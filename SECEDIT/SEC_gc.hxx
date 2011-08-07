@@ -50,7 +50,7 @@ enum {
     SEC_SKELE_NHELIX,  // skeleton non-pairing helix color
 
     SEC_GC_MAX
-}; // AW_gc
+};
 
 #define SEC_GC_DATA_COUNT (SEC_GC_LAST_DATA-SEC_GC_FIRST_DATA+1)
 #define SEC_GC_FONT_COUNT (SEC_GC_LAST_FONT-SEC_GC_FIRST_FONT+1)

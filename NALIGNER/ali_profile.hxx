@@ -24,7 +24,7 @@
 typedef void ALI_MAP_; // make module independent
 
 
-typedef struct {
+struct ALI_PROFILE_CONTEXT {
     ALI_ARBDB *arbdb;
     ALI_PT *pt;
 
@@ -47,8 +47,7 @@ typedef struct {
 
     double substitute_matrix[5][5]; // a c g u -
     double binding_matrix[5][5]; // a c g u -
-
-} ALI_PROFILE_CONTEXT;
+};
 
 
 // Class for a family member

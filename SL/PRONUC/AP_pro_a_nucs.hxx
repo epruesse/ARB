@@ -48,8 +48,7 @@ struct arb_r2a_pro_2_nuc : virtual Noncopyable {
     ~arb_r2a_pro_2_nuc();
 };
 
-// distance definition for one protein
-typedef struct {
+struct AWT_PDP { // distance definition for one protein
     long patd[3];               // proteins at dist
     // every bit in patd[x] represents one protein
     // bit in patd[0] is set = > distance == 0
@@ -57,8 +56,7 @@ typedef struct {
     // bit in patd[2] is set = > distance <= 2
 
     char nucbits[3];            // bitsets of nucs
-
-} AWT_PDP;
+};
 
 class AWT_translator;
 

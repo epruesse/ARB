@@ -61,10 +61,10 @@ enum {
 #define PH_TRANSFORMATION_BANDELT2_STRING            "B2"
 #define PH_TRANSFORMATION_BANDELT2_JC_STRING         "B2+J+C"
 
-typedef enum {
+enum PH_CORRECTION {
     PH_CORRECTION_NONE,
     PH_CORRECTION_BANDELT
-} PH_CORRECTION;
+};
 
 
 enum {
@@ -90,7 +90,7 @@ enum display_type { NONE, species_dpy, filter_dpy, matrix_dpy, tree_dpy };
 
 typedef double AP_FLOAT;
 
-typedef enum {
+enum PH_TRANSFORMATION {
     PH_TRANSFORMATION_NONE,
     PH_TRANSFORMATION_JUKES_CANTOR,
     PH_TRANSFORMATION_KIMURA,
@@ -99,8 +99,8 @@ typedef enum {
     PH_TRANSFORMATION_BANDELT,
     PH_TRANSFORMATION_BANDELT_JC,
     PH_TRANSFORMATION_BANDELT2,
-    PH_TRANSFORMATION_BANDELT2_JC } PH_TRANSFORMATION;
-
+    PH_TRANSFORMATION_BANDELT2_JC
+};
 
 // --------------------------
 //      class definitions

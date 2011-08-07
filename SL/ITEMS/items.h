@@ -21,20 +21,19 @@
 
 #define it_assert(cond) arb_assert(cond)
 
-typedef enum {
+enum QUERY_ITEM_TYPE {
     QUERY_ITEM_SPECIES,
     QUERY_ITEM_GENES,
     QUERY_ITEM_EXPERIMENTS,
 
     QUERY_ITEM_TYPES // how many different types do we have
+};
 
-} QUERY_ITEM_TYPE;
-
-typedef enum {
+enum QUERY_RANGE {
     QUERY_CURRENT_ITEM,
     QUERY_MARKED_ITEMS,
     QUERY_ALL_ITEMS
-} QUERY_RANGE;
+};
 
 struct                            MutableItemSelector;
 typedef const MutableItemSelector ItemSelector;

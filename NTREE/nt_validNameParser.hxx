@@ -30,11 +30,11 @@ namespace validNames {
     typedef std::vector<std::string> TokL;
     typedef TokL *TokLPtr;
 
-    typedef enum {
+    enum DESCT {
         VALGEN, HETGEN, HOMGEN, RENGEN, CORGEN,
         VALSPEC, HETSPEC, HOMSPEC, RENSPEC, CORSPEC,
         NOTYPE, VAL, HET, HOM, REN, COR
-    } DESCT;
+    };
 
     class Desco {
     private:

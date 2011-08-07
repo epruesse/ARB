@@ -88,8 +88,7 @@ class Sonde;
 #define MAXSONDENHASHSIZE   1000        // max 1000 Sonden koennen gecached werden, bei Bedarf aendern !!!!
 
 
-typedef struct
-{
+struct awar_vars {
     char    *manual_sequence;
     char    *selected_probes;
     char    *probelist;
@@ -109,22 +108,23 @@ typedef struct
     float   min_weight;
     float   max_weight;
     float   greyzone;
-} awar_vars;
+};
 
 class AW_selection_list;
-extern bool Stop_evaluation;
-extern AW_selection_list *selected_list;            // globale id's fuer
-extern AW_selection_list *probelist;            // identifizierung der Listen
-extern char MP_probe_tab[256];
-extern AW_selection_list *result_probes_list;
-extern int  remembered_mismatches;
-extern int  anz_elem_marked;
-extern int  anz_elem_unmarked;
-extern unsigned char **hamming_tab;
-extern int  **system3_tab;
-extern int  outside_mismatches;
-extern bool pt_server_different;
-extern bool new_pt_server;
+
+extern bool                Stop_evaluation;
+extern AW_selection_list  *selected_list;           // globale id's fuer
+extern AW_selection_list  *probelist;               // identifizierung der Listen
+extern char                MP_probe_tab[256];
+extern AW_selection_list  *result_probes_list;
+extern int                 remembered_mismatches;
+extern int                 anz_elem_marked;
+extern int                 anz_elem_unmarked;
+extern unsigned char     **hamming_tab;
+extern int               **system3_tab;
+extern int                 outside_mismatches;
+extern bool                pt_server_different;
+extern bool                new_pt_server;
 
 long            k_aus_n(int k, int n);                      // Berechnung k aus n
 extern int      get_random(int min, int max);       // gibt eine Zufallszahl x mit der Eigenschaft : min <= x <= max

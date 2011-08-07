@@ -15,8 +15,7 @@
 #include "a3_seq.hxx"
 #endif
 
-typedef enum
-{
+enum Mask {
     P_ADENIN  = 0x0001,
     P_CYTOSIN = 0x0002,
     P_GUANIN  = 0x0004,
@@ -31,8 +30,7 @@ typedef enum
     N_URACIL  = 0x0400,
     N_ONE     = 0x0800,
     N_ANY     = 0x1000
-}
-Mask;
+};
 
 struct PtNode {
     // Struktur eines Baumknotens

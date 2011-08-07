@@ -22,8 +22,7 @@
 #define ED4_G_FIRST_FONT ED4_G_STANDARD // ED4_G_SEQUENCES
 #define ED4_G_LAST_FONT  ED4_G_HELIX
 
-typedef enum
-{
+enum ED4_gc {
     ED4_G_STANDARD,
 
     ED4_G_SEQUENCES,
@@ -68,7 +67,7 @@ typedef enum
     ED4_G_LAST_COLOR_GROUP = ED4_G_FIRST_COLOR_GROUP+AW_COLOR_GROUPS-1,
 
     ED4_G_DRAG = ED4_G_LAST_COLOR_GROUP+1               // must be last
-} ED4_gc;
+};
 
 
 #define ED4_AWAR_SEARCH_RESULT_CHANGED "tmp/search/result_changed" // triggered when search result changes

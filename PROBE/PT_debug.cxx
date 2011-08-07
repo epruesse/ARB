@@ -194,7 +194,7 @@ void PT_dump_POS_TREE(POS_TREE * IF_DEBUG(node)) {
             break;
         case PT_NT_NODE:
             for (i = 0; i < PT_B_MAX; i++) {
-                printf("%6li:0x%p\n", i, PT_read_son(ptmain, node, (enum PT_bases_enum)i));
+                printf("%6li:0x%p\n", i, PT_read_son(ptmain, node, (PT_BASES)i));
             }
             break;
         case PT_NT_CHAIN:

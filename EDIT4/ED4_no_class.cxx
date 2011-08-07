@@ -1387,7 +1387,7 @@ void ed4_changesecurity(AW_root *root, AW_CL /* cd1 */)
 
 void ed4_change_edit_mode(AW_root *root, AW_CL cd1)
 {
-    awar_edit_mode = (ad_edit_mode)ED4_get_edit_mode(root);
+    awar_edit_mode = (ED4_EDITMODI)ED4_get_edit_mode(root);
     ed4_changesecurity(root, cd1);
 }
 
@@ -1787,13 +1787,12 @@ static GB_ERROR createDataFromConsensus(GBDATA *gb_species, ED4_group_manager *g
 
 // --------------------------------------------------------------------------------
 
-struct S_SpeciesMergeList {
+struct SpeciesMergeList {
     GBDATA *species;
-    char *species_name;
-    struct S_SpeciesMergeList *next;
+    char   *species_name;
 
+    SpeciesMergeList *next;
 };
-typedef struct S_SpeciesMergeList *SpeciesMergeList;
 
 static ARB_ERROR add_species_to_merge_list(ED4_base *base, AW_CL cl_SpeciesMergeListPtr, AW_CL cl_gb_species_data) {
     GB_ERROR error = NULL;
@@ -1807,12 +1806,13 @@ static ARB_ERROR add_species_to_merge_list(ED4_base *base, AW_CL cl_SpeciesMerge
             GBDATA *gb_species      = GBT_find_species_rel_species_data(gb_species_data, species_name);
 
             if (gb_species) {
-                SpeciesMergeList *smlp = (SpeciesMergeList*)cl_SpeciesMergeListPtr;
-                SpeciesMergeList sml = new S_SpeciesMergeList;
-                sml->species = gb_species;
+                SpeciesMergeList **smlp = (SpeciesMergeList**)cl_SpeciesMergeListPtr;
+                SpeciesMergeList  *sml  = new SpeciesMergeList;
+
+                sml->species      = gb_species;
                 sml->species_name = strdup(species_name);
-                sml->next = *smlp;
-                *smlp = sml;
+                sml->next         = *smlp;
+                *smlp             = sml;
             }
             else {
                 error = GB_append_exportedError(GBS_global_string("can't find species '%s'", species_name));
@@ -1823,7 +1823,7 @@ static ARB_ERROR add_species_to_merge_list(ED4_base *base, AW_CL cl_SpeciesMerge
     }
     return error;
 }
-static int SpeciesMergeListLength(SpeciesMergeList sml)
+static int SpeciesMergeListLength(SpeciesMergeList *sml)
 {
     int length = 0;
 
@@ -1834,7 +1834,7 @@ static int SpeciesMergeListLength(SpeciesMergeList sml)
 
     return length;
 }
-static void freeSpeciesMergeList(SpeciesMergeList sml) {
+static void freeSpeciesMergeList(SpeciesMergeList *sml) {
     while (sml) {
         free(sml->species_name);
         freeset(sml, sml->next);
@@ -1969,7 +1969,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                     }
                     else {
                         ED4_group_manager *group_man = cursor_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
-                        SpeciesMergeList   sml       = 0; // list of species in group
+                        SpeciesMergeList  *sml       = 0;  // list of species in group
 
                         error = group_man->route_down_hierarchy(add_species_to_merge_list, (AW_CL)&sml, (AW_CL)gb_species_data);
                         if (!error && !sml) {
@@ -1988,7 +1988,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                         if (!error) {
                             char             *doneFields = strdup(";name;full_name;"); // all fields which are already merged
                             int               doneLen    = strlen(doneFields);
-                            SpeciesMergeList  sl         = sml;
+                            SpeciesMergeList *sl         = sml;
                             int               sl_length  = SpeciesMergeListLength(sml);
                             int              *fieldStat  = new int[sl_length];         // 0 = not used yet ; -1 = don't has field ; 1..n = field content, same number means same content
 
@@ -2026,7 +2026,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                                             }
 
                                             while (doneSpecies<sl_length) { // since all species in list were handled
-                                                SpeciesMergeList sl2 = sml;
+                                                SpeciesMergeList *sl2 = sml;
                                                 i = 0;
 
                                                 while (sl2) {
@@ -2034,7 +2034,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                                                         gb_field = GB_search(sl2->species, fieldName, GB_FIND);
                                                         if (gb_field) {
                                                             char *content = GB_read_as_string(gb_field);
-                                                            SpeciesMergeList sl3 = sl2->next;
+                                                            SpeciesMergeList *sl3 = sl2->next;
 
                                                             fieldStat[i] = nextStat;
                                                             doneSpecies++;
@@ -2080,7 +2080,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                                                 int new_content_len = 0;
 
                                                 if (nextStat==2) { // all species contain same field content or do not have the field
-                                                    SpeciesMergeList sl2 = sml;
+                                                    SpeciesMergeList *sl2 = sml;
 
                                                     while (sl2) {
                                                         gb_field = GB_search(sl2->species, fieldName, GB_FIND);
@@ -2096,7 +2096,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                                                     int actualStat;
                                                     for (actualStat=1; actualStat<nextStat; actualStat++) {
                                                         int names_len = 1; // open bracket
-                                                        SpeciesMergeList sl2 = sml;
+                                                        SpeciesMergeList *sl2 = sml;
                                                         i = 0;
                                                         char *content = 0;
 
