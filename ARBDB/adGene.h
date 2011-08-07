@@ -38,7 +38,7 @@ struct GEN_position {
     bool           joinable;                        // true = join(...), false = order(...) aka not joinable or unknown
     size_t        *start_pos;
     size_t        *stop_pos;
-    unsigned char *complement;                      // 0       = normal or 1 = complementary
+    unsigned char *complement;                      // ASCII 0 = normal or ASCII 1 = complementary
 
     // [optional elements]
 

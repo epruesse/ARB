@@ -39,7 +39,10 @@ class SimpleLocation : public Location {
 
 public:
     SimpleLocation(long p1, long p2, char u1, char u2)
-        : pos1(p1), pos2(p2), uncertain1(u1), uncertain2(u2) {}
+        : pos1(p1), pos2(p2), uncertain1(u1), uncertain2(u2)
+    {
+        arb_assert(u1 && u2);
+    }
     SimpleLocation(long p, char u)
         : pos1(p), pos2(p), uncertain1(u), uncertain2(u)
     {
@@ -280,6 +283,7 @@ LocationPtr parseLocation(const string& source) {
             // single base position
             char   uncertain;
             size_t single_pos = parsePosition(source, uncertain);
+            if (uncertain != '=') throw "No uncertainty allowed for single positions";
             return new SimpleLocation(single_pos, uncertain);
         }
     }
@@ -303,30 +307,42 @@ GEN_position *Location::create_GEN_position() const {
     return pos;
 }
 
-inline LocationPtr part2SimpleLocation(GEN_position *pos, int i) {
+inline LocationPtr part2SimpleLocation(const GEN_position *pos, int i, bool inverseComplement) {
     LocationPtr res = new SimpleLocation(pos->start_pos[i], pos->stop_pos[i], pos->start_uncertain[i], pos->stop_uncertain[i]);
-    if (pos->complement[i]) {
+    if (contradicted(pos->complement[i], inverseComplement)) {;
         res = new ComplementLocation(res);
     }
     return res;
 }
 
-LocationPtr to_Location(GEN_position *gp) {
+LocationPtr to_Location(const GEN_position *gp) {
     arb_assert(gp->start_uncertain);
     arb_assert(gp->stop_uncertain);
 
     if (gp->parts == 1) {
-        return part2SimpleLocation(gp, 0);
+        return part2SimpleLocation(gp, 0, false);
     }
+
+    int complemented = 0;
+    for (int p = 0; p<gp->parts; ++p) complemented += gp->complement[p];
 
     JoinedLocation *joined = new JoinedLocation(gp->joinable ? LJT_JOIN : LJT_ORDER);
     LocationPtr     res    = joined;
 
-    for (int p = 0; p<gp->parts; ++p) {
-        LocationPtr ploc = part2SimpleLocation(gp, p);
-        joined->push_back(ploc);
+    if (2*complemented > gp->parts) {
+        // create "complement(join())" since it is "smaller"
+        for (int p = gp->parts-1; p >= 0; --p) {
+            LocationPtr ploc = part2SimpleLocation(gp, p, true);
+            joined->push_back(ploc);
+        }
+        res = new ComplementLocation(res);
     }
-
+    else {
+        for (int p = 0; p<gp->parts; ++p) {
+            LocationPtr ploc = part2SimpleLocation(gp, p, false);
+            joined->push_back(ploc);
+        }
+    }
     return res;
 }
 
@@ -383,10 +399,13 @@ static GB_ERROR perform_conversions(const string& in, string& out, string& out2)
     } while(0)
 
 #define TEST_ASSERT_RECONV__INTO(str,res) do {                     \
-        DO_LOCONV_NOERR(str);                                      \
-        TEST_ASSERT_EQUAL(str, reverse.c_str());                   \
-        TEST_ASSERT_EQUAL(res, convReverse.c_str());               \
-        TEST_ASSERT(reverse.length() >= convReverse.length());     \
+        do {                                                       \
+            DO_LOCONV_NOERR(str);                                  \
+            TEST_ASSERT_EQUAL(str, reverse.c_str());               \
+            TEST_ASSERT_EQUAL(res, convReverse.c_str());           \
+            TEST_ASSERT(reverse.length() >= convReverse.length()); \
+        } while(0);                                                \
+        TEST_ASSERT___CONV_IDENT(res);                             \
     } while(0)
 
 #define TEST_ASSERT_RECONV__SPAM(str,res) do {                          \
@@ -435,24 +454,22 @@ void TEST_gene_location() {
     TEST_ASSERT_RECONV__INTO("order(1)", "1");
     TEST_ASSERT___CONV_IDENT("order(0,8,15)");
     TEST_ASSERT___CONV_IDENT("order(10..12,7..9,1^2)");
-    TEST_ASSERT_RECONV__SPAM("complement(order(10..12,7..9,1^2))",
-                             "order(complement(1^2),complement(7..9),complement(10..12))");
+    TEST_ASSERT_RECONV__INTO("order(complement(1^2),complement(7..9),complement(10..12))",
+                             "complement(order(10..12,7..9,1^2))");
     TEST_ASSERT___CONV_IDENT("order(10..12,complement(7..9),1^2)");
-    TEST_ASSERT_RECONV__INTO("complement(order(10..12,complement(7..9),1^2))",
-                             "order(complement(1^2),7..9,complement(10..12))");
+    TEST_ASSERT_RECONV__INTO("order(complement(1^2),7..9,complement(10..12))",
+                             "complement(order(10..12,complement(7..9),1^2))");
 
     TEST_ASSERT__PARSE_ERROR("join(order(0,8,15),order(3,2,1))", "order() and join() cannot be mixed");
 
-    TEST_ASSERT___CONV_IDENT("join(complement(3..77),complement(100..200))");
-
-    TEST_ASSERT_RECONV__SPAM("complement(join(3..77,100..200))",
-                             "join(complement(100..200),complement(3..77))");
-
-    TEST_ASSERT_RECONV__SPAM("join(complement(join(3..77,74..83)),complement(100..200))",
-                             "join(complement(74..83),complement(3..77),complement(100..200))");
-    
+    TEST_ASSERT_RECONV__INTO("join(complement(3..77),complement(100..200))",
+                             "complement(join(100..200,3..77))");
+    TEST_ASSERT_RECONV__INTO("join(complement(join(3..77,74..83)),complement(100..200))",
+                             "complement(join(100..200,3..77,74..83))");
     TEST_ASSERT_RECONV__INTO("complement(complement(complement(100..200)))",
                              "complement(100..200)");
+    TEST_ASSERT_RECONV__INTO("join(complement(join(complement(join(1)))))",
+                             "1");
 
     // cover errors
     TEST_ASSERT__PARSE_ERROR("join(abc()", "Expected 1 closing parenthesis in 'abc('");
