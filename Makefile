@@ -1625,6 +1625,16 @@ release_quick:
 
 # --------------------------------------------------------------------------------
 
+MAKE_IF_COMMITTED=$(MAKE) -C SOURCE_TOOLS -f Makefile.commitbuild
+
+build_CTARGET:
+	+$(MAKE_IF_COMMITTED) "CTARGET=$(CTARGET)" build_CTARGET
+
+reset_committed_build:
+	+$(MAKE_IF_COMMITTED) reset
+
+# --------------------------------------------------------------------------------
+
 # basic arb libraries
 arbbasic: links preplib
 		$(MAKE) arbbasic2
