@@ -62,8 +62,9 @@ namespace RefEntries {
             if (GB_have_error()) error = GB_await_error();
         }
         else {
-            size_t   refCount = 0;
-            char   **refNames = GBT_split_string(filtered, ";, ", true, &refCount);
+            ConstStrArray refNames;
+            GBT_split_string(refNames, filtered, ";, ", true);
+            size_t   refCount = refNames.size();
 
             for (size_t r = 0; r<refCount && !error; ++r) {
                 GBDATA *gb_main     = GB_get_root(gb_item);
@@ -84,7 +85,6 @@ namespace RefEntries {
                 }
             }
 
-            GBT_free_names(refNames);
             free(filtered);
         }
 

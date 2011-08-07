@@ -357,9 +357,10 @@ void NT_database_optimization(AW_window *aww) {
     GB_push_my_security(GLOBAL_gb_main);
     GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
     if (!error) {
-        char         **ali_names = GBT_get_alignment_names(GLOBAL_gb_main);
-        arb_progress   ali_progress("Optimizing sequence data", GBT_count_names(ali_names));
+        ConstStrArray ali_names;
+        GBT_get_alignment_names(ali_names, GLOBAL_gb_main);
 
+        arb_progress ali_progress("Optimizing sequence data", ali_names.size());
         ali_progress.allow_title_reuse();
 
         error = GBT_check_data(GLOBAL_gb_main, 0);
@@ -367,13 +368,12 @@ void NT_database_optimization(AW_window *aww) {
 
         if (!error) {
             char *tree_name = aww->get_root()->awar("tmp/nt/arbdb/optimize_tree_name")->read_string();
-            for (char **ali_name = ali_names; !error && *ali_name; ali_name++) {
-                error = GBT_compress_sequence_tree2(GLOBAL_gb_main, tree_name, *ali_name);
+            for (int i = 0; ali_names[i]; ++i) {
+                error = GBT_compress_sequence_tree2(GLOBAL_gb_main, tree_name, ali_names[i]);
                 ali_progress.inc_and_check_user_abort(error);
             }
             free(tree_name);
         }
-        GBT_free_names(ali_names);
     }
     progress.inc_and_check_user_abort(error);
 
@@ -1002,10 +1002,11 @@ void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
     GB_ERROR       error = 0;
     GB_transaction ta(gb_main);
 
-    int    treeCount;
-    char **tree_names = GBT_get_tree_names_and_count(gb_main, &treeCount);
+    ConstStrArray tree_names;
+    GBT_get_tree_names(tree_names, gb_main);
 
-    if (tree_names) {
+    if (!tree_names.empty()) {
+        int           treeCount    = tree_names.size();
         arb_progress  progress("Deleting from trees", treeCount);
         GB_HASH      *species_hash = GBT_create_species_hash(gb_main);
 
@@ -1042,7 +1043,6 @@ void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
             progress.inc_and_check_user_abort(error);
         }
 
-        GBT_free_names(tree_names);
         GBS_free_hash(species_hash);
     }
 

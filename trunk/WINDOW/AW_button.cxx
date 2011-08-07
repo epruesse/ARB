@@ -1694,7 +1694,7 @@ void AW_window::update_selection_list(AW_selection_list * selection_list) {
     delete [] strtab;
 }
 
-void AW_window::init_selection_list_from_array(AW_selection_list *selection_list, const char * const *entries, const char *defaultEntry) {
+void AW_window::init_selection_list_from_array(AW_selection_list *selection_list, const CharPtrArray& entries, const char *defaultEntry) {
     // update selection list with contents of NULL-terminated array 'entries'
     // 'defaultEntry' is used as default selection
     // awar value will be changed to 'defaultEntry' if it does not match any other entry
@@ -1723,25 +1723,21 @@ void AW_window::init_selection_list_from_array(AW_selection_list *selection_list
     free(defaultEntryCopy);
 }
 
-char **AW_window::selection_list_to_array(AW_selection_list *sel_list, bool values) {
+void AW_window::selection_list_to_array(StrArray& array, AW_selection_list *sel_list, bool values) {
     /*! read contents of selection list into an array.
      * @param values true->read values, false->read displayed strings
      * Use GBT_free_names() to free the result.
      *
-     * Note: if 'values' is true, this function only works for string selection lists! 
+     * Note: if 'values' is true, this function only works for string selection lists!
      */
 
-    size_t   count = sel_list->size();
-    char   **array = (char**)malloc((count+1)*sizeof(*array));
-    size_t   idx   = 0;
-
+    size_t count = sel_list->size();
+    array.reserve(count);
+    
     for (AW_selection_list_entry *lt = sel_list->list_table; lt; lt = lt->next) {
-        array[idx++] = strdup(values ? lt->value.get_string() : lt->get_displayed());
+        array.put(strdup(values ? lt->value.get_string() : lt->get_displayed()));
     }
-    array[idx] = NULL;
-    aw_assert(idx == count);
-
-    return array;
+    aw_assert(array.size() == count);
 }
 
 void AW_window::update_selection_list_intern(AW_selection_list *selection_list) {
@@ -1977,11 +1973,12 @@ GB_ERROR AW_window::load_selection_list(AW_selection_list *selection_list, const
     char *pl;
 
     this->clear_selection_list(selection_list);
-    char **fnames = GBS_read_dir(filename, NULL);
-    char **fname;
+    StrArray fnames;
+    GBS_read_dir(fnames, filename, NULL);
 
-    for (fname = fnames; *fname; fname++) {
-        char *data = GB_read_file(*fname);
+    for (int i = 0; fnames[i]; ++i) {
+        const char *fname = fnames[i];
+        char       *data  = GB_read_file(fname);
         if (!data) {
             GB_print_error();
             continue;
@@ -1995,7 +1992,7 @@ GB_ERROR AW_window::load_selection_list(AW_selection_list *selection_list, const
             if (ko) {
                 if (selection_list->value_equal_display) { // here no comma should occur
                     if (correct_old_format == -1) {
-                        correct_old_format = aw_ask_sure(GBS_global_string("'%s' seems to be in old selection-list-format. Try to correct?", *fname));
+                        correct_old_format = aw_ask_sure(GBS_global_string("'%s' seems to be in old selection-list-format. Try to correct?", fname));
                     }
 
                     if (correct_old_format == 1) {
@@ -2017,7 +2014,6 @@ GB_ERROR AW_window::load_selection_list(AW_selection_list *selection_list, const
         }
         free(data);
     }
-    GBT_free_names(fnames);
 
     this->insert_default_selection(selection_list, "", "");
     this->update_selection_list(selection_list);

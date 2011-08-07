@@ -75,12 +75,24 @@ GB_ERROR GBT_check_arb_file(const char *name) {
 
 #define GBT_SUM_LEN 4096                            // maximum length of path
 
-struct DbScanner {
+struct DbScanner : virtual Noncopyable {
     GB_HASH   *hash_table;
-    int        count;
-    char     **result;
+    StrArray&  result; // not owned!
     GB_TYPES   type;
     char      *buffer;
+
+    DbScanner(StrArray& result_)
+        : result(result_)
+    {
+        hash_table = GBS_create_hash(1024, GB_MIND_CASE);
+        buffer     = (char*)malloc(GBT_SUM_LEN);
+        buffer[0]  = 0;
+    }
+
+    ~DbScanner() {
+        GBS_free_hash(hash_table);
+        free(buffer);
+    }
 };
 
 static void gbt_scan_db_rek(GBDATA *gbd, char *prefix, int deep, DbScanner *scanner) {
@@ -114,12 +126,6 @@ static void gbt_scan_db_rek(GBDATA *gbd, char *prefix, int deep, DbScanner *scan
     }
 }
 
-static long gbs_scan_db_count(const char */*key*/, long val, void *cd_scanner) {
-    DbScanner *scanner = (DbScanner*)cd_scanner;
-    scanner->count++;
-    return val;
-}
-
 struct scan_db_insert {
     DbScanner  *scanner;
     const char *datapath;
@@ -141,7 +147,7 @@ static long gbs_scan_db_insert(const char *key, long val, void *cd_insert_data) 
 
     if (to_insert) {
         DbScanner *scanner = insert->scanner;
-        scanner->result[scanner->count++] = to_insert;
+        scanner->result.put(to_insert);
     }
 
     return val;
@@ -152,49 +158,30 @@ static int gbs_scan_db_compare(const void *left, const void *right, void *) {
 }
 
 
-char **GBT_scan_db(GBDATA *gbd, const char *datapath) {
+void GBT_scan_db(StrArray& fieldNames, GBDATA *gbd, const char *datapath) {
     /*! scan CONTAINER for existing sub-keys
      *
      * recurses completely downwards the DB tree
      *
-     * @param gbd node where search starts
-     * @param datapath if != NULL, only keys with prefix datapath are scanned and
-     * the prefix is removed from the resulting key_names.
-     *
-     * @return a NULL terminated array of 'char*':
+     * @param fieldNames gets filled with result strings
      * - each string is the path to a node beyond gbd
      * - every string exists only once
      * - the first character of a string is the type of the entry
      * - the strings are sorted alphabetically
-     *
-     * caller has to free the result (e.g. using GBT_free_names())
+     * @param gbd node where search starts
+     * @param datapath if != NULL, only keys with prefix datapath are scanned and
+     * the prefix is removed from the resulting key_names.
      *
      * Note: this function is incredibly slow when called from clients
      */
-    DbScanner scanner;
 
-    scanner.hash_table = GBS_create_hash(1024, GB_MIND_CASE);
-    scanner.buffer     = (char *)malloc(GBT_SUM_LEN);
-    strcpy(scanner.buffer, "");
-
-    gbt_scan_db_rek(gbd, scanner.buffer, 0, &scanner);
-
-    scanner.count = 0;
-    GBS_hash_do_loop(scanner.hash_table, gbs_scan_db_count, &scanner);
-
-    scanner.result = (char **)GB_calloc(sizeof(char *), scanner.count+1);
-    // null terminated result
-
-    scanner.count = 0;
-    scan_db_insert insert = { &scanner, datapath, };
-    GBS_hash_do_loop(scanner.hash_table, gbs_scan_db_insert, &insert);
-
-    GBS_free_hash(scanner.hash_table);
-
-    GB_sort((void **)scanner.result, 0, scanner.count, gbs_scan_db_compare, 0);
-
-    free(scanner.buffer);
-    return scanner.result;
+    {
+        DbScanner scanner(fieldNames);
+        gbt_scan_db_rek(gbd, scanner.buffer, 0, &scanner);
+        scan_db_insert insert = { &scanner, datapath, };
+        GBS_hash_do_loop(scanner.hash_table, gbs_scan_db_insert, &insert);
+    }
+    fieldNames.sort(gbs_scan_db_compare, 0);
 }
 
 // --------------------------
@@ -930,11 +917,11 @@ GB_ERROR GB_notify(GBDATA *gb_main, int id, const char *message) {
 
 #define TEST_ASSERT_SCANNED_EQUALS(path,expected) do {  \
         GB_transaction ta(gb_main);                     \
-        char **fields = GBT_scan_db(gb_main, path);     \
+        StrArray fields;                                \
+        GBT_scan_db(fields, gb_main, path);             \
         char  *joined = GBT_join_names(fields, ',');    \
         TEST_ASSERT_EQUAL(joined, expected);            \
         free(joined);                                   \
-        GBT_free_names(fields);                         \
     } while (0)
 
 void TEST_scan_db() {

@@ -88,24 +88,27 @@ struct AWT_tree_selection: public AW_DB_selection {
         GBDATA         *gb_main = get_gb_main();
         GB_transaction  ta(gb_main);
 
-        char **tree_names = GBT_get_tree_names(gb_main);
-        if (tree_names) {
+        ConstStrArray tree_names;
+        GBT_get_tree_names(tree_names, gb_main);
+
+        if (!tree_names.empty()) {
             int maxTreeNameLen = 0;
-            for (char **tree = tree_names; *tree; tree++) {
-                int len = strlen(*tree);
+            for (int i = 0; tree_names[i]; ++i) {
+                const char *tree = tree_names[i];
+                int         len  = strlen(tree);
                 if (len>maxTreeNameLen) maxTreeNameLen = len;
             }
-            for (char **tree = tree_names; *tree; tree++) {
-                const char *info = GBT_tree_info_string(gb_main, *tree, maxTreeNameLen);
+            for (int i = 0; tree_names[i]; ++i) {
+                const char *tree = tree_names[i];
+                const char *info = GBT_tree_info_string(gb_main, tree, maxTreeNameLen);
                 if (info) {
-                    insert_selection(info, *tree);
+                    insert_selection(info, tree);
                 }
                 else {
                     aw_message(GB_await_error());
-                    insert_selection(*tree, *tree);
+                    insert_selection(tree, tree);
                 }
             }
-            GBT_free_names(tree_names);
         }
         insert_default_selection("????", "????");
     }
@@ -400,12 +403,11 @@ public:
     {}
 
     void fill() {
-        int    config_count;
-        char **config = GBT_get_configuration_names_and_count(get_gb_main(), &config_count);
+        ConstStrArray config;
+        GBT_get_configuration_names(config, get_gb_main());
 
-        if (config) {
-            for (int c = 0; c<config_count; c++) insert_selection(config[c], config[c]);
-            GBT_free_names(config);
+        if (!config.empty()) {
+            for (int c = 0; config[c]; c++) insert_selection(config[c], config[c]);
         }
         insert_default_selection("????", "????");
     }
@@ -427,20 +429,20 @@ char *awt_create_string_on_configurations(GBDATA *gb_main) {
 
     GB_push_transaction(gb_main);
 
-    int    config_count;
-    char **config = GBT_get_configuration_names_and_count(gb_main, &config_count);
-    char  *result = 0;
+    ConstStrArray config;
+    GBT_get_configuration_names(config, gb_main);
 
-    if (config) {
+    char *result = 0;
+
+    if (!config.empty()) {
         GBS_strstruct *out = GBS_stropen(1000);
-        for (int c = 0; c<config_count; c++) {
+        for (int c = 0; config[c]; c++) {
             if (c>0) GBS_chrcat(out, ';');
             GBS_strcat(out, config[c]);
         }
         result = GBS_strclose(out);
     }
 
-    GBT_free_names(config);
     GB_pop_transaction(gb_main);
     return result;
 }

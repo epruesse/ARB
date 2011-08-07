@@ -21,7 +21,6 @@
 #include <aw_root.hxx>
 #include <arb_str.h>
 #include <arb_strbuf.h>
-#include <arb_strarray.h>
 
 #define AWAR1 "tmp/merge1/"
 #define AWAR2 "tmp/merge2/"
@@ -631,27 +630,23 @@ AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
 
 GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
     /*! Make the alignment names equal */
-    char **   M_alignment_names = GBT_get_alignment_names(GLOBAL_gb_merge);
-    char **   D_alignment_names = GBT_get_alignment_names(GLOBAL_gb_dest);
-    GB_ERROR  error             = 0;
-    char     *dest              = 0;
+    ConstStrArray M_alignment_names;
+    ConstStrArray D_alignment_names;
+    GBT_get_alignment_names(M_alignment_names, GLOBAL_gb_merge);
+    GBT_get_alignment_names(D_alignment_names, GLOBAL_gb_dest);
+
+    GB_ERROR    error = 0;
+    const char *dest  = 0;
 
     if (M_alignment_names[0] == 0) {
         error =  GB_export_error("No source sequences found");
     }
     else {
         char *type = GBT_get_alignment_type_string(GLOBAL_gb_merge, M_alignment_names[0]);
-        int   s;
-        int   d;
 
-        for (s=0, d=0; D_alignment_names[s]; s++) {
-            char *type2 = GBT_get_alignment_type_string(GLOBAL_gb_dest, D_alignment_names[s]);
-            if (strcmp(type, type2) == 0) {
-                D_alignment_names[d] = D_alignment_names[s];
-                if (d != s) D_alignment_names[s] = 0;
-                ++d;
-            }
-            else freenull(D_alignment_names[s]);
+        for (int d = D_alignment_names.size()-1; d>0; --d) {
+            char *type2 = GBT_get_alignment_type_string(GLOBAL_gb_dest, D_alignment_names[d]);
+            if (strcmp(type, type2) != 0) D_alignment_names.remove(d--);
             free(type2);
         }
 
@@ -659,6 +654,7 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
         char          *b;
         int            aliid;
 
+        int d = D_alignment_names.size();
         switch (d) {
             case 0:
                 error = GB_export_errorf("Cannot find a target alignment with a type of '%s'\n"
@@ -714,8 +710,6 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
         }
         free(type);
     }
-    GBT_free_names(M_alignment_names);
-    GBT_free_names(D_alignment_names);
 
     return error;
 }

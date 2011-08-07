@@ -95,36 +95,37 @@ int MG_copy_and_check_alignments(AW_window */*aww*/) {
     GB_begin_transaction(GLOBAL_gb_dest);
     GB_begin_transaction(GLOBAL_gb_merge);
 
-    char   **names       = GBT_get_alignment_names(GLOBAL_gb_merge);
-    GBDATA  *gb_presets2 = NULL;
+    ConstStrArray names;
+    GBT_get_alignment_names(names, GLOBAL_gb_merge);
 
-    for (char **name = names; *name && !error; name++) {
-        GBDATA *gb_ali2 = GBT_get_alignment(GLOBAL_gb_dest, *name);
+    GBDATA *gb_presets2 = NULL;
+
+    for (int i = 0; names[i] && !error; ++i) {
+        const char *name    = names[i];
+        GBDATA     *gb_ali2 = GBT_get_alignment(GLOBAL_gb_dest, name);
 
         if (!gb_ali2) {
-            GB_clear_error(); // ignore "alignment not found"  
+            GB_clear_error(); // ignore "alignment not found"
 
-            GBDATA *gb_ali1 = GBT_get_alignment(GLOBAL_gb_merge, *name);
+            GBDATA *gb_ali1 = GBT_get_alignment(GLOBAL_gb_merge, name);
             mg_assert(gb_ali1);
 
             if (!gb_presets2) gb_presets2 = GB_search(GLOBAL_gb_dest, "presets", GB_CREATE_CONTAINER);
 
             gb_ali2 = GB_create_container(gb_presets2, "alignment");
             GB_copy(gb_ali2, gb_ali1);
-            GBT_add_new_changekey(GLOBAL_gb_dest, (char *)GBS_global_string("%s/data", *name), GB_STRING);
+            GBT_add_new_changekey(GLOBAL_gb_dest, (char *)GBS_global_string("%s/data", name), GB_STRING);
         }
 
-        char *type1 = GBT_get_alignment_type_string(GLOBAL_gb_merge, *name);
-        char *type2 = GBT_get_alignment_type_string(GLOBAL_gb_dest, *name);
+        char *type1 = GBT_get_alignment_type_string(GLOBAL_gb_merge, name);
+        char *type2 = GBT_get_alignment_type_string(GLOBAL_gb_dest, name);
 
         if (strcmp(type1, type2) != 0) {
-            error = GBS_global_string("The alignments '%s' have different types (%s != %s)", *name, type1, type2);
+            error = GBS_global_string("The alignments '%s' have different types (%s != %s)", name, type1, type2);
         }
         free(type2);
         free(type1);
     }
-
-    GBT_free_names(names);
 
     GB_commit_transaction(GLOBAL_gb_dest);
     GB_commit_transaction(GLOBAL_gb_merge);

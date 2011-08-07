@@ -169,19 +169,17 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
 
     // rename species in trees
     {
-        int tree_count;
-        char **tree_names = GBT_get_tree_names_and_count(NameSession.gb_main, &tree_count);
+        ConstStrArray tree_names;
+        GBT_get_tree_names(tree_names, NameSession.gb_main);
 
-        if (tree_names) {
-            int count;
-            gb_assert(tree_count); // otherwise tree_names should be zero
-
+        if (!tree_names.empty()) {
+            int          tree_count = tree_names.size();
             arb_progress progress(GBS_global_string("Renaming species in %i tree%c", tree_count, "s"[tree_count<2]),
                                   tree_count*3);
 
-            for (count = 0; count<tree_count && !error; ++count) {
-                char     *tname = tree_names[count];
-                GBT_TREE *tree  = GBT_read_tree(NameSession.gb_main, tname, -sizeof(GBT_TREE));
+            for (int count = 0; count<tree_count && !error; ++count) {
+                const char *tname = tree_names[count];
+                GBT_TREE   *tree  = GBT_read_tree(NameSession.gb_main, tname, -sizeof(GBT_TREE));
                 ++progress;
 
                 if (tree) {
@@ -201,22 +199,19 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
                     ++progress;
                 }
             }
-            GBT_free_names(tree_names);
         }
         commit_progress.inc_and_check_user_abort(error);
     }
     // rename configurations
     if (!error) {
-        int config_count;
-        char **config_names = GBT_get_configuration_names_and_count(NameSession.gb_main, &config_count);
+        ConstStrArray config_names;
+        GBT_get_configuration_names(config_names, NameSession.gb_main);
 
-        if (config_names) {
-            int count;
-            gb_assert(config_count); // otherwise config_names should be zero
-
+        if (!config_names.empty()) {
+            int          config_count = config_names.size();
             arb_progress progress(GBS_global_string("Renaming species in %i config%c", config_count, "s"[config_count<2]), config_count);
 
-            for (count = 0; !error && count<config_count; ++count) {
+            for (int count = 0; !error && count<config_count; ++count) {
                 GBT_config *config = GBT_load_configuration_data(NameSession.gb_main, config_names[count], &error);
                 if (!error) {
                     int need_save = 0;
@@ -256,7 +251,6 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
                 }
                 progress.inc_and_check_user_abort(error);
             }
-            GBT_free_names(config_names);
         }
     }
     commit_progress.inc_and_check_user_abort(error);

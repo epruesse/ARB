@@ -477,8 +477,9 @@ static GB_ERROR NT_del_mark_move_REF(GBDATA *gb_main, size_t species_count, size
 
     // delete 'mark' entries from all alignments of species/SAIs
 
-    arb_progress progress(all);
-    char **ali_names = GBT_get_alignment_names(gb_main);
+    arb_progress  progress(all);
+    ConstStrArray ali_names;
+    GBT_get_alignment_names(ali_names, gb_main);
 
     for (int pass = 0; pass < 2 && !error; ++pass) {
         for (GBDATA *gb_item = (pass == 0) ? GBT_first_species(gb_main) : GBT_first_SAI(gb_main);
@@ -534,8 +535,6 @@ static GB_ERROR NT_del_mark_move_REF(GBDATA *gb_main, size_t species_count, size
 
         free(helix_name);
     }
-
-    GBT_free_names(ali_names);
 
     if (!error) {
         if (removed) {

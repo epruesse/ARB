@@ -39,6 +39,9 @@ struct GBS_string_matcher;
 struct GBS_strstruct;
 struct GEN_position;
 struct DictData;
+struct CharPtrArray;
+struct StrArray;
+struct ConstStrArray;
 
 // --------------
 //      enums

@@ -258,16 +258,18 @@ AW_window *AWTC_create_submission_window(AW_root *root, AW_CL cl_gbmain) {
     aws->create_input_field(AWAR_SPECIES_NAME, 12);
 
     aws->at("submission");
-    char **submits = GBS_read_dir(GB_path_in_ARBLIB("submit"), NULL);
-    if (submits) {
-        aws->create_option_menu("submission/source", "Select a Form", "s");
-        for (char **submit = submits; *submit; submit++) {
-            aws->insert_option(*submit, "", *submit);
-        }
-        aws->insert_default_option("default", "d", "default");
-        aws->update_option_menu();
+    {
+        StrArray submits;
+        GBS_read_dir(submits, GB_path_in_ARBLIB("submit"), NULL);
 
-        GBT_free_names(submits);
+        if (!submits.empty()) {
+            aws->create_option_menu("submission/source", "Select a Form", "s");
+            for (int i = 0; submits[i]; ++i) {
+                aws->insert_option(submits[i], "", submits[i]);
+            }
+            aws->insert_default_option("default", "d", "default");
+            aws->update_option_menu();
+        }
     }
 
     aws->at("gen");
@@ -303,5 +305,5 @@ AW_window *AWTC_create_submission_window(AW_root *root, AW_CL cl_gbmain) {
     aws->at("privatlabel");
     aws->create_button(0, "Your private data");
 
-    return (AW_window *)aws;
+    return aws;
 }

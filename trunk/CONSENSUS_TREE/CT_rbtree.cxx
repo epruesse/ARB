@@ -14,25 +14,23 @@
 #include "CT_mem.hxx"
 
 #include <arbdbt.h>
+#include <arb_strarray.h>
 
 
 #define RMSTRLEN 81
 
-char **name_tbl = NULL;
+static const CharPtrArray *name_tbl = NULL;
 
-
-/* Initialize the module */
-void rb_init(char **names)
-{
-    name_tbl = names;
+void rb_init(const CharPtrArray& names) {
+    /* Initialize the module */
+    name_tbl = &names; // @@@ use a copy for safety ? 
 }
 
 
-/* get the name of a leaf from the index */
-char *get_name(int idx)
-{
+char *get_name(int idx) {
+    /* get the name of a leaf from the index */
     char *t;
-    t = strdup(name_tbl[idx]);
+    t = strdup((*name_tbl)[idx]);
     return t;
 }
 
@@ -77,7 +75,7 @@ RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
     nsonp = tree->son_list;
     if (!nsonp) {                                        /* if node is leaf */
         idx = calc_index(tree->part);
-        gbtnode->name = strdup((name_tbl[idx]));
+        gbtnode->name = strdup(get_name(idx));
         gbtnode->is_leaf = true;
         return info;
     }

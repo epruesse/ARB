@@ -730,11 +730,13 @@ GB_ERROR SEQIO_export_by_format(GBDATA *gb_main, int marked_only, AP_filter *fil
     } while(0)                                                          \
 
 void TEST_sequence_export() {
-    GB_shell shell;
+    GB_shell              shell;
     arb_suppress_progress silence;
-    GBDATA  *gb_main    = GB_open("TEST_loadsave.arb", "r");
-    char    *export_dir = nulldup(GB_path_in_ARBLIB("export"));
-    char   **eft        = GBS_read_dir(export_dir, "*.eft");
+
+    GBDATA   *gb_main    = GB_open("TEST_loadsave.arb", "r");
+    char     *export_dir = nulldup(GB_path_in_ARBLIB("export"));
+    StrArray  eft;
+    GBS_read_dir(eft, export_dir, "*.eft");
 
     AP_filter *filter = NULL;
     {
@@ -793,7 +795,6 @@ void TEST_sequence_export() {
     }
 
     delete filter;
-    GBT_free_names(eft);
     free(export_dir);
     GB_close(gb_main);
 }

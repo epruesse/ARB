@@ -19,6 +19,8 @@
 #include <string>
 
 #include <arb_sort.h>
+#include <arb_str.h>
+#include <arb_strarray.h>
 
 #include "gb_local.h"
 #include "gb_load.h"
@@ -234,7 +236,7 @@ char *GBS_find_lib_file(const char *filename, const char *libprefix, bool warn_w
     return result;
 }
 
-char **GBS_read_dir(const char *dir, const char *mask) {
+void GBS_read_dir(StrArray& names, const char *dir, const char *mask) {
     /* Return names of files in directory 'dir'.
      * Filter through 'mask':
      * - mask == NULL -> return all files
@@ -251,30 +253,26 @@ char **GBS_read_dir(const char *dir, const char *mask) {
 
     gb_assert(dir);             // dir == NULL was allowed before 12/2008, forbidden now!
 
-    char  *fulldir   = strdup(GB_canonical_path(dir));
-    DIR   *dirstream = opendir(fulldir);
-    char **names     = NULL;
+    char *fulldir   = strdup(GB_canonical_path(dir));
+    DIR  *dirstream = opendir(fulldir);
 
     if (!dirstream) {
         if (GB_is_readablefile(fulldir)) {
-            names    = (char**)malloc(2*sizeof(*names));
-            names[0] = strdup(fulldir);
-            names[1] = NULL;
+            names.put(strdup(fulldir));
         }
         else {
             char *lslash = strrchr(fulldir, '/');
 
             if (lslash) {
-                char *name;
-                lslash[0] = 0;
-                name      = lslash+1;
+                lslash[0]  = 0;
+                char *name = lslash+1;
                 if (GB_is_directory(fulldir)) {
-                    names = GBS_read_dir(fulldir, name);
+                    GBS_read_dir(names, fulldir, name);
                 }
                 lslash[0] = '/';
             }
 
-            if (!names) GB_export_errorf("can't read directory '%s'", fulldir);
+            if (names.empty()) GB_export_errorf("can't read directory '%s'", fulldir);
         }
     }
     else {
@@ -282,10 +280,6 @@ char **GBS_read_dir(const char *dir, const char *mask) {
 
         GBS_string_matcher *matcher = GBS_compile_matcher(mask, GB_MIND_CASE);
         if (matcher) {
-            int allocated = 100;
-            int entries   = 0;
-            names         = (char**)malloc(100*sizeof(*names));
-
             dirent *entry;
             while ((entry = readdir(dirstream)) != 0) {
                 const char *name = entry->d_name;
@@ -297,20 +291,13 @@ char **GBS_read_dir(const char *dir, const char *mask) {
                     if (GBS_string_matches_regexp(name, matcher)) {
                         const char *full = GB_concat_path(fulldir, name);
                         if (!GB_is_directory(full)) { // skip directories
-                            if (entries == allocated) {
-                                allocated += allocated>>1; // * 1.5
-                                names      = (char**)realloc(names, allocated*sizeof(*names));
-                            }
-                            names[entries++] = strdup(full);
+                            names.put(strdup(full));
                         }
                     }
                 }
             }
 
-            names          = (char**)realloc(names, (entries+1)*sizeof(*names));
-            names[entries] = NULL;
-
-            GB_sort((void**)names, 0, entries, GB_string_comparator, 0);
+            names.sort(GB_string_comparator, 0);
 
             GBS_free_matcher(matcher);
         }
@@ -319,8 +306,6 @@ char **GBS_read_dir(const char *dir, const char *mask) {
     }
 
     free(fulldir);
-
-    return names;
 }
 
 // --------------------------------------------------------------------------------
@@ -692,6 +677,33 @@ void TEST_diff_files() {
     
     TEST_ASSERT(GB_test_textfile_difflines(file_date_swapped, file_date_changed, 6, 0));
     TEST_ASSERT(GB_test_textfile_difflines(file_date_swapped, file_date_changed, 0, 1));
+}
+
+static char *remove_path(const char *fullname, void *cl_path) {
+    const char *path   = (const char *)cl_path;
+    return strdup(fullname+(ARB_strscmp(fullname, path) == 0 ? strlen(path) : 0));
+}
+
+void GBT_transform_names(StrArray& dest, const StrArray& source, char *transform(const char *, void *), void *client_data) {
+    for (int i = 0; source[i]; ++i) dest.put(transform(source[i], client_data));
+}
+
+#define TEST_JOINED_DIR_CONTENT_EQUALS(subdir,mask,expected) do {       \
+        char     *fulldir = strdup(GB_path_in_ARBHOME(subdir));         \
+        StrArray  contents;                                             \
+        GBS_read_dir(contents, fulldir, mask);                          \
+        StrArray  contents_no_path;                                     \
+        GBT_transform_names(contents_no_path, contents, remove_path, (void*)fulldir); \
+        char     *joined  = GBT_join_names(contents_no_path, '!');      \
+        TEST_ASSERT_EQUAL(joined, expected);                            \
+        free(joined);                                                   \
+        free(fulldir);                                                  \
+    } while(0)
+
+void TEST_GBS_read_dir() {
+    TEST_JOINED_DIR_CONTENT_EQUALS("GDE/CLUSTAL", "*.c",       "/amenu.c!/clustalv.c!/gcgcheck.c!/myers.c!/sequence.c!/showpair.c!/trees.c!/upgma.c!/util.c");
+    TEST_JOINED_DIR_CONTENT_EQUALS("GDE/CLUSTAL", "/s.*\\.c/", "/clustalv.c!/myers.c!/sequence.c!/showpair.c!/trees.c");
+    TEST_JOINED_DIR_CONTENT_EQUALS("GDE",         NULL,        "/Makefile!/README");
 }
 
 // --------------------------------------------------------------------------------

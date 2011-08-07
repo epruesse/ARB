@@ -22,7 +22,7 @@ typedef struct {
 } RB_INFO;
 
 
-void rb_init(char **names);
+void rb_init(const class CharPtrArray& names);
 
 GBT_TREE *rb_gettree(NT_NODE *tree);
 

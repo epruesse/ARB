@@ -14,6 +14,7 @@
 #include <adGene.h>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
+#include <arb_strarray.h>
 
 
 bool GEN_is_genome_db(GBDATA *gb_main, int default_value) {
@@ -205,16 +206,9 @@ static struct GEN_position_mem_handler {
 } GEN_position_dealloc;
 
 
-static void clearParseTable(char **parseTable, int parts) {
-    int p;
-    free(parseTable[0]);
-    for (p = 0; p<parts; p++) parseTable[p] = 0;
-}
-
-static GB_ERROR parseCSV(GBDATA *gb_gene, const char *field_name, int parts, char **parseTable) {
+static GB_ERROR parseCSV(GBDATA *gb_gene, const char *field_name, size_t parts_expected, ConstStrArray& parseTable) {
     // reads a field and splits the content at ','
-    // results are put into parseTable (only first entry in parseTable is allocated, other entries
-    // are simply pointers into the same string)
+    // results are stored in parseTable
 
     GB_ERROR  error      = 0;
     GBDATA   *gb_field   = GB_entry(gb_gene, field_name);
@@ -223,52 +217,30 @@ static GB_ERROR parseCSV(GBDATA *gb_gene, const char *field_name, int parts, cha
         char *content       = GB_read_string(gb_field);
         if (!content) error = GB_await_error();
         else {
-            int   p;
-            char *pos = content;
-
-            clearParseTable(parseTable, parts);
-
-            for (p = 0; p<(parts-1) && !error; p++) {
-                char *comma = strchr(pos, ',');
-                if (comma) {
-                    comma[0]      = 0;
-                    parseTable[p] = pos;
-                    pos           = comma+1;
-                }
-                else {
-                    error = "comma expected";
-                }
-            }
-
-            if (!error) {
-                parseTable[p] = pos; // rest
-
-                if (strchr(pos, ',') != 0) error = "comma found where none expected";
-            }
-
-            if (error) {
-                error         = GBS_global_string("%s in '%s' (while parsing %i values from '%s')",
-                                                  error, pos, parts, GB_read_char_pntr(gb_field));
-                parseTable[0] = content; // ensure content gets freed
+            parseTable.erase();
+            GBT_splitNdestroy_string(parseTable, content, ',');
+            if (parseTable.size() != parts_expected) {
+                error = GBS_global_string("Expected %zu CSV, found %zu", parts_expected, parseTable.size());
             }
         }
     }
-
-    if (error) clearParseTable(parseTable, parts);
     return error;
 }
 
-static GB_ERROR parsePositions(GBDATA *gb_gene, const char *field_name, int parts, size_t *results, char **parseTable) {
-    GB_ERROR error = parseCSV(gb_gene, field_name, parts, parseTable);
+static GB_ERROR parsePositions(GBDATA *gb_gene, const char *field_name, int parts_expected, size_t *results, ConstStrArray& parseTable) {
+    GB_ERROR error = parseCSV(gb_gene, field_name, parts_expected, parseTable);
     if (!error) {
         int p;
-        for (p = 0; p<parts && !error; p++) {
+        for (p = 0; p<parts_expected && !error; p++) {
             char *end;
             results[p] = strtol(parseTable[p], &end, 10);
             if (end == parseTable[p]) { // error
-                error = GBS_global_string("can't convert '%s' to number (while parsing '%s')", parseTable[p], field_name);
+                error = GBS_global_string("can't convert '%s' to number", parseTable[p]);
             }
         }
+    }
+    if (error) {
+        error = GBS_global_string("While parsing field '%s': %s", field_name, error);
     }
     return error;
 }
@@ -292,7 +264,8 @@ GEN_position *GEN_read_position(GBDATA *gb_gene) {
     if (!error) {
         pos = GEN_new_position(parts, joinable);
 
-        char **parseTable = (char**)GB_calloc(parts, sizeof(*parseTable));
+        ConstStrArray parseTable;
+        parseTable.reserve(parts);
 
         error =             parsePositions(gb_gene, "pos_start", parts, pos->start_pos, parseTable);
         if (!error) error = parsePositions(gb_gene, "pos_stop",  parts, pos->stop_pos,  parseTable);
@@ -334,9 +307,6 @@ GEN_position *GEN_read_position(GBDATA *gb_gene) {
                 }
             }
         }
-
-        clearParseTable(parseTable, parts);
-        free(parseTable);
     }
 
     gb_assert(error || pos);

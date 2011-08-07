@@ -1144,14 +1144,14 @@ static const char *enum_trans_to_string[] = {
     "max ml"
 };
 
-static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL bootstrap_flag)
-{
-    AW_root   *aw_root         = aww->get_root();
-    GB_ERROR   error           = 0;
-    GBT_TREE  *tree            = 0;
-    char     **all_names       = 0;
-    int        loop_count      = 0;
-    int        bootstrap_count = aw_root->awar(AWAR_DIST_BOOTSTRAP_COUNT)->read_int();
+static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL bootstrap_flag) {
+    AW_root  *aw_root   = aww->get_root();
+    GB_ERROR  error     = 0;
+    GBT_TREE *tree      = 0;
+    StrArray *all_names = 0;
+
+    int loop_count      = 0;
+    int bootstrap_count = aw_root->awar(AWAR_DIST_BOOTSTRAP_COUNT)->read_int();
 
     {
         char *tree_name = aw_root->awar(AWAR_DIST_TREE_STD_NAME)->read_string();
@@ -1187,11 +1187,13 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
                     error = "unexpected error in di_calculate_matrix_cb (data missing)";
                 }
                 else {
-                    all_names = (char **)calloc(sizeof(char *), (size_t)matr->nentries+2);
+                    all_names = new StrArray;
+                    all_names->reserve(matr->nentries+2);
+
                     for (long i=0; i<matr->nentries; i++) {
-                        all_names[i] = strdup(matr->entries[i]->name);
+                        all_names->put(strdup(matr->entries[i]->name));
                     }
-                    ctree_init(matr->nentries, all_names);
+                    ctree_init(matr->nentries, *all_names);
                 }
             }
             loop_count++;
@@ -1267,7 +1269,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
     // aw_status(); // remove 'abort' flag (@@@ got no equiv for arb_progress yet. really needed?)
 
     if (bootstrap_flag) {
-        if (all_names) GBT_free_names(all_names);
+        if (all_names) delete all_names;
     }
 #if defined(DEBUG)
     else {

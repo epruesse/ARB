@@ -10,6 +10,7 @@
 
 #include <arbdbt.h>
 #include <adGene.h>
+#include <arb_strarray.h>
 
 #include "gb_local.h"
 
@@ -127,37 +128,18 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name) {
     return error;
 }
 
-char **GBT_get_alignment_names(GBDATA *gbd) {
+void GBT_get_alignment_names(ConstStrArray& names, GBDATA *gbd) {
     /* Get names of existing alignments from database.
      *
      * Returns: array of strings, the last element is NULL
      * (Note: use GBT_free_names() to free result)
      */
 
-    GBDATA *presets;
-    GBDATA *ali;
-    GBDATA *name;
-    long size;
-
-    char **erg;
-    presets = GB_search(gbd, "presets", GB_CREATE_CONTAINER);
-    size = 0;
-    for (ali = GB_entry(presets, "alignment"); ali; ali = GB_nextEntry(ali)) {
-        size ++;
+    GBDATA *presets = GB_search(gbd, "presets", GB_CREATE_CONTAINER);
+    for (GBDATA *ali = GB_entry(presets, "alignment"); ali; ali = GB_nextEntry(ali)) {
+        GBDATA *name = GB_entry(ali, "alignment_name");
+        names.put(name ? GB_read_char_pntr(name) : "<unnamed alignment>");
     }
-    erg = (char **)GB_calloc(sizeof(char *), (size_t)size+1);
-    size = 0;
-    for (ali = GB_entry(presets, "alignment"); ali; ali = GB_nextEntry(ali)) {
-        name = GB_entry(ali, "alignment_name");
-        if (!name) {
-            erg[size] = strdup("alignment_name ???");
-        }
-        else {
-            erg[size] = GB_read_string(name);
-        }
-        size ++;
-    }
-    return erg;
 }
 
 static char *gbt_nonexisting_alignment(GBDATA *gbMain) {
@@ -948,3 +930,51 @@ NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, bool use_revCo
 char *GBT_read_gene_sequence(GBDATA *gb_gene, bool use_revComplement, char partSeparator) {
     return GBT_read_gene_sequence_and_length(gb_gene, use_revComplement, partSeparator, 0);
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#include <test_unit.h>
+
+void TEST_alignment() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("TEST_prot.arb", "r");
+
+    {
+        GB_transaction ta(gb_main);
+
+        TEST_ASSERT_EQUAL(GBT_count_alignments(gb_main), 2);
+
+        char *def_ali_name = GBT_get_default_alignment(gb_main);
+        TEST_ASSERT_EQUAL(def_ali_name, "ali_tuf_dna");
+
+        {
+            ConstStrArray names;
+            GBT_get_alignment_names(names, gb_main);
+            {
+                char *joined = GBT_join_names(names, '*');
+                TEST_ASSERT_EQUAL(joined, "ali_tuf_pro*ali_tuf_dna");
+                free(joined);
+            }
+
+            for (int i = 0; names[i]; ++i) {
+                long len = GBT_get_alignment_len(gb_main, names[i]);
+                TEST_ASSERT_EQUAL(len, !i ? 473 : 1426);
+
+                char *type_name = GBT_get_alignment_type_string(gb_main, names[i]);
+                TEST_ASSERT_EQUAL(type_name, !i ? "ami" : "dna");
+                free(type_name);
+
+                GB_alignment_type type = GBT_get_alignment_type(gb_main, names[i]);
+                TEST_ASSERT_EQUAL(type, !i ? GB_AT_AA : GB_AT_DNA);
+                TEST_ASSERT(!i == GBT_is_alignment_protein(gb_main, names[i]));
+            }
+        }
+
+        free(def_ali_name);
+    }
+
+    GB_close(gb_main);
+}
+
+#endif // UNIT_TESTS
