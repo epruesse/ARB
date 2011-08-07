@@ -727,6 +727,7 @@ sub die_usage($) {
   print "  -U          do not die on undefined environment variables\n";
   print "  -G outgif   Draw dependency graph (using dot)\n";
   print "  -V          Dump dependencies\n";
+  print "  -n          do not print nested dependencies\n";
   print "  -I          Invert (print inheritants instead of dependencies)\n";
   print "  -B          Both (print inheritants and dependencies)\n";
   print "  -S          Include self (lib/exe given on command line)\n";
@@ -746,6 +747,7 @@ sub main() {
   my $dependencyGraph = undef;
   my $dump            = 0;
   my $trackDepends    = 1;
+  my $nestDepends     = 1;
   my $trackInherits   = 0;
   my $includeSelf     = 0;
   my $onlyTerminals   = 0;
@@ -763,6 +765,7 @@ sub main() {
       elsif ($switch eq 'U') { $dieOnUndefEnvvar = 0; }
       elsif ($switch eq 'G') { $dependencyGraph = shift @ARGV; }
       elsif ($switch eq 'V') { $dump = 1; }
+      elsif ($switch eq 'n') { $nestDepends = 0; }
       elsif ($switch eq 'I') { $trackInherits = 1; $trackDepends = 0; }
       elsif ($switch eq 'B') { $trackInherits = 1; }
       elsif ($switch eq 'S') { $includeSelf = 1; }
@@ -804,9 +807,17 @@ sub main() {
 
   my %track = ();
   if ($trackDepends==1) {
-    foreach (@targets) {
-      my $dep_r = $all_dependencies_of{$_};
-      foreach (keys %$dep_r) { $track{$_} = 1; }
+    if ($nestDepends==1) {
+      foreach (@targets) {
+        my $dep_r = $all_dependencies_of{$_};
+        foreach (keys %$dep_r) { $track{$_} = 1; }
+      }
+    }
+    else {
+      foreach (@targets) {
+        my $dep_r = $dependencies_of{$_};
+        foreach (keys %$dep_r) { $track{$_} = 1; }
+      }
     }
   }
   if ($trackInherits==1) {
