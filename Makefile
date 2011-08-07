@@ -480,6 +480,7 @@ endif
 		@echo ' relocated   - rebuild partly (use when you have relocated ARBHOME)'
 		@echo ' check_res   - check ressource usage'
 		@echo ' dep_graph   - Build dependency graphs'
+		@echo ' clean_cov   - Clean coverage results'
 		@echo ''
 		@echo $(SEP)
 		@echo ''
@@ -1525,7 +1526,7 @@ clean2: $(ARCHS:.a=.clean) \
 # links are needed for cleanup
 clean: redo_links
 	$(MAKE) clean2
-	$(MAKE) clean_cov clean_links
+	$(MAKE) clean_cov_all clean_links
 
 # 'relocated' is about 50% faster than 'rebuild'
 reloc_clean: links
@@ -1760,7 +1761,7 @@ TEST_RUN_SUITE=$(MAKE) $(NODIR) -C UNIT_TESTER -f Makefile.suite -r
 TEST_MAKE_FLAGS=
 TEST_POST_CLEAN=
 ifeq ($(COVERAGE),1)
-TEST_POST_CLEAN=$(MAKE) clean_cov_results
+TEST_POST_CLEAN=$(MAKE) clean_cov
 TEST_MAKE_FLAGS+=-j1
 endif
 
@@ -1780,19 +1781,19 @@ endif
 
 test_base: $(UNIT_TESTER_LIB:.a=.dummy)
 
-clean_cov_results:
+clean_cov:
 	find . \( -name "*.gcda" -o -name "*.gcov" -o -name "*.cov" \) -exec rm {} \;
 
-clean_cov: clean_cov_results
+clean_cov_all: clean_cov
 	find . \( -name "*.gcno" \) -exec rm {} \;
 
-unit_tests: test_base clean_cov_results
+unit_tests: test_base clean_cov
 	+@$(TEST_RUN_SUITE) init
 	@echo "fake[1]: Entering directory \`$(ARBHOME)/UNIT_TESTER'"
 	$(MAKE) $(TEST_MAKE_FLAGS) $(NODIR) $(TESTED_UNITS)
 	@echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
 	+@$(TEST_RUN_SUITE) cleanup
-	$(MAKE) clean_cov_results
+	$(MAKE) clean_cov
 
 ut:
 ifeq ($(UNIT_TESTS),1)
