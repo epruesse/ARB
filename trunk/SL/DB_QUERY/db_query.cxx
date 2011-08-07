@@ -341,8 +341,11 @@ void QUERY::DbQuery_update_list(DbQuery *query) {
     // clear
     query->aws->clear_selection_list(query->result_id);
 
-    AW_root         *aw_root = query->aws->get_root();
+    AW_window   *aww     = query->aws;
+    AW_root     *aw_root = aww->get_root();
     QUERY_RANGE  range   = (QUERY_RANGE)aw_root->awar(query->awar_where)->read_int();
+
+    const ItemSelector *selector = query->selector;
 
     // create array of hits
     long     count  = count_queried_items(query, range);
@@ -350,13 +353,13 @@ void QUERY::DbQuery_update_list(DbQuery *query) {
     {
         long s = 0;
 
-        for (GBDATA *gb_item_container = query->selector->get_first_item_container(query->gb_main, aw_root, range);
+        for (GBDATA *gb_item_container = selector->get_first_item_container(query->gb_main, aw_root, range);
              gb_item_container;
-             gb_item_container = query->selector->get_next_item_container(gb_item_container, range))
+             gb_item_container = selector->get_next_item_container(gb_item_container, range))
         {
-            for (GBDATA *gb_item = query->selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
+            for (GBDATA *gb_item = selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
                  gb_item;
-                 gb_item = query->selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
+                 gb_item = selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
             {
                 if (IS_QUERIED(gb_item, query)) sorted[s++] = gb_item;
             }
@@ -367,7 +370,7 @@ void QUERY::DbQuery_update_list(DbQuery *query) {
 
     bool show_value = true; // default
     hits_sort_params param = { query, NULL, {} };
-    param.first_key = query->aws->get_root()->awar(query->awar_keys[0])->read_string();
+    param.first_key = aww->get_root()->awar(query->awar_keys[0])->read_string();
 
     if (query->sort_mask != QUERY_SORT_NONE) {    // unsorted -> don't sort
         QUERY_RESULT_ORDER main_criteria = split_sort_mask(query->sort_mask, param.order);
@@ -380,14 +383,14 @@ void QUERY::DbQuery_update_list(DbQuery *query) {
 
     // display hits
 
-    int name_len = query->selector->item_name_length;
+    int name_len = selector->item_name_length;
     if (name_len == -1) { // if name_len is unknown -> detect
         GBS_hash_do_loop(query->hit_description, detectMaxNameLength, &name_len);
     }
 
     long i;
     for (i = 0; i<count && i<MAX_QUERY_LIST_LEN; i++) {
-        char *name = query->selector->generate_item_id(query->gb_main, sorted[i]);
+        char *name = selector->generate_item_id(query->gb_main, sorted[i]);
         if (name) {
             char       *toFree = 0;
             const char *info;
@@ -418,21 +421,21 @@ void QUERY::DbQuery_update_list(DbQuery *query) {
                                                  name_len, name,
                                                  info);
 
-            query->aws->insert_selection(query->result_id, line, name);
+            aww->insert_selection(query->result_id, line, name);
             free(toFree);
             free(name);
         }
     }
 
     if (count>MAX_QUERY_LIST_LEN) {
-        query->aws->insert_selection(query->result_id, "*****  List truncated  *****", "");
+        aww->insert_selection(query->result_id, "*****  List truncated  *****", "");
     }
 
     free(sorted);
 
-    query->aws->insert_default_selection(query->result_id, "End of list", "");
-    query->aws->update_selection_list(query->result_id);
-    query->aws->get_root()->awar(query->awar_count)->write_int((long)count);
+    aww->insert_default_selection(query->result_id, "End of list", "");
+    aww->update_selection_list(query->result_id);
+    aww->get_root()->awar(query->awar_count)->write_int((long)count);
     GB_pop_transaction(query->gb_main);
 }
 
@@ -441,16 +444,18 @@ static void mark_queried_cb(AW_window*, AW_CL cl_query, AW_CL mark) {
     // mark = 1 -> mark listed
     // mark | 8 -> don't change rest
 
-    DbQuery *query = (DbQuery*)cl_query;
+    DbQuery            *query    = (DbQuery*)cl_query;
+    const ItemSelector *selector = query->selector;
+
     GB_push_transaction(query->gb_main);
 
-    for (GBDATA *gb_item_container = query->selector->get_first_item_container(query->gb_main, query->aws->get_root(), QUERY_ALL_ITEMS);
+    for (GBDATA *gb_item_container = selector->get_first_item_container(query->gb_main, query->aws->get_root(), QUERY_ALL_ITEMS);
          gb_item_container;
-         gb_item_container = query->selector->get_next_item_container(gb_item_container, QUERY_ALL_ITEMS))
+         gb_item_container = selector->get_next_item_container(gb_item_container, QUERY_ALL_ITEMS))
         {
-            for (GBDATA *gb_item = query->selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
+            for (GBDATA *gb_item = selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
                  gb_item;
-                 gb_item = query->selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
+                 gb_item = selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
                 {
                     if (IS_QUERIED(gb_item, query)) {
                         GB_write_flag(gb_item, mark&1);
@@ -478,17 +483,19 @@ void QUERY::unquery_all(void *, DbQuery *query) {
 }
 
 static void delete_queried_species_cb(AW_window*, AW_CL cl_query) {
-    DbQuery *query = (DbQuery*)cl_query;
+    DbQuery            *query    = (DbQuery*)cl_query;
+    const ItemSelector *selector = query->selector;
+    
     GB_begin_transaction(query->gb_main);
-    long     cnt   = 0;
 
-    for (GBDATA *gb_item_container = query->selector->get_first_item_container(query->gb_main, query->aws->get_root(), QUERY_ALL_ITEMS);
+    long cnt = 0;
+    for (GBDATA *gb_item_container = selector->get_first_item_container(query->gb_main, query->aws->get_root(), QUERY_ALL_ITEMS);
          gb_item_container;
-         gb_item_container = query->selector->get_next_item_container(gb_item_container, QUERY_ALL_ITEMS))
+         gb_item_container = selector->get_next_item_container(gb_item_container, QUERY_ALL_ITEMS))
     {
-        for (GBDATA *gb_item = query->selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
+        for (GBDATA *gb_item = selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
              gb_item;
-             gb_item = query->selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
+             gb_item = selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
         {
             if (IS_QUERIED(gb_item, query)) cnt++;
         }
@@ -496,7 +503,7 @@ static void delete_queried_species_cb(AW_window*, AW_CL cl_query) {
 
     int cancel;
     {
-        char *question = GBS_global_string_copy("Are you sure to delete %li %s", cnt, query->selector->items_name);
+        char *question = GBS_global_string_copy("Are you sure to delete %li %s", cnt, selector->items_name);
         cancel         = aw_question(question, "OK,CANCEL");
         free(question);
     }
@@ -508,13 +515,13 @@ static void delete_queried_species_cb(AW_window*, AW_CL cl_query) {
 
     GB_ERROR error = 0;
 
-    for (GBDATA *gb_item_container = query->selector->get_first_item_container(query->gb_main, query->aws->get_root(), QUERY_ALL_ITEMS);
+    for (GBDATA *gb_item_container = selector->get_first_item_container(query->gb_main, query->aws->get_root(), QUERY_ALL_ITEMS);
          !error && gb_item_container;
-         gb_item_container = query->selector->get_next_item_container(gb_item_container, QUERY_ALL_ITEMS))
+         gb_item_container = selector->get_next_item_container(gb_item_container, QUERY_ALL_ITEMS))
         {
-            for (GBDATA *gb_item = query->selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
+            for (GBDATA *gb_item = selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
                  !error && gb_item;
-                 gb_item = query->selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
+                 gb_item = selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
                 {
                     if (IS_QUERIED(gb_item, query)) {
                         error = GB_delete(gb_item);
@@ -1010,7 +1017,9 @@ bool query_info::matches(const char *data, GBDATA *gb_item) const {
 }
 
 static void perform_query_cb(AW_window*, AW_CL cl_query, AW_CL cl_ext_query) {
-    DbQuery *query = (DbQuery*)cl_query;
+    DbQuery            *query    = (DbQuery*)cl_query;
+    const ItemSelector *selector = query->selector;
+
     GB_push_transaction(query->gb_main);
 
     EXT_QUERY_TYPES  ext_query = (EXT_QUERY_TYPES)cl_ext_query;
@@ -1049,13 +1058,13 @@ static void perform_query_cb(AW_window*, AW_CL cl_query, AW_CL cl_ext_query) {
                    query->expect_hit_in_ref_list ? " of species listed in other hitlist" : "");
 #endif // DEBUG
 
-            for (GBDATA *gb_item_container = query->selector->get_first_item_container(query->gb_main, aw_root, range);
+            for (GBDATA *gb_item_container = selector->get_first_item_container(query->gb_main, aw_root, range);
                  gb_item_container && !error;
-                 gb_item_container = query->selector->get_next_item_container(gb_item_container, range))
+                 gb_item_container = selector->get_next_item_container(gb_item_container, range))
             {
-                for (GBDATA *gb_item = query->selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
+                for (GBDATA *gb_item = selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
                      gb_item && !error;
-                     gb_item = query->selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
+                     gb_item = selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
                 {
                     switch (mode) {
                         case QUERY_GENERATE: CLEAR_QUERIED(gb_item, query); break;
@@ -1080,7 +1089,7 @@ static void perform_query_cb(AW_window*, AW_CL cl_query, AW_CL cl_ext_query) {
                                         this_hit   = true;
                                         hit_reason = GBS_global_string("%s%s has word '%s' in %s",
                                                                        query->expect_hit_in_ref_list ? "Hit " : "",
-                                                                       query->selector->generate_item_id(query->gb_ref, gb_ref_pntr),
+                                                                       selector->generate_item_id(query->gb_ref, gb_ref_pntr),
                                                                        t, first_key);
                                     }
                                 }
@@ -1091,7 +1100,7 @@ static void perform_query_cb(AW_window*, AW_CL cl_query, AW_CL cl_ext_query) {
                                     this_hit   = true;
                                     hit_reason = GBS_global_string("%s%s matches %s",
                                                                    query->expect_hit_in_ref_list ? "Hit " : "",
-                                                                   query->selector->generate_item_id(query->gb_ref, gb_ref_pntr),
+                                                                   selector->generate_item_id(query->gb_ref, gb_ref_pntr),
                                                                    first_key);
                                 }
                             }
@@ -1139,13 +1148,13 @@ static void perform_query_cb(AW_window*, AW_CL cl_query, AW_CL cl_ext_query) {
                 aw_root->awar(query->awar_sort)->write_int(QUERY_SORT_BY_HIT_DESCRIPTION);
             }
 
-            for (GBDATA *gb_item_container = query->selector->get_first_item_container(query->gb_main, aw_root, range);
+            for (GBDATA *gb_item_container = selector->get_first_item_container(query->gb_main, aw_root, range);
                  gb_item_container && !error;
-                 gb_item_container = query->selector->get_next_item_container(gb_item_container, range))
+                 gb_item_container = selector->get_next_item_container(gb_item_container, range))
             {
-                for (GBDATA *gb_item = query->selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
+                for (GBDATA *gb_item = selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
                      gb_item && !error;
-                     gb_item = query->selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
+                     gb_item = selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
                 {
                     string hit_reason;
 
@@ -1371,22 +1380,23 @@ void QUERY::copy_selection_list_2_query_box(DbQuery *query, AW_selection_list *i
 
 
 void QUERY::search_duplicated_field_content(AW_window *, DbQuery *query, bool tokenize) {
-    char     *key   = query->aws->get_root()->awar(query->awar_keys[0])->read_string();
-    GB_ERROR  error = 0;
+    AW_root  *aw_root = query->aws->get_root();
+    char     *key     = aw_root->awar(query->awar_keys[0])->read_string();
+    GB_ERROR  error   = 0;
 
     if (strlen(key) == 0) {
         error = "Please select a key (in the first query expression)";
     }
     else {
-        GB_transaction dumy(query->gb_main);
+        GB_transaction      dumy(query->gb_main);
+        const ItemSelector *selector = query->selector;
 
-        GBDATA          *gb_species_data = GB_search(query->gb_main, "species_data", GB_CREATE_CONTAINER);
-        AW_root         *aw_root         = query->aws->get_root();
-        long             hashsize;
+        GBDATA      *gb_species_data = GB_search(query->gb_main, "species_data", GB_CREATE_CONTAINER);
+        long         hashsize;
         QUERY_RANGE  range           = QUERY_ALL_ITEMS;
         QUERY_TYPES  type            = (QUERY_TYPES)aw_root->awar(query->awar_by)->read_int();
 
-        switch (query->selector->type) {
+        switch (selector->type) {
             case QUERY_ITEM_SPECIES: {
                 hashsize = GB_number_of_subentries(gb_species_data);
                 break;
@@ -1396,9 +1406,9 @@ void QUERY::search_duplicated_field_content(AW_window *, DbQuery *query, bool to
                 // handle species sub-items
                 hashsize = 0;
 
-                for (GBDATA *gb_item_container = query->selector->get_first_item_container(query->gb_main, query->aws->get_root(), range);
+                for (GBDATA *gb_item_container = selector->get_first_item_container(query->gb_main, aw_root, range);
                      gb_item_container;
-                     gb_item_container = query->selector->get_next_item_container(gb_item_container, range))
+                     gb_item_container = selector->get_next_item_container(gb_item_container, range))
                 {
                     hashsize += GB_number_of_subentries(gb_item_container);
                 }
@@ -1422,13 +1432,13 @@ void QUERY::search_duplicated_field_content(AW_window *, DbQuery *query, bool to
         if (!error) {
             GB_HASH *hash = GBS_create_hash(hashsize, GB_IGNORE_CASE);
 
-            for (GBDATA *gb_item_container = query->selector->get_first_item_container(query->gb_main, aw_root, range);
+            for (GBDATA *gb_item_container = selector->get_first_item_container(query->gb_main, aw_root, range);
                  gb_item_container;
-                 gb_item_container = query->selector->get_next_item_container(gb_item_container, range))
+                 gb_item_container = selector->get_next_item_container(gb_item_container, range))
             {
-                for (GBDATA *gb_item = query->selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
+                for (GBDATA *gb_item = selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
                      gb_item;
-                     gb_item = query->selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
+                     gb_item = selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
                 {
                     CLEAR_QUERIED(gb_item, query);
                     GB_write_flag(gb_item, 0);
@@ -1484,9 +1494,9 @@ void QUERY::search_duplicated_field_content(AW_window *, DbQuery *query, bool to
                 }
 
                 if (type == QUERY_DONT_MATCH) {
-                    for (GBDATA *gb_item = query->selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
+                    for (GBDATA *gb_item = selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
                          gb_item;
-                         gb_item = query->selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
+                         gb_item = selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
                     {
                         if (IS_QUERIED(gb_item, query)) {
                             CLEAR_QUERIED(gb_item, query);
@@ -1519,13 +1529,15 @@ void QUERY::search_duplicated_field_content(AW_window *, DbQuery *query, bool to
 }
 
 static void modify_fields_of_queried_cb(AW_window*, AW_CL cl_query) {
-    DbQuery  *query = (DbQuery*)cl_query;
-    GB_ERROR  error = 0;
-    char     *key   = query->aws->get_root()->awar(query->awar_parskey)->read_string();
+    DbQuery            *query    = (DbQuery*)cl_query;
+    const ItemSelector *selector = query->selector;
+    AW_root            *aw_root  = query->aws->get_root();
+    GB_ERROR            error    = 0;
+    char               *key      = aw_root->awar(query->awar_parskey)->read_string();
 
     if (!strcmp(key, "name")) {
         bool abort = false;
-        switch (query->selector->type) {
+        switch (selector->type) {
             case QUERY_ITEM_SPECIES: {
                 if (aw_question("WARNING WARNING WARNING!!! You now try to rename the species\n"
                                 "    The name is used to link database entries and trees\n"
@@ -1560,7 +1572,7 @@ static void modify_fields_of_queried_cb(AW_window*, AW_CL cl_query) {
     }
     else if (!strlen(key)) error = "Please select a valid key";
 
-    char *command = query->aws->get_root()->awar(query->awar_parsvalue)->read_string();
+    char *command = aw_root->awar(query->awar_parsvalue)->read_string();
     if (!error && !strlen(command)) {
         error = "Please enter your command";
     }
@@ -1569,14 +1581,14 @@ static void modify_fields_of_queried_cb(AW_window*, AW_CL cl_query) {
 
         GBDATA *gb_key_name;
         {
-            GBDATA *gb_key_data = GB_search(query->gb_main, query->selector->change_key_path, GB_CREATE_CONTAINER);
+            GBDATA *gb_key_data = GB_search(query->gb_main, selector->change_key_path, GB_CREATE_CONTAINER);
             while (!error && !(gb_key_name = GB_find_string(gb_key_data, CHANGEKEY_NAME, key, GB_IGNORE_CASE, SEARCH_GRANDCHILD))) {
                 const char *question = GBS_global_string("The destination field '%s' does not exists", key);
                 if (aw_question(question, "Create Field (Type STRING),Cancel")) {
                     error = "Aborted by user";
                 }
                 else {
-                    error = GBT_add_new_changekey_to_keypath(query->gb_main, key, GB_STRING, query->selector->change_key_path);
+                    error = GBT_add_new_changekey_to_keypath(query->gb_main, key, GB_STRING, selector->change_key_path);
                 }
             }
         }
@@ -1596,29 +1608,28 @@ static void modify_fields_of_queried_cb(AW_window*, AW_CL cl_query) {
         }
 
         if (!error) {
-            long  ncount = query->aws->get_root()->awar(query->awar_count)->read_int();
-            char *deftag = query->aws->get_root()->awar(query->awar_deftag)->read_string();
-            char *tag    = query->aws->get_root()->awar(query->awar_tag)->read_string();
+            long  ncount = aw_root->awar(query->awar_count)->read_int();
+            char *deftag = aw_root->awar(query->awar_deftag)->read_string();
+            char *tag    = aw_root->awar(query->awar_tag)->read_string();
 
             {
-                long use_tag = query->aws->get_root()->awar(query->awar_use_tag)->read_int();
+                long use_tag = aw_root->awar(query->awar_use_tag)->read_int();
                 if (!use_tag || !strlen(tag)) {
                     freenull(tag);
                 }
             }
-            int double_pars = query->aws->get_root()->awar(query->awar_double_pars)->read_int();
+            int double_pars = aw_root->awar(query->awar_double_pars)->read_int();
 
-            arb_progress     progress("Parse fields", ncount);
-            AW_root         *aw_root = query->aws->get_root();
-            QUERY_RANGE  range   = (QUERY_RANGE)aw_root->awar(query->awar_where)->read_int();
+            arb_progress progress("Parse fields", ncount);
+            QUERY_RANGE  range = (QUERY_RANGE)aw_root->awar(query->awar_where)->read_int();
 
-            for (GBDATA *gb_item_container = query->selector->get_first_item_container(query->gb_main, aw_root, range);
+            for (GBDATA *gb_item_container = selector->get_first_item_container(query->gb_main, aw_root, range);
                  !error && gb_item_container;
-                 gb_item_container = query->selector->get_next_item_container(gb_item_container, range))
+                 gb_item_container = selector->get_next_item_container(gb_item_container, range))
             {
-                for (GBDATA *gb_item = query->selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
+                for (GBDATA *gb_item = selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
                      !error && gb_item;
-                     gb_item = query->selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
+                     gb_item = selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
                 {
                     if (IS_QUERIED(gb_item, query)) {
                         GBDATA *gb_new = GB_search(gb_item, key, GB_FIND);
@@ -1696,26 +1707,27 @@ static void predef_prg(AW_root *aw_root, DbQuery *query) {
 }
 
 static void colorize_queried_cb(AW_window *, AW_CL cl_query) {
-    DbQuery         *query       = (DbQuery *)cl_query;
-    GB_transaction   trans_dummy(query->gb_main);
-    GB_ERROR         error       = 0;
-    AW_root         *aw_root     = query->aws->get_root();
-    int              color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
-    QUERY_RANGE  range       = (QUERY_RANGE)aw_root->awar(query->awar_where)->read_int();
+    DbQuery            *query       = (DbQuery *)cl_query;
+    const ItemSelector *selector    = query->selector;
+    GB_transaction      trans_dummy(query->gb_main);
+    GB_ERROR            error       = 0;
+    AW_root            *aw_root     = query->aws->get_root();
+    int                 color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
+    QUERY_RANGE         range       = (QUERY_RANGE)aw_root->awar(query->awar_where)->read_int();
 
-    for (GBDATA *gb_item_container = query->selector->get_first_item_container(query->gb_main, aw_root, range);
+    for (GBDATA *gb_item_container = selector->get_first_item_container(query->gb_main, aw_root, range);
          !error && gb_item_container;
-         gb_item_container = query->selector->get_next_item_container(gb_item_container, range))
+         gb_item_container = selector->get_next_item_container(gb_item_container, range))
+    {
+        for (GBDATA *gb_item = selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
+             !error && gb_item;
+             gb_item       = selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
         {
-            for (GBDATA *gb_item = query->selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
-                 !error && gb_item;
-                 gb_item       = query->selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
-                {
-                    if (IS_QUERIED(gb_item, query)) {
-                        error = AW_set_color_group(gb_item, color_group);
-                    }
-                }
+            if (IS_QUERIED(gb_item, query)) {
+                error = AW_set_color_group(gb_item, color_group);
+            }
         }
+    }
 
     if (error) GB_export_error(error);
 }
@@ -1737,16 +1749,16 @@ static void colorize_marked_cb(AW_window *aww, AW_CL cl_cmd) {
     for (GBDATA *gb_item_container = sel->get_first_item_container(cmd->gb_main, aw_root, range);
          !error && gb_item_container;
          gb_item_container = sel->get_next_item_container(gb_item_container, range))
+    {
+        for (GBDATA *gb_item = sel->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
+             !error && gb_item;
+             gb_item       = sel->get_next_item(gb_item, QUERY_ALL_ITEMS))
         {
-            for (GBDATA *gb_item = sel->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
-                 !error && gb_item;
-                 gb_item       = sel->get_next_item(gb_item, QUERY_ALL_ITEMS))
-                {
-                    if (GB_read_flag(gb_item)) {
-                        error = AW_set_color_group(gb_item, color_group);
-                    }
-                }
+            if (GB_read_flag(gb_item)) {
+                error = AW_set_color_group(gb_item, color_group);
+            }
         }
+    }
 
     if (error) GB_export_error(error);
 }
@@ -2027,7 +2039,7 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, AW_CL cl_csd)
         aw_loadsave = (AW_window**)GB_calloc(QUERY_ITEM_TYPES, sizeof(*aw_loadsave)); // contains loadsave windows for each item type
     }
 
-    color_save_data     *csd  = (color_save_data*)cl_csd;
+    color_save_data *csd  = (color_save_data*)cl_csd;
     QUERY_ITEM_TYPE  type = csd->cmd->sel->type;
 
     dbq_assert(type<QUERY_ITEM_TYPES);
@@ -2281,21 +2293,24 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
 
 static void set_field_of_queried_cb(AW_window*, AW_CL cl_query, AW_CL append) {
     // set fields of listed items
-    DbQuery  *query = (DbQuery*)cl_query;
-    GB_ERROR  error = 0;
-    char     *key   = query->aws->get_root()->awar(query->awar_setkey)->read_string();
+    DbQuery            *query    = (DbQuery*)cl_query;
+    const ItemSelector *selector = query->selector;
+    GB_ERROR            error    = 0;
+    AW_root            *aw_root  = query->aws->get_root();
+    char               *key      = aw_root->awar(query->awar_setkey)->read_string();
+
     if (strcmp(key, "name") == 0) {
         error = "You cannot set the name field";
     }
 
-    char *value = query->aws->get_root()->awar(query->awar_setvalue)->read_string();
+    char *value = aw_root->awar(query->awar_setvalue)->read_string();
     if (value[0] == 0) freenull(value);
 
     GB_begin_transaction(query->gb_main);
 
     GBDATA *gb_key_type = 0;
     {
-        GBDATA *gb_key_data     = GB_search(query->gb_main, query->selector->change_key_path, GB_CREATE_CONTAINER);
+        GBDATA *gb_key_data     = GB_search(query->gb_main, selector->change_key_path, GB_CREATE_CONTAINER);
         if (!gb_key_data) error = GB_await_error();
         else {
             GBDATA *gb_key_name = GB_find_string(gb_key_data, CHANGEKEY_NAME, key, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
@@ -2310,13 +2325,13 @@ static void set_field_of_queried_cb(AW_window*, AW_CL cl_query, AW_CL append) {
     }
     dbq_assert(gb_key_type || error);
 
-    for (GBDATA *gb_item_container = query->selector->get_first_item_container(query->gb_main, query->aws->get_root(), QUERY_ALL_ITEMS);
+    for (GBDATA *gb_item_container = selector->get_first_item_container(query->gb_main, aw_root, QUERY_ALL_ITEMS);
          !error && gb_item_container;
-         gb_item_container = query->selector->get_next_item_container(gb_item_container, QUERY_ALL_ITEMS))
+         gb_item_container = selector->get_next_item_container(gb_item_container, QUERY_ALL_ITEMS))
     {
-        for (GBDATA *gb_item = query->selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
+        for (GBDATA *gb_item = selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
              !error && gb_item;
-             gb_item = query->selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
+             gb_item = selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
         {
             if (IS_QUERIED(gb_item, query)) {
                 GBDATA *gb_new = GB_search(gb_item, key, GB_FIND);
@@ -2334,7 +2349,7 @@ static void set_field_of_queried_cb(AW_window*, AW_CL cl_query, AW_CL append) {
                             }
                             else {
                                 char *name = GBT_read_string(gb_item, "name");
-                                error = GB_export_errorf("Field '%s' of %s '%s' has incompatible type", key, query->selector->item_name, name);
+                                error = GB_export_errorf("Field '%s' of %s '%s' has incompatible type", key, selector->item_name, name);
                                 free(name);
                             }
                         }
@@ -2393,28 +2408,29 @@ AW_window *create_awt_do_set_list(AW_root *aw_root, DbQuery *query)
 
 static void set_protection_of_queried_cb(AW_window*, AW_CL cl_query) {
     // set protection of listed items
-    DbQuery  *query = (DbQuery*)cl_query;
-    GB_ERROR  error = 0;
-    char     *key   = query->aws->get_root()->awar(query->awar_setkey)->read_string();
+    DbQuery            *query    = (DbQuery*)cl_query;
+    const ItemSelector *selector = query->selector;
+    AW_root            *aw_root  = query->aws->get_root();
+    GB_ERROR            error    = 0;
+    char               *key      = aw_root->awar(query->awar_setkey)->read_string();
 
     GB_begin_transaction(query->gb_main);
-    GBDATA *gb_key_data = GB_search(query->gb_main, query->selector->change_key_path, GB_CREATE_CONTAINER);
+    GBDATA *gb_key_data = GB_search(query->gb_main, selector->change_key_path, GB_CREATE_CONTAINER);
     GBDATA *gb_key_name = GB_find_string(gb_key_data, CHANGEKEY_NAME, key, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     if (!gb_key_name) {
         error = GBS_global_string("The destination field '%s' does not exists", key);
     }
     else {
-        int              level   = query->aws->get_root()->awar(query->awar_setprotection)->read_int();
-        AW_root         *aw_root = query->aws->get_root();
-        QUERY_RANGE  range   = (QUERY_RANGE)aw_root->awar(query->awar_where)->read_int();
+        int         level = aw_root->awar(query->awar_setprotection)->read_int();
+        QUERY_RANGE range = (QUERY_RANGE)aw_root->awar(query->awar_where)->read_int();
 
-        for (GBDATA *gb_item_container = query->selector->get_first_item_container(query->gb_main, aw_root, range);
+        for (GBDATA *gb_item_container = selector->get_first_item_container(query->gb_main, aw_root, range);
              !error && gb_item_container;
-             gb_item_container = query->selector->get_next_item_container(gb_item_container, range))
+             gb_item_container = selector->get_next_item_container(gb_item_container, range))
         {
-            for (GBDATA *gb_item = query->selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
+            for (GBDATA *gb_item = selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
                  !error && gb_item;
-                 gb_item = query->selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
+                 gb_item = selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
             {
                 if (IS_QUERIED(gb_item, query)) {
                     GBDATA *gb_new = GB_search(gb_item, key, GB_FIND);
