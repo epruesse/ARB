@@ -41,6 +41,7 @@
 #include <aw_advice.hxx>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
+#include <aw_global_awars.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
@@ -161,11 +162,9 @@ static void AWAR_INFO_BUTTON_TEXT_change_cb(AW_root *awr) {
 static void expert_mode_changed_cb(AW_root *aw_root) {
     aw_root->awar(AWAR_AWM_MASK)->write_int(aw_root->awar(AWAR_EXPERT)->read_int() ? AWM_ALL : AWM_BASIC); // publish expert-mode globally
 }
-static void NT_toggle_expert_mode(AW_window *aww, AW_CL, AW_CL) {
-    AW_root *aw_root     = aww->get_root();
-    AW_awar *awar_expert = aw_root->awar(AWAR_EXPERT);
-    awar_expert->write_int(!awar_expert->read_int());
-}
+
+static void NT_toggle_expert_mode(AW_window *aww, AW_CL, AW_CL) { aww->get_root()->awar(AWAR_EXPERT)->toggle_toggle(); }
+static void NT_toggle_focus_policy(AW_window *aww, AW_CL, AW_CL) { aww->get_root()->awar(AWAR_AW_FOCUS_FOLLOWS_MOUSE)->toggle_toggle(); }
 
 static void nt_create_all_awars(AW_root *awr, AW_default def) {
     // creates awars for all modules reachable from ARB_NT main window
@@ -229,7 +228,7 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     SQ_create_awars(awr, def);
     RefEntries::create_refentries_awars(awr, def);
 
-    GB_ERROR error = ARB_init_global_awars(awr, def, GLOBAL_gb_main);
+    GB_ERROR error = ARB_bind_global_awars(GLOBAL_gb_main);
     if (!error) {
         AW_awar *awar_expert = awr->awar(AWAR_EXPERT);
         awar_expert->add_callback(expert_mode_changed_cb);
@@ -1559,12 +1558,13 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
                 AWMIMT("props_tree",                 "Tree colors & fonts", "c", "nt_props_data.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window,    (AW_CL)aw_gc_manager);
             }
             awm->close_sub_menu();
-            AWMIMT("props_www",      "Search world wide web (WWW)",                 "W", "props_www.hlp",       AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window,  (AW_CL)GLOBAL_gb_main);
+            AWMIMT("props_www", "Search world wide web (WWW)", "W", "props_www.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window, (AW_CL)GLOBAL_gb_main);
             SEP________________________SEP();
-            AWMIMT("enable_advices", "Reactivate advices",                          "R", "advice.hlp", AWM_ALL, (AW_CB) AWT_reactivate_all_advices, 0, 0);
-            AWMIMT("!toggle_expert", "Toggle expert mode",                          "x", 0,           AWM_ALL, NT_toggle_expert_mode, 0, 0);
+            AWMIMT("enable_advices", "Reactivate advices",         "R", "advice.hlp", AWM_ALL, (AW_CB) AWT_reactivate_all_advices, 0, 0);
+            AWMIMT("!toggle_expert", "Toggle expert mode",         "x", 0,            AWM_ALL, NT_toggle_expert_mode,              0, 0);
+            AWMIMT("!toggle_focus",  "Toggle focus follows mouse", "f", 0,            AWM_ALL, NT_toggle_focus_policy,             0, 0);
             SEP________________________SEP();
-            AWMIMT("save_props",     "Save properties (in ~/.arb_prop/ntree.arb)",  "S", "savedef.hlp", AWM_ALL, (AW_CB) AW_save_properties, 0, 0);
+            AWMIMT("save_props", "Save properties (in ~/.arb_prop/ntree.arb)", "S", "savedef.hlp", AWM_ALL, (AW_CB) AW_save_properties, 0, 0);
         }
     }
 
