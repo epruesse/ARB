@@ -406,6 +406,8 @@ public:
     void get_screen_size(int& width, int& height);
     bool get_mouse_pos(int& x, int& y);
 
+    void set_focus_policy(bool follow_mouse);
+    
     // ************** ********************************************************************  *********
     // ************** Create buttons: First set modify flags and finally create the button  *********
     // ************** ********************************************************************  *********
