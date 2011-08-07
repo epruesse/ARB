@@ -20,7 +20,7 @@
  *  and provided that this copyright notice is not removed.
  */
 
-/* Conversion to C by Gary Olsen, 1991 */
+// Conversion to C by Gary Olsen, 1991
 
 #define programName     "DNAml_rates"
 #define programVersion  "1.0.0"
@@ -36,57 +36,57 @@
 
 #define assert(bed) arb_assert(bed)
 
-/*  Global variables */
+//  Global variables
 
 xarray
 *usedxtip, *freextip;
 
 double
-dLidki[maxpatterns],      /*  change in pattern i likelihood with rate */
-    bestki[maxpatterns],      /*  best rate for pattern i */
-    bestLi[maxpatterns],      /*  best likelihood found for pattern i */
-    patrate[maxpatterns];     /*  current rate for pattern i */
+dLidki[maxpatterns],      //  change in pattern i likelihood with rate
+    bestki[maxpatterns],      //  best rate for pattern i
+    bestLi[maxpatterns],      //  best likelihood found for pattern i
+    patrate[maxpatterns];     //  current rate for pattern i
 
 double
-xi, xv, ttratio,          /*  transition/transversion info */
-    freqa, freqc, freqg, freqt,  /*  base frequencies */
+xi, xv, ttratio,          //  transition/transversion info
+    freqa, freqc, freqg, freqt,  //  base frequencies
     freqr, freqy, invfreqr, invfreqy,
     freqar, freqcy, freqgr, freqty,
-    fracchange;    /*  random matching frequency (in a sense) */
+    fracchange;    //  random matching frequency (in a sense)
 
 int
-info[maxsites+1],         /*  number of informative nucleotides */
-    patsite[maxsites+1],      /*  site corresponding to pattern */
-    pattern[maxsites+1],      /*  pattern number corresponding to site */
-    patweight[maxsites+1],    /*  weight of given pattern */
-    weight[maxsites+1];       /*  weight of sequence site */
+info[maxsites+1],         //  number of informative nucleotides
+    patsite[maxsites+1],      //  site corresponding to pattern
+    pattern[maxsites+1],      //  pattern number corresponding to site
+    patweight[maxsites+1],    //  weight of given pattern
+    weight[maxsites+1];       //  weight of sequence site
 
 int
-categs,        /*  number of rate categories */
-    endsite,       /*  number of unique sequence patterns */
-    mininfo,       /*  minimum number of informative sequences for rate est */
-    numsp,         /*  number of species */
-    sites,         /*  number of input sequence positions */
-    weightsum;     /*  sum of weights of positions in analysis */
+categs,        //  number of rate categories
+    endsite,       //  number of unique sequence patterns
+    mininfo,       //  minimum number of informative sequences for rate est
+    numsp,         //  number of species
+    sites,         //  number of input sequence positions
+    weightsum;     //  sum of weights of positions in analysis
 
 bool
-anerror,       /*  error flag */
-    freqsfrom,     /*  use empirical base frequencies */
-    interleaved,   /*  input data are in interleaved format */
-    printdata,     /*  echo data to output stream */
-    writefile,     /*  put weight and rate data in file */
-    userweights;   /*  use user-supplied position weight mask */
+anerror,       //  error flag
+    freqsfrom,     //  use empirical base frequencies
+    interleaved,   //  input data are in interleaved format
+    printdata,     //  echo data to output stream
+    writefile,     //  put weight and rate data in file
+    userweights;   //  use user-supplied position weight mask
 
 char
-*y[maxsp+1];                    /*  sequence data array */
+*y[maxsp+1];                    //  sequence data array
 
 
-/* ======================================================================= */
-/*                              PROGRAM                                  */
-/* ======================================================================= */
+// =======================================================================
+//                              PROGRAM
+// =======================================================================
 
 void getnums(FILE *INFILE) {
-    /* input number of species, number of sites */
+    // input number of species, number of sites
     printf("\n%s, version %s, %s\n\n",
            programName,
            programVersion,
@@ -128,7 +128,7 @@ bool white(int ch) { return (ch == ' ' || ch == '\n' || ch == '\t'); }
 
 
 void uppercase(int *chptr) {
-    /* convert character to upper case -- either ASCII or EBCDIC */
+    // convert character to upper case -- either ASCII or EBCDIC
     int  ch;
     ch = *chptr;
     if ((ch >= 'a' && ch <= 'i') || (ch >= 'j' && ch <= 'r')
@@ -168,7 +168,7 @@ int findch(int c, FILE *INFILE) {
 
 
 void inputweights(FILE *INFILE) {
-    /* input the character weights 0, 1, 2 ... 9, A, B, ... Y, Z */
+    // input the character weights 0, 1, 2 ... 9, A, B, ... Y, Z
     int i, ch, wi;
 
     for (i = 2; i <= nmlngth; i++)  (void) getc(INFILE);
@@ -187,7 +187,7 @@ void inputweights(FILE *INFILE) {
         }
     }
 
-    if (findch('\n', INFILE) == EOF) {      /* skip to end of line */
+    if (findch('\n', INFILE) == EOF) {      // skip to end of line
         printf("ERROR: Missing newline at end of weight data\n");
         anerror = true;
     }
@@ -197,14 +197,14 @@ void inputweights(FILE *INFILE) {
 void getoptions(FILE *INFILE) {
     int  ch, i, extranum;
 
-    categs      =     0;  /*  Number of rate categories */
-    freqsfrom   = false;  /*  Use empirical base frequencies */
-    interleaved =  true;  /*  By default, data format is interleaved */
-    mininfo     = MIN_INFO; /*  Default minimum number of informative seqs */
-    printdata   = false;  /*  Don't echo data to output stream */
-    ttratio     =   2.0;  /*  Transition/transversion rate ratio */
-    userweights = false;  /*  User-defined position weights */
-    writefile   = false;  /*  Do not write to file */
+    categs      =     0;  //  Number of rate categories
+    freqsfrom   = false;  //  Use empirical base frequencies
+    interleaved =  true;  //  By default, data format is interleaved
+    mininfo     = MIN_INFO; //  Default minimum number of informative seqs
+    printdata   = false;  //  Don't echo data to output stream
+    ttratio     =   2.0;  //  Transition/transversion rate ratio
+    userweights = false;  //  User-defined position weights
+    writefile   = false;  //  Do not write to file
     extranum    =     0;
 
     while ((ch = getc(INFILE)) != '\n' && ch != EOF) {
@@ -235,7 +235,7 @@ void getoptions(FILE *INFILE) {
         return;
     }
 
-    /*  process lines with auxiliary data */
+    //  process lines with auxiliary data
 
     while (extranum-- && ! anerror) {
         ch = getc(INFILE);
@@ -257,7 +257,7 @@ void getoptions(FILE *INFILE) {
                 }
                 break;
 
-            case 'M':   /*  Minimum informative sequences  */
+            case 'M':   //  Minimum informative sequences
                 if (mininfo > 0) {
                     printf("ERROR: Unexpected Min informative residues data\n");
                     anerror = true;
@@ -273,7 +273,7 @@ void getoptions(FILE *INFILE) {
                 }
                 break;
 
-            case 'T':   /*  Transition/transversion ratio  */
+            case 'T':   //  Transition/transversion ratio
                 if (ttratio >= 0.0) {
                     printf("ERROR: Unexpected Transition/transversion data\n");
                     anerror = true;
@@ -284,7 +284,7 @@ void getoptions(FILE *INFILE) {
                 }
                 break;
 
-            case 'W':    /*  Weights  */
+            case 'W':    //  Weights
                 if (! userweights || weightsum > 0) {
                     printf("ERROR: Unexpected Weights data\n");
                     anerror = true;
@@ -406,7 +406,7 @@ void setuptree(tree *tr, int numSp) {
     int     i, j;
     nodeptr p = 0, q;
 
-    for (i = 1; i <= numSp; i++) {   /*  Set-up tips */
+    for (i = 1; i <= numSp; i++) {   //  Set-up tips
         if ((anerror = !(p = (nodeptr) malloc((unsigned) sizeof(node))))) break;
         p->x      = (xarray *) NULL;
         p->tip    = (char *) NULL;
@@ -416,7 +416,7 @@ void setuptree(tree *tr, int numSp) {
         tr->nodep[i] = p;
     }
 
-    for (i = numSp+1; i <= 2*numSp-1 && ! anerror; i++) { /* Internal nodes */  /* was : 2*numSp-2 (ralf) */
+    for (i = numSp+1; i <= 2*numSp-1 && ! anerror; i++) { // Internal nodes    **  was : 2*numSp-2 (ralf)
         q = (node *) NULL;
         for (j = 1; j <= 3; j++) {
             if ((anerror = !(p = (nodeptr) malloc((unsigned) sizeof(node))))) break;
@@ -444,7 +444,7 @@ void setuptree(tree *tr, int numSp) {
 
 
 void freeTreeNode(nodeptr p) {
-    /*  Free a tree node (sector) */
+    //  Free a tree node (sector)
     if (p) {
         if (p->x) {
             free(p->x->a);
@@ -473,9 +473,9 @@ void freeTree(tree *tr) {
 
 
 void getdata(tree *tr, FILE *INFILE) {
-     /* read sequences */
+     // read sequences
     int  i, j, k, l, basesread, basesnew, ch;
-    int  meaning[256];          /*  meaning of input characters */
+    int  meaning[256];          //  meaning of input characters
     char *nameptr;
     bool  allread, firstpass;
 
@@ -508,10 +508,10 @@ void getdata(tree *tr, FILE *INFILE) {
     ch = ' ';
 
     while (! allread) {
-        for (i = 1; i <= numsp; i++) {          /*  Read data line */
-            if (firstpass) {                      /*  Read species names */
+        for (i = 1; i <= numsp; i++) {          //  Read data line
+            if (firstpass) {                      //  Read species names
                 j = 1;
-                while (white(ch = getc(INFILE))) {  /*  Skip blank lines */
+                while (white(ch = getc(INFILE))) {  //  Skip blank lines
                     if (ch == '\n')  j = 1;  else  j++;
                 }
 
@@ -534,7 +534,7 @@ void getdata(tree *tr, FILE *INFILE) {
                 }
 
                 while (j++ <= nmlngth) *nameptr++ = ' ';
-                *nameptr = '\0';                      /*  add null termination */
+                *nameptr = '\0';                      //  add null termination
 
                 if (ch == EOF) {
                     printf("ERROR: End-of-file in name of species %d\n", i);
@@ -574,7 +574,7 @@ void getdata(tree *tr, FILE *INFILE) {
                 return;
             }
 
-            if (! firstpass && (j == basesread)) i--;        /* no data on line */
+            if (! firstpass && (j == basesread)) i--;        // no data on line
             else if (i == 1) basesnew = j;
             else if (j != basesnew) {
                 printf("ERROR: Sequences out of alignment\n");
@@ -584,14 +584,14 @@ void getdata(tree *tr, FILE *INFILE) {
                 return;
             }
 
-            while (ch != '\n' && ch != EOF) ch = getc(INFILE); /* flush line */
+            while (ch != '\n' && ch != EOF) ch = getc(INFILE); // flush line
         }
         firstpass = false;
         basesread = basesnew;
         allread = (basesread >= sites);
     }
 
-    /*  Print listing of sequence alignment */
+    //  Print listing of sequence alignment
 
     if (printdata) {
         j = nmlngth - 5 + ((sites + ((sites-1)/10))/2);
@@ -629,7 +629,7 @@ void getdata(tree *tr, FILE *INFILE) {
         }
     }
 
-    /*  Convert characters to meanings */
+    //  Convert characters to meanings
 
     for (i = 1; i <= sites; i++)  info[i] = 0;
 
@@ -645,7 +645,7 @@ void getdata(tree *tr, FILE *INFILE) {
 
 
 void sitesort() {
-    /* Shell sort keeping sites, weights in same order */
+    // Shell sort keeping sites, weights in same order
     int  gap, i, j, jj, jg, k;
     bool  flip, tied;
 
@@ -675,7 +675,7 @@ void sitesort() {
 
 
 void sitecombcrunch() {
-    /* combine sites that have identical patterns (and nonzero weight) */
+    // combine sites that have identical patterns (and nonzero weight)
     int  i, sitei, j, sitej, k;
     bool  tied;
 
@@ -709,7 +709,7 @@ void sitecombcrunch() {
 
 
 void makeweights() {
-    /* make up weights vector to avoid duplicate computations */
+    // make up weights vector to avoid duplicate computations
     int  i;
 
     for (i = 1; i <= sites; i++)  patsite[i] = i;
@@ -727,11 +727,11 @@ void makeweights() {
 
 
 void makevalues(tree *tr) {
-    /* set up fractional likelihoods at tips */
+    // set up fractional likelihoods at tips
     nodeptr  p;
     int  i, j;
 
-    for (i = 1; i <= numsp; i++) {    /* Pack and move tip data */
+    for (i = 1; i <= numsp; i++) {    // Pack and move tip data
         for (j = 0; j < endsite; j++)
             y[i-1][j] = y[i][patsite[j]];
 
@@ -742,7 +742,7 @@ void makevalues(tree *tr) {
 
 
 void empiricalfreqs(tree *tr) {
-     /* Get empirical base frequencies from the data */
+     // Get empirical base frequencies from the data
     double  sum, suma, sumc, sumg, sumt, wj, fa, fc, fg, ft;
     int  i, j, k, code;
     char *yptr;
@@ -821,7 +821,7 @@ xarray *setupxarray() {
 
 
 void linkxarray(int req, int min, xarray **freexptr, xarray **usedxptr) {
-    /*  Link a set of xarrays */
+    //  Link a set of xarrays
     xarray  *first, *prev, *x;
     int  i;
 
@@ -875,10 +875,10 @@ xarray *getxtip(nodeptr p) {
 
     if (p->x) {
         new_xarray = p->x;
-        if (new_xarray == new_xarray->prev) ;             /* linked to self; leave it */
-        else if (new_xarray == usedxtip) usedxtip = usedxtip->next; /* at head */
-        else if (new_xarray == usedxtip->prev) ;   /* already at tail */
-        else {                              /* move to tail of list */
+        if (new_xarray == new_xarray->prev) ;             // linked to self; leave it
+        else if (new_xarray == usedxtip) usedxtip = usedxtip->next; // at head
+        else if (new_xarray == usedxtip->prev) ;   // already at tail
+        else {                              // move to tail of list
             new_xarray->prev->next = new_xarray->next;
             new_xarray->next->prev = new_xarray->prev;
             splice                 = true;
@@ -888,7 +888,7 @@ xarray *getxtip(nodeptr p) {
     else if (freextip) {
         p->x = new_xarray = freextip;
         new_xarray->owner = p;
-        if (new_xarray->prev != new_xarray) {            /* not only member of freelist */
+        if (new_xarray->prev != new_xarray) {            // not only member of freelist
             new_xarray->prev->next = new_xarray->next;
             new_xarray->next->prev = new_xarray->prev;
             freextip               = new_xarray->next;
@@ -913,7 +913,7 @@ xarray *getxtip(nodeptr p) {
     }
 
     if (splice) {
-        if (usedxtip) {                  /* list is not empty */
+        if (usedxtip) {                  // list is not empty
             usedxtip->prev->next = new_xarray;
             new_xarray->prev     = usedxtip->prev;
             usedxtip->prev       = new_xarray;
@@ -928,10 +928,10 @@ xarray *getxtip(nodeptr p) {
 
 
 xarray *getxnode(nodeptr p) {
-    /* Ensure that internal node p has memory */
+    // Ensure that internal node p has memory
     nodeptr  s;
 
-    if (! (p->x)) {  /*  Move likelihood array on this node to sector p */
+    if (! (p->x)) {  //  Move likelihood array on this node to sector p
         if ((s = p->next)->x || (s = s->next)->x) {
             p->x = s->x;
             s->x = (xarray *) NULL;
@@ -946,7 +946,7 @@ xarray *getxnode(nodeptr p) {
 
 
 void newview(nodeptr p) {
-    /*  Update likelihoods at node */
+    //  Update likelihoods at node
     double   z1, lz1, xvlz1, z2, lz2, xvlz2,
         zz1, zv1, fx1r, fx1y, fx1n, suma1, sumg1, sumc1, sumt1,
         zz2, zv2, fx2r, fx2y, fx2n, ki, tempi, tempj;
@@ -955,13 +955,13 @@ void newview(nodeptr p) {
         *x3a, *x3c, *x3g, *x3t;
     int      i;
 
-    if (p->tip) {             /*  Make sure that data are at tip */
+    if (p->tip) {             //  Make sure that data are at tip
         int code;
         char *yptr;
 
-        if (p->x) return;       /*  They are already there */
-        (void) getxtip(p);      /*  They are not, so get memory */
-        x3a = &(p->x->a[0]);    /*  Move tip data to xarray */
+        if (p->x) return;       //  They are already there
+        (void) getxtip(p);      //  They are not, so get memory
+        x3a = &(p->x->a[0]);    //  Move tip data to xarray
         x3c = &(p->x->c[0]);
         x3g = &(p->x->g[0]);
         x3t = &(p->x->t[0]);
@@ -976,7 +976,7 @@ void newview(nodeptr p) {
         return;
     }
 
-    /*  Internal node needs update */
+    //  Internal node needs update
 
     q = p->next->back;
     r = p->next->next->back;
@@ -1061,9 +1061,9 @@ void initrav(nodeptr p) {
     }
 }
 
-/* ======================================================================= */
-/*                         Read a tree from a file                       */
-/* ======================================================================= */
+// =======================================================================
+//                         Read a tree from a file
+// =======================================================================
 
 int treeFinishCom(FILE *INFILE) {
     int  ch;
@@ -1071,10 +1071,10 @@ int treeFinishCom(FILE *INFILE) {
 
     inquote = false;
     while ((ch = getc(INFILE)) != EOF && (inquote || ch != ']')) {
-        if (ch == '[' && ! inquote) {             /* comment; find its end */
+        if (ch == '[' && ! inquote) {             // comment; find its end
             if ((ch = treeFinishCom(INFILE)) == EOF)  break;
         }
-        else if (ch == '\'') inquote = ! inquote;  /* start or end of quote */
+        else if (ch == '\'') inquote = ! inquote;  // start or end of quote
     }
 
     return  ch;
@@ -1082,12 +1082,12 @@ int treeFinishCom(FILE *INFILE) {
 
 
 int treeGetCh(FILE *INFILE) {
-    /* get next nonblank, noncomment character */
+    // get next nonblank, noncomment character
     int  ch;
 
     while ((ch = getc(INFILE)) != EOF) {
         if (white(ch)) ;
-        else if (ch == '[') {                   /* comment; find its end */
+        else if (ch == '[') {                   // comment; find its end
             if ((ch = treeFinishCom(INFILE)) == EOF)  break;
         }
         else  break;
@@ -1109,9 +1109,9 @@ void treeFlushLabel(FILE *INFILE) {
 
         while (! done) {
             if (quoted) {
-                if ((ch = findch('\'', INFILE)) == EOF)  return;      /* find close quote */
-                ch = getc(INFILE);                            /* check next char */
-                if (ch != '\'') done = true;                  /* not doubled quote */
+                if ((ch = findch('\'', INFILE)) == EOF)  return;      // find close quote
+                ch = getc(INFILE);                            // check next char
+                if (ch != '\'') done = true;                  // not doubled quote
             }
             else if (ch == ':' || ch == ',' || ch == ')'  || ch == '['
                      || ch == ';' || ch == '\n' || ch == EOF) {
@@ -1164,12 +1164,12 @@ int findTipName(tree *tr, int ch, FILE *INFILE) {
     }
 
     (void) ungetc(ch, INFILE);
-    while (i < nmlngth)  str[i++] = ' ';     /*  Pad name */
+    while (i < nmlngth)  str[i++] = ' ';     //  Pad name
 
     n = 1;
     do {
         q = tr->nodep[n];
-        if (! (q->back)) {          /*  Only consider unused tips */
+        if (! (q->back)) {          //  Only consider unused tips
             i = 0;
             nameptr = q->name;
             do { found = str[i] == *nameptr++; } while (found && (++i < nmlngth));
@@ -1193,7 +1193,7 @@ double processLength(FILE *INFILE) {
     int     ch;
     char    string[41];
 
-    ch = treeGetCh(INFILE);                            /*  Skip comments */
+    ch = treeGetCh(INFILE);                            //  Skip comments
     if (ch != EOF)  (void) ungetc(ch, INFILE);
 
     if (fscanf(INFILE, "%lf", &branch) != 1) {
@@ -1239,7 +1239,7 @@ void addElementLen(tree *tr, nodeptr p, FILE *INFILE) {
     nodeptr  q;
     int      n, ch;
 
-    if ((ch = treeGetCh(INFILE)) == '(') {     /*  A new internal node */
+    if ((ch = treeGetCh(INFILE)) == '(') {     //  A new internal node
         n = (tr->nextnode)++;
         if (n > 2*(tr->mxtips) - 2) {
             if (tr->rooted || n > 2*(tr->mxtips) - 1) {
@@ -1262,7 +1262,7 @@ void addElementLen(tree *tr, nodeptr p, FILE *INFILE) {
         treeFlushLabel(INFILE);                   if (anerror)  return;
     }
 
-    else {                               /*  A new tip */
+    else {                               //  A new tip
         n = findTipName(tr, ch, INFILE);
         if (n <= 0) { anerror = true; return; }
         q = tr->nodep[n];
@@ -1289,7 +1289,7 @@ void uprootTree(tree *tr, nodeptr p) {
         return;
     }
 
-    n = --(tr->nextnode);               /* last internal node added */
+    n = --(tr->nextnode);               // last internal node added
     if (n != tr->mxtips + tr->ntips - 1) {
         printf("ERROR: Unable to uproot tree.  Inconsistent\n");
         printf("       number of tips and nodes for rooted tree.\n");
@@ -1297,7 +1297,7 @@ void uprootTree(tree *tr, nodeptr p) {
         return;
     }
 
-    q = p->next->back;                  /* remove p from tree */
+    q = p->next->back;                  // remove p from tree
     r = p->next->next->back;
     hookup(q, r, q->z * r->z);
 
@@ -1305,7 +1305,7 @@ void uprootTree(tree *tr, nodeptr p) {
     r = q->next;
     s = q->next->next;
     if (tr->ntips > 2 && p != q && p != r && p != s) {
-        hookup(p,             q->back, q->z);   /* move connections to p */
+        hookup(p,             q->back, q->z);   // move connections to p
         hookup(p->next,       r->back, r->z);
         hookup(p->next->next, s->back, s->z);
     }
@@ -1333,10 +1333,10 @@ void treeReadLen(tree *tr, FILE *INFILE) {
     treeNeedCh(',', "in", INFILE);                   if (anerror)  return;
     addElementLen(tr, p->next, INFILE);              if (anerror)  return;
     if (! tr->rooted) {
-        if ((ch = treeGetCh(INFILE)) == ',') {        /*  An unrooted format */
+        if ((ch = treeGetCh(INFILE)) == ',') {        //  An unrooted format
             addElementLen(tr, p->next->next, INFILE); if (anerror) return;
         }
-        else {                                  /*  A rooted format */
+        else {                                  //  A rooted format
             p->next->next->back = (nodeptr) NULL;
             tr->rooted = true;
             if (ch != EOF)  (void) ungetc(ch, INFILE);
@@ -1354,15 +1354,15 @@ void treeReadLen(tree *tr, FILE *INFILE) {
     treeNeedCh(';', "at end of", INFILE); if (anerror)  return;
 
     if (tr->rooted)  uprootTree(tr, p->next->next);  if (anerror)  return;
-    tr->start = p->next->next->back;  /* This is start used by treeString */
+    tr->start = p->next->next->back;  // This is start used by treeString
 
     initrav(tr->start);
     initrav(tr->start->back);
 }
 
-/* ======================================================================= */
-/*                           End of Tree Reading                         */
-/* ======================================================================= */
+// =======================================================================
+//                           End of Tree Reading
+// =======================================================================
 
 
 double evaluate(tree *tr, nodeptr p) {
@@ -1430,7 +1430,7 @@ double evaluate(tree *tr, nodeptr p) {
 
 
 void dli_dki(nodeptr p) {
-    /*  d(Li)/d(ki) */
+    //  d(Li)/d(ki)
     double   z, lz, xvlz;
     double   ki, fx1a, fx1c, fx1g, fx1t, fx1r, fx1y, fx2r, fx2y,
         suma, sumb, sumc;
@@ -1512,7 +1512,7 @@ void findSiteRates(tree *tr, double ki_min, double ki_max, double d_ki, double m
     }
 
     for (i = 0; i < endsite; i++) {
-        bestki[i] = 1.0;                       /*  dummy initial rates */
+        bestki[i] = 1.0;                       //  dummy initial rates
         bestLi[i] = unlikely;
     }
 
@@ -1588,11 +1588,11 @@ double treeLength(tree *tr) {
 
 void categorize(int    Sites,
                 int    Categs,
-                int    Weight[],                    /* one based */
-                int    Pattern[],                   /* one based */
-                double Patrate[],                   /* zero based */
-                double categrate[],                 /* zero based */
-                int    sitecateg[])                 /* one based */
+                int    Weight[],                    // one based
+                int    Pattern[],                   // one based
+                double Patrate[],                   // zero based
+                double categrate[],                 // zero based
+                int    sitecateg[])                 // one based
 {
     double  ki, min_1, min_2, max_1, max_2, a, b;
     int  i, k;
@@ -1650,7 +1650,7 @@ char   *alignment_name;
 GBDATA *gb_main;
 
 void getArbFilter() {
-    /*! Get the calling filter, needed to expand weights afterwards */
+    //! Get the calling filter, needed to expand weights afterwards
     GB_begin_transaction(gb_main);
     arb_filter     = GBT_read_string(gb_main, AWAR_GDE_EXPORT_FILTER);
     alignment_name = GBT_get_default_alignment(gb_main);
@@ -1691,8 +1691,8 @@ void writeToArb() {
     long    ali_len;
     int     i, k;
     int     ali_pos;
-    float  *rates;              /* rates to export */
-    char   *cats;               /* categories */
+    float  *rates;              // rates to export
+    char   *cats;               // categories
     GBDATA *gb_data;
 
 
@@ -1702,34 +1702,34 @@ void writeToArb() {
     cats    = (char *)GB_calloc(ali_len, sizeof(char));
     rates   = (float *)GB_calloc(ali_len, sizeof(float));
 
-    /* fill in rates and categories */
+    // fill in rates and categories
     {
-        double  categrate[maxcategories]; /* rate of a given category */
-        int     sitecateg[maxsites+1];    /* category of a given site */
+        double  categrate[maxcategories]; // rate of a given category
+        int     sitecateg[maxsites+1];    // category of a given site
 
         categorize(sites, categs, weight, pattern, patrate, categrate, sitecateg);
 
-        i = 1;                  /* thanks to pascal */
+        i = 1;                  // thanks to pascal
         for (ali_pos = 0; ali_pos < ali_len; ali_pos++) {
             if (arb_filter[ali_pos] == '0') {
                 cats[ali_pos] = '.';
                 rates[ali_pos] = KI_MAX;
-                continue; /* filter says not written */
+                continue; // filter says not written
             }
             if (weight[i] > 0) {
                 rates[ali_pos] = patrate[pattern[i]];
                 cats[ali_pos] = itobase36(categs - sitecateg[i]);
             }
             else {
-                rates[i] = KI_MAX;      /* infinite rate */
+                rates[i] = KI_MAX;      // infinite rate
                 cats[ali_pos] = '.';
             }
             i++;
         }
 
-        /* write categories */
+        // write categories
         p    = category_string;
-        p[0] = 0; /* if no categs */
+        p[0] = 0; // if no categs
         for (k = 1; k <= categs; k ++) {
             sprintf(p, " %G", categrate[categs-k]);
             p += strlen(p);
@@ -1787,9 +1787,9 @@ void closeArb() {
 void wrfile(FILE   *outfile,
             int     Sites,
             int     Categs,
-            int     Weight[],   /* one based */
-            double  categrate[], /* zero based */
-            int     sitecateg[]) /* one based */
+            int     Weight[],   // one based
+            double  categrate[], // zero based
+            int     sitecateg[]) // one based
 {
 
 
@@ -1852,8 +1852,8 @@ void summarize(int treenum) {
     putchar('\n');
 
     if (categs > 1) {
-        double  categrate[maxcategories]; /* rate of a given category */
-        int     sitecateg[maxsites+1];    /* category of a given site */
+        double  categrate[maxcategories]; // rate of a given category
+        int     sitecateg[maxsites+1];    // category of a given site
 
         categorize(sites, categs, weight, pattern, patrate, categrate, sitecateg);
 
@@ -1916,7 +1916,7 @@ inline bool is_char(const char *name, char c) { return name[0] == c && !name[1];
 inline bool wantSTDIN(const char *iname) { return is_char(iname, '-'); }
 
 int main(int argc, char *argv[]) {
-    /* Maximum Likelihood Site Rate */
+    // Maximum Likelihood Site Rate
     const char *dbname     = ":";
     const char *dbsavename = NULL;
     bool        help       = false;

@@ -70,7 +70,7 @@ static long callDelay(long loops);
 #define WANTED_TIME 5*SECOND // time reserved for each test
 
 static long run_test(test_fun fun, long loops, double *perCall) {
-    /* returns time for test 'fun' in microseconds */
+    // returns time for test 'fun' in microseconds
     struct timeval t1;
     struct timeval t2;
 

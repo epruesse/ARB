@@ -31,7 +31,7 @@ int aw_message_cb_result;
 
 void message_cb(AW_window *, AW_CL cd1) {
     long result = (long)cd1;
-    if (result == -1) { /* exit */
+    if (result == -1) { // exit
         exit(EXIT_FAILURE);
     }
     aw_message_cb_result = ((int)result);
@@ -207,11 +207,11 @@ int aw_question(const char *question, const char *buttons, bool fixedSizeButtons
     aw_msg->hide();
 
     switch (aw_message_cb_result) {
-        case -1:                /* exit with core */
+        case -1:                // exit with core
             fprintf(stderr, "Core dump requested\n");
             ARB_SIGSEGV(1);
             break;
-        case -2:                /* exit without core */
+        case -2:                // exit without core
             exit(-1);
             break;
     }

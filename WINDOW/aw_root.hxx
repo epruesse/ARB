@@ -129,7 +129,7 @@ public:
     void add_timed_callback               (int ms, AW_RCB0 f) { add_timed_callback               (ms, (AW_RCB2)f, 0, 0); }
     void add_timed_callback_never_disabled(int ms, AW_RCB0 f) { add_timed_callback_never_disabled(ms, (AW_RCB2)f, 0, 0); }
 
-    void set_focus_callback(AW_RCB fcb, AW_CL cd1, AW_CL cd2); /* any focus callback in any window */
+    void set_focus_callback(AW_RCB fcb, AW_CL cd1, AW_CL cd2); // any focus callback in any window
 
     AW_awar *awar(const char *awar);
     AW_awar *awar_no_error(const char *awar);

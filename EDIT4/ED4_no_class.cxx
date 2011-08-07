@@ -1588,7 +1588,7 @@ AW_window *ED4_create_level_1_options_window(AW_root *root) {
     return aws;
 }
 
-/* Open window to show IUPAC tables */
+// Open window to show IUPAC tables
 static AW_window * CON_showgroupswin_cb(AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;

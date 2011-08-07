@@ -7,9 +7,6 @@
 
 static struct S_cfgLine cfg_lines[];
 
-/* -------------------------------------------------------------------------- */
-/*      static int decodeFrand(str setting, void *frandPtr) */
-/* ------------------------------------------------------ 20.05.95 18.19 ---- */
 static int decodeFrand(str setting, void *frandPtr)
 {
     str medium = strtok(setting, " "),
@@ -49,17 +46,11 @@ static int decodeFrand(str setting, void *frandPtr)
 
     return 0;
 }
-/* -------------------------------------------------------------------------- */
-/*      static int decodeInt(str setting, void *intPtr) */
-/* ------------------------------------------------------ 20.05.95 12.33 ---- */
 static int decodeInt(str setting, void *intPtr)
 {
     *((int*)intPtr) = atoi(setting);
     return 1;
 }
-/* -------------------------------------------------------------------------- */
-/*      static int decodeProb(str setting, void *doublePtr) */
-/* ------------------------------------------------------ 17.05.95 21.55 ---- */
 static int decodeProb(str setting, void *doublePtr)
 {
     double *dptr = (double*)doublePtr;
@@ -74,9 +65,6 @@ static int decodeProb(str setting, void *doublePtr)
 
     return 1;
 }
-/* -------------------------------------------------------------------------- */
-/*      void readSimCfg(cstr fname) */
-/* ------------------------------------------------------ 17.05.95 22:10 ---- */
 void readSimCfg(cstr fname)
 {
     int lenTeiler,
@@ -103,9 +91,8 @@ void readSimCfg(cstr fname)
 static struct S_cfgLine cfg_lines[] =
 {
 
-    /* /---------------------------------------\ */
-    /* |  Nur zur Initialisierung notwendig :  | */
-    /* \---------------------------------------/ */
+    // --------------------------------------------
+    //      Nur zur Initialisierung notwendig :
 
     { "OriginLen",          "3000",             decodeInt,          &orgLen,            "Number of base positions in origin species" },
     { "OriginHelixPart",    "0.5",              decodeProb,         &orgHelixPart,      "size of helical part in origin species (0.5 means 50% helix and 50% loop regions)" },
@@ -115,9 +102,8 @@ static struct S_cfgLine cfg_lines[] =
     { "TransitionRate",     "0.5",              decodeProb,         &transitionRate,    "transition rate" },
     { "TransversionRate",   "0.5",              decodeProb,         &transversionRate,  "transversion rate" },
 
-    /* /-----------------------------------------------------------------\ */
-    /* |  Parameter, welche sich w„hrend des Baumdurchlaufs ver„ndern :  | */
-    /* \-----------------------------------------------------------------/ */
+    // ----------------------------------------------------------------------
+    //      Parameter, welche sich waehrend des Baumdurchlaufs veraendern :
 
     { "PairPart",           "0.85 0.1 0.01",    decodeFrand,        &pairPart,          "part of pairing helix positions (mean value, low frequent part, high frequent part)" },
     { "MutationRate",       "0.01 0.005 0.001", decodeFrand,        &mutationRate,      "mutation rate" },

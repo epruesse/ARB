@@ -109,7 +109,7 @@ void ED4_create_NDS_awars(AW_root *root)
     NDS_changed(root, 0); // init globals
 }
 
-/* a crazy implementation of a toggle field */
+// a crazy implementation of a toggle field
 void ed4_nds_select_change(AW_window *aww, AW_CL selected) {
     int i;
     AW_root *aw_root = aww->get_root();

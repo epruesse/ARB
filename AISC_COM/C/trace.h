@@ -13,9 +13,9 @@
 
 #if defined(DEBUG)
 // #define DUMP_COMMUNICATION
-#endif /* DEBUG */
+#endif // DEBUG
 
-/* -------------------------------------------------------------------------------- */
+// --------------------------------------------------------------------------------
 
 #if defined(DUMP_COMMUNICATION)
 
@@ -57,9 +57,9 @@ static void aisc_dump_voidPtr2(const char *where, const char *varname, void *var
 #else
 #define AISC_DUMP(where, type, var)
 #define AISC_DUMP_SEP()
-#endif /* DUMP_COMMUNICATION */
+#endif // DUMP_COMMUNICATION
 
-/* -------------------------------------------------------------------------------- */
+// --------------------------------------------------------------------------------
 
 #else
 #error trace.h included twice

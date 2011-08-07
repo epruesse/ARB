@@ -40,7 +40,7 @@
  *     Jeroen van der Zijp (jvz@cyberia.cfdrc.com)
  */
 
-/* This file has been modified for use with ARB */
+// This file has been modified for use with ARB
 
 #ifndef __GLX_MOTIF
 #error ARB only needs the Motif flavour of this file
@@ -49,8 +49,8 @@
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-/* #include <GL/glx.h> */
-/* #include <GL/gl.h> */
+// #include <GL/glx.h>
+// #include <GL/gl.h>
 #ifdef __GLX_MOTIF
 #include <Xm/PrimitiveP.h>
 #include "GLwMDrawAP.h"
@@ -73,7 +73,7 @@
 #define offset(field) XtOffset(GLwDrawingAreaWidget, glwDrawingArea.field)
 
 
-/* forward definitions */
+// forward definitions
 static void createColormap(GLwDrawingAreaWidget w, int offset, XrmValue *value);
 static void Initialize(GLwDrawingAreaWidget req, GLwDrawingAreaWidget neww, ArgList args, Cardinal *num_args);
 static void Realize(Widget w, Mask *valueMask, XSetWindowAttributes *attributes);
@@ -96,7 +96,7 @@ static char defaultTranslations[] =
 
 
 static XtActionsRec actions[] = {
-    { (String)"glwInput", (XtActionProc)glwInput },             /* key or mouse input */
+    { (String)"glwInput", (XtActionProc)glwInput },             // key or mouse input
   };
 
 
@@ -117,7 +117,7 @@ static XtActionsRec actions[] = {
  */
 
 static XtResource resources[] = {
-  /* The GLX attributes.  Add any new attributes here */
+  // The GLX attributes.  Add any new attributes here
 
     { (String)GLwNbufferSize,    (String)GLwCBufferSize,     XtRInt,     sizeof(int),     offset(bufferSize),     XtRImmediate, (XtPointer)0 },
     { (String)GLwNlevel,         (String)GLwCLevel,          XtRInt,     sizeof(int),     offset(level),          XtRImmediate, (XtPointer)0 },
@@ -136,13 +136,13 @@ static XtResource resources[] = {
     { (String)GLwNaccumBlueSize, (String)GLwCAccumColorSize, XtRInt,     sizeof(int),     offset(accumBlueSize),  XtRImmediate, (XtPointer)0 },
     { (String)GLwNaccumAlphaSize, (String)GLwCAccumAlphaSize, XtRInt,    sizeof(int),     offset(accumAlphaSize), XtRImmediate, (XtPointer)0 },
 
-  /* the attribute list */
+  // the attribute list
     { (String)GLwNattribList, (String)GLwCAttribList, XtRPointer, sizeof(int *), offset(attribList), XtRImmediate, (XtPointer) NULL },
 
-  /* the visual info */
+  // the visual info
     { (String)GLwNvisualInfo, (String)GLwCVisualInfo, (String)GLwRVisualInfo, sizeof (XVisualInfo *), offset(visualInfo), XtRImmediate, (XtPointer) NULL },
 
-  /* miscellaneous resources */
+  // miscellaneous resources
     { (String)GLwNinstallColormap,    (String)GLwCInstallColormap,   XtRBoolean,  sizeof(Boolean),        offset(installColormap),     XtRImmediate, (XtPointer)TRUE },
     { (String)GLwNallocateBackground, (String)GLwCAllocateColors,    XtRBoolean,  sizeof(Boolean),        offset(allocateBackground),  XtRImmediate, (XtPointer)FALSE },
     { (String)GLwNallocateOtherColors, (String)GLwCAllocateColors,   XtRBoolean,  sizeof(Boolean),        offset(allocateOtherColors), XtRImmediate, (XtPointer)FALSE },
@@ -152,7 +152,7 @@ static XtResource resources[] = {
     { (String)GLwNresizeCallback,     (String)GLwCCallback,          XtRCallback, sizeof(XtCallbackList), offset(resizeCallback),      XtRImmediate, (XtPointer)NULL },
     { (String)GLwNexposeCallback,     (String)GLwCCallback,          XtRCallback, sizeof(XtCallbackList), offset(exposeCallback),      XtRImmediate, (XtPointer)NULL },
 
-  /* Changes to Motif primitive resources */
+  // Changes to Motif primitive resources
 #ifdef __GLX_MOTIF
     { (String)XmNtraversalOn, (String)XmCTraversalOn, XmRBoolean, sizeof (Boolean), XtOffset (GLwDrawingAreaWidget, primitive.traversal_on), XmRImmediate, (XtPointer)FALSE },
 
@@ -172,18 +172,18 @@ static XtResource resources[] = {
 ** in the initialize proc.
 */
 
-/* The colormap */
+// The colormap
 static XtResource initializeResources[] = {
-  /* reobtain the colormap with the new visual */
+  // reobtain the colormap with the new visual
   { XtNcolormap, XtCColormap, XtRColormap, sizeof(Colormap),
    XtOffset(GLwDrawingAreaWidget, core.colormap),
    XtRCallProc, (XtPointer) createColormap },
   };
 
 
-/* reallocate any colors we need in the new colormap */
+// reallocate any colors we need in the new colormap
 
-/* The background is obtained only if the allocateBackground resource is TRUE */
+// The background is obtained only if the allocateBackground resource is TRUE
 static XtResource backgroundResources[] = {
 #ifdef __GLX_MOTIF
   { XmNbackground, XmCBackground, XmRPixel,
@@ -232,14 +232,14 @@ static XtResource otherColorResources[] = {
 
 
 GLwDrawingAreaClassRec glwDrawingAreaClassRec = {
-  { /* core fields */
+  { // core fields
 #ifdef __GLX_MOTIF
     /* superclass                */        (WidgetClass) &xmPrimitiveClassRec,
     /* class_name                */        (String)"GLwMDrawingArea",
-#else /* not __GLX_MOTIF */
+#else // not __GLX_MOTIF
     /* superclass                */        (WidgetClass) &widgetClassRec,
     /* class_name                */        (String)"GLwDrawingArea",
-#endif /* __GLX_MOTIF */
+#endif // __GLX_MOTIF
     /* widget_size               */        sizeof(GLwDrawingAreaRec),
     /* class_initialize          */        NULL,
     /* class_part_initialize     */        NULL,
@@ -271,7 +271,7 @@ GLwDrawingAreaClassRec glwDrawingAreaClassRec = {
     /* display_accelerator       */        XtInheritDisplayAccelerator,
     /* extension                 */        NULL
   },
-#ifdef __GLX_MOTIF /* primitive resources (XmPrimitiveClassPart) */
+#ifdef __GLX_MOTIF // primitive resources (XmPrimitiveClassPart)
   {
     /* border_highlight          */        XmInheritBorderHighlight,
     /* border_unhighlight        */        XmInheritBorderUnhighlight,
@@ -312,7 +312,7 @@ static void warning(Widget w, const char* string) {
 
 
 
-/* Initialize the attribList based on the attributes */
+// Initialize the attribList based on the attributes
 static void createAttribList(GLwDrawingAreaWidget w) {
   int *ptr;
   w->glwDrawingArea.attribList = (int*)XtMalloc(ATTRIBLIST_SIZE*sizeof(int));
@@ -355,7 +355,7 @@ static void createAttribList(GLwDrawingAreaWidget w) {
 
 
 
-/* Initialize the visualInfo based on the attribute list */
+// Initialize the visualInfo based on the attribute list
 static void createVisualInfo(GLwDrawingAreaWidget w) {
   assert(w->glwDrawingArea.attribList);
   w->glwDrawingArea.visualInfo=glXChooseVisual(XtDisplay(w), XScreenNumberOfScreen(XtScreen(w)), w->glwDrawingArea.attribList);
@@ -379,7 +379,7 @@ static void createColormap(GLwDrawingAreaWidget w, int offset, XrmValue *value) 
 
   assert(w->glwDrawingArea.visualInfo);
 
-  /* see if we can find it in the cache */
+  // see if we can find it in the cache
   for (i=0; i<cacheEntries; i++) {
     if (cmapCache[i].visual==w->glwDrawingArea.visualInfo->visual) {
       value->addr=(XtPointer)(&cmapCache[i].cmap);
@@ -387,7 +387,7 @@ static void createColormap(GLwDrawingAreaWidget w, int offset, XrmValue *value) 
       }
     }
 
-  /* not in the cache, create a new entry */
+  // not in the cache, create a new entry
   if (cacheEntries >= cacheMalloced) {
     /* need to malloc a new one.  Since we are likely to have only a
      * few colormaps, we allocate one the first time, and double
@@ -416,36 +416,36 @@ static void createColormap(GLwDrawingAreaWidget w, int offset, XrmValue *value) 
 
 static void Initialize(GLwDrawingAreaWidget req, GLwDrawingAreaWidget neww, ArgList args, Cardinal *num_args) {
 
-  /* fix size */
+  // fix size
   if (req->core.width==0) neww->core.width=100;
   if (req->core.height==0) neww->core.width=100;
 
-  /* create the attribute list if needed */
+  // create the attribute list if needed
   neww->glwDrawingArea.myList=FALSE;
   if (neww->glwDrawingArea.attribList==NULL) {
     neww->glwDrawingArea.myList=TRUE;
     createAttribList(neww);
     }
 
-  /* Gotta have it */
+  // Gotta have it
   assert(neww->glwDrawingArea.attribList);
 
-  /* determine the visual info if needed */
+  // determine the visual info if needed
   neww->glwDrawingArea.myVisual=FALSE;
   if (neww->glwDrawingArea.visualInfo==NULL) {
     neww->glwDrawingArea.myVisual=TRUE;
     createVisualInfo(neww);
     }
 
-  /* Gotta have that too */
+  // Gotta have that too
   assert(neww->glwDrawingArea.visualInfo);
 
   neww->core.depth=neww->glwDrawingArea.visualInfo->depth;
 
-  /* Reobtain the colormap and colors in it using XtGetApplicationResources */
+  // Reobtain the colormap and colors in it using XtGetApplicationResources
   XtGetApplicationResources((Widget)neww, neww, initializeResources, XtNumber(initializeResources), args, *num_args);
 
-  /* obtain the color resources if appropriate */
+  // obtain the color resources if appropriate
   if (req->glwDrawingArea.allocateBackground) {
     XtGetApplicationResources((Widget)neww, neww, backgroundResources, XtNumber(backgroundResources), args, *num_args);
     }
@@ -476,25 +476,25 @@ static void Realize(Widget w, Mask *valueMask, XSetWindowAttributes *attributes)
 
   XtCreateWindow(w, (unsigned int)InputOutput, glw->glwDrawingArea.visualInfo->visual, *valueMask, attributes);
 
-  /* if appropriate, call XSetWMColormapWindows to install the colormap */
+  // if appropriate, call XSetWMColormapWindows to install the colormap
   if (glw->glwDrawingArea.installColormap) {
 
-    /* Get parent shell */
+    // Get parent shell
     for (parentShell=XtParent(w); parentShell&&!XtIsShell(parentShell); parentShell=XtParent(parentShell)) ;
 
     if (parentShell && XtWindow(parentShell)) {
 
-      /* check to see if there is already a property */
+      // check to see if there is already a property
       status=XGetWMColormapWindows(XtDisplay(parentShell), XtWindow(parentShell), &windowsReturn, &countReturn);
 
-      /* if no property, just create one */
+      // if no property, just create one
       if (!status) {
         windows[0]=XtWindow(w);
         windows[1]=XtWindow(parentShell);
         XSetWMColormapWindows(XtDisplay(parentShell), XtWindow(parentShell), windows, 2);
         }
 
-      /* there was a property, add myself to the beginning */
+      // there was a property, add myself to the beginning
       else {
         windowList=(Window *)XtMalloc((sizeof(Window))*(countReturn+1));
         windowList[0]=XtWindow(w);
@@ -509,7 +509,7 @@ static void Realize(Widget w, Mask *valueMask, XSetWindowAttributes *attributes)
       }
     }
 
-  /* Invoke callbacks */
+  // Invoke callbacks
   cb.reason=GLwCR_GINIT;
   cb.event=NULL;
   cb.width=glw->core.width;
@@ -559,25 +559,25 @@ static void Destroy(GLwDrawingAreaWidget glw) {
     XtFree((XtPointer)glw->glwDrawingArea.visualInfo);
     }
 
-  /* if my colormap was installed, remove it */
+  // if my colormap was installed, remove it
   if (glw->glwDrawingArea.installColormap) {
 
-    /* Get parent shell */
+    // Get parent shell
     for (parentShell=XtParent(glw); parentShell&&!XtIsShell(parentShell); parentShell=XtParent(parentShell)) ;
 
     if (parentShell && XtWindow(parentShell)) {
 
-      /* make sure there is a property */
+      // make sure there is a property
       status=XGetWMColormapWindows(XtDisplay(parentShell), XtWindow(parentShell), &windowsReturn, &countReturn);
 
-      /* if no property, just return.  If there was a property, continue */
+      // if no property, just return.  If there was a property, continue
       if (status) {
 
-        /* search for a match */
+        // search for a match
         for (i=0; i<countReturn; i++) {
           if (windowsReturn[i]==XtWindow(glw)) {
 
-            /* we found a match, now copy the rest down */
+            // we found a match, now copy the rest down
             for (i++; i<countReturn; i++) { windowsReturn[i-1]=windowsReturn[i]; }
 
             XSetWMColormapWindows(XtDisplay(parentShell), XtWindow(parentShell), windowsReturn, countReturn-1);
@@ -592,7 +592,7 @@ static void Destroy(GLwDrawingAreaWidget glw) {
 
 
 
-/* Action routine for keyboard and mouse events */
+// Action routine for keyboard and mouse events
 static void glwInput(GLwDrawingAreaWidget glw, XEvent *event, String *params, Cardinal *numParams) {
     GLwDrawingAreaCallbackStruct cb;
     USE(params);
@@ -607,7 +607,7 @@ static void glwInput(GLwDrawingAreaWidget glw, XEvent *event, String *params, Ca
 
 #ifdef __GLX_MOTIF
 
-/* Create routine */
+// Create routine
 Widget GLwCreateMDrawingArea(Widget parent, char *name, ArgList arglist, Cardinal argcount) {
   return XtCreateWidget(name, glwMDrawingAreaWidgetClass, parent, arglist, argcount);
   }
@@ -617,13 +617,13 @@ Widget GLwCreateMDrawingArea(Widget parent, char *name, ArgList arglist, Cardina
 
 #ifndef __GLX_MOTIF
 
-/* Make context current */
+// Make context current
 void GLwDrawingAreaMakeCurrent(Widget w, GLXContext ctx) {
   glXMakeCurrent(XtDisplay(w), XtWindow(w), ctx);
   }
 
 
-/* Swap buffers convenience function */
+// Swap buffers convenience function
 void GLwDrawingAreaSwapBuffers(Widget w) {
   glXSwapBuffers(XtDisplay(w), XtWindow(w));
   }

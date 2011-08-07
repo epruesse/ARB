@@ -396,7 +396,7 @@ static bool handleZoomEvent(AW_window *aww, AWT_canvas *ntw, AW_device *device, 
             ntw->zoom_drag_sy = ntw->zoom_drag_ey = event.y;
         }
         else {
-            /* delete last box */
+            // delete last box
             nt_draw_zoom_box(device, ntw);
             ntw->drag = 0;
 
@@ -560,7 +560,7 @@ static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
         ntw->zoom_drag_ey = event.y;
 
 
-        /* display */
+        // display
         ntw->scroll(aww, -dx *3, -dy *3);
     }
     else {
@@ -627,7 +627,7 @@ void AWT_canvas::scroll(AW_window *, int dx, int dy, bool dont_update_scrollbars
     int screenwidth = this->rect.r-this->rect.l;
     int screenheight = this->rect.b-this->rect.t;
 
-    /* compute move area params */
+    // compute move area params
 
     if (dx>0) {
         csx = dx;
@@ -650,10 +650,10 @@ void AWT_canvas::scroll(AW_window *, int dx, int dy, bool dont_update_scrollbars
         cheight = screenheight+dy;
     }
 
-    /* move area */
+    // move area
     if (!tree_disp->exports.dont_scroll) {
         device->move_region(csx, csy, cwidth, cheight, cdx, cdy);
-        /* redraw stripes */
+        // redraw stripes
         this->shift_x_to_fit -= dx/this->trans_to_fit;
         this->shift_y_to_fit -= dy/this->trans_to_fit;
 
@@ -682,7 +682,7 @@ void AWT_canvas::scroll(AW_window *, int dx, int dy, bool dont_update_scrollbars
         }
     }
     else {          // redraw everything
-        /* redraw stripes */
+        // redraw stripes
         this->shift_x_to_fit -= dx/this->trans_to_fit;
         this->shift_y_to_fit -= dy/this->trans_to_fit;
         AWT_expose_cb(aww, this,  0);

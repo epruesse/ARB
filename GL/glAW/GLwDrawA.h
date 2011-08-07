@@ -152,19 +152,19 @@ extern WidgetClass glwDrawingAreaWidgetClass;
 #endif
 
 
-/* Callback reasons */
+// Callback reasons
 #ifdef __GLX_MOTIF
 #define GLwCR_EXPOSE    XmCR_EXPOSE
 #define GLwCR_RESIZE    XmCR_RESIZE
 #define GLwCR_INPUT     XmCR_INPUT
 #else
-/* The same values as Motif, but don't use Motif constants */
+// The same values as Motif, but don't use Motif constants
 #define GLwCR_EXPOSE    38
 #define GLwCR_RESIZE    39
 #define GLwCR_INPUT     40
 #endif
 
-#define GLwCR_GINIT     32135   /* Arbitrary number that should neverr clash */
+#define GLwCR_GINIT     32135   // Arbitrary number that should neverr clash
 
 typedef struct
 {
@@ -177,7 +177,7 @@ typedef struct
 extern "C" {
 #endif
 
-    /* front ends to glXMakeCurrent and glXSwapBuffers */
+    // front ends to glXMakeCurrent and glXSwapBuffers
     extern void GLwDrawingAreaMakeCurrent(Widget w, GLXContext ctx);
     extern void GLwDrawingAreaSwapBuffers(Widget w);
 

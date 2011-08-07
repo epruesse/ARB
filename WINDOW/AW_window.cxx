@@ -1345,8 +1345,8 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     // @@@ FIXME: the next line hangs if program runs inside debugger
     p_r->toplevel_widget = XtOpenApplication(&(p_r->context), programname,
             NULL, 0, // XrmOptionDescRec+numOpts
-            &a, /* &argc */
-            NULL, /* argv */
+            &a, // &argc
+            NULL, // argv
             fallback_resources,
             applicationShellWidgetClass, // widget class
             NULL, 0);
@@ -3240,7 +3240,7 @@ void AW_root::process_pending_events() {
 }
 
 AW_ProcessEventType AW_root::peek_key_event(AW_window * /* aww */) {
-    /*! Returns type if key event follows, else 0 */
+    //! Returns type if key event follows, else 0
 
     XEvent xevent;
     Boolean result = XtAppPeekEvent(p_r->context, &xevent);

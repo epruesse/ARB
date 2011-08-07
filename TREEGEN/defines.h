@@ -8,23 +8,20 @@
 #include <attributes.h>
 #endif
 
-/* /-----------\ */
-/* |  Defines  | */
-/* \-----------/ */
+// ----------------
+//      Defines
 
 #define outOfMemory()   def_outOfMemory(__FILE__, __LINE__)
 #define assert(c)       do { static int assCnt; assCnt++; if (!(c)) def_assert(#c, __FILE__, __LINE__, assCnt); } while (0)
 
-/* /---------\ */
-/* |  Typen  | */
-/* \---------/ */
+// --------------
+//      Typen
 
 typedef char          *str;
 typedef const char    *cstr;
 
-/* /----------------\ */
-/* |  Hilfroutinen  | */
-/* \----------------/ */
+// ---------------------
+//      Hilfroutinen
 
 #ifdef __cplusplus
 extern "C" {

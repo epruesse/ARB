@@ -15,7 +15,7 @@
 
 using namespace AW;
 
-/* *********************** paint sub tree ************************ */
+// *********************** paint sub tree ************************
 
 const int tipBoxSize = 3;
 

@@ -78,7 +78,7 @@ public:
     void mark_matching(POS_TREE *pt) const;
 
     int operator()(const DataLoc& loc) const { 
-        /*! Increment match_count for matched postree-tips */
+        //! Increment match_count for matched postree-tips
         if (did_match()) count_match(loc);
         else if (match_possible()) {
             ProbeTraversal(*this).match_rest_and_mark(loc);
@@ -90,7 +90,7 @@ public:
 Range ProbeTraversal::range(-1, -1, -1);
 
 void ProbeTraversal::mark_matching(POS_TREE *pt) const {
-    /*! Traverse pos(sub)tree through matching branches and increment 'match_count' */
+    //! Traverse pos(sub)tree through matching branches and increment 'match_count'
 
     pt_assert(pt);
     pt_assert(!too_many_mismatches());
@@ -132,7 +132,7 @@ void ProbeTraversal::mark_all(POS_TREE *pt) const {
 
 
 static void clear_statistic() {
-    /*! Clear all information in psg.data[i].stat */
+    //! Clear all information in psg.data[i].stat
 
     for (int i = 0; i < psg.data_count; i++) {
         memset((char *) &psg.data[i].stat, 0, sizeof(probe_statistic));
@@ -142,7 +142,7 @@ static void clear_statistic() {
 
 
 static void make_match_statistic(int probe_len, int sequence_length) {
-    /*! Calculate the statistic information for the family */
+    //! Calculate the statistic information for the family
 
     // compute statistic for all species in family
     for (int i = 0; i < psg.data_count; i++) {
@@ -169,7 +169,7 @@ struct cmp_probe_rel {
 };
 
 static int make_PT_family_list(PT_family *ffinder) {
-    /*!  Make sorted list of family members */
+    //!  Make sorted list of family members
 
     // Sort the data
     struct probe_input_data *my_list[psg.data_count];
@@ -223,7 +223,7 @@ static int make_PT_family_list(PT_family *ffinder) {
 
 inline int probe_is_ok(char *probe, int probe_len, char first_c, char second_c)
 {
-    /*! Check the probe for inconsistencies */
+    //! Check the probe for inconsistencies
     if (probe_len < 2 || probe[0] != first_c || probe[1] != second_c)
         return 0;
     for (int i = 2; i < probe_len; i++)
@@ -250,7 +250,7 @@ inline void complement_sequence(char *seq, int len) {
 }
 
 int find_family(PT_family *ffinder, bytestring *species) {
-    /*! make sorted list of family members of species */
+    //! make sorted list of family members of species
 
     int probe_len   = ffinder->pr_len;
     int mismatch_nr = ffinder->mis_nr;

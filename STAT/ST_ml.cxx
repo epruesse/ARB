@@ -472,7 +472,7 @@ GB_ERROR ST_ML::init_st_ml(const char *tree_name, const char *alignment_namei,
                            const char *species_names, int marked_only,
                            ColumnStat *colstat, const WeightedFilter *weighted_filter)
 {
-    /*! this is the real constructor, call only once */
+    //! this is the real constructor, call only once
 
     GB_ERROR error = 0;
 

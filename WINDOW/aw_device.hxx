@@ -210,8 +210,8 @@ class AW_clipable {
     void set_cliprect_oversize(const AW_screen_area& rect, bool allow_oversize);
 protected:
     int compoutcode(AW_pos xx, AW_pos yy) const {
-        /* calculate outcode for clipping the current line */
-        /* order - top,bottom,right,left */
+        // calculate outcode for clipping the current line
+        // order - top,bottom,right,left
         int code = 0;
         if (clip_rect.b - yy < 0)       code = 4;
         else if (yy - clip_rect.t < 0)  code = 8;

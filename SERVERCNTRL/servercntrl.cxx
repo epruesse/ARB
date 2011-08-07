@@ -23,27 +23,27 @@
  * call 'make proto' to update
  */
 
-/* AISC_MKPT_PROMOTE:#ifndef ARBDB_BASE_H */
-/* AISC_MKPT_PROMOTE:#include <arbdb_base.h> */
-/* AISC_MKPT_PROMOTE:#endif */
-/* AISC_MKPT_PROMOTE: */
-/* AISC_MKPT_PROMOTE:struct arb_params { */
-/* AISC_MKPT_PROMOTE:    char *species_name; */
-/* AISC_MKPT_PROMOTE:    char *extended_name; */
-/* AISC_MKPT_PROMOTE:    char *alignment; */
-/* AISC_MKPT_PROMOTE:    char *default_file; */
-/* AISC_MKPT_PROMOTE:    char *field; */
-/* AISC_MKPT_PROMOTE:    const char *field_default; */
-/* AISC_MKPT_PROMOTE: */
-/* AISC_MKPT_PROMOTE:    int  read_only; */
-/* AISC_MKPT_PROMOTE: */
-/* AISC_MKPT_PROMOTE:    char *job_server; */
-/* AISC_MKPT_PROMOTE:    char *db_server; */
-/* AISC_MKPT_PROMOTE:    char *mgr_server; */
-/* AISC_MKPT_PROMOTE:    char *pt_server; */
-/* AISC_MKPT_PROMOTE: */
-/* AISC_MKPT_PROMOTE:    char *tcp; */
-/* AISC_MKPT_PROMOTE:}; */
+// AISC_MKPT_PROMOTE:#ifndef ARBDB_BASE_H
+// AISC_MKPT_PROMOTE:#include <arbdb_base.h>
+// AISC_MKPT_PROMOTE:#endif
+// AISC_MKPT_PROMOTE:
+// AISC_MKPT_PROMOTE:struct arb_params {
+// AISC_MKPT_PROMOTE:    char *species_name;
+// AISC_MKPT_PROMOTE:    char *extended_name;
+// AISC_MKPT_PROMOTE:    char *alignment;
+// AISC_MKPT_PROMOTE:    char *default_file;
+// AISC_MKPT_PROMOTE:    char *field;
+// AISC_MKPT_PROMOTE:    const char *field_default;
+// AISC_MKPT_PROMOTE:
+// AISC_MKPT_PROMOTE:    int  read_only;
+// AISC_MKPT_PROMOTE:
+// AISC_MKPT_PROMOTE:    char *job_server;
+// AISC_MKPT_PROMOTE:    char *db_server;
+// AISC_MKPT_PROMOTE:    char *mgr_server;
+// AISC_MKPT_PROMOTE:    char *pt_server;
+// AISC_MKPT_PROMOTE:
+// AISC_MKPT_PROMOTE:    char *tcp;
+// AISC_MKPT_PROMOTE:};
 
 #define TRIES 1
 
@@ -133,7 +133,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
             char *command = 0;
             int   delay   = 5;
 
-            if (*tcp_id == ':') { /* local mode */
+            if (*tcp_id == ':') { // local mode
                 command = GBS_global_string_copy("%s %s -T%s &", server, serverparams, tcp_id);
                 make_valgrinded_call(command);
             }
@@ -154,7 +154,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
             if (!error) {
 #if defined(DEBUG)
                 printf("Starting server (cmd='%s')\n", command);
-#endif /* DEBUG */
+#endif // DEBUG
                 if (!gbmain || GBCMC_system(gbmain, command)) system(command);
                 if (do_sleep) sleep(delay);
             }
@@ -352,7 +352,7 @@ arb_params *arb_trace_argv(int *argc, char **argv)
                 case 'T': {
                     char *ipport = argv[s]+2;
                     if (ipport[0] == ':' &&
-                        ipport[1] >= '0' && ipport[1] <= '9') { /* port only -> assume localhost */
+                        ipport[1] >= '0' && ipport[1] <= '9') { // port only -> assume localhost
                         erg->tcp = GBS_global_string_copy("localhost%s", ipport);
                     }
                     else {

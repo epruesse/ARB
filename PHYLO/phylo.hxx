@@ -130,8 +130,8 @@ class PHDATA : virtual Noncopyable {
         GBDATA       *gb_species_data_ptr;
         PHENTRY      *next;
         PHENTRY      *prev;
-        int           group_members; /* >0: this elem is grouphead */
-        elem         *first_member; /* !=NULL: elem is grouphead */
+        int           group_members; // >0: this elem is grouphead
+        elem         *first_member; // !=NULL: elem is grouphead
         bool          selected;
     };
     unsigned int last_key_number;

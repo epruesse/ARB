@@ -332,7 +332,7 @@ DbScanner *create_db_scanner(GBDATA         *gb_main,
     AW_root *aw_root = aws->get_root();
 
     GB_push_transaction(gb_main);
-    /*!************* Create local AWARS *******************/
+    //!************* Create local AWARS ******************
     sprintf(buffer, "tmp/arbdb_scanner_%i/list", scanner_id);
     cbs->awarname_current_item = strdup(buffer);
     aw_root->awar_pointer(cbs->awarname_current_item, 0, AW_ROOT_DEFAULT);
@@ -355,14 +355,14 @@ DbScanner *create_db_scanner(GBDATA         *gb_main,
     cbs->gb_edit     = 0;
     cbs->scannermode = scannermode;
 
-    /*!************* Create the delete button ****************/
+    //!************* Create the delete button ***************
     if (delete_pos_fig) {
         aws->at(delete_pos_fig);
         aws->callback((AW_CB)scanner_delete_selected_field, (AW_CL)cbs, 0);
         aws->create_button("DELETE_DB_FIELD", "DELETE", "D");
     }
 
-    /*!************* Create the enable edit selector ****************/
+    //!************* Create the enable edit selector ***************
     if (edit_enable_pos_fig) {
         aws->at(edit_enable_pos_fig);
         aws->callback((AW_CB1)remap_edit_box, (AW_CL)cbs);
@@ -390,7 +390,7 @@ DbScanner *create_db_scanner(GBDATA         *gb_main,
         aws->create_text_field(cbs->awarname_editfield, 20, 10);
     }
 
-    /*!************* Create the rescan button ****************/
+    //!************* Create the rescan button ***************
     if (rescan_pos_fig) {
         aws->at(rescan_pos_fig);
         aws->callback(cbs->selector.selection_list_rescan_cb, (AW_CL)cbs->gb_main, (AW_CL)type_filter);

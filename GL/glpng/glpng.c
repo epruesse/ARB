@@ -23,7 +23,7 @@
  * http://arb-home.de/
  */
 
-#ifdef _WIN32 /* Stupid Windows needs to include windows.h before gl.h */
+#ifdef _WIN32 // Stupid Windows needs to include windows.h before gl.h
 #undef FAR
 #include <windows.h>
 #endif
@@ -42,7 +42,7 @@
 #define PNG_CHECK_SIG(header,size) (png_sig_cmp(header,0,size)==0)
 #endif
 
-/* Used to decide if GL/gl.h supports the paletted extension */
+// Used to decide if GL/gl.h supports the paletted extension
 #ifdef GL_COLOR_INDEX1_EXT
 #define SUPPORTS_PALETTE_EXT
 #endif
@@ -73,11 +73,11 @@ static GLint MaxTextureSize = 0;
  */
 #ifdef _MAC
 static double screenGamma = 2.2 / 1.45;
-#else /* PC/default */
+#else // PC/default
 static double screenGamma = 2.2 / 1.0;
 #endif
 
-static char gammaExplicit = 0;  /* if  */
+static char gammaExplicit = 0;  // if
 
 static void checkForGammaEnv()
 {
@@ -91,7 +91,7 @@ static void checkForGammaEnv()
     }
 }
 
-/* Returns a safe texture size to use (ie a power of 2), based on the current texture size "i" */
+// Returns a safe texture size to use (ie a power of 2), based on the current texture size "i"
 static int SafeSize(int i) {
     int p;
 
@@ -104,7 +104,7 @@ static int SafeSize(int i) {
     return MaxTextureSize;
 }
 
-/* Resize the texture since gluScaleImage doesn't work on everything */
+// Resize the texture since gluScaleImage doesn't work on everything
 static void Resize(int components, const png_bytep d1, int w1, int h1, png_bytep d2, int w2, int h2) {
     const float sx = (float) w1/w2, sy = (float) h1/h2;
     int x, y, xx, yy, c;
@@ -227,7 +227,7 @@ static int HalfSize(GLint components, GLint width, GLint height, const unsigned 
 
 #undef GET
 
-/* Replacement for gluBuild2DMipmaps so GLU isn't needed */
+// Replacement for gluBuild2DMipmaps so GLU isn't needed
 static void Build2DMipmaps(GLint components, GLint width, GLint height, GLenum format, const unsigned char *data, int filter) {
     int level = 0;
     unsigned char *d = (unsigned char *) malloc((width/2)*(height/2)*components+4);
@@ -306,7 +306,7 @@ int APIENTRY pngLoadRawF(FILE *fp, pngRawInfo *pinfo) {
     pinfo->Height = height;
     pinfo->Depth  = depth;
 
-    /* --GAMMA-- */
+    // --GAMMA--
     checkForGammaEnv();
     if (png_get_gAMA(png, info, &fileGamma))
         png_set_gamma(png, screenGamma, fileGamma);
@@ -447,7 +447,7 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
         if (color == PNG_COLOR_TYPE_PALETTE)
             png_set_expand(png);
 
-    /* --GAMMA-- */
+    // --GAMMA--
     checkForGammaEnv();
     if (png_get_gAMA(png, info, &fileGamma))
         png_set_gamma(png, screenGamma, fileGamma);
@@ -476,7 +476,7 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
 
         png_bytep data2 = (png_bytep) malloc(rw*rh*channels);
 
-        /* Doesn't work on certain sizes */
+        // Doesn't work on certain sizes
         /*              if (gluScaleImage(glformat, width, height, GL_UNSIGNED_BYTE, data, rw, rh, GL_UNSIGNED_BYTE, data2) != 0)
                         return 0;
         */
@@ -487,7 +487,7 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
         data  = data2;
     }
 
-    { /* OpenGL stuff */
+    { // OpenGL stuff
         glGetIntegerv(GL_PACK_ALIGNMENT, &pack);
         glGetIntegerv(GL_UNPACK_ALIGNMENT, &unpack);
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -653,7 +653,7 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
 
         glPixelStorei(GL_PACK_ALIGNMENT, pack);
         glPixelStorei(GL_UNPACK_ALIGNMENT, unpack);
-    } /* OpenGL end */
+    } // OpenGL end
 
     png_read_end(png, endinfo);
     png_destroy_read_struct(&png, &info, &endinfo);

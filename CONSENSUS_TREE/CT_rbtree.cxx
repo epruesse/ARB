@@ -8,7 +8,7 @@
 //                                                               //
 // ============================================================= //
 
-/* Reconstruct GBT-tree from Ntree */
+// Reconstruct GBT-tree from Ntree
 
 #include "CT_rbtree.hxx"
 #include "CT_mem.hxx"
@@ -22,20 +22,20 @@
 static const CharPtrArray *name_tbl = NULL;
 
 void rb_init(const CharPtrArray& names) {
-    /* Initialize the module */
+    // Initialize the module
     name_tbl = &names; // @@@ use a copy for safety ? 
 }
 
 
 char *get_name(int idx) {
-    /* get the name of a leaf from the index */
+    // get the name of a leaf from the index
     char *t;
     t = strdup((*name_tbl)[idx]);
     return t;
 }
 
 
-/* build a remark with the percentage representation of the partition */
+// build a remark with the percentage representation of the partition
 char *rb_remark(const char *info, int perc, char *txt)
 {
     char *txt2;
@@ -54,8 +54,8 @@ char *rb_remark(const char *info, int perc, char *txt)
 }
 
 
-/* doing all the work for rb_gettree() :-) */
-/* convert a Ntree into a GBT-Tree */
+// doing all the work for rb_gettree() :-)
+// convert a Ntree into a GBT-Tree
 RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
 {
     NSONS *nsonp;
@@ -69,11 +69,11 @@ RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
 
     gbtnode->father = father;
 
-    info->node = gbtnode;                                /* return-information */
+    info->node = gbtnode;                                // return-information
     info->percent = tree->part->percent;
     info->len = tree->part->len;
     nsonp = tree->son_list;
-    if (!nsonp) {                                        /* if node is leaf */
+    if (!nsonp) {                                        // if node is leaf
         idx = calc_index(tree->part);
         gbtnode->name = strdup(get_name(idx));
         gbtnode->is_leaf = true;
@@ -85,7 +85,7 @@ RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
         gbtnode->remark_branch = rb_remark("", info->percent, gbtnode->remark_branch);
     }
 
-    /* leftson */
+    // leftson
     info_res = rbtree(nsonp->node, gbtnode);
     gbtnode->leftson = info_res->node;
     gbtnode->leftlen = info_res->len;
@@ -94,7 +94,7 @@ RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
     nsonp = nsonp->next;
     if (!nsonp) return info;
 
-    /* rightson */
+    // rightson
     info_res = rbtree(nsonp->node, gbtnode);
     gbtnode->rightson = info_res->node;
     gbtnode->rightlen = info_res->len;
@@ -104,7 +104,7 @@ RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
 }
 
 
-/* reconstruct GBT Tree from Ntree. Ntree is not destructed afterwards! */
+// reconstruct GBT Tree from Ntree. Ntree is not destructed afterwards!
 GBT_TREE *rb_gettree(NT_NODE *tree)
 {
     RB_INFO *info;

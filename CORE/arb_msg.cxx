@@ -16,7 +16,7 @@
 #include <smartptr.h>
 #include <arb_handlers.h>
  
-/* AISC_MKPT_PROMOTE:#ifndef _GLIBCXX_CSTDLIB */
+// AISC_MKPT_PROMOTE:#ifndef _GLIBCXX_CSTDLIB
 // AISC_MKPT_PROMOTE:#include <cstdlib>
 // AISC_MKPT_PROMOTE:#endif
 // AISC_MKPT_PROMOTE:#ifndef ARB_CORE_H

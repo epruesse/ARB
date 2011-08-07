@@ -1,12 +1,12 @@
-/* ============================================================== */
+// ==============================================================
 /*                                                                */
-/*   File      : struct_man.c                                     */
-/*   Purpose   :                                                  */
+//   File      : struct_man.c
+//   Purpose   :
 /*                                                                */
-/*   Institute of Microbiology (Technical University Munich)      */
-/*   http://www.arb-home.de/                                      */
+//   Institute of Microbiology (Technical University Munich)
+//   http://www.arb-home.de/
  /*                                                                */
- /* ============================================================== */
+ // ==============================================================
 
 
 #include <aisc.h>
@@ -16,10 +16,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* AISC_MKPT_PROMOTE:struct aisc_hash_node; */
+// AISC_MKPT_PROMOTE:struct aisc_hash_node;
 
-/* --------------------- */
-/*      hash tables      */
+// ---------------------
+//      hash tables
 
 
 #define CORE
@@ -135,8 +135,8 @@ long aisc_read_hash(aisc_hash_node **table, const char *key) {
     return 0;
 }
 
-/* ---------------------- */
-/*      link control      */
+// ----------------------
+//      link control
 
 const char *aisc_link(dllpublic_ext *father, dllheader_ext *object) {
     if (!object) {
@@ -326,7 +326,7 @@ void trf_begin() {
 }
 
 void trf_commit(int errors) {
-    /* if errors == 1 then print errors and CORE */
+    // if errors == 1 then print errors and CORE
     int i;
     struct trf_dest_struct *tds, *ntds;
     struct trf_struct *ts, *nts;
@@ -355,8 +355,8 @@ void trf_commit(int errors) {
     }
 }
 
-/* ------------------------------ */
-/*      bytestring functions      */
+// ------------------------------
+//      bytestring functions
 
 int aisc_server_dllint_2_bytestring(dllpublic_ext * pb, bytestring *bs, int offset)
 {

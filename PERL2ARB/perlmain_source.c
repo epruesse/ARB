@@ -61,7 +61,7 @@ main(int argc, char **argv, char **env)
     return exitstatus;
 }
 
-/* Register any extra external extensions */
+// Register any extra external extensions
 
 EXTERN_C void boot_ARB (pTHX_ CV* cv);
 EXTERN_C void boot_DynaLoader (pTHX_ CV* cv);
@@ -77,7 +77,7 @@ xs_init(pTHX)
 	newXS("ARB::bootstrap", boot_ARB, file);
     }
     {
-	/* DynaLoader is a special case */
+	// DynaLoader is a special case
 
 	newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
     }

@@ -321,16 +321,16 @@ static void CPRO_maketables(char isamino, char countgaps)
             CPRO.convtable[(unsigned char)'a'+i] = i+1+GAP;
             CPRO.convtable[(unsigned char)'A'+i] = i+1+GAP;
         }
-        CPRO.convtable[(unsigned char)'*'] = 10+GAP;    /* 'J' */
+        CPRO.convtable[(unsigned char)'*'] = 10+GAP;    // 'J'
 
         for (i=0; i<MAX_AMINOS; i++) CPRO.grouptable[i] = 0;
 
 #define SC(x, P) CPRO.grouptable[(unsigned char)P-(unsigned char)'A'+1+GAP] = x
-        SC(1, 'P'); SC(1, 'A'); SC(1, 'G'); SC(1, 'S'); SC(1, 'T'); /* PAGST */
-        SC(2, 'Q'); SC(2, 'N'); SC(2, 'E'); SC(2, 'D'); SC(2, 'B'); SC(2, 'Z'); /* QNEDBZ */
-        SC(3, 'H'); SC(3, 'K'); SC(3, 'R'); /* HKR */
-        SC(4, 'L'); SC(4, 'I'); SC(4, 'V'); SC(4, 'M'); /* LIVM */
-        SC(5, 'F'); SC(5, 'Y'); SC(5, 'W'); /* FYW */
+        SC(1, 'P'); SC(1, 'A'); SC(1, 'G'); SC(1, 'S'); SC(1, 'T'); // PAGST
+        SC(2, 'Q'); SC(2, 'N'); SC(2, 'E'); SC(2, 'D'); SC(2, 'B'); SC(2, 'Z'); // QNEDBZ
+        SC(3, 'H'); SC(3, 'K'); SC(3, 'R'); // HKR
+        SC(4, 'L'); SC(4, 'I'); SC(4, 'V'); SC(4, 'M'); // LIVM
+        SC(5, 'F'); SC(5, 'Y'); SC(5, 'W'); // FYW
 #undef SC
     }
 }
@@ -554,9 +554,9 @@ static void CPRO_calculate_cb(AW_window *aw, AW_CL which_statistic)
     AW_root *awr=aw->get_root();
     char *align=awr->awar("cpro/alignment")->read_string();
     char *marked=awr->awar("cpro/which_species")->read_string();
-    char versus=0; /* all vs all */
-    if (!(strcmp("marked", marked))) versus=1; /* marked vs marked */
-    if (!(strcmp("markedall", marked))) versus=2; /* marked vs all */
+    char versus=0; // all vs all
+    if (!(strcmp("marked", marked))) versus=1; // marked vs marked
+    if (!(strcmp("markedall", marked))) versus=2; // marked vs all
     GB_ERROR faultmessage;
     free(marked);
 
@@ -610,13 +610,13 @@ static void CPRO_calculate_cb(AW_window *aw, AW_CL which_statistic)
     free(countgapsstring);
     CPRO.result[which_statistic].countgaps=(long)countgaps;
 
-    /* create convtable and grouptable */
+    // create convtable and grouptable
     CPRO_maketables(isamino, countgaps);
     CPRO.result[which_statistic].ratio=awr->awar("cpro/transratio")->read_float();
     CPRO.grouprate=1-(0.5/CPRO.result[which_statistic].ratio);
     CPRO.distancecorrection=(CPRO.result[which_statistic].ratio+1)*2.0/3.0;
 
-    /* fill the CPRO.statistic table */
+    // fill the CPRO.statistic table
     CPRO_makestatistic(speciesdata, speciesdatabase, (char)which_statistic);
     // GBUSE(success);
     CPRO_workupstatistic((char)which_statistic);
@@ -635,7 +635,7 @@ static void CPRO_calculate_cb(AW_window *aw, AW_CL which_statistic)
 
 static void CPRO_memrequirement_cb(AW_root *aw_root)
 {
-    char  versus = 0; /* all vs all */
+    char  versus = 0; // all vs all
     {
         char *marked = aw_root->awar("cpro/which_species")->read_string();
         
@@ -856,7 +856,7 @@ void CPRO_drawstatistic (AW_device *device, unsigned char which_statistic)
     float betweendistance=30.0;
     float firstavailable=.65;
     float secondavailable=.35;
-    /* points are in the areas and without the frame */
+    // points are in the areas and without the frame
     float topfirst, leftfirst, widthfirst, highfirst;
     float topsecond, leftsecond, widthsecond, highsecond;
     float highboth;
@@ -889,7 +889,7 @@ void CPRO_drawstatistic (AW_device *device, unsigned char which_statistic)
 
     device->text(GC_black, "column", leftdistance+82, 14, 0, 1, 0);
 
-    /* draw grid and inscribe axes */
+    // draw grid and inscribe axes
     char buf[30];
     long gridx, gridy;
     float xpos=leftdistance, ypos;
@@ -925,7 +925,7 @@ void CPRO_drawstatistic (AW_device *device, unsigned char which_statistic)
     if ((CPRO.column<1)||(CPRO.column>CPRO.result[which_statistic].maxalignlen))
         return;
 
-    /* fill first box */
+    // fill first box
     float accu, confidinterval;
     float step=widthfirst/CPRO.result[which_statistic].resolution;
     float linelength=step/CPRO.maxdistance;
@@ -977,7 +977,7 @@ void CPRO_drawstatistic (AW_device *device, unsigned char which_statistic)
     device->text(GC_black, buf, leftsecond-43, topsecond+10*1, 0, 1, 0);
     device->text(GC_black, "  pairs", leftsecond-50, topsecond+10*3, 0, 1, 0);
 
-    /* fill second box */
+    // fill second box
     for (firstx=0; firstx<(long)widthsecond; firstx++) {
         long res = firstx*CPRO.result[which_statistic].resolution /widthsecond*CPRO.maxdistance;
         resaccu  = CPRO_statisticaccumulation(res, bio2info(CPRO.column), which_statistic);
@@ -1594,7 +1594,7 @@ AP_open_cprofile_window(AW_root *aw_root)
     aws->at("xpert"); aws->callback(AW_POPUP, (AW_CL)CPRO_xpert_cb, 0);
     aws->create_button("EXPERT_OPTIONS", "expert...", "x");
 
-    /* start action by button */
+    // start action by button
     aws->button_length(17);
     aws->at("calculate1"); aws->callback(AW_POPUP, (AW_CL)CPRO_calculatewin_cb, 0);
     aws->create_button("GO_STAT_1", "calculate as\nstatistic 1 ...", "c");

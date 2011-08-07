@@ -332,7 +332,7 @@ void LoadData(char *filen) {
     if (Find2(filen, "gde") != 0)
         strcpy(FileName, filen);
 
-    if (strstr(filen, ".arb") || strchr(filen, ':')) {  /* ARBDB TYPE */
+    if (strstr(filen, ".arb") || strchr(filen, ':')) {  // ARBDB TYPE
         if (DataSet == NULL) {
             DataSet = (NA_Alignment *) Calloc(1,
                                               sizeof(NA_Alignment));
@@ -813,9 +813,9 @@ int WriteStatus(NA_Alignment *aln, char *filename, int method)
     }
     fprintf(file, "File_format: %s\n", FileFormat==GENBANK ? "genbank" : "flat");
 
-    this_seq = &(aln->element[1]); /* Nadd->cursor !? */
+    this_seq = &(aln->element[1]); // Nadd->cursor !?
     if (this_seq->id[0]) fprintf(file, "sequence-ID %s\n", this_seq->id);
-    fprintf(file, "Column: %d\nPos:%d\n", 1, 1); /* NAdd->cursor_x,NAdd->position */
+    fprintf(file, "Column: %d\nPos:%d\n", 1, 1); // NAdd->cursor_x,NAdd->position
     switch (this_seq->elementtype)
     {
         case DNA:

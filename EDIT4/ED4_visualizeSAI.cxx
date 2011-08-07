@@ -77,7 +77,7 @@ static const char *getClrDefAwar(const char *awarName) {
 }
 #undef BUFSIZE
 
-/* --------------------------------------------------------- */
+// ---------------------------------------------------------
 
 static void setVisualizeSAI_cb(AW_root *awr) {
     ED4_ROOT->visualizeSAI = awr->awar(AWAR_SAI_ENABLE)->read_int();
@@ -160,7 +160,7 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
             }
 
             {
-                GBS_strstruct *clrDefStr = GBS_stropen(500);            /* create output stream */
+                GBS_strstruct *clrDefStr = GBS_stropen(500);            // create output stream
                 for (int i=0; i<10; i++) {
                     awr->awar_string(getAwarName(i))->write_string((char *)s[i]);
 
@@ -609,7 +609,7 @@ const char *ED4_getSaiColorString(AW_root *awr, int start, int end) {
 }
 
 
-/* -------------------- Creating Windows and Display dialogs -------------------- */
+// -------------------- Creating Windows and Display dialogs --------------------
 
 static AW_window *create_copyColorTranslationTable_window(AW_root *aw_root) { // creates copy color translation table window
     AW_window_simple *aws = new AW_window_simple;
