@@ -8,7 +8,6 @@
 //                                                                 //
 // =============================================================== //
 
-#include "map_viewer.hxx"
 #include "nt_internal.h"
 #include "ntree.hxx"
 #include "nt_cb.hxx"
@@ -28,6 +27,7 @@
 #include <arb_progress.h>
 #include <aw_root.hxx>
 
+#include <arbdbt.h>
 #include <adGene.h>
 #include <arb_version.h>
 
@@ -526,7 +526,6 @@ int main(int argc, char **argv) {
     AW_root *aw_root = AWT_create_root(".arb_prop/ntree.arb", "ARB_NT");
 
     GLOBAL_NT.awr = aw_root;
-    MapViewer_set_default_root(aw_root);            // set default for launch_MapViewer_cb (as long as no info-box was opened)
 
     // create some early awars
     // Note: normally you don't like to add your awar-init-function here, but into nt_create_all_awars()

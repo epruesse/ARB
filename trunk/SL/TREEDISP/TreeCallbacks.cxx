@@ -14,7 +14,6 @@
 #include <aw_advice.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
-#include <awt.hxx>
 
 #include <cctype>
 
@@ -88,7 +87,7 @@ void nt_mode_event(AW_window */*aws*/, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
             break;
     }
 
-    awt_assert(strlen(text) < AWAR_FOOTER_MAX_LEN); // text too long!
+    td_assert(strlen(text) < AWAR_FOOTER_MAX_LEN); // text too long!
 
     ntw->awr->awar(AWAR_FOOTER)->write_string(text);
     ntw->set_mode(mode);
@@ -123,7 +122,7 @@ static int nt_species_has_alignment(GBDATA *gb_species, void *cd_use) {
 
 static int nt_sequence_is_partial(GBDATA *gb_species, void *cd_partial) {
     long wanted  = (long)cd_partial;
-    awt_assert(wanted == 0 || wanted == 1);
+    td_assert(wanted == 0 || wanted == 1);
     int partial = GBT_is_partial(gb_species, 1-wanted, 0);
 
     return partial == wanted;
@@ -168,7 +167,7 @@ void NT_mark_all_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
             break;
         }
         default:
-            awt_assert(0); // illegal mode
+            td_assert(0); // illegal mode
             break;
     }
 
@@ -202,7 +201,7 @@ void NT_mark_tree_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
             break;
         }
         default:
-            awt_assert(0); // illegal mode
+            td_assert(0); // illegal mode
             break;
     }
     ntw->refresh();
@@ -234,7 +233,7 @@ static int mark_nontree_cb(GBDATA *gb_species, void *cb_data) {
                 mark_me = nt_species_has_alignment(gb_species, data->ali);
                 break;
             default:
-                awt_assert(0); // illegal mode
+                td_assert(0); // illegal mode
                 break;
         }
     }
@@ -277,7 +276,7 @@ void NT_mark_color_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
     GB_transaction gb_dummy(ntw->gb_main);
 
     int color_group = mark_mode>>4;
-    awt_assert(mark_mode&(4|8)); // either 4 or 8 has to be set
+    td_assert(mark_mode&(4|8)); // either 4 or 8 has to be set
     bool mark_matching = (mark_mode&4) == 4;
     mark_mode    = mark_mode&3;
 
@@ -289,7 +288,7 @@ void NT_mark_color_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
                 case 0: GB_write_flag(gb_species, 0); break;
                 case 1: GB_write_flag(gb_species, 1); break;
                 case 2: GB_write_flag(gb_species, !GB_read_flag(gb_species)); break;
-                default: awt_assert(0); break;
+                default: td_assert(0); break;
             }
         }
     }
@@ -313,7 +312,7 @@ void NT_insert_color_mark_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_c
         case 0: label_base = "all_unmark_color"; break;
         case 1: label_base = "all_mark_color"; break;
         case 2: label_base = "all_invert_mark_color"; break;
-        default: awt_assert(0); break;
+        default: td_assert(0); break;
     }
 
     for (int all_but = 0; all_but <= 1; ++all_but) {
@@ -400,7 +399,7 @@ static void nt_insert_mark_topic(AW_window_menu_modes *awm, AW_active mask, cons
 
 static void nt_insert_mark_topics(AW_window_menu_modes *awm, AW_active mask, AWT_canvas *ntw, int affect, const char *attrib)
 {
-    awt_assert(affect == (affect&MARK_MODE_UPPER_BITS)); // only bits 2 .. 4 are allowed
+    td_assert(affect == (affect&MARK_MODE_UPPER_BITS)); // only bits 2 .. 4 are allowed
 
     nt_insert_mark_topic(awm, mask, attrib, "mark_all",            "Mark all %sSpecies%s",                    "M", "sp_mrk_all.hlp",    (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(1+affect));
     nt_insert_mark_topic(awm, mask, attrib, "unmark_all",          "Unmark all %sSpecies%s",                  "U", "sp_umrk_all.hlp",   (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(0+affect));
@@ -492,7 +491,7 @@ void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntr
 #define MAXLABEL 30
 #define MAXENTRY (AW_COLOR_GROUP_NAME_LEN+10)
 
-    awt_assert(ntree_canvas != 0);
+    td_assert(ntree_canvas != 0);
 
     awm->insert_sub_menu("Group all except Color ...", "C");
 
@@ -754,7 +753,7 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, AW_CL auto_expand_groups) {
                 ntw->zoom_reset_and_refresh();
                 break;
             }
-            default: awt_assert(0); break;
+            default: td_assert(0); break;
         }
     }
     free(name);
@@ -796,7 +795,7 @@ void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, AW_CL expose) {
                 else msg         = GBS_global_string("%i duplicate%s", duplicates, plural(duplicates));
             }
             else {
-                awt_assert(zombies);
+                td_assert(zombies);
                 msg = GBS_global_string("%i zombie%s", zombies, plural(zombies));
             }
             aw_message(GBS_global_string("%s in '%s'", msg, tree_name));
@@ -812,7 +811,7 @@ void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, AW_CL expose) {
 
 void NT_recompute_cb(AW_window *, AWT_canvas *ntw, AW_CL cl2) {
     AWT_graphic_tree *gt = dynamic_cast<AWT_graphic_tree*>(ntw->tree_disp);
-    awt_assert(gt);
+    td_assert(gt);
 
     gt->get_root_node()->compute_tree(ntw->gb_main);
     AWT_expose_cb (ntw->aww, ntw, cl2);

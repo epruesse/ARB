@@ -18,6 +18,8 @@
 #include <awt_canvas.hxx>
 #endif
 
+#define td_assert(cond) arb_assert(cond)
+
 #define AWAR_DTREE_BASELINEWIDTH   "awt/dtree/baselinewidth"
 #define AWAR_DTREE_VERICAL_DIST    "awt/dtree/verticaldist"
 #define AWAR_DTREE_AUTO_JUMP       "awt/dtree/autojump"

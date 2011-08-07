@@ -456,7 +456,6 @@ ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ED4_naligner.o: $(ARBHOME)/INCLUDE/awt.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -534,13 +533,14 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt.hxx
-ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_no_class.o: $(ARBHOME)/INCLUDE/item_sel_list.h
+ED4_no_class.o: $(ARBHOME)/INCLUDE/items.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/st_window.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -894,7 +894,6 @@ ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/awt.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx

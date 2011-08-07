@@ -264,3 +264,13 @@ GEN_position *Location::create_GEN_position() const {
 }
 
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#include <test_unit.h>
+
+void TEST_gene_location() {
+    // TEST_ASSERT(0); // @@@ works - keep it
+}
+
+#endif // UNIT_TESTS

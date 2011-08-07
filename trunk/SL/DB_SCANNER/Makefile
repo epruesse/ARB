@@ -1,19 +1,14 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 
-.SUFFIXES: .o .c .cxx .depend
+.SUFFIXES: .o .cxx .depend
 
-C_OBJECTS = 
-CPP_OBJECTS = db_scanner.o 
-OBJECTS=$(C_OBJECTS) $(CPP_OBJECTS)
+OBJECTS=$(subst .cxx,.o,$(wildcard *.cxx))
 
 $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
-
-.c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -60,8 +55,8 @@ db_scanner.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-db_scanner.o: $(ARBHOME)/INCLUDE/awt.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/cb.h
 db_scanner.o: $(ARBHOME)/INCLUDE/dupstr.h
+db_scanner.o: $(ARBHOME)/INCLUDE/items.h
 db_scanner.o: $(ARBHOME)/INCLUDE/smartptr.h
 db_scanner.o: $(ARBHOME)/INCLUDE/test_global.h

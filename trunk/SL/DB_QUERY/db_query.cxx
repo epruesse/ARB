@@ -1,17 +1,18 @@
-// ================================================================ //
-//                                                                  //
-//   File      : AWT_query_and_functions.cxx                        //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
+// ============================================================ //
+//                                                              //
+//   File      : db_query.cxx                                   //
+//   Purpose   : Database queries                               //
+//                                                              //
+//   Institute of Microbiology (Technical University Munich)    //
+//   http://www.arb-home.de/                                    //
+//                                                              //
+// ============================================================ //
 
-#include "awt.hxx"
-#include "awtlocal.hxx"
-#include "awt_item_sel_list.hxx"
-#include "awt_config_manager.hxx"
+#include "db_query.h"
+#include "db_query_local.h"
+
+#include <item_sel_list.h>
+#include <awt_config_manager.hxx>
 
 #include <aw_advice.hxx>
 #include <aw_color_groups.hxx>
@@ -21,12 +22,13 @@
 #include <arb_progress.h>
 #include <aw_root.hxx>
 
-#include <arbdbt.h>
 #include <arb_strbuf.h>
 #include <arb_sort.h>
 
 #include <list>
 #include <string>
+
+#define dbq_assert(cond) arb_assert(cond)
 
 using namespace std;
 
@@ -36,7 +38,7 @@ using namespace std;
 #define AWAR_COLORIZE "tmp/dbquery_all/colorize"
 
 inline void SET_QUERIED(GBDATA *gb_species, DbQuery *cbs, const char *hitInfo, size_t hitInfoLen = 0) {
-    awt_assert(hitInfo);
+    dbq_assert(hitInfo);
 
     GB_write_usr_private(gb_species, cbs->select_bit | GB_read_usr_private(gb_species));
 
@@ -82,6 +84,14 @@ static void awt_query_create_global_awars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_int(AWAR_COLORIZE, 0, aw_def);
 }
 
+GBDATA *query_get_gb_main(DbQuery *cbs) {
+    return cbs->gb_main;
+}
+
+const struct ad_item_selector *get_queried_itemtype(DbQuery *query) {
+    return query->selector;
+}
+
 enum AWT_EXT_QUERY_TYPES {
     AWT_EXT_QUERY_NONE,
     AWT_EXT_QUERY_COMPARE_LINES,
@@ -91,6 +101,14 @@ enum AWT_EXT_QUERY_TYPES {
 awt_query_struct::awt_query_struct() {
     memset((char *)this, 0, sizeof(awt_query_struct));
     select_bit = 1;
+}
+
+bool awt_query_struct::is_queried(GBDATA *gb_item) const {
+    return select_bit & GB_read_usr_private(gb_item);
+}
+
+bool IS_QUERIED(GBDATA *gb_item, const DbQuery *dq) {
+    return dq->is_queried(gb_item);
 }
 
 long awt_count_queried_items(DbQuery *cbs, AWT_QUERY_RANGE range) {
@@ -155,7 +173,7 @@ static AWT_QUERY_RESULT_ORDER split_sort_mask(unsigned long sort_mask, AWT_QUERY
 
     for (int o = 0; o<MAX_CRITERIA; o++) {
         order[o] = AWT_QUERY_RESULT_ORDER(sort_mask&AWT_QUERY_SORT_CRITERIA_MASK);
-        awt_assert(order[o] == (order[o]&AWT_QUERY_SORT_CRITERIA_MASK));
+        dbq_assert(order[o] == (order[o]&AWT_QUERY_SORT_CRITERIA_MASK));
 
         if (first == AWT_QUERY_SORT_NONE) {
             if (order[o] & (AWT_QUERY_SORT_BY_1STFIELD_CONTENT|AWT_QUERY_SORT_BY_HIT_DESCRIPTION)) {
@@ -392,7 +410,7 @@ long awt_query_update_list(void *, DbQuery *cbs) {
                 if (!info) info = "<no hit info>";
             }
 
-            awt_assert(info);
+            dbq_assert(info);
             const char *line = GBS_global_string("%c %-*s :%s",
                                                  GB_read_flag(sorted[i]) ? '*' : ' ',
                                                  name_len, name,
@@ -669,7 +687,7 @@ public:
             switch (op) {
                 case AND: both += "&&"; break;
                 case OR: both  += "||"; break;
-                default: awt_assert(0); break;
+                default: dbq_assert(0); break;
             }
             both += ' '+mine;
             mine  = both;
@@ -684,7 +702,7 @@ public:
 };
 
 void awt_query::initFields(DbQuery *cbs, int idx, awt_query_operator aqo, AW_root *aw_root) {
-    awt_assert(aqo == OR || aqo == AND);
+    dbq_assert(aqo == OR || aqo == AND);
 
     error         = 0;
     lastACIresult = 0;
@@ -753,8 +771,8 @@ awt_query *awt_query::remove_tail() {
         while (body_last->next && body_last->next->next) {
             body_last = body_last->next;
         }
-        awt_assert(body_last->next);
-        awt_assert(body_last->next->next == 0);
+        dbq_assert(body_last->next);
+        dbq_assert(body_last->next->next == 0);
 
         tail            = body_last->next;
         body_last->next = 0;
@@ -763,7 +781,7 @@ awt_query *awt_query::remove_tail() {
 }
 
 void awt_query::append(awt_query *tail) {
-    awt_assert(this != tail);
+    dbq_assert(this != tail);
     if (next) next->append(tail);
     else next = tail;
 }
@@ -778,7 +796,7 @@ void awt_query::negate() {
         switch (tail->op) {
             case AND: tail->op = OR; break;
             case OR: tail->op  = AND; break;
-            default: awt_assert(0); break;
+            default: dbq_assert(0); break;
         }
 
         append(tail);
@@ -889,7 +907,7 @@ void awt_query::detect_query_type() {
         else type = AQT_EXACT_MATCH;
     }
 
-    awt_assert(type != AQT_INVALID || error);
+    dbq_assert(type != AQT_INVALID || error);
 }
 
 bool awt_query::matches(const char *data, GBDATA *gb_item) const {
@@ -898,8 +916,8 @@ bool awt_query::matches(const char *data, GBDATA *gb_item) const {
 
     bool hit = false;
 
-    awt_assert(data);
-    awt_assert(gb_item);
+    dbq_assert(data);
+    dbq_assert(gb_item);
 
     if (error) hit = false;
     else switch (type) {
@@ -978,7 +996,7 @@ bool awt_query::matches(const char *data, GBDATA *gb_item) const {
             break;
         }
         case AQT_INVALID: {                     // invalid
-            awt_assert(0);
+            dbq_assert(0);
             freedup(error, "Invalid search expression");
             hit   = false;
             break;
@@ -1079,7 +1097,7 @@ static void awt_do_query(void *, DbQuery *cbs, AW_CL cl_ext_query) {
                             }
 
                             if (this_hit) {
-                                awt_assert(!hit_reason.empty());
+                                dbq_assert(!hit_reason.empty());
                                 SET_QUERIED(gb_item, cbs, hit_reason.c_str(), hit_reason.length());
                             }
                             else CLEAR_QUERIED(gb_item, cbs);
@@ -1158,7 +1176,7 @@ static void awt_do_query(void *, DbQuery *cbs, AW_CL cl_ext_query) {
                                 if (!data) error = GB_await_error();
 
                                 while (data) {
-                                    awt_assert(ext_query == AWT_EXT_QUERY_NONE);
+                                    dbq_assert(ext_query == AWT_EXT_QUERY_NONE);
                                     bool        matched    = this_query->matches(data, gb_item); // includes not-op
                                     const char *reason_key = 0;
 
@@ -1205,19 +1223,19 @@ static void awt_do_query(void *, DbQuery *cbs, AW_CL cl_ext_query) {
 
                                         if (gb_key) {
                                             data = GB_read_as_string(gb_key);
-                                            awt_assert(data);
+                                            dbq_assert(data);
                                         }
                                     }
                                 }
 
                                 if (this_hit && match_field == AQFT_ALL_FIELDS) {
-                                    awt_assert(this_hit_reason.empty());
+                                    dbq_assert(this_hit_reason.empty());
                                     this_hit_reason = this_query->shallMatch() ? "<matched all fields>" : "<matched no field>";
                                 }
 
 
                                 if (this_hit) {
-                                    awt_assert(!this_hit_reason.empty()); // if we got a hit, we also need a reason
+                                    dbq_assert(!this_hit_reason.empty()); // if we got a hit, we also need a reason
                                     const char *prefix = GBS_global_string("%c%c", '1'+this_query->getIndex(), this_query->shallMatch() ? ' ' : '!');
                                     this_hit_reason    = string(prefix)+this_hit_reason;
                                 }
@@ -1226,30 +1244,30 @@ static void awt_do_query(void *, DbQuery *cbs, AW_CL cl_ext_query) {
                                 // (Note: the operator of the 1st query is always OR)
                                 switch (this_op) {
                                     case AND: {
-                                        awt_assert(hit); // otherwise there was no need to run this sub-query
+                                        dbq_assert(hit); // otherwise there was no need to run this sub-query
                                         hit        = this_hit;
                                         hit_reason = hit_reason.empty() ? this_hit_reason : hit_reason+" & "+this_hit_reason;
                                         break;
                                     }
                                     case OR: {
-                                        awt_assert(!hit); // otherwise there was no need to run this sub-query
+                                        dbq_assert(!hit); // otherwise there was no need to run this sub-query
                                         hit        = this_hit;
                                         hit_reason = this_hit_reason;
                                         break;
                                     }
                                     default:
-                                        awt_assert(0);
+                                        dbq_assert(0);
                                         break;
                                 }
-                                awt_assert(!hit || !hit_reason.empty()); // if we got a hit, we also need a reason
+                                dbq_assert(!hit || !hit_reason.empty()); // if we got a hit, we also need a reason
                             }
                             break;
                         }
-                        default: awt_assert(0); break;
+                        default: dbq_assert(0); break;
                     }
 
                     if (hit) {
-                        awt_assert(!hit_reason.empty());
+                        dbq_assert(!hit_reason.empty());
 
                         if (mode == AWT_QUERY_REDUCE) {
                             string prev_info = getHitInfo(gb_item, cbs);
@@ -1282,7 +1300,7 @@ static void awt_do_query(void *, DbQuery *cbs, AW_CL cl_ext_query) {
 void awt_copy_selection_list_2_queried_species(DbQuery *cbs, AW_selection_list *id, const char *hit_description) {
     GB_transaction ta(cbs->gb_main);
 
-    awt_assert(strstr(hit_description, "%s")); // hit_description needs '%s' (which is replaced by visible content of 'id')
+    dbq_assert(strstr(hit_description, "%s")); // hit_description needs '%s' (which is replaced by visible content of 'id')
 
     GB_ERROR         error     = 0;
     AW_window       *aww       = cbs->aws;
@@ -1383,7 +1401,7 @@ void awt_search_equal_entries(AW_window *, DbQuery *cbs, bool tokenize) {
                 break;
             }
             default: {
-                awt_assert(0);
+                dbq_assert(0);
                 hashsize = 0;
                 break;
             }
@@ -1527,7 +1545,7 @@ void awt_do_pars_list(void *, DbQuery *cbs) {
                 break;
             }
             default: {
-                awt_assert(0);
+                dbq_assert(0);
                 abort = true;
                 break;
             }
@@ -1762,7 +1780,7 @@ static void awt_mark_colored(AW_window *aww, AW_CL cl_cmd, AW_CL cl_mode) {
                     case 0: marked = 0; break;
                     case 1: marked = 1; break;
                     case 2: marked = !marked; break;
-                    default: awt_assert(0); break;
+                    default: dbq_assert(0); break;
                 }
 
                 GB_write_flag(gb_item, marked);
@@ -1789,7 +1807,7 @@ static GBDATA *get_colorset_root(const color_save_data *csd) {
     GBDATA *gb_colorsets = GB_search(gb_main, "colorsets", GB_CREATE_CONTAINER);
     GBDATA *gb_item_root = GB_search(gb_colorsets, csd->items_name, GB_CREATE_CONTAINER);
 
-    awt_assert(gb_item_root);
+    dbq_assert(gb_item_root);
     return gb_item_root;
 }
 
@@ -1905,7 +1923,7 @@ static GB_ERROR restore_colorset_representation(const color_save_data *csd, cons
 
     while (colorset) {
         const char *equal = strchr(colorset, '=');
-        awt_assert(equal);
+        dbq_assert(equal);
         const char *semi  = strchr(equal, ';');
 
         int size = equal-colorset;
@@ -1914,7 +1932,7 @@ static GB_ERROR restore_colorset_representation(const color_save_data *csd, cons
             freeset(buffer, (char*)malloc(buffersize));
         }
 
-        awt_assert(buffer && buffersize>size);
+        dbq_assert(buffer && buffersize>size);
         memcpy(buffer, colorset, size);
         buffer[size] = 0;       // now buffer contains the item id
 
@@ -1946,7 +1964,7 @@ static void awt_loadsave_colorset(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
     else {
         GB_transaction ta(csd->cmd->gb_main);
         GBDATA *gb_colorset_root = get_colorset_root(csd);
-        awt_assert(gb_colorset_root);
+        dbq_assert(gb_colorset_root);
 
         GBDATA *gb_colorset_name = GB_find_string(gb_colorset_root, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
         GBDATA *gb_colorset      = gb_colorset_name ? GB_get_father(gb_colorset_name) : 0;
@@ -1956,7 +1974,7 @@ static void awt_loadsave_colorset(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
                 if (!gb_colorset) error = GB_await_error();
                 else error              = GBT_write_string(gb_colorset, "name", name);
             }
-            awt_assert(gb_colorset || error);
+            dbq_assert(gb_colorset || error);
 
             if (!error) {
                 char *colorset = create_colorset_representation(csd, error);
@@ -1990,7 +2008,7 @@ static void awt_loadsave_colorset(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
                     }
                 }
                 else {
-                    awt_assert(mode == 3); // delete-mode
+                    dbq_assert(mode == 3); // delete-mode
                     error = GB_delete(gb_colorset);
                 }
             }
@@ -2014,7 +2032,7 @@ static AW_window *awt_create_loadsave_colored_window(AW_root *aw_root, AW_CL cl_
     color_save_data     *csd  = (color_save_data*)cl_csd;
     AWT_QUERY_ITEM_TYPE  type = csd->cmd->sel->type;
 
-    awt_assert(type<AWT_QUERY_ITEM_TYPES);
+    dbq_assert(type<AWT_QUERY_ITEM_TYPES);
 
     if (!aw_loadsave[type]) {
         // init window
@@ -2038,7 +2056,7 @@ static AW_window *awt_create_loadsave_colored_window(AW_root *aw_root, AW_CL cl_
         aws->at("name");
         aws->create_input_field(AWT_COLOR_LOADSAVE_NAME, 60);
 
-        awt_assert(csd->sel_id == 0);
+        dbq_assert(csd->sel_id == 0);
         aws->at("list");
         csd->sel_id = aws->create_selection_list(AWT_COLOR_LOADSAVE_NAME, 0, 0, 0, 0);
         csd->aww    = aws;
@@ -2102,14 +2120,14 @@ static AW_window *create_awt_colorizer_window(AW_root *aw_root, GBDATA *gb_main,
     AW_window_simple *aws = new AW_window_simple;
 
     if (cbs) {
-        awt_assert(mode == AWT_COL_INVALID);
+        dbq_assert(mode == AWT_COL_INVALID);
         mode = AWT_COL_COLORIZE_LISTED;
     }
     if (sel) {
-        awt_assert(mode == AWT_COL_INVALID);
+        dbq_assert(mode == AWT_COL_INVALID);
         mode = AWT_COL_COLORIZE_MARKED;
     }
-    awt_assert(!(mode == AWT_COL_INVALID));
+    dbq_assert(!(mode == AWT_COL_INVALID));
 
     const ad_item_selector *Sel  = mode == AWT_COL_COLORIZE_LISTED ? cbs->selector : sel;
     const char             *what = mode == AWT_COL_COLORIZE_LISTED ? "listed" : "marked";
@@ -2249,7 +2267,7 @@ AW_window *create_awt_open_parser(AW_root *aw_root, DbQuery *cbs)
         case AWT_QUERY_ITEM_SPECIES:     sellst = "mod_fields*.sellst"; break;
         case AWT_QUERY_ITEM_GENES:       sellst = "mod_gene_fields*.sellst"; break;
         case AWT_QUERY_ITEM_EXPERIMENTS: sellst = "mod_experiment_fields*.sellst"; break;
-        default: awt_assert(0); break;
+        default: dbq_assert(0); break;
     }
 
     GB_ERROR error = sellst
@@ -2293,7 +2311,7 @@ void awt_do_set_list(void *, DbQuery *cbs, long append) {
             }
         }
     }
-    awt_assert(gb_key_type || error);
+    dbq_assert(gb_key_type || error);
 
     for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, cbs->aws->get_root(), QUERY_ALL_ITEMS);
          !error && gb_item_container;
@@ -2460,99 +2478,6 @@ void awt_toggle_flag(AW_window *aww, DbQuery *cbs) {
     awt_query_update_list(aww, cbs);
 }
 
-//  -----------------------------------------------------
-//      struct ad_item_selector AWT_species_selector
-//  -----------------------------------------------------
-
-static GBDATA *awt_get_first_species_data(GBDATA *gb_main, AW_root *, AWT_QUERY_RANGE) {
-    return GBT_get_species_data(gb_main);
-}
-static GBDATA *awt_get_next_species_data(GBDATA *, AWT_QUERY_RANGE) {
-    return 0; // there is only ONE species_data
-}
-
-static void awt_select_species(GBDATA*,  AW_root *aw_root, const char *item_name) {
-    aw_root->awar(AWAR_SPECIES_NAME)->write_string(item_name);
-}
-
-static GBDATA* awt_get_selected_species(GBDATA *gb_main, AW_root *aw_root) {
-    char   *species_name = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
-    GBDATA *gb_species   = 0;
-    if (species_name[0]) {
-        gb_species = GBT_find_species(gb_main, species_name);
-    }
-    free(species_name);
-    return gb_species;
-}
-
-static char* awt_get_species_id(GBDATA *, GBDATA *gb_species) {
-    // awt_get_species_id creates the label that occurs in the search and query result list
-    GBDATA *gb_name = GB_entry(gb_species, "name");
-    if (!gb_name) return 0;     // species w/o name -> skip
-    return GB_read_as_string(gb_name);
-}
-
-static GBDATA *awt_find_species_by_id(GBDATA *gb_main, const char *id) {
-    return GBT_find_species(gb_main, id); // id is 'name' field
-}
-
-static GBDATA *awt_get_first_species(GBDATA *gb_species_data, AWT_QUERY_RANGE range) {
-    GBDATA *gb_first = NULL;
-    switch (range) {
-        case QUERY_ALL_ITEMS:    gb_first = GBT_first_species_rel_species_data(gb_species_data); break;
-        case QUERY_MARKED_ITEMS: gb_first = GBT_first_marked_species_rel_species_data(gb_species_data); break;
-        case QUERY_CURRENT_ITEM: gb_first = awt_get_selected_species(GB_get_root(gb_species_data), AW_root::SINGLETON); break;
-    }
-    return gb_first;
-}
-static GBDATA *awt_get_next_species(GBDATA *gb_prev, AWT_QUERY_RANGE range) {
-    GBDATA *gb_next = NULL;
-    switch (range) {
-        case QUERY_ALL_ITEMS:    gb_next = GBT_next_species(gb_prev); break;
-        case QUERY_MARKED_ITEMS: gb_next = GBT_next_marked_species(gb_prev); break;
-        case QUERY_CURRENT_ITEM: gb_next = NULL; break;
-    }
-    return gb_next;
-}
-
-struct ad_item_selector AWT_species_selector = {
-    AWT_QUERY_ITEM_SPECIES,
-    awt_select_species,
-    awt_get_species_id,
-    awt_find_species_by_id,
-    (AW_CB)awt_selection_list_update_cb,
-    12,
-    CHANGE_KEY_PATH,
-    "species",
-    "species",
-    "name",
-    awt_get_first_species_data,
-    awt_get_next_species_data,
-    awt_get_first_species,
-    awt_get_next_species,
-    awt_get_selected_species,
-    0, 0,
-};
-
-struct ad_item_selector AWT_organism_selector = {
-    AWT_QUERY_ITEM_SPECIES,
-    awt_select_species,
-    awt_get_species_id,
-    awt_find_species_by_id,
-    (AW_CB)awt_selection_list_update_cb,
-    12,
-    CHANGE_KEY_PATH,
-    "organism",
-    "organism",
-    "name",
-    awt_get_first_species_data,
-    awt_get_next_species_data,
-    awt_get_first_species,
-    awt_get_next_species,
-    awt_get_selected_species,
-    0, 0,
-};
-
 static void awt_new_selection_made(AW_root *aw_root, AW_CL cl_awar_selection, AW_CL cl_cbs) {
     const char *awar_selection = (const char *)cl_awar_selection;
     DbQuery    *cbs            = (DbQuery *)cl_cbs;
@@ -2622,7 +2547,7 @@ DbQuery *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs, const cha
         for (int key_id = 0; key_id<AWT_QUERY_SEARCHES; ++key_id) {
             sprintf(buffer, "tmp/dbquery_%s/key_%i", query_id, key_id);
             cbs->awar_keys[key_id] = strdup(buffer);
-            awt_assert(default_key[key_id] != 0);
+            dbq_assert(default_key[key_id] != 0);
             aw_root->awar_string(cbs->awar_keys[key_id], default_key[key_id], AW_ROOT_DEFAULT);
 
             sprintf(buffer, "tmp/dbquery_%s/query_%i", query_id, key_id);
@@ -2815,7 +2740,7 @@ DbQuery *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs, const cha
         aws->update_option_menu();
     }
     else {
-        awt_assert(0); // hmm - no sort button here. -> tell ralf where this happens
+        dbq_assert(0); // hmm - no sort button here. -> tell ralf where this happens
     }
 
     if (awtqs->do_mark_pos_fig) {
@@ -2893,7 +2818,7 @@ DbQuery *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs, const cha
         sprintf(buffer, "Set Color of Listed %s", Items);    query_rel_menu_entry(aws, "set_color_of_listed", query_id, buffer, "C", "set_color_of_listed.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_awt_listed_items_colorizer, (AW_CL)cbs);
 
         if (cbs->gb_ref) {
-            awt_assert(cbs->selector->type == AWT_QUERY_ITEM_SPECIES); // stuff below works only for species
+            dbq_assert(cbs->selector->type == AWT_QUERY_ITEM_SPECIES); // stuff below works only for species
             aws->insert_separator();
             if (cbs->expect_hit_in_ref_list) {
                 aws->insert_menu_topic("search_equal_fields_and_listed_in_I", "Search entries existing in both DBs and listed in the DB I hitlist", "S",
@@ -2915,3 +2840,4 @@ DbQuery *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs, const cha
     GB_pop_transaction(gb_main);
     return cbs;
 }
+

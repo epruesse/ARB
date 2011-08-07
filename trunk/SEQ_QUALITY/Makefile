@@ -71,7 +71,6 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-SQ_functions.o: $(ARBHOME)/INCLUDE/awt.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/downcast.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -108,7 +107,6 @@ SQ_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-SQ_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/cb.h

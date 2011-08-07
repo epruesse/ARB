@@ -11,8 +11,7 @@
 #include "ntree.hxx"
 #include "nt_cb.hxx"
 
-#include <awt_item_sel_list.hxx>
-#include <awt.hxx>
+#include <item_sel_list.h>
 #include <aw_awar.hxx>
 #include <arb_progress.h>
 #include <aw_msg.hxx>

@@ -117,12 +117,7 @@ AW_window *NT_open_select_alignment_window(AW_root *awr)
     return aws;
 }
 
-void NT_system_cb(AW_window *aww, AW_CL command, AW_CL auto_help_file)
-{
-    char *sys = (char *)command;
-    if (auto_help_file) {
-        AW_POPUP_HELP(aww, auto_help_file);
-    }
-    GBCMC_system(GLOBAL_gb_main, sys);
+void NT_system_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file) {
+    AW_system(aww, GLOBAL_gb_main, (const char *)cl_command, (const char *)cl_auto_help_file);
 }
 

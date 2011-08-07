@@ -22,19 +22,15 @@
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
-#ifndef AWT_HXX
-#include "awt.hxx"
-#endif
 #ifndef _GLIBCXX_SET
 #include <set>
 #endif
 #ifndef DBITEM_SET_H
 #include <dbitem_set.h>
 #endif
-
-
-class AW_root;
-class AW_window;
+#ifndef ITEMS_H
+#include <items.h>
+#endif
 
 namespace RefEntries {
 

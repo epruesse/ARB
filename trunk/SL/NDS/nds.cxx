@@ -8,16 +8,20 @@
 //                                                                  //
 // ================================================================ //
 
-#include "awt_nds.hxx"
-#include "awt_config_manager.hxx"
-#include "awt_sel_boxes.hxx"
-#include "awt.hxx"
+#include "nds.h"
+#include <awt_config_manager.hxx>
+#include <awt_sel_boxes.hxx>
 
+#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <arbdbt.h>
+#include <items.h>
+
+
+#define nds_assert(cond) arb_assert(cond)
 
 #define NDS_PER_PAGE 10         // number of NDS definitions on each config-page
 #define NDS_PAGES     6         // how many config-pages (each has NDS_PER_PAGE definitions)
@@ -57,7 +61,7 @@ struct NodeTextBuilder {
     }
 
     void insert_overflow_warning() {
-        awt_assert(space_left >= 0); // <0 means 'already warned'
+        nds_assert(space_left >= 0); // <0 means 'already warned'
         while (space_left) {
             *bp++ = ' ';
             space_left--;
@@ -81,9 +85,9 @@ struct NodeTextBuilder {
         }
     }
     void append(const char *str, int length = -1) {
-        awt_assert(str);
+        nds_assert(str);
         if (length == -1) length = strlen(str);
-        awt_assert(int(strlen(str)) == length);
+        nds_assert(int(strlen(str)) == length);
 
         if (space_left >= length) {
             strcpy(bp, str);
@@ -105,7 +109,7 @@ struct NodeTextBuilder {
 } *awt_nds_ms = 0;
 
 inline const char *viewkeyAwarName(int i, const char *name) {
-    awt_assert(i >= 0 && i < NDS_PER_PAGE);
+    nds_assert(i >= 0 && i < NDS_PER_PAGE);
     return GBS_global_string("tmp/viewkeys/viewkey_%i/%s", i, name);
 }
 
@@ -126,11 +130,11 @@ static void map_viewkey(AW_root *aw_root, AW_default awdef, int i, GBDATA *gb_vi
     GBDATA *gb_group    = GB_entry(gb_viewkey, "group");
     GBDATA *gb_leaf     = GB_entry(gb_viewkey, "leaf");
 
-    awt_assert(gb_key_text);
-    awt_assert(gb_pars);
-    awt_assert(gb_len1);
-    awt_assert(gb_group);
-    awt_assert(gb_leaf);
+    nds_assert(gb_key_text);
+    nds_assert(gb_pars);
+    nds_assert(gb_len1);
+    nds_assert(gb_group);
+    nds_assert(gb_leaf);
 
     AW_awar *Awar;
     Awar = viewkeyAwar(aw_root, awdef, i, "key_text", true); Awar->map(gb_key_text);
@@ -171,8 +175,8 @@ static void map_viewkeys(AW_root *aw_root, AW_CL cl_awdef, AW_CL cl_gb_main) {
 
         for (int i = 0; i <= i2; i++) {
             gb_viewkey = !gb_viewkey ? GB_entry(gb_arb_presets, "viewkey") : GB_nextEntry(gb_viewkey);
-            awt_assert(i<NDS_COUNT);
-            awt_assert(gb_viewkey);
+            nds_assert(i<NDS_COUNT);
+            nds_assert(gb_viewkey);
             if (i >= i1) map_viewkey(aw_root, awdef, i-i1, gb_viewkey);
         }
     }
@@ -730,7 +734,7 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
                         awt_nds_ms->append(spaced, nds_len);
                     }
                     else {
-                        awt_assert(mode == NDS_OUTPUT_LEAFTEXT);
+                        nds_assert(mode == NDS_OUTPUT_LEAFTEXT);
                         awt_nds_ms->append(str, str_len);
                     }
                 }
@@ -819,3 +823,4 @@ char *make_node_text_list(GBDATA * gbd, FILE *fp)
     *bp = 0;
     return awt_nds_ms->buf;
 }
+

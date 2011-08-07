@@ -10,7 +10,7 @@
 
 #include "TreeDisplay.hxx"
 
-#include <awt_nds.hxx>
+#include <nds.h>
 #include <aw_awars.hxx>
 
 using namespace AW;

@@ -177,7 +177,6 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MP_noclass.o: $(ARBHOME)/INCLUDE/awt.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/cb.h

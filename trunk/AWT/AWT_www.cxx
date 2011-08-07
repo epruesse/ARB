@@ -11,6 +11,7 @@
 #include "awt_config_manager.hxx"
 #include "awt.hxx"
 
+#include <aw_window.hxx>
 #include <aw_global_awars.hxx>
 #include <aw_awars.hxx>
 #include <aw_root.hxx>

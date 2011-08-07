@@ -14,8 +14,8 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
-#ifndef AWT_NDS_HXX
-#include <awt_nds.hxx>
+#ifndef NDS_H
+#include <nds.h>
 #endif
 
 typedef void        (*TREE_make_node_text_init)(GBDATA *gb_main);

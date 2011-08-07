@@ -27,6 +27,13 @@
 #ifndef AW_ROOT_HXX
 #include <aw_root.hxx>
 #endif
+#ifndef AW_WINDOW_HXX
+#include <aw_window.hxx>
+#endif
+#ifndef AWT_HXX
+#include "awt.hxx"
+#endif
+
 
 #ifndef _GLIBCXX_MAP
 #include <map>

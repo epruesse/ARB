@@ -1,6 +1,6 @@
 // ==================================================================== //
 //                                                                      //
-//   File      : AWT_item_sel_list.cxx                                  //
+//   File      : item_sel_list.cxx                                      //
 //   Purpose   : selection lists for items (ad_item_selector)           //
 //                                                                      //
 //                                                                      //
@@ -11,8 +11,7 @@
 //                                                                      //
 // ==================================================================== //
 
-#include "awt_item_sel_list.hxx"
-#include "awt.hxx"
+#include "item_sel_list.h"
 
 #include <aw_awars.hxx>
 #include <arbdbt.h>
