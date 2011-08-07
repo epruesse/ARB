@@ -203,10 +203,10 @@ inline bool wantPrototypeFor(const char *name) {
 
 // ----------------------------------------
 
-typedef struct word {
-    struct word *next;
-    char   string[1];
-} Word;
+struct Word {
+    Word *next;
+    char  string[1];
+};
 
 // Routines for manipulating lists of words.
 

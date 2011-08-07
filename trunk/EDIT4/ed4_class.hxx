@@ -1019,11 +1019,11 @@ public:
     virtual ~ED4_terminal();
 };
 
-typedef enum {
+enum ED4_species_mode {
     ED4_SM_MOVE,
     ED4_SM_KILL,
     ED4_SM_MARK
-} ED4_species_mode;
+};
 
 class ED4_reference_terminals : virtual Noncopyable {
     ED4_sequence_info_terminal *ref_sequence_info;
@@ -1276,7 +1276,7 @@ public:
     void reinit_char_table();
 };
 
-typedef enum {
+enum ED4_remap_mode {
     ED4_RM_NONE,                                    // no remapping (normal mode)
     ED4_RM_SHOW_ABOVE,                              // Show all positions, where xxx% of all edited sequences have any base
     ED4_RM_MAX_ALIGN,                               // ------------------------- any edited sequence has a base
@@ -1285,7 +1285,7 @@ typedef enum {
 
     ED4_RM_MODES
 
-} ED4_remap_mode;
+};
 
 class ED4_remap : virtual Noncopyable {
 

@@ -12,14 +12,14 @@
 #ifndef ED4_BLOCK_HXX
 #define ED4_BLOCK_HXX
 
-typedef enum {
+enum ED4_blocktype {
     ED4_BT_NOBLOCK,             // nothing is marked
     ED4_BT_LINEBLOCK,           // all species with EDIT4-marks are marked
     ED4_BT_COLUMNBLOCK,         // range is marked
     ED4_BT_MODIFIED_COLUMNBLOCK // was columnblock, but single species were removed/added
-} ED4_blocktype;
+};
 
-typedef enum {
+enum ED4_blockoperation_type {
     ED4_BO_UPPER_CASE,
     ED4_BO_LOWER_CASE,
     ED4_BO_REVERSE,
@@ -29,7 +29,7 @@ typedef enum {
     ED4_BO_UNALIGN_RIGHT,
     ED4_BO_SHIFT_LEFT,
     ED4_BO_SHIFT_RIGHT
-} ED4_blockoperation_type;
+};
 
 ED4_blocktype ED4_getBlocktype();
 void          ED4_setBlocktype(ED4_blocktype bt);

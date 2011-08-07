@@ -597,14 +597,14 @@ AW_window *GEN_create_layout_window(AW_root *awr) {
     return aws;
 }
 
-typedef enum {
+enum GEN_PERFORM_MODE {
     GEN_PERFORM_ALL_ORGANISMS,
     GEN_PERFORM_CURRENT_ORGANISM,
     GEN_PERFORM_ALL_BUT_CURRENT_ORGANISM,
     GEN_PERFORM_MARKED_ORGANISMS,
 
     GEN_PERFORM_MODES, // counter
-} GEN_PERFORM_MODE;
+};
 
 const char *GEN_PERFORM_MODE_id[GEN_PERFORM_MODES] = {
     "org_all",
@@ -617,7 +617,7 @@ inline string performmode_relative_id(const char *id, GEN_PERFORM_MODE pmode) {
     return GBS_global_string("%s_%s", GEN_PERFORM_MODE_id[pmode], id);
 }
 
-typedef enum {
+enum GEN_MARK_MODE {
     GEN_MARK,
     GEN_UNMARK,
     GEN_INVERT_MARKED,
@@ -634,9 +634,9 @@ typedef enum {
     GEN_MARK_VISIBLE,
     GEN_UNMARK_HIDDEN,
     GEN_UNMARK_VISIBLE
-} GEN_MARK_MODE;
+};
 
-typedef enum {
+enum GEN_HIDE_MODE {
     GEN_HIDE_ALL,
     GEN_UNHIDE_ALL,
     GEN_INVERT_HIDE_ALL,
@@ -644,7 +644,7 @@ typedef enum {
     GEN_HIDE_MARKED,
     GEN_UNHIDE_MARKED,
     GEN_INVERT_HIDE_MARKED
-} GEN_HIDE_MODE;
+};
 
 // --------------------------------------------------------------------------------
 

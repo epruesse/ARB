@@ -49,16 +49,16 @@ struct conAlignStruct {
     char              *seqType;
 };
 
-struct SPECIES_ConcatenateList {
+struct SpeciesConcatenateList {
     GBDATA *species;
     char   *species_name;
-    struct SPECIES_ConcatenateList *next;
-};
-typedef struct SPECIES_ConcatenateList *speciesConcatenateList;
 
-extern GBDATA               *GLOBAL_gb_main;
-static AW_selection_list    *con_alignment_list;
-static AW_selection_list    *db_alignment_list;
+    SpeciesConcatenateList *next;
+};
+
+extern GBDATA            *GLOBAL_gb_main;
+static AW_selection_list *con_alignment_list;
+static AW_selection_list *db_alignment_list;
 
 // --------------------------creating and initializing AWARS----------------------------------------
 void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def) {
@@ -389,34 +389,35 @@ void concatenateAlignments(AW_window *aws) {
     free(new_ali_name);
 }
 
-static void addSpeciesToConcatenateList(speciesConcatenateList *sclp, GB_CSTR species_name) {
+static void addSpeciesToConcatenateList(SpeciesConcatenateList **sclp, GB_CSTR species_name) {
 
     GBDATA *gb_species_data = GB_search(GLOBAL_gb_main, "species_data",  GB_CREATE_CONTAINER);
     GBDATA *gb_species      = GBT_find_species_rel_species_data(gb_species_data, species_name);
 
     if (gb_species) {
-        speciesConcatenateList scl = new SPECIES_ConcatenateList;
-        scl->species               = gb_species;
-        scl->species_name          = strdup(species_name);
-        scl->next                  = *sclp;
-        *sclp                      = scl;
+        SpeciesConcatenateList *scl = new SpeciesConcatenateList;
+
+        scl->species      = gb_species;
+        scl->species_name = strdup(species_name);
+        scl->next         = *sclp;
+        *sclp             = scl;
     }
 }
 
-static void freeSpeciesConcatenateList(speciesConcatenateList scl) {
+static void freeSpeciesConcatenateList(SpeciesConcatenateList *scl) {
     while (scl) {
-        speciesConcatenateList next = scl->next;
+        SpeciesConcatenateList *next = scl->next;
         free(scl->species_name);
         delete scl;
         scl = next;
     }
 }
 
-GB_ERROR checkAndMergeFields(GBDATA *gb_new_species, GB_ERROR error, speciesConcatenateList scl) {
+GB_ERROR checkAndMergeFields(GBDATA *gb_new_species, GB_ERROR error, SpeciesConcatenateList *scl) {
 
     char *doneFields = strdup(";name;"); // all fields which are already merged
     int   doneLen    = strlen(doneFields);
-    speciesConcatenateList sl = scl;
+    SpeciesConcatenateList *sl = scl;
     int  sl_length = 0; while (scl) { sl_length++; scl=scl->next; } // counting no. of similar species stored in the list
     int *fieldStat = new int[sl_length]; // 0 = not used yet ; -1 = doesn't have field ; 1..n = field content (same number means same content)
 
@@ -445,14 +446,15 @@ GB_ERROR checkAndMergeFields(GBDATA *gb_new_species, GB_ERROR error, speciesConc
                     for (i=0; i<sl_length; i++) { fieldStat[i] = 0; } // clear field status
 
                     while (doneSpecies<sl_length) { // since all species in list were handled
-                        speciesConcatenateList sl2 = sl; i = 0;
+                        SpeciesConcatenateList *sl2 = sl;
+                        i = 0;
 
                         while (sl2) {
                             if (fieldStat[i]==0) {
                                 gb_field = GB_search(sl2->species, fieldName, GB_FIND);
                                 if (gb_field) {
                                     char *content = GB_read_as_string(gb_field);
-                                    speciesConcatenateList sl3 = sl2->next;
+                                    SpeciesConcatenateList *sl3 = sl2->next;
                                     fieldStat[i] = nextStat;
                                     int j = i+1; doneSpecies++;
 
@@ -491,7 +493,7 @@ GB_ERROR checkAndMergeFields(GBDATA *gb_new_species, GB_ERROR error, speciesConc
                         int   new_content_len = 0;
 
                         if (nextStat==2) { // all species contain same field content or do not have the field
-                            speciesConcatenateList sl2 = sl;
+                            SpeciesConcatenateList *sl2 = sl;
                             while (sl2) {
                                 gb_field = GB_search(sl2->species, fieldName, GB_FIND);
                                 if (gb_field) {
@@ -506,7 +508,7 @@ GB_ERROR checkAndMergeFields(GBDATA *gb_new_species, GB_ERROR error, speciesConc
                             int actualStat;
                             for (actualStat=1; actualStat<nextStat; actualStat++) {
                                 int names_len = 1; // open bracket
-                                speciesConcatenateList sl2 = sl;
+                                SpeciesConcatenateList *sl2 = sl;
                                 char *content = 0; i = 0;
 
                                 while (sl2) {
@@ -568,7 +570,7 @@ GB_ERROR checkAndMergeFields(GBDATA *gb_new_species, GB_ERROR error, speciesConc
     return error;
 }
 
-GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speciesConcatenateList scl) {
+GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, SpeciesConcatenateList *scl) {
     GB_push_transaction(GLOBAL_gb_main);
 
     GB_ERROR  error           = 0;
@@ -603,7 +605,7 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
         GBT_get_alignment_names(ali_names, GLOBAL_gb_main);
 
         long id = 0;
-        for (speciesConcatenateList speciesList = scl; speciesList; speciesList = speciesList->next) {
+        for (SpeciesConcatenateList *speciesList = scl; speciesList; speciesList = speciesList->next) {
             for (int no_of_alignments = 0; ali_names[no_of_alignments]!=0; no_of_alignments++) {
                 GBDATA *gb_seq_data = GBT_read_sequence(speciesList->species, ali_names[no_of_alignments]);
                 if (gb_seq_data) {
@@ -683,8 +685,8 @@ static void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenate
         char    *merge_field_name = aw_root->awar(AWAR_CON_MERGE_FIELD)->read_string();
         char    *new_field_name   = aw_root->awar(AWAR_CON_STORE_SIM_SP_NO)->read_string();
 
-        speciesConcatenateList scl            = 0; // to build list of similar species
-        speciesConcatenateList newSpeciesList = 0;  // new SPECIES_ConcatenateList
+        SpeciesConcatenateList *scl            = 0; // to build list of similar species
+        SpeciesConcatenateList *newSpeciesList = 0;  // new SpeciesConcatenateList
 
         GB_begin_transaction(GLOBAL_gb_main);       // open database for transaction
 

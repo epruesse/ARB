@@ -16,7 +16,7 @@ class AW_device;
 class AW_clicked_line;
 class AW_clicked_text;
 
-typedef enum {
+enum AWT_COMMAND_MODE {
     AWT_MODE_NONE,
     AWT_MODE_SELECT,
     AWT_MODE_MARK,
@@ -40,7 +40,7 @@ typedef enum {
     AWT_MODE_OPTIMIZE,
     AWT_MODE_PROINFO,
     AWT_MODE_STRETCH
-} AWT_COMMAND_MODE;
+};
 
 #define STANDARD_PADDING 10
 

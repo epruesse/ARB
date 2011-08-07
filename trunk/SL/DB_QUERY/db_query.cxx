@@ -597,9 +597,9 @@ static GB_HASH *create_ref_hash(const DbQuery *query, const char *key, bool spli
 //  ------------------------
 //      class query_info
 
-typedef enum { ILLEGAL, AND, OR } query_operator;
+enum query_operator { ILLEGAL, AND, OR };
 
-typedef enum {
+enum query_type {
     AQT_INVALID,
     AQT_EMPTY,
     AQT_NON_EMPTY,
@@ -612,13 +612,13 @@ typedef enum {
     AQT_WILDCARD,
     AQT_REGEXPR,
     AQT_ACI,
-} query_type;
+};
 
-typedef enum {
+enum query_field_type {
     AQFT_EXPLICIT,                                  // query should match one explicit field
     AQFT_ANY_FIELD,                                 // query should match one field (no matter which)
     AQFT_ALL_FIELDS,                                // query should match all fields
-} query_field_type;
+};
 
 class query_info : virtual Noncopyable {
     query_operator op;                              // operator (AND or OR)

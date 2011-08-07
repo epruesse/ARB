@@ -43,13 +43,13 @@ void awt_create_dtree_awars(AW_root *aw_root, AW_default def);
 #define AWT_TREE(ntw) DOWNCAST(AWT_graphic_tree*, (ntw)->tree_disp)
 
 
-typedef enum {
+enum AP_tree_sort {
     AP_TREE_NORMAL, // normal tree display (dendrogram)
     AP_TREE_RADIAL, // radial tree display
     AP_TREE_IRS, // like AP_TREE_NORMAL, with folding line
     AP_LIST_NDS,
     AP_LIST_SIMPLE // simple display only showing name (used at startup to avoid NDS error messages)
-} AP_tree_sort;
+};
 
 inline bool sort_is_list_style(AP_tree_sort sort) { return sort == AP_LIST_NDS || sort == AP_LIST_SIMPLE; }
 inline bool sort_is_tree_style(AP_tree_sort sort) { return !sort_is_list_style(sort); }

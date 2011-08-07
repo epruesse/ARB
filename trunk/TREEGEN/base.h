@@ -5,15 +5,14 @@
 #include "defines.h"
 #endif
 
-typedef enum
-{
+enum BaseType {
     BASE_A,
     BASE_C,
     BASE_G,
     BASE_T,
     BASE_DEL
 
-} BaseType;
+};
 
 #define BASETYPES           4
 #define BASECHARS           (BASETYPES+1)
@@ -33,7 +32,7 @@ extern int  basesArePairing[BASECHARS][BASECHARS], // Kombination paarend?
             charIsDelete[],
             charIsHelical[];
 
-#define char2BaseType(c)    ((BaseType)baseCharType[(int)c])
+#define char2BaseType(c)    ((enum BaseType)baseCharType[(int)c])
 
 #ifdef __cplusplus
 extern "C" {

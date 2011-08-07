@@ -411,20 +411,20 @@ void setuptree(tree *tr, int numSp) {
         p->x      = (xarray *) NULL;
         p->tip    = (char *) NULL;
         p->number = i;
-        p->next   = (node *) NULL;
-        p->back   = (node *) NULL;
+        p->next   = (nodeptr) NULL;
+        p->back   = (nodeptr) NULL;
         tr->nodep[i] = p;
     }
 
     for (i = numSp+1; i <= 2*numSp-1 && ! anerror; i++) { // Internal nodes    **  was : 2*numSp-2 (ralf)
-        q = (node *) NULL;
+        q = (nodeptr) NULL;
         for (j = 1; j <= 3; j++) {
             if ((anerror = !(p = (nodeptr) malloc((unsigned) sizeof(node))))) break;
             p->x      = (xarray *) NULL;
             p->tip    = (char *) NULL;
             p->number = i;
             p->next   = q;
-            p->back   = (node *) NULL;
+            p->back   = (nodeptr) NULL;
             q = p;
         }
         if (anerror) break;
@@ -809,7 +809,7 @@ xarray *setupxarray() {
             x->g = data += endsite;
             x->t = data +  endsite;
             x->prev = x->next = x;
-            x->owner = (node *) NULL;
+            x->owner = (nodeptr) NULL;
         }
         else {
             free(x);
@@ -1319,7 +1319,7 @@ void treeReadLen(tree *tr, FILE *INFILE) {
     nodeptr  p;
     int  i, ch;
 
-    for (i = 1; i <= tr->mxtips; i++) tr->nodep[i]->back = (node *) NULL;
+    for (i = 1; i <= tr->mxtips; i++) tr->nodep[i]->back = (nodeptr) NULL;
     tr->start       = tr->nodep[tr->mxtips];
     tr->ntips       = 0;
     tr->nextnode    = tr->mxtips + 1;

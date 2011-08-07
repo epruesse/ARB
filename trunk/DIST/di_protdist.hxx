@@ -22,12 +22,12 @@ const int di_max_dist   = 10;   // max dist
 
 // stop is first non real AA == 20
 
-typedef enum {
+enum di_codetype {
     universal, ciliate, mito, vertmito, flymito, yeastmito
-} di_codetype;
-typedef enum {
+};
+enum di_cattype {
     none, similarity, kimura, pam, chemical, hall, george
-} di_cattype;
+};
 
 
 typedef double di_aa_matrix[di_max_aa][di_max_aa];

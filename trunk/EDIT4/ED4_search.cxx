@@ -43,8 +43,7 @@ const char *ED4_SearchPositionTypeId[SEARCH_PATTERNS+1] =
 
 // --------------------------------------------------------------------------------
 
-typedef struct S_SearchAwarList // contains names of awars
-{
+struct SearchAwarList { // contains names of awars
     const char *pattern,
         *min_mismatches,
         *max_mismatches,
@@ -58,8 +57,7 @@ typedef struct S_SearchAwarList // contains names of awars
         *show,
         *openFolded,
         *autoJump;
-
-} *SearchAwarList;
+}; 
 
 class SearchSettings : virtual Noncopyable {
     char            *pattern;
@@ -77,8 +75,7 @@ class SearchSettings : virtual Noncopyable {
 
 public:
 
-    void update(SearchAwarList awarList)
-    {
+    void update(SearchAwarList *awarList) {
         AW_root *root = ED4_ROOT->aw_root;
 
         freeset(pattern, root->awar(awarList->pattern)->read_string());
@@ -104,7 +101,7 @@ public:
         }
     }
 
-    SearchSettings(SearchAwarList awarList)     { pattern = 0; update(awarList); }
+    SearchSettings(SearchAwarList *awarList)    { pattern = 0; update(awarList); }
     ~SearchSettings()                           { delete pattern; }
 
     GB_CSTR get_pattern() const                 { return pattern; }
@@ -637,7 +634,7 @@ void SearchTree::findMatches(const char *seq, int len, reportMatch report)
     AWAR_NAME(t, OPEN_FOLDED),                  \
     AWAR_NAME(t, AUTO_JUMP)
 
-static struct S_SearchAwarList awar_list[SEARCH_PATTERNS] = {
+static struct SearchAwarList awar_list[SEARCH_PATTERNS] = {
     { AWAR_LIST(USER1) },
     { AWAR_LIST(USER2) },
     { AWAR_LIST(PROBE) },
@@ -1602,8 +1599,8 @@ static void load_search_paras_from_file(AW_window *aw, AW_CL cl_type) {
         error = GBS_global_string("File '%s' not found", filename);
     }
     else {
-        ED4_SearchPositionType type = ED4_SearchPositionType(cl_type);
-        SearchAwarList         al   = &awar_list[type];
+        ED4_SearchPositionType  type = ED4_SearchPositionType(cl_type);
+        SearchAwarList         *al   = &awar_list[type];
 
         while (1) {
             const int BUFFERSIZE = 10000;
@@ -1703,7 +1700,7 @@ static AW_window *save_search_parameters(AW_root *root, AW_CL cl_type) {
 
 
 static void search_init_config(AWT_config_definition& cdef, int search_type) {
-    SearchAwarList awarList = &awar_list[search_type];
+    SearchAwarList *awarList = &awar_list[search_type];
 
     cdef.add(awarList->show, "show");
     cdef.add(awarList->openFolded, "openFolded");
@@ -1739,9 +1736,9 @@ static void search_restore_config(AW_window *aww, const char *stored_string, AW_
 
 
 AW_window *ED4_create_search_window(AW_root *root, AW_CL cl) {
-    ED4_SearchPositionType type = ED4_SearchPositionType(cl);
-    SearchAwarList awarList = &awar_list[type];
-    AW_window_simple *aws = new AW_window_simple;
+    ED4_SearchPositionType  type     = ED4_SearchPositionType(cl);
+    SearchAwarList         *awarList = &awar_list[type];
+    AW_window_simple       *aws      = new AW_window_simple;
 
     ED4_aws_init(root, aws, "%s_search", "%s Search", ED4_SearchPositionTypeId[type]);
     aws->load_xfig("edit4/search.fig");

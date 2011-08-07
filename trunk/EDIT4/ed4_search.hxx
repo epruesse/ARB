@@ -12,20 +12,20 @@
 #ifndef ED4_SEARCH_HXX
 #define ED4_SEARCH_HXX
 
-typedef enum {
+enum ED4_SEARCH_CASE {
     ED4_SC_CASE_SENSITIVE,
     ED4_SC_CASE_INSENSITIVE
-} ED4_SEARCH_CASE;
+};
 
-typedef enum {
+enum ED4_SEARCH_TU {
     ED4_ST_T_NOT_EQUAL_U,
     ED4_ST_T_EQUAL_U
-} ED4_SEARCH_TU;
+};
 
-typedef enum {
+enum ED4_SEARCH_GAPS {
     ED4_SG_CONSIDER_GAPS,
     ED4_SG_IGNORE_GAPS
-} ED4_SEARCH_GAPS;
+};
 
 void       ED4_search(AW_window *aww, AW_CL searchDescriptor);
 GB_ERROR   ED4_repeat_last_search();
@@ -37,8 +37,7 @@ void       ED4_create_search_awars(AW_root *root);
 #define SEARCH_PATTERNS 9
 #define MAX_MISMATCHES  5
 
-typedef enum
-    {
+enum ED4_SearchPositionType {
     ED4_USER1_PATTERN,
     ED4_USER2_PATTERN,
     ED4_PROBE_PATTERN,
@@ -49,8 +48,7 @@ typedef enum
     ED4_SIG2_PATTERN,
     ED4_SIG3_PATTERN,
     ED4_ANY_PATTERN
-
-} ED4_SearchPositionType;
+};
 
 extern const char *ED4_SearchPositionTypeId[];
 
