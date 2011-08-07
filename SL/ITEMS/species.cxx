@@ -65,7 +65,7 @@ static GBDATA *get_next_species(GBDATA *gb_prev, QUERY_RANGE range) {
     return gb_next;
 }
 
-struct ItemSelector ITEM_species = {
+static struct MutableItemSelector ITEM_species = {
     QUERY_ITEM_SPECIES,
     select_species,
     get_species_id,
@@ -84,7 +84,7 @@ struct ItemSelector ITEM_species = {
     0, 0,
 };
 
-struct ItemSelector ITEM_organism = {
+static struct MutableItemSelector ITEM_organism = {
     QUERY_ITEM_SPECIES,
     select_species,
     get_species_id,
@@ -102,6 +102,9 @@ struct ItemSelector ITEM_organism = {
     get_selected_species,
     0, 0,
 };
+
+ItemSelector& SPECIES_get_selector() { return ITEM_species; }
+ItemSelector& ORGANISM_get_selector() { return ITEM_organism; }
 
 void popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_gb_main) {
     static AW_window_simple *aws = 0;
@@ -126,7 +129,7 @@ void popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, AW_CL
                                             aws,
                                             "tmp/viewkeys/key_text_select",
                                             FIELD_FILTER_NDS,
-                                            "scandb", "rescandb", &ITEM_species, 20, 10);
+                                            "scandb", "rescandb", SPECIES_get_selector(), 20, 10);
         aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
     }
     aws->activate();

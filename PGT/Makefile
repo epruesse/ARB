@@ -66,6 +66,7 @@ arb_interface.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_interface.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 arb_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_interface.o: $(ARBHOME)/INCLUDE/EXP.hxx
+arb_interface.o: $(ARBHOME)/INCLUDE/items.h
 arb_interface.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_interface.o: $(ARBHOME)/INCLUDE/test_global.h
 

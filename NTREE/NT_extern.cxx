@@ -38,7 +38,6 @@
 #include <awt_www.hxx>
 #include <nds.h>
 
-#include <items.h>
 #include <db_query.h>
 #include <dbui.h>
 
@@ -975,7 +974,7 @@ static void NT_create_mask_submenu(AW_window_menu_modes *awm) {
     AWT_create_mask_submenu(awm, AWT_IT_SPECIES, NT_open_mask_window, 0);
 }
 static AW_window *create_colorize_species_window(AW_root *aw_root) {
-    return QUERY::create_colorize_items_window(aw_root, GLOBAL_gb_main, &ITEM_species);
+    return QUERY::create_colorize_items_window(aw_root, GLOBAL_gb_main, SPECIES_get_selector());
 }
 
 void NT_update_marked_counter(AW_window *aww, long count) {
@@ -1079,7 +1078,7 @@ static ARB_ERROR mark_referred_species(GBDATA *gb_main, const DBItemSet& referre
 static AW_window *create_mark_by_refentries_window(AW_root *awr, AW_CL cl_gbmain) {
     static AW_window *aws = NULL;
     if (!aws) {
-        static RefEntries::ReferringEntriesHandler reh((GBDATA*)cl_gbmain, ITEM_species);
+        static RefEntries::ReferringEntriesHandler reh((GBDATA*)cl_gbmain, SPECIES_get_selector());
         aws = RefEntries::create_refentries_window(awr, &reh, "markbyref", "Mark by reference", "markbyref.hlp", NULL, "Mark referenced", mark_referred_species);
     }
     return aws;

@@ -884,7 +884,7 @@ static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, int option) 
                                             FIELD_FILTER_NDS,
                                             "field_select",
                                             0,
-                                            &ITEM_species,
+                                            SPECIES_get_selector(),
                                             20, 30,
                                             SelectedFields(SF_PSEUDO|SF_HIDDEN),
                                             "sel_merge_field");

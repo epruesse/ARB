@@ -15,6 +15,8 @@
 #include <items.h>
 #endif
 
+struct AW_selection_list;
+
 namespace QUERY {
 
     typedef AW_window *(*create_info_window_cb)(AW_root *aw_root, AW_CL cl_gb_main);
@@ -22,16 +24,18 @@ namespace QUERY {
     struct DbQuery;
 
     class query_spec {
+        ItemSelector& selector;                         // which kind of item do we handle?
+
     public:
-        query_spec();
+        query_spec(ItemSelector& selector_);
 
-        GBDATA *gb_main;                                // the main database (in merge tool: source db in left query; dest db in right query)
-        GBDATA *gb_ref;                                 // second reference database (only used by merge tool; dest db in left query; source db in right query)
-        bool    expect_hit_in_ref_list;                 // merge-tool: when searching dups in fields: match only if hit exists in other DBs hitlist (true for DBII-query)
-        AWAR    species_name;                           // AWAR containing current species name
-        AWAR    tree_name;                              // AWAR containing current tree name
+        ItemSelector& get_queried_itemtype() const { return selector; }
 
-        const struct ItemSelector *selector;               // which kind of item do we handle?
+        GBDATA       *gb_main;                          // the main database (in merge tool: source db in left query; dest db in right query)
+        GBDATA       *gb_ref;                           // second reference database (only used by merge tool; dest db in left query; source db in right query)
+        bool          expect_hit_in_ref_list;           // merge-tool: when searching dups in fields: match only if hit exists in other DBs hitlist (true for DBII-query)
+        AWAR          species_name;                     // AWAR containing current species name
+        AWAR          tree_name;                        // AWAR containing current tree name
 
         int select_bit;                                 // one of 1 2 4 8 .. 128 (one for each query box)
         int use_menu;                                   // put additional commands in menu
@@ -71,14 +75,14 @@ namespace QUERY {
     long     count_queried_items(DbQuery *query, QUERY_RANGE range);
     void     unquery_all(void *dummy, DbQuery *query);
 
-    const struct ItemSelector *get_queried_itemtype(DbQuery *query);
+    ItemSelector& get_queried_itemtype(DbQuery *query);
 
     inline bool IS_QUERIED(GBDATA *gb_item, const query_spec *aqs) { return aqs->is_queried(gb_item); }
     bool IS_QUERIED(GBDATA *gb_item, const DbQuery *query);
 
     void DbQuery_update_list(DbQuery *query);
 
-    AW_window *create_colorize_items_window(AW_root *aw_root, GBDATA *gb_main, const ItemSelector *sel);
+    AW_window *create_colorize_items_window(AW_root *aw_root, GBDATA *gb_main, ItemSelector& sel);
 
     GBDATA *query_get_gb_main(DbQuery *query);
     

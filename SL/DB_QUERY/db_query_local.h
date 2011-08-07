@@ -15,6 +15,9 @@
 #include <arbdbt.h>
 #endif
 
+#define dbq_assert(cond) arb_assert(cond)
+
+
 namespace QUERY {
 
     typedef enum {
@@ -49,9 +52,9 @@ namespace QUERY {
 
     struct DbQuery {
         AW_window         *aws;
-        GBDATA            *gb_main;                     // the main database (in merge tool: source db in left query; dest db in right query)
-        GBDATA            *gb_ref;                      // second reference database (only used by merge tool; dest db in left query; source db in right query)
-        bool               expect_hit_in_ref_list;      // merge-tool: when searching dups in fields: match only if hit exists in other DBs hitlist (true for DBII-query)
+        GBDATA            *gb_main;                       // the main database (in merge tool: source db in left query; dest db in right query)
+        GBDATA            *gb_ref;                        // second reference database (only used by merge tool; dest db in left query; source db in right query)
+        bool               expect_hit_in_ref_list;        // merge-tool: when searching dups in fields: match only if hit exists in other DBs hitlist (true for DBII-query)
         AWAR               species_name;
         const char        *tree_name;
         AWAR               awar_keys[QUERY_SEARCHES];
@@ -62,7 +65,7 @@ namespace QUERY {
         AWAR               awar_parsvalue;
         AWAR               awar_parspredefined;
         AWAR               awar_queries[QUERY_SEARCHES];
-        AWAR               awar_not[QUERY_SEARCHES]; // not flags for queries
+        AWAR               awar_not[QUERY_SEARCHES];      // not flags for queries
         AWAR               awar_operator[QUERY_SEARCHES]; // not flags for queries
         AWAR               awar_ere;
         AWAR               awar_where;
@@ -73,13 +76,17 @@ namespace QUERY {
         AWAR               awar_tag;
         AWAR               awar_count;
         AWAR               awar_sort;
-        unsigned long      sort_mask;                   // contains several cascading sort criteria (QUERY_SORT_CRITERIA_BITS each)
+        unsigned long      sort_mask;                     // contains several cascading sort criteria (QUERY_SORT_CRITERIA_BITS each)
         AW_selection_list *result_id;
-        int                select_bit;                  // one of 1 2 4 8 .. 128 (one for each query box)
+        ItemSelector&      selector;
+        int                select_bit;                    // one of 1 2 4 8 .. 128 (one for each query box)
+        GB_HASH           *hit_description;               // key = char* (hit item name), value = char* (description of hit - allocated!)
 
-        const ItemSelector *selector;
-
-        GB_HASH *hit_description; // key = char* (hit item name), value = char* (description of hit - allocated!)
+        DbQuery(ItemSelector& selector_)
+            : selector(selector_)
+        {
+            dbq_assert(&selector);
+        }
 
         bool is_queried(GBDATA *gb_item) const {
             return select_bit & GB_read_usr_private(gb_item);
