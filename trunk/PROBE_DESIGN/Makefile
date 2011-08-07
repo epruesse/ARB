@@ -72,6 +72,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/client_types.h
 probe_design.o: $(ARBHOME)/INCLUDE/downcast.h
 probe_design.o: $(ARBHOME)/INCLUDE/dupstr.h
 probe_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/items.h
 probe_design.o: $(ARBHOME)/INCLUDE/iupac.h
 probe_design.o: $(ARBHOME)/INCLUDE/PT_com.h
 probe_design.o: $(ARBHOME)/INCLUDE/servercntrl.h

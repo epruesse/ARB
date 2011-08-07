@@ -78,6 +78,8 @@ struct GEN_create_map_param {
 
 AW_window *GEN_create_map(AW_root *aw_root, AW_CL cl_GEN_create_map_param);
 
+GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data);
+
 // --------------------------------------------------------------------------------
 
 #else

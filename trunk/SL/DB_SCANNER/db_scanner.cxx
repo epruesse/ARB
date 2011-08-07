@@ -9,7 +9,6 @@
 // =============================================================== //
 
 #include <db_scanner.hxx>
-#include <items.h>
 
 #include <AW_rename.hxx>
 
@@ -32,10 +31,10 @@
 ***************************************************************************/
 
 #if defined(WARN_TODO)
-#warning derive db_scanner_data from AW_DB_selection
+#warning derive DbScanner from AW_DB_selection
 #endif
 
-struct db_scanner_data {
+struct DbScanner {
     AW_window         *aws;
     AW_root           *awr;
     GBDATA            *gb_main;
@@ -51,14 +50,32 @@ struct db_scanner_data {
     char *awarname_edit_enabled;
     char *awarname_mark;
 
-    const ItemSelector *selector;
+    ItemSelector& selector;
+
+    DbScanner(ItemSelector& selector_)
+        : selector(selector_),
+          aws(NULL),
+          awr(NULL),
+          gb_main(NULL),
+          id(NULL),
+          gb_user(NULL),
+          gb_edit(NULL),
+          may_be_an_error(false),
+          scannermode(DB_SCANNER),
+          awarname_editfield(NULL), 
+          awarname_current_item(NULL), 
+          awarname_edit_enabled(NULL), 
+          awarname_mark(NULL) 
+    {
+        arb_assert(&selector);
+    }
 };
 
 /* return the selected GBDATA pntr the should be no !!! running transaction and
    this function will begin a transaction */
 
 static GBDATA *get_mapped_item_and_begin_trans(AW_CL arbdb_scanid) {
-    db_scanner_data *cbs     = (db_scanner_data *)arbdb_scanid;
+    DbScanner *cbs     = (DbScanner *)arbdb_scanid;
     AW_root         *aw_root = cbs->aws->get_root();
 
     cbs->may_be_an_error = false;
@@ -74,14 +91,14 @@ static GBDATA *get_mapped_item_and_begin_trans(AW_CL arbdb_scanid) {
 
 
 
-static bool inside_scanner_keydata(db_scanner_data *cbs, GBDATA *gbd) {
+static bool inside_scanner_keydata(DbScanner *cbs, GBDATA *gbd) {
     // return true if 'gbd' is below keydata of scanner
     GBDATA *gb_key_data;
-    gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
+    gb_key_data = GB_search(cbs->gb_main, cbs->selector.change_key_path, GB_CREATE_CONTAINER);
     return GB_check_father(gbd, gb_key_data);
 }
 
-static void scanner_delete_selected_field(void *, db_scanner_data *cbs) {
+static void scanner_delete_selected_field(void *, DbScanner *cbs) {
     GBDATA *gbd = get_mapped_item_and_begin_trans((AW_CL)cbs);
     if (!gbd) {
         aw_message("Sorry, cannot perform your operation, please redo it");
@@ -96,7 +113,7 @@ static void scanner_delete_selected_field(void *, db_scanner_data *cbs) {
     GB_commit_transaction(cbs->gb_main);
 }
 
-static void selected_field_changed_cb(GBDATA *, db_scanner_data *cbs, GB_CB_TYPE gbtype) {
+static void selected_field_changed_cb(GBDATA *, DbScanner *cbs, GB_CB_TYPE gbtype) {
     AW_window *aws = cbs->aws;
     cbs->may_be_an_error = true;
 
@@ -120,7 +137,7 @@ static void selected_field_changed_cb(GBDATA *, db_scanner_data *cbs, GB_CB_TYPE
 }
 
 
-static void editfield_value_changed(void *, db_scanner_data *cbs)
+static void editfield_value_changed(void *, DbScanner *cbs)
 {
     char *value = cbs->aws->get_root()->awar(cbs->awarname_editfield)->read_string();
     int   vlen  = strlen(value);
@@ -160,9 +177,9 @@ static void editfield_value_changed(void *, db_scanner_data *cbs)
         else { // change old element
             key_name = GB_read_key(gbd);
             if (GB_get_father(gbd) == cbs->gb_user && strcmp(key_name, "name") == 0) { // This is a real rename !!!
-                const ItemSelector *selector = cbs->selector;
+                ItemSelector& selector = cbs->selector;
 
-                if (selector->type == QUERY_ITEM_SPECIES) { // species
+                if (selector.type == QUERY_ITEM_SPECIES) { // species
                     arb_progress progress("Renaming species");
                     char *name = nulldup(GBT_read_name(cbs->gb_user));
 
@@ -185,14 +202,14 @@ static void editfield_value_changed(void *, db_scanner_data *cbs)
                         GBDATA *gb_exists    = 0;
                         GBDATA *gb_item_data = GB_get_father(cbs->gb_user);
 
-                        for (gb_exists = selector->get_first_item(gb_item_data, QUERY_ALL_ITEMS);
+                        for (gb_exists = selector.get_first_item(gb_item_data, QUERY_ALL_ITEMS);
                              gb_exists;
-                             gb_exists = selector->get_next_item(gb_exists, QUERY_ALL_ITEMS))
+                             gb_exists = selector.get_next_item(gb_exists, QUERY_ALL_ITEMS))
                         {
                             if (ARB_stricmp(GBT_read_name(gb_exists), value) == 0) break;
                         }
 
-                        if (gb_exists) error = GBS_global_string("There is already a %s named '%s'", selector->item_name, value);
+                        if (gb_exists) error = GBS_global_string("There is already a %s named '%s'", selector.item_name, value);
                         else error           = GB_write_as_string(gbd, value);
                     }
                     else {
@@ -207,7 +224,7 @@ static void editfield_value_changed(void *, db_scanner_data *cbs)
                     error = GB_write_as_string(gbd, value);
                 }
                 else {
-                    GBDATA *gb_key = GBT_get_changekey(cbs->gb_main, key_name, cbs->selector->change_key_path);
+                    GBDATA *gb_key = GBT_get_changekey(cbs->gb_main, key_name, cbs->selector.change_key_path);
                     if (GB_child(gbd)) {
                         error = "Sorry, cannot perform a deletion.\n(The selected entry has child entries. Delete them first.)";
                     }
@@ -238,15 +255,15 @@ static void editfield_value_changed(void *, db_scanner_data *cbs)
     if (update_self) { // if the name changed -> rewrite awars AFTER transaction was closed
         GB_transaction ta(cbs->gb_main);
 
-        char *my_id = cbs->selector->generate_item_id(cbs->gb_main, cbs->gb_user);
-        cbs->selector->update_item_awars(cbs->gb_main, cbs->awr, my_id); // update awars (e.g. AWAR_SPECIES_NAME)
+        char *my_id = cbs->selector.generate_item_id(cbs->gb_main, cbs->gb_user);
+        cbs->selector.update_item_awars(cbs->gb_main, cbs->awr, my_id); // update awars (e.g. AWAR_SPECIES_NAME)
         free(my_id);
     }
 
     free(value);
 }
 
-static void toggle_marked_cb(AW_window *aws, db_scanner_data *cbs, char *awar_name)
+static void toggle_marked_cb(AW_window *aws, DbScanner *cbs, char *awar_name)
 {
     cbs->may_be_an_error = false;
     long flag = aws->get_root()->awar(awar_name)->read_int();
@@ -259,7 +276,7 @@ static void toggle_marked_cb(AW_window *aws, db_scanner_data *cbs, char *awar_na
     GB_pop_transaction(cbs->gb_main);
 }
 
-static void remap_edit_box(GBDATA *, db_scanner_data *cbs) {
+static void remap_edit_box(GBDATA *, DbScanner *cbs) {
     GBDATA *gbd;
     cbs->may_be_an_error = false;
     GB_push_transaction(cbs->gb_main);
@@ -290,29 +307,29 @@ static void remap_edit_box(GBDATA *, db_scanner_data *cbs) {
 
 
 
-static void scanner_changed_cb(GBDATA *dummy, db_scanner_data *cbs, GB_CB_TYPE gbtype);
+static void scanner_changed_cb(GBDATA *dummy, DbScanner *cbs, GB_CB_TYPE gbtype);
 
-AW_CL create_db_scanner(GBDATA             *gb_main, AW_window *aws,
-                        const char         *box_pos_fig,        // the position for the box in the xfig file
-                        const char         *delete_pos_fig,
-                        const char         *edit_pos_fig,
-                        const char         *edit_enable_pos_fig,
-                        DB_SCANNERMODE      scannermode,
-                        const char         *rescan_pos_fig,     // DB_VIEWER
-                        const char         *mark_pos_fig,
-                        long                type_filter,
-                        const ItemSelector *selector)
+DbScanner *create_db_scanner(GBDATA         *gb_main,
+                             AW_window      *aws,
+                             const char     *box_pos_fig,            // the position for the box in the xfig file
+                             const char     *delete_pos_fig,
+                             const char     *edit_pos_fig,
+                             const char     *edit_enable_pos_fig,
+                             DB_SCANNERMODE  scannermode,
+                             const char     *rescan_pos_fig,         // DB_VIEWER
+                             const char     *mark_pos_fig,
+                             long            type_filter,
+                             ItemSelector&   selector)
 {
     /* create an unmapped scanner box and optional some buttons,
        the return value is the id to further scanner functions */
 
     static int scanner_id = 0;
 
-    db_scanner_data *cbs = new db_scanner_data;
-    memset(cbs, 0, sizeof(*cbs));
+    DbScanner *cbs = new DbScanner(selector);
 
-    char                 buffer[256];
-    AW_root             *aw_root    = aws->get_root();
+    char     buffer[256];
+    AW_root *aw_root = aws->get_root();
 
     GB_push_transaction(gb_main);
     /*!************* Create local AWARS *******************/
@@ -337,7 +354,6 @@ AW_CL create_db_scanner(GBDATA             *gb_main, AW_window *aws,
     cbs->gb_user     = 0;
     cbs->gb_edit     = 0;
     cbs->scannermode = scannermode;
-    cbs->selector    = selector;
 
     /*!************* Create the delete button ****************/
     if (delete_pos_fig) {
@@ -377,17 +393,17 @@ AW_CL create_db_scanner(GBDATA             *gb_main, AW_window *aws,
     /*!************* Create the rescan button ****************/
     if (rescan_pos_fig) {
         aws->at(rescan_pos_fig);
-        aws->callback(cbs->selector->selection_list_rescan_cb, (AW_CL)cbs->gb_main, (AW_CL)type_filter);
+        aws->callback(cbs->selector.selection_list_rescan_cb, (AW_CL)cbs->gb_main, (AW_CL)type_filter);
         aws->create_button("RESCAN_DB", "RESCAN", "R");
     }
 
     scanner_id++;
     GB_pop_transaction(gb_main);
     aws->set_popup_callback((AW_CB)scanner_changed_cb, (AW_CL)cbs, GB_CB_CHANGED);
-    return (AW_CL)cbs;
+    return cbs;
 }
 
-static void scan_fields_recursive(GBDATA *gbd, db_scanner_data *cbs, int deep, AW_selection_list *id)
+static void scan_fields_recursive(GBDATA *gbd, DbScanner *cbs, int deep, AW_selection_list *id)
 {
     GB_TYPES  type = GB_read_type(gbd);
     char     *key  = GB_read_key(gbd);
@@ -438,7 +454,7 @@ static void scan_fields_recursive(GBDATA *gbd, db_scanner_data *cbs, int deep, A
     free(key);
 }
 
-static void scan_list(GBDATA *, db_scanner_data *cbs) {
+static void scan_list(GBDATA *, DbScanner *cbs) {
 #define INFO_WIDTH 1000
  refresh_again :
     char buffer[INFO_WIDTH+1];
@@ -451,7 +467,7 @@ static void scan_list(GBDATA *, db_scanner_data *cbs) {
 
     cbs->aws->clear_selection_list(cbs->id);
 
-    GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
+    GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector.change_key_path, GB_CREATE_CONTAINER);
 
     for (int existing = 1; existing >= 0; --existing) {
         for (GBDATA *gb_key = GB_entry(gb_key_data, CHANGEKEY); gb_key; gb_key = GB_nextEntry(gb_key)) {
@@ -520,7 +536,7 @@ static void scan_list(GBDATA *, db_scanner_data *cbs) {
 #undef INFO_WIDTH
 }
 
-static void scanner_changed_cb(GBDATA *, db_scanner_data *cbs, GB_CB_TYPE gbtype) {
+static void scanner_changed_cb(GBDATA *, DbScanner *cbs, GB_CB_TYPE gbtype) {
     AW_window *aws = cbs->aws;
 
     cbs->may_be_an_error = true;
@@ -558,42 +574,38 @@ static void scanner_changed_cb(GBDATA *, db_scanner_data *cbs, GB_CB_TYPE gbtype
 }
 /*!********** Unmap edit field if 'key_data' has been changed (maybe entries deleted)
  *********/
-static void scanner_changed_cb2(GBDATA *dummy, db_scanner_data *cbs, GB_CB_TYPE gbtype) {
+static void scanner_changed_cb2(GBDATA *dummy, DbScanner *cbs, GB_CB_TYPE gbtype) {
     cbs->aws->get_root()->awar(cbs->awarname_current_item)->write_pointer(NULL);
     // unmap edit field
     scanner_changed_cb(dummy, cbs, gbtype);
 }
 
-void map_db_scanner(AW_CL arbdb_scanid, GBDATA *gb_pntr, const char *key_path) {
-    db_scanner_data *cbs = (db_scanner_data *)arbdb_scanid;
-    GB_push_transaction(cbs->gb_main);
+void map_db_scanner(DbScanner *scanner, GBDATA *gb_pntr, const char *key_path) {
+    GB_transaction ta(scanner->gb_main);
 
-    GBDATA *gb_key_data = GB_search(cbs->gb_main, key_path, GB_CREATE_CONTAINER);
+    GBDATA *gb_key_data = GB_search(scanner->gb_main, key_path, GB_CREATE_CONTAINER);
 
-    if (cbs->gb_user) {
-        GB_remove_callback(cbs->gb_user, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), (GB_CB)scanner_changed_cb, (int *)cbs);
-        if (cbs->scannermode == DB_VIEWER) {
-            GB_remove_callback(gb_key_data, (GB_CB_TYPE)(GB_CB_CHANGED), (GB_CB)scanner_changed_cb2, (int *)cbs);
-        }
+    if (scanner->gb_user) {
+        GB_remove_callback(scanner->gb_user, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), (GB_CB)scanner_changed_cb, (int *)scanner);
+    }
+    if (scanner->scannermode == DB_VIEWER) {
+        GB_remove_callback(gb_key_data, (GB_CB_TYPE)(GB_CB_CHANGED), (GB_CB)scanner_changed_cb2, (int *)scanner);
     }
 
-    cbs->gb_user = gb_pntr;
+    scanner->gb_user = gb_pntr;
 
     if (gb_pntr) {
-        GB_add_callback(gb_pntr, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), (GB_CB)scanner_changed_cb, (int *)cbs);
-        if (cbs->scannermode == DB_VIEWER) {
-            GB_add_callback(gb_key_data, (GB_CB_TYPE)(GB_CB_CHANGED), (GB_CB)scanner_changed_cb2, (int *)cbs);
+        GB_add_callback(gb_pntr, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), (GB_CB)scanner_changed_cb, (int *)scanner);
+        if (scanner->scannermode == DB_VIEWER) {
+            GB_add_callback(gb_key_data, (GB_CB_TYPE)(GB_CB_CHANGED), (GB_CB)scanner_changed_cb2, (int *)scanner);
         }
     }
 
-    cbs->aws->get_root()->awar(cbs->awarname_current_item)->write_pointer(NULL);
-    scanner_changed_cb(gb_pntr, cbs, GB_CB_CHANGED);
-
-    GB_pop_transaction(cbs->gb_main);
+    scanner->aws->get_root()->awar(scanner->awarname_current_item)->write_pointer(NULL);
+    scanner_changed_cb(gb_pntr, scanner, GB_CB_CHANGED);
 }
 
-GBDATA *get_db_scanner_main(AW_CL arbdb_scanid) {
-    db_scanner_data *cbs = (db_scanner_data *)arbdb_scanid;
-    return cbs->gb_main;
+GBDATA *get_db_scanner_main(DbScanner *scanner) {
+    return scanner->gb_main;
 }
 

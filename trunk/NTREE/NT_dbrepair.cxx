@@ -51,7 +51,7 @@ using namespace std;
 // fixed flues a put into DB again.
 // see http://bugs.arb-home.de/ticket/143
 
-typedef GB_ERROR (*item_check_fun)(GBDATA *gb_item, const ItemSelector *sel);
+typedef GB_ERROR (*item_check_fun)(GBDATA *gb_item, ItemSelector& sel);
 
 typedef map<string, item_check_fun>    item_check_map;
 typedef item_check_map::const_iterator item_check_iter;
@@ -63,7 +63,7 @@ class CheckedConsistencies : virtual Noncopyable {
     set<string>     consistencies;
     item_check_map  item_checks;
 
-    GB_ERROR perform_selected_item_checks(ItemSelector *sel);
+    GB_ERROR perform_selected_item_checks(ItemSelector& sel);
 
 public:
 
@@ -140,17 +140,17 @@ public:
     }
 };
 
-GB_ERROR CheckedConsistencies::perform_selected_item_checks(ItemSelector *sel) {
+GB_ERROR CheckedConsistencies::perform_selected_item_checks(ItemSelector& sel) {
     GB_ERROR        error = NULL;
     item_check_iter end   = item_checks.end();
 
-    for (GBDATA *gb_cont = sel->get_first_item_container(gb_main, NULL, QUERY_ALL_ITEMS);
+    for (GBDATA *gb_cont = sel.get_first_item_container(gb_main, NULL, QUERY_ALL_ITEMS);
          gb_cont && !error;
-         gb_cont = sel->get_next_item_container(gb_cont, QUERY_ALL_ITEMS))
+         gb_cont = sel.get_next_item_container(gb_cont, QUERY_ALL_ITEMS))
     {
-        for (GBDATA *gb_item = sel->get_first_item(gb_cont, QUERY_ALL_ITEMS);
+        for (GBDATA *gb_item = sel.get_first_item(gb_cont, QUERY_ALL_ITEMS);
              gb_item && !error;
-             gb_item = sel->get_next_item(gb_item, QUERY_ALL_ITEMS))
+             gb_item = sel.get_next_item(gb_item, QUERY_ALL_ITEMS))
         {
             for (item_check_iter chk = item_checks.begin(); chk != end && !error; ++chk) {
                 error = chk->second(gb_item, sel);
@@ -167,7 +167,7 @@ void CheckedConsistencies::perform_item_checks(GB_ERROR& error) {
             GB_transaction ta(gb_main);
             bool           is_genome_db = GEN_is_genome_db(gb_main, -1);
 
-            error = perform_selected_item_checks(&ITEM_species);
+            error = perform_selected_item_checks(SPECIES_get_selector());
             if (!error && is_genome_db) {
                 error             = perform_selected_item_checks(GEN_get_selector());
                 if (!error) error = perform_selected_item_checks(EXP_get_selector());
@@ -981,7 +981,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
 
 // --------------------------------------------------------------------------------
 
-static GB_ERROR remove_dup_colors(GBDATA *gb_item, const ItemSelector *sel) {
+static GB_ERROR remove_dup_colors(GBDATA *gb_item, ItemSelector& IF_DEBUG(sel)) {
     // Databases out there may contain multiple 'ARB_color' entries.
     // Due to some already fixed bug - maybe introduced in r5309 and fixed in r5825
 
@@ -1010,10 +1010,8 @@ static GB_ERROR remove_dup_colors(GBDATA *gb_item, const ItemSelector *sel) {
     if (del_count) fprintf(stderr,
                            "- deleted %i duplicated '" AW_COLOR_GROUP_ENTRY "' from %s '%s'\n",
                            del_count,
-                           sel->item_name,
-                           sel->generate_item_id(GB_get_root(gb_item), gb_item));
-#else
-    sel = sel;                                      // no warning
+                           sel.item_name,
+                           sel.generate_item_id(GB_get_root(gb_item), gb_item));
 #endif // DEBUG
 
     return error;

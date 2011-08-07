@@ -11,9 +11,13 @@
 #ifndef ITEMS_H
 #define ITEMS_H
 
-#ifndef AW_WINDOW_HXX
-#include <aw_window.hxx>
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
 #endif
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+
 
 #define it_assert(cond) arb_assert(cond)
 
@@ -32,7 +36,10 @@ typedef enum {
     QUERY_ALL_ITEMS
 } QUERY_RANGE;
 
-struct ItemSelector { // @@@ remove AW_root arguments!
+struct                            MutableItemSelector;
+typedef const MutableItemSelector ItemSelector;
+
+struct MutableItemSelector { // @@@ remove AW_root arguments!
     QUERY_ITEM_TYPE type;
 
     // if user selects an item in the result list,
@@ -59,20 +66,17 @@ struct ItemSelector { // @@@ remove AW_root arguments!
 
     GBDATA *(*get_selected_item)(GBDATA *gb_main, AW_root *aw_root); // searches the currently selected item
 
-    struct ItemSelector *parent_selector;       // selector of parent item (or NULL if item has no parents)
+    ItemSelector *parent_selector;              // selector of parent item (or NULL if item has no parents)
     GBDATA *(*get_parent)(GBDATA *gb_item);     // if 'parent_selector' is defined, this function returns the parent of the item
 };
 
-extern ItemSelector ITEM_species;
-extern ItemSelector ITEM_organism;
-
 void popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_gb_main);
 
-struct BoundItemSel {
-    GBDATA              *gb_main;
-    const ItemSelector&  selector;
+struct MutableBoundItemSel {
+    GBDATA        *gb_main;
+    ItemSelector&  selector;
 
-    BoundItemSel(GBDATA *gb_main_, const ItemSelector& selector_)
+    MutableBoundItemSel(GBDATA *gb_main_, ItemSelector& selector_)
         : gb_main(gb_main_),
           selector(selector_)
     {
@@ -80,6 +84,11 @@ struct BoundItemSel {
         it_assert(&selector);
     }
 };
+
+typedef const MutableBoundItemSel BoundItemSel;
+
+ItemSelector& SPECIES_get_selector();
+ItemSelector& ORGANISM_get_selector();
 
 #else
 #error items.h included twice

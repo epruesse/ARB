@@ -36,39 +36,37 @@ enum SelectedFields {
 #define FIELD_FILTER_PARS   (1<<GB_STRING)|(1<<GB_BYTE)|(1<<GB_INT)|(1<<GB_FLOAT)|(1<<GB_BITS)|(1<<GB_LINK)
 #define FIELD_FILTER_STRING (1<<GB_STRING)|(1<<GB_BITS)|(1<<GB_LINK)
 
-struct ItemSelector;
-
 class Itemfield_Selection : public AW_DB_selection { // derived from a Noncopyable
-    long                type_filter;
-    SelectedFields      field_filter;
-    const ItemSelector *selector;
+    long            type_filter;
+    SelectedFields  field_filter;
+    ItemSelector&   selector;
 
     bool shall_display_type(int key_type) const { return type_filter & (1 << key_type); }
 
 public:
-    Itemfield_Selection(AW_window          *win_,
-                        AW_selection_list  *sellist_,
-                        GBDATA             *gb_key_data,
-                        long                type_filter_,
-                        SelectedFields      field_filter_,
-                        const ItemSelector *selector_);
+    Itemfield_Selection(AW_window         *win_,
+                        AW_selection_list *sellist_,
+                        GBDATA            *gb_key_data,
+                        long               type_filter_,
+                        SelectedFields     field_filter_,
+                        ItemSelector&      selector_);
 
     void fill();
 
-    const ItemSelector *get_selector() const { return selector; }
+    ItemSelector& get_selector() const { return selector; }
 };
 
-Itemfield_Selection *create_selection_list_on_itemfields(GBDATA             *gb_main,
-                                                         AW_window          *aws,
-                                                         const char         *varname,
-                                                         long                type_filter,
-                                                         const char         *scan_xfig_label,
-                                                         const char         *rescan_xfig_label,
-                                                         const ItemSelector *selector,
-                                                         size_t              columns,
-                                                         size_t              visible_rows,
-                                                         SelectedFields      field_filter       = SF_STANDARD,
-                                                         const char         *popup_button_label = NULL);
+Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main,
+                                                         AW_window      *aws,
+                                                         const char     *varname,
+                                                         long            type_filter,
+                                                         const char     *scan_xfig_label,
+                                                         const char     *rescan_xfig_label,
+                                                         ItemSelector&   selector,
+                                                         size_t          columns,
+                                                         size_t          visible_rows,
+                                                         SelectedFields  field_filter       = SF_STANDARD,
+                                                         const char     *popup_button_label = NULL);
 
 
 enum RescanMode {

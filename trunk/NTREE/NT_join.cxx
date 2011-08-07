@@ -183,7 +183,7 @@ AW_window *create_species_join_window(AW_root *root)
     create_selection_list_on_itemfields(GLOBAL_gb_main,
                                             aws, AWAR_SPECIES_JOIN_FIELD,
                                             FIELD_FILTER_NDS,
-                                            "field", 0, &ITEM_species, 20, 10);
+                                            "field", 0, SPECIES_get_selector(), 20, 10);
 
     return (AW_window *)aws;
 }

@@ -18,6 +18,9 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
+#ifndef ITEMS_H
+#include <items.h>
+#endif
 
 // --------------------------------------------------------------------------------
 // this header is visible ARB-wide (so here are only things needed somewhere else)
@@ -57,8 +60,7 @@ void GEN_select_gene(GBDATA* gb_main, AW_root *aw_root, const char *item_name);
 class AW_repeated_question;
 GB_ERROR GEN_testAndRemoveTranslations(GBDATA *gb_gene_data, void (*warn)(AW_CL cd, const char *msg), AW_CL cd, AW_repeated_question *ok_to_ignore_wrong_start_codon);
 
-struct ItemSelector;
-ItemSelector *GEN_get_selector(); // return GEN_item_selector
+ItemSelector& GEN_get_selector();
 
 #else
 #error GEN.hxx included twice

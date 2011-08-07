@@ -39,8 +39,8 @@
 
 #define AWAR_APPEND AWAR2"append"
 
-static AW_CL ad_global_scannerid1 = 0;
-static AW_CL ad_global_scannerid2 = 0;
+static DbScanner *ad_global_scanner1 = 0;
+static DbScanner *ad_global_scanner2 = 0;
 
 const char *MG_left_AWAR_SPECIES_NAME() { return AWAR_SPECIES1; }
 const char *MG_right_AWAR_SPECIES_NAME() { return AWAR_SPECIES2; }
@@ -62,7 +62,7 @@ void AD_map_species1(AW_root *aw_root)
     char   *source     = aw_root->awar(AWAR_SPECIES1)->read_string();
     GBDATA *gb_species = GBT_find_species(GLOBAL_gb_merge, source);
 
-    if (gb_species) map_db_scanner(ad_global_scannerid1, gb_species, CHANGE_KEY_PATH);
+    if (gb_species) map_db_scanner(ad_global_scanner1, gb_species, CHANGE_KEY_PATH);
     GB_pop_transaction(GLOBAL_gb_merge);
     delete source;
 }
@@ -73,7 +73,7 @@ void AD_map_species2(AW_root *aw_root)
     GB_push_transaction(GLOBAL_gb_dest);
     GBDATA *gb_species = GBT_find_species(GLOBAL_gb_dest, source);
     if (gb_species) {
-        map_db_scanner(ad_global_scannerid2, gb_species, CHANGE_KEY_PATH);
+        map_db_scanner(ad_global_scanner2, gb_species, CHANGE_KEY_PATH);
     }
     GB_pop_transaction(GLOBAL_gb_dest);
     delete source;
@@ -419,7 +419,7 @@ AW_window *MG_transfer_fields(AW_root *aw_root)
     create_selection_list_on_itemfields(GLOBAL_gb_merge,
                                             aws, AWAR_FIELD1,
                                             FIELD_FILTER_NDS,
-                                            "scandb", "rescandb", &ITEM_species, 20, 10);
+                                            "scandb", "rescandb", SPECIES_get_selector(), 20, 10);
 
     return (AW_window*)aws;
 }
@@ -524,7 +524,7 @@ AW_window *create_mg_move_fields(AW_root *aw_root)
     create_selection_list_on_itemfields(GLOBAL_gb_merge,
                                             aws, AWAR_FIELD1,
                                             FIELD_FILTER_NDS,
-                                            "scandb", "rescandb", &ITEM_species, 20, 10);
+                                            "scandb", "rescandb", SPECIES_get_selector(), 20, 10);
 
     return (AW_window*)aws;
 }
@@ -622,8 +622,8 @@ AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
 
     aws->at("del1");    aws->create_input_field(AWAR_TAG_DEL1, 5);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_merge, aws, AWAR_FIELD1, FIELD_FILTER_NDS, "fields1", 0, &ITEM_species, 20, 10);
-    create_selection_list_on_itemfields(GLOBAL_gb_dest,  aws, AWAR_FIELD2, FIELD_FILTER_NDS, "fields2", 0, &ITEM_species, 20, 10);
+    create_selection_list_on_itemfields(GLOBAL_gb_merge, aws, AWAR_FIELD1, FIELD_FILTER_NDS, "fields1", 0, SPECIES_get_selector(), 20, 10);
+    create_selection_list_on_itemfields(GLOBAL_gb_dest,  aws, AWAR_FIELD2, FIELD_FILTER_NDS, "fields2", 0, SPECIES_get_selector(), 20, 10);
 
     return (AW_window*)aws;
 }
@@ -877,16 +877,15 @@ static GBDATA *mg_get_selected_species2(GBDATA * /* gb_main */, AW_root *aw_root
     return gb_species;
 }
 
-static struct ItemSelector MG_species_selector[2];
+static MutableItemSelector MG_species_selector[2];
 
 static void mg_initialize_species_selectors() {
     static int initialized = 0;
     if (!initialized) {
-        MG_species_selector[0] = ITEM_species;
-        MG_species_selector[1] = ITEM_species;
+        MG_species_selector[0] = MG_species_selector[1] = SPECIES_get_selector();
 
         for (int s = 0; s <= 1; ++s) {
-            ItemSelector& sel = MG_species_selector[s];
+            MutableItemSelector& sel = MG_species_selector[s];
 
             sel.update_item_awars        = s ? mg_select_species2 : mg_select_species1;
             sel.get_first_item_container = s ? mg_get_first_species_data2 : mg_get_first_species_data1;
@@ -915,73 +914,75 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
     aws->callback(AW_POPUP_HELP, (AW_CL)"mg_species.hlp");
     aws->create_button("HELP", "HELP", "H");
 
-    QUERY::query_spec awtqs;
-    aws->create_menu("DB_I_Expert", "D");
-
-    awtqs.gb_main                = GLOBAL_gb_merge;
-    awtqs.gb_ref                 = GLOBAL_gb_dest;
-    awtqs.expect_hit_in_ref_list = false;
-    awtqs.species_name           = AWAR_SPECIES1;
-    awtqs.tree_name              = 0;               // no selected tree here -> can't use tree related ACI commands without specifying a tree
-    awtqs.select_bit             = 1;
-    awtqs.ere_pos_fig            = "ere1";
-    awtqs.by_pos_fig             = "by1";
-    awtqs.qbox_pos_fig           = "qbox1";
-    awtqs.rescan_pos_fig         = "rescan1";
-    awtqs.key_pos_fig            = 0;
-    awtqs.query_pos_fig          = "content1";
-    awtqs.result_pos_fig         = "result1";
-    awtqs.count_pos_fig          = "count1";
-    awtqs.do_query_pos_fig       = "doquery1";
-    awtqs.config_pos_fig         = "doconfig1";
-    awtqs.do_mark_pos_fig        = 0;
-    awtqs.do_unmark_pos_fig      = 0;
-    awtqs.do_delete_pos_fig      = "dodelete1";
-    awtqs.do_set_pos_fig         = "doset1";
-    awtqs.do_refresh_pos_fig     = "dorefresh1";
-    awtqs.open_parser_pos_fig    = "openparser1";
-    awtqs.use_menu               = 1;
-
     mg_initialize_species_selectors();
-    awtqs.selector = &(MG_species_selector[0]);
 
-    create_query_box(aws, &awtqs, "db1");
+    {
+        QUERY::query_spec awtqs(MG_species_selector[0]);
+        aws->create_menu("DB_I_Expert", "D");
 
-    AW_CL scannerid      = create_db_scanner(GLOBAL_gb_merge, aws, "box1", 0, 0, 0, DB_SCANNER, 0, 0, FIELD_FILTER_NDS, awtqs.selector);
-    ad_global_scannerid1 = scannerid;
-    aws->get_root()->awar(AWAR_SPECIES1)->add_callback(AD_map_species1);
+        awtqs.gb_main                = GLOBAL_gb_merge;
+        awtqs.gb_ref                 = GLOBAL_gb_dest;
+        awtqs.expect_hit_in_ref_list = false;
+        awtqs.species_name           = AWAR_SPECIES1;
+        awtqs.tree_name              = 0;               // no selected tree here -> can't use tree related ACI commands without specifying a tree
+        awtqs.select_bit             = 1;
+        awtqs.ere_pos_fig            = "ere1";
+        awtqs.by_pos_fig             = "by1";
+        awtqs.qbox_pos_fig           = "qbox1";
+        awtqs.rescan_pos_fig         = "rescan1";
+        awtqs.key_pos_fig            = 0;
+        awtqs.query_pos_fig          = "content1";
+        awtqs.result_pos_fig         = "result1";
+        awtqs.count_pos_fig          = "count1";
+        awtqs.do_query_pos_fig       = "doquery1";
+        awtqs.config_pos_fig         = "doconfig1";
+        awtqs.do_mark_pos_fig        = 0;
+        awtqs.do_unmark_pos_fig      = 0;
+        awtqs.do_delete_pos_fig      = "dodelete1";
+        awtqs.do_set_pos_fig         = "doset1";
+        awtqs.do_refresh_pos_fig     = "dorefresh1";
+        awtqs.open_parser_pos_fig    = "openparser1";
+        awtqs.use_menu               = 1;
 
-    aws->create_menu("DB_II_Expert", "B");
+        create_query_box(aws, &awtqs, "db1");
 
-    awtqs.gb_main                = GLOBAL_gb_dest;
-    awtqs.gb_ref                 = GLOBAL_gb_merge;
-    awtqs.expect_hit_in_ref_list = true;
-    awtqs.species_name           = AWAR_SPECIES2;
-    awtqs.select_bit             = 1;
-    awtqs.ere_pos_fig            = "ere2";
-    awtqs.by_pos_fig             = "by2";
-    awtqs.qbox_pos_fig           = "qbox2";
-    awtqs.rescan_pos_fig         = "rescan2";
-    awtqs.key_pos_fig            = 0;
-    awtqs.query_pos_fig          = "content2";
-    awtqs.result_pos_fig         = "result2";
-    awtqs.count_pos_fig          = "count2";
-    awtqs.do_query_pos_fig       = "doquery2";
-    awtqs.config_pos_fig         = "doconfig2";
-    awtqs.do_mark_pos_fig        = 0;
-    awtqs.do_unmark_pos_fig      = 0;
-    awtqs.do_delete_pos_fig      = "dodelete2";
-    awtqs.do_set_pos_fig         = "doset2";
-    awtqs.do_refresh_pos_fig     = "dorefresh2";
-    awtqs.open_parser_pos_fig    = "openparser2";
+        DbScanner *scanner = create_db_scanner(GLOBAL_gb_merge, aws, "box1", 0, 0, 0, DB_SCANNER, 0, 0, FIELD_FILTER_NDS, awtqs.get_queried_itemtype());
+        ad_global_scanner1 = scanner;
+        aws->get_root()->awar(AWAR_SPECIES1)->add_callback(AD_map_species1);
+    }
+    {
+        QUERY::query_spec awtqs(MG_species_selector[1]);
+        aws->create_menu("DB_II_Expert", "B");
 
-    awtqs.selector = &(MG_species_selector[1]);
+        awtqs.gb_main                = GLOBAL_gb_dest;
+        awtqs.gb_ref                 = GLOBAL_gb_merge;
+        awtqs.expect_hit_in_ref_list = true;
+        awtqs.species_name           = AWAR_SPECIES2;
+        awtqs.select_bit             = 1;
+        awtqs.ere_pos_fig            = "ere2";
+        awtqs.by_pos_fig             = "by2";
+        awtqs.qbox_pos_fig           = "qbox2";
+        awtqs.rescan_pos_fig         = "rescan2";
+        awtqs.key_pos_fig            = 0;
+        awtqs.query_pos_fig          = "content2";
+        awtqs.result_pos_fig         = "result2";
+        awtqs.count_pos_fig          = "count2";
+        awtqs.do_query_pos_fig       = "doquery2";
+        awtqs.config_pos_fig         = "doconfig2";
+        awtqs.do_mark_pos_fig        = 0;
+        awtqs.do_unmark_pos_fig      = 0;
+        awtqs.do_delete_pos_fig      = "dodelete2";
+        awtqs.do_set_pos_fig         = "doset2";
+        awtqs.do_refresh_pos_fig     = "dorefresh2";
+        awtqs.open_parser_pos_fig    = "openparser2";
+        awtqs.use_menu               = 1;
 
-    create_query_box(aws, &awtqs, "db2");
+        create_query_box(aws, &awtqs, "db2");
 
-    scannerid            = create_db_scanner(GLOBAL_gb_dest, aws, "box2", 0, 0, 0, DB_SCANNER, 0, 0, FIELD_FILTER_NDS, awtqs.selector);
-    ad_global_scannerid2 = scannerid;
-    aws->get_root()->awar(AWAR_SPECIES2)->add_callback(AD_map_species2);
+        DbScanner *scanner = create_db_scanner(GLOBAL_gb_dest, aws, "box2", 0, 0, 0, DB_SCANNER, 0, 0, FIELD_FILTER_NDS, awtqs.get_queried_itemtype());
+        ad_global_scanner2 = scanner;
+        aws->get_root()->awar(AWAR_SPECIES2)->add_callback(AD_map_species2);
+    }
 
     // big transfer buttons:
     aws->button_length(13);

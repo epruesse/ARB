@@ -153,5 +153,6 @@ primer_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/cb.h
 primer_design.o: $(ARBHOME)/INCLUDE/dupstr.h
 primer_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
+primer_design.o: $(ARBHOME)/INCLUDE/items.h
 primer_design.o: $(ARBHOME)/INCLUDE/smartptr.h
 primer_design.o: $(ARBHOME)/INCLUDE/test_global.h
