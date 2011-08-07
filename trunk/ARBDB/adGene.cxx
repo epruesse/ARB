@@ -844,6 +844,8 @@ struct arb_unit_test::test_alignment_data TestAlignmentData_Genome[] = {
     } while(0)
     
 void TEST_GEN_position() {
+    // see also ../GENOM_IMPORT/Location.cxx@TEST_gene_location
+
     GB_shell   shell;
     ARB_ERROR  error;
     GBDATA    *gb_main = TEST_CREATE_DB(error, "ali_genom", TestAlignmentData_Genome, false);
