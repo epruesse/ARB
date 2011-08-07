@@ -1986,6 +1986,18 @@ else
 	@rm $(TIMELOG)
 endif
 
+timed_target_tested:
+ifeq ($(TIMED_TARGET),)
+	@echo "Error: You have to pass TIMED_TARGET to $@"
+	false
+else
+	@echo "Build time:" > $(TIMELOG)
+	$(MAKE) "ONE_TIMED_TARGET=$(TIMED_TARGET)" time_one
+	$(MAKE) "ONE_TIMED_TARGET=ut" time_one
+	@cat $(TIMELOG)
+	@rm $(TIMELOG)
+endif
+
 clean_timed_target:
 ifeq ($(TIMED_TARGET),)
 	@echo "Error: You have to pass TIMED_TARGET to $@"
