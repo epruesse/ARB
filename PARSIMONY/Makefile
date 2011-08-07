@@ -258,13 +258,13 @@ PARS_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
-PARS_main.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/cb.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/downcast.h
 PARS_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 PARS_main.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
+PARS_main.o: $(ARBHOME)/INCLUDE/nds.h
 PARS_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 PARS_main.o: $(ARBHOME)/INCLUDE/test_global.h
 PARS_main.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx

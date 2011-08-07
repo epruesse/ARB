@@ -15,7 +15,6 @@
 #include "merge.hxx"
 #include "MG_adapt_ali.hxx"
 
-#include <awt.hxx>
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>

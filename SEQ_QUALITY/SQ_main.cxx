@@ -15,13 +15,15 @@
 #include "seq_quality.h"
 #include "SQ_functions.h"
 
-#include <awt.hxx>
 #include <awt_filter.hxx>
 #include <awt_sel_boxes.hxx>
+
+#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
-#include <arb_progress.h>
 #include <aw_root.hxx>
+
+#include <arb_progress.h>
 #include <arbdbt.h>
 
 // --------------------------------------------------------------------------------
@@ -121,7 +123,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
         int reevaluate = aw_root->awar(AWAR_SQ_REEVALUATE)->read_int();
 
         // Load and use Sequence-Filter
-        AP_filter *filter = awt_get_filter(aw_root, (adfiltercbstruct*)res_from_awt_create_select_filter);
+        AP_filter *filter = awt_get_filter((adfiltercbstruct*)res_from_awt_create_select_filter);
 
         /*
           SQ_evaluate() generates the final estimation for the quality of an alignment.

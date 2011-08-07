@@ -169,8 +169,8 @@ arb_export_tree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-arb_export_tree.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 arb_export_tree.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_export_tree.o: $(ARBHOME)/INCLUDE/nds.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/TreeWrite.h

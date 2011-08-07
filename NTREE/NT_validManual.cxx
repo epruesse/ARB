@@ -8,11 +8,11 @@
 //                                                                 //
 // =============================================================== //
 
-#include <arbdbt.h>
+#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
-#include <awt.hxx>
 #include <aw_msg.hxx>
+#include <arbdbt.h>
 
 #include <string>
 #include <list>

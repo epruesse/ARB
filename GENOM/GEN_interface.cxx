@@ -11,12 +11,10 @@
 
 #include "GEN_local.hxx"
 
-#include <ntree.hxx>
-#include <../NTREE/ad_spec.hxx>
-#include <../NTREE/nt_internal.h>
-
 #include <db_scanner.hxx>
-#include <awt_item_sel_list.hxx>
+#include <db_query.h>
+#include <dbui.h>
+#include <item_sel_list.h>
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
 #include <aw_detach.hxx>
@@ -364,8 +362,8 @@ GBDATA *GEN_get_current_gene(GBDATA *gb_main, AW_root *aw_root) {
 }
 
 
-static AW_CL    ad_global_scannerid   = 0;
-static AW_root *ad_global_scannerroot = 0;
+static AW_CL    GEN_global_scannerid   = 0;
+static AW_root *GEN_global_scannerroot = 0;
 AW_CL           gene_query_global_cbs = 0;
 
 static void gene_rename_cb(AW_window *aww, AW_CL cl_gb_main) {
@@ -589,9 +587,14 @@ static void GEN_map_gene(AW_root *aw_root, AW_CL scannerid, AW_CL cl_gb_main) {
 }
 
 static void GEN_create_field_items(AW_window *aws, GBDATA *gb_main) {
-    aws->insert_menu_topic("gen_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&GEN_item_selector);
-    aws->insert_menu_topic("gen_delete_field",   "Delete/Hide field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&GEN_item_selector);
-    aws->insert_menu_topic("gen_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&GEN_item_selector);
+    static bound_item_selector *bis = 0;
+
+    gen_assert(!bis);
+    bis = new bound_item_selector(gb_main, GEN_item_selector);
+
+    aws->insert_menu_topic("gen_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)DBUI::NT_create_ad_list_reorder, (AW_CL)&bis);
+    aws->insert_menu_topic("gen_delete_field",   "Delete/Hide field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::NT_create_ad_field_delete, (AW_CL)&bis);
+    aws->insert_menu_topic("gen_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::NT_create_ad_field_create, (AW_CL)&bis);
     aws->insert_separator();
     aws->insert_menu_topic("gen_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_unhide_all_cb, (AW_CL)gb_main, AWT_NDS_FILTER);
     aws->insert_separator();
@@ -624,9 +627,9 @@ AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main) {
         aws->create_button("HELP", "HELP", "H");
 
 
-        AW_CL scannerid       = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", AWT_NDS_FILTER, &GEN_item_selector);
-        ad_global_scannerid   = scannerid;
-        ad_global_scannerroot = aws->get_root();
+        AW_CL scannerid        = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", AWT_NDS_FILTER, &GEN_item_selector);
+        GEN_global_scannerid   = scannerid;
+        GEN_global_scannerroot = aws->get_root();
 
         aws->create_menu("GENE", "G", AD_F_ALL);
         aws->insert_menu_topic("gene_delete", "Delete",     "D", "spa_delete.hlp", AD_F_ALL, (AW_CB)gene_delete_cb, (AW_CL)gb_main, 0);
@@ -645,7 +648,7 @@ AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main) {
             cb_info->add_callback();
 
             aws->at("detach");
-            aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)detach_info);
+            aws->callback(DBUI::NT_detach_information_window, (AW_CL)&aws, (AW_CL)detach_info);
             aws->create_button("DETACH", "DETACH", "D");
 
             detach_info->set_detach_button(aws->get_last_widget());

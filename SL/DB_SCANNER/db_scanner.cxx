@@ -9,10 +9,9 @@
 // =============================================================== //
 
 #include <db_scanner.hxx>
+#include <items.h>
 
 #include <AW_rename.hxx>
-
-#include <awt.hxx>
 
 #include <aw_awars.hxx>
 #include <aw_select.hxx>
@@ -559,15 +558,13 @@ static void scanner_changed_cb(GBDATA *, db_scanner_data *cbs, GB_CB_TYPE gbtype
 }
 /*!********** Unmap edit field if 'key_data' has been changed (maybe entries deleted)
  *********/
-static void scanner_changed_cb2(GBDATA *dummy, db_scanner_data *cbs, GB_CB_TYPE gbtype)
-{
+static void scanner_changed_cb2(GBDATA *dummy, db_scanner_data *cbs, GB_CB_TYPE gbtype) {
     cbs->aws->get_root()->awar(cbs->awarname_current_item)->write_pointer(NULL);
     // unmap edit field
     scanner_changed_cb(dummy, cbs, gbtype);
 }
 
-void map_db_scanner(AW_CL arbdb_scanid, GBDATA *gb_pntr, const char *key_path)
-{
+void map_db_scanner(AW_CL arbdb_scanid, GBDATA *gb_pntr, const char *key_path) {
     db_scanner_data *cbs = (db_scanner_data *)arbdb_scanid;
     GB_push_transaction(cbs->gb_main);
 
@@ -594,3 +591,9 @@ void map_db_scanner(AW_CL arbdb_scanid, GBDATA *gb_pntr, const char *key_path)
 
     GB_pop_transaction(cbs->gb_main);
 }
+
+GBDATA *get_db_scanner_main(AW_CL arbdb_scanid) {
+    db_scanner_data *cbs = (db_scanner_data *)arbdb_scanid;
+    return cbs->gb_main;
+}
+

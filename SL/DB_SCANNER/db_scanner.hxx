@@ -63,6 +63,9 @@ AW_CL create_db_scanner(GBDATA                 *gb_main,
 
 void map_db_scanner(AW_CL arbdb_scanid, GBDATA *gb_pntr, const char *key_path);
 
+
+GBDATA *get_db_scanner_main(AW_CL arbdb_scanid);
+
 #else
 #error db_scanner.hxx included twice
 #endif // DB_SCANNER_HXX

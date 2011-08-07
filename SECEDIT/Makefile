@@ -267,7 +267,6 @@ SEC_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-SEC_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BI_helix.hxx

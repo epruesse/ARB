@@ -15,7 +15,6 @@
 
 #include "merge.hxx"
 
-#include <awt.hxx>
 #include <awt_config_manager.hxx>
 #include <aw_awars.hxx>
 #include <aw_root.hxx>

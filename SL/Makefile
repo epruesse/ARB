@@ -5,14 +5,18 @@ ARCHS_ALL = \
 	ARB_TREE/ARB_TREE.dummy  \
 	AW_HELIX/AW_HELIX.dummy  \
 	AW_NAME/AW_NAME.dummy  \
+	DB_QUERY/DB_QUERY.dummy  \
 	DB_SCANNER/DB_SCANNER.dummy  \
+	DB_UI/DB_UI.dummy  \
 	SEQIO/SEQIO.dummy  \
 	FAST_ALIGNER/FAST_ALIGNER.dummy  \
 	FILE_BUFFER/FILE_BUFFER.dummy  \
 	FILTER/FILTER.dummy  \
 	GUI_ALIVIEW/GUI_ALIVIEW.dummy  \
 	HELIX/HELIX.dummy  \
+	ITEMS/ITEMS.dummy  \
 	MATRIX/MATRIX.dummy  \
+	NDS/NDS.dummy  \
 	NEIGHBOURJOIN/NEIGHBOURJOIN.dummy  \
 	PRONUC/PRONUC.dummy  \
 	REGEXPR/REGEXPR.dummy  \

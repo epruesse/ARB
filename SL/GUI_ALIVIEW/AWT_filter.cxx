@@ -1,7 +1,8 @@
-#include "awt.hxx"
 #include "awt_filter.hxx"
 #include "awt_sel_boxes.hxx"
+#include "ga_local.h"
 
+#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
 #include <AP_filter.hxx>
@@ -202,8 +203,8 @@ adfiltercbstruct *awt_create_select_filter(AW_root *aw_root, GBDATA *gb_main, co
     {
         int len = strlen(def_name);
 
-        awt_assert(len >= 5);
-        awt_assert(strcmp(def_name+len-5, "/name") == 0); // filter awar has to be "SOMETHING/name"
+        ga_assert(len >= 5);
+        ga_assert(strcmp(def_name+len-5, "/name") == 0); // filter awar has to be "SOMETHING/name"
     }
 #endif                          // DEBUG
 
@@ -389,19 +390,17 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL res_of_create_se
     return acbs->aw_filt;
 }
 
-AP_filter *awt_get_filter(AW_root *aw_root, adfiltercbstruct *acbs) {
+AP_filter *awt_get_filter(adfiltercbstruct *acbs) {
     AP_filter *filter = NULL;
 
     if (acbs) {
-        awt_assert(aw_root == acbs->awr);               // @@@ if this doesnt fail, remove aw_root from params
-        
         GB_push_transaction(acbs->gb_main);
 
-        char *filter_string = aw_root->awar(acbs->def_filter)->read_string();
+        char *filter_string = acbs->awr->awar(acbs->def_filter)->read_string();
         long  len           = 0;
 
         {
-            char *use = aw_root->awar(acbs->def_alignment)->read_string();
+            char *use = acbs->awr->awar(acbs->def_alignment)->read_string();
 
             len = GBT_get_alignment_len(acbs->gb_main, use);
             free(use);
@@ -409,7 +408,7 @@ AP_filter *awt_get_filter(AW_root *aw_root, adfiltercbstruct *acbs) {
 
         if (len != -1) { // have alignment
             filter  = new AP_filter(filter_string, "0", len);
-            int sim = aw_root->awar(acbs->def_simplify)->read_int();
+            int sim = acbs->awr->awar(acbs->def_simplify)->read_int();
             filter->enable_simplify((AWT_FILTER_SIMPLIFY)sim);
             free(filter_string);
         }

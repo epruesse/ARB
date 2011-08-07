@@ -122,12 +122,12 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
-SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cb.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/dupstr.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/items.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/nds.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/smartptr.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/test_global.h

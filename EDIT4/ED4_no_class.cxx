@@ -21,7 +21,7 @@
 #include <AW_helix.hxx>
 #include <AW_rename.hxx>
 #include <awt.hxx>
-#include <awt_item_sel_list.hxx>
+#include <item_sel_list.h>
 #include <awt_sel_boxes.hxx>
 #include <awt_seq_colors.hxx>
 #include <aw_awars.hxx>

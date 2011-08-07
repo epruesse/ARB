@@ -19,7 +19,6 @@
 
 #include <aw_preset.hxx>
 #include <arb_progress.h>
-#include <awt.hxx>
 #include <arbdbt.h>
 
 using namespace std;

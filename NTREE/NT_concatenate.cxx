@@ -12,8 +12,8 @@
 
 #include "nt_internal.h"
 
-#include <awt.hxx>
-#include <awt_item_sel_list.hxx>
+#include <items.h>
+#include <item_sel_list.h>
 #include <awt_sel_boxes.hxx>
 #include <AW_rename.hxx>
 #include <aw_question.hxx>
