@@ -279,6 +279,7 @@ endif
 
 cflags += -pipe
 cflags += -fmessage-length=0# don't wrap compiler output
+cflags += -fshow-column# show columns
 cflags += -funit-at-a-time
 cflags += -fPIC
 cflags += -fno-common# link all global data into one namespace
@@ -1126,7 +1127,7 @@ include SOURCE_TOOLS/export2sub
 
 # rule to generate main target (normally a library):
 %.dummy:
-	@( export ID=$$$$; \
+	@( export ID=$$$$; LANG=C; \
 	(( \
 	    echo "$(SEP) Make everything in $(@D)"; \
 	    $(MAKE) -C $(@D) -r \
@@ -1524,7 +1525,7 @@ clean2: $(ARCHS:.a=.clean) \
 # links are needed for cleanup
 clean: redo_links
 	$(MAKE) clean2
-	$(MAKE) clean_coverage clean_links
+	$(MAKE) clean_cov clean_links
 
 # 'relocated' is about 50% faster than 'rebuild'
 reloc_clean: links
@@ -1756,6 +1757,13 @@ TESTED_UNITS = $(TESTED_UNITS_MANUAL)
 
 TEST_LOG_DIR = UNIT_TESTER/logs
 TEST_RUN_SUITE=$(MAKE) $(NODIR) -C UNIT_TESTER -f Makefile.suite -r
+TEST_MAKE_FLAGS=
+TEST_POST_CLEAN=
+ifeq ($(COVERAGE),1)
+TEST_POST_CLEAN=$(MAKE) clean_cov_results
+TEST_MAKE_FLAGS+=-j1
+endif
+
 
 %.test:
 	-@( export ID=$$$$; mkdir -p $(TEST_LOG_DIR); \
@@ -1765,24 +1773,25 @@ TEST_RUN_SUITE=$(MAKE) $(NODIR) -C UNIT_TESTER -f Makefile.suite -r
 		"UNITLIBNAME=$(@F:.test=)" \
 		"COVERAGE=$(COVERAGE)" \
 		"cflags=$(cflags)" \
-		runtest \
+		runtest; \
+	    $(TEST_POST_CLEAN) \
 	) >$(TEST_LOG_DIR)/$(@F).log 2>&1 ; cat $(TEST_LOG_DIR)/$(@F).log)
 
 test_base: $(UNIT_TESTER_LIB:.a=.dummy)
 
-clean_coverage_results:
+clean_cov_results:
 	find . \( -name "*.gcda" -o -name "*.gcov" -o -name "*.cov" \) -exec rm {} \;
 
-clean_coverage: clean_coverage_results
+clean_cov: clean_cov_results
 	find . \( -name "*.gcno" \) -exec rm {} \;
 
-
-unit_tests: test_base clean_coverage_results
+unit_tests: test_base clean_cov_results
 	+@$(TEST_RUN_SUITE) init
 	@echo "fake[1]: Entering directory \`$(ARBHOME)/UNIT_TESTER'"
-	$(MAKE) $(NODIR) $(TESTED_UNITS)
+	$(MAKE) $(TEST_MAKE_FLAGS) $(NODIR) $(TESTED_UNITS)
 	@echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
 	+@$(TEST_RUN_SUITE) cleanup
+	$(MAKE) clean_cov_results
 
 ut:
 ifeq ($(UNIT_TESTS),1)
