@@ -3,7 +3,7 @@ notarget:
 	@echo "Usage: make (init|cleanup|unskip)" 
 	false
 
-include Makefile.setup
+include Makefile.setup.include
 
 TEST_REPORTER = ./reporter.pl
 TEST_LOG_DIR = ./logs

@@ -41,7 +41,8 @@ my %used_files = map { $_ => 1; } (
                                    'Makefile',
                                    'Makefile.org',
                                    'Makefile.test',
-                                   'Makefile.setup',
+                                   'Makefile.setup.template',
+                                   'Makefile.setup.include',
                                    'Makefile.suite',
                                    '!BRANCH_STATE',
                                    'AUTHORS',
@@ -55,6 +56,7 @@ my %skipped_files = map { $_ => 1; } (
                                       'config.makefile',
                                       'ChangeLog',
                                       'ARB_GDEmenus',
+                                      'Makefile.setup.local',
                                       'makeloc.here',
                                       'helpfiles.lst',
                                       'makeloc.here',
@@ -99,6 +101,7 @@ my %skipped_extensions = map { $_ => 1; } (
                                            'old',
                                            'last_gcc',
                                            'patch',
+                                           'gcno',
                                           );
 
 
