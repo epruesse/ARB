@@ -154,12 +154,14 @@ sub collect_gcov_data($$) {
     unlink($gcov);
   }
   else {
+    my $summary = "lines=$lines covered=$covered (coverage=$percent%)";
+
     $verbose==0 ||
-    print "collect_gcov_data($gcov): lines=$lines covered=$covered (coverage=$percent%)\n";
+      print "collect_gcov_data($gcov): $summary\n";
     $covered>0 || die "Argh.. collected data for completely uncovered file '$source'";
 
     if ($tests_seen==0 and $showCoverageForAll==0) {
-      print "$source_name defines no tests. lines=$lines covered=$covered (coverage=$percent%)\n";
+      print "$source_name defines no tests. $summary\n";
     }
     else {
       my $line = 0;
@@ -177,6 +179,9 @@ sub collect_gcov_data($$) {
         $line = $last;
       }
 
+      if ($percent<90) { print "$source_name:0: Warning: Summary $summary\n"; }
+      else { print "Summary $source_name: $summary\n"; }
+      
       rename($gcov,$cov) || die "Failed to rename '$gcov' -> '$cov' (Reason: $!)";
     }
   }
