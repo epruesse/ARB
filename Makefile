@@ -1777,6 +1777,7 @@ endif
 	    $(TEST_POST_CLEAN) \
 	) >$(TEST_LOG_DIR)/$(@F).log 2>&1 ; cat $(TEST_LOG_DIR)/$(@F).log)
 
+
 test_base: $(UNIT_TESTER_LIB:.a=.dummy)
 
 clean_cov_results:
