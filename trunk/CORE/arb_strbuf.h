@@ -64,6 +64,7 @@ public:
         data         = 0;
         return result;
     }
+    char *release() { size_t s; return release_mem(s); }
 
     void reset_pos() { set_pos(0); }
 
@@ -138,6 +139,9 @@ public:
 
     void vnprintf(size_t maxlen, const char *templat, va_list& parg) __ATTR__VFORMAT_MEMBER(2);
     void nprintf(size_t maxlen, const char *templat, ...) __ATTR__FORMAT_MEMBER(2);
+
+    void putlong(long l) { nprintf(100, "%li", l); }
+    void putfloat(float f) { nprintf(100, "%f", f); }
 };
 
 // old interface

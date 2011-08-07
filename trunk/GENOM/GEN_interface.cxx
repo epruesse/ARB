@@ -21,8 +21,15 @@
 #include <aw_msg.hxx>
 #include <arbdbt.h>
 #include <adGene.h>
+#include <../GENOM_IMPORT/Location.h>
+#include <arb_strarray.h>
+#include <arb_strbuf.h>
 
 using namespace std;
+
+// --------------------------------------------------------------------------------
+
+#define AWAR_GENE_DEST "tmp/gene/dest"
 
 // --------------------------------------------------------------------------------
 
@@ -245,17 +252,22 @@ static void auto_select_pseudo_species(AW_root *awr, GBDATA *gb_main, const char
 
 void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
     GB_transaction  dummy(gb_main);
-    GBDATA         *gb_gene = GEN_get_current_gene(gb_main, awr);
-    bool            clear   = true;
+    GBDATA         *gb_gene      = GEN_get_current_gene(gb_main, awr);
+    bool            clear        = true;
+    AW_awar        *awar_content = awr->awar(AWAR_GENE_CONTENT);
 
     if (gb_gene) {
         // ignore complement here (to highlight gene in ARB_EDIT4);
         // separate multiple parts by \n
         char *gene_content = GBT_read_gene_sequence(gb_gene, false, '\n');
-
-        awr->awar(AWAR_GENE_CONTENT)->write_string(gene_content);
-        clear = false;
-        free(gene_content);
+        if (gene_content) {
+            awar_content->write_string(gene_content);
+            clear = false;
+            free(gene_content);
+        }
+        else {
+            awar_content->write_string(GB_await_error());
+        }
     }
     else {
         char      *gene_name  = awr->awar(AWAR_GENE_NAME)->read_string();
@@ -283,7 +295,7 @@ void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
                     memcpy(buffer, seq_data+start_pos, len);
                     buffer[len]  = 0;
 
-                    awr->awar(AWAR_GENE_CONTENT)->write_string(buffer);
+                    awar_content->write_string(buffer);
                     clear = false;
 
                     free(buffer);
@@ -294,7 +306,7 @@ void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
     }
 
     if (clear) {
-        awr->awar(AWAR_GENE_CONTENT)->write_string(""); // if we did not detect any gene sequence -> clear
+        awar_content->write_string(""); // if we did not detect any gene sequence -> clear
     }
 }
 
@@ -325,11 +337,7 @@ void GEN_create_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main) {
     aw_root->awar_string(AWAR_SPECIES_NAME,  "", gb_main)->add_callback(GEN_species_name_changed_cb, (AW_CL)gb_main);
 
     aw_root->awar_string(AWAR_GENE_DEST, "", aw_def);
-    aw_root->awar_string(AWAR_GENE_POS1, "", aw_def);
-    aw_root->awar_string(AWAR_GENE_POS2, "", aw_def);
-
-    aw_root->awar_int(AWAR_GENE_COMPLEMENT, 0, aw_def);
-
+    
     aw_root->awar_string(AWAR_GENE_EXTRACT_ALI, "ali_gene_",    aw_def);
 }
 
@@ -483,83 +491,421 @@ static AW_window *create_gene_copy_window(AW_root *root, AW_CL cl_gb_main) {
     return aws;
 }
 
-static void gene_create_cb(AW_window *aww, AW_CL cl_gb_main) {
-    GBDATA *gb_main = (GBDATA*)cl_gb_main;
 
-    GB_begin_transaction(gb_main);
+// -----------------------
+//      LocationEditor
 
-    GB_ERROR  error        = 0;
-    AW_root  *aw_root      = aww->get_root();
-    char     *dest         = aw_root->awar(AWAR_GENE_DEST)->read_string();
-    int       pos1         = atoi(aw_root->awar(AWAR_GENE_POS1)->read_string());
-    int       pos2         = atoi(aw_root->awar(AWAR_GENE_POS2)->read_string());
-    int       complement   = aw_root->awar(AWAR_GENE_COMPLEMENT)->read_int();
-    GBDATA   *gb_gene_data = GEN_get_current_gene_data(gb_main, aw_root);
-    GBDATA   *gb_dest      = GEN_find_gene_rel_gene_data(gb_gene_data, dest);
+const int NAME_WIDTH = 33;
+const int POS_WIDTH  = NAME_WIDTH;
+const int CER_WIDTH  = POS_WIDTH/2;
+const int LOC_WIDTH  = 53;
 
-    if (!gb_gene_data) error = "Please select a species first";
-    else if (gb_dest) error  = GBS_global_string("Gene '%s' already exists", dest);
+#define GLE_POS1       "pos1"
+#define GLE_POS2       "pos2"
+#define GLE_CERT1      "cert1"
+#define GLE_CERT2      "cert2"
+#define GLE_COMPLEMENT "complement"
+#define GLE_JOINABLE   "joinable"
+#define GLE_READABLE   "location"
+#define GLE_STATUS     "status"
+
+class LocationEditor : virtual Noncopyable { // GLE
+    typedef void (*PosChanged_cb)(AW_root *aw_root, LocationEditor *loced);
+
+    char          *tag;
+    AW_root       *aw_root;
+    GBDATA        *gb_main;
+    char          *status;
+    GEN_position  *pos;
+    PosChanged_cb  pos_changed_cb;
+
+    void createAwars();
+
+    void createInputField(AW_window *aws, const char *at, const char *aname, int width) const {
+        aws->at(at);
+        aws->create_input_field(loc_awar_name(aname), width);
+    }
+
+public:
+    LocationEditor(AW_root *aw_root_, GBDATA *gb_main_, const char *tag_)
+        : tag(strdup(tag_)),
+          aw_root(aw_root_),
+          gb_main(gb_main_), 
+          status(NULL),
+          pos(NULL),
+          pos_changed_cb(NULL)
+    {
+        createAwars();
+        set_status(NULL);
+    }
+    ~LocationEditor() {
+        free(tag);
+        free(status);
+        GEN_free_position(pos);
+    }
+
+    GBDATA *get_gb_main() const { return gb_main; }
+
+    void add_pos_changed_cb(PosChanged_cb cb) { pos_changed_cb = cb; }
+
+    const GEN_position *get_pos() const { return pos; }
+    void set_pos(GEN_position*& pos_) {
+        GEN_free_position(pos);
+        pos  = pos_;
+        pos_ = NULL; // take ownership
+        set_status(status);
+
+        if (pos && pos_changed_cb) {
+            pos_changed_cb(aw_root, this);
+        }
+    }
+    void set_status(const char *status_) {
+        if (status != status) freedup(status, status_);
+        loc_awar(GLE_STATUS)->write_string(status ? status : (pos ? "Ok" : "No data"));
+    }
+
+    const char *loc_awar_name(const char *aname) const {
+        const int   BUFSIZE = 100;
+        static char buf[BUFSIZE];
+
+        IF_DEBUG(int printed =) sprintf(buf, "tmp/loc/%s/%s", tag, aname);
+        gen_assert(printed<BUFSIZE);
+
+        return buf;
+    }
+    AW_awar *loc_awar(const char *aname) const { return aw_root->awar(loc_awar_name(aname)); }
+    const char *awar_charp_value(const char *aname) const { return loc_awar(aname)->read_char_pntr(); }
+
+    void createEditFields(AW_window *aws);
+    
+    GEN_position *create_GEN_position_from_fields(GB_ERROR& error);
+    void revcomp() {
+        loc_awar(GLE_READABLE)->write_string(GBS_global_string("complement(%s)", awar_charp_value(GLE_READABLE)));
+    }
+};
+
+inline const char *elemOr(ConstStrArray& a, size_t i, const char *Default) {
+    return i<a.size() ? a[i] : Default;
+}
+inline char elemOr(const char *a, size_t len, size_t i, char Default) {
+    return i<len ? a[i] : Default;
+}
+
+GEN_position *LocationEditor::create_GEN_position_from_fields(GB_ERROR& error) {
+    const char *ipos1  = awar_charp_value(GLE_POS1);
+    const char *ipos2  = awar_charp_value(GLE_POS2);
+    const char *icert1 = awar_charp_value(GLE_CERT1);
+    const char *icert2 = awar_charp_value(GLE_CERT2);
+    const char *icomp  = awar_charp_value(GLE_COMPLEMENT);
+
+    const char *sep = ",; ";
+
+    ConstStrArray pos1, pos2;
+    GBT_split_string(pos1, ipos1, sep, true);
+    GBT_split_string(pos2, ipos2, sep, true);
+
+    size_t clen1 = strlen(icert1);
+    size_t clen2 = strlen(icert2);
+    size_t clen  = strlen(icomp);
+
+    size_t max_size = pos1.size();
+    bool   joinable = loc_awar(GLE_JOINABLE)->read_int();
+
+    GEN_position *gp = NULL;
+    if (max_size>0) {
+        gp = GEN_new_position(max_size, joinable);
+        GEN_use_uncertainties(gp);
+
+        for (size_t i = 0; i<max_size; ++i) {
+            const char *p1c = elemOr(pos1, i, "1");
+            size_t      p1  = atoi(p1c);
+            size_t      p2  = atoi(elemOr(pos2, i, p1c));
+
+            char c  = elemOr(icomp,  clen,  i, '0');
+            char c1 = elemOr(icert1, clen1, i, '=');
+            char c2 = elemOr(icert2, clen2, i, '=');
+
+            gen_assert(c1 && c2);
+
+            gp->start_pos[i]       = p1;
+            gp->stop_pos[i]        = p2;
+            gp->complement[i]      = !!(c-'0');
+            gp->start_uncertain[i] = c1;
+            gp->stop_uncertain[i]  = c2;
+        }
+    }
     else {
-        GB_ERROR pos_error              = 0;
-        if (pos1<1 || pos2<1) pos_error = "positions have to be above zero";
-        else if (pos2<pos1) pos_error   = "endpos has to be greater or equal to startpos";
-        else {
-            GBDATA *gb_organism   = GB_get_father(gb_gene_data);
-            GBDATA *gb_genome     = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
-            int     genome_length = GB_read_count(gb_genome);
+        error = "No data";
+    }
 
-            if (pos2 > genome_length) {
-                pos_error = GBS_global_string("endpos is behind sequence end (%i)", genome_length);
-            }
+    return gp;
+}
+
+static int loc_update_running = 0;
+
+inline GB_ERROR update_location_from_GEN_position(LocationEditor *loced, const GEN_position *gp) {
+    GB_ERROR error = NULL;
+    if (gp) {
+        try {
+            LocationPtr loc = to_Location(gp);
+            loced->loc_awar(GLE_READABLE)->write_string(loc->as_string().c_str());
+        }
+        catch (const char *& err) { error = GBS_global_string("%s", err); }
+        catch (string& err) { error = GBS_global_string("%s", err.c_str()); }
+        catch (...) { gen_assert(0); }
+    }
+    return error;
+}
+
+
+static void GLE_update_from_detailFields(AW_root *, AW_CL cl_loced) {
+    // update location according to other fields
+    if (!loc_update_running) {
+        loc_update_running++;
+
+        GB_ERROR        error = NULL;
+        LocationEditor *loced = (LocationEditor*)cl_loced;
+        GEN_position   *gp    = loced->create_GEN_position_from_fields(error);
+        
+        if (!error) {
+            error = update_location_from_GEN_position(loced, gp);
         }
 
-        if (pos_error) {
-            error = GBS_global_string("Illegal position(s): %s", pos_error);
-        }
-        else {
-            gb_dest = GEN_find_or_create_gene_rel_gene_data(gb_gene_data, dest);
+        loced->set_pos(gp);
+        loced->set_status(error);
 
-            if (!gb_dest) error = GB_await_error();
+        loc_update_running--;
+    }
+}
+
+
+static SmartCharPtr sizetarray2string(const size_t *array, int size) {
+    GBS_strstruct out(size*5);
+    for (int i = 0; i<size; ++i) {
+        out.putlong(array[i]);
+        out.put(' ');
+    }
+    out.cut_tail(1);
+    return out.release();
+}
+inline SmartCharPtr dupSizedPart(const unsigned char *in, int size) {
+    const char *in2 = reinterpret_cast<const char*>(in);
+    return GB_strpartdup(in2, in2+size-1);
+}
+inline SmartCharPtr dupComplement(const unsigned char *in, int size) {
+    char *dup = (char*)malloc(size+1);
+    for (int i = 0; i<size; ++i) {
+        dup[i] = in[i] ? '1' : '0';
+    }
+    dup[size] = 0;
+    return dup;
+}
+
+static void GLE_update_from_location(AW_root *, AW_CL cl_loced) {
+    // update other fields according to location
+    if (!loc_update_running) {
+        loc_update_running++;
+
+        GB_ERROR        error  = NULL;
+        LocationEditor *loced  = (LocationEditor*)cl_loced;
+        const char     *locstr = loced->awar_charp_value(GLE_READABLE);
+        GEN_position   *gp     = NULL;
+
+        try {
+            LocationPtr loc = parseLocation(locstr);
+            gp              = loc->create_GEN_position();
+        }
+        catch (const char *& err) { error = GBS_global_string("%s", err); }
+        catch (string& err) { error = GBS_global_string("%s", err.c_str()); }
+        catch (...) { gen_assert(0); }
+
+        if (!error) {
+            loced->loc_awar(GLE_POS1)->write_string(&*sizetarray2string(gp->start_pos, gp->parts));
+            loced->loc_awar(GLE_POS2)->write_string(&*sizetarray2string(gp->stop_pos, gp->parts));
+
+            loced->loc_awar(GLE_CERT1)->write_string(&*dupSizedPart(gp->start_uncertain, gp->parts));
+            loced->loc_awar(GLE_CERT2)->write_string(&*dupSizedPart(gp->stop_uncertain, gp->parts));
+            loced->loc_awar(GLE_COMPLEMENT)->write_string(&*dupComplement(gp->complement, gp->parts));
+
+            loced->loc_awar(GLE_JOINABLE)->write_int(gp->parts>1 ? gp->joinable : 1);
+        }
+
+        loced->set_pos(gp);
+        loced->set_status(error);
+
+        loc_update_running--;
+    }
+}
+
+static void GLE_revcomp_cb(AW_window*, AW_CL cl_loced) {
+    LocationEditor *loced  = (LocationEditor*)cl_loced;
+    loced->revcomp();
+}
+
+void LocationEditor::createAwars() {
+    aw_root->awar_string(loc_awar_name(GLE_POS1),       "", gb_main)->add_callback(GLE_update_from_detailFields,      (AW_CL)this);
+    aw_root->awar_string(loc_awar_name(GLE_POS2),       "", gb_main)->add_callback(GLE_update_from_detailFields,      (AW_CL)this);
+    aw_root->awar_string(loc_awar_name(GLE_CERT1),      "", gb_main)->add_callback(GLE_update_from_detailFields,      (AW_CL)this);
+    aw_root->awar_string(loc_awar_name(GLE_CERT2),      "", gb_main)->add_callback(GLE_update_from_detailFields,      (AW_CL)this);
+    aw_root->awar_string(loc_awar_name(GLE_COMPLEMENT), "", gb_main)->add_callback(GLE_update_from_detailFields,      (AW_CL)this);
+    aw_root->awar_int   (loc_awar_name(GLE_JOINABLE),    1, gb_main)->add_callback(GLE_update_from_detailFields,      (AW_CL)this);
+    aw_root->awar_string(loc_awar_name(GLE_READABLE),   "", gb_main)->add_callback(GLE_update_from_location, (AW_CL)this);
+    aw_root->awar_string(loc_awar_name(GLE_STATUS),     "", gb_main);
+}
+
+void LocationEditor::createEditFields(AW_window *aws) {
+    createInputField(aws, "pos1",   GLE_POS1,       POS_WIDTH);
+    createInputField(aws, "cert1",  GLE_CERT1,      CER_WIDTH);
+    createInputField(aws, "pos2",   GLE_POS2,       POS_WIDTH);
+    createInputField(aws, "cert2",  GLE_CERT2,      CER_WIDTH);
+    createInputField(aws, "comp",   GLE_COMPLEMENT, CER_WIDTH);
+    createInputField(aws, "loc",    GLE_READABLE,   LOC_WIDTH);
+    createInputField(aws, "status", GLE_STATUS,     LOC_WIDTH);
+
+    aws->at("rev");
+    aws->callback(GLE_revcomp_cb, (AW_CL)this);
+    aws->button_length(8);
+    aws->create_button("REV", "RevComp");
+    
+    aws->at("join");
+    aws->create_toggle(loc_awar_name(GLE_JOINABLE));
+}
+
+static void gene_changed_cb(AW_root *aw_root, AW_CL cl_loced) {
+    LocationEditor *loced   = (LocationEditor*)cl_loced;
+    GBDATA         *gb_gene = GEN_get_current_gene(loced->get_gb_main(), aw_root);
+    GEN_position   *pos     = gb_gene ? GEN_read_position(gb_gene) : NULL;
+
+    GB_ERROR error = NULL;
+    if (pos) {
+        GEN_use_uncertainties(pos);
+        error = update_location_from_GEN_position(loced, pos);
+    }
+    loced->set_pos(pos);
+    loced->set_status(error);
+}
+
+static void boundloc_changed_cb(AW_root *aw_root, LocationEditor *loced) {
+    GBDATA*             gb_main = loced->get_gb_main();
+    const GEN_position *pos     = loced->get_pos();
+    gen_assert(pos);
+
+    GB_push_transaction(gb_main);
+    GBDATA   *gb_gene = GEN_get_current_gene(gb_main, aw_root);
+    GB_ERROR  error;
+    if (gb_gene) {
+        error = GEN_write_position(gb_gene, pos);
+    }
+    else {
+        error = "That had no effect (no gene is selected)";
+    }
+    GB_end_transaction_show_error(gb_main, error, aw_message);
+
+    if (error) {
+        gene_changed_cb(aw_root, (AW_CL)loced);
+    }
+}
+
+static void gene_create_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_loced) {
+    GBDATA   *gb_main = (GBDATA*)cl_gb_main;
+    GB_ERROR  error   = GB_begin_transaction(gb_main);
+
+    if (!error) {
+        AW_root *aw_root      = aww->get_root();
+        GBDATA  *gb_gene_data = GEN_get_current_gene_data(gb_main, aw_root);
+
+        if (!gb_gene_data) error = "Please select an organism";
+        else {
+            char    *dest    = aw_root->awar(AWAR_GENE_DEST)->read_string();
+            GBDATA  *gb_dest = GEN_find_gene_rel_gene_data(gb_gene_data, dest);
+
+            if (gb_dest) error = GBS_global_string("Gene '%s' already exists", dest);
             else {
-                error = GBT_write_int(gb_dest, "pos_start", pos1);
-                if (!error) error = GBT_write_int(gb_dest, "pos_stop", pos2);
-                if (!error) error = GBT_write_byte(gb_dest, "complement", complement);
+                LocationEditor     *loced = (LocationEditor*)cl_loced;
+                const GEN_position *pos   = loced->get_pos();
+
+                if (!pos) error = "Won't create a gene with invalid position";
+                else  {
+                    gb_dest             = GEN_find_or_create_gene_rel_gene_data(gb_gene_data, dest);
+                    if (!gb_dest) error = GB_await_error();
+                    else error          = GEN_write_position(gb_dest, pos);
+
+                    if (!error) {
+                        aw_root->awar(AWAR_GENE_NAME)->write_string(dest);
+                        aww->hide();
+                    }
+                }
             }
 
-            if (!error) aww->get_root()->awar(AWAR_GENE_NAME)->write_string(dest);
+            free(dest);
         }
     }
     GB_end_transaction_show_error(gb_main, error, aw_message);
-    free(dest);
+
+    gen_assert(!GB_have_error());
 }
 
+static AW_window *get_gene_create_or_locationEdit_window(AW_root *root, bool createGene, GBDATA *gb_main) {
+    static AW_window_simple *awa[2] = { NULL, NULL};
+    static LocationEditor   *le[2] = { NULL, NULL};
+
+    AW_window_simple*& aws   = awa[createGene];
+    LocationEditor*&   loced = le[createGene];
+
+    if (!aws) {
+        gen_assert(gb_main);
+
+        aws   = new AW_window_simple;
+        loced = new LocationEditor(root, gb_main, createGene ? "create" : "edit");
+
+        if (createGene) aws->init(root, "CREATE_GENE",   "GENE CREATE");
+        else            aws->init(root, "EDIT_LOCATION", "EDIT LOCATION");
+
+        aws->load_xfig("ad_gen_create.fig");
+
+        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("close");
+        aws->create_button("CLOSE", "Close", "C");
+
+        aws->at("help");
+        aws->callback(AW_POPUP_HELP, (AW_CL)"gen_create.hlp");
+        aws->create_button("HELP", "Help", "H");
+
+        aws->button_length(NAME_WIDTH);
+        
+        aws->at("organism");
+        aws->create_button(NULL, AWAR_ORGANISM_NAME);
+
+        aws->at("gene");
+        if (createGene) {
+            aws->create_input_field(AWAR_GENE_DEST, NAME_WIDTH);
+        }
+        else {
+            aws->create_button(NULL, AWAR_GENE_NAME);
+            AW_awar *awar_cgene = aws->get_root()->awar(AWAR_COMBINED_GENE_NAME);
+            awar_cgene->add_callback(gene_changed_cb, (AW_CL)loced);
+            awar_cgene->touch();
+
+            loced->add_pos_changed_cb(boundloc_changed_cb);
+        }
+        aws->button_length(0);
+
+        loced->createEditFields(aws);
+
+        if (createGene) {
+            aws->at_shift(0, 30);
+            aws->callback(gene_create_cb, (AW_CL)gb_main, (AW_CL)loced);
+            aws->create_autosize_button("CREATE", "Create gene", "G");
+        }
+    }
+    return aws;
+}
+static void popup_gene_location_editor(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
+    AW_window *aws = get_gene_create_or_locationEdit_window(aww->get_root(), false, (GBDATA*)cl_gb_main);
+    aws->activate();
+}
 static AW_window *create_gene_create_window(AW_root *root, AW_CL cl_gb_main) {
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init(root, "CREATE_GENE", "GENE CREATE");
-    aws->load_xfig("ad_al_si3.fig");
-
-    aws->callback((AW_CB0)AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
-
-    aws->at("label"); aws->create_autosize_button(0, "Please enter the name\nof the new gene");
-    aws->at("input"); aws->create_input_field(AWAR_GENE_DEST, 15);
-
-    aws->at("label1"); aws->create_autosize_button(0, "Start position");
-    aws->at("input1"); aws->create_input_field(AWAR_GENE_POS1, 12);
-
-    aws->at("label2"); aws->create_autosize_button(0, "End position");
-    aws->at("input2"); aws->create_input_field(AWAR_GENE_POS2, 12);
-
-    aws->at("toggle");
-    aws->label("Complementary strand");
-    aws->create_toggle(AWAR_GENE_COMPLEMENT);
-
-    aws->at("ok");
-    aws->callback(gene_create_cb, cl_gb_main);
-    aws->create_button("GO", "GO", "G");
-
-    return (AW_window *)aws;
+    return get_gene_create_or_locationEdit_window(root, true, (GBDATA*)cl_gb_main);
 }
 
 static void gene_delete_cb(AW_window *aww, AW_CL cl_gb_main) {
@@ -598,6 +944,8 @@ static void GEN_create_field_items(AW_window *aws, GBDATA *gb_main) {
     aws->insert_menu_topic("gen_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_scan_unknown_cb,  (AW_CL)gb_main, FIELD_FILTER_NDS);
     aws->insert_menu_topic("gen_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_delete_unused_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
     aws->insert_menu_topic("gen_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_update_cb,        (AW_CL)gb_main, FIELD_FILTER_NDS);
+    aws->insert_separator();
+    aws->insert_menu_topic("gen_edit_loc", "Edit gene location", "l", "gen_create.hlp", AD_F_ALL, popup_gene_location_editor, (AW_CL)gb_main, 0);
 }
 
 #if defined(WARN_TODO)
@@ -633,7 +981,7 @@ AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main) {
         aws->insert_menu_topic("gene_delete", "Delete",     "D", "spa_delete.hlp", AD_F_ALL, (AW_CB)gene_delete_cb, (AW_CL)gb_main, 0);
         aws->insert_menu_topic("gene_rename", "Rename ...", "R", "spa_rename.hlp", AD_F_ALL, AW_POPUP, (AW_CL)create_gene_rename_window, (AW_CL)gb_main);
         aws->insert_menu_topic("gene_copy",   "Copy ...",   "y", "spa_copy.hlp",   AD_F_ALL, AW_POPUP, (AW_CL)create_gene_copy_window,   (AW_CL)gb_main);
-        aws->insert_menu_topic("gene_create", "Create ...", "C", "spa_create.hlp", AD_F_ALL, AW_POPUP, (AW_CL)create_gene_create_window, (AW_CL)gb_main);
+        aws->insert_menu_topic("gene_create", "Create ...", "C", "gen_create.hlp", AD_F_ALL, AW_POPUP, (AW_CL)create_gene_create_window, (AW_CL)gb_main);
         aws->insert_separator();
 
         aws->create_menu("FIELDS", "F", AD_F_ALL);
