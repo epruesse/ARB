@@ -25,7 +25,7 @@
 
 namespace RefEntries {
 
-    static ARB_ERROR generate_item_error(const char *format, const ad_item_selector& itemtype, GBDATA *gb_item) {
+    static ARB_ERROR generate_item_error(const char *format, const ItemSelector& itemtype, GBDATA *gb_item) {
         GBDATA *gb_main          = GB_get_root(gb_item);
         char   *item_id          = itemtype.generate_item_id(gb_main, gb_item);
         char   *item_description = GBS_global_string_copy("%s '%s'", itemtype.item_name, item_id);
@@ -39,7 +39,7 @@ namespace RefEntries {
         return error;
     }
 
-    const char *RefSelector::get_refs(const ad_item_selector& itemtype, GBDATA *gb_item) const {
+    const char *RefSelector::get_refs(const ItemSelector& itemtype, GBDATA *gb_item) const {
         const char *refs    = NULL;
         GBDATA     *gb_refs = GB_entry(gb_item, field);
         if (gb_refs) {
@@ -55,7 +55,7 @@ namespace RefEntries {
         return refs ? GB_command_interpreter(GB_get_root(gb_item), refs, aci, gb_item, NULL) : NULL;
     }
 
-    static ARB_ERROR addRefsTo(DBItemSet& referred, const ad_item_selector& itemtype, GBDATA *gb_item, const RefSelector& ref) {
+    static ARB_ERROR addRefsTo(DBItemSet& referred, const ItemSelector& itemtype, GBDATA *gb_item, const RefSelector& ref) {
         ARB_ERROR   error;
         const char *refs     = ref.get_refs(itemtype, gb_item);
         char       *filtered = ref.filter_refs(refs, gb_item);
@@ -93,7 +93,7 @@ namespace RefEntries {
         return error;
     }
 
-    ARB_ERROR ReferringEntriesHandler::with_all_referred_items(AWT_QUERY_RANGE range, const RefSelector& refsel, referred_item_handler callback) {
+    ARB_ERROR ReferringEntriesHandler::with_all_referred_items(QUERY_RANGE range, const RefSelector& refsel, referred_item_handler callback) {
         re_assert(range != QUERY_CURRENT_ITEM); // would need AW_root
 
         ARB_ERROR  error;
@@ -149,7 +149,7 @@ namespace RefEntries {
         referred_item_handler    ricb = (referred_item_handler)cl_ricb;
 
         AW_root         *aw_root   = aww->get_root();
-        AWT_QUERY_RANGE  range = aw_root->awar(AWAR_MARKBYREF_ALL)->read_int() ? QUERY_ALL_ITEMS : QUERY_MARKED_ITEMS;
+        QUERY_RANGE  range = aw_root->awar(AWAR_MARKBYREF_ALL)->read_int() ? QUERY_ALL_ITEMS : QUERY_MARKED_ITEMS;
 
         RefSelector refsel(aw_root->awar(AWAR_MARKBYREF_FIELD)->read_char_pntr(),
                            aw_root->awar(AWAR_MARKBYREF_FILTER)->read_char_pntr(),
@@ -162,7 +162,7 @@ namespace RefEntries {
 
     static void refresh_result_cb(AW_root *aw_root, AW_CL cl_reh) {
         ReferringEntriesHandler *reh      = (ReferringEntriesHandler*)cl_reh;
-        const ad_item_selector&  itemtype = reh->get_referring_item();
+        const ItemSelector&      itemtype = reh->get_referring_item();
         GBDATA                  *gb_main  = reh->get_gbmain();
         GB_transaction           ta(gb_main);
 
@@ -245,7 +245,7 @@ namespace RefEntries {
         const int LABEL_LENGTH = 27;
         aws->label_length(LABEL_LENGTH);
 
-        const ad_item_selector& itemtype = reh->get_referring_item();
+        const ItemSelector& itemtype = reh->get_referring_item();
 
         char *items_name = strdup(itemtype.items_name);
         items_name[0]    = toupper(items_name[0]);

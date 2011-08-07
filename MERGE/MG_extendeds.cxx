@@ -194,12 +194,12 @@ AW_window *MG_merge_extendeds_cb(AW_root *awr) {
 
     aws->at("ex1");
     awt_create_selection_list_on_extendeds(GLOBAL_gb_merge, (AW_window *)aws, AWAR_EX_NAME1);
-    AW_CL scannerid = create_db_scanner(GLOBAL_gb_merge, aws, "info1", 0, 0, 0, DB_SCANNER, 0, 0, 0, &AWT_species_selector);
+    AW_CL scannerid = create_db_scanner(GLOBAL_gb_merge, aws, "info1", 0, 0, 0, DB_SCANNER, 0, 0, 0, &ITEM_species);
     aws->get_root()->awar(AWAR_EX_NAME1)->add_callback(MG_map_extended1, scannerid);
 
     aws->at("ex2");
     awt_create_selection_list_on_extendeds(GLOBAL_gb_dest, (AW_window *)aws, AWAR_EX_NAME2);
-    scannerid = create_db_scanner(GLOBAL_gb_dest, aws, "info2", 0, 0, 0, DB_SCANNER, 0, 0, 0, &AWT_species_selector);
+    scannerid = create_db_scanner(GLOBAL_gb_dest, aws, "info2", 0, 0, 0, DB_SCANNER, 0, 0, 0, &ITEM_species);
     aws->get_root()->awar(AWAR_EX_NAME2)->add_callback(MG_map_extended2, scannerid);
 
     aws->button_length(20);

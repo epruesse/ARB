@@ -104,7 +104,7 @@ inline void gen_restore_old_species_marks(GBDATA *gb_main) {
     }
 }
 
-static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QUERY_RANGE range) {
+static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, QUERY_RANGE range) {
     GBDATA   *gb_organism = 0;
     GB_ERROR  error      = 0;
 
@@ -144,7 +144,7 @@ static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QU
     return gb_organism ? GEN_expect_gene_data(gb_organism) : 0;
 }
 
-static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE range) {
+static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, QUERY_RANGE range) {
     GBDATA *gb_organism = 0;
     switch (range) {
         case QUERY_CURRENT_ITEM: {
@@ -172,7 +172,7 @@ static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE rang
     return gb_organism ? GEN_expect_gene_data(gb_organism) : 0;
 }
 
-static GBDATA *first_gene_in_range(GBDATA *gb_gene_data, AWT_QUERY_RANGE range) {
+static GBDATA *first_gene_in_range(GBDATA *gb_gene_data, QUERY_RANGE range) {
     GBDATA *gb_first = NULL;
     switch (range) {
         case QUERY_ALL_ITEMS:    gb_first = GEN_first_gene_rel_gene_data(gb_gene_data); break;
@@ -181,7 +181,7 @@ static GBDATA *first_gene_in_range(GBDATA *gb_gene_data, AWT_QUERY_RANGE range) 
     }
     return gb_first;
 }
-static GBDATA *next_gene_in_range(GBDATA *gb_prev, AWT_QUERY_RANGE range) {
+static GBDATA *next_gene_in_range(GBDATA *gb_prev, QUERY_RANGE range) {
     GBDATA *gb_next = NULL;
     switch (range) {
         case QUERY_ALL_ITEMS:    gb_next = GEN_next_gene(gb_prev); break;
@@ -194,12 +194,12 @@ static GBDATA *next_gene_in_range(GBDATA *gb_prev, AWT_QUERY_RANGE range) {
 // --------------------------
 //      GEN_item_selector
 
-struct ad_item_selector GEN_item_selector = {
-    AWT_QUERY_ITEM_GENES,
+struct ItemSelector GEN_item_selector = {
+    QUERY_ITEM_GENES,
     GEN_select_gene,
     gen_get_gene_id,
     gen_find_gene_by_id,
-    (AW_CB)awt_gene_field_selection_list_update_cb,
+    (AW_CB)gene_field_selection_list_update_cb,
     -1, // unknown
     CHANGE_KEY_PATH_GENES,
     "gene",
@@ -210,10 +210,10 @@ struct ad_item_selector GEN_item_selector = {
     first_gene_in_range,
     next_gene_in_range,
     GEN_get_current_gene,
-    &AWT_organism_selector, GB_get_grandfather,
+    &ITEM_organism, GB_get_grandfather,
 };
 
-ad_item_selector *GEN_get_selector() { return &GEN_item_selector; }
+ItemSelector *GEN_get_selector() { return &GEN_item_selector; }
 
 void GEN_species_name_changed_cb(AW_root *awr, AW_CL cl_gb_main) {
     char           *species_name = awr->awar(AWAR_SPECIES_NAME)->read_string();
@@ -362,9 +362,9 @@ GBDATA *GEN_get_current_gene(GBDATA *gb_main, AW_root *aw_root) {
 }
 
 
-static AW_CL    GEN_global_scannerid   = 0;
-static AW_root *GEN_global_scannerroot = 0;
-AW_CL           gene_query_global_cbs = 0;
+static AW_CL           GEN_global_scannerid   = 0;
+static AW_root        *GEN_global_scannerroot = 0;
+static QUERY::DbQuery *GLOBAL_gene_query      = 0;
 
 static void gene_rename_cb(AW_window *aww, AW_CL cl_gb_main) {
     AW_root *aw_root = aww->get_root();
@@ -587,20 +587,20 @@ static void GEN_map_gene(AW_root *aw_root, AW_CL scannerid, AW_CL cl_gb_main) {
 }
 
 static void GEN_create_field_items(AW_window *aws, GBDATA *gb_main) {
-    static bound_item_selector *bis = 0;
+    static BoundItemSel *bis = 0;
 
     gen_assert(!bis);
-    bis = new bound_item_selector(gb_main, GEN_item_selector);
+    bis = new BoundItemSel(gb_main, GEN_item_selector);
 
-    aws->insert_menu_topic("gen_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)DBUI::NT_create_ad_list_reorder, (AW_CL)&bis);
-    aws->insert_menu_topic("gen_delete_field",   "Delete/Hide field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::NT_create_ad_field_delete, (AW_CL)&bis);
-    aws->insert_menu_topic("gen_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::NT_create_ad_field_create, (AW_CL)&bis);
+    aws->insert_menu_topic("gen_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_fields_reorder_window, (AW_CL)&bis);
+    aws->insert_menu_topic("gen_delete_field",   "Delete/Hide field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_delete_window, (AW_CL)&bis);
+    aws->insert_menu_topic("gen_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_create_window, (AW_CL)&bis);
     aws->insert_separator();
-    aws->insert_menu_topic("gen_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_unhide_all_cb, (AW_CL)gb_main, AWT_NDS_FILTER);
+    aws->insert_menu_topic("gen_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_unhide_all_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
     aws->insert_separator();
-    aws->insert_menu_topic("gen_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_scan_unknown_cb,  (AW_CL)gb_main, AWT_NDS_FILTER);
-    aws->insert_menu_topic("gen_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_delete_unused_cb, (AW_CL)gb_main, AWT_NDS_FILTER);
-    aws->insert_menu_topic("gen_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_update_cb,        (AW_CL)gb_main, AWT_NDS_FILTER);
+    aws->insert_menu_topic("gen_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_scan_unknown_cb,  (AW_CL)gb_main, FIELD_FILTER_NDS);
+    aws->insert_menu_topic("gen_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_delete_unused_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
+    aws->insert_menu_topic("gen_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_update_cb,        (AW_CL)gb_main, FIELD_FILTER_NDS);
 }
 
 AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main) {
@@ -627,7 +627,7 @@ AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main) {
         aws->create_button("HELP", "HELP", "H");
 
 
-        AW_CL scannerid        = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", AWT_NDS_FILTER, &GEN_item_selector);
+        AW_CL scannerid        = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, &GEN_item_selector);
         GEN_global_scannerid   = scannerid;
         GEN_global_scannerroot = aws->get_root();
 
@@ -648,7 +648,7 @@ AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main) {
             cb_info->add_callback();
 
             aws->at("detach");
-            aws->callback(DBUI::NT_detach_information_window, (AW_CL)&aws, (AW_CL)detach_info);
+            aws->callback(DBUI::detach_info_window, (AW_CL)&aws, (AW_CL)detach_info);
             aws->create_button("DETACH", "DETACH", "D");
 
             detach_info->set_detach_button(aws->get_last_widget());
@@ -678,7 +678,7 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
         aws->create_menu("More functions", "f");
         aws->load_xfig("ad_query.fig");
 
-        awt_query_struct awtqs;
+        QUERY::query_spec awtqs;
 
         awtqs.gb_main             = (GBDATA*)cl_gb_main;
         awtqs.species_name        = AWAR_SPECIES_NAME;
@@ -705,12 +705,12 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
         awtqs.create_view_window  = GEN_create_gene_window;
         awtqs.selector            = &GEN_item_selector;
 
-        AW_CL cbs             = (AW_CL)awt_create_query_box(aws, &awtqs, "gen");
-        gene_query_global_cbs = cbs;
+        QUERY::DbQuery *query = create_query_box(aws, &awtqs, "gen");
+        GLOBAL_gene_query     = query;
 
         aws->create_menu("More search",     "s");
-        aws->insert_menu_topic("gen_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",               "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs, 0);
-        aws->insert_menu_topic("gen_search_equal_words_within_db",  "Search For Equal Words Between Fields and Mark Duplicates", "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs, 1);
+        aws->insert_menu_topic("gen_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",               "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)QUERY::search_duplicated_field_content, (AW_CL)query, 0);
+        aws->insert_menu_topic("gen_search_equal_words_within_db",  "Search For Equal Words Between Fields and Mark Duplicates", "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)QUERY::search_duplicated_field_content, (AW_CL)query, 1);
 
         aws->button_length(7);
 

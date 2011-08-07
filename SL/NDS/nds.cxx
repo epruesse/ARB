@@ -485,7 +485,7 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, AW_CL cgb_main) {
                 aws->create_input_field(awar_name, 15);
 
                 aws->button_length(0);
-                aws->callback(AWT_popup_select_species_field_window, (AW_CL)awar_name, cgb_main); // awar_name belongs to cbs now
+                aws->callback(popup_select_species_field_window, (AW_CL)awar_name, cgb_main); // awar_name belongs to cbs now
                 aws->get_at_position(&fieldselectx, &dummy);
 
                 char *button_id = GBS_global_string_copy("SELECT_NDS_%i", i+1);

@@ -15,18 +15,18 @@
 #include <aw_awars.hxx>
 
 
-static GBDATA *awt_get_first_species_data(GBDATA *gb_main, AW_root *, AWT_QUERY_RANGE) {
+static GBDATA *get_first_species_data(GBDATA *gb_main, AW_root *, QUERY_RANGE) {
     return GBT_get_species_data(gb_main);
 }
-static GBDATA *awt_get_next_species_data(GBDATA *, AWT_QUERY_RANGE) {
+static GBDATA *get_next_species_data(GBDATA *, QUERY_RANGE) {
     return 0; // there is only ONE species_data
 }
 
-static void awt_select_species(GBDATA*,  AW_root *aw_root, const char *item_name) {
+static void select_species(GBDATA*,  AW_root *aw_root, const char *item_name) {
     aw_root->awar(AWAR_SPECIES_NAME)->write_string(item_name);
 }
 
-static GBDATA* awt_get_selected_species(GBDATA *gb_main, AW_root *aw_root) {
+static GBDATA* get_selected_species(GBDATA *gb_main, AW_root *aw_root) {
     char   *species_name = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
     GBDATA *gb_species   = 0;
     if (species_name[0]) {
@@ -36,27 +36,26 @@ static GBDATA* awt_get_selected_species(GBDATA *gb_main, AW_root *aw_root) {
     return gb_species;
 }
 
-static char* awt_get_species_id(GBDATA *, GBDATA *gb_species) {
-    // awt_get_species_id creates the label that occurs in the search and query result list
+static char* get_species_id(GBDATA *, GBDATA *gb_species) {
     GBDATA *gb_name = GB_entry(gb_species, "name");
     if (!gb_name) return 0;     // species w/o name -> skip
     return GB_read_as_string(gb_name);
 }
 
-static GBDATA *awt_find_species_by_id(GBDATA *gb_main, const char *id) {
+static GBDATA *find_species_by_id(GBDATA *gb_main, const char *id) {
     return GBT_find_species(gb_main, id); // id is 'name' field
 }
 
-static GBDATA *awt_get_first_species(GBDATA *gb_species_data, AWT_QUERY_RANGE range) {
+static GBDATA *get_first_species(GBDATA *gb_species_data, QUERY_RANGE range) {
     GBDATA *gb_first = NULL;
     switch (range) {
         case QUERY_ALL_ITEMS:    gb_first = GBT_first_species_rel_species_data(gb_species_data); break;
         case QUERY_MARKED_ITEMS: gb_first = GBT_first_marked_species_rel_species_data(gb_species_data); break;
-        case QUERY_CURRENT_ITEM: gb_first = awt_get_selected_species(GB_get_root(gb_species_data), AW_root::SINGLETON); break;
+        case QUERY_CURRENT_ITEM: gb_first = get_selected_species(GB_get_root(gb_species_data), AW_root::SINGLETON); break;
     }
     return gb_first;
 }
-static GBDATA *awt_get_next_species(GBDATA *gb_prev, AWT_QUERY_RANGE range) {
+static GBDATA *get_next_species(GBDATA *gb_prev, QUERY_RANGE range) {
     GBDATA *gb_next = NULL;
     switch (range) {
         case QUERY_ALL_ITEMS:    gb_next = GBT_next_species(gb_prev); break;
@@ -66,45 +65,45 @@ static GBDATA *awt_get_next_species(GBDATA *gb_prev, AWT_QUERY_RANGE range) {
     return gb_next;
 }
 
-struct ad_item_selector AWT_species_selector = {
-    AWT_QUERY_ITEM_SPECIES,
-    awt_select_species,
-    awt_get_species_id,
-    awt_find_species_by_id,
-    (AW_CB)awt_selection_list_update_cb,
+struct ItemSelector ITEM_species = {
+    QUERY_ITEM_SPECIES,
+    select_species,
+    get_species_id,
+    find_species_by_id,
+    (AW_CB)species_field_selection_list_update_cb,
     12,
     CHANGE_KEY_PATH,
     "species",
     "species",
     "name",
-    awt_get_first_species_data,
-    awt_get_next_species_data,
-    awt_get_first_species,
-    awt_get_next_species,
-    awt_get_selected_species,
+    get_first_species_data,
+    get_next_species_data,
+    get_first_species,
+    get_next_species,
+    get_selected_species,
     0, 0,
 };
 
-struct ad_item_selector AWT_organism_selector = {
-    AWT_QUERY_ITEM_SPECIES,
-    awt_select_species,
-    awt_get_species_id,
-    awt_find_species_by_id,
-    (AW_CB)awt_selection_list_update_cb,
+struct ItemSelector ITEM_organism = {
+    QUERY_ITEM_SPECIES,
+    select_species,
+    get_species_id,
+    find_species_by_id,
+    (AW_CB)species_field_selection_list_update_cb,
     12,
     CHANGE_KEY_PATH,
     "organism",
     "organism",
     "name",
-    awt_get_first_species_data,
-    awt_get_next_species_data,
-    awt_get_first_species,
-    awt_get_next_species,
-    awt_get_selected_species,
+    get_first_species_data,
+    get_next_species_data,
+    get_first_species,
+    get_next_species,
+    get_selected_species,
     0, 0,
 };
 
-void AWT_popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_gb_main) {
+void popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_gb_main) {
     static AW_window_simple *aws = 0;
 
     // everytime map selection awar to latest user awar:
@@ -123,11 +122,11 @@ void AWT_popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, A
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        awt_create_selection_list_on_itemfields((GBDATA *)cl_gb_main,
-                                                aws,
-                                                "tmp/viewkeys/key_text_select",
-                                                AWT_NDS_FILTER,
-                                                "scandb", "rescandb", &AWT_species_selector, 20, 10);
+        create_selection_list_on_itemfields((GBDATA *)cl_gb_main,
+                                            aws,
+                                            "tmp/viewkeys/key_text_select",
+                                            FIELD_FILTER_NDS,
+                                            "scandb", "rescandb", &ITEM_species, 20, 10);
         aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
     }
     aws->activate();

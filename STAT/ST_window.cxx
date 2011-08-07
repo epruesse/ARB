@@ -215,14 +215,14 @@ AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
         aws->at("sb");
         aws->create_input_field(ST_ML_AWAR_CQ_BUCKET_SIZE);
 
-        awt_create_selection_list_on_itemfields(gb_main, aws,
+        create_selection_list_on_itemfields(gb_main, aws,
                                                 ST_ML_AWAR_CQ_DEST_FIELD,
                                                 1 << GB_STRING,
                                                 "dest",
                                                 0,
-                                                &AWT_species_selector,
+                                                &ITEM_species,
                                                 20, 10,
-                                                AWT_SF_STANDARD,
+                                                SF_STANDARD,
                                                 "SELECT_REPORT_FIELD");
 
         aws->at("report");
