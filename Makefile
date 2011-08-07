@@ -854,7 +854,6 @@ ARCHS_EDIT4 := \
 
 ifeq ($(OPENGL),1)
 ARCHS_EDIT4 += RNA3D/RNA3D.a
-RNA3D/RNA3D.dummy: gl
 endif
 
 LIBS_EDIT4 := $(GL_LIBS)
@@ -1172,6 +1171,7 @@ NAMES_COM/client.dummy:
 
 ARBDB/libARBDB.dummy:			links
 CORE/libCORE.dummy:			links
+
 SL/FILE_BUFFER/FILE_BUFFER.dummy:	links
 PERLTOOLS/PERLTOOLS.dummy:		core db SL/FILE_BUFFER/FILE_BUFFER.dummy
 
@@ -1186,7 +1186,6 @@ EDIT4/EDIT4.dummy:			links_non_perl templ com
 EISPACK/EISPACK.dummy:			links_non_perl
 GDE/GDE.dummy:				links_non_perl
 GENOM/GENOM.dummy:			links_non_perl
-GL/GL.dummy:				links_non_perl
 ISLAND_HOPPING/ISLAND_HOPPING.dummy:	links_non_perl
 GENOM_IMPORT/GENOM_IMPORT.dummy:	links_non_perl
 PARSIMONY/PARSIMONY.dummy:		links_non_perl
@@ -1231,12 +1230,22 @@ PGT/PGT.dummy:				links_non_perl
 NTREE/NTREE.dummy:			links_non_perl templ
 SERVERCNTRL/SERVERCNTRL.dummy:		links_non_perl com
 
-TOOLS/TOOLS.dummy : core db com \
+ifeq ($(OPENGL),1)
+GL/glAW/glAW.dummy: links_non_perl
+GL/glpng/glpng.dummy: links_non_perl
+GL/GL.dummy: GL/glAW/glAW.dummy GL/glpng/glpng.dummy
+RNA3D/RNA3D.dummy: links_non_perl gl
+endif
+
+UNIT_TESTER/UNIT_TESTER.dummy:		link_db \
+	SERVERCNTRL/SERVERCNTRL.dummy \
+
+TOOLS/TOOLS.dummy : links_non_perl link_db \
 	SL/FILE_BUFFER/FILE_BUFFER.dummy \
 	SERVERCNTRL/SERVERCNTRL.dummy \
 	SL/TREE_WRITE/TREE_WRITE.dummy \
 	SL/TREE_READ/TREE_READ.dummy \
-	XML/XML.dummy
+	XML/XML.dummy \
 
 AWTC/AWTC.dummy :   			com
 
@@ -1251,6 +1260,12 @@ NALIGNER/NALIGNER.dummy : 		com
 
 ARB_GDE/ARB_GDE.dummy : 		proto_tools
 
+# synonyms for some dummy targets
+
+ARBDB/ARBDB.dummy:		ARBDB/libARBDB.dummy
+CORE/CORE.dummy:		CORE/libCORE.dummy
+AWT/AWT.dummy:			AWT/libAWT.dummy 
+WINDOW/WINDOW.dummy:		WINDOW/libWINDOW.dummy
 
 #***************************************************************************************
 #			Short aliases to make targets
@@ -1336,8 +1351,15 @@ ph:	$(PHYLO)
 pa:	$(PARSIMONY)
 tg:	$(TREEGEN)
 
+ifeq ($(OPENGL),1)
 3d:	RNA3D/RNA3D.dummy
 gl:	GL/GL.dummy
+else
+noopengl:
+	@echo "invalid target for OPENGL=0"
+3d: noopengl
+gl: noopengl
+endif
 
 SL/SL.dummy: com
 
@@ -1489,7 +1511,7 @@ readseq:	READSEQ/READSEQ.dummy
 #			Some user commands
 #***************************************************************************************
 
-menus: binlink
+menus: binlink links
 	@(( \
 		echo "$(SEP) Make GDEHELP"; \
 		$(MAKE) -C GDEHELP -r "PP=$(PP)" all && \
@@ -1505,12 +1527,6 @@ endif
 
 binlink:
 	$(MAKE) -C bin $(BIN_TARGET)
-
-bin/arb_%:	DEPOT2/%
-	cp $< $@
-bin/%:	DEPOT2/%
-	cp $< $@
-
 
 preplib:
 	(cd lib;$(MAKE) all)
