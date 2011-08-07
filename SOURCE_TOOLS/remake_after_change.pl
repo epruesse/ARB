@@ -170,35 +170,40 @@ sub config2env() {
     system($cmd);
     exit(1);
   }
-  
+
   open(CONF,'<'.$conf) || die "can't read '$conf' (Reason: $!)";
 
-  my $OPENGL = 0;
-  my $PTPAN  = 0;
+  my $OPENGL     = 0;
+  my $PTPAN      = 0;
+  my $UNIT_TESTS = 0;
 
   foreach (<CONF>) {
     chomp;
     if (/^OPENGL\s*:=\s*([0-9]+)/) { $OPENGL = $1; }
     if (/^PTPAN\s*:=\s*([0-9]+)/) { $PTPAN = $1; }
+    if (/^UNIT_TESTS\s*:=\s*([0-9]+)/) { $UNIT_TESTS = $1; }
   }
   close(CONF);
 
   print "Using:\n";
   print "- OPENGL=$OPENGL\n";
   print "- PTPAN=$PTPAN\n";
+  print "- UNIT_TESTS=$UNIT_TESTS\n";
 
   if ($OPENGL==1) {
     $ENV{RNA3D_LIB} = 'RNA3D/RNA3D.a';
   }
   if ($PTPAN==1) { $ENV{ARCHS_PT_SERVER_LINK} = 'ptpan/PROBE.a'; }
   else { $ENV{ARCHS_PT_SERVER_LINK} = 'PROBE/PROBE.a'; }
+
+  return $UNIT_TESTS;
 }
 
 sub main() {
   my $dir = `pwd`;
   chomp($dir);
 
-  config2env();
+  my $UNIT_TESTS = config2env();
 
   if (not $dir =~ /^$ARBHOME/) {
     print "Usage: simply call in any directory inside ARBHOME\n";
@@ -259,7 +264,13 @@ sub main() {
 
     print "\n";
 
-    my $makecmd = "cd $ARBHOME;make \"TIMED_TARGET=$targets\" -j$jobs timed_target";
+    my $targets_contain_unittests = 0;
+    my %targets = map { $_ => 1; } split / /,$targets;
+    if (defined $targets{all}) { $targets_contain_unittests = 1; }
+
+    my $timed_target = (($UNIT_TESTS==0) or ($targets_contain_unittests==1)) ? 'timed_target' : 'timed_target_tested';
+
+    my $makecmd = "cd $ARBHOME;make \"TIMED_TARGET=$targets\" -j$jobs $timed_target";
     # my $makecmd = "cd $ARBHOME;make -j$jobs $targets";
     # print "makecmd='$makecmd'\n";
 
