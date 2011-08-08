@@ -15,6 +15,9 @@
 #include <arbtools.h>
 #endif
 
+#ifndef ARB_OPENGL
+#error shall only be compiled in ARB_OPENGL mode
+#endif // ARB_OPENGL
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846

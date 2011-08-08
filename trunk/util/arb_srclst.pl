@@ -22,7 +22,6 @@ my @skipped_directories = (
                            qr/^\.\/lib\/help_html$/o,
                            qr/^\.\/lib\/pts$/o,
                            qr/^\.\/LIBLINK$/o,
-                           qr/^\.\/MAKEBIN$/o,
                            qr/^\.\/patches.arb$/o,
                            qr/^\.\/PERL5$/o,
                            qr/_COM\/DUMP$/o,
