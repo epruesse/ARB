@@ -97,6 +97,11 @@ pregenerate: $(GEN_INCLUDES) $(GEN_SERVER_PROTO) $(GEN_SERVER_OBJECTS:.o=.c)
 directories:
 	@mkdir -p GENH GENC O DUMP
 
+GENH:	directories
+GENC:	directories
+O:	directories
+DUMP:	directories
+
 $(SERVER): $(SERVER_OBJECTS) $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS)
 	$(LINK_STATIC_LIB) $@ $^
 
