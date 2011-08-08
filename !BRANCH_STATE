@@ -109,11 +109,13 @@ BRANCH->TRUNK
                 7753 7754 7755 7762 -> 7813
                 7760 7761 7763 7764 7765 -> 7814
                 7766 7767 -> 7815
+                7773 7776 7797 -> 7818
+                7774 7778 7779 7780 7781 7782 7783 7784 7785 7786 7787 7788 7789 7790 7791 7792 7793 7794 7795 7796 7817 -> 7819
 
     skipped patches (depends, already there, this file, ...)
 
-                this file:      7249 7277 7351 7416 7627 7670
-                depends:        7256 7540 7573 7709
+                this file:      7249 7277 7351 7416 7627 7670 7816
+                depends:        7256 7540 7573 7709 7777
                 not needed:     7507 7560
                 crap:           7278 7280 7545 7756 
                 sync 2 trunk:   7281
@@ -134,29 +136,5 @@ BRANCH->TRUNK
 
         --- current try above
 
-                7773 make_cleanup (MAKEBIN)
-                7774 needed_libs (-T)
-                7776 svn ignores (perl)
-                7777 depends
-                7778 make_async (needs_libs)
-                7779 make_cleanup (vardef,$(MAIN))
-                7780 make_async (dep_graph)
-                7781 make_async (perl/speed)
-                7782 make_cleanup (Xlib)
-                7783 make_cleanup (dir generation)
-                7784 make_cleanup ($(MAIN))
-                7785 make_async (see [7789])
-                7786 make_cleanup (shared_libs)
-                7787 make_async (tags,async up)
-                7788 make_cleanup (1st make fix)
-                7789 make_async (fix [7785])
-                7790 make_async (dependency)
-                7791 test_async (mutex)
-                7792 test_async (ARB_PID)
-                7793 test_async (ARB_PID)
-                7794 libdepends (unused yet)
-                7795 make_cleanup (OPENGL,synonyms)
-                7796 remake_after_change (auto-test)
-                7797 OPENGL stopper
 
-    not reviewed: 7798:HEAD
+    not reviewed: 7819:HEAD
