@@ -265,15 +265,24 @@ sub main() {
     print "\n";
 
     my $targets_contain_unittests = 0;
+    my $targets_are_timed = 0;
+
     my %targets = map { $_ => 1; } split / /,$targets;
-    if (defined $targets{all}) { $targets_contain_unittests = 1; }
+    if (defined $targets{all}) {
+      $targets_contain_unittests = 1;
+      $targets_are_timed         = 1;
+    }
 
-    my $timed_target = (($UNIT_TESTS==0) or ($targets_contain_unittests==1)) ? 'timed_target' : 'timed_target_tested';
+    my $makecmd;
+    if ($targets_are_timed==1) {
+      $makecmd = "cd $ARBHOME;make -j$jobs $targets";
+    }
+    else {
+      my $timed_target = (($UNIT_TESTS==0) or ($targets_contain_unittests==1)) ? 'timed_target' : 'timed_target_tested';
+      $makecmd = "cd $ARBHOME;make \"TIMED_TARGET=$targets\" -j$jobs $timed_target";
+    }
 
-    my $makecmd = "cd $ARBHOME;make \"TIMED_TARGET=$targets\" -j$jobs $timed_target";
-    # my $makecmd = "cd $ARBHOME;make -j$jobs $targets";
-    # print "makecmd='$makecmd'\n";
-
+    print "[Make: '$makecmd']\n";
     system($makecmd)==0 || die "error executing '$makecmd' (exitcode=$?)";
     print "remake[3]: Leaving directory `$ARBHOME'\n";
   }
