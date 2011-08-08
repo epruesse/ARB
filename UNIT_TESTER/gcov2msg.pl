@@ -5,7 +5,15 @@ use warnings;
 
 use Cwd;
 
-my $showCoverageForAll = 0; # set to 1 to see coverage for all modules (recommended setting is 0)
+my $showCoverageForAll = 0; # show coverage only for files containing tests (recommended setting)
+# my $showCoverageForAll = 1; # show coverage for all files
+
+my $showCoverageForFilesMatching = qr/.*/; # show all files
+# my $showCoverageForFilesMatching = qr/.*(adlang|adquery).*/; # show only some files
+# my $showCoverageForFilesMatching = qr/.*(adlang).*/; # show only some files
+
+# my $sortBySectionSize = 0; # sort by location
+my $sortBySectionSize = 1; # sort by section size
 
 my $verbose = 0;
 
@@ -156,19 +164,26 @@ sub collect_gcov_data($$) {
   else {
     my $summary = "lines=$lines covered=$covered (coverage=$percent%)";
 
-    $verbose==0 ||
-      print "collect_gcov_data($gcov): $summary\n";
+    $verbose==0 || print "collect_gcov_data($gcov): $summary\n";
     $covered>0 || die "Argh.. collected data for completely uncovered file '$source'";
 
-    if ($tests_seen==0 and $showCoverageForAll==0) {
-      print "$source_name defines no tests. $summary\n";
-    }
+    if    ($tests_seen==0 and $showCoverageForAll==0)         { print "$source_name defines no tests. $summary\n"; }
+    elsif (not $source_name =~ $showCoverageForFilesMatching) { print "Skipping $source_name by mask. $summary\n"; }
     else {
       my $line = 0;
+      my @sections = ();
+
     SECTION: while (1) {
         my ($first,$last,$loc) = next_uncovered_section_after(@covered_lines, $size, $line);
         if (not defined $first) { last SECTION; }
+        push @sections, [$first,$last,$loc];
+        $line = $last;
+      }
 
+      if ($sortBySectionSize==1) { @sections = sort { $$a[2] <=> $$b[2]; } @sections; }
+
+      foreach my $sec_r (@sections) {
+        my ($first,$last,$loc) = ($$sec_r[0],$$sec_r[1], $$sec_r[2]);
         if ($first==$last) {
           print_annotated_message($source, $first, 'Uncovered line');
         }
@@ -176,7 +191,6 @@ sub collect_gcov_data($$) {
           print_annotated_message($source, $first, "[start] $loc uncovered lines");
           print_annotated_message($source, $last, '[end]');
         }
-        $line = $last;
       }
 
       if ($percent<90) { print "$source_name:0: Warning: Summary $summary\n"; }
