@@ -11,9 +11,9 @@ $(MAIN): $(OBJECTS)
 	$(CPPLIB) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 proto: 
-	../MAKEBIN/aisc_mkpt -P -G -A -w arb_msg.h    arb_msg.cxx    > arb_msg.genh
-	../MAKEBIN/aisc_mkpt -P -G -A -w arb_string.h arb_string.cxx > arb_string.genh
-	../MAKEBIN/aisc_mkpt -P -G -A -w arb_signal.h arb_signal.cxx > arb_signal.genh
+	../AISC_MKPTPS/aisc_mkpt -P -G -A -w arb_msg.h    arb_msg.cxx    > arb_msg.genh
+	../AISC_MKPTPS/aisc_mkpt -P -G -A -w arb_string.h arb_string.cxx > arb_string.genh
+	../AISC_MKPTPS/aisc_mkpt -P -G -A -w arb_signal.h arb_signal.cxx > arb_signal.genh
 	../SOURCE_TOOLS/mv_if_diff arb_msg.genh    arb_msg.h
 	../SOURCE_TOOLS/mv_if_diff arb_string.genh arb_string.h
 	../SOURCE_TOOLS/mv_if_diff arb_signal.genh arb_signal.h

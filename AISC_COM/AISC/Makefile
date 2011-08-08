@@ -5,8 +5,8 @@ MAKETHIS=$(MAKE) -f $(THIS)
 .SUFFIXES: .o .c .h .aisc
 
 #where to find the creator files
-AISC=../MAKEBIN/aisc
-AISC_MKPT = ../MAKEBIN/aisc_mkpt
+AISC=../AISC/aisc
+AISC_MKPT = ../AISC_MKPTPS/aisc_mkpt
 
 RUN_AISC:=$(AISC)
 # valgrinding like this breaks the build process (due to wrong exitcode)

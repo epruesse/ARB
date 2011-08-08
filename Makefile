@@ -1493,7 +1493,6 @@ bin_reinit:
 clean_directories:
 	-rm -rf \
 		$(ARBHOME)/PROBE_SET/bin \
-		$(ARBHOME)/MAKEBIN \
 		$(ARBHOME)/INCLUDE \
 		$(ARBHOME)/LIBLINK \
 
