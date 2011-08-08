@@ -22,16 +22,18 @@ AISC_DEPENDS = $(wildcard AISC/*.pa) $(AISC_COMPILER) $(AISC_PROTOTYPER)
 
 include AISC/export2sub
 
-server.a:	$(MAIN_SOURCE)	$(PRIVATE_SERVER_OBJECTS:.o=.c) $(PUBLIC_SOURCES) $(AISC_DEPENDS)  $(MAIN_HEADER)
-		@$(MAKE) -r -f AISC/Makefile
+$(MAIN): server.a
+
+server.a: $(MAIN_SOURCE) $(PRIVATE_SERVER_OBJECTS:.o=.c) $(PUBLIC_SOURCES) $(AISC_DEPENDS) $(MAIN_HEADER)
+	@$(MAKE) -r -f AISC/Makefile
 
 depends:
-		@rm -f .depends
-		@$(MAKE) -r -f AISC/Makefile pregenerate
+	@rm -f .depends
+	@$(MAKE) -r -f AISC/Makefile pregenerate
 
 clean:
-		@rm -f .depends
-		@$(MAKE) -r -f AISC/Makefile clean
+	@rm -f .depends
+	@$(MAKE) -r -f AISC/Makefile clean
 
 # DO NOT DELETE
 
