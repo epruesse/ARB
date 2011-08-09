@@ -645,55 +645,37 @@ static GB_ERROR gbl_origin(GBL_command_arguments *args) {
     return error;
 }
 
-#if defined(WARN_TODO)
-#warning DRY gbl_count vs gbl_len
-#endif
+inline void init_count_tab(char *tab, int init, const char *invert) {
+    for (int i = 0; i<256; ++i) tab[i] = init;
+    for (int i = 0; invert[i]; ++i) tab[safeCharIndex(invert[i])] = 1-init;
+}
+inline GB_ERROR count_by_tab(GBL_command_arguments *args, const char *tab) {
+    GBL_CHECK_FREE_PARAM(args->output.size(), args->input.size());
+    for (int i=0; i<args->input.size(); ++i) {
+        long        sum = 0;            // count frequencies
+        const char *p   = args->input.get(i);
+        
+        while (*p) sum += tab[safeCharIndex(*(p++))];
+        PASS_2_OUT(args, GBS_global_string_copy("%li", sum));
+    }
+    return NULL;
+}
 
 static GB_ERROR gbl_count(GBL_command_arguments *args) {
     if (args->param.size()!=1) return "syntax: count(\"characters to count\")";
 
-    int  i;
-    char tab[256]; // if tab[char] count 'char'
-    for (i=0; i<256; i++) {
-        if (strchr(args->param.get(0), i)) tab[i] = 1;
-        else tab[i] = 0;
-    }
-    
-    GBL_CHECK_FREE_PARAM(args->output.size(), args->input.size());
-    for (i=0; i<args->input.size(); i++) {       // go through all orig streams
-        long           sum = 0;                     // count frequencies
-        unsigned char *p   = (unsigned char *)args->input.get(i);
-        while (*p) {
-            sum += tab[*(p++)];
-        }
-        PASS_2_OUT(args, GBS_global_string_copy("%li", sum));
-    }
-    return 0;
+    char tab[256];
+    init_count_tab(tab, 0, args->param.get(0));
+    return count_by_tab(args, tab);
 }
 
 static GB_ERROR gbl_len(GBL_command_arguments *args) {
-    int i;
-    char tab[256];                              // if tab[char] count 'char'
-    const char *option;
+    if (args->param.size() >= 2) return "syntax: len[(\"characters not to count\")]";
 
-    if (args->param.size() == 0) option = "";
-    else option = args->param.get(0);
-    if (args->param.size()>=2) return "syntax: len[(\"characters not to count\")]";
-
-    for (i = 0; i<256; ++i) tab[i] = 1;
-    for (i = 0; option[i]; ++i) tab[safeCharIndex(option[i])] = 0;
-
-    GBL_CHECK_FREE_PARAM(args->output.size(), args->input.size());
-    for (i=0; i<args->input.size(); i++) {       // go through all orig streams
-        const char *p;
-        long sum = 0;                   // count frequencies
-        p = args->input.get(i);
-        while (*p) {
-            sum += tab[safeCharIndex(*(p++))];
-        }
-        PASS_2_OUT(args, GBS_global_string_copy("%li", sum));
-    }
-    return 0;
+    char        tab[256];
+    const char *exclude = args->param.size() ? args->param.get(0) : "";
+    init_count_tab(tab, 1, exclude);
+    return count_by_tab(args, tab);
 }
 
 #if defined(WARN_TODO)
