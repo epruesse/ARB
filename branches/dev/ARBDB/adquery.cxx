@@ -1515,11 +1515,11 @@ void TEST_GB_command_interpreter() {
         // error cases
         TEST_CI_ERROR("", "nocmd",          "ARB ERROR: Command 'nocmd' failed:\nReason: Unknown command 'nocmd'");
         TEST_CI_ERROR("", "|nocmd",         "ARB ERROR: Command '|nocmd' failed:\nReason: Unknown command 'nocmd'");
-        TEST_CI_ERROR("", "count(a,b)",     "ARB ERROR: Command 'count(a,b)' failed:\nReason: while applying 'count(a,b)'\nto '':\ncount syntax: count(\"characters to count\")");
+        TEST_CI_ERROR("", "count(a,b)",     "ARB ERROR: Command 'count(a,b)' failed:\nReason: while applying 'count(a,b)'\nto '':\nsyntax: count(\"characters to count\")");
         TEST_CI_ERROR("", "count(a,b",      "ARB ERROR: Command 'count(a,b' failed:\nReason: Missing ')'");
         TEST_CI_ERROR("", "count(a,\"b)",   "ARB ERROR: unbalanced '\"' in 'count(a,\"b)'");
         TEST_CI_ERROR("", "count(a,\"b)\"", "ARB ERROR: Command 'count(a,\"b)\"' failed:\nReason: Missing ')'");
-        TEST_CI_ERROR("", "dd;dd|count",    "ARB ERROR: Command 'dd;dd|count' failed:\nReason: while applying 'count'\nto ';':\ncount syntax: count(\"characters to count\")");
+        TEST_CI_ERROR("", "dd;dd|count",    "ARB ERROR: Command 'dd;dd|count' failed:\nReason: while applying 'count'\nto ';':\nsyntax: count(\"characters to count\")");
         TEST_CI_ERROR("", "|count(\"a\"x)", "ARB ERROR: Command '|count(\"a\"x)' failed:\nReason: Missing '\"'"); 
         TEST_CI_ERROR("", "|count(\"a)",    "ARB ERROR: unbalanced '\"' in '|count(\"a)'"); 
 
