@@ -399,6 +399,7 @@ SECTION COMMANDLIST
 
                         Randomly modifies the content of columns selected
                         by the filter (see common options above).
+                        Only columns containing letters will be modified.
 
                         The options 'include=xyz' and 'exclude=xyz' work like
                         with 'filter()', but here they select the columns to modify - all other
@@ -427,11 +428,22 @@ SECTION COMMANDLIST
 
 	SPECIALS
 
-		exec(command,var1,...)
+		exec(command[,param1,param2,...])
 
-                    Execute external (unix) command
+                    Execute external (unix) command.
 
-                        WARNING !!!!!! You should not use this command for NDS !!!
+                    Given params will be single-quoted and passed to the command.
+
+                    All input streams will be concatenated and piped into the command.
+
+                    When the command itself is a pipe, put it in parenthesis (e.g. "(sort|uniq)").
+                    Note: This won't work together with params.
+
+                    The result is the output of the command.
+
+                    WARNING!!!
+
+                        You better not use this command for NDS,
                         because any slow command will disable all editing -> You never
                         can remove this command from the NDS. Even arb_panic will not
                         easily help you.
