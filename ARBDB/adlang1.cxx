@@ -510,7 +510,7 @@ static GB_ERROR gbl_eval(GBL_command_arguments *args) {
     GB_ERROR error = NULL;
 
     if (args->cparam!=1) {
-        error = "eval syntax: eval(\"escaped command evaluating to command\")";
+        error = "syntax: eval(\"escaped command evaluating to command\")";
     }
     else {
         GBL_CHECK_FREE_PARAM(*args->coutput, args->cinput);
@@ -651,7 +651,7 @@ static GB_ERROR gbl_count(GBL_command_arguments *args)
     int  i;
     char tab[256];              // if tab[char] count 'char'
 
-    if (args->cparam!=1) return "count syntax: count(\"characters to count\")";
+    if (args->cparam!=1) return "syntax: count(\"characters to count\")";
 
     for (i=0; i<256; i++) {
         if (strchr(args->vparam[0].str, i)) tab[i] = 1;
@@ -677,7 +677,7 @@ static GB_ERROR gbl_len(GBL_command_arguments *args)
 
     if (args->cparam == 0) option = "";
     else option = args->vparam[0].str;
-    if (args->cparam>=2) return "len syntax: len[(\"characters not to count\")]";
+    if (args->cparam>=2) return "syntax: len[(\"characters not to count\")]";
 
     for (i = 0; i<256; ++i) tab[i] = 1;
     for (i = 0; option[i]; ++i) tab[safeCharIndex(option[i])] = 0;
@@ -701,7 +701,7 @@ static GB_ERROR gbl_remove(GBL_command_arguments *args)
     char tab[256];                              // if tab[char] count 'char'
 
 
-    if (args->cparam!=1) return "remove syntax: remove(\"characters to remove\")";
+    if (args->cparam!=1) return "syntax: remove(\"characters to remove\")";
 
     for (i=0; i<256; i++) {
         if (strchr(args->vparam[0].str, i)) tab[i] = 1;
@@ -727,7 +727,7 @@ static GB_ERROR gbl_keep(GBL_command_arguments *args)
     char tab[256];                              // if tab[char] != 0 then keep'char'
 
 
-    if (args->cparam!=1) return "keep syntax: keep(\"characters not to remove\")";
+    if (args->cparam!=1) return "syntax: keep(\"characters not to remove\")";
 
     memset(tab, 0, 256); // keep none
     {
@@ -796,7 +796,7 @@ static GB_ERROR gbl_translate(GBL_command_arguments *args)
     int  i;
     char replace_other = 0;
 
-    if (args->cparam<2 || args->cparam>3) return "translate syntax: translate(#old, #new [,#other])";
+    if (args->cparam<2 || args->cparam>3) return "syntax: translate(#old, #new [,#other])";
 
     if (args->cparam == 3) {
         const char *other = args->vparam[2].str;
@@ -905,7 +905,7 @@ static GB_ERROR gbl_string_convert(GBL_command_arguments *args)
 static GB_ERROR gbl_head(GBL_command_arguments *args)
 {
     int start;
-    if (args->cparam!=1) return "head syntax: head(#start)";
+    if (args->cparam!=1) return "syntax: head(#start)";
     start = atoi(args->vparam[0].str);
     return gbl_mid_streams(args->cinput, args->vinput, args->coutput, args->voutput, 0, 0, start, -start);
 }
@@ -913,7 +913,7 @@ static GB_ERROR gbl_head(GBL_command_arguments *args)
 static GB_ERROR gbl_tail(GBL_command_arguments *args)
 {
     int end;
-    if (args->cparam!=1) return "tail syntax: tail(#length_of_tail)";
+    if (args->cparam!=1) return "syntax: tail(#length_of_tail)";
     end = atoi(args->vparam[0].str);
     return gbl_mid_streams(args->cinput, args->vinput, args->coutput, args->voutput, -1, end, -1, 0);
 }
@@ -922,7 +922,7 @@ static GB_ERROR gbl_mid0(GBL_command_arguments *args)
 {
     int start;
     int end;
-    if (args->cparam!=2) return "mid0 syntax: mid0(#start;#end)";
+    if (args->cparam!=2) return "syntax: mid0(#start;#end)";
     start = atoi(args->vparam[0].str);
     end = atoi(args->vparam[1].str);
     return gbl_mid_streams(args->cinput, args->vinput, args->coutput, args->voutput, start, -start, end, -end);
@@ -932,7 +932,7 @@ static GB_ERROR gbl_mid(GBL_command_arguments *args)
 {
     int start;
     int end;
-    if (args->cparam!=2) return "mid syntax: mid(#start;#end)";
+    if (args->cparam!=2) return "syntax: mid(#start;#end)";
     start = atoi(args->vparam[0].str)-1;
     end = atoi(args->vparam[1].str)-1;
     return gbl_mid_streams(args->cinput, args->vinput, args->coutput, args->voutput, start, -start, end, -end);
@@ -942,7 +942,7 @@ static GB_ERROR gbl_tab(GBL_command_arguments *args)
 {
     int i, j;
     int tab;
-    if (args->cparam!=1) return "tab syntax: tab(#tab)";
+    if (args->cparam!=1) return "syntax: tab(#tab)";
     tab = atoi(args->vparam[0].str);
     GBL_CHECK_FREE_PARAM(*args->coutput, args->cinput);
     for (i=0; i<args->cinput; i++) {       // go through all in streams
@@ -967,7 +967,7 @@ static GB_ERROR gbl_pretab(GBL_command_arguments *args)
 {
     int i, j;
     int tab;
-    if (args->cparam!=1) return "pretab syntax: pretab(#tab)";
+    if (args->cparam!=1) return "syntax: pretab(#tab)";
     tab = atoi(args->vparam[0].str);
     GBL_CHECK_FREE_PARAM(*args->coutput, args->cinput);
     for (i=0; i<args->cinput; i++) {       // go through all in streams
@@ -995,7 +995,7 @@ static GB_ERROR gbl_crop(GBL_command_arguments *args)
     int         i;
     const char *chars_to_crop;
 
-    if (args->cparam != 1) return "crop syntax: pretab(chars_to_crop)";
+    if (args->cparam != 1) return "syntax: crop(chars_to_crop)";
 
     chars_to_crop = args->vparam[0].str;
     GBL_CHECK_FREE_PARAM(*args->coutput, args->cinput);
@@ -1847,7 +1847,7 @@ static GB_ERROR gbl_taxonomy(GBL_command_arguments *args) {
     GB_ERROR  error     = 0;
 
     if (args->cparam<1 || args->cparam>2) {
-        error = "\"taxonomy\" syntax: \"taxonomy\"([tree_name,] count)";
+        error = "syntax: taxonomy([tree_name,] count)";
     }
     else {
         int   is_current_tree = 0;
@@ -1889,7 +1889,7 @@ static GB_ERROR gbl_taxonomy(GBL_command_arguments *args) {
 static GB_ERROR gbl_sequence(GBL_command_arguments *args) {
     GB_ERROR  error = 0;
 
-    if (args->cparam!=0) error      = "\"sequence\" syntax: \"sequence\" (no parameters)";
+    if (args->cparam!=0) error      = "syntax: sequence (no parameters)";
     else if (args->cinput==0) error = "No input stream";
     else {
         GBL_CHECK_FREE_PARAM(*args->coutput, 1);
@@ -1930,7 +1930,7 @@ static GB_ERROR gbl_export_sequence(GBL_command_arguments *args) {
     GB_ERROR error = 0;
 
     if (args->cparam!=0) {
-        error = "\"sequence\" syntax: \"export_sequence\" (no parameters)";
+        error = "syntax: export_sequence (no parameters)";
     }
     else if (args->cinput==0) {
         error = "No input stream";
@@ -1969,7 +1969,7 @@ static GB_ERROR gbl_export_sequence(GBL_command_arguments *args) {
 static GB_ERROR gbl_ali_name(GBL_command_arguments *args) {
     GB_ERROR error = 0;
 
-    if (args->cparam) error = "\"ali_name\" syntax: \"ali_name\" (no parameters)";
+    if (args->cparam) error = "syntax: ali_name (no parameters)";
     else {
         GBL_CHECK_FREE_PARAM(*args->coutput, 1);
         if (!args->cinput) error = "No input stream";
@@ -1987,7 +1987,7 @@ static GB_ERROR gbl_sequence_type(GBL_command_arguments *args)
 {
     GB_ERROR error = 0;
 
-    if (args->cparam) error = "\"sequence_type\" syntax: \"sequence\" (no parameters)";
+    if (args->cparam) error = "syntax: sequence_type (no parameters)";
     else {
         GBL_CHECK_FREE_PARAM(*args->coutput, 1);
         if (!args->cinput) error = "No input stream";
