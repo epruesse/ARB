@@ -280,8 +280,8 @@ SECTION COMMANDLIST
 					of the sequence. If the field complement = 1 then the
 					result is the reverse-complement.
 
-	 	sequence_type 		the default sequence's type(rna/dna..)
-		sequence_name		the default sequence name(ali_16s,..)
+	 	sequence_type 		the sequence type of the selected alignment ('rna','dna',..)
+		ali_name		the name of the selected alignment (e.g. 'ali_16s')
 
                 Note: The commands above only work at the beginning of the ACI expression.
 
