@@ -76,6 +76,7 @@ my $failed   = 0;
 my $warnings = 0;
 my $elapsed  = 0;
 my $crashed  = 0;
+my $valgrind = 0;
 
 my $max_dur      = 0;
 my $max_dur_unit = undef;
@@ -113,6 +114,7 @@ sub parse_log($) {
           $max_dur_unit = $curr_target;
         }
       }
+      if (/valgrind.*error/)  { $valgrind++; $dump_log = 1; }
     }
   }
   close(LOG);
@@ -130,7 +132,7 @@ sub parse_log($) {
     $log_ptr =~ s/^\./UNIT_TESTER/;
     print "Suppressing dispensable $log_ptr\n";
   }
-  
+
   if (not $seenSummary) {
     print "Warning: No summary found in '$log' (maybe the test did not compile or crashed)\n";
     $crashed++;
@@ -189,6 +191,9 @@ sub print_summary($) {
   }
   push @summary, sprintf(" Crashed : %5i units", $crashed);
   push @summary, sprintf(" Warnings: %5i", $warnings);
+  if ($valgrind>0) {
+    push @summary, sprintf(" Valgrind: %5i failures", $valgrind);
+  }
 
   my @big;
   my $Big = $tests_failed ? $BigFailed : $BigOk;
@@ -223,7 +228,7 @@ sub do_report() {
     parse_log($_);
   }
 
-  my $tests_failed = (($failed>0) or ($crashed>0));
+  my $tests_failed = (($failed>0) or ($crashed>0) or ($valgrind>0));
   print_summary($tests_failed);
   slow_cleanup($tests_failed);
   if ($tests_failed) {
