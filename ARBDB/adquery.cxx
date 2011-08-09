@@ -1310,10 +1310,8 @@ void TEST_GB_command_interpreter() {
                 "g\n"
                 "t");
         
-        TEST_CI__BROKEN("acgt", "format(gap=0)",   "<should raise an error>");
-        TEST_CI__BROKEN("acgt", "format(numleft)", "<should raise an error>");
-        // TEST_CI_ERROR_CONTAINS("acgt", "format(gap=0)",   "Unknown Parameter 'gap=0' in command 'format'");
-        // TEST_CI_ERROR_CONTAINS("acgt", "format(numleft)", "Unknown Parameter 'numleft' in command 'format'");
+        TEST_CI_ERROR_CONTAINS("acgt", "format(gap=0)",   "Unknown Parameter 'gap=0' in command 'format'");
+        TEST_CI_ERROR_CONTAINS("acgt", "format(numleft)", "Unknown Parameter 'numleft' in command 'format'");
 
         // format_sequence
         TEST_CI("acgt", "format_sequence(firsttab=5,tab=5,width=1,numleft=1)",
@@ -1329,10 +1327,8 @@ void TEST_GB_command_interpreter() {
         TEST_CI("acgtacgt", "format_sequence(firsttab=0,width=10,gap=4)",      "acgt acgt");
         TEST_CI("acgtacgt", "format_sequence(firsttab=1,width=10,gap=4)",      " acgt acgt");
 
-        TEST_CI__BROKEN("acgt", "format_sequence(nl=c)",     "<should raise an error>");
-        TEST_CI__BROKEN("acgt", "format_sequence(forcenl=)", "<should raise an error>");
-        // TEST_CI_ERROR_CONTAINS("acgt", "format_sequence(nl=c)",     "Unknown Parameter 'nl=c' in command 'format_sequence'");
-        // TEST_CI_ERROR_CONTAINS("acgt", "format_sequence(forcenl=)", "Unknown Parameter 'forcenl=' in command 'format_sequence'");
+        TEST_CI_ERROR_CONTAINS("acgt", "format_sequence(nl=c)",     "Unknown Parameter 'nl=c' in command 'format_sequence'");
+        TEST_CI_ERROR_CONTAINS("acgt", "format_sequence(forcenl=)", "Unknown Parameter 'forcenl=' in command 'format_sequence'");
         // TEST_CI_ERROR("acgt", "format(width=0)", "should_raise_some_error"); // @@@ crashes
 
         // remove + keep
