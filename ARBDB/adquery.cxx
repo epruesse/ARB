@@ -14,6 +14,7 @@
 #include "gb_key.h"
 #include "gb_localdata.h"
 #include "gb_ta.h"
+#include <algorithm>
 
 #include <arb_strbuf.h>
 
@@ -423,8 +424,7 @@ char *GB_first_non_key_char(const char *str) {
     return gb_first_non_key_character(str);
 }
 
-GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag)
-{
+GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag) {
     /* finds a hierarchical key,
        if create != GB_FIND(==0), then create the key
        force types if ! internflag
@@ -730,8 +730,7 @@ GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring) {
 // ----------------------------
 //      Command interpreter
 
-void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table, size_t table_size)
-{
+void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table, size_t table_size) {
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     if (!Main->command_hash) Main->command_hash = GBS_create_hash(table_size, GB_IGNORE_CASE);
 
@@ -742,8 +741,7 @@ void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table, 
     gb_assert((GBS_hash_count_elems(Main->command_hash)+1) == table_size);
 }
 
-char *gbs_search_second_x(const char *str)
-{
+char *gbs_search_second_x(const char *str) {
     int c;
     for (; (c=*str); str++) {
         if (c=='\\') {      // escaped characters
@@ -756,8 +754,7 @@ char *gbs_search_second_x(const char *str)
     return NULL;
 }
 
-char *gbs_search_second_bracket(const char *source)
-{
+char *gbs_search_second_bracket(const char *source) {
     int c;
     int deep = 0;
     if (*source != '(') deep --;    // first bracket
@@ -819,12 +816,12 @@ char *gbs_search_next_separator(const char *source, const char *seps) {
     return NULL;
 }
 
-static void dumpStreams(const char *name, int count, const GBL *args) {
+static void dumpStreams(const char *name, const GBL_streams& streams) {
+    int count = streams.size();
     printf("%s=%i\n", name, count);
     if (count > 0) {
-        int c;
-        for (c = 0; c<count; c++) {
-            printf("  %02i='%s'\n", c, args[c].str);
+        for (int c = 0; c<count; c++) {
+            printf("  %02i='%s'\n", c, streams.get(c));
         }
     }
 }
@@ -862,14 +859,6 @@ char *GBS_apply_ACI(GBDATA *gb_main, const char *commands, const char *str, GBDA
     
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
 
-    GBL morig[GBL_MAX_ARGUMENTS];
-    GBL min[GBL_MAX_ARGUMENTS];
-    GBL mout[GBL_MAX_ARGUMENTS];
-
-    GBL *orig = & morig[0];
-    GBL *in   = & min[0];
-    GBL *out  = & mout[0];
-    
     gb_local->gbl.gb_main = gb_main;
 
     char *buffer = strdup(commands);
@@ -907,17 +896,12 @@ char *GBS_apply_ACI(GBDATA *gb_main, const char *commands, const char *str, GBDA
         *s2 = 0;
     }
 
+    GBL_streams orig;
 
+    orig.insert(strdup(str));
 
-    memset((char *)orig, 0, sizeof(GBL)*GBL_MAX_ARGUMENTS);
-    memset((char *)in, 0, sizeof(GBL)*GBL_MAX_ARGUMENTS);
-    memset((char *)out, 0, sizeof(GBL)*GBL_MAX_ARGUMENTS);
-
-    orig[0].str = strdup(str);
-
-    int      argcinput = 1;
-    int      argcout   = 0;
-    GB_ERROR error     = NULL;
+    GB_ERROR error = NULL;
+    GBL_streams out;
     {
         char *s1, *s2;
         s1 = buffer;
@@ -936,7 +920,7 @@ char *GBS_apply_ACI(GBDATA *gb_main, const char *commands, const char *str, GBDA
                 separator = 0;
             }
             // collect the parameters
-            memset((char*)in, 0, sizeof(GBL)*GBL_MAX_ARGUMENTS);
+            GBL_streams in;
             if (*s1 == '"') {           // copy "text" to out
                 char *end = gbs_search_second_x(s1+1);
                 if (!end) {
@@ -945,10 +929,10 @@ char *GBS_apply_ACI(GBDATA *gb_main, const char *commands, const char *str, GBDA
                     break;
                 }
                 *end = 0;
-                out[argcout++].str = strdup(s1+1);
+                
+                out.insert(strdup(s1+1));
             }
             else {
-                int   argcparam = 0;
                 char *bracket   = strchr(s1, '(');
 
                 if (bracket) {      // I got the parameter list
@@ -979,7 +963,7 @@ char *GBS_apply_ACI(GBDATA *gb_main, const char *commands, const char *str, GBDA
                                     p1[len2] = 0;
                                 }
                             }
-                            in[argcparam++].str = strdup(p1);
+                            in.insert(strdup(p1));
                         }
                     }
                 }
@@ -999,25 +983,19 @@ char *GBS_apply_ACI(GBDATA *gb_main, const char *commands, const char *str, GBDA
                         error = GBS_global_string("Unknown command '%s'", s1);
                     }
                     else {
-                        GBL_command_arguments args(gbd, default_tree_name);
-                        
-                        args.command = s1;
-                        args.cinput  = argcinput;
-                        args.vinput  = orig;
-                        args.cparam  = argcparam;
-                        args.vparam  = in;
-                        args.coutput = &argcout;
-                        args.voutput = &out;
+                        GBL_command_arguments args(gbd, default_tree_name, orig, in, out);
 
+                        args.command = s1;
+                        
                         if (trace) {
                             printf("-----------------------\nExecution of command '%s':\n", args.command);
-                            dumpStreams("Arguments", args.cparam, args.vparam);
-                            dumpStreams("InputStreams", args.cinput, args.vinput);
+                            dumpStreams("Arguments", args.param);
+                            dumpStreams("InputStreams", args.input);
                         }
 
                         error = command(&args); // execute the command
 
-                        if (!error && trace) dumpStreams("OutputStreams", *args.coutput, *args.voutput);
+                        if (!error && trace) dumpStreams("OutputStreams", args.output);
 
                         if (error) {
                             char *inputstreams = 0;
@@ -1026,19 +1004,19 @@ char *GBS_apply_ACI(GBDATA *gb_main, const char *commands, const char *str, GBDA
 
 #define MAX_PRINT_LEN 200
 
-                            for (j = 0; j<args.cparam; ++j) {
-                                const char *param       = args.vparam[j].str;
+                            for (j = 0; j<args.param.size(); ++j) {
+                                const char *param       = args.param.get(j);
                                 const char *param_short = shortenLongString(param, MAX_PRINT_LEN);
 
                                 if (!paramlist) paramlist = strdup(param_short);
                                 else freeset(paramlist, GBS_global_string_copy("%s,%s", paramlist, param_short));
                             }
-                            for (j = 0; j<args.cinput; ++j) {
-                                const char *param       = args.vinput[j].str;
-                                const char *param_short = shortenLongString(param, MAX_PRINT_LEN);
+                            for (j = 0; j<args.input.size(); ++j) {
+                                const char *input       = args.input.get(j);
+                                const char *input_short = shortenLongString(input, MAX_PRINT_LEN);
 
-                                if (!inputstreams) inputstreams = strdup(param_short);
-                                else freeset(inputstreams, GBS_global_string_copy("%s;%s", inputstreams, param_short));
+                                if (!inputstreams) inputstreams = strdup(input_short);
+                                else freeset(inputstreams, GBS_global_string_copy("%s;%s", inputstreams, input_short));
                             }
 #undef MAX_PRINT_LEN
                             if (paramlist) {
@@ -1053,54 +1031,19 @@ char *GBS_apply_ACI(GBDATA *gb_main, const char *commands, const char *str, GBDA
                         }
                     }
                 }
-
-                for (int i=0; i<argcparam; i++) {   // free intermediate arguments
-                    if (in[i].str) free(in[i].str);
-                }
             }
 
             if (error) break;
 
-            if (separator == '|') {         // swap in and out in pipes
-                GBL *h;
-                for (int i=0; i<argcinput; i++) {
-                    if (orig[i].str)    free(orig[i].str);
-                }
-                memset((char*)orig, 0, sizeof(GBL)*GBL_MAX_ARGUMENTS);
-                argcinput = 0;
-
-                h = out;            // swap orig and out
-                out = orig;
-                orig = h;
-
-                argcinput = argcout;
-                argcout = 0;
+            if (separator == '|') { // out -> in pipe; clear in
+                out.swap(orig);
+                out.erase();
             }
-
         }
-    }
-    for (int i=0; i<argcinput; i++) {
-        if (orig[i].str) free(orig[i].str);
     }
 
     {
-        char *s1;
-        if (!argcout) {
-            s1 = strdup(""); // returned '<NULL>' in the past
-        }
-        else if (argcout == 1) {
-            s1 = out[0].str;
-        }
-        else {             // concatenate output strings
-            GBS_strstruct *strstruct = GBS_stropen(1000);
-            for (int i=0; i<argcout; i++) {
-                if (out[i].str) {
-                    GBS_strcat(strstruct, out[i].str);
-                    free(out[i].str);
-                }
-            }
-            s1 = GBS_strclose(strstruct);
-        }
+        char *s1 = out.concatenated();
         free(buffer);
 
         if (!error) {
@@ -1112,6 +1055,26 @@ char *GBS_apply_ACI(GBDATA *gb_main, const char *commands, const char *str, GBDA
 
     GB_export_errorf("Command '%s' failed:\nReason: %s", commands, error);
     return NULL;
+}
+
+void GBL_streams::swap(GBL_streams& other) {
+    int bigger = std::max(count, other.count);
+    for (int i = 0; i<bigger; ++i) {
+        std::swap(content[i], other.content[i]);
+    }
+    std::swap(count, other.count);
+}
+
+char *GBL_streams::concatenated() const {
+    if (!count) return strdup("");
+    if (count == 1) return strdup(get(0));
+
+    GBS_strstruct *strstruct = GBS_stropen(1000);
+    for (int i=0; i<count; i++) {
+        const char *s = get(i);
+        if (s) GBS_strcat(strstruct, s);
+    }
+    return GBS_strclose(strstruct);
 }
 
 char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name) {
