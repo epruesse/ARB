@@ -188,6 +188,8 @@ SECTION COMMANDLIST
                                                    This character is deleted !
                         "forcenl=chrs" ("\n")      Force a newline at these characters.
 
+                    (see also format_sequence below)
+
 		extract_words("chars",val)
 
                     Search for all words (separated by ',' ';' ':' ' ' or 'tab') that
@@ -294,7 +296,7 @@ SECTION COMMANDLIST
 
 		format_sequence(options)
 
-                        takes a long string ( sequence ) and breaks it into several lines
+                    takes a long string ( sequence ) and breaks it into several lines
 
 			option       (default)  description
                         =============================================================
@@ -303,6 +305,8 @@ SECTION COMMANDLIST
 			tab=#        (10)       left indent (not first line)
 			numleft      (NO)       numbers on the left side
 			gap=#        (10)       insert a gap every # seq. characters.
+
+                    (see also 'format' above)
 
 		extract_sequence("chars",rel_len)
 

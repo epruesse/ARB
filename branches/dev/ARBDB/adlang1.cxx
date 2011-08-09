@@ -102,6 +102,9 @@ static int gbl_param_bit(const char *param_name, int def, const char *help_text,
 #define GBL_PARAM_TYPE(type, var, param_name, def, help_text) type  var = gbl_param_##type(param_name, def, help_text, &params, &var)
 #define GBL_STRUCT_PARAM_TYPE(type, strct, member, param_name, def, help_text) strct.member = gbl_param_##type(param_name, def, help_text, &params, &strct.member)
 
+// use PARAM_IF for parameters whose existance depends on condition 
+#define PARAM_IF(cond,param) ((cond) ? (param) : NULL)
+
 #define GBL_PARAM_INT(var,    param_name, def, help_text) GBL_PARAM_TYPE(int,    var, param_name, def, help_text)
 #define GBL_PARAM_CHAR(var,   param_name, def, help_text) GBL_PARAM_TYPE(char,   var, param_name, def, help_text)
 #define GBL_PARAM_UINT(var,   param_name, def, help_text) GBL_PARAM_TYPE(uint,   var, param_name, def, help_text)
@@ -153,50 +156,52 @@ static GB_ERROR trace_params(int argc, const GBL *argv, gbl_param *ppara, const 
         const char *argument = argv[i].str;
 
         for (para = ppara; para && !error; para = para->next) {
-            int len = strlen(para->param_name);
+            if (para->param_name) { // NULL means param is inactive (see PARAM_IF)
+                int len = strlen(para->param_name);
 
-            if (strncmp(argument, para->param_name, len) == 0) {
-                const char *value = argument+len; // set to start of value
+                if (strncmp(argument, para->param_name, len) == 0) {
+                    const char *value = argument+len; // set to start of value
 
-                if (para->type == GB_BIT) {
-                    // GB_BIT is special cause param_name does NOT contain trailing '='
+                    if (para->type == GB_BIT) {
+                        // GB_BIT is special cause param_name does NOT contain trailing '='
 
-                    if (!value[0]) { // only 'name' -> handle like 'name=1'
-                        ;
-                    }
-                    else if (value[0] == '=') {
-                        value++;
-                    }
-                }
-
-                switch (para->type) {
-                    case GB_STRING:
-                        *(const char **)para->varaddr  = value;
-                        break;
-
-                    case GB_INT:
-                        COMPILE_ASSERT(sizeof(int) == sizeof(uint)); // assumed by GBL_PARAM_UINT
-                        *(int *)para->varaddr = atoi(value);
-                        break;
-
-                    case GB_BIT:
-                        // 'param=' is same as 'param' or 'param=1' (historical reason, don't change)
-                        *(int *)para->varaddr = (value[0] ? atoi(value) : 1);
-                        break;
-
-                    case GB_BYTE:
-                        *(char *)para->varaddr = *value; // this may use the terminal zero-byte (e.g. for p1 in 'p0=0,p1=,p2=2' )
-                        if (value[0] && value[1]) { // found at least 2 chars
-                            GB_warningf("Only one character expected in value '%s' of param '%s' - rest is ignored", value, para->param_name);
+                        if (!value[0]) { // only 'name' -> handle like 'name=1'
+                            ;
                         }
-                        break;
+                        else if (value[0] == '=') {
+                            value++;
+                        }
+                    }
 
-                    default:
-                        gb_assert(0);
-                        error = GBS_global_string("Parameter '%s': Unknown type %i (internal error)", para->param_name, para->type);
-                        break;
+                    switch (para->type) {
+                        case GB_STRING:
+                            *(const char **)para->varaddr  = value;
+                            break;
+
+                        case GB_INT:
+                            COMPILE_ASSERT(sizeof(int) == sizeof(uint)); // assumed by GBL_PARAM_UINT
+                            *(int *)para->varaddr = atoi(value);
+                            break;
+
+                        case GB_BIT:
+                            // 'param=' is same as 'param' or 'param=1' (historical reason, don't change)
+                            *(int *)para->varaddr = (value[0] ? atoi(value) : 1);
+                            break;
+
+                        case GB_BYTE:
+                            *(char *)para->varaddr = *value; // this may use the terminal zero-byte (e.g. for p1 in 'p0=0,p1=,p2=2' )
+                            if (value[0] && value[1]) { // found at least 2 chars
+                                GB_warningf("Only one character expected in value '%s' of param '%s' - rest is ignored", value, para->param_name);
+                            }
+                            break;
+
+                        default:
+                            gb_assert(0);
+                            error = GBS_global_string("Parameter '%s': Unknown type %i (internal error)", para->param_name, para->type);
+                            break;
+                    }
+                    break; // accept parameter
                 }
-                break; // accept parameter
             }
         }
 
@@ -216,23 +221,25 @@ static GB_ERROR trace_params(int argc, const GBL *argv, gbl_param *ppara, const 
 
             for (pcount--; pcount>=0; pcount--) {
                 para = params[pcount];
-                GBS_strcat(str, "\t");
-                GBS_strcat(str, para->param_name);
-                switch (para->type) {
-                    case GB_STRING: GBS_strcat(str, "STRING"); break;
-                    case GB_INT:    GBS_strcat(str, "INT");    break;
-                    case GB_FLOAT:  GBS_strcat(str, "FLOAT");  break;
-                    case GB_BYTE:   GBS_strcat(str, "CHAR");   break;
-                    case GB_BIT:    GBS_strcat(str, "    ");   break;
-                    default:        gb_assert (0); GBS_strcat(str, "????"); break;
+                if (para->param_name) {
+                    GBS_strcat(str, "  ");
+                    GBS_strcat(str, para->param_name);
+                    switch (para->type) {
+                        case GB_STRING: GBS_strcat(str, "STRING"); break;
+                        case GB_INT:    GBS_strcat(str, "INT");    break;
+                        case GB_FLOAT:  GBS_strcat(str, "FLOAT");  break;
+                        case GB_BYTE:   GBS_strcat(str, "CHAR");   break;
+                        case GB_BIT:    GBS_strcat(str, "    ");   break;
+                        default:        gb_assert (0); GBS_strcat(str, "????"); break;
+                    }
+                    GBS_strcat(str, "\t\t;");
+                    GBS_strcat(str, para->help_text);
+                    GBS_strcat(str, "\n");
                 }
-                GBS_strcat(str, "\t\t;");
-                GBS_strcat(str, para->help_text);
-                GBS_strcat(str, "\n");
             }
             freenull(params);
             res = GBS_strclose(str);
-            err = GB_export_errorf("Unknown Parameter '%s' in command '%s'\n\tPARAMETERS:\n%s", argv[i].str, com, res);
+            err = GB_export_errorf("Unknown Parameter '%s' in command '%s'\n  PARAMETERS:\n%s", argv[i].str, com, res);
             free(res);
             return err;
         }
@@ -2007,14 +2014,21 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
     GB_ERROR error = 0;
     int      ic;
 
+    int simple_format = (strcmp(args->command, "format") == 0);         // "format_sequence" == !simple_format
+
     GBL_BEGIN_PARAMS;
     GBL_PARAM_UINT  (firsttab, "firsttab=", 10,   "Indent first line");
     GBL_PARAM_UINT  (tab,      "tab=",      10,   "Indent not first line");
-    GBL_PARAM_BIT   (numleft,  "numleft",   0,    "Numbers left of sequence");
-    GBL_PARAM_UINT  (gap,      "gap=",      10,   "Insert ' ' every n sequence characters");
     GBL_PARAM_UINT  (width,    "width=",    50,   "Sequence width (bases only)");
-    GBL_PARAM_STRING(nl,       "nl=",       " ",  "Break line at characters 'str' if wrapping needed");
-    GBL_PARAM_STRING(forcenl,  "forcenl=",  "\n", "Always break line at characters 'str'");
+
+    // "format_sequence"-only
+    GBL_PARAM_BIT (numleft, PARAM_IF(!simple_format, "numleft"), 0,  "Numbers left of sequence");
+    GBL_PARAM_UINT(gap,     PARAM_IF(!simple_format, "gap="),    10, "Insert ' ' every n sequence characters");
+
+    // "format"-only
+    GBL_PARAM_STRING(nl,      PARAM_IF(simple_format, "nl="),      " ",  "Break line at characters 'str' if wrapping needed");
+    GBL_PARAM_STRING(forcenl, PARAM_IF(simple_format, "forcenl="), "\n", "Always break line at characters 'str'");
+
     GBL_TRACE_PARAMS(args->cparam, args->vparam);
     GBL_END_PARAMS;
 
@@ -2025,7 +2039,6 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
             const char *src           = args->vinput[ic].str;
             size_t      data_size     = strlen(src);
             size_t      needed_size;
-            int         simple_format = (strcmp(args->command, "format") == 0);
 
             {
                 size_t lines;
