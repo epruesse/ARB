@@ -1289,7 +1289,7 @@ void TEST_GB_command_interpreter() {
         TEST_CI("x", "dd;dd|dd;dd|dd;dd|streams", "8");
         TEST_CI("x", "do(d4)|streams",            "1"); // stream is merged when do() returns
 
-        // TEST_CI("", "ali_name", "ali_16s");  // ask for default-alignment name (@@@ not implemented yet)
+        TEST_CI("", "ali_name", "ali_16s");  // ask for default-alignment name
         TEST_CI("", "sequence_type", "rna"); // ask for sequence_type of default-alignment
 
         // format

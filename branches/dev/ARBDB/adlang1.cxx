@@ -1966,6 +1966,23 @@ static GB_ERROR gbl_export_sequence(GBL_command_arguments *args) {
     return error;
 }
 
+static GB_ERROR gbl_ali_name(GBL_command_arguments *args) {
+    GB_ERROR error = 0;
+
+    if (args->cparam) error = "\"ali_name\" syntax: \"ali_name\" (no parameters)";
+    else {
+        GBL_CHECK_FREE_PARAM(*args->coutput, 1);
+        if (!args->cinput) error = "No input stream";
+        else {
+            GBDATA *gb_main = args->get_main();
+            char   *use     = GBT_get_default_alignment(gb_main);
+            PASS_2_OUT(args, use);
+        }
+    }
+
+    return error;
+}
+
 static GB_ERROR gbl_sequence_type(GBL_command_arguments *args)
 {
     GB_ERROR error = 0;
@@ -2608,6 +2625,7 @@ static GB_ERROR gbl_exec(GBL_command_arguments *args)
 
 
 static GBL_command_table gbl_command_table[] = {
+    { "ali_name",        gbl_ali_name },
     { "caps",            gbl_string_convert },
     { "change",          gbl_change_gc },
     { "checksum",        gbl_check },
