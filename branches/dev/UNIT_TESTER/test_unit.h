@@ -276,6 +276,12 @@ namespace arb_test {
 
     inline bool test_equal(double d1, double d2) { return test_similar(d1, d2, 0.000001); }
 
+    inline bool test_strcontains(const char *str, const char *part)  {
+        const char *found = strstr(str, part);
+        if (!found) StaticCode::printf("string '%s'\ndoes not contain '%s'\n", str, part);
+        return found;
+    }
+    
     // inline bool is_equal(double d1, double d2) {
         // return is_similar(d1, d2, 0.000001);
     // }
@@ -538,6 +544,9 @@ namespace arb_test {
 #define TEST_ASSERT_LOWER_EQUAL(lower,upper)  TEST_ASSERT(arb_test::test_less_equal(lower, upper))
 #define TEST_ASSERT_LOWER(lower,upper) do { TEST_ASSERT_LOWER_EQUAL(lower, upper); TEST_ASSERT_DIFFERENT(lower, upper); } while(0)
 #define TEST_ASSERT_IN_RANGE(val,lower,upper) do { TEST_ASSERT_LOWER_EQUAL(lower, val); TEST_ASSERT_LOWER_EQUAL(val, upper); } while(0)
+
+
+#define TEST_ASSERT_CONTAINS(str, part) TEST_ASSERT(arb_test::test_strcontains(str, part))
 
 // --------------------------------------------------------------------------------
 // the following macros only work when
