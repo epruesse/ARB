@@ -1180,18 +1180,41 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     } while(0)
 
 
-#define TEST_CI(input,cmd,expected)         TEST_CI__INTERNAL(input,cmd,expected,TEST_ASSERT_EQUAL)
-#define TEST_CI__BROKEN(input,cmd,expected) TEST_CI__INTERNAL(input,cmd,expected,TEST_ASSERT_EQUAL__BROKEN)
+#define TEST_CI(input,cmd,expected)         do {                        \
+        TEST_ASSERT_DIFFERENT(input,expected);                          \
+        TEST_CI__INTERNAL(input,cmd,expected,TEST_ASSERT_EQUAL);        \
+    } while(0)
+
+#define TEST_CI__BROKEN(input,cmd,expected) do {                        \
+        TEST_ASSERT_DIFFERENT(input,expected);                          \
+        TEST_CI__INTERNAL(input,cmd,expected,TEST_ASSERT_EQUAL__BROKEN); \
+    } while(0)
+
+#define TEST_CI_NOOP(inandout,cmd)         TEST_CI__INTERNAL(inandout,cmd,inandout,TEST_ASSERT_EQUAL)
+#define TEST_CI_NOOP__BROKEN(inandout,cmd) TEST_CI__INTERNAL(inandout,cmd,inandout,TEST_ASSERT_EQUAL__BROKEN)
+
+#define CI_ERROR_INIT(input,cmd)                                        \
+    char *result = GB_command_interpreter(gb_main, input, cmd, gb_data, NULL); \
+    if (result) {                                                       \
+        TEST_WARNING("Expected no result (got '%s')", result);          \
+        free(result);                                                   \
+    }                                                                   \
 
 #define TEST_CI_ERROR(input,cmd,error_expected) do {                    \
-        char *result = GB_command_interpreter(gb_main, input, cmd, gb_data, NULL); \
-        if (result) {                                                   \
-            TEST_WARNING("Expected no result (got '%s')", result);      \
-            free(result);                                               \
-        }                                                               \
+        CI_ERROR_INIT(input,cmd);                                       \
         TEST_ASSERT_EQUAL(GB_await_error(),error_expected);             \
         free(result);                                                   \
     } while(0)
+
+#define TEST_CI_ERROR_CONTAINS(input,cmd,errorpart_expected) do {       \
+        CI_ERROR_INIT(input,cmd);                                       \
+        TEST_ASSERT_CONTAINS(GB_await_error(),errorpart_expected);      \
+        free(result);                                                   \
+    } while(0)
+    
+#define ACI_SPLIT          "|split(\",\",0)"
+#define ACI_MERGE          "|merge(\",\")"
+#define WITH_SPLITTED(aci) ACI_SPLIT aci ACI_MERGE
 
 void TEST_GB_command_interpreter() {
     GB_shell  shell;
@@ -1199,14 +1222,15 @@ void TEST_GB_command_interpreter() {
 
     GBT_set_default_alignment(gb_main, "ali_16s"); // for sequence ACI command (@@@ really needed ? )
 
+    int old_trace = GB_get_ACISRT_trace();
 #if 0
     GB_set_ACISRT_trace(1); // used to detect coverage and for debugging purposes
 #endif
     {
         GB_transaction  ta(gb_main);
-        GBDATA         *gb_data = GBT_find_species(gb_main, "LcbReu40"); 
+        GBDATA         *gb_data = GBT_find_species(gb_main, "LcbReu40");
 
-        TEST_CI("bla", "", "bla"); // noop
+        TEST_CI_NOOP("bla", ""); 
         
         TEST_CI("bla", ":a=u", "blu"); // simple SRT
 
@@ -1223,35 +1247,271 @@ void TEST_GB_command_interpreter() {
         // escaping (@@@ wrong behavior?)
         TEST_CI("b\\a",   "|count(\\a)",         "2"); // i would expect '1' as result (the 'a'), but it counts '\\' and 'a'
         TEST_CI("b\\a",   "|contains(\"\\\\\")", "0"); // searches for 2 backslashes(ok)
-        TEST_CI__BROKEN("b\\a", "|contains(\\)", "1"); // searches for 1 backslash (ok), but reports two hits instead of one
+        TEST_CI__BROKEN("b\\a",   "|contains(\\)",       "1"); // searches for 1 backslash (ok), but reports two hits instead of one
         TEST_CI__BROKEN("b\\\\a", "|contains(\"\\\\\")", "1"); // searches for 2 backslashes (ok), but reports two hits instead of one
         TEST_CI_ERROR("b\\a", "|contains(\"\\\")", "ARB ERROR: unbalanced '\"' in '|contains(\"\\\")'"); // raises error (should searches for 1 backslash)
 
         // test binary ops
-        TEST_CI("", "\"5\";\"7\"|minus", "-2");
-        TEST_CI("", "\"5\"|minus(\"7\")", "-2");
+        TEST_CI("", "\"5\";\"7\"|minus",            "-2");
+        TEST_CI("", "\"5\"|minus(\"7\")",           "-2");
         TEST_CI("", "|minus(\"\"5\"\", \"\"7\"\")", "-2"); // @@@ syntax needed here 'minus(""5"", ""7"")' is broken - need to unescape correctly after parsing parameters!
 
-#define ACI_SPLIT "|split(\",\",0)"
-#define ACI_MERGE "|merge(\",\")"
-#define WITH_SPLITTED(aci) ACI_SPLIT aci ACI_MERGE
 
-        TEST_CI("ab,bcb,abac", WITH_SPLITTED(""),                           "ab,bcb,abac");
-        TEST_CI("ab,bcb,abac", WITH_SPLITTED("|len"),                       "2,3,4");
-        TEST_CI("ab,bcb,abac", WITH_SPLITTED("|count(a)"),                  "1,0,2");
-        TEST_CI("ab,bcb,abac", WITH_SPLITTED("|minus(len,count(a))"),       "1,3,2");
-        TEST_CI("ab,bcb,abac", WITH_SPLITTED("|minus(\"\"5\"\",count(a))"), "4,5,3"); // @@@ escaping broken here as well
+        TEST_CI_NOOP("ab,bcb,abac", WITH_SPLITTED(""));
+        TEST_CI     ("ab,bcb,abac", WITH_SPLITTED("|len"),                       "2,3,4");
+        TEST_CI     ("ab,bcb,abac", WITH_SPLITTED("|count(a)"),                  "1,0,2");
+        TEST_CI     ("ab,bcb,abac", WITH_SPLITTED("|minus(len,count(a))"),       "1,3,2");
+        TEST_CI     ("ab,bcb,abac", WITH_SPLITTED("|minus(\"\"5\"\",count(a))"), "4,5,3"); // @@@ escaping broken here as well
 
         // test other recursive uses of GB_command_interpreter
-        TEST_CI("one", "|dd;\"two\";dd|command(\"dd;\"_\";dd;\"-\"\")", "one_one-two_two-one_one-");
-        TEST_CI("", "|sequence|command(\"/^([\\\\.-]*)[A-Z].*/\\\\1/\")|len", "9"); // count gaps at start of sequence
-        TEST_CI("one", "|dd;dd|eval(\"\"up\";\"per\"|merge\")", "ONEONE");
+        TEST_CI("one",   "|dd;\"two\";dd|command(\"dd;\"_\";dd;\"-\"\")",                          "one_one-two_two-one_one-");
+        TEST_CI("",      "|sequence|command(\"/^([\\\\.-]*)[A-Z].*/\\\\1/\")|len",                 "9"); // count gaps at start of sequence
+        TEST_CI("one",   "|dd;dd|eval(\"\"up\";\"per\"|merge\")",                                  "ONEONE");
         TEST_CI("1,2,3", WITH_SPLITTED("|select(\"\",  \"\"one\"\", \"\"two\"\", \"\"three\"\")"), "one,two,three");
 
-#undef WITH_SPLITTED
-#undef ACI_MERGE
-#undef ACI_SPLIT
+        // test define and do (@@@ SLOW)
+        TEST_CI("ignored", "define(d4, \"dd;dd;dd;dd\")",        "");
+        TEST_CI("ignored", "define(d16, \"do(d4)|do(d4)\")",     "");
+        TEST_CI("ignored", "define(d64, \"do(d4)|do(d16)\")",    "");
+        TEST_CI("ignored", "define(d4096, \"do(d64)|do(d64)\")", "");
 
+        TEST_CI("x",  "do(d4)",        "xxxx");
+        TEST_CI("xy", "do(d4)",        "xyxyxyxy");
+        TEST_CI("x",  "do(d16)",       "xxxxxxxxxxxxxxxx");
+        TEST_CI("x",  "do(d64)|len",   "64");
+        TEST_CI("x",  "do(d4096)|len", "4096");
+
+        // other commands
+
+        // streams
+        TEST_CI("x", "dd;dd|streams",             "2");
+        TEST_CI("x", "dd;dd|dd;dd|streams",       "4");
+        TEST_CI("x", "dd;dd|dd;dd|dd;dd|streams", "8");
+        TEST_CI("x", "do(d4)|streams",            "1"); // stream is merged when do() returns
+
+        // TEST_CI("", "ali_name", "ali_16s");  // ask for default-alignment name (@@@ not implemented yet)
+        TEST_CI("", "sequence_type", "rna"); // ask for sequence_type of default-alignment
+
+        // format
+        TEST_CI("acgt", "format", "          acgt");
+        TEST_CI("acgt", "format(firsttab=1)", " acgt");
+        TEST_CI("acgt", "format(firsttab=1, width=2)",
+                " ac\n"
+                "          gt");
+        TEST_CI("acgt", "format(firsttab=1,tab=1,width=2)",
+                " ac\n"
+                " gt");
+        TEST_CI("acgt", "format(firsttab=0,tab=0,width=2)",
+                "ac\n"
+                "gt");
+        TEST_CI("acgt", "format(firsttab=0,tab=0,width=1)",
+                "a\n"
+                "c\n"
+                "g\n"
+                "t");
+        
+        TEST_CI__BROKEN("acgt", "format(gap=0)",   "<should raise an error>");
+        TEST_CI__BROKEN("acgt", "format(numleft)", "<should raise an error>");
+        // TEST_CI_ERROR_CONTAINS("acgt", "format(gap=0)",   "Unknown Parameter 'gap=0' in command 'format'");
+        // TEST_CI_ERROR_CONTAINS("acgt", "format(numleft)", "Unknown Parameter 'numleft' in command 'format'");
+
+        // format_sequence
+        TEST_CI("acgt", "format_sequence(firsttab=5,tab=5,width=1,numleft=1)",
+                "1    a\n"
+                "2    c\n"
+                "3    g\n"
+                "4    t");
+        TEST_CI("acgt", "format_sequence(firsttab=0,tab=0,width=2,gap=1)",
+                "a c\n"
+                "g t");
+        TEST_CI("acgt",     "format_sequence(firsttab=0,tab=0,width=4,gap=1)", "a c g t");
+        TEST_CI("acgt",     "format_sequence(firsttab=0,tab=0,width=4,gap=2)", "ac gt");
+        TEST_CI("acgtacgt", "format_sequence(firsttab=0,width=10,gap=4)",      "acgt acgt");
+        TEST_CI("acgtacgt", "format_sequence(firsttab=1,width=10,gap=4)",      " acgt acgt");
+
+        TEST_CI__BROKEN("acgt", "format_sequence(nl=c)",     "<should raise an error>");
+        TEST_CI__BROKEN("acgt", "format_sequence(forcenl=)", "<should raise an error>");
+        // TEST_CI_ERROR_CONTAINS("acgt", "format_sequence(nl=c)",     "Unknown Parameter 'nl=c' in command 'format_sequence'");
+        // TEST_CI_ERROR_CONTAINS("acgt", "format_sequence(forcenl=)", "Unknown Parameter 'forcenl=' in command 'format_sequence'");
+        // TEST_CI_ERROR("acgt", "format(width=0)", "should_raise_some_error"); // @@@ crashes
+
+        // remove + keep
+        TEST_CI_NOOP("acgtacgt",         "remove(-.)");
+        TEST_CI     ("..acg--ta-cgt...", "remove(-.)", "acgtacgt");
+        TEST_CI     ("..acg--ta-cgt...", "remove(acgt)", "..---...");
+
+        TEST_CI_NOOP("acgtacgt",         "keep(acgt)");
+        TEST_CI     ("..acg--ta-cgt...", "keep(-.)", "..---...");
+        TEST_CI     ("..acg--ta-cgt...", "keep(acgt)", "acgtacgt");
+
+        // compare + icompare
+        TEST_CI("x,z,y,y,z,x,x,Z,y,Y,Z,x", WITH_SPLITTED("|compare"),  "-1,0,1,1,1,-1");
+        TEST_CI("x,z,y,y,z,x,x,Z,y,Y,Z,x", WITH_SPLITTED("|icompare"), "-1,0,1,-1,0,1");
+
+        TEST_CI("x,y,z", WITH_SPLITTED("|compare(\"y\")"), "-1,0,1");
+
+        // equals + iequals
+        TEST_CI("a,b,a,a,a,A", WITH_SPLITTED("|equals"),  "0,1,0");
+        TEST_CI("a,b,a,a,a,A", WITH_SPLITTED("|iequals"), "0,1,1");
+
+        // contains + icontains
+        TEST_CI("abc,bcd,BCD", WITH_SPLITTED("|contains(\"bc\")"),   "2,1,0");
+        TEST_CI("abc,bcd,BCD", WITH_SPLITTED("|icontains(\"bc\")"),  "2,1,1");
+        TEST_CI("abc,bcd,BCD", WITH_SPLITTED("|icontains(\"d\")"),   "0,3,3");
+
+        // partof + ipartof
+        TEST_CI("abc,BCD,def,deg", WITH_SPLITTED("|partof(\"abcdefg\")"),   "1,0,4,0");
+        TEST_CI("abc,BCD,def,deg", WITH_SPLITTED("|ipartof(\"abcdefg\")"),  "1,2,4,0");
+
+        // translate
+        TEST_CI("abcdefgh", "translate(abc,cba)",     "cbadefgh");
+        TEST_CI("abcdefgh", "translate(cba,abc)",     "cbadefgh");
+        TEST_CI("abcdefgh", "translate(hcba,abch,-)", "hcb----a");
+        TEST_CI("abcdefgh", "translate(aceg,aceg,-)", "a-c-e-g-");
+        TEST_CI("abbaabba", "translate(ab,ba,-)",     "baabbaab");
+        TEST_CI("abbaabba", "translate(a,x,-)",       "x--xx--x");
+        TEST_CI("abbaabba", "translate(,,-)",         "--------");
+
+        // echo
+        TEST_CI("", "echo(x,y,z)", "xyz");
+        TEST_CI("", "echo(x,y,z)|streams", "3");
+
+        // upper, lower + caps
+        TEST_CI("the QUICK brOwn Fox", "lower", "the quick brown fox");
+        TEST_CI("the QUICK brOwn Fox", "upper", "THE QUICK BROWN FOX");
+        TEST_CI("the QUICK brOwn Fox", "caps",  "The Quick Brown Fox");
+
+        // head, tail + mid/mid0
+        TEST_CI     ("1234567890", "head(3)", "123");
+        TEST_CI_NOOP("1234567890", "head(20)");
+        TEST_CI     ("1234567890", "tail(4)", "7890");
+
+        TEST_CI("1234567890", "mid(3,5)", "34");          // @@@ wrong ?
+        TEST_CI__BROKEN("1234567890", "mid(3,5)", "345"); // @@@ wanted ? check help
+
+        TEST_CI("1234567890", "mid0(3,5)", "45");          // @@@ wrong ?
+        TEST_CI__BROKEN("1234567890", "mid0(3,5)", "456"); // @@@ wanted ? check help
+        
+        TEST_CI("1234567890", "mid(9,20)", "90");
+        TEST_CI("1234567890", "mid(20,20)", "");
+
+        // tab + pretab
+        TEST_CI("x,xx,xxx", WITH_SPLITTED("|tab(2)"),    "x ,xx,xxx");
+        TEST_CI("x,xx,xxx", WITH_SPLITTED("|tab(3)"),    "x  ,xx ,xxx");
+        TEST_CI("x,xx,xxx", WITH_SPLITTED("|tab(4)"),    "x   ,xx  ,xxx ");
+        TEST_CI("x,xx,xxx", WITH_SPLITTED("|pretab(2)"), " x,xx,xxx");
+        TEST_CI("x,xx,xxx", WITH_SPLITTED("|pretab(3)"), "  x, xx,xxx");
+        TEST_CI("x,xx,xxx", WITH_SPLITTED("|pretab(4)"), "   x,  xx, xxx");
+
+        // crop
+        TEST_CI("   x  x  ",         "crop(\" \")",     "x  x");
+        TEST_CI("\n \t  x  x \n \t", "crop(\"\t\n \")", "x  x");
+
+        // cut, drop, dropempty and dropzero
+        TEST_CI("one,two,three,four,five,six", WITH_SPLITTED("|cut(2,3,5)"),        "two,three,five");
+        TEST_CI("one,two,three,four,five,six", WITH_SPLITTED("|drop(2,3,5)"),       "one,four,six");
+
+        TEST_CI("one,two,three,four,five,six", WITH_SPLITTED("|dropempty|streams"), "6");
+        TEST_CI("one,two,,,five,six",          WITH_SPLITTED("|dropempty|streams"), "4");
+        TEST_CI(",,,,,",                       WITH_SPLITTED("|dropempty"),         "");
+        TEST_CI(",,,,,",                       WITH_SPLITTED("|dropempty|streams"), "0");
+
+        TEST_CI("1,0,0,2,3,0",                 WITH_SPLITTED("|dropzero"),          "1,2,3");
+        TEST_CI("0,0,0,0,0,0",                 WITH_SPLITTED("|dropzero"),          "");
+        TEST_CI("0,0,0,0,0,0",                 WITH_SPLITTED("|dropzero|streams"),  "0");
+
+        // swap
+        TEST_CI("1,2,3,four,five,six", WITH_SPLITTED("|swap"),                "1,2,3,four,six,five");
+        TEST_CI("1,2,3,four,five,six", WITH_SPLITTED("|swap(2,3)"),           "1,3,2,four,five,six");
+        TEST_CI("1,2,3,four,five,six", WITH_SPLITTED("|swap(2,3)|swap(4,3)"), "1,3,four,2,five,six");
+
+        // toback + tofront
+        TEST_CI     ("front,mid,back", WITH_SPLITTED("|toback(2)"),  "front,back,mid");
+        TEST_CI     ("front,mid,back", WITH_SPLITTED("|tofront(2)"), "mid,front,back");
+        TEST_CI_NOOP("front,mid,back", WITH_SPLITTED("|toback(3)"));
+        TEST_CI_NOOP("front,mid,back", WITH_SPLITTED("|tofront(1)"));
+
+        // split (default)
+        TEST_CI("a\nb", "|split" ACI_MERGE, "a,b");
+
+        // extract_words + extract_sequence
+        TEST_CI("1,2,3,four,five,six", "extract_words(\"0123456789\",1)",                  "1 2 3");
+        TEST_CI("1,2,3,four,five,six", "extract_words(\"abcdefghijklmnopqrstuvwxyz\", 3)", "five four six");
+        TEST_CI("1,2,3,four,five,six", "extract_words(\"abcdefghijklmnopqrstuvwxyz\", 4)", "five four");
+        TEST_CI("1,2,3,four,five,six", "extract_words(\"abcdefghijklmnopqrstuvwxyz\", 5)", "");
+
+        TEST_CI     ("1,2,3,four,five,six",    "extract_sequence(\"acgtu\", 1.0)",   "");
+        TEST_CI     ("1,2,3,four,five,six",    "extract_sequence(\"acgtu\", 0.5)",   "");
+        TEST_CI     ("1,2,3,four,five,six",    "extract_sequence(\"acgtu\", 0.0)",   "four five six");
+        TEST_CI     ("..acg--ta-cgt...",       "extract_sequence(\"acgtu\", 1.0)",   "");
+        TEST_CI_NOOP("..acg--ta-cgt...",       "extract_sequence(\"acgtu-.\", 1.0)");
+        TEST_CI_NOOP("..acg--ta-ygt...",       "extract_sequence(\"acgtu-.\", 0.7)");
+        TEST_CI     ("70 ..acg--ta-cgt... 70", "extract_sequence(\"acgtu-.\", 1.0)", "..acg--ta-cgt...");
+
+        // checksum + gcgchecksum
+        TEST_CI("", "sequence|checksum",      "4C549A5F");
+        TEST_CI("", "sequence | gcgchecksum", "4308");
+
+        // SRT
+        TEST_CI("The quick brown fox", "srt(\"quick=lazy:brown fox=dog\")", "The lazy dog");
+        TEST_CI__BROKEN("The quick brown fox", "srt(quick=lazy:brown fox=dog)", "The lazy dog"); // @@@ parsing problem ?
+
+        // calculator
+        TEST_CI("", "echo(9,3)|plus",     "12");
+        TEST_CI("", "echo(9,3)|minus",    "6");
+        TEST_CI("", "echo(9,3)|mult",     "27");
+        TEST_CI("", "echo(9,3)|div",      "3");
+        TEST_CI("", "echo(9,3)|rest",     "0");
+        TEST_CI("", "echo(9,3)|per_cent", "300");
+        
+        TEST_CI("", "echo(1,2,3)|plus(1)" ACI_MERGE,     "2,3,4");
+        TEST_CI("", "echo(1,2,3)|minus(2)" ACI_MERGE,    "-1,0,1");
+        TEST_CI("", "echo(1,2,3)|mult(42)" ACI_MERGE,    "42,84,126");
+        TEST_CI("", "echo(1,2,3)|div(2)" ACI_MERGE,      "0,1,1");
+        TEST_CI("", "echo(1,2,3)|rest(2)" ACI_MERGE,     "1,0,1");
+        TEST_CI("", "echo(1,2,3)|per_cent(3)" ACI_MERGE, "33,66,100");
+
+        // readdb
+        TEST_CI("", "readdb(name)", "LcbReu40");
+        TEST_CI("", "readdb(acc)",  "X76328");
+
+        // taxonomy
+        TEST_CI("", "taxonomy(1)",           "No default tree");
+        TEST_CI("", "taxonomy(tree_nuc, 1)", "group1");
+        TEST_CI("", "taxonomy(tree_nuc, 5)", "top/lower-red/group1");
+
+        // diff, filter + change
+        TEST_CI("..acg--ta-cgt..." ","
+                "..acg--ta-cgt...", WITH_SPLITTED("|diff(pairwise=1)"),
+                "................");
+        TEST_CI("..acg--ta-cgt..." ","
+                "..cgt--ta-acg...", WITH_SPLITTED("|diff(pairwise=1,equal==)"),
+                "==cgt=====acg===");
+        TEST_CI("..acg--ta-cgt..." ","
+                "..cgt--ta-acg...", WITH_SPLITTED("|diff(pairwise=1,differ=X)"),
+                "..XXX.....XXX...");
+        TEST_CI("", "sequence|diff(species=LcbFruct)|checksum", "645E3107");
+
+        TEST_CI("..XXX.....XXX..." ","
+                "..acg--ta-cgt...", WITH_SPLITTED("|filter(pairwise=1,exclude=X)"),
+                "..--ta-...");
+        TEST_CI("..XXX.....XXX..." ","
+                "..acg--ta-cgt...", WITH_SPLITTED("|filter(pairwise=1,include=X)"),
+                "acgcgt");
+        TEST_CI("", "sequence|filter(species=LcbFruct,include=.-)", "-----------T----T-------G----------C-----T----T...");
+
+        TEST_CI("...XXX....XXX..." ","
+                "..acg--ta-cgt...", WITH_SPLITTED("|change(pairwise=1,include=X,to=C,change=100)"),
+                "..aCC--ta-CCC...");
+        TEST_CI("...XXXXXXXXX...." ","
+                "..acg--ta-cgt...", WITH_SPLITTED("|change(pairwise=1,include=X,to=-,change=100)"),
+                "..a---------t...");
+
+
+        // exec
+        TEST_CI("c,b,c,b,a,a", WITH_SPLITTED("|exec(\"(sort|uniq)\")|split|dropempty"),              "a,b,c");
+        TEST_CI("a,aba,cac",   WITH_SPLITTED("|exec(\"perl\",-pe,s/([bc])/$1$1/g)|split|dropempty"), "a,abba,ccacc");
+        
         // error cases
         TEST_CI_ERROR("", "nocmd",          "ARB ERROR: Command 'nocmd' failed:\nReason: Unknown command 'nocmd'");
         TEST_CI_ERROR("", "|nocmd",         "ARB ERROR: Command '|nocmd' failed:\nReason: Unknown command 'nocmd'");
@@ -1274,6 +1534,7 @@ void TEST_GB_command_interpreter() {
         TEST_CI_ERROR(NULL, "", "ARB ERROR: ACI: no input streams found"); 
     }
 
+    GB_set_ACISRT_trace(old_trace); // avoid side effect of TEST_GB_command_interpreter
     GB_close(gb_main);
 }
 
