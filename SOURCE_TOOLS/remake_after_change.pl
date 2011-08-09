@@ -272,6 +272,9 @@ sub main() {
       $targets_contain_unittests = 1;
       $targets_are_timed         = 1;
     }
+    if (defined $targets{ut}) {
+      $targets_contain_unittests = 1;
+    }
 
     my $makecmd;
     if ($targets_are_timed==1) {
