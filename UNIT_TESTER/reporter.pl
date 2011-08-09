@@ -91,6 +91,8 @@ sub parse_log($) {
   my $seenSummary  = 0;
   my $curr_target  = undef;
 
+  my $dump_log = 0;
+
   while ($_ = <LOG>) {
     chomp;
     if (/^UnitTester:/) {
@@ -100,8 +102,8 @@ sub parse_log($) {
       if (/passed=([0-9]+)/)  { $passed += $1; }
       if (/passed=ALL/)       { $passedALL = 1; }
 
-      if (/failed=([0-9]+)/)  { $failed += $1; }
-      if (/warnings=([0-9]+)/)  { $warnings += $1; }
+      if (/failed=([0-9]+)/)  { $failed += $1; $dump_log = 1; }
+      if (/warnings=([0-9]+)/)  { $warnings += $1; if ($failed==0) { $dump_log = 1; } }
       if (/target=([^\s]+)/)  { $curr_target = $1; }
       if (/time=([0-9.]+)/)   {
         $elapsed += $1;
@@ -115,6 +117,20 @@ sub parse_log($) {
   }
   close(LOG);
 
+  if (not $seenSummary) { $dump_log = 1; }
+
+  if ($dump_log==1) {
+    open(LOG,$log) || die "can't open '$log' (Reason: $!)";
+    my $line;
+    while (defined($line=<LOG>)) { print $line; }
+    close(LOG);
+  }
+  else {
+    my $log_ptr = $log;
+    $log_ptr =~ s/^\./UNIT_TESTER/;
+    print "Suppressing dispensable $log_ptr\n";
+  }
+  
   if (not $seenSummary) {
     print "Warning: No summary found in '$log' (maybe the test did not compile or crashed)\n";
     $crashed++;
