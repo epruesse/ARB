@@ -19,6 +19,7 @@
 #include <arb_strbuf.h>
 
 #include <cctype>
+#include <algorithm>
 
 
 #define AWAR_TREE_REFRESH "tmp/focus/tree_refresh" // touch this awar to refresh the tree display
@@ -355,28 +356,27 @@ static const char *gbl_stristr(const char *haystack, const char *needle) {
     return 0;
 }
 
-static GB_ERROR gbl_mid_streams(const GBL_streams& arg_input, GBL_streams& arg_out, int start, int mstart, int end, int relend) {
+inline int approve_pos(int pos, int len) { return pos<0 ? (-pos<len ? len+pos : 0) : pos; }
+
+static GB_ERROR gbl_mid_streams(const GBL_streams& arg_input, GBL_streams& arg_out, int start, int end) {
     // used as well to copy all streams (e.g. by 'dd')
-    int i;
     GBL_CHECK_FREE_PARAM(arg_out.size(), arg_input.size());
-    for (i=0; i<arg_input.size(); i++) {       // go through all in streams
-        const char *p;
+    for (int i=0; i<arg_input.size(); i++) {       // go through all in streams
+        const char *p   = arg_input.get(i);
+        int         len = strlen(p);
 
-        int len;
-        int nstart = start;
-        int nend = end;
+        int s = approve_pos(start, len);
+        int e = approve_pos(end, len);
 
-        p = arg_input.get(i);
-        len = strlen(p);
-        if (nstart<0) nstart = len - mstart;
-        if (nend<0) nend = len - relend;        // check rel len
-
-        if (nstart>len) nstart = len;   // check boundaries
-        if (nstart<0) nstart = 0;
-        if (nend>len) nend = len;
-        if (nend<nstart) nend = nstart;
-
-        arg_out.insert(GB_strpartdup(p+nstart, p+nend-1));     // export result string
+        char *res;
+        if (s >= len || e<s) {
+            res = strdup("");
+        }
+        else {
+            gb_assert(s >= 0);
+            res = GB_strpartdup(p+s, p+e);
+        }
+        arg_out.insert(res);
     }
     return 0;
 }
@@ -394,7 +394,7 @@ static GB_ERROR gbl_trace(GBL_command_arguments *args) {
         GB_set_ACISRT_trace(tmp_trace);
     }
 
-    return gbl_mid_streams(args->input, args->output, 0, 0, -1, 0); // copy all streams
+    return gbl_mid_streams(args->input, args->output, 0, -1); // copy all streams
 }
 
 /* ---------------------------------------------------------------------------------------
@@ -850,7 +850,7 @@ static GB_ERROR gbl_echo(GBL_command_arguments *args) {
 
 static GB_ERROR gbl_dd(GBL_command_arguments *args) {
     if (args->param.size()!=0) return "syntax: dd (no parameters)";
-    return gbl_mid_streams(args->input, args->output, 0, 0, -1, 0); // copy all streams
+    return gbl_mid_streams(args->input, args->output, 0, -1); // copy all streams
 }
 
 static GB_ERROR gbl_string_convert(GBL_command_arguments *args) {
@@ -895,17 +895,17 @@ static GB_ERROR gbl_string_convert(GBL_command_arguments *args) {
 }
 
 static GB_ERROR gbl_head(GBL_command_arguments *args) {
-    int start;
-    if (args->param.size()!=1) return "syntax: head(#start)";
-    start = atoi(args->param.get(0));
-    return gbl_mid_streams(args->input, args->output, 0, 0, start, -start);
+    if (args->param.size()!=1) return "syntax: head(#length_of_head)";
+    int start = atoi(args->param.get(0));
+    if (start <= 0) return gbl_mid_streams(args->input, args->output, 1, 0); // empty all streams
+    return gbl_mid_streams(args->input, args->output, 0, start-1);
 }
 
 static GB_ERROR gbl_tail(GBL_command_arguments *args) {
-    int end;
-    if (args->param.size()!=1) return "syntax: tail(#length_of_tail)";
-    end = atoi(args->param.get(0));
-    return gbl_mid_streams(args->input, args->output, -1, end, -1, 0);
+    if (args->param.size() != 1) return "syntax: tail(#length_of_tail)";
+    int end = atoi(args->param.get(0));
+    if (end <= 0) return gbl_mid_streams(args->input, args->output, 1, 0); // empty all streams
+    return gbl_mid_streams(args->input, args->output, -end, -1);
 }
 
 static GB_ERROR gbl_mid0(GBL_command_arguments *args) {
@@ -914,7 +914,7 @@ static GB_ERROR gbl_mid0(GBL_command_arguments *args) {
     if (args->param.size()!=2) return "syntax: mid0(#start;#end)";
     start = atoi(args->param.get(0));
     end = atoi(args->param.get(1));
-    return gbl_mid_streams(args->input, args->output, start, -start, end, -end);
+    return gbl_mid_streams(args->input, args->output, start, end);
 }
 
 static GB_ERROR gbl_mid(GBL_command_arguments *args) {
@@ -923,7 +923,7 @@ static GB_ERROR gbl_mid(GBL_command_arguments *args) {
     if (args->param.size()!=2) return "syntax: mid(#start;#end)";
     start = atoi(args->param.get(0))-1;
     end = atoi(args->param.get(1))-1;
-    return gbl_mid_streams(args->input, args->output, start, -start, end, -end);
+    return gbl_mid_streams(args->input, args->output, start, end);
 }
 
 static GB_ERROR gbl_tab(GBL_command_arguments *args) {
