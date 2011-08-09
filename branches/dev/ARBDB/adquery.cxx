@@ -1342,17 +1342,31 @@ void TEST_GB_command_interpreter() {
 
         // head, tail + mid/mid0
         TEST_CI     ("1234567890", "head(3)", "123");
+        TEST_CI     ("1234567890", "head(9)", "123456789");
+        TEST_CI_NOOP("1234567890", "head(10)");
         TEST_CI_NOOP("1234567890", "head(20)");
-        TEST_CI     ("1234567890", "tail(4)", "7890");
-
-        TEST_CI("1234567890", "mid(3,5)", "34");          // @@@ wrong ?
-        TEST_CI__BROKEN("1234567890", "mid(3,5)", "345"); // @@@ wanted ? check help
-
-        TEST_CI("1234567890", "mid0(3,5)", "45");          // @@@ wrong ?
-        TEST_CI__BROKEN("1234567890", "mid0(3,5)", "456"); // @@@ wanted ? check help
         
+        TEST_CI     ("1234567890", "tail(4)", "7890");
+        TEST_CI     ("1234567890", "tail(9)", "234567890");
+        TEST_CI_NOOP("1234567890", "tail(10)");
+        TEST_CI_NOOP("1234567890", "tail(20)");
+
+        TEST_CI("1234567890", "tail(0)", "");
+        TEST_CI("1234567890", "head(0)", "");
+        TEST_CI("1234567890", "tail(-2)", "");
+        TEST_CI("1234567890", "head(-2)", "");
+        
+        TEST_CI("1234567890", "mid(3,5)", "345");
+        TEST_CI("1234567890", "mid(2,2)", "2");
+
+        TEST_CI("1234567890", "mid0(3,5)", "456");
+
         TEST_CI("1234567890", "mid(9,20)", "90");
         TEST_CI("1234567890", "mid(20,20)", "");
+
+        TEST_CI("1234567890", "tail(3)",     "890"); // example from ../HELP_SOURCE/oldhelp/commands.hlp@mid0
+        TEST_CI("1234567890", "mid(-2,0)",   "890");
+        TEST_CI("1234567890", "mid0(-3,-1)", "890");
 
         // tab + pretab
         TEST_CI("x,xx,xxx", WITH_SPLITTED("|tab(2)"),    "x ,xx,xxx");

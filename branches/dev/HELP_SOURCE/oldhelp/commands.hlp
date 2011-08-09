@@ -125,14 +125,21 @@ SECTION COMMANDLIST
 		tail(n)			the last n characters
 		right(n)		the last n characters
 
+                                        the above functions return an empty string for n<=0
+
 		len			the length of the input
 
 		len("chr")		the length of the input excluding the
 					characters in 'chr'
 
-		mid(x,y)		the string from x to y
-					y < 0 means a position relative to the
-					end
+		mid(x,y)		the substring string from position x to y
+
+                                        Allowed positions are
+                                        - [1..N] for mid()
+                                        - [0..N-1] for mid0()
+
+					A position below that range is relative to the end of the string,
+                                        i.e. mid(-2,0) and mid0(-3,-1) are equiv to tail(3)
 
                 crop("str")             removes characters of 'str' from
                                         both ends of the input
