@@ -259,7 +259,8 @@ sub main() {
 
     my $premake = "make -j$jobs proto depends";
     print "Silent premake: $premake'\n";
-    $premake = "cd $ARBHOME;$premake >/dev/null";
+    # $premake = "cd $ARBHOME;$premake >/dev/null";
+    $premake = "cd $ARBHOME;$premake > silent_premake.log";
     system($premake)==0 || die "error executing '$premake' (exitcode=$?)";
 
     print "\n";
@@ -288,6 +289,8 @@ sub main() {
     print "[Make: '$makecmd']\n";
     system($makecmd)==0 || die "error executing '$makecmd' (exitcode=$?)";
     print "remake[3]: Leaving directory `$ARBHOME'\n";
+
+    unlink('silent_premake.log');
   }
 }
 
