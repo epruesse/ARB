@@ -19,18 +19,20 @@ OCCURRENCE	NDS
 		[ ARB_NT/Species/search/parse_fields ]
 
 DESCRIPTION	The command interpreter is a simple interpreter.
+
 		All commands take the data from the input streams,
 		modify it and write it to the output
-		(which may be the input of the next command). The first
-		input stream is normally the value of a database field
+		(which may be the input of the next command).
+
+                The first input stream often is the value of a database field
 		(see NDS for more information).
 
                      e.g. count("a") counts every 'a' in each input stream and
                      generates an output stream (== the sum of 'a') for every
                      input.
 
-		Many commands have command modifiers which are appended to
-		the command.
+		Many commands have parameters which are specified behind
+		the command in parenthesis.
 
 		Different commands can be separated by:
 
@@ -68,7 +70,28 @@ DESCRIPTION
 	.        ->count("G")-->| ----->		|
 
 
+SECTION PARAMETERS
 
+        Several commands expect or accept additional parameters in
+        parenthesis (e.g. 'remove(aA)').
+
+        Multiple parameters have to be separated by ',' or ';'.
+
+        There are two distinct ways to specify such a parameter:
+        - unquoted
+
+          Unquoted parameters are taken as specified, but may not contain any of
+          the following characters: ',;"|)'
+
+        - quoted
+
+          Quoted parameters begin and end with a '"'. You can use any character,
+          but you need to escape '\' and '"' by preceeding a '\'.
+
+          Example: 'remove("\"")' will remove all double quotes from input.
+                   'remove("\\")' will remove all backslashes from input.
+
+        [@@@ behavior currently not strictly implemented]
 
 SECTION COMMANDLIST
 
@@ -203,6 +226,15 @@ SECTION COMMANDLIST
                     contain more characters of type chars than val, sort them
                     alphabetically and write them separated by ' ' to the output
 
+        ESCAPING AND QUOTING
+
+                 escape         escapes all occurrances of '\' and '"' by preceeding a '\'
+                 quote          quotes the input in '"'
+
+                 unescape       inverse of escape
+                 unquote        removes quotes (if present). otherwise return input
+
+
 	STRING COMPARISON
 
                compare(a,b)             return -1 if a<b, 0 if a=b, 1 if a>b
@@ -252,7 +284,7 @@ SECTION COMMANDLIST
                       is applied to each input stream together with the argument.
                       For each input stream one output stream is generated.
                     - has 2 arguments, it is applied to these. The arguments are interpreted as
-                      escaped ACI commands and are applied for each input stream. The results of
+                      ACI commands and are applied for each input stream. The results of
                       the commands are passed as arguments to the binary operator. For each input
                       stream one output stream is generated.
 
@@ -455,41 +487,41 @@ SECTION COMMANDLIST
                         can remove this command from the NDS. Even arb_panic will not
                         easily help you.
 
-		command(escapedCommand)
+		command(action)
 
-                        applies 'escapedCommand' to all input streams using
+                        applies 'action' to all input streams using
 
                                  - ACI,
                                  - SRT (if starts with ':') (see LINK{parser.hlp})
                                  - or as REG (if starts with '/') (see LINK{regexpr.hlp}).
 
-                        In escapedCommand you have to escape '\' and '"' by
-                        preceding a '\'. If you nest calls you have to use multiple escapes
-                        (e.g. inside an export filter - which is in fact an
+                        Normally you use a quoted parameter (see section about PARAMETERS above)
+
+                        If you nest calls (i.e. if 'action' contains further calls to 'command') you have to apply
+                        escaping multiple times (e.g. inside an export filter - which is in fact an
                         SRT expression - you'll have to use double escapes).
 
-                eval(escapedCommand)
+                eval(exprEvalToAction)
 
-                        the 'escapedCommand' is evaluated (using an empty string as input)
-                        and the result is interpreted as command and gets applied to all
-                        input streams.
+                        the 'exprEvalToAction' is evaluated (using an empty string as input)
+                        and the result is interpreted as action and gets applied to all
+                        input streams (as in 'command' above).
 
                         Example: Said you have two numeric positions stored in database fields
                                  'pos1' and 'pos2' for each species. Then the following command
                                  extracts the sequence data from pos1 to pos2:
 
-                        sequence|eval(" \"mid(\";readdb(pos1);\";\";readdb(pos2);\")\" ")
+                                 'sequence|eval(" \"mid(\";readdb(pos1);\";\";readdb(pos2);\")\" ")'
 
                         How the example works:
 
-                                The argument to eval is the escaped version of the command
-                                 '"mid(" ; readdb(pos1) ; ";" ; readdb(pos2) ; ")"'.
-                                 If pos1 contains '10' and pos2 contains '20' that command
-                                 evaluates to 'mid(10;20)'.
+                            The argument is the escaped version of the
+                            command '"mid(" ; readdb(pos1) ; ";" ; readdb(pos2) ; ")"'.
 
-                                 The resulting ACI for the example species
-                                 is 'sequence|eval("mid(10;20)")' which is equivalent
-                                 to 'sequence|mid(10;20)'.
+                            If pos1 contains '10' and pos2 contains '20' that command will
+                            evaluate to 'mid(10;20)'.
+
+                            For these positions the executed ACI behaves like 'sequence|mid(10;20)'. 
 
                 define(name,escapedCommand)
 
@@ -501,11 +533,12 @@ SECTION COMMANDLIST
 
                         applies a previously defined ACI-macro to all input streams (see 'define').
 
-                        'define' followed by 'do' works similar to 'command'.
+                        'define(a,action)' followed by 'do(a)' works similar to 'command(action)'.
+
                         See embl.eft for an example using define and 'do'
 
-                origin_organism(escapedCommand)
-                origin_gene(escapedCommand)
+                origin_organism(action)
+                origin_gene(action)
 
                         like command() but readdb() etc. reads all data from the
                         origin organism/gene of a gene-species (not from the gene-species itself).

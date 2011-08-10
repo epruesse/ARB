@@ -1144,17 +1144,20 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 
 
 #define TEST_CI(input,cmd,expected)         do {                        \
-        TEST_ASSERT_DIFFERENT(input,expected);                          \
         TEST_CI__INTERNAL(input,cmd,expected,TEST_ASSERT_EQUAL);        \
     } while(0)
 
 #define TEST_CI__BROKEN(input,cmd,expected) do {                        \
-        TEST_ASSERT_DIFFERENT(input,expected);                          \
         TEST_CI__INTERNAL(input,cmd,expected,TEST_ASSERT_EQUAL__BROKEN); \
     } while(0)
 
 #define TEST_CI_NOOP(inandout,cmd)         TEST_CI__INTERNAL(inandout,cmd,inandout,TEST_ASSERT_EQUAL)
 #define TEST_CI_NOOP__BROKEN(inandout,cmd) TEST_CI__INTERNAL(inandout,cmd,inandout,TEST_ASSERT_EQUAL__BROKEN)
+
+#define TEST_CI_INVERSE(in,cmd,inv_cmd,out) do {        \
+        TEST_CI(in,  cmd,     out);                     \
+        TEST_CI(out, inv_cmd, in);                      \
+    } while(0)
 
 #define CI_ERROR_INIT(input,cmd)                                        \
     char *result = GB_command_interpreter(gb_main, input, cmd, gb_data, NULL); \
@@ -1194,22 +1197,41 @@ void TEST_GB_command_interpreter() {
         GBDATA         *gb_data = GBT_find_species(gb_main, "LcbReu40");
 
         TEST_CI_NOOP("bla", ""); 
-        
+
         TEST_CI("bla", ":a=u", "blu"); // simple SRT
 
         TEST_CI("bla",    "/a/u/",   "blu"); // simple regExp replace
         TEST_CI("blabla", "/l.*b/",  "lab"); // simple regExp match
-        TEST_CI("blabla", "/b.b/",   ""); // simple regExp match (failing)
+        TEST_CI("blabla", "/b.b/",   "");    // simple regExp match (failing)
 
+        // escape / quote
+        TEST_CI_INVERSE("ac", "|quote",        "|unquote",          "\"ac\"");
+        TEST_CI_INVERSE("ac", "|escape",       "|unescape",         "ac");
+        TEST_CI_INVERSE("ac", "|escape|quote", "|unquote|unescape", "\"ac\"");
+        TEST_CI_INVERSE("ac", "|quote|escape", "|unescape|unquote", "\\\"ac\\\"");
+        
+        TEST_CI_INVERSE("a\"b\\c", "|quote",        "|unquote",          "\"a\"b\\c\"");
+        TEST_CI_INVERSE("a\"b\\c", "|escape",       "|unescape",         "a\\\"b\\\\c");
+        TEST_CI_INVERSE("a\"b\\c", "|escape|quote", "|unquote|unescape", "\"a\\\"b\\\\c\"");
+        TEST_CI_INVERSE("a\"b\\c", "|quote|escape", "|unescape|unquote", "\\\"a\\\"b\\\\c\\\"");
+
+        TEST_CI_NOOP("ac", "|unquote");   
+        TEST_CI_NOOP("\"ac", "|unquote");   
+        TEST_CI_NOOP("ac\"", "|unquote");   
+        
         TEST_CI("blabla", "|coUNT(ab)",         "4");   // simple ACI
         TEST_CI("l",      "|\"b\";dd;\"a\"|dd", "bla"); // ACI with muliple streams
         TEST_CI("bla",    "|count(\"\")",       "0");   // empty parameter
         TEST_CI("b a",    "|count(\" \")",      "1");   // space in quotes
-        TEST_CI("bla",    "|count(\"\\a\")",    "1");   // escaped character
+        TEST_CI("b\\a",   "|count(\\a)",        "2");   // count '\\' and 'a' (ok)
+        TEST_CI__BROKEN("b\\a",   "|count(\"\\a\")",    "1"); // should only count 'a' (which is escaped in param)
+        TEST_CI("b\\a",   "|count(\"\a\")",     "0");   // does not contain '\a'
+        TEST_CI("b\a",    "|count(\"\a\")",     "1");   // counts '\a'
 
         // escaping (@@@ wrong behavior?)
         TEST_CI("b\\a",   "|count(\\a)",         "2"); // i would expect '1' as result (the 'a'), but it counts '\\' and 'a'
-        TEST_CI("b\\a",   "|contains(\"\\\\\")", "0"); // searches for 2 backslashes(ok)
+        TEST_CI("b\\a",   "|contains(\"\\\\\")", "0"); // searches for 2 backslashes, finds none
+        TEST_CI__BROKEN("b\\a",   "|contains(\"\")", "0"); // search for nothing, but reports 1 hit
         TEST_CI__BROKEN("b\\a",   "|contains(\\)",       "1"); // searches for 1 backslash (ok), but reports two hits instead of one
         TEST_CI__BROKEN("b\\\\a", "|contains(\"\\\\\")", "1"); // searches for 2 backslashes (ok), but reports two hits instead of one
         TEST_CI_ERROR("b\\a", "|contains(\"\\\")", "ARB ERROR: unbalanced '\"' in '|contains(\"\\\")'"); // raises error (should searches for 1 backslash)
