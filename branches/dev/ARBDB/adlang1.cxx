@@ -256,27 +256,6 @@ inline char *interpret_subcommand(const GBL_reference& ref, const char *input, c
 // -------------------------
 //      String functions
 
-static char *unEscapeString(const char *escapedString) {
-    // replaces all \x by x
-    char *result = nulldup(escapedString);
-    char *to     = result;
-    char *from   = result;
-
-    while (1) {
-        char c = *from++;
-        if (!c) break;
-
-        if (c=='\\') {
-            *to++ = *from++;
-        }
-        else {
-            *to++ = c;
-        }
-    }
-    *to = 0;
-    return result;
-}
-
 static int gbl_stricmp(const char *s1, const char *s2) {
     // case insensitive strcmp
     int i;
@@ -479,8 +458,99 @@ static GB_ERROR gbl_apply_binary_operator(GBL_command_arguments *args, gbl_binar
     return error;
 }
 
+// --------------------------------
+//      escape/unescape strings
+
+static char *unEscapeString(const char *escapedString) {
+    // replaces all \x by x
+    char *result = nulldup(escapedString);
+    char *to     = result;
+    char *from   = result;
+
+    while (1) {
+        char c = *from++;
+        if (!c) break;
+
+        if (c=='\\') {
+            *to++ = *from++;
+        }
+        else {
+            *to++ = c;
+        }
+    }
+    *to = 0;
+    return result;
+}
+static char *escapeString(const char *unescapedString) {
+    // replaces all '\' and '"' by '\\' and '\"'
+    int         len    = strlen(unescapedString);
+    char       *result = (char*)malloc(2*len+1);
+    char       *to     = result;
+    const char *from   = unescapedString;
+
+    while (1) {
+        char c = *from++;
+        if (!c) break;
+
+        if (c=='\\' || c == '\"') {
+            *to++ = '\\';
+            *to++ = c;
+        }
+        else {
+            *to++ = c;
+        }
+    }
+    *to = 0;
+    return result;
+}
+
 // ---------------------------------
 //      the commands themselves:
+
+static GB_ERROR gbl_quote(GBL_command_arguments *args) {
+    if (args->param.size()!=0) return "syntax: quote (no parameters)";
+    GBL_CHECK_FREE_PARAM(args->output.size(), args->input.size());
+    for (int i=0; i<args->input.size(); i++) {
+        char *quoted  = GBS_global_string_copy("\"%s\"", args->input.get(i));
+        PASS_2_OUT(args, quoted);
+    }
+    return NULL;
+}
+static GB_ERROR gbl_unquote(GBL_command_arguments *args) {
+    if (args->param.size()!=0) return "syntax: unquote (no parameters)";
+    GBL_CHECK_FREE_PARAM(args->output.size(), args->input.size());
+    for (int i=0; i<args->input.size(); i++) {
+        const char *str = args->input.get(i);
+        int         len = strlen(str);
+
+        if (str[0] == '\"' && str[len-1] == '\"') {
+            PASS_2_OUT(args, GB_strpartdup(str+1, str+len-2));
+        }
+        else {
+            PASS_2_OUT(args, strdup(str));
+        }
+    }
+    return NULL;
+}
+
+static GB_ERROR gbl_escape(GBL_command_arguments *args) {
+    if (args->param.size()!=0) return "syntax: escape (no parameters)";
+    GBL_CHECK_FREE_PARAM(args->output.size(), args->input.size());
+    for (int i=0; i<args->input.size(); i++) {
+        char *escaped = escapeString(args->input.get(i));
+        PASS_2_OUT(args, escaped);
+    }
+    return NULL;
+}
+static GB_ERROR gbl_unescape(GBL_command_arguments *args) {
+    if (args->param.size()!=0) return "syntax: unescape (no parameters)";
+    GBL_CHECK_FREE_PARAM(args->output.size(), args->input.size());
+    for (int i=0; i<args->input.size(); i++) {
+        char *unescaped = unEscapeString(args->input.get(i));
+        PASS_2_OUT(args, unescaped);
+    }
+    return NULL;
+}
 
 static GB_ERROR gbl_command(GBL_command_arguments *args) {
     GB_ERROR error = NULL;
@@ -2557,6 +2627,8 @@ static GBL_command_table gbl_command_table[] = {
     { "echo",            gbl_echo },
     { "equals",          gbl_equals },
     { "iequals",         gbl_iequals },
+    { "escape",          gbl_escape },
+    { "unescape",        gbl_unescape },
     { "eval",            gbl_eval },
     { "exec",            gbl_exec },
     { "export_sequence", gbl_export_sequence },
@@ -2583,6 +2655,8 @@ static GBL_command_table gbl_command_table[] = {
     { "per_cent",        gbl_per_cent },
     { "plus",            gbl_plus },
     { "pretab",          gbl_pretab },
+    { "quote",           gbl_quote },
+    { "unquote",         gbl_unquote },
     { "readdb",          gbl_readdb },
     { "remove",          gbl_remove },
     { "rest",            gbl_rest },
