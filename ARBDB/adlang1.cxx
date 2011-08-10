@@ -645,11 +645,18 @@ static GB_ERROR gbl_origin(GBL_command_arguments *args) {
     return error;
 }
 
-inline void init_count_tab(char *tab, int init, const char *invert) {
-    for (int i = 0; i<256; ++i) tab[i] = init;
-    for (int i = 0; invert[i]; ++i) tab[safeCharIndex(invert[i])] = 1-init;
-}
-inline GB_ERROR count_by_tab(GBL_command_arguments *args, const char *tab) {
+class Tab {
+    bool tab[256];
+public:
+    Tab(bool take, const char *invert) {
+        bool init = !take;
+        for (int i = 0; i<256; ++i) tab[i] = init;
+        for (int i = 0; invert[i]; ++i) tab[safeCharIndex(invert[i])] = take;
+    }
+    bool operator[](int i) const { return tab[i]; }
+};
+
+inline GB_ERROR count_by_tab(GBL_command_arguments *args, const Tab& tab) {
     GBL_CHECK_FREE_PARAM(args->output.size(), args->input.size());
     for (int i=0; i<args->input.size(); ++i) {
         long        sum = 0;            // count frequencies
@@ -660,40 +667,9 @@ inline GB_ERROR count_by_tab(GBL_command_arguments *args, const char *tab) {
     }
     return NULL;
 }
-
-static GB_ERROR gbl_count(GBL_command_arguments *args) {
-    if (args->param.size()!=1) return "syntax: count(\"characters to count\")";
-
-    char tab[256];
-    init_count_tab(tab, 0, args->param.get(0));
-    return count_by_tab(args, tab);
-}
-
-static GB_ERROR gbl_len(GBL_command_arguments *args) {
-    if (args->param.size() >= 2) return "syntax: len[(\"characters not to count\")]";
-
-    char        tab[256];
-    const char *exclude = args->param.size() ? args->param.get(0) : "";
-    init_count_tab(tab, 1, exclude);
-    return count_by_tab(args, tab);
-}
-
-#if defined(WARN_TODO)
-#warning DRY gbl_remove vs gbl_keep
-#endif
-
-static GB_ERROR gbl_remove(GBL_command_arguments *args) {
-    if (args->param.size()!=1) return "syntax: remove(\"characters to remove\")";
-
-    int i;
-    char tab[256]; // if tab[char] count 'char'
-    for (i=0; i<256; i++) {
-        if (strchr(args->param.get(0), i)) tab[i] = 1;
-        else tab[i] = 0;
-    }
-
+inline GB_ERROR remove_by_tab(GBL_command_arguments *args, const Tab& tab) {
     GBL_CHECK_FREE_PARAM(args->output.size(), args->input.size());
-    for (i=0; i<args->input.size(); i++) {       // go through all orig streams
+    for (int i=0; i<args->input.size(); ++i) {
         GBS_strstruct *strstruct = GBS_stropen(1000);
         for (const char *p = args->input.get(i); *p; p++) {
             if (!tab[(unsigned int)*p]) {
@@ -702,34 +678,27 @@ static GB_ERROR gbl_remove(GBL_command_arguments *args) {
         }
         PASS_2_OUT(args, GBS_strclose(strstruct));
     }
-    return 0;
+    return NULL;
 }
 
+static GB_ERROR gbl_count(GBL_command_arguments *args) {
+    if (args->param.size()!=1) return "syntax: count(\"characters to count\")";
+    return count_by_tab(args, Tab(true, args->param.get(0)));
+}
+static GB_ERROR gbl_len(GBL_command_arguments *args) {
+    if (args->param.size() >= 2) return "syntax: len[(\"characters not to count\")]";
+    const char *exclude = args->param.size() ? args->param.get(0) : "";
+    return count_by_tab(args, Tab(false, exclude));
+}
+static GB_ERROR gbl_remove(GBL_command_arguments *args) {
+    if (args->param.size()!=1) return "syntax: remove(\"characters to remove\")";
+    return remove_by_tab(args, Tab(true, args->param.get(0)));
+}
 static GB_ERROR gbl_keep(GBL_command_arguments *args) {
     if (args->param.size()!=1) return "syntax: keep(\"characters not to remove\")";
-
-    int  i;
-    char tab[256];                              // if tab[char] != 0 then keep'char'
-    memset(tab, 0, 256); // keep none
-    {
-        unsigned char *keep = (unsigned char*)args->param.get(0);
-        for (i = 0; keep[i]; ++i) {
-            tab[keep[i]] = 1; // keep all members of argument
-        }
-    }
-
-    GBL_CHECK_FREE_PARAM(args->output.size(), args->input.size());
-    for (i=0; i<args->input.size(); i++) {       // go through all orig streams
-        GBS_strstruct *strstruct = GBS_stropen(1000);
-        for (const char *p = args->input.get(i); *p; p++) {
-            if (tab[(unsigned int)*p]) {
-                GBS_chrcat(strstruct, *p);
-            }
-        }
-        PASS_2_OUT(args, GBS_strclose(strstruct));
-    }
-    return 0;
+    return remove_by_tab(args, Tab(false, args->param.get(0)));
 }
+
 
 static char *binop_compare(const char *arg1, const char *arg2, void *client_data) {
     long case_sensitive = (long)client_data;
