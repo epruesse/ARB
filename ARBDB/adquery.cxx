@@ -1174,24 +1174,8 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
         TEST_CI(out, inv_cmd, in);                      \
     } while(0)
 
-#define CI_ERROR_INIT(input,cmd)                                        \
-    char *result = GB_command_interpreter(gb_main, input, cmd, gb_data, NULL); \
-    if (result) {                                                       \
-        TEST_WARNING("Expected no result (got '%s')", result);          \
-        free(result);                                                   \
-    }                                                                   \
-
-#define TEST_CI_ERROR(input,cmd,error_expected) do {                    \
-        CI_ERROR_INIT(input,cmd);                                       \
-        TEST_ASSERT_EQUAL(GB_await_error(),error_expected);             \
-        free(result);                                                   \
-    } while(0)
-
-#define TEST_CI_ERROR_CONTAINS(input,cmd,errorpart_expected) do {       \
-        CI_ERROR_INIT(input,cmd);                                       \
-        TEST_ASSERT_CONTAINS(GB_await_error(),errorpart_expected);      \
-        free(result);                                                   \
-    } while(0)
+#define TEST_CI_ERROR(input,cmd,error_expected)                 TEST_ASSERT_NORESULT__ERROREXPORTED_CHECKERROR(GB_command_interpreter(gb_main, input, cmd, gb_data, NULL), error_expected, NULL)
+#define TEST_CI_ERROR_CONTAINS(input,cmd,errorpart_expected)    TEST_ASSERT_NORESULT__ERROREXPORTED_CHECKERROR(GB_command_interpreter(gb_main, input, cmd, gb_data, NULL), NULL, errorpart_expected)
     
 #define ACI_SPLIT          "|split(\",\",0)"
 #define ACI_MERGE          "|merge(\",\")"
