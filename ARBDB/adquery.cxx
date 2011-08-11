@@ -998,20 +998,20 @@ char *GBS_apply_ACI(GBDATA *gb_main, const char *commands, const char *str, GBDA
                         if (!error && trace) dumpStreams("OutputStreams", args.output);
 
                         if (error) {
-                            char *inputstreams = 0;
-                            char *paramlist    = 0;
-                            int   j;
+                            char *dup_error = strdup(error);
 
 #define MAX_PRINT_LEN 200
 
-                            for (j = 0; j<args.param.size(); ++j) {
+                            char *paramlist = 0;
+                            for (int j = 0; j<args.param.size(); ++j) {
                                 const char *param       = args.param.get(j);
                                 const char *param_short = shortenLongString(param, MAX_PRINT_LEN);
 
                                 if (!paramlist) paramlist = strdup(param_short);
                                 else freeset(paramlist, GBS_global_string_copy("%s,%s", paramlist, param_short));
                             }
-                            for (j = 0; j<args.input.size(); ++j) {
+                            char *inputstreams = 0;
+                            for (int j = 0; j<args.input.size(); ++j) {
                                 const char *input       = args.input.get(j);
                                 const char *input_short = shortenLongString(input, MAX_PRINT_LEN);
 
@@ -1020,14 +1020,15 @@ char *GBS_apply_ACI(GBDATA *gb_main, const char *commands, const char *str, GBDA
                             }
 #undef MAX_PRINT_LEN
                             if (paramlist) {
-                                error = GBS_global_string("while applying '%s(%s)'\nto '%s':\n%s", s1, paramlist, inputstreams, error);
+                                error = GBS_global_string("while applying '%s(%s)'\nto '%s':\n%s", s1, paramlist, inputstreams, dup_error);
                             }
                             else {
-                                error = GBS_global_string("while applying '%s'\nto '%s':\n%s", s1, inputstreams, error);
+                                error = GBS_global_string("while applying '%s'\nto '%s':\n%s", s1, inputstreams, dup_error);
                             }
 
                             free(inputstreams);
                             free(paramlist);
+                            free(dup_error);
                         }
                     }
                 }
@@ -1085,13 +1086,27 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
      */
 
     int trace = GB_get_ACISRT_trace();
+    SmartMallocPtr(char) heapstr;
 
     if (!str) {
         if (!gbd) {
             GB_export_error("ACI: no input streams found");
             return NULL;
         }
-        str = GB_read_char_pntr(gbd);
+
+        if (GB_read_type(gbd) == GB_STRING) {
+            str = GB_read_char_pntr(gbd);
+        }
+        else {
+            char *asstr = GB_read_as_string(gbd);
+            if (!asstr) {
+                GB_export_error("Can't read this DB entry as string");
+                return NULL;
+            }
+
+            heapstr = asstr;
+            str     = &*heapstr;
+        }
     }
 
     if (trace) {
@@ -1221,6 +1236,7 @@ void TEST_GB_command_interpreter() {
         
         TEST_CI("blabla", "|coUNT(ab)",         "4");   // simple ACI
         TEST_CI("l",      "|\"b\";dd;\"a\"|dd", "bla"); // ACI with muliple streams
+        TEST_CI("bla",    "|count()",           "0");   // one empty parameter
         TEST_CI("bla",    "|count(\"\")",       "0");   // empty parameter
         TEST_CI("b a",    "|count(\" \")",      "1");   // space in quotes
         TEST_CI("b\\a",   "|count(\\a)",        "2");   // count '\\' and 'a' (ok)
@@ -1253,6 +1269,7 @@ void TEST_GB_command_interpreter() {
         TEST_CI("",      "|sequence|command(\"/^([\\\\.-]*)[A-Z].*/\\\\1/\")|len",                 "9"); // count gaps at start of sequence
         TEST_CI("one",   "|dd;dd|eval(\"\"up\";\"per\"|merge\")",                                  "ONEONE");
         TEST_CI("1,2,3", WITH_SPLITTED("|select(\"\",  \"\"one\"\", \"\"two\"\", \"\"three\"\")"), "one,two,three");
+        TEST_CI_ERROR_CONTAINS("1,4", WITH_SPLITTED("|select(\"\",  \"\"one\"\", \"\"two\"\", \"\"three\"\")"), "Illegal param number '4' (allowed [0..3])");
 
         // test define and do (@@@ SLOW)
         TEST_CI("ignored", "define(d4, \"dd;dd;dd;dd\")",        "");
@@ -1264,6 +1281,9 @@ void TEST_GB_command_interpreter() {
         TEST_CI("xy", "do(d4)",        "xyxyxyxy");
         TEST_CI("x",  "do(d16)",       "xxxxxxxxxxxxxxxx");
         TEST_CI("x",  "do(d64)|len",   "64");
+        TEST_CI("xy", "do(d4)|len",    "8");
+        TEST_CI("xy", "do(d4)|len()",  "8");
+        TEST_CI("xy", "do(d4)|len(x)", "4");
         TEST_CI("x",  "do(d4096)|len", "4096");
 
         // other commands
@@ -1354,13 +1374,16 @@ void TEST_GB_command_interpreter() {
         TEST_CI("abbaabba", "translate(,,-)",         "--------");
 
         // echo
+        TEST_CI("", "echo", "");
         TEST_CI("", "echo(x,y,z)", "xyz");
+        TEST_CI("", "echo(x;y,z)", "xyz"); // check ';' as param-separator
+        TEST_CI("", "echo(x;y;z)", "xyz");
         TEST_CI("", "echo(x,y,z)|streams", "3");
 
         // upper, lower + caps
         TEST_CI("the QUICK brOwn Fox", "lower", "the quick brown fox");
         TEST_CI("the QUICK brOwn Fox", "upper", "THE QUICK BROWN FOX");
-        TEST_CI("the QUICK brOwn Fox", "caps",  "The Quick Brown Fox");
+        TEST_CI("the QUICK brOwn FoX", "caps",  "The Quick Brown Fox");
 
         // head, tail + mid/mid0
         TEST_CI     ("1234567890", "head(3)", "123");
@@ -1406,6 +1429,11 @@ void TEST_GB_command_interpreter() {
         TEST_CI("one,two,three,four,five,six", WITH_SPLITTED("|cut(2,3,5)"),        "two,three,five");
         TEST_CI("one,two,three,four,five,six", WITH_SPLITTED("|drop(2,3,5)"),       "one,four,six");
 
+        TEST_CI_ERROR_CONTAINS("a", "drop(2)", "Illegal stream number '2' (allowed [1..1])");
+        TEST_CI_ERROR_CONTAINS("a", "drop(0)", "Illegal stream number '0' (allowed [1..1])");
+        TEST_CI_ERROR_CONTAINS("a", "cut(2)",  "Illegal stream number '2' (allowed [1..1])");
+        TEST_CI_ERROR_CONTAINS("a", "cut(0)",  "Illegal stream number '0' (allowed [1..1])");
+        
         TEST_CI("one,two,three,four,five,six", WITH_SPLITTED("|dropempty|streams"), "6");
         TEST_CI("one,two,,,five,six",          WITH_SPLITTED("|dropempty|streams"), "4");
         TEST_CI(",,,,,",                       WITH_SPLITTED("|dropempty"),         "");
@@ -1419,13 +1447,25 @@ void TEST_GB_command_interpreter() {
         TEST_CI("1,2,3,four,five,six", WITH_SPLITTED("|swap"),                "1,2,3,four,six,five");
         TEST_CI("1,2,3,four,five,six", WITH_SPLITTED("|swap(2,3)"),           "1,3,2,four,five,six");
         TEST_CI("1,2,3,four,five,six", WITH_SPLITTED("|swap(2,3)|swap(4,3)"), "1,3,four,2,five,six");
+        TEST_CI_NOOP("1,2,3,four,five,six", WITH_SPLITTED("|swap(3,3)"));
+        TEST_CI_NOOP("1,2,3,four,five,six", WITH_SPLITTED("|swap(3,2)|swap(2,3)"));
+        TEST_CI_NOOP("1,2,3,four,five,six", WITH_SPLITTED("|swap(3,2)|swap(3,1)|swap(2,1)|swap(1,3)"));
+
+        TEST_CI_ERROR_CONTAINS("a",   "swap",                      "need at least two input streams");
+        TEST_CI_ERROR_CONTAINS("a,b", WITH_SPLITTED("|swap(2,3)"), "Illegal stream number '3' (allowed [1..2])");
+        TEST_CI_ERROR_CONTAINS("a,b", WITH_SPLITTED("|swap(3,2)"), "Illegal stream number '3' (allowed [1..2])");
 
         // toback + tofront
         TEST_CI     ("front,mid,back", WITH_SPLITTED("|toback(2)"),  "front,back,mid");
         TEST_CI     ("front,mid,back", WITH_SPLITTED("|tofront(2)"), "mid,front,back");
         TEST_CI_NOOP("front,mid,back", WITH_SPLITTED("|toback(3)"));
         TEST_CI_NOOP("front,mid,back", WITH_SPLITTED("|tofront(1)"));
+        TEST_CI_NOOP("a",              WITH_SPLITTED("|tofront(1)"));
+        TEST_CI_NOOP("a",              WITH_SPLITTED("|toback(1)"));
 
+        TEST_CI_ERROR_CONTAINS("a,b", WITH_SPLITTED("|tofront(3)"), "Illegal stream number '3' (allowed [1..2])");
+        TEST_CI_ERROR_CONTAINS("a,b", WITH_SPLITTED("|toback(3)"),  "Illegal stream number '3' (allowed [1..2])");
+        
         // split (default)
         TEST_CI("a\nb", "|split" ACI_MERGE, "a,b");
 
@@ -1446,10 +1486,11 @@ void TEST_GB_command_interpreter() {
         // checksum + gcgchecksum
         TEST_CI("", "sequence|checksum",      "4C549A5F");
         TEST_CI("", "sequence | gcgchecksum", "4308");
-
+        
         // SRT
         TEST_CI("The quick brown fox", "srt(\"quick=lazy:brown fox=dog\")", "The lazy dog");
         TEST_CI__BROKEN("The quick brown fox", "srt(quick=lazy:brown fox=dog)", "The lazy dog"); // @@@ parsing problem ?
+        TEST_CI_ERROR_CONTAINS("x", "srt(x=y,z)", "SRT ERROR: no '=' found in command");
 
         // calculator
         TEST_CI("", "echo(9,3)|plus",     "12");
@@ -1474,6 +1515,7 @@ void TEST_GB_command_interpreter() {
         TEST_CI("", "taxonomy(1)",           "No default tree");
         TEST_CI("", "taxonomy(tree_nuc, 1)", "group1");
         TEST_CI("", "taxonomy(tree_nuc, 5)", "top/lower-red/group1");
+        TEST_CI_ERROR_CONTAINS("", "taxonomy", "syntax: taxonomy([tree_name,]count)");
 
         // diff, filter + change
         TEST_CI("..acg--ta-cgt..." ","
@@ -1506,17 +1548,27 @@ void TEST_GB_command_interpreter() {
         // exec
         TEST_CI("c,b,c,b,a,a", WITH_SPLITTED("|exec(\"(sort|uniq)\")|split|dropempty"),              "a,b,c");
         TEST_CI("a,aba,cac",   WITH_SPLITTED("|exec(\"perl\",-pe,s/([bc])/$1$1/g)|split|dropempty"), "a,abba,ccacc");
-        
-        // error cases
-        TEST_CI_ERROR("", "nocmd",          "ARB ERROR: Command 'nocmd' failed:\nReason: Unknown command 'nocmd'");
-        TEST_CI_ERROR("", "|nocmd",         "ARB ERROR: Command '|nocmd' failed:\nReason: Unknown command 'nocmd'");
-        TEST_CI_ERROR("", "count(a,b)",     "ARB ERROR: Command 'count(a,b)' failed:\nReason: while applying 'count(a,b)'\nto '':\nsyntax: count(\"characters to count\")");
-        TEST_CI_ERROR("", "count(a,b",      "ARB ERROR: Command 'count(a,b' failed:\nReason: Missing ')'");
-        TEST_CI_ERROR("", "count(a,\"b)",   "ARB ERROR: unbalanced '\"' in 'count(a,\"b)'");
-        TEST_CI_ERROR("", "count(a,\"b)\"", "ARB ERROR: Command 'count(a,\"b)\"' failed:\nReason: Missing ')'");
-        TEST_CI_ERROR("", "dd;dd|count",    "ARB ERROR: Command 'dd;dd|count' failed:\nReason: while applying 'count'\nto ';':\nsyntax: count(\"characters to count\")");
-        TEST_CI_ERROR("", "|count(\"a\"x)", "ARB ERROR: Command '|count(\"a\"x)' failed:\nReason: Missing '\"'"); 
-        TEST_CI_ERROR("", "|count(\"a)",    "ARB ERROR: unbalanced '\"' in '|count(\"a)'"); 
+
+         // error cases
+        TEST_CI_ERROR_CONTAINS("", "nocmd",          "Unknown command 'nocmd'");
+        TEST_CI_ERROR_CONTAINS("", "|nocmd",         "Unknown command 'nocmd'");
+        TEST_CI_ERROR_CONTAINS("", "caps(x)",        "syntax: caps (no parameters)");
+        TEST_CI_ERROR_CONTAINS("", "trace",          "syntax: trace(0|1)");
+        TEST_CI_ERROR_CONTAINS("", "count",          "syntax: count(\"characters to count\")");
+        TEST_CI_ERROR_CONTAINS("", "count(a,b)",     "syntax: count(\"characters to count\")");
+        TEST_CI_ERROR_CONTAINS("", "len(a,b)",       "syntax: len[(\"characters not to count\")]");
+        TEST_CI_ERROR_CONTAINS("", "plus(a,b,c)",    "syntax: plus[(Expr1[,Expr2])]");
+        TEST_CI_ERROR_CONTAINS("", "count(a,b",      "Reason: Missing ')'");
+        TEST_CI_ERROR_CONTAINS("", "count(a,\"b)",   "unbalanced '\"' in 'count(a,\"b)'");
+        TEST_CI_ERROR_CONTAINS("", "count(a,\"b)\"", "Reason: Missing ')'");
+        TEST_CI_ERROR_CONTAINS("", "dd;dd|count",    "syntax: count(\"characters to count\")");
+        TEST_CI_ERROR_CONTAINS("", "|count(\"a\"x)", "Reason: Missing '\"'");
+        TEST_CI_ERROR_CONTAINS("", "|count(\"a)",    "unbalanced '\"' in '|count(\"a)'");
+
+        TEST_CI_ERROR_CONTAINS("", "translate(a)",       "syntax: translate(old,new[,other])");
+        TEST_CI_ERROR_CONTAINS("", "translate(a,b,c,d)", "syntax: translate(old,new[,other])");
+
+        TEST_CI_ERROR(NULL, "whatever", "ARB ERROR: Can't read this DB entry as string"); // here gb_data is the species container
 
         gb_data = GB_entry(gb_data, "full_name"); // execute ACI on 'full_name' from here on ------------------------------
 
@@ -1525,8 +1577,11 @@ void TEST_GB_command_interpreter() {
         TEST_CI(NULL, ":tobac=", "Lacillus reuteri");
         TEST_CI(NULL, "/ba.*us/B/", "LactoB reuteri");
 
+        TEST_CI(NULL, "|taxonomy(1)", "No default tree");
+        TEST_CI_ERROR_CONTAINS(NULL, "|taxonomy(tree_nuc,2)", "Container has neither 'name' nor 'group_name' entry - can't detect container type");
+
         gb_data = NULL;
-        TEST_CI_ERROR(NULL, "", "ARB ERROR: ACI: no input streams found"); 
+        TEST_CI_ERROR_CONTAINS(NULL, "", "no input streams found");
     }
 
     GB_set_ACISRT_trace(old_trace); // avoid side effect of TEST_GB_command_interpreter
