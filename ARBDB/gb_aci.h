@@ -35,12 +35,14 @@ public:
     const char *get_tree_name() const { return default_tree_name; }
 };
 
-class GBL_streams : virtual Noncopyable {
+class GBL_streams {
     std::vector<GBL> content;
     
 public:
     void insert(char *copy) { content.push_back(copy); }
+    void insert(GBL smartie) { content.push_back(smartie); }
     const char *get(int idx) const { gb_assert(idx<size()); return &*content[idx]; }
+    GBL get_smart(int idx) const { gb_assert(idx<size()); return content[idx]; }
     int size() const { return content.size(); }
 
     void erase() { content.clear(); }

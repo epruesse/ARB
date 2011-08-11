@@ -42,9 +42,10 @@ int GB_get_ACISRT_trace() { return trace; }
 
 // export stream
 
-#define PASS_2_OUT(args, s)  (args)->output.insert(s)
-#define COPY_2_OUT(args, s)  PASS_2_OUT(args, strdup(s))
-#define IN_2_OUT(args, i)    COPY_2_OUT(args, args->input.get(i))
+#define PASS_2_OUT(args,s)  (args)->output.insert(s)
+#define COPY_2_OUT(args,s)  PASS_2_OUT(args, strdup(s))
+#define IN_2_OUT(args,i)    PASS_2_OUT(args, args->input.get_smart(i))
+#define PARAM_2_OUT(args,i) PASS_2_OUT(args, args->param.get_smart(i))
 
 // ----------------------------
 //      Parameter functions
@@ -583,7 +584,7 @@ static GB_ERROR gbl_unquote(GBL_command_arguments *args) {
             PASS_2_OUT(args, GB_strpartdup(str+1, str+len-2));
         }
         else {
-            PASS_2_OUT(args, strdup(str));
+            IN_2_OUT(args, i);
         }
     }
     return NULL;
@@ -882,12 +883,7 @@ static GB_ERROR gbl_translate(GBL_command_arguments *args) {
 
 static GB_ERROR gbl_echo(GBL_command_arguments *args) {
     COMMAND_DROPS_INPUT_STREAMS(args);
-
-    for (int i=0; i<args->param.size(); i++) {
-        const char *p;
-        p = args->param.get(i);
-        COPY_2_OUT(args, p);
-    }
+    for (int i=0; i<args->param.size(); i++) PARAM_2_OUT(args, i);
     return 0;
 }
 
@@ -1175,8 +1171,8 @@ static GB_ERROR gbl_split(GBL_command_arguments *args) {
                     in   = splitAt + (split_mode == 0 ? sepLen : 0);
                     from = in+(split_mode == 1 ? sepLen : 0);
                 }
-                else {          // last part
-                    COPY_2_OUT(args, in);
+                else {
+                    COPY_2_OUT(args, in); // last part
                     in = 0;
                 }
             }
@@ -1249,11 +1245,10 @@ static GB_ERROR gbl_gcgcheck(GBL_command_arguments *args) {
 static GB_ERROR gbl_srt(GBL_command_arguments *args) {
     GB_ERROR error = NULL;
     for (int i=0; i<args->input.size() && !error; i++) {
-        const char *source    = args->input.get(i);
-        char       *modsource = 0;
+        char *modsource = 0;
 
         for (int j=0; j<args->param.size() && !error; j++) {
-            char *hs = GBS_string_eval(modsource ? modsource : source,
+            char *hs = GBS_string_eval(modsource ? modsource : args->input.get(i),
                                        args->param.get(j),
                                        args->get_ref());
 
@@ -1266,7 +1261,7 @@ static GB_ERROR gbl_srt(GBL_command_arguments *args) {
 
         if (!error) {
             if (modsource) PASS_2_OUT(args, modsource);
-            else           COPY_2_OUT(args, source);
+            else           IN_2_OUT(args, i);
         }
     }
     return error;
