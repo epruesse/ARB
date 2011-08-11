@@ -1058,15 +1058,8 @@ char *GBS_apply_ACI(GBDATA *gb_main, const char *commands, const char *str, GBDA
     return NULL;
 }
 
-void GBL_streams::swap(GBL_streams& other) {
-    int bigger = std::max(count, other.count);
-    for (int i = 0; i<bigger; ++i) {
-        std::swap(content[i], other.content[i]);
-    }
-    std::swap(count, other.count);
-}
-
 char *GBL_streams::concatenated() const {
+    int count = size();
     if (!count) return strdup("");
     if (count == 1) return strdup(get(0));
 
@@ -1176,7 +1169,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 
 #define TEST_CI_ERROR(input,cmd,error_expected)                 TEST_ASSERT_NORESULT__ERROREXPORTED_CHECKERROR(GB_command_interpreter(gb_main, input, cmd, gb_data, NULL), error_expected, NULL)
 #define TEST_CI_ERROR_CONTAINS(input,cmd,errorpart_expected)    TEST_ASSERT_NORESULT__ERROREXPORTED_CHECKERROR(GB_command_interpreter(gb_main, input, cmd, gb_data, NULL), NULL, errorpart_expected)
-    
+
 #define ACI_SPLIT          "|split(\",\",0)"
 #define ACI_MERGE          "|merge(\",\")"
 #define WITH_SPLITTED(aci) ACI_SPLIT aci ACI_MERGE
@@ -1274,7 +1267,7 @@ void TEST_GB_command_interpreter() {
             int prev_trace = GB_get_ACISRT_trace();
             GB_set_ACISRT_trace(0); // do not trace here
             // create 4096 streams:
-            TEST_CI_ERROR_CONTAINS("x",  "dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|streams", "max. parameters exceeded");
+            TEST_CI("x",  "dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|streams", "4096");
             GB_set_ACISRT_trace(prev_trace);
         }
 

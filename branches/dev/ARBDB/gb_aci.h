@@ -11,20 +11,16 @@
 #ifndef GB_ACI_H
 #define GB_ACI_H
 
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
-#endif
 #ifndef ARBDBT_H
 #include "arbdbt.h"
+#endif
+#ifndef _GLIBCXX_VECTOR
+#include <vector>
 #endif
 
 #define gb_assert(cond) arb_assert(cond)
 
-#define GBL_MAX_ARGUMENTS 500
-
-struct GBL {
-    char *str;
-};
+typedef SmartMallocPtr(char) GBL;
 
 class GBL_reference {
     GBDATA     *gb_ref;            // the database entry on which the command is applied (may be species, gene, experiment, group and maybe more)
@@ -39,32 +35,18 @@ public:
     const char *get_tree_name() const { return default_tree_name; }
 };
 
-class GBL_streams {
-    int count;
-    GBL content[GBL_MAX_ARGUMENTS];
-
-    void setup() {
-        count = 0;
-        memset(content, 0, sizeof(content));
-    }
-    void cleanup() {
-        for (int i = 0; i<count; ++i) {
-            free(content[i].str);
-        }
-    }
-
+class GBL_streams : virtual Noncopyable {
+    std::vector<GBL> content;
+    
 public:
-    GBL_streams() { setup(); }
-    ~GBL_streams() { cleanup(); }
+    void insert(char *copy) { content.push_back(copy); }
+    const char *get(int idx) const { gb_assert(idx<size()); return &*content[idx]; }
+    int size() const { return content.size(); }
 
-    void insert(char *copy) { content[count++].str = copy; }
-    const char *get(int idx) const { gb_assert(idx<count); return content[idx].str; }
-    int size() const { return count; }
-
-    void erase() { cleanup(); setup(); }
+    void erase() { content.clear(); }
 
     char *concatenated() const;
-    void swap(GBL_streams& other);
+    void swap(GBL_streams& other) { std::swap(content, other.content); }
 };
 
 struct GBL_command_arguments : public GBL_reference {
