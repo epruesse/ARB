@@ -1492,6 +1492,12 @@ void TEST_GB_command_interpreter() {
         TEST_CI__BROKEN("The quick brown fox", "srt(quick=lazy:brown fox=dog)", "The lazy dog"); // @@@ parsing problem ?
         TEST_CI_ERROR_CONTAINS("x", "srt(x=y,z)", "SRT ERROR: no '=' found in command");
 
+        // REG
+        TEST_CI("stars*to*stripes", "/\\*/--/", "stars--to--stripes");
+
+        TEST_CI("sImILaRWIllBE,GonEEASIly", WITH_SPLITTED("|command(/[A-Z]//)"),   "small,only");
+        TEST_CI("sthBIGinside,FATnotCAP",   WITH_SPLITTED("|command(/([A-Z])+/)"), "BIG,FAT");
+
         // calculator
         TEST_CI("", "echo(9,3)|plus",     "12");
         TEST_CI("", "echo(9,3)|minus",    "6");
