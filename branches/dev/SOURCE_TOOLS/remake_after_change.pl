@@ -258,9 +258,9 @@ sub main() {
     print "\n";
 
     my $premake = "make -j$jobs proto depends";
-    print "Silent premake: $premake'\n";
+    print "Silent premake: '$premake'\n";
     # $premake = "cd $ARBHOME;$premake >/dev/null";
-    $premake = "cd $ARBHOME;$premake > silent_premake.log";
+    $premake = "cd $ARBHOME;$premake > silent_premake.log 2>&1";
     system($premake)==0 || die "error executing '$premake' (exitcode=$?)";
 
     print "\n";
