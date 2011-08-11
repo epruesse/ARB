@@ -1286,6 +1286,14 @@ void TEST_GB_command_interpreter() {
         TEST_CI("xy", "do(d4)|len(x)", "4");
         TEST_CI("x",  "do(d4096)|len", "4096");
 
+        {
+            int prev_trace = GB_get_ACISRT_trace();
+            GB_set_ACISRT_trace(0); // do not trace here
+            // create 4096 streams:
+            TEST_CI_ERROR_CONTAINS("x",  "dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|streams", "max. parameters exceeded");
+            GB_set_ACISRT_trace(prev_trace);
+        }
+
         // other commands
 
         // streams
