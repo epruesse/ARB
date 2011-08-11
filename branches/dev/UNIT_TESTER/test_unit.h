@@ -456,7 +456,7 @@ namespace arb_test {
         }                                                               \
     } while (0)
 
-#define TEST_ASSERT_NORESULT__ERROREXPORTED(create_result)              \
+#define TEST_ASSERT_NORESULT__ERROREXPORTED_CHECKERROR(create_result,equal,contains) \
     do {                                                                \
         TEST_CLEAR_EXPORTED_ERROR();                                    \
         bool have_result = (create_result);                             \
@@ -472,8 +472,13 @@ namespace arb_test {
             TEST_ERROR("'%s' (w/o result) should always export error",  \
                        #create_result);                                 \
         }                                                               \
+        if (equal) TEST_ASSERT_EQUAL(error, equal);                     \
+        if (contains) TEST_ASSERT_CONTAINS(error, contains);            \
     } while (0)
 
+
+#define TEST_ASSERT_NORESULT__ERROREXPORTED(create_result) TEST_ASSERT_NORESULT__ERROREXPORTED_CHECKERROR(create_result,NULL,NULL) 
+    
 
 #define TEST_ASSERT_RESULT__NOERROREXPORTED(create_result)              \
     do {                                                                \
