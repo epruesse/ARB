@@ -494,7 +494,7 @@ namespace arb_test {
             else {                                                      \
                 TEST_WARNING("exported error is '%s'", error);          \
             }                                                           \
-            TEST_ERROR("Expected '%s' to return sth", #create_result);  \
+            TEST_ERROR2("Expected '%s' to return sth (exported=%s)", #create_result, error); \
         }                                                               \
     } while (0)
 
