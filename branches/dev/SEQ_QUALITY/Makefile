@@ -72,6 +72,7 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SQ_functions.o: $(ARBHOME)/INCLUDE/cb.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/downcast.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/dupstr.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/smartptr.h

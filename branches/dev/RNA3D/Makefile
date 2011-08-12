@@ -53,6 +53,7 @@ RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/cb.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/dupstr.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -178,6 +179,7 @@ RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_window_Xm_interface.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/cb.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/dupstr.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/smartptr.h
