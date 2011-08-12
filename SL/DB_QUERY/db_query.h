@@ -14,6 +14,10 @@
 #ifndef ITEMS_H
 #include <items.h>
 #endif
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
+#endif
+
 
 struct AW_selection_list;
 
