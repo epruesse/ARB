@@ -77,7 +77,6 @@ sub dir2name($$$) {
 sub dirs2changedlibs($);
 sub dirs2changedlibs($) {
   my ($dirs) = @_;
-  # my $changed_lib;
 
   my @dir = split / /,$dirs;
   my %libs = ();
@@ -100,10 +99,6 @@ sub dirs2changedlibs($) {
         $prefix = 'lib';
         $suffix = '.so';
       }
-
-      # my $libname;
-      # if ($dir =~ /\/([^\/]+)$/) { $libname = $dir.'/'.$prefix.$1.$suffix; }
-      # elsif ($dir ne '')         { $libname = $dir.'/'.$prefix.$dir.$suffix; }
 
       my $libname = dir2name($dir,$prefix,$suffix);
       $libs{$libname} = 1;
@@ -250,18 +245,26 @@ sub main() {
     my $cores = `cat /proc/cpuinfo | grep processor | wc -l`;
     if ($cores<1) { $cores = 1; }
     my $jobs = $cores+1;
-
-    # print "Remaking: -j$jobs $targets\n";
     print "Remaking\n";
+
     foreach (split / /,$targets) { print " - $_\n"; }
 
     print "\n";
 
-    my $premake = "make -j$jobs proto depends";
+    my $premake = "make -j$jobs up_by_remake";
     print "Silent premake: '$premake'\n";
-    # $premake = "cd $ARBHOME;$premake >/dev/null";
-    $premake = "cd $ARBHOME;$premake > silent_premake.log 2>&1";
-    system($premake)==0 || die "error executing '$premake' (exitcode=$?)";
+    my $log = 'silent_premake.log';
+    $premake = "cd $ARBHOME;$premake > $log 2>&1";
+    if (system($premake)!=0) {
+      my $err = "error executing '$premake' (exitcode=$?)";
+      print "\nError: Silent premake failed\n";
+      print "---------------------------------------- [$log start]\n";
+      open(LOG,'<'.$log) || die "can't read '$log' (Reason: $!)";
+      print <LOG>;
+      close(LOG);
+      print "---------------------------------------- [$log end]\n";
+      die $err;
+    }
 
     print "\n";
 
