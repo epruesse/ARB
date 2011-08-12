@@ -7,6 +7,9 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
+#ifndef CB_H
+#include <cb.h>
+#endif
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif

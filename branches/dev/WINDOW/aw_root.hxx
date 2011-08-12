@@ -7,20 +7,19 @@
 #ifndef ARB_ERROR_H
 #include <arb_error.h>
 #endif
-#ifndef CB_H
-#include <cb.h>
+#ifndef AW_BASE_HXX
+#include "aw_base.hxx"
 #endif
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
+#endif
+#ifndef CB_H
+#include <cb.h>
 #endif
 
 #ifndef aw_assert
 #define aw_assert(bed) arb_assert(bed)
 #endif
-
-typedef void (*AW_RCB0)(AW_root*);
-typedef void (*AW_RCB1)(AW_root*, AW_CL);
-typedef AW_RCB AW_RCB2;
 
 typedef AW_window *(*AW_PPP)(AW_root*, AW_CL, AW_CL);
 
