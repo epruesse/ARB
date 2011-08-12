@@ -301,6 +301,7 @@ GEN_translations.o: $(ARBHOME)/INCLUDE/arbtools.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/attributes.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_question.hxx
+GEN_translations.o: $(ARBHOME)/INCLUDE/cb.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/items.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/smartptr.h

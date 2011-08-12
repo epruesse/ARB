@@ -147,6 +147,7 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/cb.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/dbitem_set.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/dupstr.h

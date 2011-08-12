@@ -76,6 +76,7 @@ DBwriter.o: $(ARBHOME)/INCLUDE/attributes.h
 DBwriter.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
+DBwriter.o: $(ARBHOME)/INCLUDE/cb.h
 DBwriter.o: $(ARBHOME)/INCLUDE/dupstr.h
 DBwriter.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 DBwriter.o: $(ARBHOME)/INCLUDE/GEN.hxx

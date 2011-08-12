@@ -80,6 +80,7 @@ AP_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+AP_main.o: $(ARBHOME)/INCLUDE/cb.h
 AP_main.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -158,6 +159,7 @@ PARS_debug.o: $(ARBHOME)/INCLUDE/attributes.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+PARS_debug.o: $(ARBHOME)/INCLUDE/cb.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/dupstr.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/smartptr.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -218,6 +220,7 @@ PARS_klprops.o: $(ARBHOME)/INCLUDE/arbtools.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+PARS_klprops.o: $(ARBHOME)/INCLUDE/cb.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/dupstr.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/test_global.h
 

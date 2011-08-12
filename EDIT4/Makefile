@@ -228,6 +228,7 @@ ED4_dump.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
+ED4_dump.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -286,6 +287,7 @@ ED4_list.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_list.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_list.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_list.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
+ED4_list.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_list.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_list.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_list.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -570,6 +572,7 @@ ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
+ED4_plugins.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/rna3d_extern.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/secedit_extern.hxx
@@ -956,6 +959,7 @@ EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
+EDB_root_bact.o: $(ARBHOME)/INCLUDE/cb.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/dupstr.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/smartptr.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/test_global.h
