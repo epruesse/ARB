@@ -161,6 +161,7 @@ enum_check_SIGNED(long);
 char enum_check(float);
 char enum_check(double);
 char enum_check(long double);
+char enum_check(long long);
 
 #undef enum_check_SIGNED
 

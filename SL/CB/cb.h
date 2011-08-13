@@ -19,22 +19,22 @@ class AW_window;
 typedef long AW_CL; // client data (casted from pointer or value)
 
 // AW_root callbacks
-typedef void (*AW_RCB)(AW_root*, AW_CL, AW_CL);
-typedef void (*AW_RCB0)(AW_root*);
+typedef void (*AW_RCB2)(AW_root*, AW_CL, AW_CL);
 typedef void (*AW_RCB1)(AW_root*, AW_CL);
-typedef AW_RCB AW_RCB2;
+typedef void (*AW_RCB0)(AW_root*);
+typedef AW_RCB2 AW_RCB;
 
 // AW_awar callbacks
+typedef AW_RCB2 Awar_CB2;
+typedef AW_RCB1 Awar_CB1;
+typedef AW_RCB0 Awar_CB0;
 typedef AW_RCB  Awar_CB;
-typedef Awar_CB Awar_CB2;
-typedef         void (*Awar_CB1)(AW_root *, AW_CL);
-typedef         void (*Awar_CB0)(AW_root *);
 
 // AW_window callbacks
-typedef void (*AW_CB)(AW_window*, AW_CL, AW_CL);
-typedef void (*AW_CB0)(AW_window*);
-typedef void (*AW_CB1)(AW_window*, AW_CL);
 typedef void (*AW_CB2)(AW_window*, AW_CL, AW_CL);
+typedef void (*AW_CB1)(AW_window*, AW_CL);
+typedef void (*AW_CB0)(AW_window*);
+typedef AW_CB2 AW_CB;
 
 // AW_window-builder callbacks
 typedef AW_window *(*AW_Window_Creator)(AW_root*, AW_CL);
