@@ -72,12 +72,15 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/cb.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/cbtypes.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/dbitem_set.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/smartptr.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/static_assert.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/test_global.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 DI_clustertree.o: di_clustertree.hxx
 DI_clustertree.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -148,12 +151,15 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/cb.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/cbtypes.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/dbitem_set.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/smartptr.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/static_assert.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/test_global.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 DI_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -176,10 +182,13 @@ DI_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/cb.h
+DI_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
 DI_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
 DI_main.o: $(ARBHOME)/INCLUDE/smartptr.h
+DI_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 DI_main.o: $(ARBHOME)/INCLUDE/test_global.h
+DI_main.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 DI_matr.o: di_awars.hxx
 DI_matr.o: di_clusters.hxx
@@ -226,6 +235,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/awt_macro.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/cb.h
+DI_matr.o: $(ARBHOME)/INCLUDE/cbtypes.h
 DI_matr.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/CT_ctree.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -233,7 +243,9 @@ DI_matr.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_matr.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/neighbourjoin.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
+DI_matr.o: $(ARBHOME)/INCLUDE/static_assert.h
 DI_matr.o: $(ARBHOME)/INCLUDE/test_global.h
+DI_matr.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 DI_mldist.o: di_matr.hxx
 DI_mldist.o: di_mldist.hxx
@@ -356,10 +368,13 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/cb.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/cbtypes.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/smartptr.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/static_assert.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/test_global.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 distanalyse.o: di_matr.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -388,7 +403,10 @@ distanalyse.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/cb.h
+distanalyse.o: $(ARBHOME)/INCLUDE/cbtypes.h
 distanalyse.o: $(ARBHOME)/INCLUDE/downcast.h
 distanalyse.o: $(ARBHOME)/INCLUDE/dupstr.h
 distanalyse.o: $(ARBHOME)/INCLUDE/smartptr.h
+distanalyse.o: $(ARBHOME)/INCLUDE/static_assert.h
 distanalyse.o: $(ARBHOME)/INCLUDE/test_global.h
+distanalyse.o: $(ARBHOME)/INCLUDE/ttypes.h

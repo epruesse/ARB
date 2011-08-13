@@ -77,13 +77,16 @@ DBwriter.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/cb.h
+DBwriter.o: $(ARBHOME)/INCLUDE/cbtypes.h
 DBwriter.o: $(ARBHOME)/INCLUDE/dupstr.h
 DBwriter.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 DBwriter.o: $(ARBHOME)/INCLUDE/GEN.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/items.h
 DBwriter.o: $(ARBHOME)/INCLUDE/smartptr.h
+DBwriter.o: $(ARBHOME)/INCLUDE/static_assert.h
 DBwriter.o: $(ARBHOME)/INCLUDE/test_global.h
 DBwriter.o: $(ARBHOME)/INCLUDE/Translate.hxx
+DBwriter.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 Feature.o: defs.h
 Feature.o: Feature.h

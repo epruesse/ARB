@@ -81,11 +81,14 @@ AP_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/cb.h
+AP_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AP_main.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_main.o: $(ARBHOME)/INCLUDE/test_global.h
 AP_main.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
+AP_main.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AP_tree_edge.o: AP_buffer.hxx
 AP_tree_edge.o: ap_main.hxx
@@ -140,10 +143,13 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/cb.h
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/test_global.h
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 PARS_debug.o: pars_debug.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -160,9 +166,12 @@ PARS_debug.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/cb.h
+PARS_debug.o: $(ARBHOME)/INCLUDE/cbtypes.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/dupstr.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/smartptr.h
+PARS_debug.o: $(ARBHOME)/INCLUDE/static_assert.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/test_global.h
+PARS_debug.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 PARS_dtree.o: AP_buffer.hxx
 PARS_dtree.o: ap_main.hxx
@@ -204,13 +213,16 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/cb.h
+PARS_dtree.o: $(ARBHOME)/INCLUDE/cbtypes.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/downcast.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/dupstr.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/smartptr.h
+PARS_dtree.o: $(ARBHOME)/INCLUDE/static_assert.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/test_global.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
+PARS_dtree.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 PARS_klprops.o: pars_klprops.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -221,8 +233,11 @@ PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/cb.h
+PARS_klprops.o: $(ARBHOME)/INCLUDE/cbtypes.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/dupstr.h
+PARS_klprops.o: $(ARBHOME)/INCLUDE/static_assert.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/test_global.h
+PARS_klprops.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 PARS_main.o: AP_buffer.hxx
 PARS_main.o: ap_main.hxx
@@ -263,12 +278,15 @@ PARS_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/cb.h
+PARS_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/downcast.h
 PARS_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 PARS_main.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/nds.h
 PARS_main.o: $(ARBHOME)/INCLUDE/smartptr.h
+PARS_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 PARS_main.o: $(ARBHOME)/INCLUDE/test_global.h
 PARS_main.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
+PARS_main.o: $(ARBHOME)/INCLUDE/ttypes.h
