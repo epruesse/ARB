@@ -19,17 +19,13 @@
 #include <cstdlib>
 #endif
 
-
 #define NOisnotYES() enum { No = !Yes }
-
-#define FALSE() enum { Yes = 0,  No = 1 }
-#define TRUE()  enum { Yes = 1,  No = 0 }
 
 // --------------------------
 //      fundamental types
 
-template<typename T> class IsFundaT { public: FALSE(); };
-#define DECL_FUNDA_TYPE(t) template<> class IsFundaT<t> { public: TRUE(); };
+template<typename T> class IsFundaT { public: enum { Yes = 0,  No = 1 }; };
+#define DECL_FUNDA_TYPE(t) template<> class IsFundaT<t> { public: enum { Yes = 1,  No = 0 }; };
 #define DECL_FUNDA_TYPE_SIGNED(t) DECL_FUNDA_TYPE(signed t); DECL_FUNDA_TYPE(unsigned t)
 
 DECL_FUNDA_TYPE(bool);
@@ -269,9 +265,6 @@ template<bool B, typename T, typename F> class IfThenElseType;
 template<typename T, typename F> class IfThenElseType<true, T, F> { public: typedef T ResultType; };
 template<typename T, typename F> class IfThenElseType<false, T, F> { public: typedef F ResultType; };
 
-
-#undef TRUE
-#undef FALSE
 #undef NOisnotYES
 
 #else
