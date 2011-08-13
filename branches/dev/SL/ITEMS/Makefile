@@ -52,9 +52,12 @@ changekey.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 changekey.o: $(ARBHOME)/INCLUDE/cb.h
+changekey.o: $(ARBHOME)/INCLUDE/cbtypes.h
 changekey.o: $(ARBHOME)/INCLUDE/dupstr.h
 changekey.o: $(ARBHOME)/INCLUDE/smartptr.h
+changekey.o: $(ARBHOME)/INCLUDE/static_assert.h
 changekey.o: $(ARBHOME)/INCLUDE/test_global.h
+changekey.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 item_sel_list.o: item_sel_list.h
 item_sel_list.o: items.h
@@ -77,9 +80,12 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/cb.h
+item_sel_list.o: $(ARBHOME)/INCLUDE/cbtypes.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/dupstr.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/smartptr.h
+item_sel_list.o: $(ARBHOME)/INCLUDE/static_assert.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/test_global.h
+item_sel_list.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 species.o: item_sel_list.h
 species.o: items.h
@@ -103,6 +109,9 @@ species.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 species.o: $(ARBHOME)/INCLUDE/cb.h
+species.o: $(ARBHOME)/INCLUDE/cbtypes.h
 species.o: $(ARBHOME)/INCLUDE/dupstr.h
 species.o: $(ARBHOME)/INCLUDE/smartptr.h
+species.o: $(ARBHOME)/INCLUDE/static_assert.h
 species.o: $(ARBHOME)/INCLUDE/test_global.h
+species.o: $(ARBHOME)/INCLUDE/ttypes.h

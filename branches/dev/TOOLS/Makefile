@@ -127,9 +127,12 @@ arb_dnarates.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 arb_dnarates.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 arb_dnarates.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 arb_dnarates.o: $(ARBHOME)/INCLUDE/cb.h
+arb_dnarates.o: $(ARBHOME)/INCLUDE/cbtypes.h
 arb_dnarates.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_dnarates.o: $(ARBHOME)/INCLUDE/smartptr.h
+arb_dnarates.o: $(ARBHOME)/INCLUDE/static_assert.h
 arb_dnarates.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_dnarates.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 arb_export_rates.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_export_rates.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -147,9 +150,12 @@ arb_export_rates.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 arb_export_rates.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 arb_export_rates.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 arb_export_rates.o: $(ARBHOME)/INCLUDE/cb.h
+arb_export_rates.o: $(ARBHOME)/INCLUDE/cbtypes.h
 arb_export_rates.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_export_rates.o: $(ARBHOME)/INCLUDE/smartptr.h
+arb_export_rates.o: $(ARBHOME)/INCLUDE/static_assert.h
 arb_export_rates.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_export_rates.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 arb_export_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -326,8 +332,11 @@ arb_test.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 arb_test.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 arb_test.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 arb_test.o: $(ARBHOME)/INCLUDE/cb.h
+arb_test.o: $(ARBHOME)/INCLUDE/cbtypes.h
 arb_test.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_test.o: $(ARBHOME)/INCLUDE/smartptr.h
+arb_test.o: $(ARBHOME)/INCLUDE/static_assert.h
 arb_test.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_test.o: $(ARBHOME)/INCLUDE/test_unit.h
+arb_test.o: $(ARBHOME)/INCLUDE/ttypes.h
 arb_test.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h

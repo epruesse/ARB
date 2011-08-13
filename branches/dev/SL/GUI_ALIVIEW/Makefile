@@ -63,9 +63,12 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_filter.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/smartptr.h
+AWT_filter.o: $(ARBHOME)/INCLUDE/static_assert.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/test_global.h
+AWT_filter.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 ColumnStat.o: ColumnStat.hxx
 ColumnStat.o: ga_local.h
@@ -92,9 +95,12 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/cb.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/dupstr.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/smartptr.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/static_assert.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/test_global.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 GUI_aliview.o: awt_filter.hxx
 GUI_aliview.o: ColumnStat.hxx
