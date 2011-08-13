@@ -39,6 +39,15 @@ typedef AW_CB2 AW_CB;
 // AW_window-builder callbacks
 typedef AW_window *(*AW_Window_Creator)(AW_root*, AW_CL);
 
+// ---------------------------
+//      typesafe callbacks
+
+#ifndef CBTYPES_H
+#include "cbtypes.h"
+#endif
+
+
+
 #else
 #error cb.h included twice
 #endif // CB_H
