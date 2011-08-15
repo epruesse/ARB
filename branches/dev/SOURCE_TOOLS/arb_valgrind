@@ -164,7 +164,7 @@ else
             if [ -z "$LOG_STDOUT" ]; then
                 LOG_STDOUT=/tmp/arb_valgrind_$USER_$$.stdout
             fi
-            $VG_CMD "$@" 2>&1 >$LOG_STDOUT | $DIR/valgrind2grep $CALLERS "$FILTER" $SUPPX 
+            $VG_CMD --log-fd=3 "$@" 3>&1 >$LOG_STDOUT 2>&1 | $DIR/valgrind2grep $CALLERS "$FILTER" $SUPPX 
             EXITCODE=${PIPESTATUS[0]}
         else
             $VG_CMD "$@"
