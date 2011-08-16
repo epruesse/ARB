@@ -66,6 +66,9 @@ public:
 };
 template<> class ForwardParamT<void> { class Unused {}; public: typedef Unused Type; };
 
+// ------------------------------
+//      const parameter types
+
 template<typename T>
 class ConstParamT {
 public:
@@ -80,6 +83,18 @@ public:
 };
 template<> class ConstParamT<void> { class Unused {}; public: typedef Unused Type; };
 
+// ------------------------------------
+//      forbid some parameter types
+
+template<typename T> class AW_CL_castableType { public: static AW_CL cast_to_AW_CL(const T& t) { return (AW_CL)t; } };
+
+#define INVALID_CB_PARAM_TYPE(TYPE) template<> class AW_CL_castableType<TYPE> { }
+
+INVALID_CB_PARAM_TYPE(void);
+INVALID_CB_PARAM_TYPE(double);
+INVALID_CB_PARAM_TYPE(float);
+
+#undef INVALID_CB_PARAM_TYPE
 
 // -----------------------
 //      typed callback
@@ -128,30 +143,31 @@ public:
 //      convenience macros
 
 #define CASTABLE_TO_AW_CL(TYPE) (sizeof(TYPE) <= sizeof(AW_CL))
+#define CAST_TO_AW_CL(TYPE,PARAM) AW_CL_castableType<TYPE>::cast_to_AW_CL(PARAM)
 
 #define CBTYPE_BUILDER_TEMPLATES(BUILDER,CB,RESULT,FIXED,SIG)           \
     inline CB BUILDER(RESULT (*cb)(FIXED)) {                            \
         return CB((SIG)cb, 0, 0);                                       \
     }                                                                   \
     template<typename P1>                                               \
-    inline CB BUILDER(RESULT (*cb)(FIXED, P1), P1 p1) {                 \
+    inline CB BUILDER(RESULT (*cb)(FIXED, P1), P1 p1) { \
         COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1));                          \
-        return CB((SIG)cb, AW_CL(p1), 0);                               \
+        return CB((SIG)cb, CAST_TO_AW_CL(P1,p1), 0);                    \
     }                                                                   \
     template<typename P1>                                               \
     inline CB BUILDER(RESULT (*cb)(FIXED, typename ConstParamT<P1>::Type), P1 p1) { \
         COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1));                          \
-        return CB((SIG)cb, AW_CL(p1), 0);                               \
+        return CB((SIG)cb, CAST_TO_AW_CL(P1,p1), 0);                    \
     }                                                                   \
     template<typename P1, typename P2>                                  \
     inline CB BUILDER(RESULT (*cb)(FIXED, P1, P2), P1 p1, P2 p2) {      \
         COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1) && CASTABLE_TO_AW_CL(P2)); \
-        return CB((SIG)cb, AW_CL(p1), AW_CL(p2));                       \
+        return CB((SIG)cb, CAST_TO_AW_CL(P1,p1), CAST_TO_AW_CL(P2,p2)); \
     }                                                                   \
     template<typename P1, typename P2>                                  \
-    inline CB BUILDER(RESULT (*cb)(FIXED, typename ConstParamT<P1>::Type, typename ConstParamT<P2>::Type), P1 p1, P2 p2) {      \
+    inline CB BUILDER(RESULT (*cb)(FIXED, typename ConstParamT<P1>::Type, typename ConstParamT<P2>::Type), P1 p1, P2 p2) { \
         COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1) && CASTABLE_TO_AW_CL(P2)); \
-        return CB((SIG)cb, AW_CL(p1), AW_CL(p2));                       \
+        return CB((SIG)cb, CAST_TO_AW_CL(P1,p1), CAST_TO_AW_CL(P2,p2)); \
     }
 
 // declares the callback type (CBTYPE) and the makeCBTYPE() templates needed to ensure
