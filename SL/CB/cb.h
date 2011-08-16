@@ -43,10 +43,14 @@ typedef AW_window *(*AW_Window_Creator)(AW_root*, AW_CL);
 //      typesafe callbacks
 
 #ifndef CBTYPES_H
-#include "cbtypes.h"
+#include <cbtypes.h>
 #endif
 
+typedef AW_window *(*AWC_CB)(AW_root *, AW_CL, AW_CL);
 
+DECLARE_CBTYPE_AND_BUILDERS(RootCallback,          void,       AW_root*,   AW_RCB); // generates makeRootCallback
+DECLARE_CBTYPE_AND_BUILDERS(WindowCallback,        void,       AW_window*, AW_CB);  // generates makeWindowCallback
+DECLARE_CBTYPE_AND_BUILDERS(WindowCreatorCallback, AW_window*, AW_root*,   AWC_CB); // generates makeWindowCreatorCallback
 
 #else
 #error cb.h included twice
