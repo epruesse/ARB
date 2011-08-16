@@ -23,25 +23,23 @@ using namespace std;
 #define TRACE
 
 static unsigned long traceChecksum;
+const int            BUFFERSIZE = 100;
+char                 traceBuffer[BUFFERSIZE];
 
 STATIC_ATTRIBUTED(__ATTR__FORMAT(1), void tracef(const char *format, ...)) {
     va_list parg;
     va_start(parg, format);
-
-    const int BUFFERSIZE = 100;
-    char      buffer[BUFFERSIZE];
-    int       printed    = vsnprintf(buffer, BUFFERSIZE, format, parg);
-
+    int printed = vsnprintf(traceBuffer, BUFFERSIZE, format, parg);
     va_end(parg);
 
     TEST_ASSERT(printed<BUFFERSIZE);
 #if defined(TRACE)
-    fputs(buffer, stdout);
+    fputs(traceBuffer, stdout);
 #endif
 
     traceChecksum = 0;
     for (int p = 0; p<printed; ++p) {
-        traceChecksum = (traceChecksum<<1)^buffer[p];
+        traceChecksum = (traceChecksum<<1)^traceBuffer[p];
     }
 }
 
@@ -156,6 +154,17 @@ inline void call(const WindowCreatorCallback& wccb) { TEST_ASSERT(wccb(fake_root
         TEST_ASSERT_EQUAL(traceChecksum, (unsigned long)(expectedChecksum)); \
     } while(0)
 
+#define TEST_CB_TRACE(cb,expectedOutput) do {                           \
+        call(cb);                                                       \
+        TEST_ASSERT_EQUAL(traceBuffer, expectedOutput);                 \
+    } while(0)
+
+#define TEST_CB_TRACE__BROKEN(cb,expectedOutput) do {                   \
+        call(cb);                                                       \
+        TEST_ASSERT_EQUAL__BROKEN(traceBuffer, expectedOutput);         \
+    } while(0)
+
+
 void TEST_cbs() {
     MISSING_TEST("please log");
     // for (int i = 0; i<100000; ++i)
@@ -164,13 +173,23 @@ void TEST_cbs() {
         TEST_CB(makeRootCallback(rcb1,  "dispatched"), 0x5d9780);
         TEST_CB(makeRootCallback(rcb2, "age",  46),    0x176c160);
         TEST_CB(makeRootCallback(rcb2, "size", 178L),  0xbaf72ec);
-        TEST_CB(makeRootCallback(rcb2, "rate", 7.5),   0xba9bbc04);
-
+        
         TEST_CB(makeWindowCallback(wcb0),               0x16f8);
         TEST_CB(makeWindowCallback(wcb1, "dispatched"), 0x589780);
         TEST_CB(makeWindowCallback(wcb2, "age",  46),   0x162c160);
         TEST_CB(makeWindowCallback(wcb2, "size", 178L), 0xb0f72ec);
-        TEST_CB(makeWindowCallback(wcb2, "rate", 7.5),  0xb09bbc04);
+
+#if defined(DEBUG)
+        TEST_CB_TRACE(makeRootCallback  (rcb2, "rate", 7.5), "rcb2(rate=7.500) [double]\n");
+        TEST_CB_TRACE(makeRootCallback  (rcb2, "rate", 7.6), "rcb2(rate=7.600) [double]\n");
+        TEST_CB_TRACE(makeWindowCallback(wcb2, "rate", 7.5), "wcb2(rate=7.500) [double]\n");
+        TEST_CB_TRACE(makeWindowCallback(wcb2, "rate", 7.6), "wcb2(rate=7.600) [double]\n");
+#else // !defined(DEBUG)
+        TEST_CB_TRACE__BROKEN(makeRootCallback  (rcb2, "rate", 7.5), "rcb2(rate=7.500) [double]\n");
+        TEST_CB_TRACE__BROKEN(makeRootCallback  (rcb2, "rate", 7.6), "rcb2(rate=7.600) [double]\n");
+        TEST_CB_TRACE__BROKEN(makeWindowCallback(wcb2, "rate", 7.5), "wcb2(rate=7.500) [double]\n");
+        TEST_CB_TRACE__BROKEN(makeWindowCallback(wcb2, "rate", 7.6), "wcb2(rate=7.600) [double]\n");
+#endif
 
         TEST_CB(makeWindowCallback(wcb2, 'l', 0xb09bbc04b09bbcLL),  0xb22c830caac);
 
