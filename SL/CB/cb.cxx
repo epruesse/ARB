@@ -32,10 +32,13 @@ STATIC_ATTRIBUTED(__ATTR__FORMAT(1), void tracef(const char *format, ...)) {
     int printed = vsnprintf(traceBuffer, BUFFERSIZE, format, parg);
     va_end(parg);
 
-    TEST_ASSERT(printed<BUFFERSIZE);
 #if defined(TRACE)
     fputs(traceBuffer, stdout);
 #endif
+    if (printed >= BUFFERSIZE) {
+        printf("\nprinted=%i\n", printed);
+    }
+    TEST_ASSERT(printed<BUFFERSIZE);
 
     traceChecksum = 0;
     for (int p = 0; p<printed; ++p) {
@@ -62,10 +65,6 @@ static void rcb2(AW_root *r, const char *name, long val) {
     TEST_ASSERT(r == fake_root);
     tracef("rcb2(%s=%li) [long]\n", name, val);
 }
-static void rcb2(AW_root *r, const char *name, double val) {
-    TEST_ASSERT(r == fake_root);
-    tracef("rcb2(%s=%4.3f) [double]\n", name, val);
-}
 
 static void wcb0(AW_window *w) {
     TEST_ASSERT(w == fake_win);
@@ -82,10 +81,6 @@ static void wcb2(AW_window *w, const char *name, int val) {
 static void wcb2(AW_window *w, const char *name, long val) {
     TEST_ASSERT(w == fake_win);
     tracef("wcb2(%s=%li) [long]\n", name, val);
-}
-static void wcb2(AW_window *w, const char *name, double val) {
-    TEST_ASSERT(w == fake_win);
-    tracef("wcb2(%s=%4.3f) [double]\n", name, val);
 }
 static void wcb2(AW_window *w, char c, long long val) {
     TEST_ASSERT(w == fake_win);
@@ -179,18 +174,6 @@ void TEST_cbs() {
         TEST_CB(makeWindowCallback(wcb2, "age",  46),   0x162c160);
         TEST_CB(makeWindowCallback(wcb2, "size", 178L), 0xb0f72ec);
 
-#if defined(DEBUG)
-        TEST_CB_TRACE(makeRootCallback  (rcb2, "rate", 7.5), "rcb2(rate=7.500) [double]\n");
-        TEST_CB_TRACE(makeRootCallback  (rcb2, "rate", 7.6), "rcb2(rate=7.600) [double]\n");
-        TEST_CB_TRACE(makeWindowCallback(wcb2, "rate", 7.5), "wcb2(rate=7.500) [double]\n");
-        TEST_CB_TRACE(makeWindowCallback(wcb2, "rate", 7.6), "wcb2(rate=7.600) [double]\n");
-#else // !defined(DEBUG)
-        TEST_CB_TRACE__BROKEN(makeRootCallback  (rcb2, "rate", 7.5), "rcb2(rate=7.500) [double]\n");
-        TEST_CB_TRACE__BROKEN(makeRootCallback  (rcb2, "rate", 7.6), "rcb2(rate=7.600) [double]\n");
-        TEST_CB_TRACE__BROKEN(makeWindowCallback(wcb2, "rate", 7.5), "wcb2(rate=7.500) [double]\n");
-        TEST_CB_TRACE__BROKEN(makeWindowCallback(wcb2, "rate", 7.6), "wcb2(rate=7.600) [double]\n");
-#endif
-
         TEST_CB(makeWindowCallback(wcb2, 'l', 0xb09bbc04b09bbcLL),  0xb22c830caac);
 
         TEST_CB(makeWindowCreatorCallback(wccb0),     0x2878);
@@ -226,10 +209,6 @@ void TEST_cbs() {
         TEST_CB(makeWindowCreatorCallback(wccb1, con),  0x145feb8);
 
         free(mut);
-
-        // parameter too big (shall fail to compile):
-        // TEST_CB(makeWindowCallback(wcb2, 'f', 0.1234567890123456789012345678901234567890L),  0x0);
-        // TEST_CB(makeWindowCallback(wcb1, 0.1234567890123456789012345678901234567890L),  0x0);
     }
 
 }
