@@ -1433,7 +1433,6 @@ proto: proto_tools
 		NTREE/NTREE.proto \
 		$(ARCHS_PT_SERVER:.a=.proto) \
 		SERVERCNTRL/SERVERCNTRL.proto \
-		AISC_COM/AISC_COM.proto \
 		GDE/GDE.proto \
 		SL/SL.proto \
 
