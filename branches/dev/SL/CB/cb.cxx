@@ -9,7 +9,7 @@
 //                                                                //
 // ============================================================== //
 
-#include "cbtypes.h"
+#include <cb.h>
 #include <attributes.h>
 
 
@@ -133,12 +133,6 @@ static AW_window *wccb2(AW_root *r, const char *s1, char *s2) {
     tracef("wccb2(%s=%s) [const mutable]\n", s1, s2);
     return fake_win;
 }
-
-typedef AW_window *(*AWC_CB)(AW_root *, AW_CL, AW_CL);
-
-DECLARE_CBTYPE_AND_BUILDERS(RootCallback, void, AW_root*, AW_RCB);
-DECLARE_CBTYPE_AND_BUILDERS(WindowCallback, void, AW_window*, AW_CB);
-DECLARE_CBTYPE_AND_BUILDERS(WindowCreatorCallback, AW_window*, AW_root*, AWC_CB);
 
 inline void call(const RootCallback& rcb) { rcb(fake_root); }
 inline void call(const WindowCallback& wcb) { wcb(fake_win); }
