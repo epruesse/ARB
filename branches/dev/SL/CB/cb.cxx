@@ -11,6 +11,7 @@
 
 #include <cb.h>
 #include <attributes.h>
+#include <string>
 
 
 using namespace std;
@@ -73,6 +74,18 @@ static void wcb0(AW_window *w) {
 static void wcb1(AW_window *w, const char *name) {
     TEST_ASSERT(w == fake_win);
     tracef("wcb1(%s)\n", name);
+}
+static void wcb1(AW_window *w, string *name) {
+    TEST_ASSERT(w == fake_win);
+    tracef("wcb1(%s) [string]\n", name->c_str());
+}
+static void wcb2(AW_window *w, const char *name, const char *val) {
+    TEST_ASSERT(w == fake_win);
+    tracef("wcb2(%s=%s) [const char/const char]\n", name, val);
+}
+static void wcb2(AW_window *w, const string *name, const string *val) {
+    TEST_ASSERT(w == fake_win);
+    tracef("wcb2(%s=%s) [string/string]\n", name->c_str(), val->c_str());
 }
 static void wcb2(AW_window *w, const char *name, int val) {
     TEST_ASSERT(w == fake_win);
@@ -154,6 +167,11 @@ inline void call(const WindowCreatorCallback& wccb) { TEST_ASSERT(wccb(fake_root
     } while(0)
 
 
+static void freeCharp(char *str) { free(str); }
+static void freeCharp(char *str1, char *str2) { free(str1); free(str2); }
+static void deleteString(string *str) { delete str; }
+static void deleteString(string *str1, string *str2) { delete str1; delete str2; }
+
 void TEST_cbs() {
     MISSING_TEST("please log");
     // for (int i = 0; i<100000; ++i)
@@ -172,6 +190,16 @@ void TEST_cbs() {
 
         TEST_CB(makeWindowCreatorCallback(wccb0),     0x2878);
         TEST_CB(makeWindowCreatorCallback(wccb1, 77), 0xa19c);
+
+        // callbacks with deallocator
+
+        // TEST_CB(makeWindowCallback(wcb1, strdup("leak")), 0x163ac); // leaks
+        TEST_CB(makeWindowCallback(wcb1, freeCharp, strdup("leak")), 0x163ac);
+        // TEST_CB(makeWindowCallback(wcb1, freeCharp, "leak"), 0x163ac); // does not compile (can't call freeCharp with const char *)
+        TEST_CB(makeWindowCallback(wcb1, deleteString, new string("leak")), 0x2c7790c);
+        // TEST_CB(makeWindowCallback(wcb2, strdup("hue"), strdup("hott")), 0x5884382750); // leaks
+        TEST_CB(makeWindowCallback(wcb2, freeCharp, strdup("hue"), strdup("hott")), 0x16210e09c190);
+        TEST_CB(makeWindowCallback(wcb2, deleteString, new string("hue"), new string("hott")), 0x162108df0c);
 
         // test const vs non-const pointers:
         char       *mut = strdup("mut");

@@ -87,6 +87,7 @@ MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/cb.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/cbtypes.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/PT_com.h
+MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/static_assert.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/test_global.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/ttypes.h
@@ -222,6 +223,7 @@ MP_permute.o: $(ARBHOME)/INCLUDE/cb.h
 MP_permute.o: $(ARBHOME)/INCLUDE/cbtypes.h
 MP_permute.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_permute.o: $(ARBHOME)/INCLUDE/PT_com.h
+MP_permute.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_permute.o: $(ARBHOME)/INCLUDE/static_assert.h
 MP_permute.o: $(ARBHOME)/INCLUDE/test_global.h
 MP_permute.o: $(ARBHOME)/INCLUDE/ttypes.h
@@ -269,6 +271,7 @@ MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/cb.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/cbtypes.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/PT_com.h
+MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/static_assert.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/test_global.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/ttypes.h
@@ -289,6 +292,7 @@ MP_probe_tabs.o: $(ARBHOME)/INCLUDE/cb.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/cbtypes.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/PT_com.h
+MP_probe_tabs.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/static_assert.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/test_global.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/ttypes.h

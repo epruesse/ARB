@@ -491,6 +491,7 @@ aw_scalar.o: $(ARBHOME)/INCLUDE/attributes.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/cb.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/cbtypes.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/dupstr.h
+aw_scalar.o: $(ARBHOME)/INCLUDE/smartptr.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/static_assert.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/test_global.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/ttypes.h
