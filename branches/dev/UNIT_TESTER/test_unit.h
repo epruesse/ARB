@@ -374,6 +374,15 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
+#define TEST_FAILS_INSIDE_VALGRIND(THETEST) do {                \
+        if (!GBK_running_on_valgrind()) {                       \
+            THETEST;                                            \
+            TEST_WARNING("valgrind fails for '%s'", #THETEST);  \
+        }                                                       \
+    } while(0)
+
+// --------------------------------------------------------------------------------
+
 #define TEST_ASSERT__BROKEN(cond)                                       \
     do {                                                                \
         if (cond)                                                       \
