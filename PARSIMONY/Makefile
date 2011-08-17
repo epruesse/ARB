@@ -235,6 +235,7 @@ PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/cb.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/cbtypes.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/dupstr.h
+PARS_klprops.o: $(ARBHOME)/INCLUDE/smartptr.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/static_assert.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/test_global.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/ttypes.h

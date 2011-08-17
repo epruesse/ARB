@@ -34,8 +34,10 @@ cb.o: cb.h
 cb.o: cbtypes.h
 cb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 cb.o: $(ARBHOME)/INCLUDE/arb_core.h
+cb.o: $(ARBHOME)/INCLUDE/arbtools.h
 cb.o: $(ARBHOME)/INCLUDE/attributes.h
 cb.o: $(ARBHOME)/INCLUDE/dupstr.h
+cb.o: $(ARBHOME)/INCLUDE/smartptr.h
 cb.o: $(ARBHOME)/INCLUDE/static_assert.h
 cb.o: $(ARBHOME)/INCLUDE/test_global.h
 cb.o: $(ARBHOME)/INCLUDE/test_unit.h

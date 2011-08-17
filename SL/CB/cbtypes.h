@@ -21,6 +21,9 @@
 #ifndef STATIC_ASSERT_H
 #include <static_assert.h>
 #endif
+#ifndef SMARTPTR_H
+#include <smartptr.h>
+#endif
 
 
 // ---------------------------------
@@ -120,7 +123,31 @@ public:
     RT operator()(FP1 p1, FP2 p2)         const { return cb(p1, p2); }
     RT operator()(FP1 p1)                 const { return cb(p1); }
     RT operator()()                       const { return cb(); }
+    
+    bool equals(const StrictlyTypedCallback& other) const { return cb == other.cb; }
 };
+
+// ---------------------
+//      CallbackData
+
+template<typename P1, typename P2>
+struct CallbackData {
+    P1 p1;
+    P2 p2;
+
+    typedef void (*CallbackDataDeallocator)(P1 p1, P2 p2);
+    CallbackDataDeallocator dealloc;
+
+    CallbackData(P1 p1_, P2 p2_) : p1(p1_), p2(p2_), dealloc(NULL) {}
+    CallbackData(P1 p1_, P2 p2_, CallbackDataDeallocator dealloc_) : p1(p1_), p2(p2_), dealloc(dealloc_) {}
+    ~CallbackData() { if (dealloc) dealloc(p1, p2); }
+    bool equals(const CallbackData& other) const { return p1 == other.p1 && p2 == other.p2 && dealloc == other.dealloc; }
+};
+
+template<typename P1, typename P2>
+inline bool operator == (const CallbackData<P1,P2>& cd1, const CallbackData<P1,P2>& cd2) { return cd1.equals(cd2); }
+
+typedef CallbackData<AW_CL,AW_CL> UntypedCallbackData;
 
 // ------------------------
 //      casted callback
@@ -131,44 +158,62 @@ public:
     typedef StrictlyTypedCallback<RT,FIXED,AW_CL,AW_CL> Signature;
 
 private:
-    Signature cb;
-    AW_CL     p1, p2;
+    Signature                     cb;
+    SmartPtr<UntypedCallbackData> cd;
 
 public:
-    CallbackGroup(Signature CB, AW_CL P1, AW_CL P2) : cb(CB), p1(P1), p2(P2) {}
-    RT operator()(FIXED fixed) const { return cb(fixed, p1, p2); }
+    CallbackGroup(Signature CB, AW_CL P1, AW_CL P2) : cb(CB), cd(new UntypedCallbackData(P1, P2)) {}
+    CallbackGroup(Signature CB, UntypedCallbackData::CallbackDataDeallocator dealloc, AW_CL P1, AW_CL P2) : cb(CB), cd(new UntypedCallbackData(P1, P2, dealloc)) {}
+    RT operator()(FIXED fixed) const { return cb(fixed, cd->p1, cd->p2); }
+    bool equals(const CallbackGroup& other) const { return cb.equals(other.cb) && *cd == *other.cd; }
 };
+
+template<typename RT, typename FIXED>
+inline bool operator == (const CallbackGroup<RT,FIXED>& cb1, const CallbackGroup<RT,FIXED>& cb2) { return cb1.equals(cb2); }
 
 // ---------------------------
 //      convenience macros
 
-#define CASTABLE_TO_AW_CL(TYPE) (sizeof(TYPE) <= sizeof(AW_CL))
+#define CASTABLE_TO_AW_CL(TYPE)   (sizeof(TYPE) <= sizeof(AW_CL))
 #define CAST_TO_AW_CL(TYPE,PARAM) AW_CL_castableType<TYPE>::cast_to_AW_CL(PARAM)
+
+#define CONST_PARAM_T(T) typename ConstParamT<T>::Type 
+
+#define CBTYPE_BUILDER_P1(BUILDER,CB,RESULT,FIXED,SIG,P1,P1fun)         \
+    template<typename P1>                                               \
+    inline CB BUILDER(RESULT (*cb)(FIXED, P1fun), P1 p1) {              \
+        COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1));                          \
+        return CB((SIG)cb, CAST_TO_AW_CL(P1,p1), 0);                    \
+    }                                                                   \
+    template<typename P1>                                               \
+    inline CB BUILDER(RESULT (*cb)(FIXED, P1fun),                       \
+                      void (*dealloc)(P1), P1 p1) {                     \
+        COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1));                          \
+        return CB((SIG)cb, (UntypedCallbackData::CallbackDataDeallocator)dealloc, CAST_TO_AW_CL(P1,p1), 0); \
+    }                                                                   \
+
+#define CBTYPE_BUILDER_P1P2(BUILDER,CB,RESULT,FIXED,SIG,P1,P2,P1fun,P2fun) \
+    template<typename P1, typename P2>                                  \
+    inline CB BUILDER(RESULT (*cb)(FIXED, P1fun, P2fun),                \
+                      P1 p1, P2 p2) {                                   \
+        COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1) && CASTABLE_TO_AW_CL(P2)); \
+        return CB((SIG)cb, CAST_TO_AW_CL(P1,p1), CAST_TO_AW_CL(P2,p2)); \
+    }                                                                   \
+    template<typename P1, typename P2>                                  \
+    inline CB BUILDER(RESULT (*cb)(FIXED, P1fun, P2fun),                \
+                      void (*dealloc)(P1,P2), P1 p1, P2 p2) {           \
+        COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1) && CASTABLE_TO_AW_CL(P2)); \
+        return CB((SIG)cb, (UntypedCallbackData::CallbackDataDeallocator)dealloc, CAST_TO_AW_CL(P1,p1), CAST_TO_AW_CL(P2,p2)); \
+    }                                                                   \
 
 #define CBTYPE_BUILDER_TEMPLATES(BUILDER,CB,RESULT,FIXED,SIG)           \
     inline CB BUILDER(RESULT (*cb)(FIXED)) {                            \
         return CB((SIG)cb, 0, 0);                                       \
     }                                                                   \
-    template<typename P1>                                               \
-    inline CB BUILDER(RESULT (*cb)(FIXED, P1), P1 p1) { \
-        COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1));                          \
-        return CB((SIG)cb, CAST_TO_AW_CL(P1,p1), 0);                    \
-    }                                                                   \
-    template<typename P1>                                               \
-    inline CB BUILDER(RESULT (*cb)(FIXED, typename ConstParamT<P1>::Type), P1 p1) { \
-        COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1));                          \
-        return CB((SIG)cb, CAST_TO_AW_CL(P1,p1), 0);                    \
-    }                                                                   \
-    template<typename P1, typename P2>                                  \
-    inline CB BUILDER(RESULT (*cb)(FIXED, P1, P2), P1 p1, P2 p2) {      \
-        COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1) && CASTABLE_TO_AW_CL(P2)); \
-        return CB((SIG)cb, CAST_TO_AW_CL(P1,p1), CAST_TO_AW_CL(P2,p2)); \
-    }                                                                   \
-    template<typename P1, typename P2>                                  \
-    inline CB BUILDER(RESULT (*cb)(FIXED, typename ConstParamT<P1>::Type, typename ConstParamT<P2>::Type), P1 p1, P2 p2) { \
-        COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1) && CASTABLE_TO_AW_CL(P2)); \
-        return CB((SIG)cb, CAST_TO_AW_CL(P1,p1), CAST_TO_AW_CL(P2,p2)); \
-    }
+    CBTYPE_BUILDER_P1(BUILDER,CB,RESULT,FIXED,SIG,P1,P1);               \
+    CBTYPE_BUILDER_P1(BUILDER,CB,RESULT,FIXED,SIG,P1,CONST_PARAM_T(P1)); \
+    CBTYPE_BUILDER_P1P2(BUILDER,CB,RESULT,FIXED,SIG,P1,P2,P1,P2);       \
+    CBTYPE_BUILDER_P1P2(BUILDER,CB,RESULT,FIXED,SIG,P1,P2,CONST_PARAM_T(P1), CONST_PARAM_T(P2)); \
 
 // declares the callback type (CBTYPE) and the makeCBTYPE() templates needed to ensure
 // typecheck between callback-signature and bound parameters
