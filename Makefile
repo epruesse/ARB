@@ -148,15 +148,15 @@ ifeq ($(DEBUG),1)
 
 # ------- above only warnings available in 3.0
 
- ifneq ($(USE_GCC_4_OR_HIGHER),'')
+ ifneq ('$(USE_GCC_4_OR_HIGHER)','')
 	extended_cpp_warnings += -Weffc++# gcc 3.0.1
 	extended_cpp_warnings += -Wmissing-noreturn# gcc 3.0.2
 #	extended_cpp_warnings += -Wold-style-cast# gcc 3.0.4 (warn about 28405 old-style casts)
 	extended_cpp_warnings += -Winit-self# gcc 3.4.0
 	extended_cpp_warnings += -Wstrict-aliasing# gcc 3.4
 	extended_cpp_warnings += -Wextra# gcc 3.4.0
-  ifneq ($(USE_GCC_45_OR_HIGHER),'')
-   ifneq ($(USE_GCC_452_OR_HIGHER),'')
+  ifneq ('$(USE_GCC_45_OR_HIGHER)','')
+   ifneq ('$(USE_GCC_452_OR_HIGHER)','')
 	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
    endif
   endif
@@ -284,7 +284,7 @@ cflags += -funit-at-a-time
 cflags += -fPIC
 cflags += -fno-common# link all global data into one namespace
 
-ifneq ($(USE_GCC_4_OR_HIGHER),'')
+ifneq ('$(USE_GCC_4_OR_HIGHER)','')
 cflags += -fstrict-aliasing# gcc 3.4
 endif
 
