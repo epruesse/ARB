@@ -300,8 +300,13 @@ sub parse_input(\@) {
       $_ = suppress($_,@warnout);
     }
     elsif ($_ =~ $reg_file_noline) {
-      push @related, included_from_here($1);
-      $_ = suppress($_,@warnout);
+      if (/^cc1plus:.*error/) {
+        ; # display normally
+      }
+      else {
+        push @related, included_from_here($1);
+        $_ = suppress($_,@warnout);
+      }
     }
     elsif (@related) {
       if ($_ =~ $reg_included2) {
