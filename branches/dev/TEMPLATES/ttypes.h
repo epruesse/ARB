@@ -47,12 +47,12 @@ DECL_FUNDA_TYPE(long double);
 template<typename T>
 class IsFunctionT {
 private:
-    typedef char One;
-    typedef struct { char a[2]; } Two;
+    typedef char yes;
+    typedef struct { char a[2]; } no;
 public:
-    template<typename U> static One test(...);
-    template<typename U> static Two test(U (*)[1]);
-    enum { Yes = sizeof(IsFunctionT<T>::test<T>(0)) == 1 };
+    template<typename U> static yes test(...);
+    template<typename U> static no  test(U (*)[1]);
+    enum { Yes = sizeof(test<T>(0)) == sizeof(yes) };
     NOisnotYES();
 };
 
