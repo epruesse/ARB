@@ -12,6 +12,7 @@
 #include <cb.h>
 #include <attributes.h>
 #include <string>
+#include <stdint.h>
 
 
 using namespace std;
@@ -23,7 +24,7 @@ using namespace std;
 
 #define TRACE
 
-static unsigned long traceChecksum;
+static uint32_t traceChecksum;
 const int            BUFFERSIZE = 100;
 char                 traceBuffer[BUFFERSIZE];
 
@@ -43,7 +44,7 @@ STATIC_ATTRIBUTED(__ATTR__FORMAT(1), void tracef(const char *format, ...)) {
 
     traceChecksum = 0;
     for (int p = 0; p<printed; ++p) {
-        traceChecksum = (traceChecksum<<1)^traceBuffer[p];
+        traceChecksum = (traceChecksum<<1)^(traceChecksum>>31)^traceBuffer[p];
     }
 }
 
@@ -151,19 +152,19 @@ inline void call(const RootCallback& rcb) { rcb(fake_root); }
 inline void call(const WindowCallback& wcb) { wcb(fake_win); }
 inline void call(const WindowCreatorCallback& wccb) { TEST_ASSERT(wccb(fake_root) == fake_win); }
 
-#define TEST_CB(cb,expectedChecksum) do {                       \
+#define TEST_CB(cb,expectedChecksum) do {                               \
+        call(cb);                                                       \
+        TEST_ASSERT_EQUAL(traceChecksum, (uint32_t)expectedChecksum);   \
+    } while(0)
+
+#define TEST_CB_TRACE(cb,expectedOutput) do {           \
+        call(cb);                                       \
+        TEST_ASSERT_EQUAL(traceBuffer, expectedOutput); \
+    } while(0)
+
+#define TEST_CB_TRACE__BROKEN(cb,expectedOutput) do {           \
         call(cb);                                               \
-        TEST_ASSERT_EQUAL(traceChecksum, (unsigned long)(expectedChecksum)); \
-    } while(0)
-
-#define TEST_CB_TRACE(cb,expectedOutput) do {                           \
-        call(cb);                                                       \
-        TEST_ASSERT_EQUAL(traceBuffer, expectedOutput);                 \
-    } while(0)
-
-#define TEST_CB_TRACE__BROKEN(cb,expectedOutput) do {                   \
-        call(cb);                                                       \
-        TEST_ASSERT_EQUAL__BROKEN(traceBuffer, expectedOutput);         \
+        TEST_ASSERT_EQUAL__BROKEN(traceBuffer, expectedOutput); \
     } while(0)
 
 
@@ -186,7 +187,9 @@ void TEST_cbs() {
         TEST_CB(makeWindowCallback(wcb2, "age",  46),   0x162c160);
         TEST_CB(makeWindowCallback(wcb2, "size", 178L), 0xb0f72ec);
 
-        TEST_CB(makeWindowCallback(wcb2, 'l', 0xb09bbc04b09bbcLL),  0xb22c830caac);
+#if defined(ARB_64)
+        TEST_CB(makeWindowCallback(wcb2, 'l', 0xb09bbc04b09bbcLL),  0xc830c18e);
+#endif
 
         TEST_CB(makeWindowCreatorCallback(wccb0),     0x2878);
         TEST_CB(makeWindowCreatorCallback(wccb1, 77), 0xa19c);
@@ -197,18 +200,18 @@ void TEST_cbs() {
         TEST_CB(makeWindowCallback(wcb1, freeCharp, strdup("leak")), 0x163ac);
         // TEST_CB(makeWindowCallback(wcb1, freeCharp, "leak"), 0x163ac); // does not compile (can't call freeCharp with const char *)
         TEST_CB(makeWindowCallback(wcb1, deleteString, new string("leak")), 0x2c7790c);
-        // TEST_CB(makeWindowCallback(wcb2, strdup("hue"), strdup("hott")), 0x5884382750); // leaks
-        TEST_CB(makeWindowCallback(wcb2, freeCharp, strdup("hue"), strdup("hott")), 0x16210e09c190);
-        TEST_CB(makeWindowCallback(wcb2, deleteString, new string("hue"), new string("hott")), 0x162108df0c);
+        // TEST_CB(makeWindowCallback(wcb2, strdup("hue"), strdup("hott")), 0xe09d7b1); // leaks
+        TEST_CB(makeWindowCallback(wcb2, freeCharp, strdup("hue"), strdup("hott")), 0xe09d7b1);
+        TEST_CB(makeWindowCallback(wcb2, deleteString, new string("hue"), new string("hott")), 0x2108df1a);
 
         // test const vs non-const pointers:
         char       *mut = strdup("mut");
         const char *con = "con";
 
-        TEST_CB(makeWindowCreatorCallback(wccb2, con, con), 0x515078338);  // exact match
-        TEST_CB(makeWindowCreatorCallback(wccb2, mut, con), 0x514678338);  // fallback to const/const
-        TEST_CB(makeWindowCreatorCallback(wccb2, con, mut), 0x1454460ac4); // exact match
-        TEST_CB(makeWindowCreatorCallback(wccb2, mut, mut), 0x514718338);  // fallback to const const
+        TEST_CB(makeWindowCreatorCallback(wccb2, con, con), 0x1507833d);  // exact match
+        TEST_CB(makeWindowCreatorCallback(wccb2, mut, con), 0x1467833d);  // fallback to const/const
+        TEST_CB(makeWindowCreatorCallback(wccb2, con, mut), 0x54460ad0); // exact match
+        TEST_CB(makeWindowCreatorCallback(wccb2, mut, mut), 0x1471833d);  // fallback to const const
 
         // test reference arguments
         int       imut = 17;
