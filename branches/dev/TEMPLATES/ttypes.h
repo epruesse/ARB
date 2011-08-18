@@ -85,6 +85,14 @@ public:
     typedef typename CompountT<T>::BottomT BottomT;
     typedef CompountT<void> ClassT;
 };
+template<typename T>
+class CompountT<T&> { // specialization for references
+public:
+    enum { IsPtrT = 0, IsRefT = 1, IsArrayT = 0, IsFuncT = 0, IsPtrMemT = 0 };
+    typedef T BaseT;
+    typedef typename CompountT<T>::BottomT BottomT;
+    typedef CompountT<void> ClassT;
+};
 template<typename T, size_t N>
 class CompountT<T[N]> { // specialization for arrays
 public:

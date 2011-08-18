@@ -22,6 +22,82 @@ using namespace std;
 #ifdef UNIT_TESTS
 #include <test_unit.h>
 
+// ---------------------------------------------
+//      compile time test of type inspection
+
+#define COMPILE_ASSERT_POINTER_TO(ISTYPE,POINTER)               \
+    COMPILE_ASSERT(TypeT<POINTER>::IsPtrT &&                    \
+                   TypeT<CompountT<POINTER>::BaseT>::ISTYPE)
+
+typedef int (*somefun)(const char *);
+int myfun(const char *) { return 0; }
+static somefun sfun = myfun;
+
+enum someenum { A, B };
+
+class someclass { public : int memfun() {} };
+
+
+COMPILE_ASSERT(IsFundaT<void>::No);
+COMPILE_ASSERT(IsFundaT<bool>::Yes);
+COMPILE_ASSERT(IsFundaT<int>::Yes);
+COMPILE_ASSERT(IsFundaT<long>::Yes);
+COMPILE_ASSERT(IsFundaT<double>::Yes);
+
+COMPILE_ASSERT(IsFundaT<int*>::No);
+COMPILE_ASSERT_POINTER_TO(IsFundaT, int*);
+COMPILE_ASSERT_POINTER_TO(IsPtrT, int**);
+COMPILE_ASSERT(IsFundaT<int&>::No);
+
+COMPILE_ASSERT(IsFundaT<somefun>::No);
+COMPILE_ASSERT(IsFundaT<typeof(myfun)>::No);
+COMPILE_ASSERT(IsFundaT<someenum>::No);
+
+COMPILE_ASSERT(IsFunctionT<typeof(myfun)>::Yes);
+
+COMPILE_ASSERT(IsFunctionT<somefun>::No); // somefun is pointer to functiontype
+COMPILE_ASSERT_POINTER_TO(IsFuncT, somefun);
+COMPILE_ASSERT(IsFunctionT<typeof(sfun)>::No); // sfun is pointer to functiontype
+COMPILE_ASSERT_POINTER_TO(IsFuncT, typeof(sfun));
+COMPILE_ASSERT(IsFunctionT<void>::No);
+COMPILE_ASSERT(IsFunctionT<int>::No);
+COMPILE_ASSERT(IsFunctionT<bool>::No);
+
+COMPILE_ASSERT(CompountT<const int&>::IsRefT);
+COMPILE_ASSERT(CompountT<int&>::IsRefT);
+
+COMPILE_ASSERT(IsEnumT<someenum>::Yes);
+COMPILE_ASSERT_POINTER_TO(IsEnumT, someenum*);
+
+COMPILE_ASSERT(IsEnumT<int>::No);
+COMPILE_ASSERT(IsEnumT<int*>::No);
+COMPILE_ASSERT(IsEnumT<int&>::No);
+COMPILE_ASSERT(IsEnumT<somefun>::No);
+COMPILE_ASSERT(IsEnumT<typeof(myfun)>::No);
+
+COMPILE_ASSERT(IsClassT<someclass>::Yes);
+COMPILE_ASSERT_POINTER_TO(IsClassT, someclass*);
+
+COMPILE_ASSERT(IsClassT<int>::No);
+COMPILE_ASSERT(IsClassT<int*>::No);
+COMPILE_ASSERT(IsClassT<int&>::No);
+COMPILE_ASSERT(IsClassT<someenum>::No);
+COMPILE_ASSERT(IsClassT<somefun>::No);
+COMPILE_ASSERT(IsClassT<typeof(myfun)>::No);
+
+COMPILE_ASSERT(TypeT<int>::IsFundaT);
+COMPILE_ASSERT(TypeT<int*>::IsPtrT);
+COMPILE_ASSERT(TypeT<int&>::IsRefT);
+COMPILE_ASSERT(TypeT<int[]>::IsArrayT);
+COMPILE_ASSERT(TypeT<int[7]>::IsArrayT);
+COMPILE_ASSERT(TypeT<typeof(myfun)>::IsFuncT);
+COMPILE_ASSERT(TypeT<typeof(&someclass::memfun)>::IsPtrMemT);
+COMPILE_ASSERT(TypeT<someenum>::IsEnumT);
+COMPILE_ASSERT(TypeT<someclass>::IsClassT);
+
+// -----------------------
+//      test callbacks
+
 #define TRACE
 
 static uint32_t traceChecksum;
