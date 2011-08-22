@@ -14,8 +14,9 @@
 #include <string>
 #include <stdint.h>
 
-
 using namespace std;
+
+COMPILE_ASSERT(sizeof(int*) == sizeof(AW_CL)); // important for casted db-callback type (GB_CB vs GB_CB_wanted..)
 
 // --------------------------------------------------------------------------------
 
@@ -35,7 +36,7 @@ static somefun sfun = myfun;
 
 enum someenum { A, B };
 
-class someclass { public : int memfun() {} };
+class someclass { public : int memfun() { return -1; } };
 
 
 COMPILE_ASSERT(IsFundaT<void>::No);
@@ -124,8 +125,10 @@ STATIC_ATTRIBUTED(__ATTR__FORMAT(1), void tracef(const char *format, ...)) {
     }
 }
 
-static AW_root   *fake_root = (AW_root*)1;
-static AW_window *fake_win  = (AW_window*)2;
+static AW_root    *fake_root   = (AW_root*)1;
+static AW_window  *fake_win    = (AW_window*)2;
+static GBDATA     *fake_gbd    = (GBDATA*)3;
+static GB_CB_TYPE  fake_gbtype = GB_CB_CHANGED;
 
 static void rcb0(AW_root *r) {
     TEST_ASSERT(r == fake_root);
@@ -224,11 +227,33 @@ static AW_window *wccb2(AW_root *r, const char *s1, char *s2) {
     return fake_win;
 }
 
+static void dbcb01(GBDATA *gbd) {
+    TEST_ASSERT(gbd == fake_gbd);
+    tracef("dbcb01()\n");
+}
+static void dbcb012(GBDATA *gbd, GB_CB_TYPE t) {
+    TEST_ASSERT(gbd == fake_gbd && t == fake_gbtype);
+    tracef("dbcb012()\n");
+}
+static void dbcb02(GB_CB_TYPE t) {
+    tracef("dbcb02(%i)\n", int(t));
+}
+static void dbcb1(GBDATA *gbd, int x, GB_CB_TYPE t) {
+    TEST_ASSERT(gbd == fake_gbd && t == fake_gbtype);
+    tracef("dbcb1(%i) [int]\n", x);
+}
+static void dbcb1(GBDATA *gbd, const char *n, GB_CB_TYPE t) {
+    TEST_ASSERT(gbd == fake_gbd && t == fake_gbtype);
+    tracef("dbcb1(%s) [const char]\n", n);
+}
+
 inline void call(const RootCallback& rcb) { rcb(fake_root); }
 inline void call(const WindowCallback& wcb) { wcb(fake_win); }
 inline void call(const WindowCreatorCallback& wccb) { TEST_ASSERT(wccb(fake_root) == fake_win); }
+inline void call(const DatabaseCallback& dbcb) { dbcb(fake_gbd, fake_gbtype); }
 
 #define TEST_CB(cb,expectedChecksum) do {                               \
+        traceChecksum = -666;                                           \
         call(cb);                                                       \
         TEST_ASSERT_EQUAL(traceChecksum, (uint32_t)expectedChecksum);   \
     } while(0)
@@ -269,6 +294,11 @@ void TEST_cbs() {
 
         TEST_CB(makeWindowCreatorCallback(wccb0),     0x2878);
         TEST_CB(makeWindowCreatorCallback(wccb1, 77), 0xa19c);
+
+        TEST_CB(makeDatabaseCallback(dbcb012), 0x8778);
+        TEST_CB(makeDatabaseCallback(dbcb02), 0x87f0);                // call dbcb02 with fixed argument (i.e. with argument normally passed by ARBDB)
+        TEST_CB(makeDatabaseCallback(dbcb1, 77), 0x21a260);
+        TEST_CB(makeDatabaseCallback(dbcb1, freeCharp, strdup("test")), 0x428ac190);
 
         // callbacks with deallocator
 
