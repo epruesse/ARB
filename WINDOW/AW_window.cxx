@@ -52,18 +52,6 @@
 
 AW_root *AW_root::SINGLETON = NULL;
 
-AW_cb_struct::AW_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i, const char *help_texti, class AW_cb_struct *nexti) {
-    aw            = awi;
-    f             = g;
-    cd1           = cd1i;
-    cd2           = cd2i;
-    help_text     = help_texti;
-    pop_up_window = NULL;
-    this->next = nexti;
-
-    id = NULL;
-}
-
 AW_timer_cb_struct::AW_timer_cb_struct(AW_root *ari, AW_RCB g, AW_CL cd1i, AW_CL cd2i) {
     ar = ari;
     f = g;
@@ -314,13 +302,13 @@ void AW_window::set_horizontal_scrollbar_left_indent(int indent) {
 static void value_changed_scroll_bar_horizontal(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer call_data) {
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
-    (cbs->aw)->slider_pos_horizontal = sbcbs->value; // setzt Scrollwerte im AW_window
+    cbs->caller_window()->slider_pos_horizontal = sbcbs->value;
     cbs->run_callback();
 }
 static void drag_scroll_bar_horizontal(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer call_data) {
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
-    (cbs->aw)->slider_pos_horizontal = sbcbs->value; // setzt Scrollwerte im AW_window
+    cbs->caller_window()->slider_pos_horizontal = sbcbs->value;
     cbs->run_callback();
 }
 void AW_window::set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
@@ -335,13 +323,13 @@ void AW_window::set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_C
 static void value_changed_scroll_bar_vertical(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer call_data) {
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
-    cbs->aw->slider_pos_vertical = sbcbs->value; // setzt Scrollwerte im AW_window
+    cbs->caller_window()->slider_pos_vertical = sbcbs->value;
     cbs->run_callback();
 }
 static void drag_scroll_bar_vertical(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer call_data) {
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
-    cbs->aw->slider_pos_vertical = sbcbs->value; // setzt Scrollwerte im AW_window
+    cbs->caller_window()->slider_pos_vertical = sbcbs->value;
     cbs->run_callback();
 }
 
@@ -618,32 +606,6 @@ static void aw_calculate_WM_offsets(AW_window *aww) {
 #endif // DEBUG
 }
 
-bool AW_cb_struct::is_equal(const AW_cb_struct& other) const {
-    bool equal = false;
-    if (f == other.f) {                             // same callback function
-        equal = (cd1 == other.cd1) && (cd2 == other.cd2);
-        if (equal) {
-            if (f == AW_POPUP) {
-                equal = aw->get_root() == other.aw->get_root();
-            }
-            else {
-                equal = aw == other.aw;
-                if (!equal) {
-                    equal = aw->get_root() == other.aw->get_root();
-#if defined(DEBUG) && 0
-                    if (equal) {
-                        fprintf(stderr,
-                                "callback '%s' instantiated twice with different windows (w1='%s' w2='%s') -- assuming the callbacks are equal\n",
-                                id, aw->get_window_id(), other.aw->get_window_id());
-                    }
-#endif // DEBUG
-                }
-            }
-        }
-    }
-    return equal;
-}
-
 #if defined(DEBUG)
 // #define TRACE_CALLBACKS
 #endif // DEBUG
@@ -654,9 +616,9 @@ AW_cb_struct_guard AW_cb_struct::guard_after  = NULL;
 
 void AW_cb_struct::run_callback() {
     if (next) next->run_callback();                 // callback the whole list
-    if (!f) return;                                 // run no callback
+    if (!cb) return;                                // run no callback
 
-    AW_root *root = aw->get_root();
+    AW_root *root = caller->get_root();
     if (root->disable_callbacks) {
         // some functions (namely aw_message, aw_input, aw_string_selection and aw_file_selection)
         // have to disable most callbacks, because they are often called from inside these callbacks
@@ -665,27 +627,27 @@ void AW_cb_struct::run_callback() {
 
         // the following callbacks are allowed even if disable_callbacks is true
 
-        bool isModalCallback = (f == AW_CB(message_cb) ||
-                                f == AW_CB(input_history_cb) ||
-                                f == AW_CB(input_cb) ||
-                                f == AW_CB(file_selection_cb));
+        bool isModalCallback = (cb == AW_CB(message_cb) ||
+                                cb == AW_CB(input_history_cb) ||
+                                cb == AW_CB(input_cb) ||
+                                cb == AW_CB(file_selection_cb));
 
-        bool isPopdown = (f == AW_CB(AW_POPDOWN));
-        bool isHelp    = (f == AW_CB(AW_POPUP_HELP));
+        bool isPopdown = (cb == AW_CB(AW_POPDOWN));
+        bool isHelp    = (cb == AW_CB(AW_POPUP_HELP));
         bool allow     = isModalCallback || isHelp || isPopdown;
 
         bool isInfoResizeExpose = false;
 
         if (!allow) {
-            isInfoResizeExpose = aw->is_expose_callback(AW_INFO_AREA, f) || aw->is_resize_callback(AW_INFO_AREA, f);
+            isInfoResizeExpose = caller->is_expose_callback(AW_INFO_AREA, cb) || caller->is_resize_callback(AW_INFO_AREA, cb);
             allow              = isInfoResizeExpose;
         }
 
         if (!allow) {
             // don't warn about the following callbacks, just silently ignore them
             bool silentlyIgnore =
-                aw->is_expose_callback(AW_MIDDLE_AREA, f) ||
-                aw->is_resize_callback(AW_MIDDLE_AREA, f);
+                caller->is_expose_callback(AW_MIDDLE_AREA, cb) ||
+                caller->is_resize_callback(AW_MIDDLE_AREA, cb);
 
             if (!silentlyIgnore) { // otherwise remind the user to answer the prompt:
                 aw_message("That has been ignored. Answer the prompt first!");
@@ -713,14 +675,14 @@ void AW_cb_struct::run_callback() {
 
     if (guard_before) guard_before();
 
-    if (f == AW_POPUP) {
+    if (cb == AW_POPUP) {
         if (pop_up_window) { // already exists
             pop_up_window->activate();
         }
         else {
             AW_PPP g = (AW_PPP)cd1;
             if (g) {
-                pop_up_window = g(aw->get_root(), cd2, 0);
+                pop_up_window = g(caller->get_root(), cd2, 0);
                 pop_up_window->show();
             }
             else {
@@ -731,14 +693,14 @@ void AW_cb_struct::run_callback() {
             p_aww(pop_up_window)->popup_cb->run_callback();
     }
     else {
-        f(aw, cd1, cd2);
+        cb(caller, cd1, cd2);
     }
 
     if (guard_after) guard_after();
 }
 
 bool AW_cb_struct::contains(void (*g)(AW_window*, AW_CL, AW_CL)) {
-    return (f == g) || (next && next->contains(g));
+    return (cb == g) || (next && next->contains(g));
 }
 
 AW_root_Motif::AW_root_Motif() {
@@ -772,42 +734,46 @@ void AW_root_Motif::normal_cursor() {
     set_cursor(old_cursor_display, old_cursor_window, 0);
 }
 
-void AW_server_callback(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call_data*/) {
-    AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
+inline void popup_help_if_possible(AW_window *aww, const char *help) {
+    if (help) {
+        bool startable = GBS_string_matches(help, "*.ps", GB_IGNORE_CASE) ||
+            GBS_string_matches(help, "*.hlp", GB_IGNORE_CASE) ||
+            GBS_string_matches(help, "*.help", GB_IGNORE_CASE);
 
-    AW_root *root = cbs->aw->get_root();
+        if (startable) AW_POPUP_HELP(aww, (AW_CL)help);
+        else aw_message(GBS_global_string("Can't start help '%s'", help));
+    }
+    else aw_message("Sorry no help available");
+}
+
+void AW_server_callback(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call_data*/) {
+    AW_cb_struct *cbs  = (AW_cb_struct *) aw_cb_struct;
+    AW_window    *awc  = cbs->caller_window();
+    AW_root      *root = awc->get_root();
+
     if (p_global->help_active) {
         p_global->help_active = 0;
         p_global->normal_cursor();
-
-        if (cbs->help_text && ((GBS_string_matches(cbs->help_text, "*.ps", GB_IGNORE_CASE)) ||
-                               (GBS_string_matches(cbs->help_text, "*.hlp", GB_IGNORE_CASE)) ||
-                               (GBS_string_matches(cbs->help_text, "*.help", GB_IGNORE_CASE))))
-        {
-            AW_POPUP_HELP(cbs->aw, (AW_CL)cbs->help_text);
-        }
-        else {
-            aw_message("Sorry no help available");
-        }
+        popup_help_if_possible(awc, cbs->get_help());
         return;
     }
 
     if (root->prvt->recording_macro_file) {
-        if (cbs->id && strcmp(cbs->id, root->prvt->stop_action_name)) {
+        if (!cbs->has_id(root->prvt->stop_action_name)) {
             fprintf(root->prvt->recording_macro_file,
                     "BIO::remote_action($gb_main,\"%s\",",
                     root->prvt->application_name_for_macros);
-            GBS_fwrite_string(cbs->id, root->prvt->recording_macro_file);
+            GBS_fwrite_string(cbs->get_id(), root->prvt->recording_macro_file);
             fprintf(root->prvt->recording_macro_file, ");\n");
         }
     }
 
-    if (cbs->f == AW_POPUP) {
+    if (cbs->would_call(AW_POPUP)) {
         cbs->run_callback();
     }
     else {
         p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
-                XtWindow(p_aww(cbs->aw)->shell),
+                XtWindow(p_aww(awc)->shell),
                 p_global->clock_cursor);
         cbs->run_callback();
 
@@ -819,12 +785,12 @@ void AW_server_callback(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call
 
         if (p_global->help_active) {
             p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
-                    XtWindow(p_aww(cbs->aw)->shell),
+                    XtWindow(p_aww(awc)->shell),
                     p_global->question_cursor);
         }
         else {
             p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
-                    XtWindow(p_aww(cbs->aw)->shell),
+                    XtWindow(p_aww(awc)->shell),
                     0);
         }
     }
@@ -1040,7 +1006,7 @@ void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, A
 static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallbackStruct *call_data) {
     XEvent             *ev                        = call_data->event;
     AW_cb_struct       *cbs                       = (AW_cb_struct *) aw_cb_struct;
-    AW_window          *aww                       = cbs->aw;
+    AW_window          *aww                       = cbs->caller_window();
     bool                run_callback              = false;
     bool                run_double_click_callback = false;
     AW_area_management *area                      = 0;
@@ -1126,16 +1092,15 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
     }
 
     if (run_double_click_callback) {
-        if (cbs->help_text == (char*)1) {
+        if (cbs->get_help() == (const char*)1) {
             cbs->run_callback();
         }
-        else {
-            if (area)
-                area->get_double_click_cb()->run_callback();
+        else if (area) {
+            area->get_double_click_cb()->run_callback();
         }
     }
 
-    if (run_callback && (cbs->help_text == (char*)0)) {
+    if (run_callback && (cbs->get_help() == (const char*)0)) {
         cbs->run_callback();
     }
 }
@@ -1174,11 +1139,12 @@ void AW_window::get_event(AW_event *eventi) const {
 
 static void AW_motionCB(Widget /*w*/, XtPointer aw_cb_struct, XEvent *ev, Boolean*) {
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
+    AW_window    *awc = cbs->caller_window();
 
-    cbs->aw->event.type    = AW_Mouse_Drag;
-    cbs->aw->event.x       = ev->xmotion.x;
-    cbs->aw->event.y       = ev->xmotion.y;
-    cbs->aw->event.keycode = AW_KEY_NONE;
+    awc->event.type    = AW_Mouse_Drag;
+    awc->event.x       = ev->xmotion.x;
+    awc->event.y       = ev->xmotion.y;
+    awc->event.keycode = AW_KEY_NONE;
 
     cbs->run_callback();
 }
@@ -2938,7 +2904,7 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
                   (XtCallbackProc) AW_server_callback,
                   (XtPointer) cbs);
 
-    cbs->id = strdup(topic_id);
+    cbs->set_id(strdup(topic_id));
     root->define_remote_command(cbs);
     root->make_sensitive(button, Mask);
 }
@@ -3357,8 +3323,8 @@ public:
 
 void AW_window::_set_activate_callback(void *widget) {
     if (_callback && (long)_callback != 1) {
-        if (!_callback->help_text && _at->helptext_for_next_button) {
-            _callback->help_text = _at->helptext_for_next_button;
+        if (!_callback->get_help() && _at->helptext_for_next_button) {
+            _callback->set_help(_at->helptext_for_next_button);
             _at->helptext_for_next_button = 0;
         }
 
@@ -3438,15 +3404,15 @@ GB_ERROR AW_root::execute_macro(const char *file) {
 }
 
 void AW_root::define_remote_command(AW_cb_struct *cbs) {
-    if (cbs->f == (AW_CB)AW_POPDOWN) {
-        aw_assert(!cbs->get_cd1() && !cbs->get_cd2()); // popdown takes no parameters (please pass ", 0, 0"!)
+    if (cbs->would_call((AW_CB)AW_POPDOWN)) {
+        aw_assert(!cbs->has_parameters()); // popdown takes no parameters (please pass ", 0, 0"!)
     }
 
-    AW_cb_struct *old_cbs = (AW_cb_struct*)GBS_write_hash(prvt->action_hash, cbs->id, (long)cbs);
+    AW_cb_struct *old_cbs = (AW_cb_struct*)GBS_write_hash(prvt->action_hash, cbs->get_id(), (long)cbs);
     if (old_cbs) {
         if (!old_cbs->is_equal(*cbs)) {                  // existing remote command replaced by different callback
 #if defined(DEBUG)
-            fputs(GBS_global_string("Warning: reused callback id '%s' for different callback\n", old_cbs->id), stderr);
+            fputs(GBS_global_string("Warning: reused callback id '%s' for different callback\n", old_cbs->get_id()), stderr);
 #if defined(DEVEL_RALF) && 0
             aw_assert(0);
 #endif // DEVEL_RALF

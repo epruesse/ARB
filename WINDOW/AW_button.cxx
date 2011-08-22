@@ -529,11 +529,11 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     if (_callback && ((long)_callback != 1))
     {
         if (macro_name) {
-            _callback->id = GBS_global_string_copy("%s/%s", this->window_defaults_name, macro_name);
+            _callback->set_id(GBS_global_string_copy("%s/%s", this->window_defaults_name, macro_name));
             get_root()->define_remote_command(_callback);
         }
         else {
-            _callback->id = 0;
+            _callback->set_id(0);
         }
     }
 
@@ -1008,7 +1008,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
         XtAddCallback(textField, XmNactivateCallback,
                       (XtCallbackProc) AW_server_callback,
                       (XtPointer) _d_callback);
-        _d_callback->id = GBS_global_string_copy("INPUT:%s", var_name);
+        _d_callback->set_id(GBS_global_string_copy("INPUT:%s", var_name));
         get_root()->define_remote_command(_d_callback);
     }
 
