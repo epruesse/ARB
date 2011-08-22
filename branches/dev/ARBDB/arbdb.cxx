@@ -2931,36 +2931,72 @@ void TEST_GB_shell() {
     TEST_ASSERT_SEGFAULT(test_opendb); // should be impossible to open db w/o shell
 }
 
-struct callback_trace {
+// -----------------------
+//      test callbacks
+
+class callback_trace {
     GBDATA     *called_gbd;
     GB_CB_TYPE  called_type;
+    int         callcount;
 
-    void set_called_by(GBDATA *gbd, GB_CB_TYPE type) { called_gbd = gbd; called_type = type; }
-    void reset() { set_called_by(0, GB_CB_NONE); }
 
+public:
     callback_trace() { reset(); }
+
+    void set_called_by(GBDATA *gbd, GB_CB_TYPE type) { called_gbd = gbd; called_type = type; callcount++; }
+    void reset() { called_gbd = NULL; called_type = GB_CB_NONE; callcount = 0; }
 
     bool was_called_by(GBDATA *gbd) const {
         bool ok = called_gbd == gbd;
         if (!ok) printf("mismatch in GBDATA (wanted=%p, got=%p)\n", gbd, called_gbd);
-        return ok;
+        return ok && callcount <= 1;
     }
     bool was_called_by(GB_CB_TYPE exp_type) const {
         bool ok = (called_type&exp_type) != 0 || exp_type == 0;
         if (!ok) printf("mismatch in GB_CB_TYPE (wanted=%i, got=%i)\n", exp_type, called_type);
-        return ok;
+        return ok && callcount <= 1;
     }
     bool was_called_by(GBDATA *gbd, GB_CB_TYPE exp_type) const {
         return was_called_by(gbd) && was_called_by(exp_type);
     }
-    bool was_not_called() const { return was_called_by(0, GB_CB_NONE); }
-    bool was_called() const { return !was_not_called(); }
+    bool was_not_called() const { return was_called_by(0, GB_CB_NONE) && callcount == 0; }
+    bool was_called() const { return !was_not_called() && callcount == 1; }
 };
 
 static void some_cb(GBDATA *gbd, int *cd, GB_CB_TYPE cbtype) {
     callback_trace *trace = (callback_trace*)cd;
     trace->set_called_by(gbd, cbtype);
 }
+
+#define TRACESTRUCT(ELEM,FLAVOR) trace_##ELEM##_##FLAVOR
+    
+#define ADD_CHANGED_CALLBACK(elem) TEST_ASSERT_NO_ERROR(GB_add_callback(elem, GB_CB_CHANGED,     some_cb, (int*)&TRACESTRUCT(elem,changed)))
+#define ADD_DELETE_CALLBACK(elem)  TEST_ASSERT_NO_ERROR(GB_add_callback(elem, GB_CB_DELETE,      some_cb, (int*)&TRACESTRUCT(elem,deleted)))
+#define ADD_NCHILD_CALLBACK(elem)  TEST_ASSERT_NO_ERROR(GB_add_callback(elem, GB_CB_SON_CREATED, some_cb, (int*)&TRACESTRUCT(elem,newchild)))
+
+#define ENSURE_CHANGED_CALLBACK(elem) TEST_ASSERT_NO_ERROR(GB_ensure_callback(elem, GB_CB_CHANGED,     some_cb, (int*)&TRACESTRUCT(elem,changed)))
+#define ENSURE_DELETE_CALLBACK(elem)  TEST_ASSERT_NO_ERROR(GB_ensure_callback(elem, GB_CB_DELETE,      some_cb, (int*)&TRACESTRUCT(elem,deleted)))
+#define ENSURE_NCHILD_CALLBACK(elem)  TEST_ASSERT_NO_ERROR(GB_ensure_callback(elem, GB_CB_SON_CREATED, some_cb, (int*)&TRACESTRUCT(elem,newchild)))
+
+#define REMOVE_CHANGED_CALLBACK(elem) GB_remove_callback(elem, GB_CB_CHANGED,     some_cb, (int*)&TRACESTRUCT(elem,changed))
+#define REMOVE_DELETE_CALLBACK(elem)  GB_remove_callback(elem, GB_CB_DELETE,      some_cb, (int*)&TRACESTRUCT(elem,deleted))
+#define REMOVE_NCHILD_CALLBACK(elem)  GB_remove_callback(elem, GB_CB_SON_CREATED, some_cb, (int*)&TRACESTRUCT(elem,newchild))
+
+#define INIT_CHANGED_CALLBACK(elem) callback_trace TRACESTRUCT(elem,changed); ADD_CHANGED_CALLBACK(elem)
+#define INIT_DELETE_CALLBACK(elem)  callback_trace TRACESTRUCT(elem,deleted); ADD_DELETE_CALLBACK(elem)
+#define INIT_NCHILD_CALLBACK(elem)  callback_trace TRACESTRUCT(elem,newchild); ADD_NCHILD_CALLBACK(elem)
+
+#define ADD_ENTRY_CALLBACKS(entry)    ADD_CHANGED_CALLBACK(entry); ADD_DELETE_CALLBACK(entry)
+#define ADD_CONTAINER_CALLBACKS(cont) ADD_CHANGED_CALLBACK(cont);  ADD_NCHILD_CALLBACK(cont); ADD_DELETE_CALLBACK(cont)
+
+#define ENSURE_ENTRY_CALLBACKS(entry)    ENSURE_CHANGED_CALLBACK(entry); ENSURE_DELETE_CALLBACK(entry)
+#define ENSURE_CONTAINER_CALLBACKS(cont) ENSURE_CHANGED_CALLBACK(cont);  ENSURE_NCHILD_CALLBACK(cont); ENSURE_DELETE_CALLBACK(cont)
+
+#define REMOVE_ENTRY_CALLBACKS(entry)    REMOVE_CHANGED_CALLBACK(entry); REMOVE_DELETE_CALLBACK(entry)
+#define REMOVE_CONTAINER_CALLBACKS(cont) REMOVE_CHANGED_CALLBACK(cont);  REMOVE_NCHILD_CALLBACK(cont); REMOVE_DELETE_CALLBACK(cont)
+
+#define INIT_ENTRY_CALLBACKS(entry)    INIT_CHANGED_CALLBACK(entry); INIT_DELETE_CALLBACK(entry)
+#define INIT_CONTAINER_CALLBACKS(cont) INIT_CHANGED_CALLBACK(cont);  INIT_NCHILD_CALLBACK(cont); INIT_DELETE_CALLBACK(cont)
 
 #define TRIGGER(gbd)                    \
     GB_begin_transaction(gb_main);      \
@@ -3015,7 +3051,7 @@ static void some_cb(GBDATA *gbd, int *cd, GB_CB_TYPE cbtype) {
 #define TEST_ASSERT_TRIGGER__MISSING(TRACE)     \
     TEST_ASSERT__BROKEN(TRACE.was_called());    \
     TRACE.reset()
-    
+
 void TEST_db_callbacks() {
     GB_shell  shell;
     GBDATA   *gb_main = GB_open("new.arb", "c");
@@ -3034,18 +3070,11 @@ void TEST_db_callbacks() {
 
     // install change callbacks
     GB_begin_transaction(gb_main);
-    callback_trace trace_top_changed;       GB_add_callback(top,      GB_CB_CHANGED,     some_cb, (int*)&trace_top_changed);
-    callback_trace trace_son_changed;       GB_add_callback(son,      GB_CB_CHANGED,     some_cb, (int*)&trace_son_changed);
-    callback_trace trace_grandson_changed;  GB_add_callback(grandson, GB_CB_CHANGED,     some_cb, (int*)&trace_grandson_changed);
-    callback_trace trace_cont_top_changed;  GB_add_callback(cont_top, GB_CB_CHANGED,     some_cb, (int*)&trace_cont_top_changed);
-    callback_trace trace_cont_son_changed;  GB_add_callback(cont_son, GB_CB_CHANGED,     some_cb, (int*)&trace_cont_son_changed);
-    callback_trace trace_cont_top_newchild; GB_add_callback(cont_top, GB_CB_SON_CREATED, some_cb, (int*)&trace_cont_top_newchild);
-    callback_trace trace_cont_son_newchild; GB_add_callback(cont_son, GB_CB_SON_CREATED, some_cb, (int*)&trace_cont_son_newchild);
-    callback_trace trace_top_deleted;       GB_add_callback(top,      GB_CB_DELETE,      some_cb, (int*)&trace_top_deleted);
-    callback_trace trace_son_deleted;       GB_add_callback(son,      GB_CB_DELETE,      some_cb, (int*)&trace_son_deleted);
-    callback_trace trace_grandson_deleted;  GB_add_callback(grandson, GB_CB_DELETE,      some_cb, (int*)&trace_grandson_deleted);
-    callback_trace trace_cont_top_deleted;  GB_add_callback(cont_top, GB_CB_DELETE,      some_cb, (int*)&trace_cont_top_deleted);
-    callback_trace trace_cont_son_deleted;  GB_add_callback(cont_son, GB_CB_DELETE,      some_cb, (int*)&trace_cont_son_deleted);
+    INIT_CONTAINER_CALLBACKS(cont_top);
+    INIT_CONTAINER_CALLBACKS(cont_son);
+    INIT_ENTRY_CALLBACKS(top);
+    INIT_ENTRY_CALLBACKS(son);
+    INIT_ENTRY_CALLBACKS(grandson);
     GB_commit_transaction(gb_main);
 
     TEST_ASSERT_NO_CALLBACK_TRIGGERED();
@@ -3159,6 +3188,50 @@ void TEST_db_callbacks() {
     TEST_ASSERT_NO_ERROR(GB_undo(gb_main, GB_UNDO_UNDO)); // undo delete of top
     TEST_ASSERT_NO_CALLBACK_TRIGGERED();
 
+    // reinstall callbacks that were removed by deletes
+
+    GB_begin_transaction(gb_main);
+    ENSURE_CONTAINER_CALLBACKS(cont_top);
+    ENSURE_CONTAINER_CALLBACKS(cont_son);
+    ENSURE_ENTRY_CALLBACKS(top);
+    ENSURE_ENTRY_CALLBACKS(son);
+    ENSURE_ENTRY_CALLBACKS(grandson);
+    GB_commit_transaction(gb_main);
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+
+    // trigger callbacks which will be removed
+    
+    TRIGGER(son);
+    TEST_ASSERT_CHANGE_TRIGGERED(trace_son_changed, son);
+    TEST_ASSERT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
+    TEST_ASSERT_TRIGGER__UNWANTED(trace_cont_top_newchild); // @@@ modifying son should not trigger newchild callback
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+
+    GB_begin_transaction(gb_main);
+    GBDATA *son3 = GB_create(cont_top, "son3", GB_INT); TEST_ASSERT(son3);
+    GB_commit_transaction(gb_main);
+    TEST_ASSERT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
+    TEST_ASSERT_NCHILD_TRIGGERED(trace_cont_top_newchild, cont_top);
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+    
+    // test remove callback
+    
+    GB_begin_transaction(gb_main);
+    REMOVE_ENTRY_CALLBACKS(son);
+    REMOVE_CONTAINER_CALLBACKS(cont_top);
+    GB_commit_transaction(gb_main);
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+
+    // "trigger" removed callbacks
+    
+    TRIGGER(son);
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+
+    GB_begin_transaction(gb_main);
+    GBDATA *son4 = GB_create(cont_top, "son4", GB_INT); TEST_ASSERT(son4);
+    GB_commit_transaction(gb_main);
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+    
     GB_close(gb_main);
 }
 
