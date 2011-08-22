@@ -413,18 +413,15 @@ void AW_color_group_name_changed_cb(AW_root *) {
               "save properties and restart the program.",
               AW_ADVICE_TOGGLE, "Color group name has been changed", 0);
 }
-void AW_color_group_usage_changed_cb(AW_root *awr, AW_CL /* cl_ntw */) {
-    use_color_groups       = awr->awar(AWAR_COLOR_GROUPS_USE)->read_int();
-    //     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
-    //     ntw->refresh();
-    // @@@ FIXME: a working refresh is missing
+void AW_color_group_usage_changed_cb(AW_root *awr) {
+    use_color_groups = awr->awar(AWAR_COLOR_GROUPS_USE)->read_int();
 }
 
 void AW_init_color_groups(AW_root *awr, AW_default def) {
     if (!color_groups_initialized) {
         AW_awar *useAwar = awr->awar_int(AWAR_COLOR_GROUPS_USE, 1, def);
         use_color_groups = useAwar->read_int();
-        useAwar->add_callback(AW_color_group_usage_changed_cb, (AW_CL)0);
+        useAwar->add_callback(makeRootCallback(AW_color_group_usage_changed_cb));
 
         char name_buf[AW_COLOR_GROUP_NAME_LEN+1];
         for (int i = 1; i <= AW_COLOR_GROUPS; ++i) {

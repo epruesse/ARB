@@ -1298,7 +1298,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
         if (error) aw_popup_exit(error);
     }
 
-    awr->awar(AWAR_COLOR_GROUPS_USE)->add_callback((AW_RCB)NT_recompute_cb, (AW_CL)ntw, 0);
+    awr->awar(AWAR_COLOR_GROUPS_USE)->add_callback(makeRootCallback(TREE_recompute_cb, ntw));
 
     if (cmds->add_marked)           NT_quick_add(awm, ntw, NT_ADD_MARKED);
     if (cmds->add_selected)         NT_quick_add(awm, ntw, NT_ADD_SELECTED);
