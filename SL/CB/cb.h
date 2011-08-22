@@ -58,6 +58,16 @@ DECLARE_CBTYPE_FVV_AND_BUILDERS(WindowCreatorCallback, AW_window*, AW_root*);   
 
 DECLARE_CBTYPE_FVF_AND_BUILDERS(DatabaseCallback, void, GBDATA*, GB_CB_TYPE);    // generates makeDatabaseCallback
 
+#if defined(DEVEL_RALF)
+#define DEPRECATE_UNSAFE_CALLBACKS
+#endif
+
+#if defined(DEPRECATE_UNSAFE_CALLBACKS)
+#define __ATTR__DEPRECATED_CALLBACK __ATTR__DEPRECATED("use typesafe callback")
+#else
+#define __ATTR__DEPRECATED_CALLBACK
+#endif
+
 #else
 #error cb.h included twice
 #endif // CB_H
