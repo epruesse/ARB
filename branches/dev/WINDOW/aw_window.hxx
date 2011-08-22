@@ -126,38 +126,71 @@ void AW_openURL(AW_root *aw_root, const char *url);
 
 typedef void (*AW_cb_struct_guard)();
 
-class AW_cb_struct {
-    AW_CL         cd1;
-    AW_CL         cd2;
+class AW_cb_struct : virtual Noncopyable {
+    AW_window *caller;
+
+    AW_CB cb;
+    AW_CL cd1;
+    AW_CL cd2;
+
+    const char *help;
+    AW_window  *pop_up_window;
+    char       *id;
+
     AW_cb_struct *next;
 
     static AW_cb_struct_guard guard_before;
     static AW_cb_struct_guard guard_after;
 
-public:
-    // private (read-only):
-    AW_window  *pop_up_window;
-    AW_CB       f;
-    AW_window  *aw;
-    const char *help_text;
-    char       *id;
-
-    // real public section:
-    AW_cb_struct(AW_window    *awi,
-                 AW_CB         g,
-                 AW_CL         cd1i       = 0,
-                 AW_CL         cd2i       = 0,
-                 const char   *help_texti = 0,
-                 AW_cb_struct *next       = 0);
-
-    void run_callback();                            // runs the whole list
-    bool contains(AW_CB g);                         // test if contained in list
-    bool is_equal(const AW_cb_struct& other) const;
-
-#if defined(ASSERTION_USED)
     AW_CL get_cd1() const { return cd1; }
     AW_CL get_cd2() const { return cd2; }
-#endif // ASSERTION_USED
+
+public:
+    AW_cb_struct(AW_window    *caller_,
+                 AW_CB         cb_,
+                 AW_CL         cd1_  = 0,
+                 AW_CL         cd2_  = 0,
+                 const char   *help_ = 0,
+                 AW_cb_struct *next_ = 0)
+        : caller(caller_),
+          cb(cb_),
+          cd1(cd1_),
+          cd2(cd2_),
+          help(help_),
+          pop_up_window(NULL),
+          id(NULL),
+          next(next_)
+        {}
+
+    ~AW_cb_struct() {
+        free(id);
+    }
+
+    void run_callback();    // runs the whole list
+    bool contains(AW_CB g); // test whether 'g' is contained in callback-list
+
+    const char *get_id() const { return id; }
+    void set_id(char *newId) { freeset(id, newId); }
+    bool has_id(const char *test) const { return strcmp(test, id) == 0; }
+
+    AW_window *popup_window() const { return pop_up_window; }
+    AW_window *caller_window() const { return caller; }
+    bool would_call(AW_CB cb_) const { return cb == cb_; }
+
+    const char *get_help() const { return help; }
+    void set_help(const char *help_) { help = help_; }
+
+    int callback_cmp(const AW_cb_struct& other) const {
+        int cmp = (AW_CL)(other.cb) - (AW_CL)cb; // compare address of function
+        if (!cmp) {
+            cmp = other.get_cd1() - get_cd1();
+            if (!cmp) cmp = other.get_cd2() - get_cd2();
+        }
+        return cmp;
+
+    }
+    bool is_equal(const AW_cb_struct& other) const { return callback_cmp(other) == 0; }
+    bool has_parameters() const { return get_cd1() || get_cd2(); }
 
     static void set_AW_cb_guards(AW_cb_struct_guard before, AW_cb_struct_guard after) {
         guard_before = before;

@@ -149,14 +149,8 @@ int sortedByCallbackLocation(const char *k0, long v0, const char *k1, long v1) {
     AW_cb_struct *cbs0 = reinterpret_cast<AW_cb_struct*>(v0);
     AW_cb_struct *cbs1 = reinterpret_cast<AW_cb_struct*>(v1);
 
-    int cmp = (AW_CL)(cbs1->f) - (AW_CL)cbs0->f; // compare address of function
-    if (!cmp) {
-        cmp = cbs1->get_cd1() - cbs0->get_cd1();
-        if (!cmp) {
-            cmp = cbs1->get_cd2() - cbs0->get_cd2();
-            if (!cmp) cmp = strcmp(k0, k1);
-        }
-    }
+    int cmp = cbs0->callback_cmp(*cbs1);
+    if (!cmp) cmp = strcmp(k0, k1);
     return cmp;
 }
 
@@ -239,7 +233,7 @@ size_t AW_root::callallcallbacks(int mode) {
                         AW_cb_struct *cbs = (AW_cb_struct *)GBS_read_hash(prvt->action_hash, remote_command);
                         bool skipcb = remote_command[0] == '!' || GBS_read_hash(dontCallHash, remote_command);
                         if (!skipcb) {
-                            if (cbs->f == (AW_CB)AW_help_entry_pressed) skipcb = true;
+                            if (cbs->would_call((AW_CB)AW_help_entry_pressed)) skipcb = true;
                         }
                         if (skipcb) {
                             fprintf(stderr, "Skipped callback %zu/%zu (%s)\n", curr, count, remote_command);
@@ -257,8 +251,8 @@ size_t AW_root::callallcallbacks(int mode) {
                                 fprintf(stderr, "Unhandled error in '%s': %s\n", remote_command, GB_await_error());
                             }
 
-                            if (cbs->f == AW_POPUP) {
-                                AW_window *awp = cbs->pop_up_window;
+                            if (cbs->would_call(AW_POPUP)) {
+                                AW_window *awp = cbs->popup_window();
                                 if (awp) {
                                     awp->force_expose();
                                     process_pending_events();
