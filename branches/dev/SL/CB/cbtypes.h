@@ -126,8 +126,8 @@ public:
 
     bool equals(const StrictlyTypedCallback& other) const { return cb == other.cb; }
 
-    void *get_cb() const { return (void*)cb; }
-    static StrictlyTypedCallback make_cb(void *cb_) { return StrictlyTypedCallback((FuncType)cb_); }
+    AW_CL get_cb() const { return (AW_CL)cb; }
+    static StrictlyTypedCallback make_cb(AW_CL cb_) { return StrictlyTypedCallback((FuncType)cb_); }
 
     bool is_set() const { return cb != 0; }
 };
@@ -187,8 +187,8 @@ private:
     enum funtype { ST_P0F12, ST_P0F2, ST_P1 }; // Signature type
     typedef CallbackData<AW_CL,funtype> FVF_CallbackData;
 
-    void                       *cb; // has one of the above Signatures
-    SmartPtr<FVF_CallbackData>  cd; // cd->p2 cannot be used by clients and is used to select Signature of 'cb'
+    AW_CL                      cb;  // has one of the above Signatures
+    SmartPtr<FVF_CallbackData> cd;  // cd->p2 cannot be used by clients and is used to select Signature of 'cb'
 
     funtype get_funtype() const { return cd->p2; }
 
