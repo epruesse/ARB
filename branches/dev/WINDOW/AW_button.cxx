@@ -124,18 +124,18 @@ class VarUpdateInfo : virtual Noncopyable { // used to refresh single items on c
     AW_widget_type  widget_type;
     AW_awar        *awar;
     AW_scalar       value;
-    AW_cb_struct   *cbs;
+    AW_cb          *cbs;
     void           *id;         // selection id etc ...
-    
+
 public:
-    VarUpdateInfo(Widget w, AW_widget_type wtype, AW_awar *a, AW_cb_struct *cbs_)
+    VarUpdateInfo(Widget w, AW_widget_type wtype, AW_awar *a, AW_cb *cbs_)
         : widget(w), widget_type(wtype), awar(a),
           value(a),
           cbs(cbs_), id(NULL)
     {
     }
     template<typename T>
-    VarUpdateInfo(Widget w, AW_widget_type wtype, AW_awar *a, T t, AW_cb_struct *cbs_)
+    VarUpdateInfo(Widget w, AW_widget_type wtype, AW_awar *a, T t, AW_cb *cbs_)
         : widget(w), widget_type(wtype), awar(a),
           value(t),
           cbs(cbs_), id(NULL)
@@ -232,7 +232,7 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
 
             fprintf(root->prvt->recording_macro_file, ");\n");
         }
-        if (cbs) cbs->run_callback();
+        if (cbs) cbs->run_callbacks();
         root->value_changed = false;
     }
 }
@@ -844,8 +844,8 @@ void AW_window::update_toggle(Widget widget, const char *var, AW_CL cd_toggle_da
 }
 
 void AW_window::create_toggle(const char *var_name, aw_toggle_data *tdata) {
-    AW_cb_struct *cbs = _callback;
-    _callback         = (AW_cb_struct *)1;
+    AW_cb *cbs = _callback;
+    _callback  = (AW_cb *)1;
 
     {
         int old_length_of_buttons = _at->length_of_buttons;
@@ -931,7 +931,7 @@ void AW_window::create_inverse_toggle(const char *var_name) {
 void AW_window::create_input_field(const char *var_name,   int columns) {
     Widget         textField              = 0;
     Widget         tmp_label              = 0;
-    AW_cb_struct  *cbs;
+    AW_cb         *cbs;
     VarUpdateInfo *vui;
     char          *String;
     int            x_correcting_for_label = 0;
@@ -1057,14 +1057,16 @@ void AW_window::create_text_field(const char *var_name, int columns, int rows) {
     Widget scrolledWindowText;
     Widget scrolledText;
     Widget tmp_label = 0;
-    AW_cb_struct *cbs;
+
+    AW_cb         *cbs;
     VarUpdateInfo *vui;
-    char *String = NULL;
-    short width_of_last_widget = 0;
-    short height_of_last_widget = 0;
-    int width_of_text = 0;
-    int height_of_text = 0;
-    int x_correcting_for_label = 0;
+
+    char  *String                 = NULL;
+    short  width_of_last_widget   = 0;
+    short  height_of_last_widget  = 0;
+    int    width_of_text          = 0;
+    int    height_of_text         = 0;
+    int    x_correcting_for_label = 0;
 
     AW_awar *vs = root->awar(var_name);
     String      = root->awar(var_name)->read_string();
@@ -1201,7 +1203,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, const 
     Widget l = 0;
 
     VarUpdateInfo *vui;
-    AW_cb_struct              *cbs;
+    AW_cb         *cbs;
 
     int width_of_label        = 0;
     int height_of_label       = 0;
@@ -2230,8 +2232,8 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
         option_type_mismatch("string");
     }
     else {
-        Widget        entry = (Widget)_create_option_entry(AW_STRING, option_name, mnemonic, name_of_color);
-        AW_cb_struct *cbs   = _callback; // user-own callback
+        Widget  entry = (Widget)_create_option_entry(AW_STRING, option_name, mnemonic, name_of_color);
+        AW_cb  *cbs   = _callback; // user-own callback
 
         // callback for new choice
         XtAddCallback(entry, XmNactivateCallback,
@@ -2250,8 +2252,8 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
         option_type_mismatch("int");
     }
     else {
-        Widget        entry = (Widget)_create_option_entry(AW_INT, option_name, mnemonic, name_of_color);
-        AW_cb_struct *cbs   = _callback; // user-own callback
+        Widget  entry = (Widget)_create_option_entry(AW_INT, option_name, mnemonic, name_of_color);
+        AW_cb  *cbs   = _callback; // user-own callback
 
         // callback for new choice
         XtAddCallback(entry, XmNactivateCallback,
@@ -2270,8 +2272,8 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
         option_type_mismatch("float");
     }
     else {
-        Widget        entry = (Widget)_create_option_entry(AW_FLOAT, option_name, mnemonic, name_of_color);
-        AW_cb_struct *cbs   = _callback; // user-own callback
+        Widget  entry = (Widget)_create_option_entry(AW_FLOAT, option_name, mnemonic, name_of_color);
+        AW_cb  *cbs   = _callback; // user-own callback
 
         // callback for new choice
         XtAddCallback(entry, XmNactivateCallback,

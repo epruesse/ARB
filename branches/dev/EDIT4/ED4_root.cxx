@@ -1566,8 +1566,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
 
     SEP________________________SEP;
 
-    static AW_cb_struct *expose_cb = 0;
-    if (!expose_cb) expose_cb = new AW_cb_struct(awmm, (AW_CB)ED4_expose_cb, 0, 0);
+    static AW_cb *expose_cb = 0;
+    if (!expose_cb) expose_cb = new AW_cb(awmm, (AW_CB)ED4_expose_cb, 0, 0);
 
     if (alignment_type == GB_AT_AA) awmm->insert_menu_topic("props_pfold",     "Protein Match Settings ", "P", "pfold_props.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_pfold_create_props_window, (AW_CL)expose_cb);
     else                            awmm->insert_menu_topic("props_helix_sym", "Helix Settings ",         "H", "helixsym.hlp",    AWM_ALL, AW_POPUP, (AW_CL)create_helix_props_window,     (AW_CL)expose_cb);

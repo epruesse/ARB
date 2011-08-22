@@ -124,9 +124,9 @@ void AW_normal_cursor(AW_root *);
 
 void AW_openURL(AW_root *aw_root, const char *url);
 
-typedef void (*AW_cb_struct_guard)();
+typedef void (*AW_cb_guard)();
 
-class AW_cb_struct : virtual Noncopyable {
+class AW_cb : virtual Noncopyable {
     AW_window *caller;
 
     AW_CB cb;
@@ -137,21 +137,16 @@ class AW_cb_struct : virtual Noncopyable {
     AW_window  *pop_up_window;
     char       *id;
 
-    AW_cb_struct *next;
+    AW_cb *next;
 
-    static AW_cb_struct_guard guard_before;
-    static AW_cb_struct_guard guard_after;
+    static AW_cb_guard guard_before;
+    static AW_cb_guard guard_after;
 
     AW_CL get_cd1() const { return cd1; }
     AW_CL get_cd2() const { return cd2; }
 
 public:
-    AW_cb_struct(AW_window    *caller_,
-                 AW_CB         cb_,
-                 AW_CL         cd1_  = 0,
-                 AW_CL         cd2_  = 0,
-                 const char   *help_ = 0,
-                 AW_cb_struct *next_ = 0)
+    AW_cb(AW_window  *caller_, AW_CB cb_, AW_CL cd1_  = 0, AW_CL cd2_  = 0, const char *help_ = 0, AW_cb *next_ = 0)
         : caller(caller_),
           cb(cb_),
           cd1(cd1_),
@@ -162,11 +157,9 @@ public:
           next(next_)
         {}
 
-    ~AW_cb_struct() {
-        free(id);
-    }
+    ~AW_cb() { free(id); }
 
-    void run_callback();    // runs the whole list
+    void run_callbacks();
     bool contains(AW_CB g); // test whether 'g' is contained in callback-list
 
     const char *get_id() const { return id; }
@@ -180,7 +173,7 @@ public:
     const char *get_help() const { return help; }
     void set_help(const char *help_) { help = help_; }
 
-    int callback_cmp(const AW_cb_struct& other) const {
+    int callback_cmp(const AW_cb& other) const {
         int cmp = (AW_CL)(other.cb) - (AW_CL)cb; // compare address of function
         if (!cmp) {
             cmp = other.get_cd1() - get_cd1();
@@ -189,10 +182,10 @@ public:
         return cmp;
 
     }
-    bool is_equal(const AW_cb_struct& other) const { return callback_cmp(other) == 0; }
+    bool is_equal(const AW_cb& other) const { return callback_cmp(other) == 0; }
     bool has_parameters() const { return get_cd1() || get_cd2(); }
 
-    static void set_AW_cb_guards(AW_cb_struct_guard before, AW_cb_struct_guard after) {
+    static void set_AW_cb_guards(AW_cb_guard before, AW_cb_guard after) {
         guard_before = before;
         guard_after  = after;
     }
@@ -259,9 +252,10 @@ public:
     // ************ This is not the public section *************
 
     AW_window_Motif *p_w;       // Do not use !!!
-    AW_at           *_at;
-    AW_cb_struct    *_callback;
-    AW_cb_struct    *_d_callback;
+
+    AW_at *_at;
+    AW_cb *_callback;
+    AW_cb *_d_callback;
 
     AW_window();
     virtual ~AW_window();
@@ -491,17 +485,19 @@ public:
     void store_at_size_and_attach(AW_at_size *at_size);   // get size of at-element
     void restore_at_size_and_attach(const AW_at_size *at_size);   // set size of a at-element
 
-    void sens_mask(AW_active mask);   // Set the sensitivity mask used for following widgets (Note: reset by next at()-command)
-    void help_text(const char *id);  // Set the help text of a button
+    void sens_mask(AW_active mask); // Set the sensitivity mask used for following widgets (Note: reset by next at()-command)
+    void help_text(const char *id); // Set the help text of a button
+    
     void callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2); // normal callbacks
     void callback(void (*f)(AW_window*, AW_CL), AW_CL cd1);
     void callback(void (*f)(AW_window*));
-    void callback(AW_cb_struct * /* owner */ awcbs); // Calls f with
-    // aww in awcbs
+    void callback(AW_cb *awcbs);
+
     void d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2); // double click callbacks
     void d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1); // selection lists only !!
     void d_callback(void (*f)(AW_window*));
-    void d_callback(AW_cb_struct * /* owner */ awcbs); // Calls f with
+    void d_callback(AW_cb *awcbs);
+    
     // *** create the buttons ********
 
     void   create_button(const char *macro_name, AW_label label, const char *mnemonic = 0, const char *color = 0); // simple button; shadow only when callback

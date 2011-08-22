@@ -146,8 +146,8 @@ static long collect_callbacks(const char *key, long value, void *cl_callbacks) {
 }
 
 int sortedByCallbackLocation(const char *k0, long v0, const char *k1, long v1) {
-    AW_cb_struct *cbs0 = reinterpret_cast<AW_cb_struct*>(v0);
-    AW_cb_struct *cbs1 = reinterpret_cast<AW_cb_struct*>(v1);
+    AW_cb *cbs0 = reinterpret_cast<AW_cb*>(v0);
+    AW_cb *cbs1 = reinterpret_cast<AW_cb*>(v1);
 
     int cmp = cbs0->callback_cmp(*cbs1);
     if (!cmp) cmp = strcmp(k0, k1);
@@ -230,8 +230,9 @@ size_t AW_root::callallcallbacks(int mode) {
                     GBS_write_hash(alreadyCalledHash, remote_command, 1); // don't call twice
 
                     if (mode != -2) { // -2 means "only mark as called"
-                        AW_cb_struct *cbs = (AW_cb_struct *)GBS_read_hash(prvt->action_hash, remote_command);
-                        bool skipcb = remote_command[0] == '!' || GBS_read_hash(dontCallHash, remote_command);
+                        AW_cb *cbs    = (AW_cb *)GBS_read_hash(prvt->action_hash, remote_command);
+                        bool   skipcb = remote_command[0] == '!' || GBS_read_hash(dontCallHash, remote_command);
+
                         if (!skipcb) {
                             if (cbs->would_call((AW_CB)AW_help_entry_pressed)) skipcb = true;
                         }
@@ -243,7 +244,7 @@ size_t AW_root::callallcallbacks(int mode) {
 
                             GB_clear_error();
 
-                            cbs->run_callback();
+                            cbs->run_callbacks();
                             callCount++;
                             process_pending_events();
 
