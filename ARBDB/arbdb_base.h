@@ -49,6 +49,8 @@ enum GB_CB_TYPE {
     GB_CB_ALL         = 7
 };
 
+typedef void (*GB_CB)(GBDATA *, int *clientdata, GB_CB_TYPE gbtype);
+
 enum GB_alignment_type {
     GB_AT_UNKNOWN,
     GB_AT_RNA,      // Nucleotide sequence (U)

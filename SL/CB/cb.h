@@ -12,6 +12,10 @@
 #ifndef CB_H
 #define CB_H
 
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
+#endif
+
 class AW_root;
 class AW_window;
 
@@ -48,9 +52,11 @@ typedef AW_window *(*AW_Window_Creator)(AW_root*, AW_CL);
 
 typedef AW_window *(*AWC_CB)(AW_root *, AW_CL, AW_CL);
 
-DECLARE_CBTYPE_AND_BUILDERS(RootCallback,          void,       AW_root*,   AW_RCB); // generates makeRootCallback
-DECLARE_CBTYPE_AND_BUILDERS(WindowCallback,        void,       AW_window*, AW_CB);  // generates makeWindowCallback
-DECLARE_CBTYPE_AND_BUILDERS(WindowCreatorCallback, AW_window*, AW_root*,   AWC_CB); // generates makeWindowCreatorCallback
+DECLARE_CBTYPE_FVV_AND_BUILDERS(RootCallback,          void,       AW_root*);    // generates makeRootCallback
+DECLARE_CBTYPE_FVV_AND_BUILDERS(WindowCallback,        void,       AW_window*);  // generates makeWindowCallback
+DECLARE_CBTYPE_FVV_AND_BUILDERS(WindowCreatorCallback, AW_window*, AW_root*);    // generates makeWindowCreatorCallback
+
+DECLARE_CBTYPE_FVF_AND_BUILDERS(DatabaseCallback, void, GBDATA*, GB_CB_TYPE);    // generates makeDatabaseCallback
 
 #else
 #error cb.h included twice

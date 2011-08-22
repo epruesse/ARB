@@ -104,14 +104,14 @@ INVALID_CB_PARAM_TYPE(float);
 
 template<typename RT, typename P1 = void, typename P2 = void, typename P3 = void>
 class StrictlyTypedCallback {
-protected: 
+public:
     typedef typename Function<RT,P1,P2,P3>::Type FuncType;
-
+    
+private:
     typedef typename ForwardParamT<P1>::Type FP1;
     typedef typename ForwardParamT<P2>::Type FP2;
     typedef typename ForwardParamT<P3>::Type FP3;
 
-private:
     FuncType cb;
 
 public:
@@ -123,8 +123,13 @@ public:
     RT operator()(FP1 p1, FP2 p2)         const { return cb(p1, p2); }
     RT operator()(FP1 p1)                 const { return cb(p1); }
     RT operator()()                       const { return cb(); }
-    
+
     bool equals(const StrictlyTypedCallback& other) const { return cb == other.cb; }
+
+    void *get_cb() const { return (void*)cb; }
+    static StrictlyTypedCallback make_cb(void *cb_) { return StrictlyTypedCallback((FuncType)cb_); }
+
+    bool is_set() const { return cb != 0; }
 };
 
 // ---------------------
@@ -149,11 +154,11 @@ inline bool operator == (const CallbackData<P1,P2>& cd1, const CallbackData<P1,P
 
 typedef CallbackData<AW_CL,AW_CL> UntypedCallbackData;
 
-// ------------------------
-//      casted callback
+// ------------------------------
+//      casted callback types
 
 template<typename RT, typename FIXED>
-class CallbackGroup {
+class Callback_FVV { // FVV stands for arguments (FIXED, VARIABLE, VARIABLE)
 public:
     typedef StrictlyTypedCallback<RT,FIXED,AW_CL,AW_CL> Signature;
 
@@ -162,14 +167,50 @@ private:
     SmartPtr<UntypedCallbackData> cd;
 
 public:
-    CallbackGroup(Signature CB, AW_CL P1, AW_CL P2) : cb(CB), cd(new UntypedCallbackData(P1, P2)) {}
-    CallbackGroup(Signature CB, UntypedCallbackData::CallbackDataDeallocator dealloc, AW_CL P1, AW_CL P2) : cb(CB), cd(new UntypedCallbackData(P1, P2, dealloc)) {}
+    Callback_FVV(Signature CB, AW_CL P1, AW_CL P2) : cb(CB), cd(new UntypedCallbackData(P1, P2)) {}
+    Callback_FVV(Signature CB, UntypedCallbackData::CallbackDataDeallocator dealloc, AW_CL P1, AW_CL P2) : cb(CB), cd(new UntypedCallbackData(P1, P2, dealloc)) {}
     RT operator()(FIXED fixed) const { return cb(fixed, cd->p1, cd->p2); }
-    bool equals(const CallbackGroup& other) const { return cb.equals(other.cb) && *cd == *other.cd; }
+    bool equals(const Callback_FVV& other) const { return cb.equals(other.cb) && *cd == *other.cd; }
 };
 
 template<typename RT, typename FIXED>
-inline bool operator == (const CallbackGroup<RT,FIXED>& cb1, const CallbackGroup<RT,FIXED>& cb2) { return cb1.equals(cb2); }
+inline bool operator == (const Callback_FVV<RT,FIXED>& cb1, const Callback_FVV<RT,FIXED>& cb2) { return cb1.equals(cb2); }
+
+template<typename RT, typename F1, typename F2>
+class Callback_FVF { // FVF stands for arguments (FIXED, VARIABLE, FIXED)
+public:
+    typedef StrictlyTypedCallback<RT,F1,AW_CL,F2>  SigP1;
+    typedef StrictlyTypedCallback<RT,F1,F2,void>   SigP0F12;
+    typedef StrictlyTypedCallback<RT,F2,void,void> SigP0F2;
+
+private:
+    enum funtype { ST_P0F12, ST_P0F2, ST_P1 }; // Signature type
+    typedef CallbackData<AW_CL,funtype> FVF_CallbackData;
+
+    void                       *cb; // has one of the above Signatures
+    SmartPtr<FVF_CallbackData>  cd; // cd->p2 cannot be used by clients and is used to select Signature of 'cb'
+
+    funtype get_funtype() const { return cd->p2; }
+
+public:
+    Callback_FVF(SigP0F12 CB) : cb(CB.get_cb()), cd(new FVF_CallbackData(0, ST_P0F12)) {}
+    Callback_FVF(SigP0F2 CB) : cb(CB.get_cb()), cd(new FVF_CallbackData(0, ST_P0F2)) {}
+    Callback_FVF(SigP1 CB, AW_CL P1) : cb(CB.get_cb()), cd(new FVF_CallbackData(P1, ST_P1)) {}
+    Callback_FVF(SigP1 CB, UntypedCallbackData::CallbackDataDeallocator dealloc, AW_CL P1)
+        : cb(CB.get_cb()), cd(new FVF_CallbackData(P1, ST_P1, (typename FVF_CallbackData::CallbackDataDeallocator)dealloc)) {}
+
+    RT operator()(F1 f1, F2 f2) const {
+        funtype ft = get_funtype();
+        if (ft == ST_P0F12) return SigP0F12::make_cb(cb)(f1, f2);
+        if (ft == ST_P0F2) return SigP0F2::make_cb(cb)(f2);
+        arb_assert(ft == ST_P1);
+        return SigP1::make_cb(cb)(f1, cd->p1, f2);
+    }
+    bool equals(const Callback_FVF& other) const { return cb == other.cb && *cd == *other.cd; }
+};
+
+template<typename RT, typename F1, typename F2>
+inline bool operator == (const Callback_FVF<RT,F1,F2>& cb1, const Callback_FVF<RT,F1,F2>& cb2) { return cb1.equals(cb2); }
 
 // ---------------------------
 //      convenience macros
@@ -179,20 +220,20 @@ inline bool operator == (const CallbackGroup<RT,FIXED>& cb1, const CallbackGroup
 
 #define CONST_PARAM_T(T) typename ConstParamT<T>::Type 
 
-#define CBTYPE_BUILDER_P1(BUILDER,CB,RESULT,FIXED,SIG,P1,P1fun)         \
-    template<typename P1>                                               \
-    inline CB BUILDER(RESULT (*cb)(FIXED, P1fun), P1 p1) {              \
-        COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1));                          \
-        return CB((SIG)cb, CAST_TO_AW_CL(P1,p1), 0);                    \
-    }                                                                   \
-    template<typename P1>                                               \
-    inline CB BUILDER(RESULT (*cb)(FIXED, P1fun),                       \
-                      void (*dealloc)(P1), P1 p1) {                     \
-        COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1));                          \
-        return CB((SIG)cb, (UntypedCallbackData::CallbackDataDeallocator)dealloc, CAST_TO_AW_CL(P1,p1), 0); \
-    }                                                                   \
+#define CBTYPE_FVV_BUILDER_P1(BUILDER,CB,RESULT,FIXED,SIG,P1,P1fun)                                             \
+    template<typename P1>                                                                                       \
+    inline CB BUILDER(RESULT (*cb)(FIXED, P1fun), P1 p1) {                                                      \
+        COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1));                                                                  \
+        return CB((SIG)cb, CAST_TO_AW_CL(P1,p1), 0);                                                            \
+    }                                                                                                           \
+    template<typename P1>                                                                                       \
+    inline CB BUILDER(RESULT (*cb)(FIXED, P1fun),                                                               \
+                      void (*dealloc)(P1), P1 p1) {                                                             \
+        COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1));                                                                  \
+        return CB((SIG)cb, (UntypedCallbackData::CallbackDataDeallocator)dealloc, CAST_TO_AW_CL(P1,p1), 0);     \
+    }
 
-#define CBTYPE_BUILDER_P1P2(BUILDER,CB,RESULT,FIXED,SIG,P1,P2,P1fun,P2fun) \
+#define CBTYPE_FVV_BUILDER_P1P2(BUILDER,CB,RESULT,FIXED,SIG,P1,P2,P1fun,P2fun) \
     template<typename P1, typename P2>                                  \
     inline CB BUILDER(RESULT (*cb)(FIXED, P1fun, P2fun),                \
                       P1 p1, P2 p2) {                                   \
@@ -206,20 +247,52 @@ inline bool operator == (const CallbackGroup<RT,FIXED>& cb1, const CallbackGroup
         return CB((SIG)cb, (UntypedCallbackData::CallbackDataDeallocator)dealloc, CAST_TO_AW_CL(P1,p1), CAST_TO_AW_CL(P2,p2)); \
     }                                                                   \
 
-#define CBTYPE_BUILDER_TEMPLATES(BUILDER,CB,RESULT,FIXED,SIG)           \
-    inline CB BUILDER(RESULT (*cb)(FIXED)) {                            \
-        return CB((SIG)cb, 0, 0);                                       \
-    }                                                                   \
-    CBTYPE_BUILDER_P1(BUILDER,CB,RESULT,FIXED,SIG,P1,P1);               \
-    CBTYPE_BUILDER_P1(BUILDER,CB,RESULT,FIXED,SIG,P1,CONST_PARAM_T(P1)); \
-    CBTYPE_BUILDER_P1P2(BUILDER,CB,RESULT,FIXED,SIG,P1,P2,P1,P2);       \
-    CBTYPE_BUILDER_P1P2(BUILDER,CB,RESULT,FIXED,SIG,P1,P2,CONST_PARAM_T(P1), CONST_PARAM_T(P2)); \
+#define CBTYPE_FVV_BUILDER_TEMPLATES(BUILDER,CB,RESULT,FIXED,SIG)                                       \
+    inline CB BUILDER(RESULT (*cb)(FIXED)) {                                                            \
+        return CB((SIG)cb, 0, 0);                                                                       \
+    }                                                                                                   \
+    CBTYPE_FVV_BUILDER_P1(BUILDER,CB,RESULT,FIXED,SIG,P1,P1);                                           \
+    CBTYPE_FVV_BUILDER_P1(BUILDER,CB,RESULT,FIXED,SIG,P1,CONST_PARAM_T(P1));                            \
+    CBTYPE_FVV_BUILDER_P1P2(BUILDER,CB,RESULT,FIXED,SIG,P1,P2,P1,P2);                                   \
+    CBTYPE_FVV_BUILDER_P1P2(BUILDER,CB,RESULT,FIXED,SIG,P1,P2,CONST_PARAM_T(P1), CONST_PARAM_T(P2));
+
+
+    
+#define CBTYPE_FVF_BUILDER_P1(BUILDER,CB,RESULT,F1,F2,SIG,P1,P1fun)                                             \
+    template<typename P1>                                                                                       \
+    inline CB BUILDER(RESULT (*cb)(F1, P1fun, F2), P1 p1) {                                                     \
+        COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1));                                                                  \
+        return CB((SIG)cb, CAST_TO_AW_CL(P1,p1));                                                               \
+    }                                                                                                           \
+    template<typename P1>                                                                                       \
+    inline CB BUILDER(RESULT (*cb)(F1, P1fun, F2),                                                              \
+                      void (*dealloc)(P1), P1 p1) {                                                             \
+        COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1));                                                                  \
+        return CB((SIG)cb, (UntypedCallbackData::CallbackDataDeallocator)dealloc, CAST_TO_AW_CL(P1,p1));        \
+    }
+
+#define CBTYPE_FVF_BUILDER_TEMPLATES(BUILDER,CB,RESULT,F1,F2,SIG,SIG01,SIG02)   \
+    inline CB BUILDER(RESULT (*cb)(F1)) { return CB((SIG01)cb); }               \
+    inline CB BUILDER(RESULT (*cb)(F1,F2)) { return CB((SIG01)cb); }            \
+    inline CB BUILDER(RESULT (*cb)(F2)) { return CB((SIG02)cb); }               \
+    CBTYPE_FVF_BUILDER_P1(BUILDER,CB,RESULT,F1,F2,SIG,P1,P1);                   \
+    CBTYPE_FVF_BUILDER_P1(BUILDER,CB,RESULT,F1,F2,SIG,P1,CONST_PARAM_T(P1));
+
 
 // declares the callback type (CBTYPE) and the makeCBTYPE() templates needed to ensure
 // typecheck between callback-signature and bound parameters
-#define DECLARE_CBTYPE_AND_BUILDERS(CBTYPE,RESULT,FIXED,SIG)            \
-    typedef CallbackGroup<RESULT, FIXED> CBTYPE;                        \
-    CBTYPE_BUILDER_TEMPLATES(make##CBTYPE, CBTYPE, RESULT, FIXED, SIG);
+
+#define DECLARE_CBTYPE_FVV_AND_BUILDERS(CBTYPE,RESULT,FIXED)            \
+    typedef Callback_FVV<RESULT, FIXED> CBTYPE;                         \
+    CBTYPE_FVV_BUILDER_TEMPLATES(make##CBTYPE,CBTYPE,RESULT,FIXED,      \
+                                 CBTYPE::Signature::FuncType);
+
+#define DECLARE_CBTYPE_FVF_AND_BUILDERS(CBTYPE,RESULT,F1,F2)            \
+    typedef Callback_FVF<RESULT,F1,F2> CBTYPE;                          \
+    CBTYPE_FVF_BUILDER_TEMPLATES(make##CBTYPE,CBTYPE,RESULT,F1,F2,      \
+                                 CBTYPE::SigP1::FuncType,               \
+                                 CBTYPE::SigP0F12::FuncType,            \
+                                 CBTYPE::SigP0F2::FuncType);
 
 
 

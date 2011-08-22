@@ -100,8 +100,6 @@ enum GB_UNDO_TYPE {
 // -----------------------
 //      callback types
 
-typedef void (*GB_CB)(GBDATA *, int *clientdata, GB_CB_TYPE gbtype);
-
 typedef long (*gb_hash_loop_type)(const char *key, long val, void *client_data);
 typedef int (*gbs_hash_compare_function) (const char *key0, long val0, const char *key1, long val1);
 
