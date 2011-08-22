@@ -848,8 +848,8 @@ static void AW_root_focusCB(Widget /*wgt*/, XtPointer awrp, XEvent*, Boolean*) {
     AW_root_cblist::call(aw_root->focus_callback_list, aw_root);
 }
 
-void AW_root::set_focus_callback(AW_RCB f, AW_CL cd1, AW_CL cd2) {
-    AW_root_cblist::add(focus_callback_list, AW_root_callback(f, cd1, cd2));
+void AW_root::set_focus_callback(RootCallback fcb) {
+    AW_root_cblist::add(focus_callback_list, fcb);
 }
 
 static void AW_focusCB(Widget /*wgt*/, XtPointer aw_cb_struct, XEvent*, Boolean*) {
