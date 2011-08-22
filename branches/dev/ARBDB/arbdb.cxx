@@ -2931,4 +2931,235 @@ void TEST_GB_shell() {
     TEST_ASSERT_SEGFAULT(test_opendb); // should be impossible to open db w/o shell
 }
 
+struct callback_trace {
+    GBDATA     *called_gbd;
+    GB_CB_TYPE  called_type;
+
+    void set_called_by(GBDATA *gbd, GB_CB_TYPE type) { called_gbd = gbd; called_type = type; }
+    void reset() { set_called_by(0, GB_CB_NONE); }
+
+    callback_trace() { reset(); }
+
+    bool was_called_by(GBDATA *gbd) const {
+        bool ok = called_gbd == gbd;
+        if (!ok) printf("mismatch in GBDATA (wanted=%p, got=%p)\n", gbd, called_gbd);
+        return ok;
+    }
+    bool was_called_by(GB_CB_TYPE exp_type) const {
+        bool ok = (called_type&exp_type) != 0 || exp_type == 0;
+        if (!ok) printf("mismatch in GB_CB_TYPE (wanted=%i, got=%i)\n", exp_type, called_type);
+        return ok;
+    }
+    bool was_called_by(GBDATA *gbd, GB_CB_TYPE exp_type) const {
+        return was_called_by(gbd) && was_called_by(exp_type);
+    }
+    bool was_not_called() const { return was_called_by(0, GB_CB_NONE); }
+    bool was_called() const { return !was_not_called(); }
+};
+
+static void some_cb(GBDATA *gbd, int *cd, GB_CB_TYPE cbtype) {
+    callback_trace *trace = (callback_trace*)cd;
+    trace->set_called_by(gbd, cbtype);
+}
+
+#define TRIGGER(gbd)                    \
+    GB_begin_transaction(gb_main);      \
+    GB_touch(gbd);                      \
+    GB_commit_transaction(gb_main)
+
+#define TEST_ASSERT_NO_CALLBACK_TRIGGERED()                     \
+    TEST_ASSERT(trace_top_deleted.was_not_called());            \
+    TEST_ASSERT(trace_son_deleted.was_not_called());            \
+    TEST_ASSERT(trace_grandson_deleted.was_not_called());       \
+    TEST_ASSERT(trace_cont_top_deleted.was_not_called());       \
+    TEST_ASSERT(trace_cont_son_deleted.was_not_called());       \
+    TEST_ASSERT(trace_top_changed.was_not_called());            \
+    TEST_ASSERT(trace_son_changed.was_not_called());            \
+    TEST_ASSERT(trace_grandson_changed.was_not_called());       \
+    TEST_ASSERT(trace_cont_top_changed.was_not_called());       \
+    TEST_ASSERT(trace_cont_son_changed.was_not_called());       \
+    TEST_ASSERT(trace_cont_top_newchild.was_not_called());      \
+    TEST_ASSERT(trace_cont_son_newchild.was_not_called());      \
+
+
+#define TEST_ASSERT_CB_TRIGGERED(TRACE,GBD,TYPE)        \
+    TEST_ASSERT(TRACE.was_called_by(GBD, TYPE));        \
+    TRACE.reset()
+    
+#define TEST_ASSERT_CB_TRIGGERED__WRONG_GBDATA(TRACE,GBD,TYPE)  \
+    TEST_ASSERT(TRACE.was_called_by(TYPE));                     \
+    TEST_ASSERT__BROKEN(TRACE.was_called_by(GBD));              \
+    TRACE.reset()
+
+#define TEST_ASSERT_CB_TRIGGERED__WRONG_TYPE(TRACE,GBD,TYPE)    \
+    TEST_ASSERT(TRACE.was_called_by(GBD));                      \
+    TEST_ASSERT__BROKEN(TRACE.was_called_by(TYPE));             \
+    TRACE.reset()
+
+#define TEST_ASSERT_CB_TRIGGERED__COMPLETELY_BROKEN(TRACE,GBD,TYPE)     \
+    TEST_ASSERT__BROKEN(TRACE.was_called_by(GBD));                      \
+    TEST_ASSERT__BROKEN(TRACE.was_called_by(TYPE));                     \
+    TRACE.reset()
+
+    
+#define TEST_ASSERT_CHANGE_TRIGGERED(TRACE,GBD) TEST_ASSERT_CB_TRIGGERED(TRACE, GBD, GB_CB_CHANGED)
+#define TEST_ASSERT_DELETE_TRIGGERED(TRACE,GBD) TEST_ASSERT_CB_TRIGGERED(TRACE, GBD, GB_CB_DELETE)
+#define TEST_ASSERT_NCHILD_TRIGGERED(TRACE,GBD) TEST_ASSERT_CB_TRIGGERED(TRACE, GBD, GB_CB_SON_CREATED)
+
+#define TEST_ASSERT_NCHILD_TRIGGERED__WRONG_TYPE(TRACE,GBD) TEST_ASSERT_CB_TRIGGERED__WRONG_TYPE(TRACE, GBD, GB_CB_SON_CREATED)
+
+#define TEST_ASSERT_TRIGGER__UNWANTED(TRACE)            \
+    TEST_ASSERT__BROKEN(TRACE.was_not_called());        \
+    TRACE.reset()
+    
+#define TEST_ASSERT_TRIGGER__MISSING(TRACE)     \
+    TEST_ASSERT__BROKEN(TRACE.was_called());    \
+    TRACE.reset()
+    
+void TEST_db_callbacks() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("new.arb", "c");
+
+    // create some data
+    GB_begin_transaction(gb_main);
+
+    GBDATA *cont_top = GB_create_container(gb_main,  "cont_top"); TEST_ASSERT(cont_top);
+    GBDATA *cont_son = GB_create_container(cont_top, "cont_son"); TEST_ASSERT(cont_son);
+
+    GBDATA *top      = GB_create(gb_main,  "top",      GB_STRING); TEST_ASSERT(top);
+    GBDATA *son      = GB_create(cont_top, "son",      GB_INT);    TEST_ASSERT(son);
+    GBDATA *grandson = GB_create(cont_son, "grandson", GB_STRING); TEST_ASSERT(grandson);
+
+    GB_commit_transaction(gb_main);
+
+    // install change callbacks
+    GB_begin_transaction(gb_main);
+    callback_trace trace_top_changed;       GB_add_callback(top,      GB_CB_CHANGED,     some_cb, (int*)&trace_top_changed);
+    callback_trace trace_son_changed;       GB_add_callback(son,      GB_CB_CHANGED,     some_cb, (int*)&trace_son_changed);
+    callback_trace trace_grandson_changed;  GB_add_callback(grandson, GB_CB_CHANGED,     some_cb, (int*)&trace_grandson_changed);
+    callback_trace trace_cont_top_changed;  GB_add_callback(cont_top, GB_CB_CHANGED,     some_cb, (int*)&trace_cont_top_changed);
+    callback_trace trace_cont_son_changed;  GB_add_callback(cont_son, GB_CB_CHANGED,     some_cb, (int*)&trace_cont_son_changed);
+    callback_trace trace_cont_top_newchild; GB_add_callback(cont_top, GB_CB_SON_CREATED, some_cb, (int*)&trace_cont_top_newchild);
+    callback_trace trace_cont_son_newchild; GB_add_callback(cont_son, GB_CB_SON_CREATED, some_cb, (int*)&trace_cont_son_newchild);
+    callback_trace trace_top_deleted;       GB_add_callback(top,      GB_CB_DELETE,      some_cb, (int*)&trace_top_deleted);
+    callback_trace trace_son_deleted;       GB_add_callback(son,      GB_CB_DELETE,      some_cb, (int*)&trace_son_deleted);
+    callback_trace trace_grandson_deleted;  GB_add_callback(grandson, GB_CB_DELETE,      some_cb, (int*)&trace_grandson_deleted);
+    callback_trace trace_cont_top_deleted;  GB_add_callback(cont_top, GB_CB_DELETE,      some_cb, (int*)&trace_cont_top_deleted);
+    callback_trace trace_cont_son_deleted;  GB_add_callback(cont_son, GB_CB_DELETE,      some_cb, (int*)&trace_cont_son_deleted);
+    GB_commit_transaction(gb_main);
+
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+
+    // trigger change callbacks via change
+    GB_begin_transaction(gb_main);
+    GB_write_string(top, "hello world");
+    GB_commit_transaction(gb_main);
+    TEST_ASSERT_CHANGE_TRIGGERED(trace_top_changed, top);
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+
+    GB_begin_transaction(gb_main);
+    GB_write_string(top, "hello world"); // no change
+    GB_commit_transaction(gb_main);
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+    
+    GB_begin_transaction(gb_main);
+    GB_write_flag(son, 1); // only change "mark"
+    GB_commit_transaction(gb_main);
+    TEST_ASSERT_CHANGE_TRIGGERED(trace_son_changed, son);
+    TEST_ASSERT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
+    TEST_ASSERT_TRIGGER__UNWANTED(trace_cont_top_newchild); // @@@ modifying son should not trigger newchild callback
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+
+    GB_begin_transaction(gb_main);
+    GB_touch(grandson); 
+    GB_commit_transaction(gb_main);
+    TEST_ASSERT_CHANGE_TRIGGERED(trace_grandson_changed, grandson);
+    TEST_ASSERT_CHANGE_TRIGGERED(trace_cont_son_changed, cont_son);
+    TEST_ASSERT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
+    TEST_ASSERT_TRIGGER__UNWANTED(trace_cont_top_newchild); // @@@ modifying grandson should not trigger newchild callback
+    TEST_ASSERT_TRIGGER__UNWANTED(trace_cont_son_newchild); // @@@ modifying grandson should not trigger newchild callback
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+
+    // trigger change- and soncreate-callbacks via create
+
+    GB_begin_transaction(gb_main);
+    GBDATA *son2 = GB_create(cont_top, "son2", GB_INT); TEST_ASSERT(son2);
+    GB_commit_transaction(gb_main);
+    TEST_ASSERT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
+    TEST_ASSERT_NCHILD_TRIGGERED(trace_cont_top_newchild, cont_top);
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+
+    GB_begin_transaction(gb_main);
+    GBDATA *grandson2 = GB_create(cont_son, "grandson2", GB_STRING); TEST_ASSERT(grandson2);
+    GB_commit_transaction(gb_main);
+    TEST_ASSERT_CHANGE_TRIGGERED(trace_cont_son_changed, cont_son);
+    TEST_ASSERT_NCHILD_TRIGGERED(trace_cont_son_newchild, cont_son); 
+    TEST_ASSERT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
+    TEST_ASSERT_NCHILD_TRIGGERED__WRONG_TYPE(trace_cont_top_newchild, cont_top); // @@@ wrong GB_CB_TYPE! (should be either GB_CB_SON_CREATED or not be called at all)
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+
+    // trigger callbacks via delete 
+    
+    GB_begin_transaction(gb_main);
+    GB_delete(son2);
+    GB_commit_transaction(gb_main);
+    TEST_ASSERT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
+    TEST_ASSERT_NCHILD_TRIGGERED__WRONG_TYPE(trace_cont_top_newchild, cont_top); // @@@ wrong GB_CB_TYPE! (should be either new type GB_CB_SON_DELETED or not be called at all)
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+
+    GB_begin_transaction(gb_main);
+    GB_delete(grandson2);
+    GB_commit_transaction(gb_main);
+    TEST_ASSERT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
+    TEST_ASSERT_CHANGE_TRIGGERED(trace_cont_son_changed, cont_son);
+    TEST_ASSERT_NCHILD_TRIGGERED__WRONG_TYPE(trace_cont_top_newchild, cont_top); // @@@ wrong GB_CB_TYPE! (should be either new type GB_CB_SON_DELETED or not be called at all)
+    TEST_ASSERT_NCHILD_TRIGGERED__WRONG_TYPE(trace_cont_son_newchild, cont_son); // @@@ wrong GB_CB_TYPE! (should be either new type GB_CB_SON_DELETED or not be called at all)
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+
+    TEST_ASSERT_NO_ERROR(GB_request_undo_type(gb_main, GB_UNDO_UNDO));
+
+    GB_begin_transaction(gb_main);
+    GB_delete(top);
+    GB_commit_transaction(gb_main);
+    TEST_ASSERT_DELETE_TRIGGERED(trace_top_deleted, top);
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+
+    GB_begin_transaction(gb_main);
+    GB_delete(grandson);
+    GB_commit_transaction(gb_main);
+    TEST_ASSERT_DELETE_TRIGGERED(trace_grandson_deleted, grandson);
+    TEST_ASSERT_CHANGE_TRIGGERED(trace_cont_son_changed, cont_son);
+    TEST_ASSERT_NCHILD_TRIGGERED__WRONG_TYPE(trace_cont_son_newchild, cont_son); // @@@ wrong GB_CB_TYPE! (should be either new type GB_CB_SON_DELETED or not be called at all)
+    TEST_ASSERT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
+    TEST_ASSERT_NCHILD_TRIGGERED__WRONG_TYPE(trace_cont_top_newchild, cont_top); // @@@ wrong GB_CB_TYPE! (should be either new type GB_CB_SON_DELETED or not be called at all)
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+
+    GB_begin_transaction(gb_main);
+    GB_delete(cont_son);
+    GB_commit_transaction(gb_main);
+    TEST_ASSERT_TRIGGER__MISSING(trace_son_deleted); // @@@ son gets deleted w/o callback
+    TEST_ASSERT_DELETE_TRIGGERED(trace_cont_son_deleted, cont_son);
+    TEST_ASSERT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
+    TEST_ASSERT_NCHILD_TRIGGERED__WRONG_TYPE(trace_cont_top_newchild, cont_top); // @@@ wrong GB_CB_TYPE! (should be either new type GB_CB_SON_DELETED or not be called at all)
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+
+    // trigger callbacks by undoing last 3 delete transactions
+
+    TEST_ASSERT_NO_ERROR(GB_undo(gb_main, GB_UNDO_UNDO)); // undo delete of cont_son
+    TEST_ASSERT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
+    TEST_ASSERT_NCHILD_TRIGGERED(trace_cont_top_newchild, cont_top);
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+
+    TEST_ASSERT_NO_ERROR(GB_undo(gb_main, GB_UNDO_UNDO)); // undo delete of grandson
+    // cont_son callbacks are not triggered (they are not restored by undo)
+    TEST_ASSERT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
+    TEST_ASSERT_NCHILD_TRIGGERED__WRONG_TYPE(trace_cont_top_newchild, cont_top); // @@@ wrong GB_CB_TYPE! (should be either GB_CB_SON_CREATED or not be called at all)
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+
+    TEST_ASSERT_NO_ERROR(GB_undo(gb_main, GB_UNDO_UNDO)); // undo delete of top
+    TEST_ASSERT_NO_CALLBACK_TRIGGERED();
+
+    GB_close(gb_main);
+}
+
 #endif
