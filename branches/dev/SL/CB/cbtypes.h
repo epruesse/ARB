@@ -130,6 +130,9 @@ public:
     static StrictlyTypedCallback make_cb(AW_CL cb_) { return StrictlyTypedCallback((FuncType)cb_); }
 
     bool is_set() const { return cb != 0; }
+
+    bool operator <  (const StrictlyTypedCallback& other) const { return cb <  other.cb; }
+    bool operator == (const StrictlyTypedCallback& other) const { return cb == other.cb; }
 };
 
 // ---------------------
@@ -146,11 +149,13 @@ struct CallbackData {
     CallbackData(P1 p1_, P2 p2_) : p1(p1_), p2(p2_), dealloc(NULL) {}
     CallbackData(P1 p1_, P2 p2_, CallbackDataDeallocator dealloc_) : p1(p1_), p2(p2_), dealloc(dealloc_) {}
     ~CallbackData() { if (dealloc) dealloc(p1, p2); }
-    bool equals(const CallbackData& other) const { return p1 == other.p1 && p2 == other.p2 && dealloc == other.dealloc; }
+    bool operator <  (const CallbackData& other) const {
+        return p1<other.p1 || (p1 == other.p1 && (p2< other.p2 || (p2 == other.p2 && dealloc<other.dealloc)));
+    }
+    bool operator == (const CallbackData& other) const {
+        return p1 == other.p1 && p2 == other.p2 && dealloc == other.dealloc;
+    }
 };
-
-template<typename P1, typename P2>
-inline bool operator == (const CallbackData<P1,P2>& cd1, const CallbackData<P1,P2>& cd2) { return cd1.equals(cd2); }
 
 typedef CallbackData<AW_CL,AW_CL> UntypedCallbackData;
 
@@ -170,11 +175,9 @@ public:
     Callback_FVV(Signature CB, AW_CL P1, AW_CL P2) : cb(CB), cd(new UntypedCallbackData(P1, P2)) {}
     Callback_FVV(Signature CB, UntypedCallbackData::CallbackDataDeallocator dealloc, AW_CL P1, AW_CL P2) : cb(CB), cd(new UntypedCallbackData(P1, P2, dealloc)) {}
     RT operator()(FIXED fixed) const { return cb(fixed, cd->p1, cd->p2); }
-    bool equals(const Callback_FVV& other) const { return cb.equals(other.cb) && *cd == *other.cd; }
+    bool operator <  (const Callback_FVV& other) const { return cb<other.cb || (cb == other.cb && *cd<*other.cd); }
+    bool operator == (const Callback_FVV& other) const { return cb == other.cb && *cd == *other.cd; }
 };
-
-template<typename RT, typename FIXED>
-inline bool operator == (const Callback_FVV<RT,FIXED>& cb1, const Callback_FVV<RT,FIXED>& cb2) { return cb1.equals(cb2); }
 
 template<typename RT, typename F1, typename F2>
 class Callback_FVF { // FVF stands for arguments (FIXED, VARIABLE, FIXED)
@@ -206,11 +209,9 @@ public:
         arb_assert(ft == ST_P1);
         return SigP1::make_cb(cb)(f1, cd->p1, f2);
     }
-    bool equals(const Callback_FVF& other) const { return cb == other.cb && *cd == *other.cd; }
+    bool operator <  (const Callback_FVF& other) const { return cb<other.cb || (cb == other.cb && *cd<*other.cd); }
+    bool operator == (const Callback_FVF& other) const { return cb == other.cb && *cd == *other.cd; }
 };
-
-template<typename RT, typename F1, typename F2>
-inline bool operator == (const Callback_FVF<RT,F1,F2>& cb1, const Callback_FVF<RT,F1,F2>& cb2) { return cb1.equals(cb2); }
 
 // ---------------------------
 //      convenience macros
