@@ -249,6 +249,7 @@ ED4_edit_string.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -318,6 +319,7 @@ ED4_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_main.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_main.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
@@ -679,6 +681,7 @@ ED4_root.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_root.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_root.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_base.hxx
