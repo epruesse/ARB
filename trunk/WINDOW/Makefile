@@ -80,6 +80,7 @@ AW_advice.o: $(ARBHOME)/INCLUDE/cb.h
 AW_advice.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_advice.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_advice.o: $(ARBHOME)/INCLUDE/test_global.h
+AW_advice.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 AW_at.o: aw_at.hxx
 AW_at.o: aw_base.hxx
