@@ -201,11 +201,19 @@ const awXKeymap *aw_xkey_2_awkey(XKeyEvent *xkeyevent) {
         numlockwason      = true;
     }
 
-    static char    buffer[256];
-    KeySym         keysym;
-    XComposeStatus compose;
-    int            count = XLookupString(xkeyevent, buffer, 256, &keysym, &compose);
-    buffer[count]        = 0;
+    const int   BUFFERSIZE = 256;;
+    static char buffer[BUFFERSIZE];
+    KeySym      keysym;
+    int         count      = XLookupString(xkeyevent, buffer, BUFFERSIZE, &keysym, NULL);
+    buffer[count]          = 0;
+
+    if (!buffer[0] && count) {
+#if defined(DUMP_KEYEVENTS)
+        printf("special case: Ctrl-Space\n");
+#endif
+        aw_assert(keysym == XK_space);
+        buffer[0] = ' ';
+    }
 
 #if defined(DUMP_KEYEVENTS)
     printf("state=%u keycode=%u name='%s' ", xkeyevent->state, xkeyevent->keycode, buffer);
@@ -213,8 +221,9 @@ const awXKeymap *aw_xkey_2_awkey(XKeyEvent *xkeyevent) {
 
     if (keysym >= XK_space && keysym <= XK_asciitilde) {
         singlekey.awkey = AW_KEY_ASCII;
-        singlekey.awmod = AW_KEYMODE_NONE;
+        singlekey.awmod = (AW_key_mod)(xkeyevent->state & (AW_KEYMODE_CONTROL|AW_KEYMODE_ALT));  // forward ctrl and alt state
         singlekey.awstr = buffer;
+        aw_assert(buffer[0]);
 
         result = &singlekey;
 
