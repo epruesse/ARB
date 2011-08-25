@@ -11,6 +11,7 @@
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <aw_advice.hxx>
 #include <cctype>
 
 #define SAFE_EDITING        // undef this to remove sequence test code
@@ -802,121 +803,134 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                     if (is_consensus) { cannot_handle = 1; return 0; }
                     if (mode==AD_NOWRITE) { write_fault = 1; break; }
 
-                    if (key == ' ') { // insert gap
+                    if (key == ' ') {
                         if (is_sequence) {
-                            long left;
-                            int l, r;
-                            left = cursorpos-1; if (left<0) left = 0;
-                            l = seq[left]; r = seq[cursorpos];
-                            key = '-';
-                            if (ADPP_IS_ALIGN_CHARACTER(l)) key = l;
-                            if (ADPP_IS_ALIGN_CHARACTER(r)) key = r;
+                            long left = seq_pos>0 ? seq_pos-1 : 0;
+                            int  l    = seq[left];
+                            int  r    = seq[seq_pos];
+
+                            char gapchar_at_pos = ADPP_IS_ALIGN_CHARACTER(l) ? l : (ADPP_IS_ALIGN_CHARACTER(r) ? r : 0);
+
+                            switch (keymod) {
+                                case AW_KEYMODE_NONE:
+                                    key = gapchar_at_pos ? gapchar_at_pos : '-'; // insert (same) gap
+                                    break;
+
+                                case AW_KEYMODE_CONTROL:
+                                    if (gapchar_at_pos) key = gapchar_at_pos == '-' ? '.' : '-'; // toggle gaptype
+                                    break;
+
+                                default: break;
+                            }
                         }
                         str[0] = key;
                     }
 
-                    switch (mode) {
-                        case AD_ALIGN: {
-                            if (ADPP_IS_ALIGN_CHARACTER(key)) {
-                                long left;
-                                int l, r;
+                    if (ADPP_IS_ALIGN_CHARACTER(key) && keymod == AW_KEYMODE_CONTROL) { // gap-type change works in all modes
+                        // gap type functions ('.' <-> '-')
 
-                                left = seq_pos-1;
-                                if (left<0) left = 0;
+                        long left = seq_pos>0 ? seq_pos-1 : 0;
+                        int  l    = seq[left];
+                        int  r    = seq[seq_pos];
 
-                                l = seq[left];
-                                r = seq[seq_pos];
+                        if      (ADPP_IS_ALIGN_CHARACTER(l) && l!=key) { ad_err = swap_gaps(left, key);    changed_flag = 1; }
+                        else if (ADPP_IS_ALIGN_CHARACTER(r) && r!=key) { ad_err = swap_gaps(seq_pos, key); changed_flag = 1; }
+                    }
+                    else {
+                        switch (mode) {
+                            case AD_ALIGN: {
+                                if (ADPP_IS_ALIGN_CHARACTER(key)) {
+                                    if (keymod == AW_KEYMODE_NONE) {
+                                        if (!ad_err) {
+                                            char *nstr = (char *)GB_calloc(1, nrepeat+1);
+                                            int i;
 
-                                if (ADPP_IS_ALIGN_CHARACTER(l) && l!=key)       ad_err = swap_gaps(left, key);
-                                else if (ADPP_IS_ALIGN_CHARACTER(r) && r!=key)      ad_err = swap_gaps(seq_pos, key);
-                                else if (!ad_err) {
-                                    char *nstr = (char *)GB_calloc(1, nrepeat+1);
-                                    int i;
-
-                                    for (i = 0; i< nrepeat; i++) nstr[i] = key;
-                                    ad_err = insert(nstr, seq_pos, direction, 0);
-                                    if (!ad_err) seq_pos = get_next_visible_pos(seq_pos+(direction>=0 ? nrepeat : 0), direction);
-                                    delete nstr;
+                                            for (i = 0; i< nrepeat; i++) nstr[i] = key;
+                                            ad_err = insert(nstr, seq_pos, direction, 0);
+                                            if (!ad_err) seq_pos = get_next_visible_pos(seq_pos+(direction>=0 ? nrepeat : 0), direction);
+                                            delete nstr;
+                                        }
+                                        changed_flag = 1;
+                                    }
                                 }
-                                changed_flag = 1;
+                                else { // check typed bases against sequence
+                                    while (nrepeat && !ad_err) {
+                                        nrepeat--;
+                                        seq_pos = get_next_visible_base(seq_pos, direction);
+                                        if (seq_pos<0 || seq_pos>=seq_len) {
+                                            ad_err = GBS_global_string("End of sequence reached");
+                                        }
+                                        else if (seq[seq_pos]!=key) {
+                                            ad_err = GBS_global_string("Base '%c' at %li does not match '%c'", seq[seq_pos], seq_pos, key);
+                                        }
+                                        else {
+                                            seq_pos = get_next_visible_pos(seq_pos, direction)+1;
+                                            ad_err = 0;
+                                        }
+                                        if (ad_err) {
+                                            ed4_beep();
+                                        }
+                                    }
+                                }
+                                break;
                             }
-                            else { // check typed bases against sequence
+                            case AD_REPLACE: {
                                 while (nrepeat && !ad_err) {
                                     nrepeat--;
-                                    seq_pos = get_next_visible_base(seq_pos, direction);
-                                    if (seq_pos<0 || seq_pos>=seq_len) {
-                                        ad_err = GBS_global_string("End of sequence reached");
-                                    }
-                                    else if (seq[seq_pos]!=key) {
-                                        ad_err = GBS_global_string("Base '%c' at %li does not match '%c'", seq[seq_pos], seq_pos, key);
+                                    if (direction>0) {
+                                        ad_err = replace(str, seq_pos, 1);
+
+                                        if (!ad_err) {
+                                            seq_pos++;
+                                            changed_flag = 1;
+                                        }
                                     }
                                     else {
-                                        seq_pos = get_next_visible_pos(seq_pos, direction)+1;
-                                        ad_err = 0;
-                                    }
-                                    if (ad_err) {
-                                        ed4_beep();
+                                        int left_pos = get_next_visible_pos(seq_pos, -1);
+
+                                        if (left_pos>=0)    ad_err = replace(str, left_pos+1, -1);
+                                        else            ad_err = "End of sequence";
+
+                                        if (!ad_err) {
+                                            seq_pos = left_pos;
+                                            changed_flag = 1;
+                                        }
                                     }
                                 }
+                                break;
                             }
-                            break;
-                        }
-                        case AD_REPLACE: {
-                            while (nrepeat && !ad_err) {
-                                nrepeat--;
-                                if (direction>0) {
-                                    ad_err = replace(str, seq_pos, 1);
+                            case AD_INSERT: {
+                                while (nrepeat && !ad_err) {
+                                    nrepeat--;
+                                    if (direction>0) {
+                                        ad_err = insert(str, seq_pos, 1, !is_sequence);
 
-                                    if (!ad_err) {
-                                        seq_pos++;
-                                        changed_flag = 1;
-                                    }
-                                }
-                                else {
-                                    int left_pos = get_next_visible_pos(seq_pos, -1);
-
-                                    if (left_pos>=0)    ad_err = replace(str, left_pos+1, -1);
-                                    else            ad_err = "End of sequence";
-
-                                    if (!ad_err) {
-                                        seq_pos = left_pos;
-                                        changed_flag = 1;
-                                    }
-                                }
-                            }
-                            break;
-                        }
-                        case AD_INSERT: {
-                            while (nrepeat && !ad_err) {
-                                nrepeat--;
-                                if (direction>0) {
-                                    ad_err = insert(str, seq_pos, 1, !is_sequence);
-
-                                    if (!ad_err) {
-                                        seq_pos++;
-                                        changed_flag = 1;
-                                    }
-                                }
-                                else {
-                                    int left_pos = get_next_visible_pos(seq_pos, -1);
-
-                                    if (left_pos>=0) {
-                                        ad_err = insert(str, left_pos+1, -1, !is_sequence);
+                                        if (!ad_err) {
+                                            seq_pos++;
+                                            changed_flag = 1;
+                                        }
                                     }
                                     else {
-                                        ad_err = "End of sequence";
-                                    }
+                                        int left_pos = get_next_visible_pos(seq_pos, -1);
 
-                                    if (!ad_err) {
-                                        seq_pos = left_pos;
-                                        changed_flag = 1;
+                                        if (left_pos>=0) {
+                                            ad_err = insert(str, left_pos+1, -1, !is_sequence);
+                                        }
+                                        else {
+                                            ad_err = "End of sequence";
+                                        }
+
+                                        if (!ad_err) {
+                                            seq_pos = left_pos;
+                                            changed_flag = 1;
+                                        }
                                     }
                                 }
+                                break;
                             }
-                            break;
-                        }
-                        default: {
-                            break;
+                            default: {
+                                break;
+                            }
                         }
                     }
 
@@ -971,7 +985,21 @@ GB_ERROR ED4_Edit_String::edit(ED4_work_info *info) {
         seq_len = seq_len_int;
     }
 
-    int map_key = ED4_ROOT->edk->map_key(info->event.character);
+    int map_key;
+    if (info->event.keymodifier == AW_KEYMODE_NONE) {
+        map_key = ED4_ROOT->edk->map_key(info->event.character);
+        if (map_key != info->event.character) { // remapped
+            if (info->event.character == ' ') { // space
+                AW_advice("You have keymapped the space-key!\n"
+                          "The new functionality assigned to space-key is not available when\n"
+                          "key-mapping is enabled.\n",
+                          AW_ADVICE_TOGGLE|AW_ADVICE_HELP, "Obsolete default keymapping", "nekey_map.hlp");
+            }
+        }
+    }
+    else {
+        map_key = info->event.character;
+    }
     GB_ERROR err = 0;
 
     nrepeat_zero_requested = 1;
