@@ -9,6 +9,7 @@ cma_CPP:= $(CPP)
 cma_cflags:= $(cflags)
 
 cma_CPP:= $(subst -Weffc++,,$(cma_CPP))
+cma_CPP:= $(subst -Wctor-dtor-privacy,,$(cma_CPP))
 cma_cflags:= $(subst -Wshadow,,$(cma_cflags))
 cma_cflags+= -I../HEADERLIBS
 
