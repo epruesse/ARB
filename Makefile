@@ -1386,7 +1386,9 @@ fa:	SL/FAST_ALIGNER/FAST_ALIGNER.dummy
 
 #********************************************************************************
 
-up: depends proto tags valgrind_update libdepends
+up_by_remake: depends proto libdepends
+
+up: up_by_remake tags valgrind_update 
 
 #********************************************************************************
 
@@ -1913,7 +1915,7 @@ TEST_MAKE_FLAGS+=-j1
 endif
 
 
-%.test:
+%.test: %.dummy
 	-@( export ID=$$$$; mkdir -p $(TEST_LOG_DIR); \
 	( \
 	    $(MAKE) -C UNIT_TESTER -f Makefile.test -r \
