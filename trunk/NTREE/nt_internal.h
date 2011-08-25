@@ -28,6 +28,7 @@ AW_window *NT_open_select_tree_window(AW_root *awr, char *awar_tree);
 void NT_select_last_tree(AW_window *aww, char *awar_tree);
 AW_window *NT_open_select_alignment_window(AW_root *awr);
 void NT_system_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
+void NT_system_in_xterm_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
 
 /* AP_consensus.cxx */
 AW_window *AP_open_con_expert_window(AW_root *aw_root);
