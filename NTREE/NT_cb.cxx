@@ -126,5 +126,5 @@ void NT_system_in_xterm_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_
     if (cl_auto_help_file) AW_POPUP_HELP(aww, cl_auto_help_file);
 
     GB_ERROR error = GB_xcmd(command, true, true);
-    
+    if (error) aw_message(error);
 }
