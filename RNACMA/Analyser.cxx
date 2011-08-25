@@ -90,14 +90,8 @@ AlignedSequenceLoader* Analyser::getLoader() {
  */
 GB_ERROR Analyser::saveSAI(vector<size_t> clusters, double threshold) {
 
-    GBDATA *gb_main = runningDatabase();
-//     GBDATA *gb_main = GB_open(":", "rwt"); // @@@
-//     if (!gb_main) {
-//         GB_print_error();
-//         exit(-1);
-//     }
-
-    GB_ERROR error = GB_push_transaction(gb_main);
+    GBDATA   *gb_main = runningDatabase();
+    GB_ERROR  error   = GB_push_transaction(gb_main);
     if (error) {
         cout << "ERROR 1" << endl;
     }
@@ -111,7 +105,6 @@ GB_ERROR Analyser::saveSAI(vector<size_t> clusters, double threshold) {
     string result = ss.str();
 
     //save
-    // GBDATA *gb_sai = GBT_find_or_create_SAI(gb_main, "cma_clusters"); // @@@
     GBDATA *gb_sai = GBT_find_or_create_SAI(gb_main, getSAIname());
     GBDATA *gb_data = GBT_add_data(gb_sai, al_name, "data", GB_STRING);
     error = GB_write_string(gb_data, result.c_str());
@@ -142,7 +135,6 @@ GB_ERROR Analyser::saveSAI(vector<size_t> clusters, double threshold) {
  *         because we have to be able to show it in the SAI, where we
  *         are allowed to use only one character for each position).
  */
-// vector<char> Analyser::normalizeClusters(vector<unsigned int> clusters) { // @@@
 vector<char> Analyser::normalizeClusters(vector<size_t> clusters) {
 
     vector<char> result;
@@ -150,7 +142,6 @@ vector<char> Analyser::normalizeClusters(vector<size_t> clusters) {
     rename_map[0] = '-';
     char classes = '0';
 
-    // for (vector<unsigned int>::iterator it = clusters.begin(); it // @@@
     for (vector<size_t>::iterator it = clusters.begin(); it != clusters.end(); ++it) {
         if (rename_map.find(*it) == rename_map.end()) {
             rename_map[*it] = classes++;
@@ -240,12 +231,6 @@ int main(int argc, char** argv) {
 
         cout << "Saved results to SAI '" << Analyser::getSAIname() << "'" << endl
              << "(To analyse the results, open the editor and visualise the clusters using the SAI annotations)" << endl;
-//         cout << "Quit (q) or choose other threshold (t)? "; // @@@
-//         char response;
-//         cin >> response;
-//         if (response == 'q' or response == 'Q') {
-//             break;
-//         }
     }
 
     delete a;

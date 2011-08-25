@@ -21,12 +21,6 @@
  */
 AlignedSequenceLoader::AlignedSequenceLoader() {
 
-//     GBDATA *gb_main = GB_open(":", "rwt"); // @@@
-//     if (!gb_main) {
-//         GB_print_error();
-//         exit(-1);
-//     }
-
     GBDATA *gb_main = runningDatabase();
 
     GB_ERROR error = GB_push_transaction(gb_main);

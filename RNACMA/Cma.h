@@ -29,12 +29,9 @@
 #include <list>
 
 using namespace std;
-// USING_PART_OF_NAMESPACE_EIGEN;
-
 using Eigen::VectorXd;
 using Eigen::VectorXi;
 using Eigen::MatrixXd;
-using Eigen::MatrixXi;
 
 // Vector of maps to store the histogram of sequences.
 typedef vector<map<int, int> > MapVecType;

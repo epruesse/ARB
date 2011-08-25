@@ -33,7 +33,6 @@ public:
 
 
 GBDATA *runningDatabase() {
-    // static SmartPtr<ARBDB_connector> db = new ARBDB_connector;
     static SmartPtr<ARBDB_connector> db;
     if (db.isNull()) db = new ARBDB_connector;
     return db->main();
