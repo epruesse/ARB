@@ -154,7 +154,7 @@ vector<char> Analyser::normalizeClusters(vector<size_t> clusters) {
 
 //--------------------------------
 
-int main(int argc, char** argv) {
+int main(void) {
     cout
         << "arb_rnacma -- correlated mutation analysis" << endl
         << "              computes clusters of correlated positions" << endl

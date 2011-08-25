@@ -33,12 +33,11 @@ AlignedSequenceLoader::AlignedSequenceLoader() {
     MSA_len = GBT_get_alignment_len(gb_main, al_name);
 
     size_t occurrences[MSA_len];
-    for (int i = 0; i < MSA_len; i++)
+    for (size_t i = 0; i < MSA_len; i++)
         occurrences[i] = 0;
 
     cout << "loading marked species: ";
     flush( cout);
-    long temp;
     for (GBDATA *gb_species = GBT_first_marked_species(gb_main); gb_species; gb_species
              = GBT_next_marked_species(gb_species)) {
 
@@ -94,7 +93,7 @@ AlignedSequenceLoader::AlignedSequenceLoader() {
                 cout << "seq::" << seq_as_vec[0] << endl;
 #endif
 
-                assert(k == MSA_len);
+                assert((size_t)k == MSA_len);
                 vector<string> seq_vector(&seq_as_vec[0], &seq_as_vec[k]);
 
                 seqs->push_back(seq_vector);
