@@ -82,6 +82,7 @@ AW_advice.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_advice.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_advice.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_advice.o: $(ARBHOME)/INCLUDE/test_global.h
+AW_advice.o: $(ARBHOME)/INCLUDE/test_unit.h
 AW_advice.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AW_at.o: aw_at.hxx

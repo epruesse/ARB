@@ -24,7 +24,7 @@ char *string;
                 fprintf(stderr,"Error:%s\n",string);
                 exit(1);
         }
-        return;
+        return 0;
 }
 
 char *Calloc2(count,size)
@@ -163,7 +163,7 @@ int count;
                         fputc(data[j].nuc[i],file);
                 }
         }
-        return;
+        return 0;
 }
 
 
