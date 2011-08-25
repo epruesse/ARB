@@ -57,11 +57,6 @@ public:
     AlignedSequenceLoader();
 
     /**
-     * Dummy constructor used only for debugging.
-     */
-    AlignedSequenceLoader(bool dummy);
-
-    /**
      * Destructor.
      */
     virtual ~AlignedSequenceLoader();
