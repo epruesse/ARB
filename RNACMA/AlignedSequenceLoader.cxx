@@ -12,8 +12,6 @@
 #include <arbdbt.h>
 #include "dbconn.h"
 
-#define AL_DEBUG false
-
 /**
  * Loads the marked sequences aligned from Arb's DB.
  * This loader only considers letters given by the following regular
@@ -56,9 +54,6 @@ AlignedSequenceLoader::AlignedSequenceLoader() {
                 string seq_as_vec[MSA_len];
                 int k = 0;
                 for (string::iterator i = sequence.begin(); i != sequence.end(); ++i) {
-#if AL_DEBUG
-                    cout << *i;
-#endif
                     switch (*i) {
                         case 'A':
                         case 'a':
@@ -88,22 +83,11 @@ AlignedSequenceLoader::AlignedSequenceLoader() {
                     }
                     k++;
                 }
-#if AL_DEBUG
-                cout << endl << "len::" << /*seq_as_vec.size()*/k << endl;
-                cout << "seq::" << seq_as_vec[0] << endl;
-#endif
 
                 assert((size_t)k == MSA_len);
                 vector<string> seq_vector(&seq_as_vec[0], &seq_as_vec[k]);
 
                 seqs->push_back(seq_vector);
-#if AL_DEBUG
-                for (vector<string>::iterator i = seqs->at(0).begin(); i
-                         != seqs->at(0).end(); ++i) {
-                    cout << *i;
-                }
-#endif
-
             }
         }
 
@@ -115,44 +99,6 @@ AlignedSequenceLoader::AlignedSequenceLoader() {
     flush(cout);
 
     cleanSeqs(occurrences, MSA_len);
-
-#if AL_DEBUG
-    cout << "popped" << endl;
-#endif
-
-    // GB_close(gb_main);
-}
-
-/**
- * Dummy - used for Debug.
- */
-AlignedSequenceLoader::AlignedSequenceLoader(bool dummy) {
-
-    seqs = new VecVecType(4);
-    seqs->at(0) = vector<string> (0, "");
-    seqs->at(0).push_back("A");
-    seqs->at(0).push_back("-");
-    seqs->at(0).push_back("A");
-    seqs->at(0).push_back("T");
-    seqs->at(1) = vector<string> (0, "");
-    seqs->at(1).push_back("T");
-    seqs->at(1).push_back("-");
-    seqs->at(1).push_back("C");
-    seqs->at(1).push_back("A");
-    seqs->at(2) = vector<string> (0, "");
-    seqs->at(2).push_back("C");
-    seqs->at(2).push_back("C");
-    seqs->at(2).push_back("-");
-    seqs->at(2).push_back("A");
-    seqs->at(3) = vector<string> (0, "");
-    seqs->at(3).push_back("A");
-    seqs->at(3).push_back("G");
-    seqs->at(3).push_back("-");
-    seqs->at(3).push_back("G");
-
-    int occurrences[] = { 1, 1, 1, 1 };
-    cleanSeqs((size_t*) occurrences, 4);
-
 }
 
 /**
@@ -225,13 +171,6 @@ void AlignedSequenceLoader::cleanSeqs(size_t *occurrences, long len) {
         }
     }
 
-#if AL_DEBUG
-    for (j = 0; j < num_of_bases; j++) {
-        cout << ":" << position_map->at(j);
-    }
-    cout << endl;
-#endif
-
     for (VecVecType::iterator seq = seqs->begin(); seq != seqs->end(); ++seq) {
         //for every sequence
         vector<string> sequence(num_of_bases, "");
@@ -246,28 +185,7 @@ void AlignedSequenceLoader::cleanSeqs(size_t *occurrences, long len) {
         clean_seqs->push_back(sequence);
     }
 
-#if AL_DEBUG
-    for (VecVecType::iterator i = clean_seqs->begin(); i != clean_seqs->end(); ++i) {
-        cout << "new sequence" << endl;
-        for (vector<string>::iterator j = i->begin(); j != i->end(); j++) {
-            cout << *j;
-        }
-        cout << endl;
-    }
-#endif
-
     seqs = clean_seqs;
-
-#if AL_DEBUG
-    cout << "cleaned-up seqs:" << endl;
-    for (VecVecType::iterator i = seqs->begin(); i != seqs->end(); ++i) {
-        cout << "new sequence" << endl;
-        for (vector<string>::iterator j = i->begin(); j != i->end(); j++) {
-            cout << *j;
-        }
-        cout << endl;
-    }
-#endif
 
     cout << "clean-up done." << endl;
 

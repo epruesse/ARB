@@ -7,8 +7,6 @@
  *      Author: breno
  */
 
-#define AN_DEBUG false
-
 #include "Analyser.h"
 #include <time.h>
 #include <iostream>
@@ -27,31 +25,10 @@ Analyser::Analyser() {
     alphabet.push_back("G");
     alphabet.push_back("T");
 
-#if AN_DEBUG
-    loader = new AlignedSequenceLoader(true);
-#else
     loader = new AlignedSequenceLoader();
-#endif
     VecVecType *seqs = loader->getSequences();
 
-#if AN_DEBUG
-    cout << "cleaned-up seqs:" << endl;
-    for (VecVecType::iterator i = seqs->begin(); i != seqs->end(); ++i) {
-        cout << "new sequence" << endl;
-        for (vector<string>::iterator j = i->begin(); j != i->end(); j++) {
-            cout << *j;
-        }
-        cout << endl;
-    }
-#endif
-
-    flush( cout);
-
     cma = new Cma(alphabet, seqs->size());
-
-#if AN_DEBUG
-    cout << "passou do cma" << endl;
-#endif
 }
 
 /**
@@ -210,18 +187,6 @@ int main(void) {
             j++;
             i++;
         }
-
-#if AN_DEBUG
-        cout << cl << endl;
-#endif
-
-#if AN_DEBUG
-        cout << "Clusters (length = " << clusters->size() << "):" << endl;
-        for (vector<size_t>::iterator it = clusters->begin(); it != clusters->end(); ++it) {
-            cout << *it;
-        }
-        cout << endl;
-#endif
 
         GB_ERROR e = a->saveSAI(*clusters, threshold);
 

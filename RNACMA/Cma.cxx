@@ -13,9 +13,6 @@
 
 //>--------------------------Global definitions--------------------------------
 
-// set to true to print some debug messages
-#define CMA_DEBUG false
-
 // Some local function prototypes.
 bool compareMITuples(MITuple first, MITuple second);
 void unifyCluster(int cluster1, int cluster2, VectorXi & result);
@@ -165,18 +162,6 @@ list<MITuple> Cma::compute_mituples(MatrixXd mutualInformation) {
     // sort mituples by MI-value
     mituples.sort(compareMITuples);
 
-#if CMA_DEBUG
-    cout << "list of MI values contains:";
-    for (list<MITuple>::iterator it = mituples.begin(); it != mituples.end(); ++it) {
-        cout << " " << it->MI << endl;
-    }
-    cout << endl;
-
-    cout << "highest MI value is " << mituples.begin()->MI
-         << " between positions " << mituples.begin()->pos1 << " and "
-         << mituples.begin()->pos2 << "." << endl;
-#endif
-
     return mituples;
 }
 
@@ -215,35 +200,17 @@ VectorXi Cma::computeClusters(list<MITuple> mituples, size_t size,
             result[it->pos1] = cluster;
             result[it->pos2] = cluster++;
             rest -= 2;
-#if CMA_DEBUG
-            cout << "Joining position " << it->pos1 << " with " << it->pos2
-                 << " in cluster " << cluster - 1 << ". MI is " << it->MI
-                 << endl;
-#endif
-        } else if (result1 > epsilon and result2 < epsilon) {
+        }
+        else if (result1 > epsilon and result2 < epsilon) {
             result[it->pos2] = result[it->pos1];
             rest -= 1;
-#if CMA_DEBUG
-            cout << "Joining position " << it->pos1 << " with " << it->pos2
-                 << " in cluster " << result[it->pos1] << ". MI is "
-                 << it->MI << endl;
-#endif
-        } else if (result1 < epsilon and result2 > epsilon) {
+        }
+        else if (result1 < epsilon and result2 > epsilon) {
             result[it->pos1] = result[it->pos2];
             rest -= 1;
-#if CMA_DEBUG
-            cout << "Joining position " << it->pos1 << " with " << it->pos2
-                 << " in cluster " << result[it->pos2] << ". MI is "
-                 << it->MI << endl;
-#endif
-        } else if (result1 > epsilon and result2 > epsilon && result1 - result2
-                   > epsilon) {
-#if CMA_DEBUG
-            cout << "Joining cluster " << result[it->pos1] << " with "
-                 << result[it->pos2] << ". MI is " << it->MI << endl;
-#endif
+        }
+        else if (result1 > epsilon and result2 > epsilon && result1 - result2 > epsilon) {
             unifyCluster(result[it->pos1], result[it->pos2], result);
-
         }
     }
 
@@ -307,12 +274,6 @@ void Cma::initAlphabet(vector<string> alph) {
         }
     }
     alphabet_map["total"] = i;
-#if CMA_DEBUG
-    cout << "alphabet initialized to:" << endl;
-    for (map<string, int>::iterator it = alphabet_map.begin(); it != alphabet_map.end(); ++it) {
-        cout << it->first << ":" << it->second << endl;
-    }
-#endif
 }
 
 /**
