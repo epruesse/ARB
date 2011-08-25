@@ -52,7 +52,6 @@ public:
     /**
      * Gives the clusters sensible names.
      */
-    // vector<char> normalizeClusters(vector<unsigned int> clusters); // @@@
     vector<char> normalizeClusters(vector<size_t> clusters);
 
     /**
