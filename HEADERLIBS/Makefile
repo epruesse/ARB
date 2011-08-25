@@ -6,5 +6,6 @@ clean:
 
 eigen: eigen.tgz
 	tar -zxvf $<
+	touch eigen/
 
 

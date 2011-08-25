@@ -1500,6 +1500,13 @@ clean_links:
 redo_links: clean_links
 	$(MAKE) links
 
+#********************************************************************************
+
+headerlibs:
+	$(MAKE) -C HEADERLIBS all
+
+#********************************************************************************
+
 gde:		GDE/GDE.dummy
 GDE:		gde
 agde: 		ARB_GDE/ARB_GDE.dummy
