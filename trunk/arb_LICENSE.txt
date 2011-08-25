@@ -1,6 +1,7 @@
 Copyrights
 
 ARB copyright and license information
+-------------------------------------
 
     COPYRIGHTS
 
@@ -74,7 +75,8 @@ ARB copyright and license information
         applications and all external programs used by ARB.
 
 
-Copyright notices for programs distributes together with ARB
+Copyright notices for programs distributed together with ARB:
+-------------------------------------------------------------
 
     GDE
 
@@ -296,6 +298,13 @@ Copyright notices for programs distributes together with ARB
          Please advise me of any bugs, additions or corrections.
 
 
+Copyright notices for headerlibs distributed together with ARB:
+---------------------------------------------------------------
+
+     eigen (2.0.16)
+
+        eigen is copyrighted by the LGPL
+        (copies are provided in HEADERLIBS/eigen.tgz)
 
 
 
