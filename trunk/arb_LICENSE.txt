@@ -1,7 +1,6 @@
 Copyrights
 
 ARB copyright and license information
--------------------------------------
 
     COPYRIGHTS
 
@@ -76,7 +75,6 @@ ARB copyright and license information
 
 
 Copyright notices for programs distributed together with ARB:
--------------------------------------------------------------
 
     GDE
 
@@ -299,7 +297,6 @@ Copyright notices for programs distributed together with ARB:
 
 
 Copyright notices for headerlibs distributed together with ARB:
----------------------------------------------------------------
 
      eigen (2.0.16)
 
