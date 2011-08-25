@@ -205,6 +205,18 @@ AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit) {
     atexit(destroy_AW_root); // do not call this before opening properties DB!
 }
 
+#if defined(UNIT_TESTS)
+AW_root::AW_root(const char *propertyFile) {
+    aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
+    AW_root::SINGLETON = this;
+
+    memset((char *)this, 0, sizeof(AW_root));
+    init_variables(load_properties(propertyFile));
+    atexit(destroy_AW_root); // do not call this before opening properties DB!
+}
+#endif
+
+
 AW_root::~AW_root() {
     AW_root_cblist::clear(focus_callback_list);
     delete button_sens_list;    button_sens_list = NULL;
@@ -1224,7 +1236,6 @@ void AW_root::init_variables(AW_default database) {
     application_database     = database;
     hash_table_for_variables = GBS_create_hash(1000, GB_MIND_CASE);
     hash_for_windows         = GBS_create_hash(100, GB_MIND_CASE);
-    prvt->action_hash        = GBS_create_hash(1000, GB_MIND_CASE);
 
     for (int i=0; aw_fb[i].awar; ++i) {
         awar_string(aw_fb[i].awar, aw_fb[i].init, application_database);
@@ -1329,6 +1340,8 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     int          a = 0;
     XFontStruct *fontstruct;
     char        *fallback_resources[100];
+
+    prvt->action_hash = GBS_create_hash(1000, GB_MIND_CASE);
 
     p_r-> no_exit = no_exit;
     program_name  = strdup(programname);

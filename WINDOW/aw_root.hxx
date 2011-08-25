@@ -110,6 +110,9 @@ public:
 
     // the real public section:
     AW_root(const char *properties, const char *program, bool no_exit);
+#if defined(UNIT_TESTS)
+    AW_root(const char *properties); // fake-root for unit-tests (allows access to awar-subsystem)
+#endif
     ~AW_root();
 
     enum { AW_MONO_COLOR, AW_RGB_COLOR }    color_mode;

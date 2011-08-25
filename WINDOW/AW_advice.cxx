@@ -233,7 +233,7 @@ void AW_advice(const char *message, int type, const char *title, const char *cor
 
 void TEST_advice_id_awar_handling() {
     GB_shell  shell;
-    AW_root  root("min_ascii.arb", "test", true); // @@@ leaks
+    AW_root  root("min_ascii.arb");
     init_Advisor(&root);
 
     const char *one = "one";
@@ -269,6 +269,11 @@ void TEST_advice_id_awar_handling() {
     toggle_advice_shown(one);
     TEST_ASSERT(!advice_currently_shown(one));
     TEST_ASSERT(!advice_currently_shown(two));
+}
+
+void TEST_another_AW_root() {
+    GB_shell  shell;
+    AW_root("min_ascii.arb");
 }
 
 #endif // UNIT_TESTS
