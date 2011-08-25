@@ -735,6 +735,7 @@ ARCHS = \
 			PROBE_SET/PROBE_SET.a \
 			READSEQ/READSEQ.a \
 			RNA3D/RNA3D.a \
+			RNACMA/RNACMA.a \
 			SECEDIT/SECEDIT.a \
 			SEQ_QUALITY/SEQ_QUALITY.a \
 			SERVERCNTRL/SERVERCNTRL.a \
@@ -865,6 +866,20 @@ $(EDIT4): $(ARCHS_EDIT4:.a=.dummy) link_awt
 		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT4) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
+
+#***********************************	arb_rnacma **************************************
+RNACMA = bin/arb_rnacma
+ARCHS_RNACMA = \
+		RNACMA/RNACMA.a \
+
+$(RNACMA): $(ARCHS_RNACMA:.a=.dummy) link_db
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_RNACMA) $(LIBS) || ( \
+		echo "$(SEP) Link $@"; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(LIBS) $(ARCHS_RNACMA)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(LIBS) $(ARCHS_RNACMA) && \
+		echo "$(SEP) Link $@ [done]"; \
+		)
+
 
 #***********************************	arb_pgt **************************************
 
@@ -1194,6 +1209,7 @@ PHYLO/PHYLO.dummy:			links_non_perl
 PRIMER_DESIGN/PRIMER_DESIGN.dummy:	links_non_perl
 PROBE_SET/PROBE_SET.dummy:		links_non_perl link_db
 READSEQ/READSEQ.dummy:			links_non_perl
+RNACMA/RNACMA.dummy:			links_non_perl headerlibs
 SECEDIT/SECEDIT.dummy:			links_non_perl
 SL/ALIVIEW/ALIVIEW.dummy:		links_non_perl
 SL/AP_TREE/AP_TREE.dummy:		links_non_perl
@@ -1353,6 +1369,7 @@ tg:	$(TREEGEN)
 
 ifeq ($(OPENGL),1)
 3d:	RNA3D/RNA3D.dummy
+cma: $(RNACMA)
 gl:	GL/GL.dummy
 else
 noopengl:
@@ -1652,6 +1669,7 @@ clean2: $(ARCHS:.a=.clean) \
 		objclean \
 		lib/lib.clean \
 		GDEHELP/GDEHELP.clean \
+		HEADERLIBS/HEADERLIBS.clean \
 		SOURCE_TOOLS/SOURCE_TOOLS.clean \
 		UNIT_TESTER/UNIT_TESTER.clean \
 		TEMPLATES/TEMPLATES.clean \
@@ -1772,7 +1790,7 @@ reset_committed_build:
 
 # --------------------------------------------------------------------------------
 
-arbapplications: nt pa e4 wetc pt na nal di ph ds pgt wetc
+arbapplications: nt pa e4 wetc pt na nal di ph ds pgt wetc cma
 
 arb_external: convert tools gde readseq tg pst a3 xmlin
 
@@ -1798,6 +1816,7 @@ rac_aliv3:		a3
 rac_arb_pgt:		pgt
 rac_arb_convert_aln:	convert
 rac_arb_treegen:	tg
+rac_arb_rnacma:		cma
 
 # --------------------------------------------------------------------------------
 # unit testing 
