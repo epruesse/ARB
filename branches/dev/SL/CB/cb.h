@@ -63,10 +63,20 @@ DECLARE_CBTYPE_FVF_AND_BUILDERS(DatabaseCallback, void, GBDATA*, GB_CB_TYPE);   
 #endif
 
 #if defined(DEPRECATE_UNSAFE_CALLBACKS)
-#define __ATTR__DEPRECATED_CALLBACK __ATTR__DEPRECATED("use typesafe callback")
+
+#define __ATTR__DEPRECATED_CALLBACK         __ATTR__DEPRECATED("use typesafe callback")
+#define __ATTR__DEPRECATED_CALLBACK_IN_CTOR __ATTR__DEPRECATED_FUNCTION
+
 #else
+
 #define __ATTR__DEPRECATED_CALLBACK
+#define __ATTR__DEPRECATED_CALLBACK_IN_CTOR 
+
 #endif
+
+#define __ATTR__DEPRECATED_CALLBACK_LATER         __ATTR__DEPRECATED_LATER("use typesafe callback")
+#define __ATTR__DEPRECATED_CALLBACK_IN_CTOR_LATER __ATTR__DEPRECATED_FUNCTION_LATER
+
 
 #else
 #error cb.h included twice
