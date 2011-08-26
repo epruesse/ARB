@@ -631,8 +631,10 @@ AW_cb_guard AW_cb::guard_before = NULL;
 AW_cb_guard AW_cb::guard_after  = NULL;
 
 void AW_cb::run_callbacks() {
-    if (next) next->run_callbacks();                 // callback the whole list
-    if (!cb) return;                                // run no callback
+    if (next) next->run_callbacks(); // callback the whole list
+
+    aw_assert(CB.callee());   // @@@ remove condition below ?
+    if (!CB.callee()) return; // run no callback
 
     AW_root *root = caller->get_root();
     if (root->disable_callbacks) {
@@ -643,27 +645,27 @@ void AW_cb::run_callbacks() {
 
         // the following callbacks are allowed even if disable_callbacks is true
 
-        bool isModalCallback = (cb == AW_CB(message_cb) ||
-                                cb == AW_CB(input_history_cb) ||
-                                cb == AW_CB(input_cb) ||
-                                cb == AW_CB(file_selection_cb));
+        bool isModalCallback = (has_callee((AW_CB)message_cb) ||
+                                has_callee((AW_CB)input_history_cb) ||
+                                has_callee((AW_CB)input_cb) ||
+                                has_callee((AW_CB)file_selection_cb));
 
-        bool isPopdown = (cb == AW_CB(AW_POPDOWN));
-        bool isHelp    = (cb == AW_CB(AW_POPUP_HELP));
+        bool isPopdown = has_callee((AW_CB)AW_POPDOWN);
+        bool isHelp    = has_callee((AW_CB)AW_POPUP_HELP);
         bool allow     = isModalCallback || isHelp || isPopdown;
 
         bool isInfoResizeExpose = false;
 
         if (!allow) {
-            isInfoResizeExpose = caller->is_expose_callback(AW_INFO_AREA, cb) || caller->is_resize_callback(AW_INFO_AREA, cb);
+            isInfoResizeExpose = caller->is_expose_callback(AW_INFO_AREA, (AW_CB)CB.callee()) || caller->is_resize_callback(AW_INFO_AREA, (AW_CB)CB.callee());
             allow              = isInfoResizeExpose;
         }
 
         if (!allow) {
             // don't warn about the following callbacks, just silently ignore them
             bool silentlyIgnore =
-                caller->is_expose_callback(AW_MIDDLE_AREA, cb) ||
-                caller->is_resize_callback(AW_MIDDLE_AREA, cb);
+                caller->is_expose_callback(AW_MIDDLE_AREA, (AW_CB)CB.callee()) ||
+                caller->is_resize_callback(AW_MIDDLE_AREA, (AW_CB)CB.callee());
 
             if (!silentlyIgnore) { // otherwise remind the user to answer the prompt:
                 aw_message("That has been ignored. Answer the prompt first!");
@@ -691,14 +693,14 @@ void AW_cb::run_callbacks() {
 
     if (guard_before) guard_before();
 
-    if (cb == AW_POPUP) {
+    if (has_callee(AW_POPUP)) {
         if (pop_up_window) { // already exists
             pop_up_window->activate();
         }
         else {
-            AW_PPP g = (AW_PPP)cd1;
+            AW_PPP g = (AW_PPP)CB.inspect_CD1();
             if (g) {
-                pop_up_window = g(caller->get_root(), cd2, 0);
+                pop_up_window = g(caller->get_root(), CB.inspect_CD2(), 0);
                 pop_up_window->show();
             }
             else {
@@ -709,14 +711,14 @@ void AW_cb::run_callbacks() {
             p_aww(pop_up_window)->popup_cb->run_callbacks();
     }
     else {
-        cb(caller, cd1, cd2);
+        CB(caller);
     }
 
     if (guard_after) guard_after();
 }
 
 bool AW_cb::contains(void (*g)(AW_window*, AW_CL, AW_CL)) {
-    return (cb == g) || (next && next->contains(g));
+    return has_callee(g) || (next && next->contains(g));
 }
 
 AW_root_Motif::AW_root_Motif() {
@@ -784,7 +786,7 @@ void AW_server_callback(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call
         }
     }
 
-    if (cbs->would_call(AW_POPUP)) {
+    if (cbs->has_callee(AW_POPUP)) {
         cbs->run_callbacks();
     }
     else {
@@ -3419,13 +3421,13 @@ GB_ERROR AW_root::execute_macro(const char *file) {
 }
 
 void AW_root::define_remote_command(AW_cb *cbs) {
-    if (cbs->would_call((AW_CB)AW_POPDOWN)) {
+    if (cbs->has_callee((AW_CB)AW_POPDOWN)) {
         aw_assert(!cbs->has_parameters()); // popdown takes no parameters (please pass ", 0, 0"!)
     }
 
     AW_cb *old_cbs = (AW_cb*)GBS_write_hash(prvt->action_hash, cbs->get_id(), (long)cbs);
     if (old_cbs) {
-        if (!old_cbs->is_equal(*cbs)) {                  // existing remote command replaced by different callback
+        if (!old_cbs->callback_cmp(*cbs) == 0) { // existing remote command replaced by different callback
 #if defined(DEBUG)
             fputs(GBS_global_string("Warning: reused callback id '%s' for different callback\n", old_cbs->get_id()), stderr);
 #if defined(DEVEL_RALF) && 0

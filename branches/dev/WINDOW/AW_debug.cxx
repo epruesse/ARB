@@ -234,7 +234,7 @@ size_t AW_root::callallcallbacks(int mode) {
                         bool   skipcb = remote_command[0] == '!' || GBS_read_hash(dontCallHash, remote_command);
 
                         if (!skipcb) {
-                            if (cbs->would_call((AW_CB)AW_help_entry_pressed)) skipcb = true;
+                            if (cbs->has_callee((AW_CB)AW_help_entry_pressed)) skipcb = true;
                         }
                         if (skipcb) {
                             fprintf(stderr, "Skipped callback %zu/%zu (%s)\n", curr, count, remote_command);
@@ -252,7 +252,7 @@ size_t AW_root::callallcallbacks(int mode) {
                                 fprintf(stderr, "Unhandled error in '%s': %s\n", remote_command, GB_await_error());
                             }
 
-                            if (cbs->would_call(AW_POPUP)) {
+                            if (cbs->has_callee(AW_POPUP)) {
                                 AW_window *awp = cbs->popup_window();
                                 if (awp) {
                                     awp->force_expose();
