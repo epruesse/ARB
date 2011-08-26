@@ -300,7 +300,7 @@ Copyright notices for headerlibs distributed together with ARB:
 
      eigen (2.0.16)
 
-        eigen is copyrighted by the LGPL
+        eigen is copyrighted by LGPL3
         (copies are provided in HEADERLIBS/eigen.tgz)
 
 
