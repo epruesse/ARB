@@ -14,6 +14,7 @@ my @skipped_directories = (
                            qr/\/HELP_SOURCE\/Xml$/o,
                            qr/\/ignore\./o,
                            qr/\/PERL2ARB\/blib$/o,
+                           qr/\/HEADERLIBS\/[^\/]+/o,
                            qr/\/UNIT_TESTER\/logs$/o,
                            qr/\/UNIT_TESTER\/tests$/o,
                            qr/^\.\/ARB_SOURCE_DOC/o,
@@ -103,6 +104,7 @@ my %skipped_extensions = map { $_ => 1; } (
                                            'so',
                                            'stamp',
                                            'swp',
+                                           'yml', 'json', # perl2arb
                                           );
 
 
@@ -137,6 +139,8 @@ my @used_when_matchesFull = (
                              qr/\/GDEHELP\/HELP_PLAIN/o,
                              qr/\/GDEHELP\/HELP_WRITTEN/o,
                              qr/\/GDEHELP\/Makefile\.helpfiles/o,
+                             qr/\/HEADERLIBS\/.*COPYING$/o,
+                             qr/\/HEADERLIBS\/.*\.tgz$/o,
                              qr/\/HELP_SOURCE\/.*\.gif$/o,
                              qr/\/HELP_SOURCE\/oldhelp\/.*\.(ps|pdf)\.gz$/o,
                              qr/\/HELP_SOURCE\/oldhelp\/.*\.hlp$/o,
