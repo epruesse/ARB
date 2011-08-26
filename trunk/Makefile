@@ -1369,7 +1369,6 @@ tg:	$(TREEGEN)
 
 ifeq ($(OPENGL),1)
 3d:	RNA3D/RNA3D.dummy
-cma: $(RNACMA)
 gl:	GL/GL.dummy
 else
 noopengl:
@@ -1386,6 +1385,7 @@ pst: 	PROBE_SET/PROBE_SET.dummy
 pd:	PROBE_DESIGN/PROBE_DESIGN.dummy
 na:	$(NAMES)
 sq:	SEQ_QUALITY/SEQ_QUALITY.dummy
+cma:    $(RNACMA)
 
 sec:	SECEDIT/SECEDIT.dummy
 
