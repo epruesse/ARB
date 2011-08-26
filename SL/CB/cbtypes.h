@@ -174,9 +174,15 @@ private:
 public:
     Callback_FVV(Signature CB, AW_CL P1, AW_CL P2) : cb(CB), cd(new UntypedCallbackData(P1, P2)) {}
     Callback_FVV(Signature CB, UntypedCallbackData::CallbackDataDeallocator dealloc, AW_CL P1, AW_CL P2) : cb(CB), cd(new UntypedCallbackData(P1, P2, dealloc)) {}
+
     RT operator()(FIXED fixed) const { return cb(fixed, cd->p1, cd->p2); }
+
     bool operator <  (const Callback_FVV& other) const { return cb<other.cb || (cb == other.cb && *cd<*other.cd); }
     bool operator == (const Callback_FVV& other) const { return cb == other.cb && *cd == *other.cd; }
+
+    AW_CL callee() const { return cb.get_cb(); } // @@@ only intermediate - remove later
+    AW_CL inspect_CD1() const { return cd->p1; } // @@@ only intermediate - remove later
+    AW_CL inspect_CD2() const { return cd->p2; } // @@@ only intermediate - remove later
 };
 
 template<typename RT, typename F1, typename F2>
@@ -209,8 +215,13 @@ public:
         arb_assert(ft == ST_P1);
         return SigP1::make_cb(cb)(f1, cd->p1, f2);
     }
+
     bool operator <  (const Callback_FVF& other) const { return cb<other.cb || (cb == other.cb && *cd<*other.cd); }
     bool operator == (const Callback_FVF& other) const { return cb == other.cb && *cd == *other.cd; }
+
+    AW_CL callee() const { return cb; }          // @@@ only intermediate - remove later
+    AW_CL inspect_CD1() const { return cd->p1; } // @@@ only intermediate - remove later
+    AW_CL inspect_CD2() const { return cd->p2; } // @@@ only intermediate - remove later
 };
 
 // ---------------------------

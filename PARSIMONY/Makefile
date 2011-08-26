@@ -229,6 +229,7 @@ PARS_klprops.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arb_core.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arbtools.h
+PARS_klprops.o: $(ARBHOME)/INCLUDE/attributes.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_window.hxx

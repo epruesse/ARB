@@ -10,7 +10,6 @@
 // ============================================================== //
 
 #include <cb.h>
-#include <attributes.h>
 #include <string>
 #include <stdint.h>
 
