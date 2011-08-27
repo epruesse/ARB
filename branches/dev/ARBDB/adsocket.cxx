@@ -742,7 +742,7 @@ GB_ERROR GB_xterm() {
 }
 
 GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
-    // goes to header: __ATTR__USERESULT
+    // goes to header: __ATTR__USERESULT_TODO
 
     // runs a command in an xterm
     // if 'background' is true -> run asynchronous
