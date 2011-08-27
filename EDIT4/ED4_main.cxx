@@ -328,7 +328,7 @@ static void ED4_edit_direction_changed(AW_root * /* awr */) {
 
 void ED4_expose_all_windows() {
     for (ED4_window *ew = ED4_ROOT->first_window; ew; ew = ew->next) {
-        ED4_expose_cb(ew->aww, 0, 0);
+        ED4_expose_cb(ew->aww);
     }
 }
 

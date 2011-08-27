@@ -318,27 +318,18 @@ static void value_changed_scroll_bar_horizontal(Widget /*wgt*/, XtPointer aw_cb_
     cbs->caller_window()->slider_pos_horizontal = sbcbs->value;
     cbs->run_callbacks();
 }
-static void drag_scroll_bar_horizontal(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer call_data) {
-    XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
-    AW_cb                     *cbs   = (AW_cb *)aw_cb_struct;
-
-    cbs->caller_window()->slider_pos_horizontal = sbcbs->value;
-    cbs->run_callbacks();
-}
-void AW_window::set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    XtAddCallback(p_w->scroll_bar_horizontal, XmNvalueChangedCallback,
-            (XtCallbackProc) value_changed_scroll_bar_horizontal,
-            (XtPointer) new AW_cb(this, f, cd1, cd2, ""));
-    XtAddCallback(p_w->scroll_bar_horizontal, XmNdragCallback,
-            (XtCallbackProc) drag_scroll_bar_horizontal,
-            (XtPointer) new AW_cb(this, f, cd1, cd2, ""));
-}
-
 static void value_changed_scroll_bar_vertical(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer call_data) {
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb                     *cbs   = (AW_cb *)aw_cb_struct;
 
     cbs->caller_window()->slider_pos_vertical = sbcbs->value;
+    cbs->run_callbacks();
+}
+static void drag_scroll_bar_horizontal(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer call_data) {
+    XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
+    AW_cb                     *cbs   = (AW_cb *)aw_cb_struct;
+
+    cbs->caller_window()->slider_pos_horizontal = sbcbs->value;
     cbs->run_callbacks();
 }
 static void drag_scroll_bar_vertical(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer call_data) {
@@ -348,21 +339,28 @@ static void drag_scroll_bar_vertical(Widget /*wgt*/, XtPointer aw_cb_struct, XtP
     cbs->caller_window()->slider_pos_vertical = sbcbs->value;
     cbs->run_callbacks();
 }
+void AW_window::set_horizontal_change_callback(const WindowCallback& wcb) {
+    const AW_cb *xcb = new AW_cb(this, wcb, "");
+    Widget       bar = p_w->scroll_bar_horizontal;
 
+    XtAddCallback(bar, XmNvalueChangedCallback, (XtCallbackProc)value_changed_scroll_bar_horizontal, (XtPointer)xcb);
+    XtAddCallback(bar, XmNdragCallback,         (XtCallbackProc)drag_scroll_bar_horizontal,          (XtPointer)xcb);
+}
+void AW_window::set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    set_horizontal_change_callback(makeWindowCallback(f, cd1, cd2));
+}
+
+void AW_window::set_vertical_change_callback(const WindowCallback& wcb) {
+    const AW_cb *xcb = new AW_cb(this, wcb, "");
+    Widget       bar = p_w->scroll_bar_vertical;
+
+    XtAddCallback(bar, XmNvalueChangedCallback,  (XtCallbackProc)value_changed_scroll_bar_vertical, (XtPointer)xcb);
+    XtAddCallback(bar, XmNdragCallback,          (XtCallbackProc)drag_scroll_bar_vertical,          (XtPointer)xcb);
+    XtAddCallback(bar, XmNpageIncrementCallback, (XtCallbackProc)drag_scroll_bar_vertical,          (XtPointer)xcb);
+    XtAddCallback(bar, XmNpageDecrementCallback, (XtCallbackProc)drag_scroll_bar_vertical,          (XtPointer)xcb);
+}
 void AW_window::set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    XtAddCallback(p_w->scroll_bar_vertical, XmNvalueChangedCallback,
-            (XtCallbackProc) value_changed_scroll_bar_vertical,
-            (XtPointer) new AW_cb(this, f, cd1, cd2, ""));
-    XtAddCallback(p_w->scroll_bar_vertical, XmNdragCallback,
-            (XtCallbackProc) drag_scroll_bar_vertical,
-            (XtPointer) new AW_cb(this, f, cd1, cd2, ""));
-
-    XtAddCallback(p_w->scroll_bar_vertical, XmNpageIncrementCallback,
-            (XtCallbackProc) drag_scroll_bar_vertical,
-            (XtPointer) new AW_cb(this, f, cd1, cd2, ""));
-    XtAddCallback(p_w->scroll_bar_vertical, XmNpageDecrementCallback,
-            (XtCallbackProc) drag_scroll_bar_vertical,
-            (XtPointer) new AW_cb(this, f, cd1, cd2, ""));
+    set_vertical_change_callback(makeWindowCallback(f, cd1, cd2));
 }
 
 void AW_window::tell_scrolled_picture_size(AW_screen_area rectangle) {
@@ -631,7 +629,7 @@ AW_cb_guard AW_cb::guard_before = NULL;
 AW_cb_guard AW_cb::guard_after  = NULL;
 
 void AW_cb::run_callbacks() {
-    if (next) next->run_callbacks(); // callback the whole list
+    if (prev) prev->run_callbacks(); // callback the whole list
 
     aw_assert(CB.callee());   // @@@ remove condition below ?
     if (!CB.callee()) return; // run no callback
@@ -718,7 +716,7 @@ void AW_cb::run_callbacks() {
 }
 
 bool AW_cb::contains(void (*g)(AW_window*, AW_CL, AW_CL)) {
-    return has_callee(g) || (next && next->contains(g));
+    return has_callee(g) || (prev && prev->contains(g));
 }
 
 AW_root_Motif::AW_root_Motif() {
@@ -842,12 +840,12 @@ static void AW_focusCB(Widget /*wgt*/, XtPointer aw_cb_struct, XEvent*, Boolean*
 }
 
 void AW_window::set_popup_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    p_w->popup_cb = new AW_cb(this, f, cd1, cd2, 0, p_w->popup_cb);
+    AW_cb::append(p_w->popup_cb, new AW_cb(this, f, cd1, cd2)); // @@@ DEPCTOR
 }
 
 void AW_window::set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     XtAddEventHandler(MIDDLE_WIDGET, EnterWindowMask, FALSE,
-    AW_focusCB, (XtPointer) new AW_cb(this, f, cd1, cd2, 0));
+    AW_focusCB, (XtPointer) new AW_cb(this, f, cd1, cd2, 0)); // @@@ DEPCTOR
 }
 
 // ---------------
@@ -865,18 +863,23 @@ static void AW_exposeCB(Widget /*wgt*/, XtPointer aw_cb_struct, XmDrawingAreaCal
     }
 }
 
-void AW_area_management::set_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_area_management::set_expose_callback(AW_window *aww, const WindowCallback& wcb) {
     // insert expose callback for draw_area
     if (!expose_cb) {
-        XtAddCallback(area, XmNexposeCallback, (XtCallbackProc) AW_exposeCB,
-                (XtPointer) this);
+        XtAddCallback(area, XmNexposeCallback, (XtCallbackProc) AW_exposeCB, (XtPointer) this);
     }
-    expose_cb = new AW_cb(aww, f, cd1, cd2, 0, expose_cb);
+    AW_cb::append(expose_cb, new AW_cb(aww, wcb));
+}
+void AW_area_management::set_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    set_expose_callback(aww, makeWindowCallback(f, cd1, cd2));
 }
 
-void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::set_expose_callback(AW_area area, const WindowCallback& wcb) {
     AW_area_management *aram = MAP_ARAM(area);
-    if (aram) aram->set_expose_callback(this, f, cd1, cd2);
+    if (aram) aram->set_expose_callback(this, wcb);
+}
+void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    set_expose_callback(area, makeWindowCallback(f, cd1, cd2));
 }
 
 bool AW_area_management::is_expose_callback(AW_window * /* aww */, void (*f)(AW_window*, AW_CL, AW_CL)) {
@@ -1001,20 +1004,23 @@ static void AW_resizeCB_draw_area(Widget /*wgt*/, XtPointer aw_cb_struct, XtPoin
     aram->run_resize_callback();
 }
 
-void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_area_management::set_resize_callback(AW_window *aww, const WindowCallback& wcb) {
     // insert resize callback for draw_area
     if (!resize_cb) {
-        XtAddCallback(area, XmNresizeCallback,
-                (XtCallbackProc) AW_resizeCB_draw_area, (XtPointer) this);
+        XtAddCallback(area, XmNresizeCallback, (XtCallbackProc) AW_resizeCB_draw_area, (XtPointer) this);
     }
-    resize_cb = new AW_cb(aww, f, cd1, cd2, 0, resize_cb);
+    AW_cb::append(resize_cb, new AW_cb(aww, wcb));
+}
+void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    set_resize_callback(aww, makeWindowCallback(f, cd1, cd2));
 }
 
-void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::set_resize_callback(AW_area area, const WindowCallback& wcb) {
     AW_area_management *aram = MAP_ARAM(area);
-    if (!aram)
-        return;
-    aram->set_resize_callback(this, f, cd1, cd2);
+    if (aram) aram->set_resize_callback(this, wcb);
+}
+void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    set_resize_callback(area, makeWindowCallback(f, cd1, cd2));
 }
 
 // -------------------
@@ -1128,7 +1134,7 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
 void AW_area_management::set_input_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     XtAddCallback(area, XmNinputCallback,
             (XtCallbackProc) AW_inputCB_draw_area,
-            (XtPointer) new AW_cb(aww, f, cd1, cd2, (char*)0));
+            (XtPointer) new AW_cb(aww, f, cd1, cd2, (char*)0)); // @@@ DEPCTOR
 }
 
 void AW_window::set_input_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
@@ -1138,9 +1144,8 @@ void AW_window::set_input_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW
     aram->set_input_callback(this, f, cd1, cd2);
 }
 
-// cppcheck-suppress publicAllocationError
 void AW_area_management::set_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    double_click_cb = new AW_cb(aww, f, cd1, cd2, (char*)0, double_click_cb);
+    AW_cb::append(double_click_cb, new AW_cb(aww, f, cd1, cd2)); // @@@ DEPCTOR
 }
 
 void AW_window::set_double_click_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
@@ -1170,7 +1175,7 @@ static void AW_motionCB(Widget /*w*/, XtPointer aw_cb_struct, XEvent *ev, Boolea
 }
 void AW_area_management::set_motion_callback(AW_window *aww, void (*f)(AW_window *, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     XtAddEventHandler(area, ButtonMotionMask, False,
-                      AW_motionCB, (XtPointer) new AW_cb(aww, f, cd1, cd2, ""));
+                      AW_motionCB, (XtPointer) new AW_cb(aww, f, cd1, cd2, "")); // @@@ DEPCTOR
 }
 void AW_window::set_motion_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     AW_area_management *aram = MAP_ARAM(area);
@@ -2535,9 +2540,8 @@ void AW_window::select_mode(int mode) {
     XtVaSetValues(widget, XmNbackground, p_global->foreground, NULL);
 }
 
-static void aw_mode_callback(AW_window *aww, long mode, AW_cb *cbs) {
-    aww->select_mode((int)mode);
-    cbs->run_callbacks();
+static void aw_mode_callback(AW_window *aww, short int mode) {
+    aww->select_mode(mode);
 }
 
 #define MODE_BUTTON_OFFSET 34
@@ -2564,9 +2568,10 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active M
     XtVaSetValues(button, RES_CONVERT(XmNlabelPixmap, path), NULL);
     XtVaGetValues(button, XmNforeground, &p_global->foreground, NULL);
 
-    AW_cb *cbs = new AW_cb(this, f, cd1, cd2, 0);
-    AW_cb *cb2 = new AW_cb(this, (AW_CB)aw_mode_callback, (AW_CL)p_w->number_of_modes, (AW_CL)cbs, helpText, cbs);
-    XtAddCallback(button, XmNactivateCallback, (XtCallbackProc)AW_server_callback, (XtPointer)cb2);
+    AW_cb *modecb = new AW_cb(this, makeWindowCallback(aw_mode_callback, p_w->number_of_modes), helpText);
+    AW_cb::append(modecb, new AW_cb(this, f, cd1, cd2)); // @@@ DEPCTOR
+
+    XtAddCallback(button, XmNactivateCallback, (XtCallbackProc)AW_server_callback, (XtPointer)modecb);
 
     if (!p_w->modes_f_callbacks) {
         p_w->modes_f_callbacks = (AW_cb **)GB_calloc(sizeof(AW_cb*), AW_NUMBER_OF_F_KEYS); // valgrinders : never freed because AW_window never is freed
@@ -2575,7 +2580,7 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active M
         p_w->modes_widgets = (Widget *)GB_calloc(sizeof(Widget), AW_NUMBER_OF_F_KEYS);
     }
     if (p_w->number_of_modes<AW_NUMBER_OF_F_KEYS) {
-        p_w->modes_f_callbacks[p_w->number_of_modes] = cb2;
+        p_w->modes_f_callbacks[p_w->number_of_modes] = modecb;
         p_w->modes_widgets[p_w->number_of_modes] = button;
     }
 
@@ -2883,10 +2888,11 @@ void AW_window::close_sub_menu() {
         p_w->menu_deep--;
 }
 
-void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
-                                  const char *mnemonic, const char *helpText, AW_active Mask,
-                                  void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2)
-{
+void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active Mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    insert_menu_topic(topic_id, name, mnemonic, helpText, Mask, makeWindowCallback(f, cd1, cd2));
+}
+
+void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active Mask, const WindowCallback& cb) {
     aw_assert(legal_mask(Mask));
     Widget button;
 
@@ -2918,7 +2924,7 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
     }
 
     AW_label_in_awar_list(this, button, name);
-    AW_cb *cbs = new AW_cb(this, f, cd1, cd2, helpText);
+    AW_cb *cbs = new AW_cb(this, cb, helpText);
     XtAddCallback(button, XmNactivateCallback,
                   (XtCallbackProc) AW_server_callback,
                   (XtPointer) cbs);
@@ -2927,6 +2933,7 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
     root->define_remote_command(cbs);
     root->make_sensitive(button, Mask);
 }
+
 
 void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const char *helpText, AW_active Mask,
                                   void (*f)(AW_window*, AW_CL,  AW_CL), AW_CL cd1, AW_CL cd2)
@@ -2939,7 +2946,7 @@ void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const cha
             p_w->help_pull_down,
             RES_CONVERT(XmNlabelString, name),
                                       RES_CONVERT(XmNmnemonic, mnemonic), NULL);
-    XtAddCallback(button, XmNactivateCallback, (XtCallbackProc)AW_server_callback, (XtPointer)new AW_cb(this, f, cd1, cd2, helpText));
+    XtAddCallback(button, XmNactivateCallback, (XtCallbackProc)AW_server_callback, (XtPointer)new AW_cb(this, f, cd1, cd2, helpText)); // @@@ DEPCTOR
 
     root->make_sensitive(button, Mask);
 }

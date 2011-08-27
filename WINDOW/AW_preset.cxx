@@ -99,7 +99,7 @@ void aw_incdec_color(AW_window *aww, const char *action) {
 
 #define AWAR_GLOBAL_COLOR_NAME "tmp/aw/color_label"
 
-void aw_create_color_chooser_window(AW_window *aww, const char *awar_name, const char *label_name) {
+void aw_popup_color_chooser_window(AW_window *aww, const char *awar_name, const char *label_name) {
     AW_root *awr = aww->get_root();
     static AW_window_simple *aws = 0;
     if (!aws) {
@@ -110,7 +110,7 @@ void aw_create_color_chooser_window(AW_window *aww, const char *awar_name, const
         aws->init(awr, "COLORS", "COLORS");
         aws->at(10, 10);
         aws->auto_space(3, 3);
-        aws->callback     (AW_POPDOWN);
+        aws->callback(makeWindowCallback(AW_POPDOWN));
         aws->create_button("CLOSE", "CLOSE", "C");
         aws->get_at_position(&x1, &y1);
         aws->at_newline();
@@ -137,7 +137,7 @@ void aw_create_color_chooser_window(AW_window *aww, const char *awar_name, const
 
                     char color_name[10];
                     sprintf(color_name, "#%2.2X%2.2X%2.2X", rgb==0 ? 0xff : 0x55, rgb==1 ? 0xff : 0x55, rgb==2 ? 0xff : 0x55);
-                    aws->callback((AW_CB1)aw_incdec_color, (AW_CL)strdup(action));
+                    aws->callback(makeWindowCallback(aw_incdec_color, strdup(action)));
                     aws->create_button(action, action+1, 0, color_name);
                 }
             }
@@ -179,7 +179,7 @@ void AW_preset_create_color_chooser(AW_window *aws, const char *awar_name, const
         aw_assert(label);
         aws->label(label);
     }
-    aws->callback((AW_CB)aw_create_color_chooser_window, (AW_CL)strdup(awar_name), (AW_CL)strdup(label));
+    aws->callback(makeWindowCallback(aw_popup_color_chooser_window, strdup(awar_name), strdup(label)));
     char *color     = aws->get_root()->awar(awar_name)->read_string();
     char *button_id = GBS_global_string_copy("sel_color[%s]", awar_name);
     aws->create_button(button_id, " ", 0, color);
@@ -244,28 +244,24 @@ public:
     AW_MGC_awar_cb_struct *get_font_change_parameter() const { return font_change_cb_parameter; }
 };
 
-struct AW_MGC_cb_struct {   // one for each window
-    AW_MGC_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i);
+struct AW_MGC_cb_struct : virtual Noncopyable {   // one for each window
+    AW_MGC_cb_struct(AW_window *awi, const WindowCallback& wcb)
+    : aw(awi),
+      cb(wcb),
+      window_awar_name(strdup(aw->get_window_id())),
+      device(NULL), 
+      next_drag(NULL) 
+    {
+    }
+    
+    AW_window      *aw;
+    WindowCallback  cb;
 
-    AW_window *aw;
-    void (*f)(AW_window*, AW_CL, AW_CL);
-    AW_CL      cd1;
-    AW_CL      cd2;
     char      *window_awar_name;
     AW_device *device;
 
     struct AW_MGC_awar_cb_struct *next_drag;
 };
-
-AW_MGC_cb_struct::AW_MGC_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i) {
-    memset((char*)this, 0, sizeof(AW_MGC_cb_struct));
-    aw  = awi;
-    f   = g;
-    cd1 = cd1i;
-    cd2 = cd2i;
-
-    window_awar_name = strdup(awi->get_window_id());
-}
 
 struct AW_MGC_awar_cb_struct {  // one for each awar
     struct AW_MGC_cb_struct      *cbs;
@@ -359,7 +355,7 @@ static void aw_gc_changed_cb(AW_root *awr, AW_MGC_awar_cb_struct *cbs, long mode
         }
 
         if (mode != -1) {
-            cbs->cbs->f(cbs->cbs->aw, cbs->cbs->cd1, cbs->cbs->cd2);
+            cbs->cbs->cb(cbs->cbs->aw);
         }
         --dont_recurse;
     }
@@ -385,7 +381,7 @@ void aw_gc_color_changed_cb(AW_root *root, AW_MGC_awar_cb_struct *cbs, long mode
         }
     }
     if (mode != -1) {
-        cbs->cbs->f(cbs->cbs->aw, cbs->cbs->cd1, cbs->cbs->cd2);
+        cbs->cbs->cb(cbs->cbs->aw);
     }
     free(colorname);
 }
@@ -510,16 +506,14 @@ GB_ERROR AW_set_color_group(GBDATA *gbd, long color_group) {
     return GBT_write_int(gbd, AW_COLOR_GROUP_ENTRY, color_group);
 }
 
-AW_gc_manager AW_manage_GC(AW_window   *aww,
-                           AW_device   *device,
-                           int          base_gc,
-                           int          base_drag,
-                           AW_GCM_AREA  area,
-                           void (*changecb)(AW_window*, AW_CL, AW_CL),
-                           AW_CL        cd1,
-                           AW_CL        cd2,
-                           bool         define_color_groups,
-                           const char  *default_background_color,
+AW_gc_manager AW_manage_GC(AW_window             *aww,
+                           AW_device             *device,
+                           int                    base_gc,
+                           int                    base_drag,
+                           AW_GCM_AREA            area,
+                           const WindowCallback&  changecb,
+                           bool                   define_color_groups,
+                           const char            *default_background_color,
                            ...)
 {
     /*  Parameter:
@@ -558,7 +552,7 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
     AW_font               def_font;
     struct aw_gc_manager *gcmgrlast = 0, *gcmgr2=0, *gcmgrfirst=0;
 
-    AW_MGC_cb_struct *mcbs = new AW_MGC_cb_struct(aww, changecb, cd1, cd2);
+    AW_MGC_cb_struct *mcbs = new AW_MGC_cb_struct(aww, changecb);
     mcbs->device = device;
 
     int col = AW_WINDOW_BG;
