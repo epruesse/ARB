@@ -32,20 +32,24 @@ enum AW_GCM_AREA {
     AW_GCM_WINDOW_AREA
 };
 
-AW_gc_manager AW_manage_GC(AW_window                                       *aww,
-                           AW_device                                       *device, int base_gc, int base_drag, AW_GCM_AREA area,
-                           void (*changecb)(AW_window*, AW_CL, AW_CL), AW_CL  cd1, AW_CL cd2,
-                           bool                                             define_color_groups,
-                           const char                                      *default_background_color,
+AW_gc_manager AW_manage_GC(AW_window             *aww,
+                           AW_device             *device,
+                           int                    base_gc,
+                           int                    base_drag,
+                           AW_GCM_AREA            area,
+                           const WindowCallback&  change_cb,
+                           bool                   define_color_groups,
+                           const char            *default_background_color,
                            ...) __ATTR__SENTINEL;
+
 /* creates some GC pairs: one for normal operation,
-                    the other for drag mode
-        eg.
-        AW_manage_GC(aww,device,10,20,AW_GCM_DATA_AREA, my_expose_cb, cd1 ,cd2, "name","#sequence",NULL);
+   the other for drag mode
+   eg.
+   AW_manage_GC(aww,device,10,20,AW_GCM_DATA_AREA, my_expose_cb, cd1 ,cd2, "name","#sequence",NULL);
 
-                (see implementation for more details on parameter strings)
+   (see implementation for more details on parameter strings)
 
-        will create 4 GCs:
+   will create 4 GCs:
             GC 10 (normal) and 20 (drag)
             GC 11 (normal and monospaced (indicated by '#')
                21 drag and monospaced
@@ -53,6 +57,8 @@ AW_gc_manager AW_manage_GC(AW_window                                       *aww,
 
             When the GCs are modified the 'changecb' is called
 */
+
+
 
 AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager id); // opens the properties Window
 

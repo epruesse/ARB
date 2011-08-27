@@ -82,30 +82,29 @@ void AW_window::sens_mask(AW_active Mask) {
 
 
 void AW_window::callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    _callback = new AW_cb(this, (AW_CB)f, cd1, cd2);
+    _callback = new AW_cb(this, makeWindowCallback(f, cd1, cd2));
 }
-
 void AW_window::callback(void (*f)(AW_window*, AW_CL), AW_CL cd1) {
-    _callback = new AW_cb(this, (AW_CB)f, cd1);
+    _callback = new AW_cb(this, makeWindowCallback(f, cd1));
 }
-
 void AW_window::callback(void (*f)(AW_window*)) {
-    _callback = new AW_cb(this, (AW_CB)f);
+    _callback = new AW_cb(this, makeWindowCallback(f));
+}
+void AW_window::callback(const WindowCallback& cb) {
+    _callback = new AW_cb(this, cb);
 }
 void AW_window::callback(AW_cb *awcbs) {
     _callback = awcbs;
 }
 
 void AW_window::d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    _d_callback = new AW_cb(this, (AW_CB)f, cd1, cd2);
+    _d_callback = new AW_cb(this, makeWindowCallback(f, cd1, cd2));
 }
-
 void AW_window::d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1) {
-    _d_callback = new AW_cb(this, (AW_CB)f, cd1);
+    _d_callback = new AW_cb(this, makeWindowCallback(f, cd1));
 }
-
-void AW_window::d_callback(void (*f)(AW_window*)) {
-    _d_callback = new AW_cb(this, (AW_CB)f);
+void AW_window::d_callback(const WindowCallback& cb) {
+    _d_callback = new AW_cb(this, cb);
 }
 void AW_window::d_callback(AW_cb *awcbs) {
     _d_callback = awcbs;

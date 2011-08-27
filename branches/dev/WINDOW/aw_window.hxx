@@ -28,6 +28,10 @@ class AW_device_size;
 class AW_screen_area;
 struct GB_HASH;
 
+#ifndef aw_assert
+#define aw_assert(bed) arb_assert(bed)
+#endif
+
 // --------------------------------------------------------------------------------
 
 #define AW_POPUP  ((AW_CB)(-1))
@@ -134,22 +138,36 @@ class AW_cb : virtual Noncopyable  {
     AW_window  *pop_up_window;
     char       *id;
 
-    AW_cb *next;
+    AW_cb *prev; 
 
     static AW_cb_guard guard_before;
     static AW_cb_guard guard_after;
 
 public:
-    __ATTR__DEPRECATED_CALLBACK_IN_CTOR_LATER AW_cb(AW_window  *caller_, AW_CB cb_, AW_CL cd1_  = 0, AW_CL cd2_  = 0, const char *help_ = 0, AW_cb *next_ = 0) 
+    __ATTR__DEPRECATED_CALLBACK_IN_CTOR AW_cb(AW_window  *caller_, AW_CB cb_, AW_CL cd1_  = 0, AW_CL cd2_  = 0, const char *help_ = 0) 
         : caller(caller_),
           CB(makeWindowCallback(cb_, cd1_, cd2_)), 
           help(help_),
           pop_up_window(NULL),
           id(NULL),
-          next(next_)
+          prev(NULL)
         {} 
 
+    AW_cb(AW_window  *caller_, const WindowCallback& wcb, const char *help_ = 0)
+        : caller(caller_),
+          CB(wcb), 
+          help(help_),
+          pop_up_window(NULL),
+          id(NULL),
+          prev(NULL)
+        {}
     ~AW_cb() { free(id); }
+
+    static void append(AW_cb*& head, AW_cb *addcb) {
+        aw_assert(!addcb->prev);
+        addcb->prev = head;
+        head        = addcb;
+    }
 
     void run_callbacks();
     bool contains(AW_CB g); // test whether 'g' is contained in callback-list
@@ -344,8 +362,10 @@ public:
     void set_popup_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
 
-    void set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
-    void set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
+    void set_expose_callback(AW_area area, const WindowCallback& wcb);
+    void set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0) __ATTR__DEPRECATED_CALLBACK_LATER;
+    void set_resize_callback(AW_area area, const WindowCallback& wcb);
+    void set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0) __ATTR__DEPRECATED_CALLBACK_LATER;
     void set_input_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
     void set_motion_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
     void set_double_click_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
@@ -370,7 +390,8 @@ public:
     // ************** Create the menu buttons *********
     void create_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
     void insert_sub_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
-    void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
+    void insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active Mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_CALLBACK_LATER;
+    void insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active Mask, const WindowCallback& cb);
     void close_sub_menu();
 
     void insert_separator();
@@ -391,8 +412,12 @@ public:
     void calculate_scrollbars();
     void set_vertical_scrollbar_position(int position);
     void set_horizontal_scrollbar_position(int position);
-    void set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
-    void set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
+
+    void set_vertical_change_callback(const WindowCallback& wcb);
+    void set_horizontal_change_callback(const WindowCallback& wcb);
+    void set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_CALLBACK_LATER;
+    void set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_CALLBACK_LATER;
+    
     void set_horizontal_scrollbar_left_indent(int indent);
     void set_vertical_scrollbar_top_indent(int indent);
     void set_vertical_scrollbar_bottom_indent(int indent);
@@ -470,17 +495,26 @@ public:
 
     void sens_mask(AW_active mask); // Set the sensitivity mask used for following widgets (Note: reset by next at()-command)
     void help_text(const char *id); // Set the help text of a button
+
+    // normal callbacks
+    void callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_CALLBACK_LATER;
+    void callback(void (*f)(AW_window*, AW_CL), AW_CL cd1) __ATTR__DEPRECATED_CALLBACK_LATER;
+    void callback(void (*f)(AW_window*)) __ATTR__DEPRECATED_CALLBACK_LATER;
     
-    void callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2); // normal callbacks
-    void callback(void (*f)(AW_window*, AW_CL), AW_CL cd1);
-    void callback(void (*f)(AW_window*));
+    void callback(const WindowCallback& cb);
     void callback(AW_cb *awcbs);
 
-    void d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2); // double click callbacks
-    void d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1); // selection lists only !!
-    void d_callback(void (*f)(AW_window*));
+    // callbacks for
+    // - 'double click' (in selection lists)
+    // - 'ENTER'        (in input fields)
+    // (might also work elsewhere, please document here if you find such 'elsewhere')
+
+    void d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_CALLBACK_LATER;
+    void d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1) __ATTR__DEPRECATED_CALLBACK_LATER;
+
+    void d_callback(const WindowCallback& cb);
     void d_callback(AW_cb *awcbs);
-    
+
     // *** create the buttons ********
 
     void   create_button(const char *macro_name, AW_label label, const char *mnemonic = 0, const char *color = 0); // simple button; shadow only when callback
