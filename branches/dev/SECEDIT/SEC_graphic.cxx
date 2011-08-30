@@ -492,11 +492,10 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd,
     }
     else {
         if (button != AWT_M_MIDDLE && cmd != AWT_MODE_ZOOM) { // don't handle scroll + zoom
-            AW_CL    cd1, cd2;
-
-            if (AW_getBestClick(cl, ct, &cd1, &cd2)) {
-                SEC_base *elem   = reinterpret_cast<SEC_base*>(cd1);
-                int       abspos = cd2;
+            AW_clicked_element *clicked = AW_getBestClick(cl, ct);
+            if (clicked) {
+                SEC_base *elem   = reinterpret_cast<SEC_base*>(clicked->cd1());
+                int       abspos = clicked->cd2();
 
 #if defined(DEBUG) && 0
                 if (cl->exists) device->line(SEC_GC_CURSOR, cl->x0, cl->y0, cl->x1, cl->y1, -1, 0, -1);
