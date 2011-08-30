@@ -74,7 +74,7 @@ enum Group_Existing {
     EXISTING_GROUP_ABORT,
     EXISTING_GROUP_SKIP,
     EXISTING_GROUP_OVERWRITE,
-    EXISTING_GROUP_APPEND_NAME,
+    EXISTING_GROUP_APPEND_ORG,
 };
 
 
@@ -399,7 +399,7 @@ class GroupBuilder : virtual Noncopyable {
     string          cluster_prefix;                 // prefix for cluster name
     size_t          group_count;                    // count generated/deleted groups
     Group2Cluster   updated_groups;                 // store handled groups (used to update cluster list)
-    bool            want_prefix_match;              // only delete groups, where prefix matches
+    bool            del_match_prefixes;             // only delete groups, where prefix matches
 
     GroupTree *find_group_position(GroupTree *subtree, size_t cluster_size);
 
@@ -415,12 +415,12 @@ public:
     {
         AW_root *awr = global_data->get_aw_root();
 
-        tree_name         = awr->awar(AWAR_DIST_TREE_CURR_NAME)->read_char_pntr();
-        existing          = (Group_Existing)awr->awar(AWAR_CLUSTER_GROUP_EXISTING)->read_int();
-        notfound          = (Group_NotFound)awr->awar(AWAR_CLUSTER_GROUP_NOTFOUND)->read_int();
-        want_prefix_match = awr->awar(AWAR_CLUSTER_GROUP_PREFIX_MATCH)->read_int();
-        matchRatio        = awr->awar(AWAR_CLUSTER_GROUP_IDENTITY)->read_int()/100.0;
-        cluster_prefix    = awr->awar(AWAR_CLUSTER_GROUP_PREFIX)->read_char_pntr();
+        tree_name          = awr->awar(AWAR_DIST_TREE_CURR_NAME)->read_char_pntr();
+        existing           = (Group_Existing)awr->awar(AWAR_CLUSTER_GROUP_EXISTING)->read_int();
+        notfound           = (Group_NotFound)awr->awar(AWAR_CLUSTER_GROUP_NOTFOUND)->read_int();
+        del_match_prefixes = awr->awar(AWAR_CLUSTER_GROUP_PREFIX_MATCH)->read_int();
+        matchRatio         = awr->awar(AWAR_CLUSTER_GROUP_IDENTITY)->read_int()/100.0;
+        cluster_prefix     = awr->awar(AWAR_CLUSTER_GROUP_PREFIX)->read_char_pntr();
     }
     ~GroupBuilder() {
         delete tree_root;
@@ -438,8 +438,13 @@ public:
     void update_group(ClusterPtr cluster); // create or delete group for cluster
     Group2Cluster& get_updated_groups() { return updated_groups; }
 
-    bool prefix_ok(const char *name) const {
-        return !want_prefix_match || strstr(name, cluster_prefix.c_str()) == name;
+    bool matches_current_prefix(const char *groupname) const {
+        return strstr(groupname, cluster_prefix.c_str()) == groupname &&
+            groupname[cluster_prefix.length()] == '_';
+    }
+
+    bool shall_delete_group(const char *name) const {
+        return !del_match_prefixes || matches_current_prefix(name);
     }
 };
 
@@ -485,6 +490,17 @@ GroupTree *GroupBuilder::find_group_position(GroupTree *subtree, size_t cluster_
     }
     return groupPos;
 }
+
+class HasntCurrentClusterPrefix : public ARB_tree_predicate {
+    const GroupBuilder& builder;
+public:
+    HasntCurrentClusterPrefix(const GroupBuilder& builder_) : builder(builder_) {}
+    bool selects(const ARB_tree& tree) const {
+        const char *groupname        = tree.group_name();
+        bool        hasClusterPrefix = groupname && builder.matches_current_prefix(groupname);
+        return !hasClusterPrefix;
+    }
+};
 
 void GroupBuilder::update_group(ClusterPtr cluster) {
     if (!error) {
@@ -550,9 +566,17 @@ void GroupBuilder::update_group(ClusterPtr cluster) {
                                     case EXISTING_GROUP_OVERWRITE:
                                         // silently overwrite
                                         break;
-                                    case EXISTING_GROUP_APPEND_NAME:
-                                        suffix = string(" {was:")+old_name+"}";
+                                    case EXISTING_GROUP_APPEND_ORG: {
+                                        char *original = originalGroupName(old_name);
+                                        if (!original && !matches_current_prefix(old_name)) {
+                                            original = strdup(old_name); // use existing name as original name
+                                        }
+                                        if (original) {
+                                            suffix = string(" {was:")+original+"}";
+                                            free(original);
+                                        }
                                         break;
+                                    }
                                 }
                             }
 
@@ -563,7 +587,9 @@ void GroupBuilder::update_group(ClusterPtr cluster) {
                                     if (matchRate<100) {
                                         new_name += GBS_global_string("%i%%_of_", matchRate);
                                     }
-                                    new_name += cluster->build_group_name(group_node);
+
+                                    new_name += cluster->build_group_name(group_node, HasntCurrentClusterPrefix(*this));
+                                    new_name += suffix;
                                 }
 
                                 free(old_name);
@@ -578,12 +604,18 @@ void GroupBuilder::update_group(ClusterPtr cluster) {
                             break;
                         }
                         case GROUP_DELETE: {
-                            if (group_node->name && prefix_ok(group_node->name)) {
-                                freenull(group_node->name);
-                                group_node->gb_node = NULL; // forget ref to group data (@@@ need to delete group data from DB ? )
+                            if (group_node->name && shall_delete_group(group_node->name)) {
+                                char *original = originalGroupName(group_node->name);
 
-                                tree_modified = true;
+                                if (original) {
+                                    freeset(group_node->name, original); // restore original name
+                                }
+                                else {
+                                    freenull(group_node->name);
+                                    group_node->gb_node = NULL; // forget ref to group data (@@@ need to delete group data from DB ? )
+                                }
                                 group_count++;
+                                tree_modified = true;
                             }
                             break;
                         }
@@ -636,7 +668,7 @@ static void group_clusters(AW_window *, AW_CL cl_Group_Action, AW_CL cl_aw_clust
                     case EXISTING_GROUP_ABORT:       cl_assert(0);     break; // logic error
                     case EXISTING_GROUP_SKIP:        msg = "Skipped";  break;
                     case EXISTING_GROUP_OVERWRITE:   msg = "Replaced"; break;
-                    case EXISTING_GROUP_APPEND_NAME: msg = "Modified"; break;
+                    case EXISTING_GROUP_APPEND_ORG:  msg = "Modified"; break;
                 }
             }
             if (msg) aw_message(GBS_global_string("%s %zu existing groups", msg, existed));
@@ -647,7 +679,7 @@ static void group_clusters(AW_window *, AW_CL cl_Group_Action, AW_CL cl_aw_clust
             const char *did;
             switch (action) {
                 case GROUP_CREATE: did = "Created"; break;
-                case GROUP_DELETE: did = "Deleted"; break;
+                case GROUP_DELETE: did = "Deleted/restored"; break;
             }
             aw_message(GBS_global_string("%s %zu group(s)", did, groupBuilder.get_group_count()));
 
@@ -659,7 +691,7 @@ static void group_clusters(AW_window *, AW_CL cl_Group_Action, AW_CL cl_aw_clust
                 for (; upd != upd_end; ++upd) {
                     ClusterPtr  cluster    = upd->second;
                     GroupTree  *group_tree = upd->first;
-                    cluster->generate_name(group_tree);
+                    cluster->generate_name(group_tree, HasntCurrentClusterPrefix(groupBuilder));
                 }
             }
         }
@@ -715,10 +747,10 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
         aws->create_autosize_button("CREATE_GROUPS", "create groups!");
 
         aws->create_option_menu(AWAR_CLUSTER_GROUP_EXISTING, "If group exists", "x");
-        aws->insert_default_option("abort",          "a", EXISTING_GROUP_ABORT);
-        aws->insert_option        ("skip",           "s", EXISTING_GROUP_SKIP);
-        aws->insert_option        ("overwrite",      "o", EXISTING_GROUP_OVERWRITE);
-        aws->insert_option        ("append to name", "a", EXISTING_GROUP_APPEND_NAME);
+        aws->insert_default_option("abort",           "a", EXISTING_GROUP_ABORT);
+        aws->insert_option        ("skip",            "s", EXISTING_GROUP_SKIP);
+        aws->insert_option        ("overwrite",       "o", EXISTING_GROUP_OVERWRITE);
+        aws->insert_option        ("append original", "k", EXISTING_GROUP_APPEND_ORG);
         aws->update_option_menu();
 
         aws->at_newline();
