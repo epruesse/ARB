@@ -381,11 +381,13 @@ void ARB_tree::replace_seq(AP_sequence *sequence) {
 size_t ARB_countedTree::relative_position_in(const ARB_countedTree *upgroup) const {
     at_assert(is_inside(upgroup));
 
-    const ARB_countedTree *Father = get_father();
-    size_t                 pos    = is_upper_son(Father) ? 0 : get_brother()->get_leaf_count();
 
-    if (Father != upgroup) pos += Father->relative_position_in(upgroup);
-
+    size_t pos = 0;
+    if (this != upgroup) {
+        const ARB_countedTree *Father = get_father();
+        pos = is_upper_son(Father) ? 0 : get_brother()->get_leaf_count();
+        pos += Father->relative_position_in(upgroup);
+    }
     return pos;
 }
 

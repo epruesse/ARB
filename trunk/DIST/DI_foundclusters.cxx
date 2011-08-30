@@ -39,6 +39,10 @@ static AP_FLOAT calc_mean_dist_to(const ClusterTree *distance_to, const LeafRela
     return sum/count;
 }
 
+struct UseAnyTree : public ARB_tree_predicate {
+    bool selects(const ARB_tree&) const { return true; }
+};
+    
 Cluster::Cluster(ClusterTree *ct)
     : next_name(NULL)
 {
@@ -101,23 +105,25 @@ Cluster::Cluster(ClusterTree *ct)
     }
     mean_dist /= distances->size();
     cl_assert(representative);
-    generate_name(ct);
+    generate_name(ct, UseAnyTree());
 }
 
-static string *get_downgroups(const ARB_countedTree *ct, size_t& group_members) {
+static string *get_downgroups(const ARB_countedTree *ct, const ARB_tree_predicate& keep_group_name, size_t& group_members) {
     string *result = NULL;
     if (ct->is_leaf) {
         group_members = 0;
     }
     else {
-        if (ct->gb_node && ct->name) {
+        const char *group_name = ct->group_name();
+
+        if (group_name && keep_group_name.selects(*ct)) {
             group_members = ct->get_leaf_count();
             result        = new string(ct->name);
         }
         else {
-            string *leftgroups  = get_downgroups(ct->get_leftson(), group_members);
+            string *leftgroups  = get_downgroups(ct->get_leftson(), keep_group_name, group_members);
             size_t  right_members;
-            string *rightgroups = get_downgroups(ct->get_rightson(), right_members);
+            string *rightgroups = get_downgroups(ct->get_rightson(), keep_group_name, right_members);
 
             group_members += right_members;
 
@@ -133,74 +139,89 @@ static string *get_downgroups(const ARB_countedTree *ct, size_t& group_members) 
     }
     return result;
 }
-static const char *get_upgroup(const ARB_countedTree *ct, const ARB_countedTree*& upgroupPtr) {
-    const char *name = NULL;
-    if (ct->gb_node && ct->name) {
+static const char *get_upgroup(const ARB_countedTree *ct, const ARB_tree_predicate& keep_group_name, const ARB_countedTree*& upgroupPtr) {
+    const char *group_name = ct->group_name();
+    char       *original   = group_name ? originalGroupName(group_name) : NULL;
+
+    if (original) {
+        static SmartCharPtr result;
+        result = original;
+        group_name = &*result;
         upgroupPtr = ct;
-        name       = ct->name;
+    }
+    else if (group_name && keep_group_name.selects(*ct)) {
+        upgroupPtr = ct;
     }
     else {
         const ARB_countedTree *father = ct->get_father();
         if (father) {
-            name = get_upgroup(father, upgroupPtr);
+            group_name = get_upgroup(father, keep_group_name, upgroupPtr);
         }
         else {
             upgroupPtr = ct;
-            name       = "WHOLE_TREE";
+            group_name = "WHOLE_TREE";
         }
     }
 
-    cl_assert(name);
-    return name;
+    cl_assert(!upgroupPtr || ct->is_inside(upgroupPtr));
+    cl_assert(group_name);
+    return group_name;
 }
 
-void Cluster::generate_name(const ARB_countedTree *ct) {
+void Cluster::generate_name(const ARB_countedTree *ct, const ARB_tree_predicate& keep_group_name) {
+    // creates initial cluster description (using up- and down-groups and percentages) 
     cl_assert(!ct->is_leaf);
 
-    if (ct->gb_node && ct->name) {                  // cluster root is a group
-        name = ct->name;
+    const ARB_countedTree *upgroup         = NULL;
+    const char            *upgroup_name    = get_upgroup(ct, keep_group_name, upgroup);
+    size_t                 upgroup_members = upgroup->get_leaf_count(); 
+
+    size_t cluster_members = ct->get_leaf_count();
+
+    cl_assert(upgroup_members>0); // if no group, whole tree should have been returned
+
+    if (upgroup_members == cluster_members) { // use original or existing name
+        name = upgroup_name;
     }
     else {
-        size_t                 downgroup_members;
-        string                *downgroup_names = get_downgroups(ct, downgroup_members);
-        const ARB_countedTree *upgroup         = NULL;
-        const char            *upgroup_name    = get_upgroup(ct, upgroup);
-        size_t                 upgroup_members = upgroup->get_leaf_count();
-
-        size_t cluster_members = ct->get_leaf_count();
-
-        cl_assert(upgroup_members>0); // if no group, whole tree should have been returned
-
-        AP_FLOAT up_rel   = (AP_FLOAT)cluster_members/upgroup_members; // used for: xx% of upgroup (big is good)
-        AP_FLOAT down_rel = (AP_FLOAT)downgroup_members/cluster_members; // used for: downgroup(s) + (1-xx)% outgroup (big is good)
+        size_t    downgroup_members;
+        string   *downgroup_names = get_downgroups(ct, keep_group_name, downgroup_members);
+        AP_FLOAT up_rel = (AP_FLOAT)cluster_members/upgroup_members;   // used for: xx% of upgroup (big is good)
+        AP_FLOAT  down_rel        = (AP_FLOAT)downgroup_members/cluster_members; // used for: downgroup(s) + (1-xx)% outgroup (big is good)
 
         if (up_rel>down_rel) { // prefer up_percent
             name = string(GBS_global_string("%4.1f%% of %s", up_rel*100.0, upgroup_name));
         }
         else {
-            name = string(GBS_global_string("%s + %4.1f%% outgroup", downgroup_names->c_str(), (1-down_rel)*100.0));
+            if (downgroup_members == cluster_members) {
+                name = downgroup_names->c_str();
+            }
+            else {
+                name = string(GBS_global_string("%s + %4.1f%% outgroup", downgroup_names->c_str(), (1-down_rel)*100.0));
+            }
         }
 
         delete downgroup_names;
     }
 }
 
-string Cluster::build_group_name(const ARB_countedTree *ct) {
+string Cluster::build_group_name(const ARB_countedTree *ct, const ARB_tree_predicate& keep_group_name) {
     // similar to generate_name()
     // - contains relative position in up-group (instead of percentages)
 
-    string group_name;
-
     cl_assert(!ct->is_leaf);
-    if (ct->gb_node && ct->name) {                  // cluster root is a group
-        group_name = ct->name;
+
+    const ARB_countedTree *upgroup      = NULL;
+    const char            *upgroup_name = get_upgroup(ct, keep_group_name, upgroup);
+
+    size_t upgroup_members = upgroup->get_leaf_count();
+    size_t cluster_members = ct->get_leaf_count();
+
+    const char *group_name;
+    if (upgroup_members == cluster_members) {
+        group_name = upgroup_name;
     }
     else {
-        const ARB_countedTree *upgroup         = NULL;
-        const char            *upgroup_name    = get_upgroup(ct, upgroup);
-        size_t                 upgroup_members = upgroup->get_leaf_count();
-        size_t                 cluster_members = ct->get_leaf_count();
-
         size_t cluster_pos1 = ct->relative_position_in(upgroup)+1; // range [1..upgroup_members]
         size_t cluster_posN = cluster_pos1+cluster_members-1;
 
@@ -421,6 +442,23 @@ void ClustersData::free(AW_window *aww) {
     stored.clear();
     update_cluster_selection_list(aww);
     known_clusters.clear();
+}
+
+char *originalGroupName(const char *groupname) {
+    char *original = NULL;
+    const char *was = strstr(groupname, " {was:");
+    const char *closing = strchr(groupname, '}');
+    if (was && closing) {
+        original = GB_strpartdup(was+6, closing-1);
+        if (original[0]) {
+            char *sub = originalGroupName(original);
+            if (sub) freeset(original, sub);
+        }
+        else {
+            freenull(original); // empty -> invalid
+        }
+    }
+    return original;
 }
 
 

@@ -42,6 +42,7 @@
 #define cl_assert(cond) arb_assert(cond)
 
 class ClusterTree;
+class ARB_tree_predicate;
 class ARB_countedTree;
 class AW_selection_list;
 class AW_window;
@@ -98,8 +99,8 @@ public:
     void mark_all_members(bool mark_representative) const;
     GBDATA *get_representative() const { return representative; }
 
-    void        generate_name(const ARB_countedTree *ct);
-    std::string build_group_name(const ARB_countedTree *ct);
+    void        generate_name(const ARB_countedTree *ct, const ARB_tree_predicate& keep_group_name);
+    std::string build_group_name(const ARB_countedTree *ct, const ARB_tree_predicate& keep_group_name);
 
     void propose_name(const std::string& newName) {
         delete next_name;
@@ -238,6 +239,8 @@ public:
 
     void free(AW_window *aww);
 };
+
+char *originalGroupName(const char *groupname);
 
 #else
 #error di_foundclusters.hxx included twice
