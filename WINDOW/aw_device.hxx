@@ -101,31 +101,63 @@ enum AW_cursor_type {
 // @@@ FIXME: elements of the following classes should go private!
 
 class AW_clicked_element {
-public:
+public: // @@@ make private
     AW_CL client_data1;
     AW_CL client_data2;
-    bool  exists;                                   // true if a drawn element was clicked, else false
+    bool  exists;           // true if a drawn element was clicked, else false
+    int   distance;         // distance in pixel to nearest line/text
+
+protected:
+    AW_pos nearest_rel_pos;        // 0 = at left(upper) small-side, 1 = at right(lower) small-side of textArea
+    
+    AW_clicked_element() : client_data1(0), client_data2(0), exists(false), distance(-1), nearest_rel_pos(0) {}
+    virtual ~AW_clicked_element() {}
+
+public:
+
+    AW_CL cd1() const { return client_data1; }
+    AW_CL cd2() const { return client_data2; }
+
+    virtual AW::Position get_attach_point() const = 0;
+    virtual bool is_text() const            = 0;
+    bool is_line() const { return !is_text(); }
+
+    AW_pos get_rel_pos() const { return nearest_rel_pos; }
+    void set_rel_pos(AW_pos rel) { aw_assert(rel >= 0.0 && rel <= 1.0); nearest_rel_pos = rel; }
+
+    AW::LineVector get_connecting_line(const AW_clicked_element& other) const {
+        return AW::LineVector(get_attach_point(), other.get_attach_point());
+    }
 };
 
 class AW_clicked_line : public AW_clicked_element {
 public:
     AW_pos x0, y0, x1, y1;  // @@@ make this a Rectangle
-    AW_pos distance;        // min. distance to line
-    AW_pos nearest_rel_pos; // 0 = at x0/y0, 1 = at x1/y1
+
+    AW_clicked_line() : x0(0), y0(0), x1(0), y1(0) {}
+
+    bool is_text() const { return false; }
+    AW::Position get_attach_point() const {
+        return AW::Position(x0*(1-nearest_rel_pos)+x1*nearest_rel_pos,
+                            y0*(1-nearest_rel_pos)+y1*nearest_rel_pos);
+    }
 };
 
 class AW_clicked_text : public AW_clicked_element {
 public:
     AW::Rectangle textArea;     // world coordinates of text
-    AW_pos        alignment;
-    AW_pos        rotation;
-    AW_pos        distance;     // y-Distance to text, <0 -> above, >0 -> below
-    AW_pos        dist2center;  // Distance to center of text
-    int           cursor;       // which letter was selected, from 0 to strlen-1
-    bool          exactHit;     // true -> real click on text (not only near text)
+    int           cursor;       // which letter was selected, from 0 to strlen-1 [or -1 if not 'exactHit']
+    bool          exactHit;     // true -> real click inside text bounding-box (not only near text) (@@@ redundant: exactHit == (distance == 0))
+
+    AW_clicked_text() : cursor(-1), exactHit(false) {}
+
+    bool is_text() const { return true; }
+    AW::Position get_attach_point() const {
+        return textArea.centroid(); // @@@ use center atm
+    }
 };
 
-bool AW_getBestClick(AW_clicked_line *cl, AW_clicked_text *ct, AW_CL *cd1, AW_CL *cd2);
+AW_clicked_element *AW_getBestClick(AW_clicked_line *cl, AW_clicked_text *ct);
 
 // --------------------------------------------------
 // general note on world- vs. pixel-positions:(WORLD_vs_PIXEL)
@@ -709,10 +741,13 @@ public:
     AW_borders get_unscaleable_overlap() const;
 };
 
+#define AWT_CATCH    30         // max-pixel distance to graphical element (to accept a click or command)
+#define AWT_NO_CATCH -1
+
 class AW_device_click : public AW_simple_device {
-    AW_pos          mouse_x, mouse_y;
-    AW_pos          max_distance_line;
-    AW_pos          max_distance_text;
+    AW_pos mouse_x, mouse_y; // @@@ is 'int' sufficant ? 
+    int    max_distance_line;
+    int    max_distance_text;
 
     bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri);
     bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
@@ -721,20 +756,20 @@ class AW_device_click : public AW_simple_device {
     void specific_reset() {}
     
 public:
-    AW_clicked_line opt_line;
+    AW_clicked_line opt_line; // @@@ make private
     AW_clicked_text opt_text;
 
     AW_device_click(AW_common *common_)
         : AW_simple_device(common_)
-    {
-        init(0, 0, -1, -1, 0, AW_ALL_DEVICES);
-    }
+        {
+            init_click(0, 0, AWT_NO_CATCH, AW_ALL_DEVICES);
+        }
 
     AW_DEVICE_TYPE type();
 
-    void init(AW_pos mousex, AW_pos mousey, AW_pos max_distance_liniei, AW_pos max_distance_texti, AW_pos radi, AW_bitset filteri);
+    void init_click(AW_pos mousex, AW_pos mousey, int max_distance, AW_bitset filteri);
 
-    void get_clicked_line(class AW_clicked_line *ptr) const;
+    void get_clicked_line(class AW_clicked_line *ptr) const; // @@@ make real accessors returning const&
     void get_clicked_text(class AW_clicked_text *ptr) const;
 };
 

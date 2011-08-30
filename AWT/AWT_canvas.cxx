@@ -430,7 +430,7 @@ static void input_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
     }
 
     if (!event_handled) {
-        AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH_LINE, AWT_CATCH_TEXT, 0);
+        AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH);
         click_device->set_filter(AW_CLICK);
         device->set_filter(AW_SCREEN);
 
@@ -580,9 +580,7 @@ static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
                     // fall-through
                 case AWT_MODE_MOVE: {
                     ntw->init_device(device);
-                    AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA,
-                                                                          event.x, event.y, AWT_CATCH_LINE,
-                                                                          AWT_CATCH_TEXT, 0);
+                    AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH);
                     click_device->set_filter(AW_CLICK_DRAG);
                     ntw->init_device(click_device);
                     ntw->tree_disp->show(click_device);
@@ -721,9 +719,6 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_g
 {
     tree_disp->drag_gc  = drag_gc;
     set_gc_manager      = gc_manager;
-
-    memset((char *)&clicked_line, 0, sizeof(clicked_line));
-    memset((char *)&clicked_text, 0, sizeof(clicked_text));
 
     AWT_resize_cb(aww, this, 0);
 
