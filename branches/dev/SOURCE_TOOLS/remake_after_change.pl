@@ -290,7 +290,7 @@ sub main() {
     }
 
     print "[Make: '$makecmd']\n";
-    system($makecmd)==0 || die "error executing '$makecmd' (exitcode=$?)";
+    system($makecmd)==0 || die "error executing '$makecmd' (exitcode=$?)\n";
     print "remake[3]: Leaving directory `$ARBHOME'\n";
 
     unlink('silent_premake.log');
