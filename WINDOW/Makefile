@@ -230,7 +230,6 @@ AW_edit.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_edit.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_file_selection.o: aw_awar.hxx
-AW_file_selection.o: aw_awars.hxx
 AW_file_selection.o: aw_base.hxx
 AW_file_selection.o: aw_file.hxx
 AW_file_selection.o: aw_keysym.hxx
@@ -271,6 +270,7 @@ AW_font_group.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_global_awars.o: aw_awar.hxx
+AW_global_awars.o: aw_awar_defs.hxx
 AW_global_awars.o: aw_awars.hxx
 AW_global_awars.o: aw_base.hxx
 AW_global_awars.o: aw_global_awars.hxx
@@ -488,6 +488,7 @@ AW_size.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_size.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_status.o: aw_awar.hxx
+AW_status.o: aw_awar_defs.hxx
 AW_status.o: aw_awars.hxx
 AW_status.o: aw_base.hxx
 AW_status.o: aw_keysym.hxx

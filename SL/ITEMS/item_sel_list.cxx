@@ -13,7 +13,6 @@
 
 #include "item_sel_list.h"
 
-#include <aw_awars.hxx>
 #include <arbdbt.h>
 
 static AW_window *existing_window_creator(AW_window *, AW_CL cl1, AW_CL) {

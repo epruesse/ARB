@@ -80,6 +80,7 @@ AW_rename.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_rename.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+AW_rename.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

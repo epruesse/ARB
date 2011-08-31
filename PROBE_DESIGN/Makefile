@@ -50,6 +50,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/arbdbt.h
 probe_design.o: $(ARBHOME)/INCLUDE/arbtools.h
 probe_design.o: $(ARBHOME)/INCLUDE/attributes.h
 probe_design.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -114,6 +115,7 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbtools.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/attributes.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_device.hxx

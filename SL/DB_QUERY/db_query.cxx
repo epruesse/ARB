@@ -18,7 +18,7 @@
 #include <aw_color_groups.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
-#include <aw_awars.hxx>
+#include <aw_awar.hxx>
 #include <arb_progress.h>
 #include <aw_root.hxx>
 

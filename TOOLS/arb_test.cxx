@@ -10,7 +10,6 @@
 // =============================================================== //
 
 #include <arbdbt.h>
-#include <aw_awars.hxx>
 #include <arb_defs.h>
 
 int main(int, char **) {

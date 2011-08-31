@@ -13,7 +13,6 @@
 
 #include "item_sel_list.h"
 
-#include <aw_awars.hxx>
 #include <arbdbt.h>
 #include <arb_strarray.h>
 

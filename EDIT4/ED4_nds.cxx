@@ -12,7 +12,7 @@
 #include "ed4_awars.hxx"
 
 #include <arbdbt.h>
-#include <aw_awars.hxx>
+#include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 

@@ -101,6 +101,7 @@ SQ_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 SQ_main.o: $(ARBHOME)/INCLUDE/attributes.h
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+SQ_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

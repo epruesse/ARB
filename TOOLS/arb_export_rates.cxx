@@ -9,7 +9,7 @@
 // =============================================================== //
 
 #include <arbdbt.h>
-#include <aw_awars.hxx>
+#include <aw_awar_defs.hxx>
 
 /* Input: SAI name from CL
  *        fastdnaml-args from CL

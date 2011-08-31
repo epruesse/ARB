@@ -59,7 +59,7 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/arbdbt.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arbtools.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/attributes.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-EXP_interface.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+EXP_interface.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_detach.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -94,6 +94,7 @@ EXP_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 EXP_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 EXP_main.o: $(ARBHOME)/INCLUDE/attributes.h
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+EXP_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -154,7 +155,6 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/arbtools.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/attributes.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -193,7 +193,7 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arbtools.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/attributes.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-GEN_interface.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+GEN_interface.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_detach.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -234,6 +234,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GEN_map.o: $(ARBHOME)/INCLUDE/arbtools.h
 GEN_map.o: $(ARBHOME)/INCLUDE/attributes.h
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+GEN_map.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
