@@ -9,9 +9,12 @@
 // =============================================================== //
 
 #include <arbdb.h>
+#include <arb_handlers.h>
 
 int main(int argc, char **argv) {
     GB_ERROR error = 0;
+
+    ARB_redirect_handlers_to(stderr, stderr);
 
     fprintf(stderr, "arb_2_ascii - ARB database binary to ascii converter\n");
 
