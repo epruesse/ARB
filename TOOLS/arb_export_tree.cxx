@@ -10,17 +10,12 @@
 
 #include <TreeWrite.h>
 #include <arbdbt.h>
-
-/*      Input   Tree_name       argv[1]
- *      Output(stdout)  one line tree
- *      */
-
+#include <arb_handlers.h>
 
 int main(int argc, char **argv) {
     int exitcode = EXIT_SUCCESS;
 
-    FILE *real_STDOUT = stdout;
-    stdout            = stderr;
+    ARB_redirect_handlers_to(stderr, stderr);
 
     if (argc < 2) {
         fprintf(stderr,
@@ -72,7 +67,7 @@ int main(int argc, char **argv) {
 
                     GBT_TREE *tree = GBT_read_tree(gb_main, tree_name, - sizeof(GBT_TREE));
                     if (tree) {
-                        error = TREE_export_tree(gb_main, real_STDOUT, tree, trifurcated, branchlens, doublequotes);
+                        error = TREE_export_tree(gb_main, stdout, tree, trifurcated, branchlens, doublequotes);
                         GBT_delete_tree(tree);
                     }
                     else if (tree_name[0] && strcmp(tree_name, "????") != 0) {
@@ -83,7 +78,7 @@ int main(int argc, char **argv) {
                     }
                 }
 
-                if (!error) fprintf(real_STDOUT, ";\n"); // aka empty tree
+                if (!error) fprintf(stdout, ";\n"); // aka empty tree
                 GB_close(gb_main);
             }
         }

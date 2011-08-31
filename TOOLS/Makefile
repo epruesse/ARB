@@ -84,6 +84,7 @@ arb_2_ascii.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_2_ascii.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_2_ascii.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_2_ascii.o: $(ARBHOME)/INCLUDE/arb_error.h
+arb_2_ascii.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 arb_2_ascii.o: $(ARBHOME)/INCLUDE/arb_msg.h
 arb_2_ascii.o: $(ARBHOME)/INCLUDE/arb_string.h
 arb_2_ascii.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -156,6 +157,7 @@ arb_export_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arb_error.h
+arb_export_tree.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arb_string.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arbdb.h

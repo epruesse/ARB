@@ -42,18 +42,29 @@ inline GB_ERROR valgrinded_system(const char *cmdline) {
 #define TEST_RUN_TOOL_NEVER_VALGRIND(cmdline) TEST_ASSERT_NO_ERROR(RUN_TOOL_NEVER_VALGRIND(cmdline))
 
 void TEST_SLOW_ascii_2_bin_2_ascii() {
-    const char *ascii_ORG = "TEST_loadsave_ascii.arb";
-    const char *ascii     = "bin2ascii.arb";
-    const char *binary    = "ascii2bin.arb";
+    const char *ascii_ORG  = "TEST_loadsave_ascii.arb";
+    const char *ascii      = "bin2ascii.arb";
+    const char *binary     = "ascii2bin.arb";
+    const char *binary_2ND = "ascii2bin2.arb";
 
+    // test conversion file -> file
     TEST_RUN_TOOL(GBS_global_string("arb_2_bin   %s %s", ascii_ORG, binary));
     TEST_RUN_TOOL(GBS_global_string("arb_2_ascii %s %s", binary, ascii));
 
     TEST_ASSERT_FILES_EQUAL(ascii, ascii_ORG);
 
+    // test conversion (bin->ascii->bin) via stream (this tests 'arb_repair')
+    TEST_RUN_TOOL(GBS_global_string("arb_2_ascii %s - | arb_2_bin - %s", binary, binary_2ND));
+    // TEST_ASSERT_FILES_EQUAL(binary, binary_2ND); // can't compare binary files (they contain undefined bytes)
+    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(ascii));
+    TEST_RUN_TOOL(GBS_global_string("arb_2_ascii %s %s", binary_2ND, ascii));
+    TEST_ASSERT_FILES_EQUAL(ascii, ascii_ORG);
+    
     TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(ascii));
     TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(binary));
+    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(binary_2ND));
     TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink("ascii2bin.ARF"));
+    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink("ascii2bin2.ARF"));
 }
 
 void TEST_SLOW_arb_gene_probe() {
