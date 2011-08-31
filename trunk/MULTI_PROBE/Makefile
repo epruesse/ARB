@@ -60,7 +60,6 @@ MP_Generation.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-MP_Generation.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_Generation.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_Generation.o: $(ARBHOME)/INCLUDE/cb.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -78,7 +77,6 @@ MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/cb.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -98,7 +96,7 @@ MP_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_main.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-MP_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+MP_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -130,7 +128,6 @@ MP_mo_liste.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/bytestring.h
@@ -167,7 +164,6 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-MP_noclass.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -201,7 +197,6 @@ MP_permute.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_permute.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_permute.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_permute.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-MP_permute.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_permute.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_permute.o: $(ARBHOME)/INCLUDE/cb.h
 MP_permute.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -221,7 +216,6 @@ MP_probe.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_probe.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-MP_probe.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
@@ -242,7 +236,6 @@ MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/cb.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -259,7 +252,6 @@ MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-MP_probe_tabs.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/cb.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -284,7 +276,6 @@ MP_sonde.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-MP_sonde.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_sonde.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_sonde.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MP_sonde.o: $(ARBHOME)/INCLUDE/bytestring.h
@@ -317,7 +308,6 @@ MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-MP_sondentopf.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
@@ -344,7 +334,7 @@ MP_Window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_Window.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-MP_Window.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+MP_Window.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

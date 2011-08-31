@@ -1158,7 +1158,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awr->awar(AWAR_DTREE_CIRCLE_ZOOM)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
     awr->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
     awr->awar(AWAR_DTREE_USE_ELLIPSE)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
-    awr->awar(AWAR_DTREE_REFRESH)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
+    awr->awar(AWAR_TREE_REFRESH)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
     awr->awar(AWAR_COLOR_GROUPS_USE)->add_callback((AW_RCB)NT_recompute_cb, (AW_CL)ntw, 0);
 
     GBDATA *gb_arb_presets =    GB_search(GLOBAL_gb_main, "arb_presets", GB_CREATE_CONTAINER);

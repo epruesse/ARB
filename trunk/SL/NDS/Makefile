@@ -44,7 +44,6 @@ nds.o: $(ARBHOME)/INCLUDE/arbdbt.h
 nds.o: $(ARBHOME)/INCLUDE/arbtools.h
 nds.o: $(ARBHOME)/INCLUDE/attributes.h
 nds.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-nds.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

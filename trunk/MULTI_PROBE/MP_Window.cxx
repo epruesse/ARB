@@ -17,6 +17,7 @@
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <aw_awar_defs.hxx>
 
 // **************************************************************************
 

@@ -110,7 +110,6 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arbtools.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
@@ -165,7 +164,6 @@ MG_extendeds.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/arbtools.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
@@ -196,7 +194,6 @@ MG_gene_species.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arbtools.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
@@ -224,6 +221,7 @@ MG_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 MG_main.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+MG_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_file.hxx
@@ -284,7 +282,6 @@ MG_preserves.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arbtools.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-MG_preserves.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
@@ -315,6 +312,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_species.o: $(ARBHOME)/INCLUDE/arbtools.h
 MG_species.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_species.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+MG_species.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

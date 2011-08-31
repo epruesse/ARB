@@ -64,6 +64,7 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/arbtools.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -210,6 +211,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arbtools.h
 DI_matr.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -343,6 +345,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arbtools.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx

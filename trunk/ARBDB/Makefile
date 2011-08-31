@@ -532,6 +532,7 @@ adlang1.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_string.h
 adlang1.o: $(ARBHOME)/INCLUDE/arbtools.h
 adlang1.o: $(ARBHOME)/INCLUDE/attributes.h
+adlang1.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 adlang1.o: $(ARBHOME)/INCLUDE/dupstr.h
 adlang1.o: $(ARBHOME)/INCLUDE/smartptr.h
 adlang1.o: $(ARBHOME)/INCLUDE/static_assert.h

@@ -142,6 +142,7 @@ primer_design.o: $(ARBHOME)/INCLUDE/arbdbt.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbtools.h
 primer_design.o: $(ARBHOME)/INCLUDE/attributes.h
 primer_design.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+primer_design.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

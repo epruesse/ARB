@@ -19,7 +19,7 @@
 #include <db_scanner.hxx>
 #include <db_query.h>
 #include <AW_rename.hxx>
-#include <aw_awars.hxx>
+#include <aw_awar_defs.hxx>
 #include <aw_detach.hxx>
 #include <aw_msg.hxx>
 #include <algorithm>

@@ -73,6 +73,7 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_edit.hxx

@@ -60,8 +60,6 @@ irstree_display.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 irstree_display.o: $(ARBHOME)/INCLUDE/arbdbt.h
 irstree_display.o: $(ARBHOME)/INCLUDE/arbtools.h
 irstree_display.o: $(ARBHOME)/INCLUDE/attributes.h
-irstree_display.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-irstree_display.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -69,7 +67,6 @@ irstree_display.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
-irstree_display.o: $(ARBHOME)/INCLUDE/cb.h
 irstree_display.o: $(ARBHOME)/INCLUDE/downcast.h
 irstree_display.o: $(ARBHOME)/INCLUDE/dupstr.h
 irstree_display.o: $(ARBHOME)/INCLUDE/nds.h
@@ -96,6 +93,7 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/attributes.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -133,6 +131,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/arbdbt.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/attributes.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx

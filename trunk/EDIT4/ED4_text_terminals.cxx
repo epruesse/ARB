@@ -20,7 +20,7 @@
 #include "ed4_protein_2nd_structure.hxx"
 
 #include <aw_preset.hxx>
-#include <aw_awars.hxx>
+#include <aw_awar.hxx>
 
 #include <AW_helix.hxx>
 #include <aw_msg.hxx>
