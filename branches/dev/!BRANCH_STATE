@@ -25,21 +25,27 @@ TRUNK->BRANCH
                 7743 7744 -> 7745
                 7868 7871 -> 7874
                 7737 7739 7759 7885 7886 7887 7888 -> 7889
+                7891 7892 -> 7901
+                7893 7894 7900 -> 7902
+                7895 7896 7897 7898 7899 -> 7903 
+                7915 7916 7919 -> 7920
+                7913 7917 7918 -> 7921
+                7922 -> 7932
 
     skipped patches (depends, already there, ...)
 
         merged from dev: 7352 7407 7408 7409 7410 7412 7413 7414 7415 7423 7424 7428 7431 7508 7619
                          7620 7621 7622 7623 7624 7625 7626 7655 7659 7660 7661 7662 7663 7664 7665
                          7666 7667 7668 7669 7770 7771 7798 7799 7800 7801 7802 7803 7804 7805 7806
-                         7807 7808 7809 7810 7811 7812 7813 7814 7815 7818 7819
+                         7807 7808 7809 7810 7811 7812 7813 7814 7815 7818 7819 7890 7925 7926 7928
+                         7929 7930 7931
         merged from stable: 7488 7591
 
     not merged yet:
 
         --- current try above
 
-
-    not reviewed: 7889:HEAD
+    not reviewed: 7933:HEAD
 
 BRANCH->TRUNK
 
@@ -111,15 +117,22 @@ BRANCH->TRUNK
                 7766 7767 -> 7815
                 7773 7776 7797 -> 7818
                 7774 7778 7779 7780 7781 7782 7783 7784 7785 7786 7787 7788 7789 7790 7791 7792 7793 7794 7795 7796 7817 -> 7819
+                7832 7836 7839 7851 -> 7890
+                7821 7822 7923 -> 7925
+                7823 7829 7831 7835 7840 7846 7860 7867 7924 -> 7926
+                7864 7904 -> 7928 
+                7844 7855 7865 7869 7910 7911 -> 7929
+                7875 -> 7930
+                7905 7908 7927 -> 7931
 
     skipped patches (depends, already there, this file, ...)
 
-                this file:      7249 7277 7351 7416 7627 7670 7816
+                this file:      7249 7277 7351 7416 7627 7670 7816 7820 7932
                 depends:        7256 7540 7573 7709 7777
                 not needed:     7507 7560
                 crap:           7278 7280 7545 7756 
                 sync 2 trunk:   7281
-                from trunk:     7505 7654 7656 7657 7658 7678 7745
+                from trunk:     7505 7654 7656 7657 7658 7678 7745 7874 7889 7901 7902 7903 7920 7921 7932
 
     not merged yet:
 
@@ -130,11 +143,60 @@ BRANCH->TRUNK
                 7294 added ACI tests
                 7295 GBL_reference
                 7296 ACI refactoring
+                7824 ACI (added tests)
+                7825 ACI (added 'ali_name')
+                7826 ACI (unify syntax errors)
+                7827 ACI (parameter handling)
+                7828 ACI (help)
+                7830 ACI (refactor)
+                7833 ACI (fix broken behavior (mid))
+                7834 ACI (DRY)
+                7837 ACI (DRY)
+                7838 ACI (escape-handling step1)
+                7841 ACI (syntax,refactor,fixes)
+                7842 ACI (comments)
+                7843 ACI (unit test for REG)
+                7845 ACI (streamlimit)
+                7846 ACI ([partially merged: skipped adquery.cxx])
+                7847 ACI (streamlimit removed)
+                7848 ACI (avoid streamcopies)
 
         --- do above later (unfinished etc)
 
 
         --- current try above
 
+                7849 safeCallbacks (collect all cb-types)
+                7850 depends [7849]
+                7852 safeCallbacks (module stub)
+                7853 reverts partof [7851]
+                7854 safeCallbacks (type inspection)
+                7856 safeCallbacks (cb-types+tests)
+                7857 safeCallbacks (type inspection)
+                7858 safeCallbacks (publish)
+                7859 depends [7858]
+                7861 safeCallbacks (tests) 
+                7862 safeCallbacks (double=invalid cb-param)
+                7863 safeCallbacks (publish RootCallback, WindowCallback and WindowCreatorCallback)
+                7866 safeCallbacks (dynamic cb-data)
+                7870 safeCallbacks (fix 32-bit tests) 
+                7872 safeCallbacks (type inspection; missing type)
+                7873 safeCallbacks (type inspection; gcc 4.3.2 fix)
+                7876 arbdbCallbackTests
+                7877 arbdbCallbackTests 
+                7878 safeCallbacks (new type to catch arbdbCallbacks)
+                7879 safeCallbacks (warning)
+                7880 safeCallbacks (introduce RootCallback)
+                7881 safeCallbacks (use RootCallback for Awars)
+                7882 safeCallbacks (refactor AW_cb(_struct))
+                7883 safeCallbacks (refactor AW_cb)
+                7884 safeCallbacks (strict order)
+                7906 safeCallbacks (deprecation)
+                7907 safeCallbacks (introduce WindowCallback)
+                7908 safeCallbacks ([partially merged: skipped cb.h])
+                7909 safeCallbacks (several WindowCallback as examples)
 
-    not reviewed: 7819:HEAD
+                7912 clickDevice (Rectangle)
+                7914 clickDevice (fix click behavior)
+
+    not reviewed: 7933:HEAD

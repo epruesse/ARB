@@ -28,6 +28,37 @@ gb_local_data *gb_local = 0;
 long *arbdb_stat;
 #endif
 
+#define INIT_TYPE_NAME(t) GB_TYPES_name[t] = #t
+
+static const char *GB_TYPES_2_name(GB_TYPES type) {
+    static const char *GB_TYPES_name[GB_TYPE_MAX];
+    static bool        initialized = false;
+
+    if (!initialized) {
+        memset(GB_TYPES_name, 0, sizeof(GB_TYPES_name));
+        INIT_TYPE_NAME(GB_NONE);
+        INIT_TYPE_NAME(GB_BIT);
+        INIT_TYPE_NAME(GB_BYTE);
+        INIT_TYPE_NAME(GB_INT);
+        INIT_TYPE_NAME(GB_FLOAT);
+        INIT_TYPE_NAME(GB_POINTER);
+        INIT_TYPE_NAME(GB_BITS);
+        INIT_TYPE_NAME(GB_BYTES);
+        INIT_TYPE_NAME(GB_INTS);
+        INIT_TYPE_NAME(GB_FLOATS);
+        INIT_TYPE_NAME(GB_LINK);
+        INIT_TYPE_NAME(GB_STRING);
+        INIT_TYPE_NAME(GB_STRING_SHRT);
+        INIT_TYPE_NAME(GB_DB);
+        initialized = true;
+    }
+
+    const char *name = NULL;
+    if (type >= 0 && type<GB_TYPE_MAX) name = GB_TYPES_name[type];
+    if (!name) name = GBS_global_string("invalid-type-%i", type);
+    return name;
+}
+
 inline GB_ERROR gb_transactable_type(GB_TYPES type, GBDATA *gbd) {
     GB_ERROR error = NULL;
     if (!GB_MAIN(gbd)->transaction) {
@@ -39,7 +70,13 @@ inline GB_ERROR gb_transactable_type(GB_TYPES type, GBDATA *gbd) {
     else {
         GB_TYPES gb_type = GB_TYPE(gbd);
         if (gb_type != type && (type != GB_STRING || GB_TYPE(gbd) != GB_LINK)) {
-            error = GBS_global_string("type mismatch (want=%i, got=%i)", type, gb_type);
+            char *rtype    = strdup(GB_TYPES_2_name(type));
+            char *rgb_type = strdup(GB_TYPES_2_name(gb_type));
+            
+            error = GBS_global_string("type mismatch (want='%s', got='%s') in '%s'", rtype, rgb_type, GB_get_db_path(gbd));
+
+            free(rgb_type);
+            free(rtype);
         }
     }
     if (error) {
