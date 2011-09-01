@@ -715,24 +715,24 @@ GB_ERROR AP_tree_root::saveToDB() {
 GB_ERROR AP_tree::move_group_info(AP_tree *new_group) {
     GB_ERROR error = 0;
     if (is_leaf || !name) {
-        error = GB_export_error("Please select a valid group");
+        error = "Please select a valid group";
     }
     else if (!gb_node) {
-        error = GB_export_error("Internal Error: group with name is missing DB-entry");
+        error = "Internal Error: group with name is missing DB-entry";
     }
     else if (new_group->is_leaf) {
         if (new_group->name) {
-            error = GB_export_errorf("'%s' is not a valid target for group information of '%s'.", new_group->name, name);
+            error = GBS_global_string("'%s' is not a valid target for group information of '%s'.", new_group->name, name);
         }
         else if (new_group->gb_node) {
-            error = GB_export_error("Internal Error: Target node already has a database entry (but no name)");
+            error = "Internal Error: Target node already has a database entry (but no name)";
         }
     }
 
     if (!error) {
         if (new_group->name) {
             if (!new_group->gb_node) {
-                error = GB_export_error("Internal Error: Target node has a database entry (but no name)");
+                error = "Internal Error: Target node has a database entry (but no name)";
             }
             else { // exchange information of two groups
                 GBDATA *tmp_node   = new_group->gb_node;

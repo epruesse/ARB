@@ -993,7 +993,7 @@ GB_ERROR GB_write_byte(GBDATA *gbd, int i)
 }
 
 GB_ERROR GB_write_int(GBDATA *gbd, long i) {
-#if defined(ARB64)
+#if defined(ARB_64)
 #if defined(WARN_TODO)
 #warning GB_write_int should be GB_ERROR GB_write_int(GBDATA *gbd,int32_t i)
 #endif

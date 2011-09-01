@@ -35,6 +35,8 @@
 #endif
 
 struct DbScanner {
+    ItemSelector& selector;
+
     AW_window         *aws;
     AW_root           *awr;
     GBDATA            *gb_main;
@@ -49,8 +51,6 @@ struct DbScanner {
     char *awarname_current_item; // awar contains pointer to mapped item (GBDATA*)
     char *awarname_edit_enabled;
     char *awarname_mark;
-
-    ItemSelector& selector;
 
     DbScanner(ItemSelector& selector_)
         : selector(selector_),

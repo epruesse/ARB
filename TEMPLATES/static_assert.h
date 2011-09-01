@@ -17,12 +17,12 @@ namespace arb_compile_assertion {
     template<int x> struct static_assert_test{};
 }
 
-#define CA_JOINTYPE(X,Y) X##Y
+#define CA_JOIN(X,Y) X##Y
+#define CA_JOINTYPE(X,Y) CA_JOIN(X, Y)
 #define CA_UNIQUETYPE(typename) CA_JOINTYPE(typename,__LINE__)
 
-#define COMPILE_ASSERT(const_expression)                                \
-    typedef ::arb_compile_assertion::static_assert_test<sizeof(::arb_compile_assertion::is< (bool)( const_expression ) >)> \
-    CA_UNIQUETYPE(_arb_compile_assertion_typedef_)
+#define COMPILE_ASSERTED_TYPE(const_expression) ::arb_compile_assertion::static_assert_test<sizeof(::arb_compile_assertion::is< (bool)( const_expression ) >)>
+#define COMPILE_ASSERT(const_expression)        typedef COMPILE_ASSERTED_TYPE(const_expression) CA_UNIQUETYPE(_arb_compile_assertion_typedef_)
 
 #else
 #error static_assert.h included twice
