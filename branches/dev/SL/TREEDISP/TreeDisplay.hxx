@@ -30,8 +30,6 @@
 #define AWAR_DTREE_USE_ELLIPSE     "awt/dtree/ellipse"
 #define AWAR_DTREE_GREY_LEVEL      "awt/dtree/greylevel"
 
-#define AWAR_DTREE_REFRESH       AWAR_TREE_REFRESH // touch this awar to refresh the tree display
-
 void awt_create_dtree_awars(AW_root *aw_root, AW_default def);
 
 #define NT_BOX_WIDTH      7 // pixel

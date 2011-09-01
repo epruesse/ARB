@@ -17,12 +17,10 @@
 #include <static_assert.h>
 #include <arb_defs.h>
 #include <arb_strbuf.h>
+#include <aw_awar_defs.hxx>
 
 #include <cctype>
 #include <algorithm>
-
-
-#define AWAR_TREE_REFRESH "tmp/focus/tree_refresh" // touch this awar to refresh the tree display
 
 // hook for 'export_sequence'
 

@@ -47,7 +47,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ui_species.o: $(ARBHOME)/INCLUDE/arbtools.h
 ui_species.o: $(ARBHOME)/INCLUDE/attributes.h
 ui_species.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-ui_species.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+ui_species.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_detach.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

@@ -15,6 +15,7 @@
 #include "mp_proto.hxx"
 
 #include <aw_root.hxx>
+#include <aw_awar_defs.hxx>
 #include <awt_canvas.hxx>
 
 awar_vars  mp_gl_awars;

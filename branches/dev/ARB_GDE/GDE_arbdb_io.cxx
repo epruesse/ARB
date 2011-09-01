@@ -5,7 +5,7 @@
 #include <arb_progress.h>
 #include <AW_rename.hxx>
 #include <AP_filter.hxx>
-#include <aw_awars.hxx>
+#include <aw_awar_defs.hxx>
 
 // AISC_MKPT_PROMOTE:#ifndef GDE_EXTGLOB_H
 // AISC_MKPT_PROMOTE:#include "GDE_extglob.h"

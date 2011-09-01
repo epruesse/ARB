@@ -83,8 +83,6 @@ ST_quality.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbtools.h
 ST_quality.o: $(ARBHOME)/INCLUDE/attributes.h
-ST_quality.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-ST_quality.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -112,6 +110,7 @@ ST_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbtools.h
 ST_window.o: $(ARBHOME)/INCLUDE/attributes.h
 ST_window.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+ST_window.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

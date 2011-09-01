@@ -11,7 +11,6 @@
 #include "TreeDisplay.hxx"
 
 #include <nds.h>
-#include <aw_awars.hxx>
 
 using namespace AW;
 

@@ -16,7 +16,7 @@
 #include <dbui.h>
 #include <item_sel_list.h>
 #include <awt_sel_boxes.hxx>
-#include <aw_awars.hxx>
+#include <aw_awar_defs.hxx>
 #include <aw_detach.hxx>
 #include <aw_msg.hxx>
 #include <arbdbt.h>

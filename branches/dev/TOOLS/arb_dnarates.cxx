@@ -28,7 +28,7 @@
 
 #include "DNAml_rates_1_0.h"
 
-#include <aw_awars.hxx>
+#include <aw_awar_defs.hxx>
 #include <arbdbt.h>
 
 #include <unistd.h>

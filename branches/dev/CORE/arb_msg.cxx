@@ -472,6 +472,7 @@ void GB_informationf(const char *templat, ...) {
     // goes to header: __ATTR__FORMAT(1)
 
     /* this message is always printed to stdout (regardless whether program uses GUI or not)
+     * (if it is not redirected using ARB_redirect_handlers_to)
      * see also : GB_warning
      */
 
