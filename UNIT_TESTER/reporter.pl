@@ -115,6 +115,7 @@ sub parse_log($) {
         }
       }
       if (/valgrind.*error/)  { $valgrind++; $dump_log = 1; }
+      if (/coverage/)  { $dump_log = 1; }
     }
   }
   close(LOG);

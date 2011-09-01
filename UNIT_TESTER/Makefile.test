@@ -143,6 +143,7 @@ ifeq ($(findstring B,$(VALGRIND)),B)
 endif
 	$(TEST_EXE) 
 ifeq ($(COVERAGE),1)
+	@echo "UnitTester: coverage" # do not remove (used as trigger)
 	@echo "-------------------- test-coverage for $(UNITLIBNAME)"
 	./gcov2msg.sh $(FULLUNITDIR) $(UNITLIBNAME)
 	@echo "-------------------- test-coverage for $(UNITLIBNAME) [end]"
