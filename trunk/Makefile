@@ -1442,7 +1442,6 @@ proto_tools: AISC_MKPTPS/AISC_MKPTPS.dummy
 proto: proto_tools
 	@echo $(SEP) Updating prototypes
 	$(MAKE) \
-		AISC/AISC.proto \
 		ARBDB/ARBDB.proto \
 		ARB_GDE/ARB_GDE.proto \
 		CORE/CORE.proto \
@@ -1450,7 +1449,6 @@ proto: proto_tools
 		NTREE/NTREE.proto \
 		$(ARCHS_PT_SERVER:.a=.proto) \
 		SERVERCNTRL/SERVERCNTRL.proto \
-		AISC_COM/AISC_COM.proto \
 		GDE/GDE.proto \
 		SL/SL.proto \
 
