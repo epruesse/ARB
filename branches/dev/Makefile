@@ -869,8 +869,8 @@ ARCHS_RNACMA = \
 $(RNACMA): $(ARCHS_RNACMA:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_RNACMA) $(LIBS) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(LIBS) $(ARCHS_RNACMA)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(LIBS) $(ARCHS_RNACMA) && \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(LIBS) $(ARCHS_RNACMA) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(LIBS) $(ARCHS_RNACMA) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 

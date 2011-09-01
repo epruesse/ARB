@@ -14,7 +14,11 @@ cma_cflags:= $(subst -Wshadow,,$(cma_cflags))
 cma_cflags+= -I../HEADERLIBS
 
 $(MAIN): $(CPP_OBJECTS) 
-	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
+	@$(ARBHOME)/SOURCE_TOOLS/binuptodate.pl $(MAIN) $(CPP_OBJECTS) || ( \
+		echo "$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)"; \
+		$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS) ; \
+	)
+
 .cxx.o:
 	$(cma_CPP) $(cma_cflags) -c $<  $(CPPINCLUDES)  $(POST_COMPILE)
 
