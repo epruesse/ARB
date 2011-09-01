@@ -2,10 +2,12 @@
 
 if [ -z $1 ] ; then
     echo ''
-    echo 'Usage: arb_valgrind [-m] [-c <callers>] [-f <filter>] [-l [-r]] [-A] <arb_program> <arguments>'
+    echo 'Usage: arb_valgrind [options] <arb_program> <arguments>'
     echo ''
     echo '    runs valgrind (versions 3.x) on <arb_program> piping results through a filter'
     echo '    so that the output can be used as emacs error messages'
+    echo ''
+    echo '    options:'
     echo ''
     echo '    -m             use massif (default uses memcheck)'
     echo '    -c <callers>   show <callers> stackframes (default: none)'
@@ -16,6 +18,7 @@ if [ -z $1 ] ; then
     echo '    -q             quiet'
     echo '    -L <file>      log stdout to <file> (does not work with -D)'
     echo '    -D             run gdb on error'
+    echo '    -e             return exitcode 1 on valgrind-errors'
     echo ''
     echo ''
     echo 'Usage: arb_valgrind update'
@@ -59,6 +62,7 @@ else
     ATTACH=''
     QUIET=''
     LOG_STDOUT=''
+    ERROR_EXITCODE=''
 
     if [ ! -f $LIST ] ; then
         UPDATE=1
@@ -118,8 +122,14 @@ else
                 shift 2
                 SCAN_ARGS=1
             fi
+            if [ "$1" = "-e" ] ; then
+                ERROR_EXITCODE='--error-exitcode=123'
+                shift 1
+                SCAN_ARGS=1
+            fi
         done
     fi
+
 
     if [ "X$LEAK_CHECK" = "X" ] ; then
         LEAK_CHECK="--leak-check=no"
@@ -136,6 +146,7 @@ else
                 > $LIST
         echo 'done.'
     fi
+    EXITCODE=0
     if [ $RUN = 1 ] ; then
         echo "Running valgrind on '$*' ..."
         echo "CALLERS='$CALLERS'"
@@ -143,6 +154,7 @@ else
         VG_CALLERS=$[$CALLERS+5]
         VG_OPTS=""
         VG_OPTS="$VG_OPTS --error-limit=yes"
+        VG_OPTS="$VG_OPTS $ERROR_EXITCODE"
         # VG_OPTS="$VG_OPTS --track-origins=yes" # ulalala ... eats MUUUUCH memory 
         VG_OPTS="$VG_OPTS --track-fds=yes" # track filedescriptors open on exit
         VG_OPTS="$VG_OPTS --show-below-main=yes" # valgrind below main (e.g. in static initialization)
@@ -152,10 +164,13 @@ else
             if [ -z "$LOG_STDOUT" ]; then
                 LOG_STDOUT=/tmp/arb_valgrind_$USER_$$.stdout
             fi
-            $VG_CMD "$@" 2>&1 >$LOG_STDOUT | $DIR/valgrind2grep $CALLERS "$FILTER" $SUPPX
+            $VG_CMD --log-fd=3 "$@" 3>&1 >$LOG_STDOUT 2>&1 | $DIR/valgrind2grep $CALLERS "$FILTER" $SUPPX 
+            EXITCODE=${PIPESTATUS[0]}
         else
             $VG_CMD "$@"
+            EXITCODE=$?
         fi
-        echo 'valgrind done.'
+        echo "valgrind done (exitcode=$EXITCODE)"
     fi
+    exit $EXITCODE
 fi
