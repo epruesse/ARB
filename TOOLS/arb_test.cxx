@@ -247,16 +247,6 @@ public:
 
 // --------------------------------------------------------------------------------
 
-static bool test_strcontains(const char *str, const char *part)  {
-    const char *found = strstr(str, part);
-    if (!found) {
-        printf("string '%s'\ndoes not contain '%s'\n", str, part);
-    }
-    return found;
-}
-
-#define TEST_ASSERT_CONTAINS(str, part) TEST_ASSERT(test_strcontains(str, part))
-
 #define TEST_OUTPUT_EQUALS(cmd, expected_std, expected_err)             \
     do {                                                                \
         CommandOutput out(cmd, expected_err == NULL);                   \
