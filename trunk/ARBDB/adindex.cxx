@@ -743,7 +743,7 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA *gbd, int deep) {
 // ----------------------------------------
 //      UNDO functions exported to USER
 
-GB_ERROR GB_request_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type) { // goes to header: __ATTR__USERESULT
+GB_ERROR GB_request_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type) { // goes to header: __ATTR__USERESULT_TODO
     /*! Define how to undo DB changes.
      *
      * This function should be called just before opening a transaction,
