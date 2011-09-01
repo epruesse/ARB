@@ -363,6 +363,35 @@ void GroupTree::update_tag_counters() {
     }
 }
 
+struct GroupChanges {
+    size_t created;
+    size_t skipped;
+    size_t overwritten;
+    size_t deleted;
+    size_t restored;
+
+    void clear() { created = skipped = overwritten = deleted = restored = 0; }
+    bool exist() const { return created||overwritten||deleted||restored; }
+
+    void show_message() {
+        string msg;
+
+        if (created)     msg += GBS_global_string("%zu created  ",     created);
+        if (overwritten) msg += GBS_global_string("%zu overwritten  ", overwritten);
+        if (skipped)     msg += GBS_global_string("%zu skipped  ",     skipped);
+        if (deleted)     msg += GBS_global_string("%zu deleted  ",     deleted);
+        if (restored)    msg += GBS_global_string("%zu restored  ",    restored);
+
+        if (!msg.empty()) {
+            msg = string("Group changes: ")+msg;
+            aw_message(msg.c_str());
+        }
+    }
+    
+    GroupChanges() { clear(); }
+};
+
+
 // ---------------------
 //      GroupBuilder
 
@@ -372,7 +401,6 @@ class GroupBuilder : virtual Noncopyable {
     GBDATA         *gb_main;
     string          tree_name;
     ARB_tree_root  *tree_root;
-    bool            tree_modified;                  // need to save ?
     Group_Action    action;                         // create or delete ?
     Species2Tip     species2tip;                    // map speciesName -> leaf
     ARB_ERROR       error;
@@ -384,20 +412,18 @@ class GroupBuilder : virtual Noncopyable {
     double          maxDist;                        // max. Distance used for calculation
     string          cluster_prefix;                 // prefix for cluster name
     string          cluster_suffix_def;             // suffix-definition for cluster name
-    size_t          group_count;                    // count generated/deleted groups
+    GroupChanges    changes;                        // count tree modifications
     bool            del_match_prefixes;             // only delete groups, where prefix matches
 
     GroupTree *find_group_position(GroupTree *subtree, size_t cluster_size);
 
 public:
     GroupBuilder(GBDATA *gb_main_, Group_Action action_)
-        : gb_main(gb_main_)
-        , tree_root(NULL)
-        , tree_modified(false)
-        , action(action_)
-        , error(NULL)
-        , existing_count(0)
-        , group_count(0)
+        : gb_main(gb_main_),
+          tree_root(NULL),
+          action(action_),
+          error(NULL),
+          existing_count(0)
     {
         AW_root *awr = global_data->get_aw_root();
 
@@ -418,7 +444,6 @@ public:
     ClusterPtr get_bad_cluster() const { return bad_cluster; }
     Group_Existing with_existing() const { return existing; }
     size_t get_existing_count() const { return existing_count; }
-    size_t get_group_count() const { return group_count; }
     double get_max_distance() const { return maxDist; }
 
     ARB_ERROR save_modified_tree();
@@ -448,7 +473,8 @@ void GroupBuilder::load_tree() {
         tree_root = NULL;
     }
     else {
-        tree_modified   = false;
+        changes.clear();
+
         GroupTree *tree = DOWNCAST(GroupTree*, tree_root->get_root_node());
         tree->update_leaf_counters();
         tree->map_species2tip(species2tip);
@@ -456,12 +482,17 @@ void GroupBuilder::load_tree() {
 }
 ARB_ERROR GroupBuilder::save_modified_tree() {
     di_assert(!error);
-    if (tree_modified) {
+    if (changes.exist()) {
         di_assert(tree_root);
         error = tree_root->saveToDB();
 
         AW_root *awr = global_data->get_aw_root();
         awr->awar(AWAR_TREE_REFRESH)->touch();
+
+        if (!error) {
+            changes.show_message();
+            changes.clear();
+        }
     }
     return error;
 }
@@ -625,50 +656,46 @@ void GroupBuilder::update_group(ClusterPtr cluster) {
                 switch (action) {
                     case GROUP_CREATE: {
                         char *old_name = group_node->name;
-                        bool  create   = true;
 
-                        if (old_name) {
-                            switch (existing) {
-                                case EXISTING_GROUP_ABORT: error = GBS_global_string("Existing group '%s' is in the way", old_name); break;
-                                case EXISTING_GROUP_SKIP: create = false; break;
-                                case EXISTING_GROUP_OVERWRITE: break;  // silently overwrite
-                                case EXISTING_GROUP_APPEND_ORG: break; // silently overwrite
+                        if (old_name && existing == EXISTING_GROUP_ABORT) {
+                            error = GBS_global_string("Existing group '%s' is in the way", old_name);
+                        }
+                        else {
+                            if (old_name && existing == EXISTING_GROUP_SKIP) {
+                                changes.skipped++;
+                            }
+                            else {
+                                string new_name = generate_group_name(cluster, group_node);
+
+                                if (old_name) changes.overwritten++; else changes.created++;
+
+                                free(old_name);
+                                group_node->name = strdup(new_name.c_str());
+
+                                // @@@ DRY that.. it's spread everywhere through libs :(
+                                if (!group_node->gb_node) {
+                                    GBDATA *gb_tree = group_node->get_tree_root()->get_gb_tree();
+                                    GB_transaction ta(gb_tree);
+                                    GBDATA *gb_node = GB_create_container(gb_tree, "node");
+                                    if (!gb_node) {
+                                        error = GB_await_error();
+                                    }
+                                    else {
+                                        error = GBT_write_int(gb_node, "id", 0);
+                                    }
+
+                                    if (!error) {
+                                        group_node->gb_node = gb_node;
+                                    }
+                                }
+                                if (group_node->gb_node && !error) {
+                                    GB_transaction ta(group_node->gb_node);
+                                    error = GBT_write_string(group_node->gb_node, "group_name", group_node->name);
+                                }
+
+                                cluster->update_description(group_node); // change list display
                             }
                         }
-
-                        if (!error && create) {
-                            string new_name = generate_group_name(cluster, group_node);
-
-                            free(old_name);
-                            group_node->name = strdup(new_name.c_str());
-
-                            // @@@ DRY that.. it's spread everywhere through libs :(
-                            if (!group_node->gb_node) {
-                                GBDATA *gb_tree = group_node->get_tree_root()->get_gb_tree();
-                                GB_transaction ta(gb_tree);
-                                GBDATA *gb_node = GB_create_container(gb_tree, "node");
-                                if (!gb_node) {
-                                    error = GB_await_error();
-                                }
-                                else {
-                                    error = GBT_write_int(gb_node, "id", 0);
-                                }
-
-                                if (!error) {
-                                    group_node->gb_node = gb_node;
-                                }
-                            }
-                            if (group_node->gb_node && !error) {
-                                GB_transaction ta(group_node->gb_node);
-                                error = GBT_write_string(group_node->gb_node, "group_name", group_node->name);
-                            }
-
-                            cluster->update_description(group_node); // change list display
-
-                            tree_modified = true;
-                            group_count++;
-                        }
-
                         break;
                     }
                     case GROUP_DELETE: {
@@ -680,16 +707,15 @@ void GroupBuilder::update_group(ClusterPtr cluster) {
                                 if (group_node->gb_node) {
                                     error = GBT_write_string(group_node->gb_node, "group_name", group_node->name);
                                 }
+                                changes.restored++;
                             }
                             else {
                                 freenull(group_node->name);
                                 group_node->gb_node = NULL; // forget ref to group data (@@@ need to delete group data from DB ? )
+                                changes.deleted++;
                             }
 
                             cluster->update_description(group_node); // change list display
-                                
-                            group_count++;
-                            tree_modified = true;
                         }
                         break;
                     }
@@ -755,30 +781,7 @@ static void group_clusters(AW_window *, AW_CL cl_Group_Action, AW_CL cl_aw_clust
         }
     }
     else {
-        {
-            size_t      existed = groupBuilder.get_existing_count();
-            const char *msg     = NULL;
-
-            if (existed>0) {
-                switch (groupBuilder.with_existing()) {
-                    case EXISTING_GROUP_ABORT:       cl_assert(0);     break; // logic error
-                    case EXISTING_GROUP_SKIP:        msg = "Skipped";  break;
-                    case EXISTING_GROUP_OVERWRITE:   msg = "Replaced"; break;
-                    case EXISTING_GROUP_APPEND_ORG:  msg = "Modified"; break;
-                }
-            }
-            if (msg) aw_message(GBS_global_string("%s %zu existing groups", msg, existed));
-        }
         error = groupBuilder.save_modified_tree();
-
-        if (!error) {
-            const char *did;
-            switch (action) {
-                case GROUP_CREATE: did = "Created"; break;
-                case GROUP_DELETE: did = "Deleted/restored"; break;
-            }
-            aw_message(GBS_global_string("%s %zu group(s)", did, groupBuilder.get_group_count()));
-        }
     }
 
     error = ta.close(error);
