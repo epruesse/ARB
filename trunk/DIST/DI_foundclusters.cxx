@@ -39,12 +39,8 @@ static AP_FLOAT calc_mean_dist_to(const ClusterTree *distance_to, const LeafRela
     return sum/count;
 }
 
-struct UseAnyTree : public ARB_tree_predicate {
-    bool selects(const ARB_tree&) const { return true; }
-};
-    
 Cluster::Cluster(ClusterTree *ct)
-    : next_name(NULL)
+    : next_desc(NULL)
 {
     cl_assert(ct->get_state() == CS_IS_CLUSTER);
 
@@ -105,7 +101,7 @@ Cluster::Cluster(ClusterTree *ct)
     }
     mean_dist /= distances->size();
     cl_assert(representative);
-    generate_name(ct, UseAnyTree());
+    desc = create_description(ct);
 }
 
 static string *get_downgroups(const ARB_countedTree *ct, const ARB_tree_predicate& keep_group_name, size_t& group_members) {
@@ -139,9 +135,9 @@ static string *get_downgroups(const ARB_countedTree *ct, const ARB_tree_predicat
     }
     return result;
 }
-static const char *get_upgroup(const ARB_countedTree *ct, const ARB_tree_predicate& keep_group_name, const ARB_countedTree*& upgroupPtr) {
+static const char *get_upgroup(const ARB_countedTree *ct, const ARB_tree_predicate& keep_group_name, const ARB_countedTree*& upgroupPtr, bool reuse_original_name) {
     const char *group_name = ct->group_name();
-    char       *original   = group_name ? originalGroupName(group_name) : NULL;
+    char       *original   = (reuse_original_name && group_name) ? originalGroupName(group_name) : NULL;
 
     if (original) {
         static SmartCharPtr result;
@@ -155,7 +151,7 @@ static const char *get_upgroup(const ARB_countedTree *ct, const ARB_tree_predica
     else {
         const ARB_countedTree *father = ct->get_father();
         if (father) {
-            group_name = get_upgroup(father, keep_group_name, upgroupPtr);
+            group_name = get_upgroup(father, keep_group_name, upgroupPtr, reuse_original_name);
         }
         else {
             upgroupPtr = ct;
@@ -168,26 +164,31 @@ static const char *get_upgroup(const ARB_countedTree *ct, const ARB_tree_predica
     return group_name;
 }
 
-void Cluster::generate_name(const ARB_countedTree *ct, const ARB_tree_predicate& keep_group_name) {
-    // creates initial cluster description (using up- and down-groups and percentages) 
+string Cluster::create_description(const ARB_countedTree *ct) {
+    // creates cluster description (using up- and down-groups, percentages, existing groups, ...)
     cl_assert(!ct->is_leaf);
 
+    string name;
+
+    UseAnyTree use_any_upgroup;
+
     const ARB_countedTree *upgroup         = NULL;
-    const char            *upgroup_name    = get_upgroup(ct, keep_group_name, upgroup);
-    size_t                 upgroup_members = upgroup->get_leaf_count(); 
+    const char            *upgroup_name    = get_upgroup(ct, use_any_upgroup, upgroup, false);
+    size_t                 upgroup_members = upgroup->get_leaf_count();
 
     size_t cluster_members = ct->get_leaf_count();
 
     cl_assert(upgroup_members>0); // if no group, whole tree should have been returned
 
     if (upgroup_members == cluster_members) { // use original or existing name
-        name = upgroup_name;
+        name = string("[G] ")+upgroup_name;
     }
     else {
-        size_t    downgroup_members;
-        string   *downgroup_names = get_downgroups(ct, keep_group_name, downgroup_members);
-        AP_FLOAT up_rel = (AP_FLOAT)cluster_members/upgroup_members;   // used for: xx% of upgroup (big is good)
-        AP_FLOAT  down_rel        = (AP_FLOAT)downgroup_members/cluster_members; // used for: downgroup(s) + (1-xx)% outgroup (big is good)
+        size_t  downgroup_members;
+        string *downgroup_names = get_downgroups(ct, use_any_upgroup, downgroup_members);
+
+        AP_FLOAT up_rel   = (AP_FLOAT)cluster_members/upgroup_members;   // used for: xx% of upgroup (big is good)
+        AP_FLOAT down_rel = (AP_FLOAT)downgroup_members/cluster_members; // used for: downgroup(s) + (1-xx)% outgroup (big is good)
 
         if (up_rel>down_rel) { // prefer up_percent
             name = string(GBS_global_string("%4.1f%% of %s", up_rel*100.0, upgroup_name));
@@ -203,37 +204,36 @@ void Cluster::generate_name(const ARB_countedTree *ct, const ARB_tree_predicate&
 
         delete downgroup_names;
     }
+    return name;
 }
 
-string Cluster::build_group_name(const ARB_countedTree *ct, const ARB_tree_predicate& keep_group_name) {
-    // similar to generate_name()
-    // - contains relative position in up-group (instead of percentages)
-
+string Cluster::get_upgroup_info(const ARB_countedTree *ct, const ARB_tree_predicate& keep_group_name) {
+    // generates a string indicating relative position in up-group
     cl_assert(!ct->is_leaf);
 
     const ARB_countedTree *upgroup      = NULL;
-    const char            *upgroup_name = get_upgroup(ct, keep_group_name, upgroup);
+    const char            *upgroup_name = get_upgroup(ct, keep_group_name, upgroup, true);
 
     size_t upgroup_members = upgroup->get_leaf_count();
     size_t cluster_members = ct->get_leaf_count();
 
-    const char *group_name;
+    const char *upgroup_info;
     if (upgroup_members == cluster_members) {
-        group_name = upgroup_name;
+        upgroup_info = upgroup_name;
     }
     else {
         size_t cluster_pos1 = ct->relative_position_in(upgroup)+1; // range [1..upgroup_members]
         size_t cluster_posN = cluster_pos1+cluster_members-1;
 
-        group_name = GBS_global_string("%zu-%zu/%zu_%s", cluster_pos1, cluster_posN, upgroup_members, upgroup_name);
+        upgroup_info = GBS_global_string("%zu-%zu/%zu_%s", cluster_pos1, cluster_posN, upgroup_members, upgroup_name);
     }
-    return group_name;
+    return upgroup_info;
 }
 
 // --------------------------
-//      DescriptionFormat
+//      DisplayFormat
 
-class DescriptionFormat {
+class DisplayFormat {
     size_t   max_count;
     AP_FLOAT max_dist;
     AP_FLOAT max_minBases;
@@ -258,12 +258,16 @@ class DescriptionFormat {
     static char *make_format(AP_FLOAT val) {
         long digits   = calc_digits(long(val));
         long afterdot = digits <=3 ? 5-digits-1 : 0;
-        return GBS_global_string_copy("%%%li.%lif", digits, afterdot);
+
+        cl_assert(afterdot >= 0);
+        long all = digits+(afterdot ? (afterdot+1) : 0);
+
+        return GBS_global_string_copy("%%%li.%lif", all, afterdot);
     }
 
 public:
 
-    DescriptionFormat()
+    DisplayFormat()
         : max_count(0)
         , max_dist(0.0)
         , max_minBases(0.0)
@@ -300,12 +304,12 @@ public:
 
 
 
-void Cluster::scan_description_widths(DescriptionFormat& format) const {
+void Cluster::scan_display_widths(DisplayFormat& format) const {
     AP_FLOAT max_of_all_dists = std::max(max_dist, std::max(min_dist, mean_dist));
     format.announce(get_member_count(), max_of_all_dists*100.0, min_bases);
 }
 
-const char *Cluster::description(const DescriptionFormat *format) const {
+const char *Cluster::get_list_display(const DisplayFormat *format) const {
     const char *format_string;
     if (format) format_string = format->get_format();
     else        format_string = "%zu  %.3f [%.3f-%.3f]  %.1f  %s";
@@ -316,7 +320,7 @@ const char *Cluster::description(const DescriptionFormat *format) const {
                              min_dist*100.0,
                              max_dist*100.0,
                              min_bases,
-                             name.c_str());
+                             desc.c_str());
 }
 
 
@@ -414,7 +418,7 @@ void ClustersData::update_cluster_selection_list(AW_window *aww) {
         }
         {
             ClusterIDsIter    cl_end = shown.end();
-            DescriptionFormat format;
+            DisplayFormat format;
 
             for (int pass = 1; pass <= 2; ++pass) {
                 for (ClusterIDsIter cl = shown.begin(); cl != cl_end; ++cl) {
@@ -422,10 +426,10 @@ void ClustersData::update_cluster_selection_list(AW_window *aww) {
                     ClusterPtr cluster = clusterWithID(id);
 
                     if (pass == 1) {
-                        cluster->scan_description_widths(format);
+                        cluster->scan_display_widths(format);
                     }
                     else {
-                        aww->insert_selection(clusterList, cluster->description(&format), cluster->get_ID());
+                        aww->insert_selection(clusterList, cluster->get_list_display(&format), cluster->get_ID());
                     }
                 }
             }
