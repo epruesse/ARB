@@ -181,7 +181,7 @@ bool ARB_global_awars_initialized();
 void ARB_declare_global_awars(AW_root *aw_root, AW_default aw_def);
 GB_ERROR ARB_bind_global_awars(GBDATA *gb_main) __ATTR__USERESULT;
 
-INLINE_ATTRIBUTED(__ATTR__USERESULT, GB_ERROR ARB_init_global_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main)) {
+INLINE_ATTRIBUTED(__ATTR__USERESULT_TODO, GB_ERROR ARB_init_global_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main)) {
     ARB_declare_global_awars(aw_root, aw_def);
     return ARB_bind_global_awars(gb_main);
 }

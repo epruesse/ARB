@@ -1409,7 +1409,9 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             AWMIMT(awm->local_id("tree_remove_marked"),  "Remove marked",  "m", "trm_mrkd.hlp",   AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_MARKED);
             AWMIMT(awm->local_id("tree_keep_marked"),    "Keep marked",    "K", "tkeep_mrkd.hlp", AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_NOT_MARKED|AWT_REMOVE_DELETED);
 #if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning add "remove duplicates from tree"
+#endif
             SEP________________________SEP();
             AWMIMT("all_tree_remove_deleted", "Remove zombies from all trees", "a", "trm_del.hlp", AWM_ALL, (AW_CB)NT_alltree_remove_leafs, AWT_REMOVE_DELETED, (AW_CL)GLOBAL_gb_main);
             AWMIMT("all_tree_remove_marked",  "Remove marked from all trees",  "l", "trm_del.hlp", AWM_ALL, (AW_CB)NT_alltree_remove_leafs, AWT_REMOVE_MARKED, (AW_CL)GLOBAL_gb_main);

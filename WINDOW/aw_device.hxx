@@ -697,7 +697,7 @@ public:
 
     // all get_size_information...() return screen coordinates
 
-    void get_size_information(AW_world *ptr) __ATTR__DEPRECATED_LATER("whole AW_world is deprecated") const {
+    void get_size_information(AW_world *ptr) const __ATTR__DEPRECATED_TODO("whole AW_world is deprecated") {
         *ptr = scaled.get_size();
     }
     AW::Rectangle get_size_information() const { return scaled.get_size_as_Rectangle(); }

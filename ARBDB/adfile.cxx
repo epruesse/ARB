@@ -33,7 +33,8 @@ GB_CSTR GB_getcwd() {
     RETURN_ONETIME_ALLOC(getcwd(0, FILE_PATH_MAX));
 }
 
-GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) { // goes to header: __ATTR__USERESULT
+GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) {
+    // goes to header: __ATTR__USERESULT_TODO
     // look for quick saves (basename = yyy/xxx no arb ending !!!!)
     char        *path        = strdup(basename);
     const char  *fulldir     = ".";

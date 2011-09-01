@@ -103,7 +103,7 @@ void gbs_memcopy(char *dest, const char *source, long len);
 char *gbs_add_path(char *path, char *name);
 
 /* adfile.cxx */
-GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) __ATTR__USERESULT;
+GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) __ATTR__USERESULT_TODO;
 
 /* adsystem.cxx */
 GB_ERROR gb_load_dictionary_data(GBDATA *gb_main, const char *key, char **dict_data, long *size);

@@ -928,10 +928,13 @@ static void swap_clusters(AW_window *aww) {
 // ------------------
 //      save/load
 
-static void save_clusters(AW_window *aww) {
+#if defined(WARN_TODO)
+#warning "implement save/load clusters"
+#endif
+static void save_clusters(AW_window *) {
     cl_assert(0); // not impl
 }
-static void load_clusters(AW_window *aww) {
+static void load_clusters(AW_window *) {
     cl_assert(0); // not impl
 }
 

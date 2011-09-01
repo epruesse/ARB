@@ -1784,7 +1784,7 @@ long gbcmc_key_alloc(GBDATA *gbd, const char *key) {
 #warning GBCMC_system should return GB_ERROR!
 #endif
 
-int GBCMC_system(GBDATA *gbd, const char *ss) { // goes to header: __ATTR__USERESULT
+int GBCMC_system(GBDATA *gbd, const char *ss) { // goes to header: __ATTR__USERESULT_TODO
     int           socket;
     long          gb_result[2];
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
