@@ -277,9 +277,9 @@ void probe_read_alignments() {
                     pid.size = size;
 
                     free(data);
+                    count++;
                 }
                     
-                count++;
             }
             progress.inc();
         }
