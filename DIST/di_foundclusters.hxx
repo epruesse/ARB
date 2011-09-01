@@ -64,7 +64,7 @@ enum ClusterOrder {
     SORT_REVERSE = 1<<3,                              // bitflag!
 };
 
-class DescriptionFormat;
+class DisplayFormat;
 
 class Cluster : virtual Noncopyable {
     double min_dist;                                // min. distance between species inside Cluster
@@ -74,11 +74,11 @@ class Cluster : virtual Noncopyable {
     double min_bases;                               // min bases used for sequence distance
     double rel_tree_pos;                            // relative position in tree [0.0 .. 1.0]
 
-    GBDATA     *representative;                     // cluster member with lowest mean distance
-    DBItemSet  members;                            // all members (including representative)
+    GBDATA    *representative;                      // cluster member with lowest mean distance
+    DBItemSet  members;                             // all members (including representative)
 
-    std::string  name;                              // cluster name
-    std::string *next_name;                         // proposed new name (call accept_name() to accept it)
+    std::string  desc;                              // cluster description
+    std::string *next_desc;                         // proposed new description (call accept_proposed() to accept it)
 
     ID id;                                          // unique id for this cluster (used in AWAR_CLUSTER_SELECTED)
 
@@ -86,31 +86,37 @@ class Cluster : virtual Noncopyable {
 
 public:
     Cluster(ClusterTree *ct);
-    ~Cluster() { delete next_name; }
+    ~Cluster() { delete next_desc; }
 
     ID get_ID() const { return id; }
 
     size_t get_member_count() const { return members.size(); }
-    void scan_description_widths(DescriptionFormat& format) const;
-    const char *description(const DescriptionFormat *format) const;
+    void scan_display_widths(DisplayFormat& format) const;
+    const char *get_list_display(const DisplayFormat *format) const;
 
     const DBItemSet& get_members() const { return members; }
 
     void mark_all_members(bool mark_representative) const;
     GBDATA *get_representative() const { return representative; }
 
-    void        generate_name(const ARB_countedTree *ct, const ARB_tree_predicate& keep_group_name);
-    std::string build_group_name(const ARB_countedTree *ct, const ARB_tree_predicate& keep_group_name);
+    std::string create_description(const ARB_countedTree *ct);
+    std::string get_upgroup_info(const ARB_countedTree *ct, const ARB_tree_predicate& keep_group_name);
+    double get_mean_distance() const { return mean_dist; }
 
-    void propose_name(const std::string& newName) {
-        delete next_name;
-        next_name = new std::string(newName);
+    void propose_description(const std::string& newDesc) {
+        delete next_desc;
+        next_desc = new std::string(newDesc);
     }
-    void accept_name(bool accept) {
-        if (accept && next_name) name = *next_name;
+    void update_description(const ARB_countedTree *ct) {
+        propose_description(create_description(ct));
+    }
+    void accept_proposed(bool accept) {
+        if (accept && next_desc) {
+            desc = *next_desc;
+        }
 
-        delete next_name;
-        next_name = NULL;
+        delete next_desc;
+        next_desc = NULL;
     }
     
 private:

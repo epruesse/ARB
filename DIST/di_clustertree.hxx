@@ -204,6 +204,9 @@ public:
     void oblivion(bool forgetDistances); // forget unneeded data
 };
 
+struct UseAnyTree : public ARB_tree_predicate {
+    bool selects(const ARB_tree&) const { return true; }
+};
 
 #else
 #error di_clustertree.hxx included twice
