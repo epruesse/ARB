@@ -297,6 +297,7 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_file.hxx
@@ -359,7 +360,6 @@ AWT_tables.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-AWT_tables.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -391,6 +391,7 @@ AWT_www.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_www.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+AWT_www.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_global_awars.hxx

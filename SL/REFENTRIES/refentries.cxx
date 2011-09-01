@@ -13,7 +13,6 @@
 
 #include <aw_window.hxx>
 #include <aw_root.hxx>
-#include <aw_awar.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
 #include <arb_msg.h>

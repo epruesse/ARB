@@ -80,6 +80,7 @@ RNA3D_Interface.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/arbtools.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -149,6 +150,7 @@ RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arbtools.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -252,6 +254,7 @@ RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/arbdbt.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/arbtools.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx

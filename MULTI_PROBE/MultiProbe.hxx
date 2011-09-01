@@ -17,9 +17,8 @@
 #ifndef MPDEFS_H
 #include "mpdefs.h"
 #endif
-
-#ifndef AW_AWARS_HXX
-#include <aw_awars.hxx>
+#ifndef AW_AWAR_HXX
+#include <aw_awar.hxx>
 #endif
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>

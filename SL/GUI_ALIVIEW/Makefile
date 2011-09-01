@@ -56,6 +56,7 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+AWT_filter.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

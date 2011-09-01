@@ -12,7 +12,7 @@
 
 #include <AW_rename.hxx>
 
-#include <aw_awars.hxx>
+#include <aw_awar.hxx>
 #include <aw_select.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>

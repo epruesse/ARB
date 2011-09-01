@@ -48,6 +48,7 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_file.hxx
