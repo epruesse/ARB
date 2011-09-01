@@ -875,8 +875,8 @@ ARCHS_RNACMA = \
 $(RNACMA): $(ARCHS_RNACMA:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_RNACMA) $(LIBS) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(LIBS) $(ARCHS_RNACMA)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(LIBS) $(ARCHS_RNACMA) && \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(LIBS) $(ARCHS_RNACMA) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(LIBS) $(ARCHS_RNACMA) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1034,8 +1034,8 @@ ARCHS_DBSERVER = \
 $(DBSERVER): $(ARCHS_DBSERVER:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DBSERVER) $(ARBDB_LIB) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS) PROBE_COM/client.a" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS) PROBE_COM/client.a && \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) PROBE_COM/client.a $(SYSLIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) PROBE_COM/client.a $(SYSLIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1056,8 +1056,8 @@ ARCHS_PROBE_DEPEND = \
 $(PROBE): $(ARCHS_PROBE_DEPEND:.a=.dummy) link_db 
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) config.makefile || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) $(EXECLIBS) PROBE_COM/server.a" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) $(EXECLIBS) PROBE_COM/server.a && \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) PROBE_COM/server.a $(SYSLIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) PROBE_COM/server.a $(SYSLIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1070,8 +1070,8 @@ ARCHS_NAMES = \
 $(NAMES): $(ARCHS_NAMES:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS) $(EXECLIBS) NAMES_COM/server.a" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS) $(EXECLIBS) NAMES_COM/server.a && \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) NAMES_COM/server.a $(SYSLIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) NAMES_COM/server.a $(SYSLIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
