@@ -54,16 +54,12 @@ CPPreal:=cpp
 
 # supported compiler versions:
 
-ALLOWED_GCC_3xx_VERSIONS=3.2 3.3.1 3.3.3 3.3.4 3.3.5 3.3.6 3.4.0 3.4.2 3.4.3
 ALLOWED_GCC_4xx_VERSIONS=\
-	4.0.0 4.0.1 4.0.2 4.0.3 \
-	4.1.1 4.1.2 4.1.3 \
-	4.2.0 4.2.1 4.2.3 4.2.4 \
 	4.3 4.3.1 4.3.2 4.3.3 4.3.4 \
 	4.4 4.4.1 4.4.3 4.4.5 \
 	4.5.2
 
-ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_3xx_VERSIONS) $(ALLOWED_GCC_4xx_VERSIONS)
+ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_4xx_VERSIONS)
 
 GCC_VERSION_FOUND=$(shell $(GCC) -dumpversion)
 GCC_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_GCC_VERSIONS),$(findstring ___$(version)___,___$(GCC_VERSION_FOUND)___))))
@@ -76,14 +72,19 @@ USE_GCC_MAJOR:=$(word 1,$(SPLITTED_VERSION))
 USE_GCC_MINOR:=$(word 2,$(SPLITTED_VERSION))
 USE_GCC_PATCHLEVEL:=$(word 3,$(SPLITTED_VERSION))
 
-USE_GCC_4_OR_HIGHER:=$(findstring $(USE_GCC_MAJOR),456789)
-USE_GCC_45_OR_HIGHER:=
 USE_GCC_452_OR_HIGHER:=
 ifeq ($(USE_GCC_MAJOR),4)
- USE_GCC_45_OR_HIGHER:=$(findstring $(USE_GCC_MINOR),56789)
  ifeq ($(USE_GCC_MINOR),5)
-  USE_GCC_452_OR_HIGHER:=$(findstring $(USE_GCC_PATCHLEVEL),23456789)
+  ifneq ('$(findstring $(USE_GCC_PATCHLEVEL),23456789)','')
+   USE_GCC_452_OR_HIGHER:=yes
+  endif
+ else
+  ifneq ('$(findstring $(USE_GCC_MINOR),6789)','')
+   USE_GCC_452_OR_HIGHER:=yes
+  endif
  endif
+else
+ USE_GCC_452_OR_HIGHER:=yes
 endif
 
 #---------------------- define special directories for non standard builds
@@ -148,18 +149,14 @@ ifeq ($(DEBUG),1)
 
 # ------- above only warnings available in 3.0
 
- ifneq ('$(USE_GCC_4_OR_HIGHER)','')
 	extended_cpp_warnings += -Weffc++# gcc 3.0.1
 	extended_cpp_warnings += -Wmissing-noreturn# gcc 3.0.2
 #	extended_cpp_warnings += -Wold-style-cast# gcc 3.0.4 (warn about 28405 old-style casts)
 	extended_cpp_warnings += -Winit-self# gcc 3.4.0
 	extended_cpp_warnings += -Wstrict-aliasing# gcc 3.4
 	extended_cpp_warnings += -Wextra# gcc 3.4.0
-  ifneq ('$(USE_GCC_45_OR_HIGHER)','')
-   ifneq ('$(USE_GCC_452_OR_HIGHER)','')
+ ifeq ('$(USE_GCC_452_OR_HIGHER)','yes')
 	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
-   endif
-  endif
  endif
 
  ifeq ($(DEBUG_GRAPHICS),1)
@@ -283,10 +280,7 @@ cflags += -fshow-column# show columns
 cflags += -funit-at-a-time
 cflags += -fPIC
 cflags += -fno-common# link all global data into one namespace
-
-ifneq ('$(USE_GCC_4_OR_HIGHER)','')
 cflags += -fstrict-aliasing# gcc 3.4
-endif
 
 #---------------------- X11 location
 
@@ -2044,7 +2038,7 @@ ifeq ("$(DEVELOPER)","SAVETEST")
 	$(MAKE) save_test
 endif
 
-all: 
+all:
 	@echo "Build time" > $(TIMELOG)
 	@echo "$(SEP) $(MAKE) build"
 	@$(TIMECMD) $(MAKE) build
