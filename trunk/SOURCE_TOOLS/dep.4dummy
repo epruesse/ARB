@@ -61,4 +61,3 @@ TOOLS/arb_test.dummy: ARBDB/ARBDB.dummy
 WETC/WETC.dummy: AWT/AWT.dummy
 WINDOW/libWINDOW.dummy: ARBDB/ARBDB.dummy
 XML/XML.dummy: ARBDB/ARBDB.dummy
-ptpan/PROBE.dummy: PROBE_COM/PROBE_COM.dummy SERVERCNTRL/SERVERCNTRL.dummy
