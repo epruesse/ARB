@@ -61,4 +61,3 @@ TOOLS/arb_test.o
 WETC/WETC.a
 WINDOW/libWINDOW.so
 XML/XML.a
-ptpan/PROBE.a
