@@ -24,7 +24,7 @@
 #define pt_assert(bed) arb_assert(bed)
 
 #if defined(DEBUG)
-#define PTM_DEBUG
+// #define PTM_DEBUG
 #endif // DEBUG
 
 typedef unsigned long ULONG;
