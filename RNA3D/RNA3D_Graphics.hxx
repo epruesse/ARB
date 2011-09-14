@@ -65,6 +65,7 @@ public:
     void show(AW_device *device);
     void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
     void paint(AW_device *device);
+    void handle_command(AW_device *, AWT_graphic_event&) {}
 };
 
 #else

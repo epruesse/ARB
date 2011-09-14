@@ -441,11 +441,9 @@ static void input_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
         click_device->get_clicked_line(&ntw->clicked_line);
         click_device->get_clicked_text(&ntw->clicked_text);
 
-        ntw->tree_disp->command(device, ntw->mode,
-                                event.button, event.keymodifier, event.keycode, event.character,
-                                event.type, event.x,
-                                event.y, &ntw->clicked_line,
-                                &ntw->clicked_text);
+        AWT_graphic_event gevent(ntw->mode, event, false, &ntw->clicked_line, &ntw->clicked_text);
+        ntw->tree_disp->handle_command(device, gevent);
+
         if (ntw->tree_disp->exports.save) {
             // save it
             GB_ERROR error = ntw->tree_disp->save(ntw->gb_main, 0, 0, 0);
@@ -596,10 +594,10 @@ static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
 
         if (run_command) {
             ntw->init_device(device);
-            ntw->tree_disp->command(device, ntw->mode,
-                                    event.button, event.keymodifier, event.keycode, event.character, AW_Mouse_Drag, event.x,
-                                    event.y, &ntw->clicked_line,
-                                    &ntw->clicked_text);
+
+            AWT_graphic_event gevent(ntw->mode, event, true, &ntw->clicked_line, &ntw->clicked_text);
+            ntw->tree_disp->handle_command(device, gevent);
+
             if (ntw->gb_main) {
                 ntw->tree_disp->update(ntw->gb_main);
             }
@@ -730,18 +728,6 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_g
     aww->set_motion_callback(AW_MIDDLE_AREA, (AW_CB)motion_event, (AW_CL)this, 0);
     aww->set_horizontal_change_callback(makeWindowCallback(scroll_hor_cb, this));
     aww->set_vertical_change_callback(makeWindowCallback(scroll_vert_cb, this));
-}
-
-// --------------------
-//      AWT_graphic
-// --------------------
-
-void AWT_graphic::command(AW_device *, AWT_COMMAND_MODE, int, AW_key_mod, AW_key_code, char,
-                          AW_event_type, AW_pos, AW_pos, AW_clicked_line *, AW_clicked_text *)
-{
-}
-
-void AWT_graphic::text(AW_device * /* device */, char * /* text */) {
 }
 
 // --------------------------

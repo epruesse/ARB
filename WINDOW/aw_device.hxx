@@ -157,7 +157,7 @@ public:
     }
 };
 
-AW_clicked_element *AW_getBestClick(AW_clicked_line *cl, AW_clicked_text *ct);
+const AW_clicked_element *AW_getBestClick(const AW_clicked_line *cl, const AW_clicked_text *ct);
 
 // --------------------------------------------------
 // general note on world- vs. pixel-positions:(WORLD_vs_PIXEL)

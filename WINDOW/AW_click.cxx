@@ -210,11 +210,11 @@ void AW_device_click::get_clicked_text(class AW_clicked_text *ptr) const {
     *ptr = opt_text;
 }
 
-AW_clicked_element *AW_getBestClick(AW_clicked_line *cl, AW_clicked_text *ct) { 
+const AW_clicked_element *AW_getBestClick(const AW_clicked_line *cl, const AW_clicked_text *ct) { 
     // returns the element with lower distance (to mouse-click- or key-"click"-position).
     // or NULL (if no element was found inside catch-distance)
 
-    AW_clicked_element *bestClick = 0;
+    const AW_clicked_element *bestClick = 0;
 
     if (cl->exists) {
         if (ct->exists) {
