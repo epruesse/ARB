@@ -47,7 +47,7 @@ ARB_ERROR pt_init_main_struct(PT_main *, const char *filename) { // __ATTR__USER
         psg.alignment_name = GBT_get_default_alignment(psg.gb_main);
         GB_commit_transaction(psg.gb_main);
         printf("Building PT-Server for alignment '%s'...\n", psg.alignment_name);
-        probe_read_alignments();
+        probe_read_alignments(filename);
         PT_build_species_hash();
     }
     return error;
