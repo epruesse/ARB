@@ -171,7 +171,7 @@ void InitializeOpenGLEngine(GLint width, GLint height) {
 
     GLenum err = glewInit();
     if (GLEW_OK != err) {
-        /* problem: glewInit failed, something is seriously wrong */
+        // problem: glewInit failed, something is seriously wrong
         fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
     }
     fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
@@ -218,7 +218,7 @@ void CalculateRotationMatrix() {
     static int initialized = 0;
     GLfloat new_rotation_matrix[16];
 
-    /* calculate new rotation matrix */
+    // calculate new rotation matrix
     glPushMatrix();
     glLoadIdentity();
     glRotatef(-rot_x, 1.0, 0.0, 0.0);
@@ -226,7 +226,7 @@ void CalculateRotationMatrix() {
     glGetFloatv(GL_MODELVIEW_MATRIX, new_rotation_matrix);
     glPopMatrix();
 
-    /* calculate total rotation */
+    // calculate total rotation
     glPushMatrix();
     glLoadIdentity();
     glMultMatrixf(new_rotation_matrix);

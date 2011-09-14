@@ -11,13 +11,13 @@
 #include "ntree.hxx"
 #include "nt_cb.hxx"
 
-#include <awt_item_sel_list.hxx>
-#include <awt.hxx>
+#include <item_sel_list.h>
 #include <aw_awar.hxx>
 #include <arb_progress.h>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <arbdbt.h>
+#include <arb_sort.h>
 
 #define NT_RESORT_FILTER (1<<GB_STRING)|(1<<GB_INT)|(1<<GB_FLOAT)
 
@@ -181,20 +181,20 @@ AW_window *NT_build_resort_window(AW_root *awr) {
     aws->callback((AW_CB0)NT_resort_data_by_user_criteria);
     aws->create_button("GO", "GO", "G");
 
-    awt_create_selection_list_on_itemfields(GLOBAL_gb_main,
+    create_selection_list_on_itemfields(GLOBAL_gb_main,
                                             aws, "ad_tree/sort_1",
                                             NT_RESORT_FILTER,
-                                            "key1", 0, &AWT_species_selector, 20, 10);
+                                            "key1", 0, SPECIES_get_selector(), 20, 10);
 
-    awt_create_selection_list_on_itemfields(GLOBAL_gb_main,
+    create_selection_list_on_itemfields(GLOBAL_gb_main,
                                             aws, "ad_tree/sort_2",
                                             NT_RESORT_FILTER,
-                                            "key2", 0, &AWT_species_selector, 20, 10);
+                                            "key2", 0, SPECIES_get_selector(), 20, 10);
 
-    awt_create_selection_list_on_itemfields(GLOBAL_gb_main,
+    create_selection_list_on_itemfields(GLOBAL_gb_main,
                                             aws, "ad_tree/sort_3",
                                             NT_RESORT_FILTER,
-                                            "key3", 0, &AWT_species_selector, 20, 10);
+                                            "key3", 0, SPECIES_get_selector(), 20, 10);
 
     return (AW_window *)aws;
 

@@ -17,7 +17,7 @@
 #include <arb_progress.h>
 
 int compress_data(char *probestring) {
-    /*! change a sequence with normal bases the PT_? format and delete all other signs */
+    //! change a sequence with normal bases the PT_? format and delete all other signs
     char    c;
     char    *src,
         *dest;
@@ -47,7 +47,7 @@ int compress_data(char *probestring) {
 }
 
 void PT_base_2_string(char *id_string, long len) {
-    /*! get a string with readable bases from a string with PT_? */
+    //! get a string with readable bases from a string with PT_?
     char    c;
     char    *src,
         *dest;

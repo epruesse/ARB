@@ -462,7 +462,7 @@ void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
              NULL);
 
 
-    /* Get the unknown names */
+    // Get the unknown names
     bytestring unknown_names;
     if (aisc_get(pd_gl.link, PT_PDC, pdc,
                  PDC_UNKNOWN_NAMES, &unknown_names,
@@ -1097,7 +1097,7 @@ void create_probe_design_variables(AW_root *root, AW_default db1, AW_default glo
 {
     char buffer[256]; memset(buffer, 0, 256);
     int  i;
-    pd_gl.pd_design = 0;        /* design result window not created */
+    pd_gl.pd_design = 0;        // design result window not created
     root->awar_string(AWAR_SPECIES_NAME,         "", db1);
     root->awar_string(AWAR_PD_SELECTED_MATCH,    "", db1)->add_callback(selected_match_changed_cb);
     root->awar_float (AWAR_PD_DESIGN_EXP_DTEDGE, .5, db1);

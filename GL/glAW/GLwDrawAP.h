@@ -39,7 +39,7 @@
 #define _GLwDrawAP_h
 
 
-/* MOTIF */
+// MOTIF
 #ifdef __GLX_MOTIF
 #include "GLwMDrawA.h"
 #else
@@ -62,7 +62,7 @@ typedef struct _GLwMDrawingAreaClassRec {
 extern GLwMDrawingAreaClassRec glwMDrawingAreaClassRec;
 
 
-/* XT */
+// XT
 #else
 
 typedef struct _GLwDrawingAreaClassRec {
@@ -78,11 +78,11 @@ extern GLwDrawingAreaClassRec glwDrawingAreaClassRec;
 
 
 typedef struct {
-  /* resources */
+  // resources
   int *                attribList;
   XVisualInfo *        visualInfo;
-  Boolean              myList;                /* TRUE if we malloced the attribList */
-  Boolean              myVisual;        /* TRUE if we created the visualInfo */
+  Boolean              myList;                // TRUE if we malloced the attribList
+  Boolean              myVisual;        // TRUE if we created the visualInfo
   Boolean              installColormap;
   Boolean              allocateBackground;
   Boolean              allocateOtherColors;
@@ -91,7 +91,7 @@ typedef struct {
   XtCallbackList       resizeCallback;
   XtCallbackList       exposeCallback;
   XtCallbackList       inputCallback;
-  /* specific attributes; add as we get new attributes */
+  // specific attributes; add as we get new attributes
   int                  bufferSize;
   int                  level;
   Boolean              rgba;

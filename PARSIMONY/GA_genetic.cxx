@@ -276,7 +276,7 @@ char *GA_genetic::write_tree_rek(AP_tree *node, char *dest, long mode) {
      * - if AP_PUT_DATA -> create tree representation in 'dest' buffer
      * - else -> only calculate needed buffer size
      */
-    char buffer[40];                /* just real numbers */
+    char buffer[40];                // just real numbers
     char    *c1;
     if (node->is_leaf) {
         if (mode == AP_PUT_DATA) {
@@ -288,7 +288,7 @@ char *GA_genetic::write_tree_rek(AP_tree *node, char *dest, long mode) {
             return dest;
         }
         else {
-            if (node->name) return dest+1+strlen(node->name)+1;     /* N name term */
+            if (node->name) return dest+1+strlen(node->name)+1;     // N name term
             return dest+1+1;
         }
     }

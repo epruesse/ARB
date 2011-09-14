@@ -20,15 +20,15 @@
 #include <aw_msg.hxx>
 #include <arbdbt.h>
 
-/* AISC_MKPT_PROMOTE:#ifndef ARBDB_BASE_H */
-/* AISC_MKPT_PROMOTE:#include <arbdb_base.h> */
-/* AISC_MKPT_PROMOTE:#endif */
-/* AISC_MKPT_PROMOTE:#ifndef AW_BASE_HXX */
-/* AISC_MKPT_PROMOTE:#include <aw_base.hxx> */
-/* AISC_MKPT_PROMOTE:#endif */
-/* AISC_MKPT_PROMOTE: */
-/* AISC_MKPT_PROMOTE:class AW_window; */
-/* AISC_MKPT_PROMOTE:class AWT_canvas; */
+// AISC_MKPT_PROMOTE:#ifndef ARBDB_BASE_H
+// AISC_MKPT_PROMOTE:#include <arbdb_base.h>
+// AISC_MKPT_PROMOTE:#endif
+// AISC_MKPT_PROMOTE:#ifndef AW_BASE_HXX
+// AISC_MKPT_PROMOTE:#include <aw_base.hxx>
+// AISC_MKPT_PROMOTE:#endif
+// AISC_MKPT_PROMOTE:
+// AISC_MKPT_PROMOTE:class AW_window;
+// AISC_MKPT_PROMOTE:class AWT_canvas;
 
 #define AWT_TREE(ntw) DOWNCAST(AWT_graphic_tree *, (ntw)->tree_disp)
 
@@ -117,12 +117,14 @@ AW_window *NT_open_select_alignment_window(AW_root *awr)
     return aws;
 }
 
-void NT_system_cb(AW_window *aww, AW_CL command, AW_CL auto_help_file)
-{
-    char *sys = (char *)command;
-    if (auto_help_file) {
-        AW_POPUP_HELP(aww, auto_help_file);
-    }
-    GBCMC_system(GLOBAL_gb_main, sys);
+void NT_system_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file) {
+    AW_system(aww, GLOBAL_gb_main, (const char *)cl_command, (const char *)cl_auto_help_file);
 }
 
+void NT_system_in_xterm_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file) {
+    char *command = (char *)cl_command;
+    if (cl_auto_help_file) AW_POPUP_HELP(aww, cl_auto_help_file);
+
+    GB_ERROR error = GB_xcmd(command, true, true);
+    if (error) aw_message(error);
+}

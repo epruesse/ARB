@@ -13,7 +13,6 @@
 #include "MP_externs.hxx"
 #include "MP_probe.hxx"
 
-#include <awt.hxx>
 #include <aw_select.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>

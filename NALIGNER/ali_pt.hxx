@@ -24,9 +24,9 @@
 #include <client.h>
 #endif
 
-typedef enum { ServerMode, SpecifiedMode } ALI_PT_MODE;
+enum ALI_PT_MODE { ServerMode, SpecifiedMode };
 
-typedef struct {
+struct ALI_PT_CONTEXT {
     char *servername;
     GBDATA *gb_main;
 
@@ -36,7 +36,7 @@ typedef struct {
     unsigned long ext_list_max;
 
     char *use_specified_family;
-} ALI_PT_CONTEXT;
+};
 
 // class of family members
 class ali_pt_member : virtual Noncopyable {

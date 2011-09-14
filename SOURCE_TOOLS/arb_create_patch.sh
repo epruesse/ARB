@@ -20,9 +20,11 @@ else
             FAKEPATCH=$PATCHDIR/fake.patch
             RECENT_PATCH=./latest.patch
             INTERDIFF_PATCH=./interdiff.patch
+            IGNORE_WHITE_PATCH=./latest_iwhite.patch
+            WHITE_PATCH=./white.patch
 
             svn diff > $PATCH
-
+            
             if [ -e $PATCH ]; then
                 if [ ! -s $PATCH ]; then
                     rm $PATCH
@@ -46,6 +48,9 @@ else
                         rm $PATCH
                         rm -f $INTERDIFF_PATCH
                     else
+                        (   svn diff -x -b > $IGNORE_WHITE_PATCH ; \
+                            interdiff $PATCH $IGNORE_WHITE_PATCH > $WHITE_PATCH ) &
+
                         if [ $INTER != 0 ]; then
                             interdiff -w $RECENT_PATCH $PATCH > $INTERDIFF_PATCH
                         else

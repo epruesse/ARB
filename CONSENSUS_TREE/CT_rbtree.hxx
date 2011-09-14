@@ -15,14 +15,14 @@
 #include "CT_ntree.hxx"
 #endif
 
-typedef struct {
-    GBT_LEN len;
+struct RB_INFO {
+    GBT_LEN   len;
     GBT_TREE *node;
-    int percent;
-} RB_INFO;
+    int       percent;
+};
 
 
-void rb_init(char **names);
+void rb_init(const class CharPtrArray& names);
 
 GBT_TREE *rb_gettree(NT_NODE *tree);
 

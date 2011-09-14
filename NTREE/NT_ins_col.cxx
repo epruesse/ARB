@@ -17,7 +17,7 @@
 
 #define nt_assert(bed) arb_assert(bed)
 
-extern GBDATA *GLOBAL_gb_main;     /* muss existieren */
+extern GBDATA *GLOBAL_gb_main;     // muss existieren
 
 void create_insertchar_variables(AW_root *root, AW_default db1) {
     root->awar_int   (AWAR_CURSOR_POSITION,    info2bio(0),  GLOBAL_gb_main);

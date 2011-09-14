@@ -83,13 +83,10 @@ ST_quality.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbtools.h
 ST_quality.o: $(ARBHOME)/INCLUDE/attributes.h
-ST_quality.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-ST_quality.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
-ST_quality.o: $(ARBHOME)/INCLUDE/cb.h
 ST_quality.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_quality.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -109,6 +106,7 @@ ST_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbtools.h
 ST_window.o: $(ARBHOME)/INCLUDE/attributes.h
 ST_window.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+ST_window.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -116,12 +114,12 @@ ST_window.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ST_window.o: $(ARBHOME)/INCLUDE/awt.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
-ST_window.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/cb.h
 ST_window.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_window.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
+ST_window.o: $(ARBHOME)/INCLUDE/item_sel_list.h
+ST_window.o: $(ARBHOME)/INCLUDE/items.h
 ST_window.o: $(ARBHOME)/INCLUDE/smartptr.h
 ST_window.o: $(ARBHOME)/INCLUDE/test_global.h

@@ -1,4 +1,4 @@
-/*  DNAml_rates.h  */
+//  DNAml_rates.h
 
 /*  Compile time switches for various updates to program:
  *    0 gives original version
@@ -7,21 +7,21 @@
 
 #define Debug 1
 
-/*  Program constants and parameters  */
+//  Program constants and parameters
 
-#define maxsp         10000  /* maximum number of species */
-#define maxsites      8000  /* maximum number of sites */
-#define maxpatterns   8000  /* max number of different site patterns */
-#define maxcategories   35  /* maximum number of site types */
-#define nmlngth         10  /* max. number of characters in species name */
-#define KI_MAX       256.0  /* largest rate possible */
-#define RATE_STEP sqrt(sqrt(2.0)) /* initial step size for rate search */
-#define MAX_ERROR     0.01  /* max fractional error in rate calculation */
-#define MIN_INFO         4  /* minimum number of informative sequences */
-#define UNDEF_CATEGORY   1  /* category number to output for undefined rate */
-#define zmin       1.0E-15  /* max branch prop. to -log(zmin) (= 34) */
-#define zmax (1.0 - 1.0E-6) /* min branch prop. to 1.0-zmax (= 1.0E-6) */
-#define unlikely  -1.0E300  /* low likelihood for initialization */
+#define maxsp         10000  // maximum number of species
+#define maxsites      8000  // maximum number of sites
+#define maxpatterns   8000  // max number of different site patterns
+#define maxcategories   35  // maximum number of site types
+#define nmlngth         10  // max. number of characters in species name
+#define KI_MAX       256.0  // largest rate possible
+#define RATE_STEP sqrt(sqrt(2.0)) // initial step size for rate search
+#define MAX_ERROR     0.01  // max fractional error in rate calculation
+#define MIN_INFO         4  // minimum number of informative sequences
+#define UNDEF_CATEGORY   1  // category number to output for undefined rate
+#define zmin       1.0E-15  // max branch prop. to -log(zmin) (= 34)
+#define zmax (1.0 - 1.0E-6) // min branch prop. to 1.0-zmax (= 1.0E-6)
+#define unlikely  -1.0E300  // low likelihood for initialization
 #define decimal_point   '.'
 
 #define ABS(x)    (((x)< 0)  ? -(x) : (x))
@@ -32,43 +32,46 @@
 #define aint(x)   ((double) ((int) (x)))
 
 
-typedef  double  xtype;
+typedef double  xtype;
+struct          node;
+typedef node   *nodeptr;
 
-typedef  struct  xmantyp {
-    struct xmantyp  *prev;
-    struct xmantyp  *next;
-    struct noderec  *owner;
-    xtype           *a, *c, *g, *t;
-    } xarray;
+struct xarray {
+    xarray  *prev;
+    xarray  *next;
+    nodeptr  owner;
+    xtype   *a, *c, *g, *t;
+};
 
-typedef  struct noderec {
-    double           z;
-    struct noderec  *next;
-    struct noderec  *back;
-    int              number;
-    xarray          *x;
-    int              xcoord, ycoord, ymin, ymax;
-    char             name[nmlngth+1];     /*  Space for null termination  */
-    char            *tip;                 /*  Pointer to sequence data  */
-} node, *nodeptr;
+struct node {
+    double   z;
+    nodeptr  next;
+    nodeptr  back;
+    int      number;
+    xarray  *x;
+    int      xcoord, ycoord, ymin, ymax;
+    char     name[nmlngth+1];             //  Space for null termination
+    char    *tip;                         //  Pointer to sequence data
+};
 
-typedef  struct {
+
+struct tree {
     double  likelihood;
     double  log_f[maxpatterns];
-    node   *nodep[2*maxsp-1];
-    node   *start;
+    nodeptr nodep[2*maxsp-1];
+    nodeptr start;
     int     mxtips;
     int     ntips;
     int     nextnode;
     int     opt_level;
     bool    smoothed;
     bool    rooted;
-} tree;
+};
 
-typedef  struct {
+struct drawdata {
     double tipmax;
     int    tipy;
-} drawdata;
+};
 
 
 

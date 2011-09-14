@@ -10,9 +10,9 @@
 
 #include "ed4_naligner.hxx"
 
+#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
-#include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
@@ -89,7 +89,7 @@ void aed_start_naligning(AW_window *aw) {
     for (i=0; i<5; i++) {
         for (j=0; j<5; j++) {
             char var[100];
-            if (i==4 || j==4) {                 /* gap panelty */
+            if (i==4 || j==4) {                 // gap panelty
                 if (i==4 && j==4) {
                     GBS_floatcat(strstruct, 0.0);
                 }

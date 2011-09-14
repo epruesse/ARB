@@ -52,7 +52,7 @@ void AWTC_export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_crea
     char *outname      = awr->awar(AWAR_EXPORT_FILE"/file_name")->read_string();
     char *real_outname = 0;     // with suffix (name of first file if multiple)
 
-    AP_filter *filter = awt_get_filter(awr, acbs);
+    AP_filter *filter = awt_get_filter(acbs);
     char *db_name = awr->awar(AWAR_DB_NAME)->read_string();
 
     error = SEQIO_export_by_format(gb_main, marked_only, filter, cut_stop_codon, compress,

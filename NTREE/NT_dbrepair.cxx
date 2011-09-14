@@ -14,7 +14,7 @@
 #include <arbdbt.h>
 #include <adGene.h>
 
-#include <awt.hxx>                                  // for ad_item_selector only
+#include <items.h>
 #include <GEN.hxx>
 #include <EXP.hxx>
 #include <aw_color_groups.hxx>
@@ -23,6 +23,7 @@
 #include <aw_root.hxx>
 
 #include <arb_str.h>
+#include <arb_strarray.h>
 
 #include <map>
 #include <set>
@@ -37,7 +38,7 @@ using namespace std;
 #if defined(WARN_TODO)
 #warning the whole fix mechanism should be part of some lower-level-library
 // meanwhile DB checks are only performed by ARB_NTREE
-// ad_item_selector should go to same library as this module
+// ItemSelector should go to same library as this module
 #endif
 
 // --------------------------------------------------------------------------------
@@ -50,7 +51,7 @@ using namespace std;
 // fixed flues a put into DB again.
 // see http://bugs.arb-home.de/ticket/143
 
-typedef GB_ERROR (*item_check_fun)(GBDATA *gb_item, const ad_item_selector *sel);
+typedef GB_ERROR (*item_check_fun)(GBDATA *gb_item, ItemSelector& sel);
 
 typedef map<string, item_check_fun>    item_check_map;
 typedef item_check_map::const_iterator item_check_iter;
@@ -62,7 +63,7 @@ class CheckedConsistencies : virtual Noncopyable {
     set<string>     consistencies;
     item_check_map  item_checks;
 
-    GB_ERROR perform_selected_item_checks(ad_item_selector *sel);
+    GB_ERROR perform_selected_item_checks(ItemSelector& sel);
 
 public:
 
@@ -139,17 +140,17 @@ public:
     }
 };
 
-GB_ERROR CheckedConsistencies::perform_selected_item_checks(ad_item_selector *sel) {
+GB_ERROR CheckedConsistencies::perform_selected_item_checks(ItemSelector& sel) {
     GB_ERROR        error = NULL;
     item_check_iter end   = item_checks.end();
 
-    for (GBDATA *gb_cont = sel->get_first_item_container(gb_main, NULL, QUERY_ALL_ITEMS);
+    for (GBDATA *gb_cont = sel.get_first_item_container(gb_main, NULL, QUERY_ALL_ITEMS);
          gb_cont && !error;
-         gb_cont = sel->get_next_item_container(gb_cont, QUERY_ALL_ITEMS))
+         gb_cont = sel.get_next_item_container(gb_cont, QUERY_ALL_ITEMS))
     {
-        for (GBDATA *gb_item = sel->get_first_item(gb_cont, QUERY_ALL_ITEMS);
+        for (GBDATA *gb_item = sel.get_first_item(gb_cont, QUERY_ALL_ITEMS);
              gb_item && !error;
-             gb_item = sel->get_next_item(gb_item, QUERY_ALL_ITEMS))
+             gb_item = sel.get_next_item(gb_item, QUERY_ALL_ITEMS))
         {
             for (item_check_iter chk = item_checks.begin(); chk != end && !error; ++chk) {
                 error = chk->second(gb_item, sel);
@@ -166,7 +167,7 @@ void CheckedConsistencies::perform_item_checks(GB_ERROR& error) {
             GB_transaction ta(gb_main);
             bool           is_genome_db = GEN_is_genome_db(gb_main, -1);
 
-            error = perform_selected_item_checks(&AWT_species_selector);
+            error = perform_selected_item_checks(SPECIES_get_selector());
             if (!error && is_genome_db) {
                 error             = perform_selected_item_checks(GEN_get_selector());
                 if (!error) error = perform_selected_item_checks(EXP_get_selector());
@@ -476,8 +477,9 @@ static GB_ERROR NT_del_mark_move_REF(GBDATA *gb_main, size_t species_count, size
 
     // delete 'mark' entries from all alignments of species/SAIs
 
-    arb_progress progress(all);
-    char **ali_names = GBT_get_alignment_names(gb_main);
+    arb_progress  progress(all);
+    ConstStrArray ali_names;
+    GBT_get_alignment_names(ali_names, gb_main);
 
     for (int pass = 0; pass < 2 && !error; ++pass) {
         for (GBDATA *gb_item = (pass == 0) ? GBT_first_species(gb_main) : GBT_first_SAI(gb_main);
@@ -533,8 +535,6 @@ static GB_ERROR NT_del_mark_move_REF(GBDATA *gb_main, size_t species_count, size
 
         free(helix_name);
     }
-
-    GBT_free_names(ali_names);
 
     if (!error) {
         if (removed) {
@@ -981,7 +981,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
 
 // --------------------------------------------------------------------------------
 
-static GB_ERROR remove_dup_colors(GBDATA *gb_item, const ad_item_selector *sel) {
+static GB_ERROR remove_dup_colors(GBDATA *gb_item, ItemSelector& IF_DEBUG(sel)) {
     // Databases out there may contain multiple 'ARB_color' entries.
     // Due to some already fixed bug - maybe introduced in r5309 and fixed in r5825
 
@@ -1010,10 +1010,8 @@ static GB_ERROR remove_dup_colors(GBDATA *gb_item, const ad_item_selector *sel) 
     if (del_count) fprintf(stderr,
                            "- deleted %i duplicated '" AW_COLOR_GROUP_ENTRY "' from %s '%s'\n",
                            del_count,
-                           sel->item_name,
-                           sel->generate_item_id(GB_get_root(gb_item), gb_item));
-#else
-    sel = sel;                                      // no warning
+                           sel.item_name,
+                           sel.generate_item_id(GB_get_root(gb_item), gb_item));
 #endif // DEBUG
 
     return error;

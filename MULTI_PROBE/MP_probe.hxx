@@ -16,22 +16,16 @@ class GenerationDuplicates;
 class probe_statistic;
 class probe_combi_statistic;
 
-#if defined(WARN_TODO)
-#warning remove old-style typedefs
-#endif
-
-typedef struct
-{
+struct probe {
     int probe_index;
     int allowed_mismatches;
     int e_coli_pos;
-} probe;
+};
 
-typedef struct
-{
-    probe_combi_statistic   *ps;
-    char            *view_string;
-} result_struct;
+struct result_struct {
+    probe_combi_statistic *ps;
+    char                  *view_string;
+};
 
 
 
@@ -161,18 +155,20 @@ public:
 };
 
 class ProbeValuation : virtual Noncopyable {
-    char            **sondenarray;
-    int             *bewertungarray;
-    int             *mismatch_array;
-    int             size_sonden_array;
-    probe           **probe_pool;               // Generierung eines Pools, in dem die Wahrscheinlichkeiten fuer die Erfassung
-    // der Sonden schon eingearbeitet sind. DIe WS werden vom Benutzer fuer jede
-    // einzelne Sonde bestimmt.
-    int             pool_length,
-        max_init_pop_combis;
-    Generation          *act_generation,
-        *child_generation; // @@@ can be removed
-    List<result_struct>     *computation_result_list;
+    char **sondenarray;
+    int   *bewertungarray;
+    int   *mismatch_array;
+    int    size_sonden_array;
+    
+    probe **probe_pool; // Generierung eines Pools, in dem die Wahrscheinlichkeiten fuer die Erfassung
+    // der Sonden schon eingearbeitet sind. DIe WS werden vom Benutzer fuer jede einzelne Sonde bestimmt.
+
+    int pool_length;
+    int max_init_pop_combis;
+
+    Generation          *act_generation;
+    Generation          *child_generation;      // @@@ can be removed
+    List<result_struct> *computation_result_list;
 
 public:
     void        set_act_gen(Generation *g) { act_generation = g; };

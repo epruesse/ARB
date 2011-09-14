@@ -31,7 +31,7 @@ WeightedFilter::~WeightedFilter() {
 }
 
 AP_filter *WeightedFilter::create_filter() const {
-    return awt_get_filter(adfilter->awr, adfilter);
+    return awt_get_filter(adfilter);
 }
 
 AP_weights *WeightedFilter::create_weights(const AP_filter *filter) const {

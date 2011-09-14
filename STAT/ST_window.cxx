@@ -17,8 +17,7 @@
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
-#include <awt.hxx>
-#include <awt_item_sel_list.hxx>
+#include <item_sel_list.h>
 #include <awt_filter.hxx>
 
 #define ST_ML_AWAR "tmp/st_ml/"
@@ -108,7 +107,7 @@ ST_ML_Color *STAT_get_color_string(ST_ML *st_ml, char *species_name, AP_tree *no
 }
 
 bool STAT_update_ml_likelihood(ST_ML *st_ml, char *result[4], int& latest_update, const char *species_name, AP_tree *node) {
-    /*! @see ST_ML::update_ml_likelihood() */
+    //! @see ST_ML::update_ml_likelihood()
     return st_ml->update_ml_likelihood(result, latest_update, species_name, node);
 }
 
@@ -216,14 +215,14 @@ AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
         aws->at("sb");
         aws->create_input_field(ST_ML_AWAR_CQ_BUCKET_SIZE);
 
-        awt_create_selection_list_on_itemfields(gb_main, aws,
+        create_selection_list_on_itemfields(gb_main, aws,
                                                 ST_ML_AWAR_CQ_DEST_FIELD,
                                                 1 << GB_STRING,
                                                 "dest",
                                                 0,
-                                                &AWT_species_selector,
+                                                SPECIES_get_selector(),
                                                 20, 10,
-                                                AWT_SF_STANDARD,
+                                                SF_STANDARD,
                                                 "SELECT_REPORT_FIELD");
 
         aws->at("report");

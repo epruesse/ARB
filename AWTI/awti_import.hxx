@@ -18,7 +18,7 @@
 
 #define AWAR_READ_GENOM_DB "tmp/import/genom_db"
 
-typedef enum { IMP_GENOME_FLATFILE, IMP_PLAIN_SEQUENCE } AWTI_ImportType;
+enum AWTI_ImportType { IMP_GENOME_FLATFILE, IMP_PLAIN_SEQUENCE };
 
 #define AWTC_RCB(func) void (*func)(AW_root*, AW_CL, AW_CL)
 

@@ -506,7 +506,7 @@ long AW_find_color_group(GBDATA *gbd, bool ignore_usage_flag) {
 
     GBDATA *gb_group = GB_entry(gbd, AW_COLOR_GROUP_ENTRY);
     if (gb_group) return GB_read_int(gb_group);
-    return 0;                   /* no color group */
+    return 0;                   // no color group
 }
 
 GB_ERROR AW_set_color_group(GBDATA *gbd, long color_group) {

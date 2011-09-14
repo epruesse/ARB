@@ -7,16 +7,16 @@
 
 typedef struct S_Frand
 {
-    double val,    /* Interner Wert des Niederfrequenzgenerators */
-           alpha,  /* Faktor fÅr konstanten Zufallsgenerator */
-           beta,   /* Faktor fÅr niederfrequenten Zufallsgenerator */
-           medium; /* Mittelwert */
-    int    teiler; /* Teiler fÅr Niederfrequenzgenerator */
+    double val,    // Interner Wert des Niederfrequenzgenerators
+           alpha,  // Faktor fuer konstanten Zufallsgenerator
+           beta,   // Faktor fuer niederfrequenten Zufallsgenerator
+           medium; // Mittelwert
+    int    teiler; // Teiler fuer Niederfrequenzgenerator
 
 } *Frand;
 
-/* Um den Frequenzgenerator an der selben Stelle wiederaufzusetzen, */
-/* muss der Wert 'val' gemerkt und spaeter wiedereingesetzt werden. */
+// Um den Frequenzgenerator an der selben Stelle wiederaufzusetzen,
+// muss der Wert 'val' gemerkt und spaeter wiedereingesetzt werden.
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,7 +27,7 @@ extern "C" {
 
     double getFrand  (Frand f);
 
-    /* Zufallszahl (0.0 bis 1.0): */
+    // Zufallszahl (0.0 bis 1.0):
 
     double randProb  ();
 

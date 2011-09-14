@@ -95,6 +95,7 @@ SEC_db.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEC_db.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_db.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+SEC_db.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -138,6 +139,7 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -256,6 +258,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SEC_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_main.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+SEC_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -267,7 +270,6 @@ SEC_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-SEC_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BI_helix.hxx

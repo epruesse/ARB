@@ -22,12 +22,12 @@ const int di_max_dist   = 10;   // max dist
 
 // stop is first non real AA == 20
 
-typedef enum {
+enum di_codetype {
     universal, ciliate, mito, vertmito, flymito, yeastmito
-} di_codetype;
-typedef enum {
+};
+enum di_cattype {
     none, similarity, kimura, pam, chemical, hall, george
-} di_cattype;
+};
 
 
 typedef double di_aa_matrix[di_max_aa][di_max_aa];
@@ -68,7 +68,7 @@ class di_protdist : virtual Noncopyable {
     double          weight[2];  // weight akt slope 1 -> linear interpolation
     AP_smatrix     *matrix;     // link to output matrix
 
-    /* Local variables for makedists, propagated globally for c version: */
+    // Local variables for makedists, propagated globally for c version:
     double p, dp, d2p;
 
 

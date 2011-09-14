@@ -13,7 +13,7 @@
 
 struct GBT_TREE;
 
-void      ctree_init(int node_count, char **names);
+void      ctree_init(int node_count, const class CharPtrArray& names);
 void      insert_ctree(GBT_TREE *tree, int weight);
 GBT_TREE *get_ctree();
 

@@ -1,6 +1,6 @@
 //  ==================================================================== //
 //                                                                       //
-//    File      : AWT_input_mask.h                                       //
+//    File      : awt_input_mask.hxx                                     //
 //    Purpose   : General input masks                                    //
 //                                                                       //
 //                                                                       //
@@ -18,12 +18,12 @@
 #ifndef _GLIBCXX_STRING
 #include <string>
 #endif
-#ifndef AWT_HXX
-#include <awt.hxx>
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
 #endif
 
 
-typedef enum {
+enum awt_item_type {
     AWT_IT_UNKNOWN,
     AWT_IT_SPECIES,
     AWT_IT_ORGANISM,
@@ -31,7 +31,7 @@ typedef enum {
     AWT_IT_EXPERIMENT,
 
     AWT_IT_TYPES
-} awt_item_type;
+};
 
 //  -------------------------------------
 //      class awt_item_type_selector
@@ -73,7 +73,7 @@ public:
 typedef void (*AWT_OpenMaskWindowCallback)(AW_window* aww, AW_CL cl_id, AW_CL cl_user);
 
 awt_item_type AWT_getItemType(const std::string& itemtype_name);
-void          AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_item_type, AWT_OpenMaskWindowCallback open_mask_window_cb, AW_CL cl_user);
+void          AWT_create_mask_submenu(class AW_window_menu_modes *awm, awt_item_type wanted_item_type, AWT_OpenMaskWindowCallback open_mask_window_cb, AW_CL cl_user);
 void          AWT_destroy_input_masks();
 
 #else

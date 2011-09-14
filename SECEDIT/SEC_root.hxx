@@ -67,10 +67,10 @@ class SEC_root;
 
 class SEC_region : virtual Noncopyable {
 private:
-    /* non redundant values */
+    // non redundant values
     int sequence_start, sequence_end; // sequence_end is exclusive
 
-    /* cached values */
+    // cached values
     int baseCount;             // number of real bases (-1 = uninitialized)
 
     int * abspos_array;

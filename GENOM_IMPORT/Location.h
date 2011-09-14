@@ -41,6 +41,7 @@ struct Location : public Noncopyable {
     virtual bool isInRange(long pos1, long pos2) const              = 0;
     virtual void save(GEN_position *into, bool complementary) const = 0;
     virtual LocationJoinType getJoinType() const                    = 0;
+    virtual string as_string() const                                = 0;
 
     GEN_position *create_GEN_position() const;
 };
@@ -48,6 +49,7 @@ struct Location : public Noncopyable {
 typedef SmartPtr<Location> LocationPtr;
 
 LocationPtr parseLocation(const string& source);
+LocationPtr to_Location(const GEN_position *gp);
 
 #else
 #error Location.h included twice

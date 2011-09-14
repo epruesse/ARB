@@ -33,15 +33,15 @@ enum {
 
     GEN_GC_MAX = GEN_GC_FIRST_COLOR_GROUP+AW_COLOR_GROUPS
 
-};                              // AW_gc
+};
 
-typedef enum {
+enum GEN_DisplayStyle {
     GEN_DISPLAY_STYLE_RADIAL,
     GEN_DISPLAY_STYLE_BOOK,
     GEN_DISPLAY_STYLE_VERTICAL,
 
     GEN_DISPLAY_STYLES // counter
-} GEN_DisplayStyle;
+};
 
 
 //  -----------------------------------------------

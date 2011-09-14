@@ -33,54 +33,32 @@
 #ifndef __GNUC__
 # error You have to use the gnu compiler!
 #endif
-#if (__GNUC__ < 3)
-# error You have to use gcc 3.xx or above
+#if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 3))
+# error You have to use gcc 4.3 or above
 #endif
 
-#if (__GNUC__ >= 4) // gcc 4.x and above
-# define __ATTR__SENTINEL   __attribute__((sentinel))
-# define HAS_FUNCTION_TYPE_ATTRIBUTES
-# if (__GNUC_MINOR__ > 5 || (__GNUC_MINOR__ == 5 && __GNUC_PATCHLEVEL__ >= 2)) // gcc 4.5.2 and higher
-#  define __ATTR__DEPRECATED(reason) __attribute__((deprecated(reason)))
-# endif
-# if (__GNUC_MINOR__ >= 2)
-#  define __ATTR__USERESULT __attribute__((warn_unused_result))
-# endif
-#endif
-
-#if (__GNUC__ == 3) // gcc 3.x
-# if (__GNUC_MINOR__ >= 4)
-#  define HAS_FUNCTION_TYPE_ATTRIBUTES
-# endif
+#if (__GNUC_MINOR__ > 5 || (__GNUC_MINOR__ == 5 && __GNUC_PATCHLEVEL__ >= 2)) // gcc 4.5.2 and higher
+# define __ATTR__DEPRECATED(reason) __attribute__((deprecated(reason)))
 #endif
 
 // ------------------------------------------------------------
 // helper macro to declare attributes for function-pointers
 
-#ifdef HAS_FUNCTION_TYPE_ATTRIBUTES
 #define FUNCTION_TYPE_ATTR(x) x
-#else
-#define FUNCTION_TYPE_ATTR(x)
-#endif
 
 // ------------------------------------------------------------
-// helper macros to declare attributed function prototype and
-// start function definition in one line (static or inline functions only)
-// (change also at ../AISC_MKPTPS/mkptypes.cxx@specialHandling_ATTRIBUTED)
-#define STATIC_ATTRIBUTED(attribute, proto) static proto attribute; static proto
-#define INLINE_ATTRIBUTED(attribute, proto) inline proto attribute; inline proto
-
-// ------------------------------------------------------------
-// valid for any gcc above 3.xx
+// valid for any gcc above 4.3
 
 #ifndef __ATTR__DEPRECATED
 # define __ATTR__DEPRECATED(reason) __attribute__((deprecated))
 #endif
-#define __ATTR__DEPRECATED_LATER(reason)
+#define __ATTR__DEPRECATED_FUNCTION __attribute__((deprecated)) // function attributes sometimes cant handle reason (e.g. ctors)
 
-#define __ATTR__PURE       __attribute__((pure))
-#define __ATTR__CONST      __attribute__((const))
-#define __ATTR__NORETURN   __attribute__((noreturn))
+#define __ATTR__PURE      __attribute__((pure))
+#define __ATTR__CONST     __attribute__((const))
+#define __ATTR__NORETURN  __attribute__((noreturn))
+#define __ATTR__SENTINEL  __attribute__((sentinel))
+#define __ATTR__USERESULT __attribute__((warn_unused_result))
 
 #define __ATTR__FORMAT(pos)         __attribute__((format(__printf__, pos, (pos)+1)))
 #define __ATTR__VFORMAT(pos)        __attribute__((format(__printf__, pos, 0)))
@@ -108,6 +86,25 @@
 # define __ATTR__DEPRECATED(reason)
 #endif
 
+// ------------------------------------------------------------
+// quickly disable attributes
+
+#if defined(WARN_TODO)
+#define __ATTR__USERESULT_TODO           __ATTR__USERESULT
+#define __ATTR__DEPRECATED_TODO(reason)  __ATTR__DEPRECATED(reason)
+#define __ATTR__DEPRECATED_FUNCTION_TODO __ATTR__DEPRECATED_FUNCTION
+#else
+#define __ATTR__USERESULT_TODO
+#define __ATTR__DEPRECATED_TODO(reason)
+#define __ATTR__DEPRECATED_FUNCTION_TODO
+#endif
+
+// ------------------------------------------------------------
+// helper macros to declare attributed function prototype and
+// start function definition in one line (static or inline functions only)
+// (change also at ../AISC_MKPTPS/mkptypes.cxx@specialHandling_ATTRIBUTED)
+#define STATIC_ATTRIBUTED(attribute, proto) static proto attribute; static proto
+#define INLINE_ATTRIBUTED(attribute, proto) inline proto attribute; inline proto
 
 #else
 #error attributes.h included twice

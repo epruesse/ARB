@@ -45,7 +45,7 @@ long GB_read_clients(GBDATA *gbd);
 bool GB_is_server(GBDATA *gbd);
 bool GB_is_client(GBDATA *gbd);
 GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str, GB_CASE case_sens, GB_SEARCH_TYPE gbs);
-int GBCMC_system(GBDATA *gbd, const char *ss) __ATTR__USERESULT;
+int GBCMC_system(GBDATA *gbd, const char *ss) __ATTR__USERESULT_TODO;
 GB_ERROR GB_tell_server_dont_wait(GBDATA *gbd);
 GB_ERROR GB_install_pid(int mode);
 const char *GB_date_string(void);
@@ -130,10 +130,6 @@ GB_ERROR GB_optimize(GBDATA *gb_main);
 /* adperl.cxx */
 GB_ERROR GBC_await_error(void);
 
-/* adsort.cxx */
-void GB_sort(void **array, size_t first, size_t behind_last, gb_compare_function compare, void *client_data);
-int GB_string_comparator(const void *v0, const void *v1, void *);
-
 /* adstring.cxx */
 void GB_raise_critical_error(const char *msg) __ATTR__NORETURN;
 char *GBS_string_2_key_with_exclusions(const char *str, const char *additional);
@@ -158,7 +154,7 @@ void GBS_fwrite_string(const char *strngi, FILE *out);
 char *GBS_fread_string(FILE *in);
 char *GBS_fconvert_string(char *buffer);
 char *GBS_replace_tabs_by_spaces(const char *text);
-const char *GBS_readable_size(unsigned long long size);
+const char *GBS_readable_size(unsigned long long size, const char *unit_suffix);
 char *GBS_trim(const char *str);
 char *GBS_log_dated_action_to(const char *comment, const char *action);
 
@@ -167,9 +163,10 @@ GB_CSTR GB_getcwd(void);
 char *GB_find_all_files(const char *dir, const char *mask, bool filename_only);
 char *GB_find_latest_file(const char *dir, const char *mask);
 char *GBS_find_lib_file(const char *filename, const char *libprefix, bool warn_when_not_found);
-char **GBS_read_dir(const char *dir, const char *mask);
+void GBS_read_dir(StrArray &names, const char *dir, const char *mask);
 bool GB_test_textfile_difflines(const char *file1, const char *file2, int expected_difflines, int special_mode);
 bool GB_test_files_equal(const char *file1, const char *file2);
+void GBT_transform_names(StrArray &dest, const StrArray &source, char *transform (const char *, void *), void *client_data);
 
 /* adsystem.cxx */
 DictData *GB_get_dictionary(GBDATA *gb_main, const char *key);
@@ -384,7 +381,7 @@ bool GB_is_dictionary_compressed(GBDATA *gbd);
 /* adindex.cxx */
 GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long estimated_size);
 NOT4PERL void GB_dump_indices(GBDATA *gbd);
-GB_ERROR GB_request_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type) __ATTR__USERESULT;
+GB_ERROR GB_request_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type) __ATTR__USERESULT_TODO;
 GB_UNDO_TYPE GB_get_requested_undo_type(GBDATA *gb_main);
 GB_ERROR GB_undo(GBDATA *gb_main, GB_UNDO_TYPE type) __ATTR__USERESULT;
 char *GB_undo_info(GBDATA *gb_main, GB_UNDO_TYPE type);
@@ -445,7 +442,7 @@ GB_ULONG GB_last_saved_time(GBDATA *gb_main);
 GB_ERROR GB_textprint(const char *path) __ATTR__USERESULT;
 GB_ERROR GB_system(const char *system_command) __ATTR__USERESULT;
 GB_ERROR GB_xterm(void) __ATTR__USERESULT;
-GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) __ATTR__USERESULT;
+GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) __ATTR__USERESULT_TODO;
 char *GB_executable(GB_CSTR exe_name);
 char *GB_find_executable(GB_CSTR description_of_executable, ...) __ATTR__SENTINEL;
 void GB_setenv(const char *var, const char *value);

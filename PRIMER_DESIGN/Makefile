@@ -142,6 +142,7 @@ primer_design.o: $(ARBHOME)/INCLUDE/arbdbt.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbtools.h
 primer_design.o: $(ARBHOME)/INCLUDE/attributes.h
 primer_design.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+primer_design.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -153,5 +154,6 @@ primer_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/cb.h
 primer_design.o: $(ARBHOME)/INCLUDE/dupstr.h
 primer_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
+primer_design.o: $(ARBHOME)/INCLUDE/items.h
 primer_design.o: $(ARBHOME)/INCLUDE/smartptr.h
 primer_design.o: $(ARBHOME)/INCLUDE/test_global.h

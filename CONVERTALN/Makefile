@@ -12,7 +12,7 @@ check_error_codes:
 	$(CPP) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 proto:
-	../MAKEBIN/aisc_mkpt -P -G -A -w prototypes.h $(OBJECTS:.o=.cxx) >prototypes.h.tmp
+	../AISC_MKPTPS/aisc_mkpt -P -G -A -w prototypes.h $(OBJECTS:.o=.cxx) >prototypes.h.tmp
 	../SOURCE_TOOLS/mv_if_diff prototypes.h.tmp prototypes.h
 
 clean:

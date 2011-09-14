@@ -50,7 +50,7 @@ inline void aisc_link(dll_public *dll, AN_revers *revers)   { aisc_link(reinterp
 // --------------------------------------------------------------------------------
 
 struct AN_gl_struct  AN_global;
-AN_main             *aisc_main; /* muss so heissen */
+AN_main             *aisc_main; // muss so heissen
 
 const int SERVER_VERSION = 5;
 
@@ -341,7 +341,7 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
     char *full2 = nas_string_2_name(full1);
 
     look = (AN_shorts *)aisc_find_lib((dllpublic_ext*)parent, full2);
-    if (look) {                 /* name is already known */
+    if (look) {                 // name is already known
         free(full2);
         free(full1);
         return strdup(look->shrt);
@@ -661,7 +661,7 @@ aisc_string get_short(AN_local *locs) {
             shrt = strdup(an_shorts->shrt);
         }
     }
-    if (!shrt) { /* now there is no short name (or an illegal one) */
+    if (!shrt) { // now there is no short name (or an illegal one)
         char *first_advice=0, *second_advice=0;
 
         if (locs->advice[0] && !stralnum(locs->advice)) { // bad advice

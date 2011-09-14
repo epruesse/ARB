@@ -14,13 +14,27 @@ TITLE		Reorder Fields
 OCCURRENCE	ARB_NT/Species/Info/FIELDS/Reorder fields
                 ARB_NT/Genes/Info/FIELDS/Reorder fields
 
-DESCRIPTION	Allows changing the order of the fields within the
+DESCRIPTION	Allows to change the order of the fields within the
                 'DATABASE FIELDS' subwindow of the 'SPECIES/GENE INFORMATION'
                 window.
 
- 		        Select fields from the subwindows and press the 'MOVE ..' buttons
-                        to change the order of the fields displayed in
-                        the 'SPECIES/GENE INFORMATION' window.
+                To manually move around one field, select it in the right list and
+                use the 'Up' and 'Down' buttons.
+
+                To move a field to a specific position, select it in the right list
+                and then either
+                    - use 'Top' or 'Bottom' buttons or
+                    - select another field in the left list and use 'Move right behind left'
+
+                To sort a range of fields, select range borders in both lists, choose
+                sort criteria and press 'Sort by'. The following sort criteria are
+                available:
+                    - 'name' (sort by field name)
+                    - 'type' (sort by database type)
+                    - 'frequency' (sort most frequent fields to top)
+
+                Press 'Reverse' to reverse the order of the fields in the currently
+                selected range.
 
 NOTES		None
 

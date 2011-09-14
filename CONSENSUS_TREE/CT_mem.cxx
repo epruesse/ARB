@@ -1,4 +1,4 @@
-/* memory handling */
+// memory handling
 
 #include <cstdlib>
 #include <cstring>

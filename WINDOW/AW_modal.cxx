@@ -15,6 +15,7 @@
 #include "aw_root.hxx"
 
 #include <arbdbt.h>
+#include <arb_strarray.h>
 
 #include <deque>
 #include <string>
@@ -30,7 +31,7 @@ int aw_message_cb_result;
 
 void message_cb(AW_window *, AW_CL cd1) {
     long result = (long)cd1;
-    if (result == -1) { /* exit */
+    if (result == -1) { // exit
         exit(EXIT_FAILURE);
     }
     aw_message_cb_result = ((int)result);
@@ -206,11 +207,11 @@ int aw_question(const char *question, const char *buttons, bool fixedSizeButtons
     aw_msg->hide();
 
     switch (aw_message_cb_result) {
-        case -1:                /* exit with core */
+        case -1:                // exit with core
             fprintf(stderr, "Core dump requested\n");
             ARB_SIGSEGV(1);
             break;
-        case -2:                /* exit without core */
+        case -2:                // exit without core
             exit(-1);
             break;
     }
@@ -381,12 +382,13 @@ static AW_window_message *new_input_window(AW_root *root, const char *title, con
     aw_msg->at_newline();
     aw_msg->create_input_field(AW_INPUT_AWAR, INPUT_SIZE);
 
-    size_t   butCount     = 2;                      // ok and cancel
-    char   **button_names = 0;
-    int      maxlen       = 6;                      // use as min.length for buttons (for 'CANCEL')
+    size_t        butCount = 2;                     // ok and cancel
+    ConstStrArray button_names;
+    int           maxlen   = 6;                     // use as min.length for buttons (for 'CANCEL')
 
     if (buttons) {
-        button_names = GBT_split_string(buttons, ',', &butCount);
+        GBT_split_string(button_names, buttons, ',');
+        butCount = button_names.size();
 
         for (size_t b = 0; b<butCount; b++) {
             int len = strlen(button_names[b]);
@@ -425,8 +427,6 @@ static AW_window_message *new_input_window(AW_root *root, const char *title, con
             aw_msg->create_button(name, name, "");
             thisLine++;
         }
-        GBT_free_names(button_names);
-        button_names = 0;
     }
     else {
         aw_msg->callback(input_cb,  0); aw_msg->create_button("OK", "OK", "O");

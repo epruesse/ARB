@@ -16,8 +16,8 @@
 #include <arbdb_base.h>
 #endif
 
-#define TREE_DEFLEN        0.1 /* default length of tree-edge w/o given length */
-#define TREE_DEFLEN_MARKER -1000.0 /* tree-edges w/o length are marked with this value during read and corrected in TREE_scale */
+#define TREE_DEFLEN        0.1 // default length of tree-edge w/o given length
+#define TREE_DEFLEN_MARKER -1000.0 // tree-edges w/o length are marked with this value during read and corrected in TREE_scale
 
 GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int allow_length_scaling, char **warningPtr);
 void      TREE_scale(GBT_TREE *tree, double length_scale, double bootstrap_scale);

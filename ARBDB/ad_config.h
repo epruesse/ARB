@@ -21,55 +21,53 @@
 #define CONFIG_DATA_PATH "configuration_data"
 #define CONFIG_ITEM      "configuration"
 
-    GBDATA *GBT_find_configuration(GBDATA *gb_main, const char *name);
-    GBDATA *GBT_create_configuration(GBDATA *gb_main, const char *name);
+GBDATA *GBT_find_configuration(GBDATA *gb_main, const char *name);
+GBDATA *GBT_create_configuration(GBDATA *gb_main, const char *name);
 
-    char **GBT_get_configuration_names(GBDATA *gb_main);
-    char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr);
+void GBT_get_configuration_names(class ConstStrArray& configNames, GBDATA *gb_main);
 
+struct GBT_config {
+    char *top_area;
+    char *middle_area;
+};
 
-    struct GBT_config {
-        char *top_area;
-        char *middle_area;
-    };
+GBT_config *GBT_load_configuration_data(GBDATA *gb_main, const char *name, GB_ERROR *error);
 
-    GBT_config *GBT_load_configuration_data(GBDATA *gb_main, const char *name, GB_ERROR *error);
-
-    GB_ERROR GBT_save_configuration_data(GBT_config *data, GBDATA *gb_main, const char *name);
-    void     GBT_free_configuration_data(GBT_config *data);
+GB_ERROR GBT_save_configuration_data(GBT_config *data, GBDATA *gb_main, const char *name);
+void     GBT_free_configuration_data(GBT_config *data);
 
 
-    enum GBT_CONFIG_ITEM_TYPE {
-        CI_UNKNOWN       = 1,
-        CI_GROUP         = 2,
-        CI_FOLDED_GROUP  = 4,
-        CI_SPECIES       = 8,
-        CI_SAI           = 16,
-        CI_CLOSE_GROUP   = 32,
-        CI_END_OF_CONFIG = 64,
-    };
+enum GBT_CONFIG_ITEM_TYPE {
+    CI_UNKNOWN       = 1,
+    CI_GROUP         = 2,
+    CI_FOLDED_GROUP  = 4,
+    CI_SPECIES       = 8,
+    CI_SAI           = 16,
+    CI_CLOSE_GROUP   = 32,
+    CI_END_OF_CONFIG = 64,
+};
 
-    struct GBT_config_item {
-        GBT_CONFIG_ITEM_TYPE  type;
-        char                 *name;
-    };
+struct GBT_config_item {
+    GBT_CONFIG_ITEM_TYPE  type;
+    char                 *name;
+};
 
-    struct GBT_config_parser {
-        char *config_string;
-        int   parse_pos;
-    };
+struct GBT_config_parser {
+    char *config_string;
+    int   parse_pos;
+};
 
-    GBT_config_parser *GBT_start_config_parser(const char *config_string);
-    void               GBT_free_config_parser(GBT_config_parser *parser);
+GBT_config_parser *GBT_start_config_parser(const char *config_string);
+void               GBT_free_config_parser(GBT_config_parser *parser);
 
-    GB_ERROR         GBT_parse_next_config_item(GBT_config_parser *parser, GBT_config_item *item);
-    void             GBT_append_to_config_string(const GBT_config_item *item, struct GBS_strstruct *strstruct);
+GB_ERROR         GBT_parse_next_config_item(GBT_config_parser *parser, GBT_config_item *item);
+void             GBT_append_to_config_string(const GBT_config_item *item, struct GBS_strstruct *strstruct);
 
-    GBT_config_item *GBT_create_config_item();
-    void             GBT_free_config_item(GBT_config_item *item);
+GBT_config_item *GBT_create_config_item();
+void             GBT_free_config_item(GBT_config_item *item);
 
 #if defined(DEBUG)
-        void GBT_test_config_parser(GBDATA *gb_main);
+void GBT_test_config_parser(GBDATA *gb_main);
 #endif // DEBUG
 
 #else

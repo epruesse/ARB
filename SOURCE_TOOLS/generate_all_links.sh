@@ -117,7 +117,6 @@ makedir PROBE_COM/GENH &&
 makedir PROBE_COM/O &&
 
 makedir LIBLINK &&
-makedir MAKEBIN &&
 makedir lib/help &&
 
 (test -d lib/pts || makedir lib/pts) &&
@@ -215,15 +214,12 @@ symlink_file ../AWT/awt_canvas.hxx INCLUDE/awt_canvas.hxx &&
 symlink_file ../AWT/awt_config_manager.hxx INCLUDE/awt_config_manager.hxx &&
 symlink_file ../AWT/awt_hotkeys.hxx INCLUDE/awt_hotkeys.hxx &&
 symlink_file ../AWT/awt_input_mask.hxx INCLUDE/awt_input_mask.hxx &&
-symlink_file ../AWT/awt_item_sel_list.hxx INCLUDE/awt_item_sel_list.hxx &&
 symlink_file ../AWT/awt_macro.hxx INCLUDE/awt_macro.hxx &&
 symlink_file ../AWT/awt_map_key.hxx INCLUDE/awt_map_key.hxx &&
-symlink_file ../AWT/awt_nds.hxx INCLUDE/awt_nds.hxx &&
 symlink_file ../AWT/awt_sel_boxes.hxx INCLUDE/awt_sel_boxes.hxx &&
 symlink_file ../AWT/awt_seq_colors.hxx INCLUDE/awt_seq_colors.hxx &&
 symlink_file ../AWT/awt_www.hxx INCLUDE/awt_www.hxx &&
 symlink_file ../AWT/awtlocal.hxx INCLUDE/awtlocal.hxx &&
-symlink_file ../AWT/refentries.h INCLUDE/refentries.h &&
 symlink_file ../AWTC/awtc_next_neighbours.hxx INCLUDE/awtc_next_neighbours.hxx &&
 symlink_file ../AWTC/awtc_submission.hxx INCLUDE/awtc_submission.hxx &&
 symlink_file ../AWTI/awti_export.hxx INCLUDE/awti_export.hxx &&
@@ -234,8 +230,10 @@ symlink_file ../CORE/arb_core.h INCLUDE/arb_core.h &&
 symlink_file ../CORE/arb_cs.h INCLUDE/arb_cs.h &&
 symlink_file ../CORE/arb_msg.h INCLUDE/arb_msg.h &&
 symlink_file ../CORE/arb_signal.h INCLUDE/arb_signal.h &&
+symlink_file ../CORE/arb_sort.h INCLUDE/arb_sort.h &&
 symlink_file ../CORE/arb_strbuf.h INCLUDE/arb_strbuf.h &&
 symlink_file ../CORE/arb_string.h INCLUDE/arb_string.h &&
+symlink_file ../CORE/arb_strarray.h INCLUDE/arb_strarray.h &&
 symlink_file ../CORE/arb_handlers.h INCLUDE/arb_handlers.h &&
 symlink_file ../CORE/arb_progress.h INCLUDE/arb_progress.h &&
 symlink_file ../DIST/dist.hxx INCLUDE/dist.hxx &&
@@ -260,6 +258,8 @@ symlink_file ../SL/ARB_TREE/ARB_Tree.hxx INCLUDE/ARB_Tree.hxx &&
 symlink_file ../SL/AW_HELIX/AW_helix.hxx INCLUDE/AW_helix.hxx &&
 symlink_file ../SL/AW_NAME/AW_rename.hxx INCLUDE/AW_rename.hxx &&
 symlink_file ../SL/DB_SCANNER/db_scanner.hxx INCLUDE/db_scanner.hxx &&
+symlink_file ../SL/DB_QUERY/db_query.h INCLUDE/db_query.h &&
+symlink_file ../SL/DB_UI/dbui.h INCLUDE/dbui.h &&
 symlink_file ../SL/SEQIO/seqio.hxx INCLUDE/seqio.hxx &&
 symlink_file ../SL/FAST_ALIGNER/fast_aligner.hxx INCLUDE/fast_aligner.hxx &&
 symlink_file ../SL/FILE_BUFFER/FileBuffer.h INCLUDE/FileBuffer.h &&
@@ -269,11 +269,15 @@ symlink_file ../SL/GUI_ALIVIEW/awt_filter.hxx INCLUDE/awt_filter.hxx &&
 symlink_file ../SL/GUI_ALIVIEW/gui_aliview.hxx INCLUDE/gui_aliview.hxx &&
 symlink_file ../SL/HELIX/BI_helix.hxx INCLUDE/BI_helix.hxx &&
 symlink_file ../SL/HELIX/BI_basepos.hxx INCLUDE/BI_basepos.hxx &&
+symlink_file ../SL/ITEMS/items.h INCLUDE/items.h &&
+symlink_file ../SL/ITEMS/item_sel_list.h INCLUDE/item_sel_list.h &&
 symlink_file ../SL/MATRIX/AP_matrix.hxx INCLUDE/AP_matrix.hxx &&
+symlink_file ../SL/NDS/nds.h INCLUDE/nds.h &&
 symlink_file ../SL/NEIGHBOURJOIN/neighbourjoin.hxx INCLUDE/neighbourjoin.hxx &&
 symlink_file ../SL/PRONUC/AP_codon_table.hxx INCLUDE/AP_codon_table.hxx &&
 symlink_file ../SL/PRONUC/AP_pro_a_nucs.hxx INCLUDE/AP_pro_a_nucs.hxx &&
 symlink_file ../SL/PRONUC/iupac.h INCLUDE/iupac.h &&
+symlink_file ../SL/REFENTRIES/refentries.h INCLUDE/refentries.h &&
 symlink_file ../SL/REGEXPR/RegExpr.hxx INCLUDE/RegExpr.hxx &&
 symlink_file ../SL/SEQUENCE/AP_seq_dna.hxx INCLUDE/AP_seq_dna.hxx &&
 symlink_file ../SL/SEQUENCE/AP_seq_protein.hxx INCLUDE/AP_seq_protein.hxx &&
@@ -290,6 +294,7 @@ symlink_file ../UNIT_TESTER/test_global.h INCLUDE/test_global.h &&
 symlink_file ../UNIT_TESTER/test_helpers.h INCLUDE/test_helpers.h &&
 symlink_file ../WINDOW/aw_advice.hxx INCLUDE/aw_advice.hxx &&
 symlink_file ../WINDOW/aw_awar.hxx INCLUDE/aw_awar.hxx &&
+symlink_file ../WINDOW/aw_awar_defs.hxx INCLUDE/aw_awar_defs.hxx &&
 symlink_file ../WINDOW/aw_awars.hxx INCLUDE/aw_awars.hxx &&
 symlink_file ../WINDOW/aw_base.hxx INCLUDE/aw_base.hxx &&
 symlink_file ../WINDOW/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx &&
@@ -315,11 +320,6 @@ symlink_file ../XML/xml.hxx INCLUDE/xml.hxx &&
 # gl stuff
 symlink_file ../../GL/glpng/glpng.h INCLUDE/GL/glpng.h &&
 symlink_file ../../GL/glAW/aw_window_ogl.hxx INCLUDE/GL/aw_window_ogl.hxx &&
-
-# small dirs
-
-symlink_maybe_no_target ../AISC/aisc             MAKEBIN/aisc &&
-symlink_maybe_no_target ../AISC_MKPTPS/aisc_mkpt MAKEBIN/aisc_mkpt &&
 
 # help files (make sure the file is present in user distribution!)
 

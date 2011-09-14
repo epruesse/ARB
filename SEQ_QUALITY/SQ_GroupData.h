@@ -31,10 +31,10 @@
 #endif
 #define seq_assert(bed) arb_assert(bed)
 
-typedef struct {
+struct consensus_result {
     double conformity;
     double deviation;
-} consensus_result;
+};
 
 class SQ_GroupData {
 public:

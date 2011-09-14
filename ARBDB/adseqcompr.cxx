@@ -608,7 +608,9 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                         }
                         if (pass == 1) {
                             speciesNotInTree = count;
-                            progress = new arb_progress("Compressing sequences NOT in tree", speciesNotInTree);
+                            if (speciesNotInTree>0) {
+                                progress = new arb_progress("Compressing sequences NOT in tree", speciesNotInTree);
+                            }
                         }
                     }
                 }
@@ -653,6 +655,8 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                         else { // count size of top master
                             GBDATA *gbd  = masters[si]->gbd;
                             sumnew      += GB_read_memuse(gbd);
+
+                            progress.inc_and_check_user_abort(error);
                         }
                     }
 
@@ -669,9 +673,9 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                     }
 
                     if (!error) {
-                        char *sizeOrg = strdup(GBS_readable_size(sumorg));
-                        char *sizeOld = strdup(GBS_readable_size(sumold));
-                        char *sizeNew = strdup(GBS_readable_size(sumnew));
+                        char *sizeOrg = strdup(GBS_readable_size(sumorg, "b"));
+                        char *sizeOld = strdup(GBS_readable_size(sumold, "b"));
+                        char *sizeNew = strdup(GBS_readable_size(sumnew, "b"));
 
                         GB_warningf("Alignment '%s':\n"
                                     "    Uncompressed data:   %7s\n"

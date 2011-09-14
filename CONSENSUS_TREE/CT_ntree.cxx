@@ -16,13 +16,13 @@
 // #define NTREE_DEBUG_FUNCTIONS
 #endif // DEBUG
 
-/* Einen Binaerbaum erzeugen ueber einen Multitree */
+// Einen Binaerbaum erzeugen ueber einen Multitree
 
 NT_NODE *ntree = NULL;
 int ntree_count=0;
 
 
-/* returns the referenz of the actual NTree */
+// returns the referenz of the actual NTree
 NT_NODE *ntree_get()
 {
     return ntree;
@@ -30,7 +30,7 @@ NT_NODE *ntree_get()
 
 
 #if defined(NTREE_DEBUG_FUNCTIONS)
-/* testfunction to print a NTree */
+// testfunction to print a NTree
 void print_ntree(NT_NODE *tree)
 {
     NSONS *nsonp;
@@ -39,11 +39,11 @@ void print_ntree(NT_NODE *tree)
         return;
     }
 
-    /* print father */
+    // print father
     printf("(");
     part_print(tree->part);
 
-    /* and sons */
+    // and sons
     for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
         print_ntree(nsonp->node);
     }
@@ -51,20 +51,20 @@ void print_ntree(NT_NODE *tree)
     printf(")");
 }
 
-/* Testfunction to print the indexnumbers of the tree */
+// Testfunction to print the indexnumbers of the tree
 void print_ntindex(NT_NODE *tree)
 {
     NSONS *nsonp;
     PART  *p = part_new();
 
-    /* print father */
+    // print father
     printf("(");
     for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
         part_or(nsonp->node->part, p);
     }
     printf("%d", tree->part->p[0]);
 
-    /* and sons */
+    // and sons
     for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
         print_ntindex(nsonp->node);
     }
@@ -75,7 +75,7 @@ void print_ntindex(NT_NODE *tree)
 }
 #endif
 
-/* build a new node and store the partition p in it */
+// build a new node and store the partition p in it
 static NT_NODE *new_ntnode(PART *p)
 {
     NT_NODE *n;
@@ -87,7 +87,7 @@ static NT_NODE *new_ntnode(PART *p)
 }
 
 
-/* delete the tree */
+// delete the tree
 static void del_tree(NT_NODE *tree)
 {
     NSONS *nsonp, *nson_help;
@@ -102,21 +102,21 @@ static void del_tree(NT_NODE *tree)
     }
     tree->son_list = NULL;
 
-    /* now is leaf  */
+    // now is leaf
     part_free((tree->part));
     tree->part = NULL;
     freenull(tree);
 }
 
 
-/* Initialization of the tree */
+// Initialization of the tree
 void ntree_init()
 {
     PART *r;
 
-    /* Destruct old tree */
+    // Destruct old tree
     del_tree(ntree);
-    /* Set root = max. partition */
+    // Set root = max. partition
     ntree = NULL;
     r=part_root();
     ntree=new_ntnode(r);
@@ -125,20 +125,20 @@ void ntree_init()
 }
 
 #if 0
-/* test if the tree is already complete (all necessary partitions are inserted) */
+// test if the tree is already complete (all necessary partitions are inserted)
 static int ntree_cont(int len)
 {
     return (ntree_count<len);
 }
 #endif
 
-/* Move son from parent-sonlist to new sonlist */
-/* nson is pointer on element in parent-sonlist */
-/* sonlist is new sonlist where to move in */
+// Move son from parent-sonlist to new sonlist
+// nson is pointer on element in parent-sonlist
+// sonlist is new sonlist where to move in
 void insert_son(NT_NODE *f_node, NT_NODE *s_node, NSONS *nson)
 {
 
-    /* Move out of parent-sonlist */
+    // Move out of parent-sonlist
     if (nson == f_node->son_list)
         f_node->son_list = f_node->son_list->next;
     if (nson->prev)
@@ -146,7 +146,7 @@ void insert_son(NT_NODE *f_node, NT_NODE *s_node, NSONS *nson)
     if (nson->next)
         nson->next->prev = nson->prev;
 
-    /* Move in node-sonlist */
+    // Move in node-sonlist
     nson->next = s_node->son_list;
     nson->prev = NULL;
     if (s_node->son_list)
@@ -168,22 +168,22 @@ int ins_ntree(NT_NODE *tree, PART *newpart)
     NSONS *nsonp_h;
     NT_NODE *newntnode;
 
-    /* Tree is leaf */
+    // Tree is leaf
     if (!tree->son_list) {
         tree->son_list = (NSONS *) getmem(sizeof(NSONS));
         tree->son_list->node = new_ntnode(newpart);
         return 1;
     }
 
-    /* test if part fit under one son of tree -> recursion */
+    // test if part fit under one son of tree -> recursion
     for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
         if (son(newpart, nsonp->node->part)) {
             return ins_ntree(nsonp->node, newpart);
         }
     }
 
-    /* If partition is not a son maybe it is a brother */
-    /* If it is neither brother nor son -> don't fit here */
+    // If partition is not a son maybe it is a brother
+    // If it is neither brother nor son -> don't fit here
     for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
         if (!brothers(nsonp->node->part, newpart)) {
             if (!son(nsonp->node->part, newpart)) {
@@ -192,10 +192,10 @@ int ins_ntree(NT_NODE *tree, PART *newpart)
         }
     }
 
-    /* Okay, insert part here ... */
+    // Okay, insert part here ...
     newntnode = new_ntnode(newpart);
 
-    /* Move sons from parent-sonlist in nt_node-sonlist */
+    // Move sons from parent-sonlist in nt_node-sonlist
     nsonp = tree->son_list;
     while (nsonp) {
 
@@ -206,7 +206,7 @@ int ins_ntree(NT_NODE *tree, PART *newpart)
         nsonp = nsonp_h;
     }
 
-    /* insert nsons-elem in son-list of father */
+    // insert nsons-elem in son-list of father
     nsonp = (NSONS *) getmem(sizeof(NSONS));
     nsonp->node = newntnode;
     nsonp->prev = NULL;

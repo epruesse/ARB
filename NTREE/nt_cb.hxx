@@ -27,7 +27,8 @@ void NT_delete_mark_all_cb(void *, AWT_canvas *ntw);
 AW_window *NT_open_select_tree_window(AW_root *awr, char *awar_tree);
 void NT_select_last_tree(AW_window *aww, char *awar_tree);
 AW_window *NT_open_select_alignment_window(AW_root *awr);
-void NT_system_cb(AW_window *aww, AW_CL command, AW_CL auto_help_file);
+void NT_system_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
+void NT_system_in_xterm_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
 
 /* NT_extern.cxx */
 void nt_test_ascii_print(AW_window *aww);
@@ -39,10 +40,10 @@ void nt_exit(AW_window *aws);
 void NT_save_cb(AW_window *aww);
 void NT_save_quick_cb(AW_window *aww);
 void NT_save_quick_as_cb(AW_window *aww);
+void NT_save_as_cb(AW_window *aww);
 AW_window *NT_create_save_quick_as(AW_root *aw_root, char *base_name);
 void NT_database_optimization(AW_window *aww);
 AW_window *NT_create_database_optimization_window(AW_root *aw_root);
-void NT_save_as_cb(AW_window *aww);
 AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name);
 void NT_undo_cb(AW_window *, AW_CL undo_type, AW_CL ntw);
 void NT_undo_info_cb(AW_window *, AW_CL undo_type);

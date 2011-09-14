@@ -13,20 +13,20 @@
 #include "GEN_gene.hxx"
 #include "GEN_graphic.hxx"
 #include "GEN_nds.hxx"
-#include "GEN_interface.hxx"
-#include "EXP_interface.hxx"
 #include "EXP_local.hxx"
-#include "../NTREE/ad_spec.hxx" // needed for species query window
 
+#include <dbui.h>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
 #include <aw_question.hxx>
 #include <AW_rename.hxx>
+#include <awt.hxx>
 #include <awt_input_mask.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <aw_root.hxx>
 #include <adGene.h>
+#include <db_query.h>
 
 #include <map>
 
@@ -597,14 +597,14 @@ AW_window *GEN_create_layout_window(AW_root *awr) {
     return aws;
 }
 
-typedef enum {
+enum GEN_PERFORM_MODE {
     GEN_PERFORM_ALL_ORGANISMS,
     GEN_PERFORM_CURRENT_ORGANISM,
     GEN_PERFORM_ALL_BUT_CURRENT_ORGANISM,
     GEN_PERFORM_MARKED_ORGANISMS,
 
     GEN_PERFORM_MODES, // counter
-} GEN_PERFORM_MODE;
+};
 
 const char *GEN_PERFORM_MODE_id[GEN_PERFORM_MODES] = {
     "org_all",
@@ -617,7 +617,7 @@ inline string performmode_relative_id(const char *id, GEN_PERFORM_MODE pmode) {
     return GBS_global_string("%s_%s", GEN_PERFORM_MODE_id[pmode], id);
 }
 
-typedef enum {
+enum GEN_MARK_MODE {
     GEN_MARK,
     GEN_UNMARK,
     GEN_INVERT_MARKED,
@@ -634,9 +634,9 @@ typedef enum {
     GEN_MARK_VISIBLE,
     GEN_UNMARK_HIDDEN,
     GEN_UNMARK_VISIBLE
-} GEN_MARK_MODE;
+};
 
-typedef enum {
+enum GEN_HIDE_MODE {
     GEN_HIDE_ALL,
     GEN_UNHIDE_ALL,
     GEN_INVERT_HIDE_ALL,
@@ -644,7 +644,7 @@ typedef enum {
     GEN_HIDE_MARKED,
     GEN_UNHIDE_MARKED,
     GEN_INVERT_HIDE_MARKED
-} GEN_HIDE_MODE;
+};
 
 // --------------------------------------------------------------------------------
 
@@ -1433,17 +1433,17 @@ static void GEN_create_mask_submenu(AW_window_menu_modes *awm, GBDATA *gb_main) 
     AWT_create_mask_submenu(awm, AWT_IT_GENE, GEN_open_mask_window, (AW_CL)gb_main);
 }
 
-static AW_window *GEN_create_gene_colorize_window(AW_root *aw_root, AW_CL cl_gb_main) {
-    return awt_create_item_colorizer(aw_root, (GBDATA*)cl_gb_main, &GEN_item_selector);
+static AW_window *create_colorize_genes_window(AW_root *aw_root, AW_CL cl_gb_main) {
+    return QUERY::create_colorize_items_window(aw_root, (GBDATA*)cl_gb_main, GEN_get_selector());
 }
 
-static AW_window *GEN_create_organism_colorize_window(AW_root *aw_root, AW_CL cl_gb_main) {
-    return awt_create_item_colorizer(aw_root, (GBDATA*)cl_gb_main, &AWT_organism_selector);
+static AW_window *create_colorize_organisms_window(AW_root *aw_root, AW_CL cl_gb_main) {
+    return QUERY::create_colorize_items_window(aw_root, (GBDATA*)cl_gb_main, ORGANISM_get_selector());
 }
 
 void GEN_popup_organism_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
     // used to avoid that the organisms info window is stored in a menu (or with a button)
-    AW_window *aws = NTX_create_organism_window(aww->get_root(), cl_gb_main);
+    AW_window *aws = DBUI::create_organism_info_window(aww->get_root(), cl_gb_main);
     aws->activate();
 }
 
@@ -1466,7 +1466,7 @@ static void GEN_create_organism_submenu(AW_window_menu_modes *awm, GBDATA *gb_ma
         awm->insert_separator();
         AWMIMT("mark_organisms_with_marked_genes", "Mark organisms with marked Genes", "G", "organism_mark.hlp", AWM_ALL, mark_organisms_with_marked_genes, (AW_CL)gb_main, 0);
         awm->insert_separator();
-        AWMIMT("organism_colors",   "Colors ...",           "C",    "mark_colors.hlp", AWM_ALL, AW_POPUP,  (AW_CL)GEN_create_organism_colorize_window, (AW_CL)gb_main);
+        AWMIMT("organism_colors",   "Colors ...",           "C",    "mark_colors.hlp", AWM_ALL, AW_POPUP,  (AW_CL)create_colorize_organisms_window, (AW_CL)gb_main);
     }
     if (submenu) awm->close_sub_menu();
 }
@@ -1526,7 +1526,7 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool f
         GEN_insert_mark_submenu(awm, gb_main, "gene_invert_marked", "Invert marked genes", "v", "gene_mark.hlp", GEN_INVERT_MARKED);
         GEN_insert_mark_submenu(awm, gb_main, "gene_count_marked",  "Count marked genes",  "C", "gene_mark.hlp", GEN_COUNT_MARKED);
 
-        AWMIMT("gene_colors", "Colors ...", "l", "mark_colors.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_gene_colorize_window, (AW_CL)gb_main);
+        AWMIMT("gene_colors", "Colors ...", "l", "mark_colors.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_colorize_genes_window, (AW_CL)gb_main);
 
         awm->insert_separator();
 
@@ -1681,7 +1681,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 
     at(gene_x, first_line_y);
     help_text("organism_search.hlp");
-    callback(AW_POPUP, (AW_CL)NTX_create_query_window, 0);  // @@@ hier sollte eine Art "Organism-Search" verwendet werden (AWT_organism_selector anpassen)
+    callback(AW_POPUP, (AW_CL)DBUI::create_species_query_window, (AW_CL)gb_main); // @@@ should use an organism search (using ITEM_organism) 
     create_button("SEARCH_ORGANISM", AWAR_LOCAL_ORGANISM_NAME(window_nr));
 
     at(gene_x, second_line_y);

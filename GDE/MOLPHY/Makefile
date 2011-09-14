@@ -172,7 +172,7 @@ Ndmlproc.o : Ndmlproc.c protdml.h molphy.h optimtpm.c abratio.c
 
 prot_tml.h: $(SOURCES_TML) Makefile
 	rm -f $@
-	../../MAKEBIN/aisc_mkpt -w $@ $(SOURCES_TML) >$@.tmp
+	../../AISC_MKPTPS/aisc_mkpt -w $@ $(SOURCES_TML) >$@.tmp
 	$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $@.tmp $@
 
 proto: prot_tml.h

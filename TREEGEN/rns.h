@@ -14,16 +14,14 @@
 typedef double SingleProb[BASETYPES];
 typedef double DoubleProb[BASETYPES][BASETYPES];
 
-/* /------------------------\ */
-/* |  Erzeugung der Ur-RNS  | */
-/* \------------------------/ */
+// -----------------------------
+//      Erzeugung der Ur-RNS
 
 extern int        orgLen;
 extern double     orgHelixPart;
 
-/* /------------\ */
-/* |  Mutation  | */
-/* \------------/ */
+// -----------------
+//      Mutation
 
 extern int    timeSteps;
 extern Frand  mrpb_Init,
@@ -40,24 +38,22 @@ extern Frand  mrpb_Init,
 extern double transitionRate,
               transversionRate;
 
-/* /----------------------\ */
-/* |  Ausgabefilepointer  | */
-/* \----------------------/ */
+// ---------------------------
+//      Ausgabefilepointer
 
 extern FILE *topo,
             *seq;
 
-/* /----------------\ */
-/* |  Eine Species  | */
-/* \----------------/ */
+// ---------------------
+//      Eine Species
 
 typedef struct S_RNS
 {
-    char *base;    /* Array der Basen */
-    int   bases,   /* Anzahl Basen */
-          helix,   /* Anzahl Basenpaare in helikalen Bereichen */
-          pairing, /* Anzahl paarender Basenpaare (G-C und A-T) */
-          laufNr;  /* erhîht sich mit jeder neuen RNS (fÅr Namensvergabe) */
+    char *base;    // Array der Basen
+    int   bases,   // Anzahl Basen
+          helix,   // Anzahl Basenpaare in helikalen Bereichen
+          pairing, // Anzahl paarender Basenpaare (G-C und A-T)
+          laufNr;  // erhoeht sich mit jeder neuen RNS (fuer Namensvergabe)
 
 } *RNS;
 

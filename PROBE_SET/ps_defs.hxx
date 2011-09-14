@@ -77,7 +77,7 @@ struct PS_Callback {
 #  error DEBUG is defined - but it should not!
 # endif
 # define ps_assert(bed)
-#endif /* NDEBUG */
+#endif // NDEBUG
 
 #else
 #error ps_defs.hxx included twice

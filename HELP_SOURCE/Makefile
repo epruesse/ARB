@@ -29,6 +29,8 @@ VALIDATE = $(QUIETLY) XMLLINT
 
 # --------------------------------------------------------------------------------
 
+$(MAIN) : all
+
 all: date generated dirs tools nonhlp_formats delzerohtml
 		@echo --------------------------------------------------- [old hlp 2 xml]
 		time $(MAKE) xml
@@ -204,9 +206,9 @@ help : $(HELP)
 # --------------------------------------------------------------------------------
 
 clean:
-	rm -f $(TOOL_OBJECTS) $(BINARIES)
-	rm -f $(XML_DEPEND) dummy date.xsl
-	rm -rf $(XML_LOCATION) $(HLP_DEST) $(HTML_LOCATION)
+	-rm -f $(TOOL_OBJECTS) $(BINARIES)
+	-rm -f $(XML_DEPEND) dummy date.xsl
+	-rm -rf $(XML_LOCATION) $(HLP_DEST) $(HTML_LOCATION)
 	$(MAKE) -C $(HLP_GENERATED) clean
 
 # --------------------------------------------------------------------------------
@@ -224,7 +226,9 @@ $(XML_DEPEND) : arb_help2xml.cxx
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 $(HELP2XML): arb_help2xml.o $(LIBS)
+# @@@ when backtracing code is in libCORE, link vs ARBDB is no longer needed! 
 	$(LINK_EXECUTABLE) $@ $< $(LIBS) $(LIBPATH) $(ARBDB_LIB) $(EXECLIBS)
+
 
 DEPENDS = $(TOOL_OBJECTS:.o=.depend)
 depends: $(DEPENDS)

@@ -69,7 +69,7 @@ struct name_value_pair {
 };
 
 //! Match quality for secondary structure match.
-typedef enum {
+enum PFOLD_MATCH_TYPE {
     STRUCT_PERFECT_MATCH,  //!< Perfect match
     STRUCT_GOOD_MATCH,     //!< Good match
     STRUCT_MEDIUM_MATCH,   //!< Medium match
@@ -77,7 +77,7 @@ typedef enum {
     STRUCT_NO_MATCH,       //!< No match
     STRUCT_UNKNOWN,        //!< Unknown structure
     PFOLD_MATCH_TYPE_COUNT //!< Number of match types
-} PFOLD_MATCH_TYPE;
+};
 
 //! Awars for the match type; binds the #PFOLD_MATCH_TYPE to the corresponding awar name.
 extern name_value_pair pfold_match_type_awars[];
@@ -100,12 +100,12 @@ extern char *pfold_pair_chars[PFOLD_PAIRS];
 #define PFOLD_PAIR_CHARS_2 "##++~~--  "
 
 //! Defines the methods for match computation. For details refer to ED4_pfold_calculate_secstruct_match().
-typedef enum {
+enum PFOLD_MATCH_METHOD {
     SECSTRUCT_SECSTRUCT,        //!< Compare two protein secondary structures
     SECSTRUCT_SEQUENCE,         //!< Compare an amino acid sequence with a reference protein secondary structure
     SECSTRUCT_SEQUENCE_PREDICT, //!< Compare a full prediction of the protein secondary structure from its amino acid sequence with a reference protein secondary structure
     PFOLD_MATCH_METHOD_COUNT    //!< Number of match methods
-} PFOLD_MATCH_METHOD;
+};
 
 /*! \brief Returns the former value of an amino acid depending on the given structure type.
  *

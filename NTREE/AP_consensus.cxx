@@ -103,7 +103,7 @@ void CON_evaluatestatistic(char   *&result, int **statistic, char **groupflags,
 {
     int row=0;
     int j = 0;
-    int groupfr[MAX_GROUPS]; /* frequency of group */
+    int groupfr[MAX_GROUPS]; // frequency of group
     int highestfr, highestgr;
     long numentries;
 
@@ -243,15 +243,15 @@ int CON_makegrouptable(char **gf, char *groupnames,
 #define SC(x, P) gf[x][P-'A'+1] = 1
         {
             SC(27, 'P'); SC(27, 'A'); SC(27, 'G'); SC(27, 'S'); SC(27, 'T');
-            /* PAGST */
+            // PAGST
             SC(28, 'Q'); SC(28, 'N'); SC(28, 'E'); SC(28, 'D'); SC(28, 'B');
-            SC(28, 'Z');   /* QNEDBZ */
+            SC(28, 'Z');   // QNEDBZ
             SC(29, 'H'); SC(29, 'K'); SC(29, 'R');
-            /* HKR */
+            // HKR
             SC(30, 'L'); SC(30, 'I'); SC(30, 'V'); SC(30, 'M');
-            /* LIVM */
+            // LIVM
             SC(31, 'F'); SC(31, 'Y'); SC(31, 'W');
-            /* FYW */
+            // FYW
             return (32);
         }
 #undef SC
@@ -396,11 +396,11 @@ void CON_maketables(int *convtable, int **statistic, long maxalignlen, int isami
             statistic[i]=(int*)GB_calloc((unsigned int)maxalignlen, sizeof(int));
         }
         statistic[MAX_AMINOS]=NULL;
-        convtable['*']=10; /* 'J' */
+        convtable['*']=10; // 'J'
     }
 }
 
-/* export results into database */
+// export results into database
 GB_ERROR CON_export(char *savename, char *align, int **statistic, char *result, int *convtable, char *groupnames, int onlymarked, long nrofspecies, long maxalignlen, int countgaps, int gapbound, int groupallowed, double fconsidbound, double fupper, int lower, int resultiscomplex)
 {
     GB_ERROR    err;
@@ -432,7 +432,7 @@ GB_ERROR CON_export(char *savename, char *align, int **statistic, char *result, 
     err=GB_write_string(gb_options, buffer);
 
     GBDATA *gb_names = GB_search(GB_get_father(gb_options), "_SPECIES", GB_FIND);
-    if (gb_names) GB_delete(gb_names); /* delete old entry */
+    if (gb_names) GB_delete(gb_names); // delete old entry
 
     if (nrofspecies<20) {
         GBDATA        *gb_species;
@@ -462,21 +462,21 @@ GB_ERROR CON_export(char *savename, char *align, int **statistic, char *result, 
         char buffer2[256];
         sprintf(buffer2, "%s/FREQUENCIES", align);
         GBDATA *gb_graph = GB_search(gb_extended, buffer2, GB_FIND);
-        if (gb_graph) GB_delete(gb_graph);  /* delete old entry */
+        if (gb_graph) GB_delete(gb_graph);  // delete old entry
     }
-    /* export additional information */
+    // export additional information
     if (resultiscomplex)
     {
         GBDATA *gb_graph = GBT_add_data(gb_extended, align, "FREQUENCIES", GB_DB);
         char *charname=(char *)GB_calloc(5, sizeof(char));
 
         float **additional=0;
-        /* problem : aminos, especially '*' -> new order */
+        // problem : aminos, especially '*' -> new order
 
         int *allreadycounted=(int*)GB_calloc((unsigned int)256, sizeof(char));
         int *neworder=(int*)GB_calloc((unsigned int)256, sizeof(int));
         int k;
-        int numdiffchars=1;  /* first additional row (nr. 0) is max-row */
+        int numdiffchars=1;  // first additional row (nr. 0) is max-row
         for (int c=0; c<256; c++)
         {
             if ((k=convtable[c]))
@@ -633,12 +633,12 @@ void CON_calculate_cb(AW_window *aw)
         }
 
 
-        /* creating the table for characters and allocating memory for 'statistic' */
+        // creating the table for characters and allocating memory for 'statistic'
         int *statistic[MAX_AMINOS+1];
         int  convtable[256];
         CON_maketables(convtable, statistic, maxalignlen, isamino);
 
-        /* filling the statistic table */
+        // filling the statistic table
         arb_progress progress("Calculating consensus");
 
         long   nrofspecies = CON_makestatistic(statistic, convtable, align, onlymarked);
@@ -674,12 +674,12 @@ void CON_calculate_cb(AW_window *aw)
                 free(group);
             }
 
-            /* creating the table for groups */
+            // creating the table for groups
             char *groupflags[40];
             char  groupnames[40];
             int   numgroups = CON_makegrouptable(groupflags, groupnames, isamino, groupallowed);
 
-            /* calculate and export the result strings */
+            // calculate and export the result strings
             char *result = 0;
             CON_evaluatestatistic(result, statistic, groupflags, groupnames, (int)maxalignlen, fupper, lower, fconsidbound, gapbound, countgap, numgroups);
 
@@ -689,7 +689,7 @@ void CON_calculate_cb(AW_window *aw)
                                onlymarked, nrofspecies, maxalignlen, countgap, gapbound, groupallowed,
                                fconsidbound, fupper, lower, resultiscomplex);
 
-            /* freeing allocated memory */
+            // freeing allocated memory
             free(savename);
             free(result);
             for (int i=0; i<MAX_GROUPS; i++) free(groupflags[i]);
@@ -725,7 +725,7 @@ void create_consensus_var(AW_root *aw_root, AW_default aw_def)
 
 }
 
-/* Open window to show IUPAC tables */
+// Open window to show IUPAC tables
 AW_window *
 CON_showgroupswin_cb(AW_root *aw_root)
 {
@@ -770,7 +770,7 @@ AP_open_con_expert_window(AW_root *aw_root)
 
     aws->button_length(15);
 
-    /* activation of consensus calculation by button ... */
+    // activation of consensus calculation by button ...
     aws->at("calculate"); aws->callback((AW_CB0)CON_calculate_cb);
     aws->create_button("GO", "GO", "G");
 
@@ -870,7 +870,7 @@ AP_open_consensus_window(AW_root *aw_root)
 
     aws->button_length(15);
 
-    /* activation of consensus calculation by button ... */
+    // activation of consensus calculation by button ...
     aws->at("calculate"); aws->callback((AW_CB0)CON_calculate_cb);
     aws->create_button("CALCULATE", "CALCULATE", "C");
 
@@ -1003,7 +1003,7 @@ AP_open_max_freq_window(AW_root *aw_root)
     aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"max_freq.hlp");
     aws->create_button("HELP", "HELP", "H");
 
-    /* activation of consensus calculation by button ... */
+    // activation of consensus calculation by button ...
     aws->at("go"); aws->callback((AW_CB0)CON_calc_max_freq_cb);
     aws->create_button("GO", "GO", "C");
 

@@ -10,19 +10,15 @@ UP	gene_info.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Create Species/Gene
+TITLE		Create Species
 
-OCCURRENCE	ARB_NT/Species/Info/SPECIES/Create
-		ARB_NT/Genes/Info/SPECIES/Create
+OCCURRENCE	ARB_NT/Species/Species Information/SPECIES/Create
 
-DESCRIPTION	Creates a new species/gene entry.
+DESCRIPTION	Creates a new species.
 
-		Choose the 'Create' item from the 'SPECIES/GENE' menu to
-		display the 'SPECIES/GENE CREATE' window. Type a name to
-		this window and press <GO>
+                Type the full name of the species and press <GO>.
 
-NOTES		In case of creating a new species the ARB name server ensures
-		that no duplicated names are created.
+                The ARB name server automatically creates a unique short name.
 
 EXAMPLES	None
 
