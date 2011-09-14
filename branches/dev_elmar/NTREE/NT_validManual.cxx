@@ -8,11 +8,11 @@
 //                                                                 //
 // =============================================================== //
 
-#include <arbdbt.h>
+#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
-#include <awt.hxx>
 #include <aw_msg.hxx>
+#include <arbdbt.h>
 
 #include <string>
 #include <list>
@@ -35,7 +35,7 @@ struct selectValidNameStruct {
     const char        *initials;
 };
 
-/* --------------------------creating and initializing AWARS---------------------------------------- */
+// --------------------------creating and initializing AWARS----------------------------------------
 void NT_createValidNamesAwars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_SELECTED_VALNAME, "????",   aw_def);
     aw_root->awar_string(AWAR_INPUT_INITIALS,    "",      aw_def);

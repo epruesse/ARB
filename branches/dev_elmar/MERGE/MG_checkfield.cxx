@@ -10,11 +10,10 @@
 
 #include "merge.hxx"
 
-#include <awt.hxx>
-#include <awt_item_sel_list.hxx>
+#include <item_sel_list.h>
 #include <awt_sel_boxes.hxx>
 
-#include <aw_awars.hxx>
+#include <aw_awar.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
@@ -32,7 +31,7 @@
 #define AWAR_ETAG         "/tmp/merge1/chk/tag"
 
 
-int gbs_cmp_strings(char *str1, char *str2, int *tab) { /* returns 0 if strings are equal */
+int gbs_cmp_strings(char *str1, char *str2, int *tab) { // returns 0 if strings are equal
     char *s1, *s2;
     int c1, c2;
     s1 = str1;
@@ -41,7 +40,7 @@ int gbs_cmp_strings(char *str1, char *str2, int *tab) { /* returns 0 if strings 
     do {
         do { c1 = *(s1++); } while (tab[c1] < 0);
         do { c2 = *(s2++); } while (tab[c2] < 0);
-        if (tab[c1] != tab[c2]) {   /* difference found */
+        if (tab[c1] != tab[c2]) {   // difference found
             return 1;
         }
         count --;
@@ -86,9 +85,9 @@ char *GBS_diff_strings(char *str1, char * &str2, char *exclude, long ToUpper, lo
     do {
         do { c1 = *(s1++); } while (tab[c1] < 0);
         do { c2 = *(s2++); } while (tab[c2] < 0);
-        if (tab[c1] != tab[c2]) {   /* difference found */
+        if (tab[c1] != tab[c2]) {   // difference found
             if (correct) {
-                /* check substitution */
+                // check substitution
                 {
                     int c = s2[-1];
                     s2[-1] = s1[-1];
@@ -100,19 +99,19 @@ char *GBS_diff_strings(char *str1, char * &str2, char *exclude, long ToUpper, lo
                     s2[-1] = c;
                 }
 
-                /* check insertion in s2 */
+                // check insertion in s2
                 if (!gbs_cmp_strings(s1-1, s2, &tab[0])) {
                     s2[-1] = gapchar;
-                    do { c2 = *(s2++); } while (tab[c2] < 0); /* eat s2 */
+                    do { c2 = *(s2++); } while (tab[c2] < 0); // eat s2
                     *corrrected = 1;
                     continue;
                 }
-                /* check deletion in s2 */
+                // check deletion in s2
                 if (!gbs_cmp_strings(s1, s2-1, &tab[0])) {
                     int toins = c1;
                     char *toinspos = s2-1;
                     if (toinspos > str2) toinspos--;
-                    if (tab[(unsigned char)toinspos[0]]> 0) { /* real insertion */
+                    if (tab[(unsigned char)toinspos[0]]> 0) { // real insertion
                         GBS_strstruct *str = GBS_stropen(strlen(str2+10));
                         int pos = s2-str2-1;
                         GBS_strncat(str, str2, pos);
@@ -124,7 +123,7 @@ char *GBS_diff_strings(char *str1, char * &str2, char *exclude, long ToUpper, lo
                         *corrrected = 1;
                         continue;
                     }
-                    int side=1; /* 0 = left   1= right */
+                    int side=1; // 0 = left   1= right
                     if (tab[(unsigned char)s1[0]]<0) side = 0;
                     if (! side) {
                         while (toinspos > str2 &&
@@ -132,7 +131,7 @@ char *GBS_diff_strings(char *str1, char * &str2, char *exclude, long ToUpper, lo
                     }
                     toinspos[0] = toins;
                     *corrrected = 1;
-                    do { c1 = *(s1++); } while (tab[c1] < 0); /* eat s1 */
+                    do { c1 = *(s1++); } while (tab[c1] < 0); // eat s1
                     continue;
                 }
             }
@@ -325,11 +324,11 @@ AW_window *create_mg_check_fields(AW_root *aw_root) {
     aws->at("tag");
     aws->create_input_field(AWAR_ETAG, 6);
 
-    awt_create_selection_list_on_itemfields(GLOBAL_gb_dest, aws, AWAR_SOURCE_FIELD,
-                                            AWT_STRING_FILTER, "source", 0, &AWT_species_selector, 20, 10);
+    create_selection_list_on_itemfields(GLOBAL_gb_dest, aws, AWAR_SOURCE_FIELD,
+                                            FIELD_FILTER_STRING, "source", 0, SPECIES_get_selector(), 20, 10);
 
-    awt_create_selection_list_on_itemfields(GLOBAL_gb_dest, aws, AWAR_DEST_FIELD,
-                                            (1<<GB_STRING)|(1<<GB_INT), "dest", 0, &AWT_species_selector, 20, 10);
+    create_selection_list_on_itemfields(GLOBAL_gb_dest, aws, AWAR_DEST_FIELD,
+                                            (1<<GB_STRING)|(1<<GB_INT), "dest", 0, SPECIES_get_selector(), 20, 10);
 
 #if defined(WARN_TODO)
 #warning check code above. Maybe one call has to get GLOBAL_gb_merge ?

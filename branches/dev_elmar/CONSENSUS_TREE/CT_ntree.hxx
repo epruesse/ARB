@@ -15,18 +15,18 @@
 #include "CT_part.hxx"
 #endif
 
-struct nsons;
+struct NSONS;
 
-typedef struct nt_node {
-    PART         *part;
-    struct nsons *son_list;
-} NT_NODE;
+struct NT_NODE {
+    PART  *part;
+    NSONS *son_list;
+};
 
 
-typedef struct nsons {
+struct NSONS {
     NT_NODE *node;
-    nsons   *prev, *next;
-} NSONS;
+    NSONS   *prev, *next;
+};
 
 
 void ntree_init();

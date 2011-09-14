@@ -14,6 +14,7 @@
 #include <adGene.h>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
+#include <arb_strarray.h>
 
 
 bool GEN_is_genome_db(GBDATA *gb_main, int default_value) {
@@ -192,12 +193,14 @@ void GEN_use_uncertainties(GEN_position *pos) {
 }
 
 void GEN_free_position(GEN_position *pos) {
-    if (lastFreedPosition) {
-        free(lastFreedPosition->start_pos); // rest is allocated together with start_pos
-        free(lastFreedPosition);
-    }
+    if (pos) {
+        if (lastFreedPosition) {
+            free(lastFreedPosition->start_pos); // rest is allocated together with start_pos
+            free(lastFreedPosition);
+        }
 
-    lastFreedPosition = pos;
+        lastFreedPosition = pos;
+    }
 }
 
 static struct GEN_position_mem_handler {
@@ -205,16 +208,9 @@ static struct GEN_position_mem_handler {
 } GEN_position_dealloc;
 
 
-static void clearParseTable(char **parseTable, int parts) {
-    int p;
-    free(parseTable[0]);
-    for (p = 0; p<parts; p++) parseTable[p] = 0;
-}
-
-static GB_ERROR parseCSV(GBDATA *gb_gene, const char *field_name, int parts, char **parseTable) {
+static GB_ERROR parseCSV(GBDATA *gb_gene, const char *field_name, size_t parts_expected, ConstStrArray& parseTable) {
     // reads a field and splits the content at ','
-    // results are put into parseTable (only first entry in parseTable is allocated, other entries
-    // are simply pointers into the same string)
+    // results are stored in parseTable
 
     GB_ERROR  error      = 0;
     GBDATA   *gb_field   = GB_entry(gb_gene, field_name);
@@ -223,52 +219,30 @@ static GB_ERROR parseCSV(GBDATA *gb_gene, const char *field_name, int parts, cha
         char *content       = GB_read_string(gb_field);
         if (!content) error = GB_await_error();
         else {
-            int   p;
-            char *pos = content;
-
-            clearParseTable(parseTable, parts);
-
-            for (p = 0; p<(parts-1) && !error; p++) {
-                char *comma = strchr(pos, ',');
-                if (comma) {
-                    comma[0]      = 0;
-                    parseTable[p] = pos;
-                    pos           = comma+1;
-                }
-                else {
-                    error = "comma expected";
-                }
-            }
-
-            if (!error) {
-                parseTable[p] = pos; // rest
-
-                if (strchr(pos, ',') != 0) error = "comma found where none expected";
-            }
-
-            if (error) {
-                error         = GBS_global_string("%s in '%s' (while parsing %i values from '%s')",
-                                                  error, pos, parts, GB_read_char_pntr(gb_field));
-                parseTable[0] = content; // ensure content gets freed
+            parseTable.erase();
+            GBT_splitNdestroy_string(parseTable, content, ',');
+            if (parseTable.size() != parts_expected) {
+                error = GBS_global_string("Expected %zu CSV, found %zu", parts_expected, parseTable.size());
             }
         }
     }
-
-    if (error) clearParseTable(parseTable, parts);
     return error;
 }
 
-static GB_ERROR parsePositions(GBDATA *gb_gene, const char *field_name, int parts, size_t *results, char **parseTable) {
-    GB_ERROR error = parseCSV(gb_gene, field_name, parts, parseTable);
+static GB_ERROR parsePositions(GBDATA *gb_gene, const char *field_name, int parts_expected, size_t *results, ConstStrArray& parseTable) {
+    GB_ERROR error = parseCSV(gb_gene, field_name, parts_expected, parseTable);
     if (!error) {
         int p;
-        for (p = 0; p<parts && !error; p++) {
+        for (p = 0; p<parts_expected && !error; p++) {
             char *end;
             results[p] = strtol(parseTable[p], &end, 10);
             if (end == parseTable[p]) { // error
-                error = GBS_global_string("can't convert '%s' to number (while parsing '%s')", parseTable[p], field_name);
+                error = GBS_global_string("can't convert '%s' to number", parseTable[p]);
             }
         }
+    }
+    if (error) {
+        error = GBS_global_string("While parsing field '%s': %s", field_name, error);
     }
     return error;
 }
@@ -292,7 +266,8 @@ GEN_position *GEN_read_position(GBDATA *gb_gene) {
     if (!error) {
         pos = GEN_new_position(parts, joinable);
 
-        char **parseTable = (char**)GB_calloc(parts, sizeof(*parseTable));
+        ConstStrArray parseTable;
+        parseTable.reserve(parts);
 
         error =             parsePositions(gb_gene, "pos_start", parts, pos->start_pos, parseTable);
         if (!error) error = parsePositions(gb_gene, "pos_stop",  parts, pos->stop_pos,  parseTable);
@@ -334,9 +309,6 @@ GEN_position *GEN_read_position(GBDATA *gb_gene) {
                 }
             }
         }
-
-        clearParseTable(parseTable, parts);
-        free(parseTable);
     }
 
     gb_assert(error || pos);
@@ -388,21 +360,57 @@ GB_ERROR GEN_write_position(GBDATA *gb_gene, const GEN_position *pos) {
         }
     }
 
-#if defined(DEBUG)
     // test data
     if (!error) {
-        for (p = 0; p<pos->parts; ++p) {
+        size_t length;
+        {
+            GBDATA *gb_organism = GB_get_grandfather(gb_gene);
+            GBDATA *gb_genome   = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
+            
+            length = GB_read_count(gb_genome);
+        }
+
+        for (p = 0; p<pos->parts && !error; ++p) {
             char c;
 
             c = pos->complement[p]; gb_assert(c == 0 || c == 1);
-            gb_assert(pos->start_pos[p] <= pos->stop_pos[p]);
-            if (pos->start_uncertain) {
-                c = pos->start_uncertain[p]; gb_assert(strchr("<=>+", c) != 0);
-                c = pos->stop_uncertain[p]; gb_assert(strchr("<=>-", c) != 0);
+            if (c<0 || c>1) {
+                error = GBS_global_string("Illegal value %i in complement", int(c));
+            }
+            else {
+                if (pos->start_pos[p]>pos->stop_pos[p]) {
+                    error = GBS_global_string("Illegal positions (%li>%li)", pos->start_pos[p], pos->stop_pos[p]);
+                }
+                else if (pos->start_pos[p] == 0) {
+                    error = GBS_global_string("Illegal start position %li", pos->start_pos[p]);
+                }
+                else if (pos->stop_pos[p] > length) {
+                    error = GBS_global_string("Illegal stop position %li (>length(=%li))", pos->stop_pos[p], length);
+                }
+                else {
+                    if (pos->start_uncertain) {
+                        c       = pos->start_uncertain[p];
+                        char c2 = pos->stop_uncertain[p];
+
+                        if      (!c  || strchr("<=>+", c)  == 0) error = GBS_global_string("Invalid uncertainty '%c'", c);
+                        else if (!c2 || strchr("<=>-", c2) == 0) error = GBS_global_string("Invalid uncertainty '%c'", c2);
+                        else {
+                            if (c == '+' || c2 == '-') {
+                                if (c == '+' && c2 == '-') {
+                                    if (pos->start_pos[p] != pos->stop_pos[p]-1) {
+                                        error = GBS_global_string("Invalid positions %li^%li for uncertainties +-", pos->start_pos[p], pos->stop_pos[p]);
+                                    }
+                                }
+                                else {
+                                    error = "uncertainties '+' and '-' can only be used together";
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
-#endif // DEBUG
 
     if (!error) {
         if (pos->parts == 1) {
@@ -841,6 +849,11 @@ struct arb_unit_test::test_alignment_data TestAlignmentData_Genome[] = {
         TEST_ASSERT_NULL(error.deliver());                              \
     } while(0)
 
+#define TEST_WRITE_GEN_POSITION_ERROR(pos,exp_error) do {               \
+        error = GEN_write_position(gb_gene, &*(pos));                   \
+        TEST_ASSERT_EQUAL(error.deliver(), exp_error);                  \
+    } while(0)
+    
 #define TEST_GENPOS_FIELD(field,value) do {                             \
         GBDATA *gb_field = GB_entry(gb_gene, (field));                  \
         if ((value)) {                                                  \
@@ -874,6 +887,8 @@ struct arb_unit_test::test_alignment_data TestAlignmentData_Genome[] = {
     } while(0)
     
 void TEST_GEN_position() {
+    // see also ../GENOM_IMPORT/Location.cxx@TEST_gene_location
+
     GB_shell   shell;
     ARB_ERROR  error;
     GBDATA    *gb_main = TEST_CREATE_DB(error, "ali_genom", TestAlignmentData_Genome, false);
@@ -892,11 +907,8 @@ void TEST_GEN_position() {
 
         pos = GEN_new_position(1, false);
 
-        TEST_WRITE_READ_GEN_POSITION(&*pos);
-        TEST_GENPOS_FIELDS("0", "0", "0", NULL);
+        TEST_WRITE_GEN_POSITION_ERROR(pos, "Illegal start position 0");
 
-        TEST_GENE_SEQ_AND_LENGTH(true, NULL, 0); // expect error (ill. positions)
-        
         pos->start_pos[0]  = 5;
         pos->stop_pos[0]   = 10;
         pos->complement[0] = 1;
@@ -912,8 +924,7 @@ void TEST_GEN_position() {
 
         pos = GEN_new_position(3, false);
 
-        TEST_WRITE_READ_GEN_POSITION(&*pos);
-        TEST_GENPOS_FIELDS("0,0,0", "0,0,0", "0,0,0", NULL);
+        TEST_WRITE_GEN_POSITION_ERROR(pos, "Illegal start position 0");
 
         GEN_use_uncertainties(&*pos);
 
@@ -928,6 +939,22 @@ void TEST_GEN_position() {
         TEST_GENPOS_FIELDS("5,10,25", "15,20,25", "0,1,0", "<=,==,=>");
 
         TEST_GENE_SEQ_AND_LENGTH(false, "CCUAAACCCAA-TACGGTTGGGT-G", 25);
+
+        pos->stop_uncertain[2] = 'x';
+        TEST_WRITE_GEN_POSITION_ERROR(pos, "Invalid uncertainty 'x'"); 
+
+        pos->stop_uncertain[2] = '+';
+        TEST_WRITE_GEN_POSITION_ERROR(pos, "Invalid uncertainty '+'"); // invalid for stop
+        
+        pos->start_uncertain[2] = '+';
+        pos->stop_uncertain[2]  = '-';
+        TEST_WRITE_GEN_POSITION_ERROR(pos, "Invalid positions 25^25 for uncertainties +-");
+
+        pos->stop_pos[2] = 26;
+        TEST_WRITE_GEN_POSITION_ERROR(pos, NULL);
+        
+        pos->stop_pos[0] = 100;
+        TEST_WRITE_GEN_POSITION_ERROR(pos, "Illegal stop position 100 (>length(=32))");
     }
 
     GB_close(gb_main);

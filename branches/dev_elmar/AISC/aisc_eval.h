@@ -78,7 +78,7 @@ public:
     }
 
     char *evalVarDecl(bool& failed) {
-        /* dont eval first '$(' */
+        // dont eval first '$('
     
         char *res = NULL;
         char *varDecl  = strstr(ebuffer, "$(");

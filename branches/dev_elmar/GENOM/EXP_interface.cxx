@@ -13,16 +13,14 @@
 //  ==================================================================== //
 
 #include "EXP_local.hxx"
-#include "EXP_interface.hxx"
 #include "GEN_local.hxx"
-#include "GEN_interface.hxx"
-#include "../NTREE/ad_spec.hxx"
-#include <../NTREE/nt_internal.h>
 
+#include <db_query.h>
 #include <db_scanner.hxx>
+#include <dbui.h>
 #include <awt_sel_boxes.hxx>
-#include <awt_item_sel_list.hxx>
-#include <aw_awars.hxx>
+#include <item_sel_list.h>
+#include <aw_awar_defs.hxx>
 #include <aw_detach.hxx>
 #include <aw_msg.hxx>
 #include <arbdbt.h>
@@ -83,7 +81,7 @@ inline void exp_restore_old_species_marks(GBDATA *gb_main) {
     }
 }
 
-static GBDATA *EXP_get_first_experiment_data(GBDATA *gb_main, AW_root *aw_root, AWT_QUERY_RANGE range) {
+static GBDATA *EXP_get_first_experiment_data(GBDATA *gb_main, AW_root *aw_root, QUERY_RANGE range) {
     GBDATA   *gb_organism = 0;
     GB_ERROR  error      = 0;
 
@@ -125,7 +123,7 @@ static GBDATA *EXP_get_first_experiment_data(GBDATA *gb_main, AW_root *aw_root, 
     return gb_organism ? EXP_get_experiment_data(gb_organism) : 0;
 }
 
-static GBDATA *EXP_get_next_experiment_data(GBDATA *gb_experiment_data, AWT_QUERY_RANGE range) {
+static GBDATA *EXP_get_next_experiment_data(GBDATA *gb_experiment_data, QUERY_RANGE range) {
     GBDATA *gb_organism = 0;
     switch (range) {
         case QUERY_CURRENT_ITEM: {
@@ -153,7 +151,7 @@ static GBDATA *EXP_get_next_experiment_data(GBDATA *gb_experiment_data, AWT_QUER
     return gb_organism ? EXP_get_experiment_data(gb_organism) : 0;
 }
 
-static GBDATA *first_experiment_in_range(GBDATA *gb_experiment_data, AWT_QUERY_RANGE range) {
+static GBDATA *first_experiment_in_range(GBDATA *gb_experiment_data, QUERY_RANGE range) {
     GBDATA *gb_first = NULL;
     switch (range) {
         case QUERY_ALL_ITEMS:    gb_first = EXP_first_experiment_rel_exp_data(gb_experiment_data); break;
@@ -162,7 +160,7 @@ static GBDATA *first_experiment_in_range(GBDATA *gb_experiment_data, AWT_QUERY_R
     }
     return gb_first;
 }
-static GBDATA *next_experiment_in_range(GBDATA *gb_prev, AWT_QUERY_RANGE range) {
+static GBDATA *next_experiment_in_range(GBDATA *gb_prev, QUERY_RANGE range) {
     GBDATA *gb_next = NULL;
     switch (range) {
         case QUERY_ALL_ITEMS:    gb_next = EXP_next_experiment(gb_prev); break;
@@ -172,12 +170,16 @@ static GBDATA *next_experiment_in_range(GBDATA *gb_prev, AWT_QUERY_RANGE range) 
     return gb_next;
 }
 
-struct ad_item_selector EXP_item_selector = {
-    AWT_QUERY_ITEM_EXPERIMENTS,
+#if defined(WARN_TODO)
+#warning move EXP_item_selector to SL/ITEMS
+#endif
+
+static struct MutableItemSelector EXP_item_selector = {
+    QUERY_ITEM_EXPERIMENTS,
     EXP_select_experiment,
     EXP_get_experiment_id,
     EXP_find_experiment_by_id,
-    (AW_CB)awt_experiment_field_selection_list_update_cb,
+    (AW_CB)experiment_field_selection_list_update_cb,
     -1, // unknown
     CHANGE_KEY_PATH_EXPERIMENTS,
     "experiment",
@@ -188,10 +190,10 @@ struct ad_item_selector EXP_item_selector = {
     first_experiment_in_range,
     next_experiment_in_range,
     EXP_get_current_experiment,
-    &AWT_organism_selector, GB_get_grandfather,
+    &ORGANISM_get_selector(), GB_get_grandfather,
 };
 
-ad_item_selector *EXP_get_selector() { return &EXP_item_selector; }
+ItemSelector& EXP_get_selector() { return EXP_item_selector; }
 
 GBDATA *EXP_get_current_experiment(GBDATA *gb_main, AW_root *aw_root) {
     GBDATA *gb_organism    = GEN_get_current_organism(gb_main, aw_root);
@@ -206,9 +208,12 @@ GBDATA *EXP_get_current_experiment(GBDATA *gb_main, AW_root *aw_root) {
     return gb_experiment;
 }
 
-static AW_CL    ad_global_scannerid   = 0;
-static AW_root *ad_global_scannerroot = 0;
-AW_CL           experiment_query_global_cbs = 0;
+static QUERY::DbQuery *GLOBAL_experiment_query = 0;
+
+
+#if defined(WARN_TODO)
+#warning move EXP_create_experiment_query_window to SL/DB_UI
+#endif
 
 AW_window *EXP_create_experiment_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
     static AW_window_simple_menu *aws = 0;
@@ -220,7 +225,7 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root, AW_CL cl_gb_main
         aws->create_menu("More functions", "f");
         aws->load_xfig("ad_query.fig");
 
-        awt_query_struct awtqs;
+        QUERY::query_spec awtqs(EXP_get_selector());
 
         awtqs.gb_main             = gb_main;
         awtqs.species_name        = AWAR_SPECIES_NAME;
@@ -245,14 +250,13 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root, AW_CL cl_gb_main
         awtqs.do_refresh_pos_fig  = "dorefresh";
         awtqs.open_parser_pos_fig = "openparser";
         awtqs.create_view_window  = EXP_create_experiment_window;
-        awtqs.selector            = &EXP_item_selector;
 
-        AW_CL cbs                   = (AW_CL)awt_create_query_box((AW_window*)aws, &awtqs, "exp");
-        experiment_query_global_cbs = cbs;
+        QUERY::DbQuery *query   = create_query_box(aws, &awtqs, "exp");
+        GLOBAL_experiment_query = query;
 
         aws->create_menu("More search",     "s");
-        aws->insert_menu_topic("exp_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",              "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs, 0);
-        aws->insert_menu_topic("exp_search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplicates", "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs, 1);
+        aws->insert_menu_topic("exp_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",              "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)QUERY::search_duplicated_field_content, (AW_CL)query, 0);
+        aws->insert_menu_topic("exp_search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplicates", "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)QUERY::search_duplicated_field_content, (AW_CL)query, 1);
 
         aws->button_length(7);
 
@@ -291,13 +295,13 @@ static void experiment_create_cb(AW_window *aww, AW_CL cl_gb_main) {
         GBDATA *gb_experiment_data = EXP_get_current_experiment_data(gb_main, aw_root);
 
         if (!gb_experiment_data) {
-            error = "Please select a species";
+            error = "Please select an organism";
         }
         else {
             GBDATA *gb_dest = EXP_find_experiment_rel_exp_data(gb_experiment_data, dest);
 
             if (gb_dest) {
-                error  = GB_export_errorf("Experiment '%s' already exists", dest);
+                error  = GBS_global_string("Experiment '%s' already exists", dest);
             }
             else {
                 gb_dest             = EXP_find_or_create_experiment_rel_exp_data(gb_experiment_data, dest);
@@ -448,25 +452,33 @@ AW_window *create_experiment_create_window(AW_root *root, AW_CL cl_gb_main) {
     return aws;
 }
 
-static void EXP_map_experiment(AW_root *aw_root, AW_CL scannerid, AW_CL cl_gb_main) {
+static void EXP_map_experiment(AW_root *aw_root, AW_CL cl_scanner, AW_CL cl_gb_main) {
     GBDATA         *gb_main       = (GBDATA*)cl_gb_main;
     GB_transaction  ta(gb_main);
     GBDATA         *gb_experiment = EXP_get_current_experiment(gb_main, aw_root);
 
-    if (gb_experiment) map_db_scanner(scannerid, gb_experiment, CHANGE_KEY_PATH_EXPERIMENTS);
+    if (gb_experiment) map_db_scanner((DbScanner*)cl_scanner, gb_experiment, CHANGE_KEY_PATH_EXPERIMENTS);
 }
 
 static void EXP_create_field_items(AW_window *aws, GBDATA *gb_main) {
-    aws->insert_menu_topic("exp_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&EXP_item_selector);
-    aws->insert_menu_topic("exp_delete_field",   "Delete/Hide Field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&EXP_item_selector);
-    aws->insert_menu_topic("exp_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&EXP_item_selector);
+    static BoundItemSel *bis = new BoundItemSel(gb_main, EXP_get_selector());
+    exp_assert(bis->gb_main == gb_main);
+
+    aws->insert_menu_topic("exp_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_fields_reorder_window, (AW_CL)bis);
+    aws->insert_menu_topic("exp_delete_field",   "Delete/Hide Field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_delete_window, (AW_CL)bis);
+    aws->insert_menu_topic("exp_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_create_window, (AW_CL)bis);
     aws->insert_separator();
-    aws->insert_menu_topic("exp_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_unhide_all_cb, (AW_CL)gb_main, AWT_NDS_FILTER);
+    aws->insert_menu_topic("exp_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)experiment_field_selection_list_unhide_all_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
     aws->insert_separator();
-    aws->insert_menu_topic("exp_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_scan_unknown_cb,  (AW_CL)gb_main, AWT_NDS_FILTER);
-    aws->insert_menu_topic("exp_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_delete_unused_cb, (AW_CL)gb_main, AWT_NDS_FILTER);
-    aws->insert_menu_topic("exp_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_update_cb,        (AW_CL)gb_main, AWT_NDS_FILTER);
+    aws->insert_menu_topic("exp_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)experiment_field_selection_list_scan_unknown_cb,  (AW_CL)gb_main, FIELD_FILTER_NDS);
+    aws->insert_menu_topic("exp_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)experiment_field_selection_list_delete_unused_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
+    aws->insert_menu_topic("exp_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)experiment_field_selection_list_update_cb,        (AW_CL)gb_main, FIELD_FILTER_NDS);
 }
+
+#if defined(WARN_TODO)
+#warning move EXP_create_experiment_window to SL/DB_UI
+#endif
+
 
 AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_main) {
     static AW_window_simple_menu *aws = 0;
@@ -493,9 +505,7 @@ AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_main) {
         aws->create_button("HELP", "HELP", "H");
 
 
-        AW_CL scannerid       = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", AWT_NDS_FILTER, &EXP_item_selector);
-        ad_global_scannerid   = scannerid;
-        ad_global_scannerroot = aws->get_root();
+        DbScanner *scanner = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, EXP_get_selector());
 
         aws->create_menu("EXPERIMENT", "E", AD_F_ALL);
         aws->insert_menu_topic("experiment_delete", "Delete",     "D", "spa_delete.hlp", AD_F_ALL, (AW_CB)experiment_delete_cb, (AW_CL)gb_main,                         0);
@@ -508,19 +518,19 @@ AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_main) {
         EXP_create_field_items(aws, gb_main);
 
         {
-            Awar_Callback_Info    *cb_info     = new Awar_Callback_Info(aws->get_root(), AWAR_EXPERIMENT_NAME, EXP_map_experiment, scannerid, (AW_CL)gb_main); // do not delete!
+            Awar_Callback_Info    *cb_info     = new Awar_Callback_Info(aws->get_root(), AWAR_EXPERIMENT_NAME, EXP_map_experiment, (AW_CL)scanner, (AW_CL)gb_main); // do not delete!
             AW_detach_information *detach_info = new AW_detach_information(cb_info); // do not delete!
             cb_info->add_callback();
 
             aws->at("detach");
-            aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)cb_info);
+            aws->callback(DBUI::detach_info_window, (AW_CL)&aws, (AW_CL)cb_info);
             aws->create_button("DETACH", "DETACH", "D");
 
             detach_info->set_detach_button(aws->get_last_widget());
         }
 
         aws->show();
-        EXP_map_experiment(aws->get_root(), scannerid, (AW_CL)gb_main);
+        EXP_map_experiment(aws->get_root(), (AW_CL)scanner, (AW_CL)gb_main);
     }
     return aws;
 }

@@ -50,7 +50,7 @@ enum {
 
     AWT_GC_FIRST_COLOR_GROUP,
     AWT_GC_MAX = AWT_GC_FIRST_COLOR_GROUP+AW_COLOR_GROUPS
-}; // AW_gc
+};
 
 enum AP_STACK_MODE {
     NOTHING   = 0,                                                      // nothing to buffer in AP_tree node
@@ -170,7 +170,7 @@ public:
     int view_sum;   // virtual size of node for display ( isgrouped?sqrt(leave_sum):leave_sum
 
     float   tree_depth; // max length of path; for drawing triangles */
-    float   min_tree_depth; /* min length of path; for drawing triangle */
+    float   min_tree_depth; // min length of path; for drawing triangle
     float   spread;
 
     float   left_angle;

@@ -11,9 +11,9 @@ $(MAIN): $(OBJECTS)
 	$(CPPLIB) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 proto: 
-	../MAKEBIN/aisc_mkpt -P -G -A -w arb_msg.h    arb_msg.cxx    > arb_msg.genh
-	../MAKEBIN/aisc_mkpt -P -G -A -w arb_string.h arb_string.cxx > arb_string.genh
-	../MAKEBIN/aisc_mkpt -P -G -A -w arb_signal.h arb_signal.cxx > arb_signal.genh
+	../AISC_MKPTPS/aisc_mkpt -P -G -A -w arb_msg.h    arb_msg.cxx    > arb_msg.genh
+	../AISC_MKPTPS/aisc_mkpt -P -G -A -w arb_string.h arb_string.cxx > arb_string.genh
+	../AISC_MKPTPS/aisc_mkpt -P -G -A -w arb_signal.h arb_signal.cxx > arb_signal.genh
 	../SOURCE_TOOLS/mv_if_diff arb_msg.genh    arb_msg.h
 	../SOURCE_TOOLS/mv_if_diff arb_string.genh arb_string.h
 	../SOURCE_TOOLS/mv_if_diff arb_signal.genh arb_signal.h
@@ -94,6 +94,21 @@ arb_signal.o: $(ARBHOME)/INCLUDE/SigHandler.h
 arb_signal.o: $(ARBHOME)/INCLUDE/SuppressOutput.h
 arb_signal.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_signal.o: $(ARBHOME)/INCLUDE/valgrind.h
+
+arb_sort.o: arb_sort.h
+
+arb_strarray.o: arb_core.h
+arb_strarray.o: arb_sort.h
+arb_strarray.o: arb_strarray.h
+arb_strarray.o: arb_strbuf.h
+arb_strarray.o: arb_string.h
+arb_strarray.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_strarray.o: $(ARBHOME)/INCLUDE/arb_str.h
+arb_strarray.o: $(ARBHOME)/INCLUDE/arbtools.h
+arb_strarray.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_strarray.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_strarray.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_strarray.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 arb_strbuf.o: arb_core.h
 arb_strbuf.o: arb_strbuf.h

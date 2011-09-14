@@ -64,6 +64,7 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -72,6 +73,7 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
@@ -79,7 +81,6 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AWTC_submission.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/cb.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/smartptr.h

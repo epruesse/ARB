@@ -8,10 +8,9 @@
 //                                                                 //
 // =============================================================== //
 
-#include <awt.hxx>
-#include <awt_item_sel_list.hxx>
+#include <item_sel_list.h>
 #include <awt_sel_boxes.hxx>
-#include <aw_awars.hxx>
+#include <aw_awar.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
@@ -181,10 +180,10 @@ AW_window *create_species_join_window(AW_root *root)
     aws->help_text("species_join.hlp");
     aws->create_button("GO", "GO", "G");
 
-    awt_create_selection_list_on_itemfields(GLOBAL_gb_main,
+    create_selection_list_on_itemfields(GLOBAL_gb_main,
                                             aws, AWAR_SPECIES_JOIN_FIELD,
-                                            AWT_NDS_FILTER,
-                                            "field", 0, &AWT_species_selector, 20, 10);
+                                            FIELD_FILTER_NDS,
+                                            "field", 0, SPECIES_get_selector(), 20, 10);
 
     return (AW_window *)aws;
 }

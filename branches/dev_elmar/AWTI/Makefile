@@ -48,6 +48,7 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_file.hxx
@@ -72,6 +73,7 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_progress.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -90,11 +92,12 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt.hxx
-AWTI_import.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/cb.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/GEN.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/GenomeImport.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/item_sel_list.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/items.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/seqio.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/test_global.h

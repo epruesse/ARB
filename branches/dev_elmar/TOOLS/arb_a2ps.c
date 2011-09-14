@@ -1,88 +1,88 @@
-/************************************************************************/
+//**********************************************************************
 /*                                                                      */
-/* Description: Ascii to PostScript printer program.                    */
-/* File: bounty:/archive/src/a2ps/Last/a2ps.c                           */
-/* Created: Fri Nov 5 8:20 1993 by miguel@bountyimag.fr (Miguel Santana) */
-/* Version: 4.3                                                         */
+// Description: Ascii to PostScript printer program.
+// File: bounty:/archive/src/a2ps/Last/a2ps.c
+// Created: Fri Nov 5 8:20 1993 by miguel@bountyimag.fr (Miguel Santana)
+// Version: 4.3
 /*                                                                      */
-/* Edit history:                                                        */
-/* 1) Derived of shell program written by evan@csli (Evan Kirshenbaum). */
-/*    Written in C for improve speed execution and portability. Many    */
-/*    improvements have been added.                                     */
-/* Fixes by Oscar Nierstrasz @ cui.uucp:                                */
-/* 2) Fixed incorrect handling of stdin (removed error if no file names) */
-/* 3) Added start_page variable to eliminate blank pages printed for    */
-/*      files that are exactly multiples of 132 lines (e.g., man pages) */
-/* Modified by santana@imag.fr:                                         */
-/* 4) Added new options at installation : sheet format (height/width in */
-/*    inches), page format (number of columns per line and of lines per */
-/*    page).                                                            */
-/* Modified by santana@imag.fr:                                         */
-/* 5) Added new option to print n copies of a same document.            */
-/* 6) Cut long filenames if don't fit in the page header.               */
-/* Modified by Tim Clark (T.Clark@warwick.ac.uk):                       */
-/* 7) Two additional modes of printing (portrait and wide format modes) */
-/* 8) Fixed to cope with filenames which contain a character which must */
-/*    be escaped in a PostScript string.                                */
-/* Modified by santana@imag.fr to                                       */
-/* 9) Added new option to suppress heading printing.                    */
-/* 10) Added new option to suppress page surrounding border printing.   */
-/* 11) Added new option to change font size. Lines and columns are      */
-/*     automatically adjusted, depending on font size and printing mode */
-/* 12) Minor changes (best layout, usage message, etc).                 */
-/* Modified by tullemans@apolloway.prl.philips.nl                       */
-/* 13) Backspaces (^H) are now handled correctly.                       */
-/* Modified by Johan Vromans (jv@mh.nl) to                              */
-/* 14) Added new option to give a header title that replaces use of     */
-/*     filename.                                                        */
-/* Modified by craig.r.stevenson@att.com to                             */
-/* 15) Print last modification date/time in header                      */
-/* 16) Printing current date/time on left side of footer (optional)     */
-/* Modified by erikt@cs.umu.se:                                         */
-/* 17) Added lpr support for the BSD version                            */
-/* 18) Added som output of pages printed.                               */
-/* Modified by wstahw@lso.win.tue.nl:                                   */
-/* 19) Added option to allowing the printing of 2 files in one sheet    */
-/* Modified by mai@wolfen.cc.uow.oz                                     */
-/* 20) Added an option to set the lines per page to a specified value.  */
-/* 21) Added support for printing nroff manuals                         */
-/* Modified by santana@imag.fr                                          */
-/* 22) Integration of changes.                                          */
-/* 23) No more standard header file (printed directly by a2ps).         */
-/* 24) New format for command options.                                  */
-/* 25) Other minor changes.                                             */
-/* Modified by Johan Garpendahl (garp@isy.liu.se) and santana@imag.fr:  */
-/* 26) Added 8-bit characters printing as ISO-latin 1 chars             */
-/* Modified by John Interrante (interran@uluru.stanford.edu) and        */
-/* santana@imag.fr:                                                     */
-/* 27) Two pages per physical page in portrait mode                     */
-/* Modified by santana@imag.fr:                                         */
-/* 28) New option for two-sided printing                                */
-/* 29) Several fixes                                                    */
-/* Modified by Chris Adamo (adamo@ll.mit.edu) and                       */
-/*     Larry Barbieri (lbarbieri@ll.mit.edu) 3/12/93                    */
-/* 30) Output format enhancements.                                      */
-/* 31) Added login_id flag (for SYSV and BSD only) for printing user's  */
-/*     login ID at top of page.  Added command line parameter (-nL) to  */
-/*     suppress this feature.                                           */
-/* 33) Added filename_footer flag for printing file name at bottom      */
-/*     of page.  Added command line parameter (-nu) to suppress this    */
-/*     feature.                                                         */
-/* 34) Added -B (-nB) options to enable (disable) bold font             */
-/* Modified by santana@imag.fr:                                         */
-/* 35) Adapted to respect Adobe conventions for page independence. A2ps */
-/*     output can be now used by other Postscript processors.           */
-/* 36) Names of most postscript variables have been coded in order to   */
-/*     reduce the size of the output.                                   */
-/* 37) Ansi C compilers are now automatically taken into account.       */
-/* 38) Enhanced routine for cutting long filenames                      */
-/* 39) Added -q option to print files in quiet mode (no summary)        */
-/* 40) Fixed some little bugs (counters, modification time for stdin,   */
-/*     character separator when printing line numbers and cutting a     */
-/*     line).                                                           */
-/* 41) Some minor changes (new preprocessing variables, formatting)     */
+// Edit history:
+// 1) Derived of shell program written by evan@csli (Evan Kirshenbaum).
+//    Written in C for improve speed execution and portability. Many
+//    improvements have been added.
+// Fixes by Oscar Nierstrasz @ cui.uucp:
+// 2) Fixed incorrect handling of stdin (removed error if no file names)
+// 3) Added start_page variable to eliminate blank pages printed for
+//      files that are exactly multiples of 132 lines (e.g., man pages)
+// Modified by santana@imag.fr:
+// 4) Added new options at installation : sheet format (height/width in
+//    inches), page format (number of columns per line and of lines per
+//    page).
+// Modified by santana@imag.fr:
+// 5) Added new option to print n copies of a same document.
+// 6) Cut long filenames if don't fit in the page header.
+// Modified by Tim Clark (T.Clark@warwick.ac.uk):
+// 7) Two additional modes of printing (portrait and wide format modes)
+// 8) Fixed to cope with filenames which contain a character which must
+//    be escaped in a PostScript string.
+// Modified by santana@imag.fr to
+// 9) Added new option to suppress heading printing.
+// 10) Added new option to suppress page surrounding border printing.
+// 11) Added new option to change font size. Lines and columns are
+//     automatically adjusted, depending on font size and printing mode
+// 12) Minor changes (best layout, usage message, etc).
+// Modified by tullemans@apolloway.prl.philips.nl
+// 13) Backspaces (^H) are now handled correctly.
+// Modified by Johan Vromans (jv@mh.nl) to
+// 14) Added new option to give a header title that replaces use of
+//     filename.
+// Modified by craig.r.stevenson@att.com to
+// 15) Print last modification date/time in header
+// 16) Printing current date/time on left side of footer (optional)
+// Modified by erikt@cs.umu.se:
+// 17) Added lpr support for the BSD version
+// 18) Added som output of pages printed.
+// Modified by wstahw@lso.win.tue.nl:
+// 19) Added option to allowing the printing of 2 files in one sheet
+// Modified by mai@wolfen.cc.uow.oz
+// 20) Added an option to set the lines per page to a specified value.
+// 21) Added support for printing nroff manuals
+// Modified by santana@imag.fr
+// 22) Integration of changes.
+// 23) No more standard header file (printed directly by a2ps).
+// 24) New format for command options.
+// 25) Other minor changes.
+// Modified by Johan Garpendahl (garp@isy.liu.se) and santana@imag.fr:
+// 26) Added 8-bit characters printing as ISO-latin 1 chars
+// Modified by John Interrante (interran@uluru.stanford.edu) and
+// santana@imag.fr:
+// 27) Two pages per physical page in portrait mode
+// Modified by santana@imag.fr:
+// 28) New option for two-sided printing
+// 29) Several fixes
+// Modified by Chris Adamo (adamo@ll.mit.edu) and
+//     Larry Barbieri (lbarbieri@ll.mit.edu) 3/12/93
+// 30) Output format enhancements.
+// 31) Added login_id flag (for SYSV and BSD only) for printing user's
+//     login ID at top of page.  Added command line parameter (-nL) to
+//     suppress this feature.
+// 33) Added filename_footer flag for printing file name at bottom
+//     of page.  Added command line parameter (-nu) to suppress this
+//     feature.
+// 34) Added -B (-nB) options to enable (disable) bold font
+// Modified by santana@imag.fr:
+// 35) Adapted to respect Adobe conventions for page independence. A2ps
+//     output can be now used by other Postscript processors.
+// 36) Names of most postscript variables have been coded in order to
+//     reduce the size of the output.
+// 37) Ansi C compilers are now automatically taken into account.
+// 38) Enhanced routine for cutting long filenames
+// 39) Added -q option to print files in quiet mode (no summary)
+// 40) Fixed some little bugs (counters, modification time for stdin,
+//     character separator when printing line numbers and cutting a
+//     line).
+// 41) Some minor changes (new preprocessing variables, formatting)
 /*                                                                      */
-/************************************************************************/
+//**********************************************************************
 
 /*
  * Copyright (c) 1993, 1994, Miguel Santana, M.Santana@frgu.bull.fr
@@ -100,11 +100,11 @@
  */
 
 
-/************************************************************************/
+//**********************************************************************
 /*                                                                      */
-/*                      I n c l u d e   f i l e s                       */
+//                      I n c l u d e   f i l e s
 /*                                                                      */
-/************************************************************************/
+//**********************************************************************
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -132,11 +132,11 @@
 #endif
 
 
-/************************************************************************/
+//**********************************************************************
 /*                                                                      */
-/*           P r e p r o c e s s i n g   d e f i n i t i o n s          */
+//           P r e p r o c e s s i n g   d e f i n i t i o n s
 /*                                                                      */
-/************************************************************************/
+//**********************************************************************
 
 /*
  * Common definitions
@@ -217,33 +217,33 @@
 #define LANDSCAPE_HEADER        0.22
 #define PIXELS_INCH             72
 #define MAXFILENAME             32
-#define MAX_LINES               320             /* max. lines per page */
-#define MAN_LINES               66              /* no lines for a man */
-#define IS_ROMAN                0               /* normal font */
-#define IS_BOLD                 1               /* bold sequence flag */
+#define MAX_LINES               320             // max. lines per page
+#define MAN_LINES               66              // no lines for a man
+#define IS_ROMAN                0               // normal font
+#define IS_BOLD                 1               // bold sequence flag
 #if defined(SYSV) || defined(BSD)
 #define MAX_HOSTNAME            40
 #endif
 
 
-/************************************************************************/
+//**********************************************************************
 /*                                                                      */
-/*                 G l o b a l   d e f i n i t i o n s                  */
+//                 G l o b a l   d e f i n i t i o n s
 /*                                                                      */
-/************************************************************************/
+//**********************************************************************
 
 
 /*
  * Global types
  */
-typedef enum { BOLD, NORMAL } WEIGHT;           /* font weights */
+typedef enum { BOLD, NORMAL } WEIGHT;           // font weights
 
 
 /*
  * Function declarations.
  */
 #ifdef __STDC__
-/* Function prototypes */
+// Function prototypes
 void usage(int failure);
 void set_global_option(char *arg);
 void set_positional_option(char *arg);
@@ -272,7 +272,7 @@ int   gethostname(char *name, int namelen);
 #endif
 
 #else
-/* Only forward declarations */
+// Only forward declarations
 int is_binaryfile();
 void print_standard_prologue();
 void startpage();
@@ -291,94 +291,94 @@ int gethostname();
 /*
  * Flags related to options.
  */
-int numbering = FALSE;          /* Line numbering option */
-int folding = TRUE;             /* Line folding option */
-int restart = FALSE;            /* Don't restart page number after each file */
-int only_printable = FALSE;     /* Replace non printable char by space */
-int interpret = TRUE;           /* Interpret TAB, FF and BS chars option */
-int print_binaries = FALSE;     /* Force printing for binary files */
-int landscape = TRUE;           /* Otherwise portrait format sheets */
-int new_landscape = TRUE;       /* To scrute changes of landscape option */
-int twinpages = TRUE;           /* 2 pages per sheet if true, 1 otherwise */
-int new_twinpages = TRUE;       /* To scrute changes of twinpages option */
-int twinfiles = FALSE;          /* Allow 2 files per sheet */
-int no_header = FALSE;          /* TRUE if user doesn't want the header */
-int no_border = FALSE;          /* Don't print the surrounding border ? */
-int printdate = FALSE;          /* Print current date as footnote */
-int filename_footer = TRUE;     /* Print file name at bottom of page */
-int no_summary = FALSE;         /* Quiet mode? */
-WEIGHT fontweight = NORMAL;     /* Control font weight: BOLD or NORMAL */
-WEIGHT new_fontweight = NORMAL; /* To scrute changes of bold option */
+int numbering = FALSE;          // Line numbering option
+int folding = TRUE;             // Line folding option
+int restart = FALSE;            // Don't restart page number after each file
+int only_printable = FALSE;     // Replace non printable char by space
+int interpret = TRUE;           // Interpret TAB, FF and BS chars option
+int print_binaries = FALSE;     // Force printing for binary files
+int landscape = TRUE;           // Otherwise portrait format sheets
+int new_landscape = TRUE;       // To scrute changes of landscape option
+int twinpages = TRUE;           // 2 pages per sheet if true, 1 otherwise
+int new_twinpages = TRUE;       // To scrute changes of twinpages option
+int twinfiles = FALSE;          // Allow 2 files per sheet
+int no_header = FALSE;          // TRUE if user doesn't want the header
+int no_border = FALSE;          // Don't print the surrounding border ?
+int printdate = FALSE;          // Print current date as footnote
+int filename_footer = TRUE;     // Print file name at bottom of page
+int no_summary = FALSE;         // Quiet mode?
+WEIGHT fontweight = NORMAL;     // Control font weight: BOLD or NORMAL
+WEIGHT new_fontweight = NORMAL; // To scrute changes of bold option
 #if defined(SYSV) || defined(BSD)
-int login_id = TRUE;            /* Print login ID at top of page */
+int login_id = TRUE;            // Print login ID at top of page
 #endif
 #if LPR_PRINT
-int lpr_print = TRUE;           /* Fork a lpr process to do the printing */
+int lpr_print = TRUE;           // Fork a lpr process to do the printing
 #ifdef RECTO_VERSO_PRINTING
-int rectoverso = TWOSIDED_DFLT; /* Two-side printing */
+int rectoverso = TWOSIDED_DFLT; // Two-side printing
 #endif
 #endif
-int ISOlatin1 = FALSE;          /* Print 8-bit characters? */
+int ISOlatin1 = FALSE;          // Print 8-bit characters?
 
 
 /*
  * Counters of different kinds.
  */
-int column = 0;                 /* Column number (in current line) */
-int line = 0;                   /* Line number (in current page) */
-int line_number = 0;            /* Source line number */
-int pages = 0;                  /* Number of logical pages printed */
-int sheets = 0;                 /* Number of physical pages printed */
-int old_pages, old_sheets;      /* Value before printing current file */
-int sheetside = 0;              /* Side of the sheet currently printing */
-int linesperpage;               /* Lines per page */
-int lines_requested = 0;        /* Lines per page requested by the user */
-int new_linesrequest = 0;       /* To scrute new values for lines_requested */
-int columnsperline;             /* Characters per output line */
-int nonprinting_chars, chars;   /* Number of nonprinting and total chars */
-int copies_number = 1;          /* Number of copies to print */
-int column_width = 8;           /* Default column tab width (8) */
+int column = 0;                 // Column number (in current line)
+int line = 0;                   // Line number (in current page)
+int line_number = 0;            // Source line number
+int pages = 0;                  // Number of logical pages printed
+int sheets = 0;                 // Number of physical pages printed
+int old_pages, old_sheets;      // Value before printing current file
+int sheetside = 0;              // Side of the sheet currently printing
+int linesperpage;               // Lines per page
+int lines_requested = 0;        // Lines per page requested by the user
+int new_linesrequest = 0;       // To scrute new values for lines_requested
+int columnsperline;             // Characters per output line
+int nonprinting_chars, chars;   // Number of nonprinting and total chars
+int copies_number = 1;          // Number of copies to print
+int column_width = 8;           // Default column tab width (8)
 
 
 /*
  * Other global variables.
  */
-int first_page;                 /* First page for a file */
-int no_files = TRUE;            /* No file until now */
-int prefix_width;               /* Width in characters for line prefix */
-float fontsize = 0.0;           /* Size of a char for body font */
-float new_fontsize = 0.0;       /* To scrute new values for fontsize */
-char *command;                  /* Name of a2ps program */
-char *lpr_opt = NULL;           /* Options to lpr */
-char *header_text = NULL;       /* Allow for different header text */
-float header_size;              /* Size of the page header */
-char *prologue = NULL;          /* postscript header file */
-char current_filename[MAXFILENAME+1];   /* Name of the file being printed */
-char currentdate[18];           /* Date for today */
-char filedate[18];              /* Last modification time for current file */
+int first_page;                 // First page for a file
+int no_files = TRUE;            // No file until now
+int prefix_width;               // Width in characters for line prefix
+float fontsize = 0.0;           // Size of a char for body font
+float new_fontsize = 0.0;       // To scrute new values for fontsize
+char *command;                  // Name of a2ps program
+char *lpr_opt = NULL;           // Options to lpr
+char *header_text = NULL;       // Allow for different header text
+float header_size;              // Size of the page header
+char *prologue = NULL;          // postscript header file
+char current_filename[MAXFILENAME+1];   // Name of the file being printed
+char currentdate[18];           // Date for today
+char filedate[18];              // Last modification time for current file
 #if defined(SYSV) || defined(BSD)
-char *login = NULL;             /* user's login name and host machine */
+char *login = NULL;             // user's login name and host machine
 #endif
 
 
 /*
  * Sheet dimensions
  */
-double page_height = HEIGHT;    /* Paper height */
-double page_width = WIDTH;      /* Paper width */
+double page_height = HEIGHT;    // Paper height
+double page_width = WIDTH;      // Paper width
 
 
-/************************************************************************/
+//**********************************************************************
 /*                                                                      */
 /*                                                                      */
-/************************************************************************/
+//**********************************************************************
 
 /*
  * Print a usage message.
  */
 void
 usage(failure)
-     int failure;               /* Must we exit with a failure code? */
+     int failure;               // Must we exit with a failure code?
 {
     fprintf(stderr, "A2ps v%s usage: %s [pos. or global options] [ f1 [ [pos. options] f2 ...] ]\n", VERSION, command);
     fprintf(stderr, "pos.   =  -#num\t\tnumber of copies to print\n");
@@ -438,30 +438,30 @@ set_global_option(arg)
      char *arg;
 {
     switch (arg[1]) {
-        case '?':                               /* help */
+        case '?':                               // help
         case 'h':
             usage(EXIT_SUCCESS);
-        case 'b':                               /* print binary files */
+        case 'b':                               // print binary files
             if (arg[2] != NUL)
                 usage(EXIT_FAILURE);
             print_binaries = TRUE;
             break;
-        case 'c':                               /* allow two files per sheet */
+        case 'c':                               // allow two files per sheet
             if (arg[2] != NUL)
                 usage(EXIT_FAILURE);
             twinfiles = TRUE;
             break;
-        case 'f':                               /* fold lines too large */
+        case 'f':                               // fold lines too large
             if (arg[2] != NUL)
                 usage(EXIT_FAILURE);
             folding = TRUE;
             break;
-        case 'I':                               /* include this file as a2ps prologue */
+        case 'I':                               // include this file as a2ps prologue
             if (arg[2] == NUL)
                 usage(EXIT_FAILURE);
             prologue = arg+2;
             break;
-        case 'i':                               /* interpret control chars */
+        case 'i':                               // interpret control chars
             if (arg[2] != NUL)
                 usage(EXIT_FAILURE);
             interpret = TRUE;
@@ -472,33 +472,33 @@ set_global_option(arg)
             if (arg[3] != NUL)
                 usage(EXIT_FAILURE);
             switch (arg[2]) {
-                case 'b':                       /* don't print binaries */
+                case 'b':                       // don't print binaries
                     print_binaries = FALSE;
                     break;
-                case 'c':                       /* don't allow 2 files/sheet */
+                case 'c':                       // don't allow 2 files/sheet
                     twinfiles = FALSE;
                     break;
-                case 'f':                       /* cut lines too long */
+                case 'f':                       // cut lines too long
                     folding = FALSE;
                     break;
-                case 'H':                       /* don't print header */
+                case 'H':                       // don't print header
                     no_header = TRUE;
                     break;
-                case 'i':                       /* don't interpret ctrl chars */
+                case 'i':                       // don't interpret ctrl chars
                     interpret = FALSE;
                     break;
 #if LPR_PRINT
-                case 'P':                       /* don't lpr */
+                case 'P':                       // don't lpr
                     lpr_print = FALSE;
                     break;
 #endif
-                case 'r':                       /* don't restart sheet number */
+                case 'r':                       // don't restart sheet number
                     restart = FALSE;
                     break;
-                case 'v':                       /* only printable chars */
+                case 'v':                       // only printable chars
                     only_printable = TRUE;
                     break;
-                case '8':                       /* don't print 8-bit chars */
+                case '8':                       // don't print 8-bit chars
                     ISOlatin1 = FALSE;
                     break;
                 case 'B':
@@ -516,7 +516,7 @@ set_global_option(arg)
             }
             break;
 #if LPR_PRINT
-        case 'P':                                       /* fork a process to print */
+        case 'P':                                       // fork a process to print
             if (arg[2] != NUL) {
                 lpr_opt = (char *)malloc(strlen(arg)+1);
                 strcpy(lpr_opt, arg);
@@ -524,10 +524,10 @@ set_global_option(arg)
             lpr_print = TRUE;
             break;
 #endif
-        case 'q':                                       /* don't print a summary */
+        case 'q':                                       // don't print a summary
             no_summary = TRUE;
             break;
-        case 'r':                                       /* restart sheet number */
+        case 'r':                                       // restart sheet number
             if (arg[2] != NUL)
                 usage(EXIT_FAILURE);
             restart = TRUE;
@@ -537,11 +537,11 @@ set_global_option(arg)
                 return;
 #ifdef RECTO_VERSO_PRINTING
             if (arg[3] == NUL) {
-                if (arg[2] == '1') {            /* one-sided printing */
+                if (arg[2] == '1') {            // one-sided printing
                     rectoverso = FALSE;
                     break;
                 }
-                if (arg[2] == '2') {            /* two-sided printing */
+                if (arg[2] == '2') {            // two-sided printing
                     rectoverso = TRUE;
                     break;
                 }
@@ -549,16 +549,16 @@ set_global_option(arg)
 #endif
             usage(EXIT_FAILURE);
             break;
-        case 't':                               /* set tab size */
+        case 't':                               // set tab size
             if (arg[2] == NUL || (column_width = atoi(arg+2)) <= 0)
                 usage(EXIT_FAILURE);
             break;
-        case 'v':                               /* print control chars */
+        case 'v':                               // print control chars
             if (arg[2] != NUL)
                 usage(EXIT_FAILURE);
             only_printable = FALSE;
             break;
-        case '8':                               /* print 8-bit chars */
+        case '8':                               // print 8-bit chars
             if (arg[2] != NUL)
                 usage(EXIT_FAILURE);
             ISOlatin1 = TRUE;
@@ -597,32 +597,32 @@ set_positional_option(arg)
     float size;
 
     switch (arg[1]) {
-        case NUL:                               /* global option */
+        case NUL:                               // global option
             break;
-        case '#':                               /* n copies */
+        case '#':                               // n copies
             if (sscanf(&arg[2], "%d", &copies) != 1 || copies <= 0)
                 fprintf(stderr, "Bad number of copies: '%s'. Ignored\n", &arg[2]);
             else
                 copies_number = copies;
             printf("/#copies %d def\n", copies_number);
             break;
-        case '1':                               /* 1 logical page per sheet */
+        case '1':                               // 1 logical page per sheet
             if (arg[2] != NUL)
                 usage(EXIT_FAILURE);
             new_twinpages = FALSE;
             break;
-        case '2':                               /* twin pages */
+        case '2':                               // twin pages
             if (arg[2] != NUL)
                 usage(EXIT_FAILURE);
             new_twinpages = TRUE;
             break;
         case 'B':
-            new_fontweight = BOLD;              /* use bold font */
+            new_fontweight = BOLD;              // use bold font
             break;
-        case 'd':                               /* print current date/time */
+        case 'd':                               // print current date/time
             printdate = TRUE;
             break;
-        case 'F':                               /* change font size */
+        case 'F':                               // change font size
             if (arg[2] == NUL || sscanf(&arg[2], "%f", &size) != 1 || size == 0.0) {
                 fprintf(stderr, "Wrong value for option -F: '%s'. Ignored\n",
                         &arg[2]);
@@ -630,17 +630,17 @@ set_positional_option(arg)
             }
             new_fontsize = size;
             break;
-        case 'H':                               /* header text */
+        case 'H':                               // header text
             header_text = arg+2;
             break;
         case 'l':
-            if (arg[2] == NUL) {                /* landscape format */
+            if (arg[2] == NUL) {                // landscape format
                 new_landscape = TRUE;
                 break;
             }
-            /* set lines per page */
-            /* Useful with preformatted files. Scaling is automatically */
-            /* done when necessary.                                             */
+            // set lines per page
+            // Useful with preformatted files. Scaling is automatically
+            // done when necessary.
             if (sscanf(&arg[2], "%d", &lines) != 1
                 || lines < 0 || lines > MAX_LINES)
             {
@@ -650,55 +650,55 @@ set_positional_option(arg)
             }
             new_linesrequest = lines;
             break;
-        case 'm':                               /* Process file as a man */
+        case 'm':                               // Process file as a man
             new_linesrequest = MAN_LINES;
             numbering = FALSE;
             break;
-        case 'n':                               /* number file lines */
+        case 'n':                               // number file lines
             if (arg[2] == NUL) {
                 numbering = TRUE;
                 break;
             }
             switch (arg[2]) {
-                case 'B':                       /* disable bold text */
+                case 'B':                       // disable bold text
                     new_fontweight = NORMAL;
                     break;
-                case 'd':                       /* don't print date/time */
+                case 'd':                       // don't print date/time
                     printdate = FALSE;
                     break;
 #if defined(SYSV) || defined(BSD)
-                case 'L':                       /* no login name in footer */
+                case 'L':                       // no login name in footer
                     login_id = FALSE;
                     break;
 #endif
-                case 'l':                       /* portrait format */
+                case 'l':                       // portrait format
                     new_landscape = FALSE;
                     break;
-                case 'm':                       /* stop processing as a man */
+                case 'm':                       // stop processing as a man
                     new_linesrequest = 0;
                     break;
-                case 'n':                       /* don't number lines */
+                case 'n':                       // don't number lines
                     numbering = FALSE;
                     break;
-                case 'p':                       /* landscape format */
+                case 'p':                       // landscape format
                     new_landscape = TRUE;
                     break;
-                case 's':                       /* no surrounding border */
+                case 's':                       // no surrounding border
                     no_border = TRUE;
                     break;
-                case 'u':                       /* no filename in footer */
+                case 'u':                       // no filename in footer
                     filename_footer = FALSE;
                     break;
                 default:
                     usage(EXIT_FAILURE);
             }
             break;
-        case 'p':                               /* portrait format */
+        case 'p':                               // portrait format
             if (arg[2] != NUL)
                 usage(EXIT_FAILURE);
             new_landscape = FALSE;
             break;
-        case 's':                               /* surrounding border */
+        case 's':                               // surrounding border
             if (arg[2] != NUL)
                 usage(EXIT_FAILURE);
             no_border = FALSE;
@@ -709,9 +709,9 @@ set_positional_option(arg)
 }
 
 
-/****************************************************************/
-/*                      Service routines                        */
-/****************************************************************/
+//**************************************************************
+//                      Service routines
+//**************************************************************
 
 /*
  * This routine buffers a line of input, release one character at a time
@@ -731,7 +731,7 @@ mygetc(statusp)
 
     *statusp = IS_ROMAN;
 
-    /* Read a new line, if necessary */
+    // Read a new line, if necessary
     if (curr >= size) {
         if (fgets((char *)buffer, BUFFER_SIZE+1, stdin) == NULL)
             return  EOF;
@@ -742,10 +742,10 @@ mygetc(statusp)
         }
         curr = 0;
     }
-    if (buffer[curr+1] != '\b')         /* this is not a special sequence */
+    if (buffer[curr+1] != '\b')         // this is not a special sequence
         return  buffer[curr++];
 
-    /* Check if it is a bold sequence */
+    // Check if it is a bold sequence
     c = buffer[curr++];
     if (c               == buffer[curr+1] &&
         buffer[curr]    == buffer[curr+2] &&
@@ -757,7 +757,7 @@ mygetc(statusp)
         curr += 6;
     }
 
-    /* Return the first character of the sequence */
+    // Return the first character of the sequence
     return  c;
 }
 
@@ -864,7 +864,7 @@ skip_page()
     if (twinpages == FALSE || sheetside == 0) {
         printf("%%%%Page: %d %d\n", sheets+1, sheets+1);
         printf("/pagesave save def\n");
-        /* Reinitialize state variables for each new sheet */
+        // Reinitialize state variables for each new sheet
         print_page_prologue(0);
     }
     startpage();
@@ -908,9 +908,9 @@ cut_line()
 }
 
 
-/****************************************************************/
-/*                      "Postscript" routines.                  */
-/****************************************************************/
+//**************************************************************
+//                      "Postscript" routines.
+//**************************************************************
 
 /*
  * Print a physical page.
@@ -945,7 +945,7 @@ startpage()
     if (sheetside == 0) {
 #ifdef RECTO_VERSO_PRINTING
         if (rectoverso && (sheets & 0x1)) {
-            /* Shift to left backside pages.  */
+            // Shift to left backside pages.
             printf("rm neg 0 translate\n");
         }
 #endif
@@ -1003,9 +1003,9 @@ endpage()
 }
 
 
-/****************************************************************/
-/*              Printing a file                                 */
-/****************************************************************/
+//**************************************************************
+//              Printing a file
+//**************************************************************
 
 /*
  * Print the file prologue.
@@ -1020,11 +1020,11 @@ init_file_printing(name, title)
     float char_width;
     struct stat statbuf;
 
-    /* Print last page of previous file, if necessary */
+    // Print last page of previous file, if necessary
     if (pages > 0 && !twinfiles)
         cleanup();
 
-    /* Initialize variables related to the format */
+    // Initialize variables related to the format
     new_format = FALSE;
     if (new_landscape != landscape || new_twinpages != twinpages) {
         landscape = new_landscape;
@@ -1032,7 +1032,7 @@ init_file_printing(name, title)
         new_format = TRUE;
     }
 
-    /* Initialize variables related to the header */
+    // Initialize variables related to the header
     if (no_header && name == title)
         header_size = 0.0;
     else {
@@ -1043,7 +1043,7 @@ init_file_printing(name, title)
         cut_filename(title, current_filename);
     }
 
-    /* Initialize variables related to the font size */
+    // Initialize variables related to the font size
     new_font = FALSE;
     if (fontsize != new_fontsize || new_format ||
         lines_requested != new_linesrequest || fontweight != new_fontweight)
@@ -1052,7 +1052,7 @@ init_file_printing(name, title)
             new_fontsize = landscape ? 6.8 : twinpages ? 6.4 : 9.0;
         if (lines_requested != new_linesrequest) {
             if ((lines_requested = new_linesrequest) != 0) {
-                /* Scale fontsize */
+                // Scale fontsize
                 if (landscape)
                     lines = (int)((page_width-header_size) / new_fontsize) - 1;
                 else if (twinpages)
@@ -1067,7 +1067,7 @@ init_file_printing(name, title)
         new_font = TRUE;
     }
 
-    /* Initialize file printing, if there is any change */
+    // Initialize file printing, if there is any change
     if (new_format || new_font) {
         char_width = 0.6 * fontsize;
         if (landscape) {
@@ -1093,12 +1093,12 @@ init_file_printing(name, title)
         }
     }
 
-    /* Retrieve file modification date and hour */
+    // Retrieve file modification date and hour
     if (fstat(fileno(stdin), &statbuf) == -1) {
         fprintf(stderr, "Error getting file modification time\n");
         exit(EXIT_FAILURE);
     }
-    /* Do we have a pipe? */
+    // Do we have a pipe?
     if (S_ISFIFO(statbuf.st_mode))
         strcpy(filedate, currentdate);
     else {
@@ -1113,9 +1113,9 @@ init_file_printing(name, title)
  */
 void
 print_page_prologue(side)
-     int side;                  /* Logical page to print (left/right) */
+     int side;                  // Logical page to print (left/right)
 {
-    /* General format */
+    // General format
     printf("/twp %s def\n", twinpages ? "true" : "false");
     printf("/fnfs %d def\n", landscape ? 11 : twinpages ? 10 : 15);
     printf("/dfs fnfs 0.8 mul def\n");
@@ -1123,19 +1123,19 @@ print_page_prologue(side)
     printf("/dw df setfont td stringwidth pop def\n");
     printf("/sfnf filenmfontname fnfs getfont def\n");
     printf("/hm fnfs 0.25 mul def\n");
-    /* Header size */
+    // Header size
     if (header_size == 0.0)
         printf("/hs 0.0 def\n");
     else
         printf("/hs %g inch def\n",
                landscape || twinpages ? LANDSCAPE_HEADER : PORTRAIT_HEADER);
-    /* Font sizes */
+    // Font sizes
     printf("/bfs %g def\n", fontsize);
     printf("/bdf /Courier-Bold bfs getfont def\n");
     printf("/bm bfs 0.7 mul def\n");
     printf("/bf %s bfs getfont def\n",
            fontweight == NORMAL ? "/CourierBack" : "/Courier-Bold");
-    /* Page attributes */
+    // Page attributes
     printf("/l %d def\n", linesperpage);
     printf("/c %d def\n", columnsperline);
     printf("/pw\n");
@@ -1206,11 +1206,11 @@ print_file(name, header)
     int continue_exit;
     int status, new_status;
 
-    /* Reinitialize postscript variables depending on positional options */
+    // Reinitialize postscript variables depending on positional options
     init_file_printing(name, header == NULL ? name : header);
 
-    /* If we are in compact mode and the file beginning is to be printed */
-    /* in the middle of a twinpage, we have to print a new page prologue */
+    // If we are in compact mode and the file beginning is to be printed
+    // in the middle of a twinpage, we have to print a new page prologue
     if (twinfiles && sheetside == 1)
         print_page_prologue(1);
 
@@ -1229,17 +1229,17 @@ print_file(name, header)
      */
     nonprinting_chars = chars = 0;
 
-    /* Initialize printing variables */
+    // Initialize printing variables
     column = 0;
     line = line_number = 0;
     first_page = TRUE;
     start_line = TRUE;
     prefix_width = numbering ? 6 : 1;
 
-    /* Start printing */
+    // Start printing
     skip_page();
 
-    /* Process each character of the file */
+    // Process each character of the file
     status = IS_ROMAN;
     c = mygetc(&new_status);
     while (c != EOF) {
@@ -1255,20 +1255,20 @@ print_file(name, header)
          * - prefix parents and backslash ['(', ')', '\'] by backslash
          *   (escape character in postscript)
          */
-        /* Form feed */
+        // Form feed
         if (c == '\f' && interpret) {
-            /* Close current line */
+            // Close current line
             if (!start_line) {
                 printf(") s\n");
                 start_line = TRUE;
             }
-            /* start a new page ? */
+            // start a new page ?
             if (start_page)
                 skip_page();
-            /* Close current page and begin another */
+            // Close current page and begin another
             endpage();
             start_page = TRUE;
-            /* Verification for binary files */
+            // Verification for binary files
             if (first_page && is_binaryfile(name))
                 return;
             line = 0;
@@ -1277,10 +1277,10 @@ print_file(name, header)
                 break;
         }
 
-        /* Start a new line ? */
+        // Start a new line ?
         if (start_line) {
             if (start_page) {
-                /* only if there is something to print! */
+                // only if there is something to print!
                 skip_page();
                 start_page = FALSE;
             }
@@ -1291,9 +1291,9 @@ print_file(name, header)
             start_line = FALSE;
         }
 
-        /* Is a new font ? This feature is used only to detect bold     */
-        /* sequences produced by nroff (man pages), in connexion with   */
-        /* mygetc.                                                      */
+        // Is a new font ? This feature is used only to detect bold
+        // sequences produced by nroff (man pages), in connexion with
+        // mygetc.
         if (status != new_status) {
             printf(")\n");
             printf("%s", status == IS_ROMAN ? "b" : "st");
@@ -1301,14 +1301,14 @@ print_file(name, header)
             status = new_status;
         }
 
-        /* Interpret each character */
+        // Interpret each character
         switch (c) {
             case '\b':
                 if (!interpret)
                     goto print;
-                /* A backspace is converted to 2 chars ('\b'). These chars      */
-                /* with the Courier backspace font produce correct under-       */
-                /* lined strings.       */
+                // A backspace is converted to 2 chars ('\b'). These chars
+                // with the Courier backspace font produce correct under-
+                // lined strings.
                 if (column)
                     column--;
                 putchar('\\');
@@ -1386,9 +1386,9 @@ print_file(name, header)
 }
 
 
-/****************************************************************/
-/*              Print a postscript prologue for a2ps.           */
-/****************************************************************/
+//**************************************************************
+//              Print a postscript prologue for a2ps.
+//**************************************************************
 
 /*
  * Print the a2ps prologue.
@@ -1407,7 +1407,7 @@ print_prologue()
     struct utsname  snames;
 #endif
 
-    /* Retrieve date and hour */
+    // Retrieve date and hour
 #if defined(__STDC__)
     time_t date;
 
@@ -1438,7 +1438,7 @@ print_prologue()
 #endif
 
 #if defined(SYSV) || defined(BSD)
-    /* Retrieve user's login name and hostname */
+    // Retrieve user's login name and hostname
     logname = getlogin();
     host = (char *)malloc(MAX_HOSTNAME);
     if (host != NULL) {
@@ -1458,11 +1458,11 @@ print_prologue()
     }
 #endif
 
-    /* Print a general prologue */
+    // Print a general prologue
     if (prologue == NULL)
         print_standard_prologue(datestring);
     else if ((f = fopen(prologue, "r")) != NULL) {
-        /* Header file printing */
+        // Header file printing
         while ((c = getc(f)) != EOF)
             putchar(c);
     }
@@ -1471,7 +1471,7 @@ print_prologue()
         exit(EXIT_FAILURE);
     }
 
-    /* Completes the prologue with a2ps static variables */
+    // Completes the prologue with a2ps static variables
     printf("\n%% Initialize page description variables.\n");
     printf("/x0 0 def\n");
     printf("/y0 0 def\n");
@@ -1482,13 +1482,13 @@ print_prologue()
     printf("/lm margin 2 mul 3 div def\n");
     printf("/d () def\n");
 
-    /* And print them */
+    // And print them
     sprintf(currentdate, "%.6s %.4s %.5s",
             datestring+4, datestring+20, datestring+11);
     printf("/td (%s) def\n", currentdate);
 
 #if defined(SYSV) || defined(BSD)
-    /* Add the user's login name string to the Postscript output */
+    // Add the user's login name string to the Postscript output
     if (logname != NULL || host != NULL) {
         if (logname != NULL && host != NULL)
             printf("/lg (Printed by %s from %s) def\n", logname, host);
@@ -1498,15 +1498,15 @@ print_prologue()
             printf("/lg (Printed from %s) def\n", host);
     }
 
-    /* If the host string was allocated via malloc, release the memory */
+    // If the host string was allocated via malloc, release the memory
     if (host != NULL)
         free(host);
 #endif
 
-    /* Close prolog */
+    // Close prolog
     printf("%%%%EndProlog\n\n");
 
-    /* Go on */
+    // Go on
     printf("/docsave save def\n");
 }
 
@@ -1755,7 +1755,7 @@ main(argc, argv)
     const char *lpr_args[10];
 #endif
 
-    /* Process global options  */
+    // Process global options
     command = argv[0];
     arg = argv[narg = 1];
     while (narg < argc) {
@@ -1765,7 +1765,7 @@ main(argc, argv)
     }
 
 #if LPR_PRINT
-    /* Start lpr process */
+    // Start lpr process
     if (lpr_print) {
         pipe(fd);
         if (fork() == 0) {
@@ -1795,16 +1795,16 @@ main(argc, argv)
     }
 #endif
 
-    /* Initialize variables not depending of positional options */
-    landscape = twinpages = -1; /* To force format switching */
-    fontsize = -1.0;                    /* To force fontsize switching */
+    // Initialize variables not depending of positional options
+    landscape = twinpages = -1; // To force format switching
+    fontsize = -1.0;                    // To force fontsize switching
     page_height = (double)(HEIGHT - MARGIN) * PIXELS_INCH;
     page_width = (double)(WIDTH - MARGIN) * PIXELS_INCH;
 
-    /* Postscript prologue printing */
+    // Postscript prologue printing
     print_prologue();
 
-    /* Print files designated or standard input */
+    // Print files designated or standard input
     arg = argv[narg = 1];
     while (narg < argc) {
         if (arg[0] != NUL) {
@@ -1819,17 +1819,17 @@ main(argc, argv)
                 }
                 no_files = FALSE;
 
-                /* Save counters values */
+                // Save counters values
                 old_pages = pages;
                 if (twinfiles && twinpages)
                     old_sheets = sheets;
                 else
                     old_sheets = sheets + sheetside;
 
-                /* Print the file */
+                // Print the file
                 print_file(arg, header_text);
 
-                /* Print the number of pages and sheets printed */
+                // Print the number of pages and sheets printed
                 if (no_summary == FALSE) {
                     total = pages - old_pages;
                     fprintf(stderr, "[%s: %d page%s on ", arg,
@@ -1842,7 +1842,7 @@ main(argc, argv)
                     fprintf(stderr, "%d sheet%s]\n", total, total == 1 ? "" : "s");
                 }
 
-                /* Reinitialize header title */
+                // Reinitialize header title
                 header_text = NULL;
             }
         }
@@ -1851,7 +1851,7 @@ main(argc, argv)
     if (no_files)
         print_file((char*)"stdin", header_text);
 
-    /* Print the total number of pages printed */
+    // Print the total number of pages printed
     if (no_summary == FALSE && pages != old_pages) {
         fprintf(stderr, "[Total: %d page%s on ", pages, pages == 1 ? "" : "s");
         total = sheets + sheetside;
@@ -1862,7 +1862,7 @@ main(argc, argv)
         fprintf(stderr, "%d sheet%s]\n", total, total == 1 ? "" : "s");
     }
 
-    /* And stop */
+    // And stop
     cleanup();
     printf("\n%%%%Trailer\n");
     printf("%%%%Pages: %d\n", sheets + sheetside);

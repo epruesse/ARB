@@ -50,6 +50,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/arbdbt.h
 probe_design.o: $(ARBHOME)/INCLUDE/arbtools.h
 probe_design.o: $(ARBHOME)/INCLUDE/attributes.h
 probe_design.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -72,6 +73,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/client_types.h
 probe_design.o: $(ARBHOME)/INCLUDE/downcast.h
 probe_design.o: $(ARBHOME)/INCLUDE/dupstr.h
 probe_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/items.h
 probe_design.o: $(ARBHOME)/INCLUDE/iupac.h
 probe_design.o: $(ARBHOME)/INCLUDE/PT_com.h
 probe_design.o: $(ARBHOME)/INCLUDE/servercntrl.h
@@ -113,6 +115,7 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbtools.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/attributes.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -122,12 +125,12 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
-SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cb.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/dupstr.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/items.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/nds.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/smartptr.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/test_global.h

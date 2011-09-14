@@ -30,34 +30,34 @@ const char *GDEmonth[] = {
 
 // Tables for DNA/RNA <--> ASCII translation
 int Default_RNA_Trans[128] = {
-    '-', 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'U', 'W', 'Y', 'H', 'K', 'D', 'B', 'N', /* Upper */
-    '.', 'a', 'c', 'm', 'g', 'r', 's', 'v', 'u', 'w', 'y', 'h', 'k', 'd', 'b', 'n', /* lower */
-    '-', 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'U', 'W', 'Y', 'H', 'K', 'D', 'B', 'N', /* Upper select */
-    '.', 'a', 'c', 'm', 'g', 'r', 's', 'v', 'u', 'w', 'y', 'h', 'k', 'd', 'b', 'n', /* lwr select */
-    '-', 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'U', 'W', 'Y', 'H', 'K', 'D', 'B', 'N', /* extended */
-    '~', 'a', 'c', 'm', 'g', 'r', 's', 'v', 'u', 'w', 'y', 'h', 'k', 'd', 'b', 'n', /* extended */
-    '-', 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'U', 'W', 'Y', 'H', 'K', 'D', 'B', 'N', /* extended */
-    '~', 'a', 'c', 'm', 'g', 'r', 's', 'v', 'u', 'w', 'y', 'h', 'k', 'd', 'b', 'n', /* extended */
+    '-', 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'U', 'W', 'Y', 'H', 'K', 'D', 'B', 'N', // Upper
+    '.', 'a', 'c', 'm', 'g', 'r', 's', 'v', 'u', 'w', 'y', 'h', 'k', 'd', 'b', 'n', // lower
+    '-', 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'U', 'W', 'Y', 'H', 'K', 'D', 'B', 'N', // Upper select
+    '.', 'a', 'c', 'm', 'g', 'r', 's', 'v', 'u', 'w', 'y', 'h', 'k', 'd', 'b', 'n', // lwr select
+    '-', 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'U', 'W', 'Y', 'H', 'K', 'D', 'B', 'N', // extended
+    '~', 'a', 'c', 'm', 'g', 'r', 's', 'v', 'u', 'w', 'y', 'h', 'k', 'd', 'b', 'n', // extended
+    '-', 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'U', 'W', 'Y', 'H', 'K', 'D', 'B', 'N', // extended
+    '~', 'a', 'c', 'm', 'g', 'r', 's', 'v', 'u', 'w', 'y', 'h', 'k', 'd', 'b', 'n', // extended
 };
 
 int Default_DNA_Trans[128] = {
-    '-', 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'T', 'W', 'Y', 'H', 'K', 'D', 'B', 'N', /* Upper */
-    '.', 'a', 'c', 'm', 'g', 'r', 's', 'v', 't', 'w', 'y', 'h', 'k', 'd', 'b', 'n', /* lower */
-    '-', 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'T', 'W', 'Y', 'H', 'K', 'D', 'B', 'N', /* Upper select */
-    '.', 'a', 'c', 'm', 'g', 'r', 's', 'v', 't', 'w', 'y', 'h', 'k', 'd', 'b', 'n', /* lwr select */
-    '-', 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'T', 'W', 'Y', 'H', 'K', 'D', 'B', 'N', /* extended */
-    '~', 'a', 'c', 'm', 'g', 'r', 's', 'v', 't', 'w', 'y', 'h', 'k', 'd', 'b', 'n', /* extended */
-    '-', 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'T', 'W', 'Y', 'H', 'K', 'D', 'B', 'N', /* extended */
-    '~', 'a', 'c', 'm', 'g', 'r', 's', 'v', 't', 'w', 'y', 'h', 'k', 'd', 'b', 'n', /* extended */
+    '-', 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'T', 'W', 'Y', 'H', 'K', 'D', 'B', 'N', // Upper
+    '.', 'a', 'c', 'm', 'g', 'r', 's', 'v', 't', 'w', 'y', 'h', 'k', 'd', 'b', 'n', // lower
+    '-', 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'T', 'W', 'Y', 'H', 'K', 'D', 'B', 'N', // Upper select
+    '.', 'a', 'c', 'm', 'g', 'r', 's', 'v', 't', 'w', 'y', 'h', 'k', 'd', 'b', 'n', // lwr select
+    '-', 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'T', 'W', 'Y', 'H', 'K', 'D', 'B', 'N', // extended
+    '~', 'a', 'c', 'm', 'g', 'r', 's', 'v', 't', 'w', 'y', 'h', 'k', 'd', 'b', 'n', // extended
+    '-', 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'T', 'W', 'Y', 'H', 'K', 'D', 'B', 'N', // extended
+    '~', 'a', 'c', 'm', 'g', 'r', 's', 'v', 't', 'w', 'y', 'h', 'k', 'd', 'b', 'n', // extended
 };
 
 int Default_NA_RTrans[128] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    /* Upper case alpha */
+    // Upper case alpha
     0x01, 0xe, 0x02, 0x0d, 0, 0, 0x04, 0x0b, 0, 0, 0x0c, 0, 0x03, 0x0f, 0, 0, 0, 0x05, 0x06, 0x08,
     0x08, 0x07, 0x09, 0x0f, 0xa, 0, 0, 0, 0, 0, 0, 0,
-    /* Lower case alpha */
+    // Lower case alpha
     0x11, 0x1e, 0x12, 0x1d, 0, 0, 0x14, 0x1b, 0, 0, 0x1c, 0, 0x13, 0x1f, 0, 0, 0, 0x15, 0x16, 0x18,
     0x18, 0x17, 0x19, 0x1f, 0x1a, 0, 0, 0, 0, 0x10, 0
 };

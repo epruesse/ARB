@@ -39,6 +39,9 @@ struct GBS_string_matcher;
 struct GBS_strstruct;
 struct GEN_position;
 struct DictData;
+struct CharPtrArray;
+struct StrArray;
+struct ConstStrArray;
 
 // --------------
 //      enums
@@ -105,8 +108,6 @@ typedef int (*gbs_hash_compare_function) (const char *key0, long val0, const cha
 typedef const char* (*gb_export_sequence_cb)(GBDATA *gb_species, size_t *seq_len, GB_ERROR *error);
 
 typedef GBDATA* (*GB_Link_Follower)(GBDATA *GB_root, GBDATA *GB_elem, const char *link);
-
-typedef int (*gb_compare_function)(const void *p0, const void *p1, void *client_data);
 
 typedef const char *(*gb_getenv_hook)(const char *varname);
 

@@ -41,6 +41,23 @@ static const char *knownSections[] = { "OCCURRENCE", "DESCRIPTION", "NOTES", "EX
                                        "QUESTION", "ANSWER", "SECTION",
                                        0 };
 
+enum SectionType {
+    SEC_OCCURRENCE,
+    SEC_DESCRIPTION,
+    SEC_NOTES,
+    SEC_EXAMPLES,
+    SEC_WARNINGS,
+    SEC_BUGS,
+    SEC_QUESTION,
+    SEC_ANSWER,
+    SEC_SECTION,
+
+    SEC_NONE,
+
+    SEC_FAKE, 
+};
+
+
 STATIC_ATTRIBUTED(__ATTR__VFORMAT(1), string vstrf(const char *format, va_list argPtr)) {
     static size_t  buf_size = 256;
     static char   *buffer   = new char[buf_size];
@@ -188,14 +205,17 @@ public:
 typedef list<string> Strings;
 
 class Section {
-    Strings content;
-    size_t  start_lineno;
+    SectionType type;
+    Strings     content;
+    size_t      start_lineno;
 
 public:
-    Section(size_t start_lineno_) : start_lineno(start_lineno_) {}
+    Section(SectionType type_, size_t start_lineno_) : type(type_), start_lineno(start_lineno_) {}
 
     const Strings& Content() const { return content; }
     Strings& Content() { return content; }
+
+    SectionType get_type() const { return type; }
 
     size_t StartLineno() const { return start_lineno; }
     void set_StartLineno(size_t start_lineno_) { start_lineno = start_lineno_; }
@@ -261,7 +281,7 @@ private:
     string        inputfile;
 
 public:
-    Helpfile() : title(-1U) {}
+    Helpfile() : title(SEC_FAKE, -1U) {}
     virtual ~Helpfile() {}
 
     void readHelp(istream& in, const string& filename);
@@ -360,12 +380,18 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
 #if defined(WARN_MISSING_HELP)
             check_TODO(line, reader);
 #endif // WARN_MISSING_HELP
-        
+
             string Line = line;
-            const char *first = firstChar(line);
-            if (first[0] == '-') {
+
+            if (sec.get_type() == SEC_OCCURRENCE) {
                 pushParagraph(sec, paragraph); lines_in_paragraph = 0;
-                Line[first-line] = ' ';
+            }
+            else {
+                const char *first = firstChar(line);
+                if (first[0] == '-') {
+                    pushParagraph(sec, paragraph); lines_in_paragraph = 0;
+                    Line[first-line] = ' ';
+                }
             }
 
             if (paragraph.length()) {
@@ -467,23 +493,25 @@ void Helpfile::readHelp(istream& in, const string& filename) {
                     if (keyword == "EXAMPLE") keyword = "EXAMPLES";
                     if (keyword == "WARNING") keyword = "WARNINGS";
 
-                    int idx;
+                    SectionType stype = SEC_NONE;
+                    int         idx;
                     for (idx = 0; knownSections[idx]; ++idx) {
                         if (knownSections[idx] == keyword) {
+                            stype = SectionType(idx);
                             break;
                         }
                     }
 
                     if (knownSections[idx]) {
-                        if (keyword == "SECTION") {
+                        if (stype == SEC_SECTION) {
                             string  section_name = eatWhite(rest);
-                            Section sec(read.getLineNo());
+                            Section sec(stype, read.getLineNo());
 
                             parseSection(sec, "", 0, read);
                             sections.push_back(NamedSection(section_name, sec));
                         }
                         else {
-                            Section sec(read.getLineNo());
+                            Section sec(stype, read.getLineNo());
 
                             rest = eatWhite(rest);
                             parseSection(sec, rest, rest-line, read);
@@ -1240,17 +1268,12 @@ void Helpfile::extractInternalLinks() {
                     {
                         try {
                             check_duplicates(link_target, "SUB", references, true); // check only sublinks here
-                            try {
-                                check_duplicates(link_target, "UP", uplinks, false); // check only sublinks here
-                                check_duplicates(link_target, "AUTO-SUB", auto_references, false); // check only sublinks here
-                            }
-                            catch (string& err) {
-                                ; // ignore duplicated link in text
-                            }
+                            check_duplicates(link_target, "UP", uplinks, false); // check only sublinks here
+                            check_duplicates(link_target, "AUTO-SUB", auto_references, false); // check only sublinks here
                             auto_references.push_back(Link(link_target, sec.StartLineno()));
                         }
                         catch (string& err) {
-                            preadd_warning(strf("%s", err.c_str()), sec.StartLineno());
+                            ; // silently ignore inlined 
                         }
                     }
                     start = close+1;

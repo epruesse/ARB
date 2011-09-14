@@ -25,12 +25,6 @@ class AW_device_size;
 class AW_screen_area;
 struct GB_HASH;
 
-typedef void (*AW_CB)(AW_window*, AW_CL, AW_CL);
-typedef void (*AW_CB0)(AW_window*);
-typedef void (*AW_CB1)(AW_window*, AW_CL);
-typedef void (*AW_CB2)(AW_window*, AW_CL, AW_CL);
-typedef AW_window *(*AW_Window_Creator)(AW_root*, AW_CL);
-
 // --------------------------------------------------------------------------------
 
 #define AW_POPUP  ((AW_CB)(-1))
@@ -108,15 +102,15 @@ enum AW_event_type {
 };
 
 struct AW_event {
-    AW_event_type       type;       /* AW_Keyboard or AW_Mouse */
-    unsigned long       time;       /* time in msec, when event occurred */
+    AW_event_type       type;       // AW_Keyboard or AW_Mouse
+    unsigned long       time;       // time in msec, when event occurred
     // ***** button fields
-    unsigned int        button;     /* which mouse button was pressed 1,2,3 */
-    int         x, y;       /* pointer x,y coordinates in the event window */
+    unsigned int        button;     // which mouse button was pressed 1,2,3
+    int         x, y;       // pointer x,y coordinates in the event window
     // ****** key fields
-    AW_key_mod      keymodifier;    /* control alt meta .... */
-    AW_key_code     keycode;    /* which key type was pressed */
-    char            character;  /* the c character */
+    AW_key_mod      keymodifier;    // control alt meta ....
+    AW_key_code     keycode;    // which key type was pressed
+    char            character;  // the c character
 };
 
 void AW_POPDOWN(AW_window *);
@@ -406,6 +400,8 @@ public:
     void get_screen_size(int& width, int& height);
     bool get_mouse_pos(int& x, int& y);
 
+    void set_focus_policy(bool follow_mouse);
+    
     // ************** ********************************************************************  *********
     // ************** Create buttons: First set modify flags and finally create the button  *********
     // ************** ********************************************************************  *********
@@ -562,7 +558,7 @@ public:
 
     void clear_selection_list(AW_selection_list *selection_list);
     void update_selection_list(AW_selection_list *selection_list);
-    void init_selection_list_from_array(AW_selection_list *selection_list, const char * const *entries, const char *defaultEntry);
+    void init_selection_list_from_array(AW_selection_list *selection_list, const class CharPtrArray& entries, const char *defaultEntry);
 
     int         get_index_of_element(AW_selection_list *selection_list, const char *selected_element);
     const char *get_element_at_index(AW_selection_list *selection_list, int index);
@@ -571,7 +567,7 @@ public:
     void select_element_at_index(AW_selection_list *selection_list, int wanted_index);
     void move_selection(AW_selection_list *selection_list, int offset);
 
-    char    **selection_list_to_array(AW_selection_list *sel_list, bool values);
+    void selection_list_to_array(class StrArray& array, AW_selection_list *sel_list, bool values);
     char     *get_selection_list_contents(AW_selection_list * selection_list, long nr_of_lines = -1);
     GB_HASH  *selection_list_to_hash(AW_selection_list *sel_list, bool case_sens);
 

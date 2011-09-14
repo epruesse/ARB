@@ -65,11 +65,11 @@ struct _xfstruct x_fontinfo[AW_NUM_FONTS] = {
     { "-adobe-times-medium-i-*--",                  (xfont*) NULL }, // #1
     { "-adobe-times-bold-r-*--",                    (xfont*) NULL }, // #2
     { "-adobe-times-bold-i-*--",                    (xfont*) NULL }, // #3
-    { "-schumacher-clean-medium-r-*--",             (xfont*) NULL },      /* closest to Avant-Garde */
+    { "-schumacher-clean-medium-r-*--",             (xfont*) NULL },      // closest to Avant-Garde
     { "-schumacher-clean-medium-i-*--",             (xfont*) NULL }, // #5
     { "-schumacher-clean-bold-r-*--",               (xfont*) NULL }, // #6
     { "-schumacher-clean-bold-i-*--",               (xfont*) NULL }, // #7
-    { "-adobe-times-medium-r-*--",                  (xfont*) NULL },      /* closest to Bookman */
+    { "-adobe-times-medium-r-*--",                  (xfont*) NULL },      // closest to Bookman
     { "-adobe-times-medium-i-*--",                  (xfont*) NULL }, // #9
     { "-adobe-times-bold-r-*--",                    (xfont*) NULL }, // #10
     { "-adobe-times-bold-i-*--",                    (xfont*) NULL }, // #11
@@ -81,7 +81,7 @@ struct _xfstruct x_fontinfo[AW_NUM_FONTS] = {
     { "-adobe-helvetica-medium-o-*--",              (xfont*) NULL }, // #17
     { "-adobe-helvetica-bold-r-*--",                (xfont*) NULL }, // #18
     { "-adobe-helvetica-bold-o-*--",                (xfont*) NULL }, // #19
-    { "-adobe-helvetica-medium-r-*--",              (xfont*) NULL },      /* closest to Helv-nar. */
+    { "-adobe-helvetica-medium-r-*--",              (xfont*) NULL },      // closest to Helv-nar.
     { "-adobe-helvetica-medium-o-*--",              (xfont*) NULL }, // #21
     { "-adobe-helvetica-bold-r-*--",                (xfont*) NULL }, // #22
     { "-adobe-helvetica-bold-o-*--",                (xfont*) NULL }, // #23
@@ -89,7 +89,7 @@ struct _xfstruct x_fontinfo[AW_NUM_FONTS] = {
     { "-adobe-new century schoolbook-medium-i-*--", (xfont*) NULL }, // #25
     { "-adobe-new century schoolbook-bold-r-*--",   (xfont*) NULL }, // #26
     { "-adobe-new century schoolbook-bold-i-*--",   (xfont*) NULL }, // #27
-    { "-*-lucidabright-medium-r-*--",               (xfont*) NULL },      /* closest to Palatino */
+    { "-*-lucidabright-medium-r-*--",               (xfont*) NULL },      // closest to Palatino
     { "-*-lucidabright-medium-i-*--",               (xfont*) NULL }, // #29
     { "-*-lucidabright-demibold-r-*--",             (xfont*) NULL }, // #30
     { "-*-lucidabright-demibold-i-*--",             (xfont*) NULL }, // #31
@@ -193,8 +193,8 @@ static char *getParsedFontPart(const char *fontname, int *minus_position, int id
     return result;
 }
 
-/* parse the point size of font 'name' */
-/* e.g. -adobe-courier-bold-o-normal--10-100-75-75-m-60-ISO8859-1 */
+// parse the point size of font 'name'
+// e.g. -adobe-courier-bold-o-normal--10-100-75-75-m-60-ISO8859-1
 
 static int parsesize(const char *fontname) {
     int         pos[14];
@@ -244,10 +244,10 @@ void aw_root_init_font(Display *tool_d)
         printf("Searching for SCALABLEFONTS\n");
 #endif // DUMP_FONT_LOOKUP
 
-        /* first look for OpenWindow style font names (e.g. times-roman) */
+        // first look for OpenWindow style font names (e.g. times-roman)
         if ((fontlist = XListFonts(tool_d, ps_fontinfo[1].name, 1, &count))!=0) {
-            openwinfonts = true;        /* yes, use them */
-            for (int f=0; f<AW_NUM_FONTS; f++) {     /* copy the OpenWindow font names */
+            openwinfonts = true;        // yes, use them
+            for (int f=0; f<AW_NUM_FONTS; f++) {     // copy the OpenWindow font names
                 x_fontinfo[f].templat = ps_fontinfo[f+1].name;
 #if defined(DUMP_FONT_LOOKUP)
                 printf("ps_fontinfo[f+1].name='%s'\n", ps_fontinfo[f+1].name);
@@ -257,7 +257,7 @@ void aw_root_init_font(Display *tool_d)
         }
         else {
             char templat[200];
-            strcpy(templat, x_fontinfo[0].templat); /* nope, check for font size 0 */
+            strcpy(templat, x_fontinfo[0].templat); // nope, check for font size 0
             strcat(templat, "0-0-*-*-*-*-*-*");
             if ((fontlist = XListFonts(tool_d, templat, 1, &count))!=0) {
 #if defined(DUMP_FONT_LOOKUP)
@@ -269,7 +269,7 @@ void aw_root_init_font(Display *tool_d)
 #if defined(DUMP_FONT_LOOKUP)
                 printf("Not using SCALABLEFONTS!\n");
 #endif // DUMP_FONT_LOOKUP
-                appres.SCALABLEFONTS = false;   /* none, turn off request for them */
+                appres.SCALABLEFONTS = false;   // none, turn off request for them
             }
         }
     }
@@ -399,9 +399,9 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
     found_size = -1;
 
     if (f == DEFAULT)
-        f = 0;          /* pass back the -normal font font */
+        f = 0;          // pass back the -normal font font
     if (s < 0)
-        s = DEF_FONTSIZE;       /* default font size */
+        s = DEF_FONTSIZE;       // default font size
 
     /* see if we've already loaded that font size 's'
        from the font family 'f' */
@@ -431,22 +431,22 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
             }
         }
     }
-    if (found) {                /* found exact size (or only larger available) */
+    if (found) {                // found exact size (or only larger available)
         if (verboose) {
             if (s < nf->size) fprintf(stderr, "Font size %d not found, using larger %d point\n", s, nf->size);
             if (appres.debug) fprintf(stderr, "Detected font %s\n", nf->fname);
         }
     }
-    else if (!appres.SCALABLEFONTS) { /* not found, use largest available */
+    else if (!appres.SCALABLEFONTS) { // not found, use largest available
         nf = oldnf;
         if (verboose) {
             if (s > nf->size) fprintf(stderr, "Font size %d not found, using smaller %d point\n", s, nf->size);
             if (appres.debug) fprintf(stderr, "Using font %s for size %d\n", nf->fname, s);
         }
     }
-    else { /* SCALABLE; none yet of that size, alloc one and put it in the list */
+    else { // SCALABLE; none yet of that size, alloc one and put it in the list
         newfont = (xfont *) malloc(sizeof(xfont));
-        /* add it on to the end of the list */
+        // add it on to the end of the list
 
         nf = oldnf ? oldnf->next : 0; // store successor
 
@@ -461,7 +461,7 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
         nf = newfont;
 
         if (openwinfonts) {
-            /* OpenWindows fonts, create font name like times-roman-13 */
+            // OpenWindows fonts, create font name like times-roman-13
 
             nf->fname = GBS_global_string_copy("%s-%d", x_fontinfo[f].templat, s);
         }
@@ -493,7 +493,7 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
 #ifndef DEVEL_JB
         aw_assert(nf->fname);
 #endif
-    } /* scalable */
+    } // scalable
 
     bool font_found = true;
 
@@ -507,9 +507,9 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
             if (fontst == NULL) {
                 fprintf(stderr, "ARB fontpackage: Unexpectedly couldn't load font '%s', falling back to '%s' (f=%i, s=%i)\n", nf->fname, NORMAL_FONT, f, s);
                 fontst = XLoadQueryFont(tool_d, NORMAL_FONT); // @@@ may return 0!
-                freedup(nf->fname, NORMAL_FONT);    /* store actual name */
+                freedup(nf->fname, NORMAL_FONT);    // store actual name
             }
-            /* put the structure in the list */
+            // put the structure in the list
             nf->fstruct = fontst;
         }
     }
@@ -717,10 +717,10 @@ void AW_GC_Xm::wm_set_font(const AW_font font_nr, const int size, int *found_siz
     curfont = *xfs;
 
     const XCharStruct *cs;
-    const XCharStruct *def;     /* info about default char */
-    bool               singlerow = (xfs->max_byte1 == 0); /* optimization */
+    const XCharStruct *def;     // info about default char
+    bool               singlerow = (xfs->max_byte1 == 0); // optimization
 
-    if (singlerow) {    /* optimization */
+    if (singlerow) {    // optimization
         CI_GetDefaultInfo_1D(xfs, def);
     }
     else {

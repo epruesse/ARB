@@ -9,11 +9,10 @@
 //                                                                 //
 // =============================================================== //
 
-#include "GEN_interface.hxx"
+#include "GEN.hxx"
 
-#include <awt.hxx>
-#include <awt_nds.hxx>
-#include <awt_item_sel_list.hxx>
+#include <nds.h>
+#include <item_sel_list.h>
 #include <awt_sel_boxes.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
@@ -57,7 +56,7 @@ void GEN_make_node_text_init(GBDATA *gb_main) {
     count                  = 0;
 
     for (gbz = GB_entry(gb_arb_presets, "gene_viewkey"); gbz; gbz  = GB_nextEntry(gbz)) {
-        /* toggle set ? */
+        // toggle set ?
         if (GB_read_int(GB_entry(gbz, sf))) {
             freeset(gen_nds_ms->dkeys[count], GB_read_string(GB_entry(gbz, "key_text")));
             if (GB_first_non_key_char(gen_nds_ms->dkeys[count])) {
@@ -82,7 +81,7 @@ void GEN_make_node_text_init(GBDATA *gb_main) {
 //  -----------------------------------------------------------------------------
 char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
 {
-    /* if mode ==0 compress info else format info */
+    // if mode ==0 compress info else format info
     char   *bp;
     GBDATA *gbe;
     long    i, j;
@@ -93,10 +92,10 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
 
     first = 0;
     for (i = 0; i < gen_nds_ms->count; i++) {
-        if (gen_nds_ms->rek[i]) { /* hierarchical key */
+        if (gen_nds_ms->rek[i]) { // hierarchical key
             gbe = GB_search(gbd, gen_nds_ms->dkeys[i], GB_FIND);
         }
-        else {                  /* flat entry */
+        else {                  // flat entry
             gbe = GB_entry(gbd, gen_nds_ms->dkeys[i]);
         }
 
@@ -286,7 +285,7 @@ void GEN_create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main, GB
 void GEN_create_select_nds_window(AW_window *aww, char *key_text, AW_CL cgb_main)
 {
 #if defined(WARN_TODO)
-#warning make this function more general like AWT_popup_select_species_field_window
+#warning make this function more general like popup_select_species_field_window
 #endif
 
     static AW_window *win = 0;
@@ -302,10 +301,10 @@ void GEN_create_select_nds_window(AW_window *aww, char *key_text, AW_CL cgb_main
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        awt_create_selection_list_on_itemfields((GBDATA *)cgb_main,
+        create_selection_list_on_itemfields((GBDATA *)cgb_main,
                                                 aws, "tmp/gene_viewkey/key_text",
-                                                AWT_NDS_FILTER,
-                                                "scandb", "rescandb", &GEN_item_selector, 20, 10);
+                                                FIELD_FILTER_NDS,
+                                                "scandb", "rescandb", GEN_get_selector(), 20, 10);
 
         win =  (AW_window*)aws;
     }

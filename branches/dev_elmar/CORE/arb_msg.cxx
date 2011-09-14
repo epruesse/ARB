@@ -16,7 +16,7 @@
 #include <smartptr.h>
 #include <arb_handlers.h>
  
-/* AISC_MKPT_PROMOTE:#ifndef _GLIBCXX_CSTDLIB */
+// AISC_MKPT_PROMOTE:#ifndef _GLIBCXX_CSTDLIB
 // AISC_MKPT_PROMOTE:#include <cstdlib>
 // AISC_MKPT_PROMOTE:#endif
 // AISC_MKPT_PROMOTE:#ifndef ARB_CORE_H
@@ -232,7 +232,7 @@ GB_ERROR GB_export_error(const char *error) { // just a temp hack around format-
 GB_ERROR GB_export_errorf(const char *templat, ...) {
     /* goes to header:
      * __ATTR__FORMAT(1)
-     * __ATTR__DEPRECATED_LATER("use GB_export_error(GBS_global_string(...))")
+     * __ATTR__DEPRECATED_TODO("use GB_export_error(GBS_global_string(...))")
      *          because it's misused (where GBS_global_string should be used)
      *          old functionality will remain available via 'GB_export_error(GBS_global_string(...))' 
      */
@@ -293,7 +293,7 @@ GB_ERROR GB_IO_error(const char *action, const char *filename) {
 }
 
 GB_ERROR GB_export_IO_error(const char *action, const char *filename) {
-    // goes to header: __ATTR__DEPRECATED_LATER("use GB_export_error(GB_IO_error(...))")
+    // goes to header: __ATTR__DEPRECATED_TODO("use GB_export_error(GB_IO_error(...))")
     return GB_export_error(GB_IO_error(action, filename));
 }
 
@@ -303,7 +303,7 @@ GB_ERROR GB_export_IO_error(const char *action, const char *filename) {
 
 
 GB_ERROR GB_print_error() {
-    // goes to header: __ATTR__DEPRECATED_LATER("will be removed completely")
+    // goes to header: __ATTR__DEPRECATED_TODO("will be removed completely")
     if (GB_error_buffer) {
         fflush(stdout);
         fprintf(stderr, "%s\n", GB_error_buffer);
@@ -312,7 +312,7 @@ GB_ERROR GB_print_error() {
 }
 
 GB_ERROR GB_get_error() {
-    // goes to header: __ATTR__DEPRECATED_LATER("consider using either GB_have_error() or GB_await_error()")
+    // goes to header: __ATTR__DEPRECATED_TODO("consider using either GB_have_error() or GB_await_error()")
     return GB_error_buffer;
 }
 
@@ -472,6 +472,7 @@ void GB_informationf(const char *templat, ...) {
     // goes to header: __ATTR__FORMAT(1)
 
     /* this message is always printed to stdout (regardless whether program uses GUI or not)
+     * (if it is not redirected using ARB_redirect_handlers_to)
      * see also : GB_warning
      */
 

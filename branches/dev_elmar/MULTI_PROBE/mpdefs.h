@@ -17,18 +17,17 @@
 
 #define NON_WEIGHTED 0
 
-enum
-    {
-        MP_NO_PROBE = 0,
-        MP_PROBE1   = 1,
-        MP_PROBE2   = 2,
-        MP_PROBE3   = 4,
-        MP_PROBE4   = 8,
-        MP_PROBE5   = 16,
-        MP_PROBE6   = 32,
-        MP_PROBE7   = 64,
-        MP_PROBE8   = 128
-    };
+enum {
+    MP_NO_PROBE = 0,
+    MP_PROBE1   = 1,
+    MP_PROBE2   = 2,
+    MP_PROBE3   = 4,
+    MP_PROBE4   = 8,
+    MP_PROBE5   = 16,
+    MP_PROBE6   = 32,
+    MP_PROBE7   = 64,
+    MP_PROBE8   = 128
+};
 
 class Bakt_Info;
 class Hit;
@@ -36,11 +35,10 @@ class Sonde;
 class MO_Liste;
 class Sondentopf;
 
-typedef struct _baktmm
-{
+struct MO_Mismatch {
     long   nummer;
     double mismatch;
-} MO_Mismatch;
+};
 
 
 struct MP_list_elem

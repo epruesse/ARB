@@ -22,7 +22,7 @@ GDE_proto.h: $(CPP_FILES) Makefile
 	$(MAKE) proto
 
 proto:
-	../MAKEBIN/aisc_mkpt -P -G -A -E -w GDE_proto.h $(CPP_FILES) > GDE_proto.h.tmp
+	../AISC_MKPTPS/aisc_mkpt -P -G -A -E -w GDE_proto.h $(CPP_FILES) > GDE_proto.h.tmp
 	../SOURCE_TOOLS/mv_if_diff GDE_proto.h.tmp GDE_proto.h
 
 clean:
@@ -96,12 +96,10 @@ GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/attributes.h
-GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
-GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/cb.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/smartptr.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/test_global.h

@@ -30,11 +30,11 @@ namespace validNames {
     typedef std::vector<std::string> TokL;
     typedef TokL *TokLPtr;
 
-    typedef enum {
+    enum DESCT {
         VALGEN, HETGEN, HOMGEN, RENGEN, CORGEN,
         VALSPEC, HETSPEC, HOMSPEC, RENSPEC, CORSPEC,
         NOTYPE, VAL, HET, HOM, REN, COR
-    } DESCT;
+    };
 
     class Desco {
     private:
@@ -76,7 +76,7 @@ namespace validNames {
     Desco determineType(const std::string& descriptionString);
 
     bool isUpperCase(const std::string& input);
-}; /* end namespace */
+}; // end namespace
 
 #else
 #error nt_validNameParser.hxx included twice

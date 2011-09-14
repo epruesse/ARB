@@ -483,8 +483,6 @@ const AW_screen_area& AW_device::get_area_size() const {
     return get_common()->get_screen();
 }
 
-void AW_device::privat_reset() {}
-
 void AW_device::reset() {
     while (clip_scale_stack) {
         pop_clip_scale();
@@ -496,10 +494,10 @@ void AW_device::reset() {
         set_cliprect(get_area_size());
     }
     AW_zoomable::reset();
-    privat_reset();
+    specific_reset(); 
 }
 
-bool AW_device::invisible_impl(int /*gc*/, const AW::Position& pos, AW_bitset filteri) {
+bool AW_device::generic_invisible(const AW::Position& pos, AW_bitset filteri) {
     return (filter & filteri) ? !is_outside_clip(transform(pos)) : false;
 }
 

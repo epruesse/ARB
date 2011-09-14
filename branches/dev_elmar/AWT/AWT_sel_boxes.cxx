@@ -10,7 +10,8 @@
 
 #include "awt.hxx"
 #include "awt_sel_boxes.hxx"
-#include "awt_item_sel_list.hxx"
+
+#include <item_sel_list.h>
 
 #include <aw_awars.hxx>
 #include <aw_file.hxx>
@@ -21,6 +22,7 @@
 
 #include <arbdbt.h>
 #include <arb_strbuf.h>
+#include <arb_strarray.h>
 
 #include <list>
 
@@ -87,24 +89,27 @@ struct AWT_tree_selection: public AW_DB_selection {
         GBDATA         *gb_main = get_gb_main();
         GB_transaction  ta(gb_main);
 
-        char **tree_names = GBT_get_tree_names(gb_main);
-        if (tree_names) {
+        ConstStrArray tree_names;
+        GBT_get_tree_names(tree_names, gb_main);
+
+        if (!tree_names.empty()) {
             int maxTreeNameLen = 0;
-            for (char **tree = tree_names; *tree; tree++) {
-                int len = strlen(*tree);
+            for (int i = 0; tree_names[i]; ++i) {
+                const char *tree = tree_names[i];
+                int         len  = strlen(tree);
                 if (len>maxTreeNameLen) maxTreeNameLen = len;
             }
-            for (char **tree = tree_names; *tree; tree++) {
-                const char *info = GBT_tree_info_string(gb_main, *tree, maxTreeNameLen);
+            for (int i = 0; tree_names[i]; ++i) {
+                const char *tree = tree_names[i];
+                const char *info = GBT_tree_info_string(gb_main, tree, maxTreeNameLen);
                 if (info) {
-                    insert_selection(info, *tree);
+                    insert_selection(info, tree);
                 }
                 else {
                     aw_message(GB_await_error());
-                    insert_selection(*tree, *tree);
+                    insert_selection(tree, tree);
                 }
             }
-            GBT_free_names(tree_names);
         }
         insert_default_selection("????", "????");
     }
@@ -399,12 +404,11 @@ public:
     {}
 
     void fill() {
-        int    config_count;
-        char **config = GBT_get_configuration_names_and_count(get_gb_main(), &config_count);
+        ConstStrArray config;
+        GBT_get_configuration_names(config, get_gb_main());
 
-        if (config) {
-            for (int c = 0; c<config_count; c++) insert_selection(config[c], config[c]);
-            GBT_free_names(config);
+        if (!config.empty()) {
+            for (int c = 0; config[c]; c++) insert_selection(config[c], config[c]);
         }
         insert_default_selection("????", "????");
     }
@@ -426,20 +430,20 @@ char *awt_create_string_on_configurations(GBDATA *gb_main) {
 
     GB_push_transaction(gb_main);
 
-    int    config_count;
-    char **config = GBT_get_configuration_names_and_count(gb_main, &config_count);
-    char  *result = 0;
+    ConstStrArray config;
+    GBT_get_configuration_names(config, gb_main);
 
-    if (config) {
+    char *result = 0;
+
+    if (!config.empty()) {
         GBS_strstruct *out = GBS_stropen(1000);
-        for (int c = 0; c<config_count; c++) {
+        for (int c = 0; config[c]; c++) {
             if (c>0) GBS_chrcat(out, ';');
             GBS_strcat(out, config[c]);
         }
         result = GBS_strclose(out);
     }
 
-    GBT_free_names(config);
     GB_pop_transaction(gb_main);
     return result;
 }
@@ -759,34 +763,5 @@ void awt_write_string(AW_window *aws, AW_CL varname, AW_CL value)   // set an aw
     aws->get_root()->awar((char *)varname)->write_string((char *)value);
 }
 
-void AWT_popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_gb_main)
-{
-    static AW_window_simple *aws = 0;
-
-    // everytime map selection awar to latest user awar:
-    AW_root    *aw_root   = aww->get_root();
-    const char *awar_name = (const char *)cl_awar_name;
-    aw_root->awar("tmp/viewkeys/key_text_select")->map(awar_name);
-
-    if (!aws) {
-        aws = new AW_window_simple;
-
-        aws->init(aw_root, "SELECT_SPECIES_FIELD", "Select species field");
-        aws->load_xfig("awt/nds_sel.fig");
-        aws->button_length(13);
-
-        aws->callback(AW_POPDOWN);
-        aws->at("close");
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        awt_create_selection_list_on_itemfields((GBDATA *)cl_gb_main,
-                                                aws,
-                                                "tmp/viewkeys/key_text_select",
-                                                AWT_NDS_FILTER,
-                                                "scandb", "rescandb", &AWT_species_selector, 20, 10);
-        aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
-    }
-    aws->activate();
-}
 
 

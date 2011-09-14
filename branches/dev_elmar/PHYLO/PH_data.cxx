@@ -186,7 +186,7 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
 
     // rna or dna sequence: set synonyms
     if (bases_used) {
-        reference_table[(unsigned char)'U'] = reference_table[(unsigned char)'T']; /* T=U */
+        reference_table[(unsigned char)'U'] = reference_table[(unsigned char)'T']; // T=U
         reference_table[(unsigned char)'u'] = reference_table[(unsigned char)'t'];
         reference_table[(unsigned char)'N'] = reference_table[(unsigned char)'X'];
         reference_table[(unsigned char)'n'] = reference_table[(unsigned char)'x'];
@@ -199,7 +199,7 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
         }
     }
 
-    if (bases_used) /* set substitutions T = U ... */
+    if (bases_used) // set substitutions T = U ...
     {
         distance_table->set(reference_table[(unsigned char)'N'], reference_table[(unsigned char)'X'], 0.0);
         distance_table->set(reference_table[(unsigned char)'n'], reference_table[(unsigned char)'x'], 0.0);

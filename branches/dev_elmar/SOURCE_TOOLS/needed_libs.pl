@@ -62,6 +62,18 @@ sub trim($) {
 
 # --------------------------------------------------------------------------------
 
+sub legal_target_or_die($) {
+  my ($target) = @_;
+
+  my $ct = $target;
+  $ct =~ s/ $//g;
+  $ct =~ s/^ //g;
+
+  if ($ct ne $target) {
+    die "Invalid target '$target' (chomped='$ct')";
+  }
+}
+
 my $reg_exedepend = qr/^$exedepend_dir\/$libdepend_file\./;
 my $reg_depend = qr/\/$libdepend_file/;
 
@@ -95,7 +107,9 @@ sub dependencyFile2target($) {
 
 sub target2dependencyFile($) {
   my ($target) = @_;
-  $target      = ARBHOME_relative($target);
+
+  $target = ARBHOME_relative($target);
+  legal_target_or_die($target);
 
   my $depfile = undef;
   my $dir     = dirOf($target);
@@ -244,6 +258,8 @@ sub declare_initial_target($$) {
   my ($target,$type) = @_;
 
   if ($target ne '') {
+    legal_target_or_die($target);
+
     my $inherit_locations_r = $inheritants_of{$target};
     if (not defined $inherit_locations_r) {
       my %new_hash = ();
@@ -268,6 +284,7 @@ sub detect_target_type($) {
 
 sub detect_type_and_declare_initial_target($) {
   my ($target) = @_;
+
   my $type = detect_target_type($target);
   declare_initial_target($target,$type);
 }
@@ -535,14 +552,19 @@ sub dot_label($) {
   return '"'.$target.'"';
 }
 
+sub generateDependencyGraph(\@\@$) {
+  my ($depends_r,$targets_r,$gif) = @_;
 
-sub generateDependencyGraph(\@\@) {
-  my ($depends_r,$targets_r) = @_;
+  my $base;
+  if ($gif =~ /\.gif$/) {
+    $base = $`;
+  }
+  else {
+    $base = $gif;
+    $gif = $base.'.gif';
+  }
 
-  my $base    = $ARBHOME.'lib_dependency';
   my $dotfile = $base.'.dot';
-  my $gif     = $base.'.gif';
-
   my $maxsize = 17; # inch
 
   open(DOT,'>'.$dotfile) || die "can't write to '$dotfile' (Reason: $!)";
@@ -633,6 +655,8 @@ sub generateDependencyGraph(\@\@) {
   my $cmd = 'dot -Tgif -o'.$gif.' '.$dotfile;
   print STDERR $cmd."\n";
   system($cmd)==0 || die "Failed to execute '$cmd'";
+
+  unlink($dotfile) || die "Failed to unlink '$dotfile' (Reason: $!)";
 }
 
 # --------------------------------------------------------------------------------
@@ -701,11 +725,13 @@ sub die_usage($) {
   print "  -d          output dynamic lib names (e.g. -lARBDB ..)\n";
   print "  -A dir      prefix paths with 'dir' (not for dynamic libs)\n";
   print "  -U          do not die on undefined environment variables\n";
-  print "  -G          Draw dependency graph (using dot)\n";
+  print "  -G outgif   Draw dependency graph (using dot)\n";
   print "  -V          Dump dependencies\n";
+  print "  -n          do not print nested dependencies\n";
   print "  -I          Invert (print inheritants instead of dependencies)\n";
   print "  -B          Both (print inheritants and dependencies)\n";
   print "  -S          Include self (lib/exe given on command line)\n";
+  print "  -T          only show terminals (=those w/o dependencies and/or inheritants)\n";
   die "Error: $err\n";
 }
 
@@ -718,11 +744,13 @@ sub main() {
   my $printStatic     = 0;
   my $printDynamic    = 0;
   my $pathPrefix      = undef;
-  my $dependencyGraph = 0;
+  my $dependencyGraph = undef;
   my $dump            = 0;
   my $trackDepends    = 1;
+  my $nestDepends     = 1;
   my $trackInherits   = 0;
   my $includeSelf     = 0;
+  my $onlyTerminals   = 0;
 
   while (scalar(@ARGV)) {
     $_ = shift @ARGV;
@@ -735,11 +763,13 @@ sub main() {
       elsif ($switch eq 'l') { $printStatic = 1; $printDynamic = 1; }
       elsif ($switch eq 'A') { $pathPrefix = shift @ARGV; }
       elsif ($switch eq 'U') { $dieOnUndefEnvvar = 0; }
-      elsif ($switch eq 'G') { $dependencyGraph = 1; }
+      elsif ($switch eq 'G') { $dependencyGraph = shift @ARGV; }
       elsif ($switch eq 'V') { $dump = 1; }
+      elsif ($switch eq 'n') { $nestDepends = 0; }
       elsif ($switch eq 'I') { $trackInherits = 1; $trackDepends = 0; }
       elsif ($switch eq 'B') { $trackInherits = 1; }
       elsif ($switch eq 'S') { $includeSelf = 1; }
+      elsif ($switch eq 'T') { $onlyTerminals = 1; }
       elsif ($switch eq '?' or $switch eq 'help' or $switch eq 'h') { die_usage('help requested'); }
       else { die "unknown switch '-$switch'"; }
     }
@@ -752,7 +782,7 @@ sub main() {
 
   if ($targets>0) {
     if ($targets>1) {
-      if ($dependencyGraph==0) {
+      if (not defined $dependencyGraph) {
         die_usage("You may only specify ONE target! (only with -G multiple targets are possible)");
       }
     }
@@ -777,9 +807,17 @@ sub main() {
 
   my %track = ();
   if ($trackDepends==1) {
-    foreach (@targets) {
-      my $dep_r = $all_dependencies_of{$_};
-      foreach (keys %$dep_r) { $track{$_} = 1; }
+    if ($nestDepends==1) {
+      foreach (@targets) {
+        my $dep_r = $all_dependencies_of{$_};
+        foreach (keys %$dep_r) { $track{$_} = 1; }
+      }
+    }
+    else {
+      foreach (@targets) {
+        my $dep_r = $dependencies_of{$_};
+        foreach (keys %$dep_r) { $track{$_} = 1; }
+      }
     }
   }
   if ($trackInherits==1) {
@@ -804,10 +842,31 @@ sub main() {
     foreach (keys %inheritants_of) { $track{$_} = 1; }
   }
 
+  if ($onlyTerminals==1) {
+    if ($trackInherits==1) {
+      # untrack all which have inheritants
+      foreach (keys %track) {
+        my $hash_r = $inheritants_of{$_};
+        if ((defined $hash_r) and (scalar(keys %$hash_r)>0)) {
+          delete $track{$_};
+        }
+      }
+    }
+    if ($trackDepends==1) {
+      # untrack all which have dependencies
+      foreach (keys %track) {
+        my $hash_r = $dependencies_of{$_};
+        if ((defined $hash_r) and (scalar(keys %$hash_r)>0)) {
+          delete $track{$_};
+        }
+      }
+    }
+  }
+
   my @track = sort keys %track;
 
   if ($dump==1) { dump_dependencies(); }
-  if ($dependencyGraph==1) { generateDependencyGraph(@track,@targets); }
+  if (defined $dependencyGraph) { generateDependencyGraph(@track,@targets,$dependencyGraph); }
 
   my @out = ();
   if ($printDirs==1) { pushDirsTo($pathPrefix,@track,@out); }

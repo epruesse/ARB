@@ -5,8 +5,8 @@ MAKETHIS=$(MAKE) -f $(THIS)
 .SUFFIXES: .o .c .h .aisc
 
 #where to find the creator files
-AISC=../MAKEBIN/aisc
-AISC_MKPT = ../MAKEBIN/aisc_mkpt
+AISC=../AISC/aisc
+AISC_MKPT = ../AISC_MKPTPS/aisc_mkpt
 
 RUN_AISC:=$(AISC)
 # valgrinding like this breaks the build process (due to wrong exitcode)
@@ -66,11 +66,11 @@ endif
 
 ifeq ($(AUTODEPENDS),1)
 all:
-	test -f .depends || $(MAKETHIS) "AUTODEPENDS=0" .depends
-	$(MAKETHIS) "AUTODEPENDS=2" all
+	+test -f .depends || $(MAKETHIS) "AUTODEPENDS=0" .depends
+	+$(MAKETHIS) "AUTODEPENDS=2" all
 else
 all: directories
-	$(MAKETHIS) realall
+	+$(MAKETHIS) realall
 
 endif
 
@@ -96,6 +96,11 @@ pregenerate: $(GEN_INCLUDES) $(GEN_SERVER_PROTO) $(GEN_SERVER_OBJECTS:.o=.c)
 
 directories:
 	@mkdir -p GENH GENC O DUMP
+
+GENH:	directories
+GENC:	directories
+O:	directories
+DUMP:	directories
 
 $(SERVER): $(SERVER_OBJECTS) $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS)
 	$(LINK_STATIC_LIB) $@ $^

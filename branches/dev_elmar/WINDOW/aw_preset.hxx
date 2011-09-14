@@ -54,7 +54,7 @@ AW_gc_manager AW_manage_GC(AW_window                                       *aww,
             When the GCs are modified the 'changecb' is called
 */
 
-AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager id); /* opens the properties Window */
+AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager id); // opens the properties Window
 
 // same as AW_create_gc_window, but uses different window id and name
 // (use if if there are two or more color def windows in one application,

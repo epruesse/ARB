@@ -15,52 +15,52 @@
 #include <smartptr.h>
 #include <unistd.h>
 
-
 // AISC_MKPT_PROMOTE:#ifndef ARB_CORE_H
 // AISC_MKPT_PROMOTE:#include <arb_core.h>
 // AISC_MKPT_PROMOTE:#endif
 
-static void to_stderr(const char *msg) {
-    fflush(stdout);
-    fprintf(stderr, "%s\n", msg);
-    fflush(stderr);
+static FILE *arberr = stderr;
+static FILE *arbout = stdout;
+
+static void to_arberr(const char *msg) {
+    fflush(arbout);
+    fprintf(arberr, "%s\n", msg);
+    fflush(arberr);
 }
-static void to_stdout(const char *msg) {
-    fprintf(stdout, "%s\n", msg);
+static void to_arbout(const char *msg) {
+    fprintf(arbout, "%s\n", msg);
 }
 
 // -------------------------
-//      ARB_stdout_status
+//      ARB_arbout_status
 
 const int  HEIGHT = 12; // 12 can be devided by 2, 3, 4 (so subtitles tend to be at start of line)
 const int  WIDTH  = 70;
 const char CHAR   = '.';
 
-class BasicStatus {
-    static int openCount;
-
+class BasicStatus : virtual Noncopyable {
+    int         openCount;
     char       *subtitle;
     int         printed;
     const char *cursor;
 
 public:
+    BasicStatus() : openCount(0) {}
+    ~BasicStatus() { if (openCount) close(); }
+
     void open(const char *title) {
         arb_assert(++openCount <= 1);
         
-        printf("Progress: %s\n", title);
+        fprintf(arbout, "Progress: %s\n", title);
         printed  = 0;
         cursor   = NULL;
         subtitle = NULL;
     }
     void close() {
         freenull(subtitle);
-        printf("[done]\n");
+        fprintf(arbout, "[done]\n");
         arb_assert(--openCount >= 0);
-        fflush(stdout);
-    }
-
-    ~BasicStatus() {
-        if (openCount) close();
+        fflush(arbout);
     }
 
     int next_LF() const { return printed-printed%WIDTH+WIDTH; }
@@ -87,26 +87,25 @@ public:
         if (printed<wanted) {
             while (printed<wanted) {
                 if (cursor && cursor[0]) {
-                    fputc(*cursor++, stdout);
+                    fputc(*cursor++, arbout);
                 }
                 else {
                     cursor = 0;
-                    fputc(CHAR, stdout);
+                    fputc(CHAR, arbout);
                 }
                 printed++;
                 if (printed == nextLF) {
-                    printf(" [%5.1f%%]\n", printed*100.0/(WIDTH*HEIGHT));
+                    fprintf(arbout, " [%5.1f%%]\n", printed*100.0/(WIDTH*HEIGHT));
                     nextLF = next_LF();
                 }
             }
-            fflush(stdout);
+            fflush(arbout);
 #if defined(DEBUG)
             // usleep(25000); // uncomment to see slow status
 #endif
         }
     }
 };
-int BasicStatus::openCount = 0;
 
 static BasicStatus status;
 
@@ -117,7 +116,7 @@ static bool basic_set_subtitle(const char *stitle) { status.set_subtitle(stitle)
 static bool basic_set_gauge(double gauge) { status.set_gauge(gauge); return false; }
 static bool basic_user_abort() { return false; }
 
-static arb_status_implementation ARB_stdout_status = {
+static arb_status_implementation ARB_arbout_status = {
     AST_FORWARD, 
     basic_openstatus,
     basic_closestatus,
@@ -127,13 +126,18 @@ static arb_status_implementation ARB_stdout_status = {
     basic_user_abort
 };
 
-static arb_handlers stderr_handlers = {
-    to_stderr,
-    to_stdout,
-    to_stdout,
-    ARB_stdout_status, 
+static arb_handlers arbout_handlers = {
+    to_arberr,
+    to_arbout,
+    to_arbout,
+    ARB_arbout_status,
 };
 
-arb_handlers *active_arb_handlers = &stderr_handlers;
+arb_handlers *active_arb_handlers = &arbout_handlers; // default-handlers
+
 void ARB_install_handlers(arb_handlers& handlers) { active_arb_handlers = &handlers; }
 
+void ARB_redirect_handlers_to(FILE *errStream, FILE *outStream) {
+    arberr = errStream;
+    arbout = outStream;
+}

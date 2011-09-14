@@ -1,8 +1,5 @@
 #!/usr/bin/perl
 
-# 0westram@waltz ...westram_waltz/ARB-waltz/ARB.relatives> [10:26]
-# find . -name "needs_libs*" | grep -v '.svn' | sed -e 's/[\/\.]/_/g' | sed -e 's/needs_libs//' | sed -e 's/__*/_/g' | sed -e 's/^_*//'  | sed -e 's/_*$//' 
-
 my $ARBHOME = $ENV{ARBHOME};
 if (not -d $ARBHOME) {
   die "ARBHOME has to be defined and has to mark a directory";
@@ -41,11 +38,27 @@ sub main() {
     mkdir($dest) || die "can't create dir '$dest' (Reason: $!)";
   }
 
+  my @childs = ();
   foreach (@dep_files) {
-    my $destgif = "$dest/".$gif_suffix{$_}.".gif";
-    execute("SOURCE_TOOLS/needed_libs.pl -G -U -B -S $_");
-    execute("mv lib_dependency.gif $destgif");
+    my $pid = fork();
+    while (not defined $pid) {
+      print "Warning: could not fork\n";
+      sleep(1);
+      $pid = fork(); # retry
+    }
+    if ($pid == 0) { # child
+      my $destgif = "$dest/".$gif_suffix{$_}.".gif";
+      execute("SOURCE_TOOLS/needed_libs.pl -G $destgif -U -B -S $_");
+      exit(0);
+    }
+
+    push @childs, $pid;
   }
-  unlink("lib_dependency.dot");
+
+  print "Waiting for childs...\n";
+  foreach (@childs) {
+    waitpid($_, 0);
+  }
+  print "All childs terminated\n";
 }
 main();

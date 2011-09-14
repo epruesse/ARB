@@ -188,6 +188,20 @@ DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
 				(amino acid) symbol, it will jump aside the next
 				nucleotide (amino acid) symbol.
 
+                Change gap type
+
+                       Consecutive runs of gaps can be set to 
+
+                       CTRL-'-'         minus sign (normal gaps)
+                       CTRL-'.'         dots (recommended at both sequence ends)
+                       CTRL-SPACE       toggles between both gap types
+
+                       These gap types have different meanings:
+
+                       '-'        is only used for aligning
+                       '.'        marks potentially missing bases
+
+
 		Other keys:
 
 			CTRL+LEFT/RIGHT

@@ -27,7 +27,7 @@
 #define MAX_COST_OF_SUB_PERCENT_DEFAULT    0.5
 #define MAX_COST_OF_HELIX                  2.0
 #define ERROR_COUNT_DEFAULT                2
-#define MAX_NUMBER_OF_MAPS_DEFAULT         10 /* 100 */
+#define MAX_NUMBER_OF_MAPS_DEFAULT         10 // 100
 #define MAX_NUMBER_OF_MAPS_ALIGNER_DEFAULT 2
 #define INTERVALL_BORDER_DEFAULT           5
 #define INTERVALL_CENTER_DEFAULT           5
@@ -41,21 +41,21 @@
 
 
 double default_substitute_matrix[5][5] = {
-    /* a    c    g    u    -          */
-    { 0.0, 3.0, 1.0, 3.0, 5.0 }, /* a */
-    { 3.0, 0.0, 3.0, 1.0, 5.0 }, /* c */
-    { 1.0, 3.0, 0.0, 3.0, 5.0 }, /* g */
-    { 3.0, 1.0, 3.0, 0.0, 5.0 }, /* u */
-    { 5.0, 5.0, 5.0, 5.0, 0.0 } /* - */
+    // a    c    g    u    -
+    { 0.0, 3.0, 1.0, 3.0, 5.0 }, // a
+    { 3.0, 0.0, 3.0, 1.0, 5.0 }, // c
+    { 1.0, 3.0, 0.0, 3.0, 5.0 }, // g
+    { 3.0, 1.0, 3.0, 0.0, 5.0 }, // u
+    { 5.0, 5.0, 5.0, 5.0, 0.0 } // -
 };
 
 double default_binding_matrix[5][5] = {
-    /* a    c    g    u    -          */
-    { 9.9, 9.9, 2.0, 0.9, 9.9 }, /* a */
-    { 9.9, 9.9, 0.6, 9.9, 9.9 }, /* c */
-    { 2.0, 0.6, 5.0, 1.1, 9.9 }, /* g */
-    { 0.9, 9.9, 1.1, 9.9, 9.9 }, /* u */
-    { 9.9, 9.9, 9.9, 9.9, 0.0 } /* - */
+    // a    c    g    u    -
+    { 9.9, 9.9, 2.0, 0.9, 9.9 }, // a
+    { 9.9, 9.9, 0.6, 9.9, 9.9 }, // c
+    { 2.0, 0.6, 5.0, 1.1, 9.9 }, // g
+    { 0.9, 9.9, 1.1, 9.9, 9.9 }, // u
+    { 9.9, 9.9, 9.9, 9.9, 0.0 } // -
 };
 
 

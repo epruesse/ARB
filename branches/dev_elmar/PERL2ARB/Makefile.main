@@ -45,8 +45,8 @@ export MYEXTLIB PASTHRU_INC PASTHRU_DEFINE dflags
 
 ifeq ($(AUTODEPENDS),1)
 all:
-	test -f .depends || $(MAKETHIS) "AUTODEPENDS=0" .depends
-	$(MAKETHIS) "AUTODEPENDS=2" all
+	+test -f .depends || $(MAKETHIS) "AUTODEPENDS=0" .depends
+	+$(MAKETHIS) "AUTODEPENDS=2" all
 else
 all: realall
 endif
@@ -69,8 +69,8 @@ $(ARB_SO) : $(XS_DEPENDS) depends.stamp
 		(echo "------ failed.. retry once"; \
 		 $(MAKE) "dflags=${dflags}" $@))
 	@echo "-------- post-recreating .depends"
-	$(MAKETHIS) "DEPENDS=0" .depends
-	$(MAKETHIS) $@ # recurse
+	+$(MAKETHIS) "DEPENDS=0" .depends
+	+$(MAKETHIS) $@ # recurse
 
 ARB.c : $(XS_DEPENDS) 
 	@echo "-------- calling MakeMaker-Makefile (to get depends)"
@@ -114,7 +114,7 @@ clean:
 	rm -f Makefile
 
 .depends: depends.stamp Makefile.main
-	test -f ARB.c || $(MAKETHIS) "AUTODEPENDS=0" ARB.c 
+	+test -f ARB.c || $(MAKETHIS) "AUTODEPENDS=0" ARB.c 
 	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) ARB.c 2>/dev/null | \
 		perl -ne 's/ARB.o:/depends.stamp:/g; print $$_;' | \
 		../SOURCE_TOOLS/fix_depends.pl > $@

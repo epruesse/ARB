@@ -12,9 +12,9 @@
 #include "MG_adapt_ali.hxx"
 
 #include <AW_rename.hxx>
+#include <db_query.h>
 #include <db_scanner.hxx>
-#include <awt.hxx>
-#include <awt_item_sel_list.hxx>
+#include <item_sel_list.h>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
@@ -39,8 +39,8 @@
 
 #define AWAR_APPEND AWAR2"append"
 
-static AW_CL ad_global_scannerid1 = 0;
-static AW_CL ad_global_scannerid2 = 0;
+static DbScanner *ad_global_scanner1 = 0;
+static DbScanner *ad_global_scanner2 = 0;
 
 const char *MG_left_AWAR_SPECIES_NAME() { return AWAR_SPECIES1; }
 const char *MG_right_AWAR_SPECIES_NAME() { return AWAR_SPECIES2; }
@@ -62,7 +62,7 @@ void AD_map_species1(AW_root *aw_root)
     char   *source     = aw_root->awar(AWAR_SPECIES1)->read_string();
     GBDATA *gb_species = GBT_find_species(GLOBAL_gb_merge, source);
 
-    if (gb_species) map_db_scanner(ad_global_scannerid1, gb_species, CHANGE_KEY_PATH);
+    if (gb_species) map_db_scanner(ad_global_scanner1, gb_species, CHANGE_KEY_PATH);
     GB_pop_transaction(GLOBAL_gb_merge);
     delete source;
 }
@@ -73,7 +73,7 @@ void AD_map_species2(AW_root *aw_root)
     GB_push_transaction(GLOBAL_gb_dest);
     GBDATA *gb_species = GBT_find_species(GLOBAL_gb_dest, source);
     if (gb_species) {
-        map_db_scanner(ad_global_scannerid2, gb_species, CHANGE_KEY_PATH);
+        map_db_scanner(ad_global_scanner2, gb_species, CHANGE_KEY_PATH);
     }
     GB_pop_transaction(GLOBAL_gb_dest);
     delete source;
@@ -416,10 +416,10 @@ AW_window *MG_transfer_fields(AW_root *aw_root)
     aws->at("append");
     aws->create_toggle(AWAR_APPEND);
 
-    awt_create_selection_list_on_itemfields(GLOBAL_gb_merge,
+    create_selection_list_on_itemfields(GLOBAL_gb_merge,
                                             aws, AWAR_FIELD1,
-                                            AWT_NDS_FILTER,
-                                            "scandb", "rescandb", &AWT_species_selector, 20, 10);
+                                            FIELD_FILTER_NDS,
+                                            "scandb", "rescandb", SPECIES_get_selector(), 20, 10);
 
     return (AW_window*)aws;
 }
@@ -521,10 +521,10 @@ AW_window *create_mg_move_fields(AW_root *aw_root)
     aws->create_button("HELP", "HELP");
 
 
-    awt_create_selection_list_on_itemfields(GLOBAL_gb_merge,
+    create_selection_list_on_itemfields(GLOBAL_gb_merge,
                                             aws, AWAR_FIELD1,
-                                            AWT_NDS_FILTER,
-                                            "scandb", "rescandb", &AWT_species_selector, 20, 10);
+                                            FIELD_FILTER_NDS,
+                                            "scandb", "rescandb", SPECIES_get_selector(), 20, 10);
 
     return (AW_window*)aws;
 }
@@ -622,35 +622,31 @@ AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
 
     aws->at("del1");    aws->create_input_field(AWAR_TAG_DEL1, 5);
 
-    awt_create_selection_list_on_itemfields(GLOBAL_gb_merge, aws, AWAR_FIELD1, AWT_NDS_FILTER, "fields1", 0, &AWT_species_selector, 20, 10);
-    awt_create_selection_list_on_itemfields(GLOBAL_gb_dest, aws, AWAR_FIELD2, AWT_NDS_FILTER, "fields2", 0, &AWT_species_selector, 20, 10);
+    create_selection_list_on_itemfields(GLOBAL_gb_merge, aws, AWAR_FIELD1, FIELD_FILTER_NDS, "fields1", 0, SPECIES_get_selector(), 20, 10);
+    create_selection_list_on_itemfields(GLOBAL_gb_dest,  aws, AWAR_FIELD2, FIELD_FILTER_NDS, "fields2", 0, SPECIES_get_selector(), 20, 10);
 
     return (AW_window*)aws;
 }
 
 GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
-    /*! Make the alignment names equal */
-    char **   M_alignment_names = GBT_get_alignment_names(GLOBAL_gb_merge);
-    char **   D_alignment_names = GBT_get_alignment_names(GLOBAL_gb_dest);
-    GB_ERROR  error             = 0;
-    char     *dest              = 0;
+    //! Make the alignment names equal
+    ConstStrArray M_alignment_names;
+    ConstStrArray D_alignment_names;
+    GBT_get_alignment_names(M_alignment_names, GLOBAL_gb_merge);
+    GBT_get_alignment_names(D_alignment_names, GLOBAL_gb_dest);
+
+    GB_ERROR    error = 0;
+    const char *dest  = 0;
 
     if (M_alignment_names[0] == 0) {
         error =  GB_export_error("No source sequences found");
     }
     else {
         char *type = GBT_get_alignment_type_string(GLOBAL_gb_merge, M_alignment_names[0]);
-        int   s;
-        int   d;
 
-        for (s=0, d=0; D_alignment_names[s]; s++) {
-            char *type2 = GBT_get_alignment_type_string(GLOBAL_gb_dest, D_alignment_names[s]);
-            if (strcmp(type, type2) == 0) {
-                D_alignment_names[d] = D_alignment_names[s];
-                if (d != s) D_alignment_names[s] = 0;
-                ++d;
-            }
-            else freenull(D_alignment_names[s]);
+        for (int d = D_alignment_names.size()-1; d>0; --d) {
+            char *type2 = GBT_get_alignment_type_string(GLOBAL_gb_dest, D_alignment_names[d]);
+            if (strcmp(type, type2) != 0) D_alignment_names.remove(d--);
             free(type2);
         }
 
@@ -658,6 +654,7 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
         char          *b;
         int            aliid;
 
+        int d = D_alignment_names.size();
         switch (d) {
             case 0:
                 error = GB_export_errorf("Cannot find a target alignment with a type of '%s'\n"
@@ -713,14 +710,12 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
         }
         free(type);
     }
-    GBT_free_names(M_alignment_names);
-    GBT_free_names(D_alignment_names);
 
     return error;
 }
 
 GB_ERROR MG_simple_merge(AW_root *awr) {
-    /*! Merge the sequences of two databases */
+    //! Merge the sequences of two databases
 
     static char *m_name         = 0;
     GB_ERROR     error          = 0;
@@ -858,10 +853,10 @@ static void mg_select_species2(GBDATA*,  AW_root *aw_root, const char *item_name
     aw_root->awar(AWAR_SPECIES2)->write_string(item_name);
 }
 
-static GBDATA *mg_get_first_species_data1(GBDATA *, AW_root *, AWT_QUERY_RANGE) {
+static GBDATA *mg_get_first_species_data1(GBDATA *, AW_root *, QUERY_RANGE) {
     return GBT_get_species_data(GLOBAL_gb_merge);
 }
-static GBDATA *mg_get_first_species_data2(GBDATA *, AW_root *, AWT_QUERY_RANGE) {
+static GBDATA *mg_get_first_species_data2(GBDATA *, AW_root *, QUERY_RANGE) {
     return GBT_get_species_data(GLOBAL_gb_dest);
 }
 
@@ -882,16 +877,15 @@ static GBDATA *mg_get_selected_species2(GBDATA * /* gb_main */, AW_root *aw_root
     return gb_species;
 }
 
-static struct ad_item_selector MG_species_selector[2];
+static MutableItemSelector MG_species_selector[2];
 
 static void mg_initialize_species_selectors() {
     static int initialized = 0;
     if (!initialized) {
-        MG_species_selector[0] = AWT_species_selector;
-        MG_species_selector[1] = AWT_species_selector;
+        MG_species_selector[0] = MG_species_selector[1] = SPECIES_get_selector();
 
         for (int s = 0; s <= 1; ++s) {
-            ad_item_selector& sel = MG_species_selector[s];
+            MutableItemSelector& sel = MG_species_selector[s];
 
             sel.update_item_awars        = s ? mg_select_species2 : mg_select_species1;
             sel.get_first_item_container = s ? mg_get_first_species_data2 : mg_get_first_species_data1;
@@ -920,73 +914,75 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
     aws->callback(AW_POPUP_HELP, (AW_CL)"mg_species.hlp");
     aws->create_button("HELP", "HELP", "H");
 
-    awt_query_struct awtqs;
-    aws->create_menu("DB_I_Expert", "D");
-
-    awtqs.gb_main                = GLOBAL_gb_merge;
-    awtqs.gb_ref                 = GLOBAL_gb_dest;
-    awtqs.expect_hit_in_ref_list = false;
-    awtqs.species_name           = AWAR_SPECIES1;
-    awtqs.tree_name              = 0;               // no selected tree here -> can't use tree related ACI commands without specifying a tree
-    awtqs.select_bit             = 1;
-    awtqs.ere_pos_fig            = "ere1";
-    awtqs.by_pos_fig             = "by1";
-    awtqs.qbox_pos_fig           = "qbox1";
-    awtqs.rescan_pos_fig         = "rescan1";
-    awtqs.key_pos_fig            = 0;
-    awtqs.query_pos_fig          = "content1";
-    awtqs.result_pos_fig         = "result1";
-    awtqs.count_pos_fig          = "count1";
-    awtqs.do_query_pos_fig       = "doquery1";
-    awtqs.config_pos_fig         = "doconfig1";
-    awtqs.do_mark_pos_fig        = 0;
-    awtqs.do_unmark_pos_fig      = 0;
-    awtqs.do_delete_pos_fig      = "dodelete1";
-    awtqs.do_set_pos_fig         = "doset1";
-    awtqs.do_refresh_pos_fig     = "dorefresh1";
-    awtqs.open_parser_pos_fig    = "openparser1";
-    awtqs.use_menu               = 1;
-
     mg_initialize_species_selectors();
-    awtqs.selector = &(MG_species_selector[0]);
 
-    awt_create_query_box(aws, &awtqs, "db1");
+    {
+        QUERY::query_spec awtqs(MG_species_selector[0]);
+        aws->create_menu("DB_I_Expert", "D");
 
-    AW_CL scannerid      = create_db_scanner(GLOBAL_gb_merge, aws, "box1", 0, 0, 0, DB_SCANNER, 0, 0, AWT_NDS_FILTER, awtqs.selector);
-    ad_global_scannerid1 = scannerid;
-    aws->get_root()->awar(AWAR_SPECIES1)->add_callback(AD_map_species1);
+        awtqs.gb_main                = GLOBAL_gb_merge;
+        awtqs.gb_ref                 = GLOBAL_gb_dest;
+        awtqs.expect_hit_in_ref_list = false;
+        awtqs.species_name           = AWAR_SPECIES1;
+        awtqs.tree_name              = 0;               // no selected tree here -> can't use tree related ACI commands without specifying a tree
+        awtqs.select_bit             = 1;
+        awtqs.ere_pos_fig            = "ere1";
+        awtqs.by_pos_fig             = "by1";
+        awtqs.qbox_pos_fig           = "qbox1";
+        awtqs.rescan_pos_fig         = "rescan1";
+        awtqs.key_pos_fig            = 0;
+        awtqs.query_pos_fig          = "content1";
+        awtqs.result_pos_fig         = "result1";
+        awtqs.count_pos_fig          = "count1";
+        awtqs.do_query_pos_fig       = "doquery1";
+        awtqs.config_pos_fig         = "doconfig1";
+        awtqs.do_mark_pos_fig        = 0;
+        awtqs.do_unmark_pos_fig      = 0;
+        awtqs.do_delete_pos_fig      = "dodelete1";
+        awtqs.do_set_pos_fig         = "doset1";
+        awtqs.do_refresh_pos_fig     = "dorefresh1";
+        awtqs.open_parser_pos_fig    = "openparser1";
+        awtqs.use_menu               = 1;
 
-    aws->create_menu("DB_II_Expert", "B");
+        create_query_box(aws, &awtqs, "db1");
 
-    awtqs.gb_main                = GLOBAL_gb_dest;
-    awtqs.gb_ref                 = GLOBAL_gb_merge;
-    awtqs.expect_hit_in_ref_list = true;
-    awtqs.species_name           = AWAR_SPECIES2;
-    awtqs.select_bit             = 1;
-    awtqs.ere_pos_fig            = "ere2";
-    awtqs.by_pos_fig             = "by2";
-    awtqs.qbox_pos_fig           = "qbox2";
-    awtqs.rescan_pos_fig         = "rescan2";
-    awtqs.key_pos_fig            = 0;
-    awtqs.query_pos_fig          = "content2";
-    awtqs.result_pos_fig         = "result2";
-    awtqs.count_pos_fig          = "count2";
-    awtqs.do_query_pos_fig       = "doquery2";
-    awtqs.config_pos_fig         = "doconfig2";
-    awtqs.do_mark_pos_fig        = 0;
-    awtqs.do_unmark_pos_fig      = 0;
-    awtqs.do_delete_pos_fig      = "dodelete2";
-    awtqs.do_set_pos_fig         = "doset2";
-    awtqs.do_refresh_pos_fig     = "dorefresh2";
-    awtqs.open_parser_pos_fig    = "openparser2";
+        DbScanner *scanner = create_db_scanner(GLOBAL_gb_merge, aws, "box1", 0, 0, 0, DB_SCANNER, 0, 0, FIELD_FILTER_NDS, awtqs.get_queried_itemtype());
+        ad_global_scanner1 = scanner;
+        aws->get_root()->awar(AWAR_SPECIES1)->add_callback(AD_map_species1);
+    }
+    {
+        QUERY::query_spec awtqs(MG_species_selector[1]);
+        aws->create_menu("DB_II_Expert", "B");
 
-    awtqs.selector = &(MG_species_selector[1]);
+        awtqs.gb_main                = GLOBAL_gb_dest;
+        awtqs.gb_ref                 = GLOBAL_gb_merge;
+        awtqs.expect_hit_in_ref_list = true;
+        awtqs.species_name           = AWAR_SPECIES2;
+        awtqs.select_bit             = 1;
+        awtqs.ere_pos_fig            = "ere2";
+        awtqs.by_pos_fig             = "by2";
+        awtqs.qbox_pos_fig           = "qbox2";
+        awtqs.rescan_pos_fig         = "rescan2";
+        awtqs.key_pos_fig            = 0;
+        awtqs.query_pos_fig          = "content2";
+        awtqs.result_pos_fig         = "result2";
+        awtqs.count_pos_fig          = "count2";
+        awtqs.do_query_pos_fig       = "doquery2";
+        awtqs.config_pos_fig         = "doconfig2";
+        awtqs.do_mark_pos_fig        = 0;
+        awtqs.do_unmark_pos_fig      = 0;
+        awtqs.do_delete_pos_fig      = "dodelete2";
+        awtqs.do_set_pos_fig         = "doset2";
+        awtqs.do_refresh_pos_fig     = "dorefresh2";
+        awtqs.open_parser_pos_fig    = "openparser2";
+        awtqs.use_menu               = 1;
 
-    awt_create_query_box(aws, &awtqs, "db2");
+        create_query_box(aws, &awtqs, "db2");
 
-    scannerid            = create_db_scanner(GLOBAL_gb_dest, aws, "box2", 0, 0, 0, DB_SCANNER, 0, 0, AWT_NDS_FILTER, awtqs.selector);
-    ad_global_scannerid2 = scannerid;
-    aws->get_root()->awar(AWAR_SPECIES2)->add_callback(AD_map_species2);
+        DbScanner *scanner = create_db_scanner(GLOBAL_gb_dest, aws, "box2", 0, 0, 0, DB_SCANNER, 0, 0, FIELD_FILTER_NDS, awtqs.get_queried_itemtype());
+        ad_global_scanner2 = scanner;
+        aws->get_root()->awar(AWAR_SPECIES2)->add_callback(AD_map_species2);
+    }
 
     // big transfer buttons:
     aws->button_length(13);

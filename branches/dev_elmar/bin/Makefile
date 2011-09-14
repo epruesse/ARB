@@ -16,9 +16,9 @@ develall: all
 clean: realclean
 
 realclean:
-	find . -type l            -exec rm {} \;
-	find . -type f -perm -100 -exec rm {} \;
+	-find . -type l            -exec rm {} \;
+	-find . -type f -perm -100 -exec rm {} \;
 
 
 cleanlinks:
-	find . -type l -exec rm {} \;
+	-find . -type l -exec rm {} \;

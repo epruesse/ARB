@@ -14,10 +14,9 @@
 #include "GEN_graphic.hxx"
 
 #include <arbdbt.h>
-#include <aw_awars.hxx>
+#include <aw_awar.hxx>
 #include <aw_preset.hxx>
 #include <awt_attributes.hxx>
-#include <awt.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 

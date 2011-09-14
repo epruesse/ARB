@@ -18,7 +18,9 @@
 
 #include <AP_pro_a_nucs.hxx>
 
+#if defined(WARN_TODO)
 #warning module completely unused
+#endif
 
 extern void ph_view_matrix_cb(AW_window *);
 

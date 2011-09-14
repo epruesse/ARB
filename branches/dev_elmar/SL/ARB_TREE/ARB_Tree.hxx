@@ -228,6 +228,8 @@ public:
         return seq;
     }
 
+    const char *group_name() const { return gb_node && name ? name : NULL; }
+
 #if defined(CHECK_TREE_STRUCTURE)
     void assert_valid() const;
 #endif // CHECK_TREE_STRUCTURE
@@ -235,6 +237,12 @@ public:
     void mark_subtree();
     bool contains_marked_species();
 
+};
+
+class ARB_tree_predicate {
+public:
+    virtual ~ARB_tree_predicate() {}
+    virtual bool selects(const ARB_tree& tree) const = 0;
 };
 
 // macros to overwrite accessors in classes derived from ARB_tree_root or ARB_tree:

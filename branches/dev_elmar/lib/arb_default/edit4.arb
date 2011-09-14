@@ -124,8 +124,8 @@ key_mapping		%% (%
 		%) /*key_3*/
 
 	key_4			%% (%
-		source			" "
-		dest			"-"
+		source			""
+		dest			""
 		%) /*key_4*/
 
 	key_5			%% (%

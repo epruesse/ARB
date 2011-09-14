@@ -44,6 +44,7 @@ struct arb_handlers {
 extern arb_handlers *active_arb_handlers;
 
 void ARB_install_handlers(arb_handlers& handlers);
+void ARB_redirect_handlers_to(FILE *use_as_stderr, FILE *use_as_stdout);
 
 #else
 #error arb_handlers.h included twice

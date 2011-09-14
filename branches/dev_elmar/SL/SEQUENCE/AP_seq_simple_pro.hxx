@@ -15,10 +15,10 @@
 #include <AP_sequence.hxx>
 #endif
 
-typedef enum {
+enum aas {
     ala, arg, asn, asp, cys, gln, glu, gly, his, ileu, leu, lys, met, phe, pro,
     ser, thr, trp, tyr, val, stop, del, asx, glx, unk, quest
-} aas;
+};
 
 typedef unsigned char ap_pro;   // aas but only one character used
 

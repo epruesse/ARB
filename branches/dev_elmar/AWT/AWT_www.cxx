@@ -11,6 +11,7 @@
 #include "awt_config_manager.hxx"
 #include "awt.hxx"
 
+#include <aw_window.hxx>
 #include <aw_global_awars.hxx>
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
@@ -156,7 +157,7 @@ void awt_openDefaultURL_on_species(AW_window *aww, GBDATA *gb_main) {
     if (error) aw_message(error);
     delete selected_species;
 }
-/* a crazy implementation of a toggle field */
+// a crazy implementation of a toggle field
 void awt_www_select_change(AW_window *aww, AW_CL selected) {
     int i;
     AW_root *aw_root = aww->get_root();

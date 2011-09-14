@@ -19,7 +19,7 @@
 
 #include <awt.hxx>
 #include <ColumnStat.hxx>
-#include <awt_nds.hxx>
+#include <nds.h>
 #include <awt_sel_boxes.hxx>
 #include <awt_filter.hxx>
 #include <arb_progress.h>

@@ -80,6 +80,7 @@ AW_advice.o: $(ARBHOME)/INCLUDE/cb.h
 AW_advice.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_advice.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_advice.o: $(ARBHOME)/INCLUDE/test_global.h
+AW_advice.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 AW_at.o: aw_at.hxx
 AW_at.o: aw_base.hxx
@@ -119,18 +120,18 @@ AW_button.o: aw_window.hxx
 AW_button.o: aw_window_Xm.hxx
 AW_button.o: aw_Xm.hxx
 AW_button.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AW_button.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_button.o: $(ARBHOME)/INCLUDE/arb_sort.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_str.h
+AW_button.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_button.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_button.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AW_button.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_button.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_button.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_button.o: $(ARBHOME)/INCLUDE/cb.h
@@ -229,7 +230,6 @@ AW_edit.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_edit.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_file_selection.o: aw_awar.hxx
-AW_file_selection.o: aw_awars.hxx
 AW_file_selection.o: aw_base.hxx
 AW_file_selection.o: aw_file.hxx
 AW_file_selection.o: aw_keysym.hxx
@@ -270,6 +270,7 @@ AW_font_group.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_global_awars.o: aw_awar.hxx
+AW_global_awars.o: aw_awar_defs.hxx
 AW_global_awars.o: aw_awars.hxx
 AW_global_awars.o: aw_base.hxx
 AW_global_awars.o: aw_global_awars.hxx
@@ -329,6 +330,7 @@ AW_modal.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_modal.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_modal.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_modal.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_modal.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AW_modal.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_modal.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_modal.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -486,6 +488,7 @@ AW_size.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_size.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_status.o: aw_awar.hxx
+AW_status.o: aw_awar_defs.hxx
 AW_status.o: aw_awars.hxx
 AW_status.o: aw_base.hxx
 AW_status.o: aw_keysym.hxx

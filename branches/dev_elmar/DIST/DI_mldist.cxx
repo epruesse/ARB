@@ -22,7 +22,7 @@
 
 void di_mldist::givens(di_ml_matrix a, long i, long j, long n, double ctheta, double stheta, bool left)
 {
-    /* Givens transform at i,j for 1..n with angle theta */
+    // Givens transform at i,j for 1..n with angle theta
     long            k;
     double          d;
 
@@ -42,7 +42,7 @@ void di_mldist::givens(di_ml_matrix a, long i, long j, long n, double ctheta, do
 
 void di_mldist::coeffs(double x, double y, double *c, double *s, double accuracy)
 {
-    /* compute cosine and sine of theta */
+    // compute cosine and sine of theta
     double          root;
 
     root = sqrt(x * x + y * y);
@@ -58,7 +58,7 @@ void di_mldist::coeffs(double x, double y, double *c, double *s, double accuracy
 
 void di_mldist::tridiag(di_ml_matrix a, long n, double accuracy)
 {
-    /* Givens tridiagonalization */
+    // Givens tridiagonalization
     long            i, j;
     double          s, c;
 
@@ -74,7 +74,7 @@ void di_mldist::tridiag(di_ml_matrix a, long n, double accuracy)
 
 void di_mldist::shiftqr(di_ml_matrix a, long n, double accuracy)
 {
-    /* QR eigenvalue-finder */
+    // QR eigenvalue-finder
     long            i, j;
     double          approx, s, c, d, TEMP, TEMP1;
 
@@ -105,7 +105,7 @@ void di_mldist::shiftqr(di_ml_matrix a, long n, double accuracy)
 
 void di_mldist::qreigen(di_ml_matrix proba, long n)
 {
-    /* QR eigenvector/eigenvalue method for symmetric matrix */
+    // QR eigenvector/eigenvalue method for symmetric matrix
     double          accuracy;
     long            i, j;
 
@@ -123,11 +123,11 @@ void di_mldist::qreigen(di_ml_matrix proba, long n)
         for (j = 0; j < n_states; j++)
             proba[i][j] = sqrt(pi[j]) * eigvecs[i][j];
     }
-    /* proba[i][j] is the value of U' times pi^(1/2) */
+    // proba[i][j] is the value of U' times pi^(1/2)
 }
 
 
-/* pameigen */
+// pameigen
 
 void di_mldist::build_exptteig(double tt) {
     int m;
@@ -138,7 +138,7 @@ void di_mldist::build_exptteig(double tt) {
 
 void di_mldist::predict(double /* tt */, long nb1, long  nb2)
 {
-    /* make contribution to prediction of this aa pair */
+    // make contribution to prediction of this aa pair
     long            m;
     double          q;
     double          TEMP;
@@ -199,7 +199,7 @@ double di_mldist::pos_2_tt(int pos) {
 
 void di_mldist::build_akt_predikt(double tt)
 {
-    /* take an actual slope from the hash table, else calculate a new one */
+    // take an actual slope from the hash table, else calculate a new one
     int             pos = tt_2_pos(tt);
     if (!slopes[pos]) {
         build_predikt_table(pos);
@@ -213,7 +213,7 @@ void di_mldist::build_akt_predikt(double tt)
 
 GB_ERROR di_mldist::makedists(bool *aborted_flag)
 {
-    /* compute the distances */
+    // compute the distances
     long   i, j, k, iterations;
     double delta, slope, curv;
     int    b1 = 0, b2=0;
@@ -226,7 +226,7 @@ GB_ERROR di_mldist::makedists(bool *aborted_flag)
     for (i = 0; i < spp; i++) {
         matrix->set(i, i, 0.0);
         {
-            /* move all unknown characters to del */
+            // move all unknown characters to del
             ap_pro *seq = entries[i]->sequence_protein->get_sequence();
             for (k = 0; k <chars;  k++) {
                 b1 = seq[k];

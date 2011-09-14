@@ -26,7 +26,7 @@ void AW_device_size::clear() {
 
 AW_DEVICE_TYPE AW_device_size::type() { return AW_DEVICE_SIZE; }
 
-void AW_device_size::privat_reset() {
+void AW_device_size::specific_reset() {
     clear();
 }
 
@@ -68,7 +68,7 @@ inline void AW_device_size::dot_transformed(const AW::Position& pos, AW_bitset f
     }
 }
 
-bool AW_device_size::invisible_impl(int /*gc*/, const AW::Position& pos, AW_bitset filteri) {
+bool AW_device_size::invisible_impl(const AW::Position& pos, AW_bitset filteri) {
     if (filteri & filter) {
         dot(pos, filteri);
         return true;

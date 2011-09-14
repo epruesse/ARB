@@ -205,6 +205,18 @@ AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit) {
     atexit(destroy_AW_root); // do not call this before opening properties DB!
 }
 
+#if defined(UNIT_TESTS)
+AW_root::AW_root(const char *propertyFile) {
+    aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
+    AW_root::SINGLETON = this;
+
+    memset((char *)this, 0, sizeof(AW_root));
+    init_variables(load_properties(propertyFile));
+    atexit(destroy_AW_root); // do not call this before opening properties DB!
+}
+#endif
+
+
 AW_root::~AW_root() {
     AW_root_cblist::clear(focus_callback_list);
     delete button_sens_list;    button_sens_list = NULL;
@@ -1224,7 +1236,6 @@ void AW_root::init_variables(AW_default database) {
     application_database     = database;
     hash_table_for_variables = GBS_create_hash(1000, GB_MIND_CASE);
     hash_for_windows         = GBS_create_hash(100, GB_MIND_CASE);
-    prvt->action_hash        = GBS_create_hash(1000, GB_MIND_CASE);
 
     for (int i=0; aw_fb[i].awar; ++i) {
         awar_string(aw_fb[i].awar, aw_fb[i].init, application_database);
@@ -1330,6 +1341,8 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     XFontStruct *fontstruct;
     char        *fallback_resources[100];
 
+    prvt->action_hash = GBS_create_hash(1000, GB_MIND_CASE);
+
     p_r-> no_exit = no_exit;
     program_name  = strdup(programname);
 
@@ -1345,8 +1358,8 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     // @@@ FIXME: the next line hangs if program runs inside debugger
     p_r->toplevel_widget = XtOpenApplication(&(p_r->context), programname,
             NULL, 0, // XrmOptionDescRec+numOpts
-            &a, /* &argc */
-            NULL, /* argv */
+            &a, // &argc
+            NULL, // argv
             fallback_resources,
             applicationShellWidgetClass, // widget class
             NULL, 0);
@@ -1848,6 +1861,9 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
 #if defined(DEBUG) && 0
     printf("aw_create_shell: pos=%i/%i size=%i%i\n", posx, posy, width, height);
 #endif // DEBUG
+
+    int focusPolicy = root->focus_follows_mouse ? XmPOINTER : XmEXPLICIT;
+
     if (!p_global->main_widget || !p_global->main_aww->is_shown()) {
         shell = XtVaCreatePopupShell("editor", applicationShellWidgetClass,
                                      father,
@@ -1857,7 +1873,7 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
                                      XmNy, posy,
                                      XmNtitle, aww->window_name,
                                      XmNiconName, aww->window_name,
-                                     XmNkeyboardFocusPolicy, XmEXPLICIT,
+                                     XmNkeyboardFocusPolicy, focusPolicy,
                                      XmNdeleteResponse, XmDO_NOTHING,
                                      XtNiconPixmap, icon_pixmap,
                                      NULL);
@@ -1871,7 +1887,7 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
                                      XmNy, posy,
                                      XmNtitle, aww->window_name,
                                      XmNiconName, aww->window_name,
-                                     XmNkeyboardFocusPolicy, XmEXPLICIT,
+                                     XmNkeyboardFocusPolicy, focusPolicy,
                                      XmNdeleteResponse, XmDO_NOTHING,
                                      XtNiconPixmap, icon_pixmap,
                                      NULL);
@@ -2496,8 +2512,7 @@ void AW_window::set_info_area_height(int height) {
 
 void AW_window::set_bottom_area_height(int height) {
     XtVaSetValues(BOTTOM_WIDGET, XmNheight, height, NULL);
-    XtVaSetValues(p_w->scroll_bar_horizontal, XmNbottomOffset, (int)height,
-            NULL);
+    XtVaSetValues(p_w->scroll_bar_horizontal, XmNbottomOffset, (int)height, NULL);
 }
 
 void AW_window::set_vertical_scrollbar_top_indent(int indent) {
@@ -2506,8 +2521,7 @@ void AW_window::set_vertical_scrollbar_top_indent(int indent) {
 }
 
 void AW_window::set_vertical_scrollbar_bottom_indent(int indent) {
-    XtVaSetValues(p_w->scroll_bar_vertical, XmNbottomOffset, (int)(3+indent),
-            NULL);
+    XtVaSetValues(p_w->scroll_bar_vertical, XmNbottomOffset, (int)(3+indent), NULL);
     bottom_indent_of_vertical_scrollbar = indent;
 }
 
@@ -2519,6 +2533,21 @@ void AW_root::apply_sensitivity(AW_active mask) {
     for (list = button_sens_list; list; list = list->next) {
         XtSetSensitive(list->button, (list->mask & mask) ? True : False);
     }
+}
+
+void AW_window::set_focus_policy(bool follow_mouse) {
+    int focusPolicy = follow_mouse ? XmPOINTER : XmEXPLICIT;
+    XtVaSetValues(p_w->shell, XmNkeyboardFocusPolicy, focusPolicy, NULL);
+}
+
+static long set_focus_policy(const char *, long cl_aww, void *) {
+    AW_window *aww = (AW_window*)cl_aww;
+    aww->set_focus_policy(aww->get_root()->focus_follows_mouse);
+    return cl_aww;
+}
+void AW_root::apply_focus_policy(bool follow_mouse) {
+    focus_follows_mouse = follow_mouse;
+    GBS_hash_do_loop(hash_for_windows, set_focus_policy, 0);
 }
 
 void AW_window::select_mode(int mode) {
@@ -3224,7 +3253,7 @@ void AW_root::process_pending_events() {
 }
 
 AW_ProcessEventType AW_root::peek_key_event(AW_window * /* aww */) {
-    /*! Returns type if key event follows, else 0 */
+    //! Returns type if key event follows, else 0
 
     XEvent xevent;
     Boolean result = XtAppPeekEvent(p_r->context, &xevent);

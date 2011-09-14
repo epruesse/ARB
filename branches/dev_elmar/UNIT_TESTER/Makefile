@@ -1,7 +1,9 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 .SUFFIXES: .o .cxx .depend .setup
 
-include Makefile.setup
+first: $(MAIN)
+
+include Makefile.setup.include
 
 TESTER_OBJECTS = \
 	UnitTester.o \
@@ -21,7 +23,7 @@ TEST_ENVIRONMENT_LIBS = \
 $(MAIN): $(TESTER_OBJECTS) test_environment
 	$(LINK_STATIC_LIB) $(MAIN) $(TESTER_OBJECTS)  
 
-$(CPP_OBJECTS): Makefile.setup Makefile
+$(CPP_OBJECTS): Makefile.setup.local Makefile
 
 test_environment: $(ENVIRONMENT_OBJECTS) $(TESTER_OBJECTS) $(TEST_ENVIRONMENT_LIBS)
 	$(LINK_EXECUTABLE) test_environment $(ENVIRONMENT_OBJECTS) $(TESTER_OBJECTS) $(LIBPATH) $(ARBDB_LIB) $(TEST_ENVIRONMENT_LIBS) $(EXECLIBS)

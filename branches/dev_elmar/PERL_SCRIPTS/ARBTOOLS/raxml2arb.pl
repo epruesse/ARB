@@ -154,7 +154,7 @@ sub main() {
         my $command = 'arb_read_tree '.$currTreename.' '.$_.' "likelyhood='.$likelyhood{$_}.'"';
         if (-f $infofile) { $command .= ' -commentFromFile '.$infofile; }
 
-        system($command)==0 || die "can't execute '$command' (Reason: $!)";
+        system($command)==0 || die "can't execute '$command' (Reason: $?)";
       }
     }
     else { # calc consense tree
@@ -188,7 +188,7 @@ sub main() {
       $meanLH /= $treesToTake;
 
       my $command = 'arb_echo y | consense';
-      system($command)==0 || die "can't execute '$command' (Reason: $!)";
+      system($command)==0 || die "can't execute '$command' (Reason: $?)";
 
       if (not -f 'outtree') {
         die "Consense failed (no 'outtree' generated)";
@@ -197,7 +197,7 @@ sub main() {
       my $comment = "Consense tree of $treesToTake trees\nLikelyhood: min=$minLH mean=$meanLH max=$maxLH";
       $command = 'arb_read_tree -consense '.$treesToTake.' '.$treename.' outtree "'.$comment.'"';
       if (-f $infofile) { $command .= ' -commentFromFile '.$infofile; }
-      system($command)==0 || die "can't execute '$command' (Reason: $!)";
+      system($command)==0 || die "can't execute '$command' (Reason: $?)";
     }
   };
   if ($@) { error($@); }

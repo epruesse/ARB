@@ -9,34 +9,34 @@
 // =============================================================== //
 
 #include <arbdbt.h>
+#include <arb_strarray.h>
 
 #define ADD_LEN        10
 #define PRM_BUFFERSIZE 256
 
 
 struct arb_prm_struct : virtual Noncopyable {
-    char    **alignment_names;
-    int       al_len;
-    int       max_name;
-    GBDATA   *gb_main;
-    char      buffer[PRM_BUFFERSIZE];
-    char     *source;
-    int       prmanz;
-    int       prmlen;
-    int       prmsmin;
-    char    **data;
-    int       sp_count;
-    int       key_cnt;
-    int       one_key_cnt;
-    int       reduce;
-    FILE     *out;
-    char     *outname;
+    ConstStrArray   alignment_names;
+    int             al_len;
+    int             max_name;
+    GBDATA         *gb_main;
+    char            buffer[PRM_BUFFERSIZE];
+    const char     *source;
+    int             prmanz;
+    int             prmlen;
+    int             prmsmin;
+    char          **data;
+    int             sp_count;
+    int             key_cnt;
+    int             one_key_cnt;
+    int             reduce;
+    FILE           *out;
+    char           *outname;
 
     arb_prm_struct() {
         memset(this, 0, sizeof(*this));
     }
     ~arb_prm_struct() {
-        GBT_free_names(alignment_names);
         if (data) {
             for (int i = 0; i<sp_count; ++i) free(data[i]);
             free(data);
@@ -48,14 +48,12 @@ struct arb_prm_struct : virtual Noncopyable {
 
 
 GB_ERROR arb_prm_menu() {
-    char **alignment_name;
     int i;
     printf(" Please select an Alignment:\n");
-    for (alignment_name = aprm.alignment_names, i=1;
-            *alignment_name;
-         alignment_name++, i++) {
-        printf("%i: %s\n", i, *alignment_name);
+    for (i=1; aprm.alignment_names[i-1]; ++i) {
+        printf("%i: %s\n", i, aprm.alignment_names[i-1]);
     }
+
     aprm.max_name = i;
     fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
     i             = atoi(aprm.buffer);
@@ -254,13 +252,13 @@ void arb_prm_primer(int /* prmanz */)
         pspecies = 0;
         if (pos % 50 == 0) printf("Pos. %i (%i)\n", pos, aprm.al_len);
         cutoff_cnt = aprm.prmanz+1;
-        for (sp = 0; sp < aprm.sp_count; sp++) {    /* build initial hash table */
+        for (sp = 0; sp < aprm.sp_count; sp++) {    // build initial hash table
             if (!primer_print(buffer, aprm.data[sp] + pos, prmlen)) {
                 GBS_incr_hash(mhash, buffer);
                 pspecies++;
             }
         }
-        if (pspecies*100 >= aprm.prmsmin * aprm.sp_count) {     /* reduce primer length */
+        if (pspecies*100 >= aprm.prmsmin * aprm.sp_count) {     // reduce primer length
             for (hash = mhash; prmlen >= aprm.prmlen; prmlen-=aprm.reduce) {
                 hash = GBS_create_hash(aprm.prmanz, GB_MIND_CASE);
 
@@ -325,7 +323,7 @@ int main(int argc, char **argv) {
     }
     else {
         GB_begin_transaction(aprm.gb_main);
-        aprm.alignment_names = GBT_get_alignment_names(aprm.gb_main);
+        GBT_get_alignment_names(aprm.alignment_names, aprm.gb_main);
         GB_commit_transaction(aprm.gb_main);
 
         error = arb_prm_menu();

@@ -1,6 +1,6 @@
 #include "di_matr.hxx"
 
-/*  returns 1 only if groupname != null and there are species for that group */
+//  returns 1 only if groupname != null and there are species for that group
 int DI_MATRIX::search_group(GBT_TREE *node, GB_HASH *hash, long *groupcnt, char *groupname, DI_ENTRY **groups) {
     if (node->is_leaf) {
         if (!node->name) return 0;

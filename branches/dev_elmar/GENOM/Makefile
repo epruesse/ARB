@@ -42,13 +42,9 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
-EXP_interface.o: ../NTREE/ad_spec.hxx
-EXP_interface.o: ../NTREE/nt_internal.h
 EXP_interface.o: EXP.hxx
-EXP_interface.o: EXP_interface.hxx
 EXP_interface.o: EXP_local.hxx
 EXP_interface.o: GEN.hxx
-EXP_interface.o: GEN_interface.hxx
 EXP_interface.o: GEN_local.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/ad_prot.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -63,7 +59,7 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/arbdbt.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arbtools.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/attributes.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-EXP_interface.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+EXP_interface.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_detach.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -71,18 +67,19 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-EXP_interface.o: $(ARBHOME)/INCLUDE/awt.hxx
-EXP_interface.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/cb.h
+EXP_interface.o: $(ARBHOME)/INCLUDE/db_query.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
+EXP_interface.o: $(ARBHOME)/INCLUDE/dbui.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
+EXP_interface.o: $(ARBHOME)/INCLUDE/item_sel_list.h
+EXP_interface.o: $(ARBHOME)/INCLUDE/items.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/smartptr.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/test_global.h
 
 EXP_main.o: ../NTREE/nt_cb.hxx
 EXP_main.o: EXP.hxx
-EXP_main.o: EXP_interface.hxx
 EXP_main.o: EXP_local.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 EXP_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -97,6 +94,7 @@ EXP_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 EXP_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 EXP_main.o: $(ARBHOME)/INCLUDE/attributes.h
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+EXP_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -105,7 +103,9 @@ EXP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/awt_input_mask.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/cb.h
+EXP_main.o: $(ARBHOME)/INCLUDE/db_query.h
 EXP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
+EXP_main.o: $(ARBHOME)/INCLUDE/items.h
 EXP_main.o: $(ARBHOME)/INCLUDE/ntree.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 EXP_main.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -134,6 +134,7 @@ GEN_gene.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/cb.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/dupstr.h
+GEN_gene.o: $(ARBHOME)/INCLUDE/items.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -154,7 +155,6 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/arbtools.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/attributes.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -164,16 +164,17 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GEN_graphic.o: $(ARBHOME)/INCLUDE/awt.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/cb.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/dupstr.h
+GEN_graphic.o: $(ARBHOME)/INCLUDE/items.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/test_global.h
 
-GEN_interface.o: ../NTREE/ad_spec.hxx
-GEN_interface.o: ../NTREE/nt_internal.h
+GEN_interface.o: ../GENOM_IMPORT/defs.h
+GEN_interface.o: ../GENOM_IMPORT/Location.h
+GEN_interface.o: ../GENOM_IMPORT/types.h
 GEN_interface.o: GEN.hxx
 GEN_interface.o: GEN_local.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -183,6 +184,8 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_core.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_error.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_msg.h
+GEN_interface.o: $(ARBHOME)/INCLUDE/arb_strarray.h
+GEN_interface.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_string.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arbdb.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -190,7 +193,7 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arbtools.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/attributes.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-GEN_interface.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+GEN_interface.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_detach.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -198,24 +201,22 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GEN_interface.o: $(ARBHOME)/INCLUDE/awt.hxx
-GEN_interface.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/cb.h
+GEN_interface.o: $(ARBHOME)/INCLUDE/db_query.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
+GEN_interface.o: $(ARBHOME)/INCLUDE/dbui.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
-GEN_interface.o: $(ARBHOME)/INCLUDE/ntree.hxx
+GEN_interface.o: $(ARBHOME)/INCLUDE/item_sel_list.h
+GEN_interface.o: $(ARBHOME)/INCLUDE/items.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/test_global.h
 
-GEN_map.o: ../NTREE/ad_spec.hxx
 GEN_map.o: EXP.hxx
-GEN_map.o: EXP_interface.hxx
 GEN_map.o: EXP_local.hxx
 GEN_map.o: GEN.hxx
 GEN_map.o: GEN_gene.hxx
 GEN_map.o: GEN_graphic.hxx
-GEN_map.o: GEN_interface.hxx
 GEN_map.o: GEN_local.hxx
 GEN_map.o: GEN_nds.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -233,6 +234,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GEN_map.o: $(ARBHOME)/INCLUDE/arbtools.h
 GEN_map.o: $(ARBHOME)/INCLUDE/attributes.h
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+GEN_map.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -249,11 +251,14 @@ GEN_map.o: $(ARBHOME)/INCLUDE/awt.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/awt_input_mask.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/cb.h
+GEN_map.o: $(ARBHOME)/INCLUDE/db_query.h
+GEN_map.o: $(ARBHOME)/INCLUDE/dbui.h
 GEN_map.o: $(ARBHOME)/INCLUDE/dupstr.h
+GEN_map.o: $(ARBHOME)/INCLUDE/items.h
 GEN_map.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_map.o: $(ARBHOME)/INCLUDE/test_global.h
 
-GEN_nds.o: GEN_interface.hxx
+GEN_nds.o: GEN.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -271,12 +276,12 @@ GEN_nds.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GEN_nds.o: $(ARBHOME)/INCLUDE/awt.hxx
-GEN_nds.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
-GEN_nds.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/cb.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/dupstr.h
+GEN_nds.o: $(ARBHOME)/INCLUDE/item_sel_list.h
+GEN_nds.o: $(ARBHOME)/INCLUDE/items.h
+GEN_nds.o: $(ARBHOME)/INCLUDE/nds.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -298,6 +303,7 @@ GEN_translations.o: $(ARBHOME)/INCLUDE/attributes.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/dupstr.h
+GEN_translations.o: $(ARBHOME)/INCLUDE/items.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/test_global.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/Translate.hxx

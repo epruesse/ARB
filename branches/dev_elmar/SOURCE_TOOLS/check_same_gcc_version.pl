@@ -35,7 +35,7 @@ else {
     my $lastVersion = $found_version_files[0];
     if ($lastVersion ne "$version.$extension") {
         my $command = "cat $lastVersion";
-        system("$command") ==0 || die "can't execute '$command' (Reason: $!)";
+        system("$command") ==0 || die "can't execute '$command' (Reason: $?)";
         print "- Your current gcc version is '$version'.\n";
         print "Use 'make rebuild' to recompile with a different gcc version or\n";
         print "use 'make clean' to cleanup build and then compile again.\n";

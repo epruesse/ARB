@@ -61,7 +61,7 @@ void MySAXHandler::startElement(const XMLCh* const uri,   const XMLCh* const loc
         fFormatter  << XMLFormatter::NoEscapes << chSpace ;
         //        fFormatter  << attributes.getLocalName(index) ;
 
-        fFormatter /* << chEqual << chDoubleQuote*/
+        fFormatter // << chEqual << chDoubleQuote
                     << XMLFormatter::AttrEscapes
                     << attributes.getValue(index)
                     << XMLFormatter::NoEscapes << chSpace

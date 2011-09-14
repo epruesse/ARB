@@ -28,19 +28,31 @@ DESCRIPTION     Choose whether you like to create (or delete) groups for all 'li
 
                       - abort (the default)
                       - skip
-                      - overwrite or
-                      - to append to existing group name.
+                      - overwrite with generated name or
+                      - overwrite and append original group name.
 
-                You can specify a name prefix for the generated group names. The rest of the name is
-                generated automatically and shows the position of the group inside its parent group.
+                You can specify a name prefix for the generated group names.
+
+                The rest of the name is generated from the 'Name suffix' specification.
+                This specification may contain normal text and the following codes:
+
+                     %p            position in upgroup (which don't start with cluster prefix)
+                     %P            position in upgroup
+                     %t            position in tree
+                     %d            mean distance of cluster
+                     %D            max allowed distance (as set in input field)
+                     %o            "..%_of" (only occurs when applying to different tree topology)
+                     %e            existing group-name
+                     %%            %
 
                 Click on 'delete groups' to erase groups existing at cluster subtrees. You can select
-                to remove all groups or only groups matching the name prefix below.
+                to remove all groups or only groups matching the name prefix.
 
-NOTES		This function always affects the tree currently selected in the ARB_DIST main window. 
+NOTES		This function always affects the tree currently selected in the ARB_DIST main window.
 
 EXAMPLES	None
 
-WARNINGS	None
+WARNINGS	Be careful when using 'overwrite' without appending original names.
+                It will destroy existing groups.
 
 BUGS		No bugs known

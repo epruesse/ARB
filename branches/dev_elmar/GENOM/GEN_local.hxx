@@ -18,12 +18,6 @@
 
 #define gen_assert(bed) arb_assert(bed)
 
-// to create new genes:
-#define AWAR_GENE_DEST       "tmp/gene/dest"
-#define AWAR_GENE_POS1       "tmp/gene/pos1"
-#define AWAR_GENE_POS2       "tmp/gene/pos2"
-#define AWAR_GENE_COMPLEMENT "tmp/gene/compl"
-
 // contains the path to the gene:  "organism_name;gene_name"
 // writing this awar has no effect
 #define AWAR_COMBINED_GENE_NAME "tmp/gene/combined_name"
@@ -77,6 +71,8 @@ struct GEN_create_map_param {
 };
 
 AW_window *GEN_create_map(AW_root *aw_root, AW_CL cl_GEN_create_map_param);
+
+GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data);
 
 // --------------------------------------------------------------------------------
 
