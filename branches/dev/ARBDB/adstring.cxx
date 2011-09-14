@@ -117,10 +117,10 @@ GB_ERROR GB_check_key(const char *key) { // goes to header: __ATTR__USERESULT
     int  i;
     long len;
 
-    if (!key || key[0] == 0) return GB_export_error("Empty key is not allowed");
+    if (!key || key[0] == 0) return "Empty key is not allowed";
     len = strlen(key);
-    if (len>GB_KEY_LEN_MAX) return GB_export_errorf("Invalid key '%s': too long", key);
-    if (len < GB_KEY_LEN_MIN) return GB_export_errorf("Invalid key '%s': too short", key);
+    if (len>GB_KEY_LEN_MAX) return GBS_global_string("Invalid key '%s': too long", key);
+    if (len < GB_KEY_LEN_MIN) return GBS_global_string("Invalid key '%s': too short", key);
 
     for (i = 0; key[i]; ++i) {
         char c = key[i];
@@ -128,7 +128,7 @@ GB_ERROR GB_check_key(const char *key) { // goes to header: __ATTR__USERESULT
         if ((c>='A') && (c<='Z')) continue;
         if ((c>='0') && (c<='9')) continue;
         if ((c=='_')) continue;
-        return GB_export_errorf("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' ", c, key);
+        return GBS_global_string("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' ", c, key);
     }
 
     return 0;
