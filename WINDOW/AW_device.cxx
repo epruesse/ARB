@@ -691,3 +691,10 @@ const AW_screen_area& AW_device::get_common_screen(const AW_common *common_) {
 }
 
 
+
+int AW_clicked_line::draw(AW_device *d, int gc) const {
+    return d->line(gc, x0, y0, x1, y1);
+}
+int AW_clicked_text::draw(AW_device *d, int gc) const {
+    return d->box(gc, true, textArea);
+}
