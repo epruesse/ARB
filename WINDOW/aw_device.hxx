@@ -33,7 +33,7 @@
 
 const AW_bitset AW_SCREEN        = 1;
 const AW_bitset AW_CLICK         = 2;
-const AW_bitset AW_CLICK_DRAG    = 4;
+const AW_bitset AW_CLICK_DROP    = 4;
 const AW_bitset AW_SIZE          = 8;
 const AW_bitset AW_SIZE_UNSCALED = 16;  // for text and text-size dependant parts
 const AW_bitset AW_PRINTER       = 32;  // print/xfig-export

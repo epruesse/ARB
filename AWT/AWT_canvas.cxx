@@ -418,10 +418,12 @@ static void input_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
     device->set_filter(AW_SCREEN);
     device->reset();
 
-    ntw->tree_disp->exports.clear();
+    AWT_graphic *graph_disp = ntw->tree_disp;
+
+    graph_disp->exports.clear();
     ntw->push_transaction();
 
-    ntw->tree_disp->check_update(ntw->gb_main);
+    graph_disp->check_update(ntw->gb_main);
 
     bool event_handled = false;
 
@@ -437,23 +439,30 @@ static void input_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
         ntw->init_device(click_device);
         ntw->init_device(device);
 
-        ntw->tree_disp->show(click_device);
+        graph_disp->show(click_device);
         click_device->get_clicked_line(&ntw->clicked_line);
         click_device->get_clicked_text(&ntw->clicked_text);
 
         AWT_graphic_event gevent(ntw->mode, event, false, &ntw->clicked_line, &ntw->clicked_text);
-        ntw->tree_disp->handle_command(device, gevent);
+        graph_disp->handle_command(device, gevent);
 
-        if (ntw->tree_disp->exports.save) {
+        AWT_graphic_exports& exports = graph_disp->exports;
+
+        if (exports.save) {
             // save it
-            GB_ERROR error = ntw->tree_disp->save(ntw->gb_main, 0, 0, 0);
+            GB_ERROR error = graph_disp->save(ntw->gb_main, 0, 0, 0);
             if (error) {
                 aw_message(error);
-                ntw->tree_disp->load(ntw->gb_main, 0, 0, 0);
+                graph_disp->load(ntw->gb_main, 0, 0, 0);
             }
+            exports.structure_change = 1;
+        }
+        if (exports.structure_change) {
+            graph_disp->update_structure();
+            exports.resize = 1;
         }
         if (ntw->gb_main) {
-            ntw->tree_disp->update(ntw->gb_main);
+            graph_disp->update(ntw->gb_main);
         }
         ntw->refresh_by_exports();
     }
@@ -573,18 +582,15 @@ static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
                     run_command = false;
                     break;
 
-                case AWT_MODE_SWAP2:
-                    if (event.button == AWT_M_RIGHT) break;
-                    // fall-through
                 case AWT_MODE_MOVE: {
                     ntw->init_device(device);
                     AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH);
-                    click_device->set_filter(AW_CLICK_DRAG);
+                    click_device->set_filter(AW_CLICK_DROP);
                     ntw->init_device(click_device);
                     ntw->tree_disp->show(click_device);
                     click_device->get_clicked_line(&ntw->clicked_line);
                     click_device->get_clicked_text(&ntw->clicked_text);
-                    run_command  = false;
+                    run_command  = true; 
                     break;
                 }
                 default:

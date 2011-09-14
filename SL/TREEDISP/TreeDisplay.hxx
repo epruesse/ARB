@@ -163,6 +163,8 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     }
 
     virtual void read_tree_settings();
+
+    void update_structure() { get_root_node()->compute_tree(tree_static->get_gb_main()); }
     
 protected:
 

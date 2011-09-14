@@ -61,6 +61,8 @@ class GEN_graphic : public AWT_nonDB_graphic, virtual Noncopyable {
 
     void delete_gen_root(AWT_canvas *ntw);
 
+    void update_structure() {}
+    
 protected:
 
     // variables - tree compatibility
