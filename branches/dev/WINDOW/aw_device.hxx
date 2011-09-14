@@ -97,6 +97,10 @@ enum AW_cursor_type {
     AW_cursor_overwrite
 };
 
+class  AW_common;
+class  AW_clip_scale_stack;
+class  AW_device;
+struct AW_world;
 
 // @@@ FIXME: elements of the following classes should go private!
 
@@ -107,9 +111,10 @@ public: // @@@ make private
     bool  exists;           // true if a drawn element was clicked, else false
     int   distance;         // distance in pixel to nearest line/text
 
-protected:
     AW_pos nearest_rel_pos;        // 0 = at left(upper) small-side, 1 = at right(lower) small-side of textArea
     
+protected:
+
     AW_clicked_element() : client_data1(0), client_data2(0), exists(false), distance(-1), nearest_rel_pos(0) {}
     virtual ~AW_clicked_element() {}
 
@@ -119,11 +124,13 @@ public:
     AW_CL cd2() const { return client_data2; }
 
     virtual AW::Position get_attach_point() const = 0;
-    virtual bool is_text() const            = 0;
+    virtual bool is_text() const                  = 0;
+    virtual int draw(AW_device *d, int gc) const  = 0;
+
     bool is_line() const { return !is_text(); }
 
-    AW_pos get_rel_pos() const { return nearest_rel_pos; }
-    void set_rel_pos(AW_pos rel) { aw_assert(rel >= 0.0 && rel <= 1.0); nearest_rel_pos = rel; }
+    double get_rel_pos() const { return nearest_rel_pos; }
+    void set_rel_pos(double rel) { aw_assert(rel >= 0.0 && rel <= 1.0); nearest_rel_pos = rel; }
 
     AW::LineVector get_connecting_line(const AW_clicked_element& other) const {
         return AW::LineVector(get_attach_point(), other.get_attach_point());
@@ -132,15 +139,21 @@ public:
 
 class AW_clicked_line : public AW_clicked_element {
 public:
-    AW_pos x0, y0, x1, y1;  // @@@ make this a Rectangle
+    AW_pos x0, y0, x1, y1;  // @@@ make this a LineVector
 
     AW_clicked_line() : x0(0), y0(0), x1(0), y1(0) {}
 
     bool is_text() const { return false; }
+    bool operator == (const AW_clicked_line& other) const { return nearlyEqual(get_line(), other.get_line()); }
+
     AW::Position get_attach_point() const {
-        return AW::Position(x0*(1-nearest_rel_pos)+x1*nearest_rel_pos,
-                            y0*(1-nearest_rel_pos)+y1*nearest_rel_pos);
+        double nrp = get_rel_pos();
+        return AW::Position(x0*(1-nrp)+x1*nrp,
+                            y0*(1-nrp)+y1*nrp);
     }
+
+    AW::LineVector get_line() const { return AW::LineVector(x0, y0, x1, y1); }
+    int draw(AW_device *d, int gc) const;
 };
 
 class AW_clicked_text : public AW_clicked_element {
@@ -152,9 +165,12 @@ public:
     AW_clicked_text() : cursor(-1), exactHit(false) {}
 
     bool is_text() const { return true; }
+    bool operator == (const AW_clicked_text& other) const { return nearlyEqual(textArea, other.textArea); }
+
     AW::Position get_attach_point() const {
         return textArea.centroid(); // @@@ use center atm
     }
+    int draw(AW_device *d, int gc) const;
 };
 
 const AW_clicked_element *AW_getBestClick(const AW_clicked_line *cl, const AW_clicked_text *ct);
@@ -381,8 +397,6 @@ enum AW_function {
     AW_XOR
 };
 
-class AW_common;
-
 class AW_stylable : virtual Noncopyable {
     AW_common *common;
 public:
@@ -406,10 +420,6 @@ public:
     
     void reset_style();
 };
-
-class  AW_clip_scale_stack;
-struct AW_world;
-class  AW_device;
 
 class AW_click_cd : virtual Noncopyable {
     AW_CL              cd1;
