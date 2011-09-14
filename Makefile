@@ -37,9 +37,9 @@
 # Read configuration 
 include config.makefile
 
-ifeq ($(LD_LIBRARY_PATH),'')
-LD_LIBRARY_PATH:=${ARBHOME}/lib
-endif
+export ARBHOME:=$(shell pwd)
+export PATH:=${ARBHOME}/bin:${PATH}
+export LD_LIBRARY_PATH:=${ARBHOME}/lib:${LD_LIBRARY_PATH}
 
 FORCEMASK = umask 002
 NODIR=--no-print-directory
