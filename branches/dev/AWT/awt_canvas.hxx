@@ -30,7 +30,6 @@ enum AWT_COMMAND_MODE {
     AWT_MODE_SPREAD,
     AWT_MODE_SWAP,
     AWT_MODE_LENGTH,
-    AWT_MODE_SWAP2,
     AWT_MODE_MOVE,
     AWT_MODE_SETROOT,
     AWT_MODE_RESET,
@@ -49,11 +48,12 @@ class AWT_graphic_exports {
     AW_borders padding;
 
 public:
-    unsigned int zoom_reset : 1;
-    unsigned int resize : 1;
-    unsigned int refresh : 1;
-    unsigned int save : 1;
-    unsigned int structure_change : 1; // maybe useless
+    unsigned int refresh : 1;          // 1 -> do a refresh
+    unsigned int resize : 1;           // 1 -> size of graphic might have changed (implies refresh)
+    unsigned int structure_change : 1; // 1 -> call update_structure (implies resize)
+    unsigned int zoom_reset : 1;       // 1 -> do a zoom-reset (implies resize)
+    unsigned int save : 1;             // 1 -> save structure to DB (implies structure_change)
+
     unsigned int dont_fit_x : 1;
     unsigned int dont_fit_y : 1;
     unsigned int dont_fit_larger : 1;  // if xsize>ysize -> dont_fit_x (otherwise dont_fit_y)
@@ -171,9 +171,11 @@ public:
                 The function may return a pointer to a preset window */
 
     virtual void handle_command(AW_device *device, AWT_graphic_event& event) = 0;
+    virtual void update_structure()                                          = 0; // called when exports.structure_change == 1
 };
 
 class AWT_nonDB_graphic : public AWT_graphic {
+    void update_structure() {}
     // a partly implementation of AWT_graphic
 public:
     AWT_nonDB_graphic() {}

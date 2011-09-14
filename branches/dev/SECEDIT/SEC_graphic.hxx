@@ -41,6 +41,8 @@ class SEC_graphic : public AWT_graphic, virtual Noncopyable {
     SEC_update_request  update_requested;
     char               *load_error; // error occurred during load()
 
+    void update_structure() {}
+    
 protected:
 
     // variables - tree compatibility

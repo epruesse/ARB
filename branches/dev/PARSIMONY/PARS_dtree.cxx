@@ -291,91 +291,11 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, AWT
                                     AW_event_type type, AW_pos x, AW_pos y,
                                     const AW_clicked_line *cl, const AW_clicked_text *ct)
 {
-    static int bl_drag_flag;
-
-    AP_tree *at;
-
-    bool compute_tree = false;
-    bool recalc_branch_lengths = false;
-    bool beautify_tree = false;
+    static int  bl_drag_flag;
+    AP_tree    *at;
+    bool        recalc_branch_lengths = false;
 
     switch (cmd) {
-        case AWT_MODE_MOVE:                             // two point commands !!!!!
-            if (button==AWT_M_MIDDLE) {
-                break;
-            }
-            switch (type) {
-                case AW_Mouse_Press:
-                    if (!(cl && cl->exists)) {
-                        break;
-                    }
-
-                    // @@@ check security level
-                    at = (AP_tree *)cl->client_data1;
-                    if (at && at->father) {
-                        bl_drag_flag = 1;
-                        this->rot_at = at;
-                        this->rot_cl = *cl;
-                        this->old_rot_cl = *cl;
-                    }
-                    break;
-
-                case AW_Mouse_Drag:
-                    if (bl_drag_flag && this->rot_at && this->rot_at->father) {
-                        this->rot_show_line(device);
-                        if (cl->exists) {
-                            this->rot_cl = *cl;
-                        }
-                        else {
-                            rot_cl = old_rot_cl;
-                        }
-                        this->rot_show_line(device);
-                    }
-                    break;
-                case AW_Mouse_Release:
-                    if (bl_drag_flag && this->rot_at && this->rot_at->father) {
-                        this->rot_show_line(device);
-                        AP_tree *dest = 0;
-                        if (cl->exists) dest = (AP_tree *)cl->client_data1;
-                        AP_tree *source = rot_at;
-                        if (!(source && dest)) {
-                            aw_message("Please Drag Line to a valid branch");
-                            break;
-                        }
-                        if (source == dest) {
-                            aw_message("Please drag mouse from source to destination");
-                            break;
-                        }
-                        const char *error = 0;
-
-                        switch (button) {
-                            case AWT_M_LEFT:
-                                error = source->cantMoveTo(dest);
-                                if (!error) {
-                                    source->moveTo(dest, cl->get_rel_pos());
-                                    recalc_branch_lengths = true;
-                                }
-                                break;
-                            case AWT_M_RIGHT:
-                                error = source->move_group_info(dest);
-                                break;
-
-                            case AWT_M_MIDDLE: ap_assert(0); break; // shall be handled by caller
-                        }
-
-                        if (error) aw_message(error);
-                        this->exports.refresh = 1;
-                        this->exports.save    = 1;
-                        this->exports.resize  = 1;
-                        ASSERT_VALID_TREE(get_root_node());
-                        compute_tree = true;
-                    }
-                    break;
-                default:
-                    break;
-            }
-            break;
-
 #ifdef NNI_MODES
         case AWT_MODE_NNI:
             if (type==AW_Mouse_Press) {
@@ -389,11 +309,8 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, AWT
                             AP_tree_nlen *atn = DOWNCAST(AP_tree_nlen*, at);
                             atn->nn_interchange_rek(-1, AP_BL_NNI_ONLY, false);
 
-                            exports.refresh = 1;
-                            exports.save    = 1;
-
+                            exports.save = 1;
                             ASSERT_VALID_TREE(get_root_node());
-                            recalc_branch_lengths = true;
                         }
                         break;
                     }
@@ -405,11 +322,8 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, AWT
                         atn->nn_interchange_rek(-1, AP_BL_NNI_ONLY, false);
                         printf("Combines: %li\n", AP_sequence::combine_count()-prevCombineCount);
 
-                        exports.refresh = 1;
-                        exports.save    = 1;
-
+                        exports.save = 1;
                         ASSERT_VALID_TREE(get_root_node());
-                        recalc_branch_lengths = true;
                         break;
                     }
                     case AWT_M_MIDDLE: ap_assert(0); break; // shall be handled by caller
@@ -426,19 +340,15 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, AWT
                             arb_progress progress("Kernighan-Lin optimize subtree");
                             at = (AP_tree *)cl->client_data1;
                             PARS_kernighan_cb(at);
-                            this->exports.refresh = 1;
                             this->exports.save = 1;
                             ASSERT_VALID_TREE(get_root_node());
-                            recalc_branch_lengths = true;
                         }
                         break;
                     case AWT_M_RIGHT: {
                         arb_progress progress("Kernighan-Lin optimize tree");
                         PARS_kernighan_cb(get_root_node());
-                        this->exports.refresh = 1;
                         this->exports.save = 1;
                         ASSERT_VALID_TREE(get_root_node());
-                        recalc_branch_lengths = true;
                         break;
                     }
                     case AWT_M_MIDDLE: ap_assert(0); break; // shall be handled by caller
@@ -457,20 +367,16 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, AWT
                             at = (AP_tree *)cl->client_data1;
                             
                             if (at) PARS_optimizer_cb(at, progress);
-                            this->exports.refresh = 1;
-                            this->exports.save    = 1;
+                            this->exports.save = 1;
                             ASSERT_VALID_TREE(get_root_node());
-                            recalc_branch_lengths = true;
                         }
                         break;
                     case AWT_M_RIGHT: {
                         arb_progress progress("Optimizing tree");
                         
                         PARS_optimizer_cb(get_root_node(), progress);
-                        this->exports.refresh = 1;
-                        this->exports.save    = 1;
+                        this->exports.save = 1;
                         ASSERT_VALID_TREE(get_root_node());
-                        recalc_branch_lengths = true;
                         break;
                     }
                     case AWT_M_MIDDLE: ap_assert(0); break; // shall be handled by caller
@@ -485,23 +391,10 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, AWT
             break;
     }
 
-    if (recalc_branch_lengths) {
+    if (exports.save == 1) {
         arb_progress progress("Recalculating branch lengths");
         rootEdge()->calc_branchlengths();
-
-        beautify_tree = true; // beautify after recalc_branch_lengths
-    }
-
-    if (beautify_tree) {
-        this->resort_tree(0);
-        this->exports.save = 1;
-
-        compute_tree = true; // compute_tree after beautify_tree
-    }
-
-    if (compute_tree) {
-        get_root_node()->compute_tree(gb_main);
-        exports.refresh = 1;
+        resort_tree(0); // beautify after recalc_branch_lengths
     }
 }
 
