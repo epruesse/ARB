@@ -1,6 +1,6 @@
 PROJECT         pb_com
 OBJECT_KEY      PT,             # MAIN PREFIX
-MAX_KEY         33,             # MAX NUMBER OF AN ATTRIBUTE
+MAX_KEY         93,             # MAX NUMBER OF AN ATTRIBUTE
 MAX_OBJECT      12,             # MAX DIFFERENT USER STRUCTURES
 MAX_STRING_LEN  1024,
 MAX_PAR_CNT     16,
@@ -191,6 +191,9 @@ PT_probematch, MATCHLIST,       4,      (~the probe match list~), {
     char,        sequence,          l,    r,    ,       SEQUENCE,       17,     ,      (~path of probe~);
     int,         reversed,          t,    r,    ,       REVERSED,       18,     ,      (~reversed probe matches~);
     aisc_string, get_match_overlay, %,    r,    ,       OVERLAY,        19,     ,      (~ascii visualization of match~);
+    aisc_string,get_match_acc,%,r,,FIELD_ACC,91,,(~get db field acc~);
+    int        ,get_match_start,%,r,,FIELD_START,92,,(~get db field start~);
+    int        ,get_match_stop,%,r,,FIELD_STOP,93,,(~get db field stop~);
 };
 
 # used below in MAIN/SPECIESLIST

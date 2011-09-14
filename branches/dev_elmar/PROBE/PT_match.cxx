@@ -590,6 +590,31 @@ char *get_match_overlay(PT_probematch *ml)
     return ref;
 }
 
+const char* get_match_acc(PT_probematch *ml) {
+    GB_transaction trans(psg.gb_main);
+    GBDATA *gbd = GB_entry(psg.data[ml->name].gbd, "acc");
+    if (gbd) {
+        return GB_read_char_pntr(gbd);
+    }
+    return 0;
+}
+int get_match_start(PT_probematch *ml) {
+    GB_transaction trans(psg.gb_main);
+    GBDATA *gbd = GB_entry(psg.data[ml->name].gbd, "start");
+    if (gbd) {
+        return GB_read_int(gbd);
+    }
+    return 0;
+}
+int get_match_stop(PT_probematch *ml) {
+    GB_transaction trans(psg.gb_main);
+    GBDATA *gbd = GB_entry(psg.data[ml->name].gbd, "stop");
+    if (gbd) {
+        return GB_read_int(gbd);
+    }
+    return 0;
+}
+
 static const char *get_match_info_formatted(PT_probematch  *ml, const format_props& format) {
     GBS_strstruct *memfile = GBS_stropen(256);
     GBS_strcat(memfile, "  ");

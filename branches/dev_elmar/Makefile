@@ -1084,6 +1084,10 @@ $(ALIV3): $(ARCHS_ALIV3:.a=.dummy) link_db
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
+# SLV_TOOLS stuff
+SLV_TOOLS/SLV_TOOLS.dummy : shared_libs com_probe
+slv:        shared_libs SLV_TOOLS/SLV_TOOLS.dummy
+ 
 #***********************************	SHARED LIBRARIES SECTION  **************************************
 
 prepare_libdir: libs addlibs
@@ -1784,7 +1788,7 @@ reset_committed_build:
 
 arbapplications: nt pa e4 wetc pt na nal di ph ds pgt wetc cma
 
-arb_external: convert tools gde readseq tg pst a3 xmlin
+arb_external: convert tools gde readseq tg pst a3 xmlin slv
 
 arb_no_perl: arbapplications help arb_external
 
