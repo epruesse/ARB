@@ -26,12 +26,12 @@ class AWT_graphic_parsimony : public AWT_graphic_tree {
 
 
     virtual void show(AW_device *device);
-    virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,
+    virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, AWT_Mouse_Button button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,
                          AW_event_type type, AW_pos x, AW_pos y,
-                         AW_clicked_line *cl, AW_clicked_text *ct);
+                         const AW_clicked_line *cl, const AW_clicked_text *ct);
+    virtual void handle_command(AW_device *device, AWT_graphic_event& event); 
 public:
     AWT_graphic_parsimony(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
-
 };
 
 void PARS_tree_init(AWT_graphic_tree *agt);

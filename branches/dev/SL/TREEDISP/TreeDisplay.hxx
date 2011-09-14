@@ -198,12 +198,14 @@ public:
     virtual void info(AW_device *device, AW_pos x, AW_pos y,
                       AW_clicked_line *cl, AW_clicked_text *ct);
 
-    virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char, AW_event_type type,
+    virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, AWT_Mouse_Button button, AW_key_mod key_modifier, AW_key_code key_code, char key_char, AW_event_type type,
                          AW_pos x, AW_pos y,
-                         AW_clicked_line *cl, AW_clicked_text *ct);
+                         const AW_clicked_line *cl, const AW_clicked_text *ct);
 
     void key_command(AWT_COMMAND_MODE cmd, AW_key_mod key_modifier, char key_char,
-                     AW_pos           x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
+                     AW_pos x, AW_pos y, const AW_clicked_line *cl, const AW_clicked_text *ct);
+
+    void handle_command(AW_device *device, AWT_graphic_event& event);
 
     void mark_species_in_tree(AP_tree *at, int mark);
     void mark_species_in_tree_that(AP_tree *at, int mark, int (*condition)(GBDATA*, void*), void *cd);

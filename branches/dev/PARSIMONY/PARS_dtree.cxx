@@ -280,10 +280,16 @@ void AWT_graphic_parsimony::show(AW_device *device)
     this->AWT_graphic_tree::show(device);
 }
 
+void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event& event) {
+    command(device, // @@@ inline this call 
+            event.cmd(), event.button(), event.key_modifier(), event.key_code(), event.key_char(),
+            event.type(), event.x(), event.y(), event.cl(), event.ct()
+        );
+}
 
-void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,
+void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, AWT_Mouse_Button button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,
                                     AW_event_type type, AW_pos x, AW_pos y,
-                                    AW_clicked_line *cl, AW_clicked_text *ct)
+                                    const AW_clicked_line *cl, const AW_clicked_text *ct)
 {
     static int bl_drag_flag;
 
@@ -353,6 +359,8 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                             case AWT_M_RIGHT:
                                 error = source->move_group_info(dest);
                                 break;
+
+                            case AWT_M_MIDDLE: ap_assert(0); break; // shall be handled by caller
                         }
 
                         if (error) aw_message(error);
@@ -404,6 +412,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                         recalc_branch_lengths = true;
                         break;
                     }
+                    case AWT_M_MIDDLE: ap_assert(0); break; // shall be handled by caller
                 }
                 GB_begin_transaction(gb_main);
             }
@@ -432,6 +441,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                         recalc_branch_lengths = true;
                         break;
                     }
+                    case AWT_M_MIDDLE: ap_assert(0); break; // shall be handled by caller
                 }
                 GB_begin_transaction(gb_main);
             }
@@ -463,6 +473,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                         recalc_branch_lengths = true;
                         break;
                     }
+                    case AWT_M_MIDDLE: ap_assert(0); break; // shall be handled by caller
                 }
                 GB_begin_transaction(gb_main);
             }
@@ -493,3 +504,5 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
         exports.refresh = 1;
     }
 }
+
+

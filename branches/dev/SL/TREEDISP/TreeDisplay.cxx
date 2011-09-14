@@ -686,7 +686,7 @@ GB_ERROR AWT_graphic_tree::create_group(AP_tree * at) {
 }
 
 void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /* cmd */, AW_key_mod key_modifier, char key_char,
-                                   AW_pos /* x */, AW_pos /* y */, AW_clicked_line *cl, AW_clicked_text *ct)
+                                   AW_pos /* x */, AW_pos /* y */, const AW_clicked_line *cl, const AW_clicked_text *ct)
 {
     bool update_timer = true;
     bool calc_color   = true;
@@ -953,10 +953,17 @@ static bool command_on_GBDATA(GBDATA *gbd, AWT_COMMAND_MODE cmd, AW_event_type t
     return refresh;
 }
 
+void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& event) {
+    command(device, // @@@ inline this call 
+            event.cmd(), event.button(), event.key_modifier(), event.key_code(), event.key_char(),
+            event.type(), event.x(), event.y(), event.cl(), event.ct()
+        );
+}
+
 void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
-                               int button, AW_key_mod key_modifier, AW_key_code /* key_code */, char key_char,
+                               AWT_Mouse_Button button, AW_key_mod key_modifier, AW_key_code /* key_code */, char key_char,
                                AW_event_type type, AW_pos x, AW_pos y,
-                               AW_clicked_line *cl, AW_clicked_text *ct)
+                               const AW_clicked_line *cl, const AW_clicked_text *ct)
 {
     static int rot_drag_flag, bl_drag_flag;
 
@@ -1385,6 +1392,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             exports.zoom_reset = 1;
                         }
                         break;
+
+                    case AWT_M_MIDDLE: td_assert(0); break; // shall be handled by caller
                 }
                 get_root_node()->compute_tree(gb_main);
             }
@@ -1455,6 +1464,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                                     exports.save    = 1;
                                     exports.refresh = 1;
                                     break;
+
+                                case AWT_M_MIDDLE: td_assert(0); break; // shall be handled by caller
                             }
                         }
                     }
@@ -1484,6 +1495,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             this->exports.save = 1;
                         }
                         break;
+
+                    case AWT_M_MIDDLE: td_assert(0); break; // shall be handled by caller
                 }
             }
             break;
@@ -1552,6 +1565,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         exports.zoom_reset = 1;
                         get_root_node()->compute_tree(gb_main);
                         break;
+
+                    case AWT_M_MIDDLE: td_assert(0); break; // shall be handled by caller
                 }
             } 
             break;
@@ -1571,6 +1586,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         break;
                     case AWT_M_RIGHT:
                         break;
+
+                    case AWT_M_MIDDLE: td_assert(0); break; // shall be handled by caller
                 }
             }
             break;
@@ -1589,6 +1606,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             case AWT_M_RIGHT:
                                 mark_species_in_tree(at, 0);
                                 break;
+
+                            case AWT_M_MIDDLE: td_assert(0); break; // shall be handled by caller
                         }
                     }
                     exports.refresh = 1;
@@ -2635,6 +2654,7 @@ void AWT_graphic_tree::show(AW_device *device) {
 void AWT_graphic_tree::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/) {
     aw_message("INFO MESSAGE");
 }
+
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb) {
     AWT_graphic_tree *apdt    = new AWT_graphic_tree(root, gb_main, map_viewer_cb);

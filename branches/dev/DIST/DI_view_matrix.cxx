@@ -249,7 +249,7 @@ static void input_cb(AW_window *aww, AW_CL cl_dmatrix, AW_CL) {
             click_device->get_clicked_text(&clicked_text);
             click_device->get_clicked_line(&clicked_line);
 
-            AW_clicked_element *clicked = AW_getBestClick(&clicked_line, &clicked_text);
+            const AW_clicked_element *clicked = AW_getBestClick(&clicked_line, &clicked_text);
             if (clicked) {
                 ClickAction action = static_cast<ClickAction>(clicked->cd1());
 

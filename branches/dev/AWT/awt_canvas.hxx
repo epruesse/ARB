@@ -87,6 +87,57 @@ public:
     int get_left_padding() const { return padding.l; }
 };
 
+enum AWT_Mouse_Button {
+    AWT_M_LEFT   = 1,
+    AWT_M_MIDDLE = 2,
+    AWT_M_RIGHT  = 3
+};
+
+class AWT_graphic_event : virtual Noncopyable {
+    AWT_COMMAND_MODE M_cmd;  // currently active mode
+
+    AWT_Mouse_Button M_button;
+    AW_key_mod       M_key_modifier;
+    AW_key_code      M_key_code;
+    char             M_key_char;
+    AW_event_type    M_type;
+
+    AW::Position mousepos;
+
+    const AW_clicked_line *M_cl; // text and/or
+    const AW_clicked_text *M_ct; // line selected by current mouse position
+
+public:
+    AWT_graphic_event(AWT_COMMAND_MODE cmd_, const AW_event& event, bool is_drag, const AW_clicked_line  *cl_, const AW_clicked_text  *ct_)
+        : M_cmd(cmd_),
+          M_button((AWT_Mouse_Button)event.button),
+          M_key_modifier(event.keymodifier),
+          M_key_code(event.keycode),
+          M_key_char(event.character),
+          M_type(is_drag ? AW_Mouse_Drag : event.type),
+          mousepos(event.x, event.y), 
+          M_cl(cl_),
+          M_ct(ct_)
+    {}
+
+    AWT_COMMAND_MODE cmd() const { return M_cmd; }
+    AWT_Mouse_Button button() const { return M_button; }
+
+    AW_key_mod key_modifier() const { return M_key_modifier; }
+    AW_key_code key_code() const { return M_key_code; }
+    char key_char() const { return M_key_char; }
+    
+    AW_event_type type() const { return M_type; }
+
+    AW_pos x() const __ATTR__DEPRECATED("use position()") { return mousepos.xpos(); }
+    AW_pos y() const __ATTR__DEPRECATED("use position()") { return mousepos.ypos(); }
+    const AW::Position& position() const { return mousepos; } // screen-coordinates
+
+    const AW_clicked_line *cl() const __ATTR__DEPRECATED("use best_click()") { return M_cl; } 
+    const AW_clicked_text *ct() const __ATTR__DEPRECATED("use best_click()") { return M_ct; } 
+    const AW_clicked_element *best_click() const { return AW_getBestClick(M_cl, M_ct); }
+};
+
 class AWT_graphic {
     friend class AWT_canvas;
 
@@ -119,13 +170,7 @@ public:
                 or AWT_resize_cb(aw_window, ntw, cd2);
                 The function may return a pointer to a preset window */
 
-    // implemented interface (most are dummies doing nothing):
-    virtual void command(AW_device *device, AWT_COMMAND_MODE cmd,
-                         int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,
-                         AW_event_type type, AW_pos x, AW_pos y,
-                         AW_clicked_line *cl, AW_clicked_text *ct);
-    virtual void text(AW_device *device, char *text);
-
+    virtual void handle_command(AW_device *device, AWT_graphic_event& event) = 0;
 };
 
 class AWT_nonDB_graphic : public AWT_graphic {
@@ -147,12 +192,6 @@ public:
 
 #define AWT_ZOOM_OUT_STEP 40    // (pixel) rand um screen
 #define AWT_MIN_WIDTH     100   // Minimum center screen (= screen-offset)
-enum {
-    AWT_M_LEFT   = 1,
-    AWT_M_MIDDLE = 2,
-    AWT_M_RIGHT  = 3
-};
-
 enum {
     AWT_d_screen = 1
 };
