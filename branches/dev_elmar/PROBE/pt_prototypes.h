@@ -42,7 +42,8 @@ void PT_base_2_string(char *id_string, long len);
 ARB_ERROR probe_read_data_base(const char *name) __ATTR__USERESULT;
 int probe_compress_sequence(char *seq, int seqsize);
 char *probe_read_alignment(int j, int *psize);
-void probe_read_alignments(void);
+void cache_save(const char *filename, int count);
+void probe_read_alignments(const char *filename);
 void PT_build_species_hash(void);
 long PT_abs_2_rel(long pos);
 

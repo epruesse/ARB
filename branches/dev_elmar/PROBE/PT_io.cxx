@@ -16,6 +16,8 @@
 #include <BI_basepos.hxx>
 #include <arb_progress.h>
 
+#include <sys/stat.h>
+
 int compress_data(char *probestring) {
     //! change a sequence with normal bases the PT_? format and delete all other signs
     char    c;
@@ -207,7 +209,154 @@ char *probe_read_alignment(int j, int *psize) {
     return buffer;
 }
 
-void probe_read_alignments() {
+/** Cache:
+ * Instead of extracting the pure sequence data and checksum from the arb
+ * database each time the pt server loads, cache this data in a separate
+ * file to regain near instant pt server startup time.
+ *
+ * The format of the file is as follows:
+ * uint32: magic
+ * uint32: version
+ * uint32: number of sequences c
+ * uint32[c]: lengths of sequences
+ * uint32[c]: checksums
+ * char[]: sequences
+ */
+static const uint cache_magic = 0x97CAC11E;
+static const uint cache_version = 1;
+
+static char* cache_mkfilename(const char *arbfile) {
+    const char*  const suffix = ".ptc";
+    char *cname = (char*)calloc(sizeof(char),strlen(arbfile)+strlen(suffix)+1);
+    sprintf(cname, "%s%s", arbfile, suffix);
+    return cname;
+}
+
+static int cache_load(const char* filename, const uint count) {
+    char *cname = cache_mkfilename(filename);
+
+    // get stats for arb-file
+    struct stat s_arb, s_ptc;
+    if (stat(filename,&s_arb)) {
+        perror("Unable to stat arb file! Utterly weird, I just opened it...");
+        exit(1);
+    }
+
+    // get stats for cache-file
+    if (stat(cname, &s_ptc)) {
+        printf("Couldn't find cache file.\n");
+        return 1;
+    }
+
+    // check that cache file is newer than arb file
+    if (s_arb.st_mtime > s_ptc.st_mtime) {
+        printf("Cachefile older than ARB file.\n");
+        return 1;
+    }
+
+    printf("Loading data from cache:\n");
+
+    FILE *fp = fopen(cname, "r");
+    if (!fp) {
+        perror("Unable to open cache file.");
+        return 1;
+    }
+    free(cname);
+
+    uint rval;
+    fread(&rval, sizeof(int), 1, fp);
+    if (rval != cache_magic) {
+        printf("Cache file not a cache file!?!\n");
+        return 1;
+    }
+
+    fread(&rval, sizeof(int), 1, fp);
+    if (rval != cache_version) {
+        printf("Cache file has wrong version");
+        return 1;
+    }
+
+    fread(&rval, sizeof(int), 1, fp);
+    if (rval != count) {
+        printf("Unable to load cache: wrong number of sequences!\n");
+        return 1;
+    }
+
+    int *sizes = (int*)calloc(sizeof(int), count);
+    if (fread(sizes, sizeof(int), count, fp) != count) {
+        printf("Cache file too short!");
+        return 1;
+    }
+
+    uint *checksums = (uint*)calloc(sizeof(uint), count);
+    if (fread(checksums, sizeof(uint), count, fp) != count) {
+        printf("Cache file too short!");
+        return 1;
+    }
+
+    ulong datasize = 0;
+    for (uint i=0; i<count; i++) {
+        psg.data[i].size = sizes[i];
+        datasize += sizes[i];
+        psg.data[i].checksum = checksums[i];
+    }
+
+    free(sizes);
+    free(checksums);
+
+    char *data = (char*)calloc(sizeof(char), datasize);
+    if (fread(data, sizeof(char), datasize, fp) != datasize) {
+        printf("Cache file too short!");
+        return 1;
+    }
+
+    for (uint i=0; i<count; i++) {
+        psg.data[i].data = data;
+        data += psg.data[i].size;
+    }
+
+    printf("done\n");
+
+    return 0;
+}
+
+void cache_save(const char *filename, int count) {
+    char *cname = cache_mkfilename(filename);
+    FILE *fp = fopen(cname, "w+");
+    if (!fp) {
+        perror("Unable to open cache file! Not saving cache.");
+        return;
+    }
+    free(cname);
+
+    printf("PT-cache: writing cache file...\n");
+
+    fwrite(&cache_magic, sizeof(uint), 1, fp);
+    fwrite(&cache_version, sizeof(uint), 1, fp);
+    fwrite(&count, sizeof(count), 1, fp);
+
+
+    int *sizes = (int*)calloc(sizeof(int), count);
+    uint *checksums = (uint*)calloc(sizeof(uint), count);
+    for (int i=0; i<count; i++) {
+        sizes[i]=psg.data[i].size;
+        checksums[i]=psg.data[i].checksum;
+    }
+    fwrite(sizes, sizeof(int), count, fp);
+    fwrite(checksums, sizeof(uint), count, fp);
+    free(sizes);
+    free(checksums);
+
+    for (int i=0; i<count; i++) {
+        fwrite(psg.data[i].data, sizeof(char), psg.data[i].size, fp);
+    }
+
+    fclose(fp);
+
+    printf("done\n");
+}
+
+void probe_read_alignments(const char* filename) {
     // reads sequence data into psg.data
 
     GB_begin_transaction(psg.gb_main);
@@ -238,6 +387,7 @@ void probe_read_alignments() {
     {
         arb_progress progress("Preparing sequence data", icount);
         int count = 0;
+        int recache = cache_load(filename, icount);
 
         for (GBDATA *gb_species = GBT_first_species_rel_species_data(psg.gb_species_data);
              gb_species;
@@ -259,7 +409,7 @@ void probe_read_alignments() {
                 fprintf(stderr, "Species '%s' has no data in '%s'\n", pid.name, psg.alignment_name);
                 data_missing++;
             }
-            else {
+            else if (recache) {
                 int   hsize;
                 char *data = probe_read_string_append_point(gb_data, &hsize);
 
@@ -270,6 +420,7 @@ void probe_read_alignments() {
                     data_missing++;
                 }
                 else {
+                    if (recache) {
                     pid.checksum = GB_checksum(data, hsize, 1, ".-");
                     int   size = probe_compress_sequence(data, hsize);
 
@@ -279,7 +430,10 @@ void probe_read_alignments() {
                     free(data);
                     count++;
                 }
+                }
                     
+            } else {
+                count++;
             }
             progress.inc();
         }
@@ -288,6 +442,8 @@ void probe_read_alignments() {
 
         psg.data_count = count;
         GB_commit_transaction(psg.gb_main);
+        if (recache && data_missing == 0)
+            cache_save(filename, count);
     }
 
     
@@ -299,6 +455,7 @@ void probe_read_alignments() {
         printf("\nAll species contain data in alignment '%s'.\n", psg.alignment_name);
     }
     fflush(stdout);
+
 }
 
 void PT_build_species_hash() {
