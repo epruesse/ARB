@@ -163,6 +163,9 @@ GB_CSTR GB_getcwd(void);
 char *GB_find_all_files(const char *dir, const char *mask, bool filename_only);
 char *GB_find_latest_file(const char *dir, const char *mask);
 char *GBS_find_lib_file(const char *filename, const char *libprefix, bool warn_when_not_found);
+const char *GB_existing_file(const char *file, bool warn_when_not_found);
+char *GB_lib_file(bool warn_when_not_found, const char *libprefix, const char *filename);
+char *GB_property_file(bool warn_when_not_found, const char *filename);
 void GBS_read_dir(StrArray &names, const char *dir, const char *mask);
 bool GB_test_textfile_difflines(const char *file1, const char *file2, int expected_difflines, int special_mode);
 bool GB_test_files_equal(const char *file1, const char *file2);
@@ -472,6 +475,7 @@ GB_CSTR GB_concat_full_path(const char *anypath_left, const char *anypath_right)
 GB_CSTR GB_unfold_path(const char *pwd_envar, const char *path);
 GB_CSTR GB_path_in_ARBHOME(const char *relative_path);
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path);
+GB_CSTR GB_path_in_arbprop(const char *relative_path);
 GB_CSTR GB_path_in_ARBHOME(const char *relative_path_left, const char *anypath_right);
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path_left, const char *anypath_right);
 FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_fullname);
