@@ -1207,6 +1207,7 @@ GB_ULONG GB_get_physical_memory() {
 
 // ---------------------------------------------
 // path completion (parts former located in AWT)
+// @@@ whole section (+ corresponding tests) should move to adfile.cxx
 
 static int  path_toggle = 0;
 static char path_buf[2][PATH_MAX];
@@ -1340,6 +1341,9 @@ GB_CSTR GB_path_in_ARBHOME(const char *relative_path) {
 }
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path) {
     return GB_path_in_ARBHOME("lib", relative_path);
+}
+GB_CSTR GB_path_in_arbprop(const char *relative_path) {
+    return GB_unfold_path("HOME", GB_concat_path(".arb_prop", relative_path));
 }
 GB_CSTR GB_path_in_ARBHOME(const char *relative_path_left, const char *anypath_right) {
     return GB_path_in_ARBHOME(GB_concat_path(relative_path_left, anypath_right));
