@@ -35,7 +35,7 @@ static bool            bStartPosStored         = false;
 static bool            bEndPosStored           = false;
 
 static char *find_data_file(const char *name) {
-    char *fname = GBS_find_lib_file(name, "rna3d/", false);
+    char *fname = GB_lib_file(false, "rna3d/", name);
     if (!fname) throw string("file not found: ")+name;
     return fname;
 }
