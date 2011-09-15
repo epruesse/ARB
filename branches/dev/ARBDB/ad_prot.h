@@ -177,6 +177,7 @@ GB_ERROR GB_set_dictionary(GBDATA *gb_main, const char *key, const DictData *dd)
 void GB_free_dictionary(DictData *dd);
 
 /* adtcp.cxx */
+char *GB_arbtcpdat_path(void);
 const char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam);
 
 #ifdef UNIT_TESTS
