@@ -734,7 +734,9 @@ struct NotifyCb {
 };
 
 static void notify_cb(GBDATA *gb_message, int *cb_info, GB_CB_TYPE cb_type) {
-    GB_remove_callback(gb_message, GB_CB_TYPE(GB_CB_CHANGED|GB_CB_DELETE), notify_cb, cb_info); // @@@ cbproblematic
+    if (cb_type != GB_CB_DELETE) {
+        GB_remove_callback(gb_message, GB_CB_TYPE(GB_CB_CHANGED|GB_CB_DELETE), notify_cb, cb_info);
+    }
 
     int       cb_done = 0;
     NotifyCb *pending = (NotifyCb*)cb_info;
