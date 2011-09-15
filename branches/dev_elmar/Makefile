@@ -1085,8 +1085,11 @@ $(ALIV3): $(ARCHS_ALIV3:.a=.dummy) link_db
 		)
 
 # SLV_TOOLS stuff
-SLV_TOOLS/SLV_TOOLS.dummy : shared_libs com_probe
-slv:        shared_libs SLV_TOOLS/SLV_TOOLS.dummy
+ARCHS_slv = SL/FILTER/FILTER.a \
+            SL/SEQIO/SEQIO.a \
+            XML/XML.a
+SLV_TOOLS/SLV_TOOLS.dummy: $(ARCHS_slv:.a=.dummy) link_db $(PROBE) 
+slv:        libs SLV_TOOLS/SLV_TOOLS.dummy
  
 #***********************************	SHARED LIBRARIES SECTION  **************************************
 
