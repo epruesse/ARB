@@ -379,7 +379,7 @@ static void test_notification_cb(const char *message, void *cd) {
 
 #define INIT_NOTIFICATION                                                                       \
     GB_shell shell;                                                                             \
-    GBDATA *gb_main = GBT_open("nosuch.arb", "crw", NULL);                                      \
+    GBDATA *gb_main = GBT_open("nosuch.arb", "crw");                                            \
     const char *cd  = "some argument";                                                          \
     char *cmd = GB_generate_notification(gb_main, test_notification_cb, "the note", (void*)cd)
 

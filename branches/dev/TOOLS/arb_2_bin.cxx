@@ -65,7 +65,7 @@ int main(int argc, char **argv)
 
         printf("Reading database...\n");
         GB_shell  shell;
-        GBDATA   *gb_main = GBT_open(in, rtype, 0);
+        GBDATA   *gb_main = GBT_open(in, rtype);
         if (!gb_main) {
             error = GB_await_error();
         }
