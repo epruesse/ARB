@@ -183,16 +183,14 @@ static GB_ERROR gb_remove_quick_saved(GB_MAIN_TYPE *Main, const char *path) {
     for (i=0; i<10 && !error; i++) GB_unlink_or_warn(gb_oldQuicksaveName(path, i), &error);
     if (Main) Main->qs.last_index = -1;
 
-    gb_assert(!GB_have_error()); // dont export
-    return error;
+    RETURN_ERROR(error);
 }
 
 GB_ERROR gb_remove_all_but_main(GB_MAIN_TYPE *Main, const char *path) {
     GB_ERROR error = gb_remove_quick_saved(Main, path);
     if (!error) GB_unlink_or_warn(gb_mapfile_name(path), &error); // delete old mapfile
 
-    gb_assert(!GB_have_error());                    // dont export
-    return error;
+    RETURN_ERROR(error);
 }
 
 static GB_ERROR deleteSuperfluousQuicksaves(GB_MAIN_TYPE *Main) {
@@ -1007,8 +1005,7 @@ GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype) {
         }
     }
 
-    gb_assert(!GB_have_error());                    // dont export
-    return error;
+    RETURN_ERROR(error);
 }
 
 static GB_ERROR gb_check_quick_save(GBDATA *gb_main) {
@@ -1118,8 +1115,7 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, const char *path) {
         }
     }
 
-    gb_assert(!GB_have_error());                    // dont export
-    return error;
+    RETURN_ERROR(error);
 }
 
 GB_ERROR GB_save_quick(GBDATA *gb, const char *refpath) {
@@ -1189,8 +1185,7 @@ GB_ERROR GB_save_quick(GBDATA *gb, const char *refpath) {
         }
     }
 
-    gb_assert(!GB_have_error());                    // dont export
-    return error;
+    RETURN_ERROR(error);
 }
 
 char *gb_full_path(const char *path) {
