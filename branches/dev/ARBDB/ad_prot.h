@@ -383,7 +383,7 @@ char *GEN_global_gene_identifier(GBDATA *gb_gene, GBDATA *gb_organism);
 bool GB_is_dictionary_compressed(GBDATA *gbd);
 
 /* adindex.cxx */
-GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long estimated_size);
+GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long estimated_size) __ATTR__USERESULT;
 NOT4PERL void GB_dump_indices(GBDATA *gbd);
 GB_ERROR GB_request_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type) __ATTR__USERESULT_TODO;
 GB_UNDO_TYPE GB_get_requested_undo_type(GBDATA *gb_main);
