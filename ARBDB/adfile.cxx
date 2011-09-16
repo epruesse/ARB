@@ -193,55 +193,6 @@ char *GB_find_latest_file(const char *dir, const char *mask) {
     return result;
 }
 
-char *GBS_find_lib_file(const char *filename, const char *libprefix, bool warn_when_not_found) {
-    // Searches files in current dir, $HOME, $ARBHOME/lib/libprefix
-    // When looking inside '$ARBHOME/lib' any path prefix is removed from 'filename'
-    // 
-    // Return NULL, if file does not exist in any of these directories.
-    // 
-    // @@@ the whole concept of this function is weird. Will be replaced!
-
-    char *result = 0;
-
-    if (GB_is_readablefile(filename)) {
-        result = strdup(filename);
-    }
-    else {
-        const char *slash = strrchr(filename, '/'); // look for last slash
-
-        if (slash && filename[0] != '.') { // have absolute path
-            filename = slash+1; // only use filename part
-            slash    = 0;
-        }
-
-        const char *fileInHome = GB_concat_full_path(GB_getenvHOME(), filename);
-
-        if (fileInHome && GB_is_readablefile(fileInHome)) {
-            result = strdup(fileInHome);
-        }
-        else {
-            if (slash) filename = slash+1; // now use filename only, even if path starts with '.'
-
-            const char *fileInLib = GB_path_in_ARBLIB(libprefix, filename);
-
-            if (fileInLib && GB_is_readablefile(fileInLib)) {
-                result = strdup(fileInLib);
-            }
-            else {
-                if (warn_when_not_found) {
-                    GB_warningf("Don't know where to find '%s'\n"
-                                "  searched in '.'\n"
-                                "  searched in $(HOME) (for '%s')\n"
-                                "  searched in $(ARBHOME)/lib/%s (for '%s')\n",
-                                filename, fileInHome, libprefix, fileInLib);
-                }
-            }
-        }
-    }
-
-    return result;
-}
-
 const char *GB_existing_file(const char *file, bool warn_when_not_found) {
     // return 'file' if it's an existing readable file
     // return NULL otherwise
@@ -737,73 +688,19 @@ void TEST_GBS_read_dir() {
     TEST_JOINED_DIR_CONTENT_EQUALS("GDE",         NULL,        "/Makefile!/README");
 }
 
-// --------------------------------------------------------------------------------
-
-#define TEST_ASSERT_INORBELOW_DIR(full, dir) TEST_ASSERT(strstr(full, dir) == full)
-
-#define TEST_ASSERT_LIBFILE_COMPAT(prefix, name, expectInOrBelowDir) do { \
-        char *dir = nulldup(expectInOrBelowDir);                                \
-        char *oldway = GBS_find_lib_file(name, prefix, true);                   \
-        char *newway = GB_lib_file(true, prefix, name);                         \
-        printf("prefix='%s' name='%s'\n", prefix, name);                        \
-        printf("oldway='%s'\n", oldway);                                        \
-        printf("newway='%s'\n", newway);                                        \
-        TEST_ASSERT_EQUAL(oldway, newway);                                      \
-        if (dir) {                                                              \
-            TEST_ASSERT_INORBELOW_DIR(newway, dir);                             \
-        }                                                                       \
-        else {                                                                  \
-            TEST_ASSERT_NULL(newway);                                           \
-        }                                                                       \
-        free(newway);                                                           \
-        free(oldway);                                                           \
-        free(dir);                                                              \
-    } while(0)
-
-#define TEST_ASSERT_PROPFILE_COMPAT(prefix, name, expectInOrBelowDir) do {      \
-        char       *dir         = nulldup(expectInOrBelowDir);                  \
-        const char *is_arb_prop = strstr(name, ".arb_prop/");                   \
-        TEST_ASSERT(is_arb_prop);                                               \
-        const char *subname     = name+10;                                      \
-        printf("prefix='%s' name='%s' subname='%s'\n", prefix, name, subname);  \
-        char       *oldway      = GBS_find_lib_file(name, prefix, true);        \
-        char       *newway      = GB_property_file(true, subname);              \
-        printf("oldway='%s'\n", oldway);                                        \
-        printf("newway='%s'\n", newway);                                        \
-        TEST_ASSERT_EQUAL(oldway, newway);                                      \
-        if (dir) {                                                              \
-            TEST_ASSERT_INORBELOW_DIR(newway, dir);                             \
-        }                                                                       \
-        else {                                                                  \
-            TEST_ASSERT_NULL(newway);                                           \
-        }                                                                       \
-        free(newway);                                                           \
-        free(oldway);                                                           \
-        free(dir);                                                              \
-    } while(0)
-    
 void TEST_find_file() {
-    TEST_ASSERT_LIBFILE_COMPAT("",             "arb_tcp_org.dat",         GB_path_in_ARBLIB(""));
-    TEST_ASSERT_LIBFILE_COMPAT("",             "nosuchfile",              NULL);
-    TEST_ASSERT_LIBFILE_COMPAT("rna3d/",       "Ecoli_1PNU_23S_rRNA.pdb", GB_path_in_ARBLIB("rna3d"));
-    TEST_ASSERT_LIBFILE_COMPAT("rna3d/images", "ConeDown.png",            GB_path_in_ARBLIB("rna3d/images"));
-
-#if defined(DEVEL_RALF)
-    // these tests won't work in nightly builds
-
-    char *status_props = GBS_find_lib_file(".arb_prop/status.arb", "arb_default", true);
-    char *ntree_props = GBS_find_lib_file(".arb_prop/ntree.arb", "arb_default/", true); // should find my saved properties
-
-    TEST_ASSERT_EQUAL(status_props, GB_path_in_ARBLIB("arb_default", "status.arb"));
-    TEST_ASSERT_EQUAL(ntree_props, GB_unfold_path("HOME", GB_concat_path(".arb_prop", "ntree.arb"))); // finds my saved props!
-
-    TEST_ASSERT_PROPFILE_COMPAT("arb_default", ".arb_prop/ntree.arb", GB_unfold_path("HOME", ""));
-    TEST_ASSERT_PROPFILE_COMPAT("arb_default", ".arb_prop/status.arb", GB_path_in_ARBLIB("arb_default"));
+    TEST_ASSERT_EQUAL(GB_existing_file("min_ascii.arb", false), "min_ascii.arb");
+    TEST_ASSERT_EQUAL(GB_existing_file("nosuchfile", false), NULL);
     
-    free(ntree_props);
-    free(status_props);
+    char *tcporg = GB_lib_file(false, "", "arb_tcp_org.dat");
+    TEST_ASSERT_EQUAL(tcporg, GB_path_in_ARBHOME("lib/arb_tcp_org.dat"));
+    TEST_ASSERT_EQUAL(GB_lib_file(true, "bla", "blub"), NULL);
+    free(tcporg);
 
-#endif
+    char *status = GB_property_file(false, "status.arb");
+    TEST_ASSERT_EQUAL(status, GB_path_in_ARBHOME("lib/arb_default/status.arb"));
+    TEST_ASSERT_EQUAL(GB_property_file(true, "undhepp"), NULL);
+    free(status);
 }
 
 // --------------------------------------------------------------------------------
