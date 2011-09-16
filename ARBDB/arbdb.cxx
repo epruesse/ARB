@@ -1926,7 +1926,7 @@ bool GB_allow_compression(GBDATA *gb_main, bool allow_compression) {
 // --------------------------
 //      temporary entries
 
-GB_ERROR GB_set_temporary(GBDATA *gbd) {
+GB_ERROR GB_set_temporary(GBDATA *gbd) { // goes to header: __ATTR__USERESULT
     /*! if the temporary flag is set, then that entry (including all subentries) will not be saved
      * @see GB_clear_temporary() and GB_is_temporary()
      */
