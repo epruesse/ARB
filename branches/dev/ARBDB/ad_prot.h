@@ -163,7 +163,6 @@ char *GBS_log_dated_action_to(const char *comment, const char *action);
 GB_CSTR GB_getcwd(void);
 char *GB_find_all_files(const char *dir, const char *mask, bool filename_only);
 char *GB_find_latest_file(const char *dir, const char *mask);
-char *GBS_find_lib_file(const char *filename, const char *libprefix, bool warn_when_not_found);
 const char *GB_existing_file(const char *file, bool warn_when_not_found);
 char *GB_lib_file(bool warn_when_not_found, const char *libprefix, const char *filename);
 char *GB_property_file(bool warn_when_not_found, const char *filename);
