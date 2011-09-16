@@ -537,7 +537,7 @@ GBDATA *GBT_open(const char *path, const char *opent, const char *disabled_path)
     long    hash_size;
 
     if (!gbd) return gbd;
-    if (!disabled_path) disabled_path = "$(ARBHOME)/lib/pts/*";
+    if (!disabled_path) disabled_path = GB_path_in_ARBLIB("pts/*");
     GB_disable_path(gbd, disabled_path);
     GB_begin_transaction(gbd);
 
