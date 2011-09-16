@@ -174,7 +174,9 @@ public:
 
     const char *get_id() const { return id; }
     void set_id(char *newId) { freeset(id, newId); }
-    bool has_id(const char *test) const { return strcmp(test, id) == 0; }
+
+    bool has_id(const char *test) const { aw_assert(id); return strcmp(test, id) == 0; }
+    bool has_id_other_than(const char *test) const { return id && !has_id(test); }
 
     AW_window *popup_window() const { return pop_up_window; }
     AW_window *caller_window() const { return caller; }

@@ -775,7 +775,7 @@ void AW_server_callback(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call
     }
 
     if (root->prvt->recording_macro_file) {
-        if (!cbs->has_id(root->prvt->stop_action_name)) {
+        if (cbs->has_id_other_than(root->prvt->stop_action_name)) {
             fprintf(root->prvt->recording_macro_file,
                     "BIO::remote_action($gb_main,\"%s\",",
                     root->prvt->application_name_for_macros);
