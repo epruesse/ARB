@@ -1570,7 +1570,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             AWMIMT("!toggle_expert", "Toggle expert mode",         "x", 0,            AWM_ALL, NT_toggle_expert_mode,              0, 0);
             AWMIMT("!toggle_focus",  "Toggle focus follows mouse", "f", 0,            AWM_ALL, NT_toggle_focus_policy,             0, 0);
             SEP________________________SEP();
-            AWMIMT("save_props", "Save properties (in ~/.arb_prop/ntree.arb)", "S", "savedef.hlp", AWM_ALL, (AW_CB) AW_save_properties, 0, 0);
+            AWMIMT("save_props", "Save properties (ntree.arb)", "S", "savedef.hlp", AWM_ALL, (AW_CB) AW_save_properties, 0, 0);
         }
     }
 

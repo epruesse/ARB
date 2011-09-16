@@ -523,7 +523,7 @@ int main(int argc, char **argv) {
     GB_set_verbose();
 
     GB_shell shell;
-    AW_root *aw_root = AWT_create_root(".arb_prop/ntree.arb", "ARB_NT");
+    AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_NT");
 
     GLOBAL_NT.awr = aw_root;
 

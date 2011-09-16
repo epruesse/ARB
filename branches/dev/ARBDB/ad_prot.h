@@ -29,8 +29,9 @@ GBDATA *GB_open(const char *path, const char *opent);
 
 /* ad_save_load.cxx */
 GB_ERROR GB_save(GBDATA *gb, const char *path, const char *savetype);
+GB_ERROR GB_create_parent_directory(const char *path);
 GB_ERROR GB_create_directory(const char *path);
-GB_ERROR GB_save_in_home(GBDATA *gb, const char *path, const char *savetype);
+GB_ERROR GB_save_in_arbprop(GBDATA *gb, const char *path, const char *savetype);
 GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype);
 GB_ERROR GB_delete_database(GB_CSTR filename);
 GB_ERROR GB_save_quick_as(GBDATA *gb_main, const char *path);
