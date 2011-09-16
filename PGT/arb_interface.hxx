@@ -27,8 +27,8 @@
 #define AWAR_SPECIES_NAME    "tmp/focus/species_name"
 #define AWAR_ORGANISM_NAME   "tmp/focus/organism_name"
 
-// PATH TO THE PGT CONFIG FILE
-#define PGT_CONFIG_FILE            ".arb_prop/pgt.arb"
+// NAME OF THE PGT CONFIG FILE
+#define PGT_CONFIG_NAME            "pgt.arb"
 
 // CONFIG DATABASE ENTRIES
 #define CONFIG_PGT_COLOR_CROSSHAIR "colors/crosshair"
@@ -55,8 +55,8 @@
 int ARB_connect(char *);
 int ARB_disconnect();
 
-int CONFIG_connect();
-int CONFIG_disconnect();
+void CONFIG_connect();
+void CONFIG_disconnect();
 
 bool ARB_begin_transaction();
 bool ARB_commit_transaction();

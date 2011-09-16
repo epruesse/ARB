@@ -463,15 +463,15 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
 }
 
 const char *ED4_propertyName(int mode) {
-    // mode == 0 -> alignment specific          (e.g. ".arb_prop/edit4_ali_16s.arb")
-    // mode == 1 -> alignment-type specific     (e.g. ".arb_prop/edit4_rna.arb")
-    // mode == 2 -> unspecific (normal)         (always ".arb_prop/edit4.arb")
+    // mode == 0 -> alignment specific          (e.g. "edit4_ali_16s.arb")
+    // mode == 1 -> alignment-type specific     (e.g. "edit4_rna.arb")
+    // mode == 2 -> unspecific (normal)         (always "edit4.arb")
     //
     // Note : result is only valid until next call
 
     e4_assert(mode >= 0 && mode <= 2);
 
-    if (mode == 2) return ".arb_prop/edit4.arb";
+    if (mode == 2) return "edit4.arb";
 
     static char *ali_name = 0;
     static char *ali_type = 0;
@@ -484,7 +484,7 @@ const char *ED4_propertyName(int mode) {
         result   = new char[21+strlen(ali_name)];
     }
 
-    sprintf(result, ".arb_prop/edit4_%s.arb", mode == 0 ? ali_name : ali_type);
+    sprintf(result, "edit4_%s.arb", mode == 0 ? ali_name : ali_type);
 
     return result;
 }

@@ -183,6 +183,7 @@ ad_load.o: gb_tune.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ad_load.o: $(ARBHOME)/INCLUDE/arb_str.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_load.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_load.o: $(ARBHOME)/INCLUDE/attributes.h
