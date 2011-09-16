@@ -1000,13 +1000,13 @@ static GB_CSTR getenv_autodirectory(const char *envvar, const char *defaultDirec
 
 GB_CSTR GB_getenvARBMACROHOME() {
     static const char *amh = 0;
-    if (!amh) amh = getenv_autodirectory("ARBMACROHOME", "$(HOME)/.arb_prop/macros");  // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBMACROHOME
+    if (!amh) amh = getenv_autodirectory("ARBMACROHOME", GB_path_in_arbprop("macros"));  // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBMACROHOME
     return amh;
 }
 
 GB_CSTR GB_getenvARBCONFIG() {
     static const char *ac = 0;
-    if (!ac) ac = getenv_autodirectory("ARBCONFIG", "$(HOME)/.arb_prop/cfgSave"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBCONFIG
+    if (!ac) ac = getenv_autodirectory("ARBCONFIG", GB_path_in_arbprop("cfgSave")); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBCONFIG
     return ac;
 }
 
