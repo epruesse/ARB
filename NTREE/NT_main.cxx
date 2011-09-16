@@ -202,7 +202,7 @@ static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_root, bool install_c
 
 static ARB_ERROR load_and_startup_main_window(AW_root *aw_root, const char *autorun_macro) {
     char *db_server = aw_root->awar(AWAR_DB_PATH)->read_string();
-    GLOBAL_gb_main  = GBT_open(db_server, "rw", "$(ARBHOME)/lib/pts/*");
+    GLOBAL_gb_main  = GBT_open(db_server, "rw");
 
     ARB_ERROR error;
     if (!GLOBAL_gb_main) {
@@ -563,7 +563,7 @@ int main(int argc, char **argv) {
 
             if (mode == EXPORT) {
                 MG_create_all_awars(aw_root, AW_ROOT_DEFAULT, ":", "noname.arb");
-                GLOBAL_gb_merge = GBT_open(":", "rw", 0);
+                GLOBAL_gb_merge = GBT_open(":", "rw");
                 if (!GLOBAL_gb_merge) {
                     error = GB_await_error();
                 }
@@ -572,7 +572,7 @@ int main(int argc, char **argv) {
                     AWT_announce_db_to_browser(GLOBAL_gb_merge, "Current database (:)");
 #endif // DEBUG
 
-                    GLOBAL_gb_dest = GBT_open("noname.arb", "cw", 0);
+                    GLOBAL_gb_dest = GBT_open("noname.arb", "cw");
 #if defined(DEBUG)
                     AWT_announce_db_to_browser(GLOBAL_gb_dest, "New database (noname.arb)");
 #endif // DEBUG

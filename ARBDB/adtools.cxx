@@ -520,13 +520,13 @@ GBDATA *GB_test_link_follower(GBDATA *gb_main, GBDATA *gb_link, const char *link
 // --------------------
 //      save & load
 
-GBDATA *GBT_open(const char *path, const char *opent, const char *disabled_path) {
-    /*! Open a database and create an index for species and extended names.
+GBDATA *GBT_open(const char *path, const char *opent) {
+    /*! Open a database,
+     *  create an index for species and extended names and
+     *  disable saving in the PT_SERVER directory.
      *
      * @param path filename of the DB
      * @param opent see GB_login()
-     * @param disabled_path disable saving in this path.
-     * if disabled_path is NULL, disable saving in the PT_SERVER directory.
      * @see GB_open()
      */
 
@@ -537,8 +537,8 @@ GBDATA *GBT_open(const char *path, const char *opent, const char *disabled_path)
     long    hash_size;
 
     if (!gbd) return gbd;
-    if (!disabled_path) disabled_path = GB_path_in_ARBLIB("pts/*");
-    GB_disable_path(gbd, disabled_path);
+
+    GB_disable_path(gbd, GB_path_in_ARBLIB("pts/*"));
     GB_begin_transaction(gbd);
 
     if (!strchr(path, ':')) {
