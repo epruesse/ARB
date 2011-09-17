@@ -12,13 +12,13 @@
 
 
 void GBS_strstruct::vnprintf(size_t maxlen, const char *templat, va_list& parg) {
-    ensure_mem(maxlen);
+    ensure_mem(maxlen+1);
 
     char *buffer = data+pos;
     int   printed;
 
 #ifdef LINUX
-    printed = vsnprintf(buffer, maxlen, templat, parg);
+    printed = vsnprintf(buffer, maxlen+1, templat, parg);
 #else
     printed = vsprintf(buffer, templat, parg);
 #endif
