@@ -568,7 +568,7 @@ size_t GBS_shorten_repeated_data(char *data) {
             repeat++;
         }
         else {
-            if (repeat >= 10) {
+            if (repeat >= 5) {
                 dest += sprintf(dest, "%c{%zu}", last, repeat); // insert repeat count
             }
             else {
@@ -1169,11 +1169,11 @@ void TEST_GBS_shorten_repeated_data() {
     TEST_SHORTENED_EQUALS("aaaaaaaaaaaabc", "a{12}bc"); 
     TEST_SHORTENED_EQUALS("aaaaaaaaaaabc", "a{11}bc"); 
     TEST_SHORTENED_EQUALS("aaaaaaaaaabc", "a{10}bc"); 
-    TEST_SHORTENED_EQUALS("aaaaaaaaabc", "aaaaaaaaabc"); 
-    TEST_SHORTENED_EQUALS("aaaaaaaabc", "aaaaaaaabc"); 
-    TEST_SHORTENED_EQUALS("aaaaaaabc", "aaaaaaabc"); 
-    TEST_SHORTENED_EQUALS("aaaaaabc", "aaaaaabc"); 
-    TEST_SHORTENED_EQUALS("aaaaabc", "aaaaabc"); 
+    TEST_SHORTENED_EQUALS("aaaaaaaaabc", "a{9}bc"); 
+    TEST_SHORTENED_EQUALS("aaaaaaaabc", "a{8}bc"); 
+    TEST_SHORTENED_EQUALS("aaaaaaabc", "a{7}bc"); 
+    TEST_SHORTENED_EQUALS("aaaaaabc", "a{6}bc"); 
+    TEST_SHORTENED_EQUALS("aaaaabc", "a{5}bc"); 
     TEST_SHORTENED_EQUALS("aaaabc", "aaaabc"); 
     TEST_SHORTENED_EQUALS("aaabc", "aaabc"); 
     TEST_SHORTENED_EQUALS("aabc", "aabc"); 
