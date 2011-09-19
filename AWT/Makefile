@@ -174,6 +174,7 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_str.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -195,6 +196,7 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/static_assert.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/test_global.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/test_unit.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AWT_hotkeys.o: awt_hotkeys.hxx
