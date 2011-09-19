@@ -12,14 +12,16 @@
 //  ==================================================================== //
 
 #include "awt.hxx"
+#include "awt_hexdump.hxx"
 
-#include <arb_str.h>
-#include <arb_strbuf.h>
-#include <AP_Tree.hxx>
 #include <aw_window.hxx>
-#include <aw_awar.hxx>
 #include <aw_msg.hxx>
-#include <aw_root.hxx>
+#include <aw_awar.hxx>
+
+#include <arb_msg.h>
+#include <arb_str.h>
+
+#include <arbdb.h>
 
 #include <string>
 #include <vector>
@@ -147,105 +149,9 @@ struct list_entry {
 
 SortOrder list_entry::sort_order = SORT_NONE;
 
-// -------------------
-//      hex dumper
-
-inline char nibble2hex(unsigned char c) { return "0123456789ABCDEF"[c&0x0f]; }
-inline void dump_hexbyte(GBS_strstruct& buf, unsigned char c) { buf.put(nibble2hex(c>>4)); buf.put(nibble2hex(c)); }
-
-class MemDump {
-    bool show_offset;   // prefix every line with position info ?
-    bool hex;           // dump hex ?
-    bool ascii;         // dump ascii ?
-
-    size_t width;       // > 0   -> wrap lines every XXX positions
-    size_t separate;    // > 0   -> separate by one additional space after every XXX bytes
-    bool   space;       // true -> space hex bytes
-
-    bool is_separate_position(size_t pos) const { return separate && pos && !(pos%separate); }
-
-    void dump_sep(GBS_strstruct& buf) const { buf.cat(" | "); }
-    void dump_offset(GBS_strstruct& buf, size_t off) const {
-        if (show_offset) {
-            dump_hexbyte(buf, off>>8);
-            dump_hexbyte(buf, off&0xff);
-            if (hex||ascii) dump_sep(buf);
-        }
-    }
-    void dump_hex(GBS_strstruct& buf, const char *mem, size_t off, size_t count, bool padded) const {
-        size_t i;
-        for (i = 0; i<count; ++i) {
-            if (is_separate_position(i)) buf.put(' ');
-            dump_hexbyte(buf, mem[off+i]);
-            if (space) buf.put(' ');
-        }
-        if (padded) {
-            for (; i<width; ++i) {
-                buf.nput(' ', 3+is_separate_position(i));
-            }
-        }
-        buf.cut_tail(space);
-    }
-    void dump_ascii(GBS_strstruct& buf, const char *mem, size_t off, size_t count) const {
-        for (size_t i = 0; i<count; ++i) {
-            if (is_separate_position(i)) buf.put(' ');
-            buf.put(isprint(mem[off+i]) ? mem[off+i] : '.');
-        }
-    }
-    void dump_line(GBS_strstruct& buf, const char *mem, size_t off, size_t count) const {
-        dump_offset(buf, off);
-        if (hex) {
-            dump_hex(buf, mem, off, count, ascii);
-            if (ascii) dump_sep(buf);
-        }
-        if (ascii) dump_ascii(buf, mem, off, count);
-        buf.put('\n');
-    }
-    void dump_wrapped(GBS_strstruct& buf, const char *mem, size_t size) const {
-        awt_assert(wrapped());
-        size_t off = 0;
-        while (size) {
-            size_t count = size<width ? size : width;
-            dump_line(buf, mem, off, count);
-            size -= count;
-            off  += count;
-        }
-    }
-
-public:
-
-    MemDump(bool show_offset_, bool hex_, bool ascii_, size_t  width_ = 0, size_t  separate_ = 0, bool space_ = true)
-        : show_offset(show_offset_),
-          hex(hex_),
-          ascii(ascii_),
-          width(width_),
-          separate(separate_), 
-          space(space_)
-    {}
-
-    bool wrapped() const { return width; }
-    
-    size_t get_dumpsize(size_t bytes) const {
-        size_t sections = show_offset+hex+ascii;
-
-        if (!sections) return 1;
-
-        size_t perByte      = hex*3+ascii;
-        size_t extraPerLine = (sections-1)*3+1;
-        size_t lines        = width ? bytes/width+1 : 1;
-
-        return bytes*perByte + lines*extraPerLine + 50;
-    }
-
-    void dump_to(GBS_strstruct& buf, const char *mem, size_t size) const {
-        if (wrapped()) dump_wrapped(buf, mem, size);
-        else { // one-line dump
-            MemDump mod(*this);
-            mod.width = size;
-            mod.dump_wrapped(buf, mem, size);
-        }
-    }
-};
+// ---------------------
+//      create AWARs
+// ---------------------
 
 MemDump make_userdefined_MemDump(AW_root *awr) {
     bool   hex      = awr->awar(AWAR_DUMP_HEX)->read_int();
@@ -258,86 +164,6 @@ MemDump make_userdefined_MemDump(AW_root *awr) {
 
     return MemDump(offset, hex, ascii, width, separate, space);
 }
-
-#ifdef UNIT_TESTS
-#ifndef TEST_UNIT_H
-#include <test_unit.h>
-#endif
-
-#define DO_HEXDUMP(off,hex,ascii,width,gap,space)   \
-    str.reset_pos();                            \
-    MemDump(off, hex, ascii, width, gap,space)      \
-        .dump_to(str, buf, len)
-
-#define TEST_HEXDUMP_EQUAL(width,gap,off,hex,ascii,space,expected) do {       \
-        DO_HEXDUMP(off,hex,ascii,width,gap,space);                            \
-        TEST_ASSERT_EQUAL(str.get_data(), expected);                    \
-    } while(0)
-
-#define TEST_HEXDUMP_EQUAL__BROKEN(width,gap,off,hex,ascii,space,expected) do {       \
-        DO_HEXDUMP(off,hex,ascii,width,gap,space);                                    \
-        TEST_ASSERT_EQUAL__BROKEN(str.get_data(), expected);                    \
-    } while(0)
-
-void TEST_hexdump() {
-    GBS_strstruct str(200);
-    {
-        char buf[] = { 0x11, 0x47, 0, 0};
-        int len = 4;
-
-        TEST_HEXDUMP_EQUAL(0, 0, false, true,  false, true,  "11 47 00 00\n");        // unwrapped hexdump
-        TEST_HEXDUMP_EQUAL(0, 0, false, true,  false, false, "11470000\n");           // unwrapped hexdump (unspaced)
-        TEST_HEXDUMP_EQUAL(0, 0, false, false, true,  true,  ".G..\n");               // unwrapped ascii
-        TEST_HEXDUMP_EQUAL(0, 0, false, true,  true,  true,  "11 47 00 00 | .G..\n"); // unwrapped hex+ascii
-
-        TEST_HEXDUMP_EQUAL(0, 0, true, false, true,  true, "0000 | .G..\n");               // unwrapped ascii
-        TEST_HEXDUMP_EQUAL(0, 0, true, true,  false, true, "0000 | 11 47 00 00\n");        // unwrapped hex
-        TEST_HEXDUMP_EQUAL(0, 0, true, true,  true,  true, "0000 | 11 47 00 00 | .G..\n"); // unwrapped hex+ascii
-
-        TEST_HEXDUMP_EQUAL(4, 0, false, true,  false, true, "11 47 00 00\n");
-        TEST_HEXDUMP_EQUAL(4, 0, true,  true,  false, true, "0000 | 11 47 00 00\n");
-        TEST_HEXDUMP_EQUAL(4, 0, true,  true,  true,  true, "0000 | 11 47 00 00 | .G..\n");
-
-        TEST_HEXDUMP_EQUAL(3, 0, false, true,  false, true, "11 47 00\n00\n");
-        TEST_HEXDUMP_EQUAL(3, 0, true,  true,  false, true, "0000 | 11 47 00\n0003 | 00\n");
-        TEST_HEXDUMP_EQUAL(3, 0, true,  true,  true,  true, "0000 | 11 47 00 | .G.\n0003 | 00       | .\n");
-
-        TEST_HEXDUMP_EQUAL(2, 0, false, true,  false, true, "11 47\n00 00\n");
-        TEST_HEXDUMP_EQUAL(2, 0, true,  true,  false, true, "0000 | 11 47\n0002 | 00 00\n");
-        TEST_HEXDUMP_EQUAL(2, 0, true,  true,  true,  true, "0000 | 11 47 | .G\n0002 | 00 00 | ..\n");
-
-        TEST_HEXDUMP_EQUAL(1, 0, false, true,  false, true, "11\n47\n00\n00\n");
-        TEST_HEXDUMP_EQUAL(1, 0, true,  true,  false, true, "0000 | 11\n0001 | 47\n0002 | 00\n0003 | 00\n");
-        TEST_HEXDUMP_EQUAL(1, 0, true,  true,  true,  true, "0000 | 11 | .\n0001 | 47 | G\n0002 | 00 | .\n0003 | 00 | .\n");
-    }
-
-    {
-        char buf[] = "\1Smarkerline\1Sposvar_full_all\1Sp";
-        int len    = strlen(buf);
-        TEST_HEXDUMP_EQUAL(16, 0, true, true, true, true, 
-                           "0000 | 01 53 6D 61 72 6B 65 72 6C 69 6E 65 01 53 70 6F | .Smarkerline.Spo\n"
-                           "0010 | 73 76 61 72 5F 66 75 6C 6C 5F 61 6C 6C 01 53 70 | svar_full_all.Sp\n");
-        TEST_HEXDUMP_EQUAL(16, 4, true, true, true, true, 
-                           "0000 | 01 53 6D 61  72 6B 65 72  6C 69 6E 65  01 53 70 6F | .Sma rker line .Spo\n"
-                           "0010 | 73 76 61 72  5F 66 75 6C  6C 5F 61 6C  6C 01 53 70 | svar _ful l_al l.Sp\n");
-        TEST_HEXDUMP_EQUAL(13, 4, true, true, true, true, 
-                           "0000 | 01 53 6D 61  72 6B 65 72  6C 69 6E 65  01 | .Sma rker line .\n"
-                           "000D | 53 70 6F 73  76 61 72 5F  66 75 6C 6C  5F | Spos var_ full _\n"
-                           "001A | 61 6C 6C 01  53 70                        | all. Sp\n"
-                           );
-        TEST_HEXDUMP_EQUAL(13, 4, true, false, true, true, 
-                           "0000 | .Sma rker line .\n"
-                           "000D | Spos var_ full _\n"
-                           "001A | all. Sp\n"
-                           );
-    }
-}
-
-#endif // UNIT_TESTS
-
-// ---------------------
-//      create AWARs
-// ---------------------
 
 static void hexmode_changed_cb(AW_root *aw_root) {
     aw_root->awar(AWAR_DBB_BROWSE)->touch();
@@ -734,7 +560,7 @@ static char *get_dbentry_content(GBDATA *gbd, GB_TYPES type, bool shorten_repeat
         long      size = GB_read_count(gbd);
         const int plen = 30;
 
-        GBS_strstruct buf(dump.get_dumpsize(size)+plen);
+        GBS_strstruct buf(dump.mem_needed_for_dump(size)+plen);
 
         if (!dump.wrapped()) buf.nprintf(plen, "<%li bytes>: ", size);
         dump.dump_to(buf, GB_read_pntr(gbd), size);
