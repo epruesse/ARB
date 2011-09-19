@@ -299,6 +299,7 @@ adcolumns.o: $(ARBHOME)/INCLUDE/attributes.h
 adcolumns.o: $(ARBHOME)/INCLUDE/dupstr.h
 adcolumns.o: $(ARBHOME)/INCLUDE/smartptr.h
 adcolumns.o: $(ARBHOME)/INCLUDE/test_global.h
+adcolumns.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adcomm.o: ad_prot.h
 adcomm.o: arb_assert.h
