@@ -121,24 +121,24 @@ static const char *gbt_insert_delete(const char *source, long srclen, long destl
     return result;
 }
 
-enum insDelTarget {
+enum TargetType {
     IDT_SPECIES = 0,
     IDT_SAI,
     IDT_SECSTRUCT,
 };
 
-static GB_CSTR targetType[] = {
+static GB_CSTR targetTypeName[] = {
     "Species",
     "SAI",
     "SeceditStruct",
 };
 
-static bool insdel_shall_be_applied_to(GBDATA *gb_data, enum insDelTarget target) {
+static bool insdel_shall_be_applied_to(GBDATA *gb_data, TargetType ttype) {
     bool        apply = true;
     const char *key   = GB_read_key_pntr(gb_data);
 
     if (key[0] == '_') {                            // don't apply to keys starting with '_'
-        switch (target) {
+        switch (ttype) {
             case IDT_SECSTRUCT:
             case IDT_SPECIES:
                 apply = false;
@@ -155,10 +155,10 @@ static bool insdel_shall_be_applied_to(GBDATA *gb_data, enum insDelTarget target
     return apply;
 }
 
-inline int alignment_oversize(GBDATA *gb_data, enum insDelTarget target, long alilen, long found_size) {
+inline int alignment_oversize(GBDATA *gb_data, TargetType ttype, long alilen, long found_size) {
     int oversize = 0;
     const char *key = GB_read_key_pntr(gb_data);
-    switch (target) {
+    switch (ttype) {
         case IDT_SPECIES:
             break;
         case IDT_SECSTRUCT:
@@ -191,6 +191,12 @@ class AlignmentOperator : virtual Noncopyable {
 
     const char *delete_chars; // characters allowed to delete (array with 256 entries, value == 0 means deletion allowed)
 
+    GB_ERROR apply(GBDATA *gb_data, TargetType ttype, const Alignment& ali) const;
+
+    GB_ERROR apply_recursive(GBDATA *gb_data, TargetType ttype, const Alignment& ali) const;
+    GB_ERROR apply_to_childs_named(GBDATA *gb_item_data, const char *item_field, TargetType ttype, const Alignment& ali) const;
+    GB_ERROR apply_to_secstructs(GBDATA *gb_secstructs, const Alignment& ali) const;
+
 public:
 
 
@@ -204,99 +210,88 @@ public:
 
     long get_pos() const { return pos; }
     long get_amount() const { return nchar; }
-
     bool allowed_to_delete(char c) const {
         return delete_chars[safeCharIndex(c)] == 1;
     }
+
+    GB_ERROR apply_to_alignment(GBDATA *gb_main, const Alignment& ali) const;
 };
 
+GB_ERROR AlignmentOperator::apply(GBDATA *gb_data, TargetType ttype, const Alignment& ali) const {
+    gb_assert(get_pos() >= 0);
 
-
-static GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, enum insDelTarget target, const AlignmentOperator& op, const Alignment& ali) {
-    GB_ERROR error = 0;
     GB_TYPES type  = GB_read_type(gb_data);
+    GB_ERROR error = NULL;
+    if (type >= GB_BITS && type != GB_LINK) {
+        long size = GB_read_count(gb_data);
 
-    if (type == GB_DB) {
-        GBDATA *gb_child;
-        for (gb_child = GB_child(gb_data); gb_child && !error; gb_child = GB_nextChild(gb_child)) {
-            error = gbt_insert_character_gbd(gb_child, target, op, ali);
-        }
-    }
-    else {
-        gb_assert(op.get_pos() >= 0);
-        if (type >= GB_BITS && type != GB_LINK) {
-            long size = GB_read_count(gb_data);
+        if (ali.get_len() != size || get_amount() != 0) { // nothing would change
+            if (insdel_shall_be_applied_to(gb_data, ttype)) {
+                GB_CSTR source      = 0;
+                long    mod         = sizeof(char);
+                char    insert_what = 0;
+                char    insert_tail = 0;
+                char    extraByte   = 0;
 
-            if (ali.get_len() != size || op.get_amount() != 0) { // nothing would change
-                if (insdel_shall_be_applied_to(gb_data, target)) {
-                    GB_CSTR source      = 0;
-                    long    mod         = sizeof(char);
-                    char    insert_what = 0;
-                    char    insert_tail = 0;
-                    char    extraByte   = 0;
-                    long    pos         = op.get_pos();
-                    long    nchar       = op.get_amount();
+                switch (type) {
+                    case GB_STRING: {
+                        source      = GB_read_char_pntr(gb_data);
+                        extraByte   = 1;
+                        insert_what = '-';
+                        insert_tail = '.';
 
-                    switch (type) {
-                        case GB_STRING: {
-                            source      = GB_read_char_pntr(gb_data);
-                            extraByte   = 1;
-                            insert_what = '-';
-                            insert_tail = '.';
-
-                            if (source) {
-                                if (nchar > 0) { // insert
-                                    if (pos<size) { // otherwise insert pos is behind (old and too short) sequence -> dots are inserted at tail
-                                        if ((pos>0 && source[pos-1] == '.') || source[pos] == '.') { // dot at insert position?
-                                            insert_what = '.'; // insert dots
-                                        }
-                                    }
-                                }
-                                else { // delete
-                                    long after            = pos+(-nchar); // position after deleted part
-                                    if (after>size) after = size;
-
-                                    for (long p = pos; p<after; p++) {
-                                        if (op.allowed_to_delete(source[p])) {
-                                            error = GBS_global_string("You tried to delete '%c' at position %li  -> Operation aborted", source[p], p);
-                                        }
+                        if (source) {
+                            if (get_amount() > 0) { // insert
+                                if (get_pos()<size) { // otherwise insert pos_obs is behind (old and too short) sequence -> dots are inserted at tail
+                                    if ((get_pos()>0 && source[get_pos()-1] == '.') || source[get_pos()] == '.') { // dot at insert position?
+                                        insert_what = '.'; // insert dots
                                     }
                                 }
                             }
+                            else { // delete
+                                long after            = get_pos()+(-get_amount()); // position after deleted part
+                                if (after>size) after = size;
 
-                            break;
-                        }
-                        case GB_BITS:   source = GB_read_bits_pntr(gb_data, '-', '+');  insert_what = '-'; insert_tail = '-'; break;
-                        case GB_BYTES:  source = GB_read_bytes_pntr(gb_data);           break;
-                        case GB_INTS:   source = (GB_CSTR)GB_read_ints_pntr(gb_data);   mod = sizeof(GB_UINT4); break;
-                        case GB_FLOATS: source = (GB_CSTR)GB_read_floats_pntr(gb_data); mod = sizeof(float); break;
-
-                        default:
-                            error = GBS_global_string("Unhandled type '%i'", type);
-                            GB_internal_error(error);
-                            break;
-                    }
-
-                    if (!error) {
-                        if (!source) error = GB_await_error();
-                        else {
-                            long    modified_len;
-                            int     oversize   = alignment_oversize(gb_data, target, ali.get_len(), size);
-                            long    wanted_len = ali.get_len() + oversize;
-                            GB_CSTR modified   = gbt_insert_delete(source, size, wanted_len, &modified_len, pos, nchar, mod, insert_what, insert_tail, extraByte);
-
-                            if (modified) {
-                                gb_assert(modified_len == (ali.get_len()+op.get_amount()+oversize));
-
-                                switch (type) {
-                                    case GB_STRING: error = GB_write_string(gb_data, modified);                          break;
-                                    case GB_BITS:   error = GB_write_bits  (gb_data, modified, modified_len, "-");       break;
-                                    case GB_BYTES:  error = GB_write_bytes (gb_data, modified, modified_len);            break;
-                                    case GB_INTS:   error = GB_write_ints  (gb_data, (GB_UINT4*)modified, modified_len); break;
-                                    case GB_FLOATS: error = GB_write_floats(gb_data, (float*)modified, modified_len);    break;
-
-                                    default: gb_assert(0); break;
+                                for (long p = get_pos(); p<after; p++) {
+                                    if (allowed_to_delete(source[p])) {
+                                        error = GBS_global_string("You tried to delete '%c' at position %li  -> Operation aborted", source[p], p);
+                                    }
                                 }
+                            }
+                        }
+
+                        break;
+                    }
+                    case GB_BITS:   source = GB_read_bits_pntr(gb_data, '-', '+');  insert_what = '-'; insert_tail = '-'; break;
+                    case GB_BYTES:  source = GB_read_bytes_pntr(gb_data);           break;
+                    case GB_INTS:   source = (GB_CSTR)GB_read_ints_pntr(gb_data);   mod = sizeof(GB_UINT4); break;
+                    case GB_FLOATS: source = (GB_CSTR)GB_read_floats_pntr(gb_data); mod = sizeof(float); break;
+
+                    default:
+                        error = GBS_global_string("Unhandled type '%i'", type);
+                        GB_internal_error(error);
+                        break;
+                }
+
+                if (!error) {
+                    if (!source) error = GB_await_error();
+                    else {
+                        long    modified_len;
+                        int     oversize   = alignment_oversize(gb_data, ttype, ali.get_len(), size);
+                        long    wanted_len = ali.get_len() + oversize;
+                        GB_CSTR modified   = gbt_insert_delete(source, size, wanted_len, &modified_len, get_pos(), get_amount(), mod, insert_what, insert_tail, extraByte);
+
+                        if (modified) {
+                            gb_assert(modified_len == (ali.get_len()+get_amount()+oversize));
+
+                            switch (type) {
+                                case GB_STRING: error = GB_write_string(gb_data, modified);                          break;
+                                case GB_BITS:   error = GB_write_bits  (gb_data, modified, modified_len, "-");       break;
+                                case GB_BYTES:  error = GB_write_bytes (gb_data, modified, modified_len);            break;
+                                case GB_INTS:   error = GB_write_ints  (gb_data, (GB_UINT4*)modified, modified_len); break;
+                                case GB_FLOATS: error = GB_write_floats(gb_data, (float*)modified, modified_len);    break;
+
+                                default: gb_assert(0); break;
                             }
                         }
                     }
@@ -304,26 +299,27 @@ static GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, enum insDelTarget targ
             }
         }
     }
-
     return error;
 }
 
-static GB_ERROR gbt_insert_character_item(GBDATA *gb_item, enum insDelTarget item_type, const AlignmentOperator& op, const Alignment& ali) {
-    GB_ERROR  error  = 0;
-    GBDATA   *gb_ali = GB_entry(gb_item, ali.get_name());
+GB_ERROR AlignmentOperator::apply_recursive(GBDATA *gb_data, TargetType ttype, const Alignment& ali) const {
+    GB_ERROR error = 0;
+    GB_TYPES type  = GB_read_type(gb_data);
 
-    if (gb_ali) {
-        error = gbt_insert_character_gbd(gb_ali, item_type, op, ali);
-        if (error) {
-            const char *item_name = GBT_read_name(gb_item);
-            error = GBS_global_string("%s '%s': %s", targetType[item_type], item_name, error);
+    if (type == GB_DB) {
+        GBDATA *gb_child;
+        for (gb_child = GB_child(gb_data); gb_child && !error; gb_child = GB_nextChild(gb_child)) {
+            error = apply_recursive(gb_child, ttype, ali);
         }
+    }
+    else {
+        error = apply(gb_data, ttype, ali);
     }
 
     return error;
 }
 
-static GB_ERROR gbt_insert_character(GBDATA *gb_item_data, const char *item_field, enum insDelTarget item_type, const AlignmentOperator& op, const Alignment& ali) {
+GB_ERROR AlignmentOperator::apply_to_childs_named(GBDATA *gb_item_data, const char *item_field, TargetType ttype, const Alignment& ali) const {
     GBDATA   *gb_item;
     GB_ERROR  error      = 0;
     long      item_count = GB_number_of_subentries(gb_item_data);
@@ -335,7 +331,14 @@ static GB_ERROR gbt_insert_character(GBDATA *gb_item_data, const char *item_fiel
              gb_item && !error;
              gb_item = GB_nextEntry(gb_item))
         {
-            error = gbt_insert_character_item(gb_item, item_type, op, ali);
+            GBDATA *gb_ali = GB_entry(gb_item, ali.get_name());
+            if (gb_ali) {
+                error = apply_recursive(gb_ali, ttype, ali);
+                if (error) {
+                    const char *item_name = GBT_read_name(gb_item);
+                    error = GBS_global_string("%s '%s': %s", targetTypeName[ttype], item_name, error);
+                }
+            }
             progress.inc_and_check_user_abort(error);
         }
     }
@@ -345,7 +348,7 @@ static GB_ERROR gbt_insert_character(GBDATA *gb_item_data, const char *item_fiel
     return error;
 }
 
-static GB_ERROR gbt_insert_character_secstructs(GBDATA *gb_secstructs, const AlignmentOperator& op, const Alignment& ali) {
+GB_ERROR AlignmentOperator::apply_to_secstructs(GBDATA *gb_secstructs, const Alignment& ali) const {
     GB_ERROR  error  = 0;
     GBDATA   *gb_ali = GB_entry(gb_secstructs, ali.get_name());
     
@@ -362,10 +365,10 @@ static GB_ERROR gbt_insert_character_secstructs(GBDATA *gb_secstructs, const Ali
         {
             GBDATA *gb_ref = GB_entry(gb_item, "ref");
             if (gb_ref) {
-                error = gbt_insert_character_gbd(gb_ref, IDT_SECSTRUCT, op, ali);
+                error = apply_recursive(gb_ref, IDT_SECSTRUCT, ali);
                 if (error) {
                     const char *item_name = GBT_read_name(gb_item);
-                    error = GBS_global_string("%s '%s': %s", targetType[IDT_SECSTRUCT], item_name, error);
+                    error = GBS_global_string("%s '%s': %s", targetTypeName[IDT_SECSTRUCT], item_name, error);
                 }
             }
             progress.inc_and_check_user_abort(error);
@@ -377,12 +380,18 @@ static GB_ERROR gbt_insert_character_secstructs(GBDATA *gb_secstructs, const Ali
     return error;
 }
 
+GB_ERROR AlignmentOperator::apply_to_alignment(GBDATA *gb_main, const Alignment& ali) const {
+    GB_ERROR error    = apply_to_childs_named(GBT_find_or_create(gb_main, "species_data",  7), "species",  IDT_SPECIES, ali);
+    if (!error) error = apply_to_childs_named(GBT_find_or_create(gb_main, "extended_data", 7), "extended", IDT_SAI,     ali);
+    if (!error) error = apply_to_secstructs(GB_search(gb_main, "secedit/structs", GB_CREATE_CONTAINER), ali);
+    return error;
+}
+
+// --------------------------------------------------------------------------------
+
 static GB_ERROR GBT_check_lengths(GBDATA *Main, const char *alignment_name) {
-    GB_ERROR  error            = 0;
-    GBDATA   *gb_presets       = GBT_find_or_create(Main, "presets", 7);
-    GBDATA   *gb_species_data  = GBT_find_or_create(Main, "species_data", 7);
-    GBDATA   *gb_extended_data = GBT_find_or_create(Main, "extended_data", 7);
-    GBDATA   *gb_secstructs    = GB_search(Main, "secedit/structs", GB_CREATE_CONTAINER);
+    GB_ERROR  error      = 0;
+    GBDATA   *gb_presets = GBT_find_or_create(Main, "presets", 7);
     GBDATA   *gb_ali;
 
     AlignmentOperator op(0, 0, 0);
@@ -398,11 +407,7 @@ static GB_ERROR GBT_check_lengths(GBDATA *Main, const char *alignment_name) {
             GBDATA *gb_len = GB_entry(gb_ali, "alignment_len");
 
             Alignment ali(GB_read_char_pntr(gb_name), GB_read_int(gb_len));
-
-            error             = gbt_insert_character(gb_extended_data, "extended", IDT_SAI,     op, ali);
-            if (!error) error = gbt_insert_character(gb_species_data,  "species",  IDT_SPECIES, op, ali);
-            if (!error) error = gbt_insert_character_secstructs(gb_secstructs, op, ali);
-
+            error = op.apply_to_alignment(Main, ali);
             if (error) progress.done();
         }
     }
@@ -445,10 +450,7 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
     }
     else {
         GBDATA *gb_ali;
-        GBDATA *gb_presets       = GBT_find_or_create(Main, "presets", 7);
-        GBDATA *gb_species_data  = GBT_find_or_create(Main, "species_data", 7);
-        GBDATA *gb_extended_data = GBT_find_or_create(Main, "extended_data", 7);
-        GBDATA *gb_secstructs    = GB_search(Main, "secedit/structs", GB_CREATE_CONTAINER);
+        GBDATA *gb_presets = GBT_find_or_create(Main, "presets", 7);
         char    char_delete_list[256];
 
         if (strchr(char_delete, '%')) {
@@ -482,14 +484,11 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
                 }
 
                 if (!error) {
-                    arb_progress  insert_progress("Insert/delete characters", 3);
-                    Alignment     ali(use, len);
+                    arb_progress      insert_progress("Insert/delete characters", 3);
+                    Alignment         ali(use, len);
                     AlignmentOperator op(pos, count, char_delete_list);
 
-                    error             = gbt_insert_character(gb_species_data,   "species",  IDT_SPECIES,   op, ali);
-                    if (!error) error = gbt_insert_character(gb_extended_data,  "extended", IDT_SAI,       op, ali);
-                    if (!error) error = gbt_insert_character_secstructs(gb_secstructs, op, ali);
-
+                    error = op.apply_to_alignment(Main, ali);
                     if (error) insert_progress.done();
                 }
                 free(use);
