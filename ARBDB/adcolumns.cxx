@@ -159,13 +159,15 @@ inline int alignment_oversize(GBDATA *gb_data, enum insDelTarget target, long al
     int oversize = 0;
     const char *key = GB_read_key_pntr(gb_data);
     switch (target) {
+        case IDT_SPECIES:
+            break;
         case IDT_SECSTRUCT:
-            if (strcmp(key, "ref") == 0) { // _REF is one byte longer than alignment size
+            if (strcmp(key, "ref") == 0) { // 'ref' may be one byte longer than alignment size
                 oversize = found_size-alilen;
             }
             break;
         case IDT_SAI:
-            if (strcmp(key, "_REF") == 0) { // _REF is one byte longer than alignment size
+            if (strcmp(key, "_REF") == 0) { // _REF may be one byte longer than alignment size
                 oversize = found_size-alilen;
             }
             break;
@@ -173,40 +175,67 @@ inline int alignment_oversize(GBDATA *gb_data, enum insDelTarget target, long al
     return oversize;
 }
 
-struct insDel_params {
-    char       *ali_name;                           // name of alignment
-    long        ali_len;                            // wanted length of alignment
-    long        pos;                                // start position of insert/delete
-    long        nchar;                              // number of elements to insert/delete
-    const char *delete_chars;                       // characters allowed to delete (array with 256 entries, value == 0 means deletion allowed)
+class Alignment {
+    SmartCharPtr name; // name of alignment
+    long         len;  // length of alignment
+public:
+    Alignment(const char *name_, long len_) : name(strdup(name_)), len(len_) {}
+
+    const char *get_name() const { return &*name; }
+    long get_len() const { return len; }
+};
+
+class insDel_params : virtual Noncopyable {
+    long pos;        // start position of insert/delete
+    long nchar;      // number of elements to insert/delete
+
+    const char *delete_chars; // characters allowed to delete (array with 256 entries, value == 0 means deletion allowed)
+
+public:
+
+
+    insDel_params(long pos_, long nchar_, const char *delete_chars_)
+        : pos(pos_),
+          nchar(nchar_),
+          delete_chars(delete_chars_)
+    {
+        // gb_assert(correlated(nchar<0, delete_chars)); // @@@
+    }
+
+    long get_pos() const { return pos; }
+    long get_amount() const { return nchar; }
+
+    bool allowed_to_delete(char c) const {
+        return delete_chars[safeCharIndex(c)] == 1;
+    }
 };
 
 
 
-static GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, enum insDelTarget target, const insDel_params *params) {
+static GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, enum insDelTarget target, const insDel_params& params, const Alignment& ali) {
     GB_ERROR error = 0;
     GB_TYPES type  = GB_read_type(gb_data);
 
     if (type == GB_DB) {
         GBDATA *gb_child;
         for (gb_child = GB_child(gb_data); gb_child && !error; gb_child = GB_nextChild(gb_child)) {
-            error = gbt_insert_character_gbd(gb_child, target, params);
+            error = gbt_insert_character_gbd(gb_child, target, params, ali);
         }
     }
     else {
-        gb_assert(params->pos >= 0);
+        gb_assert(params.get_pos() >= 0);
         if (type >= GB_BITS && type != GB_LINK) {
             long size = GB_read_count(gb_data);
 
-            if (params->ali_len != size || params->nchar != 0) { // nothing would change
+            if (ali.get_len() != size || params.get_amount() != 0) { // nothing would change
                 if (insdel_shall_be_applied_to(gb_data, target)) {
                     GB_CSTR source      = 0;
                     long    mod         = sizeof(char);
                     char    insert_what = 0;
                     char    insert_tail = 0;
                     char    extraByte   = 0;
-                    long    pos         = params->pos;
-                    long    nchar       = params->nchar;
+                    long    pos         = params.get_pos();
+                    long    nchar       = params.get_amount();
 
                     switch (type) {
                         case GB_STRING: {
@@ -216,21 +245,19 @@ static GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, enum insDelTarget targ
                             insert_tail = '.';
 
                             if (source) {
-                                if (nchar > 0) {    // insert
+                                if (nchar > 0) { // insert
                                     if (pos<size) { // otherwise insert pos is behind (old and too short) sequence -> dots are inserted at tail
                                         if ((pos>0 && source[pos-1] == '.') || source[pos] == '.') { // dot at insert position?
                                             insert_what = '.'; // insert dots
                                         }
                                     }
                                 }
-                                else {              // delete
-                                    long    after        = pos+(-nchar); // position after deleted part
-                                    long    p;
-                                    GB_CSTR delete_chars = params->delete_chars;
-
+                                else { // delete
+                                    long after            = pos+(-nchar); // position after deleted part
                                     if (after>size) after = size;
-                                    for (p = pos; p<after; p++) {
-                                        if (delete_chars[((const unsigned char *)source)[p]]) {
+
+                                    for (long p = pos; p<after; p++) {
+                                        if (params.allowed_to_delete(source[p])) {
                                             error = GBS_global_string("You tried to delete '%c' at position %li  -> Operation aborted", source[p], p);
                                         }
                                     }
@@ -254,12 +281,12 @@ static GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, enum insDelTarget targ
                         if (!source) error = GB_await_error();
                         else {
                             long    modified_len;
-                            int     oversize   = alignment_oversize(gb_data, target, params->ali_len, size);
-                            long    wanted_len = params->ali_len + oversize;
+                            int     oversize   = alignment_oversize(gb_data, target, ali.get_len(), size);
+                            long    wanted_len = ali.get_len() + oversize;
                             GB_CSTR modified   = gbt_insert_delete(source, size, wanted_len, &modified_len, pos, nchar, mod, insert_what, insert_tail, extraByte);
 
                             if (modified) {
-                                gb_assert(modified_len == (params->ali_len+params->nchar+oversize));
+                                gb_assert(modified_len == (ali.get_len()+params.get_amount()+oversize));
 
                                 switch (type) {
                                     case GB_STRING: error = GB_write_string(gb_data, modified);                          break;
@@ -281,12 +308,12 @@ static GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, enum insDelTarget targ
     return error;
 }
 
-static GB_ERROR gbt_insert_character_item(GBDATA *gb_item, enum insDelTarget item_type, const insDel_params *params) {
+static GB_ERROR gbt_insert_character_item(GBDATA *gb_item, enum insDelTarget item_type, const insDel_params& params, const Alignment& ali) {
     GB_ERROR  error  = 0;
-    GBDATA   *gb_ali = GB_entry(gb_item, params->ali_name);
+    GBDATA   *gb_ali = GB_entry(gb_item, ali.get_name());
 
     if (gb_ali) {
-        error = gbt_insert_character_gbd(gb_ali, item_type, params);
+        error = gbt_insert_character_gbd(gb_ali, item_type, params, ali);
         if (error) {
             const char *item_name = GBT_read_name(gb_item);
             error = GBS_global_string("%s '%s': %s", targetType[item_type], item_name, error);
@@ -296,7 +323,7 @@ static GB_ERROR gbt_insert_character_item(GBDATA *gb_item, enum insDelTarget ite
     return error;
 }
 
-static GB_ERROR gbt_insert_character(GBDATA *gb_item_data, const char *item_field, enum insDelTarget item_type, const insDel_params *params) {
+static GB_ERROR gbt_insert_character(GBDATA *gb_item_data, const char *item_field, enum insDelTarget item_type, const insDel_params& params, const Alignment& ali) {
     GBDATA   *gb_item;
     GB_ERROR  error      = 0;
     long      item_count = GB_number_of_subentries(gb_item_data);
@@ -308,7 +335,7 @@ static GB_ERROR gbt_insert_character(GBDATA *gb_item_data, const char *item_fiel
              gb_item && !error;
              gb_item = GB_nextEntry(gb_item))
         {
-            error = gbt_insert_character_item(gb_item, item_type, params);
+            error = gbt_insert_character_item(gb_item, item_type, params, ali);
             progress.inc_and_check_user_abort(error);
         }
     }
@@ -318,9 +345,9 @@ static GB_ERROR gbt_insert_character(GBDATA *gb_item_data, const char *item_fiel
     return error;
 }
 
-static GB_ERROR gbt_insert_character_secstructs(GBDATA *gb_secstructs, const insDel_params *params) {
+static GB_ERROR gbt_insert_character_secstructs(GBDATA *gb_secstructs, const insDel_params& params, const Alignment& ali) {
     GB_ERROR  error  = 0;
-    GBDATA   *gb_ali = GB_entry(gb_secstructs, params->ali_name);
+    GBDATA   *gb_ali = GB_entry(gb_secstructs, ali.get_name());
     
     if (gb_ali) {
         long item_count = GB_number_of_subentries(gb_ali)-1;
@@ -335,7 +362,7 @@ static GB_ERROR gbt_insert_character_secstructs(GBDATA *gb_secstructs, const ins
         {
             GBDATA *gb_ref = GB_entry(gb_item, "ref");
             if (gb_ref) {
-                error = gbt_insert_character_gbd(gb_ref, IDT_SECSTRUCT, params);
+                error = gbt_insert_character_gbd(gb_ref, IDT_SECSTRUCT, params, ali);
                 if (error) {
                     const char *item_name = GBT_read_name(gb_item);
                     error = GBS_global_string("%s '%s': %s", targetType[IDT_SECSTRUCT], item_name, error);
@@ -358,7 +385,7 @@ static GB_ERROR GBT_check_lengths(GBDATA *Main, const char *alignment_name) {
     GBDATA   *gb_secstructs    = GB_search(Main, "secedit/structs", GB_CREATE_CONTAINER);
     GBDATA   *gb_ali;
 
-    insDel_params params = { 0, 0, 0, 0, 0 };
+    insDel_params params(0, 0, 0);
 
     for (gb_ali = GB_entry(gb_presets, "alignment");
          gb_ali && !error;
@@ -370,15 +397,13 @@ static GB_ERROR GBT_check_lengths(GBDATA *Main, const char *alignment_name) {
             arb_progress progress("Formatting alignment", 3); // SAI, species and secstructs
             GBDATA *gb_len = GB_entry(gb_ali, "alignment_len");
 
-            params.ali_name = GB_read_string(gb_name);
-            params.ali_len  = GB_read_int(gb_len);
+            Alignment ali(GB_read_char_pntr(gb_name), GB_read_int(gb_len));
 
-            error             = gbt_insert_character(gb_extended_data, "extended", IDT_SAI,     &params);
-            if (!error) error = gbt_insert_character(gb_species_data,  "species",  IDT_SPECIES, &params);
-            if (!error) error = gbt_insert_character_secstructs(gb_secstructs, &params);
+            error             = gbt_insert_character(gb_extended_data, "extended", IDT_SAI,     params, ali);
+            if (!error) error = gbt_insert_character(gb_species_data,  "species",  IDT_SPECIES, params, ali);
+            if (!error) error = gbt_insert_character_secstructs(gb_secstructs, params, ali);
 
             if (error) progress.done();
-            freenull(params.ali_name);
         }
     }
     free_insDelBuffer();
@@ -457,12 +482,13 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
                 }
 
                 if (!error) {
-                    arb_progress insert_progress("Insert/delete characters", 3);
-                    insDel_params params = { use, len, pos, count, char_delete_list };
+                    arb_progress  insert_progress("Insert/delete characters", 3);
+                    Alignment     ali(use, len);
+                    insDel_params params(pos, count, char_delete_list);
 
-                    error             = gbt_insert_character(gb_species_data,   "species",  IDT_SPECIES,   &params);
-                    if (!error) error = gbt_insert_character(gb_extended_data,  "extended", IDT_SAI,       &params);
-                    if (!error) error = gbt_insert_character_secstructs(gb_secstructs, &params);
+                    error             = gbt_insert_character(gb_species_data,   "species",  IDT_SPECIES,   params, ali);
+                    if (!error) error = gbt_insert_character(gb_extended_data,  "extended", IDT_SAI,       params, ali);
+                    if (!error) error = gbt_insert_character_secstructs(gb_secstructs, params, ali);
 
                     if (error) insert_progress.done();
                 }
