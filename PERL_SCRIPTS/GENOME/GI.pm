@@ -49,13 +49,47 @@ sub findCurrentGenome() {
   return ($gb_orga,$organism);
 }
 
-sub unmarkGenesOfGenome($) {
-  my ($gb_genome) = @_;
-  my $gb_gene = BIO::first_marked_gene($gb_genome);
+sub with_marked_genes($\&) {
+  my ($gb_orga,$fun_r) = @_;
+  my $gb_gene = BIO::first_marked_gene($gb_orga);
   while ($gb_gene) {
-    ARB::write_flag($gb_gene, 0); # unmark
+    &$fun_r($gb_gene);
     $gb_gene = BIO::next_marked_gene($gb_gene);
   }
+}
+sub with_all_genes($\&) {
+  my ($gb_orga,$fun_r) = @_;
+  my $gb_gene = BIO::first_gene($gb_orga);
+  while ($gb_gene) {
+    &$fun_r($gb_gene);
+    $gb_gene = BIO::next_gene($gb_gene);
+  }
+}
+
+sub with_marked_genomes(\&) {
+  my ($fun_r) = @_;
+  my $gb_orga = BIO::first_marked_organism($gb_main);
+  while ($gb_orga) {
+    &$fun_r($gb_orga);
+    $gb_orga = BIO::next_marked_organism($gb_orga);
+  }
+}
+sub with_all_genomes(\&) {
+  my ($fun_r) = @_;
+  my $gb_orga = BIO::first_organism($gb_main);
+  while ($gb_orga) {
+    &$fun_r($gb_orga);
+    $gb_orga = BIO::next_organism($gb_orga);
+  }
+}
+
+sub unmark_gene($) {
+  my ($gb_gene) = @_;
+  ARB::write_flag($gb_gene, 0); # unmark
+}
+sub unmarkGenesOfGenome($) {
+  my ($gb_genome) = @_;
+  with_marked_genes($gb_genome, &unmark_gene);
 }
 
 sub findORF($$$$$) {
