@@ -157,11 +157,18 @@ static bool insdel_shall_be_applied_to(GBDATA *gb_data, enum insDelTarget target
 
 inline int alignment_oversize(GBDATA *gb_data, enum insDelTarget target, long alilen, long found_size) {
     int oversize = 0;
-    if (target == IDT_SAI) {
-        const char *key   = GB_read_key_pntr(gb_data);
-        if (strcmp(key, "_REF") == 0) { // _REF is one byte longer than alignment size
-            oversize = found_size-alilen;
-        }
+    const char *key = GB_read_key_pntr(gb_data);
+    switch (target) {
+        case IDT_SECSTRUCT:
+            if (strcmp(key, "ref") == 0) { // _REF is one byte longer than alignment size
+                oversize = found_size-alilen;
+            }
+            break;
+        case IDT_SAI:
+            if (strcmp(key, "_REF") == 0) { // _REF is one byte longer than alignment size
+                oversize = found_size-alilen;
+            }
+            break;
     }
     return oversize;
 }
@@ -290,17 +297,23 @@ static GB_ERROR gbt_insert_character_item(GBDATA *gb_item, enum insDelTarget ite
 }
 
 static GB_ERROR gbt_insert_character(GBDATA *gb_item_data, const char *item_field, enum insDelTarget item_type, const insDel_params *params) {
-    GBDATA       *gb_item;
-    GB_ERROR      error      = 0;
-    long          item_count = GB_number_of_subentries(gb_item_data);
-    arb_progress  progress(item_field, item_count);
+    GBDATA   *gb_item;
+    GB_ERROR  error      = 0;
+    long      item_count = GB_number_of_subentries(gb_item_data);
 
-    for (gb_item = GB_entry(gb_item_data, item_field);
-         gb_item && !error;
-         gb_item = GB_nextEntry(gb_item))
-    {
-        error = gbt_insert_character_item(gb_item, item_type, params);
-        progress.inc_and_check_user_abort(error);
+    if (item_count) {
+        arb_progress progress(item_field, item_count);
+
+        for (gb_item = GB_entry(gb_item_data, item_field);
+             gb_item && !error;
+             gb_item = GB_nextEntry(gb_item))
+        {
+            error = gbt_insert_character_item(gb_item, item_type, params);
+            progress.inc_and_check_user_abort(error);
+        }
+    }
+    else {
+        arb_progress dummy; // inc parent
     }
     return error;
 }
@@ -403,7 +416,7 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
     GB_ERROR error = 0;
 
     if (pos<0) {
-        error = GB_export_error("Illegal sequence position");
+        error = GBS_global_string("Illegal sequence position %li", pos);
     }
     else {
         GBDATA *gb_ali;
@@ -419,13 +432,8 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
         else {
             int ch;
             for (ch = 0; ch<256; ch++) {
-                if (char_delete) {
-                    if (strchr(char_delete, ch)) char_delete_list[ch] = 0;
-                    else                        char_delete_list[ch] = 1;
-                }
-                else {
-                    char_delete_list[ch] = 0;
-                }
+                if (strchr(char_delete, ch)) char_delete_list[ch] = 0;
+                else                         char_delete_list[ch] = 1;
             }
         }
 
@@ -449,11 +457,14 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
                 }
 
                 if (!error) {
+                    arb_progress insert_progress("Insert/delete characters", 3);
                     insDel_params params = { use, len, pos, count, char_delete_list };
 
                     error             = gbt_insert_character(gb_species_data,   "species",  IDT_SPECIES,   &params);
                     if (!error) error = gbt_insert_character(gb_extended_data,  "extended", IDT_SAI,       &params);
                     if (!error) error = gbt_insert_character_secstructs(gb_secstructs, &params);
+
+                    if (error) insert_progress.done();
                 }
                 free(use);
             }
@@ -470,6 +481,8 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
 
 #ifdef UNIT_TESTS
 #include <test_unit.h>
+#include <arb_unit_test.h>
+#include <arb_defs.h>
 
 #define DO_INSERT(str,alilen,pos,amount)                                                                \
     long        newlen;                                                                                 \
@@ -529,8 +542,331 @@ void TEST_insert_delete() {
     // insert/delete all
     TEST_INSERT("",    0, 0, 3, "---");
     TEST_DELETE("---", 3, 0, 3, "");
-    
+
     free_insDelBuffer();
+}
+
+// ------------------------------
+
+struct arb_unit_test::test_alignment_data TADinsdel[] = {
+    { 1, "MtnK1722", "...G-GGC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUCACCUCC....." }, 
+    { 1, "MhnFormi", "---A-CGA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUCACCUCCU....." }, 
+    { 1, "MhnT1916", "...A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUCACCUCCU----" }, 
+};
+
+struct arb_unit_test::test_alignment_data EXTinsdel[] = {
+    { 0, "ECOLI",    "---U-GCC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCCCACCUGA...." },
+    { 0, "HELIX",    ".....[<[.........[[..[<<.[..].>>]....]]....].>......]" },
+    { 0, "HELIX_NR", ".....1.1.........22..34..34.34..34...22....1........1" },
+};
+
+#define HELIX_REF    ".....x..x........x.x.x....x.x....x...x.x...x.........x"
+#define HELIX_STRUCT "VERSION=3\nLOOP={etc.pp\n}\n"
+
+const char *read_item_entry(GBDATA *gb_item, const char *ali_name, const char *entry_name) {
+    const char *result = NULL;
+    if (gb_item) {
+        GBDATA *gb_ali = GB_find(gb_item, ali_name, SEARCH_CHILD);
+        if (gb_ali) {
+            GBDATA *gb_entry = GB_entry(gb_ali, entry_name);
+            if (gb_entry) {
+                result = GB_read_char_pntr(gb_entry);
+            }
+        }
+    }
+    if (!result) TEST_ASSERT_NO_ERROR(GB_await_error());
+    return result;
+}
+
+#define TEST_ITEM_HAS_ENTRY(find,name,ename,expected)                                          \
+    TEST_ASSERT_EQUAL(read_item_entry(find(gb_main, name), ali_name, ename), expected)
+
+#define TEST_ITEM_HAS_DATA(find,name,expected) TEST_ITEM_HAS_ENTRY(find,name,"data",expected)
+
+#define TEST_SPECIES_HAS_DATA(ad,sd)    TEST_ITEM_HAS_DATA(GBT_find_species,ad.name,sd)
+#define TEST_SAI_HAS_DATA(ad,sd)        TEST_ITEM_HAS_DATA(GBT_find_SAI,ad.name,sd)
+#define TEST_SAI_HAS_ENTRY(ad,ename,sd) TEST_ITEM_HAS_ENTRY(GBT_find_SAI,ad.name,ename,sd)
+
+#define TEST_DATA(sd0,sd1,sd2,ed0,ed1,ed2,ref,struct) do {      \
+        TEST_SPECIES_HAS_DATA(TADinsdel[0], sd0);               \
+        TEST_SPECIES_HAS_DATA(TADinsdel[1], sd1);               \
+        TEST_SPECIES_HAS_DATA(TADinsdel[2], sd2);               \
+        TEST_SAI_HAS_DATA(EXTinsdel[0], ed0);                   \
+        TEST_SAI_HAS_DATA(EXTinsdel[1], ed1);                   \
+        TEST_SAI_HAS_DATA(EXTinsdel[2], ed2);                   \
+        TEST_SAI_HAS_ENTRY(EXTinsdel[1], "_REF", ref);          \
+        TEST_ASSERT_EQUAL(GB_read_char_pntr(GB_search(gb_main, "secedit/structs/ali_mini/struct/ref", GB_FIND)), ref); \
+        TEST_SAI_HAS_ENTRY(EXTinsdel[1], "_STRUCT", struct);    \
+    } while(0)
+
+#define TEST_ALI_LEN_ALIGNED(len,aligned) do {                                          \
+        TEST_ASSERT_EQUAL(GBT_get_alignment_len(gb_main, ali_name), len);               \
+        TEST_ASSERT_EQUAL(GBT_get_alignment_aligned(gb_main, ali_name), aligned);       \
+    }while(0)
+
+void TEST_insert_delete_DB() {
+    GB_shell    shell;
+    ARB_ERROR   error;
+    const char *ali_name = "ali_mini";
+    GBDATA     *gb_main  = TEST_CREATE_DB(error, ali_name, TADinsdel, false);
+
+    if (!error) {
+        GB_transaction ta(gb_main);
+        TEST_DB_INSERT_SAI(gb_main, error, ali_name, EXTinsdel);
+
+        // add secondary structure to "HELIX"
+        GBDATA *gb_helix     = GBT_find_SAI(gb_main, "HELIX");
+        if (!gb_helix) error = GB_await_error();
+        else {
+            GBDATA *gb_struct     = GBT_add_data(gb_helix, ali_name, "_STRUCT", GB_STRING);
+            if (!gb_struct) error = GB_await_error();
+            else    error         = GB_write_string(gb_struct, HELIX_STRUCT);
+
+            GBDATA *gb_struct_ref     = GBT_add_data(gb_helix, ali_name, "_REF", GB_STRING);
+            if (!gb_struct_ref) error = GB_await_error();
+            else    error             = GB_write_string(gb_struct_ref, HELIX_REF);
+        }
+
+        // add stored secondary structure
+        GBDATA *gb_ref     = GB_search(gb_main, "secedit/structs/ali_mini/struct/ref", GB_STRING);
+        if (!gb_ref) error = GB_await_error();
+        else    error      = GB_write_string(gb_ref, HELIX_REF);
+    }
+
+    if (!error) {
+        GB_transaction ta(gb_main);
+
+        for (int pass = 1; pass <= 2; ++pass) {
+            if (pass == 1) TEST_ALI_LEN_ALIGNED(52, 1);
+            if (pass == 2) TEST_ALI_LEN_ALIGNED(53, 0); // was marked as "not aligned"
+            TEST_DATA("...G-GGC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUCACCUCC.....",
+                      "---A-CGA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUCACCUCCU.....",
+                      "...A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUCACCUCCU----",
+                      "---U-GCC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCCCACCUGA....",
+                      ".....[<[.........[[..[<<.[..].>>]....]]....].>......]",
+                      ".....1.1.........22..34..34.34..34...22....1........1",
+                      ".....x..x........x.x.x....x.x....x...x.x...x.........x",
+                      HELIX_STRUCT);
+
+            if (pass == 1) TEST_ASSERT_NO_ERROR(GBT_check_data(gb_main, ali_name));
+        }
+
+        TEST_ASSERT_NO_ERROR(GBT_format_alignment(gb_main, ali_name));
+        TEST_ALI_LEN_ALIGNED(53, 1);
+        TEST_DATA("...G-GGC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUCACCUCC......",
+                  "---A-CGA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUCACCUCCU.....",
+                  "...A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUCACCUCCU----.", // @@@ <- should convert '-' to '.' or append '-' 
+                  "---U-GCC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCCCACCUGA.....",
+                  ".....[<[.........[[..[<<.[..].>>]....]]....].>......]",
+                  ".....1.1.........22..34..34.34..34...22....1........1",
+                  ".....x..x........x.x.x....x.x....x...x.x...x.........x",
+                  HELIX_STRUCT);
+
+// editor column -> alignment column
+#define COL(col) ((col)-19)
+
+        TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(60), 2, "")); // insert in middle
+        TEST_ALI_LEN_ALIGNED(55, 1);
+        TEST_DATA("...G-GGC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC......",
+                  "---A-CGA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.....",
+                  "...A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU----.", 
+                  "---U-GCC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.....",
+                  ".....[<[.........[[..[<<.[..].>>]....]]......].>......]",
+                  ".....1.1.........22..34..34.34..34...22......1........1",
+                  ".....x..x........x.x.x....x.x....x...x.x.....x.........x",
+                  HELIX_STRUCT);
+        
+        TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(71), 2, "")); // insert near end
+        TEST_ALI_LEN_ALIGNED(57, 1);
+        TEST_DATA("...G-GGC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC........",
+                  "---A-CGA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.......",
+                  "...A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU------.",
+                  "---U-GCC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.......",
+                  ".....[<[.........[[..[<<.[..].>>]....]]......].>........]",
+                  ".....1.1.........22..34..34.34..34...22......1..........1",
+                  ".....x..x........x.x.x....x.x....x...x.x.....x...........x",
+                  HELIX_STRUCT);
+
+        TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(20), 2, "")); // insert near start
+        TEST_ALI_LEN_ALIGNED(59, 1);
+        TEST_DATA(".....G-GGC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC........",
+                  "-----A-CGA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.......",
+                  ".....A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU------.",
+                  "-----U-GCC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.......",
+                  ".......[<[.........[[..[<<.[..].>>]....]]......].>........]",
+                  ".......1.1.........22..34..34.34..34...22......1..........1",
+                  ".......x..x........x.x.x....x.x....x...x.x.....x...........x",
+                  HELIX_STRUCT);
+
+        
+        TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(26), 2, "")); // insert at left helix start
+        TEST_ALI_LEN_ALIGNED(61, 1);
+        TEST_DATA(".....G---GGC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC........",
+                  "-----A---CGA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.......",
+                  ".....A---CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU------.",
+                  "-----U---GCC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.......",
+                  ".........[<[.........[[..[<<.[..].>>]....]]......].>........]",
+                  ".........1.1.........22..34..34.34..34...22......1..........1",
+                  ".........x..x........x.x.x....x.x....x...x.x.....x...........x",
+                  HELIX_STRUCT);
+
+        TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(29), 2, "")); // insert behind left helix start
+        TEST_ALI_LEN_ALIGNED(63, 1);
+        TEST_DATA(".....G---G--GC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC........",
+                  "-----A---C--GA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.......",
+                  ".....A---C--GA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU------.",
+                  "-----U---G--CC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.......",
+                  ".........[--<[.........[[..[<<.[..].>>]....]]......].>........]", // @@@ <- should insert dots
+                  ".........1...1.........22..34..34.34..34...22......1..........1",
+                  ".........x....x........x.x.x....x.x....x...x.x.....x...........x",
+                  HELIX_STRUCT);
+
+        TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(32), 2, "")); // insert at left helix end
+        TEST_ALI_LEN_ALIGNED(65, 1);
+        TEST_DATA(".....G---G--G--C-C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC........",
+                  "-----A---C--G--A-U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.......",
+                  ".....A---C--G--A-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU------.",
+                  "-----U---G--C--C-U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.......",
+                  ".........[--<--[.........[[..[<<.[..].>>]....]]......].>........]", // @@@ <- should insert dots
+                  ".........1.....1.........22..34..34.34..34...22......1..........1",
+                  ".........x......x........x.x.x....x.x....x...x.x.....x...........x",
+                  HELIX_STRUCT);
+
+        TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(35), 2, "")); // insert behind left helix end
+        TEST_ALI_LEN_ALIGNED(67, 1);
+        TEST_DATA(".....G---G--G--C---C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC........",
+                  "-----A---C--G--A---U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.......",
+                  ".....A---C--G--A---A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU------.",
+                  "-----U---G--C--C---U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.......",
+                  ".........[--<--[...........[[..[<<.[..].>>]....]]......].>........]", 
+                  ".........1.....1...........22..34..34.34..34...22......1..........1",
+                  ".........x........x........x.x.x....x.x....x...x.x.....x...........x", // @@@ _REF gets destroyed here! (see #159)
+                  HELIX_STRUCT);
+
+        
+        TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(57), 2, "")); // insert at right helix start
+        TEST_ALI_LEN_ALIGNED(69, 1);
+        TEST_DATA(".....G---G--G--C---C-G...--AGGGGAA-CCU--G-CGGC-UGGAUC--ACCUCC........",
+                  "-----A---C--G--A---U-C-----CGGGGAA-CCU--G-CGGC-UGGAUC--ACCUCCU.......",
+                  ".....A---C--G--A---A-C.....GGGGGAA-CCU--G-CGGC-UGGAUC--ACCUCCU------.",
+                  "-----U---G--C--C---U-G-----GCGGCCU-UAG--C-GCGG-UGGUCC--CACCUGA.......",
+                  ".........[--<--[...........[[..[<<.[....].>>]....]]......].>........]",
+                  ".........1.....1...........22..34..34...34..34...22......1..........1",
+                  ".........x........x........x.x.x....x...x....x...x.x.....x...........x",
+                  HELIX_STRUCT);
+
+        TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(60), 2, "")); // insert behind right helix start
+        TEST_ALI_LEN_ALIGNED(71, 1);
+        TEST_DATA(".....G---G--G--C---C-G...--AGGGGAA-CCU--G---CGGC-UGGAUC--ACCUCC........",
+                  "-----A---C--G--A---U-C-----CGGGGAA-CCU--G---CGGC-UGGAUC--ACCUCCU.......",
+                  ".....A---C--G--A---A-C.....GGGGGAA-CCU--G---CGGC-UGGAUC--ACCUCCU------.",
+                  "-----U---G--C--C---U-G-----GCGGCCU-UAG--C---GCGG-UGGUCC--CACCUGA.......",
+                  ".........[--<--[...........[[..[<<.[....]...>>]....]]......].>........]", 
+                  ".........1.....1...........22..34..34...3--4..34...22......1..........1", // @@@ <- helix nr destroyed + shall use dots
+                  ".........x........x........x.x.x....x...x......x...x.x.....x...........x", 
+                  HELIX_STRUCT);
+
+        TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(65), 2, "")); // insert at right helix end
+        TEST_ALI_LEN_ALIGNED(73, 1);
+        TEST_DATA(".....G---G--G--C---C-G...--AGGGGAA-CCU--G---CG--GC-UGGAUC--ACCUCC........",
+                  "-----A---C--G--A---U-C-----CGGGGAA-CCU--G---CG--GC-UGGAUC--ACCUCCU.......",
+                  ".....A---C--G--A---A-C.....GGGGGAA-CCU--G---CG--GC-UGGAUC--ACCUCCU------.",
+                  "-----U---G--C--C---U-G-----GCGGCCU-UAG--C---GC--GG-UGGUCC--CACCUGA.......",
+                  ".........[--<--[...........[[..[<<.[....]...>>--]....]]......].>........]", // @@@ <- shall insert dots
+                  ".........1.....1...........22..34..34...3--4....34...22......1..........1", 
+                  ".........x........x........x.x.x....x...x........x...x.x.....x...........x",
+                  HELIX_STRUCT);
+
+        TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(68), 2, ""));           // insert behind right helix end
+        TEST_ALI_LEN_ALIGNED(75, 1);
+        TEST_DATA(".....G---G--G--C---C-G...--AGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCC........",
+                  "-----A---C--G--A---U-C-----CGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU.......",
+                  ".....A---C--G--A---A-C.....GGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU------.",
+                  "-----U---G--C--C---U-G-----GCGGCCU-UAG--C---GC--G--G-UGGUCC--CACCUGA.......",
+                  ".........[--<--[...........[[..[<<.[....]...>>--]......]]......].>........]",
+                  ".........1.....1...........22..34..34...3--4....3--4...22......1..........1", // @@@ <- helix nr destroyed + shall use dots
+                  ".........x........x........x.x.x....x...x..........x...x.x.....x...........x", // @@@ _REF gets destroyed here! (see #159)
+                  HELIX_STRUCT);
+
+        
+
+        TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(44), 2, ""));           // insert at gap border
+        TEST_ALI_LEN_ALIGNED(77, 1);
+        TEST_DATA(".....G---G--G--C---C-G.....--AGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCC........",
+                  "-----A---C--G--A---U-C-------CGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU.......",
+                  ".....A---C--G--A---A-C.......GGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU------.",
+                  "-----U---G--C--C---U-G-------GCGGCCU-UAG--C---GC--G--G-UGGUCC--CACCUGA.......",
+                  ".........[--<--[.............[[..[<<.[....]...>>--]......]]......].>........]",
+                  ".........1.....1.............22..34..34...3--4....3--4...22......1..........1", 
+                  ".........x........x..........x.x.x....x...x..........x...x.x.....x...........x", 
+                  HELIX_STRUCT);
+
+        
+        TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(42), -6, "-.")); // delete gaps
+        TEST_ALI_LEN_ALIGNED(71, 1);
+        TEST_DATA(".....G---G--G--C---C-G.AGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCC........",
+                  "-----A---C--G--A---U-C-CGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU.......",
+                  ".....A---C--G--A---A-C.GGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU------.",
+                  "-----U---G--C--C---U-G-GCGGCCU-UAG--C---GC--G--G-UGGUCC--CACCUGA.......",
+                  ".........[--<--[.......[[..[<<.[....]...>>--]......]]......].>........]",
+                  ".........1.....1.......22..34..34...3--4....3--4...22......1..........1", 
+                  ".........x........x....x.x.x....x...x..........x...x.x.....x...........x", 
+                  HELIX_STRUCT);
+        
+        
+        TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(71), -4, "%")); // delete anything
+        TEST_ALI_LEN_ALIGNED(67, 1);
+        TEST_DATA(".....G---G--G--C---C-G.AGGGGAA-CCU--G---CG--G--C-UGG-ACCUCC........",
+                  "-----A---C--G--A---U-C-CGGGGAA-CCU--G---CG--G--C-UGG-ACCUCCU.......",
+                  ".....A---C--G--A---A-C.GGGGGAA-CCU--G---CG--G--C-UGG-ACCUCCU------.",
+                  "-----U---G--C--C---U-G-GCGGCCU-UAG--C---GC--G--G-UGG-CACCUGA.......",
+                  ".........[--<--[.......[[..[<<.[....]...>>--]......]...].>........]",
+                  ".........1.....1.......22..34..34...3--4....3--4...2...1..........1", 
+                  ".........x........x....x.x.x....x...x..........x...x...x...........x", 
+                  HELIX_STRUCT);
+
+    }
+
+    if (!error) {
+        {
+            GB_transaction ta(gb_main);
+            TEST_ASSERT_EQUAL(GBT_insert_character(gb_main, ali_name, COL(35), -3, "-."), // illegal delete
+                              "SAI 'HELIX': You tried to delete 'x' at position 18  -> Operation aborted");
+            ta.close("xxx");
+        }
+        {
+            GB_transaction ta(gb_main);
+            TEST_ASSERT_EQUAL(GBT_insert_character(gb_main, ali_name, COL(56), -3, "-."), // illegal delete
+                              "SAI 'HELIX_NR': You tried to delete '4' at position 39  -> Operation aborted");
+            ta.close("xxx");
+        }
+        {
+            GB_transaction ta(gb_main);
+            TEST_ASSERT_EQUAL(GBT_insert_character(gb_main, ali_name, 4711, 3, "-."), // illegal insert
+                              "Can't insert at position 4711 (exceeds length 67 of alignment 'ali_mini')");
+            ta.close("xxx");
+        }
+        {
+            GB_transaction ta(gb_main);
+            TEST_ASSERT_EQUAL(GBT_insert_character(gb_main, ali_name, -1, 3, "-."), // illegal insert
+                              "Illegal sequence position -1");
+            ta.close("xxx");
+        }
+    }
+    if (!error) {
+        GB_transaction ta(gb_main);
+        TEST_DATA(".....G---G--G--C---C-G.AGGGGAA-CCU--G---CG--G--C-UGG-ACCUCC........",
+                  "-----A---C--G--A---U-C-CGGGGAA-CCU--G---CG--G--C-UGG-ACCUCCU.......",
+                  ".....A---C--G--A---A-C.GGGGGAA-CCU--G---CG--G--C-UGG-ACCUCCU------.",
+                  "-----U---G--C--C---U-G-GCGGCCU-UAG--C---GC--G--G-UGG-CACCUGA.......",
+                  ".........[--<--[.......[[..[<<.[....]...>>--]......]...].>........]",
+                  ".........1.....1.......22..34..34...3--4....3--4...2...1..........1", 
+                  ".........x........x....x.x.x....x...x..........x...x...x...........x", 
+                  HELIX_STRUCT);
+    }
+
+    GB_close(gb_main);
+    TEST_ASSERT_NO_ERROR(error.deliver());
 }
 
 #endif // UNIT_TESTS
