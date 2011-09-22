@@ -168,6 +168,7 @@ char *GB_lib_file(bool warn_when_not_found, const char *libprefix, const char *f
 char *GB_property_file(bool warn_when_not_found, const char *filename);
 void GBS_read_dir(StrArray &names, const char *dir, const char *mask);
 bool GB_test_textfile_difflines(const char *file1, const char *file2, int expected_difflines, int special_mode);
+size_t GB_test_mem_equal(const unsigned char *buf1, const unsigned char *buf2, size_t common);
 bool GB_test_files_equal(const char *file1, const char *file2);
 void GBT_transform_names(StrArray &dest, const StrArray &source, char *transform (const char *, void *), void *client_data);
 
