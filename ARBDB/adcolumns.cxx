@@ -11,6 +11,7 @@
 #include <arbdbt.h>
 #include <adGene.h>
 #include <arb_progress.h>
+#include <arb_defs.h>
 
 #include "gb_local.h"
 
@@ -123,7 +124,6 @@ static const char *gbt_insert_delete(const char *source, long srclen, long destl
     }
     return result;
 }
-
 
 enum TargetType {
     IDT_SPECIES = 0,
@@ -541,9 +541,10 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
 #include <test_unit.h>
+#endif
 #include <arb_unit_test.h>
-#include <arb_defs.h>
 
 #define DO_INSERT(str,alilen,pos,amount)                                                                \
     size_t      newlen;                                                                                 \
@@ -567,7 +568,7 @@ void TEST_insert_delete() {
     TEST_FORMAT__BROKEN("xxx--", 3, "xxx");
     TEST_FORMAT__BROKEN("xxx..", 3, "xxx");
     TEST_FORMAT__BROKEN("xxxxx", 3, "xxx");
-    TEST_FORMAT__BROKEN("xxx",   0, ""); 
+    TEST_FORMAT__BROKEN("xxx",   0, "");
 
     // insert/delete in the middle
     TEST_INSERT("abcde", 5, 3, 0, NULL);
@@ -624,7 +625,7 @@ struct arb_unit_test::test_alignment_data EXTinsdel[] = {
 #define HELIX_REF    ".....x..x........x.x.x....x.x....x...x.x...x.........x"
 #define HELIX_STRUCT "VERSION=3\nLOOP={etc.pp\n}\n"
 
-const char *read_item_entry(GBDATA *gb_item, const char *ali_name, const char *entry_name) {
+static const char *read_item_entry(GBDATA *gb_item, const char *ali_name, const char *entry_name) {
     const char *result = NULL;
     if (gb_item) {
         GBDATA *gb_ali = GB_find(gb_item, ali_name, SEARCH_CHILD);
@@ -638,26 +639,100 @@ const char *read_item_entry(GBDATA *gb_item, const char *ali_name, const char *e
     if (!result) TEST_ASSERT_NO_ERROR(GB_await_error());
     return result;
 }
+static char *ints2string(const GB_UINT4 *ints, size_t count) {
+    char *str = (char*)malloc(count+1);
+    for (size_t c = 0; c<count; ++c) {
+        str[c] = (ints[c]<10) ? ints[c]+'0' : '?';
+    }
+    str[count] = 0;
+    return str;
+}
+static GB_UINT4 *string2ints(const char *str, size_t count) {
+    GB_UINT4 *ints = (GB_UINT4*)malloc(sizeof(GB_UINT4)*count);
+    for (size_t c = 0; c<count; ++c) {
+        ints[c] = int(str[c]-'0');
+    }
+    return ints;
+}
+static char *floats2string(const float *floats, size_t count) {
+    char *str = (char*)malloc(count+1);
+    for (size_t c = 0; c<count; ++c) {
+        str[c] = char(floats[c]*64.0+0.5)+' '+1;
+    }
+    str[count] = 0;
+    return str;
+}
+static float *string2floats(const char *str, size_t count) {
+    float *floats = (float*)malloc(sizeof(float)*count);
+    for (size_t c = 0; c<count; ++c) {
+        floats[c] = float(str[c]-' '-1)/64.0;
+    }
+    return floats;
+}
 
-#define TEST_ITEM_HAS_ENTRY(find,name,ename,expected)                                          \
+static GBDATA *get_ali_entry(GBDATA *gb_item, const char *ali_name, const char *entry_name) {
+    GBDATA *gb_entry = NULL;
+    if (gb_item) {
+        GBDATA *gb_ali = GB_find(gb_item, ali_name, SEARCH_CHILD);
+        if (gb_ali) gb_entry = GB_entry(gb_ali, entry_name);
+    }
+    return gb_entry;
+}
+
+static char *read_item_ints_entry_as_string(GBDATA *gb_item, const char *ali_name, const char *entry_name) {
+    char   *result   = NULL;
+    GBDATA *gb_entry = get_ali_entry(gb_item, ali_name, entry_name);
+    if (gb_entry) {
+        GB_UINT4 *ints = GB_read_ints(gb_entry);
+        result         = ints2string(ints, GB_read_count(gb_entry));
+        free(ints);
+    }
+    if (!result) TEST_ASSERT_NO_ERROR(GB_await_error());
+    return result;
+}
+static char *read_item_floats_entry_as_string(GBDATA *gb_item, const char *ali_name, const char *entry_name) {
+    char   *result   = NULL;
+    GBDATA *gb_entry = get_ali_entry(gb_item, ali_name, entry_name);
+    if (gb_entry) {
+        float *floats = GB_read_floats(gb_entry);
+        result         = floats2string(floats, GB_read_count(gb_entry));
+        free(floats);
+    }
+    if (!result) TEST_ASSERT_NO_ERROR(GB_await_error());
+    return result;
+}
+
+#define TEST_ITEM_HAS_ENTRY(find,name,ename,expected)                                   \
     TEST_ASSERT_EQUAL(read_item_entry(find(gb_main, name), ali_name, ename), expected)
 
+#define TEST_ITEM_HAS_INTSENTRY(find,name,ename,expected)                                                               \
+    TEST_ASSERT_EQUAL(&*SmartCharPtr(read_item_ints_entry_as_string(find(gb_main, name), ali_name, ename)), expected)
+
+#define TEST_ITEM_HAS_FLOATSENTRY(find,name,ename,expected)                                                             \
+    TEST_ASSERT_EQUAL(&*SmartCharPtr(read_item_floats_entry_as_string(find(gb_main, name), ali_name, ename)), expected)
+    
 #define TEST_ITEM_HAS_DATA(find,name,expected) TEST_ITEM_HAS_ENTRY(find,name,"data",expected)
 
 #define TEST_SPECIES_HAS_DATA(ad,sd)    TEST_ITEM_HAS_DATA(GBT_find_species,ad.name,sd)
 #define TEST_SAI_HAS_DATA(ad,sd)        TEST_ITEM_HAS_DATA(GBT_find_SAI,ad.name,sd)
 #define TEST_SAI_HAS_ENTRY(ad,ename,sd) TEST_ITEM_HAS_ENTRY(GBT_find_SAI,ad.name,ename,sd)
 
-#define TEST_DATA(sd0,sd1,sd2,ed0,ed1,ed2,ref,struct) do {      \
-        TEST_SPECIES_HAS_DATA(TADinsdel[0], sd0);               \
-        TEST_SPECIES_HAS_DATA(TADinsdel[1], sd1);               \
-        TEST_SPECIES_HAS_DATA(TADinsdel[2], sd2);               \
-        TEST_SAI_HAS_DATA(EXTinsdel[0], ed0);                   \
-        TEST_SAI_HAS_DATA(EXTinsdel[1], ed1);                   \
-        TEST_SAI_HAS_DATA(EXTinsdel[2], ed2);                   \
-        TEST_SAI_HAS_ENTRY(EXTinsdel[1], "_REF", ref);          \
-        TEST_ASSERT_EQUAL(GB_read_char_pntr(GB_search(gb_main, "secedit/structs/ali_mini/struct/ref", GB_FIND)), ref); \
-        TEST_SAI_HAS_ENTRY(EXTinsdel[1], "_STRUCT", struct);    \
+#define TEST_SPECIES_HAS_INTS(ad,id)   TEST_ITEM_HAS_INTSENTRY(GBT_find_species,ad.name,"NN",id)
+#define TEST_SPECIES_HAS_FLOATS(ad,fd) TEST_ITEM_HAS_FLOATSENTRY(GBT_find_species,ad.name,"FF",fd)
+
+#define TEST_DATA(sd0,sd1,sd2,ed0,ed1,ed2,ref,ints,floats,struct) do {                          \
+        TEST_SPECIES_HAS_DATA(TADinsdel[0], sd0);                                               \
+        TEST_SPECIES_HAS_DATA(TADinsdel[1], sd1);                                               \
+        TEST_SPECIES_HAS_DATA(TADinsdel[2], sd2);                                               \
+        TEST_SAI_HAS_DATA(EXTinsdel[0], ed0);                                                   \
+        TEST_SAI_HAS_DATA(EXTinsdel[1], ed1);                                                   \
+        TEST_SAI_HAS_DATA(EXTinsdel[2], ed2);                                                   \
+        TEST_SAI_HAS_ENTRY(EXTinsdel[1], "_REF", ref);                                          \
+        GBDATA *gb_ref = GB_search(gb_main, "secedit/structs/ali_mini/struct/ref", GB_FIND);    \
+        TEST_ASSERT_EQUAL(GB_read_char_pntr(gb_ref), ref);                                      \
+        TEST_SPECIES_HAS_INTS(TADinsdel[0], ints);                                              \
+        TEST_SPECIES_HAS_FLOATS(TADinsdel[0], floats);                                          \
+        TEST_SAI_HAS_ENTRY(EXTinsdel[1], "_STRUCT", struct);                                    \
     } while(0)
 
 #define TEST_ALI_LEN_ALIGNED(len,aligned) do {                                          \
@@ -670,6 +745,8 @@ void TEST_insert_delete_DB() {
     ARB_ERROR   error;
     const char *ali_name = "ali_mini";
     GBDATA     *gb_main  = TEST_CREATE_DB(error, ali_name, TADinsdel, false);
+
+    arb_suppress_progress noProgress;
 
     if (!error) {
         GB_transaction ta(gb_main);
@@ -692,6 +769,35 @@ void TEST_insert_delete_DB() {
         GBDATA *gb_ref     = GB_search(gb_main, "secedit/structs/ali_mini/struct/ref", GB_STRING);
         if (!gb_ref) error = GB_await_error();
         else    error      = GB_write_string(gb_ref, HELIX_REF);
+
+        // create one INTS and one FLOATS entry for first species
+        GBDATA *gb_spec = GBT_find_species(gb_main, TADinsdel[0].name);
+        {
+            GBDATA     *gb_ints   = GBT_add_data(gb_spec, ali_name, "NN", GB_INTS);
+            const char *intsAsStr = "934674096035485565009425682006116502001394358998513";
+            size_t      len       = strlen(intsAsStr);
+            GB_UINT4   *ints      = string2ints(intsAsStr, len);
+            {
+                char *asStr = ints2string(ints, len);
+                TEST_ASSERT_EQUAL(intsAsStr, asStr);
+                free(asStr);
+            }
+            error = GB_write_ints(gb_ints, ints, len);
+            free(ints);
+        }
+        {
+            GBDATA     *gb_ints     = GBT_add_data(gb_spec, ali_name, "FF", GB_FLOATS);
+            const char *floatsAsStr = "ODu8EJh60e1XYLgxvzmeMiMAjB5EJxT6JPiCvQ4uCLDoHlWV59DW";
+            size_t      len         = strlen(floatsAsStr);
+            float      *floats      = string2floats(floatsAsStr, len);
+            {
+                char *asStr = floats2string(floats, len);
+                TEST_ASSERT_EQUAL(floatsAsStr, asStr);
+                free(asStr);
+            }
+            error = GB_write_floats(gb_ints, floats, len);
+            free(floats);
+        }
     }
 
     if (!error) {
@@ -700,6 +806,7 @@ void TEST_insert_delete_DB() {
         for (int pass = 1; pass <= 2; ++pass) {
             if (pass == 1) TEST_ALI_LEN_ALIGNED(52, 1);
             if (pass == 2) TEST_ALI_LEN_ALIGNED(53, 0); // was marked as "not aligned"
+
             TEST_DATA("...G-GGC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUCACCUCC.....",
                       "---A-CGA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUCACCUCCU.....",
                       "...A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUCACCUCCU----",
@@ -707,6 +814,8 @@ void TEST_insert_delete_DB() {
                       ".....[<[.........[[..[<<.[..].>>]....]]....].>......]",
                       ".....1.1.........22..34..34.34..34...22....1........1",
                       ".....x..x........x.x.x....x.x....x...x.x...x.........x",
+                      "934674096035485565009425682006116502001394358998513",  // a INTS entry
+                      "ODu8EJh60e1XYLgxvzmeMiMAjB5EJxT6JPiCvQ4uCLDoHlWV59DW", // a FLOATS entry
                       HELIX_STRUCT);
 
             if (pass == 1) TEST_ASSERT_NO_ERROR(GBT_check_data(gb_main, ali_name));
@@ -721,6 +830,8 @@ void TEST_insert_delete_DB() {
                   ".....[<[.........[[..[<<.[..].>>]....]]....].>......]",
                   ".....1.1.........22..34..34.34..34...22....1........1",
                   ".....x..x........x.x.x....x.x....x...x.x...x.........x",
+                  "93467409603548556500942568200611650200139435899851300",
+                  "ODu8EJh60e1XYLgxvzmeMiMAjB5EJxT6JPiCvQ4uCLDoHlWV59DW!",
                   HELIX_STRUCT);
 
 // editor column -> alignment column
@@ -735,6 +846,8 @@ void TEST_insert_delete_DB() {
                   ".....[<[.........[[..[<<.[..].>>]....]]......].>......]",
                   ".....1.1.........22..34..34.34..34...22......1........1",
                   ".....x..x........x.x.x....x.x....x...x.x.....x.........x",
+                  "9346740960354855650094256820061165020013900435899851300",
+                  "ODu8EJh60e1XYLgxvzmeMiMAjB5EJxT6JPiCvQ4uC!!LDoHlWV59DW!",
                   HELIX_STRUCT);
         
         TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(71), 2, "")); // insert near end
@@ -746,6 +859,8 @@ void TEST_insert_delete_DB() {
                   ".....[<[.........[[..[<<.[..].>>]....]]......].>........]",
                   ".....1.1.........22..34..34.34..34...22......1..........1",
                   ".....x..x........x.x.x....x.x....x...x.x.....x...........x",
+                  "934674096035485565009425682006116502001390043589985100300",
+                  "ODu8EJh60e1XYLgxvzmeMiMAjB5EJxT6JPiCvQ4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
         TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(20), 2, "")); // insert near start
@@ -757,6 +872,8 @@ void TEST_insert_delete_DB() {
                   ".......[<[.........[[..[<<.[..].>>]....]]......].>........]",
                   ".......1.1.........22..34..34.34..34...22......1..........1",
                   ".......x..x........x.x.x....x.x....x...x.x.....x...........x",
+                  "90034674096035485565009425682006116502001390043589985100300",
+                  "O!!Du8EJh60e1XYLgxvzmeMiMAjB5EJxT6JPiCvQ4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
         
@@ -769,6 +886,8 @@ void TEST_insert_delete_DB() {
                   ".........[<[.........[[..[<<.[..].>>]....]]......].>........]",
                   ".........1.1.........22..34..34.34..34...22......1..........1",
                   ".........x..x........x.x.x....x.x....x...x.x.....x...........x",
+                  "9003467004096035485565009425682006116502001390043589985100300",
+                  "O!!Du8E!!Jh60e1XYLgxvzmeMiMAjB5EJxT6JPiCvQ4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
         TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(29), 2, "")); // insert behind left helix start
@@ -780,6 +899,8 @@ void TEST_insert_delete_DB() {
                   ".........[--<[.........[[..[<<.[..].>>]....]]......].>........]", // @@@ <- should insert dots
                   ".........1...1.........22..34..34.34..34...22......1..........1",
                   ".........x....x........x.x.x....x.x....x...x.x.....x...........x",
+                  "900346700400096035485565009425682006116502001390043589985100300",
+                  "O!!Du8E!!J!!h60e1XYLgxvzmeMiMAjB5EJxT6JPiCvQ4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
         TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(32), 2, "")); // insert at left helix end
@@ -791,6 +912,8 @@ void TEST_insert_delete_DB() {
                   ".........[--<--[.........[[..[<<.[..].>>]....]]......].>........]", // @@@ <- should insert dots
                   ".........1.....1.........22..34..34.34..34...22......1..........1",
                   ".........x......x........x.x.x....x.x....x...x.x.....x...........x",
+                  "90034670040000096035485565009425682006116502001390043589985100300",
+                  "O!!Du8E!!J!!h!!60e1XYLgxvzmeMiMAjB5EJxT6JPiCvQ4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
         TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(35), 2, "")); // insert behind left helix end
@@ -802,6 +925,8 @@ void TEST_insert_delete_DB() {
                   ".........[--<--[...........[[..[<<.[..].>>]....]]......].>........]", 
                   ".........1.....1...........22..34..34.34..34...22......1..........1",
                   ".........x........x........x.x.x....x.x....x...x.x.....x...........x", // @@@ _REF gets destroyed here! (see #159)
+                  "9003467004000009006035485565009425682006116502001390043589985100300",
+                  "O!!Du8E!!J!!h!!6!!0e1XYLgxvzmeMiMAjB5EJxT6JPiCvQ4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
         
@@ -814,6 +939,8 @@ void TEST_insert_delete_DB() {
                   ".........[--<--[...........[[..[<<.[....].>>]....]]......].>........]",
                   ".........1.....1...........22..34..34...34..34...22......1..........1",
                   ".........x........x........x.x.x....x...x....x...x.x.....x...........x",
+                  "900346700400000900603548556500942568200006116502001390043589985100300",
+                  "O!!Du8E!!J!!h!!6!!0e1XYLgxvzmeMiMAjB5E!!JxT6JPiCvQ4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
         TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(60), 2, "")); // insert behind right helix start
@@ -825,6 +952,8 @@ void TEST_insert_delete_DB() {
                   ".........[--<--[...........[[..[<<.[....]...>>]....]]......].>........]", 
                   ".........1.....1...........22..34..34...3--4..34...22......1..........1", // @@@ <- helix nr destroyed + shall use dots
                   ".........x........x........x.x.x....x...x......x...x.x.....x...........x", 
+                  "90034670040000090060354855650094256820000006116502001390043589985100300",
+                  "O!!Du8E!!J!!h!!6!!0e1XYLgxvzmeMiMAjB5E!!J!!xT6JPiCvQ4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
         TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(65), 2, "")); // insert at right helix end
@@ -836,6 +965,8 @@ void TEST_insert_delete_DB() {
                   ".........[--<--[...........[[..[<<.[....]...>>--]....]]......].>........]", // @@@ <- shall insert dots
                   ".........1.....1...........22..34..34...3--4....34...22......1..........1", 
                   ".........x........x........x.x.x....x...x........x...x.x.....x...........x",
+                  "9003467004000009006035485565009425682000000611006502001390043589985100300",
+                  "O!!Du8E!!J!!h!!6!!0e1XYLgxvzmeMiMAjB5E!!J!!xT6!!JPiCvQ4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
         TEST_ASSERT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(68), 2, ""));           // insert behind right helix end
@@ -847,6 +978,8 @@ void TEST_insert_delete_DB() {
                   ".........[--<--[...........[[..[<<.[....]...>>--]......]]......].>........]",
                   ".........1.....1...........22..34..34...3--4....3--4...22......1..........1", // @@@ <- helix nr destroyed + shall use dots
                   ".........x........x........x.x.x....x...x..........x...x.x.....x...........x", // @@@ _REF gets destroyed here! (see #159)
+                  "900346700400000900603548556500942568200000061100600502001390043589985100300",
+                  "O!!Du8E!!J!!h!!6!!0e1XYLgxvzmeMiMAjB5E!!J!!xT6!!J!!PiCvQ4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
         
@@ -860,6 +993,8 @@ void TEST_insert_delete_DB() {
                   ".........[--<--[.............[[..[<<.[....]...>>--]......]]......].>........]",
                   ".........1.....1.............22..34..34...3--4....3--4...22......1..........1", 
                   ".........x........x..........x.x.x....x...x..........x...x.x.....x...........x", 
+                  "90034670040000090060354850056500942568200000061100600502001390043589985100300",
+                  "O!!Du8E!!J!!h!!6!!0e1XYLg!!xvzmeMiMAjB5E!!J!!xT6!!J!!PiCvQ4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
         
@@ -872,6 +1007,8 @@ void TEST_insert_delete_DB() {
                   ".........[--<--[.......[[..[<<.[....]...>>--]......]]......].>........]",
                   ".........1.....1.......22..34..34...3--4....3--4...22......1..........1", 
                   ".........x........x....x.x.x....x...x..........x...x.x.....x...........x", 
+                  "90034670040000090060354500942568200000061100600502001390043589985100300",
+                  "O!!Du8E!!J!!h!!6!!0e1XYzmeMiMAjB5E!!J!!xT6!!J!!PiCvQ4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
         
         
@@ -884,6 +1021,8 @@ void TEST_insert_delete_DB() {
                   ".........[--<--[.......[[..[<<.[....]...>>--]......]...].>........]",
                   ".........1.....1.......22..34..34...3--4....3--4...2...1..........1", 
                   ".........x........x....x.x.x....x...x..........x...x...x...........x", 
+                  "9003467004000009006035450094256820000006110060050200043589985100300",
+                  "O!!Du8E!!J!!h!!6!!0e1XYzmeMiMAjB5E!!J!!xT6!!J!!PiCvQ!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
     }
@@ -923,6 +1062,8 @@ void TEST_insert_delete_DB() {
                   ".........[--<--[.......[[..[<<.[....]...>>--]......]...].>........]",
                   ".........1.....1.......22..34..34...3--4....3--4...2...1..........1", 
                   ".........x........x....x.x.x....x...x..........x...x...x...........x", 
+                  "9003467004000009006035450094256820000006110060050200043589985100300",
+                  "O!!Du8E!!J!!h!!6!!0e1XYzmeMiMAjB5E!!J!!xT6!!J!!PiCvQ!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
     }
 
