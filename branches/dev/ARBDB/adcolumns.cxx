@@ -15,7 +15,322 @@
 
 #include "gb_local.h"
 
+#include <algorithm>
 
+using namespace std;
+
+// --------------------------------------------------------------------------------
+
+class AliData;
+typedef SmartPtr<AliData> AliDataPtr;
+
+class AliData {
+protected:
+    void *inc_by_units(void *mem, size_t units) const { return reinterpret_cast<char*>(mem)+units*unitsize(); }
+public:
+    virtual ~AliData() {}
+
+    virtual size_t unitsize() const                                      = 0;
+    virtual AliDataPtr create_gap(size_t repeat) const                   = 0;
+    virtual size_t elems() const                                         = 0;
+    virtual void copyPartTo(void *mem, size_t start, size_t count) const = 0;
+
+    size_t memsize() const { return unitsize()*elems(); }
+    void copyTo(void *mem) const { copyPartTo(mem, 0, elems()); }
+    bool empty() const { return !elems(); }
+
+};
+
+class ComposedAliData : public AliData {
+    AliDataPtr left, right;
+
+    ComposedAliData(AliDataPtr l, AliDataPtr r) : left(l), right(r) {
+        gb_assert(l->unitsize() == r->unitsize());
+        gb_assert(l->elems());
+        gb_assert(r->elems());
+    }
+    friend AliDataPtr concat(AliDataPtr left, AliDataPtr right);
+public:
+    size_t unitsize() const { return left->unitsize(); }
+    AliDataPtr create_gap(size_t repeat) const { return left->create_gap(repeat); }
+    size_t elems() const  { return left->elems()+right->elems(); }
+    void copyPartTo(void *mem, size_t start, size_t count) const {
+        size_t left_elems = left->elems();
+        size_t take_left  = 0;
+        if (start<left_elems) {
+            take_left = min(count, left_elems-start);
+            left->copyPartTo(mem, start, take_left);
+        }
+
+        size_t take_right = count-take_left;
+        if (take_right) {
+            size_t rstart = start>left_elems ? start-left_elems : 0;
+            right->copyPartTo(inc_by_units(mem, take_left), rstart, count-take_left);
+        }
+    }
+};
+
+class AliDataSlice : public AliData {
+    AliDataPtr from;
+    size_t     pos;
+    size_t     amount;
+public:
+    AliDataSlice(AliDataPtr from_, size_t pos_, size_t amount_)
+        : from(from_),
+          pos(pos_),
+          amount(amount_)
+    {
+        size_t from_size = from->elems();
+
+        if (pos>from_size) amount = 0;
+        if (amount) {
+            size_t last_pos  = pos+amount-1;
+            size_t last_from = from->elems()-1;
+            if (last_pos > last_from) {
+                gb_assert(last_from >= pos);
+                amount = last_from-pos+1;
+            }
+        }
+    }
+
+    size_t unitsize() const { return from->unitsize(); }
+    AliDataPtr create_gap(size_t repeat) const { return from->create_gap(repeat); }
+    size_t elems() const { return amount; }
+    void copyPartTo(void *mem, size_t start, size_t count) const {
+        gb_assert(count <= amount);
+        from->copyPartTo(mem, start+pos, count);
+    }
+};
+
+template<typename T>
+class SpecificGap : public AliData {
+    T      gap;
+    size_t repeat;
+public:
+    SpecificGap(const T& gap_, size_t repeat_) : gap(gap_), repeat(repeat_) {}
+    size_t unitsize() const { return sizeof(T); }
+    AliDataPtr create_gap(size_t) const { gb_assert(0); return NULL; }
+    size_t elems() const { return repeat; }
+    void copyPartTo(void *mem, size_t start, size_t count) const {
+        if (start<repeat) {
+            size_t amount = min(start+count, repeat-start);
+            for (size_t a = 0; a<amount; ++a) {
+                memcpy(mem, &gap, unitsize());
+                mem = inc_by_units(mem, 1);
+            }
+        }
+    }
+};
+
+template<typename T>
+class SpecificAliData : public AliData, virtual Noncopyable {
+    T      *data;
+    size_t  size;
+    T       gap;
+
+public:
+    SpecificAliData(T*& allocated_data, size_t elements, const T& gap_)
+        : data(allocated_data),
+          size(elements),
+          gap(gap_)
+    {
+        allocated_data = NULL;
+    }
+    ~SpecificAliData() { free(data); }
+
+    size_t unitsize() const { return sizeof(T); }
+    AliDataPtr create_gap(size_t repeat) const { return new SpecificGap<T>(gap, repeat); }
+    size_t elems() const  { return size; }
+    void copyPartTo(void *mem, size_t start, size_t count) const {
+        gb_assert(start<elems());
+        if (count>0) {
+            size_t last = start+count-1;
+            gb_assert(last<elems());
+            size_t msize = unitsize()*count;
+            gb_assert(msize>0);
+            memcpy(mem, data+start, msize);
+        }
+    }
+};
+
+// --------------------------------------------------------------------------------
+// @@@ move things below into a class ?
+
+inline AliDataPtr concat(AliDataPtr left, AliDataPtr right) {
+    return left->empty() ? right : (right->empty() ? left : new ComposedAliData(left, right));
+}
+inline AliDataPtr concat(AliDataPtr left, AliDataPtr mid, AliDataPtr right) {
+    return concat(left, concat(mid, right));
+}
+
+inline AliDataPtr partof(AliDataPtr data, size_t pos, size_t amount) { return new AliDataSlice(data, pos, amount); }
+inline AliDataPtr before(AliDataPtr data, size_t pos) { return partof(data, 0, pos); }
+inline AliDataPtr after(AliDataPtr data, size_t pos) { return partof(data, pos+1, data->elems()-pos-1); }
+
+inline AliDataPtr delete_from(AliDataPtr from, size_t pos, size_t amount) { return concat(before(from, pos), after(from, pos+amount-1)); }
+inline AliDataPtr insert_at(AliDataPtr dest, size_t pos, AliDataPtr src) {
+    return concat(before(dest, pos), src, after(dest, pos-1));
+}
+
+inline AliDataPtr insert_gap(AliDataPtr data, size_t pos, size_t count) {
+    AliDataPtr gap = data->create_gap(count);
+    return insert_at(data, pos, gap);
+}
+
+template<typename T> AliDataPtr makeAliData(T*& allocated_data, size_t elems, const T& gap) { return new SpecificAliData<T>(allocated_data, elems, gap); }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+template<typename T>
+inline T*& copyof(const T* const_data, size_t elemsize, size_t elements) {
+    static T *copy = NULL;
+
+    size_t memsize = elemsize*elements;
+    gb_assert(!copy);
+    copy = (T*)malloc(memsize);
+    gb_assert(copy);
+    memcpy(copy, const_data, memsize);
+    return copy;
+}
+
+
+#define COPYOF(typedarray) copyof(typedarray, sizeof(*(typedarray)), ARRAY_ELEMS(typedarray))
+#define SIZEOF(typedarray) (sizeof(*(typedarray))*ARRAY_ELEMS(typedarray))
+
+#define TEST_ASSERT_COPIES_EQUAL(d1,d2) do{                     \
+        size_t  s1 = (d1)->memsize();                           \
+        size_t  s2 = (d2)->memsize();                           \
+        TEST_ASSERT_EQUAL(s1, s2);                              \
+        void   *copy1 = malloc(s1+s2);                          \
+        void   *copy2 = reinterpret_cast<char*>(copy1)+s1;      \
+        (d1)->copyTo(copy1);                                    \
+        (d2)->copyTo(copy2);                                    \
+        TEST_ASSERT_MEM_EQUAL(copy1, copy2, s1);                \
+        free(copy1);                                            \
+    }while(0)
+
+#define TEST_ASSERT_COPY_EQUALS_ARRAY(adp,typedarray,asize) do{ \
+        size_t  size    = (adp)->memsize();                     \
+        TEST_ASSERT_EQUAL(size, asize);                         \
+        void   *ad_copy = malloc(size);                         \
+        (adp)->copyTo(ad_copy);                                 \
+        TEST_ASSERT_MEM_EQUAL(ad_copy, typedarray, size);       \
+        free(ad_copy);                                          \
+    }while(0)
+
+#define TEST_ASSERT_COPY_EQUALS_STRING(adp,str) do{             \
+        size_t  size    = (adp)->memsize();                     \
+        char   *ad_copy = (char*)malloc(size+1);                \
+        (adp)->copyTo(ad_copy);                                 \
+        ad_copy[size]   = 0;                                    \
+        TEST_ASSERT_EQUAL(ad_copy, str);                        \
+        free(ad_copy);                                          \
+    }while(0)
+    
+static void illegal_alidata_composition() {
+    const int ELEMS = 5;
+
+    int  *i = (int*)malloc(sizeof(int)*ELEMS);
+    char *c = (char*)malloc(sizeof(char)*ELEMS);
+
+    concat(makeAliData(i, ELEMS, 0), makeAliData(c, ELEMS, '-'));
+}
+
+void TEST_AliData() {
+#define SEQDATA "CGCAC-C-GG-C-GG-A--C------GG--C-UCAGU"
+    char      bit_src[] = SEQDATA; // also contains trailing 0-byte!
+    GB_CUINT4 int_src[] = { 0x01, 0x1213, 0x242526, 0x37383930, 0xffffffff };
+    float     flt_src[] = { 0.0, 0.5, 1.0, -5.0, 20.1 };
+
+    AliDataPtr type[] = {
+        makeAliData(COPYOF(bit_src), ARRAY_ELEMS(bit_src)-1, '-'), 
+        makeAliData(COPYOF(int_src), ARRAY_ELEMS(int_src), 0U), 
+        makeAliData(COPYOF(flt_src), ARRAY_ELEMS(flt_src), 0.0F) 
+    };
+    TEST_ASSERT_COPY_EQUALS_ARRAY(type[0], bit_src, SIZEOF(bit_src)-1);
+    TEST_ASSERT_COPY_EQUALS_STRING(type[0], bit_src);
+    TEST_ASSERT_COPY_EQUALS_ARRAY(type[1], int_src, SIZEOF(int_src));
+    TEST_ASSERT_COPY_EQUALS_ARRAY(type[2], flt_src, SIZEOF(flt_src));
+
+    for (size_t t = 0; t<ARRAY_ELEMS(type); ++t) {
+        AliDataPtr data  = type[t];
+        AliDataPtr dup = concat(data, data);
+        TEST_ASSERT_EQUAL(dup->elems(), 2*data->elems());
+
+        AliDataPtr start = before(data, 3);
+        TEST_ASSERT_EQUAL(start->elems(), 3U);
+
+        AliDataPtr end = after(data, 3);
+        TEST_ASSERT_EQUAL(end->elems(), data->elems()-4);
+
+        AliDataPtr mid = partof(data, 3, 1);
+        TEST_ASSERT_COPIES_EQUAL(concat(start, mid, end), data);
+
+        AliDataPtr del = delete_from(data, 3, 1);
+        TEST_ASSERT_EQUAL(del->elems(), data->elems()-1);
+        TEST_ASSERT_COPIES_EQUAL(concat(start, end), del);
+
+        AliDataPtr empty = before(data, 0);
+        TEST_ASSERT_EQUAL(empty->elems(), 0U);
+
+        TEST_ASSERT_COPIES_EQUAL(data, concat(data, empty));
+        TEST_ASSERT_COPIES_EQUAL(data, concat(empty, data));
+        TEST_ASSERT_COPIES_EQUAL(empty, concat(empty, empty));
+
+        AliDataPtr del_rest = delete_from(data, 3, 999);
+        TEST_ASSERT_COPIES_EQUAL(start, del_rest);
+
+        AliDataPtr ins = insert_at(del, 3, mid);
+        TEST_ASSERT_COPIES_EQUAL(data, ins);
+        TEST_ASSERT_COPIES_EQUAL(del, delete_from(ins, 3, 1));
+
+        TEST_ASSERT_COPIES_EQUAL(insert_at(del, 3, empty), del);
+        TEST_ASSERT_COPIES_EQUAL(insert_at(del, 777, empty), del);      // append via insert_at
+        TEST_ASSERT_COPIES_EQUAL(insert_at(start, 777, end), del); // append via insert_at
+
+        AliDataPtr gap = del->create_gap(5);
+        TEST_ASSERT_EQUAL(gap->elems(), 5U);
+
+        AliDataPtr ins_gap = insert_gap(del, 4, 5);
+        TEST_ASSERT_EQUAL(ins_gap->elems(), del->elems()+5);
+
+        TEST_ASSERT_COPIES_EQUAL(ins_gap, insert_gap(ins_gap, 7, 0)); // insert empty gap
+
+        AliDataPtr start_gap1 = insert_gap(ins_gap, 0, 1); // insert gap at start
+        AliDataPtr start_gap3 = insert_gap(ins_gap, 0, 3); // insert gap at start
+
+        TEST_ASSERT_COPIES_EQUAL(insert_gap(empty, 0, 5), gap); // insert into empty
+
+        AliDataPtr end_gap1 = insert_gap(mid, 1, 1);
+        TEST_ASSERT_EQUAL(end_gap1->elems(), 2U);
+
+        if (t == 0) {
+            TEST_ASSERT_COPY_EQUALS_STRING(start,      "CGC");
+            TEST_ASSERT_COPY_EQUALS_STRING(end,        "C-C-GG-C-GG-A--C------GG--C-UCAGU");
+            TEST_ASSERT_COPY_EQUALS_STRING(mid,        "A");
+            TEST_ASSERT_COPY_EQUALS_STRING(end_gap1,   "A-");
+            TEST_ASSERT_COPY_EQUALS_STRING(del,        "CGCC-C-GG-C-GG-A--C------GG--C-UCAGU");
+            TEST_ASSERT_COPY_EQUALS_STRING(del_rest,   "CGC");
+            TEST_ASSERT_COPY_EQUALS_STRING(ins,        "CGCAC-C-GG-C-GG-A--C------GG--C-UCAGU");
+            TEST_ASSERT_COPY_EQUALS_STRING(gap,        "-----");
+            TEST_ASSERT_COPY_EQUALS_STRING(ins_gap,    "CGCC------C-GG-C-GG-A--C------GG--C-UCAGU");
+            TEST_ASSERT_COPY_EQUALS_STRING(start_gap1, "-CGCC------C-GG-C-GG-A--C------GG--C-UCAGU");
+            TEST_ASSERT_COPY_EQUALS_STRING(start_gap3, "---CGCC------C-GG-C-GG-A--C------GG--C-UCAGU");
+        }
+
+    }
+
+    TEST_ASSERT_CODE_ASSERTION_FAILS(illegal_alidata_composition); // composing different unitsizes shall fail
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
 
 static char   *insDelBuffer = 0;
 static size_t  insDelBuffer_size;
