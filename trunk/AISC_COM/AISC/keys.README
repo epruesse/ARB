@@ -6,6 +6,7 @@ PROJECT      string   // main name of program
 OBJECT_KEY   string   // prefix key for objects
 MAX_KEY      num      // maximum attribute number
 MAX_OBJECT   num      // maximum object number
+MAGIC_NUMBER num      // server version (see magic.lst)
 
 DATA {          
 

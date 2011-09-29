@@ -18,7 +18,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main *, char *tname) __ATTR__USERESULT;
 ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) __ATTR__USERESULT;
 
 /* PT_etc.cxx */
-void set_table_for_PT_N_mis(void);
+void set_table_for_PT_N_mis(int ignored_Nmismatches, int when_less_than_Nmismatches);
 void pt_export_error(PT_local *locs, const char *error);
 const char *virt_name(PT_probematch *ml);
 const char *virt_fullname(PT_probematch *ml);
