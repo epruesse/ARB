@@ -33,9 +33,6 @@ typedef unsigned char uchar;
 
 #define PT_CORE *(int *)0 = 0;
 
-#define PT_MAX_MATCHES     1024*1024
-
-// #define PT_MAX_IDENTS      10000
 #define PT_POS_TREE_HEIGHT 20
 #define PT_POS_SECURITY    10
 #define MIN_PROBE_LENGTH   6

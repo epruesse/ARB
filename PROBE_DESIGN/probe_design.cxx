@@ -49,7 +49,6 @@
 #define AWAR_PD_MATCH_WRITE2TMP  "probe_match/write_2_tmp" // write result to field tmp
 #define AWAR_PD_MATCH_AUTOMATCH  "probe_match/auto_match" // auto match probes when target string changes
 
-#define AWAR_PD_MATCH_CLIPHITS "probe_match/clip_hits"
 #define AWAR_PD_MATCH_NHITS    "tmp/probe_match/nhits" // display the 'number of hits'
 
 // probe design awars
@@ -707,7 +706,6 @@ void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
                           LOCS_MATCH_SORT_BY,        root->awar(AWAR_PD_MATCH_SORTBY)->read_int(),
                           LOCS_MATCH_COMPLEMENT,     0,
                           LOCS_MATCH_MAX_MISMATCHES, root->awar(AWAR_MAX_MISMATCHES)->read_int(),
-                          LOCS_MATCH_MAX_SPECIES,    root->awar(AWAR_PD_MATCH_CLIPHITS)->read_int(),
                           LOCS_SEARCHMATCH,          probe,
                           NULL))
             {
@@ -1143,7 +1141,6 @@ void create_probe_design_variables(AW_root *root, AW_default db1, AW_default glo
     root->awar_int   (AWAR_PD_MATCH_COMPLEMENT, 0,    db1);
     root->awar_int   (AWAR_MIN_MISMATCHES,      0,    global);
     root->awar_int   (AWAR_MAX_MISMATCHES,      0,    global);
-    root->awar_int   (AWAR_PD_MATCH_CLIPHITS,   1000, db1);
     root->awar_string(AWAR_TARGET_STRING,       "",   global);
     root->awar_string(AWAR_PD_MATCH_NHITS,      0,    db1);
     root->awar_int   (AWAR_PD_MATCH_AUTOMATCH,  0,    db1)->add_callback(auto_match_changed);

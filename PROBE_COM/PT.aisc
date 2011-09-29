@@ -4,7 +4,7 @@ MAX_KEY         33,             # MAX NUMBER OF AN ATTRIBUTE
 MAX_OBJECT      12,             # MAX DIFFERENT USER STRUCTURES
 MAX_STRING_LEN  1024,
 MAX_PAR_CNT     16,
-MAGIC_NUMBER    0x415054,       # MAGIC_NUMBER 6 HEX DIGITS
+MAGIC_NUMBER    0x615054,       # MAGIC_NUMBER 6 HEX DIGITS (see AISC/magic.lst@PTSERVER) 
 
 SERVER_INCLUDES (~
 #include <stdio.h>
@@ -214,8 +214,10 @@ PT_local, LOCS,         2,      (~local communication buffer~), {
     int,            pm_reversed,          t,    rw,     ,       MATCH_REVERSED,       9,      1,                    (~reverse probe~);
     int,            pm_complement,        t,    rw,     ,       MATCH_COMPLEMENT,     10,     ,                     (~complement probe~);
     int,            pm_max,               t,    rw,     ,       MATCH_MAX_MISMATCHES, 11,     ,                     (~max mismatches~);
-    int,            pm_max_spec,          t,    rw,     ,       MATCH_MAX_SPECIES,    12,     ,                     (~max number of species matching~);
+    int,            pm_max_hits,          t,    rw,     ,       MATCH_MAX_HITS,       12,     1000000,              (~max number of hits reported (0=unlimited)~); 
     int,            sort_by,              t,    rw,     ,       MATCH_SORT_BY,        13,     ,                     (~0 == mismatches  1 == weighted mismatches 2 == weighted mismatches with pos and strength~);
+    int,            pm_nmatches_ignored,  t,    rw,     ,       MATCH_N_ACCEPT,       14,     1,                    (~max. of accepted matches vs N~);
+    int,            pm_nmatches_limit,    t,    rw,     ,       MATCH_N_LIMIT,        33,     4,                    (~N-matches are only accepted, if less than NMATCHES_LIMIT occur, otherwise no N-matches are accepted ~);
     PT_probematch,  pm,                   d,    r,      ,       MATCH_LIST,           15,     ,                     (~result: List of species where probe matches~);
     int,            matches_truncated,    t,    r,      ,       MATCHES_TRUNCATED,    17,     ,                     (~result: whether MATCH_LIST was truncated~);
     bytestring,     match_string,         %,    r,      ,       MATCH_STRING,         18,     ,                     (~result: List of species where probe matches~);
