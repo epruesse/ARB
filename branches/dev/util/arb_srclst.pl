@@ -130,6 +130,7 @@ my @skipped_when_matches = (
                            );
 
 my @used_when_matchesFull = (
+                             qr/\/AISC_COM\/AISC\/magic.lst$/o,
                              qr/\/CLUSTALW\/.*$/o,
                              qr/\/EISPACK\/rg\.html$/o,
                              qr/\/GDE\/.*\.html$/o,
@@ -209,6 +210,9 @@ my @skipped_when_matchesFull = (
                                 qr/^\.\/PERL2ARB\/pm_to_blib$/o,
                                 qr/^\.\/SOURCE_TOOLS\/valgrind2grep\.lst$/o,
                                 qr/^\.\/TEMPLATES\/arb_build\.h$/o,
+                                qr/^\.\/UNIT_TESTER\/run\/TEST_pt\.arb$/o,
+                                qr/^\.\/UNIT_TESTER\/run\/.*\.ARM$/o,
+                                qr/^\.\/UNIT_TESTER\/run\/.*\.ARF$/o,
                                 qr/date\.xsl$/o,
                                );
 
