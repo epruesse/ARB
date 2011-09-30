@@ -130,6 +130,7 @@ my @skipped_when_matches = (
                            );
 
 my @used_when_matchesFull = (
+                             qr/\/AISC_COM\/AISC\/magic.lst$/o,
                              qr/\/CLUSTALW\/.*$/o,
                              qr/\/EISPACK\/rg\.html$/o,
                              qr/\/GDE\/.*\.html$/o,
