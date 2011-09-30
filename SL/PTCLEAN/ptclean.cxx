@@ -138,12 +138,13 @@ GB_ERROR prepare_ptserver_database(GBDATA *gb_main, Servertype type) {
 #endif
 
 void TEST_ptclean() {
-    GB_shell  shell;
-    GBDATA   *gb_main = GB_open("TEST_pt_src.arb", "rw");
+    GB_shell    shell;
+    GBDATA     *gb_main = GB_open("TEST_pt_src.arb", "rw");
+    const char *saveas  = "TEST_pt_cleaned.arb";
 
     TEST_ASSERT(gb_main);
     TEST_ASSERT_NO_ERROR(prepare_ptserver_database(gb_main, PTSERVER));
-    TEST_ASSERT_NO_ERROR(GB_save_as(gb_main, "TEST_pt_cleaned.arb", "a"));
+    TEST_ASSERT_NO_ERROR(GB_save_as(gb_main, saveas, "a"));
     GB_close(gb_main);
 
 // #define TEST_AUTO_UPDATE
@@ -152,6 +153,7 @@ void TEST_ptclean() {
 #else
     TEST_ASSERT_TEXTFILES_EQUAL("TEST_pt_cleaned.arb", "TEST_pt_cleaned_expected.arb");
 #endif
+    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
 }
 
 #endif // UNIT_TESTS
