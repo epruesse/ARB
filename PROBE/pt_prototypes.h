@@ -39,7 +39,7 @@ int PT_find_exProb(PT_exProb *pep, int dummy_1x);
 /* PT_io.cxx */
 int compress_data(char *probestring);
 void PT_base_2_string(char *id_string, long len);
-ARB_ERROR probe_read_data_base(const char *name) __ATTR__USERESULT;
+ARB_ERROR probe_read_data_base(const char *name, bool readOnly) __ATTR__USERESULT;
 int probe_compress_sequence(char *seq, int seqsize);
 char *probe_read_alignment(int j, int *psize);
 void probe_read_alignments(void);

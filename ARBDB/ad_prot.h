@@ -392,6 +392,9 @@ GB_ERROR GB_undo(GBDATA *gb_main, GB_UNDO_TYPE type) __ATTR__USERESULT;
 char *GB_undo_info(GBDATA *gb_main, GB_UNDO_TYPE type);
 GB_ERROR GB_set_undo_mem(GBDATA *gbd, long memsize);
 
+/* admap.cxx */
+bool GB_supports_mapfile(void);
+
 /* adquery.cxx */
 const char *GB_get_GBDATA_path(GBDATA *gbd);
 GBDATA *GB_find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GBDATA *after, size_t skip_over);

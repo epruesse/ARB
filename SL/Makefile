@@ -1,5 +1,6 @@
 
 ARCHS_ALL = \
+	PTCLEAN/PTCLEAN.dummy  \
 	CB/CB.dummy  \
 	ALIVIEW/ALIVIEW.dummy  \
 	AP_TREE/AP_TREE.dummy  \
