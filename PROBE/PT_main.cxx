@@ -383,7 +383,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR run_command(const char *exename, 
             error = probe_read_data_base(params->db_server, false);
             if (!error) {
                 pt_assert(psg.gb_main);
-                error = clean_ptserver_database(psg.gb_main, PTSERVER);
+                error = prepare_ptserver_database(psg.gb_main, PTSERVER);
                 if (!error) {
                     const char *mode = "bf"; // save PT-server database withOUT! Fastload file
                     error            = GB_save_as(psg.gb_main, params->db_server, mode);
