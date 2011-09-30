@@ -70,13 +70,13 @@ void PT_base_2_string(char *id_string, long len) {
     *dest = '\0';
 }
 
-ARB_ERROR probe_read_data_base(const char *name) { // goes to header: __ATTR__USERESULT
+ARB_ERROR probe_read_data_base(const char *name, bool readOnly) { // goes to header: __ATTR__USERESULT
     ARB_ERROR error;
     GB_set_verbose();
 
     psg.gb_shell = new GB_shell;
 
-    GBDATA *gb_main     = GB_open(name, "r");
+    GBDATA *gb_main     = GB_open(name, readOnly ? "r" : "rw");
     if (!gb_main) error = GB_await_error();
     else {
         error = GB_begin_transaction(gb_main);

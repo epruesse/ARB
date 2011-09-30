@@ -201,6 +201,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 PT_main.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_core.h
+PT_main.o: $(ARBHOME)/INCLUDE/arb_defs.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -217,6 +218,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_main.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_main.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_main.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
+PT_main.o: $(ARBHOME)/INCLUDE/ptclean.h
 PT_main.o: $(ARBHOME)/INCLUDE/server.h
 PT_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
 PT_main.o: $(ARBHOME)/INCLUDE/smartptr.h
