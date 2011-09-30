@@ -69,10 +69,15 @@
 #define AWAR_PD_DESIGN_GENE "probe_design/gene" // generate probes for genes ?
 
 // probe design/match (expert window)
-#define AWAR_PD_DESIGN_EXP_BONDS  "probe_design/bonds/pos" // prefix for bonds
+#define AWAR_PD_COMMON_EXP_BONDS "probe_design/bonds/pos"  // prefix for bonds
+
 #define AWAR_PD_DESIGN_EXP_SPLIT  "probe_design/SPLIT"
 #define AWAR_PD_DESIGN_EXP_DTEDGE "probe_design/DTEDGE"
 #define AWAR_PD_DESIGN_EXP_DT     "probe_design/DT"
+
+#define AWAR_PD_MATCH_NMATCHES   "probe_match/nmatches"
+#define AWAR_PD_MATCH_LIM_NMATCH "probe_match/lim_nmatch"
+#define AWAR_PD_MATCH_MAX_RES    "probe_match/maxres"
 
 // ----------------------------------------
 
@@ -360,24 +365,38 @@ GB_ERROR pd_get_the_gene_names(GBDATA *gb_main, bytestring &bs, bytestring &chec
     return error;
 }
 
-int probe_design_send_data(AW_root *root, T_PT_PDC  pdc)
-{
-    int i;
-    char buffer[256];
-    if (aisc_put(pd_gl.link, PT_PDC, pdc,
-                 PDC_DTEDGE,    (double)root->awar(AWAR_PD_DESIGN_EXP_DTEDGE)->read_float()*100.0,
-                 PDC_DT,        (double)root->awar(AWAR_PD_DESIGN_EXP_DT)->read_float()*100.0,
-                 PDC_SPLIT, (double)root->awar(AWAR_PD_DESIGN_EXP_SPLIT)->read_float(),
-                 PDC_CLIPRESULT,    root->awar(AWAR_PD_DESIGN_CLIPRESULT)->read_int(),
-                 NULL)) return 1;
-    for (i=0; i<16; i++) {
-        sprintf(buffer, AWAR_PD_DESIGN_EXP_BONDS "%i", i);
+static int probe_send_bonds(AW_root *root, T_PT_PDC pdc) {
+    for (int i=0; i<16; i++) {
+        char buffer[256];
+        sprintf(buffer, AWAR_PD_COMMON_EXP_BONDS "%i", i);
         if (aisc_put(pd_gl.link, PT_PDC, pdc,
                      PT_INDEX,  i,
                      PDC_BONDVAL,   (double)root->awar(buffer)->read_float(),
-                     NULL)) return 1;
+                     NULL))
+            return 1;
     }
     return 0;
+}
+static int probe_design_send_data(AW_root *root, T_PT_PDC pdc) {
+    if (aisc_put(pd_gl.link, PT_PDC, pdc,
+                 PDC_DTEDGE,     (double)root->awar(AWAR_PD_DESIGN_EXP_DTEDGE)->read_float()*100.0,
+                 PDC_DT,         (double)root->awar(AWAR_PD_DESIGN_EXP_DT)->read_float()*100.0,
+                 PDC_SPLIT,      (double)root->awar(AWAR_PD_DESIGN_EXP_SPLIT)->read_float(),
+                 PDC_CLIPRESULT, root->awar(AWAR_PD_DESIGN_CLIPRESULT)->read_int(),
+                 NULL))
+        return 1;
+
+    return probe_send_bonds(root, pdc);
+}
+static int probe_match_send_data(AW_root *root, T_PT_PDC pdc) {
+    if (aisc_put(pd_gl.link, PT_LOCS, pd_gl.locs,
+                 LOCS_MATCH_N_ACCEPT, root->awar(AWAR_PD_MATCH_NMATCHES)->read_int(),  
+                 LOCS_MATCH_N_LIMIT,  root->awar(AWAR_PD_MATCH_LIM_NMATCH)->read_int(),
+                 LOCS_MATCH_MAX_HITS, root->awar(AWAR_PD_MATCH_MAX_RES)->read_int(),
+                 NULL))
+        return 1;
+
+    return probe_send_bonds(root, pdc);
 }
 
 static int ecolipos2int(const char *awar_val) {
@@ -689,10 +708,10 @@ void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
             if (init_local_com_struct()) error = "Cannot contact PT-server (2)";
 
             if (!error) {
-                aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs,
-                            LOCS_PROBE_DESIGN_CONFIG, PT_PDC, &pdc,
+                aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs, 
+                            LOCS_PROBE_DESIGN_CONFIG, PT_PDC, &pdc, // @@@ hack - only done to transfer bonds
                             NULL);
-                if (probe_design_send_data(root, pdc)) error = "Connection to PT_SERVER lost (2)";
+                if (probe_match_send_data(root, pdc)) error = "Connection to PT_SERVER lost (2)";
             }
         }
 
@@ -753,9 +772,10 @@ void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
                 }
             }
 
-            root->awar(AWAR_PD_MATCH_NHITS)->write_string(GBS_global_string(matches_truncated ? "> %li" : "%li", match_list_cnt));
+            root->awar(AWAR_PD_MATCH_NHITS)->write_string(GBS_global_string(matches_truncated ? "[more than %li]" : "%li", match_list_cnt));
             if (matches_truncated) {
-                aw_message("Too many matches - list does not necessarily contain best matches.");
+                aw_message("Too many matches, displaying a random digest.\n"
+                           "Increase the limit in the expert window.");
             }
         }
 
@@ -976,7 +996,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
         }
 
         if (error) {
-            root->awar(AWAR_PD_MATCH_NHITS)->write_string("0"); // clear hits
+            root->awar(AWAR_PD_MATCH_NHITS)->write_string("[none]"); // clear hits
             aw_message(error);
         }
         else {
@@ -1091,15 +1111,15 @@ static void selected_match_changed_cb(AW_root *root) {
     free(selected_match);
 }
 
-void create_probe_design_variables(AW_root *root, AW_default db1, AW_default global)
+void create_probe_design_variables(AW_root *root, AW_default props, AW_default db)
 {
     char buffer[256]; memset(buffer, 0, 256);
     int  i;
     pd_gl.pd_design = 0;        // design result window not created
-    root->awar_string(AWAR_SPECIES_NAME,         "", db1);
-    root->awar_string(AWAR_PD_SELECTED_MATCH,    "", db1)->add_callback(selected_match_changed_cb);
-    root->awar_float (AWAR_PD_DESIGN_EXP_DTEDGE, .5, db1);
-    root->awar_float (AWAR_PD_DESIGN_EXP_DT,     .5, db1);
+    root->awar_string(AWAR_SPECIES_NAME,         "", props);
+    root->awar_string(AWAR_PD_SELECTED_MATCH,    "", props)->add_callback(selected_match_changed_cb);
+    root->awar_float (AWAR_PD_DESIGN_EXP_DTEDGE, .5, props);
+    root->awar_float (AWAR_PD_DESIGN_EXP_DT,     .5, props);
 
 
     double default_bonds[16] = {
@@ -1110,61 +1130,71 @@ void create_probe_design_variables(AW_root *root, AW_default db1, AW_default glo
     };
 
     for (i=0; i<16; i++) {
-        sprintf(buffer, AWAR_PD_DESIGN_EXP_BONDS "%i", i);
-        root->awar_float(buffer, default_bonds[i], db1);
+        sprintf(buffer, AWAR_PD_COMMON_EXP_BONDS "%i", i);
+        root->awar_float(buffer, default_bonds[i], props);
         root->awar(buffer)->set_minmax(0, 3.0);
     }
-    root->awar_float(AWAR_PD_DESIGN_EXP_SPLIT,  .5, db1);
-    root->awar_float(AWAR_PD_DESIGN_EXP_DTEDGE, .5, db1);
-    root->awar_float(AWAR_PD_DESIGN_EXP_DT,     .5, db1);
+    root->awar_float(AWAR_PD_DESIGN_EXP_SPLIT,  .5, props);
+    root->awar_float(AWAR_PD_DESIGN_EXP_DTEDGE, .5, props);
+    root->awar_float(AWAR_PD_DESIGN_EXP_DT,     .5, props);
 
-    root->awar_int  (AWAR_PD_DESIGN_CLIPRESULT, 50,   db1)->set_minmax(0, 1000);
-    root->awar_int  (AWAR_PD_DESIGN_MISHIT,     0,    db1)->set_minmax(0, 100000);
-    root->awar_int  (AWAR_PD_DESIGN_MAXBOND,    4,    db1)->set_minmax(0, 20);
-    root->awar_float(AWAR_PD_DESIGN_MINTARGETS, 50.0, db1)->set_minmax(0, 100);
+    root->awar_int  (AWAR_PD_DESIGN_CLIPRESULT, 50,   props)->set_minmax(0, 1000);
+    root->awar_int  (AWAR_PD_DESIGN_MISHIT,     0,    props)->set_minmax(0, 100000);
+    root->awar_int  (AWAR_PD_DESIGN_MAXBOND,    4,    props)->set_minmax(0, 20);
+    root->awar_float(AWAR_PD_DESIGN_MINTARGETS, 50.0, props)->set_minmax(0, 100);
 
-    root->awar_int  (AWAR_PD_DESIGN_PROBELENGTH,  18,     db1)->set_minmax(10, 100);
-    root->awar_float(AWAR_PD_DESIGN_MIN_TEMP,     50.0,   db1)->set_minmax(0,  1000);
-    root->awar_float(AWAR_PD_DESIGN_MAX_TEMP,     100.0,  db1)->set_minmax(0,  1000);
-    root->awar_float(AWAR_PD_DESIGN_MIN_GC,       50.0,   db1)->set_minmax(0,  100);
-    root->awar_float(AWAR_PD_DESIGN_MAX_GC,       100.0,  db1)->set_minmax(0,  100);
+    root->awar_int  (AWAR_PD_DESIGN_PROBELENGTH,  18,     props)->set_minmax(10, 100);
+    root->awar_float(AWAR_PD_DESIGN_MIN_TEMP,     50.0,   props)->set_minmax(0,  1000);
+    root->awar_float(AWAR_PD_DESIGN_MAX_TEMP,     100.0,  props)->set_minmax(0,  1000);
+    root->awar_float(AWAR_PD_DESIGN_MIN_GC,       50.0,   props)->set_minmax(0,  100);
+    root->awar_float(AWAR_PD_DESIGN_MAX_GC,       100.0,  props)->set_minmax(0,  100);
 
-    root->awar_string(AWAR_PD_DESIGN_MIN_ECOLIPOS, "", db1);
-    root->awar_string(AWAR_PD_DESIGN_MAX_ECOLIPOS, "", db1);
+    root->awar_string(AWAR_PD_DESIGN_MIN_ECOLIPOS, "", props);
+    root->awar_string(AWAR_PD_DESIGN_MAX_ECOLIPOS, "", props);
 
-    root->awar_int(AWAR_PT_SERVER,      0, db1);
-    root->awar_int(AWAR_PD_DESIGN_GENE, 0, db1);
+    root->awar_int(AWAR_PT_SERVER,      0, props);
+    root->awar_int(AWAR_PD_DESIGN_GENE, 0, props);
 
-    root->awar_int   (AWAR_PD_MATCH_MARKHITS,   1,    db1);
-    root->awar_int   (AWAR_PD_MATCH_SORTBY,     0,    db1);
-    root->awar_int   (AWAR_PD_MATCH_WRITE2TMP,  0,    db1);
-    root->awar_int   (AWAR_PD_MATCH_COMPLEMENT, 0,    db1);
-    root->awar_int   (AWAR_MIN_MISMATCHES,      0,    global);
-    root->awar_int   (AWAR_MAX_MISMATCHES,      0,    global);
-    root->awar_string(AWAR_TARGET_STRING,       "",   global);
-    root->awar_string(AWAR_PD_MATCH_NHITS,      0,    db1);
-    root->awar_int   (AWAR_PD_MATCH_AUTOMATCH,  0,    db1)->add_callback(auto_match_changed);
+    root->awar_int   (AWAR_PD_MATCH_MARKHITS,   1,       props);
+    root->awar_int   (AWAR_PD_MATCH_SORTBY,     0,       props);
+    root->awar_int   (AWAR_PD_MATCH_WRITE2TMP,  0,       props);
+    root->awar_int   (AWAR_PD_MATCH_COMPLEMENT, 0,       props);
 
-    root->awar_string(AWAR_PD_MATCH_RESOLVE, "", db1)->add_callback(resolved_probe_chosen);
-    root->awar_string(AWAR_ITARGET_STRING, "", global);
+    root->awar_int   (AWAR_MIN_MISMATCHES,      0,       db);
+    root->awar_int   (AWAR_MAX_MISMATCHES,      0,       db);
+    root->awar_string(AWAR_TARGET_STRING,       "",      db);
 
-    root->awar_int   (AWAR_PROBE_ADMIN_PT_SERVER,    0,  db1);
-    root->awar_int   (AWAR_PROBE_CREATE_GENE_SERVER, 0,  db1);
+    root->awar_string(AWAR_PD_MATCH_NHITS,      "[none]",props);
+    root->awar_int   (AWAR_PD_MATCH_NMATCHES,   1,       props);
+    root->awar_int   (AWAR_PD_MATCH_LIM_NMATCH, 4,       props);
+    root->awar_int   (AWAR_PD_MATCH_MAX_RES,    1000000, props);
 
-    root->awar_string(AWAR_SPV_SAI_2_PROBE,    "",     global); // name of SAI selected in list
-    root->awar_string(AWAR_SPV_DB_FIELD_NAME,  "name", global); // name of displayed species field
-    root->awar_int   (AWAR_SPV_DB_FIELD_WIDTH, 10,     global); // width of displayed species field
-    root->awar_string(AWAR_SPV_ACI_COMMAND,    "",     global); // User defined or pre-defined ACI command to display
-    root->awar_string(AWAR_SPV_SELECTED_PROBE, "",     global); // For highlighting the selected PROBE
+    root->awar_int   (AWAR_PD_MATCH_AUTOMATCH,  0,    props)->add_callback(auto_match_changed);
+
+    root->awar_string(AWAR_PD_MATCH_RESOLVE, "", props)->add_callback(resolved_probe_chosen);
+    root->awar_string(AWAR_ITARGET_STRING, "", db);
+
+    root->awar_int   (AWAR_PROBE_ADMIN_PT_SERVER,    0,  db);
+    root->awar_int   (AWAR_PROBE_CREATE_GENE_SERVER, 0,  db);
+
+    root->awar_string(AWAR_SPV_SAI_2_PROBE,    "",     db); // name of SAI selected in list
+    root->awar_string(AWAR_SPV_DB_FIELD_NAME,  "name", db); // name of displayed species field
+    root->awar_int   (AWAR_SPV_DB_FIELD_WIDTH, 10,     db); // width of displayed species field
+    root->awar_string(AWAR_SPV_ACI_COMMAND,    "",     db); // User defined or pre-defined ACI command to display
+    root->awar_string(AWAR_SPV_SELECTED_PROBE, "",     db); // For highlighting the selected PROBE
 }
 
-AW_window *create_probe_design_expert_window(AW_root *root) {
-    int i;
-    char buffer[256];
+AW_window *create_probe_expert_window(AW_root *root, AW_CL for_design) {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(root, "PD_EXPERT", "PD-SPECIALS");
-
-    aws->load_xfig("pd_spec.fig");
+    if (for_design) {
+        aws->init(root, "PD_exp", "Probe Design (Expert)");
+        aws->load_xfig("pd_spec.fig");
+    }
+    else {
+        aws->init(root, "PM_exp", "Probe Match (Expert)");
+        aws->load_xfig("pm_spec.fig");
+    }
+    
     aws->label_length(30);
     aws->button_length(10);
 
@@ -1172,27 +1202,33 @@ AW_window *create_probe_design_expert_window(AW_root *root) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"pd_spec_param.hlp");
+    aws->callback(AW_POPUP_HELP, (AW_CL)(for_design ? "pd_spec_param.hlp" : "pm_spec_param.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "C");
 
-    aws->at("dt");
-    aws->create_input_field(AWAR_PD_DESIGN_EXP_DT, 6);
-
-    aws->at("dt_edge");
-    aws->create_input_field(AWAR_PD_DESIGN_EXP_DTEDGE, 6);
-
-    aws->at("split");
-    aws->create_input_field(AWAR_PD_DESIGN_EXP_SPLIT, 6);
-
-
-    for (i=0; i<16; i++) {
+    for (int i=0; i<16; i++) { // bond matrix
+        char buffer[256];
         sprintf(buffer, "%i", i);
         aws->at(buffer);
-        sprintf(buffer, AWAR_PD_DESIGN_EXP_BONDS "%i", i);
+        sprintf(buffer, AWAR_PD_COMMON_EXP_BONDS "%i", i);
         aws->create_input_field(buffer, 4);
     }
 
+    if (for_design) {
+        aws->sens_mask(AWM_EXP);
+        aws->at("split");   aws->create_input_field(AWAR_PD_DESIGN_EXP_SPLIT,  6);
+        aws->at("dt_edge"); aws->create_input_field(AWAR_PD_DESIGN_EXP_DTEDGE, 6);
+        aws->at("dt");      aws->create_input_field(AWAR_PD_DESIGN_EXP_DT,     6);
+        aws->sens_mask(AWM_ALL);
+    }
+    else {
+        aws->sens_mask(AWM_EXP);
+        aws->at("nmatches");   aws->create_input_field(AWAR_PD_MATCH_NMATCHES,   3);
+        aws->at("lim_nmatch"); aws->create_input_field(AWAR_PD_MATCH_LIM_NMATCH, 3);
+        aws->sens_mask(AWM_ALL);
+        aws->at("max_res");    aws->create_input_field(AWAR_PD_MATCH_MAX_RES,    14);
+    }
+    
     return aws;
 }
 
@@ -1218,7 +1254,7 @@ static AWT_config_mapping_def probe_design_mapping_def[] = {
 static void probe_design_init_config(AWT_config_definition& cdef) {
     cdef.add(probe_design_mapping_def);
     for (int i = 0; i<16; ++i) {
-        cdef.add(GBS_global_string(AWAR_PD_DESIGN_EXP_BONDS "%i", i), "bond", i);
+        cdef.add(GBS_global_string(AWAR_PD_COMMON_EXP_BONDS "%i", i), "bond", i);
     }
 }
 
@@ -1262,7 +1298,7 @@ AW_window *create_probe_design_window(AW_root *root, AW_CL cl_gb_main) {
     aws->at("result");
     aws->create_button("RESULT", "RESULT", "S");
 
-    aws->callback((AW_CB1)AW_POPUP, (AW_CL)create_probe_design_expert_window);
+    aws->callback(AW_POPUP, (AW_CL)create_probe_expert_window, (AW_CL)1);
     aws->at("expert");
     aws->create_button("EXPERT", "EXPERT", "S");
 
@@ -1560,7 +1596,7 @@ AW_window *create_probe_match_window(AW_root *root, AW_CL cl_gb_main) {
         aws->callback(popupSaiProbeMatchWindow, (AW_CL)gb_main);
         aws->create_button("MATCH_SAI", "Match SAI", "S");
 
-        aws->callback((AW_CB1)AW_POPUP, (AW_CL)create_probe_design_expert_window);
+        aws->callback(AW_POPUP, (AW_CL)create_probe_expert_window, (AW_CL)0);
         aws->at("expert");
         aws->create_button("EXPERT", "EXPERT", "X");
 
