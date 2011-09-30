@@ -239,10 +239,20 @@ species_data		%% (%
 
 		acc			"ARB_ED8B86F"
 		%) /*species*/
-
 	%) /*species_data*/
 
 extended_data	:7000	%% (%
+	extended		%% (%
+		name		:7000	"ECOLI"
+		errors			%i 0
+		acc			"J01695"
+		full_name		"Escherichia coli"
+		ali_mini		%% (%
+			data		:7000	".AAAUUGAAGAGUUUGAUCAUG----UCGAGCGGGCGGAACACAUGCAAAGCUUGCUUCUUUGCG------ACGAGUGGC-GGACGGGUGAGGGGAAACGGUAGCUAAUACCGCAUAAC-GAUGACUAAAGUUAAUACCUAUUGA-CGUUACCCGCAGAAGAAGCACCGGCUAACUCCGUGCCAG.."
+			%) /*ali_mini*/
+
+		%) /*extended*/
+
 	%) /*extended_data*/
 
 tree_data	:7000	%% (%
