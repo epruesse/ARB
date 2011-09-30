@@ -32,6 +32,7 @@ depend.init:
 
 ptclean.o: ptclean.h
 ptclean.o: $(ARBHOME)/INCLUDE/ad_prot.h
+ptclean.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ptclean.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ptclean.o: $(ARBHOME)/INCLUDE/arb_core.h
 ptclean.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -39,6 +40,7 @@ ptclean.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ptclean.o: $(ARBHOME)/INCLUDE/arb_string.h
 ptclean.o: $(ARBHOME)/INCLUDE/arbdb.h
 ptclean.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+ptclean.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ptclean.o: $(ARBHOME)/INCLUDE/arbtools.h
 ptclean.o: $(ARBHOME)/INCLUDE/attributes.h
 ptclean.o: $(ARBHOME)/INCLUDE/dupstr.h
