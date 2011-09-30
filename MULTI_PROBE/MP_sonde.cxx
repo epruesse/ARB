@@ -98,7 +98,6 @@ MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, in
                      LOCS_MATCH_SORT_BY,        match_weight, // Weighted
                      LOCS_MATCH_COMPLEMENT,     0,  // ???
                      LOCS_MATCH_MAX_MISMATCHES, match_mis, // Mismatches
-                     LOCS_MATCH_MAX_SPECIES,    100000, // ???
                      LOCS_SEARCHMATCH,          match_seq, // Sequence
                      NULL)) {
             free(probe);

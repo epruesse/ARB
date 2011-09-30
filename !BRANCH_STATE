@@ -10,7 +10,6 @@ STABLE->TRUNK
 
                 7758 -> 7759
 
-
 TRUNK->BRANCH
 
                 7223 -> 7224
@@ -31,6 +30,8 @@ TRUNK->BRANCH
                 7915 7916 7919 -> 7920
                 7913 7917 7918 -> 7921
                 7922 -> 7932
+                7971 7983 -> 7988
+                7933 7935 7936 7937 7980 7986 7987 -> 7989
 
     skipped patches (depends, already there, ...)
 
@@ -45,7 +46,7 @@ TRUNK->BRANCH
 
         --- current try above
 
-    not reviewed: 7933:HEAD
+    not reviewed: 7988:HEAD
 
 BRANCH->TRUNK
 

@@ -13,6 +13,8 @@
 #include "probe_tree.h"
 #include "pt_prototypes.h"
 
+#include <arb_progress.h>
+
 #include <unistd.h>
 
 POS_TREE *build_pos_tree (POS_TREE *pt, int anfangs_pos, int apos, int RNS_nr, unsigned int end)
@@ -158,8 +160,10 @@ long PTD_save_partial_tree(FILE *out, PTM2 *ptmain, POS_TREE * node, char *parts
         blocked = 1;
         while (blocked && !error) {
             blocked = 0;
-            printf("*************** pass %li *************\n", pos);
+#if defined(PTM_DEBUG)
+            printf("flushing to disk [%li]\n", pos);
             fflush(stdout);
+#endif
             r_pos = PTD_write_leafs_to_disk(out, ptmain, node, pos, ppos, &blocked, error);
             if (r_pos > pos) pos = r_pos;
         }
@@ -249,21 +253,17 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                 }
             }
 
-            printf ("Tree Build: %li bases in %i passes\n", psg.char_count, passes);
-
             PT_init_base_string_counter(partstring, PT_N, partsize);
+            arb_progress pass_progress(GBS_global_string ("Tree Build: %s in %i passes\n", GBS_readable_size(psg.char_count, "bp"), passes),
+                                       passes);
+
             while (!PT_base_string_counter_eof(partstring)) {
                 ++pass0;
-                printf("\n Starting pass %i(%i)\n", pass0, passes);
+                arb_progress data_progress(GBS_global_string("pass %i/%i", pass0, passes), psg.data_count);
 
                 for (int i = 0; i < psg.data_count; i++) {
                     int   psize;
                     char *align_abs = probe_read_alignment(i, &psize);
-
-                    if ((i % 1000) == 0) {
-                        printf("%i(%i)\t cutoffs:%i\n", i, psg.data_count, psg.stat.cut_offs);
-                        fflush(stdout);
-                    }
 
                     int abs_align_pos = psize-1;
                     for (int j = psg.data[i].size - 1; j >= 0; j--, abs_align_pos--) {
@@ -276,6 +276,8 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                         pt = build_pos_tree(pt, j, abs_align_pos, i, psg.data[i].size);
                     }
                     free(align_abs);
+
+                    ++data_progress;
                 }
                 pos = PTD_save_partial_tree(out, psg.ptmain, pt, partstring, partsize, pos, &last_obj, error);
                 if (error) break;
