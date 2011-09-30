@@ -16,6 +16,7 @@
 #include <arbdbt.h>
 
 #include <algorithm>
+#include <vector>
 
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_family_list *family)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(family)); }
@@ -172,7 +173,9 @@ static int make_PT_family_list(PT_family *ffinder) {
     //!  Make sorted list of family members
 
     // Sort the data
-    struct probe_input_data *my_list[psg.data_count];
+    std::vector<struct probe_input_data*> my_list;
+    my_list.resize(psg.data_count);
+
     for (int i = 0; i < psg.data_count; i++) {
         my_list[i] = &psg.data[i];
     }
@@ -181,18 +184,18 @@ static int make_PT_family_list(PT_family *ffinder) {
 
     if (ffinder->sort_type == 0) {
         if (sort_all) {
-            std::sort(my_list, my_list + psg.data_count, cmp_probe_abs());
+            std::sort(my_list.begin(), my_list.end(), cmp_probe_abs());
         }
         else {
-            std::partial_sort(my_list, my_list + ffinder->sort_max, my_list + psg.data_count, cmp_probe_abs());
+            std::partial_sort(my_list.begin(), my_list.begin() + ffinder->sort_max, my_list.begin() + psg.data_count, cmp_probe_abs());
         }
     }
     else {
         if (sort_all) {
-            std::sort(my_list, my_list + psg.data_count, cmp_probe_rel());
+            std::sort(my_list.begin(), my_list.begin() + psg.data_count, cmp_probe_rel());
         }
         else {
-            std::partial_sort(my_list, my_list + ffinder->sort_max, my_list + psg.data_count, cmp_probe_rel());
+            std::partial_sort(my_list.begin(), my_list.begin() + ffinder->sort_max, my_list.begin() + psg.data_count, cmp_probe_rel());
         }
     }
 

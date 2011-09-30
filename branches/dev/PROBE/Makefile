@@ -58,6 +58,7 @@ PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_progress.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_string.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arbdb_base.h

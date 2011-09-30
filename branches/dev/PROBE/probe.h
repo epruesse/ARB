@@ -24,7 +24,7 @@
 #define pt_assert(bed) arb_assert(bed)
 
 #if defined(DEBUG)
-#define PTM_DEBUG
+// #define PTM_DEBUG
 #endif // DEBUG
 
 typedef unsigned long ULONG;
@@ -33,13 +33,6 @@ typedef unsigned char uchar;
 
 #define PT_CORE *(int *)0 = 0;
 
-#if defined(DEVEL_KAI)
-#define PT_MAX_MATCHES     1024*256
-#else
-#define PT_MAX_MATCHES     100000
-#endif // DEVEL_KAI
-
-// #define PT_MAX_IDENTS      10000
 #define PT_POS_TREE_HEIGHT 20
 #define PT_POS_SECURITY    10
 #define MIN_PROBE_LENGTH   6
