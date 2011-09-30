@@ -290,7 +290,7 @@ static Error ptserver(Mode mode) {
     switch (mode) {
         case SETUP: {
             test_ptserver_activate(false);                        // first kill pt-server (otherwise we may test an outdated pt-server)
-            TEST_ASSERT_NO_ERROR(GB_system("touch TEST_pt.arb")); // force rebuild
+            TEST_ASSERT_NO_ERROR(GB_system("cp TEST_pt_src.arb TEST_pt.arb")); // force rebuild
             test_ptserver_activate(true);
             TEST_ASSERT_FILES_EQUAL("TEST_pt.arb.pt.expected", "TEST_pt.arb.pt");
             TEST_ASSERT(GB_time_of_file("TEST_pt.arb.pt") >= GB_time_of_file("TEST_pt.arb"));
