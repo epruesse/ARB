@@ -54,7 +54,7 @@ class ProbeTraversal {
     }
 
     void match_rest_and_mark(const DataLoc& loc) {
-        do match_one_char(psg.data[loc.name].data[loc.rpos+height]); while (match_possible());
+        do match_one_char(psg.data[loc.name].get_data()[loc.rpos+height]); while (match_possible());
         if (did_match()) count_match(loc);
     }
 
@@ -99,7 +99,7 @@ void ProbeTraversal::mark_matching(POS_TREE *pt) const {
 
     if (PT_read_type(pt) == PT_NT_NODE) {
         for (int base = PT_N; base < PT_B_MAX; base++) {
-            POS_TREE *pt_son = PT_read_son(psg.ptmain, pt, (PT_BASES)base);
+            POS_TREE *pt_son = PT_read_son(pt, (PT_BASES)base);
             if (pt_son && !at_end()) {
                 ProbeTraversal sub(*this);
                 sub.match_one_char(base);
@@ -111,7 +111,7 @@ void ProbeTraversal::mark_matching(POS_TREE *pt) const {
         }
     }
     else {
-        PT_withall_tips(psg.ptmain, pt, *this); // calls operator() 
+        PT_withall_tips(pt, *this); // calls operator() 
     }
 }
 
@@ -122,12 +122,12 @@ void ProbeTraversal::mark_all(POS_TREE *pt) const {
 
     if (PT_read_type(pt) == PT_NT_NODE) {
         for (int base = PT_N; base < PT_B_MAX; base++) {
-            POS_TREE *pt_son = PT_read_son(psg.ptmain, pt, (PT_BASES)base);
+            POS_TREE *pt_son = PT_read_son(pt, (PT_BASES)base);
             if (pt_son) mark_all(pt_son);
         }
     }
     else {
-        PT_withall_tips(psg.ptmain, pt, *this); // calls operator() 
+        PT_withall_tips(pt, *this); // calls operator() 
     }
 }
 
@@ -147,7 +147,7 @@ static void make_match_statistic(int probe_len, int sequence_length) {
 
     // compute statistic for all species in family
     for (int i = 0; i < psg.data_count; i++) {
-        int all_len = std::min(psg.data[i].size, sequence_length) - probe_len + 1;
+        int all_len = std::min(psg.data[i].get_size(), sequence_length) - probe_len + 1;
         if (all_len <= 0) {
             psg.data[i].stat.rel_match_count = 0;
         }

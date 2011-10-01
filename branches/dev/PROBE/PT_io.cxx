@@ -229,7 +229,7 @@ void probe_read_alignments() {
 
     int icount = GB_number_of_subentries(psg.gb_species_data);
     
-    psg.data       = (probe_input_data *)calloc(sizeof(probe_input_data), icount);
+    psg.data       = new probe_input_data[icount];
     psg.data_count = 0;
 
     int data_missing = 0;
@@ -270,11 +270,10 @@ void probe_read_alignments() {
                     data_missing++;
                 }
                 else {
-                    pid.checksum = GB_checksum(data, hsize, 1, ".-");
+                    pid.set_checksum(GB_checksum(data, hsize, 1, ".-"));
                     int   size = probe_compress_sequence(data, hsize);
 
-                    pid.data = GB_memdup(data, size);
-                    pid.size = size;
+                    pid.set_data(GB_memdup(data, size), size);
 
                     free(data);
                     count++;
@@ -310,8 +309,8 @@ void PT_build_species_hash() {
     unsigned int    max_size;
     max_size = 0;
     for (i = 0; i < psg.data_count; i++) {  // get max sequence len
-        max_size = std::max(max_size, (unsigned)(psg.data[i].size));
-        psg.char_count += psg.data[i].size;
+        max_size = std::max(max_size, (unsigned)(psg.data[i].get_size()));
+        psg.char_count += psg.data[i].get_size();
     }
     psg.max_size = max_size;
 
