@@ -13,26 +13,39 @@ void help() {
         "\n"
         "Parameters:\n"
         "\n"
-        " --db <FILE>            ARB file\n"
-        " --port <PORT>          port of PT server\n"
-        " --sequence <SEQUENCE>  probe\n"
-        " --mismatches <N>       allowed mismatches (0)\n"
-        " --complement           match complement also\n"
-        " --reversed             match reversed also\n"
-        " --weighted             use weighted matching\n"
-        " --maxresult <N>        limit result set size (100,000)\n"
+        " --db <FILE>             ARB file\n"
+        " --port <PORT>           port of PT server\n"
+        " --sequence <SEQUENCE>   probe\n"
+        " --reversed              match reversed also\n"
+        " --complement            match complement also\n"
+        " --maxhits <N>           maximum number of hits on db (1,000,000)\n"
+        " --weighted              use weighted matching\n"
+        " --weighted-pos          use weighted matching with pos&strength\n"
+        " --n-matches <N>         consider N occurances of 'N' as match (2)\n"
+        " --n-match-bound <N>     abover N occurancse of 'N', consider all as mismatch (5)\n"
+        " --mismatches <N>        allowed mismatches (0)\n"
+
          << endl;
 }
+
+enum SORT_BY_TYPE {
+    SORT_BY_MISMATCHES = 0,
+    SORT_BY_WEIGHTED_MISMATCHES = 1,
+    SORT_BY_WEIGHTED_MISMATCHES_W_POS_AND_STRENGTH = 2
+};
 
 int main(int argc, char ** argv) {
     const char* db = 0;
     const char* port = 0;
     const char* sequence = 0;
-    int mismatches = 0;
-    int complement = 0;
     int reversed = 0;
-    int maxresult = 100000;
-    int weighted = 0;
+    int complement = 0;
+    int max_hits = 1000000;
+    SORT_BY_TYPE sort_by = SORT_BY_MISMATCHES;
+    int n_accept = 2;
+    int n_limit = 5;
+    int max_mismatches = 0;
+
     GB_shell shell;
 
     if (argc<2) {
@@ -41,15 +54,17 @@ int main(int argc, char ** argv) {
     }
 
     for (int i = 1; i < argc; i++) {
-        if (!strcmp(argv[i], "--complement")) {
-            complement = 1;
-        } else if (!strcmp(argv[i], "--reversed")) {
-            reversed = 1;
-        } else if (!strcmp(argv[i], "--weighted")) {
-            weighted = 1;
-        } else if (!strcmp(argv[i], "--help")) {
+        if (!strcmp(argv[i], "--help")) {
             help();
             return 0;
+        } else if (!strcmp(argv[i], "--reversed")) {
+            reversed = 1;
+        } else if (!strcmp(argv[i], "--complement")) {
+            complement = 1;
+        } else if (!strcmp(argv[i], "--weighted")) {
+            sort_by = SORT_BY_WEIGHTED_MISMATCHES;
+        } else if (!strcmp(argv[i], "--weighted-pos")) {
+            sort_by = SORT_BY_WEIGHTED_MISMATCHES_W_POS_AND_STRENGTH;
         } else if (argc > i+1) {
             if (!strcmp(argv[i], "--db")) {
                 db = argv[++i];
@@ -57,11 +72,20 @@ int main(int argc, char ** argv) {
                 port = argv[++i];
             } else if (!strcmp(argv[i], "--sequence")) {
                 sequence = argv[++i];
+            } else if (!strcmp(argv[i], "--max-hits")) {
+                max_hits = atoi(argv[++i]);
+            } else if (!strcmp(argv[i], "--n-matches")) {
+                n_accept = atoi(argv[++i]);
+            } else if (!strcmp(argv[i], "--n-match-bound")) {
+                n_limit = atoi(argv[++i]);
             } else if (!strcmp(argv[i], "--mismatches")) {
-                mismatches = atoi(argv[++i]);
-            } else if (!strcmp(argv[i], "--maxresult")) {
-                maxresult = atoi(argv[++i]);
+                max_mismatches = atoi(argv[++i]);
             }
+        } else {
+            cerr << "Error: Did not understand argument '" << argv[i] 
+                 << "'." << endl << endl;
+            help();
+            return 1;
         }
     }
 
@@ -79,12 +103,8 @@ int main(int argc, char ** argv) {
         cerr << "need '--sequence' parameter" << endl;
         err = true;
     }
-    if (mismatches < 0 || mismatches > 10) {
+    if (max_mismatches < 0 || max_mismatches > 10) {
         cerr << "mismatches must be between 0 and 10" << endl;
-        err = true;
-    }
-    if (maxresult < 0 || maxresult > 10000000) {
-        cerr << "maxresult must be between 0 and 10000000" << endl;
         err = true;
     }
     if (err) {
@@ -118,10 +138,12 @@ int main(int argc, char ** argv) {
 
     if (aisc_nput(link, PT_LOCS, locs,
                   LOCS_MATCH_REVERSED,       reversed,
-                  LOCS_MATCH_SORT_BY,        weighted,
                   LOCS_MATCH_COMPLEMENT,     complement,
-                  LOCS_MATCH_MAX_MISMATCHES, mismatches,
-                  LOCS_MATCH_MAX_SPECIES,    maxresult,
+                  LOCS_MATCH_MAX_HITS,       max_hits,
+                  LOCS_MATCH_SORT_BY,        sort_by,
+                  LOCS_MATCH_N_ACCEPT,       n_accept,
+                  LOCS_MATCH_N_LIMIT,        n_limit,
+                  LOCS_MATCH_MAX_MISMATCHES, max_mismatches,
                   LOCS_SEARCHMATCH,          sequence,
                   NULL)) {
         cerr << "Connection to PT server lost" << endl;
@@ -146,8 +168,10 @@ int main(int argc, char ** argv) {
         free(locs_error);
     }
 
-    //std::cout << bs.data << endl;
-    std::cout << "next step: check match_list" << endl;
+    if (matches_truncated) {
+        std::cout << "match list was truncated!" << endl;
+    }
+
     std::cout << "acc     \t"
               << "start\t"
               << "stop\t"
@@ -159,7 +183,8 @@ int main(int argc, char ** argv) {
               << "rev\t"
               << "seq"
               << std::endl;
-    while(match_list && maxresult--) {
+
+    while(match_list) {
         char *m_acc, *m_sequence;
         long m_start, m_stop, m_pos, m_mismatches, m_n_mismatches;
         long m_reversed;
