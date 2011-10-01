@@ -211,7 +211,7 @@ char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checks
             if (checksums) {
                 const char *checksum = get_list_part(checksums, coff);
                 // if sequence checksum changed since pt server was updated -> not found
-                found                = atol(checksum) == psg.data[idx].checksum;
+                found                = atol(checksum) == psg.data[idx].get_checksum();
             }
             else {
                 found = true;

@@ -102,12 +102,19 @@ struct PTM2 {
 struct probe_statistic {
     int    match_count;                             // Counter for matches
     double rel_match_count;                         // match_count / (seq_len - probe_len + 1)
+
+    probe_statistic()
+        : match_count(0),
+          rel_match_count(0.0)
+    {}
 };
 
-struct probe_input_data {                           // every taxa's own data
-    char   *data;                                   // sequence
-    long    checksum;
+class probe_input_data : virtual Noncopyable {      // every taxa's own data
+
+    char   *data;     // sequence
+    long    checksum; // checksum of sequence
     int     size;
+public:
     char   *name;
     char   *fullname;
     GBDATA *gbd;
@@ -122,6 +129,31 @@ struct probe_input_data {                           // every taxa's own data
     probe_statistic stat;
 
     int next;
+
+    probe_input_data()
+        : data(0),
+          checksum(0), 
+          size(0), 
+          name(0), 
+          fullname(0), 
+          gbd(0), 
+          is_group(0), 
+          match(0), 
+          next(0) 
+    {}
+    ~probe_input_data() {
+        free(data);
+        free(name);
+        free(fullname);
+    }
+
+    const char *get_data() const { return data; }
+    long get_checksum() const { return checksum; }
+    int get_size() const { return size; }
+
+    // obsolete methods below @@@ remove them
+    void set_data(char *assign, int size_) { pt_assert(!data); data = assign; size = size_; }
+    void set_checksum(long cs) { checksum = cs; }
 };
 
 struct probe_statistic_struct {
@@ -197,12 +229,12 @@ extern struct probe_struct_global {
     char     *alignment_name;
     GB_HASH  *namehash;                             // name to int
 
+    int                      data_count;
     struct probe_input_data *data;                  // the internal database
 
     char         *ecoli;                            // the ecoli sequenz
     BI_ecoli_ref *bi_ecoli;
 
-    int  data_count;
     int  max_size;                                  // maximum sequence len
     long char_count;                                // number of all 'acgtuACGTU'
 

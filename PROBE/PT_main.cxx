@@ -99,15 +99,7 @@ void PT_exit_psg() {
     pt_assert(psg_initialized);
     if (psg_initialized) {
         if (psg.gb_main) {
-            int count = GB_number_of_subentries(psg.gb_species_data);
-            if (psg.data) {
-                for (int i = 0; i < count; ++i) {
-                    free(psg.data[i].data);
-                    free(psg.data[i].name);
-                    free(psg.data[i].fullname);
-                }
-                free(psg.data);
-            }
+            delete [] psg.data;
 
             GB_close(psg.gb_main);
             psg.gb_main         = NULL;
