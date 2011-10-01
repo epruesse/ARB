@@ -52,7 +52,7 @@ int server_shutdown(PT_main *pm, aisc_string passwd);
 int broadcast(PT_main *main, int dummy_1x);
 void PT_init_psg(void);
 void PT_exit_psg(void);
-void PT_exit(int exitcode) __ATTR__NORETURN;
+void PT_exit(void);
 GB_ERROR PT_init_map(void) __ATTR__USERESULT;
 
 /* PT_match.cxx */

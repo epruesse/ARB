@@ -56,6 +56,7 @@ PT_buildtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_core.h
+PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_defs.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_progress.h
@@ -72,6 +73,7 @@ PT_buildtree.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/smartptr.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/test_global.h
+PT_buildtree.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 PT_debug.o: probe.h
 PT_debug.o: probe_tree.h
