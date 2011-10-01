@@ -402,7 +402,7 @@ void TEST_SLOW_maybe_build_tree() {
     const char *expectedPT = "extra_pt_src.arb_expected.pt";
     bool        exists     = GB_is_regularfile(testDB);
 
-    TEST_ASSERT(exists); // uncomment to enforce the test
+    // TEST_ASSERT(exists); // uncomment to enforce the test
 
     if (exists) {
         const char *argv[] = {
