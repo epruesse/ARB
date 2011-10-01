@@ -12,6 +12,7 @@
 #include <PT_server_prototypes.h>
 #include "probe_tree.h"
 #include "pt_prototypes.h"
+#include "arb_defs.h"
 
 #include <arb_progress.h>
 
@@ -384,3 +385,47 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USE
     return error;
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+int main(int argc, const char*argv[]);
+void TEST_SLOW_maybe_build_tree() {
+    // does only test sth if DB is present.
+
+    const char *dbarg      = "-D" "extra_pt_src.arb";
+    const char *testDB     = dbarg+2;
+    const char *resultPT   = "extra_pt_src.arb.pt";
+    const char *expectedPT = "extra_pt_src.arb_expected.pt";
+    bool        exists     = GB_is_regularfile(testDB);
+
+    TEST_ASSERT(exists); // uncomment to enforce the test
+
+    if (exists) {
+        const char *argv[] = {
+            "fake_pt_server",
+            "-build",
+            dbarg,
+        };
+
+#if 1
+        // build
+        int res = main(ARRAY_ELEMS(argv), argv);
+        TEST_ASSERT_EQUAL(res, EXIT_SUCCESS);
+#endif
+
+// #define TEST_AUTO_UPDATE
+#if defined(TEST_AUTO_UPDATE)
+        TEST_COPY_FILE(resultPT, expectedPT);
+#else // !defined(TEST_AUTO_UPDATE)
+        TEST_ASSERT_FILES_EQUAL(resultPT, expectedPT);
+#endif
+    }
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

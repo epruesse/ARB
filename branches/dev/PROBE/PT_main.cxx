@@ -68,8 +68,8 @@ int server_shutdown(PT_main *pm, aisc_string passwd) {
 
     // shutdown server
     aisc_server_shutdown(psg.com_so);
-    PT_exit(EXIT_SUCCESS); // never returns
-    return 0;
+    PT_exit();
+    exit(EXIT_SUCCESS);
 }
 
 int broadcast(PT_main *main, int) {
@@ -134,12 +134,11 @@ void PT_exit_psg() {
     }
 }
 
-void PT_exit(int exitcode) { // goes to header: __ATTR__NORETURN
+void PT_exit() { 
     // unique exit point to ensure cleanup
     if (aisc_main) destroy_PT_main(aisc_main);
     if (psg_initialized) PT_exit_psg();
     PTM_finally_free_all_mem();
-    exit(exitcode);
 }
 
 // ------------------------------------------------------------------------------ name mapping
@@ -516,5 +515,6 @@ int main(int argc, char **argv) {
     }
 
     free_arb_params(params);
-    PT_exit(exitcode);
+    PT_exit();
+    return exitcode;
 }
