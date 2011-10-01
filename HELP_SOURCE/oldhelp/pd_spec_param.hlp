@@ -4,23 +4,16 @@ UP	glossary.hlp
 UP	probedesign.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-#SUB	subtopic.hlp
+#SUB	bonds.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Weighting of Base Pairings
+TITLE           Probe design (Expert)
 
-OCCURRENCE	ARB_NT/ETC/Probe Design/PROBE DESIGN/EXPERT
+OCCURRENCE	ARB_NT/Probes/Design Probes/EXPERT
 
-DESCRIPTION	Allows to adjust values indicating the relative strengths of
-		base (mis) pairings. These values are used by ARB_PROBE for the
-		ranking of potential probe target sites.
-
-		Define weights:
-
-			Type the values to the corresponding subwindows of the
-			'Relative Strength of Base Pairings' matrix.
+DESCRIPTION	See LINK{bonds.hlp} for upper area.
 
 		Define threshold for splitting melting domains:
 

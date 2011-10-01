@@ -39,6 +39,10 @@ static double ptnd_get_wmismatch(PT_pdc *pdc, char *probe, int pos, char ref)
     return (max_bind - new_bind);
 }
 
+inline bool max_number_of_hits_collected(PT_local* locs) {
+    return locs->pm_max_hits>0 && locs->ppm.cnt >= locs->pm_max_hits;
+}
+
 struct PT_store_match_in {
     PT_local* ilocs;
 
@@ -81,12 +85,18 @@ struct PT_store_match_in {
                 N_mismatches++;
                 height++;
             }
+            pt_assert(N_mismatches <= PT_POS_TREE_HEIGHT);
             if (locs->sort_by != PT_MATCH_TYPE_INTEGER) {
                 if (psg.w_N_mismatches[N_mismatches] + (int)(wmismatches+.5) > psg.deep) return 0;
             }
             else {
                 if (psg.w_N_mismatches[N_mismatches]+mismatches>psg.deep) return 0;
             }
+        }
+
+        if (max_number_of_hits_collected(locs)) {
+            locs->matches_truncated = 1;
+            return 1;
         }
 
         // @@@ dupped code from read_names_and_pos (PT_NT_LEAF-branch)
@@ -101,7 +111,7 @@ struct PT_store_match_in {
         ml->N_mismatches = N_mismatches;
         ml->sequence     = psg.main_probe;
         ml->reversed     = psg.reversed ? 1 : 0;
-
+            
         aisc_link(&locs->ppm, ml);
 
         return 0;
@@ -116,9 +126,10 @@ int read_names_and_pos(PT_local *locs, POS_TREE *pt) {
     int            name, pos, rpos;
     PT_probematch *ml;
 
-    if (pt == NULL)
+    if (pt == NULL) {
         return 0;
-    if (locs->ppm.cnt > PT_MAX_MATCHES) {
+    }
+    if (max_number_of_hits_collected(locs)) {
         locs->matches_truncated = 1;
         return 1;
     }
@@ -141,7 +152,6 @@ int read_names_and_pos(PT_local *locs, POS_TREE *pt) {
         ml->reversed     = psg.reversed ? 1 : 0;
 
         aisc_link(&locs->ppm, ml);
-
         return 0;
     }
     else {
@@ -177,6 +187,7 @@ int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatch
     int       new_N_mis;
     int       error;
     if (!pt) return 0;
+    pt_assert(N_mismatches <= PT_POS_TREE_HEIGHT);
     if (locs->sort_by != PT_MATCH_TYPE_INTEGER) {
         if (psg.w_N_mismatches[N_mismatches] + (int)(wmismatches + 0.5) > psg.deep) return 0;
     }
@@ -251,6 +262,7 @@ int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatch
             PT_forwhole_chain(psg.ptmain, pt, PT_store_match_in(locs)); // @@@ why ignore result
             return 0;
         }
+        pt_assert(psg.N_mismatches <= PT_POS_TREE_HEIGHT);
         if (locs->sort_by != PT_MATCH_TYPE_INTEGER) {
             if (psg.w_N_mismatches[psg.N_mismatches] + (int)(psg.wmismatches+.5) > psg.deep) return 0;
         }
@@ -418,7 +430,8 @@ int probe_match(PT_local * locs, aisc_string probestring) {
             return 0;
         }
     }
-    set_table_for_PT_N_mis();
+
+    set_table_for_PT_N_mis(locs->pm_nmatches_ignored, locs->pm_nmatches_limit);
     if (locs->pm_complement) {
         complement_probe(probestring, 0);
     }
