@@ -1163,7 +1163,7 @@ static void emit(Word *wlist, Word *plist, long startline) {
         if (w->string[0]) {
             count ++;
             if      (strcmp(w->string, "static") == 0) isstatic = 1;
-            else if (strcmp(w->string, "main") == 0) ismain = 1;
+            else if (strcmp(w->string, "main")   == 0) ismain = 1;
         }
     }
 
@@ -1499,6 +1499,7 @@ int main(int argc, char **argv) {
     argv++; argc--;
 
     setExcludedSymParts("^TEST_");
+    setExcludedSymParts("^NOTEST_");
 
     iobuf = (char *)malloc(NEWBUFSIZ);
     while (*argv && **argv == '-') {
