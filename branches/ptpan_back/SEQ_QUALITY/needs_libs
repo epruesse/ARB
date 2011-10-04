@@ -1,0 +1,5 @@
+# libraries needed to link against SEQ_QUALITY/SEQ_QUALITY.a
+
+SL/GUI_ALIVIEW/GUI_ALIVIEW.a
+
+

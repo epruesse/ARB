@@ -1,0 +1,64 @@
+#!/bin/bash -x
+# renames output to 'treefile'
+
+if [ -f treefile ]; then
+    rm treefile
+fi
+
+if [ -z "$5" ]; then
+    arb_message "Usage: arb_protml modelflag searchflag rearrange calclengths inputfile"
+else
+    MODEL=$1
+    SEARCH=$2
+    REARRANGE=$3
+    CALCLENGTH=$4
+    INFILE=$5
+
+    if [ \! -s $INFILE ]; then
+        arb_message "Error: no or empty input file"
+        ls -al $INFILE
+    else
+        FLAGS="-v $MODEL"
+        if [ \! "$REARRANGE" = "0" ]; then
+            if [ "$SEARCH" = "-s" ]; then
+                arb_message "You have selected 'Star decomposition search' AND 'Rearrangement'.\n  Original protml crashed with this parameter combination.\n  We fixed protml, but we did not check the results\n  - so use them with care!"
+            fi
+            FLAGS="$FLAGS $REARRANGE"
+        fi
+
+        # normal tree generation with protml
+        echo >arb_read_tree_args
+        if [ "$SEARCH" = "-s" ]; then
+            if [ "$CALCLENGTH" = "0" ]; then
+                arb_message "Note: Star decomposition search always calculates branchlengths"
+            fi
+            # Star decomposition search (may not be the ML tree)
+            protml $FLAGS -I -s $INFILE
+        else
+            # Exhaustive search or quickadd
+            protml $FLAGS -I $SEARCH $INFILE | tail -1 >outtree # write last tree to outtree
+
+            if [ -s outtree ]; then
+                if [ "$CALCLENGTH" = "1" ]; then
+                    echo "1" >intree #no of trees
+                    cat outtree >>intree
+                    protml -v $MODEL -u -I $INFILE intree # calculates branch lengths
+                else
+                    mv outtree protml.tre
+                fi
+            else
+                arb_message "Error running protml: outtree is empty"
+            fi
+        fi
+
+        if [ \! -s protml.tre ]; then
+            arb_message "Error running protml: protml.tre was not generated or is empty"
+        else
+            mv protml.tre treefile
+        fi
+    fi
+
+    # remove protml junk:
+    rm protml.eps protml.tpl
+fi
+

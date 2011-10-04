@@ -1,0 +1,5 @@
+# libraries needed to link against PGT/PGT.a
+
+ARBDB/libARBDB.so
+$(XLIBS)
+$(TIFFLIBS)
