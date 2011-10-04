@@ -356,7 +356,7 @@ SYSLIBS:=
 ifdef DARWIN
 	SYSLIBS += -lstdc++
 else
-	SYSLIBS += -lm
+	SYSLIBS += -lm -lboost_thread
 endif
 
 #---------------------- include symbols?
