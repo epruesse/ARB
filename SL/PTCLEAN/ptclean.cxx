@@ -42,6 +42,7 @@ class EntryTempMarker : virtual Noncopyable {
             case SOME_OF_ROOT:
                 if (strcmp(keyname, "__SYSTEM__")    == 0) return ALL;
                 if (strcmp(keyname, "genom_db")      == 0) return ALL;
+                if (strcmp(keyname, "gene_map")      == 0) return ALL;
                 if (strcmp(keyname, "species_data")  == 0) return SOME_OF_SPECIES_DATA;
                 if (strcmp(keyname, "extended_data") == 0) return SOME_OF_EXTENDED_DATA;
                 if (strcmp(keyname, "presets")       == 0) return SOME_OF_PRESETS;
@@ -58,14 +59,17 @@ class EntryTempMarker : virtual Noncopyable {
                 }
                 break;
 
-            case SOME_OF_EXTENDED:
             case SOME_OF_SPECIES:
-                if (strcmp(keyname, "name") == 0) return ALL;
-                if (strcmp(keyname, "acc") == 0) return ALL;
+            case SOME_OF_EXTENDED:
+                if (from == SOME_OF_SPECIES) {
+                    if (strcmp(keyname, "abspos") == 0) return ALL;
+                }
+                if (strcmp(keyname, "name")      == 0) return ALL;
+                if (strcmp(keyname, "acc")       == 0) return ALL;
                 if (strcmp(keyname, "full_name") == 0) return ALL;
-                if (strcmp(keyname, ali_name) == 0) return SOME_OF_ALI_CONTAINER;
+                if (strcmp(keyname, ali_name)    == 0) return SOME_OF_ALI_CONTAINER;
                 break;
-                
+
             case SOME_OF_PRESETS:
                 if (strcmp(keyname, "use") == 0) return ALL;
                 break;
