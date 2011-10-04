@@ -77,7 +77,6 @@ double ptnd_check_split(PT_pdc *pdc, char *probe, int pos, char ref);
 char *get_design_info(PT_tprobes *tprobe);
 char *get_design_hinfo(PT_tprobes *tprobe);
 int PT_start_design(PT_pdc *pdc, int dummy_1x);
-void ptnd_new_match(PT_local *locs, char *probestring);
 
 /* PT_prefixtree.cxx */
 void PT_init_count_bits(void);

@@ -141,9 +141,9 @@ public:
         : data(0),
           checksum(0), 
           size(0), 
-          gbd(0), 
           name(0), 
           fullname(0), 
+          gbd(0), 
           group(false), 
           match(0) 
     {}

@@ -441,23 +441,16 @@ int probe_match(PT_local * locs, aisc_string probestring) {
     psg.deep = locs->pm_max;
     pt_build_pos_to_weight((PT_MATCH_TYPE)locs->sort_by, probestring);
 
-    if (psg.deep >= 0) {
-        get_info_about_probe(locs, probestring, psg.pt, 0, 0.0, 0, 0);
-    }
-    else {
-        ptnd_new_match(locs,    probestring);
-    }
+    pt_assert(psg.deep >= 0); // deep < 0 was used till [8011] to trigger "new match" (feature unused)
+    get_info_about_probe(locs, probestring, psg.pt, 0, 0.0, 0, 0);
+
     if (locs->pm_reversed) {
         psg.reversed = 1;
-        rev_pro = reverse_probe(probestring, 0);
+        rev_pro      = reverse_probe(probestring, 0);
         complement_probe(rev_pro, 0);
         freeset(locs->pm_csequence, psg.main_probe = strdup(rev_pro));
-        if (psg.deep >= 0) {
-            get_info_about_probe(locs, rev_pro, psg.pt, 0, 0.0, 0, 0);
-        }
-        else {
-            ptnd_new_match(locs,        rev_pro);
-        }
+        
+        get_info_about_probe(locs, rev_pro, psg.pt, 0, 0.0, 0, 0);
         free(rev_pro);
     }
     pt_sort_match_list(locs);

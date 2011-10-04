@@ -53,12 +53,12 @@ extern "C" {
         return 0;
     }
 }
-struct ptnd_loop_com {
+
+static struct ptnd_loop_com {
     PT_pdc        *pdc;
     PT_local      *locs;
     PT_probeparts *parts;
     int            mishits;
-    int            new_match; // match or design the probe: 1 match   0 design
     double         sum_bonds; // sum of bond of longest non mismatch string
     double         dt;     // sum of mismatches
 } ptnd;
@@ -472,7 +472,7 @@ static void ptnd_check_position(PT_pdc *pdc) {
     }
 }
 
-static void ptnd_check_bonds(PT_pdc *pdc, int match) {
+static void ptnd_check_bonds(PT_pdc *pdc) {
     /*! check the average bond size.
      *
      * @TODO  checks probe hairpin bonds
@@ -491,7 +491,6 @@ static void ptnd_check_bonds(PT_pdc *pdc, int match) {
         }
         tprobe->sum_bonds = sbond;
     }
-    match = match;
 }
 
 static void ptnd_cp_tprobe_2_probepart(PT_pdc *pdc) {
@@ -651,28 +650,6 @@ static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts, const Data
 
     if (pos >= PERC_SIZE) return; // out of observation
     tprobe->perc[pos] ++;
-    if (ptnd.new_match) {                       // save the result in probematch
-        PT_probematch *match;
-        if (psg.data[matchLoc.name].match) {
-            if (psg.data[matchLoc.name].match->dt < ndt) return;
-            // there is a better hit for that sequence
-            match = psg.data[matchLoc.name].match;
-        }
-        else {
-            match = create_PT_probematch();
-            aisc_link(&ptnd.locs->ppm, match);
-            psg.data[matchLoc.name].match = match;
-        }
-        match->name = matchLoc.name;
-        match->b_pos = matchLoc.apos - parts->start;     // that's not correct !!!
-        match->rpos = matchLoc.rpos-parts->start;
-        match->N_mismatches = -1;       // there are no mismatches in this mode
-        match->mismatches = -1;
-        match->wmismatches = dt;        // only weighted mismatches (maybe)
-        match->dt = ndt;
-        match->sequence = psg.main_probe;
-        match->reversed = psg.reversed;
-    }
 }
 static int ptnd_check_inc_mode(PT_pdc *pdc, PT_probeparts *parts, double dt, double sum_bonds)
 {
@@ -692,7 +669,7 @@ struct ptnd_chain_check_part {
     ptnd_chain_check_part(int s) : split(s) {}
     
     int operator() (const DataLoc& partLoc) {
-        if (ptnd.new_match || psg.data[partLoc.name].outside_group()) {
+        if (psg.data[partLoc.name].outside_group()) {
             char   *probe  = psg.probe;
             int     height = psg.height;
             double  sbond  = ptnd.sum_bonds;
@@ -732,7 +709,7 @@ static void ptnd_check_part_all(POS_TREE *pt, double dt, double sum_bonds) {
     if (PT_read_type(pt) == PT_NT_LEAF) {
         // @@@ dupped code is in ptnd_chain_check_part::operator()
         DataLoc loc(pt);
-        if (ptnd.new_match || psg.data[loc.name].outside_group()) {
+        if (psg.data[loc.name].outside_group()) {
             ptnd_check_part_inc_dt(ptnd.pdc, ptnd.parts, loc, dt, sum_bonds);
         }
     }
@@ -795,7 +772,7 @@ static void ptnd_check_part(char *probe, POS_TREE *pt, int  height, double dt, d
         if (PT_read_type(pt) == PT_NT_LEAF) {
             // @@@ dupped code is in ptnd_chain_check_part::operator()
             const DataLoc loc(pt);
-            if (ptnd.new_match || psg.data[loc.name].outside_group()) {
+            if (psg.data[loc.name].outside_group()) {
                 pos = loc.rpos + height;
                 if (pos + (int)(strlen(probe+height)) >= psg.data[loc.name].get_size())               // after end
                     return;
@@ -1032,10 +1009,10 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
 
     //  IDP probe design
 
-    PT_local *locs   = (PT_local*)pdc->mh.parent->parent;
-    ptnd.new_match   = 0;
-    ptnd.locs        = locs;
-    ptnd.pdc         = pdc;
+    PT_local *locs = (PT_local*)pdc->mh.parent->parent;
+
+    ptnd.locs = locs;
+    ptnd.pdc  = pdc;
 
     const char *error;
     {
@@ -1066,7 +1043,7 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     ptnd_sort_probes_by(pdc, 1);
     ptnd_first_check(pdc);
     ptnd_check_position(pdc);
-    ptnd_check_bonds(pdc, ptnd.new_match);
+    ptnd_check_bonds(pdc);
     ptnd_cp_tprobe_2_probepart(pdc);
     ptnd_duplicate_probepart(pdc);
     ptnd_sort_parts(pdc);
@@ -1080,28 +1057,3 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     return 0;
 }
 
-void ptnd_new_match(PT_local * locs, char *probestring) // @@@ obsolete (not used anywhere, no unit-tests, no useful results)
-{
-    PT_pdc     *pdc = locs->pdc;
-    PT_tprobes *tprobe;
-
-    ptnd.locs      = locs;
-    ptnd.pdc       = pdc;
-    ptnd.new_match = 1;
-
-    if (!pdc) return; // no config
-
-    tprobe           = create_PT_tprobes();
-    tprobe->sequence = strdup(probestring);
-
-    aisc_link(&pdc->ptprobes, tprobe);
-    ptnd_check_bonds(pdc, ptnd.new_match);
-    ptnd_cp_tprobe_2_probepart(pdc);
-    ptnd_duplicate_probepart(pdc);
-    ptnd_sort_parts(pdc);
-    ptnd_remove_duplicated_probepart(pdc);
-    ptnd_check_probepart(pdc);
-
-    while (pdc->parts)                  destroy_PT_probeparts(pdc->parts);
-    while ((tprobe = pdc->tprobes))     destroy_PT_tprobes(tprobe);
-}
