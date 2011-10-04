@@ -141,7 +141,7 @@ public:
 
         PT_BASES b = (PT_BASES)data.get_data()[leaf.rpos];
 
-        printf("%s[%c] %s apos=%i rpos=%i\n", prefix, PT_BASES_2_char(b), data.name, leaf.apos, leaf.rpos);
+        printf("%s[%c] %s apos=%i rpos=%i\n", prefix, PT_BASES_2_char(b), data.get_name(), leaf.apos, leaf.rpos);
         return 0;
     }
 };
