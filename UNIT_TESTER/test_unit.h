@@ -626,7 +626,7 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_SETUP_GLOBAL_ENVIRONMENT(modulename) TEST_ASSERT_NO_ERROR(GB_system("../test_environment setup " modulename))
+#define TEST_SETUP_GLOBAL_ENVIRONMENT(modulename) TEST_ASSERT_NO_ERROR(GB_system(GBS_global_string("../test_environment setup %s",  (modulename))))
 // cleanup is done (by Makefile.suite) after all unit tests have been run
 
 // --------------------------------------------------------------------------------

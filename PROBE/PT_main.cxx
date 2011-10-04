@@ -214,7 +214,7 @@ GB_ERROR PT_init_map() { // goes to header: __ATTR__USERESULT
             GBDATA     *map_ptr_str = GB_entry(gb_gene_map, "map_string");
             const char *map_str     = GB_read_char_pntr(map_ptr_str);
 
-            parse_names_into_gene_struct(map_str, all_gene_structs);
+            error = parse_names_into_gene_struct(map_str, all_gene_structs).deliver();
 
             // build indices :
             gene_struct_list::const_iterator end = all_gene_structs.end();

@@ -183,6 +183,7 @@ const char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam);
 
 #ifdef UNIT_TESTS
 #define TEST_SERVER_ID (-666)
+#define TEST_GENESERVER_ID (-667)
 #endif
 
 const char *GBS_nameserver_tag(const char *add_field);
