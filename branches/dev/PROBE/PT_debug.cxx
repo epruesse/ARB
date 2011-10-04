@@ -151,24 +151,29 @@ void PT_dump_POS_TREE_recursive(POS_TREE *IF_DEBUG(pt), const char *IF_DEBUG(pre
 #if defined(DEBUG)
     switch (PT_read_type(pt)) {
         case PT_NT_NODE:
-            for (int i = PT_N; i<PT_B_MAX; i++) {
+            for (int i = PT_QU; i<PT_B_MAX; i++) {
                 PT_BASES  b   = PT_BASES(i);
                 POS_TREE *son = PT_read_son(pt, b);
                 if (son) {
-                    char *subPrefix = GBS_global_string_copy("%s%c", prefix, PT_BASES_2_char(b));
+                    char *subPrefix = GBS_global_string_copy("%s%c", prefix, b == PT_QU ? '.' : PT_BASES_2_char(b));
                     PT_dump_POS_TREE_recursive(son, subPrefix);
                     free(subPrefix);
                 }
             }
             break;
         case PT_NT_LEAF: {
-            PT_dump_leaf dump_leaf(prefix);
+            char         *subPrefix = GBS_global_string_copy("{l} %s", prefix);
+            PT_dump_leaf  dump_leaf(subPrefix);
             dump_leaf(DataLoc(pt));
+            free(subPrefix);
             break;
         }
-        case PT_NT_CHAIN:
-            PT_forwhole_chain(pt, PT_dump_leaf(prefix));
+        case PT_NT_CHAIN: {
+            char *subPrefix = GBS_global_string_copy("{c} %s", prefix);
+            PT_forwhole_chain(pt, PT_dump_leaf(subPrefix));
+            free(subPrefix);
             break;
+        }
         default:
             printf("%s [unhandled]\n", prefix);
             pt_assert(0);

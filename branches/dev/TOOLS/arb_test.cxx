@@ -67,17 +67,6 @@ void TEST_SLOW_ascii_2_bin_2_ascii() {
     TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink("ascii2bin2.ARF"));
 }
 
-void TEST_SLOW_arb_gene_probe() {
-    const char *genome   = "tools/gene_probe.arb";
-    const char *out      = "tools/gene_probe_out.arb";
-    const char *expected = "tools/gene_probe_expected.arb";
-
-    TEST_RUN_TOOL(GBS_global_string("arb_gene_probe %s %s", genome, out));
-    TEST_ASSERT_FILES_EQUAL(out, expected);
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(out));
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink("tools/gene_probe_out.ARM"));
-}
-
 void TEST_arb_primer() {
     const char *primer_db       = "TEST_nuc.arb";
     const char *primer_stdin    = "tools/arb_primer.in";
