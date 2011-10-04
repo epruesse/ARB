@@ -761,7 +761,7 @@ void TEST_SLOW_match_geneprobe() {
             "genome1\1" "  genome1  intergene_17_65   0     4  0.0  38   21 0   GCUAUCGGU-GU==GC-CUAAGCCAU\1"
             "genome1\1" "  genome1  intergene_17_65   0     4  0.0  56   39 0   AGCCAUGCG-AG==AU-AUGUA\1" "";
         
-        TEST_ARB_PROBE__BROKEN(ARRAY_ELEMS(arguments), arguments, expectd);
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd);
     }
     {
         const char *arguments[] = {
@@ -777,7 +777,7 @@ void TEST_SLOW_match_geneprobe() {
             "genome2\1" "  genome2  gene3             0     2  0.0   5    4 0   ......UUU-C====G-AUC\1"
             "genome2\1" "  genome2  joined1           0     2  0.0   5    4 0   ......UUU-C====G-AUCCUGCCA\1" "";
 
-        TEST_ARB_PROBE__BROKEN(ARRAY_ELEMS(arguments), arguments, expectd);
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd);
     }
 
     {
@@ -789,7 +789,7 @@ void TEST_SLOW_match_geneprobe() {
             "genome1\1" "  genome1  gene2      0     0  0.0   9    1 0   .........-=======-GC\1"
             "genome2\1" "  genome2  gene2      0     0  0.0   9    3 0   .......GU-=======-GCCA\1" "";
 
-        TEST_ARB_PROBE__BROKEN(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: probe exists as well in 'joined1' (of both genomes)
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: probe exists as well in 'joined1' (of both genomes)
     }
     {
         const char *arguments[] = {
@@ -799,7 +799,7 @@ void TEST_SLOW_match_geneprobe() {
         CCP expectd = "    organism genename mis N_mis wmis pos gpos rev          'GAUCCU'\1"
             "genome2\1" "  genome2  gene2      0     0  0.0  10    4 0   ......GUU-======-GCCA\1" "";
 
-        TEST_ARB_PROBE__BROKEN(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: probe is part of above probe, but reports less hits
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: probe is part of above probe, but reports less hits
     }
     {
         const char *arguments[] = {
@@ -810,7 +810,7 @@ void TEST_SLOW_match_geneprobe() {
             "genome2\1" "  genome2  gene3      0     0  0.0   2    1 0   .........-======-UUGAUC\1"
             "genome2\1" "  genome2  joined1    0     0  0.0   2    1 0   .........-======-UUGAUCCUG\1" "";
 
-        TEST_ARB_PROBE__BROKEN(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: also exists in genome2/gene1
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: also exists in genome2/gene1
     }
     {
         const char *arguments[] = {
@@ -820,7 +820,7 @@ void TEST_SLOW_match_geneprobe() {
         CCP expectd = "    organism genename mis N_mis wmis pos gpos rev          'AUCCUG'\1"
             "genome2\1" "  genome2  gene2      0     0  0.0  11    5 0   .....GUUG-======-CCA\1" "";
 
-        TEST_ARB_PROBE__BROKEN(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: exists in 'gene2' and 'joined1' of both genomes
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: exists in 'gene2' and 'joined1' of both genomes
     }
     {
         const char *arguments[] = {
@@ -831,7 +831,7 @@ void TEST_SLOW_match_geneprobe() {
             "genome2\1" "  genome2  gene2      0     0  0.0   8    2 0   ........G-==========-CA\1"
             "genome1\1" "  genome1  joined1    0     0  0.0   8    5 0   .....CUGG-==========-\1" "";
 
-        TEST_ARB_PROBE__BROKEN(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: also exists in 'genome2/joined1'
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: also exists in 'genome2/joined1'
     }
 }
 
