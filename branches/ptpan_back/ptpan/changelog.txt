@@ -1,0 +1,43 @@
+PTPan ARB integration
+
+v0.6.4 (?? ?? 2011)
+
+- TODO
+
+- parallelized build process in shared memory
+- parallelized creation of differential alignment
+- various code optimizations (e.g. removed some C-style stuff)
+- optimized partition determination process (choose best thread count)
+- addec memory utilization ratio parameter (use at own risk)
+- optimized long edge dictionary build process to take less time
+  and build time memory in trade of a little bit of space in 
+  the final index
+
+- added genome support (features)
+- added getAllProbes(length) method
+- added method probeNongroupIncreaseWMis()
+- optimizing ProbeDesign (query independent of 
+  core structures -> removed pe_IsGroup flag)
+- ProbeDesgin can now cope with selected features (aka feature-ProbeDesign)
+  in addition to whole genome ProbeDesign
+- added method probeNongroupIncreaseArrayWidth()
+- added custom information field in index header
+
+- major refactoring to make interface easier to use
+  WARNING The new interface is not compatible to the old one!
+
+- BUGFIX fixed a rare occurring error in long edge dictionary build
+
+v0.5.2 (31 August 2011)
+
+- fixed minor issue in tree build
+
+v0.5.1 (09 July 2011)
+
+- fixed minor issue in ARB integration: ProbeDesign parameter output fixed
+- fixed rare occurring error in probeMatch leading to program abortion
+
+v0.5.0 (09 May 2011)
+
+- initial release
+
