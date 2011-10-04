@@ -169,7 +169,7 @@ void TEST_SLOW_arb_read_tree() {
     } while(0)
 
 void TEST_arb_replace() {
-    const char *infile = "tools/gene_probe.arb";
+    const char *infile = "tools/arb_replace.in";
     const char *file1  = "tools/arb_replace_1.out";
     const char *file2  = "tools/arb_replace_2.out";
 
