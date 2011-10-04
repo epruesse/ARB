@@ -210,7 +210,7 @@ static int make_PT_family_list(PT_family *ffinder) {
         if (my_list[i]->stat.match_count != 0) {
             PT_family_list *fl = create_PT_family_list();
 
-            fl->name        = strdup(my_list[i]->name);
+            fl->name        = strdup(my_list[i]->get_name());
             fl->matches     = my_list[i]->stat.match_count;
             fl->rel_matches = my_list[i]->stat.rel_match_count;
 

@@ -681,17 +681,14 @@ static void gene_rel_2_abs(PT_probematch *ml) {
     GB_transaction ta(psg.gb_main);
 
     for (; ml; ml = ml->next) {
-        probe_input_data&  pid    = psg.data[ml->name];
-        GBDATA            *gb_pos = GB_entry(pid.gbd, "abspos");
-
-        if (gb_pos) {
-            long gene_pos  = GB_read_int(gb_pos);
-            ml->g_pos      = ml->b_pos;
-            ml->b_pos     += gene_pos;
+        long gene_pos = psg.data[ml->name].get_abspos();
+        if (gene_pos >= 0) {
+            ml->g_pos  = ml->b_pos;
+            ml->b_pos += gene_pos;
         }
         else {
             fprintf(stderr, "Error in gene-pt-server: gene w/o position info\n");
-            pt_assert(gb_pos);
+            pt_assert(0);
         }
     }
 }
@@ -793,7 +790,7 @@ bytestring *MP_all_species_string(PT_local *) {
 
     for (i = 0; i < psg.data_count; i++)
     {
-        GBS_strcat(memfile, psg.data[i].name);
+        GBS_strcat(memfile, psg.data[i].get_name());
         GBS_chrcat(memfile, (char)1);
     }
 
