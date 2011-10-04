@@ -18,6 +18,7 @@ You may use the provided install script, e.g.
      - xfig
      - transfig
      - xterm
+     - libboost-thread (better: libboost-all-dev)
 
  1b) OPENGL version 
 
@@ -43,6 +44,7 @@ You may use the provided install script, e.g.
      - x11proto-print-dev
      - xsltproc
      - xutils-dev
+     - libboost-thread (better: libboost-all-dev)
 
  2b) OPENGL version
 
