@@ -1,0 +1,3 @@
+# libraries needed to link against SL/PTCOMMON/PTCOMMON.a
+
+CORE/libCORE.so

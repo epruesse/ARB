@@ -1,0 +1,3 @@
+# libraries needed to link against PTWRAPPER/PTWRAPPER.a
+
+SL/PTCOMMON/PTCOMMON.a

@@ -322,3 +322,4 @@ PT_rangeCheck.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_rangeCheck.o: $(ARBHOME)/INCLUDE/smartptr.h
 PT_rangeCheck.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_rangeCheck.o: $(ARBHOME)/INCLUDE/test_global.h
+PT_rangeCheck.o: $(ARBHOME)/INCLUDE/test_unit.h

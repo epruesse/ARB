@@ -349,6 +349,8 @@ else
 	TIFFLIBS := -ltiff
 endif
 
+THREADLIBS:= -lboost_thread
+
 #---------------------- basic libs:
 
 SYSLIBS:=
@@ -356,7 +358,7 @@ SYSLIBS:=
 ifdef DARWIN
 	SYSLIBS += -lstdc++
 else
-	SYSLIBS += -lm -lboost_thread
+	SYSLIBS += -lm
 endif
 
 #---------------------- include symbols?
@@ -658,31 +660,6 @@ ifeq ($(VTABLE_INFRONTOF_CLASS),1)
 cflags:=$(cflags) -DFAKE_VTAB_PTR=char
 endif
 
-# ------------------------------- 
-#     old PTSERVER or PTPAN?
-
-ifeq ($(PTPAN),1)
-# PTPAN only libs
-ARCHS_PT_SERVER = \
-	ptpan/PROBE.a
-else
-ifeq ($(PTPAN),2)
-# special mode to compile both servers (developers only!)
-ARCHS_PT_SERVER = \
-	ptpan/PROBE.a \
-	PROBE/PROBE.a
-ARCHS_PT_SERVER_LINK = PROBE/PROBE.a# default to old ptserver
-else
-# PT-server only libs
-ARCHS_PT_SERVER = \
-	PROBE/PROBE.a
-endif
-endif
-
-ifndef ARCHS_PT_SERVER_LINK
-ARCHS_PT_SERVER_LINK = $(ARCHS_PT_SERVER)
-endif
-
 # ---------------------------------------
 # List of standard top level directories
 #
@@ -692,7 +669,6 @@ endif
 #
 
 ARCHS = \
-			$(ARCHS_PT_SERVER) \
 			AISC/AISC.a \
 			AISC_MKPTPS/AISC_MKPTPS.a \
 			ALIV3/ALIV3.a \
@@ -722,6 +698,8 @@ ARCHS = \
 			PARSIMONY/PARSIMONY.a \
 			PERLTOOLS/PERLTOOLS.a \
 			PGT/PGT.a \
+			PROBE/PROBE.a \
+			ptpan/ptpan.a \
 			PHYLO/PHYLO.a \
 			PRIMER_DESIGN/PRIMER_DESIGN.a \
 			PROBE_COM/server.a \
@@ -1033,25 +1011,53 @@ $(DBSERVER): $(ARCHS_DBSERVER:.a=.dummy) link_db
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
-#***********************************	arb_pt_server **************************************
-PROBE = bin/arb_pt_server
-ARCHS_PROBE_COMMON = \
-		SERVERCNTRL/SERVERCNTRL.a \
-		SL/HELIX/HELIX.a \
+#*********************************** index servers **************************************
 
-ARCHS_PROBE_LINK = \
-		$(ARCHS_PROBE_COMMON) \
-		$(ARCHS_PT_SERVER_LINK) \
+PTSERVER = bin/arb_ptserver
+PTPAN = bin/arb_ptpan
+PTWRAPPER = bin/arb_pt_server# do not change
 
-ARCHS_PROBE_DEPEND = \
-		$(ARCHS_PROBE_COMMON) \
-		$(ARCHS_PT_SERVER) \
+ARCHS_PT_COMMON= \
+	SL/PTCOMMON/PTCOMMON.a \
 
-$(PROBE): $(ARCHS_PROBE_DEPEND:.a=.dummy) link_db 
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) config.makefile || ( \
+ARCHS_PT_SERVERCOMMON= \
+	$(ARCHS_PT_COMMON) \
+	SERVERCNTRL/SERVERCNTRL.a \
+	SL/HELIX/HELIX.a \
+
+ARCHS_PTSERVER_ONLY= \
+	PROBE/PROBE.a \
+
+ARCHS_PTPAN_ONLY= \
+	ptpan/ptpan.a \
+
+PTLINK_COMMON=$(LIBPATH) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) PROBE_COM/server.a $(ARCHS_PT_SERVERCOMMON) $(SYSLIBS) $(EXECLIBS)
+
+$(PTSERVER): $(subst .a,.dummy,$(ARCHS_PTSERVER_ONLY) $(ARCHS_PT_SERVERCOMMON)) link_db
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PTSERVER) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) PROBE_COM/server.a $(SYSLIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) PROBE_COM/server.a $(SYSLIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(PTLINK_COMMON) $(ARCHS_PTSERVER_ONLY)" ; \
+		$(LINK_EXECUTABLE) $@ $(PTLINK_COMMON) $(ARCHS_PTSERVER_ONLY) && \
+		echo "$(SEP) Link $@ [done]"; \
+		)
+
+$(PTPAN): $(subst .a,.dummy,$(ARCHS_PTPAN_ONLY) $(ARCHS_PT_SERVERCOMMON)) link_db
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PTPAN) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) || ( \
+		echo "$(SEP) Link $@"; \
+		echo "$(LINK_EXECUTABLE) $@ $(PTLINK_COMMON) $(ARCHS_PTPAN_ONLY) $(THREADLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(PTLINK_COMMON) $(ARCHS_PTPAN_ONLY)  $(THREADLIBS) && \
+		echo "$(SEP) Link $@ [done]"; \
+		)
+
+ARCHS_PTWRAPPER= \
+	PTWRAPPER/PTWRAPPER.a \
+	$(ARCHS_PT_COMMON) \
+
+$(PTWRAPPER): $(subst .a,.dummy,$(ARCHS_PTWRAPPER)) link_core
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PTWRAPPER) $(CORE_LIB) || ( \
+		echo "$(SEP) Link $@"; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PTWRAPPER) $(CORE_LIB)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PTWRAPPER) $(CORE_LIB) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1223,6 +1229,7 @@ SL/PRONUC/PRONUC.dummy:			links_non_perl
 SL/SEQUENCE/SEQUENCE.dummy:		links_non_perl
 SL/TRANSLATE/TRANSLATE.dummy:		links_non_perl
 SL/SEQIO/SEQIO.dummy:			links_non_perl
+SL/PTCOMMON/PTCOMMON.dummy:		links_non_perl
 SL/REGEXPR/REGEXPR.dummy:		links_non_perl
 SL/REFENTRIES/REFENTRIES.dummy:		links_non_perl
 SL/TREE_READ/TREE_READ.dummy:		links_non_perl
@@ -1263,7 +1270,7 @@ NAMES/NAMES.dummy : 			com
 SL/AW_NAME/AW_NAME.dummy : 		com
 
 PROBE/PROBE.dummy : 			com
-ptpan/PROBE.dummy : 			com
+ptpan/ptpan.dummy : 			com
 MULTI_PROBE/MULTI_PROBE.dummy : 	com
 PROBE_DESIGN/PROBE_DESIGN.dummy : 	com
 NALIGNER/NALIGNER.dummy : 		com
@@ -1374,7 +1381,7 @@ endif
 SL/SL.dummy: com
 
 ds:	$(DBSERVER)
-pt:	$(PROBE)
+pt:	$(PTSERVER) $(PTPAN) $(PTWRAPPER)
 pst: 	PROBE_SET/PROBE_SET.dummy
 pd:	PROBE_DESIGN/PROBE_DESIGN.dummy
 na:	$(NAMES)
@@ -1801,7 +1808,9 @@ rac_arb_pars:		pa
 rac_arb_phylo:		ph
 rac_arb_wetc:		wetc
 rac_arb_naligner:	nal
-rac_arb_pt_server:	pt
+rac_arb_pt_server:	$(PTWRAPPER)
+rac_arb_ptserver:	$(PTSERVER)
+rac_arb_ptpan:		$(PTPAN)
 rac_arb_db_server:	ds
 rac_arb_name_server:	na
 rac_aliv3:		a3
@@ -1843,9 +1852,7 @@ UNITS_WORKING = \
 	PGT/PGT.test \
 	PHYLO/PHYLO.test \
 	PRIMER_DESIGN/PRIMER_DESIGN.test \
-	PROBE/PROBE.test \
 	PROBE_DESIGN/PROBE_DESIGN.test \
-	ptpan/PROBE.test \
 	SECEDIT/SECEDIT.test \
 	SEQ_QUALITY/SEQ_QUALITY.test \
 	SERVERCNTRL/SERVERCNTRL.test \
@@ -1895,6 +1902,10 @@ UNITS_TESTED_FIRST = \
 	AWTC/AWTC.test \
 
 UNITS_TESTED = \
+	ptpan/ptpan.test \
+	PROBE/PROBE.test \
+	PTWRAPPER/PTWRAPPER.test \
+	SL/PTCOMMON/PTCOMMON.test \
 	GENOM_IMPORT/GENOM_IMPORT.test \
 	CORE/CORE.test \
 	SL/TREEDISP/TREEDISP.test \
