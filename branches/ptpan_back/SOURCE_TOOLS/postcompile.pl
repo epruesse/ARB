@@ -40,7 +40,7 @@ my $filter_Weffpp = 1;
 my @reg_Weffpp = (
                   qr/^base\sclass\s.*has\sa\snon-virtual\sdestructor/,
                   qr/\sshould\sbe\sinitialized\sin\sthe\smember\sinitialization\slist/,
-
+                  qr/boost::icl::(insert|add)_iterator<ContainerT>.*should\sreturn/, # filter boost-iterator postfix operators warnings
                   qr/^\s\sbut\sdoes\snot\soverride/, # belongs to reg_Weffpp_copyable
                   qr/^\s\sor\s'operator=/, # belongs to reg_Weffpp_copyable
                  );
@@ -49,7 +49,8 @@ my $filter_Weffpp_copyable = 0; # 1 = filter copy-ctor/op=-warning, 0 = check fo
 my $reg_Weffpp_copyable = qr/'(class|struct)\s([A-Za-z_0-9:]+).*'\shas\spointer\sdata\smembers/; # occurs also if derived from 'Noncopyable'
 
 # regexps for files:
-my $reg_user_include = qr/^\/usr\/include\//;
+my $reg_user_include       = qr/^\/usr\/include\//;
+my $reg_HEADERLIBS_include = qr/\/HEADERLIBS\//;
 
 my $stop_after_first_error = 0;
 my $hide_warnings          = 0;
@@ -216,6 +217,16 @@ sub suppress($\@) {
   return undef;
 }
 
+sub is_system_or_builtin($) {
+  my ($file) = @_;
+  return (($file =~ $reg_user_include) or ($file eq '<built-in>') or ($file =~ $reg_HEADERLIBS_include));
+}
+
+sub suppress_shadow_warning_for($) {
+  my ($file) = @_;
+  return is_system_or_builtin($file);
+}
+
 sub parse_input(\@) {
   my ($out_r) = @_;
   my @related = ();
@@ -242,11 +253,15 @@ sub parse_input(\@) {
             store_shadow($_,@warnout);
             $_ = suppress($_,@warnout);
           }
+          elsif (suppress_shadow_warning_for($file)) {
+            $_ = suppress($_,@warnout);
+            # $location_info = undef;
+          }
         }
         elsif ($warn_text =~ $reg_shadow_location) {
           if (not defined $shadow_warning) { warning('no shadow_warning seen',@warnout); }
           else {
-            if ($file =~ $reg_user_include or $file eq '<built-in>') {
+            if (suppress_shadow_warning_for($file)) {
               # don't warn about /usr/include or <built-in> shadowing
               $_ = suppress($_,@warnout);
               @related = ();
