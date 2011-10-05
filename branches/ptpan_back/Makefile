@@ -1441,7 +1441,7 @@ proto: proto_tools
 		CORE/CORE.proto \
 		CONVERTALN/CONVERTALN.proto \
 		NTREE/NTREE.proto \
-		$(ARCHS_PT_SERVER:.a=.proto) \
+		PROBE/PROBE.proto \
 		SERVERCNTRL/SERVERCNTRL.proto \
 		GDE/GDE.proto \
 		SL/SL.proto \

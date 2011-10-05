@@ -2,22 +2,8 @@
 
 .SUFFIXES: .o .cxx .depend
 
-C_OBJECTS =  ptpan_main.o ptpan_legacy.o huffman.o bin_tree.o dlist.o
-
-CPP_OBJECTS = ptpan.o \
-    ptpan_base.o \
-	ptpan_tree.o \
-	ptpan_tree_builder.o \
-	ptpan_filter.o \
-	ptpan_build_settings.o \
-	dna5_alphabet_specifics.o \
-	abstract_alphabet_specifics.o \
-	arbdb_data_retriever.o \
-	abstract_data_retriever.o
-
-OBJECTS=$(C_OBJECTS) $(CPP_OBJECTS)
-
-#AOBJECTS = #BI_helix.o
+SOURCES=$(wildcard *.cxx)
+OBJECTS=$(subst .cxx,.o,$(SOURCES))
 
 # --------------------------------------------------------------------------------
 
@@ -25,24 +11,13 @@ pan_cflags:=$(cflags) -I../HEADERLIBS
 
 # --------------------------------------------------------------------------------
 
-#$(MAIN): $(OBJECTS) $(AOBJECTS) Makefile
-# $(LINK_STATIC_LIB) $(MAIN) $(OBJECTS) $(AOBJECTS)
 $(MAIN): $(OBJECTS) 
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
  
-ifeq ('$(RAISE_WARNINGS)','0')
-	@echo ----------------- warnings enabled again
-endif
-
-# $(OBJECTS): Makefile
-
-.c.o:
-		$(ACC) $(pan_cflags) -c $< $(AINCLUDES)  -I./../probe_bank/COM $(POST_COMPILE)
 .cxx.o:
 		$(CPP) $(pan_cflags) -c $<  $(CPPINCLUDES) -I./../probe_bank/COM $(POST_COMPILE)
 proto:
-		../AISC_MKPTPS/aisc_mkpt -E -z -A -w pt_prototypes.h $(OBJECTS:.o=.cxx) >pt_prototypes.h.tmp
-		../SOURCE_TOOLS/mv_if_diff pt_prototypes.h.tmp pt_prototypes.h
+		false
 
 clean:
 		rm -f $(OBJECTS) *.a
