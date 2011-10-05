@@ -426,10 +426,10 @@ GB_shell::~GB_shell() {
 void GB_shell::ensure_inside()  { if (!inside_shell) GBK_terminate("Not inside GB_shell"); }
 
 bool GB_shell::in_shell() {
-	if (!inside_shell) {
-		return false;
-	}
-	return true;
+    if (!inside_shell) {
+        return false;
+    }
+    return true;
 }
 
 struct GB_test_shell_closed {
