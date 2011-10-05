@@ -109,9 +109,9 @@ struct PT_store_match_in {
         ml->wmismatches  = wmismatches;
         ml->mismatches   = mismatches;
         ml->N_mismatches = N_mismatches;
-        ml->sequence     = psg.main_probe;
+        ml->psequence    = strdup(psg.main_probe);
         ml->reversed     = psg.reversed ? 1 : 0;
-            
+
         aisc_link(&locs->ppm, ml);
 
         return 0;
@@ -148,7 +148,7 @@ int read_names_and_pos(PT_local *locs, POS_TREE *pt) {
         ml->mismatches   = psg.mismatches;
         ml->wmismatches  = psg.wmismatches;
         ml->N_mismatches = psg.N_mismatches;
-        ml->sequence     = psg.main_probe;
+        ml->psequence    = strdup(psg.main_probe);
         ml->reversed     = psg.reversed ? 1 : 0;
 
         aisc_link(&locs->ppm, ml);
@@ -450,10 +450,11 @@ int probe_match(PT_local * locs, aisc_string probestring) {
         ptnd_new_match(locs,    probestring);
     }
     if (locs->pm_reversed) {
-        psg.reversed = 1;
-        rev_pro = reverse_probe(probestring, 0);
+        psg.reversed   = 1;
+        rev_pro        = reverse_probe(probestring, 0);
         complement_probe(rev_pro, 0);
-        freeset(locs->pm_csequence, psg.main_probe = strdup(rev_pro));
+        freedup(locs->pm_csequence, rev_pro);
+        psg.main_probe = locs->pm_csequence;
         if (psg.deep >= 0) {
             get_info_about_probe(locs, rev_pro, psg.pt, 0, 0.0, 0, 0);
         }
@@ -552,7 +553,7 @@ inline void cat_dashed_right(GBS_strstruct *memfile, const char *text, int width
 
 char *get_match_overlay(PT_probematch *ml)
 {
-    int    pr_len = strlen(ml->sequence);
+    int pr_len = strlen(ml->psequence);
 
     PT_local *locs = (PT_local *)ml->mh.parent->parent;
     PT_pdc   *pdc  = locs->pdc;
@@ -568,13 +569,13 @@ char *get_match_overlay(PT_probematch *ml)
     }
     ref[9] = '-';
 
-    pt_build_pos_to_weight((PT_MATCH_TYPE)locs->sort_by, ml->sequence);
+    pt_build_pos_to_weight((PT_MATCH_TYPE)locs->sort_by, ml->psequence);
 
     for (int pr_pos = 0, al_pos = ml->rpos;
          pr_pos < pr_len && al_pos < psg.data[ml->name].size;
          pr_pos++, al_pos++)
     {
-        int a = ml->sequence[pr_pos];
+        int a = ml->psequence[pr_pos];
         int b = psg.data[ml->name].data[al_pos];
         if (a == b) {
             ref[pr_pos+10] = '=';
@@ -582,7 +583,7 @@ char *get_match_overlay(PT_probematch *ml)
         else {
             ref[pr_pos+10] = b;
             if (pdc && a >= PT_A && a <= PT_T && b >= PT_A && b<=PT_T) {
-                double h = ptnd_check_split(pdc, ml->sequence, pr_pos, b);
+                double h = ptnd_check_split(pdc, ml->psequence, pr_pos, b);
                 if (h>=0.0) {
                     ref[pr_pos+10] = " nacgu"[b];
                 }
@@ -656,7 +657,7 @@ static const char *get_match_hinfo_formatted(PT_probematch *ml, const format_pro
         cat_dashed_left(memfile, "rev", format.rev_width());
 
         if (ml->N_mismatches >= 0) { //
-            char *seq = strdup(ml->sequence);
+            char *seq = strdup(ml->psequence);
             PT_base_2_string(seq, 0);
 
             GBS_strcat(memfile, "         '");

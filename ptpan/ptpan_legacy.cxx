@@ -394,7 +394,7 @@ STRPTR virt_name(PT_probematch *ml) {
 STRPTR virt_fullname(PT_probematch *ml) {
     struct PTPanLegacy *pl = PTPanLegacyGlobalPtr;
     if (PTPanLegacyGlobalPtr->pl_pt->containsFeatures()) {
-        return ml->sequence;
+        return ml->psequence;
     }
     return const_cast<STRPTR>(pl->pl_pt->getEntryFullName(ml->name));
 }
@@ -504,9 +504,9 @@ int find_family(PT_family *ffinder, bytestring *species) {
 //Peter Pan seems to store the already formated string in ml->sequence, so no further transformation is required
 char *get_match_overlay(PT_probematch *ml) {
     if (PTPanLegacyGlobalPtr->pl_pt->containsFeatures()) {
-        return &ml->sequence[ml->rpos + 1];
+        return &ml->psequence[ml->rpos + 1];
     }
-    return ml->sequence;
+    return ml->psequence;
 }
 /* \\\ */
 
@@ -997,22 +997,22 @@ void create_match_list(const SearchQuery& sq,
                                         + hit->qh_InsertCount
                                         + hit->qh_DeleteCount;
                                 ml->N_mismatches = hit->qh_nmismatch;
-                                ml->sequence = (STRPTR) calloc(
+                                ml->psequence = (STRPTR) calloc(
                                         ml->rpos + 1 + 21 + query_length, 0x01);
-                                memcpy(ml->sequence, (*it)->pf_name, ml->rpos);
-                                memcpy(&ml->sequence[ml->rpos + 1],
+                                memcpy(ml->psequence, (*it)->pf_name, ml->rpos);
+                                memcpy(&ml->psequence[ml->rpos + 1],
                                         hit->qh_seqout.data(),
                                         20 + query_length);
 
                                 if (borders.first < 9) {
                                     for (int i = 0; i < 9 - borders.first;
                                             i++) {
-                                        ml->sequence[ml->rpos + 1 + i] = '.';
+                                        ml->psequence[ml->rpos + 1 + i] = '.';
                                     }
                                 }
                                 if (borders.second < 9) {
                                     for (int i = 8; i > borders.second; i--) {
-                                        ml->sequence[ml->rpos + 1 + 11
+                                        ml->psequence[ml->rpos + 1 + 11
                                                 + query_length + i] = '.';
                                     }
                                 }
@@ -1042,9 +1042,9 @@ void create_match_list(const SearchQuery& sq,
                         + hit->qh_DeleteCount;
                 ml->N_mismatches = hit->qh_nmismatch;
                 length = hit->qh_seqout.size();
-                ml->sequence = (STRPTR) malloc(length + 1);
-                memcpy(ml->sequence, hit->qh_seqout.data(), length);
-                ml->sequence[length] = 0;
+                ml->psequence = (STRPTR) malloc(length + 1);
+                memcpy(ml->psequence, hit->qh_seqout.data(), length);
+                ml->psequence[length] = 0;
                 ml->reversed = (hit->qh_Flags & QHF_REVERSED) ? 1 : 0;
 
                 aisc_link(

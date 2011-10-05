@@ -675,15 +675,16 @@ static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts,
             aisc_link(&ptnd.locs->ppm, match);
             psg.data[matchLoc.name].match = match;
         }
-        match->name = matchLoc.name;
-        match->b_pos = matchLoc.apos - parts->start;     // that's not correct !!!
-        match->rpos = matchLoc.rpos-parts->start;
-        match->N_mismatches = -1;       // there are no mismatches in this mode
-        match->mismatches = -1;
-        match->wmismatches = dt;        // only weighted mismatches (maybe)
-        match->dt = ndt;
-        match->sequence = psg.main_probe;
-        match->reversed = psg.reversed;
+
+        match->name         = matchLoc.name;
+        match->b_pos        = matchLoc.apos - parts->start; // that's not correct !!!
+        match->rpos         = matchLoc.rpos-parts->start;
+        match->N_mismatches = -1;                           // there are no mismatches in this mode
+        match->mismatches   = -1;
+        match->wmismatches  = dt;                           // only weighted mismatches (maybe)
+        match->dt           = ndt;
+        match->psequence    = strdup(psg.main_probe);
+        match->reversed     = psg.reversed;
     }
 }
 static int ptnd_check_inc_mode(PT_pdc *pdc, PT_probeparts *parts, double dt, double sum_bonds)
