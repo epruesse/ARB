@@ -54,6 +54,7 @@ else
         elif [ "$2" == "compile_common" ]; then
             echo \
                 g++ \
+                libboost-all-dev \
                 libmotif-dev \
                 libtiff4-dev \
                 libx11-dev \
