@@ -188,9 +188,7 @@ PT_probematch, MATCHLIST,       4,      (~the probe match list~), {
     double,      wmismatches,       t,    r,    ,       WMISMATCHES,    14,     ,      (~number of weighted mismatches~);
     int,         N_mismatches,      t,    r,    ,       N_MISMATCHES,   15,     ,      (~number of 'N' mismatches~);
     double,      dt,                t,    r,    ,       DT,             16,     ,      (~the dt of a probe~);
-	# TE fixed error when cleaning up struct which hit PTPan hard as every probe_match leaked memory 
-	# old'n'buggy:    char,       sequence,       l,    r,    ,       SEQUENCE,       22,     ,      (~path of probe~);
-	aisc_string, sequence,          t,    ,     ,       SEQUENCE,       17,     ,      (~path of probe~);
+    aisc_string, psequence,         t,    ,     ,       SEQUENCE,       17,     ,      (~path of probe~);
     int,         reversed,          t,    r,    ,       REVERSED,       18,     ,      (~reversed probe matches~);
     aisc_string, get_match_overlay, %,    r,    ,       OVERLAY,        19,     ,      (~ascii visualization of match~);
 };

@@ -224,8 +224,8 @@ extern struct probe_struct_global {
 
     int sort_by;
 
-    char *probe;                                    // probe design + chains
-    char *main_probe;
+    char       *probe;                              // probe design + chains
+    const char *main_probe;
 
     char      *server_name;                         // name of this server
     aisc_com  *link;
