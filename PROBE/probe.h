@@ -100,16 +100,6 @@ struct PTM2 {
 // ---------------------
 //      Probe search
 
-struct probe_statistic {
-    int    match_count;                             // Counter for matches
-    double rel_match_count;                         // match_count / (seq_len - probe_len + 1)
-
-    probe_statistic()
-        : match_count(0),
-          rel_match_count(0.0)
-    {}
-};
-
 class probe_input_data : virtual Noncopyable {      // every taxa's own data
 
     char *data;       // sequence
@@ -121,14 +111,6 @@ class probe_input_data : virtual Noncopyable {      // every taxa's own data
     GBDATA *gbd;
 
     bool group;           // probe_design: whether species is in group
-
-public:
-
-    PT_probematch *match; // best hit for PT_new_design (probe design (match))
-    
-    probe_statistic stat; // find family
-
-private:
 
     // obsolete methods below @@@ remove them
     GBDATA *get_gbdata() const { return gbd; }
@@ -144,8 +126,7 @@ public:
           name(0), 
           fullname(0), 
           gbd(0), 
-          group(false), 
-          match(0) 
+          group(false) 
     {}
     ~probe_input_data() {
         free(data);
