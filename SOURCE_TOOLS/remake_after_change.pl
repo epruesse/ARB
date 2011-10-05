@@ -29,7 +29,7 @@ my %dir2libs = (
                 'PROBE_COM' => 'PROBE_COM/client.a PROBE_COM/server.a',
                 'GL/glAW'   => 'GL/glAW/libglAW.a',
                 'GL/glpng'  => 'GL/glpng/libglpng_arb.a',
-                'ptpan'     => 'ptpan/PROBE.a',
+                'ptpan'     => 'ptpan/ptpan.a',
 
                );
 
@@ -169,27 +169,22 @@ sub config2env() {
   open(CONF,'<'.$conf) || die "can't read '$conf' (Reason: $!)";
 
   my $OPENGL     = 0;
-  my $PTPAN      = 0;
   my $UNIT_TESTS = 0;
 
   foreach (<CONF>) {
     chomp;
     if (/^OPENGL\s*:=\s*([0-9]+)/) { $OPENGL = $1; }
-    if (/^PTPAN\s*:=\s*([0-9]+)/) { $PTPAN = $1; }
     if (/^UNIT_TESTS\s*:=\s*([0-9]+)/) { $UNIT_TESTS = $1; }
   }
   close(CONF);
 
   print "Using:\n";
   print "- OPENGL=$OPENGL\n";
-  print "- PTPAN=$PTPAN\n";
   print "- UNIT_TESTS=$UNIT_TESTS\n";
 
   if ($OPENGL==1) {
     $ENV{RNA3D_LIB} = 'RNA3D/RNA3D.a';
   }
-  if ($PTPAN==1) { $ENV{ARCHS_PT_SERVER_LINK} = 'ptpan/PROBE.a'; }
-  else { $ENV{ARCHS_PT_SERVER_LINK} = 'PROBE/PROBE.a'; }
 
   return $UNIT_TESTS;
 }

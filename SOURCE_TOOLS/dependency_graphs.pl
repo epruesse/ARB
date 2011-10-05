@@ -9,6 +9,7 @@ chdir($ARBHOME);
 sub make_suffix($) {
   my ($name) = @_;
 
+  $name =~ s/\s/_/g;
   $name =~ s/[\/\.]/_/g;
 
   $name =~ s/needs_libs//;
@@ -32,6 +33,18 @@ sub main() {
   } `cd $ARBHOME;find . -name "needs_libs*"`;
 
   my %gif_suffix = map { $_ => make_suffix($_); } @dep_files;
+
+  my %manual_defs = (
+                     'arb_ptserver arb_ptpan arb_pt_server' => 'index_servers',
+                     'arb_ptserver arb_ptpan arb_pt_server arb_name_server arb_db_server' => 'servers',
+                     'arb_ntree arb_edit4 arb_dist arb_phylo arb_pars' => 'main application',
+                    );
+
+  foreach (keys %manual_defs) {
+    push @dep_files, $_;
+    my $suff = make_suffix($manual_defs{$_});
+    $gif_suffix{$_} = 'ADD_'.$suff;
+  }
 
   my $dest = 'dep_graphs';
   if (not -d $dest) {

@@ -15,9 +15,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
  
 .cxx.o:
-		$(CPP) $(pan_cflags) -c $<  $(CPPINCLUDES) -I./../probe_bank/COM $(POST_COMPILE)
-proto:
-		false
+		$(CPP) $(pan_cflags) -c $<  $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 		rm -f $(OBJECTS) *.a
@@ -116,6 +114,11 @@ ptpan_base.o: huffman.h
 ptpan_base.o: ptpan.h
 ptpan_base.o: ptpan_base.h
 ptpan_base.o: types.h
+ptpan_base.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ptpan_base.o: $(ARBHOME)/INCLUDE/arb_core.h
+ptpan_base.o: $(ARBHOME)/INCLUDE/dupstr.h
+ptpan_base.o: $(ARBHOME)/INCLUDE/test_global.h
+ptpan_base.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 ptpan_build_settings.o: abstract_alphabet_specifics.h
 ptpan_build_settings.o: bin_tree.h

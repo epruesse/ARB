@@ -1,7 +1,6 @@
-# libraries needed to link against PROBE/PROBE.a
+# libraries needed to link against ptpan/ptpan.a
 
 PROBE_COM/server.a
 SERVERCNTRL/SERVERCNTRL.a
-SL/HELIX/HELIX.a
 SL/PTCOMMON/PTCOMMON.a
-
+$(THREADLIBS)

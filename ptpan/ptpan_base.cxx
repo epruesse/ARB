@@ -181,3 +181,20 @@ void PtpanBase::setVerbose(bool verbose) {
 bool PtpanBase::isVerbose() const {
     return m_verbose;
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+void TEST_nothing() {
+    // TEST_ASSERT(0);
+    MISSING_TEST(none);
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
+

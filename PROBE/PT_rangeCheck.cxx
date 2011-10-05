@@ -40,3 +40,18 @@ int Range::calc_max_abs_pos() const {
     return pos;
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+void TEST_nothing() {
+    // TEST_ASSERT(0);
+    TEST_SETUP_GLOBAL_ENVIRONMENT("ptserver"); 
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
