@@ -15,7 +15,12 @@
 int main(int argc, char *argv[]) {
     GBS_strstruct cmdline(1000);
 
+#if 0
     cmdline.cat("arb_ptserver");
+#else
+    cmdline.cat("arb_ptpan --verbose");
+#endif
+
     for (int a = 1; a<argc; a++) {
         cmdline.put(' ');
         cmdline.cat(argv[a]);
