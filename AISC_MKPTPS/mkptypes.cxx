@@ -129,9 +129,7 @@ struct SymPart {
     SymPart *next;
 };
 
-static void setSymParts(SymPart*& symParts, const char *parts) {
-    mp_assert(!symParts);
-
+static void addSymParts(SymPart*& symParts, const char *parts) {
     char       *p   = strdup(parts);
     const char *sep = ",";
     char       *s   = strtok(p, sep);
@@ -188,8 +186,8 @@ static void freeSymParts(SymPart*& symParts) {
 static SymPart *requiredSymParts = 0; // only create prototypes if function-name matches one of these parts
 static SymPart *excludedSymParts = 0; // DONT create prototypes if function-name matches one of these parts
 
-inline void setRequiredSymParts(const char *parts) { setSymParts(requiredSymParts, parts); }
-inline void setExcludedSymParts(const char *parts) { setSymParts(excludedSymParts, parts); }
+inline void addRequiredSymParts(const char *parts) { addSymParts(requiredSymParts, parts); }
+inline void addExcludedSymParts(const char *parts) { addSymParts(excludedSymParts, parts); }
 
 inline void freeRequiredSymParts() { freeSymParts(requiredSymParts); }
 inline void freeExcludedSymParts() { freeSymParts(excludedSymParts); }
@@ -1163,7 +1161,7 @@ static void emit(Word *wlist, Word *plist, long startline) {
         if (w->string[0]) {
             count ++;
             if      (strcmp(w->string, "static") == 0) isstatic = 1;
-            else if (strcmp(w->string, "main") == 0) ismain = 1;
+            else if (strcmp(w->string, "main")   == 0) ismain = 1;
         }
     }
 
@@ -1498,7 +1496,7 @@ int main(int argc, char **argv) {
 
     argv++; argc--;
 
-    setExcludedSymParts("^TEST_");
+    addExcludedSymParts("^TEST_,^NOTEST_"); // exclude unit tests
 
     iobuf = (char *)malloc(NEWBUFSIZ);
     while (*argv && **argv == '-') {
@@ -1541,14 +1539,14 @@ int main(int argc, char **argv) {
             else if (*t == 'F') {
                 t = *argv++; --argc;
                 if (!t) Usage();
-                setRequiredSymParts(t);
+                addRequiredSymParts(t);
                 break;
             }
             else if (*t == 'S') {
                 t = *argv++; --argc;
                 if (!t) Usage();
                 freeExcludedSymParts();
-                setExcludedSymParts(t);
+                addExcludedSymParts(t);
                 break;
             }
             else if (*t == 'V') {
