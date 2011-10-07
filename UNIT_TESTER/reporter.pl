@@ -98,7 +98,7 @@ sub parse_log($) {
     chomp;
     if (/^UnitTester:/) {
       if (/tests=([0-9]+)/)   { $tests_this += $1; $seenSummary=1; }
-      if (/skipped=([0-9]+)/) { $skipped_this += $1; }
+      if (/skipped=([0-9]+)/) { $skipped_this += $1; $dump_log = 1; }
 
       if (/passed=([0-9]+)/)  { $passed += $1; }
       if (/passed=ALL/)       { $passedALL = 1; }
