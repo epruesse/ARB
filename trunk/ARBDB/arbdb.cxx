@@ -675,12 +675,16 @@ void *GB_read_pointer(GBDATA *gbd) {
 
 double GB_read_float(GBDATA *gbd)
 {
-    XDR xdrs;
+    XDR          xdrs;
     static float f;
+    
     GB_TEST_READ(gbd, GB_FLOAT, "GB_read_float");
     xdrmem_create(&xdrs, &gbd->info.in.data[0], SIZOFINTERN, XDR_DECODE);
     xdr_float(&xdrs, &f);
     xdr_destroy(&xdrs);
+
+    gb_assert(f == f); // !nan
+
     return (double)f;
 }
 
@@ -1027,7 +1031,9 @@ GB_ERROR GB_write_pointer(GBDATA *gbd, void *pointer) {
 
 GB_ERROR GB_write_float(GBDATA *gbd, double f)
 {
-    XDR xdrs;
+    gb_assert(f == f); // !nan
+
+    XDR          xdrs;
     static float f2;
 
     GB_TEST_WRITE(gbd, GB_FLOAT, "GB_write_float");

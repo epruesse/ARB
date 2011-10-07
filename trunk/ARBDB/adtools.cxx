@@ -417,6 +417,8 @@ NOT4PERL double *GBT_readOrCreate_float(GBDATA *gb_container, const char *fieldp
      * but if field does not exist, it will be created and initialized with 'default_value'
      */
 
+    gb_assert(default_value == default_value); // !nan
+    
     GBDATA *gb_float;
     double *result = NULL;
 
@@ -426,6 +428,9 @@ NOT4PERL double *GBT_readOrCreate_float(GBDATA *gb_container, const char *fieldp
         static double result_var;
         result_var = GB_read_float(gb_float);
         result     = &result_var;
+    }
+    else {
+        gb_assert(0);
     }
     GB_pop_transaction(gb_container);
     return result;
@@ -491,6 +496,9 @@ GB_ERROR GBT_write_float(GBDATA *gb_container, const char *fieldpath, double con
      *
      * but for fields of type GB_FLOAT
      */
+
+    gb_assert(content == content); // !nan
+
     GB_ERROR  error = GB_push_transaction(gb_container);
     GBDATA   *gbd   = GB_search(gb_container, fieldpath, GB_FLOAT);
     if (!gbd) error = GB_await_error();
