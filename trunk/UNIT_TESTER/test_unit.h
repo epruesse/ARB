@@ -573,6 +573,11 @@ namespace arb_test {
 #ifdef AD_PROT_H
 
 namespace arb_test {
+    inline bool test_mem_equal(const void *mem1, const void *mem2, size_t size) {
+        FlushedOutputNoLF yes;
+        return GB_test_mem_equal(reinterpret_cast<const unsigned char *>(mem1),
+                                 reinterpret_cast<const unsigned char *>(mem2), size) == size;
+    }
     inline bool test_files_equal(const char *file1, const char *file2) {
         FlushedOutputNoLF yes;
         return GB_test_files_equal(file1, file2);
@@ -595,6 +600,9 @@ namespace arb_test {
 
 #define TEST_ASSERT_FILES_EQUAL(f1,f2)         TEST_ASSERT(arb_test::test_files_equal(f1,f2))
 #define TEST_ASSERT_FILES_EQUAL__BROKEN(f1,f2) TEST_ASSERT__BROKEN(arb_test::test_files_equal(f1,f2))
+
+#define TEST_ASSERT_MEM_EQUAL(m1,m2,size)         TEST_ASSERT(arb_test::test_mem_equal(m1,m2,size))
+#define TEST_ASSERT_MEM_EQUAL__BROKEN(m1,m2,size) TEST_ASSERT__BROKEN(arb_test::test_mem_equal(m1,m2,size))
 
 #define TEST_ASSERT_TEXTFILES_EQUAL(f1,f2)         TEST_ASSERT_TEXTFILE_DIFFLINES(f1,f2,0)
 #define TEST_ASSERT_TEXTFILES_EQUAL__BROKEN(f1,f2) TEST_ASSERT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,0)
