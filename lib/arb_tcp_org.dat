@@ -31,7 +31,7 @@ ARB_TCP_DAT_VERSION 2
 #***********    Test Servers  ******************
 
 ARB_TEST_PT_SERVER          localhost:3200          arb_pt_server   -D$(ARBHOME)/UNIT_TESTER/run/TEST_pt.arb
-
+ARB_TEST_PT_SERVER_GENE     localhost:3201          arb_pt_server   -D$(ARBHOME)/UNIT_TESTER/run/TEST_gpt.arb
 
 #***********    Private Servers (for each user) ******************
 #

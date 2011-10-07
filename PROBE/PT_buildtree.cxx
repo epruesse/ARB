@@ -12,102 +12,102 @@
 #include <PT_server_prototypes.h>
 #include "probe_tree.h"
 #include "pt_prototypes.h"
+#include "arb_defs.h"
 
 #include <arb_progress.h>
 
 #include <unistd.h>
 
-POS_TREE *build_pos_tree (POS_TREE *pt, int anfangs_pos, int apos, int RNS_nr, unsigned int end)
-{
-    static POS_TREE       *pthelp, *pt_next;
-    unsigned int i, j;
-    int          height = 0, anfangs_apos_ref, anfangs_rpos_ref, RNS_nr_ref;
-    pthelp = pt;
-    i = anfangs_pos;
-    while (PT_read_type(pthelp) == PT_NT_NODE) {    // now we got an inner node
-        if ((pt_next = PT_read_son_stage_1(psg.ptmain, pthelp, (PT_BASES)psg.data[RNS_nr].data[i])) == NULL) {
-                            // there is no son of that type -> simply add the new son to that path //
-            if (pthelp == pt) { // now we create a new root structure (size will change)
-                PT_create_leaf(psg.ptmain, &pthelp, (PT_BASES)psg.data[RNS_nr].data[i], anfangs_pos, apos, RNS_nr);
-                return pthelp;  // return the new root
-            }
-            else {
-                PT_create_leaf(psg.ptmain, &pthelp, (PT_BASES)psg.data[RNS_nr].data[i], anfangs_pos, apos, RNS_nr);
-                return pt;  // return the old root
-            }
+// AISC_MKPT_PROMOTE: class DataLoc;
+
+static POS_TREE *build_pos_tree(POS_TREE *const root, const DataLoc& loc) {
+    POS_TREE *at = root;
+    int       height = 0;
+
+    while (PT_read_type(at) == PT_NT_NODE) {    // now we got an inner node
+        POS_TREE *pt_next = PT_read_son_stage_1(at, loc[height]);
+        if (!pt_next) { // there is no son of that type -> simply add the new son to that path //
+            bool atRoot = (at == root);
+            PT_create_leaf(&at, loc[height], loc);
+            return atRoot ? at : root; // inside tree return old root, otherwise new root has been created
         }
         else {            // go down the tree
-            pthelp = pt_next;
+            at = pt_next;
             height++;
-            i++;
-            if (i >= end) {     // end of sequence reached -> change node to chain and add
-                        // should never be reached, because of the terminal symbol
-                        // of each sequence
-                if (PT_read_type(pthelp) == PT_NT_CHAIN)
-                    pthelp = PT_add_to_chain(psg.ptmain, pthelp, RNS_nr, apos, anfangs_pos);
+
+            if (loc.is_shorther_than(height)) {
+                // end of sequence reached -> change node to chain and add
+                // should never be reached, because of the terminal symbol of each sequence (@@@ this IS reached - even with unittestdb)
+                if (PT_read_type(at) == PT_NT_CHAIN) {
+                    PT_add_to_chain(at, loc);
+                }
                 // if type == node then forget it
-                return pt;
+                return root;
             }
         }
     }
-            // type == leaf or chain
-    if (PT_read_type(pthelp) == PT_NT_CHAIN) {      // old chain reached
-        pthelp = PT_add_to_chain(psg.ptmain, pthelp, RNS_nr, apos, anfangs_pos);
-        return pt;
-    }
-    anfangs_rpos_ref = PT_read_rpos(psg.ptmain, pthelp); // change leave to node and create two sons
-    anfangs_apos_ref = PT_read_apos(psg.ptmain, pthelp);
-    RNS_nr_ref = PT_read_name(psg.ptmain, pthelp);
-    j = anfangs_rpos_ref + height;
 
-    while (psg.data[RNS_nr].data[i] == psg.data[RNS_nr_ref].data[j]) {  // creates nodes until sequences are different
-                                        // type != nt_node
-        if (PT_read_type(pthelp) == PT_NT_CHAIN) {          // break
-            pthelp = PT_add_to_chain(psg.ptmain, pthelp, RNS_nr, apos, anfangs_pos);
-            return pt;
+    // type == leaf or chain
+    if (PT_read_type(at) == PT_NT_CHAIN) {      // old chain reached
+        PT_add_to_chain(at, loc);
+        return root;
+    }
+
+    // change leave to node and create two sons
+
+    const DataLoc loc_ref(at);
+
+    while (loc[height] == loc_ref[height]) {  // creates nodes until sequences are different
+        // type != nt_node
+        if (PT_read_type(at) == PT_NT_CHAIN) { 
+            PT_add_to_chain(at, loc);
+            return root;
         }
         if (height >= PT_POS_TREE_HEIGHT) {
-            if (PT_read_type(pthelp) == PT_NT_LEAF) {
-                pthelp = PT_leaf_to_chain(psg.ptmain, pthelp);
+            if (PT_read_type(at) == PT_NT_LEAF) {
+                at = PT_leaf_to_chain(at);
             }
-            pthelp = PT_add_to_chain(psg.ptmain, pthelp, RNS_nr, apos, anfangs_pos);
-            return pt;
+            PT_add_to_chain(at, loc);
+            return root;
         }
-        if (((i + 1) >= end) && (j + 1 >= (unsigned)(psg.data[RNS_nr_ref].size))) { // end of both sequences
-            return pt;
+
+        bool loc_done = loc.is_shorther_than(height+1);
+        bool ref_done = loc_ref.is_shorther_than(height+1);
+
+        if (ref_done && loc_done) return root; // end of both sequences
+
+        at = PT_change_leaf_to_node(at); // change tip to node and append two new leafs
+        if (loc_done) { // end of source sequence reached
+            PT_create_leaf(&at, loc_ref[height], loc_ref);
+            return root;
         }
-        pthelp = PT_change_leaf_to_node(psg.ptmain, pthelp); // change tip to node and append two new leafs
-        if (i + 1 >= end) {                 // end of source sequence reached
-            pthelp = PT_create_leaf(psg.ptmain, &pthelp, (PT_BASES)psg.data[RNS_nr_ref].data[j],
-                    anfangs_rpos_ref, anfangs_apos_ref, RNS_nr_ref);
-            return pt;
+        if (ref_done) { // end of reference sequence
+            PT_create_leaf(&at, loc[height], loc);
+            return root;
         }
-        if (j + 1 >= (unsigned)(psg.data[RNS_nr_ref].size)) {       // end of reference sequence
-            pthelp = PT_create_leaf(psg.ptmain, &pthelp, (PT_BASES)psg.data[RNS_nr].data[i], anfangs_pos, apos, RNS_nr);
-            return pt;
-        }
-        pthelp = PT_create_leaf(psg.ptmain, &pthelp, (PT_BASES)psg.data[RNS_nr].data[i], anfangs_rpos_ref, anfangs_apos_ref, RNS_nr_ref);
-                    // dummy leaf just to create a new node; may become a chain
-        i++;
-        j++;
+        at = PT_create_leaf(&at, loc[height], loc_ref); // dummy leaf just to create a new node; may become a chain
         height++;
     }
+
+    
+    
     if (height >= PT_POS_TREE_HEIGHT) {
-        if (PT_read_type(pthelp) == PT_NT_LEAF)
-            pthelp = PT_leaf_to_chain(psg.ptmain, pthelp);
-        pthelp = PT_add_to_chain(psg.ptmain, pthelp, RNS_nr, apos, anfangs_pos);
-        return pt;
+        if (PT_read_type(at) == PT_NT_LEAF) at = PT_leaf_to_chain(at);
+        PT_add_to_chain(at, loc);
+        return root;
     }
-    if (PT_read_type(pthelp) == PT_NT_CHAIN) {
-        pthelp = PT_add_to_chain(psg.ptmain, pthelp, RNS_nr, apos, anfangs_pos);
+    if (PT_read_type(at) == PT_NT_CHAIN) {
+        // not covered by test - but looks similar to case in top-loop
+        PT_add_to_chain(at, loc);
     }
     else {
-        pthelp = PT_change_leaf_to_node(psg.ptmain, pthelp); // Blatt loeschen
-        PT_create_leaf(psg.ptmain, &pthelp, (PT_BASES)psg.data[RNS_nr].data[i], anfangs_pos, apos, RNS_nr); // zwei neue Blaetter
-        PT_create_leaf(psg.ptmain, &pthelp, (PT_BASES)psg.data[RNS_nr_ref].data[j], anfangs_rpos_ref, anfangs_apos_ref, RNS_nr_ref);
+        at = PT_change_leaf_to_node(at);             // delete leaf
+        PT_create_leaf(&at, loc[height], loc); // two new leafs
+        PT_create_leaf(&at, loc_ref[height], loc_ref);
     }
-    return pt;
+    return root;
 }
+
 
 inline void get_abs_align_pos(char *seq, int &pos)
 {
@@ -146,15 +146,15 @@ inline void get_abs_align_pos(char *seq, int &pos)
     pos+=q_exists;
 }
 
-long PTD_save_partial_tree(FILE *out, PTM2 *ptmain, POS_TREE * node, char *partstring, int partsize, long pos, long *ppos, ARB_ERROR& error) {
+long PTD_save_partial_tree(FILE *out, POS_TREE * node, char *partstring, int partsize, long pos, long *ppos, ARB_ERROR& error) {
     if (partsize) {
-        POS_TREE *son = PT_read_son(ptmain, node, (PT_BASES)partstring[0]);
+        POS_TREE *son = PT_read_son(node, (PT_BASES)partstring[0]);
         if (son) {
-            pos = PTD_save_partial_tree(out, ptmain, son, partstring+1, partsize-1, pos, ppos, error);
+            pos = PTD_save_partial_tree(out, son, partstring+1, partsize-1, pos, ppos, error);
         }
     }
     else {
-        PTD_clear_fathers(ptmain, node);
+        PTD_clear_fathers(node);
         long r_pos;
         int blocked;
         blocked = 1;
@@ -164,7 +164,7 @@ long PTD_save_partial_tree(FILE *out, PTM2 *ptmain, POS_TREE * node, char *parts
             printf("flushing to disk [%li]\n", pos);
             fflush(stdout);
 #endif
-            r_pos = PTD_write_leafs_to_disk(out, ptmain, node, pos, ppos, &blocked, error);
+            r_pos = PTD_write_leafs_to_disk(out, node, pos, ppos, &blocked, error);
             if (r_pos > pos) pos = r_pos;
         }
     }
@@ -220,8 +220,8 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
             psg.ptmain = PT_init();
             psg.ptmain->stage1 = 1;             // enter stage 1
 
-            pt = PT_create_leaf(psg.ptmain, NULL, PT_N, 0, 0, 0);  // create main node
-            pt = PT_change_leaf_to_node(psg.ptmain, pt);
+            pt = PT_create_leaf(NULL, PT_N, DataLoc(0, 0, 0));  // create main node
+            pt = PT_change_leaf_to_node(pt);
             psg.stat.cut_offs = 0;                  // statistic information
             GB_begin_transaction(psg.gb_main);
 
@@ -266,20 +266,20 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                     char *align_abs = probe_read_alignment(i, &psize);
 
                     int abs_align_pos = psize-1;
-                    for (int j = psg.data[i].size - 1; j >= 0; j--, abs_align_pos--) {
+                    for (int j = psg.data[i].get_size() - 1; j >= 0; j--, abs_align_pos--) {
                         get_abs_align_pos(align_abs, abs_align_pos); // may result in neg. abs_align_pos (seems to happen if sequences are short < 214bp )
                         if (abs_align_pos < 0) break; // -> in this case abort
 
-                        if (partsize && (*partstring != psg.data[i].data[j] || strncmp(partstring, psg.data[i].data+j, partsize))) continue;
-                        if (ptd_string_shorter_than(psg.data[i].data+j, 9)) continue;
+                        if (partsize && (*partstring != psg.data[i].get_data()[j] || strncmp(partstring, psg.data[i].get_data()+j, partsize))) continue;
+                        if (ptd_string_shorter_than(psg.data[i].get_data()+j, 9)) continue;
 
-                        pt = build_pos_tree(pt, j, abs_align_pos, i, psg.data[i].size);
+                        pt = build_pos_tree(pt, DataLoc(i, abs_align_pos, j));
                     }
                     free(align_abs);
 
                     ++data_progress;
                 }
-                pos = PTD_save_partial_tree(out, psg.ptmain, pt, partstring, partsize, pos, &last_obj, error);
+                pos = PTD_save_partial_tree(out, pt, partstring, partsize, pos, &last_obj, error);
                 if (error) break;
 
 #ifdef PTM_DEBUG
@@ -291,7 +291,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
 
             if (!error) {
                 if (partsize) {
-                    pos = PTD_save_partial_tree(out, psg.ptmain, pt, NULL, 0, pos, &last_obj, error);
+                    pos = PTD_save_partial_tree(out, pt, NULL, 0, pos, &last_obj, error);
 #ifdef PTM_DEBUG
                     PTM_debug_mem();
                     PTD_debug_nodes();
@@ -376,7 +376,7 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USE
             error = GB_IO_error("read", tname);
         }
         else {
-            error = PTD_read_leafs_from_disk(tname, psg.ptmain, &psg.pt);
+            error = PTD_read_leafs_from_disk(tname, &psg.pt);
             fclose(in);
         }
     }
@@ -384,3 +384,45 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USE
     return error;
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+int main(int argc, const char*argv[]);
+void NOTEST_SLOW_maybe_build_tree() {
+    // does only test sth if DB is present.
+
+    const char *dbarg      = "-D" "extra_pt_src.arb";
+    const char *testDB     = dbarg+2;
+    const char *resultPT   = "extra_pt_src.arb.pt";
+    const char *expectedPT = "extra_pt_src.arb_expected.pt";
+    bool        exists     = GB_is_regularfile(testDB);
+
+    if (exists) {
+        const char *argv[] = {
+            "fake_pt_server",
+            "-build",
+            dbarg,
+        };
+
+#if 1
+        // build
+        int res = main(ARRAY_ELEMS(argv), argv);
+        TEST_ASSERT_EQUAL(res, EXIT_SUCCESS);
+#endif
+
+// #define TEST_AUTO_UPDATE
+#if defined(TEST_AUTO_UPDATE)
+        TEST_COPY_FILE(resultPT, expectedPT);
+#else // !defined(TEST_AUTO_UPDATE)
+        TEST_ASSERT_FILES_EQUAL(resultPT, expectedPT);
+#endif
+    }
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

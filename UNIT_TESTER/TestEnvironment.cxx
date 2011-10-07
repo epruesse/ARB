@@ -269,8 +269,8 @@ public:
 // -----------------
 //      ptserver
 
-static void test_ptserver_activate(bool start) {
-    const char *server_tag = GBS_ptserver_tag(TEST_SERVER_ID);
+static void test_ptserver_activate(bool start, int serverid) {
+    const char *server_tag = GBS_ptserver_tag(serverid);
     if (start) {
         TEST_ASSERT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, 0));
     }
@@ -289,15 +289,15 @@ static Error ptserver(Mode mode) {
 
     switch (mode) {
         case SETUP: {
-            test_ptserver_activate(false);                        // first kill pt-server (otherwise we may test an outdated pt-server)
-            TEST_ASSERT_NO_ERROR(GB_system("touch TEST_pt.arb")); // force rebuild
-            test_ptserver_activate(true);
+            test_ptserver_activate(false, TEST_SERVER_ID);                     // first kill pt-server (otherwise we may test an outdated pt-server)
+            TEST_ASSERT_NO_ERROR(GB_system("cp TEST_pt_src.arb TEST_pt.arb")); // force rebuild
+            test_ptserver_activate(true, TEST_SERVER_ID);
             TEST_ASSERT_FILES_EQUAL("TEST_pt.arb.pt.expected", "TEST_pt.arb.pt");
             TEST_ASSERT(GB_time_of_file("TEST_pt.arb.pt") >= GB_time_of_file("TEST_pt.arb"));
             break;
         }
         case CLEAN: {
-            test_ptserver_activate(false);
+            test_ptserver_activate(false, TEST_SERVER_ID);
             TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink("TEST_pt.arb.pt"));
             break;
         }
@@ -306,6 +306,52 @@ static Error ptserver(Mode mode) {
             break;
     }
 
+    return NULL;
+}
+
+static Error ptserver_gene(Mode mode) {
+    // test-gene-ptserver is restarted and rebuild.
+    // This is done only once in the complete test suite.
+    // 
+    // every unit-test using the test-gene-ptserver should simply call
+    // TEST_SETUP_GLOBAL_ENVIRONMENT("ptserver_gene");
+
+// #define TEST_AUTO_UPDATE
+
+    switch (mode) {
+        case SETUP: {
+            test_ptserver_activate(false, TEST_GENESERVER_ID);                     // first kill pt-server (otherwise we may test an outdated pt-server)
+            TEST_ASSERT_NO_ERROR(GB_system("arb_gene_probe TEST_gpt_src.arb TEST_gpt.arb")); // prepare gene-ptserver-db (forcing rebuild)
+
+#if defined(TEST_AUTO_UPDATE)
+            TEST_COPY_FILE("TEST_gpt.arb", "TEST_gpt.arb.expected");
+#else // !defined(TEST_AUTO_UPDATE)
+            TEST_ASSERT_FILES_EQUAL("TEST_gpt.arb.expected", "TEST_gpt.arb");
+#endif
+
+            test_ptserver_activate(true, TEST_GENESERVER_ID);
+
+#if defined(TEST_AUTO_UPDATE)
+            TEST_COPY_FILE("TEST_gpt.arb.pt", "TEST_gpt.arb.pt.expected");
+#else // !defined(TEST_AUTO_UPDATE)
+            TEST_ASSERT_FILES_EQUAL("TEST_gpt.arb.pt.expected", "TEST_gpt.arb.pt");
+#endif
+
+            TEST_ASSERT(GB_time_of_file("TEST_gpt.arb.pt") >= GB_time_of_file("TEST_gpt.arb"));
+            break;
+        }
+        case CLEAN: {
+            test_ptserver_activate(false, TEST_GENESERVER_ID);
+            TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink("TEST_gpt.arb.pt"));
+            break;
+        }
+        case UNKNOWN:
+            env_assert(0);
+            break;
+    }
+
+#undef TEST_AUTO_UPDATE
+    
     return NULL;
 }
 
@@ -413,6 +459,7 @@ public:
 
 static FunInfo modules[] = {
     FUNINFO(ptserver),
+    FUNINFO(ptserver_gene),
 };
 
 const size_t MODULES = ARRAY_ELEMS(modules);

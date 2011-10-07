@@ -71,27 +71,27 @@ static const char *arb2internal_name(const char *name) {
     return found ? found->get_internal_gene_name() : 0;
 }
 
-const char *virt_name(PT_probematch *ml)
+const char *virt_name(PT_probematch *ml) 
 {
     // get the name with a virtual function
     if (gene_flag) {
-        const gene_struct *gs = get_gene_struct_by_internal_gene_name(psg.data[ml->name].name);
+        const gene_struct *gs = get_gene_struct_by_internal_gene_name(psg.data[ml->name].get_name());
         return gs ? gs->get_arb_species_name() : "<cantResolveName>";
     }
     else {
-        pt_assert(psg.data[ml->name].name);
-        return psg.data[ml->name].name;
+        pt_assert(psg.data[ml->name].get_name());
+        return psg.data[ml->name].get_name();
     }
 }
 
-const char *virt_fullname(PT_probematch * ml)
+const char *virt_fullname(PT_probematch * ml) 
 {
     if (gene_flag) {
-        const gene_struct *gs = get_gene_struct_by_internal_gene_name(psg.data[ml->name].name);
+        const gene_struct *gs = get_gene_struct_by_internal_gene_name(psg.data[ml->name].get_name());
         return gs ? gs->get_arb_gene_name() : "<cantResolveGeneFullname>";
     }
     else {
-        return psg.data[ml->name].fullname ?  psg.data[ml->name].fullname : "<undefinedFullname>";
+        return psg.data[ml->name].get_fullname() ?  psg.data[ml->name].get_fullname() : "<undefinedFullname>";
     }
 }
 
@@ -162,7 +162,7 @@ char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checks
 
     // clear 'is_group'
     for (int i = 0; i < psg.data_count; i++) {
-        psg.data[i].is_group = 0; // Note: probes are designed for species with is_group == 1
+        psg.data[i].set_group_state(0); // Note: probes are designed for species with is_group == 1
     }
     locs->group_count = 0;
     error             = 0;
@@ -211,14 +211,14 @@ char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checks
             if (checksums) {
                 const char *checksum = get_list_part(checksums, coff);
                 // if sequence checksum changed since pt server was updated -> not found
-                found                = atol(checksum) == psg.data[idx].checksum;
+                found                = atol(checksum) == psg.data[idx].get_checksum();
             }
             else {
                 found = true;
             }
 
             if (found) {
-                psg.data[idx].is_group = 1; // mark
+                psg.data[idx].set_group_state(1); // mark
                 locs->group_count++;
             }
         }

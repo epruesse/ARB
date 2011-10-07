@@ -277,6 +277,7 @@ symlink_file ../SL/NEIGHBOURJOIN/neighbourjoin.hxx INCLUDE/neighbourjoin.hxx &&
 symlink_file ../SL/PRONUC/AP_codon_table.hxx INCLUDE/AP_codon_table.hxx &&
 symlink_file ../SL/PRONUC/AP_pro_a_nucs.hxx INCLUDE/AP_pro_a_nucs.hxx &&
 symlink_file ../SL/PRONUC/iupac.h INCLUDE/iupac.h &&
+symlink_file ../SL/PTCLEAN/ptclean.h INCLUDE/ptclean.h &&
 symlink_file ../SL/REFENTRIES/refentries.h INCLUDE/refentries.h &&
 symlink_file ../SL/REGEXPR/RegExpr.hxx INCLUDE/RegExpr.hxx &&
 symlink_file ../SL/SEQUENCE/AP_seq_dna.hxx INCLUDE/AP_seq_dna.hxx &&
