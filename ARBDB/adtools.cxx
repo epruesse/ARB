@@ -17,6 +17,10 @@
 #include <arb_str.h>
 #include <arb_strarray.h>
 
+#include <algorithm>
+
+using namespace std;
+
 GBDATA *GBT_find_or_create(GBDATA *Main, const char *key, long delete_level)
 {
     GBDATA *gbd;
@@ -417,6 +421,8 @@ NOT4PERL double *GBT_readOrCreate_float(GBDATA *gb_container, const char *fieldp
      * but if field does not exist, it will be created and initialized with 'default_value'
      */
 
+    gb_assert(default_value == default_value); // !nan
+    
     GBDATA *gb_float;
     double *result = NULL;
 
@@ -426,6 +432,9 @@ NOT4PERL double *GBT_readOrCreate_float(GBDATA *gb_container, const char *fieldp
         static double result_var;
         result_var = GB_read_float(gb_float);
         result     = &result_var;
+    }
+    else {
+        gb_assert(0);
     }
     GB_pop_transaction(gb_container);
     return result;
@@ -491,6 +500,9 @@ GB_ERROR GBT_write_float(GBDATA *gb_container, const char *fieldpath, double con
      *
      * but for fields of type GB_FLOAT
      */
+
+    gb_assert(content == content); // !nan
+
     GB_ERROR  error = GB_push_transaction(gb_container);
     GBDATA   *gbd   = GB_search(gb_container, fieldpath, GB_FLOAT);
     if (!gbd) error = GB_await_error();
@@ -512,49 +524,58 @@ GBDATA *GB_test_link_follower(GBDATA *gb_main, GBDATA *gb_link, const char *link
 // --------------------
 //      save & load
 
-GBDATA *GBT_open(const char *path, const char *opent, const char *disabled_path) {
-    /*! Open a database and create an index for species and extended names.
+GBDATA *GBT_open(const char *path, const char *opent) {
+    /*! Open a database,
+     *  create an index for species and extended names (server only!) and
+     *  disable saving in the PT_SERVER directory.
      *
      * @param path filename of the DB
      * @param opent see GB_login()
-     * @param disabled_path disable saving in this path.
-     * if disabled_path is NULL, disable saving in the PT_SERVER directory.
+     * @return database handle (or NULL in which case an error is exported)
      * @see GB_open()
      */
 
     GBDATA *gbd = GB_open(path, opent);
-    GBDATA *species_data;
-    GBDATA *extended_data;
-    GBDATA *gb_tmp;
-    long    hash_size;
+    if (gbd) {
+        GB_disable_path(gbd, GB_path_in_ARBLIB("pts/*"));
+        GB_ERROR error = NULL;
+        {
+            GB_transaction ta(gbd);
 
-    if (!gbd) return gbd;
-    if (!disabled_path) disabled_path = "$(ARBHOME)/lib/pts/*";
-    GB_disable_path(gbd, disabled_path);
-    GB_begin_transaction(gbd);
+            if (!strchr(path, ':')) {
+                GBDATA *species_data = GB_search(gbd, "species_data", GB_FIND);
+                if (species_data) {
+                    long hash_size = max(GB_number_of_subentries(species_data), GBT_SPECIES_INDEX_SIZE);
+                    error          = GB_create_index(species_data, "name", GB_IGNORE_CASE, hash_size);
 
-    if (!strchr(path, ':')) {
-        species_data = GB_search(gbd, "species_data", GB_FIND);
-        if (species_data) {
-            hash_size = GB_number_of_subentries(species_data);
-            if (hash_size < GBT_SPECIES_INDEX_SIZE) hash_size = GBT_SPECIES_INDEX_SIZE;
-            GB_create_index(species_data, "name", GB_IGNORE_CASE, hash_size);
+                    if (!error) {
+                        GBDATA *extended_data = GBT_get_SAI_data(gbd);
+                        hash_size             = max(GB_number_of_subentries(extended_data), GBT_SAI_INDEX_SIZE);
+                        error                 = GB_create_index(extended_data, "name", GB_IGNORE_CASE, hash_size);
+                    }
+                }
+            }
+            if (!error) {
+                GBDATA *gb_tmp = GB_search(gbd, "tmp", GB_CREATE_CONTAINER);
+                if (gb_tmp) error = GB_set_temporary(gb_tmp);
+            }
 
-            extended_data = GBT_get_SAI_data(gbd);
-            hash_size = GB_number_of_subentries(extended_data);
-            if (hash_size < GBT_SAI_INDEX_SIZE) hash_size = GBT_SAI_INDEX_SIZE;
-            GB_create_index(extended_data, "name", GB_IGNORE_CASE, hash_size);
+            if (!error) {
+                {
+                    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+                    Main->table_hash = GBS_create_hash(256, GB_MIND_CASE);
+                    GB_install_link_follower(gbd, "REF", GB_test_link_follower);
+                }
+                GBT_install_table_link_follower(gbd);
+            }
+        }
+        if (error) {
+            GB_close(gbd);
+            gbd = NULL;
+            GB_export_error(error);
         }
     }
-    gb_tmp = GB_search(gbd, "tmp", GB_CREATE_CONTAINER);
-    GB_set_temporary(gb_tmp);
-    {
-        GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-        Main->table_hash = GBS_create_hash(256, GB_MIND_CASE);
-        GB_install_link_follower(gbd, "REF", GB_test_link_follower);
-    }
-    GBT_install_table_link_follower(gbd);
-    GB_commit_transaction(gbd);
+    gb_assert(contradicted(gbd, GB_have_error()));
     return gbd;
 }
 
@@ -726,7 +747,9 @@ struct NotifyCb {
 };
 
 static void notify_cb(GBDATA *gb_message, int *cb_info, GB_CB_TYPE cb_type) {
-    GB_remove_callback(gb_message, GB_CB_TYPE(GB_CB_CHANGED|GB_CB_DELETE), notify_cb, cb_info); // @@@ cbproblematic
+    if (cb_type != GB_CB_DELETE) {
+        GB_remove_callback(gb_message, GB_CB_TYPE(GB_CB_CHANGED|GB_CB_DELETE), notify_cb, cb_info);
+    }
 
     int       cb_done = 0;
     NotifyCb *pending = (NotifyCb*)cb_info;

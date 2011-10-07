@@ -175,8 +175,15 @@ static void edit_SAI_description(AW_window *aww) {
                 if (!gb_ali) error = GBS_global_string("SAI '%s' has no data in alignment '%s'", sai_name, ali_name);
                 else {
                     GB_clear_error();
-                    type             = GBT_read_string(gb_ali, "_TYPE");
-                    if (!type) error = GB_await_error();
+                    type = GBT_read_string(gb_ali, "_TYPE");
+                    if (!type) {
+                        if (GB_have_error()) {
+                            error = GB_await_error();
+                        }
+                        else {
+                            type = strdup("");
+                        }
+                    }
                 }
             }
             error = ta.close(error);

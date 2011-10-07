@@ -75,59 +75,28 @@ int ARB_disconnect()
 
 
 /****************************************************************************
-*  ESTABLISH A CONNECTION TO THE ARB CONFIGURATION
-****************************************************************************/
-int CONFIG_connect()
-{
-    global_gbConfig= NULL; // ABFRAGE !!!
-    global_CONFIG_available= false;
+ *  ESTABLISH A CONNECTION TO THE ARB CONFIGURATION
+ ****************************************************************************/
+void CONFIG_connect() {
+    char *config    = strdup(GB_path_in_arbprop(PGT_CONFIG_NAME));
+    global_gbConfig = GB_open(config, "rwc");                // OPEN CONFIG FILE
+    free(config);
 
-    // GET ARB HOME
-    const char *home= GB_getenvHOME();
-    char *buffer= (char *)malloc(1025 * sizeof(char));
-    sprintf(buffer,"%s/%s", home, PGT_CONFIG_FILE);
-
-    // OPEN CONFIG FILE
-    global_gbConfig= GB_open(buffer, "rwc");
-    if(!global_gbConfig)
-    {
-        free(buffer);
-        return 0;
-    }
-
-    // DISABLE TRANSACTIONS
-    GB_no_transaction(global_gbConfig);
-
-    global_CONFIG_available= true;
-
-    free(buffer);
-    return 1;
+    if (global_gbConfig) GB_no_transaction(global_gbConfig); // DISABLE TRANSACTIONS
+    global_CONFIG_available = global_gbConfig;
 }
 
 
 /****************************************************************************
 *  CLOSE THE ARB CONFIGURATION
 ****************************************************************************/
-int CONFIG_disconnect()
-{
-    if(global_gbConfig)
-    {
-        // GET ARB HOME
-        const char *home= GB_getenvHOME();
-        char *buffer= (char *)malloc(1025 * sizeof(char));
-        sprintf(buffer,"%s/%s", home, PGT_CONFIG_FILE);
-
-        GB_save(global_gbConfig, buffer, "a");
-
+void CONFIG_disconnect() {
+    if (global_gbConfig) {
+        GB_save_in_arbprop(global_gbConfig, PGT_CONFIG_NAME, "a");
         GB_close(global_gbConfig);
-
-        free(buffer);
     }
-
-    global_CONFIG_available= false;
-    global_gbConfig= NULL;
-
-    return 1;
+    global_CONFIG_available = false;
+    global_gbConfig         = NULL;
 }
 
 

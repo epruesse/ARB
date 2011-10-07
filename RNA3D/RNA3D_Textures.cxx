@@ -45,7 +45,7 @@ static char* GetImageFile(int ImageId) {
         throw string(GBS_global_string("Illegal image id %i", ImageId));
     }
 
-    char *fname = GBS_find_lib_file(imageName, "rna3d/images/", false);
+    char *fname = GB_lib_file(false, "rna3d/images/", imageName);
     if (!fname) {
         throw string("File not found: ")+imageName;
     }

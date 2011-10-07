@@ -219,7 +219,7 @@ static GB_ERROR st_ml_add_quality_string_to_species(GBDATA *gb_main, const AP_fi
                             error                = GB_write_string(gb_report, blownUp_report);
                             free(blownUp_report);
                         }
-                        if (report == ST_QUALITY_REPORT_TEMP) GB_set_temporary(gb_report);
+                        if (report == ST_QUALITY_REPORT_TEMP) error = GB_set_temporary(gb_report);
 
                         delete [] report_str;
                     }

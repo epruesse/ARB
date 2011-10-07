@@ -17,6 +17,7 @@
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <aw_edit.hxx>
 
 #include <ad_config.h>
 
@@ -202,7 +203,19 @@ AWT_ptserver_selection::AWT_ptserver_selection(AW_window *win_, AW_selection_lis
 }
 
 
+static void arb_tcp_dat_changed_cb(const char * /* path */, bool fileChanged, bool /* editorTerminated */) {
+    if (fileChanged) {
+        awt_refresh_all_pt_server_selection_lists();
+    }
+}
 
+void awt_edit_arbtcpdat_cb(AW_window *aww, AW_CL cl_gb_main) { 
+    GBDATA *gb_main  = (GBDATA*)cl_gb_main;
+    char   *filename = GB_arbtcpdat_path();
+
+    AW_edit(filename, arb_tcp_dat_changed_cb, aww, gb_main);
+    free(filename);
+}
 
 static char *readable_pt_servername(int index, int maxlength) {
     char *fullname = GBS_ptserver_id_to_choice(index, 0);

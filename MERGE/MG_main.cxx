@@ -239,7 +239,7 @@ void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest
             awm->insert_menu_topic("quitnstart", "Quit & Start DB II", "D", "quit.hlp", AWM_ALL, MG_exit, 1, 0);
         }
 
-        awm->insert_menu_topic("save_props", "Save properties (to ~/.arb_prop/ntree.arb)",              "p", "savedef.hlp", AWM_ALL,      (AW_CB)AW_save_properties, 0, 0);
+        awm->insert_menu_topic("save_props", "Save properties (ntree.arb)", "p", "savedef.hlp", AWM_ALL, (AW_CB)AW_save_properties, 0, 0);
 
         awm->button_length(30);
 
@@ -324,7 +324,7 @@ void MG_start_cb(AW_window *aww)
 #warning when closing them, call AWT_browser_forget_db as well
 #endif
             progress.subtitle("DATABASE I");
-            GLOBAL_gb_merge             = GBT_open(merge, "rw", "$(ARBHOME)/lib/pts/*");
+            GLOBAL_gb_merge             = GBT_open(merge, "rw");
             if (!GLOBAL_gb_merge) error = GB_await_error();
             else {
 #if defined(DEBUG)
@@ -348,7 +348,7 @@ void MG_start_cb(AW_window *aww)
                 }
 
                 if (!error) {
-                    GLOBAL_gb_dest             = GBT_open(main, open_mode, "$(ARBHOME)/lib/pts/*");
+                    GLOBAL_gb_dest             = GBT_open(main, open_mode);
                     if (!GLOBAL_gb_dest) error = GB_await_error();
 #if defined(DEBUG)
                     else AWT_announce_db_to_browser(GLOBAL_gb_dest, GBS_global_string("Database II (destination; %s)", main));

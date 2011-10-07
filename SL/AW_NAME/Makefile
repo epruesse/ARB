@@ -59,6 +59,7 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AW_names_admin.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/cb.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/smartptr.h

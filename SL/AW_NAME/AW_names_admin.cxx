@@ -16,6 +16,7 @@
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <awt_sel_boxes.hxx>
 
 static char *namesFilename(AW_CL cl_gb_main) {
     const char *field    = AW_get_nameserver_addid((GBDATA*)cl_gb_main);
@@ -65,15 +66,6 @@ static void addid_changed_cb(AW_root *, AW_CL cl_gb_main) {
     else AW_advice("Calling 'Species/Generate New Names' is highly recommended", AW_ADVICE_TOGGLE|AW_ADVICE_HELP, 0, "namesadmin.hlp");
 }
 
-static void edit_arb_tcp(AW_window *aww, AW_CL cl_gb_main) {
-    GBDATA *gb_main  = (GBDATA*)cl_gb_main;
-    char   *filename = GBS_find_lib_file("arb_tcp.dat", "", true);
-
-    AW_edit(filename, NULL, aww, gb_main);
-    free(filename);
-}
-
-
 void AW_create_namesadmin_awars(AW_root *awr, GBDATA *gb_main) {
     awr->awar_string(AWAR_NAMESERVER_ADDID, "", gb_main);
 }
@@ -114,7 +106,7 @@ AW_window *AW_create_namesadmin_window(AW_root *root, AW_CL cl_gb_main) {
     aws->create_input_field(AWAR_NAMESERVER_ADDID, 20);
 
     aws->at("config");
-    aws->callback(edit_arb_tcp, cl_gb_main);
+    aws->callback(awt_edit_arbtcpdat_cb, cl_gb_main);
     aws->create_button("CREATE_TEMPLATE", "Configure arb_tcp.dat");
 
     return aws;
