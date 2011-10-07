@@ -5,8 +5,8 @@
 #include <arbdb.h>
 #endif
 
-#define GBT_SPECIES_INDEX_SIZE       10000
-#define GBT_SAI_INDEX_SIZE           1000
+#define GBT_SPECIES_INDEX_SIZE       10000L
+#define GBT_SAI_INDEX_SIZE           1000L
 
 #define GB_GROUP_NAME_MAX 256
 

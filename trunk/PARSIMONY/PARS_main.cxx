@@ -1705,7 +1705,7 @@ int main(int argc, char **argv) {
         db_server = argv[1];
     }
 
-    GLOBAL_gb_main = GBT_open(db_server, "rw", 0);
+    GLOBAL_gb_main = GBT_open(db_server, "rw");
     if (!GLOBAL_gb_main) aw_popup_exit(GB_await_error()); // exits
 
 #if defined(DEBUG)

@@ -119,17 +119,17 @@ void gb_index_check_out(GBDATA *gbd) {
     }
 }
 
-GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long estimated_size) {
+GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long estimated_size) { // goes to header: __ATTR__USERESULT
     /* Create an index for a database.
      * Uses hash tables - collisions are avoided by using linked lists.
      */
     GB_ERROR error = 0;
 
     if (GB_TYPE(gbd) != GB_DB) {
-        error = GB_export_error("GB_create_index used on non CONTAINER Type");
+        error = "GB_create_index used on non CONTAINER Type";
     }
     else if (GB_read_clients(gbd)<0) {
-        error = GB_export_error("No index tables in DB clients allowed");
+        error = "No index tables in DB clients allowed";
     }
     else {
         GBCONTAINER    *gbc       = (GBCONTAINER *)gbd;
@@ -170,7 +170,7 @@ GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long e
             }
         }
     }
-    return error;
+    RETURN_ERROR(error);
 }
 
 void gb_destroy_indices(GBCONTAINER *gbc) {

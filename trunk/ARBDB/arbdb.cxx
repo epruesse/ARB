@@ -1926,17 +1926,22 @@ bool GB_allow_compression(GBDATA *gb_main, bool allow_compression) {
 // --------------------------
 //      temporary entries
 
-GB_ERROR GB_set_temporary(GBDATA *gbd) {
+GB_ERROR GB_set_temporary(GBDATA *gbd) { // goes to header: __ATTR__USERESULT
     /*! if the temporary flag is set, then that entry (including all subentries) will not be saved
      * @see GB_clear_temporary() and GB_is_temporary()
      */
 
+    GB_ERROR error = NULL;
     GB_test_transaction(gbd);
-    if (GB_GET_SECURITY_DELETE(gbd)>GB_MAIN(gbd)->security_level)
-        return GB_export_errorf("Security error in GB_set_temporary: %s", GB_read_key_pntr(gbd));
-    gbd->flags.temporary = 1;
-    gb_touch_entry(gbd, GB_NORMAL_CHANGE);
-    return 0;
+
+    if (GB_GET_SECURITY_DELETE(gbd)>GB_MAIN(gbd)->security_level) {
+        error = GBS_global_string("Security error in GB_set_temporary: %s", GB_read_key_pntr(gbd));
+    }
+    else {
+        gbd->flags.temporary = 1;
+        gb_touch_entry(gbd, GB_NORMAL_CHANGE);
+    }
+    RETURN_ERROR(error);
 }
 
 GB_ERROR GB_clear_temporary(GBDATA *gbd) {

@@ -324,7 +324,7 @@ void MG_start_cb(AW_window *aww)
 #warning when closing them, call AWT_browser_forget_db as well
 #endif
             progress.subtitle("DATABASE I");
-            GLOBAL_gb_merge             = GBT_open(merge, "rw", "$(ARBHOME)/lib/pts/*");
+            GLOBAL_gb_merge             = GBT_open(merge, "rw");
             if (!GLOBAL_gb_merge) error = GB_await_error();
             else {
 #if defined(DEBUG)
@@ -348,7 +348,7 @@ void MG_start_cb(AW_window *aww)
                 }
 
                 if (!error) {
-                    GLOBAL_gb_dest             = GBT_open(main, open_mode, "$(ARBHOME)/lib/pts/*");
+                    GLOBAL_gb_dest             = GBT_open(main, open_mode);
                     if (!GLOBAL_gb_dest) error = GB_await_error();
 #if defined(DEBUG)
                     else AWT_announce_db_to_browser(GLOBAL_gb_dest, GBS_global_string("Database II (destination; %s)", main));
