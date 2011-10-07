@@ -125,6 +125,13 @@ BRANCH->TRUNK
                 7844 7855 7865 7869 7910 7911 -> 7929
                 7875 -> 7930
                 7905 7908 7927 -> 7931
+                7940 7941 7962 -> 8035
+                7950 7951 7952 7953 7954 7955 7957 -> 8036
+                7958 7959 7960 7961 -> 8037
+                7963 7964 7965 -> 8038
+                7966 7968 -> 8039
+                7975 8034 8002 8004 -> 8040
+                7990 7991 7992 7993 7994 7995 7996 7998 8001 8003 8005 8006 8007 8008 8009 8011 8012 8019 -> 8041
 
     skipped patches (depends, already there, this file, ...)
 
@@ -133,7 +140,7 @@ BRANCH->TRUNK
                 not needed:     7507 7560
                 crap:           7278 7280 7545 7756 
                 sync 2 trunk:   7281
-                from trunk:     7505 7654 7656 7657 7658 7678 7745 7874 7889 7901 7902 7903 7920 7921 7932
+                from trunk:     7505 7654 7656 7657 7658 7678 7745 7874 7889 7901 7902 7903 7920 7921 7932 7988 7989
 
     not merged yet:
 
@@ -161,11 +168,7 @@ BRANCH->TRUNK
                 7846 ACI ([partially merged: skipped adquery.cxx])
                 7847 ACI (streamlimit removed)
                 7848 ACI (avoid streamcopies)
-
-        --- do above later (unfinished etc)
-
-
-        --- current try above
+                7939 adlang DEBUG prints
 
                 7849 safeCallbacks (collect all cb-types)
                 7850 depends [7849]
@@ -189,15 +192,34 @@ BRANCH->TRUNK
                 7879 safeCallbacks (warning)
                 7880 safeCallbacks (introduce RootCallback)
                 7881 safeCallbacks (use RootCallback for Awars)
-                7882 safeCallbacks (refactor AW_cb(_struct))
+                7882 safeCallbacks (refactor AW_cb(_struct)) -- see [7956]
                 7883 safeCallbacks (refactor AW_cb)
                 7884 safeCallbacks (strict order)
                 7906 safeCallbacks (deprecation)
                 7907 safeCallbacks (introduce WindowCallback)
                 7908 safeCallbacks ([partially merged: skipped cb.h])
                 7909 safeCallbacks (several WindowCallback as examples)
+                7956 fix for [7882]
 
                 7912 clickDevice (Rectangle)
                 7914 clickDevice (fix click behavior)
+                7938 AWT_graphic
+                7942 clickDevice (draw,op==)
+                7943 clickDevice (fix tree keys, dragline)
 
-    not reviewed: 7933:HEAD
+                7967 insert_delete_format (_REF,progress,tests added)
+                7969 insert_delete_format (more tests,fixes)
+                7970 insert_delete_format (refactor)
+                7972 insert_delete_format (refactor)
+                7973 insert_delete_format (refactor)
+                7974 insert_delete_format (refactor)
+                7976 insert_delete_format (test FLOATS INTS)
+                7977 insert_delete_format (AliData)
+
+        --- do above later (unfinished etc)
+
+
+        --- current try above
+
+
+    not reviewed: 8041:HEAD
