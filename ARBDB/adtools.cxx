@@ -17,6 +17,10 @@
 #include <arb_str.h>
 #include <arb_strarray.h>
 
+#include <algorithm>
+
+using namespace std;
+
 GBDATA *GBT_find_or_create(GBDATA *Main, const char *key, long delete_level)
 {
     GBDATA *gbd;
@@ -520,49 +524,58 @@ GBDATA *GB_test_link_follower(GBDATA *gb_main, GBDATA *gb_link, const char *link
 // --------------------
 //      save & load
 
-GBDATA *GBT_open(const char *path, const char *opent, const char *disabled_path) {
-    /*! Open a database and create an index for species and extended names.
+GBDATA *GBT_open(const char *path, const char *opent) {
+    /*! Open a database,
+     *  create an index for species and extended names (server only!) and
+     *  disable saving in the PT_SERVER directory.
      *
      * @param path filename of the DB
      * @param opent see GB_login()
-     * @param disabled_path disable saving in this path.
-     * if disabled_path is NULL, disable saving in the PT_SERVER directory.
+     * @return database handle (or NULL in which case an error is exported)
      * @see GB_open()
      */
 
     GBDATA *gbd = GB_open(path, opent);
-    GBDATA *species_data;
-    GBDATA *extended_data;
-    GBDATA *gb_tmp;
-    long    hash_size;
+    if (gbd) {
+        GB_disable_path(gbd, GB_path_in_ARBLIB("pts/*"));
+        GB_ERROR error = NULL;
+        {
+            GB_transaction ta(gbd);
 
-    if (!gbd) return gbd;
-    if (!disabled_path) disabled_path = GB_path_in_ARBLIB("pts/*");
-    GB_disable_path(gbd, disabled_path);
-    GB_begin_transaction(gbd);
+            if (!strchr(path, ':')) {
+                GBDATA *species_data = GB_search(gbd, "species_data", GB_FIND);
+                if (species_data) {
+                    long hash_size = max(GB_number_of_subentries(species_data), GBT_SPECIES_INDEX_SIZE);
+                    error          = GB_create_index(species_data, "name", GB_IGNORE_CASE, hash_size);
 
-    if (!strchr(path, ':')) {
-        species_data = GB_search(gbd, "species_data", GB_FIND);
-        if (species_data) {
-            hash_size = GB_number_of_subentries(species_data);
-            if (hash_size < GBT_SPECIES_INDEX_SIZE) hash_size = GBT_SPECIES_INDEX_SIZE;
-            GB_create_index(species_data, "name", GB_IGNORE_CASE, hash_size);
+                    if (!error) {
+                        GBDATA *extended_data = GBT_get_SAI_data(gbd);
+                        hash_size             = max(GB_number_of_subentries(extended_data), GBT_SAI_INDEX_SIZE);
+                        error                 = GB_create_index(extended_data, "name", GB_IGNORE_CASE, hash_size);
+                    }
+                }
+            }
+            if (!error) {
+                GBDATA *gb_tmp = GB_search(gbd, "tmp", GB_CREATE_CONTAINER);
+                if (gb_tmp) error = GB_set_temporary(gb_tmp);
+            }
 
-            extended_data = GBT_get_SAI_data(gbd);
-            hash_size = GB_number_of_subentries(extended_data);
-            if (hash_size < GBT_SAI_INDEX_SIZE) hash_size = GBT_SAI_INDEX_SIZE;
-            GB_create_index(extended_data, "name", GB_IGNORE_CASE, hash_size);
+            if (!error) {
+                {
+                    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+                    Main->table_hash = GBS_create_hash(256, GB_MIND_CASE);
+                    GB_install_link_follower(gbd, "REF", GB_test_link_follower);
+                }
+                GBT_install_table_link_follower(gbd);
+            }
+        }
+        if (error) {
+            GB_close(gbd);
+            gbd = NULL;
+            GB_export_error(error);
         }
     }
-    gb_tmp = GB_search(gbd, "tmp", GB_CREATE_CONTAINER);
-    GB_set_temporary(gb_tmp);
-    {
-        GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-        Main->table_hash = GBS_create_hash(256, GB_MIND_CASE);
-        GB_install_link_follower(gbd, "REF", GB_test_link_follower);
-    }
-    GBT_install_table_link_follower(gbd);
-    GB_commit_transaction(gbd);
+    gb_assert(contradicted(gbd, GB_have_error()));
     return gbd;
 }
 

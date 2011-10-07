@@ -22,6 +22,9 @@
 // AISC_MKPT_PROMOTE:#ifndef ARB_CORE_H
 // AISC_MKPT_PROMOTE:#include "arb_core.h"
 // AISC_MKPT_PROMOTE:#endif
+// AISC_MKPT_PROMOTE:
+// AISC_MKPT_PROMOTE:// return error and ensure none is exported 
+// AISC_MKPT_PROMOTE:#define RETURN_ERROR(err)  arb_assert(!GB_have_error()); return (err)
 
 
 #if defined(DEBUG)
