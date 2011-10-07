@@ -26,7 +26,7 @@
 
 #if defined(UNIT_TESTS)
 #undef MEMORY_TEST
-#define MEMORY_TEST 0 // test mmapped-DB version in unittests
+#define MEMORY_TEST 0 // test mmapped-DB version in unittests (recommended setting)
 // #define MEMORY_TEST 1 // test DEBUG DB version in unittests
 #endif
 

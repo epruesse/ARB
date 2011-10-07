@@ -152,9 +152,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
             }
 
             if (!error) {
-#if defined(DEBUG)
-                printf("Starting server (cmd='%s')\n", command);
-#endif // DEBUG
+                printf("[Starting server (cmd='%s')]\n", command);
                 if (!gbmain || GBCMC_system(gbmain, command)) system(command);
                 if (do_sleep) sleep(delay);
             }

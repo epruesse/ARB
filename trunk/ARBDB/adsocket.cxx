@@ -1193,12 +1193,12 @@ GB_ULONG GB_get_physical_memory() {
 
     GB_ULONG usedmemsize = (MIN(net_memsize, max_malloc)*95)/100; // arb uses max. 95 % of available memory (was 70% in the past)
 
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
     printf("- memsize(real)        = %20lu k\n", memsize);
     printf("- memsize(net)         = %20lu k\n", net_memsize);
     printf("- memsize(max_malloc)  = %20lu k\n", max_malloc);
-#endif // DEBUG
     printf("- memsize(used by ARB) = %20lu k\n", usedmemsize);
+#endif // DEBUG
 
     arb_assert(usedmemsize != 0);
 

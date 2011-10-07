@@ -66,7 +66,7 @@ struct PT_store_match_in {
             // @@@ code here is a duplicate of code in get_info_about_probe (PT_NT_LEAF-branch)
             pos = matchLoc.rpos+psg.height;
             height = psg.height;
-            while ((base=probe[height]) && (ref = psg.data[matchLoc.name].data[pos])) {
+            while ((base=probe[height]) && (ref = psg.data[matchLoc.name].get_data()[pos])) {
                 if (ref == PT_N || base == PT_N) {
                     // @@@ Warning: dupped code also counts PT_QU as mismatch!
                     N_mismatches++;
@@ -123,7 +123,6 @@ int read_names_and_pos(PT_local *locs, POS_TREE *pt) {
 
     int            base;
     int            error;
-    int            name, pos, rpos;
     PT_probematch *ml;
 
     if (pt == NULL) {
@@ -134,17 +133,15 @@ int read_names_and_pos(PT_local *locs, POS_TREE *pt) {
         return 1;
     }
     if (PT_read_type(pt) == PT_NT_LEAF) {
-        name = PT_read_name(psg.ptmain, pt);
-        pos  = PT_read_apos(psg.ptmain, pt);
-        rpos = PT_read_rpos(psg.ptmain, pt);
+        DataLoc loc(pt);
 
         // @@@ dupped code from PT_store_match_in::operator()
         ml = create_PT_probematch();
 
-        ml->name         = name;
-        ml->b_pos        = pos;
+        ml->name         = loc.name;
+        ml->b_pos        = loc.apos;
         ml->g_pos        = -1;
-        ml->rpos         = rpos;
+        ml->rpos         = loc.rpos;
         ml->mismatches   = psg.mismatches;
         ml->wmismatches  = psg.wmismatches;
         ml->N_mismatches = psg.N_mismatches;
@@ -157,14 +154,14 @@ int read_names_and_pos(PT_local *locs, POS_TREE *pt) {
     else {
         if (PT_read_type(pt) == PT_NT_CHAIN) {
             psg.probe = 0;
-            if (PT_forwhole_chain(psg.ptmain, pt, PT_store_match_in(locs))) {
+            if (PT_forwhole_chain(pt, PT_store_match_in(locs))) {
                 error = 1;
                 return 1;
             }
         }
         else {
             for (base = PT_QU; base< PT_B_MAX; base++) {
-                error = read_names_and_pos(locs, PT_read_son(psg.ptmain, pt, (PT_BASES)base));
+                error = read_names_and_pos(locs, PT_read_son(pt, (PT_BASES)base));
                 if (error) return error;
             }
 
@@ -196,7 +193,7 @@ int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatch
     }
     if (PT_read_type(pt) == PT_NT_NODE && probe[height]) {
         for (i=PT_N; i<PT_B_MAX; i++) {
-            if ((pthelp = PT_read_son(psg.ptmain, pt, (PT_BASES)i))) {
+            if ((pthelp = PT_read_son(pt, (PT_BASES)i))) {
                 new_N_mis = N_mismatches;
                 base = probe[height];
                 if (base == PT_N || i == PT_N) {
@@ -231,15 +228,16 @@ int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatch
         if (PT_read_type(pt) == PT_NT_LEAF) {
             // @@@ code here is duplicate of code in PT_store_match_in::operator()
 
-            pos  = PT_read_rpos(psg.ptmain, pt) + height;
-            name = PT_read_name(psg.ptmain, pt);
+            DataLoc loc(pt);
+            pos  = loc.rpos + height;
+            name = loc.name;
 
             // @@@ recursive use of strlen with constant result (argh!)
-            if (pos + (int)(strlen(probe+height)) >= psg.data[name].size)       // end of sequence
+            if (pos + (int)(strlen(probe+height)) >= psg.data[name].get_size())       // end of sequence
                 return 0;
 
             while ((base = probe[height])) {
-                i = psg.data[name].data[pos];
+                i = psg.data[name].get_data()[pos];
                 if (i == PT_N || base == PT_N || i == PT_QU || base == PT_QU) {
                     psg.N_mismatches = psg.N_mismatches + 1;
                 }
@@ -259,7 +257,7 @@ int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatch
         else {                // chain
             psg.probe = probe;
             psg.height = height;
-            PT_forwhole_chain(psg.ptmain, pt, PT_store_match_in(locs)); // @@@ why ignore result
+            PT_forwhole_chain(pt, PT_store_match_in(locs)); // @@@ why ignore result
             return 0;
         }
         pt_assert(psg.N_mismatches <= PT_POS_TREE_HEIGHT);
@@ -443,23 +441,16 @@ int probe_match(PT_local * locs, aisc_string probestring) {
     psg.deep = locs->pm_max;
     pt_build_pos_to_weight((PT_MATCH_TYPE)locs->sort_by, probestring);
 
-    if (psg.deep >= 0) {
-        get_info_about_probe(locs, probestring, psg.pt, 0, 0.0, 0, 0);
-    }
-    else {
-        ptnd_new_match(locs,    probestring);
-    }
+    pt_assert(psg.deep >= 0); // deep < 0 was used till [8011] to trigger "new match" (feature unused)
+    get_info_about_probe(locs, probestring, psg.pt, 0, 0.0, 0, 0);
+
     if (locs->pm_reversed) {
         psg.reversed = 1;
-        rev_pro = reverse_probe(probestring, 0);
+        rev_pro      = reverse_probe(probestring, 0);
         complement_probe(rev_pro, 0);
         freeset(locs->pm_csequence, psg.main_probe = strdup(rev_pro));
-        if (psg.deep >= 0) {
-            get_info_about_probe(locs, rev_pro, psg.pt, 0, 0.0, 0, 0);
-        }
-        else {
-            ptnd_new_match(locs,        rev_pro);
-        }
+        
+        get_info_about_probe(locs, rev_pro, psg.pt, 0, 0.0, 0, 0);
         free(rev_pro);
     }
     pt_sort_match_list(locs);
@@ -563,19 +554,19 @@ char *get_match_overlay(PT_probematch *ml)
          pr_pos >= 0 && al_pos >= 0;
          pr_pos--, al_pos--)
     {
-        if (!psg.data[ml->name].data[al_pos]) break;
-        ref[pr_pos] = psg.data[ml->name].data[al_pos];
+        if (!psg.data[ml->name].get_data()[al_pos]) break;
+        ref[pr_pos] = psg.data[ml->name].get_data()[al_pos];
     }
     ref[9] = '-';
 
     pt_build_pos_to_weight((PT_MATCH_TYPE)locs->sort_by, ml->sequence);
 
     for (int pr_pos = 0, al_pos = ml->rpos;
-         pr_pos < pr_len && al_pos < psg.data[ml->name].size;
+         pr_pos < pr_len && al_pos < psg.data[ml->name].get_size();
          pr_pos++, al_pos++)
     {
         int a = ml->sequence[pr_pos];
-        int b = psg.data[ml->name].data[al_pos];
+        int b = psg.data[ml->name].get_data()[al_pos];
         if (a == b) {
             ref[pr_pos+10] = '=';
         }
@@ -592,10 +583,10 @@ char *get_match_overlay(PT_probematch *ml)
     }
 
     for (int pr_pos = 0, al_pos = ml->rpos+pr_len;
-         pr_pos < 9 && al_pos < psg.data[ml->name].size;
+         pr_pos < 9 && al_pos < psg.data[ml->name].get_size();
          pr_pos++, al_pos++)
     {
-        ref[pr_pos+11+pr_len] = psg.data[ml->name].data[al_pos];
+        ref[pr_pos+11+pr_len] = psg.data[ml->name].get_data()[al_pos];
     }
     ref[10+pr_len] = '-';
     PT_base_2_string(ref, 0);
@@ -683,17 +674,14 @@ static void gene_rel_2_abs(PT_probematch *ml) {
     GB_transaction ta(psg.gb_main);
 
     for (; ml; ml = ml->next) {
-        probe_input_data&  pid    = psg.data[ml->name];
-        GBDATA            *gb_pos = GB_entry(pid.gbd, "abspos");
-
-        if (gb_pos) {
-            long gene_pos  = GB_read_int(gb_pos);
-            ml->g_pos      = ml->b_pos;
-            ml->b_pos     += gene_pos;
+        long gene_pos = psg.data[ml->name].get_abspos();
+        if (gene_pos >= 0) {
+            ml->g_pos  = ml->b_pos;
+            ml->b_pos += gene_pos;
         }
         else {
             fprintf(stderr, "Error in gene-pt-server: gene w/o position info\n");
-            pt_assert(gb_pos);
+            pt_assert(0);
         }
     }
 }
@@ -795,7 +783,7 @@ bytestring *MP_all_species_string(PT_local *) {
 
     for (i = 0; i < psg.data_count; i++)
     {
-        GBS_strcat(memfile, psg.data[i].name);
+        GBS_strcat(memfile, psg.data[i].get_name());
         GBS_chrcat(memfile, (char)1);
     }
 

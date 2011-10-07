@@ -592,6 +592,8 @@ namespace arb_test {
     }
 };
 
+#define TEST_COPY_FILE(src, dst) TEST_ASSERT(system(GBS_global_string("cp '%s' '%s'", src, dst)) == 0)
+
 #define TEST_ASSERT_TEXTFILE_DIFFLINES(f1,f2,diff)         TEST_ASSERT(arb_test::test_textfile_difflines(f1,f2, diff))
 #define TEST_ASSERT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,diff) TEST_ASSERT__BROKEN(arb_test::test_textfile_difflines(f1,f2, diff))
 
@@ -624,7 +626,7 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_SETUP_GLOBAL_ENVIRONMENT(modulename) TEST_ASSERT_NO_ERROR(GB_system("../test_environment setup " modulename))
+#define TEST_SETUP_GLOBAL_ENVIRONMENT(modulename) TEST_ASSERT_NO_ERROR(GB_system(GBS_global_string("../test_environment setup %s",  (modulename))))
 // cleanup is done (by Makefile.suite) after all unit tests have been run
 
 // --------------------------------------------------------------------------------

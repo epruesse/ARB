@@ -203,102 +203,96 @@ void PT_change_father(POS_TREE *father, POS_TREE *source, POS_TREE *dest) { // s
     PT_CORE;
 }
 
-POS_TREE *PT_add_to_chain(PTM2 *ptmain, POS_TREE *node, int name, int apos, int rpos)   // stage1
-{                                           // insert at the beginning of list
-    static char buffer[100];
+POS_TREE *PT_add_to_chain(POS_TREE *node, const DataLoc& loc) { // stage1
+    // insert at the beginning of list
+
+    char *data  = (&node->data) + psg.ptmain->mode;
+    data       += (node->flags&1) ? 4 : 2;
+
     unsigned long old_first;
-    char *data;
-    int mainapos;                           // TODO: mainapos isn't used
-    data = (&node->data) + ptmain->mode;
-    if (node->flags&1) {
-        PT_READ_INT(data, mainapos);
-        data += 4;
-    }
-    else {
-        PT_READ_SHORT(data, mainapos);
-        data += 2;
-    }
     PT_READ_PNTR(data, old_first);  // create a new list element
-    char *p;
-    p = buffer;
+
+    static char  buffer[100];
+    char        *p = buffer;
+
     PT_WRITE_PNTR(p, old_first);
     p += sizeof(PT_PNTR);
-    PT_WRITE_NAT(p, name);
-    PT_WRITE_NAT(p, rpos);
-    PT_WRITE_NAT(p, apos);
+
+    PT_WRITE_NAT(p, loc.name);
+    PT_WRITE_NAT(p, loc.rpos);
+    PT_WRITE_NAT(p, loc.apos);
+    
     int size = p - buffer;
-    p = (char *)PTM_get_mem(size);
+    p        = (char *)PTM_get_mem(size);
     memcpy(p, buffer, size);
     PT_WRITE_PNTR(data, p);
     psg.stat.cut_offs ++;
     return NULL;
 }
 
-
-POS_TREE *PT_change_leaf_to_node(PTM2 * /* ptmain */, POS_TREE *node) // stage 1
-{
-    long i;
-    POS_TREE *father, *new_elem;
+POS_TREE *PT_change_leaf_to_node(POS_TREE *node) { // stage 1
     if (PT_GET_TYPE(node) != PT_NT_LEAF) PT_CORE;
+    
+    long i;
     PT_READ_PNTR((&node->data), i);
-    father=(POS_TREE *)i;
-    new_elem = (POS_TREE *)PTM_get_mem(PT_EMPTY_NODE_SIZE);
+
+    POS_TREE *father   = (POS_TREE *)i;
+    POS_TREE *new_elem = (POS_TREE *)PTM_get_mem(PT_EMPTY_NODE_SIZE);
     if (father) PT_change_father(father, node, new_elem);
     PTM_free_mem((char *)node, PT_LEAF_SIZE(node));
     PT_SET_TYPE(new_elem, PT_NT_NODE, 0);
     PT_WRITE_PNTR((&(new_elem->data)), (long)father);
+
     return new_elem;
 }
 
-POS_TREE *PT_leaf_to_chain(PTM2 *ptmain, POS_TREE *node)        // stage 1
-{
-    long i;
-    int apos, rpos, name;
-    POS_TREE *father, *new_elem;
-    int chain_size;
-    char    *data;
+POS_TREE *PT_leaf_to_chain(POS_TREE *node) { // stage 1
     if (PT_GET_TYPE(node) != PT_NT_LEAF) PT_CORE;
-    PT_READ_PNTR((&node->data), i);
-    father=(POS_TREE *)i;
-    name = PT_read_name(ptmain, node);                          // backup name,
-    apos = PT_read_apos(ptmain, node);                          //        apos,
-    rpos = PT_read_rpos(ptmain, node);                          //        rpos
-    chain_size = PT_EMPTY_CHAIN_SIZE;
-    if (apos>PT_SHORT_SIZE) chain_size+=2;
 
-    new_elem = (POS_TREE *)PTM_get_mem(chain_size);
+    long i;
+    PT_READ_PNTR((&node->data), i);
+
+    POS_TREE      *father = (POS_TREE *)i;
+    const DataLoc  loc(node);
+
+    int chain_size                          = PT_EMPTY_CHAIN_SIZE;
+    if (loc.apos>PT_SHORT_SIZE) chain_size += 2;
+
+    POS_TREE *new_elem = (POS_TREE *)PTM_get_mem(chain_size);
     PT_change_father(father, node, new_elem);
     PTM_free_mem((char *)node, PT_LEAF_SIZE(node));
     PT_SET_TYPE(new_elem, PT_NT_CHAIN, 0);
-    PT_WRITE_PNTR((&new_elem->data), (long)father);             // father
-    data = (&new_elem->data)+sizeof(PT_PNTR);
-    if (apos>PT_SHORT_SIZE) {                                   // mainapos
-        PT_WRITE_INT(data, apos);                               // .
-        data+=4; new_elem->flags|=1;                            // .
+    PT_WRITE_PNTR((&new_elem->data), (long)father);
+    
+    char *data = (&new_elem->data)+sizeof(PT_PNTR);
+    if (loc.apos>PT_SHORT_SIZE) {                                   
+        PT_WRITE_INT(data, loc.apos);                               
+        data+=4;
+        new_elem->flags|=1;
     }
-    else {                                                      // .
-        PT_WRITE_SHORT(data, apos);                             // .
-        data+=2;                                                // .
+    else {                                                      
+        PT_WRITE_SHORT(data, loc.apos);
+        data+=2;
     }
-    PT_WRITE_PNTR(data, NULL);                                  // first element
-    PT_add_to_chain(ptmain, new_elem, name, apos, rpos);
+    PT_WRITE_PNTR(data, NULL);
+    PT_add_to_chain(new_elem, loc);
+
     return new_elem;
 }
 
-POS_TREE       *
-PT_create_leaf(PTM2 *ptmain, POS_TREE ** pfather, PT_BASES base, int rpos, int apos, int name)  // stage 1
-{
-    POS_TREE       *father, *node, *new_elemfather;
-    int             base2;
-    int     leafsize;
-    char        *dest;
+POS_TREE *PT_create_leaf(POS_TREE ** pfather, PT_BASES base, const DataLoc& loc) { // stage 1
+    POS_TREE *father, *node, *new_elemfather;
+    int       base2;
+    int       leafsize;
+    char     *dest;
     leafsize = PT_EMPTY_LEAF_SIZE;
-    if (rpos>PT_SHORT_SIZE) leafsize+=2;
-    if (apos>PT_SHORT_SIZE) leafsize+=2;
-    if (name>PT_SHORT_SIZE) leafsize+=2;
-    node = (POS_TREE *) PTM_get_mem(leafsize);
+
+    if (loc.rpos>PT_SHORT_SIZE) leafsize += 2;
+    if (loc.apos>PT_SHORT_SIZE) leafsize += 2;
+    if (loc.name>PT_SHORT_SIZE) leafsize += 2;
+    node                              = (POS_TREE *) PTM_get_mem(leafsize);
     if (base >= PT_B_MAX)
-        *(int *) 0 = 0;
+        *(int *) 0                    = 0;
     if (pfather) {
         int             oldfathersize;
         POS_TREE       *gfather, *son;
@@ -340,54 +334,50 @@ PT_create_leaf(PTM2 *ptmain, POS_TREE ** pfather, PT_BASES base, int rpos, int a
     }
     PT_SET_TYPE(node, PT_NT_LEAF, 0);
     dest = (&node->data) + sizeof(PT_PNTR);
-    if (name>PT_SHORT_SIZE) {
-        PT_WRITE_INT(dest, name);
+    if (loc.name>PT_SHORT_SIZE) {
+        PT_WRITE_INT(dest, loc.name);
         node->flags |= 1;
         dest += 4;
     }
     else {
-        PT_WRITE_SHORT(dest, name);
+        PT_WRITE_SHORT(dest, loc.name);
         dest += 2;
     }
-    if (rpos>PT_SHORT_SIZE) {
-        PT_WRITE_INT(dest, rpos);
+    if (loc.rpos>PT_SHORT_SIZE) {
+        PT_WRITE_INT(dest, loc.rpos);
         node->flags |= 2;
         dest += 4;
     }
     else {
-        PT_WRITE_SHORT(dest, rpos);
+        PT_WRITE_SHORT(dest, loc.rpos);
         dest += 2;
     }
-    if (apos>PT_SHORT_SIZE) {
-        PT_WRITE_INT(dest, apos);
+    if (loc.apos>PT_SHORT_SIZE) {
+        PT_WRITE_INT(dest, loc.apos);
         node->flags |= 4;
         dest += 4;
     }
     else {
-        PT_WRITE_SHORT(dest, apos);
+        PT_WRITE_SHORT(dest, loc.apos);
         dest += 2;
     }
     if (base == PT_QU)
-        return PT_leaf_to_chain(ptmain, node);
+        return PT_leaf_to_chain(node);
     return node;
 }
-
 
 // ------------------------------------
 //      functions for stage 1: save
 
-void PTD_clear_fathers(PTM2 *ptmain, POS_TREE * node)       // stage 1
-{
-    POS_TREE       *sons;
-    int i;
-    PT_NODE_TYPE    type = PT_read_type(node);
-    if (type == PT_NT_SAVED) return;
-    PT_WRITE_PNTR((&node->data), NULL);
-    if (type == PT_NT_NODE) {
-        for (i = PT_QU; i < PT_B_MAX; i++) {
-            sons = PT_read_son(ptmain, node, (PT_BASES)i);
-            if (sons)
-                PTD_clear_fathers(ptmain, sons);
+void PTD_clear_fathers(POS_TREE * node) { // stage 1
+    PT_NODE_TYPE type = PT_read_type(node);
+    if (type != PT_NT_SAVED) {
+        PT_WRITE_PNTR((&node->data), NULL);
+        if (type == PT_NT_NODE) {
+            for (int i = PT_QU; i < PT_B_MAX; i++) {
+                POS_TREE *sons = PT_read_son(node, (PT_BASES)i);
+                if (sons) PTD_clear_fathers(sons);
+            }
         }
     }
 }
@@ -444,7 +434,7 @@ void PTD_set_object_to_saved_status(POS_TREE * node, long pos, int size) {
     }
 }
 
-long PTD_write_tip_to_disk(FILE * out, PTM2 * /* ptmain */, POS_TREE * node, long pos)
+long PTD_write_tip_to_disk(FILE * out, POS_TREE * node, long pos)
 {
     int size, cnt;
     putc(node->flags, out);         // save type
@@ -489,7 +479,7 @@ void ptd_set_chain_references(char *entry, char **entry_tab) {
     }
 }
 
-ARB_ERROR ptd_write_chain_entries(FILE * out, long *ppos, PTM2 * /* ptmain */, char ** entry_tab,  int n_entries, int mainapos) { // __ATTR__USERESULT
+ARB_ERROR ptd_write_chain_entries(FILE * out, long *ppos, char ** entry_tab,  int n_entries, int mainapos) { // __ATTR__USERESULT
     ARB_ERROR   error;
     int         lastname = 0;
     
@@ -529,13 +519,13 @@ ARB_ERROR ptd_write_chain_entries(FILE * out, long *ppos, PTM2 * /* ptmain */, c
 }
 
 
-long PTD_write_chain_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos, ARB_ERROR& error) {
+long PTD_write_chain_to_disk(FILE * out, POS_TREE * node, long pos, ARB_ERROR& error) {
     char *data;
     long oldpos = pos;
     putc(node->flags, out);         // save type
     pos++;
     int mainapos;
-    data = (&node->data) + ptmain->mode;
+    data = (&node->data) + psg.ptmain->mode;
 
     if (node->flags&1) {
         PT_READ_INT(data, mainapos);
@@ -555,7 +545,7 @@ long PTD_write_chain_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
     {
         char **entry_tab = (char **)GB_calloc(sizeof(char *), n_entries);
         ptd_set_chain_references((char *)first_entry, entry_tab);
-        error = ptd_write_chain_entries(out, &pos, ptmain, entry_tab, n_entries, mainapos);
+        error = ptd_write_chain_entries(out, &pos, entry_tab, n_entries, mainapos);
         free(entry_tab);
     }
     putc(PT_CHAIN_END, out);
@@ -592,7 +582,7 @@ void PTD_debug_nodes()
 #endif
 }
 
-long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long *r_poss, long pos) {
+long PTD_write_node_to_disk(FILE * out, POS_TREE * node, long *r_poss, long pos) {
     int i, size;   // Save node after all descendends are already saved
     POS_TREE *sons;
 
@@ -605,7 +595,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long *r_p
     mysize = PT_EMPTY_NODE_SIZE;
 
     for (i = PT_QU; i < PT_B_MAX; i++) {    // free all sons
-        sons = PT_read_son(ptmain, node, (PT_BASES)i);
+        sons = PT_read_son(node, (PT_BASES)i);
         if (sons) {
             int memsize;
             long   diff = pos - r_poss[i];
@@ -758,7 +748,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long *r_p
     return pos;
 }
 
-long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos, long *pnodepos, int *pblock, ARB_ERROR& error) {
+long PTD_write_leafs_to_disk(FILE * out, POS_TREE * node, long pos, long *pnodepos, int *pblock, ARB_ERROR& error) {
     // returns new pos when son is written 0 otherwise
     // pnodepos is set to last object
 
@@ -777,20 +767,20 @@ long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
     }
     else if (type == PT_NT_LEAF) {
         *pnodepos = pos;
-        pos = PTD_write_tip_to_disk(out, ptmain, node, pos);
+        pos = PTD_write_tip_to_disk(out, node, pos);
     }
     else if (type == PT_NT_CHAIN) {
         *pnodepos = pos;
-        pos = PTD_write_chain_to_disk(out, ptmain, node, pos, error);
+        pos = PTD_write_chain_to_disk(out, node, pos, error);
     }
     else if (type == PT_NT_NODE) {
         block[0] = 0;
         o_pos = pos;
         for (i = PT_QU; i < PT_B_MAX && !error; i++) {    // save all sons
-            sons = PT_read_son(ptmain, node, (PT_BASES)i);
+            sons = PT_read_son(node, (PT_BASES)i);
             r_poss[i] = 0;
             if (sons) {
-                r_pos = PTD_write_leafs_to_disk(out, ptmain, sons, pos, &(r_poss[i]), &(block[0]), error);
+                r_pos = PTD_write_leafs_to_disk(out, sons, pos, &(r_poss[i]), &(block[0]), error);
                 if (r_pos>pos) {        // really saved ????
                     son_size[i] = r_pos-pos;
                     pos = r_pos;
@@ -812,7 +802,7 @@ long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
         }
         else {          // now i can write my data
             *pnodepos = pos;
-            if (!error) pos = PTD_write_node_to_disk(out, ptmain, node, r_poss, pos);
+            if (!error) pos = PTD_write_node_to_disk(out, node, r_poss, pos);
         }
     }
     pt_assert(pos >= 0 || error);
@@ -823,7 +813,7 @@ long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
 //      functions for stage 2-3: load
 
 
-ARB_ERROR PTD_read_leafs_from_disk(const char *fname, PTM2 *ptmain, POS_TREE **pnode) { // __ATTR__USERESULT
+ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE **pnode) { // __ATTR__USERESULT
     GB_ERROR  error  = NULL;
     char     *buffer = GB_map_file(fname, 0);
 
@@ -891,9 +881,10 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, PTM2 *ptmain, POS_TREE **p
         if (!error) {
             pt_assert(i >= 0);
 
-            *pnode             = (POS_TREE *)(i+buffer);
-            ptmain->mode       = 0;
-            ptmain->data_start = buffer;
+            *pnode = (POS_TREE *)(i+buffer);
+
+            psg.ptmain->mode       = 0;
+            psg.ptmain->data_start = buffer;
         }
     }
 
