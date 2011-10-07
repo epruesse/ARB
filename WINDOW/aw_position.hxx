@@ -31,9 +31,17 @@
 // ------------------------
 
 #if defined(DEBUG)
+
 #define ISVALID(a) aw_assert((a).valid())
+
+inline const double& NONAN(const double& d) {
+    aw_assert(d == d);
+    return d;
+}
+
 #else
 #define ISVALID(a)
+#define NONAN(d)   (d)
 #endif // DEBUG
 
 namespace AW {
@@ -77,6 +85,7 @@ namespace AW {
         bool valid() const { return (x == x) && (y == y); } // fails if one is NAN
 
         Position(double X, double Y) : x(X), y(Y) { ISVALID(*this); }
+        // Position(const Position& other) : x(other.x), y(other.y) { ISVALID(*this); }
         Position() : x(NAN), y(NAN) {} // default is no position
         ~Position() {}
 
@@ -86,11 +95,11 @@ namespace AW {
         const double& xpos() const { return x; }
         const double& ypos() const { return y; }
 
-        void setx(const double& X) { x = X; }
-        void sety(const double& Y) { y = Y; }
+        void setx(const double& X) { x = NONAN(X); }
+        void sety(const double& Y) { y = NONAN(Y); }
 
-        void movex(const double& X) { x += X; }
-        void movey(const double& Y) { y += Y; }
+        void movex(const double& X) { x += NONAN(X); }
+        void movey(const double& Y) { y += NONAN(Y); }
 
         void move(const Vector& movement) { *this += movement; }
         void moveTo(const Position& pos) { *this = pos; }
@@ -102,6 +111,12 @@ namespace AW {
 
     extern const Position Origin;
 
+    inline bool nearlyEqual(const Position& p1, const Position& p2) {
+        return
+            nearlyEqual(p1.xpos(), p2.xpos()) && 
+            nearlyEqual(p1.ypos(), p2.ypos()); 
+    }
+    
     // -------------------------------
     //      a 2D vector
     // -------------------------------
@@ -175,6 +190,8 @@ namespace AW {
 
     extern const Vector ZeroVector;
 
+    inline bool nearlyEqual(const Vector& v1, const Vector& v2) { return nearlyEqual(v1.endpoint(), v2.endpoint()); }
+    
     // -----------------------------------------
     //      inline Position members
     // -----------------------------------------
@@ -272,7 +289,12 @@ namespace AW {
 
     inline bool is_vertical(const LineVector& line) { return is_vertical(line.line_vector()); }
     inline bool is_horizontal(const LineVector& line) { return is_horizontal(line.line_vector()); }
-
+    inline bool nearlyEqual(const LineVector& L1, const LineVector& L2) {
+        return
+            nearlyEqual(L1.line_vector(), L2.line_vector()) &&
+            nearlyEqual(L1.start(), L2.start());
+    }
+    
     // ---------------------
     //      a rectangle
     // ---------------------
@@ -467,9 +489,10 @@ namespace AW {
         return diff < 0.000001;
     }
 
-    inline bool are_orthographic(const Vector& v1, const Vector& v2) {
+    inline bool are_orthographic(const Vector& v1, const Vector& v2) { // orthogonal (dt.)
         return are_equal(scalarProduct(v1, v2), 0);
     }
+
 #endif // DEBUG
 
     inline bool isOrigin(const Position& p) {
