@@ -25,7 +25,6 @@
 
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
-#include <aw_edit.hxx>
 #include <aw_select.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
@@ -1821,23 +1820,6 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
     if (error) aw_message(error);
 }
 
-static void arb_tcp_dat_changed_cb(const char * /* path */, bool fileChanged, bool /* editorTerminated */) {
-#if defined(DEBUG) && 0
-    printf("File '%s': changed=%i editorTerminated=%i\n", path, int(fileChanged), int(editorTerminated));
-#endif // DEBUG
-    if (fileChanged) {
-        awt_refresh_all_pt_server_selection_lists();
-    }
-}
-
-static void pd_edit_arb_tcp(AW_window *aww, AW_CL cl_gb_main) {
-    GBDATA *gb_main  = (GBDATA*)cl_gb_main;
-    char   *filename = GBS_find_lib_file("arb_tcp.dat", "", true);
-
-    AW_edit(filename, arb_tcp_dat_changed_cb, aww, gb_main);
-    free(filename);
-}
-
 AW_window *create_probe_admin_window(AW_root *root, AW_CL cl_gb_main) {
     GBDATA           *gb_main = (GBDATA*)cl_gb_main;
     AW_window_simple *aws     = new AW_window_simple;
@@ -1883,7 +1865,7 @@ AW_window *create_probe_admin_window(AW_root *root, AW_CL cl_gb_main) {
     aws->create_button("KILL_ALL_SERVERS", "Stop all servers");
 
     aws->at("edit");
-    aws->callback(pd_edit_arb_tcp, (AW_CL)gb_main);
+    aws->callback(awt_edit_arbtcpdat_cb, (AW_CL)gb_main);
     aws->create_button("CREATE_TEMPLATE", "Configure");
 
     aws->at("export");

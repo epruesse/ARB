@@ -537,7 +537,7 @@ GBDATA *GBT_open(const char *path, const char *opent, const char *disabled_path)
     long    hash_size;
 
     if (!gbd) return gbd;
-    if (!disabled_path) disabled_path = "$(ARBHOME)/lib/pts/*";
+    if (!disabled_path) disabled_path = GB_path_in_ARBLIB("pts/*");
     GB_disable_path(gbd, disabled_path);
     GB_begin_transaction(gbd);
 
@@ -734,7 +734,9 @@ struct NotifyCb {
 };
 
 static void notify_cb(GBDATA *gb_message, int *cb_info, GB_CB_TYPE cb_type) {
-    GB_remove_callback(gb_message, GB_CB_TYPE(GB_CB_CHANGED|GB_CB_DELETE), notify_cb, cb_info); // @@@ cbproblematic
+    if (cb_type != GB_CB_DELETE) {
+        GB_remove_callback(gb_message, GB_CB_TYPE(GB_CB_CHANGED|GB_CB_DELETE), notify_cb, cb_info);
+    }
 
     int       cb_done = 0;
     NotifyCb *pending = (NotifyCb*)cb_info;
