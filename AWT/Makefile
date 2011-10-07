@@ -152,35 +152,46 @@ AWT_config_manager.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AWT_db_browser.o: awt.hxx
+AWT_db_browser.o: awt_hexdump.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AWT_db_browser.o: $(ARBHOME)/INCLUDE/AliView.hxx
-AWT_db_browser.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
-AWT_db_browser.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_str.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_string.h
-AWT_db_browser.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/cb.h
-AWT_db_browser.o: $(ARBHOME)/INCLUDE/downcast.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/test_global.h
+
+AWT_hexdump.o: awt.hxx
+AWT_hexdump.o: awt_hexdump.hxx
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/arb_core.h
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/arbtools.h
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/attributes.h
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/smartptr.h
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/test_global.h
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 AWT_hotkeys.o: awt_hotkeys.hxx
 
