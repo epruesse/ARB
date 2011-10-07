@@ -562,13 +562,13 @@ size_t GBS_shorten_repeated_data(char *data) {
     size_t  repeat    = 1;
     char    last      = *data++;
 
-    do {
+    while (last) {
         char curr = *data++;
         if (curr == last) {
             repeat++;
         }
         else {
-            if (repeat >= 10) {
+            if (repeat >= 5) {
                 dest += sprintf(dest, "%c{%zu}", last, repeat); // insert repeat count
             }
             else {
@@ -579,7 +579,6 @@ size_t GBS_shorten_repeated_data(char *data) {
             repeat = 1;
         }
     }
-    while (last);
 
     *dest = 0;
 
@@ -1158,5 +1157,28 @@ void TEST_GBS_strstruct() {
     }
 }
 
+#define TEST_SHORTENED_EQUALS(Long,Short) do {  \
+        char *buf = strdup(Long);               \
+        GBS_shorten_repeated_data(buf);         \
+        TEST_ASSERT_EQUAL(buf, Short);          \
+        free(buf);                              \
+    } while(0)
+
+void TEST_GBS_shorten_repeated_data() {
+    TEST_SHORTENED_EQUALS("12345", "12345"); 
+    TEST_SHORTENED_EQUALS("aaaaaaaaaaaabc", "a{12}bc"); 
+    TEST_SHORTENED_EQUALS("aaaaaaaaaaabc", "a{11}bc"); 
+    TEST_SHORTENED_EQUALS("aaaaaaaaaabc", "a{10}bc"); 
+    TEST_SHORTENED_EQUALS("aaaaaaaaabc", "a{9}bc"); 
+    TEST_SHORTENED_EQUALS("aaaaaaaabc", "a{8}bc"); 
+    TEST_SHORTENED_EQUALS("aaaaaaabc", "a{7}bc"); 
+    TEST_SHORTENED_EQUALS("aaaaaabc", "a{6}bc"); 
+    TEST_SHORTENED_EQUALS("aaaaabc", "a{5}bc"); 
+    TEST_SHORTENED_EQUALS("aaaabc", "aaaabc"); 
+    TEST_SHORTENED_EQUALS("aaabc", "aaabc"); 
+    TEST_SHORTENED_EQUALS("aabc", "aabc"); 
+    TEST_SHORTENED_EQUALS("", "");
+    
+}
 #endif
 
