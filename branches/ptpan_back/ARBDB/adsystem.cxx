@@ -214,48 +214,54 @@ GB_ERROR gb_save_dictionary_data(GBDATA *gb_main, const char *key, const char *d
     return error;
 }
 
-GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main) {
-    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
+GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main) { // goes to header: __ATTR__USERESULT
+    GB_MAIN_TYPE *Main  = GB_MAIN(gb_main);
+    GB_ERROR      error = NULL;
+
     GBDATA *gb_key_data = gb_search(gb_main, GB_SYSTEM_FOLDER "/" GB_SYSTEM_KEY_DATA, GB_CREATE_CONTAINER, 1);
-    GBDATA *gb_key, *gb_next_key=0;
-    int key;
+    if (!gb_key_data) {
+        error = GB_await_error();
+    }
+    else {
+        Main->gb_key_data = gb_key_data;
+        if (Main->local_mode) { // do not create anything at the client side
+            GB_push_my_security(gb_main);
 
-    Main->gb_key_data = gb_key_data;
-    if (!Main->local_mode) return 0;    // do not create anything at the client side
+            // search unused keys and delete them
+            for (GBDATA *gb_key = GB_entry(gb_key_data, "@key"); gb_key && !error;) {
+                GBDATA *gb_next_key = GB_nextEntry(gb_key);
+                GBDATA *gb_name     = GB_entry(gb_key, "@name");
+                if (!gb_name) error = GB_await_error();
+                else {
+                    const char *name = GB_read_char_pntr(gb_name);
+                    if (!name) error = GB_await_error();
+                    else {
+                        GBQUARK quark = gb_key_2_quark(Main, name);
+                        if (quark<=0 || quark >= Main->sizeofkeys || !Main->keys[quark].key) {
+                            error = GB_delete(gb_key);  // delete unused key
+                        }
+                    }
+                }
+                gb_key = gb_next_key;
+            }
 
-    GB_push_my_security(gb_main);
+            if (!error) error = GB_create_index(gb_key_data, "@name", GB_MIND_CASE, Main->sizeofkeys*2); // create key index
+            if (!error) {
+                gb_key_2_quark(Main, "@name");
+                gb_key_2_quark(Main, "@key");
+                gb_key_2_quark(Main, "@dictionary");
+                gb_key_2_quark(Main, "compression_mask");
 
-    // First step: search unused keys and delete them
-    for (gb_key = GB_entry(gb_key_data, "@key");
-         gb_key;
-         gb_key = gb_next_key)
-    {
-        GBDATA     *gb_name = GB_entry(gb_key, "@name");
-        const char *name    = GB_read_char_pntr(gb_name);
-        GBQUARK     quark   = gb_key_2_quark(Main, name);
-
-        gb_next_key = GB_nextEntry(gb_key);
-
-        if (quark<=0 || quark >= Main->sizeofkeys || !Main->keys[quark].key) {
-            GB_delete(gb_key);  // delete unused key
+                for (int key=1; key<Main->sizeofkeys; key++) {
+                    char *k = Main->keys[key].key;
+                    if (!k) continue;
+                    gb_load_single_key_data(gb_main, key);
+                }
+            }
+            GB_pop_my_security(gb_main);
         }
     }
-    GB_create_index(gb_key_data, "@name", GB_MIND_CASE, Main->sizeofkeys*2);
-
-    gb_key_2_quark(Main, "@name");
-    gb_key_2_quark(Main, "@key");
-    gb_key_2_quark(Main, "@dictionary");
-    gb_key_2_quark(Main, "compression_mask");
-
-    for (key=1; key<Main->sizeofkeys; key++) {
-        char *k = Main->keys[key].key;
-        if (!k) continue;
-        gb_load_single_key_data(gb_main, key);
-    }
-
-
-    GB_pop_my_security(gb_main);
-    return 0;
+    RETURN_ERROR(error);
 }
 
 /* gain access to allow repair of broken compression

@@ -682,12 +682,16 @@ void *GB_read_pointer(GBDATA *gbd) {
 
 double GB_read_float(GBDATA *gbd)
 {
-    XDR xdrs;
+    XDR          xdrs;
     static float f;
+    
     GB_TEST_READ(gbd, GB_FLOAT, "GB_read_float");
     xdrmem_create(&xdrs, &gbd->info.in.data[0], SIZOFINTERN, XDR_DECODE);
     xdr_float(&xdrs, &f);
     xdr_destroy(&xdrs);
+
+    gb_assert(f == f); // !nan
+
     return (double)f;
 }
 
@@ -1034,7 +1038,9 @@ GB_ERROR GB_write_pointer(GBDATA *gbd, void *pointer) {
 
 GB_ERROR GB_write_float(GBDATA *gbd, double f)
 {
-    XDR xdrs;
+    gb_assert(f == f); // !nan
+
+    XDR          xdrs;
     static float f2;
 
     GB_TEST_WRITE(gbd, GB_FLOAT, "GB_write_float");
@@ -1927,17 +1933,22 @@ bool GB_allow_compression(GBDATA *gb_main, bool allow_compression) {
 // --------------------------
 //      temporary entries
 
-GB_ERROR GB_set_temporary(GBDATA *gbd) {
+GB_ERROR GB_set_temporary(GBDATA *gbd) { // goes to header: __ATTR__USERESULT
     /*! if the temporary flag is set, then that entry (including all subentries) will not be saved
      * @see GB_clear_temporary() and GB_is_temporary()
      */
 
+    GB_ERROR error = NULL;
     GB_test_transaction(gbd);
-    if (GB_GET_SECURITY_DELETE(gbd)>GB_MAIN(gbd)->security_level)
-        return GB_export_errorf("Security error in GB_set_temporary: %s", GB_read_key_pntr(gbd));
-    gbd->flags.temporary = 1;
-    gb_touch_entry(gbd, GB_NORMAL_CHANGE);
-    return 0;
+
+    if (GB_GET_SECURITY_DELETE(gbd)>GB_MAIN(gbd)->security_level) {
+        error = GBS_global_string("Security error in GB_set_temporary: %s", GB_read_key_pntr(gbd));
+    }
+    else {
+        gbd->flags.temporary = 1;
+        gb_touch_entry(gbd, GB_NORMAL_CHANGE);
+    }
+    RETURN_ERROR(error);
 }
 
 GB_ERROR GB_clear_temporary(GBDATA *gbd) {

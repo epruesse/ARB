@@ -29,8 +29,9 @@ GBDATA *GB_open(const char *path, const char *opent);
 
 /* ad_save_load.cxx */
 GB_ERROR GB_save(GBDATA *gb, const char *path, const char *savetype);
+GB_ERROR GB_create_parent_directory(const char *path);
 GB_ERROR GB_create_directory(const char *path);
-GB_ERROR GB_save_in_home(GBDATA *gb, const char *path, const char *savetype);
+GB_ERROR GB_save_in_arbprop(GBDATA *gb, const char *path, const char *savetype);
 GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype);
 GB_ERROR GB_delete_database(GB_CSTR filename);
 GB_ERROR GB_save_quick_as(GBDATA *gb_main, const char *path);
@@ -162,9 +163,12 @@ char *GBS_log_dated_action_to(const char *comment, const char *action);
 GB_CSTR GB_getcwd(void);
 char *GB_find_all_files(const char *dir, const char *mask, bool filename_only);
 char *GB_find_latest_file(const char *dir, const char *mask);
-char *GBS_find_lib_file(const char *filename, const char *libprefix, bool warn_when_not_found);
+const char *GB_existing_file(const char *file, bool warn_when_not_found);
+char *GB_lib_file(bool warn_when_not_found, const char *libprefix, const char *filename);
+char *GB_property_file(bool warn_when_not_found, const char *filename);
 void GBS_read_dir(StrArray &names, const char *dir, const char *mask);
 bool GB_test_textfile_difflines(const char *file1, const char *file2, int expected_difflines, int special_mode);
+size_t GB_test_mem_equal(const unsigned char *buf1, const unsigned char *buf2, size_t common);
 bool GB_test_files_equal(const char *file1, const char *file2);
 void GBT_transform_names(StrArray &dest, const StrArray &source, char *transform (const char *, void *), void *client_data);
 
@@ -174,6 +178,7 @@ GB_ERROR GB_set_dictionary(GBDATA *gb_main, const char *key, const DictData *dd)
 void GB_free_dictionary(DictData *dd);
 
 /* adtcp.cxx */
+char *GB_arbtcpdat_path(void);
 const char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam);
 
 #ifdef UNIT_TESTS
@@ -276,7 +281,7 @@ GB_ERROR GB_copy(GBDATA *dest, GBDATA *source);
 GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_protections);
 char *GB_get_subfields(GBDATA *gbd);
 bool GB_allow_compression(GBDATA *gb_main, bool allow_compression);
-GB_ERROR GB_set_temporary(GBDATA *gbd);
+GB_ERROR GB_set_temporary(GBDATA *gbd) __ATTR__USERESULT;
 GB_ERROR GB_clear_temporary(GBDATA *gbd);
 bool GB_is_temporary(GBDATA *gbd);
 bool GB_in_temporary_branch(GBDATA *gbd);
@@ -379,7 +384,7 @@ char *GEN_global_gene_identifier(GBDATA *gb_gene, GBDATA *gb_organism);
 bool GB_is_dictionary_compressed(GBDATA *gbd);
 
 /* adindex.cxx */
-GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long estimated_size);
+GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long estimated_size) __ATTR__USERESULT;
 NOT4PERL void GB_dump_indices(GBDATA *gbd);
 GB_ERROR GB_request_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type) __ATTR__USERESULT_TODO;
 GB_UNDO_TYPE GB_get_requested_undo_type(GBDATA *gb_main);
@@ -471,6 +476,7 @@ GB_CSTR GB_concat_full_path(const char *anypath_left, const char *anypath_right)
 GB_CSTR GB_unfold_path(const char *pwd_envar, const char *path);
 GB_CSTR GB_path_in_ARBHOME(const char *relative_path);
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path);
+GB_CSTR GB_path_in_arbprop(const char *relative_path);
 GB_CSTR GB_path_in_ARBHOME(const char *relative_path_left, const char *anypath_right);
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path_left, const char *anypath_right);
 FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_fullname);

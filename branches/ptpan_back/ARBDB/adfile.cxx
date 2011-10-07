@@ -193,47 +193,28 @@ char *GB_find_latest_file(const char *dir, const char *mask) {
     return result;
 }
 
-char *GBS_find_lib_file(const char *filename, const char *libprefix, bool warn_when_not_found) {
-    // Searches files in current dir, $HOME, $ARBHOME/lib/libprefix
+const char *GB_existing_file(const char *file, bool warn_when_not_found) {
+    // return 'file' if it's an existing readable file
+    // return NULL otherwise
 
-    char *result = 0;
+    gb_assert(file);
+    if (GB_is_readablefile(file)) return file;
+    if (warn_when_not_found) GB_warningf("Could not find '%s'", file);
+    return NULL;
+}
 
-    if (GB_is_readablefile(filename)) {
-        result = strdup(filename);
-    }
-    else {
-        const char *slash = strrchr(filename, '/'); // look for last slash
+char *GB_lib_file(bool warn_when_not_found, const char *libprefix, const char *filename) {
+    // Search a file in '$ARBHOME/lib/libprefix'
+    // Return NULL if not found
+    return nulldup(GB_existing_file(GB_path_in_ARBLIB(libprefix, filename), warn_when_not_found));
+}
 
-        if (slash && filename[0] != '.') { // have absolute path
-            filename = slash+1; // only use filename part
-            slash    = 0;
-        }
+char *GB_property_file(bool warn_when_not_found, const char *filename) {
+    // Search a file in '~/.arb_prop' or its default in '$ARBHOME/lib/arb_default'
+    // Return NULL if neighter found
 
-        const char *fileInHome = GB_concat_full_path(GB_getenvHOME(), filename);
-
-        if (fileInHome && GB_is_readablefile(fileInHome)) {
-            result = strdup(fileInHome);
-        }
-        else {
-            if (slash) filename = slash+1; // now use filename only, even if path starts with '.'
-
-            const char *fileInLib = GB_path_in_ARBLIB(libprefix, filename);
-
-            if (fileInLib && GB_is_readablefile(fileInLib)) {
-                result = strdup(fileInLib);
-            }
-            else {
-                if (warn_when_not_found) {
-                    GB_warningf("Don't know where to find '%s'\n"
-                                "  searched in '.'\n"
-                                "  searched in $(HOME) (for '%s')\n"
-                                "  searched in $(ARBHOME)/lib/%s (for '%s')\n",
-                                filename, fileInHome, libprefix, fileInLib);
-                }
-            }
-        }
-    }
-
+    char *result = nulldup(GB_existing_file(GB_path_in_arbprop(filename), warn_when_not_found));
+    if (!result) result = GB_lib_file(warn_when_not_found, "arb_default", filename);
     return result;
 }
 
@@ -584,6 +565,39 @@ bool GB_test_textfile_difflines(const char *file1, const char *file2, int expect
     return !error;
 }
 
+size_t GB_test_mem_equal(const unsigned char *buf1, const unsigned char *buf2, size_t common) {
+    size_t equal_bytes;
+    if (memcmp(buf1, buf2, common) == 0) {
+        equal_bytes = common;
+    }
+    else {
+        equal_bytes = 0;
+        size_t x    = 0;    // position inside memory
+        while (buf1[x] == buf2[x]) {
+            x++;
+            equal_bytes++;
+        }
+
+        const size_t DUMP       = 7;
+        size_t       y1         = x >= DUMP ? x-DUMP : 0;
+        size_t       y2         = (x+DUMP)>common ? common : (x+DUMP);
+        size_t       blockstart = equal_bytes-x;
+
+        for (size_t y = y1; y <= y2; y++) {
+            fprintf(stderr, "[0x%04zx]", blockstart+y);
+            arb_test::print_pair(buf1[y], buf2[y]);
+            fputc(' ', stderr);
+            arb_test::print_hex_pair(buf1[y], buf2[y]);
+            if (x == y) fputs("                     <- diff", stderr);
+            fputc('\n', stderr);
+        }
+        if (y2 == common) {
+            fputs("[end of block - truncated]\n", stderr);
+        }
+    }
+    return equal_bytes;
+}
+
 bool GB_test_files_equal(const char *file1, const char *file2) {
     const char        *error = NULL;
     FILE              *fp1   = fopen(file1, "rb");
@@ -605,44 +619,20 @@ bool GB_test_files_equal(const char *file1, const char *file2) {
             int            equal_bytes  = 0;
 
             while (!error) {
-                int read1  = fread(buf1, 1, BLOCKSIZE, fp1);
-                int read2  = fread(buf2, 1, BLOCKSIZE, fp2);
-                int common = read1<read2 ? read1 : read2;
+                int    read1  = fread(buf1, 1, BLOCKSIZE, fp1);
+                int    read2  = fread(buf2, 1, BLOCKSIZE, fp2);
+                size_t common = read1<read2 ? read1 : read2;
 
                 if (!common) {
                     if (read1 != read2) error = "filesize differs";
                     break;
                 }
 
-                if (memcmp(buf1, buf2, common) == 0) {
-                    equal_bytes += common;
-                }
-                else {
-                    int x = 0;
-                    while (buf1[x] == buf2[x]) {
-                        x++;
-                        equal_bytes++;
-                    }
+                size_t thiseq = GB_test_mem_equal(buf1, buf2, common);
+                if (thiseq != common) {
                     error = "content differs";
-
-                    // x is the position inside the current block
-                    const int DUMP       = 7;
-                    int       y1         = x >= DUMP ? x-DUMP : 0;
-                    int       y2         = (x+DUMP)>common ? common : (x+DUMP);
-                    int       blockstart = equal_bytes-x;
-
-                    for (int y = y1; y <= y2; y++) {
-                        fprintf(stderr, "[0x%04x]", blockstart+y);
-                        arb_test::print_pair(buf1[y], buf2[y]);
-                        fputc(' ', stderr);
-                        arb_test::print_hex_pair(buf1[y], buf2[y]);
-                        if (x == y) fputs("                     <- diff", stderr);
-                        fputc('\n', stderr);
-                    }
-                    if (y2 == common) {
-                        fputs("[end of block - truncated]\n", stderr);
-                    }
                 }
+                equal_bytes += thiseq;
             }
 
             if (error) printf("test_files_equal: equal_bytes=%i\n", equal_bytes);
@@ -707,6 +697,21 @@ void TEST_GBS_read_dir() {
     TEST_JOINED_DIR_CONTENT_EQUALS("GDE",         NULL,        "/Makefile!/README");
 }
 
+void TEST_find_file() {
+    TEST_ASSERT_EQUAL(GB_existing_file("min_ascii.arb", false), "min_ascii.arb");
+    TEST_ASSERT_EQUAL(GB_existing_file("nosuchfile", false), NULL);
+    
+    char *tcporg = GB_lib_file(false, "", "arb_tcp_org.dat");
+    TEST_ASSERT_EQUAL(tcporg, GB_path_in_ARBHOME("lib/arb_tcp_org.dat"));
+    TEST_ASSERT_EQUAL(GB_lib_file(true, "bla", "blub"), NULL);
+    free(tcporg);
+
+    char *status = GB_property_file(false, "status.arb");
+    TEST_ASSERT_EQUAL(status, GB_path_in_ARBHOME("lib/arb_default/status.arb"));
+    TEST_ASSERT_EQUAL(GB_property_file(true, "undhepp"), NULL);
+    free(status);
+}
+
 // --------------------------------------------------------------------------------
 // tests for global code included from central ARB headers (located in $ARBHOME/TEMPLATES)
 #if defined(WARN_TODO)
@@ -754,11 +759,12 @@ void TEST_logic() {
             TEST_ASSERT(implicated(kermitIsGreen && !kermitIsFrog,  !onlyFrogsAreGreen));
 
             TEST_ASSERT(correlated(
-                                  correlated(kermitIsGreen, kermitIsFrog), 
-                                  allFrogsAreGreen && onlyFrogsAreGreen
-                                  ));
+                            correlated(kermitIsGreen, kermitIsFrog), 
+                            allFrogsAreGreen && onlyFrogsAreGreen
+                            ));
         }
     }
 }
+
 
 #endif // UNIT_TESTS

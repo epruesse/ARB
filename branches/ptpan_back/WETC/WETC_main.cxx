@@ -30,13 +30,13 @@ int main(int argc, char **argv) {
             error = GBS_global_string("Unexpected parameter '%s'", com);
         }
         else {
-            AW_root *aw_root = AWT_create_root(".arb_prop/ntree.arb", "ARB_WETC");
+            GB_shell shell;
+            AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_WETC");
 
             AWT_show_file(aw_root, file);
             aw_root->window_hide();
             AWT_install_cb_guards();
             aw_root->main_loop();
-
         }
     }
 

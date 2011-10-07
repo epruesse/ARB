@@ -583,31 +583,27 @@ AW_awar::~AW_awar() {
     free(awar_name);
 }
 
-const char *AW_root::property_DB_fullname(const char *default_name) {
-    const char *home = GB_getenvHOME();
-    return GBS_global_string("%s/%s", home, default_name);
-}
-
-bool AW_root::property_DB_exists(const char *default_name) {
-    return GB_is_regularfile(property_DB_fullname(default_name));
-}
-
 AW_default AW_root::load_properties(const char *default_name) {
-    GBDATA *gb_default = GB_open(default_name, "rwcD");
+    GBDATA   *gb_default = GB_open(default_name, "rwcD");
+    GB_ERROR  error      = NULL;
 
     if (gb_default) {
         GB_no_transaction(gb_default);
 
         GBDATA *gb_tmp = GB_search(gb_default, "tmp", GB_CREATE_CONTAINER);
-        GB_set_temporary(gb_tmp);
+        error          = GB_set_temporary(gb_tmp);
     }
     else {
-        GB_ERROR    error           = GB_await_error();
+        error = GB_await_error();
+    }
+
+    if (error) {
         const char *shown_name      = strrchr(default_name, '/');
         if (!shown_name) shown_name = default_name;
 
         GBK_terminatef("Error loading properties '%s': %s", shown_name, error);
     }
+    
     return (AW_default) gb_default;
 }
 
@@ -623,7 +619,7 @@ GB_ERROR AW_root::save_properties(const char *filename) {
         if (!error) {
             aw_update_awar_window_geometry(this);
             error = GB_pop_transaction(gb_main);
-            if (!error) error = GB_save_in_home(gb_main, filename, "a");
+            if (!error) error = GB_save_in_arbprop(gb_main, filename, "a");
         }
     }
 
