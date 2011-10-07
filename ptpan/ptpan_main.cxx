@@ -93,6 +93,8 @@ int broadcast(PT_main *main, int) {
     return (0);
 }
 
+#define PTPAN_LOGTAG "PTPAN"
+
 /*
  * \brief Main
  */
@@ -269,6 +271,8 @@ int main(int argc, char *argv[]) {
             }
         }
         if (forcebuild || build) {
+            GBS_add_ptserver_logentry(PTPAN_LOGTAG, GBS_global_string("started index-build for '%s'", dbName.c_str()));
+        
             AbstractAlphabetSpecifics *as =
                     (AbstractAlphabetSpecifics *) new Dna5AlphabetSpecifics();
             AbstractDataRetriever *dr =
@@ -416,9 +420,11 @@ int main(int argc, char *argv[]) {
             delete dr;
             delete settings;
 
+            GBS_add_ptserver_logentry(PTPAN_LOGTAG, GBS_global_string("finished index-build for '%s'", dbName.c_str()));
+
             if (build) {
                 printf("PTPan index for database '%s' has been created.\n",
-                        dbName.data());
+                       dbName.data());
                 if (arbParams) {
                     free_arb_params(arbParams);
                 }

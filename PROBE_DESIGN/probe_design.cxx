@@ -1768,10 +1768,10 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
         const char *ipPort = GBS_read_arb_tcp(server_tag);
         const char *file   = GBS_scan_arb_tcp_param(ipPort, "-d");
 
-        GBS_add_ptserver_logentry(GBS_global_string("Started build of '%s'", file));
+        GBS_add_ptserver_logentry(awr->program_name, GBS_global_string("Started build of '%s'", file));
         {
             char *db_name = awr->awar(AWAR_DB_PATH)->read_string();
-            GBS_add_ptserver_logentry(GBS_global_string("Exporting DB '%s'", db_name));
+            GBS_add_ptserver_logentry(awr->program_name, GBS_global_string("Exporting DB '%s'", db_name));
             free(db_name);
         }
 
@@ -1779,14 +1779,14 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
         {
             const char *mode = "bfm"; // save PT-server database with Fastload file
 
-            if (create_gene_server) {
+            if (create_gene_server) { // @@@ delegate this part to arb_ptserver
                 char *temp_server_name = GBS_string_eval(file, "*.arb=*_temp.arb", 0);
                 error = GB_save_as(gb_main, temp_server_name, mode);
 
                 if (!error) {
                     // convert database (genes -> species)
                     progress.subtitle("Preparing DB for gene PT server");
-                    GBS_add_ptserver_logentry("Preparing DB for gene PT server");
+                    GBS_add_ptserver_logentry(awr->program_name, "Preparing DB for gene PT server");
                     char *command = GBS_global_string_copy("$ARBHOME/bin/arb_gene_probe %s %s", temp_server_name, file);
                     printf("Executing '%s'\n", command);
                     int result = system(command);

@@ -433,7 +433,7 @@ const char *GBS_ptserver_logname() {
     RETURN_ONETIME_ALLOC(nulldup(GB_path_in_ARBLIB("pts/ptserver.log")));
 }
 
-void GBS_add_ptserver_logentry(const char *entry) {
+void GBS_add_ptserver_logentry(const char *who, const char *entry) {
     FILE *log = fopen(GBS_ptserver_logname(), "at");
     if (log) {
         chmod(GBS_ptserver_logname(), 0666);
@@ -443,7 +443,7 @@ void GBS_add_ptserver_logentry(const char *entry) {
         tm     *tms = localtime(&t);
 
         strftime(atime, 255, "%Y/%m/%d %k:%M:%S", tms);
-        fprintf(log, "%s %s\n", atime, entry);
+        fprintf(log, "%s [%s] %s\n", atime, who, entry);
         fclose(log);
     }
     else {
