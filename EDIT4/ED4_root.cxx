@@ -1586,21 +1586,21 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
         // check what is the default mode
         int default_mode = -1;
         for (int mode = 0; mode <= 2; ++mode) {
-            if (0 == strcmp(AW_root::property_DB_fullname(ED4_propertyName(mode)), db_name)) {
+            if (strcmp(GB_path_in_arbprop(ED4_propertyName(mode)), db_name) == 0) {
                 default_mode = mode;
                 break;
             }
         }
         e4_assert(default_mode != -1);
 
-        const char *entry = GBS_global_string("Save loaded Properties (~/%s)", db_name);
+        const char *entry = GBS_global_string("Save loaded Properties (%s)", ED4_propertyName(default_mode));
         awmm->insert_menu_topic("save_loaded_props", entry, "l", "e4_defaults.hlp", AWM_ALL, ED4_save_properties, (AW_CL)default_mode, 0);
         SEP________________________SEP;
 
         for (int mode = 2; mode >= 0; --mode) {
             char hotkey[] = "x";
             hotkey[0]     = "Pta"[mode];
-            entry         = GBS_global_string("Save %sProperties (~/%s)", entry_type[mode], ED4_propertyName(mode));
+            entry         = GBS_global_string("Save %sProperties (%s)", entry_type[mode], ED4_propertyName(mode));
             awmm->insert_menu_topic(tag[mode], entry, hotkey, "e4_defaults.hlp", AWM_ALL, ED4_save_properties, (AW_CL)mode, 0);
         }
     }
@@ -1897,7 +1897,7 @@ static char *detectProperties() {
     char *propname = NULL;
 
     for (int mode = 0; !propname && mode <= 2; ++mode) { // search for properties-database
-        const char *fullprop = AW_root::property_DB_fullname(ED4_propertyName(mode));
+        const char *fullprop = GB_path_in_arbprop(ED4_propertyName(mode));
         if (mode == 2 || GB_is_regularfile(fullprop)) {
             freedup(propname, fullprop);
         }

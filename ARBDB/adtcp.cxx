@@ -219,14 +219,18 @@ GB_ERROR ArbTcpDat::read(int *versionFound) {
     return error;
 }
 
+char *GB_arbtcpdat_path() {
+    return GB_lib_file(true, "", "arb_tcp.dat");
+}
+
 GB_ERROR ArbTcpDat::update() {
     // read arb_tcp.dat (once or if changed on disk)
     GB_ERROR error = 0;
 
-    if (!filename) filename = GBS_find_lib_file("arb_tcp.dat", "", true);
+    if (!filename) filename = GB_arbtcpdat_path();
 
     if (!filename) {
-        error = GBS_global_string("File $ARBHOME/lib/arb_tcp.dat not found");
+        error = "File $ARBHOME/lib/arb_tcp.dat missing or unreadable";
     }
     else {
         struct stat st;

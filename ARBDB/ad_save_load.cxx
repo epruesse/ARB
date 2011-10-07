@@ -832,54 +832,44 @@ GB_ERROR GB_save(GBDATA *gb, const char *path, const char *savetype)
     return GB_save_as(gb, path, savetype);
 }
 
+GB_ERROR GB_create_parent_directory(const char *path) {
+    GB_ERROR error = NULL;
+    char *parent;
+    GB_split_full_path(path, &parent, NULL, NULL, NULL);
+    if (parent) {
+        if (!GB_is_directory(parent)) error = GB_create_directory(parent);
+        free(parent);
+    }
+    return error;
+}
+
 GB_ERROR GB_create_directory(const char *path) {
     GB_ERROR error = 0;
     if (!GB_is_directory(path)) {
-        char *parent;
-        GB_split_full_path(path, &parent, NULL, NULL, NULL);
-        if (parent) {
-            if (!GB_is_directory(parent)) error = GB_create_directory(parent);
-            free(parent);
-        }
-
+        error = GB_create_parent_directory(path);
         if (!error) {
             int res = mkdir(path, ACCESSPERMS);
             if (res) error = GB_IO_error("creating directory", path);
         }
-
-        gb_assert(error || GB_is_directory(path));
-
         error = GB_failedTo_error("GB_create_directory", path, error);
     }
     return error;
 }
 
-GB_ERROR GB_save_in_home(GBDATA *gb, const char *path, const char *savetype) {
+GB_ERROR GB_save_in_arbprop(GBDATA *gb, const char *path, const char *savetype) {
     /* savetype
      *      'a'    ascii
      *      'b'    binary
      *      'bm'   binary + mapfile
-     *      0=ascii
      *
      * automatically creates subdirectories
      */
-    GB_ERROR    error = 0;
-    char       *buffer;
-    const char *env;
-    char       *slash;
 
-    env = GB_getenvHOME();
-    if (!path) path = GB_MAIN(gb)->path;
+    char     *fullname = strdup(GB_path_in_arbprop(path ? path : GB_MAIN(gb)->path));
+    GB_ERROR  error    = GB_create_parent_directory(fullname);
+    if (!error) error = GB_save_as(gb, fullname, savetype);
+    free(fullname);
 
-    buffer = (char *)GB_calloc(sizeof(char), strlen(env) + strlen(path) + 2);
-
-    sprintf(buffer, "%s/%s", env, path);
-    slash             = strrchr(buffer, '/');
-    *slash            = 0;
-    error             = GB_create_directory(buffer);
-    *slash            = '/';
-    if (!error) error = GB_save_as(gb, buffer, savetype);
-    if (buffer) free(buffer);
     return error;
 }
 

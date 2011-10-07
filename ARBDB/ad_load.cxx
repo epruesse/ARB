@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 
 #include <arbdbt.h>
+#include <arb_str.h>
 
 #include "gb_storage.h"
 #include "gb_localdata.h"
@@ -1357,8 +1358,8 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
      * - 'w' write (w/o 'r' it overwrites existing database)
      * - 'c' create (if not found)
      * - 's'     read only ???
-     * - 'd' look for default (if create) in $ARBHOME/lib (any leading '.' is removed )
-     * - 'D' look for default (if create) in $ARBHOME/lib/arb_default (any leading '.' is removed )
+     * - 'D' looks for default in $ARBHOME/lib/arb_default if file is not found in ~/.arb_prop
+     *       (only work combined with mode 'c') 
      * - memory usage:
      *   - 't' small memory usage
      *   - 'm' medium
@@ -1382,6 +1383,8 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
     GB_ERROR       error               = 0;
     char          *path                = strdup(cpath);
     bool           dbCreated           = false;
+
+    gb_assert(strchr(opent, 'd') == NULL); // mode 'd' is deprecated. You have to use 'D' and store your defaults inside ARBHOME/lib/arb_default
 
     if (!opent) opentype = gb_open_all;
     else if (strchr(opent, 'w')) opentype = gb_open_all;
@@ -1503,26 +1506,18 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
                 if (strchr(opent, 'c')) {
                     GB_disable_quicksave((GBDATA *)gbd, "Database Created");
 
-                    if (strchr(opent, 'd')||strchr(opent, 'D')) {
-                        // use default settings
-                        const char *pre;
-                        char       *found_path;
+                    if (strchr(opent, 'D')) { // use default settings
+                        GB_clear_error(); // with default-files gb_scan_directory (used above) has created an error, cause the path was a fake path
+                        
+                        gb_assert(ARB_strscmp(path, ".arb_prop/") != 0); // do no longer pass path-prefix [deprecated!]  
+                        char *found_path = GB_property_file(false, path);
 
-                        GB_clear_error();           // with default-files gb_scan_directory (used above)
-                        // creates an error, cause the path is a fake path
-
-                        if (strchr(opent, 'd')) pre = "";
-                        else                    pre = "arb_default/";
-
-                        found_path = GBS_find_lib_file(path, pre, false);
                         if (!found_path) {
                             fprintf(stderr, "file %s not found\n", path);
                             dbCreated = true;
                         }
                         else {
-#if defined(DEBUG)
-                            fprintf(stderr, "Using properties from %s\n", found_path);
-#endif // DEBUG
+                            fprintf(stderr, "Using properties from '%s'\n", found_path);
                             freeset(path, found_path);
                             input = fopen(path, "rb");
                         }

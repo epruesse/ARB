@@ -276,6 +276,7 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_msg.hxx

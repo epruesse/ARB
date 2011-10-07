@@ -11,6 +11,7 @@
 
 #include <arbdbt.h>
 #include <arb_defs.h>
+#include <unistd.h>
 
 int main(int, char **) {
     fputs("don't call us\n", stderr);
@@ -368,6 +369,57 @@ void TEST_arb_export_tree() {
     TEST_OUTPUT_EQUALS("arb_export_tree tree_nosuch " TREE_DB,
                        ";\n",                                                                    // shall export an empty newick tree
                        "arb_export_tree: Tree 'tree_nosuch' does not exist in DB '" TREE_DB "'\n"); // with error!
+}
+
+static char *notification_result = NULL;
+static void test_notification_cb(const char *message, void *cd) {
+    const char *cds     = (const char *)cd;
+    notification_result = GBS_global_string_copy("message='%s' cd='%s'", message, cds);
+}
+
+#define INIT_NOTIFICATION                                                                       \
+    GB_shell shell;                                                                             \
+    GBDATA *gb_main = GBT_open("nosuch.arb", "crw", NULL);                                      \
+    const char *cd  = "some argument";                                                          \
+    char *cmd = GB_generate_notification(gb_main, test_notification_cb, "the note", (void*)cd)
+
+#define EXIT_NOTIFICATION       \
+    GB_close(gb_main);          \
+    free(cmd)
+    
+#define TEST_DBSERVER_OPEN(gbmain) TEST_ASSERT_NO_ERROR(GBCMS_open(":", 0, gbmain))
+#define TEST_DBSERVER_SERVE_UNTIL(gbmain, cond) do {                    \
+        bool success            = GBCMS_accept_calls(gb_main, false);   \
+        while (success) success = GBCMS_accept_calls(gb_main, true);    \
+        GB_usleep(10000);                                               \
+    } while(!(cond))
+
+#define TEST_DBSERVER_CLOSE(gbmain) GBCMS_shutdown(gb_main)
+
+void TEST_close_with_pending_notification() {
+    INIT_NOTIFICATION;
+    EXIT_NOTIFICATION;
+}
+void TEST_close_after_pending_notification_removed() {
+    INIT_NOTIFICATION;
+    TEST_ASSERT_NO_ERROR(GB_remove_last_notification(gb_main));
+    EXIT_NOTIFICATION;
+}
+void TEST_arb_notify() {
+    INIT_NOTIFICATION;
+
+    TEST_DBSERVER_OPEN(gb_main);
+
+    TEST_ASSERT_NULL(notification_result);
+    TEST_ASSERT_NO_ERROR(GB_system(GBS_global_string("%s &", cmd))); // async call to arb_notify
+
+    TEST_DBSERVER_SERVE_UNTIL(gb_main, notification_result);
+    TEST_DBSERVER_CLOSE(gb_main);
+
+    TEST_ASSERT_EQUAL(notification_result, "message='the note' cd='some argument'");
+    freenull(notification_result);
+
+    EXIT_NOTIFICATION;
 }
 
 #endif // UNIT_TESTS

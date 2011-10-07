@@ -513,19 +513,24 @@ static ARB_ERROR check_argument_for_mode(const char *database, char *&browser_st
 }
 
 int main(int argc, char **argv) {
-    unsigned long mtime = GB_time_of_file("$(ARBHOME)/lib/message");
-    unsigned long rtime = GB_time_of_file("$(HOME)/.arb_prop/msgtime");
-    if (mtime > rtime) {
-        AW_edit("${ARBHOME}/lib/message");
-        system("touch ${HOME}/.arb_prop/msgtime");
-    }
     aw_initstatus();
     GB_set_verbose();
 
     GB_shell shell;
-    AW_root *aw_root = AWT_create_root(".arb_prop/ntree.arb", "ARB_NT");
+    AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_NT");
 
     GLOBAL_NT.awr = aw_root;
+
+    {
+        char *message = strdup(GB_path_in_ARBLIB("message"));
+        char *stamp   = strdup(GB_path_in_arbprop("msgtime"));
+        if (GB_time_of_file(message)>GB_time_of_file(stamp)) {
+            AW_edit(message);
+            system(GBS_global_string("touch %s", stamp));
+        }
+        free(stamp);
+        free(message);
+    }
 
     // create some early awars
     // Note: normally you don't like to add your awar-init-function here, but into nt_create_all_awars()
