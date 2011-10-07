@@ -215,7 +215,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
 
             // now temp file exists -> trigger ptserver-selectionlist-update in all
             // ARB applications by writing to log
-            GBS_add_ptserver_logentry(GBS_global_string("Calculating probe tree (%s)", tname));
+            GBS_add_ptserver_logentry(PT_SERVER_LOGTAG, GBS_global_string("Calculating probe tree (%s)", tname));
 
             psg.ptmain = PT_init();
             psg.ptmain->stage1 = 1;             // enter stage 1

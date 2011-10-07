@@ -185,7 +185,7 @@ const char *GBS_ptserver_tag(int id);
 const char *GBS_read_arb_tcp(const char *env);
 const char *const *GBS_get_arb_tcp_entries(const char *matching);
 const char *GBS_ptserver_logname(void);
-void GBS_add_ptserver_logentry(const char *entry);
+void GBS_add_ptserver_logentry(const char *who, const char *entry);
 char *GBS_ptserver_id_to_choice(int i, int showBuild);
 
 /* arbdb.cxx */

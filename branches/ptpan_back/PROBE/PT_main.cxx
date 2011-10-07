@@ -374,7 +374,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR run_command(const char *exename, 
                 else {
                     char *msg = GBS_global_string_copy("PT_SERVER database \"%s\" has been created.", params->db_server);
                     puts(msg);
-                    GBS_add_ptserver_logentry(msg);
+                    GBS_add_ptserver_logentry(PT_SERVER_LOGTAG, msg);
 
                     char *msg_command        = GBS_global_string_copy("arb_message '%s'", msg);
                     if (system(msg_command) != 0) fprintf(stderr, "Failed to run '%s'\n", msg_command);

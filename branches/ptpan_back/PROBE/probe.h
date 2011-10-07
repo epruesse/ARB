@@ -21,6 +21,8 @@
 #define PT_SERVER_MAGIC   0x32108765                // pt server identifier
 #define PT_SERVER_VERSION 2                         // version of pt server database (no versioning till 2009/05/13)
 
+#define PT_SERVER_LOGTAG "PTSERVER"
+
 #define pt_assert(bed) arb_assert(bed)
 
 #if defined(DEBUG)
