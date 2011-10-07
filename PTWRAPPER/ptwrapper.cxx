@@ -15,7 +15,7 @@
 int main(int argc, char *argv[]) {
     GBS_strstruct cmdline(1000);
 
-#if 0
+#if 1
     cmdline.cat("arb_ptserver");
 #else
     cmdline.cat("arb_ptpan --verbose");
