@@ -112,6 +112,7 @@ namespace arb_test {
         bool show_warnings;
         bool assertion_failed;
         bool running_test;
+        bool entered_mutex_loop; // helper to avoid race-condition
 
         // counters
         size_t warnings;
