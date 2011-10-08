@@ -41,7 +41,7 @@ enum Mode { UNKNOWN, SETUP, CLEAN };
 static const char *mode_command[] = { NULL, "setup", "clean" }; // same order as in enum Mode
 static Mode other_mode[] = { UNKNOWN, CLEAN, SETUP }; 
 
-typedef GB_ERROR Error;
+typedef SmartCharPtr Error;
 
 static const char *upcase(const char *str) {
     char *upstr = strdup(str);
@@ -308,6 +308,7 @@ static Error ptserver(Mode mode) {
     // every unit-test using the test-ptserver should simply call
     // TEST_SETUP_GLOBAL_ENVIRONMENT("ptserver");
 
+    Error error;
     switch (mode) {
         case SETUP: {
             test_ptserver_activate(false, TEST_SERVER_ID);                     // first kill pt-server (otherwise we may test an outdated pt-server)
@@ -327,7 +328,7 @@ static Error ptserver(Mode mode) {
             break;
     }
 
-    return NULL;
+    return error;
 }
 
 static Error ptserver_gene(Mode mode) {
@@ -339,6 +340,7 @@ static Error ptserver_gene(Mode mode) {
 
 // #define TEST_AUTO_UPDATE
 
+    Error error;
     switch (mode) {
         case SETUP: {
             test_ptserver_activate(false, TEST_GENESERVER_ID);                     // first kill pt-server (otherwise we may test an outdated pt-server)
@@ -373,16 +375,17 @@ static Error ptserver_gene(Mode mode) {
 
 #undef TEST_AUTO_UPDATE
     
-    return NULL;
+    return error;
 }
 
 // --------------------------------------------------------------------------------
 
 typedef Error (*Environment_cb)(Mode mode);
 
-static Environment_cb  wrapped_cb    = NULL;
-static Mode            wrapped_mode  = UNKNOWN;
-static const char     *wrapped_error = NULL;
+static Environment_cb wrapped_cb   = NULL;
+static Mode           wrapped_mode = UNKNOWN;
+static SmartCharPtr   wrapped_error;
+
 void wrapped() { wrapped_error = wrapped_cb(wrapped_mode); }
 
 static LazyPersistantFlag any_setup(ANY_SETUP, true);
@@ -401,20 +404,20 @@ class FunInfo {
     Error set_to(Mode mode) {
         StaticCode::printf("[%s environment '%s' START]\n", mode_command[mode], get_name());
 
-        wrapped_cb    = cb;
-        wrapped_mode  = mode;
-        wrapped_error = NULL;
+        wrapped_cb   = cb;
+        wrapped_mode = mode;
+        wrapped_error.SetNull();
 
         chdir(runDir());
 
-        long            duration;
-        UnitTestResult  guard_says = execute_guarded(wrapped, &duration, MAX_EXEC_MS_ENV, false);
-        const char     *error      = NULL;
+        long           duration;
+        UnitTestResult guard_says = execute_guarded(wrapped, &duration, MAX_EXEC_MS_ENV, false);
+        Error          error;
 
         switch (guard_says) {
             case TEST_OK:
-                if (wrapped_error) {
-                    error = GBS_global_string("returns error: %s", wrapped_error);
+                if (wrapped_error.isSet()) {
+                    error = GBS_global_string_copy("returns error: %s", &*wrapped_error);
                 }
                 break;
 
@@ -424,14 +427,14 @@ class FunInfo {
                     ? "trapped"
                     : "has been interrupted (might be a deaklock)";
 
-                error = GBS_global_string("%s%s",
-                                          what_happened,
-                                          wrapped_error ? GBS_global_string(" (wrapped_error='%s')", wrapped_error) : "");
+                error = GBS_global_string_copy("%s%s",
+                                               what_happened,
+                                               wrapped_error.isSet() ? GBS_global_string(" (wrapped_error='%s')", &*wrapped_error) : "");
                 break;
             }
         }
-        if (error) {
-            error = GBS_global_string("%s(%s) %s", name.c_str(), upcase(mode_command[mode]), error);
+        if (error.isSet()) {
+            error = GBS_global_string_copy("%s(%s) %s", name.c_str(), upcase(mode_command[mode]), &*error);
         }
         else {
             Mutex m(FLAG_MUTEX);
@@ -468,7 +471,7 @@ public:
     {}
 
     Error switch_to(Mode mode) { // @@@ need to return allocated msg (it gets overwritten)
-        Error error      = NULL;
+        Error error;
         bool  want_setup = (mode == SETUP);
 
         bool perform_change  = false;
@@ -478,8 +481,8 @@ public:
 
             if (changing) { // somebody is changing the environment state
                 if (is_setup == want_setup) { // wanted state was reached, but somebody is altering it
-                    error = GBS_global_string("[environment '%s' was %s, but somebody is changing it to %s]",
-                                              get_name(), mode_command[mode], mode_command[other_mode[mode]]);
+                    error = GBS_global_string_copy("[environment '%s' was %s, but somebody is changing it to %s]",
+                                                   get_name(), mode_command[mode], mode_command[other_mode[mode]]);
                 }
                 else { // the somebody is changing to my wanted state
                     wait_for_change = true;
@@ -543,8 +546,10 @@ static FunInfo *find_module(const char *moduleName) {
 }
 
 static Error set_all_modules_to(Mode mode) {
-    Error error = NULL;
-    for (size_t e = 0; !error && e<MODULES; ++e) error = modules[e].switch_to(mode);
+    Error error;
+    for (size_t e = 0; error.isNull() && e<MODULES; ++e) {
+        error = modules[e].switch_to(mode);
+    }
     return error;
 }
 
@@ -571,8 +576,10 @@ static const char *known_modes(char separator) {
 
 
 int main(int argc, char* argv[]) {
-    Error error = NULL;
-    if (argc<2 || argc>3) error = "Wrong number of arguments";
+    Error error;
+    bool  showUsage = true;
+
+    if (argc<2 || argc>3) error = strdup("Wrong number of arguments");
     else {
         const char *modearg = argv[1];
         Mode        mode    = UNKNOWN;
@@ -582,12 +589,13 @@ int main(int argc, char* argv[]) {
         }
 
         if (mode == UNKNOWN) {
-            error = GBS_global_string("unknown argument '%s' (known modes are: %s)", modearg, known_modes(' '));
+            error = GBS_global_string_copy("unknown argument '%s' (known modes are: %s)", modearg, known_modes(' '));
         }
         else {
             if (argc == 2) {
-                error = set_all_modules_to(mode);
-                
+                error     = set_all_modules_to(mode);
+                showUsage = false;
+
                 if (mode == CLEAN) {
                     Mutex m(FLAG_MUTEX);
                     any_setup = false;    // reset during final environment cleanup
@@ -599,19 +607,20 @@ int main(int argc, char* argv[]) {
                 FunInfo    *module    = find_module(modulearg);
 
                 if (!module) {
-                    error = GBS_global_string("unknown argument '%s' (known modules are: %s)", modulearg, known_modules(' '));
+                    error = GBS_global_string_copy("unknown argument '%s' (known modules are: %s)", modulearg, known_modules(' '));
                 }
                 else {
-                    error = module->switch_to(mode);
+                    error     = module->switch_to(mode);
+                    showUsage = false;
                 }
             }
         }
     }
 
-    if (error) {
+    if (error.isSet()) {
         const char *exename = argv[0];
-        StaticCode::printf("%s: %s\n", exename, error);
-        StaticCode::printf("Usage: %s [%s] [%s]\n", exename, known_modes('|'), known_modules('|'));
+        StaticCode::printf("Error in %s: %s\n", exename, &*error);
+        if (showUsage) StaticCode::printf("Usage: %s [%s] [%s]\n", exename, known_modes('|'), known_modules('|'));
         return EXIT_FAILURE;
     }
 
