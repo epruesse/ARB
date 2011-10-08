@@ -39,6 +39,7 @@ using namespace std;
 
 enum Mode { UNKNOWN, SETUP, CLEAN };
 static const char *mode_command[] = { NULL, "setup", "clean" }; // same order as in enum Mode
+static Mode other_mode[] = { UNKNOWN, CLEAN, SETUP }; 
 
 typedef GB_ERROR Error;
 
@@ -62,6 +63,11 @@ static const char *runDir() {
 static char *mutexDir(const char *name) {
     return strdup(GB_concat_full_path(flagDir(), GBS_global_string("mutex_%s", name)));
 }
+
+#if defined(DEBUG)
+// #define DUMP_MUTEX_ACCESS
+#endif
+
 
 class Mutex : virtual Noncopyable {
     string name;
@@ -104,7 +110,9 @@ public:
             else {
                 int res = mkdir(mutexdir.c_str(), S_IRWXU);
                 if (res == 0) {
+#if defined(DUMP_MUTEX_ACCESS)
                     printf("[%s] allocated mutex '%s'\n", now(), name.c_str());
+#endif
                     gotMutex = true;
                 }
                 else {
@@ -125,7 +133,9 @@ public:
                 GBK_terminatef("[%s] Failed to release mutex dir (%s)", now(), error);
             }
             else {
+#if defined(DUMP_MUTEX_ACCESS)
                 printf("[%s] released mutex '%s'\n", now(), mutexdir.c_str());
+#endif
             }
         }
         known_mutexes.erase(name);
@@ -218,6 +228,7 @@ public:
 
     PersistantFlag& operator = (bool b) {
         if (b != bool(*this)) {
+            StaticCode::printf("Changing flag '%s' to %i\n", name.c_str(), int(b));
             value = b;
             updateFlagFile();
         }
@@ -380,11 +391,15 @@ class FunInfo {
     Environment_cb     cb;
     string             name;
     LazyPersistantFlag is_setup;
+    LazyPersistantFlag changing; // some process is currently setting up/cleaning the environment
+
+    void all_get_lazy_again() {
+        changing.get_lazy_again();
+        is_setup.get_lazy_again();
+    }
 
     Error set_to(Mode mode) {
         StaticCode::printf("[%s environment '%s' START]\n", mode_command[mode], get_name());
-
-        any_setup = true;
 
         wrapped_cb    = cb;
         wrapped_mode  = mode;
@@ -419,6 +434,9 @@ class FunInfo {
             error = GBS_global_string("%s(%s) %s", name.c_str(), upcase(mode_command[mode]), error);
         }
         else {
+            Mutex m(FLAG_MUTEX);
+
+            env_assert(changing);
             is_setup = (mode == SETUP);
 #if defined(SIMULATE_ENVSETUP_TIMEOUT)
             if (mode == SETUP) {
@@ -432,6 +450,8 @@ class FunInfo {
                 sleepms(MAX_EXEC_MS_SLOW+100); // simulate overtime
             }
 #endif
+            changing = false;
+            all_get_lazy_again();
         }
 
         StaticCode::printf("[%s environment '%s' END]\n", mode_command[mode], get_name());
@@ -443,20 +463,59 @@ public:
     FunInfo(Environment_cb cb_, const char *name_)
         : cb(cb_),
           name(name_),
-          is_setup(name_)
+          is_setup(name_),
+          changing(GBS_global_string("changing_%s", name_))
     {}
 
-    Error switch_to(Mode mode) {
+    Error switch_to(Mode mode) { // @@@ need to return allocated msg (it gets overwritten)
         Error error      = NULL;
         bool  want_setup = (mode == SETUP);
-        if (is_setup == want_setup) {
-            StaticCode::printf("[environment '%s' already was %s]\n", get_name(), mode_command[mode]);
-        }
-        else {
-            error = set_to(mode);
+
+        bool perform_change  = false;
+        bool wait_for_change = false;
+        {
+            Mutex m(FLAG_MUTEX);
+
+            if (changing) { // somebody is changing the environment state
+                if (is_setup == want_setup) { // wanted state was reached, but somebody is altering it
+                    error = GBS_global_string("[environment '%s' was %s, but somebody is changing it to %s]",
+                                              get_name(), mode_command[mode], mode_command[other_mode[mode]]);
+                }
+                else { // the somebody is changing to my wanted state
+                    wait_for_change = true;
+                }
+            }
+            else {
+                if (is_setup == want_setup) {
+                    StaticCode::printf("[environment '%s' already was %s]\n", get_name(), mode_command[mode]);
+                }
+                else {
+                    changing  = perform_change = true;
+                    any_setup = true;
+                    any_setup.get_lazy_again();
+                }
+            }
+
+            all_get_lazy_again();
         }
 
-        is_setup.get_lazy_again();
+        env_assert(!(perform_change && wait_for_change));
+
+        if (perform_change) set_to(mode);
+
+        if (wait_for_change) {
+            bool reached = false;
+            while (!reached) {
+                StaticCode::printf("[waiting until environment '%s' reaches '%s']\n", get_name(), mode_command[mode]);
+                sleep(1);
+                {
+                    Mutex m(FLAG_MUTEX);
+                    if (!changing && is_setup == want_setup) reached = true;
+                    all_get_lazy_again();
+                }
+            }
+            StaticCode::printf("[environment '%s' has reached '%s']\n", get_name(), mode_command[mode]);
+        }
 
         return error;
     }
@@ -485,11 +544,7 @@ static FunInfo *find_module(const char *moduleName) {
 
 static Error set_all_modules_to(Mode mode) {
     Error error = NULL;
-
     for (size_t e = 0; !error && e<MODULES; ++e) error = modules[e].switch_to(mode);
-
-    
-
     return error;
 }
 
@@ -531,11 +586,13 @@ int main(int argc, char* argv[]) {
         }
         else {
             if (argc == 2) {
-                Mutex m(FLAG_MUTEX);
-
-                error                        = set_all_modules_to(mode);
-                if (mode == CLEAN) any_setup = false;    // reset during final environment cleanup
-                any_setup.get_lazy_again();
+                error = set_all_modules_to(mode);
+                
+                if (mode == CLEAN) {
+                    Mutex m(FLAG_MUTEX);
+                    any_setup = false;    // reset during final environment cleanup
+                    any_setup.get_lazy_again();
+                }
             }
             else {
                 const char *modulearg = argv[2];
@@ -545,9 +602,7 @@ int main(int argc, char* argv[]) {
                     error = GBS_global_string("unknown argument '%s' (known modules are: %s)", modulearg, known_modules(' '));
                 }
                 else {
-                    Mutex m(FLAG_MUTEX);
                     error = module->switch_to(mode);
-                    any_setup.get_lazy_again();
                 }
             }
         }
