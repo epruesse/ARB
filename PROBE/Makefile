@@ -26,7 +26,7 @@ $(MAIN): $(OBJECTS)
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES) $(POST_COMPILE)
 
 proto:
-	../AISC_MKPTPS/aisc_mkpt -G -E -z -A -w pt_prototypes.h $(OBJECTS:.o=.cxx) probe_tree.h >pt_prototypes.h.tmp
+	../AISC_MKPTPS/aisc_mkpt -P -G -E -z -A -w pt_prototypes.h $(OBJECTS:.o=.cxx) probe_tree.h >pt_prototypes.h.tmp
 	../SOURCE_TOOLS/mv_if_diff pt_prototypes.h.tmp pt_prototypes.h
 
 clean:
@@ -56,6 +56,7 @@ PT_buildtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_core.h
+PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_defs.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_progress.h
@@ -72,6 +73,7 @@ PT_buildtree.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/smartptr.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/test_global.h
+PT_buildtree.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 PT_debug.o: probe.h
 PT_debug.o: probe_tree.h
@@ -201,6 +203,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 PT_main.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_core.h
+PT_main.o: $(ARBHOME)/INCLUDE/arb_defs.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -217,6 +220,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_main.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_main.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_main.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
+PT_main.o: $(ARBHOME)/INCLUDE/ptclean.h
 PT_main.o: $(ARBHOME)/INCLUDE/server.h
 PT_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
 PT_main.o: $(ARBHOME)/INCLUDE/smartptr.h

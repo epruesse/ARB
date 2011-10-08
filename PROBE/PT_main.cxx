@@ -15,11 +15,13 @@
 #include <BI_basepos.hxx>
 
 #include <arbdbt.h>
+#include <arb_defs.h>
 #include <servercntrl.h>
 #include <server.h>
 #include <client.h>
 #include <struct_man.h>
 #include <ut_valgrinded.h>
+#include <ptclean.h>
 
 #include <unistd.h>
 #include <sys/stat.h>
@@ -41,7 +43,7 @@ gene_struct_index_internal gene_struct_internal2arb; // sorted by internal name
 //      Communication
 
 ARB_ERROR pt_init_main_struct(PT_main *, const char *filename) { // __ATTR__USERESULT
-    ARB_ERROR error = probe_read_data_base(filename);
+    ARB_ERROR error = probe_read_data_base(filename, true);
     if (!error) {
         GB_begin_transaction(psg.gb_main);
         psg.alignment_name = GBT_get_default_alignment(psg.gb_main);
@@ -66,8 +68,8 @@ int server_shutdown(PT_main *pm, aisc_string passwd) {
 
     // shutdown server
     aisc_server_shutdown(psg.com_so);
-    PT_exit(EXIT_SUCCESS); // never returns
-    return 0;
+    PT_exit();
+    exit(EXIT_SUCCESS);
 }
 
 int broadcast(PT_main *main, int) {
@@ -97,13 +99,7 @@ void PT_exit_psg() {
     pt_assert(psg_initialized);
     if (psg_initialized) {
         if (psg.gb_main) {
-            int count = GB_number_of_subentries(psg.gb_species_data);
-            for (int i = 0; i < count; ++i) {
-                free(psg.data[i].data);
-                free(psg.data[i].name);
-                free(psg.data[i].fullname);
-            }
-            free(psg.data);
+            delete [] psg.data;
 
             GB_close(psg.gb_main);
             psg.gb_main         = NULL;
@@ -130,12 +126,11 @@ void PT_exit_psg() {
     }
 }
 
-void PT_exit(int exitcode) { // goes to header: __ATTR__NORETURN
+void PT_exit() { 
     // unique exit point to ensure cleanup
     if (aisc_main) destroy_PT_main(aisc_main);
     if (psg_initialized) PT_exit_psg();
     PTM_finally_free_all_mem();
-    exit(exitcode);
 }
 
 // ------------------------------------------------------------------------------ name mapping
@@ -219,7 +214,7 @@ GB_ERROR PT_init_map() { // goes to header: __ATTR__USERESULT
             GBDATA     *map_ptr_str = GB_entry(gb_gene_map, "map_string");
             const char *map_str     = GB_read_char_pntr(map_ptr_str);
 
-            parse_names_into_gene_struct(map_str, all_gene_structs);
+            error = parse_names_into_gene_struct(map_str, all_gene_structs).deliver();
 
             // build indices :
             gene_struct_list::const_iterator end = all_gene_structs.end();
@@ -308,10 +303,22 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR start_pt_server(const char *socke
 
             if (update_reason) {
                 printf("- updating postree (Reason: %s)", update_reason);
-                char *build_cmd  = GBS_global_string_copy("%s -build -D%s", exename, arbdb_name);
-                make_valgrinded_call(build_cmd);
-                error            = GB_system(build_cmd);
-                free(build_cmd);
+
+                const char *build_step[] = {
+                    "build_clean",
+                    "build_map",
+                    "build",
+                };
+
+                for (size_t s = 0; !error && s<ARRAY_ELEMS(build_step); s++) {
+                    if (s == 1 && !GB_supports_mapfile()) continue; // skip useless step 
+                    
+                    char *build_cmd = GBS_global_string_copy("%s -%s -D%s", exename, build_step[s], arbdb_name);
+                    make_valgrinded_call(build_cmd);
+                    error           = GB_system(build_cmd);
+                    free(build_cmd);
+                }
+
                 if (error) error = GBS_global_string("Failed to update postree (Reason: %s)", error.deliver());
             }
         }
@@ -363,7 +370,31 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR run_command(const char *exename, 
     if (!error) {
         char *pt_name = GBS_global_string_copy("%s.pt", params->db_server);
 
-        if (strcmp(command, "-build") == 0) {  // build command
+        if (strcmp(command, "-build_clean") == 0) {  // cleanup source DB
+            error = probe_read_data_base(params->db_server, false);
+            if (!error) {
+                pt_assert(psg.gb_main);
+                error = prepare_ptserver_database(psg.gb_main, PTSERVER);
+                if (!error) {
+                    const char *mode = "bf"; // save PT-server database withOUT! Fastload file
+                    error            = GB_save_as(psg.gb_main, params->db_server, mode);
+                }
+            }
+        }
+        else if (strcmp(command, "-build_map") == 0) {  // create a clean mapfile for source DB
+            if (GB_supports_mapfile()) {
+                error = probe_read_data_base(params->db_server, false);
+                if (!error) {
+                    pt_assert(psg.gb_main);
+                    const char *mode = "bfm"; // save PT-server database with Fastload file
+                    error            = GB_save_as(psg.gb_main, params->db_server, mode);
+                }
+            }
+            else {
+                error = "Invalid invocation of -build_map (your ARB version does not support mapfiles)";
+            }
+        }
+        else if (strcmp(command, "-build") == 0) {  // build command
             error = pt_init_main_struct(aisc_main, params->db_server);
             if (error) error = GBS_global_string("Gave up (Reason: %s)", error.deliver());
             else {
@@ -476,5 +507,6 @@ int main(int argc, char **argv) {
     }
 
     free_arb_params(params);
-    PT_exit(exitcode);
+    PT_exit();
+    return exitcode;
 }

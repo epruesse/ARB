@@ -46,7 +46,7 @@ static void analyse_tree(POS_TREE *pt, int height) {
             ptds->nodes[height]++;
             basecnt = 0;
             for (i=PT_QU; i<PT_B_MAX; i++) {
-                if ((pt_help = PT_read_son(psg.ptmain, pt, (PT_BASES)i)))
+                if ((pt_help = PT_read_son(pt, (PT_BASES)i)))
                 {
                     basecnt++;
                     analyse_tree(pt_help, height+1);
@@ -60,14 +60,14 @@ static void analyse_tree(POS_TREE *pt, int height) {
         default:
             ptds->chains[height]++;
             psg.height = 0;
-            PT_forwhole_chain(psg.ptmain, pt, PT_chain_count());
+            PT_forwhole_chain(pt, PT_chain_count());
             if (psg.height >= DEBUG_MAX_CHAIN_SIZE) psg.height = DEBUG_MAX_CHAIN_SIZE;
             ptds->chainsizes[psg.height][height]++;
             ptds->chainsizes2[psg.height]++;
             ptds->chaincount++;
             if (ptds->chaincount<20) {
                 printf("\n\n\n\n");
-                PT_forwhole_chain(psg.ptmain, pt, PTD_chain_print());
+                PT_forwhole_chain(pt, PTD_chain_print());
             }
             break;
     };
@@ -139,9 +139,9 @@ public:
     int operator()(const DataLoc& leaf) {
         struct probe_input_data& data = psg.data[leaf.name];
 
-        PT_BASES b = (PT_BASES)data.data[leaf.rpos];
+        PT_BASES b = (PT_BASES)data.get_data()[leaf.rpos];
 
-        printf("%s[%c] %s apos=%i rpos=%i\n", prefix, PT_BASES_2_char(b), data.name, leaf.apos, leaf.rpos);
+        printf("%s[%c] %s apos=%i rpos=%i\n", prefix, PT_BASES_2_char(b), data.get_name(), leaf.apos, leaf.rpos);
         return 0;
     }
 };
@@ -151,24 +151,29 @@ void PT_dump_POS_TREE_recursive(POS_TREE *IF_DEBUG(pt), const char *IF_DEBUG(pre
 #if defined(DEBUG)
     switch (PT_read_type(pt)) {
         case PT_NT_NODE:
-            for (int i = PT_N; i<PT_B_MAX; i++) {
+            for (int i = PT_QU; i<PT_B_MAX; i++) {
                 PT_BASES  b   = PT_BASES(i);
-                POS_TREE *son = PT_read_son(psg.ptmain, pt, b);
+                POS_TREE *son = PT_read_son(pt, b);
                 if (son) {
-                    char *subPrefix = GBS_global_string_copy("%s%c", prefix, PT_BASES_2_char(b));
+                    char *subPrefix = GBS_global_string_copy("%s%c", prefix, b == PT_QU ? '.' : PT_BASES_2_char(b));
                     PT_dump_POS_TREE_recursive(son, subPrefix);
                     free(subPrefix);
                 }
             }
             break;
         case PT_NT_LEAF: {
-            PT_dump_leaf dump_leaf(prefix);
-            dump_leaf(DataLoc(psg.ptmain, pt));
+            char         *subPrefix = GBS_global_string_copy("{l} %s", prefix);
+            PT_dump_leaf  dump_leaf(subPrefix);
+            dump_leaf(DataLoc(pt));
+            free(subPrefix);
             break;
         }
-        case PT_NT_CHAIN:
-            PT_forwhole_chain(psg.ptmain, pt, PT_dump_leaf(prefix));
+        case PT_NT_CHAIN: {
+            char *subPrefix = GBS_global_string_copy("{c} %s", prefix);
+            PT_forwhole_chain(pt, PT_dump_leaf(subPrefix));
+            free(subPrefix);
             break;
+        }
         default:
             printf("%s [unhandled]\n", prefix);
             pt_assert(0);
@@ -182,24 +187,28 @@ void PT_dump_POS_TREE_recursive(POS_TREE *IF_DEBUG(pt), const char *IF_DEBUG(pre
 void PT_dump_POS_TREE(POS_TREE * IF_DEBUG(node)) {
     // Debug function for all stages
 #if defined(DEBUG)
-    long             i;
-    PTM2        *ptmain = psg.ptmain;
     if (!node) printf("Zero node\n");
-    PT_READ_PNTR(&node->data, i);
-    printf("node father 0x%lx\n", i);
+
+    {
+        long i;
+        PT_READ_PNTR(&node->data, i);
+        printf("node father 0x%lx\n", i);
+    }
+
     switch (PT_read_type(node)) {
-        case PT_NT_LEAF:
-            printf("leaf %i:%i,%i\n", PT_read_name(ptmain, node),
-                   PT_read_rpos(ptmain, node), PT_read_apos(ptmain, node));
+        case PT_NT_LEAF: {
+            DataLoc loc(node);
+            printf("leaf %i:%i,%i\n", loc.name, loc.rpos, loc.apos);
             break;
+        }
         case PT_NT_NODE:
-            for (i = 0; i < PT_B_MAX; i++) {
-                printf("%6li:0x%p\n", i, PT_read_son(ptmain, node, (PT_BASES)i));
+            for (long i = 0; i < PT_B_MAX; i++) {
+                printf("%6li:0x%p\n", i, PT_read_son(node, (PT_BASES)i));
             }
             break;
         case PT_NT_CHAIN:
             printf("chain:\n");
-            PT_forwhole_chain(ptmain, node, PTD_chain_print());
+            PT_forwhole_chain(node, PTD_chain_print());
             break;
         case PT_NT_SAVED:
             printf("saved:\n");

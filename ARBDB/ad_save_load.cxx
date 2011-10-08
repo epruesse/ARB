@@ -1296,7 +1296,6 @@ static GB_ERROR modify_db(GBDATA *gb_main) {
 }
 
 // #define TEST_AUTO_UPDATE // uncomment to auto-update binary and quicksave testfiles (needed once after changing ascii testfile or modify_db())
-#define TEST_copy(src, dst) TEST_ASSERT(system(GBS_global_string("cp '%s' '%s'", src, dst)) == 0)
 
 #define TEST_loadsave_CLEANUP() TEST_ASSERT(system("rm -f [ab]2[ab]*.* master.* slave.* renamed.* fast.* fast2b.* TEST_loadsave.ARF") == 0)
 
@@ -1372,7 +1371,7 @@ void TEST_SLOW_loadsave() {
         TEST_ASSERT_NO_ERROR(GB_save_quick(gb_b2b, "b2b.arb"));
 
 #if defined(TEST_AUTO_UPDATE)
-        TEST_copy("a2b.a00", "TEST_loadsave_quick.a00");
+        TEST_COPY_FILE("a2b.a00", "TEST_loadsave_quick.a00");
 #endif // TEST_AUTO_UPDATE
 
         TEST_ASSERT_FILES_EQUAL("TEST_loadsave_quick.a00", "a2b.a00");

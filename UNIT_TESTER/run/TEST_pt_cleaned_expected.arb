@@ -1,43 +1,6 @@
 /*ARBDB ASCII*/
 genom_db		%i 0
 presets			%% (%
-	alignment	:6000	%% (%
-		alignment_name	:7600	"ali_mini"
-		alignment_len	:7000	%i 187
-		aligned		:7000	%i 1
-		alignment_write_security	:7600	%i 0
-		alignment_type	:7000	"rna"
-		auto_format		%i 0
-		alignment_rem		"<NONE>"
-		%) /*alignment*/
-
-	key_data		%% (%
-		key			%% (%
-			key_name		"name"
-			key_type		%i 12
-			key_hidden		%i 0
-			%) /*key*/
-
-		key			%% (%
-			key_name		"acc"
-			key_type		%i 12
-			key_hidden		%i 0
-			%) /*key*/
-
-		key			%% (%
-			key_name		"ali_mini"
-			key_type		%i 15
-			key_hidden		%i 0
-			%) /*key*/
-
-		key			%% (%
-			key_name		"ali_mini/data"
-			key_type		%i 12
-			key_hidden		%i 0
-			%) /*key*/
-
-		%) /*key_data*/
-
 	use			"ali_mini"
 	%) /*presets*/
 
@@ -243,40 +206,15 @@ species_data		%% (%
 	%) /*species_data*/
 
 extended_data	:7000	%% (%
+	extended		%% (%
+		name		:7000	"ECOLI"
+		acc			"J01695"
+		full_name		"Escherichia coli"
+		ali_mini		%% (%
+			data		:7000	".AAAUUGAAGAGUUUGAUCAUG----UCGAGCGGGCGGAACACAUGCAAAGCUUGCUUCUUUGCG------ACGAGUGGC-GGACGGGUGAGGGGAAACGGUAGCUAAUACCGCAUAAC-GAUGACUAAAGUUAAUACCUAUUGA-CGUUACCCGCAGAAGAAGCACCGGCUAACUCCGUGCCAG.."
+			%) /*ali_mini*/
+
+		%) /*extended*/
+
 	%) /*extended_data*/
-
-tree_data	:7000	%% (%
-	tree_ph_24306		%% (%
-		tree			"N0.03618,0.03618;N0.04082,0.06452;N0.0404,0.28364;N0.0473,0.2638;N0.06826,0.13072;N0.09494,0.11285;LHllHalod\ALLgtLytic\ALPslFlave\AN0.04416,0.07602;N0.02484,0.01242;LVbhChole\ALVblVulni\ALVbrFurni\AN0.13971,0.16265;N0.02,0.35135;N0.07947,0.09524;LClnCorin\ALCPPParap\ALCltBotul\ALClfPerfr\AN0.28846,0.2;N0.06844,0.10559;N0.06211,0.58369;N0.09357,0.06548;LAclPleur\ALPtVVVulg\ALPsAAAA00\ALDcdNodos\ALFrhhPhil\AN0.19802,0.06369;N0.04192,0.02516;LBcSSSS00\ALBl0LLL00\AN0.04516,0.04487;N0.03974,0.04516;N0.09717,0.10759;N0.10726,0.77778;LDlcTolu2\ALDsssDesu\ALStsssola\ALPbcAcet2\ALPbrPropi\A"
-		nnodes			%i 21
-		remark			"PRG=neighbor CORR=F84 FILTER=none PKG=phylip\n\nSun Aug 22 21:38:37 2010: Loaded from outtree\n\nTree loaded from 'outtree' on Sun Aug 22 21:38:37 2010\nSun Aug 22 22:01:06 2010: tree_ph_24306 saved to /home/ralf/data/db/ph_24306.tree\nSun Aug 22 22:02:33 2010: Loaded from /home/ralf/data/db/ph_24306.tree\n"
-		security		%i 0
-		ruler			%% (%
-			size			%f 0.1
-			LIST			%% (%
-				ruler_y			%f 0
-				ruler_x			%f 0
-				text_x			%f 0
-				text_y			%f 0
-				%) /*LIST*/
-
-			ruler_width		%i 0
-			%) /*ruler*/
-
-		%) /*tree_ph_24306*/
-
-	%) /*tree_data*/
-
-focus			%% (%
-	tree_name		"tree_ph_24306"
-	%) /*focus*/
-
-description		"db for unit-test pt-server"
-
-checks			%% (%
-	check			"fix gene_data"
-	check			"fix_dict_compress"
-	check			"del_mark_move_REF"
-	check			"duplicated_item_colors"
-	%) /*checks*/
 

@@ -410,11 +410,12 @@ inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr, const int mainapos, in
 }
 // calculate the index of the pointer in a node
 
-inline POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
+inline POS_TREE *PT_read_son(POS_TREE *node, PT_BASES base)
 {
-    long i;
-    UINT sec;
-    UINT offset;
+    long  i;
+    UINT  sec;
+    UINT  offset;
+    PTM2 *ptmain = psg.ptmain;
     if (ptmain->stage3) {       // stage 3  no father
         if (node->flags & IS_SINGLE_BRANCH_NODE) {
             if (base != (node->flags & 0x7)) return NULL;  // no son
@@ -502,13 +503,12 @@ inline POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
     }
 }
 
-inline POS_TREE *PT_read_son_stage_1(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
-{
-    long i;
+inline POS_TREE *PT_read_son_stage_1(POS_TREE *node, PT_BASES base) {
     if (!((1<<base) & node->flags)) return NULL;   // bit not set
     base = (PT_BASES)PT_count_bits[base][node->flags];
-    PT_READ_PNTR((&node->data)+sizeof(PT_PNTR)*base+ptmain->mode, i);
-    return (POS_TREE *)(i+ptmain->data_start); // ptmain->data_start == 0x00 in stage 1
+    long i;
+    PT_READ_PNTR((&node->data)+sizeof(PT_PNTR)*base+psg.ptmain->mode, i);
+    return (POS_TREE *)(i+psg.ptmain->data_start); // psg.ptmain->data_start == 0x00 in stage 1
 }
 
 inline PT_NODE_TYPE PT_read_type(POS_TREE *node)
@@ -516,88 +516,50 @@ inline PT_NODE_TYPE PT_read_type(POS_TREE *node)
     return (PT_NODE_TYPE)PT_GET_TYPE(node);
 }
 
-inline int PT_read_name(PTM2 *ptmain, POS_TREE *node)
-{
-    int i;
-    if (node->flags&1) {
-        PT_READ_INT((&node->data)+ptmain->mode, i);
-    }
-    else {
-        PT_READ_SHORT((&node->data)+ptmain->mode, i);
-    }
-    pt_assert(i >= 0);
-    return i;
-}
-
-inline int PT_read_rpos(PTM2 *ptmain, POS_TREE *node)
-{
-    int i;
-    char *data = (&node->data)+2+ptmain->mode;
-    if (node->flags&1) data+=2;
-    if (node->flags&2) {
-        PT_READ_INT(data, i);
-    }
-    else {
-        PT_READ_SHORT(data, i);
-    }
-    pt_assert(i >= 0);
-    return i;
-}
-
-inline int PT_read_apos(PTM2 *ptmain, POS_TREE *node)
-{
-    int i;
-    char *data = (&node->data)+ptmain->mode+4;  // father 4 name 2 rpos 2
-    if (node->flags&1) data+=2;
-    if (node->flags&2) data+=2;
-    if (node->flags&4) {
-        PT_READ_INT(data, i);
-    }
-    else {
-        PT_READ_SHORT(data, i);
-    }
-    pt_assert(i >= 0);
-    return i;
-}
-
 struct DataLoc {
-    int name;
+    int name; // index into psg.data[], aka as species id
     int apos;
-    int rpos;
+    int rpos; // position in data
 
     void init(const char ** data, int pos) {
         *data = PT_READ_CHAIN_ENTRY(*data, pos, &name, &apos, &rpos);
     }
-    void init(PTM2 *ptmain, POS_TREE *pt) {
-        pt_assert(PT_read_type(pt) == PT_NT_LEAF);
+    void init(POS_TREE *node) {
+        pt_assert(PT_read_type(node) == PT_NT_LEAF);
+        char *data = (&node->data)+psg.ptmain->mode;
+        if (node->flags&1) { PT_READ_INT(data, name); data += 4; } else { PT_READ_SHORT(data, name); data += 2; }
+        if (node->flags&2) { PT_READ_INT(data, rpos); data += 4; } else { PT_READ_SHORT(data, rpos); data += 2; }
+        if (node->flags&4) { PT_READ_INT(data, apos); data += 4; } else { PT_READ_SHORT(data, apos); data += 2; }
 
-        name = PT_read_name(ptmain, pt);
-        apos = PT_read_apos(ptmain, pt);
-        rpos = PT_read_rpos(ptmain, pt);
+        pt_assert(name >= 0);
+        pt_assert(apos >= 0);
+        pt_assert(rpos >= 0);
     }
 
     DataLoc(int name_, int apos_, int rpos_) : name(name_), apos(apos_), rpos(rpos_) {}
-    DataLoc(const char ** data, int pos) {
-        name = 0;
-        init(data, pos);
-    }
-    DataLoc(PTM2 *ptmain, POS_TREE *pt) {
-        init(ptmain, pt);
-    }
+    DataLoc(POS_TREE *pt) { init(pt); }
+    DataLoc(const char ** data, int pos) { name = 0; init(data, pos); }
+
+    const probe_input_data& get_pid() const { pt_assert(name >= 0 && name<psg.data_count); return psg.data[name]; }
+    const char *get_data() const { return get_pid().get_data(); }
+    PT_BASES operator[](int offset) const { return PT_BASES(get_data()[rpos+offset]); }
+
+    int restlength() const { return get_pid().get_size()-rpos; }
+    bool is_shorther_than(int offset) const { return offset >= restlength(); }
 
 #if defined(DEBUG)
     void dump(FILE *fp) const {
-        fprintf(fp, "          apos=%6i  rpos=%6i  name=%6i='%s'\n", apos, rpos, name, psg.data[name].name);
+        fprintf(fp, "          apos=%6i  rpos=%6i  name=%6i='%s'\n", apos, rpos, name, psg.data[name].get_name());
         fflush(fp);
     }
 #endif
 };
 
 template<typename T>
-int PT_forwhole_chain(PTM2 *ptmain, POS_TREE *node, T func) {
+int PT_forwhole_chain(POS_TREE *node, T func) {
     pt_assert(PT_read_type(node) == PT_NT_CHAIN);
 
-    const char *data = (&node->data) + ptmain->mode;
+    const char *data = (&node->data) + psg.ptmain->mode;
     int         pos;
 
     if (node->flags&1) {
@@ -620,15 +582,15 @@ int PT_forwhole_chain(PTM2 *ptmain, POS_TREE *node, T func) {
 }
 
 template<typename T>
-int PT_withall_tips(PTM2 *ptmain, POS_TREE *node, T func) {
+int PT_withall_tips(POS_TREE *node, T func) {
     // like PT_forwhole_chain, but also can handle leafs
     PT_NODE_TYPE type = PT_read_type(node);
     if (type == PT_NT_LEAF) {
-        return func(DataLoc(ptmain, node));
+        return func(DataLoc(node));
     }
 
     pt_assert(type == PT_NT_CHAIN);
-    return PT_forwhole_chain(ptmain, node, func);
+    return PT_forwhole_chain(node, func);
 }
 
 #if defined(DEBUG)

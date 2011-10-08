@@ -673,6 +673,14 @@ GB_ERROR gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
     return error;
 }
 
+bool GB_supports_mapfile() {
+#if (MEMORY_TEST == 1)
+    return false;
+#else
+    return true;
+#endif
+}
+
 int gb_is_valid_mapfile(const char *path, gb_map_header *mheader, int verbose) {
     /* Test whether mapfile is valid
      * returns
