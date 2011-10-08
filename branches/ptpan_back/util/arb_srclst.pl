@@ -167,7 +167,6 @@ my @used_when_matchesFull = (
                              qr/\/UNIT_TESTER\/run\/.*\.out$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.tree$/o,
                              qr/\/UNIT_TESTER\/run\/impexp\/.*\.exported$/o,
-                             qr/\/UNIT_TESTER\/run\/TEST_.*\.pt$/o, # has to move to skipped_when_matchesFull (when merging test env)
                              qr/\/UNIT_TESTER\/valgrind\/arb_valgrind_logged$/o,
                              qr/^\.\/etc\//o,
                              qr/^\.\/lib\/arb_default\/.*\.arb$/o,
@@ -210,6 +209,9 @@ my @skipped_when_matchesFull = (
                                 qr/^\.\/PERL2ARB\/pm_to_blib$/o,
                                 qr/^\.\/SOURCE_TOOLS\/valgrind2grep\.lst$/o,
                                 qr/^\.\/TEMPLATES\/arb_build\.h$/o,
+                                qr/^\.\/UNIT_TESTER\/run\/TEST_g?pt\.arb$/o,
+                                qr/^\.\/UNIT_TESTER\/run\/.*\.ARM$/o,
+                                qr/^\.\/UNIT_TESTER\/run\/.*\.ARF$/o,
                                 qr/date\.xsl$/o,
                                );
 

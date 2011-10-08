@@ -67,17 +67,6 @@ void TEST_SLOW_ascii_2_bin_2_ascii() {
     TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink("ascii2bin2.ARF"));
 }
 
-void TEST_SLOW_arb_gene_probe() {
-    const char *genome   = "tools/gene_probe.arb";
-    const char *out      = "tools/gene_probe_out.arb";
-    const char *expected = "tools/gene_probe_expected.arb";
-
-    TEST_RUN_TOOL(GBS_global_string("arb_gene_probe %s %s", genome, out));
-    TEST_ASSERT_FILES_EQUAL(out, expected);
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(out));
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink("tools/gene_probe_out.ARM"));
-}
-
 void TEST_arb_primer() {
     const char *primer_db       = "TEST_nuc.arb";
     const char *primer_stdin    = "tools/arb_primer.in";
@@ -180,7 +169,7 @@ void TEST_SLOW_arb_read_tree() {
     } while(0)
 
 void TEST_arb_replace() {
-    const char *infile = "tools/gene_probe.arb";
+    const char *infile = "tools/arb_replace.in";
     const char *file1  = "tools/arb_replace_1.out";
     const char *file2  = "tools/arb_replace_2.out";
 
@@ -298,10 +287,9 @@ void TEST_SLOW_arb_probe() {
                        " serverid=-666"
                        " matchsequence=UAUCGGAGAGUUUGA",
 
-                       "    name---- fullname mis N_mis wmis pos rev          'UAUCGGAGAGUUUGA'"
-                       "BcSSSS00"
-                       "  BcSSSS00            0     0  0.0   3 0   .......UU-===============-UCAAGUCGA"
-                       );
+                       /* ---- */ "    name---- fullname mis N_mis wmis pos ecoli rev          'UAUCGGAGAGUUUGA'\1"
+                       "BcSSSS00\1" "  BcSSSS00            0     0  0.0   3     2 0   .......UU-===============-UCAAGUCGA\1"
+        );
 
     TEST_STDOUT_EQUALS("arb_probe"
                        " serverid=-666"
@@ -316,10 +304,10 @@ void TEST_SLOW_arb_probe() {
                        "Max Non Group Hits     0\n"
                        "Min Group Hits       100%\n"
                        "Target             le     apos ecol grps  G+C 4GC+2AT Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
-                       "CGAAAGGAAGAUUAAUAC 18 A=    94   94    4 33.3 48.0    GUAUUAAUCUUCCUUUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-                       "GAAAGGAAGAUUAAUACC 18 A+     1   95    4 33.3 48.0    GGUAUUAAUCUUCCUUUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-                       "UCAAGUCGAGCGAUGAAG 18 B=    18   18    4 50.0 54.0    CUUCAUCGCUCGACUUGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-                       "AUCAAGUCGAGCGAUGAA 18 B-     1   17    4 44.4 52.0    UUCAUCGCUCGACUUGAU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  2,  3,\n"
+                       "CGAAAGGAAGAUUAAUAC 18 A=    94   82    4 33.3 48.0    GUAUUAAUCUUCCUUUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+                       "GAAAGGAAGAUUAAUACC 18 A+     1   83    4 33.3 48.0    GGUAUUAAUCUUCCUUUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+                       "UCAAGUCGAGCGAUGAAG 18 B=    18   17    4 50.0 54.0    CUUCAUCGCUCGACUUGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+                       "AUCAAGUCGAGCGAUGAA 18 B-     1   16    4 44.4 52.0    UUCAUCGCUCGACUUGAU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  2,  3,\n"
                        );
 }
 

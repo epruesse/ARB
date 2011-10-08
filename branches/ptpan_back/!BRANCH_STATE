@@ -1,0 +1,35 @@
+
+performed merges in this branch
+
+        FullSync @ 7997 (created from trunk)
+
+TRUNK->BRANCH
+
+                8028 8031 8035 8036 8037 8038 8039 8040 -> 8044
+                8041 -> 8045
+
+    skipped patches (depends, already there, ...)
+
+    not merged yet:
+
+        --- current try above
+
+
+    not reviewed: 8042:HEAD
+
+BRANCH->TRUNK
+
+
+    skipped patches (depends, already there, this file, ...)
+
+
+    not merged yet:
+
+
+        --- do above later (unfinished etc)
+
+
+        --- current try above
+
+
+    not reviewed: 8010:HEAD
