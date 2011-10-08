@@ -214,13 +214,15 @@ inline bool kill_verbose(pid_t pid, int sig, const char *signame) {
 // set by TestEnvironment.cxx@ANY_SETUP
 static const char * const any_setup_flag = "../" FLAGS_DIR "/" ANY_SETUP "." FLAGS_EXT;
 
-static bool been_inside_environment() {
+static bool any_setup_flag_exists() {
     struct stat stt;
     return stat(any_setup_flag, &stt) == 0 && S_ISREG(stt.st_mode);
-    // dups GB_is_regularfile("any_setup")
+}
+static bool been_inside_environment() {
+    return any_setup_flag_exists() || arb_test::test_data().entered_mutex_loop;
 }
 static void reset_been_inside_environment() {
-    if (been_inside_environment()) {
+    if (any_setup_flag_exists()) {
         TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(any_setup_flag));
     }
 }

@@ -26,6 +26,7 @@
 #include <unistd.h>
 
 #include <sys/stat.h>
+#include <sys/time.h>
 
 
 #define env_assert(cond) arb_assert(cond)
@@ -68,6 +69,14 @@ class Mutex : virtual Noncopyable {
 
     bool mutexdir_exists() const { return GB_is_directory(mutexdir.c_str()); }
 
+    static const char *now() {
+        static char buf[100];
+        timeval t;
+        gettimeofday(&t, NULL);
+        sprintf(buf, "%li.%li", t.tv_sec, t.tv_usec);
+        return buf;
+    }
+
     static set<string> known_mutexes;
 
 public:
@@ -82,24 +91,25 @@ public:
 
         arb_assert(maxwait>0);
 
+        test_data().entered_mutex_loop = true; // avoid race-condition
         while (!gotMutex) {
             if (mutexdir_exists()) {
                 if (wait>maxwait && mutexdir_exists()) {
-                    GBK_terminatef("Failed to get mutex for more than %i seconds", maxwait);
+                    GBK_terminatef("[%s] Failed to get mutex for more than %i seconds", now(), maxwait);
                 }
-                printf("mutex '%s' exists.. sleeping\n", name.c_str());
+                printf("[%s] mutex '%s' exists.. sleeping\n", now(), name.c_str());
                 sleep(1);
                 wait++;
             }
             else {
                 int res = mkdir(mutexdir.c_str(), S_IRWXU);
                 if (res == 0) {
-                    printf("allocated mutex '%s'\n", name.c_str());
+                    printf("[%s] allocated mutex '%s'\n", now(), name.c_str());
                     gotMutex = true;
                 }
                 else {
                     wait = 0; // reset timeout
-                    printf("lost race for mutex '%s'\n", name.c_str());
+                    printf("[%s] lost race for mutex '%s'\n", now(), name.c_str());
                 }
             }
         }
@@ -107,15 +117,15 @@ public:
     }
     ~Mutex() {
         if (!mutexdir_exists()) {
-            printf("Strange - mutex '%s' has vanished\n", name.c_str());
+            printf("[%s] Strange - mutex '%s' has vanished\n", now(), name.c_str());
         }
         else {
             if (rmdir(mutexdir.c_str()) != 0) {
                 const char *error = GB_IO_error("remove", mutexdir.c_str());
-                GBK_terminatef("Failed to release mutex dir (%s)", error);
+                GBK_terminatef("[%s] Failed to release mutex dir (%s)", now(), error);
             }
             else {
-                printf("released mutex '%s'\n", mutexdir.c_str());
+                printf("[%s] released mutex '%s'\n", now(), mutexdir.c_str());
             }
         }
         known_mutexes.erase(name);
