@@ -27,10 +27,11 @@ int main(int argc, char *argv[]) {
     }
 
     char *cmd = cmdline.release();
-    fprintf(stderr, "ptwrapper calls '%s'\n", cmd);
+    fprintf(stderr, "ptwrapper calls '%s'\n", cmd); fflush(stderr);
 
     make_valgrinded_call(cmd);
     int pt_exit = system(cmd);
+    fprintf(stderr, "ptwrapper returns with ec=%i from '%s'\n", pt_exit, cmd); fflush(stderr);
     free(cmd);
     return pt_exit;
 }
