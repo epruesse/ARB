@@ -78,7 +78,7 @@ static void aw_message(const char *error) {
 static const char *AP_probe_pt_look_for_server(ARB_ERROR& error) {
     const char *server_tag = GBS_ptserver_tag(P.SERVERID);
 
-    error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, 0);
+    error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag);
     if (error) return NULL;
     
     return GBS_read_arb_tcp(server_tag);
@@ -880,7 +880,7 @@ void TEST_SLOW_variable_defaults_in_server() {
     test_setup(false);
 
     const char *server_tag = GBS_ptserver_tag(TEST_SERVER_ID);
-    TEST_ASSERT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, 0));
+    TEST_ASSERT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag));
 
     const char *servername = GBS_read_arb_tcp(server_tag);;
     TEST_ASSERT_EQUAL(servername, "localhost:3200"); // as defined in ../lib/arb_tcp.dat@ARB_TEST_PT_SERVER

@@ -150,7 +150,7 @@ static void sina_start(AW_window *window, AW_CL cl_AlignDataAccess) {
         pt_db += strlen(pt_db)+3;
 
         // start pt server if necessary
-        gb_error = arb_look_and_start_server(AISC_MAGIC_NUMBER, ptnam.str().c_str(), GLOBAL_gb_main);
+        gb_error = arb_look_and_start_server(AISC_MAGIC_NUMBER, ptnam.str().c_str());
         if (gb_error) {
             std::stringstream tmp;
             tmp << "Cannot contact PT server. Aborting" << endl
