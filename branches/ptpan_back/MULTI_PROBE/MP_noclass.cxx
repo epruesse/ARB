@@ -931,7 +931,7 @@ int MP_init_local_com_struct()
 
 const char *MP_probe_pt_look_for_server() {
     const char *server_tag = GBS_ptserver_tag(mp_gl_awars.ptserver);
-    GB_ERROR    error      = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, 0);
+    GB_ERROR    error      = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag);
 
     if (error) {
         aw_message(error);

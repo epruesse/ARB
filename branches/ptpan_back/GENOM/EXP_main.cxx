@@ -113,8 +113,8 @@ static AW_window *create_colorize_experiments_window(AW_root *aw_root, AW_CL cl_
     return QUERY::create_colorize_items_window(aw_root, gb_main, EXP_get_selector());
 }
 
-static void EXP_run_pgt(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
-    AW_system(aww, (GBDATA*)cl_gb_main, "arb_pgt &", 0);
+static void EXP_run_pgt(AW_window *aww, AW_CL, AW_CL) {
+    AW_system(aww, "arb_pgt &", 0);
 }
 
 #define AWMIMT awm->insert_menu_topic
@@ -136,7 +136,7 @@ void EXP_create_experiments_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, 
         AWMIMT("experiment_colors",     "Colors ...",           "C",    "mark_colors.hlp", AWM_ALL, AW_POPUP,  (AW_CL)create_colorize_experiments_window, (AW_CL)gb_main);
 
         awm->insert_separator();
-        AWMIMT("pgt", "Proteom Genome Toolkit (PGT)", "P", "pgt.hlp", AWM_ALL, EXP_run_pgt, (AW_CL)gb_main, 0);
+        AWMIMT("pgt", "Proteom Genome Toolkit (PGT)", "P", "pgt.hlp", AWM_ALL, EXP_run_pgt, 0, 0);
     }
     if (submenu) awm->close_sub_menu();
 }

@@ -185,7 +185,7 @@ INLINE_ATTRIBUTED(__ATTR__USERESULT_TODO, GB_ERROR ARB_init_global_awars(AW_root
 
 inline AW_default get_AW_ROOT_DEFAULT() { return AW_root::SINGLETON->check_properties(NULL); }
 
-void AW_system(AW_window *aww, GBDATA *gb_main, const char *command, const char *auto_help_file);
+void AW_system(AW_window *aww, const char *command, const char *auto_help_file);
 
 #else
 #error aw_root.hxx included twice

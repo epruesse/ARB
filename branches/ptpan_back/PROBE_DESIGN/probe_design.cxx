@@ -235,14 +235,14 @@ int init_local_com_struct()
     return 0;
 }
 
-static const char *PD_probe_pt_look_for_server(AW_root *root, GBDATA *gb_main, GB_ERROR& error) {
+static const char *PD_probe_pt_look_for_server(AW_root *root, GB_ERROR& error) { 
     // return PT server info string (see GBS_read_arb_tcp for details)
     // or NULL (in this case 'error' is set)
 
     const char *result     = 0;
     const char *server_tag = GBS_ptserver_tag(root->awar(AWAR_PT_SERVER)->read_int());
 
-    error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, gb_main);
+    error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag);
     if (!error) {
         result             = GBS_read_arb_tcp(server_tag);
         if (!result) error = GB_await_error();
@@ -417,7 +417,7 @@ void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
     progress.subtitle("Connecting PT-server");
 
     {
-        const char *servername = PD_probe_pt_look_for_server(root, gb_main, error);
+        const char *servername = PD_probe_pt_look_for_server(root, error);
         if (servername) {
             pd_gl.link = aisc_open(servername, &pd_gl.com, AISC_MAGIC_NUMBER);
             if (!pd_gl.link) error = "can't contact PT server";
@@ -681,7 +681,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
         SmartPtr<arb_progress> progress;
         
         if (!error) {
-            const char *servername = PD_probe_pt_look_for_server(root, gb_main, error);
+            const char *servername = PD_probe_pt_look_for_server(root, error);
 
             if (!error) {
                 if (selection_id) {
@@ -1654,10 +1654,10 @@ AW_window *create_probe_match_window(AW_root *root, AW_CL cl_gb_main) {
     return aws;
 }
 
-static void pd_start_pt_server(AW_window *aww, AW_CL cl_gb_main) {
+static void pd_start_pt_server(AW_window *aww) {
     const char *server_tag = GBS_ptserver_tag(aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
     arb_progress progress("Connecting PT-server");
-    GB_ERROR error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, (GBDATA*)cl_gb_main);
+    GB_ERROR error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag);
     if (error) aw_message(error);
 }
 
@@ -1814,7 +1814,7 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
 
         if (!error) {
             progress.subtitle("Start PT-server (builds in background)");
-            error = arb_start_server(server_tag, gb_main, 1);
+            error = arb_start_server(server_tag, 1);
         }
     }
     if (error) aw_message(error);
@@ -1849,7 +1849,7 @@ AW_window *create_probe_admin_window(AW_root *root, AW_CL cl_gb_main) {
     awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, false);
 
     aws->at("start");
-    aws->callback(pd_start_pt_server, (AW_CL)gb_main);
+    aws->callback(pd_start_pt_server);
     aws->create_button("START_SERVER", "Start server");
 
     aws->at("kill");
