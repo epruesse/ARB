@@ -364,7 +364,7 @@ int main(int argc, char *argv[]) {
                 } else if (strncmp(argv[i], "--prefix=", 9) == 0) {
                     std::string s = std::string(&argv[i][9]);
                     settings->setMaxPrefixLength(atoi(s.c_str()) + 1);
-                    printf("Setting maximum prefix length to: %u\n",
+                    printf("Setting maximum prefix length to: %lu\n",
                             settings->getMaxPrefixLength() - 1);
                 } else if (strncmp(argv[i], "--ratio=", 8) == 0) {
                     std::string s = std::string(&argv[i][8]);
@@ -376,7 +376,7 @@ int main(int argc, char *argv[]) {
                 } else if (strncmp(argv[i], "--threads=", 10) == 0) {
                     std::string s = std::string(&argv[i][10]);
                     settings->setThreadNumber(atoi(s.c_str()));
-                    printf("Setting maximum number of threads to: %u\n",
+                    printf("Setting maximum number of threads to: %lu\n",
                             settings->getThreadNumber());
                 } else if ((strncmp(argv[i], "-v", 2) == 0)
                         || (strncmp(argv[i], "--verbose", 9) == 0)) {

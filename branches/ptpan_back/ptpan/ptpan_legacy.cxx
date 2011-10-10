@@ -428,7 +428,7 @@ bytestring *PT_unknown_names(PT_pdc *pdc) {
 #ifdef DEBUG
             printf("found %ld ids after splitting\n", splitted.size());
             if (splitted.size() == 1) {
-                printf("'%s'\n", splitted[0]);
+                printf("'%s'\n", splitted[0].c_str());
             }
 #endif
 
