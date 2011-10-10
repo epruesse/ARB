@@ -1350,62 +1350,6 @@ Node *rp;
 
 
 void
-chroot(tr, s1, s2)
-Tree *tr;
-int s1, s2;
-{
-	Node *rp, *cp, *op, *xp, *yp;
-
-	if (Outgr_optn == 2) {
-	} else { 
-	}
-
-	rp = tr->ebrnchp[s1]->kinp;
-	cp = rp;
-	do {
-		cp = cp->isop->kinp;
-		if (cp->isop == NULL) { /* external node */
-			cp->descen = TRUE;
-			cp = cp->kinp;
-			cp->descen = FALSE;
-		} else { /* internal node */
-			if (cp->descen != -1) {
-				cp->descen = TRUE;
-				cp->kinp->descen = -1;
-				tr->ibrnchp[cp->num - Maxspc] = cp;
-			} else {
-				cp->descen = FALSE;
-			}
-			if (!cp->descen) {
-				op = cp->kinp;
-				xp = op->isop;
-				yp = xp->isop;
-				if (xp->num > yp->num) {
-					op->isop = yp;
-					yp->isop = xp;
-					xp->isop = op;
-				}
-				cp->num = op->isop->num;
-				xp->num = xp->kinp->num;
-				yp->num = yp->kinp->num;
-			}
-		}
-	} while (cp != rp);
-	op = cp;
-	xp = op->isop;
-	yp = xp->isop;
-	if (xp->num > yp->num) {
-		op->isop = yp;
-		yp->isop = xp;
-		xp->isop = op;
-	}
-	xp->num = xp->kinp->num;
-	yp->num = yp->kinp->num;
-	op->num = op->kinp->num;
-} /* chroot */
-
-
-void
 noexch(rp, exchstate)
 Node *rp;
 ivector exchstate;
