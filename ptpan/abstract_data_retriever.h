@@ -21,6 +21,9 @@
  * be provided to hand in the data source information.
  */
 class AbstractDataRetriever {
+    AbstractDataRetriever(const AbstractDataRetriever&);
+    AbstractDataRetriever& operator = (const AbstractDataRetriever&);
+
 protected:
  AbstractDataRetriever();
  AbstractDataRetriever(AbstractAlphabetSpecifics *specifics);

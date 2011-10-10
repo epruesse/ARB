@@ -139,6 +139,10 @@ HitTuple::HitTuple(ULLONG abs_pos, struct PTPanEntry *entry) :
         ht_AbsPos(abs_pos), ht_Entry(entry) {
 }
 
+HitTuple::HitTuple(const HitTuple& other) :
+    ht_AbsPos(other.ht_AbsPos), ht_Entry(other.ht_Entry) {
+}
+
 /*!
  * \brief Destructor
  */

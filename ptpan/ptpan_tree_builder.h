@@ -389,9 +389,12 @@ private:
      * next entry from list
      */
     class EntryDispatcher {
+        EntryDispatcher(const EntryDispatcher&);
+        EntryDispatcher& operator=(const EntryDispatcher&);
+        
     public:
         EntryDispatcher() :
-                m_ps(NULL), m_mutex(), m_first(true) {
+            m_ps(NULL), m_mutex(), m_first(true) {
         }
 
         ~EntryDispatcher() {
