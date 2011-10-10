@@ -16,9 +16,9 @@ void help() {
         " --db <FILE>             ARB file\n"
         " --port <PORT>           port of PT server\n"
         " --sequence <SEQUENCE>   probe\n"
-        " --reversed              match reversed also\n"
-        " --complement            match complement also\n"
-        " --maxhits <N>           maximum number of hits on db (1,000,000)\n"
+        " --reversed              reverse probe before matching\n"
+        " --complement            complement probe before matching\n"
+        " --max-hits <N>           maximum number of hits on db (1,000,000)\n"
         " --weighted              use weighted matching\n"
         " --weighted-pos          use weighted matching with pos&strength\n"
         " --n-matches <N>         consider N occurances of 'N' as match (2)\n"
@@ -54,6 +54,7 @@ int main(int argc, char ** argv) {
     }
 
     for (int i = 1; i < argc; i++) {
+        int err = 0;
         if (!strcmp(argv[i], "--help")) {
             help();
             return 0;
@@ -80,9 +81,14 @@ int main(int argc, char ** argv) {
                 n_limit = atoi(argv[++i]);
             } else if (!strcmp(argv[i], "--mismatches")) {
                 max_mismatches = atoi(argv[++i]);
+            } else {
+                err = 1;
             }
         } else {
-            cerr << "Error: Did not understand argument '" << argv[i] 
+            err = 1;
+        }
+        if (err) {
+            cerr << "Error: Did not understand argument '" << argv[i]
                  << "'." << endl << endl;
             help();
             return 1;
@@ -184,7 +190,7 @@ int main(int argc, char ** argv) {
               << "seq"
               << std::endl;
 
-    while(match_list) {
+    while (match_list) {
         char *m_acc, *m_sequence;
         long m_start, m_stop, m_pos, m_mismatches, m_n_mismatches;
         long m_reversed;
@@ -203,16 +209,16 @@ int main(int argc, char ** argv) {
                  MATCHLIST_REVERSED,      &m_reversed,
                  MATCHLIST_NEXT,          &match_list,
                  NULL);
-        std::cout << m_acc << "\t" 
-                  << m_start << "\t" 
-                  << m_stop << "\t" 
-                  << m_pos << "\t" 
-                  << m_mismatches << "\t" 
-                  << m_wmismatches << "\t" 
+        std::cout << m_acc << "\t"
+                  << m_start << "\t"
+                  << m_stop << "\t"
+                  << m_pos << "\t"
+                  << m_mismatches << "\t"
+                  << m_wmismatches << "\t"
                   << m_n_mismatches << "\t"
-                  << m_dt << "\t" 
+                  << m_dt << "\t"
                   << m_reversed << "\t"
-                  << m_sequence << "\t" 
+                  << m_sequence << "\t"
                   << std::endl;
         fflush(stdout);
     }
