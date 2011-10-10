@@ -250,6 +250,8 @@ for(            ULONG pos = 0; pos < sqh_PosWeightLength; ++pos) {
      *     over PTPan
      */
     class LevenshteinSupport {
+        LevenshteinSupport(const LevenshteinSupport&);
+        LevenshteinSupport& operator=(const LevenshteinSupport&);
     public:
         LevenshteinSupport(ULONG source_len, ULONG query_len, ULONG max_check) :
                 m_distance_matrix(NULL), m_direction_matrix(NULL), m_source_len(

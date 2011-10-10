@@ -17,9 +17,11 @@
  * \brief ... TODO
  */
 class PtpanBuildSettings {
+    PtpanBuildSettings(const PtpanBuildSettings&);
+    PtpanBuildSettings& operator = (const PtpanBuildSettings&);
 public:
     PtpanBuildSettings(AbstractAlphabetSpecifics *as, const std::string& name,
-            const std::string& path = "");
+                       const std::string&         path     = "");
     virtual ~PtpanBuildSettings();
 
     ULONG setPruneLength(ULONG length);

@@ -507,8 +507,10 @@ private:
 
 /* data tuple for collected hits */
 class HitTuple {
+    HitTuple& operator = (const HitTuple& other);
 public:
     HitTuple(ULLONG abs_pos, struct PTPanEntry *entry);
+    HitTuple(const HitTuple& other);
     virtual ~HitTuple();
 
     ULLONG ht_AbsPos; /* absolute position of hit */

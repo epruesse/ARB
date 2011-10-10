@@ -16,18 +16,22 @@
 /*!
  * \brief Private default constructor
  */
-ArbdbDataRetriever::ArbdbDataRetriever() :
-        AbstractDataRetriever(), m_mutex(), m_arbdb_mutex(), m_retrieve_features(
-                false), m_db_name(), m_alpha_specs(NULL), m_open(false), m_shell(
-                NULL), m_initialized_shell(false), m_main_db(NULL), m_sai_data(
-                NULL), m_alignment_name(NULL), m_species_data(NULL), m_current_species(
-                NULL), m_current_count(0) {
-}
-
-/*!
- * \brief Private copy constructor
- */
-ArbdbDataRetriever::ArbdbDataRetriever(const ArbdbDataRetriever& /*adr*/) {
+ArbdbDataRetriever::ArbdbDataRetriever()
+    : m_mutex(),
+      m_arbdb_mutex(),
+      m_db_name(),
+      m_alpha_specs(NULL),
+      m_retrieve_features(false),
+      m_open(false),
+      m_shell(NULL),
+      m_initialized_shell(false),
+      m_main_db(NULL),
+      m_sai_data(NULL),
+      m_alignment_name(NULL),
+      m_species_data(NULL),
+      m_current_species(NULL),
+      m_current_count(0)
+{
 }
 
 /*!
@@ -50,13 +54,23 @@ ArbdbDataRetriever& ArbdbDataRetriever::operator=(
  *
  * \exception std::invalid_argument Thrown if AbstractAlphabetSpecifics pointer is empty
  */
-ArbdbDataRetriever::ArbdbDataRetriever(const std::string& db_name,
-        AbstractAlphabetSpecifics* alpha_specs) :
-        AbstractDataRetriever(alpha_specs), m_mutex(), m_arbdb_mutex(), m_retrieve_features(
-                false), m_db_name(db_name), m_alpha_specs(alpha_specs), m_open(
-                false), m_shell(NULL), m_initialized_shell(false), m_main_db(
-                NULL), m_sai_data(NULL), m_alignment_name(NULL), m_species_data(
-                NULL), m_current_species(NULL), m_current_count(0) {
+ArbdbDataRetriever::ArbdbDataRetriever(const std::string& db_name, AbstractAlphabetSpecifics* alpha_specs)
+    : AbstractDataRetriever(alpha_specs),
+      m_mutex(),
+      m_arbdb_mutex(),
+      m_db_name(db_name),
+      m_alpha_specs(alpha_specs),
+      m_retrieve_features(false),
+      m_open(false),
+      m_shell(NULL),
+      m_initialized_shell(false),
+      m_main_db(NULL),
+      m_sai_data(NULL),
+      m_alignment_name(NULL),
+      m_species_data(NULL),
+      m_current_species(NULL),
+      m_current_count(0)
+{
     if (!m_alpha_specs) {
         throw std::invalid_argument(
                 "ArbdbDataRetriever(...) AbstractAlphabetSpecifics pointer is empty!");
