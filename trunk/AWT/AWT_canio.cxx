@@ -541,16 +541,15 @@ static void create_print_awars(AW_root *awr, AWT_canvas *ntw) {
 
 // --------------------------------------------------------------------------------
 
-static GB_ERROR canvas_to_xfig(AWT_canvas *ntw, const char *xfig_name, bool add_invisibles) {
-    // if 'add_invisibles' is true => print 2 invisible dots to make fig2dev center correctly 
+static GB_ERROR canvas_to_xfig(AWT_canvas *ntw, const char *xfig_name, bool add_invisibles, double border) {
+    // if 'add_invisibles' is true => print 2 invisible dots to make fig2dev center correctly
 
-    GB_transaction ta(ntw->gb_main);
+    GB_transaction  ta(ntw->gb_main);
+    AW_root        *awr = ntw->awr;
 
-    AW_root *awr       = ntw->awr;
-    bool     draw_all  = awr->awar(AWAR_CANIO_CLIP)->read_int();
-    bool     handles   = awr->awar(AWAR_CANIO_HANDLES)->read_int();
-    bool     use_color = awr->awar(AWAR_CANIO_COLOR)->read_int();
-    double   border    = awr->awar(AWAR_CANIO_BORDERSIZE)->read_float();
+    bool draw_all  = awr->awar(AWAR_CANIO_CLIP)->read_int();
+    bool handles   = awr->awar(AWAR_CANIO_HANDLES)->read_int();
+    bool use_color = awr->awar(AWAR_CANIO_COLOR)->read_int();
 
     AW_device_print *device = ntw->aww->get_print_device(AW_MIDDLE_AREA);
 
@@ -631,7 +630,7 @@ static void canvas_to_xfig_and_run_xfig(AW_window *aww, AW_CL cl_ntw) {
         error = "Please enter a file name";
     }
     else {
-        error = canvas_to_xfig(ntw, xfig, true);
+        error = canvas_to_xfig(ntw, xfig, true, 0.0);
         if (!error) {
             awr->awar(AWAR_CANIO_FILE_DIR)->touch(); // reload dir to show created xfig
             error = GB_system(GBS_global_string("xfig %s &", xfig));
@@ -679,7 +678,10 @@ void canvas_to_printer(AW_window *aww, AW_CL cl_ntw) {
         progress.subtitle("Exporting Data");
 
         if (!xfig) error = GB_await_error();
-        if (!error) error = canvas_to_xfig(ntw, xfig, true);
+        if (!error) {
+            double border = awr->awar(AWAR_CANIO_BORDERSIZE)->read_float();
+            error         = canvas_to_xfig(ntw, xfig, true, border);
+        }
 
         if (!error) {
             awt_assert(GB_is_privatefile(xfig, true));
@@ -797,12 +799,8 @@ void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL)
         aws->label("Export colors");
         aws->create_toggle(AWAR_CANIO_COLOR);
 
-
         aws->at("xfig"); aws->callback(canvas_to_xfig_and_run_xfig, cl_canvas);
-        aws->create_button("START_XFIG", "EXPORT to XFIG", "X");
-
-        aws->at("cancel"); aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CANCEL", "C");
+        aws->create_autosize_button("START_XFIG", "EXPORT to XFIG", "X");
     }
 
     aws->activate();
@@ -819,6 +817,9 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) 
         aws = new AW_window_simple;
         aws->init(awr, "EXPORT_TREE_AS_XFIG", "EXPORT STRUCTURE TO XFIG");
         aws->load_xfig("awt/secExport.fig");
+
+        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"tree2file.hlp");
         aws->create_button("HELP", "HELP", "H");
@@ -838,13 +839,7 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) 
         aws->create_toggle(AWAR_CANIO_COLOR);
 
         aws->at("xfig"); aws->callback(canvas_to_xfig_and_run_xfig, cl_canvas);
-        aws->create_button("START_XFIG", "EXPORT to XFIG", "X");
-
-        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->at("cancel"); aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CANCEL", "C");
+        aws->create_autosize_button("START_XFIG", "EXPORT to XFIG", "X");
     }
 
     aws->activate();
