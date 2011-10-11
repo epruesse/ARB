@@ -27,10 +27,34 @@ int main(int, char **) {
 // --------------------------------------------------------------------------------
 
 
+inline void make_valgrinded_call_from_pipe(char *&command) {
+    using namespace utvg;
+    static valgrind_info valgrind;
+    if (valgrind.wanted) {
+        char *pipeSym = strchr(command, '|');
+        if (pipeSym) {
+            char *left  = GB_strpartdup(command, pipeSym-1);
+            char *right = strdup(pipeSym+1);
+
+            make_valgrinded_call(left);
+            make_valgrinded_call_from_pipe(right);
+
+            freeset(command, GBS_global_string_copy("%s | %s", left, right));
+
+            free(right);
+            free(left);
+        }
+        else {
+            make_valgrinded_call(command);
+        }
+    }
+}
+
 inline GB_ERROR valgrinded_system(const char *cmdline) {
-    char     *cmddup = strdup(cmdline);
-    make_valgrinded_call(cmddup);
-    GB_ERROR  error  = GB_system(cmddup);
+    char *cmddup = strdup(cmdline);
+    make_valgrinded_call_from_pipe(cmddup);
+
+    GB_ERROR error = GB_system(cmddup);
     free(cmddup);
     return error;
 }
@@ -55,11 +79,14 @@ void TEST_SLOW_ascii_2_bin_2_ascii() {
 
     // test conversion (bin->ascii->bin) via stream (this tests 'arb_repair')
     TEST_RUN_TOOL(GBS_global_string("arb_2_ascii %s - | arb_2_bin - %s", binary, binary_2ND));
+
     // TEST_ASSERT_FILES_EQUAL(binary, binary_2ND); // can't compare binary files (they contain undefined bytes)
+
+    // instead convert back to ascii and compare result with original
     TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(ascii));
     TEST_RUN_TOOL(GBS_global_string("arb_2_ascii %s %s", binary_2ND, ascii));
     TEST_ASSERT_FILES_EQUAL(ascii, ascii_ORG);
-    
+
     TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(ascii));
     TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(binary));
     TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(binary_2ND));
