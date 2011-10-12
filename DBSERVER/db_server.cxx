@@ -311,7 +311,7 @@ inline GB_ERROR valgrinded_system(const char *cmdline) {
 #define TEST_RUN_TOOL_FAILS(cmdline) TEST_ASSERT_ERROR(RUN_TOOL(cmdline))
 
 inline bool server_is_down(const char *tcp) {
-    char     *ping_cmd = strdup(GBS_global_string("arb_db_server -T%s -Cping >/dev/null 2>&1", tcp));
+    char     *ping_cmd = strdup(GBS_global_string("arb_db_server -T%s -Cping", tcp));
     GB_ERROR  error    = GB_system(ping_cmd); // causes a crash in called command (as long as server is not up)
     free(ping_cmd);
     return error;
@@ -345,7 +345,7 @@ void TEST_SLOW_dbserver() {
         bool down = true;
         int max_wait = 2000/50;
         while (down) {
-            GB_usleep(50*1000);
+            GB_usleep(25*1000);
             down = server_is_down(tcp);
             TEST_ASSERT(max_wait-->0);
         }
@@ -477,6 +477,7 @@ void TEST_SLOW_dbserver() {
     }
     else { // child ("the server")
 #if !defined(DEBUG_SERVER)
+        GB_usleep(100*1000);
         TEST_RUN_TOOL(GBS_global_string("arb_db_server -T%s -d%s -A", tcp, db)); // start the server (in ASCII-mode)
 #endif
         exit(EXIT_SUCCESS);
