@@ -569,6 +569,7 @@ public:
             dh_NonGroupHitsPerc[i] = 0;
         }
         dh_sortKey = 0;
+        dh_valid = true;
     }
 
     std::string dh_ProbeSeq; /* sequence of the probe */
@@ -582,6 +583,7 @@ public:
     boost::ptr_vector<HitTuple> dh_Matches; /* Absolute pos of all hits */
     ULONG dh_NonGroupHitsPerc[DECR_TEMP_CNT]; /* number of nongroup hits with decreasing temperature */
     ULONG dh_sortKey;
+    bool dh_valid;
 
 private:
     DesignHit();

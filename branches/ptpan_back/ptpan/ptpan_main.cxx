@@ -156,8 +156,7 @@ int main(int argc, char *argv[]) {
 
     /* get server host name */
     if (!(pl->pl_ServerName = arbParams->tcp)) {
-        if (!(pl->pl_ServerName = (STRPTR) GBS_read_arb_tcp(
-                "ARB_PT_SERVER0"))) {
+        if (!(pl->pl_ServerName = (STRPTR) GBS_read_arb_tcp("ARB_PT_SERVER0"))) {
             GB_print_error(); /* no host name found */
             exit(-1);
         }
@@ -204,10 +203,15 @@ int main(int argc, char *argv[]) {
         }
 
         int num_threads = boost::thread::hardware_concurrency();
+        bool verbose = false;
         for (int i = 0; i < argc; ++i) {
             if (strncmp(argv[i], "--threads=", 10) == 0) {
                 std::string s = std::string(&argv[i][10]);
                 num_threads = atoi(s.c_str());
+            } else if ((strncmp(argv[i], "-v", 2) == 0)
+                    || (strncmp(argv[i], "--verbose", 9) == 0)) {
+                printf("Verbose mode!\n");
+                verbose = true;
             }
         }
 
@@ -255,6 +259,7 @@ int main(int argc, char *argv[]) {
                             GB_init_gb(); // needed for PT_new_design
                             pl->pl_pt = new PtpanTree(indexName);
                             pl->pl_pt->setNumberOfThreads(num_threads);
+                            pl->pl_pt->setVerbose(verbose);
                         } catch (std::invalid_argument& e) {
                             printf("ERROR: %s", e.what());
                             if (arbParams) {
@@ -382,6 +387,7 @@ int main(int argc, char *argv[]) {
                         || (strncmp(argv[i], "--verbose", 9) == 0)) {
                     printf("Verbose mode!\n");
                     settings->setVerbose(true);
+                    verbose = true;
                 } else if (strncmp(argv[i], "--force", 7) == 0) {
                     printf("Force settings!\n");
                     settings->setForce(true);
@@ -437,6 +443,7 @@ int main(int argc, char *argv[]) {
                     GB_init_gb(); // needed for PT_new_design
                     pl->pl_pt = new PtpanTree(indexName);
                     pl->pl_pt->setNumberOfThreads(num_threads);
+                    pl->pl_pt->setVerbose(verbose);
                 } catch (std::invalid_argument& e) {
                     printf("ERROR: %s", e.what());
                     if (arbParams) {

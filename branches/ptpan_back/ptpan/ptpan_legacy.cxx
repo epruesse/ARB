@@ -316,15 +316,19 @@ std::set<std::string> * markEntryGroup(STRPTR specnames) {
 
 /* /// "PT_start_design()" */
 int PT_start_design(PT_pdc *pdc, int /* dummy */) {
-#ifdef DEBUG
-    printf("EXTERN: PT_start_design\n");
     struct timeval tsStart, tsNow;
+    struct PTPanLegacy *pl = PTPanLegacyGlobalPtr;
+#ifndef DEBUG
+    if (pl->pl_pt->isVerbose()) {
+#endif
+    printf("Start ProbeDesign ...\n");
     gettimeofday(&tsStart, NULL);
+#ifndef DEBUG
+}
 #endif
 
     if (pdc->names.data && (*pdc->names.data != 0)) {
 
-        struct PTPanLegacy *pl = PTPanLegacyGlobalPtr;
         MismatchWeights *mw = MismatchWeights::cloneMismatchWeightMatrix(
                 pl->pl_pt->getAlphabetSpecifics()->mismatch_weights);
         convertBondMatrix(pdc, mw);
@@ -372,10 +376,14 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
         }
     }
 
-#ifdef DEBUG
+#ifndef DEBUG
+    if (pl->pl_pt->isVerbose()) {
+#endif
     gettimeofday(&tsNow, NULL);
-    printf("PT_start_design: %li seconds elapsed\n",
+    printf("... done in %li seconds.\n",
             (tsNow.tv_sec - tsStart.tv_sec));
+#ifndef DEBUG
+}
 #endif
 
     return 0;
@@ -455,17 +463,21 @@ bytestring *PT_unknown_names(PT_pdc *pdc) {
 
 /* /// "ff_find_family()" */
 int find_family(PT_family *ffinder, bytestring *species) {
-#ifdef DEBUG
-    printf("EXTERN: ff_find_family\n");
     struct timeval tsStart, tsNow;
+    struct PTPanLegacy *pl = PTPanLegacyGlobalPtr;
+#ifndef DEBUG
+    if (pl->pl_pt->isVerbose()) {
+#endif
+    printf("Start SimilaritySearch (= FindFamily) ...\n");
     gettimeofday(&tsStart, NULL);
+#ifndef DEBUG
+}
 #endif
     // destroy old list
     while (ffinder->fl) {
         destroy_PT_family_list(ffinder->fl);
     }
 
-    struct PTPanLegacy *pl = PTPanLegacyGlobalPtr;
     SimilaritySearchQuery ssq = SimilaritySearchQuery(species->data);
     ssq.ssq_ComplementMode = ffinder->complement;
     ssq.ssq_NumMaxMismatches = (double) ffinder->mis_nr;
@@ -491,10 +503,13 @@ int find_family(PT_family *ffinder, bytestring *species) {
     ffinder->list_size = count;
     free(species->data);
 
-#ifdef DEBUG
+#ifndef DEBUG
+    if (pl->pl_pt->isVerbose()) {
+#endif
     gettimeofday(&tsNow, NULL);
-    printf("find_family: %li seconds elapsed\n",
-            (tsNow.tv_sec - tsStart.tv_sec));
+    printf("... done in %li seconds.\n", (tsNow.tv_sec - tsStart.tv_sec));
+#ifndef DEBUG
+}
 #endif
     return 0;
 }
@@ -589,7 +604,8 @@ inline void cat_internal(GBS_strstruct *memfile, int len, const char *text,
     if (len == width) {
         GBS_strcat(memfile, text); // text has exact len
     } else if (len > width) { // text to long
-        char buf[width + 1];memcpy(buf, text, width);
+        char buf[width + 1];
+        memcpy(buf, text, width);
         buf[width] = 0;
         GBS_strcat(memfile, buf);
     } else { // text is too short -> insert spaces

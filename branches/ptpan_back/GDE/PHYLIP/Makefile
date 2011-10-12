@@ -1,6 +1,13 @@
 .SUFFIXES: .o .c .depend
 
 LIBS    = -lm -lc
+
+#TODO ifeq ($(REDHAT),1)
+#TODO ifeq ($(ARB_64),1)
+    LIBS := -L/usr/lib64/openmotif $(LIBS)
+#TODO endif
+#TODO endif
+
 PROGS_old   =      clique consense contml contrast dnacomp dnadist \
                    dnainvar dnaml dnamlk dnamove dnapars dnapenny \
                    dolmove dollop dolpenny drawgram drawtree factor \

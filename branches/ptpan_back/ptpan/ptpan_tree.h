@@ -16,6 +16,7 @@
 #include <vector>
 
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/atomic.hpp>
 
 #include "ptpan_base.h"
 #include "abstract_alphabet_specifics.h"
@@ -152,8 +153,8 @@ private:
 // ...
 for(            ULONG pos = 0; pos < sqh_PosWeightLength; ++pos) {
                 if (sq.sq_WeightedSearchMode) {
-                    sqh_PosWeight[pos] = calc_position_wmis(pos, sqh_PosWeightLength,
-                    0.3, 1.0);
+                    sqh_PosWeight[pos] = calc_position_wmis(pos,
+                    sqh_PosWeightLength, 0.3, 1.0);
                 } else {
                     sqh_PosWeight[pos] = 1.0;
                 }
@@ -224,8 +225,8 @@ for(            ULONG pos = 0; pos < sqh_PosWeightLength; ++pos) {
         ULONG ssqh_filtered_seq_len; // maybe we get rid of this someday!
 
         ULONG ssqh_entry_count;
-        ULLONG *ssqh_hit_count;
-        double *ssqh_rel_hit_count;
+        boost::atomic_ulong* ssqh_hit_count;
+        double* ssqh_rel_hit_count;
 
         void reset() {
             ssqh_Hits.clear();
@@ -233,11 +234,9 @@ for(            ULONG pos = 0; pos < sqh_PosWeightLength; ++pos) {
                 free(ssqh_filtered_seq);
             }
             ssqh_filtered_seq_len = 0;
-            if (ssqh_hit_count && ssqh_rel_hit_count) {
-                for (ULONG cnt = 0; cnt < ssqh_entry_count; cnt++) {
-                    ssqh_hit_count[cnt] = 0;
-                    ssqh_rel_hit_count[cnt] = 0.0;
-                }
+            for (ULONG cnt = 0; cnt < ssqh_entry_count; cnt++) {
+                ssqh_hit_count[cnt].store(0);
+                ssqh_rel_hit_count[cnt] = 0.0;
             }
         }
 
@@ -439,11 +438,19 @@ private:
             std::vector<std::string>& results, ULONG depth, ULONG length) const;
     void find_probe_in_partition(struct PTPanPartition *pp,
             const DesignQuery& dq, DesignQueryHandle& dqh) const;
+    void design_probes(const DesignQuery& dq, DesignQueryHandle& dqh,
+            int offset = 0, int participators = 1) const;
+    void calculate_probe_quality(DesignQueryHandle& dqh, int offset = 0,
+            int participators = 1) const;
     void add_design_hit(const DesignQuery& dq, DesignQueryHandle& dqh) const;
 
     void
     ss_window_sequence(const SimilaritySearchQuery& ssq,
             SimilaritySearchQueryHandle& ssqh) const;
+    void
+    ss_window_search(const SimilaritySearchQuery& ssq,
+            SimilaritySearchQueryHandle& ssqh, int offset = 0,
+            int participators = 1) const;
     void ss_create_hits(const SimilaritySearchQuery& ssq,
             SimilaritySearchQueryHandle& ssqh) const;
 
