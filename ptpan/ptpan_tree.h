@@ -310,7 +310,7 @@ public:
      * scheme: MAJOR.MINOR.BUGFIX
      */
     static const std::string version() {
-        return "0.6.4_beta";
+        return "0.6.5_beta";
     }
 
     const std::string getCustomInformation() const;
