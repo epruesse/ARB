@@ -1,6 +1,6 @@
 PTPan ARB integration
 
-v0.6.4 (?? ?? 2011)
+v0.6.5 (?? ?? 2011)
 
 - TODO
 
