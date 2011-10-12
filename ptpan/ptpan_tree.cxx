@@ -813,8 +813,8 @@ STRPTR PtpanTree::getProbes(STRPTR seed_probe, ULONG length,
     bool done = false;
     UWORD seqcode = 0;
     ULONG length_corr =
-            (length < best_pp->pp_TreePruneLength) ?
-                    length : best_pp->pp_TreePruneLength;
+            (length < best_pp->pp_TreePruneLength) ? length :
+                    best_pp->pp_TreePruneLength;
 
     ULONG buffer_size;
     ULONG buffer_consumed = 0;
@@ -1238,10 +1238,9 @@ void PtpanTree::loadIndexHeader() {
     ULONG size = 0;
     dummy = fread(&size, sizeof(size), 1, fh);
     if (size > 0) {
-        m_custom_info.resize(size);
         STRPTR custom = (STRPTR) calloc(size + 1, 1);
         dummy = fread(custom, 1, size, fh);
-        m_custom_info.append(custom);
+        m_custom_info = std::string(custom);
         free(custom);
 #ifdef DEBUG
         printf("Read custom info: \n'%s'\n", m_custom_info.data());
@@ -2817,15 +2816,16 @@ void PtpanTree::search_tree_hamming(const SearchQuery& sq,
 void PtpanTree::search_tree_levenshtein(const SearchQuery& sq,
         SearchQueryHandle& sqh) const {
     LONG query_len =
-            sq.sq_Query.size() > m_prune_length ?
-                    m_prune_length : (LONG) sq.sq_Query.size();
+            sq.sq_Query.size() > m_prune_length ? m_prune_length :
+                    (LONG) sq.sq_Query.size();
     LONG source_len =
-            sqh.sqh_MaxLength > m_prune_length ?
-                    m_prune_length : (LONG) sqh.sqh_MaxLength;
+            sqh.sqh_MaxLength > m_prune_length ? m_prune_length :
+                    (LONG) sqh.sqh_MaxLength;
 
     LONG max_check =
-            sq.sq_Query.size() < m_prune_length ?
-                    m_prune_length - sq.sq_Query.size() : 0;
+            sq.sq_Query.size() < m_prune_length ? m_prune_length
+                    - sq.sq_Query.size() :
+                    0;
     if (max_check > sq.sq_MaxErrors) {
         max_check = (LONG) sq.sq_MaxErrors;
     }
@@ -3936,8 +3936,8 @@ void PtpanTree::find_probe_in_partition(struct PTPanPartition *pp,
     bool done = false;
     UWORD seqcode = m_as->wildcard_code + 1;
     ULONG length =
-            (dq.dq_ProbeLength < pp->pp_TreePruneLength) ?
-                    dq.dq_ProbeLength : pp->pp_TreePruneLength;
+            (dq.dq_ProbeLength < pp->pp_TreePruneLength) ? dq.dq_ProbeLength :
+                    pp->pp_TreePruneLength;
     double currtemp = 0.0;
     UWORD currgc = 0;
     do {
