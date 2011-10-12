@@ -300,6 +300,10 @@ long gbcms_close(gbcmc_comm *link)
 static void gbcmc_suppress_sigpipe(int) {
 }
 
+inline bool is_default_or_ignore_or_own_sighandler(SigHandler sh) {
+    return sh == gbcmc_suppress_sigpipe || is_default_or_ignore_sighandler(sh);
+}
+
 gbcmc_comm *gbcmc_open(const char *path) {
     gbcmc_comm *link = (gbcmc_comm *)GB_calloc(sizeof(gbcmc_comm), 1);
     GB_ERROR    err  = gbcm_open_socket(path, TCP_NODELAY, 1, &link->socket, &link->unix_name);
@@ -312,7 +316,7 @@ gbcmc_comm *gbcmc_open(const char *path) {
         }
         return 0;
     }
-    ASSERT_RESULT_PREDICATE(is_default_or_ignore_sighandler, INSTALL_SIGHANDLER(SIGPIPE, gbcmc_suppress_sigpipe, "gbcmc_open"));
+    ASSERT_RESULT_PREDICATE(is_default_or_ignore_or_own_sighandler, INSTALL_SIGHANDLER(SIGPIPE, gbcmc_suppress_sigpipe, "gbcmc_open"));
     gb_local->iamclient = 1;
     return link;
 }
