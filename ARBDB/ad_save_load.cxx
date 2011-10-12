@@ -925,7 +925,7 @@ GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype) {
                     Main->security_level = 7;
 
                     bool outOfOrderSave     = strchr(savetype, 'f');
-                    bool deleteQuickAllowed = !outOfOrderSave;
+                    bool deleteQuickAllowed = !outOfOrderSave && !dump_to_stdout;
                     {
                         int result = 0;
 
