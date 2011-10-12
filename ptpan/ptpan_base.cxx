@@ -16,7 +16,7 @@ PtpanBase::PtpanBase() :
         m_pool_mutex(), m_threadpool(
                 new boost::threadpool::pool(
                         boost::thread::hardware_concurrency())), m_verbose(
-                false) {
+                false), m_num_threads(boost::thread::hardware_concurrency()) {
 }
 
 /*!
@@ -142,6 +142,7 @@ std::size_t PtpanBase::numberOfThreads() const {
 void PtpanBase::setNumberOfThreads(std::size_t num =
         boost::thread::hardware_concurrency()) {
     boost::lock_guard<boost::mutex> lock(m_pool_mutex);
+    m_num_threads = num;
     if (num > m_threadpool->size()) {
         m_threadpool->size_controller().resize(num);
     } else {
@@ -149,7 +150,7 @@ void PtpanBase::setNumberOfThreads(std::size_t num =
         if (m_verbose) {
 #endif
         printf(
-                "TODO The utilized threadpool has currently an issue with down-sizing, so it is not done!");
+                "TODO The utilized threadpool has currently an issue with down-sizing, so it is not done!\n");
 #ifndef DEBUG
     }
 #endif

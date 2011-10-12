@@ -35,6 +35,7 @@ protected:
     pool_ptr m_threadpool;
 
     bool m_verbose;
+    ULONG m_num_threads;
 
 private:
     // anything??

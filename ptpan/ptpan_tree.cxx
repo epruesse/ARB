@@ -108,6 +108,7 @@ PtpanTree::~PtpanTree() {
         if (m_EntriesMap) {
             free(m_EntriesMap);
         }
+        m_entry_map.clear();
     } catch (...) {
         // destructor must not throw
     }
@@ -162,12 +163,12 @@ PtpanTree::SearchQueryHandle::SearchQueryHandle(const SearchQueryHandle& sqh) :
     if (sqh.sqh_PosWeight) {
         sqh_PosWeight = new double[sqh_PosWeightLength + 1];
         //..
-for                (ULONG i = 0; i <sqh_PosWeightLength + 1; i++) {
+for                (ULONG i = 0; i < sqh_PosWeightLength + 1; i++) {
                     sqh_PosWeight[i] = sqh.sqh_PosWeight[i];
                 }
-            } if (sqh.sqh_HitsHash) {
-                sqh_HitsHash = new boost::unordered_map<ULONG, ULONG>(
-                        HASH_SIZE_SEED);
+            }
+            if (sqh.sqh_HitsHash) {
+                sqh_HitsHash = new boost::unordered_map<ULONG, ULONG>(HASH_SIZE_SEED);
             }
         }
 
@@ -182,10 +183,10 @@ PtpanTree::SearchQueryHandle& PtpanTree::SearchQueryHandle::operator=(
         // sqh_State = SearchQueryState();
         sqh_PosWeightLength = sqh.sqh_PosWeightLength;
         if (sqh.sqh_PosWeight) {
-            sqh_PosWeight = new double[sqh_PosWeightLength + 1];for (ULONG i = 0; i<sqh_PosWeightLength + 1; i++) {
-                        sqh_PosWeight[i] = sqh.sqh_PosWeight[i];
-                    }
-} else {
+            sqh_PosWeight = new double[sqh_PosWeightLength + 1];for (ULONG i = 0; i< sqh_PosWeightLength + 1; i++) {
+                sqh_PosWeight[i] = sqh.sqh_PosWeight[i];
+            }
+        } else {
                 sqh_PosWeight = NULL;
             }
         sqh_MaxLength = sqh.sqh_MaxLength;
@@ -338,12 +339,8 @@ PtpanTree::SimilaritySearchQueryHandle::~SimilaritySearchQueryHandle() {
     if (ssqh_filtered_seq) {
         free(ssqh_filtered_seq);
     }
-    if (ssqh_hit_count) {
-        delete[] ssqh_hit_count;
-    }
-    if (ssqh_rel_hit_count) {
-        delete[] ssqh_rel_hit_count;
-    }
+    delete[] ssqh_hit_count;
+    delete[] ssqh_rel_hit_count;
 }
 
 /*!
@@ -353,10 +350,10 @@ PtpanTree::SimilaritySearchQueryHandle::SimilaritySearchQueryHandle(
         ULONG entry_count) :
         ssqh_Hits(), ssqh_filtered_seq(NULL), ssqh_filtered_seq_len(0), ssqh_entry_count(
                 entry_count), ssqh_hit_count(NULL), ssqh_rel_hit_count(NULL) {
-    ssqh_hit_count = new ULLONG[ssqh_entry_count];
+    ssqh_hit_count = new boost::atomic_ulong[ssqh_entry_count];
     ssqh_rel_hit_count = new double[ssqh_entry_count];
     for (ULONG cnt = 0; cnt < ssqh_entry_count; cnt++) {
-        ssqh_hit_count[cnt] = 0;
+        ssqh_hit_count[cnt].store(0);
         ssqh_rel_hit_count[cnt] = 0.0;
     }
 }
@@ -450,6 +447,9 @@ bool PtpanTree::containsEntry(const std::string& id) const {
                             feature.data());
                 }
             }
+        } else {
+            // no feature(s), but maybe whole genomes!!
+            return m_entry_map.find(id.data()) != m_entry_map.end();
         }
     } else {
         return m_entry_map.find(id.data()) != m_entry_map.end();
@@ -630,12 +630,11 @@ const boost::ptr_vector<QueryHit> PtpanTree::searchTree(const SearchQuery& sq,
                 printf(">> CreateDiffAlignment for %lu hits\n",
                         sqh.sqh_hits.size());
 #endif
-                if (sqh.sqh_hits.size() < m_threadpool->size()
-                        || m_threadpool->size() <= 1) {
+                if (sqh.sqh_hits.size() < m_num_threads || m_num_threads <= 1) {
                     create_diff_alignment(internal_sq, sqh);
                 } else {
                     std::size_t i = 0;
-                    ULONG participators = m_threadpool->size();
+                    ULONG participators = m_num_threads;
                     for (; i < participators - 1; i++) {
                         boost::threadpool::schedule(
                                 *m_threadpool,
@@ -946,126 +945,44 @@ const boost::ptr_vector<DesignHit> PtpanTree::designProbes(
         printf("%ld probes generated...\n", dqh.dqh_Hits.size());
         printf("Calc Probe Quality\n");
 #endif
-        struct MismatchWeights* mws =
-                MismatchWeights::cloneMismatchWeightMatrix(
-                        m_as->mismatch_weights);
-        SearchQuery sq = SearchQuery(mws); // note: SearchQuery take ownership of MismatchWeights!
-        sq.sq_Query = std::string(dq.dq_ProbeLength, 'N'); // we need a dummy sequence!
-        sq.sq_MaxErrors = (float) DECR_TEMP_CNT * PROBE_MISM_DEC;
-        sq.sq_WeightedSearchMode = true;
-        sq.sq_AllowReplace = true;
-        sq.sq_AllowInsert = true;
-        sq.sq_AllowDelete = true;
-        sq.sq_KillNSeqsAt = dq.dq_ProbeLength / 3;
-
-        SearchQueryHandle sqh = SearchQueryHandle(sq);
-
-#ifdef DEBUG
-        ULONG number = 1;
-#endif
-
+        if (dqh.dqh_Hits.size() < m_num_threads || m_num_threads <= 1) {
+            design_probes(dq, dqh);
+        } else {
+            std::size_t i = 0;
+            ULONG participators = m_num_threads;
+            for (; i < participators - 1; i++) {
+                boost::threadpool::schedule(
+                        *m_threadpool,
+                        boost::bind(&PtpanTree::design_probes, this,
+                                boost::ref(dq), boost::ref(dqh), i,
+                                participators));
+            }
+            design_probes(dq, dqh, i, participators); // main thread can do some work as well!
+            m_threadpool->wait();
+        }
+        // remove invalid design hits! due to parallelization, we cannot do this before!
         boost::ptr_vector<DesignHit>::iterator dh;
-        ULONG hitpos;
-        for (dh = dqh.dqh_Hits.begin(); dh != dqh.dqh_Hits.end();) { // TODO parallelize this loop!?
-            // reset values to new DesignHit
-            sq.sq_Query = dh->dh_ProbeSeq;
-            sqh.reset();
-            // search over partitions
-            for (pit = m_partitions.begin(); pit != m_partitions.end(); pit++) {
-                // search normal
-                search_partition(*pit, sq, sqh); // TODO FIXME do this num_threads times in parallel
-                // TODO FIXME it is no good to create a SearchQuery for each candidate
-                // as this may result in way to large memory consumption, so we go over
-                // all partitions parallel and then all threads increment, and then again
-                // every thread goes over all partitions again
-                // -> we need a barrier! m_threadpool->wait();
-            }
-            post_filter_query_hits(sq, sqh);
-            // check all hits
-            boost::ptr_vector<QueryHit>::iterator qh;
-            for (qh = sqh.sqh_hits.begin(); qh != sqh.sqh_hits.end(); qh++) {
-                if ((dqh.dqh_MarkedEntryNumbers.count(qh->qh_Entry->pe_Num) == 0)
-                        || (dqh.dqh_handleFeatures
-                                && !dqh.hitsAnyFeature(qh->qh_AbsPos,
-                                        qh->qh_Entry, dq))) {
-                    hitpos = (ULONG) (qh->qh_ErrorCount
-                            * (1.0 / PROBE_MISM_DEC));
-                    if (((ULONG) floor(qh->qh_ErrorCount * 10)) % 2 == 0) {
-                        // this is done to achieve <= instead of < without it!
-                        hitpos--;
-                    }
-                    if (hitpos < DECR_TEMP_CNT) {
-                        dh->dh_NonGroupHitsPerc[hitpos]++;
-                    }
-                }
-            }
-#ifdef DEBUG
-            printf("Probe (%ld) %s \n", number++, dh->dh_ProbeSeq.data());
-            //            ULONG sum = 0;
-            //            for (hitpos = 0; hitpos < DECR_TEMP_CNT; hitpos++) {
-            //                sum += dh->dh_NonGroupHitsPerc[hitpos];
-            //                printf("%ld ", sum);
-            //            }
-            //            printf("\n");
-#endif
-            {
-                // calculate relative position position if reference entry
-                // is available (and thus alignment data)
-                boost::ptr_vector<HitTuple>::const_iterator tuple =
-                        dh->dh_Matches.begin();
-                if (tuple != dh->dh_Matches.end()) {
-                    struct PTPanEntry *ps = tuple->ht_Entry;
-                    LONG relpos = 0;
-                    ULONG abspos = tuple->ht_AbsPos - ps->pe_AbsOffset;
-                    UBYTE code;
-                    ULONG bitpos = 0;
-                    ULONG count;
-                    while (bitpos < ps->pe_SeqDataCompressedSize) { // get relpos
-                        code = m_as->getNextCharacter(ps->pe_SeqDataCompressed,
-                                bitpos, count);
-                        if (m_as->seq_code_valid_table[code]) { // it's a valid char
-                            if (!(abspos--)) {
-                                break; // position found
-                            }
-                            ++relpos;
-                        } else { // it's not a valid char
-                            relpos += count;
-                        }
-                    }
-                    dh->dh_relpos = relpos;
-                } else {
-                    dh->dh_relpos = 0;
-                }
-                ULONG check_pos = dh->dh_relpos;
-                if (m_ref_entry) {
-                    if (check_pos < m_ref_entry->pre_ReferenceSeqSize) {
-                        check_pos =
-                                m_ref_entry->pre_ReferenceBaseTable[check_pos];
-                    } else {
-                        check_pos =
-                                m_ref_entry->pre_ReferenceBaseTable[m_ref_entry->pre_ReferenceSeqSize];
-                    }
-                }
-                if ((LONG) check_pos < dq.dq_MinPos
-                        || ((LONG) check_pos > dq.dq_MaxPos
-                                && dq.dq_MaxPos != -1)) {
-                    dh = dqh.dqh_Hits.erase(dh);
-                } else {
-                    dh->dh_ref_pos = check_pos;
-                    dh++;
-                }
+        for (dh = dqh.dqh_Hits.begin(); dh != dqh.dqh_Hits.end();) {
+            if (dh->dh_valid) {
+                dh++;
+            } else {
+                dh = dqh.dqh_Hits.erase(dh);
             }
         }
         // quality calculation ...
-        for (dh = dqh.dqh_Hits.begin(); dh != dqh.dqh_Hits.end(); dh++) { // TODO parallelize this loop!?
-            int i;
-            for (i = 0; i < DECR_TEMP_CNT - 1; i++) {
-                if (dh->dh_NonGroupHitsPerc[i] > dh->dh_NonGroupHits) {
-                    break;
-                }
+        if (dqh.dqh_Hits.size() < m_num_threads || m_num_threads <= 1) {
+            calculate_probe_quality(dqh);
+        } else {
+            std::size_t i = 0;
+            ULONG participators = m_num_threads;
+            for (; i < participators - 1; i++) {
+                boost::threadpool::schedule(
+                        *m_threadpool,
+                        boost::bind(&PtpanTree::calculate_probe_quality, this,
+                                boost::ref(dqh), i, participators));
             }
-            dh->dh_Quality = ((double) dh->dh_GroupHits * i)
-                    + 1000.0 / (1000.0 + dh->dh_NonGroupHitsPerc[i]);
+            calculate_probe_quality(dqh, i, participators); // main thread can do some work as well!
+            m_threadpool->wait();
         }
         // sort hits ...
         switch (dq.dq_SortMode) {
@@ -1142,6 +1059,40 @@ const boost::ptr_vector<SimilaritySearchHit> PtpanTree::similaritySearch(
                     ssq.ssq_SourceSeq.size() + 1, 1);
             ssqh.ssqh_filtered_seq_len = m_as->filterSequenceTo(
                     ssq.ssq_SourceSeq.data(), ssqh.ssqh_filtered_seq);
+            // TODO TEST
+            // ULONG* compr_seq = compressSequence(ssq.ssq_SourceSeq.data());
+            // DO NOT COMPRESS whole sequence, but only window-sized snippets
+            // filter Ns?
+            // regain rev, compl and rev-compl during decompression
+            //            printf("Length of filtered sequence: %ld\n",
+            //                    ssqh.ssqh_filtered_seq_len);
+            //
+            //            std::map<ULONG, ULONG> simsearch_set;
+            //            ULONG pval = 0;
+            //
+            //            // init pval with (ssq.ssq_WindowSize - 1) values
+            //            ULONG i;
+            //            for (i = 0; i < ssq.ssq_WindowSize - 1; i++) {
+            //                pval *= m_as->alphabet_size;
+            //                pval += m_as->compress_table[ssqh.ssqh_filtered_seq[i]];
+            //            }
+            //            std::map<ULONG, ULONG>::iterator it;
+            //            for (; i < ssqh.ssqh_filtered_seq_len - ssq.ssq_WindowSize; i++) {
+            //
+            //                // sliding window:
+            //                pval %= m_as->power_table[ssq.ssq_WindowSize - 1];
+            //                pval *= m_as->alphabet_size;
+            //                pval += m_as->compress_table[ssqh.ssqh_filtered_seq[i]];
+            //
+            //                it = simsearch_set.find(pval);
+            //                if (it != simsearch_set.end()) {
+            //                    it->second++;
+            //                } else {
+            //                    simsearch_set.insert(std::make_pair(pval, 1));
+            //                }
+            //            }
+            //            printf("Number of unique window probes: %ld\n",
+            //                    simsearch_set.size());
 
             if (ssq.ssq_ComplementMode & (1 << 0)) { // pf_ComplementMode & 0x01 == 0x01 // forward
                 ss_window_sequence(ssq, ssqh);
@@ -1290,7 +1241,7 @@ void PtpanTree::loadIndexHeader() {
         m_custom_info.resize(size);
         STRPTR custom = (STRPTR) calloc(size + 1, 1);
         dummy = fread(custom, 1, size, fh);
-        m_custom_info = std::string(custom);
+        m_custom_info.append(custom);
         free(custom);
 #ifdef DEBUG
         printf("Read custom info: \n'%s'\n", m_custom_info.data());
@@ -3701,17 +3652,18 @@ void PtpanTree::sort_hits_list(const SearchQuery& sq,
                 assert(
                         ((LLONG) (qh->qh_AbsPos - qh->qh_Entry->pe_AbsOffset)) <= 0xfffffff);
                 // 28 bit
-                qh->qh_sortKey = (LLONG) (
-                        (qh->qh_Flags & QHF_REVERSED) ? (1LL << 62)
-                        : 0LL)+ ((qh->qh_InsertCount
-                                        | qh->qh_DeleteCount) ? (1LL << 61) : 0LL)
+                qh->qh_sortKey = (LLONG) ((qh->qh_Flags & QHF_REVERSED) ?
+                (1LL << 62) : 0LL)
+                + ((qh->qh_InsertCount | qh->qh_DeleteCount) ?
+                        (1LL << 61) : 0LL)
                 + (((LLONG) (qh->qh_ReplaceCount
                                         + qh->qh_InsertCount
                                         + qh->qh_DeleteCount)) << 56)
                 + (((LLONG) qh->qh_nmismatch) << 53)
                 + (((LLONG) round(qh->qh_ErrorCount * 10.0))
-                        << 48) + (((LLONG) round(
-                                        qh->qh_WMisCount * 10.0)) << 45)
+                        << 48)
+                + (((LLONG) round(qh->qh_WMisCount * 10.0))
+                        << 45)
                 + (((LLONG) qh->qh_Entry->pe_Num) << 25)
                 + ((LLONG) (qh->qh_AbsPos
                                 - qh->qh_Entry->pe_AbsOffset));
@@ -3729,20 +3681,25 @@ void PtpanTree::sort_hits_list(const SearchQuery& sq,
                 assert(
                         ((LLONG) (qh->qh_AbsPos - qh->qh_Entry->pe_AbsOffset)) <= 0xfffffff);
                 // 28 bit
-                qh->qh_sortKey = (LLONG) (
-                        (LLONG) (qh->qh_Flags & QHF_REVERSED) ? (1LL
-                                << 62) : 0LL)+ ((LLONG) (qh->qh_InsertCount
-                                | qh->qh_DeleteCount) ? (1LL << 61) : 0LL)
-                + (((LLONG) round(qh->qh_ErrorCount * 10.0))
-                        << 56) + (((LLONG) qh->qh_nmismatch)
-                        << 53) + (((LLONG) (qh->qh_ReplaceCount
-                                        + qh->qh_InsertCount + qh->qh_DeleteCount))
-                        << 48) + ((LLONG) qh->qh_Entry->pe_Num << 28)
-                + ((LLONG) (qh->qh_AbsPos
-                                - qh->qh_Entry->pe_AbsOffset));
+                qh->qh_sortKey =
+                        (LLONG) (
+                                (LLONG) (qh->qh_Flags & QHF_REVERSED) ?
+                                        (1LL << 62) : 0LL)
+                                + ((LLONG) (qh->qh_InsertCount
+                                        | qh->qh_DeleteCount) ?
+                                        (1LL << 61) : 0LL)
+                                + (((LLONG) round(qh->qh_ErrorCount * 10.0))
+                                        << 56)
+                                + (((LLONG) qh->qh_nmismatch) << 53)
+                                + (((LLONG) (qh->qh_ReplaceCount
+                                        + qh->qh_InsertCount
+                                        + qh->qh_DeleteCount)) << 48)
+                                + ((LLONG) qh->qh_Entry->pe_Num << 28)
+                                + ((LLONG) (qh->qh_AbsPos
+                                        - qh->qh_Entry->pe_AbsOffset));
             }
         }
-        // finally sort by key
+                // finally sort by key
         sqh.sqh_hits.sort(QueryHit::keyCompare);
     }
 }
@@ -4147,6 +4104,147 @@ void PtpanTree::find_probe_in_partition(struct PTPanPartition *pp,
 }
 
 /*!
+ * \brief Method to check probe candidate stats with help of the index
+ *
+ * \param dq
+ * \param dqh
+ * \param offset
+ * \param participators
+ */
+void PtpanTree::design_probes(const DesignQuery& dq, DesignQueryHandle& dqh,
+        int offset, int participators) const {
+    struct MismatchWeights* mws = MismatchWeights::cloneMismatchWeightMatrix(
+            m_as->mismatch_weights);
+    SearchQuery sq = SearchQuery(mws); // note: SearchQuery take ownership of MismatchWeights!
+    sq.sq_Query = std::string(dq.dq_ProbeLength, 'N'); // we need a dummy sequence!
+    sq.sq_MaxErrors = (float) DECR_TEMP_CNT * PROBE_MISM_DEC;
+    sq.sq_WeightedSearchMode = true;
+    sq.sq_AllowReplace = true;
+    sq.sq_AllowInsert = true;
+    sq.sq_AllowDelete = true;
+    sq.sq_KillNSeqsAt = dq.dq_ProbeLength / 3;
+
+    SearchQueryHandle sqh = SearchQueryHandle(sq);
+
+#ifdef DEBUG
+    ULONG number = 1;
+#endif
+
+    DesignHit* dh;
+    ULONG hitpos;
+    std::vector<PTPanPartition *>::const_iterator pit;
+    for (ULONG i = offset; i < dqh.dqh_Hits.size(); i += participators) {
+        dh = &(dqh.dqh_Hits.at(i));
+
+        // reset values to new DesignHit
+        sq.sq_Query = dh->dh_ProbeSeq;
+        sqh.reset();
+        // search over partitions
+        for (pit = m_partitions.begin(); pit != m_partitions.end(); pit++) {
+            // search normal
+            search_partition(*pit, sq, sqh); // TODO FIXME do this num_threads times in parallel
+            // TODO FIXME it is no good to create a SearchQuery for each candidate
+            // as this may result in way to large memory consumption, so we go over
+            // all partitions parallel and then all threads increment, and then again
+            // every thread goes over all partitions again
+            // -> we need a barrier! boost::barrier(num-participants)
+        }
+        post_filter_query_hits(sq, sqh);
+        // check all hits
+        boost::ptr_vector<QueryHit>::iterator qh;
+        for (qh = sqh.sqh_hits.begin(); qh != sqh.sqh_hits.end(); qh++) {
+            if ((dqh.dqh_MarkedEntryNumbers.count(qh->qh_Entry->pe_Num) == 0)
+                    || (dqh.dqh_handleFeatures
+                            && !dqh.hitsAnyFeature(qh->qh_AbsPos, qh->qh_Entry,
+                                    dq))) {
+                hitpos = (ULONG) (qh->qh_ErrorCount * (1.0 / PROBE_MISM_DEC));
+                if (((ULONG) floor(qh->qh_ErrorCount * 10)) % 2 == 0) {
+                    // this is done to achieve <= instead of < without it!
+                    hitpos--;
+                }
+                if (hitpos < DECR_TEMP_CNT) {
+                    dh->dh_NonGroupHitsPerc[hitpos]++;
+                }
+            }
+        }
+#ifdef DEBUG
+        printf("Probe (%ld) %s \n", number++, dh->dh_ProbeSeq.data());
+        //            ULONG sum = 0;
+        //            for (hitpos = 0; hitpos < DECR_TEMP_CNT; hitpos++) {
+        //                sum += dh->dh_NonGroupHitsPerc[hitpos];
+        //                printf("%ld ", sum);
+        //            }
+        //            printf("\n");
+#endif
+        {
+            // calculate relative position position if reference entry
+            // is available (and thus alignment data)
+            boost::ptr_vector<HitTuple>::const_iterator tuple =
+                    dh->dh_Matches.begin();
+            if (tuple != dh->dh_Matches.end()) {
+                struct PTPanEntry *ps = tuple->ht_Entry;
+                LONG relpos = 0;
+                ULONG abspos = tuple->ht_AbsPos - ps->pe_AbsOffset;
+                UBYTE code;
+                ULONG bitpos = 0;
+                ULONG count;
+                while (bitpos < ps->pe_SeqDataCompressedSize) { // get relpos
+                    code = m_as->getNextCharacter(ps->pe_SeqDataCompressed,
+                            bitpos, count);
+                    if (m_as->seq_code_valid_table[code]) { // it's a valid char
+                        if (!(abspos--)) {
+                            break; // position found
+                        }
+                        ++relpos;
+                    } else { // it's not a valid char
+                        relpos += count;
+                    }
+                }
+                dh->dh_relpos = relpos;
+            } else {
+                dh->dh_relpos = 0;
+            }
+            ULONG check_pos = dh->dh_relpos;
+            if (m_ref_entry) {
+                if (check_pos < m_ref_entry->pre_ReferenceSeqSize) {
+                    check_pos = m_ref_entry->pre_ReferenceBaseTable[check_pos];
+                } else {
+                    check_pos =
+                            m_ref_entry->pre_ReferenceBaseTable[m_ref_entry->pre_ReferenceSeqSize];
+                }
+            }
+            if ((LONG) check_pos < dq.dq_MinPos
+                    || ((LONG) check_pos > dq.dq_MaxPos && dq.dq_MaxPos != -1)) {
+                // we must delay deletion as we may have more then one threads!
+                dh->dh_valid = false;
+            } else {
+                dh->dh_valid = true;
+                dh->dh_ref_pos = check_pos;
+            }
+        }
+    }
+}
+
+/*!
+ * \brief Calculate Probe candidate quality
+ */
+void PtpanTree::calculate_probe_quality(DesignQueryHandle& dqh, int offset,
+        int participators) const {
+    DesignHit* dh;
+    for (ULONG i = offset; i < dqh.dqh_Hits.size(); i += participators) {
+        dh = &(dqh.dqh_Hits.at(i));
+        int i;
+        for (i = 0; i < DECR_TEMP_CNT - 1; i++) {
+            if (dh->dh_NonGroupHitsPerc[i] > dh->dh_NonGroupHits) {
+                break;
+            }
+        }
+        dh->dh_Quality = ((double) dh->dh_GroupHits * i)
+                + 1000.0 / (1000.0 + dh->dh_NonGroupHitsPerc[i]);
+    }
+}
+
+/*!
  * \brief add probe design hit to DesignQuery
  *
  * \param dq DesignQuery
@@ -4380,6 +4478,35 @@ void PtpanTree::add_design_hit(const DesignQuery& dq,
  */
 void PtpanTree::ss_window_sequence(const SimilaritySearchQuery& ssq,
         SimilaritySearchQueryHandle& ssqh) const {
+
+    if (ssqh.ssqh_filtered_seq_len < ssq.ssq_WindowSize || m_num_threads <= 1) {
+        ss_window_search(ssq, ssqh);
+    } else {
+        std::size_t i = 0;
+        ULONG participators = m_num_threads;
+        for (; i < participators - 1; i++) {
+            boost::threadpool::schedule(
+                    *m_threadpool,
+                    boost::bind(&PtpanTree::ss_window_search, this,
+                            boost::ref(ssq), boost::ref(ssqh), i,
+                            participators));
+        }
+        ss_window_search(ssq, ssqh, i, participators); // main thread can do some work as well!
+        m_threadpool->wait();
+    }
+}
+
+/*!
+ * \brief Conduct the search itself (once for every thread participating)
+ *
+ * \param ssq
+ * \param ssqh
+ * \param offset
+ * \param participators
+ */
+void PtpanTree::ss_window_search(const SimilaritySearchQuery& ssq,
+        SimilaritySearchQueryHandle& ssqh, int offset,
+        int participators) const {
     MismatchWeights *mw = MismatchWeights::cloneMismatchWeightMatrix(
             m_as->mismatch_weights);
     SearchQuery sq = SearchQuery(mw);
@@ -4405,31 +4532,19 @@ void PtpanTree::ss_window_sequence(const SimilaritySearchQuery& ssq,
         // TODO FIXME filter = (correct-cast-to AbstractQueryFilter *) new RichBaseRangeQueryFilter(...);
     }
 
-    // TODO optimize by building a kind of dictionary/hash map with compressed
-    // sequence as key and count of occurrences as payload
-    // this will reduce the number of queries!!
-
-    // TODO: parallelize here... (i += threadCount, maybe)
-    for (ULONG i = 0; i < ssqh.ssqh_filtered_seq_len - ssq.ssq_WindowSize;
-            ++i) {
+    for (ULONG i = offset; i < ssqh.ssqh_filtered_seq_len - ssq.ssq_WindowSize;
+            i += participators) {
         if ((ssq.ssq_SearchMode == 0) || (ssqh.ssqh_filtered_seq[i] == 'A')
-                || (ssqh.ssqh_filtered_seq[i] == 'a')) { // TODO TEST
-            //if ((ssq->ssq_SearchMode == 0)) {
-            char *tmpProbe = (char*) malloc(ssq.ssq_WindowSize + 1);
-            memcpy(tmpProbe, &ssqh.ssqh_filtered_seq[i], ssq.ssq_WindowSize); // copy substring
-            tmpProbe[ssq.ssq_WindowSize] = 0x00; // terminate substring
-            //   #ifdef DEBUG
-            //      printf("length: %ld %ld", sq->sq_QueryLen, strlen(tmpProbe)); // remove after testing
-            //   #endif
-            sq.sq_Query = std::string(tmpProbe);
+                || (ssqh.ssqh_filtered_seq[i] == 'a')) {
+            // direct copy to search sequence (which is the same size every time!)
+            memcpy(const_cast<STRPTR>(sq.sq_Query.data()), &ssqh.ssqh_filtered_seq[i], ssq.ssq_WindowSize);
             sqh.reset();
-            assert((ULONG)sq.sq_Query.size() == strlen(tmpProbe));
-
             { // search all occurrences and increase hitcounts!
                 std::vector<PTPanPartition *>::const_iterator pit;
                 for (pit = m_partitions.begin(); pit != m_partitions.end();
                         pit++) {
                     search_partition(*pit, sq, sqh);
+                    // TODO FIXME in parallel mode, we may want a barrier here!?
                 }
                 post_filter_query_hits(sq, sqh);
 
@@ -4437,11 +4552,10 @@ void PtpanTree::ss_window_sequence(const SimilaritySearchQuery& ssq,
                 for (qh = sqh.sqh_hits.begin(); qh != sqh.sqh_hits.end();
                         qh++) {
                     if (!filter || filter->matchesFilter(*qh)) {
-                        ssqh.ssqh_hit_count[qh->qh_Entry->pe_Num]++;
+                        ssqh.ssqh_hit_count[qh->qh_Entry->pe_Num].fetch_add(1, boost::memory_order_relaxed);
                     }
                 }
             }
-            free(tmpProbe);
         }
     }
 }

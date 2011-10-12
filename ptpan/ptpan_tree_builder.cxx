@@ -109,8 +109,8 @@ PtpanTreeBuilder::PtpanTreeBuilder() :
                 ".raw_data.tmp"), m_merged_raw_data_size(0), m_merged_raw_data(
                 NULL), m_dispatcher(), m_merge_border_map(), m_partition_dispatcher(), m_total_seq_size(
                 0), m_total_raw_size(0), m_total_seq_compressed_size(0), m_extended_long_edges(
-                false), m_long_edge_max_size_factor(1), m_all_hash_sum(rand()), m_partitions(), m_partitions_statistics(), m_partitions_use_threads(
-                0), m_max_partition_size(0) {
+                false), m_long_edge_max_size_factor(1), m_all_hash_sum(rand()), m_partitions(), m_partitions_statistics(), m_max_partition_size(
+                0) {
     m_entries = (struct List *) malloc(sizeof(List));
     NewList(m_entries);
 }
@@ -150,8 +150,8 @@ PtpanTreeBuilder::PtpanTreeBuilder(const PtpanTreeBuilder& ptb) :
                 ".raw_data.tmp"), m_merged_raw_data_size(0), m_merged_raw_data(
                 NULL), m_dispatcher(), m_merge_border_map(), m_partition_dispatcher(), m_total_seq_size(
                 0), m_total_raw_size(0), m_total_seq_compressed_size(0), m_extended_long_edges(
-                false), m_long_edge_max_size_factor(1), m_all_hash_sum(rand()), m_partitions(), m_partitions_statistics(), m_partitions_use_threads(
-                0), m_max_partition_size(0) {
+                false), m_long_edge_max_size_factor(1), m_all_hash_sum(rand()), m_partitions(), m_partitions_statistics(), m_max_partition_size(
+                0) {
 }
 
 /*!
@@ -386,7 +386,7 @@ void PtpanTreeBuilder::checkSettings() {
         printf("Max edge length < max_code_fit_long\n");
 #endif
     }
-    m_partitions_use_threads = m_settings->getThreadNumber();
+    m_num_threads = m_settings->getThreadNumber();
 }
 
 /*!
@@ -592,7 +592,7 @@ void PtpanTreeBuilder::loadEntry() {
             maxBaseLength, longestali);
     printf(
             "Database contains %ld valid entries. (only last message is correct one!)\n"
-            "%llu bytes (alignment) sequence data (%llu bases).\n",
+                    "%llu bytes (alignment) sequence data (%llu bases).\n",
             m_num_entries, m_total_seq_size, m_total_raw_size);
     printf(
             "Compressed sequence data (with dots and hyphens): %llu byte (%llu kb, %llu mb)\n",
@@ -1136,10 +1136,10 @@ void PtpanTreeBuilder::partitionDetermination() {
 #ifndef DEBUG
     if (m_verbose) {
 #endif
-        printf("Total number of bases: %lld\n", m_total_raw_size);
-        printf("Maximum number of tuples: %lu\n", m_max_partition_size);
+    printf("Total number of bases: %lld\n", m_total_raw_size);
+    printf("Maximum number of tuples: %lu\n", m_max_partition_size);
 #ifndef DEBUG
-    }
+}
 #endif
     // calculate if we may need longer prefixes than default!
     ULONG factor = 1;
@@ -1194,11 +1194,11 @@ void PtpanTreeBuilder::partitionDetermination() {
 #ifndef DEBUG
         if (m_verbose) {
 #endif
-            m_partitions_statistics.push_back(
-                    PartitionStatistics(pp->pp_ID, m_as->alphabet_size,
-                            m_max_partition_size));
+        m_partitions_statistics.push_back(
+                PartitionStatistics(pp->pp_ID, m_as->alphabet_size,
+                        m_max_partition_size));
 #ifndef DEBUG
-        }
+    }
 #endif
 
     } else {
@@ -1261,9 +1261,9 @@ void PtpanTreeBuilder::partitionDetermination() {
         ULONG offset = m_as->power_table[max_prefix_length - prefix_length];
         for (UWORD i = 0; i < m_as->alphabet_size; i++) {
             refine_queue.push_back(
-                    PartitionDetermination(i, prefix_length,
-                            (i * offset), (((i + 1) * offset) - 1)));
-                        }
+                    PartitionDetermination(i, prefix_length, (i * offset),
+                            (((i + 1) * offset) - 1)));
+        }
 
         std::set<PartitionDetermination> valid_partitions;
         struct PTPanPartition *pp = NULL;
@@ -1276,17 +1276,17 @@ void PtpanTreeBuilder::partitionDetermination() {
         ULONG best_thread_count = 1;
         ULONG last_thread_count = 1;
         double ratio = m_settings->getPartitionRatio();
-        ULONG threshold = (ULONG) (SIGNIFICANCE_THRESHOLD
-                * m_max_partition_size);
+        ULONG threshold =
+                (ULONG) (SIGNIFICANCE_THRESHOLD * m_max_partition_size);
         bool recheck = false;
 
 #ifndef DEBUG
         if (m_verbose) {
 #endif
-            printf("memory ratio = '%4.2f' = %ld bases (threshold = %ld)\n",
-                    ratio, (ULONG) (ratio * m_max_partition_size), threshold);
+        printf("memory ratio = '%4.2f' = %ld bases (threshold = %ld)\n", ratio,
+                (ULONG) (ratio * m_max_partition_size), threshold);
 #ifndef DEBUG
-        }
+    }
 #endif
         bool too_big = true;
         while (too_big) {
@@ -1404,12 +1404,12 @@ void PtpanTreeBuilder::partitionDetermination() {
 
         if (use_optimization && !best_partition_distribution.empty()) {
             valid_partitions.swap(best_partition_distribution);
-            m_partitions_use_threads = best_thread_count;
+            m_num_threads = best_thread_count;
 #ifdef DEBUG
             printf("Best thread count = %ld\n", best_thread_count);
 #endif
         } else {
-            m_partitions_use_threads = m_settings->getThreadNumber();
+            m_num_threads = m_settings->getThreadNumber();
         }
         cnt = 0;
         std::set<PartitionDetermination>::const_iterator it;
@@ -1445,27 +1445,26 @@ void PtpanTreeBuilder::partitionDetermination() {
 #ifndef DEBUG
             if (m_verbose) {
 #endif
-                m_partitions_statistics.push_back(
-                        PartitionStatistics(pp->pp_ID, m_as->alphabet_size,
-                                m_max_partition_size));
-                {
-                    char tempBuffer[128];
-                    STRPTR tarseq = tempBuffer;
-                    ULONG ccnt = pp->pp_PrefixLen;
-                    do {
-                        *tarseq++ = m_as->decompress_table[(pp->pp_Prefix
-                                / m_as->power_table[--ccnt])
-                                % m_as->alphabet_size];
-                    } while (ccnt);
-                    *tarseq = 0;
-                    printf(
-                            "(%ld) Partition %ld - %ld, size %ld, prefix = %ld, prefixlen = %ld %s\n",
-                            pp->pp_ID, it->m_prefix_range_start,
-                            it->m_prefix_range_end, it->m_base_count,
-                            pp->pp_Prefix, pp->pp_PrefixLen, tempBuffer);
-                }
-#ifndef DEBUG
+            m_partitions_statistics.push_back(
+                    PartitionStatistics(pp->pp_ID, m_as->alphabet_size,
+                            m_max_partition_size));
+            {
+                char tempBuffer[128];
+                STRPTR tarseq = tempBuffer;
+                ULONG ccnt = pp->pp_PrefixLen;
+                do {
+                    *tarseq++ = m_as->decompress_table[(pp->pp_Prefix
+                            / m_as->power_table[--ccnt]) % m_as->alphabet_size];
+                } while (ccnt);
+                *tarseq = 0;
+                printf(
+                        "(%ld) Partition %ld - %ld, size %ld, prefix = %ld, prefixlen = %ld %s\n",
+                        pp->pp_ID, it->m_prefix_range_start,
+                        it->m_prefix_range_end, it->m_base_count, pp->pp_Prefix,
+                        pp->pp_PrefixLen, tempBuffer);
             }
+#ifndef DEBUG
+        }
 #endif
         }
 
@@ -1476,10 +1475,10 @@ void PtpanTreeBuilder::partitionDetermination() {
 #ifndef DEBUG
     if (m_verbose) {
 #endif
-        printf("Using %ld partitions and %ld thread(s).\n", m_partitions.size(),
-                m_partitions_use_threads);
+    printf("Using %ld partitions and %ld thread(s).\n", m_partitions.size(),
+            m_num_threads);
 #ifndef DEBUG
-    }
+}
 #endif
 }
 
@@ -1647,10 +1646,10 @@ void PtpanTreeBuilder::buildTree() {
     printf("Build index tree for each partition ...\n");
 #endif
     // build tree for each partition
-    if (m_partitions.size() > 1 && m_partitions_use_threads > 1) {
+    if (m_partitions.size() > 1 && m_num_threads > 1) {
         // build partitions parallel ...
         m_partition_dispatcher.setPartitionList(m_partitions);
-        for (std::size_t i = 0; i < m_partitions_use_threads - 1; i++) {
+        for (std::size_t i = 0; i < m_num_threads - 1; i++) {
             boost::threadpool::schedule(*m_threadpool,
                     boost::bind(&PtpanTreeBuilder::buildTreeThread, this));
         }
@@ -1679,39 +1678,38 @@ void PtpanTreeBuilder::buildTree() {
 #ifndef DEBUG
     if (m_verbose) {
 #endif
-        printf("Partition ration from settings: '%4.2f'\n",
-                m_settings->getPartitionRatio());
-        printf("(ID) load = 'percent' (overall/inner/border)\n");
-        std::vector<PartitionStatistics>::const_iterator it;
-        ULONG count = 0;
-        double highest_significant = 0.0;
-        double average_ratio = 0.0;
+    printf("Partition ration from settings: '%4.2f'\n",
+            m_settings->getPartitionRatio());
+    printf("(ID) load = 'percent' (overall/inner/border)\n");
+    std::vector<PartitionStatistics>::const_iterator it;
+    ULONG count = 0;
+    double highest_significant = 0.0;
+    double average_ratio = 0.0;
 
-        for (it = m_partitions_statistics.begin();
-                it != m_partitions_statistics.end(); it++) {
-            std::string significance_str;
-            double current_load = it->load();
-            if (it->significant()) {
-                significance_str = "*";
-                average_ratio += current_load;
-                count++;
-                if (highest_significant < current_load) {
-                    highest_significant = current_load;
-                }
+    for (it = m_partitions_statistics.begin();
+            it != m_partitions_statistics.end(); it++) {
+        std::string significance_str;
+        double current_load = it->load();
+        if (it->significant()) {
+            significance_str = "*";
+            average_ratio += current_load;
+            count++;
+            if (highest_significant < current_load) {
+                highest_significant = current_load;
             }
-            printf("(%ld) load = '%4.2f' (%ld/%ld/%ld) %s\n", it->getId(),
-                    current_load, it->getOverallCount(), it->getInnerNodes(),
-                    it->getBorderNodes(), significance_str.data());
         }
-        if (m_partitions_statistics.size() > 1) {
-            printf(
-                    "%ld *significant values: average='%4.2f' (highest='%4.2f')\n",
-                    count, (average_ratio / count), highest_significant);
-            printf("%ld non-significant values\n",
-                    m_partitions_statistics.size() - count);
-        }
-#ifndef DEBUG
+        printf("(%ld) load = '%4.2f' (%ld/%ld/%ld) %s\n", it->getId(),
+                current_load, it->getOverallCount(), it->getInnerNodes(),
+                it->getBorderNodes(), significance_str.data());
     }
+    if (m_partitions_statistics.size() > 1) {
+        printf("%ld *significant values: average='%4.2f' (highest='%4.2f')\n",
+                count, (average_ratio / count), highest_significant);
+        printf("%ld non-significant values\n",
+                m_partitions_statistics.size() - count);
+    }
+#ifndef DEBUG
+}
 #endif
 
 }
@@ -1746,14 +1744,13 @@ void PtpanTreeBuilder::buildPartitionTree(struct PTPanPartition *pp) {
 #ifndef DEBUG
     if (m_verbose) {
 #endif
-        m_partitions_statistics.at(pp->pp_ID).setBorderNodes(
-                pbp->pbp_NumBorderNodes);
-        m_partitions_statistics.at(pp->pp_ID).setInnerNodes(
-                pbp->pbp_NumInnerNodes);
-        m_partitions_statistics.at(pp->pp_ID).setOverallCount(pp->pp_Size);
-        // TODO gather statistical data! ? edge count data??
+    m_partitions_statistics.at(pp->pp_ID).setBorderNodes(
+            pbp->pbp_NumBorderNodes);
+    m_partitions_statistics.at(pp->pp_ID).setInnerNodes(pbp->pbp_NumInnerNodes);
+    m_partitions_statistics.at(pp->pp_ID).setOverallCount(pp->pp_Size);
+    // TODO gather statistical data! ? edge count data??
 #ifndef DEBUG
-    }
+}
 #endif
 
     pbt_freePtpanBuildPartition(pbp);
@@ -1781,8 +1778,7 @@ struct PtpanTreeBuilder::PTPanBuildPartition* PtpanTreeBuilder::pbt_initPtpanBui
     // node (Leaf + SfxInnerNode + SfxBorderNode)
     // and some space for the special case of inner nodes with leafs
     ULONG factor = (sizeof(SfxInnerNode)
-            + (m_as->alphabet_size - 1) * sizeof(ULONG)
-            + sizeof(SfxBorderNode));
+            + (m_as->alphabet_size - 1) * sizeof(ULONG) + sizeof(SfxBorderNode));
     ULONG threshold = (ULONG) (SIGNIFICANCE_THRESHOLD * m_max_partition_size);
     if (pp->pp_Size > threshold) {
         factor = (ULONG) (factor * m_settings->getPartitionRatio());
@@ -2014,7 +2010,7 @@ void PtpanTreeBuilder::pbt_buildMemoryTree(struct PTPanBuildPartition* pbp) {
     printf(
             "Quick Prefix Lookup speedup: %ld%% (%ld)\n",
             (pbp->pbp_QuickPrefixCount * 100)
-            / pbp->pbp_PTPanPartition->pp_Size,
+                    / pbp->pbp_PTPanPartition->pp_Size,
             pbp->pbp_QuickPrefixCount);
 #endif
 
@@ -2275,10 +2271,10 @@ void PtpanTreeBuilder::pbt_calculateTreeStats(struct PTPanBuildPartition* pbp) {
     // allocate short edge code histogram (for edges between of 2-7 base pairs)
     ULONG bitsused = m_as->bits_use_table[m_as->short_edge_max] + 1;
     pbp->pbp_ShortEdgeCode = (struct HuffCode *) calloc((1UL << bitsused),
-    sizeof(struct HuffCode));if
-(    !pbp->pbp_ShortEdgeCode) {
+            sizeof(struct HuffCode));
+    if (!pbp->pbp_ShortEdgeCode) {
         throw std::runtime_error(
-        "PtpanTreeBuilder::pbt_calculateTreeStats() out of memory (pbp_ShortEdgeCode)");
+                "PtpanTreeBuilder::pbt_calculateTreeStats() out of memory (pbp_ShortEdgeCode)");
     }
     // get short edge stats
     pbp->pbp_EdgeCount = 0;
@@ -2526,7 +2522,7 @@ void PtpanTreeBuilder::pbt_buildLongEdgeDictionary(
                 "Number of affected long edges %ld (%ld %%)\n",
                 longEdgeConc->bcll_TouchedCount,
                 (longEdgeConc->bcll_TouchedCount * 100)
-                / pbp->pbp_unique_long_edges);
+                        / pbp->pbp_unique_long_edges);
 #endif
         // we use our former tmp_buffer as it already contains some data
         pbp->pbp_PTPanPartition->pp_LongDictSize = tmp_buffer_size;
@@ -2826,8 +2822,7 @@ STRPTR PtpanTreeBuilder::pbt_buildConcatenatedLongEdges(struct SfxNode ** edges,
             STRPTR newptr;
             // double the size of the buffer
             *tmp_buffer_size <<= 1;
-            if ((newptr = (STRPTR) realloc(tmp_buffer_local,
-                    *tmp_buffer_size))) {
+            if ((newptr = (STRPTR) realloc(tmp_buffer_local, *tmp_buffer_size))) {
                 tmp_buffer_local = newptr;
             } else {
                 free(tmp_buffer_local);
@@ -2875,8 +2870,7 @@ STRPTR PtpanTreeBuilder::pbt_buildConcatenatedLongEdges(struct SfxNode ** edges,
                 longEdgeConc->bcll_TouchedCount++;
             }
             // check, if we have to enlarge this interval...
-            if ((edges[cnt]->sn_StartPos + edges[cnt]->sn_EdgeLen - 1
-                    > ivalend)) {
+            if ((edges[cnt]->sn_StartPos + edges[cnt]->sn_EdgeLen - 1 > ivalend)) {
                 ULONG count = edges[cnt]->sn_StartPos + edges[cnt]->sn_EdgeLen
                         - 1 - ivalend;
                 ULONG tmp_pos = edges[cnt]->sn_EdgeLen - count;

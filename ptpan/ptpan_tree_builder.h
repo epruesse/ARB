@@ -499,7 +499,6 @@ private:
 
     pmap m_partitions; // prefix partitions
     std::vector<PartitionStatistics> m_partitions_statistics;
-    ULONG m_partitions_use_threads;
     ULONG m_max_partition_size;
 
     ULONG write_byte(ULONG value, UBYTE *buffer);

@@ -155,7 +155,7 @@ HitTuple::~HitTuple() {
 DesignHit::DesignHit() :
         dh_ProbeSeq(), dh_GroupHits(0), dh_NonGroupHits(0), dh_Temp(0.0), dh_GCContent(
                 0), dh_relpos(0), dh_ref_pos(0), dh_Quality(0.0), dh_Matches(), dh_NonGroupHitsPerc(), dh_sortKey(
-                0) {
+                0), dh_valid(true) {
 }
 
 /*!
@@ -167,7 +167,7 @@ DesignHit::DesignHit(const DesignHit& hit) :
                 hit.dh_GCContent), dh_relpos(hit.dh_relpos), dh_ref_pos(
                 hit.dh_ref_pos), dh_Quality(hit.dh_Quality), dh_Matches(
                 hit.dh_Matches), dh_NonGroupHitsPerc(), dh_sortKey(
-                hit.dh_sortKey) {
+                hit.dh_sortKey), dh_valid(hit.dh_valid) {
     for (int i = 0; i < DECR_TEMP_CNT; i++) {
         dh_NonGroupHitsPerc[i] = hit.dh_NonGroupHitsPerc[i];
     }
@@ -179,7 +179,8 @@ DesignHit::DesignHit(const DesignHit& hit) :
 DesignHit::DesignHit(ULONG probe_length) :
         dh_ProbeSeq(std::string(probe_length, '0')), dh_GroupHits(0), dh_NonGroupHits(
                 0), dh_Temp(0.0), dh_GCContent(0), dh_relpos(0), dh_ref_pos(0), dh_Quality(
-                0.0), dh_Matches(), dh_NonGroupHitsPerc(), dh_sortKey(0) {
+                0.0), dh_Matches(), dh_NonGroupHitsPerc(), dh_sortKey(0), dh_valid(
+                true) {
 }
 
 /*!
@@ -208,6 +209,7 @@ DesignHit& DesignHit::operator =(const DesignHit & hit) {
             dh_NonGroupHitsPerc[i] = hit.dh_NonGroupHitsPerc[i];
         }
         dh_sortKey = hit.dh_sortKey;
+        dh_valid = hit.dh_valid;
     }
     return *this;
 }
@@ -402,6 +404,10 @@ PTPanFeatureContainer::PTPanFeatureContainer() :
                 0), m_feature_map(NULL), m_feature_pos_map(NULL), m_normal_mode(
                 true), m_simple_mode(false) {
     m_features = new std::vector<PTPanFeature*>();
+    if (!m_simple_mode) {
+        m_feature_map = new PtpanFeatureMap();
+        m_feature_pos_map = new FeaturePositionT();
+    }
 }
 
 /*!
@@ -433,8 +439,12 @@ PTPanFeatureContainer::~PTPanFeatureContainer() {
                 }
             }
             if (!m_simple_mode) {
-                delete m_feature_map;
-                delete m_feature_pos_map;
+                if (m_feature_map) {
+                    delete m_feature_map;
+                }
+                if (m_feature_pos_map) {
+                    delete m_feature_pos_map;
+                }
             }
         }
     } catch (...) {
@@ -469,10 +479,16 @@ void PTPanFeatureContainer::clear() {
         for (it = m_features->begin(); it != m_features->end(); it++) {
             PTPanFeature::freePtpanFeature(*it);
         }
-        m_features->clear();
+        if (m_features) {
+            m_features->clear();
+        }
         if (!m_simple_mode) {
-            m_feature_map->clear();
-            m_feature_pos_map->clear();
+            if (m_feature_map) {
+                m_feature_map->clear();
+            }
+            if (m_feature_pos_map) {
+                m_feature_pos_map->clear();
+            }
         }
     }
     // TODO FIXME else for special mode
@@ -559,7 +575,7 @@ ULONG PTPanFeatureContainer::byteSize() const {
 void PTPanFeatureContainer::add(PTPanFeature *feature) {
     if (m_normal_mode) {
         m_features->push_back(feature);
-        if (m_simple_mode) {
+        if (!m_simple_mode) {
             (*m_feature_map)[feature->pf_name] = feature;
             MemberSetT feature_set;
             feature_set.insert((ULONG) feature);
