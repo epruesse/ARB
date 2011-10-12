@@ -1073,8 +1073,8 @@ ARCHS_PTWRAPPER= \
 $(PTWRAPPER): $(subst .a,.dummy,$(ARCHS_PTWRAPPER)) link_core
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PTWRAPPER) $(CORE_LIB) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PTWRAPPER) $(CORE_LIB)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PTWRAPPER) $(CORE_LIB) && \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PTWRAPPER) $(CORE_LIB) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PTWRAPPER) $(CORE_LIB) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
