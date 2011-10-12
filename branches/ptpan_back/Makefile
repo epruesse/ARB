@@ -57,7 +57,8 @@ CPPreal:=cpp
 ALLOWED_GCC_4xx_VERSIONS=\
 	4.3 4.3.1 4.3.2 4.3.3 4.3.4 \
 	4.4 4.4.1 4.4.3 4.4.5 \
-	4.5.2
+	4.5.2 \
+	4.6.1
 
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_4xx_VERSIONS)
 
@@ -291,6 +292,10 @@ ifdef DARWIN
 	XINCLUDES := -I/sw/include -I$(OSX_SDK)/usr/X11/include -I$(OSX_SDK)/usr/include/krb5 -I/usr/OpenMotif/include #Snow Leopard couldn't find OpenMotif
 endif
 
+ifdef REDHAT
+    XINCLUDES :=-I/usr/include/openmotif
+endif
+
 ifdef DARWIN
 	XLIBS := -L/usr/OpenMotif/lib -lXm -L$(XHOME)/lib -lpng -lXt -lX11 -lXext -lc -lXmu -lXi
 	XLIBS += -lGLU -lGL -Wl,-dylib_file,$(OSX_FW_OPENGL)/libGL.dylib:$(OSX_FW_OPENGL)/libGL.dylib
@@ -316,7 +321,7 @@ GL_PNGLIBS_SYS := -lpng
  ifdef DARWIN
 	GLEWLIB := -L/usr/lib -lGLEW -L$(OSX_SDK)/usr/X11/lib -lGLw
 	GLUTLIB := -L$(XHOME)/lib -lglut
- else 
+ else
 	GLEWLIB := -lGLEW -lGLw
 	GLUTLIB := -lglut
  endif
@@ -399,17 +404,18 @@ CPPLIB := $(CPP) $(shared_cflags)# compile C++ (shared libs)
 
 PP := $(CPPreal)# preprocessor
 
+gpplflags += -Wl,$(ldynamic)
 lflags += $(ldynamic)
 
 LINK_STATIC_LIB := ld $(lflags) -r -o# link static lib
-LINK_EXECUTABLE := $(GPP) $(lflags) $(cdynamic) -o# link executable (c++)
+LINK_EXECUTABLE := $(GPP) $(gpplflags) $(cdynamic) -o# link executable (c++)
 
 ifeq ($(LINK_STATIC),1)
 SHARED_LIB_SUFFIX = a# static lib suffix
 LINK_SHARED_LIB := $(LINK_STATIC_LIB)
 else
 SHARED_LIB_SUFFIX = so# shared lib suffix
-LINK_SHARED_LIB := $(GPP) $(lflags) -shared $(GCOVFLAGS) -o# link shared lib
+LINK_SHARED_LIB := $(GPP) $(gpplflags) -shared $(GCOVFLAGS) -o# link shared lib
 endif
 
 # other used tools
@@ -417,7 +423,11 @@ endif
 ifdef DARWIN
 	XMKMF := /usr/X11/bin/xmkmf
 else
-	XMKMF := /usr/bin/X11/xmkmf
+ifdef REDHAT
+	XMKMF := /usr/bin/xmkmf
+else
+    XMKMF := /usr/bin/X11/xmkmf
+endif		
 endif
 MAKEDEPEND_PLAIN = makedepend
 
@@ -643,6 +653,11 @@ LIBS = $(ARBDB_LIB) $(SYSLIBS)
 GUI_LIBS = $(LIBS) -lWINDOW -lAWT $(XLIBS)
 
 LIBPATH = -L$(ARBHOME)/LIBLINK
+ifdef REDHAT
+ifdef ARB_64
+LIBPATH += -L/usr/lib64/openmotif/ -L/usr/lib64
+endif
+endif
 
 DEST_LIB = lib
 DEST_BIN = bin
@@ -1272,7 +1287,7 @@ NAMES/NAMES.dummy : 			com
 SL/AW_NAME/AW_NAME.dummy : 		com
 
 PROBE/PROBE.dummy : 			com
-ptpan/ptpan.dummy : 			com
+ptpan/ptpan.dummy : 			com headerlibs
 MULTI_PROBE/MULTI_PROBE.dummy : 	com
 PROBE_DESIGN/PROBE_DESIGN.dummy : 	com
 NALIGNER/NALIGNER.dummy : 		com

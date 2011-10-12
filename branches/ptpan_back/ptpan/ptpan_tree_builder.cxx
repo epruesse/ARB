@@ -204,7 +204,7 @@ PtpanTreeBuilder::PartitionStatistics::PartitionStatistics(
 /*!
  * \brief Assignment operator
  */
-PtpanTreeBuilder::PartitionStatistics::PartitionStatistics& PtpanTreeBuilder::PartitionStatistics::operator=(
+PtpanTreeBuilder::PartitionStatistics& PtpanTreeBuilder::PartitionStatistics::operator=(
         const PartitionStatistics& ps) {
     if (this != &ps) {
         m_id = ps.m_id;

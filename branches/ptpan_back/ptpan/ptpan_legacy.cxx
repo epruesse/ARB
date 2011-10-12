@@ -943,13 +943,17 @@ int MP_count_all_species(PT_local *) {
 }
 /* \\\ */
 
-/* /// "create_match_list()" */
-void create_match_list(const SearchQuery& sq,
-        const boost::ptr_vector<QueryHit>& results) {
+/*
+ * /// "create_match_list()"
+ *
+ * \param limit 0 means unlimited
+ */
+ULONG create_match_list(const SearchQuery& sq,
+        const boost::ptr_vector<QueryHit>& results, ULONG limit) {
 #ifdef DEBUG
     printf("create_match_list(...) for %ld results\n", results.size());
 #endif
-
+    ULONG done = 0;
     if (results.size() > 0) {
         struct PTPanEntry *pe;
         boost::ptr_vector<QueryHit>::const_iterator hit;
@@ -976,6 +980,7 @@ void create_match_list(const SearchQuery& sq,
                                             - hit->qh_DeleteCount)) {
 
                                 PT_probematch *ml = create_PT_probematch();
+                                done++;
                                 ml->name = pe->pe_Num;
                                 // UGLY PROBLEM: we need a second identifier to hand over the
                                 // Feature pointer or pointer to name!!
@@ -1023,6 +1028,10 @@ void create_match_list(const SearchQuery& sq,
                                 aisc_link(
                                         (dllpublic_ext *) &(PTPanLegacyGlobalPtr->pl_SearchPrefs->ppm),
                                         (dllheader_ext *) ml);
+
+                                if (limit != 0 && done >= limit) {
+                                    return done;
+                                }
                             }
                         }
                     }
@@ -1034,6 +1043,7 @@ void create_match_list(const SearchQuery& sq,
             for (hit = results.begin(); hit != results.end(); hit++) {
                 pe = hit->qh_Entry;
                 PT_probematch *ml = create_PT_probematch();
+                done++;
                 ml->name = pe->pe_Num;
                 ml->b_pos = hit->qh_relpos;
                 // we don't neeed this: ml->rpos = qh->qh_AbsPos - pe->pe_AbsOffset;
@@ -1050,9 +1060,14 @@ void create_match_list(const SearchQuery& sq,
                 aisc_link(
                         (dllpublic_ext *) &(PTPanLegacyGlobalPtr->pl_SearchPrefs->ppm),
                         (dllheader_ext *) ml);
+
+                if (limit != 0 && done >= limit) {
+                    break;
+                }
             }
         }
     }
+    return done;
 }
 /* \\\ */
 
@@ -1155,7 +1170,7 @@ int probe_match(PT_local *locs, aisc_string probestring) {
         sq.sq_AllowInsert = true;
         sq.sq_AllowDelete = true;
     }
-    sq.sq_KillNSeqsAt = sq.sq_Query.size() / 3;
+    sq.sq_KillNSeqsAt = sq.sq_Query.size() / 3; // TODO FIXME limit number of N-mismatches (locs->pm_nmatches_ignored, locs->pm_nmatches_limit)
     sq.sq_MinorMisThres = locs->pdc->split;
     if (locs->sort_by == 0) { // 0 is non-weighted
         sq.sq_WeightedSearchMode = false;
@@ -1167,13 +1182,13 @@ int probe_match(PT_local *locs, aisc_string probestring) {
     printf("Prepared everything, now search!\n");
 #endif
     boost::ptr_vector<QueryHit> results = pl->pl_pt->searchTree(sq, true, true);
-    create_match_list(sq, results);
+    ULONG done = create_match_list(sq, results, locs->pm_max_hits);
 
     if (locs->pm_reversed) {
         SearchQuery compsq = sq;
         compsq.sq_Reversed = true;
         results = pl->pl_pt->searchTree(compsq, true, true);
-        create_match_list(compsq, results);
+        done = create_match_list(compsq, results, locs->pm_max_hits - done);
     }
 
     // Just to be secure, we clear the PDC structure

@@ -966,14 +966,19 @@ const boost::ptr_vector<DesignHit> PtpanTree::designProbes(
 
         boost::ptr_vector<DesignHit>::iterator dh;
         ULONG hitpos;
-        for (dh = dqh.dqh_Hits.begin(); dh != dqh.dqh_Hits.end();) {
+        for (dh = dqh.dqh_Hits.begin(); dh != dqh.dqh_Hits.end();) { // TODO parallelize this loop!?
             // reset values to new DesignHit
             sq.sq_Query = dh->dh_ProbeSeq;
             sqh.reset();
             // search over partitions
             for (pit = m_partitions.begin(); pit != m_partitions.end(); pit++) {
                 // search normal
-                search_partition(*pit, sq, sqh);
+                search_partition(*pit, sq, sqh); // TODO FIXME do this num_threads times in parallel
+                // TODO FIXME it is no good to create a SearchQuery for each candidate
+                // as this may result in way to large memory consumption, so we go over
+                // all partitions parallel and then all threads increment, and then again
+                // every thread goes over all partitions again
+                // -> we need a barrier! m_threadpool->wait();
             }
             post_filter_query_hits(sq, sqh);
             // check all hits
@@ -1052,7 +1057,7 @@ const boost::ptr_vector<DesignHit> PtpanTree::designProbes(
             }
         }
         // quality calculation ...
-        for (dh = dqh.dqh_Hits.begin(); dh != dqh.dqh_Hits.end(); dh++) {
+        for (dh = dqh.dqh_Hits.begin(); dh != dqh.dqh_Hits.end(); dh++) { // TODO parallelize this loop!?
             int i;
             for (i = 0; i < DECR_TEMP_CNT - 1; i++) {
                 if (dh->dh_NonGroupHitsPerc[i] > dh->dh_NonGroupHits) {
