@@ -8,15 +8,19 @@
 #include <sys/mman.h>
 
 #include "ptpan_base.h"
+#include "check_hyperthreads.h"
 
 /*!
  * \brief constructor
  */
 PtpanBase::PtpanBase() :
-        m_pool_mutex(), m_threadpool(
-                new boost::threadpool::pool(
-                        boost::thread::hardware_concurrency())), m_verbose(
-                false), m_num_threads(boost::thread::hardware_concurrency()) {
+        m_pool_mutex(), m_threadpool(), m_verbose(false), m_num_threads(
+                boost::thread::hardware_concurrency()) {
+    if (arb::toolbox::hasHyperThreads()) {
+        std::pair<int, int> threads = arb::toolbox::getHardwareThreads();
+        m_num_threads = threads.first;
+    }
+    m_threadpool = pool_ptr(new boost::threadpool::pool(m_num_threads));
 }
 
 /*!
@@ -134,13 +138,9 @@ std::size_t PtpanBase::numberOfThreads() const {
  * If value is 0 or 1, the number is set to 1 also the main process
  * does work as well, so we won't need a thread in the pool!
  *
- * Default value is obtained by "boost::thread::hardware_concurrency()"
- * allowing the reset to system default value.
- *
  * \param num
  */
-void PtpanBase::setNumberOfThreads(std::size_t num =
-        boost::thread::hardware_concurrency()) {
+void PtpanBase::setNumberOfThreads(std::size_t num) {
     boost::lock_guard<boost::mutex> lock(m_pool_mutex);
     m_num_threads = num;
     if (num > m_threadpool->size()) {
@@ -149,10 +149,10 @@ void PtpanBase::setNumberOfThreads(std::size_t num =
 #ifndef DEBUG
         if (m_verbose) {
 #endif
-        printf(
-                "TODO The utilized threadpool has currently an issue with down-sizing, so it is not done!\n");
+            printf(
+                    "TODO The utilized threadpool has currently an issue with down-sizing, so it is not done!\n");
 #ifndef DEBUG
-    }
+        }
 #endif
         //        if (num <= 1) {
         //            printf("RESIZE TO 1 (from %ld)\n", m_threadpool->size());
