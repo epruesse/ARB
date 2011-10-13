@@ -50,7 +50,7 @@ static void awtc_remove_arb_acc(AW_window * /* aws */, AW_CL cl_gb_main) {
                                            "*ACC {ARB*='" // remove entries with 'ARB_' prefix (Note: Nameserver does not store the '_'!)
                                            " %s",
                                            path, newpath, path);
-    GB_ERROR error = GB_system(command);
+    GB_ERROR error = GBK_system(command);
     if (error) aw_message(error);
 
     free(command);

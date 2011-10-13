@@ -717,32 +717,16 @@ GB_ERROR GB_textprint(const char *path) {
     // goes to header: __ATTR__USERESULT
     char       *fpath   = GBS_eval_env(path);
     const char *command = GBS_global_string("arb_textprint '%s' &", fpath);
-    GB_ERROR    error   = GB_system(command);
+    GB_ERROR    error   = GBK_system(command);
     free(fpath);
     return GB_failedTo_error("print textfile", fpath, error);
-}
-
-#if defined(WARN_TODO)
-#warning search for '\b(system)\b\s*\(' and use GB_system instead
-#endif
-GB_ERROR GB_system(const char *system_command) {
-    // goes to header: __ATTR__USERESULT
-    fprintf(stderr, "[Action: '%s']\n", system_command);
-    int      res   = system(system_command);
-    GB_ERROR error = NULL;
-    if (res) {
-        error = GBS_global_string("System call failed (result=%i)\n"
-                                  "System call was '%s'\n"
-                                  "(Note: console window may contain additional information)", res, system_command);
-    }
-    return error;
 }
 
 GB_ERROR GB_xterm() {
     // goes to header: __ATTR__USERESULT
     const char *xt      = GB_getenvARB_XTERM();
     const char *command = GBS_global_string("%s &", xt);
-    return GB_system(command);
+    return GBK_system(command);
 }
 
 GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
@@ -779,7 +763,7 @@ GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
         }
     }
 
-    GB_ERROR error = GB_system(GBS_mempntr(strstruct));
+    GB_ERROR error = GBK_system(GBS_mempntr(strstruct));
     GBS_strforget(strstruct);
 
     return error;

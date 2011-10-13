@@ -110,7 +110,7 @@ void AW_edit(const char *path, aw_fileChanged_cb callback, AW_window *aww, GBDAT
 
     if (command) {
         aw_assert(!error);
-        error = GB_system(command);
+        error = GBK_system(command);
         if (error) {
             aw_message(error); error = NULL;
             if (callback) error = GB_remove_last_notification(gb_main);
@@ -136,5 +136,5 @@ void AW_edit(const char *path, aw_fileChanged_cb callback, AW_window *aww, GBDAT
 
 void AW_system(AW_window *aww, const char *command, const char *auto_help_file) {
     if (auto_help_file) AW_POPUP_HELP(aww, (AW_CL)auto_help_file);
-    aw_message_if(GB_system(command));
+    aw_message_if(GBK_system(command));
 }
