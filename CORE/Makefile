@@ -19,10 +19,10 @@ $(MAIN): $(OBJECTS)
 .cxx.genh:
 	../AISC_MKPTPS/aisc_mkpt -P -G -A -w $(subst .genh,.h,$@) $< > $@
 
-.genh.h:
-	../SOURCE_TOOLS/mv_if_diff $< $@
+%.genheader: %.genh
+	../SOURCE_TOOLS/mv_if_diff $< $(subst .genheader,.h,$@)
 
-proto: $(GENERATED_HEADERS)
+proto: $(subst .h,.genheader,$(GENERATED_HEADERS))
 
 clean:
 	rm -f $(OBJECTS) *.a *.so
