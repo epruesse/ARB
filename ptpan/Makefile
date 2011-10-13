@@ -108,6 +108,7 @@ ptpan.o: ptpan.h
 ptpan.o: types.h
 
 ptpan_base.o: bin_tree.h
+ptpan_base.o: check_hyperthreads.h
 ptpan_base.o: dlist.h
 ptpan_base.o: hash_key.h
 ptpan_base.o: huffman.h
@@ -122,6 +123,7 @@ ptpan_base.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 ptpan_build_settings.o: abstract_alphabet_specifics.h
 ptpan_build_settings.o: bin_tree.h
+ptpan_build_settings.o: check_hyperthreads.h
 ptpan_build_settings.o: dlist.h
 ptpan_build_settings.o: hash_key.h
 ptpan_build_settings.o: huffman.h
