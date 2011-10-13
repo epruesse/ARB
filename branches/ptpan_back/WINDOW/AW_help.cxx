@@ -15,7 +15,8 @@
 #include "aw_global_awars.hxx"
 #include "aw_msg.hxx"
 
-#include <arbdbt.h>
+#include <arbdb.h>
+#include <arb_file.h>
 
 #include <sys/stat.h>
 

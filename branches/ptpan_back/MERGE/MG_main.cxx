@@ -18,9 +18,10 @@
 #include <aw_awars.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
-#include <arb_progress.h>
 #include <aw_root.hxx>
 
+#include <arb_progress.h>
+#include <arb_file.h>
 
 GBDATA *GLOBAL_gb_merge = NULL;
 GBDATA *GLOBAL_gb_dest  = NULL;

@@ -11,6 +11,7 @@
 #include "gb_map.h"
 #include "gb_storage.h"
 #include "gb_index.h"
+#include <arb_file.h>
 
 #include <static_assert.h>
 

@@ -12,6 +12,8 @@
 #include "probe_tree.h"
 #include "pt_prototypes.h"
 
+#include <arb_file.h>
+
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <climits>

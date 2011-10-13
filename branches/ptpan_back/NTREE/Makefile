@@ -202,6 +202,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_error.h
+ad_trees.o: $(ARBHOME)/INCLUDE/arb_file.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -347,6 +348,7 @@ ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/arb_core.h
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/arb_error.h
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/arb_file.h
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/arb_string.h
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -510,6 +512,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arb_build.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arb_error.h
+NT_extern.o: $(ARBHOME)/INCLUDE/arb_file.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arb_msg.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arb_progress.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arb_strarray.h
@@ -666,6 +669,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_main.o: $(ARBHOME)/INCLUDE/arb_build.h
 NT_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_main.o: $(ARBHOME)/INCLUDE/arb_error.h
+NT_main.o: $(ARBHOME)/INCLUDE/arb_file.h
 NT_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 NT_main.o: $(ARBHOME)/INCLUDE/arb_progress.h
 NT_main.o: $(ARBHOME)/INCLUDE/arb_string.h

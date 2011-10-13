@@ -12,7 +12,8 @@
 #include <PT_server_prototypes.h>
 #include "probe_tree.h"
 #include "pt_prototypes.h"
-#include "arb_defs.h"
+#include <arb_defs.h>
+#include <arb_file.h>
 
 #include <arb_progress.h>
 

@@ -44,6 +44,7 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_file.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arbdb.h

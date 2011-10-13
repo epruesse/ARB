@@ -21,6 +21,7 @@ int main(int, char **) {
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS
+#include <arb_file.h>
 #include <test_unit.h>
 #include <ut_valgrinded.h>
 

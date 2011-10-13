@@ -15,6 +15,7 @@
 
 #include <arbdbt.h>
 #include <arb_str.h>
+#include <arb_file.h>
 
 #include "gb_storage.h"
 #include "gb_localdata.h"

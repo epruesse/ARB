@@ -12,6 +12,8 @@
 #include <sys/stat.h>
 #include <netinet/in.h>
 
+#include <arb_file.h>
+
 #include "gb_map.h"
 #include "gb_load.h"
 #include "gb_storage.h"

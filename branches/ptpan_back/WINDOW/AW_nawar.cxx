@@ -13,6 +13,7 @@
 #include "aw_detach.hxx"
 #include "aw_msg.hxx"
 #include <arbdb.h>
+#include <arb_file.h>
 #include <sys/stat.h>
 
 #define AWAR_EPS 0.00000001
