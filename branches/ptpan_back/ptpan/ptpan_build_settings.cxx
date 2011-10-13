@@ -5,8 +5,10 @@
  * \author Tilo Eissler
  */
 
-#include "ptpan_build_settings.h"
 #include <boost/thread.hpp>
+
+#include "ptpan_build_settings.h"
+#include "check_hyperthreads.h"
 
 /*!
  * \brief Private default constructor
@@ -15,6 +17,10 @@ PtpanBuildSettings::PtpanBuildSettings() :
         m_as(NULL), m_prune_length(0), m_memory_size(0), m_max_prefix_len(0), m_path(), m_index_name(), m_num_threads(
                 boost::thread::hardware_concurrency()), m_include_features(
                 false), m_verbose(false), m_force(false), m_ratio(1.0) {
+    if (arb::toolbox::hasHyperThreads()) {
+        std::pair<int, int> threads = arb::toolbox::getHardwareThreads();
+        m_num_threads = threads.first;
+    }
 }
 
 /*!
@@ -38,6 +44,10 @@ PtpanBuildSettings::PtpanBuildSettings(AbstractAlphabetSpecifics *as,
                 5), m_path(path), m_index_name(name), m_max_prefix_lookup_size(
                 7), m_num_threads(boost::thread::hardware_concurrency()), m_include_features(
                 false), m_verbose(false), m_force(false), m_ratio(1.0) {
+    if (arb::toolbox::hasHyperThreads()) {
+        std::pair<int, int> threads = arb::toolbox::getHardwareThreads();
+        m_num_threads = threads.first;
+    }
 }
 
 /*!
