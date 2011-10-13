@@ -47,7 +47,7 @@ int Range::calc_max_abs_pos() const {
 #include <test_unit.h>
 #endif
 
-void TEST_nothing() {
+void TEST_SLOW_nothing() {
     // TEST_ASSERT(0);
     TEST_SETUP_GLOBAL_ENVIRONMENT("ptserver"); 
 }

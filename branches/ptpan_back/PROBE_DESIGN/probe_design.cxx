@@ -36,6 +36,7 @@
 // general awars
 
 #define AWAR_PROBE_CREATE_GENE_SERVER "tmp/probe_admin/gene_server" // whether to create a gene pt server
+#define AWAR_PROBE_CREATE_PAN_SERVER  "tmp/probe_admin/pan_server"  // whether to use ptpan
 
 // probe match awars
 
@@ -243,7 +244,7 @@ static const char *PD_probe_pt_look_for_server(AW_root *root, GB_ERROR& error) {
     const char *result     = 0;
     const char *server_tag = GBS_ptserver_tag(root->awar(AWAR_PT_SERVER)->read_int());
 
-    error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag);
+    error = arb_look_and_start_ptserver(AISC_MAGIC_NUMBER, server_tag, root->awar(AWAR_PROBE_CREATE_PAN_SERVER)->read_int());
     if (!error) {
         result             = GBS_read_arb_tcp(server_tag);
         if (!result) error = GB_await_error();
@@ -1174,8 +1175,9 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_string(AWAR_PD_MATCH_RESOLVE, "", props)->add_callback(resolved_probe_chosen);
     root->awar_string(AWAR_ITARGET_STRING, "", db);
 
-    root->awar_int   (AWAR_PROBE_ADMIN_PT_SERVER,    0,  db);
-    root->awar_int   (AWAR_PROBE_CREATE_GENE_SERVER, 0,  db);
+    root->awar_int(AWAR_PROBE_ADMIN_PT_SERVER,    0, db);
+    root->awar_int(AWAR_PROBE_CREATE_GENE_SERVER, 0, db);
+    root->awar_int(AWAR_PROBE_CREATE_PAN_SERVER,  0, db);
 
     root->awar_string(AWAR_SPV_SAI_2_PROBE,    "",     db); // name of SAI selected in list
     root->awar_string(AWAR_SPV_DB_FIELD_NAME,  "name", db); // name of displayed species field
@@ -1656,9 +1658,11 @@ AW_window *create_probe_match_window(AW_root *root, AW_CL cl_gb_main) {
 }
 
 static void pd_start_pt_server(AW_window *aww) {
-    const char *server_tag = GBS_ptserver_tag(aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
-    arb_progress progress("Connecting PT-server");
-    GB_ERROR error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag);
+    AW_root      *awr          = aww->get_root();
+    const char   *server_tag   = GBS_ptserver_tag(awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
+    arb_progress  progress("Connecting PT-server");
+    bool          prefer_ptpan = awr->awar(AWAR_PROBE_CREATE_PAN_SERVER)->read_int();
+    GB_ERROR      error        = arb_look_and_start_ptserver(AISC_MAGIC_NUMBER, server_tag, prefer_ptpan);
     if (error) aw_message(error);
 }
 
@@ -1815,7 +1819,7 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
 
         if (!error) {
             progress.subtitle("Start PT-server (builds in background)");
-            error = arb_start_server(server_tag, 1);
+            error = arb_start_server(server_tag, 1, awr->awar(AWAR_PROBE_CREATE_PAN_SERVER)->read_int());
         }
     }
     if (error) aw_message(error);
@@ -1879,6 +1883,10 @@ AW_window *create_probe_admin_window(AW_root *root, AW_CL cl_gb_main) {
         aws->create_toggle(AWAR_PROBE_CREATE_GENE_SERVER);
     }
 
+    aws->at("pan_server");
+    aws->label("Use PTPan?");
+    aws->create_toggle(AWAR_PROBE_CREATE_PAN_SERVER);
+    
     return aws;
 }
 

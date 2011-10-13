@@ -22,7 +22,7 @@ class EntryTempMarker : virtual Noncopyable {
 
     GBDATA         *gb_main;
     GB_transaction  ta;
-    Servertype      type;
+    PT_Servertype   type;
     char           *ali_name;
 
     enum Need {
@@ -107,7 +107,7 @@ class EntryTempMarker : virtual Noncopyable {
     }
 
 public:
-    EntryTempMarker(Servertype type_, GBDATA *gb_main_)
+    EntryTempMarker(PT_Servertype type_, GBDATA *gb_main_)
         : gb_main(gb_main_),
           ta(gb_main),
           type(type_),
@@ -118,11 +118,11 @@ public:
     GB_ERROR mark_unwanted_entries() { return mark_subentries(gb_main, SOME_OF_ROOT); }
 };
 
-inline GB_ERROR clean_ptserver_database(GBDATA *gb_main, Servertype type) {
+inline GB_ERROR clean_ptserver_database(GBDATA *gb_main, PT_Servertype type) {
     return EntryTempMarker(type, gb_main).mark_unwanted_entries();
 }
 
-GB_ERROR prepare_ptserver_database(GBDATA *gb_main, Servertype type) {
+GB_ERROR prepare_ptserver_database(GBDATA *gb_main, PT_Servertype type) {
     GB_ERROR error = GB_request_undo_type(gb_main, GB_UNDO_NONE);
     if (!error) {
         GB_push_my_security(gb_main);

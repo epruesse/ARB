@@ -15,13 +15,11 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
+#ifndef PTCOMMON_H
+#include <ptcommon.h>
+#endif
 
-enum Servertype {
-    PTSERVER,
-    PTPAN
-};
-
-GB_ERROR prepare_ptserver_database(GBDATA *gb_main, Servertype type);
+GB_ERROR prepare_ptserver_database(GBDATA *gb_main, PT_Servertype type);
 
 #else
 #error ptclean.h included twice

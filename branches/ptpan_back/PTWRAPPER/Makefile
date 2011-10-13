@@ -37,10 +37,12 @@ depend.init:
 ptwrapper.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ptwrapper.o: $(ARBHOME)/INCLUDE/arb_core.h
 ptwrapper.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ptwrapper.o: $(ARBHOME)/INCLUDE/arb_str.h
 ptwrapper.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ptwrapper.o: $(ARBHOME)/INCLUDE/arbtools.h
 ptwrapper.o: $(ARBHOME)/INCLUDE/attributes.h
 ptwrapper.o: $(ARBHOME)/INCLUDE/dupstr.h
+ptwrapper.o: $(ARBHOME)/INCLUDE/ptcommon.h
 ptwrapper.o: $(ARBHOME)/INCLUDE/test_global.h
 ptwrapper.o: $(ARBHOME)/INCLUDE/test_unit.h
 ptwrapper.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h

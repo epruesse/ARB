@@ -11,12 +11,18 @@
 #ifndef PTCOMMON_H
 #define PTCOMMON_H
 
-enum Servertype { // @@@ DRY vs PTCLEAN when merged
+#ifndef ARB_CORE_H
+#include <arb_core.h>
+#endif
+
+enum PT_Servertype {
     PTSERVER,
-    PTPAN
+    PTPAN,
+    PTUNKNOWN, 
 };
 
-bool index_exists_for(Servertype type); 
+PT_Servertype servertype_of_uptodate_index(const char *dbname, GB_ERROR& error);
+const char *readable_Servertype(PT_Servertype type);
 
 #else
 #error ptcommon.h included twice
