@@ -61,6 +61,7 @@ remove_flags() {
     rm_if $BASEDIR/flag.valgrind
     rm_if $BASEDIR/flag.valgrind.leaks
     rm_if $BASEDIR/flag.valgrind.reachable
+    rm_if $BASEDIR/flag.valgrind.callseen
 }
 
 INIT() { 
