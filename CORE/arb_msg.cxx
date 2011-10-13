@@ -497,3 +497,19 @@ void GBS_reuse_buffer(const char *global_buffer) {
     gbs_vglobal_string(global_buffer, 0, -1); // omg hax
 }
 
+#if defined(WARN_TODO)
+#warning search for '\b(system)\b\s*\(' and use GBK_system instead
+#endif
+GB_ERROR GBK_system(const char *system_command) {
+    // goes to header: __ATTR__USERESULT
+    fprintf(stderr, "[Action: '%s']\n", system_command);
+    int      res   = system(system_command);
+    GB_ERROR error = NULL;
+    if (res) {
+        error = GBS_global_string("System call failed (result=%i)\n"
+                                  "System call was '%s'\n"
+                                  "(Note: console window may contain additional information)", res, system_command);
+    }
+    return error;
+}
+

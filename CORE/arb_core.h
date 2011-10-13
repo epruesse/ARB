@@ -38,6 +38,8 @@ GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr);
 void GBK_dump_backtrace(FILE *out, const char *message);
 void GBK_terminate(const char *error);
 
+GB_ERROR GBK_system(const char *system_command);
+
 #else
 #error arb_core.h included twice
 #endif // ARB_CORE_H

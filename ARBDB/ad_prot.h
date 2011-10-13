@@ -448,7 +448,6 @@ GB_ULONG GB_time_of_day(void);
 long GB_last_saved_clock(GBDATA *gb_main);
 GB_ULONG GB_last_saved_time(GBDATA *gb_main);
 GB_ERROR GB_textprint(const char *path) __ATTR__USERESULT;
-GB_ERROR GB_system(const char *system_command) __ATTR__USERESULT;
 GB_ERROR GB_xterm(void) __ATTR__USERESULT;
 GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) __ATTR__USERESULT_TODO;
 char *GB_executable(GB_CSTR exe_name);

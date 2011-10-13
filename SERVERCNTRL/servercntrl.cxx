@@ -152,7 +152,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep)
             }
 
             if (!error) {
-                error = GB_system(command);
+                error = GBK_system(command);
                 if (do_sleep) sleep(delay);
             }
             free(command);
