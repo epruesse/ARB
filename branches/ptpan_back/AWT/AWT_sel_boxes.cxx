@@ -24,6 +24,7 @@
 #include <arbdbt.h>
 #include <arb_strbuf.h>
 #include <arb_strarray.h>
+#include <arb_file.h>
 
 #include <list>
 
