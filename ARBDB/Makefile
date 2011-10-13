@@ -182,6 +182,7 @@ ad_load.o: gb_storage.h
 ad_load.o: gb_tune.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_error.h
+ad_load.o: $(ARBHOME)/INCLUDE/arb_file.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_str.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -209,6 +210,7 @@ ad_save_load.o: gb_storage.h
 ad_save_load.o: gb_tune.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_error.h
+ad_save_load.o: $(ARBHOME)/INCLUDE/arb_file.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -317,6 +319,7 @@ adcomm.o: gb_storage.h
 adcomm.o: gb_tune.h
 adcomm.o: $(ARBHOME)/INCLUDE/arb_core.h
 adcomm.o: $(ARBHOME)/INCLUDE/arb_error.h
+adcomm.o: $(ARBHOME)/INCLUDE/arb_file.h
 adcomm.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adcomm.o: $(ARBHOME)/INCLUDE/arb_signal.h
 adcomm.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -383,6 +386,7 @@ adfile.o: gb_local.h
 adfile.o: gb_prot.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_core.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_error.h
+adfile.o: $(ARBHOME)/INCLUDE/arb_file.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_sort.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_str.h
@@ -528,6 +532,7 @@ adlang1.o: gb_tune.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_core.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_defs.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_error.h
+adlang1.o: $(ARBHOME)/INCLUDE/arb_file.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -598,6 +603,7 @@ admap.o: gb_storage.h
 admap.o: gb_tune.h
 admap.o: $(ARBHOME)/INCLUDE/arb_core.h
 admap.o: $(ARBHOME)/INCLUDE/arb_error.h
+admap.o: $(ARBHOME)/INCLUDE/arb_file.h
 admap.o: $(ARBHOME)/INCLUDE/arb_msg.h
 admap.o: $(ARBHOME)/INCLUDE/arb_string.h
 admap.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -790,6 +796,7 @@ adsocket.o: gb_prot.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_core.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_cs.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_error.h
+adsocket.o: $(ARBHOME)/INCLUDE/arb_file.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_str.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_strbuf.h

@@ -21,6 +21,7 @@
 #include <arb_sort.h>
 #include <arb_str.h>
 #include <arb_strarray.h>
+#include <arb_file.h>
 
 #include "gb_local.h"
 #include "gb_load.h"

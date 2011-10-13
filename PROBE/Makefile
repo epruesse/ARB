@@ -58,6 +58,7 @@ PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_defs.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_error.h
+PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_file.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_progress.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -205,6 +206,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_defs.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_error.h
+PT_main.o: $(ARBHOME)/INCLUDE/arb_file.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 PT_main.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -290,6 +292,7 @@ PT_prefixtree.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_error.h
+PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_file.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_string.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arbdb.h

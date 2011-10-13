@@ -18,6 +18,7 @@
 #include <arbdbt.h>
 #include <arb_defs.h>
 #include <arb_strbuf.h>
+#include <arb_file.h>
 
 using namespace AW;
 

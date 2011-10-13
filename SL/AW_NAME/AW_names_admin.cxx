@@ -18,6 +18,8 @@
 #include <aw_root.hxx>
 #include <awt_sel_boxes.hxx>
 
+#include <arb_file.h>
+
 static char *namesFilename(AW_CL cl_gb_main) {
     const char *field    = AW_get_nameserver_addid((GBDATA*)cl_gb_main);
     const char *filename = field[0] ? GBS_global_string("names_%s.dat", field) : "names.dat";

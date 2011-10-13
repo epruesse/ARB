@@ -15,6 +15,7 @@
 #include <BI_basepos.hxx>
 
 #include <arbdbt.h>
+#include <arb_file.h>
 #include <arb_defs.h>
 #include <servercntrl.h>
 #include <server.h>

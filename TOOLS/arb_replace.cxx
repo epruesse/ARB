@@ -9,6 +9,7 @@
 // =============================================================== //
 
 #include <arb_strbuf.h>
+#include <arb_file.h>
 #include <arbdb.h>
 
 int main(int argc, char **argv) {

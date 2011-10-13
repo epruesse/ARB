@@ -12,7 +12,9 @@
 
 #include <client_privat.h>
 #include <client.h>
+
 #include <arbdb.h>
+#include <arb_file.h>
 #include <ut_valgrinded.h>
 
 #include <unistd.h>
