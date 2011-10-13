@@ -160,7 +160,7 @@ GB_ERROR PT_FamilyFinder::open(const char *servername) {
     
     ff_assert(!com && !link);
 
-    if (arb_look_and_start_server(AISC_MAGIC_NUMBER, servername)) {
+    if (arb_look_and_start_ptserver(AISC_MAGIC_NUMBER, servername, false)) {
         error = "Cannot contact PT  server";
     }
     else {

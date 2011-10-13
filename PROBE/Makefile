@@ -223,6 +223,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_main.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_main.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PT_main.o: $(ARBHOME)/INCLUDE/ptclean.h
+PT_main.o: $(ARBHOME)/INCLUDE/ptcommon.h
 PT_main.o: $(ARBHOME)/INCLUDE/server.h
 PT_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
 PT_main.o: $(ARBHOME)/INCLUDE/smartptr.h

@@ -85,13 +85,12 @@ char *prefixSSH(const char *host, const char *command, int async) {
     return result;
 }
 
-GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep)
-{
+GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep, bool prefer_ptpan) {
     const char *tcp_id;
     GB_ERROR    error = 0;
 
     if (!(tcp_id = GBS_read_arb_tcp(arb_tcp_env))) {
-        error = GB_export_errorf("Entry '%s' in $(ARBHOME)/lib/arb_tcp.dat not found", arb_tcp_env);
+        error = GBS_global_string("Entry '%s' in $(ARBHOME)/lib/arb_tcp.dat not found", arb_tcp_env);
     }
     else {
         const char *server       = strchr(tcp_id, 0) + 1;
@@ -131,6 +130,11 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep)
             }
         }
 
+        if (strstr(server, "arb_pt_server")) {
+            // pass preferred server type to PTWRAPPER
+            freeset(serverparams, GBS_global_string_copy("-prefer=%s %s", prefer_ptpan ? "PAN" : "PT", serverparams)); 
+        }
+
         {
             char *command = 0;
             int   delay   = 5;
@@ -143,7 +147,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep)
                 const char *port = strchr(tcp_id, ':');
 
                 if (!port) {
-                    error = GB_export_errorf("Error: Missing ':' in line '%s' file $(ARBHOME)/lib/arb_tcp.dat", arb_tcp_env);
+                    error = GBS_global_string("Error: Missing ':' in line '%s' file $(ARBHOME)/lib/arb_tcp.dat", arb_tcp_env);
                 }
                 else {
                     char *remoteCommand = GBS_global_string_copy("$ARBHOME/bin/%s %s -T%s", server, serverparams, port);
@@ -161,13 +165,13 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep)
         }
         free(serverparams);
     }
-    return error;
+    RETURN_ERROR(error);
 }
 
-static GB_ERROR arb_wait_for_server(const char *arb_tcp_env, const char *tcp_id, int magic_number, struct gl_struct *serverctrl, int wait) {
+static GB_ERROR arb_wait_for_server(const char *arb_tcp_env, const char *tcp_id, int magic_number, struct gl_struct *serverctrl, int wait, bool prefer_ptpan) {
     serverctrl->link = aisc_open(tcp_id, &(serverctrl->com), magic_number);
     if (!serverctrl->link) { // no server running -> start one
-        GB_ERROR error = arb_start_server(arb_tcp_env, 0);
+        GB_ERROR error = arb_start_server(arb_tcp_env, 0, prefer_ptpan);
         if (error) return error;
 
         while (!serverctrl->link && wait) {
@@ -183,7 +187,7 @@ static GB_ERROR arb_wait_for_server(const char *arb_tcp_env, const char *tcp_id,
     return 0;
 }
 
-GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env) {
+static GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, bool prefer_ptpan) {
     GB_ERROR    error       = 0;
     const char *tcp_id      = GBS_read_arb_tcp(arb_tcp_env);
     const char *arb_tcp_dat = "$(ARBHOME)/lib/arb_tcp.dat";
@@ -242,7 +246,7 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env) {
         }
 
         if (!error) {
-            error = arb_wait_for_server(arb_tcp_env, tcp_id, magic_number, &glservercntrl, 20);
+            error = arb_wait_for_server(arb_tcp_env, tcp_id, magic_number, &glservercntrl, 20, prefer_ptpan);
 
             if (!error) {
                 if (!glservercntrl.link) { // couldn't start server
@@ -267,6 +271,13 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env) {
     }
 
     return error;
+}
+
+GB_ERROR arb_look_and_start_ptserver(long magic_number, const char *arb_tcp_env, bool prefer_ptpan) {
+    return arb_look_and_start_server(magic_number, arb_tcp_env, prefer_ptpan);
+}
+GB_ERROR arb_look_and_start_nameserver(long magic_number, const char *arb_tcp_env) {
+    return arb_look_and_start_server(magic_number, arb_tcp_env, false);
 }
 
 GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env) {

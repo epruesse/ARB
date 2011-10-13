@@ -33,6 +33,8 @@ depend.init:
 ptcommon.o: ptcommon.h
 ptcommon.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ptcommon.o: $(ARBHOME)/INCLUDE/arb_core.h
+ptcommon.o: $(ARBHOME)/INCLUDE/arb_file.h
+ptcommon.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ptcommon.o: $(ARBHOME)/INCLUDE/attributes.h
 ptcommon.o: $(ARBHOME)/INCLUDE/dupstr.h
 ptcommon.o: $(ARBHOME)/INCLUDE/test_global.h
-ptcommon.o: $(ARBHOME)/INCLUDE/test_unit.h

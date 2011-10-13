@@ -76,6 +76,7 @@ TestEnvironment.o: $(ARBHOME)/INCLUDE/client.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/client_types.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/dupstr.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/PT_com.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/ptcommon.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/servercntrl.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/smartptr.h
 

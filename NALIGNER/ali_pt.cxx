@@ -97,7 +97,7 @@ char *ALI_PT::get_extension_member(char *specifiedfamily,    unsigned long numbe
 
 int ALI_PT::open(char *servername)
 {
-    if (arb_look_and_start_server(AISC_MAGIC_NUMBER, servername)) {
+    if (arb_look_and_start_ptserver(AISC_MAGIC_NUMBER, servername, false)) {
         ali_message ("Cannot contact Probe bank server");
         return -1;
     }

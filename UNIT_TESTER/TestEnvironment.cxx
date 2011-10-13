@@ -18,6 +18,7 @@
 #include <PT_com.h>
 #include <client.h>
 #include <servercntrl.h>
+#include <ptcommon.h>
 
 #include "test_unit.h"
 #include "UnitTester.hxx"
@@ -291,10 +292,10 @@ public:
 // -----------------
 //      ptserver
 
-static void test_ptserver_activate(bool start, int serverid) {
+static void test_ptserver_activate(bool start, int serverid, PT_Servertype pttype) {
     const char *server_tag = GBS_ptserver_tag(serverid);
     if (start) {
-        TEST_ASSERT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag));
+        TEST_ASSERT_NO_ERROR(arb_look_and_start_ptserver(AISC_MAGIC_NUMBER, server_tag, pttype == PTPAN));
     }
     else { // stop
         GB_ERROR kill_error = arb_look_and_kill_server(AISC_MAGIC_NUMBER, server_tag);
@@ -312,15 +313,15 @@ static Error ptserver(Mode mode) {
     Error error;
     switch (mode) {
         case SETUP: {
-            test_ptserver_activate(false, TEST_SERVER_ID);                     // first kill pt-server (otherwise we may test an outdated pt-server)
+            test_ptserver_activate(false, TEST_SERVER_ID, PTSERVER);                     // first kill pt-server (otherwise we may test an outdated pt-server)
             TEST_ASSERT_NO_ERROR(GBK_system("cp TEST_pt_src.arb TEST_pt.arb")); // force rebuild
-            test_ptserver_activate(true, TEST_SERVER_ID);
+            test_ptserver_activate(true, TEST_SERVER_ID, PTSERVER);
             TEST_ASSERT_FILES_EQUAL("TEST_pt.arb.pt.expected", "TEST_pt.arb.pt");
             TEST_ASSERT(GB_time_of_file("TEST_pt.arb.pt") >= GB_time_of_file("TEST_pt.arb"));
             break;
         }
         case CLEAN: {
-            test_ptserver_activate(false, TEST_SERVER_ID);
+            test_ptserver_activate(false, TEST_SERVER_ID, PTSERVER);
             TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink("TEST_pt.arb.pt"));
             break;
         }
@@ -344,7 +345,7 @@ static Error ptserver_gene(Mode mode) {
     Error error;
     switch (mode) {
         case SETUP: {
-            test_ptserver_activate(false, TEST_GENESERVER_ID);                     // first kill pt-server (otherwise we may test an outdated pt-server)
+            test_ptserver_activate(false, TEST_GENESERVER_ID, PTSERVER);                     // first kill pt-server (otherwise we may test an outdated pt-server)
             TEST_ASSERT_NO_ERROR(GBK_system("arb_gene_probe TEST_gpt_src.arb TEST_gpt.arb")); // prepare gene-ptserver-db (forcing rebuild)
 
 #if defined(TEST_AUTO_UPDATE)
@@ -353,7 +354,7 @@ static Error ptserver_gene(Mode mode) {
             TEST_ASSERT_FILES_EQUAL("TEST_gpt.arb.expected", "TEST_gpt.arb");
 #endif
 
-            test_ptserver_activate(true, TEST_GENESERVER_ID);
+            test_ptserver_activate(true, TEST_GENESERVER_ID, PTSERVER);
 
 #if defined(TEST_AUTO_UPDATE)
             TEST_COPY_FILE("TEST_gpt.arb.pt", "TEST_gpt.arb.pt.expected");
@@ -365,7 +366,7 @@ static Error ptserver_gene(Mode mode) {
             break;
         }
         case CLEAN: {
-            test_ptserver_activate(false, TEST_GENESERVER_ID);
+            test_ptserver_activate(false, TEST_GENESERVER_ID, PTSERVER);
             TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink("TEST_gpt.arb.pt"));
             break;
         }
