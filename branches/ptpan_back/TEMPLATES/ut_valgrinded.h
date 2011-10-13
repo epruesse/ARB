@@ -22,8 +22,7 @@
 #include <sys/stat.h>
 #endif
 
-
-#define UTVG_ANY_SYSCALL "any.syscall"
+#define UTVG_CALL_SEEN "flag.valgrind.callseen"
 
 namespace utvg {
 
@@ -41,8 +40,14 @@ namespace utvg {
     inline bool flag_exists(const char *name) {
         const char  *path = flag_name(name);
         struct stat  stt;
-        
+
         return stat(path, &stt) == 0 && S_ISREG(stt.st_mode);
+    }
+    inline void raise_flag(const char *name) {
+        const char *path = flag_name(name);
+        FILE       *fp   = fopen(path, "w");
+        arb_assert(fp);
+        fclose(fp);
     }
 
     struct valgrind_info {
@@ -59,15 +64,15 @@ namespace utvg {
         }
     };
 
-    inline void touch(const char *file) {
-        FILE *out = fopen(file, "w");
-        fclose(out);
+    inline const valgrind_info& get_valgrind_info() {
+        static valgrind_info vinfo;
+        return vinfo;
     }
 };
 
 inline void make_valgrinded_call(char *&command) {
     using namespace utvg;
-    static valgrind_info valgrind;
+    const valgrind_info& valgrind = get_valgrind_info();
     if (valgrind.wanted) {
 // #define VALGRIND_ONLY_SOME
 #if defined(VALGRIND_ONLY_SOME)
@@ -83,13 +88,18 @@ inline void make_valgrinded_call(char *&command) {
         char       *valgrinded_command = GBS_global_string_copy("$ARBHOME/UNIT_TESTER/valgrind/arb_valgrind_logged CALL %s -c 15 %s", switches, command);
         freeset(command, valgrinded_command);
 
-        touch(flag_name(UTVG_ANY_SYSCALL));
+        utvg::raise_flag(UTVG_CALL_SEEN);
     }
 }
+
+inline bool will_valgrind_calls() { return utvg::get_valgrind_info().wanted; }
+inline bool seen_valgrinded_call() { return utvg::flag_exists(UTVG_CALL_SEEN); }
 
 #else
 
 #define make_valgrinded_call(command)
+inline bool will_valgrind_calls() { return false; }
+inline bool seen_valgrinded_call() { return false; }
 
 #endif
 

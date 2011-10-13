@@ -388,8 +388,6 @@ static SmartCharPtr   wrapped_error;
 
 void wrapped() { wrapped_error = wrapped_cb(wrapped_mode); }
 
-static LazyPersistantFlag any_setup(ANY_SETUP, true);
-
 class FunInfo {
     Environment_cb     cb;
     string             name;
@@ -493,9 +491,7 @@ public:
                     StaticCode::printf("[environment '%s' already was %s]\n", get_name(), mode_command[mode]);
                 }
                 else {
-                    changing  = perform_change = true;
-                    any_setup = true;
-                    any_setup.get_lazy_again();
+                    changing = perform_change = true;
                 }
             }
 
@@ -595,12 +591,6 @@ int main(int argc, char* argv[]) {
             if (argc == 2) {
                 error     = set_all_modules_to(mode);
                 showUsage = false;
-
-                if (mode == CLEAN) {
-                    Mutex m(FLAG_MUTEX);
-                    any_setup = false;    // reset during final environment cleanup
-                    any_setup.get_lazy_again();
-                }
             }
             else {
                 const char *modulearg = argv[2];
