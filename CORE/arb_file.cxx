@@ -39,6 +39,12 @@ long GB_size_of_FILE(FILE *in) {
     return st.st_size;
 }
 
+unsigned long GB_time_of_file(const char *path) {
+    struct stat stt;
+    if (!path || stat(path, &stt)) return 0; // return epoch for missing files
+    return stt.st_mtime;
+}
+
 long GB_mode_of_file(const char *path) {
     struct stat stt;
     if (path) if (stat(path, &stt)) return -1;

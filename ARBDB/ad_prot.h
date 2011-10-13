@@ -422,7 +422,6 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 
 /* adsocket.cxx */
 void GB_usleep(long usec);
-GB_ULONG GB_time_of_file(const char *path);
 char *GB_read_fp(FILE *in);
 char *GB_read_file(const char *path);
 char *GB_map_FILE(FILE *in, int writeable);

@@ -277,6 +277,7 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_file.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_strbuf.h

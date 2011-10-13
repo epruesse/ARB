@@ -408,19 +408,6 @@ long gbcm_read_long(int socket) {
     return data;
 }
 
-GB_ULONG GB_time_of_file(const char *path) {
-    struct stat stt;
-    if (path) {
-        char *path2 = GBS_eval_env(path);
-        if (stat(path2, &stt)) {
-            free(path2);
-            return 0;
-        }
-        free(path2);
-    }
-    return stt.st_mtime;
-}
-
 char *GB_read_fp(FILE *in) {
     /*! like GB_read_file(), but works on already open file
      * (useful together with GB_fopen_tempfile())
