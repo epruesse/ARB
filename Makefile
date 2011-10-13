@@ -715,6 +715,7 @@ ARCHS = \
 			PGT/PGT.a \
 			PROBE/PROBE.a \
 			ptpan/ptpan.a \
+			PTWRAPPER/PTWRAPPER.a \
 			PHYLO/PHYLO.a \
 			PRIMER_DESIGN/PRIMER_DESIGN.a \
 			PROBE_COM/server.a \
