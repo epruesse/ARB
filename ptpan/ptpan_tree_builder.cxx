@@ -82,17 +82,22 @@ void PtpanTreeBuilder::buildPtpanTree(PtpanBuildSettings *settings,
     }
 #endif
 
-    builder.initIndexHeader(custom_info);
-    builder.loadEntries();
-    builder.freeStuff();
-    builder.m_dr->closeConnection();
-    builder.reInitStuff();
-    builder.buildMergedRawData();
+    try {
+        builder.initIndexHeader(custom_info);
+        builder.loadEntries();
+        builder.freeStuff();
+        builder.m_dr->closeConnection();
+        builder.reInitStuff();
+        builder.buildMergedRawData();
 
-    builder.partitionDetermination();
+        builder.partitionDetermination();
 
-    builder.storeIndexHeader();
-    builder.buildTree();
+        builder.storeIndexHeader();
+        builder.buildTree();
+    } catch (std::exception& e) {
+        printf("Build failed! (%s)\n", e.what());
+        builder.cleanFail();
+    }
 
 #ifdef DEBUG
     printf("PTPan index build done.\n");
@@ -400,6 +405,8 @@ void PtpanTreeBuilder::loadReferenceEntry() {
 
 /*!
  * \brief Method for loading entries
+ *
+ * \exception std::invalid_argument Thrown if a sequence is to short
  */
 void PtpanTreeBuilder::loadEntry() {
 #ifdef DEBUG
@@ -415,6 +422,15 @@ void PtpanTreeBuilder::loadEntry() {
     while (m_dr->hasNextEntry()) {
         entry = m_dr->nextEntry();
         if (entry) {
+            if (entry->pe_RawDataSize < 2 * m_as->max_code_fit_long) {
+                std::ostringstream os;
+                os
+                        << "PtpanTreeBuilder::loadEntry() sorry, sequence is to short for PTPan! (";
+                os << entry->pe_Name << ")\n";
+                os << "Must currently be at least "
+                        << (2 * m_as->max_code_fit_long) << " bases long!";
+                throw std::invalid_argument(os.str());
+            }
 
             UWORD len_id = strlen(entry->pe_Name);
             UWORD len_name = strlen(entry->pe_FullName);
@@ -1262,8 +1278,8 @@ void PtpanTreeBuilder::partitionDetermination() {
         for (UWORD i = 0; i < m_as->alphabet_size; i++) {
             refine_queue.push_back(
                     PartitionDetermination(i, prefix_length, (i * offset),
-                            (((i + 1) * offset) - 1)));
-        }
+                    (((i + 1) * offset) - 1)));
+                }
 
         std::set<PartitionDetermination> valid_partitions;
         struct PTPanPartition *pp = NULL;
@@ -1276,8 +1292,8 @@ void PtpanTreeBuilder::partitionDetermination() {
         ULONG best_thread_count = 1;
         ULONG last_thread_count = 1;
         double ratio = m_settings->getPartitionRatio();
-        ULONG threshold =
-                (ULONG) (SIGNIFICANCE_THRESHOLD * m_max_partition_size);
+        ULONG threshold = (ULONG) (SIGNIFICANCE_THRESHOLD
+                * m_max_partition_size);
         bool recheck = false;
 
 #ifndef DEBUG
@@ -1778,7 +1794,8 @@ struct PtpanTreeBuilder::PTPanBuildPartition* PtpanTreeBuilder::pbt_initPtpanBui
     // node (Leaf + SfxInnerNode + SfxBorderNode)
     // and some space for the special case of inner nodes with leafs
     ULONG factor = (sizeof(SfxInnerNode)
-            + (m_as->alphabet_size - 1) * sizeof(ULONG) + sizeof(SfxBorderNode));
+            + (m_as->alphabet_size - 1) * sizeof(ULONG)
+            + sizeof(SfxBorderNode));
     ULONG threshold = (ULONG) (SIGNIFICANCE_THRESHOLD * m_max_partition_size);
     if (pp->pp_Size > threshold) {
         factor = (ULONG) (factor * m_settings->getPartitionRatio());
@@ -2271,10 +2288,10 @@ void PtpanTreeBuilder::pbt_calculateTreeStats(struct PTPanBuildPartition* pbp) {
     // allocate short edge code histogram (for edges between of 2-7 base pairs)
     ULONG bitsused = m_as->bits_use_table[m_as->short_edge_max] + 1;
     pbp->pbp_ShortEdgeCode = (struct HuffCode *) calloc((1UL << bitsused),
-            sizeof(struct HuffCode));
-    if (!pbp->pbp_ShortEdgeCode) {
+    sizeof(struct HuffCode));if
+(    !pbp->pbp_ShortEdgeCode) {
         throw std::runtime_error(
-                "PtpanTreeBuilder::pbt_calculateTreeStats() out of memory (pbp_ShortEdgeCode)");
+        "PtpanTreeBuilder::pbt_calculateTreeStats() out of memory (pbp_ShortEdgeCode)");
     }
     // get short edge stats
     pbp->pbp_EdgeCount = 0;
@@ -2822,7 +2839,8 @@ STRPTR PtpanTreeBuilder::pbt_buildConcatenatedLongEdges(struct SfxNode ** edges,
             STRPTR newptr;
             // double the size of the buffer
             *tmp_buffer_size <<= 1;
-            if ((newptr = (STRPTR) realloc(tmp_buffer_local, *tmp_buffer_size))) {
+            if ((newptr = (STRPTR) realloc(tmp_buffer_local,
+                    *tmp_buffer_size))) {
                 tmp_buffer_local = newptr;
             } else {
                 free(tmp_buffer_local);
@@ -2870,7 +2888,8 @@ STRPTR PtpanTreeBuilder::pbt_buildConcatenatedLongEdges(struct SfxNode ** edges,
                 longEdgeConc->bcll_TouchedCount++;
             }
             // check, if we have to enlarge this interval...
-            if ((edges[cnt]->sn_StartPos + edges[cnt]->sn_EdgeLen - 1 > ivalend)) {
+            if ((edges[cnt]->sn_StartPos + edges[cnt]->sn_EdgeLen - 1
+                    > ivalend)) {
                 ULONG count = edges[cnt]->sn_StartPos + edges[cnt]->sn_EdgeLen
                         - 1 - ivalend;
                 ULONG tmp_pos = edges[cnt]->sn_EdgeLen - count;
@@ -3625,6 +3644,22 @@ ULONG PtpanTreeBuilder::pbt_writePackedLeaf(struct PTPanBuildPartition *pbp,
 #endif
     *buf = 0xff;
     return (leafsize);
+}
+
+/*!
+ * \brief Try to clean up if build failed
+ */
+void PtpanTreeBuilder::cleanFail() {
+    if (!m_index_name.empty()) {
+        if (m_index_fh) {
+            fclose(m_index_fh);
+            m_index_fh = NULL;
+        }
+        if (remove(m_index_name.data()) != 0) {
+            printf(
+                    "PtpanTreeBuilder::cleanFail() could not remove index stuff.");
+        }
+    }
 }
 
 /*!

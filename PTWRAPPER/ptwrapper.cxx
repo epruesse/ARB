@@ -12,6 +12,7 @@
 #include <ptcommon.h>
 #include <arb_strbuf.h>
 #include <arb_str.h>
+#include <arb_msg.h>
 #include <ut_valgrinded.h>
 
 int main(int argc, char *argv[]) {
