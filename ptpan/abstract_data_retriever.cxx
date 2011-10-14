@@ -62,3 +62,14 @@ void AbstractDataRetriever::setIncludeFeatures(bool include) {
 bool AbstractDataRetriever::getIncludeFeatures() const {
     return m_include_features;
 }
+
+/*!
+ * \brief If a data retriever ignores values, this count will give the ignored number
+ *
+ * Default returns 0 (if not implemented by subclass)
+ *
+ * \return ULONG
+ */
+ULONG AbstractDataRetriever::ignoredEntryCount() const {
+    return 0;
+}
