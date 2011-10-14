@@ -33,8 +33,6 @@
 #include "gb_localdata.h"
 #include "gb_main.h"
 
-#include <SigHandler.h>
-
 #if defined(DARWIN)
 # include <sys/sysctl.h>
 #endif // DARWIN
@@ -282,21 +280,6 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
     }
 }
 
-#if defined(WARN_TODO)
-#warning gbcms_close is unused
-#endif
-long gbcms_close(gbcmc_comm *link)
-{
-    if (link->socket) {
-        close(link->socket);
-        link->socket = 0;
-        if (link->unix_name) {
-            unlink(link->unix_name);
-        }
-    }
-    return 0;
-}
-
 static void gbcmc_suppress_sigpipe(int) {
 }
 
@@ -316,9 +299,14 @@ gbcmc_comm *gbcmc_open(const char *path) {
         }
         return 0;
     }
-    ASSERT_RESULT_PREDICATE(is_default_or_ignore_or_own_sighandler, INSTALL_SIGHANDLER(SIGPIPE, gbcmc_suppress_sigpipe, "gbcmc_open"));
+    ASSERT_RESULT_PREDICATE(is_default_or_ignore_or_own_sighandler,
+                            link->old_SIGPIPE_handler = INSTALL_SIGHANDLER(SIGPIPE, gbcmc_suppress_sigpipe, "gbcmc_open"));
     gb_local->iamclient = 1;
     return link;
+}
+
+void gbcmc_restore_sighandlers(gbcmc_comm * link) {
+    ASSERT_RESULT(SigHandler, gbcmc_suppress_sigpipe, INSTALL_SIGHANDLER(SIGPIPE, link->old_SIGPIPE_handler, "gbcmc_close"));
 }
 
 long gbcm_write_two(int socket, long a, long c)

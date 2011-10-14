@@ -329,6 +329,7 @@ adcomm.o: $(ARBHOME)/INCLUDE/dupstr.h
 adcomm.o: $(ARBHOME)/INCLUDE/SigHandler.h
 adcomm.o: $(ARBHOME)/INCLUDE/smartptr.h
 adcomm.o: $(ARBHOME)/INCLUDE/test_global.h
+adcomm.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adcompr.o: ad_prot.h
 adcompr.o: ad_t_prot.h
@@ -738,6 +739,7 @@ adquery.o: $(ARBHOME)/INCLUDE/arb_string.h
 adquery.o: $(ARBHOME)/INCLUDE/arbtools.h
 adquery.o: $(ARBHOME)/INCLUDE/attributes.h
 adquery.o: $(ARBHOME)/INCLUDE/dupstr.h
+adquery.o: $(ARBHOME)/INCLUDE/SigHandler.h
 adquery.o: $(ARBHOME)/INCLUDE/smartptr.h
 adquery.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -1000,6 +1002,7 @@ arbdb.o: $(ARBHOME)/INCLUDE/arb_string.h
 arbdb.o: $(ARBHOME)/INCLUDE/arbtools.h
 arbdb.o: $(ARBHOME)/INCLUDE/attributes.h
 arbdb.o: $(ARBHOME)/INCLUDE/dupstr.h
+arbdb.o: $(ARBHOME)/INCLUDE/SigHandler.h
 arbdb.o: $(ARBHOME)/INCLUDE/smartptr.h
 arbdb.o: $(ARBHOME)/INCLUDE/test_global.h
 arbdb.o: $(ARBHOME)/INCLUDE/test_unit.h

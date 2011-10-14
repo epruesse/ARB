@@ -24,7 +24,6 @@
 #include "gb_comm.h"
 #include "gb_localdata.h"
 
-#include <SigHandler.h>
 #include <arb_signal.h>
 #include <arb_file.h>
 
@@ -99,6 +98,9 @@ struct gb_server_data {
     int                wait_for_new_request;
     gbcms_delete_list *del_first; // All deleted items, that are yet unknown to at least one client
     gbcms_delete_list *del_last;
+
+    SigHandler old_SIGPIPE_handler;
+    SigHandler old_SIGHUP_handler;
 };
 
 
@@ -182,8 +184,12 @@ GB_ERROR GBCMS_open(const char *path, long timeout, GBDATA *gb_main) {
 
             error = gbcm_open_socket(path, TCP_NODELAY, 0, &socket, &unix_name);
             if (!error) {
-                ASSERT_RESULT_PREDICATE(is_default_or_ignore_sighandler, INSTALL_SIGHANDLER(SIGPIPE, gbcms_sigpipe, "GBCMS_open"));
-                ASSERT_RESULT(SigHandler, SIG_DFL,                       INSTALL_SIGHANDLER(SIGHUP, gbcms_sighup, "GBCMS_open"));
+
+                SigHandler old_SIGPIPE_handler = INSTALL_SIGHANDLER(SIGPIPE, gbcms_sigpipe, "GBCMS_open");
+                SigHandler old_SIGHUP_handler  = INSTALL_SIGHANDLER(SIGHUP, gbcms_sighup, "GBCMS_open");
+
+                gb_assert(is_default_or_ignore_sighandler(old_SIGPIPE_handler));
+                gb_assert(old_SIGHUP_handler == SIG_DFL);
 
                 gbcms_gb_main = (GBCONTAINER *)gb_main;
 
@@ -197,6 +203,9 @@ GB_ERROR GBCMS_open(const char *path, long timeout, GBDATA *gb_main) {
                     hs->gb_main   = gb_main;
                     hs->hso       = socket;
                     hs->unix_name = unix_name;
+
+                    hs->old_SIGPIPE_handler = old_SIGPIPE_handler;
+                    hs->old_SIGHUP_handler  = old_SIGHUP_handler;
 
                     Main->server_data = hs;
                 }
@@ -230,6 +239,10 @@ void GBCMS_shutdown(GBDATA *gbd) {
             freenull(hs->unix_name);
         }
         close(hs->hso);
+
+        ASSERT_RESULT(SigHandler, gbcms_sigpipe, INSTALL_SIGHANDLER(SIGPIPE, hs->old_SIGPIPE_handler, "GBCMS_shutdown"));
+        ASSERT_RESULT(SigHandler, gbcms_sighup,  INSTALL_SIGHANDLER(SIGHUP,  hs->old_SIGHUP_handler,  "GBCMS_shutdown"));
+        
         freenull(Main->server_data);
     }
 }
@@ -1890,7 +1903,9 @@ GBCM_ServerResult gbcmc_close(gbcmc_comm * link) {
         link->socket = 0;
     }
     if (link->unix_name) free(link->unix_name); // @@@
+    gbcmc_restore_sighandlers(link);
     free(link);
+    
     return GBCM_SERVER_OK;
 }
 
@@ -1991,3 +2006,94 @@ const char *GB_date_string() {
     return readable;
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+#include <sys/wait.h>
+
+// test_com_server and test_com_server run in separate processes
+struct test_com : virtual Noncopyable {
+    char   *socket;
+    long    timeout;
+
+    bool is_parent; // true if not in fork-child
+
+    test_com() : socket(0), timeout(10) {}
+    ~test_com() { free(socket); }
+};
+
+inline bool served(GBDATA *gb_main) {
+    GB_begin_transaction(gb_main);
+    GB_commit_transaction(gb_main);
+    return GBCMS_accept_calls(gb_main, false);
+}
+
+static void test_com_server(const test_com& tcom) {
+    GB_shell shell;
+    GBDATA   *gb_main = GB_open("nosuch.arb", "crw");
+    GB_ERROR  error   = NULL;
+
+    if (!gb_main) {
+        error = GB_await_error();
+    }
+    else {
+        error = GBCMS_open(tcom.socket, tcom.timeout, gb_main);
+
+        int clients = 0;
+        while (!clients) { served(gb_main); clients = GB_read_clients(gb_main); } // wait for client
+        while (clients) { served(gb_main); clients = GB_read_clients(gb_main); } // serve client until he disconnects
+
+        GBCMS_shutdown(gb_main);
+        GB_close(gb_main);
+    }
+
+    TEST_ASSERT_NO_ERROR(error);
+}
+static void test_com_client(const test_com& tcom) {
+    GB_shell shell;
+    sleep(3); // wait for server
+    
+    GBDATA   *gb_main = GB_open(tcom.socket, "rw");
+    GB_ERROR  error   = NULL;
+    if (!gb_main) {
+        error = GB_await_error();
+    }
+    else {
+        GB_close(gb_main);
+    }
+    TEST_ASSERT_NO_ERROR(error);
+}
+
+inline void test_com_interface(bool as_client, const test_com& tcom) {
+    as_client ? test_com_client(tcom) : test_com_server(tcom);
+}
+
+void TEST_SLOW_DB_com_interface() {
+    for (int parent_as_client = 0; parent_as_client <= 1; ++parent_as_client) { // test once as client, once as server (to get full coverage of both sides)
+        pid_t child_pid = fork();
+
+        test_com tcom;
+        tcom.is_parent = child_pid;
+        tcom.socket    = GBS_global_string_copy(":%s/UNIT_TESTER/sockets/TEST_DB_com_interface.socket", GB_getenvARBHOME());
+
+        if (tcom.is_parent) { // parent
+            TEST_ANNOTATE_ASSERT(parent_as_client ? "client(parent)" : "server(parent)");
+            test_com_interface(parent_as_client, tcom);
+            while (child_pid != wait(NULL)) {}
+        }
+        else { // child
+            bool child_as_client = !parent_as_client;
+            TEST_ANNOTATE_ASSERT(child_as_client ? "client(child)" : "server(child)");
+            test_com_interface(child_as_client, tcom);
+            exit(EXIT_SUCCESS);
+        }
+    }
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

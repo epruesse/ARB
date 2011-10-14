@@ -11,10 +11,18 @@
 #ifndef GB_COMM_H
 #define GB_COMM_H
 
+#ifndef ARB_ASSERT_H
+#include "arb_assert.h"
+#endif
+#ifndef SIGHANDLER_H
+#include <SigHandler.h>
+#endif
+
 struct gbcmc_comm {
-    int   socket;
-    char *unix_name;
-    char *error;
+    int         socket;
+    char       *unix_name;
+    char       *error;
+    SigHandler  old_SIGPIPE_handler;
 };
 
 
