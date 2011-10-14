@@ -7,10 +7,10 @@ clean:
 	rm -rf boost/
 
 eigen: eigen.tgz
-	tar -zxvf $<
+	tar -zxf $<
 	touch eigen/
 
 boost:boost.tar.gz
-	tar -zxvf $<
+	tar -zxf $<
 	touch boost/
 
