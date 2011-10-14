@@ -238,6 +238,13 @@ void GBCMS_shutdown(GBDATA *gbd) {
 #warning rewrite gbcm_write_bin (error handling - do not export)
 #endif
 
+template <typename T>
+void write_smallType_to_long(long& to, const T& val) {
+    gb_assert(sizeof(T)<sizeof(long));
+    to = 0; // otherwise uninitialized bytes will be sent
+    *((T*)(&to)) = val;
+}
+
 static GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode, long deep, int send_headera) {
      /* send a database item to client/server
       *
@@ -255,13 +262,13 @@ static GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode,
     i = 2;
     buffer[i++] = (long)gbd;
     buffer[i++] = gbd->index;
-    *(gb_flag_types *)(&buffer[i++]) = gbd->flags;
+    write_smallType_to_long(buffer[i++], gbd->flags);
     if (GB_TYPE(gbd) == GB_DB) {
         int end;
         int index;
         gbc = (GBCONTAINER *)gbd;
         end = gbc->d.nheader;
-        *(gb_flag_types3 *)(&buffer[i++]) = gbc->flags3;
+        write_smallType_to_long(buffer[i++], gbc->flags3);
 
         buffer[i++] = send_headera ? end : -1;
         buffer[i++] = deep ? gbc->d.size : -1;
