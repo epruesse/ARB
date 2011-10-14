@@ -16,22 +16,18 @@
 /*!
  * \brief Private default constructor
  */
-ArbdbDataRetriever::ArbdbDataRetriever()
-    : m_mutex(),
-      m_arbdb_mutex(),
-      m_db_name(),
-      m_alpha_specs(NULL),
-      m_retrieve_features(false),
-      m_open(false),
-      m_shell(NULL),
-      m_initialized_shell(false),
-      m_main_db(NULL),
-      m_sai_data(NULL),
-      m_alignment_name(NULL),
-      m_species_data(NULL),
-      m_current_species(NULL),
-      m_current_count(0)
-{
+ArbdbDataRetriever::ArbdbDataRetriever() :
+        AbstractDataRetriever(), m_mutex(), m_arbdb_mutex(), m_retrieve_features(
+                false), m_db_name(), m_alpha_specs(NULL), m_open(false), m_shell(
+                NULL), m_initialized_shell(false), m_main_db(NULL), m_sai_data(
+                NULL), m_alignment_name(NULL), m_species_data(NULL), m_current_species(
+                NULL), m_current_count(0), m_ignored_count(0) {
+}
+
+/*!
+ * \brief Private copy constructor
+ */
+ArbdbDataRetriever::ArbdbDataRetriever(const ArbdbDataRetriever& /*adr*/) {
 }
 
 /*!
@@ -54,23 +50,14 @@ ArbdbDataRetriever& ArbdbDataRetriever::operator=(
  *
  * \exception std::invalid_argument Thrown if AbstractAlphabetSpecifics pointer is empty
  */
-ArbdbDataRetriever::ArbdbDataRetriever(const std::string& db_name, AbstractAlphabetSpecifics* alpha_specs)
-    : AbstractDataRetriever(alpha_specs),
-      m_mutex(),
-      m_arbdb_mutex(),
-      m_db_name(db_name),
-      m_alpha_specs(alpha_specs),
-      m_retrieve_features(false),
-      m_open(false),
-      m_shell(NULL),
-      m_initialized_shell(false),
-      m_main_db(NULL),
-      m_sai_data(NULL),
-      m_alignment_name(NULL),
-      m_species_data(NULL),
-      m_current_species(NULL),
-      m_current_count(0)
-{
+ArbdbDataRetriever::ArbdbDataRetriever(const std::string& db_name,
+        AbstractAlphabetSpecifics* alpha_specs) :
+        AbstractDataRetriever(alpha_specs), m_mutex(), m_arbdb_mutex(), m_retrieve_features(
+                false), m_db_name(db_name), m_alpha_specs(alpha_specs), m_open(
+                false), m_shell(NULL), m_initialized_shell(false), m_main_db(
+                NULL), m_sai_data(NULL), m_alignment_name(NULL), m_species_data(
+                NULL), m_current_species(NULL), m_current_count(0), m_ignored_count(
+                0) {
     if (!m_alpha_specs) {
         throw std::invalid_argument(
                 "ArbdbDataRetriever(...) AbstractAlphabetSpecifics pointer is empty!");
@@ -351,7 +338,17 @@ bool ArbdbDataRetriever::hasNextEntry() const {
  */
 ULONG ArbdbDataRetriever::returnedEntryCount() const {
     boost::lock_guard<boost::mutex> lock(m_mutex);
-    return m_current_count;
+    return m_current_count - m_ignored_count;
+}
+
+/*!
+ * \brief Returns number of ignored values
+ *
+ * \return ULONG
+ */
+ULONG ArbdbDataRetriever::ignoredEntryCount() const {
+    boost::lock_guard<boost::mutex> lock(m_mutex);
+    return m_ignored_count;
 }
 
 /*!
@@ -458,6 +455,7 @@ struct PTPanEntry* ArbdbDataRetriever::retrieveEntry(GBDATA *gb_species) const {
         /* get name */
         GBDATA *gb_name = GB_find(gb_species, "name", SEARCH_CHILD);
         if (!gb_name) {
+            m_ignored_count++;
             return NULL; /* huh? couldn't find the name of the sequence entry? */
         }
         STRPTR spname = GB_read_string(gb_name);
@@ -466,6 +464,7 @@ struct PTPanEntry* ArbdbDataRetriever::retrieveEntry(GBDATA *gb_species) const {
         GBDATA *gb_ali = GB_find(gb_species, m_alignment_name, SEARCH_CHILD);
         if (!gb_ali) {
             free(spname);
+            m_ignored_count++;
             return NULL; /* too bad, no alignment information found */
         }
         GBDATA *gb_data = GB_find(gb_ali, "data", SEARCH_CHILD);
@@ -473,6 +472,7 @@ struct PTPanEntry* ArbdbDataRetriever::retrieveEntry(GBDATA *gb_species) const {
             fprintf(stderr, "Species '%s' has no data in '%s'\n", spname,
                     m_alignment_name);
             free(spname);
+            m_ignored_count++;
             return NULL;
         }
 
@@ -549,3 +549,4 @@ struct PTPanEntry* ArbdbDataRetriever::retrieveEntry(GBDATA *gb_species) const {
 
     return ps;
 }
+

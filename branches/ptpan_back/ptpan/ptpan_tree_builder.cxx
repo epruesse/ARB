@@ -645,11 +645,16 @@ void PtpanTreeBuilder::loadEntries() {
         }
 
         if (m_num_entries != m_dr->returnedEntryCount()) {
-            printf("Loaded %lu out of %lu entries", m_num_entries,
+            printf("Loaded %lu out of %lu entries\n", m_num_entries,
                     m_dr->returnedEntryCount());
             throw std::runtime_error(
                     "PtpanTreeBuilder::loadEntries() failed to get some entries!");
         }
+        // TODO FIXME update entry count in index header file!!
+        ULONG index = 16 + sizeof(ULONG) + sizeof(UWORD) + sizeof(UWORD) + sizeof(ULONG);
+        fseek(m_index_fh, index, SEEK_SET);
+        fwrite(&m_num_entries, sizeof(m_num_entries), 1, m_index_fh);
+        fseek(m_index_fh, 0, SEEK_END);
 
         fwrite(&m_total_seq_size, sizeof(m_total_seq_size), 1, m_index_fh);
         fwrite(&m_total_seq_compressed_size,
@@ -3651,6 +3656,9 @@ ULONG PtpanTreeBuilder::pbt_writePackedLeaf(struct PTPanBuildPartition *pbp,
  */
 void PtpanTreeBuilder::cleanFail() {
     if (!m_index_name.empty()) {
+        if (m_threadpool) {
+            m_threadpool->clear();
+        }
         if (m_index_fh) {
             fclose(m_index_fh);
             m_index_fh = NULL;

@@ -56,6 +56,7 @@ public:
  virtual struct PTPanEntry* nextEntry() const = 0;
  virtual bool hasNextEntry() const = 0;
  virtual ULONG returnedEntryCount() const = 0;
+ virtual ULONG ignoredEntryCount() const;
 
  /*!
   * \brief Check underlying data for a reference entry
