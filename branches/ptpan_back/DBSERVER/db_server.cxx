@@ -42,12 +42,6 @@ inline GB_ERROR init_data(GBDATA *gb_main) {
     return error;
 }
 
-inline bool served(GBDATA *gb_main) {
-    GB_begin_transaction(gb_main);
-    GB_commit_transaction(gb_main);
-    return GBCMS_accept_calls(gb_main, false);
-}
-
 static bool do_shutdown       = false;
 static bool command_triggered = false;
 
@@ -123,6 +117,12 @@ static void react_to_command(GBDATA *gb_main) {
         free(command);
         in_reaction = false;
     }
+}
+
+inline bool served(GBDATA *gb_main) {
+    GB_begin_transaction(gb_main);
+    GB_commit_transaction(gb_main);
+    return GBCMS_accept_calls(gb_main, false);
 }
 
 static GB_ERROR server_main_loop(GBDATA *gb_main) {

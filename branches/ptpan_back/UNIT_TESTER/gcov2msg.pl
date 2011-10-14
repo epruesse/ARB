@@ -8,8 +8,8 @@ use Cwd;
 my $showCoverageForAll = 0; # show coverage only for files containing tests (recommended setting)
 # my $showCoverageForAll = 1; # show coverage for all files
 
-my $showCoverageForFilesMatching = qr/.*/; # show all files
-# my $showCoverageForFilesMatching = qr/.*(adlang|adquery).*/; # show only some files
+# my $showCoverageForFilesMatching = qr/.*/; # show all files
+my $showCoverageForFilesMatching = qr/.*(adcomm|adsocket).*/; # show only some files
 # my $showCoverageForFilesMatching = qr/.*(adlang).*/; # show only some files
 
 # my $sortBySectionSize = 0; # sort by location
