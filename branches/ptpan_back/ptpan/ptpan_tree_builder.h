@@ -384,6 +384,8 @@ private:
     ULONG pbt_writePackedLeaf(struct PTPanBuildPartition *pbp,
             struct SfxBorderNode *sfxnode, UBYTE *buf);
 
+    void cleanFail();
+
     /*!
      * \brief Private subclass handling thread-safe retrieval of
      * next entry from list
