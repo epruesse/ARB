@@ -427,30 +427,30 @@ namespace arb_test {
     } while (0)
 
 
-#define TEST_ASSERT_NO_ERROR__BROKEN(error_cond)                        \
-    do {                                                                \
-        const char *error = (error_cond);                               \
-        if (error) {                                                    \
-            TEST_WARNING2("Known broken behavior ('%s' reports error '%s')", \
-                         #error_cond, error);                           \
-        }                                                               \
-        else {                                                          \
+#define TEST_ASSERT_NO_ERROR__BROKEN(error_cond)                                \
+    do {                                                                        \
+        const char *error_ = (error_cond);                                      \
+        if (error_) {                                                           \
+            TEST_WARNING2("Known broken behavior ('%s' reports error '%s')",    \
+                          #error_cond, error_);                                 \
+        }                                                                       \
+        else {                                                                  \
             TEST_ERROR("Formerly broken test '%s' succeeds (reports no error)", \
-                       #error_cond);                                    \
-        }                                                               \
+                       #error_cond);                                            \
+        }                                                                       \
     } while (0)
 
-#define TEST_ASSERT_ERROR__BROKEN(error_cond)                           \
-    do {                                                                \
-        const char *error = (error_cond);                               \
-        if (!error) {                                                    \
-            TEST_WARNING("Known broken behavior ('%s' fails to report error)", \
-                         #error_cond);                                  \
-        }                                                               \
-        else {                                                          \
-            TEST_ERROR2("Former broken test '%s' succeeds (reports error '%s')", \
-                       #error_cond, error);                             \
-        }                                                               \
+#define TEST_ASSERT_ERROR__BROKEN(error_cond)                                           \
+    do {                                                                                \
+        const char *error_ = (error_cond);                                              \
+        if (!error_) {                                                                  \
+            TEST_WARNING("Known broken behavior ('%s' fails to report error)",          \
+                         #error_cond);                                                  \
+        }                                                                               \
+        else {                                                                          \
+            TEST_ERROR2("Former broken test '%s' succeeds (reports error '%s')",        \
+                        #error_cond, error_);                                           \
+        }                                                                               \
     } while (0)
 
 
@@ -460,58 +460,58 @@ namespace arb_test {
 
 #define TEST_CLEAR_EXPORTED_ERROR()                                     \
     do {                                                                \
-        const char *error = TEST_EXPORTED_ERROR();                      \
-        if (error) {                                                    \
+        const char *error_ = TEST_EXPORTED_ERROR();                     \
+        if (error_) {                                                   \
             TEST_WARNING("detected and cleared exported error '%s'",    \
-                         error);                                        \
+                         error_);                                       \
         }                                                               \
     } while (0)
 
-#define TEST_ASSERT_NORESULT__ERROREXPORTED_CHECKERROR(create_result,equal,contains) \
-    do {                                                                \
-        TEST_CLEAR_EXPORTED_ERROR();                                    \
-        bool have_result = (create_result);                             \
-        const char *error = TEST_EXPORTED_ERROR();                      \
-        if (have_result) {                                              \
-            if (error) {                                                \
-                TEST_WARNING("Error '%s' exported (when result returned)", \
-                             error);                                    \
-            }                                                           \
-            TEST_ERROR("Expected '%s' to return NULL", #create_result); \
-        }                                                               \
-        else if (!error) {                                              \
-            TEST_ERROR("'%s' (w/o result) should always export error",  \
-                       #create_result);                                 \
-        }                                                               \
-        if (equal) TEST_ASSERT_EQUAL(error, equal);                     \
-        if (contains) TEST_ASSERT_CONTAINS(error, contains);            \
+#define TEST_ASSERT_NORESULT__ERROREXPORTED_CHECKERROR(create_result,equal,contains)    \
+    do {                                                                                \
+        TEST_CLEAR_EXPORTED_ERROR();                                                    \
+        bool have_result = (create_result);                                             \
+        const char *error_ = TEST_EXPORTED_ERROR();                                     \
+        if (have_result) {                                                              \
+            if (error_) {                                                               \
+                TEST_WARNING("Error '%s' exported (when result returned)",              \
+                             error_);                                                   \
+            }                                                                           \
+            TEST_ERROR("Expected '%s' to return NULL", #create_result);                 \
+        }                                                                               \
+        else if (!error_) {                                                             \
+            TEST_ERROR("'%s' (w/o result) should always export error",                  \
+                       #create_result);                                                 \
+        }                                                                               \
+        if (equal) TEST_ASSERT_EQUAL(error_, equal);                                    \
+        if (contains) TEST_ASSERT_CONTAINS(error_, contains);                           \
     } while (0)
 
 
 #define TEST_ASSERT_NORESULT__ERROREXPORTED(create_result) TEST_ASSERT_NORESULT__ERROREXPORTED_CHECKERROR(create_result,NULL,NULL) 
     
 
-#define TEST_ASSERT_RESULT__NOERROREXPORTED(create_result)              \
-    do {                                                                \
-        TEST_CLEAR_EXPORTED_ERROR();                                    \
-        bool have_result = (create_result);                             \
-        const char *error = TEST_EXPORTED_ERROR();                      \
-        if (have_result) {                                              \
-            if (error) {                                                \
-                TEST_ERROR("Error '%s' exported (when result returned)", \
-                           error);                                      \
-            }                                                           \
-        }                                                               \
-        else {                                                          \
-            if (!error) {                                               \
-                TEST_WARNING("'%s' (w/o result) should always export error", \
-                             #create_result);                           \
-            }                                                           \
-            else {                                                      \
-                TEST_WARNING("exported error is '%s'", error);          \
-            }                                                           \
-            TEST_ERROR2("Expected '%s' to return sth (exported=%s)", #create_result, error); \
-        }                                                               \
+#define TEST_ASSERT_RESULT__NOERROREXPORTED(create_result)                                      \
+    do {                                                                                        \
+        TEST_CLEAR_EXPORTED_ERROR();                                                            \
+        bool have_result = (create_result);                                                     \
+        const char *error_ = TEST_EXPORTED_ERROR();                                             \
+        if (have_result) {                                                                      \
+            if (error_) {                                                                       \
+                TEST_ERROR("Error '%s' exported (when result returned)",                        \
+                           error_);                                                             \
+            }                                                                                   \
+        }                                                                                       \
+        else {                                                                                  \
+            if (!error_) {                                                                      \
+                TEST_WARNING("'%s' (w/o result) should always export error",                    \
+                             #create_result);                                                   \
+            }                                                                                   \
+            else {                                                                              \
+                TEST_WARNING("exported error is '%s'", error_);                                 \
+            }                                                                                   \
+            TEST_ERROR2("Expected '%s' to return sth (exported=%s)", #create_result, error_);   \
+        }                                                                                       \
     } while (0)
 
 // --------------------------------------------------------------------------------
