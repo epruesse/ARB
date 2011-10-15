@@ -1,0 +1,26 @@
+/*ARBDB ASCII*/
+tmp			%% (%
+	message			%% (%
+		pending			%% (%
+			%) /*pending*/
+
+		%) /*message*/
+
+	%) /*tmp*/
+
+text			"bla"
+serveronly		%% (%
+	value			"no"
+	%) /*serveronly*/
+
+cont			%% (%
+	entry			"super"
+	entry			"hyper"
+	%) /*cont*/
+
+sync			%i 8
+trigger_create_update		%i 7
+container		%% (%
+	value			%i 2069
+	%) /*container*/
+

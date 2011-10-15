@@ -117,22 +117,27 @@ struct gbcms_create {
 
 static GBCONTAINER *gbcms_gb_main;
 
+static const char *panic_file_name() {
+    const char *ap = GB_getenv("ARB_PID");
+    if (!ap) ap    = "";
+    return GBS_global_string("arb_panic_%s_%s", GB_getenvUSER(), ap);
+}
+
 static void gbcms_sighup(int) {
     char *panic_file = 0;                      // hang-up trigger file
     char *db_panic   = 0;                      // file to save DB to
     {
-        const char *ap = GB_getenv("ARB_PID");
-        if (!ap) ap    = "";
-
-        FILE *in = GB_fopen_tempfile(GBS_global_string("arb_panic_%s_%s", GB_getenvUSER(), ap), "rt", &panic_file);
+        FILE *in = GB_fopen_tempfile(panic_file_name(), "rt", &panic_file);
 
         fprintf(stderr,
                 "**** ARB DATABASE SERVER received a HANGUP SIGNAL ****\n"
                 "- Looking for file '%s'\n",
                 panic_file);
 
-        db_panic = GB_read_fp(in);
-        fclose(in);
+        if (in) {
+            db_panic = GB_read_fp(in);
+            fclose(in);
+        }
     }
 
     if (!db_panic) {
@@ -510,10 +515,12 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbd, long *buffe
             long newmod = mode;
             if (mode>=0) {
                 if (mode==0 && nitems<=1) {         // only a partial send
+UNCOVERED();
                     gb2->flags2.folded_container = 1;
                 }
             }
             else {
+UNCOVERED();
                 newmod = -2;
             }
             debug_printf("Client %i \n", nheader);
@@ -751,6 +758,7 @@ static GBCM_ServerResult gbcms_talking_unfold(int socket, long */*hsin*/, void *
 }
 
 static GBCM_ServerResult gbcms_talking_get_update(int /*socket*/, long */*hsin*/, void */*sin*/, GBDATA */*gbd*/) {
+    // command: GBCM_COMMAND_GET_UPDATA (obsolete/unused)
     return GBCM_SERVER_OK;
 }
 
@@ -811,6 +819,7 @@ static GBCM_ServerResult gbcms_talking_put_update(int socket, long */*hsin*/, vo
 }
 
 static GBCM_ServerResult gbcms_talking_updated(int /*socket*/, long */*hsin*/, void */*sin*/, GBDATA */*gbd*/) {
+    // command: GBCM_COMMAND_UPDATED (obsolete/unused)
     return GBCM_SERVER_OK;
 }
 
@@ -879,6 +888,7 @@ static GBCM_ServerResult gbcms_talking_init_transaction(int socket, long *hsin, 
             return GBCM_SERVER_FAULT;
         }
         if (GBCM_SERVER_OK == gbcms_talking(socket, hsin, sin)) continue;
+UNCOVERED();
         gb_local->running_client_transaction = ARB_ABORT;
         GB_abort_transaction(gbd);
         return GBCM_SERVER_FAULT;
@@ -888,6 +898,7 @@ static GBCM_ServerResult gbcms_talking_init_transaction(int socket, long *hsin, 
         gbcms_shift_delete_list(hsin, sin);
     }
     else {
+UNCOVERED();
         GB_abort_transaction(gbd);
     }
     return GBCM_SERVER_OK;
@@ -950,6 +961,7 @@ static GBCM_ServerResult gbcms_talking_begin_transaction(int socket, long *hsin,
             return GBCM_SERVER_FAULT;
         }
         if (GBCM_SERVER_OK == gbcms_talking(socket, hsin, sin)) continue;
+UNCOVERED(); 
         gb_local->running_client_transaction = ARB_ABORT;
         GB_abort_transaction(gbd);
         return GBCM_SERVER_FAULT;
@@ -1129,6 +1141,7 @@ static GBCM_ServerResult gbcms_talking_key_alloc(int socket, long */*hsin*/, voi
 }
 
 static GBCM_ServerResult gbcms_talking_disable_wait_for_new_request(int /*socket*/, long *hsin, void */*sin*/, GBDATA */*gbd*/) {
+    // command GBCM_COMMAND_DONT_WAIT
     gb_server_data *hs = (gb_server_data *) hsin;
     hs->wait_for_new_request--;
     return GBCM_SERVER_OK_WAIT;
@@ -1788,7 +1801,6 @@ long gbcmc_key_alloc(GBDATA *gbd, const char *key) {
 
 GB_ERROR gbcmc_send_undo_commands(GBDATA *gbd, enum gb_undo_commands command) { // goes to header: __ATTR__USERESULT
     // send an undo command
-
     GB_ERROR      error = NULL;
     GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
 
@@ -1814,7 +1826,7 @@ char *gbcmc_send_undo_info_commands(GBDATA *gbd, enum gb_undo_commands command) 
     char *result;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (Main->local_mode) {
-        GB_internal_error("gbcmc_send_undo_commands: cannot call a server in a server");
+        GB_internal_error("gbcmc_send_undo_info_commands: cannot call a server in a server");
         return 0;
     }
     socket = Main->c_link->socket;
@@ -1837,6 +1849,8 @@ char *gbcmc_send_undo_info_commands(GBDATA *gbd, enum gb_undo_commands command) 
 }
 
 GB_ERROR GB_tell_server_dont_wait(GBDATA *gbd) {
+    // @@@ this is used in EDIT4 and DIST, but not in other clients
+ 
     int socket;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
 
@@ -2014,6 +2028,7 @@ const char *GB_date_string() {
 #endif
 
 #include <sys/wait.h>
+#include <arbdbt.h>
 
 // test_com_server and test_com_server run in separate processes
 struct test_com : virtual Noncopyable {
@@ -2022,17 +2037,66 @@ struct test_com : virtual Noncopyable {
 
     bool is_parent; // true if not in fork-child
 
-    test_com() : socket(0), timeout(10) {}
+    test_com() : socket(0), timeout(50) {}
     ~test_com() { free(socket); }
 };
 
-inline bool served(GBDATA *gb_main) {
+inline bool served(GBDATA *gb_main, bool wait) {
     GB_begin_transaction(gb_main);
     GB_commit_transaction(gb_main);
-    return GBCMS_accept_calls(gb_main, false);
+    return GBCMS_accept_calls(gb_main, wait);
 }
 
-static void test_com_server(const test_com& tcom) {
+inline void serve_all(GBDATA *gb_main) {
+#if 1 // @@@ 
+    // slow, but more coverage
+    if (served(gb_main, false)) {
+        while (served(gb_main, true)) {}
+    }
+#else
+    // fast, but less coverage
+    while (served(gb_main, false)) {}
+#endif
+}
+
+inline int test_sync(GBDATA *gb_main, bool is_server) {
+    int  val    = *GBT_read_int(gb_main, "sync");
+    bool is_odd = val%2;
+
+    if (is_server == is_odd) { // server handles odd, client even values
+        if (is_server) {
+            if (val) {
+                GBT_write_int(gb_main, "trigger_create_update", 7); // triggers some special updates
+            }
+        }
+        GBT_write_int(gb_main, "sync", ++val);
+        if (!is_server) { // wait for server doing his job
+            TEST_ASSERT_NO_ERROR(GB_tell_server_dont_wait(gb_main));
+            while (*GBT_read_int(gb_main, "sync") == val) {
+                TEST_ASSERT_NO_ERROR(GB_tell_server_dont_wait(gb_main));
+                GB_usleep(50*1000);
+                TEST_ASSERT_NO_ERROR(GB_tell_server_dont_wait(gb_main));
+            }
+            val++;
+        }
+    }
+    else {
+        val = 0;
+    }
+    return val;
+}
+
+#define CONTNUMBER      "cont/number"
+#define NOTUSEDBYCLIENT "serveronly/value"
+#define DELETEDBYCLIENT "cont/clientdel"
+
+#define TEST_ASSERT_HAVE_INT(gb_main,path,value) do {           \
+        long *fieldExists = GBT_read_int(gb_main, path);        \
+        TEST_ASSERT(fieldExists);                               \
+        TEST_ASSERT_EQUAL(*fieldExists, value);                 \
+    } while(0)
+
+static void test_com_server(const test_com& tcom, bool wait_for_HUP) {
     GB_shell shell;
     GBDATA   *gb_main = GB_open("nosuch.arb", "crw");
     GB_ERROR  error   = NULL;
@@ -2043,9 +2107,94 @@ static void test_com_server(const test_com& tcom) {
     else {
         error = GBCMS_open(tcom.socket, tcom.timeout, gb_main);
 
-        int clients = 0;
-        while (!clients) { served(gb_main); clients = GB_read_clients(gb_main); } // wait for client
-        while (clients) { served(gb_main); clients = GB_read_clients(gb_main); } // serve client until he disconnects
+        if (!error) { // prepare some data
+            TEST_ASSERT(GB_is_server(gb_main));
+
+            TEST_ASSERT_CONTAINS(GBCMS_open(tcom.socket, tcom.timeout, gb_main),
+                                 "reopen of server not allowed"); // 2nd open on socket shall fail
+
+            GB_transaction ta(gb_main);
+            TEST_ASSERT_NO_ERROR(GBT_write_string(gb_main, "text", "bla"));
+            TEST_ASSERT_NO_ERROR(GBT_write_string(gb_main, NOTUSEDBYCLIENT, "yes"));
+            TEST_ASSERT_NO_ERROR(GBT_write_string(gb_main, DELETEDBYCLIENT, "deleteme"));
+            TEST_ASSERT_NO_ERROR(GBT_write_int(gb_main, CONTNUMBER, 0x4711));
+
+            GBDATA *gb_cont = GB_entry(gb_main, "cont");
+            TEST_ASSERT(gb_cont);
+
+            {
+                GBDATA *gb_entry = GB_create(gb_cont, "entry", GB_STRING); TEST_ASSERT_NO_ERROR(GB_write_string(gb_entry, "super"));
+                gb_entry         = GB_create(gb_cont, "entry", GB_STRING); TEST_ASSERT_NO_ERROR(GB_write_string(gb_entry, "hyper"));
+            }
+
+            GBDATA *gb_unsaved = GB_create_container(gb_main, "unsaved");
+            TEST_ASSERT(gb_unsaved);
+
+            for (int i = 0; i<GB_MAX_LOCAL_SEARCH+10; ++i) { // need more than GB_MAX_LOCAL_SEARCH entries to force serverside search
+                GBDATA *gb_sub   = GB_create_container(gb_unsaved, "sub");
+                TEST_ASSERT(gb_sub);
+
+                GBDATA *gb_id  = GB_create(gb_sub, "id", GB_STRING);
+                GBDATA *gb_nid = GB_create(gb_sub, "nid", GB_INT);
+                TEST_ASSERT(gb_id && gb_nid);
+                TEST_ASSERT_NO_ERROR(GB_write_string(gb_id, GBS_global_string("<%i>", i)));
+                TEST_ASSERT_NO_ERROR(GB_write_int(gb_nid, i));
+
+                if (i == 99) TEST_ASSERT_NO_ERROR(GBT_write_string(gb_sub, "one", "unique"));
+            }
+        }
+
+        if (!error) {
+            // serve the client
+            int clients = 0;
+
+            GBT_write_int(gb_main, "sync", 0);
+
+            while (!clients) { served(gb_main, false); clients = GB_read_clients(gb_main); } // wait for client
+            while (clients) { // serve client until he disconnects
+                serve_all(gb_main);
+                int sync_pos = test_sync(gb_main, true);
+                switch (sync_pos) { // sync to server state (see SYNC_TO_SERVER_STATE)
+                    case 2: {
+                        TEST_ASSERT_NO_ERROR(GBT_write_int(gb_main, CONTNUMBER, 0x4712));
+                        TEST_ASSERT_HAVE_INT(gb_main, CONTNUMBER, 0x4712);
+                        break;
+                    }
+                    case 4: {
+                        TEST_ASSERT_HAVE_INT(gb_main, CONTNUMBER, 0x4713);
+                        TEST_ASSERT_NO_ERROR(GBT_write_int(gb_main, CONTNUMBER, 0x4714));
+                        TEST_ASSERT_HAVE_INT(gb_main, CONTNUMBER, 0x4714);
+                        TEST_ASSERT_NO_ERROR(GBT_write_string(gb_main, NOTUSEDBYCLIENT, "no"));
+                        break;
+                    }
+                    case 6: {
+                        GB_transaction ta(gb_main);
+                        TEST_ASSERT_NO_ERROR(GB_delete(GB_search(gb_main, CONTNUMBER, GB_FIND)));
+                        break;
+                    }
+                    case 8: { // final sync (clean up to keep panix.arb small)
+                        GB_transaction ta(gb_main);
+                        TEST_ASSERT_NO_ERROR(GB_delete(GB_search(gb_main, "unsaved", GB_FIND)));
+                        break;
+                    }
+                    default: TEST_ASSERT_EQUAL(0, sync_pos);
+                }
+                clients = GB_read_clients(gb_main);
+            }
+
+            // check data created by client
+            TEST_ASSERT_HAVE_INT(gb_main, "container/value", 0x0815);
+            {
+                GB_transaction ta(gb_main);
+                TEST_ASSERT(!GB_search(gb_main, "container/undone", GB_FIND));
+            }
+        }
+
+        if (wait_for_HUP) {
+            while (!GB_is_regularfile("panix.arb")) { 
+                GB_usleep(100);
+            }
+        }
 
         GBCMS_shutdown(gb_main);
         GB_close(gb_main);
@@ -2053,27 +2202,117 @@ static void test_com_server(const test_com& tcom) {
 
     TEST_ASSERT_NO_ERROR(error);
 }
+
+
+static GBDATA *connect_to_server(const test_com& tcom) {
+    GBDATA *gb_main = NULL;
+    int     maxwait = 3*1000;
+    int     mywait  = 0;
+    while (!gb_main && mywait<maxwait) {
+        gb_main  = GB_open(tcom.socket, "rw");;
+        if (!gb_main) {
+            // not reached if server was faster
+            TEST_ASSERT_CONTAINS(GB_await_error(), "There is no ARBDB server");
+            int w    = 30;
+            GB_usleep(w*1000);
+            mywait  += w;
+        }
+    }
+    return gb_main;
+}
+
+#define SYNC_TO_SERVER_STATE(val) TEST_ASSERT_EQUAL(test_sync(gb_main, false), val)
+
 static void test_com_client(const test_com& tcom) {
-    GB_shell shell;
-    sleep(3); // wait for server
-    
-    GBDATA   *gb_main = GB_open(tcom.socket, "rw");
+    GB_shell  shell;
+    GBDATA   *gb_main = connect_to_server(tcom);
     GB_ERROR  error   = NULL;
+
     if (!gb_main) {
         error = GB_await_error();
     }
     else {
+        TEST_ASSERT(GB_is_client(gb_main));
+
+        // check data created by server
+        {
+            GB_transaction  ta(gb_main);
+            GBDATA         *gb_cont = GB_entry(gb_main, "cont");
+            TEST_ASSERT(gb_cont);
+
+            GBDATA *gb_found = GB_find_string(gb_cont,  "entry", "super", GB_MIND_CASE, SEARCH_CHILD);   TEST_ASSERT(gb_found);
+            gb_found         = GB_find_string(gb_found, "entry", "hyper", GB_MIND_CASE, SEARCH_BROTHER); TEST_ASSERT(gb_found);
+
+            GBDATA *gb_unsaved = GB_entry(gb_main, "unsaved");
+            TEST_ASSERT(gb_unsaved);
+
+            gb_found = GB_find_string(gb_unsaved, "id",  "<141>", GB_MIND_CASE, SEARCH_GRANDCHILD); TEST_ASSERT(gb_found);
+            gb_found = GB_find_int   (gb_unsaved, "nid", 201,                   SEARCH_GRANDCHILD); TEST_ASSERT(gb_found);
+            gb_found = GB_find       (gb_unsaved, "one",                        SEARCH_GRANDCHILD); TEST_ASSERT(gb_found);
+        }
+
+
+        TEST_ASSERT_EQUAL(GBT_read_char_pntr(gb_main, "text"), "bla");
+        TEST_ASSERT_EQUAL(GBT_read_char_pntr(gb_main, "cont/entry"), "super");
+        TEST_ASSERT_HAVE_INT(gb_main, CONTNUMBER, 0x4711);
+
+        SYNC_TO_SERVER_STATE(2);
+
+        TEST_ASSERT_HAVE_INT(gb_main, CONTNUMBER, 0x4712); // updated to new value by server
+        { // start and abort transaction
+            TEST_ASSERT_NO_ERROR(GB_begin_transaction(gb_main));
+            TEST_ASSERT_RESULT__NOERROREXPORTED(GB_create(gb_main, "aborted_string", GB_STRING));
+            TEST_ASSERT_RESULT__NOERROREXPORTED(GB_create(gb_main, "aborted_int", GB_INT));
+            TEST_ASSERT_NO_ERROR(GB_abort_transaction(gb_main));
+        }
+        TEST_ASSERT_NO_ERROR(GBT_write_int(gb_main, CONTNUMBER, 0x4713));
+
+        { // delete data from server
+            GB_transaction ta(gb_main);
+            TEST_ASSERT_NO_ERROR(GB_delete(GB_search(gb_main, DELETEDBYCLIENT, GB_FIND)));
+        }
+
+        SYNC_TO_SERVER_STATE(4);
+
+        TEST_ASSERT_HAVE_INT(gb_main, CONTNUMBER, 0x4714); // updated to new value by server
+
+        // create some new data, then undo it
+        TEST_ASSERT_NO_ERROR(GBT_write_int(gb_main, "container/value", 0x0815));
+        TEST_ASSERT_NO_ERROR(GB_request_undo_type(gb_main, GB_UNDO_UNDO));
+        TEST_ASSERT_NO_ERROR(GBT_write_string(gb_main, "container/undone", "17+4"));
+        {
+            char *uinfo = GB_undo_info(gb_main, GB_UNDO_UNDO);
+            TEST_ASSERT_EQUAL(uinfo, "Delete new entry: undone\nUndo modified entry: container\nDelete new entry: @key\nUndo modified entry: @key_data\n");
+            free(uinfo);
+        }
+        TEST_ASSERT_NO_ERROR(GB_undo(gb_main, GB_UNDO_UNDO));
+
+        SYNC_TO_SERVER_STATE(6);
+
+        TEST_ASSERT(GBT_read_int(gb_main, CONTNUMBER) == NULL); // deleted by server 
+
+        TEST_ASSERT_CONTAINS(GBCMS_open(tcom.socket, tcom.timeout, gb_main), // open a server on used socket
+                             "TEST_DB_com_interface.socket' already in use");
+
+        SYNC_TO_SERVER_STATE(8);
+        
         GB_close(gb_main);
     }
     TEST_ASSERT_NO_ERROR(error);
 }
 
-inline void test_com_interface(bool as_client, const test_com& tcom) {
-    as_client ? test_com_client(tcom) : test_com_server(tcom);
+inline void test_com_interface(bool as_client, bool as_child, const test_com& tcom) {
+    as_client
+        ? test_com_client(tcom)
+        : test_com_server(tcom, as_child); // as_child wait_for_HUP
 }
 
 void TEST_SLOW_DB_com_interface() {
-    for (int parent_as_client = 0; parent_as_client <= 1; ++parent_as_client) { // test once as client, once as server (to get full coverage of both sides)
+    int parent_as_client_in_loop = GB_random(2); // should not matter
+    for (int loop = 0; loop <= 1; ++loop) {   // test once as client, once as server (to get full coverage of both sides)
+        bool parent_as_client = parent_as_client_in_loop == loop;
+        bool child_as_client  = !parent_as_client;
+
         pid_t child_pid = fork();
 
         test_com tcom;
@@ -2081,14 +2320,40 @@ void TEST_SLOW_DB_com_interface() {
         tcom.socket    = GBS_global_string_copy(":%s/UNIT_TESTER/sockets/TEST_DB_com_interface.socket", GB_getenvARBHOME());
 
         if (tcom.is_parent) { // parent
-            TEST_ANNOTATE_ASSERT(parent_as_client ? "client(parent)" : "server(parent)");
-            test_com_interface(parent_as_client, tcom);
+            TEST_ANNOTATE_ASSERT(GBS_global_string("parent(%s) in loop %i", parent_as_client ? "client" : "server", loop));
+            test_com_interface(parent_as_client, false, tcom);
+
+            const char *panic_arb          = "panix.arb";
+            const char *panic_arb_expected = "panix.arb.expected";
+            if (parent_as_client) {
+#if 1
+                kill(child_pid, SIGHUP); // dont panic save
+                GB_usleep(200); // let server interrupt
+#endif
+
+                // send HUP (server should panic-save)
+                FILE *panic_fp = GB_fopen_tempfile(panic_file_name(), "wt", NULL);
+                fprintf(panic_fp, "%s\n", panic_arb);
+                fclose(panic_fp);
+
+                kill(child_pid, SIGHUP);
+            }
+
             while (child_pid != wait(NULL)) {}
+
+            if (parent_as_client) { // test server has panic-saved database
+// #define TEST_AUTO_UPDATE
+#if defined(TEST_AUTO_UPDATE)
+                TEST_COPY_FILE(panic_arb, panic_arb_expected);
+#else // !defined(TEST_AUTO_UPDATE)
+                TEST_ASSERT_TEXTFILES_EQUAL(panic_arb, panic_arb_expected);
+                TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(panic_arb));
+#endif
+            }
         }
         else { // child
-            bool child_as_client = !parent_as_client;
-            TEST_ANNOTATE_ASSERT(child_as_client ? "client(child)" : "server(child)");
-            test_com_interface(child_as_client, tcom);
+            TEST_ANNOTATE_ASSERT(GBS_global_string("child(%s) in loop %i", child_as_client ? "client" : "server", loop));
+            test_com_interface(child_as_client, true, tcom);
             exit(EXIT_SUCCESS);
         }
     }

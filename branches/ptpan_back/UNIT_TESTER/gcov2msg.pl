@@ -9,7 +9,8 @@ my $showCoverageForAll = 0; # show coverage only for files containing tests (rec
 # my $showCoverageForAll = 1; # show coverage for all files
 
 # my $showCoverageForFilesMatching = qr/.*/; # show all files
-my $showCoverageForFilesMatching = qr/.*(adcomm|adsocket).*/; # show only some files
+# my $showCoverageForFilesMatching = qr/.*(adcomm|adsocket).*/; # show only some files
+my $showCoverageForFilesMatching = qr/.*(adcomm).*/; # show only some files
 # my $showCoverageForFilesMatching = qr/.*(adlang).*/; # show only some files
 
 # my $sortBySectionSize = 0; # sort by location
@@ -180,7 +181,7 @@ sub collect_gcov_data($$) {
         $line = $last;
       }
 
-      if ($sortBySectionSize==1) { @sections = sort { $$a[2] <=> $$b[2]; } @sections; }
+      if ($sortBySectionSize==1) { @sections = sort { $$b[2] <=> $$a[2]; } @sections; }
 
       foreach my $sec_r (@sections) {
         my ($first,$last,$loc) = ($$sec_r[0],$$sec_r[1], $$sec_r[2]);
