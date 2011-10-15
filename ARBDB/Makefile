@@ -303,9 +303,11 @@ adcolumns.o: $(ARBHOME)/INCLUDE/smartptr.h
 adcolumns.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adcomm.o: ad_prot.h
+adcomm.o: ad_t_prot.h
 adcomm.o: arb_assert.h
 adcomm.o: arbdb.h
 adcomm.o: arbdb_base.h
+adcomm.o: arbdbt.h
 adcomm.o: gb_comm.h
 adcomm.o: gb_data.h
 adcomm.o: gb_header.h
