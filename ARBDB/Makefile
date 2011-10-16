@@ -330,6 +330,7 @@ adcomm.o: $(ARBHOME)/INCLUDE/attributes.h
 adcomm.o: $(ARBHOME)/INCLUDE/dupstr.h
 adcomm.o: $(ARBHOME)/INCLUDE/SigHandler.h
 adcomm.o: $(ARBHOME)/INCLUDE/smartptr.h
+adcomm.o: $(ARBHOME)/INCLUDE/static_assert.h
 adcomm.o: $(ARBHOME)/INCLUDE/test_global.h
 adcomm.o: $(ARBHOME)/INCLUDE/test_unit.h
 
