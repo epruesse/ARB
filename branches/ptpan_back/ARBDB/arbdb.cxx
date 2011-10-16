@@ -623,12 +623,15 @@ void GB_close(GBDATA *gbd) {
     gb_assert(Main->transaction <= 0); // transaction running -> you can't close DB yet!
 
     if (!Main->local_mode) {
-        long result            = gbcmc_close(Main->c_link);
-        if (result != 0) error = GBS_global_string("gbcmc_close returns %li", result);
+        GBCM_ServerResult result   = gbcmc_close(Main->c_link);
+        if (result.failed()) error = result.get_error();
     }
 
-    gbcm_logout(Main, NULL);                        // logout default user
-    
+    {
+        GB_ERROR err_lo = gbcm_logout(Main, NULL);                        // logout default user
+        if (!error) error = err_lo;
+    }
+
     if (!error) {
         gb_assert((GBDATA*)Main->data == gbd);
 
@@ -1698,10 +1701,8 @@ GB_ERROR GB_delete(GBDATA *source) {
     return 0;
 }
 
-GB_ERROR gb_delete_force(GBDATA *source)    // delete always
-{
+void gb_delete_force(GBDATA *source) { // delete always
     gb_touch_entry(source, GB_DELETED);
-    return 0;
 }
 
 

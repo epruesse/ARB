@@ -185,7 +185,7 @@ NOT4PERL GBDATA *GB_find_subcontent_by_quark(GBDATA *father, GBQUARK key_quark, 
     return find_sub_by_quark(father, key_quark, type, val, case_sens, after, skip_over);
 }
 
-static GBDATA *find_sub_sub_by_quark(GBDATA *father, const char *key, GBQUARK sub_key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after) {
+static GBDATA *find_sub_sub_by_quark(GBDATA *father, const char *key, GBQUARK sub_key_quark, const GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after) {
     int             end, index;
     gb_header_list *header;
     GBCONTAINER    *gbf  = (GBCONTAINER*)father;
@@ -254,7 +254,7 @@ static GBDATA *find_sub_sub_by_quark(GBDATA *father, const char *key, GBQUARK su
 }
 
 
-static GBDATA *gb_find_internal(GBDATA *gbd, const char *key, GB_TYPES type, const char *val, GB_CASE case_sens, GB_SEARCH_TYPE gbs) {
+static GBDATA *gb_find_internal(GBDATA *gbd, const char *key, const GB_TYPES type, const char *val, GB_CASE case_sens, GB_SEARCH_TYPE gbs) {
     GBDATA *result = NULL;
 
     if (gbd) {

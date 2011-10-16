@@ -96,64 +96,71 @@ long gbcm_read(int socket, char *ptr, long size)
     return size;
 }
 
+GBCM_ServerResult gbcm_read_expect_size(int socket, char *ptr, long size) {
+    long read = gbcm_read(socket, ptr, size);
+    if (read == size) return GBCM_ServerResult::OK();
+    return GBCM_ServerResult::FAULT(GBS_global_string("expected to receive %li bytes, got %li", size, read));
+}
+
 GBCM_ServerResult gbcm_write_flush(int socket) {
-    char *ptr;
-    long    leftsize, writesize;
-    ptr = gb_local->write_buffer;
-    leftsize = gb_local->write_ptr - ptr;
+    char *ptr      = gb_local->write_buffer;
+    long  leftsize = gb_local->write_ptr - ptr;
+
     gb_local->write_free = gb_local->write_bufsize;
-    if (!leftsize) return GBCM_SERVER_OK;
 
-    gb_local->write_ptr = ptr;
-    gbcm_pipe_violation_flag = 0;
+    GBCM_ServerResult result = GBCM_ServerResult::OK();
 
-    writesize = write(socket, ptr, (size_t)leftsize);
+    if (leftsize) {
+        gb_assert(leftsize>0);
 
-    if (gbcm_pipe_violation_flag || writesize<0) {
-        if (gb_local->iamclient) {
-            fprintf(stderr, "DB_Server is killed, Now I kill myself\n");
-            exit(-1);
-        }
-        fprintf(stderr, "writesize: %li ppid %i\n", writesize, getppid());
-        return GBCM_SERVER_FAULT;
-    }
-    ptr += writesize;
-    leftsize = leftsize - writesize;
+        gb_local->write_ptr      = ptr;
+        gbcm_pipe_violation_flag = 0;
 
-    while (leftsize) {
+        while (result.ok() && leftsize>0) {
+            long writesize = write(socket, ptr, (size_t)leftsize);
 
-        GB_usleep(10000);
-
-        writesize = write(socket, ptr, (size_t)leftsize);
-        if (gbcm_pipe_violation_flag || writesize<0) {
-            if ((int)getppid() <= 1) {
-                fprintf(stderr, "DB_Server is killed, Now I kill myself\n");
-                exit(-1);
+            if (gbcm_pipe_violation_flag) {
+                result = GBCM_ServerResult::FAULT("broken pipe");
             }
-            fprintf(stderr, "write error\n");
-            return GBCM_SERVER_FAULT;
+            else if (writesize<0) {
+                result = GBCM_ServerResult::FAULT(GB_IO_error("writing", GBS_global_string("<socket %i>", socket)));
+            }
+
+            if (result.failed()) {
+                if (gb_local->iamclient) {
+                    fprintf(stderr, "DB_Server is killed, Now I kill myself\n");
+                    exit(-1);
+                }
+            }
+            else {
+                ptr      += writesize;
+                leftsize -= writesize;
+
+                if (leftsize>0) GB_usleep(10000);
+            }
         }
-        ptr += writesize;
-        leftsize -= writesize;
     }
-    return GBCM_SERVER_OK;
+    return result;
 }
 
 GBCM_ServerResult gbcm_write(int socket, const char *ptr, long size) {
-
-    while  (size >= gb_local->write_free) {
+    while (size >= gb_local->write_free) {
         memcpy(gb_local->write_ptr, ptr, (int)gb_local->write_free);
-        gb_local->write_ptr += gb_local->write_free;
-        size -= gb_local->write_free;
-        ptr += gb_local->write_free;
 
-        gb_local->write_free = 0;
-        if (gbcm_write_flush(socket)) return GBCM_SERVER_FAULT;
+        gb_local->write_ptr  += gb_local->write_free;
+        size                 -= gb_local->write_free;
+        ptr                  += gb_local->write_free;
+        gb_local->write_free  = 0;
+
+        GBCM_ServerResult result = gbcm_write_flush(socket);
+        if (result.failed()) return result;
     }
+
     memcpy(gb_local->write_ptr, ptr, (int)size);
-    gb_local->write_ptr += size;
+    gb_local->write_ptr  += size;
     gb_local->write_free -= size;
-    return GBCM_SERVER_OK;
+
+    return GBCM_ServerResult::OK();
 }
 
 static GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id) {
@@ -309,16 +316,16 @@ void gbcmc_restore_sighandlers(gbcmc_comm * link) {
     ASSERT_RESULT(SigHandler, gbcmc_suppress_sigpipe, INSTALL_SIGHANDLER(SIGPIPE, link->old_SIGPIPE_handler, "gbcmc_close"));
 }
 
-long gbcm_write_two(int socket, long a, long c)
-{
-    long    ia[3];
-    ia[0] = a;
-    ia[1] = 3;
-    ia[2] = c;
-    if (!socket) return 1;
-    return  gbcm_write(socket, (const char *)ia, sizeof(long)*3);
+GBCM_ServerResult gbcm_write_two(int socket, long a, long c) {
+    if (socket) {
+        long ia[3];
+        ia[0] = a;
+        ia[1] = 3;
+        ia[2] = c;
+        return gbcm_write(socket, (const char *)ia, sizeof(long)*3);
+    }
+    return GBCM_ServerResult::FAULT("no socket");
 }
-
 
 GBCM_ServerResult gbcm_read_two(int socket, long a, long *b, long *c) {
     /*! read two values: length and any user long
@@ -327,41 +334,39 @@ GBCM_ServerResult gbcm_read_two(int socket, long a, long *b, long *c) {
      *  and is not used!
      */
 
-    long    ia[3];
-    long    size;
-    size = gbcm_read(socket, (char *)&(ia[0]), sizeof(long)*3);
-    if (size != sizeof(long) * 3) {
-        GB_internal_errorf("receive failed: %zu bytes expected, %li got, keyword %lX",
-                           sizeof(long) * 3, size, a);
-        return GBCM_SERVER_FAULT;
-    }
-    if (ia[0] != a) {
-        GB_internal_errorf("received keyword failed %lx != %lx\n", ia[0], a);
-        return GBCM_SERVER_FAULT;
-    }
-    if (b) {
-        *b = ia[1];
-    }
-    else {
-        if (ia[1]!=3) {
-            GB_internal_error("receive failed: size not 3\n");
-            return GBCM_SERVER_FAULT;
+    long ia[3];
+    GBCM_ServerResult result = gbcm_read_expect_size(socket, (char *)&(ia[0]), sizeof(long)*3);
+    if (result.ok()) {
+        if (ia[0] != a) {
+            result = GBCM_ServerResult::FAULT(GBS_global_string("received unexpected keyword (expected=%lx, got=%lx)", a, ia[0]));
+        }
+        else {
+            if (b) {
+                *b = ia[1];
+            }
+            else {
+                if (ia[1]!=3) {
+                    result = GBCM_ServerResult::FAULT(GBS_global_string("wrong size (expected=3, got=%li)", ia[1]));
+                }
+            }
+            if (result.ok()) *c = ia[2];
         }
     }
-    *c = ia[2];
-    return GBCM_SERVER_OK;
+    return result;
 }
 
 GBCM_ServerResult gbcm_write_string(int socket, const char *key) {
+    GBCM_ServerResult result = GBCM_ServerResult::OK();
     if (key) {
         size_t len = strlen(key);
-        gbcm_write_long(socket, len);
-        if (len) gbcm_write(socket, key, len);
+
+        result                         = gbcm_write_long(socket, len);
+        if (result.ok() && len) result = gbcm_write(socket, key, len);;
     }
     else {
-        gbcm_write_long(socket, -1);
+        result = gbcm_write_long(socket, -1);
     }
-    return GBCM_SERVER_OK;
+    return result;
 }
 
 char *gbcm_read_string(int socket)
@@ -386,8 +391,7 @@ char *gbcm_read_string(int socket)
 }
 
 GBCM_ServerResult gbcm_write_long(int socket, long data) {
-    gbcm_write(socket, (char*)&data, sizeof(data));
-    return GBCM_SERVER_OK;
+    return gbcm_write(socket, (char*)&data, sizeof(data));
 }
 
 long gbcm_read_long(int socket) {

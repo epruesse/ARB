@@ -88,11 +88,41 @@ enum GB_COMPRESSION_TYPES {
     GB_COMPRESSION_LAST       = 128
 };
 
-enum GBCM_ServerResult {
+enum GBCM_ServerResultCode {
     GBCM_SERVER_OK      = 0,
     GBCM_SERVER_FAULT   = 1,
     GBCM_SERVER_ABORTED = 2,
-    GBCM_SERVER_OK_WAIT = 3, 
+    GBCM_SERVER_OK_WAIT = 3,
+};
+
+class GBCM_ServerResult {
+    GBCM_ServerResultCode code;
+    GB_ERROR              error;
+
+    GBCM_ServerResult(GBCM_ServerResultCode code_) : code(code_), error(NULL) {
+        gb_assert(code == GBCM_SERVER_OK || code == GBCM_SERVER_OK_WAIT || code == GBCM_SERVER_ABORTED);
+    }
+    GBCM_ServerResult(GBCM_ServerResultCode code_, GB_ERROR error_) : code(code_), error(error_) {
+        gb_assert(code == GBCM_SERVER_FAULT);
+    }
+public:
+    GBCM_ServerResult(const GBCM_ServerResult& other) {
+        gb_assert(!error); // dropping errors not permitted :p
+        code  = other.code;
+        error = other.error;
+    }
+    static GBCM_ServerResult OK() { return GBCM_ServerResult(GBCM_SERVER_OK); }
+    static GBCM_ServerResult OK_WAIT() { return GBCM_ServerResult(GBCM_SERVER_OK_WAIT); }
+    static GBCM_ServerResult ABORTED() { return GBCM_ServerResult(GBCM_SERVER_ABORTED); }
+    static GBCM_ServerResult FAULT(GB_ERROR error) { return GBCM_ServerResult(GBCM_SERVER_FAULT, error); }
+
+    bool ok() const { return code == GBCM_SERVER_OK; }
+    bool failed() const { return !ok(); }
+
+    GBCM_ServerResultCode get_code() const { return code; }
+    GB_ERROR get_error() const { return error; }
+
+    void annotate(const char *msg) { error = GBS_global_string("%s (reason: %s)", msg, error); }
 };
 
 // ------------------------------------------------------
