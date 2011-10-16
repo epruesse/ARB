@@ -36,9 +36,7 @@ static GBCM_ServerResult gbcms_talking(int con, long *hs, void *sin);
 #define MAX_QUEUE_LEN             5
 
 #define GBCM_COMMAND_UNFOLD             (GBTUM_MAGIC_NUMBER)
-#define GBCM_COMMAND_GET_UPDATA         (GBTUM_MAGIC_NUMBER+1)
 #define GBCM_COMMAND_PUT_UPDATE         (GBTUM_MAGIC_NUMBER+2)
-#define GBCM_COMMAND_UPDATED            (GBTUM_MAGIC_NUMBER+3)
 #define GBCM_COMMAND_BEGIN_TRANSACTION  (GBTUM_MAGIC_NUMBER+4)
 #define GBCM_COMMAND_COMMIT_TRANSACTION (GBTUM_MAGIC_NUMBER+5)
 #define GBCM_COMMAND_ABORT_TRANSACTION  (GBTUM_MAGIC_NUMBER+6)
@@ -692,11 +690,6 @@ static GBCM_ServerResult gbcms_talking_unfold(int socket, long */*hsin*/, void *
     return result;
 }
 
-static GBCM_ServerResult gbcms_talking_get_update(int /*socket*/, long */*hsin*/, void */*sin*/, GBDATA */*gbd*/) {
-    // command: GBCM_COMMAND_GET_UPDATA (obsolete/unused)
-    return GBCM_ServerResult::OK();
-}
-
 static GBCM_ServerResult gbcms_talking_put_update(int socket, long */*hsin*/, void */*sin*/, GBDATA */*gbd*/) {
     /* Reads
      * - the date
@@ -764,11 +757,6 @@ static GBCM_ServerResult gbcms_talking_put_update(int socket, long */*hsin*/, vo
         }
     }
     return result;
-}
-
-static GBCM_ServerResult gbcms_talking_updated(int /*socket*/, long */*hsin*/, void */*sin*/, GBDATA */*gbd*/) {
-    // command: GBCM_COMMAND_UPDATED (obsolete/unused)
-    return GBCM_ServerResult::OK();
 }
 
 static GBCM_ServerResult gbcms_talking_init_transaction(int socket, long *hsin, void *sin, GBDATA */*gb_dummy*/) {
@@ -1083,7 +1071,7 @@ static GBCM_ServerResult gbcms_talking_disable_wait_for_new_request(int /*socket
     return GBCM_ServerResult::OK_WAIT();
 }
 
-static GBCM_ServerResult gbcms_talking_obsolete(int /*socket*/, long */*hsin*/, void */*sin*/, GBDATA */*gbd*/) {
+static GBCM_ServerResult gbcms_OBSOLETE_talking(int /*socket*/, long */*hsin*/, void */*sin*/, GBDATA */*gbd*/) {
     fputs("Obsolete server function called\n", stderr);
     return GBCM_ServerResult::FAULT("Obsolete server function called");
 }
@@ -1095,16 +1083,16 @@ typedef GBCM_ServerResult (*TalkingFunction)(int socket, long *hsin, void *sin, 
 
 static TalkingFunction aisc_talking_functions[] = {
     gbcms_talking_unfold,                           // GBCM_COMMAND_UNFOLD
-    gbcms_talking_get_update,                       // GBCM_COMMAND_GET_UPDATA
+    gbcms_OBSOLETE_talking,
     gbcms_talking_put_update,                       // GBCM_COMMAND_PUT_UPDATE
-    gbcms_talking_updated,                          // GBCM_COMMAND_UPDATED
+    gbcms_OBSOLETE_talking,
     gbcms_talking_begin_transaction,                // GBCM_COMMAND_BEGIN_TRANSACTION
     gbcms_talking_commit_transaction,               // GBCM_COMMAND_COMMIT_TRANSACTION
     gbcms_talking_abort_transaction,                // GBCM_COMMAND_ABORT_TRANSACTION
     gbcms_talking_init_transaction,                 // GBCM_COMMAND_INIT_TRANSACTION
     gbcms_talking_find,                             // GBCM_COMMAND_FIND
     gbcms_talking_close,                            // GBCM_COMMAND_CLOSE
-    gbcms_talking_obsolete,
+    gbcms_OBSOLETE_talking,
     gbcms_talking_key_alloc,                        // GBCM_COMMAND_KEY_ALLOC
     gbcms_talking_undo,                             // GBCM_COMMAND_UNDO
     gbcms_talking_disable_wait_for_new_request      // GBCM_COMMAND_DONT_WAIT
