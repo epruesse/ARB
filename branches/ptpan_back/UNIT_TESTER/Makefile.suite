@@ -11,23 +11,32 @@ TEST_LOG_DIR = ./logs
 PATCHNAMEBASE:=TestsOk
 PATCHNAMESUFFIX:=
 
+VALGRIND_INTERNAL=$(findstring B,$(VALGRIND))$(findstring A,$(VALGRIND))
+VALGRIND_EXTERNAL=$(findstring E,$(VALGRIND))
+VALGRIND_ANY=$(VALGRIND_INTERNAL)$(VALGRIND_EXTERNAL)
+
 # -------------------- build patch name
 
 ifneq ('$(RESTRICT_LIB)','')
 PATCHNAMESUFFIX:=$(PATCHNAMESUFFIX)__only_$(RESTRICT_LIB)
 endif
+
 ifneq ($(RESTRICT_MODULE),'.')
 PATCHNAMESUFFIX:=$(PATCHNAMESUFFIX)__notAllFiles
 endif
+
 SKIPPED_SLOW:=$(shell (test -f skipslow.stamp && ls -1 skipslow.stamp))
 ifneq ('$(SKIPPED_SLOW)','')
 PATCHNAMESUFFIX:=$(PATCHNAMESUFFIX)__SLOW_skipped
 endif
+
+ifneq ('$(VALGRIND_ANY)','')
+PATCHNAMESUFFIX:=$(PATCHNAMESUFFIX)__valgrinded_$(VALGRIND_ANY)
+endif
+
 PATCHNAMESUFFIX:=$(subst :,_,$(PATCHNAMESUFFIX))
 
 # -------------------- targets
-
-VALGRIND_EXTERNAL=$(findstring E,$(VALGRIND))
 
 cleanup_environment:
 	./test_environment clean || echo "Failed to clean environment (maybe some setup/cleanup crashed?)"
