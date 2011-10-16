@@ -96,13 +96,13 @@ long gbcm_read(int socket, char *ptr, long size)
     return size;
 }
 
-GBCM_ServerResult gbcm_read_expect_size(int socket, char *ptr, long size) {
+GBCM_ServerResult gbcm_read_expect_size(int socket, char *ptr, long size) { // goes to header: __ATTR__USERESULT
     long read = gbcm_read(socket, ptr, size);
     if (read == size) return GBCM_ServerResult::OK();
     return GBCM_ServerResult::FAULT(GBS_global_string("expected to receive %li bytes, got %li", size, read));
 }
 
-GBCM_ServerResult gbcm_write_flush(int socket) {
+GBCM_ServerResult gbcm_write_flush(int socket) { // goes to header: __ATTR__USERESULT
     char *ptr      = gb_local->write_buffer;
     long  leftsize = gb_local->write_ptr - ptr;
 
@@ -143,7 +143,7 @@ GBCM_ServerResult gbcm_write_flush(int socket) {
     return result;
 }
 
-GBCM_ServerResult gbcm_write(int socket, const char *ptr, long size) {
+GBCM_ServerResult gbcm_write(int socket, const char *ptr, long size) { // goes to header: __ATTR__USERESULT
     while (size >= gb_local->write_free) {
         memcpy(gb_local->write_ptr, ptr, (int)gb_local->write_free);
 
@@ -316,7 +316,7 @@ void gbcmc_restore_sighandlers(gbcmc_comm * link) {
     ASSERT_RESULT(SigHandler, gbcmc_suppress_sigpipe, INSTALL_SIGHANDLER(SIGPIPE, link->old_SIGPIPE_handler, "gbcmc_close"));
 }
 
-GBCM_ServerResult gbcm_write_two(int socket, long a, long c) {
+GBCM_ServerResult gbcm_write_two(int socket, long a, long c) { // goes to header: __ATTR__USERESULT
     if (socket) {
         long ia[3];
         ia[0] = a;
@@ -327,7 +327,7 @@ GBCM_ServerResult gbcm_write_two(int socket, long a, long c) {
     return GBCM_ServerResult::FAULT("no socket");
 }
 
-GBCM_ServerResult gbcm_read_two(int socket, long a, long *b, long *c) {
+GBCM_ServerResult gbcm_read_two(int socket, long a, long *b, long *c) { // goes to header: __ATTR__USERESULT
     /*! read two values: length and any user long
      *
      *  if data is send by gbcm_write_two() then @param b should be zero
@@ -355,7 +355,7 @@ GBCM_ServerResult gbcm_read_two(int socket, long a, long *b, long *c) {
     return result;
 }
 
-GBCM_ServerResult gbcm_write_string(int socket, const char *key) {
+GBCM_ServerResult gbcm_write_string(int socket, const char *key) { // goes to header: __ATTR__USERESULT
     GBCM_ServerResult result = GBCM_ServerResult::OK();
     if (key) {
         size_t len = strlen(key);
@@ -390,7 +390,7 @@ char *gbcm_read_string(int socket)
     return key;
 }
 
-GBCM_ServerResult gbcm_write_long(int socket, long data) {
+GBCM_ServerResult gbcm_write_long(int socket, long data) { // goes to header: __ATTR__USERESULT
     return gbcm_write(socket, (char*)&data, sizeof(data));
 }
 
