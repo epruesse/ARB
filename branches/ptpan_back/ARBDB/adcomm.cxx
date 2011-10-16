@@ -772,11 +772,13 @@ __ATTR__USERESULT static GBCM_ServerResult gbcms_talking_init_transaction(int so
     GBDATA       *gb_main = hs->gb_main;
     GB_MAIN_TYPE *Main    = GB_MAIN(gb_main);
     GBDATA       *gbd     = gb_main;
-    char         *user    = gbcm_read_string(socket);
+
+    GBCM_ServerResult  result = GBCM_ServerResult::OK();
+    char              *user   = gbcm_read_string(socket, result);
 
     gbcm_read_flush();
 
-    GBCM_ServerResult result = gbcm_login((GBCONTAINER *)gbd, user);
+    if (result.ok()) result = gbcm_login((GBCONTAINER *)gbd, user);
     if (result.ok()) {
         si->username = user;
         gb_local->running_client_transaction = ARB_TRANS;
@@ -970,50 +972,52 @@ __ATTR__USERESULT static GBCM_ServerResult gbcms_talking_undo(int socket, long *
 
 __ATTR__USERESULT static GBCM_ServerResult gbcms_talking_find(int socket, long */*hsin*/, void */*sin*/, GBDATA * gbd) {
     // command: GBCM_COMMAND_FIND
-    
-
     GBCM_ServerResult result = gbcm_check_address(gbd);
     if (result.ok()) {
-        char           *key       = gbcm_read_string(socket);
-        const GB_TYPES  type      = GB_TYPES(gbcm_read_long(socket));
+        char           *key       = gbcm_read_string(socket, result);
+        const GB_TYPES  type      = GB_TYPES(gbcm_read_long(socket, result));
         char           *str_val   = 0;
         GB_CASE         case_sens = GB_CASE_UNDEFINED;
         long            int_val   = 0;
 
-        switch (type) {
-            case GB_NONE:
-                break;
+        if (result.ok()) {
+            switch (type) {
+                case GB_NONE:
+                    break;
 
-            case GB_STRING:
-                str_val      = gbcm_read_string(socket);
-                case_sens = GB_CASE(gbcm_read_long(socket));
-                break;
+                case GB_STRING:
+                    str_val      = gbcm_read_string(socket, result);
+                    case_sens = GB_CASE(gbcm_read_long(socket, result));
+                    break;
 
-            case GB_INT:
-                int_val = gbcm_read_long(socket);
-                break;
+                case GB_INT:
+                    int_val = gbcm_read_long(socket, result);
+                    break;
 
-            default:
-                result = GBCM_ServerResult::FAULT(GBS_global_string("illegal data type (%i)", type));
-                break;
+                default:
+                    result = GBCM_ServerResult::FAULT(GBS_global_string("illegal data type (%i)", type));
+                    break;
+            }
         }
 
         if (result.ok()) {
-            GB_SEARCH_TYPE gbs = GB_SEARCH_TYPE(gbcm_read_long(socket));
+            GB_SEARCH_TYPE gbs = GB_SEARCH_TYPE(gbcm_read_long(socket, result));
             gbcm_read_flush();
 
-            if (type == GB_NONE) {
-                gbd = GB_find(gbd, key, gbs);
-            }
-            else if (type == GB_STRING) {
-                gbd = GB_find_string(gbd, key, str_val, case_sens, gbs);
-                free(str_val);
-            }
-            else if (type == GB_INT) {
-                gbd = GB_find_int(gbd, key, int_val, gbs);
-            }
-            else {
-                result = GBCM_ServerResult::FAULT(GBS_global_string("Searching DBtype %i not implemented", type));
+            if (result.ok()) {
+                if (type == GB_NONE) {
+                    gbd = GB_find(gbd, key, gbs);
+                }
+                else if (type == GB_STRING) {
+                    gbd = GB_find_string(gbd, key, str_val, case_sens, gbs);
+                    free(str_val);
+                }
+                else if (type == GB_INT) {
+                    gbd = GB_find_int(gbd, key, int_val, gbs);
+                }
+                else {
+                    result = GBCM_ServerResult::FAULT(GBS_global_string("Searching DBtype %i not implemented", type));
+                }
             }
         }
 
@@ -1049,7 +1053,7 @@ __ATTR__USERESULT static GBCM_ServerResult gbcms_talking_key_alloc(int socket, l
     if (result.ok()) {
         long index = 0;
         {
-            char *key = gbcm_read_string(socket);
+            char *key = gbcm_read_string(socket, result);
             gbcm_read_flush();
 
             if (key) {
@@ -1058,7 +1062,7 @@ __ATTR__USERESULT static GBCM_ServerResult gbcms_talking_key_alloc(int socket, l
             }
         }
 
-        result                  = gbcm_write_two(socket, GBCM_COMMAND_KEY_ALLOC_RES, index);
+        if (result.ok()) result = gbcm_write_two(socket, GBCM_COMMAND_KEY_ALLOC_RES, index);
         if (result.ok()) result = gbcm_write_flush(socket);
     }
     return result;
@@ -1392,7 +1396,7 @@ __ATTR__USERESULT static GBCM_ServerResult gbcmc_read_keys(int socket, GBDATA *g
                 Main->keys[i].nref          = buffer[0];    // to control malloc_index
                 Main->keys[i].next_free_key = buffer[1];    // to control malloc_index
 
-                char *key = gbcm_read_string(socket);
+                char *key = gbcm_read_string(socket, result);
                 if (key) {
                     GBS_write_hash(Main->key_2_index_hash, key, i);
                     if (Main->keys[i].key) free (Main->keys[i].key);
@@ -1702,7 +1706,7 @@ GB_ERROR gbcmc_send_undo_commands(GBDATA *gbd, enum gb_undo_commands command) { 
         if (result.ok()) result = gbcm_write_two(socket, GBCM_COMMAND_UNDO_CMD, command);
         if (result.ok()) result = gbcm_write_flush(socket);
         if (result.ok()) {
-            GB_ERROR error    = gbcm_read_string(socket);
+            GB_ERROR error    = gbcm_read_string(socket, result);
             if (error) result = GBCM_ServerResult::FAULT(error);
         }
         gbcm_read_flush();
@@ -1722,7 +1726,7 @@ char *gbcmc_send_undo_info_commands(GBDATA *gbd, enum gb_undo_commands command) 
         result                  = gbcm_write_two(socket, GBCM_COMMAND_UNDO, gbd->server_id);
         if (result.ok()) result = gbcm_write_two(socket, GBCM_COMMAND_UNDO_CMD, command);
         if (result.ok()) result = gbcm_write_flush(socket);
-        if (result.ok()) info   = gbcm_read_string(socket);
+        if (result.ok()) info   = gbcm_read_string(socket, result);
     }
     gbcm_read_flush();
 

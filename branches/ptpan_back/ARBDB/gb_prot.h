@@ -225,7 +225,6 @@ char *gbs_search_next_separator(const char *source, const char *seps);
 /* adsocket.cxx */
 void gbcms_sigpipe(int dummy_1x);
 void gbcm_read_flush(void);
-long gbcm_read(int socket, char *ptr, long size);
 GBCM_ServerResult gbcm_read_expect_size(int socket, char *ptr, long size) __ATTR__USERESULT;
 GBCM_ServerResult gbcm_write_flush(int socket) __ATTR__USERESULT;
 GBCM_ServerResult gbcm_write(int socket, const char *ptr, long size) __ATTR__USERESULT;
@@ -235,9 +234,9 @@ void gbcmc_restore_sighandlers(gbcmc_comm *link);
 GBCM_ServerResult gbcm_write_two(int socket, long a, long c) __ATTR__USERESULT;
 GBCM_ServerResult gbcm_read_two(int socket, long a, long *b, long *c) __ATTR__USERESULT;
 GBCM_ServerResult gbcm_write_string(int socket, const char *key) __ATTR__USERESULT;
-char *gbcm_read_string(int socket);
+char *gbcm_read_string(int socket, GBCM_ServerResult &result);
 GBCM_ServerResult gbcm_write_long(int socket, long data) __ATTR__USERESULT;
-long gbcm_read_long(int socket);
+long gbcm_read_long(int socket, GBCM_ServerResult &result);
 
 #else
 #error gb_prot.h included twice

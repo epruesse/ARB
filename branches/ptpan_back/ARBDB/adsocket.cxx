@@ -55,51 +55,49 @@ void gbcm_read_flush() {
     gb_local->write_free = gb_local->write_bufsize;
 }
 
-static long gbcm_read_buffered(int socket, char *ptr, long size) {
-    /* write_ptr ptr to not read data
-       write_free   = write_bufsize-size of non read data;
-    */
-    long holding;
-    holding = gb_local->write_bufsize - gb_local->write_free;
+__ATTR__USERESULT inline long gbcm_read_buffered(int socket, char *ptr, long size) {
+    // copy size 'byte' from read-buffer to 'ptr'.
+    // read next block from 'socket' if necessary.
+    // 
+    // return number of bytes copied (or 0 on IOfailure)
+    
+    gb_assert(size>0);
+    long holding = gb_local->write_bufsize - gb_local->write_free;
     if (holding <= 0) {
         holding = read(socket, gb_local->write_buffer, (size_t)gb_local->write_bufsize);
+        if (holding < 0) return 0;
 
-        if (holding < 0)
-        {
-            fprintf(stderr, "Cannot read data from client: len=%li (%s, errno %i)\n",
-                    holding, strerror(errno), errno);
-            return 0;
-        }
         gbcm_read_flush();
-        gb_local->write_free-=holding;
+        gb_local->write_free -= holding;
     }
-    if (size>holding) size = holding;
+
+    if (size>holding) size  = holding;
     memcpy(ptr, gb_local->write_ptr, (int)size);
-    gb_local->write_ptr += size;
-    gb_local->write_free += size;
+    gb_local->write_ptr    += size;
+    gb_local->write_free   += size;
     return size;
 }
 
-long gbcm_read(int socket, char *ptr, long size)
-{
-    long    leftsize, readsize;
-    leftsize = size;
-    readsize = 0;
-
+__ATTR__USERESULT inline long gbcm_read(int socket, char *ptr, long size) {
+    // read 'size' byte from 'socket' to 'ptr'
+    // return 'size' or 0 in case of error
+    gb_assert(size>0);
+    long leftsize = size;
     while (leftsize) {
-        readsize = gbcm_read_buffered(socket, ptr, leftsize);
+        long readsize = gbcm_read_buffered(socket, ptr, leftsize);
         if (readsize<=0) return 0;
-        ptr += readsize;
+
+        ptr      += readsize;
         leftsize -= readsize;
     }
-
     return size;
 }
 
 GBCM_ServerResult gbcm_read_expect_size(int socket, char *ptr, long size) { // goes to header: __ATTR__USERESULT
     long read = gbcm_read(socket, ptr, size);
     if (read == size) return GBCM_ServerResult::OK();
-    return GBCM_ServerResult::FAULT(GBS_global_string("expected to receive %li bytes, got %li", size, read));
+    return GBCM_ServerResult::FAULT(GBS_global_string("expected to receive %li bytes, got %li (reason: %s)",
+                                                      size, read, strerror(errno)));
 }
 
 GBCM_ServerResult gbcm_write_flush(int socket) { // goes to header: __ATTR__USERESULT
@@ -369,24 +367,21 @@ GBCM_ServerResult gbcm_write_string(int socket, const char *key) { // goes to he
     return result;
 }
 
-char *gbcm_read_string(int socket)
-{
-    char *key;
-    long  len = gbcm_read_long(socket);
+char *gbcm_read_string(int socket, GBCM_ServerResult& result) {
+    char *key = 0;
+    long  len = gbcm_read_long(socket, result);
 
-    if (len) {
-        if (len>0) {
-            key = (char *)GB_calloc(sizeof(char), (size_t)len+1);
-            gbcm_read(socket, key, len);
+    if (result.ok()) {
+        if (len) {
+            if (len>0) {
+                key    = (char *)GB_calloc(sizeof(char), (size_t)len+1);
+                result = gbcm_read_expect_size(socket, key, len);
+            }
         }
         else {
-            key = 0;
+            key = strdup("");
         }
     }
-    else {
-        key = strdup("");
-    }
-
     return key;
 }
 
@@ -394,9 +389,9 @@ GBCM_ServerResult gbcm_write_long(int socket, long data) { // goes to header: __
     return gbcm_write(socket, (char*)&data, sizeof(data));
 }
 
-long gbcm_read_long(int socket) {
-    long data;
-    gbcm_read(socket, (char*)&data, sizeof(data));
+long gbcm_read_long(int socket, GBCM_ServerResult& result) {
+    long data = 0;
+    if (result.ok()) result = gbcm_read_expect_size(socket, (char*)&data, sizeof(data));
     return data;
 }
 
