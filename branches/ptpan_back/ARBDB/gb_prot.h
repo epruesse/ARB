@@ -68,8 +68,8 @@ GB_ERROR gbcms_add_to_delete_list(GBDATA *gbd);
 long gbcmc_key_alloc(GBDATA *gbd, const char *key);
 GB_ERROR gbcmc_send_undo_commands(GBDATA *gbd, enum gb_undo_commands command) __ATTR__USERESULT;
 char *gbcmc_send_undo_info_commands(GBDATA *gbd, enum gb_undo_commands command);
-GBCM_ServerResult gbcm_login(GBCONTAINER *gb_main, const char *loginname);
-GBCM_ServerResult gbcmc_close(gbcmc_comm *link);
+GBCM_ServerResult gbcm_login(GBCONTAINER *gb_main, const char *loginname) __ATTR__USERESULT;
+GBCM_ServerResult gbcmc_close(gbcmc_comm *link) __ATTR__USERESULT;
 GB_ERROR gbcm_logout(GB_MAIN_TYPE *Main, const char *loginname);
 
 /* adhash.cxx */
@@ -226,17 +226,17 @@ char *gbs_search_next_separator(const char *source, const char *seps);
 void gbcms_sigpipe(int dummy_1x);
 void gbcm_read_flush(void);
 long gbcm_read(int socket, char *ptr, long size);
-GBCM_ServerResult gbcm_read_expect_size(int socket, char *ptr, long size);
-GBCM_ServerResult gbcm_write_flush(int socket);
-GBCM_ServerResult gbcm_write(int socket, const char *ptr, long size);
+GBCM_ServerResult gbcm_read_expect_size(int socket, char *ptr, long size) __ATTR__USERESULT;
+GBCM_ServerResult gbcm_write_flush(int socket) __ATTR__USERESULT;
+GBCM_ServerResult gbcm_write(int socket, const char *ptr, long size) __ATTR__USERESULT;
 GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, char **unix_name);
 gbcmc_comm *gbcmc_open(const char *path);
 void gbcmc_restore_sighandlers(gbcmc_comm *link);
-GBCM_ServerResult gbcm_write_two(int socket, long a, long c);
-GBCM_ServerResult gbcm_read_two(int socket, long a, long *b, long *c);
-GBCM_ServerResult gbcm_write_string(int socket, const char *key);
+GBCM_ServerResult gbcm_write_two(int socket, long a, long c) __ATTR__USERESULT;
+GBCM_ServerResult gbcm_read_two(int socket, long a, long *b, long *c) __ATTR__USERESULT;
+GBCM_ServerResult gbcm_write_string(int socket, const char *key) __ATTR__USERESULT;
 char *gbcm_read_string(int socket);
-GBCM_ServerResult gbcm_write_long(int socket, long data);
+GBCM_ServerResult gbcm_write_long(int socket, long data) __ATTR__USERESULT;
 long gbcm_read_long(int socket);
 
 #else

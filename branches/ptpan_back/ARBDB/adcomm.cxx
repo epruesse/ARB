@@ -178,7 +178,7 @@ GB_ERROR GBCMS_open(const char *path, long timeout, GBDATA *gb_main) {
         gbcmc_comm *comm = gbcmc_open(path);
         if (comm) {
             error = GBS_global_string("Socket '%s' already in use", path);
-            gbcmc_close(comm);
+            IGNORE_RESULT(gbcmc_close(comm));
         }
         else {
             int   socket;
@@ -1752,7 +1752,7 @@ GB_ERROR GB_tell_server_dont_wait(GBDATA *gbd) {
 //      Login/Logout
 
 
-GBCM_ServerResult gbcm_login(GBCONTAINER *gb_main, const char *loginname) {
+GBCM_ServerResult gbcm_login(GBCONTAINER *gb_main, const char *loginname) { // goes to header: __ATTR__USERESULT
     // look for any free user and set this_user
     GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(gb_main);
 
@@ -1782,7 +1782,7 @@ GBCM_ServerResult gbcm_login(GBCONTAINER *gb_main, const char *loginname) {
     return GBCM_ServerResult::FAULT(GBS_global_string("Too many users in this database: User '%s' ", loginname));
 }
 
-GBCM_ServerResult gbcmc_close(gbcmc_comm * link) {
+GBCM_ServerResult gbcmc_close(gbcmc_comm * link) { // goes to header: __ATTR__USERESULT
     GBCM_ServerResult result = GBCM_ServerResult::OK();
     if (link->socket) {
         result                  = gbcm_write_two(link->socket, GBCM_COMMAND_CLOSE, 0);
