@@ -28,7 +28,7 @@
 #include <arb_file.h>
 #include <static_assert.h>
 
-static GBCM_ServerResult gbcms_talking(int con, long *hs, void *sin);
+__ATTR__USERESULT static GBCM_ServerResult gbcms_talking(int con, long *hs, void *sin);
 
 #define debug_printf(a, b)
 
@@ -323,12 +323,12 @@ __ATTR__USERESULT static GBCM_ServerResult gbcm_write_bin(int socket, GBDATA *gb
     return result;
 }
 
-static GBCM_ServerResult gbcm_check_address(void *ptr) {
+__ATTR__USERESULT static GBCM_ServerResult gbcm_check_address(void *ptr) {
     GB_ERROR error = GBK_test_address((long*)(ptr), GBTUM_MAGIC_NUMBER);
     return error ? GBCM_ServerResult::FAULT(error) : GBCM_ServerResult::OK();
 }
 
-static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbd, long *buffer, long mode, GBDATA *gb_source, void *cs_main) {
+__ATTR__USERESULT static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbd, long *buffer, long mode, GBDATA *gb_source, void *cs_main) {
     /* read an entry into gbd
      * mode ==  1  server reads data
      * mode ==  0  client read all data
@@ -545,7 +545,7 @@ static void gbcms_shift_delete_list(void *hsi, void *soi) {
     }
 }
 
-static GBCM_ServerResult gbcms_write_deleted(int socket, GBDATA */*gbd*/, long hsin, long client_clock, long *buffer) {
+__ATTR__USERESULT static GBCM_ServerResult gbcms_write_deleted(int socket, GBDATA */*gbd*/, long hsin, long client_clock, long *buffer) {
     gb_server_data *hs = (gb_server_data *)hsin;
     Socinf         *socinf;
     for (socinf = hs->soci; socinf; socinf=socinf->next) {
@@ -581,7 +581,7 @@ static GBCM_ServerResult gbcms_write_deleted(int socket, GBDATA */*gbd*/, long h
     return result;
 }
 
-static GBCM_ServerResult gbcms_write_updated(int socket, GBDATA *gbd, long hsin, long client_clock, long *buffer) {
+__ATTR__USERESULT static GBCM_ServerResult gbcms_write_updated(int socket, GBDATA *gbd, long hsin, long client_clock, long *buffer) {
     GBCM_ServerResult result = GBCM_ServerResult::OK();
     if (GB_GET_EXT_UPDATE_DATE(gbd)>client_clock) {
         if (GB_GET_EXT_CREATION_DATE(gbd) > client_clock) {
@@ -622,7 +622,7 @@ static GBCM_ServerResult gbcms_write_updated(int socket, GBDATA *gbd, long hsin,
     return result;
 }
 
-static GBCM_ServerResult gbcms_write_keys(int socket, GBDATA *gbd) {
+__ATTR__USERESULT static GBCM_ServerResult gbcms_write_keys(int socket, GBDATA *gbd) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
 
     long buffer[4];
@@ -643,7 +643,7 @@ static GBCM_ServerResult gbcms_write_keys(int socket, GBDATA *gbd) {
     return result;
 }
 
-static GBCM_ServerResult gbcms_talking_unfold(int socket, long */*hsin*/, void */*sin*/, GBDATA *gb_in) {
+__ATTR__USERESULT static GBCM_ServerResult gbcms_talking_unfold(int socket, long */*hsin*/, void */*sin*/, GBDATA *gb_in) {
     // command: GBCM_COMMAND_UNFOLD
     GBCONTAINER       *gbc    = (GBCONTAINER *)gb_in;
     GBCM_ServerResult  result = gbcm_check_address(gbc);
@@ -690,7 +690,7 @@ static GBCM_ServerResult gbcms_talking_unfold(int socket, long */*hsin*/, void *
     return result;
 }
 
-static GBCM_ServerResult gbcms_talking_put_update(int socket, long */*hsin*/, void */*sin*/, GBDATA */*gbd*/) {
+__ATTR__USERESULT static GBCM_ServerResult gbcms_talking_put_update(int socket, long */*hsin*/, void */*sin*/, GBDATA */*gbd*/) {
     /* Reads
      * - the date
      * - and all changed data
@@ -759,7 +759,7 @@ static GBCM_ServerResult gbcms_talking_put_update(int socket, long */*hsin*/, vo
     return result;
 }
 
-static GBCM_ServerResult gbcms_talking_init_transaction(int socket, long *hsin, void *sin, GBDATA */*gb_dummy*/) {
+__ATTR__USERESULT static GBCM_ServerResult gbcms_talking_init_transaction(int socket, long *hsin, void *sin, GBDATA */*gb_dummy*/) {
     /* begin client transaction
      * sends clock
      *
@@ -825,7 +825,7 @@ static GBCM_ServerResult gbcms_talking_init_transaction(int socket, long *hsin, 
     return result;
 }
 
-static GBCM_ServerResult gbcms_talking_begin_transaction(int socket, long *hsin, void *sin, GBDATA *long_client_clock) {
+__ATTR__USERESULT static GBCM_ServerResult gbcms_talking_begin_transaction(int socket, long *hsin, void *sin, GBDATA *long_client_clock) {
     /* begin client transaction
      * sends clock
      * deleted
@@ -897,7 +897,7 @@ static GBCM_ServerResult gbcms_talking_begin_transaction(int socket, long *hsin,
     return result;
 }
 
-static GBCM_ServerResult commit_or_abort_transaction(int socket, GBDATA *gbd, ARB_TRANS_TYPE commit_or_abort) {
+__ATTR__USERESULT static GBCM_ServerResult commit_or_abort_transaction(int socket, GBDATA *gbd, ARB_TRANS_TYPE commit_or_abort) {
     GBCM_ServerResult result = gbcm_check_address(gbd);
     if (result.ok()) {
         gb_local->running_client_transaction = commit_or_abort;
@@ -908,22 +908,22 @@ static GBCM_ServerResult commit_or_abort_transaction(int socket, GBDATA *gbd, AR
     }
     return result;
 }
-static GBCM_ServerResult gbcms_talking_commit_transaction(int socket, long */*hsin*/, void */*sin*/, GBDATA *gbd) {
+__ATTR__USERESULT static GBCM_ServerResult gbcms_talking_commit_transaction(int socket, long */*hsin*/, void */*sin*/, GBDATA *gbd) {
     // command: GBCM_COMMAND_COMMIT_TRANSACTION
     return commit_or_abort_transaction(socket, gbd, ARB_COMMIT);
 }
 
-static GBCM_ServerResult gbcms_talking_abort_transaction(int socket, long */*hsin*/, void */*sin*/, GBDATA *gbd) {
+__ATTR__USERESULT static GBCM_ServerResult gbcms_talking_abort_transaction(int socket, long */*hsin*/, void */*sin*/, GBDATA *gbd) {
     // command: GBCM_COMMAND_ABORT_TRANSACTION
     return commit_or_abort_transaction(socket, gbd, ARB_ABORT);
 }
 
-static GBCM_ServerResult gbcms_talking_close(int /*socket*/, long */*hsin*/, void */*sin*/, GBDATA */*gbd*/) {
+__ATTR__USERESULT static GBCM_ServerResult gbcms_talking_close(int /*socket*/, long */*hsin*/, void */*sin*/, GBDATA */*gbd*/) {
     // command: GBCM_COMMAND_CLOSE
     return GBCM_ServerResult::ABORTED();
 }
 
-static GBCM_ServerResult gbcms_talking_undo(int socket, long */*hsin*/, void */*sin*/, GBDATA *gbd) {
+__ATTR__USERESULT static GBCM_ServerResult gbcms_talking_undo(int socket, long */*hsin*/, void */*sin*/, GBDATA *gbd) {
     // command: GBCM_COMMAND_UNDO
     long cmd;
     GBCM_ServerResult sresult = gbcm_read_two(socket, GBCM_COMMAND_UNDO_CMD, 0, &cmd);
@@ -968,7 +968,7 @@ static GBCM_ServerResult gbcms_talking_undo(int socket, long */*hsin*/, void */*
     return sresult;
 }
 
-static GBCM_ServerResult gbcms_talking_find(int socket, long */*hsin*/, void */*sin*/, GBDATA * gbd) {
+__ATTR__USERESULT static GBCM_ServerResult gbcms_talking_find(int socket, long */*hsin*/, void */*sin*/, GBDATA * gbd) {
     // command: GBCM_COMMAND_FIND
     
 
@@ -1041,7 +1041,7 @@ static GBCM_ServerResult gbcms_talking_find(int socket, long */*hsin*/, void */*
     return result;
 }
 
-static GBCM_ServerResult gbcms_talking_key_alloc(int socket, long */*hsin*/, void */*sin*/, GBDATA * gbd) {
+__ATTR__USERESULT static GBCM_ServerResult gbcms_talking_key_alloc(int socket, long */*hsin*/, void */*sin*/, GBDATA * gbd) {
     // command: GBCM_COMMAND_KEY_ALLOC
     // (old maybe wrong comment: "do a query in the server")
 
@@ -1064,14 +1064,14 @@ static GBCM_ServerResult gbcms_talking_key_alloc(int socket, long */*hsin*/, voi
     return result;
 }
 
-static GBCM_ServerResult gbcms_talking_disable_wait_for_new_request(int /*socket*/, long *hsin, void */*sin*/, GBDATA */*gbd*/) {
+__ATTR__USERESULT static GBCM_ServerResult gbcms_talking_disable_wait_for_new_request(int /*socket*/, long *hsin, void */*sin*/, GBDATA */*gbd*/) {
     // command GBCM_COMMAND_DONT_WAIT
     gb_server_data *hs = (gb_server_data *) hsin;
     hs->wait_for_new_request--;
     return GBCM_ServerResult::OK_WAIT();
 }
 
-static GBCM_ServerResult gbcms_OBSOLETE_talking(int /*socket*/, long */*hsin*/, void */*sin*/, GBDATA */*gbd*/) {
+__ATTR__USERESULT static GBCM_ServerResult gbcms_OBSOLETE_talking(int /*socket*/, long */*hsin*/, void */*sin*/, GBDATA */*gbd*/) {
     fputs("Obsolete server function called\n", stderr);
     return GBCM_ServerResult::FAULT("Obsolete server function called");
 }
@@ -1098,7 +1098,7 @@ static TalkingFunction aisc_talking_functions[] = {
     gbcms_talking_disable_wait_for_new_request      // GBCM_COMMAND_DONT_WAIT
 };
 
-static GBCM_ServerResult gbcms_talking(int con, long *hs, void *sin) {
+__ATTR__USERESULT static GBCM_ServerResult gbcms_talking(int con, long *hs, void *sin) {
     GBCM_ServerResult result = GBCM_ServerResult::OK();
 
     gbcm_read_flush();
@@ -1377,7 +1377,7 @@ GB_ERROR gbcmc_sendupdate_update(GBDATA *gbd, int send_headera) {
     return result.get_error();
 }
 
-static GBCM_ServerResult gbcmc_read_keys(int socket, GBDATA *gbd) {
+__ATTR__USERESULT static GBCM_ServerResult gbcmc_read_keys(int socket, GBDATA *gbd) {
     long buffer[2];
     GBCM_ServerResult result = gbcm_read_expect_size(socket, (char *)buffer, sizeof(long)*2);
     if (result.ok()) {
@@ -1584,7 +1584,7 @@ bool GB_is_client(GBDATA *gbd) {
     return !GB_is_server(gbd);
 }
 
-static GBCM_ServerResult gbcmc_unfold_list(int socket, GBDATA * gbd) {
+__ATTR__USERESULT static GBCM_ServerResult gbcmc_unfold_list(int socket, GBDATA * gbd) {
     GB_MAIN_TYPE      *Main   = GB_MAIN(gbd);
     long               readvar[2];
     GBCM_ServerResult  result = gbcm_read_expect_size(socket, (char *)readvar, sizeof(long)*2);
@@ -1602,7 +1602,7 @@ static GBCM_ServerResult gbcmc_unfold_list(int socket, GBDATA * gbd) {
     return result;
 }
 
-inline GBCM_ServerResult cannot_use_in_server(GB_MAIN_TYPE *Main) {
+__ATTR__USERESULT inline GBCM_ServerResult cannot_use_in_server(GB_MAIN_TYPE *Main) {
     if (Main->local_mode) return GBCM_ServerResult::FAULT("invalid use in server");
     return GBCM_ServerResult::OK();
 }
@@ -1647,7 +1647,7 @@ GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str,
             if (result.ok()) result = gbcm_read_two(socket, GBCM_COMMAND_FIND_ERG, 0, &found.l);
 
             if (found.gbd) {
-                gbcmc_unfold_list(socket, gbd);
+                result  = gbcmc_unfold_list(socket, gbd);
                 found.l = GBS_read_numhash(Main->remote_hash, found.l);
             }
         }

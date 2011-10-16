@@ -114,7 +114,7 @@ public:
     static GBCM_ServerResult OK() { return GBCM_ServerResult(GBCM_SERVER_OK); }
     static GBCM_ServerResult OK_WAIT() { return GBCM_ServerResult(GBCM_SERVER_OK_WAIT); }
     static GBCM_ServerResult ABORTED() { return GBCM_ServerResult(GBCM_SERVER_ABORTED); }
-    static GBCM_ServerResult FAULT(GB_ERROR error) { return GBCM_ServerResult(GBCM_SERVER_FAULT, error); }
+    __ATTR__USERESULT static GBCM_ServerResult FAULT(GB_ERROR error) { return GBCM_ServerResult(GBCM_SERVER_FAULT, error); }
 
     bool ok() const { return code == GBCM_SERVER_OK; }
     bool failed() const { return !ok(); }
