@@ -2032,14 +2032,16 @@ const char *GB_date_string() {
 
 // test_com_server and test_com_server run in separate processes
 struct test_com : virtual Noncopyable {
-    char   *socket;
-    long    timeout;
-
-    bool is_parent; // true if not in fork-child
+    char *socket;
+    long  timeout;
+    bool  is_parent; // true if not in fork-child
 
     test_com() : socket(0), timeout(50) {}
     ~test_com() { free(socket); }
+
 };
+
+inline void sleep_ms(int ms) { GB_usleep(ms*1000); }
 
 inline bool served(GBDATA *gb_main, bool wait) {
     GB_begin_transaction(gb_main);
@@ -2074,7 +2076,7 @@ inline int test_sync(GBDATA *gb_main, bool is_server) {
             TEST_ASSERT_NO_ERROR(GB_tell_server_dont_wait(gb_main));
             while (*GBT_read_int(gb_main, "sync") == val) {
                 TEST_ASSERT_NO_ERROR(GB_tell_server_dont_wait(gb_main));
-                GB_usleep(50*1000);
+                sleep_ms(50);
                 TEST_ASSERT_NO_ERROR(GB_tell_server_dont_wait(gb_main));
             }
             val++;
@@ -2192,7 +2194,7 @@ static void test_com_server(const test_com& tcom, bool wait_for_HUP) {
 
         if (wait_for_HUP) {
             while (!GB_is_regularfile("panix.arb")) { 
-                GB_usleep(100);
+                sleep_ms(100);
             }
         }
 
@@ -2214,7 +2216,7 @@ static GBDATA *connect_to_server(const test_com& tcom) {
             // not reached if server was faster
             TEST_ASSERT_CONTAINS(GB_await_error(), "There is no ARBDB server");
             int w    = 30;
-            GB_usleep(w*1000);
+            sleep_ms(w);
             mywait  += w;
         }
     }
@@ -2309,6 +2311,7 @@ inline void test_com_interface(bool as_client, bool as_child, const test_com& tc
 
 void TEST_SLOW_DB_com_interface() {
     int parent_as_client_in_loop = GB_random(2); // should not matter
+
     for (int loop = 0; loop <= 1; ++loop) {   // test once as client, once as server (to get full coverage of both sides)
         bool parent_as_client = parent_as_client_in_loop == loop;
         bool child_as_client  = !parent_as_client;
@@ -2327,8 +2330,8 @@ void TEST_SLOW_DB_com_interface() {
             const char *panic_arb_expected = "panix.arb.expected";
             if (parent_as_client) {
 #if 1
-                kill(child_pid, SIGHUP); // dont panic save
-                GB_usleep(200); // let server interrupt
+                kill(child_pid, SIGHUP); // HUP w/o panic save
+                sleep_ms(200);           // let server interrupt
 #endif
 
                 // send HUP (server should panic-save)
