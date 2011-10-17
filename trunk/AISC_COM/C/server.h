@@ -7,7 +7,8 @@
 
 /* define ARB attributes: */
 #ifndef ATTRIBUTES_H
-# include <attributes.h>
+#error You have to include attributes.h before including server.h
+// it's not possible to include attributes here due to link problems 
 #endif
 
 

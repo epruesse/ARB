@@ -28,6 +28,7 @@
 
 #include "aisc_com.h"
 // AISC_MKPT_PROMOTE:#include <aisc_func_types.h>
+#include <attributes.h>
 #include "server.h"
 #include "aisc_global.h"
 
