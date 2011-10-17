@@ -463,64 +463,6 @@ static int test_setup(bool use_gene_ptserver) {
     return use_gene_ptserver ? TEST_GENESERVER_ID : TEST_SERVER_ID;
 }
 
-void TEST_SLOW_variable_defaults_in_server() {
-    test_setup(false);
-
-    const char *server_tag = GBS_ptserver_tag(TEST_SERVER_ID);
-    TEST_ASSERT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, 0));
-
-    const char *servername = GBS_read_arb_tcp(server_tag);;
-    TEST_ASSERT_EQUAL(servername, "localhost:3200"); // as defined in ../lib/arb_tcp.dat@ARB_TEST_PT_SERVER
-
-    long com;
-    long locs;
-    aisc_com *link = aisc_open(servername, &com, AISC_MAGIC_NUMBER);
-    TEST_ASSERT(link);
-
-    TEST_ASSERT_ZERO(aisc_create(link, PT_MAIN, com,
-                                 MAIN_LOCS, PT_LOCS, &locs,
-                                 NULL));
-
-    {
-#define LOCAL(rvar) (prev_read_##rvar)
-
-        
-#define FREE_LOCAL_long(rvar) 
-#define FREE_LOCAL_charp(rvar) free(LOCAL(rvar)) 
-#define FREE_LOCAL(type,rvar) FREE_LOCAL_##type(rvar)
-
-#define TEST__READ(type,rvar,expected)                                  \
-        do {                                                            \
-            TEST_ASSERT_ZERO(aisc_get(link, PT_LOCS, locs, rvar, &(LOCAL(rvar)), NULL)); \
-            TEST_ASSERT_EQUAL(LOCAL(rvar), expected);                   \
-            FREE_LOCAL(type,rvar);                                      \
-        } while(0)
-#define TEST_WRITE(type,rvar,val)                                       \
-        TEST_ASSERT_ZERO(aisc_put(link, PT_LOCS, locs, rvar, (type)val, NULL))
-#define TEST_CHANGE(type,rvar,val)              \
-        do {                                    \
-            TEST_WRITE(type, rvar, val);        \
-            TEST__READ(type, rvar, val);        \
-        } while(0)
-#define TEST_DEFAULT_CHANGE(ctype,type,remote_variable,default_value,other_value) \
-        do {                                                            \
-            ctype DEFAULT_VALUE = default_value;                   \
-            ctype OTHER_VALUE   = other_value;                     \
-            type LOCAL(remote_variable);                                \
-            TEST__READ(type, remote_variable, DEFAULT_VALUE);           \
-            TEST_CHANGE(type, remote_variable, OTHER_VALUE);            \
-            TEST_CHANGE(type, remote_variable, DEFAULT_VALUE);          \
-        } while(0)
-
-        TEST_DEFAULT_CHANGE(const long, long, LOCS_MATCH_REVERSED, 1, 67);
-        typedef char *charp;
-        typedef const char *ccharp;
-        TEST_DEFAULT_CHANGE(ccharp, charp, LOCS_LOGINTIME, "notime", "sometime");
-    }
-
-    TEST_ASSERT_ZERO(aisc_close(link));
-}
-
 // ----------------------------------
 //      test probe design / match
 
@@ -555,6 +497,100 @@ void TEST_SLOW_variable_defaults_in_server() {
     } while(0)
 
 typedef const char *CCP;
+
+void TEST_SLOW_match_geneprobe() {
+    bool use_gene_ptserver = true;
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "matchsequence=NNUCNN",
+            "matchacceptN=4", 
+            "matchlimitN=5", 
+        };
+        CCP expectd = "    organism genename------- mis N_mis wmis pos gpos rev          'NNUCNN'\1"
+            "genome2\1" "  genome2  gene3             0     4  0.0   2    1 0   .........-UU==GG-UUGAUC\1"
+            "genome2\1" "  genome2  joined1           0     4  0.0   2    1 0   .........-UU==GG-UUGAUCCUG\1"
+            "genome2\1" "  genome2  gene2             0     4  0.0  10    4 0   ......GUU-GA==CU-GCCA\1"
+            "genome2\1" "  genome2  intergene_19_65   0     4  0.0  31   12 0   GGUUACUGC-AU==GG-UGUUCGCCU\1"
+            "genome1\1" "  genome1  intergene_17_65   0     4  0.0  31   14 0   GGUUACUGC-UA==GG-UGUUCGCCU\1"
+            "genome2\1" "  genome2  intergene_19_65   0     4  0.0  38   19 0   GCAUUCGGU-GU==GC-CUAAGCACU\1"
+            "genome1\1" "  genome1  intergene_17_65   0     4  0.0  38   21 0   GCUAUCGGU-GU==GC-CUAAGCCAU\1"
+            "genome1\1" "  genome1  intergene_17_65   0     4  0.0  56   39 0   AGCCAUGCG-AG==AU-AUGUA\1" "";
+        
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd);
+    }
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "matchsequence=NGGUUN",
+            "matchacceptN=2", 
+            "matchlimitN=3", 
+        };
+        CCP expectd = "    organism genename------- mis N_mis wmis pos gpos rev          'NGGUUN'\1"
+            "genome1\1" "  genome1  joined1           0     2  0.0   5    2 0   ........C-U====G-AUCCUGC\1"
+            "genome2\1" "  genome2  intergene_19_65   0     2  0.0  21    2 0   ........G-A====A-CUGCAUUCG\1"
+            "genome1\1" "  genome1  intergene_17_65   0     2  0.0  21    4 0   ......CAG-A====A-CUGCUAUCG\1"
+            "genome2\1" "  genome2  gene3             0     2  0.0   5    4 0   ......UUU-C====G-AUC\1"
+            "genome2\1" "  genome2  joined1           0     2  0.0   5    4 0   ......UUU-C====G-AUCCUGCCA\1" "";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd);
+    }
+
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "matchsequence=UGAUCCU", // exists in data
+        };
+        CCP expectd = "    organism genename mis N_mis wmis pos gpos rev          'UGAUCCU'\1"
+            "genome1\1" "  genome1  gene2      0     0  0.0   9    1 0   .........-=======-GC\1"
+            "genome2\1" "  genome2  gene2      0     0  0.0   9    3 0   .......GU-=======-GCCA\1" "";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: probe exists as well in 'joined1' (of both genomes)
+    }
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "matchsequence=GAUCCU",
+        };
+        CCP expectd = "    organism genename mis N_mis wmis pos gpos rev          'GAUCCU'\1"
+            "genome2\1" "  genome2  gene2      0     0  0.0  10    4 0   ......GUU-======-GCCA\1" "";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: probe is part of above probe, but reports less hits
+    }
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "matchsequence=UUUCGG", // exists only in genome2 
+        };
+        CCP expectd = "    organism genename mis N_mis wmis pos gpos rev          'UUUCGG'\1"
+            "genome2\1" "  genome2  gene3      0     0  0.0   2    1 0   .........-======-UUGAUC\1"
+            "genome2\1" "  genome2  joined1    0     0  0.0   2    1 0   .........-======-UUGAUCCUG\1" "";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: also exists in genome2/gene1
+    }
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "matchsequence=AUCCUG", 
+        };
+        CCP expectd = "    organism genename mis N_mis wmis pos gpos rev          'AUCCUG'\1"
+            "genome2\1" "  genome2  gene2      0     0  0.0  11    5 0   .....GUUG-======-CCA\1" "";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: exists in 'gene2' and 'joined1' of both genomes
+    }
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "matchsequence=UUGAUCCUGC",
+        };
+        CCP expectd = "    organism genename mis N_mis wmis pos gpos rev          'UUGAUCCUGC'\1"
+            "genome2\1" "  genome2  gene2      0     0  0.0   8    2 0   ........G-==========-CA\1"
+            "genome1\1" "  genome1  joined1    0     0  0.0   8    5 0   .....CUGG-==========-\1" "";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: also exists in 'genome2/joined1'
+    }
+}
+
 void TEST_SLOW_match_probe() {
     bool use_gene_ptserver = false;
     {
@@ -742,99 +778,6 @@ void TEST_SLOW_match_probe() {
     }
 }
 
-void TEST_SLOW_match_geneprobe() {
-    bool use_gene_ptserver = true;
-    {
-        const char *arguments[] = {
-            "prgnamefake",
-            "matchsequence=NNUCNN",
-            "matchacceptN=4", 
-            "matchlimitN=5", 
-        };
-        CCP expectd = "    organism genename------- mis N_mis wmis pos gpos rev          'NNUCNN'\1"
-            "genome2\1" "  genome2  gene3             0     4  0.0   2    1 0   .........-UU==GG-UUGAUC\1"
-            "genome2\1" "  genome2  joined1           0     4  0.0   2    1 0   .........-UU==GG-UUGAUCCUG\1"
-            "genome2\1" "  genome2  gene2             0     4  0.0  10    4 0   ......GUU-GA==CU-GCCA\1"
-            "genome2\1" "  genome2  intergene_19_65   0     4  0.0  31   12 0   GGUUACUGC-AU==GG-UGUUCGCCU\1"
-            "genome1\1" "  genome1  intergene_17_65   0     4  0.0  31   14 0   GGUUACUGC-UA==GG-UGUUCGCCU\1"
-            "genome2\1" "  genome2  intergene_19_65   0     4  0.0  38   19 0   GCAUUCGGU-GU==GC-CUAAGCACU\1"
-            "genome1\1" "  genome1  intergene_17_65   0     4  0.0  38   21 0   GCUAUCGGU-GU==GC-CUAAGCCAU\1"
-            "genome1\1" "  genome1  intergene_17_65   0     4  0.0  56   39 0   AGCCAUGCG-AG==AU-AUGUA\1" "";
-        
-        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd);
-    }
-    {
-        const char *arguments[] = {
-            "prgnamefake",
-            "matchsequence=NGGUUN",
-            "matchacceptN=2", 
-            "matchlimitN=3", 
-        };
-        CCP expectd = "    organism genename------- mis N_mis wmis pos gpos rev          'NGGUUN'\1"
-            "genome1\1" "  genome1  joined1           0     2  0.0   5    2 0   ........C-U====G-AUCCUGC\1"
-            "genome2\1" "  genome2  intergene_19_65   0     2  0.0  21    2 0   ........G-A====A-CUGCAUUCG\1"
-            "genome1\1" "  genome1  intergene_17_65   0     2  0.0  21    4 0   ......CAG-A====A-CUGCUAUCG\1"
-            "genome2\1" "  genome2  gene3             0     2  0.0   5    4 0   ......UUU-C====G-AUC\1"
-            "genome2\1" "  genome2  joined1           0     2  0.0   5    4 0   ......UUU-C====G-AUCCUGCCA\1" "";
-
-        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd);
-    }
-
-    {
-        const char *arguments[] = {
-            "prgnamefake",
-            "matchsequence=UGAUCCU", // exists in data
-        };
-        CCP expectd = "    organism genename mis N_mis wmis pos gpos rev          'UGAUCCU'\1"
-            "genome1\1" "  genome1  gene2      0     0  0.0   9    1 0   .........-=======-GC\1"
-            "genome2\1" "  genome2  gene2      0     0  0.0   9    3 0   .......GU-=======-GCCA\1" "";
-
-        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: probe exists as well in 'joined1' (of both genomes)
-    }
-    {
-        const char *arguments[] = {
-            "prgnamefake",
-            "matchsequence=GAUCCU",
-        };
-        CCP expectd = "    organism genename mis N_mis wmis pos gpos rev          'GAUCCU'\1"
-            "genome2\1" "  genome2  gene2      0     0  0.0  10    4 0   ......GUU-======-GCCA\1" "";
-
-        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: probe is part of above probe, but reports less hits
-    }
-    {
-        const char *arguments[] = {
-            "prgnamefake",
-            "matchsequence=UUUCGG", // exists only in genome2 
-        };
-        CCP expectd = "    organism genename mis N_mis wmis pos gpos rev          'UUUCGG'\1"
-            "genome2\1" "  genome2  gene3      0     0  0.0   2    1 0   .........-======-UUGAUC\1"
-            "genome2\1" "  genome2  joined1    0     0  0.0   2    1 0   .........-======-UUGAUCCUG\1" "";
-
-        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: also exists in genome2/gene1
-    }
-    {
-        const char *arguments[] = {
-            "prgnamefake",
-            "matchsequence=AUCCUG", 
-        };
-        CCP expectd = "    organism genename mis N_mis wmis pos gpos rev          'AUCCUG'\1"
-            "genome2\1" "  genome2  gene2      0     0  0.0  11    5 0   .....GUUG-======-CCA\1" "";
-
-        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: exists in 'gene2' and 'joined1' of both genomes
-    }
-    {
-        const char *arguments[] = {
-            "prgnamefake",
-            "matchsequence=UUGAUCCUGC",
-        };
-        CCP expectd = "    organism genename mis N_mis wmis pos gpos rev          'UUGAUCCUGC'\1"
-            "genome2\1" "  genome2  gene2      0     0  0.0   8    2 0   ........G-==========-CA\1"
-            "genome1\1" "  genome1  joined1    0     0  0.0   8    5 0   .....CUGG-==========-\1" "";
-
-        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: also exists in 'genome2/joined1'
-    }
-}
-
 static char *extract_locations(const char *probe_design_result) {
     const char *Target = strstr(probe_design_result, "\nTarget");
     if (Target) {
@@ -933,5 +876,62 @@ void TEST_SLOW_match_designed_probe() {
     TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
 }
 
+void TEST_SLOW_variable_defaults_in_server() {
+    test_setup(false);
+
+    const char *server_tag = GBS_ptserver_tag(TEST_SERVER_ID);
+    TEST_ASSERT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, 0));
+
+    const char *servername = GBS_read_arb_tcp(server_tag);;
+    TEST_ASSERT_EQUAL(servername, "localhost:3200"); // as defined in ../lib/arb_tcp.dat@ARB_TEST_PT_SERVER
+
+    long com;
+    long locs;
+    aisc_com *link = aisc_open(servername, &com, AISC_MAGIC_NUMBER);
+    TEST_ASSERT(link);
+
+    TEST_ASSERT_ZERO(aisc_create(link, PT_MAIN, com,
+                                 MAIN_LOCS, PT_LOCS, &locs,
+                                 NULL));
+
+    {
+#define LOCAL(rvar) (prev_read_##rvar)
+
+        
+#define FREE_LOCAL_long(rvar) 
+#define FREE_LOCAL_charp(rvar) free(LOCAL(rvar)) 
+#define FREE_LOCAL(type,rvar) FREE_LOCAL_##type(rvar)
+
+#define TEST__READ(type,rvar,expected)                                  \
+        do {                                                            \
+            TEST_ASSERT_ZERO(aisc_get(link, PT_LOCS, locs, rvar, &(LOCAL(rvar)), NULL)); \
+            TEST_ASSERT_EQUAL(LOCAL(rvar), expected);                   \
+            FREE_LOCAL(type,rvar);                                      \
+        } while(0)
+#define TEST_WRITE(type,rvar,val)                                       \
+        TEST_ASSERT_ZERO(aisc_put(link, PT_LOCS, locs, rvar, (type)val, NULL))
+#define TEST_CHANGE(type,rvar,val)              \
+        do {                                    \
+            TEST_WRITE(type, rvar, val);        \
+            TEST__READ(type, rvar, val);        \
+        } while(0)
+#define TEST_DEFAULT_CHANGE(ctype,type,remote_variable,default_value,other_value) \
+        do {                                                            \
+            ctype DEFAULT_VALUE = default_value;                   \
+            ctype OTHER_VALUE   = other_value;                     \
+            type LOCAL(remote_variable);                                \
+            TEST__READ(type, remote_variable, DEFAULT_VALUE);           \
+            TEST_CHANGE(type, remote_variable, OTHER_VALUE);            \
+            TEST_CHANGE(type, remote_variable, DEFAULT_VALUE);          \
+        } while(0)
+
+        TEST_DEFAULT_CHANGE(const long, long, LOCS_MATCH_REVERSED, 1, 67);
+        typedef char *charp;
+        typedef const char *ccharp;
+        TEST_DEFAULT_CHANGE(ccharp, charp, LOCS_LOGINTIME, "notime", "sometime");
+    }
+
+    TEST_ASSERT_ZERO(aisc_close(link));
+}
 
 #endif
