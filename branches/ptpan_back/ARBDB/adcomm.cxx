@@ -1161,30 +1161,25 @@ bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time) { // @@@ shall return
     }
 
     {
-        fd_set Set, Setex;
+        fd_set fset_read, fset_except;
 
-        FD_ZERO(&Set);
-        FD_ZERO(&Setex);
-        FD_SET(hs->hso, &Set);
-        FD_SET(hs->hso, &Setex);
+        FD_ZERO(&fset_read);
+        FD_ZERO(&fset_except);
+        FD_SET(hs->hso, &fset_read);
+        FD_SET(hs->hso, &fset_except);
 
-        {
-            Socinf *si;
-            long    i;
-            for (si=hs->soci, i=1; si; si=si->next, i++)
-            {
-                FD_SET(si->socket, &Set);
-                FD_SET(si->socket, &Setex);
-            }
+        for (Socinf *si = hs->soci; si; si=si->next) {
+            FD_SET(si->socket, &fset_read);
+            FD_SET(si->socket, &fset_except);
         }
 
         {
             long anz;
             if (hs->timeout>=0) {
-                anz = select(FD_SETSIZE, &Set, NULL, &Setex, &timeout);
+                anz = select(FD_SETSIZE, &fset_read, NULL, &fset_except, &timeout);
             }
             else {
-                anz = select(FD_SETSIZE, &Set, NULL, &Setex, 0);
+                anz = select(FD_SETSIZE, &fset_read, NULL, &fset_except, 0);
             }
 
             if (anz==-1) {
@@ -1195,7 +1190,7 @@ bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time) { // @@@ shall return
             }
         }
 
-        if (FD_ISSET(hs->hso, &Set)) {
+        if (FD_ISSET(hs->hso, &fset_read)) {
             int con = accept(hs->hso, NULL, 0);
             if (con>0) {
                 long    optval[1];
@@ -1217,16 +1212,18 @@ bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time) { // @@@ shall return
                 sinext = si->next;
 
                 GBCM_ServerResult result = GBCM_ServerResult::OK();
-                if (FD_ISSET(si->socket, &Set)) {
+                if (FD_ISSET(si->socket, &fset_read)) {
                     result = gbcms_talking(si->socket, (long *)hs, (void *)si);
                     if (result.ok()) {
-                        hs->wait_for_new_request ++;
+                        hs->wait_for_new_request++;
                         continue;
                     }
-                } else if (!FD_ISSET(si->socket, &Setex)) continue;
+                }
+                else if (!FD_ISSET(si->socket, &fset_except)) {
+                    continue;
+                }
 
                 // kill socket
-
                 if (close(si->socket)) {
                     printf("aisc_accept_calls: ");
                     printf("couldn't close socket errno = %i!\n", errno);
