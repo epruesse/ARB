@@ -18,6 +18,7 @@
 #include <arbdbt.h>
 #include <arb_defs.h>
 #include <arb_strbuf.h>
+#include <arb_file.h>
 
 using namespace AW;
 
@@ -633,7 +634,7 @@ static void canvas_to_xfig_and_run_xfig(AW_window *aww, AW_CL cl_ntw) {
         error = canvas_to_xfig(ntw, xfig, true, 0.0);
         if (!error) {
             awr->awar(AWAR_CANIO_FILE_DIR)->touch(); // reload dir to show created xfig
-            error = GB_system(GBS_global_string("xfig %s &", xfig));
+            error = GBK_system(GBS_global_string("xfig %s &", xfig));
         }
     }
     if (error) aw_message(error);
@@ -712,7 +713,7 @@ void canvas_to_printer(AW_window *aww, AW_CL cl_ntw) {
                 cmd.put(' '); cmd.cat(xfig); // input
                 cmd.put(' '); cmd.cat(dest); // output
 
-                error = GB_system(cmd.get_data());
+                error = GBK_system(cmd.get_data());
             }
 
             // if user saves to .ps -> no special file permissions are required
@@ -725,7 +726,7 @@ void canvas_to_printer(AW_window *aww, AW_CL cl_ntw) {
                     case PDEST_PREVIEW: {
                         GB_CSTR gs      = GB_getenvARB_GS();
                         GB_CSTR command = GBS_global_string("(%s %s;rm -f %s) &", gs, dest, dest);
-                        error           = GB_system(command);
+                        error           = GBK_system(command);
                         break;
                     }
                     case PDEST_POSTSCRIPT:
@@ -733,7 +734,7 @@ void canvas_to_printer(AW_window *aww, AW_CL cl_ntw) {
 
                     case PDEST_PRINTER: {
                         char *prt = awr->awar(AWAR_CANIO_PRINTER)->read_string();
-                        error     = GB_system(GBS_global_string("%s %s", prt, dest));
+                        error     = GBK_system(GBS_global_string("%s %s", prt, dest));
                         free(prt);
                         GB_unlink_or_warn(dest, &error);
                         break;
@@ -744,7 +745,7 @@ void canvas_to_printer(AW_window *aww, AW_CL cl_ntw) {
         if (xfig) {
 #if defined(DEBUG) && 0
             // show intermediate xfig and unlink it
-            GB_system(GBS_global_string("( xfig %s; rm %s) &", xfig, xfig));
+            GBK_system(GBS_global_string("( xfig %s; rm %s) &", xfig, xfig));
 #else // !defined(DEBUG)
             GB_unlink_or_warn(xfig, &error);
 #endif

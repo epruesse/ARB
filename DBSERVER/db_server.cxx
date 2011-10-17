@@ -11,6 +11,7 @@
 #include <arbdb.h>
 #include <servercntrl.h>
 #include <ut_valgrinded.h>
+#include <arb_file.h>
 
 #define TIMEOUT 1000*60*2       // save every 2 minutes
 #define LOOPS   30              // wait 30*TIMEOUT (1 hour) till shutdown
@@ -301,7 +302,7 @@ inline GB_ERROR valgrinded_system(const char *cmdline) {
     char *cmddup = strdup(cmdline);
     make_valgrinded_call(cmddup);
 
-    GB_ERROR error = GB_system(cmddup);
+    GB_ERROR error = GBK_system(cmddup);
     free(cmddup);
     return error;
 }
@@ -312,7 +313,7 @@ inline GB_ERROR valgrinded_system(const char *cmdline) {
 
 inline bool server_is_down(const char *tcp) {
     char     *ping_cmd = strdup(GBS_global_string("arb_db_server -T%s -Cping", tcp));
-    GB_ERROR  error    = GB_system(ping_cmd); // causes a crash in called command (as long as server is not up)
+    GB_ERROR  error    = GBK_system(ping_cmd); // causes a crash in called command (as long as server is not up)
     free(ping_cmd);
     return error;
 }

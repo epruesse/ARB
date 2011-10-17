@@ -21,6 +21,7 @@ int main(int, char **) {
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS
+#include <arb_file.h>
 #include <test_unit.h>
 #include <ut_valgrinded.h>
 
@@ -54,13 +55,13 @@ inline GB_ERROR valgrinded_system(const char *cmdline) {
     char *cmddup = strdup(cmdline);
     make_valgrinded_call_from_pipe(cmddup);
 
-    GB_ERROR error = GB_system(cmddup);
+    GB_ERROR error = GBK_system(cmddup);
     free(cmddup);
     return error;
 }
 
 #define RUN_TOOL(cmdline)                valgrinded_system(cmdline)
-#define RUN_TOOL_NEVER_VALGRIND(cmdline) GB_system(cmdline)
+#define RUN_TOOL_NEVER_VALGRIND(cmdline) GBK_system(cmdline)
 
 #define TEST_RUN_TOOL(cmdline)                TEST_ASSERT_NO_ERROR(RUN_TOOL(cmdline))
 #define TEST_RUN_TOOL_NEVER_VALGRIND(cmdline) TEST_ASSERT_NO_ERROR(RUN_TOOL_NEVER_VALGRIND(cmdline))
@@ -237,7 +238,7 @@ public:
 
             char *cmd = GBS_global_string_copy("bash -c '%s >stdout.log 2>stderr.log'", escaped);
 
-            appendError(GB_system(cmd));
+            appendError(GBK_system(cmd));
             free(cmd);
             free(escaped);
 
@@ -426,7 +427,7 @@ void TEST_arb_notify() {
     TEST_DBSERVER_OPEN(gb_main);
 
     TEST_ASSERT_NULL(notification_result);
-    TEST_ASSERT_NO_ERROR(GB_system(GBS_global_string("%s &", cmd))); // async call to arb_notify
+    TEST_ASSERT_NO_ERROR(GBK_system(GBS_global_string("%s &", cmd))); // async call to arb_notify
 
     TEST_DBSERVER_SERVE_UNTIL(gb_main, notification_result);
     TEST_DBSERVER_CLOSE(gb_main);

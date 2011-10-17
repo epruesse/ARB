@@ -18,6 +18,8 @@
 #include <aw_root.hxx>
 #include <awt_sel_boxes.hxx>
 
+#include <arb_file.h>
+
 static char *namesFilename(AW_CL cl_gb_main) {
     const char *field    = AW_get_nameserver_addid((GBDATA*)cl_gb_main);
     const char *filename = field[0] ? GBS_global_string("names_%s.dat", field) : "names.dat";
@@ -50,7 +52,7 @@ static void awtc_remove_arb_acc(AW_window * /* aws */, AW_CL cl_gb_main) {
                                            "*ACC {ARB*='" // remove entries with 'ARB_' prefix (Note: Nameserver does not store the '_'!)
                                            " %s",
                                            path, newpath, path);
-    GB_ERROR error = GB_system(command);
+    GB_ERROR error = GBK_system(command);
     if (error) aw_message(error);
 
     free(command);

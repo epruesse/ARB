@@ -23,6 +23,7 @@
 
 #include <arbdbt.h>
 #include <arb_handlers.h>
+#include <arb_file.h>
 
 #include <X11/keysym.h>
 #include <X11/Xutil.h>

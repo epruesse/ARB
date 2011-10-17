@@ -25,6 +25,7 @@
 
 #include <arb_progress.h>
 #include <arb_strbuf.h>
+#include <arb_file.h>
 
 #include <climits>
 
@@ -396,7 +397,7 @@ static int awtc_next_file() {
 
                 arb_progress::show_comment(GBS_global_string("exec '%s'", awtcig.ifo2->system));
 
-                error                        = GB_system(sys);
+                error                        = GBK_system(sys);
                 if (!error) origin_file_name = mid_file_name;
 
                 free(sys);
@@ -424,7 +425,7 @@ static int awtc_next_file() {
 
                 arb_progress::show_comment(GBS_global_string("Converting File %s", awtcig.ifo->system));
 
-                error                        = GB_system(sys);
+                error                        = GBK_system(sys);
                 if (!error) origin_file_name = dest_file_name;
 
                 free(sys);

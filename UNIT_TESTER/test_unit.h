@@ -630,7 +630,7 @@ namespace arb_test {
 
 #define TEST_SETUP_GLOBAL_ENVIRONMENT(modulename) do {                                                          \
         arb_test::test_data().raiseLocalFlag(ANY_SETUP);                                                        \
-        TEST_ASSERT_NO_ERROR(GB_system(GBS_global_string("../test_environment setup %s",  (modulename))));      \
+        TEST_ASSERT_NO_ERROR(GBK_system(GBS_global_string("../test_environment setup %s",  (modulename))));      \
     } while(0)
 // cleanup is done (by Makefile.suite) after all unit tests have been run
 

@@ -24,12 +24,14 @@
 #include <aw_edit.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
-#include <arb_progress.h>
 #include <aw_root.hxx>
 
 #include <arbdbt.h>
 #include <adGene.h>
+
 #include <arb_version.h>
+#include <arb_progress.h>
+#include <arb_file.h>
 
 using namespace std;
 

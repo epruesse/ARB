@@ -15,6 +15,7 @@
 #include <BI_basepos.hxx>
 
 #include <arbdbt.h>
+#include <arb_file.h>
 #include <arb_defs.h>
 #include <servercntrl.h>
 #include <server.h>
@@ -315,7 +316,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR start_pt_server(const char *socke
                     
                     char *build_cmd = GBS_global_string_copy("%s -%s -D%s", exename, build_step[s], arbdb_name);
                     make_valgrinded_call(build_cmd);
-                    error           = GB_system(build_cmd);
+                    error           = GBK_system(build_cmd);
                     free(build_cmd);
                 }
 

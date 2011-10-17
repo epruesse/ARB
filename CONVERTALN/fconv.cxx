@@ -58,7 +58,9 @@ void log_processed(int seqCount) {
 
 #ifdef UNIT_TESTS
 #include <arbdbt.h> // before test_unit.h!
+#include <arb_file.h>
 #include <test_unit.h>
+
 
 #define TEST_THROW // comment out to temp. disable intentional throws
 

@@ -38,6 +38,7 @@ servercntrl.o: $(ARBHOME)/INCLUDE/aisc_global.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_assert.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_core.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_error.h
+servercntrl.o: $(ARBHOME)/INCLUDE/arb_file.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_msg.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_string.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arbdb.h

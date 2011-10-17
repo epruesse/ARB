@@ -36,6 +36,7 @@
 #include <aw_root.hxx>
 #include <aw_advice.hxx>
 #include <arb_version.h>
+#include <arb_file.h>
 #include <arbdbt.h>
 
 #include <cctype>

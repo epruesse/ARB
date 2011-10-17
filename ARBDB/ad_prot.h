@@ -422,33 +422,14 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 
 /* adsocket.cxx */
 void GB_usleep(long usec);
-GB_ULONG GB_time_of_file(const char *path);
-long GB_size_of_file(const char *path);
-long GB_mode_of_file(const char *path);
-long GB_mode_of_link(const char *path);
-bool GB_is_regularfile(const char *path);
-bool GB_is_link(const char *path);
-bool GB_is_executablefile(const char *path);
-bool GB_is_privatefile(const char *path, bool read_private);
-bool GB_is_readablefile(const char *filename);
-bool GB_is_directory(const char *path);
-long GB_getuid_of_file(const char *path);
-int GB_unlink(const char *path);
-void GB_unlink_or_warn(const char *path, GB_ERROR *error);
-char *GB_follow_unix_link(const char *path);
-GB_ERROR GB_symlink(const char *target, const char *link);
-GB_ERROR GB_set_mode_of_file(const char *path, long mode);
-GB_ERROR GB_rename_file(const char *oldpath, const char *newpath);
 char *GB_read_fp(FILE *in);
 char *GB_read_file(const char *path);
 char *GB_map_FILE(FILE *in, int writeable);
 char *GB_map_file(const char *path, int writeable);
-long GB_size_of_FILE(FILE *in);
 GB_ULONG GB_time_of_day(void);
 long GB_last_saved_clock(GBDATA *gb_main);
 GB_ULONG GB_last_saved_time(GBDATA *gb_main);
 GB_ERROR GB_textprint(const char *path) __ATTR__USERESULT;
-GB_ERROR GB_system(const char *system_command) __ATTR__USERESULT;
 GB_ERROR GB_xterm(void) __ATTR__USERESULT;
 GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) __ATTR__USERESULT_TODO;
 char *GB_executable(GB_CSTR exe_name);

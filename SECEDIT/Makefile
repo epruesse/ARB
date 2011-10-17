@@ -251,6 +251,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SEC_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_main.o: $(ARBHOME)/INCLUDE/arb_error.h
+SEC_main.o: $(ARBHOME)/INCLUDE/arb_file.h
 SEC_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SEC_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 SEC_main.o: $(ARBHOME)/INCLUDE/arbdb.h

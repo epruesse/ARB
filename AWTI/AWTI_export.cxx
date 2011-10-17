@@ -21,6 +21,7 @@
 #include <aw_root.hxx>
 #include <arbdbt.h>
 #include <arb_str.h>
+#include <arb_file.h>
 
 #define AWAR_EXPORT_FILE           "tmp/export_db/file"
 #define AWAR_EXPORT_FORM           "export/form"
