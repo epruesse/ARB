@@ -231,8 +231,6 @@ GBCM_ServerResult gbcm_write(int socket, const char *ptr, long size) __ATTR__USE
 GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, char **unix_name);
 gbcmc_comm *gbcmc_open(const char *path);
 void gbcmc_restore_sighandlers(gbcmc_comm *link);
-GBCM_ServerResult gbcm_write_two(int socket, long a, long c) __ATTR__USERESULT;
-GBCM_ServerResult gbcm_read_two(int socket, long a, long *b, long *c) __ATTR__USERESULT;
 GBCM_ServerResult gbcm_write_string(int socket, const char *key) __ATTR__USERESULT;
 char *gbcm_read_string(int socket, GBCM_ServerResult &result);
 GBCM_ServerResult gbcm_write_long(int socket, long data) __ATTR__USERESULT;
