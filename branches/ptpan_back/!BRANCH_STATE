@@ -19,17 +19,75 @@ TRUNK->BRANCH
 
 BRANCH->TRUNK
 
+                8023 8030 8052 8058 8062 -> 8098
+                8046 8047 8050 8048 8057 8069 -> 8099
+                8016 8017 8021 8051 8067 -> 8100
+                8065 8066 -> 8101
+                8070 8072 -> 8102
+                8071 8075 8076 8077 8079 -> 8103 
+                8085 8088 8091 -> 8104
 
     skipped patches (depends, already there, this file, ...)
 
+        from trunk: 8044 8045
 
     not merged yet:
 
+                8013 ptpan
+                8014 ptpan
+                8015 ptpan (Makefile/AISC)
+                8025 ptserver (fix for [8015])
+
+                8018 ptpan (HEADERLIBS)
+                8020 ptpan (HEADERLIBS)
+                8022 ptpan (link prereq)
+
+                8024 ptpan (c++)
+                8026 ptpan/ptserver linking
+                8027 ptwrapper
+                8029 pt_linking
+                8032 pt_linking (fix for [8029])
+
+                8033 pt_logging
+                8043 ptwrapper
+
+                8049 ptwrapper
+
+                8053 ptpan (warnings)
+                8054 ptpan (warnings)
+
+                8059 ptpan
+                8060 ptpan
+                8061 ptpan
+
+                8063 ptpan
+                8064 ptwrapper
+
+                8068 ptwrapper
+
+                8073 ptpan
+                8074 ptpan
+
+                8078 ptwrapper (prefer-flag)
+                8080 ptpan
+                8081 ptpan
+                8083 ptpan (HEADERLIBS)
 
         --- do above later (unfinished etc)
 
 
         --- current try above
 
+                8082 DBcom (valgrinded)
+                8084 DBcom (sigs,cleanup,basictest)
+                8086 DBcom (unit test)
+                8087 DBcom (fix)
+                8089 DBcom (error handling)
+                8090 DBcom (obsoletes)
+                8092 DBcom (useresult)
+                8093 DBcom (useresult)
+                8094 DBcom (read errors)
+                8095 DBcom (avoid test-zombies)
+                8096 DBcom (DRY)
 
-    not reviewed: 8010:HEAD
+    not reviewed: 8104:HEAD
