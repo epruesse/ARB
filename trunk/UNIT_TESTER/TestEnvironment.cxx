@@ -13,6 +13,7 @@
 
 #include <arb_defs.h>
 #include <arb_str.h>
+#include <arb_file.h>
 #include <arbdb.h>
 #include <PT_com.h>
 #include <client.h>
@@ -312,7 +313,7 @@ static Error ptserver(Mode mode) {
     switch (mode) {
         case SETUP: {
             test_ptserver_activate(false, TEST_SERVER_ID);                     // first kill pt-server (otherwise we may test an outdated pt-server)
-            TEST_ASSERT_NO_ERROR(GB_system("cp TEST_pt_src.arb TEST_pt.arb")); // force rebuild
+            TEST_ASSERT_NO_ERROR(GBK_system("cp TEST_pt_src.arb TEST_pt.arb")); // force rebuild
             test_ptserver_activate(true, TEST_SERVER_ID);
             TEST_ASSERT_FILES_EQUAL("TEST_pt.arb.pt.expected", "TEST_pt.arb.pt");
             TEST_ASSERT(GB_time_of_file("TEST_pt.arb.pt") >= GB_time_of_file("TEST_pt.arb"));
@@ -344,7 +345,7 @@ static Error ptserver_gene(Mode mode) {
     switch (mode) {
         case SETUP: {
             test_ptserver_activate(false, TEST_GENESERVER_ID);                     // first kill pt-server (otherwise we may test an outdated pt-server)
-            TEST_ASSERT_NO_ERROR(GB_system("arb_gene_probe TEST_gpt_src.arb TEST_gpt.arb")); // prepare gene-ptserver-db (forcing rebuild)
+            TEST_ASSERT_NO_ERROR(GBK_system("arb_gene_probe TEST_gpt_src.arb TEST_gpt.arb")); // prepare gene-ptserver-db (forcing rebuild)
 
 #if defined(TEST_AUTO_UPDATE)
             TEST_COPY_FILE("TEST_gpt.arb", "TEST_gpt.arb.expected");

@@ -19,6 +19,7 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <arbdbt.h>
+#include <arb_file.h>
 
 #include <unistd.h>
 

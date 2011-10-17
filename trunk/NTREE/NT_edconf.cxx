@@ -647,7 +647,7 @@ static void nt_start_editor_on_configuration(AW_window *aww) {
     const char *cn  = aww->get_root()->awar(AWAR_CONFIGURATION)->read_char_pntr();
     const char *com = GBS_global_string("arb_edit4 -c '%s' &", cn);
 
-    aw_message_if(GB_system(com));
+    aw_message_if(GBK_system(com));
 }
 
 AW_window *NT_start_editor_on_old_configuration(AW_root *awr) {
@@ -673,7 +673,7 @@ AW_window *NT_start_editor_on_old_configuration(AW_root *awr) {
 
 void NT_start_editor_on_tree(AW_window *, AW_CL cl_use_species_aside, AW_CL) {
     GB_ERROR error = nt_create_configuration(0, nt_get_current_tree_root(), CONFNAME, (int)cl_use_species_aside);
-    if (!error) error = GB_system("arb_edit4 -c " CONFNAME " &");
+    if (!error) error = GBK_system("arb_edit4 -c " CONFNAME " &");
     aw_message_if(error);
 }
 

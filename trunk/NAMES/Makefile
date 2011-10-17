@@ -35,6 +35,7 @@ names.o: $(ARBHOME)/INCLUDE/aisc_global.h
 names.o: $(ARBHOME)/INCLUDE/arb_assert.h
 names.o: $(ARBHOME)/INCLUDE/arb_core.h
 names.o: $(ARBHOME)/INCLUDE/arb_error.h
+names.o: $(ARBHOME)/INCLUDE/arb_file.h
 names.o: $(ARBHOME)/INCLUDE/arb_msg.h
 names.o: $(ARBHOME)/INCLUDE/arb_string.h
 names.o: $(ARBHOME)/INCLUDE/arbdb.h

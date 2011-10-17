@@ -79,6 +79,7 @@ AWT_canio.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_canio.o: $(ARBHOME)/INCLUDE/arb_file.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
@@ -205,6 +206,7 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_file.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -230,6 +232,7 @@ AWT_macro.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_macro.o: $(ARBHOME)/INCLUDE/arb_file.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -274,6 +277,7 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_file.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_strbuf.h

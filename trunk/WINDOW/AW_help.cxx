@@ -15,7 +15,8 @@
 #include "aw_global_awars.hxx"
 #include "aw_msg.hxx"
 
-#include <arbdbt.h>
+#include <arbdb.h>
+#include <arb_file.h>
 
 #include <sys/stat.h>
 
@@ -282,7 +283,7 @@ static GB_ERROR aw_help_show_external_format(const char *help_file, const char *
         free(compressed);
     }
 
-    if (sys[0] && !error) error = GB_system(sys);
+    if (sys[0] && !error) error = GBK_system(sys);
 
     return error;
 }
@@ -413,7 +414,7 @@ static void aw_help_search(AW_window *aww) {
                 const char *gen_help_tmpl = "cd %s;grep -i '^[^#]*%s' `find . -name \"*.hlp\"` | sed -e 'sI:.*IIg' -e 'sI^\\./IIg' | sort | uniq > %s";
                 char       *gen_help_cmd  = GBS_global_string_copy(gen_help_tmpl, GB_getenvDOCPATH(), searchtext, helpfilename);
 
-                error = GB_system(gen_help_cmd);
+                error = GBK_system(gen_help_cmd);
 
                 free(gen_help_cmd);
                 GB_remove_on_exit(helpfilename);

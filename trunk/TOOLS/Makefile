@@ -294,6 +294,7 @@ arb_replace.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_replace.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_replace.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_replace.o: $(ARBHOME)/INCLUDE/arb_error.h
+arb_replace.o: $(ARBHOME)/INCLUDE/arb_file.h
 arb_replace.o: $(ARBHOME)/INCLUDE/arb_msg.h
 arb_replace.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 arb_replace.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -311,6 +312,7 @@ arb_test.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_defs.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_error.h
+arb_test.o: $(ARBHOME)/INCLUDE/arb_file.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_msg.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_string.h
 arb_test.o: $(ARBHOME)/INCLUDE/arbdb.h

@@ -140,8 +140,9 @@ GB_ERROR prepare_ptserver_database(GBDATA *gb_main, Servertype type) {
 #ifndef TEST_UNIT_H
 #include <test_unit.h>
 #endif
+#include <arb_file.h>
 
-void TEST_ptclean() {
+void TEST_SLOW_ptclean() {
     GB_shell    shell;
     GBDATA     *gb_main = GB_open("TEST_pt_src.arb", "rw");
     const char *saveas  = "TEST_pt_cleaned.arb";

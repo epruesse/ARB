@@ -228,6 +228,7 @@ symlink_file ../BUGEX/bugex.h INCLUDE/bugex.h &&
 symlink_file ../CONSENSUS_TREE/CT_ctree.hxx INCLUDE/CT_ctree.hxx &&
 symlink_file ../CORE/arb_core.h INCLUDE/arb_core.h &&
 symlink_file ../CORE/arb_cs.h INCLUDE/arb_cs.h &&
+symlink_file ../CORE/arb_file.h INCLUDE/arb_file.h &&
 symlink_file ../CORE/arb_msg.h INCLUDE/arb_msg.h &&
 symlink_file ../CORE/arb_signal.h INCLUDE/arb_signal.h &&
 symlink_file ../CORE/arb_sort.h INCLUDE/arb_sort.h &&

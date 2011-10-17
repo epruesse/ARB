@@ -12,7 +12,9 @@
 
 #include <client_privat.h>
 #include <client.h>
+
 #include <arbdb.h>
+#include <arb_file.h>
 #include <ut_valgrinded.h>
 
 #include <unistd.h>
@@ -152,7 +154,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep)
             }
 
             if (!error) {
-                error = GB_system(command);
+                error = GBK_system(command);
                 if (do_sleep) sleep(delay);
             }
             free(command);

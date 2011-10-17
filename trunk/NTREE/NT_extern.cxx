@@ -51,6 +51,7 @@
 #include <aw_root.hxx>
 #include <arb_strbuf.h>
 #include <arb_strarray.h>
+#include <arb_file.h>
 
 #include <arb_version.h>
 #include <refentries.h>
@@ -676,7 +677,7 @@ void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base) {
 
         nt_assert(GB_is_privatefile(mail_file, false));
 
-        error = GB_system(command);
+        error = GBK_system(command);
         GB_unlink_or_warn(mail_file, &error);
 
         free(plainaddress);

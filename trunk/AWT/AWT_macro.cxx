@@ -14,6 +14,7 @@
 #include "awt_macro.hxx"
 
 #include <arbdb.h>
+#include <arb_file.h>
 
 #include <aw_window.hxx>
 #include <aw_edit.hxx>

@@ -1,7 +1,13 @@
 
-.SUFFIXES: .o .cxx .depend .h .genh
+.SUFFIXES: .o .cxx .depend .h .genh 
 
 OBJECTS=$(subst .cxx,.o,$(wildcard *.cxx))
+
+GENERATED_HEADERS= \
+	arb_msg.h \
+	arb_string.h \
+	arb_signal.h \
+	arb_file.h \
 
 $(MAIN): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
@@ -10,13 +16,13 @@ $(MAIN): $(OBJECTS)
 .cxx.o:
 	$(CPPLIB) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
-proto: 
-	../AISC_MKPTPS/aisc_mkpt -P -G -A -w arb_msg.h    arb_msg.cxx    > arb_msg.genh
-	../AISC_MKPTPS/aisc_mkpt -P -G -A -w arb_string.h arb_string.cxx > arb_string.genh
-	../AISC_MKPTPS/aisc_mkpt -P -G -A -w arb_signal.h arb_signal.cxx > arb_signal.genh
-	../SOURCE_TOOLS/mv_if_diff arb_msg.genh    arb_msg.h
-	../SOURCE_TOOLS/mv_if_diff arb_string.genh arb_string.h
-	../SOURCE_TOOLS/mv_if_diff arb_signal.genh arb_signal.h
+.cxx.genh:
+	../AISC_MKPTPS/aisc_mkpt -P -G -A -w $(subst .genh,.h,$@) $< > $@
+
+%.genheader: %.genh
+	../SOURCE_TOOLS/mv_if_diff $< $(subst .genheader,.h,$@)
+
+proto: $(subst .h,.genheader,$(GENERATED_HEADERS))
 
 clean:
 	rm -f $(OBJECTS) *.a *.so
@@ -47,6 +53,12 @@ arb_cs.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_cs.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_cs.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_cs.o: $(ARBHOME)/INCLUDE/test_global.h
+
+arb_file.o: arb_core.h
+arb_file.o: arb_file.h
+arb_file.o: arb_msg.h
+arb_file.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_file.o: $(ARBHOME)/INCLUDE/dupstr.h
 
 arb_handlers.o: arb_core.h
 arb_handlers.o: arb_handlers.h
