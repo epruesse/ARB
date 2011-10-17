@@ -49,7 +49,7 @@ __ATTR__USERESULT static GBCM_ServerResult gbcms_talking(int con, long *hs, void
 
 #define GBCM_COMMAND_SEND               (GBTUM_MAGIC_NUMBER+0x1000)
 #define GBCM_COMMAND_SEND_COUNT         (GBTUM_MAGIC_NUMBER+0x2000)
-#define GBCM_COMMAND_SETDEEP            (GBTUM_MAGIC_NUMBER+0x3000)
+#define GBCM_COMMAND_SETDEPTH           (GBTUM_MAGIC_NUMBER+0x3000)
 #define GBCM_COMMAND_SETINDEX           (GBTUM_MAGIC_NUMBER+0x4000)
 #define GBCM_COMMAND_PUT_UPDATE_KEYS    (GBTUM_MAGIC_NUMBER+0x5000)
 #define GBCM_COMMAND_PUT_UPDATE_CREATE  (GBTUM_MAGIC_NUMBER+0x6000)
@@ -254,14 +254,11 @@ void write_smallType_to_long(long& to, const T& val) {
     *((T*)(&to)) = val;
 }
 
-__ATTR__USERESULT static GBCM_ServerResult gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode, long deep, int send_headera) {
-     /* send a database item to client/server
-      *
-      * mode    =1 server
-      *         =0 client
-      * buffer = buffer
-      * deep = 0 -> just send one item   >0 send sub entries too
-      * send_headera = 1 -> if type = GB_DB send flag and key_quark array
+__ATTR__USERESULT static GBCM_ServerResult gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long depth, bool send_headera) {
+    /* send a database item to client/server
+     *
+     * depth         = 0 -> just send one item, != 0 -> send sub entries too (use -1 for "full" recursion)
+     * send_headera = 1 -> if type = GB_DB send flag and key_quark array
      */
 
     GBCONTAINER *gbc;
@@ -280,7 +277,7 @@ __ATTR__USERESULT static GBCM_ServerResult gbcm_write_bin(int socket, GBDATA *gb
 
         int end = gbc->d.nheader;
         buffer[i++] = send_headera ? end : -1;
-        buffer[i++] = deep ? gbc->d.size : -1;
+        buffer[i++] = depth ? gbc->d.size : -1;
 
         buffer[1] = i;
 
@@ -294,14 +291,14 @@ __ATTR__USERESULT static GBCM_ServerResult gbcm_write_bin(int socket, GBDATA *gb
             }
             result = gbcm_write(socket, (const char *)buf2, end * sizeof(gb_header_flags));
         }
-        if (result.ok() && deep) {
+        if (depth && result.ok()) {
             debug_printf("%i    ", gbc->d.size);
 
             for (int index = 0; index < end && result.ok(); index++) {
                 GBDATA *gb2 = GBCONTAINER_ELEM(gbc, index);
                 if (gb2) {
                     debug_printf("%i ", index);
-                    result = gbcm_write_bin(socket, gb2, (long *)buffer, mode, deep-1, send_headera);
+                    result = gbcm_write_bin(socket, gb2, (long *)buffer, depth-1, send_headera);
                 }
             }
             debug_printf("\n", 0);
@@ -589,7 +586,7 @@ __ATTR__USERESULT static GBCM_ServerResult gbcms_write_updated(int socket, GBDAT
             buffer[1] = (long)GB_FATHER(gbd);
 
             result                  = gbcm_write(socket, (const char *)buffer, sizeof(long)*2);
-            if (result.ok()) result = gbcm_write_bin(socket, gbd, buffer, 1, 0, 1);
+            if (result.ok()) result = gbcm_write_bin(socket, gbd, buffer, 0, 1);
         }
         else {                                          // send clients first
             int send_header = 0;
@@ -603,7 +600,7 @@ __ATTR__USERESULT static GBCM_ServerResult gbcms_write_updated(int socket, GBDAT
                 buffer[1] = (long)gbd;
 
                 result                  = gbcm_write(socket, (const char *)buffer, sizeof(long)*2);
-                if (result.ok()) result = gbcm_write_bin(socket, gbd, buffer, 1, 0, send_header);
+                if (result.ok()) result = gbcm_write_bin(socket, gbd, buffer, 0, send_header);
 
                 for (int index = 0; index < end && result.ok(); index++) {
                     GBDATA *gb2 = GBCONTAINER_ELEM(gbc, index);
@@ -615,7 +612,7 @@ __ATTR__USERESULT static GBCM_ServerResult gbcms_write_updated(int socket, GBDAT
                 buffer[1] = (long)gbd;
 
                 result                  = gbcm_write(socket, (const char *)buffer, sizeof(long)*2);
-                if (result.ok()) result = gbcm_write_bin(socket, gbd, buffer, 1, 0, send_header);
+                if (result.ok()) result = gbcm_write_bin(socket, gbd, buffer, 0, send_header);
             }
         }
     }
@@ -686,9 +683,9 @@ __ATTR__USERESULT static GBCM_ServerResult gbcms_talking_unfold(int socket, long
         }
     }
 
-    long deep;
+    long depth;
     long index_pos;
-    if (result.ok()) result = gbcm_read_tagged(socket, GBCM_COMMAND_SETDEEP, &deep);
+    if (result.ok()) result = gbcm_read_tagged(socket, GBCM_COMMAND_SETDEPTH, &depth);
     if (result.ok()) result = gbcm_read_tagged(socket, GBCM_COMMAND_SETINDEX, &index_pos);
 
     if (result.ok()) {
@@ -696,7 +693,7 @@ __ATTR__USERESULT static GBCM_ServerResult gbcms_talking_unfold(int socket, long
         char *buffer = GB_give_buffer(1014);
 
         if (index_pos==-2) {
-            result                  = gbcm_write_bin(socket, gb_in, (long *)buffer, 1, deep+1, 1);
+            result                  = gbcm_write_bin(socket, gb_in, (long *)buffer, depth+1, 1);
             if (result.ok()) result = gbcm_write_flush(socket);
         }
         else {
@@ -714,7 +711,7 @@ __ATTR__USERESULT static GBCM_ServerResult gbcms_talking_unfold(int socket, long
             }
             for (int index = start; index < end && result.ok(); index++) {
                 GBDATA *gb2 = GBCONTAINER_ELEM(gbc, index);
-                if (gb2) result = gbcm_write_bin(socket, gb2, (long *)buffer, 1, deep, 1);
+                if (gb2) result = gbcm_write_bin(socket, gb2, (long *)buffer, depth, 1);
             }
 
             if (result.ok()) result = gbcm_write_flush(socket);
@@ -1270,12 +1267,12 @@ __ATTR__USERESULT inline GBCM_ServerResult gbcmc_get_server_socket(GBDATA *gbd, 
     return result;
 }
 
-GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long deep, long index_pos) {
+GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long depth, long index_pos) {
     // goes to header: __ATTR__USERESULT
 
     /* read data from a server
-     * deep       = -1   read whole data
-     * deep       = 0...n    read to deep
+     * depth       = -1   read whole data
+     * depth       = 0...n    read to depth
      * index_pos == -1 read all clients
      * index_pos == -2 read all clients + header array
      */
@@ -1286,7 +1283,7 @@ GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long deep, long index_pos) {
     int socket; GBCM_ServerResult result = gbcmc_get_server_socket((GBDATA*)gbd, socket);
 
     if (result.ok()) result = gbcm_write_tagged(socket, GBCM_COMMAND_UNFOLD, gbd->server_id);
-    if (result.ok()) result = gbcm_write_tagged(socket, GBCM_COMMAND_SETDEEP, deep);
+    if (result.ok()) result = gbcm_write_tagged(socket, GBCM_COMMAND_SETDEPTH, depth);
     if (result.ok()) result = gbcm_write_tagged(socket, GBCM_COMMAND_SETINDEX, index_pos);
     if (result.ok()) result = gbcm_write_flush(socket);
 
@@ -1362,7 +1359,7 @@ GB_ERROR gbcmc_sendupdate_create(GBDATA *gbd) {
             result = gbcm_write_tagged(socket, GBCM_COMMAND_PUT_UPDATE_CREATE, father->server_id);
             if (result.ok()) {
                 long *buffer = (long *)GB_give_buffer(1014);
-                result = gbcm_write_bin(socket, gbd, buffer, 0, -1, 1);
+                result = gbcm_write_bin(socket, gbd, buffer, -1, 1);
             }
         }
     }
@@ -1386,7 +1383,7 @@ GB_ERROR gbcmc_sendupdate_update(GBDATA *gbd, int send_headera) {
             result = gbcm_write_tagged(socket, GBCM_COMMAND_PUT_UPDATE_UPDATE, gbd->server_id);
             if (result.ok()) {
                 long *buffer = (long *)GB_give_buffer(1016);
-                result       = gbcm_write_bin(socket, gbd, buffer, 0, 0, send_headera);
+                result       = gbcm_write_bin(socket, gbd, buffer, 0, send_headera);
             }
         }
     }
