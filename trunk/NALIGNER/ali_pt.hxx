@@ -77,7 +77,7 @@ private:
     int init_communication();
     char *get_family_member(char *specified_family, unsigned long number);
     char *get_extension_member(char *specified_family, unsigned long number);
-    int open(char *servername, GBDATA *gb_main);
+    int open(char *servername);
     void close();
 
 public:

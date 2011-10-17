@@ -293,7 +293,7 @@ public:
 static void test_ptserver_activate(bool start, int serverid) {
     const char *server_tag = GBS_ptserver_tag(serverid);
     if (start) {
-        TEST_ASSERT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, 0));
+        TEST_ASSERT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag));
     }
     else { // stop
         GB_ERROR kill_error = arb_look_and_kill_server(AISC_MAGIC_NUMBER, server_tag);

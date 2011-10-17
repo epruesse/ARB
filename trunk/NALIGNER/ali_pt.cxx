@@ -95,9 +95,9 @@ char *ALI_PT::get_extension_member(char *specifiedfamily,    unsigned long numbe
 }
 
 
-int ALI_PT::open(char *servername, GBDATA *gb_main)
+int ALI_PT::open(char *servername)
 {
-    if (arb_look_and_start_server(AISC_MAGIC_NUMBER, servername, gb_main)) {
+    if (arb_look_and_start_server(AISC_MAGIC_NUMBER, servername)) {
         ali_message ("Cannot contact Probe bank server");
         return -1;
     }
@@ -151,7 +151,7 @@ ALI_PT::ALI_PT(ALI_PT_CONTEXT *context)
         specified_family = 0;
 
         ali_message("Connecting to PT server");
-        if (open(context->servername, context->gb_main) != 0) {
+        if (open(context->servername) != 0) {
             ali_fatal_error("Can't connect to PT server");
         }
         ali_message("Connection established");
