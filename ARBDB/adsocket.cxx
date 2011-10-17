@@ -314,45 +314,6 @@ void gbcmc_restore_sighandlers(gbcmc_comm * link) {
     ASSERT_RESULT(SigHandler, gbcmc_suppress_sigpipe, INSTALL_SIGHANDLER(SIGPIPE, link->old_SIGPIPE_handler, "gbcmc_close"));
 }
 
-GBCM_ServerResult gbcm_write_two(int socket, long a, long c) { // goes to header: __ATTR__USERESULT
-    if (socket) {
-        long ia[3];
-        ia[0] = a;
-        ia[1] = 3;
-        ia[2] = c;
-        return gbcm_write(socket, (const char *)ia, sizeof(long)*3);
-    }
-    return GBCM_ServerResult::FAULT("no socket");
-}
-
-GBCM_ServerResult gbcm_read_two(int socket, long a, long *b, long *c) { // goes to header: __ATTR__USERESULT
-    /*! read two values: length and any user long
-     *
-     *  if data is send by gbcm_write_two() then @param b should be zero
-     *  and is not used!
-     */
-
-    long ia[3];
-    GBCM_ServerResult result = gbcm_read_expect_size(socket, (char *)&(ia[0]), sizeof(long)*3);
-    if (result.ok()) {
-        if (ia[0] != a) {
-            result = GBCM_ServerResult::FAULT(GBS_global_string("received unexpected keyword (expected=%lx, got=%lx)", a, ia[0]));
-        }
-        else {
-            if (b) {
-                *b = ia[1];
-            }
-            else {
-                if (ia[1]!=3) {
-                    result = GBCM_ServerResult::FAULT(GBS_global_string("wrong size (expected=3, got=%li)", ia[1]));
-                }
-            }
-            if (result.ok()) *c = ia[2];
-        }
-    }
-    return result;
-}
-
 GBCM_ServerResult gbcm_write_string(int socket, const char *key) { // goes to header: __ATTR__USERESULT
     GBCM_ServerResult result = GBCM_ServerResult::OK();
     if (key) {
