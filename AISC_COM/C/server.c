@@ -185,14 +185,19 @@ static const char *test_address_valid(void *address, long key)
     return result;
 }
 
-static void aisc_server_sigsegv(int /*sig*/) {
-    sigsegv_occurred = true;
+static SigHandler old_sigsegv_handler;
 
+static void aisc_server_sigsegv(int sig) {
+    sigsegv_occurred = true;
     if (catch_sigsegv) {
         siglongjmp(return_after_segv, 666); // never returns
     }
+    // unexpected SEGV
 
-    UNINSTALL_SIGHANDLER(SIGSEGV, aisc_server_sigsegv, SIG_DFL, "aisc_server_sigsegv");
+    UNINSTALL_SIGHANDLER(SIGSEGV, aisc_server_sigsegv, old_sigsegv_handler, "aisc_server_sigsegv");
+    old_sigsegv_handler(sig); //
+    arb_assert(0);            // oops - old handler returned
+    abort();
 }
 
 // -----------------------------
@@ -443,8 +448,9 @@ Hs_struct *open_aisc_server(const char *path, int timeout, int fork) {
         return 0;
     }
 
-    // install signal handlers (asserting none have been installed yet!)
-    ASSERT_RESULT(SigHandler, SIG_DFL, INSTALL_SIGHANDLER(SIGSEGV, aisc_server_sigsegv, "open_aisc_server"));
+    // install signal handlers
+    fprintf(stderr, "Installing signal handler from open_aisc_server\n"); fflush(stderr);
+    old_sigsegv_handler = INSTALL_SIGHANDLER(SIGSEGV, aisc_server_sigsegv, "open_aisc_server");
     ASSERT_RESULT_PREDICATE(is_default_or_ignore_sighandler, INSTALL_SIGHANDLER(SIGPIPE, aisc_server_sigpipe, "open_aisc_server"));
 
     aisc_server_bytes_first = 0;

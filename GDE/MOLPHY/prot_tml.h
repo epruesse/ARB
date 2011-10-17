@@ -236,7 +236,6 @@ Node *relibranch P_((Node *op));
 void mlvalue P_((Tree *tr, Infotree *infotrs));
 void reroot P_((Tree *tr, Node *rp));
 void sorttree P_((Tree *tr, Node *rp));
-void chroot P_((Tree *tr, int s1, int s2));
 void noexch P_((Node *rp, ivector exchstate));
 void reliml P_((Tree *tr, Node *op, double lklorg, LPVECTOR mlklptrn, double *rel));
 void localbp P_((dmatrix reliprob, LPVECTOR mlklptrn, LPCUBE rlklptrn, ivector whichml, int nb, int ns));
