@@ -54,7 +54,7 @@ char *gb_full_path(const char *path);
 GB_ERROR gb_check_saveable(GBDATA *gbd, const char *path, const char *flags);
 
 /* adcomm.cxx */
-GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long deep, long index_pos) __ATTR__USERESULT;
+GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long depth, long index_pos) __ATTR__USERESULT;
 GB_ERROR gbcmc_begin_sendupdate(GBDATA *gbd);
 GB_ERROR gbcmc_end_sendupdate(GBDATA *gbd);
 GB_ERROR gbcmc_sendupdate_create(GBDATA *gbd);
