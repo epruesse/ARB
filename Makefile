@@ -1221,6 +1221,7 @@ SL/MATRIX/MATRIX.dummy:			links_non_perl
 SL/NDS/NDS.dummy:			links_non_perl
 SL/NEIGHBOURJOIN/NEIGHBOURJOIN.dummy:	links_non_perl
 SL/PRONUC/PRONUC.dummy:			links_non_perl
+SL/PTCLEAN/PTCLEAN.dummy:		links_non_perl link_db
 SL/SEQUENCE/SEQUENCE.dummy:		links_non_perl
 SL/TRANSLATE/TRANSLATE.dummy:		links_non_perl
 SL/SEQIO/SEQIO.dummy:			links_non_perl
