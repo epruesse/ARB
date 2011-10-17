@@ -317,6 +317,11 @@ inline bool server_is_down(const char *tcp) {
     free(ping_cmd);
     return error;
 }
+inline bool killed_running_server(const char *tcp, const char *shutdown_cmd) {
+    if (server_is_down(tcp)) return false;
+    TEST_RUN_TOOL(shutdown_cmd);
+    return true;
+}
 
 static int entry_changed_cb_called = 0;
 static void entry_changed_cb(GBDATA *, int*, GB_CB_TYPE) {
@@ -338,10 +343,10 @@ void TEST_SLOW_dbserver() {
 // #define DEBUG_SERVER // uncomment when debugging server manually
 
 #if !defined(DEBUG_SERVER)
-    TEST_ASSERT(server_is_down(tcp));
+    TEST_ASSERT(!killed_running_server(tcp, shutdown_cmd)); // occurs once (may indicate problems with server shutdown)
 #endif
 
-    pid_t child_pid = fork();
+    pid_t child_pid = TEST_FORK();
     if (child_pid) { // parent ("the client")
         bool down = true;
         int max_wait = 2000/50;

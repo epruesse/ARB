@@ -31,6 +31,7 @@
 #include <SigHandler.h>
 #include <setjmp.h>
 #include <string>
+#include <stack>
 
 using namespace std;
 
@@ -316,6 +317,31 @@ STATIC_ATTRIBUTED(__ATTR__NORETURN, void deadlockguard(long max_allowed_duration
 }
 #endif
 
+static stack<pid_t> child_tests;
+
+static void announce_child_cb(test_pid_t child_pid) {
+    if (child_pid) {
+        fprintf(stderr, "Child %i announced by %i\n", child_pid, getpid()); fflush(stderr);
+        child_tests.push(child_pid);
+    }
+}
+static void kill_test_childs() {
+    if (!child_tests.empty()) {
+        fprintf(stderr, "Killing %zu test-child(s)..\n", child_tests.size()); 
+        while (!child_tests.empty()) {
+            pid_t pid = child_tests.top();
+            if (kill(pid, SIGKILL) != 0) {
+                fprintf(stderr, "Failed to kill test-child %i (%s)\n", pid, strerror(errno));
+            }
+            else {
+                fprintf(stderr, "Test-child %i killed by UnitTester\n", pid);
+            }
+            child_tests.pop();
+        }
+        fflush(stderr);
+    }
+}
+
 UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec, long max_allowed_duration_ms, bool detect_environment_calls) {
     if (GLOBAL.running_on_valgrind) max_allowed_duration_ms *= 4;
     UnitTestResult result;
@@ -326,6 +352,7 @@ UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec, long 
         if (kill(child_pid, SIGKILL) != 0) {
             fprintf(stderr, "Failed to kill deadlock-guard (%s)\n", strerror(errno)); fflush(stderr);
         }
+        kill_test_childs();
     }
     else { // child
 #if (DEADLOCKGUARD == 1)
@@ -395,6 +422,9 @@ bool SimpleTester::perform(size_t which) {
     double         duration_ms_this = duration_usec/1000.0;
 
     duration_ms += duration_ms_this;
+
+    kill_test_childs();
+    
     trace("* %s = %s (%.1f ms)", test.name, readable_result[result], duration_ms_this);
 
     switch (result) {
@@ -472,7 +502,7 @@ UnitTester::UnitTester(const char *libname, const UnitTest_simple *simple_tests,
     {
         arb_test::GlobalTestData& global = arb_test::test_data();
 
-        global.init(flag_callback);
+        global.init(flag_callback, announce_child_cb);
         global.show_warnings = (warn_level != 0);
 
         double duration_ms = 0;

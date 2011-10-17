@@ -60,6 +60,8 @@
         ARB_SIGSEGV(backtrace);                 \
     } while(0)
 
+typedef int test_pid_t; // same as pid_t
+    
 namespace arb_test {
     class FlushedOutputNoLF {
         inline void flushall() { fflush(stdout); fflush(stderr); }
@@ -78,8 +80,10 @@ namespace arb_test {
 
     class GlobalTestData {
         typedef bool (*FlagCallback)(FlagAction action, const char *name);
+        typedef void (*AnnounceChildCallback)(test_pid_t child_pid);
 
-        FlagCallback flag_cb;
+        FlagCallback          flag_cb;
+        AnnounceChildCallback child_cb;
 
         GlobalTestData()
             : flag_cb(NULL),
@@ -135,7 +139,8 @@ namespace arb_test {
                 fputs("cannot raise local flag (called from outside test-code?)\n", stderr);
             }
         }
-        void init(FlagCallback fc) { flag_cb = fc; }
+        test_pid_t announce_child(test_pid_t child) { child_cb(child); return child; }
+        void init(FlagCallback fc, AnnounceChildCallback accb) { flag_cb = fc; child_cb = accb; }
 
         bool not_covered_by_test() const { return !running_test; }
 
@@ -157,6 +162,7 @@ namespace arb_test {
             fprintf(stderr, "%s:%i: Assertion '%s' failed", filename, lineno, condition);
             print_annotation();
         }
+
     };
 
     inline GlobalTestData& test_data() { return GlobalTestData::get_instance(); }
@@ -166,6 +172,8 @@ namespace arb_test {
 
 #define TEST_ANNOTATE_ASSERT(annotation) arb_test::test_data().annotate(annotation)
 #define RUNNING_TEST()                   arb_test::test_data().running_test
+#define TEST_FORK()                      (pid_t)arb_test::test_data().announce_child(fork())
+
 
 // special assert for unit tests (additionally to SEGV it sets a global flag)
 #define test_assert(cond,backtrace)             \
