@@ -83,7 +83,7 @@ char *prefixSSH(const char *host, const char *command, int async) {
     return result;
 }
 
-GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
+GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep)
 {
     const char *tcp_id;
     GB_ERROR    error = 0;
@@ -152,8 +152,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
             }
 
             if (!error) {
-                printf("[Starting server (cmd='%s')]\n", command);
-                if (!gbmain || GBCMC_system(gbmain, command)) system(command);
+                error = GB_system(command);
                 if (do_sleep) sleep(delay);
             }
             free(command);
@@ -163,10 +162,10 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
     return error;
 }
 
-static GB_ERROR arb_wait_for_server(const char *arb_tcp_env, GBDATA *gbmain, const char *tcp_id, int magic_number, struct gl_struct *serverctrl, int wait) {
+static GB_ERROR arb_wait_for_server(const char *arb_tcp_env, const char *tcp_id, int magic_number, struct gl_struct *serverctrl, int wait) {
     serverctrl->link = aisc_open(tcp_id, &(serverctrl->com), magic_number);
     if (!serverctrl->link) { // no server running -> start one
-        GB_ERROR error = arb_start_server(arb_tcp_env, gbmain, 0);
+        GB_ERROR error = arb_start_server(arb_tcp_env, 0);
         if (error) return error;
 
         while (!serverctrl->link && wait) {
@@ -182,7 +181,7 @@ static GB_ERROR arb_wait_for_server(const char *arb_tcp_env, GBDATA *gbmain, con
     return 0;
 }
 
-GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, GBDATA *gbmain) {
+GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env) {
     GB_ERROR    error       = 0;
     const char *tcp_id      = GBS_read_arb_tcp(arb_tcp_env);
     const char *arb_tcp_dat = "$(ARBHOME)/lib/arb_tcp.dat";
@@ -241,7 +240,7 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, G
         }
 
         if (!error) {
-            error = arb_wait_for_server(arb_tcp_env, gbmain, tcp_id, magic_number, &glservercntrl, 20);
+            error = arb_wait_for_server(arb_tcp_env, tcp_id, magic_number, &glservercntrl, 20);
 
             if (!error) {
                 if (!glservercntrl.link) { // couldn't start server

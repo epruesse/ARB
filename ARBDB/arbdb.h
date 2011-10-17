@@ -136,6 +136,7 @@ public:
     ~GB_shell();
 
     static void ensure_inside();
+    static bool in_shell();
 };
 
 // --------------------------------------------

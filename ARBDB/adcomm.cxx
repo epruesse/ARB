@@ -47,7 +47,6 @@ static GBCM_ServerResult gbcms_talking(int con, long *hs, void *sin);
 #define GBCM_COMMAND_INIT_TRANSACTION   (GBTUM_MAGIC_NUMBER+7)
 #define GBCM_COMMAND_FIND               (GBTUM_MAGIC_NUMBER+8)
 #define GBCM_COMMAND_CLOSE              (GBTUM_MAGIC_NUMBER+9)
-#define GBCM_COMMAND_SYSTEM             (GBTUM_MAGIC_NUMBER+10)
 #define GBCM_COMMAND_KEY_ALLOC          (GBTUM_MAGIC_NUMBER+11)
 #define GBCM_COMMAND_UNDO               (GBTUM_MAGIC_NUMBER+12)
 #define GBCM_COMMAND_DONT_WAIT          (GBTUM_MAGIC_NUMBER+13)
@@ -64,7 +63,6 @@ static GBCM_ServerResult gbcms_talking(int con, long *hs, void *sin);
 #define GBCM_COMMAND_TRANSACTION_RETURN (GBTUM_MAGIC_NUMBER+0x100000)
 #define GBCM_COMMAND_FIND_ERG           (GBTUM_MAGIC_NUMBER+0x108000)
 #define GBCM_COMMAND_KEY_ALLOC_RES      (GBTUM_MAGIC_NUMBER+0x10b000)
-#define GBCM_COMMAND_SYSTEM_RETURN      (GBTUM_MAGIC_NUMBER+0x10a0000)
 #define GBCM_COMMAND_UNDO_CMD           (GBTUM_MAGIC_NUMBER+0x10a0001)
 
 // ------------------------
@@ -969,24 +967,6 @@ static GBCM_ServerResult gbcms_talking_close(int /*socket*/, long */*hsin*/, voi
     return GBCM_SERVER_ABORTED;
 }
 
-static GBCM_ServerResult gbcms_talking_system(int socket, long */*hsin*/, void */*sin*/, GBDATA */*gbd*/) {
-    // command: GBCM_COMMAND_SYSTEM
-    char *comm = gbcm_read_string(socket);
-
-    gbcm_read_flush();
-
-    GB_ERROR error = GB_system(comm);
-    if (error) {
-        GB_warning(error);
-        return GBCM_SERVER_FAULT;
-    }
-
-    if (gbcm_write_two(socket, GBCM_COMMAND_SYSTEM_RETURN, 0)) {
-        return GBCM_SERVER_FAULT;
-    }
-    return gbcm_write_flush(socket);
-}
-
 static GBCM_ServerResult gbcms_talking_undo(int socket, long */*hsin*/, void */*sin*/, GBDATA *gbd) {
     // command: GBCM_COMMAND_UNDO
     long cmd;
@@ -1133,6 +1113,11 @@ static GBCM_ServerResult gbcms_talking_disable_wait_for_new_request(int /*socket
     return GBCM_SERVER_OK_WAIT;
 }
 
+static GBCM_ServerResult gbcms_talking_obsolete(int /*socket*/, long */*hsin*/, void */*sin*/, GBDATA */*gbd*/) {
+    fputs("Obsolete server function called\n", stderr);
+    return GBCM_SERVER_FAULT;
+}
+
 // -----------------------
 //      server talking
 
@@ -1149,7 +1134,7 @@ static TalkingFunction aisc_talking_functions[] = {
     gbcms_talking_init_transaction,                 // GBCM_COMMAND_INIT_TRANSACTION
     gbcms_talking_find,                             // GBCM_COMMAND_FIND
     gbcms_talking_close,                            // GBCM_COMMAND_CLOSE
-    gbcms_talking_system,                           // GBCM_COMMAND_SYSTEM
+    gbcms_talking_obsolete,
     gbcms_talking_key_alloc,                        // GBCM_COMMAND_KEY_ALLOC
     gbcms_talking_undo,                             // GBCM_COMMAND_UNDO
     gbcms_talking_disable_wait_for_new_request      // GBCM_COMMAND_DONT_WAIT
@@ -1778,39 +1763,6 @@ long gbcmc_key_alloc(GBDATA *gbd, const char *key) {
     gbcm_read_two(socket, GBCM_COMMAND_KEY_ALLOC_RES, 0, gb_result);
     gbcm_read_flush();
     return gb_result[0];
-}
-
-#if defined(WARN_TODO)
-#warning GBCMC_system should return GB_ERROR!
-#endif
-
-int GBCMC_system(GBDATA *gbd, const char *ss) { // goes to header: __ATTR__USERESULT_TODO
-    int           socket;
-    long          gb_result[2];
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-
-    if (Main->local_mode) {
-        GB_ERROR error = GB_system(ss);
-        if (error) GB_export_error(error);
-        return error != 0;
-    }
-    socket = Main->c_link->socket;
-
-    if (gbcm_write_two(socket, GBCM_COMMAND_SYSTEM, gbd->server_id)) {
-        GB_export_error(SEND_ERROR());
-        GB_print_error();
-        return -1;
-    }
-
-    gbcm_write_string(socket, ss);
-    if (gbcm_write_flush(socket)) {
-        GB_export_error("ARB_DB CLIENT ERROR send failed");
-        GB_print_error();
-        return -1;
-    }
-    gbcm_read_two(socket, GBCM_COMMAND_SYSTEM_RETURN, 0, (long *)gb_result);
-    gbcm_read_flush();
-    return 0;
 }
 
 GB_ERROR gbcmc_send_undo_commands(GBDATA *gbd, enum gb_undo_commands command) { // goes to header: __ATTR__USERESULT

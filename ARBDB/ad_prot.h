@@ -46,7 +46,6 @@ long GB_read_clients(GBDATA *gbd);
 bool GB_is_server(GBDATA *gbd);
 bool GB_is_client(GBDATA *gbd);
 GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str, GB_CASE case_sens, GB_SEARCH_TYPE gbs);
-int GBCMC_system(GBDATA *gbd, const char *ss) __ATTR__USERESULT_TODO;
 GB_ERROR GB_tell_server_dont_wait(GBDATA *gbd);
 GB_ERROR GB_install_pid(int mode);
 const char *GB_date_string(void);
