@@ -156,8 +156,8 @@ How to use ARB unit testing
    Whenever unit tests complete successfully, a patch (svn diff) is generated and
    stored inside $ARBHOME/patches.arb/
 
-   After DELETE_PATCHES_AFTER seconds the patch will be deleted automatically
-   (see Makefile.setup.local).
+   After PATCHES_KEEP_HOURS seconds the patch will be deleted automatically
+   (see Makefile.setup.local), considering at least PATCHES_MIN_KEPT patches remain.
 
 8. Building tests
 

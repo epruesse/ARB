@@ -11,6 +11,9 @@
 #include <aisc.h>
 #include <aisc_com.h>
 
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
 #include <server.h>
 #include <aisc_server_proto.h>
 #include <aisc_server_extern.h>
