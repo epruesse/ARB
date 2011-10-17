@@ -2192,14 +2192,14 @@ inline void test_com_interface(bool as_client, bool as_child, const test_com& tc
 void TEST_SLOW_DB_com_interface() {
     int  parent_as_client_in_loop = GB_random(2); // should not matter
 
+    test_com tcom;
+    tcom.socket = GBS_global_string_copy(":%s/UNIT_TESTER/sockets/TEST_DB_com_interface.socket", GB_getenvARBHOME());
+
     for (int loop = 0; loop <= 1; ++loop) {   // test once as client, once as server (to get full coverage of both sides)
         bool parent_as_client = parent_as_client_in_loop == loop;
         bool child_as_client  = !parent_as_client;
 
-        test_com tcom;
-        tcom.socket = GBS_global_string_copy(":%s/UNIT_TESTER/sockets/TEST_DB_com_interface.socket", GB_getenvARBHOME());
-        
-        pid_t child_pid = fork();
+        pid_t child_pid = TEST_FORK();
 
         if (child_pid) { // parent
             TEST_ANNOTATE_ASSERT(GBS_global_string("parent(%s) in loop %i", parent_as_client ? "client" : "server", loop));
