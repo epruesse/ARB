@@ -30,7 +30,7 @@ PATCHNAMESUFFIX:=$(subst :,_,$(PATCHNAMESUFFIX))
 VALGRIND_EXTERNAL=$(findstring E,$(VALGRIND))
 
 cleanup_environment:
-	./test_environment clean
+	./test_environment clean || echo "Failed to clean environment (maybe some setup/cleanup crashed?)"
 ifeq ($(VALGRIND_EXTERNAL),E)
 	./valgrind/arb_valgrind_logged WAIT
 endif
