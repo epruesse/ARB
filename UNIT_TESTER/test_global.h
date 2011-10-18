@@ -175,8 +175,11 @@ namespace arb_test {
 
 #define TEST_ANNOTATE_ASSERT(annotation) arb_test::test_data().annotate(annotation)
 #define RUNNING_TEST()                   arb_test::test_data().running_test
-#define TEST_FORK()                      (pid_t)arb_test::test_data().announce_child(fork())
 
+// use TEST_FORK to fork inside a unit-test
+// do not use 'exit(EXIT_SUCCESS);' to return from child, instead use EXIT_CHILD
+#define TEST_FORK()  (pid_t)arb_test::test_data().announce_child(fork())
+#define EXIT_CHILD() return
 
 // special assert for unit tests (additionally to SEGV it sets a global flag)
 #define test_assert(cond,backtrace)             \

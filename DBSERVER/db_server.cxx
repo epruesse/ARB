@@ -486,7 +486,7 @@ void TEST_SLOW_dbserver() {
         GB_usleep(100*1000);
         TEST_RUN_TOOL(GBS_global_string("arb_db_server -T%s -d%s -A", tcp, db)); // start the server (in ASCII-mode)
 #endif
-        exit(EXIT_SUCCESS);
+        EXIT_CHILD();
     }
 
     TEST_ASSERT(server_is_down(tcp));
