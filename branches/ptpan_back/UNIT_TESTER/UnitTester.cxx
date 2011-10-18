@@ -324,10 +324,13 @@ static void announce_child_cb(test_pid_t child_pid) {
         fprintf(stderr, "Child %i announced by %i\n", child_pid, getpid()); fflush(stderr);
         child_tests.push(child_pid);
     }
+    else {
+        arb_test::test_data().i_am_a_forked_child = true;
+    }
 }
 static void kill_test_childs() {
     if (!child_tests.empty()) {
-        fprintf(stderr, "Killing %zu test-child(s)..\n", child_tests.size()); 
+        fprintf(stderr, "Killing %zu test-child(s)..\n", child_tests.size());
         while (!child_tests.empty()) {
             pid_t pid = child_tests.top();
             if (kill(pid, SIGKILL) != 0) {
@@ -392,20 +395,18 @@ public:
     double overall_duration_ms() const { return duration_ms; }
 };
 
-
 size_t SimpleTester::perform_all() {
     // returns number of passed tests
 
     trace("performing %zu simple tests..", count);
     size_t passed = 0;
-    for (size_t c = 0; c<count; ++c) {
+    for (size_t c = 0; c<count && !arb_test::test_data().i_am_a_forked_child; ++c) {
         GLOBAL.setup_test_precondition();
         passed += perform(c);
         GLOBAL.setup_test_postcondition();
     }
     return passed;
 }
-
 
 bool SimpleTester::perform(size_t which) {
     ut_assert(which<count);
@@ -424,8 +425,10 @@ bool SimpleTester::perform(size_t which) {
     duration_ms += duration_ms_this;
 
     kill_test_childs();
-    
-    trace("* %s = %s (%.1f ms)", test.name, readable_result[result], duration_ms_this);
+
+    if (!arb_test::test_data().i_am_a_forked_child) {
+        trace("* %s = %s (%.1f ms)", test.name, readable_result[result], duration_ms_this);
+    }
 
     switch (result) {
         case TEST_OK:
@@ -451,7 +454,6 @@ bool SimpleTester::perform(size_t which) {
 
     return result == TEST_OK;
 }
-
 
 // --------------------------------------------------------------------------------
 
@@ -516,9 +518,15 @@ UnitTester::UnitTester(const char *libname, const UnitTest_simple *simple_tests,
             }
         }
 
-        trace("%s", generateReport(libname,
-                                   tests+skippedTests, skippedTests, passed,
-                                   duration_ms, global.warnings));
+        if (global.i_am_a_forked_child) {
+            // do not generate report in child forked from test
+            tests = passed = 0;
+        }
+        else {
+            trace("%s", generateReport(libname,
+                                       tests+skippedTests, skippedTests, passed,
+                                       duration_ms, global.warnings));
+        }
     }
 
     arb_test::GlobalTestData::erase_instance();

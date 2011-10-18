@@ -2112,7 +2112,7 @@ inline void test_com_interface(bool as_client, bool as_child, const test_com& tc
         : test_com_server(tcom, as_child); // as_child wait_for_HUP
 }
 
-void TEST_SLOW_DB_com_interface() {
+void NOTEST_SLOW_DB_com_interface() {
     int  parent_as_client_in_loop = GB_random(2); // should not matter
 
     test_com tcom;
@@ -2161,6 +2161,22 @@ void TEST_SLOW_DB_com_interface() {
             test_com_interface(child_as_client, true, tcom);
             exit(EXIT_SUCCESS);
         }
+    }
+}
+
+void TEST_static_cleanup_in_forked_child() {
+    // call this test in valgrind to see missing cleanup
+    SmartCharPtr str(strdup("bla"));
+
+    pid_t child_pid = TEST_FORK();
+    if (child_pid) {
+        SmartCharPtr parent(strdup("blub"));
+        while (child_pid != wait(NULL)) {}
+    }
+    else {
+        SmartCharPtr child(strdup("blubber"));
+        // exit(EXIT_SUCCESS); // normal child exit leaks
+        return; // clean child exit
     }
 }
 

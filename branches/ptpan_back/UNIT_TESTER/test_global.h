@@ -91,6 +91,8 @@ namespace arb_test {
               show_warnings(true),
               assertion_failed(false),
               running_test(false),
+              entered_mutex_loop(false),
+              i_am_a_forked_child(false), 
               warnings(0)
         {}
         ~GlobalTestData() {
@@ -127,6 +129,7 @@ namespace arb_test {
         bool assertion_failed;
         bool running_test;
         bool entered_mutex_loop; // helper to avoid race-condition
+        bool i_am_a_forked_child;
 
         // counters
         size_t warnings;
