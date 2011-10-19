@@ -426,7 +426,9 @@ bool SimpleTester::perform(size_t which) {
 
     kill_test_childs();
 
-    if (!arb_test::test_data().i_am_a_forked_child) {
+    arb_test::GlobalTestData& global = arb_test::test_data();
+    
+    if (!global.i_am_a_forked_child) {
         trace("* %s = %s (%.1f ms)", test.name, readable_result[result], duration_ms_this);
     }
 
@@ -444,11 +446,11 @@ bool SimpleTester::perform(size_t which) {
             break;
 
         case TEST_TRAPPED:
-            fprintf(stderr, "%s: Error: %s failed (details above)\n", test.location, test.name);
-            break;
-            
         case TEST_INTERRUPTED:
-            fprintf(stderr, "%s: Error: %s has been interrupted (details above)\n", test.location, test.name);
+            fprintf(stderr, "%s: Error: %s ", test.location, test.name);
+            fputs(result == TEST_TRAPPED ? "failed" : "has been interrupted", stderr);
+            global.print_annotation();
+            fputs(" (details above)\n", stderr);
             break;
     }
 
