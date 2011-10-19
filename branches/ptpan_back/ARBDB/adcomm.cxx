@@ -2120,7 +2120,7 @@ inline void test_com_interface(bool as_client, bool as_child, const test_com& tc
         : test_com_server(tcom, as_child); // as_child wait_for_HUP
 }
 
-void TEST_SLOW_DB_com_interface() {
+void NOTEST_SLOW_DB_com_interface() {
     int  parent_as_client_in_loop = GB_random(2); // should not matter
 
     test_com tcom;
@@ -2171,6 +2171,61 @@ void TEST_SLOW_DB_com_interface() {
         }
     }
 }
+
+static bool test_transaction_in_place(GBDATA *gb_main) {
+    GB_transaction ta(gb_main);
+    bool ok = (NULL == GB_search(gb_main, "test/number", GB_FIND));
+    ok = ok && (NULL == GB_search(gb_main, "string2", GB_FIND));
+    ok = ok && (NULL != GB_search(gb_main, "string3", GB_FIND));
+    return ok;
+}
+
+void TEST_GB_undo() {
+    GB_shell  shell;
+    for (int undo = -1; undo <= 2; undo++) {
+        // undo == -1 -> do not provide nor perform undo
+        // undo == 0 -> provide but dont perform undo
+        // undo == 1 -> provide and perform undo
+        // undo == 2 -> provide and perform undo and the redo
+
+        // if (undo != 2) continue; // try only one
+
+        GBDATA *gb_main = GB_open("nosuch.arb", "crw");
+        TEST_ASSERT(gb_main);
+
+        if (undo >= 0) TEST_ASSERT_NO_ERROR(GB_request_undo_type(gb_main, GB_UNDO_UNDO));
+
+        TEST_ASSERT_NO_ERROR(GBT_write_int(gb_main, "test/number", 0x4711));
+        TEST_ASSERT_NO_ERROR(GBT_write_string(gb_main, "string1", "data"));
+        TEST_ASSERT_NO_ERROR(GBT_write_string(gb_main, "string2", "alkjfklasjflasjdflasdalkjfklasjflasjdflasdalkjfklasjflasjdflasdalkjfklasjflasjdflasd"));
+        {
+            GB_transaction ta(gb_main);
+            TEST_ASSERT_NO_ERROR(GB_delete(GB_search(gb_main, "test/number", GB_FIND)));
+            TEST_ASSERT_NO_ERROR(GB_delete(GB_search(gb_main, "string1", GB_FIND)));
+            TEST_ASSERT_NO_ERROR(GB_delete(GB_search(gb_main, "string2", GB_FIND)));
+            TEST_ASSERT_NO_ERROR(GBT_write_string(gb_main, "string3", "anotherlongtextanotherlongtextanotherlongtext"));
+            TEST_ASSERT_NO_ERROR(GB_delete(GB_search(gb_main, "test", GB_FIND)));
+        }
+
+        TEST_ASSERT(test_transaction_in_place(gb_main));
+
+        if (undo >= 0) {
+            if (undo) {
+                TEST_ASSERT_NO_ERROR(GB_undo(gb_main, GB_UNDO_UNDO));
+                TEST_ASSERT(!test_transaction_in_place(gb_main));
+            
+                if (undo == 2) {
+                    TEST_ASSERT_NO_ERROR(GB_undo(gb_main, GB_UNDO_REDO));
+                    TEST_ASSERT(test_transaction_in_place(gb_main));
+                }
+            }
+        }
+        TEST_ASSERT_NO_ERROR(GB_request_undo_type(gb_main, GB_UNDO_KILL));
+        { GB_transaction ta(gb_main); }
+        GB_close(gb_main);
+    }
+}
+
 
 #endif // UNIT_TESTS
 
