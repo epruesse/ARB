@@ -234,6 +234,19 @@ void GBCMS_shutdown(GBDATA *gbd) {
         }
         shutdown(hs->hso, SHUT_RDWR);
 
+        if (hs->del_first) {
+            gb_assert(hs->del_last);
+            gbcms_delete_list *dl = hs->del_first;
+            while (dl) {
+                gbcms_delete_list *next = dl->next;
+
+                free(dl);
+                gb_assert(next || hs->del_last == dl);
+                dl = next;
+            }
+            hs->del_first = hs->del_last = NULL;
+        }
+
         if (hs->unix_name) {
             unlink(hs->unix_name);
             freenull(hs->unix_name);
@@ -2120,7 +2133,7 @@ inline void test_com_interface(bool as_client, bool as_child, const test_com& tc
         : test_com_server(tcom, as_child); // as_child wait_for_HUP
 }
 
-void NOTEST_SLOW_DB_com_interface() {
+void TEST_SLOW_DB_com_interface() {
     int  parent_as_client_in_loop = GB_random(2); // should not matter
 
     test_com tcom;
