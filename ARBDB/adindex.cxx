@@ -368,9 +368,7 @@ static void delete_g_b_undo_entry(g_b_undo_entry *entry) {
             break;
         case GB_UNDO_ENTRY_TYPE_DELETED: {
             GBDATA*& gbd = entry->d.gs.gbd;
-            // do not delete when has father ( = delete was undone)
-            // @@@ try setting entry to NULL during undo
-            if (gbd && !GB_FATHER(gbd)) {
+            if (gbd) {
                 gb_delete_predeleted_entry(&gbd);
                 gb_assert(entry->d.gs.gbd == NULL);
             }
@@ -455,7 +453,8 @@ static GB_ERROR undo_entry(g_b_undo_entry *ue) {
             break;
         case GB_UNDO_ENTRY_TYPE_DELETED:
         {
-            GBDATA *gbd = gb_restore_predeleted_entry((GBCONTAINER *)ue->source, ue->d.gs.gbd, ue->d.gs.key);
+            GBDATA *gbd  = gb_restore_predeleted_entry((GBCONTAINER *)ue->source, ue->d.gs.gbd, ue->d.gs.key);
+            ue->d.gs.gbd = NULL;
 
             GB_ARRAY_FLAGS(gbd).flags = ue->flag;
             gb_touch_header(GB_FATHER(gbd));
@@ -731,7 +730,7 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA *gbd, int deep) {
     ue->d.gs.gbd = gbd;
     ue->d.gs.key = GB_KEY_QUARK(gbd);
 
-    gb_pre_delete_entry(gbd);       // get the core of the entry
+    gb_predelete_entry(gbd);       // get the core of the entry
 
     if (type == GB_DB) {
         g_b_add_size_to_undo_entry(ue, sizeof(GBCONTAINER));
@@ -876,4 +875,126 @@ GB_ERROR GB_set_undo_mem(GBDATA *gbd, long memsize) {
     g_b_check_undo_size(Main);
     return 0;
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+#include "arbdbt.h"
+
+inline bool exists(GBDATA *gb_main, const char *path) { return GB_search(gb_main, path, GB_FIND); }
+inline bool missing(GBDATA *gb_main, const char *path) { return !exists(gb_main, path); }
+
+static bool is_in_state1(GBDATA *gb_main) {
+    GB_transaction ta(gb_main);
+    return
+        exists(gb_main, "test/number") && 
+        exists(gb_main, "string1") && 
+        exists(gb_main, "string2"); 
+}
+static bool is_in_state2(GBDATA *gb_main) {
+    GB_transaction ta(gb_main);
+    return
+        missing(gb_main, "test/number") && 
+        missing(gb_main, "string1") && 
+        exists(gb_main, "sub/cont") && 
+        exists(gb_main, "string3"); 
+}
+static bool is_in_state3(GBDATA *gb_main) {
+    GB_transaction ta(gb_main);
+    return
+        missing(gb_main, "test/number") && 
+        missing(gb_main, "sub/cont") && 
+        exists(gb_main, "string1") && 
+        exists(gb_main, "test/number2") && 
+        exists(gb_main, "string3"); 
+}
+
+void TEST_GB_undo() {
+    GB_shell  shell;
+    for (int undo = -1; undo <= 8; undo++) {
+        // undo == -1 -> do not provide nor perform undo
+        // undo == 0 -> provide but dont perform undo
+        // undo == 1 -> provide and perform undo
+        // undo == 2 -> provide and perform undo and the redo
+        // undo > 2 -> repeat undo/redo
+
+        TEST_ANNOTATE_ASSERT(GBS_global_string("undo==%i", undo));
+
+        GBDATA *gb_main = GB_open("nosuch.arb", "crw");
+        TEST_ASSERT(gb_main);
+
+        if (undo >= 0) TEST_ASSERT_NO_ERROR(GB_request_undo_type(gb_main, GB_UNDO_UNDO));
+
+        TEST_ASSERT_NO_ERROR(GBT_write_int(gb_main, "test/number", 0x4711));
+        TEST_ASSERT_NO_ERROR(GBT_write_int(gb_main, "sub/entry", 0x0815));
+        TEST_ASSERT_NO_ERROR(GBT_write_string(gb_main, "string1", "data"));
+        TEST_ASSERT_NO_ERROR(GBT_write_string(gb_main, "string2", "alkjfklasjflasjdflasdalkjfklasjflasjdflasdalkjfklasjflasjdflasdalkjfklasjflasjdflasd"));
+
+        TEST_ASSERT(is_in_state1(gb_main));
+        TEST_ASSERT(!is_in_state2(gb_main) && !is_in_state3(gb_main));
+
+        {
+            GB_transaction ta(gb_main);
+            TEST_ASSERT_NO_ERROR(GB_delete(GB_search(gb_main, "test/number", GB_FIND)));
+            TEST_ASSERT_NO_ERROR(GB_delete(GB_search(gb_main, "string1", GB_FIND)));
+            TEST_ASSERT_NO_ERROR(GB_delete(GB_search(gb_main, "string2", GB_FIND)));
+            TEST_ASSERT_RESULT__NOERROREXPORTED(GB_create_container(GB_search(gb_main, "sub", GB_FIND), "cont"));
+            TEST_ASSERT_NO_ERROR(GBT_write_string(gb_main, "string3", "anotherlongtextanotherlongtextanotherlongtext"));
+            TEST_ASSERT_NO_ERROR(GB_delete(GB_search(gb_main, "test", GB_FIND)));
+        }
+
+        TEST_ASSERT(is_in_state2(gb_main));
+        TEST_ASSERT(!is_in_state1(gb_main) && !is_in_state3(gb_main));
+        
+        {
+            GB_transaction ta(gb_main);
+            TEST_ASSERT_NO_ERROR(GBT_write_int(gb_main, "test/number2", 0x4712));
+            TEST_ASSERT_NO_ERROR(GBT_write_string(gb_main, "string1", "alkjfklasjflasjdflasdalkjfklasjflasjdflasdalkjfklasjflasjdflasdalkjfklasjflasjdflasd"));
+            TEST_ASSERT_NO_ERROR(GBT_write_string(gb_main, "string2", "data"));
+            TEST_ASSERT_NO_ERROR(GB_delete(GB_search(gb_main, "sub/cont", GB_FIND)));
+        }
+
+
+        TEST_ASSERT(is_in_state3(gb_main));
+        TEST_ASSERT(!is_in_state1(gb_main) && !is_in_state2(gb_main));
+
+        if (undo >= 0) {
+            int repeat_undo = undo;
+
+            while (repeat_undo) {
+                TEST_ASSERT_NO_ERROR(GB_undo(gb_main, GB_UNDO_UNDO));
+                TEST_ASSERT(is_in_state2(gb_main));
+                repeat_undo--;
+
+                if (repeat_undo) {
+                    TEST_ASSERT_NO_ERROR(GB_undo(gb_main, GB_UNDO_UNDO));
+                    TEST_ASSERT(is_in_state1(gb_main));
+                    repeat_undo--;
+
+                    if (repeat_undo) {
+                        TEST_ASSERT_NO_ERROR(GB_undo(gb_main, GB_UNDO_REDO)); 
+                        TEST_ASSERT(is_in_state2(gb_main));
+                        repeat_undo--;
+                    }
+                }
+
+                if (repeat_undo) {
+                    TEST_ASSERT_NO_ERROR(GB_undo(gb_main, GB_UNDO_REDO));
+                    TEST_ASSERT(is_in_state3(gb_main));
+                    repeat_undo--;
+                }
+            }
+        }
+
+        GB_close(gb_main);
+    }
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
+
 

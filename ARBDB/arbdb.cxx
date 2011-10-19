@@ -1591,9 +1591,12 @@ GBDATA *GB_create(GBDATA *father, const char *key, GB_TYPES type) {
      */
     GBDATA *gbd;
 
-    if (GB_check_key(key)) {
-        GB_print_error();
-        return NULL;
+    {
+        GB_ERROR error = GB_check_key(key);
+        if (error) {
+            GB_export_error(error);
+            return NULL;
+        }
     }
 
     if (type == GB_DB) {
@@ -1643,9 +1646,12 @@ GBDATA *GB_create_container(GBDATA *father, const char *key) {
      */
 
     GBCONTAINER *gbd;
-    if (GB_check_key(key)) {
-        GB_print_error();
-        return NULL;
+    {
+        GB_ERROR error = GB_check_key(key);
+        if (error) {
+            GB_export_error(error);
+            return NULL;
+        }
     }
 
     if ((*key == '\0')) {
