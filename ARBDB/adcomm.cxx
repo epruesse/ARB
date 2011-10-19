@@ -2182,13 +2182,14 @@ static bool test_transaction_in_place(GBDATA *gb_main) {
 
 void TEST_GB_undo() {
     GB_shell  shell;
-    for (int undo = -1; undo <= 2; undo++) {
+    for (int undo = -1; undo <= 6; undo++) {
         // undo == -1 -> do not provide nor perform undo
         // undo == 0 -> provide but dont perform undo
         // undo == 1 -> provide and perform undo
         // undo == 2 -> provide and perform undo and the redo
+        // undo > 2 -> repeat undo/redo
 
-        // if (undo != 2) continue; // try only one
+        TEST_ANNOTATE_ASSERT(GBS_global_string("undo==%i", undo));
 
         GBDATA *gb_main = GB_open("nosuch.arb", "crw");
         TEST_ASSERT(gb_main);
@@ -2210,18 +2211,21 @@ void TEST_GB_undo() {
         TEST_ASSERT(test_transaction_in_place(gb_main));
 
         if (undo >= 0) {
-            if (undo) {
+            int repeat_undo = undo;
+
+            while (repeat_undo) {
                 TEST_ASSERT_NO_ERROR(GB_undo(gb_main, GB_UNDO_UNDO));
                 TEST_ASSERT(!test_transaction_in_place(gb_main));
-            
-                if (undo == 2) {
+                repeat_undo--;
+
+                if (repeat_undo) {
                     TEST_ASSERT_NO_ERROR(GB_undo(gb_main, GB_UNDO_REDO));
                     TEST_ASSERT(test_transaction_in_place(gb_main));
+                    repeat_undo--;
                 }
             }
         }
-        TEST_ASSERT_NO_ERROR(GB_request_undo_type(gb_main, GB_UNDO_KILL));
-        { GB_transaction ta(gb_main); }
+
         GB_close(gb_main);
     }
 }
