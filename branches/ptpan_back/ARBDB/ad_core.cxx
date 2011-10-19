@@ -401,7 +401,7 @@ GBCONTAINER *gb_make_container(GBCONTAINER * father, const char *key, long index
     return gbd;
 }
 
-void gb_pre_delete_entry(GBDATA *gbd) {
+void gb_predelete_entry(GBDATA *gbd) {
     // Reduce an entry to its absolute minimum and remove it from database
     GB_MAIN_TYPE *Main      = GB_MAIN_NO_FATHER(gbd);
     long          type      = GB_TYPE(gbd);
@@ -471,7 +471,7 @@ static void gb_delete_or_predelete_entry(GBCONTAINER **gbc_ptr, bool is_predelet
     gb_assert(implicated(is_predeleted, !GB_FATHER(gbc))); // predeleted entries have no father
 
     gb_destroy_childs_of(gbc);
-    if (!is_predeleted) gb_pre_delete_entry((GBDATA*)gbc);
+    if (!is_predeleted) gb_predelete_entry((GBDATA*)gbc);
     gb_destroy_core_entry(gbc, gbm_index);
     *gbc_ptr = 0; // avoid further usage
 }
@@ -485,7 +485,7 @@ static void gb_delete_or_predelete_entry(GBDATA **gbd_ptr, bool is_predeleted) {
         gb_assert(implicated(is_predeleted, !GB_FATHER(gbd))); // predeleted entries have no father
         long gbm_index = GB_GBM_INDEX(gbd);
         
-        if (!is_predeleted) gb_pre_delete_entry(gbd);
+        if (!is_predeleted) gb_predelete_entry(gbd);
         gb_destroy_core_entry(gbd, gbm_index);
         *gbd_ptr = 0;                               // avoid further usage
     }

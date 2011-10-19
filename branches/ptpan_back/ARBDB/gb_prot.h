@@ -154,7 +154,7 @@ GBDATA *gb_restore_predeleted_entry(GBCONTAINER *father, GBDATA *gbd, GBQUARK ke
 void gb_rename_entry(GBCONTAINER *gbc, const char *new_key);
 GBDATA *gb_make_entry(GBCONTAINER *father, const char *key, long index_pos, GBQUARK keyq, GB_TYPES type);
 GBCONTAINER *gb_make_container(GBCONTAINER *father, const char *key, long index_pos, GBQUARK keyq);
-void gb_pre_delete_entry(GBDATA *gbd);
+void gb_predelete_entry(GBDATA *gbd);
 void gb_delete_predeleted_entry(GBCONTAINER **gbc_ptr);
 void gb_delete_entry(GBCONTAINER **gbc_ptr);
 void gb_delete_predeleted_entry(GBDATA **gbd_ptr);

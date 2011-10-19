@@ -470,9 +470,11 @@ adhashtools.o: $(ARBHOME)/INCLUDE/smartptr.h
 adhashtools.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adindex.o: ad_prot.h
+adindex.o: ad_t_prot.h
 adindex.o: arb_assert.h
 adindex.o: arbdb.h
 adindex.o: arbdb_base.h
+adindex.o: arbdbt.h
 adindex.o: gb_data.h
 adindex.o: gb_hashindex.h
 adindex.o: gb_header.h
@@ -496,6 +498,7 @@ adindex.o: $(ARBHOME)/INCLUDE/attributes.h
 adindex.o: $(ARBHOME)/INCLUDE/dupstr.h
 adindex.o: $(ARBHOME)/INCLUDE/smartptr.h
 adindex.o: $(ARBHOME)/INCLUDE/test_global.h
+adindex.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 aditem.o: ad_prot.h
 aditem.o: ad_t_prot.h
