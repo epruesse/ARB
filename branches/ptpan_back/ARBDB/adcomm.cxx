@@ -1864,31 +1864,30 @@ inline void serve_all(GBDATA *gb_main) {
 #endif
 }
 
-inline int test_sync(GBDATA *gb_main, bool is_server) {
-    int  val    = *GBT_read_int(gb_main, "sync");
-    bool is_odd = val%2;
+inline void trace(bool is_server, const char *msg) {
+    fprintf(stderr, "%s %s\n", is_server ? "server" : "client", msg);
+    fflush(stderr);
+}
 
-    if (is_server == is_odd) { // server handles odd, client even values
-        if (is_server) {
-            if (val) {
-                GBT_write_int(gb_main, "trigger_create_update", 7); // triggers some special updates
-            }
+inline void wait_for_sync(GBDATA *gb_main, bool is_server, int wanted_sync) {
+    bool got = false;
+    trace(is_server, GBS_global_string("wait_for_sync %i [start]", wanted_sync));
+    while (!got) {
+        if (is_server) serve_all(gb_main); else TEST_ASSERT_NO_ERROR(GB_tell_server_dont_wait(gb_main));
+        int val = *GBT_read_int(gb_main, "sync");
+        got     = (val == wanted_sync);
+
+        if (is_server && wanted_sync) {
+            TEST_ASSERT_NO_ERROR(GBT_write_int(gb_main, "trigger_create_update", 7)); // triggers some special updates
         }
-        GBT_write_int(gb_main, "sync", ++val);
-        if (!is_server) { // wait for server doing his job
-            TEST_ASSERT_NO_ERROR(GB_tell_server_dont_wait(gb_main));
-            while (*GBT_read_int(gb_main, "sync") == val) {
-                TEST_ASSERT_NO_ERROR(GB_tell_server_dont_wait(gb_main));
-                sleep_ms(50);
-                TEST_ASSERT_NO_ERROR(GB_tell_server_dont_wait(gb_main));
-            }
-            val++;
-        }
+        if (is_server) serve_all(gb_main); else TEST_ASSERT_NO_ERROR(GB_tell_server_dont_wait(gb_main));
     }
-    else {
-        val = 0;
-    }
-    return val;
+    trace(is_server, GBS_global_string("wait_for_sync %i [done]", wanted_sync));
+}
+inline void set_sync_to(GBDATA *gb_main, bool is_server, int wanted_sync) {
+    trace(is_server, GBS_global_string("set_sync_to %i [start]", wanted_sync));
+    TEST_ASSERT_NO_ERROR(GBT_write_int(gb_main, "sync", wanted_sync));
+    trace(is_server, GBS_global_string("set_sync_to %i [done]", wanted_sync));
 }
 
 #define CONTNUMBER      "cont/number"
@@ -1953,36 +1952,42 @@ static void test_com_server(const test_com& tcom, bool wait_for_HUP) {
             // serve the client
             int clients = 0;
 
-            GBT_write_int(gb_main, "sync", 0);
+            int sync_pos = 0;
+            TEST_ASSERT_NO_ERROR(GBT_write_int(gb_main, "sync", sync_pos));
 
             while (!clients) { served(gb_main, false); clients = GB_read_clients(gb_main); } // wait for client
             while (clients) { // serve client until he disconnects
                 serve_all(gb_main);
-                int sync_pos = test_sync(gb_main, true);
-                switch (sync_pos) { // sync to server state (see SYNC_TO_SERVER_STATE)
-                    case 2: {
-                        TEST_ASSERT_NO_ERROR(GBT_write_int(gb_main, CONTNUMBER, 0x4712));
-                        TEST_ASSERT_HAVE_INT(gb_main, CONTNUMBER, 0x4712);
-                        break;
+                if (sync_pos<8) {
+                    wait_for_sync(gb_main, true, ++sync_pos);
+
+                    switch (sync_pos) { // sync to server state (see SYNC_TO_SERVER_STATE)
+                        case 1: {
+                            TEST_ASSERT_NO_ERROR(GBT_write_int(gb_main, CONTNUMBER, 0x4712));
+                            TEST_ASSERT_HAVE_INT(gb_main, CONTNUMBER, 0x4712);
+                            break;
+                        }
+                        case 3: {
+                            TEST_ASSERT_HAVE_INT(gb_main, CONTNUMBER, 0x4713);
+                            TEST_ASSERT_NO_ERROR(GBT_write_int(gb_main, CONTNUMBER, 0x4714));
+                            TEST_ASSERT_HAVE_INT(gb_main, CONTNUMBER, 0x4714);
+                            TEST_ASSERT_NO_ERROR(GBT_write_string(gb_main, NOTUSEDBYCLIENT, "no"));
+                            break;
+                        }
+                        case 5: {
+                            GB_transaction ta(gb_main);
+                            TEST_ASSERT_NO_ERROR(GB_delete(GB_search(gb_main, CONTNUMBER, GB_FIND)));
+                            break;
+                        }
+                        case 7: { // final sync (clean up to keep panix.arb small)
+                            GB_transaction ta(gb_main);
+                            TEST_ASSERT_NO_ERROR(GB_delete(GB_search(gb_main, "unsaved", GB_FIND)));
+                            break;
+                        }
+                        default: TEST_ASSERT(0);
                     }
-                    case 4: {
-                        TEST_ASSERT_HAVE_INT(gb_main, CONTNUMBER, 0x4713);
-                        TEST_ASSERT_NO_ERROR(GBT_write_int(gb_main, CONTNUMBER, 0x4714));
-                        TEST_ASSERT_HAVE_INT(gb_main, CONTNUMBER, 0x4714);
-                        TEST_ASSERT_NO_ERROR(GBT_write_string(gb_main, NOTUSEDBYCLIENT, "no"));
-                        break;
-                    }
-                    case 6: {
-                        GB_transaction ta(gb_main);
-                        TEST_ASSERT_NO_ERROR(GB_delete(GB_search(gb_main, CONTNUMBER, GB_FIND)));
-                        break;
-                    }
-                    case 8: { // final sync (clean up to keep panix.arb small)
-                        GB_transaction ta(gb_main);
-                        TEST_ASSERT_NO_ERROR(GB_delete(GB_search(gb_main, "unsaved", GB_FIND)));
-                        break;
-                    }
-                    default: TEST_ASSERT_EQUAL(0, sync_pos);
+
+                    set_sync_to(gb_main, true, ++sync_pos);
                 }
                 clients = GB_read_clients(gb_main);
             }
@@ -2026,7 +2031,10 @@ static GBDATA *connect_to_server(const test_com& tcom) {
     return gb_main;
 }
 
-#define SYNC_TO_SERVER_STATE(val) TEST_ASSERT_EQUAL(test_sync(gb_main, false), val)
+#define SYNC_TO_SERVER_STATE(val) do {          \
+        set_sync_to(gb_main, false, val);       \
+        wait_for_sync(gb_main, false, val+1);   \
+    } while(0)
 
 static void test_com_client(const test_com& tcom) {
     GB_shell  shell;
@@ -2061,7 +2069,7 @@ static void test_com_client(const test_com& tcom) {
         TEST_ASSERT_EQUAL(GBT_read_char_pntr(gb_main, "cont/entry"), "super");
         TEST_ASSERT_HAVE_INT(gb_main, CONTNUMBER, 0x4711);
 
-        SYNC_TO_SERVER_STATE(2);
+        SYNC_TO_SERVER_STATE(1);
 
         TEST_ASSERT_HAVE_INT(gb_main, CONTNUMBER, 0x4712); // updated to new value by server
         { // start and abort transaction
@@ -2077,7 +2085,7 @@ static void test_com_client(const test_com& tcom) {
             TEST_ASSERT_NO_ERROR(GB_delete(GB_search(gb_main, DELETEDBYCLIENT, GB_FIND)));
         }
 
-        SYNC_TO_SERVER_STATE(4);
+        SYNC_TO_SERVER_STATE(3);
 
         TEST_ASSERT_HAVE_INT(gb_main, CONTNUMBER, 0x4714); // updated to new value by server
 
@@ -2092,14 +2100,14 @@ static void test_com_client(const test_com& tcom) {
         }
         TEST_ASSERT_NO_ERROR(GB_undo(gb_main, GB_UNDO_UNDO));
 
-        SYNC_TO_SERVER_STATE(6);
+        SYNC_TO_SERVER_STATE(5);
 
         TEST_ASSERT(GBT_read_int(gb_main, CONTNUMBER) == NULL); // deleted by server 
 
         TEST_ASSERT_CONTAINS(GBCMS_open(tcom.socket, tcom.timeout, gb_main), // open a server on used socket
                              "TEST_DB_com_interface.socket' already in use");
 
-        SYNC_TO_SERVER_STATE(8);
+        SYNC_TO_SERVER_STATE(7);
         
         GB_close(gb_main);
     }
