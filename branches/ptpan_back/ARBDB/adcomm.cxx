@@ -240,7 +240,7 @@ void GBCMS_shutdown(GBDATA *gbd) {
             while (dl) {
                 gbcms_delete_list *next = dl->next;
 
-                free(dl);
+                gbm_free_mem(dl, sizeof(gbcms_delete_list), GBM_CB_INDEX);
                 gb_assert(next || hs->del_last == dl);
                 dl = next;
             }
