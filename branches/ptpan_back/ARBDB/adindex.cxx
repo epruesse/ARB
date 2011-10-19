@@ -362,12 +362,24 @@ static void delete_g_b_undo_entry(g_b_undo_entry *entry) {
     switch (entry->type) {
         case GB_UNDO_ENTRY_TYPE_MODIFY:
         case GB_UNDO_ENTRY_TYPE_MODIFY_ARRAY:
-            {
-                if (entry->d.ts) {
-                    gb_del_ref_gb_transaction_save(entry->d.ts);
-                }
+            if (entry->d.ts) {
+                gb_del_ref_gb_transaction_save(entry->d.ts);
             }
+            break;
+        case GB_UNDO_ENTRY_TYPE_DELETED: {
+            GBDATA*& gbd = entry->d.gs.gbd;
+            // do not delete when has father ( = delete was undone)
+            // @@@ try setting entry to NULL during undo
+            if (gbd && !GB_FATHER(gbd)) {
+                gb_delete_predeleted_entry(&gbd);
+                gb_assert(entry->d.gs.gbd == NULL);
+            }
+            break;
+        }
+        case GB_UNDO_ENTRY_TYPE_CREATED:
+            break;
         default:
+            gb_assert(0);
             break;
     }
     gbm_free_mem(entry, sizeof(g_b_undo_entry), GBM_UNDO);
@@ -442,20 +454,14 @@ static GB_ERROR undo_entry(g_b_undo_entry *ue) {
             error = GB_delete(ue->source);
             break;
         case GB_UNDO_ENTRY_TYPE_DELETED:
-            {
-                GBDATA *gbd = ue->d.gs.gbd;
-                int type = GB_TYPE(gbd);
-                if (type == GB_DB) {
-                    gbd = (GBDATA *)gb_make_pre_defined_container((GBCONTAINER *)ue->source, (GBCONTAINER *)gbd, -1, ue->d.gs.key);
-                }
-                else {
-                    gbd = gb_make_pre_defined_entry((GBCONTAINER *)ue->source, gbd, -1, ue->d.gs.key);
-                }
-                GB_ARRAY_FLAGS(gbd).flags = ue->flag;
-                gb_touch_header(GB_FATHER(gbd));
-                gb_touch_entry((GBDATA *)gbd, GB_CREATED);
-            }
-            break;
+        {
+            GBDATA *gbd = gb_restore_predeleted_entry((GBCONTAINER *)ue->source, ue->d.gs.gbd, ue->d.gs.key);
+
+            GB_ARRAY_FLAGS(gbd).flags = ue->flag;
+            gb_touch_header(GB_FATHER(gbd));
+            gb_touch_entry((GBDATA *)gbd, GB_CREATED);
+        }
+        break;
         case GB_UNDO_ENTRY_TYPE_MODIFY_ARRAY:
         case GB_UNDO_ENTRY_TYPE_MODIFY:
             {
@@ -499,8 +505,8 @@ static GB_ERROR undo_entry(g_b_undo_entry *ue) {
             }
             break;
         default:
-            GB_internal_error("Undo stack corrupt:!!!");
-            error = GB_export_error("shit 34345");
+            GB_internal_error("Undo stack corrupt");
+            error = GB_export_error("Undo stack corrupt");
     }
 
     return error;

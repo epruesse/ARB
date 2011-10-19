@@ -40,8 +40,8 @@ struct g_b_undo_entry {
     int     gbm_index;
     long    sizeof_this;
     union {
-        gb_transaction_save *ts;
-        g_b_undo_gbd         gs;
+        gb_transaction_save *ts; // used by GB_UNDO_ENTRY_TYPE_MODIFY_ARRAY and GB_UNDO_ENTRY_TYPE_MODIFY
+        g_b_undo_gbd         gs; // used by GB_UNDO_ENTRY_TYPE_DELETED
     } d;
 };
 
