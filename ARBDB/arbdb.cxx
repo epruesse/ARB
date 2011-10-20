@@ -1958,13 +1958,16 @@ GB_ERROR GB_set_temporary(GBDATA *gbd) { // goes to header: __ATTR__USERESULT
     RETURN_ERROR(error);
 }
 
-GB_ERROR GB_clear_temporary(GBDATA *gbd) {
-    //! undo effect of GB_set_temporary()
-
-    GB_test_transaction(gbd);
+inline void clear_temporary(GBDATA *gbd) {
     gbd->flags.temporary = 0;
     gb_touch_entry(gbd, GB_NORMAL_CHANGE);
-    return 0;
+}
+
+void GB_clear_temporary(GBDATA *gbd) {
+    //! undo effect of GB_set_temporary()
+    GB_test_transaction(gbd);
+    clear_temporary(gbd);
+    gb_assert(!GB_in_temporary_branch(gbd)); // will not be saved (logic error?)
 }
 
 bool GB_is_temporary(GBDATA *gbd) {
@@ -1973,17 +1976,50 @@ bool GB_is_temporary(GBDATA *gbd) {
     return (long)gbd->flags.temporary;
 }
 
-bool GB_in_temporary_branch(GBDATA *gbd) {
-    /*! @return true, if 'gbd' is member of a temporary subtree,
-     * i.e. if GB_is_temporary(itself or any parent)
+GBDATA *GB_in_temporary_branch(GBDATA *gbd) {
+    /*! @return the root of a temporary subtree, if 'gbd' is member of such a subtree
      */
+    GBDATA *upmost_tmp = GB_is_temporary(gbd) ? gbd : NULL;
+    GBDATA *parent     = GB_get_father(gbd);
 
-    if (GB_is_temporary(gbd)) return true;
+    if (parent) {
+        GBDATA *ptmp         = GB_in_temporary_branch(parent);
+        if (ptmp) upmost_tmp = ptmp;
+    }
 
-    GBDATA *gb_parent = GB_get_father(gbd);
-    if (!gb_parent) return false;
+    return upmost_tmp;
+}
 
-    return GB_in_temporary_branch(gb_parent);
+static GB_ERROR correct_temporary_parents(GBDATA *cleared_son) {
+    GBDATA *parent = GB_get_father(cleared_son);
+    if (parent) {
+        if (GB_is_temporary(parent)) {
+            clear_temporary(parent);
+            for (GBDATA *son = GB_child(parent); son; son = GB_nextChild(son)) { // make all other sons temporary
+                if (son != cleared_son) {
+                    GB_ERROR error = GB_set_temporary(son);
+                    if (error) return error;
+                }
+            }
+        }
+        return correct_temporary_parents(parent);
+    }
+    return 0;
+}
+
+GB_ERROR GB_clear_temporary_upwards(GBDATA *gbd) {
+    //! like GB_clear_temporary, but corrects parent tmp-flags
+
+    // currently only used in its own test
+    // its useful to shrink big DBs to some entries w/o recompressing anything
+    // - mark gb_main as temp
+    // - call GB_clear_temporary_upwards for all entries you like to keep
+    // @@@ take care of system folder
+    
+    GB_test_transaction(gbd);
+
+    if (GB_is_temporary(gbd)) clear_temporary(gbd);
+    return correct_temporary_parents(gbd);
 }
 
 // ---------------------
@@ -2991,6 +3027,67 @@ void TEST_GB_shell() {
     }
 
     TEST_ASSERT_SEGFAULT(test_opendb); // should be impossible to open db w/o shell
+}
+
+inline GBDATA *make_cont(GBDATA *father, bool temp) {
+    GBDATA *cont = GB_create_container(father, temp ? "tmp" : "nor");
+    if (temp) TEST_ASSERT_NO_ERROR(GB_set_temporary(cont));
+    return cont;
+}
+
+void TEST_temp_entries() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("nosuch.arb", "crw");
+    TEST_ASSERT(gb_main);
+
+    {
+        GB_transaction ta(gb_main);
+
+        GBDATA *gb_nor = make_cont(gb_main, false);
+        GBDATA *gb_tmp = make_cont(gb_main, true);
+
+        GBDATA *gb_nor_nor = make_cont(gb_nor, false);
+        GBDATA *gb_nor_tmp = make_cont(gb_nor, true);
+
+        GBDATA *gb_tmp_nor = make_cont(gb_tmp, false);
+        GBDATA *gb_tmp_no2 = make_cont(gb_tmp, false);
+        GBDATA *gb_tmp_tmp = make_cont(gb_tmp, true);
+        GBDATA *gb_tmp_tm2 = make_cont(gb_tmp, true);
+
+        TEST_ASSERT(!GB_is_temporary(gb_nor));
+        TEST_ASSERT(!GB_is_temporary(gb_nor_nor));
+        TEST_ASSERT( GB_is_temporary(gb_nor_tmp));
+        TEST_ASSERT( GB_is_temporary(gb_tmp));
+        TEST_ASSERT(!GB_is_temporary(gb_tmp_nor));
+        TEST_ASSERT(!GB_is_temporary(gb_tmp_no2));
+        TEST_ASSERT( GB_is_temporary(gb_tmp_tmp));
+        TEST_ASSERT( GB_is_temporary(gb_tmp_tm2));
+
+        TEST_ASSERT_EQUAL(GB_in_temporary_branch(gb_nor),     (GBDATA*)NULL);
+        TEST_ASSERT_EQUAL(GB_in_temporary_branch(gb_nor_nor), (GBDATA*)NULL);
+        TEST_ASSERT_EQUAL(GB_in_temporary_branch(gb_nor_tmp), gb_nor_tmp);
+        TEST_ASSERT_EQUAL(GB_in_temporary_branch(gb_tmp),     gb_tmp);
+        TEST_ASSERT_EQUAL(GB_in_temporary_branch(gb_tmp_nor), gb_tmp);
+        TEST_ASSERT_EQUAL(GB_in_temporary_branch(gb_tmp_no2), gb_tmp);
+        TEST_ASSERT_EQUAL(GB_in_temporary_branch(gb_tmp_tmp), gb_tmp);
+        TEST_ASSERT_EQUAL(GB_in_temporary_branch(gb_tmp_tm2), gb_tmp);
+
+        TEST_ASSERT_NO_ERROR(GB_clear_temporary_upwards(gb_tmp_tmp));
+
+        TEST_ASSERT(!GB_is_temporary(gb_tmp));
+        TEST_ASSERT( GB_is_temporary(gb_tmp_nor)); // changed
+        TEST_ASSERT( GB_is_temporary(gb_tmp_no2)); // changed
+        TEST_ASSERT(!GB_is_temporary(gb_tmp_tmp));
+        TEST_ASSERT( GB_is_temporary(gb_tmp_tm2));
+        
+        TEST_ASSERT_EQUAL(GB_in_temporary_branch(gb_tmp),     (GBDATA*)NULL);
+        TEST_ASSERT_EQUAL(GB_in_temporary_branch(gb_tmp_nor), gb_tmp_nor);
+        TEST_ASSERT_EQUAL(GB_in_temporary_branch(gb_tmp_no2), gb_tmp_no2);
+        TEST_ASSERT_EQUAL(GB_in_temporary_branch(gb_tmp_tmp), (GBDATA*)NULL);
+        TEST_ASSERT_EQUAL(GB_in_temporary_branch(gb_tmp_tm2), gb_tmp_tm2);
+    }
+
+    GB_close(gb_main);
 }
 
 #endif
