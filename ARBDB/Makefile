@@ -592,6 +592,7 @@ admalloc.o: $(ARBHOME)/INCLUDE/attributes.h
 admalloc.o: $(ARBHOME)/INCLUDE/dupstr.h
 admalloc.o: $(ARBHOME)/INCLUDE/smartptr.h
 admalloc.o: $(ARBHOME)/INCLUDE/test_global.h
+admalloc.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 admap.o: ad_prot.h
 admap.o: arb_assert.h
