@@ -123,6 +123,9 @@ namespace arb_test {
     inline void print(size_t z)              { fprintf(stderr, "%zu", z); }
     inline void print_hex(size_t z)          { fprintf(stderr, "0x%zx", z); }
 
+    inline void print(void *p)               { print((long)p); }
+    inline void print_hex(void *p)           { print_hex((long)p); }
+    
     inline void print(unsigned char c)       { fprintf(stderr, "'%c'", c); }
     inline void print_hex(unsigned char c)   { print_hex(size_t(c)); }
 
