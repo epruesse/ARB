@@ -22,10 +22,15 @@
 // #define DUMP_MEMBLKS_AT_EXIT
 
 #ifdef DEBUG
+#if defined(DEVEL_RALF)
 // #define TEST_MEMBLKS
-// #define TRACE_ALLOCS
+#define CHECKED_ALLOCS
+#endif
+#if defined(CHECKED_ALLOCS)
+#warning allocation logger is active (non-standard) 
+#endif
 #if defined(WARN_TODO)
-#warning unit tests fail when TRACE_ALLOCS is defined (due to wrong sized block during load(?). cant fix atm. see [6672])
+#warning unit tests fail when CHECKED_ALLOCS is defined (due to wrong sized block during load(?). cant fix atm. see [6672])
 #endif
 #endif
 
@@ -140,37 +145,55 @@ NOT4PERL void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, un
     return mem;
 }
 
-#ifdef TRACE_ALLOCS
+#ifdef CHECKED_ALLOCS
 
 class AllocLogEntry {
+    // Helper class to track down memleaks in internal memory management.
+    // It does not report directly, but leaks intentionally
+    // (at the point of allocation and at the point of any problems detected)
+    // => run inside valgrind to use
+
     void   *block;
     size_t  size;
     long    index;
 
-    mutable BackTraceInfo *trace;
+    mutable const char *isBad; // NULL or reason why bad
+    mutable char       *mark_alloc_by_leak; // leaks where allocated (if isBad)
 
 public:
-    AllocLogEntry(void *block_, size_t size_, long index_, bool do_trace)
+    AllocLogEntry(void *block_, size_t size_, long index_)
         : block(block_)
         , size(size_)
         , index(index_)
-        , trace(do_trace ? GBK_get_backtrace(5) : NULL)
+        , isBad(false)
+        , mark_alloc_by_leak(strdup("alloc position"))
     { }
     AllocLogEntry(const AllocLogEntry& other)
         : block(other.block)
         , size(other.size)
         , index(other.index)
-        , trace(other.trace)
+        , isBad(other.isBad)
+        , mark_alloc_by_leak(other.mark_alloc_by_leak)
     {
-        other.trace = NULL;
+        other.mark_alloc_by_leak = NULL;
+        other.isBad = false;
     }
-    ~AllocLogEntry() { if (trace) GBK_free_backtrace(trace); }
+    DECLARE_ASSIGNMENT_OPERATOR(AllocLogEntry);
+    ~AllocLogEntry() {
+        if (!isBad) free(mark_alloc_by_leak); // dont leak on good blocks
+    }
+
+    void mark_bad(const char *reason) const {
+        isBad = strdup(reason); // leak where marked bad
+    }
+    void mark_bad_if(bool condition, const char *reason) const {
+        if (condition) mark_bad(reason);
+    }
 
     size_t get_size() const { return size; }
     long get_index() const { return index; }
-    
+
     bool operator<(const AllocLogEntry& other) const { return block < other.block; }
-    void dump(FILE *out, GB_CSTR message) const { GBK_dump_former_backtrace(trace, out, message); }
 };
 
 typedef std::set<AllocLogEntry> AllocLogEntries;
@@ -179,7 +202,7 @@ class AllocLogger {
     AllocLogEntries entries;
 
     const AllocLogEntry *existingEntry(void *block) {
-        AllocLogEntries::const_iterator found = entries.find(AllocLogEntry(block, 0, 0, false));
+        AllocLogEntries::const_iterator found = entries.find(AllocLogEntry(block, 0, 0));
         
         return found == entries.end() ? NULL : &*found;
     }
@@ -193,7 +216,7 @@ public:
             fprintf(stderr, "%zu non-freed blocks:\n", count);
             AllocLogEntries::const_iterator end = entries.end();
             for (AllocLogEntries::const_iterator entry = entries.begin(); entry != end; ++entry) {
-                entry->dump(stderr, "block was allocated from here");
+                entry->mark_bad("block not freed");
             }
         }
     }
@@ -201,11 +224,10 @@ public:
     void allocated(void *block, size_t size, long index) {
         const AllocLogEntry *exists = existingEntry(block);
         if (exists) {
-            GBK_dump_backtrace(stderr, "Block allocated again");
-            exists->dump(stderr, "Already allocated from here");
+            exists->mark_bad("block allocated again (before it was freed)");
         }
         else {
-            entries.insert(AllocLogEntry(block, size, index, true));
+            entries.insert(AllocLogEntry(block, size, index));
         }
     }
     void freed(void *block, size_t size, long index) {
@@ -217,8 +239,8 @@ public:
             }
         }
         else {
-            gb_assert(exists->get_size() == size);
-            gb_assert(exists->get_index() == index);
+            exists->mark_bad_if(exists->get_size()  != size,  "size mismatch");
+            exists->mark_bad_if(exists->get_index() != index, "index mismatch");
             entries.erase(*exists);
         }
     }
@@ -551,7 +573,7 @@ void *gbmGetMemImpl(size_t size, long index) {
         memset(erg, 0, nsize); // act like calloc()
     }
 
-#ifdef TRACE_ALLOCS
+#ifdef CHECKED_ALLOCS
     allocLogger.allocated(erg, size, index);
 #endif
     return erg;
@@ -567,7 +589,7 @@ void gbmFreeMemImpl(void *data, size_t size, long index) {
     ggi = & gbm_pool4idx[index];
     nsize = (size + (GBM_ALIGNED - 1)) & (-GBM_ALIGNED);
 
-#ifdef TRACE_ALLOCS
+#ifdef CHECKED_ALLOCS
     allocLogger.freed(data, size, index);
 #endif
 
@@ -677,11 +699,10 @@ void gbm_debug_mem() {
 
 // --------------------------------------------------------------------------------
 
-#if defined(UNIT_TESTS) && 0
-
+#if defined(UNIT_TESTS)
 #include <test_unit.h>
 
-void TEST_ARBDB_memory() { // not a real unit test - just was used for debugging
+void DEBUGGING_TEST_ARBDB_memory() { // not a real unit test - just was used for debugging
 #define ALLOCS 69
     long *blocks[ALLOCS];
 
@@ -737,6 +758,5 @@ void TEST_ARBDB_memory() { // not a real unit test - just was used for debugging
 
     GBK_dump_backtrace(stderr, "test");
 }
-
 
 #endif
