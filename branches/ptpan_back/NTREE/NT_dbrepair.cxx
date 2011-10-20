@@ -477,63 +477,65 @@ static GB_ERROR NT_del_mark_move_REF(GBDATA *gb_main, size_t species_count, size
 
     // delete 'mark' entries from all alignments of species/SAIs
 
-    arb_progress  progress(all);
     ConstStrArray ali_names;
     GBT_get_alignment_names(ali_names, gb_main);
 
-    for (int pass = 0; pass < 2 && !error; ++pass) {
-        for (GBDATA *gb_item = (pass == 0) ? GBT_first_species(gb_main) : GBT_first_SAI(gb_main);
-             gb_item && !error;
-             gb_item = (pass == 0) ? GBT_next_species(gb_item) : GBT_next_SAI(gb_item))
-        {
-            for (int ali = 0; ali_names[ali] && !error; ++ali) {
-                GBDATA *gb_ali = GB_entry(gb_item, ali_names[ali]);
-                if (gb_ali) {
-                    GBDATA *gb_mark = GB_entry(gb_ali, "mark");
-                    if (gb_mark) {
-                        error = GB_delete(gb_mark);
-                        removed++;
+    if (ali_names.size()) {
+        arb_progress  progress(all);
+        for (int pass = 0; pass < 2 && !error; ++pass) {
+            for (GBDATA *gb_item = (pass == 0) ? GBT_first_species(gb_main) : GBT_first_SAI(gb_main);
+                 gb_item && !error;
+                 gb_item = (pass == 0) ? GBT_next_species(gb_item) : GBT_next_SAI(gb_item))
+            {
+                for (int ali = 0; ali_names[ali] && !error; ++ali) {
+                    GBDATA *gb_ali = GB_entry(gb_item, ali_names[ali]);
+                    if (gb_ali) {
+                        GBDATA *gb_mark = GB_entry(gb_ali, "mark");
+                        if (gb_mark) {
+                            error = GB_delete(gb_mark);
+                            removed++;
+                        }
                     }
                 }
+
+                progress.inc_and_check_user_abort(error);
             }
-
-            progress.inc_and_check_user_abort(error);
         }
-    }
 
-    {
-        char   *helix_name = GBT_get_default_helix(gb_main);
-        GBDATA *gb_helix   = GBT_find_SAI(gb_main, helix_name);
+        {
+            char   *helix_name = GBT_get_default_helix(gb_main);
+            GBDATA *gb_helix   = GBT_find_SAI(gb_main, helix_name);
 
-        if (gb_helix) {
-            for (int ali = 0; ali_names[ali] && !error; ++ali) {
-                GBDATA *gb_ali     = GB_entry(gb_helix, ali_names[ali]);
-                GBDATA *gb_old_ref = GB_entry(gb_ali, "REF");
-                GBDATA *gb_new_ref = GB_entry(gb_ali, "_REF");
+            if (gb_helix) {
+                for (int ali = 0; ali_names[ali] && !error; ++ali) {
+                    GBDATA *gb_ali     = GB_entry(gb_helix, ali_names[ali]);
+                    GBDATA *gb_old_ref = GB_entry(gb_ali, "REF");
+                    GBDATA *gb_new_ref = GB_entry(gb_ali, "_REF");
 
-                if (gb_old_ref) {
-                    if (gb_new_ref) {
-                        error = GBS_global_string("SAI:%s has 'REF' and '_REF' in '%s' (data corrupt?!)",
-                                                  helix_name, ali_names[ali]);
-                    }
-                    else { // move info from REF -> _REF
-                        char *content       = GB_read_string(gb_old_ref);
-                        if (!content) error = GB_await_error();
-                        else {
-                            gb_new_ref             = GB_create(gb_ali, "_REF", GB_STRING);
-                            if (!gb_new_ref) error = GB_await_error();
+                    if (gb_old_ref) {
+                        if (gb_new_ref) {
+                            error = GBS_global_string("SAI:%s has 'REF' and '_REF' in '%s' (data corrupt?!)",
+                                                      helix_name, ali_names[ali]);
+                        }
+                        else { // move info from REF -> _REF
+                            char *content       = GB_read_string(gb_old_ref);
+                            if (!content) error = GB_await_error();
                             else {
-                                error = GB_write_string(gb_new_ref, content);
-                                if (!error) error = GB_delete(gb_old_ref);
+                                gb_new_ref             = GB_create(gb_ali, "_REF", GB_STRING);
+                                if (!gb_new_ref) error = GB_await_error();
+                                else {
+                                    error = GB_write_string(gb_new_ref, content);
+                                    if (!error) error = GB_delete(gb_old_ref);
+                                }
+                                free(content);
                             }
-                            free(content);
                         }
                     }
                 }
             }
-        }
 
-        free(helix_name);
+            free(helix_name);
+        }
     }
 
     if (!error) {
