@@ -903,49 +903,29 @@ char *gb_uncompress_by_sequence(GBDATA *gbd, const char *ss, long size, GB_ERROR
 
 void TEST_SLOW_decompression() {
     GB_shell shell;
+    
+    GBDATA *gb_main;
+    TEST_ASSERT_RESULT__NOERROREXPORTED(gb_main = GB_open("compression_bug.arb", "rw"));
 
-    for (int pass = 0; pass <= 1; pass++) {
-        GBDATA *gb_main;
+    {
+        GB_transaction ta(gb_main);
+        GBDATA *gb_species;
+        TEST_ASSERT_RESULT__NOERROREXPORTED(gb_species = GBT_find_species(gb_main, "AnCha112f"));
 
-        if (pass == 0) TEST_ASSERT_RESULT__NOERROREXPORTED(gb_main = GB_open("/home/ralf/data/db/decompress_error2.arb", "rw"));
-        if (pass == 1) TEST_ASSERT_RESULT__NOERROREXPORTED(gb_main = GB_open("compression_bug.arb", "rw"));
+        GBDATA *gb_data;
+        TEST_ASSERT_RESULT__NOERROREXPORTED(gb_data = GBT_read_sequence(gb_species, "ali_16s"));
 
-        {
-            GBDATA *gb_data;
-            {
-                GB_transaction ta(gb_main);
-                GBDATA *gb_species;
-                TEST_ASSERT_RESULT__NOERROREXPORTED(gb_species = GBT_find_species(gb_main, "AnCha112f"));
+        long seqlen = GB_read_string_count(gb_data);
+        TEST_ASSERT_EQUAL(seqlen, 86471);
 
-                TEST_ASSERT_RESULT__NOERROREXPORTED(gb_data = GBT_read_sequence(gb_species, "ali_16s"));
+        char *seq = GB_read_string(gb_data);
+        TEST_ASSERT_DIFFERENT__BROKEN(GB_await_error(), "ARB ERROR: Wrong decompressed size (expected=86472, got=86471)");
 
-                long seqlen = GB_read_string_count(gb_data);
-                TEST_ASSERT_EQUAL(seqlen, 86471);
-
-                char *seq = GB_read_string(gb_data);
-                TEST_ASSERT_DIFFERENT__BROKEN(GB_await_error(), "ARB ERROR: Wrong decompressed size (expected=86472, got=86471)");
-
-                const char *cseq = GB_read_char_pntr(gb_data);
-                TEST_ASSERT_DIFFERENT__BROKEN(GB_await_error(), "ARB ERROR: Wrong decompressed size (expected=86472, got=86471)");
-            }
-
-            if (pass == 0) {
-                // shrink testdb
-                GB_transaction ta(gb_main);
-
-                GB_push_my_security(gb_main);
-                TEST_ASSERT_NO_ERROR(GB_set_temporary(gb_main));
-                TEST_ASSERT_NO_ERROR(GB_clear_temporary_upwards(gb_data));
-                TEST_ASSERT_NO_ERROR(GB_clear_temporary_upwards(GB_search(gb_main, "presets/use", GB_FIND)));
-                TEST_ASSERT_NO_ERROR(GB_clear_temporary_upwards(GBT_get_alignment(gb_main, "ali_16s")));
-                GB_pop_my_security(gb_main);
-
-                TEST_ASSERT_NO_ERROR(GB_save_as(gb_main, "compression_bug.arb", "b"));
-            }
-        }
-
-        GB_close(gb_main);
+        const char *cseq = GB_read_char_pntr(gb_data);
+        TEST_ASSERT_DIFFERENT__BROKEN(GB_await_error(), "ARB ERROR: Wrong decompressed size (expected=86472, got=86471)");
     }
+
+    GB_close(gb_main);
 }
 
 #endif // UNIT_TESTS
