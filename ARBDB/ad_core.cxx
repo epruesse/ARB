@@ -528,6 +528,7 @@ void gb_delete_dummy_father(GBCONTAINER **dummy_father) {
 
     gb_assert(GB_TYPE(gbc)   == GB_DB);
     gb_assert(GB_FATHER(gbc) == NULL);
+    gb_assert(gbc->d.nheader == 1);
 
     for (int index = 0; index < gbc->d.nheader; index++) {
         GBCONTAINER *gb_main = (GBCONTAINER*)GBCONTAINER_ELEM(gbc, index);

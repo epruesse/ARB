@@ -780,9 +780,9 @@ __ATTR__USERESULT static GBCM_ServerResult gbcms_talking_put_update(int socket, 
         }
     }
 
+    gbcm_read_flush();
 
     if (result.ok()) {
-        gbcm_read_flush();
         gbcms_create *cs = cs_main;
         while (cs && result.ok()) { // send all id's of newly created objects
             result = gbcm_write_two(socket, (long)cs->client_id, (long)cs->server_id);
@@ -794,7 +794,7 @@ __ATTR__USERESULT static GBCM_ServerResult gbcms_talking_put_update(int socket, 
     return result;
 }
 
-__ATTR__USERESULT static GBCM_ServerResult gbcms_send_modified_data_to_client(GBDATA *gbd, int socket, long *hsin, void *sin) {
+__ATTR__USERESULT static GBCM_ServerResult gbcms_receive_modified_data_from_client(GBDATA *gbd, int socket, long *hsin, void *sin) {
     GBCM_ServerResult result = GBCM_ServerResult::OK();
     GB_begin_transaction(gbd);
     while (gb_local->running_client_transaction == ARB_TRANS) {
@@ -861,7 +861,7 @@ __ATTR__USERESULT static GBCM_ServerResult gbcms_talking_init_transaction(int so
         if (result.ok()) result = gbcm_write_flush(socket);
     }
 
-    if (result.ok()) result = gbcms_send_modified_data_to_client(gbd, socket, hsin, sin);
+    if (result.ok()) result = gbcms_receive_modified_data_from_client(gbd, socket, hsin, sin);
     return result;
 }
 
@@ -892,7 +892,7 @@ __ATTR__USERESULT static GBCM_ServerResult gbcms_talking_begin_transaction(int s
         if (result.ok()) result = gbcms_write_updated(socket, gbd, (long)hs, client_clock);
         if (result.ok()) result = gbcm_write_two(socket, GBCM_COMMAND_PUT_UPDATE_END, 0);
         if (result.ok()) result = gbcm_write_flush(socket);
-        if (result.ok()) result = gbcms_send_modified_data_to_client(gbd, socket, hsin, sin);
+        if (result.ok()) result = gbcms_receive_modified_data_from_client(gbd, socket, hsin, sin);
     }
     return result;
 }
