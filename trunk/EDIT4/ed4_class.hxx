@@ -11,6 +11,21 @@
 # define IMPLEMENT_DUMP         // comment out this line to skip compilation of the dump() methods
 #endif
 
+#if defined(IMPLEMENT_DUMP)
+#define DECLARE_DUMP_FOR_BASECLASS()            \
+    virtual void dump(size_t indent) const = 0; \
+    virtual void dump_base(size_t indent) const
+
+#define DECLARE_DUMP_FOR_LEAFCLASS()            \
+    virtual void dump(size_t indent) const
+
+#else
+#define DECLARE_DUMP_FOR_BASECLASS()
+#define DECLARE_DUMP_FOR_LEAFCLASS()
+#endif // IMPLEMENT_DUMP
+
+
+
 // #define LIMIT_TOP_AREA_SPACE // // if defined, top area is size-limited
 #ifdef LIMIT_TOP_AREA_SPACE
 #define MAX_TOP_AREA_SIZE 10    // size limit for top-area
@@ -693,10 +708,7 @@ public:
 
     void draw_bb(int color);
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const = 0;
-    void dump_base(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_BASECLASS();
 
     // function for species_pointer
 
@@ -871,9 +883,7 @@ public:
     ED4_members *children;
     bool         is_group;
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_BASECLASS();
 
     int refresh_flag_ok();
 
@@ -968,9 +978,7 @@ public:
     ED4_selection_entry *selection_info;            // Info about i.e. Position
     long                 actual_timestamp;
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_BASECLASS();
 
     // callbacks
 
@@ -1181,9 +1189,8 @@ public:
     ED4_terminal *get_top_middle_spacer_terminal() const { return top_middle_spacer; }
     ED4_terminal *get_top_middle_line_terminal() const { return top_middle_line; }
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS();
+
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode resize_requested_by_parent();
 };
@@ -1195,9 +1202,7 @@ public:
     ED4_device_manager  (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
     ~ED4_device_manager ();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS();
 };
 
 class ED4_area_manager : public ED4_manager
@@ -1206,9 +1211,8 @@ class ED4_area_manager : public ED4_manager
 public:
     ED4_area_manager    (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
     ~ED4_area_manager   ();
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+
+    DECLARE_DUMP_FOR_LEAFCLASS();
 };
 
 class ED4_multi_species_manager : public ED4_manager
@@ -1228,9 +1232,7 @@ public:
     ED4_multi_species_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
     ~ED4_multi_species_manager();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS();
 
     int           count_visible_children(); // is called by a multi_species_manager
     int           count_all_children_and_set_group_id(); // counts all children of a parent
@@ -1272,9 +1274,7 @@ public:
 
     void reinit_char_table();
     
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_BASECLASS();
 };
 
 class ED4_group_manager : public ED4_abstract_group_manager
@@ -1286,9 +1286,7 @@ public:
     ED4_group_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group);
     virtual ~ED4_group_manager();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS();
 };
 
 enum ED4_remap_mode {
@@ -1386,6 +1384,8 @@ public:
 
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode resize_requested_by_parent();
+
+    DECLARE_DUMP_FOR_LEAFCLASS();
 };
 
 typedef void (*ED4_species_manager_cb)(ED4_species_manager*, AW_CL);
@@ -1413,9 +1413,7 @@ public:
     ED4_species_manager (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
     ~ED4_species_manager   ();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS();
 
     bool setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfold_groups, ED4_CursorJumpType jump_type);
 
@@ -1433,9 +1431,7 @@ public:
     ED4_multi_sequence_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
     ~ED4_multi_sequence_manager();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS();
 };
 
 class ED4_sequence_manager : public ED4_manager
@@ -1445,9 +1441,7 @@ public:
     ED4_sequence_manager    (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
     ~ED4_sequence_manager   ();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS();
 };
 
 class ED4_multi_name_manager : public ED4_manager
@@ -1460,9 +1454,7 @@ public:
     ED4_multi_name_manager  (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
     virtual ~ED4_multi_name_manager ();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS();
 };
 
 
@@ -1475,9 +1467,7 @@ public:
     ED4_name_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
     ~ED4_name_manager();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS();
 };
 
 
@@ -1495,9 +1485,7 @@ public:
     ED4_tree_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_tree_terminal();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS();
 };
 
 class ED4_bracket_terminal : public ED4_terminal
@@ -1510,9 +1498,7 @@ public:
     ED4_bracket_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_bracket_terminal();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS();
 };
 
 class ED4_text_terminal : public ED4_terminal {
@@ -1528,9 +1514,7 @@ public:
     ED4_text_terminal(GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_text_terminal();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_BASECLASS();
 };
 
 class ED4_sequence_terminal_basic : public ED4_text_terminal { // derived from a Noncopyable
@@ -1554,6 +1538,7 @@ public:
     void calc_intervall_displayed_in_rectangle(AW_screen_area *area_rect, long *left_index, long *right_index);
     void calc_update_intervall(long *left_index, long *right_index);
 
+    DECLARE_DUMP_FOR_BASECLASS();
 };
 
 class ED4_AA_sequence_terminal : public ED4_sequence_terminal_basic { // derived from a Noncopyable
@@ -1581,6 +1566,8 @@ public:
     
     int GET_aaStartPos () { return aaStartPos; }
     int GET_aaStrandType () { return aaStrandType; }
+
+    DECLARE_DUMP_FOR_LEAFCLASS();
 };
 
 class ED4_sequence_terminal : public ED4_sequence_terminal_basic { // derived from a Noncopyable
@@ -1604,9 +1591,7 @@ public:
         return col_term ? col_term->to_columnStat_terminal() : 0;
     }
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS();
 };
 
 class ED4_columnStat_terminal : public ED4_text_terminal { // derived from a Noncopyable
@@ -1635,9 +1620,7 @@ public:
     ED4_columnStat_terminal(GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_columnStat_terminal();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS();
 };
 
 class ED4_species_name_terminal : public ED4_text_terminal
@@ -1657,9 +1640,7 @@ public:
         return seq_term ? seq_term->to_sequence_terminal() : 0;
     }
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS();
 };
 
 class ED4_sequence_info_terminal : public ED4_text_terminal
@@ -1682,9 +1663,7 @@ public:
 
     virtual bool remove_deleted_children();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS();
 };
 
 class ED4_pure_text_terminal : public ED4_text_terminal
@@ -1696,9 +1675,7 @@ public:
 
     virtual int get_length() const { int len; resolve_pointer_to_char_pntr(&len); return len; }
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS();
 };
 
 class ED4_consensus_sequence_terminal : public ED4_sequence_terminal_basic
@@ -1714,9 +1691,7 @@ public:
     virtual GB_alignment_type GetAliType() { e4_assert(0); return GB_AT_UNKNOWN; };
     virtual int get_length() const;
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS();
 };
 
 class ED4_spacer_terminal : public ED4_terminal
@@ -1729,9 +1704,7 @@ public:
     ED4_spacer_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_spacer_terminal();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS();
 };
 
 class ED4_line_terminal : public ED4_terminal
@@ -1744,9 +1717,7 @@ public:
     ED4_line_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_line_terminal();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS();
 };
 
 
