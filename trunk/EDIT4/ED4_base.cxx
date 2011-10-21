@@ -445,7 +445,7 @@ ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_C
     char buffer[35];
 
     sprintf(buffer, "Group_Manager.%ld", ED4_counter);                                                          // create new group manager
-    *group_manager = new ED4_group_manager(buffer, 0, 0, 0, 0, NULL, 0);
+    *group_manager = new ED4_group_manager(buffer, 0, 0, 0, 0, NULL);
 
     sprintf(buffer, "Bracket_Terminal.%ld", ED4_counter);
     bracket_terminal = new ED4_bracket_terminal(buffer, 0, 0, BRACKETWIDTH, 0, *group_manager);

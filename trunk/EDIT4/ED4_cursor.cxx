@@ -1666,7 +1666,7 @@ void ED4_change_cursor(AW_window * /* aww */, AW_CL /* cd1 */, AW_CL /* cd2 */) 
 class fake_man_4test : public ED4_species_manager {
 public:
     fake_man_4test()
-        : ED4_species_manager("fake", 0, 0, 0, 0, NULL, false)
+        : ED4_species_manager("fake", 0, 0, 0, 0, NULL)
     {
     }
 };

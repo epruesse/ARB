@@ -527,7 +527,7 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
     height_spacer   = SPACERHEIGHT;
 
     sprintf(namebuffer, "Group_Manager.%ld", ED4_counter);                              // create new group manager
-    group_manager = new ED4_group_manager(namebuffer, 0, local_count_position, 0, 0, parent, 0);
+    group_manager = new ED4_group_manager(namebuffer, 0, local_count_position, 0, 0, parent);
     parent->children->append_member(group_manager);
 
     sprintf(namebuffer, "Bracket_Terminal.%ld", ED4_counter);

@@ -881,7 +881,6 @@ class ED4_manager : public ED4_base { // derived from a Noncopyable
 
 public:
     ED4_members *children;
-    bool         is_group;
 
     DECLARE_DUMP_FOR_BASECLASS();
 
@@ -962,7 +961,7 @@ public:
     virtual ED4_returncode      make_children_visible();
     virtual ED4_returncode  hide_children();
 
-    ED4_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_manager();
 };
 
@@ -1180,7 +1179,7 @@ class ED4_main_manager : public ED4_manager { // derived from a Noncopyable
 
     ED4_main_manager(const ED4_main_manager&); // copy-constructor not allowed
 public:
-    ED4_main_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_main_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_main_manager();
 
     void set_top_middle_spacer_terminal(ED4_terminal *top_middle_spacer_) { top_middle_spacer = top_middle_spacer_; }
@@ -1199,7 +1198,7 @@ class ED4_device_manager : public ED4_manager
 {
     ED4_device_manager(const ED4_device_manager&); // copy-constructor not allowed
 public:
-    ED4_device_manager  (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_device_manager  (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_device_manager ();
 
     DECLARE_DUMP_FOR_LEAFCLASS();
@@ -1209,7 +1208,7 @@ class ED4_area_manager : public ED4_manager
 {
     ED4_area_manager(const ED4_area_manager&); // copy-constructor not allowed
 public:
-    ED4_area_manager    (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_area_manager    (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_area_manager   ();
 
     DECLARE_DUMP_FOR_LEAFCLASS();
@@ -1229,7 +1228,7 @@ class ED4_multi_species_manager : public ED4_manager
     ED4_multi_species_manager(const ED4_multi_species_manager&); // copy-constructor not allowed
 
 public:
-    ED4_multi_species_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_multi_species_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_multi_species_manager();
 
     DECLARE_DUMP_FOR_LEAFCLASS();
@@ -1259,8 +1258,8 @@ protected:
     ED4_char_table my_table; // table concerning Consensusfunction
 
 public:
-    ED4_abstract_group_manager(const char *id_, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent_, bool temp_is_group)
-        : ED4_manager(id_, x, y, width, height, parent_, temp_is_group),
+    ED4_abstract_group_manager(const char *id_, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent_)
+        : ED4_manager(id_, x, y, width, height, parent_),
           my_table(0)
     {
     }
@@ -1283,7 +1282,7 @@ class ED4_group_manager : public ED4_abstract_group_manager
 
 public:
 
-    ED4_group_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group);
+    ED4_group_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_group_manager();
 
     DECLARE_DUMP_FOR_LEAFCLASS();
@@ -1410,7 +1409,7 @@ class ED4_species_manager : public ED4_manager
 
     ED4_species_manager(const ED4_species_manager&); // copy-constructor not allowed
 public:
-    ED4_species_manager (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_species_manager (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_species_manager   ();
 
     DECLARE_DUMP_FOR_LEAFCLASS();
@@ -1428,7 +1427,7 @@ class ED4_multi_sequence_manager : public ED4_manager
 {
     ED4_multi_sequence_manager(const ED4_multi_sequence_manager&); // copy-constructor not allowed
 public:
-    ED4_multi_sequence_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_multi_sequence_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_multi_sequence_manager();
 
     DECLARE_DUMP_FOR_LEAFCLASS();
@@ -1438,7 +1437,7 @@ class ED4_sequence_manager : public ED4_manager
 {
     ED4_sequence_manager(const ED4_sequence_manager&); // copy-constructor not allowed
 public:
-    ED4_sequence_manager    (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_sequence_manager    (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_sequence_manager   ();
 
     DECLARE_DUMP_FOR_LEAFCLASS();
@@ -1451,7 +1450,7 @@ class ED4_multi_name_manager : public ED4_manager
 
     ED4_multi_name_manager(const ED4_multi_name_manager&); // copy-constructor not allowed
 public:
-    ED4_multi_name_manager  (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_multi_name_manager  (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_multi_name_manager ();
 
     DECLARE_DUMP_FOR_LEAFCLASS();
@@ -1464,7 +1463,7 @@ class ED4_name_manager : public ED4_manager
     // it's linked into speciesmanager
     ED4_name_manager(const ED4_name_manager&); // copy-constructor not allowed
 public:
-    ED4_name_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_name_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_name_manager();
 
     DECLARE_DUMP_FOR_LEAFCLASS();
