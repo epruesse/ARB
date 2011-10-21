@@ -436,7 +436,7 @@ ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_C
     ED4_species_name_terminal   *species_name_terminal  = NULL;
     ED4_sequence_manager        *sequence_manager       = NULL;
     ED4_sequence_info_terminal  *sequence_info_terminal = NULL;
-    ED4_sequence_terminal       *sequence_terminal      = NULL;
+    ED4_sequence_terminal_basic *sequence_terminal      = NULL;
     ED4_spacer_terminal         *group_spacer_terminal1 = NULL;
     ED4_spacer_terminal         *group_spacer_terminal2 = NULL;
     ED4_multi_species_manager   *multi_species_manager  = NULL;
@@ -445,7 +445,7 @@ ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_C
     char buffer[35];
 
     sprintf(buffer, "Group_Manager.%ld", ED4_counter);                                                          // create new group manager
-    *group_manager = new ED4_group_manager(buffer, 0, 0, 0, 0, NULL);
+    *group_manager = new ED4_group_manager(buffer, 0, 0, 0, 0, NULL, 0);
 
     sprintf(buffer, "Bracket_Terminal.%ld", ED4_counter);
     bracket_terminal = new ED4_bracket_terminal(buffer, 0, 0, BRACKETWIDTH, 0, *group_manager);
@@ -917,11 +917,11 @@ void ED4_sequence_terminal_basic::calc_update_intervall(long *left_index, long *
     if (*left_index < 0) *left_index                             = 0;
 }
 
-void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager, arb_progress *progress) {
+void ED4_manager::create_consensus(ED4_abstract_group_manager *upper_group_manager, arb_progress *progress) {
     // creates consensus
     // is called by group manager
 
-    ED4_group_manager *group_manager_for_child = upper_group_manager;
+    ED4_abstract_group_manager *group_manager_for_child = upper_group_manager;
 
     if (is_group_manager()) {
         ED4_group_manager *group_manager = to_group_manager();

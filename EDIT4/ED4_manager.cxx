@@ -1905,8 +1905,7 @@ void ED4_species_manager::remove_all_callbacks() {
 // --------------------------------------------------------------------------------
 
 ED4_group_manager::ED4_group_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group) :
-    ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group),
-    my_table(0)
+    ED4_abstract_group_manager(temp_id, x, y, width, height, temp_parent, temp_is_group)
 {
     spec = &(group_manager_spec);
 }
@@ -2133,8 +2132,8 @@ GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
 // --------------------------------------------------------------------------------
 
 ED4_root_group_manager::ED4_root_group_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_group_manager(temp_id, x, y, width, height, temp_parent),
-      my_remap()
+    : ED4_abstract_group_manager(temp_id, x, y, width, height, temp_parent, 0),
+      my_remap() 
 {
     spec = &(root_group_manager_spec);
 
