@@ -351,7 +351,7 @@ void PV_ManageTerminals(AW_root *root) {
                             // walk through all the corresponding AA sequence terminals for the species and
                             // hide or unhide the terminals based on the display options set by the user
                             ED4_species_name_terminal *speciesNameTerm = speciesManager->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
-                            if (speciesNameTerm->flag.selected) {
+                            if (speciesNameTerm->tflag.selected) {
                                 for (int i=0; i<PV_AA_Terminals4Species; i++) {
                                     // get the corresponding AA_sequence_terminal skipping sequence_info terminal
                                     // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
