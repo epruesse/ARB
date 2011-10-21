@@ -964,7 +964,7 @@ public:
         unsigned int selected : 1;                  // Flag for 'Object selected'
         unsigned int dragged : 1;                   // Flag for 'Object dragged'
         unsigned int deleted : 1;
-    } flag;
+    } tflag;
     ED4_selection_entry *selection_info;            // Info about i.e. Position
     long                 actual_timestamp;
 

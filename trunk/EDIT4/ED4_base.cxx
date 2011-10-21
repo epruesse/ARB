@@ -28,7 +28,7 @@ bool ED4_base::remove_deleted_children()
 
 bool ED4_terminal::remove_deleted_children()
 {
-    if (flag.deleted) {
+    if (tflag.deleted) {
         if (get_species_pointer() != 0) {
 #if defined(DEBUG)
             printf("ED4_terminal: has non-zero species_pointer in remove_deleted_children (resetting to zero)\n");
@@ -44,7 +44,7 @@ bool ED4_terminal::remove_deleted_children()
 }
 bool ED4_sequence_info_terminal::remove_deleted_children()
 {
-    if (flag.deleted) {
+    if (tflag.deleted) {
         if (get_species_pointer() != 0) {
 #if defined(DEBUG)
             printf("ED4_sequence_info_terminal: has non-zero species_pointer in remove_deleted_children (resetting to zero)\n");
@@ -188,7 +188,7 @@ void ED4_text_terminal::deleted_from_database()
         printf("- Deleting name terminal\n");
 #endif // DEBUG
         ED4_name_manager *name_man = parent->to_name_manager();
-        flag.deleted               = 1;
+        tflag.deleted              = 1;
         name_man->delete_requested_by_child();
     }
     else if (parent->is_sequence_manager()) {
@@ -196,7 +196,7 @@ void ED4_text_terminal::deleted_from_database()
         printf("- Deleting sequence terminal\n");
 #endif // DEBUG
         ED4_sequence_manager *seq_man = parent->to_sequence_manager();
-        flag.deleted                  = 1;
+        tflag.deleted                 = 1;
         seq_man->delete_requested_by_child();
     }
     else {
@@ -229,7 +229,7 @@ void ED4_sequence_terminal::deleted_from_database()
     }
 
     ED4_sequence_manager *seq_man = parent->to_sequence_manager();
-    flag.deleted = 1;
+    tflag.deleted                 = 1;
     seq_man->delete_requested_by_child();
 }
 void ED4_manager::deleted_from_database()
@@ -524,7 +524,7 @@ ED4_returncode ED4_base::generate_configuration_string(char **generated_string)
     ED4_manager *consensus_manager = NULL;
 
     if (is_species_name_terminal() &&
-        !((ED4_terminal *)this)->flag.deleted) { // wenn multi_name_manager mehrere name_terminals hat, dann muss das echte name_terminal markiert sein
+        !((ED4_terminal *)this)->tflag.deleted) { // wenn multi_name_manager mehrere name_terminals hat, dann muss das echte name_terminal markiert sein
 
         old_size   = strlen(*generated_string);
         old_string = *generated_string;
