@@ -88,7 +88,6 @@ static GB_ERROR perform_block_operation_on_whole_sequence(ED4_blockoperation blo
             else {
                 memcpy(seq, new_seq, len);
             }
-            delete new_seq;
 
             if (!error) {
                 error = GB_write_string(gbd, seq);
@@ -97,9 +96,9 @@ static GB_ERROR perform_block_operation_on_whole_sequence(ED4_blockoperation blo
                     term->parent->refresh_requested_by_child();
                 }
             }
+            free(new_seq);
         }
-
-        delete seq;
+        free(seq);
     }
 
     return error;
@@ -748,7 +747,7 @@ static char *reverse_complement_sequence(const char *seq, int len, int repeat, i
     char *new_seq1  = GBT_complementNucSequence(seq, len, T_or_U);
     char *new_seq2  = GBT_reverseNucSequence(new_seq1, len);
 
-    delete new_seq1;
+    free(new_seq1);
     if (new_len) *new_len = len;
     return new_seq2;
 }

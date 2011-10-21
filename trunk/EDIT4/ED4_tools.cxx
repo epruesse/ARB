@@ -52,5 +52,5 @@ void ED4_aws_init(AW_root *root, AW_window_simple *aws, GB_CSTR macro_format, GB
 
     char *macro = GBS_string_2_key(macro_buffer);
     aws->init(root, macro, window_buffer);
-    delete macro;
+    free(macro);
 }

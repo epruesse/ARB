@@ -776,8 +776,8 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
             ED4_ROOT->main_manager->resize_requested_by_parent();
         }
 
-        delete buffer;
-        delete default_alignment;
+        delete [] buffer;
+        free(default_alignment);
     }
     else {
         aw_message("No species marked.");
@@ -913,7 +913,7 @@ void ED4_cursor::updateAwars()
             len = seq_pos+1; // fake
         }
         else {
-            seq = owner_of_cursor->resolve_pointer_to_string_copy(&len);
+            seq = owner_of_cursor->resolve_pointer_to_string_copy(&len); 
         }
 
         e4_assert(seq);
@@ -1505,7 +1505,7 @@ void ED4_base_position::calc4base(const ED4_base *base)
         is_gap_fun = is_consensus_gap;
     }
     else {
-        seq = base->resolve_pointer_to_string_copy(&len);
+        seq = base->resolve_pointer_to_string_copy(&len); 
         e4_assert((int)strlen(seq) == len);
         is_gap_fun = is_gap;
     }

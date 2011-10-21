@@ -100,6 +100,9 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "ARB_NT/mark_duplicates",         4);
     GBS_write_hash(dontCallHash, "ARB_NT/view_probe_group_result", 4);
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/CHECK_SERVER",   4);
+    GBS_write_hash(dontCallHash, "ARB_EDIT4/SECEDIT",              4);
+    GBS_write_hash(dontCallHash, "sec_edit",                       4);
+    GBS_write_hash(dontCallHash, "reload_config",                  4);
 #endif
 
 #if 1

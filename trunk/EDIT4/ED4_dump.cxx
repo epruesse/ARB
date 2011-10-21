@@ -164,6 +164,7 @@ void ED4_members::dump(size_t indent) const {
 } while (0)
 
 void ED4_area_manager::dump(size_t indent) const { DUMP_MANAGER(ED4_area_manager); }
+void ED4_abstract_group_manager::dump(size_t indent) const { DUMP_MANAGER(ED4_abstract_group_manager); }
 void ED4_device_manager::dump(size_t indent) const { DUMP_MANAGER(ED4_device_manager); }
 void ED4_group_manager::dump(size_t indent) const { DUMP_MANAGER(ED4_group_manager); }
 void ED4_main_manager::dump(size_t indent) const { DUMP_MANAGER(ED4_main_manager); }
@@ -241,6 +242,4 @@ void ED4_update_info::dump(size_t indent) const {
 }
 
 #endif
-
-
 

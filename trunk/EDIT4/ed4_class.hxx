@@ -50,6 +50,7 @@ enum PositionType {
 
 class ED4_Edit_String;
 class ED4_area_manager;
+class ED4_abstract_group_manager;
 class ED4_base;
 class ED4_bases_table;
 class ED4_bracket_terminal;
@@ -899,7 +900,7 @@ public:
     virtual ED4_returncode  calc_size_requested_by_parent();
     virtual ED4_returncode  move_requested_by_parent(ED4_move_info *mi);
 
-    void create_consensus(ED4_group_manager *upper_group_manager, arb_progress *progress);
+    void create_consensus(ED4_abstract_group_manager *upper_group_manager, arb_progress *progress);
 
     virtual ARB_ERROR route_down_hierarchy(ED4_cb cb, AW_CL cd1, AW_CL cd2);
     virtual ARB_ERROR route_down_hierarchy(ED4_cb1 cb, AW_CL cd) { return route_down_hierarchy(ED4_cb(cb), cd, 0); }
@@ -1250,22 +1251,18 @@ public:
     void        mark_selected_species(int mark);
 };
 
-class ED4_group_manager : public ED4_manager
-{
-    ED4_group_manager(const ED4_group_manager&); // copy-constructor not allowed
-
+class ED4_abstract_group_manager : public ED4_manager {
 protected:
 
     ED4_char_table my_table; // table concerning Consensusfunction
 
 public:
-
-    ED4_group_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
-    virtual ~ED4_group_manager();
-
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    ED4_abstract_group_manager(const char *id_, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent_, bool temp_is_group)
+        : ED4_manager(id_, x, y, width, height, parent_, temp_is_group),
+          my_table(0)
+    {
+    }
+    virtual ~ED4_abstract_group_manager() {}
 
     ED4_char_table&         table() { return my_table; }
     const ED4_char_table&   table() const { return my_table; }
@@ -1274,6 +1271,24 @@ public:
     const ED4_bases_table&  table(unsigned char c) const { return table().table(c); }
 
     void reinit_char_table();
+    
+#if defined(IMPLEMENT_DUMP)
+    virtual void dump(size_t indent) const;
+#endif // IMPLEMENT_DUMP
+};
+
+class ED4_group_manager : public ED4_abstract_group_manager
+{
+    ED4_group_manager(const ED4_group_manager&); // copy-constructor not allowed
+
+public:
+
+    ED4_group_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group);
+    virtual ~ED4_group_manager();
+
+#if defined(IMPLEMENT_DUMP)
+    virtual void dump(size_t indent) const;
+#endif // IMPLEMENT_DUMP
 };
 
 enum ED4_remap_mode {
@@ -1353,7 +1368,7 @@ public:
     }
 };
 
-class ED4_root_group_manager : public ED4_group_manager
+class ED4_root_group_manager : public ED4_abstract_group_manager
 {
     ED4_remap my_remap;
 
@@ -1519,6 +1534,8 @@ public:
 };
 
 class ED4_sequence_terminal_basic : public ED4_text_terminal { // derived from a Noncopyable
+    mutable ED4_SearchResults searchResults;
+
 public:
 
     char *species_name;
@@ -1528,6 +1545,8 @@ public:
 
     virtual GB_alignment_type GetAliType() = 0;
     virtual int get_length() const { int len; resolve_pointer_to_char_pntr(&len); return len; }
+
+    ED4_SearchResults& results() const { return searchResults; }
 
     ED4_species_name_terminal *corresponding_species_name_terminal() const {
         return get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
@@ -1565,8 +1584,6 @@ public:
 };
 
 class ED4_sequence_terminal : public ED4_sequence_terminal_basic { // derived from a Noncopyable
-    mutable ED4_SearchResults searchResults;
-
     virtual ED4_returncode  draw(int only_text = 0);
     ED4_sequence_terminal(const ED4_sequence_terminal&); // copy-constructor not allowed
 
@@ -1581,8 +1598,6 @@ public:
 
     virtual void deleted_from_database();
     virtual int get_length() const { return ED4_sequence_terminal_basic::get_length(); }
-
-    ED4_SearchResults& results() const { return searchResults; }
 
     ED4_columnStat_terminal *corresponding_columnStat_terminal() const {
         ED4_base *col_term = get_parent(ED4_L_MULTI_SEQUENCE)->search_spec_child_rek(ED4_L_COL_STAT);
@@ -1686,7 +1701,7 @@ public:
 #endif // IMPLEMENT_DUMP
 };
 
-class ED4_consensus_sequence_terminal : public ED4_sequence_terminal
+class ED4_consensus_sequence_terminal : public ED4_sequence_terminal_basic
 {
     virtual ED4_returncode  draw(int only_text = 0);
     ED4_consensus_sequence_terminal(const ED4_consensus_sequence_terminal&); // copy-constructor not allowed
@@ -1696,6 +1711,7 @@ public:
     ED4_consensus_sequence_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_consensus_sequence_terminal();
 
+    virtual GB_alignment_type GetAliType() { e4_assert(0); return GB_AT_UNKNOWN; };
     virtual int get_length() const;
 
 #if defined(IMPLEMENT_DUMP)
