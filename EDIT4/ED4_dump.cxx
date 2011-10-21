@@ -118,6 +118,7 @@ static void dumpLevel(size_t indent, const char *varname, ED4_level level) {
 
 void ED4_base::dump_base(size_t indent) const {
     openDump(indent, "ED4_Base", (void*)this);
+#if 0
     print_indented(NEXT_INDENT, GBS_global_string("my_species_pointer=%p", get_species_pointer()));
     print_indented(NEXT_INDENT, GBS_global_string("lastXpos          =%f", lastXpos));
     print_indented(NEXT_INDENT, GBS_global_string("lastYpos          =%f", lastYpos));
@@ -135,19 +136,18 @@ void ED4_base::dump_base(size_t indent) const {
     dumpProperties(NEXT_INDENT, "dynamic_prop", dynamic_prop);
     extension.dump(NEXT_INDENT);
     update_info.dump(NEXT_INDENT);
+#else
+    print_indented(NEXT_INDENT, GBS_global_string("id                ='%s'", id));
+    print_indented(NEXT_INDENT, GBS_global_string("flag.is_consensus =%i", flag.is_consensus));
+    print_indented(NEXT_INDENT, GBS_global_string("flag.is_SAI       =%i", flag.is_SAI));
+    print_indented(NEXT_INDENT, GBS_global_string("parent            =%p", parent));
+#endif
 
     closeDump(indent);
 }
 
 // =========================================================================================
-// ED4_manager's
-
-void ED4_manager::dump(size_t indent) const {
-    openDump(indent, "ED4_Manager", (void*)this);
-    dump_base(NEXT_INDENT);
-    children->dump(NEXT_INDENT);
-    closeDump(indent);
-}
+// ED4_members
 
 void ED4_members::dump(size_t indent) const {
     openDump(indent, "ED4_members", (void*)this);
@@ -157,54 +157,61 @@ void ED4_members::dump(size_t indent) const {
     closeDump(indent);
 }
 
-#define DUMP_MANAGER(mytype) do {               \
-    openDump(indent, #mytype, (void*)this);     \
-    ED4_manager::dump(NEXT_INDENT);             \
-    closeDump(indent);                          \
-} while (0)
-
-void ED4_area_manager::dump(size_t indent) const { DUMP_MANAGER(ED4_area_manager); }
-void ED4_abstract_group_manager::dump(size_t indent) const { DUMP_MANAGER(ED4_abstract_group_manager); }
-void ED4_device_manager::dump(size_t indent) const { DUMP_MANAGER(ED4_device_manager); }
-void ED4_group_manager::dump(size_t indent) const { DUMP_MANAGER(ED4_group_manager); }
-void ED4_main_manager::dump(size_t indent) const { DUMP_MANAGER(ED4_main_manager); }
-void ED4_multi_name_manager::dump(size_t indent) const { DUMP_MANAGER(ED4_multi_name_manager); }
-void ED4_multi_sequence_manager::dump(size_t indent) const { DUMP_MANAGER(ED4_multi_sequence_manager); }
-void ED4_multi_species_manager::dump(size_t indent) const { DUMP_MANAGER(ED4_multi_species_manager); }
-void ED4_name_manager::dump(size_t indent) const { DUMP_MANAGER(ED4_name_manager); }
-void ED4_sequence_manager::dump(size_t indent) const { DUMP_MANAGER(ED4_sequence_manager); }
-void ED4_species_manager::dump(size_t indent) const { DUMP_MANAGER(ED4_species_manager); }
-
-#undef DUMP_MANAGER
-
 // =========================================================================================
-// ED4_terminal's
+// managers and terminals
 
-void ED4_terminal::dump(size_t indent) const {
+void ED4_manager::dump_base(size_t indent) const {
+    openDump(indent, "ED4_Manager", (void*)this);
+    ED4_base::dump_base(NEXT_INDENT);
+    children->dump(NEXT_INDENT);
+    closeDump(indent);
+}
+void ED4_terminal::dump_base(size_t indent) const {
     openDump(indent, "ED4_terminal", (void*)this);
-    dump_base(NEXT_INDENT);
+    ED4_base::dump_base(NEXT_INDENT);
     closeDump(indent);
 }
 
-#define DUMP_TERMINAL(mytype) do {               \
-    openDump(indent, #mytype, (void*)this);     \
-    ED4_terminal::dump(NEXT_INDENT);             \
-    closeDump(indent);                          \
-} while (0)
+#define DUMP_ME(mytype,basetype) do {           \
+        openDump(indent, #mytype, (void*)this); \
+        basetype::dump_base(NEXT_INDENT);       \
+        closeDump(indent);                      \
+    } while (0)
 
-void ED4_bracket_terminal::dump(size_t indent) const { DUMP_TERMINAL(ED4_bracket_terminal); }
-void ED4_columnStat_terminal::dump(size_t indent) const { DUMP_TERMINAL(ED4_columnStat_terminal); }
-void ED4_consensus_sequence_terminal::dump(size_t indent) const { DUMP_TERMINAL(ED4_consensus_sequence_terminal); }
-void ED4_line_terminal::dump(size_t indent) const { DUMP_TERMINAL(ED4_line_terminal); }
-void ED4_pure_text_terminal::dump(size_t indent) const { DUMP_TERMINAL(ED4_pure_text_terminal); }
-void ED4_sequence_info_terminal::dump(size_t indent) const { DUMP_TERMINAL(ED4_sequence_info_terminal); }
-void ED4_sequence_terminal::dump(size_t indent) const { DUMP_TERMINAL(ED4_sequence_terminal); }
-void ED4_spacer_terminal::dump(size_t indent) const { DUMP_TERMINAL(ED4_spacer_terminal); }
-void ED4_species_name_terminal::dump(size_t indent) const { DUMP_TERMINAL(ED4_species_name_terminal); }
-void ED4_text_terminal::dump(size_t indent) const { DUMP_TERMINAL(ED4_text_terminal); }
-void ED4_tree_terminal::dump(size_t indent) const { DUMP_TERMINAL(ED4_tree_terminal); }
 
-#undef DUMP_TERMINAL
+#define DUMP_MANAGER(mytype)       DUMP_ME(mytype,ED4_manager)
+#define DUMP_GROUP_MANAGER(mytype) DUMP_ME(mytype,ED4_abstract_group_manager)
+#define DUMP_TERMINAL(mytype)      DUMP_ME(mytype, ED4_terminal)
+#define DUMP_SEQ_TERMINAL(mytype)  DUMP_ME(mytype, ED4_sequence_terminal_basic)
+
+void ED4_abstract_group_manager::dump_base (size_t indent) const { DUMP_MANAGER (ED4_abstract_group_manager); }
+void ED4_text_terminal::dump_base          (size_t indent) const { DUMP_TERMINAL(ED4_text_terminal); }
+void ED4_sequence_terminal_basic::dump_base(size_t indent) const { DUMP_ME      (ED4_sequence_terminal_basic, ED4_text_terminal); }
+
+void ED4_area_manager::dump               (size_t indent) const { DUMP_MANAGER      (ED4_area_manager); }
+void ED4_abstract_group_manager::dump     (size_t indent) const { DUMP_MANAGER      (ED4_abstract_group_manager); }
+void ED4_device_manager::dump             (size_t indent) const { DUMP_MANAGER      (ED4_device_manager); }
+void ED4_main_manager::dump               (size_t indent) const { DUMP_MANAGER      (ED4_main_manager); }
+void ED4_multi_name_manager::dump         (size_t indent) const { DUMP_MANAGER      (ED4_multi_name_manager); }
+void ED4_multi_sequence_manager::dump     (size_t indent) const { DUMP_MANAGER      (ED4_multi_sequence_manager); }
+void ED4_multi_species_manager::dump      (size_t indent) const { DUMP_MANAGER      (ED4_multi_species_manager); }
+void ED4_name_manager::dump               (size_t indent) const { DUMP_MANAGER      (ED4_name_manager); }
+void ED4_sequence_manager::dump           (size_t indent) const { DUMP_MANAGER      (ED4_sequence_manager); }
+void ED4_species_manager::dump            (size_t indent) const { DUMP_MANAGER      (ED4_species_manager); }
+void ED4_group_manager::dump              (size_t indent) const { DUMP_GROUP_MANAGER(ED4_group_manager); }
+void ED4_root_group_manager::dump         (size_t indent) const { DUMP_GROUP_MANAGER(ED4_group_manager); }
+void ED4_bracket_terminal::dump           (size_t indent) const { DUMP_TERMINAL     (ED4_bracket_terminal); }
+void ED4_columnStat_terminal::dump        (size_t indent) const { DUMP_TERMINAL     (ED4_columnStat_terminal); }
+void ED4_line_terminal::dump              (size_t indent) const { DUMP_TERMINAL     (ED4_line_terminal); }
+void ED4_pure_text_terminal::dump         (size_t indent) const { DUMP_TERMINAL     (ED4_pure_text_terminal); }
+void ED4_sequence_info_terminal::dump     (size_t indent) const { DUMP_TERMINAL     (ED4_sequence_info_terminal); }
+void ED4_spacer_terminal::dump            (size_t indent) const { DUMP_TERMINAL     (ED4_spacer_terminal); }
+void ED4_species_name_terminal::dump      (size_t indent) const { DUMP_TERMINAL     (ED4_species_name_terminal); }
+void ED4_text_terminal::dump              (size_t indent) const { DUMP_TERMINAL     (ED4_text_terminal); }
+void ED4_tree_terminal::dump              (size_t indent) const { DUMP_TERMINAL     (ED4_tree_terminal); }
+void ED4_consensus_sequence_terminal::dump(size_t indent) const { DUMP_SEQ_TERMINAL (ED4_consensus_sequence_terminal); }
+void ED4_sequence_terminal::dump          (size_t indent) const { DUMP_SEQ_TERMINAL (ED4_sequence_terminal); }
+void ED4_AA_sequence_terminal::dump       (size_t indent) const { DUMP_SEQ_TERMINAL (ED4_sequence_terminal); }
 
 // =========================================================================================
 // member structures
