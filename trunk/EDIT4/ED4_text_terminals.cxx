@@ -622,7 +622,7 @@ ED4_returncode ED4_sequence_info_terminal::draw(int /* only_text */)
     buffer[9] = 0;
 
     ED4_species_name_terminal *name_term = corresponding_species_name_terminal();
-    if (name_term->tflag.selected) {
+    if (name_term->flag.selected) {
         ED4_ROOT->get_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], text_y-y+1);
     }
 
@@ -699,7 +699,7 @@ ED4_returncode ED4_text_terminal::draw(int /* only_text */)
             width_of_char = 0;
         }
 
-        if (tflag.selected) {
+        if (flag.selected) {
             ED4_ROOT->get_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], text_y-y+1);
         }
         ED4_ROOT->get_device()->text(ED4_G_STANDARD, real_name, text_x+width_of_char, text_y, 0, AW_SCREEN, 0);

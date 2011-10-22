@@ -1294,7 +1294,7 @@ ED4_returncode ED4_base::delete_requested_by_child() {
 }
 
 ED4_returncode ED4_terminal::delete_requested_by_parent() {
-    tflag.deleted = 1;
+    flag.deleted = 1;
     return ED4_R_OK;
 }
 ED4_returncode ED4_manager::delete_requested_by_parent() {
@@ -1306,7 +1306,7 @@ ED4_returncode ED4_manager::delete_requested_by_parent() {
 
 ED4_returncode ED4_terminal::delete_requested_children() {
     e4_assert(update_info.delete_requested);
-    e4_assert(tflag.deleted);
+    e4_assert(flag.deleted);
 
     delete this;
     return ED4_R_WARNING;       // == remove all links to me
@@ -1373,10 +1373,11 @@ ED4_base* ED4_manager::search_ID(const char *temp_id) {
 }
 
 
-ED4_manager::ED4_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+ED4_manager::ED4_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group) :
     ED4_base(temp_id, x, y, width, height, temp_parent)
 {
     children = new ED4_members(this);
+    is_group = temp_is_group;
 }
 
 ED4_manager::~ED4_manager() {
@@ -1401,8 +1402,8 @@ ED4_manager::~ED4_manager() {
 //      ED4_main_manager
 // --------------------------------------------------------------------------------
 
-ED4_main_manager::ED4_main_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_manager(temp_id, x, y, width, height, temp_parent)
+ED4_main_manager::ED4_main_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group) :
+    ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group)
 {
     spec = &(main_manager_spec);
 }
@@ -1415,8 +1416,8 @@ ED4_main_manager::~ED4_main_manager()
 //      ED4_device_manager
 // --------------------------------------------------------------------------------
 
-ED4_device_manager::ED4_device_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_manager(temp_id, x, y, width, height, temp_parent)
+ED4_device_manager::ED4_device_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group) :
+    ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group)
 {
     spec = &(device_manager_spec);
 }
@@ -1429,8 +1430,8 @@ ED4_device_manager::~ED4_device_manager()
 //      ED4_area_manager
 // --------------------------------------------------------------------------------
 
-ED4_area_manager::ED4_area_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_manager(temp_id, x, y, width, height, temp_parent)
+ED4_area_manager::ED4_area_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group) :
+    ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group)
 {
     spec = &(area_manager_spec);
 }
@@ -1444,8 +1445,8 @@ ED4_area_manager::~ED4_area_manager()
 //      ED4_multi_species_manager
 // --------------------------------------------------------------------------------
 
-ED4_multi_species_manager::ED4_multi_species_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_manager(temp_id, x, y, width, height, temp_parent),
+ED4_multi_species_manager::ED4_multi_species_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group) :
+    ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group),
     species(-1),
     selected_species(-1)
 {
@@ -1577,7 +1578,7 @@ void ED4_multi_species_manager::count_species(int *speciesPtr, int *selectedPtr)
                 ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
 
                 sp++;
-                if (species_name->tflag.selected) {
+                if (species_name->flag.selected) {
                     sel++;
                 }
             }
@@ -1613,7 +1614,7 @@ void ED4_multi_species_manager::update_species_counters() {
                 ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
 
                 sp++;
-                if (species_name->tflag.selected) {
+                if (species_name->flag.selected) {
                     sel++;
                 }
             }
@@ -1646,7 +1647,7 @@ void ED4_multi_species_manager::select_all_species() {
                     ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
 
                     sel++;
-                    if (!species_name->tflag.selected) {
+                    if (!species_name->flag.selected) {
                         ED4_ROOT->add_to_selected(species_name);
                     }
                 }
@@ -1674,7 +1675,7 @@ void ED4_multi_species_manager::deselect_all_species() {
                 sp++;
                 ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
 
-                if (species_name->tflag.selected) {
+                if (species_name->flag.selected) {
                     ED4_ROOT->remove_from_selected(species_name);
                 }
             }
@@ -1707,7 +1708,7 @@ void ED4_multi_species_manager::invert_selection_of_all_species() {
                 if (!species_man->flag.is_SAI) {
                     ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
 
-                    if (species_name->tflag.selected) {
+                    if (species_name->flag.selected) {
                         ED4_ROOT->remove_from_selected(species_name);
                     }
                     else {
@@ -1753,20 +1754,20 @@ void ED4_multi_species_manager::select_marked_species(int select) {
                 if (is_marked) {
                     if (select) { // select marked
                         if (!species_man->flag.is_SAI) {
-                            if (!species_name->tflag.selected) {
+                            if (!species_name->flag.selected) {
                                 ED4_ROOT->add_to_selected(species_name);
                             }
                             sel++;
                         }
                     }
                     else { // de-select marked
-                        if (species_name->tflag.selected) {
+                        if (species_name->flag.selected) {
                             ED4_ROOT->remove_from_selected(species_name);
                         }
                     }
                 }
                 else {
-                    if (species_name->tflag.selected) {
+                    if (species_name->flag.selected) {
                         sel++;
                     }
                 }
@@ -1799,7 +1800,7 @@ void ED4_multi_species_manager::mark_selected_species(int mark) {
                 ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
 
                 sp++;
-                if (species_name->tflag.selected) {
+                if (species_name->flag.selected) {
                     GBDATA *gbd = species_man->get_species_pointer();
                     e4_assert(gbd);
 
@@ -1839,8 +1840,8 @@ ED4_terminal *ED4_multi_species_manager::get_consensus_terminal() {
 //      ED4_species_manager
 // --------------------------------------------------------------------------------
 
-ED4_species_manager::ED4_species_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_manager(temp_id, x, y, width, height, temp_parent)
+ED4_species_manager::ED4_species_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group) :
+    ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group)
 {
     spec = &(species_manager_spec);
 }
@@ -1903,8 +1904,9 @@ void ED4_species_manager::remove_all_callbacks() {
 //      ED4_group_manager::
 // --------------------------------------------------------------------------------
 
-ED4_group_manager::ED4_group_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_abstract_group_manager(temp_id, x, y, width, height, temp_parent)
+ED4_group_manager::ED4_group_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group) :
+    ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group),
+    my_table(0)
 {
     spec = &(group_manager_spec);
 }
@@ -2131,8 +2133,8 @@ GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
 // --------------------------------------------------------------------------------
 
 ED4_root_group_manager::ED4_root_group_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_abstract_group_manager(temp_id, x, y, width, height, temp_parent),
-      my_remap() 
+    : ED4_group_manager(temp_id, x, y, width, height, temp_parent),
+      my_remap()
 {
     spec = &(root_group_manager_spec);
 
@@ -2165,8 +2167,8 @@ int ED4_root_group_manager::update_remap()
 //              ED4_multi_species_manager::
 // --------------------------------------------------------------------------------
 
-ED4_multi_sequence_manager::ED4_multi_sequence_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_manager(temp_id, x, y, width, height, temp_parent)
+ED4_multi_sequence_manager::ED4_multi_sequence_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group)
+    : ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group)
 {
     spec = &(multi_sequence_manager_spec);
 }
@@ -2175,8 +2177,8 @@ ED4_multi_sequence_manager::~ED4_multi_sequence_manager()
 {
 }
 
-ED4_sequence_manager::ED4_sequence_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_manager(temp_id, x, y, width, height, temp_parent)
+ED4_sequence_manager::ED4_sequence_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group)
+    : ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group)
 {
     spec = &(sequence_manager_spec);
 }
@@ -2185,8 +2187,8 @@ ED4_sequence_manager::~ED4_sequence_manager() {
 }
 
 
-ED4_multi_name_manager::ED4_multi_name_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_manager(temp_id, x, y, width, height, temp_parent)
+ED4_multi_name_manager::ED4_multi_name_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group)
+    : ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group)
 {
     spec = &(multi_name_manager_spec);
 }
@@ -2195,8 +2197,8 @@ ED4_multi_name_manager::~ED4_multi_name_manager()
 {
 }
 
-ED4_name_manager::ED4_name_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_manager(temp_id, x, y, width, height, temp_parent)
+ED4_name_manager::ED4_name_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group)
+    : ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group)
 {
     spec = &(name_manager_spec);
 }

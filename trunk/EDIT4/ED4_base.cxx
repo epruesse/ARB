@@ -28,7 +28,7 @@ bool ED4_base::remove_deleted_children()
 
 bool ED4_terminal::remove_deleted_children()
 {
-    if (tflag.deleted) {
+    if (flag.deleted) {
         if (get_species_pointer() != 0) {
 #if defined(DEBUG)
             printf("ED4_terminal: has non-zero species_pointer in remove_deleted_children (resetting to zero)\n");
@@ -44,7 +44,7 @@ bool ED4_terminal::remove_deleted_children()
 }
 bool ED4_sequence_info_terminal::remove_deleted_children()
 {
-    if (tflag.deleted) {
+    if (flag.deleted) {
         if (get_species_pointer() != 0) {
 #if defined(DEBUG)
             printf("ED4_sequence_info_terminal: has non-zero species_pointer in remove_deleted_children (resetting to zero)\n");
@@ -188,7 +188,7 @@ void ED4_text_terminal::deleted_from_database()
         printf("- Deleting name terminal\n");
 #endif // DEBUG
         ED4_name_manager *name_man = parent->to_name_manager();
-        tflag.deleted              = 1;
+        flag.deleted               = 1;
         name_man->delete_requested_by_child();
     }
     else if (parent->is_sequence_manager()) {
@@ -196,7 +196,7 @@ void ED4_text_terminal::deleted_from_database()
         printf("- Deleting sequence terminal\n");
 #endif // DEBUG
         ED4_sequence_manager *seq_man = parent->to_sequence_manager();
-        tflag.deleted                 = 1;
+        flag.deleted                  = 1;
         seq_man->delete_requested_by_child();
     }
     else {
@@ -229,7 +229,7 @@ void ED4_sequence_terminal::deleted_from_database()
     }
 
     ED4_sequence_manager *seq_man = parent->to_sequence_manager();
-    tflag.deleted                 = 1;
+    flag.deleted = 1;
     seq_man->delete_requested_by_child();
 }
 void ED4_manager::deleted_from_database()
@@ -436,7 +436,7 @@ ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_C
     ED4_species_name_terminal   *species_name_terminal  = NULL;
     ED4_sequence_manager        *sequence_manager       = NULL;
     ED4_sequence_info_terminal  *sequence_info_terminal = NULL;
-    ED4_sequence_terminal_basic *sequence_terminal      = NULL;
+    ED4_sequence_terminal       *sequence_terminal      = NULL;
     ED4_spacer_terminal         *group_spacer_terminal1 = NULL;
     ED4_spacer_terminal         *group_spacer_terminal2 = NULL;
     ED4_multi_species_manager   *multi_species_manager  = NULL;
@@ -524,7 +524,7 @@ ED4_returncode ED4_base::generate_configuration_string(char **generated_string)
     ED4_manager *consensus_manager = NULL;
 
     if (is_species_name_terminal() &&
-        !((ED4_terminal *)this)->tflag.deleted) { // wenn multi_name_manager mehrere name_terminals hat, dann muss das echte name_terminal markiert sein
+        !((ED4_terminal *)this)->flag.deleted) { // wenn multi_name_manager mehrere name_terminals hat, dann muss das echte name_terminal markiert sein
 
         old_size   = strlen(*generated_string);
         old_string = *generated_string;
@@ -917,11 +917,11 @@ void ED4_sequence_terminal_basic::calc_update_intervall(long *left_index, long *
     if (*left_index < 0) *left_index                             = 0;
 }
 
-void ED4_manager::create_consensus(ED4_abstract_group_manager *upper_group_manager, arb_progress *progress) {
+void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager, arb_progress *progress) {
     // creates consensus
     // is called by group manager
 
-    ED4_abstract_group_manager *group_manager_for_child = upper_group_manager;
+    ED4_group_manager *group_manager_for_child = upper_group_manager;
 
     if (is_group_manager()) {
         ED4_group_manager *group_manager = to_group_manager();

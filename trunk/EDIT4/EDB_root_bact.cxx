@@ -507,13 +507,13 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
                                                   bool                         is_folded,
                                                   ED4_index                    local_count_position)
 {
-    ED4_species_manager         *species_manager        = NULL;
-    ED4_species_name_terminal   *species_name_terminal  = NULL;
-    ED4_sequence_manager        *sequence_manager       = NULL;
-    ED4_sequence_info_terminal  *sequence_info_terminal = NULL;
-    ED4_sequence_terminal_basic *sequence_terminal      = NULL;
-    ED4_spacer_terminal         *group_spacer_terminal  = NULL;
-    ED4_group_manager           *group_manager          = NULL;
+    ED4_species_manager        *species_manager        = NULL;
+    ED4_species_name_terminal  *species_name_terminal  = NULL;
+    ED4_sequence_manager       *sequence_manager       = NULL;
+    ED4_sequence_info_terminal *sequence_info_terminal = NULL;
+    ED4_sequence_terminal      *sequence_terminal      = NULL;
+    ED4_spacer_terminal        *group_spacer_terminal  = NULL;
+    ED4_group_manager          *group_manager          = NULL;
 
 
     char namebuffer[NAME_BUFFERSIZE];

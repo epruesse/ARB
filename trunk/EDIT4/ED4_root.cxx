@@ -177,8 +177,8 @@ ED4_returncode  ED4_root::remove_from_selected(ED4_terminal *object)
 
         delete object->selection_info;
         object->selection_info = NULL;
-        object->tflag.selected = 0;
-        object->tflag.dragged = 0;
+        object->flag.selected = 0;
+        object->flag.dragged = 0;
 
         if (object->is_species_name_terminal()) {
             ED4_species_name_terminal *name_term = object->to_species_name_terminal();
@@ -291,7 +291,7 @@ ED4_returncode ED4_root::add_to_selected(ED4_terminal *object)
         object->selection_info->old_event_y = 0;
         object->selection_info->object = object;
         selected_objects.append_elem_backwards((void *) object->selection_info);
-        object->tflag.selected = 1;
+        object->flag.selected = 1;
 
         if (object->is_species_name_terminal()) {
             ED4_species_name_terminal *name_term = object->to_species_name_terminal();
