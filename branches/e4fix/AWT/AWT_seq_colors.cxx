@@ -251,7 +251,7 @@ AWT_reference::AWT_reference(GBDATA *_gb_main) {
 }
 
 void AWT_reference::init() {
-    delete reference;
+    free(reference);
     reference = 0;
     ref_len = 0;
     delete init_species_name;
