@@ -88,6 +88,7 @@ static GB_ERROR perform_block_operation_on_whole_sequence(ED4_blockoperation blo
             else {
                 memcpy(seq, new_seq, len);
             }
+            delete new_seq;
 
             if (!error) {
                 error = GB_write_string(gbd, seq);
@@ -96,9 +97,9 @@ static GB_ERROR perform_block_operation_on_whole_sequence(ED4_blockoperation blo
                     term->parent->refresh_requested_by_child();
                 }
             }
-            free(new_seq);
         }
-        free(seq);
+
+        delete seq;
     }
 
     return error;
@@ -233,7 +234,7 @@ int ED4_get_selected_range(ED4_terminal *term, int *first_column, int *last_colu
     }
 
     ED4_species_name_terminal *name_term = term->to_sequence_terminal()->corresponding_species_name_terminal();
-    return name_term->tflag.selected;
+    return name_term->flag.selected;
 }
 
 ED4_blocktype ED4_getBlocktype() {
@@ -372,7 +373,7 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
                 }
 
                 ED4_species_name_terminal *name_term = seq_term->corresponding_species_name_terminal();
-                if (name_term->tflag.selected) { // already selected
+                if (name_term->flag.selected) { // already selected
                     if (xRangeChanged) {
                         col_block_refresh_on_seq_term(seq_term);
                     }
@@ -394,7 +395,7 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
         if (!initial_call) {
             if (do_below) {
                 while (term) {
-                    if (term->is_species_name_terminal() && term->tflag.selected) {
+                    if (term->is_species_name_terminal() && term->flag.selected) {
                         ED4_species_manager *species_man = term->get_parent(ED4_L_SPECIES)->to_species_manager();
 
                         if (!species_man->flag.is_consensus) {
@@ -409,7 +410,7 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
             if (do_above) {
                 term = last_term1->corresponding_species_name_terminal();
                 while (term && term!=term1) {
-                    if (term->is_species_name_terminal() && term->tflag.selected) {
+                    if (term->is_species_name_terminal() && term->flag.selected) {
                         ED4_species_manager *species_man = term->get_parent(ED4_L_SPECIES)->to_species_manager();
 
                         if (!species_man->flag.is_consensus) {
@@ -747,7 +748,7 @@ static char *reverse_complement_sequence(const char *seq, int len, int repeat, i
     char *new_seq1  = GBT_complementNucSequence(seq, len, T_or_U);
     char *new_seq2  = GBT_reverseNucSequence(new_seq1, len);
 
-    free(new_seq1);
+    delete new_seq1;
     if (new_len) *new_len = len;
     return new_seq2;
 }
