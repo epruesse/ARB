@@ -134,7 +134,7 @@ class ED4_root_group_manager;
 class ED4_sequence_info_terminal;
 class ED4_sequence_manager;
 class ED4_sequence_terminal;
-class ED4_AA_sequence_terminal;
+class ED4_orf_terminal;
 class ED4_spacer_terminal;
 class ED4_species_manager;
 class ED4_species_name_terminal;
@@ -866,7 +866,7 @@ public:
     int is_species_name_terminal()  const { return !this || spec->level & ED4_L_SPECIES_NAME; }
     int is_sequence_info_terminal() const { return !this || spec->level & ED4_L_SEQUENCE_INFO; }
     int is_sequence_terminal()      const { return !this || spec->level & ED4_L_SEQUENCE_STRING; }
-    int is_aa_sequence_terminal()      const { return !this || spec->level & ED4_L_AA_SEQUENCE_STRING; } // ykadi
+    int is_orf_terminal()           const { return !this || spec->level & ED4_L_ORF; } // ykadi
     int is_pure_text_terminal()     const { return !this || spec->level & ED4_L_PURE_TEXT; }
     int is_columnStat_terminal()    const { return !this || spec->level & ED4_L_COL_STAT; }
 
@@ -897,7 +897,7 @@ public:
     ED4_species_name_terminal   *to_species_name_terminal() const   { e4_assert(is_species_name_terminal()); return (ED4_species_name_terminal *)this; }
     ED4_sequence_info_terminal  *to_sequence_info_terminal() const  { e4_assert(is_sequence_info_terminal()); return (ED4_sequence_info_terminal*)this; }
     ED4_sequence_terminal       *to_sequence_terminal() const       { e4_assert(is_sequence_terminal());    return (ED4_sequence_terminal*)this; }
-    ED4_AA_sequence_terminal  *to_aa_sequence_terminal() const       { e4_assert(is_aa_sequence_terminal());    return (ED4_AA_sequence_terminal*)this; } // ykadi
+    ED4_orf_terminal            *to_orf_terminal() const            { e4_assert(is_orf_terminal());    return (ED4_orf_terminal*)this; } // ykadi
     ED4_pure_text_terminal      *to_pure_text_terminal() const      { e4_assert(is_pure_text_terminal());   return (ED4_pure_text_terminal*)this; }
     ED4_columnStat_terminal     *to_columnStat_terminal() const     { e4_assert(is_columnStat_terminal());  return (ED4_columnStat_terminal*)this; }
 
@@ -1567,8 +1567,8 @@ public:
     DECLARE_DUMP_FOR_BASECLASS(ED4_sequence_terminal_basic, ED4_text_terminal);
 };
 
-class ED4_AA_sequence_terminal : public ED4_sequence_terminal_basic { // derived from a Noncopyable
-    // NOTE: ED4_AA_sequence_terminal is a separate terminal class used to display Open Reading Frames (ORFs)
+class ED4_orf_terminal : public ED4_sequence_terminal_basic { // derived from a Noncopyable
+    // NOTE: ED4_orf_terminal is a separate terminal class used to display Open Reading Frames (ORFs)
     //       for the corresponding gene (DNA) sequence. It is used in ProteinViewer Module and should not be
     //       used for drawing aminoacid sequence alone as in protein alignment. Aminoacid sequences are
     //       handled by the standard "ED4_sequence_terminal" class.
@@ -1579,10 +1579,10 @@ class ED4_AA_sequence_terminal : public ED4_sequence_terminal_basic { // derived
     int   aaStrandType;
 
     virtual ED4_returncode  draw(int only_text = 0);
-    ED4_AA_sequence_terminal(const ED4_AA_sequence_terminal&);
+    ED4_orf_terminal(const ED4_orf_terminal&);
 public:
-    ED4_AA_sequence_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    virtual ~ED4_AA_sequence_terminal();
+    ED4_orf_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
+    virtual ~ED4_orf_terminal();
 
     virtual GB_alignment_type GetAliType();
 

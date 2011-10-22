@@ -123,7 +123,7 @@ enum ED4_level {
     ED4_L_SPECIES_NAME       = 0x100,
     ED4_L_SEQUENCE_INFO      = 0x200,               // evtl. aendern fuer Name-Manager und group-manager
     ED4_L_SEQUENCE_STRING    = 0x400,
-    ED4_L_AA_SEQUENCE_STRING = 0x600,               // ykadi
+    ED4_L_ORF = 0x600,               // ykadi
     ED4_L_SPACER             = 0x800,
     ED4_L_LINE               = 0x1000,
     ED4_L_MULTI_NAME         = 0x2000,

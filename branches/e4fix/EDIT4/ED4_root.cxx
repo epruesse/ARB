@@ -210,7 +210,7 @@ ED4_returncode  ED4_root::remove_from_selected(ED4_terminal *object)
                 seq_term->parent->refresh_requested_by_child();
             }
 
-            // ProtView: Refresh corresponding AA_sequence terminals
+            // ProtView: Refresh corresponding orf terminals
             if (alignment_type == GB_AT_DNA) {
                 PV_CallBackFunction(this->aw_root);
             }
@@ -322,7 +322,7 @@ ED4_returncode ED4_root::add_to_selected(ED4_terminal *object)
                 seq_term->parent->refresh_requested_by_child();
             }
 
-            // ProtView: Refresh corresponding AA_sequence terminals
+            // ProtView: Refresh corresponding orf terminals
             if (alignment_type == GB_AT_DNA) {
                 PV_CallBackFunction(this->aw_root);
             }

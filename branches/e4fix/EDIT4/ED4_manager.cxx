@@ -78,7 +78,7 @@ ED4_object_specification sequence_manager_spec = {
     (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_VERTICAL),      // static props
     ED4_L_SEQUENCE,                                           // level
     (ED4_level)(ED4_L_SEQUENCE_INFO | ED4_L_SEQUENCE_STRING |
-                ED4_L_AA_SEQUENCE_STRING),                    // allowed children level
+                ED4_L_ORF),                    // allowed children level
     ED4_L_NO_LEVEL,                                           // handled object
     ED4_L_SPECIES,                                            // restriction level
     0                                                         // justification value (0 means top-aligned)
@@ -252,7 +252,7 @@ ED4_returncode ED4_manager::check_bases_and_rebuild_consensi(const char *old_seq
 
     // Refresh aminoacid sequence terminals in Protein Viewer or protstruct
     if (ED4_ROOT->alignment_type == GB_AT_DNA) {
-        PV_AA_SequenceUpdate_CB(GB_CB_CHANGED);
+        PV_SequenceUpdate_CB(GB_CB_CHANGED);
     }
     else if (ED4_ROOT->alignment_type == GB_AT_AA) {
         GB_ERROR err = ED4_pfold_set_SAI(&ED4_ROOT->protstruct, GLOBAL_gb_main, ED4_ROOT->alignment_name, &ED4_ROOT->protstruct_len);

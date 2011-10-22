@@ -501,7 +501,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                                     GB_write_flag(gbd, !GB_read_flag(gbd));
                                     set_refresh();
                                     parent->refresh_requested_by_child();
-                                    // ProtView: Refreshing AA_sequence terminals
+                                    // ProtView: Refreshing orf terminals
                                     if (ED4_ROOT->alignment_type ==  GB_AT_DNA) {
                                         PV_RefreshWindow(aww->get_root());
                                     }
@@ -1140,7 +1140,7 @@ ED4_sequence_terminal_basic::~ED4_sequence_terminal_basic() {
     free(species_name);
 }
 
-ED4_AA_sequence_terminal::ED4_AA_sequence_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+ED4_orf_terminal::ED4_orf_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
     : ED4_sequence_terminal_basic(temp_id, x, y, width, height, temp_parent)
 {
     spec = &(sequence_terminal_spec);
@@ -1150,12 +1150,12 @@ ED4_AA_sequence_terminal::ED4_AA_sequence_terminal(const char *temp_id, AW_pos x
     aaStrandType = 0;
 }
 
-GB_alignment_type ED4_AA_sequence_terminal::GetAliType()
+GB_alignment_type ED4_orf_terminal::GetAliType()
 {
     return (GB_alignment_type) GB_AT_AA;
 }
 
-ED4_AA_sequence_terminal::~ED4_AA_sequence_terminal()
+ED4_orf_terminal::~ED4_orf_terminal()
 {
     free(aaSequence);
     free(aaColor);

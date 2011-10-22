@@ -203,7 +203,7 @@ STANDARD_DUMP_BASE(ED4_sequence_terminal_basic);
 STANDARD_DUMP_MID(ED4_group_manager);
 STANDARD_DUMP_MID(ED4_sequence_terminal);
 
-STANDARD_DUMP_LEAF(ED4_AA_sequence_terminal);
+STANDARD_DUMP_LEAF(ED4_orf_terminal);
 STANDARD_DUMP_LEAF(ED4_area_manager);
 STANDARD_DUMP_LEAF(ED4_bracket_terminal);
 STANDARD_DUMP_LEAF(ED4_columnStat_terminal);

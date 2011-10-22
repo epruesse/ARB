@@ -198,7 +198,7 @@ static bool ED4_show_protein_match_on_device(AW_device *device, int gc, const ch
 //  ProteinViewer: Drawing AminoAcid sequence parallel to the DNA sequence
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ED4_returncode ED4_AA_sequence_terminal::draw(int /* only_text */)
+ED4_returncode ED4_orf_terminal::draw(int /* only_text */)
 {
     AW_pos        text_x, text_y;
     int           max_seq_len            = 0;

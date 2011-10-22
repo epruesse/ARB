@@ -71,16 +71,16 @@ void PV_CallBackFunction(AW_root *root);
 AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root);
 
 // callback function to update sequence change in EDITOR
-void PV_AA_SequenceUpdate_CB(GB_CB_TYPE gbtype);
+void PV_SequenceUpdate_CB(GB_CB_TYPE gbtype);
 
-// refresh all AA_sequence_terminal's
+// refresh all orf_terminal's
 void PV_RefreshWindow(AW_root *root);
 
-// Creates new AA_sequence_terminal's for new species added to the editor ** called from ED4_cursor.cxx **
-void PV_AddCorrespondingAAseqTerminals(class ED4_species_name_terminal *spNameTerm);
+// Creates new orf_terminal's for new species added to the editor ** called from ED4_cursor.cxx **
+void PV_AddCorrespondingOrfTerminals(class ED4_species_name_terminal *spNameTerm);
 
-// Creates new AA_sequence_terminal's when newly marked species is loaded
-void PV_AddAAseqTerminalsToLoadedSpecies();
+// Creates new orf_terminal's when newly marked species is loaded
+void PV_AddOrfTerminalsToLoadedSpecies();
 
 // flags to use in display options
 enum {
