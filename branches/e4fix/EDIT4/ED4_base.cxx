@@ -936,8 +936,8 @@ void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager, arb_p
         ED4_base *member = children->member(i);
 
         if (member->is_species_manager()) {
-            ED4_species_manager *species_manager = member->to_species_manager();
-            ED4_terminal *sequence_data_terminal = species_manager->get_consensus_relevant_terminal();
+            ED4_species_manager *species_manager        = member->to_species_manager();
+            const ED4_terminal  *sequence_data_terminal = species_manager->get_consensus_relevant_terminal();
 
             if (sequence_data_terminal) {
                 int   db_pointer_len;
@@ -967,8 +967,7 @@ void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager, arb_p
     }
 }
 
-ED4_terminal *ED4_base::get_consensus_relevant_terminal()
-{
+const ED4_terminal *ED4_base::get_consensus_relevant_terminal() const {
     int i;
 
     if (is_terminal()) {
@@ -978,9 +977,10 @@ ED4_terminal *ED4_base::get_consensus_relevant_terminal()
         return NULL;
     }
 
-    ED4_manager  *manager           = this->to_manager();
-    ED4_terminal *relevant_terminal = 0;
-    int           members           = manager->children->members();
+    const ED4_manager  *manager           = this->to_manager();
+    const ED4_terminal *relevant_terminal = 0;
+
+    int members = manager->children->members();
 
     for (i=0; !relevant_terminal && i<members; ++i) {
         ED4_base     *member = manager->children->member(i);
