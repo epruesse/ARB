@@ -1372,11 +1372,10 @@ ED4_base* ED4_manager::search_ID(const char *temp_id) {
 }
 
 
-ED4_manager::ED4_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group) :
+ED4_manager::ED4_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
     ED4_base(temp_id, x, y, width, height, temp_parent)
 {
     children = new ED4_members(this);
-    is_group = temp_is_group;
 }
 
 ED4_manager::~ED4_manager() {
@@ -1401,8 +1400,8 @@ ED4_manager::~ED4_manager() {
 //      ED4_main_manager
 // --------------------------------------------------------------------------------
 
-ED4_main_manager::ED4_main_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group) :
-    ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group)
+ED4_main_manager::ED4_main_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+    ED4_manager(temp_id, x, y, width, height, temp_parent)
 {
     spec = &(main_manager_spec);
 }
@@ -1415,8 +1414,8 @@ ED4_main_manager::~ED4_main_manager()
 //      ED4_device_manager
 // --------------------------------------------------------------------------------
 
-ED4_device_manager::ED4_device_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group) :
-    ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group)
+ED4_device_manager::ED4_device_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+    ED4_manager(temp_id, x, y, width, height, temp_parent)
 {
     spec = &(device_manager_spec);
 }
@@ -1429,8 +1428,8 @@ ED4_device_manager::~ED4_device_manager()
 //      ED4_area_manager
 // --------------------------------------------------------------------------------
 
-ED4_area_manager::ED4_area_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group) :
-    ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group)
+ED4_area_manager::ED4_area_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+    ED4_manager(temp_id, x, y, width, height, temp_parent)
 {
     spec = &(area_manager_spec);
 }
@@ -1444,8 +1443,8 @@ ED4_area_manager::~ED4_area_manager()
 //      ED4_multi_species_manager
 // --------------------------------------------------------------------------------
 
-ED4_multi_species_manager::ED4_multi_species_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group) :
-    ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group),
+ED4_multi_species_manager::ED4_multi_species_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+    ED4_manager(temp_id, x, y, width, height, temp_parent),
     species(-1),
     selected_species(-1)
 {
@@ -1839,8 +1838,8 @@ ED4_terminal *ED4_multi_species_manager::get_consensus_terminal() {
 //      ED4_species_manager
 // --------------------------------------------------------------------------------
 
-ED4_species_manager::ED4_species_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group) :
-    ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group)
+ED4_species_manager::ED4_species_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+    ED4_manager(temp_id, x, y, width, height, temp_parent)
 {
     spec = &(species_manager_spec);
 }
@@ -1903,8 +1902,8 @@ void ED4_species_manager::remove_all_callbacks() {
 //      ED4_group_manager::
 // --------------------------------------------------------------------------------
 
-ED4_group_manager::ED4_group_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group) :
-    ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group),
+ED4_group_manager::ED4_group_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+    ED4_manager(temp_id, x, y, width, height, temp_parent),
     my_table(0)
 {
     spec = &(group_manager_spec);
@@ -2166,8 +2165,8 @@ int ED4_root_group_manager::update_remap()
 //              ED4_multi_species_manager::
 // --------------------------------------------------------------------------------
 
-ED4_multi_sequence_manager::ED4_multi_sequence_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group)
-    : ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group)
+ED4_multi_sequence_manager::ED4_multi_sequence_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_manager(temp_id, x, y, width, height, temp_parent)
 {
     spec = &(multi_sequence_manager_spec);
 }
@@ -2176,8 +2175,8 @@ ED4_multi_sequence_manager::~ED4_multi_sequence_manager()
 {
 }
 
-ED4_sequence_manager::ED4_sequence_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group)
-    : ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group)
+ED4_sequence_manager::ED4_sequence_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_manager(temp_id, x, y, width, height, temp_parent)
 {
     spec = &(sequence_manager_spec);
 }
@@ -2186,8 +2185,8 @@ ED4_sequence_manager::~ED4_sequence_manager() {
 }
 
 
-ED4_multi_name_manager::ED4_multi_name_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group)
-    : ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group)
+ED4_multi_name_manager::ED4_multi_name_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_manager(temp_id, x, y, width, height, temp_parent)
 {
     spec = &(multi_name_manager_spec);
 }
@@ -2196,8 +2195,8 @@ ED4_multi_name_manager::~ED4_multi_name_manager()
 {
 }
 
-ED4_name_manager::ED4_name_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group)
-    : ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group)
+ED4_name_manager::ED4_name_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_manager(temp_id, x, y, width, height, temp_parent)
 {
     spec = &(name_manager_spec);
 }
