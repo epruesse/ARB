@@ -199,7 +199,7 @@ void ED4_manager::dump_base(size_t indent) const {
 
 STANDARD_DUMP_BASE(ED4_terminal);
 STANDARD_DUMP_BASE(ED4_text_terminal);
-STANDARD_DUMP_BASE(ED4_sequence_terminal_basic);
+STANDARD_DUMP_BASE(ED4_abstract_sequence_terminal);
 
 STANDARD_DUMP_MID(ED4_group_manager);
 STANDARD_DUMP_MID(ED4_sequence_terminal);

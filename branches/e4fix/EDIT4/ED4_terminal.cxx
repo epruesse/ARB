@@ -1139,18 +1139,18 @@ ED4_consensus_sequence_terminal::~ED4_consensus_sequence_terminal()
 {
 }
 
-ED4_sequence_terminal_basic::ED4_sequence_terminal_basic(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+ED4_abstract_sequence_terminal::ED4_abstract_sequence_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
     : ED4_text_terminal(temp_id, x, y, width, height, temp_parent)
 {
     species_name = NULL;
 }
 
-ED4_sequence_terminal_basic::~ED4_sequence_terminal_basic() {
+ED4_abstract_sequence_terminal::~ED4_abstract_sequence_terminal() {
     free(species_name);
 }
 
 ED4_orf_terminal::ED4_orf_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_sequence_terminal_basic(temp_id, x, y, width, height, temp_parent)
+    : ED4_abstract_sequence_terminal(temp_id, x, y, width, height, temp_parent)
 {
     spec = &(orf_terminal_spec);
     aaSequence   = 0;
@@ -1171,7 +1171,7 @@ ED4_orf_terminal::~ED4_orf_terminal()
 }
 
 ED4_sequence_terminal::ED4_sequence_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_sequence_terminal_basic(temp_id, x, y, width, height, temp_parent)
+    : ED4_abstract_sequence_terminal(temp_id, x, y, width, height, temp_parent)
 {
     spec = &(sequence_terminal_spec);
     st_ml_node = NULL;

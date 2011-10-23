@@ -1562,13 +1562,14 @@ public:
     DECLARE_DUMP_FOR_BASECLASS(ED4_text_terminal, ED4_terminal);
 };
 
-class ED4_sequence_terminal_basic : public ED4_text_terminal { // derived from a Noncopyable
+class ED4_abstract_sequence_terminal : public ED4_text_terminal { // derived from a Noncopyable
+    
 public:
+    char *species_name; // @@@ wrong place (may be member of ED4_sequence_manager)
 
-    char *species_name;
 
-    ED4_sequence_terminal_basic(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    virtual ~ED4_sequence_terminal_basic();
+    ED4_abstract_sequence_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
+    virtual ~ED4_abstract_sequence_terminal();
 
     virtual GB_alignment_type GetAliType() = 0;
     virtual int get_length() const { int len; resolve_pointer_to_char_pntr(&len); return len; }
@@ -1579,10 +1580,10 @@ public:
     void calc_intervall_displayed_in_rectangle(AW_screen_area *area_rect, long *left_index, long *right_index);
     void calc_update_intervall(long *left_index, long *right_index);
 
-    DECLARE_DUMP_FOR_BASECLASS(ED4_sequence_terminal_basic, ED4_text_terminal);
+    DECLARE_DUMP_FOR_BASECLASS(ED4_abstract_sequence_terminal, ED4_text_terminal);
 };
 
-class ED4_orf_terminal : public ED4_sequence_terminal_basic { // derived from a Noncopyable
+class ED4_orf_terminal : public ED4_abstract_sequence_terminal { // derived from a Noncopyable
     // NOTE: ED4_orf_terminal is a separate terminal class used to display Open Reading Frames (ORFs)
     //       for the corresponding gene (DNA) sequence. It is used in ProteinViewer Module and should not be
     //       used for drawing aminoacid sequence alone as in protein alignment. Aminoacid sequences are
@@ -1608,10 +1609,10 @@ public:
     int GET_aaStartPos () { return aaStartPos; }
     int GET_aaStrandType () { return aaStrandType; }
 
-    DECLARE_DUMP_FOR_LEAFCLASS(ED4_sequence_terminal_basic);
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_abstract_sequence_terminal);
 };
 
-class ED4_sequence_terminal : public ED4_sequence_terminal_basic { // derived from a Noncopyable
+class ED4_sequence_terminal : public ED4_abstract_sequence_terminal { // derived from a Noncopyable
     mutable ED4_SearchResults searchResults;
 
     virtual ED4_returncode  draw(int only_text = 0);
@@ -1627,7 +1628,7 @@ public:
     virtual GB_alignment_type GetAliType();
 
     virtual void deleted_from_database();
-    virtual int get_length() const { return ED4_sequence_terminal_basic::get_length(); }
+    virtual int get_length() const { return ED4_abstract_sequence_terminal::get_length(); }
 
     ED4_SearchResults& results() const { return searchResults; }
 
@@ -1636,7 +1637,7 @@ public:
         return col_term ? col_term->to_columnStat_terminal() : 0;
     }
 
-    DECLARE_DUMP_FOR_MIDCLASS(ED4_sequence_terminal,ED4_sequence_terminal_basic);
+    DECLARE_DUMP_FOR_MIDCLASS(ED4_sequence_terminal,ED4_abstract_sequence_terminal);
 };
 
 class ED4_columnStat_terminal : public ED4_text_terminal { // derived from a Noncopyable

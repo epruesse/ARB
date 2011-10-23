@@ -877,7 +877,7 @@ int ED4_multi_species_manager::count_all_children_and_set_group_id() // counts a
     return counter;
 }
 
-void ED4_sequence_terminal_basic::calc_intervall_displayed_in_rectangle(AW_screen_area *rect, long *left_index, long *right_index) { // rect contains win-coords
+void ED4_abstract_sequence_terminal::calc_intervall_displayed_in_rectangle(AW_screen_area *rect, long *left_index, long *right_index) { // rect contains win-coords
     AW_pos x, y;
     int    length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
 
@@ -894,7 +894,7 @@ void ED4_sequence_terminal_basic::calc_intervall_displayed_in_rectangle(AW_scree
     if (*left_index < 0) *left_index = 0;
 }
 
-void ED4_sequence_terminal_basic::calc_update_intervall(long *left_index, long *right_index)
+void ED4_abstract_sequence_terminal::calc_update_intervall(long *left_index, long *right_index)
 {
     AW_pos x, y;
     int    length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
