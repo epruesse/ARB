@@ -869,9 +869,9 @@ public:
 
     int is_species_name_terminal()  const { e4_assert(this); return spec->level & ED4_L_SPECIES_NAME; }
 
-    int is_sequence_info_terminal() const { e4_assert(this); return (spec->level & ED4_L_SEQUENCE_INFO) && !is_orf_terminal(); }
-    int is_sequence_terminal()      const { e4_assert(this); return (spec->level & ED4_L_SEQUENCE_STRING) && !is_orf_terminal(); }
-    int is_orf_terminal()           const { e4_assert(this); return (spec->level & ED4_L_ORF) == ED4_L_ORF; }
+    int is_sequence_info_terminal() const { e4_assert(this); return spec->level & ED4_L_SEQUENCE_INFO; }
+    int is_sequence_terminal()      const { e4_assert(this); return spec->level & ED4_L_SEQUENCE_STRING; }
+    int is_orf_terminal()           const { e4_assert(this); return spec->level & ED4_L_ORF; }
 
     int is_pure_text_terminal()     const { e4_assert(this); return spec->level & ED4_L_PURE_TEXT; }
     int is_columnStat_terminal()    const { e4_assert(this); return spec->level & ED4_L_COL_STAT; }

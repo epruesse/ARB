@@ -60,6 +60,7 @@ static void printLevel(ED4_level level) {
     plev(SPECIES_NAME);
     plev(SEQUENCE_INFO);
     plev(SEQUENCE_STRING);
+    plev(ORF);
     plev(SPACER);
     plev(LINE);
     plev(MULTI_NAME);
