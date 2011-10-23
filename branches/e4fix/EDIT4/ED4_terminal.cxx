@@ -77,6 +77,16 @@ ED4_object_specification sequence_terminal_spec =
     0                      // justification value --no meaning for a terminal
 };
 
+ED4_object_specification orf_terminal_spec =
+{
+    ED4_P_IS_TERMINAL,     // static props
+    ED4_L_ORF,             // level
+    ED4_L_NO_LEVEL,        // allowed children level
+    ED4_L_NO_LEVEL,        // handled object
+    ED4_L_NO_LEVEL,        // restriction level
+    0                      // justification value --no meaning for a terminal
+};
+
 ED4_object_specification pure_text_terminal_spec =
 {
     ED4_P_IS_TERMINAL,     // static props
@@ -409,7 +419,7 @@ ED4_returncode ED4_terminal::draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text, int
         location.position[Y_POS] = drag_y;
         device_manager->children->search_target_species(&location, ED4_P_HORIZONTAL, &drag_target, ED4_L_NO_LEVEL);
 
-        if (drag_target && !is_sequence_info_terminal()) {
+        if (drag_target) {
             drag_target->calc_world_coords (&target_x, &target_y);
             ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &target_x, &target_y);
 #define ARROW_LENGTH 3
@@ -700,7 +710,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                 }
 
                 case ED4_B_RIGHT_BUTTON: {
-                    if (is_sequence_terminal() && right_button_started_on_sequence_term) {
+                    if (right_button_started_on_sequence_term && is_sequence_terminal()) {
                         dumpEvent("Relea", event);
                         ED4_no_dangerous_modes();
                         ED4_setColumnblockCorner(event, to_sequence_terminal()); // mark columnblock
@@ -1132,7 +1142,6 @@ ED4_consensus_sequence_terminal::~ED4_consensus_sequence_terminal()
 ED4_sequence_terminal_basic::ED4_sequence_terminal_basic(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
     : ED4_text_terminal(temp_id, x, y, width, height, temp_parent)
 {
-    spec = &(sequence_terminal_spec);
     species_name = NULL;
 }
 
@@ -1143,7 +1152,7 @@ ED4_sequence_terminal_basic::~ED4_sequence_terminal_basic() {
 ED4_orf_terminal::ED4_orf_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
     : ED4_sequence_terminal_basic(temp_id, x, y, width, height, temp_parent)
 {
-    spec = &(sequence_terminal_spec);
+    spec = &(orf_terminal_spec);
     aaSequence   = 0;
     aaColor   = 0;
     aaStartPos   = 0;
