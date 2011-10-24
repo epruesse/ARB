@@ -91,8 +91,12 @@ Amino_Group iupac::get_amino_group_for(char aa) {
     return amino_group[aa-'A'];
 }
 
-
-
+char iupac::get_amino_consensus_char(Amino_Group ag) {
+    if (ag>AA_GROUP_NONE && ag<AA_GROUP_ILLEGAL) {
+        return aminoGroupMembers[ag][0];
+    }
+    return '?';
+}
 
 static char IUPAC_add[26][26]; // uses T
 static int IUPAC_add_initialized = 0;
