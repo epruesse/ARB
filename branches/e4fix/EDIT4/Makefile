@@ -2,45 +2,19 @@
 
 .SUFFIXES: .o .cxx .depend
 
-CPP_OBJECTS = \
-	ED4_protein_2nd_structure.o \
-	ED4_ProteinViewer.o \
-	ED4_search.o \
-	ED4_cursor.o \
-	ED4_dump.o \
-	ED4_nds.o \
-	ED4_plugins.o \
-	ED4_main.o \
-	ED4_mini_classes.o \
-	ED4_edit_string.o \
-	ED4_base.o \
-	ED4_manager.o \
-	ED4_terminal.o \
-	ED4_root.o \
-	EDB_root_bact.o \
-	ED4_window.o \
-	ED4_members.o \
-	ED4_no_class.o \
-	ED4_list.o \
-	ED4_text_terminals.o \
-	ED4_tools.o \
-	ED4_block.o \
-	ED4_visualizeSAI.o \
-	ED4_naligner.o \
-	graph_aligner_gui.o \
-	ED4_dots.o \
+SOURCES=$(wildcard *.cxx)
+OBJECTS=$(subst .cxx,.o,$(SOURCES))
 
-
-$(MAIN): $(CPP_OBJECTS)
-	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
+$(MAIN): $(OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
-	rm -f $(CPP_OBJECTS) *.a
+	rm -f $(OBJECTS) *.a
 
-DEPENDS = $(CPP_OBJECTS:.o=.depend)
+DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile
 	@rm $(DEPENDS)
