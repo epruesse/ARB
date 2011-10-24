@@ -1671,7 +1671,7 @@ public:
     }
 };
 
-static ED4_objspec fake_object_spec { ED4_P_NO_PROP, ED4_L_NO_LEVEL, ED4_L_NO_LEVEL, ED4_L_NO_LEVEL, ED4_L_NO_LEVEL, 0 };
+static ED4_objspec fake_object_spec(ED4_P_NO_PROP, ED4_L_NO_LEVEL, ED4_L_NO_LEVEL, ED4_L_NO_LEVEL, ED4_L_NO_LEVEL, 0);
 
 class fake_base_4test : public ED4_base {  // derived from a Noncopyable
     const char *seq;

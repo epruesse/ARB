@@ -224,7 +224,8 @@ public:
     EDB_root_bact() {}
 };
 
-struct ED4_objspec {
+class ED4_objspec {
+public:
     ED4_properties static_prop;
     ED4_level      level;
     ED4_level      allowed_children;
@@ -232,6 +233,8 @@ struct ED4_objspec {
     ED4_level      restriction_level;
     float          justification; // Justification of Object, which is controlled by a manager
 
+    ED4_objspec(ED4_properties static_prop_, ED4_level level_, ED4_level allowed_children_, ED4_level handled_level_, ED4_level restriction_level_, float justification_);
+    
 #if defined(IMPLEMENT_DUMP)
     void dump(size_t indent) const;
 #endif // IMPLEMENT_DUMP

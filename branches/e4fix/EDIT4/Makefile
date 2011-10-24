@@ -538,6 +538,28 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/st_window.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/test_global.h
 
+ED4_objspec.o: ed4_class.hxx
+ED4_objspec.o: ed4_defs.hxx
+ED4_objspec.o: ed4_search.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/arb_core.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/arbtools.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/downcast.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/smartptr.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/test_global.h
+
 ED4_plugins.o: ed4_class.hxx
 ED4_plugins.o: ed4_defs.hxx
 ED4_plugins.o: ed4_plugins.hxx
