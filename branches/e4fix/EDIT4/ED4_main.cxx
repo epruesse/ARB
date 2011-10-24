@@ -582,6 +582,8 @@ int main(int argc, char **argv) {
     ED4_ROOT->sequence_colors->aww = ED4_ROOT->create_new_window(); // create first editor window
     if (err) aw_message(err); // write again to status window
 
+    ED4_objspec::init_object_specs();
+    
     {
         int found_config = 0;
 

@@ -224,7 +224,11 @@ public:
     EDB_root_bact() {}
 };
 
-class ED4_objspec {
+#define MAX_SPECIFIED_OBJECT_TYPES 22
+
+class ED4_objspec : public Noncopyable {
+    static bool object_specs_initialized;
+
 public:
     ED4_properties static_prop;
     ED4_level      level;
@@ -234,12 +238,19 @@ public:
     float          justification; // Justification of Object, which is controlled by a manager
 
     ED4_objspec(ED4_properties static_prop_, ED4_level level_, ED4_level allowed_children_, ED4_level handled_level_, ED4_level restriction_level_, float justification_);
-    
+
 #if defined(IMPLEMENT_DUMP)
     void dump(size_t indent) const;
 #endif // IMPLEMENT_DUMP
 
-};                              // Manager coordinates Layout
+    static void init_object_specs();
+
+    bool allowed_to_contain(ED4_level other) const {
+        e4_assert(object_specs_initialized);
+        e4_assert(static_prop&ED4_P_IS_MANAGER); // terminals can't contain anything - your test is senseless
+        return allowed_children&other;
+    }
+};
 
 class ED4_folding_line : virtual Noncopyable {
     // properties of an object, i.e. concerning rectangles on screen showing sequences

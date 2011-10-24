@@ -19,8 +19,6 @@
 //      Manager static properties (used by manager-constructors)
 // -----------------------------------------------------------------
 
-// Each manager should either be ED4_P_HORIZONTAL or ED4_P_VERTICAL - never both !!!
-
 static ED4_objspec main_manager_spec(
     (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_HORIZONTAL), // static props
     ED4_L_ROOT,                                            // level

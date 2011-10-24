@@ -558,7 +558,9 @@ ED4_objspec.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_objspec.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_objspec.o: $(ARBHOME)/INCLUDE/smartptr.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/static_assert.h
 ED4_objspec.o: $(ARBHOME)/INCLUDE/test_global.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 ED4_plugins.o: ed4_class.hxx
 ED4_plugins.o: ed4_defs.hxx
