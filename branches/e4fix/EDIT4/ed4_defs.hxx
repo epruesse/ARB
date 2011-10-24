@@ -129,9 +129,10 @@ enum ED4_level { // has to contain bit values
     ED4_L_MULTI_NAME      = 0x4000,
     ED4_L_NAME_MANAGER    = 0x8000,
     ED4_L_GROUP           = 0x10000, 
-    ED4_L_BRACKET         = 0x20000,
-    ED4_L_PURE_TEXT       = 0x40000,
-    ED4_L_COL_STAT        = 0x80000, 
+    ED4_L_ROOTGROUP       = 0x20000, 
+    ED4_L_BRACKET         = 0x40000,
+    ED4_L_PURE_TEXT       = 0x80000,
+    ED4_L_COL_STAT        = 0x100000, 
 };
 
 enum ED4_datamode {

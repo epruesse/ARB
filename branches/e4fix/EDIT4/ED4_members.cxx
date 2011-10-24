@@ -67,6 +67,7 @@ ED4_returncode ED4_members::search_target_species(ED4_extension *location,   ED4
              (location->position[rel_pos] >= (current_member->extension.position[rel_pos] + abs_pos)) &&        // just as long as possibility exists, to find the object
              (location->position[rel_pos] >= abs_pos && location->position[rel_pos] <= current_member->parent->extension.size[rel_size] + abs_pos))
     {
+        e4_assert(!current_member->is_root_group_manager());
         if (current_member->is_group_manager() &&
             !current_member->flag.hidden &&
             !current_member->flag.is_consensus) { // search_clicked_member for multi_species_manager in groups
@@ -157,7 +158,7 @@ ED4_returncode ED4_members::insert_member(ED4_base *new_member)                 
     ED4_index   index;
     ED4_properties      prop;
 
-    prop = owner()->spec->static_prop;                                          // properties of parent object
+    prop = owner()->spec.static_prop;                                          // properties of parent object
 
     if ((index = search_member(&(new_member->extension), prop)) < 0) {          // search list for a suitable position
         index = 0;                                                              // list was empty

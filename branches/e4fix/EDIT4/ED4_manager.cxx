@@ -21,7 +21,7 @@
 
 // Each manager should either be ED4_P_HORIZONTAL or ED4_P_VERTICAL - never both !!!
 
-ED4_object_specification main_manager_spec = {
+ED4_objspec main_manager_spec = {
     (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_HORIZONTAL), // static props
     ED4_L_ROOT,                                            // level
     ED4_L_GROUP,                                           // allowed children level
@@ -30,7 +30,7 @@ ED4_object_specification main_manager_spec = {
     0                                                      // justification value (0 means left-aligned, 1.0 means right-aligned)
 };
 
-ED4_object_specification device_manager_spec = {
+ED4_objspec device_manager_spec = {
     (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_HORIZONTAL), // static props
     ED4_L_DEVICE,                                          // level
     (ED4_level)(ED4_L_AREA | ED4_L_SPACER),                // allowed children level
@@ -39,7 +39,7 @@ ED4_object_specification device_manager_spec = {
     0                                                      // justification value (0 means left-aligned)
 };
 
-ED4_object_specification area_manager_spec = {
+ED4_objspec area_manager_spec = {
     (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_VERTICAL),          // static props
     ED4_L_AREA,                                                   // level
     (ED4_level)(ED4_L_MULTI_SPECIES | ED4_L_TREE | ED4_L_SPACER), // allowed children level
@@ -48,7 +48,7 @@ ED4_object_specification area_manager_spec = {
     0                                                             // justification value (0 means top-aligned)
 };
 
-ED4_object_specification multi_species_manager_spec = {
+ED4_objspec multi_species_manager_spec = {
     (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_HORIZONTAL),   // static props
     ED4_L_MULTI_SPECIES,                                     // level
     (ED4_level)(ED4_L_SPECIES | ED4_L_GROUP | ED4_L_SPACER), // allowed children level
@@ -57,7 +57,7 @@ ED4_object_specification multi_species_manager_spec = {
     0                                                        // justification value (0 means left-aligned)
 };
 
-ED4_object_specification species_manager_spec = {
+ED4_objspec species_manager_spec = {
     (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_VERTICAL),  // static props
     ED4_L_SPECIES,                                        // level
     (ED4_level)(ED4_L_MULTI_SEQUENCE | ED4_L_MULTI_NAME), // allowed children level
@@ -65,7 +65,7 @@ ED4_object_specification species_manager_spec = {
     ED4_L_NO_LEVEL,                                       // restriction level
     0                                                     // justification value (0 means top-aligned)
 };
-ED4_object_specification multi_sequence_manager_spec = {
+ED4_objspec multi_sequence_manager_spec = {
     (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_HORIZONTAL), // static props
     ED4_L_MULTI_SEQUENCE,                                  // level
     ED4_L_SEQUENCE,                                        // allowed children level
@@ -74,7 +74,7 @@ ED4_object_specification multi_sequence_manager_spec = {
     0                                                      // justification value (0 means left-aligned)
 };
 
-ED4_object_specification sequence_manager_spec = {
+ED4_objspec sequence_manager_spec = {
     (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_VERTICAL),      // static props
     ED4_L_SEQUENCE,                                           // level
     (ED4_level)(ED4_L_SEQUENCE_INFO | ED4_L_SEQUENCE_STRING | ED4_L_ORF), // allowed children level
@@ -83,7 +83,7 @@ ED4_object_specification sequence_manager_spec = {
     0                                                         // justification value (0 means top-aligned)
 };
 
-ED4_object_specification multi_name_manager_spec = {
+ED4_objspec multi_name_manager_spec = {
     (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_HORIZONTAL), // static props
     ED4_L_MULTI_NAME,                                      // level
     ED4_L_NAME_MANAGER,                                    // allowed children level
@@ -92,7 +92,7 @@ ED4_object_specification multi_name_manager_spec = {
     0                                                      // justification value (0 means left-aligned)
 };
 
-ED4_object_specification name_manager_spec = {
+ED4_objspec name_manager_spec = {
     (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_VERTICAL), // static props
     ED4_L_NAME_MANAGER,                                  // level
     (ED4_level)(ED4_L_SPECIES_NAME),                     // allowed children level
@@ -101,7 +101,7 @@ ED4_object_specification name_manager_spec = {
     0                                                    // justification value (0 means top-aligned)
 };
 
-ED4_object_specification group_manager_spec = {
+ED4_objspec group_manager_spec = {
     (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_VERTICAL),             // static props
     ED4_L_GROUP,                                                     // level
     (ED4_level)(ED4_L_MULTI_SPECIES | ED4_L_BRACKET | ED4_L_DEVICE), // allowed children level
@@ -110,9 +110,9 @@ ED4_object_specification group_manager_spec = {
     0                                                                // justification value (0 means top-aligned)
 };
 
-ED4_object_specification root_group_manager_spec = {
+ED4_objspec root_group_manager_spec = {
     (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_VERTICAL), // static props
-    ED4_L_GROUP,                                         // level
+    ED4_L_ROOTGROUP,                                     // level
     (ED4_level)(ED4_L_DEVICE),                           // allowed children level
     ED4_L_NO_LEVEL,                                      // handled object
     ED4_L_NO_LEVEL,                                      // restriction level
@@ -133,7 +133,7 @@ ED4_returncode ED4_manager::rebuild_consensi(ED4_base *start_species, ED4_update
 
     switch (update_flag) {
         case ED4_U_UP:          // rebuild consensus from a certain starting point upwards
-            while (temp_parent && !(temp_parent->is_area_manager())) {
+            while (temp_parent) {
                 if (temp_parent->is_group_manager()) {
                     ED4_group_manager *group_manager = temp_parent->to_group_manager();
                     multi_species_manager = group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
@@ -147,7 +147,7 @@ ED4_returncode ED4_manager::rebuild_consensi(ED4_base *start_species, ED4_update
             }
             break;
         case ED4_U_UP_DOWN:     // only search first groupmanager and update consensi recursively downwards
-            while (temp_parent && !(temp_parent->is_area_manager())) {
+            while (temp_parent) {
                 if (temp_parent->is_group_manager()) {
                     first_group_manager = temp_parent->to_group_manager();
                 }
@@ -174,6 +174,7 @@ ED4_returncode ED4_manager::check_in_bases(ED4_base *added_base, int start_pos, 
         }
     }
 
+    e4_assert(!added_base->is_root_group_manager());
     if (added_base->is_group_manager()) { // add a group
         return check_bases(0, &added_base->to_group_manager()->table(), start_pos, end_pos);
     }
@@ -195,6 +196,7 @@ ED4_returncode ED4_manager::check_out_bases(ED4_base *subbed_base, int start_pos
         }
     }
 
+    e4_assert(!subbed_base->is_root_group_manager());
     if (subbed_base->is_group_manager()) { // sub a group
         return check_bases(&subbed_base->to_group_manager()->table(), 0, start_pos, end_pos);
     }
@@ -286,6 +288,8 @@ ED4_returncode ED4_manager::check_bases(const ED4_base *old_base, const ED4_base
         return res;
     }
 
+    e4_assert(!old_base->is_root_group_manager());
+    e4_assert(!new_base->is_root_group_manager());
     if (old_base->is_group_manager()) {
         e4_assert(new_base->is_group_manager());
 
@@ -300,16 +304,16 @@ ED4_returncode ED4_manager::check_bases(const ED4_base *old_base, const ED4_base
 // WITH_ALL_ABOVE_GROUP_MANAGER_TABLES performs a command with all groupmanager-tables
 // starting at walk_up (normally the current) until top (or until one table has an ignore flag)
 
-#define WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, COMMAND)           \
-    do {                                                                \
-        while (walk_up) {                                               \
-            if (walk_up->is_group_manager()) {                          \
-                ED4_char_table& char_table = walk_up->to_group_manager()->table(); \
-                char_table.COMMAND;                                     \
-                if (char_table.is_ignored()) break;                     \
-            }                                                           \
-            walk_up = walk_up->parent;                                  \
-        }                                                               \
+#define WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, COMMAND)                                   \
+    do {                                                                                        \
+        while (walk_up) {                                                                       \
+            if (walk_up->is_abstract_group_manager()) {                                         \
+                ED4_char_table& char_table = walk_up->to_abstract_group_manager()->table();     \
+                char_table.COMMAND;                                                             \
+                if (char_table.is_ignored()) break;                                             \
+            }                                                                                   \
+            walk_up = walk_up->parent;                                                          \
+        }                                                                                       \
     } while (0)
 
 ED4_returncode ED4_manager::check_bases(const char *old_sequence, int old_len, const char *new_sequence, int new_len, int start_pos, int end_pos) {
@@ -458,7 +462,7 @@ ED4_base* ED4_manager::get_competent_child(AW_pos x, AW_pos y, ED4_properties re
     ext.position[Y_POS] = y;
     ED4_base::touch_world_cache();
 
-    temp_index = children->search_member(&ext, spec->static_prop);
+    temp_index = children->search_member(&ext, spec.static_prop);
 
     if ((temp_index < 0) || (temp_index >= children->members())) {     // no child at given location
         return (NULL);
@@ -466,7 +470,7 @@ ED4_base* ED4_manager::get_competent_child(AW_pos x, AW_pos y, ED4_properties re
 
     child = children->member(temp_index);
 
-    return (child->spec->static_prop & relevant_prop) ? child : (ED4_base*)NULL;
+    return (child->spec.static_prop & relevant_prop) ? child : (ED4_base*)NULL;
 }
 
 ED4_base* ED4_manager::get_competent_clicked_child(AW_pos x, AW_pos y, ED4_properties relevant_prop) {
@@ -478,14 +482,14 @@ ED4_base* ED4_manager::get_competent_clicked_child(AW_pos x, AW_pos y, ED4_prope
     ext.position[Y_POS] = y;
     ED4_base::touch_world_cache();
 
-    children->search_target_species(&ext, spec->static_prop, &temp_parent, ED4_L_MULTI_SPECIES);
+    children->search_target_species(&ext, spec.static_prop, &temp_parent, ED4_L_MULTI_SPECIES);
 
     if (!temp_parent) {
         temp_parent = this;
     }
 
     child = temp_parent;
-    if (child->spec->static_prop & relevant_prop) {
+    if (child->spec.static_prop & relevant_prop) {
         return (child);
     }
     else {
@@ -514,7 +518,7 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
     int nr_of_children_in_group = 0;
 #endif
 
-    if ((mi == NULL) || (mi->object->spec->level <= spec->level)) {
+    if ((mi == NULL) || (mi->object->spec.level <= spec.level)) {
         return (ED4_R_IMPOSSIBLE);
     }
 
@@ -523,15 +527,15 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
 
     calc_rel_coords(&rel_x, &rel_y);
 
-    if ((mi->preferred_parent & spec->level) ||             // desired parent or levels match = > can handle moving
-        (mi->object->spec->level & spec->allowed_children)) // object(s) myself, take info from list of selected objects
+    if ((mi->preferred_parent & spec.level) ||             // desired parent or levels match = > can handle moving
+        (mi->object->spec.level & spec.allowed_children)) // object(s) myself, take info from list of selected objects
     {
 
         if (mi->object->dynamic_prop & ED4_P_IS_HANDLE) { // object is a handle for an object up in the hierarchy = > search it
-            mlevel = mi->object->spec->handled_level;
+            mlevel = mi->object->spec.handled_level;
             object = mi->object;
 
-            while ((object != NULL) && !(object->spec->level & mlevel)) object = object->parent;
+            while ((object != NULL) && !(object->spec.level & mlevel)) object = object->parent;
             if (object == NULL) return (ED4_R_IMPOSSIBLE); // no target level found
         }
         else {
@@ -593,8 +597,8 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
                 sel_object = sel_info->object;
 
                 if ((sel_object==mi->object)) break;
-                if (spec->static_prop & ED4_P_HORIZONTAL) y_off += sel_info->actual_height;
-                if (spec->static_prop & ED4_P_VERTICAL) x_off += sel_info->actual_width;
+                if (spec.static_prop & ED4_P_HORIZONTAL) y_off += sel_info->actual_height;
+                if (spec.static_prop & ED4_P_VERTICAL) x_off += sel_info->actual_width;
 
                 list_elem = list_elem->next();
             }
@@ -679,10 +683,10 @@ ED4_returncode  ED4_manager::move_requested_by_child(ED4_move_info *mi) {
     if (mi == NULL)
         return (ED4_R_IMPOSSIBLE);
 
-    if (spec->level < mi->object->spec->restriction_level) return (ED4_R_IMPOSSIBLE); // check if there is a level restriction to the move request
+    if (spec.level < mi->object->spec.restriction_level) return (ED4_R_IMPOSSIBLE); // check if there is a level restriction to the move request
 
     if (mi->object->dynamic_prop & ED4_P_IS_HANDLE) { // determine first if we could be the moving object
-        if ((dynamic_prop & ED4_P_MOVABLE) && (spec->level & mi->object->spec->handled_level)) { // yes, we are meant to be the moving object
+        if ((dynamic_prop & ED4_P_MOVABLE) && (spec.level & mi->object->spec.handled_level)) { // yes, we are meant to be the moving object
             mi->object = this;
         }
 
@@ -735,7 +739,7 @@ ED4_returncode  ED4_manager::event_sent_by_parent(AW_event *event, AW_window *aw
 
     calc_rel_coords(&ext.position[X_POS], &ext.position[Y_POS]);
 
-    temp_index = children->search_member(&ext, spec->static_prop); // search child who is competent for the location of given event
+    temp_index = children->search_member(&ext, spec.static_prop); // search child who is competent for the location of given event
 
     if ((temp_index >= children->members()) || (temp_index < 0)) {
         return (ED4_R_IMPOSSIBLE); // no suitable member found
@@ -822,7 +826,7 @@ short ED4_manager::calc_bounding_box() {
     }
 
 
-    if (spec->static_prop & ED4_P_HORIZONTAL) {
+    if (spec.static_prop & ED4_P_HORIZONTAL) {
         if (int(extension.size[WIDTH]) != int(max_x)) { // because compares between floats fail sometimes (AW_pos==float)
             extension.size[WIDTH] = max_x;
             bb_changed = 1;
@@ -834,7 +838,7 @@ short ED4_manager::calc_bounding_box() {
         }
     }
 
-    if (spec->static_prop & ED4_P_VERTICAL) {
+    if (spec.static_prop & ED4_P_VERTICAL) {
         if (int(extension.size[WIDTH]) != int(sum_width)) {
             extension.size[WIDTH] = sum_width;
             bb_changed = 1;
@@ -874,13 +878,13 @@ ED4_returncode ED4_manager::distribute_children() {
     ED4_base  *current_child;
 
     // set extension-indexes rel_pos and rel_size according to properties
-    if (spec->static_prop & ED4_P_HORIZONTAL) {
+    if (spec.static_prop & ED4_P_HORIZONTAL) {
         rel_pos    = X_POS;
         other_pos  = Y_POS;
         rel_size   = WIDTH;
         other_size = HEIGHT;
     }
-    if (spec->static_prop & ED4_P_VERTICAL) {
+    if (spec.static_prop & ED4_P_VERTICAL) {
         rel_pos    = Y_POS;
         other_pos  = X_POS;
         rel_size   = HEIGHT;
@@ -901,7 +905,7 @@ ED4_returncode ED4_manager::distribute_children() {
     current_index = 0;                                          // set children's relevant position according to justification value
     // (0.0 means top- or left-justified, 1.0 means bottom- or right-justified)
     while ((current_child = children->member(current_index++)) != NULL) {
-        current_child->extension.position[rel_pos] = spec->justification * (max_rel_size - current_child->extension.size[rel_size]);
+        current_child->extension.position[rel_pos] = spec.justification * (max_rel_size - current_child->extension.size[rel_size]);
         ED4_base::touch_world_cache();
     }
 
@@ -1172,8 +1176,8 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
                 AW_pos x, y;
                 child->calc_world_coords(&x, &y);
 
-                if (spec->static_prop & ED4_P_HORIZONTAL) { // horizontal manager
-                    e4_assert((spec->static_prop&ED4_P_VERTICAL)==0);   // otherwise this binary search will not work correctly
+                if (spec.static_prop & ED4_P_HORIZONTAL) { // horizontal manager
+                    e4_assert((spec.static_prop&ED4_P_VERTICAL)==0);   // otherwise this binary search will not work correctly
                     if ((x+child->extension.size[WIDTH])<=rect.l) { // left of clipping range
                         l = max_m;
                     }
@@ -1181,7 +1185,7 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
                         h = min_m;
                     }
                 }
-                else if (spec->static_prop & ED4_P_VERTICAL) { // vertical manager
+                else if (spec.static_prop & ED4_P_VERTICAL) { // vertical manager
                     if ((y+child->extension.size[HEIGHT])<=rect.t) { // above clipping range
                         l = max_m;
                     }
@@ -1372,8 +1376,8 @@ ED4_base* ED4_manager::search_ID(const char *temp_id) {
 }
 
 
-ED4_manager::ED4_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_base(temp_id, x, y, width, height, temp_parent)
+ED4_manager::ED4_manager(const ED4_objspec& spec_, const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+    ED4_base(spec_, temp_id, x, y, width, height, temp_parent)
 {
     children = new ED4_members(this);
 }
@@ -1401,12 +1405,7 @@ ED4_manager::~ED4_manager() {
 // --------------------------------------------------------------------------------
 
 ED4_main_manager::ED4_main_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_manager(temp_id, x, y, width, height, temp_parent)
-{
-    spec = &(main_manager_spec);
-}
-
-ED4_main_manager::~ED4_main_manager()
+    ED4_manager(main_manager_spec, temp_id, x, y, width, height, temp_parent)
 {
 }
 
@@ -1415,12 +1414,7 @@ ED4_main_manager::~ED4_main_manager()
 // --------------------------------------------------------------------------------
 
 ED4_device_manager::ED4_device_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_manager(temp_id, x, y, width, height, temp_parent)
-{
-    spec = &(device_manager_spec);
-}
-
-ED4_device_manager::~ED4_device_manager()
+    ED4_manager(device_manager_spec, temp_id, x, y, width, height, temp_parent)
 {
 }
 
@@ -1429,13 +1423,7 @@ ED4_device_manager::~ED4_device_manager()
 // --------------------------------------------------------------------------------
 
 ED4_area_manager::ED4_area_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_manager(temp_id, x, y, width, height, temp_parent)
-{
-    spec = &(area_manager_spec);
-}
-
-
-ED4_area_manager::~ED4_area_manager()
+    ED4_manager(area_manager_spec, temp_id, x, y, width, height, temp_parent)
 {
 }
 
@@ -1444,14 +1432,9 @@ ED4_area_manager::~ED4_area_manager()
 // --------------------------------------------------------------------------------
 
 ED4_multi_species_manager::ED4_multi_species_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_manager(temp_id, x, y, width, height, temp_parent),
+    ED4_manager(multi_species_manager_spec, temp_id, x, y, width, height, temp_parent),
     species(-1),
     selected_species(-1)
-{
-    spec = &(multi_species_manager_spec);
-}
-
-ED4_multi_species_manager::~ED4_multi_species_manager()
 {
 }
 
@@ -1479,6 +1462,7 @@ void ED4_multi_species_manager::invalidate_species_counters() {
         set_refresh();
         parent->refresh_requested_by_child();
 
+        e4_assert(!parent->is_root_group_manager());
         if (parent->is_group_manager()) {
             ED4_group_manager *group_man = parent->to_group_manager();
             ED4_base          *base      = group_man->get_defined_level(ED4_L_BRACKET);
@@ -1839,9 +1823,8 @@ ED4_terminal *ED4_multi_species_manager::get_consensus_terminal() {
 // --------------------------------------------------------------------------------
 
 ED4_species_manager::ED4_species_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_manager(temp_id, x, y, width, height, temp_parent)
+    ED4_manager(species_manager_spec, temp_id, x, y, width, height, temp_parent)
 {
-    spec = &(species_manager_spec);
 }
 
 #if defined(DEBUG)
@@ -1898,18 +1881,18 @@ void ED4_species_manager::remove_all_callbacks() {
 }
 
 
-// --------------------------------------------------------------------------------
-//      ED4_group_manager::
-// --------------------------------------------------------------------------------
+// ------------------------
+//      group managers
 
-ED4_group_manager::ED4_group_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_manager(temp_id, x, y, width, height, temp_parent),
+ED4_abstract_group_manager::ED4_abstract_group_manager(const ED4_objspec& spec_, const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+    ED4_manager(spec_, temp_id, x, y, width, height, temp_parent), 
     my_table(0)
 {
-    spec = &(group_manager_spec);
 }
 
-ED4_group_manager::~ED4_group_manager() {
+ED4_group_manager::ED4_group_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+    ED4_abstract_group_manager(group_manager_spec, temp_id, x, y, width, height, temp_parent)
+{
 }
 
 // --------------------------------------------------------------------------------
@@ -2131,18 +2114,13 @@ GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
 // --------------------------------------------------------------------------------
 
 ED4_root_group_manager::ED4_root_group_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_group_manager(temp_id, x, y, width, height, temp_parent),
+    : ED4_abstract_group_manager(root_group_manager_spec, temp_id, x, y, width, height, temp_parent),
       my_remap()
 {
-    spec = &(root_group_manager_spec);
-
     AW_root *awr = ED4_ROOT->aw_root;
     my_remap.set_mode((ED4_remap_mode)awr->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->read_int(),
                       awr->awar(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT)->read_int());
     my_remap.mark_compile_needed_force();
-}
-
-ED4_root_group_manager::~ED4_root_group_manager() {
 }
 
 int ED4_root_group_manager::update_remap()
@@ -2166,41 +2144,23 @@ int ED4_root_group_manager::update_remap()
 // --------------------------------------------------------------------------------
 
 ED4_multi_sequence_manager::ED4_multi_sequence_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_manager(temp_id, x, y, width, height, temp_parent)
-{
-    spec = &(multi_sequence_manager_spec);
-}
-
-ED4_multi_sequence_manager::~ED4_multi_sequence_manager()
+    : ED4_manager(multi_sequence_manager_spec, temp_id, x, y, width, height, temp_parent)
 {
 }
 
 ED4_sequence_manager::ED4_sequence_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_manager(temp_id, x, y, width, height, temp_parent)
+    : ED4_manager(sequence_manager_spec, temp_id, x, y, width, height, temp_parent)
 {
-    spec = &(sequence_manager_spec);
 }
-
-ED4_sequence_manager::~ED4_sequence_manager() {
-}
-
 
 ED4_multi_name_manager::ED4_multi_name_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_manager(temp_id, x, y, width, height, temp_parent)
-{
-    spec = &(multi_name_manager_spec);
-}
-
-ED4_multi_name_manager::~ED4_multi_name_manager()
+    : ED4_manager(multi_name_manager_spec, temp_id, x, y, width, height, temp_parent)
 {
 }
 
 ED4_name_manager::ED4_name_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_manager(temp_id, x, y, width, height, temp_parent)
+    : ED4_manager(name_manager_spec, temp_id, x, y, width, height, temp_parent)
 {
-    spec = &(name_manager_spec);
 }
 
-ED4_name_manager::~ED4_name_manager() {
-}
 
