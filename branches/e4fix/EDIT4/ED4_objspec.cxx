@@ -67,6 +67,30 @@ public:
         e4_assert(spec);
         return *spec;
     }
+
+    bool has_manager_that_may_contain(ED4_level lev) const {
+        for (int i = 0; i<MAX_SPECIFIED_OBJECT_TYPES; ++i) {
+            ED4_objspec *spec = known_spec[i];
+            if (spec && spec->is_manager() && spec->allowed_to_contain(lev))
+                return true;
+        }
+        return false;
+    }
+
+    void init_object_specs() {
+        for (int i = 1; i<MAX_SPECIFIED_OBJECT_TYPES; ++i) {
+            if (known_spec[i]) {
+                ED4_objspec& spec = *known_spec[i];
+
+                if (!has_manager_that_may_contain(spec.level)) {
+                    printf("\nDid not find manager allowed to contain:\n");
+                    spec.dump(2);
+                }
+                // e4_assert(has_manager_that_may_contain(spec.level));
+            }
+        }
+
+    }
 };
 
 static ED4_objspec_registry& get_objspec_registry() {
@@ -77,7 +101,7 @@ static ED4_objspec_registry& get_objspec_registry() {
 bool ED4_objspec::object_specs_initialized = false;
 void ED4_objspec::init_object_specs() {
     e4_assert(!object_specs_initialized);
-    // @@@ 
+    get_objspec_registry().init_object_specs();
     object_specs_initialized = true;
 }
 
@@ -139,7 +163,10 @@ void TEST_objspec_registry() {
     TEST_ASSERT(objspec_registry.count_registered()>0);
     TEST_ASSERT_EQUAL(objspec_registry.count_registered(), MAX_SPECIFIED_OBJECT_TYPES);
 
-    TEST_ASSERT(objspec_registry.get_object_spec(ED4_L_ROOT).allowed_children == ED4_L_GROUP);
+    TEST_ASSERT(objspec_registry.get_object_spec(ED4_L_ROOT).allowed_children == ED4_L_ROOTGROUP);
+
+    MISSING_TEST(log);
+    ED4_objspec::init_object_specs();
 }
 
 #endif // UNIT_TESTS

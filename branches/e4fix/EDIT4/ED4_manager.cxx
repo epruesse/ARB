@@ -22,7 +22,7 @@
 static ED4_objspec main_manager_spec(
     (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_HORIZONTAL), // static props
     ED4_L_ROOT,                                            // level
-    ED4_L_GROUP,                                           // allowed children level
+    ED4_L_ROOTGROUP,                                       // allowed children level
     ED4_L_NO_LEVEL,                                        // handled object
     ED4_L_NO_LEVEL,                                        // restriction level
     0                                                      // justification value (0 means left-aligned, 1.0 means right-aligned)
@@ -31,7 +31,7 @@ static ED4_objspec main_manager_spec(
 static ED4_objspec device_manager_spec(
     (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_HORIZONTAL), // static props
     ED4_L_DEVICE,                                          // level
-    (ED4_level)(ED4_L_AREA | ED4_L_SPACER),                // allowed children level
+    (ED4_level)(ED4_L_AREA | ED4_L_SPACER | ED4_L_LINE),   // allowed children level
     ED4_L_NO_LEVEL,                                        // handled object
     ED4_L_NO_LEVEL,                                        // restriction level
     0                                                      // justification value (0 means left-aligned)
@@ -58,7 +58,9 @@ static ED4_objspec multi_species_manager_spec(
 static ED4_objspec species_manager_spec(
     (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_VERTICAL),  // static props
     ED4_L_SPECIES,                                        // level
-    (ED4_level)(ED4_L_MULTI_SEQUENCE | ED4_L_MULTI_NAME), // allowed children level
+    // (ED4_level)(ED4_L_MULTI_SEQUENCE | ED4_L_MULTI_NAME), // allowed children level
+    (ED4_level)(ED4_L_MULTI_SEQUENCE | ED4_L_MULTI_NAME | // (used by normal species) 
+                ED4_L_SPECIES_NAME | ED4_L_SEQUENCE), // allowed children level (used by consensus)
     ED4_L_NO_LEVEL,                                       // handled object
     ED4_L_NO_LEVEL,                                       // restriction level
     0                                                     // justification value (0 means top-aligned)
@@ -75,7 +77,7 @@ static ED4_objspec multi_sequence_manager_spec(
 static ED4_objspec sequence_manager_spec(
     (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_VERTICAL),      // static props
     ED4_L_SEQUENCE,                                           // level
-    (ED4_level)(ED4_L_SEQUENCE_INFO | ED4_L_SEQUENCE_STRING | ED4_L_ORF), // allowed children level
+    (ED4_level)(ED4_L_SEQUENCE_INFO | ED4_L_SEQUENCE_STRING | ED4_L_ORF | ED4_L_PURE_TEXT | ED4_L_COL_STAT), // allowed children level
     ED4_L_NO_LEVEL,                                           // handled object
     ED4_L_SPECIES,                                            // restriction level
     0                                                         // justification value (0 means top-aligned)

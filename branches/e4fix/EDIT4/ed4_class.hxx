@@ -245,9 +245,12 @@ public:
 
     static void init_object_specs();
 
+    bool is_manager() const { return static_prop & ED4_P_IS_MANAGER; }
+    bool is_terminal() const { return static_prop & ED4_P_IS_TERMINAL; }
+
     bool allowed_to_contain(ED4_level other) const {
-        e4_assert(object_specs_initialized);
-        e4_assert(static_prop&ED4_P_IS_MANAGER); // terminals can't contain anything - your test is senseless
+        // e4_assert(object_specs_initialized); // @@@ cant check here.. but where
+        e4_assert(is_manager()); // terminals can't contain anything - your test is senseless
         return allowed_children&other;
     }
 };

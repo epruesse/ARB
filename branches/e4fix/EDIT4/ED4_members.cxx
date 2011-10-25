@@ -193,6 +193,8 @@ ED4_returncode ED4_members::insert_member(ED4_base *new_member)                 
 ED4_returncode ED4_members::append_member(ED4_base *new_member) {
     ED4_index index = no_of_members;
 
+    e4_assert(owner()->spec.allowed_to_contain(new_member->spec.level));
+ 
     if (index>=size_of_list) { // ensure free element
         ED4_index new_size_of_list = (size_of_list*3)/2;        // resize to 1.5*size_of_list
         ED4_base **new_member_list = (ED4_base**)GB_calloc(new_size_of_list, sizeof(*new_member_list));
