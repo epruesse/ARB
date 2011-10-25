@@ -802,19 +802,17 @@ static ARB_ERROR ED4_with_all_loaded_species(ED4_Species_Callback cb, AW_CL cd) 
 //  faligner
 // --------------------------------------------------------------------------------
 
-static int has_species_name(ED4_base *base, AW_CL cl_species_name)
-{
+static bool has_species_name(ED4_base *base, AW_CL cl_species_name) {
     ED4_species_name_terminal *name_term = base->to_species_name_terminal();
     GBDATA *gbd = name_term->get_species_pointer();
 
     if (gbd) {
         const char *name = GB_read_char_pntr(gbd);
         e4_assert(name);
-        int has_name = strcmp(name, (const char*)cl_species_name)==0;
-        return has_name;
+        return strcmp(name, (const char*)cl_species_name)==0;
     }
 
-    return 0;
+    return false;
 }
 
 ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_name)

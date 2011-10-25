@@ -669,8 +669,7 @@ ARB_ERROR ED4_manager::route_down_hierarchy(ED4_cb cb, AW_CL cd1, AW_CL cd2) {
     return error;
 }
 
-ED4_base *ED4_manager::find_first_that(ED4_level level, int (*condition)(ED4_base *to_test, AW_CL arg), AW_CL arg)
-{
+ED4_base *ED4_manager::find_first_that(ED4_level level, bool (*condition)(ED4_base *to_test, AW_CL arg), AW_CL arg) {
     if ((spec.level&level) && condition(this, arg)) {
         return this;
     }
@@ -694,11 +693,6 @@ ED4_base *ED4_manager::find_first_that(ED4_level level, int (*condition)(ED4_bas
     }
 
     return 0;
-}
-
-ED4_base *ED4_manager::find_first_that(ED4_level level, int (*condition)(ED4_base *to_test))
-{
-    return find_first_that(level, (int(*)(ED4_base*, AW_CL))condition, (AW_CL)0);
 }
 
 int ED4_base::calc_group_depth()

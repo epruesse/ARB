@@ -569,7 +569,7 @@ void ED4_jump_to_current_species(AW_window * /* aw */, AW_CL)
     }
 }
 
-static int multi_species_man_consensus_id_starts_with(ED4_base *base, AW_CL cl_start) { // TRUE if consensus id starts with 'start'
+static bool multi_species_man_consensus_id_starts_with(ED4_base *base, AW_CL cl_start) { // TRUE if consensus id starts with 'start'
     ED4_multi_species_manager *ms_man = base->to_multi_species_manager();
     char *start = (char*)cl_start;
     ED4_base *consensus = ms_man->search_spec_child_rek(ED4_L_SPECIES);
@@ -585,7 +585,7 @@ static int multi_species_man_consensus_id_starts_with(ED4_base *base, AW_CL cl_s
         }
     }
 
-    return 0;
+    return false;
 }
 
 ED4_multi_species_manager *ED4_new_species_multi_species_manager() {     // returns manager into which new species should be inserted

@@ -1017,9 +1017,11 @@ public:
     virtual ARB_ERROR route_down_hierarchy(ED4_cb1 cb, AW_CL cd) { return route_down_hierarchy(ED4_cb(cb), cd, 0); }
     virtual ARB_ERROR route_down_hierarchy(ED4_cb0 cb) { return route_down_hierarchy(ED4_cb(cb), 0, 0); }
 
-    virtual ED4_base*       find_first_that(ED4_level level, int (*condition)(ED4_base *to_test, AW_CL arg), AW_CL arg);
-    virtual ED4_base*       find_first_that(ED4_level level, int (*condition)(ED4_base *to_test));
-
+    virtual ED4_base*       find_first_that(ED4_level level, bool (*condition)(ED4_base *to_test, AW_CL arg), AW_CL arg);
+    virtual ED4_base*       find_first_that(ED4_level level, bool (*condition)(ED4_base *to_test)) {
+        return find_first_that(level, (bool(*)(ED4_base*, AW_CL))condition, (AW_CL)0);
+    }
+    
     // bottom-up functions
     virtual ED4_returncode  move_requested_by_child(ED4_move_info *moveinfo);
     virtual ED4_returncode  resize_requested_by_child();
