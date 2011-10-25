@@ -236,7 +236,6 @@ void ED4_objspec::dump(size_t indent) const {
     dumpLevel(NEXT_INDENT, "allowed_children", allowed_children);
     dumpLevel(NEXT_INDENT, "handled_level", handled_level);
     dumpLevel(NEXT_INDENT, "restriction_level", restriction_level);
-    print_indented(NEXT_INDENT, GBS_global_string("justification       =%f", justification));
     closeDump(indent);
 }
 

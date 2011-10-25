@@ -14,7 +14,7 @@
 
 #define MAX_POSSIBLE_SPECIFIED_OBJECT_TYPES ((sizeof(ED4_level)*8)-1)
 
-COMPILE_ASSERT(MAX_SPECIFIED_OBJECT_TYPES <= MAX_POSSIBLE_SPECIFIED_OBJECT_TYPES);
+COMPILE_ASSERT(SPECIFIED_OBJECT_TYPES <= MAX_POSSIBLE_SPECIFIED_OBJECT_TYPES);
 
 inline int level2index(ED4_level lev) {
     int index = 0;
@@ -36,13 +36,11 @@ inline ED4_level index2level(int index) { return ED4_level(1<<index); }
 static class ED4_objspec_registry& get_objspec_registry();
 
 class ED4_objspec_registry : virtual Noncopyable {
-    ED4_objspec *known_spec[MAX_SPECIFIED_OBJECT_TYPES];
-    int count;
+    ED4_objspec *known_spec[SPECIFIED_OBJECT_TYPES];
+    int          count;
 
-    ED4_objspec_registry()
-        : count(0)
-    {
-        memset(known_spec, 0, sizeof(*known_spec)*MAX_SPECIFIED_OBJECT_TYPES);
+    ED4_objspec_registry() : count(0) {
+        for (int i = 0; i<SPECIFIED_OBJECT_TYPES; ++i) known_spec[i] = 0;
     }
     friend ED4_objspec_registry& get_objspec_registry();
 public:
@@ -51,7 +49,7 @@ public:
         int idx = level2index(ospec->level);
 
         e4_assert(ospec);
-        e4_assert(idx<MAX_SPECIFIED_OBJECT_TYPES);
+        e4_assert(idx<SPECIFIED_OBJECT_TYPES);
         e4_assert(!known_spec[idx]); // two object types have same level
 
         known_spec[idx] = ospec;
@@ -69,7 +67,7 @@ public:
     }
 
     bool has_manager_that_may_contain(ED4_level lev) const {
-        for (int i = 0; i<MAX_SPECIFIED_OBJECT_TYPES; ++i) {
+        for (int i = 0; i<SPECIFIED_OBJECT_TYPES; ++i) {
             ED4_objspec *spec = known_spec[i];
             if (spec && spec->is_manager() && spec->allowed_to_contain(lev))
                 return true;
@@ -78,18 +76,13 @@ public:
     }
 
     void init_object_specs() {
-        for (int i = 1; i<MAX_SPECIFIED_OBJECT_TYPES; ++i) {
+        for (int i = 1; i<SPECIFIED_OBJECT_TYPES; ++i) {
             if (known_spec[i]) {
                 ED4_objspec& spec = *known_spec[i];
 
-                if (!has_manager_that_may_contain(spec.level)) {
-                    printf("\nDid not find manager allowed to contain:\n");
-                    spec.dump(2);
-                }
-                // e4_assert(has_manager_that_may_contain(spec.level));
+                e4_assert(has_manager_that_may_contain(spec.level));
             }
         }
-
     }
 };
 
@@ -104,17 +97,14 @@ void ED4_objspec::init_object_specs() {
     get_objspec_registry().init_object_specs();
     object_specs_initialized = true;
 }
-
-ED4_objspec::ED4_objspec(ED4_properties static_prop_, ED4_level level_, ED4_level allowed_children_, ED4_level handled_level_, ED4_level restriction_level_, float justification_)
+ED4_objspec::ED4_objspec(ED4_properties static_prop_, ED4_level level_, ED4_level allowed_children_, ED4_level handled_level_, ED4_level restriction_level_)
     : static_prop(static_prop_),
       level(level_),
       allowed_children(allowed_children_),
       handled_level(handled_level_),
-      restriction_level(restriction_level_),
-      justification(justification_)
+      restriction_level(restriction_level_)
 {
     e4_assert(!object_specs_initialized); // specs must be instaciated before they are initialized
-    e4_assert(justification == 0); // @@@ always 0 -> remove
 
     switch (static_prop&(ED4_P_IS_MANAGER|ED4_P_IS_TERMINAL)) {
         case ED4_P_IS_MANAGER: // manager specific checks
@@ -151,13 +141,13 @@ void TEST_objspec_registry() {
     TEST_ASSERT(level2index(ED4_level(0x4)) == 2);
     TEST_ASSERT(level2index(ED4_level(0x10000)) == 16);
 
-    for (int i = 0; i<MAX_SPECIFIED_OBJECT_TYPES; ++i) {
+    for (int i = 0; i<SPECIFIED_OBJECT_TYPES; ++i) {
         TEST_ASSERT_EQUAL(level2index(index2level(i)), i);
     }
 
     ED4_objspec_registry& objspec_registry = get_objspec_registry();
     TEST_ASSERT(objspec_registry.count_registered()>0);
-    TEST_ASSERT_EQUAL(objspec_registry.count_registered(), MAX_SPECIFIED_OBJECT_TYPES);
+    TEST_ASSERT_EQUAL(objspec_registry.count_registered(), SPECIFIED_OBJECT_TYPES);
 
     TEST_ASSERT(objspec_registry.get_object_spec(ED4_L_ROOT).allowed_children == ED4_L_ROOTGROUP);
 

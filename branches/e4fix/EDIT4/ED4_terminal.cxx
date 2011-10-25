@@ -32,8 +32,7 @@ static ED4_objspec tree_terminal_spec(
     ED4_L_TREE,         // level
     ED4_L_NO_LEVEL,     // allowed children level
     ED4_L_NO_LEVEL,     // handled object
-    ED4_L_NO_LEVEL,     // restriction level
-    0                   // justification value --no meaning for a terminal
+    ED4_L_NO_LEVEL      // restriction level
     );
 
 static ED4_objspec bracket_terminal_spec(
@@ -41,8 +40,7 @@ static ED4_objspec bracket_terminal_spec(
     ED4_L_BRACKET,      // level
     ED4_L_NO_LEVEL,     // allowed children level
     ED4_L_NO_LEVEL,     // handled object
-    ED4_L_NO_LEVEL,     // restriction level
-    0                   // justification value --no meaning for a terminal
+    ED4_L_NO_LEVEL      // restriction level
     );
 
 static ED4_objspec species_name_terminal_spec(
@@ -50,8 +48,7 @@ static ED4_objspec species_name_terminal_spec(
     ED4_L_SPECIES_NAME, // level
     ED4_L_NO_LEVEL,     // allowed children level
     ED4_L_SPECIES,      // handled object
-    ED4_L_NO_LEVEL,     // restriction level
-    0                   // justification value --no meaning for a terminal
+    ED4_L_NO_LEVEL      // restriction level
     );
 
 static ED4_objspec sequence_info_terminal_spec(
@@ -59,8 +56,7 @@ static ED4_objspec sequence_info_terminal_spec(
     ED4_L_SEQUENCE_INFO, // level
     ED4_L_NO_LEVEL,     // allowed children level
     ED4_L_SEQUENCE,     // handled object
-    ED4_L_NO_LEVEL,     // restriction level
-    0                   // justification value --no meaning for a terminal
+    ED4_L_NO_LEVEL      // restriction level
     );
 
 static ED4_objspec sequence_terminal_spec(
@@ -68,8 +64,7 @@ static ED4_objspec sequence_terminal_spec(
     ED4_L_SEQUENCE_STRING, // level
     ED4_L_NO_LEVEL,        // allowed children level
     ED4_L_NO_LEVEL,        // handled object
-    ED4_L_NO_LEVEL,        // restriction level
-    0                      // justification value --no meaning for a terminal
+    ED4_L_NO_LEVEL         // restriction level
     );
 
 static ED4_objspec orf_terminal_spec(
@@ -77,8 +72,7 @@ static ED4_objspec orf_terminal_spec(
     ED4_L_ORF,             // level
     ED4_L_NO_LEVEL,        // allowed children level
     ED4_L_NO_LEVEL,        // handled object
-    ED4_L_NO_LEVEL,        // restriction level
-    0                      // justification value --no meaning for a terminal
+    ED4_L_NO_LEVEL         // restriction level
     );
 
 static ED4_objspec pure_text_terminal_spec(
@@ -86,8 +80,7 @@ static ED4_objspec pure_text_terminal_spec(
     ED4_L_PURE_TEXT,       // level
     ED4_L_NO_LEVEL,        // allowed children level
     ED4_L_NO_LEVEL,        // handled object
-    ED4_L_NO_LEVEL,        // restriction level
-    0                      // justification value --no meaning for a terminal
+    ED4_L_NO_LEVEL         // restriction level
     );
 
 static ED4_objspec spacer_terminal_spec(
@@ -95,8 +88,7 @@ static ED4_objspec spacer_terminal_spec(
     ED4_L_SPACER,          // level
     ED4_L_NO_LEVEL,        // allowed children level
     ED4_L_NO_LEVEL,        // handled object
-    ED4_L_NO_LEVEL,        // restriction level
-    0                      // justification value --no meaning for a terminal
+    ED4_L_NO_LEVEL         // restriction level
     );
 
 static ED4_objspec line_terminal_spec(
@@ -104,8 +96,7 @@ static ED4_objspec line_terminal_spec(
     ED4_L_LINE,            // level
     ED4_L_NO_LEVEL,        // allowed children level
     ED4_L_NO_LEVEL,        // handled object
-    ED4_L_NO_LEVEL,        // restriction level
-    0                      // justification value --no meaning for a terminal
+    ED4_L_NO_LEVEL         // restriction level
     );
 
 static ED4_objspec column_stat_terminal_spec(
@@ -113,8 +104,7 @@ static ED4_objspec column_stat_terminal_spec(
     ED4_L_COL_STAT,        // level
     ED4_L_NO_LEVEL,        // allowed children level
     ED4_L_NO_LEVEL,        // handled object
-    ED4_L_NO_LEVEL,        // restriction level
-    0                      // justification value --no meaning for a terminal
+    ED4_L_NO_LEVEL         // restriction level
     );
 
 

@@ -224,10 +224,13 @@ public:
     EDB_root_bact() {}
 };
 
-#define MAX_SPECIFIED_OBJECT_TYPES 21
+#define SPECIFIED_OBJECT_TYPES 21
 
 class ED4_objspec : public Noncopyable {
     static bool object_specs_initialized;
+
+    mutable ED4_level used_childs; // in any object of this type
+
 
 public:
     ED4_properties static_prop;
@@ -235,9 +238,8 @@ public:
     ED4_level      allowed_children;
     ED4_level      handled_level;
     ED4_level      restriction_level;
-    float          justification; // Justification of Object, which is controlled by a manager
 
-    ED4_objspec(ED4_properties static_prop_, ED4_level level_, ED4_level allowed_children_, ED4_level handled_level_, ED4_level restriction_level_, float justification_);
+    ED4_objspec(ED4_properties static_prop_, ED4_level level_, ED4_level allowed_children_, ED4_level handled_level_, ED4_level restriction_level_);
 
 #if defined(IMPLEMENT_DUMP)
     void dump(size_t indent) const;
@@ -248,11 +250,13 @@ public:
     bool is_manager() const { return static_prop & ED4_P_IS_MANAGER; }
     bool is_terminal() const { return static_prop & ED4_P_IS_TERMINAL; }
 
-    bool allowed_to_contain(ED4_level other) const {
+    bool allowed_to_contain(ED4_level child_level) const {
         // e4_assert(object_specs_initialized); // @@@ cant check here.. but where
         e4_assert(is_manager()); // terminals can't contain anything - your test is senseless
-        return allowed_children&other;
+        return allowed_children & child_level;
     }
+
+    void announce_added(ED4_level child_level) const { used_childs = ED4_level(used_childs|child_level); }
 };
 
 class ED4_folding_line : virtual Noncopyable {
@@ -1913,3 +1917,4 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access);
 #else
 #error ed4_class included twice
 #endif
+

@@ -226,6 +226,8 @@ ED4_returncode ED4_members::append_member(ED4_base *new_member) {
     no_of_members++;
     new_member->index = index;
 
+    owner()->spec.announce_added(new_member->spec.level);
+
     owner()->resize_requested_by_child();
     return ED4_R_OK;
 }

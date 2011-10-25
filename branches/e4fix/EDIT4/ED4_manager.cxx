@@ -24,8 +24,7 @@ static ED4_objspec main_manager_spec(
     ED4_L_ROOT,                                            // level
     ED4_L_ROOTGROUP,                                       // allowed children level
     ED4_L_NO_LEVEL,                                        // handled object
-    ED4_L_NO_LEVEL,                                        // restriction level
-    0                                                      // justification value (0 means left-aligned, 1.0 means right-aligned)
+    ED4_L_NO_LEVEL                                         // restriction level
     );
 
 static ED4_objspec device_manager_spec(
@@ -33,8 +32,7 @@ static ED4_objspec device_manager_spec(
     ED4_L_DEVICE,                                          // level
     (ED4_level)(ED4_L_AREA | ED4_L_SPACER | ED4_L_LINE),   // allowed children level
     ED4_L_NO_LEVEL,                                        // handled object
-    ED4_L_NO_LEVEL,                                        // restriction level
-    0                                                      // justification value (0 means left-aligned)
+    ED4_L_NO_LEVEL                                         // restriction level
     );
 
 static ED4_objspec area_manager_spec(
@@ -42,8 +40,7 @@ static ED4_objspec area_manager_spec(
     ED4_L_AREA,                                                   // level
     (ED4_level)(ED4_L_MULTI_SPECIES | ED4_L_TREE | ED4_L_SPACER), // allowed children level
     ED4_L_NO_LEVEL,                                               // handled object
-    ED4_L_NO_LEVEL,                                               // restriction level
-    0                                                             // justification value (0 means top-aligned)
+    ED4_L_NO_LEVEL                                                // restriction level
     );
 
 static ED4_objspec multi_species_manager_spec(
@@ -51,8 +48,7 @@ static ED4_objspec multi_species_manager_spec(
     ED4_L_MULTI_SPECIES,                                     // level
     (ED4_level)(ED4_L_SPECIES | ED4_L_GROUP | ED4_L_SPACER), // allowed children level
     ED4_L_NO_LEVEL,                                          // handled object
-    ED4_L_NO_LEVEL,                                          // restriction level
-    0                                                        // justification value (0 means left-aligned)
+    ED4_L_NO_LEVEL                                           // restriction level
     );
 
 static ED4_objspec species_manager_spec(
@@ -62,16 +58,14 @@ static ED4_objspec species_manager_spec(
     (ED4_level)(ED4_L_MULTI_SEQUENCE | ED4_L_MULTI_NAME | // (used by normal species) 
                 ED4_L_SPECIES_NAME | ED4_L_SEQUENCE), // allowed children level (used by consensus)
     ED4_L_NO_LEVEL,                                       // handled object
-    ED4_L_NO_LEVEL,                                       // restriction level
-    0                                                     // justification value (0 means top-aligned)
+    ED4_L_NO_LEVEL                                        // restriction level
     );
 static ED4_objspec multi_sequence_manager_spec(
     (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_HORIZONTAL), // static props
     ED4_L_MULTI_SEQUENCE,                                  // level
     ED4_L_SEQUENCE,                                        // allowed children level
     ED4_L_NO_LEVEL,                                        // handled object
-    ED4_L_NO_LEVEL,                                        // restriction level
-    0                                                      // justification value (0 means left-aligned)
+    ED4_L_NO_LEVEL                                         // restriction level
     );
 
 static ED4_objspec sequence_manager_spec(
@@ -79,8 +73,7 @@ static ED4_objspec sequence_manager_spec(
     ED4_L_SEQUENCE,                                           // level
     (ED4_level)(ED4_L_SEQUENCE_INFO | ED4_L_SEQUENCE_STRING | ED4_L_ORF | ED4_L_PURE_TEXT | ED4_L_COL_STAT), // allowed children level
     ED4_L_NO_LEVEL,                                           // handled object
-    ED4_L_SPECIES,                                            // restriction level
-    0                                                         // justification value (0 means top-aligned)
+    ED4_L_SPECIES                                             // restriction level
     );
 
 static ED4_objspec multi_name_manager_spec(
@@ -88,8 +81,7 @@ static ED4_objspec multi_name_manager_spec(
     ED4_L_MULTI_NAME,                                      // level
     ED4_L_NAME_MANAGER,                                    // allowed children level
     ED4_L_NO_LEVEL,                                        // handled object
-    ED4_L_NO_LEVEL,                                        // restriction level
-    0                                                      // justification value (0 means left-aligned)
+    ED4_L_NO_LEVEL                                         // restriction level
     );
 
 static ED4_objspec name_manager_spec(
@@ -97,17 +89,15 @@ static ED4_objspec name_manager_spec(
     ED4_L_NAME_MANAGER,                                  // level
     (ED4_level)(ED4_L_SPECIES_NAME),                     // allowed children level
     ED4_L_NO_LEVEL,                                      // handled object
-    ED4_L_SPECIES,                                       // restriction level
-    0                                                    // justification value (0 means top-aligned)
+    ED4_L_SPECIES                                        // restriction level
     );
 
 static ED4_objspec group_manager_spec(
     (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_VERTICAL),             // static props
     ED4_L_GROUP,                                                     // level
-    (ED4_level)(ED4_L_MULTI_SPECIES | ED4_L_BRACKET | ED4_L_DEVICE), // allowed children level
+    (ED4_level)(ED4_L_MULTI_SPECIES | ED4_L_BRACKET), // allowed children level
     ED4_L_NO_LEVEL,                                                  // handled object
-    ED4_L_NO_LEVEL,                                                  // restriction level
-    0                                                                // justification value (0 means top-aligned)
+    ED4_L_NO_LEVEL                                                   // restriction level
     );
 
 static ED4_objspec root_group_manager_spec(
@@ -115,8 +105,7 @@ static ED4_objspec root_group_manager_spec(
     ED4_L_ROOTGROUP,                                     // level
     (ED4_level)(ED4_L_DEVICE),                           // allowed children level
     ED4_L_NO_LEVEL,                                      // handled object
-    ED4_L_NO_LEVEL,                                      // restriction level
-    0                                                    // justification value (0 means top-aligned)
+    ED4_L_NO_LEVEL                                       // restriction level
     );
 
 // ----------------------------
@@ -902,10 +891,11 @@ ED4_returncode ED4_manager::distribute_children() {
         current_index++;
     }
 
-    current_index = 0;                                          // set children's relevant position according to justification value
+    // set children's relevant position according to justification value
     // (0.0 means top- or left-justified, 1.0 means bottom- or right-justified)
+    current_index = 0;
     while ((current_child = children->member(current_index++)) != NULL) {
-        current_child->extension.position[rel_pos] = spec.justification * (max_rel_size - current_child->extension.size[rel_size]);
+        current_child->extension.position[rel_pos] = 0.0;
         ED4_base::touch_world_cache();
     }
 
