@@ -129,11 +129,7 @@ ED4_objspec::ED4_objspec(ED4_properties static_prop_, ED4_level level_, ED4_leve
             break;
 
         default :
-#if defined(UNIT_TESTS)
-            e4_assert(level == ED4_L_FAKE); // accept test fake
-#else // !defined(UNIT_TESTS)
             e4_assert(0);
-#endif
             break;
     }
 

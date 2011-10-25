@@ -224,7 +224,7 @@ public:
     EDB_root_bact() {}
 };
 
-#define MAX_SPECIFIED_OBJECT_TYPES 22
+#define MAX_SPECIFIED_OBJECT_TYPES 21
 
 class ED4_objspec : public Noncopyable {
     static bool object_specs_initialized;
@@ -338,7 +338,6 @@ class ED4_base_position : private BasePosition { // derived from a Noncopyable
     const ED4_base *calced4base;
 
     void calc4base(const ED4_base *base);
-    ED4_base_position(const ED4_base_position&); // copy-constructor not allowed
     void set_base(const ED4_base *base) { if (calced4base != base) calc4base(base); }
 
 public:

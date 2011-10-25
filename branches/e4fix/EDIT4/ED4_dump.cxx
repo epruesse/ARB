@@ -69,7 +69,6 @@ static void printLevel(ED4_level level) {
     plev(BRACKET);
     plev(PURE_TEXT);
     plev(COL_STAT);
-    plev(FAKE);
     fputc(' ', OUT);
 #undef plev
 }

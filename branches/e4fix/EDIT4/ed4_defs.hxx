@@ -133,9 +133,6 @@ enum ED4_level { // has to contain bit values
     ED4_L_BRACKET         = 0x40000,
     ED4_L_PURE_TEXT       = 0x80000,
     ED4_L_COL_STAT        = 0x100000,
-#if defined(UNIT_TESTS)
-    ED4_L_FAKE            = 0x200000,
-#endif
 };
 
 enum ED4_datamode {
