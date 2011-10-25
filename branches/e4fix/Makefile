@@ -123,8 +123,9 @@ ifeq ($(DEBUG),1)
 
 	gdb_common := -g -g3 -ggdb -ggdb3
 
-#	cflags := -O0 $(gdb_common) # (using dwarf - cant debug inlines here, incredible slow on showing variable content)
-	cflags := -O0  $(gdb_common) -gstabs+  # (using stabs+)
+	cflags := -O0 $(gdb_common) # (using dwarf - cant debug inlines here, incredible slow on showing variable content)
+#	cflags := -O0  $(gdb_common) -gstabs+  # (using stabs+)
+#	cflags := -O0  $(gdb_common) -gstabs  # (using stabs)
 #	cflags := -O2 $(gdb_common) # use this for callgrind (force inlining)
 ifndef DARWIN
 	lflags += -g
