@@ -230,11 +230,12 @@ class ED4_objspec : public Noncopyable {
     static bool object_specs_initialized;
     static bool descendants_uptodate;
 
-    mutable ED4_level used_childs;          // in any object of this type
-    mutable ED4_level possible_descendants; // below any object of this type
+    mutable ED4_level used_children;         // in any object of this type
+    mutable ED4_level possible_descendants;  // below any object of this type (depends on used_children)
+    mutable ED4_level allowed_descendants;   // below any object of this type (depends on allowed_children)
 
-    ED4_level calc_possible_descendants() const;
-    
+    void calc_descendants() const;
+
 public:
     ED4_properties static_prop;
     ED4_level      level;
@@ -261,15 +262,21 @@ public:
 
     void announce_added(ED4_level child_level) const {
         e4_assert(allowed_to_contain(child_level));
-        used_childs          = ED4_level(used_childs|child_level);
+        used_children          = ED4_level(used_children|child_level);
         descendants_uptodate = false;
     }
 
-    static void recalc_possible_descendants();
-    ED4_level get_possible_descendants() const {
+    static void recalc_descendants();
+
+    ED4_level get_possible_descendants() const { 
         e4_assert(is_manager());
-        if (!descendants_uptodate) recalc_possible_descendants();
+        if (!descendants_uptodate) recalc_descendants();
         return possible_descendants;
+    }
+    ED4_level get_allowed_descendants() const { // (allowed = possible + those allowed to add, but not added anywhere)
+        e4_assert(is_manager());
+        if (!descendants_uptodate) recalc_descendants();
+        return allowed_descendants;
     }
 };
 
