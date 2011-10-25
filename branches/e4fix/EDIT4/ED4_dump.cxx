@@ -234,6 +234,8 @@ void ED4_objspec::dump(size_t indent) const {
     dumpProperties(NEXT_INDENT, "static_prop", static_prop);
     dumpLevel(NEXT_INDENT, "level", level);
     dumpLevel(NEXT_INDENT, "allowed_children", allowed_children);
+    dumpLevel(NEXT_INDENT, "used_childs", used_childs);
+    dumpLevel(NEXT_INDENT, "possible_descendants", possible_descendants);
     dumpLevel(NEXT_INDENT, "handled_level", handled_level);
     dumpLevel(NEXT_INDENT, "restriction_level", restriction_level);
     closeDump(indent);

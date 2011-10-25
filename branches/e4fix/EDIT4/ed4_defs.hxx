@@ -111,6 +111,7 @@ inline int ABS(int x)       { return x<0 ? -x : x; }
 
 
 enum ED4_level { // has to contain bit values
+    ED4_L_INVALID         = -1U,
     ED4_L_NO_LEVEL        = 0,
     ED4_L_ROOT            = 0x1,
     ED4_L_DEVICE          = 0x2,

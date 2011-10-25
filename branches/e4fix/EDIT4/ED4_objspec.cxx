@@ -43,6 +43,7 @@ class ED4_objspec_registry : virtual Noncopyable {
         for (int i = 0; i<SPECIFIED_OBJECT_TYPES; ++i) known_spec[i] = 0;
     }
     friend ED4_objspec_registry& get_objspec_registry();
+
 public:
 
     void register_objspec(ED4_objspec *ospec) {
@@ -60,11 +61,11 @@ public:
         return count;
     }
 
-    const ED4_objspec& get_object_spec(ED4_level lev) const {
-        ED4_objspec *spec = known_spec[level2index(lev)];
-        e4_assert(spec);
-        return *spec;
+    const ED4_objspec *get_object_spec_at_index(int index) const {
+        e4_assert(index >= 0 && index<SPECIFIED_OBJECT_TYPES);
+        return known_spec[index];
     }
+    const ED4_objspec& get_object_spec(ED4_level lev) const { return *get_object_spec_at_index(level2index(lev)); }
 
     bool has_manager_that_may_contain(ED4_level lev) const {
         for (int i = 0; i<SPECIFIED_OBJECT_TYPES; ++i) {
@@ -92,11 +93,47 @@ static ED4_objspec_registry& get_objspec_registry() {
 }
 
 bool ED4_objspec::object_specs_initialized = false;
+bool ED4_objspec::descendants_uptodate     = false;
+
 void ED4_objspec::init_object_specs() {
     e4_assert(!object_specs_initialized);
     get_objspec_registry().init_object_specs();
     object_specs_initialized = true;
 }
+
+ED4_level ED4_objspec::calc_possible_descendants() const {
+    if (possible_descendants == ED4_L_INVALID) {
+        possible_descendants = ED4_L_NO_LEVEL;
+        if (used_childs) {
+            possible_descendants = used_childs;
+
+            ED4_objspec_registry& objspec_registry = get_objspec_registry();
+
+            for (int i = 0; i<SPECIFIED_OBJECT_TYPES; ++i) {
+                const ED4_objspec *child_spec = objspec_registry.get_object_spec_at_index(i);
+                if (child_spec && child_spec != this && (used_childs & child_spec->level)) {
+                    possible_descendants = ED4_level(possible_descendants|child_spec->calc_possible_descendants());
+                }
+            }
+        }
+    }
+    return possible_descendants;
+}
+void ED4_objspec::recalc_possible_descendants() {
+    ED4_objspec_registry& objspec_registry = get_objspec_registry();
+
+    for (int i = 0; i<SPECIFIED_OBJECT_TYPES; ++i) {
+        const ED4_objspec *spec = objspec_registry.get_object_spec_at_index(i);
+        if (spec) spec->possible_descendants = ED4_L_INVALID;
+    }
+    for (int i = 0; i<SPECIFIED_OBJECT_TYPES; ++i) {
+        const ED4_objspec *spec = objspec_registry.get_object_spec_at_index(i);
+        if (spec) spec->calc_possible_descendants();
+    }
+
+    descendants_uptodate = true;
+}
+
 ED4_objspec::ED4_objspec(ED4_properties static_prop_, ED4_level level_, ED4_level allowed_children_, ED4_level handled_level_, ED4_level restriction_level_)
     : static_prop(static_prop_),
       level(level_),
@@ -153,6 +190,20 @@ void TEST_objspec_registry() {
 
     MISSING_TEST(log);
     ED4_objspec::init_object_specs();
+
+    // simulate adding sth in the hierarchy
+    objspec_registry.get_object_spec(ED4_L_MULTI_SEQUENCE).announce_added(ED4_L_SEQUENCE);
+    objspec_registry.get_object_spec(ED4_L_SEQUENCE).announce_added(ED4_L_SEQUENCE_STRING);
+
+    TEST_ASSERT(objspec_registry.get_object_spec(ED4_L_SEQUENCE).get_possible_descendants() &       ED4_L_SEQUENCE_STRING);
+    TEST_ASSERT(objspec_registry.get_object_spec(ED4_L_MULTI_SEQUENCE).get_possible_descendants() & ED4_L_SEQUENCE_STRING);
+
+    // add more (checks refresh)
+    TEST_ASSERT((objspec_registry.get_object_spec(ED4_L_MULTI_SEQUENCE).get_possible_descendants() & ED4_L_SEQUENCE_INFO) == 0);
+
+    objspec_registry.get_object_spec(ED4_L_SEQUENCE).announce_added(ED4_L_SEQUENCE_INFO);
+
+    TEST_ASSERT(objspec_registry.get_object_spec(ED4_L_MULTI_SEQUENCE).get_possible_descendants() & ED4_L_SEQUENCE_INFO);
 }
 
 #endif // UNIT_TESTS

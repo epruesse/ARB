@@ -228,10 +228,13 @@ public:
 
 class ED4_objspec : public Noncopyable {
     static bool object_specs_initialized;
+    static bool descendants_uptodate;
 
-    mutable ED4_level used_childs; // in any object of this type
+    mutable ED4_level used_childs;          // in any object of this type
+    mutable ED4_level possible_descendants; // below any object of this type
 
-
+    ED4_level calc_possible_descendants() const;
+    
 public:
     ED4_properties static_prop;
     ED4_level      level;
@@ -256,7 +259,18 @@ public:
         return allowed_children & child_level;
     }
 
-    void announce_added(ED4_level child_level) const { used_childs = ED4_level(used_childs|child_level); }
+    void announce_added(ED4_level child_level) const {
+        e4_assert(allowed_to_contain(child_level));
+        used_childs          = ED4_level(used_childs|child_level);
+        descendants_uptodate = false;
+    }
+
+    static void recalc_possible_descendants();
+    ED4_level get_possible_descendants() const {
+        e4_assert(is_manager());
+        if (!descendants_uptodate) recalc_possible_descendants();
+        return possible_descendants;
+    }
 };
 
 class ED4_folding_line : virtual Noncopyable {
