@@ -473,23 +473,24 @@ static void select_named_sequence_terminal(const char *name) {
             if (cursor) {
                 ED4_sequence_terminal *cursor_seq_term = 0;
 
-                ED4_terminal *cursor_term = cursor->owner_of_cursor->to_text_terminal();
-                if (cursor_term->is_sequence_terminal()) {
-                    cursor_seq_term = cursor_term->to_sequence_terminal();
-                }
-                else {          // user clicked into a non-sequence text terminal
-                    // search for corresponding sequence terminal
-                    ED4_multi_sequence_manager *seq_man = cursor_term->get_parent(ED4_L_MULTI_SEQUENCE)->to_multi_sequence_manager();
-                    if (seq_man) {
-                        cursor_seq_term = seq_man->search_spec_child_rek(ED4_L_SEQUENCE_STRING)->to_sequence_terminal();
+                if (cursor->owner_of_cursor) {
+                    ED4_terminal *cursor_term = cursor->owner_of_cursor->to_text_terminal();
+                    if (cursor_term->is_sequence_terminal()) {
+                        cursor_seq_term = cursor_term->to_sequence_terminal();
+                    }
+                    else { // cursor is in a non-sequence text terminal -> search for corresponding sequence terminal
+                        ED4_multi_sequence_manager *seq_man = cursor_term->get_parent(ED4_L_MULTI_SEQUENCE)->to_multi_sequence_manager();
+                        if (seq_man) {
+                            cursor_seq_term = seq_man->search_spec_child_rek(ED4_L_SEQUENCE_STRING)->to_sequence_terminal();
+                        }
                     }
                 }
-
                 if (cursor_seq_term) {
                     cursor_name_term = cursor_seq_term->corresponding_species_name_terminal();
                 }
             }
         }
+
         if (name_term!=cursor_name_term) { // do not change if already there!
 #if defined(TRACE_JUMPS)
             printf("Jumping to species/SAI '%s'\n", name);
