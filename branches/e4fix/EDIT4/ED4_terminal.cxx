@@ -813,7 +813,7 @@ int ED4_terminal::adjust_clipping_rectangle() {
 ED4_terminal::ED4_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
     ED4_base(spec_, temp_id, x, y, width, height, temp_parent)
 {
-    memset((char*)&flag, 0, sizeof(flag));
+    memset((char*)&tflag, 0, sizeof(tflag));
     selection_info   = 0;
     actual_timestamp = 0;
 }
@@ -1348,9 +1348,9 @@ ED4_returncode ED4_columnStat_terminal::draw(int /* only_text */)
         if (left>right) return ED4_R_OK;
     }
 
-    char *sbuffer = new char[right+1];  // used to build displayed terminal content  (values = '0'-'9')
-    memset(sbuffer, ' ', right);
-    sbuffer[right] = 0; // eos
+    char *sbuffer = new char[right+2];  // used to build displayed terminal content  (values = '0'-'9')
+    memset(sbuffer, ' ', right+1);
+    sbuffer[right+1] = 0; // eos
 
     AW_pos y2;
     int r;
@@ -1447,7 +1447,7 @@ ED4_returncode ED4_columnStat_terminal::draw(int /* only_text */)
         device->text(gc, sbuffer, text_x, y2-font_height, 0, AW_SCREEN, right); // draw higher-significant digit
     }
 
-    free(sbuffer);
+    delete [] sbuffer;
     return ED4_R_OK;
 }
 
