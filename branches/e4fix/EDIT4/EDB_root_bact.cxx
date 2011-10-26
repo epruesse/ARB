@@ -597,7 +597,7 @@ char *EDB_root_bact::generate_config_string(char *confname)                 // a
     char *generated_string = NULL;
     int counter = 0;
     GBDATA *gb_area;
-    ED4_device_manager *device_manager = ED4_ROOT->main_manager->search_spec_child_rek (ED4_L_DEVICE)->to_device_manager();
+    ED4_device_manager *device_manager = ED4_ROOT->get_device_manager();
 
     for (i=0; i<device_manager->children->members(); i++) {
         if (device_manager->children->member(i)->is_area_manager()) {
