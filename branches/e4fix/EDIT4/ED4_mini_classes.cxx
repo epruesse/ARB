@@ -146,10 +146,14 @@ void ED4_bases_table::sub(const ED4_bases_table& other, int start, int end)
         }
     }
 }
-void ED4_bases_table::sub_and_add(const ED4_bases_table& Sub, const ED4_bases_table& Add, int start, int end)
+void ED4_bases_table::sub_and_add(const ED4_bases_table& Sub, const ED4_bases_table& Add, UpdateRange range)
 {
     e4_assert(no_of_entries==Sub.no_of_entries);
     e4_assert(no_of_entries==Add.no_of_entries);
+
+    int start = range.start();
+    int end   = range.end();
+
     e4_assert(start>=0);
     e4_assert(end<no_of_entries);
     e4_assert(start<=end);
@@ -744,7 +748,7 @@ ED4_char_table::~ED4_char_table()
     delete [] bases_table;
 }
 
-int ED4_char_table::changed_range(const ED4_char_table& other, int *startPtr, int *endPtr) const
+const UpdateRange *ED4_char_table::changed_range(const ED4_char_table& other) const
 {
     int i;
     int Size = size();
@@ -767,13 +771,14 @@ int ED4_char_table::changed_range(const ED4_char_table& other, int *startPtr, in
                 linear_table(i).lastDifference(other.linear_table(i), end+1, Size-1, &end);
             }
 
-            *startPtr = start;
-            *endPtr = end;
             e4_assert(start<=end);
-            return 1;
+            static UpdateRange range;
+            
+            range = UpdateRange(start, end);
+            return &range;
         }
     }
-    return 0;
+    return NULL;
 }
 void ED4_char_table::add(const ED4_char_table& other)
 {
@@ -825,10 +830,7 @@ void ED4_char_table::sub(const ED4_char_table& other, int start, int end)
     test();
 }
 
-void ED4_char_table::sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add)
-{
-    int start, end;
-
+void ED4_char_table::sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add) {
     test();
 
     if (Sub.ignore) {
@@ -839,47 +841,51 @@ void ED4_char_table::sub_and_add(const ED4_char_table& Sub, const ED4_char_table
     Sub.test();
     Add.test();
 
-    if (Sub.changed_range(Add, &start, &end)) {
+    const UpdateRange *range = Sub.changed_range(Add);
+    if (range) {
         prepare_to_add_elements(Add.added_sequences()-Sub.added_sequences());
-        sub_and_add(Sub, Add, start, end);
+        sub_and_add(Sub, Add, *range);
     }
 
     test();
 }
-void ED4_char_table::sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add, int start, int end)
-{
+
+void ED4_char_table::sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add, UpdateRange range) {
     test();
     Sub.test();
     Add.test();
 
     e4_assert(!Sub.ignore && !Add.ignore);
-    e4_assert(start<=end);
+    e4_assert(range.is_restricted());
 
     int i;
     for (i=0; i<used_bases_tables; i++) {
-        linear_table(i).sub_and_add(Sub.linear_table(i), Add.linear_table(i), start, end);
+        linear_table(i).sub_and_add(Sub.linear_table(i), Add.linear_table(i), range);
     }
 
     test();
 }
 
-int ED4_char_table::changed_range(const char *string1, const char *string2, int min_len, int *start, int *end)
+const UpdateRange *ED4_char_table::changed_range(const char *string1, const char *string2, int min_len)
 {
     const unsigned long *range1 = (const unsigned long *)string1;
     const unsigned long *range2 = (const unsigned long *)string2;
-    const int step = sizeof(*range1);
+    const int            step   = sizeof(*range1);
+
     int l = min_len/step;
     int r = min_len%step;
     int i;
     int j;
     int k;
 
+    int start, end;
+
     for (i=0; i<l; i++) {       // search wordwise (it's faster)
         if (range1[i] != range2[i]) {
             k = i*step;
             for (j=0; j<step; j++) {
                 if (string1[k+j] != string2[k+j]) {
-                    *start = *end = k+j;
+                    start = end = k+j;
                     break;
                 }
             }
@@ -892,7 +898,7 @@ int ED4_char_table::changed_range(const char *string1, const char *string2, int 
     if (i==l) {         // no difference found in word -> look at rest
         for (j=0; j<r; j++) {
             if (string1[k+j] != string2[k+j]) {
-                *start = *end = k+j;
+                start = end = k+j;
                 break;
             }
         }
@@ -904,19 +910,19 @@ int ED4_char_table::changed_range(const char *string1, const char *string2, int 
 
     for (j=r-1; j>=0; j--) {    // search rest backwards
         if (string1[k+j] != string2[k+j]) {
-            *end = k+j;
+            end = k+j;
             break;
         }
     }
 
     if (j==-1) {                // not found in rest -> search words backwards
-        int m = *start/step;
+        int m = start/step;
         for (i=l-1; i>=m; i--) {
             if (range1[i] != range2[i]) {
                 k = i*step;
                 for (j=step-1; j>=0; j--) {
                     if (string1[k+j] != string2[k+j]) {
-                        *end = k+j;
+                        end = k+j;
                         break;
                     }
                 }
@@ -925,8 +931,12 @@ int ED4_char_table::changed_range(const char *string1, const char *string2, int 
         }
     }
 
-    e4_assert(*start<=*end);
-    return 1;
+    e4_assert(start<=end);
+
+    static UpdateRange range;
+    range = UpdateRange(start, end);
+
+    return &range;
 }
 
 void ED4_char_table::add(const char *scan_string, int len)
@@ -1001,9 +1011,10 @@ void ED4_char_table::sub(const char *scan_string, int len)
     test();
 }
 
-void ED4_char_table::sub_and_add(const char *old_string, const char *new_string, int start, int end)
-{
+void ED4_char_table::sub_and_add(const char *old_string, const char *new_string, UpdateRange range) {
     test();
+    int start = range.start();
+    int end   = range.end();
     e4_assert(start<=end);
 
     int i;
@@ -1014,6 +1025,9 @@ void ED4_char_table::sub_and_add(const char *old_string, const char *new_string,
             unsigned char o = old_string[i];
             unsigned char n = new_string[i];
 
+            e4_assert(o); // @@@ if these never fail, some code below is superfluous
+            e4_assert(n);
+            
             if (!o) {
                 for (; n && i<=end; i++) {
                     n = new_string[i];
@@ -1041,6 +1055,9 @@ void ED4_char_table::sub_and_add(const char *old_string, const char *new_string,
             unsigned char o = old_string[i];
             unsigned char n = new_string[i];
 
+            e4_assert(o); // @@@ if these never fail, some code below is superfluous
+            e4_assert(n);
+            
             if (!o) {
                 for (; n && i<=end; i++) {
                     n = new_string[i];

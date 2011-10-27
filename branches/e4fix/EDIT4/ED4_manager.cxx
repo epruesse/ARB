@@ -149,7 +149,7 @@ ED4_returncode ED4_manager::rebuild_consensi(ED4_base *start_species, ED4_update
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_manager::check_in_bases(ED4_base *added_base, int start_pos, int end_pos) {
+ED4_returncode ED4_manager::check_in_bases(ED4_base *added_base) {
     if (added_base->is_species_manager()) { // add a sequence
         ED4_species_manager *species_manager = added_base->to_species_manager();
         const ED4_terminal *sequence_terminal = species_manager->get_consensus_relevant_terminal();
@@ -157,7 +157,7 @@ ED4_returncode ED4_manager::check_in_bases(ED4_base *added_base, int start_pos, 
         if (sequence_terminal) {
             int   seq_len;
             char *seq          = sequence_terminal->resolve_pointer_to_string_copy(&seq_len);
-            ED4_returncode res = check_bases(0, 0, seq, seq_len, start_pos, end_pos);
+            ED4_returncode res = update_bases(0, 0, seq, seq_len);
             free(seq);
             return res;
         }
@@ -165,13 +165,15 @@ ED4_returncode ED4_manager::check_in_bases(ED4_base *added_base, int start_pos, 
 
     e4_assert(!added_base->is_root_group_manager());
     if (added_base->is_group_manager()) { // add a group
-        return check_bases(0, &added_base->to_group_manager()->table(), start_pos, end_pos);
+        return update_bases(0, &added_base->to_group_manager()->table());
     }
 
+    e4_assert(0); // wrong type
+    
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_manager::check_out_bases(ED4_base *subbed_base, int start_pos, int end_pos) {
+ED4_returncode ED4_manager::check_out_bases(ED4_base *subbed_base) {
     if (subbed_base->is_species_manager()) { // sub a sequence
         ED4_species_manager *species_manager = subbed_base->to_species_manager();
         const ED4_terminal *sequence_terminal = species_manager->get_consensus_relevant_terminal();
@@ -179,7 +181,7 @@ ED4_returncode ED4_manager::check_out_bases(ED4_base *subbed_base, int start_pos
         if (sequence_terminal) {
             int   seq_len;
             char *seq          = sequence_terminal->resolve_pointer_to_string_copy(&seq_len);
-            ED4_returncode res = check_bases(seq, seq_len, 0, 0, start_pos, end_pos);
+            ED4_returncode res = update_bases(seq, seq_len, (const char *)0, 0);
             free(seq);
             return res;
         }
@@ -187,15 +189,17 @@ ED4_returncode ED4_manager::check_out_bases(ED4_base *subbed_base, int start_pos
 
     e4_assert(!subbed_base->is_root_group_manager());
     if (subbed_base->is_group_manager()) { // sub a group
-        return check_bases(&subbed_base->to_group_manager()->table(), 0, start_pos, end_pos);
+        return update_bases(&subbed_base->to_group_manager()->table(), 0);
     }
 
+    e4_assert(0); // wrong type
+    
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_manager::check_bases(const char *old_sequence, int old_len, const ED4_base *new_base, int start_pos, int end_pos) {
+ED4_returncode ED4_manager::update_bases(const char *old_sequence, int old_len, const ED4_base *new_base, UpdateRange range) {
     if (!new_base) {
-        return check_bases(old_sequence, old_len, 0, 0, start_pos, end_pos);
+        return update_bases(old_sequence, old_len, 0, 0, range);
     }
 
     e4_assert(new_base->is_species_manager());
@@ -206,18 +210,19 @@ ED4_returncode ED4_manager::check_bases(const char *old_sequence, int old_len, c
     int   new_len;
     char *new_sequence = new_sequence_terminal->resolve_pointer_to_string_copy(&new_len);
 
-    if (end_pos==-1) {
-        ED4_char_table::changed_range(old_sequence, new_sequence, min(old_len, new_len), &start_pos, &end_pos);
+    if (range.is_full_range()) {
+        const UpdateRange *restricted = ED4_char_table::changed_range(old_sequence, new_sequence, min(old_len, new_len));
+        
+        e4_assert(restricted);
+        range = *restricted;
     }
 
-    ED4_returncode res = check_bases(old_sequence, old_len, new_sequence, new_len, start_pos, end_pos);
+    ED4_returncode res = update_bases(old_sequence, old_len, new_sequence, new_len, range);
     free(new_sequence);
     return res;
 }
 
-ED4_returncode ED4_manager::check_bases_and_rebuild_consensi(const char *old_sequence, int old_len, ED4_base *new_base,
-                                                             ED4_update_flag update_flag, int start_pos, int end_pos)
-{
+ED4_returncode ED4_manager::update_bases_and_rebuild_consensi(const char *old_sequence, int old_len, ED4_base *new_base, ED4_update_flag update_flag, UpdateRange range) {
     e4_assert(new_base);
     e4_assert(new_base->is_species_manager());
 
@@ -232,11 +237,14 @@ ED4_returncode ED4_manager::check_bases_and_rebuild_consensi(const char *old_seq
     printf("new: %s\n", new_sequence);
 #endif // DEBUG
 
-    if (end_pos==-1) {
-        ED4_char_table::changed_range(old_sequence, new_sequence, min(old_len, new_len), &start_pos, &end_pos);
+    if (range.is_full_range()) {
+        const UpdateRange *restricted = ED4_char_table::changed_range(old_sequence, new_sequence, min(old_len, new_len));
+
+        e4_assert(restricted); // @@@ e.g. fails from aligner (why does it not return full-range as explicit range?)
+        if (restricted) range = *restricted;
     }
 
-    ED4_returncode result1 = check_bases(old_sequence, old_len, new_sequence, new_len, start_pos, end_pos);
+    ED4_returncode result1 = update_bases(old_sequence, old_len, new_sequence, new_len, range);
     ED4_returncode result2 = rebuild_consensi(new_base, update_flag);
     ED4_returncode result  = (result1 != ED4_R_OK) ? result1 : result2;
 
@@ -255,7 +263,7 @@ ED4_returncode ED4_manager::check_bases_and_rebuild_consensi(const char *old_seq
     return result;
 }
 
-ED4_returncode ED4_manager::check_bases(const ED4_base *old_base, const ED4_base *new_base, int start_pos, int end_pos) {
+ED4_returncode ED4_manager::update_bases(const ED4_base *old_base, const ED4_base *new_base, UpdateRange range) {
     e4_assert(old_base);
     e4_assert(new_base);
 
@@ -271,7 +279,7 @@ ED4_returncode ED4_manager::check_bases(const ED4_base *old_base, const ED4_base
         char *old_seq = old_sequence_terminal->resolve_pointer_to_string_copy(&old_len);
         char *new_seq = new_sequence_terminal->resolve_pointer_to_string_copy(&new_len);
 
-        ED4_returncode res = check_bases(old_seq, old_len, new_seq, new_len, start_pos, end_pos);
+        ED4_returncode res = update_bases(old_seq, old_len, new_seq, new_len, range);
         free(new_seq);
         free(old_seq);
         return res;
@@ -282,9 +290,9 @@ ED4_returncode ED4_manager::check_bases(const ED4_base *old_base, const ED4_base
     if (old_base->is_group_manager()) {
         e4_assert(new_base->is_group_manager());
 
-        return check_bases(&old_base->to_group_manager()->table(),
+        return update_bases(&old_base->to_group_manager()->table(),
                            &new_base->to_group_manager()->table(),
-                           start_pos, end_pos);
+                           range);
     }
 
     return ED4_R_OK;
@@ -299,43 +307,38 @@ ED4_returncode ED4_manager::check_bases(const ED4_base *old_base, const ED4_base
             if (walk_up->is_abstract_group_manager()) {                                         \
                 ED4_char_table& char_table = walk_up->to_abstract_group_manager()->table();     \
                 char_table.COMMAND;                                                             \
-                if (char_table.is_ignored()) break;                                             \
+                if (char_table.is_ignored()) break; /* @@@ problematic */                       \
             }                                                                                   \
             walk_up = walk_up->parent;                                                          \
         }                                                                                       \
     } while (0)
 
-ED4_returncode ED4_manager::check_bases(const char *old_sequence, int old_len, const char *new_sequence, int new_len, int start_pos, int end_pos) {
+ED4_returncode ED4_manager::update_bases(const char *old_sequence, int old_len, const char *new_sequence, int new_len, UpdateRange range) {
     ED4_manager *walk_up = this;
-
-#ifdef DEBUG
-    if (end_pos==-1) {
-        printf("check_bases does not know update range - maybe an error?\n");
-    }
-#endif
 
     if (old_sequence) {
         if (new_sequence) {
-            if (end_pos==-1) {
-                if (!ED4_char_table::changed_range(old_sequence, new_sequence, min(old_len, new_len), &start_pos, &end_pos)) {
-                    return ED4_R_OK;
-                }
+            if (range.is_full_range()) {
+                const UpdateRange *restricted = ED4_char_table::changed_range(old_sequence, new_sequence, min(old_len, new_len));
+                if (!restricted) return ED4_R_OK;
+                
+                range = *restricted;
             }
 
 #if defined(DEBUG) && 0
-            printf("check_bases(..., %i, %i)\n", start_pos, end_pos);
+            printf("update_bases(..., %i, %i)\n", start_pos, end_pos);
 #endif
 
-            WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub_and_add(old_sequence, new_sequence, start_pos, end_pos));
+            WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub_and_add(old_sequence, new_sequence, range));
         }
         else {
-            e4_assert(start_pos==0 && end_pos==-1);
+            e4_assert(range.is_full_range());
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub(old_sequence, old_len));
         }
     }
     else {
         if (new_sequence) {
-            e4_assert(start_pos==0 && end_pos==-1);
+            e4_assert(range.is_full_range());
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, add(new_sequence, new_len));
         }
         else {
@@ -347,26 +350,27 @@ ED4_returncode ED4_manager::check_bases(const char *old_sequence, int old_len, c
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_manager::check_bases(const ED4_char_table *old_table, const ED4_char_table *new_table, int start_pos, int end_pos) {
+ED4_returncode ED4_manager::update_bases(const ED4_char_table *old_table, const ED4_char_table *new_table, UpdateRange range) {
     ED4_manager *walk_up = this;
 
     if (old_table) {
         if (new_table) {
-            if (end_pos==-1) {
-                if (!old_table->changed_range(*new_table, &start_pos, &end_pos)) {
-                    return ED4_R_OK;
-                }
+            if (range.is_full_range()) {
+                const UpdateRange *restricted = old_table->changed_range(*new_table);
+                if (!restricted) return ED4_R_OK;
+
+                range = *restricted;
             }
-            WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub_and_add(*old_table, *new_table, start_pos, end_pos));
+            WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub_and_add(*old_table, *new_table, range));
         }
         else {
-            e4_assert(start_pos==0 && end_pos==-1);
+            e4_assert(range.is_full_range());
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub(*old_table));
         }
     }
     else {
         if (new_table) {
-            e4_assert(start_pos==0 && end_pos==-1);
+            e4_assert(range.is_full_range());
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, add(*new_table));
         }
         else {
@@ -396,11 +400,9 @@ ED4_returncode ED4_manager::remove_callbacks() {
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_manager::update_consensus(ED4_manager *old_parent, ED4_manager *new_parent, ED4_base *sequence, int start_pos, int end_pos) {
-    if (old_parent) old_parent->check_out_bases(sequence, start_pos, end_pos);
-    if (new_parent) new_parent->check_in_bases(sequence, start_pos, end_pos);
-
-    return ED4_R_OK;
+void ED4_manager::update_consensus(ED4_manager *old_parent, ED4_manager *new_parent, ED4_base *sequence) {
+    if (old_parent) old_parent->check_out_bases(sequence);
+    if (new_parent) new_parent->check_in_bases(sequence);
 }
 
 ED4_terminal* ED4_manager::get_first_terminal(int start_index) const {

@@ -109,7 +109,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
     if (datamode == ED4_D_EXTENDED) {
         species_manager->flag.is_SAI = 1;
         ED4_abstract_group_manager *group_man = species_manager->get_parent(ED4_level(ED4_L_GROUP|ED4_L_ROOTGROUP))->to_abstract_group_manager();
-        group_man->table().ignore_me(); // ignore SAI tables
+        group_man->table().ignore_me(); // ignore SAI tables (does not work - instead ignore SAIs when calculating consensus)
     }
     species_manager->set_species_pointer(gb_datamode);
     multi_species_manager->children->append_member(species_manager);
