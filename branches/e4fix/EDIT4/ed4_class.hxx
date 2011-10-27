@@ -681,14 +681,15 @@ class ED4_char_table : virtual Noncopyable {
     int                  ignore; // this table will be ignored when calculating tables higher in hierarchy
     // (used to suppress SAI in root_group_man tables)
 
-    static bool           initialized;
-    static unsigned char  char_to_index_tab[MAXCHARTABLE];
-    static unsigned char *upper_index_chars;
-    static unsigned char *lower_index_chars;
-    static int            used_bases_tables; // size of 'bases_table'
+    // @@@ move statics into own class:
+    static bool               initialized;
+    static unsigned char      char_to_index_tab[MAXCHARTABLE];
+    static unsigned char     *upper_index_chars;
+    static unsigned char     *lower_index_chars;
+    static int                used_bases_tables; // size of 'bases_table'
+    static GB_alignment_type  ali_type;
 
-    inline void         set_char_to_index(unsigned char c, int index);
-    inline void         set_string_to_index(const char *s, int index);
+    static inline void set_char_to_index(unsigned char c, int index);
 
     ED4_char_table(const ED4_char_table&); // copy-constructor not allowed
 
@@ -722,7 +723,9 @@ public:
     ED4_char_table(int maxseqlength=0);
     ~ED4_char_table();
 
-    void ignore_me() { ignore = 1; } 
+    static void initial_setup(const char *gap_chars, GB_alignment_type ali_type_);
+
+    void ignore_me() { ignore = 1; }
     int is_ignored() const { return ignore; }
 
     void init(int maxseqlength);
@@ -1982,6 +1985,4 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access);
 #else
 #error ed4_class included twice
 #endif
-
-
 
