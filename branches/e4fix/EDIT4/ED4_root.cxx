@@ -1266,11 +1266,11 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access) {
     if (error) aw_message(error);
 }
 
-static void ED4_create_faligner_window(AW_root *awr, AW_CL cl_AlignDataAccess) {
+static AW_window *ED4_create_faligner_window(AW_root *awr, AW_CL cl_AlignDataAccess) {
     AlignDataAccess *data_access = (AlignDataAccess*)cl_AlignDataAccess;
 
     ED4_init_aligner_data_access(data_access);
-    FastAligner_create_window(awr, data_access);
+    return FastAligner_create_window(awr, data_access);
 }
 
 static void ED4_save_properties(AW_window *aw, AW_CL cl_mode, AW_CL) {
