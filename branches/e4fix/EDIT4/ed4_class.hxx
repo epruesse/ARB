@@ -644,7 +644,7 @@ public:
 
     void add(const ED4_bases_table& other, int start, int end);
     void sub(const ED4_bases_table& other, int start, int end);
-    void sub_and_add(const ED4_bases_table& Sub, const ED4_bases_table& Add, UpdateRange range);
+    void sub_and_add(const ED4_bases_table& Sub, const ED4_bases_table& Add, PosRange range);
 
     void change_table_length(int new_length, int default_entry);
 
@@ -730,21 +730,21 @@ public:
     ED4_bases_table&        table(int c)        { e4_assert(c>0 && c<MAXCHARTABLE); return linear_table(char_to_index_tab[c]); }
     const ED4_bases_table&  table(int c) const  { e4_assert(c>0 && c<MAXCHARTABLE); return linear_table(char_to_index_tab[c]); }
 
-    const UpdateRange *changed_range(const ED4_char_table& other) const;
-    static const UpdateRange *changed_range(const char *string1, const char *string2, int min_len);
+    const PosRange *changed_range(const ED4_char_table& other) const;
+    static const PosRange *changed_range(const char *string1, const char *string2, int min_len);
 
     void add(const ED4_char_table& other);
     void sub(const ED4_char_table& other);
     void sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add);
-    void sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add, UpdateRange range);
+    void sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add, PosRange range);
 
     void add(const char *string, int len);
     void sub(const char *string, int len);
-    void sub_and_add(const char *old_string, const char *new_string, UpdateRange range);
+    void sub_and_add(const char *old_string, const char *new_string, PosRange range);
 
-    void build_consensus_string_to(char *buffer, UpdateRange range) const;
-    char *build_consensus_string(UpdateRange range) const;
-    char *build_consensus_string() const { return build_consensus_string(UpdateRange()); }
+    void build_consensus_string_to(char *buffer, PosRange range) const;
+    char *build_consensus_string(PosRange range) const;
+    char *build_consensus_string() const { return build_consensus_string(PosRange()); }
 
     void change_table_length(int new_length);
 };
@@ -1062,12 +1062,12 @@ public:
 
     virtual ED4_returncode  check_in_bases(ED4_base *added_base);
     virtual ED4_returncode  check_out_bases(ED4_base *subbed_base);
-    virtual ED4_returncode  update_bases(const ED4_base *old_base, const ED4_base *new_base, UpdateRange range = UpdateRange());
-    virtual ED4_returncode  update_bases(const char *old_seq, int old_len, const char *new_seq, int new_len, UpdateRange range = UpdateRange());
-    virtual ED4_returncode  update_bases(const char *old_seq, int old_len, const ED4_base *new_base, UpdateRange range = UpdateRange());
-    virtual ED4_returncode  update_bases(const ED4_char_table *old_table, const ED4_char_table *new_table, UpdateRange range = UpdateRange());
+    virtual ED4_returncode  update_bases(const ED4_base *old_base, const ED4_base *new_base, PosRange range = PosRange());
+    virtual ED4_returncode  update_bases(const char *old_seq, int old_len, const char *new_seq, int new_len, PosRange range = PosRange());
+    virtual ED4_returncode  update_bases(const char *old_seq, int old_len, const ED4_base *new_base, PosRange range = PosRange());
+    virtual ED4_returncode  update_bases(const ED4_char_table *old_table, const ED4_char_table *new_table, PosRange range = PosRange());
 
-    virtual ED4_returncode  update_bases_and_rebuild_consensi(const char *old_seq, int old_len, ED4_base *species, ED4_update_flag update_flag, UpdateRange range = UpdateRange());
+    virtual ED4_returncode  update_bases_and_rebuild_consensi(const char *old_seq, int old_len, ED4_base *species, ED4_update_flag update_flag, PosRange range = PosRange());
 
     void            generate_id_for_groups();
 

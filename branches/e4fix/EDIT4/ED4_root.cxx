@@ -822,7 +822,7 @@ ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_na
     return base ? base->to_species_name_terminal() : 0;
 }
 
-static char *get_group_consensus(const char *species_name, UpdateRange range) {
+static char *get_group_consensus(const char *species_name, PosRange range) {
     ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(species_name);
     char *consensus = 0;
 

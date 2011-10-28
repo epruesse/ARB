@@ -16,13 +16,13 @@
 #include <arb_assert.h>
 #endif
 
-class UpdateRange { // @@@ rename
+class PosRange {
     int start_pos;
     int end_pos;
 
 public:
-    UpdateRange() : start_pos(0), end_pos(-1) {} // unlimited range (e.g. whole sequence, w/o knowing it's explicit length)
-    UpdateRange(int from, int to) : start_pos(from), end_pos(to) {
+    PosRange() : start_pos(0), end_pos(-1) {} // unlimited range (e.g. whole sequence, w/o knowing it's explicit length)
+    PosRange(int from, int to) : start_pos(from), end_pos(to) {
         arb_assert(from >= 0);
         arb_assert(from <= to || to == -1);
     }
