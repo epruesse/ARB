@@ -822,15 +822,14 @@ ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_na
     return base ? base->to_species_name_terminal() : 0;
 }
 
-static char *get_group_consensus(const char *species_name, int start_pos, int end_pos)
-{
+static char *get_group_consensus(const char *species_name, UpdateRange range) {
     ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(species_name);
     char *consensus = 0;
 
     if (name_term) {
         ED4_abstract_group_manager *group_man = name_term->get_parent(ED4_level(ED4_L_GROUP|ED4_L_ROOTGROUP))->to_abstract_group_manager();
         if (group_man) {
-            consensus = group_man->table().build_consensus_string(start_pos, end_pos);
+            consensus = group_man->table().build_consensus_string(range);
         }
     }
 

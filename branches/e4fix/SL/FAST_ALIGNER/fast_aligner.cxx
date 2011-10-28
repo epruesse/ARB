@@ -87,7 +87,7 @@ enum FA_errorAction {
 struct AlignParams {
     FA_report report;
     bool      showGapsMessages; // display messages about missing gaps in master?
-    int       firstColumn;      // first column of range to be aligned (0..len-1)
+    int       firstColumn;      // first column of range to be aligned (0..len-1) // @@@ make this a UpdateRange
     int       lastColumn;       // last column of range to be aligned (0..len-1, -1 = (len-1))
 
     TargetRange get_TargetRange() const {
@@ -1382,10 +1382,9 @@ static ARB_ERROR alignToGroupConsensus(GBDATA                     *gb_toAlign,
                                        int                         max_seq_length,
                                        const AlignParams&          ali_params)
 {
-    ARB_ERROR   error        = 0;
-    const char *species_name = read_name(gb_toAlign);
-    char       *consensus    = get_consensus(species_name, ali_params.firstColumn, ali_params.lastColumn);
-    size_t      cons_len     = strlen(consensus);
+    ARB_ERROR  error     = 0;
+    char      *consensus = get_consensus(read_name(gb_toAlign), UpdateRange(ali_params.firstColumn, ali_params.lastColumn));
+    size_t     cons_len  = strlen(consensus);
 
     fa_assert(cons_len);
 
@@ -3063,10 +3062,10 @@ static GBDATA *fake_next_selected() {
     return selection_fake_gb_last;
 }
 
-static char *fake_get_consensus(const char*, int start, int end) {
+static char *fake_get_consensus(const char*, UpdateRange range) {
     const char *data = get_aligned_data_of(selection_fake_gb_main, "s1");
-    if (end == -1) return strdup(data+start);
-    return GB_strpartdup(data+start, data+end);
+    if (range.is_full_range()) return strdup(data);
+    return GB_strpartdup(data+range.start(), data+range.end());
 }
 
 void test_install_fakes(GBDATA *gb_main) {

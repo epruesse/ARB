@@ -472,30 +472,36 @@ void ED4_consensus_display_changed(AW_root *root, AW_CL, AW_CL) {
     ED4_ROOT->refresh_all_windows(1);
 }
 
-char *ED4_char_table::build_consensus_string(int left_idx, int right_index) const {
-    if (right_index<0) right_index = size()-1;
+char *ED4_char_table::build_consensus_string(UpdateRange range) const {
+    if (range.is_full_range()) range.make_explicit(size());
 
-    long  entr    = right_index-left_idx+1;
-    char *new_buf = (char*)malloc(entr+1);
-    new_buf[entr] = 0;
-    build_consensus_string_to(new_buf, left_idx, right_index);
+    long  entries = range.size();
+    char *new_buf = (char*)malloc(entries+1);
+
+    build_consensus_string_to(new_buf, range);
+    new_buf[entries] = 0;
+
     return new_buf;
 }
 
-void ED4_char_table::build_consensus_string_to(char *consensus_string, int left_idx, int right_idx) const {
-    // 'consensus_string' has to be a buffer of size 'right_idx-left_idx+2'
+void ED4_char_table::build_consensus_string_to(char *consensus_string, UpdateRange range) const {
+    // 'consensus_string' has to be a buffer of size 'range.size()+1'
     // Note : Always check that consensus behavior is identical to that used in CON_evaluatestatistic()
 
+    if (range.is_full_range()) range.make_explicit(size());
+    
     if (!BK) BK = new ConsensusBuildParams(ED4_ROOT->aw_root);
 
     e4_assert(consensus_string);
-    e4_assert(right_idx<size());
-    if (right_idx==-1 || right_idx>=size()) right_idx = size()-1;
+    e4_assert(range.end()<size());
 
 #define PERCENT(part, all)      ((100*(part))/(all))
 #define MAX_BASES_TABLES 41     // 25
 
     e4_assert(used_bases_tables<=MAX_BASES_TABLES);     // this is correct for DNA/RNA -> build_consensus_string() must be corrected for AMI/PRO
+
+    int left_idx  = range.start();
+    int right_idx = range.end();
 
     if (sequences) {
         for (int i=left_idx; i<=right_idx; i++) {

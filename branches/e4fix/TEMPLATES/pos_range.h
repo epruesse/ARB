@@ -33,7 +33,7 @@ public:
         return end_pos;
     }
 
-    size_t length() const { return end()-start()+1; }
+    size_t size() const { return end()-start()+1; }
 
     bool is_full_range() const { return start_pos == 0 && end_pos == -1; }
     bool is_restricted() const { return !is_full_range(); }
@@ -42,6 +42,7 @@ public:
         arb_assert(is_full_range()); // already have specified range
         end_pos = max_length-1;
     }
+
 };
 
 

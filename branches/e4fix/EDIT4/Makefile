@@ -1050,6 +1050,7 @@ graph_aligner_gui.o: $(ARBHOME)/INCLUDE/client.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/client_types.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/dupstr.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/pos_range.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/PT_com.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/servercntrl.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/smartptr.h

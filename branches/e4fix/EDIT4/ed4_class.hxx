@@ -742,9 +742,9 @@ public:
     void sub(const char *string, int len);
     void sub_and_add(const char *old_string, const char *new_string, UpdateRange range);
 
-    void build_consensus_string_to(char *buffer, int left_idx, int right_index) const;
-    char *build_consensus_string(int left_idx, int right_index) const;
-    char *build_consensus_string() const { return build_consensus_string(0, -1); }
+    void build_consensus_string_to(char *buffer, UpdateRange range) const;
+    char *build_consensus_string(UpdateRange range) const;
+    char *build_consensus_string() const { return build_consensus_string(UpdateRange()); }
 
     void change_table_length(int new_length);
 };
