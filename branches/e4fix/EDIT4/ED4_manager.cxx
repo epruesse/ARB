@@ -229,37 +229,40 @@ ED4_returncode ED4_manager::update_bases_and_rebuild_consensi(const char *old_se
     ED4_species_manager *new_species_manager   = new_base->to_species_manager();
     const ED4_terminal  *new_sequence_terminal = new_species_manager->get_consensus_relevant_terminal();
 
-    int   new_len;
-    char *new_sequence = new_sequence_terminal->resolve_pointer_to_string_copy(&new_len);
+    int         new_len;
+    const char *new_sequence = new_sequence_terminal->resolve_pointer_to_char_pntr(&new_len);
 
 #if defined(DEBUG) && 0
     printf("old: %s\n", old_sequence);
     printf("new: %s\n", new_sequence);
 #endif // DEBUG
 
+    const UpdateRange *changedRange = 0;
     if (range.is_full_range()) {
-        const UpdateRange *restricted = ED4_char_table::changed_range(old_sequence, new_sequence, min(old_len, new_len));
-
-        e4_assert(restricted); // @@@ e.g. fails from aligner (why does it not return full-range as explicit range?)
-        if (restricted) range = *restricted;
+        changedRange = ED4_char_table::changed_range(old_sequence, new_sequence, min(old_len, new_len));
+    }
+    else {
+        changedRange = &range; // @@@ use method similar to changedRange here, which just reduces the existing range
     }
 
-    ED4_returncode result1 = update_bases(old_sequence, old_len, new_sequence, new_len, range);
-    ED4_returncode result2 = rebuild_consensi(new_base, update_flag);
-    ED4_returncode result  = (result1 != ED4_R_OK) ? result1 : result2;
+    ED4_returncode result = ED4_R_OK;
+    if (changedRange) {
+        ED4_returncode result1 = update_bases(old_sequence, old_len, new_sequence, new_len, *changedRange);
+        ED4_returncode result2 = rebuild_consensi(new_base, update_flag);
 
-    // Refresh aminoacid sequence terminals in Protein Viewer or protstruct
-    if (ED4_ROOT->alignment_type == GB_AT_DNA) {
-        PV_SequenceUpdate_CB(GB_CB_CHANGED);
-    }
-    else if (ED4_ROOT->alignment_type == GB_AT_AA) {
-        GB_ERROR err = ED4_pfold_set_SAI(&ED4_ROOT->protstruct, GLOBAL_gb_main, ED4_ROOT->alignment_name, &ED4_ROOT->protstruct_len);
-        if (err) { aw_message(err); result = ED4_R_WARNING; }
-        ED4_ROOT->refresh_all_windows(0);
-        ED4_expose_all_windows();
-    }
+        result = (result1 != ED4_R_OK) ? result1 : result2;
 
-    free(new_sequence);
+        // Refresh aminoacid sequence terminals in Protein Viewer or protstruct // @@@ this is definitely wrong here (omg)
+        if (ED4_ROOT->alignment_type == GB_AT_DNA) {
+            PV_SequenceUpdate_CB(GB_CB_CHANGED);
+        }
+        else if (ED4_ROOT->alignment_type == GB_AT_AA) { 
+            GB_ERROR err = ED4_pfold_set_SAI(&ED4_ROOT->protstruct, GLOBAL_gb_main, ED4_ROOT->alignment_name, &ED4_ROOT->protstruct_len);
+            if (err) { aw_message(err); result = ED4_R_WARNING; }
+            ED4_ROOT->refresh_all_windows(0); // @@@ crazy slowdown ? 
+            ED4_expose_all_windows();
+        }
+    }
     return result;
 }
 

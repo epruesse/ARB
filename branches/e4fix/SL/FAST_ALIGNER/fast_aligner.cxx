@@ -1394,7 +1394,7 @@ static ARB_ERROR alignToGroupConsensus(GBDATA                     *gb_toAlign,
         }
     }
 
-    CompactedSubSequence compacted(consensus, cons_len, "group consensus");
+    CompactedSubSequence compacted(consensus, cons_len, "group consensus", ali_params.firstColumn);
 
     {
         FastSearchSequence fast(compacted);
@@ -3061,8 +3061,9 @@ static GBDATA *fake_next_selected() {
     return selection_fake_gb_last;
 }
 
-static char *fake_get_consensus(const char*, int, int) {
-    return strdup(get_aligned_data_of(selection_fake_gb_main, "s1"));
+static char *fake_get_consensus(const char*, int start, int end) {
+    const char  *data = get_aligned_data_of(selection_fake_gb_main, "s1");
+    return GB_strpartdup(data+start, data+end);
 }
 
 void test_install_fakes(GBDATA *gb_main) {

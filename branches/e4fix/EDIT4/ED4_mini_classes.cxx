@@ -473,7 +473,9 @@ void ED4_consensus_display_changed(AW_root *root, AW_CL, AW_CL) {
 }
 
 char *ED4_char_table::build_consensus_string(int left_idx, int right_index) const {
-    long  entr    = size();
+    if (right_index<0) right_index = size()-1;
+
+    long  entr    = right_index-left_idx+1;
     char *new_buf = (char*)malloc(entr+1);
     new_buf[entr] = 0;
     build_consensus_string_to(new_buf, left_idx, right_index);
@@ -481,7 +483,7 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_index) cons
 }
 
 void ED4_char_table::build_consensus_string_to(char *consensus_string, int left_idx, int right_idx) const {
-    // consensus is only built in intervall, but 'consensus_string' has to be a buffer of ED4_char_table::size()
+    // 'consensus_string' has to be a buffer of size 'right_idx-left_idx+2'
     // Note : Always check that consensus behavior is identical to that used in CON_evaluatestatistic()
 
     if (!BK) BK = new ConsensusBuildParams(ED4_ROOT->aw_root);
@@ -497,11 +499,12 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, int left_
 
     if (sequences) {
         for (int i=left_idx; i<=right_idx; i++) {
-            int bases = 0; // count of all bases together
+            int o        = i-left_idx;
+            int bases    = 0;           // count of all bases together
             int base[MAX_BASES_TABLES]; // count of specific base
             int j;
-            int max_base = -1; // maximum count of specific base
-            int max_j = -1; // index of this base
+            int max_base = -1;          // maximum count of specific base
+            int max_j    = -1;          // index of this base
 
             for (j=0; j<used_bases_tables; j++) {
                 base[j] = linear_table(j)[i];
@@ -519,10 +522,10 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, int left_
             // What to do with gaps?
 
             if (gaps == sequences) {
-                consensus_string[i] = '=';
+                consensus_string[o] = '=';
             }
             else if (BK->countgaps && PERCENT(gaps, sequences)>=BK->gapbound) {
-                consensus_string[i] = '-';
+                consensus_string[o] = '-';
             }
             else {
                 // Simplify using IUPAC :
@@ -594,25 +597,21 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, int left_
                 int percent = PERCENT(kcount, sequences);
 
                 if (percent>=BK->upper) {
-                    consensus_string[i] = kchar;
+                    consensus_string[o] = kchar;
                 }
                 else if (percent>=BK->lower) {
-                    consensus_string[i] = tolower(kchar);
+                    consensus_string[o] = tolower(kchar);
                 }
                 else {
-                    consensus_string[i] = '.';
+                    consensus_string[o] = '.';
                 }
             }
-            e4_assert(consensus_string[i]);
+            e4_assert(consensus_string[o]);
         }
     }
     else {
-        for (int i=left_idx; i<=right_idx; i++) {
-            consensus_string[i] = '?';
-        }
+        memset(consensus_string, '?', right_idx-left_idx+1);
     }
-
-
 #undef PERCENT
 }
 
