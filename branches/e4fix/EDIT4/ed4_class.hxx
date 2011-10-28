@@ -7,6 +7,9 @@
 #ifndef DOWNCAST_H
 #include <downcast.h>
 #endif
+#ifndef POS_RANGE_H
+#include <pos_range.h>
+#endif
 
 #define e4_assert(bed) arb_assert(bed)
 
@@ -552,24 +555,6 @@ public:
 #ifdef DEBUG
 // # define TEST_BASES_TABLE
 #endif
-
-class UpdateRange {
-    int start_pos;
-    int end_pos;
-
-public:
-    UpdateRange() : start_pos(0), end_pos(-1) {}
-    UpdateRange(int from, int to) : start_pos(from), end_pos(to) {}
-
-    int start() const { return start_pos; }
-    int end() const {
-        e4_assert(end_pos != -1);
-        return end_pos;
-    }
-
-    bool is_full_range() const { return start_pos == 0 && end_pos == -1; }
-    bool is_restricted() const { return !is_full_range(); }
-};
 
 #define SHORT_TABLE_ELEM_SIZE 1
 #define SHORT_TABLE_MAX_VALUE 0xff
