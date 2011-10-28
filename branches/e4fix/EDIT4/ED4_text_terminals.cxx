@@ -89,7 +89,7 @@ ED4_returncode ED4_consensus_sequence_terminal::draw(int /* only_text */)
         }
 
         char *cons = GB_give_buffer(seq_end+1);
-        cons = get_char_table().build_consensus_string(seq_start, seq_end, cons);
+        get_char_table().build_consensus_string_to(cons, seq_start, seq_end);
 
         if (size_t(right_index) >= buffer_size) {
             delete [] buffer;

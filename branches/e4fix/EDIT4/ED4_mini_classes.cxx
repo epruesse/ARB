@@ -472,24 +472,23 @@ void ED4_consensus_display_changed(AW_root *root, AW_CL, AW_CL) {
     ED4_ROOT->refresh_all_windows(1);
 }
 
-char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *fill_id) const {
-    // consensus is only built in intervall
+char *ED4_char_table::build_consensus_string(int left_idx, int right_index) const {
+    long  entr    = size();
+    char *new_buf = (char*)malloc(entr+1);
+    new_buf[entr] = 0;
+    build_consensus_string_to(new_buf, left_idx, right_index);
+    return new_buf;
+}
+
+void ED4_char_table::build_consensus_string_to(char *consensus_string, int left_idx, int right_idx) const {
+    // consensus is only built in intervall, but 'consensus_string' has to be a buffer of ED4_char_table::size()
     // Note : Always check that consensus behavior is identical to that used in CON_evaluatestatistic()
-    int i;
 
     if (!BK) BK = new ConsensusBuildParams(ED4_ROOT->aw_root);
 
-    if (!fill_id) {
-        long entr = size();
-
-        fill_id = (char*)malloc(entr+1);
-        fill_id[entr] = 0;
-    }
-
+    e4_assert(consensus_string);
     e4_assert(right_idx<size());
     if (right_idx==-1 || right_idx>=size()) right_idx = size()-1;
-
-    char *consensus_string = fill_id;
 
 #define PERCENT(part, all)      ((100*(part))/(all))
 #define MAX_BASES_TABLES 41     // 25
@@ -497,7 +496,7 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
     e4_assert(used_bases_tables<=MAX_BASES_TABLES);     // this is correct for DNA/RNA -> build_consensus_string() must be corrected for AMI/PRO
 
     if (sequences) {
-        for (i=left_idx; i<=right_idx; i++) {
+        for (int i=left_idx; i<=right_idx; i++) {
             int bases = 0; // count of all bases together
             int base[MAX_BASES_TABLES]; // count of specific base
             int j;
@@ -608,15 +607,13 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
         }
     }
     else {
-        for (i=left_idx; i<=right_idx; i++) {
+        for (int i=left_idx; i<=right_idx; i++) {
             consensus_string[i] = '?';
         }
     }
 
 
 #undef PERCENT
-
-    return consensus_string;
 }
 
 // -----------------------
@@ -1196,7 +1193,12 @@ void TEST_char_table() {
     const int seqlen = 30;
     char      seq[seqlen+1];
 
-    ED4_char_table::initial_setup(".", GB_AT_RNA);
+    const char *gapChars = ".-"; // @@@ doesnt make any difference which gaps are used - why?
+    // const char *gapChars = "-";
+    // const char *gapChars = ".";
+    // const char *gapChars = "A"; // makes me fail
+    ED4_char_table::initial_setup(gapChars, GB_AT_RNA);
+    ED4_init_is_align_character(gapChars);
 
     TEST_ASSERT(!BK);
     BK = new ConsensusBuildParams();

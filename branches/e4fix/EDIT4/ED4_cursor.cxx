@@ -910,7 +910,7 @@ void ED4_cursor::updateAwars()
         if (species_manager->flag.is_consensus) {
             ED4_group_manager *group_manager = owner_of_cursor->get_parent(ED4_L_GROUP)->to_group_manager();
 
-            seq = group_manager->table().build_consensus_string(seq_pos, seq_pos, 0);
+            seq = group_manager->table().build_consensus_string(seq_pos, seq_pos);
             len = seq_pos+1; // fake
         }
         else {

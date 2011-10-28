@@ -757,7 +757,9 @@ public:
     void sub(const char *string, int len);
     void sub_and_add(const char *old_string, const char *new_string, UpdateRange range);
 
-    char *build_consensus_string(int left_idx=0, int right_index=-1, char *fill_id=0) const;
+    void build_consensus_string_to(char *buffer, int left_idx, int right_index) const;
+    char *build_consensus_string(int left_idx, int right_index) const;
+    char *build_consensus_string() const { return build_consensus_string(0, -1); }
 
     void change_table_length(int new_length);
 };
@@ -1985,4 +1987,3 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access);
 #else
 #error ed4_class included twice
 #endif
-
