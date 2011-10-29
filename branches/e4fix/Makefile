@@ -624,7 +624,7 @@ ifeq ($(DEBUG),1)
 endif
 
 force_tab_check:
-	@touch -t 198001010000 SOURCE_TOOLS/tabBrake.stamp
+	@touch -t 198001010000 SOURCE_TOOLS/stamp.tabBrake
 	@$(MAKE) check_tabs
 
 
@@ -1496,7 +1496,7 @@ tags: $(TAG_SOURCE_LISTS)
 
 #********************************************************************************
 
-LINKSTAMP=SOURCE_TOOLS/generate_all_links.stamp
+LINKSTAMP=SOURCE_TOOLS/stamp.generate_all_links
 
 links: checks $(LINKSTAMP)
 
