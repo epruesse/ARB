@@ -55,11 +55,11 @@ static const char *upcase(const char *str) {
 static const char *unitTesterDir() {
     RETURN_ONETIME_ALLOC(strdup(GB_concat_full_path(GB_getenvARBHOME(), "UNIT_TESTER")));
 }
-static const char *flagDir() {
-    RETURN_ONETIME_ALLOC(strdup(GB_concat_full_path(unitTesterDir(), FLAGS_DIR)));
-}
 static const char *runDir() {
     RETURN_ONETIME_ALLOC(strdup(GB_concat_full_path(unitTesterDir(), "run")));
+}
+static const char *flagDir() {
+    RETURN_ONETIME_ALLOC(strdup(GB_concat_full_path(runDir(), FLAGS_DIR)));
 }
 static char *mutexDir(const char *name) {
     return strdup(GB_concat_full_path(flagDir(), GBS_global_string("mutex_%s", name)));

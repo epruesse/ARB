@@ -235,7 +235,7 @@ public:
 };
 
 inline Flag getLocalFlag(const char *flagname) {
-    string localname  = string(GLOBAL.runDir)+"/../flags/"+flagname+'.'+GLOBAL.libname;
+    string localname  = string(GLOBAL.runDir)+"/flags/"+flagname+'.'+GLOBAL.libname;
     return Flag(localname.c_str());
 }
 
