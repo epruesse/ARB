@@ -945,21 +945,21 @@ const boost::ptr_vector<DesignHit> PtpanTree::designProbes(
         printf("%ld probes generated...\n", dqh.dqh_Hits.size());
         printf("Calc Probe Quality\n");
 #endif
-        if (dqh.dqh_Hits.size() < m_num_threads || m_num_threads <= 1) {
+// TODO get parallel code running        if (dqh.dqh_Hits.size() < m_num_threads || m_num_threads <= 1) {
             design_probes(dq, dqh);
-        } else {
-            std::size_t i = 0;
-            ULONG participators = m_num_threads;
-            for (; i < participators - 1; i++) {
-                boost::threadpool::schedule(
-                        *m_threadpool,
-                        boost::bind(&PtpanTree::design_probes, this,
-                                boost::ref(dq), boost::ref(dqh), i,
-                                participators));
-            }
-            design_probes(dq, dqh, i, participators); // main thread can do some work as well!
-            m_threadpool->wait();
-        }
+//        } else {
+//            std::size_t i = 0;
+//            ULONG participators = m_num_threads;
+//            for (; i < participators - 1; i++) {
+//                boost::threadpool::schedule(
+//                        *m_threadpool,
+//                        boost::bind(&PtpanTree::design_probes, this,
+//                                boost::ref(dq), boost::ref(dqh), i,
+//                                participators));
+//            }
+//            design_probes(dq, dqh, i, participators); // main thread can do some work as well!
+//            m_threadpool->wait();
+//        }
         // remove invalid design hits! due to parallelization, we cannot do this before!
         boost::ptr_vector<DesignHit>::iterator dh;
         for (dh = dqh.dqh_Hits.begin(); dh != dqh.dqh_Hits.end();) {
@@ -4394,7 +4394,7 @@ void PtpanTree::add_design_hit(const DesignQuery& dq,
                         // check if it hits marked feature!!
                         if (dqh.hitsAnyFeature(ht->ht_AbsPos, ht->ht_Entry,
                                 dq)) {
-                            dh->dh_GroupHits++;
+                            dh->dh_GroupHits++; // TODO FIXME should check for entries hit!!
                         } else {
                             // It's a non-group hit as it misses the marked features
                             if (++dh->dh_NonGroupHits > dq.dq_MaxNonGroupHits) {
@@ -4403,7 +4403,7 @@ void PtpanTree::add_design_hit(const DesignQuery& dq,
                             }
                         }
                     } else {
-                        dh->dh_GroupHits++;
+                        dh->dh_GroupHits++; // TODO FIXME should check for entries hit!!
                     }
                 } else {
                     // check if we are over the limit
@@ -4482,21 +4482,21 @@ void PtpanTree::add_design_hit(const DesignQuery& dq,
 void PtpanTree::ss_window_sequence(const SimilaritySearchQuery& ssq,
         SimilaritySearchQueryHandle& ssqh) const {
 
-    if (ssqh.ssqh_filtered_seq_len < ssq.ssq_WindowSize || m_num_threads <= 1) {
+    // TODO get parallel code running    if (ssqh.ssqh_filtered_seq_len < ssq.ssq_WindowSize || m_num_threads <= 1) {
         ss_window_search(ssq, ssqh);
-    } else {
-        std::size_t i = 0;
-        ULONG participators = m_num_threads;
-        for (; i < participators - 1; i++) {
-            boost::threadpool::schedule(
-                    *m_threadpool,
-                    boost::bind(&PtpanTree::ss_window_search, this,
-                            boost::ref(ssq), boost::ref(ssqh), i,
-                            participators));
-        }
-        ss_window_search(ssq, ssqh, i, participators); // main thread can do some work as well!
-        m_threadpool->wait();
-    }
+//    } else {
+//        std::size_t i = 0;
+//        ULONG participators = m_num_threads;
+//        for (; i < participators - 1; i++) {
+//            boost::threadpool::schedule(
+//                    *m_threadpool,
+//                    boost::bind(&PtpanTree::ss_window_search, this,
+//                            boost::ref(ssq), boost::ref(ssqh), i,
+//                            participators));
+//        }
+//        ss_window_search(ssq, ssqh, i, participators); // main thread can do some work as well!
+//        m_threadpool->wait();
+//    }
 }
 
 /*!
