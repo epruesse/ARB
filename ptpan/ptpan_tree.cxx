@@ -18,6 +18,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <boost/unordered_set.hpp>
 
 #include "ptpan_tree.h"
 #include "ptpan_filter.h"
@@ -163,32 +164,33 @@ PtpanTree::SearchQueryHandle::SearchQueryHandle(const SearchQueryHandle& sqh) :
     if (sqh.sqh_PosWeight) {
         sqh_PosWeight = new double[sqh_PosWeightLength + 1];
         //..
-for                (ULONG i = 0; i < sqh_PosWeightLength + 1; i++) {
-                    sqh_PosWeight[i] = sqh.sqh_PosWeight[i];
-                }
-            }
-            if (sqh.sqh_HitsHash) {
-                sqh_HitsHash = new boost::unordered_map<ULONG, ULONG>(HASH_SIZE_SEED);
-            }
+        for (ULONG i = 0; i < sqh_PosWeightLength + 1; i++) {
+            sqh_PosWeight[i] = sqh.sqh_PosWeight[i];
         }
+    }
+    if (sqh.sqh_HitsHash) {
+        sqh_HitsHash = new boost::unordered_map<ULONG, ULONG>(HASH_SIZE_SEED);
+    }
+}
 
-        /*!
-         * \brief Private assignment operator
-         *
-         * \warning does not copy already present hits!
-         */
+/*!
+ * \brief Private assignment operator
+ *
+ * \warning does not copy already present hits!
+ */
 PtpanTree::SearchQueryHandle& PtpanTree::SearchQueryHandle::operator=(
         const SearchQueryHandle& sqh) {
     if (this != &sqh) {
         // sqh_State = SearchQueryState();
         sqh_PosWeightLength = sqh.sqh_PosWeightLength;
         if (sqh.sqh_PosWeight) {
-            sqh_PosWeight = new double[sqh_PosWeightLength + 1];for (ULONG i = 0; i< sqh_PosWeightLength + 1; i++) {
+            sqh_PosWeight = new double[sqh_PosWeightLength + 1];
+            for (ULONG i = 0; i < sqh_PosWeightLength + 1; i++) {
                 sqh_PosWeight[i] = sqh.sqh_PosWeight[i];
             }
         } else {
-                sqh_PosWeight = NULL;
-            }
+            sqh_PosWeight = NULL;
+        }
         sqh_MaxLength = sqh.sqh_MaxLength;
         if (sqh.sqh_HitsHash) {
             sqh_HitsHash = new boost::unordered_map<ULONG, ULONG>(
@@ -242,12 +244,13 @@ PtpanTree::DesignQueryHandle::DesignQueryHandle(const DesignQuery& dq,
                                 std::make_pair(
                                         id,
                                         const_cast<PTPanFeature*>(entry->pe_FeatureContainer->getFeature(
-                                                split_vec[1].data()))));}
-                                    }
-                                }
-                            }
-                        }
-                        // if there are no features marked, turn off
+                                                split_vec[1].data()))));
+                    }
+                }
+            }
+        }
+    }
+    // if there are no features marked, turn off
     if (dqh_ptpanFeatureMap.empty()) {
 #ifdef DEBUG
         printf("Deactivate feature checking as no are marked\n");
@@ -313,7 +316,7 @@ PtpanTree::DesignQueryHandle& PtpanTree::DesignQueryHandle::operator=(
  *
  * \param qh
  *
- * \return bool
+ * \return bool TODO FIXME switch to PTPanFeature*
  */
 bool PtpanTree::DesignQueryHandle::hitsAnyFeature(ULLONG abspos,
         PTPanEntry* entry, const DesignQuery& dq) const {
@@ -325,11 +328,35 @@ bool PtpanTree::DesignQueryHandle::hitsAnyFeature(ULLONG abspos,
     while (start != end) {
         pos = abspos - entry->pe_AbsOffset;
         if (start->second->inSameRange(pos, dq.dq_ProbeLength)) {
-            return true;
+            return true; // TODO FIXME return PTPanFeature* ??
         }
         ++start;
     }
-    return false;
+    return false; // TODO FIXME return NULL ??
+}
+
+/*!
+ * \brief Check if QueryHit hits any feature
+ *
+ * \param qh
+ *
+ * \return PTPanFeature*
+ */
+const PTPanFeature* PtpanTree::DesignQueryHandle::hitsAnyFeatureReturn(
+        ULLONG abspos, PTPanEntry* entry, const DesignQuery& dq) const {
+
+    boost::unordered_multimap<ULONG, PTPanFeature*>::const_iterator start, end;
+    boost::tuples::tie(start, end) = dqh_ptpanFeatureMap.equal_range(
+            entry->pe_Num);
+    ULONG pos = 0;
+    while (start != end) {
+        pos = abspos - entry->pe_AbsOffset;
+        if (start->second->inSameRange(pos, dq.dq_ProbeLength)) {
+            return start->second;
+        }
+        ++start;
+    }
+    return NULL;
 }
 
 /*!
@@ -946,7 +973,7 @@ const boost::ptr_vector<DesignHit> PtpanTree::designProbes(
         printf("Calc Probe Quality\n");
 #endif
 // TODO get parallel code running        if (dqh.dqh_Hits.size() < m_num_threads || m_num_threads <= 1) {
-            design_probes(dq, dqh);
+        design_probes(dq, dqh);
 //        } else {
 //            std::size_t i = 0;
 //            ULONG participators = m_num_threads;
@@ -2110,10 +2137,10 @@ bool PtpanTree::levenshtein_match(const SearchQuery& sq, SearchQueryHandle& sqh,
         const std::string& compare, STRPTR tarstr, bool create_string) const {
     LONG source_len = (LONG) compare.size();
     LONG query_len = (LONG) sq.sq_Query.size();
-    UBYTE query[query_len + 1];UBYTE
-    source[source_len + 1];
+    UBYTE query[query_len + 1];
+    UBYTE source[source_len + 1];
 
-for(    LONG i = 0; i < source_len; i++) {
+    for (LONG i = 0; i < source_len; i++) {
         source[i] = m_as->compress_table[(LONG) compare[i]];
     }
     for (ULONG i = 0; i < sq.sq_Query.size(); i++) {
@@ -2121,11 +2148,11 @@ for(    LONG i = 0; i < source_len; i++) {
     }
 
     //Define the lattices where we will compute the Levenshtein distance and do the backtracking
-    double distance_matrix[source_len + 1][query_len + 1];char
-    direction_matrix[source_len + 1][query_len + 1];
+    double distance_matrix[source_len + 1][query_len + 1];
+    char direction_matrix[source_len + 1][query_len + 1];
 
     // Initialize the first row and first columns
-distance_matrix    [0][0] = 0.0;
+    distance_matrix[0][0] = 0.0;
     direction_matrix[0][0] = LEV_START;
 
     // quick'n'dirty, but easy
@@ -2840,13 +2867,13 @@ void PtpanTree::search_tree_levenshtein(const SearchQuery& sq,
 
     UBYTE query[query_len + 1];
     // ..
-for(    LONG i = 0; i < query_len; i++) {
+    for (LONG i = 0; i < query_len; i++) {
         query[i] = m_as->compress_table[(LONG) sq.sq_Query[i]];
     }
     UBYTE source[source_len + 1];
 
     //Define the lattices where we will compute the Levenshtein distance and do the backtracking
-LevenshteinSupport    levenshtein(source_len, query_len, max_check);
+    LevenshteinSupport levenshtein(source_len, query_len, max_check);
 
     // Initialize the first row and first columns
     levenshtein.m_distance_matrix[0][0] = 0.0;
@@ -3163,29 +3190,27 @@ void PtpanTree::search_tree_levenshtein_rec(const SearchQuery& sq,
                         for (ULONG l = 1; l <= levenshtein.m_max_check; l++) {
                             if (levenshtein.m_distance_matrix[levenshtein.m_query_len
                                     + l][levenshtein.m_query_len]
-                                    < sqh.sqh_State.sqs_ErrorCount
-                                    && levenshtein.m_direction_matrix[levenshtein.m_query_len
-                                            + l][levenshtein.m_query_len]
-                                            == LEV_EQ) { // TODO FIXME why LEV_EQ??
-                                sqh.sqh_State.sqs_ErrorCount =
-                                        levenshtein.m_distance_matrix[levenshtein.m_query_len
-                                                + l][levenshtein.m_query_len];
-                                length = levenshtein.m_query_len + l;
-                            }
+                                    < sqh.sqh_State.sqs_ErrorCount && levenshtein.m_direction_matrix[levenshtein.m_query_len
+                                    + l][levenshtein.m_query_len]
+                                    == LEV_EQ) { // TODO FIXME why LEV_EQ??
+sqh                            .sqh_State.sqs_ErrorCount =
+                            levenshtein.m_distance_matrix[levenshtein.m_query_len
+                            + l][levenshtein.m_query_len];
+                            length = levenshtein.m_query_len + l;
                         }
+                    }
                         for (int l = 1; l <= (int) sq.sq_MaxErrors; l++) {
                             if (levenshtein.m_distance_matrix[levenshtein.m_query_len
                                     - l][levenshtein.m_query_len]
-                                    < sqh.sqh_State.sqs_ErrorCount
-                                    && levenshtein.m_direction_matrix[levenshtein.m_query_len
-                                            - l][levenshtein.m_query_len]
-                                            == LEV_EQ) { // TODO FIXME why LEV_EQ??
-                                sqh.sqh_State.sqs_ErrorCount =
-                                        levenshtein.m_distance_matrix[levenshtein.m_query_len
-                                                - l][levenshtein.m_query_len];
-                                length = levenshtein.m_query_len - l;
-                            }
+                                    < sqh.sqh_State.sqs_ErrorCount && levenshtein.m_direction_matrix[levenshtein.m_query_len
+                                    - l][levenshtein.m_query_len]
+                                    == LEV_EQ) { // TODO FIXME why LEV_EQ??
+sqh                            .sqh_State.sqs_ErrorCount =
+                            levenshtein.m_distance_matrix[levenshtein.m_query_len
+                            - l][levenshtein.m_query_len];
+                            length = levenshtein.m_query_len - l;
                         }
+                    }
                         ULONG i_length = levenshtein.m_query_len;
                         if (levenshtein.m_source_len == m_prune_length
                                 && length == m_prune_length
@@ -3655,21 +3680,23 @@ void PtpanTree::sort_hits_list(const SearchQuery& sq,
                 assert(
                         ((LLONG) (qh->qh_AbsPos - qh->qh_Entry->pe_AbsOffset)) <= 0xfffffff);
                 // 28 bit
-                qh->qh_sortKey = (LLONG) ((qh->qh_Flags & QHF_REVERSED) ?
-                (1LL << 62) : 0LL)
-                + ((qh->qh_InsertCount | qh->qh_DeleteCount) ?
-                        (1LL << 61) : 0LL)
-                + (((LLONG) (qh->qh_ReplaceCount
+                qh->qh_sortKey =
+                        (LLONG) (
+                                (qh->qh_Flags & QHF_REVERSED) ?
+                                        (1LL << 62) : 0LL)
+                                + ((qh->qh_InsertCount | qh->qh_DeleteCount) ?
+                                        (1LL << 61) : 0LL)
+                                + (((LLONG) (qh->qh_ReplaceCount
                                         + qh->qh_InsertCount
                                         + qh->qh_DeleteCount)) << 56)
-                + (((LLONG) qh->qh_nmismatch) << 53)
-                + (((LLONG) round(qh->qh_ErrorCount * 10.0))
-                        << 48)
-                + (((LLONG) round(qh->qh_WMisCount * 10.0))
-                        << 45)
-                + (((LLONG) qh->qh_Entry->pe_Num) << 25)
-                + ((LLONG) (qh->qh_AbsPos
-                                - qh->qh_Entry->pe_AbsOffset));
+                                + (((LLONG) qh->qh_nmismatch) << 53)
+                                + (((LLONG) round(qh->qh_ErrorCount * 10.0))
+                                        << 48)
+                                + (((LLONG) round(qh->qh_WMisCount * 10.0))
+                                        << 45)
+                                + (((LLONG) qh->qh_Entry->pe_Num) << 25)
+                                + ((LLONG) (qh->qh_AbsPos
+                                        - qh->qh_Entry->pe_AbsOffset));
             }
         } else {
             //printf("Sort with weight...\n");
@@ -3702,7 +3729,7 @@ void PtpanTree::sort_hits_list(const SearchQuery& sq,
                                         - qh->qh_Entry->pe_AbsOffset));
             }
         }
-                // finally sort by key
+        // finally sort by key
         sqh.sqh_hits.sort(QueryHit::keyCompare);
     }
 }
@@ -4378,6 +4405,8 @@ void PtpanTree::add_design_hit(const DesignQuery& dq,
         dh->dh_NonGroupHits = 0;
         dh->dh_GroupHits = 0;
 
+        boost::unordered_set<ULONG> unique_hits;
+
         boost::ptr_vector<HitTuple>::iterator ht;
         for (ht = dh->dh_Matches.begin(); ht != dh->dh_Matches.end(); ht++) {
             if (!(ps = ht->ht_Entry)) {
@@ -4391,11 +4420,29 @@ void PtpanTree::add_design_hit(const DesignQuery& dq,
 
                 if (dqh.dqh_MarkedEntryNumbers.count(ps->pe_Num) == 1) {
                     if (dqh.dqh_handleFeatures) {
+
+                        // TODO FIXME if "has-marked-features"
+                        // This would be required by a "mixed-mode" to design
+                        // probes for whole genomes combined with some genes on others!
+
                         // check if it hits marked feature!!
-                        if (dqh.hitsAnyFeature(ht->ht_AbsPos, ht->ht_Entry,
-                                dq)) {
-                            dh->dh_GroupHits++; // TODO FIXME should check for entries hit!!
+                        const PTPanFeature* feature_ptr =
+                                dqh.hitsAnyFeatureReturn(ht->ht_AbsPos,
+                                        ht->ht_Entry, dq);
+                        if (feature_ptr) {
+                            std::size_t key = 0;
+                            boost::hash_combine(key, ps->pe_Num);
+                            boost::hash_combine(key, (ULONG) feature_ptr);
+                            if (unique_hits.find(key) == unique_hits.end()) {
+                                unique_hits.insert(key);
+                            }
+
                         } else {
+                            // TODO FIXME if only genomes with features marked are allowed this is ok as it is
+                            // otherwise we want to add by calling "unique_hits.insert(ps->pe_Num);"!!
+                            // or something like that after checking if no marked features exist!!
+                            // or maybe we want to check "has-marked-features" above!
+
                             // It's a non-group hit as it misses the marked features
                             if (++dh->dh_NonGroupHits > dq.dq_MaxNonGroupHits) {
                                 take = false;
@@ -4403,7 +4450,9 @@ void PtpanTree::add_design_hit(const DesignQuery& dq,
                             }
                         }
                     } else {
-                        dh->dh_GroupHits++; // TODO FIXME should check for entries hit!!
+                        if (unique_hits.find(ps->pe_Num) == unique_hits.end()) {
+                            unique_hits.insert(ps->pe_Num);
+                        }
                     }
                 } else {
                     // check if we are over the limit
@@ -4416,6 +4465,7 @@ void PtpanTree::add_design_hit(const DesignQuery& dq,
                 }
             }
         }
+        dh->dh_GroupHits = unique_hits.size();
 
         if (dh->dh_GroupHits < dq.dq_MinGroupHits) {
             // printf("grouphits %ld < MinGroupHits %ld\n", dh->dh_GroupHits, dq->dq_MinGroupHits);
@@ -4483,7 +4533,7 @@ void PtpanTree::ss_window_sequence(const SimilaritySearchQuery& ssq,
         SimilaritySearchQueryHandle& ssqh) const {
 
     // TODO get parallel code running    if (ssqh.ssqh_filtered_seq_len < ssq.ssq_WindowSize || m_num_threads <= 1) {
-        ss_window_search(ssq, ssqh);
+    ss_window_search(ssq, ssqh);
 //    } else {
 //        std::size_t i = 0;
 //        ULONG participators = m_num_threads;
@@ -4540,7 +4590,8 @@ void PtpanTree::ss_window_search(const SimilaritySearchQuery& ssq,
         if ((ssq.ssq_SearchMode == 0) || (ssqh.ssqh_filtered_seq[i] == 'A')
                 || (ssqh.ssqh_filtered_seq[i] == 'a')) {
             // direct copy to search sequence (which is the same size every time!)
-            memcpy(const_cast<STRPTR>(sq.sq_Query.data()), &ssqh.ssqh_filtered_seq[i], ssq.ssq_WindowSize);
+            memcpy(const_cast<STRPTR>(sq.sq_Query.data()),
+                    &ssqh.ssqh_filtered_seq[i], ssq.ssq_WindowSize);
             sqh.reset();
             { // search all occurrences and increase hitcounts!
                 std::vector<PTPanPartition *>::const_iterator pit;
@@ -4555,7 +4606,8 @@ void PtpanTree::ss_window_search(const SimilaritySearchQuery& ssq,
                 for (qh = sqh.sqh_hits.begin(); qh != sqh.sqh_hits.end();
                         qh++) {
                     if (!filter || filter->matchesFilter(*qh)) {
-                        ssqh.ssqh_hit_count[qh->qh_Entry->pe_Num].fetch_add(1, boost::memory_order_relaxed);
+                        ssqh.ssqh_hit_count[qh->qh_Entry->pe_Num].fetch_add(1,
+                                boost::memory_order_relaxed);
                     }
                 }
             }

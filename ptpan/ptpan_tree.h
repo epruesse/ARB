@@ -151,10 +151,10 @@ private:
             sqh_PosWeightLength = sq.sq_Query.size();
             sqh_PosWeight = new double[sqh_PosWeightLength + 1];
 // ...
-for(            ULONG pos = 0; pos < sqh_PosWeightLength; ++pos) {
+            for (ULONG pos = 0; pos < sqh_PosWeightLength; ++pos) {
                 if (sq.sq_WeightedSearchMode) {
                     sqh_PosWeight[pos] = calc_position_wmis(pos,
-                    sqh_PosWeightLength, 0.3, 1.0);
+                            sqh_PosWeightLength, 0.3, 1.0);
                 } else {
                     sqh_PosWeight[pos] = 1.0;
                 }
@@ -200,6 +200,8 @@ for(            ULONG pos = 0; pos < sqh_PosWeightLength; ++pos) {
         // check if any feature is hit by QueryHit
         bool hitsAnyFeature(ULLONG abspos, PTPanEntry* entry,
                 const DesignQuery& dq) const;
+        const PTPanFeature* hitsAnyFeatureReturn(ULLONG abspos,
+                PTPanEntry* entry, const DesignQuery& dq) const;
 
     private:
         DesignQueryHandle();
@@ -309,7 +311,7 @@ public:
      * scheme: MAJOR.MINOR.BUGFIX
      */
     static const std::string version() {
-        return "0.6.5_beta";
+        return "0.6.6_beta";
     }
 
     const std::string getCustomInformation() const;
