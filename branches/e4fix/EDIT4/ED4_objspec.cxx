@@ -200,9 +200,7 @@ void TEST_objspec_registry() {
 
     TEST_ASSERT(objspec_registry.get_object_spec(ED4_L_ROOT).allowed_children == ED4_L_ROOTGROUP);
 
-    MISSING_TEST(log);
     ED4_objspec::init_object_specs();
-
 
     const ED4_objspec& multi_seq = objspec_registry.get_object_spec(ED4_L_MULTI_SEQUENCE);
     const ED4_objspec& seq       = objspec_registry.get_object_spec(ED4_L_SEQUENCE);

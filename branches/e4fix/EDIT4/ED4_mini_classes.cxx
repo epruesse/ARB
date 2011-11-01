@@ -472,11 +472,10 @@ void ED4_consensus_display_changed(AW_root *root, AW_CL, AW_CL) {
     ED4_ROOT->refresh_all_windows(1);
 }
 
-char *ED4_char_table::build_consensus_string(PosRange range) const {
-    if (range.is_full_range()) range.make_explicit(size());
-
-    long  entries = range.size();
-    char *new_buf = (char*)malloc(entries+1);
+char *ED4_char_table::build_consensus_string(PosRange r) const {
+    ExplicitRange  range(r, size());
+    long           entries = range.size();
+    char          *new_buf = (char*)malloc(entries+1);
 
     build_consensus_string_to(new_buf, range);
     new_buf[entries] = 0;
@@ -484,12 +483,10 @@ char *ED4_char_table::build_consensus_string(PosRange range) const {
     return new_buf;
 }
 
-void ED4_char_table::build_consensus_string_to(char *consensus_string, PosRange range) const {
+void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitRange range) const {
     // 'consensus_string' has to be a buffer of size 'range.size()+1'
     // Note : Always check that consensus behavior is identical to that used in CON_evaluatestatistic()
 
-    if (range.is_full_range()) range.make_explicit(size());
-    
     if (!BK) BK = new ConsensusBuildParams(ED4_ROOT->aw_root);
 
     e4_assert(consensus_string);
@@ -796,9 +793,10 @@ const PosRange *ED4_char_table::changed_range(const ED4_char_table& other) const
             }
 
             e4_assert(start<=end);
+
             static PosRange range;
-            
             range = PosRange(start, end);
+
             return &range;
         }
     }

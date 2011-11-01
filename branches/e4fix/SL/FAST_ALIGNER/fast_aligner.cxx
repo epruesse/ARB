@@ -89,9 +89,9 @@ struct AlignParams {
     bool      showGapsMessages; // display messages about missing gaps in master?
     int       firstColumn;      // first column of range to be aligned (0..len-1) // @@@ make this a PosRange
     int       lastColumn;       // last column of range to be aligned (0..len-1, -1 = (len-1))
-
-    TargetRange get_TargetRange() const {
-        return TargetRange(firstColumn, lastColumn);
+    
+    PosRange get_TargetRange() const {
+        return PosRange(firstColumn, lastColumn);
     }
 };
 
@@ -1028,7 +1028,7 @@ inline long calcSequenceChecksum(const char *data, long length) {
 }
 
 #if defined(WARN_TODO)
-#warning firstColumn + lastColumn -> TargetRange
+#warning firstColumn + lastColumn -> PosRange
 #endif
 
 static CompactedSubSequence *readCompactedSequence(GBDATA      *gb_species,
@@ -1492,8 +1492,8 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
 
         {
             // find relatives
-            FamilyFinder       *familyFinder = relSearch.getFamilyFinder();
-            const TargetRange&  range        = familyFinder->get_TargetRange();
+            FamilyFinder    *familyFinder = relSearch.getFamilyFinder();
+            const PosRange&  range        = familyFinder->get_TargetRange();
 
             if (range.is_restricted()) {
                 range.copy_corresponding_part(findRelsBySeq, findRelsBySeq, strlen(findRelsBySeq));
@@ -2370,8 +2370,8 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
             free(default_alignment);
         }
 
-        char        *pt_server_alignment = root->awar(FA_AWAR_PT_SERVER_ALIGNMENT)->read_string();
-        TargetRange  relRange; // unrestricted!
+        char     *pt_server_alignment = root->awar(FA_AWAR_PT_SERVER_ALIGNMENT)->read_string();
+        PosRange  relRange            = PosRange::whole(); // unrestricted!
 
         if (mayRestrictRelRange) {
             AW_awar    *awar_relrange = root->awar(FA_AWAR_RELATIVE_RANGE);
@@ -2382,7 +2382,7 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
                 fa_assert(firstColumn >= 0);
                 fa_assert(lastColumn >= 0);
 
-                relRange = TargetRange(firstColumn-region_plus, lastColumn+region_plus); // restricted
+                relRange = PosRange(firstColumn-region_plus, lastColumn+region_plus); // restricted
                 awar_relrange->write_as_string(GBS_global_string("%i", region_plus)); // set awar to detected value (avoid misbehavior when it contains ' ' or similar)
             }
         }
@@ -2902,14 +2902,15 @@ class FakeFamilyFinder: public FamilyFinder { // derived from a Noncopyable
     GBDATA                    *gb_main;
     string                     ali_name;
     map<string, OligoCounter>  oligos_counted;      // key = species name
-    TargetRange                counted_for_range;
+    PosRange                   counted_for_range;
     size_t                     oligo_len;
 
 public:
     FakeFamilyFinder(GBDATA *gb_main_, string ali_name_, bool rel_matches_, size_t oligo_len_)
         : FamilyFinder(rel_matches_),
           gb_main(gb_main_),
-          ali_name(ali_name_), 
+          ali_name(ali_name_),
+          counted_for_range(PosRange::whole()), 
           oligo_len(oligo_len_)
     {}
 
@@ -2946,7 +2947,7 @@ public:
 
                 if (partial_match) {
                     int spec_seq_len = GB_read_count(gb_data);
-                    int range_len    = range.length(spec_seq_len);
+                    int range_len    = ExplicitRange(range, spec_seq_len).size();
 
                     if (buffersize<range_len) {
                         delete [] buffer;
@@ -3064,7 +3065,7 @@ static GBDATA *fake_next_selected() {
 
 static char *fake_get_consensus(const char*, PosRange range) {
     const char *data = get_aligned_data_of(selection_fake_gb_main, "s1");
-    if (range.is_full_range()) return strdup(data);
+    if (range.is_whole()) return strdup(data);
     return GB_strpartdup(data+range.start(), data+range.end());
 }
 
@@ -3272,7 +3273,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
     // --------------------------------------
     //      test partial relative search
 
-    TargetRange range = test_ali_params_partial.get_TargetRange();
+    PosRange range = test_ali_params_partial.get_TargetRange();
     search_relative_params.getFamilyFinder()->restrict_2_region(range);
     TEST_ASSERT_NO_ERROR(forget_used_relatives(gb_main));
 

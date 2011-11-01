@@ -210,7 +210,7 @@ ED4_returncode ED4_manager::update_bases(const char *old_sequence, int old_len, 
     int   new_len;
     char *new_sequence = new_sequence_terminal->resolve_pointer_to_string_copy(&new_len);
 
-    if (range.is_full_range()) {
+    if (range.is_whole()) {
         const PosRange *restricted = ED4_char_table::changed_range(old_sequence, new_sequence, min(old_len, new_len));
         
         e4_assert(restricted);
@@ -238,7 +238,7 @@ ED4_returncode ED4_manager::update_bases_and_rebuild_consensi(const char *old_se
 #endif // DEBUG
 
     const PosRange *changedRange = 0;
-    if (range.is_full_range()) {
+    if (range.is_whole()) {
         changedRange = ED4_char_table::changed_range(old_sequence, new_sequence, min(old_len, new_len));
     }
     else {
@@ -321,7 +321,7 @@ ED4_returncode ED4_manager::update_bases(const char *old_sequence, int old_len, 
 
     if (old_sequence) {
         if (new_sequence) {
-            if (range.is_full_range()) {
+            if (range.is_whole()) {
                 const PosRange *restricted = ED4_char_table::changed_range(old_sequence, new_sequence, min(old_len, new_len));
                 if (!restricted) return ED4_R_OK;
                 
@@ -335,13 +335,13 @@ ED4_returncode ED4_manager::update_bases(const char *old_sequence, int old_len, 
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub_and_add(old_sequence, new_sequence, range));
         }
         else {
-            e4_assert(range.is_full_range());
+            e4_assert(range.is_whole());
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub(old_sequence, old_len));
         }
     }
     else {
         if (new_sequence) {
-            e4_assert(range.is_full_range());
+            e4_assert(range.is_whole());
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, add(new_sequence, new_len));
         }
         else {
@@ -358,7 +358,7 @@ ED4_returncode ED4_manager::update_bases(const ED4_char_table *old_table, const 
 
     if (old_table) {
         if (new_table) {
-            if (range.is_full_range()) {
+            if (range.is_whole()) {
                 const PosRange *restricted = old_table->changed_range(*new_table);
                 if (!restricted) return ED4_R_OK;
 
@@ -367,13 +367,13 @@ ED4_returncode ED4_manager::update_bases(const ED4_char_table *old_table, const 
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub_and_add(*old_table, *new_table, range));
         }
         else {
-            e4_assert(range.is_full_range());
+            e4_assert(range.is_whole());
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub(*old_table));
         }
     }
     else {
         if (new_table) {
-            e4_assert(range.is_full_range());
+            e4_assert(range.is_whole());
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, add(*new_table));
         }
         else {

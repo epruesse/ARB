@@ -742,9 +742,9 @@ public:
     void sub(const char *string, int len);
     void sub_and_add(const char *old_string, const char *new_string, PosRange range);
 
-    void build_consensus_string_to(char *buffer, PosRange range) const;
+    void build_consensus_string_to(char *buffer, ExplicitRange range) const;
     char *build_consensus_string(PosRange range) const;
-    char *build_consensus_string() const { return build_consensus_string(PosRange()); }
+    char *build_consensus_string() const { return build_consensus_string(PosRange::whole()); }
 
     void change_table_length(int new_length);
 };
@@ -1062,12 +1062,12 @@ public:
 
     virtual ED4_returncode  check_in_bases(ED4_base *added_base);
     virtual ED4_returncode  check_out_bases(ED4_base *subbed_base);
-    virtual ED4_returncode  update_bases(const ED4_base *old_base, const ED4_base *new_base, PosRange range = PosRange());
-    virtual ED4_returncode  update_bases(const char *old_seq, int old_len, const char *new_seq, int new_len, PosRange range = PosRange());
-    virtual ED4_returncode  update_bases(const char *old_seq, int old_len, const ED4_base *new_base, PosRange range = PosRange());
-    virtual ED4_returncode  update_bases(const ED4_char_table *old_table, const ED4_char_table *new_table, PosRange range = PosRange());
+    virtual ED4_returncode  update_bases(const ED4_base *old_base, const ED4_base *new_base, PosRange range = PosRange::whole());
+    virtual ED4_returncode  update_bases(const char *old_seq, int old_len, const char *new_seq, int new_len, PosRange range = PosRange::whole());
+    virtual ED4_returncode  update_bases(const char *old_seq, int old_len, const ED4_base *new_base, PosRange range = PosRange::whole());
+    virtual ED4_returncode  update_bases(const ED4_char_table *old_table, const ED4_char_table *new_table, PosRange range = PosRange::whole());
 
-    virtual ED4_returncode  update_bases_and_rebuild_consensi(const char *old_seq, int old_len, ED4_base *species, ED4_update_flag update_flag, PosRange range = PosRange());
+    virtual ED4_returncode  update_bases_and_rebuild_consensi(const char *old_seq, int old_len, ED4_base *species, ED4_update_flag update_flag, PosRange range = PosRange::whole());
 
     void            generate_id_for_groups();
 
