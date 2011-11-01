@@ -1,6 +1,6 @@
 PTPan ARB integration
 
-v0.6.5 (?? ?? 2011)
+v0.6.6 (?? ?? 2011)
 
 - TODO
 
@@ -27,6 +27,8 @@ v0.6.5 (?? ?? 2011)
   WARNING The new interface is not compatible to the old one!
 
 - BUGFIX fixed a rare occurring error in long edge dictionary build
+- BUGFIX fixed an error leading to a wrong in-group count in the ProbeDesign process
+         leading to wrong results
 
 v0.5.2 (31 August 2011)
 
