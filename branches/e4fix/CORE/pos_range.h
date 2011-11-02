@@ -24,43 +24,49 @@
 
 class PosRange { // this is a value-class (i.e. all methods apart from ctors have to be const)
     int start_pos;
-    int end_pos; // test9
-    
+    int end_pos;
+
 public:
-    PosRange() : start_pos(-1), end_pos(-1) {} // default is empty range
-    PosRange(int From, int to) : start_pos(From == -1 ? 0 : From), end_pos(to) { // @@@ simplify this one ?
-        if (start_pos>end_pos && end_pos != -1) {
-            start_pos = end_pos = -1; // empty
-        }
+    PosRange() : start_pos(-1), end_pos(-2) {} // default is empty range
+    PosRange(int From, int to)
+        : start_pos(From<0 ? 0 : From)
+    {
+        if (to<0) end_pos = -2;
         else {
-            arb_assert(start_pos >= 0);
-            arb_assert(start_pos <= end_pos || end_pos == -1);
+            if (start_pos>to) { // empty range
+                start_pos = -1;
+                end_pos = -2;
+            }
+            else {
+                end_pos = to;
+                arb_assert(start_pos <= end_pos);
+            }
         }
     }
     
     // factory functions
     static PosRange empty() { return PosRange(); }
-    static PosRange whole() { return PosRange(0, -1); }
+    static PosRange whole() { return from(0); }
     static PosRange from(int pos) { return PosRange(pos, -1); } static PosRange after(int pos) { return from(pos+1); }
     static PosRange till(int pos) { return PosRange(0, pos); }  static PosRange prior(int pos) { return till(pos-1); }
 
     int start() const {
         arb_assert(!is_empty());
-        arb_assert(start_pos != -1); // @@@ remove later
         return start_pos;
     }
     int end() const {
-        arb_assert(end_pos != -1);
+        arb_assert(size()>0);
+        arb_assert(end_pos >= 0); // @@@ remove later
         return end_pos;
     }
 
-    int size() const { return is_empty() ? 0 : (is_explicit() ? end()-start()+1 : -1); }
+    int size() const { return end_pos-start_pos+1; }
 
-    bool is_whole() const { return start_pos == 0 && end_pos == -1; } 
+    bool is_whole() const { return start_pos == 0 && end_pos<0; }
     bool is_restricted() const { return !is_whole(); }
 
-    bool is_empty() const { return end_pos == -1 && start_pos == -1; }
-    bool is_explicit() const { return end_pos >= 0 || is_empty(); }
+    bool is_empty() const { return size() == 0; }
+    bool is_explicit() const { return size() >= 0; } // includes empty range
 
     bool operator == (const PosRange& other) const { return start_pos == other.start_pos && end_pos == other.end_pos; }
     bool operator != (const PosRange& other) const { return !(*this == other); }

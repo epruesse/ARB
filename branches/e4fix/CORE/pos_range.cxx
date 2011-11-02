@@ -69,8 +69,8 @@ void TEST_PosRange() {
     TEST_ASSERT(!seven2nine.is_empty());
 
     TEST_ASSERT_EQUAL(empty.size(), 0);
-    TEST_ASSERT_EQUAL(whole.size(), -1); 
-    TEST_ASSERT_EQUAL(from7.size(), -1);
+    TEST_ASSERT(whole.size() < 0); 
+    TEST_ASSERT(from7.size() < 0);
     TEST_ASSERT_EQUAL(till9.size(), 10);
     TEST_ASSERT_EQUAL(seven2nine.size(), 3);
     
