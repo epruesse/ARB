@@ -136,6 +136,53 @@ void TEST_range_copying() {
     TEST_ASSERT_EQUAL(PosRange(2, 5).dup_corresponding_part(NULL, 0), ""); // empty source
 }
 
+void TEST_range_intersection() {
+    PosRange empty;
+    PosRange whole  = PosRange::whole();
+    PosRange till50 = PosRange::till(50);
+    PosRange from30 = PosRange::from(30);
+    PosRange part(30, 50);
+
+    TEST_ASSERT(intersection(empty, empty)  == empty);
+    TEST_ASSERT(intersection(empty, whole)  == empty);
+    TEST_ASSERT(intersection(empty, till50) == empty);
+    TEST_ASSERT(intersection(empty, from30) == empty);
+    TEST_ASSERT(intersection(empty, part)   == empty);
+
+    TEST_ASSERT(intersection(whole, empty)  == empty);
+    TEST_ASSERT(intersection(whole, whole)  == whole);
+    TEST_ASSERT(intersection(whole, till50) == till50);
+    TEST_ASSERT(intersection(whole, from30) == from30);
+    TEST_ASSERT(intersection(whole, part)   == part);
+    
+    TEST_ASSERT(intersection(till50, empty)  == empty);
+    TEST_ASSERT(intersection(till50, whole)  == till50);
+    TEST_ASSERT(intersection(till50, till50) == till50);
+    TEST_ASSERT(intersection(till50, from30) == part);
+    TEST_ASSERT(intersection(till50, part)   == part);
+
+    TEST_ASSERT(intersection(from30, empty)  == empty);
+    TEST_ASSERT(intersection(from30, whole)  == from30);
+    TEST_ASSERT(intersection(from30, till50) == part);
+    TEST_ASSERT(intersection(from30, from30) == from30);
+    TEST_ASSERT(intersection(from30, part)   == part);
+
+    TEST_ASSERT(intersection(part, empty)  == empty);
+    TEST_ASSERT(intersection(part, whole)  == part);
+    TEST_ASSERT(intersection(part, till50) == part);
+    TEST_ASSERT(intersection(part, from30) == part);
+    TEST_ASSERT(intersection(part, part)   == part);
+
+    TEST_ASSERT(intersection(PosRange(20, 40), till50)    == PosRange(20, 40));
+    TEST_ASSERT(intersection(PosRange(40, 60), till50)    == PosRange(40, 50));
+    TEST_ASSERT(intersection(PosRange(60, 80), till50) == empty);
+
+    TEST_ASSERT(intersection(PosRange(0,  20), from30) == empty);
+    TEST_ASSERT(intersection(PosRange(20, 40), from30) == PosRange(30, 40));
+    TEST_ASSERT(intersection(PosRange(40, 60), from30) == PosRange(40, 60));
+    
+    TEST_ASSERT(intersection(PosRange(40, 60), PosRange(50, 70)) == PosRange(50, 60));
+}
 
 #endif // UNIT_TESTS
 

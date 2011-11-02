@@ -69,6 +69,19 @@ public:
     char *dup_corresponding_part(const char *source, size_t source_len) const;
 };
 
+inline PosRange intersection(PosRange r1, PosRange r2) {
+    if (r1.is_empty()) return r1;
+    if (r2.is_empty()) return r2;
+
+    int start = std::max(r1.start(), r2.start());
+    if (r1.is_explicit()) {
+        if (r2.is_explicit()) return PosRange(start, std::min(r1.end(), r2.end()));
+        return PosRange(start, r1.end());
+    }
+    if (r2.is_explicit()) return PosRange(start, r2.end());
+    return PosRange::from(start);
+}
+
 class ExplicitRange : public PosRange {
 
     // this ctor is private to avoid making ranges repeatedly explicit (if REALLY needed, convert range to PosRange before)
