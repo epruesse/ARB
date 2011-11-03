@@ -15,6 +15,12 @@
 #include <string>
 #include <vector>
 
+// workaround for missing memory_order_consume
+#include <boost/version.hpp>
+#if (BOOST_VERSION < 104200)  && !defined(memory_order_consume)
+#define memory_order_consume (boost::memory_order)8
+#endif
+
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/atomic.hpp>
 
