@@ -43,7 +43,6 @@ using std::list;
 // #define TRACE_ISLANDHOPPER_DATA
 // #define TRACE_COMPRESSED_ALIGNMENT
 // #define TRACE_RELATIVES
-// #define TRACE_UNALIGNED_BASES
 #endif // DEBUG
 
 // --------------------------------------------------------------------------------
@@ -87,12 +86,7 @@ enum FA_errorAction {
 struct AlignParams {
     FA_report report;
     bool      showGapsMessages; // display messages about missing gaps in master?
-    int       firstColumn;      // first column of range to be aligned (0..len-1) // @@@ make this a PosRange
-    int       lastColumn;       // last column of range to be aligned (0..len-1, -1 = (len-1))
-    
-    PosRange get_TargetRange() const {
-        return PosRange(firstColumn, lastColumn);
-    }
+    PosRange  range;            // range to be aligned
 };
 
 struct SearchRelativeParams : virtual Noncopyable {
@@ -267,112 +261,76 @@ static void build_reverse_complement(AW_window *aw, AW_CL cl_AlignDataAccess) {
 
 // --------------------------------------------------------------------------------
 
-class UnalignedBasesList;
-class UnalignedBases : virtual Noncopyable {
-    int             start; // absolute positions
-    int             end;
-    UnalignedBases *next;
-
-    friend class UnalignedBasesList;
+class AliChange { // describes a local alignment change
+    const CompactedSubSequence& Old;
+    const CompactedSubSequence& New;
 
 public:
-    UnalignedBases(int pos1, int posn)      { start = pos1; end = posn; next = 0; }
-    ~UnalignedBases()               { delete next; }
+    AliChange(const CompactedSubSequence& old_, const CompactedSubSequence& new_)
+        : Old(old_), New(new_)
+    {
+        fa_assert(Old.may_refer_to_same_part_as(New));
+    }
 
-    int get_start() const { return start; }
-    int get_end() const { return end; }
+    int follow(ExplicitRange& range) const {
+        ExplicitRange compressed(Old.compPosition(range.start()),
+                                 Old.compPosition(range.end()));
+
+        int exp_start = New.expdPosition(compressed.start());
+        int exp_end   = New.expdPosition(compressed.end());
+
+        int gaps_before = New.no_of_gaps_before(compressed.start());
+        int gaps_after = New.no_of_gaps_after(compressed.end());
+
+        fa_assert(gaps_before >= 0);
+        fa_assert(gaps_after >= 0);
+
+        range = ExplicitRange(exp_start-gaps_before, exp_end+gaps_after);
+
+        return compressed.size(); // number of bases
+    }
 };
 
-class UnalignedBasesList : virtual Noncopyable {
-    UnalignedBases *head;
+class LooseBases {
+    typedef list<ExplicitRange> Ranges;
+
+    Ranges ranges;
+    
 public:
-    UnalignedBasesList() { head = 0; }
-    ~UnalignedBasesList() { delete head; }
 
-    void clear() { delete head; head = 0; }
-    int is_empty() const { return head==0; }
+    bool is_empty() const { return ranges.empty(); }
+    void clear() { ranges.clear(); }
 
-    void memorize(int start, int end) {
-#ifdef TRACE_UNALIGNED_BASES
-        printf("memorize %i-%i\n", start, end);
-#endif // TRACE_UNALIGNED_BASES
-        fa_assert(start<=end);
-        UnalignedBases *ub = new UnalignedBases(start, end);
-        ub->next = head;
-        head = ub;
+    void memorize(ExplicitRange range) {
+        ranges.push_front(range);
     }
-    void recall(int *start, int *end) {
-        UnalignedBases *ub = head;
-
-        if (start) *start = ub->start;
-        if (end) *end = ub->end;
-
-#ifdef TRACE_UNALIGNED_BASES
-        printf("recall %i-%i\n", ub->start, ub->end);
-#endif // TRACE_UNALIGNED_BASES
-
-        head = head->next;
-        ub->next = 0;
-        delete ub;
+    ExplicitRange recall() {
+        ExplicitRange range = ranges.front();
+        ranges.pop_front();
+        return range;
     }
-
-    void add(UnalignedBasesList *ubl);
-    int add_and_recalc_positions(UnalignedBasesList *ubl, CompactedSubSequence *oldSequence, CompactedSubSequence *newSequence);
-};
-
-inline void UnalignedBasesList::add(UnalignedBasesList *ubl) {
-    if (!ubl->is_empty()) {
-        if (is_empty()) {
-            head = ubl->head;
-        }
-        else {
-            UnalignedBases *last = head;
-
-            while (last->next) {
-                last = last->next;
+    int follow_ali_change(const AliChange& change) {
+        // transform positions according to changed alignment (oldSequence -> newSequence) 
+        // returns the number of bases contained in 'this'
+        int basecount = 0;
+        if (!is_empty()) {
+            for (Ranges::iterator r = ranges.begin(); r != ranges.end(); ++r) {
+                basecount += change.follow(*r);
             }
-            last->next = ubl->head;
         }
-        ubl->head = 0;
+        return basecount;
     }
-}
-
-inline int UnalignedBasesList::add_and_recalc_positions(UnalignedBasesList *ubl, CompactedSubSequence *oldSequence, CompactedSubSequence *newSequence) {
-    // returns the number of unaligned bases
-    int bases = 0;
-
-    if (!ubl->is_empty()) {
-        UnalignedBases *toCorrect = ubl->head;
-
-        fa_assert(oldSequence->length()==newSequence->length());
-
-        add(ubl);
-        while (toCorrect) {
-            int cs = oldSequence->compPosition(toCorrect->start);   // compressed positions in oldSequence = compressed positions in newSequence
-            int ce = oldSequence->compPosition(toCorrect->end);
-
-            bases += ce-cs+1;
-
-#ifdef TRACE_UNALIGNED_BASES
-            printf("add_and_recalc_positions %i/%i -> ", toCorrect->start, toCorrect->end);
-#endif // TRACE_UNALIGNED_BASES
-
-            toCorrect->start = newSequence->expdPosition(cs) - newSequence->no_of_gaps_before(cs);
-            toCorrect->end = newSequence->expdPosition(ce)   + newSequence->no_of_gaps_after(ce);
-
-#ifdef TRACE_UNALIGNED_BASES
-            printf("%i/%i\n", toCorrect->start, toCorrect->end);
-#endif // TRACE_UNALIGNED_BASES
-
-            toCorrect = toCorrect->next;
-        }
+    void append(LooseBases& loose) { ranges.splice(ranges.end(), loose.ranges); }
+    int follow_ali_change_and_append(LooseBases& loose, const AliChange& change) {
+        // returns the number of loose bases (added from 'loose')
+        int basecount = loose.follow_ali_change(change);
+        append(loose);
+        return basecount;
     }
+};
 
-    return bases;
-}
+static LooseBases unaligned_bases; // if fast_align cannot align (no master bases) -> stores positions here
 
-
-static UnalignedBasesList unaligned_bases; // if fast_align cannot align (no master bases) -> stores positions here
 
 static const char *read_name(GBDATA *gbd) {
     return gbd ? GBT_read_name(gbd) : "GROUP-CONSENSUS";
@@ -643,9 +601,8 @@ static ARB_ERROR insertClustalValigned(AlignBuffer *alignBuffer,
                 fa_assert(baseAtLeft);
             }
 
-            int start = slave.expdPosition(); // memorize base positions without counterpart in master
-            int end = slave.expdPosition(slave_bases-1);
-            unaligned_bases.memorize(start, end);
+            unaligned_bases.memorize(ExplicitRange(slave.expdPosition(), // memorize base positions without counterpart in master
+                                                   slave.expdPosition(slave_bases-1)));
 
             if (slave_bases>alignBuffer->free()) return bufferTooSmall();
             insertSlaveBases(alignBuffer, slave, slave_bases, report);
@@ -812,10 +769,9 @@ static ARB_ERROR cannot_fast_align(const CompactedSubSequence& master, long moff
         }
         else { // master is empty here, so we just copy in the slave bases
             if (slength<=alignBuffer->free()) {
-                int start = slaveSequence.expdPosition(soffset);
-                int end = slaveSequence.expdPosition(soffset+slength-1);
-
-                unaligned_bases.memorize(start, end);
+                unaligned_bases.memorize(ExplicitRange(slaveSequence.expdPosition(soffset),
+                                                       slaveSequence.expdPosition(soffset+slength-1)));
+                
                 alignBuffer->copy(slaveSequence.text(soffset), '?', slength);   // '?' means not aligned (just inserted)
                 // corrected by at alignBuffer->correctUnalignedPositions()
                 report->count_unaligned_base(slength);
@@ -1036,13 +992,14 @@ static CompactedSubSequence *readCompactedSequence(GBDATA      *gb_species,
                                                    ARB_ERROR   *errorPtr,
                                                    char       **dataPtr,     // if dataPtr != NULL it will be set to the WHOLE uncompacted sequence
                                                    long        *seqChksum,   // may be NULL (of part of sequence)
-                                                   int          firstColumn, // return only part of the sequence
-                                                   int          lastColumn)  // (-1 -> till end of sequence)
+                                                   PosRange     range)       // if !range.is_whole() -> return only part of the sequence
 {
     ARB_ERROR                  error = 0;
     GBDATA                    *gbd;
     CompactedSubSequence *seq   = 0;
 
+
+    
     gbd = GBT_read_sequence(gb_species, ali);       // get sequence
 
     if (gbd)
@@ -1056,7 +1013,10 @@ static CompactedSubSequence *readCompactedSequence(GBDATA      *gb_species,
             *dataPtr = data;
         }
 
-        if (firstColumn!=0 || lastColumn!=-1) {     // take only part of sequence
+        int firstColumn = range.start();
+        if (range.is_restricted()) {     // take only part of sequence
+            int lastColumn = range.end();
+
             fa_assert(firstColumn>=0);
             fa_assert(firstColumn<=lastColumn);
 
@@ -1142,8 +1102,8 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
 // (i.o.w.: toAlignSequence, alignTo and toAlignChksum refer to the partial sequence)
 {
     AlignBuffer alignBuffer(max_seq_length);
-    if (ali_params.firstColumn>0) {
-        alignBuffer.set(GAP_CHAR, alignQuality(GAP_CHAR, GAP_CHAR), ali_params.firstColumn);
+    if (ali_params.range.start()>0) {
+        alignBuffer.set(GAP_CHAR, alignQuality(GAP_CHAR, GAP_CHAR), ali_params.range.start());
     }
 
     const char *master_name = read_name(gb_alignTo);
@@ -1225,15 +1185,15 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
                     error = "Can't find/create sequence data";
                 }
                 else {
-                    if (ali_params.firstColumn!=0 || ali_params.lastColumn!=-1) { // we aligned just a part of the sequence
+                    if (ali_params.range.is_restricted()) { // we aligned just a part of the sequence
                         char *buffer       = GB_read_string(gbd); // so we read old sequence data
                         long  len          = GB_read_string_count(gbd);
                         if (!buffer) error = GB_await_error();
                         else {
-                            int  lenToCopy   = ali_params.lastColumn-ali_params.firstColumn+1;
+                            int  lenToCopy   = ali_params.range.size();
                             long wholeChksum = calcSequenceChecksum(buffer, len);
 
-                            memcpy(buffer+ali_params.firstColumn, alignBuffer.text()+ali_params.firstColumn, lenToCopy); // copy in the aligned part 
+                            memcpy(buffer+ali_params.range.start(), alignBuffer.text()+ali_params.range.start(), lenToCopy); // copy in the aligned part 
                             // @@@ genau um 1 position zu niedrig
                             
                             if (calcSequenceChecksum(buffer, len) != wholeChksum) {
@@ -1349,9 +1309,10 @@ static ARB_ERROR alignTo(GBDATA                   *gb_toAlign,
                          int                       max_seq_length,
                          const AlignParams&        ali_params)
 {
-    ARB_ERROR                  error           = NULL;
-    long                       chksum;
-    CompactedSubSequence *toAlignSequence = readCompactedSequence(gb_toAlign, alignment, &error, NULL, &chksum, ali_params.firstColumn, ali_params.lastColumn);
+    ARB_ERROR error = NULL;
+    long      chksum;
+
+    CompactedSubSequence *toAlignSequence = readCompactedSequence(gb_toAlign, alignment, &error, NULL, &chksum, ali_params.range);
 
     if (island_hopper) {
         GBDATA *gb_seq = GBT_read_sequence(gb_toAlign, alignment);      // get sequence
@@ -1383,7 +1344,7 @@ static ARB_ERROR alignToGroupConsensus(GBDATA                     *gb_toAlign,
                                        const AlignParams&          ali_params)
 {
     ARB_ERROR  error     = 0;
-    char      *consensus = get_consensus(read_name(gb_toAlign), PosRange(ali_params.firstColumn, ali_params.lastColumn));
+    char      *consensus = get_consensus(read_name(gb_toAlign), ali_params.range);
     size_t     cons_len  = strlen(consensus);
 
     fa_assert(cons_len);
@@ -1395,7 +1356,7 @@ static ARB_ERROR alignToGroupConsensus(GBDATA                     *gb_toAlign,
         }
     }
 
-    CompactedSubSequence compacted(consensus, cons_len, "group consensus", ali_params.firstColumn);
+    CompactedSubSequence compacted(consensus, cons_len, "group consensus", ali_params.range.start());
 
     {
         FastSearchSequence fast(compacted);
@@ -1467,7 +1428,7 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
 
         char *findRelsBySeq = 0;
         if (use_different_pt_server_alignment) {
-            toAlignSequence = readCompactedSequence(gb_toAlign, alignment, &error, 0, &chksum, ali_params.firstColumn, ali_params.lastColumn);
+            toAlignSequence = readCompactedSequence(gb_toAlign, alignment, &error, 0, &chksum, ali_params.range);
 
             GBDATA *gbd = GBT_read_sequence(gb_toAlign, relSearch.pt_server_alignment); // use a different alignment for next relative search
             if (!gbd) {
@@ -1478,7 +1439,7 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
             }
         }
         else {
-            toAlignSequence = readCompactedSequence(gb_toAlign, alignment, &error, &findRelsBySeq, &chksum, ali_params.firstColumn, ali_params.lastColumn);
+            toAlignSequence = readCompactedSequence(gb_toAlign, alignment, &error, &findRelsBySeq, &chksum, ali_params.range);
         }
 
         if (error) {
@@ -1654,7 +1615,7 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
             // align
 
             if (!error) {
-                CompactedSubSequence *alignToSequence = readCompactedSequence(gb_reference[0], alignment, &error, NULL, NULL, ali_params.firstColumn, ali_params.lastColumn);
+                CompactedSubSequence *alignToSequence = readCompactedSequence(gb_reference[0], alignment, &error, NULL, NULL, ali_params.range);
                 fa_assert(alignToSequence != 0);
 
                 if (island_hopper) {
@@ -1698,15 +1659,15 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                             if (next_relatives>1) error = "Island hopping uses only one relative";
                         }
                         else {
-                            UnalignedBasesList ubl;
-                            UnalignedBasesList ubl_for_next_relative;
+                            LooseBases loose;
+                            LooseBases loose_for_next_relative;
 
                             int unaligned_positions;
                             {
-                                CompactedSubSequence *alignedSequence = readCompactedSequence(gb_toAlign, alignment, &error, 0, 0, ali_params.firstColumn, ali_params.lastColumn);
+                                CompactedSubSequence *alignedSequence = readCompactedSequence(gb_toAlign, alignment, &error, 0, 0, ali_params.range);
 
-                                unaligned_positions = ubl.add_and_recalc_positions(&unaligned_bases, toAlignSequence, alignedSequence);
-                                // now ubl holds the unaligned (and recalculated) parts from last relative
+                                unaligned_positions = loose.follow_ali_change_and_append(unaligned_bases, AliChange(*toAlignSequence, *alignedSequence));
+                                // now loose holds the unaligned (and recalculated) parts from last relative
                                 delete alignedSequence;
                             }
 
@@ -1718,47 +1679,28 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                             }
 
                             for (i=1; i<next_relatives && !error; i++) {
-                                ubl.add(&ubl_for_next_relative);
+                                loose.append(loose_for_next_relative);
                                 int unaligned_positions_for_next = 0;
 
-                                while (!ubl.is_empty() && !error) {
-                                    int start, end;
-                                    ubl.recall(&start, &end);
-
-                                    // restrict recalled-range by ali_params-range:
-                                    fa_assert(start <= end);
-                                    if (ali_params.lastColumn != -1) {
-                                        fa_assert(start <= ali_params.lastColumn); // range completely outside range-to-align (why have that range ?)
-                                        if (end>ali_params.lastColumn) end = ali_params.lastColumn; // correct range
-                                    }
-
-                                    fa_assert(end >= ali_params.firstColumn); // range completely outside range-to-align (why have that range ?)
-                                    if (start<ali_params.firstColumn) start = ali_params.firstColumn; // correct range
-
-                                    fa_assert(ali_params.firstColumn<=start && (end<=ali_params.lastColumn || ali_params.lastColumn==-1)); // now redundant by code above
-
-                                    CompactedSubSequence *alignToPart = readCompactedSequence(gb_reference[i], alignment, &error, 0, 0, start, end);
+                                while (!loose.is_empty() && !error) {
+                                    ExplicitRange         partRange(intersection(loose.recall(), ali_params.range));
+                                    CompactedSubSequence *alignToPart = readCompactedSequence(gb_reference[i], alignment, &error, 0, 0, partRange);
 
                                     if (!error) {
                                         long                  part_chksum;
-                                        CompactedSubSequence *toAlignPart = readCompactedSequence(gb_toAlign, alignment, &error, 0, &part_chksum, start, end);
+                                        CompactedSubSequence *toAlignPart = readCompactedSequence(gb_toAlign, alignment, &error, 0, &part_chksum, partRange);
 
                                         if (!error) {
-                                            AlignParams ubl_ali_params = {
-                                                ali_params.report,
-                                                ali_params.showGapsMessages,
-                                                start,
-                                                end
-                                            };
+                                            AlignParams loose_ali_params = { ali_params.report, ali_params.showGapsMessages, partRange };
 
                                             FastSearchSequence referenceFastSeq(*alignToPart);
                                             error = alignCompactedTo(toAlignPart, &referenceFastSeq,
                                                                      max_seq_length, alignment, part_chksum,
-                                                                     gb_toAlign, gb_reference[i], ubl_ali_params);
+                                                                     gb_toAlign, gb_reference[i], loose_ali_params);
                                             if (!error) {
-                                                CompactedSubSequence *alignedPart = readCompactedSequence(gb_toAlign, alignment, &error, 0, 0, start, end);
+                                                CompactedSubSequence *alignedPart = readCompactedSequence(gb_toAlign, alignment, &error, 0, 0, partRange);
                                                 if (!error) {
-                                                    unaligned_positions_for_next += ubl_for_next_relative.add_and_recalc_positions(&unaligned_bases, toAlignPart, alignedPart);
+                                                    unaligned_positions_for_next += loose_for_next_relative.follow_ali_change_and_append(unaligned_bases, AliChange(*toAlignPart, *alignedPart));
                                                 }
                                                 delete alignedPart;
                                             }
@@ -2107,7 +2049,7 @@ ARB_ERROR Aligner::alignToExplicitReference(GBDATA *gb_species_data, int max_seq
     }
     else {
         long                  referenceChksum;
-        CompactedSubSequence *referenceSeq = readCompactedSequence(gb_reference, alignment, &error, NULL, &referenceChksum, ali_params.firstColumn, ali_params.lastColumn);
+        CompactedSubSequence *referenceSeq = readCompactedSequence(gb_reference, alignment, &error, NULL, &referenceChksum, ali_params.range);
 
         if (island_hopper) {
 #if defined(WARN_TODO)
@@ -2165,7 +2107,7 @@ ARB_ERROR Aligner::run() {
     fa_assert(reference==NULL || get_consensus==NULL);    // can't do both modes
 
     if (turnAllowed != FA_TURN_NEVER) {
-        if ((ali_params.firstColumn!=0 || ali_params.lastColumn!=-1) || !search_by_pt_server) {
+        if ((ali_params.range.is_restricted()) || !search_by_pt_server) {
             // if not selected 'Range/Whole sequence' or not selected 'Reference/Auto search..'
             turnAllowed = FA_TURN_NEVER; // then disable mirroring for the current call
         }
@@ -2407,8 +2349,7 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
         struct AlignParams ali_params = {
             static_cast<FA_report>(root->awar(FA_AWAR_REPORT)->read_int()),
             root->awar(FA_AWAR_SHOW_GAPS_MESSAGES)->read_int(),
-            firstColumn,
-            lastColumn,
+            PosRange(firstColumn, lastColumn),
         };
 
         {
@@ -3079,15 +3020,13 @@ void test_install_fakes(GBDATA *gb_main) {
 static AlignParams test_ali_params = {
     FA_NO_REPORT,
     false, // showGapsMessages
-    0,     // firstColumn
-    -1,    // lastColumn
+    PosRange::whole()
 };
 
 static AlignParams test_ali_params_partial = {
     FA_NO_REPORT,
     false, // showGapsMessages
-    25,    // firstColumn
-    60,    // lastColumn
+    PosRange(25, 60)
 };
 
 // ----------------------------------------
@@ -3273,8 +3212,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
     // --------------------------------------
     //      test partial relative search
 
-    PosRange range = test_ali_params_partial.get_TargetRange();
-    search_relative_params.getFamilyFinder()->restrict_2_region(range);
+    search_relative_params.getFamilyFinder()->restrict_2_region(test_ali_params_partial.range);
     TEST_ASSERT_NO_ERROR(forget_used_relatives(gb_main));
 
     for (int sp = 0; sp<species_count; ++sp) {
@@ -3378,17 +3316,8 @@ void TEST_SLOW_Aligner_checksumError() {
     GB_close(gb_main);
 }
 
-struct Test_UnalignedBasesList : public UnalignedBasesList {
-    void memorize(ExplicitRange range) { UnalignedBasesList::memorize(range.start(), range.end()); }
-    ExplicitRange recall() {
-        int start, end;
-      UnalignedBasesList::recall(&start, &end);
-        return ExplicitRange(start, end);
-    }
-};
-
-static const char *asstr(Test_UnalignedBasesList& ub) {
-    Test_UnalignedBasesList tmp;
+static const char *asstr(LooseBases& ub) {
+    LooseBases tmp;
     while (!ub.is_empty()) tmp.memorize(ub.recall());
     
     const char *result = "";
@@ -3400,8 +3329,8 @@ static const char *asstr(Test_UnalignedBasesList& ub) {
     return result;
 }
 
-void TEST_UnalignedBases() {
-    Test_UnalignedBasesList ub;
+void TEST_BASIC_UnalignedBases() {
+    LooseBases ub;
     TEST_ASSERT(ub.is_empty());
     TEST_ASSERT_EQUAL(asstr(ub), "");
 
@@ -3426,7 +3355,7 @@ void TEST_UnalignedBases() {
     TEST_ASSERT_EQUAL(asstr(ub), " 2/4 4/9 8/10 11/14 12/17"); // check asstr has no side-effect
 
     {
-        Test_UnalignedBasesList toaddNrecalc;
+        LooseBases toaddNrecalc;
 
         CompactedSubSequence Old("ACGTACGT", 8, "name1");
         CompactedSubSequence New("--A-C--G-T--A-C-G-T", 19, "name2");
@@ -3436,17 +3365,17 @@ void TEST_UnalignedBases() {
         toaddNrecalc.memorize(ExplicitRange(3, 5));
         TEST_ASSERT_EQUAL(asstr(toaddNrecalc), " 1/7 3/5");
 
-        ub.add_and_recalc_positions(&toaddNrecalc, &Old, &New);
+        ub.follow_ali_change_and_append(toaddNrecalc, AliChange(Old, New));
 
         TEST_ASSERT_EQUAL(asstr(ub), " 3/18 8/15 2/4 4/9 8/10 11/14 12/17");
         TEST_ASSERT(toaddNrecalc.is_empty());
 
-        Test_UnalignedBasesList selfRecalc;
-        selfRecalc.add_and_recalc_positions(&ub, &New, &New);
+        LooseBases selfRecalc;
+        selfRecalc.follow_ali_change_and_append(ub, AliChange(New, New));
         TEST_ASSERT_EQUAL__BROKEN(asstr(selfRecalc), " 3/18 8/15 0/6 3/11 8/11 10/15 10/17"); // wanted behavior? 
         TEST_ASSERT_EQUAL(asstr(selfRecalc),         " 3/18 8/17 0/6 3/11 8/13 10/15 10/18"); // doc wrong behavior @@@ "8/17", "8/13", "10/18" are wrong
 
-        ub.add_and_recalc_positions(&selfRecalc, &New, &Old);
+        ub.follow_ali_change_and_append(selfRecalc, AliChange(New, Old));
         TEST_ASSERT_EQUAL__BROKEN(asstr(ub), " 1/7 3/5 0/1 1/3 3/3 4/5 4/6"); // wanted behavior? (from wanted behavior above)
         TEST_ASSERT_EQUAL__BROKEN(asstr(ub), " 1/7 3/6 0/1 1/3 3/4 4/5 4/7"); // wanted behavior? (from wrong result above)
         TEST_ASSERT_EQUAL(asstr(ub),         " 1/7 3/7 0/2 1/4 3/5 4/6 4/7"); // doc wrong
