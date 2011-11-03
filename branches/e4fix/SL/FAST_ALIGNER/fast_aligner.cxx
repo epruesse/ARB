@@ -3378,6 +3378,82 @@ void TEST_SLOW_Aligner_checksumError() {
     GB_close(gb_main);
 }
 
+struct Test_UnalignedBasesList : public UnalignedBasesList {
+    void memorize(ExplicitRange range) { UnalignedBasesList::memorize(range.start(), range.end()); }
+    ExplicitRange recall() {
+        int start, end;
+      UnalignedBasesList::recall(&start, &end);
+        return ExplicitRange(start, end);
+    }
+};
+
+static const char *asstr(Test_UnalignedBasesList& ub) {
+    Test_UnalignedBasesList tmp;
+    while (!ub.is_empty()) tmp.memorize(ub.recall());
+    
+    const char *result = "";
+    while (!tmp.is_empty()) {
+        ExplicitRange r = tmp.recall();
+        result          = GBS_global_string("%s %i/%i", result, r.start(), r.end());
+        ub.memorize(r);
+    }
+    return result;
+}
+
+void TEST_UnalignedBases() {
+    Test_UnalignedBasesList ub;
+    TEST_ASSERT(ub.is_empty());
+    TEST_ASSERT_EQUAL(asstr(ub), "");
+
+    // test add+remove
+    ub.memorize(ExplicitRange(5, 7));
+    TEST_ASSERT(!ub.is_empty());
+    TEST_ASSERT_EQUAL(asstr(ub), " 5/7");
+    
+    TEST_ASSERT(ub.recall() == ExplicitRange(5, 7));
+    TEST_ASSERT(ub.is_empty());
+
+    ub.memorize(ExplicitRange(2, 4));
+    TEST_ASSERT_EQUAL(asstr(ub), " 2/4");
+
+    ub.memorize(ExplicitRange(4, 9));
+    TEST_ASSERT_EQUAL(asstr(ub), " 2/4 4/9");
+    
+    ub.memorize(ExplicitRange(8, 10));
+    ub.memorize(ExplicitRange(11, 14));
+    ub.memorize(ExplicitRange(12, 17));
+    TEST_ASSERT_EQUAL(asstr(ub), " 2/4 4/9 8/10 11/14 12/17");
+    TEST_ASSERT_EQUAL(asstr(ub), " 2/4 4/9 8/10 11/14 12/17"); // check asstr has no side-effect
+
+    {
+        Test_UnalignedBasesList toaddNrecalc;
+
+        CompactedSubSequence Old("ACGTACGT", 8, "name1");
+        CompactedSubSequence New("--A-C--G-T--A-C-G-T", 19, "name2");
+        // ---------------------- 0123456789012345678
+
+        toaddNrecalc.memorize(ExplicitRange(1, 7));
+        toaddNrecalc.memorize(ExplicitRange(3, 5));
+        TEST_ASSERT_EQUAL(asstr(toaddNrecalc), " 1/7 3/5");
+
+        ub.add_and_recalc_positions(&toaddNrecalc, &Old, &New);
+
+        TEST_ASSERT_EQUAL(asstr(ub), " 3/18 8/15 2/4 4/9 8/10 11/14 12/17");
+        TEST_ASSERT(toaddNrecalc.is_empty());
+
+        Test_UnalignedBasesList selfRecalc;
+        selfRecalc.add_and_recalc_positions(&ub, &New, &New);
+        TEST_ASSERT_EQUAL__BROKEN(asstr(selfRecalc), " 3/18 8/15 0/6 3/11 8/11 10/15 10/17"); // wanted behavior? 
+        TEST_ASSERT_EQUAL(asstr(selfRecalc),         " 3/18 8/17 0/6 3/11 8/13 10/15 10/18"); // doc wrong behavior @@@ "8/17", "8/13", "10/18" are wrong
+
+        ub.add_and_recalc_positions(&selfRecalc, &New, &Old);
+        TEST_ASSERT_EQUAL__BROKEN(asstr(ub), " 1/7 3/5 0/1 1/3 3/3 4/5 4/6"); // wanted behavior? (from wanted behavior above)
+        TEST_ASSERT_EQUAL__BROKEN(asstr(ub), " 1/7 3/6 0/1 1/3 3/4 4/5 4/7"); // wanted behavior? (from wrong result above)
+        TEST_ASSERT_EQUAL(asstr(ub),         " 1/7 3/7 0/2 1/4 3/5 4/6 4/7"); // doc wrong
+    }
+}
+
+
 #endif
 
 
