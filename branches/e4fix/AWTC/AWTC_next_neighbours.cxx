@@ -198,7 +198,7 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
                         FAMILYFINDER_SORT_MAX,        long(max_results),        // speed up family sorting (only sort retrieved results)
                         FAMILYFINDER_COMPLEMENT,      long(compl_mode),         // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement (1 hardcoded in PT-Server till July 2008)
                         FAMILYFINDER_RANGE_STARTPOS,  long(range.start()),
-                        FAMILYFINDER_RANGE_ENDPOS,    long(range.is_explicit() ? range.end() : -1),
+                        FAMILYFINDER_RANGE_ENDPOS,    long(range.is_limited() ? range.end() : -1),
                         FAMILYFINDER_FIND_FAMILY,     &bs,                      // RPC (has to be last parameter!)
                         NULL))
         {

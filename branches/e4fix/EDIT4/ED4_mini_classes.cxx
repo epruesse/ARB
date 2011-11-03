@@ -878,7 +878,7 @@ void ED4_char_table::sub_and_add(const ED4_char_table& Sub, const ED4_char_table
     Add.test();
 
     e4_assert(!Sub.ignore && !Add.ignore);
-    e4_assert(range.is_restricted());
+    e4_assert(range.is_part());
 
     int i;
     for (i=0; i<used_bases_tables; i++) {

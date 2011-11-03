@@ -1014,7 +1014,7 @@ static CompactedSubSequence *readCompactedSequence(GBDATA      *gb_species,
         }
 
         int firstColumn = range.start();
-        if (range.is_restricted()) {     // take only part of sequence
+        if (range.is_part()) {     // take only part of sequence
             int lastColumn = range.end();
 
             fa_assert(firstColumn>=0);
@@ -1185,7 +1185,7 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
                     error = "Can't find/create sequence data";
                 }
                 else {
-                    if (ali_params.range.is_restricted()) { // we aligned just a part of the sequence
+                    if (ali_params.range.is_part()) { // we aligned just a part of the sequence
                         char *buffer       = GB_read_string(gbd); // so we read old sequence data
                         long  len          = GB_read_string_count(gbd);
                         if (!buffer) error = GB_await_error();
@@ -1456,7 +1456,7 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
             FamilyFinder    *familyFinder = relSearch.getFamilyFinder();
             const PosRange&  range        = familyFinder->get_TargetRange();
 
-            if (range.is_restricted()) {
+            if (range.is_part()) {
                 range.copy_corresponding_part(findRelsBySeq, findRelsBySeq, strlen(findRelsBySeq));
                 turnAllowed = FA_TURN_NEVER; // makes no sense if we're using partial relative search
             }
@@ -2107,7 +2107,7 @@ ARB_ERROR Aligner::run() {
     fa_assert(reference==NULL || get_consensus==NULL);    // can't do both modes
 
     if (turnAllowed != FA_TURN_NEVER) {
-        if ((ali_params.range.is_restricted()) || !search_by_pt_server) {
+        if ((ali_params.range.is_part()) || !search_by_pt_server) {
             // if not selected 'Range/Whole sequence' or not selected 'Reference/Auto search..'
             turnAllowed = FA_TURN_NEVER; // then disable mirroring for the current call
         }
@@ -2872,7 +2872,7 @@ public:
         char *buffer     = 0;
         int   buffersize = 0;
 
-        bool partial_match = range.is_restricted();
+        bool partial_match = range.is_part();
 
         GB_transaction ta(gb_main);
         int            results = 0;

@@ -63,10 +63,11 @@ public:
     int size() const { return end_pos-start_pos+1; }
 
     bool is_whole() const { return start_pos == 0 && end_pos<0; }
-    bool is_restricted() const { return !is_whole(); }
-
     bool is_empty() const { return size() == 0; }
-    bool is_explicit() const { return size() >= 0; } // includes empty range
+    bool is_part() const { return !(is_empty() || is_whole()); }
+
+    bool is_limited() const { return size() >= 0; }
+    bool is_unlimited() const { return !is_limited(); }
 
     bool operator == (const PosRange& other) const { return start_pos == other.start_pos && end_pos == other.end_pos; }
     bool operator != (const PosRange& other) const { return !(*this == other); }
@@ -80,11 +81,11 @@ inline PosRange intersection(PosRange r1, PosRange r2) {
     if (r2.is_empty()) return r2;
 
     int start = std::max(r1.start(), r2.start());
-    if (r1.is_explicit()) {
-        if (r2.is_explicit()) return PosRange(start, std::min(r1.end(), r2.end()));
+    if (r1.is_limited()) {
+        if (r2.is_limited()) return PosRange(start, std::min(r1.end(), r2.end()));
         return PosRange(start, r1.end());
     }
-    if (r2.is_explicit()) return PosRange(start, r2.end());
+    if (r2.is_limited()) return PosRange(start, r2.end());
     return PosRange::from(start);
 }
 
@@ -94,22 +95,22 @@ class ExplicitRange : public PosRange {
     ExplicitRange(const ExplicitRange& range, int maxlen);
 
 public:
-    ExplicitRange(const ExplicitRange& explici) : PosRange(explici) {}
-    explicit ExplicitRange(const PosRange& explici) : PosRange(explici) { arb_assert(is_explicit()); }
+    ExplicitRange(const ExplicitRange& limRange) : PosRange(limRange) {}
+    explicit ExplicitRange(const PosRange& limRange) : PosRange(limRange) { arb_assert(is_limited()); }
 
     ExplicitRange(const PosRange& range, int maxlen)
         : PosRange(range.is_empty() || maxlen <= 0
                    ? PosRange::empty()
-                   : PosRange(range.start(), range.is_explicit() ? std::min(range.end(), maxlen-1) : maxlen-1))
-    { arb_assert(is_explicit()); }
+                   : PosRange(range.start(), range.is_limited() ? std::min(range.end(), maxlen-1) : maxlen-1))
+    { arb_assert(is_limited()); }
 
     ExplicitRange(int start_, int end_)
         : PosRange(start_, end_)
-    { arb_assert(is_explicit()); }
+    { arb_assert(is_limited()); }
 
     explicit ExplicitRange(int len)
         : PosRange(0, len-1)
-    { arb_assert(is_explicit()); }
+    { arb_assert(is_limited()); }
 };
 
 #else

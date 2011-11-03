@@ -41,6 +41,13 @@ char *PosRange::dup_corresponding_part(const char *source, size_t source_len) co
 #include <test_unit.h>
 #endif
 
+inline bool exactly_one_of(bool b1, bool b2, bool b3) { return (b1+b2+b3) == 1; }
+inline bool wellDefined(PosRange range) {
+    return
+        exactly_one_of(range.is_empty(), range.is_part(), range.is_whole()) &&
+        contradicted(range.is_limited(), range.is_unlimited());
+}
+
 void TEST_PosRange() {
     // TEST_ASSERT(0);
 
@@ -50,32 +57,32 @@ void TEST_PosRange() {
     PosRange till9 = PosRange::till(9);
     PosRange seven2nine(7, 9);
 
-    TEST_ASSERT(!empty.is_whole());      TEST_ASSERT(empty.is_restricted());
-    TEST_ASSERT(whole.is_whole());       TEST_ASSERT(!whole.is_restricted());
-    TEST_ASSERT(!from7.is_whole());      TEST_ASSERT(from7.is_restricted());
-    TEST_ASSERT(!till9.is_whole());      TEST_ASSERT(till9.is_restricted()); 
-    TEST_ASSERT(!seven2nine.is_whole()); TEST_ASSERT(seven2nine.is_restricted());  
+    TEST_ASSERT(!empty.is_whole());      TEST_ASSERT(!empty.is_part());      TEST_ASSERT( empty.is_empty());
+    TEST_ASSERT( whole.is_whole());      TEST_ASSERT(!whole.is_part());      TEST_ASSERT(!whole.is_empty());     
+    TEST_ASSERT(!from7.is_whole());      TEST_ASSERT( from7.is_part());      TEST_ASSERT(!from7.is_empty());     
+    TEST_ASSERT(!till9.is_whole());      TEST_ASSERT( till9.is_part());      TEST_ASSERT(!till9.is_empty());     
+    TEST_ASSERT(!seven2nine.is_whole()); TEST_ASSERT( seven2nine.is_part()); TEST_ASSERT(!seven2nine.is_empty()); 
 
-    TEST_ASSERT(empty.is_explicit());
-    TEST_ASSERT(!whole.is_explicit());
-    TEST_ASSERT(!from7.is_explicit());
-    TEST_ASSERT(till9.is_explicit());
-    TEST_ASSERT(seven2nine.is_explicit());
-
-    TEST_ASSERT(empty.is_empty());
-    TEST_ASSERT(!whole.is_empty());
-    TEST_ASSERT(!from7.is_empty());
-    TEST_ASSERT(!till9.is_empty());
-    TEST_ASSERT(!seven2nine.is_empty());
-
+    TEST_ASSERT( empty.is_limited());     
+    TEST_ASSERT(!whole.is_limited());     
+    TEST_ASSERT(!from7.is_limited());     
+    TEST_ASSERT( till9.is_limited());     
+    TEST_ASSERT( seven2nine.is_limited());
+    
     TEST_ASSERT_EQUAL(empty.size(), 0);
     TEST_ASSERT(whole.size() < 0); 
     TEST_ASSERT(from7.size() < 0);
     TEST_ASSERT_EQUAL(till9.size(), 10);
     TEST_ASSERT_EQUAL(seven2nine.size(), 3);
     
+    TEST_ASSERT(wellDefined(empty));     
+    TEST_ASSERT(wellDefined(whole));     
+    TEST_ASSERT(wellDefined(from7));     
+    TEST_ASSERT(wellDefined(till9));     
+    TEST_ASSERT(wellDefined(seven2nine));
+    
     ExplicitRange wholeOf17(whole, 17);
-    TEST_ASSERT(wholeOf17.is_explicit());
+    TEST_ASSERT(wholeOf17.is_limited());
 
     TEST_ASSERT(whole == whole);
     TEST_ASSERT(from7 == from7);
