@@ -74,6 +74,10 @@ public:
 
     void copy_corresponding_part(char *dest, const char *source, size_t source_len) const;
     char *dup_corresponding_part(const char *source, size_t source_len) const;
+
+    bool contains(int pos) const {
+        return !is_empty() && pos >= start_pos && (pos <= end_pos || is_unlimited());
+    }
 };
 
 inline PosRange intersection(PosRange r1, PosRange r2) {

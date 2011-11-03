@@ -138,6 +138,7 @@ arb_string.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_string.o: $(ARBHOME)/INCLUDE/test_global.h
 
 pos_range.o: arb_core.h
+pos_range.o: arb_msg.h
 pos_range.o: pos_range.h
 pos_range.o: $(ARBHOME)/INCLUDE/arb_assert.h
 pos_range.o: $(ARBHOME)/INCLUDE/attributes.h
