@@ -1118,7 +1118,7 @@ public:
     // functions concerning graphic output
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0) = 0;
     virtual ED4_returncode Resize();
-    virtual ED4_returncode draw(int only_text = 0)                   = 0;
+    virtual ED4_returncode draw() = 0;
 
     virtual int   adjust_clipping_rectangle();
     virtual short calc_bounding_box();
@@ -1599,8 +1599,8 @@ class ED4_tree_terminal : public ED4_terminal
 {
     ED4_tree_terminal(const ED4_tree_terminal&); // copy-constructor not allowed
 public:
-    virtual ED4_returncode  draw(int only_text=0);
-    virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0);
+    virtual ED4_returncode draw();
+    virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
 
     ED4_tree_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
@@ -1611,8 +1611,8 @@ class ED4_bracket_terminal : public ED4_terminal
 {
     ED4_bracket_terminal(const ED4_bracket_terminal&); // copy-constructor not allowed
 public:
-    virtual ED4_returncode  draw(int only_text = 0);
-    virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0);
+    virtual ED4_returncode draw();
+    virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
 
     ED4_bracket_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
@@ -1623,8 +1623,8 @@ class ED4_text_terminal : public ED4_terminal {
     ED4_text_terminal(const ED4_text_terminal&); // copy-constructor not allowed
 public:
     // functions concerning graphic output
-    virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0);
-    virtual ED4_returncode      draw(int only_text=0);
+    virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
+    virtual ED4_returncode draw();
 
     virtual int get_length() const = 0;
     virtual void deleted_from_database();
@@ -1670,7 +1670,7 @@ class ED4_orf_terminal : public ED4_abstract_sequence_terminal { // derived from
     int   aaStartPos;
     int   aaStrandType;
 
-    virtual ED4_returncode  draw(int only_text = 0);
+    virtual ED4_returncode draw();
     ED4_orf_terminal(const ED4_orf_terminal&);
 public:
     ED4_orf_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
@@ -1691,7 +1691,7 @@ public:
 class ED4_sequence_terminal : public ED4_abstract_sequence_terminal { // derived from a Noncopyable
     mutable ED4_SearchResults searchResults;
 
-    virtual ED4_returncode  draw(int only_text = 0);
+    virtual ED4_returncode draw();
     ED4_sequence_terminal(const ED4_sequence_terminal&); // copy-constructor not allowed
 
 public:
@@ -1727,7 +1727,7 @@ class ED4_columnStat_terminal : public ED4_text_terminal { // derived from a Non
 public:
     // functions concerning graphic output
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
-    virtual ED4_returncode draw(int only_text=0);
+    virtual ED4_returncode draw();
     virtual int get_length() const { return corresponding_sequence_terminal()->to_text_terminal()->get_length(); }
 
     static int threshold_is_set();
@@ -1773,7 +1773,7 @@ public:
         return get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
     }
 
-    virtual ED4_returncode draw(int only_text = 0);
+    virtual ED4_returncode draw();
 
     GBDATA *data() { return get_species_pointer(); }
     const GBDATA *data() const { return get_species_pointer(); }
@@ -1798,7 +1798,7 @@ public:
 
 class ED4_consensus_sequence_terminal : public ED4_sequence_terminal
 {
-    virtual ED4_returncode  draw(int only_text = 0);
+    virtual ED4_returncode draw();
     ED4_consensus_sequence_terminal(const ED4_consensus_sequence_terminal&); // copy-constructor not allowed
 
     ED4_char_table& get_char_table() const { return get_parent(ED4_L_GROUP)->to_group_manager()->table(); }
@@ -1814,8 +1814,8 @@ class ED4_spacer_terminal : public ED4_terminal
 {
     ED4_spacer_terminal(const ED4_spacer_terminal&); // copy-constructor not allowed
 public:
-    virtual ED4_returncode      Show(int refresh_all=0, int is_cleared=0);
-    virtual ED4_returncode      draw(int only_text = 0);
+    virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
+    virtual ED4_returncode draw();
 
     ED4_spacer_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
@@ -1826,8 +1826,8 @@ class ED4_line_terminal : public ED4_terminal
 {
     ED4_line_terminal(const ED4_line_terminal&); // copy-constructor not allowed
 public:
-    virtual ED4_returncode      Show(int refresh_all=0, int is_cleared=0);
-    virtual ED4_returncode  draw(int only_text = 0);
+    virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
+    virtual ED4_returncode draw();
 
     ED4_line_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 

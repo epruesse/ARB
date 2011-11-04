@@ -753,22 +753,7 @@ short ED4_terminal::calc_bounding_box()
     return (bb_changed);
 }
 
-ED4_returncode ED4_terminal::Show(int /* refresh_all */, int /* is_cleared */)
-{
-    e4_assert(0);
-    return ED4_R_IMPOSSIBLE;
-}
-
-
-ED4_returncode ED4_terminal::draw(int /* only_text */)
-{
-    e4_assert(0);
-    return ED4_R_IMPOSSIBLE;
-}
-
-
-ED4_returncode ED4_terminal::resize_requested_by_parent()
-{
+ED4_returncode ED4_terminal::resize_requested_by_parent() {
     if (update_info.resize) { // likes to resize?
         if (calc_bounding_box()) { // size changed?
             parent->resize_requested_by_child(); // tell parent!
@@ -847,8 +832,7 @@ ED4_returncode ED4_tree_terminal::Show(int IF_ASSERTION_USED(refresh_all), int i
 
 
 
-ED4_returncode ED4_tree_terminal::draw(int /* only_text */)                  // draws bounding box of object
-{
+ED4_returncode ED4_tree_terminal::draw() {
     AW_pos  x, y;
     AW_pos  text_x, text_y;
     char   *db_pointer;
@@ -887,8 +871,7 @@ ED4_returncode ED4_bracket_terminal::Show(int IF_ASSERTION_USED(refresh_all), in
 }
 
 
-ED4_returncode ED4_bracket_terminal::draw(int /* only_text */)                   // draws bounding box of object
-{
+ED4_returncode ED4_bracket_terminal::draw() {
     ED4_index   i;
     AW_pos      x, y,
         width  = extension.size[WIDTH] - 1,
@@ -1146,8 +1129,7 @@ ED4_returncode ED4_spacer_terminal::Show(int /* refresh_all */, int is_cleared) 
 }
 
 
-ED4_returncode ED4_spacer_terminal::draw(int /* only_text */)                    // draws bounding box of object
-{
+ED4_returncode ED4_spacer_terminal::draw() {
 #if defined(DEBUG) && 0
     clear_background(ED4_G_FIRST_COLOR_GROUP); // draw colored spacers to make them visible
 #else
@@ -1161,8 +1143,7 @@ ED4_spacer_terminal::ED4_spacer_terminal(const char *temp_id, AW_pos x, AW_pos y
 {
 }
 
-ED4_returncode ED4_line_terminal::draw(int /* only_text */)      // draws bounding box of object
-{
+ED4_returncode ED4_line_terminal::draw() {
     AW_pos x1, y1;
     calc_world_coords(&x1, &y1);
     ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x1, &y1);
@@ -1308,11 +1289,7 @@ GB_CSTR ED4_columnStat_terminal::build_probe_match_string(PosRange range) const 
 }
 #undef PROBE_MATCH_TARGET_STRING_LENGTH
 
-ED4_returncode ED4_columnStat_terminal::draw(int /* only_text */)
-{
-#if defined(WARN_TODO)
-#warning test drawing of ED4_columnStat_terminal
-#endif
+ED4_returncode ED4_columnStat_terminal::draw() {
     if (!update_likelihood()) {
         aw_popup_ok("Can't calculate likelihood.");
         return ED4_R_IMPOSSIBLE;

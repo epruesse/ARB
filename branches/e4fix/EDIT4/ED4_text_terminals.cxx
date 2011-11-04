@@ -48,7 +48,7 @@ inline void ensure_buffer(char*& buffer, size_t& buffer_size, size_t needed) {
     }
 }
 
-ED4_returncode ED4_consensus_sequence_terminal::draw(int /* only_text */) {
+ED4_returncode ED4_consensus_sequence_terminal::draw() {
     static char   *buffer      = 0;
     static size_t  buffer_size = 0;
 
@@ -179,11 +179,9 @@ static bool ED4_show_protein_match_on_device(AW_device *device, int gc, const ch
     return device->text(gc, buffer, x, y);
 }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//  ProteinViewer: Drawing AminoAcid sequence parallel to the DNA sequence
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ED4_returncode ED4_orf_terminal::draw() {
+    // draw aminoacid ORFs below the DNA sequence
 
-ED4_returncode ED4_orf_terminal::draw(int /* only_text */) {
     static int    color_is_used[ED4_G_DRAG];
     static char **colored_strings        = 0;
     static int    len_of_colored_strings = 0;
@@ -327,7 +325,7 @@ ED4_returncode ED4_orf_terminal::draw(int /* only_text */) {
     return (ED4_R_OK);
 }
 
-ED4_returncode ED4_sequence_terminal::draw(int /* only_text */) {
+ED4_returncode ED4_sequence_terminal::draw() {
     static int    color_is_used[ED4_G_DRAG];
     static char **colored_strings        = 0;
     static int    len_of_colored_strings = 0;
@@ -561,10 +559,8 @@ ED4_returncode ED4_sequence_terminal::draw(int /* only_text */) {
 }
 
 
-ED4_returncode ED4_sequence_info_terminal::draw(int /* only_text */)
-{
+ED4_returncode ED4_sequence_info_terminal::draw() {
     AW_pos x, y;
-
     calc_world_coords(&x, &y);
     ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x, &y);
 
@@ -624,16 +620,13 @@ ED4_returncode ED4_text_terminal::Show(int IF_ASSERTION_USED(refresh_all), int i
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_text_terminal::draw(int /* only_text */)
-{
+ED4_returncode ED4_text_terminal::draw() {
     AW_pos x, y;
-    AW_pos text_x, text_y;
-
     calc_world_coords(&x, &y);
     ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x, &y);
 
-    text_x = x + CHARACTEROFFSET; // don't change
-    text_y = y + INFO_TERM_TEXT_YOFFSET;
+    AW_pos text_x = x + CHARACTEROFFSET; // don't change
+    AW_pos text_y = y + INFO_TERM_TEXT_YOFFSET;
 
     ED4_ROOT->get_device()->set_vertical_font_overlap(true);
 
