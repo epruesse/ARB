@@ -363,7 +363,7 @@ void free_ulicube(ulicube c)
 /* variable */
 long idum;
 
-double randomunitintervall()
+double randomunitinterval()
 /* Long period (> 2e18) random number generator. Returns a uniform random
    deviate between 0.0 and 1.0 (exclusive of endpoint values).
 
@@ -438,7 +438,7 @@ int initrandom(int seed)
 	{
 	int n;
 	for (n=0; n<PP_Myid; n++)
-		(void) randomunitintervall();
+		(void) randomunitinterval();
 #       ifdef PVERBOSE1
   	   fprintf(stderr, "(%2d) !!! random seed set to %d, %dx drawn !!!\n", PP_Myid, seed, n);
 #       endif
@@ -458,14 +458,14 @@ int randominteger(int n)
 	int t;
 #  ifndef FIXEDINTRAND
 #	ifndef PARALLEL
-		t = (int) floor(randomunitintervall()*n);
+		t = (int) floor(randomunitinterval()*n);
 		return t;
 #	else
 		int m;
 		for (m=1; m<PP_NumProcs; m++)
-			(void) randomunitintervall();
+			(void) randomunitinterval();
 		PP_randn+=(m-1); PP_rand++;
-		return (int) floor(randomunitintervall()*n);
+		return (int) floor(randomunitinterval()*n);
 #	endif
 #  else
 	fprintf(stderr, "!!! fixed \"random\" integers for testing purposes !!!\n");

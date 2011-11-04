@@ -31,8 +31,8 @@
 struct ALI_PREALIGNER_CONTEXT {
     long max_number_of_maps;
     long max_number_of_maps_aligner;
-    int intervall_border;
-    int intervall_center;
+    int interval_border;
+    int interval_center;
     float max_cost_of_sub_percent;
     float max_cost_of_helix;
     unsigned long error_count;
