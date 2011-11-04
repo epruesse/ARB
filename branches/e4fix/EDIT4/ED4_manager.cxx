@@ -946,7 +946,7 @@ ED4_returncode ED4_main_manager::resize_requested_by_parent() {
 
     if (update_info.resize) {
         result = ED4_manager::resize_requested_by_parent();
-        ED4_ROOT->get_ed4w()->update_scrolled_rectangle();
+        current_ed4w()->update_scrolled_rectangle();
     }
     return ED4_R_OK;
 }
@@ -973,7 +973,7 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
     printf("Show main_manager\n");
 #endif
 
-    AW_device *device = ED4_ROOT->get_device();
+    AW_device *device = current_device();
 
     if (flag.hidden) {
         if (last_window_reached && update_info.refresh) {
@@ -998,7 +998,7 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
 
         int x1, y1, x2, y2;
         ED4_folding_line *flv, *flh;
-        ED4_window& win = *ED4_ROOT->get_ed4w();
+        ED4_window& win = *current_ed4w();
         int old_last_window_reached = last_window_reached;
 
         last_window_reached = 0;
@@ -1115,18 +1115,18 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
         AW_screen_area rect; // clipped rectangle in world coordinates
 
         {
-            const AW_screen_area &clip_rect = ED4_ROOT->get_device()->get_cliprect();      // clipped rectangle in win coordinates
+            const AW_screen_area &clip_rect = current_device()->get_cliprect();      // clipped rectangle in win coordinates
             
             double x, y;
             x = clip_rect.l;
             y = clip_rect.t;
 
-            ED4_ROOT->win_to_world_coords(ED4_ROOT->get_aww(), &x, &y);
+            ED4_ROOT->win_to_world_coords(current_aww(), &x, &y);
 
             rect.l = int(x);
             rect.t = int(y);
 
-            e4_assert(AW::nearlyEqual(ED4_ROOT->get_device()->get_scale(), 1.0)); // assumed by calculation below
+            e4_assert(AW::nearlyEqual(current_device()->get_scale(), 1.0)); // assumed by calculation below
             rect.r = rect.l+(clip_rect.r-clip_rect.l);
             rect.b = rect.t+(clip_rect.b-clip_rect.t);
         }
@@ -1208,7 +1208,7 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
                 AW_pos x, y;
                 child->calc_world_coords(&x, &y);
 
-                AW_device *device = ED4_ROOT->get_device();
+                AW_device *device = current_device();
 
                 if (!(((y-rect.b)>0.5) ||
                       ((rect.t-(y+child->extension.size[HEIGHT]-1))>0.5) ||

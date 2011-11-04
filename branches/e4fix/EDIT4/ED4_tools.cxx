@@ -34,10 +34,10 @@ void ED4_set_clipping_rectangle(AW_screen_area *rect)
 {
     // The following can't be replaced by set_cliprect (set_cliprect clears font overlaps):
 
-    ED4_ROOT->get_device()->set_top_clip_border(rect->t);
-    ED4_ROOT->get_device()->set_bottom_clip_border(rect->b);
-    ED4_ROOT->get_device()->set_left_clip_border(rect->l);
-    ED4_ROOT->get_device()->set_right_clip_border(rect->r);
+    current_device()->set_top_clip_border(rect->t);
+    current_device()->set_bottom_clip_border(rect->b);
+    current_device()->set_left_clip_border(rect->l);
+    current_device()->set_right_clip_border(rect->r);
 }
 
 void ED4_aws_init(AW_root *root, AW_window_simple *aws, GB_CSTR macro_format, GB_CSTR window_format, GB_CSTR typeId) {

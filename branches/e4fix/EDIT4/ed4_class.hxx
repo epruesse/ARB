@@ -1184,25 +1184,21 @@ public:
 
 class ED4_WinContext {
     ED4_window *ed4w;
-    AW_window  *aww;
     AW_device  *device;
 
     bool have_context() const { return ed4w; }
     void init(ED4_window *ew) {
         e4_assert(ew);
-        
         ed4w   = ew;
-        aww    = ed4w->aww;
-        device = aww->get_device(AW_MIDDLE_AREA);
+        device = ed4w->aww->get_device(AW_MIDDLE_AREA);
     }
 
 public:
-    ED4_WinContext() : ed4w(0), aww(0), device(0) {}
+    ED4_WinContext() : ed4w(0), device(0) {}
 
     inline ED4_WinContext(AW_window *aww_);
     ED4_WinContext(ED4_window *ed4w_) { init(ed4w_); }
 
-    AW_window *get_aww() const { e4_assert(have_context()); return aww; }
     AW_device *get_device() const { e4_assert(have_context()); return device; }
     ED4_window *get_ed4w() const { e4_assert(have_context()); return ed4w; }
 };
@@ -1257,9 +1253,9 @@ public:
     void use_window(ED4_window *ed4w) { context = ED4_WinContext(ed4w); }
     void use_first_window() { use_window(first_window); }
 
-    AW_window *get_aww() const { return context.get_aww(); }
-    AW_device *get_device() const { return context.get_device(); }
-    ED4_window *get_ed4w() const { return context.get_ed4w(); }
+    AW_device *curr_device() const { return context.get_device(); }
+    ED4_window *curr_ed4w() const { return context.get_ed4w(); }
+    AW_window *curr_aww() const { return context.get_ed4w()->aww; }
 
     inline ED4_device_manager *get_device_manager();
 
@@ -1296,6 +1292,11 @@ public:
     ED4_root();
     ~ED4_root();
 };
+
+inline AW_window *current_aww() { return ED4_ROOT->curr_aww(); }
+inline AW_device *current_device() { return ED4_ROOT->curr_device(); }
+inline ED4_window *current_ed4w() { return ED4_ROOT->curr_ed4w(); }
+inline ED4_cursor& current_cursor() { return current_ed4w()->cursor; }
 
 ED4_WinContext::ED4_WinContext(AW_window *aww_) {
     init(ED4_ROOT->first_window->get_matching_ed4w(aww_));

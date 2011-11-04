@@ -74,7 +74,7 @@ ED4_returncode ED4_root::refresh_window(int redraw) // this function should only
 
 ED4_returncode ED4_root::refresh_all_windows(int redraw)
 {
-    ED4_window *old_window = get_ed4w();
+    ED4_window *old_window = curr_ed4w();
 
     last_window_reached = 0;
 
@@ -230,7 +230,7 @@ ED4_returncode  ED4_root::remove_from_selected(ED4_terminal *object)
 void ED4_root::announce_deletion(ED4_base *object) {
     // remove any links which might point to the object
 
-    ED4_cursor& cursor = get_ed4w()->cursor;
+    ED4_cursor& cursor = curr_ed4w()->cursor;
     if (cursor.owner_of_cursor == object) { // about to delete owner_of_cursor
         cursor.HideCursor();
         e4_assert(cursor.owner_of_cursor != object);
@@ -419,7 +419,7 @@ ED4_returncode ED4_root::init_alignment() {
 void ED4_root::recalc_font_group() {
     font_group.unregisterAll();
     for (int f=ED4_G_FIRST_FONT; f<=ED4_G_LAST_FONT; f++) {
-        font_group.registerFont(get_device(), f);
+        font_group.registerFont(curr_device(), f);
     }
 }
 
@@ -650,10 +650,10 @@ ED4_returncode ED4_root::get_area_rectangle(AW_screen_area *rect, AW_pos x, AW_p
     // returns win-coordinates of area (defined by folding lines) which contains position x/y
     ED4_folding_line      *flv, *flh;
     int                    x1, x2, y1, y2;
-    const AW_screen_area&  area_rect = get_device()->get_area_size();
+    const AW_screen_area&  area_rect = curr_device()->get_area_size();
 
     x1 = area_rect.l;
-    for (flv=get_ed4w()->vertical_fl; ; flv = flv->next) {
+    for (flv=curr_ed4w()->vertical_fl; ; flv = flv->next) {
         if (flv) {
             e4_assert(flv->length==INFINITE);
             x2 = int(flv->window_pos[X_POS]);
@@ -666,7 +666,7 @@ ED4_returncode ED4_root::get_area_rectangle(AW_screen_area *rect, AW_pos x, AW_p
         }
 
         y1 = area_rect.t;
-        for (flh=get_ed4w()->horizontal_fl; ; flh = flh->next) {
+        for (flh=curr_ed4w()->horizontal_fl; ; flh = flh->next) {
             if (flh) {
                 e4_assert(flh->length==INFINITE);
                 y2 = int(flh->window_pos[Y_POS]);
@@ -700,7 +700,7 @@ ED4_returncode ED4_root::world_to_win_coords(AW_window *IF_ASSERTION_USED(aww), 
     ED4_folding_line    *current_fl;
     AW_pos      temp_x, temp_y, x, y;
 
-    current_window = get_ed4w();
+    current_window = curr_ed4w();
     e4_assert(current_window==first_window->get_matching_ed4w(aww));
 
     if (! current_window) {
@@ -1021,7 +1021,7 @@ void ED4_undo_redo(AW_window*, AW_CL undo_type)
     else {
         GB_begin_transaction(GLOBAL_gb_main);
         GB_commit_transaction(GLOBAL_gb_main);
-        ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
+        ED4_cursor *cursor = &current_cursor();
         if (cursor->owner_of_cursor) {
             ED4_terminal *terminal = cursor->owner_of_cursor->to_terminal();
 
@@ -1035,7 +1035,7 @@ void aw_clear_message_cb(AW_window *aww);
 
 void ED4_clear_errors(AW_window*, AW_CL)
 {
-    aw_clear_message_cb(ED4_ROOT->get_aww());
+    aw_clear_message_cb(current_aww());
 }
 
 AW_window *ED4_zoom_message_window(AW_root *root, AW_CL)
@@ -1100,7 +1100,7 @@ static void insert_search_fields(AW_window_menu_modes *awmm,
 }
 
 void ED4_set_protection(AW_window * /* aww */, AW_CL cd1, AW_CL /* cd2 */) {
-    ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
+    ED4_cursor *cursor = &current_cursor();
     GB_ERROR    error  = 0;
 
     if (cursor->owner_of_cursor) {
@@ -1229,7 +1229,7 @@ void ED4_no_dangerous_modes()
     switch (ED4_ROOT->species_mode) {
         case ED4_SM_KILL: {
             ED4_ROOT->species_mode = ED4_SM_MOVE;
-            ED4_ROOT->get_aww()->select_mode(0);
+            current_aww()->select_mode(0);
             break;
         }
         default: {
@@ -1662,24 +1662,24 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     awmm->at("helixnrTxt"); awmm->create_button(0, "Helix#");
 
     awmm->at("pos");
-    awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) get_ed4w()->awar_path_for_cursor, AW_CL(ED4_POS_SEQUENCE));
-    awmm->create_input_field(get_ed4w()->awar_path_for_cursor, 7);
+    awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) curr_ed4w()->awar_path_for_cursor, AW_CL(ED4_POS_SEQUENCE));
+    awmm->create_input_field(curr_ed4w()->awar_path_for_cursor, 7);
 
     awmm->at("ecoli");
-    awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) get_ed4w()->awar_path_for_Ecoli, AW_CL(ED4_POS_ECOLI));
-    awmm->create_input_field(get_ed4w()->awar_path_for_Ecoli, 6);
+    awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) curr_ed4w()->awar_path_for_Ecoli, AW_CL(ED4_POS_ECOLI));
+    awmm->create_input_field(curr_ed4w()->awar_path_for_Ecoli, 6);
 
     awmm->at("base");
-    awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) get_ed4w()->awar_path_for_basePos, AW_CL(ED4_POS_BASE));
-    awmm->create_input_field(get_ed4w()->awar_path_for_basePos, 6);
+    awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) curr_ed4w()->awar_path_for_basePos, AW_CL(ED4_POS_BASE));
+    awmm->create_input_field(curr_ed4w()->awar_path_for_basePos, 6);
 
     awmm->at("iupac");
-    awmm->callback((AW_CB)ED4_set_iupac, (AW_CL) get_ed4w()->awar_path_for_IUPAC, AW_CL(0));
-    awmm->create_input_field(get_ed4w()->awar_path_for_IUPAC, 4);
+    awmm->callback((AW_CB)ED4_set_iupac, (AW_CL) curr_ed4w()->awar_path_for_IUPAC, AW_CL(0));
+    awmm->create_input_field(curr_ed4w()->awar_path_for_IUPAC, 4);
 
     awmm->at("helixnr");
-    awmm->callback((AW_CB)ED4_set_helixnr, (AW_CL) get_ed4w()->awar_path_for_helixNr, AW_CL(0));
-    awmm->create_input_field(get_ed4w()->awar_path_for_helixNr, 5);
+    awmm->callback((AW_CB)ED4_set_helixnr, (AW_CL) curr_ed4w()->awar_path_for_helixNr, AW_CL(0));
+    awmm->create_input_field(curr_ed4w()->awar_path_for_helixNr, 5);
 
     // ---------------------------
     //      jump/get/undo/redo

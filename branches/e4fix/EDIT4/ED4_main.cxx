@@ -321,7 +321,7 @@ static void ED4_gap_chars_changed(AW_root *root) {
 }
 
 static void ED4_edit_direction_changed(AW_root * /* awr */) {
-    ED4_ROOT->get_ed4w()->cursor.redraw();
+    current_cursor().redraw();
 }
 
 void ED4_expose_all_windows() {
