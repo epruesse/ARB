@@ -1275,7 +1275,7 @@ inline int find_significant_positions(int sig, int like_A, int like_C, int like_
 
 #define PROBE_MATCH_TARGET_STRING_LENGTH 32
 
-GB_CSTR ED4_columnStat_terminal::build_probe_match_string(int start_pos, int end_pos) const {
+GB_CSTR ED4_columnStat_terminal::build_probe_match_string(PosRange range) const {
     static char            result[PROBE_MATCH_TARGET_STRING_LENGTH+1]; // see create_probe_match_window() for length
     int                    max_insert   = PROBE_MATCH_TARGET_STRING_LENGTH;
     char                  *r            = result;
@@ -1283,7 +1283,7 @@ GB_CSTR ED4_columnStat_terminal::build_probe_match_string(int start_pos, int end
     ED4_sequence_terminal *seq_term     = corresponding_sequence_terminal()->to_sequence_terminal();
     char                  *seq          = seq_term->resolve_pointer_to_string_copy();
 
-    for (int pos=start_pos; pos<=end_pos; pos++) {
+    for (int pos=range.start(); pos<=range.end(); pos++) {
         int found = find_significant_positions(significance, likelihood[0][pos], likelihood[1][pos], likelihood[2][pos], likelihood[3][pos], 0);
 
         if (found || strchr("-=.", seq[pos])==0) {

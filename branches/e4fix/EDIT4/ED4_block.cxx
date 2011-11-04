@@ -31,7 +31,7 @@ static void col_block_refresh_on_seq_term(ED4_sequence_terminal *seq_term) {
 
     ED4_columnStat_terminal *colStatTerm = seq_term->corresponding_columnStat_terminal();
     if (colStatTerm) {
-        const char *probe_match_pattern = colStatTerm->build_probe_match_string(blockrange.start(), blockrange.end());
+        const char *probe_match_pattern = colStatTerm->build_probe_match_string(blockrange);
         int len = strlen(probe_match_pattern);
 
         if (len>=4) {
