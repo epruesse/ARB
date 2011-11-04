@@ -297,11 +297,11 @@ public:
     ED4_folding_line();
 };
 
-struct ED4_scroll_links
-{
+struct ED4_scroll_links {
     ED4_base *link_for_hor_slider;
     ED4_base *link_for_ver_slider;
 
+    ED4_scroll_links() : link_for_hor_slider(0), link_for_ver_slider(0) {}
 };
 
 struct ED4_scrolled_rectangle {
@@ -1182,15 +1182,43 @@ public:
     ~ED4_reference_terminals() { clear(); }
 };
 
+class ED4_WinContext {
+    ED4_window *ed4w;
+    AW_window  *aww;
+    AW_device  *device;
 
-class ED4_root : virtual Noncopyable {
-    int ED4_ROOT;
-    ED4_root(const ED4_root&);                      // copy-constructor not allowed
+    bool have_context() const { return ed4w; }
+    void init(ED4_window *ew) {
+        e4_assert(ew);
+        
+        ed4w   = ew;
+        aww    = ed4w->aww;
+        device = aww->get_device(AW_MIDDLE_AREA);
+    }
 
 public:
-    AW_root                 *aw_root;               // Points to 'AW-Window-Controller'
-    AW_default               props_db;              // Default Properties database
-    char                    *db_name;               // name of Default Properties database (complete path)
+    ED4_WinContext() : ed4w(0), aww(0), device(0) {}
+
+    inline ED4_WinContext(AW_window *aww_);
+    ED4_WinContext(ED4_window *ed4w_) { init(ed4w_); }
+
+    AW_window *get_aww() const { e4_assert(have_context()); return aww; }
+    AW_device *get_device() const { e4_assert(have_context()); return device; }
+    ED4_window *get_ed4w() const { e4_assert(have_context()); return ed4w; }
+};
+
+class ED4_root : virtual Noncopyable {
+    void ED4_ROOT() const { e4_assert(0); } // avoid ED4_root-members use global ED4_ROOT
+
+    ED4_returncode refresh_window_simple(int redraw);
+
+    ED4_WinContext context;
+
+public:
+    char       *db_name;                            // name of Default Properties database (complete path)
+    AW_root    *aw_root;                            // Points to 'AW-Window-Controller'
+    AW_default  props_db;                           // Default Properties database
+
     ED4_window              *first_window;          // Points to List of Main Windows of ED4
     ED4_main_manager        *main_manager;          // Points to Main manager of ED4
     ED4_area_manager        *middle_area_man;       // Points to middle area
@@ -1222,66 +1250,41 @@ public:
     int                      column_stat_initialized;
     int                      visualizeSAI;
     int                      visualizeSAI_allSpecies;
+    int                      temp_gc;
+    AW_font_group            font_group;
 
-private:
-    AW_window  *tmp_aww;
-    ED4_window *tmp_ed4w;
-    AW_device  *tmp_device;
-
-public:
-    void use_window(AW_window *aww) {
-        if (aww != tmp_aww) {
-            e4_assert(aww);
-            tmp_aww    = aww;
-            tmp_device = aww->get_device(AW_MIDDLE_AREA);
-            e4_assert(tmp_device);
-            tmp_ed4w = first_window->get_matching_ed4w(aww);
-            e4_assert(tmp_ed4w);
-        }
-    }
-    void use_window(ED4_window *ed4w) {
-        e4_assert(ed4w);
-        tmp_ed4w   = ed4w;
-        tmp_aww    = ed4w->aww;
-        tmp_device = tmp_aww->get_device(AW_MIDDLE_AREA);
-        e4_assert(tmp_device);
-    }
+    void use_window(AW_window *aww) { context = ED4_WinContext(aww); }
+    void use_window(ED4_window *ed4w) { context = ED4_WinContext(ed4w); }
     void use_first_window() { use_window(first_window); }
 
-    AW_window *get_aww() const { e4_assert(tmp_aww); return tmp_aww; }
-    AW_device *get_device() const { e4_assert(tmp_device); return tmp_device; }
-    ED4_window *get_ed4w() const { e4_assert(tmp_ed4w); return tmp_ed4w; }
+    AW_window *get_aww() const { return context.get_aww(); }
+    AW_device *get_device() const { return context.get_device(); }
+    ED4_window *get_ed4w() const { return context.get_ed4w(); }
 
     inline ED4_device_manager *get_device_manager();
-
-    int            temp_gc;
-    AW_font_group  font_group;
 
     // Initializing functions
     ED4_returncode  create_hierarchy(char *area_string_middle, char *area_string_top);
     ED4_returncode  init_alignment();
     void recalc_font_group();
 
-    AW_window       *create_new_window();
-    ED4_returncode  generate_window(AW_device **device, ED4_window **new_window);
-    void        copy_window_struct(ED4_window *source,   ED4_window *destination);
+    AW_window *create_new_window();
+    ED4_returncode generate_window(AW_device **device, ED4_window **new_window);
+    void copy_window_struct(ED4_window *source,   ED4_window *destination);
 
     // functions concerned with global refresh and resize
-    ED4_returncode      resize_all();
+    ED4_returncode resize_all();
 
-private:
-    ED4_returncode      refresh_window_simple(int redraw);
-public:
-    ED4_returncode      refresh_window(int redraw);
-    ED4_returncode  refresh_all_windows(int redraw);
+    ED4_returncode refresh_window(int redraw);
+    ED4_returncode refresh_all_windows(int redraw);
 
     void announce_deletion(ED4_base *object); // before deleting an object, announce here
 
     // functions concerned with list of selected objects
-    ED4_returncode  add_to_selected(ED4_terminal *object);
-    ED4_returncode  remove_from_selected(ED4_terminal *object);
-    short               is_primary_selection(ED4_terminal *object);
-    ED4_returncode      deselect_all();
+    ED4_returncode add_to_selected(ED4_terminal *object);
+    ED4_returncode remove_from_selected(ED4_terminal *object);
+    short is_primary_selection(ED4_terminal *object);
+    ED4_returncode deselect_all();
 
     // functions concerning coordinate transformation
     ED4_returncode world_to_win_coords(AW_window *aww, AW_pos *x, AW_pos *y);
@@ -1293,6 +1296,10 @@ public:
     ED4_root();
     ~ED4_root();
 };
+
+ED4_WinContext::ED4_WinContext(AW_window *aww_) {
+    init(ED4_ROOT->first_window->get_matching_ed4w(aww_));
+}
 
 // ------------------------
 //      manager classes
@@ -1983,3 +1990,4 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access);
 #else
 #error ed4_class included twice
 #endif
+

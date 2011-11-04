@@ -1904,15 +1904,39 @@ static char *detectProperties() {
     return propname;
 }
 
-ED4_root::ED4_root() {
-    memset((char *)this, 0, sizeof(*this));
-
-    db_name  = detectProperties();
-    aw_root  = AWT_create_root(db_name, "ARB_EDIT4");
-    props_db = AW_ROOT_DEFAULT;
-
-    species_mode = ED4_SM_MOVE;
-}
+ED4_root::ED4_root()
+    : db_name(detectProperties()),
+      aw_root(AWT_create_root(db_name, "ARB_EDIT4")),
+      props_db(AW_ROOT_DEFAULT),
+      first_window(0),
+      main_manager(0),
+      middle_area_man(0),
+      top_area_man(0),
+      root_group_man(0),
+      database(0),
+      folding_action(0),
+      species_mode(ED4_SM_MOVE),
+      ecoli_ref(0),
+      alignment_name(0),
+      alignment_type(GB_AT_UNKNOWN),
+      reference(0),
+      sequence_colors(0),
+      aw_gc_manager(0),
+      st_ml(0),
+      helix(0),
+      helix_spacing(0),
+      helix_add_spacing(0),
+      terminal_add_spacing(0),
+      protstruct(0),
+      protstruct_len(0),
+      edk(0),
+      edit_string(0),
+      column_stat_activated(0),
+      column_stat_initialized(0),
+      visualizeSAI(0),
+      visualizeSAI_allSpecies(0),
+      temp_gc(0)
+{}
 
 
 ED4_root::~ED4_root() {
