@@ -227,6 +227,14 @@ ED4_returncode  ED4_root::remove_from_selected(ED4_terminal *object)
     return (ED4_R_OK);
 }
 
+void ED4_root::announce_useraction_in(AW_window *aww) {
+    for (ED4_window *win = first_window; win; win = win->next) {
+        if (win->aww == aww) {
+            most_recently_used_window = win;
+        }
+    }
+}
+
 void ED4_root::announce_deletion(ED4_base *object) {
     // remove any links which might point to the object
 
@@ -1905,7 +1913,8 @@ static char *detectProperties() {
 }
 
 ED4_root::ED4_root()
-    : db_name(detectProperties()),
+    : most_recently_used_window(0), 
+      db_name(detectProperties()),
       aw_root(AWT_create_root(db_name, "ARB_EDIT4")),
       props_db(AW_ROOT_DEFAULT),
       first_window(0),

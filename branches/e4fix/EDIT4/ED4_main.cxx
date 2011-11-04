@@ -488,9 +488,6 @@ const char *ED4_propertyName(int mode) {
 }
 
 static void ED4_postcbcb(AW_window *aww) {
-#if defined(DEBUG) && 1
-    aw_message(GBS_global_string("ED4_postcbcb %p", aww)); // @@@ remove me
-#endif
     ED4_ROOT->announce_useraction_in(aww);
 }
 

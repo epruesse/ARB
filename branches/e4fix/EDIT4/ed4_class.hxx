@@ -1208,7 +1208,8 @@ class ED4_root : virtual Noncopyable {
 
     ED4_returncode refresh_window_simple(int redraw);
 
-    ED4_WinContext context;
+    ED4_WinContext  context;
+    ED4_window     *most_recently_used_window;
 
 public:
     char       *db_name;                            // name of Default Properties database (complete path)
@@ -1257,7 +1258,8 @@ public:
     ED4_window *curr_ed4w() const { return context.get_ed4w(); }
     AW_window *curr_aww() const { return context.get_ed4w()->aww; }
 
-    void announce_useraction_in(AW_window *aww) {} // @@@ fill later
+    void announce_useraction_in(AW_window *aww);
+    ED4_window *get_most_recently_used_window() const { return most_recently_used_window; }
 
     inline ED4_device_manager *get_device_manager();
 
