@@ -242,7 +242,7 @@ ED4_returncode ED4_manager::update_bases_and_rebuild_consensi(const char *old_se
         changedRange = ED4_char_table::changed_range(old_sequence, new_sequence, min(old_len, new_len));
     }
     else {
-        changedRange = &range; // @@@ use method similar to changedRange here, which just reduces the existing range
+        changedRange = &range; // @@@ use method similar to changed_range here, which just reduces the existing range
     }
 
     ED4_returncode result = ED4_R_OK;

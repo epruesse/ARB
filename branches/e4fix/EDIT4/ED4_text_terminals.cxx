@@ -202,7 +202,7 @@ ED4_returncode ED4_orf_terminal::draw(int /* only_text */) {
 
     ExplicitRange index_range = rm->clip_screen_range(calc_update_intervall());
     {
-        int max_seq_len = strlen(this->aaSequence); // @@@ cache len
+        int max_seq_len = aaSeqLen;
         int max_seq_pos = rm->sequence_to_screen_clipped(max_seq_len-1);
         index_range     = ExplicitRange(PosRange(index_range), max_seq_pos);
     }

@@ -1434,7 +1434,6 @@ class ED4_remap : virtual Noncopyable {
     int changed;            // remap-table changed at last compile
     int update_needed;          // remapping should be recompiled
 
-    long clip(long pos, long min_pos, long max_pos) const { return pos<min_pos ? min_pos : (pos<=max_pos ? pos : max_pos); }
     inline void set_sequence_to_screen(int pos, int newVal);
 
     ED4_remap(const ED4_remap&); // copy-constructor not allowed
@@ -1489,10 +1488,6 @@ public:
 
     int is_visible(int position) const { return sequence_to_screen(position)>=0; }
 
-    __ATTR__DEPRECATED("use range version") void clip_screen_range(long *left_screen_pos, long *right_screen_pos) const {
-        *right_screen_pos = clip(*right_screen_pos, 0, screen_len-1);
-        *left_screen_pos = clip(*left_screen_pos, 0, screen_len-1);
-    }
     ExplicitRange clip_screen_range(PosRange screen_range) const { return ExplicitRange(screen_range, screen_len-1); }
 };
 
@@ -1670,6 +1665,7 @@ class ED4_orf_terminal : public ED4_abstract_sequence_terminal { // derived from
     //       handled by the standard "ED4_sequence_terminal" class.
 
     char *aaSequence;
+    size_t aaSeqLen;
     char *aaColor;
     int   aaStartPos;
     int   aaStrandType;
@@ -1683,9 +1679,9 @@ public:
     virtual GB_alignment_type GetAliType();
 
     void SET_aaSeqFlags (int startPos, int strandType) { aaStartPos = startPos; aaStrandType = strandType; }
-    void SET_aaSequence(const char *aaSeq) { freedup(aaSequence, aaSeq); }
+    void SET_aaSequence(const char *aaSeq) { freedup(aaSequence, aaSeq); aaSeqLen = strlen(aaSequence); }
     void SET_aaColor(const char *aaSeq) { freedup(aaColor, aaSeq); }
-    
+
     int GET_aaStartPos () { return aaStartPos; }
     int GET_aaStrandType () { return aaStrandType; }
 

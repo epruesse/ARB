@@ -1103,6 +1103,7 @@ ED4_orf_terminal::ED4_orf_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_p
     : ED4_abstract_sequence_terminal(orf_terminal_spec, temp_id, x, y, width, height, temp_parent)
 {
     aaSequence   = 0;
+    aaSeqLen     = 0;
     aaColor      = 0;
     aaStartPos   = 0;
     aaStrandType = 0;
@@ -1331,18 +1332,18 @@ ED4_returncode ED4_columnStat_terminal::draw(int /* only_text */)
     AW_device             *device   = ED4_ROOT->get_device();
     ED4_sequence_terminal *seq_term = corresponding_sequence_terminal();
     const ED4_remap       *rm       = ED4_ROOT->root_group_man->remap();
-
+    
     PosRange index_range = rm->clip_screen_range(seq_term->calc_update_intervall());
-    int      left        = index_range.start();
-    int      right       = index_range.end();
-
     {
         int max_seq_len = seq_term->get_length();
         int max_seq_pos = rm->sequence_to_screen_clipped(max_seq_len);
 
-        if (right>max_seq_len) right = max_seq_pos;
-        if (left>right) return ED4_R_OK;
+        index_range = ExplicitRange(index_range, max_seq_pos);
+        if (index_range.is_empty()) return ED4_R_OK;
     }
+
+    const int left  = index_range.start();
+    const int right = index_range.end();
 
     char *sbuffer = new char[right+2];  // used to build displayed terminal content  (values = '0'-'9')
     memset(sbuffer, ' ', right+1);
