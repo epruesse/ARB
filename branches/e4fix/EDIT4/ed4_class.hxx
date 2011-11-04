@@ -1446,8 +1446,20 @@ public:
 
     int screen_to_sequence(int screen_pos) const;
     int sequence_to_screen(int sequence_pos) const;
+
     int clipped_sequence_to_screen(int sequence_pos) const;
     int sequence_to_screen_clipped(int sequence_pos) const;
+
+    PosRange sequence_to_screen(PosRange range) const {
+        e4_assert(!range.is_empty());
+        return PosRange(sequence_to_screen(range.start()), sequence_to_screen(range.end()));
+    }
+    PosRange screen_to_sequence(PosRange range) const {
+        e4_assert(!range.is_empty());
+        if (range.is_unlimited()) return PosRange::from(screen_to_sequence(range.start()));
+        return PosRange(screen_to_sequence(range.start()), screen_to_sequence(range.end()));
+    }
+
     size_t get_max_screen_pos() const { return screen_len-1; }
 
     ED4_remap_mode get_mode() const { return mode; }
@@ -1477,10 +1489,11 @@ public:
 
     int is_visible(int position) const { return sequence_to_screen(position)>=0; }
 
-    void clip_screen_range(long *left_screen_pos, long *right_screen_pos) const {
+    __ATTR__DEPRECATED("use range version") void clip_screen_range(long *left_screen_pos, long *right_screen_pos) const {
         *right_screen_pos = clip(*right_screen_pos, 0, screen_len-1);
         *left_screen_pos = clip(*left_screen_pos, 0, screen_len-1);
     }
+    ExplicitRange clip_screen_range(PosRange screen_range) const { return ExplicitRange(screen_range, screen_len-1); }
 };
 
 class ED4_root_group_manager : public ED4_abstract_group_manager
@@ -1628,7 +1641,9 @@ public:
 };
 
 class ED4_abstract_sequence_terminal : public ED4_text_terminal { // derived from a Noncopyable
-    
+
+    PosRange pixel2index(PosRange pixel_range);
+
 public:
     char *species_name; // @@@ wrong place (may be member of ED4_sequence_manager)
 
@@ -1642,8 +1657,8 @@ public:
     ED4_species_name_terminal *corresponding_species_name_terminal() const {
         return get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
     }
-    void calc_intervall_displayed_in_rectangle(AW_screen_area *area_rect, long *left_index, long *right_index);
-    void calc_update_intervall(long *left_index, long *right_index);
+    PosRange calc_intervall_displayed_in_rectangle(AW_screen_area *area_rect);
+    PosRange calc_update_intervall();
 
     DECLARE_DUMP_FOR_BASECLASS(ED4_abstract_sequence_terminal, ED4_text_terminal);
 };

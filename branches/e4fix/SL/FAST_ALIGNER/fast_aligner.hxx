@@ -25,7 +25,7 @@
 #define INTEGRATED_ALIGNERS_TITLE "Integrated Aligners"
 
 typedef char*   (*Aligner_get_consensus_func)(const char *species_name, PosRange range);
-typedef int     (*Aligner_get_selected_range)(int *firstColumn, int *lastColumn);
+typedef bool    (*Aligner_get_selected_range)(PosRange& range);
 typedef GBDATA* (*Aligner_get_first_selected_species)(int *total_no_of_selected_species);
 typedef GBDATA* (*Aligner_get_next_selected_species)(void);
 

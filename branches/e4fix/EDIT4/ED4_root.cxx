@@ -836,17 +836,15 @@ static char *get_group_consensus(const char *species_name, PosRange range) {
     return consensus;
 }
 
-static int get_selected_range(int *firstColumn, int *lastColumn)
-{
+static bool get_selected_range(PosRange& range) {
     ED4_list_elem *listElem = ED4_ROOT->selected_objects.first();
     if (listElem) {
         ED4_selection_entry *selectionEntry = (ED4_selection_entry*)listElem->elem();
         ED4_sequence_terminal *seqTerm = selectionEntry->object->get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SEQUENCE_STRING)->to_sequence_terminal();
 
-        ED4_get_selected_range(seqTerm, firstColumn, lastColumn);
-        return 1;
+        return ED4_get_selected_range(seqTerm, range);
     }
-    return 0;
+    return false;
 }
 
 static ED4_list_elem *actual_aligner_elem = 0;

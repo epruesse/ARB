@@ -2268,9 +2268,8 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
         }
     }
 
-    int  firstColumn         = 0;
-    int  lastColumn          = -1;
-    bool mayRestrictRelRange = true;
+    PosRange range               = PosRange::whole();
+    bool     mayRestrictRelRange = true;
 
     if (!error) {
         switch (static_cast<FA_range>(root->awar(FA_AWAR_RANGE)->read_int())) {
@@ -2282,17 +2281,16 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
                 int curpos = root->awar(AWAR_CURSOR_POSITION_LOCAL)->read_int();
                 int size = root->awar(FA_AWAR_AROUND)->read_int();
 
-                if ((curpos-size)>0) firstColumn = curpos-size;
-                lastColumn = curpos+size;
+                range = PosRange(curpos-size, curpos+size);
                 break;
             }
             case FA_SELECTED_RANGE: {
-                if (!data_access->get_selected_range(&firstColumn, &lastColumn)) {
+                if (!data_access->get_selected_range(range)) {
                     error = "There is no selected species!";
                 }
 #ifdef DEBUG
                 else {
-                    printf("Selected range: %i .. %i\n", firstColumn, lastColumn);
+                    printf("Selected range: %i .. %i\n", range.start(), range.end());
                 }
 #endif
                 break;
@@ -2321,18 +2319,16 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
             if (relrange[0]) {
                 int region_plus = atoi(relrange);
 
-                fa_assert(firstColumn >= 0);
-                fa_assert(lastColumn >= 0);
+                fa_assert(range.is_part());
 
-                relRange = PosRange(firstColumn-region_plus, lastColumn+region_plus); // restricted
+                relRange = PosRange(range.start()-region_plus, range.end()+region_plus); // restricted
                 awar_relrange->write_as_string(GBS_global_string("%i", region_plus)); // set awar to detected value (avoid misbehavior when it contains ' ' or similar)
             }
         }
 
         if (island_hopper) {
-            island_hopper->set_range(firstColumn, lastColumn);
-            firstColumn = 0;
-            lastColumn  = -1;
+            island_hopper->set_range(range);
+            range = PosRange::whole();
         }
 
         SearchRelativeParams relSearch(new PT_FamilyFinder(gb_main,
@@ -2349,7 +2345,7 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
         struct AlignParams ali_params = {
             static_cast<FA_report>(root->awar(FA_AWAR_REPORT)->read_int()),
             root->awar(FA_AWAR_SHOW_GAPS_MESSAGES)->read_int(),
-            PosRange(firstColumn, lastColumn),
+            range
         };
 
         {
