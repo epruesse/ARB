@@ -1257,6 +1257,8 @@ public:
     ED4_window *curr_ed4w() const { return context.get_ed4w(); }
     AW_window *curr_aww() const { return context.get_ed4w()->aww; }
 
+    void announce_useraction_in(AW_window *aww) {} // @@@ fill later
+
     inline ED4_device_manager *get_device_manager();
 
     // Initializing functions

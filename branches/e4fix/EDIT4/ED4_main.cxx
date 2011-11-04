@@ -487,6 +487,13 @@ const char *ED4_propertyName(int mode) {
     return result;
 }
 
+static void ED4_postcbcb(AW_window *aww) {
+#if defined(DEBUG) && 1
+    aw_message(GBS_global_string("ED4_postcbcb %p", aww)); // @@@ remove me
+#endif
+    ED4_ROOT->announce_useraction_in(aww);
+}
+
 int main(int argc, char **argv) {
     const char *data_path = ":";
     const char *err = NULL;
@@ -641,6 +648,7 @@ int main(int argc, char **argv) {
         PV_CallBackFunction(ED4_ROOT->aw_root);
     }
 
+    AWT_install_postcb_cb(ED4_postcbcb);
     AWT_install_cb_guards();
     ED4_ROOT->aw_root->main_loop(); // enter main-loop
 }

@@ -23,6 +23,8 @@ typedef void (*AW_CB1)(AW_window*, AW_CL);
 typedef void (*AW_CB2)(AW_window*, AW_CL, AW_CL);
 typedef AW_window *(*AW_Window_Creator)(AW_root*, AW_CL);
 
+typedef void (*AW_postcb_cb)(AW_window *);
+
 class           GBDATA;
 typedef GBDATA *AW_default;
 

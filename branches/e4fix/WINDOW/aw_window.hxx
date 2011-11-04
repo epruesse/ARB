@@ -130,6 +130,7 @@ class AW_cb_struct {
 
     static AW_cb_struct_guard guard_before;
     static AW_cb_struct_guard guard_after;
+    static AW_postcb_cb       postcb; // called after each cb triggered via interface
 
 public:
     // private (read-only):
@@ -159,6 +160,9 @@ public:
     static void set_AW_cb_guards(AW_cb_struct_guard before, AW_cb_struct_guard after) {
         guard_before = before;
         guard_after  = after;
+    }
+    static void set_AW_postcb_cb(AW_postcb_cb postcb_cb) {
+        postcb = postcb_cb;
     }
 };
 
