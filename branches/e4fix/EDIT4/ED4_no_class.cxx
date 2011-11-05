@@ -448,7 +448,7 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
 
             AW_pos win_x = event.x;
             AW_pos win_y = event.y;
-            ED4_ROOT->win_to_world_coords(aww, &(win_x), &(win_y));
+            ED4_ROOT->win_to_world_coords(&(win_x), &(win_y));
             event.x = (int) win_x;
             event.y = (int) win_y;
 
@@ -642,7 +642,7 @@ void ED4_motion_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
 
         AW_pos win_x = event.x;
         AW_pos win_y = event.y;
-        ED4_ROOT->win_to_world_coords(aww, &win_x, &win_y);
+        ED4_ROOT->win_to_world_coords(&win_x, &win_y);
         event.x = (int) win_x;
         event.y = (int) win_y;
 

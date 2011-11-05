@@ -54,7 +54,7 @@ ED4_returncode ED4_consensus_sequence_terminal::draw() {
 
     AW_pos x, y;
     calc_world_coords(&x, &y);
-    ED4_ROOT->world_to_win_coords(current_aww(), &x, &y);
+    ED4_ROOT->world_to_win_coords(&x, &y);
 
     PosRange index_range = calc_update_interval();
     if (index_range.is_empty()) return ED4_R_OK;
@@ -191,7 +191,7 @@ ED4_returncode ED4_orf_terminal::draw() {
     // @@@ DRY calculation of index-range to-be-updated (done in several draw functions)
     AW_pos world_x, world_y;
     calc_world_coords(&world_x, &world_y);
-    ED4_ROOT->world_to_win_coords(current_aww(), &world_x, &world_y);
+    ED4_ROOT->world_to_win_coords(&world_x, &world_y);
 
     AW_pos text_x = world_x + CHARACTEROFFSET; // don't change
     AW_pos text_y = world_y + SEQ_TERM_TEXT_YOFFSET;
@@ -338,7 +338,7 @@ ED4_returncode ED4_sequence_terminal::draw() {
 
     AW_pos world_x, world_y;
     calc_world_coords(&world_x, &world_y);
-    ED4_ROOT->world_to_win_coords(current_aww(), &world_x, &world_y);
+    ED4_ROOT->world_to_win_coords(&world_x, &world_y);
 
     AW_pos text_x = world_x + CHARACTEROFFSET;    // don't change
     AW_pos text_y = world_y + SEQ_TERM_TEXT_YOFFSET;
@@ -562,7 +562,7 @@ ED4_returncode ED4_sequence_terminal::draw() {
 ED4_returncode ED4_sequence_info_terminal::draw() {
     AW_pos x, y;
     calc_world_coords(&x, &y);
-    ED4_ROOT->world_to_win_coords(current_aww(), &x, &y);
+    ED4_ROOT->world_to_win_coords(&x, &y);
 
     AW_pos text_x = x + CHARACTEROFFSET; // don't change
     AW_pos text_y = y+INFO_TERM_TEXT_YOFFSET;
@@ -623,7 +623,7 @@ ED4_returncode ED4_text_terminal::Show(int IF_ASSERTION_USED(refresh_all), int i
 ED4_returncode ED4_text_terminal::draw() {
     AW_pos x, y;
     calc_world_coords(&x, &y);
-    ED4_ROOT->world_to_win_coords(current_aww(), &x, &y);
+    ED4_ROOT->world_to_win_coords(&x, &y);
 
     AW_pos text_x = x + CHARACTEROFFSET; // don't change
     AW_pos text_y = y + INFO_TERM_TEXT_YOFFSET;

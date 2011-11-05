@@ -1121,7 +1121,7 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
             x = clip_rect.l;
             y = clip_rect.t;
 
-            ED4_ROOT->win_to_world_coords(current_aww(), &x, &y);
+            ED4_ROOT->win_to_world_coords(&x, &y);
 
             rect.l = int(x);
             rect.t = int(y);

@@ -855,7 +855,7 @@ PosRange ED4_abstract_sequence_terminal::pixel2index(PosRange pixel_range) {
 PosRange ED4_abstract_sequence_terminal::calc_interval_displayed_in_rectangle(AW_screen_area *rect) { // rect contains win-coords
     AW_pos x, y;
     calc_world_coords(&x, &y);
-    ED4_ROOT->world_to_win_coords(current_ed4w()->aww, &x, &y);
+    ED4_ROOT->world_to_win_coords(&x, &y);
 
     int rel_left_x  = int(rect->l-x);
     int rel_right_x = int(rect->r-x);
@@ -1333,7 +1333,7 @@ int ED4_base::adjust_clipping_rectangle()
     AW_pos x, y;
 
     calc_world_coords(&x, &y);
-    ED4_ROOT->world_to_win_coords(current_aww(), &x, &y);
+    ED4_ROOT->world_to_win_coords(&x, &y);
     return current_device()->reduceClipBorders(int(y), int(y+extension.size[HEIGHT]-1), int(x), int(x+extension.size[WIDTH]-1));
 }
 
@@ -1398,7 +1398,7 @@ ED4_returncode ED4_base::clear_background(int color) {
 
     if (current_device()) {
         calc_world_coords(&x, &y);
-        ED4_ROOT->world_to_win_coords(current_aww(), &x, &y);
+        ED4_ROOT->world_to_win_coords(&x, &y);
 
         current_device()->push_clip_scale();
         if (adjust_clipping_rectangle()) {
@@ -1433,7 +1433,7 @@ void ED4_base::draw_bb(int color)
         if (adjust_clipping_rectangle()) {
             AW_pos x1, y1;
             calc_world_coords(&x1, &y1);
-            ED4_ROOT->world_to_win_coords(current_aww(), &x1, &y1);
+            ED4_ROOT->world_to_win_coords(&x1, &y1);
             current_device()->box(color, false, x1, y1, extension.size[WIDTH]-1, extension.size[HEIGHT]-1);
         }
         current_device()->pop_clip_scale();

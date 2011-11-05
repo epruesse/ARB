@@ -1287,8 +1287,8 @@ public:
     ED4_returncode deselect_all();
 
     // functions concerning coordinate transformation
-    ED4_returncode world_to_win_coords(AW_window *aww, AW_pos *x, AW_pos *y);
-    ED4_returncode win_to_world_coords(AW_window *aww, AW_pos *x, AW_pos *y);
+    void world_to_win_coords(AW_pos *x, AW_pos *y); // @@@ move to ED4_window
+    void win_to_world_coords(AW_pos *x, AW_pos *y); // @@@ move to ED4_window
     ED4_returncode get_area_rectangle(AW_screen_area *rect, AW_pos x, AW_pos y);
 
     ED4_index pixel2pos(AW_pos click_x);

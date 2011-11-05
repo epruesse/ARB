@@ -401,7 +401,7 @@ ED4_returncode ED4_terminal::draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text, int
 
         if (drag_target) {
             drag_target->calc_world_coords (&target_x, &target_y);
-            ED4_ROOT->world_to_win_coords(current_aww(), &target_x, &target_y);
+            ED4_ROOT->world_to_win_coords(&target_x, &target_y);
 #define ARROW_LENGTH 3
             drag_line_x0[0] = target_x + 5;                                     // horizontal
             drag_line_y0[0] = target_y + drag_target->extension.size[HEIGHT];
@@ -595,7 +595,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                             AW_pos world_x, world_y;
 
                             dragged_name_terminal->calc_world_coords(&world_x, &world_y);
-                            ED4_ROOT->world_to_win_coords(aww, &world_x, &world_y);
+                            ED4_ROOT->world_to_win_coords(&world_x, &world_y);
 
                             sel_info->drag_old_x = world_x;
                             sel_info->drag_old_y = world_y;
@@ -783,7 +783,7 @@ int ED4_terminal::adjust_clipping_rectangle() {
     // set scrolling area in AW_MIDDLE_AREA
     AW_pos x, y;
     calc_world_coords(&x, &y);
-    ED4_ROOT->world_to_win_coords(current_aww(), &x, &y);
+    ED4_ROOT->world_to_win_coords(&x, &y);
 
     return current_device()->reduceClipBorders(int(y), int(y+extension.size[HEIGHT]-1), int(x), int(x+extension.size[WIDTH]-1));
 }
@@ -838,7 +838,7 @@ ED4_returncode ED4_tree_terminal::draw() {
     char   *db_pointer;
 
     calc_world_coords(&x, &y);
-    ED4_ROOT->world_to_win_coords(current_aww(), &x, &y);
+    ED4_ROOT->world_to_win_coords(&x, &y);
 
     text_x = x + CHARACTEROFFSET;                           // don't change
     text_y = y + SEQ_TERM_TEXT_YOFFSET;
@@ -884,7 +884,7 @@ ED4_returncode ED4_bracket_terminal::draw() {
 
 
     calc_world_coords(&x, &y);
-    ED4_ROOT->world_to_win_coords(current_aww(), &x, &y);
+    ED4_ROOT->world_to_win_coords(&x, &y);
 
     line_x0[0] = x + margin + 2;
     line_y0[0] = y + margin + 2;
@@ -1146,7 +1146,7 @@ ED4_spacer_terminal::ED4_spacer_terminal(const char *temp_id, AW_pos x, AW_pos y
 ED4_returncode ED4_line_terminal::draw() {
     AW_pos x1, y1;
     calc_world_coords(&x1, &y1);
-    ED4_ROOT->world_to_win_coords(current_aww(), &x1, &y1);
+    ED4_ROOT->world_to_win_coords(&x1, &y1);
 
     AW_pos x2 = x1+extension.size[WIDTH]-1;
     AW_pos y2 = y1+extension.size[HEIGHT]-1;
@@ -1297,7 +1297,7 @@ ED4_returncode ED4_columnStat_terminal::draw() {
 
     AW_pos x, y;
     calc_world_coords(&x, &y);
-    ED4_ROOT->world_to_win_coords(current_aww(), &x, &y);
+    ED4_ROOT->world_to_win_coords(&x, &y);
 
     AW_pos term_height = extension.size[HEIGHT];
     AW_pos font_height = ED4_ROOT->font_group.get_height(ED4_G_SEQUENCES);
