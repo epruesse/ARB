@@ -1583,7 +1583,7 @@ static void save_search_paras_to_file(AW_window *aw, AW_CL cl_type) {
         }
     }
 
-    if (error) aw_popup_ok(error);
+    if (error) aw_message(error);
     else AW_POPDOWN(aw);
 
     free(filename);

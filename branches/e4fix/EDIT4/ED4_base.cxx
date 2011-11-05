@@ -133,9 +133,8 @@ void ED4_terminal::changed_by_database()
 
         if (type==GB_STRING) {
             char *data = (char*)GB_read_old_value();
-            int data_len = GB_read_old_size();
-
             if (data) {
+                int data_len = GB_read_old_size();
                 e4_assert(data_len >= 0);
                 char *dup_data = new char[data_len+1];
 
@@ -161,6 +160,9 @@ void ED4_terminal::changed_by_database()
                 }
 
                 delete [] dup_data;
+            }
+            else { // sth else changed (e.g. protection)
+                GB_clear_error();
             }
         }
     }
