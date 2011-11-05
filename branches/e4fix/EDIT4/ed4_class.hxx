@@ -507,6 +507,10 @@ public:
     ED4_folding_line    *insert_folding_line(AW_pos world_x, AW_pos world_y, AW_pos length, AW_pos dimension, ED4_base *link, ED4_properties prop);
     ED4_returncode  delete_folding_line(ED4_folding_line *fl, ED4_properties prop);
 
+    // functions concerning coordinate transformation
+    void world_to_win_coords(AW_pos *x, AW_pos *y);
+    void win_to_world_coords(AW_pos *x, AW_pos *y);
+    
     ED4_window(AW_window *window);
     ~ED4_window();
 };
@@ -1286,9 +1290,6 @@ public:
     short is_primary_selection(ED4_terminal *object);
     ED4_returncode deselect_all();
 
-    // functions concerning coordinate transformation
-    void world_to_win_coords(AW_pos *x, AW_pos *y); // @@@ move to ED4_window
-    void win_to_world_coords(AW_pos *x, AW_pos *y); // @@@ move to ED4_window
     ED4_returncode get_area_rectangle(AW_screen_area *rect, AW_pos x, AW_pos y);
 
     ED4_index pixel2pos(AW_pos click_x);

@@ -298,7 +298,7 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
         return ED4_R_BREAK;
     }
     x = del_mark;
-    ED4_ROOT->world_to_win_coords(&x, &y);
+    window()->world_to_win_coords(&x, &y);
 
     // refresh own terminal + terminal above + terminal below
 
@@ -1159,7 +1159,7 @@ ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
 
                 bool isScreen = false;
                 if (dir == ED4_C_DOWN) {
-                    ED4_ROOT->world_to_win_coords(&x_dummy, &y_world); // special handling to move cursor from top to bottom area
+                    window()->world_to_win_coords(&x_dummy, &y_world); // special handling to move cursor from top to bottom area
                     isScreen = true;
                 }
                 target_terminal = get_upper_lower_cursor_pos(ED4_ROOT->main_manager, dir, y_world, isScreen, 0, seq_pos);
@@ -1208,7 +1208,7 @@ ED4_returncode ED4_cursor::ShowCursor(ED4_index offset_x, ED4_cursor_move move, 
     x_help = cursor_abs_x + offset_x;
     y_help = y;
 
-    ED4_ROOT->world_to_win_coords(&x_help, &y_help);
+    window()->world_to_win_coords(&x_help, &y_help);
 
     if (allowed_to_draw) draw_cursor(x_help, y_help);
 #if defined(DEBUG) && 0
@@ -1359,7 +1359,7 @@ ED4_returncode ED4_cursor::show_cursor_at(ED4_terminal *target_terminal, ED4_ind
 
     AW_pos win_x = world_x;
     AW_pos win_y = world_y;
-    ED4_ROOT->world_to_win_coords(&win_x, &win_y);
+    window()->world_to_win_coords(&win_x, &win_y);
 
     cursor_abs_x = (long int)world_x;
     owner_of_cursor = target_terminal;
@@ -1419,7 +1419,7 @@ ED4_terminal *ED4_cursor::get_upper_lower_cursor_pos(ED4_manager *starting_point
                         result = get_upper_lower_cursor_pos(member->to_manager(), cursor_move, current_y, isScreen, terminal_is_appropriate, seq_pos);
                     }
 
-                    if (isScreen) ED4_ROOT->world_to_win_coords(&x, &y); // if current_y is screen, convert x/y to screen-coordinates as well
+                    if (isScreen) window()->world_to_win_coords(&x, &y); // if current_y is screen, convert x/y to screen-coordinates as well
 
                     if ((member->dynamic_prop & ED4_P_CURSOR_ALLOWED) && y > current_y) {
                         ED4_multi_species_manager *marea_man = NULL; // probably multi_species_manager of middle_area, otherwise just a dummy

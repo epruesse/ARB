@@ -506,7 +506,7 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
                 {
                     AW_pos ex = event->x;
                     AW_pos ey = event->y;
-                    ED4_ROOT->world_to_win_coords(&ex, &ey);
+                    current_ed4w()->world_to_win_coords(&ex, &ey);
 
                     if (ED4_ROOT->get_area_rectangle(&area_rect, ex, ey)!=ED4_R_OK) {
                         e4_assert(0);

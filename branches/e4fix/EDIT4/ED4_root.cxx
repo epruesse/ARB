@@ -103,15 +103,12 @@ ED4_returncode ED4_root::refresh_all_windows(int redraw)
 }
 
 
-void ED4_root::win_to_world_coords(AW_pos *x, AW_pos *y) {
+void ED4_window::win_to_world_coords(AW_pos *x, AW_pos *y) {
     // calculates transformation from window to world coordinates in a given window
-    ED4_window *curr_window = curr_ed4w();
-    e4_assert(curr_window);
-
     AW_pos temp_x = *x;
     AW_pos temp_y = *y;
 
-    ED4_folding_line *current_fl = curr_window->vertical_fl;                            // calculate x-offset due to vertical folding lines
+    ED4_folding_line *current_fl = vertical_fl;                            // calculate x-offset due to vertical folding lines
     while ((current_fl != NULL) && (*x >= current_fl->world_pos[X_POS]))
     {
         if ((current_fl->length == INFINITE) ||
@@ -122,7 +119,7 @@ void ED4_root::win_to_world_coords(AW_pos *x, AW_pos *y) {
         current_fl = current_fl->next;
     }
 
-    current_fl = curr_window->horizontal_fl;                         // calculate y-offset due to horizontal folding lines
+    current_fl = horizontal_fl;                         // calculate y-offset due to horizontal folding lines
     while ((current_fl != NULL) && (*y >= current_fl->world_pos[Y_POS])) {
         if ((current_fl->length == INFINITE) ||
             ((*x >= current_fl->window_pos[X_POS]) && (*x <= (current_fl->window_pos[X_POS] + current_fl->length))))
@@ -136,18 +133,15 @@ void ED4_root::win_to_world_coords(AW_pos *x, AW_pos *y) {
     *y = temp_y;
 }
 
-void ED4_root::world_to_win_coords(AW_pos *xPtr, AW_pos *yPtr) {
+void ED4_window::world_to_win_coords(AW_pos *xPtr, AW_pos *yPtr) {
     // calculates transformation from world to window coordinates in a given window
-    ED4_window *curr_window = curr_ed4w();
-    e4_assert(curr_window);
-
     AW_pos x = *xPtr;
     AW_pos y = *yPtr;
 
     AW_pos temp_x = x;
     AW_pos temp_y = y;
 
-    ED4_folding_line *current_fl = curr_window->vertical_fl;                          // calculate x-offset due to vertical folding lines
+    ED4_folding_line *current_fl = vertical_fl;                          // calculate x-offset due to vertical folding lines
     while (current_fl && (x>=current_fl->world_pos[X_POS])) {
         if ((current_fl->length == INFINITE) ||
             ((y >= current_fl->world_pos[Y_POS]) &&
@@ -158,7 +152,7 @@ void ED4_root::world_to_win_coords(AW_pos *xPtr, AW_pos *yPtr) {
         current_fl = current_fl->next;
     }
 
-    current_fl = curr_window->horizontal_fl;                     // calculate y-offset due to horizontal folding lines
+    current_fl = horizontal_fl;                     // calculate y-offset due to horizontal folding lines
     while (current_fl && (y >= current_fl->world_pos[Y_POS])) {
         if ((current_fl->length == INFINITE) ||
             ((x >= current_fl->world_pos[X_POS]) &&
