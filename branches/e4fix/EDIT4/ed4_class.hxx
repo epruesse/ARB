@@ -290,11 +290,13 @@ public:
     AW_pos            world_pos[2];
     AW_pos            window_pos[2];
     AW_pos            length;
-    AW_pos            dimension;
+    AW_pos            dimension; // amount of pixel folded away
     ED4_base         *link;
     ED4_folding_line *next;
 
     ED4_folding_line();
+
+    
 };
 
 struct ED4_scroll_links {
