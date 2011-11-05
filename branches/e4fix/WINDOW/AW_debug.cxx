@@ -122,9 +122,6 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "INFO_OF_ALIGNMENT/DELETE",                             5);
     GBS_write_hash(dontCallHash, "LOAD_SELECTION_BOX/LOAD",                              5);
     GBS_write_hash(dontCallHash, "MULTI_PROBE/CREATE_NEW_SEQUENCE",                      5);
-    GBS_write_hash(dontCallHash, "NDS_PROPS/SAVELOAD_CONFIG",                            5);
-    GBS_write_hash(dontCallHash, "PRIMER_DESIGN/SAVELOAD_CONFIG",                        5);
-    GBS_write_hash(dontCallHash, "PROBE_DESIGN/SAVELOAD_CONFIG",                         5);
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/KILL_ALL_SERVERS",                     5);
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/KILL_SERVER",                          5);
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/UPDATE_SERVER",                        5);
@@ -133,8 +130,6 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "SPECIES_QUERY/SAVELOAD_CONFIG_spec",                   5);
     GBS_write_hash(dontCallHash, "SPECIES_SELECTIONS/RENAME",                            5);
     GBS_write_hash(dontCallHash, "SPECIES_SELECTIONS/STORE",                             5);
-    GBS_write_hash(dontCallHash, "TREE_PROPS/SAVELOAD_CONFIG",                           5);
-    GBS_write_hash(dontCallHash, "WWW_PROPS/SAVELOAD_CONFIG",                            5);
     GBS_write_hash(dontCallHash, "del_marked",                                           5);
 #endif
 
@@ -149,6 +144,9 @@ inline bool exclude_key(const char *key) {
         if (strstr(key, "/2filter/2filter/2filter/") != 0) {
             return true;
         }
+    }
+    else {
+        if (strstr(key, "SAVELOAD_CONFIG") != 0) return true;
     }
     return false;
 }
