@@ -44,6 +44,7 @@ static long auto_dontcall1(const char *key, long value, void *cl_hash) {
         GB_HASH *autodontCallHash = (GB_HASH*)cl_hash;
         GBS_write_hash(autodontCallHash, GBS_global_string("ARB_NT_1/%s", key+7), value);
     }
+
     return value;
 }
 static long auto_dontcall2(const char *key, long value, void *) {
@@ -105,6 +106,7 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "ARB_EDIT4/RNA3D",                4);
     GBS_write_hash(dontCallHash, "rna3d",                          4);
     GBS_write_hash(dontCallHash, "reload_config",                  4);
+    GBS_write_hash(dontCallHash, "LOAD_OLD_CONFIGURATION/LOAD",    4);
 #endif
 
 #if 1
@@ -142,10 +144,21 @@ static void build_dontCallHash() {
     GBS_free_hash(autodontCallHash);
 }
 
+inline bool exclude_key(const char *key) {
+    if (strncmp(key, "FILTER_SELECT_", 14) == 0) {
+        if (strstr(key, "/2filter/2filter/2filter/") != 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 static long collect_callbacks(const char *key, long value, void *cl_callbacks) {
     if (GBS_read_hash(alreadyCalledHash, key) == 0) { // don't call twice
-        CallbackArray *callbacks = reinterpret_cast<CallbackArray*>(cl_callbacks);
-        callbacks->push_back(string(key));
+        if (!exclude_key(key)) {
+            CallbackArray *callbacks = reinterpret_cast<CallbackArray*>(cl_callbacks);
+            callbacks->push_back(string(key));
+        }
     }
     return value;
 }
@@ -172,8 +185,8 @@ size_t AW_root::callallcallbacks(int mode) {
     // mode == 1 -> call all in reverse alpha-order
     // mode == 2 -> call all in code-order
     // mode == 3 -> call all in reverse code-order
-    // mode == 10 -> call all in random order
-    // mode == 11-> call all in random order (repeated until no uncalled callbacks left)
+    // mode == 4 -> call all in random order
+    // mode & 8 -> repeat until no uncalled callbacks left
 
     size_t count     = GBS_hash_count_elems(prvt->action_hash);
     size_t callCount = 0;
@@ -182,10 +195,10 @@ size_t AW_root::callallcallbacks(int mode) {
 
     if (!dontCallHash) build_dontCallHash();
 
-    if (mode == 11) {
+    if (mode>0 && (mode&8)) {
         aw_message("Calling callbacks iterated");
         for (int iter = 1; ; ++iter) { // forever
-            size_t thisCount = callallcallbacks(10); // call all in random order
+            size_t thisCount = callallcallbacks(mode&~8); // call all in wanted order
             aw_message(GBS_global_string("%zu callbacks were called (iteration %i)", thisCount, iter));
             if (!thisCount) {
                 aw_message("No uncalled callbacks left");
@@ -209,8 +222,12 @@ size_t AW_root::callallcallbacks(int mode) {
             case 3:
                 GBS_hash_do_sorted_loop(prvt->action_hash, collect_callbacks, sortedByCallbackLocation, &callbacks);
                 break;
-            default:
+            case -2:
+            case 4:
                 GBS_hash_do_loop(prvt->action_hash, collect_callbacks, &callbacks);
+                break;
+            default:
+                aw_assert(0);
                 break;
         }
 
@@ -220,7 +237,7 @@ size_t AW_root::callallcallbacks(int mode) {
             case 2: break;                          // use this order
             case 1:
             case 3: reverse(callbacks.begin(), callbacks.end()); break; // use reverse order
-            case 10: random_shuffle(callbacks.begin(), callbacks.end()); break; // use random order
+            case 4: random_shuffle(callbacks.begin(), callbacks.end()); break; // use random order
             default: aw_assert(0); break;           // unknown mode
         }
 
