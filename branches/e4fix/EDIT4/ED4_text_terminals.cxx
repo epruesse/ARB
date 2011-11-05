@@ -642,6 +642,7 @@ ED4_returncode ED4_text_terminal::draw() {
             GBDATA *gbd = species_man->get_species_pointer();
 
             if (gbd) {
+                GB_transaction ta(gbd);
                 is_marked = GB_read_flag(gbd);
             }
 
