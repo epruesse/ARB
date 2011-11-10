@@ -31,6 +31,7 @@ my @skipped_directories = (
 # first used/skipped match wins (exception see @3 below)
 
 my %used_files = map { $_ => 1; } (
+                                   '!BRANCH_STATE',
                                    'demo.arb',
                                    'export2sub',
                                    'Doxyfile',
