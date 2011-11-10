@@ -1445,7 +1445,6 @@ proto: proto_tools
 		NTREE/NTREE.proto \
 		$(ARCHS_PT_SERVER:.a=.proto) \
 		SERVERCNTRL/SERVERCNTRL.proto \
-		GDE/GDE.proto \
 		SL/SL.proto \
 
 #********************************************************************************
