@@ -3,7 +3,7 @@
 # Installs tools and libraries needed to run, compile or develop ARB on Ubuntu.
 #
 # Tested with:
-#       * Ubuntu 8.10 (Intrepid Ibex)
+#       * Ubuntu 10.04 (Lucid Lynx)
 #
 # [ May as well work with other ubuntu flavors or debian.
 #   Please report working tests and/or send needed changes to devel@arb-home.de
