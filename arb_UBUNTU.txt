@@ -1,6 +1,6 @@
 
-ARB requirements on Ubuntu 8.10
--------------------------------
+ARB requirements on Ubuntu 10.04
+--------------------------------
 
 [Note:]
 You may use the provided install script, e.g.
