@@ -8,7 +8,7 @@ System Requirements
 
         ARB is currently developed on Linux PCs only.
 
-        Compiling ARB using the gcc compiler (versions 2.95.3, 3.x and 4.x series)
+        Compiling ARB using the gcc compiler (3.x and 4.x series)
         as well works on Mac OSX and Sun OS - but we do not publish or support
         these versions.
 
@@ -44,6 +44,8 @@ Files needed to install ARB
         Choose a 32-bit-version, if your system is 32-bit,
         choose a 64-bit-version, if your system is 64-bit.
 
+        You need only ONE of the available 'arb.*.tgz'!
+
 
 Install/Update ARB
 ------------------
@@ -58,7 +60,8 @@ Install/Update ARB
 
                 'arb_install.sh'                // install script
                 'arb_README.txt'                // this file
-                'arb.*.tgz'                     // ARB binaries (download only ONE .tgz!)
+                'arb.*.tgz'                     // your chosen ARB version
+
 
         are located and type
 
