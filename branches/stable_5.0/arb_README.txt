@@ -38,18 +38,11 @@ Files needed to install ARB
         'arb.32.*.tgz'          // 32 bit versions
         'arb.64.*.tgz'          // 64 bit versions
 
-        'arb.*.SuSE*.tgz        // SuSE version
-        'arb.*.Ubuntu*.tgz      // Ubuntu version (recommended)
-
         'arb.*.OPENGL.tgz'      // OPENGL version (contains RNA3D, a 3D-molecule-viewer)
 
 
         Choose a 32-bit-version, if your system is 32-bit,
         choose a 64-bit-version, if your system is 64-bit.
-
-        Normally one of the Ubuntu versions should work for you, only
-        use one of the SuSE versions, if the Ubuntu version has problems
-        (e.g. does not display group names in ARB_EDIT4).
 
 
 Install/Update ARB
@@ -65,7 +58,7 @@ Install/Update ARB
 
                 'arb_install.sh'                // install script
                 'arb_README.txt'                // this file
-                'arb.*.tgz'                     // ARB binaries
+                'arb.*.tgz'                     // ARB binaries (download only ONE .tgz!)
 
         are located and type
 
