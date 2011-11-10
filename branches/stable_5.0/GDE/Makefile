@@ -2,7 +2,6 @@
 ARCHS_ALL = \
 	CLUSTAL/CLUSTAL.dummy  \
 	SUPPORT/SUPPORT.dummy \
-	MOLPHY/MOLPHY.dummy \
 	AxML/AxML.dummy \
 	RAxML/RAxML.dummy \
 	PHYML/PHYML.dummy \
