@@ -5,12 +5,12 @@ performed merges in this branch
 
 unmerged patches (depends, already there, ...)
 
-        version upgrades:       6144 6152 6182 6213 6779
-        changelog upgrades:     6212 6773
+        version upgrades:       6144 6152 6182 6213 6779 8209
+        changelog upgrades:     6212 6773 8208
         depends:                6777
         svn ignores:            7028
         already in trunk:       7033 7757
-        this file:              8206
+        this file:              8206 8213
 
         other reasons
                 6519 (see 6629)
@@ -27,6 +27,7 @@ STABLE->TRUNK
                 7590 -> 7591
                 7758 -> 7759
                 8203 -> 8205
+                8207 8210 8211 -> 8212
 
 TRUNK->STABLE 
 
@@ -73,5 +74,5 @@ TRUNK->STABLE
                 7737 -> 7738
                 7900 -> 8204
 
-not reviewed: 8207:HEAD
+not reviewed: 8214:HEAD
 
