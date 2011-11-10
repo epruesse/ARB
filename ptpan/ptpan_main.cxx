@@ -30,6 +30,7 @@
 #include "arbdb_data_retriever.h"
 #include "ptpan_build_settings.h"
 #include "ptpan_tree_builder.h"
+#include "check_hyperthreads.h"
 
 #include <iostream>
 
@@ -202,7 +203,11 @@ int main(int argc, char *argv[]) {
             build = TRUE;
         }
 
-        int num_threads = boost::thread::hardware_concurrency();
+        std::pair<int, int> threads_info = arb::toolbox::getHardwareThreads();
+        int num_threads = threads_info.first;
+        if (num_threads == 0) {
+            num_threads = boost::thread::hardware_concurrency();
+        }
         bool verbose = false;
         for (int i = 0; i < argc; ++i) {
             if (strncmp(argv[i], "--threads=", 10) == 0) {
