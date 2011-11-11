@@ -757,9 +757,10 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                 }
             }
 
-            root->awar(AWAR_PD_MATCH_NHITS)->write_string(GBS_global_string(matches_truncated ? "> %li" : "%li", match_list_cnt));
+            root->awar(AWAR_PD_MATCH_NHITS)->write_string(GBS_global_string(matches_truncated ? "[more than %li]" : "%li", match_list_cnt));
             if (matches_truncated) {
-                aw_message("Too many matches - list does not necessarily contain best matches.");
+                aw_message("Too many matches, displaying a random digest.\n" 
+                           "ARB 6.0 will be able to configure the limit."); 
             }
         }
 
