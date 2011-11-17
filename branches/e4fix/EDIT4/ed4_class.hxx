@@ -13,13 +13,13 @@
 
 #define e4_assert(bed) arb_assert(bed)
 
+#define concat(a,b) a##b
+
 #ifdef DEBUG
 # define IMPLEMENT_DUMP         // comment out this line to skip compilation of the dump() methods
 #endif
 
-#if defined(IMPLEMENT_DUMP)
-
-#define concat(a,b) a##b
+#if defined(IMPLEMENT_DUMP) // ------------------------------
 
 #if 0
 #define WARN(msg) void dummy_to_produce_a_warning(int msg) {}
@@ -71,7 +71,8 @@
 #define DECLARE_DUMP_FOR_BASECLASS(self,mybase)
 #define DECLARE_DUMP_FOR_MIDCLASS(self,mybase)
 #define DECLARE_DUMP_FOR_LEAFCLASS(mybase)
-#endif // IMPLEMENT_DUMP
+
+#endif // IMPLEMENT_DUMP ------------------------------
 
 
 
