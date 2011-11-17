@@ -49,6 +49,7 @@ enum PT_MATCH_TYPE {
 #define CREATEANSWER 51                             // private msg type: create result answer
 #define FINDANSWER   52                             // private msg type: find result answer
 
+extern int gene_flag;           // if 'gene_flag' == 1 -> we are a gene pt server
 extern ULONG physical_memory;
 struct Hs_struct;
 
@@ -99,29 +100,63 @@ struct PTM2 {
 // ---------------------
 //      Probe search
 
-struct probe_statistic {
-    int    match_count;                             // Counter for matches
-    double rel_match_count;                         // match_count / (seq_len - probe_len + 1)
-};
+class probe_input_data : virtual Noncopyable {      // every taxa's own data
 
-struct probe_input_data {                           // every taxa's own data
-    char   *data;                                   // sequence
-    long    checksum;
-    int     size;
+    char *data;       // sequence
+    long  checksum;   // checksum of sequence
+    int   size;
+
     char   *name;
     char   *fullname;
     GBDATA *gbd;
 
-    // probe design
-    int is_group;                                   // -1: nevermind, 0: no group, 1: group
+    bool group;           // probe_design: whether species is in group
 
-    // probe design (match)
-    PT_probematch *match;                           // best hit for PT_new_design
+    // obsolete methods below @@@ remove them
+    GBDATA *get_gbdata() const { return gbd; }
+    void set_data(char *assign, int size_) { pt_assert(!data); data = assign; size = size_; }
+    void set_checksum(long cs) { checksum = cs; }
+    
+public:
 
-    // find family
-    probe_statistic stat;
+    probe_input_data()
+        : data(0),
+          checksum(0), 
+          size(0), 
+          name(0), 
+          fullname(0), 
+          gbd(0), 
+          group(false) 
+    {}
+    ~probe_input_data() {
+        free(data);
+        free(name);
+        free(fullname);
+    }
 
-    int next;
+    GB_ERROR init(GBDATA *gbd_);
+
+    const char *get_data() const { return data; }
+    char *read_alignment(int *psize) const;
+
+    const char *get_name() const { return name; }
+    const char *get_fullname() const { return fullname; }
+    long get_checksum() const { return checksum; }
+    int get_size() const { return size; }
+
+    bool inside_group() const { return group; }
+    bool outside_group() const { return !group; }
+
+    void set_group_state(bool isGroupMember) { group = isGroupMember; }
+
+    long get_abspos() const {
+        pt_assert(gene_flag); // only legal in gene-ptserver
+        GBDATA *gb_pos = GB_entry(get_gbdata(), "abspos");
+        if (gb_pos) return GB_read_int(gb_pos);
+        return -1;
+    }
+
+private:
 };
 
 struct probe_statistic_struct {
@@ -197,12 +232,12 @@ extern struct probe_struct_global {
     char     *alignment_name;
     GB_HASH  *namehash;                             // name to int
 
+    int                      data_count;
     struct probe_input_data *data;                  // the internal database
 
     char         *ecoli;                            // the ecoli sequenz
     BI_ecoli_ref *bi_ecoli;
 
-    int  data_count;
     int  max_size;                                  // maximum sequence len
     long char_count;                                // number of all 'acgtuACGTU'
 
@@ -283,8 +318,6 @@ public:
     const char *get_arb_gene_name() const { return arb_gene_name; }
 };
 
-extern int gene_flag;           // if 'gene_flag' == 1 -> we are a gene pt server
-
 struct ltByArbName {
     bool operator()(const gene_struct *gs1, const gene_struct *gs2) const {
         int cmp           = strcmp(gs1->get_arb_species_name(), gs2->get_arb_species_name());
@@ -312,3 +345,5 @@ extern gene_struct_index_internal gene_struct_internal2arb; // sorted by interna
 #else
 #error probe.h included twice
 #endif
+
+

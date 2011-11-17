@@ -31,8 +31,8 @@ struct arb_params {
 };
 
 char *prefixSSH(const char *host, const char *command, int async);
-GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep);
-GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, GBDATA *gbmain);
+GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep);
+GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env);
 GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env);
 void arb_print_server_params(void);
 arb_params *arb_trace_argv(int *argc, char **argv);

@@ -15,6 +15,7 @@
 #include "awt_input_mask_internal.hxx"
 
 #include <arbdbt.h>
+#include <arb_file.h>
 #include <awt_www.hxx>
 #include <aw_edit.hxx>
 #include <aw_file.hxx>
@@ -926,7 +927,7 @@ static string scan_identifier(const string& line, size_t& scan_pos, GB_ERROR& er
 inline const char *inputMaskDir(bool local) {
     if (local) {
         static char *local_mask_dir;
-        if (!local_mask_dir) local_mask_dir = AW_unfold_path("HOME", ".arb_prop/inputMasks");
+        if (!local_mask_dir) local_mask_dir = strdup(GB_path_in_arbprop("inputMasks"));
         return local_mask_dir;
     }
 

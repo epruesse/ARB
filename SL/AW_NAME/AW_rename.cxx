@@ -207,7 +207,7 @@ public:
             const char *add_field = AW_get_nameserver_addid(gb_main);
             const char *server_id = GBS_nameserver_tag(add_field);
 
-            err = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_id, gb_main);
+            err = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_id);
 
             if (!err) {
                 const char *ipport = GBS_read_arb_tcp(server_id);

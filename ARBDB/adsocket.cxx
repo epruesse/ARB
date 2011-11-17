@@ -10,7 +10,6 @@
 
 #include <unistd.h>
 
-#include <cerrno>
 #include <climits>
 #include <cstdarg>
 #include <cctype>
@@ -27,6 +26,7 @@
 #include <arb_cs.h>
 #include <arb_str.h>
 #include <arb_strbuf.h>
+#include <arb_file.h>
 
 #include "gb_comm.h"
 #include "gb_data.h"
@@ -300,6 +300,10 @@ long gbcms_close(gbcmc_comm *link)
 static void gbcmc_suppress_sigpipe(int) {
 }
 
+inline bool is_default_or_ignore_or_own_sighandler(SigHandler sh) {
+    return sh == gbcmc_suppress_sigpipe || is_default_or_ignore_sighandler(sh);
+}
+
 gbcmc_comm *gbcmc_open(const char *path) {
     gbcmc_comm *link = (gbcmc_comm *)GB_calloc(sizeof(gbcmc_comm), 1);
     GB_ERROR    err  = gbcm_open_socket(path, TCP_NODELAY, 1, &link->socket, &link->unix_name);
@@ -312,7 +316,7 @@ gbcmc_comm *gbcmc_open(const char *path) {
         }
         return 0;
     }
-    ASSERT_RESULT_PREDICATE(is_default_or_ignore_sighandler, INSTALL_SIGHANDLER(SIGPIPE, gbcmc_suppress_sigpipe, "gbcmc_open"));
+    ASSERT_RESULT_PREDICATE(is_default_or_ignore_or_own_sighandler, INSTALL_SIGHANDLER(SIGPIPE, gbcmc_suppress_sigpipe, "gbcmc_open"));
     gb_local->iamclient = 1;
     return link;
 }
@@ -404,200 +408,6 @@ long gbcm_read_long(int socket) {
     return data;
 }
 
-
-static struct stat gb_global_stt;
-
-GB_ULONG GB_time_of_file(const char *path)
-{
-    if (path) {
-        char *path2 = GBS_eval_env(path);
-        if (stat(path2, &gb_global_stt)) {
-            free(path2);
-            return 0;
-        }
-        free(path2);
-    }
-    return gb_global_stt.st_mtime;
-}
-
-long GB_size_of_file(const char *path) {
-    if (!path || stat(path, &gb_global_stt)) return -1;
-    return gb_global_stt.st_size;
-}
-
-long GB_mode_of_file(const char *path)
-{
-    if (path) if (stat(path, &gb_global_stt)) return -1;
-    return gb_global_stt.st_mode;
-}
-
-long GB_mode_of_link(const char *path)
-{
-    if (path) if (lstat(path, &gb_global_stt)) return -1;
-    return gb_global_stt.st_mode;
-}
-
-bool GB_is_regularfile(const char *path) {
-    // Warning : returns true for symbolic links to files (use GB_is_link() to test)
-    struct stat stt;
-    return stat(path, &stt) == 0 && S_ISREG(stt.st_mode);
-}
-
-bool GB_is_link(const char *path) {
-    struct stat stt;
-    return lstat(path, &stt) == 0 && S_ISLNK(stt.st_mode);
-}
-
-bool GB_is_executablefile(const char *path) {
-    struct stat stt;
-    bool        executable = false;
-
-    if (stat(path, &stt) == 0) {
-        uid_t my_userid = geteuid(); // effective user id
-        if (stt.st_uid == my_userid) { // I am the owner of the file
-            executable = !!(stt.st_mode&S_IXUSR); // owner execution permission
-        }
-        else {
-            gid_t my_groupid = getegid(); // effective group id
-            if (stt.st_gid == my_groupid) { // I am member of the file's group
-                executable = !!(stt.st_mode&S_IXGRP); // group execution permission
-            }
-            else {
-                executable = !!(stt.st_mode&S_IXOTH); // others execution permission
-            }
-        }
-    }
-
-    return executable;
-}
-
-bool GB_is_privatefile(const char *path, bool read_private) {
-    // return true, if nobody but user has write permission
-    // if 'read_private' is true, only return true if nobody but user has read permission
-    //
-    // Note: Always returns true for missing files!
-    //
-    // GB_is_privatefile is mainly used to assert that files generated in /tmp have secure permissions
-
-    struct stat stt;
-    bool        isprivate = true;
-
-    if (stat(path, &stt) == 0) {
-        if (read_private) {
-            isprivate = (stt.st_mode & (S_IWGRP|S_IWOTH|S_IRGRP|S_IROTH)) == 0;
-        }
-        else {
-            isprivate = (stt.st_mode & (S_IWGRP|S_IWOTH)) == 0;
-        }
-    }
-    return isprivate;
-}
-
-bool GB_is_readablefile(const char *filename) {
-    FILE *in = fopen(filename, "r");
-
-    if (in) {
-        fclose(in);
-        return true;
-    }
-    return false;
-}
-
-bool GB_is_directory(const char *path) {
-    // Warning : returns true for symbolic links to directories (use GB_is_link())
-    struct stat stt;
-    return stat(path, &stt) == 0 && S_ISDIR(stt.st_mode);
-}
-
-long GB_getuid_of_file(const char *path) {
-    struct stat stt;
-    if (stat(path, &stt)) return -1;
-    return stt.st_uid;
-}
-
-int GB_unlink(const char *path)
-{   /*! unlink a file
-     * @return
-     *  0   success
-     *  1   File did not exist
-     * -1   Error (use GB_await_error() to retrieve message)
-     */
-
-    if (unlink(path) != 0) {
-        if (errno == ENOENT) {
-            return 1;
-        }
-        GB_export_error(GB_IO_error("removing", path));
-        return -1;
-    }
-    return 0;
-}
-
-void GB_unlink_or_warn(const char *path, GB_ERROR *error) {
-    /* Unlinks 'path'
-     *
-     * In case of a real unlink failure:
-     * - if 'error' is given -> set error if not already set
-     * - otherwise only warn
-     */
-
-    if (GB_unlink(path)<0) {
-        GB_ERROR unlink_error = GB_await_error();
-        if (error && *error == NULL) *error = unlink_error;
-        else GB_warning(unlink_error);
-    }
-}
-
-char *GB_follow_unix_link(const char *path) {   // returns the real path of a file
-    char buffer[1000];
-    char *path2;
-    char *pos;
-    char *res;
-    int len = readlink(path, buffer, 999);
-    if (len<0) return 0;
-    buffer[len] = 0;
-    if (path[0] == '/') return strdup(buffer);
-
-    path2 = strdup(path);
-    pos = strrchr(path2, '/');
-    if (!pos) {
-        free(path2);
-        return strdup(buffer);
-    }
-    *pos = 0;
-    res  = GBS_global_string_copy("%s/%s", path2, buffer);
-    free(path2);
-    return res;
-}
-
-GB_ERROR GB_symlink(const char *target, const char *link) {
-    if (symlink(target, link)<0) {
-        return GBS_global_string("Cannot create symlink '%s' to file '%s'", link, target);
-    }
-    return 0;
-}
-
-GB_ERROR GB_set_mode_of_file(const char *path, long mode) {
-    if (chmod(path, (int)mode)) return GBS_global_string("Cannot change mode of '%s'", path);
-    return 0;
-}
-
-GB_ERROR GB_rename_file(const char *oldpath, const char *newpath) {
-    long old_mod               = GB_mode_of_file(newpath); // keep filemode for existing files
-    if (old_mod == -1) old_mod = GB_mode_of_file(oldpath);
-
-    GB_ERROR error = NULL;
-    if (rename(oldpath, newpath) != 0) {
-        error = GB_IO_error("renaming", GBS_global_string("%s into %s", oldpath, newpath));
-    }
-    else {
-        error = GB_set_mode_of_file(newpath, old_mod);
-    }
-    
-    sync();                                         // why ?
-    return error;
-}
-
 char *GB_read_fp(FILE *in) {
     /*! like GB_read_file(), but works on already open file
      * (useful together with GB_fopen_tempfile())
@@ -684,17 +494,6 @@ char *GB_map_file(const char *path, int writeable) {
     return buffer;
 }
 
-long GB_size_of_FILE(FILE *in) {
-    int         fi = fileno(in);
-    struct stat st;
-    if (fstat(fi, &st)) {
-        GB_export_error("GB_size_of_FILE: sorry file is not readable");
-        return -1;
-    }
-    return st.st_size;
-}
-
-
 GB_ULONG GB_time_of_day() {
     timeval tp;
     if (gettimeofday(&tp, 0)) return 0;
@@ -713,32 +512,16 @@ GB_ERROR GB_textprint(const char *path) {
     // goes to header: __ATTR__USERESULT
     char       *fpath   = GBS_eval_env(path);
     const char *command = GBS_global_string("arb_textprint '%s' &", fpath);
-    GB_ERROR    error   = GB_system(command);
+    GB_ERROR    error   = GBK_system(command);
     free(fpath);
     return GB_failedTo_error("print textfile", fpath, error);
-}
-
-#if defined(WARN_TODO)
-#warning search for '\b(system)\b\s*\(' and use GB_system instead
-#endif
-GB_ERROR GB_system(const char *system_command) {
-    // goes to header: __ATTR__USERESULT
-    fprintf(stderr, "[Action: '%s']\n", system_command);
-    int      res   = system(system_command);
-    GB_ERROR error = NULL;
-    if (res) {
-        error = GBS_global_string("System call failed (result=%i)\n"
-                                  "System call was '%s'\n"
-                                  "(Note: console window may contain additional information)", res, system_command);
-    }
-    return error;
 }
 
 GB_ERROR GB_xterm() {
     // goes to header: __ATTR__USERESULT
     const char *xt      = GB_getenvARB_XTERM();
     const char *command = GBS_global_string("%s &", xt);
-    return GB_system(command);
+    return GBK_system(command);
 }
 
 GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
@@ -775,7 +558,7 @@ GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
         }
     }
 
-    GB_ERROR error = GB_system(GBS_mempntr(strstruct));
+    GB_ERROR error = GBK_system(GBS_mempntr(strstruct));
     GBS_strforget(strstruct);
 
     return error;
@@ -1000,13 +783,13 @@ static GB_CSTR getenv_autodirectory(const char *envvar, const char *defaultDirec
 
 GB_CSTR GB_getenvARBMACROHOME() {
     static const char *amh = 0;
-    if (!amh) amh = getenv_autodirectory("ARBMACROHOME", "$(HOME)/.arb_prop/macros");  // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBMACROHOME
+    if (!amh) amh = getenv_autodirectory("ARBMACROHOME", GB_path_in_arbprop("macros"));  // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBMACROHOME
     return amh;
 }
 
 GB_CSTR GB_getenvARBCONFIG() {
     static const char *ac = 0;
-    if (!ac) ac = getenv_autodirectory("ARBCONFIG", "$(HOME)/.arb_prop/cfgSave"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBCONFIG
+    if (!ac) ac = getenv_autodirectory("ARBCONFIG", GB_path_in_arbprop("cfgSave")); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBCONFIG
     return ac;
 }
 
@@ -1193,12 +976,12 @@ GB_ULONG GB_get_physical_memory() {
 
     GB_ULONG usedmemsize = (MIN(net_memsize, max_malloc)*95)/100; // arb uses max. 95 % of available memory (was 70% in the past)
 
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
     printf("- memsize(real)        = %20lu k\n", memsize);
     printf("- memsize(net)         = %20lu k\n", net_memsize);
     printf("- memsize(max_malloc)  = %20lu k\n", max_malloc);
-#endif // DEBUG
     printf("- memsize(used by ARB) = %20lu k\n", usedmemsize);
+#endif // DEBUG
 
     arb_assert(usedmemsize != 0);
 
@@ -1207,6 +990,7 @@ GB_ULONG GB_get_physical_memory() {
 
 // ---------------------------------------------
 // path completion (parts former located in AWT)
+// @@@ whole section (+ corresponding tests) should move to adfile.cxx
 
 static int  path_toggle = 0;
 static char path_buf[2][PATH_MAX];
@@ -1340,6 +1124,9 @@ GB_CSTR GB_path_in_ARBHOME(const char *relative_path) {
 }
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path) {
     return GB_path_in_ARBHOME("lib", relative_path);
+}
+GB_CSTR GB_path_in_arbprop(const char *relative_path) {
+    return GB_unfold_path("HOME", GB_concat_path(".arb_prop", relative_path));
 }
 GB_CSTR GB_path_in_ARBHOME(const char *relative_path_left, const char *anypath_right) {
     return GB_path_in_ARBHOME(GB_concat_path(relative_path_left, anypath_right));

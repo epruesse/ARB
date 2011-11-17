@@ -16,8 +16,6 @@
 #include <BI_basepos.hxx>
 #include <arb_progress.h>
 
-#include <sys/stat.h>
-
 int compress_data(char *probestring) {
     //! change a sequence with normal bases the PT_? format and delete all other signs
     char    c;
@@ -72,13 +70,13 @@ void PT_base_2_string(char *id_string, long len) {
     *dest = '\0';
 }
 
-ARB_ERROR probe_read_data_base(const char *name) { // goes to header: __ATTR__USERESULT
+ARB_ERROR probe_read_data_base(const char *name, bool readOnly) { // goes to header: __ATTR__USERESULT
     ARB_ERROR error;
     GB_set_verbose();
 
     psg.gb_shell = new GB_shell;
 
-    GBDATA *gb_main     = GB_open(name, "r");
+    GBDATA *gb_main     = GB_open(name, readOnly ? "r" : "rw");
     if (!gb_main) error = GB_await_error();
     else {
         error = GB_begin_transaction(gb_main);
@@ -196,9 +194,9 @@ static char *probe_read_string_append_point(GBDATA *gb_data, int *psize) {
     return data;
 }
 
-char *probe_read_alignment(int j, int *psize) {
+char *probe_input_data::read_alignment(int *psize) const {
     char           *buffer     = 0;
-    GBDATA         *gb_species = psg.data[j].gbd;
+    GBDATA         *gb_species = get_gbdata();
     GB_transaction  ta(gb_species);
     GBDATA         *gb_ali     = GB_entry(gb_species, psg.alignment_name);
 
@@ -209,154 +207,46 @@ char *probe_read_alignment(int j, int *psize) {
     return buffer;
 }
 
-/** Cache:
- * Instead of extracting the pure sequence data and checksum from the arb
- * database each time the pt server loads, cache this data in a separate
- * file to regain near instant pt server startup time.
- *
- * The format of the file is as follows:
- * uint32: magic
- * uint32: version
- * uint32: number of sequences c
- * uint32[c]: lengths of sequences
- * uint32[c]: checksums
- * char[]: sequences
- */
-static const uint cache_magic = 0x97CAC11E;
-static const uint cache_version = 1;
-
-static char* cache_mkfilename(const char *arbfile) {
-    const char*  const suffix = ".ptc";
-    char *cname = (char*)calloc(sizeof(char),strlen(arbfile)+strlen(suffix)+1);
-    sprintf(cname, "%s%s", arbfile, suffix);
-    return cname;
+char *probe_read_alignment(int j, int *psize) { 
+    return psg.data[j].read_alignment(psize);
 }
 
-static int cache_load(const char* filename, const uint count) {
-    char *cname = cache_mkfilename(filename);
+GB_ERROR probe_input_data::init(GBDATA *gb_species) {
+    GB_ERROR  error   = NULL;
+    GBDATA   *gb_ali  = GB_entry(gb_species, psg.alignment_name);
+    GBDATA   *gb_data = gb_ali ? GB_entry(gb_ali, "data") : NULL;
 
-    // get stats for arb-file
-    struct stat s_arb, s_ptc;
-    if (stat(filename,&s_arb)) {
-        perror("Unable to stat arb file! Utterly weird, I just opened it...");
-        exit(1);
+    if (!gb_data) {
+        error = GBS_global_string("Species '%s' has no data in '%s'\n", GBT_read_name(gb_species), psg.alignment_name);
+    }
+    else {
+        int   hsize;
+        char *sdata = probe_read_string_append_point(gb_data, &hsize);
+
+        if (!sdata) {
+            error = GBS_global_string("Could not read data in '%s' for species '%s'\n(Reason: %s)\n",
+                                      psg.alignment_name, GBT_read_name(gb_species), GB_await_error());
+        }
+        else {
+            name = strdup(GBT_read_name(gb_species));
+
+            fullname                = GBT_read_string(gb_species, "full_name");
+            if (!fullname) fullname = strdup("");
+
+            gbd   = gb_species;
+
+            set_checksum(GB_checksum(sdata, hsize, 1, ".-"));
+            int csize = probe_compress_sequence(sdata, hsize);
+
+            set_data(GB_memdup(sdata, csize), csize);
+            free(sdata);
+        }
     }
 
-    // get stats for cache-file
-    if (stat(cname, &s_ptc)) {
-        printf("Couldn't find cache file.\n");
-        return 1;
-    }
-
-    // check that cache file is newer than arb file
-    if (s_arb.st_mtime > s_ptc.st_mtime) {
-        printf("Cachefile older than ARB file.\n");
-        return 1;
-    }
-
-    printf("Loading data from cache:\n");
-
-    FILE *fp = fopen(cname, "r");
-    if (!fp) {
-        perror("Unable to open cache file.");
-        return 1;
-    }
-    free(cname);
-
-    uint rval;
-    fread(&rval, sizeof(int), 1, fp);
-    if (rval != cache_magic) {
-        printf("Cache file not a cache file!?!\n");
-        return 1;
-    }
-
-    fread(&rval, sizeof(int), 1, fp);
-    if (rval != cache_version) {
-        printf("Cache file has wrong version");
-        return 1;
-    }
-
-    fread(&rval, sizeof(int), 1, fp);
-    if (rval != count) {
-        printf("Unable to load cache: wrong number of sequences!\n");
-        return 1;
-    }
-
-    int *sizes = (int*)calloc(sizeof(int), count);
-    if (fread(sizes, sizeof(int), count, fp) != count) {
-        printf("Cache file too short!");
-        return 1;
-    }
-
-    uint *checksums = (uint*)calloc(sizeof(uint), count);
-    if (fread(checksums, sizeof(uint), count, fp) != count) {
-        printf("Cache file too short!");
-        return 1;
-    }
-
-    ulong datasize = 0;
-    for (uint i=0; i<count; i++) {
-        psg.data[i].size = sizes[i];
-        datasize += sizes[i];
-        psg.data[i].checksum = checksums[i];
-    }
-
-    free(sizes);
-    free(checksums);
-
-    char *data = (char*)calloc(sizeof(char), datasize);
-    if (fread(data, sizeof(char), datasize, fp) != datasize) {
-        printf("Cache file too short!");
-        return 1;
-    }
-
-    for (uint i=0; i<count; i++) {
-        psg.data[i].data = data;
-        data += psg.data[i].size;
-    }
-
-    printf("done\n");
-
-    return 0;
+    return error;
 }
 
-void cache_save(const char *filename, int count) {
-    char *cname = cache_mkfilename(filename);
-    FILE *fp = fopen(cname, "w+");
-    if (!fp) {
-        perror("Unable to open cache file! Not saving cache.");
-        return;
-    }
-    free(cname);
-
-    printf("PT-cache: writing cache file...\n");
-
-    fwrite(&cache_magic, sizeof(uint), 1, fp);
-    fwrite(&cache_version, sizeof(uint), 1, fp);
-    fwrite(&count, sizeof(count), 1, fp);
-
-
-    int *sizes = (int*)calloc(sizeof(int), count);
-    uint *checksums = (uint*)calloc(sizeof(uint), count);
-    for (int i=0; i<count; i++) {
-        sizes[i]=psg.data[i].size;
-        checksums[i]=psg.data[i].checksum;
-    }
-    fwrite(sizes, sizeof(int), count, fp);
-    fwrite(checksums, sizeof(uint), count, fp);
-    free(sizes);
-    free(checksums);
-
-    for (int i=0; i<count; i++) {
-        fwrite(psg.data[i].data, sizeof(char), psg.data[i].size, fp);
-    }
-
-    fclose(fp);
-
-    printf("done\n");
-}
-
-void probe_read_alignments(const char* filename) {
+void probe_read_alignments(const char* /*filename*/) {
     // reads sequence data into psg.data
 
     GB_begin_transaction(psg.gb_main);
@@ -378,7 +268,7 @@ void probe_read_alignments(const char* filename) {
 
     int icount = GB_number_of_subentries(psg.gb_species_data);
     
-    psg.data       = (probe_input_data *)calloc(sizeof(probe_input_data), icount);
+    psg.data       = new probe_input_data[icount];
     psg.data_count = 0;
 
     int data_missing = 0;
@@ -387,7 +277,6 @@ void probe_read_alignments(const char* filename) {
     {
         arb_progress progress("Preparing sequence data", icount);
         int count = 0;
-        int recache = cache_load(filename, icount);
 
         for (GBDATA *gb_species = GBT_first_species_rel_species_data(psg.gb_species_data);
              gb_species;
@@ -395,44 +284,13 @@ void probe_read_alignments(const char* filename) {
         {
             probe_input_data& pid = psg.data[count];
 
-            pid.name     = strdup(GBT_read_name(gb_species));
-            pid.fullname = GBT_read_string(gb_species, "full_name");
-
-            if (!pid.fullname) pid.fullname = strdup("");
-
-            pid.is_group = 1;
-            pid.gbd      = gb_species;
-
-            GBDATA *gb_ali  = GB_entry(gb_species, psg.alignment_name);
-            GBDATA *gb_data = gb_ali ? GB_entry(gb_ali, "data") : NULL;
-            if (!gb_data) {
-                fprintf(stderr, "Species '%s' has no data in '%s'\n", pid.name, psg.alignment_name);
+            GB_ERROR error = pid.init(gb_species);
+            if (error) {
+                fputs(error, stderr);
+                fputc('\n', stderr);
                 data_missing++;
             }
-            else if (recache) {
-                int   hsize;
-                char *data = probe_read_string_append_point(gb_data, &hsize);
-
-                if (!data) {
-                    GB_ERROR error = GB_await_error();
-                    fprintf(stderr, "Could not read data in '%s' for species '%s'\n(Reason: %s)\n",
-                            psg.alignment_name, pid.name, error);
-                    data_missing++;
-                }
-                else {
-                    if (recache) {
-                    pid.checksum = GB_checksum(data, hsize, 1, ".-");
-                    int   size = probe_compress_sequence(data, hsize);
-
-                    pid.data = GB_memdup(data, size);
-                    pid.size = size;
-
-                    free(data);
-                    count++;
-                }
-                }
-                    
-            } else {
+            else {
                 count++;
             }
             progress.inc();
@@ -442,8 +300,6 @@ void probe_read_alignments(const char* filename) {
 
         psg.data_count = count;
         GB_commit_transaction(psg.gb_main);
-        if (recache && data_missing == 0)
-            cache_save(filename, count);
     }
 
     
@@ -455,20 +311,19 @@ void probe_read_alignments(const char* filename) {
         printf("\nAll species contain data in alignment '%s'.\n", psg.alignment_name);
     }
     fflush(stdout);
-
 }
 
 void PT_build_species_hash() {
     long i;
     psg.namehash = GBS_create_hash(psg.data_count, GB_MIND_CASE);
     for (i=0; i<psg.data_count; i++) {
-        GBS_write_hash(psg.namehash, psg.data[i].name, i+1);
+        GBS_write_hash(psg.namehash, psg.data[i].get_name(), i+1);
     }
     unsigned int    max_size;
     max_size = 0;
     for (i = 0; i < psg.data_count; i++) {  // get max sequence len
-        max_size = std::max(max_size, (unsigned)(psg.data[i].size));
-        psg.char_count += psg.data[i].size;
+        max_size = std::max(max_size, (unsigned)(psg.data[i].get_size()));
+        psg.char_count += psg.data[i].get_size();
     }
     psg.max_size = max_size;
 

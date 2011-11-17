@@ -219,14 +219,18 @@ GB_ERROR ArbTcpDat::read(int *versionFound) {
     return error;
 }
 
+char *GB_arbtcpdat_path() {
+    return GB_lib_file(true, "", "arb_tcp.dat");
+}
+
 GB_ERROR ArbTcpDat::update() {
     // read arb_tcp.dat (once or if changed on disk)
     GB_ERROR error = 0;
 
-    if (!filename) filename = GBS_find_lib_file("arb_tcp.dat", "", true);
+    if (!filename) filename = GB_arbtcpdat_path();
 
     if (!filename) {
-        error = GBS_global_string("File $ARBHOME/lib/arb_tcp.dat not found");
+        error = "File $ARBHOME/lib/arb_tcp.dat missing or unreadable";
     }
     else {
         struct stat st;
@@ -299,6 +303,7 @@ const char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam) 
 
 // AISC_MKPT_PROMOTE:#ifdef UNIT_TESTS
 // AISC_MKPT_PROMOTE:#define TEST_SERVER_ID (-666)
+// AISC_MKPT_PROMOTE:#define TEST_GENESERVER_ID (-667)
 // AISC_MKPT_PROMOTE:#endif
 
 const char *GBS_nameserver_tag(const char *add_field) {
@@ -312,9 +317,8 @@ const char *GBS_nameserver_tag(const char *add_field) {
 
 const char *GBS_ptserver_tag(int id) {
 #ifdef UNIT_TESTS
-    if (id == TEST_SERVER_ID) {
-        return "ARB_TEST_PT_SERVER";
-    }
+    if (id == TEST_SERVER_ID) return "ARB_TEST_PT_SERVER";
+    if (id == TEST_GENESERVER_ID) return "ARB_TEST_PT_SERVER_GENE";
 #endif // UNIT_TESTS
     gb_assert(id >= 0);
     const int   MAXIDSIZE = 30;

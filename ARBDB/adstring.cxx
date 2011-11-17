@@ -117,10 +117,10 @@ GB_ERROR GB_check_key(const char *key) { // goes to header: __ATTR__USERESULT
     int  i;
     long len;
 
-    if (!key || key[0] == 0) return GB_export_error("Empty key is not allowed");
+    if (!key || key[0] == 0) return "Empty key is not allowed";
     len = strlen(key);
-    if (len>GB_KEY_LEN_MAX) return GB_export_errorf("Invalid key '%s': too long", key);
-    if (len < GB_KEY_LEN_MIN) return GB_export_errorf("Invalid key '%s': too short", key);
+    if (len>GB_KEY_LEN_MAX) return GBS_global_string("Invalid key '%s': too long", key);
+    if (len < GB_KEY_LEN_MIN) return GBS_global_string("Invalid key '%s': too short", key);
 
     for (i = 0; key[i]; ++i) {
         char c = key[i];
@@ -128,7 +128,7 @@ GB_ERROR GB_check_key(const char *key) { // goes to header: __ATTR__USERESULT
         if ((c>='A') && (c<='Z')) continue;
         if ((c>='0') && (c<='9')) continue;
         if ((c=='_')) continue;
-        return GB_export_errorf("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' ", c, key);
+        return GBS_global_string("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' ", c, key);
     }
 
     return 0;
@@ -562,13 +562,13 @@ size_t GBS_shorten_repeated_data(char *data) {
     size_t  repeat    = 1;
     char    last      = *data++;
 
-    do {
+    while (last) {
         char curr = *data++;
         if (curr == last) {
             repeat++;
         }
         else {
-            if (repeat >= 10) {
+            if (repeat >= 5) {
                 dest += sprintf(dest, "%c{%zu}", last, repeat); // insert repeat count
             }
             else {
@@ -579,7 +579,6 @@ size_t GBS_shorten_repeated_data(char *data) {
             repeat = 1;
         }
     }
-    while (last);
 
     *dest = 0;
 
@@ -1158,5 +1157,28 @@ void TEST_GBS_strstruct() {
     }
 }
 
+#define TEST_SHORTENED_EQUALS(Long,Short) do {  \
+        char *buf = strdup(Long);               \
+        GBS_shorten_repeated_data(buf);         \
+        TEST_ASSERT_EQUAL(buf, Short);          \
+        free(buf);                              \
+    } while(0)
+
+void TEST_GBS_shorten_repeated_data() {
+    TEST_SHORTENED_EQUALS("12345", "12345"); 
+    TEST_SHORTENED_EQUALS("aaaaaaaaaaaabc", "a{12}bc"); 
+    TEST_SHORTENED_EQUALS("aaaaaaaaaaabc", "a{11}bc"); 
+    TEST_SHORTENED_EQUALS("aaaaaaaaaabc", "a{10}bc"); 
+    TEST_SHORTENED_EQUALS("aaaaaaaaabc", "a{9}bc"); 
+    TEST_SHORTENED_EQUALS("aaaaaaaabc", "a{8}bc"); 
+    TEST_SHORTENED_EQUALS("aaaaaaabc", "a{7}bc"); 
+    TEST_SHORTENED_EQUALS("aaaaaabc", "a{6}bc"); 
+    TEST_SHORTENED_EQUALS("aaaaabc", "a{5}bc"); 
+    TEST_SHORTENED_EQUALS("aaaabc", "aaaabc"); 
+    TEST_SHORTENED_EQUALS("aaabc", "aaabc"); 
+    TEST_SHORTENED_EQUALS("aabc", "aabc"); 
+    TEST_SHORTENED_EQUALS("", "");
+    
+}
 #endif
 

@@ -118,7 +118,7 @@ AW_window *NT_open_select_alignment_window(AW_root *awr)
 }
 
 void NT_system_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file) {
-    AW_system(aww, GLOBAL_gb_main, (const char *)cl_command, (const char *)cl_auto_help_file);
+    AW_system(aww, (const char *)cl_command, (const char *)cl_auto_help_file);
 }
 
 void NT_system_in_xterm_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file) {

@@ -11,6 +11,7 @@
 #include "gb_map.h"
 #include "gb_storage.h"
 #include "gb_index.h"
+#include <arb_file.h>
 
 #include <static_assert.h>
 
@@ -671,6 +672,14 @@ GB_ERROR gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
     }
 
     return error;
+}
+
+bool GB_supports_mapfile() {
+#if (MEMORY_TEST == 1)
+    return false;
+#else
+    return true;
+#endif
 }
 
 int gb_is_valid_mapfile(const char *path, gb_map_header *mheader, int verbose) {

@@ -78,6 +78,7 @@ iupac.o: iupac.h
 iupac.o: $(ARBHOME)/INCLUDE/arb_assert.h
 iupac.o: $(ARBHOME)/INCLUDE/arb_core.h
 iupac.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+iupac.o: $(ARBHOME)/INCLUDE/arbtools.h
 iupac.o: $(ARBHOME)/INCLUDE/dupstr.h
 iupac.o: $(ARBHOME)/INCLUDE/test_global.h
 iupac.o: $(ARBHOME)/INCLUDE/test_unit.h

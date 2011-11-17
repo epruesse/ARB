@@ -107,20 +107,16 @@ sub addFileIndex($$) {
 foreach (<SOURCELIST>) {
   chomp;
   addFileIndex($_,$_);
-  # $fileIndex{$_} = $_;
   if (/\/([^\/]+)\/([^\/]+)$/) {
     my $last_dir = $1;
     my $fname    = $2;
 
     addFileIndex($fname,$_);
     addFileIndex($last_dir.'/'.$fname,$_);
-    # $fileIndex{$fname} = $_;
-    # $fileIndex{$last_dir.'/'.$fname} = $_;
   }
   elsif (/\/([^\/]+)$/) {
     my $fname = $1;
     addFileIndex($fname,$_);
-    # $fileIndex{$fname} = $_;
   }
   else {
     die "invalid entry in $sourcelist ('$_')"
@@ -129,21 +125,29 @@ foreach (<SOURCELIST>) {
 
 close(SOURCELIST);
 
+sub parentDir($) {
+  my ($dirOrFile) = @_;
+  if ($dirOrFile =~ /\/[^\/]+$/o) { return $`; }
+  return undef;
+}
+
 sub makeTargetAbsolute($$) {
   my ($abslink,$reltarget) = @_;
-  if ($abslink =~ /\/[^\/]+$/o) {
-    my $absdir = $`;
-    while ($reltarget =~ /^..\//o) {
+  my $absdir = parentDir($abslink);
+  if (defined $absdir) {
+    while ($reltarget =~ /^\.\.\//o) {
       $reltarget = $';
-      if ($absdir =~ /\/[^\/]+$/o) {
-        $absdir = $`;
+      my $absparent = parentDir($absdir);
+      if (defined $absparent) {
+        $absdir = $absparent;
       }
       else {
         die "Can't detect parent dir of '$absdir'";
       }
     }
-    # print "absdir='$absdir' reltarget='$reltarget'\n";
-    return $absdir.'/'.$reltarget;
+
+    my $result = $absdir.'/'.$reltarget;
+    return $result;
   }
   else {
     die "Can't detect parent dir of '$abslink'";

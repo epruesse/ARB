@@ -112,7 +112,7 @@ void gb_system_key_changed_cb(GBDATA *gbd, int *cl, GB_CB_TYPE type);
 void gb_system_master_changed_cb(GBDATA *gbd, int *cl, GB_CB_TYPE type);
 void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q);
 GB_ERROR gb_save_dictionary_data(GBDATA *gb_main, const char *key, const char *dict, int size);
-GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main);
+GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main) __ATTR__USERESULT;
 
 /* arbdb.cxx */
 GBDATA *gb_remembered_db(void);

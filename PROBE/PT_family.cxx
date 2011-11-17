@@ -21,21 +21,64 @@
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_family_list *family)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(family)); }
 
-class ProbeTraversal {
-    static Range range;
 
-    static void count_match(const DataLoc& match) {
-        if (range.contains(match)) {
-            ++psg.data[match.name].stat.match_count;
+class HitCounter {
+    int    count;     // Counter for matches
+    double rel_count; // match_count / (seq_len - probe_len + 1)
+
+public:
+    HitCounter() : count(0), rel_count(0.0) {}
+
+    void inc() { count++; }
+    void calc_rel_match(int max_poss_matches) {
+        rel_count = max_poss_matches>0 ? double(count)/max_poss_matches : 0;
+    }
+
+    bool less_abs(const HitCounter& other) const { return count < other.count; }
+    bool less_rel(const HitCounter& other) const { return rel_count < other.rel_count; }
+
+    int get_match_count() const { return count; }
+    const double& get_rel_match_count() const { return rel_count; }
+};
+
+class FamilyStat : virtual Noncopyable {
+    size_t      size;
+    HitCounter *famstat;
+
+public:
+    FamilyStat(size_t size_) : size(size_), famstat(new HitCounter[size]) { }
+    ~FamilyStat() { delete [] famstat; }
+
+    void calc_rel_matches(int probe_len, int sequence_length)  {
+        for (size_t i = 0; i < size; i++) {
+            int max_poss_matches = std::min(psg.data[i].get_size(), sequence_length) - probe_len + 1;
+            famstat[i].calc_rel_match(max_poss_matches);
         }
     }
 
-    // ----------------------------------------
-    
+    const HitCounter& hits(size_t idx) const { pt_assert(idx<size); return famstat[idx]; }
+
+    void count_match(size_t idx) { famstat[idx].inc(); }
+
+    bool less_abs(int a, int b) const { return famstat[a].less_abs(famstat[b]); }
+    bool less_rel(int a, int b) const { return famstat[a].less_rel(famstat[b]); }
+};
+
+class ProbeTraversal {
+    static Range range;
+
     const char *probe;
     int         height;
     int         needed_positions;
     int         accept_mismatches;
+    
+    FamilyStat& fam_stat;
+
+    void count_match(const DataLoc& match) const {
+        if (range.contains(match)) {
+            fam_stat.count_match(match.name);
+        }
+    }
 
     bool at_end() const { return *probe == PT_QU; }
 
@@ -54,7 +97,7 @@ class ProbeTraversal {
     }
 
     void match_rest_and_mark(const DataLoc& loc) {
-        do match_one_char(psg.data[loc.name].data[loc.rpos+height]); while (match_possible());
+        do match_one_char(psg.data[loc.name].get_data()[loc.rpos+height]); while (match_possible());
         if (did_match()) count_match(loc);
     }
 
@@ -68,12 +111,13 @@ public:
     static void unrestrictMatchesToRegion() {
         range  = Range(-1, -1, -1);
     }
-    
-    ProbeTraversal(const char *probe_, int needed_positions_, int accept_mismatches_)
+
+    ProbeTraversal(const char *probe_, int needed_positions_, int accept_mismatches_, FamilyStat& fam_stat_)
         : probe(probe_),
           height(0),
           needed_positions(needed_positions_),
-          accept_mismatches(accept_mismatches_)
+          accept_mismatches(accept_mismatches_),
+          fam_stat(fam_stat_)
     { }
 
     void mark_matching(POS_TREE *pt) const;
@@ -99,7 +143,7 @@ void ProbeTraversal::mark_matching(POS_TREE *pt) const {
 
     if (PT_read_type(pt) == PT_NT_NODE) {
         for (int base = PT_N; base < PT_B_MAX; base++) {
-            POS_TREE *pt_son = PT_read_son(psg.ptmain, pt, (PT_BASES)base);
+            POS_TREE *pt_son = PT_read_son(pt, (PT_BASES)base);
             if (pt_son && !at_end()) {
                 ProbeTraversal sub(*this);
                 sub.match_one_char(base);
@@ -111,7 +155,7 @@ void ProbeTraversal::mark_matching(POS_TREE *pt) const {
         }
     }
     else {
-        PT_withall_tips(psg.ptmain, pt, *this); // calls operator() 
+        PT_withall_tips(pt, *this); // calls operator() 
     }
 }
 
@@ -122,97 +166,72 @@ void ProbeTraversal::mark_all(POS_TREE *pt) const {
 
     if (PT_read_type(pt) == PT_NT_NODE) {
         for (int base = PT_N; base < PT_B_MAX; base++) {
-            POS_TREE *pt_son = PT_read_son(psg.ptmain, pt, (PT_BASES)base);
+            POS_TREE *pt_son = PT_read_son(pt, (PT_BASES)base);
             if (pt_son) mark_all(pt_son);
         }
     }
     else {
-        PT_withall_tips(psg.ptmain, pt, *this); // calls operator() 
-    }
-}
-
-
-static void clear_statistic() {
-    //! Clear all information in psg.data[i].stat
-
-    for (int i = 0; i < psg.data_count; i++) {
-        memset((char *) &psg.data[i].stat, 0, sizeof(probe_statistic));
-    }
-}
-
-
-
-static void make_match_statistic(int probe_len, int sequence_length) {
-    //! Calculate the statistic information for the family
-
-    // compute statistic for all species in family
-    for (int i = 0; i < psg.data_count; i++) {
-        int all_len = std::min(psg.data[i].size, sequence_length) - probe_len + 1;
-        if (all_len <= 0) {
-            psg.data[i].stat.rel_match_count = 0;
-        }
-        else {
-            psg.data[i].stat.rel_match_count = psg.data[i].stat.match_count / (double) (all_len);
-        }
+        PT_withall_tips(pt, *this); // calls operator() 
     }
 }
 
 struct cmp_probe_abs {
-    bool operator()(const struct probe_input_data* a, const struct probe_input_data* b) {
-        return b->stat.match_count < a->stat.match_count;
-    }
+    const FamilyStat& fam_stat;
+    cmp_probe_abs(const FamilyStat& fam_stat_) : fam_stat(fam_stat_) {}
+    bool operator()(int a, int b) { return fam_stat.less_abs(b, a); }
 };
 
 struct cmp_probe_rel {
-    bool operator()(const struct probe_input_data* a, const struct probe_input_data* b) {
-        return b->stat.rel_match_count < a->stat.rel_match_count;
-    }
+    const FamilyStat& fam_stat;
+    cmp_probe_rel(const FamilyStat& fam_stat_) : fam_stat(fam_stat_) {}
+    bool operator()(int a, int b) { return fam_stat.less_rel(b, a); }
 };
 
-static int make_PT_family_list(PT_family *ffinder) {
+static int make_PT_family_list(PT_family *ffinder, const FamilyStat& famStat) {
     //!  Make sorted list of family members
 
-    // Sort the data
-    std::vector<struct probe_input_data*> my_list;
-    my_list.resize(psg.data_count);
+    // destroy old list
+    while (ffinder->fl) destroy_PT_family_list(ffinder->fl);
 
-    for (int i = 0; i < psg.data_count; i++) {
-        my_list[i] = &psg.data[i];
-    }
+    // Sort the data
+    std::vector<int> sorted;
+    sorted.resize(psg.data_count);
+
+    for (int i = 0; i < psg.data_count; i++) sorted[i] = i;
 
     bool sort_all = ffinder->sort_max == 0 || ffinder->sort_max >= psg.data_count;
 
     if (ffinder->sort_type == 0) {
         if (sort_all) {
-            std::sort(my_list.begin(), my_list.end(), cmp_probe_abs());
+            std::sort(sorted.begin(), sorted.end(), cmp_probe_abs(famStat));
         }
         else {
-            std::partial_sort(my_list.begin(), my_list.begin() + ffinder->sort_max, my_list.begin() + psg.data_count, cmp_probe_abs());
+            std::partial_sort(sorted.begin(), sorted.begin() + ffinder->sort_max, sorted.begin() + psg.data_count, cmp_probe_abs(famStat));
         }
     }
     else {
         if (sort_all) {
-            std::sort(my_list.begin(), my_list.begin() + psg.data_count, cmp_probe_rel());
+            std::sort(sorted.begin(), sorted.begin() + psg.data_count, cmp_probe_rel(famStat));
         }
         else {
-            std::partial_sort(my_list.begin(), my_list.begin() + ffinder->sort_max, my_list.begin() + psg.data_count, cmp_probe_rel());
+            std::partial_sort(sorted.begin(), sorted.begin() + ffinder->sort_max, sorted.begin() + psg.data_count, cmp_probe_rel(famStat));
         }
     }
-
-    // destroy old list
-    while (ffinder->fl) destroy_PT_family_list(ffinder->fl);
 
     // build new list
     int real_hits = 0;
 
     int end = (sort_all) ? psg.data_count : ffinder->sort_max;
     for (int i = 0; i < end; i++) {
-        if (my_list[i]->stat.match_count != 0) {
+        probe_input_data& pid = psg.data[sorted[i]];
+        const HitCounter& ps  = famStat.hits(sorted[i]);
+
+        if (ps.get_match_count() != 0) {
             PT_family_list *fl = create_PT_family_list();
 
-            fl->name        = strdup(my_list[i]->name);
-            fl->matches     = my_list[i]->stat.match_count;
-            fl->rel_matches = my_list[i]->stat.rel_match_count;
+            fl->name        = strdup(pid.get_name());
+            fl->matches     = ps.get_match_count();
+            fl->rel_matches = ps.get_rel_match_count();
 
             aisc_link(&ffinder->pfl, fl);
             real_hits++;
@@ -262,13 +281,13 @@ int find_family(PT_family *ffinder, bytestring *species) {
     char *sequence     = species->data; // sequence data passed by caller
     int   sequence_len = probe_compress_sequence(sequence, species->size);
 
-    clear_statistic();
-
     // if find_type > 0 -> search only probes starting with 'A' (quick but less accurate)
     char last_first_c = ffinder->find_type ? PT_A : PT_T;
 
     ProbeTraversal::restrictMatchesToRegion(ffinder->range_start, ffinder->range_end, probe_len);
 
+    FamilyStat famStat(psg.data_count);
+    
     // Note: code depends on order of ../AWTC/awtc_next_neighbours.hxx@FF_complement_dep
     for (int cmode = 1; cmode <= 8; cmode *= 2) {
         switch (cmode) {
@@ -289,7 +308,7 @@ int find_family(PT_family *ffinder, bytestring *species) {
                     char *last_probe = sequence+sequence_len-probe_len;
                     for (char *probe = sequence; probe < last_probe; ++probe) {
                         if (probe_is_ok(probe, probe_len, first_c, second_c)) {
-                            ProbeTraversal(probe, probe_len, mismatch_nr).mark_matching(psg.pt);
+                            ProbeTraversal(probe, probe_len, mismatch_nr, famStat).mark_matching(psg.pt);
                         }
                     }
                 }
@@ -297,8 +316,8 @@ int find_family(PT_family *ffinder, bytestring *species) {
         }
     }
 
-    make_match_statistic(ffinder->pr_len, sequence_len);
-    make_PT_family_list(ffinder);
+    famStat.calc_rel_matches(ffinder->pr_len, sequence_len);
+    make_PT_family_list(ffinder, famStat);
 
     ProbeTraversal::unrestrictMatchesToRegion();
     

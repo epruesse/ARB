@@ -20,7 +20,7 @@ static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int heig
     switch (PT_read_type(node)) {
         case PT_NT_NODE: {
             for (int i=PT_A; i<PT_B_MAX; ++i) {
-                POS_TREE *son = PT_read_son(psg.ptmain, node, PT_BASES(i));
+                POS_TREE *son = PT_read_son(node, PT_BASES(i));
                 if (son) {
                     probe[0] = PT_BASES(i); // write leftmost probe into result
                     bool found = findLeftmostProbe(son, probe+1, restlen-1, height+1);
@@ -36,13 +36,15 @@ static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int heig
         }
         case PT_NT_LEAF: {
             // here the probe-tree is cut off, because only one species matches
-            int pos  = PT_read_rpos(psg.ptmain, node) + height;
-            int name = PT_read_name(psg.ptmain, node);
-            if (pos + restlen >= psg.data[name].size)
+            DataLoc loc(node);
+            int     pos  = loc.rpos + height;
+            int     name = loc.name;
+
+            if (pos + restlen >= psg.data[name].get_size())
                 break;          // at end-of-sequence -> no probe with wanted length here
 
             pt_assert(probe[restlen] == 0);
-            const char *seq_data = psg.data[name].data;
+            const char *seq_data = psg.data[name].get_data();
             for (int r = 0; r<restlen; ++r) {
                 int data = seq_data[pos+r];
                 if (data == PT_QU || data == PT_N) return false; // ignore probes that contain 'N' or '.'
@@ -69,14 +71,14 @@ static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) 
 
     switch (PT_read_type(node)) {
         case PT_NT_NODE: {
-            POS_TREE *son   = PT_read_son(psg.ptmain, node, PT_BASES(probe[0]));
+            POS_TREE *son   = PT_read_son(node, PT_BASES(probe[0]));
             bool      found = (son != 0) && findNextProbe(son, probe+1, restlen-1, height+1);
 
             pt_assert(implicated(found, strlen(probe) == (size_t)restlen));
 
             if (!found) {
                 for (int i=probe[0]+1; !found && i<PT_B_MAX; ++i) {
-                    son = PT_read_son(psg.ptmain, node, PT_BASES(i));
+                    son = PT_read_son(node, PT_BASES(i));
                     if (son) {
                         probe[0] = PT_BASES(i); // change probe
                         found = findLeftmostProbe(son, probe+1, restlen-1, height+1);

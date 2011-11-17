@@ -37,13 +37,6 @@ FASTDNAML_DOC=$(GDE)/FASTDNAML/fastDNAml.doc
 $(GENHELPDEST)/dnaml.help: $(AXML_HELP) $(FASTDNAML_DOC)
 	./genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $^
 
-PROTML=$(GDE)/MOLPHY/doc
-PROTML_DOC_NAMES=protml protml_cli
-PROTML_DOCS=$(addsuffix .doc,$(addprefix $(PROTML)/,$(PROTML_DOC_NAMES)))
-
-$(GENHELPDEST)/protml.help: $(PROTML_DOCS)
-	./genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $^
-
 READSEQ=$(ARBHOME)/READSEQ
 READSEQ_DOC_NAMES=Readme Formats Readseq.help
 READSEQ_DOCS=$(addprefix $(READSEQ)/,$(READSEQ_DOC_NAMES))

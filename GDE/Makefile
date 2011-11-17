@@ -2,7 +2,6 @@
 ARCHS_ALL = \
 	CLUSTAL/CLUSTAL.dummy  \
 	SUPPORT/SUPPORT.dummy \
-	MOLPHY/MOLPHY.dummy \
 	AxML/AxML.dummy \
 	RAxML/RAxML.dummy \
 	PHYML/PHYML.dummy \
@@ -52,8 +51,6 @@ endif
 ifeq ('$(RAISE_WARNINGS)','0')
 	@echo ----------------- warnings enabled again
 endif
-
-proto: MOLPHY/MOLPHY.proto
 
 depends: $(ARCHS:.dummy=.depend)
 

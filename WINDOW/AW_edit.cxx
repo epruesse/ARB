@@ -110,7 +110,7 @@ void AW_edit(const char *path, aw_fileChanged_cb callback, AW_window *aww, GBDAT
 
     if (command) {
         aw_assert(!error);
-        error = GB_system(command);
+        error = GBK_system(command);
         if (error) {
             aw_message(error); error = NULL;
             if (callback) error = GB_remove_last_notification(gb_main);
@@ -134,10 +134,7 @@ void AW_edit(const char *path, aw_fileChanged_cb callback, AW_window *aww, GBDAT
     free(fpath);
 }
 
-void AW_system(AW_window *aww, GBDATA *gb_main, const char *command, const char *auto_help_file) {
+void AW_system(AW_window *aww, const char *command, const char *auto_help_file) {
     if (auto_help_file) AW_POPUP_HELP(aww, (AW_CL)auto_help_file);
-    if (GBCMC_system(gb_main, command) != 0) {
-        const char *error = GBS_global_string("Failed to execute '%s'\n(Reason: %s)", command, GB_await_error());
-        aw_message(error);
-    }
+    aw_message_if(GBK_system(command));
 }
