@@ -133,14 +133,17 @@ arb_strbuf.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_string.o: arb_core.h
 arb_string.o: arb_string.h
 arb_string.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_string.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_string.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_string.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_string.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_string.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 pos_range.o: arb_core.h
 pos_range.o: arb_msg.h
 pos_range.o: pos_range.h
 pos_range.o: $(ARBHOME)/INCLUDE/arb_assert.h
+pos_range.o: $(ARBHOME)/INCLUDE/arbtools.h
 pos_range.o: $(ARBHOME)/INCLUDE/attributes.h
 pos_range.o: $(ARBHOME)/INCLUDE/dupstr.h
 pos_range.o: $(ARBHOME)/INCLUDE/test_global.h

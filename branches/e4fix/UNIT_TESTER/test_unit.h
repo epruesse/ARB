@@ -15,6 +15,9 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 #ifndef _GLIBCXX_CSTDARG
 #include <cstdarg>
 #endif
@@ -24,9 +27,16 @@
 #ifndef ERRNO_H
 #include <errno.h>
 #endif
+#ifndef DUPSTR_H
+#include <dupstr.h>
+#endif
+
+#if defined(_GLIBCXX_STRING)
+#define TESTS_KNOW_STRING
+#endif
+
 
 #define ENABLE_CRASH_TESTS // comment out this line to get rid of provoked SEGVs (e.g. while debugging test-code)
-// #define TRACE_IS_EQUAL // print calls to numerical is_equal()
 
 /* Note:
  * This file should not generate any static code.
@@ -35,6 +45,8 @@
  * All macros named 'XXX__BROKEN' are intended to be used, when a
  * test is known to fail, but cannot be fixed atm for some reason
  *
+ * Recommended test-assertion is TEST_EXPECT(that(..).xxx())
+ * see examples in test-unit-tests in ../CORE/arb_string.cxx@UNIT_TESTS
  */
 
 #define TEST_ASSERT(cond) test_assert(cond, false)
@@ -43,104 +55,199 @@
 
 namespace arb_test {
 
-    class StaticCode {
-        static void vcompiler_msg(const char *filename, int lineno, const char *message_type, const char *format, va_list parg) __attribute__((format(__printf__, 4, 0))) {
-            fprintf(stderr, "%s:%i: ", filename, lineno);
+    // -------------
+    //      str
+
+    class str {
+        char *s;
+    public:
+        str() : s(0) {}
+        str(const str& other) : s(nulldup(other.s)) {}
+        explicit str(char *S) : s(S) {}
+        str& operator = (const str& other) {
+            freedup(s, other.s);
+            return *this;
+        }
+        str& operator = (char *S) {
+            freeset(s, S);
+            return *this;
+        }
+        ~str() { free(s); }
+
+        bool exists() const { return s; }
+        void assign(char *S) { s = S; }
+        const char *value() const { return s; }
+    };
+
+    // -----------------------
+    //      location info
+
+#define WITHVALISTFROM(format,CODE)  do { va_list parg; va_start(parg, format); CODE; va_end(parg); } while(0)
+#define VPRINTFORMAT(format)         WITHVALISTFROM(format, vfprintf(stderr, format, parg))
+#define VCOMPILERMSG(msgtype,format) WITHVALISTFROM(format, vcompiler_msg(msgtype, format, parg))
+
+    class locinfo //! stores source code location
+    {
+        const char *file;
+        int         line;
+
+        __attribute__((format(__printf__, 2, 0))) void vcompiler_msg(const char *message_type, const char *format, va_list parg) const {
+            fprintf(stderr, "%s:%i: ", file, line);
             if (message_type) fprintf(stderr, "%s: ", message_type);
             vfprintf(stderr, format, parg);
         }
-
-#define WITHVALISTFROM(format,CODE)             do { va_list parg; va_start(parg, format); CODE; va_end(parg); } while(0)
-#define VPRINTFORMAT(format)                    WITHVALISTFROM(format, vfprintf(stderr, format, parg))
-#define VCOMPILERMSG(file,line,msgtype,format)  WITHVALISTFROM(format, vcompiler_msg(file, line, msgtype, format, parg))
         
     public:
+        locinfo() : file(0), line(0) {}
+        locinfo(const char *file_, int line_) : file(file_), line(line_) {}
 
-        static void printf(const char *format, ...) __attribute__((format(printf, 1, 2))) {
-            FlushedOutputNoLF yes;
-            VPRINTFORMAT(format);
-        }
-        static void warningf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
+        bool exists() const { return file; }
+
+        const char *get_file() const { return file; }
+        int get_line() const { return line; }
+
+        __attribute__((format(printf, 2, 3))) void warningf(const char *format, ...) const {
             GlobalTestData& global = test_data();
             if (global.show_warnings) {
                 FlushedOutput yes;
-                VCOMPILERMSG(filename, lineno, "Warning", format);
+                VCOMPILERMSG("Warning", format);
                 GlobalTestData::print_annotation();
                 global.warnings++;
             }
         }
-        static void errorf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
+
+        __attribute__((format(printf, 3, 4))) void errorf(bool fail, const char *format, ...) const {
             {
                 FlushedOutput yes;
-                VCOMPILERMSG(filename, lineno, "Error", format);
+                VCOMPILERMSG("Error", format);
                 GlobalTestData::print_annotation();
             }
-            TRIGGER_ASSERTION(false); // fake an assertion failure
+            if (fail) TRIGGER_ASSERTION(false); // fake an assertion failure
         }
-        static void ioerrorf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
+        __attribute__((format(printf, 3, 4))) void ioerrorf(bool fail, const char *format, ...) const {
             {
                 FlushedOutput yes;
-                VCOMPILERMSG(filename, lineno, "Error", format);
+                VCOMPILERMSG("Error", format);
                 fprintf(stderr, " (errno=%i='%s')", errno, strerror(errno));
                 GlobalTestData::print_annotation();
             }
-            TRIGGER_ASSERTION(false); // fake an assertion failure
+            if (fail) TRIGGER_ASSERTION(false); // fake an assertion failure
+        }
+    };
+
+    // --------------------
+    //      StaticCode
+
+    struct StaticCode {
+        static void printf(const char *format, ...) __attribute__((format(printf, 1, 2))) {
+            FlushedOutputNoLF yes;
+            VPRINTFORMAT(format);
         }
 #undef VPRINTFORMAT
 #undef VCOMPILERMSG
 #undef WITHVALISTFROM
 
-        static void print_readable_string(const char *s, FILE *out) {
+        static char *readable_string(const char *s) {
             // quote like C does!
             if (s) {
-                fputc('\"', out);
-                for (int i_ = 0; s[i_]; ++i_) {
-                    switch (s[i_]) {
-                        case '\n': fputs("\\n", out); break;
-                        case '\t': fputs("\\t", out); break;
-                        case '\"': fputs("\\\"", out); break;
-                        case '\\': fputs("\\\\", out); break;
-                        default: fputc(s[i_], out); break;
+                size_t  len    = strlen(s)*4;
+                char   *res = (char*)malloc(len+2+1);
+
+                int j     = 0;
+                res[j++] = '\"';
+                for (int i = 0; s[i]; ++i) {
+                    unsigned char c = static_cast<unsigned char>(s[i]);
+                    char esc = 0;
+                    switch (c) {
+                        case '\n': esc = 'n'; break;
+                        case '\t': esc = 't'; break;
+                        case '\"': esc = '\"'; break;
+                        case '\\': esc = '\\'; break;
+                        default: if (c<10) esc = c-1+'1'; break;
+                    }
+                    if (esc) {
+                        res[j++] = '\\';
+                        res[j++] = esc;
+                    }
+                    else {
+                        if (c >= 32 && c<127) {
+                            res[j++] = c;
+                        }
+                        else {
+                            j += sprintf(res+j, "\\x%02x", int(c));
+                        }
                     }
                 }
-                fputc('\"', out);
+                res[j++] = '\"';
+                res[j++] = 0;
+                return res;
             }
             else {
-                fputs("(null)", out);
+                return strdup("(null)");
             }
         }
+        static void print_readable_string(const char *s, FILE *out) {
+            fputs(str(readable_string(s)).value(), out);
+        }
+
+        static char *vstrf(const char *format, va_list& parg) __attribute__((format(__printf__, 1, 0))) {
+            static const size_t max_vstrf_size = 10000;
+            static char         vstrf_buf[max_vstrf_size];
+
+            int printed = vsnprintf(vstrf_buf, max_vstrf_size, format, parg);
+            arb_assert(printed >= 0 && size_t(printed)<max_vstrf_size);
+
+            char *result    = (char*)malloc(printed+1);
+            memcpy(result, vstrf_buf, printed);
+            result[printed] = 0;
+            return result;
+        }
+
+        static char *strf(const char *format, ...) __attribute__((format(__printf__, 1, 2))) {
+            va_list  parg;
+            va_start(parg, format);
+            char *result = vstrf(format, parg);
+            va_end(parg);
+            return result;
+        }
+
     };
 
-    inline void print(int i)                 { fprintf(stderr, "%i", i); }
-    inline void print_hex(int i)             { fprintf(stderr, "0x%x", i); }
+    inline char *val2readable(bool b) { return strdup(b ? "true" : "false"); }
+    
+    inline char *val2readable(int i) { return StaticCode::strf("%i", i); }
+    inline char *val2hex(int i) { return StaticCode::strf("0x%x", i); }
 
-    inline void print(long L)                { fprintf(stderr, "%li", L); }
-    inline void print_hex(long L)            { fprintf(stderr, "0x%lx", L); }
+    inline char *val2readable(long L) { return StaticCode::strf("%li", L); }
+    inline char *val2hex(long L) { return StaticCode::strf("0x%lx", L); }
 
-    inline void print(const char *s)         { StaticCode::print_readable_string(s, stderr); }
-    // no print_hex for strings
-
-    inline void print(size_t z)              { fprintf(stderr, "%zu", z); }
-    inline void print_hex(size_t z)          { fprintf(stderr, "0x%zx", z); }
-
-    inline void print(unsigned char c)       { fprintf(stderr, "'%c'", c); }
-    inline void print_hex(unsigned char c)   { print_hex(size_t(c)); }
-
-    inline void print(char c)                { print((unsigned char)c); }
-    inline void print_hex(char c)            { print_hex((unsigned char)c); }
+    inline char *val2readable(size_t z) { return StaticCode::strf("%zu", z); }
+    inline char *val2hex(size_t z) { return StaticCode::strf("0x%zx", z); }
 
     // dont dup size_t:
 #ifdef ARB_64
-    inline void print(unsigned u)            { fprintf(stderr, "%u", u); }
-    inline void print_hex(unsigned u)        { fprintf(stderr, "0x%x", u); }
+    inline char *val2readable(unsigned u) { return StaticCode::strf("%u", u); }
+    inline char *val2hex(unsigned u) { return StaticCode::strf("0x%x", u); }
 #else
-    inline void print(long unsigned u)       { fprintf(stderr, "%lu", u); }
-    inline void print_hex(long unsigned u)   { fprintf(stderr, "0x%lx", u); }
+    inline char *val2readable(long unsigned u) { return StaticCode::strf("%lu", u); }
+    inline char *val2hex(long unsigned u) { return StaticCode::strf("0x%lx", u); }
 #endif
+
+    inline char *val2readable(double d) { return StaticCode::strf("%f", d); }
+
+    inline char *val2readable(unsigned char c) { arb_assert(c); return StaticCode::strf("'%c'", c); }
+    inline char *val2readable(const char *s) { return StaticCode::readable_string(s); }
+
+#ifdef TESTS_KNOW_STRING
+    inline char *val2readable(const std::string& s) { return StaticCode::readable_string(s.c_str()); }
+#endif
+
+    template <typename T> inline void print(const T& t) { fputs(val2readable(make_copy(t)), stderr); }
+    template <typename T> inline void print_hex(const T& t) { fputs(val2hex(make_copy(t)), stderr); }
 
     template <typename T1, typename T2> inline void print_pair(T1 t1, T2 t2) {
         print(t1);
-        fputs(", ", stderr);
+        fputs(",", stderr);
         print(t2);
     }
     template <typename T1, typename T2> inline void print_hex_pair(T1 t1, T2 t2) {
@@ -149,144 +256,23 @@ namespace arb_test {
         print_hex(t2);
     }
 
-    template <typename T> inline const char *nameoftype(T unspecialized) {
-        return specialized_nameoftype(unspecialized);  // define instanciating type below!
-    }
-
-#define NAMEOFTYPE(type) template <> inline const char * nameoftype<>(type) { return #type; }
-    NAMEOFTYPE(bool);
-    NAMEOFTYPE(char);
-    NAMEOFTYPE(unsigned char);
-    NAMEOFTYPE(const char*);
-    NAMEOFTYPE(int);
-    NAMEOFTYPE(unsigned int);
-    NAMEOFTYPE(long int);
-    NAMEOFTYPE(long unsigned int);
-#undef NAMEOFTYPE
-
-
-
-#ifdef TRACE_IS_EQUAL
-    template <typename T1, typename T2> inline bool bool_traced(const char *name, bool equal, T1 t1, T2 t2) {
-        fprintf(stderr, "%-5s = %s(%s ", (equal ? "true" : "false"), name, nameoftype(t1));
-        print(t1);
-        fprintf(stderr, ",%s ", nameoftype(t2));
-        print(t2);
-        fprintf(stderr, ")\n");
-        return equal;
-    }
-#else
-    template <typename T1, typename T2> inline bool bool_traced(const char *, bool equal, T1 , T2 ) {
-        return equal;
-    }
-#endif
-
-    template <typename T1, typename T2> inline bool is_equal(T1 t1, T2 t2) {
-        return bool_traced("is_equal", t1 == t2, t1, t2);
-    }
-    template<> inline bool is_equal<>(const char *s1, const char *s2) {
-        return bool_traced("is_equal", (s1 == s2) || (s1 && s2 && strcmp(s1, s2) == 0), s1, s2);
-    }
-    template <typename T1, typename T2> inline bool is_less(T1 t1, T2 t2) {
-        return bool_traced("is_less", t1 < t2, t1, t2);
-    }
-
-
-    template <typename T1, typename T2> inline void print_failed_compare(T1 t1, T2 t2, const char *prefix, const char *infix, const char *suffix) {
-        FlushedOutput yes;
-        fputs(prefix, stderr);
-        print_pair(t1, t2);
-        fputs(infix, stderr);
-        print_hex_pair(t1, t2);
-        fputs(suffix, stderr);
-    }
-    template <typename T1, typename T2> inline void print_failed_equal(T1 t1, T2 t2) {
-        print_failed_compare(t1, t2, "test_equal(", ") (", ") returns false");
-    }
-    template <typename T1, typename T2> inline void print_failed_less_equal(T1 t1, T2 t2) {
-        print_failed_compare(t1, t2, "test_less_equal(", ") (", ") returns false");
-    }
-    template <typename T1, typename T2> inline void print_failed_different(T1 t1, T2 t2) {
-        print_failed_compare(t1, t2, "test_different(", ") (", ") returns false");
-    }
-
-    template<> inline void print_failed_equal<>(const char *s1, const char *s2) {
-        FlushedOutput yes;
-        fputs("test_equal(", stderr);
-        print(s1);
-        fputs(",\n           ", stderr);
-        print(s2);
-        fputs(") returns false", stderr);
-    }
-    template<> inline void print_failed_different<>(const char *s1, const char *) {
-        FlushedOutput yes;
-        fputs("test_different(", stderr);
-        print(s1);
-        fputs(", <same>", stderr);
-        fputs(") returns false", stderr);
-    }
-
-    template <typename T1, typename T2> inline bool test_equal(T1 t1, T2 t2) {
-        bool equal = is_equal(t1, t2);
-        if (!equal) print_failed_equal(t1, t2);
-        return equal;
-    }
-    template <typename T1, typename T2> inline bool test_less_equal(T1 lower, T2 upper) {
-        bool less_equal = is_equal(lower, upper) || is_less(lower, upper);
-        if (!less_equal) print_failed_less_equal(lower, upper);
-        return less_equal;
-    }
-    template <typename T1, typename T2> inline bool test_different(T1 t1, T2 t2) {
-        bool different = !is_equal(t1, t2);
-        if (!different) print_failed_different(t1, t2);
-        return different;
-    }
-
-#define ACCEPT_NON_CONST_ARGUMENTS(FUN,TYPE) \
-    template<> inline bool FUN<>(TYPE p1, TYPE p2) { return FUN((const TYPE)p1, (const TYPE)p2); } \
-        template<> inline bool FUN<>(TYPE p1, const TYPE p2) { return FUN((const TYPE)p1, p2); } \
-        template<> inline bool FUN<>(const TYPE p1, TYPE p2) { return FUN(p1, (const TYPE)p2); }
-
-    ACCEPT_NON_CONST_ARGUMENTS(test_equal, char*);
-    ACCEPT_NON_CONST_ARGUMENTS(test_different, char*);
-
-#ifdef ARB_64
-    typedef long int NULLPTR;
-#else
-    typedef int      NULLPTR;
-#endif
-    
-#define ACCEPT_NULLPTR_ARGUMENTS(FUN,TYPE)         \
-    template<> inline bool FUN<>(TYPE p1, NULLPTR p2) { TEST_ASSERT(!p2); return FUN((const TYPE)p1, (const TYPE)p2); } \
-        template<> inline bool FUN<>(const TYPE p1, NULLPTR p2) { TEST_ASSERT(!p2); return FUN((const TYPE)p1, (const TYPE)p2); } \
-        template<> inline bool FUN<>(NULLPTR p1, TYPE p2) { TEST_ASSERT(!p1); return FUN((const TYPE)p1, (const TYPE)p2); } \
-        template<> inline bool FUN<>(NULLPTR p1, const TYPE p2) { TEST_ASSERT(!p1); return FUN((const TYPE)p1, (const TYPE)p2); }
-
-    ACCEPT_NULLPTR_ARGUMENTS(test_equal, char*);
-    ACCEPT_NULLPTR_ARGUMENTS(test_different, char*);
-
-    inline bool test_similar(double d1, double d2, double epsilon) {
-        double diff = d1-d2;
-        if (diff<0.0) diff = -diff; // do not use fabs() here
-
-        bool in_epsilon_range = diff < epsilon;
-        if (!in_epsilon_range) {
-            StaticCode::printf("test_similar(%f,%f,%f) returns false\n", d1, d2, epsilon);
+    class epsilon_similar {
+        double epsilon;
+    public:
+        epsilon_similar(double epsilon_) : epsilon(epsilon_) {}
+        bool operator()(const double& d1, const double& d2) const {
+            double diff = d1-d2;
+            if (diff<0.0) diff = -diff; // do not use fabs() here
+            return diff <= epsilon;
         }
-        return in_epsilon_range;
-    }
+    };
 
-    inline bool test_equal(double d1, double d2) { return test_similar(d1, d2, 0.000001); }
-
-    inline bool test_strcontains(const char *str, const char *part)  {
-        const char *found = strstr(str, part);
-        if (!found) StaticCode::printf("string '%s'\ndoes not contain '%s'\n", str, part);
-        return found;
-    }
-    
-    // inline bool is_equal(double d1, double d2) {
-        // return is_similar(d1, d2, 0.000001);
-    // }
+    struct containing {
+        bool operator()(const char *str, const char *part) const { return strstr(str, part); }
+#if defined(TESTS_KNOW_STRING)
+        bool operator()(const std::string& str, const std::string& part) const { return strstr(str.c_str(), part.c_str()); }
+#endif
+    };
 
     inline bool files_are_equal(const char *file1, const char *file2) {
         const char    *error = NULL;
@@ -363,16 +349,686 @@ namespace arb_test {
         if (error) StaticCode::printf("files_are_equal(%s, %s) fails: %s\n", file1, file2, error);
         return !error;
     }
+
+
+    // ------------------
+    //      copy
+
+
+    template <typename T>
+    class copy //! makes char* copyable, so it can be handled like most other types
+    {
+        T t;
+    public:
+        copy(const T& t_) : t(t_) {}
+        operator const T&() const { return t; }
+    };
+
+    template <>
+    class copy<const char *> {
+        str t;
+    public:
+        copy(const char *t_) : t(str(t_ ? strdup(t_) : NULL)) {}
+        operator const char *() const { return t.value(); }
+    };
+
+    template <typename T> class copy< copy<T> > { copy(const copy<T>& t_); }; // avoid copies of copies
+
+    template <typename T> inline copy<T> make_copy(const T& t) { return copy<T>(t); }
+
+    inline copy<const char *> make_copy(const char *p) { return copy<const char *>(p); }
+    inline copy<const char *> make_copy(char *p) { return copy<const char *>(p); }
+    inline copy<const char *> make_copy(const unsigned char *p) { return copy<const char *>(reinterpret_cast<const char *>(p)); }
+    inline copy<const char *> make_copy(unsigned char *p) { return copy<const char *>(reinterpret_cast<const char *>(p)); }
+    inline copy<const char *> make_copy(const signed char *p) { return copy<const char *>(reinterpret_cast<const char *>(p)); }
+    inline copy<const char *> make_copy(signed char *p) { return copy<const char *>(reinterpret_cast<const char *>(p)); }
+
+    inline copy<unsigned char> make_copy(char p) { return copy<unsigned char>(p); }
+    inline copy<unsigned char> make_copy(unsigned char p) { return copy<unsigned char>(p); }
+    inline copy<unsigned char> make_copy(signed char p) { return copy<unsigned char>(p); }
+
+    template <typename T> str readable(const copy<T>& v) { return str(val2readable(v)); }
+    template <typename T> str readableHex(const copy<T>& v) { return str(val2readableHex(v)); }
+
+    template <typename T> bool operator == (const copy<T>& v1, const copy<T>& v2) { return static_cast<const T&>(v1) == static_cast<const T&>(v2); }
+    template <typename T> bool operator != (const copy<T>& v1, const copy<T>& v2) { return !(v1 == v2); }
+
+    template <> inline bool operator == <const char *>(const copy<const char *>& v1, const copy<const char *>& v2) {
+        const char *val1 = v1;
+        const char *val2 = v2;
+
+        return (val1 == val2) || (val1 && val2 && (strcmp(val1, val2) == 0));
+    }
+
+
+
+    // -------------------------------
+    //      some output functions
+
+    inline void print(const char *s) { fputs(s, stderr); }
+    inline void print(char c) { fputc(c, stderr); }
+    inline void print(int i) { fprintf(stderr, "%i", i); }
+
+    inline void space() { print(' '); }
+    inline void nl() { print('\n'); }
+    
+    inline void print_indent(int indent) { while (indent--) space(); }
+
+    inline void spaced(const char *word) { space(); print(word); space(); }
+    inline void select_spaced(bool first, const char *singular, const char *plural) { spaced(first ? singular : plural); }
+    
+
+#define HASTOBE_CLONABLE(type) virtual type *clone() const = 0
+#define MAKE_CLONABLE(type)    type *clone() const { return new type(*this); }
+
+    // ------------------------------
+    //      abstract expectation
+
+    struct expectation //! something expected. can be fulfilled or not (and can explain why/not)
+    {
+        virtual ~expectation() {}
+        HASTOBE_CLONABLE(expectation);
+
+        virtual bool fulfilled() const              = 0;
+        virtual void explain(int indent) const      = 0;
+        virtual void dump_brief_description() const = 0;
+    };
+
+    // -------------------
+    //      asserters
+
+    class asserter : virtual Noncopyable {
+        expectation *expected;
+        locinfo      loc;
+        const char  *code;
+
+        virtual void announce_failure() const { TRIGGER_ASSERTION(false); }
+
+        void err(const char *format) const { loc.errorf(false, format, code); }
+        void warn(const char *format) const { loc.warningf(format, code); }
+        
+    public:
+        asserter(const expectation& e, const char *nontmp_code, const char *file, int line)
+            : expected(e.clone()),
+              loc(file, line),
+              code(nontmp_code)
+        {}
+        virtual ~asserter() { delete expected; }
+
+        const char *get_code() const { return code; }
+
+        void expect_that() const {
+            if (!expected->fulfilled()) {
+                err("Failed expectation '%s'");
+                print("expectation fails because\n");
+                expected->explain(2); print('\n');
+                announce_failure();
+            }
+        }
+        void expect_broken() const {
+            if (expected->fulfilled()) {
+                err("Previously broken expectation '%s' succeeds");
+                announce_failure();
+            }
+            else {
+                warn("Expectation '%s' known as broken (accepted until fixed)");
+                print("Broken because\n");
+                expected->explain(2); print('\n');
+            }
+        }
+        void expect_wanted_behavior() const {
+            if (expected->fulfilled()) {
+                err("Wanted behavior '%s' reached");
+                announce_failure();
+            }
+            else {
+                warn("Wanted behavior: '%s'");
+                print("Unsatisfied because\n");
+                expected->explain(2); print('\n');
+            }
+        }
+
+    };
+
+    class debug_asserter : public asserter {
+        virtual void announce_failure() const {
+            print("<<< would trigger assertion now! >>>\n");
+        }
+    public:
+        debug_asserter(const expectation& e, const char *code_, const char *file, int line)
+            : asserter(e, code_, file, line)
+        {}
+
+        void debug_expectations() {
+            fprintf(stderr, "-------------------- [Debugging expectations for '%s']\n", get_code());
+            expect_that();
+            expect_broken();
+            expect_wanted_behavior();
+        }
+    };
+
+    // ----------------------------------------
+    //      matchable + matcher (abstract)
+
+    struct matchable //! can be matched with corresponding matcher.
+    {
+        virtual ~matchable() {}
+        HASTOBE_CLONABLE(matchable);
+
+        virtual const char *name() const           = 0;
+        virtual const char *readable_value() const = 0;
+    };
+
+    struct matcher //! can match things.
+    {
+        virtual ~matcher() {}
+        HASTOBE_CLONABLE(matcher);
+
+        virtual bool matches(const matchable& thing) const                      = 0;
+        virtual void dump_expectation(const matchable& thing, int indent) const = 0;
+        virtual void dump_brief_description(const matchable& thing) const       = 0;
+    };
+
+    // ----------------------------------------------
+    //      expectation from matchable + matcher
+
+
+    class match_expectation : public expectation //! expectation composed from matcher and corresponding matchable.
+    {
+        matchable *thing;
+        matcher   *condition;
+    public:
+        match_expectation(const matchable& thing_, const matcher& condition_)
+            : thing(thing_.clone()),
+              condition(condition_.clone())
+        {}
+        match_expectation(const match_expectation& other)
+            : thing(other.thing->clone()),
+              condition(other.condition->clone())
+        {}
+        DECLARE_ASSIGNMENT_OPERATOR(match_expectation);
+        MAKE_CLONABLE(match_expectation);
+        ~match_expectation() {
+            delete thing;
+            delete condition;
+        }
+
+        bool fulfilled() const { return condition->matches(*thing); }
+        void explain(int indent) const { condition->dump_expectation(*thing, indent); }
+        void dump_brief_description() const { condition->dump_brief_description(*thing); }
+    };
+
+    // -------------------
+    //      predicate
+
+
+    class predicate_description {
+        const char  *primary;
+        const char  *inverse;
+        mutable str  tmp;
+
+        void erase_last_from_tmp() const {
+            char *t   = const_cast<char*>(tmp.value());
+            int   len = strlen(t);
+            t[len-1]  = 0;
+        }
+
+        static bool ends_with_s(const char *s) {
+            int len          = strlen(s);
+            return s[len-1] == 's';
+        }
+
+        const char *make(const char *desc, bool got) const {
+            if (ends_with_s(desc)) {
+                if (got) return desc;
+                tmp = StaticCode::strf("doesnt %s", desc);
+                erase_last_from_tmp();
+            }
+            else {
+                tmp = StaticCode::strf("%s %s", got ? "is" : "isnt", desc);
+            }
+            return tmp.value();
+        }
+
+    public:
+        predicate_description(const char *primary_) : primary(primary_), inverse(NULL) {}
+        predicate_description(const char *primary_, const char *inverse_) : primary(primary_), inverse(inverse_) {}
+        predicate_description(const predicate_description& other) : primary(other.primary), inverse(other.inverse) {}
+        DECLARE_ASSIGNMENT_OPERATOR(predicate_description);
+
+        const char *make(bool expected, bool got) const {
+            if (expected) return make(primary, got);
+            if (inverse) return make(inverse, !got);
+            return make(primary, !got);
+        }
+    };
+
+    template <typename FUNC>
+    class predicate {
+        FUNC                  pred;
+        predicate_description description;
+    public:
+        predicate(FUNC pred_, const char *name) : pred(pred_), description(name) {}
+        predicate(FUNC pred_, const char *name, const char *inverse) : pred(pred_), description(name, inverse) {}
+
+        template <typename T> bool matches(const copy<T>& v1, const copy<T>& v2) const { return pred(v1, v2); }
+        const char *describe(bool expected, bool got) const { return description.make(expected, got); }
+    };
+
+    template <typename FUNC> predicate<FUNC> make_predicate(FUNC func, const char *primary, const char *inverse) {
+        return predicate<FUNC>(func, primary, inverse);
+    }
+
+    // ------------------------------------------
+    //      matchable + matcher (for values)
+
+    template <typename T> inline bool equals(const copy<T>& t1, const copy<T>& t2) { return t1 == t2; }
+    template <typename T> inline bool less(const copy<T>& t1, const copy<T>& t2) { return t1 < t2; }
+    template <typename T> inline bool more(const copy<T>& t1, const copy<T>& t2) { return t1 > t2; }
+
+    template <typename T>
+    class matchable_value : public matchable //! matchable for values
+    {
+        copy<T>      val;
+        mutable str  readable;
+        const char * code;
+    public:
+        matchable_value(copy<T> val_, const char *nontemp_code) : val(val_), code(nontemp_code) {}
+        matchable_value(const matchable_value<T>& other) : val(other.val), readable(other.readable), code(other.code) {}
+        DECLARE_ASSIGNMENT_OPERATOR(matchable_value);
+        MAKE_CLONABLE(matchable_value<T>);
+
+        const copy<T>& value() const { return val; }
+        char *gen_description() const { return StaticCode::strf("%s (=%s)", code, val.readable()); }
+
+        const char *name() const { return code; }
+        const char *readable_value() const {
+            if (!readable.exists()) readable = arb_test::readable(val);
+            return readable.value();
+        }
+
+        template <typename U> inline match_expectation equals_expectation(bool invert, const U& other, const char *code) const;
+        template <typename U> inline match_expectation lessThan_expectation(bool invert, const U& other, const char *code) const;
+        template <typename U> inline match_expectation moreThan_expectation(bool invert, const U& other, const char *code) const;
+        
+        template <typename FUNC> inline match_expectation predicate_expectation(bool wanted, predicate<FUNC> pred, matchable_value<T> arg) const;
+        template <typename U, typename FUNC> inline match_expectation predicate_expectation(bool wanted, FUNC pred, const char *pred_code, const U& arg, const char *arg_code) const;
+    };
+
+    template <typename T, typename U>
+    inline const matchable_value<T> make_matchable_value(const U& other, const char *code_) {
+        return matchable_value<T>(T(other), code_);
+    }
+#if defined(TESTS_KNOW_STRING)
+    template<>
+    inline const matchable_value<const char*> make_matchable_value<const char *, std::string>(const std::string& other, const char *code_) {
+        return matchable_value<const char *>(other.c_str(), code_);
+    }
+#endif
+    
+    template <typename T> template <typename U>
+    inline match_expectation matchable_value<T>::equals_expectation(bool wanted, const U& other, const char *code_) const {
+        return predicate_expectation(wanted, make_predicate(equals<T>, "equals", "differs"), make_matchable_value<T,U>(other, code_));
+    }
+    template <typename T> template <typename U>
+    inline match_expectation matchable_value<T>::lessThan_expectation(bool wanted, const U& other, const char *code_) const {
+        return predicate_expectation(wanted, make_predicate(less<T>, "less than", "more or equal"), make_matchable_value<T,U>(other, code_));
+    }
+    template <typename T> template <typename U>
+    inline match_expectation matchable_value<T>::moreThan_expectation(bool wanted, const U& other, const char *code_) const {
+        return predicate_expectation(wanted, make_predicate(more<T>, "more than", "less or equal"), make_matchable_value<T,U>(other, code_));
+    }
+    
+    template <typename T>
+    class value_matcher : public matcher //! matcher for values
+    {
+        matchable_value<T> expected;
+    public:
+        value_matcher(const matchable_value<T>& expected_) : expected(expected_) {}
+        virtual ~value_matcher() {}
+
+        virtual bool matches(const copy<T>& v1, const copy<T>& v2) const       = 0;
+        virtual const char *relation(bool isMatch) const                       = 0;
+
+        const matchable_value<T>& get_expected() const { return expected; }
+
+        bool matches(const matchable& thing) const {
+            const matchable_value<T>& value_thing = dynamic_cast<const matchable_value<T>&>(thing);
+            return matches(value_thing.value(), expected.value());
+        }
+
+        void dump_expectation(const matchable& thing, int indent) const {
+            bool isMatch = matches(thing);
+            print_indent(indent);
+            fprintf(stderr, "'%s' %s '%s'", thing.name(), relation(isMatch), expected.name());
+
+            const matchable_value<T>& value_thing = dynamic_cast<const matchable_value<T>&>(thing);
+            if (equals<T>(value_thing.value(), expected.value())) {
+                fprintf(stderr, " (both are %s)", value_thing.readable_value());
+            }
+            else {
+                int diff = strlen(thing.name())-strlen(expected.name());
+
+                print(", where\n");
+                indent += 2;;
+                print_indent(indent); fprintf(stderr, "'%s'%*s is %s, and\n", thing.name(),    (diff>0 ? 0 : -diff), "", thing.readable_value());
+                print_indent(indent); fprintf(stderr, "'%s'%*s is %s",        expected.name(), (diff<0 ? 0 : diff),  "", expected.readable_value());
+            }
+        }
+        void dump_brief_description(const matchable& thing) const {
+            print(thing.name());
+            print('.');
+            print(relation(true));
+            print('('); print(expected.name()); print(')');
+        }
+
+    };
+
+    // ---------------------------
+    //      predicate_matcher
+
+
+    template <typename T, typename FUNC>
+    class predicate_matcher : public value_matcher<T> {
+        predicate<FUNC> pred;
+        bool            expected_result;
+
+    public:
+        predicate_matcher(bool wanted, predicate<FUNC> pred_, const matchable_value<T>& arg)
+            : value_matcher<T>(arg),
+              pred(pred_),
+              expected_result(wanted)
+        {}
+        MAKE_CLONABLE(predicate_matcher);
+
+        bool matches(const copy<T>& v1, const copy<T>& v2) const { return correlated(pred.matches(v1, v2), expected_result); }
+        const char *relation(bool isMatch) const { return pred.describe(expected_result, correlated(isMatch, expected_result)); }
+    };
+
+    template <typename T> template <typename FUNC>
+    inline match_expectation matchable_value<T>::predicate_expectation(bool wanted, predicate<FUNC> pred, matchable_value<T> arg) const {
+        return match_expectation(*this, predicate_matcher<T,FUNC>(wanted, pred, arg));
+    }
+    template <typename T> template <typename U, typename FUNC>
+    inline match_expectation matchable_value<T>::predicate_expectation(bool wanted, FUNC pred, const char *pred_code, const U& arg, const char *arg_code) const {
+        return match_expectation(*this, predicate_matcher<T,FUNC>(wanted, predicate<FUNC>(pred, pred_code), make_matchable_value<T,U>(arg, arg_code)));
+    }
+
+    // ------------------------------------------------
+    //      matchable + matcher (for expectations)
+
+    const int MAX_GROUP_SIZE = 3;
+    class expectation_group : public matchable //! group of expectation. matchable with group_matcher
+    {
+        int          count;
+        expectation *depend_on[MAX_GROUP_SIZE];
+
+        expectation_group& operator = (const expectation_group&); // forbidden
+    protected:
+
+    public:
+        expectation_group(const expectation& e) : count(1) {
+            depend_on[0] = e.clone();
+        }
+        expectation_group(const expectation& e1, const expectation& e2) : count(2) {
+            depend_on[0] = e1.clone();
+            depend_on[1] = e2.clone();
+        }
+        expectation_group(const expectation_group& other) : count(other.count) {
+            for (int i = 0; i<count; ++i) {
+                depend_on[i] = other.depend_on[i]->clone();
+            }
+        }
+        virtual ~expectation_group() {
+            for (int i = 0; i<count; ++i) {
+                delete depend_on[i];
+            }
+        }
+        MAKE_CLONABLE(expectation_group);
+
+        expectation_group& add(const expectation& e) { depend_on[count++] = e.clone(); return *this; }
+
+        const char *name() const {
+            return "<expectation_group>";
+        }
+        const char *readable_value() const {
+            return "<value of expectation_group>";
+        }
+
+        const expectation& dependent(int i) const { arb_assert(i<count); return *depend_on[i]; }
+        int size() const { return count; }
+        int count_fulfilled() const {
+            int ff = 0;
+            for (int i = 0; i<count; ++i) {
+                ff += dependent(i).fulfilled();
+            }
+            return ff;
+        }
+        void dump_some_expectations(int indent, bool fulfilled, bool unfulfilled) const {
+            if (fulfilled||unfulfilled) {
+                bool all    = fulfilled && unfulfilled;
+                bool wanted = fulfilled;
+
+                bool printed = false;
+                for (int i = 0; i<size(); ++i) {
+                    const expectation& e = dependent(i);
+
+                    bool is_fulfilled = e.fulfilled();
+                    if (all || is_fulfilled == wanted) {
+                        if (printed) print('\n');
+                        e.explain(indent);
+                        printed = true;
+                    }
+                }
+            }
+        }
+        void dump_brief_description() const {
+            print("of(");
+            bool printed = false;
+            for (int i = 0; i<size(); ++i) {
+                if (printed) print(", ");
+                const expectation& e = dependent(i);
+                e.dump_brief_description();
+                printed = true;
+            }
+            print(')');
+        }
+    };
+
+    struct group_match //! result of matching an expectation_group with a group_matcher
+    {
+        const int count;
+        const int fulfilled;
+        const int min_req;
+        const int max_req;
+        const int diff;
+
+        int required(int what) const { return what == -1 ? count : what; }
+        group_match(const expectation_group& group, int min, int max)
+            : count(group.size()),
+              fulfilled(group.count_fulfilled()),
+              min_req(required(min)),
+              max_req(required(max)),
+              diff(fulfilled<min_req
+                   ? fulfilled-min_req
+                   : (fulfilled>max_req ? fulfilled-max_req : 0))
+        {}
+
+
+        inline static void is(int a) { select_spaced(a == 1, "is", "are"); }
+        inline static void was(int a) { select_spaced(a < 2, "was", "were"); }
+        inline static void amountzero(int a, const char *zero) { a ? print(a) : print(zero); }
+
+        void dump_num_of(int amount, const char *thing) const {
+            amountzero(amount, "no");
+            space();
+            print(thing);
+            if (amount != 1) print('s');
+        }
+
+        void dump(const expectation_group& group, int indent) const {
+            print_indent(indent);
+            if (count == 1) {
+                print("expectation ");
+                print("'");
+                group.dependent(0).dump_brief_description();
+                print("' ");
+                print(fulfilled ? "fulfilled" : "fails");
+                print(diff ? " unexpectedly" : " as expected");
+            }
+            else {
+                print("expected ");
+                int that_many;
+                if (min_req == max_req) {
+                    if (diff>0 && min_req>0) print("only ");
+                    that_many = min_req;
+                }
+                else {
+                    if (diff) {
+                        print("at"); select_spaced(diff<0, "least", "most");
+                        that_many = diff<0 ? min_req : max_req;
+                    }
+                    else {
+                        fprintf(stderr, "%i-", min_req);
+                        that_many = max_req;
+                    }
+                }
+                dump_num_of(that_many, "fulfilled expectation");
+                space();
+                group.dump_brief_description();
+                nl();
+
+                indent += 2;
+                print_indent(indent);
+                if (diff == 0) print("and "); else print("but ");
+
+                if (diff<0 && fulfilled>0) print("only ");
+                amountzero(fulfilled, "none"); is(fulfilled); print("fulfilled");
+            }
+
+            print(", because\n");
+            bool show_fulfilled   = diff >= 0;
+            bool show_unfulfilled = diff <= 0;
+            group.dump_some_expectations(indent+2, show_fulfilled, show_unfulfilled);
+        }
+    };
+
+    class group_matcher : public matcher //! matches expectation_group for degree of fulfilledness
+    {
+        int min, max;
+        group_matcher(int min_, int max_) : min(min_), max(max_) {}
+    public:
+        MAKE_CLONABLE(group_matcher);
+
+        bool matches(const matchable& thing) const {
+            return group_match(dynamic_cast<const expectation_group&>(thing), min, max).diff == 0;
+        }
+
+        void dump_expectation(const matchable& thing, int indent) const {
+            const expectation_group& group = dynamic_cast<const expectation_group&>(thing);
+            group_match matching(group, min, max);
+            matching.dump(group, indent);
+        }
+
+        // factories
+        static group_matcher all() { return group_matcher(-1, -1); }
+        static group_matcher none() { return group_matcher(0, 0); }
+        static group_matcher atleast(int min_) { return group_matcher(min_, -1); }
+        static group_matcher atmost(int max_) { return group_matcher(0, max_); }
+        static group_matcher exacly(int amount) { return group_matcher(amount, amount); }
+
+        // match_expectation factories
+        match_expectation of(const expectation& e) const {
+            return match_expectation(expectation_group(e), *this);
+        }
+        match_expectation of(const expectation& e1, const expectation& e2) const {
+            return match_expectation(expectation_group(e1, e2), *this);
+        }
+        match_expectation of(const expectation& e1, const expectation& e2, const expectation& e3) const {
+            return match_expectation(expectation_group(e1, e2).add(e3), *this);
+        }
+
+        void dump_brief_description(const matchable& thing) const {
+            if (max == -1) {
+                if (min == -1) {
+                    print("all");
+                }
+                else {
+                    fprintf(stderr, "atleast(%i)", min);
+                }
+            }
+            else if (max == 0) {
+                print("none");
+            }
+            else if (min == max) {
+                fprintf(stderr, "exactly(%i)", min);
+            }
+            else {
+                fprintf(stderr, "[%i-%i]", min, max);
+            }
+
+            print('.');
+
+            const expectation_group& group = dynamic_cast<const expectation_group&>(thing);
+            group.dump_brief_description();
+        }
+    };
+
+    // --------------------------
+    //      helper functions
+
+    
+    template <typename T> const matchable_value<T> CREATE_matchable(const copy<T>& val, const char *code) { return matchable_value<T>(val, code); }
+
+    inline group_matcher all() { return group_matcher::all(); }
+    inline group_matcher none() { return group_matcher::none(); }
+    inline group_matcher atleast(int min) { return group_matcher::atleast(min); }
+    inline group_matcher atmost(int max) { return group_matcher::atmost(max); }
+    inline group_matcher exacly(int amount) { return group_matcher::exacly(amount); }
+
+    inline match_expectation wrong(const expectation& e) { return none().of(e); }
 };
 
 // --------------------------------------------------------------------------------
 
-#define TEST_WARNING(format,strarg)           arb_test::StaticCode::warningf(__FILE__, __LINE__, format, (strarg))
-#define TEST_WARNING2(format,strarg1,strarg2) arb_test::StaticCode::warningf(__FILE__, __LINE__, format, (strarg1), (strarg2))
+#define MATCHABLE_ARGS_UNTYPED(val) val, #val
+#define MATCHABLE_ARGS_TYPED(val)   make_copy(val), #val
 
-#define TEST_ERROR(format,strarg)           arb_test::StaticCode::errorf(__FILE__, __LINE__, format, (strarg))
-#define TEST_ERROR2(format,strarg1,strarg2) arb_test::StaticCode::errorf(__FILE__, __LINE__, format, (strarg1), (strarg2))
-#define TEST_IOERROR(format,strarg)         arb_test::StaticCode::ioerrorf(__FILE__, __LINE__, format, (strarg))
+#define equals(val)  equals_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
+#define differs(val) equals_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
+
+#define less_than(val) lessThan_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
+#define more_than(val) moreThan_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
+
+#define less_or_equal(val) moreThan_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
+#define more_or_equal(val) lessThan_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
+
+#define is(pred,arg)     predicate_expectation(true, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
+#define is_not(pred,arg) predicate_expectation(false, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
+
+#define that(thing) CREATE_matchable(MATCHABLE_ARGS_TYPED(thing))
+
+#define TEST_EXPECT(EXPCTN) do { using namespace arb_test; asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).expect_that(); } while(0)
+#define TEST_EXPECT__BROKEN(EXPCTN) do { using namespace arb_test; asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).expect_broken(); } while(0)
+#define TEST_EXPECT__WANTED(EXPCTN) do { using namespace arb_test; asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).expect_wanted_behavior(); } while(0)
+
+#define DEBUG_TEST_EXPECT(EXPCTN) do {                                                  \
+        using namespace arb_test;                                                       \
+        debug_asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).                            \
+            debug_expectations();                                                       \
+        debug_asserter(wrong(EXPCTN), "wrong(" #EXPCTN ")", __FILE__, __LINE__).        \
+            debug_expectations();                                                       \
+    } while(0)
+
+// --------------------------------------------------------------------------------
+
+#define HERE arb_test::locinfo(__FILE__, __LINE__)
+
+#define TEST_WARNING(format,strarg)           HERE.warningf(format, (strarg))
+#define TEST_WARNING2(format,strarg1,strarg2) HERE.warningf(format, (strarg1), (strarg2))
+#define TEST_ERROR(format,strarg)             HERE.errorf(true, format, (strarg))
+#define TEST_ERROR2(format,strarg1,strarg2)   HERE.errorf(true, format, (strarg1), (strarg2))
+#define TEST_IOERROR(format,strarg)           HERE.ioerrorf(true, format, (strarg))
 
 // --------------------------------------------------------------------------------
 
@@ -393,9 +1049,8 @@ namespace arb_test {
             TEST_WARNING("Known broken behavior ('%s' fails)", #cond);  \
     } while (0)
 
-
-#define TEST_ASSERT_ZERO(cond)         TEST_ASSERT((cond)         == 0)
-#define TEST_ASSERT_ZERO__BROKEN(cond) TEST_ASSERT__BROKEN((cond) == 0)
+#define TEST_ASSERT_ZERO(cond)         TEST_EXPECT(that(cond).equals(0))
+#define TEST_ASSERT_ZERO__BROKEN(cond) TEST_EXPECT__BROKEN(that(cond).equals(0))
 
 #define TEST_ASSERT_ZERO_OR_SHOW_ERRNO(iocond)                  \
     do {                                                        \
@@ -545,24 +1200,23 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_ASSERT_NULL(n)         TEST_ASSERT(arb_test::test_equal(n, (typeof(n))NULL))
-#define TEST_ASSERT_NULL__BROKEN(n) TEST_ASSERT__BROKEN(arb_test::test_equal(n, (typeof(n))NULL))
+#define TEST_ASSERT_EQUAL(e1,t2)         TEST_EXPECT(that(e1).equals(t2))
+#define TEST_ASSERT_EQUAL__BROKEN(e1,t2) TEST_EXPECT__BROKEN(that(e1).equals(t2))
 
-#define TEST_ASSERT_EQUAL(e1,t2)         TEST_ASSERT(arb_test::test_equal(e1, t2))
-#define TEST_ASSERT_EQUAL__BROKEN(e1,t2) TEST_ASSERT__BROKEN(arb_test::test_equal(e1, t2))
+#define TEST_ASSERT_NULL(n)         TEST_ASSERT_EQUAL(n, NULL)
+#define TEST_ASSERT_NULL__BROKEN(n) TEST_ASSERT_EQUAL__BROKEN(n, NULL)
 
-#define TEST_ASSERT_SIMILAR(e1,t2,epsilon)         TEST_ASSERT(arb_test::test_similar(e1, t2, epsilon))
-#define TEST_ASSERT_SIMILAR__BROKEN(e1,t2,epsilon) TEST_ASSERT__BROKEN(arb_test::test_similar(e1, t2, epsilon))
+#define TEST_ASSERT_SIMILAR(e1,t2,epsilon)         TEST_EXPECT(that(e1).is(epsilon_similar(epsilon), t2))
+#define TEST_ASSERT_SIMILAR__BROKEN(e1,t2,epsilon) TEST_EXPECT__BROKEN(that(e1).is(epsilon_similar(epsilon), t2))
 
-#define TEST_ASSERT_DIFFERENT(e1,t2)         TEST_ASSERT(arb_test::test_different(e1, t2))
-#define TEST_ASSERT_DIFFERENT__BROKEN(e1,t2) TEST_ASSERT__BROKEN(arb_test::test_different(e1, t2))
+#define TEST_ASSERT_DIFFERENT(e1,t2)         TEST_EXPECT(that(e1).differs(t2));
+#define TEST_ASSERT_DIFFERENT__BROKEN(e1,t2) TEST_EXPECT__BROKEN(that(e1).differs(t2));
 
-#define TEST_ASSERT_LOWER_EQUAL(lower,upper)  TEST_ASSERT(arb_test::test_less_equal(lower, upper))
-#define TEST_ASSERT_LOWER(lower,upper) do { TEST_ASSERT_LOWER_EQUAL(lower, upper); TEST_ASSERT_DIFFERENT(lower, upper); } while(0)
-#define TEST_ASSERT_IN_RANGE(val,lower,upper) do { TEST_ASSERT_LOWER_EQUAL(lower, val); TEST_ASSERT_LOWER_EQUAL(val, upper); } while(0)
+#define TEST_ASSERT_LOWER_EQUAL(lower,upper)  TEST_EXPECT(that(lower).less_or_equal(upper))
+#define TEST_ASSERT_LOWER(lower,upper)        TEST_EXPECT(that(lower).less_than(upper))
+#define TEST_ASSERT_IN_RANGE(val,lower,upper) TEST_EXPECT(all().of(that(val).more_or_equal(lower), that(val).less_or_equal(upper)))
 
-
-#define TEST_ASSERT_CONTAINS(str, part) TEST_ASSERT(arb_test::test_strcontains(str, part))
+#define TEST_ASSERT_CONTAINS(str, part) TEST_EXPECT(that(str).is(containing(), part))
 
 // --------------------------------------------------------------------------------
 // the following macros only work when

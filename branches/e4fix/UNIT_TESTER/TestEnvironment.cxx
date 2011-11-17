@@ -182,7 +182,7 @@ class PersistantFlag {
         FILE       *fp       = fopen(flagfile, "w");
         if (!fp) {
             GB_ERROR error = GB_IO_error("creating flag", flagfile);
-            StaticCode::errorf(__FILE__, __LINE__, "%s\n", error);
+            HERE.errorf(true, "%s\n", error);
         }
         fclose(fp);
         env_assert(flagFileExists());
@@ -196,7 +196,7 @@ class PersistantFlag {
         int res = unlink(flagfile);
         if (res != 0) {
             GB_ERROR error = GB_IO_error("unlinking", flagfile);
-            StaticCode::errorf(__FILE__, __LINE__, "%s\n", error);
+            HERE.errorf(true, "%s\n", error);
         }
         env_assert(!flagFileExists());
     }
