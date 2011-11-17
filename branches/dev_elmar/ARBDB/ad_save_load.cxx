@@ -12,6 +12,8 @@
 #include <sys/stat.h>
 #include <netinet/in.h>
 
+#include <arb_file.h>
+
 #include "gb_map.h"
 #include "gb_load.h"
 #include "gb_storage.h"
@@ -183,16 +185,14 @@ static GB_ERROR gb_remove_quick_saved(GB_MAIN_TYPE *Main, const char *path) {
     for (i=0; i<10 && !error; i++) GB_unlink_or_warn(gb_oldQuicksaveName(path, i), &error);
     if (Main) Main->qs.last_index = -1;
 
-    gb_assert(!GB_have_error()); // dont export
-    return error;
+    RETURN_ERROR(error);
 }
 
 GB_ERROR gb_remove_all_but_main(GB_MAIN_TYPE *Main, const char *path) {
     GB_ERROR error = gb_remove_quick_saved(Main, path);
     if (!error) GB_unlink_or_warn(gb_mapfile_name(path), &error); // delete old mapfile
 
-    gb_assert(!GB_have_error());                    // dont export
-    return error;
+    RETURN_ERROR(error);
 }
 
 static GB_ERROR deleteSuperfluousQuicksaves(GB_MAIN_TYPE *Main) {
@@ -832,54 +832,44 @@ GB_ERROR GB_save(GBDATA *gb, const char *path, const char *savetype)
     return GB_save_as(gb, path, savetype);
 }
 
+GB_ERROR GB_create_parent_directory(const char *path) {
+    GB_ERROR error = NULL;
+    char *parent;
+    GB_split_full_path(path, &parent, NULL, NULL, NULL);
+    if (parent) {
+        if (!GB_is_directory(parent)) error = GB_create_directory(parent);
+        free(parent);
+    }
+    return error;
+}
+
 GB_ERROR GB_create_directory(const char *path) {
     GB_ERROR error = 0;
     if (!GB_is_directory(path)) {
-        char *parent;
-        GB_split_full_path(path, &parent, NULL, NULL, NULL);
-        if (parent) {
-            if (!GB_is_directory(parent)) error = GB_create_directory(parent);
-            free(parent);
-        }
-
+        error = GB_create_parent_directory(path);
         if (!error) {
             int res = mkdir(path, ACCESSPERMS);
             if (res) error = GB_IO_error("creating directory", path);
         }
-
-        gb_assert(error || GB_is_directory(path));
-
         error = GB_failedTo_error("GB_create_directory", path, error);
     }
     return error;
 }
 
-GB_ERROR GB_save_in_home(GBDATA *gb, const char *path, const char *savetype) {
+GB_ERROR GB_save_in_arbprop(GBDATA *gb, const char *path, const char *savetype) {
     /* savetype
      *      'a'    ascii
      *      'b'    binary
      *      'bm'   binary + mapfile
-     *      0=ascii
      *
      * automatically creates subdirectories
      */
-    GB_ERROR    error = 0;
-    char       *buffer;
-    const char *env;
-    char       *slash;
 
-    env = GB_getenvHOME();
-    if (!path) path = GB_MAIN(gb)->path;
+    char     *fullname = strdup(GB_path_in_arbprop(path ? path : GB_MAIN(gb)->path));
+    GB_ERROR  error    = GB_create_parent_directory(fullname);
+    if (!error) error = GB_save_as(gb, fullname, savetype);
+    free(fullname);
 
-    buffer = (char *)GB_calloc(sizeof(char), strlen(env) + strlen(path) + 2);
-
-    sprintf(buffer, "%s/%s", env, path);
-    slash             = strrchr(buffer, '/');
-    *slash            = 0;
-    error             = GB_create_directory(buffer);
-    *slash            = '/';
-    if (!error) error = GB_save_as(gb, buffer, savetype);
-    if (buffer) free(buffer);
     return error;
 }
 
@@ -937,7 +927,7 @@ GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype) {
                     Main->security_level = 7;
 
                     bool outOfOrderSave     = strchr(savetype, 'f');
-                    bool deleteQuickAllowed = !outOfOrderSave;
+                    bool deleteQuickAllowed = !outOfOrderSave && !dump_to_stdout;
                     {
                         int result = 0;
 
@@ -1017,8 +1007,7 @@ GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype) {
         }
     }
 
-    gb_assert(!GB_have_error());                    // dont export
-    return error;
+    RETURN_ERROR(error);
 }
 
 static GB_ERROR gb_check_quick_save(GBDATA *gb_main) {
@@ -1128,8 +1117,7 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, const char *path) {
         }
     }
 
-    gb_assert(!GB_have_error());                    // dont export
-    return error;
+    RETURN_ERROR(error);
 }
 
 GB_ERROR GB_save_quick(GBDATA *gb, const char *refpath) {
@@ -1199,8 +1187,7 @@ GB_ERROR GB_save_quick(GBDATA *gb, const char *refpath) {
         }
     }
 
-    gb_assert(!GB_have_error());                    // dont export
-    return error;
+    RETURN_ERROR(error);
 }
 
 char *gb_full_path(const char *path) {
@@ -1311,7 +1298,6 @@ static GB_ERROR modify_db(GBDATA *gb_main) {
 }
 
 // #define TEST_AUTO_UPDATE // uncomment to auto-update binary and quicksave testfiles (needed once after changing ascii testfile or modify_db())
-#define TEST_copy(src, dst) TEST_ASSERT(system(GBS_global_string("cp '%s' '%s'", src, dst)) == 0)
 
 #define TEST_loadsave_CLEANUP() TEST_ASSERT(system("rm -f [ab]2[ab]*.* master.* slave.* renamed.* fast.* fast2b.* TEST_loadsave.ARF") == 0)
 
@@ -1387,7 +1373,7 @@ void TEST_SLOW_loadsave() {
         TEST_ASSERT_NO_ERROR(GB_save_quick(gb_b2b, "b2b.arb"));
 
 #if defined(TEST_AUTO_UPDATE)
-        TEST_copy("a2b.a00", "TEST_loadsave_quick.a00");
+        TEST_COPY_FILE("a2b.a00", "TEST_loadsave_quick.a00");
 #endif // TEST_AUTO_UPDATE
 
         TEST_ASSERT_FILES_EQUAL("TEST_loadsave_quick.a00", "a2b.a00");

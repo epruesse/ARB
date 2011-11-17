@@ -1038,6 +1038,7 @@ PROBE = bin/arb_pt_server
 ARCHS_PROBE_COMMON = \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/HELIX/HELIX.a \
+		SL/PTCLEAN/PTCLEAN.a \
 
 ARCHS_PROBE_LINK = \
 		$(ARCHS_PROBE_COMMON) \
@@ -1228,6 +1229,7 @@ SL/MATRIX/MATRIX.dummy:			links_non_perl
 SL/NDS/NDS.dummy:			links_non_perl
 SL/NEIGHBOURJOIN/NEIGHBOURJOIN.dummy:	links_non_perl
 SL/PRONUC/PRONUC.dummy:			links_non_perl
+SL/PTCLEAN/PTCLEAN.dummy:		links_non_perl link_db
 SL/SEQUENCE/SEQUENCE.dummy:		links_non_perl
 SL/TRANSLATE/TRANSLATE.dummy:		links_non_perl
 SL/SEQIO/SEQIO.dummy:			links_non_perl
@@ -1451,7 +1453,6 @@ proto: proto_tools
 		NTREE/NTREE.proto \
 		$(ARCHS_PT_SERVER:.a=.proto) \
 		SERVERCNTRL/SERVERCNTRL.proto \
-		GDE/GDE.proto \
 		SL/SL.proto \
 
 #********************************************************************************
@@ -1836,9 +1837,7 @@ UNITS_WORKING = \
 	$(RNA3D_TEST) \
 	ALIV3/ALIV3.test \
 	ARB_GDE/ARB_GDE.test \
-	AWT/AWT.test \
 	CONSENSUS_TREE/CONSENSUS_TREE.test \
-	DBSERVER/DBSERVER.test \
 	DIST/DIST.test \
 	EISPACK/EISPACK.test \
 	GENOM/GENOM.test \
@@ -1851,7 +1850,6 @@ UNITS_WORKING = \
 	PGT/PGT.test \
 	PHYLO/PHYLO.test \
 	PRIMER_DESIGN/PRIMER_DESIGN.test \
-	PROBE/PROBE.test \
 	PROBE_DESIGN/PROBE_DESIGN.test \
 	ptpan/PROBE.test \
 	SECEDIT/SECEDIT.test \
@@ -1903,7 +1901,9 @@ UNITS_TESTED_FIRST = \
 	AWTC/AWTC.test \
 
 UNITS_TESTED = \
+	DBSERVER/DBSERVER.test \
 	GENOM_IMPORT/GENOM_IMPORT.test \
+	AWT/AWT.test \
 	CORE/CORE.test \
 	SL/TREEDISP/TREEDISP.test \
 	NTREE/NTREE.test \
@@ -1918,6 +1918,8 @@ UNITS_TESTED = \
 	HELP_SOURCE/arb_help2xml.test \
 	CONVERTALN/CONVERTALN.test \
 	SL/SEQIO/SEQIO.test \
+	SL/PTCLEAN/PTCLEAN.test \
+	PROBE/PROBE.test \
 
 TESTED_UNITS_MANUAL = \
 	$(UNITS_TRY_FIX) \

@@ -473,9 +473,9 @@ AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AWT_graph
 
     // Properties menu
     awm->create_menu("Properties", "P");
-    awm->insert_menu_topic("props_menu", "Menu: Colors and Fonts ...",                 "M", "props_frame.hlp",   AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window,   0);
-    awm->insert_menu_topic("props_data", "Data: Colors and Fonts ...",                 "D", "ph_props_data.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)gcmiddle);
-    awm->insert_menu_topic("save_props", "Save Properties (in ~/.arb_prop/phylo.arb)", "S", "savedef.hlp",       AWM_ALL,          (AW_CB)AW_save_properties,    0, 0);
+    awm->insert_menu_topic("props_menu", "Menu: Colors and Fonts ...",  "M", "props_frame.hlp",   AWM_ALL, AW_POPUP,(AW_CL)AW_preset_window,    0);
+    awm->insert_menu_topic("props_data", "Data: Colors and Fonts ...",  "D", "ph_props_data.hlp", AWM_ALL, AW_POPUP,(AW_CL)AW_create_gc_window, (AW_CL)gcmiddle);
+    awm->insert_menu_topic("save_props", "Save Properties (phylo.arb)", "S", "savedef.hlp",       AWM_ALL,          (AW_CB)AW_save_properties,  0, 0);
 
 
     // set window areas
@@ -548,7 +548,7 @@ int main(int argc, char **argv) {
     aw_initstatus();
 
     GB_shell shell;
-    AW_root  *aw_root = AWT_create_root(".arb_prop/phylo.arb", "ARB_PHYLO");
+    AW_root  *aw_root = AWT_create_root("phylo.arb", "ARB_PHYLO");
     PH_root  *ph_root = new PH_root;
     GB_ERROR  error   = ph_root->open(db_server);
     if (error) {

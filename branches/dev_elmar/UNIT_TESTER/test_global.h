@@ -71,9 +71,19 @@ namespace arb_test {
         ~FlushedOutput() { fputc('\n', stderr); }
     };
 
+    enum FlagAction {
+        FLAG_RAISE,
+        FLAG_IS_RAISED,
+    };
+
     class GlobalTestData {
+        typedef bool (*FlagCallback)(FlagAction action, const char *name);
+
+        FlagCallback flag_cb;
+
         GlobalTestData()
-            : annotation(NULL),
+            : flag_cb(NULL),
+              annotation(NULL),
               show_warnings(true),
               assertion_failed(false),
               running_test(false),
@@ -84,7 +94,7 @@ namespace arb_test {
         }
         GlobalTestData(const GlobalTestData&); // do not synthesize
         GlobalTestData& operator=(const GlobalTestData&); // do not synthesize
-        
+
         static GlobalTestData *instance(bool erase) {
             static GlobalTestData *data = 0;             // singleton
             if (erase) {
@@ -112,9 +122,20 @@ namespace arb_test {
         bool show_warnings;
         bool assertion_failed;
         bool running_test;
+        bool entered_mutex_loop; // helper to avoid race-condition
 
         // counters
         size_t warnings;
+
+        void raiseLocalFlag(const char *name) const {
+            if (flag_cb) {
+                flag_cb(FLAG_RAISE, name);
+            }
+            else {
+                fputs("cannot raise local flag (called from outside test-code?)\n", stderr);
+            }
+        }
+        void init(FlagCallback fc) { flag_cb = fc; }
 
         bool not_covered_by_test() const { return !running_test; }
 

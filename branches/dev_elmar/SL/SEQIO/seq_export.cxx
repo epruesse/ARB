@@ -13,6 +13,7 @@
 #include <AP_filter.hxx>
 #include <arbdbt.h>
 #include <arb_strarray.h>
+#include <arb_file.h>
 #include <xml.hxx>
 #include <arb_progress.h>
 
@@ -559,7 +560,7 @@ static GB_ERROR export_format_single(const char *db_name, const char *formname, 
                 char *sys = GBS_string_eval(efo.system, srt, 0);
 
                 GB_informationf("exec '%s'", efo.system);
-                error = GB_system(sys);
+                error = GBK_system(sys);
 
                 GB_unlink_or_warn(intermediate_export, &error);
 

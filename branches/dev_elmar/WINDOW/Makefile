@@ -241,6 +241,7 @@ AW_file_selection.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_file_selection.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_file_selection.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_file_selection.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_file_selection.o: $(ARBHOME)/INCLUDE/arb_file.h
 AW_file_selection.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_file_selection.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AW_file_selection.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -301,15 +302,14 @@ AW_help.o: aw_msg.hxx
 AW_help.o: aw_root.hxx
 AW_help.o: aw_window.hxx
 AW_help.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AW_help.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_help.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_help.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_help.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_help.o: $(ARBHOME)/INCLUDE/arb_file.h
 AW_help.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_help.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_help.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_help.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AW_help.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_help.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_help.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_help.o: $(ARBHOME)/INCLUDE/cb.h
@@ -352,6 +352,7 @@ AW_nawar.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_nawar.o: $(ARBHOME)/INCLUDE/arb_file.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -541,6 +542,7 @@ AW_window.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_window.o: $(ARBHOME)/INCLUDE/arb_file.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_string.h

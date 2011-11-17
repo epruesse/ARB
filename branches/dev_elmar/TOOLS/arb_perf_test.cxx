@@ -147,7 +147,7 @@ int main(int argc, char **argv)
     }
     else {
         char *in = argv[1];
-        gb_main  = GBT_open(in, "rw", 0);
+        gb_main  = GBT_open(in, "rw");
 
         if (!gb_main) {
             error = GB_await_error();

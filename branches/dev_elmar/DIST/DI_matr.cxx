@@ -297,8 +297,8 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
                 GBDATA *gb_species = GBT_find_species_rel_species_data(gb_species_data, species_in_sort_tree[i]);
                 if (!gb_species) {
                     if (show_warnings) {
-                        aw_message(GB_export_errorf("Species '%s' found in tree '%s' but NOT in database.",
-                                                    species_in_sort_tree[i], sort_tree_name));
+                        aw_message(GBS_global_string("Species '%s' found in tree '%s' but NOT in database.",
+                                                     species_in_sort_tree[i], sort_tree_name));
                     }
                     unknown_species_in_tree++;
                     continue;
@@ -339,9 +339,9 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
     }
 
     if (unknown_species_in_tree && show_warnings) {
-        aw_message(GB_export_errorf("We found %i species in tree '%s' which are not in database.\n"
-                                    "This does not affect the current calculation, but you should think about it.",
-                                    unknown_species_in_tree, sort_tree_name));
+        aw_message(GBS_global_string("We found %i species in tree '%s' which are not in database.\n"
+                                     "This does not affect the current calculation, but you should think about it.",
+                                     unknown_species_in_tree, sort_tree_name));
     }
 
     di_assert(out_tree_species>=0);
@@ -1461,8 +1461,8 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->insert_menu_topic("quit",   "Quit",        "Q", "quit.hlp",  AWM_ALL, (AW_CB)di_exit,  0,  0);
 
     aws->create_menu("Properties", "P", AWM_ALL);
-    aws->insert_menu_topic("frame_props", "Frame ...",                                 "F", "props_frame.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0);
-    aws->insert_menu_topic("save_props",  "Save Properties (in ~/.arb_prop/dist.arb)", "S", "savedef.hlp",     AWM_ALL, (AW_CB)AW_save_properties, 0, 0);
+    aws->insert_menu_topic("frame_props", "Frame ...",                  "F", "props_frame.hlp", AWM_ALL, AW_POPUP,(AW_CL)AW_preset_window,   0);
+    aws->insert_menu_topic("save_props",  "Save Properties (dist.arb)", "S", "savedef.hlp",     AWM_ALL,          (AW_CB)AW_save_properties, 0, 0);
 
     aws->insert_help_topic("help ...", "h", "dist.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"dist.hlp", 0);
 

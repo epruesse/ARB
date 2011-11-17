@@ -11,6 +11,7 @@
 
 #include <arbdbt.h>
 #include <arb_defs.h>
+#include <unistd.h>
 
 int main(int, char **) {
     fputs("don't call us\n", stderr);
@@ -20,22 +21,47 @@ int main(int, char **) {
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS
+#include <arb_file.h>
 #include <test_unit.h>
 #include <ut_valgrinded.h>
 
 // --------------------------------------------------------------------------------
 
 
+inline void make_valgrinded_call_from_pipe(char *&command) {
+    using namespace utvg;
+    static valgrind_info valgrind;
+    if (valgrind.wanted) {
+        char *pipeSym = strchr(command, '|');
+        if (pipeSym) {
+            char *left  = GB_strpartdup(command, pipeSym-1);
+            char *right = strdup(pipeSym+1);
+
+            make_valgrinded_call(left);
+            make_valgrinded_call_from_pipe(right);
+
+            freeset(command, GBS_global_string_copy("%s | %s", left, right));
+
+            free(right);
+            free(left);
+        }
+        else {
+            make_valgrinded_call(command);
+        }
+    }
+}
+
 inline GB_ERROR valgrinded_system(const char *cmdline) {
-    char     *cmddup = strdup(cmdline);
-    make_valgrinded_call(cmddup);
-    GB_ERROR  error  = GB_system(cmddup);
+    char *cmddup = strdup(cmdline);
+    make_valgrinded_call_from_pipe(cmddup);
+
+    GB_ERROR error = GBK_system(cmddup);
     free(cmddup);
     return error;
 }
 
 #define RUN_TOOL(cmdline)                valgrinded_system(cmdline)
-#define RUN_TOOL_NEVER_VALGRIND(cmdline) GB_system(cmdline)
+#define RUN_TOOL_NEVER_VALGRIND(cmdline) GBK_system(cmdline)
 
 #define TEST_RUN_TOOL(cmdline)                TEST_ASSERT_NO_ERROR(RUN_TOOL(cmdline))
 #define TEST_RUN_TOOL_NEVER_VALGRIND(cmdline) TEST_ASSERT_NO_ERROR(RUN_TOOL_NEVER_VALGRIND(cmdline))
@@ -54,27 +80,19 @@ void TEST_SLOW_ascii_2_bin_2_ascii() {
 
     // test conversion (bin->ascii->bin) via stream (this tests 'arb_repair')
     TEST_RUN_TOOL(GBS_global_string("arb_2_ascii %s - | arb_2_bin - %s", binary, binary_2ND));
+
     // TEST_ASSERT_FILES_EQUAL(binary, binary_2ND); // can't compare binary files (they contain undefined bytes)
+
+    // instead convert back to ascii and compare result with original
     TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(ascii));
     TEST_RUN_TOOL(GBS_global_string("arb_2_ascii %s %s", binary_2ND, ascii));
     TEST_ASSERT_FILES_EQUAL(ascii, ascii_ORG);
-    
+
     TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(ascii));
     TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(binary));
     TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(binary_2ND));
     TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink("ascii2bin.ARF"));
     TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink("ascii2bin2.ARF"));
-}
-
-void TEST_SLOW_arb_gene_probe() {
-    const char *genome   = "tools/gene_probe.arb";
-    const char *out      = "tools/gene_probe_out.arb";
-    const char *expected = "tools/gene_probe_expected.arb";
-
-    TEST_RUN_TOOL(GBS_global_string("arb_gene_probe %s %s", genome, out));
-    TEST_ASSERT_FILES_EQUAL(out, expected);
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(out));
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink("tools/gene_probe_out.ARM"));
 }
 
 void TEST_arb_primer() {
@@ -179,7 +197,7 @@ void TEST_SLOW_arb_read_tree() {
     } while(0)
 
 void TEST_arb_replace() {
-    const char *infile = "tools/gene_probe.arb";
+    const char *infile = "tools/arb_replace.in";
     const char *file1  = "tools/arb_replace_1.out";
     const char *file2  = "tools/arb_replace_2.out";
 
@@ -220,7 +238,7 @@ public:
 
             char *cmd = GBS_global_string_copy("bash -c '%s >stdout.log 2>stderr.log'", escaped);
 
-            appendError(GB_system(cmd));
+            appendError(GBK_system(cmd));
             free(cmd);
             free(escaped);
 
@@ -297,10 +315,9 @@ void TEST_SLOW_arb_probe() {
                        " serverid=-666"
                        " matchsequence=UAUCGGAGAGUUUGA",
 
-                       "    name---- fullname mis N_mis wmis pos rev          'UAUCGGAGAGUUUGA'"
-                       "BcSSSS00"
-                       "  BcSSSS00            0     0  0.0   3 0   .......UU-===============-UCAAGUCGA"
-                       );
+                       /* ---- */ "    name---- fullname mis N_mis wmis pos ecoli rev          'UAUCGGAGAGUUUGA'\1"
+                       "BcSSSS00\1" "  BcSSSS00            0     0  0.0   3     2 0   .......UU-===============-UCAAGUCGA\1"
+        );
 
     TEST_STDOUT_EQUALS("arb_probe"
                        " serverid=-666"
@@ -315,10 +332,10 @@ void TEST_SLOW_arb_probe() {
                        "Max Non Group Hits     0\n"
                        "Min Group Hits       100%\n"
                        "Target             le     apos ecol grps  G+C 4GC+2AT Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
-                       "CGAAAGGAAGAUUAAUAC 18 A=    94   94    4 33.3 48.0    GUAUUAAUCUUCCUUUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-                       "GAAAGGAAGAUUAAUACC 18 A+     1   95    4 33.3 48.0    GGUAUUAAUCUUCCUUUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-                       "UCAAGUCGAGCGAUGAAG 18 B=    18   18    4 50.0 54.0    CUUCAUCGCUCGACUUGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-                       "AUCAAGUCGAGCGAUGAA 18 B-     1   17    4 44.4 52.0    UUCAUCGCUCGACUUGAU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  2,  3,\n"
+                       "CGAAAGGAAGAUUAAUAC 18 A=    94   82    4 33.3 48.0    GUAUUAAUCUUCCUUUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+                       "GAAAGGAAGAUUAAUACC 18 A+     1   83    4 33.3 48.0    GGUAUUAAUCUUCCUUUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+                       "UCAAGUCGAGCGAUGAAG 18 B=    18   17    4 50.0 54.0    CUUCAUCGCUCGACUUGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+                       "AUCAAGUCGAGCGAUGAA 18 B-     1   16    4 44.4 52.0    UUCAUCGCUCGACUUGAU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  2,  3,\n"
                        );
 }
 
@@ -368,6 +385,57 @@ void TEST_arb_export_tree() {
     TEST_OUTPUT_EQUALS("arb_export_tree tree_nosuch " TREE_DB,
                        ";\n",                                                                    // shall export an empty newick tree
                        "arb_export_tree: Tree 'tree_nosuch' does not exist in DB '" TREE_DB "'\n"); // with error!
+}
+
+static char *notification_result = NULL;
+static void test_notification_cb(const char *message, void *cd) {
+    const char *cds     = (const char *)cd;
+    notification_result = GBS_global_string_copy("message='%s' cd='%s'", message, cds);
+}
+
+#define INIT_NOTIFICATION                                                                       \
+    GB_shell shell;                                                                             \
+    GBDATA *gb_main = GBT_open("nosuch.arb", "crw");                                            \
+    const char *cd  = "some argument";                                                          \
+    char *cmd = GB_generate_notification(gb_main, test_notification_cb, "the note", (void*)cd)
+
+#define EXIT_NOTIFICATION       \
+    GB_close(gb_main);          \
+    free(cmd)
+    
+#define TEST_DBSERVER_OPEN(gbmain) TEST_ASSERT_NO_ERROR(GBCMS_open(":", 0, gbmain))
+#define TEST_DBSERVER_SERVE_UNTIL(gbmain, cond) do {                    \
+        bool success            = GBCMS_accept_calls(gb_main, false);   \
+        while (success) success = GBCMS_accept_calls(gb_main, true);    \
+        GB_usleep(10000);                                               \
+    } while(!(cond))
+
+#define TEST_DBSERVER_CLOSE(gbmain) GBCMS_shutdown(gb_main)
+
+void TEST_close_with_pending_notification() {
+    INIT_NOTIFICATION;
+    EXIT_NOTIFICATION;
+}
+void TEST_close_after_pending_notification_removed() {
+    INIT_NOTIFICATION;
+    TEST_ASSERT_NO_ERROR(GB_remove_last_notification(gb_main));
+    EXIT_NOTIFICATION;
+}
+void TEST_arb_notify() {
+    INIT_NOTIFICATION;
+
+    TEST_DBSERVER_OPEN(gb_main);
+
+    TEST_ASSERT_NULL(notification_result);
+    TEST_ASSERT_NO_ERROR(GBK_system(GBS_global_string("%s &", cmd))); // async call to arb_notify
+
+    TEST_DBSERVER_SERVE_UNTIL(gb_main, notification_result);
+    TEST_DBSERVER_CLOSE(gb_main);
+
+    TEST_ASSERT_EQUAL(notification_result, "message='the note' cd='some argument'");
+    freenull(notification_result);
+
+    EXIT_NOTIFICATION;
 }
 
 #endif // UNIT_TESTS

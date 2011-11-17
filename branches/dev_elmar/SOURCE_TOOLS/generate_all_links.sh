@@ -228,6 +228,7 @@ symlink_file ../BUGEX/bugex.h INCLUDE/bugex.h &&
 symlink_file ../CONSENSUS_TREE/CT_ctree.hxx INCLUDE/CT_ctree.hxx &&
 symlink_file ../CORE/arb_core.h INCLUDE/arb_core.h &&
 symlink_file ../CORE/arb_cs.h INCLUDE/arb_cs.h &&
+symlink_file ../CORE/arb_file.h INCLUDE/arb_file.h &&
 symlink_file ../CORE/arb_msg.h INCLUDE/arb_msg.h &&
 symlink_file ../CORE/arb_signal.h INCLUDE/arb_signal.h &&
 symlink_file ../CORE/arb_sort.h INCLUDE/arb_sort.h &&
@@ -277,6 +278,7 @@ symlink_file ../SL/NEIGHBOURJOIN/neighbourjoin.hxx INCLUDE/neighbourjoin.hxx &&
 symlink_file ../SL/PRONUC/AP_codon_table.hxx INCLUDE/AP_codon_table.hxx &&
 symlink_file ../SL/PRONUC/AP_pro_a_nucs.hxx INCLUDE/AP_pro_a_nucs.hxx &&
 symlink_file ../SL/PRONUC/iupac.h INCLUDE/iupac.h &&
+symlink_file ../SL/PTCLEAN/ptclean.h INCLUDE/ptclean.h &&
 symlink_file ../SL/REFENTRIES/refentries.h INCLUDE/refentries.h &&
 symlink_file ../SL/REGEXPR/RegExpr.hxx INCLUDE/RegExpr.hxx &&
 symlink_file ../SL/SEQUENCE/AP_seq_dna.hxx INCLUDE/AP_seq_dna.hxx &&

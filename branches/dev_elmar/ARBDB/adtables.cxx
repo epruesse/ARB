@@ -89,7 +89,7 @@ GBDATA *GBT_open_table(GBDATA *gb_table_root, const char *table_name, bool read_
     if (gb_table) return gb_table;
 
     gb_table_data = GB_search(gb_table_root, "table_data", GB_CREATE_CONTAINER);
-    GB_create_index(gb_table_data, "name", GB_IGNORE_CASE, 256);
+    ASSERT_NO_ERROR(GB_create_index(gb_table_data, "name", GB_IGNORE_CASE, 256));
 
     gb_table_name = GB_find_string(gb_table_data, "name", table_name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     if (gb_table_name) return GB_get_father(gb_table_name);
@@ -122,7 +122,7 @@ GBDATA *GBT_first_table(GBDATA *gb_main) {
     GBDATA *gb_table_data;
     GBDATA *gb_table;
     gb_table_data = GB_search(gb_main, "table_data", GB_CREATE_CONTAINER);
-    GB_create_index(gb_table_data, "name", GB_IGNORE_CASE, 256);
+    ASSERT_NO_ERROR(GB_create_index(gb_table_data, "name", GB_IGNORE_CASE, 256));
     gb_table = GB_entry(gb_table_data, "table");
     return gb_table;
 }

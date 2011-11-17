@@ -20,6 +20,9 @@
 #include "arb_core.h"
 #endif
 
+// return error and ensure none is exported
+#define RETURN_ERROR(err)  arb_assert(!GB_have_error()); return (err)
+
 const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char *templat, ...) __ATTR__FORMAT(3);
 size_t GBS_last_global_string_size(void);
 char *GBS_global_string_copy(const char *templat, ...) __ATTR__FORMAT(1);
@@ -49,6 +52,7 @@ void GB_warningf(const char *templat, ...) __ATTR__FORMAT(1);
 void GB_information(const char *message);
 void GB_informationf(const char *templat, ...) __ATTR__FORMAT(1);
 void GBS_reuse_buffer(const char *global_buffer);
+GB_ERROR GBK_system(const char *system_command) __ATTR__USERESULT;
 
 #else
 #error arb_msg.h included twice

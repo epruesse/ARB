@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
     aw_initstatus();
 
     GB_shell shell;
-    AW_root *aw_root = AWT_create_root(".arb_prop/dist.arb", "ARB_DIST");
+    AW_root *aw_root = AWT_create_root("dist.arb", "ARB_DIST");
 
     {
         arb_params *params = arb_trace_argv(&argc, argv);

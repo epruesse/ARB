@@ -51,6 +51,7 @@
 #include <aw_root.hxx>
 #include <arb_strbuf.h>
 #include <arb_strarray.h>
+#include <arb_file.h>
 
 #include <arb_version.h>
 #include <refentries.h>
@@ -676,7 +677,7 @@ void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base) {
 
         nt_assert(GB_is_privatefile(mail_file, false));
 
-        error = GB_system(command);
+        error = GBK_system(command);
         GB_unlink_or_warn(mail_file, &error);
 
         free(plainaddress);
@@ -1570,7 +1571,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             AWMIMT("!toggle_expert", "Toggle expert mode",         "x", 0,            AWM_ALL, NT_toggle_expert_mode,              0, 0);
             AWMIMT("!toggle_focus",  "Toggle focus follows mouse", "f", 0,            AWM_ALL, NT_toggle_focus_policy,             0, 0);
             SEP________________________SEP();
-            AWMIMT("save_props", "Save properties (in ~/.arb_prop/ntree.arb)", "S", "savedef.hlp", AWM_ALL, (AW_CB) AW_save_properties, 0, 0);
+            AWMIMT("save_props", "Save properties (ntree.arb)", "S", "savedef.hlp", AWM_ALL, (AW_CB) AW_save_properties, 0, 0);
         }
     }
 

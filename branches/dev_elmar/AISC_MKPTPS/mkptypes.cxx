@@ -129,9 +129,7 @@ struct SymPart {
     SymPart *next;
 };
 
-static void setSymParts(SymPart*& symParts, const char *parts) {
-    mp_assert(!symParts);
-
+static void addSymParts(SymPart*& symParts, const char *parts) {
     char       *p   = strdup(parts);
     const char *sep = ",";
     char       *s   = strtok(p, sep);
@@ -188,8 +186,8 @@ static void freeSymParts(SymPart*& symParts) {
 static SymPart *requiredSymParts = 0; // only create prototypes if function-name matches one of these parts
 static SymPart *excludedSymParts = 0; // DONT create prototypes if function-name matches one of these parts
 
-inline void setRequiredSymParts(const char *parts) { setSymParts(requiredSymParts, parts); }
-inline void setExcludedSymParts(const char *parts) { setSymParts(excludedSymParts, parts); }
+inline void addRequiredSymParts(const char *parts) { addSymParts(requiredSymParts, parts); }
+inline void addExcludedSymParts(const char *parts) { addSymParts(excludedSymParts, parts); }
 
 inline void freeRequiredSymParts() { freeSymParts(requiredSymParts); }
 inline void freeExcludedSymParts() { freeSymParts(excludedSymParts); }
@@ -1163,7 +1161,7 @@ static void emit(Word *wlist, Word *plist, long startline) {
         if (w->string[0]) {
             count ++;
             if      (strcmp(w->string, "static") == 0) isstatic = 1;
-            else if (strcmp(w->string, "main") == 0) ismain = 1;
+            else if (strcmp(w->string, "main")   == 0) ismain = 1;
         }
     }
 
@@ -1452,8 +1450,8 @@ STATIC_ATTRIBUTED(__ATTR__NORETURN, void Usage()) {
           "\n   -i               promote declarations for inline functions"
           "\n   -m               promote declaration of 'main()' (default is to skip it)"
           "\n   -F part[,part]*  only promote declarations for functionnames containing one of the parts"
-          "                      if 'part' starts with a '^' functionname has to start with rest of part\n"
-          "     -S (like -F)     do NOT promote matching declarations (defaults to -S '^TEST_')\n"
+          "\n                    if 'part' starts with a '^' functionname has to start with rest of part"
+          "\n   -S (like -F)     do NOT promote matching declarations (defaults to -S '^TEST_')"
           "\n"
           "\n   -W               don't promote types in old style declarations"
           "\n   -x               omit parameter names in prototypes"
@@ -1467,7 +1465,7 @@ STATIC_ATTRIBUTED(__ATTR__NORETURN, void Usage()) {
           "\n"
           "\n   -g               search for GNU extension __attribute__ in comment behind function header"
           "\n   -G               search for ARB macro     __ATTR__      in comment behind function header"
-          "                      and detect and ignore STATIC/INLINE_ATTRIBUTED() declarations\n"
+          "\n                    and detect and ignore STATIC/INLINE_ATTRIBUTED() declarations"
           "\n"
           "\n   -P               promote /*AISC_MKPT_PROMOTE:forHeader*/ to header"
           "\n"
@@ -1498,7 +1496,7 @@ int main(int argc, char **argv) {
 
     argv++; argc--;
 
-    setExcludedSymParts("^TEST_");
+    addExcludedSymParts("^TEST_,^NOTEST_"); // exclude unit tests
 
     iobuf = (char *)malloc(NEWBUFSIZ);
     while (*argv && **argv == '-') {
@@ -1541,14 +1539,14 @@ int main(int argc, char **argv) {
             else if (*t == 'F') {
                 t = *argv++; --argc;
                 if (!t) Usage();
-                setRequiredSymParts(t);
+                addRequiredSymParts(t);
                 break;
             }
             else if (*t == 'S') {
                 t = *argv++; --argc;
                 if (!t) Usage();
                 freeExcludedSymParts();
-                setExcludedSymParts(t);
+                addExcludedSymParts(t);
                 break;
             }
             else if (*t == 'V') {

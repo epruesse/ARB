@@ -9,12 +9,16 @@ CALL() {
     local LOGGED=$LOGGED_BASE$$.log
     local EXE=$1
     shift
-    arb_valgrind -L $LOGGED.stdout $EXE "$@" > $LOGGING
+    arb_valgrind -L $LOGGED.stdout -E $LOGGED.stderr $EXE "$@" > $LOGGING
+    local EXITCODE=$?
     sleep 2
     cp $LOGGING $LOGGED
     rm $LOGGING
     cat $LOGGED.stdout
     rm $LOGGED.stdout
+    cat $LOGGED.stderr 1>&2
+    rm $LOGGED.stderr
+    return $EXITCODE
 }
 
 rm_if() {
@@ -57,6 +61,7 @@ remove_flags() {
     rm_if $BASEDIR/flag.valgrind
     rm_if $BASEDIR/flag.valgrind.leaks
     rm_if $BASEDIR/flag.valgrind.reachable
+    rm_if $BASEDIR/flag.valgrind.callseen
 }
 
 INIT() { 

@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 #include "PT_server.h"
+#include <attributes.h>
 #include "C/server.h"
 #include <aisc_server_proto.h>
 #include <aisc_server_extern.h>

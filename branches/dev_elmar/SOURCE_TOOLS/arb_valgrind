@@ -17,6 +17,8 @@ if [ -z $1 ] ; then
     echo '    -A             show known boring errors (most Xt/Motif-related)'
     echo '    -q             quiet'
     echo '    -L <file>      log stdout to <file> (does not work with -D)'
+    echo '    -E <file>      log stderr to <file> (does not work with -D)'
+    echo '                   Default is to collect output and print in after valgrind terminates'
     echo '    -D             run gdb on error'
     echo '    -e             return exitcode 1 on valgrind-errors'
     echo ''
@@ -62,6 +64,7 @@ else
     ATTACH=''
     QUIET=''
     LOG_STDOUT=''
+    LOG_STDERR=''
     ERROR_EXITCODE=''
 
     if [ ! -f $LIST ] ; then
@@ -122,6 +125,11 @@ else
                 shift 2
                 SCAN_ARGS=1
             fi
+            if [ "$1" = "-E" ] ; then
+                LOG_STDERR=$2
+                shift 2
+                SCAN_ARGS=1
+            fi
             if [ "$1" = "-e" ] ; then
                 ERROR_EXITCODE='--error-exitcode=123'
                 shift 1
@@ -161,11 +169,32 @@ else
         VG_CMD="valgrind $QUIET $TOOL -v $VG_OPTS --num-callers=$VG_CALLERS $SHOW_REACHABLE $LEAK_CHECK $ATTACH"
         echo "VG_CMD='$VG_CMD $@'"
         if [ "$ATTACH" = "" ]; then
+            POSTDUMP_STDOUT=0
+            POSTDUMP_STDERR=0
             if [ -z "$LOG_STDOUT" ]; then
                 LOG_STDOUT=/tmp/arb_valgrind_$USER_$$.stdout
+                POSTDUMP_STDOUT=1
             fi
-            $VG_CMD --log-fd=3 "$@" 3>&1 >$LOG_STDOUT 2>&1 | $DIR/valgrind2grep $CALLERS "$FILTER" $SUPPX 
+            if [ -z "$LOG_STDERR" ]; then
+                LOG_STDERR=/tmp/arb_valgrind_$USER_$$.stderr
+                POSTDUMP_STDERR=1
+            fi
+            $VG_CMD --log-fd=3 "$@" 3>&1 >$LOG_STDOUT 2>$LOG_STDERR | $DIR/valgrind2grep $CALLERS "$FILTER" $SUPPX
             EXITCODE=${PIPESTATUS[0]}
+
+            if [ "$POSTDUMP_STDOUT" = "1" ]; then
+                echo "-------------------- [stdout of '$@' ]"
+                cat $LOG_STDOUT
+                rm $LOG_STDOUT
+            fi
+            if [ "$POSTDUMP_STDERR" = "1" ]; then
+                echo "-------------------- [stderr of '$@' ]"
+                cat $LOG_STDERR
+                rm $LOG_STDERR
+            fi
+            if [ "$POSTDUMP_STDOUT" = "1" -o "$POSTDUMP_STDERR" = "1" ]; then
+                echo "-------------------- [end of output]"
+            fi
         else
             $VG_CMD "$@"
             EXITCODE=$?

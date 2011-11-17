@@ -58,9 +58,8 @@ int main(int argc, char **argv) {
         }
         else {
             error = GB_save(gb_main, out, saveflags);
+            GB_close(gb_main);
         }
-
-        GB_close(gb_main);
     }
 
     if (error) {

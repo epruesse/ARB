@@ -25,13 +25,13 @@
 
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
-#include <aw_edit.hxx>
 #include <aw_select.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <aw_root.hxx>
 #include <adGene.h>
 #include <arb_strbuf.h>
+#include <arb_file.h>
 
 // general awars
 
@@ -236,14 +236,14 @@ int init_local_com_struct()
     return 0;
 }
 
-static const char *PD_probe_pt_look_for_server(AW_root *root, GBDATA *gb_main, GB_ERROR& error) {
+static const char *PD_probe_pt_look_for_server(AW_root *root, GB_ERROR& error) { 
     // return PT server info string (see GBS_read_arb_tcp for details)
     // or NULL (in this case 'error' is set)
 
     const char *result     = 0;
     const char *server_tag = GBS_ptserver_tag(root->awar(AWAR_PT_SERVER)->read_int());
 
-    error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, gb_main);
+    error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag);
     if (!error) {
         result             = GBS_read_arb_tcp(server_tag);
         if (!result) error = GB_await_error();
@@ -418,7 +418,7 @@ void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
     progress.subtitle("Connecting PT-server");
 
     {
-        const char *servername = PD_probe_pt_look_for_server(root, gb_main, error);
+        const char *servername = PD_probe_pt_look_for_server(root, error);
         if (servername) {
             pd_gl.link = aisc_open(servername, &pd_gl.com, AISC_MAGIC_NUMBER);
             if (!pd_gl.link) error = "can't contact PT server";
@@ -682,7 +682,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
         SmartPtr<arb_progress> progress;
         
         if (!error) {
-            const char *servername = PD_probe_pt_look_for_server(root, gb_main, error);
+            const char *servername = PD_probe_pt_look_for_server(root, error);
 
             if (!error) {
                 if (selection_id) {
@@ -1655,10 +1655,10 @@ AW_window *create_probe_match_window(AW_root *root, AW_CL cl_gb_main) {
     return aws;
 }
 
-static void pd_start_pt_server(AW_window *aww, AW_CL cl_gb_main) {
+static void pd_start_pt_server(AW_window *aww) {
     const char *server_tag = GBS_ptserver_tag(aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
     arb_progress progress("Connecting PT-server");
-    GB_ERROR error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, (GBDATA*)cl_gb_main);
+    GB_ERROR error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag);
     if (error) aw_message(error);
 }
 
@@ -1815,27 +1815,10 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
 
         if (!error) {
             progress.subtitle("Start PT-server (builds in background)");
-            error = arb_start_server(server_tag, gb_main, 1);
+            error = arb_start_server(server_tag, 1);
         }
     }
     if (error) aw_message(error);
-}
-
-static void arb_tcp_dat_changed_cb(const char * /* path */, bool fileChanged, bool /* editorTerminated */) {
-#if defined(DEBUG) && 0
-    printf("File '%s': changed=%i editorTerminated=%i\n", path, int(fileChanged), int(editorTerminated));
-#endif // DEBUG
-    if (fileChanged) {
-        awt_refresh_all_pt_server_selection_lists();
-    }
-}
-
-static void pd_edit_arb_tcp(AW_window *aww, AW_CL cl_gb_main) {
-    GBDATA *gb_main  = (GBDATA*)cl_gb_main;
-    char   *filename = GBS_find_lib_file("arb_tcp.dat", "", true);
-
-    AW_edit(filename, arb_tcp_dat_changed_cb, aww, gb_main);
-    free(filename);
 }
 
 AW_window *create_probe_admin_window(AW_root *root, AW_CL cl_gb_main) {
@@ -1867,7 +1850,7 @@ AW_window *create_probe_admin_window(AW_root *root, AW_CL cl_gb_main) {
     awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, false);
 
     aws->at("start");
-    aws->callback(pd_start_pt_server, (AW_CL)gb_main);
+    aws->callback(pd_start_pt_server);
     aws->create_button("START_SERVER", "Start server");
 
     aws->at("kill");
@@ -1883,7 +1866,7 @@ AW_window *create_probe_admin_window(AW_root *root, AW_CL cl_gb_main) {
     aws->create_button("KILL_ALL_SERVERS", "Stop all servers");
 
     aws->at("edit");
-    aws->callback(pd_edit_arb_tcp, (AW_CL)gb_main);
+    aws->callback(awt_edit_arbtcpdat_cb, (AW_CL)gb_main);
     aws->create_button("CREATE_TEMPLATE", "Configure");
 
     aws->at("export");

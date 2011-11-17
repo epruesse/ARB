@@ -22,6 +22,7 @@
 #include <aw_root.hxx>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
+#include <arb_file.h>
 
 #define nt_assert(bed) arb_assert(bed)
 
