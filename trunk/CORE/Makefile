@@ -133,6 +133,8 @@ arb_strbuf.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_string.o: arb_core.h
 arb_string.o: arb_string.h
 arb_string.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_string.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_string.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_string.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_string.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_string.o: $(ARBHOME)/INCLUDE/test_unit.h
