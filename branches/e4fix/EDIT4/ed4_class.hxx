@@ -466,16 +466,38 @@ public:
     ~ED4_cursor();
 };
 
+class ED4_foldable : virtual Noncopyable {
+    ED4_folding_line *horizontal_fl;
+    ED4_folding_line *vertical_fl;
+protected:
+    void reset() {
+        delete horizontal_fl;
+        delete vertical_fl;
+        horizontal_fl = NULL;
+        vertical_fl   = NULL;
+    }
+public:
 
-class ED4_window : virtual Noncopyable {
+    ED4_foldable() : horizontal_fl(NULL), vertical_fl(NULL) {}
+    ~ED4_foldable() { reset(); }
+
+    const ED4_folding_line *get_horizontal_folding() { return horizontal_fl; }
+    const ED4_folding_line *get_vertical_folding() { return vertical_fl; }
+
+    void world_to_win_coords(AW_pos *x, AW_pos *y);
+    void win_to_world_coords(AW_pos *x, AW_pos *y);
+
+    ED4_folding_line *insert_folding_line(AW_pos world_x, AW_pos world_y, AW_pos length, AW_pos dimension, ED4_base *link, ED4_properties prop);
+    ED4_returncode  delete_folding_line(ED4_folding_line *fl, ED4_properties prop);
+};
+
+class ED4_window : public ED4_foldable { // derived from Noncopyable
     ED4_window(const ED4_window&); // copy-constructor not allowed
 public:
     AW_window              *aww; // Points to Window
     ED4_window             *next;
     int                     slider_pos_horizontal;
     int                     slider_pos_vertical;
-    ED4_folding_line       *horizontal_fl;
-    ED4_folding_line       *vertical_fl;
     ED4_scrolled_rectangle  scrolled_rect;
     int                     id; // unique id in window-list
     ED4_coords              coords;
@@ -506,14 +528,6 @@ public:
 
     void update_window_coords();
 
-    // functions concerned with folding lines
-    ED4_folding_line    *insert_folding_line(AW_pos world_x, AW_pos world_y, AW_pos length, AW_pos dimension, ED4_base *link, ED4_properties prop);
-    ED4_returncode  delete_folding_line(ED4_folding_line *fl, ED4_properties prop);
-
-    // functions concerning coordinate transformation
-    void world_to_win_coords(AW_pos *x, AW_pos *y);
-    void win_to_world_coords(AW_pos *x, AW_pos *y);
-    
     ED4_window(AW_window *window);
     ~ED4_window();
 };

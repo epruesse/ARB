@@ -16,10 +16,8 @@
 
 int ED4_window::no_of_windows = 0;                  // static variable has to be initialized only once
 
-void ED4_window::reset_all_for_new_config()
-{
-    horizontal_fl = NULL;
-    vertical_fl   = NULL;
+void ED4_window::reset_all_for_new_config() {
+    ED4_foldable::reset();
 
     scrolled_rect.scroll_top    = NULL;
     scrolled_rect.scroll_bottom = NULL;
@@ -105,7 +103,7 @@ void ED4_window::update_window_coords()
 
 
 
-ED4_folding_line* ED4_window::insert_folding_line(AW_pos world_x, AW_pos world_y, AW_pos length, AW_pos dimension, ED4_base *link, ED4_properties prop) {
+ED4_folding_line* ED4_foldable::insert_folding_line(AW_pos world_x, AW_pos world_y, AW_pos length, AW_pos dimension, ED4_base *link, ED4_properties prop) {
     ED4_folding_line *fl = NULL;
 
     if (prop == ED4_P_VERTICAL || prop == ED4_P_HORIZONTAL) {
@@ -179,7 +177,8 @@ ED4_window *ED4_window::get_matching_ed4w(AW_window *aw) {
 
 
 
-ED4_returncode ED4_window::delete_folding_line(ED4_folding_line */*fl*/, ED4_properties /*prop*/) {
+ED4_returncode ED4_foldable::delete_folding_line(ED4_folding_line */*fl*/, ED4_properties /*prop*/) {
+    e4_assert(0); // not implement - cause it's unused
     return ED4_R_OK;
 }
 
@@ -575,8 +574,6 @@ ED4_window::ED4_window(AW_window *window)
     next                  = 0;
     slider_pos_horizontal = 0;
     slider_pos_vertical   = 0;
-    horizontal_fl         = 0;
-    vertical_fl           = 0;
 
     scrolled_rect.clear();
     id        = ++no_of_windows;
@@ -600,12 +597,8 @@ ED4_window::ED4_window(AW_window *window)
 }
 
 
-ED4_window::~ED4_window()
-{
+ED4_window::~ED4_window() {
     delete aww;
-    delete horizontal_fl;       // be careful, don't delete links to hierarchy  in folding lines!!!
-    delete vertical_fl;
-
     no_of_windows --;
 }
 

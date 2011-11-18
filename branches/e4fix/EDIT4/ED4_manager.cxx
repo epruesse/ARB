@@ -997,13 +997,12 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
         // loop through all rectangles between folding lines:
 
         int x1, y1, x2, y2;
-        ED4_folding_line *flv, *flh;
         ED4_window& win = *current_ed4w();
         int old_last_window_reached = last_window_reached;
 
         last_window_reached = 0;
         x1 = area_rect.l;
-        for (flv = win.vertical_fl; ; flv = flv->next) {
+        for (const ED4_folding_line *flv = win.get_vertical_folding(); ; flv = flv->next) {
             int lastColumn = 0;
 
             if (flv) {
@@ -1022,7 +1021,7 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
             }
 
             y1 = area_rect.t;
-            for (flh = win.horizontal_fl; ; flh = flh->next) {
+            for (const ED4_folding_line *flh = win.get_horizontal_folding(); ; flh = flh->next) {
                 int lastRow = 0;
 
                 if (flh) {
