@@ -208,9 +208,6 @@ void TEST_win_2_world() {
     ED4_folding_line *hor100 = foldable.insert_folding_line(0, 100, INFINITE, 0, NULL, ED4_P_HORIZONTAL);
     ED4_folding_line *ver200 = foldable.insert_folding_line(200, 0, INFINITE, 0, NULL, ED4_P_VERTICAL);
 
-    ED4_folding_line *hor200 = foldable.insert_folding_line(0, 200, 300, 0, NULL, ED4_P_HORIZONTAL);
-    ED4_folding_line *ver300 = foldable.insert_folding_line(300, 100, 200, 0, NULL, ED4_P_VERTICAL);
-
     // nothing folded yet
     
     TEST_ASSERT_WIN_UNFOLDED(100, 50);
@@ -229,32 +226,28 @@ void TEST_win_2_world() {
     TEST_ASSERT_WIN_UNFOLDED(250, 350);
     TEST_ASSERT_WIN_UNFOLDED(400, 350);
 
-    for (int FACTOR = 1; FACTOR <= 10; FACTOR ++) {
+    for (int FACTOR = 1; FACTOR <= 100; FACTOR += 9) {
         TEST_ANNOTATE_ASSERT(GBS_global_string("FACTOR=%i", FACTOR));
         int H1 = FACTOR* 10;
-        int H2 = FACTOR* 40;
         int V1 = FACTOR* 20;
-        int V2 = FACTOR* 80;
 
         hor100->dimension = H1;
-        hor200->dimension = H2;
         ver200->dimension = V1;
-        ver300->dimension = V2;
 
         TEST_ASSERT_WIN_UNFOLDED(100, 50); // always in unfolded range
         TEST_ASSERT_WIN_WORLD_FOLDING(250, 50, V1, 0);
         TEST_ASSERT_WIN_WORLD_FOLDING(400, 50, V1, 0);
 
-        TEST_ASSERT_WIN_WORLD_FOLDING__BROKENIF(FACTOR >= 5, 100, 150, 0,     H1);
-        TEST_ASSERT_WIN_WORLD_FOLDING__BROKENIF(FACTOR >= 3, 250, 150, V1,    H1);
-        TEST_ASSERT_WIN_WORLD_FOLDING(400, 150, V1+V2, H1);
-        TEST_ASSERT_WIN_WORLD_FOLDING__BROKENIF(FACTOR >= 3, 250, 250, V1,    H1+H2);
+        TEST_ASSERT_WIN_WORLD_FOLDING(100, 150, 0,  H1);
+        TEST_ASSERT_WIN_WORLD_FOLDING(250, 150, V1, H1);
+        TEST_ASSERT_WIN_WORLD_FOLDING(400, 150, V1, H1);
+        TEST_ASSERT_WIN_WORLD_FOLDING(250, 250, V1, H1);
 
-        TEST_ASSERT_WIN_WORLD_FOLDING(100, 250, 0,     H1+H2);
-        TEST_ASSERT_WIN_WORLD_FOLDING__BROKENIF(FACTOR >= 6, 400, 250, V1+V2, H1);
+        TEST_ASSERT_WIN_WORLD_FOLDING(100, 250, 0,  H1);
+        TEST_ASSERT_WIN_WORLD_FOLDING(400, 250, V1, H1);
 
-        TEST_ASSERT_WIN_WORLD_FOLDING(100, 350, 0,  H1+H2);
-        TEST_ASSERT_WIN_WORLD_FOLDING__BROKENIF(FACTOR >= 3, 250, 350, V1, H1+H2);
+        TEST_ASSERT_WIN_WORLD_FOLDING(100, 350, 0,  H1);
+        TEST_ASSERT_WIN_WORLD_FOLDING(250, 350, V1, H1);
         TEST_ASSERT_WIN_WORLD_FOLDING(400, 350, V1, H1);
     }
 }
