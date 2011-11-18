@@ -52,6 +52,8 @@ using std::endl;
 #define GA_AWAR_REALIGN GA_AWAR_ROOT "realign"
 #define GA_AWAR_PTLOAD GA_AWAR_ROOT "ptload"
 #define GA_AWAR_COPYMARKREF GA_AWAR_ROOT "copymarkref"
+#define GA_AWAR_MATCH_SCORE GA_AWAR_ROOT "match_score"
+#define GA_AWAR_MISMATCH_SCORE GA_AWAR_ROOT "mismatch_score"
 #define GA_AWAR_GAP_PEN GA_AWAR_ROOT "gap_pen"
 #define GA_AWAR_GAP_EXT GA_AWAR_ROOT "gap_ext"
 #define GA_AWAR_ADVANCED GA_AWAR_ROOT "advanced"
@@ -63,6 +65,21 @@ using std::endl;
 #define GA_AWAR_OVERHANG GA_AWAR_ROOT "overhang"
 #define GA_AWAR_THREADS GA_AWAR_ROOT "threads"
 #define GA_AWAR_QSIZE GA_AWAR_ROOT "qsize"
+#define GA_AWAR_KMER_LEN GA_AWAR_ROOT "kmer_len"
+#define GA_AWAR_KMER_MM GA_AWAR_ROOT "kmer_mm"
+#define GA_AWAR_MIN_LEN GA_AWAR_ROOT "min_len"
+#define GA_AWAR_WEIGHT GA_AWAR_ROOT "weight"
+#define GA_AWAR_INSERT GA_AWAR_ROOT "insert"
+#define GA_AWAR_LOWERCASE GA_AWAR_ROOT "lowercase"
+#define GA_AWAR_AUTOFILTER GA_AWAR_ROOT "autofilter"
+#define GA_AWAR_KMER_NOREL GA_AWAR_ROOT "kmer_norel"
+#define GA_AWAR_KMER_NOFAST GA_AWAR_ROOT "kmer_nofast"
+#define GA_AWAR_SHOW_DIST GA_AWAR_ROOT "show_dist"
+#define GA_AWAR_SHOW_DIFF GA_AWAR_ROOT "show_diff"
+#define GA_AWAR_COLOR GA_AWAR_ROOT "color"
+#define GA_AWAR_GENE_START GA_AWAR_ROOT "gene_start"
+#define GA_AWAR_GENE_END GA_AWAR_ROOT "gene_end"
+#define GA_AWAR_FS_COVER_GENE GA_AWAR_ROOT "fs_cover_gene"
 
 void create_sina_variables(AW_root *root, AW_default db1) {
     root->awar_string(GA_AWAR_CMD, "sina", db1);
@@ -77,8 +94,10 @@ void create_sina_variables(AW_root *root, AW_default db1) {
     root->awar_int(GA_AWAR_COPYMARKREF, 0, db1);
     root->awar_float(GA_AWAR_GAP_PEN, 5.0, db1);
     root->awar_float(GA_AWAR_GAP_EXT, 2.0, db1);
+    root->awar_float(GA_AWAR_MATCH_SCORE, 2.0, db1);
+    root->awar_float(GA_AWAR_MISMATCH_SCORE, -1.0, db1);
     root->awar_int(GA_AWAR_ADVANCED, 0, db1);
-    root->awar_int(GA_AWAR_FS_MIN, 15, db1);
+    root->awar_int(GA_AWAR_FS_MIN, 40, db1);
     root->awar_int(GA_AWAR_FS_MAX, 40, db1);
     root->awar_float(GA_AWAR_FS_MSC, .7, db1);
     root->awar_int(GA_AWAR_MIN_FULL, 1, db1);
@@ -86,6 +105,21 @@ void create_sina_variables(AW_root *root, AW_default db1) {
     root->awar_string(GA_AWAR_OVERHANG, "attach", db1);
     root->awar_int(GA_AWAR_THREADS, 1, db1);
     root->awar_int(GA_AWAR_QSIZE, 1, db1);
+    root->awar_int(GA_AWAR_KMER_LEN, 10, db1);
+    root->awar_int(GA_AWAR_KMER_MM, 0, db1);
+    root->awar_int(GA_AWAR_MIN_LEN, 150, db1);
+    root->awar_float(GA_AWAR_WEIGHT, 1, db1);
+    root->awar_string(GA_AWAR_INSERT, "shift", db1);
+    root->awar_string(GA_AWAR_LOWERCASE, "none", db1);
+    root->awar_string(GA_AWAR_AUTOFILTER, "none", db1);
+    root->awar_int(GA_AWAR_KMER_NOREL, 0, db1);
+    root->awar_int(GA_AWAR_KMER_NOFAST, 0, db1);
+    root->awar_int(GA_AWAR_SHOW_DIST, 0, db1);
+    root->awar_int(GA_AWAR_SHOW_DIFF, 0, db1);
+    root->awar_int(GA_AWAR_COLOR, 1, db1);
+    root->awar_int(GA_AWAR_GENE_START, 0, db1);
+    root->awar_int(GA_AWAR_GENE_END, 0, db1);
+    root->awar_int(GA_AWAR_FS_COVER_GENE, 1, db1);
 }
 
 AW_active sina_mask(AW_root *root) {
@@ -94,7 +128,7 @@ AW_active sina_mask(AW_root *root) {
     const char *fail_reason = 0;
 
     if (sina) {
-        int exitstatus = system(GBS_global_string("%s --has-cli-vers 1", sina));
+        int exitstatus = system(GBS_global_string("%s --has-cli-vers ARB5.99", sina));
         exitstatus     = WEXITSTATUS(exitstatus);
 
         switch (exitstatus) {
@@ -233,9 +267,6 @@ static void sina_start(AW_window *window, AW_CL cl_AlignDataAccess) {
 
                     GBS_strcat(cl, root->awar(GA_AWAR_CMD)->read_char_pntr());
                     GBS_strcat(cl, " -i :");
-                    GBS_strcat(cl, " --queue-size ");  GBS_intcat(cl,   root->awar(GA_AWAR_QSIZE)->read_int());
-                    GBS_strcat(cl, " --ncpu ");        GBS_intcat(cl,   root->awar(GA_AWAR_THREADS)->read_int());
-                    GBS_strcat(cl, " --verbosity ");   GBS_strcat(cl,   root->awar(GA_AWAR_LOGLEVEL)->read_char_pntr());
                     GBS_strcat(cl, " --ptdb ");        GBS_strcat(cl,   root->awar(GA_AWAR_PTLOAD)->read_int() ? pt_db : ":");
                     GBS_strcat(cl, " --ptport ");      GBS_strcat(cl,   pt_server);
                     GBS_strcat(cl, " --turn ");        GBS_strcat(cl,   root->awar(GA_AWAR_TURN_CHECK)->read_int() ? "all" : "none");
@@ -247,13 +278,30 @@ static void sina_start(AW_window *window, AW_CL cl_AlignDataAccess) {
                     GBS_strcat(cl, " --fs-req 1");
                     GBS_strcat(cl, " --fs-req-full "); GBS_intcat(cl,   root->awar(GA_AWAR_MIN_FULL)->read_int());
                     GBS_strcat(cl, " --fs-full-len "); GBS_intcat(cl,   root->awar(GA_AWAR_FULL_MINLEN)->read_int());
+                    GBS_strcat(cl, " --fs-kmer-len "); GBS_intcat(cl,   root->awar(GA_AWAR_KMER_LEN)->read_int());
+                    GBS_strcat(cl, " --fs-kmer-mm ");  GBS_intcat(cl,   root->awar(GA_AWAR_KMER_MM)->read_int());
+                    GBS_strcat(cl, " --fs-min-len ");  GBS_intcat(cl,   root->awar(GA_AWAR_MIN_LEN)->read_int());
+                    GBS_strcat(cl, " --fs-weight ");   GBS_intcat(cl,   root->awar(GA_AWAR_WEIGHT)->read_float());
                     GBS_strcat(cl, " --pen-gap ");     GBS_floatcat(cl, root->awar(GA_AWAR_GAP_PEN)->read_float());
                     GBS_strcat(cl, " --pen-gapext ");  GBS_floatcat(cl, root->awar(GA_AWAR_GAP_EXT)->read_float());
+                    GBS_strcat(cl, " --match-score "); GBS_floatcat(cl, root->awar(GA_AWAR_MATCH_SCORE)->read_float());
+                    GBS_strcat(cl, " --mismatch-score "); GBS_floatcat(cl, root->awar(GA_AWAR_MISMATCH_SCORE)->read_float());
                     GBS_strcat(cl, " --prot-level ");  GBS_intcat(cl,   root->awar(GA_AWAR_PROTECTION)->read_int());
                     GBS_strcat(cl, " --select-file "); GBS_strcat(cl,   tmpfile);
+                    GBS_strcat(cl, " --insertion ");   GBS_strcat(cl,   root->awar(GA_AWAR_INSERT)->read_char_pntr());
+                    GBS_strcat(cl, " --lowercase ");   GBS_strcat(cl,   root->awar(GA_AWAR_LOWERCASE)->read_char_pntr());
+                    GBS_strcat(cl, " --auto-filter-field "); GBS_strcat(cl, root->awar(GA_AWAR_AUTOFILTER)->read_char_pntr());
+                    GBS_strcat(cl, " --gene-start ");  GBS_intcat(cl,   root->awar(GA_AWAR_GENE_START)->read_int());
+                    GBS_strcat(cl, " --gene-end ");    GBS_intcat(cl,   root->awar(GA_AWAR_GENE_END)->read_int());
+                    GBS_strcat(cl, " --fs-cover-gene ");GBS_intcat(cl,   root->awar(GA_AWAR_FS_COVER_GENE)->read_int());
 
+
+                    if (root->awar(GA_AWAR_KMER_NOREL)->read_int()) GBS_strcat(cl, " --fs-kmer-norel ");
+                    if (root->awar(GA_AWAR_KMER_NOFAST)->read_int()) GBS_strcat(cl, " --fs-kmer-no-fast ");
+                    if (root->awar(GA_AWAR_SHOW_DIST)->read_int()) GBS_strcat(cl, " --show-dist ");
+                    if (root->awar(GA_AWAR_SHOW_DIFF)->read_int()) GBS_strcat(cl, " --show-diff ");
+                    if (root->awar(GA_AWAR_COLOR)->read_int())     GBS_strcat(cl, " --color");
                     if (root->awar(GA_AWAR_REALIGN)->read_int())     GBS_strcat(cl, " --realign");
-                    if (root->awar(GA_AWAR_COPYMARKREF)->read_int()) GBS_strcat(cl, " --markcopy");
 
                     gb_error = GB_xcmd(GBS_mempntr(cl), true, false);
                     GBS_strforget(cl);
@@ -346,13 +394,6 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
     awt_create_selection_list_on_pt_servers(aws, AWAR_PT_SERVER, true);
 
     aws->at_newline();
-    aws->callback(AW_POPUP, (AW_CL)create_select_sai_window, (AW_CL)0);
-    aws->label("Pos. Var.:");
-    aws->create_button("SELECT_SAI", GA_AWAR_SAI);
-    aws->button_length(12);
-
-
-    aws->at_newline();
     aws->label_length(0);
     aws->create_option_menu(GA_AWAR_OVERHANG, "Overhang placement");
     aws->insert_option("keep attached", 0, "attach");
@@ -360,9 +401,41 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
     aws->insert_option("remove", 0, "remove");
     aws->update_option_menu();
 
+    aws->at_newline();
+    aws->create_option_menu(GA_AWAR_INSERT, "Handling of unmappable insertions", "I");
+    aws->insert_option("Shift surrounding bases", 0, "shift");
+    aws->insert_option("Forbid during DP alignment", 0, "forbid");
+    aws->insert_option("Delete bases", 0, "remove");
+    aws->update_option_menu();
+
+    aws->at_newline();
+    aws->create_option_menu(GA_AWAR_LOWERCASE, "Character Case","C");
+    aws->insert_option("Do not modify", 0, "original");
+    aws->insert_option("Show unaligned bases as lower case", 0, "unaligned");
+    aws->insert_option("Uppercase all", 0, "none");
+    aws->update_option_menu();
+
+    aws->at_newline();
+    aws->label("Family conservation weight (0-1)");
+    aws->create_input_field(GA_AWAR_WEIGHT, 3);
+
+    aws->at_newline();
+    aws->label("Size of full-length sequences");
+    aws->create_input_field(GA_AWAR_FULL_MINLEN, 5);
+
     if (adv) {
         aws->at_newline();
         aws->at_shift(0, hgap);
+
+        aws->at_newline();
+        aws->callback(AW_POPUP, (AW_CL)create_select_sai_window, (AW_CL)0);
+        aws->label("Pos. Var.:");
+        aws->create_button("SELECT_SAI", GA_AWAR_SAI);
+        aws->button_length(12);
+
+        aws->at_newline();
+        aws->label("Field used for automatic filter selection");
+        aws->create_input_field(GA_AWAR_AUTOFILTER, 20);
 
         aws->label("Turn check");
         aws->create_toggle(GA_AWAR_TURN_CHECK);
@@ -375,9 +448,11 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
         aws->label("Load reference sequences from PT-Server");
         aws->create_toggle(GA_AWAR_PTLOAD);
 
+        /*
         aws->at_newline();
         aws->label("(Copy and) mark sequences used as reference");
         aws->create_toggle(GA_AWAR_COPYMARKREF);
+        */
 
         aws->at_newline();
         aws->at_shift(0, hgap);
@@ -388,23 +463,47 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
         aws->create_input_field(GA_AWAR_GAP_EXT, 5);
 
         aws->at_newline();
+        aws->label("Match score");
+        aws->create_input_field(GA_AWAR_MATCH_SCORE, 3);
+        aws->label("Mismatch score");
+        aws->create_input_field(GA_AWAR_MISMATCH_SCORE, 3);
+
+        aws->at_newline();
         aws->label("Family search min/min_score/max");
         aws->create_input_field(GA_AWAR_FS_MIN, 3);
         aws->create_input_field(GA_AWAR_FS_MSC, 3);
         aws->create_input_field(GA_AWAR_FS_MAX, 3);
 
         aws->at_newline();
-        aws->label("Use at least");
+        aws->label("Minimal number of full length sequences");
         aws->create_input_field(GA_AWAR_MIN_FULL, 3);
-        aws->label("sequences with at least");
-        aws->create_input_field(GA_AWAR_FULL_MINLEN, 5);
-        aws->label("bases as reference");
 
         aws->at_newline();
-        aws->label("Max threads");
-        aws->create_input_field(GA_AWAR_THREADS, 3);
-        aws->label("Queue size");
-        aws->create_input_field(GA_AWAR_QSIZE, 3);
+        aws->label("Family search oligo length / mismatches");
+        aws->create_input_field(GA_AWAR_KMER_LEN, 3);
+        aws->create_input_field(GA_AWAR_KMER_MM, 3);
+
+        aws->at_newline();
+        aws->label("Minimal reference sequence length");
+        aws->create_input_field(GA_AWAR_MIN_LEN, 5);
+
+        aws->at_newline();
+        aws->label("Alignment bounds: start");
+        aws->create_input_field(GA_AWAR_GENE_START, 6);
+        aws->label("end");
+        aws->create_input_field(GA_AWAR_GENE_END, 6);
+
+        aws->at_newline();
+        aws->label("Number of references required to touch bounds");
+        aws->create_input_field(GA_AWAR_FS_COVER_GENE, 3);
+
+        aws->at_newline();
+        aws->label("Disable fast search");
+        aws->create_toggle(GA_AWAR_KMER_NOFAST);
+
+        aws->at_newline();
+        aws->label("Score search results by absolute oligo match count");
+        aws->create_toggle(GA_AWAR_KMER_NOREL);
 
         aws->at_newline();
         aws->label("SINA command");
@@ -427,6 +526,7 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
     aws->insert_option("6", 0, 6);
     aws->update_option_menu();
 
+    /*
     aws->at_newline();
     aws->create_option_menu(GA_AWAR_LOGLEVEL, "Logging level", "L");
     aws->insert_option("silent", 0, "1");
@@ -436,6 +536,17 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
     aws->insert_option("debug", 0, "5");
     aws->insert_option("debug more", 0, "6");
     aws->update_option_menu();
+    */
+
+    aws->at_newline();
+    aws->label("Show changed sections of alignment");
+    aws->create_toggle(GA_AWAR_SHOW_DIFF);
+    aws->label("color bases");
+    aws->create_toggle(GA_AWAR_COLOR);
+
+    aws->at_newline();
+    aws->label("Show statistics");
+    aws->create_toggle(GA_AWAR_SHOW_DIST);
 
     aws->get_window_size(winx, winy);
     aws->get_at_position(&startx, &starty);
