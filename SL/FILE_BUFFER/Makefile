@@ -12,10 +12,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(ACC) $(cflags) -c $< $(AINCLUDES)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -38,9 +38,3 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 FileBuffer.o: FileBuffer.h
-FileBuffer.o: $(ARBHOME)/INCLUDE/arb_assert.h
-FileBuffer.o: $(ARBHOME)/INCLUDE/arb_core.h
-FileBuffer.o: $(ARBHOME)/INCLUDE/arbtools.h
-FileBuffer.o: $(ARBHOME)/INCLUDE/dupstr.h
-FileBuffer.o: $(ARBHOME)/INCLUDE/smartptr.h
-FileBuffer.o: $(ARBHOME)/INCLUDE/test_global.h

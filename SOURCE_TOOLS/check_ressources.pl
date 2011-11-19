@@ -4,18 +4,6 @@ use strict;
 use warnings;
 # use diagnostics;
 
-# my $debug_verboose;
-
-# BEGIN {
-  # $debug_verboose = 1;
-  # $SIG{__DIE__} = sub {
-    # require Carp;
-    # if ($debug_verboose>0) { Carp::confess(@_); } # with backtrace
-    # else { Carp::croak(@_); }
-  # }
-# }
-
-
 # --------------------------------------------------------------------------------
 
 my $ARBHOME = $ENV{ARBHOME};
@@ -35,7 +23,7 @@ my %picture  = (); # key=subdir/name (as used in code), value=index into @pictur
 my %pixmap   = (); # key=subdir/name (as used in code), value=index into @pixmaps
 my %helpfile = (); # key=subdir/name (as used in code), value=index into @helpfiles
 
-my %used = (); # key=file, value=1 -> used in code, value=2 -> used in helpfile
+my %used = (); # key=file, value=1 -> used in code
 
 my %full2rel = (); # key=full ressource, value=relative ressource (w/o rootdir)
 my %rel2full = (); # opposite
@@ -101,10 +89,9 @@ sub scanFilesAndIndex(\%\@$$$$) {
 }
 
 sub scanExistingRessources() {
-  scanFilesAndIndex(%picture,  @pictures,  $ARBHOME.'/lib/pictures',        '.*\.(fig|vfont)$',                 1, 0);
+  scanFilesAndIndex(%picture,  @pictures,  $ARBHOME.'/lib/pictures',        '.*\.(fig|vfont)$',                         1, 0);
   scanFilesAndIndex(%pixmap,   @pixmaps,   $ARBHOME.'/lib/pixmaps',         '.*\.(bitmap|xpm)$',                1, 0);
-  scanFilesAndIndex(%helpfile, @helpfiles, $ARBHOME.'/HELP_SOURCE/oldhelp', '.*\.(hlp|ps|pdf|ps\.gz|pdf\.gz)$', 1, 0);
-  scanFilesAndIndex(%helpfile, @helpfiles, $ARBHOME.'/HELP_SOURCE/genhelp', '.*\.(hlp|ps|pdf|ps\.gz|pdf\.gz)$', 1, 0);
+  # scanFilesAndIndex(%helpfile, @helpfiles, $ARBHOME.'/HELP_SOURCE/oldhelp', '.*\.(hlp|ps|pdf|ps\.gz|pdf\.gz)$', 1, 0);
 
   foreach (sort keys %unknown) {
     if (/readme[^\/]*$/i) {
@@ -231,12 +218,9 @@ sub scanParams($\@$\$) {
 
   $$calltype_r = 0; # no params
 
-  my ($prefix,$token);
+  my ($prefix,$token) = scanNextToken($rest,@$file_r,$lineNr);
   my @params = ();
-  eval {
-    ($prefix,$token) = scanNextToken($rest,@$file_r,$lineNr);
-  };
-  if (!$@ and $token eq '(') {
+  if ($token eq '(') {
     if (trim($prefix) ne '') {
       # print "Found prefix '$prefix' before potential parameter list - assume it's sth else\n";
     }
@@ -259,22 +243,15 @@ sub scanParams($\@$\$) {
       }
 
       $$calltype_r = 1;
-      eval {
-        ($prefix,$token) = scanNextToken($rest,@$file_r,$lineNr);
-      };
-      if ($@) {
-        @params = ();
+      ($prefix,$token) = scanNextToken($rest,@$file_r,$lineNr);
+      if ($token eq ';') {
+        $$calltype_r = 2;
+      }
+      elsif ($token eq '{') {
+        $$calltype_r = 3;
       }
       else {
-        if ($token eq ';') {
-          $$calltype_r = 2;
-        }
-        elsif ($token eq '{') {
-          $$calltype_r = 3;
-        }
-        else {
-          print "unknown token behind call: '$token'\n";
-        }
+        print "unknown token behind call: '$token'\n";
       }
     }
   }
@@ -289,14 +266,9 @@ sub trim($) {
   return $str;
 }
 
-sub isQuoted($);
 sub isQuoted($) {
   my ($str) = @_;
-  if ($str =~ /^\"(.*)\"$/o) { return $1; }
-  if ($str =~ /^\(\s*AW_CL\s*\)\s*/o) {
-    return isQuoted($');
-  }
-  if ($str =~ 'AW_POPUP_HELP') { return 'AW_POPUP_HELP'; }
+  if ($str =~ /^\"(.*)\"$/) { return $1; }
   return undef;
 }
 
@@ -324,23 +296,6 @@ sub isIconRes($) {
   return ($base.'.xpm', $base.'.bitmap');
 }
 
-my $last_help_ref = '';
-
-sub isHelpPopup($) {
-  my ($res_param) = @_;
-  if ($last_help_ref eq 'AW_POPUP_HELP') {
-    $last_help_ref = $res_param;
-    return isHelpRef($res_param);
-  }
-  $last_help_ref = $res_param;
-  return ();
-}
-sub isHelpRef($) {
-  my ($res_param) = @_;
-  if ($res_param =~ /\.(hlp|ps|pdf)$/o) { return ($res_param); }
-  return ();
-}
-
 # sub acceptExistingIconRes($) {
 #   my ($res_param) = @_;
 #   my $base = 'icons/'.$res_param;
@@ -352,39 +307,20 @@ sub isHelpRef($) {
 
 my @defs =
   (
-   # regexp for function,                  param numbers, expectInIndex, isRessource,
-   [ qr/\b(AWMIMT)\b/,                     [ 2 ],         \%pixmap,      \&isBitmapRef,   ],
-   [ qr/\b(AWMIMT)\b/,                     [ 4 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(AW_POPUP_HELP)\b/,              [ 2 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(PGT_LoadPixmap)\b/,             [ 1 ],         \%pixmap,      \&isPGTres,      ],
-   [ qr/\b(callback)\b/,                   [ -1, -2 ],    \%helpfile,    \&isHelpPopup,   ],
-   [ qr/\b(create_button)\b/,              [ 2 ],         \%pixmap,      \&isBitmapRef,   ],
-   [ qr/\b(create_mode)\b/,                [ 1 ],         \%pixmap,      \&acceptAll,     ],
-   [ qr/\b(create_mode)\b/,                [ 2 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(create_toggle)\b/,              [ -2, -3 ],    \%pixmap,      \&isBitmapRef,   ],
-   [ qr/\b(help_text)\b/,                  [ 1 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(init_root)\b/,                  [ 1 ],         \%pixmap,      \&isIconRes,     ],
-   [ qr/\b(insert_help_topic)\b/,          [ 3 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(insert_help_topic)\b/,          [ 5, 6 ],      \%helpfile,    \&isHelpPopup,   ],
-   [ qr/\b(insert_menu_topic)\b/,          [ 2 ],         \%pixmap,      \&isBitmapRef,   ],
-   [ qr/\b(insert_menu_topic)\b/,          [ 4 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(nt_insert_mark_topic)\b/,       [ 7 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(insert_menu_topic)\b/,          [ 6, 7 ],      \%helpfile,    \&isHelpPopup,   ],
-   [ qr/\b(GEN_insert_extract_submenu)\b/, [ 5 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(GEN_insert_mark_submenu)\b/,    [ 5 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(AWT_advice)\b/,                 [ -4 ],        \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(add_help)\b/,                   [ 1 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(insert_toggle)\b/,              [ 1 ],         \%pixmap,      \&isBitmapRef,   ],
-   [ qr/\b(load_xfig)\b/,                  [ 1 ],         \%picture,     \&acceptAll,     ],
-
-   # pseudos (used in comment to mark a ressource as used)
-   [ qr/\b(def_hlp_res)\b/,                [ 1 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(def_pic_res)\b/,                [ 1 ],         \%picture,     \&acceptAll,     ],
-   [ qr/\b(def_pix_res)\b/,                [ 1 ],         \%pixmap,      \&acceptAll,     ],
+   # regexp for function,       param numbers, expectInIndex, isRessource,
+   [ qr/\bload_xfig\b/,         [ 1 ],         \%picture,     \&acceptAll,     ],
+   [ qr/\bcreate_toggle\b/,     [ -2, -3 ],    \%pixmap,      \&isBitmapRef,   ],
+   [ qr/\binsert_toggle\b/,     [ 1 ],         \%pixmap,      \&isBitmapRef,   ],
+   [ qr/\bcreate_button\b/,     [ 2 ],         \%pixmap,      \&isBitmapRef,   ],
+   [ qr/\bcreate_mode\b/,       [ 2 ],         \%pixmap,      \&acceptAll,     ],
+   [ qr/\bAWMIMT\b/,            [ 2 ],         \%pixmap,      \&isBitmapRef,   ],
+   [ qr/\binsert_menu_topic\b/, [ 2 ],         \%pixmap,      \&isBitmapRef,   ],
+   [ qr/\bPGT_LoadPixmap\b/,    [ 1 ],         \%pixmap,      \&isPGTres,      ],
+   [ qr/\binit_root\b/,         [ 1 ],         \%pixmap,      \&isIconRes,     ],
   );
 
 # - param numbers is [1..n] or [-1..-n] for optional params
-# - isRessource gets the unquoted potential ressource (without possible '(AW_CL)'-cast) and
+# - isRessource gets the unquoted potential ressource and
 #   returns the plain ressource name or undef (if it's definitely no ressource)
 
 my $defs                = scalar(@defs);
@@ -438,10 +374,6 @@ sub scanCodeFile($) {
                     my $used = 0;
                   UNQUOTED: foreach my $unquoted (@unquoted) {
                       my $full_ressource_idx = $$idx_r{$unquoted};
-                      if (not defined $full_ressource_idx and $unquoted =~ /\.(ps|pdf)$/o) {
-                        $unquoted .= '.gz';  # try zipped version
-                        $full_ressource_idx = $$idx_r{$unquoted};
-                      }
                       if (defined $full_ressource_idx) { # existing ressource
                         my $full_ressource = $rel2full{$unquoted};
                         if (not defined $full_ressource) { die "expected ressource '$unquoted' to be defined"; }
@@ -512,75 +444,6 @@ sub scanCodeFile_forUnuseds($\$\%) {
   close(FILE);
 }
 
-my %helpScanned = ();
-my $newHelpRef  = 0;
-
-sub referenceHelp($);
-sub referenceHelp($) {
-  my ($referred) = @_;
-
-  my $full_ressource_idx = $helpfile{$referred};
-  if (defined $full_ressource_idx) { # existing ressource
-    my $full_ressource = $rel2full{$referred};
-    if (not defined $full_ressource) { die "expected ressource '$referred' to be defined"; }
-    $used{$full_ressource} = 1;
-    $newHelpRef++;
-  }
-  else {
-    if ($referred =~ /\.(pdf|ps)$/) {
-      referenceHelp($referred.'.gz');
-    }
-    elsif ($referred =~ /\@/) {
-      ; # ignore mail addresses
-    }
-    elsif ($referred =~ /^(http|file):\/\//o) {
-      ; # ignore urls
-    }
-    else {
-      die "Ressource '".$referred."' is missing\n";
-    }
-  }
-}
-
-sub scanHelpFile($) {
-  my ($file) = @_;
-  if ($file =~ /\.hlp$/o) {
-    if (defined $used{$file} and not defined $helpScanned{$file}) {
-      open(FILE,'<'.$file) || die "can't read '$file' (Reason: $!)";
-      my @file = <FILE>;
-      my $flines = scalar(@file);
-      unshift @file, undef;     # line 0
-      my $lineNr = 0;
-      for ($lineNr=1; $lineNr<=$flines; $lineNr++) {
-        eval {
-          $_ = $file[$lineNr];
-          if (/#/) { $_ = $`; }  # skip comments
-          if (/^\s*(SUB|UP)\s+(.*)$/o) {
-            referenceHelp($2);
-          }
-          else {
-            while (/LINK{([^\}]*)}/o) {
-              my $rest = $';
-              referenceHelp($1);
-              $_ = $rest;
-            }
-          }
-        };
-        if ($@) {
-          chomp($@);
-          print "$file:$lineNr: Error: $@\n";
-          $errors++;
-          # if ($@ =~ /enough/) { die "enough"; }
-        }
-      }
-      close(FILE);
-      $helpScanned{$file} = 1;
-      $LOC += $flines;
-    }
-  }
-}
-
-
 sub scanCode() {
   my @sources = ();
   {
@@ -594,12 +457,6 @@ sub scanCode() {
 
   @sources = sort @sources;
   foreach (@sources) { scanCodeFile($_); }
-
-  $newHelpRef = 1;
-  while ($newHelpRef>0) {
-    $newHelpRef = 0;
-    foreach (@helpfiles) { scanHelpFile($_); }
-  }
 
   print "Scanned $LOC LOC.\n";
 

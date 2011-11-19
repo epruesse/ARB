@@ -24,9 +24,6 @@
 #include <stdarg.h>
 #include <string.h>
 
-#ifndef ARBTOOLS_H
-#include <arbtools.h>
-#endif
 
 // RGBA COLOR MASKS (Hex: 0x00RRGGBB)
 #define MASK_RED   0x00FF0000
@@ -34,7 +31,8 @@
 #define MASK_BLUE  0x000000FF
 
 
-class TIFFimage : virtual Noncopyable {
+class TIFFimage
+{
     public:
         TIFFimage();
         ~TIFFimage();

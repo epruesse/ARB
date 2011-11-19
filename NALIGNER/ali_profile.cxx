@@ -1,26 +1,26 @@
-// =============================================================== //
-//                                                                 //
-//   File      : ali_profile.cxx                                   //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
 
+#include <ctype.h>
+// #include <malloc.h>
+#include <stdlib.h>
+
+#include "ali_misc.hxx"
 #include "ali_profile.hxx"
-
+#include "ali_solution.hxx"
 #include <BI_helix.hxx>
-#include <cctype>
 
 
-inline int ALI_PROFILE::is_binding_marker(char c) {
+
+GB_INLINE int ALI_PROFILE::is_binding_marker(char c) {
     return (c == '~' || c == 'x');
 }
 
 
-ALI_TLIST<ali_family_member *> *ALI_PROFILE::find_family(ALI_SEQUENCE *Sequence, ALI_PROFILE_CONTEXT *context) {
-    // find the family in the pt server
+/*
+ * find the family in the pt server
+ */
+ALI_TLIST<ali_family_member *> *ALI_PROFILE::find_family(ALI_SEQUENCE *Sequence,
+                                                         ALI_PROFILE_CONTEXT *context)
+{
     char message_buffer[100];
     ALI_PT &pt = (ALI_PT &) *(context->pt);
     ALI_ARBDB &arbdb = (ALI_ARBDB &) *(context->arbdb);
@@ -33,11 +33,13 @@ ALI_TLIST<ali_family_member *> *ALI_PROFILE::find_family(ALI_SEQUENCE *Sequence,
     float weight, d;
     unsigned long number;
 
-    // Initialization
+    /*
+     * Initialisation
+     */
     family_list = new ALI_TLIST<ali_family_member *>;
 
     ali_message("Searching for the family");
-    pt.find_family(Sequence, context->find_family_mode);
+    pt.find_family(Sequence,context->find_family_mode);
     ali_message("Family found");
 
     pt_fam_list = pt.get_family_list();
@@ -49,15 +51,17 @@ ALI_TLIST<ali_family_member *> *ALI_PROFILE::find_family(ALI_SEQUENCE *Sequence,
 
     arbdb.begin_transaction();
 
-    // calculate the real family members
+    /*
+     * calculate the real family members
+     */
     number = 0;
     while (!pt_fam_list->is_empty()) {
         pt_member = pt_fam_list->first();
-        seq = arbdb.get_sequence(pt_member->name, context->mark_family_flag);
+        seq = arbdb.get_sequence(pt_member->name,context->mark_family_flag);
         if (seq) {
             weight = 1 + d * number;
-            sprintf(message_buffer, "%s (weight = %f, matches = %d)",
-                    pt_member->name, weight, pt_member->matches);
+            sprintf(message_buffer,"%s (weight = %f, matches = %d)",
+                    pt_member->name,weight,pt_member->matches);
             ali_message(message_buffer);
             family_member = new ali_family_member(seq,
                                                   (float) pt_member->matches,
@@ -76,7 +80,9 @@ ALI_TLIST<ali_family_member *> *ALI_PROFILE::find_family(ALI_SEQUENCE *Sequence,
 
     d = -1.0 * context->ext_max_weight / (float) pt_ext_list->cardinality();
 
-    // calculate the extension of the family
+    /*
+     * calculate the extension of the family
+     */
     number = 0;
     while (!pt_ext_list->is_empty()) {
         pt_member = pt_ext_list->first();
@@ -84,8 +90,8 @@ ALI_TLIST<ali_family_member *> *ALI_PROFILE::find_family(ALI_SEQUENCE *Sequence,
                                  context->mark_family_extension_flag);
         if (seq) {
             weight = context->ext_max_weight + d * number;
-            sprintf(message_buffer, "%s (weight = %f, matches = %d)",
-                    pt_member->name, weight, pt_member->matches);
+            sprintf(message_buffer,"%s (weight = %f, matches = %d)",
+                    pt_member->name,weight,pt_member->matches);
             ali_message(message_buffer);
             family_member = new ali_family_member(seq,
                                                   (float) pt_member->matches,
@@ -105,8 +111,12 @@ ALI_TLIST<ali_family_member *> *ALI_PROFILE::find_family(ALI_SEQUENCE *Sequence,
     return family_list;
 }
 
-void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list, ALI_PROFILE_CONTEXT *context) {
-    // calculate the costs for aligning against a family
+/*
+ * calculate the costs for aligning against a family
+ */
+void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list,
+                                  ALI_PROFILE_CONTEXT *context)
+{
     ali_family_member *family_member;
     float a[7], w[7], w_sum, sm[7][7];
     float base_gap_weights[5], w_bg_sum;
@@ -120,16 +130,20 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list, A
     long        *seq_len;
     float (*w_Del)[], (*percent)[];
 
-    // allocate temporary memory
+    /*
+     * allocate temporary memory
+     */
     members = family_list->cardinality();
-    l = (unsigned long *) CALLOC((unsigned int) members, sizeof(long));
-    g = (float *) CALLOC((unsigned int) members, sizeof(float));
-    seq = (unsigned char **) CALLOC((unsigned int) members, sizeof(char *));
-    seq_len = (long *) CALLOC((unsigned int) members, sizeof(long));
+    l = (unsigned long *) CALLOC((unsigned int) members,sizeof(long));
+    g = (float *) CALLOC((unsigned int) members,sizeof(float));
+    seq = (unsigned char ** ) CALLOC((unsigned int) members,sizeof(char *));
+    seq_len = (long *) CALLOC((unsigned int) members,sizeof(long));
     if (l == 0 || g == 0 || seq == 0 || seq_len == 0)
         ali_fatal_error("Out of memory");
 
-    // initialize arrays
+    /*
+     * initialize arrays
+     */
     family_member = family_list->first();
     prof_len = family_member->sequence->length();
     seq[0] = family_member->sequence->sequence();
@@ -150,31 +164,42 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list, A
         }
     }
 
-    // Calculate the substitution cost matrix
+    /*
+     * Calculate the substitution cost matrix
+     */
     for (i = 0; i < 5; i++)
         for (j = 0; j < 5; j++)
             sm[i][j] = context->substitute_matrix[i][j];
 
-    // Initialize l-array (position of last base)
+    /*
+     * Initialize l-array (position of last base)
+     */
     for (i = 0; i < members; i++)
         l[i] = prof_len + 1;
 
-    // allocate memory for costs
+    /*
+     * allocate memory for costs
+     */
 
-    base_weights  = (float (**) [4])   CALLOC((unsigned int) prof_len, sizeof(float [4]));
-    sub_costs     = (float (**) [6])   CALLOC((unsigned int) prof_len, sizeof(float [6]));
-    binding_costs = (float (*) [5][5]) CALLOC((unsigned int) 5,        sizeof(float [5]));
-    lmin          = (unsigned long *)  CALLOC((unsigned int) prof_len, sizeof(unsigned long));
-    lmax          = (unsigned long *)  CALLOC((unsigned int) prof_len, sizeof(unsigned long));
-    gap_costs     = (float ***)        CALLOC((unsigned int) prof_len, sizeof(float *));
-    gap_percents  = (float***)         CALLOC((unsigned int) prof_len, sizeof(float *));
-
+    base_weights = (float (**) [4]) CALLOC((unsigned int) prof_len,     sizeof(float [4]));
+    //base_weights = (float (*) [1][4]) CALLOC((unsigned int) prof_len, sizeof(float [4]));
+    sub_costs = (float (**) [6])  CALLOC((unsigned int) prof_len,               sizeof(float [6]));
+    //sub_costs = (float (*) [1][6]) CALLOC((unsigned int) prof_len,            sizeof(float [6]));
+    binding_costs = (float (*) [5][5]) CALLOC((unsigned int) 5,         sizeof(float [5]));
+    lmin = (unsigned long *) CALLOC((unsigned int) prof_len,            sizeof(unsigned long));
+    lmax = (unsigned long *) CALLOC((unsigned int) prof_len,            sizeof(unsigned long));
+    gap_costs = (float ***) CALLOC((unsigned int) prof_len,             sizeof(float *));
+    //gap_costs = (float *(*)[1]) CALLOC((unsigned int) prof_len,               sizeof(float *));
+    gap_percents = (float***) CALLOC((unsigned int) prof_len,           sizeof(float *));
+    //gap_percents = (float*(*)[1]) CALLOC((unsigned int) prof_len,             sizeof(float *));
     if (binding_costs == 0 || sub_costs == 0 || lmin == 0 || lmax == 0 ||
         gap_costs == 0 || gap_percents == 0 || base_weights == 0) {
         ali_fatal_error("Out of memory");
     }
 
-    // Copy the binding costs matrix
+    /*
+     * Copy the binding costs matrix
+     */
     w_bind_maximum = context->binding_matrix[0][0];
     for (i = 0; i < 5; i++)
         for (j = 0; j < 5; j++) {
@@ -183,10 +208,14 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list, A
                 w_bind_maximum = (*binding_costs)[i][j];
         }
 
-    // calculate the costs for EVERY position
+    /*
+     * calculate the costs for EVERY position
+     */
     ali_message("Calculating costs for substitution");
     for (p = 0; p < prof_len; p++) {
-        // Initialization
+        /*
+         * Initialisation
+         */
         for (i = 0; i < 7; i++)
             a[i] = w[i] = sm[5][i] = sm[i][5] = sm[6][i] = sm[i][6] = 0.0;
         for (i = 0; i < 6; i++)
@@ -194,7 +223,9 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list, A
         w_sum = 0.0;
         w_bg_sum = 0.0;
 
-        // Statistic consensus
+        /*
+         * Statistic consensus
+         */
         for (i = 0; i < members; i++) {
             if (p < size_t(seq_len[i])) {
                 a[seq[i][p]]++;
@@ -210,7 +241,9 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list, A
             }
         }
 
-        // Relative weight of bases
+        /*
+         * Relative weight of bases
+         */
         if (w_sum != 0)
             for (i = 0; i < 4; i++)
                 (*base_weights)[p][i] = w[i] / w_sum;
@@ -218,7 +251,9 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list, A
             for (i = 0; i < 4; i++)
                 (*base_weights)[p][i] = 0.25;
 
-        // Relative weight of bases and gaps
+        /*
+         * Relative weight of bases and gaps
+         */
         if (w_bg_sum != 0)
             for (i = 0; i < 5; i++)
                 base_gap_weights[i] = w[i] / w_bg_sum;
@@ -226,7 +261,9 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list, A
             for (i = 0; i < 5; i++)
                 base_gap_weights[i] = 0.2;
 
-        // Expandation of substitute matrix (for 'n')
+        /*
+         * Expandation of substitute matrix (for 'n')
+         */
         for (j = 0; j < 5; j++) {
             for (i = 0; i < 4; i++) {
                 sm[5][j] += (*base_weights)[p][i] * sm[i][j];
@@ -236,7 +273,9 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list, A
         for (i = 0; i < 4; i++)
             sm[5][5] += (*base_weights)[p][i] * sm[i][i];
 
-        // Expandation of substitute matrix (for '.')
+        /*
+         * Expandation of substitute matrix (for '.')
+         */
         for (j = 0; j < 6; j++)
             for (i = 0; i < 5; i++) {
                 sm[6][j] += base_gap_weights[i] * sm[i][j];
@@ -245,14 +284,15 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list, A
         for (i = 0; i < 5; i++)
             sm[6][6] += base_gap_weights[i] * sm[i][i];
 
-        // Substitution costs
+        /*
+         * Substitution costs
+         */
         for (i = 0; i < members; i++) {
             if (p < size_t(seq_len[i])) {
                 for (j = 0; j < 6; j++) {
                     (*sub_costs)[p][j] += g[i] * sm[seq[i][p]][j];
                 }
-            }
-            else {
+            } else {
                 for (j = 0; j < 6; j++) {
                     (*sub_costs)[p][j] += g[i] * sm[ALI_DOT_CODE][j];
                 }
@@ -264,7 +304,9 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list, A
                 sub_costs_maximum = (*sub_costs)[p][j];
         }
 
-        // Calculate dynamic deletion costs and percents of real gaps
+        /*
+         * Calculate dynamic deletion costs and percents of real gaps
+         */
         lmax[p] = 0;
         lmin[p] = p;
         for (i = 0; i < members; i++)
@@ -285,25 +327,29 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list, A
         (*gap_costs)[p] = (float *) w_Del;
         (*gap_percents)[p] = (float *) percent;
 
-        // Calculate dynamic deletion costs
+        /*
+         * Calculate dynamic deletion costs
+         */
         for (j = 0; j <= lmax[p] - lmin[p] + 1; j++) {
             (*w_Del)[j] = 0;
             for (i = 0; i < members; i++) {
-                // Normal case
-                if (p < size_t(seq_len[i])) {
+                /*
+                 * Normal case
+                 */
+                if (p < size_t(seq_len[i]) /* && !ali_is_dot(seq[i][p]) */) {
                     if (l[i] == prof_len + 1 || l[i] >= j + lmin[p]) {
                         (*w_Del)[j] += g[i] * sm[seq[i][p]][4] * context->multi_gap_factor;
-                    }
-                    else {
+                    }else{
                         (*w_Del)[j] += g[i] * sm[seq[i][p]][4];
                     }
                 }
-                // expand sequence with dots
+                /*
+                 * expand sequence with dots
+                 */
                 else {
                     if (l[i] >= j + lmin[p] && l[i] < prof_len+1) {
                         (*w_Del)[j] += g[i] * sm[ALI_DOT_CODE][4] * context->multi_gap_factor;
-                    }
-                    else {
+                    }else{
                         (*w_Del)[j] += g[i] * sm[ALI_DOT_CODE][4];
                     }
                 }
@@ -311,13 +357,17 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list, A
             (*w_Del)[j] /= members;
         }
 
-        // Update the l-array
-        for (i = 0; i < members; i++) {
+        /*
+         * Update the l-array
+         */
+        for (i = 0; i < members; i++){
             if (!ali_is_gap(seq[i][p]))
                 l[i] = p;
         }
 
-        // Calculate percents of real gaps
+        /*
+         * Calculate percents of real gaps
+         */
         for (j = 0; j <= lmax[p] - lmin[p] + 1; j++) {
             (*percent)[j] = 0;
             for (i = 0; i < members; i++) {
@@ -331,25 +381,27 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list, A
 
     ali_message("Calculation finished");
 
-    free(l);
-    free(g);
-    free(seq);
-    free(seq_len);
+    free((char *) l);
+    free((char *) g);
+    free((char *) seq);
+    free((char *) seq_len);
 }
 
+/*
+ * find the next helix
+ */
 int ALI_PROFILE::find_next_helix(char h[], unsigned long h_len,
                                  unsigned long pos,
                                  unsigned long *helix_nr,
                                  unsigned long *start, unsigned long *end)
 {
-    // find the next helix
     unsigned long i;
 
     for (i = pos; i < h_len && !isdigit(h[i]); i++) ;
     if (i >= h_len) return -1;
 
     *start = i;
-    sscanf(&h[i], "%ld", helix_nr);
+    sscanf(&h[i],"%ld",helix_nr);
     for (; i < h_len && isdigit(h[i]); i++) ;
     for (; i < h_len && !isdigit(h[i]); i++) ;
     *end = i - 1;
@@ -357,11 +409,13 @@ int ALI_PROFILE::find_next_helix(char h[], unsigned long h_len,
     return 0;
 }
 
+/*
+ * find the complementary part of a helix
+ */
 int ALI_PROFILE::find_comp_helix(char h[], unsigned long h_len,
                                  unsigned long pos, unsigned long helix_nr,
                                  unsigned long *start, unsigned long *end)
 {
-    // find the complementary part of a helix
     unsigned long nr, i;
 
     i = pos;
@@ -369,7 +423,7 @@ int ALI_PROFILE::find_comp_helix(char h[], unsigned long h_len,
         for (; i < h_len && !isdigit(h[i]); i++) ;
         if (i >= h_len) return -1;
         *start = i;
-        sscanf(&h[i], "%ld", &nr);
+        sscanf(&h[i],"%ld",&nr);
         for (; i < h_len && isdigit(h[i]); i++) ;
     } while (helix_nr != nr);
 
@@ -390,15 +444,56 @@ void ALI_PROFILE::delete_comp_helix(char h1[], char h2[], unsigned long h_len,
     }
 }
 
+#if 0
 
-void ALI_PROFILE::initialize_helix(ALI_PROFILE_CONTEXT *context) {
-    // initialize the array, representing the helix
+int ALI_PROFILE::map_helix(char h[], unsigned long h_len,
+                           unsigned long start1, unsigned long end1,
+                           unsigned long start2, unsigned long end2)
+{
+    unsigned long p1, p2;
+    unsigned long last1, last2;
+
+    if (end1 >= h_len || end2 >= h_len || start1 > end1 || start2 > end2)
+        ali_fatal_error("Inconsistent parameters","ALI_PROFILE::map_helix()");
+
+    p1 = start1;
+    for (p2 = end2; p2 >= start2 && !is_binding_marker(h[p2]); p2--);
+
+    (*helix_borders)[p1] = ALI_PROFILE_BORDER_LEFT;
+    (*helix_borders)[p2] = ALI_PROFILE_BORDER_RIGHT;
+    last1 = p1;
+    last2 = p2;
+    while (p1 <= end1 && p2 >= start2) {
+        (*helix)[p1] = p2;
+        (*helix)[p2] = p1;
+        last1 = p1;
+        last2 = p2;
+        for (p1++; p1 <= end1 && !is_binding_marker(h[p1]); p1++);
+        for (p2--; p2 >= start2 && !is_binding_marker(h[p2]); p2--);
+    }
+    (*helix_borders)[last1] = ALI_PROFILE_BORDER_RIGHT;
+    (*helix_borders)[last2] = ALI_PROFILE_BORDER_LEFT;
+
+    if (p1 <= end1 || p2 >= start2)
+        return -1;
+
+    return 0;
+}
+#endif
+
+/*
+ * initialize the array, representing the helix
+ */
+void ALI_PROFILE::initialize_helix(ALI_PROFILE_CONTEXT *context)
+{
     const char *error_string;
     BI_helix bi_helix;
 
     unsigned long i;
 
-    // read helix
+    /*
+     * read helix
+     */
     if ((error_string = bi_helix.init(context->arbdb->gb_main)) != 0)
         ali_warning(error_string);
 
@@ -407,7 +502,9 @@ void ALI_PROFILE::initialize_helix(ALI_PROFILE_CONTEXT *context) {
     helix_borders = (char **) CALLOC((unsigned int) helix_len, sizeof(long));
     if (helix == 0 || helix_borders == 0) ali_fatal_error("Out of memory");
 
-    // convert helix for internal use
+    /*
+     * convert helix for internal use
+     */
     for (i = 0; i < helix_len; i++)
         if (bi_helix.pairtype(i) == HELIX_PAIR)
             (*helix)[i] = bi_helix.opposite_position(i);
@@ -428,26 +525,28 @@ ALI_PROFILE::ALI_PROFILE(ALI_SEQUENCE *seq, ALI_PROFILE_CONTEXT *context)
 
     initialize_helix(context);
 
-    family_list = find_family(seq, context);
+    family_list = find_family(seq,context);
     if (family_list->is_empty()) {
         ali_error("Family not found (maybe incompatible PT and DB Servers)");
     }
 
-    calculate_costs(family_list, context);
+    calculate_costs(family_list,context);
 
     insert_cost = sub_costs_maximum * context->insert_factor;
     multi_insert_cost = insert_cost * context->multi_insert_factor;
 
-    sprintf(message_buffer, "Multi gap factor = %f", multi_gap_factor);
+    sprintf(message_buffer,"Multi gap factor = %f",multi_gap_factor);
     ali_message(message_buffer);
-    sprintf(message_buffer, "Maximal substitution costs = %f", sub_costs_maximum);
+    sprintf(message_buffer,"Maximal substitution costs = %f",sub_costs_maximum);
     ali_message(message_buffer);
-    sprintf(message_buffer, "Normal insert costs = %f", insert_cost);
+    sprintf(message_buffer,"Normal insert costs = %f",insert_cost);
     ali_message(message_buffer);
-    sprintf(message_buffer, "Multiple insert costs = %f", multi_insert_cost);
+    sprintf(message_buffer,"Multiple insert costs = %f",multi_insert_cost);
     ali_message(message_buffer);
 
-    // Delete the family list
+    /*
+     * Delete the family list
+     */
     family_member = family_list->first();
     delete family_member->sequence;
     delete family_member;
@@ -459,34 +558,44 @@ ALI_PROFILE::ALI_PROFILE(ALI_SEQUENCE *seq, ALI_PROFILE_CONTEXT *context)
     delete family_list;
 }
 
-ALI_PROFILE::~ALI_PROFILE()
+ALI_PROFILE::~ALI_PROFILE(void)
 {
     size_t i;
 
-    free(helix);
-    free(helix_borders);
-    free(binding_costs);
-    free(sub_costs);
+    if (helix)
+        free((char *) helix);
+    if (helix_borders)
+        free((char *) helix_borders);
+    if (binding_costs)
+        free((char *) binding_costs);
+    if (sub_costs)
+        free((char *) sub_costs);
     if (gap_costs) {
         for (i = 0; i < prof_len; i++)
             if ((*gap_costs)[i])
-                free((*gap_costs)[i]);
-        free(gap_costs);
+                free((char *) (*gap_costs)[i]);
+        free((char *) gap_costs);
     }
     if (gap_percents) {
         for (i = 0; i < prof_len; i++)
             if ((*gap_percents)[i])
-                free((*gap_percents)[i]);
-        free(gap_percents);
+                free((char *) (*gap_percents)[i]);
+        free((char *) gap_percents);
     }
-    free(lmin);
-    free(lmax);
-    delete norm_sequence;
+    if (lmin)
+        free((char *) lmin);
+    if (lmax)
+        free((char *) lmax);
+    if (norm_sequence)
+        delete norm_sequence;
 }
 
 
-int ALI_PROFILE::is_in_helix(unsigned long pos, unsigned long *first, unsigned long *last) {
-    // test whether a position is inside a helix
+/*
+ * test whether a position is inside a helix
+ */
+int ALI_PROFILE::is_in_helix(unsigned long pos,
+                             unsigned long *first, unsigned long *last) {
     long i;
 
     if (pos > helix_len)
@@ -522,7 +631,7 @@ int ALI_PROFILE::is_in_helix(unsigned long pos, unsigned long *first, unsigned l
                             switch ((*helix_borders)[i]) {
                                 case ALI_PROFILE_BORDER_LEFT:
                                     ali_warning("Helix borders inconsistent (3)");
-                                    printf("pos = %ld\n", pos);
+                                    printf("pos = %ld\n",pos);
                                     return 0;
                                 case ALI_PROFILE_BORDER_RIGHT:
                                     *last = (unsigned long) i;
@@ -533,8 +642,11 @@ int ALI_PROFILE::is_in_helix(unsigned long pos, unsigned long *first, unsigned l
     return 0;
 }
 
-int ALI_PROFILE::is_outside_helix(unsigned long pos, unsigned long *first, unsigned long *last) {
-    // test, whether a position is outside a helix
+/*
+ * test, whether a position is outside a helix
+ */
+int ALI_PROFILE::is_outside_helix(unsigned long pos,
+                                  unsigned long *first, unsigned long *last) {
     long i;
 
     switch ((*helix_borders)[pos]) {
@@ -577,8 +689,11 @@ int ALI_PROFILE::is_outside_helix(unsigned long pos, unsigned long *first, unsig
 }
 
 
-char *ALI_PROFILE::cheapest_sequence() {
-    // generate a 'consensus sequence'
+/*
+ * generate a 'consensus sequence'
+ */
+char *ALI_PROFILE::cheapest_sequence(void)
+{
 
     char *seq;
     size_t p;
@@ -617,8 +732,12 @@ char *ALI_PROFILE::cheapest_sequence() {
     return seq;
 }
 
-float ALI_PROFILE::w_binding(unsigned long first_seq_pos, ALI_SEQUENCE *seq) {
-    // calculate the costs of a binding
+/*
+ * calculate the costs of a binding
+ */
+float ALI_PROFILE::w_binding(unsigned long first_seq_pos,
+                             ALI_SEQUENCE *seq)
+{
     unsigned long pos_1_seq, pos_2_seq, last_seq_pos;
     long pos_compl;
     float costs = 0;

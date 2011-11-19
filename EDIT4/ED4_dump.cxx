@@ -12,8 +12,12 @@
 //                                                                       //
 //  ==================================================================== //
 
-#include "ed4_class.hxx"
+#include <cstdio>
 #include <arbdb.h>
+
+#include <aw_window.hxx>
+
+#include "ed4_class.hxx"
 
 #ifdef IMPLEMENT_DUMP
 

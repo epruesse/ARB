@@ -1,22 +1,18 @@
-// ================================================================ //
-//                                                                  //
-//   File      : a3_helix.hxx                                       //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
+// -----------------------------------------------------------------------------
 
-#ifndef A3_HELIX_HXX
-#define A3_HELIX_HXX
+#ifndef _A3_HELIX_HXX
+#define _A3_HELIX_HXX
 
-#ifndef A3_TYPES_H
+// -----------------------------------------------------------------------------
+//  Include-Dateien
+// -----------------------------------------------------------------------------
+
 #include "a3_types.h"
-#endif
-#ifndef A3_DARRAY_HXX
 #include "a3_darray.hxx"
-#endif
+
+// -----------------------------------------------------------------------------
+//  Datentypen
+// -----------------------------------------------------------------------------
 
 struct HMatch       // Ubereinstimmender Bereich von Sequenz und Helixstruktur
 {
@@ -40,7 +36,10 @@ struct HelixS       // Helixbereich
                               length = l; };
 };
 
-class A3Helix : virtual Noncopyable {
+class A3Helix
+{
+    private:
+    
     str      helix,         // Helix(klammer)struktur
              consensus;     // Haeufigste Familiensequenz
     int      length;        // Laenge von helix und consensus
@@ -68,10 +67,20 @@ class A3Helix : virtual Noncopyable {
     void     Dump       ( int        all );
 };
 
-extern  int  intcmp      ( const void *a, const void *b );
-extern  int  hmatchcmp   ( const void *a, const void *b );
-extern  void hmatchdump  ( vp val );
+// -----------------------------------------------------------------------------
+//  Funktionen
+// -----------------------------------------------------------------------------
 
-#else
-#error a3_helix.hxx included twice
-#endif // A3_HELIX_HXX
+extern  int     intcmp      ( const void    *a,
+                              const void    *b);
+
+extern  int     hmatchcmp   ( const void    *a,
+                              const void    *b);
+
+extern  void    hmatchdump  ( vp    val );
+
+// -----------------------------------------------------------------------------
+
+#endif
+
+// -----------------------------------------------------------------------------

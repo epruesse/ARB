@@ -1,14 +1,14 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
-.SUFFIXES: .o .c .cxx .depend
+.SUFFIXES: .o .c .cpp .depend
 
-CPP_OBJECTS = island_hopping.o i-hopper.o align.o mem.o trnsprob.o
+CPP_OBJECTS = island_hopping.o i-hopper.o align.o memory.o trnsprob.o
 
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .c.o:
-	$(ACC) $(cflags) -DARB -c $<  $(CPPINCLUDES) $(POST_COMPILE)
-.cxx.o:
-	$(CPP) $(cflags) -DARB -c $<  $(CPPINCLUDES) $(POST_COMPILE)
+	$(ACC) $(cflags) -DARB -c $<  $(CPPINCLUDES)
+.cpp.o:
+	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -22,7 +22,7 @@ depend.init:
 	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
 .c.depend:
 	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
-.cxx.depend:
+.cpp.depend:
 	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
 # DO NOT DELETE
@@ -32,28 +32,22 @@ depend.init:
 
 align.o: defs.h
 align.o: i-hopper.h
-align.o: mem.h
+align.o: memory.h
 align.o: trnsprob.h
 
 i-hopper.o: defs.h
 i-hopper.o: i-hopper.h
-i-hopper.o: mem.h
+i-hopper.o: memory.h
 
 island_hopping.o: defs.h
 island_hopping.o: i-hopper.h
 island_hopping.o: island_hopping.h
-island_hopping.o: mem.h
+island_hopping.o: memory.h
+island_hopping.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 island_hopping.o: $(ARBHOME)/INCLUDE/arb_assert.h
-island_hopping.o: $(ARBHOME)/INCLUDE/arb_core.h
-island_hopping.o: $(ARBHOME)/INCLUDE/arbtools.h
-island_hopping.o: $(ARBHOME)/INCLUDE/dupstr.h
-island_hopping.o: $(ARBHOME)/INCLUDE/test_global.h
-
-mem.o: mem.h
-mem.o: $(ARBHOME)/INCLUDE/attributes.h
+island_hopping.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+island_hopping.o: $(ARBHOME)/INCLUDE/attributes.h
 
 trnsprob.o: defs.h
-trnsprob.o: mem.h
+trnsprob.o: memory.h
 trnsprob.o: trnsprob.h
-trnsprob.o: $(ARBHOME)/INCLUDE/arb_assert.h
-trnsprob.o: $(ARBHOME)/INCLUDE/test_global.h

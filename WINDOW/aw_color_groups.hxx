@@ -12,11 +12,8 @@
 #ifndef AW_COLOR_GROUPS_HXX
 #define AW_COLOR_GROUPS_HXX
 
-#ifndef AW_BASE_HXX
-#include "aw_base.hxx"
-#endif
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
 #endif
 
 
@@ -27,7 +24,7 @@
 //
 //  - call AW_init_color_group_defaults with current program name
 //
-//  - call AW_manage_GC with define_color_groups set to true
+//  - call AW_manage_GC with define_color_groups set to true;
 //    This defines extra GC's for color_groups (named color_group_xxx)
 //    If such GCs are defined the normal properties window (AW_create_gc_window)
 //    automatically gets a sub-window called 'Edit color-groups'

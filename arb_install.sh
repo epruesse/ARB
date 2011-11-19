@@ -40,22 +40,22 @@ untar() {
     fi
 }
 
-separator() {
+seperator() {
     echo ''
     echo '*******************************************'
 }
 
-separator
+seperator
 echo 'Welcome to the ARB Package'
-separator
+seperator
 echo '  Note:   - You may abort this script with ctrl-"C"'
 echo '          - You can rerun this script as often as you like'
 echo '          - Old ARB data will be kept if requested (in this case'
 echo '            you can simply change some options)'
 echo '          - Pressing <return> will select the value in brackets'
-separator
+seperator
 echo 'Please answer some questions:'
-separator
+seperator
 echo 'Enter path where to install ARB ?'
 echo '  ARB is not a single program but a set of programs, datafiles ...'
 echo '  To install ARB correctly all files are stored in a single '
@@ -120,7 +120,7 @@ if test -d $ARBHOME; then
     cp $ARBHOME/lib/arb_tcp.dat arb_tcp_`date +%Y%m%d`.dat
 
     if test -w $ARBHOME; then
-        separator
+        seperator
         echo 'The destination directory'
         echo "    $ARBHOME"
         echo 'already exists!'
@@ -160,7 +160,7 @@ cd $ARBHOME
 ARBHOME=`pwd`
 
 if test -d lib/pictures; then
-    separator
+    seperator
     echo "Old ARB package found (type n to change only some options)."
     echo "  Do you want to update the old package: (y/n)[y]"
     read var;
@@ -175,7 +175,7 @@ else
     untar arb.tgz;
 fi
 
-separator
+seperator
 echo 'Specify PT_SERVER files location'
 echo '  ARB needs a writeable directory to store the pt_server files. '
 echo '  Those files are needed for fast database search'
@@ -241,7 +241,7 @@ case "$pt_dir" in
     (cd lib;ln -s $pt_dir pts;)
 esac
 
-separator
+seperator
 echo 'Who is responsible for the PT_SERVER index files ?'
 echo '  Answer  y: if you trust your users (less administration)'
 echo '          n: if YOU want to administrate all PT_SERVER files'
@@ -262,7 +262,7 @@ case "$var" in
     echo ">>> flags unchanged";;
 esac
 
-separator
+seperator
 echo 'NameServer installation'
 echo '  The NameServer is a program, that synchronizes all species names'
 echo '  of the databases of different users.'
@@ -288,7 +288,7 @@ case "$var" in
     echo ">>> flags unchanged";;
 esac
 
-separator
+seperator
 echo 'Networking'
 echo '  To speed up calculation one special host can be assigned as'
 echo '  the PT_SERVER host. That means that all database search is done'
@@ -320,7 +320,7 @@ case "$var" in
     mv $bckup lib/arb_tcp.dat;
     echo ">>> old lib/arb_tcp.dat restored";;
     n)
-    separator
+    seperator
     echo "Enter the name of your host for the pt_server"
     read host
     echo "Checking connection to $host"
@@ -337,10 +337,10 @@ case "$var" in
     echo ">>> server installed";;
 esac
 
-separator
+seperator
 echo ">>> Installation Complete"
 
-separator
+seperator
 SHELL_ANS=0
 
 while [ "$SHELL_ANS" = "0" ]; do

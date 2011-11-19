@@ -13,10 +13,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(ACC) $(cflags) -c $< $(AINCLUDES)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -39,62 +39,36 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 AW_names_admin.o: AW_rename.hxx
+AW_names_admin.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AW_names_admin.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_core.h
-AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_file.h
-AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_msg.h
-AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AW_names_admin.o: $(ARBHOME)/INCLUDE/arbdbt.h
-AW_names_admin.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/attributes.h
-AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
-AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
+AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AW_names_admin.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
-AW_names_admin.o: $(ARBHOME)/INCLUDE/cb.h
-AW_names_admin.o: $(ARBHOME)/INCLUDE/dupstr.h
-AW_names_admin.o: $(ARBHOME)/INCLUDE/smartptr.h
-AW_names_admin.o: $(ARBHOME)/INCLUDE/test_global.h
+AW_names_admin.o: $(ARBHOME)/INCLUDE/awt.hxx
+AW_names_admin.o: $(ARBHOME)/INCLUDE/awt_advice.hxx
 
 AW_rename.o: AW_rename.hxx
+AW_rename.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AW_rename.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_rename.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AW_rename.o: $(ARBHOME)/INCLUDE/aisc_global.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AW_rename.o: $(ARBHOME)/INCLUDE/arb_core.h
-AW_rename.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_rename.o: $(ARBHOME)/INCLUDE/arb_msg.h
-AW_rename.o: $(ARBHOME)/INCLUDE/arb_progress.h
-AW_rename.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arbdbt.h
-AW_rename.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_rename.o: $(ARBHOME)/INCLUDE/attributes.h
-AW_rename.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-AW_rename.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
-AW_rename.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AW_rename.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AW_rename.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+AW_rename.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AW_rename.o: $(ARBHOME)/INCLUDE/bytestring.h
-AW_rename.o: $(ARBHOME)/INCLUDE/cb.h
 AW_rename.o: $(ARBHOME)/INCLUDE/client.h
-AW_rename.o: $(ARBHOME)/INCLUDE/client_types.h
-AW_rename.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_rename.o: $(ARBHOME)/INCLUDE/inline.h
 AW_rename.o: $(ARBHOME)/INCLUDE/names_client.h
 AW_rename.o: $(ARBHOME)/INCLUDE/servercntrl.h
-AW_rename.o: $(ARBHOME)/INCLUDE/smartptr.h
-AW_rename.o: $(ARBHOME)/INCLUDE/test_global.h

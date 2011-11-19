@@ -1,24 +1,24 @@
-// =============================================================== //
-//                                                                 //
-//   File      : AP_main.cxx                                       //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#include <cstdio>
+#include <cmath>
+#include <cstring>
+#include <memory.h>
+#include <iostream>
 
+#include <arbdb.h>
+#include <arbdbt.h>
+#include <awt_tree.hxx>
+
+#include "AP_buffer.hxx"
+#include "parsimony.hxx"
 #include "AP_error.hxx"
-#include "ap_tree_nlen.hxx"
-
-#include <TreeDisplay.hxx>
 
 using namespace std;
 
-// ---------------
-//      AP_ERR
+/*********************************************
+AP_ERR
+*************************/
 
-int AP_ERR::mode = 0;
+int AP_ERR::modus = 0;
 
 AP_ERR::~AP_ERR()
 {
@@ -30,25 +30,25 @@ AP_ERR::AP_ERR (const char *pntr)
 // setzt den Fehlertext und zeigt ihn an
 {
     text = pntr;
-    if (mode == 0) {
-        cout << "\n*** WARNING *** \n" << text << "\n";
+    if (modus == 0) {
+        cout << "\n*** WARNING *** \n" << text <<"\n";
         cout.flush();
     }
 }
 
-AP_ERR::AP_ERR (const char *pntr, const char *pntr2)
+AP_ERR::AP_ERR (const char *pntr,const char *pntr2)
 {
     text = pntr2;
-    if (mode == 0) {
-        cout << "\n***** WARNING  in " << pntr << "\n" << text << "\n";
+    if (modus == 0) {
+        cout << "\n***** WARNING  in " << pntr << "\n" << text <<"\n";
         cout.flush();
     }
 }
 
-AP_ERR::AP_ERR (const char *pntr, const char *pntr2, const int core)
+AP_ERR::AP_ERR (const char *pntr,const char *pntr2,const int core)
 {
     text = pntr2;
-    cout << "\n*** FATAL ERROR *** " << core << " in " << pntr << "\n" << text << "\n";
+    cout << "\n*** FATAL ERROR *** " << core << " in " <<pntr << "\n" << text <<"\n";
     cout.flush();
     GBK_terminate("AP_ERR[1]");
 }
@@ -69,44 +69,47 @@ const char *AP_ERR::show()
 }
 
 void AP_ERR::set_mode(int i) {
-    mode = i;
+    modus = i;
 }
 
-// ----------------
-//      AP_main
+/**************
 
-AP_main::AP_main() {
-    memset((char *)this, 0, sizeof(AP_main));
+AP_main
+
+***************/
+
+AP_main::AP_main(void) {
+    memset((char *)this,0,sizeof(AP_main));
 }
 
-AP_main::~AP_main() {
+AP_main::~AP_main(void) {
+    if (use) delete use;
     if (stack) delete stack;
 }
 
 GB_ERROR AP_main::open(char *db_server) {
     GB_ERROR error             = 0;
-    GLOBAL_gb_main             = GB_open(db_server, "rwt");
+    GLOBAL_gb_main             = GB_open(db_server,"rwt");
     if (!GLOBAL_gb_main) error = GB_await_error();
     return error;
 }
 
-void AP_main::user_push() {
+void AP_main::user_push(void) {
     this->user_push_counter = stack_level + 1;
     this->push();
 }
 
-void AP_main::user_pop() {
+void AP_main::user_pop(void) {
     // checks if user_pop possible
     if (user_push_counter == stack_level) {
         this->pop();    // changes user_push_counter if user pop
-    }
-    else {
-        new AP_ERR("AP_main::user_pop()", "No user pop possible");
+    } else {
+        new AP_ERR("AP_main::user_pop()","No user pop possible");
     }
     return;
 }
 
-void AP_main::push() {
+void AP_main::push(void) {
     // if count > 1 the nodes are buffered more than once
     // WARNING:: node only has to be buffered once in the stack
     //
@@ -117,13 +120,13 @@ void AP_main::push() {
     stack->last_user_buffer = this->user_push_counter;
 }
 
-void AP_main::pop() {
-    AP_tree_nlen *knoten;
+void AP_main::pop(void) {
+    AP_tree *knoten;
     if (!stack) {
-        new AP_ERR("AP_main::pop()", "Stack underflow !");
+        new AP_ERR("AP_main::pop()","Stack underflow !");
         return;
     }
-    while ((knoten = stack->pop())) {
+    while ( (knoten = stack->pop()) ) {
         if (stack_level != knoten->stack_level) {
             GB_internal_error("AP_main::pop: Error in stack_level");
             cout << "Main UPD - node UPD : " << stack_level << " -- " << knoten->stack_level << " \n";
@@ -134,10 +137,16 @@ void AP_main::pop() {
     delete stack;
     stack_level --;
     stack = list.pop();
-    user_push_counter = stack ? stack->last_user_buffer : 0;
+
+    if (stack) {
+        user_push_counter = stack->last_user_buffer;
+    }else{
+        user_push_counter = 0;
+    }
+    return;
 }
 
-void AP_main::clear() {
+void AP_main::clear(void) {
     // removes count elements from the list
     // because the current tree is used
     //
@@ -145,11 +154,10 @@ void AP_main::clear() {
     // moves all not previous buffered nodes in the
     // previous stack
 
-    AP_tree_nlen  *knoten;
-    AP_main_stack *new_stack;
-
+    AP_tree * knoten;
+    AP_main_stack * new_stack;
     if (!stack) {
-        new AP_ERR("AP_main::clear", "Stack underflow !");
+        new AP_ERR("AP_main::clear","Stack underflow !");
         return;
     }
     if (user_push_counter >= stack_level) {
@@ -157,18 +165,18 @@ void AP_main::clear() {
             if (stack->size() > 0) {
                 while (stack->size() > 0) {
                     knoten = stack->pop();
-                    knoten->clear(stack_level, user_push_counter);
+                    //if (buffer_cout == AP_TRUE) knoten->printl();
+                    knoten->clear(stack_level,user_push_counter);
                 }
             }
             delete stack;
             stack = list.pop();
         }
-    }
-    else {
+    } else {
         if (stack) {
             new_stack = list.pop();
-            while ((knoten = stack->pop())) {
-                if (knoten->clear(stack_level, user_push_counter) != true) {
+            while ( (knoten = stack->pop()) ) {
+                if (knoten->clear(stack_level,user_push_counter) != AP_TRUE) {
                     // node is not cleared because buffered in previous node stack
                     // node is instead copied in previous level
                     if (new_stack) new_stack->push(knoten);
@@ -176,8 +184,7 @@ void AP_main::clear() {
             }
             delete stack;
             stack = new_stack;
-        }
-        else {
+        } else {
             new AP_ERR("AP_main::clear");
         }
     }
@@ -187,7 +194,7 @@ void AP_main::clear() {
 
 }
 
-void AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
+void AP_main::push_node(AP_tree * node,AP_STACK_MODE mode) {
     //
     //  stores node
     //
@@ -196,24 +203,17 @@ void AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
         return;
     }
 
-    if (stack_level < node->stack_level) {
+    if ( stack_level < node->stack_level) {
         GB_warning("AP_main::push_node: stack_level < node->stack_level");
         return;
     }
 
-    if (node->push(mode, stack_level))  stack->push(node);
+    if (node->push(mode,stack_level))   stack->push(node);
 }
 
-AP_tree_nlen *AP_main::get_root_node() {
-    return DOWNCAST(AP_tree_nlen*, agt->get_root_node());
-}
 
-void AP_main::set_tree_root(AWT_graphic_tree *agt_) {
-    ap_assert(agt == 0 && agt_ != 0);               // do only once
-    agt = agt_;
+void AP_main::set_tree_root(AP_tree *new_root) {
+    // removes old root and sets it
+    // to the father of the new_root
+    *ap_main->tree_root = new_root;
 }
-
-const char *AP_main::get_aliname() const {
-    return agt->tree_static->get_aliview()->get_aliname();
-}
-

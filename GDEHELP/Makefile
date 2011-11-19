@@ -36,11 +36,11 @@ save:
 	rm -f arbgdemenus*.tar.gz
 	tar cvf - MENUS ARB_GDEmenus* |gzip >`date '+arbgdemnus_%d_%m_%y.tar.gz'`
 
-clean: $(HELPFILELIST)
+clean:
+	rm -f $(GENMENUS) $(TARGET) $(HELPFILELIST)
 	@$(MAKE) -f Makefile.helpfiles \
 		"GENHELPDEST=$(GENHELPDEST)" \
 		"GENDOCDEST=$(GENDOCDEST)" \
 		"HELPFILELIST=$(HELPFILELIST)" \
 		clean
-	rm -f $(GENMENUS) $(TARGET) $(HELPFILELIST)
 

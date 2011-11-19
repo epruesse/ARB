@@ -31,17 +31,12 @@ sub main() {
       }
 
       if ($touch==1) {
-        if (-d $file) {
-          $handled = 1;
-        }
-        else {
-          if (not -f $file) { die "File '$file' not found (statusline='$line')" }
+        if (not -f $file) { die "File '$file' not found (statusline='$line')" }
 
-          my $touch_cmd = "touch '$file'";
-          print '['.$touch_cmd."]\n";
-          system($touch_cmd);
-          $handled = 1;
-        }
+        my $touch_cmd = "touch '$file'";
+        print '['.$touch_cmd."]\n";
+        system($touch_cmd);
+        $handled = 1;
       }
     }
     if ($handled==0) { die "Can't handle status line '$line'"; }

@@ -11,14 +11,17 @@
 #ifndef GENOMEIMPORT_H
 #define GENOMEIMPORT_H
 
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
+#ifndef _CPP_CSTDIO
+#include <cstdio>
+#endif
+#ifndef ARBDB_H
+#include <arbdb.h>
 #endif
 
 class UniqueNameDetector;
 class AW_repeated_question;
 
-struct ImportSession : virtual Noncopyable { // valid during complete import of multiple files
+struct ImportSession : Noncopyable { // valid during complete import of multiple files
     GBDATA               *gb_species_data;
     UniqueNameDetector   *und_species;                    // extended when creating new species
     AW_repeated_question *ok_to_ignore_wrong_start_codon;

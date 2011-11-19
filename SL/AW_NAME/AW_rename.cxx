@@ -1,27 +1,21 @@
-// =============================================================== //
-//                                                                 //
-//   File      : AW_rename.cxx                                     //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
-
-#include "AW_rename.hxx"
-
-#include <aw_awars.hxx>
-#include <aw_window.hxx>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <time.h>
+// #include <malloc.h>
+#include <arbdb.h>
+#include <arbdbt.h>
 #include <aw_root.hxx>
-#include <aw_msg.hxx>
-#include <arb_progress.h>
+#include <aw_device.hxx>
+#include <aw_window.hxx>
+#include <aw_awars.hxx>
+#include "AW_rename.hxx"
+#include "inline.h"
 
 #include <names_client.h>
 #include <servercntrl.h>
 #include <client.h>
-
-#include <cctype>
-#include <ctime>
 
 static const char *get_addid(GBDATA *gb_main) {
     GB_transaction ta(gb_main);
@@ -46,9 +40,9 @@ const char *AW_get_nameserver_addid(GBDATA *gb_main) {
 }
 
 GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
-    // if entry AWAR_NAMESERVER_ADDID isn't defined yet, try to detect a reasonable value
+    // if entry AWAR_NAMESERVER_ADDID isnt defined yet, try to detect a reasonable value
     // from arb_tcp.dat. Ask user if multiple servers are defined.
-    //
+    // 
     // if gb_other_main is defined try to use value from there.
 
     const char *addid   = get_addid(gb_main);
@@ -111,7 +105,7 @@ GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
 
                     free(buttons);
                 }
-
+                
                 for (int c = 0; c<serverCount; c++) free(fieldNames[c]);
                 free(fieldNames);
             }
@@ -131,7 +125,7 @@ private:
     aisc_com   *link;
     T_AN_LOCAL  locs;
     T_AN_MAIN   com;
-    int         persistent;     // if true -> connection will not be closed
+    int         persistant;     // if true -> connection will not be closed
     time_t      linktime;       // time, when link has been established
 
     //  ----------------------------------
@@ -139,27 +133,27 @@ private:
     //  ----------------------------------
     int init_local_com_names()
     {
-        if (!link) return 1;    //!* create and init local com structure **
+        if (!link) return 1;    /*** create and init local com structure ***/
         if (aisc_create(link, AN_MAIN, com,
                         MAIN_LOCAL, AN_LOCAL, &locs,
                         LOCAL_WHOAMI, "i bin der arb_tree",
-                        NULL)) {
+                        NULL)){
             return 1;
         }
         return 0;
     }
 
     NameServerConnection(const NameServerConnection& other);
-    NameServerConnection& operator=(const NameServerConnection& /* other */);
+    NameServerConnection& operator=(const NameServerConnection& /*other*/);
 
     GB_ERROR reconnect(GBDATA *gb_main) { // reconnect ignoring consistency
-        int old_persistent = persistent;
+        int old_persistant = persistant;
 
         printf("Reconnecting name server\n");
 
-        persistent = 0; // otherwise disconnect() won't disconnect
+        persistant = 0; // otherwise disconnect() won't disconnect
         disconnect();
-        persistent = old_persistent; // restore previous persistence
+        persistant = old_persistant; // restore previous persistancy
 
         return connect(gb_main);
     }
@@ -192,28 +186,34 @@ public:
         link       = 0;
         locs       = 0;
         com        = 0;
-        persistent = 0;
+        persistant = 0;
     }
     virtual ~NameServerConnection() {
-        aw_assert(persistent == 0); // forgot to remove persistence ?
+        gb_assert(persistant == 0); // forgot to remove persistancy ?
         disconnect();
     }
 
     GB_ERROR connect(GBDATA *gb_main) {
-        arb_progress::show_comment("Connecting to name server");
-
         GB_ERROR err = 0;
         if (!link) {
+            char       *server_id;
             const char *add_field = AW_get_nameserver_addid(gb_main);
-            const char *server_id = GBS_nameserver_tag(add_field);
 
-            err = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_id);
+            if (add_field[0] == 0) { // no additional field -> traditional name server
+                server_id = strdup("ARB_NAME_SERVER");
+            }
+            else {
+                server_id = GBS_global_string_copy("ARB_NAME_SERVER_%s", add_field);
+                ARB_strupper(server_id);
+            }
+
+            err = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_id, gb_main);
 
             if (!err) {
                 const char *ipport = GBS_read_arb_tcp(server_id);
                 if (!ipport) err = GB_await_error();
                 else {
-                    link     = aisc_open(ipport, &com, AISC_MAGIC_NUMBER);
+                    link     = (aisc_com *)aisc_open(ipport, &com,AISC_MAGIC_NUMBER);
                     linktime = time(0);
 
                     if (init_local_com_names()) {
@@ -224,6 +224,7 @@ public:
                     }
                 }
             }
+            free(server_id);
         }
         else {
             long linkAge     = int(time(0)-linktime);
@@ -260,22 +261,22 @@ public:
     }
 
     void disconnect() {
-        if (persistent == 0) {
+        if (persistant == 0) {
             if (link) {
                 aisc_close(link);
             }
             link = 0;
         }
     }
-
-    void persistence(bool persist) {
+    
+    void persistancy(bool persist) {
         if (persist) {
-            ++persistent;
+            ++persistant;
         }
         else {
-            --persistent;
-            if (persistent <= 0) {
-                persistent = 0;
+            --persistant;
+            if (persistant <= 0) {
+                persistant = 0;
                 disconnect();
             }
         }
@@ -288,11 +289,11 @@ public:
 
 static NameServerConnection name_server;
 
-PersistentNameServerConnection::PersistentNameServerConnection() {
-    name_server.persistence(true);
+PersistantNameServerConnection::PersistantNameServerConnection() {
+    name_server.persistancy(true);
 }
-PersistentNameServerConnection::~PersistentNameServerConnection() {
-    name_server.persistence(false);
+PersistantNameServerConnection::~PersistantNameServerConnection() {
+    name_server.persistancy(false);
 }
 
 // --------------------------------------------------------------------------------
@@ -304,7 +305,7 @@ GB_ERROR AW_test_nameserver(GBDATA *gb_main) {
 
 // --------------------------------------------------------------------------------
 
-GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, const char *addid, char*& new_name) {
+GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, const char *addid, char*& new_name, bool openstatus, bool showstatus) {
     // create a unique short name for 'full_name'
     // the result is written into 'new_name' (as malloc-copy)
     // if fails: GB_ERROR!=0 && new_name==0
@@ -313,11 +314,20 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
     new_name = 0;
     if (!acc) acc = "";
 
-    arb_progress progress("Generating short name");
+    if (openstatus) {
+        aw_openstatus(GBS_global_string("Short name for '%s'", full_name));
+        showstatus = true;
+    }
 
+    if (showstatus) {
+        aw_status("Connecting to name server");
+        aw_status((double)0);
+    }
+    
     GB_ERROR err = name_server.connect(gb_main);
     if (err) return err;
 
+    if (showstatus) aw_status("Generating name");
     static char *shrt = 0;
     if (strlen(full_name)) {
         if (aisc_nput(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
@@ -325,12 +335,12 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
                       LOCAL_ACCESSION,  acc,
                       LOCAL_ADDID,      addid ? addid : "",
                       LOCAL_ADVICE,     "",
-                      NULL)) {
+                      NULL)){
             err = "Connection Problems with the NAME_SERVER";
         }
         if (aisc_get(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
                      LOCAL_GET_SHORT,   &shrt,
-                     NULL)) {
+                     NULL)){
             err = "Connection Problems with the NAME_SERVER";
         }
     }
@@ -348,16 +358,24 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
         }
     }
 
+    if (openstatus) aw_closestatus();
     name_server.disconnect();
 
     return err;
 }
 
-GB_ERROR AWTC_recreate_name(GBDATA *gb_species) {
-    GBDATA       *gb_main = GB_get_root(gb_species);
-    arb_progress  progress("Recreating name");
-    GB_ERROR      error   = name_server.connect(gb_main);
+GB_ERROR AWTC_recreate_name(GBDATA *gb_species, bool update_status) {
+    GBDATA   *gb_main = GB_get_root(gb_species);
+
+    if (update_status) {
+        aw_status("Connecting to name server");
+        aw_status((double)0);
+    }
+
+    GB_ERROR error = name_server.connect(gb_main);
     if (!error) {
+        if (update_status) aw_status("Generating name");
+
         const char *add_field = AW_get_nameserver_addid(gb_main);
         char       *ali_name  = GBT_get_default_alignment(gb_main);
 
@@ -366,11 +384,11 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species) {
         GBDATA *gb_acc       = GBT_gen_accession_number(gb_species, ali_name);
         GBDATA *gb_addfield  = add_field[0] ? GB_entry(gb_species, add_field) : 0;
 
-        char *name      = gb_name ?     GB_read_string   (gb_name)     : strdup("");
-        char *full_name = gb_full_name ? GB_read_string  (gb_full_name) : strdup("");
-        char *acc       = gb_acc ?      GB_read_string   (gb_acc)      : strdup("");
-        char *addid     = gb_addfield ? GB_read_as_string(gb_addfield) : strdup("");
-
+        char *name      = gb_name?      GB_read_string   (gb_name)     : strdup("");
+        char *full_name = gb_full_name? GB_read_string   (gb_full_name): strdup("");
+        char *acc       = gb_acc?       GB_read_string   (gb_acc)      : strdup("");
+        char *addid     = gb_addfield?  GB_read_as_string(gb_addfield) : strdup("");
+        
         int   deleted = 0;
         char *shrt    = 0;
 
@@ -385,7 +403,7 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species) {
                      NULL)  != 0 ||
             aisc_get(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
                      LOCAL_GET_SHORT,   &shrt,
-                     NULL)  != 0)
+                     NULL)  !=0)
         {
             error = "Connection Problems with the NAME_SERVER";
         }
@@ -393,7 +411,7 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species) {
 
         if (!error) {
             GBT_begin_rename_session(gb_main, 0);
-            error = GBT_rename_species(name, shrt, true);
+            error = GBT_rename_species(name, shrt, GB_TRUE);
             if (error) {
                 if (GBT_find_species(gb_main, shrt)) { // it was a rename error
                     int done = 0;
@@ -401,7 +419,7 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species) {
                     for (int count = 2; !done && !error && count<10; count++) {
                         const char *other_short = GBS_global_string("%s.%i", shrt, count);
                         if (!GBT_find_species(gb_main, other_short)) {
-                            error            = GBT_rename_species(name, other_short, true);
+                            error            = GBT_rename_species(name, other_short, GB_TRUE);
                             if (!error) done = 1;
                         }
                     }
@@ -413,7 +431,10 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species) {
             }
 
             if (error) GBT_abort_rename_session();
-            else error = GBT_commit_rename_session();
+            else {
+                if (update_status) GBT_commit_rename_session(aw_status, aw_status);
+                else GBT_commit_rename_session(0, 0);
+            }
         }
 
         free(shrt);
@@ -430,8 +451,8 @@ char *AWTC_create_numbered_suffix(GB_HASH *species_name_hash, const char *shortn
     char *newshort = 0;
     if (GBS_read_hash(species_name_hash, shortname)) {
         int i;
-        newshort = (char *)GB_calloc(sizeof(char), strlen(shortname)+20);
-        for (i = 1; ; i++) {
+        newshort = (char *)GB_calloc(sizeof(char),strlen(shortname)+20);
+        for (i= 1 ; ; i++) {
             sprintf(newshort, "%s.%i", shortname, i);
             if (!GBS_read_hash(species_name_hash, newshort))break;
         }
@@ -443,83 +464,88 @@ char *AWTC_create_numbered_suffix(GB_HASH *species_name_hash, const char *shortn
     return newshort;
 }
 
-GB_ERROR AWTC_pars_names(GBDATA *gb_main, bool *isWarningPtr) {
-    // rename species according to name_server
-    // 'isWarning' is set to true, in case of duplicates-warning
-
-    arb_progress gen_progress("Generating new names", 2);
-    GB_ERROR     err       = name_server.connect(gb_main);
-    bool         isWarning = false;
-
+GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status, bool *isWarningPtr)
+// rename species according to name_server
+// 'isWarning' is set to true, in case of duplicates-warning
+{
+    GB_ERROR err       = name_server.connect(gb_main);
+    bool     isWarning = false;
+    
     if (!err) {
-        err = GBT_begin_rename_session(gb_main, 1);
+        err = GBT_begin_rename_session(gb_main,1);
         if (!err) {
             char     *ali_name = GBT_get_default_alignment(gb_main);
-            long      spcount  = GBT_get_species_count(gb_main);
-            GB_HASH  *hash     = GBS_create_hash(spcount, GB_IGNORE_CASE);
+            GB_HASH  *hash     = GBS_create_hash(GBT_get_species_hash_size(gb_main), GB_IGNORE_CASE);
             GB_ERROR  warning  = 0;
+            long      spcount  = 0;
+            long      count    = 0;
 
-            if (spcount) {
-                arb_progress progress("Renaming species", spcount);
-                const char *add_field = AW_get_nameserver_addid(gb_main);
+            if (update_status) {
+                aw_status("Renaming");
+                spcount = GBT_get_species_count(gb_main);
+            }
 
-                for (GBDATA *gb_species = GBT_first_species(gb_main);
-                     gb_species && !err;
-                     gb_species = GBT_next_species(gb_species))
-                {
-                    GBDATA *gb_name      = GB_entry(gb_species, "name");
-                    GBDATA *gb_full_name = GB_entry(gb_species, "full_name");
-                    GBDATA *gb_acc       = GBT_gen_accession_number(gb_species, ali_name);
-                    GBDATA *gb_addfield  = add_field[0] ? GB_entry(gb_species, add_field) : 0;
+            const char *add_field = AW_get_nameserver_addid(gb_main);
 
-                    char *name      = gb_name      ? GB_read_string   (gb_name)     : strdup("");
-                    char *full_name = gb_full_name ? GB_read_string   (gb_full_name) : strdup("");
-                    char *acc       = gb_acc       ? GB_read_string   (gb_acc)      : strdup("");
-                    char *addid     = gb_addfield  ? GB_read_as_string(gb_addfield) : strdup(""); // empty value will be set to default by nameserver
+            for (GBDATA *gb_species = GBT_first_species(gb_main);
+                 gb_species && !err;
+                 gb_species = GBT_next_species(gb_species))
+            {
+                if (update_status) aw_status(count++/(double)spcount);
 
-                    char *shrt = 0;
+                GBDATA *gb_name      = GB_entry(gb_species,"name");
+                GBDATA *gb_full_name = GB_entry(gb_species,"full_name");
+                GBDATA *gb_acc       = GBT_gen_accession_number(gb_species, ali_name);
+                GBDATA *gb_addfield  = add_field[0] ? GB_entry(gb_species, add_field) : 0;
 
-                    if (full_name[0] || acc[0] || addid[0]) {
-                        if (aisc_nput(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
-                                      LOCAL_FULL_NAME,  full_name,
-                                      LOCAL_ACCESSION,  acc,
-                                      LOCAL_ADDID,      addid,
-                                      LOCAL_ADVICE,     name,
-                                      NULL)) {
-                            err = "Connection Problems with the NAME_SERVER";
-                        }
-                        if (aisc_get(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
-                                     LOCAL_GET_SHORT,   &shrt,
-                                     NULL)) {
-                            err = "Connection Problems with the NAME_SERVER";
-                        }
+                char *name      = gb_name      ? GB_read_string   (gb_name)     : strdup("");
+                char *full_name = gb_full_name ? GB_read_string   (gb_full_name): strdup("");
+                char *acc       = gb_acc       ? GB_read_string   (gb_acc)      : strdup("");
+                char *addid     = gb_addfield  ? GB_read_as_string(gb_addfield) : strdup(""); // empty value will be set to default by nameserver 
+
+                char *shrt = 0;
+
+                if (full_name[0] || acc[0] || addid[0]) {
+                    if (aisc_nput(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
+                                  LOCAL_FULL_NAME,  full_name,
+                                  LOCAL_ACCESSION,  acc,
+                                  LOCAL_ADDID,      addid,
+                                  LOCAL_ADVICE,     name,
+                                  NULL)){
+                        err = "Connection Problems with the NAME_SERVER";
                     }
-                    else {
-                        shrt = strdup(name);
+                    if (aisc_get(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
+                                 LOCAL_GET_SHORT,   &shrt,
+                                 NULL)){
+                        err = "Connection Problems with the NAME_SERVER";
                     }
-                    if (!err) {
-                        char *newshrt = AWTC_create_numbered_suffix(hash, shrt, warning);
-                        if (newshrt) freeset(shrt, newshrt);
-
-                        GBS_incr_hash(hash, shrt);
-                        err = GBT_rename_species(name, shrt, true);
-                    }
-
-                    free(shrt);
-                    free(addid);
-                    free(acc);
-                    free(full_name);
-                    free(name);
-
-                    progress.inc_and_check_user_abort(err);
                 }
+                else {
+                    shrt = strdup(name);
+                }
+                if (!err) {
+                    char *newshrt = AWTC_create_numbered_suffix(hash, shrt, warning);
+                    if (newshrt) freeset(shrt, newshrt);
+
+                    GBS_incr_hash(hash,shrt);
+                    err = GBT_rename_species(name, shrt, GB_TRUE);
+                }
+
+                free(shrt);
+                free(addid);
+                free(acc);
+                free(full_name);
+                free(name);
+            }
+
+            if (err) {
+                GBT_abort_rename_session();
             }
             else {
-                gen_progress.sub_progress_skipped(); // trigger skipped subcounter
+                // aw_status("Renaming species in trees");
+                // aw_status((double)0);
+                GBT_commit_rename_session(aw_status, aw_status);
             }
-
-            if (err) GBT_abort_rename_session();
-            else err = GBT_commit_rename_session();
 
             GBS_free_hash(hash);
             free(ali_name);
@@ -538,42 +564,53 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, bool *isWarningPtr) {
 }
 
 
-void awt_rename_cb(AW_window *aww, GBDATA *gb_main) {
-    GB_ERROR error = AWTC_pars_names(gb_main);
+void awt_rename_cb(AW_window *aww,GBDATA *gb_main)
+{
+    AWUSE(aww);
+    //  int use_advice = (int)aww->get_root()->awar(AWT_RENAME_USE_ADVICE)->read_int();
+    //  int save_data  = (int)aww->get_root()->awar(AWT_RENAME_SAVE_DATA)->read_int();
+    aw_openstatus("Generating new names");
+    aw_status("Contacting name server");
+    GB_ERROR error     = AWTC_pars_names(gb_main,1);
+    aw_closestatus();
     if (error) aw_message(error);
+
     aww->get_root()->awar(AWAR_TREE_REFRESH)->touch();
 }
 
 
-AW_window *AWTC_create_rename_window(AW_root *root, AW_CL gb_main) {
+AW_window *AWTC_create_rename_window(AW_root *root, AW_CL gb_main)
+{
+    AWUSE(root);
+
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(root, "AUTORENAME_SPECIES", "AUTORENAME SPECIES");
+    aws->init( root, "AUTORENAME_SPECIES", "AUTORENAME SPECIES");
 
     aws->load_xfig("awtc/autoren.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback( (AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->create_button("CLOSE", "CLOSE","C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"rename.hlp");
+    aws->callback( AW_POPUP_HELP,(AW_CL)"rename.hlp");
     aws->at("help");
-    aws->create_button("HELP", "HELP", "H");
+    aws->create_button("HELP", "HELP","H");
 
     aws->at("go");
     aws->highlight();
-    aws->callback((AW_CB1)awt_rename_cb, gb_main);
-    aws->create_button("GO", "GO", "G");
+    aws->callback((AW_CB1)awt_rename_cb,gb_main);
+    aws->create_button("GO", "GO","G");
 
     return (AW_window *)aws;
 }
 
-void AWTC_create_rename_awars(AW_root *root, AW_default db1) {
-    root->awar_int(AWT_RENAME_USE_ADVICE, 0,        db1);
-    root->awar_int(AWT_RENAME_SAVE_DATA, 1,     db1);
+void AWTC_create_rename_awars(AW_root *root,AW_default db1){
+    root->awar_int( AWT_RENAME_USE_ADVICE, 0  ,     db1);
+    root->awar_int( AWT_RENAME_SAVE_DATA, 1  ,  db1);
 }
 
 UniqueNameDetector::UniqueNameDetector(GBDATA *gb_item_data, int additionalEntries) {
-    hash = GBS_create_hash(GB_number_of_subentries(gb_item_data)+additionalEntries, GB_IGNORE_CASE);
+    hash = GBS_create_hash(2*(GB_number_of_subentries(gb_item_data)+additionalEntries), GB_IGNORE_CASE);
 
     for (GBDATA *gb_item = GB_child(gb_item_data); gb_item; gb_item = GB_nextChild(gb_item)) {
         GBDATA *gb_name = GB_entry(gb_item, "name");
@@ -587,13 +624,13 @@ UniqueNameDetector::~UniqueNameDetector() { GBS_free_hash(hash); }
 
 static char *makeUniqueShortName(const char *prefix, UniqueNameDetector& existing) {
     // generates a non-existing short-name (name starts with prefix)
-    //
+    // 
     // returns NULL if it fails
 
     char *result     = 0;
     int   prefix_len = strlen(prefix);
 
-    aw_assert(prefix_len<8); // prefix has to be shorter than 8 chars!
+    gb_assert(prefix_len<8); // prefix has to be shorter than 8 chars!
     if (prefix_len<8) {
         const int max_nums[8] = { 100000000, 10000000, 1000000, 100000, 10000, 1000, 100, 10 };
         static int next_try[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -609,7 +646,7 @@ static char *makeUniqueShortName(const char *prefix, UniqueNameDetector& existin
         while (num != stop) {
             sprintf(dig_pos, "%i", num);
             ++num;
-            if (!existing.name_known(short_name)) {
+            if (!existing.name_known(short_name))  {
                 result = strdup(short_name);
                 break;
             }
@@ -624,7 +661,7 @@ static char *makeUniqueShortName(const char *prefix, UniqueNameDetector& existin
 char *AWTC_makeUniqueShortName(const char *prefix, UniqueNameDetector& existingNames) {
     // generates a unique species name from prefix
     // (prefix will be fillup with zero digits and then shortened down to first char)
-    //
+    // 
     // returns NULL if failed (and exports error)
 
     int  len = strlen(prefix);
@@ -646,7 +683,7 @@ char *AWTC_makeUniqueShortName(const char *prefix, UniqueNameDetector& existingN
         result = makeUniqueShortName(p, existingNames);
     }
 
-    aw_assert(!result || strlen(result) <= 8);
+    gb_assert(!result || strlen(result) <= 8);
     if (!result) GB_export_errorf("Failed to create unique shortname (prefix='%s')", prefix);
 
     return result;
@@ -666,7 +703,7 @@ char *AWTC_generate_random_name(UniqueNameDetector& existingNames) {
             short_name[x] = r<10 ? ('0'+r) : ('a'+r-10);
         }
 
-        if (!existingNames.name_known(short_name)) {
+        if (!existingNames.name_known(short_name))  {
             new_species_name = strdup(short_name);
             break;
         }

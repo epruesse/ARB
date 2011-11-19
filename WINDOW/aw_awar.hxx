@@ -1,49 +1,15 @@
-// ================================================================= //
-//                                                                   //
-//   File      : aw_awar.hxx                                         //
-//   Purpose   :                                                     //
-//                                                                   //
-//   Coded by Ralf Westram (coder@reallysoft.de) in September 2010   //
-//   Institute of Microbiology (Technical University Munich)         //
-//   http://www.arb-home.de/                                         //
-//                                                                   //
-// ================================================================= //
-
 #ifndef AW_AWAR_HXX
 #define AW_AWAR_HXX
 
-#ifndef AW_BASE_HXX
-#include "aw_base.hxx"
-#endif
-#ifndef CB_H
-#include <cb.h>
-#endif
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
-#endif
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
-#ifndef ATTRIBUTES_H
-#include <attributes.h>
-#endif
-#ifndef ARBTOOLS_H
-#include <arbtools.h>
-#endif
 
-// --------------
-//      AWARS
+#define AW_INSERT_BUTTON_IN_AWAR_LIST(vs,cd1,widget,type,aww)           \
+do {                                                                    \
+    new AW_widget_list_for_variable(vs,cd1,(int*)widget,type,aww);      \
+} while(0)
 
-class  AW_root_cblist;
-struct AW_var_target;
-struct AW_widget_refresh_cb;
+#define AWAR_EPS 0.00000001
 
-typedef AW_RCB  Awar_CB;
-typedef Awar_CB Awar_CB2;
-typedef void (*Awar_CB1)(AW_root *, AW_CL);
-typedef void (*Awar_CB0)(AW_root *);
-
-enum AW_widget_type {
+typedef enum {
     AW_WIDGET_INPUT_FIELD,
     AW_WIDGET_TEXT_FIELD,
     AW_WIDGET_LABEL_FIELD,
@@ -51,124 +17,78 @@ enum AW_widget_type {
     AW_WIDGET_TOGGLE_FIELD,
     AW_WIDGET_SELECTION_LIST,
     AW_WIDGET_TOGGLE
+} AW_widget_type;
+
+/*************************************************************************/
+struct AW_widget_list_for_variable {
+
+    AW_widget_list_for_variable( AW_awar *vs, AW_CL cd1, int *widgeti, AW_widget_type type, AW_window *awi );
+
+    AW_CL                        cd;
+    AW_awar                     *awar;
+    int                         *widget;
+    AW_widget_type               widget_type;
+    AW_window                   *aw;
+    AW_widget_list_for_variable *next;
 };
 
 
-class AW_awar : virtual Noncopyable {
-    struct {
-        struct {
-            float min;
-            float max;
-        } f;
-        const char *srt;
+
+/*************************************************************************/
+struct AW_var_callback {
+    AW_var_callback( void (*vc_cb)(AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2 );
+    AW_var_callback( void (*vc_cb)(AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2, AW_var_callback *nexti );
+
+    void (*value_changed_cb)(AW_root*,AW_CL,AW_CL);
+
+    AW_CL            value_changed_cb_cd1;
+    AW_CL            value_changed_cb_cd2;
+    AW_var_callback *next;
+
+    void run_callback(AW_root *root);
+};
+
+typedef struct gb_data_base_type GBDATA;
+
+struct AW_variable_struct {
+    AW_variable_struct( AW_VARIABLE_TYPE var_type,
+                        const char *var_name, const char *var_value, double var_double_value, long *var_adress,
+                        AW_default default_file, AW_root *root );
+
+    AW_VARIABLE_TYPE  variable_type;
+    long             *variable_mem_pntr;
+
+    union {
+        struct { float min,max; } f;
+        char *srt;
     } pp;
 
-    AW_root_cblist       *callback_list;
-    AW_var_target        *target_list;
-    AW_widget_refresh_cb *refresh_list;
+    GBDATA          *gb_var;
+    GBDATA          *gb_origin;
+    AW_root         *value_changed_cb_root;
+    AW_var_callback *callback_list;
+    AW_var_callback *last_of_callback_list;
 
-#if defined(DEBUG)
-    bool is_global;
-#endif // DEBUG
+    AW_widget_list_for_variable *widget_list;
+    AW_widget_list_for_variable *last_of_widget_list;
 
-    void remove_all_callbacks();
-    void remove_all_target_vars();
-    bool unlink_from_DB(GBDATA *gb_main);
-
-    friend long AW_unlink_awar_from_DB(const char *key, long cl_awar, void *cl_gb_main);
-    friend void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, int *cl);
-
-    void assert_var_type(AW_VARIABLE_TYPE target_var_type);
-    
-public:
-    // read only
-    class AW_root *root;
-
-    GBDATA *gb_var;                                 // if unmapped, points to same DB elem as 'gb_origin'
-    GBDATA *gb_origin;                              // this is set ONCE on creation of awar
-
-    // read only
-
-    AW_VARIABLE_TYPE  variable_type;                // type of the awar
-    char             *awar_name;                    // name of the awar
-
-    void unlink();                                  // unconditionally unlink from DB
-
-    void run_callbacks();
-    void update_target(AW_var_target*pntr);
-    void update_targets();
-
-    AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *var_value, double var_double_value, AW_default default_file, AW_root *root);
-    ~AW_awar();
-
-    void tie_widget(AW_CL cd1, Widget widget, AW_widget_type type, AW_window *aww);
-    void untie_all_widgets();
-
-    AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2);
-    AW_awar *add_callback(Awar_CB1 f, AW_CL cd1);
-    AW_awar *add_callback(Awar_CB0 f);
-
-    AW_awar *remove_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2);   // remove a callback
-    AW_awar *remove_callback(Awar_CB1 f, AW_CL cd1);
-    AW_awar *remove_callback(Awar_CB0 f);
-
-    AW_awar *add_target_var(char **ppchr);
-    AW_awar *add_target_var(long *pint);
-    AW_awar *add_target_var(float *pfloat);
-    void    update();       // awar has changed
-
-    AW_awar *set_minmax(float min, float max);
-    AW_awar *set_srt(const char *srt);
-
-    AW_awar *map(const char *awarn);
-    AW_awar *map(AW_default dest); // map to new address
-    AW_awar *map(AW_awar *dest); // map to new address
-    AW_awar *unmap();           // map to original address
-
-#if defined(ASSERTION_USED)
-    bool is_valid() const { return correlated(gb_var, gb_origin); } // both or none NULL
-#endif // ASSERTION_USED
-
-    void get(char **p_string)  { freeset(*p_string, read_string()); } // deletes existing targets !!!
-    void get(long *p_int)      { *p_int = (long)read_int(); }
-    void get(double *p_double) { *p_double = read_float(); }
-    void get(float *p_float)   { *p_float = read_float(); }
-
-    AW_VARIABLE_TYPE get_type() const;
-
-    char       *read_string();
-    const char *read_char_pntr();
-    char       *read_as_string();
-    long        read_int();
-    double      read_float();
-    void       *read_pointer();
-
-    GB_ERROR write_string(const char *aw_string);
-    GB_ERROR write_as_string(const char *aw_string);
-    GB_ERROR write_int(long aw_int);
-    GB_ERROR write_float(double aw_double);
-    GB_ERROR write_pointer(void *aw_pointer);
-
-    GB_ERROR write_as(char *aw_value) { return write_as_string(aw_value); };
-
-    // same as write_-versions above, but always touches the database field
-    GB_ERROR rewrite_string(const char *aw_string);
-    GB_ERROR rewrite_as_string(const char *aw_string);
-    GB_ERROR rewrite_int(long aw_int);
-    GB_ERROR rewrite_float(double aw_double);
-    GB_ERROR rewrite_pointer(void *aw_pointer);
-
-    GB_ERROR rewrite_as(char *aw_value) { return rewrite_as_string(aw_value); };
-
-    GB_ERROR toggle_toggle();   // switches between 1/0
-    void     touch();
-
-    GB_ERROR make_global() __ATTR__USERESULT;       // should be used by ARB_init_global_awars only
+    char *update();             /* update all widgets */
+    char *map(GBDATA *dest);    /* map to new address */
+    void  get(char **p_string);
+    void  get(long *p_int);
+    void  get(double *p_double);
+    void  get(float *p_float);
+    char *get_as(void);
+    char *set(char *aw_string);
+    char *set(long aw_int);
+    char *set(double aw_double);
+    char *set_as(char *aw_value);
+    char *toggle_toggle();
+    void  touch(void);
 };
 
-
+void aw_update_awar_window_geometry(AW_root *awr);
 
 #else
 #error aw_awar.hxx included twice
-#endif // AW_AWAR_HXX
-
+#endif

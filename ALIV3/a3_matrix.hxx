@@ -1,22 +1,20 @@
-// ================================================================ //
-//                                                                  //
-//   File      : a3_matrix.hxx                                      //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
+// -----------------------------------------------------------------------------
 
-#ifndef A3_MATRIX_HXX
-#define A3_MATRIX_HXX
+#ifndef _A3_MATRIX_HXX
+#define _A3_MATRIX_HXX
 
-#ifndef A3_DARRAY_HXX
+// -----------------------------------------------------------------------------
+//  Include-Dateien
+// -----------------------------------------------------------------------------
+
 #include "a3_darray.hxx"
-#endif
 
-class A3Matrix {
-    // Matrix fuer beliebige Elemente
+// -----------------------------------------------------------------------------
+//  Datentypen
+// -----------------------------------------------------------------------------
+
+class A3Matrix              // Matrix fuer beliebige Elemente
+{
     private:
 
     int      width,         // Spalten der Matrix
@@ -35,8 +33,7 @@ class A3Matrix {
              A3Matrix       ( int        xlen,
                               int        ylen,
                               int        del );
-             A3Matrix       ( const A3Matrix  &other );
-    DECLARE_ASSIGNMENT_OPERATOR(A3Matrix);
+             A3Matrix       ( A3Matrix  &other );
             ~A3Matrix       ( void );
 
     int      Set            ( int        xpos,
@@ -51,6 +48,8 @@ class A3Matrix {
     void     Dump           ( dumpfunc   edump );
 };
 
-#else
-#error a3_matrix.hxx included twice
-#endif // A3_MATRIX_HXX
+// -----------------------------------------------------------------------------
+
+#endif
+
+// -----------------------------------------------------------------------------

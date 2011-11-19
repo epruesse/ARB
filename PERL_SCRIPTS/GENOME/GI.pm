@@ -49,54 +49,20 @@ sub findCurrentGenome() {
   return ($gb_orga,$organism);
 }
 
-sub with_marked_genes($\&) {
-  my ($gb_orga,$fun_r) = @_;
-  my $gb_gene = BIO::first_marked_gene($gb_orga);
-  while ($gb_gene) {
-    &$fun_r($gb_gene);
-    $gb_gene = BIO::next_marked_gene($gb_gene);
-  }
-}
-sub with_all_genes($\&) {
-  my ($gb_orga,$fun_r) = @_;
-  my $gb_gene = BIO::first_gene($gb_orga);
-  while ($gb_gene) {
-    &$fun_r($gb_gene);
-    $gb_gene = BIO::next_gene($gb_gene);
-  }
-}
-
-sub with_marked_genomes(\&) {
-  my ($fun_r) = @_;
-  my $gb_orga = BIO::first_marked_organism($gb_main);
-  while ($gb_orga) {
-    &$fun_r($gb_orga);
-    $gb_orga = BIO::next_marked_organism($gb_orga);
-  }
-}
-sub with_all_genomes(\&) {
-  my ($fun_r) = @_;
-  my $gb_orga = BIO::first_organism($gb_main);
-  while ($gb_orga) {
-    &$fun_r($gb_orga);
-    $gb_orga = BIO::next_organism($gb_orga);
-  }
-}
-
-sub unmark_gene($) {
-  my ($gb_gene) = @_;
-  ARB::write_flag($gb_gene, 0); # unmark
-}
 sub unmarkGenesOfGenome($) {
   my ($gb_genome) = @_;
-  with_marked_genes($gb_genome, &unmark_gene);
+  my $gb_gene = BIO::first_marked_gene($gb_genome);
+  while ($gb_gene) {
+    ARB::write_flag($gb_gene, 0); # unmark
+    $gb_gene = BIO::next_marked_gene($gb_gene);
+  }
 }
 
 sub findORF($$$$$) {
   my ($gb_gene_data,$genome_name,$orf,$create,$verbose) = @_;
   my $error;
   my $gb_orf;
-  my $gb_locus_tag = ARB::find_string($gb_gene_data, "locus_tag", $orf, 1, "grandchild");
+  my $gb_locus_tag = ARB::find_string($gb_gene_data, "locus_tag", $orf, 1, "down_2");
   if (!$gb_locus_tag) {
     if ($create==0) {
       $error = "no gene with locus_tag '$orf' found for organism '$genome_name'";
@@ -105,13 +71,13 @@ sub findORF($$$$$) {
       my $gb_genome = ARB::get_father($gb_gene_data);
       $gb_orf = BIO::create_nonexisting_gene($gb_genome, $orf);
       if (!$gb_orf) {
-        my $reason = ARB::await_error();
+        my $reason = ARB::get_error();
         $error = "cannot create gene '$orf' ($reason)";
       }
       else {
         my $gb_locus_tag = ARB::search($gb_orf, "locus_tag", "STRING");
         if (!$gb_locus_tag) {
-          my $reason = ARB::await_error();
+          my $reason = ARB::get_error();
           $error = "cannot create field 'locus_tag' ($reason)";
         }
         else {
@@ -139,7 +105,7 @@ sub write_entry($$$$$$) {
   if (!$gb_field) {
     $gb_field = ARB::search($gb_container, $field_name, $field_type);
     if (!$gb_field) {
-      my $reason = ARB::await_error();
+      my $reason = ARB::get_error();
       $error = "Can't create '$field_name' ($reason)";
     }
   }

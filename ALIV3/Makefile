@@ -12,10 +12,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(ACC) $(cflags) -c $< $(CPPINCLUDES)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -44,22 +44,15 @@ a3.o: a3_helix.hxx
 a3.o: a3_ptree.hxx
 a3.o: a3_seq.hxx
 a3.o: a3_types.h
+a3.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 a3.o: $(ARBHOME)/INCLUDE/ad_prot.h
 a3.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 a3.o: $(ARBHOME)/INCLUDE/arb_assert.h
-a3.o: $(ARBHOME)/INCLUDE/arb_core.h
-a3.o: $(ARBHOME)/INCLUDE/arb_error.h
-a3.o: $(ARBHOME)/INCLUDE/arb_msg.h
-a3.o: $(ARBHOME)/INCLUDE/arb_string.h
 a3.o: $(ARBHOME)/INCLUDE/arbdb.h
 a3.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 a3.o: $(ARBHOME)/INCLUDE/arbdbt.h
-a3.o: $(ARBHOME)/INCLUDE/arbtools.h
 a3.o: $(ARBHOME)/INCLUDE/attributes.h
 a3.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
-a3.o: $(ARBHOME)/INCLUDE/dupstr.h
-a3.o: $(ARBHOME)/INCLUDE/smartptr.h
-a3.o: $(ARBHOME)/INCLUDE/test_global.h
 
 a3_ali.o: a3_ali.hxx
 a3_ali.o: a3_darray.hxx
@@ -67,29 +60,20 @@ a3_ali.o: a3_helix.hxx
 a3_ali.o: a3_ptree.hxx
 a3_ali.o: a3_seq.hxx
 a3_ali.o: a3_types.h
-a3_ali.o: $(ARBHOME)/INCLUDE/arbtools.h
 
 a3_arbdb.o: a3_arbdb.hxx
+a3_arbdb.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/ad_prot.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arb_assert.h
-a3_arbdb.o: $(ARBHOME)/INCLUDE/arb_core.h
-a3_arbdb.o: $(ARBHOME)/INCLUDE/arb_error.h
-a3_arbdb.o: $(ARBHOME)/INCLUDE/arb_msg.h
-a3_arbdb.o: $(ARBHOME)/INCLUDE/arb_string.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arbdb.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arbdbt.h
-a3_arbdb.o: $(ARBHOME)/INCLUDE/arbtools.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/attributes.h
-a3_arbdb.o: $(ARBHOME)/INCLUDE/dupstr.h
-a3_arbdb.o: $(ARBHOME)/INCLUDE/smartptr.h
-a3_arbdb.o: $(ARBHOME)/INCLUDE/test_global.h
 
 a3_basen.o: a3_basen.h
 
 a3_darray.o: a3_darray.hxx
-a3_darray.o: $(ARBHOME)/INCLUDE/arbtools.h
 
 a3_helix.o: a3_ali.hxx
 a3_helix.o: a3_darray.hxx
@@ -98,39 +82,29 @@ a3_helix.o: a3_matrix.hxx
 a3_helix.o: a3_ptree.hxx
 a3_helix.o: a3_seq.hxx
 a3_helix.o: a3_types.h
-a3_helix.o: $(ARBHOME)/INCLUDE/arbtools.h
 
 a3_matrix.o: a3_darray.hxx
 a3_matrix.o: a3_matrix.hxx
-a3_matrix.o: $(ARBHOME)/INCLUDE/arbtools.h
 
 a3_ptree1.o: a3_basen.h
 a3_ptree1.o: a3_ptree.hxx
 a3_ptree1.o: a3_seq.hxx
 a3_ptree1.o: a3_types.h
-a3_ptree1.o: $(ARBHOME)/INCLUDE/arbtools.h
-a3_ptree1.o: $(ARBHOME)/INCLUDE/dupstr.h
+a3_ptree1.o: $(ARBHOME)/INCLUDE/inline.h
 
 a3_ptree2.o: a3_basen.h
 a3_ptree2.o: a3_ptree.hxx
 a3_ptree2.o: a3_seq.hxx
 a3_ptree2.o: a3_types.h
-a3_ptree2.o: $(ARBHOME)/INCLUDE/arbtools.h
-a3_ptree2.o: $(ARBHOME)/INCLUDE/dupstr.h
+a3_ptree2.o: $(ARBHOME)/INCLUDE/inline.h
 
 a3_seq.o: a3_basen.h
 a3_seq.o: a3_seq.hxx
 a3_seq.o: a3_types.h
+a3_seq.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 a3_seq.o: $(ARBHOME)/INCLUDE/ad_prot.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arb_assert.h
-a3_seq.o: $(ARBHOME)/INCLUDE/arb_core.h
-a3_seq.o: $(ARBHOME)/INCLUDE/arb_error.h
-a3_seq.o: $(ARBHOME)/INCLUDE/arb_msg.h
-a3_seq.o: $(ARBHOME)/INCLUDE/arb_string.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arbdb.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-a3_seq.o: $(ARBHOME)/INCLUDE/arbtools.h
 a3_seq.o: $(ARBHOME)/INCLUDE/attributes.h
-a3_seq.o: $(ARBHOME)/INCLUDE/dupstr.h
-a3_seq.o: $(ARBHOME)/INCLUDE/smartptr.h
-a3_seq.o: $(ARBHOME)/INCLUDE/test_global.h
+a3_seq.o: $(ARBHOME)/INCLUDE/inline.h

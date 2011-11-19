@@ -20,7 +20,7 @@
 #endif
 #define re_assert(cond) arb_assert(cond)
 
-#ifndef _GLIBCXX_STRING
+#ifndef _CPP_STRING
 #include <string>
 #endif
 
@@ -55,7 +55,7 @@ public:
 };
 
 
-class RegExpr : virtual Noncopyable {
+class RegExpr : Noncopyable {
     std::string expression;                         // the regular expression
     bool        ignore_case;
 

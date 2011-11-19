@@ -13,11 +13,7 @@
 #ifndef AWT_MACRO_HXX
 #define AWT_MACRO_HXX
 
-class AW_window;
-class AW_root;
-
-AW_window *awt_open_macro_window(AW_root *aw_root, const char *application_id);
-void awt_execute_macro(AW_root *root, const char *macroname);
+AW_window *awt_open_macro_window(AW_root *aw_root,const char *application_id);
 
 #else
 #error awt_macro.hxx included twice

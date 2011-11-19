@@ -3,7 +3,6 @@
 #include "RNA3D_Interface.hxx"
 #include "RNA3D_OpenGLEngine.hxx"
 
-#include <aw_msg.hxx>
 #include <aw_preset.hxx>
 
 
@@ -21,11 +20,11 @@ AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AW
                       (AW_CL)ntw,
                       cd2,
                       false,
-                      "#000000",
-                      "+-Foreground$#FFFFFF",     "+-MOLECULE Skeleton$#606060", "-Mapped Species$#FF0000",
-                      "+-BASE: Deletion$#FF0000", "+-BASE: Insertion$#00FF00",   "-BASE: Positions$#FFAA00",
-                      "+-BASE: Helix$#55AAFF",    "+-BASE: Unpaired$#AAFF00",    "-BASE: Non-Helix$#FFAA55",
-                      "+-HELIX$#FF0000",          "+-HELIX Skeleton$#606060",    "-HELIX MidPoint$#FFFFFF",
+                      "#000000", 
+                      "+-Foreground$#FFFFFF",     "+-MOLECULE Skeleton$#606060", "-Mapped Species$#FF0000", 
+                      "+-BASE: Deletion$#FF0000", "+-BASE: Insertion$#00FF00",   "-BASE: Positions$#FFAA00",  
+                      "+-BASE: Helix$#55AAFF",    "+-BASE: Unpaired$#AAFF00",    "-BASE: Non-Helix$#FFAA55",  
+                      "+-HELIX$#FF0000",          "+-HELIX Skeleton$#606060",    "-HELIX MidPoint$#FFFFFF",   
 
                       // colors used to Paint search patterns
                       // (do not change the names of these gcs)
@@ -37,7 +36,7 @@ AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AW
                       "+-RANGE 0$#FFFFFF",    "+-RANGE 1$#E0E0E0",    "-RANGE 2$#C0C0C0",
                       "+-RANGE 3$#A0A0A0",    "+-RANGE 4$#909090",    "-RANGE 5$#808080",
                       "+-RANGE 6$#808080",    "+-RANGE 7$#505050",    "-RANGE 8$#404040",
-                      "+-RANGE 9$#303030",    "+-Pseudoknots$#FFAAFF", "-Triple Bases$#55FF00",
+                      "+-RANGE 9$#303030",    "+-Pseudoknots$#FFAAFF","-Triple Bases$#55FF00",
 
                       "+-Cursor$#FFFFFF",    "+-Comments$#808080",    "-MoleculeMask$#00FF00",
                       NULL);
@@ -49,25 +48,28 @@ RNA3D_Graphics::RNA3D_Graphics(AW_root *aw_root_, GBDATA *gb_main_) {
     exports.dont_fit_x      = 1;
     exports.dont_fit_y      = 1;
     exports.dont_fit_larger = 0;
+    exports.left_offset     = 20;
+    exports.right_offset    = 200;
+    exports.top_offset      = 30;
+    exports.bottom_offset   = 30;
     exports.dont_scroll     = 0;
-    exports.set_standard_default_padding();
 
     this->aw_root = aw_root_;
     this->gb_main = gb_main_;
 }
 
-RNA3D_Graphics::~RNA3D_Graphics() {}
+RNA3D_Graphics::~RNA3D_Graphics(void) {}
 
-void RNA3D_Graphics::show(AW_device *device) {
+void RNA3D_Graphics::show(AW_device *device){
     paint(device);
 }
 
-void RNA3D_Graphics::info(AW_device * /* device */, AW_pos /* x */, AW_pos /* y */, AW_clicked_line * /* cl */, AW_clicked_text * /* ct */)
+void RNA3D_Graphics::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/)
 {
     aw_message("INFO MESSAGE");
 }
 
-void RNA3D_Graphics::paint(AW_device * /* device */) {
+void RNA3D_Graphics::paint(AW_device */*device*/) {
     MapDisplayParameters(aw_root);
     RefreshOpenGLDisplay();
 }

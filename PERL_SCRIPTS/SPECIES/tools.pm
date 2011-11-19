@@ -31,13 +31,14 @@ use ARB;
 
 sub dieOnError($$) {
   my ($err,$where) = @_;
-  if ($err) { die "Error at $where: $err\n"; }
+  if ($err) { die "Error at $where: $err"; }
 }
 
 sub expectError($) {
   my ($where) = @_;
-  my $err = ARB::await_error();
+  my $err = ARB::get_error();
 
+  if (not $err) { $err = "Unknown error"; }
   dieOnError($err,$where);
 }
 

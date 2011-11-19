@@ -1,20 +1,14 @@
-// ================================================================ //
-//                                                                  //
-//   File      : a3_ptree1.cxx                                      //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
+// -----------------------------------------------------------------------------
+//  Include-Dateien
+// -----------------------------------------------------------------------------
+
+#include <iostream>
+#include <cstdlib>
 
 #include "a3_basen.h"
 #include "a3_ptree.hxx"
 
-#include <dupstr.h>
-
-#include <iostream>
-#include <cstdlib>
+#include <inline.h>
 
 using std::cout;
 using std::hex;
@@ -196,7 +190,7 @@ static void CountAppearances ( str  seq,
 // -----------------------------------------------------------------------------
 //  Kopierkonstruktor
 // -----------------------------------------------------------------------------
-    PtNode::PtNode ( const PtNode &node )
+    PtNode::PtNode ( PtNode &node )
 // -----------------------------------------------------------------------------
 {
     cout << "\nKopierkonstruktor(PtNode)\n";
@@ -245,7 +239,7 @@ static void CountAppearances ( str  seq,
 // -----------------------------------------------------------------------------
 //  Anzahl der vorhandenen Positionen
 // -----------------------------------------------------------------------------
-    int PtNode::NumOfPos ( void ) const
+    int PtNode::NumOfPos ( void )
 // -----------------------------------------------------------------------------
 {
     int anz  = 0,
@@ -291,7 +285,7 @@ static void CountAppearances ( str  seq,
 // -----------------------------------------------------------------------------
 //  Anzahl der vorhandenen Verzweigungen
 // -----------------------------------------------------------------------------
-    int PtNode::NumOfNext ( void ) const
+    int PtNode::NumOfNext ( void )
 // -----------------------------------------------------------------------------
 {
     int anz  = 0,

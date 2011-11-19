@@ -1,21 +1,20 @@
-// ================================================================ //
-//                                                                  //
-//   File      : a3_ptree.hxx                                       //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
+// -----------------------------------------------------------------------------
 
-#ifndef A3_PTREE_HXX
-#define A3_PTREE_HXX
+#ifndef _A3_PTREE_HXX
+#define _A3_PTREE_HXX
 
-#ifndef A3_SEQ_HXX
+// -----------------------------------------------------------------------------
+//  Include-Dateien
+// -----------------------------------------------------------------------------
+
 #include "a3_seq.hxx"
-#endif
 
-enum Mask {
+// -----------------------------------------------------------------------------
+//  Datentypen
+// -----------------------------------------------------------------------------
+
+typedef enum
+{
     P_ADENIN  = 0x0001,
     P_CYTOSIN = 0x0002,
     P_GUANIN  = 0x0004,
@@ -30,10 +29,11 @@ enum Mask {
     N_URACIL  = 0x0400,
     N_ONE     = 0x0800,
     N_ANY     = 0x1000
-};
+}
+Mask;
 
-struct PtNode {
-    // Struktur eines Baumknotens
+struct PtNode   // Struktur eines Baumknotens
+{
     Mask        mask;           // Maske fuer die Positionen und Verweise
     int        *position;       // Positionsfeld
     PtNode    **next;           // Verweise auf darueberliegende Knoten
@@ -48,21 +48,22 @@ struct PtNode {
                               int    *pos,      // Basenpositionen
                               int     num,      // Anzahl der Basenpositionen
                               int     rec );    // Rekursionsstufe
-    PtNode      ( const PtNode &node );   // Kopierkonstruktor
-    DECLARE_ASSIGNMENT_OPERATOR(PtNode);
+                PtNode      ( PtNode &node );   // Kopierkonstruktor
                ~PtNode      ( void );           // Destruktor
 
-    int         NumOfPos    ( void ) const;           // Anzahl der Positionen
+    int         NumOfPos    ( void );           // Anzahl der Positionen
     int         IndexOfPos  ( Mask   base );    // Index einer Position
-    int         NumOfNext   ( void ) const;           // Anzahl der Verzweigungen
+    int         NumOfNext   ( void );           // Anzahl der Verzweigungen
     int         IndexOfNext ( Mask   base );    // Index einer verzweigung
     void        Dump        ( void );           // Ausgabe des Baums elementeweise
     void        Show        ( int    rec,       // Ausgabe des Baums
                               int   *where );
 };
 
-class Postree {
-    // Klasse fuer einen Positionsbaum einer RNS-Sequenzen
+class Postree   // Klasse fuer einen Positionsbaum einer RNS-Sequenzen
+{
+    private:
+
     Sequence    sequence;   // Die zugehoerige Sequenz
     PtNode     *topnode;    // Oberster Knoten des Positionsbaumes
 
@@ -80,8 +81,8 @@ class Postree {
                               UINT       line );        // einer Sequenz aus einer Datei
                                                         // mit vorgegebener Zeilennummer
 
-    Postree         ( const Postree   &postree );     // Kopierkonstruktor
-    DECLARE_ASSIGNMENT_OPERATOR(Postree);
+            Postree         ( Postree   &postree );     // Kopierkonstruktor
+
             ~Postree        ( void );                   // Destruktor
 
     int     SeqLen          ( void );                   // Liefert Laenge der kompremierten Sequenz
@@ -120,6 +121,8 @@ class Postree {
                                                         // 0 Baum, 1 Sequenz, 2 beides
 };
 
-#else
-#error a3_ptree.hxx included twice
-#endif // A3_PTREE_HXX
+// -----------------------------------------------------------------------------
+
+#endif
+
+// -----------------------------------------------------------------------------

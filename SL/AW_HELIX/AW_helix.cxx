@@ -12,12 +12,11 @@
 // ==================================================================== //
 
 #include "AW_helix.hxx"
-#include <aw_root.hxx>
-#include <aw_window.hxx>
-#include <aw_awar.hxx>
-#include <aw_device.hxx>
-#include <arbdbt.h>
+
 #include <cctype>
+#include <cstring>
+#include <aw_device.hxx>
+#include <aw_window.hxx>
 
 #define HELIX_AWAR_ENABLE          "Helix/enable"
 #define HELIX_AWAR_SYMBOL_TEMPLATE "Helix/symbols/%s"
@@ -58,7 +57,7 @@ inline const char *helix_pair_awar  (int idx) { return GBS_global_string(HELIX_A
 AW_helix::AW_helix(AW_root * aw_root)
     : enabled(0)
 {
-    for (int j=0; helix_awars[j].awar; j++) {
+    for (int j=0; helix_awars[j].awar; j++){
         int i = helix_awars[j].pair_type;
         aw_root->awar_string(helix_pair_awar(j),   pairs[i])    ->add_target_var(&pairs[i]);
         aw_root->awar_string(helix_symbol_awar(j), char_bind[i])->add_target_var(&char_bind[i]);
@@ -66,15 +65,15 @@ AW_helix::AW_helix(AW_root * aw_root)
     aw_root->awar_int(HELIX_AWAR_ENABLE, 1)->add_target_var(&enabled);
 }
 
-char AW_helix::get_symbol(char left, char right, BI_PAIR_TYPE pair_type) {
+char AW_helix::get_symbol(char left, char right, BI_PAIR_TYPE pair_type){
     left  = toupper(left);
     right = toupper(right);
-
+    
     int erg;
     if (pair_type < HELIX_NON_STANDARD0) {
         erg = *char_bind[HELIX_DEFAULT];
-        for (int i = HELIX_STRONG_PAIR; i< HELIX_NON_STANDARD0; i++) {
-            if (is_pairtype(left, right, (BI_PAIR_TYPE)i)) {
+        for (int i = HELIX_STRONG_PAIR; i< HELIX_NON_STANDARD0; i++){
+            if (is_pairtype(left,right,(BI_PAIR_TYPE)i)){
                 erg = *char_bind[i];
                 break;
             }
@@ -82,17 +81,17 @@ char AW_helix::get_symbol(char left, char right, BI_PAIR_TYPE pair_type) {
     }
     else {
         erg = *char_bind[HELIX_NO_MATCH];
-        if (is_pairtype(left, right, pair_type)) erg = *char_bind[pair_type];
+        if (is_pairtype(left,right,pair_type)) erg =  *char_bind[pair_type];
     }
     if (!erg) erg = ' ';
     return erg;
 }
 
-char *AW_helix::seq_2_helix(char *sequence, char undefsymbol) {
+char *AW_helix::seq_2_helix(char *sequence,char undefsymbol){
     size_t size2 = strlen(sequence);
     bi_assert(size2<=size()); // if this fails there is a sequence longer than the alignment
-    char *helix = (char *)GB_calloc(sizeof(char), size()+1);
-    size_t i, j;
+    char *helix = (char *)GB_calloc(sizeof(char),size()+1);
+    size_t i,j;
     for (i=0; i<size2; i++) {
         BI_PAIR_TYPE pairType = pairtype(i);
 
@@ -108,12 +107,14 @@ char *AW_helix::seq_2_helix(char *sequence, char undefsymbol) {
     return helix;
 }
 
-static bool BI_show_helix_on_device(AW_device *device, int gc, const char *opt_string, size_t opt_string_size, size_t start, size_t size,
-                                    AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/, AW_CL cduser)
+int BI_show_helix_on_device(AW_device *device, int gc, const char *opt_string, size_t opt_string_size, size_t start, size_t size,
+                            AW_pos x,AW_pos y, AW_pos opt_ascent,AW_pos opt_descent,
+                            AW_CL cduser, AW_CL cd1, AW_CL cd2)
 {
+    AWUSE(opt_ascent);AWUSE(opt_descent);
     AW_helix *helix = (AW_helix *)cduser;
     char *buffer = GB_give_buffer(size+1);
-    register unsigned long i, j, k;
+    register unsigned long i,j,k;
 
     for (k=0; k<size; k++) {
         i = k+start;
@@ -125,17 +126,22 @@ static bool BI_show_helix_on_device(AW_device *device, int gc, const char *opt_s
         else {
             j             = helix->opposite_position(i);
             char pairchar = j<opt_string_size ? opt_string[j] : '.';
-            buffer[k]     = helix->get_symbol(opt_string[i], pairchar, pairType);
+            buffer[k]     = helix->get_symbol(opt_string[i],pairchar, pairType);
         }
     }
     buffer[size] = 0;
-    return device->text(gc, buffer, x, y);
+    return device->text(gc,buffer,x,y,0.0,(AW_bitset)-1,cd1,cd2);
 }
 
-int AW_helix::show_helix(void *devicei, int gc1, const char *sequence, AW_pos x, AW_pos y, AW_bitset filter) {
+int AW_helix::show_helix( void *devicei, int gc1 , char *sequence,
+                          AW_pos x, AW_pos y,
+                          AW_bitset filter,
+                          AW_CL cd1, AW_CL cd2){
+
     if (!has_entries()) return 0;
     AW_device *device = (AW_device *)devicei;
-    return device->text_overlay(gc1, sequence, 0, AW::Position(x, y), 0.0,  filter, (AW_CL)this, 1.0, 1.0, BI_show_helix_on_device);
+    return device->text_overlay(gc1, sequence, 0, x , y, 0.0 , filter, (AW_CL)this, cd1, cd2,
+                                1.0,1.0, BI_show_helix_on_device);
 }
 
 static void helix_pairs_changed_cb(AW_window *aww, AW_CL changed, AW_CL cl_cb_struct) {
@@ -199,19 +205,19 @@ static void helix_pairs_changed_cb(AW_window *aww, AW_CL changed, AW_CL cl_cb_st
     }
 }
 
-AW_window *create_helix_props_window(AW_root *awr, AW_cb_struct *awcbs) {
+AW_window *create_helix_props_window(AW_root *awr, AW_cb_struct *awcbs){
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
         aws->init(awr, "HELIX_PROPS", "HELIX_PROPERTIES");
 
-        aws->at(10, 10);
-        aws->auto_space(3, 3);
+        aws->at(10,10);
+        aws->auto_space(3,3);
 
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"helixsym.hlp");
-        aws->create_button("HELP", "HELP", "H");
+        aws->callback( AW_POPUP_HELP, (AW_CL)"helixsym.hlp");
+        aws->create_button("HELP","HELP","H");
 
         aws->at_newline();
 
@@ -230,16 +236,16 @@ AW_window *create_helix_props_window(AW_root *awr, AW_cb_struct *awcbs) {
 
             aw_assert(strlen(helix_awars[j].awar) <= max_awar_len);
 
-            if (i != HELIX_DEFAULT && i != HELIX_NO_MATCH) {
+            if (i != HELIX_DEFAULT && i!= HELIX_NO_MATCH ) {
                 aws->label(helix_awars[j].awar);
                 aws->callback(helix_pairs_changed_cb, j, (AW_CL)awcbs);
                 aws->create_input_field(helix_pair_awar(j), 20);
-
+                
                 if (j == 0) ex = aws->get_at_xposition();
             }
             else {
                 aw_assert(j != 0);
-                aws->create_autosize_button(0, helix_awars[j].awar);
+                aws->create_autosize_button(0,helix_awars[j].awar);
                 aws->at_x(ex);
             }
 

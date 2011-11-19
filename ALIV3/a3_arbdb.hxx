@@ -1,26 +1,23 @@
-// ================================================================ //
-//                                                                  //
-//   File      : a3_arbdb.hxx                                       //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
+// -----------------------------------------------------------------------------
 
-#ifndef A3_ARBDB_HXX
-#define A3_ARBDB_HXX
+#ifndef _A3_ARBDB_HXX
+#define _A3_ARBDB_HXX
 
-#ifndef ARBDBT_H
+// -----------------------------------------------------------------------------
+//  Include-Dateien
+// -----------------------------------------------------------------------------
+
+#include <arbdb.h>
 #include <arbdbt.h>
-#endif
 
-#if defined(WARN_TODO)
-#warning reformat all code in this directory
-#endif
+// -----------------------------------------------------------------------------
+//  Datentypen
+// -----------------------------------------------------------------------------
 
+class A3Arbdb
+{
+    private:
 
-class A3Arbdb : virtual Noncopyable {
         char   *alignment;
 
     public:
@@ -48,6 +45,8 @@ class A3Arbdb : virtual Noncopyable {
                                       char *sequence);
 };
 
-#else
-#error a3_arbdb.hxx included twice
-#endif // A3_ARBDB_HXX
+// -----------------------------------------------------------------------------
+
+#endif
+
+// -----------------------------------------------------------------------------

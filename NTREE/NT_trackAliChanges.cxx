@@ -1,7 +1,7 @@
 // =============================================================== //
 //                                                                 //
 //   File      : NT_trackAliChanges.cxx                            //
-//   Purpose   : Track alignment and sequences changes             //
+//   Purpose   : Track alignment and sequences changes             // 
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in June 2007      //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -9,16 +9,16 @@
 //                                                                 //
 // =============================================================== //
 
-#include "NT_trackAliChanges.h"
-
-#include <awt_sel_boxes.hxx>
-#include <aw_window.hxx>
-#include <aw_awar.hxx>
-#include <aw_root.hxx>
-#include <aw_msg.hxx>
-#include <arb_progress.h>
-#include <arbdbt.h>
+#include <cstdlib>
+#include <cstring>
 #include <ctime>
+
+
+#include <awt.hxx>
+#include <awt_sel_boxes.hxx>
+#include <arbdbt.h>
+
+#include "NT_trackAliChanges.h"
 
 extern GBDATA *GLOBAL_gb_main;
 
@@ -55,17 +55,18 @@ static GB_ERROR writeHistory(GBDATA *gb_species, const char *stamp, const char *
 }
 
 static void trackAlignmentChanges(AW_window *aww) {
-    GB_transaction ta(GLOBAL_gb_main);
-
-    AW_root  *root           = aww->get_root();
-    char     *ali            = root->awar(AWAR_TRACK_ALI)->read_string();
-    char     *checksum_field = GBS_string_2_key(GBS_global_string("checksum_%s", ali));
-    long      newSpecies     = 0;
-    long      ali_changed    = 0;
-    long      seq_changed    = 0;
-    long      unchanged      = 0;
-    GB_ERROR  error          = 0;
-    char     *stamp;
+    GB_transaction  ta(GLOBAL_gb_main);
+    AW_root        *root           = aww->get_root();
+    char           *ali            = root->awar(AWAR_TRACK_ALI)->read_string();
+    char           *checksum_field = GBS_string_2_key(GBS_global_string("checksum_%s", ali));
+    long            newSpecies     = 0;
+    long            ali_changed    = 0;
+    long            seq_changed    = 0;
+    long            unchanged      = 0;
+    long            species        = GBT_get_species_count(GLOBAL_gb_main);
+    long            count          = 0;
+    GB_ERROR        error          = 0;
+    char           *stamp;
 
     {
         char      *initials = root->awar(AWAR_TRACK_INITIALS)->read_string();
@@ -73,12 +74,12 @@ static void trackAlignmentChanges(AW_window *aww) {
         time_t     t        = time(0);
         struct tm *tms      = localtime(&t);
 
-        strftime(atime, 255, "%Y/%m/%d %k:%M", tms);
+        strftime(atime, 255,"%Y/%m/%d %k:%M", tms);
         stamp = GBS_global_string_copy("%s %s", atime, initials);
         free(initials);
     }
 
-    arb_progress progress(GBS_global_string("Tracking changes in '%s'", ali), GBT_get_species_count(GLOBAL_gb_main));
+    aw_openstatus(GBS_global_string("Tracking changes in '%s'", ali));
 
     for (GBDATA *gb_species = GBT_first_species(GLOBAL_gb_main);
          gb_species && !error;
@@ -137,15 +138,15 @@ static void trackAlignmentChanges(AW_window *aww) {
             free(ali_entry);
             free(char_entry);
         }
-        progress.inc_and_check_user_abort(error);
+        count++;
+        aw_status(count/(double)species);
     }
 
-    if (error) aw_message(error);
-    else {
-        if (seq_changed) aw_message(GBS_global_string("%li species with changed sequence", seq_changed));
-        if (ali_changed) aw_message(GBS_global_string("%li species with changed alignment", ali_changed));
-        if (newSpecies) aw_message(GBS_global_string("%li new species", newSpecies));
-    }
+    aw_closestatus();
+
+    if (seq_changed) aw_message(GBS_global_string("%li species with changed sequence", seq_changed));
+    if (ali_changed) aw_message(GBS_global_string("%li species with changed alignment", ali_changed));
+    if (newSpecies) aw_message(GBS_global_string("%li new species", newSpecies));
 
     free(stamp);
     free(checksum_field);
@@ -167,14 +168,14 @@ AW_window *NT_create_trackAliChanges_window(AW_root *root) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"track_ali_changes.hlp");
-    aws->create_button("HELP", "HELP", "H");
+    aws->callback( AW_POPUP_HELP,(AW_CL)"track_ali_changes.hlp");
+    aws->create_button("HELP","HELP","H");
 
     aws->at("initials");
     aws->create_input_field(AWAR_TRACK_INITIALS);
-
+    
     aws->at("ali_sel");
-    awt_create_selection_list_on_alignments(GLOBAL_gb_main, aws, AWAR_TRACK_ALI, "*=");
+    awt_create_selection_list_on_ad(GLOBAL_gb_main, aws, AWAR_TRACK_ALI, "*=");
 
     aws->at("go");
     aws->callback(trackAlignmentChanges);

@@ -19,7 +19,8 @@
 #include "dialog.hxx"
 
 
-class entrySelectionDialog : public MDialog { // derived from a Noncopyable
+class entrySelectionDialog : public MDialog
+{
     public:
         entrySelectionDialog(MDialog*);
         ~entrySelectionDialog();
@@ -31,6 +32,8 @@ class entrySelectionDialog : public MDialog { // derived from a Noncopyable
         void listCallback(Widget, XtPointer);
     protected:
         void createWindow();
+
+//         void getListEntries();
 
     private:
         char *m_entry;

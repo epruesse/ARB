@@ -1,21 +1,18 @@
-// ================================================================ //
-//                                                                  //
-//   File      : a3_seq.cxx                                         //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
+// -----------------------------------------------------------------------------
+//  Include-Dateien
+// -----------------------------------------------------------------------------
+
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
+#include <ctime>
+
+#include <arbdb.h>
 
 #include "a3_basen.h"
 #include "a3_seq.hxx"
 
-#include <arbdb.h>
-
-#include <iostream>
-#include <fstream>
-#include <ctime>
+#include <inline.h>
 
 using std::ifstream;
 using std::cout;
@@ -131,6 +128,8 @@ using std::cout;
             {
                 if (tmp) delete tmp, tmp = NULL;
                 
+//              if (!input.gets(&tmp)) error = 1;
+
                 line--;
             }
 
@@ -251,7 +250,7 @@ using std::cout;
 // -----------------------------------------------------------------------------
 //  Kopierkonstruktor der Klasse Sequenz
 // -----------------------------------------------------------------------------
-    Sequence::Sequence ( const Sequence &sequence )
+    Sequence::Sequence ( Sequence &sequence )
 // -----------------------------------------------------------------------------
 {
     if (sequence.original) original = strdup(sequence.original);

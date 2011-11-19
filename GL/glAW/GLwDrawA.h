@@ -42,8 +42,11 @@
 #include <GL/glx.h>
 #include <GL/gl.h>
 
-// -------------------------------
-//      GLwDrawingArea widgets
+/****************************************************************
+ *
+ * GLwDrawingArea widgets
+ *
+ ****************************************************************/
 
 /* Resources:
 
@@ -134,12 +137,14 @@ accumAlphaSize      AccumAlphaSize     int             0
 typedef struct _GLwMDrawingAreaClassRec *GLwMDrawingAreaWidgetClass;
 typedef struct _GLwMDrawingAreaRec      *GLwMDrawingAreaWidget;
 
-// BUG. Extended by Daniel Koitzsch and Christian Becker
+/** BUG. Extended by Daniel Koitzsch and Christian Becker */
 // #define glwMDrawingAreaWidgetClass glwM1DrawingAreaWidgetClass
 // defining glwMDrawingAreaWidgetClass twice doesn't work
 #define glwMDrawingAreaWidgetClass glwM2DrawingAreaWidgetClass
+/** END OF EXT */
 
 extern WidgetClass glwMDrawingAreaWidgetClass;
+
 
 #else
 
@@ -152,40 +157,40 @@ extern WidgetClass glwDrawingAreaWidgetClass;
 #endif
 
 
-// Callback reasons
+/* Callback reasons */
 #ifdef __GLX_MOTIF
 #define GLwCR_EXPOSE    XmCR_EXPOSE
 #define GLwCR_RESIZE    XmCR_RESIZE
 #define GLwCR_INPUT     XmCR_INPUT
 #else
-// The same values as Motif, but don't use Motif constants
+/* The same values as Motif, but don't use Motif constants */
 #define GLwCR_EXPOSE    38
 #define GLwCR_RESIZE    39
 #define GLwCR_INPUT     40
 #endif
 
-#define GLwCR_GINIT     32135   // Arbitrary number that should neverr clash
+#define GLwCR_GINIT     32135   /* Arbitrary number that should neverr clash */
 
 typedef struct
 {
     int       reason;
     XEvent   *event;
-    Dimension width, height;
+    Dimension width,height;
 } GLwDrawingAreaCallbackStruct;
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
 
-    // front ends to glXMakeCurrent and glXSwapBuffers
-    extern void GLwDrawingAreaMakeCurrent(Widget w, GLXContext ctx);
+    /* front ends to glXMakeCurrent and glXSwapBuffers */
+    extern void GLwDrawingAreaMakeCurrent(Widget w,GLXContext ctx);
     extern void GLwDrawingAreaSwapBuffers(Widget w);
 
 #ifdef __GLX_MOTIF
 #ifdef _NO_PROTO
     extern Widget GLwCreateMDrawingArea();
 #else
-    extern Widget GLwCreateMDrawingArea(Widget parent, char *name, ArgList arglist, Cardinal argcount);
+    extern Widget GLwCreateMDrawingArea(Widget parent,char *name,ArgList arglist,Cardinal argcount);
 #endif
 #endif
 

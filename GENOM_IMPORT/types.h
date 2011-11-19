@@ -15,13 +15,13 @@
 #include "defs.h"
 #endif
 
-#ifndef _GLIBCXX_MAP
+#ifndef _CPP_MAP
 #include <map>
 #endif
-#ifndef _GLIBCXX_SET
+#ifndef _CPP_SET
 #include <set>
 #endif
-#ifndef _GLIBCXX_VECTOR
+#ifndef _CPP_VECTOR
 #include <vector>
 #endif
 

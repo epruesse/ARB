@@ -1,41 +1,37 @@
-// =============================================================== //
-//                                                                 //
-//   File      : ED4_mini_classes.cxx                              //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 
+#include <arbdb.h>
+#include <aw_root.hxx>
+#include <aw_window.hxx>
+
+#include <awt_iupac.hxx>
 
 #include "ed4_class.hxx"
 #include "ed4_edit_string.hxx"
 #include "ed4_awars.hxx"
 #include "ed4_tools.hxx"
 
-#include <aw_awar.hxx>
-#include <aw_root.hxx>
-#include <iupac.h>
 
-#include <cctype>
-
-// -------------------------
-//      ED4_folding_line
+// --------------------------------------------------------------------------------
+//              ED4_folding_line::
+// --------------------------------------------------------------------------------
 
 ED4_folding_line::ED4_folding_line()
 {
-    memset((char *)this, 0, sizeof(*this));
+    memset((char *)this,0,sizeof(*this));
 }
 ED4_folding_line::~ED4_folding_line()
 {
 }
 
-// ------------------------
-//      ED4_bases_table
+// --------------------------------------------------------------------------------
+//              ED4_bases_table::
+// --------------------------------------------------------------------------------
 
 #ifdef DEBUG
-// # define COUNT_BASES_TABLE_SIZE
+//# define COUNT_BASES_TABLE_SIZE
 #endif
 
 #ifdef COUNT_BASES_TABLE_SIZE
@@ -161,7 +157,7 @@ void ED4_bases_table::sub_and_add(const ED4_bases_table& Sub, const ED4_bases_ta
     int i;
     if (table_entry_size==SHORT_TABLE_ELEM_SIZE) {
         if (Sub.table_entry_size==SHORT_TABLE_ELEM_SIZE) {
-            if (Add.table_entry_size==SHORT_TABLE_ELEM_SIZE) {
+            if (Add.table_entry_size==SHORT_TABLE_ELEM_SIZE)  {
                 for (i=start; i<=end; i++) {
                     set_elem_short(i, get_elem_short(i)-Sub.get_elem_short(i)+Add.get_elem_short(i));
                 }
@@ -313,7 +309,7 @@ int ED4_bases_table::lastDifference(const ED4_bases_table& other, int start, int
 
 ED4_bases_table::ED4_bases_table(int maxseqlength)
 {
-    memset((char*)this, 0, sizeof(*this));
+    memset((char*)this,0,sizeof(*this));
     table_entry_size = SHORT_TABLE_ELEM_SIZE;
     if (maxseqlength) init(maxseqlength);
 }
@@ -342,6 +338,7 @@ void ED4_bases_table::change_table_length(int new_length, int default_entry)
             new_table[new_length] = no_of_bases.shortTable[no_of_entries];
             if (growth>0) {
                 for (int e=no_of_entries; e<new_length; ++e) new_table[e] = default_entry;
+                //memset(new_table+no_of_entries, 0, growth*sizeof(*new_table));
             }
 
             delete [] no_of_bases.shortTable;
@@ -354,6 +351,7 @@ void ED4_bases_table::change_table_length(int new_length, int default_entry)
             new_table[new_length] = no_of_bases.longTable[no_of_entries];
             if (growth>0) {
                 for (int e=no_of_entries; e<new_length; ++e) new_table[e] = default_entry;
+                //memset(new_table+no_of_entries, 0, growth*sizeof(*new_table));
             }
 
             delete [] no_of_bases.longTable;
@@ -393,8 +391,9 @@ int ED4_bases_table::empty() const
 }
 #endif // ASSERTION_USED
 
-// ------------------------
-//      Build consensus
+/* --------------------------------------------------------------------------------
+   Build consensus
+   -------------------------------------------------------------------------------- */
 
 // we make static copies of the awars to avoid performance breakdown (BK_up_to_date is changed by callback ED4_consensus_definition_changed)
 
@@ -406,7 +405,7 @@ static int BK_considbound;
 static int BK_upper;
 static int BK_lower;
 
-void ED4_consensus_definition_changed(AW_root*, AW_CL, AW_CL) {
+void ED4_consensus_definition_changed(AW_root*, AW_CL,AW_CL) {
     ED4_terminal *terminal = ED4_ROOT->root_group_man->get_first_terminal();
 
     e4_assert(terminal);
@@ -419,10 +418,11 @@ void ED4_consensus_definition_changed(AW_root*, AW_CL, AW_CL) {
     }
 
     BK_up_to_date = 0;
+    // ED4_ROOT->root_group_man->Show();
     ED4_ROOT->refresh_all_windows(1);
 }
 
-static ARB_ERROR toggle_consensus_display(ED4_base *base, AW_CL show) {
+static ED4_returncode toggle_consensus_display(void **show, void **, ED4_base *base) {
     if (base->flag.is_consensus) {
         ED4_manager *consensus_man = base->to_manager();
         ED4_spacer_terminal *spacer = consensus_man->parent->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
@@ -439,12 +439,12 @@ static ARB_ERROR toggle_consensus_display(ED4_base *base, AW_CL show) {
         }
     }
 
-    return NULL;
+    return ED4_R_OK;
 }
 
 void ED4_consensus_display_changed(AW_root *root, AW_CL, AW_CL) {
     int show = root->awar(ED4_AWAR_CONSENSUS_SHOW)->read_int();
-    ED4_ROOT->root_group_man->route_down_hierarchy(toggle_consensus_display, show).expect_no_error();
+    ED4_ROOT->root_group_man->route_down_hierarchy((void**)show, 0, toggle_consensus_display);
     ED4_ROOT->refresh_all_windows(1);
 }
 
@@ -477,7 +477,7 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
     char *consensus_string = fill_id;
 
 #define PERCENT(part, all)      ((100*(part))/(all))
-#define MAX_BASES_TABLES 41     // 25
+#define MAX_BASES_TABLES 41     //25
 
     e4_assert(used_bases_tables<=MAX_BASES_TABLES);     // this is correct for DNA/RNA -> build_consensus_string() must be corrected for AMI/PRO
 
@@ -538,10 +538,9 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
                     else {
                         e4_assert(IS_AMINO());
 
-                        const int amino_groups = iupac::AA_GROUP_COUNT;
-                        int       group_count[amino_groups];
+                        int group_count[ED4_IUPAC_GROUPS];
 
-                        for (j=0; j<amino_groups; j++) {
+                        for (j=0; j<ED4_IUPAC_GROUPS; j++) {
                             group_count[j] = 0;
                         }
                         for (j=0; j<used_bases_tables; j++) {
@@ -549,28 +548,26 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
 
                             if (!ADPP_IS_ALIGN_CHARACTER(bchar)) {
                                 if (PERCENT(base[j], sequences)>=BK_considbound) {
-                                    group_count[iupac::get_amino_group_for(bchar)] += base[j];
+                                    group_count[AWT_iupac_group[toupper(bchar)-'A']] += base[j];
                                 }
                             }
                         }
 
                         kcount = 0;
                         int bestGroup = 0;
-                        for (j=0; j<amino_groups; j++) {
+                        for (j=0; j<ED4_IUPAC_GROUPS; j++) {
                             if (group_count[j]>kcount) {
                                 bestGroup = j;
                                 kcount = group_count[j];
                             }
                         }
 
-                        kchar = "?ADHIF"[bestGroup]; // @@@ DRY!
+                        kchar = "?ADHIF"[bestGroup];
                     }
                 }
                 else {
-                    e4_assert(max_base);            // expect at least one base to occur
-                    e4_assert(max_j >= 0);
-
-                    kchar  = index_to_upperChar(max_j);
+                    e4_assert(max_base); // expect at least one base to occur
+                    kchar = index_to_upperChar(max_j);
                     kcount = max_base;
                 }
 
@@ -581,7 +578,7 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
                 if (percent>=BK_upper) {
                     consensus_string[i] = kchar;
                 }
-                else if (percent>=BK_lower) {
+                else if (percent>=BK_lower){
                     consensus_string[i] = tolower(kchar);
                 }
                 else {
@@ -602,14 +599,16 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
     return consensus_string;
 }
 
-// -----------------------
-//      ED4_char_table
+// --------------------------------------------------------------------------------
+//              ED4_char_table::
+// --------------------------------------------------------------------------------
 
-bool           ED4_char_table::initialized       = false;
-unsigned char  ED4_char_table::char_to_index_tab[MAXCHARTABLE];
+// bool ED4_char_table::tables_are_valid = true;
+bool ED4_char_table::initialized = false;
+unsigned char ED4_char_table::char_to_index_tab[MAXCHARTABLE];
 unsigned char *ED4_char_table::upper_index_chars = 0;
 unsigned char *ED4_char_table::lower_index_chars = 0;
-int            ED4_char_table::used_bases_tables = 0;
+int ED4_char_table::used_bases_tables = 0;
 
 inline void ED4_char_table::set_char_to_index(unsigned char c, int index)
 {
@@ -635,7 +634,7 @@ void ED4_char_table::expand_tables() {
 
 ED4_char_table::ED4_char_table(int maxseqlength)
 {
-    memset((char*)this, 0, sizeof(*this));
+    memset((char*)this,0,sizeof(*this));
 
     if (!initialized) {
         const char *groups = 0;
@@ -652,8 +651,7 @@ ED4_char_table::ED4_char_table(int maxseqlength)
         }
         else {
             e4_assert(IS_AMINO());
-            // @@@ create 'groups' from AA_GROUP_...
-            groups = "P,A,G,S,T,Q,N,E,D,B,Z,H,K,R,L,I,V,M,F,Y,W,C,X"; // @@@ DRY
+            groups = "P,A,G,S,T,Q,N,E,D,B,Z,H,K,R,L,I,V,M,F,Y,W,";
         }
 
         e4_assert(groups);
@@ -1068,15 +1066,34 @@ void ED4_char_table::sub_and_add(const char *old_string, const char *new_string,
     test();
 }
 
-void ED4_char_table::change_table_length(int new_length) {
-    for (int c=0; c<used_bases_tables; c++) {
+void ED4_char_table::change_table_length(int new_length)
+{
+    int c;
+
+    //     int bases1, gaps1;
+    //     bases_and_gaps_at(0, &bases1, &gaps1);
+
+    //     int table_thickness = bases1+gaps1;
+    //     bool gaps_inserted = false;
+
+    // test(); fails because MAXSEQUENCECHARACTERLENGTH is already incremented
+
+    for (c=0; c<used_bases_tables; c++) {
+        //         int default_entry = 0;
+        //         if (!gaps_inserted && ADPP_IS_ALIGN_CHARACTER(upper_index_chars[c])) {
+        //             default_entry = table_thickness;
+        //             gaps_inserted = true;
+        //         }
+        //         linear_table(c).change_table_length(new_length, default_entry);
         linear_table(c).change_table_length(new_length, 0);
     }
+
     test();
 }
 
 //  --------------
 //      tests:
+//  --------------
 
 #if defined(TEST_CHAR_TABLE_INTEGRITY) || defined(ASSERTION_USED)
 
@@ -1135,8 +1152,11 @@ bool ED4_char_table::ok() const
 
 #if defined(TEST_CHAR_TABLE_INTEGRITY)
 
+//  ------------------------------------------
+//      void ED4_char_table::test() const
+//  ------------------------------------------
 void ED4_char_table::test() const {
-
+    
     if (!ok()) {
         GBK_terminate("ED4_char_table::test() failed");
     }

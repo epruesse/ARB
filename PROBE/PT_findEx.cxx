@@ -1,50 +1,44 @@
-// =============================================================== //
-//                                                                 //
-//   File      : PT_findEx.cxx                                     //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+// #include <malloc.h>
 
-#include "probe.h"
+#include <PT_server.h>
 #include <PT_server_prototypes.h>
-#include "probe_tree.h"
+#include "probe.h"
+#include "probe_tree.hxx"
 #include "pt_prototypes.h"
-#include <arb_strbuf.h>
 
 static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int height) {
     if (restlen==0) return true;
 
     switch (PT_read_type(node)) {
-        case PT_NT_NODE: {
+        case PT_NT_NODE:  {
             for (int i=PT_A; i<PT_B_MAX; ++i) {
-                POS_TREE *son = PT_read_son(node, PT_BASES(i));
+                POS_TREE *son = PT_read_son(psg.ptmain, node, PT_BASES(i));
                 if (son) {
                     probe[0] = PT_BASES(i); // write leftmost probe into result
                     bool found = findLeftmostProbe(son, probe+1, restlen-1, height+1);
-                    pt_assert(implicated(found, strlen(probe) == (size_t)restlen));
+                    pt_assert(!found || (strlen(probe) == (size_t)restlen));
                     if (found) return true;
                 }
             }
             break;
         }
         case PT_NT_CHAIN: {
+            // fprintf(stdout, "Reached chain in findLeftmostProbe() (restlen=%i)\n", restlen);
             pt_assert(0);  // unhandled yet
             break;
         }
-        case PT_NT_LEAF: {
+        case PT_NT_LEAF:  {
             // here the probe-tree is cut off, because only one species matches
-            DataLoc loc(node);
-            int     pos  = loc.rpos + height;
-            int     name = loc.name;
-
-            if (pos + restlen >= psg.data[name].get_size())
+            int pos  = PT_read_rpos(psg.ptmain, node) + height;
+            int name = PT_read_name(psg.ptmain, node);
+            if (pos + restlen >= psg.data[name].size)
                 break;          // at end-of-sequence -> no probe with wanted length here
 
             pt_assert(probe[restlen] == 0);
-            const char *seq_data = psg.data[name].get_data();
+            const char *seq_data = psg.data[name].data;
             for (int r = 0; r<restlen; ++r) {
                 int data = seq_data[pos+r];
                 if (data == PT_QU || data == PT_N) return false; // ignore probes that contain 'N' or '.'
@@ -54,7 +48,7 @@ static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int heig
             pt_assert(strlen(probe) == (size_t)restlen);
             return true;
         }
-        default: pt_assert(0); break;  // oops
+        default : pt_assert(0); break; // oops
     }
 
     return false;
@@ -70,37 +64,41 @@ static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) 
     // returning false upwards takes the next after
 
     switch (PT_read_type(node)) {
-        case PT_NT_NODE: {
-            POS_TREE *son   = PT_read_son(node, PT_BASES(probe[0]));
+        case PT_NT_NODE:  {
+            POS_TREE *son   = PT_read_son(psg.ptmain, node, PT_BASES(probe[0]));
             bool      found = (son != 0) && findNextProbe(son, probe+1, restlen-1, height+1);
 
-            pt_assert(implicated(found, strlen(probe) == (size_t)restlen));
+            pt_assert(!found || (strlen(probe) == (size_t)restlen));
 
             if (!found) {
                 for (int i=probe[0]+1; !found && i<PT_B_MAX; ++i) {
-                    son = PT_read_son(node, PT_BASES(i));
+                    son = PT_read_son(psg.ptmain, node, PT_BASES(i));
                     if (son) {
                         probe[0] = PT_BASES(i); // change probe
                         found = findLeftmostProbe(son, probe+1, restlen-1, height+1);
-                        pt_assert(implicated(found, strlen(probe) == (size_t)restlen));
+                        pt_assert(!found || (strlen(probe) == (size_t)restlen));
                     }
                 }
             }
             return found;
         }
         case PT_NT_CHAIN:
-        case PT_NT_LEAF: {
+        case PT_NT_LEAF:  {
             // species list or single species reached
+            // fprintf(stdout, "Reached chain or leaf in findNextProbe() (restlen=%i)\n", restlen);
             return false;
         }
-        default: pt_assert(0); break;  // oops
+        default : pt_assert(0); break; // oops
     }
 
     pt_assert(0);
     return false;
 }
 
-int PT_find_exProb(PT_exProb *pep, int) {
+//  ------------------------------------------------------
+//      extern "C" int PT_find_exProb(PT_exProb *pep)
+//  ------------------------------------------------------
+extern "C" int PT_find_exProb(PT_exProb *pep) {
     POS_TREE      *pt      = psg.pt; // start search at root
     GBS_strstruct *gbs_str = GBS_stropen(pep->numget*(pep->plength+1)+1);
     bool           first   = true;

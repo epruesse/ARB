@@ -1,21 +1,15 @@
-// ================================================================ //
-//                                                                  //
-//   File      : a3_ptree2.cxx                                      //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
-
-#include "a3_basen.h"
-#include "a3_ptree.hxx"
-
-#include <dupstr.h>
+// -----------------------------------------------------------------------------
+//  Include-Dateien
+// -----------------------------------------------------------------------------
 
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
+
+#include "a3_basen.h"
+#include "a3_ptree.hxx"
+
+#include <inline.h>
 
 using std::cout;
 
@@ -152,7 +146,7 @@ static int int_compare ( const void *a,
 // -----------------------------------------------------------------------------
 //  Kopierkonstruktor
 // -----------------------------------------------------------------------------
-    Postree::Postree ( const Postree &postree ) : sequence ( postree.sequence )
+    Postree::Postree ( Postree &postree ) : sequence ( postree.sequence )
 // -----------------------------------------------------------------------------
 {
     cout << "\nKopierkonstruktor(Postree)\n";

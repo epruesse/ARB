@@ -1,20 +1,5 @@
-// =============================================================== //
-//                                                                 //
-//   File      : primer_design.hxx                                 //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Coded by Wolfram Foerster in February 2001                    //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
-
 #ifndef PRIMER_DESIGN_HXX
 #define PRIMER_DESIGN_HXX
-
-#ifndef AW_BASE_HXX
-#include <aw_base.hxx>
-#endif
 
 #define AWAR_PRIMER_DESIGN_LEFT_POS               "primer_design/position/left_pos"
 #define AWAR_PRIMER_DESIGN_LEFT_LENGTH            "primer_design/position/left_length"
@@ -37,7 +22,7 @@
 
 void       create_primer_design_variables(AW_root *aw_root, AW_default aw_def, AW_default global);
 void       create_primer_design_result_window(AW_window *aww);
-AW_window *create_primer_design_window(AW_root *root, AW_CL cl_gb_main);
+AW_window *create_primer_design_window( AW_root *root,AW_default def);
 
 #else
 #error primer_design.hxx included twice

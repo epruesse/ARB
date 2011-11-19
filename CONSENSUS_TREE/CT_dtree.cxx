@@ -1,20 +1,15 @@
-// ============================================================= //
-//                                                               //
-//   File      : CT_dtree.cxx                                    //
-//   Purpose   :                                                 //
-//                                                               //
-//   Institute of Microbiology (Technical University Munich)     //
-//   http://www.arb-home.de/                                     //
-//                                                               //
-// ============================================================= //
+/* destruct gbt-tree and build parts */
+/* insert afterwards in Hashtable */
 
-#include "CT_dtree.hxx"
-#include "CT_hash.hxx"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <arbdb.h>
 #include <arbdbt.h>
 
-// destruct gbt-tree and build parts
-// insert afterwards in Hashtable
-
+#include "CT_part.hxx"
+#include "CT_hash.hxx"
 
 void destree_init(GB_HASH *hash)
 {
@@ -23,15 +18,15 @@ void destree_init(GB_HASH *hash)
 
 
 /* destruct GBT-Tree and build partitions. This is done recursive by concatenate
-   all sons to build the father partition. All partitions are inserted in the
+   all sons to build the father partition. All partitions are iinserted in the
    hashtable */
-// caution: I use the fact that each inner node must have two sons.
+/* caution: I use the fact that each inner node must have two sons. */
 PART *dtree(GBT_TREE *tree, int weight, GBT_LEN len)
 {
     PART *p1, *p2, *ph;
     int idx;
 
-    if (tree->is_leaf) {
+    if(tree->is_leaf) {
         ph = part_new();
         idx = GBS_read_hash(Name_hash, tree->name);
         part_setbit(ph, idx);
@@ -39,7 +34,7 @@ PART *dtree(GBT_TREE *tree, int weight, GBT_LEN len)
         return ph;
     }
 
-    // In any possible case left and rightson always exist ...
+    /* In any possible case left and rightson always exist ... */
     p1 = dtree(tree->leftson, weight, tree->leftlen);
     ph = part_new();
     part_copy(p1, ph);
@@ -53,7 +48,7 @@ PART *dtree(GBT_TREE *tree, int weight, GBT_LEN len)
 }
 
 
-/* it is necessary to destruct the left and the right side separately, because
+/* it is nessasary to destruct the left and the right side seperatly, because
    the root is only a virtual node and must be ignored. Moreover the left and
    rightson are the same partition. So I may only insert right son.            */
 void des_tree(GBT_TREE *tree, int weight)

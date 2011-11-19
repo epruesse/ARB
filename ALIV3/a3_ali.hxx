@@ -1,22 +1,18 @@
-// ================================================================ //
-//                                                                  //
-//   File      : a3_ali.hxx                                         //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
+// -----------------------------------------------------------------------------
 
-#ifndef A3_ALI_HXX
-#define A3_ALI_HXX
+#ifndef _A3_ALI_HXX
+#define _A3_ALI_HXX
 
-#ifndef A3_PTREE_HXX
+// -----------------------------------------------------------------------------
+//  Include-Dateien
+// -----------------------------------------------------------------------------
+
 #include "a3_ptree.hxx"
-#endif
-#ifndef A3_HELIX_HXX
 #include "a3_helix.hxx"
-#endif
+
+// -----------------------------------------------------------------------------
+//  Datentypen
+// -----------------------------------------------------------------------------
 
 struct PSolution    // Loesung des Prealigners
 {
@@ -58,9 +54,17 @@ class Aligner       // Sekundaerstrukturalignment einer Sequenz
     void        Dump    ( void );
 };
 
-extern int  psolcmp(const void *a, const void *b);
-extern void psoldump(vp val);
+// -----------------------------------------------------------------------------
+//  Funktionen
+// -----------------------------------------------------------------------------
 
-#else
-#error a3_ali.hxx included twice
-#endif // A3_ALI_HXX
+extern  int     psolcmp     ( const void *a,
+                              const void *b );
+
+extern  void    psoldump    ( vp    val );
+
+// -----------------------------------------------------------------------------
+
+#endif
+
+// -----------------------------------------------------------------------------

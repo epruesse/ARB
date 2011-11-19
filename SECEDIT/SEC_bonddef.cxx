@@ -9,12 +9,14 @@
 //                                                                   //
 // ================================================================= //
 
-#include "SEC_bonddef.hxx"
-#include "SEC_defs.hxx"
+#include <cstring>
+#include <cctype>
+#include <cstdlib>
 
 #include <arbdbt.h>
 
-#include <cctype>
+#include "SEC_bonddef.hxx"
+#include "SEC_defs.hxx"
 
 void SEC_bond_def::clear()
 {
@@ -34,7 +36,7 @@ int SEC_bond_def::get_index(char base) const
     const char *found = strchr(allowed, toupper(base));
 
     if (!found) return -1;
-
+    
     int idx = int(found-allowed);
     sec_assert(idx>=0 && idx<SEC_BOND_BASE_CHARS);
     return idx;

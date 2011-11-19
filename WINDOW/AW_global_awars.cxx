@@ -12,10 +12,12 @@
 
 #define TEMP_DB_PATH "tmp/global_awars"
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <arbdb.h>
+#include <aw_root.hxx>
 #include <aw_global_awars.hxx>
 #include <aw_awars.hxx>
-#include <aw_root.hxx>
 #include <aw_window.hxx>
 
 static GBDATA *gb_main4awar = 0; // gb_main used for global awars
@@ -26,7 +28,7 @@ inline const char *get_db_path(const AW_awar *awar) {
 
 static bool in_global_awar_cb = false;
 
-static void awar_updated_cb(AW_root * /* aw_root */, AW_CL cl_awar) {
+static void awar_updated_cb(AW_root */*aw_root*/, AW_CL cl_awar) {
     if (!in_global_awar_cb) {
         AW_awar        *awar    = (AW_awar*)cl_awar;
         char           *content = awar->read_as_string();
@@ -44,7 +46,7 @@ static void awar_updated_cb(AW_root * /* aw_root */, AW_CL cl_awar) {
     }
 }
 
-static void db_updated_cb(GBDATA *gbd, int *cl_awar, GB_CB_TYPE /* cbtype */) {
+static void db_updated_cb(GBDATA *gbd, int *cl_awar, GB_CB_TYPE /*cbtype*/) {
     if (!in_global_awar_cb) {
         AW_awar        *awar = (AW_awar*)cl_awar;
         GB_transaction  dummy(gb_main4awar);
@@ -103,55 +105,31 @@ static void AWAR_AWM_MASK_changed_cb(AW_root *awr) {
     awr->apply_sensitivity(mask);
 }
 
-static void AWAR_AW_FOCUS_FOLLOWS_MOUSE_changed_cb(AW_root *awr) {
-    int focus = awr->awar(AWAR_AW_FOCUS_FOLLOWS_MOUSE)->read_int();
-#if defined(DEBUG)
-    printf("AWAR_AW_FOCUS_FOLLOWS_MOUSE changed, calling apply_focus_policy(%i)\n", focus);
-#endif
-    awr->apply_focus_policy(focus);
-}
-
 #if defined(DARWIN)
 #define OPENURL "open"    
 #else
 #define OPENURL "xdg-open"
 #endif // DARWIN
 
-#define MAX_GLOBAL_AWARS 5
-
-static AW_awar *declared_awar[MAX_GLOBAL_AWARS];
-static int      declared_awar_count = 0;
-
-inline void declare_awar_global(AW_awar *awar) {
-    aw_assert(declared_awar_count<MAX_GLOBAL_AWARS);
-    declared_awar[declared_awar_count++] = awar;
-}
-
-void ARB_declare_global_awars(AW_root *aw_root, AW_default aw_def) {
-    aw_assert(!declared_awar_count);
-
-    declare_awar_global(aw_root->awar_string(AWAR_WWW_BROWSER, OPENURL " \"$(URL)\"", aw_def));
-    declare_awar_global(aw_root->awar_int(AWAR_AWM_MASK, AWM_MASK_UNKNOWN, aw_def)->add_callback(AWAR_AWM_MASK_changed_cb));
-
-    AW_awar *awar_focus          = aw_root->awar_int(AWAR_AW_FOCUS_FOLLOWS_MOUSE, 0, aw_def);
-    aw_root->focus_follows_mouse = awar_focus->read_int();
-    awar_focus->add_callback(AWAR_AW_FOCUS_FOLLOWS_MOUSE_changed_cb);
-    declare_awar_global(awar_focus);
-}
-
-GB_ERROR ARB_bind_global_awars(GBDATA *gb_main) {
-    aw_assert(!initialized);                        // don't call twice!
-    aw_assert(!gb_main4awar);
-    aw_assert(declared_awar_count);                 // b4 call ARB_declare_global_awars!
+GB_ERROR ARB_init_global_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main) {
+    aw_assert(!initialized);    // don't call twice!
 
     initialized  = true;
     gb_main4awar = gb_main;
 
-    GB_ERROR error = NULL;
-    for (int a = 0; a<declared_awar_count && !error; ++a) {
-        error = declared_awar[a]->make_global();
+    GB_ERROR error = aw_root->awar_string(AWAR_WWW_BROWSER, OPENURL " \"$(URL)\"", aw_def)->make_global();
+
+    if (!error) {
+        AW_awar *awar_awm_mask = aw_root->awar_int(AWAR_AWM_MASK, AWM_MASK_UNKNOWN, aw_def);
+        
+        awar_awm_mask->add_callback(AWAR_AWM_MASK_changed_cb);
+        error = awar_awm_mask->make_global();
     }
 
     return error;
 }
+
+
+
+
 

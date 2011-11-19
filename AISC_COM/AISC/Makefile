@@ -1,18 +1,13 @@
-THIS=AISC/Makefile
-MAKETHIS=$(MAKE) -f $(THIS)
-#MAKETHIS=$(MAKE) -d -f $(THIS)
+
+# no-strict-aliasing is important - starting with gcc 4.1.1 code doesn't work without!
+# (problems are caused by type-punning w/o using union which is used widely here)
+FORCED_FLAGS=-fno-strict-aliasing -Wno-unused
 
 .SUFFIXES: .o .c .h .aisc
 
 #where to find the creator files
-AISC=../AISC/aisc
-AISC_MKPT = ../AISC_MKPTPS/aisc_mkpt
-
-RUN_AISC:=$(AISC)
-# valgrinding like this breaks the build process (due to wrong exitcode)
-#RUN_AISC:=arb_valgrind -c 15 $(AISC)
-#RUN_AISC:=arb_valgrind -c 15 -l $(AISC)
-#RUN_AISC:=arb_valgrind -c 15 -l -r $(AISC)
+AISC = ../MAKEBIN/aisc
+AISC_MKPT = ../MAKEBIN/aisc_mkpt
 
 GEN_INCLUDES = GENH/aisc.h GENH/aisc_com.h
 INCLUDE_INCLUDES = aisc_include.header
@@ -29,10 +24,7 @@ CLIENT_OBJECTS = O/client.o O/debug.o
 GEN_CLIENT_OBJECTS = GENC/aisc_debug_globals.o
 CLIENT_INCLUDES = C/client_privat.h C/client.h
 
-AISC_EXTERNALS = C/aisc_extern.c $(PRIVATE_SERVER_OBJECTS:.o=.c)
-GLOBALS_AISC = GENH/global.aisc
-
-AISC_DEPENDS = AISC/*.pa $(MAIN_SOURCE) $(AISC) $(DUMPDIR) $(GLOBALS_AISC)
+AISC_EXTERNALS	= C/aisc_extern.c $(PRIVATE_SERVER_OBJECTS:.o=.c)
 
 IMPORT_PROTO = GENH/import_proto.h
 
@@ -41,71 +33,14 @@ CLIENT = client.a
 
 AISC_SERVER_EXTERN = GENH/aisc_server_extern.aisc
 
-DUMPDIR=DUMP
+all: $(CLIENT) $(SERVER)
 
-LINK_TO_OTHER_ARB=~/ARB.aisc_regression_test_vs# create this as symlink to other ARB checkout to activate regression test 
-FAIL_ON_CHANGE=1# 0=continue on change, 1=fail on change
+pregenerate: $(GEN_INCLUDES) $(GEN_SERVER_PROTO) $(GEN_SERVER_OBJECTS:.o=.c) 
 
-# ----------------------------------------
-
-COMPARE_WITH_OTHER_ARB:=$(shell readlink $(LINK_TO_OTHER_ARB))
-ifneq ($(COMPARE_WITH_OTHER_ARB),)
-THIS__COMDIR=$(shell pwd)
-COMDIRNAME=$(subst $(ARBHOME),,$(THIS__COMDIR))
-OTHER_COMDIR=$(subst //,/,$(COMPARE_WITH_OTHER_ARB)/$(COMDIRNAME))
-ifeq ($(FAIL_ON_CHANGE),0)
-REGR_FAILURE=(echo "$(THIS):57: Warning: regression on generated code (ignored)" || true)
-else
-REGR_FAILURE=(	echo "$(THIS):59: Error: regression on generated AISC code"; \
-		rm $(SERVER) $(CLIENT); \
-		false) 
-endif
-endif
-
-# ----------------------------------------
-
-ifeq ($(AUTODEPENDS),1)
-all:
-	+test -f .depends || $(MAKETHIS) "AUTODEPENDS=0" .depends
-	+$(MAKETHIS) "AUTODEPENDS=2" all
-else
-all: directories
-	+$(MAKETHIS) realall
-
-endif
-
-realall: $(CLIENT) $(SERVER) Makefile $(THIS)
-ifeq ($(COMPARE_WITH_OTHER_ARB),)
-	@echo "AISC regression tests are disabled ($(LINK_TO_OTHER_ARB) not found from AISC_COM/$(THIS))"
-else
- ifeq ($(THIS__COMDIR),$(OTHER_COMDIR))
-	@echo "$(THIS):63: Warning: Skipping AISC regression tests (test versus self always ok)"
- else
-	@echo "Running AISC regression tests (versus $(COMPARE_WITH_OTHER_ARB))"
-#       compare generated code using ../../SOURCE_TOOLS/check_dirs_equal.sh
-	@( \
-		../SOURCE_TOOLS/check_dirs_equal.sh $(THIS__COMDIR)/GENC $(OTHER_COMDIR)/GENC '*.c' && \
-		../SOURCE_TOOLS/check_dirs_equal.sh $(THIS__COMDIR)/GENH $(OTHER_COMDIR)/GENH '*.h' && \
-		../SOURCE_TOOLS/check_dirs_equal.sh $(THIS__COMDIR)/DUMP $(OTHER_COMDIR)/DUMP '*.dump' && \
-		echo "No change in generated code" \
-	) || $(REGR_FAILURE)
- endif
-endif
-
-pregenerate: $(GEN_INCLUDES) $(GEN_SERVER_PROTO) $(GEN_SERVER_OBJECTS:.o=.c)
-
-directories:
-	@mkdir -p GENH GENC O DUMP
-
-GENH:	directories
-GENC:	directories
-O:	directories
-DUMP:	directories
-
-$(SERVER): $(SERVER_OBJECTS) $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS)
+$(SERVER):	$(SERVER_OBJECTS) $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS)
 	$(LINK_STATIC_LIB) $@ $^
 
-$(CLIENT): $(CLIENT_OBJECTS) $(GEN_CLIENT_OBJECTS)
+$(CLIENT):	$(CLIENT_OBJECTS) $(GEN_CLIENT_OBJECTS)
 	$(LINK_STATIC_LIB) $@ $^
 
 $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS): \
@@ -113,59 +48,49 @@ $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS): \
 					$(GEN_SERVER_EXTERN_PROTO) $(IMPORT_PROTO) \
 					$(GEN_SERVER_OBJECTS:.o=.c) \
 					$(PRIVATE_SERVER_OBJECTS:.o=.c)
-	$(COMPILER) -c -o $@ $(@:.o=.c) -IGENH -I. -IC -DAISC_SAVE_$(AISC_SAVE) $(POST_COMPILE)
+	$(COMPILER) $(FORCED_FLAGS) -c -o $@ $(@:.o=.c) -IGENH -I. -IC -DAISC_SAVE_$(AISC_SAVE)
 
 $(GEN_CLIENT_OBJECTS): $(GEN_INCLUDES) $(GEN_CLIENT_OBJECTS:.o=.c)
-	$(CLIENTCOMPILER) -c -o $@ $(@:.o=.c) -IGENH -I. -IC $(POST_COMPILE)
+	$(CLIENTCOMPILER) $(FORCED_FLAGS) -c -o $@ $(@:.o=.c) -IGENH -I. -IC
 
 O/%.o: C/%.c $(GEN_INCLUDES) $(CLIENT_INCLUDES) C/server.h
-	$(COMPILER) -c -o $@ $< -IGENH -I. -IC $(POST_COMPILE)
+	$(COMPILER) $(FORCED_FLAGS) -c -o $@ $< -IGENH -I. -IC
 
 $(CLIENT_OBJECTS):	$(CLIENT_OBJECTS:O/%.o=C/%.c) $(GEN_INCLUDES) $(CLIENT_INCLUDES)
-	$(CLIENTCOMPILER) -c -o $@ C/$(@F:.o=.c) -IGENH -I. -IC $(POST_COMPILE)
+	$(CLIENTCOMPILER) $(FORCED_FLAGS) -c -o $@ C/$(@F:.o=.c) -IGENH -I. -IC
 
-$(DUMPDIR): 
-	mkdir -p $(DUMPDIR)
+GENH/%.h: AISC/%.pa AISC/*.pa $(MAIN_SOURCE) $(INCLUDE_INCLUDES) $(AISC)
+	$(AISC) $< $(MAIN_SOURCE) $@
 
-$(GLOBALS_AISC).tmp: 
-	@echo "AISC_SAVE $(AISC_SAVE);" > $@
-
-$(GLOBALS_AISC): $(GLOBALS_AISC).tmp
-	$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(GLOBALS_AISC).tmp $(GLOBALS_AISC)
-
-GENH/%.h: AISC/%.pa $(AISC_DEPENDS) $(INCLUDE_INCLUDES) 
-	$(RUN_AISC) $< $(MAIN_SOURCE) $@
-
-GENC/%.c: AISC/%.pa $(AISC_DEPENDS) $(AISC_SERVER_EXTERN) $(GEN_SERVER_INCLUDES)
-	$(RUN_AISC) $< $(MAIN_SOURCE) $@ $(AISC_SERVER_EXTERN) $(IMPORT_PROTO) $(GLOBALS_AISC)
+GENC/%.c: AISC/%.pa AISC/*.pa $(MAIN_SOURCE) $(AISC_SERVER_EXTERN) $(AISC)
+	$(AISC) $< $(MAIN_SOURCE) $@ $(AISC_SERVER_EXTERN) $(IMPORT_PROTO)
 
 $(IMPORT_PROTO): GENC/aisc_server.c
 	echo $@
 
-$(AISC_SERVER_EXTERN): $(AISC_EXTERNALS) $(AISC_MKPT) $(THIS) 
+$(AISC_SERVER_EXTERN): $(AISC_EXTERNALS)
 	rm -f $(AISC_SERVER_EXTERN)
 	$(AISC_MKPT) -a $(AISC_EXTERNALS) >$@
 
-$(GEN_SERVER_EXTERN_PROTO): $(AISC_EXTERNALS) $(AISC_MKPT) $(THIS)
+$(GEN_SERVER_EXTERN_PROTO): $(AISC_EXTERNALS)
 	rm -f $(GEN_SERVER_EXTERN_PROTO)
-	$(AISC_MKPT) -z -A -w $(subst GENH/,,$@) $(AISC_EXTERNALS) >$@
+	$(AISC_MKPT) -C $(AISC_EXTERNALS) >$@
 
-$(GEN_SERVER_PROTO): $(S_GEN_SERVER_PROTO) $(AISC_MKPT) $(THIS)
+$(GEN_SERVER_PROTO): $(S_GEN_SERVER_PROTO)
 	rm -f $@
-	$(AISC_MKPT) -z -A -w $(subst GENH/,,$@) $(S_GEN_SERVER_PROTO) >$@
+	$(AISC_MKPT) -C $(S_GEN_SERVER_PROTO) >$@
 
 clean:
-	@rm -f *.[ao] */*.[ao]
-	@rm -rf GENH GENC DUMP O
-	@rm -f .depends
+	rm -f *.[ao]
+	rm -f */*.[ao]
+	rm -f GENH/*
+	rm -f GENC/*
+	rm -f .depends
 
 .depends:
-	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) C/*.c GENC/*.c -I GENH -I C -f- -w1 2>/dev/null \
-		| grep -v ' /usr' \
-		| sed -e 's/^C/O/ig' \
-		> .depends_new
+	$(MAKEDEPEND) C/*.c GENC/*.c -I GENH -I C -f- -w1 | grep -v ' /usr' | sed -e 's/^C/O/ig' > .depends_new
 	$(ARBHOME)/SOURCE_TOOLS/mv_if_diff .depends_new .depends
 
-ifeq ($(AUTODEPENDS),2)
+ifeq ($(AUTODEPENDS),1)
 include .depends
 endif

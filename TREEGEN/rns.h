@@ -1,27 +1,32 @@
-#ifndef RNS_H
-#define RNS_H
+#ifndef __RNS_H
+#define __RNS_H
 
-#ifndef BASE_H
+#ifndef __DEFINES_H
+#include "defines.h"
+#endif
+#ifndef __BASE_H
 #include "base.h"
 #endif
-#ifndef SIMCFG_H
+#ifndef __SIMCFG_H
 #include "simcfg.h"
 #endif
-#ifndef FRAND_H
+#ifndef __FRAND_H
 #include "frand.h"
 #endif
 
 typedef double SingleProb[BASETYPES];
 typedef double DoubleProb[BASETYPES][BASETYPES];
 
-// -----------------------------
-//      Erzeugung der Ur-RNS
+/* /------------------------\ */
+/* |  Erzeugung der Ur-RNS  | */
+/* \------------------------/ */
 
 extern int        orgLen;
 extern double     orgHelixPart;
 
-// -----------------
-//      Mutation
+/* /------------\ */
+/* |  Mutation  | */
+/* \------------/ */
 
 extern int    timeSteps;
 extern Frand  mrpb_Init,
@@ -38,37 +43,39 @@ extern Frand  mrpb_Init,
 extern double transitionRate,
               transversionRate;
 
-// ---------------------------
-//      Ausgabefilepointer
+/* /----------------------\ */
+/* |  Ausgabefilepointer  | */
+/* \----------------------/ */
 
 extern FILE *topo,
             *seq;
 
-// ---------------------
-//      Eine Species
+/* /----------------\ */
+/* |  Eine Species  | */
+/* \----------------/ */
 
 typedef struct S_RNS
 {
-    char *base;    // Array der Basen
-    int   bases,   // Anzahl Basen
-          helix,   // Anzahl Basenpaare in helikalen Bereichen
-          pairing, // Anzahl paarender Basenpaare (G-C und A-T)
-          laufNr;  // erhoeht sich mit jeder neuen RNS (fuer Namensvergabe)
+    char *base;    /* Array der Basen */
+    int   bases,   /* Anzahl Basen */
+          helix,   /* Anzahl Basenpaare in helikalen Bereichen */
+          pairing, /* Anzahl paarender Basenpaare (G-C und A-T) */
+          laufNr;  /* erhîht sich mit jeder neuen RNS (fÅr Namensvergabe) */
 
 } *RNS;
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif    
 
-    RNS  createOriginRNS ();
+    RNS  createOriginRNS (void);
     void freeRNS         (RNS rns);
     void splitRNS        (int no_of_father, RNS origin, double age, int steps, int depth);
 
-    void dumpDepths      ();
+    void dumpDepths      (void);
 
 #ifdef __cplusplus
 }
-#endif
+#endif    
 
 #endif

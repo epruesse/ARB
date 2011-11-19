@@ -17,7 +17,7 @@
 using namespace std;
 
 void XString::set_length(size_t len) {
-    if (number_found && x_string_len<len) freenull(number_found);
+    if (number_found && x_string_len<len) freeset(number_found, 0);
     x_string_len = len;
     initialized  = false;
 }
@@ -33,12 +33,12 @@ XString::XString(size_t ali_length)
     set_length(len);
 }
 
-XString::XString(const char *saved_x_string, size_t saved_length, size_t ali_length)
+XString::XString(const char *saved_x_string, size_t saved_length, size_t ali_length) 
     : abspos(0)
     , number_found(0)
 {
     size_t xlen = ali_length+1;
-
+    
     sec_assert(saved_length == strlen(saved_x_string));
     sec_assert(saved_length == xlen || saved_length == xlen-1);
 
@@ -60,7 +60,7 @@ void XString::initialize()
     {
         size_t len = 0;
         int    x   = 0;
-
+        
         while (char c = x_string[len]) {
             if (c == 'x') x++;
             len++;
@@ -69,7 +69,7 @@ void XString::initialize()
         sec_assert(len == x_string_len);
 
         if (abspos) { // re-initialization
-            if (x_count<x) freenull(abspos); // abspos array too small
+            if (x_count<x) freeset(abspos, 0); // abspos array too small
         }
         x_count = x;
     }
@@ -77,7 +77,7 @@ void XString::initialize()
     if (!abspos)       abspos       = (size_t*)malloc(x_count * sizeof(*abspos));
     if (!number_found) number_found = (int*)malloc(x_string_len * sizeof(*number_found));
 
-    // init abspos and number_found :
+    // init abspos and number_found : 
     {
         int pos = 0;
         int x   = 0;
@@ -126,7 +126,7 @@ const char *XString::get_x_string() const {
     static char   *copy       = 0;
     static size_t  copy_alloc = 0;
 
-    size_t bufsize = x_string_len+1;
+    size_t bufsize = x_string_len+1; 
 
     if (!copy || copy_alloc<bufsize) {
         freeset(copy, (char*)malloc(bufsize));

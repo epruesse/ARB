@@ -15,12 +15,16 @@
 #ifndef AW_QUESTION_HXX
 #define AW_QUESTION_HXX
 
-#ifndef AW_BASE_HXX
-#include "aw_base.hxx"
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
+#ifndef _STDLIB_H
+#include <stdlib.h>
 #endif
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
+
 
 // for simple questions use :  int aw_message(const char *msg, const char *buttons)
 //
@@ -30,7 +34,7 @@
 // Usage : 1. Create a new instance of AW_repeated_question outside the loop
 //         2. call get_answer() inside the loop
 
-class AW_repeated_question : virtual Noncopyable {
+class AW_repeated_question : Noncopyable {
 private:
     int   answer;
     bool  dont_ask_again;
@@ -53,7 +57,7 @@ public:
 
     int get_answer(const char *question, const char *buttons, const char *to_all, bool add_abort);
     // return 0 for first button, 1 for second button, 2 for third button, ...
-    // the single buttons are separated by commas (i.e. "YES,NO")
+    // the single buttons are seperated by kommas (i.e. "YES,NO")
     // if add_abort is true an 'ABORT' button is added behind the last
 };
 

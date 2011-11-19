@@ -18,24 +18,35 @@
 #include <PT_server.h>
 #endif
 
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+
 #define PT_SERVER_MAGIC   0x32108765                // pt server identifier
 #define PT_SERVER_VERSION 2                         // version of pt server database (no versioning till 2009/05/13)
 
 #define pt_assert(bed) arb_assert(bed)
 
 #if defined(DEBUG)
-// #define PTM_DEBUG
+#define PTM_DEBUG
 #endif // DEBUG
 
 typedef unsigned long ULONG;
 typedef unsigned int  UINT;
 typedef unsigned char uchar;
 
+#define  min(a, b) ((a) < (b)) ? (a) : (b)
+#define  max(a, b) ((a) > (b)) ? (a) : (b)
+
 #define PT_CORE *(int *)0 = 0;
 
+#define PT_MAX_MATCHES     1000000
+
+// #define PT_MAX_IDENTS      10000
 #define PT_POS_TREE_HEIGHT 20
 #define PT_POS_SECURITY    10
 #define MIN_PROBE_LENGTH   6
+#define PT_NAME_HASH_SIZE  10000
 
 enum PT_MATCH_TYPE {
     PT_MATCH_TYPE_INTEGER           = 0,
@@ -45,21 +56,21 @@ enum PT_MATCH_TYPE {
 
 
 
-#define MATCHANSWER  50                             // private msg type: match result answer
-#define CREATEANSWER 51                             // private msg type: create result answer
-#define FINDANSWER   52                             // private msg type: find result answer
+#define MATCHANSWER 50  /* private msg type: match result answer */
+#define CREATEANSWER 51 /* private msg type: create result answer */
+#define FINDANSWER 52   /* private msg type: find result answer */
 
-extern int gene_flag;           // if 'gene_flag' == 1 -> we are a gene pt server
 extern ULONG physical_memory;
 struct Hs_struct;
+extern char *pt_error_buffer;
 
-enum type_types {
+typedef enum type_types_type {
     t_int    = 1,
     t_string = 0,
     t_float  = 2
-};
+} type_types;
 
-enum PT_BASES {
+typedef enum PT_bases_enum  {
     PT_QU = 0,
     PT_N  = 1,
     PT_A,
@@ -67,128 +78,96 @@ enum PT_BASES {
     PT_G,
     PT_T,
     PT_B_MAX,
-    PT_B_UNDEF,
-};
+    PT_B_UNDEF, 
+} PT_BASES;
 
-// -----------------
-//      POS TREE
-
-enum PT_NODE_TYPE {
+/*  POS TREE */
+typedef enum enum_PT_NODE_TYPE {
     PT_NT_LEAF        = 0,
     PT_NT_CHAIN       = 1,
     PT_NT_NODE        = 2,
-    PT_NT_SINGLE_NODE = 3,                          // stage 3
-    PT_NT_SAVED       = 3,                          // stage 1+2
+    PT_NT_SINGLE_NODE = 3,      /* stage 3 */
+    PT_NT_SAVED       = 3,      /* stage 1+2 */
     PT_NT_UNDEF       = 4
-};
+} PT_NODE_TYPE;
 
-struct POS_TREE {
+typedef struct POS_TREE_struct {
     uchar flags;
     char  data;
-};
+} POS_TREE;
 
-struct PTM2 {
-    char *data_start;                               // points to start of data
+typedef struct PTMM_struct {
+    char *data_start; // points to start of data
     int   stage1;
     int   stage2;
     int   stage3;
     int   mode;
+} PTM2;
+
+
+
+/* Probe search */
+
+
+struct probe_statistic {
+    int match_count;        /* Counter for matches */
+    double  rel_match_count;    /* match_count / (seq_len - probe_len + 1) */
 };
 
-
-
-// ---------------------
-//      Probe search
-
-class probe_input_data : virtual Noncopyable {      // every taxa's own data
-
-    char *data;       // sequence
-    long  checksum;   // checksum of sequence
-    int   size;
-
+struct probe_input_data {    /* every taxas own data */
+    /******* name and sequence *********/
+    char   *data;
+    long    checksum;
+    int     size;
     char   *name;
     char   *fullname;
     GBDATA *gbd;
 
-    bool group;           // probe_design: whether species is in group
+    /********* probe design ************/
+    int is_group;   /* -1:  nevermind
+                        0:  no group
+                        1:  group */
 
-    // obsolete methods below @@@ remove them
-    GBDATA *get_gbdata() const { return gbd; }
-    void set_data(char *assign, int size_) { pt_assert(!data); data = assign; size = size_; }
-    void set_checksum(long cs) { checksum = cs; }
-    
-public:
+    /* probe design (match) */
+    PT_probematch *match;       /* best hit for PT_new_design */
 
-    probe_input_data()
-        : data(0),
-          checksum(0), 
-          size(0), 
-          name(0), 
-          fullname(0), 
-          gbd(0), 
-          group(false) 
-    {}
-    ~probe_input_data() {
-        free(data);
-        free(name);
-        free(fullname);
-    }
+    /********* find family  ************/
+    struct probe_statistic stat;
 
-    GB_ERROR init(GBDATA *gbd_);
-
-    const char *get_data() const { return data; }
-    char *read_alignment(int *psize) const;
-
-    const char *get_name() const { return name; }
-    const char *get_fullname() const { return fullname; }
-    long get_checksum() const { return checksum; }
-    int get_size() const { return size; }
-
-    bool inside_group() const { return group; }
-    bool outside_group() const { return !group; }
-
-    void set_group_state(bool isGroupMember) { group = isGroupMember; }
-
-    long get_abspos() const {
-        pt_assert(gene_flag); // only legal in gene-ptserver
-        GBDATA *gb_pos = GB_entry(get_gbdata(), "abspos");
-        if (gb_pos) return GB_read_int(gb_pos);
-        return -1;
-    }
-
-private:
+    /********* free pointer  ************/
+    int next;
 };
 
 struct probe_statistic_struct {
 #ifdef ARB_64
-    int  cut_offs;                                  // statistic of chains
-    int  single_node;
-    int  short_node;
-    int  int_node;
-    int  long_node;
-    int  longs;
-    int  ints;
-    int  ints2;
-    int  shorts;
-    int  shorts2;
-    int  chars;
+    int cut_offs;       /* statistic of chains */
+    int single_node;
+    int short_node;
+    int int_node;
+    int long_node;
+    int longs;
+    int ints;
+    int ints2;
+    int shorts;
+    int shorts2;
+    int chars;
     long maxdiff;
 #else
-    int  cut_offs;                                  // statistic of chains
-    int  single_node;
-    int  short_node;
-    int  long_node;
-    int  longs;
-    int  shorts;
-    int  shorts2;
-    int  chars;
+    int cut_offs;       /* statistic of chains */
+    int single_node;
+    int short_node;
+    int long_node;
+    int longs;
+    int shorts;
+    int shorts2;
+    int chars;
 #endif
 
 };
 
 class BI_ecoli_ref;
 
-class MostUsedPos : virtual Noncopyable {
+class MostUsedPos {
     int pos;
     int used;
 
@@ -224,34 +203,33 @@ public:
     int get_most_used() const { return pos; }
 };
 
-extern struct probe_struct_global {
-    GB_shell *gb_shell;
-    GBDATA   *gb_main;                              // ARBDB interface
-    GBDATA   *gb_species_data;
-    GBDATA   *gb_sai_data;
-    char     *alignment_name;
-    GB_HASH  *namehash;                             // name to int
+extern struct probe_struct_global   {
+    GBDATA  *gb_main;           /* ARBDB interface */
+    GBDATA  *gb_species_data;
+    GBDATA  *gb_sai_data;
+    char    *alignment_name;
+    GB_HASH *namehash;          /* name to int */
 
-    int                      data_count;
-    struct probe_input_data *data;                  // the internal database
+    struct probe_input_data *data; /* the internal database */
 
-    char         *ecoli;                            // the ecoli sequenz
+    char         *ecoli;        /* the ecoli sequenz */
     BI_ecoli_ref *bi_ecoli;
 
-    int  max_size;                                  // maximum sequence len
-    long char_count;                                // number of all 'acgtuACGTU'
+    int  data_count;
+    int  max_size;              /* maximum sequence len */
+    long char_count;            /* number of all 'acgtuACGTU' */
 
-    int    mismatches;                              // chain handle in match
+    int    mismatches;          /* chain handle in match */
     double wmismatches;
     int    N_mismatches;
     int    w_N_mismatches[PT_POS_TREE_HEIGHT+PT_POS_SECURITY+1];
 
-    int reversed;                                   // tell the matcher whether probe is reversed
+    int reversed;       /* tell the matcher whether probe is reversed */
 
-    double *pos_to_weight;                          // position to weight
-    char    complement[256];                        // complement
+    double *pos_to_weight;      /* position to weight */
+    char    complement[256];    /* complement */
 
-    int deep;                                       // for probe matching
+    int deep;                   /* for probe matching */
     int height;
     int length;
     
@@ -259,15 +237,15 @@ extern struct probe_struct_global {
 
     int sort_by;
 
-    char *probe;                                    // probe design + chains
+    char *probe;                /* probe design + chains */
     char *main_probe;
 
-    char      *server_name;                         // name of this server
-    aisc_com  *link;
-    T_PT_MAIN  main;
-    Hs_struct *com_so;                              // the communication socket
-    POS_TREE  *pt;
-    PTM2      *ptmain;
+    char             *server_name; /* name of this server */
+    aisc_com         *link;
+    T_PT_MAIN         main;
+    struct Hs_struct *com_so;   /* the communication socket */
+    POS_TREE         *pt;
+    PTM2             *ptmain;
 
     probe_statistic_struct stat;
 
@@ -318,6 +296,8 @@ public:
     const char *get_arb_gene_name() const { return arb_gene_name; }
 };
 
+extern int gene_flag;           // if 'gene_flag' == 1 -> we are a gene pt server
+
 struct ltByArbName {
     bool operator()(const gene_struct *gs1, const gene_struct *gs2) const {
         int cmp           = strcmp(gs1->get_arb_species_name(), gs2->get_arb_species_name());
@@ -337,7 +317,7 @@ typedef std::set<const gene_struct *, ltByInternalName> gene_struct_index_intern
 typedef std::set<const gene_struct *, ltByArbName>      gene_struct_index_arb;
 
 extern gene_struct_list           all_gene_structs; // stores all gene_structs
-extern gene_struct_index_arb      gene_struct_arb2internal; // sorted by arb species+gene name
+extern gene_struct_index_arb      gene_struct_arb2internal; // sorted by arb speces+gene name
 extern gene_struct_index_internal gene_struct_internal2arb; // sorted by internal name
 
 #define PT_base_string_counter_eof(str) (*(unsigned char *)(str) == 255)
@@ -345,5 +325,3 @@ extern gene_struct_index_internal gene_struct_internal2arb; // sorted by interna
 #else
 #error probe.h included twice
 #endif
-
-

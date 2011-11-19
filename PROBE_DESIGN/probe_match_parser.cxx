@@ -11,15 +11,18 @@
 //                                                                       //
 //  ==================================================================== //
 
-#include "probe_match_parser.hxx"
-
-#include <arbdbt.h>
-#include <arb_defs.h>
-
+#include <cstring>
+#include <cstdlib>
+#include <cstdio>
 #include <cctype>
 #include <map>
 
+#include <arbdb.h>
+#include <arbdbt.h>
+
 #define pm_assert(cond) arb_assert(cond)
+
+#include "probe_match_parser.hxx"
 
 using namespace std;
 
@@ -31,8 +34,8 @@ struct column {
     const char *title;          // column title (pointer into ProbeMatch_impl::headline)
     int         start_column, end_column;
 
-    column() : title(0), start_column(-1), end_column(-1) {}
-    column(const char *t, int sc, int ec) : title(t), start_column(sc), end_column(ec) {}
+    column() : title(0), start_column(-1), end_column(-1) { }
+    column(const char *t, int sc, int ec) : title(t), start_column(sc), end_column(ec) { }
 };
 
 // ------------------------
@@ -47,7 +50,7 @@ struct ltstr {
 
 typedef map<const char*, column, ltstr> ColumnMap;
 
-class ProbeMatch_impl : virtual Noncopyable {
+class ProbeMatch_impl {
     char      *headline;
     ColumnMap  columns;
     int probe_region_offset;    // left index of probe region
@@ -195,7 +198,7 @@ int ParsedProbeMatch::get_position() const {
     int c1, c2;
     if (parser.getColumnRange("pos", &c1, &c2)) {
         char *content = strpartdup(match, c1, c2);
-        int   pos     = bio2info(atoi(content));
+        int   pos     = atoi(content);
         free(content);
         return pos;
     }

@@ -1,32 +1,31 @@
-// ================================================================ //
-//                                                                  //
-//   File      : a3_seq.hxx                                         //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
+// -----------------------------------------------------------------------------
 
-#ifndef A3_SEQ_HXX
-#define A3_SEQ_HXX
+#ifndef _A3_SEQ_HXX
+#define _A3_SEQ_HXX
 
-#ifndef A3_TYPES_H
+// -----------------------------------------------------------------------------
+//  Include-Dateien
+// -----------------------------------------------------------------------------
+
+#include <string.h>
+
 #include "a3_types.h"
-#endif
-#ifndef _GLIBCXX_CSTRING
-#include <cstring>
-#endif
 
-class Sequence {
-    // Klasse fuer RNS-Sequenzen
+// -----------------------------------------------------------------------------
+//  Datentypen
+// -----------------------------------------------------------------------------
+
+class Sequence              // Klasse fuer RNS-Sequenzen
+{
+    private:
+    
     str     original;       // Originale Sequenz
     UINT    origlen;        // Laenge der originalen Sequenz
 
     str     compressed;     // Kompremiert Sequenz
     UINT    complen;        // Laenge der kompremierten Sequenz
 
-public:
+    public:
 
             Sequence        ( void );                   // Konstruktor fuer leere Sequenz
 
@@ -37,11 +36,10 @@ public:
             Sequence        ( str        file,          // Konstruktor fuer Sequenz aus Datei
                               UINT       line );
 
-            Sequence        ( const Sequence  &sequence );    // Kopierkonstruktor
-    DECLARE_ASSIGNMENT_OPERATOR(Sequence);
+            Sequence        ( Sequence  &sequence );    // Kopierkonstruktor
 
             ~Sequence       ( void );                   // Destruktor
-            
+    
     str     Original        ( void )    { return strdup(original); };   // Liefert Kopie der
                                                                         // originalen Sequenz
 
@@ -61,6 +59,8 @@ public:
     void    Dump            ( void );                                   // Gibt die Sequenz aus
 };
 
-#else
-#error a3_seq.hxx included twice
-#endif // A3_SEQ_HXX
+// -----------------------------------------------------------------------------
+
+#endif
+
+// -----------------------------------------------------------------------------

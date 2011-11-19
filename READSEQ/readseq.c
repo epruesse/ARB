@@ -429,7 +429,7 @@ int chooseFormat( boolean quietly)
 
 
 
-/* read parameter(s) */
+/* read paramater(s) */
 
 boolean checkopt( boolean casesense, char *sopt, const char *smatch, short minword)
 {

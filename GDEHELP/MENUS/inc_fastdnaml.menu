@@ -3,11 +3,11 @@ seqtype: N
 itemmeta: M
 itemmethod:(/bin/rm -f outfile infile treefile ;\
             arb_export_rates "$RATES" "Y 1" "Q" "R" "G 0 0" "T 2.0" | \
-                arb_convert_aln -GenBank in1 -fastdnaml infile;\
+                arb_convert_aln -GenBank in1 -phylip2 infile;\
             arb_export_tree $TREE >>infile;\
             RUN_IN_WINDOW((time arb_fastdnaml $PROGRAM;\
                            $DISPLAY_FUNC));\
-            /bin/rm -f in1 )&
+            rm in1 )&
 itemhelp:dnaml.help
 
 arg:RATES

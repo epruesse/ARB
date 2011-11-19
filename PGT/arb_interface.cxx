@@ -75,28 +75,59 @@ int ARB_disconnect()
 
 
 /****************************************************************************
- *  ESTABLISH A CONNECTION TO THE ARB CONFIGURATION
- ****************************************************************************/
-void CONFIG_connect() {
-    char *config    = strdup(GB_path_in_arbprop(PGT_CONFIG_NAME));
-    global_gbConfig = GB_open(config, "rwc");                // OPEN CONFIG FILE
-    free(config);
+*  ESTABLISH A CONNECTION TO THE ARB CONFIGURATION
+****************************************************************************/
+int CONFIG_connect()
+{
+    global_gbConfig= NULL; // ABFRAGE !!!
+    global_CONFIG_available= false;
 
-    if (global_gbConfig) GB_no_transaction(global_gbConfig); // DISABLE TRANSACTIONS
-    global_CONFIG_available = global_gbConfig;
+    // GET ARB HOME
+    const char *home= GB_getenvHOME();
+    char *buffer= (char *)malloc(1025 * sizeof(char));
+    sprintf(buffer,"%s/%s", home, PGT_CONFIG_FILE);
+
+    // OPEN CONFIG FILE
+    global_gbConfig= GB_open(buffer, "rwc");
+    if(!global_gbConfig)
+    {
+        free(buffer);
+        return 0;
+    }
+
+    // DISABLE TRANSACTIONS
+    GB_no_transaction(global_gbConfig);
+
+    global_CONFIG_available= true;
+
+    free(buffer);
+    return 1;
 }
 
 
 /****************************************************************************
 *  CLOSE THE ARB CONFIGURATION
 ****************************************************************************/
-void CONFIG_disconnect() {
-    if (global_gbConfig) {
-        GB_save_in_arbprop(global_gbConfig, PGT_CONFIG_NAME, "a");
+int CONFIG_disconnect()
+{
+    if(global_gbConfig)
+    {
+        // GET ARB HOME
+        const char *home= GB_getenvHOME();
+        char *buffer= (char *)malloc(1025 * sizeof(char));
+        sprintf(buffer,"%s/%s", home, PGT_CONFIG_FILE);
+
+        GB_save(global_gbConfig, buffer, "a");
+
         GB_close(global_gbConfig);
+
+        free(buffer);
     }
-    global_CONFIG_available = false;
-    global_gbConfig         = NULL;
+
+    global_CONFIG_available= false;
+    global_gbConfig= NULL;
+
+    return 1;
 }
 
 
@@ -158,6 +189,48 @@ bool ARB_commit_transaction()
 *  REQUEST ARB CONNECTION STATE
 ****************************************************************************/
 bool ARB_connected() { return global_ARB_available; }
+
+
+/****************************************************************************
+*  SMALL DEBUG FUNCTION -- DUMPS ALL ARB DB ENTRIES -- HELPER
+*
+* DEPRECATED!
+****************************************************************************/
+// void ARB_dump_helper(GBDATA *gb_level, int tabcount)
+// {
+//     char *key;
+//
+//     GBDATA *gb_next_level= GB_child(gb_level);
+//
+//     while(gb_next_level)
+//     {
+//         for(int i=0; i < tabcount; i++) printf("  ");
+//
+//         key= GB_read_key(gb_next_level);
+//
+//         if(key) printf("[%s]\n", key);
+//         else printf("[-]\n");
+//
+//         ARB_dump_helper(gb_next_level, tabcount + 1);
+//
+//         gb_next_level= GB_nextChild(gb_next_level);
+//     }
+// }
+
+
+/****************************************************************************
+*  SMALL DEBUG FUNCTION -- DUMPS ALL ARB DB ENTRIES -- FUNCTION
+*
+* DEPRECATED!
+****************************************************************************/
+// void ARB_dump(GBDATA *gb_main)
+// {
+//     ARB_begin_transaction();
+//
+//     ARB_dump_helper(gb_main, 0);
+//
+//     ARB_commit_transaction();
+// }
 
 
 /****************************************************************************
@@ -265,7 +338,7 @@ GBDATA *find_proteome(GBDATA *gb_exp_entry, char *name) {
         ARB_begin_transaction();
         GBDATA *gb_proteome_data = GB_entry(gb_exp_entry, "proteome_data");
         if (gb_proteome_data) {
-            GBDATA *gb_name = GB_find_string(gb_proteome_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+            GBDATA *gb_name = GB_find_string(gb_proteome_data, "name", name, GB_IGNORE_CASE, down_2_level);
             if (gb_name) gb_proteome = GB_get_father(gb_name);
         }
         ARB_commit_transaction();
@@ -495,7 +568,7 @@ void getEntryNamesList(Widget list, bool clear= false)
     while(gb_sp)
     {
         // FIND EXPERIMENT
-        gb_exp= GB_find(gb_sp, "experiment", SEARCH_GRANDCHILD);
+        gb_exp= GB_find(gb_sp, "experiment", down_2_level);
         while(gb_exp)
         {
             // FIND PROTEIN
@@ -731,7 +804,7 @@ char *get_config_AWAR() { return get_AWAR(AWAR_CONFIG_CHANGED); }
 
 
 /****************************************************************************
-*  ADD/REMOVE CALLBACKS TO/FROM ARB CONTAINER
+*  ADD A CALLBACK TO AN ARB CONTAINER
 ****************************************************************************/
 static void add_callback(const char *ARB_path, GB_CB callback, int *caller)
 {
@@ -744,17 +817,6 @@ static void add_callback(const char *ARB_path, GB_CB callback, int *caller)
 
     ARB_commit_transaction();
 }
-static void remove_callback(const char *ARB_path, GB_CB callback, int *caller)
-{
-    GBDATA *gb_data= get_gbData();
-
-    ARB_begin_transaction();
-
-    GBDATA *gb_field = GB_search(gb_data, ARB_path, GB_FIND);
-    if (gb_field) GB_remove_callback(gb_field, GB_CB_ALL, callback, caller);
-
-    ARB_commit_transaction();
-}
 
 
 /****************************************************************************
@@ -764,16 +826,18 @@ static void remove_callback(const char *ARB_path, GB_CB callback, int *caller)
 void add_mainDialog_callback(const char *awar, void (*cb)(GBDATA *, mainDialog *, GB_CB_TYPE), mainDialog *md) {
     add_callback(awar, (GB_CB)cb, (int*)md);
 }
-void del_mainDialog_callback(const char *awar, void (*cb)(GBDATA *, mainDialog *, GB_CB_TYPE), mainDialog *md) {
-    remove_callback(awar, (GB_CB)cb, (int*)md);
-}
 
 void add_imageDialog_callback(const char *awar, void (*cb)(GBDATA *, imageDialog *, GB_CB_TYPE), imageDialog *id) {
     add_callback(awar, (GB_CB)cb, (int*)id);
 }
-void del_imageDialog_callback(const char *awar, void (*cb)(GBDATA *, imageDialog *, GB_CB_TYPE), imageDialog *id) {
-    remove_callback(awar, (GB_CB)cb, (int*)id);
-}
+
+// void add_species_callback(GB_CB callback, void *caller) { add_callback(AWAR_SPECIES_NAME, callback, caller); }
+// void add_experiment_callback(GB_CB callback, void *caller) { add_callback(AWAR_EXPERIMENT_NAME, callback, caller); }
+// void add_proteom_callback(GB_CB callback, void *caller) { add_callback(AWAR_PROTEOM_NAME, callback, caller); }
+// void add_protein_callback(GB_CB callback, void *caller) { add_callback(AWAR_PROTEIN_NAME, callback, caller); }
+// void add_gene_callback(GB_CB callback, void *caller) { add_callback(AWAR_GENE_NAME, callback, caller); }
+// void add_config_callback(GB_CB callback, void *caller) { add_callback(AWAR_CONFIG_CHANGED, callback, caller); }
+
 
 /****************************************************************************
 *  CREATE & CHECK THE AWARS (SET DEFAULT IF THE AWARS ARE EMPTY)
@@ -819,6 +883,7 @@ void checkCreateAWARS()
     if(!info_gene_color_CONFIG || (strlen(info_gene_color_CONFIG) == 0))
         set_CONFIG(CONFIG_PGT_INFO_GENE, DEFAULT_INFO_GENE);
 
+//     free(...);
     free(crosshair_color_CONFIG);
     free(unmarked_color_CONFIG);
     free(marked_color_CONFIG);

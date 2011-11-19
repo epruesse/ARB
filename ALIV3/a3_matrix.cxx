@@ -1,18 +1,12 @@
-// ================================================================ //
-//                                                                  //
-//   File      : a3_matrix.cxx                                      //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
-
-#include "a3_matrix.hxx"
+// -----------------------------------------------------------------------------
+//  Include-Dateien
+// -----------------------------------------------------------------------------
 
 #include <cstring>
 #include <fstream>
 #include <iostream>
+
+#include "a3_matrix.hxx"
 
 using std::cout;
 
@@ -48,7 +42,7 @@ void A3Matrix::Init ( int xlen,
 }
 
 // -----------------------------------------------------------------------------
-    A3Matrix::A3Matrix ( const A3Matrix &other )
+    A3Matrix::A3Matrix ( A3Matrix &other )
 // -----------------------------------------------------------------------------
 {
     Init(other.width,other.height,other.free);

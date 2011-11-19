@@ -11,18 +11,22 @@
 #ifndef AWTI_IMP_LOCAL_HXX
 #define AWTI_IMP_LOCAL_HXX
 
-#ifndef _GLIBCXX_STRING
+#ifndef _CPP_STRING
 #include <string>
 #endif
 
 #ifndef ARBDBT_H
 #include <arbdbt.h>
 #endif
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
+
 #ifndef AWTI_IMPORT_HXX
 #include <awti_import.hxx>
 #endif
-#ifndef ARB_STRARRAY_H
-#include <arb_strarray.h>
+#ifndef SMARTPTR_H
+#include <smartptr.h>
 #endif
 
 #define awti_assert(cond) arb_assert(cond)
@@ -38,7 +42,7 @@
 #define AWTC_IMPORT_CHECK_BUFFER_SIZE 10000
 
 
-struct input_format_per_line : virtual Noncopyable {
+struct input_format_per_line {
     char *match;
     char *aci;
     char *srt;
@@ -50,10 +54,10 @@ struct input_format_per_line : virtual Noncopyable {
 
     char *defined_at; // where was match defined
 
-    input_format_per_line *next;
+    struct input_format_per_line *next;
 
-    input_format_per_line *reverse(input_format_per_line *to_append) {
-        input_format_per_line *rest = next;
+    struct input_format_per_line *reverse(struct input_format_per_line *to_append) {
+        struct input_format_per_line *rest = next;
         next = to_append;
         return rest ? rest->reverse(this) : this;
     }
@@ -63,6 +67,8 @@ struct input_format_per_line : virtual Noncopyable {
 };
 
 #define IFS_VARIABLES 26                            // 'a'-'z'
+
+// typedef std::map<char, std::string> SetVariables;
 
 class SetVariables {
     typedef SmartPtr<std::string> StringPtr;
@@ -78,12 +84,12 @@ public:
     const std::string *get(char c) const {
         awti_assert(c >= 'a' && c <= 'z');
         StringPtr v = value[c-'a'];
-        return v.isNull() ? NULL : &*v;
+        return v.Null() ? NULL : &*v;
     }
 };
 
 
-struct input_format_struct : virtual Noncopyable {
+struct input_format_struct {
     char   *autodetect;
     char   *system;
     char   *new_format;
@@ -113,24 +119,21 @@ struct input_format_struct : virtual Noncopyable {
 
     input_format_per_line *pl;
 
-    input_format_struct();
-    ~input_format_struct();
+    input_format_struct(void);
+    ~input_format_struct(void);
 };
 
 struct awtcig_struct {
-    struct input_format_struct *ifo;      // main input format
-    struct input_format_struct *ifo2;     // symlink to input format
-    
-    GBDATA *gb_main;                      // import database
-    AW_CL   cd1, cd2;
+    struct input_format_struct  *ifo; // main input format
+    struct input_format_struct  *ifo2; // symlink to input format
+    GBDATA                      *gb_main; // import database
+    AW_CL                        cd1,cd2;
     AWTC_RCB(func);
-
-    StrArray filenames;
-    int      current_file_idx;
-
-    FILE   *in;
-    bool    doExit;                             // whether import window 'close' does exit
-    GBDATA *gb_other_main;                      // main DB
+    char                       **filenames;
+    char                       **current_file;
+    FILE                        *in;
+    bool                         doExit; // whether import window 'close' does exit
+    GBDATA                      *gb_other_main; // main DB 
 };
 
 

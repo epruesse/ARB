@@ -37,7 +37,7 @@ struct MetaTag {
 
 typedef map<string, const MetaTag *> MetaTagMap;
 
-class MetaTagTranslator : virtual Noncopyable {
+class MetaTagTranslator : public Noncopyable {
     MetaTagMap translate;
 
 public:

@@ -2,6 +2,9 @@
 #include "spreadin.h"
 #include <stdlib.h>
 
+/* -------------------------------------------------------------------------- */
+/*        Spreading newSpreading(double *value, int values) */
+/* ------------------------------------------------------ 20.05.95 16:42 ---- */
 Spreading newSpreading(double *value, int values)
 {
     Spreading s;
@@ -18,7 +21,7 @@ Spreading newSpreading(double *value, int values)
     s->border = malloc(sizeof(*(s->border))*values);
     if (!s->border) outOfMemory();
 
-    for (v = 0; v<values; v++) sum += value[v];      // Summe bilden
+    for (v = 0; v<values; v++) sum += value[v];      /* Summe bilden */
 
     for (v = 0; v<values; v++)
     {
@@ -28,13 +31,22 @@ Spreading newSpreading(double *value, int values)
 
     s->border[values-1] = RAND_MAX;
 
+/*    for (v = 0; v<values; v++) printf("%f -> %i\n", value[v], s->border[v]); */
+/*    printf("---\n"); */
+
     return s;
 }
+/* -------------------------------------------------------------------------- */
+/*        void freeSpreading(Spreading s) */
+/* ------------------------------------------------------ 20.05.95 16:42 ---- */
 void freeSpreading(Spreading s)
 {
     free(s->border);
     free(s);
 }
+/* -------------------------------------------------------------------------- */
+/*        int spreadRand(Spreading s) */
+/* ------------------------------------------------------ 20.05.95 16:42 ---- */
 int spreadRand(Spreading s)
 {
     int val = rand(),

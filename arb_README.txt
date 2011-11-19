@@ -8,7 +8,7 @@ System Requirements
 
         ARB is currently developed on Linux PCs only.
 
-        Compiling ARB using the gcc compiler (4.x series)
+        Compiling ARB using the gcc compiler (3.x and 4.x series)
         as well works on Mac OSX and Sun OS - but we do not publish or support
         these versions.
 

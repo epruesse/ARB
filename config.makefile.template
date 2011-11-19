@@ -20,12 +20,8 @@ OPENGL := 1
 # 2 = compile both, use old (recommended for development only)
 PTPAN := 0
 
-ARB_64 := 1# compile 64bit ARB version
+ARB_64 := 0# compile 64bit ARB version
 #BUILDHOST_64 := 1# whether build host is 64bit (value defaults to ARB_64). Needed for cross-compile
-
-UNIT_TESTS := 0# include and perform unit tests
-COVERAGE := 0# gcov support (0=off,1=on,2=on but hidden)
-#SHOWTODO := 0# show todos (default depends on DEVELOPER)
 
 # --------------------------------------------------------------------------------
 # target machine section

@@ -6,7 +6,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -28,20 +28,10 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
+db_server.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 db_server.o: $(ARBHOME)/INCLUDE/ad_prot.h
 db_server.o: $(ARBHOME)/INCLUDE/arb_assert.h
-db_server.o: $(ARBHOME)/INCLUDE/arb_core.h
-db_server.o: $(ARBHOME)/INCLUDE/arb_error.h
-db_server.o: $(ARBHOME)/INCLUDE/arb_file.h
-db_server.o: $(ARBHOME)/INCLUDE/arb_msg.h
-db_server.o: $(ARBHOME)/INCLUDE/arb_string.h
 db_server.o: $(ARBHOME)/INCLUDE/arbdb.h
 db_server.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-db_server.o: $(ARBHOME)/INCLUDE/arbtools.h
 db_server.o: $(ARBHOME)/INCLUDE/attributes.h
-db_server.o: $(ARBHOME)/INCLUDE/dupstr.h
 db_server.o: $(ARBHOME)/INCLUDE/servercntrl.h
-db_server.o: $(ARBHOME)/INCLUDE/smartptr.h
-db_server.o: $(ARBHOME)/INCLUDE/test_global.h
-db_server.o: $(ARBHOME)/INCLUDE/test_unit.h
-db_server.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h

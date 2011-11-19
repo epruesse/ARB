@@ -15,7 +15,7 @@ TITLE		Nearest relative search
 
 OCCURRENCE      ARB_NT/Search/More search/Search Next Relatives of SELECTED Species in PT Server
                 ARB_NT/Search/More search/Search Next Relatives of LISTED Species in PT Server
-                ARB_EDIT4/Edit/Integrated Aligners
+                ARB_NT/ARB_EDIT/EDIT/Integrated Aligners
 
 SECTION         ALGORITHM
 
@@ -95,11 +95,6 @@ SECTION         PARAMETERS
                        The combinations may affect the score as well!
 
                        Note: Not available for EDIT4 aligner.
-
-                Target range:
-
-                       Restrict the alignment range in which oligos may match.
-                       Hits outside that range will not be considered.
 
 NOTES		None
 

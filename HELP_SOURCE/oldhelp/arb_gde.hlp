@@ -1,10 +1,9 @@
 #Please insert up references in the next lines (line starts with keyword UP)
 UP	arb.hlp
 UP	glossary.hlp
+UP	gde.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-
-SUB     gde_menus.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
@@ -12,12 +11,14 @@ SUB     gde_menus.hlp
 
 TITLE		GDE Extended Menu
 
-DESCRIPTION     ARB does no longer support GDE itself, it only uses the
-                GDE-style menu extensions to plugin external tools into ARB
+DESCRIPTION	Provides access to the integrated GDE software.
+
+                See LINK{gde.hlp} for original description of GDE.
 
 EXAMPLES	None
 
-WARNINGS        None
+WARNINGS	Some of the GDE tools are not available or do not run properly
+		blast/fasta require properly installed databases
 
 BUGS		No bugs known
 

@@ -1,14 +1,13 @@
-// =============================================================== //
-//                                                                 //
-//   File      : ali_main.cxx                                      //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+// ********************* INCLUDE
+#include <stdio.h>
 
+
+#include "ali_misc.hxx"
 #include "ali_global.hxx"
+#include "ali_sequence.hxx"
+#include "ali_profile.hxx"
+#include "ali_aligner.hxx"
+#include "ali_prealigner.hxx"
 
 
 #define HELIX_PAIRS    "helix_pairs"
@@ -23,7 +22,7 @@ ALI_GLOBAL aligs;
 void message(char *errortext);
 
 
-const char *ali_version =
+const char *ali_version = 
     "\nALIGNER   V2.0  (Boris Reichel 5/95)\n";
 
 const char *ali_man_line[] = {
@@ -73,29 +72,56 @@ const char *ali_man_line[] = {
 };
 
 
-void print_man() {
-    // Print a short parameter description
+/*
+ * Print a short parameter description
+ */
+void print_man()
+{
     int i;
 
-    for (i = 0; ali_man_line[i] != 0; i++)
-        fprintf(stderr, "%s\n", ali_man_line[i]);
+    for (i = 0; ali_man_line[i] != 0; i++) 
+        fprintf(stderr,"%s\n",ali_man_line[i]);
 }
 
 
 void ali_fatal_error(const char *message, const char *func) {
-    fprintf(stderr, "FATAL ERROR %s: %s\n", func, message);
+    fprintf(stderr,"FATAL ERROR %s: %s\n",func,message);
     exit(-1);
 }
 
 void ali_error(const char *message, const char *func) {
-    fprintf(stderr, "ERROR %s: %s\n", func, message);
+    fprintf(stderr,"ERROR %s: %s\n",func,message);
     exit(-1);
 }
 
 
+/********************
+void del_test(ALI_PROFILE *prof,long begin, long end)
+{
+   long i;
 
-int get_species(char *species_string, unsigned int species_number, char *buffer) {
-    // Get one species of a list
+   printf("**********************\n");
+        for (i = begin; i <= end; i++) {
+                printf("W_DEL(%d,%d)\t\t%f\n",i,end,prof->w_del(i,end));
+        }
+}
+
+void perc_test(ALI_PROFILE *prof,long begin, long end)
+{
+   long i;
+
+   printf("**********************\n");
+        for (i = begin; i <= end; i++) {
+                printf("GAP_PERC(%d,%d)\t\t%f\n",i,end,prof->gap_percent(i,end));
+        }
+}
+********************/
+
+/*
+ * Get one species of a list
+ */
+int get_species(char *species_string, unsigned int species_number, char *buffer)
+{
     while (species_number > 0 && *species_string != '\0') {
         while (*species_string != '\0' && *species_string != ',')
             species_string++;
@@ -141,8 +167,11 @@ int check_base_invariance(char *seq1, char *seq2)
 }
 
 
-int convert_for_back_write(char *seq_new, char *seq_orig) {
-    // Convert the working sequenz into the original bases
+/*
+ * Convert the working sequenz into the original bases
+ */
+int convert_for_back_write(char *seq_new, char *seq_orig)
+{
 
     while (*seq_new != '\0' && (ali_is_dot(*seq_new) || ali_is_gap(*seq_new)))
         seq_new++;
@@ -195,7 +224,7 @@ int convert_for_back_write(char *seq_new, char *seq_orig) {
                 case 'n':
                     *seq_new = *seq_orig;
                     break;
-                default:
+                default: 
                     ali_fatal_error("Unexpected character in generated sequence");
             }
         }
@@ -212,7 +241,7 @@ int convert_for_back_write(char *seq_new, char *seq_orig) {
 
     return 0;
 }
-
+        
 
 
 int main(int argc, char **argv)
@@ -226,28 +255,32 @@ int main(int argc, char **argv)
 
 
     ali_message(ali_version);
-
+        
     aligs.init(&argc, argv);
 
     if (!aligs.species_name || argc > 1) {
         printf("Unknowen : ");
         for (i = 1; i < argc; i++)
-            printf("%s ", argv[i]);
+            printf("%s ",argv[i]);
         printf("\n\n");
         print_man();
         exit (-1);
     }
-
-    // Main loop
+        
+    /*
+     * Main loop
+     */
     species_number = 0;
-    while (get_species(aligs.species_name, species_number, species_name)) {
+    while (get_species(aligs.species_name,species_number,species_name)) {
         species_number++;
 
         sprintf(message_buffer,
-                "\nStarting alignment of sequence: %s", species_name);
+                "\nStarting alignment of sequence: %s",species_name);
         ali_message(message_buffer);
 
-        // Get all information of the sequence
+        /*
+         * Get all information of the sequence
+         */
         aligs.arbdb.begin_transaction();
         ALI_SEQUENCE *align_sequence;
         align_sequence = aligs.arbdb.get_sequence(species_name,
@@ -255,8 +288,7 @@ int main(int argc, char **argv)
         if (align_sequence == 0) {
             ali_error("Can't read sequence from database");
             ali_message("Aborting alignment of sequence");
-        }
-        else {
+        }else {
             char *align_string;
             char *align_string_original;
 
@@ -268,22 +300,29 @@ int main(int argc, char **argv)
             if (align_sequence == 0)
                 ali_warning("Can't read sequence from database");
             else {
-                // make profile for sequence
+                /*
+                 * make profile for sequence
+                 */
                 ALI_PROFILE *align_profile;
-                align_profile = new ALI_PROFILE(align_sequence, &aligs.prof_context);
+                align_profile = new ALI_PROFILE(align_sequence,&aligs.prof_context);
 
-                // write information about the profile to the database
+                /* 
+                 * write information about the profile to the database
+                 */
                 aligs.arbdb.begin_transaction();
                 char *String = align_profile->cheapest_sequence();
-                aligs.arbdb.put_SAI("ALI_CON", String);
+                aligs.arbdb.put_SAI("ALI_CON",String);
                 freeset(String, align_profile->borders_sequence());
+                //                              aligs.arbdb.put_SAI("ALI_BOR",string,0);
                 free(String);
                 aligs.arbdb.commit_transaction();
 
-                // make prealignment
+                /*
+                 * make prealignment
+                 */
                 align_prealigner = new ALI_PREALIGNER(&aligs.preali_context,
                                                       align_profile,
-                                                      0, align_profile->sequence_length() - 1,
+                                                      0, align_profile->sequence_length() - 1 ,
                                                       0, align_profile->length() - 1);
                 ALI_SEQUENCE *align_pre_sequence_i, *align_pre_sequence;
                 ALI_SUB_SOLUTION *align_pre_solution;
@@ -296,42 +335,49 @@ int main(int argc, char **argv)
 
                 align_pre_solution->print();
 
-                // write result of alignment into database
+                /*
+                 * write result of alignment into database
+                 */
                 aligs.arbdb.begin_transaction();
                 String = align_pre_sequence_i->string();
-                aligs.arbdb.put_SAI("ALI_PRE_I", String);
+                aligs.arbdb.put_SAI("ALI_PRE_I",String);
                 freeset(String, align_pre_sequence->string());
-                aligs.arbdb.put_SAI("ALI_PRE", String);
+                aligs.arbdb.put_SAI("ALI_PRE",String);
                 free(String);
                 aligs.arbdb.commit_transaction();
 
 
-                sprintf(message_buffer, "%d solutions generated (taking the first)",
+                sprintf(message_buffer,"%d solutions generated (taking the first)",
                         align_pre_approx->cardinality());
                 ali_message(message_buffer);
 
                 if (align_pre_approx->is_empty())
                     ali_fatal_error("List of approximations is empty");
 
-                // Write result back to the database
+                /*
+                 * Write result back to the database
+                 */
+
                 approx_elem = align_pre_approx->first();
 
                 sequence = approx_elem->map->sequence(align_profile->sequence());
                 String = sequence->string();
 
-                if (!check_base_invariance(String, align_string))
+                if (!check_base_invariance(String,align_string))
                     ali_error("Bases changed in output sequence");
 
-                if (!convert_for_back_write(String, align_string_original))
+                if (!convert_for_back_write(String,align_string_original))
                     ali_fatal_error("Can't convert correctly");
 
                 aligs.arbdb.begin_transaction();
-                aligs.arbdb.put_sequence_string(species_name, String);
-                aligs.arbdb.put_SAI("ALI_INSERTS", approx_elem->ins_marker);
+                aligs.arbdb.put_sequence_string(species_name,String);
+                aligs.arbdb.put_SAI("ALI_INSERTS",approx_elem->ins_marker);
                 aligs.arbdb.commit_transaction();
                 delete sequence;
 
-                // Delete all Objects
+                /*
+                 * Delete all Objects
+                 */
                 free(align_string);
                 free(align_string_original);
                 delete align_pre_solution;
@@ -342,8 +388,10 @@ int main(int argc, char **argv)
             }
             delete align_sequence;
         }
-    }
+    } /* main loop */
 
     ali_message("Aligner terminated\n");
     return 0;
 }
+
+

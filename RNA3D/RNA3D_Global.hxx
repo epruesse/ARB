@@ -1,24 +1,3 @@
-// ============================================================= //
-//                                                               //
-//   File      : RNA3D_Global.hxx                                //
-//   Purpose   :                                                 //
-//                                                               //
-//   Institute of Microbiology (Technical University Munich)     //
-//   http://www.arb-home.de/                                     //
-//                                                               //
-// ============================================================= //
-
-#ifndef RNA3D_GLOBAL_HXX
-#define RNA3D_GLOBAL_HXX
-
-#ifndef ARBTOOLS_H
-#include <arbtools.h>
-#endif
-
-#ifndef ARB_OPENGL
-#error shall only be compiled in ARB_OPENGL mode
-#endif // ARB_OPENGL
-
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -87,10 +66,10 @@ struct Vector3 {
     // adding 2 vectors
     Vector3 operator+(Vector3 v) { return Vector3(v.x + x, v.y + y, v.z + z); }
 
-    // subtracting 2 vectors
+    // substracting 2 vectors
     Vector3 operator-(Vector3 v) { return Vector3(x - v.x, y - v.y, z - v.z); }
 
-    // multiply by scalars
+    //multiply by scalars
     Vector3 operator*(float num) { return Vector3(x * num, y * num, z * num); }
 
     // divide by scalars
@@ -107,9 +86,8 @@ class GLRenderer;
 
 class AW_root;
 class AWT_canvas;
-struct ED4_plugin_host;
 
-class RNA3D_Global : virtual Noncopyable {
+class RNA3D_Global {
 public:
     Widget      glw;
     AW_root    *root;
@@ -124,7 +102,7 @@ public:
     bool bDisplayMask;
     bool bDisplayComments;
 
-    bool bEColiRefInitialized;
+    bool bEColiRefInitialised;
     bool bMapSearchStringsDispListCreated;
     bool bMapSaiDispListCreated;
 
@@ -141,7 +119,7 @@ public:
     Vector3 Center;
     Vector3 Up;
 
-    RNA3D_Global(ED4_plugin_host& host);
+    RNA3D_Global();
     ~RNA3D_Global();
 };
 
@@ -150,8 +128,4 @@ public:
 extern RNA3D_Global *RNA3D;
 extern char          globalComment[1000];
 
-void RNA3D_init_global_data(ED4_plugin_host& host);
-
-#else
-#error RNA3D_Global.hxx included twice
-#endif // RNA3D_GLOBAL_HXX
+void RNA3D_init_global_data();

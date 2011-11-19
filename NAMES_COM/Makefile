@@ -1,38 +1,32 @@
 # The file, where all structures are described
 MAIN_SOURCE = names.aisc
-MAIN_HEADER = aisc_include.header
 
 # Your own server functions
 PRIVATE_SERVER_OBJECTS = names_extern.o
 
 # Public server/client sources (needed for dependencies)
-PUBLIC_SOURCES := $(wildcard C/*.c) $(wildcard C/*.h)
+PUBLIC_SOURCES = $(wildcard C/*.c)
 
 # Do you want to create save and load
-AISC_SAVE := YES
+AISC_SAVE = YES
 
 # C++ Compiler
-COMPILER := $(CPP) $(cflags) -I$(ARBHOME)/INCLUDE
-CLIENTCOMPILER := $(COMPILER)
+COMPILER = $(CPP) $(cflags) -I$(ARBHOME)/INCLUDE
+CLIENTCOMPILER = $(COMPILER)
 
 # AISC dependencies
-AISC_COMPILER=../AISC/aisc
-AISC_PROTOTYPER=../AISC_MKPTPS/aisc_mkpt
-AISC_DEPENDS = $(wildcard AISC/*.pa) $(AISC_COMPILER) $(AISC_PROTOTYPER) 
+AISC_COMPILER=../MAKEBIN/aisc
+AISC_DEPENDS = $(wildcard AISC/*.pa) $(AISC_COMPILER)
 
 include AISC/export2sub
 
-$(MAIN): server.a
-
-server.a: $(MAIN_SOURCE) $(PRIVATE_SERVER_OBJECTS:.o=.c) $(PUBLIC_SOURCES) $(AISC_DEPENDS) $(MAIN_HEADER) 
+server.a: $(MAIN_SOURCE) $(PRIVATE_SERVER_OBJECTS:.o=.c) $(PUBLIC_SOURCES) $(AISC_DEPENDS)
 	@$(MAKE) -r -f AISC/Makefile
 
 depends:
-	@rm -f .depends
 	@$(MAKE) -r -f AISC/Makefile pregenerate
 
 clean:
-	@rm -f .depends
 	@$(MAKE) -r -f AISC/Makefile clean
 
 # DO NOT DELETE

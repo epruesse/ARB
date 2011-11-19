@@ -1,21 +1,19 @@
-// --------------------------------------------------------------------------------
-// Copyright (C) 2000
-// Ralf Westram
-//
-// Permission to use, copy, modify, distribute and sell this software
-// and its documentation for any purpose is hereby granted without fee,
-// provided that the above copyright notice appear in all copies and
-// that both that copyright notice and this permission notice appear
-// in supporting documentation.  Ralf Westram makes no
-// representations about the suitability of this software for any
-// purpose.  It is provided "as is" without express or implied warranty.
-// --------------------------------------------------------------------------------
+// ================================================================ //
+//                                                                  //
+//   File      : FileBuffer.cxx                                     //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Coded by Ralf Westram (coder@reallysoft.de) in December 2006   //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
 
 #include "FileBuffer.h"
 #include <cstdlib>
 #include <cstring>
-#include <cerrno>
-#include <smartptr.h>
+#include <cstdio>
+#include <errno.h>
 
 using namespace std;
 
@@ -84,46 +82,47 @@ bool FileBuffer::getLine_intern(string& line)
     return true;
 }
 
-string FileBuffer::lineError(const string& msg) const {
-    static SmartCharPtr buffer;
+string FileBuffer::lineError(const char *msg) {
+    static char   *buffer;
     static size_t  allocated = 0;
 
     size_t len;
     if (showFilename) {
-        len = msg.length()+filename.length()+100;
+        len = strlen(msg)+filename.length()+100;
     }
     else {
-        len = msg.length()+100;
+        len = strlen(msg)+100;
     }
 
     if (len>allocated) {
         allocated = len;
+        free(buffer);
         buffer    = (char*)malloc(allocated);
     }
 
     if (showFilename) {
-#if defined(ASSERTION_USED)
+#if defined(DEBUG)
         int printed =
-#endif // ASSERTION_USED
-            sprintf(&*buffer, "%s:%zu: %s", filename.c_str(), lineNumber, msg.c_str());
+#endif // DEBUG
+            sprintf(buffer, "while reading %s (line #%li):\n%s", filename.c_str(), lineNumber, msg);
         fb_assert((size_t)printed < allocated);
     }
     else {
-#if defined(ASSERTION_USED)
+#if defined(DEBUG)
         int printed =
-#endif // ASSERTION_USED
-            sprintf(&*buffer, "while reading line #%zu:\n%s", lineNumber, msg.c_str());
+#endif // DEBUG
+            sprintf(buffer, "while reading line #%li:\n%s", lineNumber, msg);
         fb_assert((size_t)printed < allocated);
     }
-
-    return &*buffer;
+    
+    return buffer;
 }
 
 void FileBuffer::rewind() {
     errno = 0;
     std::rewind(fp);
     fb_assert(errno == 0); // not handled yet
-
+    
     read = BUFFERSIZE;
     fillBuffer();
 
@@ -134,3 +133,41 @@ void FileBuffer::rewind() {
     lineNumber = 0;
 }
 
+// --------------------------------------------------------------------------------
+// C interface
+
+inline FileBuffer *to_FileBuffer(FILE_BUFFER fb) {
+    FileBuffer *fileBuffer = reinterpret_cast<FileBuffer*>(fb);
+    fb_assert(fileBuffer);
+    fb_assert(fileBuffer->good());
+    return fileBuffer;
+}
+
+extern "C" FILE_BUFFER create_FILE_BUFFER(const char *filename, FILE *in) {
+    FileBuffer *fb = new FileBuffer(filename, in);
+    return reinterpret_cast<FILE_BUFFER>(fb);
+}
+
+extern "C" void destroy_FILE_BUFFER(FILE_BUFFER file_buffer) {
+    delete to_FileBuffer(file_buffer);
+}
+
+extern "C" const char *FILE_BUFFER_read(FILE_BUFFER file_buffer, size_t *lengthPtr) {
+    static string  line;
+
+    if (to_FileBuffer(file_buffer)->getLine(line)) {
+        if (lengthPtr) *lengthPtr = line.length();
+        return line.c_str();
+    }
+    return 0;
+}
+
+extern "C" void FILE_BUFFER_back(FILE_BUFFER file_buffer, const char *backline) {
+    static string line;
+    line = backline;
+    to_FileBuffer(file_buffer)->backLine(line);
+}
+
+extern "C" void FILE_BUFFER_rewind(FILE_BUFFER file_buffer) {
+    to_FileBuffer(file_buffer)->rewind();
+}

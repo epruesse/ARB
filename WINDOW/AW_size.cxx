@@ -1,107 +1,106 @@
-// =============================================================== //
-//                                                                 //
-//   File      : AW_size.cxx                                       //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#include <stdio.h>
+#include <stdlib.h>
+#include <X11/X.h>
+#include <X11/Xlib.h>
 
-#include "aw_common.hxx"
+#include <aw_root.hxx>
+#include "aw_device.hxx"
+#include "aw_commn.hxx"
+#include <aw_size.hxx>
 
 #include <algorithm>
 
 using namespace std;
-using namespace AW;
 
-// *****************************************************************************************
+//*****************************************************************************************
   //                                    size_device
-  // *****************************************************************************************
+  //*****************************************************************************************
 
-void AW_device_size::clear() {
-    scaled.clear();
-    unscaled.clear();
+  AW_device_size::AW_device_size(AW_common *commoni): AW_device(commoni) {
+      ;
+  }
+
+void AW_device_size::init() {
+    drawn = false;
+
+    size_information.t = 0;
+    size_information.b = 0;
+    size_information.l = 0;
+    size_information.r = 0;
 }
 
-AW_DEVICE_TYPE AW_device_size::type() { return AW_DEVICE_SIZE; }
+AW_DEVICE_TYPE AW_device_size::type(void) { return AW_DEVICE_SIZE; }
 
-void AW_device_size::specific_reset() {
-    clear();
+void AW_device_size::privat_reset(void){
+    this->init();
 }
 
-inline int calc_overlap(AW_pos smaller, AW_pos bigger) {
-    if (smaller<bigger) return AW_INT(bigger-smaller);
+inline void AW_device_size::dot_transformed(AW_pos X, AW_pos Y) {
+    if (drawn) {
+        size_information.l = min(size_information.l, X);
+        size_information.r = max(size_information.r, X);
+        size_information.t = min(size_information.t, Y);
+        size_information.b = max(size_information.b, Y);
+    }
+    else {
+        size_information.l = size_information.r = X;
+        size_information.t = size_information.b = Y;
+        drawn              = true;
+    }
+}
+
+inline void AW_device_size::dot(AW_pos x, AW_pos y) {
+    AW_pos X, Y;
+    transform(x, y, X, Y);
+    dot_transformed(X, Y);
+}
+
+/***********************************************************************************************************************/
+/* line  text  zoomtext  box *******************************************************************************************/
+/***********************************************************************************************************************/
+
+bool AW_device_size::invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
+    if (filteri & filter) dot(x, y);
+    return AW_device::invisible(gc,x,y,filteri,clientdata1,clientdata2);
+}
+
+
+int AW_device_size::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
+    AWUSE(clientdata1);AWUSE(clientdata2);
+    AWUSE(gc);
+
+    if (filteri & filter) {
+        dot(x0, y0);
+        dot(x1, y1);
+        return true;
+    }
+    return false;
+}
+
+int AW_device_size::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2, long opt_strlen) {
+    AWUSE(clientdata1);AWUSE(clientdata2);
+
+    if(filteri & filter) {
+        XFontStruct *xfs = &(common->gcs[gc]->curfont);
+        
+        AW_pos X0,Y0;           // Transformed pos
+        this->transform(x,y,X0,Y0);
+
+        AW_pos l_ascent  = xfs->max_bounds.ascent;
+        AW_pos l_descent = xfs->max_bounds.descent;
+        AW_pos l_width   = get_string_size(gc, str, opt_strlen);
+        X0               = common->x_alignment(X0,l_width,alignment);
+
+        dot_transformed(X0, Y0-l_ascent);
+        dot_transformed(X0+l_width, Y0+l_descent);
+        return 1;
+    }
     return 0;
 }
 
-AW_borders AW_device_size::get_unscaleable_overlap() const {
-    AW_borders unscalable_overlap;
-    if (scaled.was_drawn() && unscaled.was_drawn()) {
-        const AW_world& scaled_size   = scaled.get_size();
-        const AW_world& unscaled_size = unscaled.get_size();
-
-        unscalable_overlap.t = calc_overlap(unscaled_size.t, scaled_size.t);
-        unscalable_overlap.l = calc_overlap(unscaled_size.l, scaled_size.l);
-        unscalable_overlap.b = calc_overlap(scaled_size.b, unscaled_size.b);
-        unscalable_overlap.r = calc_overlap(scaled_size.r, unscaled_size.r);
-    }
-    else {
-        unscalable_overlap.clear();
-    }
-    return unscalable_overlap;
-}
-
-inline void AW_device_size::dot_transformed(const AW::Position& pos, AW_bitset filteri) {
-    if (filter == (AW_PRINTER|AW_PRINTER_EXT)) { // detect graphic size for print-scaling
-        scaled.track(pos);
-    }
-    else {
-        if (filteri&AW_SIZE) {
-            aw_assert((filteri&AW_SIZE_UNSCALED) == 0);
-            scaled.track(pos);
-        }
-        else {
-            aw_assert((filteri&AW_SIZE) == 0);
-            unscaled.track(pos);
-        }
-    }
-}
-
-bool AW_device_size::invisible_impl(const AW::Position& pos, AW_bitset filteri) {
-    if (filteri & filter) {
-        dot(pos, filteri);
-        return true;
-    }
-    return false;
-}
 
 
-bool AW_device_size::line_impl(int /*gc*/, const LineVector& Line, AW_bitset filteri) {
-    if (filteri & filter) {
-        dot(Line.start(), filteri);
-        dot(Line.head(), filteri);
-        return true;
-    }
-    return false;
-}
-
-bool AW_device_size::text_impl(int gc, const char *str, const Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
-    if (filteri & filter) {
-        Position              transPos    = transform(pos);
-        const AW_font_limits& font_limits = get_common()->map_gc(gc)->get_font_limits();
-        AW_pos                l_ascent    = font_limits.ascent;
-        AW_pos                l_descent   = font_limits.descent;
-        AW_pos                l_width     = get_string_size(gc, str, opt_strlen);
-
-        Position upperLeft(x_alignment(transPos.xpos(), l_width, alignment),
-                           transPos.ypos()-l_ascent);
-
-        dot_transformed(upperLeft, filteri);
-        dot_transformed(upperLeft + Vector(l_width, l_ascent+l_descent), filteri);
-
-        return true;
-    }
-    return false;
+void AW_device_size::get_size_information(AW_world *ptr) {
+    *ptr = size_information;
 }
 

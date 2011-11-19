@@ -23,8 +23,6 @@ fi
 write_help() {
     echo "$TITLE"
     echo ""
-    echo "# Do not edit!!! Generated from ../$INPUTTEXT"
-    echo ""
     cat $HEADER
     sed -e 's/^/    /' < $INPUTTEXT
 }

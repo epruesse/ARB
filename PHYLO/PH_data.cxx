@@ -1,40 +1,29 @@
-// ============================================================= //
-//                                                               //
-//   File      : PH_data.cxx                                     //
-//   Purpose   :                                                 //
-//                                                               //
-//   Institute of Microbiology (Technical University Munich)     //
-//   http://www.arb-home.de/                                     //
-//                                                               //
-// ============================================================= //
-
-#include "phwin.hxx"
 #include "phylo.hxx"
-#include <arbdbt.h>
-#include <aw_awar.hxx>
-#include <arb_progress.h>
-#include <aw_root.hxx>
+#include "phwin.hxx"
+
+#include <stdlib.h>
+#include <string.h>
 
 PHDATA::PHDATA(AW_root *awr) {
-    memset((char *)this, 0, sizeof(PHDATA));
+    memset((char *)this,0,sizeof(PHDATA));
     aw_root = awr;
 }
 
-char *PHDATA::unload() {
-    PHENTRY *phentry;
+char *PHDATA::unload(void) {
+    struct PHENTRY *phentry;
 
-    freenull(use);
-    for (phentry=entries; phentry; phentry=phentry->next) {
+    freeset(use, 0);
+    for (phentry=entries;phentry;phentry=phentry->next) {
         free(phentry->name);
         free(phentry->full_name);
-        free(phentry);
+        free((char *) phentry);
     }
     entries = 0;
     nentries = 0;
     return 0;
 }
 
-PHDATA::~PHDATA() {
+PHDATA::~PHDATA(void) {
     unload();
     delete matrix;
 }
@@ -65,7 +54,7 @@ char *PHDATA::load(char *usei) {
                 PHENTRY *new_entry = new PHENTRY;
 
                 new_entry->gb_species_data_ptr = gb_data;
-
+                
                 new_entry->key       = last_key_number++;
                 new_entry->name      = strdup(GBT_read_name(gb_species));
                 new_entry->full_name = GBT_read_string(gb_species, "full_name");
@@ -87,7 +76,7 @@ char *PHDATA::load(char *usei) {
 
     GB_pop_transaction(gb_main);
 
-    hash_elements = (PHENTRY **)calloc(nentries, sizeof(PHENTRY *));
+    hash_elements = (struct PHENTRY **)calloc(nentries, sizeof(struct PHENTRY *));
 
     {
         PHENTRY *phentry = entries;
@@ -104,30 +93,30 @@ char *PHDATA::load(char *usei) {
 GB_ERROR PHDATA::save(char *filename) {
     FILE *out;
 
-    out = fopen(filename, "w");
+    out = fopen(filename,"w");
     if (!out) {
         return "Cannot save your File";
     }
-    unsigned row, col;
-    fprintf(out, "%i\n", nentries);
-    for (row = 0; row<nentries; row++) {
-        fprintf(out, "%-13s", hash_elements[row]->name);
+    unsigned row,col;
+    fprintf(out,"%i\n",nentries);
+    for (row = 0; row<nentries;row++){
+        fprintf(out,"%-13s",hash_elements[row]->name);
         for (col=0; col<=row; col++) {
-            fprintf(out, "%7.4f ", matrix->get(row, col)*100.0);
+            fprintf(out,"%7.4f ",matrix->get(row,col)*100.0);
         }
-        fprintf(out, "\n");
+        fprintf(out,"\n");
     }
     fclose(out);
     return 0;
 }
 
 void PHDATA::print() {
-    unsigned row, col;
-    printf("    %i\n", nentries);
-    for (row = 0; row<nentries; row++) {
-        printf("%-10s ", hash_elements[row]->name);
+    unsigned row,col;
+    printf("    %i\n",nentries);
+    for (row = 0; row<nentries;row++){
+        printf("%-10s ",hash_elements[row]->name);
         for (col=0; col<row; col++) {
-            printf("%6f ", matrix->get(row, col));
+            printf("%6f ",matrix->get(row,col));
         }
         printf("\n");
     }
@@ -135,22 +124,21 @@ void PHDATA::print() {
 }
 
 
-GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */, PH_TRANSFORMATION /* transformation */) {
-    if (nentries<=1) return "There are no species selected";
+GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRANSFORMATION /*transformation*/) {
+    if(nentries<=1) return "There are no species selected";
 
     char       *filter;
     matrix                 = new AP_smatrix(nentries);
-    long        i, j, column, reference_table[256];
-    long        options_vector[OPT_COUNT];
-    const char *real_chars, *low_chars, *rest_chars;
-    char        all_chars[100], *sequence_bufferi, *sequence_bufferj;
+    long        i,j,column,reference_table[256];
+    long        options_vector[4];
+    const char *real_chars,*low_chars,*rest_chars;
+    char        all_chars[100],*sequence_bufferi,*sequence_bufferj;
     bool        compare[256];
     AP_FLOAT    number_of_comparisons;
+    double      gauge;
     bool        bases_used = true;                      // rna oder dna sequence : nur zum testen und Entwicklung
 
     if (!PHDATA::ROOT) return "nothing loaded yet";
-
-    arb_progress progress("Calculating matrix", (nentries*(nentries+1))/2);
 
     aw_root = PH_used_windows::windowList->phylo_main_window->get_root();
     if (bases_used) {
@@ -158,19 +146,19 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
         low_chars="acgtu";
         rest_chars="MRWSYKVHDBXNmrwsykvhdbxn";
 
-        strcpy(all_chars, real_chars);
-        strcat(all_chars, low_chars);
-        strcat(all_chars, rest_chars);
+        strcpy(all_chars,real_chars);
+        strcat(all_chars,low_chars);
+        strcat(all_chars,rest_chars);
     }
     else {
         real_chars="ABCDEFGHIKLMNPQRSTVWYZ";
         low_chars=0;
         rest_chars="X";
 
-        strcpy(all_chars, real_chars);
-        strcat(all_chars, rest_chars);
+        strcpy(all_chars,real_chars);
+        strcat(all_chars,rest_chars);
     }
-    strcat(all_chars, ".-");
+    strcat(all_chars,".-");
 
     // initialize variables
 
@@ -180,37 +168,37 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
     options_vector[OPT_FILTER_LOWER] = aw_root->awar("phyl/matrix/lower")->read_int();
 
 
-    for (i=0; i<256; i++) compare[i]=false;
-    for (i=0; i<long(strlen(real_chars)); i++) compare[(unsigned char)real_chars[i]]=true;
-    for (i=0; i<long(strlen(all_chars)); i++) reference_table[(unsigned char)all_chars[i]]=i;
+    for(i=0;i<256;i++) compare[i]=false;
+    for(i=0;i<long(strlen(real_chars));i++) compare[(unsigned char)real_chars[i]]=true;
+    for(i=0;i<long(strlen(all_chars));i++) reference_table[(unsigned char)all_chars[i]]=i;
 
-    // rna or dna sequence: set synonyms
-    if (bases_used) {
-        reference_table[(unsigned char)'U'] = reference_table[(unsigned char)'T']; // T=U
+    // rna or dna sequence: set synonymes
+    if(bases_used) {
+        reference_table[(unsigned char)'U'] = reference_table[(unsigned char)'T']; /* T=U */
         reference_table[(unsigned char)'u'] = reference_table[(unsigned char)'t'];
         reference_table[(unsigned char)'N'] = reference_table[(unsigned char)'X'];
         reference_table[(unsigned char)'n'] = reference_table[(unsigned char)'x'];
     }
 
     distance_table = new AP_smatrix(strlen(all_chars));
-    for (i=0; i<long(strlen(all_chars)); i++) {
-        for (j=0; j<long(strlen(all_chars)); j++) {
-            distance_table->set(i, j, (reference_table[i]==reference_table[j]) ? 0.0 : 1.0);
+    for(i=0;i<long(strlen(all_chars));i++) {
+        for(j=0;j<long(strlen(all_chars));j++) {
+            distance_table->set(i,j,(reference_table[i]==reference_table[j]) ? 0.0 : 1.0);
         }
     }
 
-    if (bases_used) // set substitutions T = U ...
+    if(bases_used)  /* set substitutions T = U ... */
     {
-        distance_table->set(reference_table[(unsigned char)'N'], reference_table[(unsigned char)'X'], 0.0);
-        distance_table->set(reference_table[(unsigned char)'n'], reference_table[(unsigned char)'x'], 0.0);
+        distance_table->set(reference_table[(unsigned char)'N'],reference_table[(unsigned char)'X'],0.0);
+        distance_table->set(reference_table[(unsigned char)'n'],reference_table[(unsigned char)'x'],0.0);
         // @@@ why aren't opposite entries used?
     }
-    distance_table->set(reference_table[(unsigned char)'.'], reference_table[(unsigned char)'-'], 0.0);
+    distance_table->set(reference_table[(unsigned char)'.'],reference_table[(unsigned char)'-'],0.0);
 
     filter=strdup(aw_root->awar("phyl/filter/filter")->read_string());
 
     // set compare-table according to options_vector
-    switch (options_vector[OPT_FILTER_POINT]) // '.' in column
+    switch(options_vector[0]) // '.' in column
     {
         case 0:  // forget pair
             // do nothing: compare stays false
@@ -219,7 +207,7 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
             compare[(unsigned char)'.']=true;
             break;
     }
-    switch (options_vector[OPT_FILTER_MINUS]) // '-' in column
+    switch(options_vector[1]) // '-' in column
     {
         case 0:  // forget pair
             // do nothing: compare stays false
@@ -228,35 +216,38 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
             compare[(unsigned char)'-']=true;
             break;
     }
-    switch (options_vector[OPT_FILTER_AMBIG]) // ambigious character in column
+    switch(options_vector[2]) // '.' in column
     {
         case 0:                 // forget pair
             // do nothing: compare stays false
             break;
         case 1:
-            for (i=0; i<long(strlen(rest_chars)); i++) compare[(unsigned char)rest_chars[i]] = true;
+            for(i=0;i<long(strlen(rest_chars));i++) compare[(unsigned char)rest_chars[i]] = true;
             break;
     }
-    if (bases_used) {
-        switch (options_vector[OPT_FILTER_LOWER]) // lower char in column
+    if(bases_used) {
+        switch(options_vector[1]) // '-' in column
         {
             case 0:             // forget pair
                 // do nothing: compare stays false
                 break;
             case 1:
-                for (i=0; i<long(strlen(low_chars)); i++) compare[(unsigned char)low_chars[i]] = true;
+                for(i=0;i<long(strlen(low_chars));i++) compare[(unsigned char)low_chars[i]] = true;
                 break;
         }
     }
 
 
     // counting routine
+    aw_openstatus("Calculating Matrix");
+    aw_status("Calculate the matrix");
     sequence_bufferi = 0;
     sequence_bufferj = 0;
     GB_transaction dummy(PHDATA::ROOT->gb_main);
 
-    GB_ERROR error = 0;
     for (i = 0; i < long(nentries); i++) {
+        gauge = (double) i / (double) nentries;
+        if (aw_status(gauge * gauge)) return 0;
         delete sequence_bufferi;
         sequence_bufferi = GB_read_string(hash_elements[i]->gb_species_data_ptr);
         for (j = i + 1; j < long(nentries); j++) {
@@ -272,21 +263,16 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
                                 distance_table->get(reference_table[(unsigned char)sequence_bufferi[column]],
                                                     reference_table[(unsigned char)sequence_bufferj[column]]));
                     number_of_comparisons++;
-                }
-            }
+                } //if
+            } //for column
             if (number_of_comparisons) {
                 matrix->set(i, j, (matrix->get(i, j) / number_of_comparisons));
             }
-            progress.inc_and_check_user_abort(error);
-        }
-    }
+        } //for j
+    } //for i
     delete sequence_bufferi;
-    delete sequence_bufferj;
+    delete          sequence_bufferj;
+    aw_closestatus();
 
-    if (error) {
-        delete matrix;
-        matrix = NULL;
-    }
-
-    return error;
+    return 0;
 }

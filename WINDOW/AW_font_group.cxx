@@ -12,7 +12,10 @@
 // ==================================================================== //
 
 #include "aw_font_group.hxx"
-#include "aw_common.hxx"
+#include <cstring>
+
+// ____________________________________________________________
+// start of implementation of class AW_font_group:
 
 AW_font_group::AW_font_group() {
     unregisterAll();
@@ -33,19 +36,17 @@ inline void set_max(int val, int& max) { if (val>max) max = val; }
 void AW_font_group::registerFont(AW_device *device, int gc, const char *chars) {
     aw_assert(gc <= AW_FONT_GROUP_MAX_GC);
 
-    const AW_GC *gcm = device->get_common()->map_gc(gc);
-
     if (!chars) {
         // use complete ASCII-range for limits
-        max_letter_limits[gc] = gcm->get_font_limits();
+        max_letter_limits[gc] = device->get_font_information(gc, 0)->max_letter;
     }
     else {
         aw_assert(chars[0]);
-        AW_font_limits limits = gcm->get_font_limits(chars[0]);
+        max_letter_limits[gc] = device->get_font_information(gc, chars[0])->this_letter;
         for (int i = 1; chars[i]; ++i) {
-            limits = AW_font_limits(limits, gcm->get_font_limits(chars[i]));
+            max_letter_limits[gc] = AW_font_limits(max_letter_limits[gc],
+                                                   device->get_font_information(gc, chars[i])->this_letter);
         }
-        max_letter_limits[gc] = limits;
     }
 
     set_max(get_width(gc), max_width);
@@ -53,4 +54,10 @@ void AW_font_group::registerFont(AW_device *device, int gc, const char *chars) {
     set_max(get_descent(gc), max_descent);
     set_max(get_height(gc), max_height);
 }
+
+
+// -end- of implementation of class AW_font_group.
+
+
+
 

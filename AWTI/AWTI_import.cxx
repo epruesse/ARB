@@ -1,31 +1,15 @@
-// ============================================================= //
-//                                                               //
-//   File      : AWTI_import.cxx                                 //
-//   Purpose   :                                                 //
-//                                                               //
-//   Institute of Microbiology (Technical University Munich)     //
-//   http://www.arb-home.de/                                     //
-//                                                               //
-// ============================================================= //
+#include <awti_imp_local.hxx>
 
-#include "awti_imp_local.hxx"
-
-#include <seqio.hxx>
 #include <awt.hxx>
-#include <item_sel_list.h>
-#include <aw_advice.hxx>
-#include <aw_file.hxx>
-#include <aw_awar.hxx>
+#include <awt_advice.hxx>
+#include <awt_sel_boxes.hxx>
+#include <awt_item_sel_list.hxx>
+
+#include <aw_global.hxx>
 #include <AW_rename.hxx>
-#include <aw_msg.hxx>
-#include <aw_root.hxx>
+
 #include <GenomeImport.h>
 #include <GEN.hxx>
-#include <adGene.h>
-
-#include <arb_progress.h>
-#include <arb_strbuf.h>
-#include <arb_file.h>
 
 #include <climits>
 
@@ -39,6 +23,83 @@ inline const char *name_only(const char *fullpath) {
     return lslash ? lslash+1 : fullpath;
 }
 
+static char *awtc_fgets(char *s, int size, FILE *stream) {
+    // same as fgets but also works with file in MACOS format
+    int i;
+    for (i = 0; i<(size-1); ++i) {
+        int byte = fgetc(stream);
+        if (byte == EOF) {
+            if (i == 0) return 0;
+            break;
+        }
+
+        s[i] = byte;
+        if (byte == '\n' || byte == '\r') break;
+    }
+    s[i] = 0;
+
+    return s;
+}
+
+bool awtc_read_string_pair(FILE *in, char *&s1, char *&s2, size_t& lineNr) {
+    // helper function to read import/export filters.
+    // returns true if sucessfully read
+    // 
+    // 's1' is set to a heap-copy of the first token on line
+    // 's2' is set to a heap-copy of the rest of the line (or NULL if only one token is present)
+    // 'lineNr' is incremented with each line read
+
+    s1 = 0;
+    s2 = 0;
+
+    const int  BUFSIZE = 8000;
+    char       buffer[BUFSIZE];
+    char      *res;
+
+    do {
+        res = awtc_fgets(&buffer[0], BUFSIZE-1, in);
+        if (res)  {
+            char *p = buffer;
+
+            lineNr++;
+
+            while (*p == ' ' || *p == '\t') p++;
+            if (*p != '#') {
+                int len = strlen(p)-1;
+                while  (len >= 0 && strchr("\t \n\r", p[len])) {
+                    p[len--] = 0;
+                }
+
+                if (*p) {
+                    char *e = strpbrk(p," \t");
+
+                    if (e) {
+                        *(e++) = 0;
+                        s1     = strdup(p);
+
+                        e += strspn(e, " \t"); // skip whitespace
+
+                        if (*e == '"') {
+                            char *k = strrchr(e,'"');
+                            if (k!=e) {
+                                e++;
+                                *k=0;
+                            }
+                        }
+                        s2 = strdup(e);
+                    }
+                    else { 
+                        s1 = strdup(p);
+                    }
+                }
+            }
+        }
+    } while (res && !s1);                           // read until EOF or something found
+
+    awti_assert(!res == !s1);
+
+    return res;
+}
 
 static GB_ERROR not_in_match_error(const char *cmd) {
     return GBS_global_string("Command '%s' may only appear after 'MATCH'", cmd);
@@ -46,7 +107,7 @@ static GB_ERROR not_in_match_error(const char *cmd) {
 
 static GB_ERROR read_import_format(const char *fullfile, input_format_struct *ifo, bool *var_set, bool included) {
     GB_ERROR  error = 0;
-    FILE     *in    = fopen(fullfile, "rt");
+    FILE     *in    = fopen(fullfile,"rt");
 
     input_format_per_line *pl = ifo->pl;
 
@@ -67,7 +128,7 @@ static GB_ERROR read_import_format(const char *fullfile, input_format_struct *if
         size_t  lineNumber    = 0;
         bool    include_error = false;
 
-        while (!error && SEQIO_read_string_pair(in, s1, s2, lineNumber)) {
+        while (!error && awtc_read_string_pair(in, s1, s2, lineNumber)) {
 
 #define GLOBAL_COMMAND(cmd) (!error && strcmp(s1, cmd) == 0)
 #define MATCH_COMMAND(cmd)  (!error && strcmp(s1, cmd) == 0 && (pl || !(error = not_in_match_error(cmd))))
@@ -119,7 +180,7 @@ static GB_ERROR read_import_format(const char *fullfile, input_format_struct *if
             else if (GLOBAL_COMMAND("CREATE_ACC_FROM_SEQUENCE")) { ifo->autocreateacc  = 1; }
             else if (GLOBAL_COMMAND("DONT_GEN_NAMES"))           { ifo->noautonames    = 1; }
             else if (GLOBAL_COMMAND("INCLUDE")) {
-                char *dir         = AW_extract_directory(fullfile);
+                char *dir         = AWT_extract_directory(fullfile);
                 char *includeFile = GBS_global_string_copy("%s/%s", dir, s2);
 
                 error = read_import_format(includeFile, ifo, var_set, true);
@@ -171,7 +232,7 @@ static GB_ERROR read_import_format(const char *fullfile, input_format_struct *if
 
         if (error) {
             error = GBS_global_string("%sin line %zi of %s '%s':\n%s",
-                                      include_error ? "included " : "",
+                                      include_error ? "included " : "", 
                                       lineNumber,
                                       included ? "file" : "import format",
                                       name_only(fullfile),
@@ -188,7 +249,7 @@ static GB_ERROR read_import_format(const char *fullfile, input_format_struct *if
 }
 
 GB_ERROR awtc_read_import_format(const char *file) {
-    char *fullfile = strdup(GB_path_in_ARBHOME(file));
+    char *fullfile = AWT_unfold_path(file,"ARBHOME");
 
     delete awtcig.ifo;
     awtcig.ifo = new input_format_struct;
@@ -223,7 +284,7 @@ GB_ERROR awtc_read_import_format(const char *file) {
 }
 
 input_format_per_line::input_format_per_line() {
-    memset((char *)this, 0, sizeof(*this));
+    memset((char *)this,0,sizeof(*this));
 }
 
 input_format_per_line::~input_format_per_line() {
@@ -235,12 +296,12 @@ input_format_per_line::~input_format_per_line() {
     free(write);
     free(setvar);
     free(defined_at);
-
+    
     delete next;
 }
 
 input_format_struct::input_format_struct() {
-    memset((char *)this, 0, sizeof(*this));
+    memset((char *)this,0,sizeof(*this));
 }
 
 input_format_struct::~input_format_struct() {
@@ -262,12 +323,10 @@ input_format_struct::~input_format_struct() {
 }
 
 void awtc_check_input_format(AW_window *aww) {
-    AW_root  *root = aww->get_root();
-    StrArray  files;
-    GBS_read_dir(files, GB_path_in_ARBLIB("import"), "*.ift");
-
-    char     buffer[AWTC_IMPORT_CHECK_BUFFER_SIZE+10];
-    GB_ERROR error = 0;
+    AW_root   *root  = aww->get_root();
+    char     **files = GBS_read_dir(GB_path_in_ARBLIB("import", NULL), "*.ift");
+    char       buffer[AWTC_IMPORT_CHECK_BUFFER_SIZE+10];
+    GB_ERROR   error = 0;
 
     int matched       = -1;
     int first         = -1;
@@ -277,7 +336,7 @@ void awtc_check_input_format(AW_window *aww) {
     char    *prev_selected = awar_filter->read_string();
 
     for (int idx = 0; files[idx] && !error; ++idx) {
-        const char *filtername = files[idx];
+        char *filtername = files[idx];
         awar_filter->write_string(filtername);
 
         GB_ERROR form_err = awtc_read_import_format(filtername);
@@ -295,17 +354,17 @@ void awtc_check_input_format(AW_window *aww) {
 
                     if (f[0]) {
                         const char *com = GBS_global_string("cat %s 2>/dev/null", f);
-                        in              = popen(com, "r");
+                        in              = popen(com,"r");
                     }
                     free(f);
                     if (!in) error = "Cannot open any input file";
                 }
                 if (in) {
-                    int size = fread(buffer, 1, AWTC_IMPORT_CHECK_BUFFER_SIZE, in);
+                    int size = fread(buffer,1,AWTC_IMPORT_CHECK_BUFFER_SIZE,in);
                     pclose(in);
-                    if (size>=0) {
+                    if (size>=0){
                         buffer[size] = 0;
-                        if (GBS_string_matches(buffer, autodetect, GB_MIND_CASE)) {
+                        if (GBS_string_matches(buffer,autodetect,GB_MIND_CASE)) {
                             // format found!
                             matched_count++;
                             if (matched == -1) matched = idx; // remember first/next found format
@@ -325,21 +384,21 @@ void awtc_check_input_format(AW_window *aww) {
     const char *select = 0;
     switch (matched_count) {
         case 0:
-            AW_advice("Not all formats can be auto-detected.\n"
-                      "Some need to be selected manually.",
-                       AW_ADVICE_TOGGLE,
-                      "No format auto-detected",
-                      "arb_import.hlp");
+            AWT_advice("Not all formats can be auto-detected.\n"
+                       "Some need to be selected manually.",
+                       AWT_ADVICE_TOGGLE,
+                       "No format auto-detected",
+                       "arb_import.hlp");
 
             select = "unknown.ift";
             break;
 
         default:
-            AW_advice("Several import filters matched during auto-detection.\n"
-                      "Click 'AUTO DETECT' again to select next matching import-filter.",
-                      AW_ADVICE_TOGGLE,
-                      "Several formats detected",
-                      "arb_import.hlp");
+            AWT_advice("Several import filters matched during auto-detection.\n"
+                       "Click 'AUTO DETECT' again to select next matching import-filter.",
+                       AWT_ADVICE_TOGGLE,
+                       "Several formats detected",
+                       "arb_import.hlp");
 
             // fall-through
         case 1:
@@ -361,18 +420,18 @@ void awtc_check_input_format(AW_window *aww) {
 
     free(prev_selected);
     awar_filter->write_string(select);
+    GBT_free_names(files);
 }
 
-static int awtc_next_file() {
+static int awtc_next_file(void) {
     if (awtcig.in) fclose(awtcig.in);
-    if (awtcig.current_file_idx<0) awtcig.current_file_idx = 0;
+    if (!awtcig.current_file) awtcig.current_file = awtcig.filenames;
 
     int result = 1;
-    while (result == 1 && awtcig.filenames[awtcig.current_file_idx]) {
-        const char *origin_file_name = awtcig.filenames[awtcig.current_file_idx++];
-
-        const char *sorigin   = strrchr(origin_file_name, '/');
-        if (!sorigin) sorigin = origin_file_name;
+    while (result == 1 && *awtcig.current_file) {
+        const char *origin_file_name = *(awtcig.current_file++);
+        const char *sorigin          = strrchr(origin_file_name,'/');
+        if (!sorigin) sorigin  = origin_file_name;
         else sorigin++;
 
         GB_ERROR  error          = 0;
@@ -395,9 +454,9 @@ static int awtc_next_file() {
                 char *srt = GBS_global_string_copy("$<=%s:$>=%s", origin_file_name, mid_file_name);
                 char *sys = GBS_string_eval(awtcig.ifo2->system, srt, 0);
 
-                arb_progress::show_comment(GBS_global_string("exec '%s'", awtcig.ifo2->system));
+                aw_status(GBS_global_string("exec '%s'", awtcig.ifo2->system));
 
-                error                        = GBK_system(sys);
+                error                        = GB_system(sys);
                 if (!error) origin_file_name = mid_file_name;
 
                 free(sys);
@@ -416,16 +475,14 @@ static int awtc_next_file() {
 
                 if (!dest_file_name) error = GB_await_error();
             }
-
-            awti_assert(dest_file_name || error);
-
+            
             if (!error) {
                 char *srt = GBS_global_string_copy("$<=%s:$>=%s", origin_file_name, dest_file_name);
                 char *sys = GBS_string_eval(awtcig.ifo->system, srt, 0);
 
-                arb_progress::show_comment(GBS_global_string("Converting File %s", awtcig.ifo->system));
+                aw_status(GBS_global_string("Converting File %s", awtcig.ifo->system));
 
-                error                        = GBK_system(sys);
+                error                        = GB_system(sys);
                 if (!error) origin_file_name = dest_file_name;
 
                 free(sys);
@@ -434,18 +491,18 @@ static int awtc_next_file() {
         }
 
         if (!error) {
-            awtcig.in = fopen(origin_file_name, "r");
+            awtcig.in = fopen(origin_file_name,"r");   
 
             if (awtcig.in) {
                 result = 0;
             }
             else {
-                error = GBS_global_string("Error: Cannot open file %s\n", origin_file_name);
+                error = GBS_global_string("Error: Cannot open file %s\n", awtcig.current_file[-1]);
             }
         }
 
-        if (mid_file_name) {
-            awti_assert(GB_is_privatefile(mid_file_name, false));
+        if (mid_file_name)  {
+            gb_assert(GB_is_privatefile(mid_file_name, GB_FALSE));
             GB_unlink_or_warn(mid_file_name, &error);
             free(mid_file_name);
         }
@@ -459,25 +516,25 @@ static int awtc_next_file() {
 
     return result;
 }
-char *awtc_read_line(int tab, char *sequencestart, char *sequenceend) {
+char *awtc_read_line(int tab,char *sequencestart, char *sequenceend){
     /* two modes:   tab == 0 -> read single lines,
-       different files are separated by sequenceend,
+       different files are seperated by sequenceend,
        tab != 0 join lines that start after position tab,
-       joined lines are separated by '|'
+       joined lines are seperated by '|'
        except lines that match sequencestart
        (they may be part of sequence if read_this_sequence_line_too = 1 */
 
     static char *in_queue = 0;      // read data
     static int b2offset = 0;
     const int BUFSIZE = 8000;
-    const char *SEPARATOR = "|";    // line separator
+    const char *SEPERATOR = "|";    // line seperator
     struct input_format_struct *ifo;
     ifo = awtcig.ifo;
     char *p;
 
-    if (!ifo->b1) ifo->b1 = (char*)calloc(BUFSIZE, 1);
-    if (!ifo->b2) ifo->b2 = (char*)calloc(BUFSIZE, 1);
-    if (!awtcig.in) {
+    if (!ifo->b1) ifo->b1 = (char*)calloc(BUFSIZE,1);
+    if (!ifo->b2) ifo->b2 = (char*)calloc(BUFSIZE,1);
+    if (!awtcig.in){
         if (awtc_next_file()) {
             if (in_queue) {
                 char *s = in_queue;
@@ -495,15 +552,15 @@ char *awtc_read_line(int tab, char *sequencestart, char *sequenceend) {
             in_queue = 0;
             return s;
         }
-        p = SEQIO_fgets(ifo->b1, BUFSIZE-3, awtcig.in);
-        if (!p) {
-            sprintf(ifo->b1, "%s", sequenceend);
-            if (awtcig.in) fclose(awtcig.in); awtcig.in = 0;
+        p = awtc_fgets(ifo->b1, BUFSIZE-3, awtcig.in);
+        if (!p){
+            sprintf(ifo->b1,"%s",sequenceend);
+            if (awtcig.in) fclose(awtcig.in);awtcig.in= 0;
             p = ifo->b1;
         }
         int len = strlen(p)-1;
-        while (len>=0) {
-            if (p[len] == '\n' || p[len] == 13) p[len--] = 0;
+        while (len>=0){
+            if (p[len] =='\n' || p[len] == 13) p[len--] = 0;
             else break;
         }
         return ifo->b1;
@@ -517,34 +574,34 @@ char *awtc_read_line(int tab, char *sequencestart, char *sequenceend) {
         strncpy(ifo->b2+b2offset, in_queue, BUFSIZE - 4- b2offset);
         b2offset += strlen(ifo->b2+b2offset);
         in_queue = 0;
-        if (GBS_string_matches(ifo->b2, sequencestart, GB_MIND_CASE)) return ifo->b2;
+        if (GBS_string_matches(ifo->b2,sequencestart,GB_MIND_CASE)) return ifo->b2;
     }
     while (1) {
-        p = SEQIO_fgets(ifo->b1, BUFSIZE-3, awtcig.in);
-        if (!p) {
-            if (awtcig.in) fclose(awtcig.in); awtcig.in = 0;
+        p = awtc_fgets(ifo->b1, BUFSIZE-3, awtcig.in);
+        if (!p){
+            if (awtcig.in) fclose(awtcig.in);awtcig.in= 0;
             break;
         }
         int len = strlen(p)-1;
-        while (len>=0) {
-            if (p[len] == '\n' || p[len] == 13) p[len--] = 0;
+        while (len>=0){
+            if (p[len] =='\n' || p[len] == 13) p[len--] = 0;
             else break;
         }
 
 
-        if (GBS_string_matches(ifo->b1, sequencestart, GB_MIND_CASE)) {
+        if (GBS_string_matches(ifo->b1,sequencestart,GB_MIND_CASE)){
             in_queue = ifo->b1;
             return ifo->b2;
         }
 
         int i;
-        for (i=0; i<=tab; i++) if (ifo->b1[i] != ' ') break;
+        for (i=0;i<=tab;i++) if (ifo->b1[i] != ' ') break;
 
         if (i < tab) {
             in_queue = ifo->b1;
             return ifo->b2;
         }
-        strncpy(ifo->b2+b2offset, SEPARATOR, BUFSIZE - 4- b2offset);
+        strncpy(ifo->b2+b2offset, SEPERATOR, BUFSIZE - 4- b2offset);
         b2offset += strlen(ifo->b2+b2offset);
 
         p = ifo->b1;
@@ -557,36 +614,27 @@ char *awtc_read_line(int tab, char *sequencestart, char *sequenceend) {
     return ifo->b2;
 }
 
-static void awtc_write_entry(GBDATA *gbd, const char *key, const char *str, const char *tag, int append, GB_TYPES type = GB_STRING) {
+static void awtc_write_entry(GBDATA *gbd,const char *key,char *str,const char *tag,int append, GB_TYPES type = GB_STRING)
+{
+    GBDATA *gbk;
+    int len, taglen;
+    char *buf;
     if (!gbd) return;
-
+    while (str[0] == ' '|| str[0] == '\t'|| str[0] == '|') str++;
+    len = strlen(str) -1;
+    while (len >=0 &&
+           (str[len] == ' ' || str[len] == '\t' || str[len] == '|' || str[len] == 13))
     {
-        while (str[0] == ' ' || str[0] == '\t' || str[0] == '|') str++;
-        int i = strlen(str)-1;
-        while (i >= 0 && (str[i] == ' ' || str[i] == '\t' || str[i] == '|' || str[i] == 13)) {
-            i--;
-        }
-
-        if (i<0) return;
-
-        i++;
-        if (str[i]) { // need to cut trailing whitespace?
-            char *copy = (char*)malloc(i+1);
-            memcpy(copy, str, i);
-            copy[i]    = 0;
-
-            awtc_write_entry(gbd, key, copy, tag, append, type);
-
-            free(copy);
-            return;
-        }
+        len--;
     }
+    str[len+1] = 0;
+    if (!str[0]) return;
 
-    GBDATA *gbk = GB_entry(gbd, key);
+    gbk = GB_entry(gbd,key);
 
     if (type != GB_STRING) {
-        if (!gbk) gbk=GB_create(gbd, key, type);
-        switch (type) {
+        if (!gbk) gbk=GB_create(gbd,key,type);
+        switch(type) {
             case GB_INT:
                 GB_write_int(gbk, atoi(str));
                 break;
@@ -600,53 +648,52 @@ static void awtc_write_entry(GBDATA *gbd, const char *key, const char *str, cons
         return;
     }
 
-    if (!gbk || !append) {
-        if (!gbk) gbk=GB_create(gbd, key, GB_STRING);
+    if (!gbk || !append){
+        if (!gbk) gbk=GB_create(gbd,key,GB_STRING);
 
-        if (tag) {
+        if (tag){
             GBS_strstruct *s = GBS_stropen(10000);
-            GBS_chrcat(s, '[');
-            GBS_strcat(s, tag);
-            GBS_strcat(s, "] ");
-            GBS_strcat(s, str);
+            GBS_chrcat(s,'[');
+            GBS_strcat(s,tag);
+            GBS_strcat(s,"] ");
+            GBS_strcat(s,str);
             char *val = GBS_strclose(s);
-            GB_write_string(gbk, val);
+            GB_write_string(gbk,val);
             free(val);
         }
         else {
-            if (strcmp(key, "name") == 0) {
-                char *nstr = GBT_create_unique_species_name(awtcig.gb_main, str);
-                GB_write_string(gbk, nstr);
+            if (strcmp(key,"name") == 0) {
+                char *nstr = GBT_create_unique_species_name(awtcig.gb_main,str);
+                GB_write_string(gbk,nstr);
                 free(nstr);
             }
             else {
-                GB_write_string(gbk, str);
+                GB_write_string(gbk,str);
             }
         }
         return;
     }
 
-    const char *strin = GB_read_char_pntr(gbk);
-
-    int   len    = strlen(str) + strlen(strin);
-    int   taglen = tag ? (strlen(tag)+2) : 0;
-    char *buf    = (char *)GB_calloc(sizeof(char), len+2+taglen+1);
+    const char *strin  = GB_read_char_pntr(gbk);
+    len    = strlen(str) + strlen(strin);
+    taglen = tag ? (strlen(tag)+2) : 0;
+    buf    = (char *)GB_calloc(sizeof(char),len+2+taglen+1);
 
     if (tag) {
         char *regexp = (char*)GB_calloc(sizeof(char), taglen+3);
         sprintf(regexp, "*[%s]*", tag);
 
         if (!GBS_string_matches(strin, regexp, GB_IGNORE_CASE)) { // if tag does not exist yet
-            sprintf(buf, "%s [%s] %s", strin, tag, str); // prefix with tag
+            sprintf(buf,"%s [%s] %s", strin, tag, str); // prefix with tag
         }
         free(regexp);
     }
 
     if (buf[0] == 0) {
-        sprintf(buf, "%s %s", strin, str);
+        sprintf(buf,"%s %s",strin,str);
     }
 
-    GB_write_string(gbk, buf);
+    GB_write_string(gbk,buf);
     free(buf);
     return;
 }
@@ -675,7 +722,7 @@ static string expandSetVariables(const SetVariables& variables, const string& so
                     else {
                         error = GBS_global_string_copy("Variable '$%c' not set (missing SETVAR or SETGLOBAL?)", *p);
                     }
-
+                    
                     dest.append(GBS_global_string("<%s>", error));
                     GB_export_error(error);
                     free(error);
@@ -700,52 +747,52 @@ GB_ERROR awtc_read_data(char *ali_name, int security_write)
     char        num[6];
     char        text[100];
     static int  counter         = 0;
-    GBDATA     *gb_species_data = GB_search(GB_MAIN, "species_data", GB_CREATE_CONTAINER);
+    GBDATA     *gb_species_data = GB_search(GB_MAIN,"species_data",GB_CREATE_CONTAINER);
     GBDATA     *gb_species;
     char       *p;
 
     input_format_struct   *ifo = awtcig.ifo;
     input_format_per_line *pl  = 0;
 
-    while (1) {             // go to the start
-        p = awtc_read_line(0, ifo->sequencestart, ifo->sequenceend);
-        if (!p || !ifo->begin || GBS_string_matches(p, ifo->begin, GB_MIND_CASE)) break;
+    while (1){              // go to the start
+        p = awtc_read_line(0,ifo->sequencestart,ifo->sequenceend);
+        if (!p || !ifo->begin || GBS_string_matches(p,ifo->begin,GB_MIND_CASE)) break;
     }
     if (!p) return "Cannot find start of file: Wrong format or empty file";
 
     // lets start !!!!!
-    while (p) {
+    while(p) {
         SetVariables variables(ifo->global_variables);
 
         counter++;
-        if (counter % 10 == 0) {
-            sprintf(text, "Reading species %i", counter);
-            arb_progress::show_comment(text);
+        sprintf(text,"Reading species %i",counter);
+        if (counter %10 == 0){
+            if (aw_status(text)) break;
         }
 
-        gb_species = GB_create_container(gb_species_data, "species");
-        sprintf(text, "spec%i", counter);
-        GBT_readOrCreate_char_pntr(gb_species, "name", text); // set default if missing
-        if (awtcig.filenames[1]) {      // multiple files !!!
-            const char *f = strrchr(awtcig.filenames[awtcig.current_file_idx-1], '/');
-            if (!f) f = awtcig.filenames[awtcig.current_file_idx-1];
+        gb_species = GB_create_container(gb_species_data,"species");
+        sprintf(text,"spec%i",counter);
+        GBT_readOrCreate_char_pntr(gb_species,"name",text); // set default if missing
+        if ( awtcig.filenames[1] ) {    // multiple files !!!
+            char *f= strrchr(awtcig.current_file[-1],'/');
+            if (!f) f= awtcig.current_file[-1];
             else f++;
-            awtc_write_entry(gb_species, "file", f, ifo->filetag, 0);
+            awtc_write_entry(gb_species,"file",f,ifo->filetag,0);
         }
         int line;
         static bool never_warn = false;
         int max_line = never_warn ? INT_MAX : MAX_COMMENT_LINES;
 
-        for (line=0; line<=max_line; line++) {
-            sprintf(num, "%i  ", line);
-            if (line == max_line) {
-                const char *file = NULL;
-                if (awtcig.filenames[awtcig.current_file_idx]) file = awtcig.filenames[awtcig.current_file_idx];
+        for(line=0;line<=max_line;line++){
+            sprintf(num,"%i  ",line);
+            if (line == max_line){
+                char *file = 0;
+                if (awtcig.current_file[0]) file = awtcig.current_file[0];
                 GB_ERROR msg = GB_export_errorf("A database entry in file '%s' is longer than %i lines.\n"
                                                 "    This might be the result of a wrong input format\n"
-                                                "    or a long comment in a sequence\n", file, line);
+                                                "    or a long comment in a sequence\n",file,line);
 
-                switch (aw_question(msg, "Continue Reading,Continue Reading (Never ask again),Abort")) {
+                switch (aw_question(msg,"Continue Reading,Continue Reading (Never ask again),Abort"))  {
                     case 0:
                         max_line *= 2;
                         break;
@@ -758,22 +805,22 @@ GB_ERROR awtc_read_data(char *ali_name, int security_write)
                 }
             }
             GB_ERROR    error      = 0;
-            if (strlen(p) > ifo->tab) {
+            if (strlen(p) > ifo->tab){
                 for (pl = ifo->pl; !error && pl; pl=pl->next) {
                     const char *what_error = 0;
-                    if (GBS_string_matches(p, pl->match, GB_MIND_CASE)) {
+                    if (GBS_string_matches(p,pl->match,GB_MIND_CASE)){
                         char *dup = p+ifo->tab;
                         while (*dup == ' ' || *dup == '\t') dup++;
 
                         char *s              = 0;
                         char *dele           = 0;
 
-                        if (pl->srt) {
+                        if (pl->srt){
                             bool   err_flag;
                             string expanded = expandSetVariables(variables, pl->srt, err_flag, ifo);
                             if (err_flag) error = GB_await_error();
                             else {
-                                dele           = s = GBS_string_eval(dup, expanded.c_str(), gb_species);
+                                dele           = s = GBS_string_eval(dup,expanded.c_str(),gb_species);
                                 if (!s) error  = GB_await_error();
                             }
                             if (error) what_error = "SRT";
@@ -782,13 +829,13 @@ GB_ERROR awtc_read_data(char *ali_name, int security_write)
                             s = dup;
                         }
 
-                        if (!error && pl->aci) {
+                        if (!error && pl->aci){
                             bool   err_flag;
                             string expanded     = expandSetVariables(variables, pl->aci, err_flag, ifo);
                             if (err_flag) error = GB_await_error();
                             else {
                                 dup           = dele;
-                                dele          = s = GB_command_interpreter(GB_MAIN, s, expanded.c_str(), gb_species, 0);
+                                dele          = s = GB_command_interpreter(GB_MAIN, s,expanded.c_str(),gb_species, 0);
                                 if (!s) error = GB_await_error();
                                 free(dup);
                             }
@@ -836,59 +883,59 @@ GB_ERROR awtc_read_data(char *ali_name, int security_write)
                 return GBS_global_string("%s\nwhile parsing line #%i of species #%i", error, line, counter);
             }
 
-            if (GBS_string_matches(p, ifo->sequencestart, GB_MIND_CASE)) goto read_sequence;
+            if (GBS_string_matches(p,ifo->sequencestart,GB_MIND_CASE)) goto read_sequence;
 
-            p = awtc_read_line(ifo->tab, ifo->sequencestart, ifo->sequenceend);
+            p = awtc_read_line(ifo->tab,ifo->sequencestart,ifo->sequenceend);
             if (!p) break;
         }
         return GB_export_errorf("No Start of Sequence found (%i lines read)", max_line);
 
-    read_sequence :
+    read_sequence:
         {
             char          *sequence;
             GBS_strstruct *strstruct = GBS_stropen(5000);
             int            linecnt;
-
-            for (linecnt = 0; ; linecnt++) {
-                if (linecnt || !ifo->read_this_sequence_line_too) {
-                    p = awtc_read_line(0, ifo->sequencestart, ifo->sequenceend);
+            
+            for(linecnt = 0;;linecnt++) {
+                if (linecnt || !ifo->read_this_sequence_line_too){
+                    p = awtc_read_line(0,ifo->sequencestart,ifo->sequenceend);
                 }
                 if (!p) break;
-                if (ifo->sequenceend && GBS_string_matches(p, ifo->sequenceend, GB_MIND_CASE)) break;
+                if (ifo->sequenceend && GBS_string_matches(p,ifo->sequenceend,GB_MIND_CASE)) break;
                 if (strlen(p) <= ifo->sequencecolumn) continue;
-                GBS_strcat(strstruct, p+ifo->sequencecolumn);
+                GBS_strcat(strstruct,p+ifo->sequencecolumn);
             }
             sequence = GBS_strclose(strstruct);
 
             GBDATA *gb_data = GBT_create_sequence_data(gb_species, ali_name, "data", GB_STRING, security_write);
             if (ifo->sequencesrt) {
-                char *h = GBS_string_eval(sequence, ifo->sequencesrt, gb_species);
+                char *h = GBS_string_eval(sequence,ifo->sequencesrt,gb_species);
                 if (!h) return GB_await_error();
                 freeset(sequence, h);
             }
 
             if (ifo->sequenceaci) {
-                char *h = GB_command_interpreter(GB_MAIN, sequence, ifo->sequenceaci, gb_species, 0);
+                char *h = GB_command_interpreter(GB_MAIN, sequence,ifo->sequenceaci,gb_species, 0);
                 free(sequence);
                 if (!h) return GB_await_error();
                 sequence = h;
             }
 
-            GB_write_string(gb_data, sequence);
+            GB_write_string(gb_data,sequence);
 
-            GBDATA *gb_acc = GB_search(gb_species, "acc", GB_FIND);
+            GBDATA *gb_acc = GB_search(gb_species,"acc",GB_FIND);
             if (!gb_acc && ifo->autocreateacc) {
                 char buf[100];
-                long id = GBS_checksum(sequence, 1, ".-");
-                sprintf(buf, "ARB_%lX", id);
-                gb_acc = GB_search(gb_species, "acc", GB_STRING);
-                GB_write_string(gb_acc, buf);
+                long id = GBS_checksum(sequence,1,".-");
+                sprintf(buf,"ARB_%lX",id);
+                gb_acc = GB_search(gb_species,"acc",GB_STRING);
+                GB_write_string(gb_acc,buf);
             }
             free(sequence);
         }
-        while (1) {             // go to the start of an species
-            if (!p || !ifo->begin || GBS_string_matches(p, ifo->begin, GB_MIND_CASE)) break;
-            p = awtc_read_line(0, ifo->sequencestart, ifo->sequenceend);
+        while (1){              // go to the start of an species
+            if (!p || !ifo->begin || GBS_string_matches(p,ifo->begin,GB_MIND_CASE)) break;
+            p = awtc_read_line(0,ifo->sequencestart,ifo->sequenceend);
         }
     }
     return 0;
@@ -919,13 +966,13 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
 
     GB_ERROR error = 0;
 
-    GB_change_my_security(GB_MAIN, 6);
-
+    GB_change_my_security(GB_MAIN,6,"");
+    
     GB_begin_transaction(GB_MAIN); // first transaction start
     char *ali_name;
     {
         char *ali = awr->awar(AWAR_ALI)->read_string();
-        ali_name = GBS_string_eval(ali, "*=ali_*1:ali_ali_=ali_", 0);
+        ali_name = GBS_string_eval(ali,"*=ali_*1:ali_ali_=ali_",0);
         free(ali);
     }
 
@@ -940,7 +987,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
             error = "You must set the alignment type to dna when importing genom sequences.";
         }
         else {
-            GBT_create_alignment(GB_MAIN, ali_name, 2000, 0, ali_protection, ali_type);
+            GBT_create_alignment(GB_MAIN,ali_name,2000,0,ali_protection,ali_type);
         }
         free(ali_type);
     }
@@ -951,11 +998,10 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
         if (is_genom_db) {
             // import genome flatfile into ARB-genome database:
 
-            char     *mask = awr->awar(AWAR_FILE)->read_string();
-            StrArray  fnames;
-            GBS_read_dir(fnames, mask, NULL);
+            char  *mask   = awr->awar(AWAR_FILE)->read_string();
+            char **fnames = GBS_read_dir(mask, NULL);
 
-            if (fnames.empty()) {
+            if (fnames[0] == 0) {
                 error = GB_export_error("Cannot find selected file");
             }
             else {
@@ -972,7 +1018,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                 // to avoid that all imports are undone by transaction abort happening in case of error
                 GB_commit_transaction(GB_MAIN);
 
-                arb_progress progress("Reading input files", count);
+                aw_openstatus("Reading input files");
 
                 for (int curr = 0; !error && fnames[curr]; ++curr) {
                     GB_ERROR error_this_file =  0;
@@ -980,7 +1026,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                     GB_begin_transaction(GB_MAIN);
                     {
                         const char *lslash = strrchr(fnames[curr], '/');
-                        progress.subtitle(GBS_global_string("%i/%i: %s", curr+1, count, lslash ? lslash+1 : fnames[curr]));
+                        aw_status(GBS_global_string("%i/%i: %s", curr+1, count, lslash ? lslash+1 : fnames[curr]));
                     }
 
 #if defined(DEBUG)
@@ -990,6 +1036,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
 
                     if (!error_this_file) {
                         GB_commit_transaction(GB_MAIN);
+                        // GB_warning("File '%s' successfully imported", fnames[curr]);
                         successfull_imports++;
                         delete_db_type_if_error = false;
                     }
@@ -1000,7 +1047,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                         failed_imports++;
                     }
 
-                    progress.inc_and_check_user_abort(error);
+                    aw_status((curr+1)/double(count));
                 }
 
                 if (!successfull_imports) {
@@ -1010,17 +1057,20 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                     GB_warningf("%i of %i files were imported with success", successfull_imports, (successfull_imports+failed_imports));
                 }
 
+                aw_closestatus();
+
                 // now open another transaction to "undo" the transaction close above
                 GB_begin_transaction(GB_MAIN);
             }
 
+            GBT_free_names(fnames);
             free(mask);
         }
         else {
             // import to non-genome ARB-db :
 
             {
-                // load import filter:
+                // load import filter: 
                 char *file = awr->awar(AWAR_FORM"/file_name")->read_string();
 
                 if (!strlen(file)) {
@@ -1050,21 +1100,24 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
             }
 
             {
-                char *f = awr->awar(AWAR_FILE)->read_string();
-                GBS_read_dir(awtcig.filenames, f, NULL);
+                char *f          = awr->awar(AWAR_FILE)->read_string();
+                awtcig.filenames = GBS_read_dir(f,NULL);
                 free(f);
             }
 
-            if (awtcig.filenames[0] == 0) {
+            if (awtcig.filenames[0] == 0){
                 error = GB_export_error("Cannot find selected file(s)");
             }
 
+            bool status_open = false;
             if (!error) {
-                arb_progress progress("Reading input files");
-
+                aw_openstatus("Reading input files");
+                status_open = true;
+                
                 error = awtc_read_data(ali_name, ali_protection);
+
                 if (error) {
-                    error = GBS_global_string("Error: %s\nwhile reading file %s", error, awtcig.filenames[awtcig.current_file_idx-1]);
+                    error = GBS_global_string("Error: %s\nwhile reading file %s", error, awtcig.current_file[-1]);
                 }
                 else {
                     if (awtcig.ifo->noautonames || (awtcig.ifo2 && awtcig.ifo2->noautonames)) {
@@ -1083,14 +1136,17 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                 fclose(awtcig.in);
                 awtcig.in = 0;
             }
+            
+            GBT_free_names(awtcig.filenames);
+            awtcig.filenames    = 0;
+            awtcig.current_file = 0;
 
-            awtcig.filenames.erase();
-            awtcig.current_file_idx = 0;
+            if (status_open) aw_closestatus();
         }
     }
     free(ali_name);
 
-    bool call_func = true; // shall awtcig.func be called ?
+    bool call_func = true; // shall awtcig.func be called ? 
     if (error) {
         GB_abort_transaction(GB_MAIN);
 
@@ -1107,40 +1163,41 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
     else {
         aww->hide(); // import window stays open in case of error
 
-        arb_progress progress("Checking and Scanning database", 2+ask_generate_names); // 2 or 3 passes
-        progress.subtitle("Pass 1: Check entries");
+        aw_openstatus("Checking and Scanning database");
+        aw_status("Pass 1: Check entries");
 
         // scan for hidden/unknown fields :
-        species_field_selection_list_rescan(GB_MAIN, FIELD_FILTER_NDS, RESCAN_REFRESH);
-        if (is_genom_db) gene_field_selection_list_rescan(GB_MAIN, FIELD_FILTER_NDS, RESCAN_REFRESH);
+        awt_selection_list_rescan(GB_MAIN, AWT_NDS_FILTER, AWT_RS_UPDATE_FIELDS);
+        if (is_genom_db) awt_gene_field_selection_list_rescan(GB_MAIN, AWT_NDS_FILTER, AWT_RS_UPDATE_FIELDS);
 
-        GBT_mark_all(GB_MAIN, 1);
-        progress.inc();
-        progress.subtitle("Pass 2: Check sequence lengths");
-        GBT_check_data(GB_MAIN, 0);
+        GBT_mark_all(GB_MAIN,1);
+        sleep(1);
+        aw_status("Pass 2: Check sequence lengths");
+        GBT_check_data(GB_MAIN,0);
+        sleep(1);
 
         GB_commit_transaction(GB_MAIN);
-        progress.inc();
 
         if (ask_generate_names) {
             if (aw_question("You may generate short names using the full_name and accession entry of the species",
                             "Generate new short names (recommended),Use found names")==0)
             {
-                progress.subtitle("Pass 3: Generate unique names");
+                aw_status("Pass 3: Generate unique names");
                 error = AW_select_nameserver(GB_MAIN, awtcig.gb_other_main);
                 if (!error) {
-                    error = AWTC_pars_names(GB_MAIN);
+                    error = AWTC_pars_names(GB_MAIN,1);
                 }
             }
-            progress.inc();
         }
+
+        aw_closestatus();
     }
 
     if (error) aw_message(error);
+    
+    GB_change_my_security(GB_MAIN,0,"");
 
-    GB_change_my_security(GB_MAIN, 0);
-
-    if (call_func) awtcig.func(awr, awtcig.cd1, awtcig.cd2);
+    if (call_func) awtcig.func(awr, awtcig.cd1,awtcig.cd2);
 }
 
 class AliNameAndType {
@@ -1148,7 +1205,7 @@ class AliNameAndType {
 public:
     AliNameAndType(const char *ali_name, const char *ali_type) : name_(ali_name), type_(ali_type) {}
     AliNameAndType(const AliNameAndType& other) : name_(other.name_), type_(other.type_) {}
-
+    
     const char *name() const { return name_.c_str(); }
     const char *type() const { return type_.c_str(); }
 };
@@ -1180,18 +1237,15 @@ void AWTC_import_set_ali_and_type(AW_root *awr, const char *ali_name, const char
     awar_type->write_string(ali_type);
 
     if (last_valid_gbmain) { // detect default write protection for alignment
-        GB_transaction ta(last_valid_gbmain);
-        GBDATA *gb_ali            = GBT_get_alignment(last_valid_gbmain, ali_name);
-        int     protection_to_use = 4;         // default protection
+        GB_transaction  ta(last_valid_gbmain);
+        GBDATA         *gb_ali            = GBT_get_alignment(last_valid_gbmain, ali_name);
+        int             protection_to_use = 4; // default protection
 
         if (gb_ali) {
-            GBDATA *gb_write_security = GB_entry(gb_ali, "alignment_write_security");
+            GBDATA *gb_write_security = GB_entry(gb_ali,"alignment_write_security");
             if (gb_write_security) {
                 protection_to_use = GB_read_int(gb_write_security);
             }
-        }
-        else {
-            GB_clear_error();
         }
         awr->awar(AWAR_ALI_PROTECTION)->write_int(protection_to_use);
     }
@@ -1200,32 +1254,29 @@ void AWTC_import_set_ali_and_type(AW_root *awr, const char *ali_name, const char
 static void genom_flag_changed(AW_root *awr) {
     if (awr->awar(AWAR_READ_GENOM_DB)->read_int() == IMP_PLAIN_SEQUENCE) {
         AWTC_import_set_ali_and_type(awr, last_ali.name(), last_ali.type(), 0);
-        awr->awar_string(AWAR_FORM"/filter", ".ift");
+        awr->awar_string(AWAR_FORM"/filter",".ift");
     }
     else {
         AWTC_import_set_ali_and_type(awr, GENOM_ALIGNMENT, "dna", 0);
-        awr->awar_string(AWAR_FORM"/filter", ".fit"); // *hack* to hide normal import filters
+        awr->awar_string(AWAR_FORM"/filter",".fit"); // *hack* to hide normal import filters
     }
 }
 
 static void import_window_close_cb(AW_window *aww) {
-    if (awtcig.doExit) {
-        GB_close(awtcig.gb_main);
-        exit(EXIT_SUCCESS);
-    }
-    AW_POPDOWN(aww);
+    if (awtcig.doExit) exit(EXIT_SUCCESS);
+    else AW_POPDOWN(aww);
 }
 
-GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit, GBDATA *gb_main, AWTC_RCB(func), AW_CL cd1, AW_CL cd2)
+GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, bool do_exit, GBDATA *gb_main, AWTC_RCB(func), AW_CL cd1, AW_CL cd2)
 {
     static AW_window_simple *aws = 0;
 
-#if defined(WARN_TODO)
+#if defined(DEVEL_RALF)
 #warning where is awtcig.gb_main closed
     // it is either (currently not) closed by merge tool
     // or closed as main db in ARB_NTREE
-#endif
-    awtcig.gb_main = GB_open("noname.arb", "wc");
+#endif // DEVEL_RALF
+    awtcig.gb_main = GB_open("noname.arb","wc");
     awtcig.func    = func;
     awtcig.cd1     = cd1;
     awtcig.cd2     = cd2;
@@ -1238,11 +1289,11 @@ GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit,
 
     awtcig.doExit = do_exit; // change/set behavior of CLOSE button
 
-    AW_create_fileselection_awars(awr, AWAR_FILE_BASE, ".", "", defname);
-    AW_create_fileselection_awars(awr, AWAR_FORM, GB_path_in_ARBLIB("import"), ".ift", "*");
+    aw_create_selection_box_awars(awr, AWAR_FILE_BASE, ".", "", defname);
+    aw_create_selection_box_awars(awr, AWAR_FORM, GB_path_in_ARBLIB("import", NULL), ".ift", "*");
 
-    awr->awar_string(AWAR_ALI, "dummy"); // these defaults are never used
-    awr->awar_string(AWAR_ALI_TYPE, "dummy"); // they are overwritten by AWTC_import_set_ali_and_type
+    awr->awar_string(AWAR_ALI,"dummy"); // these defaults are never used
+    awr->awar_string(AWAR_ALI_TYPE,"dummy"); // they are overwritten by AWTC_import_set_ali_and_type
     awr->awar_int(AWAR_ALI_PROTECTION, 0); // which is called via genom_flag_changed() below
 
     awr->awar(AWAR_READ_GENOM_DB)->add_callback(genom_flag_changed);
@@ -1251,32 +1302,32 @@ GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit,
     if (!aws) {
         aws = new AW_window_simple;
 
-        aws->init(awr, "ARB_IMPORT", "ARB IMPORT");
+        aws->init( awr, "ARB_IMPORT","ARB IMPORT");
         aws->load_xfig("awt/import_db.fig");
 
         aws->at("close");
         aws->callback(import_window_close_cb);
-        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->create_button("CLOSE", "CLOSE","C");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"arb_import.hlp");
-        aws->create_button("HELP", "HELP", "H");
+        aws->callback(AW_POPUP_HELP,(AW_CL)"arb_import.hlp");
+        aws->create_button("HELP", "HELP","H");
 
-        AW_create_fileselection(aws, AWAR_FILE_BASE, "imp_", "PWD", true, true); // select import filename
-        AW_create_fileselection(aws, AWAR_FORM, "", "ARBHOME", false, false); // select import filter
+        awt_create_selection_box(aws, AWAR_FILE_BASE, "imp_", "PWD", true, true); // select import filename
+        awt_create_selection_box(aws, AWAR_FORM, "", "ARBHOME", false, false); // select import filter
 
         aws->at("auto");
         aws->callback(awtc_check_input_format);
-        aws->create_autosize_button("AUTO_DETECT", "AUTO DETECT", "A");
+        aws->create_autosize_button("AUTO_DETECT", "AUTO DETECT","A");
 
         aws->at("ali");
-        aws->create_input_field(AWAR_ALI, 4);
+        aws->create_input_field(AWAR_ALI,4);
 
         aws->at("type");
         aws->create_option_menu(AWAR_ALI_TYPE);
-        aws->insert_option("dna", "d", "dna");
-        aws->insert_option("rna", "r", "rna");
-        aws->insert_option("protein", "p", "ami");
+        aws->insert_option("dna","d","dna");
+        aws->insert_option("rna","r","rna");
+        aws->insert_option("protein","p","ami");
         aws->update_option_menu();
 
         aws->at("protect");
@@ -1293,15 +1344,15 @@ GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit,
         aws->at("genom");
         aws->create_toggle_field(AWAR_READ_GENOM_DB);
         aws->sens_mask(AWM_EXP);
-        aws->insert_toggle("Import genome data in EMBL, GenBank and DDBJ format", "e", IMP_GENOME_FLATFILE);
+        aws->insert_toggle("Import genome data in EMBL, GenBank and DDBJ format","e", IMP_GENOME_FLATFILE);
         aws->sens_mask(AWM_ALL);
-        aws->insert_toggle("Import selected format", "f", IMP_PLAIN_SEQUENCE);
+        aws->insert_toggle("Import selected format","f",IMP_PLAIN_SEQUENCE);
         aws->update_toggle_field();
 
         aws->at("go");
         aws->callback(AWTC_import_go_cb);
         aws->highlight();
-        aws->create_button("GO", "GO", "G");
+        aws->create_button("GO", "GO","G");
     }
     aws->activate();
     return GB_MAIN;

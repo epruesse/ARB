@@ -1,13 +1,13 @@
 #define CHARACTERS 0
 #define SHAPES     1
 
-#define MIN(a, b) ((a)<(b) ? (a) : (b))
+#define MIN(a,b) ((a)<(b)?(a):(b))
 
 class Texture2D;
 class Structure3D;
 class OpenGLGraphics;
 
-class GLRenderer : virtual Noncopyable {
+class GLRenderer {
 public:
     float ObjectSize;
     int iDisplayBases, iBaseMode;
@@ -26,20 +26,20 @@ public:
 
     OpenGLGraphics *G;
 
-    GLRenderer();
-    virtual ~GLRenderer();
+    GLRenderer(void);
+    virtual ~GLRenderer(void);
 
     void DisplayMolecule(Structure3D *cStr);
     void DisplayMoleculeName(int w, int h, Structure3D *cStr);
     void DisplayMoleculeMask(int w, int h);
 
-    void DoHelixMapping();
+    void DoHelixMapping(void);
     void DisplayHelices();
-    void DisplayHelixBackBone();
-    void DisplayHelixNumbers();
-    void DisplayBasePositions();
-    void DisplayMappedSpBasePositions();
-    void DisplayMappedSpInsertions();
+    void DisplayHelixBackBone(void);
+    void DisplayHelixNumbers(void);
+    void DisplayBasePositions(void);
+    void DisplayMappedSpBasePositions(void);
+    void DisplayMappedSpInsertions(void);
     void DisplayHelixMidPoints(Texture2D *cImages);
 
     void BeginTexturizer();

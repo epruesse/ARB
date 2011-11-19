@@ -10,10 +10,10 @@ TARGET=$(ARBHOME)/bin/xml2newick
 $(MAIN): $(TARGET)
 
 $(TARGET) : $(CPP_OBJECTS)
-	$(LINK_EXECUTABLE) $@ $(CPP_OBJECTS) $(EXECLIBS)
+	$(LINK_EXECUTABLE) $@ $(CPP_OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c -o $@ $<  $(CPPINCLUDES) $(POST_COMPILE)
+	$(CPP) $(cflags) -c -o $@ $<  $(CPPINCLUDES)
 
 DEPENDS = $(CPP_OBJECTS:.o=.depend)
 depends: $(DEPENDS)
