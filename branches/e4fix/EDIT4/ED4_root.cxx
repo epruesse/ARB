@@ -205,8 +205,8 @@ static arb_test::match_expectation correct_win2world_calculation(ED4_foldable& f
 void TEST_win_2_world() {
     ED4_foldable foldable;
 
-    ED4_folding_line *hor100 = foldable.insert_folding_line(0, 100, INFINITE, 0, NULL, ED4_P_HORIZONTAL);
-    ED4_folding_line *ver200 = foldable.insert_folding_line(200, 0, INFINITE, 0, NULL, ED4_P_VERTICAL);
+    ED4_folding_line *hor100 = foldable.insert_folding_line(AW::Position(0, 100), INFINITE, 0, ED4_P_HORIZONTAL);
+    ED4_folding_line *ver200 = foldable.insert_folding_line(AW::Position(200, 0), INFINITE, 0, ED4_P_VERTICAL);
 
     // nothing folded yet
     
@@ -752,7 +752,7 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
     new_window = first_window;
 
     while (new_window) {
-        new_window->set_scrolled_rectangle(0, 0, 0, 0, x_link, y_link, width_link, height_link);
+        new_window->set_scrolled_rectangle(x_link, y_link, width_link, height_link);
         new_window->aww->show();
         new_window->update_scrolled_rectangle();
         ED4_refresh_window(new_window->aww, 0, 0);

@@ -1424,10 +1424,10 @@ void ED4_new_editor_window(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
 
     ED4_ROOT->use_window(new_window);
 
-    new_window->set_scrolled_rectangle(0, 0, 0, 0, ED4_ROOT->scroll_links.link_for_hor_slider,
-                                        ED4_ROOT->scroll_links.link_for_ver_slider,
-                                        ED4_ROOT->scroll_links.link_for_hor_slider,
-                                        ED4_ROOT->scroll_links.link_for_ver_slider);
+    new_window->set_scrolled_rectangle(ED4_ROOT->scroll_links.link_for_hor_slider,
+                                       ED4_ROOT->scroll_links.link_for_ver_slider,
+                                       ED4_ROOT->scroll_links.link_for_hor_slider,
+                                       ED4_ROOT->scroll_links.link_for_ver_slider);
 
     new_window->aww->show();
     new_window->update_scrolled_rectangle();

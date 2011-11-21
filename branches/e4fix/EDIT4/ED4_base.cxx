@@ -1510,14 +1510,8 @@ ED4_base::~ED4_base() // before calling this function the first time, parent has
             ED4_ROOT->scroll_links.link_for_hor_slider = sequence_terminal;
 
             ed4w = current_ed4w();
-            while (ed4w != NULL)
-            {
-                if (ed4w->scrolled_rect.x_link == this)
-                    ed4w->scrolled_rect.x_link = sequence_terminal;
-
-                if (ed4w->scrolled_rect.width_link == this)
-                    ed4w->scrolled_rect.width_link = sequence_terminal;
-
+            while (ed4w != NULL) {
+                ed4w->scrolled_rect.replace_x_width_link_to(this, sequence_terminal);
                 ed4w = ed4w->next;
             }
         }

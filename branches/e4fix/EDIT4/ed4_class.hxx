@@ -288,6 +288,7 @@ class ED4_folding_line : virtual Noncopyable {
     // properties of an object, i.e. concerning rectangles on screen showing sequences
     ED4_folding_line(const ED4_folding_line&);      // copy-constructor not allowed
 public:
+    // @@@ make members of ED4_folding_line private 
     AW_pos            world_pos[2];
     AW_pos            window_pos[2];
     AW_pos            length;
@@ -297,7 +298,10 @@ public:
 
     ED4_folding_line();
 
-    
+    void set_world_pos (AW::Position p) { world_pos [X_POS] = p.xpos(); world_pos [Y_POS] = p.ypos(); }
+    void set_window_pos(AW::Position p) { window_pos[X_POS] = p.xpos(); window_pos[Y_POS] = p.ypos(); }
+
+    void set_pos(AW::Position p) { set_world_pos(p); set_window_pos(p); }
 };
 
 struct ED4_scroll_links {
@@ -307,25 +311,202 @@ struct ED4_scroll_links {
     ED4_scroll_links() : link_for_hor_slider(0), link_for_ver_slider(0) {}
 };
 
-struct ED4_scrolled_rectangle {
-    ED4_folding_line *scroll_top, *scroll_bottom, *scroll_left, *scroll_right;
-    ED4_base         *x_link, *y_link, *width_link, *height_link;
-    AW_pos            world_x, world_y, width, height;
+class ED4_foldable : virtual Noncopyable {
+    ED4_folding_line *horizontal_fl;
+    ED4_folding_line *vertical_fl;
+protected:
+    void reset() {
+        delete horizontal_fl;
+        delete vertical_fl;
+        horizontal_fl = NULL;
+        vertical_fl   = NULL;
+    }
+    bool is_reset() const { return !horizontal_fl && !vertical_fl; }
+public:
 
-    void clear() {
+    ED4_foldable() : horizontal_fl(NULL), vertical_fl(NULL) {}
+    ~ED4_foldable() { reset(); }
+
+    const ED4_folding_line *get_horizontal_folding() { return horizontal_fl; }
+    const ED4_folding_line *get_vertical_folding() { return vertical_fl; }
+
+    void world_to_win_coords(AW_pos *x, AW_pos *y);
+    void win_to_world_coords(AW_pos *x, AW_pos *y);
+
+    ED4_folding_line *insert_folding_line(AW::Position pos, AW_pos length, AW_pos dimension, ED4_properties prop);
+    ED4_returncode  delete_folding_line(ED4_folding_line *fl, ED4_properties prop);
+};
+
+
+class ED4_scrolled_rectangle : virtual Noncopyable {
+    ED4_folding_line *scroll_bottom;
+    ED4_folding_line *scroll_right;
+    ED4_folding_line *scroll_top;
+    ED4_folding_line *scroll_left;
+
+    ED4_base *x_link;
+    ED4_base *y_link;
+    ED4_base *width_link;
+    ED4_base *height_link;
+
+    AW::Rectangle world;
+
+    bool folding_dimensions_calculated; // flag to ensure calc_folding_dimensions is called before get_window_rect
+    
+    void init_links() {
+        x_link      = 0;
+        y_link      = 0;
+        width_link  = 0;
+        height_link = 0;
+    }
+
+    void init_folding_lines() {
         scroll_top    = 0;
         scroll_bottom = 0;
         scroll_left   = 0;
         scroll_right  = 0;
-        x_link        = 0;
-        y_link        = 0;
-        width_link    = 0;
-        height_link   = 0;
-        world_x       = 0;
-        world_y       = 0;
-        width         = 0;
-        height        = 0;
+
+        folding_dimensions_calculated = false;
     }
+    void init_pos_size() { world = AW::Rectangle(AW::Origin, AW::ZeroVector); }
+
+    void init() {
+        init_folding_lines();
+        init_pos_size();
+        init_links();
+    }
+
+    void update_folding_line_positions() {
+        scroll_top->set_pos(world.upper_left_corner());
+        if (scroll_top->length != INFINITE) scroll_top->length = world.width();
+
+        scroll_bottom->set_world_pos(world.lower_left_corner());
+        if (scroll_bottom->length != INFINITE) scroll_bottom->length = world.width();
+
+        scroll_left->set_pos(world.upper_left_corner());
+        if (scroll_left->length != INFINITE) scroll_left->length = world.height();
+
+        scroll_right->set_world_pos(world.upper_right_corner());
+        if (scroll_right->length != INFINITE) scroll_right->length = world.height();
+    }
+
+public:
+
+    ED4_scrolled_rectangle() { init(); }
+
+    AW_pos bottom() const { return world.bottom(); }
+    AW_pos right() const { return world.right(); }
+
+    void reset(ED4_foldable& owner) {
+        destroy_folding_lines(owner);
+        init_pos_size();
+    }
+
+
+    bool exists() const { return scroll_top && scroll_bottom && scroll_left && scroll_right; }
+    bool is_linked() const {
+        if (x_link) {
+            e4_assert(y_link);
+            e4_assert(width_link);
+            e4_assert(height_link);
+            return true;
+        }
+        e4_assert(!y_link);
+        e4_assert(!width_link);
+        e4_assert(!height_link);
+        return false;
+    }
+    void link(ED4_base *x, ED4_base *y, ED4_base *w, ED4_base *h) {
+        e4_assert(x && y && w && h);
+
+        x_link      = x;
+        y_link      = y;
+        width_link  = w;
+        height_link = h;
+    }
+
+    void replace_x_width_link_to(ED4_base *old_link, ED4_base *new_link) {
+        if (x_link == old_link)     x_link     = new_link;
+        if (width_link == old_link) width_link = new_link;
+    }
+
+    void add_to_top_left_dimension(int dx, int dy) {
+        scroll_left->dimension += dx;
+        scroll_top->dimension  += dy;
+    }
+
+    void scroll(int dx, int dy) {
+        scroll_left->dimension   -= dx;
+        scroll_top->dimension    -= dy;
+        scroll_right->dimension  += dx;
+        scroll_bottom->dimension += dy;
+    }
+
+    AW::Rectangle get_window_rect() const {
+        e4_assert(folding_dimensions_calculated);
+        return AW::Rectangle(scroll_left->window_pos[X_POS], scroll_top->window_pos[Y_POS],
+                             scroll_right->window_pos[X_POS], scroll_bottom->window_pos[Y_POS]);
+    }
+
+    AW::Rectangle get_world_rect() const;
+
+    void set_rect(const AW::Rectangle& rect) { world = rect; }
+    void set_rect_and_update_folding_line_positions(const AW::Rectangle& rect) {
+        set_rect(rect);
+        update_folding_line_positions();
+    }
+    
+    void calc_folding_dimensions(int area_width, int area_height) {
+        AW_pos dim;
+        if (bottom() > area_height) { // our world doesn't fit vertically in our window
+            dim = bottom()-area_height; // calc dimension of bottom folding line
+            scroll_bottom->dimension = max(0, int(dim - scroll_top->dimension));
+        }
+        else {
+            dim                      = 0;
+            scroll_bottom->dimension = 0;
+            scroll_top->dimension    = 0;
+        }
+
+        scroll_bottom->set_window_pos(world.lower_left_corner()-AW::Vector(0, dim));
+
+        if (right()>area_width) { // our world doesn't fit horizontally in our window =>
+            dim = right()-area_width; // calc dimension of right folding line
+            scroll_right->dimension = max(0, int(dim - scroll_left->dimension));
+        }
+        else {
+            dim                     = 0;
+            scroll_right->dimension = 0;
+            scroll_left->dimension  = 0;
+        }
+
+        scroll_right->set_window_pos(world.upper_right_corner()-AW::Vector(dim, 0));
+
+        folding_dimensions_calculated = true;
+    }
+
+    void create_folding_lines(ED4_foldable& owner, const AW::Rectangle& rect, int area_width, int area_height) {
+        scroll_top  = owner.insert_folding_line(rect.upper_left_corner(), INFINITE, 0, ED4_P_HORIZONTAL);
+        scroll_left = owner.insert_folding_line(rect.upper_left_corner(), INFINITE, 0, ED4_P_VERTICAL);
+
+        AW_pos dim = 0;
+        if (rect.bottom() > area_height) dim = rect.bottom() - area_height;
+        scroll_bottom = owner.insert_folding_line(rect.lower_left_corner(), INFINITE, dim, ED4_P_HORIZONTAL);
+
+        dim = 0;
+        if (rect.right() > area_width) dim = rect.right() - area_width;
+        scroll_right = owner.insert_folding_line(rect.upper_right_corner(), INFINITE, dim, ED4_P_VERTICAL);
+    }
+
+    void destroy_folding_lines(ED4_foldable& owner) {
+        if (scroll_top)    owner.delete_folding_line(scroll_top,    ED4_P_HORIZONTAL);
+        if (scroll_bottom) owner.delete_folding_line(scroll_bottom, ED4_P_HORIZONTAL);
+        if (scroll_left)   owner.delete_folding_line(scroll_left,   ED4_P_VERTICAL);
+        if (scroll_right)  owner.delete_folding_line(scroll_right,  ED4_P_VERTICAL);
+
+        init_folding_lines();
+    }
+
 };
 
 class ED4_list_elem : virtual Noncopyable {
@@ -466,31 +647,6 @@ public:
     ~ED4_cursor();
 };
 
-class ED4_foldable : virtual Noncopyable {
-    ED4_folding_line *horizontal_fl;
-    ED4_folding_line *vertical_fl;
-protected:
-    void reset() {
-        delete horizontal_fl;
-        delete vertical_fl;
-        horizontal_fl = NULL;
-        vertical_fl   = NULL;
-    }
-public:
-
-    ED4_foldable() : horizontal_fl(NULL), vertical_fl(NULL) {}
-    ~ED4_foldable() { reset(); }
-
-    const ED4_folding_line *get_horizontal_folding() { return horizontal_fl; }
-    const ED4_folding_line *get_vertical_folding() { return vertical_fl; }
-
-    void world_to_win_coords(AW_pos *x, AW_pos *y);
-    void win_to_world_coords(AW_pos *x, AW_pos *y);
-
-    ED4_folding_line *insert_folding_line(AW_pos world_x, AW_pos world_y, AW_pos length, AW_pos dimension, ED4_base *link, ED4_properties prop);
-    ED4_returncode  delete_folding_line(ED4_folding_line *fl, ED4_properties prop);
-};
-
 class ED4_window : public ED4_foldable { // derived from Noncopyable
     ED4_window(const ED4_window&); // copy-constructor not allowed
 public:
@@ -523,8 +679,7 @@ public:
     ED4_returncode      update_scrolled_rectangle();
     ED4_returncode      set_scrollbar_indents();
     ED4_returncode      scroll_rectangle(int dx, int dy);
-    ED4_returncode      set_scrolled_rectangle(AW_pos    world_x, AW_pos world_y, AW_pos width, AW_pos height,
-                                                ED4_base *x_link, ED4_base *y_link, ED4_base *width_link, ED4_base *height_link);
+    ED4_returncode      set_scrolled_rectangle(ED4_base *x_link, ED4_base *y_link, ED4_base *width_link, ED4_base *height_link);
 
     void update_window_coords();
 
@@ -2013,4 +2168,5 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access);
 #else
 #error ed4_class included twice
 #endif
+
 
