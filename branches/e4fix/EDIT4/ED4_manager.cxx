@@ -1006,7 +1006,6 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
             int lastColumn = 0;
 
             if (flv) {
-                e4_assert(flv->length==INFINITE);
                 x2 = int(flv->window_pos[X_POS]);
                 if (!flv->next && x2==area_rect.r) {
                     lastColumn = 1;
@@ -1025,7 +1024,6 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
                 int lastRow = 0;
 
                 if (flh) {
-                    e4_assert(flh->length==INFINITE);
                     y2 = int(flh->window_pos[Y_POS]);
                     if (!flh->next && y2==area_rect.b) {
                         lastRow = 1;

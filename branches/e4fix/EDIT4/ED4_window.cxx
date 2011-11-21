@@ -94,14 +94,13 @@ void ED4_window::update_window_coords()
 
 
 
-ED4_folding_line* ED4_foldable::insert_folding_line(AW::Position world_pos, AW_pos length, AW_pos dimension, ED4_properties prop) {
+ED4_folding_line* ED4_foldable::insert_folding_line(AW::Position world_pos, AW_pos dimension, ED4_properties prop) {
     ED4_folding_line *fl = NULL;
 
     if (prop == ED4_P_VERTICAL || prop == ED4_P_HORIZONTAL) {
         fl            = new ED4_folding_line;
         fl->link      = NULL;
         fl->set_world_pos(world_pos);
-        fl->length    = length;
         fl->dimension = dimension;
 
         ED4_folding_line *current_fl = NULL;

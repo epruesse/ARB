@@ -284,16 +284,18 @@ public:
     }
 };
 
-class ED4_folding_line : virtual Noncopyable {
+class ED4_folding_line : virtual Noncopyable { // @@@ make members private
     // properties of an object, i.e. concerning rectangles on screen showing sequences
     ED4_folding_line(const ED4_folding_line&);      // copy-constructor not allowed
+
+
 public:
-    // @@@ make members of ED4_folding_line private 
-    AW_pos            world_pos[2];
-    AW_pos            window_pos[2];
-    AW_pos            length;
-    AW_pos            dimension; // amount of pixel folded away
-    ED4_base         *link;
+    AW_pos world_pos[2]; // @@@ what should world_pos be ? it could have a world-range, but no single position
+    AW_pos window_pos[2];
+    AW_pos dimension;    // amount of pixel folded away
+
+    ED4_base *link;
+
     ED4_folding_line *next;
 
     ED4_folding_line();
@@ -333,7 +335,7 @@ public:
     void world_to_win_coords(AW_pos *x, AW_pos *y);
     void win_to_world_coords(AW_pos *x, AW_pos *y);
 
-    ED4_folding_line *insert_folding_line(AW::Position pos, AW_pos length, AW_pos dimension, ED4_properties prop);
+    ED4_folding_line *insert_folding_line(AW::Position pos, AW_pos dimension, ED4_properties prop);
     ED4_returncode  delete_folding_line(ED4_folding_line *fl, ED4_properties prop);
 };
 
@@ -378,16 +380,9 @@ class ED4_scrolled_rectangle : virtual Noncopyable {
 
     void update_folding_line_positions() {
         scroll_top->set_pos(world.upper_left_corner());
-        if (scroll_top->length != INFINITE) scroll_top->length = world.width();
-
         scroll_bottom->set_world_pos(world.lower_left_corner());
-        if (scroll_bottom->length != INFINITE) scroll_bottom->length = world.width();
-
         scroll_left->set_pos(world.upper_left_corner());
-        if (scroll_left->length != INFINITE) scroll_left->length = world.height();
-
         scroll_right->set_world_pos(world.upper_right_corner());
-        if (scroll_right->length != INFINITE) scroll_right->length = world.height();
     }
 
 public:
@@ -486,16 +481,16 @@ public:
     }
 
     void create_folding_lines(ED4_foldable& owner, const AW::Rectangle& rect, int area_width, int area_height) {
-        scroll_top  = owner.insert_folding_line(rect.upper_left_corner(), INFINITE, 0, ED4_P_HORIZONTAL);
-        scroll_left = owner.insert_folding_line(rect.upper_left_corner(), INFINITE, 0, ED4_P_VERTICAL);
+        scroll_top  = owner.insert_folding_line(rect.upper_left_corner(), 0, ED4_P_HORIZONTAL);
+        scroll_left = owner.insert_folding_line(rect.upper_left_corner(), 0, ED4_P_VERTICAL);
 
         AW_pos dim = 0;
         if (rect.bottom() > area_height) dim = rect.bottom() - area_height;
-        scroll_bottom = owner.insert_folding_line(rect.lower_left_corner(), INFINITE, dim, ED4_P_HORIZONTAL);
+        scroll_bottom = owner.insert_folding_line(rect.lower_left_corner(), dim, ED4_P_HORIZONTAL);
 
         dim = 0;
         if (rect.right() > area_width) dim = rect.right() - area_width;
-        scroll_right = owner.insert_folding_line(rect.upper_right_corner(), INFINITE, dim, ED4_P_VERTICAL);
+        scroll_right = owner.insert_folding_line(rect.upper_right_corner(), dim, ED4_P_VERTICAL);
     }
 
     void destroy_folding_lines(ED4_foldable& owner) {

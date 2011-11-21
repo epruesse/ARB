@@ -113,21 +113,13 @@ void ED4_foldable::win_to_world_coords(AW_pos *xPtr, AW_pos *yPtr) {
 
     ED4_folding_line *current_fl = vertical_fl;                            // calculate x-offset due to vertical folding lines
     while ((current_fl != NULL) && (x >= current_fl->window_pos[X_POS])) {
-        if ((current_fl->length == INFINITE) ||
-            ((y >= current_fl->window_pos[Y_POS]) && (y <= (current_fl->window_pos[Y_POS] + current_fl->length))))
-        {
-            temp_x += current_fl->dimension;
-        }
+        temp_x += current_fl->dimension;
         current_fl = current_fl->next;
     }
 
     current_fl = horizontal_fl;                         // calculate y-offset due to horizontal folding lines
     while ((current_fl != NULL) && (y >= current_fl->window_pos[Y_POS])) {
-        if ((current_fl->length == INFINITE) ||
-            ((x >= current_fl->window_pos[X_POS]) && (x <= (current_fl->window_pos[X_POS] + current_fl->length))))
-        {
-            temp_y += current_fl->dimension;
-        }
+        temp_y += current_fl->dimension;
         current_fl = current_fl->next;
     }
 
@@ -145,21 +137,13 @@ void ED4_foldable::world_to_win_coords(AW_pos *xPtr, AW_pos *yPtr) {
 
     ED4_folding_line *current_fl = vertical_fl;                          // calculate x-offset due to vertical folding lines
     while (current_fl && (x>=current_fl->world_pos[X_POS])) {
-        if ((current_fl->length == INFINITE) ||
-            ((y >= current_fl->world_pos[Y_POS]) && (y <= current_fl->world_pos[Y_POS] + current_fl->length)))
-        {
-            temp_x -= current_fl->dimension;
-        }
+        temp_x -= current_fl->dimension;
         current_fl = current_fl->next;
     }
 
     current_fl = horizontal_fl;                     // calculate y-offset due to horizontal folding lines
     while (current_fl && (y >= current_fl->world_pos[Y_POS])) {
-        if ((current_fl->length == INFINITE) ||
-            ((x >= current_fl->world_pos[X_POS]) && (x <= (current_fl->world_pos[X_POS] + current_fl->length))))
-        {
-            temp_y -= current_fl->dimension;
-        }
+        temp_y -= current_fl->dimension;
         current_fl = current_fl->next;
     }
 
@@ -205,10 +189,10 @@ static arb_test::match_expectation correct_win2world_calculation(ED4_foldable& f
 void TEST_win_2_world() {
     ED4_foldable foldable;
 
-    ED4_folding_line *hor100 = foldable.insert_folding_line(AW::Position(0,   100), INFINITE, 0, ED4_P_HORIZONTAL);
-    ED4_folding_line *ver200 = foldable.insert_folding_line(AW::Position(200, 0),   INFINITE, 0, ED4_P_VERTICAL);
-    ED4_folding_line *hor200 = foldable.insert_folding_line(AW::Position(0,   200), INFINITE, 0, ED4_P_HORIZONTAL);
-    ED4_folding_line *ver300 = foldable.insert_folding_line(AW::Position(300, 100), INFINITE, 0, ED4_P_VERTICAL);
+    ED4_folding_line *hor100 = foldable.insert_folding_line(AW::Position(0,   100), 0, ED4_P_HORIZONTAL);
+    ED4_folding_line *ver200 = foldable.insert_folding_line(AW::Position(200, 0),   0, ED4_P_VERTICAL);
+    ED4_folding_line *hor200 = foldable.insert_folding_line(AW::Position(0,   200), 0, ED4_P_HORIZONTAL);
+    ED4_folding_line *ver300 = foldable.insert_folding_line(AW::Position(300, 100), 0, ED4_P_VERTICAL);
 
     // nothing folded yet
 
@@ -224,7 +208,8 @@ void TEST_win_2_world() {
     TEST_ASSERT_WIN_UNFOLDED(250, 250);
     TEST_ASSERT_WIN_UNFOLDED(400, 250);
 
-    for (int FACTOR = 1; FACTOR <= 100; FACTOR ++) {
+    // for (int FACTOR = 1; FACTOR <= 100; FACTOR ++) {
+    for (int FACTOR = 1; FACTOR <= 100; FACTOR += 7) {
         TEST_ANNOTATE_ASSERT(GBS_global_string("FACTOR=%i", FACTOR));
         int H1 = FACTOR* 10;
         int H2 = FACTOR* 40;
@@ -772,7 +757,6 @@ ED4_returncode ED4_root::get_area_rectangle(AW_screen_area *rect, AW_pos x, AW_p
     x1 = area_rect.l;
     for (const ED4_folding_line *flv=curr_ed4w()->get_vertical_folding(); ; flv = flv->next) {
         if (flv) {
-            e4_assert(flv->length==INFINITE);
             x2 = int(flv->window_pos[X_POS]);
         }
         else {
@@ -785,7 +769,6 @@ ED4_returncode ED4_root::get_area_rectangle(AW_screen_area *rect, AW_pos x, AW_p
         y1 = area_rect.t;
         for (const ED4_folding_line *flh=curr_ed4w()->get_horizontal_folding(); ; flh = flh->next) {
             if (flh) {
-                e4_assert(flh->length==INFINITE);
                 y2 = int(flh->window_pos[Y_POS]);
             }
             else {
