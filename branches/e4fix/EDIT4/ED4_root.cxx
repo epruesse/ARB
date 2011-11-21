@@ -205,11 +205,13 @@ static arb_test::match_expectation correct_win2world_calculation(ED4_foldable& f
 void TEST_win_2_world() {
     ED4_foldable foldable;
 
-    ED4_folding_line *hor100 = foldable.insert_folding_line(AW::Position(0, 100), INFINITE, 0, ED4_P_HORIZONTAL);
-    ED4_folding_line *ver200 = foldable.insert_folding_line(AW::Position(200, 0), INFINITE, 0, ED4_P_VERTICAL);
+    ED4_folding_line *hor100 = foldable.insert_folding_line(AW::Position(0,   100), INFINITE, 0, ED4_P_HORIZONTAL);
+    ED4_folding_line *ver200 = foldable.insert_folding_line(AW::Position(200, 0),   INFINITE, 0, ED4_P_VERTICAL);
+    ED4_folding_line *hor200 = foldable.insert_folding_line(AW::Position(0,   200), INFINITE, 0, ED4_P_HORIZONTAL);
+    ED4_folding_line *ver300 = foldable.insert_folding_line(AW::Position(300, 100), INFINITE, 0, ED4_P_VERTICAL);
 
     // nothing folded yet
-    
+
     TEST_ASSERT_WIN_UNFOLDED(100, 50);
     TEST_ASSERT_WIN_UNFOLDED(250, 50);
     TEST_ASSERT_WIN_UNFOLDED(400, 50);
@@ -222,33 +224,29 @@ void TEST_win_2_world() {
     TEST_ASSERT_WIN_UNFOLDED(250, 250);
     TEST_ASSERT_WIN_UNFOLDED(400, 250);
 
-    TEST_ASSERT_WIN_UNFOLDED(100, 350);
-    TEST_ASSERT_WIN_UNFOLDED(250, 350);
-    TEST_ASSERT_WIN_UNFOLDED(400, 350);
-
-    for (int FACTOR = 1; FACTOR <= 100; FACTOR += 9) {
+    for (int FACTOR = 1; FACTOR <= 100; FACTOR ++) {
         TEST_ANNOTATE_ASSERT(GBS_global_string("FACTOR=%i", FACTOR));
         int H1 = FACTOR* 10;
+        int H2 = FACTOR* 40;
         int V1 = FACTOR* 20;
+        int V2 = FACTOR* 80;
 
         hor100->dimension = H1;
+        hor200->dimension = H2;
         ver200->dimension = V1;
+        ver300->dimension = V2;
 
         TEST_ASSERT_WIN_UNFOLDED(100, 50); // always in unfolded range
-        TEST_ASSERT_WIN_WORLD_FOLDING(250, 50, V1, 0);
-        TEST_ASSERT_WIN_WORLD_FOLDING(400, 50, V1, 0);
+        TEST_ASSERT_WIN_WORLD_FOLDING__BROKENIF(FACTOR >= 3, 250, 50,  V1,    0);
+        TEST_ASSERT_WIN_WORLD_FOLDING(400, 50,  V1+V2, 0);
 
-        TEST_ASSERT_WIN_WORLD_FOLDING(100, 150, 0,  H1);
-        TEST_ASSERT_WIN_WORLD_FOLDING(250, 150, V1, H1);
-        TEST_ASSERT_WIN_WORLD_FOLDING(400, 150, V1, H1);
-        TEST_ASSERT_WIN_WORLD_FOLDING(250, 250, V1, H1);
+        TEST_ASSERT_WIN_WORLD_FOLDING__BROKENIF(FACTOR >= 5, 100, 150, 0,     H1);
+        TEST_ASSERT_WIN_WORLD_FOLDING__BROKENIF(FACTOR >= 3, 250, 150, V1,    H1);
+        TEST_ASSERT_WIN_WORLD_FOLDING__BROKENIF(FACTOR >= 5, 400, 150, V1+V2, H1);
 
-        TEST_ASSERT_WIN_WORLD_FOLDING(100, 250, 0,  H1);
-        TEST_ASSERT_WIN_WORLD_FOLDING(400, 250, V1, H1);
-
-        TEST_ASSERT_WIN_WORLD_FOLDING(100, 350, 0,  H1);
-        TEST_ASSERT_WIN_WORLD_FOLDING(250, 350, V1, H1);
-        TEST_ASSERT_WIN_WORLD_FOLDING(400, 350, V1, H1);
+        TEST_ASSERT_WIN_WORLD_FOLDING(100, 250, 0,     H1+H2);
+        TEST_ASSERT_WIN_WORLD_FOLDING__BROKENIF(FACTOR >= 3, 250, 250, V1,    H1+H2);
+        TEST_ASSERT_WIN_WORLD_FOLDING(400, 250, V1+V2, H1+H2);
     }
 }
 
