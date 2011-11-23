@@ -477,15 +477,19 @@ void NT_undo_info_cb(AW_window *, AW_CL undo_type) {
 }
 
 static AWT_config_mapping_def tree_setting_config_mapping[] = {
-    { AWAR_DTREE_BASELINEWIDTH,   "line_width" },
-    { AWAR_DTREE_VERICAL_DIST,    "vert_dist" },
-    { AWAR_DTREE_AUTO_JUMP,       "auto_jump" },
-    { AWAR_DTREE_SHOW_CIRCLE,     "show_circle" },
-    { AWAR_DTREE_SHOW_BRACKETS,   "show_brackets" },
-    { AWAR_DTREE_USE_ELLIPSE,     "use_ellipse" },
-    { AWAR_DTREE_CIRCLE_ZOOM,     "circle_zoom" },
-    { AWAR_DTREE_CIRCLE_MAX_SIZE, "circle_max_size" },
-    { AWAR_DTREE_GREY_LEVEL,      "grey_level" },
+    { AWAR_DTREE_BASELINEWIDTH,    "line_width" },
+    { AWAR_DTREE_VERICAL_DIST,     "vert_dist" },
+    { AWAR_DTREE_AUTO_JUMP,        "auto_jump" },
+    { AWAR_DTREE_SHOW_CIRCLE,      "show_circle" },
+    { AWAR_DTREE_SHOW_BRACKETS,    "show_brackets" },
+    { AWAR_DTREE_USE_ELLIPSE,      "use_ellipse" },
+    { AWAR_DTREE_CIRCLE_ZOOM,      "circle_zoom" },
+    { AWAR_DTREE_CIRCLE_MAX_SIZE,  "circle_max_size" },
+    { AWAR_DTREE_GREY_LEVEL,       "grey_level" },
+    { AWAR_DTREE_DENDRO_ZOOM_TEXT, "dendro_zoomtext" },
+    { AWAR_DTREE_DENDRO_XPAD,      "dendro_xpadding" },
+    { AWAR_DTREE_RADIAL_ZOOM_TEXT, "radial_zoomtext" },
+    { AWAR_DTREE_RADIAL_XPAD,      "radial_xpadding" },
     { 0, 0 }
 };
 
@@ -553,6 +557,16 @@ AW_window *NT_create_tree_setting(AW_root *aw_root)
 
     aws->label("Grey Level of Groups%");
     aws->create_input_field(AWAR_DTREE_GREY_LEVEL, 4);
+    aws->at_newline();
+
+    aws->label("Text zoom/pad (dendro)");
+    aws->create_toggle(AWAR_DTREE_DENDRO_ZOOM_TEXT);
+    aws->create_input_field(AWAR_DTREE_DENDRO_XPAD, 4);
+    aws->at_newline();
+
+    aws->label("Text zoom/pad (radial)");
+    aws->create_toggle(AWAR_DTREE_RADIAL_ZOOM_TEXT);
+    aws->create_input_field(AWAR_DTREE_RADIAL_XPAD, 4);
     aws->at_newline();
 
     aws->at("config");
@@ -1125,10 +1139,10 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     AWT_canvas *ntw;
     {
         AP_tree_sort old_sort_type = GLOBAL_NT.tree->tree_sort;
-        GLOBAL_NT.tree->set_tree_type(AP_LIST_SIMPLE); // avoid NDS warnings during startup
+        GLOBAL_NT.tree->set_tree_type(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
 
         ntw = new AWT_canvas(GLOBAL_gb_main, awm, GLOBAL_NT.tree, aw_gc_manager, awar_tree);
-        GLOBAL_NT.tree->set_tree_type(old_sort_type);
+        GLOBAL_NT.tree->set_tree_type(old_sort_type, ntw);
         ntw->set_mode(AWT_MODE_SELECT);
     }
 
@@ -1142,7 +1156,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         }
         else {
             AW_advice("Your database contains no tree.", AW_ADVICE_TOGGLE|AW_ADVICE_HELP, 0, "no_tree.hlp");
-            GLOBAL_NT.tree->set_tree_type(AP_LIST_NDS); // no tree -> show NDS list
+            GLOBAL_NT.tree->set_tree_type(AP_LIST_NDS, ntw); // no tree -> show NDS list
         }
 
         awr->awar(awar_tree)->add_callback((AW_RCB)NT_reload_tree_event, (AW_CL)ntw, 1);
@@ -1159,6 +1173,12 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awr->awar(AWAR_DTREE_CIRCLE_ZOOM)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
     awr->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
     awr->awar(AWAR_DTREE_USE_ELLIPSE)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
+
+    awr->awar(AWAR_DTREE_RADIAL_ZOOM_TEXT)->add_callback((AW_RCB)NT_reinit_treetype, (AW_CL)ntw, 0);
+    awr->awar(AWAR_DTREE_RADIAL_XPAD)->add_callback((AW_RCB)NT_reinit_treetype, (AW_CL)ntw, 0);
+    awr->awar(AWAR_DTREE_DENDRO_ZOOM_TEXT)->add_callback((AW_RCB)NT_reinit_treetype, (AW_CL)ntw, 0);
+    awr->awar(AWAR_DTREE_DENDRO_XPAD)->add_callback((AW_RCB)NT_reinit_treetype, (AW_CL)ntw, 0);
+
     awr->awar(AWAR_TREE_REFRESH)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
     awr->awar(AWAR_COLOR_GROUPS_USE)->add_callback((AW_RCB)NT_recompute_cb, (AW_CL)ntw, 0);
 

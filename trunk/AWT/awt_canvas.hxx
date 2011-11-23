@@ -159,6 +159,8 @@ enum {
 };
 
 class AWT_canvas : virtual Noncopyable {
+    bool consider_text_for_size;
+
 public:
     // too many callbacks -> public
     // in fact: private
@@ -216,6 +218,8 @@ public:
 
     void zoom_reset();
     void zoom_reset_and_refresh() { zoom_reset(); refresh(); }
+
+    void set_consider_text_for_zoom_reset(bool consider) { consider_text_for_size = consider; }
 
     void refresh_by_exports() { tree_disp->refresh_by_exports(this); }
 

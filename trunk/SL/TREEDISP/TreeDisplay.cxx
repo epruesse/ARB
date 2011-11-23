@@ -1629,7 +1629,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
     }
 }
 
-void AWT_graphic_tree::set_tree_type(AP_tree_sort type) {
+void AWT_graphic_tree::set_tree_type(AP_tree_sort type, AWT_canvas *ntw) {
     if (sort_is_list_style(type)) {
         if (tree_sort == type) { // we are already in wanted view
             nds_show_all = !nds_show_all; // -> toggle between 'marked' and 'all'
@@ -1639,8 +1639,7 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type) {
         }
     }
     tree_sort = type;
-
-    exports.set_standard_default_padding();
+    apply_zoom_settings_for_treetype(ntw); // sets default padding
     
     exports.dont_fit_x      = 0;
     exports.dont_fit_y      = 0;
@@ -1680,7 +1679,7 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
     ruler_filter         = AW_SCREEN|AW_CLICK|AW_PRINTER; // appropriate size-filter added manually in code
     root_filter          = AW_SCREEN|AW_CLICK|AW_PRINTER_EXT;
 
-    set_tree_type(AP_TREE_NORMAL);
+    set_tree_type(AP_TREE_NORMAL, NULL);
     tree_root_display = 0;
     tree_proto        = 0;
     link_to_database  = false;
@@ -2562,6 +2561,38 @@ void AWT_graphic_tree::read_tree_settings() {
     freeset(species_name, aw_root->awar(AWAR_SPECIES_NAME)->read_string());
 }
 
+void AWT_graphic_tree::apply_zoom_settings_for_treetype(AWT_canvas *ntw) {
+    exports.set_standard_default_padding();
+
+    if (ntw) {
+        bool zoom_fit_text       = false;
+        int  left_padding  = 0;
+        int  right_padding = 0;
+
+        switch (tree_sort) {
+            case AP_TREE_RADIAL:
+                zoom_fit_text = aw_root->awar(AWAR_DTREE_RADIAL_ZOOM_TEXT)->read_int();
+                left_padding  = aw_root->awar(AWAR_DTREE_RADIAL_XPAD)->read_int();
+                right_padding = left_padding;
+                break;
+
+            case AP_TREE_NORMAL:
+            case AP_TREE_IRS:
+                zoom_fit_text = aw_root->awar(AWAR_DTREE_DENDRO_ZOOM_TEXT)->read_int();
+                left_padding  = STANDARD_PADDING;
+                right_padding = aw_root->awar(AWAR_DTREE_DENDRO_XPAD)->read_int();
+                break;
+
+            default :
+                break;
+        }
+
+        exports.set_default_padding(STANDARD_PADDING, STANDARD_PADDING, left_padding, right_padding);
+    
+        ntw->set_consider_text_for_zoom_reset(zoom_fit_text);
+    }
+}
+
 void AWT_graphic_tree::show(AW_device *device) {
     if (tree_static && tree_static->get_gb_tree()) {
         check_update(gb_main);
@@ -2655,6 +2686,11 @@ void awt_create_dtree_awars(AW_root *aw_root, AW_default def)
     aw_root->awar_float(AWAR_DTREE_CIRCLE_ZOOM, 1.0, def)   ->set_minmax(0.01, 20);
     aw_root->awar_float(AWAR_DTREE_CIRCLE_MAX_SIZE, 1.5, def) ->set_minmax(0.01, 200);
     aw_root->awar_int(AWAR_DTREE_GREY_LEVEL, 20, def)       ->set_minmax(0, 100);
+    
+    aw_root->awar_int(AWAR_DTREE_RADIAL_ZOOM_TEXT, 1, def);
+    aw_root->awar_int(AWAR_DTREE_RADIAL_XPAD, 0, def);
+    aw_root->awar_int(AWAR_DTREE_DENDRO_ZOOM_TEXT, 0, def);
+    aw_root->awar_int(AWAR_DTREE_DENDRO_XPAD, 150, def);
 
     aw_root->awar_int(AWAR_TREE_REFRESH, 0, def);
 }
@@ -2891,7 +2927,7 @@ void TEST_treeDisplay() {
 
 // #define TEST_AUTO_UPDATE // dont test, instead update expected results
                     
-                    agt.set_tree_type(type);
+                    agt.set_tree_type(type, NULL);
 
 #if defined(TEST_AUTO_UPDATE)
 #warning TEST_AUTO_UPDATE is active (non-default)
