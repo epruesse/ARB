@@ -2687,10 +2687,10 @@ void awt_create_dtree_awars(AW_root *aw_root, AW_default def)
     aw_root->awar_float(AWAR_DTREE_CIRCLE_MAX_SIZE, 1.5, def) ->set_minmax(0.01, 200);
     aw_root->awar_int(AWAR_DTREE_GREY_LEVEL, 20, def)       ->set_minmax(0, 100);
     
-    aw_root->awar_int(AWAR_DTREE_RADIAL_ZOOM_TEXT, 1, def);
-    aw_root->awar_int(AWAR_DTREE_RADIAL_XPAD, 0, def);
+    aw_root->awar_int(AWAR_DTREE_RADIAL_ZOOM_TEXT, 0, def);
+    aw_root->awar_int(AWAR_DTREE_RADIAL_XPAD, 150, def);
     aw_root->awar_int(AWAR_DTREE_DENDRO_ZOOM_TEXT, 0, def);
-    aw_root->awar_int(AWAR_DTREE_DENDRO_XPAD, 150, def);
+    aw_root->awar_int(AWAR_DTREE_DENDRO_XPAD, 300, def);
 
     aw_root->awar_int(AWAR_TREE_REFRESH, 0, def);
 }
