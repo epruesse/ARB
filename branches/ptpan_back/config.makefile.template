@@ -22,6 +22,9 @@ UNIT_TESTS := 0# include and perform unit tests
 COVERAGE := 0# gcov support (0=off,1=on,2=on but hidden)
 #SHOWTODO := 0# show todos (default depends on DEVELOPER)
 
+# the hwloc library is used by PTPan and highly recommended, though not mandatory
+HWLOC_INSTALLED := 0#
+
 # --------------------------------------------------------------------------------
 # target machine section
 # [Note: Uncomment one section, depending on your machine type and compiler options]
