@@ -1,0 +1,18 @@
+
+PTPan standalone library
+(latest changes: 20 November 2011)
+
+PTPan standalone library has some dependencies on other projects listed below.
+
+
+REQUIRED:
+    - boost (1.40 or later)
+    
+OPTIONAL:
+    - hwloc (highly recommended)
+    
+    
+If hwloc is not used, detection of CPU cores to use will fall back
+to the solution provided by boost::thread which currently takes into
+account SMT/Hyperthreading as well. This may lead to a decreased performance.
+

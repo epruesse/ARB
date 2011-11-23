@@ -5,32 +5,29 @@
  * \author Tilo Eissler
  *
  * This header provides a simple function to determine the number
- * of hyperthreads on the system.
+ * of hyperthreads on the system if hwloc is available.
+ *
+ * Linking against hwloc may be necessary. If not available, only the
+ * number of processing units can be determined which may be suboptimal!
  */
 
 #ifndef ARB_CHECK_HYPERTHREADS_H_
 #define ARB_CHECK_HYPERTHREADS_H_
 
+#ifdef DEBUG
 #include <iostream>
-#include <string>
+#endif
+
+#ifdef HWLOC_AVAILABLE
+#include <hwloc.h>
+#else
+#warning Falling back to Boost::thread which may lead to SMT/Hyperthreaded cores being counted as well!
+#warning Installing hwloc-library is recommended!
+#include <boost/thread.hpp>
+#endif
 
 namespace arb {
 namespace toolbox {
-
-/*!
- * \brief Load CPU ID information
- */
-inline void cpuID(unsigned i, unsigned regs[4]) {
-#ifdef _WIN32
-    __cpuid((int *)regs, (int)i);
-
-#else
-    asm volatile
-    ("cpuid" : "=a" (regs[0]), "=b" (regs[1]), "=c" (regs[2]), "=d" (regs[3])
-            : "a" (i), "c" (0));
-    // ECX is set to zero for CPUID function 4
-#endif
-}
 
 /*!
  * \brief Return number of <cores,logical> threads
@@ -39,48 +36,45 @@ inline void cpuID(unsigned i, unsigned regs[4]) {
  *
  * If detection fails, <0,0> is returned.
  *
+ * You may need to link against 'hwloc' if available!
+ *
  * \param std::pair<int,int>
  */
 inline std::pair<int, int> getHardwareThreads() {
-    unsigned regs[4];
-
-    // Get vendor
-    char vendor[12];
-    cpuID(0, regs);
-    ((unsigned *) vendor)[0] = regs[1]; // EBX
-    ((unsigned *) vendor)[1] = regs[3]; // EDX
-    ((unsigned *) vendor)[2] = regs[2]; // ECX
-    std::string cpuVendor = std::string(vendor, 12);
-
-    // Get CPU features
-    cpuID(1, regs);
-    unsigned cpuFeatures = regs[3]; // EDX
-
     int logical = 0;
     int cores = 0;
-    if (cpuVendor == "GenuineIntel" && (cpuFeatures & (1 << 28))) { // HTT bit
-        // Logical core count per CPU
-        cpuID(1, regs);
-        logical = (regs[1] >> 16) & 0xff; // EBX[23:16]
-#ifdef DEBUG
-        std::cout << " logical cpus: " << logical << std::endl;
-#endif
-        cores = logical;
 
-        if (cpuVendor == "GenuineIntel") {
-            // Get DCP cache info
-            cpuID(4, regs);
-            cores = ((regs[0] >> 26) & 0x3f) + 1; // EAX[31:26] + 1
+#ifdef HWLOC_AVAILABLE
 
-        } else if (cpuVendor == "AuthenticAMD") {
-            // Get NC: Number of CPU cores - 1
-            cpuID(0x80000008, regs);
-            cores = ((unsigned) (regs[2] & 0xff)) + 1; // ECX[7:0] + 1
-        }
+    // Topology object
+    hwloc_topology_t topology;
+    // Allocate and initialize topology object.
+    hwloc_topology_init(&topology);
+
+    /* ... Optionally, put detection configuration here to e.g. ignore some
+     objects types, define a synthetic topology, etc....  The default is
+     to detect all the objects of the machine that the caller is allowed
+     to access.
+     See Configure Topology Detection.  */
+
+    // Perform the topology detection.
+    hwloc_topology_load(topology);
+    // get the number of cores
+    cores = (int) hwloc_get_nbobjs_by_type(topology, HWLOC_OBJ_CORE);
+    // get the number of processing units (incl. SMT/hyperthreading)
+    logical = (int) hwloc_get_nbobjs_by_type(topology, HWLOC_OBJ_PU);
+
+    // Destroy topology object.
+    hwloc_topology_destroy(topology);
 #ifdef DEBUG
-        std::cout << "    cpu cores: " << cores << std::endl;
+    std::cout << "cpu cores: " << cores << std::endl;
+    std::cout << "cpu processing units: " << logical << std::endl;
 #endif
-    }
+#else
+    cores = boost::thread::hardware_concurrency();
+    logical = cores;
+#endif
+
     return std::make_pair(cores, logical);
 }
 

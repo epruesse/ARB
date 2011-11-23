@@ -366,6 +366,11 @@ else
 	SYSLIBS += -lm
 endif
 
+ifeq ($(HWLOC_INSTALLED),1)
+	cflags:=$(cflags) -DHWLOC_AVAILABLE
+	SYSLIBS += -lhwloc
+endif
+
 #---------------------- include symbols?
 
 ifeq ($(TRACESYM),1)
@@ -674,6 +679,7 @@ ifeq ($(VTABLE_INFRONTOF_CLASS),1)
 # We are really sorry for that hack.
 cflags:=$(cflags) -DFAKE_VTAB_PTR=char
 endif
+
 
 # ---------------------------------------
 # List of standard top level directories
