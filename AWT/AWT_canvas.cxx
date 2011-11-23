@@ -96,11 +96,14 @@ void AWT_canvas::recalc_size(bool adjust_scrollbars) {
     GB_transaction  dummy(this->gb_main);
     AW_device_size *size_device = aww->get_size_device(AW_MIDDLE_AREA);
 
-    size_device->set_filter(AW_SIZE|AW_SIZE_UNSCALED);
+    size_device->set_filter(AW_SIZE|(consider_text_for_size ? AW_SIZE_UNSCALED : 0));
     size_device->reset();
 
     tree_disp->show(size_device);
-    tree_disp->exports.set_extra_text_padding(size_device->get_unscaleable_overlap());
+
+    if (consider_text_for_size) {
+        tree_disp->exports.set_extra_text_padding(size_device->get_unscaleable_overlap());
+    }
 
     size_device->get_size_information(&(this->worldinfo));
     rect = size_device->get_area_size();   // real world size (no offset)
@@ -716,7 +719,8 @@ static void scroll_hor_cb(AW_window *aww, AWT_canvas* ntw, AW_CL /*cl1*/) {
 
 
 AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_gc_manager &set_gc_manager, const char *user_awari)
-    : user_awar(strdup(user_awari))
+    : consider_text_for_size(true) 
+    , user_awar(strdup(user_awari))
     , shift_x_to_fit(0)
     , shift_y_to_fit(0)
     , gb_main(gb_maini)

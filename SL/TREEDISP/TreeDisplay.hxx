@@ -30,6 +30,12 @@
 #define AWAR_DTREE_USE_ELLIPSE     "awt/dtree/ellipse"
 #define AWAR_DTREE_GREY_LEVEL      "awt/dtree/greylevel"
 
+#define AWAR_DTREE_RADIAL_ZOOM_TEXT "awt/dtree/radial/zoomtext"
+#define AWAR_DTREE_RADIAL_XPAD      "awt/dtree/radial/xpadding"
+
+#define AWAR_DTREE_DENDRO_ZOOM_TEXT "awt/dtree/dendro/zoomtext"
+#define AWAR_DTREE_DENDRO_XPAD      "awt/dtree/dendro/xpadding"
+
 void awt_create_dtree_awars(AW_root *aw_root, AW_default def);
 
 #define NT_BOX_WIDTH      7 // pixel
@@ -132,7 +138,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     bool      nds_show_all;
 
     AD_map_viewer_cb map_viewer_cb;
-    
+
     void scale_text_koordinaten(AW_device *device, int gc, double& x, double& y, double orientation, int flag);
 
     // functions to compute displayinformation
@@ -163,6 +169,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     }
 
     virtual void read_tree_settings();
+    void apply_zoom_settings_for_treetype(AWT_canvas *ntw);
     
 protected:
 
@@ -227,11 +234,11 @@ public:
     GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
     int      check_update(GBDATA *gb_main);         // reload tree if needed
     void     update(GBDATA *gb_main);
-    void     set_tree_type(AP_tree_sort type);
+    void     set_tree_type(AP_tree_sort type, AWT_canvas *ntw);
 
     double get_irs_tree_ruler_scale_factor() const { return irs_tree_ruler_scale_factor; }
     void get_zombies_and_duplicates(int& zomb, int& dups) const { zomb = zombies; dups = duplicates; }
-    
+
 #if defined(UNIT_TESTS)
     friend class fake_AWT_graphic_tree;
 #endif
