@@ -711,23 +711,25 @@ ED4_returncode  ED4_terminal::calc_size_requested_by_parent()
     return ED4_R_OK;
 }
 
-short ED4_terminal::calc_bounding_box()
-{
-    short            bb_changed = 0;
-    ED4_list_elem   *current_list_elem;
-    ED4_base        *object;
+bool ED4_terminal::calc_bounding_box() {
+    // calculates the smallest rectangle containing the object.
+    // requests refresh and returns true if bounding box has changed.
+    
+    bool           bb_changed = false;
+    ED4_list_elem *current_list_elem;
+    ED4_base      *object;
 
     if (width_link) {
         if (extension.size[WIDTH] != width_link->extension.size[WIDTH]) {   // all bounding Boxes have the same size !!!
             extension.size[WIDTH] = width_link->extension.size[WIDTH];
-            bb_changed = 1;
+            bb_changed = true;
         }
     }
 
     if (height_link) {
         if (extension.size[HEIGHT] != height_link->extension.size[HEIGHT]) {
             extension.size[HEIGHT] = height_link->extension.size[HEIGHT];
-            bb_changed = 1;
+            bb_changed = true;
         }
     }
 
@@ -748,7 +750,7 @@ short ED4_terminal::calc_bounding_box()
         parent->refresh_requested_by_child();
     }
 
-    return (bb_changed);
+    return bb_changed;
 }
 
 ED4_returncode ED4_terminal::resize_requested_by_parent() {

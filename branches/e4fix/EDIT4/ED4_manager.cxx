@@ -787,16 +787,16 @@ int ED4_manager::refresh_flag_ok() {
     return 1;
 }
 
-short ED4_manager::calc_bounding_box() {
-    // calculates the smallest rectangle containing the object and
-    // gives information if something has changed
+bool ED4_manager::calc_bounding_box() {
+    // calculates the smallest rectangle containing the object.
+    // returns true if bounding box has changed.
     AW_pos         sum_width  = 0;
     AW_pos         sum_height = 0;
     AW_pos         max_x      = 0;
     AW_pos         max_y      = 0;
     AW_pos         dummy      = 0;
     ED4_index      i          = 0;
-    short          bb_changed = 0;
+    bool           bb_changed = false;
     ED4_list_elem *current_list_elem;
     ED4_base      *child, *object;
 
@@ -823,28 +823,27 @@ short ED4_manager::calc_bounding_box() {
     if (spec.static_prop & ED4_P_HORIZONTAL) {
         if (int(extension.size[WIDTH]) != int(max_x)) { // because compares between floats fail sometimes (AW_pos==float)
             extension.size[WIDTH] = max_x;
-            bb_changed = 1;
+            bb_changed = true;
         }
 
         if (int(extension.size[HEIGHT]) != int(sum_height)) {
             extension.size[HEIGHT] = sum_height;
-            bb_changed = 1;
+            bb_changed = true;
         }
     }
 
     if (spec.static_prop & ED4_P_VERTICAL) {
         if (int(extension.size[WIDTH]) != int(sum_width)) {
             extension.size[WIDTH] = sum_width;
-            bb_changed = 1;
+            bb_changed = true;
         }
         if (int(extension.size[HEIGHT]) != int(max_y)) {
             extension.size[HEIGHT] = max_y;
-            bb_changed = 1;
+            bb_changed = true;
         }
     }
 
     if (bb_changed) { // tell linked objects about our change of bounding box
-
         current_list_elem = linked_objects.first();
         while (current_list_elem) {
             object = (ED4_base *) current_list_elem->elem();
@@ -855,7 +854,7 @@ short ED4_manager::calc_bounding_box() {
             current_list_elem = current_list_elem->next();
         }
     }
-    return (bb_changed);
+    return bb_changed;
 }
 
 ED4_returncode ED4_manager::distribute_children() {

@@ -1029,8 +1029,9 @@ public:
     virtual int adjust_clipping_rectangle();     // sets scrolling area in AW_MIDDLE_AREA
     virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0) = 0;
     virtual ED4_returncode  Resize()                                  = 0;
+    virtual bool calc_bounding_box()                                  = 0;
+
     virtual ED4_returncode  clear_background(int color=0);
-    virtual short calc_bounding_box()                                 = 0;
 
     ED4_returncode clear_whole_background();       // clear AW_MIDDLE_AREA
     bool is_visible(AW_pos x, AW_pos y, ED4_direction direction);
@@ -1215,7 +1216,7 @@ public:
     // functions concerned with graphics
     virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode  Resize();
-    virtual short       calc_bounding_box();
+    virtual bool calc_bounding_box();
     virtual ED4_returncode  distribute_children();
 
     // top-down functions, means travelling down the hierarchy
@@ -1316,8 +1317,8 @@ public:
     virtual ED4_returncode Resize();
     virtual ED4_returncode draw() = 0;
 
-    virtual int   adjust_clipping_rectangle();
-    virtual short calc_bounding_box();
+    virtual int  adjust_clipping_rectangle();
+    virtual bool calc_bounding_box();
     virtual ED4_returncode  calc_size_requested_by_parent();
 
     virtual ED4_returncode      draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text = NULL, int cursor_y=-1);
