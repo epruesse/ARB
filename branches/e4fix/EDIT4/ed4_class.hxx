@@ -320,6 +320,17 @@ public:
 
     void set_pos(AW_pos p) { pos = p; }
     AW_pos get_pos() const { return pos; }
+
+    AW_pos win2world(AW_pos win) const {
+        if (win<pos) return win;
+        return (next ? next->win2world(win) : win)+dimension;
+    }
+    AW_pos world2win(AW_pos world) const {
+        if (world<pos) return world;
+        world -= dimension;
+        if (!next) return world;
+        return next->world2win(world);
+    }
 };
 
 struct ED4_scroll_links {

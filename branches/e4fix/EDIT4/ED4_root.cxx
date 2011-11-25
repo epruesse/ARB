@@ -105,55 +105,17 @@ ED4_returncode ED4_root::refresh_all_windows(int redraw)
 
 void ED4_foldable::win_to_world_coords(AW_pos *xPtr, AW_pos *yPtr) {
     // calculates transformation from window to world coordinates in a given window
-    const AW_pos x = *xPtr;
-    const AW_pos y = *yPtr;
-
-    AW_pos temp_x = x;
-    AW_pos temp_y = y;
-
-    // calculate x-offset due to vertical folding lines
-    const ED4_folding_line *current_fl = vertical_fl;
-    while ((current_fl != NULL) && (x >= current_fl->get_pos())) {
-        temp_x += current_fl->get_dimension();
-        current_fl = current_fl->get_next();
-    }
-
-    // calculate y-offset due to horizontal folding lines
-    current_fl = horizontal_fl;
-    while ((current_fl != NULL) && (y >= current_fl->get_pos())) {
-        temp_y += current_fl->get_dimension();
-        current_fl = current_fl->get_next();
-    }
-
-    *xPtr = temp_x;
-    *yPtr = temp_y;
+    e4_assert(!is_reset());
+    *xPtr = vertical_fl->win2world(*xPtr);
+    *yPtr = horizontal_fl->win2world(*yPtr);
 }
 
 void ED4_foldable::world_to_win_coords(AW_pos *xPtr, AW_pos *yPtr) {
     // Calculates transformation from world to window coordinates in a given window.
     // world-coordinates inside folded range result in window coordinates lower than folding line position.
-
     e4_assert(!is_reset());
-
-    AW_pos x = *xPtr;
-    AW_pos y = *yPtr;
-
-    // calculate x-offset due to vertical folding lines
-    const ED4_folding_line *current_fl = vertical_fl;
-    while (current_fl && (x >= current_fl->get_pos())) {
-        x -= current_fl->get_dimension();
-        current_fl = current_fl->get_next();
-    }
-
-    // calculate y-offset due to horizontal folding lines
-    current_fl = horizontal_fl;
-    while (current_fl && (y >= current_fl->get_pos())) {
-        y -= current_fl->get_dimension();
-        current_fl = current_fl->get_next();
-    }
-
-    *xPtr = x;
-    *yPtr = y;
+    *xPtr = vertical_fl->world2win(*xPtr);
+    *yPtr = horizontal_fl->world2win(*yPtr);
 }
 
 // --------------------------------------------------------------------------------
