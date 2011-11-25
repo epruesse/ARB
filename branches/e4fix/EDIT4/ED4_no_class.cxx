@@ -111,6 +111,7 @@ void ED4_expose_recalculations() {
 
         ED4_ROOT->main_manager->get_top_middle_spacer_terminal()->extension.size[HEIGHT] = TERMINALHEIGHT - top_middle_line_terminal->extension.size[HEIGHT];
         ED4_ROOT->main_manager->route_down_hierarchy(update_terminal_extension).expect_no_error();
+
         ED4_ROOT->resize_all(); // may change mapping
 
         int new_screenwidth = ED4_ROOT->root_group_man->remap()->sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
@@ -120,7 +121,7 @@ void ED4_expose_recalculations() {
         screenwidth = new_screenwidth;
     }
 
-    current_ed4w()->update_scrolled_rectangle();
+    current_ed4w()->update_scrolled_rectangle(); // @@@ do for all windows ?
 }
 
 void ED4_expose_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
@@ -1451,7 +1452,7 @@ void ED4_compression_changed_cb(AW_root *awr) {
     GB_transaction transaction_var(GLOBAL_gb_main);
 
     if (ED4_ROOT->root_group_man) {
-        ED4_cursor& cursor  = current_cursor();
+        ED4_cursor& cursor  = current_cursor(); // @@@ should be done for all windows (all cursors)
         int         rel_pos = cursor.get_screen_relative_pos();
         int         seq_pos = cursor.get_sequence_pos();
 

@@ -284,26 +284,96 @@ public:
     }
 };
 
-class ED4_folding_line : virtual Noncopyable { // @@@ make members private
+class ED4_folding_line : virtual Noncopyable {
     // properties of an object, i.e. concerning rectangles on screen showing sequences
     ED4_folding_line(const ED4_folding_line&);      // copy-constructor not allowed
 
+    bool   vertical; // @@@ replace dimension+vertical by dimension-vector ?
+    AW_pos dimension; // amount of pixel folded away
 
-public:
-    AW_pos world_pos[2]; // @@@ what should world_pos be ? it could have a world-range, but no single position
+    AW_pos world_pos[2]; // @@@ instead of updating world-position, calculate it if needed
     AW_pos window_pos[2];
-    AW_pos dimension;    // amount of pixel folded away
-
-    ED4_base *link;
 
     ED4_folding_line *next;
 
-    ED4_folding_line();
+
+    AW::Vector fold(AW_pos amount) const { return vertical ? AW::Vector(amount, 0) :  AW::Vector(0, amount); }
+    AW::Position calc_world_pos() const { return AW::Position(window_pos[X_POS], window_pos[Y_POS]) + fold(dimension); }
+    AW::Position calc_window_pos() const { return AW::Position(world_pos[X_POS], world_pos[Y_POS]) - fold(dimension); }
+
+    ED4_folding_line *insert(ED4_folding_line *fl) {
+        e4_assert(!fl->next);
+        e4_assert(vertical == fl->vertical); // type mismatch
+        int XorY = vertical ? X_POS : Y_POS;
+        if (world_pos[XorY] <= fl->world_pos[XorY]) { // insert behind
+            next = next ? next->insert(fl) : fl;
+            return this;
+        }
+
+        fl->next = this;
+        return fl;
+    }
+
+public:
+
+    ED4_folding_line(ED4_properties prop)
+        : vertical(prop == ED4_P_VERTICAL),
+          dimension(0),
+          next(0)
+    {
+        e4_assert(prop == ED4_P_VERTICAL || prop == ED4_P_HORIZONTAL);
+        world_pos[0]  = 0;
+        world_pos[1]  = 0;
+        window_pos[0] = 0;
+        window_pos[1] = 0;
+    }
+
+    ~ED4_folding_line() {
+        delete next;
+    }
+
+    void insertAs(ED4_folding_line*& ptr) {
+        ED4_folding_line *other = ptr;
+        e4_assert(this);
+        ptr = other ? other->insert(this) : this;
+    }
+
+    AW_pos get_dimension() const { return dimension; }
+    const ED4_folding_line *get_next() const { return next; }
+
+    void set_dimension(AW_pos dim) { dimension = dim; }
+    void add_to_dimension(AW_pos offset) { dimension += offset; }
 
     void set_world_pos (AW::Position p) { world_pos [X_POS] = p.xpos(); world_pos [Y_POS] = p.ypos(); }
     void set_window_pos(AW::Position p) { window_pos[X_POS] = p.xpos(); window_pos[Y_POS] = p.ypos(); }
 
     void set_pos(AW::Position p) { set_world_pos(p); set_window_pos(p); }
+
+    AW_pos get_window_pos() const { // only relevant coordinate
+        return vertical ? window_pos[X_POS] : window_pos[Y_POS];
+    }
+
+    void update_world_pos(AW_pos offset) {
+        AW::Position w = calc_world_pos() + fold(offset);
+        set_world_pos(w);
+        if (next) next->update_world_pos(offset+dimension);
+    }
+
+    void update_window_pos() {
+        AW::Position wi = calc_window_pos();
+        set_window_pos(wi);
+    }
+
+    bool is_consistent(AW_pos offset) const {
+        AW::Position w = calc_world_pos() + fold(offset);
+        AW::Position sw(world_pos[X_POS], world_pos[Y_POS]);
+
+        if (nearlyEqual(w, sw)) {
+            return !next || next->is_consistent(offset+dimension);
+        }
+
+        return false;
+    }
 };
 
 struct ED4_scroll_links {
@@ -332,6 +402,17 @@ public:
     const ED4_folding_line *get_horizontal_folding() { return horizontal_fl; }
     const ED4_folding_line *get_vertical_folding() { return vertical_fl; }
 
+    bool is_consistent() const {
+        e4_assert(!is_reset());
+        return horizontal_fl->is_consistent(0) && vertical_fl->is_consistent(0);
+    }
+    void update_world_positions() {
+        e4_assert(!is_reset());
+        horizontal_fl->update_world_pos(0);
+        vertical_fl->update_world_pos(0);
+        e4_assert(is_consistent());
+    }
+
     void world_to_win_coords(AW_pos *x, AW_pos *y);
     void win_to_world_coords(AW_pos *x, AW_pos *y);
 
@@ -353,7 +434,7 @@ class ED4_scrolled_rectangle : virtual Noncopyable {
 
     AW::Rectangle world;
 
-    bool folding_dimensions_calculated; // flag to ensure calc_folding_dimensions is called before get_window_rect
+    bool folding_dimensions_calculated; // flag to ensure calc_bottomRight_folding_dimensions is called before get_window_rect
     
     void init_links() {
         x_link      = 0;
@@ -426,21 +507,26 @@ public:
     }
 
     void add_to_top_left_dimension(int dx, int dy) {
-        scroll_left->dimension += dx;
-        scroll_top->dimension  += dy;
+        scroll_left->add_to_dimension(dx);
+        scroll_top->add_to_dimension(dy);
     }
 
-    void scroll(int dx, int dy) {
-        scroll_left->dimension   -= dx;
-        scroll_top->dimension    -= dy;
-        scroll_right->dimension  += dx;
-        scroll_bottom->dimension += dy;
+    void scroll(ED4_foldable& owner, int dx, int dy) {
+        e4_assert(owner.is_consistent());
+
+        scroll_left->add_to_dimension(-dx);
+        scroll_top->add_to_dimension(-dy);
+        scroll_right->add_to_dimension(dx);
+        scroll_bottom->add_to_dimension(dy);
+
+        owner.update_world_positions();
+        e4_assert(owner.is_consistent());
     }
 
     AW::Rectangle get_window_rect() const {
         e4_assert(folding_dimensions_calculated);
-        return AW::Rectangle(scroll_left->window_pos[X_POS], scroll_top->window_pos[Y_POS],
-                             scroll_right->window_pos[X_POS], scroll_bottom->window_pos[Y_POS]);
+        return AW::Rectangle(scroll_left->get_window_pos(), scroll_top->get_window_pos(),
+                             scroll_right->get_window_pos(), scroll_bottom->get_window_pos());
     }
 
     AW::Rectangle get_world_rect() const;
@@ -451,28 +537,28 @@ public:
         update_folding_line_positions();
     }
     
-    void calc_folding_dimensions(int area_width, int area_height) {
+    void calc_bottomRight_folding_dimensions(int area_width, int area_height) {
         AW_pos dim;
         if (bottom() > area_height) { // our world doesn't fit vertically in our window
             dim = bottom()-area_height; // calc dimension of bottom folding line
-            scroll_bottom->dimension = max(0, int(dim - scroll_top->dimension));
+            scroll_bottom->set_dimension(max(0, int(dim - scroll_top->get_dimension())));
         }
         else {
-            dim                      = 0;
-            scroll_bottom->dimension = 0;
-            scroll_top->dimension    = 0;
+            dim = 0;
+            scroll_bottom->set_dimension(0);
+            scroll_top->set_dimension(0);
         }
 
         scroll_bottom->set_window_pos(world.lower_left_corner()-AW::Vector(0, dim));
 
         if (right()>area_width) { // our world doesn't fit horizontally in our window =>
             dim = right()-area_width; // calc dimension of right folding line
-            scroll_right->dimension = max(0, int(dim - scroll_left->dimension));
+            scroll_right->set_dimension(max(0, int(dim - scroll_left->get_dimension())));
         }
         else {
-            dim                     = 0;
-            scroll_right->dimension = 0;
-            scroll_left->dimension  = 0;
+            dim = 0;
+            scroll_right->set_dimension(0);
+            scroll_left->set_dimension(0);
         }
 
         scroll_right->set_window_pos(world.upper_right_corner()-AW::Vector(dim, 0));

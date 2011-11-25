@@ -1394,9 +1394,8 @@ void ED4_base::update_world_coords_cache() {
 
 
 ED4_returncode ED4_base::clear_background(int color) {
-    AW_pos x, y;
-
-    if (current_device()) {
+    if (current_device()) { // @@@ should clear be done for all windows ? 
+        AW_pos x, y;
         calc_world_coords(&x, &y);
         current_ed4w()->world_to_win_coords(&x, &y);
 

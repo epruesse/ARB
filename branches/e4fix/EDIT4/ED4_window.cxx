@@ -98,47 +98,12 @@ ED4_folding_line* ED4_foldable::insert_folding_line(AW::Position world_pos, AW_p
     ED4_folding_line *fl = NULL;
 
     if (prop == ED4_P_VERTICAL || prop == ED4_P_HORIZONTAL) {
-        fl            = new ED4_folding_line;
-        fl->link      = NULL;
+        fl = new ED4_folding_line(prop);
         fl->set_world_pos(world_pos);
-        fl->dimension = dimension;
+        fl->set_dimension(dimension);
+        fl->update_window_pos();
 
-        ED4_folding_line *current_fl = NULL;
-        int               rel_pos;
-
-        if (prop == ED4_P_VERTICAL) {
-            fl->window_pos[X_POS] = fl->world_pos[X_POS] - dimension;
-            fl->window_pos[Y_POS] = fl->world_pos[Y_POS];
-
-            if (!vertical_fl) vertical_fl = fl;
-            else {
-                current_fl = vertical_fl;
-                rel_pos    = X_POS;
-            }
-        }
-        else {
-            e4_assert(prop == ED4_P_HORIZONTAL);
-            fl->window_pos[Y_POS] = fl->world_pos[Y_POS] - dimension;
-            fl->window_pos[X_POS] = fl->world_pos[X_POS];
-
-            if (!horizontal_fl) horizontal_fl = fl;
-            else {
-                current_fl = horizontal_fl;
-                rel_pos    = Y_POS;
-            }
-        }
-
-        if (current_fl) {
-            ED4_folding_line *previous_fl = NULL;
-
-            while ((current_fl != NULL) && (current_fl->world_pos[rel_pos] <= fl->world_pos[rel_pos])) {
-                previous_fl = current_fl;
-                current_fl  = current_fl->next;
-            }
-
-            if (previous_fl) previous_fl->next = fl;
-            fl->next = current_fl;
-        }
+        fl->insertAs(prop == ED4_P_VERTICAL ? vertical_fl : horizontal_fl);
     }
     return fl;
 }
@@ -173,6 +138,8 @@ ED4_returncode ED4_window::update_scrolled_rectangle() {
     if (!scrolled_rect.exists())
         return ED4_R_IMPOSSIBLE;
 
+    e4_assert(is_consistent());
+
     AW::Rectangle srect = scrolled_rect.get_world_rect();
     scrolled_rect.set_rect_and_update_folding_line_positions(srect);
 
@@ -191,7 +158,10 @@ ED4_returncode ED4_window::update_scrolled_rectangle() {
     }
 
     const AW_screen_area& area_size = current_device()->get_area_size();
-    scrolled_rect.calc_folding_dimensions(area_size.r, area_size.b);
+    scrolled_rect.calc_bottomRight_folding_dimensions(area_size.r, area_size.b);
+
+    update_world_positions();
+    e4_assert(is_consistent());
 
     update_window_coords();
 
@@ -223,7 +193,10 @@ ED4_returncode ED4_window::set_scrolled_rectangle(ED4_base *x_link, ED4_base *y_
 
     AW::Rectangle rect = scrolled_rect.get_world_rect();
     scrolled_rect.create_folding_lines(*this, rect, area_size.r, area_size.b);
+
     scrolled_rect.set_rect(rect);
+
+    e4_assert(is_consistent());
 
     return ED4_R_OK;
 }
@@ -242,7 +215,7 @@ static inline void clear_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, A
 
 #if defined(DEBUG) && 0
     static int toggle = 0;
-    current_device()->box(ED4_G_COLOR_2+toggle, x1, y1, x2-x1+1, y2-y1+1, AW_ALL_DEVICES_SCALED, 0, 0);    // fill range with color (for testing)
+    current_device()->box(ED4_G_COLOR_2+toggle, true, x1, y1, x2-x1, y2-y1, AW_ALL_DEVICES_SCALED);    // fill range with color (for testing)
     toggle = (toggle+1)&7;
 #else
     current_device()->clear_part(x1, y1, x2-x1+1, y2-y1+1, AW_ALL_DEVICES);
@@ -318,7 +291,12 @@ ED4_returncode ED4_window::scroll_rectangle(int dx, int dy)
 
     if (!dx && !dy) return ED4_R_OK; // scroll not
 
+    e4_assert(is_consistent());
+    
     AW::Rectangle rect = scrolled_rect.get_window_rect();
+
+    e4_assert(is_consistent());
+    
 
     AW::Position ul = rect.upper_left_corner();
     AW::Position lr = rect.lower_right_corner();
@@ -328,7 +306,9 @@ ED4_returncode ED4_window::scroll_rectangle(int dx, int dy)
     AW_pos right_x  = lr.xpos();
     AW_pos bottom_y = lr.ypos();
 
-    scrolled_rect.scroll(dx, dy);
+    scrolled_rect.scroll(*this, dx, dy);
+
+    e4_assert(is_consistent());
 
     skip_move = (ABS(int(dy)) > (bottom_y - top_y - 20)) || (ABS(int(dx)) > (right_x - left_x - 20));
 

@@ -1002,12 +1002,12 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
 
         last_window_reached = 0;
         x1 = area_rect.l;
-        for (const ED4_folding_line *flv = win.get_vertical_folding(); ; flv = flv->next) {
+        for (const ED4_folding_line *flv = win.get_vertical_folding(); ; flv = flv->get_next()) {
             int lastColumn = 0;
 
             if (flv) {
-                x2 = int(flv->window_pos[X_POS]);
-                if (!flv->next && x2==area_rect.r) {
+                x2 = int(flv->get_window_pos()); // @@@ use AW_INT ? 
+                if (!flv->get_next() && x2==area_rect.r) {
                     lastColumn = 1;
                 }
             }
@@ -1020,12 +1020,12 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
             }
 
             y1 = area_rect.t;
-            for (const ED4_folding_line *flh = win.get_horizontal_folding(); ; flh = flh->next) {
+            for (const ED4_folding_line *flh = win.get_horizontal_folding(); ; flh = flh->get_next()) {
                 int lastRow = 0;
 
                 if (flh) {
-                    y2 = int(flh->window_pos[Y_POS]);
-                    if (!flh->next && y2==area_rect.b) {
+                    y2 = int(flh->get_window_pos()); // @@@ use AW_INT ? 
+                    if (!flh->get_next() && y2==area_rect.b) {
                         lastRow = 1;
                     }
                 }
