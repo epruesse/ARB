@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
     AW_root *aw_root = AWT_create_root("dist.arb", "ARB_DIST");
 
     {
-        arb_params *params = arb_trace_argv(&argc, argv);
+        arb_params *params = arb_trace_argv(&argc, (const char **)argv);
         if (argc==2) {
             freedup(params->db_server, argv[1]);
         }

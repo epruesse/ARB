@@ -489,7 +489,7 @@ const char *ED4_propertyName(int mode) {
     return result;
 }
 
-int main(int argc, char **argv) {
+int ARB_main(int argc, const char *argv[]) {
     const char *data_path = ":";
     const char *err = NULL;
     char *config_name = NULL;

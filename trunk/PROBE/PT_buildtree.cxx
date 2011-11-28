@@ -392,7 +392,6 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USE
 #include <test_unit.h>
 #endif
 
-int main(int argc, const char*argv[]);
 void NOTEST_SLOW_maybe_build_tree() {
     // does only test sth if DB is present.
 
@@ -411,7 +410,7 @@ void NOTEST_SLOW_maybe_build_tree() {
 
 #if 1
         // build
-        int res = main(ARRAY_ELEMS(argv), argv);
+        int res = ARB_main(ARRAY_ELEMS(argv), argv);
         TEST_ASSERT_EQUAL(res, EXIT_SUCCESS);
 #endif
 

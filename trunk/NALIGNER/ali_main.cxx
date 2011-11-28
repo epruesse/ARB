@@ -215,7 +215,7 @@ int convert_for_back_write(char *seq_new, char *seq_orig) {
 
 
 
-int main(int argc, char **argv)
+int main(int argc, const char *argv[])
 {
     int                            i;
     char                           message_buffer[100];

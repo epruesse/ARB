@@ -1,12 +1,20 @@
+.SUFFIXES: .o .cxx 
 
 all:
 		@echo "use make clean"
 
 clean:
-		rm -f *.stamp valgrind2grep.lst postcompile.sav
+		rm -f *.stamp valgrind2grep.lst postcompile.sav arb_main.o
 
 valgrind_update:
 		./arb_valgrind update
+
+# --------------------------------------------------------------------------------
+
+.cxx.o:
+	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES) $(POST_COMPILE)
+
+mainwrapper: arb_main.o
 
 # --------------------------------------------------------------------------------
 

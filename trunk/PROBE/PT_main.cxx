@@ -468,9 +468,9 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR run_command(const char *exename, 
     return error;
 }
 
-int main(int argc, char **argv) {
+int ARB_main(int argc, const char *argv[]) {
     int         exitcode = EXIT_SUCCESS;
-    arb_params *params   = arb_trace_argv(&argc, argv);
+    arb_params *params   = arb_trace_argv(&argc, (const char **)argv);
     const char *exename  = argv[0];
 
     PT_init_psg();

@@ -1167,7 +1167,7 @@ int main(int argc, char **argv)
     Hs_struct  *so;
     arb_params *params;
 
-    params                 = arb_trace_argv(&argc, argv);
+    params                 = arb_trace_argv(&argc, (const char **)argv);
     const char *executable = argv[0];
 
     if (!params->default_file) usage(executable, "Missing default file");

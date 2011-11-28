@@ -1318,7 +1318,7 @@ static void show_warnings_and_error(const string& error, const string& helpfile)
     show_warnings_and_error(LineAttachedMessage(error, -1U), helpfile);
 }
 
-int main(int argc, char *argv[]) {
+int ARB_main(int argc, const char *argv[]) {
     Helpfile help;
     string   arb_help;
 

@@ -248,8 +248,8 @@ static void show_help() {
     arb_print_server_params();
 }
 
-int main(int argc, char **argv) {
-    arb_params *params = arb_trace_argv(&argc, argv);
+int ARB_main(int argc, const char *argv[]) {
+    arb_params *params = arb_trace_argv(&argc, (const char **)argv);
 
     bool        help  = false;
     const char *cmd   = NULL;  // run server command

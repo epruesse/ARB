@@ -20,11 +20,11 @@ private:
 public:
 
     // misc
-    char        *prog_name;
-    char        *species_name;
-    char        *default_file;
-    char        *db_server;
-    char        *pt_server;
+    const char *prog_name;
+    char       *species_name;
+    char       *default_file;
+    char       *db_server;
+    char       *pt_server;
 
     // other classes
     ALI_ARBDB       arbdb;
@@ -44,7 +44,7 @@ public:
     ALI_PREALIGNER_CONTEXT preali_context;
 
     // functions
-    void init(int *argc, char *argv[]);
+    void init(int *argc, const char *argv[]);
 };
 
 #else

@@ -42,7 +42,7 @@ all: $(BINARIES)
 	$(ACC) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 $(ARBHOME)/bin/arb_probe: arb_probe.o $(LIBS_ARB_PROBE)
-	$(LINK_EXECUTABLE) $@ $< $(LIBS_ARB_PROBE) $(LIB_ARBDB) $(EXECLIBS) 
+	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS_ARB_PROBE) $(LIB_ARBDB) $(EXECLIBS) 
 
 $(ARBHOME)/bin/arb_read_tree: arb_read_tree.o  $(LIBS_ARB_READ_TREE)
 	$(LINK_EXECUTABLE) $@ $< $(LIBS_ARB_READ_TREE) $(LIB_ARBDB) $(EXECLIBS) 
@@ -51,7 +51,7 @@ $(ARBHOME)/bin/arb_export_tree: arb_export_tree.o  $(LIBS_ARB_EXPORT_TREE)
 	$(LINK_EXECUTABLE) $@ $< $(LIBS_ARB_EXPORT_TREE) $(LIB_ARBDB) $(EXECLIBS) 
 
 $(ARBHOME)/bin/%: %.o
-	$(LINK_EXECUTABLE) $@ $< $(LIB_ARBDB) $(EXECLIBS)
+	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIB_ARBDB) $(EXECLIBS)
 
 clean:
 	rm -f $(BINARIES)

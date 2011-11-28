@@ -62,6 +62,7 @@ int macke_key_word(const char *line, int index, char *key);
 void macke_seq_data_out(const Seq &seq, const Macke &macke, Writer &write);
 
 /* main.cxx */
+int ARB_main(int argc, const char *argv[]);
 
 /* mg.cxx */
 int mtog(const Macke &macke, GenBank &gbk, const Seq &seq) __ATTR__USERESULT;
