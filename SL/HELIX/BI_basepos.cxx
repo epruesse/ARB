@@ -14,12 +14,12 @@
 
 
 static bool is_Gap(char c) { return c == '-' || c == '.'; }
-static CharPredicate pred_is_gap(is_Gap);
 
 // ---------------------
 //      BasePosition
 
 void BasePosition::initialize(const char *seq, int size) {
+    static CharPredicate pred_is_gap(is_Gap);
     initialize(seq, size, pred_is_gap);
 }
 

@@ -112,15 +112,14 @@ public:
     }
 };
 
-
-static PlugIn registered[] = { // register plugins here
-    PlugIn("SECEDIT", start_SECEDIT_plugin),
-#if defined(ARB_OPENGL)
-    PlugIn("RNA3D", start_RNA3D_plugin),
-#endif // ARB_OPENGL
-};
-
 static const PlugIn *findPlugin(const char *name) {
+    static PlugIn registered[] = { // register plugins here
+        PlugIn("SECEDIT", start_SECEDIT_plugin),
+#if defined(ARB_OPENGL)
+        PlugIn("RNA3D", start_RNA3D_plugin),
+#endif // ARB_OPENGL
+    };
+
     for (size_t plug = 0; plug<ARRAY_ELEMS(registered); ++plug) {
         if (registered[plug].has_name(name)) {
             return &registered[plug];
