@@ -30,8 +30,6 @@ EXEC   = $(ARBHOME)/bin/phyml
 
 ifdef DARWIN
 CFLAGS += -fPIC
-else
-CFLAGS += -static
 endif
 
 # ARBs standard target

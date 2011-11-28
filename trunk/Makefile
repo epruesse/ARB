@@ -57,7 +57,8 @@ CPPreal:=cpp
 ALLOWED_GCC_4xx_VERSIONS=\
 	4.3 4.3.1 4.3.2 4.3.3 4.3.4 \
 	4.4 4.4.1 4.4.3 4.4.5 \
-	4.5.2
+	4.5.2 \
+	4.6.1
 
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_4xx_VERSIONS)
 
@@ -114,7 +115,7 @@ ifeq ($(DEBUG),0)
 	dflags := -DNDEBUG# defines
 	cflags := -O4# compiler flags (C and C++)
  ifndef DARWIN
-	lflags += -O99 --strip-all# linker flags
+	lflags += -O99# linker flags
  endif
 endif
 
@@ -366,8 +367,8 @@ ifeq ($(TRACESYM),1)
 		cdynamic =
 		ldynamic =
 	else
-		cdynamic = -rdynamic
-		ldynamic = --export-dynamic 
+		cdynamic = -rdynamic -Wl,--export-dynamic
+		ldynamic = --export-dynamic
 	endif
 endif
 
@@ -397,9 +398,7 @@ CPPLIB := $(CPP) $(shared_cflags)# compile C++ (shared libs)
 
 PP := $(CPPreal)# preprocessor
 
-lflags += $(ldynamic)
-
-LINK_STATIC_LIB := ld $(lflags) -r -o# link static lib
+LINK_STATIC_LIB := ld $(lflags) $(ldynamic) -r -o# link static lib
 LINK_EXECUTABLE := $(GPP) $(lflags) $(cdynamic) -o# link executable (c++)
 
 ifeq ($(LINK_STATIC),1)
@@ -407,7 +406,7 @@ SHARED_LIB_SUFFIX = a# static lib suffix
 LINK_SHARED_LIB := $(LINK_STATIC_LIB)
 else
 SHARED_LIB_SUFFIX = so# shared lib suffix
-LINK_SHARED_LIB := $(GPP) $(lflags) -shared $(GCOVFLAGS) -o# link shared lib
+LINK_SHARED_LIB := $(GPP) $(lflags) $(cdynamic) -shared $(GCOVFLAGS) -o# link shared lib
 endif
 
 # other used tools
@@ -866,14 +865,13 @@ RNACMA = bin/arb_rnacma
 ARCHS_RNACMA = \
 		RNACMA/RNACMA.a \
 
-$(RNACMA): $(ARCHS_RNACMA:.a=.dummy) link_db
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_RNACMA) $(LIBS) || ( \
+$(RNACMA) : $(ARCHS_RNACMA:.a=.dummy) link_db
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_RNACMA) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(LIBS) $(ARCHS_RNACMA) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(LIBS) $(ARCHS_RNACMA) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_RNACMA) $(LIBS) $(EXECLIBS)"; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_RNACMA) $(LIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
-
 
 #***********************************	arb_pgt **************************************
 
@@ -961,16 +959,16 @@ ARCHS_CONVERT_ALN =	\
 		CONVERTALN/CONVERTALN.a \
 		SL/FILE_BUFFER/FILE_BUFFER.a \
 
-
-$(CONVERT_ALN) :  $(ARCHS_CONVERT_ALN:.a=.dummy) link_db
+$(CONVERT_ALN) : $(ARCHS_CONVERT_ALN:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_CONVERT_ALN) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_CONVERT_ALN) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARBDB_LIB) $(ARCHS_CONVERT_ALN) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_CONVERT_ALN) $(LIBS) $(ARBDB_LIB) $(EXECLIBS)"; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_CONVERT_ALN) $(LIBS) $(ARBDB_LIB) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
 #*********************************** arb_treegen **************************************
+
 TREEGEN = bin/arb_treegen
 ARCHS_TREEGEN =	\
 		TREEGEN/TREEGEN.a \
