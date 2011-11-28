@@ -214,7 +214,7 @@ static Format parse_outtype(const char *arg) {
 static bool is_help_req(const char *arg) {
     return strcmp(arg, "-h") == 0 || strcmp(arg, "--help") == 0;
 }
-static bool command_line_conversion(int argc, char** argv, FormattedFile& in, FormattedFile& out) {
+static bool command_line_conversion(int argc, const char * const *argv, FormattedFile& in, FormattedFile& out) {
     for (int c = 1; c<argc; c++) {
         if (is_help_req(argv[c])) {
             show_command_line_usage();
@@ -243,7 +243,7 @@ static void do_conversion(const FormattedFile& in, const FormattedFile& out) {
     convert(in, out);
 }
 
-int main(int argc, char *argv[]) {
+int ARB_main(int argc, const char *argv[]) {
     int exitcode = EXIT_SUCCESS;
     try {
         FormattedFile in;

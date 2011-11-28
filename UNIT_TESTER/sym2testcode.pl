@@ -269,17 +269,13 @@ HEAD
 
   my $MAIN = '';
   my $have_main = defined $exported{'main'};
-  if ($have_main==0) {
-    $MAIN .= 'int main(void) {'."\n";
-    # $MAIN .= 'extern int jkahdfakshdu; jkahdfakshdu=1;'; # cause unittest compile error
-    # $MAIN .= 'int *x=0; *x=0;'; # cause unittest crash
-    $MAIN .= '    '.$UNIT_TESTER."\n";
-    $MAIN .= '    return EXIT_SUCCESS;'."\n";
-    $MAIN .= '}'."\n";
+  if ($have_main==1) {
+    $MAIN .= "#error tested code uses main() - not possible. use ARB_main instead and link normal executable with arb_main.o\n";
   }
-  else {
-    $MAIN .= 'static '.$UNIT_TESTER."\n";
-  }
+  $MAIN .= 'int main(void) {'."\n";
+  $MAIN .= '    '.$UNIT_TESTER."\n";
+  $MAIN .= '    return EXIT_SUCCESS;'."\n";
+  $MAIN .= '}'."\n";
 
   print OUT $HEAD."\n";
   print OUT $TABLES."\n";

@@ -56,6 +56,7 @@ void PT_init_psg(void);
 void PT_exit_psg(void);
 void PT_exit(void);
 GB_ERROR PT_init_map(void) __ATTR__USERESULT;
+int ARB_main(int argc, const char *argv[]);
 
 /* PT_match.cxx */
 int read_names_and_pos(PT_local *locs, POS_TREE *pt);

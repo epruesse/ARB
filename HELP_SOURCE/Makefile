@@ -227,7 +227,7 @@ $(XML_DEPEND) : arb_help2xml.cxx
 
 $(HELP2XML): arb_help2xml.o $(LIBS)
 # @@@ when backtracing code is in libCORE, link vs ARBDB is no longer needed! 
-	$(LINK_EXECUTABLE) $@ $< $(LIBS) $(LIBPATH) $(ARBDB_LIB) $(EXECLIBS)
+	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS) $(LIBPATH) $(ARBDB_LIB) $(EXECLIBS)
 
 
 DEPENDS = $(TOOL_OBJECTS:.o=.depend)
