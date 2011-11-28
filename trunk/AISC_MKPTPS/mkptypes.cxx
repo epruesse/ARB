@@ -532,12 +532,12 @@ public:
     }
 };
 
-static AttributeParser attribute_parser("__attribute__", false, true);
-static AttributeParser ATTR_parser("__ATTR__", true, false);
-
 static void search_comment_for_attribute() {
     if (found__attribute__ || found__ATTR__) return; // only parse once (until reset)
     last_comment[lc_size] = 0;  // close string
+
+    static AttributeParser attribute_parser("__attribute__", false, true);
+    static AttributeParser ATTR_parser("__ATTR__", true, false);
 
     char *seen_attribute = attribute_parser.parse(last_comment, lc_size);
     char *seen_ATTR      = ATTR_parser.parse(last_comment, lc_size);
