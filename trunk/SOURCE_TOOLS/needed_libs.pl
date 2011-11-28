@@ -681,24 +681,54 @@ sub pushFilesTo($\@\@) {
     }
   }
 }
+
+sub sortLibsByDependency(\@) {
+  # sort libs for linker CL (fullfilling libs behind requesting libs)
+  my ($libs_r) = @_;
+  my @order = ();
+  my %added = map { $_ => 0; } @$libs_r;
+
+  while (scalar(@order) < scalar(@$libs_r)) {
+    my $didAdd = 0;
+    foreach my $lib (@$libs_r) {
+      if ($added{$lib}==0) { # not added yet
+        my $all_dep_r = $all_dependencies_of{$lib};
+        my $missing = 0;
+      CHECK: foreach my $dep (keys %$all_dep_r) {
+          my $was_added = $added{$dep};
+          if (defined $was_added) {
+            if ($was_added==0) { $missing = 1; last CHECK; }
+          }
+        }
+        if ($missing==0) {
+          push @order, $lib;
+          $added{$lib} = 1;
+          $didAdd = 1;
+        }
+      }
+    }
+    if ($didAdd==0) {
+      die "internal error: did not add any lib in last loop (undetected nested dependency?)";
+    }
+  }
+  @$libs_r = reverse @order;
+}
+
 sub pushStaticLibsTo($\@\@) {
   my ($pathPrefix,$depends_r,$out_r) = @_;
-  foreach my $dep (@$depends_r) {
-    if (is_static_lib($dep)) {
-      push @$out_r, prefix($pathPrefix,$dep);
-    }
-  }
+  my @libs = ();
+  foreach my $dep (@$depends_r) { if (is_static_lib($dep)) { push @libs, $dep; } }
+  sortLibsByDependency(@libs);
+  foreach (@libs) { push @$out_r, prefix($pathPrefix,$_); }
 }
+
 sub pushDynamicLibsTo(\@\@) {
   my ($depends_r,$out_r) = @_;
-  foreach my $dep (@$depends_r) {
-    if (is_dynamic_lib($dep)) {
-      push @$out_r, '-l'.dynamic_name($dep); 
-    }
-    elsif (is_extra_param($dep)) {
-      push @$out_r, $dep;
-    }
-  }
+  my @dep = ();
+  foreach my $dep (@$depends_r) { if (is_dynamic_lib($dep)) { push @dep, $dep; } }
+  sortLibsByDependency(@dep);
+  foreach (@dep) { push @$out_r, '-l'.dynamic_name($_); }
+  foreach my $dep (@$depends_r) { if (is_extra_param($dep)) { push @$out_r, $dep; } }
 }
 
 # --------------------------------------------------------------------------------
@@ -871,8 +901,14 @@ sub main() {
   my @out = ();
   if ($printDirs==1) { pushDirsTo($pathPrefix,@track,@out); }
   if ($printFiles==1) { pushFilesTo($pathPrefix,@track,@out); }
-  if ($printDynamic==1) { pushDynamicLibsTo(@track,@out); }
-  if ($printStatic==1) { pushStaticLibsTo($pathPrefix,@track,@out); }
+
+  {
+    my @libs = ();
+    if ($printStatic==1) { pushStaticLibsTo($pathPrefix,@track,@libs); }
+    if ($printDynamic==1) { pushDynamicLibsTo(@track,@libs); }
+
+    foreach (@libs) { push @out, $_; }
+  }
 
   if (scalar(@out)>0) { print join(' ',@out)."\n"; }
 }
