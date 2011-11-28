@@ -1496,18 +1496,18 @@ void ED4_base_position::calc4base(const ED4_base *base)
 
     species_manager->add_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
 
-    bool (*is_gap_fun)(char);
+    bool (*isGap_fun)(char);
     if (species_manager->flag.is_consensus) {
         ED4_group_manager *group_manager = base->get_parent(ED4_L_GROUP)->to_group_manager();
 
-        seq        = group_manager->table().build_consensus_string();
-        len        = strlen(seq);
-        is_gap_fun = is_consensus_gap;
+        seq       = group_manager->table().build_consensus_string();
+        len       = strlen(seq);
+        isGap_fun = is_consensus_gap;
     }
     else {
         seq = base->resolve_pointer_to_string_copy(&len);
         e4_assert((int)strlen(seq) == len);
-        is_gap_fun = is_gap;
+        isGap_fun = is_gap;
     }
 
     e4_assert(seq);
@@ -1515,7 +1515,7 @@ void ED4_base_position::calc4base(const ED4_base *base)
 #if defined(WARN_TODO)
 #warning ED4_is_align_character is kinda CharPredicate - refactor
 #endif
-    CharPredicate pred_is_gap(is_gap_fun);
+    CharPredicate pred_is_gap(isGap_fun);
     initialize(seq, len, pred_is_gap);
     calced4base = base;
 
