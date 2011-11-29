@@ -21,27 +21,12 @@
 #include <algorithm>
 #endif
 
-
-inline bool beginsWith(const string& str, const string& start) {
-    return str.find(start) == 0;
-}
-
-inline bool endsWith(const string& str, const string& postfix) {
-    size_t slen = str.length();
-    size_t plen = postfix.length();
-
-    if (plen>slen) { return false; }
-    return str.substr(slen-plen) == postfix;
-}
-
 inline void appendSpaced(string& str, const string& toAppend) {
     if (!toAppend.empty()) {
         if (!str.empty()) str.append(1, ' ');
         str.append(toAppend);
     }
 }
-
-bool parseInfix(const string &str, const string& prefix, const string& postfix, string& foundInfix);
 
 // --------------------------------------------------------------------------------
 

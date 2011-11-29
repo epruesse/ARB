@@ -25,19 +25,13 @@
 #include <vector>
 #endif
 
-using std::vector;
+using std::vector;  // @@@ do not use using decls in header w/o namespace
 using std::map;
 using std::set;
 
 typedef set<string>         stringSet;
 typedef map<string, string> stringMap;
 typedef vector<string>      stringVector;
-
-#define DEFINE_ITERATORS(type)                  \
-typedef type::iterator type##Iter;              \
-typedef type::const_iterator type##CIter;       \
-typedef type::reverse_iterator type##RIter;     \
-typedef type::const_reverse_iterator type##CRIter
 
 DEFINE_ITERATORS(string);
 DEFINE_ITERATORS(stringSet);

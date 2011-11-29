@@ -12,6 +12,7 @@
 #include "tools.h"
 #include "DBwriter.h"
 #include <arbdb.h>
+#include <arb_str.h>
 
 using namespace std;
 

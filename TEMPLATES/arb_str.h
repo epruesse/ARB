@@ -50,6 +50,28 @@ inline int ARB_strscmp(const char *s1, const char *s2) {
 inline void ARB_strupper(char *s) { for (int i = 0; s[i]; ++i) s[i] = toupper(s[i]); } // strupr
 inline void ARB_strlower(char *s) { for (int i = 0; s[i]; ++i) s[i] = tolower(s[i]); } // strlwr
 
+// ----------------------------------------
+// define the following inlines only if we have string 
+#ifdef _GLIBCXX_STRING
+
+inline bool beginsWith(const std::string& str, const std::string& start) {
+    return str.find(start) == 0;
+}
+
+inline bool endsWith(const std::string& str, const std::string& postfix) {
+    size_t slen = str.length();
+    size_t plen = postfix.length();
+
+    if (plen>slen) { return false; }
+    return str.substr(slen-plen) == postfix;
+}
+
+#else
+
+#define beginsWith include_string_b4_arb_str_4_beginsWith
+#define endsWith include_string_b4_arb_str_4_endsWith
+
+#endif
 
 #else
 #error arb_str.h included twice
