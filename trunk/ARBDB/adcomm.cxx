@@ -608,11 +608,9 @@ static GBCM_ServerResult gbcms_write_deleted(int socket, GBDATA *gbd, long hsin,
 }
 
 static GBCM_ServerResult gbcms_write_updated(int socket, GBDATA *gbd, long hsin, long client_clock, long *buffer) {
-    gb_server_data *hs;
-    int             send_header = 0;
+    int send_header = 0;
 
     if (GB_GET_EXT_UPDATE_DATE(gbd)<=client_clock) return GBCM_SERVER_OK;
-    hs = (gb_server_data *)hsin;
     if (GB_GET_EXT_CREATION_DATE(gbd) > client_clock) {
         buffer[0] = GBCM_COMMAND_PUT_UPDATE_CREATE;
         buffer[1] = (long)GB_FATHER(gbd);
@@ -805,7 +803,6 @@ static GBCM_ServerResult gbcms_talking_init_transaction(int socket, long *hsin, 
     gb_server_data *hs = (gb_server_data *)hsin;
     Socinf         *si = (Socinf *)sin;
     long            anz;
-    long           *buffer;
     char           *user;
     fd_set          set;
     struct timeval  timeout;
@@ -837,7 +834,6 @@ static GBCM_ServerResult gbcms_talking_init_transaction(int socket, long *hsin, 
 
     gbcm_write_flush(socket);
     // send modified data to client
-    buffer = (long *)GB_give_buffer(1024);
 
     GB_begin_transaction(gbd);
     while (gb_local->running_client_transaction == ARB_TRANS) {

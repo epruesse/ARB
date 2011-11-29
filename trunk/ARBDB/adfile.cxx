@@ -719,11 +719,9 @@ void TEST_find_file() {
 #warning move to ARB_CORE library
 #endif
 
-#if defined(DEVEL_RALF)
 // gcc reports: "warning: logical 'or' of collectively exhaustive tests is always true"
 // for 'implicated(any, any)'. True, obviously. Nevertheless annoying.
 #pragma GCC diagnostic ignored "-Wlogical-op"
-#endif
 
 void TEST_logic() {
 #define FOR_ANY_BOOL(name) for (int name = 0; name<2; ++name)
