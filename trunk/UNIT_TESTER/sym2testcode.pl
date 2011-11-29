@@ -304,7 +304,7 @@ sub main() {
   $warn_level   = shift @ARGV;
 
   parse($nm_output);
-  fail_if_no_tests_defined($libname);
+  fail_if_no_tests_defined($libname); # comment out to disableErrorOnUnitsWithoutTests
 
   filter($restrict);
   eval {

@@ -1160,8 +1160,7 @@ static void usage(const char *exeName, const char *err) {
     exit(-1);
 }
 
-int main(int argc, char **argv)
-{
+int ARB_main(int argc, const char *argv[]) {
     char       *name;
     int         i;
     Hs_struct  *so;

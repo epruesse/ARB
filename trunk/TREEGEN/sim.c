@@ -2,8 +2,7 @@
 #include <time.h>
 #include <stdlib.h>
 
-int main(int argc, str argv[])
-{
+int ARB_main(int argc, const char *argv[]) {
     RNS origin;
 
     if (argc!=4) error("Usage: arb_treegen <cfg> <tree> <seq>\n"

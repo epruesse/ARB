@@ -16,7 +16,7 @@
 AW_HEADER_MAIN
 
 
-int main(int argc, char **argv) {
+int ARB_main(int argc, const char *argv[]) {
     GB_ERROR error = NULL;
 
     if (argc != 3) {

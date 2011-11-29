@@ -893,8 +893,8 @@ PGT_SYS_LIBS=$(XLIBS) $(TIFFLIBS) $(LIBS)
 $(PGT) : $(ARCHS_PGT:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PGT) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS) $(EXECLIBS)"; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS) $(EXECLIBS)	"; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -910,8 +910,8 @@ ARCHS_WETC = \
 $(WETC): $(ARCHS_WETC:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_WETC) $(GUI_LIBS) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -934,8 +934,8 @@ ARCHS_DIST = \
 $(DIST): $(ARCHS_DIST:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DIST) $(GUI_LIBS) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -957,8 +957,8 @@ ARCHS_PARSIMONY = \
 $(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PARSIMONY) $(GUI_LIBS) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -985,8 +985,8 @@ ARCHS_TREEGEN =	\
 $(TREEGEN) :  $(ARCHS_TREEGEN:.a=.dummy)
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_TREEGEN) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_TREEGEN) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_TREEGEN) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main_C) $(LIBPATH) $(ARCHS_TREEGEN) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main_C) $(LIBPATH) $(ARCHS_TREEGEN) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1000,8 +1000,8 @@ ARCHS_NALIGNER = \
 $(NALIGNER): $(ARCHS_NALIGNER:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NALIGNER) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1017,8 +1017,8 @@ ARCHS_PHYLO = \
 $(PHYLO): $(ARCHS_PHYLO:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PHYLO) $(GUI_LIBS) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1072,8 +1072,8 @@ ARCHS_NAMES = \
 $(NAMES): $(ARCHS_NAMES:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) NAMES_COM/server.a $(SYSLIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) NAMES_COM/server.a $(SYSLIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) NAMES_COM/server.a $(SYSLIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) NAMES_COM/server.a $(SYSLIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1087,8 +1087,8 @@ ARCHS_ALIV3 = \
 $(ALIV3): $(ARCHS_ALIV3:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_ALIV3) $(ARBDB_LIB) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_ALIV3) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS)"; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_ALIV3) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_ALIV3) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS)"; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_ALIV3) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1839,7 +1839,6 @@ UNITS_WORKING = \
 	CONSENSUS_TREE/CONSENSUS_TREE.test \
 	DIST/DIST.test \
 	EISPACK/EISPACK.test \
-	GENOM/GENOM.test \
 	GL/glAW/libglAW.test \
 	GL/glpng/libglpng_arb.test \
 	ISLAND_HOPPING/ISLAND_HOPPING.test \
@@ -1850,7 +1849,6 @@ UNITS_WORKING = \
 	PHYLO/PHYLO.test \
 	PRIMER_DESIGN/PRIMER_DESIGN.test \
 	PROBE_DESIGN/PROBE_DESIGN.test \
-	ptpan/PROBE.test \
 	SECEDIT/SECEDIT.test \
 	SEQ_QUALITY/SEQ_QUALITY.test \
 	SERVERCNTRL/SERVERCNTRL.test \
@@ -1886,6 +1884,8 @@ UNITS_TRY_FIX = \
 
 UNITS_NEED_FIX = \
 	AWTI/AWTI.test \
+	ptpan/PROBE.test \
+	GENOM/GENOM.test \
 
 UNITS_UNTESTABLE_ATM = \
 	PROBE_SET/PROBE_SET.test \
@@ -1926,6 +1926,8 @@ TESTED_UNITS_MANUAL = \
 	$(UNITS_TESTED) \
 
 #	$(UNITS_WORKING)
+
+# see UNIT_TESTER/sym2testcode.pl@disableErrorOnUnitsWithoutTests
 
 #TESTED_UNITS = $(TESTED_UNITS_AUTO)
 TESTED_UNITS = $(TESTED_UNITS_MANUAL)
