@@ -8,7 +8,9 @@
 //   http://www.arb-home.de/                                        //
 //                                                                  //
 // ================================================================ //
+
 #include "Feature.h"
+#include "types.h"
 #include <cctype>
 
 

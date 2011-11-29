@@ -14,10 +14,21 @@
 #ifndef SMARTPTR_H
 #include <smartptr.h>
 #endif
-#ifndef TYPES_H
-#include "types.h"
+#ifndef _GLIBCXX_VECTOR
+#include <vector>
+#endif
+#ifndef _GLIBCXX_MAP
+#include <map>
+#endif
+#ifndef _GLIBCXX_STRING
+#include <string>
 #endif
 
+using std::vector; // @@@ do not use using decls in header w/o namespace
+using std::string;
+using std::map;
+
+typedef map<string, string> stringMap;
 
 typedef vector<int>  intVector;
 typedef vector<char> charVector;

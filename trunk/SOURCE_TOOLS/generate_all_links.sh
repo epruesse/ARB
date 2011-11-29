@@ -272,6 +272,7 @@ symlink_file ../SL/HELIX/BI_helix.hxx INCLUDE/BI_helix.hxx &&
 symlink_file ../SL/HELIX/BI_basepos.hxx INCLUDE/BI_basepos.hxx &&
 symlink_file ../SL/ITEMS/items.h INCLUDE/items.h &&
 symlink_file ../SL/ITEMS/item_sel_list.h INCLUDE/item_sel_list.h &&
+symlink_file ../SL/LOCATION/Location.h INCLUDE/Location.h &&
 symlink_file ../SL/MATRIX/AP_matrix.hxx INCLUDE/AP_matrix.hxx &&
 symlink_file ../SL/NDS/nds.h INCLUDE/nds.h &&
 symlink_file ../SL/NEIGHBOURJOIN/neighbourjoin.hxx INCLUDE/neighbourjoin.hxx &&

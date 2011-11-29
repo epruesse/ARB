@@ -21,7 +21,7 @@
 #include <aw_msg.hxx>
 #include <arbdbt.h>
 #include <adGene.h>
-#include <../GENOM_IMPORT/Location.h>
+#include <Location.h>
 #include <arb_strarray.h>
 #include <arb_strbuf.h>
 

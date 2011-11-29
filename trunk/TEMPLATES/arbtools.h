@@ -65,6 +65,12 @@ public:
     bool operator()(T o) { return o>t; }
 };
 
+#define DEFINE_ITERATORS(type)                  \
+typedef type::iterator type##Iter;              \
+typedef type::const_iterator type##CIter;       \
+typedef type::reverse_iterator type##RIter;     \
+typedef type::const_reverse_iterator type##CRIter
+
 
 #else
 #error arbtools.h included twice

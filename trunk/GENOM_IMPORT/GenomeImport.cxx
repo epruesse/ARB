@@ -16,6 +16,7 @@
 #define AW_RENAME_SKIP_GUI
 #include <AW_rename.hxx>
 #include <aw_question.hxx>
+#include <arb_str.h>
 
 using namespace std;
 
