@@ -135,7 +135,7 @@ static long count_elements(GBDATA *gbd) {
     return count+1; // self
 }
 
-int main(int argc, char **argv)
+int ARB_main(int argc, const char *argv[])
 {
     GB_ERROR error = 0;
 
@@ -146,7 +146,7 @@ int main(int argc, char **argv)
         error = "Missing arguments";
     }
     else {
-        char *in = argv[1];
+        const char *in = argv[1];
         gb_main  = GBT_open(in, "rw");
 
         if (!gb_main) {

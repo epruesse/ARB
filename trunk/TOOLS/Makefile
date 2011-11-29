@@ -50,6 +50,10 @@ $(ARBHOME)/bin/arb_read_tree: arb_read_tree.o  $(LIBS_ARB_READ_TREE)
 $(ARBHOME)/bin/arb_export_tree: arb_export_tree.o  $(LIBS_ARB_EXPORT_TREE)
 	$(LINK_EXECUTABLE) $@ $< $(LIBS_ARB_EXPORT_TREE) $(LIB_ARBDB) $(EXECLIBS) 
 
+$(ARBHOME)/bin/arb_a2ps: arb_a2ps.o
+	$(LINK_EXECUTABLE) $@ $(use_ARB_main_C) $< $(LIB_ARBDB) $(EXECLIBS)
+#	$(LINK_EXECUTABLE) $@ $< $(LIB_ARBDB) $(EXECLIBS)
+
 $(ARBHOME)/bin/%: %.o
 	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIB_ARBDB) $(EXECLIBS)
 

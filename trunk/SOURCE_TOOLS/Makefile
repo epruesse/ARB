@@ -3,18 +3,25 @@
 all:
 		@echo "use make clean"
 
-clean:
-		rm -f *.stamp valgrind2grep.lst postcompile.sav arb_main.o
+# --------------------------------------------------------------------------------
 
-valgrind_update:
-		./arb_valgrind update
+OBJECTS=arb_main_cpp.o arb_main_c.o
+
+arb_main_cpp.o: arb_main.cxx Makefile
+	$(CPP) $(cflags) -c $< -o $@ $(CPPINCLUDES) $(POST_COMPILE)
+
+arb_main_c.o: arb_main.c arb_main.cxx Makefile
+	$(ACC) $(cflags) -c $< -o $@ $(CPPINCLUDES) $(POST_COMPILE)
+
+mainwrapper: $(OBJECTS)
 
 # --------------------------------------------------------------------------------
 
-.cxx.o:
-	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES) $(POST_COMPILE)
+clean:
+		rm -f *.stamp valgrind2grep.lst postcompile.sav $(OBJECTS)
 
-mainwrapper: arb_main.o
+valgrind_update:
+		./arb_valgrind update
 
 # --------------------------------------------------------------------------------
 

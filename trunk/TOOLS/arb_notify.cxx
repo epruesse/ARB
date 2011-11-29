@@ -11,8 +11,7 @@
 
 #include <arbdbt.h>
 
-int main(int argc, char **argv)
-{
+int ARB_main(int argc, const char *argv[]) {
     if (argc == 1) {
         fprintf(stderr, "Usage: arb_notify ID \"message\"\n");
         fprintf(stderr, "Used by ARB itself to report termination of external jobs - see GB_notify()\n");

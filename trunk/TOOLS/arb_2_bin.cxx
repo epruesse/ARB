@@ -11,8 +11,7 @@
 
 #include <arbdbt.h>
 
-int main(int argc, char **argv)
-{
+int ARB_main(int argc, const char *argv[]) {
     GB_ERROR error = 0;
 
     fprintf(stderr, "arb_2_bin - ARB database ascii to binary converter\n");
@@ -34,12 +33,12 @@ int main(int argc, char **argv)
         return (-1);
     }
     else {
-        char    rtype[256];
-        char    wtype[256];
-        int     ci       = 1;
-        int     nidx     = 0;
-        int     test     = 0;
-        char   *opt_tree = 0;
+        char        rtype[256];
+        char        wtype[256];
+        int         ci       = 1;
+        int         nidx     = 0;
+        int         test     = 0;
+        const char *opt_tree = 0;
 
         {
             char *rtypep = rtype;
@@ -60,8 +59,8 @@ int main(int argc, char **argv)
             }
         }
 
-        char *in  = argv[ci++];
-        char *out = ci >= argc ? in : argv[ci++];
+        const char *in  = argv[ci++];
+        const char *out = ci >= argc ? in : argv[ci++];
 
         printf("Reading database...\n");
         GB_shell  shell;
