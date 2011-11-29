@@ -155,8 +155,8 @@ public:
 // ----------------------------------------------------
 //      const wrappers for functions from ad_prot.h
 
-inline char *GBS_find_string(char *str, GB_CSTR key, int match_mode) {
-    return const_cast<char*>(GBS_find_string(const_cast<GB_CSTR>(str), key, match_mode));
+inline char *GBS_find_string(char *content, GB_CSTR key, int match_mode) {
+    return const_cast<char*>(GBS_find_string(const_cast<GB_CSTR>(content), key, match_mode));
 }
 
 // ---------------------------------

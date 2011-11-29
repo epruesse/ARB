@@ -13,14 +13,14 @@
 
 //  GLOBALS
 
-typedef pair<bool, SpeciesID> p;
-vector<p> *__PATH = new vector<p>;
+typedef pair<bool, SpeciesID> Step;
+vector<Step> *__PATH = new vector<Step>;
 
 void PS_print_paths(const PS_NodePtr _ps_node) {
     //  recursively print the paths to the leaves
 
     // path
-    __PATH->push_back(p(_ps_node->hasInverseProbes(), _ps_node->hasProbes() ? _ps_node->getNum() : -(_ps_node->getNum())));
+    __PATH->push_back(Step(_ps_node->hasInverseProbes(), _ps_node->hasProbes() ? _ps_node->getNum() : -(_ps_node->getNum())));
 
     // children
     if (_ps_node->hasChildren()) {
@@ -31,7 +31,7 @@ void PS_print_paths(const PS_NodePtr _ps_node) {
     else {
         // print path in leaf nodes
         printf("[%4zu] ", __PATH->size());
-        for (vector<p>::const_iterator i=__PATH->begin(); i != __PATH->end(); ++i) {
+        for (vector<Step>::const_iterator i=__PATH->begin(); i != __PATH->end(); ++i) {
             printf("%4i%c ", i->second, i->first ? '+' : ' ');
         }
         printf("\n");

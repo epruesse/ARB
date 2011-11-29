@@ -48,11 +48,11 @@ inline void freeset(T *& var, T *heapcopy) {
     var = heapcopy;
 }
 
-inline char *nulldup(const char *str) {
-    return str ? strdup(str) : NULL;
+inline char *nulldup(const char *maybeStr) {
+    return maybeStr ? strdup(maybeStr) : NULL;
 }
-inline void freedup(char *& strvar, const char *no_heapcopy) {
-    freeset(strvar, nulldup(no_heapcopy));
+inline void freedup(char *& strvar, const char *maybeStr) {
+    freeset(strvar, nulldup(maybeStr));
 }
 inline void reassign(char *& dstvar, char *& srcvar) {
     freeset(dstvar, srcvar);
