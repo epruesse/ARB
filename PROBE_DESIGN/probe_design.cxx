@@ -309,12 +309,10 @@ GB_ERROR pd_get_the_gene_names(GBDATA *gb_main, bytestring &bs, bytestring &chec
     const char *use = GENOM_ALIGNMENT; // gene pt server is always build on 'ali_genom'
 
     for (GBDATA *gb_species = GEN_first_organism(gb_main); gb_species && !error; gb_species = GEN_next_organism(gb_species)) {
-        const char *sequence     = 0;
         const char *species_name = 0;
         {
             GBDATA *gb_data = GBT_read_sequence(gb_species, use);
             if (!gb_data) { error = species_requires(gb_species, GBS_global_string("data in '%s'", use)); break; }
-            sequence = GB_read_char_pntr(gb_data);
 
             GBDATA *gb_name = GB_search(gb_species, "name", GB_FIND);
             if (!gb_name) { error = species_requires(gb_species, "name"); break; }

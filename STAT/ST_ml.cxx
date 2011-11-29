@@ -800,13 +800,8 @@ ST_ML_Color *ST_ML::get_color_string(const char *species_name, AP_tree *node, si
     }
 
     const char *source_sequence = 0;
-    int source_sequence_len = 0;
-
     GBDATA *gb_data = seq->get_bound_species_data();
-    if (gb_data) {
-        source_sequence_len = GB_read_string_count(gb_data);
-        source_sequence     = GB_read_char_pntr(gb_data);
-    }
+    if (gb_data) source_sequence = GB_read_char_pntr(gb_data);
 
     // create color string in 'outs':
     ST_ML_Color    *outs   = seq->color_out  + start_ali_pos;
