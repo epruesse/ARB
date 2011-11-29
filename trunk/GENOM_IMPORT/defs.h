@@ -15,8 +15,6 @@
 #include <string>
 #endif
 
-using std::string;
-
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif

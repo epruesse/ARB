@@ -47,7 +47,7 @@ public:
     const string& getMessage() const { return err; }
 };
 
-typedef map<string, int> NameCounter;
+typedef std::map<std::string, int> NameCounter;
 class Translator;
 
 class DBwriter : virtual Noncopyable {

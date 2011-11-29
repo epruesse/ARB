@@ -21,7 +21,7 @@
 #include <algorithm>
 #endif
 
-inline void appendSpaced(string& str, const string& toAppend) {
+inline void appendSpaced(std::string& str, const std::string& toAppend) {
     if (!toAppend.empty()) {
         if (!str.empty()) str.append(1, ' ');
         str.append(toAppend);
@@ -30,12 +30,12 @@ inline void appendSpaced(string& str, const string& toAppend) {
 
 // --------------------------------------------------------------------------------
 
-#define CURRENT_REST string(pos, end).c_str()
+#define CURRENT_REST std::string(pos, end).c_str()
 
 struct StringParser {
     stringCIter pos, end;
 
-    StringParser(const string& str) : pos(str.begin()), end(str.end()) {}
+    StringParser(const std::string& str) : pos(str.begin()), end(str.end()) {}
 
     bool atEnd() const { return pos == end; }
 
@@ -45,7 +45,7 @@ struct StringParser {
     void setPosition(const stringCIter& position) { pos = position; }
     void advance(size_t offset) { std::advance(pos, offset); }
 
-    string rest() const { return string(pos, end); }
+    std::string rest() const { return std::string(pos, end); }
 
     stringCIter find(char c) {
         while (pos != end && *pos != c) {
@@ -96,7 +96,7 @@ struct StringParser {
         std::advance(pos, len); // eat the found content
     }
 
-    string extractWord(const char *delimiter = " ") {
+    std::string extractWord(const char *delimiter = " ") {
         if (atEnd() || strchr(delimiter, *pos) != 0) {
             throw GBS_global_string("Expected non-delimiter at '%s'", CURRENT_REST);
         }
@@ -104,7 +104,7 @@ struct StringParser {
         stringCIter start = pos++;
 
         while (!atEnd() && strchr(delimiter, *pos) == 0) ++pos;
-        return string(start, pos);
+        return std::string(start, pos);
     }
 
     long eatNumber(bool &eaten) {
