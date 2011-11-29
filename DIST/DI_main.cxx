@@ -41,7 +41,7 @@ static void DI_timer(AW_root *aw_root, AW_CL cl_gbmain, AW_CL cd2) {
     aw_root->add_timed_callback(500, DI_timer, cl_gbmain, cd2);
 }
 
-int main(int argc, char **argv) {
+int ARB_main(int argc, const char *argv[]) {
     if (argc >= 2 && strcmp(argv[1], "--help") == 0) {
         fprintf(stderr,
                 "Usage: arb_dist\n"

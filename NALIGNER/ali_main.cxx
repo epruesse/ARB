@@ -215,8 +215,7 @@ int convert_for_back_write(char *seq_new, char *seq_orig) {
 
 
 
-int main(int argc, const char *argv[])
-{
+int ARB_main(int argc, const char *argv[]) {
     int                            i;
     char                           message_buffer[100];
     char                           species_name[100], species_number;

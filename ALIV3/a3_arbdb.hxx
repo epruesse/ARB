@@ -32,7 +32,7 @@ class A3Arbdb : virtual Noncopyable {
         
                ~A3Arbdb             (void);
 
-        int     open                ( char *name,
+        int     open                ( const char *name,
                                       char *use_alignment = 0 );
 
         void    close               ( void );

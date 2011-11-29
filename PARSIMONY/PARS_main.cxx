@@ -1660,7 +1660,7 @@ void PARS_map_viewer(GBDATA *gb_species, AD_MAP_VIEWER_TYPE vtype) {
     }
 }
 
-int main(int argc, char **argv) {
+int ARB_main(int argc, const char *argv[]) {
     aw_initstatus();
 
     GB_shell shell;
