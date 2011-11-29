@@ -51,9 +51,9 @@ public:
     bool reinterpret_as_continued_line();
 };
 
-typedef SmartPtr<Feature>      FeaturePtr;
-typedef SmartPtr<FeatureLine>  FeatureLinePtr;
-typedef vector<FeatureLinePtr> FeatureLines;
+typedef SmartPtr<Feature>           FeaturePtr;
+typedef SmartPtr<FeatureLine>       FeatureLinePtr;
+typedef std::vector<FeatureLinePtr> FeatureLines;
 
 class Importer : virtual Noncopyable {
 protected:

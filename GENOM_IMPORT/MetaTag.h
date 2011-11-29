@@ -30,12 +30,12 @@ enum MetaTagType {
 };
 
 struct MetaTag {
-    string      tag;                                // tag name (in flatfile)
-    string      field;                              // field name
+    std::string tag;                                     // tag name (in flatfile)
+    std::string field;                                   // field name
     MetaTagType type;
 };
 
-typedef map<string, const MetaTag *> MetaTagMap;
+typedef std::map<std::string, const MetaTag *> MetaTagMap;
 
 class MetaTagTranslator : virtual Noncopyable {
     MetaTagMap translate;
@@ -48,7 +48,7 @@ public:
         }
     }
 
-    const MetaTag *get(const string& tag) const {
+    const MetaTag *get(const std::string& tag) const {
         MetaTagMap::const_iterator found = translate.find(tag);
         if (found != translate.end()) return found->second;
         return 0;

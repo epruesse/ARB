@@ -16,18 +16,18 @@
 #endif
 
 class Feature {
-    string      type;
+    std::string type;
     LocationPtr location;
     stringMap   qualifiers;     // qualifiers with content (content of multiple identical qualifiers gets merged)
 
 public:
-    Feature(const string& Type, const string& locationString);
+    Feature(const std::string& Type, const std::string& locationString);
 
-    void addQualifiedEntry(const string& qualifier, const string& value);
+    void addQualifiedEntry(const std::string& qualifier, const std::string& value);
 
-    string createGeneName() const; // creates a (non-unique) default name for gene
+    std::string createGeneName() const; // creates a (non-unique) default name for gene
 
-    const string& getType() const { return type; }
+    const std::string& getType() const { return type; }
     const Location& getLocation() const { return *location; }
     const stringMap& getQualifiers() const { return qualifiers; }
 
