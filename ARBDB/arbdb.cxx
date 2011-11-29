@@ -2572,7 +2572,6 @@ GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientda
 }
 
 static void gb_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata, bool cd_should_match) {
-    bool removed     = false;
     bool exactly_one = cd_should_match; // remove exactly one callback
 
 #if defined(DEBUG)
@@ -2604,7 +2603,6 @@ static void gb_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *cl
 
                 *cb_ptr = cb->next;
                 gbm_free_mem(cb, sizeof(gb_callback), GB_GBM_INDEX(gbd));
-                removed = true;
                 if (exactly_one) break;
             }
             else {
