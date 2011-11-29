@@ -48,7 +48,9 @@
 #endif
 
 static unsigned char DefaultAlphaCallback(unsigned char red, unsigned char green, unsigned char blue) {
-    red = green = blue; // unused
+    red   = red;   // unused
+    green = green; // unused
+    blue  = blue;  // unused
     return 255;
 }
 

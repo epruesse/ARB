@@ -188,10 +188,7 @@ long MO_Liste::debug_get_current()
     return current;
 }
 
-long MO_Liste::put_entry(const char* name)
-{
-    long    hashreturnval;
-
+long MO_Liste::put_entry(const char* name) {
     // Pruefe: Gibts den Bakter schon in dieser Liste??
     if (get_index_by_entry(name))               // wanns den Bakter scho gibt
     {
@@ -200,7 +197,7 @@ long MO_Liste::put_entry(const char* name)
     else
     {
         mo_liste[current] = new Bakt_Info(name);                    // MEL  koennte mit match_name zusammenhaengen
-        hashreturnval = GBS_write_hash(hashptr, name, current);
+        GBS_write_hash(hashptr, name, current);
         current++;
     }
     return current;

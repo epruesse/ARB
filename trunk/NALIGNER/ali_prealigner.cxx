@@ -229,11 +229,10 @@ inline float ALI_PREALIGNER::minimum3(float a, float b, float c) {
 
 
 inline void ALI_PREALIGNER::calculate_first_column_first_cell(ali_prealigner_cell * akt_cell) {
-    float v1, v2, v3;
+    float v1, v2;
 
     v1 = profile->w_ins_multi_cheap(start_x, start_y) + profile->w_sub_multi_gap_cheap(start_y, start_y);
     v2 = profile->w_sub(start_y, start_x);
-    v3 = v1;
 
     akt_cell->d = minimum2(v1, v2);
 
@@ -412,12 +411,11 @@ void ALI_PREALIGNER::calculate_matrix() {
 void ALI_PREALIGNER::generate_solution(ALI_MAP * map) {
     // Generate a sub_solution by deleting all undefined segments
     ALI_MAP        *seg_map;
-    unsigned long   map_pos, map_len;
+    unsigned long   map_pos;
     unsigned long   start_seg, end_seg, pos_seg;
 
     sub_solution = new ALI_SUB_SOLUTION(profile);
 
-    map_len = map->last_base() - map->first_base() + 1;
     for (map_pos = map->first_base(); map_pos <= map->last_base(); map_pos++) {
         // search for segment
         for (start_seg  = map_pos;

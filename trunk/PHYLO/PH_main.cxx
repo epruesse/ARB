@@ -56,14 +56,9 @@ void create_filter_text()
     strcpy(filter_text[TREAT_AS_REGULAR],     "treat as regular character                        ");
 }
 
-void startup_sequence_cb(AW_window *aww, AW_CL cd1, AW_CL cl_aww)
-{
-    PHDATA *phd;
-    char *use, *load_what;
-    AW_root *aw_root;
-
+void startup_sequence_cb(AW_window *aww, AW_CL cd1, AW_CL cl_aww) {
     if (aww) aww->hide();
-    aw_root=(AW_root *) cd1;
+    AW_root *aw_root = (AW_root *) cd1;
     // loading database
     GB_push_transaction(GLOBAL_gb_main);
     if (GBT_get_alignment_len(GLOBAL_gb_main, aw_root->awar("phyl/alignment")->read_string())<1) {
@@ -71,12 +66,13 @@ void startup_sequence_cb(AW_window *aww, AW_CL cd1, AW_CL cl_aww)
     }
     GB_pop_transaction(GLOBAL_gb_main);
 
-    use = aw_root->awar("phyl/alignment")->read_string();
-    load_what = aw_root->awar("phyl/which_species")->read_string();   // all, marked ...
-    phd=new PHDATA(aw_root);
+    char   *use = aw_root->awar("phyl/alignment")->read_string();
+    PHDATA *phd = new PHDATA(aw_root);
+
     GB_set_cache_size(GLOBAL_gb_main, PH_DB_CACHE_SIZE);
     phd->load(use);
     phd->ROOT = phd;
+    
     long len = PHDATA::ROOT->get_seq_len();
     aw_root->awar("phyl/filter/stopcol")->write_int(len);
     aw_root->awar("phyl/filter/startcol")->set_minmax(0, len);

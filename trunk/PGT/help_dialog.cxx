@@ -80,7 +80,7 @@ void helpDialog::createVisualizationHelp(Widget parent)
 
     // USED PIXMAPS (BUTTON LOGOS)
     Pixmap circle22_xpm, cross22_xpm, text22_xpm, markonly22_xpm, textonly22_xpm,
-           markall22_xpm, marknone22_xpm, arb2mark_xpm, mark2arb_xpm, help_xpm,
+           markall22_xpm, marknone22_xpm, arb2mark_xpm, mark2arb_xpm, 
            markinfo22_xpm, markinvert22_xpm;
 
     // OPEN THE PIXMAP FILES
@@ -96,7 +96,6 @@ void helpDialog::createVisualizationHelp(Widget parent)
     markinfo22_xpm   = PGT_LoadPixmap("markinfo22.xpm", s, fg, bg);
     arb2mark_xpm     = PGT_LoadPixmap("arb2mark22.xpm", s, fg, bg);
     mark2arb_xpm     = PGT_LoadPixmap("mark2arb22.xpm", s, fg, bg);
-    help_xpm         = PGT_LoadPixmap("help22.xpm", s, fg, bg);
 
     // CREATE A SIMPLE LABEL
     Widget top_label= XtVaCreateManagedWidget("label",

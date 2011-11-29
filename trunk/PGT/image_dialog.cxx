@@ -2325,7 +2325,7 @@ bool imageDialog::createDescriptions()
 ****************************************************************************/
 bool imageDialog::updateSelectedGene()
 {
-    char *awar_selected_protein, *awar_gene_id, *name= NULL;
+    char *awar_selected_protein, *name= NULL;
     GBDATA *gb_genome, *gb_gene, *gb_name;
 
     // FETCH GENOME
@@ -2334,9 +2334,6 @@ bool imageDialog::updateSelectedGene()
 
     // FETCH PROTEIN AWAR CONTENT
     awar_selected_protein= get_protein_AWAR();
-
-    // FETCH GENE IDENTIFIER
-    awar_gene_id= get_CONFIG(CONFIG_PGT_ID_GENE);
 
     // FETCH GENE
     gb_gene= m_gene_GBDATA_map[awar_selected_protein];

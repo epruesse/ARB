@@ -181,7 +181,6 @@ void ProbeValuation::init_valuation()
 {
     int         i, j, k, counter=0;
     probe       *temp_probe;
-    ST_Container    *stc;
     AW_window       *aww;
     char        *ptr, *ptr2;
 
@@ -202,7 +201,6 @@ void ProbeValuation::init_valuation()
         return;
     }
 
-    stc = mp_main->get_stc();
     aww = mp_main->get_mp_window()->get_window();
     aww->init_list_entry_iterator(selected_list); // initialisieren
 
