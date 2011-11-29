@@ -183,7 +183,6 @@ P // -----------------------------------------------------------------
 P #ifndef AISC_GEN_SERVER_INCLUDED
 P #define AISC_GEN_SERVER_INCLUDED
 --
-P typedef int         hash;
 P typedef char       *aisc_string;
 P typedef const char *aisc_cstring;
 --
