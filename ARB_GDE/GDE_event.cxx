@@ -544,7 +544,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
                 case COLORMASK:   WriteCMask  (DataSet, gfile.name, select_mode, gfile.maskable); break;
                 case GENBANK:     WriteGen    (DataSet, gfile.name, select_mode, gfile.maskable); break;
                 case NA_FLAT:     WriteNA_Flat(DataSet, gfile.name, select_mode, gfile.maskable); break;
-                case STATUS_FILE: WriteStatus (DataSet, gfile.name, select_mode);                 break;
+                case STATUS_FILE: WriteStatus (DataSet, gfile.name);                 break;
                 case GDE:         WriteGDE    (DataSet, gfile.name, select_mode, gfile.maskable); break;
                 default: break;
             }
