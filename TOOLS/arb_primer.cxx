@@ -299,7 +299,7 @@ void arb_prm_primer(int /* prmanz */)
     free(buffer);
 }
 
-int main(int argc, char **argv) {
+int ARB_main(int argc, const char *argv[]) {
     const char *path  = NULL;
 
     while (argc >= 2) {

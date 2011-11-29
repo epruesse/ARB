@@ -12,12 +12,12 @@
 #include <arb_file.h>
 #include <arbdb.h>
 
-int main(int argc, char **argv) {
+int ARB_main(int argc, const char *argv[]) {
     char       *data;
     char       *ndata;
     FILE       *out;
     int         arg;
-    char       *eval;
+    const char *eval;
     const char *fname;
     int         linemode           = false;
     int         delete_empty_lines = false;
@@ -67,24 +67,25 @@ int main(int argc, char **argv) {
         data = GB_read_file(fname);
         if (data) {
             if (patchmode) {
-                unsigned long size = GB_size_of_file(fname);
-                char *right = strchr(eval, '=');
-                int patched = false;
+                unsigned long  size    = GB_size_of_file(fname);
+                char          *evaldup = strdup(eval);
+                char          *right   = strchr(evaldup, '=');
+                int            patched = false;
                 if (!right) {
                     fprintf(stderr, "'=' not found in replace string\n");
                     return -1;
                 }
-                if (strlen(right) > strlen(eval)) {
+                if (strlen(right) > strlen(evaldup)) {
                     fprintf(stderr, "You cannot replace a shorter string by a longer one!!!\n");
                     return -1;
                 }
 
                 *(right++) = 0;
                 unsigned long i;
-                int leftsize = strlen(eval);
+                int leftsize = strlen(evaldup);
                 size -= leftsize;
                 for (i=0; i<size; i++) {
-                    if (!strncmp(data+i, eval, leftsize)) {
+                    if (!strncmp(data+i, evaldup, leftsize)) {
                         strcpy(data+i, right);
                         patched = true;
                     }

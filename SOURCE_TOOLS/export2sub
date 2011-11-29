@@ -4,7 +4,9 @@
 # variables listed here are automatically exported to sub-makefiles
 
 export ARBHOME
+
 export use_ARB_main
+export use_ARB_main_C
 
 export DEBUG
 export OPENGL 
