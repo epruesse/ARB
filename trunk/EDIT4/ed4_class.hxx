@@ -11,7 +11,7 @@
 # define IMPLEMENT_DUMP         // comment out this line to skip compilation of the dump() methods
 #endif
 
-// #define LIMIT_TOP_AREA_SPACE // // if defined, top area is size-limited
+// #define LIMIT_TOP_AREA_SPACE // // if defined, top area is size-limited // @@@ remove this
 #ifdef LIMIT_TOP_AREA_SPACE
 #define MAX_TOP_AREA_SIZE 10    // size limit for top-area
 #endif

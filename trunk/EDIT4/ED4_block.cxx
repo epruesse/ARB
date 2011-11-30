@@ -169,39 +169,34 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(ED4_blockoperation b
 
 
 void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
-    GB_ERROR               error    = GB_begin_transaction(GLOBAL_gb_main);
-    ED4_sequence_terminal *err_term = 0;
-    ED4_cursor            *cursor   = &ED4_ROOT->get_ed4w()->cursor;
-    int                    base_pos = (cursor && cursor->owner_of_cursor != 0) ? cursor->get_base_position() : -1;
+    GB_ERROR    error    = GB_begin_transaction(GLOBAL_gb_main);
+    ED4_cursor *cursor   = &ED4_ROOT->get_ed4w()->cursor;
+    int         base_pos = (cursor && cursor->owner_of_cursor != 0) ? cursor->get_base_position() : -1;
 
     switch (blocktype) {
         case ED4_BT_NOBLOCK: {
             aw_message("No block marked -- use right mouse button");
             break;
         }
-        case ED4_BT_LINEBLOCK: {
+        case ED4_BT_LINEBLOCK: { // @@@ dry
             ED4_list_elem *listElem = ED4_ROOT->selected_objects.first();
             while (listElem && !error) {
                 ED4_selection_entry   *selectionEntry = (ED4_selection_entry*)listElem->elem();
                 ED4_sequence_terminal *seqTerm        = selectionEntry->object->get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SEQUENCE_STRING)->to_sequence_terminal();
 
-                error               = perform_block_operation_on_whole_sequence(block_operation, seqTerm, repeat);
-                if (error) err_term = seqTerm;
-
+                error    = perform_block_operation_on_whole_sequence(block_operation, seqTerm, repeat);
                 listElem = listElem->next();
             }
             break;
         }
         case ED4_BT_MODIFIED_COLUMNBLOCK:
-        case ED4_BT_COLUMNBLOCK: {
+        case ED4_BT_COLUMNBLOCK: { // @@@ vs here
             ED4_list_elem *listElem = ED4_ROOT->selected_objects.first();
             while (listElem && !error) {
                 ED4_selection_entry *selectionEntry = (ED4_selection_entry*)listElem->elem();
                 ED4_sequence_terminal *seqTerm = selectionEntry->object->get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SEQUENCE_STRING)->to_sequence_terminal();
 
-                error = perform_block_operation_on_part_of_sequence(block_operation, seqTerm, repeat);
-                if (error) err_term = seqTerm;
-
+                error    = perform_block_operation_on_part_of_sequence(block_operation, seqTerm, repeat);
                 listElem = listElem->next();
             }
             break;
