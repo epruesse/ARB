@@ -755,7 +755,7 @@ long PTD_write_leafs_to_disk(FILE * out, POS_TREE * node, long pos, long *pnodep
     // pnodepos is set to last object
 
     POS_TREE     *sons;
-    long          r_pos, r_poss[PT_B_MAX], son_size[PT_B_MAX], o_pos;
+    long          r_pos, r_poss[PT_B_MAX], o_pos;
     int           block[10];            // TODO: check why we allocate 10 ints when only block[0] is used
     int           i;
     PT_NODE_TYPE  type = PT_read_type(node);
@@ -784,15 +784,8 @@ long PTD_write_leafs_to_disk(FILE * out, POS_TREE * node, long pos, long *pnodep
             if (sons) {
                 r_pos = PTD_write_leafs_to_disk(out, sons, pos, &(r_poss[i]), &(block[0]), error);
                 if (r_pos>pos) {        // really saved ????
-                    son_size[i] = r_pos-pos;
                     pos = r_pos;
                 }
-                else {
-                    son_size[i] = 0;
-                }
-            }
-            else {
-                son_size[i] = 0;
             }
         }
         if (block[0]) {     // son wrote a block
@@ -870,7 +863,11 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE **pnode) { // __A
             }
         }
 
-#ifndef ARB_64
+#ifdef ARB_64
+        // 64bit version:
+        big_db        = big_db; // only used in 32bit
+        info_detected = info_detected;
+#else
         // 32bit version:
         if (!error && big_db) {
             error = "PT-server database can only be used with 64bit-PT-Server";
@@ -878,7 +875,7 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE **pnode) { // __A
         if (!error && !info_detected) {
             printf("Warning: ptserver DB has old format (no problem)\n");
         }
-#endif // ARB_64
+#endif
 
         if (!error) {
             pt_assert(i >= 0);
