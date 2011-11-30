@@ -595,10 +595,8 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
         }
 
         while (id) {
-            bool flag_fixed_fonts_only    = false;
-            bool flag_no_color_selector   = false;
-            bool flag_append_in_same_line = false;
-            bool flag_no_fonts            = false;
+            bool flag_fixed_fonts_only = false;
+            bool flag_no_fonts         = false;
 
             AW_MGC_awar_cb_struct *acbs = 0;
             {
@@ -660,11 +658,11 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
                 int offset = 0;
                 while (1) {
                     switch (id_copy[offset]) {
-                        case '#': flag_fixed_fonts_only =   true; offset++; continue;
-                        case '=': flag_no_color_selector =  true; offset++; continue;
-                        case '+': flag_append_in_same_line = true; offset++; continue;
-                        case '-': flag_no_fonts =           true; offset++; continue;
-                        default:  break;
+                        case '#': flag_fixed_fonts_only = true; offset++; continue;
+                        case '-': flag_no_fonts = true; offset++; continue;
+                        case '=':
+                        case '+': offset++; continue; // just skip over here, handled only in aw_insert_gcs()
+                        default: break;
                     }
                     break;
                 }
@@ -770,7 +768,6 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
 
     bool        has_color_groups = false;
     const char *window_awar_name = gcmgr->get_field();
-    bool        first            = true;
 
     for (gcmgr = gcmgr->get_next(); gcmgr; gcmgr = gcmgr->get_next()) {
         const char *id = gcmgr->get_field();
@@ -862,7 +859,6 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
             }
             if (!flag_append_in_same_line)  aws->at_newline();
         }
-        first = false;
         free(fontbasename);
     }
 
