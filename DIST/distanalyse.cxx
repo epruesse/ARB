@@ -20,7 +20,7 @@ void DI_MATRIX::analyse() {
     long  row;
 
     long    act_gci, mean_gci=0;
-    float   act_gc, mean_gc, min_gc=9999.9, max_gc=0.0;
+    float   act_gc, min_gc=9999.9, max_gc=0.0;
     long    act_len, mean_len=0, min_len=9999999, max_len=0;
 
     if (is_AA) {
@@ -62,7 +62,6 @@ void DI_MATRIX::analyse() {
                        "        Be careful: Neighbour Joining is sensitive to\n"
                        "        this kind of \"error\"");
         }
-        mean_gc = ((float) mean_gci) / mean_len / nentries;
         mean_len /= nentries;
 
         if (mean_len < 100) {

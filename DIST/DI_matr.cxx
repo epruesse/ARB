@@ -1347,9 +1347,6 @@ static void di_autodetect_callback(AW_window *aww)
 
     progress.subtitle("Search Correction");
 
-    DI_TRANSFORMATION trans;
-    trans = (DI_TRANSFORMATION)aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
-
     phm->analyse();
     delete phm;
 
