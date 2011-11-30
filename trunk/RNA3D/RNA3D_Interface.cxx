@@ -93,15 +93,11 @@ void KeyReleaseEventHandler(Widget /* w */, XtPointer /* client_data */, XEvent 
 }
 
 void KeyPressEventHandler(Widget /* w */, XtPointer /* client_data */, XEvent *event, char* /* x */) {
-    XKeyEvent *evt;
-    evt = (XKeyEvent*) event;
-
     char   buffer[1];
     KeySym keysym;
-    int    count;
 
     // Converting keycode to keysym
-    count = XLookupString((XKeyEvent *) event, buffer, 1, &keysym, NULL);
+    XLookupString((XKeyEvent *) event, buffer, 1, &keysym, NULL);
 
     switch (keysym) {
         case XK_space:
