@@ -1240,32 +1240,7 @@ ED4_returncode ED4_manager::unfold_group(char *bracket_ID_to_unfold)
     if (!temp_parent) return ED4_R_WARNING;
 
     ED4_multi_species_manager *multi_species_manager = NULL;
-
-
-#if defined(LIMIT_TOP_AREA_SPACE)
-    int nr_of_visible_species   = 0;
-    int nr_of_children_in_group = 0;
-    ED4_AREA_LEVEL level = temp_parent->get_area_level(&multi_species_manager);
-    if (level==ED4_A_TOP_AREA || level==ED4_A_BOTTOM_AREA) { // check if there are any unfolding restrictions
-        nr_of_visible_species = multi_species_manager->count_visible_children();
-
-        if (nr_of_visible_species >= MAX_TOP_AREA_SIZE) {
-            aw_message("Top area limited to " MAX_TOP_AREA_SIZE " species\n"
-                       "Advice: Move group to main area and try again");
-            return ED4_R_IMPOSSIBLE;
-        }
-
-        nr_of_children_in_group = temp_parent->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->count_visible_children();
-
-        if (nr_of_children_in_group + nr_of_visible_species - 1 > MAX_TOP_AREA_SIZE) {
-            aw_message("Top area limited to " MAX_TOP_AREA_SIZE " species\n"
-                       "Advice: Move group to main area and try again");
-            return ED4_R_IMPOSSIBLE;
-        }
-    }
-#else // LIMIT_TOP_AREA_SPACE
     temp_parent->get_area_level(&multi_species_manager);
-#endif
 
     for (i=0; i < temp_parent->children->members(); i++) {
         ED4_base *member = temp_parent->children->member(i);
