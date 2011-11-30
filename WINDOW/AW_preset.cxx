@@ -513,6 +513,58 @@ GB_ERROR AW_set_color_group(GBDATA *gbd, long color_group) {
     return GBT_write_int(gbd, AW_COLOR_GROUP_ENTRY, color_group);
 }
 
+struct gc_props {
+    bool hidden; 
+    bool select_font;
+    bool select_color;
+
+    bool fixed_fonts_only;
+    bool append_same_line;
+
+    gc_props()
+        : hidden(false),
+          select_font(true), 
+          select_color(true),
+          fixed_fonts_only(false),
+          append_same_line(false)
+    {}
+
+private:
+    bool parse_char(char c) {
+        switch (c) {
+            case '#': fixed_fonts_only = true; break;
+            case '+': append_same_line = true; break;
+
+            case '=': select_color = false; break;
+            case '-': {
+                if (select_font) select_font = false;
+                else hidden                  = true; // two '-' means 'hidden'
+                break;
+            }
+
+            default : return false;
+        }
+        return true;
+    }
+
+    void correct() {
+        if (!select_font && !select_color) hidden             = true;
+        if (append_same_line && select_font) append_same_line = false;
+    }
+public:
+
+    int parse_decl(const char *decl) {
+        // returns number of (interpreted) prefix characters
+        int offset = 0;
+        while (decl[offset]) {
+            if (!parse_char(decl[offset])) break;
+            offset++;
+        }
+        correct();
+        return offset;
+    }
+};
+
 AW_gc_manager AW_manage_GC(AW_window   *aww,
                            AW_device   *device,
                            int          base_gc,
@@ -573,7 +625,7 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
     aww->main_drag_gc = base_drag;
     gcmgrfirst = gcmgrlast = new aw_gc_manager(mcbs->window_awar_name, 0);
 
-    const char *old_font_base_name = "default";
+    const char *last_font_base_name = "default";
 
     char background[50];
     aw_assert(default_background_color[0]);
@@ -595,9 +647,7 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
         }
 
         while (id) {
-            bool flag_fixed_fonts_only = false;
-            bool flag_no_fonts         = false;
-
+            gc_props gcp;
             AW_MGC_awar_cb_struct *acbs = 0;
             {
                 char       *id_copy       = strdup(id);
@@ -655,23 +705,11 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
                     mcbs->next_drag = acbs;
                 }
 
-                int offset = 0;
-                while (1) {
-                    switch (id_copy[offset]) {
-                        case '#': flag_fixed_fonts_only = true; offset++; continue;
-                        case '-': flag_no_fonts = true; offset++; continue;
-                        case '=':
-                        case '+': offset++; continue; // just skip over here, handled only in aw_insert_gcs()
-                        default: break;
-                    }
-                    break;
-                }
-
+                gcp.parse_decl(id_copy);
                 freenull(id_copy);
             }
 
-            if (flag_fixed_fonts_only) def_font = AW_DEFAULT_FIXED_FONT;
-            else def_font                       = AW_DEFAULT_NORMAL_FONT;
+            def_font = gcp.fixed_fonts_only ? AW_DEFAULT_FIXED_FONT : AW_DEFAULT_NORMAL_FONT;
 
             if ((area != AW_GCM_DATA_AREA) || !first) {
                 device->new_gc(base_gc);
@@ -693,8 +731,8 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
 
             aw_gc_color_changed_cb(aw_root, acbs, -1);
 
-            if (flag_no_fonts) acbs->fontbasename = old_font_base_name;
-            else old_font_base_name = acbs->fontbasename = acbs->colorbasename;
+            acbs->fontbasename  = gcp.select_font ? acbs->colorbasename : last_font_base_name;
+            last_font_base_name = acbs->fontbasename;
 
             {
                 sprintf(awar_name, AWP_FONTNAME_TEMPLATE, mcbs->window_awar_name, acbs->fontbasename);
@@ -702,7 +740,7 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
                 sprintf(awar_name, AWP_FONTSIZE_TEMPLATE,  mcbs->window_awar_name, acbs->fontbasename);
                 AW_awar *font_size_awar = aw_root->awar_int(awar_name, DEF_FONTSIZE, aw_def);
 
-                if (!flag_no_fonts) {
+                if (gcp.select_font) {
                     font_awar->add_callback(aw_font_changed_cb, (AW_CL)acbs);
                     gcmgr2->set_font_change_parameter(acbs);
                 }
@@ -771,28 +809,9 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
 
     for (gcmgr = gcmgr->get_next(); gcmgr; gcmgr = gcmgr->get_next()) {
         const char *id = gcmgr->get_field();
+        gc_props    gcp;
 
-        bool flag_fixed_fonts_only    = false;
-        bool flag_no_color_selector   = false;
-        bool flag_append_in_same_line = false;
-        bool flag_no_fonts            = false;
-        bool flag_hide_this_gc        = false;
-
-        while (1) {
-            switch (id[0]) {
-                case '#': flag_fixed_fonts_only =   true; id++; continue;
-                case '=': flag_no_color_selector =  true; id++; continue;
-                case '+': flag_append_in_same_line = true; id++; continue;
-                case '-': {
-                    if (flag_no_fonts) flag_hide_this_gc = true; // if gc definition contains -- the gc is completely hidden
-                    else flag_no_fonts = true;
-                    id++;
-                    continue;
-                }
-                default:    break;
-            }
-            break;
-        }
+        id += gcp.parse_decl(id);
 
         char *fontbasename   = GBS_string_2_key(id);
         char  awar_name[256];
@@ -808,7 +827,7 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
             if (insert_color_groups) continue;
         }
 
-        if (!flag_hide_this_gc) {
+        if (!gcp.hidden) {
             sprintf(awar_name, AWP_COLORNAME_TEMPLATE, window_awar_name, fontbasename);
             aws->label_length(15);
 
@@ -822,13 +841,13 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
                 aws->label(id);
             }
 
-            if (!flag_no_color_selector) {
+            if (gcp.select_color) {
                 aws->button_length(5);
                 AW_preset_create_color_chooser(aws, awar_name, id);
             }
             aws->create_input_field(awar_name, 7);
 
-            if (!flag_no_fonts) {
+            if (gcp.select_font) {
                 sprintf(awar_name, AWP_FONTNAME_TEMPLATE, window_awar_name, fontbasename);
 
                 aws->label_length(5);
@@ -840,7 +859,7 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
                     for (font_nr = 0; ; font_nr++) {
                         font_string = AW_font_2_ascii((AW_font) font_nr);
                         if (!font_string) break;
-                        if (flag_fixed_fonts_only && AW_font_2_xfig((AW_font) font_nr) >= 0) continue;
+                        if (gcp.fixed_fonts_only && AW_font_2_xfig((AW_font) font_nr) >= 0) continue;
                         aws->insert_option(font_string, 0, (int) font_nr);
                     }
                     aws->update_option_menu();
@@ -857,7 +876,7 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
 
                 aw_init_font_sizes(aw_root, acs, true); // does update_option_menu
             }
-            if (!flag_append_in_same_line)  aws->at_newline();
+            if (!gcp.append_same_line)  aws->at_newline();
         }
         free(fontbasename);
     }
