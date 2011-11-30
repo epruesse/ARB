@@ -112,21 +112,18 @@ int SQ_get_value(GBDATA * gb_main, const char *option) {
     char *alignment_name;
 
     GBDATA *gb_species;
-    GBDATA *gb_species_data;
     GBDATA *gb_name;
     GBDATA *(*getFirst)(GBDATA *) = 0;
     GBDATA *(*getNext)(GBDATA *) = 0;
 
     GB_push_transaction(gb_main);
-    gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
     alignment_name = GBT_get_default_alignment(gb_main); seq_assert(alignment_name);
 
     // marked_only
     getFirst = GBT_first_marked_species;
     getNext = GBT_next_marked_species;
 
-    for (gb_species = getFirst(gb_main); gb_species; gb_species
-            = getNext(gb_species)) {
+    for (gb_species = getFirst(gb_main); gb_species; gb_species = getNext(gb_species)) {
         gb_name = GB_entry(gb_species, "name");
 
         if (gb_name) {
@@ -152,21 +149,18 @@ int SQ_get_value_no_tree(GBDATA * gb_main, const char *option) {
 
     GBDATA *read_sequence = 0;
     GBDATA *gb_species;
-    GBDATA *gb_species_data;
     GBDATA *gb_name;
     GBDATA *(*getFirst)(GBDATA *) = 0;
     GBDATA *(*getNext)(GBDATA *) = 0;
 
     GB_push_transaction(gb_main);
-    gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
     alignment_name = GBT_get_default_alignment(gb_main); seq_assert(alignment_name);
 
     // marked_only
     getFirst = GBT_first_marked_species;
     getNext = GBT_next_marked_species;
 
-    for (gb_species = getFirst(gb_main); gb_species; gb_species
-            = getNext(gb_species)) {
+    for (gb_species = getFirst(gb_main); gb_species; gb_species = getNext(gb_species)) {
         gb_name = GB_entry(gb_species, "name");
         if (gb_name) {
 
@@ -197,14 +191,12 @@ GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights, bool marked_o
     char *alignment_name;
 
     GBDATA *gb_species;
-    GBDATA *gb_species_data;
     GBDATA *gb_name;
     GBDATA *(*getFirst)(GBDATA *) = 0;
     GBDATA *(*getNext)(GBDATA *) = 0;
     GB_ERROR error = 0;
 
     GB_push_transaction(gb_main);
-    gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
     alignment_name = GBT_get_default_alignment(gb_main); seq_assert(alignment_name);
 
     if (marked_only) {
@@ -216,8 +208,7 @@ GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights, bool marked_o
         getNext = GBT_next_species;
     }
 
-    for (gb_species = getFirst(gb_main); gb_species && !error; gb_species
-            = getNext(gb_species)) {
+    for (gb_species = getFirst(gb_main); gb_species && !error; gb_species = getNext(gb_species)) {
         gb_name = GB_entry(gb_species, "name");
 
         if (!gb_name)
@@ -415,18 +406,15 @@ GB_ERROR SQ_pass1(SQ_GroupData * globalData, GBDATA * gb_main, GBT_TREE * node, 
     char *alignment_name;
     GBDATA *read_sequence = 0;
     GBDATA *gb_species;
-    GBDATA *gb_species_data;
     GBDATA *gb_name;
     GB_ERROR error = 0;
 
     GB_push_transaction(gb_main);
-    gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
     alignment_name = GBT_get_default_alignment(gb_main); seq_assert(alignment_name);
     gb_species = node->gb_node;
     gb_name = GB_entry(gb_species, "name");
 
-    if (!gb_name)
-        error = GB_get_error();
+    if (!gb_name) error = GB_get_error();
     else {
         GBDATA *gb_ali = GB_entry(gb_species, alignment_name);
 
@@ -504,14 +492,12 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData * globalData, GBDATA * gb_main, AP_filter
 
     GBDATA *read_sequence = 0;
     GBDATA *gb_species;
-    GBDATA *gb_species_data;
     GBDATA *gb_name;
     GBDATA *(*getFirst)(GBDATA *) = 0;
     GBDATA *(*getNext)(GBDATA *) = 0;
     GB_ERROR error = 0;
 
     GB_push_transaction(gb_main);
-    gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
     alignment_name = GBT_get_default_alignment(gb_main); seq_assert(alignment_name);
 
     getFirst = GBT_first_species;
@@ -596,18 +582,15 @@ GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main,
 
     GBDATA *read_sequence = 0;
     GBDATA *gb_species;
-    GBDATA *gb_species_data;
     GBDATA *gb_name;
     GB_ERROR error = 0;
 
     GB_push_transaction(gb_main);
-    gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
     alignment_name = GBT_get_default_alignment(gb_main); seq_assert(alignment_name);
     gb_species = node->gb_node;
     gb_name = GB_entry(gb_species, "name");
 
-    if (!gb_name)
-        error = GB_get_error();
+    if (!gb_name) error = GB_get_error();
     else {
         GBDATA *gb_ali = GB_entry(gb_species, alignment_name);
 
@@ -813,14 +796,12 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData * globalData, GBDATA * gb_main, AP_
 
     GBDATA *read_sequence = 0;
     GBDATA *gb_species;
-    GBDATA *gb_species_data;
     GBDATA *gb_name;
     GBDATA *(*getFirst)(GBDATA *) = 0;
     GBDATA *(*getNext)(GBDATA *) = 0;
     GB_ERROR error = 0;
 
     GB_push_transaction(gb_main);
-    gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
     alignment_name  = GBT_get_default_alignment(gb_main); seq_assert(alignment_name);
     getFirst        = GBT_first_species;
     getNext         = GBT_next_species;
@@ -1096,11 +1077,9 @@ GB_ERROR SQ_mark_species(GBDATA * gb_main, int condition, bool marked_only) {
 
     GBDATA *read_sequence = 0;
     GBDATA *gb_species;
-    GBDATA *gb_species_data;
     GB_ERROR error = 0;
 
     GB_push_transaction(gb_main);
-    gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
     alignment_name = GBT_get_default_alignment(gb_main); seq_assert(alignment_name);
 
     GBDATA *(*getFirst)(GBDATA *) = 0;
