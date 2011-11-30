@@ -951,7 +951,7 @@ void TEST_GEN_position() {
         TEST_WRITE_GEN_POSITION_ERROR(pos, "Invalid positions 25^25 for uncertainties +-");
 
         pos->stop_pos[2] = 26;
-        TEST_WRITE_GEN_POSITION_ERROR(pos, NULL);
+        TEST_WRITE_GEN_POSITION_ERROR(pos, (void*)NULL);
         
         pos->stop_pos[0] = 100;
         TEST_WRITE_GEN_POSITION_ERROR(pos, "Illegal stop position 100 (>length(=32))");

@@ -1143,7 +1143,7 @@ namespace arb_test {
     } while (0)
 
 
-#define TEST_ASSERT_NORESULT__ERROREXPORTED(create_result) TEST_ASSERT_NORESULT__ERROREXPORTED_CHECKERROR(create_result,NULL,NULL) 
+#define TEST_ASSERT_NORESULT__ERROREXPORTED(create_result) TEST_ASSERT_NORESULT__ERROREXPORTED_CHECKERROR(create_result,(void*)NULL,(void*)NULL) 
     
 
 #define TEST_ASSERT_RESULT__NOERROREXPORTED(create_result)                                      \
@@ -1203,8 +1203,8 @@ namespace arb_test {
 #define TEST_ASSERT_EQUAL(e1,t2)         TEST_EXPECT(that(e1).equals(t2))
 #define TEST_ASSERT_EQUAL__BROKEN(e1,t2) TEST_EXPECT__BROKEN(that(e1).equals(t2))
 
-#define TEST_ASSERT_NULL(n)         TEST_ASSERT_EQUAL(n, NULL)
-#define TEST_ASSERT_NULL__BROKEN(n) TEST_ASSERT_EQUAL__BROKEN(n, NULL)
+#define TEST_ASSERT_NULL(n)         TEST_ASSERT_EQUAL(n, (typeof(n))NULL)
+#define TEST_ASSERT_NULL__BROKEN(n) TEST_ASSERT_EQUAL__BROKEN(n, (typeof(n))NULL)
 
 #define TEST_ASSERT_SIMILAR(e1,t2,epsilon)         TEST_EXPECT(that(e1).is(epsilon_similar(epsilon), t2))
 #define TEST_ASSERT_SIMILAR__BROKEN(e1,t2,epsilon) TEST_EXPECT__BROKEN(that(e1).is(epsilon_similar(epsilon), t2))
