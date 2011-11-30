@@ -509,11 +509,6 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
     ED4_base            *found_member   = NULL;
     ED4_extension        loc;
 
-#if defined(LIMIT_TOP_AREA_SPACE)
-    int nr_of_visible_species   = 0;
-    int nr_of_children_in_group = 0;
-#endif
-
     if ((mi == NULL) || (mi->object->spec->level <= spec->level)) {
         return (ED4_R_IMPOSSIBLE);
     }
@@ -550,33 +545,6 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
 
 
         old_parent = object->parent;
-
-#if defined(LIMIT_TOP_AREA_SPACE)
-        if (old_parent->get_area_level() != level) { // when moving between two different areas we have to
-            if (level == ED4_A_TOP_AREA || level == ED4_A_BOTTOM_AREA) { // check restrictions
-                nr_of_visible_species = multi_species_manager->count_visible_children();
-
-                if (nr_of_visible_species >= MAX_TOP_AREA_SIZE) {
-                    return ED4_R_IMPOSSIBLE;
-                }
-
-                if (object->is_group_manager()) {
-                    ED4_group_manager *group_manager = object->to_group_manager();
-
-                    if (object->dynamic_prop & ED4_P_IS_FOLDED) {
-                        nr_of_children_in_group = 1;
-                    }
-                    else {
-                        nr_of_children_in_group = group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->count_visible_children();
-                    }
-
-                    if (nr_of_children_in_group + nr_of_visible_species > MAX_TOP_AREA_SIZE) {
-                        return ED4_R_IMPOSSIBLE;
-                    }
-                }
-            }
-        }
-#endif // LIMIT_TOP_AREA_SPACE
 
         x_off = 0;
         y_off = 0;
