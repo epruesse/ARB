@@ -389,19 +389,15 @@ ED4_returncode ED4_terminal::resize_requested_by_child()
 
 ED4_returncode ED4_terminal::draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text, int cursor_y)      // draws drag box of object at location abs_x, abs_y
 {
-    ED4_index   i;
-    AW_pos          width, height, drag_x, drag_y;
-    AW_pos      drag_line_x0[3], drag_line_y0[3];
-    AW_pos      drag_line_x1[3], drag_line_y1[3];
-    ED4_base    *drag_target = NULL;
-    AW_pos      target_x, target_y;
-    ED4_extension   location;
+    ED4_index      i;
+    AW_pos         drag_x, drag_y;
+    AW_pos         drag_line_x0[3], drag_line_y0[3];
+    AW_pos         drag_line_x1[3], drag_line_y1[3];
+    ED4_base      *drag_target = NULL;
+    AW_pos         target_x, target_y;
+    ED4_extension  location;
 
-    width = extension.size[WIDTH] - 1;
-    height = extension.size[HEIGHT] - 1;
-
-    if (cursor_y!=-1)
-    {
+    if (cursor_y!=-1) {
         ED4_device_manager *device_manager = ED4_ROOT->main_manager->search_spec_child_rek(ED4_L_DEVICE)->to_device_manager();
         drag_x = 0;
         drag_y = (AW_pos)cursor_y; // cursor_y is already in world coordinates!

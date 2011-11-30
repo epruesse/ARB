@@ -506,7 +506,6 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
     ED4_selection_entry *sel_info;
     ED4_list_elem       *list_elem;
     bool                 i_am_consensus = 0;
-    ED4_AREA_LEVEL       level;
     ED4_base            *found_member   = NULL;
     ED4_extension        loc;
 
@@ -550,10 +549,7 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
         }
 
 
-        old_parent                                       = object->parent;
-        ED4_multi_species_manager *multi_species_manager = NULL;
-
-        level = get_area_level(&multi_species_manager);
+        old_parent = object->parent;
 
 #if defined(LIMIT_TOP_AREA_SPACE)
         if (old_parent->get_area_level() != level) { // when moving between two different areas we have to
@@ -944,10 +940,8 @@ ED4_returncode ED4_root_group_manager::resize_requested_by_parent() {
 }
 
 ED4_returncode ED4_main_manager::resize_requested_by_parent() {
-    ED4_returncode result = ED4_R_OK;
-
     if (update_info.resize) {
-        result = ED4_manager::resize_requested_by_parent();
+        ED4_manager::resize_requested_by_parent();
         ED4_ROOT->get_ed4w()->update_scrolled_rectangle();
     }
     return ED4_R_OK;

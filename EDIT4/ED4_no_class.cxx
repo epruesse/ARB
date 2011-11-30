@@ -165,15 +165,6 @@ static ARB_ERROR call_edit(ED4_base *object, AW_CL cl_work_info) {
     GB_ERROR error = NULL;
 
     if (object->is_terminal()) {
-        GB_TYPES gb_type;
-
-        if (object->get_species_pointer()) {
-            gb_type = GB_read_type(object->get_species_pointer());
-        }
-        else {
-            gb_type = GB_NONE;
-        }
-
         ED4_base *species_manager = object->get_parent(ED4_L_SPECIES);
 
         if (species_manager && !species_manager->flag.is_SAI) { // don't edit SAI's if editing the consensus
