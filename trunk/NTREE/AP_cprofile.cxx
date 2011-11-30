@@ -227,7 +227,7 @@ static void CPRO_freestatistic(unsigned char which_statistic)
 static void CPRO_workupstatistic(unsigned char which_statistic)
 {
     long base;
-    long column, colmax, memneeded=0;
+    long column, memneeded=0;
     long sum, hits, different, group;
     long hitsc, diffc, groupc;
     CPRO.maxresneeded=0;
@@ -248,7 +248,6 @@ static void CPRO_workupstatistic(unsigned char which_statistic)
             if (sum>CPRO.result[which_statistic].maxaccu)
             {
                 CPRO.result[which_statistic].maxaccu=sum;
-                colmax=column;
             }
         }
         if (hits) memneeded += CPRO.result[which_statistic].maxalignlen;
@@ -635,15 +634,6 @@ static void CPRO_calculate_cb(AW_window *aw, AW_CL which_statistic)
 
 static void CPRO_memrequirement_cb(AW_root *aw_root)
 {
-    char  versus = 0; // all vs all
-    {
-        char *marked = aw_root->awar("cpro/which_species")->read_string();
-        
-        if (!(strcmp("marked", marked))) versus    = 1;
-        if (!(strcmp("markedall", marked))) versus = 2;
-        free(marked);
-    }
-
     CPRO.partition  = aw_root->awar("cpro/partition")->read_int();
     long resolution = aw_root->awar("cpro/resolution")->read_int();
 
