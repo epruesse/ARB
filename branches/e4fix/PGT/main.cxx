@@ -32,7 +32,7 @@ class CMain : virtual Noncopyable {
         //
         bool DB_Connect();
         void DB_Disconnect();
-        int Run(int, char **);
+        int Run(int, const char **);
     protected:
         void MainLoop();
         //
@@ -144,7 +144,7 @@ void CMain::MainLoop()
 *        0 = EVERYTHING IS FINE
         -1 = AN ERROR OCCURRED (UNABLE TO ESTABLISH DB CONNECTION)
 ****************************************************************************/
-int CMain::Run(int argc, char **argv)
+int CMain::Run(int argc, const char **argv)
 {
     // TRY TO ESTABLISH THE DATABASE CONNECTIONS
     if(!m_connected)
@@ -159,9 +159,9 @@ int CMain::Run(int argc, char **argv)
 
     // CREATE THE TOP LEVEL WIDGET (APPLICATION WIDGET)
     m_topwidget= XtVaOpenApplication(&m_xapp, "PGTApp", NULL, 0,
-        &argc, argv, NULL,
-        sessionShellWidgetClass,
-        NULL);
+                                     &argc, (char**)argv, NULL,
+                                     sessionShellWidgetClass,
+                                     NULL);
 
     // CREATE THE PGT MAIN DIALOG WINDOW
     m_maindialog= new mainDialog(m_topwidget);
@@ -182,8 +182,7 @@ int CMain::Run(int argc, char **argv)
 /****************************************************************************
 *  MAIN FUNCTION - NO FURTHER COMMENT NECESSARY... ;-)
 ****************************************************************************/
-int main(int argc, char **argv)
-{
+int ARB_main(int argc, const char *argv[]) {
     // CREATE THE PGT MAIN EVENT HANDLER
     CMain cmain;
 

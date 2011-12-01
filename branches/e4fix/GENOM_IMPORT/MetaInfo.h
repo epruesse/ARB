@@ -21,31 +21,31 @@ class Reference { // holds information of one reference section
 public:
     Reference() {}
 
-    void          add(const string& field, const string& content);
-    const string *get(const string& field) const;
+    void add(const std::string& field, const std::string& content);
+    const std::string *get(const std::string& field) const;
 
     void getKeys(stringSet& keys) const; // get reference keys
 };
 
 
 class References : virtual Noncopyable { // holds information of all reference sections
-    vector<Reference>  refs;
-    Reference         *latest;
-    int                ref_count;
+    std::vector<Reference>  refs;
+    Reference              *latest;
+    int                     ref_count;
 
 public:
     References() : latest(0), ref_count(0) {}
 
     void start();               // start a new reference
-    void add(const string& field, const string& content) {
+    void add(const std::string& field, const std::string& content) {
         gi_assert(latest);
         latest->add(field, content);
     }
 
-    void add_dbid(const string& content); // special handling for 'RX' field
+    void add_dbid(const std::string& content); // special handling for 'RX' field
 
     void   getKeys(stringSet& keys) const; // get reference keys
-    string tagged_content(const string& refkey) const;
+    std::string tagged_content(const std::string& refkey) const;
 
 #if defined(DEBUG)
     void dump() const;
@@ -58,7 +58,7 @@ class MetaInfo : virtual Noncopyable {
 public:
     MetaInfo() {}
 
-    void add(const MetaTag *meta, const string& content, bool allow_multiple_entries);
+    void add(const MetaTag *meta, const std::string& content, bool allow_multiple_entries);
 
 #if defined(DEBUG)
     void dump() const;
@@ -66,7 +66,7 @@ public:
 
     const stringMap& getEntries() const { return entries; }
 
-    const string& getAccessionNumber() const;
+    const std::string& getAccessionNumber() const;
 };
 
 #else

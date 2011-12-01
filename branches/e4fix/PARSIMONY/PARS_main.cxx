@@ -1261,9 +1261,9 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     AWT_canvas *ntw;
     {
         AP_tree_sort  old_sort_type = GLOBAL_PARS->tree->tree_sort;
-        GLOBAL_PARS->tree->set_tree_type(AP_LIST_SIMPLE); // avoid NDS warnings during startup
+        GLOBAL_PARS->tree->set_tree_type(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
         ntw = new AWT_canvas(GLOBAL_gb_main, (AW_window *)awm, GLOBAL_PARS->tree, aw_gc_manager, AWAR_TREE);
-        GLOBAL_PARS->tree->set_tree_type(old_sort_type);
+        GLOBAL_PARS->tree->set_tree_type(old_sort_type, ntw);
     }
 
     {
@@ -1660,7 +1660,7 @@ void PARS_map_viewer(GBDATA *gb_species, AD_MAP_VIEWER_TYPE vtype) {
     }
 }
 
-int main(int argc, char **argv) {
+int ARB_main(int argc, const char *argv[]) {
     aw_initstatus();
 
     GB_shell shell;

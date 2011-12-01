@@ -205,9 +205,6 @@ void InitializeOpenGLEngine(GLint width, GLint height) {
 }
 
 void ComputeRotationXY(int x, int y) {
-    GLfloat dx, dy;
-    dx = RNA3D->saved_x - x;
-    dy = RNA3D->saved_y - y;
     rot_y = (GLfloat)(x - RNA3D->saved_x) * RNA3D->ROTATION_SPEED;
     rot_x = (GLfloat)(y - RNA3D->saved_y) * RNA3D->ROTATION_SPEED;
     RNA3D->saved_x = x;

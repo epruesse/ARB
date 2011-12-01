@@ -41,7 +41,7 @@ static void DI_timer(AW_root *aw_root, AW_CL cl_gbmain, AW_CL cd2) {
     aw_root->add_timed_callback(500, DI_timer, cl_gbmain, cd2);
 }
 
-int main(int argc, char **argv) {
+int ARB_main(int argc, const char *argv[]) {
     if (argc >= 2 && strcmp(argv[1], "--help") == 0) {
         fprintf(stderr,
                 "Usage: arb_dist\n"
@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
     AW_root *aw_root = AWT_create_root("dist.arb", "ARB_DIST");
 
     {
-        arb_params *params = arb_trace_argv(&argc, argv);
+        arb_params *params = arb_trace_argv(&argc, (const char **)argv);
         if (argc==2) {
             freedup(params->db_server, argv[1]);
         }
@@ -86,5 +86,7 @@ int main(int argc, char **argv) {
 
     aw_root->add_timed_callback(2000, DI_timer, AW_CL(GLOBAL_gb_main), 0);
     aw_root->main_loop();
+
+    return EXIT_SUCCESS;
 }
 

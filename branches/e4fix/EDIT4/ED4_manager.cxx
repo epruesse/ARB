@@ -503,14 +503,8 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
     ED4_selection_entry *sel_info;
     ED4_list_elem       *list_elem;
     bool                 i_am_consensus = 0;
-    ED4_AREA_LEVEL       level;
     ED4_base            *found_member   = NULL;
     ED4_extension        loc;
-
-#if defined(LIMIT_TOP_AREA_SPACE)
-    int nr_of_visible_species   = 0;
-    int nr_of_children_in_group = 0;
-#endif
 
     if ((mi == NULL) || (mi->object->spec.level <= spec.level)) {
         return (ED4_R_IMPOSSIBLE);
@@ -547,37 +541,7 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
         }
 
 
-        old_parent                                       = object->parent;
-        ED4_multi_species_manager *multi_species_manager = NULL;
-
-        level = get_area_level(&multi_species_manager);
-
-#if defined(LIMIT_TOP_AREA_SPACE)
-        if (old_parent->get_area_level() != level) { // when moving between two different areas we have to
-            if (level == ED4_A_TOP_AREA || level == ED4_A_BOTTOM_AREA) { // check restrictions
-                nr_of_visible_species = multi_species_manager->count_visible_children();
-
-                if (nr_of_visible_species >= MAX_TOP_AREA_SIZE) {
-                    return ED4_R_IMPOSSIBLE;
-                }
-
-                if (object->is_group_manager()) {
-                    ED4_group_manager *group_manager = object->to_group_manager();
-
-                    if (object->dynamic_prop & ED4_P_IS_FOLDED) {
-                        nr_of_children_in_group = 1;
-                    }
-                    else {
-                        nr_of_children_in_group = group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->count_visible_children();
-                    }
-
-                    if (nr_of_children_in_group + nr_of_visible_species > MAX_TOP_AREA_SIZE) {
-                        return ED4_R_IMPOSSIBLE;
-                    }
-                }
-            }
-        }
-#endif // LIMIT_TOP_AREA_SPACE
+        old_parent = object->parent;
 
         x_off = 0;
         y_off = 0;
@@ -941,10 +905,8 @@ ED4_returncode ED4_root_group_manager::resize_requested_by_parent() {
 }
 
 ED4_returncode ED4_main_manager::resize_requested_by_parent() {
-    ED4_returncode result = ED4_R_OK;
-
     if (update_info.resize) {
-        result = ED4_manager::resize_requested_by_parent();
+        ED4_manager::resize_requested_by_parent();
         current_ed4w()->update_scrolled_rectangle();
     }
     return ED4_R_OK;

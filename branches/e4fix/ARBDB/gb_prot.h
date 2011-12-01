@@ -13,9 +13,6 @@
 #endif
 
 
-/* adTest.cxx */
-void gb_testDB(GBDATA *gbd);
-
 /* ad_load.cxx */
 GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbd);
 long gb_read_bin_rek(FILE *in, GBCONTAINER *gbd, long nitems, long version, long reversed);

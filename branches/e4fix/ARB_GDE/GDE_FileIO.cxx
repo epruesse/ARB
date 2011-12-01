@@ -102,21 +102,17 @@ void Cfree(char *block)
 }
 
 
-static void ReadNA_Flat(char *filename, char *dataset, int type)
-{
+static void ReadNA_Flat(char *filename, char *dataset) {
     size_t j;
-    int i, jj, c, curelem=0, offset;
+    int jj, curelem=0, offset;
     char buffer[GBUFSIZ];
     char in_line[GBUFSIZ];
-    char curname[GBUFSIZ];
-    i=0; c=0; type=0;
 
     NA_Sequence *this_elem;
     NA_Alignment *data;
 
     FILE *file;
 
-    curname[0] = '\0';
     data = (NA_Alignment*)dataset;
 
     file = fopen(filename, "r");
@@ -225,12 +221,12 @@ static void LoadFile(char *filename, NA_Alignment *dataset, int type, int format
     switch (format)
     {
         case NA_FLAT:
-            ReadNA_Flat(filename, (char*)dataset, type);
+            ReadNA_Flat(filename, (char*)dataset);
             ((NA_Alignment*)dataset)->format = GDE;
             break;
 
         case GENBANK:
-            ReadGen(filename, dataset, type);
+            ReadGen(filename, dataset);
             ((NA_Alignment*)dataset)->format = GENBANK;
             break;
 
@@ -240,7 +236,7 @@ static void LoadFile(char *filename, NA_Alignment *dataset, int type, int format
             break;
 
         case GDE:
-            ReadGDE(filename, dataset, type);
+            ReadGDE(filename, dataset);
             ((NA_Alignment*)dataset)->format = GDE;
             break;
         case COLORMASK:
@@ -387,8 +383,6 @@ void LoadData(char *filen) {
 void AppendNA(NA_Base *buffer, int len, NA_Sequence *seq)
 {
     int curlen=0, j;
-    NA_Base *temp;
-    temp=0;
     if (seq->seqlen+len >= seq->seqmaxlen)
     {
         if (seq->seqlen>0)
@@ -659,7 +653,7 @@ void ReadCMask(const char *filename)
 
     size_t  j;
     size_t  curlen = 0;
-    int    *colors = 0, orig_ctype, jj, indx = 0;
+    int    *colors = 0, jj, indx = 0;
     FILE   *file;
 
     if (DataSet == NULL) return;
@@ -667,7 +661,6 @@ void ReadCMask(const char *filename)
     aln = (NA_Alignment*)DataSet;
 
     curname[0] = '\0';
-    orig_ctype = COLOR_MONO;
     file = fopen(filename, "r");
     if (file == NULL)
     {
@@ -794,12 +787,11 @@ void ReadCMask(const char *filename)
 }
 
 
-int WriteStatus(NA_Alignment *aln, char *filename, int method)
-{
+int WriteStatus(NA_Alignment *aln, char *filename) {
     NA_Sequence *this_seq;
     int j;
     FILE *file;
-    method=0; filename=0;
+    filename=0;
 
     if (DataSet == NULL)
         return (1);
@@ -852,10 +844,8 @@ int WriteStatus(NA_Alignment *aln, char *filename, int method)
 
 void NormalizeOffset(NA_Alignment *aln)
 {
-    int i;
     size_t j;
     int offset = INT_MAX;
-    i=0;
 
     for (j=0; j<aln->numelements; j++)
         offset = MIN(offset, aln->element[j].offset);

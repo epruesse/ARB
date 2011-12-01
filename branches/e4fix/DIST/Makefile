@@ -9,7 +9,6 @@ CPP_OBJECTS = \
 	DI_compress_matrix.o \
 	DI_main.o \
 	DI_matr.o \
-	DI_mldist.o \
 	DI_protdist.o \
 	DI_save_matr.o \
 	DI_view_matrix.o \
@@ -235,36 +234,6 @@ DI_matr.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/neighbourjoin.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_matr.o: $(ARBHOME)/INCLUDE/test_global.h
-
-DI_mldist.o: di_matr.hxx
-DI_mldist.o: di_mldist.hxx
-DI_mldist.o: $(ARBHOME)/INCLUDE/ad_prot.h
-DI_mldist.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-DI_mldist.o: $(ARBHOME)/INCLUDE/AliView.hxx
-DI_mldist.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
-DI_mldist.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
-DI_mldist.o: $(ARBHOME)/INCLUDE/AP_seq_simple_pro.hxx
-DI_mldist.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
-DI_mldist.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
-DI_mldist.o: $(ARBHOME)/INCLUDE/arb_assert.h
-DI_mldist.o: $(ARBHOME)/INCLUDE/arb_core.h
-DI_mldist.o: $(ARBHOME)/INCLUDE/arb_error.h
-DI_mldist.o: $(ARBHOME)/INCLUDE/arb_msg.h
-DI_mldist.o: $(ARBHOME)/INCLUDE/arb_progress.h
-DI_mldist.o: $(ARBHOME)/INCLUDE/arb_string.h
-DI_mldist.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
-DI_mldist.o: $(ARBHOME)/INCLUDE/arbdb.h
-DI_mldist.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-DI_mldist.o: $(ARBHOME)/INCLUDE/arbdbt.h
-DI_mldist.o: $(ARBHOME)/INCLUDE/arbtools.h
-DI_mldist.o: $(ARBHOME)/INCLUDE/attributes.h
-DI_mldist.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-DI_mldist.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
-DI_mldist.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-DI_mldist.o: $(ARBHOME)/INCLUDE/downcast.h
-DI_mldist.o: $(ARBHOME)/INCLUDE/dupstr.h
-DI_mldist.o: $(ARBHOME)/INCLUDE/smartptr.h
-DI_mldist.o: $(ARBHOME)/INCLUDE/test_global.h
 
 DI_protdist.o: di_matr.hxx
 DI_protdist.o: di_protdist.hxx

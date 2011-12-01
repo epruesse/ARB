@@ -35,7 +35,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep);
 GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env);
 GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env);
 void arb_print_server_params(void);
-arb_params *arb_trace_argv(int *argc, char **argv);
+arb_params *arb_trace_argv(int *argc, const char **argv);
 void free_arb_params(arb_params *params);
 
 #else

@@ -868,7 +868,6 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
      * else command interpreter
      */
     int           strmalloc = 0;
-    int           len;
     char         *buffer;
     GB_ERROR      error;
     int           i;
@@ -933,7 +932,6 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     // ********************** init *******************
 
     gb_local->gbl.gb_main = gb_main;
-    len = strlen(commands)+1;
     buffer = strdup(commands);
 
     // ********************** remove all spaces and tabs *******************

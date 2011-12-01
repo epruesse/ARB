@@ -1742,17 +1742,14 @@ print_standard_prologue(datestring)
 /*
  * Main routine for a2ps.
  */
-int
-main(argc, argv)
-     int argc;
-     char *argv[];
-{
-    int         narg;
-    char       *arg;
-    int         total;
+int ARB_main(int argc, const char *cargv[]) {
+    char       **argv = (char**)cargv;
+    int          narg;
+    char        *arg;
+    int          total;
 #if LPR_PRINT
-    int         fd[2];
-    const char *lpr_args[10];
+    int          fd[2];
+    const char  *lpr_args[10];
 #endif
 
     // Process global options

@@ -11,7 +11,7 @@
 #include <arbdb.h>
 #include <arb_handlers.h>
 
-int main(int argc, char **argv) {
+int ARB_main(int argc, const char *argv[]) {
     GB_ERROR error = 0;
 
     ARB_redirect_handlers_to(stderr, stderr);
@@ -33,8 +33,8 @@ int main(int argc, char **argv) {
         if (strcmp(argv[1], "--help") != 0) { error = "Missing arguments"; }
     }
     else {
-        char *in  = argv[1];
-        char *out = NULL;
+        const char *in  = argv[1];
+        const char *out = NULL;
 
         const char *readflags = "rw";
         const char *saveflags = "a";

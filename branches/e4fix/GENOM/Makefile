@@ -172,9 +172,6 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/items.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/test_global.h
 
-GEN_interface.o: ../GENOM_IMPORT/defs.h
-GEN_interface.o: ../GENOM_IMPORT/Location.h
-GEN_interface.o: ../GENOM_IMPORT/types.h
 GEN_interface.o: GEN.hxx
 GEN_interface.o: GEN_local.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -209,6 +206,7 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/dbui.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/items.h
+GEN_interface.o: $(ARBHOME)/INCLUDE/Location.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/test_global.h
 

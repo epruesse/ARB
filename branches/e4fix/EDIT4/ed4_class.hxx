@@ -74,13 +74,6 @@
 
 #endif // IMPLEMENT_DUMP ------------------------------
 
-
-
-// #define LIMIT_TOP_AREA_SPACE // // if defined, top area is size-limited
-#ifdef LIMIT_TOP_AREA_SPACE
-#define MAX_TOP_AREA_SIZE 10    // size limit for top-area
-#endif
-
 #ifndef ARB_ERROR_H
 #include <arb_error.h>
 #endif

@@ -250,14 +250,7 @@ int main(int argc, char **argv) {
             if (!error) error                  = GBT_write_tree(gb_main, 0, param.tree_name, tree);
 
             if (!error) {
-                // write tree comment:
-                const char *datestring;
-                {
-                    time_t date;
-                    if (time(&date) == -1) datestring = "<Error calculating time>";
-                    else datestring = ctime(&date);
-                }
-
+                // write tree comment
                 const char *comments[] = {
                     param.comment,
                     comment_from_file,

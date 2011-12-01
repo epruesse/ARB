@@ -37,17 +37,17 @@ int WriteNA_Flat(NA_Alignment *aln, char *filename, int method, int maskable);
 void Warning(const char *s);
 void InitNASeq(NA_Sequence *seq, int type);
 void ReadCMask(const char *filename);
-int WriteStatus(NA_Alignment *aln, char *filename, int method);
+int WriteStatus(NA_Alignment *aln, char *filename);
 void NormalizeOffset(NA_Alignment *aln);
 int WriteCMask(NA_Alignment *aln, char *filename, int method, int maskable);
 
 /* GDE_Genbank.cxx */
-void ReadGen(char *filename, NA_Alignment *dataset, int type);
+void ReadGen(char *filename, NA_Alignment *dataset);
 int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable);
 void SetTime(void *b);
 
 /* GDE_HGLfile.cxx */
-void ReadGDE(char *filename, NA_Alignment *dataset, int type);
+void ReadGDE(char *filename, NA_Alignment *dataset);
 int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable);
 void SeqNorm(NA_Sequence *seq);
 char *uniqueID(void);

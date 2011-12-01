@@ -46,10 +46,8 @@ static void AdjustGroups(NA_Alignment *aln)
 #endif
 }
 
-static void StripSpecial(char *string)
-{
-    int i, j, len;
-    i=0;
+static void StripSpecial(char *string) {
+    int j, len;
 
     len = strlen(string);
     for (j=0; j<len; j++)
@@ -170,19 +168,16 @@ static int OverWrite(NA_Sequence *thiss, NA_Alignment *aln) {
     return (indx);
 }
 
-void ReadGDE(char *filename, NA_Alignment *dataset, int type)
-{
+void ReadGDE(char *filename, NA_Alignment *dataset) {
     int          done               = FALSE;
     size_t       len                = 0, j=0;
-    int          success, count, temp = 0;
-    char         in_line[GBUFSIZ], c;
+    int          success, temp = 0;
+    char         in_line[GBUFSIZ];
     char        *buffer, *line;
     size_t       buflen             = GBUFSIZ;
-    int          genclen            = 0, curelem = 0;
+    int          curelem = 0;
     NA_Sequence *this_elem          = NULL, temp_elem;
     FILE        *file;
-
-    type=0; count=0; c=0;
 
     ErrorOut5(0!=(file = fopen(filename, "r")), "No such file");
 
@@ -475,7 +470,6 @@ void ReadGDE(char *filename, NA_Alignment *dataset, int type)
                     PROT_GREY_SPACE+
                     PROT_WHITE_SPACE+
                     PROT_TRANSLATION;
-            genclen                = 0;
 
             // Make a new sequence entry...
             success     = -1;

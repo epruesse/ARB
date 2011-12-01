@@ -78,10 +78,10 @@ static int inquote      = 0;                        // in a quote??
 static int newline_seen = 1;                        // are we at the start of a line
 static int glastc       = ' ';                      // last char. seen by getsym()
 
-static char *current_file   = 0;                    // name of current file
-static char *current_dir    = 0;                    // name of current directory
-static char *header_comment = 0;                    // comment written into header
-static long  linenum        = 1L;                   // line number in current file
+static char       *current_file   = 0;              // name of current file
+static char       *current_dir    = 0;              // name of current directory
+static const char *header_comment = 0;              // comment written into header
+static long        linenum        = 1L;             // line number in current file
 
 static char const *macro_name = "P_";               //   macro to use for prototypes
 static char const *ourname;                         // our name, from argv[] array
@@ -532,12 +532,12 @@ public:
     }
 };
 
-static AttributeParser attribute_parser("__attribute__", false, true);
-static AttributeParser ATTR_parser("__ATTR__", true, false);
-
 static void search_comment_for_attribute() {
     if (found__attribute__ || found__ATTR__) return; // only parse once (until reset)
     last_comment[lc_size] = 0;  // close string
+
+    static AttributeParser attribute_parser("__attribute__", false, true);
+    static AttributeParser ATTR_parser("__ATTR__", true, false);
 
     char *seen_attribute = attribute_parser.parse(last_comment, lc_size);
     char *seen_ATTR      = ATTR_parser.parse(last_comment, lc_size);
@@ -1479,9 +1479,10 @@ STATIC_ATTRIBUTED(__ATTR__NORETURN, void Usage()) {
     exit(EXIT_FAILURE);
 }
 
-int main(int argc, char **argv) {
+int ARB_main(int argc, const char *argv[]) {
     FILE *f;
-    char *t, *iobuf;
+    const char *t;
+    char *iobuf;
     int exit_if_noargs = 0;
 
     if (argv[0] && argv[0][0]) {

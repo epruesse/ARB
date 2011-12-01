@@ -521,7 +521,6 @@ static GB_ERROR export_format_single(const char *db_name, const char *formname, 
     // Full path of generated file is returned in 'resulting_outname'
 
     static int export_depth     = 0;
-    static int export_depth_max = 0;
     export_depth++;
 
     *resulting_outname = 0;
@@ -574,8 +573,6 @@ static GB_ERROR export_format_single(const char *db_name, const char *formname, 
             if (!out) error = GB_export_IO_error("writing", *resulting_outname);
             else {
                 XML_Document *xml = 0;
-
-                export_depth_max = export_depth;
 
                 int allCount    = 0;
                 for (GBDATA *gb_species = esd->first_species();

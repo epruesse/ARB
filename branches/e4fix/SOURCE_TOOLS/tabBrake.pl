@@ -66,7 +66,6 @@ my %ignored_subdirs = map { $_ => 1; } (
                                         'GDE/TREEPUZZLE',
                                         'GDE/PHYML',
                                         'GDE/RAxML',
-                                        'GDE/MOLPHY',
                                         'GDE/SUPPORT',
                                         'GDE/PHYLIP',
                                         'HEADERLIBS',

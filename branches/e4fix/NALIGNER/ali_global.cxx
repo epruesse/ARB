@@ -59,10 +59,10 @@ double default_binding_matrix[5][5] = {
 };
 
 
-void ALI_GLOBAL::init(int *argc, char *argv[])
+void ALI_GLOBAL::init(int *argc, const char *argv[])
 {
     int kill, i, h, j, ret;
-    char *pos;
+    const char *pos;
     arb_params *params;
     float fl;
 

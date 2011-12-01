@@ -1160,14 +1160,13 @@ static void usage(const char *exeName, const char *err) {
     exit(-1);
 }
 
-int main(int argc, char **argv)
-{
+int ARB_main(int argc, const char *argv[]) {
     char       *name;
     int         i;
     Hs_struct  *so;
     arb_params *params;
 
-    params                 = arb_trace_argv(&argc, argv);
+    params                 = arb_trace_argv(&argc, (const char **)argv);
     const char *executable = argv[0];
 
     if (!params->default_file) usage(executable, "Missing default file");

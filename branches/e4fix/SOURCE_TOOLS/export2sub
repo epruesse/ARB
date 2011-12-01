@@ -5,6 +5,9 @@
 
 export ARBHOME
 
+export use_ARB_main
+export use_ARB_main_C
+
 export DEBUG
 export OPENGL 
 export RNA3D_LIB 

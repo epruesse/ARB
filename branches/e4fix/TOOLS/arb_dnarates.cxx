@@ -1915,7 +1915,7 @@ void makeUserRates(tree *tr, FILE *INFILE) {
 inline bool is_char(const char *name, char c) { return name[0] == c && !name[1]; }
 inline bool wantSTDIN(const char *iname) { return is_char(iname, '-'); }
 
-int main(int argc, char *argv[]) {
+int ARB_main(int argc, const char *argv[]) {
     // Maximum Likelihood Site Rate
     const char *dbname     = ":";
     const char *dbsavename = NULL;

@@ -114,7 +114,7 @@ const char *GBS_unwrap_regexpr(const char *regexpr_in_slashes, GB_CASE *case_fla
 const char *GBS_regmatch_compiled(const char *str, GBS_regex *comreg, size_t *matchlen);
 const char *GBS_regmatch(const char *str, const char *regExpr, size_t *matchlen, GB_ERROR *error);
 char *GBS_regreplace(const char *str, const char *regReplExpr, GB_ERROR *error);
-GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR substr, int match_mode);
+GB_CSTR GBS_find_string(GB_CSTR cont, GB_CSTR substr, int match_mode);
 bool GBS_string_matches(const char *str, const char *search, GB_CASE case_sens);
 bool GBS_string_matches_regexp(const char *str, const GBS_string_matcher *expr);
 char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_container);

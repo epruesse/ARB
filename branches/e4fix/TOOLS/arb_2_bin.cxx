@@ -11,8 +11,7 @@
 
 #include <arbdbt.h>
 
-int main(int argc, char **argv)
-{
+int ARB_main(int argc, const char *argv[]) {
     GB_ERROR error = 0;
 
     fprintf(stderr, "arb_2_bin - ARB database ascii to binary converter\n");
@@ -21,7 +20,7 @@ int main(int argc, char **argv)
         fprintf(stderr,
                 "\n"
                 "Purpose: Converts a database to binary format\n"
-                "Syntax:  arb_2_bin [-m] [-r] [-c][tree_xxx] database [newdatabase]\n"
+                "Syntax:  arb_2_bin [Options] database [newdatabase]\n"
                 "Options: -m            create map file too\n"
                 "         -r            try to repair destroyed database\n"
                 "         -c[tree_xxx]  optimize database using tree_xxx or largest tree\n"
@@ -34,12 +33,12 @@ int main(int argc, char **argv)
         return (-1);
     }
     else {
-        char    rtype[256];
-        char    wtype[256];
-        int     ci       = 1;
-        int     nidx     = 0;
-        int     test     = 0;
-        char   *opt_tree = 0;
+        char rtype[256];
+        char wtype[256];
+        int  ci   = 1;
+        int  nidx = 0;
+
+        const char *opt_tree = 0;
 
         {
             char *rtypep = rtype;
@@ -56,12 +55,11 @@ int main(int argc, char **argv)
                 if (!strcmp(argv[ci], "-r")) { ci++; *(rtypep++) = 'R'; }
                 if (!strncmp(argv[ci], "-c", 2)) { opt_tree = argv[ci]+2; ci++; }
                 if (!strncmp(argv[ci], "-i", 2)) { nidx = atoi(argv[ci]+2); ci++; }
-                if (!strncmp(argv[ci], "-t", 2)) { test = 1; ci++; }
             }
         }
 
-        char *in  = argv[ci++];
-        char *out = ci >= argc ? in : argv[ci++];
+        const char *in  = argv[ci++];
+        const char *out = ci >= argc ? in : argv[ci++];
 
         printf("Reading database...\n");
         GB_shell  shell;

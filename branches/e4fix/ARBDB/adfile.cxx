@@ -700,16 +700,16 @@ void TEST_GBS_read_dir() {
 
 void TEST_find_file() {
     TEST_ASSERT_EQUAL(GB_existing_file("min_ascii.arb", false), "min_ascii.arb");
-    TEST_ASSERT_EQUAL(GB_existing_file("nosuchfile", false), NULL);
+    TEST_ASSERT_NULL(GB_existing_file("nosuchfile", false));
     
     char *tcporg = GB_lib_file(false, "", "arb_tcp_org.dat");
     TEST_ASSERT_EQUAL(tcporg, GB_path_in_ARBHOME("lib/arb_tcp_org.dat"));
-    TEST_ASSERT_EQUAL(GB_lib_file(true, "bla", "blub"), NULL);
+    TEST_ASSERT_NULL(GB_lib_file(true, "bla", "blub"));
     free(tcporg);
 
     char *status = GB_property_file(false, "status.arb");
     TEST_ASSERT_EQUAL(status, GB_path_in_ARBHOME("lib/arb_default/status.arb"));
-    TEST_ASSERT_EQUAL(GB_property_file(true, "undhepp"), NULL);
+    TEST_ASSERT_NULL(GB_property_file(true, "undhepp"));
     free(status);
 }
 
@@ -719,11 +719,9 @@ void TEST_find_file() {
 #warning move to ARB_CORE library
 #endif
 
-#if defined(DEVEL_RALF)
 // gcc reports: "warning: logical 'or' of collectively exhaustive tests is always true"
 // for 'implicated(any, any)'. True, obviously. Nevertheless annoying.
 #pragma GCC diagnostic ignored "-Wlogical-op"
-#endif
 
 void TEST_logic() {
 #define FOR_ANY_BOOL(name) for (int name = 0; name<2; ++name)

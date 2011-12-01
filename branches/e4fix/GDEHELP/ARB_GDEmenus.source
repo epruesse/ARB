@@ -50,7 +50,6 @@ menumeta:p
 menu:Phylogeny max. Likelyhood EXP
 menumeta:X
 #include <fastdnaml.genmenu>
-#include <molphy.genmenu>
 
 menu:Phylogeny max. Likelyhood
 menumeta:L

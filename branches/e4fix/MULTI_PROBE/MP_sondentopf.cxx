@@ -69,14 +69,13 @@ ST_Container::~ST_Container()
 
 Sonde* ST_Container::cache_Sonde(char *name, int allowed_mis, double outside_mis)
 {
-    long   hashreturnval;
     char*  name_for_plist = strdup(name);
     Sonde* s              = new Sonde(name, allowed_mis, outside_mis);
 
     Sondennamen->insert_as_first(name_for_plist);
     s->gen_Hitliste(Bakterienliste);
 
-    hashreturnval = GBS_write_hash(cachehash, name, (long) s);
+    GBS_write_hash(cachehash, name, (long) s);
     // Reine Sonde plus Hitliste geschrieben, der Zeiger auf die Sonde liegt als long gecastet im Hash
     return s;
 }

@@ -28,7 +28,6 @@ Scripts used by ARB or from other scripts:
         arb_ludwig                              (alias for arb_remote)
         arb_phyml                               wrapper for phyml
         arb_proml                               wrapper for proml
-        arb_protml                              wrapper for protml
         arb_protpars                            wrapper for protpars
         arb_raxml                               wrapper for raxml
         arb_sleep                               Keeps terminal windows open for 60 seconds (unused)

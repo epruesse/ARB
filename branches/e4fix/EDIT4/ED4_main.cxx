@@ -491,7 +491,7 @@ static void ED4_postcbcb(AW_window *aww) {
     ED4_ROOT->announce_useraction_in(aww);
 }
 
-int main(int argc, char **argv) {
+int ARB_main(int argc, const char *argv[]) {
     const char *data_path = ":";
     const char *err = NULL;
     char *config_name = NULL;
@@ -648,5 +648,7 @@ int main(int argc, char **argv) {
     AWT_install_postcb_cb(ED4_postcbcb);
     AWT_install_cb_guards();
     ED4_ROOT->aw_root->main_loop(); // enter main-loop
+
+    return EXIT_SUCCESS;
 }
 

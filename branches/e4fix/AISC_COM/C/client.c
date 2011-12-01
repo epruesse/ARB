@@ -750,23 +750,19 @@ static int aisc_collect_sets(aisc_com *link, int mes_cnt, va_list parg, int o_ty
     return mes_cnt;
 }
 
-int     aisc_put(aisc_com        *link, int o_type, long object, ...)
-{
-    // goes to header: __ATTR__SENTINEL
-    int mes_cnt, arg_cnt;
-    va_list     parg;
-    int len;
-    arg_cnt = mes_cnt = 2;
+int aisc_put(aisc_com *link, int o_type, long object, ...) { // goes to header: __ATTR__SENTINEL
+    int mes_cnt = 2;
     link->aisc_mes_buffer[mes_cnt++] = object;
     link->aisc_mes_buffer[mes_cnt++] = o_type;
 
+    va_list parg;
     va_start(parg, object);
     if (!(mes_cnt = aisc_collect_sets(link, mes_cnt, parg, o_type, 4))) return 1;
 
     if (mes_cnt > 3) {
         link->aisc_mes_buffer[0] = mes_cnt - 2;
         link->aisc_mes_buffer[1] = AISC_SET+link->magic;
-        len = aisc_c_write(link->socket, (const char *)(link->aisc_mes_buffer), mes_cnt * sizeof(long));
+        int len = aisc_c_write(link->socket, (const char *)(link->aisc_mes_buffer), mes_cnt * sizeof(long));
         if (!len) {
             link->error = err_connection_problems;
             PRTERR("AISC_SET_ERROR");
@@ -778,16 +774,12 @@ int     aisc_put(aisc_com        *link, int o_type, long object, ...)
     return 0;
 }
 
-int     aisc_nput(aisc_com        *link, int o_type, long object, ...)
-{
-    // goes to header: __ATTR__SENTINEL
-    int mes_cnt, arg_cnt;
-    va_list     parg;
-    int len;
-    arg_cnt = mes_cnt = 2;
+int aisc_nput(aisc_com *link, int o_type, long object, ...) { // goes to header: __ATTR__SENTINEL
+    int mes_cnt = 2;
     link->aisc_mes_buffer[mes_cnt++] = object;
     link->aisc_mes_buffer[mes_cnt++] = o_type;
 
+    va_list parg;
     va_start(parg, object);
     if (!(mes_cnt = aisc_collect_sets(link, mes_cnt, parg, o_type, 4))) {
         return 1;
@@ -796,7 +788,7 @@ int     aisc_nput(aisc_com        *link, int o_type, long object, ...)
     if (mes_cnt > 3) {
         link->aisc_mes_buffer[0] = mes_cnt - 2;
         link->aisc_mes_buffer[1] = AISC_NSET+link->magic;
-        len = aisc_c_write(link->socket, (const char *)(link->aisc_mes_buffer), mes_cnt * sizeof(long));
+        int len = aisc_c_write(link->socket, (const char *)(link->aisc_mes_buffer), mes_cnt * sizeof(long));
         if (!len) {
             link->error = err_connection_problems;
             PRTERR("AISC_SET_ERROR");

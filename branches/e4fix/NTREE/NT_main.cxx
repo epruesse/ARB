@@ -514,7 +514,7 @@ static ARB_ERROR check_argument_for_mode(const char *database, char *&browser_st
     return error;
 }
 
-int main(int argc, char **argv) {
+int ARB_main(int argc, const char *argv[]) {
     aw_initstatus();
     GB_set_verbose();
 

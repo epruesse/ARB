@@ -76,7 +76,7 @@ namespace validNames {
         bool isHetero = false;
         bool isHomo = false;
         bool isGenus = false;
-        bool isSee = false;
+        // bool isSee = false;
         bool isCorr = false;
 
 
@@ -133,7 +133,7 @@ namespace validNames {
                             }
                             else {
                                 if (*it == string("see:")) {
-                                    isSee = true;
+                                    // isSee = true;
                                     isValid = false;
 #if defined(DUMP)
                                     std::cout << "reference" << std::endl;

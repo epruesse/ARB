@@ -25,21 +25,11 @@
 #include <vector>
 #endif
 
-using std::vector;
-using std::map;
-using std::set;
+typedef std::set<std::string>              stringSet;
+typedef std::map<std::string, std::string> stringMap;
+typedef std::vector<std::string>           stringVector;
 
-typedef set<string>         stringSet;
-typedef map<string, string> stringMap;
-typedef vector<string>      stringVector;
-
-#define DEFINE_ITERATORS(type)                  \
-typedef type::iterator type##Iter;              \
-typedef type::const_iterator type##CIter;       \
-typedef type::reverse_iterator type##RIter;     \
-typedef type::const_reverse_iterator type##CRIter
-
-DEFINE_ITERATORS(string);
+DEFINE_NAMED_ITERATORS(std::string, string);
 DEFINE_ITERATORS(stringSet);
 DEFINE_ITERATORS(stringMap);
 DEFINE_ITERATORS(stringVector);

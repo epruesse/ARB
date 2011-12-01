@@ -10,7 +10,7 @@
 // ================================================================ //
 
 #include "Location.h"
-#include "tools.h"
+#include <arb_str.h>
 
 #include <adGene.h>
 #include <arbdb.h>
@@ -225,6 +225,21 @@ static void parseLocationList(const string& source, size_t startPos, LocationVec
     }
 }
 
+static bool parseInfix(const string &str, const string& prefix, const string& postfix, string& foundInfix) {
+    bool parsed = false;
+    if (beginsWith(str, prefix) && endsWith(str, postfix)) {
+        size_t strlen  = str.length();
+    size_t prelen  = prefix.length();
+    size_t postlen = postfix.length();
+
+        if (strlen >= (prelen+postlen)) { // otherwise str is to short (prefix and postfix overlap)
+            foundInfix = str.substr(prelen, strlen-(prelen+postlen));
+            parsed     = true;
+        }
+    }
+    return parsed;
+}
+
 LocationPtr parseLocation(const string& source) {
     char first = source[0];
     if (first == 'c') {
@@ -302,7 +317,7 @@ GEN_position *Location::create_GEN_position() const {
     pos->parts = 0;             // misuse 'parts' as index for filling 'pos'
     save(pos, false);
 
-    gi_assert(pos->parts == org_parts);
+    arb_assert(pos->parts == org_parts);
 
     return pos;
 }

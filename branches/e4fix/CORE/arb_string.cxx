@@ -247,7 +247,7 @@ void TEST_replace_old_TEST_ASSERTS_by_expectations() {
         TEST_ASSERT_EQUAL(car_str, car_ccp);
 
         char *null = NULL;
-        TEST_ASSERT_NULL(NULL);
+        TEST_ASSERT_NULL((void*)NULL);
         TEST_ASSERT_NULL(null);
 
         TEST_ASSERT_CONTAINS(car_ccp, "lf");

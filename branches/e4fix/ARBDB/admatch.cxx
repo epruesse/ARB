@@ -322,7 +322,7 @@ char *GBS_regreplace(const char *str, const char *regReplExpr, GB_ERROR *error) 
 // -------------------------
 //      wildcard search
 
-GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR substr, int match_mode) {
+GB_CSTR GBS_find_string(GB_CSTR cont, GB_CSTR substr, int match_mode) {
     /* search a substring in another string
      * match_mode == 0     -> exact match
      * match_mode == 1     -> a==A
@@ -335,9 +335,9 @@ GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR substr, int match_mode) {
     switch (match_mode) {
 
         case 0: // exact match
-            for (p1 = str, p2 = substr; *p1;) {
+            for (p1 = cont, p2 = substr; *p1;) {
                 if (!(b = *p2)) {
-                    return (char *)str;
+                    return (char *)cont;
                 }
                 else {
                     if (b == *p1) {
@@ -346,17 +346,17 @@ GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR substr, int match_mode) {
                     }
                     else {
                         p2 = substr;
-                        p1 = (++str);
+                        p1 = (++cont);
                     }
                 }
             }
-            if (!*p2)   return (char *)str;
+            if (!*p2)   return (char *)cont;
             break;
 
         case 1: // a==A
-            for (p1 = str, p2 = substr; *p1;) {
+            for (p1 = cont, p2 = substr; *p1;) {
                 if (!(b = *p2)) {
-                    return (char *)str;
+                    return (char *)cont;
                 }
                 else {
                     if (toupper(*p1) == toupper(b)) {
@@ -365,16 +365,16 @@ GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR substr, int match_mode) {
                     }
                     else {
                         p2 = substr;
-                        p1 = (++str);
+                        p1 = (++cont);
                     }
                 }
             }
-            if (!*p2) return (char *)str;
+            if (!*p2) return (char *)cont;
             break;
         case 2: // a==a && a==?
-            for (p1 = str, p2 = substr; *p1;) {
+            for (p1 = cont, p2 = substr; *p1;) {
                 if (!(b = *p2)) {
-                    return (char *)str;
+                    return (char *)cont;
                 }
                 else {
                     if (b == *p1 || (b=='?')) {
@@ -383,17 +383,17 @@ GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR substr, int match_mode) {
                     }
                     else {
                         p2 = substr;
-                        p1 = (++str);
+                        p1 = (++cont);
                     }
                 }
             }
-            if (!*p2) return (char *)str;
+            if (!*p2) return (char *)cont;
             break;
 
         default: // a==A && a==?
-            for (p1 = str, p2 = substr; *p1;) {
+            for (p1 = cont, p2 = substr; *p1;) {
                 if (!(b = *p2)) {
-                    return (char *)str;
+                    return (char *)cont;
                 }
                 else {
                     if (toupper(*p1) == toupper(b) || (b=='?')) {
@@ -402,11 +402,11 @@ GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR substr, int match_mode) {
                     }
                     else {
                         p2 = substr;
-                        p1 = (++str);
+                        p1 = (++cont);
                     }
                 }
             }
-            if (!*p2) return (char *)str;
+            if (!*p2) return (char *)cont;
             break;
     }
     return 0;

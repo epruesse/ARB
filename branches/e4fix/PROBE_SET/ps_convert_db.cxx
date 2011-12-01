@@ -188,7 +188,7 @@ void PS_extract_probe_data(GBDATA *_ARB_node,                // position in ARB 
 int main(int  _argc,
           char *_argv[]) {
 
-    GBDATA   *ARB_main = 0;
+    GBDATA   *gb_main = 0;
     GB_ERROR  error    = 0;
 
     // open probe-group-database
@@ -206,8 +206,8 @@ int main(int  _argc,
     struct tms before;
     times(&before);
     printf("Opening probe-group-database '%s'..\n  ", DB_name);
-    ARB_main = GB_open(DB_name, "rwcN");
-    if (!ARB_main) {
+    gb_main = GB_open(DB_name, "rwcN");
+    if (!gb_main) {
         error = GB_await_error();
         GB_warning(error);
         exit(1);
@@ -215,8 +215,8 @@ int main(int  _argc,
     printf("..loaded database (enter to continue)  ");
     PS_print_time_diff(&before);
 
-    GB_transaction dummy(ARB_main);
-    GBDATA *group_tree = GB_entry(ARB_main, "group_tree");
+    GB_transaction dummy(gb_main);
+    GBDATA *group_tree = GB_entry(gb_main, "group_tree");
     if (!group_tree) {
         printf("no 'group_tree' in database\n");
         error = GB_export_error("no 'group_tree' in database");
@@ -234,7 +234,7 @@ int main(int  _argc,
     //
     times(&before);
     printf("init Species <-> ID - Map\n");
-    PG_initSpeciesMaps(ARB_main);
+    PG_initSpeciesMaps(gb_main);
     int species_count = PG_NumberSpecies();
     printf("%i species in the map ", species_count);
     if (species_count >= 10) {

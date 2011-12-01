@@ -312,7 +312,7 @@ void arb_print_server_params() {
            );
 }
 
-arb_params *arb_trace_argv(int *argc, char **argv)
+arb_params *arb_trace_argv(int *argc, const char **argv)
 {
     int s, d;
 
@@ -349,7 +349,7 @@ arb_params *arb_trace_argv(int *argc, char **argv)
                 case 'M': freedup(erg->mgr_server, argv[s]+2); break;
                 case 'P': freedup(erg->pt_server, argv[s]+2); break;
                 case 'T': {
-                    char *ipport = argv[s]+2;
+                    const char *ipport = argv[s]+2;
                     if (ipport[0] == ':' &&
                         ipport[1] >= '0' && ipport[1] <= '9') { // port only -> assume localhost
                         erg->tcp = GBS_global_string_copy("localhost%s", ipport);

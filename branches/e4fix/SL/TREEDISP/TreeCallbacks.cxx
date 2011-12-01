@@ -557,7 +557,7 @@ void NT_reset_pzoom_cb(void *, AWT_canvas *ntw) {
 void NT_set_tree_style(void *, AWT_canvas *ntw, AP_tree_sort type) {
     GB_transaction gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
-    AWT_TREE(ntw)->set_tree_type(type);
+    AWT_TREE(ntw)->set_tree_type(type, ntw);
     ntw->zoom_reset_and_refresh();
 }
 
@@ -815,6 +815,13 @@ void NT_recompute_cb(AW_window *, AWT_canvas *ntw, AW_CL cl2) {
 
     gt->get_root_node()->compute_tree(ntw->gb_main);
     AWT_expose_cb (ntw->aww, ntw, cl2);
+}
+
+void NT_reinit_treetype(AW_window *, AWT_canvas *ntw, AW_CL ) {
+    AWT_graphic_tree *gt = dynamic_cast<AWT_graphic_tree*>(ntw->tree_disp);
+    td_assert(gt);
+    gt->set_tree_type(gt->tree_sort, ntw);
+    AWT_resize_cb(ntw->aww, ntw, 0);
 }
 
 void NT_remove_species_in_tree_from_hash(AP_tree *tree, GB_HASH *hash) {

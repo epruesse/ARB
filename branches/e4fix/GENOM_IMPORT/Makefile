@@ -5,15 +5,7 @@
 # --------------------------------------------------------------------------------
 
 # objects for library
-CPP_OBJECTS =   \
-		GenomeImport.o \
-		Importer.o \
-		DBwriter.o \
-		SequenceBuffer.o \
-		MetaInfo.o \
-		Feature.o \
-		Location.o \
-		tools.o \
+CPP_OBJECTS=$(subst .cxx,.o,$(wildcard *.cxx))
 
 # --------------------------------------------------------------------------------
 
@@ -55,7 +47,6 @@ DBwriter.o: defs.h
 DBwriter.o: Feature.h
 DBwriter.o: GenomeImport.h
 DBwriter.o: Importer.h
-DBwriter.o: Location.h
 DBwriter.o: MetaInfo.h
 DBwriter.o: MetaTag.h
 DBwriter.o: SequenceBuffer.h
@@ -80,18 +71,19 @@ DBwriter.o: $(ARBHOME)/INCLUDE/dupstr.h
 DBwriter.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 DBwriter.o: $(ARBHOME)/INCLUDE/GEN.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/items.h
+DBwriter.o: $(ARBHOME)/INCLUDE/Location.h
 DBwriter.o: $(ARBHOME)/INCLUDE/smartptr.h
 DBwriter.o: $(ARBHOME)/INCLUDE/test_global.h
 DBwriter.o: $(ARBHOME)/INCLUDE/Translate.hxx
 
 Feature.o: defs.h
 Feature.o: Feature.h
-Feature.o: Location.h
 Feature.o: types.h
 Feature.o: $(ARBHOME)/INCLUDE/arb_assert.h
 Feature.o: $(ARBHOME)/INCLUDE/arb_core.h
 Feature.o: $(ARBHOME)/INCLUDE/arbtools.h
 Feature.o: $(ARBHOME)/INCLUDE/dupstr.h
+Feature.o: $(ARBHOME)/INCLUDE/Location.h
 Feature.o: $(ARBHOME)/INCLUDE/smartptr.h
 Feature.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -100,7 +92,6 @@ GenomeImport.o: defs.h
 GenomeImport.o: Feature.h
 GenomeImport.o: GenomeImport.h
 GenomeImport.o: Importer.h
-GenomeImport.o: Location.h
 GenomeImport.o: MetaInfo.h
 GenomeImport.o: MetaTag.h
 GenomeImport.o: SequenceBuffer.h
@@ -112,6 +103,7 @@ GenomeImport.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_core.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_error.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_msg.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/arb_str.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_string.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arbdb.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -123,6 +115,7 @@ GenomeImport.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GenomeImport.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GenomeImport.o: $(ARBHOME)/INCLUDE/dupstr.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/Location.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/smartptr.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -131,7 +124,6 @@ Importer.o: defs.h
 Importer.o: Feature.h
 Importer.o: GenomeImport.h
 Importer.o: Importer.h
-Importer.o: Location.h
 Importer.o: MetaInfo.h
 Importer.o: MetaTag.h
 Importer.o: SequenceBuffer.h
@@ -142,6 +134,7 @@ Importer.o: $(ARBHOME)/INCLUDE/arb_assert.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_core.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_error.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_msg.h
+Importer.o: $(ARBHOME)/INCLUDE/arb_str.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_string.h
 Importer.o: $(ARBHOME)/INCLUDE/arbdb.h
 Importer.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -149,28 +142,9 @@ Importer.o: $(ARBHOME)/INCLUDE/arbtools.h
 Importer.o: $(ARBHOME)/INCLUDE/attributes.h
 Importer.o: $(ARBHOME)/INCLUDE/dupstr.h
 Importer.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+Importer.o: $(ARBHOME)/INCLUDE/Location.h
 Importer.o: $(ARBHOME)/INCLUDE/smartptr.h
 Importer.o: $(ARBHOME)/INCLUDE/test_global.h
-
-Location.o: defs.h
-Location.o: Location.h
-Location.o: tools.h
-Location.o: types.h
-Location.o: $(ARBHOME)/INCLUDE/ad_prot.h
-Location.o: $(ARBHOME)/INCLUDE/adGene.h
-Location.o: $(ARBHOME)/INCLUDE/arb_assert.h
-Location.o: $(ARBHOME)/INCLUDE/arb_core.h
-Location.o: $(ARBHOME)/INCLUDE/arb_error.h
-Location.o: $(ARBHOME)/INCLUDE/arb_msg.h
-Location.o: $(ARBHOME)/INCLUDE/arb_string.h
-Location.o: $(ARBHOME)/INCLUDE/arbdb.h
-Location.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-Location.o: $(ARBHOME)/INCLUDE/arbtools.h
-Location.o: $(ARBHOME)/INCLUDE/attributes.h
-Location.o: $(ARBHOME)/INCLUDE/dupstr.h
-Location.o: $(ARBHOME)/INCLUDE/smartptr.h
-Location.o: $(ARBHOME)/INCLUDE/test_global.h
-Location.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 MetaInfo.o: defs.h
 MetaInfo.o: MetaInfo.h
@@ -192,12 +166,3 @@ SequenceBuffer.o: $(ARBHOME)/INCLUDE/arbtools.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/dupstr.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/smartptr.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/test_global.h
-
-tools.o: defs.h
-tools.o: tools.h
-tools.o: types.h
-tools.o: $(ARBHOME)/INCLUDE/arb_assert.h
-tools.o: $(ARBHOME)/INCLUDE/arb_core.h
-tools.o: $(ARBHOME)/INCLUDE/arbtools.h
-tools.o: $(ARBHOME)/INCLUDE/dupstr.h
-tools.o: $(ARBHOME)/INCLUDE/test_global.h
