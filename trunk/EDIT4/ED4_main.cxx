@@ -643,5 +643,7 @@ int ARB_main(int argc, const char *argv[]) {
 
     AWT_install_cb_guards();
     ED4_ROOT->aw_root->main_loop(); // enter main-loop
+
+    return EXIT_SUCCESS;
 }
 
