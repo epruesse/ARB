@@ -933,13 +933,13 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     Widget         tmp_label              = 0;
     AW_cb_struct  *cbs;
     VarUpdateInfo *vui;
-    char          *String;
+    char          *str; 
     int            x_correcting_for_label = 0;
 
     if (!columns) columns = _at->length_of_buttons;
 
     AW_awar *vs = root->awar(var_name);
-    String      = root->awar(var_name)->read_as_string();
+    str         = root->awar(var_name)->read_as_string();
 
     int width_of_input_label, height_of_input_label;
     calculate_label_size(this, &width_of_input_label, &height_of_input_label, true, 0);
@@ -984,7 +984,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
                                             parentWidget,
                                             XmNwidth, (int)width_of_input,
                                             XmNrows, 1,
-                                            XmNvalue, String,
+                                            XmNvalue, str,
                                             XmNfontList, p_global->fontlist,
                                             XmNbackground, _at->background_color,
                                             (_at->attach_any) ? NULL : XmNx, (int)(_at->x_for_next_button + x_correcting_for_label),
@@ -993,7 +993,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
         if (_at->attach_any) aw_attach_widget(textField, _at);
     }
 
-    free(String);
+    free(str);
 
     // user-own callback
     cbs = _callback;
@@ -1054,20 +1054,20 @@ void AW_window::update_input_field(Widget widget, const char *var_value) {
 }
 
 void AW_window::create_text_field(const char *var_name, int columns, int rows) {
-    Widget scrolledWindowText;
-    Widget scrolledText;
-    Widget tmp_label = 0;
-    AW_cb_struct *cbs;
+    Widget         scrolledWindowText;
+    Widget         scrolledText;
+    Widget         tmp_label              = 0;
+    AW_cb_struct  *cbs;
     VarUpdateInfo *vui;
-    char *String = NULL;
-    short width_of_last_widget = 0;
-    short height_of_last_widget = 0;
-    int width_of_text = 0;
-    int height_of_text = 0;
-    int x_correcting_for_label = 0;
+    char          *str                    = NULL;
+    short          width_of_last_widget   = 0;
+    short          height_of_last_widget  = 0;
+    int            width_of_text          = 0;
+    int            height_of_text         = 0;
+    int            x_correcting_for_label = 0;
 
     AW_awar *vs = root->awar(var_name);
-    String      = root->awar(var_name)->read_string();
+    str         = root->awar(var_name)->read_string();
 
     int width_of_text_label, height_of_text_label;
     calculate_label_size(this, &width_of_text_label, &height_of_text_label, true, 0);
@@ -1130,14 +1130,14 @@ void AW_window::create_text_field(const char *var_name, int columns, int rows) {
                                            xmTextWidgetClass,
                                            scrolledWindowText,
                                            XmNeditMode, XmMULTI_LINE_EDIT,
-                                           XmNvalue, String,
+                                           XmNvalue, str,
                                            XmNscrollLeftSide, false,
                                            XmNwidth, (int)width_of_text,
                                            XmNheight, (int)height_of_text,
                                            XmNfontList, p_global->fontlist,
                                            XmNbackground, _at->background_color,
                                            NULL);
-    free(String);
+    free(str);
 
     if (!_at->to_position_exists) {
         XtVaGetValues(scrolledWindowText,   XmNheight, &height_of_last_widget,
