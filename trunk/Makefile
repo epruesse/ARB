@@ -703,7 +703,6 @@ ARCHS = \
 			$(ARCHS_PT_SERVER) \
 			AISC/AISC.a \
 			AISC_MKPTPS/AISC_MKPTPS.a \
-			ALIV3/ALIV3.a \
 			ARBDB/libARBDB.a \
 			CORE/libCORE.a \
 			ARB_GDE/ARB_GDE.a \
@@ -1078,21 +1077,6 @@ $(NAMES): $(ARCHS_NAMES:.a=.dummy) link_db
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
-#***********************************	OTHER EXECUTABLES   ********************************************
-
-ALIV3 = bin/aliv3
-ARCHS_ALIV3 = \
-		ALIV3/ALIV3.a \
-		SL/HELIX/HELIX.a \
-
-$(ALIV3): $(ARCHS_ALIV3:.a=.dummy) link_db
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_ALIV3) $(ARBDB_LIB) || ( \
-		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_ALIV3) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS)"; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_ALIV3) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS) && \
-		echo "$(SEP) Link $@ [done]"; \
-		)
-
 #***********************************	SHARED LIBRARIES SECTION  **************************************
 
 prepare_libdir: libs addlibs
@@ -1196,7 +1180,6 @@ PERLTOOLS/PERLTOOLS.dummy:		core db SL/FILE_BUFFER/FILE_BUFFER.dummy
 # all subdirs perl not depends on go here:
 AWT/libAWT.dummy:			links_non_perl
 AWTI/AWTI.dummy:			links_non_perl
-ALIV3/ALIV3.dummy:			links_non_perl
 CONSENSUS_TREE/CONSENSUS_TREE.dummy:	links_non_perl
 DBSERVER/DBSERVER.dummy:		links_non_perl
 DIST/DIST.dummy:			links_non_perl
@@ -1364,7 +1347,6 @@ prd: 	PRIMER_DESIGN/PRIMER_DESIGN.dummy
 nt:	menus $(NTREE)
 
 nal:	$(NALIGNER)
-a3:	$(ALIV3)
 
 di:	$(DIST)
 ph:	$(PHYLO)
@@ -1793,7 +1775,7 @@ reset_committed_build:
 
 arbapplications: nt pa e4 wetc pt na nal di ph ds pgt wetc cma
 
-arb_external: convert tools gde readseq tg pst a3 xmlin
+arb_external: convert tools gde readseq tg pst xmlin
 
 arb_no_perl: arbapplications help arb_external
 
@@ -1813,7 +1795,6 @@ rac_arb_naligner:	nal
 rac_arb_pt_server:	pt
 rac_arb_db_server:	ds
 rac_arb_name_server:	na
-rac_aliv3:		a3
 rac_arb_pgt:		pgt
 rac_arb_convert_aln:	convert
 rac_arb_treegen:	tg
@@ -1835,7 +1816,6 @@ TESTED_UNITS_AUTO = $(ARCHS:.a=.test)
 
 UNITS_WORKING = \
 	$(RNA3D_TEST) \
-	ALIV3/ALIV3.test \
 	ARB_GDE/ARB_GDE.test \
 	AWTI/AWTI.test \
 	CONSENSUS_TREE/CONSENSUS_TREE.test \
