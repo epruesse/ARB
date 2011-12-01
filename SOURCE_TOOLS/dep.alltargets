@@ -1,4 +1,3 @@
-ALIV3/ALIV3.a
 ARBDB/libARBDB.so
 ARB_GDE/ARB_GDE.a
 AWT/libAWT.so
@@ -63,7 +62,6 @@ TOOLS/arb_test.o
 WETC/WETC.a
 WINDOW/libWINDOW.so
 XML/XML.a
-aliv3
 arb_convert_aln
 arb_db_server
 arb_dist
