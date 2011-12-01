@@ -2572,8 +2572,8 @@ inline int yoffset_for_mode_button(int button_number) {
     return button_number*MODE_BUTTON_OFFSET + (button_number/4)*8 + 2;
 }
 
-int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active Mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    aw_assert(legal_mask(Mask));
+int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    aw_assert(legal_mask(mask));
     Widget button;
 
     TuneBackground(p_w->mode_area, TUNE_BUTTON); // set background color for mode-buttons
@@ -2608,7 +2608,7 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active M
         p_w->modes_widgets[p_w->number_of_modes] = button;
     }
 
-    root->make_sensitive(button, Mask);
+    root->make_sensitive(button, mask);
     p_w->number_of_modes++;
 
     int ynext = yoffset_for_mode_button(p_w->number_of_modes);
@@ -2820,8 +2820,8 @@ static void exit_duplicate_mnemonic() {
 
 // --------------------------------------------------------------------------------
 
-void AW_window::create_menu(AW_label name, const char *mnemonic, AW_active Mask) {
-    aw_assert(legal_mask(Mask));
+void AW_window::create_menu(AW_label name, const char *mnemonic, AW_active mask) {
+    aw_assert(legal_mask(mask));
     p_w->menu_deep = 0;
 #ifdef DEBUG
     init_duplicate_mnemonic();
@@ -2829,7 +2829,7 @@ void AW_window::create_menu(AW_label name, const char *mnemonic, AW_active Mask)
 #if defined(DUMP_MENU_LIST)
     dumpCloseAllSubMenus();
 #endif // DUMP_MENU_LIST
-    insert_sub_menu(name, mnemonic, Mask);
+    insert_sub_menu(name, mnemonic, mask);
 }
 
 void AW_window::all_menus_created() const { // this is called by AW_window::show() (i.e. after all menus have been created)
@@ -2844,8 +2844,8 @@ void AW_window::all_menus_created() const { // this is called by AW_window::show
 #endif // DEBUG
 }
 
-void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active Mask) {
-    aw_assert(legal_mask(Mask));
+void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active mask) {
+    aw_assert(legal_mask(mask));
     Widget shell, Label;
 
     TuneBackground(p_w->menu_bar[p_w->menu_deep], TUNE_SUBMENU); // set background color for submenus
@@ -2898,7 +2898,7 @@ void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active M
 
     if (p_w->menu_deep < AW_MAX_MENU_DEEP-1) p_w->menu_deep++;
 
-    root->make_sensitive(Label, Mask);
+    root->make_sensitive(Label, mask);
 }
 
 void AW_window::close_sub_menu() {
@@ -2913,10 +2913,10 @@ void AW_window::close_sub_menu() {
 }
 
 void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
-                                  const char *mnemonic, const char *helpText, AW_active Mask,
+                                  const char *mnemonic, const char *helpText, AW_active mask,
                                   void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2)
 {
-    aw_assert(legal_mask(Mask));
+    aw_assert(legal_mask(mask));
     Widget button;
 
     if (!topic_id) topic_id = name; // hmm, due to this we cannot insert_menu_topic w/o id. Change? @@@
@@ -2954,13 +2954,13 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
 
     cbs->id = strdup(topic_id);
     root->define_remote_command(cbs);
-    root->make_sensitive(button, Mask);
+    root->make_sensitive(button, mask);
 }
 
-void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const char *helpText, AW_active Mask,
+void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const char *helpText, AW_active mask,
                                   void (*f)(AW_window*, AW_CL,  AW_CL), AW_CL cd1, AW_CL cd2)
 {
-    aw_assert(legal_mask(Mask));
+    aw_assert(legal_mask(mask));
     Widget button;
 
     // create one help-sub-menu-point
@@ -2972,7 +2972,7 @@ void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const cha
     (XtCallbackProc) AW_server_callback,
     (XtPointer) new AW_cb_struct(this, f, cd1, cd2, helpText));
 
-    root->make_sensitive(button, Mask);
+    root->make_sensitive(button, mask);
 }
 
 void AW_window::insert_separator() {
