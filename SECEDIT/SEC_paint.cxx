@@ -256,7 +256,7 @@ void SEC_root::paintEcoliPositions(AW_device *device) {
     paintPosAnnotation(device, SEC_GC_ECOLI, size_t(abspos), "1", true, true);
 
     const BI_ecoli_ref *ecoli = db->ecoli();
-    for (size_t ep = bio2info(100); ep < ecoli->base_count(); ep += 100) {
+    for (size_t ep = bio2info(100); ep < (size_t)ecoli->base_count(); ep += 100) {
         abspos = ecoli->rel_2_abs(ep);
         paintPosAnnotation(device, SEC_GC_ECOLI, size_t(abspos), GBS_global_string("%i", info2bio(ep)), true, true);
     }
