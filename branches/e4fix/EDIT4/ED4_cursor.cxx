@@ -298,7 +298,9 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
         return ED4_R_BREAK;
     }
     x = del_mark;
-    window()->world_to_win_coords(&x, &y);
+
+    ED4_window *win = window();
+    win->world_to_win_coords(&x, &y);
 
     // refresh own terminal + terminal above + terminal below
 
@@ -343,7 +345,7 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
 
     // clear rectangle where cursor is displayed
 
-    AW_device *dev = current_device();
+    AW_device *dev = win->get_device();
     dev->push_clip_scale();
 
     int xmin, xmax, ymin, ymax;
@@ -392,10 +394,8 @@ ED4_cursor::~ED4_cursor()
     delete cursor_shape;
 }
 
-ED4_window *ED4_cursor::window() const
-{
+ED4_window *ED4_cursor::window() const {
     ED4_window *win;
-
     for (win=ED4_ROOT->first_window; win; win=win->next) {
         if (&win->cursor==this) {
             break;
@@ -466,6 +466,8 @@ static void select_named_sequence_terminal(const char *name) {
     GB_transaction ta(GLOBAL_gb_main);
     ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(name);
     if (name_term) {
+        ED4_MostRecentWinContext context; // use the last used window for selection
+
         // lookup current name term
         ED4_species_name_terminal *cursor_name_term = 0;
         {
@@ -521,7 +523,6 @@ void ED4_selected_SAI_changed_cb(AW_root * /* aw_root */)
             free(name);
         }
     }
-    ignore_selected_SAI_changes_cb = false;
     ED4_update_global_cursor_awars_allowed = true;
 }
 
@@ -536,20 +537,19 @@ void ED4_selected_species_changed_cb(AW_root * /* aw_root */)
             printf("Selected species is '%s'\n", name);
 #endif
             select_named_sequence_terminal(name);
-            free(name);
         }
+        free(name);
     }
     else {
 #if defined(TRACE_JUMPS)
         printf("Change ignored because ignore_selected_species_changes_cb!\n");
 #endif
     }
-    ignore_selected_species_changes_cb = false;
     ED4_update_global_cursor_awars_allowed = true;
 }
 
-void ED4_jump_to_current_species(AW_window * /* aw */, AW_CL)
-{
+void ED4_jump_to_current_species(AW_window *aww, AW_CL) {
+    ED4_LocalWinContext uses(aww);
     char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
     if (name && name[0]) {
         GB_transaction dummy(GLOBAL_gb_main);
@@ -675,8 +675,8 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
     }
 }
 
-void ED4_get_and_jump_to_actual(AW_window *, AW_CL)
-{
+void ED4_get_and_jump_to_actual(AW_window *aww, AW_CL) { // @@@ fix name
+    ED4_LocalWinContext uses(aww);
     char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
     if (name && name[0]) {
         ED4_get_and_jump_to_species(name);
@@ -995,6 +995,7 @@ void ED4_cursor::jump_screen_pos(AW_window *aww, int screen_pos, ED4_CursorJumpT
         return; // don`t move out of terminal
     }
 
+    ED4_LocalWinContext uses(aww);
     ED4_coords *coords = &current_ed4w()->coords;
 
     int screen_width  = coords->window_right_clip_point-coords->window_left_clip_point;
@@ -1234,13 +1235,15 @@ bool ED4_cursor::is_partly_visible() const {
     bool visible = false;
 
     switch (owner_of_cursor->get_area_level(0)) {
-        case ED4_A_TOP_AREA:
-            visible =
-                owner_of_cursor->is_visible(x1, 0, ED4_D_HORIZONTAL) ||
-                owner_of_cursor->is_visible(x2, 0, ED4_D_HORIZONTAL);
+        case ED4_A_TOP_AREA: {
+            ED4_window *win = window();
+            visible = 
+                owner_of_cursor->is_visible(win, x1, 0, ED4_D_HORIZONTAL) ||
+                owner_of_cursor->is_visible(win, x2, 0, ED4_D_HORIZONTAL);
             break;
+        }
         case ED4_A_MIDDLE_AREA:
-            visible = owner_of_cursor->is_visible(x1, y1, x2, y2, ED4_D_ALL_DIRECTION);
+            visible = owner_of_cursor->is_visible(window(), x1, y1, x2, y2, ED4_D_ALL_DIRECTION);
             break;
         default:
             break;
@@ -1250,6 +1253,8 @@ bool ED4_cursor::is_partly_visible() const {
 }
 
 void ED4_terminal::scroll_into_view(AW_window *aww) { // scroll y-position only
+    ED4_LocalWinContext uses(aww);
+
     AW_pos termw_x, termw_y;
     calc_world_coords(&termw_x, &termw_y);
 
@@ -1589,24 +1594,23 @@ public:
 
 CursorPos *CursorPos::head = 0;
 
-void ED4_store_curpos(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
-{
-    GB_transaction dummy(GLOBAL_gb_main);
-    ED4_ROOT->use_window(aww);
-    ED4_cursor *cursor = &current_cursor();
+void ED4_store_curpos(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
+    GB_transaction       dummy(GLOBAL_gb_main);
+    ED4_LocalWinContext  uses(aww);
+    ED4_cursor          *cursor = &current_cursor();
+    
     if (!cursor->owner_of_cursor) {
         aw_message("First you have to place the cursor.");
-        return;
     }
-
-    new CursorPos(cursor->owner_of_cursor->to_terminal(), cursor->get_sequence_pos());
+    else {
+        new CursorPos(cursor->owner_of_cursor->to_terminal(), cursor->get_sequence_pos());
+    }
 }
 
-void ED4_restore_curpos(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
-{
-    GB_transaction dummy(GLOBAL_gb_main);
-    ED4_ROOT->use_window(aww);
-    ED4_cursor *cursor = &current_cursor();
+void ED4_restore_curpos(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
+    GB_transaction       dummy(GLOBAL_gb_main);
+    ED4_LocalWinContext  uses(aww);
+    ED4_cursor          *cursor = &current_cursor();
 
     CursorPos *pos = CursorPos::get_head();
     if (!pos) {
@@ -1627,11 +1631,10 @@ void ED4_clear_stored_curpos(AW_window * /* aww */, AW_CL /* cd1 */, AW_CL /* cd
    Other stuff
    -------------------------------------------------------------------------------- */
 
-void ED4_helix_jump_opposite(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
-{
-    GB_transaction  dummy(GLOBAL_gb_main);
-    ED4_ROOT->use_window(aww);
-    ED4_cursor     *cursor = &current_cursor();
+void ED4_helix_jump_opposite(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
+    GB_transaction       dummy(GLOBAL_gb_main);
+    ED4_LocalWinContext  uses(aww);
+    ED4_cursor          *cursor = &current_cursor();
 
     if (!cursor->owner_of_cursor) {
         aw_message("First you have to place the cursor.");
@@ -1651,9 +1654,10 @@ void ED4_helix_jump_opposite(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
     }
 }
 
-void ED4_change_cursor(AW_window * /* aww */, AW_CL /* cd1 */, AW_CL /* cd2 */) {
-    ED4_cursor *cursor = &current_cursor();
-    ED4_CursorType typ = cursor->getType();
+void ED4_change_cursor(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
+    ED4_LocalWinContext uses(aww);
+    ED4_cursor     *cursor = &current_cursor();
+    ED4_CursorType  typ    = cursor->getType();
 
     cursor->changeType((ED4_CursorType)((typ+1)%ED4_CURSOR_TYPES));
 }

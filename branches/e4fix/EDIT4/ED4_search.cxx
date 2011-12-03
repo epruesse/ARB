@@ -726,8 +726,9 @@ static void searchParamsChanged(AW_root *root, AW_CL cl_type, AW_CL cl_action)
     }
 
     if (settings[type]->get_autoJump() && (action & DO_AUTO_JUMP)) { // auto jump
+        ED4_MostRecentWinContext context;
         ED4_cursor *cursor = &current_cursor();
-        bool jumped = false;
+        bool        jumped = false;
 
         if (cursor->owner_of_cursor && cursor->owner_of_cursor->is_sequence_terminal()) {
             int pos = cursor->get_sequence_pos();
@@ -771,7 +772,7 @@ static void searchParamsChanged(AW_root *root, AW_CL cl_type, AW_CL cl_action)
     if (action & REFRESH_ALWAYS) {
         bool old_update                        = ED4_update_global_cursor_awars_allowed;
         ED4_update_global_cursor_awars_allowed = false;
-        ED4_refresh_window(current_aww(), 0, 0);
+        ED4_ROOT->refresh_all_windows(0);
         ED4_update_global_cursor_awars_allowed = old_update;
     }
 
@@ -1340,9 +1341,9 @@ GB_ERROR ED4_repeat_last_search() {
     return 0;
 }
 
-void ED4_search(AW_window * /* aww */, AW_CL searchDescriptor)
-{
-    int direction;
+void ED4_search(AW_window *aww , AW_CL searchDescriptor) {
+    ED4_MostRecentWinContext context;
+    int direction; // @@@ fix locals
     ED4_SearchPositionType pattern;
     int searchOnlyForShownPatterns;
 

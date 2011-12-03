@@ -127,7 +127,7 @@ void ED4_expose_recalculations() {
 void ED4_expose_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     static bool dummy = 0;
 
-    ED4_ROOT->use_window(aww);
+    ED4_LocalWinContext uses(aww);
 
     GB_push_transaction(GLOBAL_gb_main);
 
@@ -147,7 +147,7 @@ void ED4_expose_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
 }
 
 void ED4_resize_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    ED4_ROOT->use_window(aww);
+    ED4_LocalWinContext uses(aww);
 
     GB_push_transaction(GLOBAL_gb_main);
 
@@ -366,7 +366,7 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
     static AW_event lastEvent;
     static int repeatCount;
 
-    ED4_ROOT->use_window(aww);
+    ED4_LocalWinContext uses(aww);
 
     aww->get_event(&event);
 
@@ -486,7 +486,7 @@ static int get_max_slider_ypos() {
 }
 
 void ED4_vertical_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    ED4_ROOT->use_window(aww);
+    ED4_LocalWinContext uses(aww);
 
     GB_push_transaction(GLOBAL_gb_main);
 
@@ -513,7 +513,7 @@ void ED4_vertical_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
 }
 
 void ED4_horizontal_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    ED4_ROOT->use_window(aww);
+    ED4_LocalWinContext uses(aww);
 
     GB_push_transaction(GLOBAL_gb_main);
 
@@ -540,7 +540,7 @@ void ED4_horizontal_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
 }
 
 void ED4_scrollbar_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    ED4_ROOT->use_window(aww);
+    ED4_LocalWinContext uses(aww);
 
     GB_push_transaction(GLOBAL_gb_main);
 
@@ -582,7 +582,7 @@ void ED4_scrollbar_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
 void ED4_motion_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
     AW_event event;
 
-    ED4_ROOT->use_window(aww);
+    ED4_LocalWinContext uses(aww);
 
     aww->get_event(&event);
 
@@ -662,12 +662,11 @@ void ED4_remote_set_cursor_cb(AW_root *awr, AW_CL /* cd1 */, AW_CL /* cd2 */)
 }
 
 void ED4_jump_to_cursor_position(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_pos_type) {
-    const char   *awar_name = (const char *)cl_awar_name;
-    PositionType  posType   = (PositionType)cl_pos_type;
-    ED4_ROOT->use_window(aww);
-
-    ED4_cursor *cursor = &current_cursor();
-    GB_ERROR    error  = 0;
+    const char          *awar_name = (const char *)cl_awar_name;
+    PositionType         posType   = (PositionType)cl_pos_type;
+    ED4_LocalWinContext  uses(aww);
+    ED4_cursor          *cursor    = &current_cursor();
+    GB_ERROR             error     = 0;
 
     long pos = aww->get_root()->awar(awar_name)->read_int();
 
@@ -795,9 +794,8 @@ void ED4_set_iupac(AW_window * /* aww */, char *awar_name, bool /* callback_flag
     }
 }
 
-void ED4_gc_is_modified(AW_window *aww, AW_CL cd1, AW_CL cd2)                       // callback if gc is modified
-{
-    ED4_ROOT->use_window(aww);
+void ED4_gc_is_modified_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
+    ED4_LocalWinContext uses(aww);
 
     ED4_resize_cb(aww, cd1, cd2);
     ED4_expose_cb(aww, cd1, cd2);
@@ -830,7 +828,7 @@ void ED4_exit() {
 }
 
 void ED4_quit_editor(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
-    ED4_ROOT->use_window(aww);
+    ED4_LocalWinContext uses(aww);
 
     if (ED4_ROOT->first_window == current_ed4w()) { // quit button has been pressed in first window
         ED4_exit();
@@ -838,14 +836,6 @@ void ED4_quit_editor(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
     // case : in another window close has been pressed
     current_aww()->hide();
     current_ed4w()->is_hidden = true;
-}
-
-void ED4_load_data(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    ED4_ROOT->use_window(aww);
-}
-
-void ED4_save_data(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    ED4_ROOT->use_window(aww);
 }
 
 void ED4_timer_refresh()
@@ -861,13 +851,9 @@ void ED4_timer(AW_root *, AW_CL cd1, AW_CL cd2)
     ED4_ROOT->aw_root->add_timed_callback(200, ED4_timer, cd1, cd2);
 }
 
-void ED4_refresh_window(AW_window *aww, AW_CL cd_called_from_menu, AW_CL /* cd2 */)
-{
-    GB_transaction dummy(GLOBAL_gb_main);
-
-    if (int(cd_called_from_menu)) {
-        ED4_ROOT->use_window(aww);
-    }
+void ED4_refresh_window(AW_window *aww) {
+    GB_transaction      dummy(GLOBAL_gb_main); // @@@ move down ?
+    ED4_LocalWinContext uses(aww); // @@@ move down ?
 
     ED4_main_manager *mainman = ED4_ROOT->main_manager;
     if (mainman) { // avoids a crash durin startup
@@ -880,7 +866,8 @@ void ED4_refresh_window(AW_window *aww, AW_CL cd_called_from_menu, AW_CL /* cd2 
     }
 }
 
-void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL cd2) {
+void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL ) {
+    ED4_LocalWinContext uses(aww);
     GB_transaction dummy(GLOBAL_gb_main);
 
     if (disable) {
@@ -921,7 +908,7 @@ void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL cd2) {
         }
     }
 
-    ED4_refresh_window(aww, 0, cd2);
+    ED4_refresh_window(aww);
 }
 
 static void show_detailed_column_stats_activated(AW_window *aww) {
@@ -963,12 +950,12 @@ void ED4_set_col_stat_threshold(AW_window * /* aww */, AW_CL cl_do_refresh, AW_C
     }
 }
 
-void ED4_toggle_detailed_column_stats(AW_window *aww, AW_CL, AW_CL)
-{
+void ED4_toggle_detailed_column_stats(AW_window *aww, AW_CL, AW_CL) {
     while (!ED4_columnStat_terminal::threshold_is_set()) {
         ED4_set_col_stat_threshold(aww, 0, 0);
     }
 
+    ED4_LocalWinContext uses(aww);
     ED4_cursor *cursor = &current_cursor();
     if (!cursor->owner_of_cursor) {
         aw_message("First you have to place your cursor");
@@ -1159,7 +1146,7 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
     GB_ERROR error = 0;
     GB_push_transaction(GLOBAL_gb_main);
 
-    ED4_ROOT->use_window(use_as_main_window);
+    ED4_LocalWinContext uses(use_as_main_window);
 
     if (!use_field) {
         char *group_name = aw_input("Enter name for new group:");
@@ -1404,27 +1391,23 @@ ARB_ERROR rebuild_consensus(ED4_base *object) {
     return NULL;
 }
 
-void ED4_new_editor_window(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
-{
-    ED4_ROOT->use_window(aww);
+void ED4_new_editor_window(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
+    ED4_LocalWinContext uses(aww);
 
     AW_device  *device;
     ED4_window *new_window = 0;
 
-    if (ED4_ROOT->generate_window(&device, &new_window) == ED4_R_BREAK)  // don't open more than five windows
-        return;
+    if (ED4_ROOT->generate_window(&device, &new_window) != ED4_R_BREAK) {
+        ED4_LocalWinContext now_uses(new_window);
 
-    ED4_ROOT->use_window(new_window);
+        new_window->set_scrolled_rectangle(ED4_ROOT->scroll_links.link_for_hor_slider,
+                                           ED4_ROOT->scroll_links.link_for_ver_slider,
+                                           ED4_ROOT->scroll_links.link_for_hor_slider,
+                                           ED4_ROOT->scroll_links.link_for_ver_slider);
 
-    new_window->set_scrolled_rectangle(ED4_ROOT->scroll_links.link_for_hor_slider,
-                                       ED4_ROOT->scroll_links.link_for_ver_slider,
-                                       ED4_ROOT->scroll_links.link_for_hor_slider,
-                                       ED4_ROOT->scroll_links.link_for_ver_slider);
-
-    new_window->aww->show();
-    new_window->update_scrolled_rectangle();
-
-    ED4_ROOT->use_window(aww);
+        new_window->aww->show();
+        new_window->update_scrolled_rectangle();
+    }
 }
 
 

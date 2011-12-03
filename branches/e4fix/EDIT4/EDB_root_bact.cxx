@@ -167,7 +167,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
     long       string_length;
     char       namebuffer[NAME_BUFFERSIZE];
 
-    device = ED4_ROOT->first_window->aww->get_device(AW_MIDDLE_AREA);
+    device = ED4_ROOT->first_window->get_device();
 
     if (alignment_flag == ED4_A_DEFAULT) {
         gb_ali_xxx = GB_entry(gb_datamode, ED4_ROOT->alignment_name);
@@ -576,7 +576,7 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
     sequence_info_terminal->set_properties((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
     sequence_manager->children->append_member(sequence_info_terminal);
 
-    device = ED4_ROOT->first_window->aww->get_device(AW_MIDDLE_AREA);
+    device = ED4_ROOT->first_window->get_device();
     pixel_length = device->get_string_size(ED4_G_SEQUENCES, CONSENSUS,   0);
 
     sequence_terminal = new ED4_consensus_sequence_terminal(CONSENSUS, SEQUENCEINFOSIZE, 0, pixel_length + 10, height_terminal, sequence_manager);

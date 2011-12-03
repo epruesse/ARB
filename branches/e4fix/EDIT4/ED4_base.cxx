@@ -109,7 +109,8 @@ void ED4_manager::changed_by_database() {
         printf("ED4_manager::changed_by_database: I have no parent!\n");
 #endif // DEBUG
     }
-    ED4_ROOT->main_manager->Show();
+
+    ED4_ROOT->refresh_all_windows(0);
 }
 
 void ED4_terminal::changed_by_database()
@@ -325,11 +326,11 @@ void ED4_species_pointer::Set(GBDATA *gbd, int *clientdata)
 //      ED4_base
 // -----------------
 
-bool ED4_base::is_visible(AW_pos x, AW_pos y, ED4_direction direction) {
-    // indicates whether x, y are in the visible scrolling area
-    // x, y are calculated by calc_world_coords
+bool ED4_base::is_visible(ED4_window *in_ed4w, AW_pos x, AW_pos y, ED4_direction direction) {
+    // return true if position (world coordinates) is visible in_ed4w
+    // (tests only into direction)
     bool        visible = true;
-    ED4_coords& coords  = current_ed4w()->coords;
+    ED4_coords& coords  = in_ed4w->coords;
 
     switch (direction)
     {
@@ -376,14 +377,13 @@ inline bool ranges_overlap(AW_pos p1, AW_pos p2, int r1, int r2) {
     return !((r2 <= p1) || (p2 <= r1)); // "exactly adjacent" means "not overlapping"
 }
 
-bool ED4_base::is_visible(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, ED4_direction IF_ASSERTION_USED(direction))
-// optimized case of function above (to avoid the need to call it 4 times)
-{
+bool ED4_base::is_visible(ED4_window *in_ed4w, AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, ED4_direction IF_ASSERTION_USED(direction)) {
+    // return true if rectangle x1/y1/x2/y2 overlaps with clipped screen
     e4_assert(direction == ED4_D_ALL_DIRECTION);
     e4_assert(x1 <= x2);
     e4_assert(y1 <= y2);
 
-    ED4_coords& coords  = current_ed4w()->coords;
+    ED4_coords& coords  = in_ed4w->coords;
 
     bool visible = (ranges_overlap(x1, x2, coords.window_left_clip_point, coords.window_right_clip_point) &&
                     ranges_overlap(y1, y2, coords.window_upper_clip_point, coords.window_lower_clip_point));

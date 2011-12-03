@@ -688,6 +688,8 @@ public:
     void        reset_all_for_new_config(); // reset structures for loading new config
     ED4_window *get_matching_ed4w(AW_window *aww);
 
+    void announce_deletion(ED4_base *object);
+
     // functions concerned the scrolled area
     ED4_returncode      update_scrolled_rectangle();
     ED4_returncode      set_scrollbar_indents();
@@ -695,6 +697,8 @@ public:
     ED4_returncode      set_scrolled_rectangle(ED4_base *x_link, ED4_base *y_link, ED4_base *width_link, ED4_base *height_link);
 
     void update_window_coords();
+
+    AW_device *get_device() const { return aww->get_device(AW_MIDDLE_AREA); }
 
     ED4_window(AW_window *window);
     ~ED4_window();
@@ -1027,8 +1031,8 @@ public:
     virtual ED4_returncode  clear_background(int color=0);
 
     ED4_returncode clear_whole_background();       // clear AW_MIDDLE_AREA
-    bool is_visible(AW_pos x, AW_pos y, ED4_direction direction);
-    bool is_visible(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, ED4_direction direction);
+    bool is_visible(ED4_window *in_ed4w, AW_pos x, AW_pos y, ED4_direction direction);
+    bool is_visible(ED4_window *in_ed4w, AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, ED4_direction direction);
 
     // functions concerned with links in the hierarchy
     virtual ED4_returncode  set_links(ED4_base *width_link, ED4_base *height_link);
@@ -1380,26 +1384,36 @@ class ED4_WinContext {
     void init(ED4_window *ew) {
         e4_assert(ew);
         ed4w   = ew;
-        device = ed4w->aww->get_device(AW_MIDDLE_AREA);
+        device = ed4w->get_device();
     }
 
-public:
+protected:
     ED4_WinContext() : ed4w(0), device(0) {}
+    static ED4_WinContext current_context;
 
+public:
     inline ED4_WinContext(AW_window *aww_);
     ED4_WinContext(ED4_window *ed4w_) { init(ed4w_); }
 
     AW_device *get_device() const { e4_assert(have_context()); return device; }
     ED4_window *get_ed4w() const { e4_assert(have_context()); return ed4w; }
+
+    static const ED4_WinContext& get_current_context() { return current_context; }
+    static bool dont_have_global_context() { return !current_context.have_context(); }
 };
+
+
+inline AW_device *current_device() { return ED4_WinContext::get_current_context().get_device(); }
+inline ED4_window *current_ed4w() { return ED4_WinContext::get_current_context().get_ed4w(); }
+inline AW_window *current_aww() { return current_ed4w()->aww; }
+inline ED4_cursor& current_cursor() { return current_ed4w()->cursor; }
 
 class ED4_root : virtual Noncopyable {
     void ED4_ROOT() const { e4_assert(0); } // avoid ED4_root-members use global ED4_ROOT
 
     ED4_returncode refresh_window_simple(int redraw);
 
-    ED4_WinContext  context;
-    ED4_window     *most_recently_used_window;
+    ED4_window *most_recently_used_window;
 
 public:
     char       *db_name;                            // name of Default Properties database (complete path)
@@ -1440,14 +1454,6 @@ public:
     int                      temp_gc;
     AW_font_group            font_group;
 
-    void use_window(AW_window *aww) { context = ED4_WinContext(aww); }
-    void use_window(ED4_window *ed4w) { context = ED4_WinContext(ed4w); }
-    void use_first_window() { use_window(first_window); }
-
-    AW_device *curr_device() const { return context.get_device(); }
-    ED4_window *curr_ed4w() const { return context.get_ed4w(); }
-    AW_window *curr_aww() const { return context.get_ed4w()->aww; }
-
     void announce_useraction_in(AW_window *aww);
     ED4_window *get_most_recently_used_window() const { return most_recently_used_window; }
 
@@ -1484,14 +1490,28 @@ public:
     ~ED4_root();
 };
 
-inline AW_window *current_aww() { return ED4_ROOT->curr_aww(); }
-inline AW_device *current_device() { return ED4_ROOT->curr_device(); }
-inline ED4_window *current_ed4w() { return ED4_ROOT->curr_ed4w(); }
-inline ED4_cursor& current_cursor() { return current_ed4w()->cursor; }
+ED4_WinContext::ED4_WinContext(AW_window *aww_) { init(ED4_ROOT->first_window->get_matching_ed4w(aww_)); }
 
-ED4_WinContext::ED4_WinContext(AW_window *aww_) {
-    init(ED4_ROOT->first_window->get_matching_ed4w(aww_));
-}
+class ED4_LocalWinContext : private ED4_WinContext {
+public:
+    ED4_LocalWinContext(AW_window *aww) : ED4_WinContext(current_context) { current_context = ED4_WinContext(aww); }
+    ED4_LocalWinContext(ED4_window *ew) : ED4_WinContext(current_context) { current_context = ED4_WinContext(ew); }
+    ~ED4_LocalWinContext() { current_context = *this; }
+};
+
+class ED4_MostRecentWinContext : virtual Noncopyable { 
+    ED4_LocalWinContext *most_recent;
+public:
+    ED4_MostRecentWinContext() : most_recent(0) {
+        if (ED4_WinContext::dont_have_global_context()) {
+            most_recent = new ED4_LocalWinContext(ED4_ROOT->get_most_recently_used_window());
+        }
+    }
+    ~ED4_MostRecentWinContext() {
+        delete most_recent;
+    }
+};
+
 
 // ------------------------
 //      manager classes
@@ -2075,6 +2095,8 @@ inline ED4_device_manager *ED4_root::get_device_manager() {
 
 extern      ST_ML *st_ml;
 
+void ED4_with_all_edit_windows(void (*cb)(ED4_window *));
+
 void ED4_expose_cb(AW_window *aww, AW_CL cd1, AW_CL cd2);
 void ED4_expose_all_windows();
 
@@ -2085,8 +2107,8 @@ void        ED4_resize_cb           (AW_window *aww, AW_CL cd1, AW_CL cd2);
 
 void ED4_remote_event(AW_event *faked_event);
 
-void        ED4_gc_is_modified      (AW_window *aww, AW_CL cd1, AW_CL cd2);
-void        ED4_quit            (AW_window *aww, AW_CL cd1, AW_CL cd2);
+void        ED4_gc_is_modified_cb(AW_window *aww, AW_CL cd1, AW_CL cd2);
+void        ED4_quit(AW_window *aww, AW_CL cd1, AW_CL cd2);
 
 void        ED4_motion_cb           (AW_window *aww, AW_CL cd1, AW_CL cd2);
 void        ED4_vertical_change_cb      (AW_window *aww, AW_CL cd1, AW_CL cd2);
@@ -2119,9 +2141,7 @@ ARB_ERROR rebuild_consensus(ED4_base *object);
 void ED4_exit() __ATTR__NORETURN;
 
 void        ED4_quit_editor         (AW_window *aww, AW_CL cd1, AW_CL cd2);                 // Be Careful: Is this the last window?
-void        ED4_load_data           (AW_window *aww, AW_CL cd1, AW_CL cd2);
-void        ED4_save_data           (AW_window *aww, AW_CL cd1, AW_CL cd2);
-void        ED4_refresh_window      (AW_window *aww, AW_CL cd1, AW_CL cd2);
+void        ED4_refresh_window      (AW_window *aww);
 
 void        ED4_store_curpos        (AW_window *aww, AW_CL cd1, AW_CL cd2);
 void        ED4_restore_curpos      (AW_window *aww, AW_CL cd1, AW_CL cd2);
@@ -2182,5 +2202,6 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access);
 #else
 #error ed4_class included twice
 #endif
+
 
 

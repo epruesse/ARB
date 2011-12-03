@@ -904,10 +904,11 @@ ED4_returncode ED4_root_group_manager::resize_requested_by_parent() {
     return result;
 }
 
+static void update_scrolled_rectangles(ED4_window *win) { win->update_scrolled_rectangle(); }
 ED4_returncode ED4_main_manager::resize_requested_by_parent() {
     if (update_info.resize) {
         ED4_manager::resize_requested_by_parent();
-        current_ed4w()->update_scrolled_rectangle();
+        ED4_with_all_edit_windows(update_scrolled_rectangles);
     }
     return ED4_R_OK;
 }
