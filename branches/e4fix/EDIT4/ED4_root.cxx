@@ -908,15 +908,15 @@ static bool get_selected_range(PosRange& range) {
     return false;
 }
 
-static ED4_list_elem *actual_aligner_elem = 0;
+static ED4_list_elem *curr_aligner_elem = 0;
 static GBDATA *get_next_selected_species()
 {
-    if (!actual_aligner_elem) return 0;
+    if (!curr_aligner_elem) return 0;
 
-    ED4_selection_entry *selectionEntry = (ED4_selection_entry*)actual_aligner_elem->elem();
+    ED4_selection_entry *selectionEntry = (ED4_selection_entry*)curr_aligner_elem->elem();
     ED4_species_manager *specMan = selectionEntry->object->get_parent(ED4_L_SPECIES)->to_species_manager();
 
-    actual_aligner_elem = actual_aligner_elem->next();
+    curr_aligner_elem = curr_aligner_elem->next();
     return specMan->get_species_pointer();
 }
 static GBDATA *get_first_selected_species(int *total_no_of_selected_species)
@@ -928,10 +928,10 @@ static GBDATA *get_first_selected_species(int *total_no_of_selected_species)
     }
 
     if (selected) {
-        actual_aligner_elem = ED4_ROOT->selected_objects.first();
+        curr_aligner_elem = ED4_ROOT->selected_objects.first();
     }
     else {
-        actual_aligner_elem = 0;
+        curr_aligner_elem = 0;
     }
 
     return get_next_selected_species();
@@ -1469,9 +1469,9 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     // ------------------------------
 
     awmm->create_menu("Edit", "E", AWM_ALL);
-    awmm->insert_menu_topic("refresh",     "Refresh [Ctrl-L]",           "f", 0, AWM_ALL, (AW_CB)ED4_refresh_window,            0, 0);
-    awmm->insert_menu_topic("load_actual", "Load current species [GET]", "G", 0, AWM_ALL, ED4_get_and_jump_to_actual_from_menu, 0, 0);
-    awmm->insert_menu_topic("load_marked", "Load marked species",        "m", 0, AWM_ALL, ED4_get_marked_from_menu,             0, 0);
+    awmm->insert_menu_topic("refresh",      "Refresh [Ctrl-L]",           "f", 0, AWM_ALL, (AW_CB)ED4_refresh_window,            0, 0);
+    awmm->insert_menu_topic("load_current", "Load current species [GET]", "G", 0, AWM_ALL, ED4_get_and_jump_to_current_from_menu, 0, 0);
+    awmm->insert_menu_topic("load_marked",  "Load marked species",        "m", 0, AWM_ALL, ED4_get_marked_from_menu,             0, 0);
     SEP________________________SEP;
     awmm->insert_menu_topic("refresh_ecoli",       "Reload Ecoli sequence",        "E", "ecoliref.hlp", AWM_ALL, (AW_CB)ED4_reload_ecoli_cb, 0, 0);
     awmm->insert_menu_topic("refresh_helix",       "Reload Helix",                 "H", "helix.hlp",    AWM_ALL, (AW_CB)ED4_reload_helix_cb, 0, 0);
@@ -1754,7 +1754,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     awmm->create_button("JUMP", "Jump");
 
     awmm->at("get");
-    awmm->callback(ED4_get_and_jump_to_actual, 0);
+    awmm->callback(ED4_get_and_jump_to_current, 0);
     awmm->help_text("e4.hlp");
     awmm->create_button("GET", "Get");
 

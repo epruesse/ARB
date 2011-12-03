@@ -675,7 +675,7 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
     }
 }
 
-void ED4_get_and_jump_to_actual(AW_window *aww, AW_CL) { // @@@ fix name
+void ED4_get_and_jump_to_current(AW_window *aww, AW_CL) {
     ED4_LocalWinContext uses(aww);
     char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
     if (name && name[0]) {
@@ -687,8 +687,8 @@ void ED4_get_and_jump_to_actual(AW_window *aww, AW_CL) { // @@@ fix name
     }
 }
 
-void ED4_get_and_jump_to_actual_from_menu(AW_window *aw, AW_CL cl, AW_CL) {
-    ED4_get_and_jump_to_actual(aw, cl);
+void ED4_get_and_jump_to_current_from_menu(AW_window *aw, AW_CL cl, AW_CL) {
+    ED4_get_and_jump_to_current(aw, cl);
     ED4_ROOT->refresh_all_windows(0);
 }
 

@@ -2076,15 +2076,15 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                                                     }
                                                 }
                                                 else { // different field contents
-                                                    int actualStat;
-                                                    for (actualStat=1; actualStat<nextStat; actualStat++) {
+                                                    int currStat;
+                                                    for (currStat=1; currStat<nextStat; currStat++) {
                                                         int names_len = 1; // open bracket
                                                         SpeciesMergeList *sl2 = sml;
                                                         i = 0;
                                                         char *content = 0;
 
                                                         while (sl2) {
-                                                            if (fieldStat[i]==actualStat) {
+                                                            if (fieldStat[i]==currStat) {
                                                                 names_len += strlen(sl2->species_name)+1;
                                                                 if (!content) {
                                                                     gb_field = GB_search(sl2->species, fieldName, GB_FIND);
@@ -2105,7 +2105,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                                                         i = 0;
                                                         int first = 1;
                                                         while (sl2) {
-                                                            if (fieldStat[i]==actualStat) {
+                                                            if (fieldStat[i]==currStat) {
                                                                 add += sprintf(add, "%c%s", first ? '{' : ';', sl2->species_name);
                                                                 first = 0;
                                                             }

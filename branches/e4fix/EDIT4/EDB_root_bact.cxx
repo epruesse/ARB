@@ -49,7 +49,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
                                         ED4_sequence_terminal      *ref_sequence_terminal,
                                         char                       *str,
                                         ED4_index                  *y,
-                                        ED4_index                   actual_local_position,
+                                        ED4_index                   curr_local_position,
                                         ED4_index                  *length_of_terminals,
                                         int                         group_depth,
                                         ED4_datamode                datamode)
@@ -100,7 +100,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
     }
 
     terminal_height = TERMINALHEIGHT;
-    local_count_position = actual_local_position;
+    local_count_position = curr_local_position;
 
     sprintf(namebuffer, "Species_Manager.%ld.%d", ED4_counter, count_too);
 
@@ -143,7 +143,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
     name_coords = seq_coords = 0;
 
     if (!(multi_species_manager->flag.hidden)) {
-        *length_of_terminals = local_count_position-actual_local_position;
+        *length_of_terminals = local_count_position-curr_local_position;
         *y += *length_of_terminals; // needed for global coordinates of manager
     }
 
@@ -325,7 +325,7 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_sp
                                             char                       *str,
                                             int                        *index,
                                             ED4_index                  *y,
-                                            ED4_index                   actual_local_position,
+                                            ED4_index                   curr_local_position,
                                             ED4_index                  *length_of_terminals, // height of terminals is meant
                                             int                         group_depth,
                                             arb_progress               *progress)
@@ -341,7 +341,7 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_sp
     ED4_returncode retCode                    = ED4_R_OK;
 
     ship = (char*)GB_calloc(SHIPSIZE, sizeof(*ship));
-    local_count_position = actual_local_position;
+    local_count_position = curr_local_position;
 
     do {
         if (word == 0) { // word is needed for jump over separator

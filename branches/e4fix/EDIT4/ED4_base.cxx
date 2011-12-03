@@ -115,7 +115,7 @@ void ED4_manager::changed_by_database() {
 
 void ED4_terminal::changed_by_database()
 {
-    if (GB_read_clock(GLOBAL_gb_main) > actual_timestamp) { // only if timer_cb occurred after last change by EDIT4
+    if (GB_read_clock(GLOBAL_gb_main) > curr_timestamp) { // only if timer_cb occurred after last change by EDIT4
 
         // test if alignment length has changed:
         {
@@ -1353,7 +1353,7 @@ ED4_returncode ED4_base::link_changed(ED4_base *link)
     return (ED4_R_OK);
 }
 
-int ED4_base::actualTimestamp = 1;
+int ED4_base::currTimestamp = 1;
 void ED4_base::update_world_coords_cache() {
     if (parent) {
         parent->calc_world_coords(&lastXpos, &lastYpos);
@@ -1364,7 +1364,7 @@ void ED4_base::update_world_coords_cache() {
     }
     lastXpos += extension.position[X_POS];
     lastYpos += extension.position[Y_POS];
-    timestamp = actualTimestamp;
+    timestamp = currTimestamp;
 }
 
 

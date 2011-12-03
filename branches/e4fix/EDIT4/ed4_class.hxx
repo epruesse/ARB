@@ -172,7 +172,7 @@ public:
                                 char                       *string,
                                 int                        *index,
                                 ED4_index                  *y,
-                                ED4_index                   actual_local_position,
+                                ED4_index                   curr_local_position,
                                 ED4_index                  *length_of_terminals,
                                 int                         group_depth,
                                 arb_progress               *progress);
@@ -182,7 +182,7 @@ public:
                              ED4_sequence_terminal      *ref_sequence_terminal,
                              char                       *string,
                              ED4_index                  *y,
-                             ED4_index                   actual_local_position,
+                             ED4_index                   curr_local_position,
                              ED4_index                  *length_of_terminals,
                              int                         group_depth,
                              ED4_datamode                datamode); // flag only needed for loading a new configuration
@@ -980,7 +980,7 @@ class ED4_base : virtual Noncopyable {
 
     // cache world coordinates:
 
-    static int actualTimestamp;
+    static int currTimestamp;
     AW_pos     lastXpos;
     AW_pos     lastYpos;
     int        timestamp;
@@ -1047,7 +1047,7 @@ public:
     void calc_rel_coords(AW_pos *x, AW_pos *y);
 
     void calc_world_coords(AW_pos *x, AW_pos *y) {
-        bool cache_up_to_date = timestamp == actualTimestamp;
+        bool cache_up_to_date = timestamp == currTimestamp;
         if (!cache_up_to_date) {
             update_world_coords_cache();
         }
@@ -1056,7 +1056,7 @@ public:
     }
 
     static void touch_world_cache() {
-        actualTimestamp++;
+        currTimestamp++;
     }
 
     // functions which refer to the object as a child, i.e. travelling down the hierarchy
@@ -1298,7 +1298,7 @@ public:
         unsigned int deleted : 1;
     } tflag;
     ED4_selection_entry *selection_info;            // Info about i.e. Position
-    long                 actual_timestamp;
+    long                 curr_timestamp;
 
     DECLARE_DUMP_FOR_BASECLASS(ED4_terminal,ED4_base);
 
@@ -2168,8 +2168,8 @@ void        ED4_compression_toggle_changed_cb   (AW_root *root, AW_CL cd1, AW_CL
 AW_window   *ED4_create_new_seq_window      (AW_root *root, AW_CL cl_creation_mode);
 
 void ED4_jump_to_current_species     (AW_window *, AW_CL);
-void ED4_get_and_jump_to_actual      (AW_window *, AW_CL);
-void ED4_get_and_jump_to_actual_from_menu    (AW_window *aw, AW_CL cl, AW_CL);
+void ED4_get_and_jump_to_current      (AW_window *, AW_CL);
+void ED4_get_and_jump_to_current_from_menu    (AW_window *aw, AW_CL cl, AW_CL);
 void ED4_get_and_jump_to_species     (GB_CSTR species_name);
 void ED4_get_marked_from_menu        (AW_window *, AW_CL, AW_CL);
 void ED4_selected_species_changed_cb     (AW_root *aw_root);

@@ -243,7 +243,7 @@ GB_ERROR ED4_terminal::write_sequence(const char *seq, int seq_len)
 
     if (!err && dynamic_prop&ED4_P_CONSENSUS_RELEVANT) {
         if (old_seq) {
-            actual_timestamp = GB_read_clock(GLOBAL_gb_main);
+            curr_timestamp = GB_read_clock(GLOBAL_gb_main);
 
             get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager()
                 ->update_bases_and_rebuild_consensi(old_seq, old_seq_len, get_parent(ED4_L_SPECIES)->to_species_manager(), ED4_U_UP); // bases_check
@@ -791,7 +791,7 @@ ED4_terminal::ED4_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, 
 {
     memset((char*)&tflag, 0, sizeof(tflag));
     selection_info   = 0;
-    actual_timestamp = 0;
+    curr_timestamp = 0;
 }
 
 
