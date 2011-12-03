@@ -776,7 +776,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             break;
                         }
                         case 'S': { // CTRL-S = Repeat last search
-                            ad_err      = ED4_repeat_last_search();
+                            ad_err      = ED4_repeat_last_search(current_ed4w());
                             seq_pos     = current_cursor().get_sequence_pos();
                             cursor_jump = ED4_JUMP_KEEP_POSITION;
                             break;

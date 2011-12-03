@@ -1131,8 +1131,8 @@ char *cat(char *toBuf, const char *s1, const char *s2)
 
 static void insert_search_fields(AW_window_menu_modes *awmm,
                                  const char *label_prefix, const char *macro_prefix,
-                                 const char *pattern_awar_name, ED4_SearchPositionType type, const char *show_awar_name,
-                                 int short_form)
+                                 const char *pattern_awar_name, const char *show_awar_name,
+                                 int short_form, ED4_search_type_and_ed4w *taw)
 {
     char buf[200];
 
@@ -1142,15 +1142,15 @@ static void insert_search_fields(AW_window_menu_modes *awmm,
     }
 
     awmm->at(cat(buf, label_prefix, "n"));
-    awmm->callback(ED4_search, ED4_encodeSearchDescriptor(+1, type));
+    awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(+1, taw->type), (AW_CL)taw->ed4w);
     awmm->create_button(cat(buf, macro_prefix, "_SEARCH_NEXT"), "#edit/next.bitmap");
 
     awmm->at(cat(buf, label_prefix, "l"));
-    awmm->callback(ED4_search, ED4_encodeSearchDescriptor(-1, type));
+    awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(-1, taw->type), (AW_CL)taw->ed4w);
     awmm->create_button(cat(buf, macro_prefix, "_SEARCH_LAST"), "#edit/last.bitmap");
 
     awmm->at(cat(buf, label_prefix, "d"));
-    awmm->callback(AW_POPUP, (AW_CL)ED4_create_search_window, (AW_CL)type);
+    awmm->callback(AW_POPUP, (AW_CL)ED4_create_search_window, (AW_CL)taw);
     awmm->create_button(cat(buf, macro_prefix, "_SEARCH_DETAIL"), "#edit/detail.bitmap");
 
     awmm->at(cat(buf, label_prefix, "s"));
@@ -1548,8 +1548,9 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
             }
             sprintf(menu_entry_name, "%s Search", id);
 
-            hotkey[0] = hotkeys[s];
-            awmm->insert_menu_topic(macro_name, menu_entry_name, hotkey, "e4_search.hlp", AWM_ALL, AW_POPUP, AW_CL(ED4_create_search_window), AW_CL(type));
+            hotkey[0]                     = hotkeys[s];
+            ED4_search_type_and_ed4w *taw = new ED4_search_type_and_ed4w(type, current_ed4w());
+            awmm->insert_menu_topic(macro_name, menu_entry_name, hotkey, "e4_search.hlp", AWM_ALL, AW_POPUP, AW_CL(ED4_create_search_window), AW_CL(taw));
         }
     }
     awmm->close_sub_menu();
@@ -1884,7 +1885,15 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     // search
 
     awmm->button_length(0);
-#define INSERT_SEARCH_FIELDS(Short, label_prefix, prefix) insert_search_fields(awmm, #label_prefix, #prefix, ED4_AWAR_##prefix##_SEARCH_PATTERN, ED4_##prefix##_PATTERN, ED4_AWAR_##prefix##_SEARCH_SHOW, Short)
+#define INSERT_SEARCH_FIELDS(Short, label_prefix, prefix)                                                               \
+    insert_search_fields(awmm,                                                                                          \
+                         #label_prefix,                                                                                 \
+                         #prefix,                                                                                       \
+                         ED4_AWAR_##prefix##_SEARCH_PATTERN,                                                            \
+                         ED4_AWAR_##prefix##_SEARCH_SHOW,                                                               \
+                         Short,                                                                                         \
+                         new ED4_search_type_and_ed4w(ED4_##prefix##_PATTERN, current_ed4w())                           \
+        )
 
     INSERT_SEARCH_FIELDS(0, u1, USER1);
     INSERT_SEARCH_FIELDS(0, u2, USER2);
@@ -1899,11 +1908,11 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
 #undef INSERT_SEARCH_FIELDS
 
     awmm->at("alast");
-    awmm->callback(ED4_search, ED4_encodeSearchDescriptor(-1, ED4_ANY_PATTERN));
+    awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(-1, ED4_ANY_PATTERN), (AW_CL)current_ed4w());
     awmm->create_button("ALL_SEARCH_LAST", "#edit/last.bitmap");
 
     awmm->at("anext");
-    awmm->callback(ED4_search, ED4_encodeSearchDescriptor(+1, ED4_ANY_PATTERN));
+    awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(+1, ED4_ANY_PATTERN), (AW_CL)current_ed4w());
     awmm->create_button("ALL_SEARCH_NEXT", "#edit/next.bitmap");
 
     title_mode_changed(aw_root, awmm);
