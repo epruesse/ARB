@@ -600,35 +600,39 @@ static const char *aw_size_awar_name(AW_window *aww, const char *sub_entry) {
 #define aw_awar_name_width(aww)  aw_size_awar_name((aww), "width")
 #define aw_awar_name_height(aww) aw_size_awar_name((aww), "height")
 
-static void aw_calculate_WM_offsets(AW_window *aww) {
-    if (p_aww(aww)->WM_top_offset == AW_FIX_POS_ON_EXPOSE) {        // very bad hack continued
-        // get last position stored in properties
-        AW_root *root  = aww->get_root();
-        int      oposx = root->awar(aw_awar_name_posx(aww))->read_int();
-        int      oposy = root->awar(aw_awar_name_posy(aww))->read_int();
+static void aw_onExpose_calc_WM_offsets(AW_window *aww) {
+    if (p_aww(aww)->WM_top_offset != AW_CALC_OFFSET_ON_EXPOSE) return; // @@@ remove me when using called-once-expose-callbacks
+    aw_assert(p_aww(aww)->WM_top_offset == AW_CALC_OFFSET_ON_EXPOSE);
 
-        // get current window position
-        short            posy, posx;
-        AW_window_Motif *motif = p_aww(aww);
-        XtVaGetValues(motif->shell,  XmNx, &posx, XmNy, &posy, NULL);
+    // get last position stored in properties
+    AW_root *root  = aww->get_root();
+    int      oposx = root->awar(aw_awar_name_posx(aww))->read_int();
+    int      oposy = root->awar(aw_awar_name_posy(aww))->read_int();
 
-        // calculate offset
-        motif->WM_top_offset  = posy-oposy;
-        motif->WM_left_offset = posx-oposx;
+    AW_window_Motif *motif = p_aww(aww);
 
-#if defined(DEBUG) && 0
-        printf("aw_calculate_WM_offsets: WM_left_offset=%i WM_top_offset=%i\n", motif->WM_left_offset, motif->WM_top_offset);
-#endif // DEBUG
+    int posx, posy;
+    aww->get_window_pos(posx, posy);
+
+    if (posx == 0 && posy == 0) { // oops - motif has no idea where the window has been placed
+        // assume positions stored in awars are correct and use them. 
+        // This works around problems with unclickable GUI-elements when running on 'Unity'
+        aww->set_window_pos(oposx, oposy);
+        posx = oposx;
+        posy = oposy;
     }
 
-#if defined(DEBUG) && 0
-    {
-        short posx, posy;
-        AW_window_Motif *motif = p_aww(aww);
-        XtVaGetValues(motif->shell,  XmNx, &posx, XmNy, &posy, NULL);
-        printf("[expose] Position reported by motif: %i/%i\n", posx, posy);
-    }
-#endif // DEBUG
+    // calculate offset
+    motif->WM_top_offset  = posy-oposy;
+    motif->WM_left_offset = posx-oposx;
+}
+
+static void aw_onExpose_setPosFromAwars(AW_window *aww) {
+    AW_root *root  = aww->get_root();
+    int oposx = root->awar(aw_awar_name_posx(aww))->read_int();
+    int oposy = root->awar(aw_awar_name_posy(aww))->read_int();
+        
+    aww->set_window_pos(oposx, oposy);
 }
 
 bool AW_cb_struct::is_equal(const AW_cb_struct& other) const {
@@ -1680,13 +1684,11 @@ static void aw_window_destroy_cb(Widget,  AW_window *aww, XmAnyCallbackStruct *)
     aww->hide();
 }
 
-static long aw_loop_get_window_geometry(const char *, long val, void *) {
-    AW_window *aww = (AW_window *)val;
-    short posx, posy;
-
+void aw_update_window_geometry_awars(AW_window *aww) {
     AW_root *root = aww->get_root();
-    unsigned short width, height, borderwidth;
 
+    short          posx, posy;
+    unsigned short width, height, borderwidth;
     XtVaGetValues(p_aww(aww)->shell,                // bad hack
                   XmNborderWidth, &borderwidth,
                   XmNwidth, &width,
@@ -1695,10 +1697,10 @@ static long aw_loop_get_window_geometry(const char *, long val, void *) {
                   XmNy, &posy,
                   NULL);
 
-    if (p_aww(aww)->WM_top_offset != AW_FIX_POS_ON_EXPOSE) {
+    if (p_aww(aww)->WM_top_offset != AW_CALC_OFFSET_ON_EXPOSE) {
         posy -= p_aww(aww)->WM_top_offset;
     }
-    posx -= p_aww(aww)->WM_left_offset;
+    posx -= p_aww(aww)->WM_left_offset; // why is this not handled like posy?
 
     if (posx<0) posx = 0;
     if (posy<0) posy = 0;
@@ -1707,11 +1709,14 @@ static long aw_loop_get_window_geometry(const char *, long val, void *) {
     root->awar(aw_awar_name_height(aww))->write_int(height);
     root->awar(aw_awar_name_posx (aww))->write_int(posx);
     root->awar(aw_awar_name_posy (aww))->write_int(posy);
+}
 
+static long aw_loop_get_window_geometry(const char *, long val, void *) {
+    aw_update_window_geometry_awars((AW_window *)val);
     return val;
 }
 
-void aw_update_awar_window_geometry(AW_root *awr) {
+void aw_update_all_window_geometry_awars(AW_root *awr) {
     GBS_hash_do_loop(awr->hash_for_windows, aw_loop_get_window_geometry, NULL);
 }
 
@@ -1951,7 +1956,7 @@ void aw_realize_widget(AW_window *aww) {
         XtManageChild(p_aww(aww)->areas[AW_BOTTOM_AREA]->get_form());
     }
     XtRealizeWidget(p_aww(aww)->shell);
-    p_aww(aww)->WM_top_offset = AW_FIX_POS_ON_EXPOSE;
+    p_aww(aww)->WM_top_offset = AW_CALC_OFFSET_ON_EXPOSE;
 }
 
 void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *windowname, int  width, int height) {
@@ -3179,21 +3184,15 @@ void AW_window::show_internal(void *cl_grab) {
                 break;
         }
 
-        if (setPos) {
-            int currx, curry;
-            get_window_pos(currx, curry);
-            if (currx != posx || curry != posy) {
-#if defined(DEBUG) && 0
-                printf("force position at show_internal: %i/%i\n", posx, posy);
-#endif // DEBUG
-                set_window_pos(posx, posy);
-            }
-        }
+        if (setPos) set_window_pos(posx, posy); // @@@ try if it's better to set this via aw_onExpose_setPosFromAwars
     }
 
     XtPopup(p_w->shell, grab);
-    if (p_w->WM_top_offset == AW_FIX_POS_ON_EXPOSE) {              // very bad hack
-        set_expose_callback(AW_INFO_AREA, (AW_CB)aw_calculate_WM_offsets, 0, 0);
+    if (p_w->WM_top_offset == AW_CALC_OFFSET_ON_EXPOSE) {              // very bad hack
+        set_expose_callback(AW_INFO_AREA, (AW_CB)aw_onExpose_calc_WM_offsets, 0, 0); // @@@ should be removed after it was called once
+    }
+    else if (recalc_pos_at_show == AW_KEEP_POS) {
+        set_expose_callback(AW_INFO_AREA, (AW_CB)aw_onExpose_setPosFromAwars, 0, 0); // @@@ should be removed after it was called once
     }
 }
 
@@ -3209,6 +3208,7 @@ void AW_window::show_grabbed() {
 
 void AW_window::hide() {
     if (window_is_shown) {
+        aw_update_window_geometry_awars(this);
         if (hide_cb) hide_cb(this);
         get_root()->window_hide();
         window_is_shown = false;
