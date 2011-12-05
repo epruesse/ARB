@@ -271,7 +271,7 @@ public:
 };
 
 const int AW_NUMBER_OF_F_KEYS = 20;
-#define AW_FIX_POS_ON_EXPOSE -12345
+#define AW_CALC_OFFSET_ON_EXPOSE -12345
 
 class AW_window_Motif : virtual Noncopyable {
 public:
