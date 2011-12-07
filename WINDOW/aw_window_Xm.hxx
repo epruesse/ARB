@@ -300,8 +300,11 @@ public:
     AW_key_mod        keymodifier;
 
     AW_area_management *areas[AW_MAX_AREA];
-    int                 WM_top_offset; // WM top area
-    int                 WM_left_offset;
+
+    int WM_top_offset;                 // correction between position set and position reported ( = size of window frame - in most cases!)
+    int WM_left_offset;
+
+    bool knows_WM_offset() const { return WM_top_offset != AW_CALC_OFFSET_ON_EXPOSE; }
 
     AW_window_Motif();
     ~AW_window_Motif() {};
