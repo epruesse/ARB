@@ -193,7 +193,7 @@ enum AW_SizeRecalc {
 
 enum AW_PosRecalc {
     AW_KEEP_POS            = 0,                     // do not change position on show
-    AW_REPOS_TO_CENTER     = 1,                     // center the window on show
+    AW_REPOS_TO_CENTER     = 1,                     // center the window on show (unused atm)
     AW_REPOS_TO_MOUSE      = 2,                     // move the window under the current mouse position
     AW_REPOS_TO_MOUSE_ONCE = 3,                     // like AW_REPOS_TO_MOUSE, but only done once!
 };
@@ -205,6 +205,8 @@ class AW_window : virtual Noncopyable {
     enum AW_PosRecalc  recalc_pos_at_show;
     aw_hide_cb         hide_cb;
 
+    bool expose_callback_added;
+    
     void all_menus_created() const;
     void create_toggle(const char *var_name, aw_toggle_data *tdata);
 
@@ -385,16 +387,25 @@ public:
     void set_vertical_scrollbar_bottom_indent(int indent);
 
 
+    void create_user_geometry_awars(int posx, int posy, int width, int height);
+    
     // ************** Control window size  *********
     void set_window_size(int width, int height);
     void get_window_size(int& width, int& height);
     void window_fit();                              // Recalculate the size of a window with buttons
 
+    void store_size_in_awars(int width, int height);
+    void get_size_from_awars(int& width, int& height);
+
 
     // ************** Control window position  *********
-    void set_window_pos(int width, int height);
-    void get_window_pos(int& xpos, int& ypos);
+    void set_window_frame_pos(int xpos, int ypos);
+    void get_window_content_pos(int& xpos, int& ypos);
 
+    void store_pos_in_awars(int xpos, int ypos);
+    void get_pos_from_awars(int& xpos, int& ypos);
+    
+    
     // *****************
 
     void get_screen_size(int& width, int& height);
