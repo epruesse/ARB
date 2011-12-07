@@ -1962,7 +1962,7 @@ void aw_realize_widget(AW_window *aww) {
     p_aww(aww)->WM_top_offset = AW_CALC_OFFSET_ON_EXPOSE;
 }
 
-void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *windowname, int  width, int height) { // @@@ indentation
+void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *windowname, int  width, int height) { 
     Widget      main_window;
     Widget      help_popup;
     Widget      help_label;
@@ -1985,183 +1985,183 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     p_w->shell = aw_create_shell(this, true, true, width, height, posx, posy);
 
     main_window = XtVaCreateManagedWidget("mainWindow1",
-            xmMainWindowWidgetClass, p_w->shell,
-            NULL);
+                                          xmMainWindowWidgetClass, p_w->shell,
+                                          NULL);
 
     p_w->menu_bar[0] = XtVaCreateManagedWidget("menu1", xmRowColumnWidgetClass,
-            main_window,
-            XmNrowColumnType, XmMENU_BAR,
-            NULL);
+                                               main_window,
+                                               XmNrowColumnType, XmMENU_BAR,
+                                               NULL);
 
     // create shell for help-cascade
     help_popup = XtVaCreatePopupShell("menu_shell", xmMenuShellWidgetClass,
-            p_w->menu_bar[0],
-            XmNwidth, 1,
-            XmNheight, 1,
-            XmNallowShellResize, true,
-            XmNoverrideRedirect, true,
-            NULL);
+                                      p_w->menu_bar[0],
+                                      XmNwidth, 1,
+                                      XmNheight, 1,
+                                      XmNallowShellResize, true,
+                                      XmNoverrideRedirect, true,
+                                      NULL);
 
     // create row column in Pull-Down shell
     p_w->help_pull_down = XtVaCreateWidget("menu_row_column",
-            xmRowColumnWidgetClass, help_popup,
-            XmNrowColumnType, XmMENU_PULLDOWN,
-            NULL);
+                                           xmRowColumnWidgetClass, help_popup,
+                                           XmNrowColumnType, XmMENU_PULLDOWN,
+                                           NULL);
 
     // create HELP-label in menu bar
     help_label = XtVaCreateManagedWidget("menu1_top_b1",
-            xmCascadeButtonWidgetClass, p_w->menu_bar[0],
-            RES_CONVERT(XmNlabelString, help_button),
-                                          RES_CONVERT(XmNmnemonic, help_mnemonic),
-                                          XmNsubMenuId, p_w->help_pull_down, NULL);
+                                         xmCascadeButtonWidgetClass, p_w->menu_bar[0],
+                                         RES_CONVERT(XmNlabelString, help_button),
+                                         RES_CONVERT(XmNmnemonic, help_mnemonic),
+                                         XmNsubMenuId, p_w->help_pull_down, NULL);
     XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
     root->make_sensitive(help_label, AWM_ALL);
 
     form1 = XtVaCreateManagedWidget("form1",
-    xmFormWidgetClass,
-    main_window,
-    // XmNwidth, width,
-    // XmNheight, height,
-    XmNresizePolicy, XmRESIZE_NONE,
-    // XmNx, 0,
-    // XmNy, 0,
-    NULL);
+                                    xmFormWidgetClass,
+                                    main_window,
+                                    // XmNwidth, width,
+                                    // XmNheight, height,
+                                    XmNresizePolicy, XmRESIZE_NONE,
+                                    // XmNx, 0,
+                                    // XmNy, 0,
+                                    NULL);
 
     p_w->mode_area = XtVaCreateManagedWidget("mode area",
-    xmDrawingAreaWidgetClass,
-    form1,
-    XmNresizePolicy, XmRESIZE_NONE,
-    XmNwidth, 38,
-    XmNheight, height,
-    XmNx, 0,
-    XmNy, 0,
-    XmNleftOffset, 0,
-    XmNtopOffset, 0,
-    XmNbottomAttachment, XmATTACH_FORM,
-    XmNleftAttachment, XmATTACH_POSITION,
-    XmNtopAttachment, XmATTACH_POSITION,
-    XmNmarginHeight, 2,
-    XmNmarginWidth, 1,
-    NULL);
+                                             xmDrawingAreaWidgetClass,
+                                             form1,
+                                             XmNresizePolicy, XmRESIZE_NONE,
+                                             XmNwidth, 38,
+                                             XmNheight, height,
+                                             XmNx, 0,
+                                             XmNy, 0,
+                                             XmNleftOffset, 0,
+                                             XmNtopOffset, 0,
+                                             XmNbottomAttachment, XmATTACH_FORM,
+                                             XmNleftAttachment, XmATTACH_POSITION,
+                                             XmNtopAttachment, XmATTACH_POSITION,
+                                             XmNmarginHeight, 2,
+                                             XmNmarginWidth, 1,
+                                             NULL);
 
     separator = XtVaCreateManagedWidget("separator",
-    xmSeparatorWidgetClass,
-    form1,
-    XmNx, 37,
-    XmNshadowThickness, 4,
-    XmNorientation, XmVERTICAL,
-    XmNbottomAttachment, XmATTACH_FORM,
-    XmNtopAttachment, XmATTACH_FORM,
-    XmNleftAttachment, XmATTACH_NONE,
-    XmNleftWidget, NULL,
-    XmNrightAttachment, XmATTACH_NONE,
-    XmNleftOffset, 70,
-    XmNleftPosition, 0,
-    NULL);
+                                        xmSeparatorWidgetClass,
+                                        form1,
+                                        XmNx, 37,
+                                        XmNshadowThickness, 4,
+                                        XmNorientation, XmVERTICAL,
+                                        XmNbottomAttachment, XmATTACH_FORM,
+                                        XmNtopAttachment, XmATTACH_FORM,
+                                        XmNleftAttachment, XmATTACH_NONE,
+                                        XmNleftWidget, NULL,
+                                        XmNrightAttachment, XmATTACH_NONE,
+                                        XmNleftOffset, 70,
+                                        XmNleftPosition, 0,
+                                        NULL);
 
     form2 = XtVaCreateManagedWidget("form2",
-    xmFormWidgetClass,
-    form1,
-    XmNwidth, width,
-    XmNheight, height,
-    XmNtopOffset, 0,
-    XmNbottomOffset, 0,
-    XmNleftOffset, 0,
-    XmNrightOffset, 0,
-    XmNrightAttachment, XmATTACH_FORM,
-    XmNbottomAttachment, XmATTACH_FORM,
-    XmNleftAttachment, XmATTACH_WIDGET,
-    XmNleftWidget, separator,
-    XmNtopAttachment, XmATTACH_POSITION,
-    XmNresizePolicy, XmRESIZE_NONE,
-    XmNx, 0,
-    XmNy, 0,
-    NULL);
+                                    xmFormWidgetClass,
+                                    form1,
+                                    XmNwidth, width,
+                                    XmNheight, height,
+                                    XmNtopOffset, 0,
+                                    XmNbottomOffset, 0,
+                                    XmNleftOffset, 0,
+                                    XmNrightOffset, 0,
+                                    XmNrightAttachment, XmATTACH_FORM,
+                                    XmNbottomAttachment, XmATTACH_FORM,
+                                    XmNleftAttachment, XmATTACH_WIDGET,
+                                    XmNleftWidget, separator,
+                                    XmNtopAttachment, XmATTACH_POSITION,
+                                    XmNresizePolicy, XmRESIZE_NONE,
+                                    XmNx, 0,
+                                    XmNy, 0,
+                                    NULL);
     p_w->areas[AW_INFO_AREA] =
-    new AW_area_management(root, form2, XtVaCreateManagedWidget("info_area",
-            xmDrawingAreaWidgetClass,
-            form2,
-            XmNheight, 0,
-            XmNbottomAttachment, XmATTACH_NONE,
-            XmNtopAttachment, XmATTACH_FORM,
-            XmNleftAttachment, XmATTACH_FORM,
-            XmNrightAttachment, XmATTACH_FORM,
-            XmNmarginHeight, 2,
-            XmNmarginWidth, 2,
-            NULL));
+        new AW_area_management(root, form2, XtVaCreateManagedWidget("info_area",
+                                                                    xmDrawingAreaWidgetClass,
+                                                                    form2,
+                                                                    XmNheight, 0,
+                                                                    XmNbottomAttachment, XmATTACH_NONE,
+                                                                    XmNtopAttachment, XmATTACH_FORM,
+                                                                    XmNleftAttachment, XmATTACH_FORM,
+                                                                    XmNrightAttachment, XmATTACH_FORM,
+                                                                    XmNmarginHeight, 2,
+                                                                    XmNmarginWidth, 2,
+                                                                    NULL));
 
     p_w->areas[AW_BOTTOM_AREA] =
-    new AW_area_management(root, form2, XtVaCreateManagedWidget("bottom_area",
-            xmDrawingAreaWidgetClass,
-            form2,
-            XmNheight, 0,
-            XmNbottomAttachment, XmATTACH_FORM,
-            XmNtopAttachment, XmATTACH_NONE,
-            XmNleftAttachment, XmATTACH_FORM,
-            XmNrightAttachment, XmATTACH_FORM,
-            NULL));
+        new AW_area_management(root, form2, XtVaCreateManagedWidget("bottom_area",
+                                                                    xmDrawingAreaWidgetClass,
+                                                                    form2,
+                                                                    XmNheight, 0,
+                                                                    XmNbottomAttachment, XmATTACH_FORM,
+                                                                    XmNtopAttachment, XmATTACH_NONE,
+                                                                    XmNleftAttachment, XmATTACH_FORM,
+                                                                    XmNrightAttachment, XmATTACH_FORM,
+                                                                    NULL));
 
     p_w->scroll_bar_horizontal = XtVaCreateManagedWidget("scroll_bar_horizontal",
-    xmScrollBarWidgetClass,
-    form2,
-    XmNheight, 15,
-    XmNminimum, 0,
-    XmNmaximum, AW_SCROLL_MAX,
-    XmNincrement, 10,
-    XmNsliderSize, AW_SCROLL_MAX,
-    XmNrightAttachment, XmATTACH_FORM,
-    XmNbottomAttachment, XmATTACH_FORM,
-    XmNbottomOffset, 0,
-    XmNleftAttachment, XmATTACH_FORM,
-    XmNtopAttachment, XmATTACH_NONE,
-    XmNorientation, XmHORIZONTAL,
-    XmNrightOffset, 18,
-    NULL);
+                                                         xmScrollBarWidgetClass,
+                                                         form2,
+                                                         XmNheight, 15,
+                                                         XmNminimum, 0,
+                                                         XmNmaximum, AW_SCROLL_MAX,
+                                                         XmNincrement, 10,
+                                                         XmNsliderSize, AW_SCROLL_MAX,
+                                                         XmNrightAttachment, XmATTACH_FORM,
+                                                         XmNbottomAttachment, XmATTACH_FORM,
+                                                         XmNbottomOffset, 0,
+                                                         XmNleftAttachment, XmATTACH_FORM,
+                                                         XmNtopAttachment, XmATTACH_NONE,
+                                                         XmNorientation, XmHORIZONTAL,
+                                                         XmNrightOffset, 18,
+                                                         NULL);
 
     p_w->scroll_bar_vertical = XtVaCreateManagedWidget("scroll_bar_vertical",
-    xmScrollBarWidgetClass,
-    form2,
-    XmNwidth, 15,
-    XmNminimum, 0,
-    XmNmaximum, AW_SCROLL_MAX,
-    XmNincrement, 10,
-    XmNsliderSize, AW_SCROLL_MAX,
-    XmNrightAttachment, XmATTACH_FORM,
-    XmNbottomAttachment, XmATTACH_WIDGET,
-    XmNbottomWidget, p_w->scroll_bar_horizontal,
-    XmNbottomOffset, 3,
-    XmNleftOffset, 3,
-    XmNrightOffset, 3,
-    XmNleftAttachment, XmATTACH_NONE,
-    XmNtopAttachment, XmATTACH_WIDGET,
-    XmNtopWidget, INFO_WIDGET,
-    NULL);
+                                                       xmScrollBarWidgetClass,
+                                                       form2,
+                                                       XmNwidth, 15,
+                                                       XmNminimum, 0,
+                                                       XmNmaximum, AW_SCROLL_MAX,
+                                                       XmNincrement, 10,
+                                                       XmNsliderSize, AW_SCROLL_MAX,
+                                                       XmNrightAttachment, XmATTACH_FORM,
+                                                       XmNbottomAttachment, XmATTACH_WIDGET,
+                                                       XmNbottomWidget, p_w->scroll_bar_horizontal,
+                                                       XmNbottomOffset, 3,
+                                                       XmNleftOffset, 3,
+                                                       XmNrightOffset, 3,
+                                                       XmNleftAttachment, XmATTACH_NONE,
+                                                       XmNtopAttachment, XmATTACH_WIDGET,
+                                                       XmNtopWidget, INFO_WIDGET,
+                                                       NULL);
 
     p_w->frame = XtVaCreateManagedWidget("draw_area",
-    xmFrameWidgetClass,
-    form2,
-    XmNshadowType, XmSHADOW_IN,
-    XmNshadowThickness, 2,
-    XmNleftOffset, 3,
-    XmNtopOffset, 3,
-    XmNbottomOffset, 3,
-    XmNrightOffset, 3,
-    XmNbottomAttachment, XmATTACH_WIDGET,
-    XmNbottomWidget, p_w->scroll_bar_horizontal,
-    XmNtopAttachment, XmATTACH_FORM,
-    XmNtopOffset, 0,
-    XmNleftAttachment, XmATTACH_FORM,
-    XmNrightAttachment, XmATTACH_WIDGET,
-    XmNrightWidget, p_w->scroll_bar_vertical,
-    NULL);
+                                         xmFrameWidgetClass,
+                                         form2,
+                                         XmNshadowType, XmSHADOW_IN,
+                                         XmNshadowThickness, 2,
+                                         XmNleftOffset, 3,
+                                         XmNtopOffset, 3,
+                                         XmNbottomOffset, 3,
+                                         XmNrightOffset, 3,
+                                         XmNbottomAttachment, XmATTACH_WIDGET,
+                                         XmNbottomWidget, p_w->scroll_bar_horizontal,
+                                         XmNtopAttachment, XmATTACH_FORM,
+                                         XmNtopOffset, 0,
+                                         XmNleftAttachment, XmATTACH_FORM,
+                                         XmNrightAttachment, XmATTACH_WIDGET,
+                                         XmNrightWidget, p_w->scroll_bar_vertical,
+                                         NULL);
 
     p_w->areas[AW_MIDDLE_AREA] =
-    new AW_area_management(root, p_w->frame, XtVaCreateManagedWidget("draw area",
-            xmDrawingAreaWidgetClass,
-            p_w->frame,
-            XmNmarginHeight, 0,
-            XmNmarginWidth, 0,
-            NULL));
+        new AW_area_management(root, p_w->frame, XtVaCreateManagedWidget("draw area",
+                                                                         xmDrawingAreaWidgetClass,
+                                                                         p_w->frame,
+                                                                         XmNmarginHeight, 0,
+                                                                         XmNmarginWidth, 0,
+                                                                         NULL));
 
     XmMainWindowSetAreas(main_window, p_w->menu_bar[0], (Widget) NULL, (Widget) NULL, (Widget) NULL, form1);
 
@@ -2172,7 +2172,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     create_window_variables();
 }
 
-void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windowname, int width, int height) { // @@@ indentation
+void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windowname, int width, int height) { 
     Widget      main_window;
     Widget      help_popup;
     Widget      help_label;
@@ -2195,173 +2195,173 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
     p_w->shell = aw_create_shell(this, true, true, width, height, posx, posy);
 
     main_window = XtVaCreateManagedWidget("mainWindow1",
-            xmMainWindowWidgetClass, p_w->shell,
-            NULL);
+                                          xmMainWindowWidgetClass, p_w->shell,
+                                          NULL);
 
     p_w->menu_bar[0] = XtVaCreateManagedWidget("menu1", xmRowColumnWidgetClass,
-            main_window,
-            XmNrowColumnType, XmMENU_BAR,
-            NULL);
+                                               main_window,
+                                               XmNrowColumnType, XmMENU_BAR,
+                                               NULL);
 
     // create shell for help-cascade
     help_popup = XtVaCreatePopupShell("menu_shell", xmMenuShellWidgetClass,
-            p_w->menu_bar[0],
-            XmNwidth, 1,
-            XmNheight, 1,
-            XmNallowShellResize, true,
-            XmNoverrideRedirect, true,
-            NULL);
+                                      p_w->menu_bar[0],
+                                      XmNwidth, 1,
+                                      XmNheight, 1,
+                                      XmNallowShellResize, true,
+                                      XmNoverrideRedirect, true,
+                                      NULL);
 
     // create row column in Pull-Down shell
     p_w->help_pull_down = XtVaCreateWidget("menu_row_column",
-            xmRowColumnWidgetClass, help_popup,
-            XmNrowColumnType, XmMENU_PULLDOWN,
-            NULL);
+                                           xmRowColumnWidgetClass, help_popup,
+                                           XmNrowColumnType, XmMENU_PULLDOWN,
+                                           NULL);
 
     // create HELP-label in menu bar
     help_label = XtVaCreateManagedWidget("menu1_top_b1",
-            xmCascadeButtonWidgetClass, p_w->menu_bar[0],
-            RES_CONVERT(XmNlabelString, help_button),
-                                          RES_CONVERT(XmNmnemonic, help_mnemonic),
-                                          XmNsubMenuId, p_w->help_pull_down, NULL);
+                                         xmCascadeButtonWidgetClass, p_w->menu_bar[0],
+                                         RES_CONVERT(XmNlabelString, help_button),
+                                         RES_CONVERT(XmNmnemonic, help_mnemonic),
+                                         XmNsubMenuId, p_w->help_pull_down, NULL);
     XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
     root->make_sensitive(help_label, AWM_ALL);
 
     form1 = XtVaCreateManagedWidget("form1",
-    xmFormWidgetClass,
-    main_window,
-    // XmNwidth, width,
-    // XmNheight, height,
-    XmNresizePolicy, XmRESIZE_NONE,
-    // XmNx, 0,
-    // XmNy, 0,
-    NULL);
+                                    xmFormWidgetClass,
+                                    main_window,
+                                    // XmNwidth, width,
+                                    // XmNheight, height,
+                                    XmNresizePolicy, XmRESIZE_NONE,
+                                    // XmNx, 0,
+                                    // XmNy, 0,
+                                    NULL);
 
     p_w->mode_area = XtVaCreateManagedWidget("mode area",
-    xmDrawingAreaWidgetClass,
-    form1,
-    XmNresizePolicy, XmRESIZE_NONE,
-    XmNwidth, 17,
-    XmNheight, height,
-    XmNx, 0,
-    XmNy, 0,
-    XmNleftOffset, 0,
-    XmNtopOffset, 0,
-    XmNbottomAttachment, XmATTACH_FORM,
-    XmNleftAttachment, XmATTACH_POSITION,
-    XmNtopAttachment, XmATTACH_POSITION,
-    XmNmarginHeight, 2,
-    XmNmarginWidth, 1,
-    NULL);
+                                             xmDrawingAreaWidgetClass,
+                                             form1,
+                                             XmNresizePolicy, XmRESIZE_NONE,
+                                             XmNwidth, 17,
+                                             XmNheight, height,
+                                             XmNx, 0,
+                                             XmNy, 0,
+                                             XmNleftOffset, 0,
+                                             XmNtopOffset, 0,
+                                             XmNbottomAttachment, XmATTACH_FORM,
+                                             XmNleftAttachment, XmATTACH_POSITION,
+                                             XmNtopAttachment, XmATTACH_POSITION,
+                                             XmNmarginHeight, 2,
+                                             XmNmarginWidth, 1,
+                                             NULL);
 
     separator = p_w->mode_area;
 
     form2 = XtVaCreateManagedWidget("form2",
-    xmFormWidgetClass,
-    form1,
-    XmNwidth, width,
-    XmNheight, height,
-    XmNtopOffset, 0,
-    XmNbottomOffset, 0,
-    XmNleftOffset, 0,
-    XmNrightOffset, 0,
-    XmNrightAttachment, XmATTACH_FORM,
-    XmNbottomAttachment, XmATTACH_FORM,
-    XmNleftAttachment, XmATTACH_WIDGET,
-    XmNleftWidget, separator,
-    XmNtopAttachment, XmATTACH_POSITION,
-    XmNresizePolicy, XmRESIZE_NONE,
-    XmNx, 0,
-    XmNy, 0,
-    NULL);
+                                    xmFormWidgetClass,
+                                    form1,
+                                    XmNwidth, width,
+                                    XmNheight, height,
+                                    XmNtopOffset, 0,
+                                    XmNbottomOffset, 0,
+                                    XmNleftOffset, 0,
+                                    XmNrightOffset, 0,
+                                    XmNrightAttachment, XmATTACH_FORM,
+                                    XmNbottomAttachment, XmATTACH_FORM,
+                                    XmNleftAttachment, XmATTACH_WIDGET,
+                                    XmNleftWidget, separator,
+                                    XmNtopAttachment, XmATTACH_POSITION,
+                                    XmNresizePolicy, XmRESIZE_NONE,
+                                    XmNx, 0,
+                                    XmNy, 0,
+                                    NULL);
     p_w->areas[AW_INFO_AREA] =
-    new AW_area_management(root, form2, XtVaCreateManagedWidget("info_area",
-            xmDrawingAreaWidgetClass,
-            form2,
-            XmNheight, 0,
-            XmNbottomAttachment, XmATTACH_NONE,
-            XmNtopAttachment, XmATTACH_FORM,
-            XmNleftAttachment, XmATTACH_FORM,
-            XmNrightAttachment, XmATTACH_FORM,
-            XmNmarginHeight, 2,
-            XmNmarginWidth, 2,
-            NULL));
+        new AW_area_management(root, form2, XtVaCreateManagedWidget("info_area",
+                                                                    xmDrawingAreaWidgetClass,
+                                                                    form2,
+                                                                    XmNheight, 0,
+                                                                    XmNbottomAttachment, XmATTACH_NONE,
+                                                                    XmNtopAttachment, XmATTACH_FORM,
+                                                                    XmNleftAttachment, XmATTACH_FORM,
+                                                                    XmNrightAttachment, XmATTACH_FORM,
+                                                                    XmNmarginHeight, 2,
+                                                                    XmNmarginWidth, 2,
+                                                                    NULL));
 
     p_w->areas[AW_BOTTOM_AREA] =
-    new AW_area_management(root, form2, XtVaCreateManagedWidget("bottom_area",
-            xmDrawingAreaWidgetClass,
-            form2,
-            XmNheight, 0,
-            XmNbottomAttachment, XmATTACH_FORM,
-            XmNtopAttachment, XmATTACH_NONE,
-            XmNleftAttachment, XmATTACH_FORM,
-            XmNrightAttachment, XmATTACH_FORM,
-            NULL));
+        new AW_area_management(root, form2, XtVaCreateManagedWidget("bottom_area",
+                                                                    xmDrawingAreaWidgetClass,
+                                                                    form2,
+                                                                    XmNheight, 0,
+                                                                    XmNbottomAttachment, XmATTACH_FORM,
+                                                                    XmNtopAttachment, XmATTACH_NONE,
+                                                                    XmNleftAttachment, XmATTACH_FORM,
+                                                                    XmNrightAttachment, XmATTACH_FORM,
+                                                                    NULL));
 
     p_w->scroll_bar_horizontal = XtVaCreateManagedWidget("scroll_bar_horizontal",
-    xmScrollBarWidgetClass,
-    form2,
-    XmNheight, 15,
-    XmNminimum, 0,
-    XmNmaximum, AW_SCROLL_MAX,
-    XmNincrement, 10,
-    XmNsliderSize, AW_SCROLL_MAX,
-    XmNrightAttachment, XmATTACH_FORM,
-    XmNbottomAttachment, XmATTACH_FORM,
-    XmNbottomOffset, 0,
-    XmNleftAttachment, XmATTACH_FORM,
-    XmNtopAttachment, XmATTACH_NONE,
-    XmNorientation, XmHORIZONTAL,
-    XmNrightOffset, 18,
-    NULL);
+                                                         xmScrollBarWidgetClass,
+                                                         form2,
+                                                         XmNheight, 15,
+                                                         XmNminimum, 0,
+                                                         XmNmaximum, AW_SCROLL_MAX,
+                                                         XmNincrement, 10,
+                                                         XmNsliderSize, AW_SCROLL_MAX,
+                                                         XmNrightAttachment, XmATTACH_FORM,
+                                                         XmNbottomAttachment, XmATTACH_FORM,
+                                                         XmNbottomOffset, 0,
+                                                         XmNleftAttachment, XmATTACH_FORM,
+                                                         XmNtopAttachment, XmATTACH_NONE,
+                                                         XmNorientation, XmHORIZONTAL,
+                                                         XmNrightOffset, 18,
+                                                         NULL);
 
     p_w->scroll_bar_vertical = XtVaCreateManagedWidget("scroll_bar_vertical",
-    xmScrollBarWidgetClass,
-    form2,
-    XmNwidth, 15,
-    XmNminimum, 0,
-    XmNmaximum, AW_SCROLL_MAX,
-    XmNincrement, 10,
-    XmNsliderSize, AW_SCROLL_MAX,
-    XmNrightAttachment, XmATTACH_FORM,
-    XmNbottomAttachment, XmATTACH_WIDGET,
-    XmNbottomWidget, p_w->scroll_bar_horizontal,
-    XmNbottomOffset, 3,
-    XmNleftOffset, 3,
-    XmNrightOffset, 3,
-    XmNleftAttachment, XmATTACH_NONE,
-    XmNtopAttachment, XmATTACH_WIDGET,
-    XmNtopWidget, INFO_WIDGET,
-    NULL);
+                                                       xmScrollBarWidgetClass,
+                                                       form2,
+                                                       XmNwidth, 15,
+                                                       XmNminimum, 0,
+                                                       XmNmaximum, AW_SCROLL_MAX,
+                                                       XmNincrement, 10,
+                                                       XmNsliderSize, AW_SCROLL_MAX,
+                                                       XmNrightAttachment, XmATTACH_FORM,
+                                                       XmNbottomAttachment, XmATTACH_WIDGET,
+                                                       XmNbottomWidget, p_w->scroll_bar_horizontal,
+                                                       XmNbottomOffset, 3,
+                                                       XmNleftOffset, 3,
+                                                       XmNrightOffset, 3,
+                                                       XmNleftAttachment, XmATTACH_NONE,
+                                                       XmNtopAttachment, XmATTACH_WIDGET,
+                                                       XmNtopWidget, INFO_WIDGET,
+                                                       NULL);
 
     p_w->frame = XtVaCreateManagedWidget("draw_area",
-    xmFrameWidgetClass,
-    form2,
-    XmNshadowType, XmSHADOW_IN,
-    XmNshadowThickness, 2,
-    XmNleftOffset, 3,
-    XmNtopOffset, 3,
-    XmNbottomOffset, 3,
-    XmNrightOffset, 3,
-    XmNbottomAttachment, XmATTACH_WIDGET,
-    XmNbottomWidget, p_w->scroll_bar_horizontal,
-    XmNtopAttachment, XmATTACH_FORM,
-    XmNtopOffset, 0,
-    XmNleftAttachment, XmATTACH_FORM,
-    XmNrightAttachment, XmATTACH_WIDGET,
-    XmNrightWidget, p_w->scroll_bar_vertical,
-    NULL);
+                                         xmFrameWidgetClass,
+                                         form2,
+                                         XmNshadowType, XmSHADOW_IN,
+                                         XmNshadowThickness, 2,
+                                         XmNleftOffset, 3,
+                                         XmNtopOffset, 3,
+                                         XmNbottomOffset, 3,
+                                         XmNrightOffset, 3,
+                                         XmNbottomAttachment, XmATTACH_WIDGET,
+                                         XmNbottomWidget, p_w->scroll_bar_horizontal,
+                                         XmNtopAttachment, XmATTACH_FORM,
+                                         XmNtopOffset, 0,
+                                         XmNleftAttachment, XmATTACH_FORM,
+                                         XmNrightAttachment, XmATTACH_WIDGET,
+                                         XmNrightWidget, p_w->scroll_bar_vertical,
+                                         NULL);
 
     p_w->areas[AW_MIDDLE_AREA] =
-    new AW_area_management(root, p_w->frame, XtVaCreateManagedWidget("draw area",
-            xmDrawingAreaWidgetClass,
-            p_w->frame,
-            XmNmarginHeight, 0,
-            XmNmarginWidth, 0,
-            NULL));
+        new AW_area_management(root, p_w->frame, XtVaCreateManagedWidget("draw area",
+                                                                         xmDrawingAreaWidgetClass,
+                                                                         p_w->frame,
+                                                                         XmNmarginHeight, 0,
+                                                                         XmNmarginWidth, 0,
+                                                                         NULL));
 
     XmMainWindowSetAreas(main_window, p_w->menu_bar[0], (Widget) NULL,
-    (Widget) NULL, (Widget) NULL, form1);
+                         (Widget) NULL, (Widget) NULL, form1);
 
     aw_realize_widget(this);
 
@@ -2405,7 +2405,7 @@ void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windo
     create_devices();
 }
 
-void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *windowname) { // @@@ indentation
+void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *windowname) { 
     root = root_in; // for macro
 
     const char *help_button = "HELP";
@@ -2426,56 +2426,56 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
     Widget form1;
 
     main_window = XtVaCreateManagedWidget("mainWindow1",
-            xmMainWindowWidgetClass, p_w->shell,
-            NULL);
+                                          xmMainWindowWidgetClass, p_w->shell,
+                                          NULL);
 
     p_w->menu_bar[0] = XtVaCreateManagedWidget("menu1", xmRowColumnWidgetClass,
-            main_window,
-            XmNrowColumnType, XmMENU_BAR,
-            NULL);
+                                               main_window,
+                                               XmNrowColumnType, XmMENU_BAR,
+                                               NULL);
 
     // create shell for help-cascade
     help_popup = XtVaCreatePopupShell("menu_shell", xmMenuShellWidgetClass,
-            p_w->menu_bar[0],
-            XmNwidth, 1,
-            XmNheight, 1,
-            XmNallowShellResize, true,
-            XmNoverrideRedirect, true,
-            NULL);
+                                      p_w->menu_bar[0],
+                                      XmNwidth, 1,
+                                      XmNheight, 1,
+                                      XmNallowShellResize, true,
+                                      XmNoverrideRedirect, true,
+                                      NULL);
 
     // create row column in Pull-Down shell
     p_w->help_pull_down = XtVaCreateWidget("menu_row_column",
-            xmRowColumnWidgetClass, help_popup,
-            XmNrowColumnType, XmMENU_PULLDOWN,
-            NULL);
+                                           xmRowColumnWidgetClass, help_popup,
+                                           XmNrowColumnType, XmMENU_PULLDOWN,
+                                           NULL);
 
     // create HELP-label in menu bar
     help_label = XtVaCreateManagedWidget("menu1_top_b1",
-            xmCascadeButtonWidgetClass, p_w->menu_bar[0],
-            RES_CONVERT(XmNlabelString, help_button),
-                                          RES_CONVERT(XmNmnemonic, help_mnemonic),
-                                          XmNsubMenuId, p_w->help_pull_down, NULL);
+                                         xmCascadeButtonWidgetClass, p_w->menu_bar[0],
+                                         RES_CONVERT(XmNlabelString, help_button),
+                                         RES_CONVERT(XmNmnemonic, help_mnemonic),
+                                         XmNsubMenuId, p_w->help_pull_down, NULL);
     XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
     root->make_sensitive(help_label, AWM_ALL);
 
     form1 = XtVaCreateManagedWidget("form1",
-    xmFormWidgetClass,
-    main_window,
-    XmNtopOffset, 10,
-    XmNresizePolicy, XmRESIZE_NONE,
-    NULL);
+                                    xmFormWidgetClass,
+                                    main_window,
+                                    XmNtopOffset, 10,
+                                    XmNresizePolicy, XmRESIZE_NONE,
+                                    NULL);
 
     p_w->areas[AW_INFO_AREA] =
-    new AW_area_management(root, form1, XtVaCreateManagedWidget("info_area",
-            xmDrawingAreaWidgetClass,
-            form1,
-            XmNbottomAttachment, XmATTACH_FORM,
-            XmNtopAttachment, XmATTACH_FORM,
-            XmNleftAttachment, XmATTACH_FORM,
-            XmNrightAttachment, XmATTACH_FORM,
-            XmNmarginHeight, 2,
-            XmNmarginWidth, 2,
-            NULL));
+        new AW_area_management(root, form1, XtVaCreateManagedWidget("info_area",
+                                                                    xmDrawingAreaWidgetClass,
+                                                                    form1,
+                                                                    XmNbottomAttachment, XmATTACH_FORM,
+                                                                    XmNtopAttachment, XmATTACH_FORM,
+                                                                    XmNleftAttachment, XmATTACH_FORM,
+                                                                    XmNrightAttachment, XmATTACH_FORM,
+                                                                    XmNmarginHeight, 2,
+                                                                    XmNmarginWidth, 2,
+                                                                    NULL));
 
     aw_realize_widget(this);
 
