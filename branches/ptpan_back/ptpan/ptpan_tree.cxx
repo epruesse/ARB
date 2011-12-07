@@ -499,7 +499,7 @@ bool PtpanTree::containsReferenceEntry() const {
 /*!
  * \brief Return PTPanReferenceEntry
  *
- * \warning Do not free! PtpanTree is still owner! This is no copy!
+ * \warning Do not free! PtpanTree is still owner! Does not return a copy!
  *
  * May return NULL if not available!
  */
@@ -524,7 +524,7 @@ bool PtpanTree::containsFeatures() const {
 /*!
  * \brief Return pointer to first PTPanEntry in list
  *
- * \warning Do not free! PtpanTree is still owner! This is no copy!
+ * \warning Do not free! PtpanTree is still owner! Does not return a copy!
  *
  * \return struct PTPanEntry*
  */
@@ -538,7 +538,7 @@ const PTPanEntry* PtpanTree::getFirstEntry() const {
 /*!
  * \brief Return PTPanEntry
  *
- * \warning Do not free! PtpanTree is still owner! This is no copy!
+ * \warning Do not free! PtpanTree is still owner! Does not return a copy!
  *
  * May return NULL if not available!
  */
@@ -550,9 +550,54 @@ const PTPanEntry* PtpanTree::getEntry(ULONG id) const {
 }
 
 /*!
+ * \brief Return PTPanEntry for given id
+ *
+ * \warning Do not free! PtpanTree is still owner! Does not return a copy!
+ *
+ * May return NULL if not available!
+ */
+const PTPanEntry* PtpanTree::getEntry(const std::string& id) const {
+
+    if (m_contains_features) {
+        // split id at '/' and try to find the parts!
+        // TODO FIXME better take '#' as delimiter, split and take first and second value of vector!
+        std::size_t pos = id.find('/');
+        if (pos != std::string::npos) {
+            std::string entry = id.substr(0, pos);
+            // NUMBER OF ENTRY: it->second - 1
+            PtpanEntryMap::const_iterator it = m_entry_map.find(entry.data());
+            if (it != m_entry_map.end()) {
+                PTPanEntry* ptpan_entry = m_EntriesMap[(it->second) - 1];
+                if (ptpan_entry) {
+                    return ptpan_entry;
+                }
+            }
+        } else {
+            // no feature(s), but maybe whole genomes!!
+            PtpanEntryMap::const_iterator it = m_entry_map.find(id.data());
+            if (it != m_entry_map.end()) {
+                PTPanEntry* ptpan_entry = m_EntriesMap[(it->second) - 1];
+                if (ptpan_entry) {
+                    return ptpan_entry;
+                }
+            }
+        }
+    } else {
+        PtpanEntryMap::const_iterator it = m_entry_map.find(id.data());
+        if (it != m_entry_map.end()) {
+            PTPanEntry* ptpan_entry = m_EntriesMap[(it->second) - 1];
+            if (ptpan_entry) {
+                return ptpan_entry;
+            }
+        }
+    }
+    return NULL;
+}
+
+/*!
  * \brief Return full name of entry
  *
- * \warning Do not free! PtpanTree is still owner! This is no copy!
+ * \warning Do not free! PtpanTree is still owner! Does not return a copy!
  *
  * May return NULL if not available!
  */
@@ -566,7 +611,7 @@ CONST_STRPTR PtpanTree::getEntryFullName(ULONG id) const {
 /*!
  * \brief Return (string) id of entry
  *
- * \warning Do not free! PtpanTree is still owner! This is no copy!
+ * \warning Do not free! PtpanTree is still owner! Does not return a copy!
  *
  * May return NULL if not available!
  */
@@ -587,6 +632,21 @@ const std::vector<std::string> PtpanTree::getAllEntryIds() const {
     struct PTPanEntry* ps = (struct PTPanEntry *) m_entries->lh_Head;
     while (ps->pe_Node.ln_Succ) {
         ret_values.push_back(ps->pe_Name);
+        ps = (struct PTPanEntry *) ps->pe_Node.ln_Succ;
+    }
+    return ret_values;
+}
+
+/*!
+ * \brief Returns all entries
+ *
+ * \return const std::vector<PTPanEntry*>
+ */
+const std::vector<PTPanEntry*> PtpanTree::getAllEntries() const {
+    std::vector<PTPanEntry*> ret_values;
+    struct PTPanEntry* ps = (struct PTPanEntry *) m_entries->lh_Head;
+    while (ps->pe_Node.ln_Succ) {
+        ret_values.push_back(ps);
         ps = (struct PTPanEntry *) ps->pe_Node.ln_Succ;
     }
     return ret_values;
@@ -840,8 +900,8 @@ STRPTR PtpanTree::getProbes(STRPTR seed_probe, ULONG length,
     bool done = false;
     UWORD seqcode = 0;
     ULONG length_corr =
-            (length < best_pp->pp_TreePruneLength) ?
-                    length : best_pp->pp_TreePruneLength;
+            (length < best_pp->pp_TreePruneLength) ? length :
+                    best_pp->pp_TreePruneLength;
 
     ULONG buffer_size;
     ULONG buffer_consumed = 0;
@@ -2847,15 +2907,16 @@ void PtpanTree::search_tree_hamming(const SearchQuery& sq,
 void PtpanTree::search_tree_levenshtein(const SearchQuery& sq,
         SearchQueryHandle& sqh) const {
     LONG query_len =
-            sq.sq_Query.size() > m_prune_length ?
-                    m_prune_length : (LONG) sq.sq_Query.size();
+            sq.sq_Query.size() > m_prune_length ? m_prune_length :
+                    (LONG) sq.sq_Query.size();
     LONG source_len =
-            sqh.sqh_MaxLength > m_prune_length ?
-                    m_prune_length : (LONG) sqh.sqh_MaxLength;
+            sqh.sqh_MaxLength > m_prune_length ? m_prune_length :
+                    (LONG) sqh.sqh_MaxLength;
 
     LONG max_check =
-            sq.sq_Query.size() < m_prune_length ?
-                    m_prune_length - sq.sq_Query.size() : 0;
+            sq.sq_Query.size() < m_prune_length ? m_prune_length
+                    - sq.sq_Query.size() :
+                    0;
     if (max_check > sq.sq_MaxErrors) {
         max_check = (LONG) sq.sq_MaxErrors;
     }
@@ -3187,18 +3248,22 @@ void PtpanTree::search_tree_levenshtein_rec(const SearchQuery& sq,
                                 (float) levenshtein.m_distance_matrix[length][levenshtein.m_query_len];
                         // find the match with the lowest error count in range
                         // range = query length +- number of allowed indels
-                        for (ULONG l = 1; l <= levenshtein.m_max_check; l++) {
-                            if (levenshtein.m_distance_matrix[levenshtein.m_query_len
-                                    + l][levenshtein.m_query_len]
-                                    < sqh.sqh_State.sqs_ErrorCount && levenshtein.m_direction_matrix[levenshtein.m_query_len
-                                    + l][levenshtein.m_query_len]
-                                    == LEV_EQ) { // TODO FIXME why LEV_EQ??
-sqh                            .sqh_State.sqs_ErrorCount =
-                            levenshtein.m_distance_matrix[levenshtein.m_query_len
-                            + l][levenshtein.m_query_len];
-                            length = levenshtein.m_query_len + l;
+                        if (sq.sq_AllowInsert) {
+                            for (ULONG l = 1; l <= levenshtein.m_max_check;
+                                    l++) {
+                                if (levenshtein.m_distance_matrix[levenshtein.m_query_len
+                                        + l][levenshtein.m_query_len]
+                                        < sqh.sqh_State.sqs_ErrorCount && levenshtein.m_direction_matrix[levenshtein.m_query_len
+                                        + l][levenshtein.m_query_len]
+                                        == LEV_EQ) { // TODO FIXME why LEV_EQ??
+sqh                                .sqh_State.sqs_ErrorCount =
+                                levenshtein.m_distance_matrix[levenshtein.m_query_len
+                                + l][levenshtein.m_query_len];
+                                length = levenshtein.m_query_len + l;
+                            }
                         }
                     }
+
                         for (int l = 1; l <= (int) sq.sq_MaxErrors; l++) {
                             if (levenshtein.m_distance_matrix[levenshtein.m_query_len
                                     - l][levenshtein.m_query_len]
@@ -3682,10 +3747,11 @@ void PtpanTree::sort_hits_list(const SearchQuery& sq,
                 // 28 bit
                 qh->qh_sortKey =
                         (LLONG) (
-                                (qh->qh_Flags & QHF_REVERSED) ?
-                                        (1LL << 62) : 0LL)
-                                + ((qh->qh_InsertCount | qh->qh_DeleteCount) ?
-                                        (1LL << 61) : 0LL)
+                                (qh->qh_Flags & QHF_REVERSED) ? (1LL << 62) :
+                                        0LL)
+                                + ((qh->qh_InsertCount | qh->qh_DeleteCount) ? (1LL
+                                        << 61) :
+                                        0LL)
                                 + (((LLONG) (qh->qh_ReplaceCount
                                         + qh->qh_InsertCount
                                         + qh->qh_DeleteCount)) << 56)
@@ -3713,11 +3779,12 @@ void PtpanTree::sort_hits_list(const SearchQuery& sq,
                 // 28 bit
                 qh->qh_sortKey =
                         (LLONG) (
-                                (LLONG) (qh->qh_Flags & QHF_REVERSED) ?
-                                        (1LL << 62) : 0LL)
+                                (LLONG) (qh->qh_Flags & QHF_REVERSED) ? (1LL
+                                        << 62) :
+                                        0LL)
                                 + ((LLONG) (qh->qh_InsertCount
-                                        | qh->qh_DeleteCount) ?
-                                        (1LL << 61) : 0LL)
+                                        | qh->qh_DeleteCount) ? (1LL << 61) :
+                                        0LL)
                                 + (((LLONG) round(qh->qh_ErrorCount * 10.0))
                                         << 56)
                                 + (((LLONG) qh->qh_nmismatch) << 53)
@@ -3966,8 +4033,8 @@ void PtpanTree::find_probe_in_partition(struct PTPanPartition *pp,
     bool done = false;
     UWORD seqcode = m_as->wildcard_code + 1;
     ULONG length =
-            (dq.dq_ProbeLength < pp->pp_TreePruneLength) ?
-                    dq.dq_ProbeLength : pp->pp_TreePruneLength;
+            (dq.dq_ProbeLength < pp->pp_TreePruneLength) ? dq.dq_ProbeLength :
+                    pp->pp_TreePruneLength;
     double currtemp = 0.0;
     UWORD currgc = 0;
     do {

@@ -540,6 +540,35 @@ const PTPanFeature * PTPanFeatureContainer::getFeatureByNumber(
 }
 
 /*!
+ * \brief Return pointer list of all Features
+ *
+ * \return const std::vector<PTPanFeature*>
+ */
+const std::vector<PTPanFeature*> PTPanFeatureContainer::getAllFeatures() const {
+    if (m_normal_mode) {
+        return *m_features;
+    }
+    return std::vector<PTPanFeature*>();
+}
+
+/*!
+ * \brief Return list of all Feature ids
+ *
+ * \return const std::vector<std::string>
+ */
+const std::vector<std::string> PTPanFeatureContainer::getAllFeatureIds() const {
+    if (m_normal_mode) {
+        std::vector<std::string> ret_values;
+        std::vector<PTPanFeature*>::const_iterator it;
+        for (it = m_features->begin(); it != m_features->end(); it++) {
+            ret_values.push_back((*it)->pf_name);
+        }
+        return ret_values;
+    }
+    return std::vector<std::string>();
+}
+
+/*!
  * \brief Returns the maximum byte size of this container for storing
  *
  * \return ULONG

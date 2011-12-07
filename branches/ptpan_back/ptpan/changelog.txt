@@ -1,6 +1,6 @@
 PTPan ARB integration
 
-v0.6.6 (?? ?? 2011)
+v0.6.7 (?? ?? 2011)
 
 - TODO
 
@@ -22,6 +22,7 @@ v0.6.6 (?? ?? 2011)
   in addition to whole genome ProbeDesign
 - added method probeNongroupIncreaseArrayWidth()
 - added custom information field in index header
+- added convenience methods here and there
 
 - major refactoring to make interface easier to use
   WARNING The new interface is not compatible to the old one!

@@ -245,6 +245,8 @@ public:
     ULONG size() const;
 
     const PTPanFeature * getFeatureByNumber(ULONG number) const;
+    const std::vector<PTPanFeature*> getAllFeatures() const;
+    const std::vector<std::string> getAllFeatureIds() const;
 
     ULONG byteSize() const;
 
