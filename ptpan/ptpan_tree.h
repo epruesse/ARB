@@ -317,7 +317,7 @@ public:
      * scheme: MAJOR.MINOR.BUGFIX
      */
     static const std::string version() {
-        return "0.6.6_beta";
+        return "0.6.7_beta";
     }
 
     const std::string getCustomInformation() const;
@@ -332,10 +332,12 @@ public:
     bool containsFeatures() const;
     const PTPanEntry* getFirstEntry() const;
     const PTPanEntry* getEntry(ULONG id) const;
+    const PTPanEntry* getEntry(const std::string& id) const;
     CONST_STRPTR getEntryFullName(ULONG id) const;
     CONST_STRPTR getEntryId(ULONG id) const;
 
     const std::vector<std::string> getAllEntryIds() const;
+    const std::vector<PTPanEntry*> getAllEntries() const;
 
     ULONG getPruneLength() const;
     const AbstractAlphabetSpecifics* getAlphabetSpecifics() const;

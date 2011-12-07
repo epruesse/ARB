@@ -999,7 +999,6 @@ void PtpanTreeBuilder::buildMergedRawData() {
                 }
                 mergeEntry();
                 m_threadpool->wait();
-                m_threadpool->clear();
             }
 
             ULONG *seqptr = &m_merged_raw_data[tmp_total - 3];
