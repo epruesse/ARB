@@ -380,8 +380,7 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     if (pl->pl_pt->isVerbose()) {
 #endif
     gettimeofday(&tsNow, NULL);
-    printf("... done in %li seconds.\n",
-            (tsNow.tv_sec - tsStart.tv_sec));
+    printf("... done in %li seconds.\n", (tsNow.tv_sec - tsStart.tv_sec));
 #ifndef DEBUG
 }
 #endif
@@ -1180,7 +1179,12 @@ int probe_match(PT_local *locs, aisc_string probestring) {
 #endif
     sq.sq_Query = std::string(locs->pm_sequence);
     sq.sq_MaxErrors = (float) locs->pm_max;
-    sq.sq_Reversed = false;
+    if (locs->pm_reversed) {
+        // include reversed-complement search as well
+        sq.sq_Reversed = true;
+    } else {
+        sq.sq_Reversed = false;
+    }
     if (sq.sq_MaxErrors > 0) {
         sq.sq_AllowReplace = true; // N-mismatches are listed anyways!
         sq.sq_AllowInsert = true;
@@ -1200,12 +1204,11 @@ int probe_match(PT_local *locs, aisc_string probestring) {
     boost::ptr_vector<QueryHit> results = pl->pl_pt->searchTree(sq, true, true);
     ULONG done = create_match_list(sq, results, locs->pm_max_hits);
 
-    if (locs->pm_reversed) {
-        SearchQuery compsq = sq;
-        compsq.sq_Reversed = true;
-        results = pl->pl_pt->searchTree(compsq, true, true);
-        done = create_match_list(compsq, results, locs->pm_max_hits - done);
+#ifdef DEBUG
+    if (done) {
+        printf("done with search!\n");
     }
+#endif
 
     // Just to be secure, we clear the PDC structure
     // but only if we created it!
