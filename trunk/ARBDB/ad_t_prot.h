@@ -29,6 +29,32 @@ char *GBT_complementNucSequence(const char *s, int len, char T_or_U);
 NOT4PERL GB_ERROR GBT_determine_T_or_U(GB_alignment_type alignment_type, char *T_or_U, const char *supposed_target);
 NOT4PERL void GBT_reverseComplementNucSequence(char *seq, long length, char T_or_U);
 
+/* adali.cxx */
+int GBT_count_alignments(GBDATA *gb_main);
+GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name);
+void GBT_get_alignment_names(ConstStrArray &names, GBDATA *gbd);
+GB_ERROR GBT_check_alignment_name(const char *alignment_name);
+GBDATA *GBT_create_alignment(GBDATA *gbd, const char *name, long len, long aligned, long security, const char *type);
+NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment, GB_HASH *species_name_hash);
+GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *dest, int copy, int dele);
+NOT4PERL GBDATA *GBT_add_data(GBDATA *species, const char *ali_name, const char *key, GB_TYPES type) __ATTR__DEPRECATED_TODO("better use GBT_create_sequence_data()");
+NOT4PERL GBDATA *GBT_create_sequence_data(GBDATA *species, const char *ali_name, const char *key, GB_TYPES type, int security_write);
+GB_ERROR GBT_write_sequence(GBDATA *gb_data, const char *ali_name, long ali_len, const char *sequence);
+GBDATA *GBT_gen_accession_number(GBDATA *gb_species, const char *ali_name);
+int GBT_is_partial(GBDATA *gb_species, int default_value, int define_if_undef);
+GBDATA *GBT_read_sequence(GBDATA *gb_species, const char *aliname);
+char *GBT_get_default_alignment(GBDATA *gb_main);
+GB_ERROR GBT_set_default_alignment(GBDATA *gb_main, const char *alignment_name);
+GBDATA *GBT_get_alignment(GBDATA *gb_main, const char *aliname);
+long GBT_get_alignment_len(GBDATA *gb_main, const char *aliname);
+GB_ERROR GBT_set_alignment_len(GBDATA *gb_main, const char *aliname, long new_len);
+int GBT_get_alignment_aligned(GBDATA *gb_main, const char *aliname);
+char *GBT_get_alignment_type_string(GBDATA *gb_main, const char *aliname);
+GB_alignment_type GBT_get_alignment_type(GBDATA *gb_main, const char *aliname);
+bool GBT_is_alignment_protein(GBDATA *gb_main, const char *alignment_name);
+NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, bool use_revComplement, char partSeparator, size_t *gene_length);
+char *GBT_read_gene_sequence(GBDATA *gb_gene, bool use_revComplement, char partSeparator);
+
 /* adcolumns.cxx */
 GB_ERROR GBT_format_alignment(GBDATA *Main, const char *alignment_name);
 GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos, long count, const char *char_delete);
@@ -160,32 +186,6 @@ void GBT_get_tree_names(ConstStrArray &names, GBDATA *Main);
 char *GBT_get_name_of_next_tree(GBDATA *gb_main, const char *tree_name);
 GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree, size_t *count);
 char *GBT_existing_tree(GBDATA *gb_main, const char *tree_name);
-
-/* adali.cxx */
-int GBT_count_alignments(GBDATA *gb_main);
-GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name);
-void GBT_get_alignment_names(ConstStrArray &names, GBDATA *gbd);
-GB_ERROR GBT_check_alignment_name(const char *alignment_name);
-GBDATA *GBT_create_alignment(GBDATA *gbd, const char *name, long len, long aligned, long security, const char *type);
-NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment, GB_HASH *species_name_hash);
-GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *dest, int copy, int dele);
-NOT4PERL GBDATA *GBT_add_data(GBDATA *species, const char *ali_name, const char *key, GB_TYPES type) __ATTR__DEPRECATED_TODO("better use GBT_create_sequence_data()");
-NOT4PERL GBDATA *GBT_create_sequence_data(GBDATA *species, const char *ali_name, const char *key, GB_TYPES type, int security_write);
-GB_ERROR GBT_write_sequence(GBDATA *gb_data, const char *ali_name, long ali_len, const char *sequence);
-GBDATA *GBT_gen_accession_number(GBDATA *gb_species, const char *ali_name);
-int GBT_is_partial(GBDATA *gb_species, int default_value, int define_if_undef);
-GBDATA *GBT_read_sequence(GBDATA *gb_species, const char *aliname);
-char *GBT_get_default_alignment(GBDATA *gb_main);
-GB_ERROR GBT_set_default_alignment(GBDATA *gb_main, const char *alignment_name);
-GBDATA *GBT_get_alignment(GBDATA *gb_main, const char *aliname);
-long GBT_get_alignment_len(GBDATA *gb_main, const char *aliname);
-GB_ERROR GBT_set_alignment_len(GBDATA *gb_main, const char *aliname, long new_len);
-int GBT_get_alignment_aligned(GBDATA *gb_main, const char *aliname);
-char *GBT_get_alignment_type_string(GBDATA *gb_main, const char *aliname);
-GB_alignment_type GBT_get_alignment_type(GBDATA *gb_main, const char *aliname);
-bool GBT_is_alignment_protein(GBDATA *gb_main, const char *alignment_name);
-NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, bool use_revComplement, char partSeparator, size_t *gene_length);
-char *GBT_read_gene_sequence(GBDATA *gb_gene, bool use_revComplement, char partSeparator);
 
 #else
 #error ad_t_prot.h included twice

@@ -11,26 +11,12 @@
 #endif
 
 
-/* NT_cb.cxx */
+/* AP_consensus.cxx */
 
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
-#endif
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
 
-class AW_window;
-class AWT_canvas;
-
-void NT_delete_mark_all_cb(void *, AWT_canvas *ntw);
-AW_window *NT_open_select_tree_window(AW_root *awr, char *awar_tree);
-void NT_select_last_tree(AW_window *aww, char *awar_tree);
-AW_window *NT_open_select_alignment_window(AW_root *awr);
-void NT_system_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
-void NT_system_in_xterm_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
-
-/* AP_consensus.cxx */
 AW_window *AP_open_con_expert_window(AW_root *aw_root);
 AW_window *AP_open_consensus_window(AW_root *aw_root);
 AW_window *AP_open_max_freq_window(AW_root *aw_root);
@@ -42,12 +28,29 @@ AW_window *AP_createConservationProfileWindow(AW_root *root);
 /* AP_cprofile.cxx */
 AW_window *AP_open_cprofile_window(AW_root *aw_root);
 
-/* ColumnStat_2_gnuplot.cxx */
-AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root);
-
 /* AP_pos_var_pars.cxx */
 void AP_calc_pos_var_pars(AW_window *aww);
 AW_window *AP_open_pos_var_pars_window(AW_root *root);
+
+/* ColumnStat_2_gnuplot.cxx */
+AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root);
+
+/* NT_cb.cxx */
+
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
+#endif
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
+#endif
+class AWT_canvas;
+
+void NT_delete_mark_all_cb(void *, AWT_canvas *ntw);
+AW_window *NT_open_select_tree_window(AW_root *awr, char *awar_tree);
+void NT_select_last_tree(AW_window *aww, char *awar_tree);
+AW_window *NT_open_select_alignment_window(AW_root *awr);
+void NT_system_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
+void NT_system_in_xterm_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
 
 /* NT_concatenate.cxx */
 void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def);
