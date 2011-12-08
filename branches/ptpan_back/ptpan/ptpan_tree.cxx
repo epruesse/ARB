@@ -686,11 +686,13 @@ const boost::ptr_vector<QueryHit> PtpanTree::searchTree(const SearchQuery& sq,
     boost::ptr_vector<QueryHit> ret_values;
     if (!sq.sq_Query.empty()) {
         SearchQuery internal_sq = sq;
+        bool reversed_too = internal_sq.sq_Reversed;
         if (internal_sq.sq_MaxErrors == 0.0) {
             internal_sq.sq_AllowInsert = false;
             internal_sq.sq_AllowDelete = false;
             internal_sq.sq_AllowReplace = false;
         }
+        internal_sq.sq_Reversed = false;
         SearchQueryHandle sqh = SearchQueryHandle(internal_sq);
 
         std::vector<PTPanPartition *>::const_iterator pit;
@@ -734,6 +736,67 @@ const boost::ptr_vector<QueryHit> PtpanTree::searchTree(const SearchQuery& sq,
                 }
             }
         }
+
+        if (reversed_too) {
+            STRPTR query_str = const_cast<char *>(internal_sq.sq_Query.c_str());
+            m_as->complementSequence(query_str);
+            m_as->reverseSequence(query_str);
+            internal_sq.sq_Reversed = true;
+
+            SearchQueryHandle sqh_rev = SearchQueryHandle(internal_sq);
+#ifdef DEBUG
+            printf("check reverse complement as well (%s)\n",
+                    internal_sq.sq_Query.c_str());
+#endif
+            // TODO FIXME double code is bad, but there is no time left :-(
+            std::vector<PTPanPartition *>::const_iterator pit;
+            for (pit = m_partitions.begin(); pit != m_partitions.end(); pit++) {
+                search_partition(*pit, internal_sq, sqh_rev);
+            }
+            post_filter_query_hits(sq, sqh_rev);
+
+#ifdef DEBUG
+            printf("after all partitions rev-compl count %lu\n",
+                    sqh_rev.sqh_hits.size());
+#endif
+            if (m_prune_length < sqh_rev.sqh_MaxLength) {
+#ifdef DEBUG
+                printf("may contain UNSAFE! %lu\n", sqh_rev.sqh_MaxLength);
+#endif
+                validate_unsafe_hits(internal_sq, sqh_rev);
+            }
+            if (build_diff) {
+                if (!sqh_rev.sqh_hits.empty()) {
+#ifdef DEBUG
+                    printf(">> CreateDiffAlignment for %lu hits\n",
+                            sqh_rev.sqh_hits.size());
+#endif
+                    if (sqh_rev.sqh_hits.size() < m_num_threads
+                            || m_num_threads <= 1) {
+                        create_diff_alignment(internal_sq, sqh_rev);
+                    } else {
+                        std::size_t i = 0;
+                        ULONG participators = m_num_threads;
+                        for (; i < participators - 1; i++) {
+                            boost::threadpool::schedule(
+                                    *m_threadpool,
+                                    boost::bind(
+                                            &PtpanTree::create_diff_alignment,
+                                            this, boost::ref(internal_sq),
+                                            boost::ref(sqh_rev), i,
+                                            participators));
+                        }
+                        create_diff_alignment(internal_sq, sqh_rev, i,
+                                participators); // main thread can do some work as well!
+                        m_threadpool->wait();
+                    }
+                }
+            }
+            // we want to transfer control over results to sqh
+            // before we sort and return results
+            sqh.sqh_hits.transfer(sqh.sqh_hits.end(), sqh_rev.sqh_hits);
+        }
+
         if (sort) {
             sort_hits_list(internal_sq, sqh);
         }
@@ -900,8 +963,8 @@ STRPTR PtpanTree::getProbes(STRPTR seed_probe, ULONG length,
     bool done = false;
     UWORD seqcode = 0;
     ULONG length_corr =
-            (length < best_pp->pp_TreePruneLength) ? length :
-                    best_pp->pp_TreePruneLength;
+            (length < best_pp->pp_TreePruneLength) ?
+                    length : best_pp->pp_TreePruneLength;
 
     ULONG buffer_size;
     ULONG buffer_consumed = 0;
@@ -2907,16 +2970,15 @@ void PtpanTree::search_tree_hamming(const SearchQuery& sq,
 void PtpanTree::search_tree_levenshtein(const SearchQuery& sq,
         SearchQueryHandle& sqh) const {
     LONG query_len =
-            sq.sq_Query.size() > m_prune_length ? m_prune_length :
-                    (LONG) sq.sq_Query.size();
+            sq.sq_Query.size() > m_prune_length ?
+                    m_prune_length : (LONG) sq.sq_Query.size();
     LONG source_len =
-            sqh.sqh_MaxLength > m_prune_length ? m_prune_length :
-                    (LONG) sqh.sqh_MaxLength;
+            sqh.sqh_MaxLength > m_prune_length ?
+                    m_prune_length : (LONG) sqh.sqh_MaxLength;
 
     LONG max_check =
-            sq.sq_Query.size() < m_prune_length ? m_prune_length
-                    - sq.sq_Query.size() :
-                    0;
+            sq.sq_Query.size() < m_prune_length ?
+                    m_prune_length - sq.sq_Query.size() : 0;
     if (max_check > sq.sq_MaxErrors) {
         max_check = (LONG) sq.sq_MaxErrors;
     }
@@ -3747,11 +3809,10 @@ void PtpanTree::sort_hits_list(const SearchQuery& sq,
                 // 28 bit
                 qh->qh_sortKey =
                         (LLONG) (
-                                (qh->qh_Flags & QHF_REVERSED) ? (1LL << 62) :
-                                        0LL)
-                                + ((qh->qh_InsertCount | qh->qh_DeleteCount) ? (1LL
-                                        << 61) :
-                                        0LL)
+                                (qh->qh_Flags & QHF_REVERSED) ?
+                                        (1LL << 62) : 0LL)
+                                + ((qh->qh_InsertCount | qh->qh_DeleteCount) ?
+                                        (1LL << 61) : 0LL)
                                 + (((LLONG) (qh->qh_ReplaceCount
                                         + qh->qh_InsertCount
                                         + qh->qh_DeleteCount)) << 56)
@@ -3779,12 +3840,11 @@ void PtpanTree::sort_hits_list(const SearchQuery& sq,
                 // 28 bit
                 qh->qh_sortKey =
                         (LLONG) (
-                                (LLONG) (qh->qh_Flags & QHF_REVERSED) ? (1LL
-                                        << 62) :
-                                        0LL)
+                                (LLONG) (qh->qh_Flags & QHF_REVERSED) ?
+                                        (1LL << 62) : 0LL)
                                 + ((LLONG) (qh->qh_InsertCount
-                                        | qh->qh_DeleteCount) ? (1LL << 61) :
-                                        0LL)
+                                        | qh->qh_DeleteCount) ?
+                                        (1LL << 61) : 0LL)
                                 + (((LLONG) round(qh->qh_ErrorCount * 10.0))
                                         << 56)
                                 + (((LLONG) qh->qh_nmismatch) << 53)
@@ -4033,8 +4093,8 @@ void PtpanTree::find_probe_in_partition(struct PTPanPartition *pp,
     bool done = false;
     UWORD seqcode = m_as->wildcard_code + 1;
     ULONG length =
-            (dq.dq_ProbeLength < pp->pp_TreePruneLength) ? dq.dq_ProbeLength :
-                    pp->pp_TreePruneLength;
+            (dq.dq_ProbeLength < pp->pp_TreePruneLength) ?
+                    dq.dq_ProbeLength : pp->pp_TreePruneLength;
     double currtemp = 0.0;
     UWORD currgc = 0;
     do {

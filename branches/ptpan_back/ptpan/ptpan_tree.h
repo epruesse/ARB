@@ -137,6 +137,12 @@ private:
             sqh_hits.clear();
         }
 
+        void clearHitsHash() {
+            if (sqh_HitsHash) {
+                sqh_HitsHash->clear();
+            }
+        }
+
     private:
         SearchQueryHandle();
 

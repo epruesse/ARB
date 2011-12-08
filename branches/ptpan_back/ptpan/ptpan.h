@@ -462,7 +462,7 @@ public:
 
     std::string sq_Query; /* query string */
 
-    bool sq_Reversed; /* query is reversed */
+    bool sq_Reversed; /* check reversed complement as well */
     bool sq_AllowReplace; /* allow replace operations */
     bool sq_AllowInsert; /* allow inserting operations */
     bool sq_AllowDelete; /* allow delete operations */
