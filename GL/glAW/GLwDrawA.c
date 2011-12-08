@@ -602,30 +602,26 @@ static void glwInput(GLwDrawingAreaWidget glw, XEvent *event, String *params, Ca
     cb.width  = glw->core.width;
     cb.height = glw->core.height;
     XtCallCallbackList((Widget)glw, glw->glwDrawingArea.inputCallback, &cb);
-  }
+}
 
+void GLwDrawingAreaMakeCurrent(Widget w, GLXContext ctx) {
+    // Make context current
+    // ARB note: define it independent from __GLX_MOTIF (undefined on suse12.1) 
+    glXMakeCurrent(XtDisplay(w), XtWindow(w), ctx);
+}
 
 #ifdef __GLX_MOTIF
 
-// Create routine
 Widget GLwCreateMDrawingArea(Widget parent, char *name, ArgList arglist, Cardinal argcount) {
-  return XtCreateWidget(name, glwMDrawingAreaWidgetClass, parent, arglist, argcount);
-  }
+    // Create routine
+    return XtCreateWidget(name, glwMDrawingAreaWidgetClass, parent, arglist, argcount);
+}
 
-#endif
+#else
 
-
-#ifndef __GLX_MOTIF
-
-// Make context current
-void GLwDrawingAreaMakeCurrent(Widget w, GLXContext ctx) {
-  glXMakeCurrent(XtDisplay(w), XtWindow(w), ctx);
-  }
-
-
-// Swap buffers convenience function
 void GLwDrawingAreaSwapBuffers(Widget w) {
-  glXSwapBuffers(XtDisplay(w), XtWindow(w));
-  }
+    // Swap buffers convenience function
+    glXSwapBuffers(XtDisplay(w), XtWindow(w));
+}
 
 #endif
