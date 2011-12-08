@@ -13,6 +13,61 @@
 #endif
 
 
+/* adExperiment.cxx */
+GBDATA *EXP_get_experiment_data(GBDATA *gb_species);
+GBDATA *EXP_find_experiment_rel_exp_data(GBDATA *gb_experiment_data, const char *name);
+GBDATA *EXP_find_experiment(GBDATA *gb_species, const char *name);
+GBDATA *EXP_expect_experiment(GBDATA *gb_species, const char *name);
+GBDATA *EXP_first_experiment_rel_exp_data(GBDATA *gb_experiment_data);
+GBDATA *EXP_next_experiment(GBDATA *gb_experiment);
+GBDATA *EXP_find_or_create_experiment_rel_exp_data(GBDATA *gb_experiment_data, const char *name);
+
+/* adGene.cxx */
+bool GEN_is_genome_db(GBDATA *gb_main, int default_value);
+GBDATA *GEN_findOrCreate_gene_data(GBDATA *gb_species);
+GBDATA *GEN_find_gene_data(GBDATA *gb_species);
+GBDATA *GEN_expect_gene_data(GBDATA *gb_species);
+GBDATA *GEN_find_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name);
+GBDATA *GEN_find_gene(GBDATA *gb_species, const char *name);
+GBDATA *GEN_create_nonexisting_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name);
+GBDATA *GEN_create_nonexisting_gene(GBDATA *gb_species, const char *name);
+GBDATA *GEN_find_or_create_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name);
+GBDATA *GEN_find_or_create_gene(GBDATA *gb_species, const char *name);
+GBDATA *GEN_first_gene(GBDATA *gb_species);
+GBDATA *GEN_first_gene_rel_gene_data(GBDATA *gb_gene_data);
+GBDATA *GEN_next_gene(GBDATA *gb_gene);
+GBDATA *GEN_first_marked_gene(GBDATA *gb_species);
+GBDATA *GEN_next_marked_gene(GBDATA *gb_gene);
+GEN_position *GEN_new_position(int parts, bool joinable);
+void GEN_use_uncertainties(GEN_position *pos);
+void GEN_free_position(GEN_position *pos);
+GEN_position *GEN_read_position(GBDATA *gb_gene);
+GB_ERROR GEN_write_position(GBDATA *gb_gene, const GEN_position *pos);
+void GEN_sortAndMergeLocationParts(GEN_position *location);
+const char *GEN_origin_organism(GBDATA *gb_pseudo);
+const char *GEN_origin_gene(GBDATA *gb_pseudo);
+bool GEN_is_pseudo_gene_species(GBDATA *gb_species);
+GB_ERROR GEN_organism_not_found(GBDATA *gb_pseudo);
+GBDATA *GEN_read_pseudo_species_from_hash(GB_HASH *pseudo_hash, const char *organism_name, const char *gene_name);
+void GEN_add_pseudo_species_to_hash(GBDATA *gb_pseudo, GB_HASH *pseudo_hash);
+GB_HASH *GEN_create_pseudo_species_hash(GBDATA *gb_main, int additionalSize);
+GBDATA *GEN_find_pseudo_species(GBDATA *gb_main, const char *organism_name, const char *gene_name, GB_HASH *pseudo_hash);
+GBDATA *GEN_find_origin_organism(GBDATA *gb_pseudo, GB_HASH *organism_hash);
+GBDATA *GEN_find_origin_gene(GBDATA *gb_pseudo, GB_HASH *organism_hash);
+GBDATA *GEN_first_pseudo_species(GBDATA *gb_main);
+GBDATA *GEN_first_pseudo_species_rel_species_data(GBDATA *gb_species_data);
+GBDATA *GEN_next_pseudo_species(GBDATA *gb_species);
+GBDATA *GEN_first_marked_pseudo_species(GBDATA *gb_main);
+GBDATA *GEN_next_marked_pseudo_species(GBDATA *gb_species);
+bool GEN_is_organism(GBDATA *gb_species);
+GBDATA *GEN_find_organism(GBDATA *gb_main, const char *name);
+GBDATA *GEN_first_organism(GBDATA *gb_main);
+GBDATA *GEN_next_organism(GBDATA *gb_organism);
+long GEN_get_organism_count(GBDATA *gb_main);
+GBDATA *GEN_first_marked_organism(GBDATA *gb_main);
+GBDATA *GEN_next_marked_organism(GBDATA *gb_organism);
+char *GEN_global_gene_identifier(GBDATA *gb_gene, GBDATA *gb_organism);
+
 /* adTest.cxx */
 const char *GB_get_type_name(GBDATA *gbd);
 const char *GB_get_db_path(GBDATA *gbd);
@@ -38,6 +93,9 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, const char *path);
 GB_ERROR GB_save_quick(GBDATA *gb, const char *refpath);
 void GB_disable_path(GBDATA *gbd, const char *path);
 
+/* adcache.cxx */
+char *GB_set_cache_size(GBDATA *gbd, size_t size);
+
 /* adcomm.cxx */
 GB_ERROR GBCMS_open(const char *path, long timeout, GBDATA *gb_main);
 void GBCMS_shutdown(GBDATA *gbd);
@@ -49,6 +107,22 @@ GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str,
 GB_ERROR GB_tell_server_dont_wait(GBDATA *gbd);
 GB_ERROR GB_install_pid(int mode);
 const char *GB_date_string(void);
+
+/* adcompr.cxx */
+bool GB_is_dictionary_compressed(GBDATA *gbd);
+
+/* adfile.cxx */
+GB_CSTR GB_getcwd(void);
+char *GB_find_all_files(const char *dir, const char *mask, bool filename_only);
+char *GB_find_latest_file(const char *dir, const char *mask);
+const char *GB_existing_file(const char *file, bool warn_when_not_found);
+char *GB_lib_file(bool warn_when_not_found, const char *libprefix, const char *filename);
+char *GB_property_file(bool warn_when_not_found, const char *filename);
+void GBS_read_dir(StrArray &names, const char *dir, const char *mask);
+bool GB_test_textfile_difflines(const char *file1, const char *file2, int expected_difflines, int special_mode);
+size_t GB_test_mem_equal(const unsigned char *buf1, const unsigned char *buf2, size_t common);
+bool GB_test_files_equal(const char *file1, const char *file2);
+void GBT_transform_names(StrArray &dest, const StrArray &source, char *transform (const char *, void *), void *client_data);
 
 /* adhash.cxx */
 GB_HASH *GBS_create_hash(long estimated_elements, GB_CASE case_sens);
@@ -80,9 +154,6 @@ long GBS_numhash_count_elems(GB_NUMHASH *hs);
 void GBS_erase_numhash(GB_NUMHASH *hs);
 void GBS_free_numhash(GB_NUMHASH *hs);
 
-/* adcache.cxx */
-char *GB_set_cache_size(GBDATA *gbd, size_t size);
-
 /* adhashtools.cxx */
 void GBT_add_item_to_hash(GBDATA *gb_item, GB_HASH *item_hash);
 GB_HASH *GBT_create_species_hash_sized(GBDATA *gb_main, long species_count);
@@ -90,6 +161,15 @@ GB_HASH *GBT_create_species_hash(GBDATA *gb_main);
 GB_HASH *GBT_create_marked_species_hash(GBDATA *gb_main);
 GB_HASH *GBT_create_SAI_hash(GBDATA *gb_main);
 GB_HASH *GBT_create_organism_hash(GBDATA *gb_main);
+
+/* adindex.cxx */
+GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long estimated_size) __ATTR__USERESULT;
+NOT4PERL void GB_dump_indices(GBDATA *gbd);
+GB_ERROR GB_request_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type) __ATTR__USERESULT_TODO;
+GB_UNDO_TYPE GB_get_requested_undo_type(GBDATA *gb_main);
+GB_ERROR GB_undo(GBDATA *gb_main, GB_UNDO_TYPE type) __ATTR__USERESULT;
+char *GB_undo_info(GBDATA *gb_main, GB_UNDO_TYPE type);
+GB_ERROR GB_set_undo_mem(GBDATA *gbd, long memsize);
 
 /* adlang1.cxx */
 NOT4PERL void GB_set_export_sequence_hook(gb_export_sequence_cb escb);
@@ -104,6 +184,9 @@ GB_ERROR GB_install_link_follower(GBDATA *gb_main, const char *link_type, GB_Lin
 NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize);
 NOT4PERL void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, unsigned int elsize);
 void GB_memerr(void);
+
+/* admap.cxx */
+bool GB_supports_mapfile(void);
 
 /* admatch.cxx */
 GBS_string_matcher *GBS_compile_matcher(const char *search_expr, GB_CASE case_flag);
@@ -129,6 +212,80 @@ GB_ERROR GB_optimize(GBDATA *gb_main);
 
 /* adperl.cxx */
 GB_ERROR GBC_await_error(void);
+
+/* adquery.cxx */
+const char *GB_get_GBDATA_path(GBDATA *gbd);
+GBDATA *GB_find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GBDATA *after, size_t skip_over);
+NOT4PERL GBDATA *GB_find_subcontent_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after, size_t skip_over);
+GBDATA *GB_find(GBDATA *gbd, const char *key, GB_SEARCH_TYPE gbs);
+GBDATA *GB_find_string(GBDATA *gbd, const char *key, const char *str, GB_CASE case_sens, GB_SEARCH_TYPE gbs);
+NOT4PERL GBDATA *GB_find_int(GBDATA *gbd, const char *key, long val, GB_SEARCH_TYPE gbs);
+GBDATA *GB_child(GBDATA *father);
+GBDATA *GB_nextChild(GBDATA *child);
+GBDATA *GB_entry(GBDATA *father, const char *key);
+GBDATA *GB_nextEntry(GBDATA *entry);
+GBDATA *GB_followingEntry(GBDATA *entry, size_t skip_over);
+GBDATA *GB_brother(GBDATA *entry, const char *key);
+char *GB_first_non_key_char(const char *str);
+GBDATA *GB_search(GBDATA *gbd, const char *fieldpath, GB_TYPES create);
+GBDATA *GB_searchOrCreate_string(GBDATA *gb_container, const char *fieldpath, const char *default_value);
+GBDATA *GB_searchOrCreate_int(GBDATA *gb_container, const char *fieldpath, long default_value);
+GBDATA *GB_searchOrCreate_float(GBDATA *gb_container, const char *fieldpath, double default_value);
+GBDATA *GB_search_last_son(GBDATA *gbd);
+long GB_number_of_marked_subentries(GBDATA *gbd);
+GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring);
+GBDATA *GB_following_marked(GBDATA *gbd, const char *keystring, size_t skip_over);
+GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring);
+char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name);
+
+/* adsocket.cxx */
+void GB_usleep(long usec);
+char *GB_read_fp(FILE *in);
+char *GB_read_file(const char *path);
+char *GB_map_FILE(FILE *in, int writeable);
+char *GB_map_file(const char *path, int writeable);
+GB_ULONG GB_time_of_day(void);
+long GB_last_saved_clock(GBDATA *gb_main);
+GB_ULONG GB_last_saved_time(GBDATA *gb_main);
+GB_ERROR GB_textprint(const char *path) __ATTR__USERESULT;
+GB_ERROR GB_xterm(void) __ATTR__USERESULT;
+GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) __ATTR__USERESULT_TODO;
+char *GB_executable(GB_CSTR exe_name);
+char *GB_find_executable(GB_CSTR description_of_executable, ...) __ATTR__SENTINEL;
+void GB_setenv(const char *var, const char *value);
+GB_CSTR GB_getenvARB_XTERM(void);
+GB_CSTR GB_getenvARB_XCMD(void);
+GB_CSTR GB_getenvUSER(void);
+GB_CSTR GB_getenvHOME(void);
+GB_CSTR GB_getenvARBHOME(void);
+GB_CSTR GB_getenvARBMACRO(void);
+GB_CSTR GB_getenvARBMACROHOME(void);
+GB_CSTR GB_getenvARBCONFIG(void);
+GB_CSTR GB_getenvPATH(void);
+GB_CSTR GB_getenvARB_GS(void);
+GB_CSTR GB_getenvARB_PDFVIEW(void);
+GB_CSTR GB_getenvARB_TEXTEDIT(void);
+GB_CSTR GB_getenvDOCPATH(void);
+GB_CSTR GB_getenvHTMLDOCPATH(void);
+NOT4PERL gb_getenv_hook GB_install_getenv_hook(gb_getenv_hook hook);
+GB_CSTR GB_getenv(const char *env);
+bool GB_host_is_local(const char *hostname);
+GB_ULONG GB_get_physical_memory(void);
+GB_CSTR GB_append_suffix(const char *name, const char *suffix);
+GB_CSTR GB_canonical_path(const char *anypath);
+GB_CSTR GB_concat_path(GB_CSTR anypath_left, GB_CSTR anypath_right);
+GB_CSTR GB_concat_full_path(const char *anypath_left, const char *anypath_right);
+GB_CSTR GB_unfold_path(const char *pwd_envar, const char *path);
+GB_CSTR GB_path_in_ARBHOME(const char *relative_path);
+GB_CSTR GB_path_in_ARBLIB(const char *relative_path);
+GB_CSTR GB_path_in_arbprop(const char *relative_path);
+GB_CSTR GB_path_in_ARBHOME(const char *relative_path_left, const char *anypath_right);
+GB_CSTR GB_path_in_ARBLIB(const char *relative_path_left, const char *anypath_right);
+FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_fullname);
+char *GB_create_tempfile(const char *name);
+char *GB_unique_filename(const char *name_prefix, const char *suffix);
+void GB_remove_on_exit(const char *filename);
+void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullname, char **res_name_only, char **res_suffix);
 
 /* adstring.cxx */
 void GB_raise_critical_error(const char *msg) __ATTR__NORETURN;
@@ -157,19 +314,6 @@ char *GBS_replace_tabs_by_spaces(const char *text);
 const char *GBS_readable_size(unsigned long long size, const char *unit_suffix);
 char *GBS_trim(const char *str);
 char *GBS_log_dated_action_to(const char *comment, const char *action);
-
-/* adfile.cxx */
-GB_CSTR GB_getcwd(void);
-char *GB_find_all_files(const char *dir, const char *mask, bool filename_only);
-char *GB_find_latest_file(const char *dir, const char *mask);
-const char *GB_existing_file(const char *file, bool warn_when_not_found);
-char *GB_lib_file(bool warn_when_not_found, const char *libprefix, const char *filename);
-char *GB_property_file(bool warn_when_not_found, const char *filename);
-void GBS_read_dir(StrArray &names, const char *dir, const char *mask);
-bool GB_test_textfile_difflines(const char *file1, const char *file2, int expected_difflines, int special_mode);
-size_t GB_test_mem_equal(const unsigned char *buf1, const unsigned char *buf2, size_t common);
-bool GB_test_files_equal(const char *file1, const char *file2);
-void GBT_transform_names(StrArray &dest, const StrArray &source, char *transform (const char *, void *), void *client_data);
 
 /* adsystem.cxx */
 DictData *GB_get_dictionary(GBDATA *gb_main, const char *key);
@@ -324,150 +468,6 @@ char GB_type_2_char(GB_TYPES type);
 GB_ERROR GB_print_debug_information(void *, GBDATA *gb_main);
 int GB_info(GBDATA *gbd);
 long GB_number_of_subentries(GBDATA *gbd);
-
-/* adExperiment.cxx */
-GBDATA *EXP_get_experiment_data(GBDATA *gb_species);
-GBDATA *EXP_find_experiment_rel_exp_data(GBDATA *gb_experiment_data, const char *name);
-GBDATA *EXP_find_experiment(GBDATA *gb_species, const char *name);
-GBDATA *EXP_expect_experiment(GBDATA *gb_species, const char *name);
-GBDATA *EXP_first_experiment_rel_exp_data(GBDATA *gb_experiment_data);
-GBDATA *EXP_next_experiment(GBDATA *gb_experiment);
-GBDATA *EXP_find_or_create_experiment_rel_exp_data(GBDATA *gb_experiment_data, const char *name);
-
-/* adGene.cxx */
-bool GEN_is_genome_db(GBDATA *gb_main, int default_value);
-GBDATA *GEN_findOrCreate_gene_data(GBDATA *gb_species);
-GBDATA *GEN_find_gene_data(GBDATA *gb_species);
-GBDATA *GEN_expect_gene_data(GBDATA *gb_species);
-GBDATA *GEN_find_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name);
-GBDATA *GEN_find_gene(GBDATA *gb_species, const char *name);
-GBDATA *GEN_create_nonexisting_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name);
-GBDATA *GEN_create_nonexisting_gene(GBDATA *gb_species, const char *name);
-GBDATA *GEN_find_or_create_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name);
-GBDATA *GEN_find_or_create_gene(GBDATA *gb_species, const char *name);
-GBDATA *GEN_first_gene(GBDATA *gb_species);
-GBDATA *GEN_first_gene_rel_gene_data(GBDATA *gb_gene_data);
-GBDATA *GEN_next_gene(GBDATA *gb_gene);
-GBDATA *GEN_first_marked_gene(GBDATA *gb_species);
-GBDATA *GEN_next_marked_gene(GBDATA *gb_gene);
-GEN_position *GEN_new_position(int parts, bool joinable);
-void GEN_use_uncertainties(GEN_position *pos);
-void GEN_free_position(GEN_position *pos);
-GEN_position *GEN_read_position(GBDATA *gb_gene);
-GB_ERROR GEN_write_position(GBDATA *gb_gene, const GEN_position *pos);
-void GEN_sortAndMergeLocationParts(GEN_position *location);
-const char *GEN_origin_organism(GBDATA *gb_pseudo);
-const char *GEN_origin_gene(GBDATA *gb_pseudo);
-bool GEN_is_pseudo_gene_species(GBDATA *gb_species);
-GB_ERROR GEN_organism_not_found(GBDATA *gb_pseudo);
-GBDATA *GEN_read_pseudo_species_from_hash(GB_HASH *pseudo_hash, const char *organism_name, const char *gene_name);
-void GEN_add_pseudo_species_to_hash(GBDATA *gb_pseudo, GB_HASH *pseudo_hash);
-GB_HASH *GEN_create_pseudo_species_hash(GBDATA *gb_main, int additionalSize);
-GBDATA *GEN_find_pseudo_species(GBDATA *gb_main, const char *organism_name, const char *gene_name, GB_HASH *pseudo_hash);
-GBDATA *GEN_find_origin_organism(GBDATA *gb_pseudo, GB_HASH *organism_hash);
-GBDATA *GEN_find_origin_gene(GBDATA *gb_pseudo, GB_HASH *organism_hash);
-GBDATA *GEN_first_pseudo_species(GBDATA *gb_main);
-GBDATA *GEN_first_pseudo_species_rel_species_data(GBDATA *gb_species_data);
-GBDATA *GEN_next_pseudo_species(GBDATA *gb_species);
-GBDATA *GEN_first_marked_pseudo_species(GBDATA *gb_main);
-GBDATA *GEN_next_marked_pseudo_species(GBDATA *gb_species);
-bool GEN_is_organism(GBDATA *gb_species);
-GBDATA *GEN_find_organism(GBDATA *gb_main, const char *name);
-GBDATA *GEN_first_organism(GBDATA *gb_main);
-GBDATA *GEN_next_organism(GBDATA *gb_organism);
-long GEN_get_organism_count(GBDATA *gb_main);
-GBDATA *GEN_first_marked_organism(GBDATA *gb_main);
-GBDATA *GEN_next_marked_organism(GBDATA *gb_organism);
-char *GEN_global_gene_identifier(GBDATA *gb_gene, GBDATA *gb_organism);
-
-/* adcompr.cxx */
-bool GB_is_dictionary_compressed(GBDATA *gbd);
-
-/* adindex.cxx */
-GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long estimated_size) __ATTR__USERESULT;
-NOT4PERL void GB_dump_indices(GBDATA *gbd);
-GB_ERROR GB_request_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type) __ATTR__USERESULT_TODO;
-GB_UNDO_TYPE GB_get_requested_undo_type(GBDATA *gb_main);
-GB_ERROR GB_undo(GBDATA *gb_main, GB_UNDO_TYPE type) __ATTR__USERESULT;
-char *GB_undo_info(GBDATA *gb_main, GB_UNDO_TYPE type);
-GB_ERROR GB_set_undo_mem(GBDATA *gbd, long memsize);
-
-/* admap.cxx */
-bool GB_supports_mapfile(void);
-
-/* adquery.cxx */
-const char *GB_get_GBDATA_path(GBDATA *gbd);
-GBDATA *GB_find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GBDATA *after, size_t skip_over);
-NOT4PERL GBDATA *GB_find_subcontent_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after, size_t skip_over);
-GBDATA *GB_find(GBDATA *gbd, const char *key, GB_SEARCH_TYPE gbs);
-GBDATA *GB_find_string(GBDATA *gbd, const char *key, const char *str, GB_CASE case_sens, GB_SEARCH_TYPE gbs);
-NOT4PERL GBDATA *GB_find_int(GBDATA *gbd, const char *key, long val, GB_SEARCH_TYPE gbs);
-GBDATA *GB_child(GBDATA *father);
-GBDATA *GB_nextChild(GBDATA *child);
-GBDATA *GB_entry(GBDATA *father, const char *key);
-GBDATA *GB_nextEntry(GBDATA *entry);
-GBDATA *GB_followingEntry(GBDATA *entry, size_t skip_over);
-GBDATA *GB_brother(GBDATA *entry, const char *key);
-char *GB_first_non_key_char(const char *str);
-GBDATA *GB_search(GBDATA *gbd, const char *fieldpath, GB_TYPES create);
-GBDATA *GB_searchOrCreate_string(GBDATA *gb_container, const char *fieldpath, const char *default_value);
-GBDATA *GB_searchOrCreate_int(GBDATA *gb_container, const char *fieldpath, long default_value);
-GBDATA *GB_searchOrCreate_float(GBDATA *gb_container, const char *fieldpath, double default_value);
-GBDATA *GB_search_last_son(GBDATA *gbd);
-long GB_number_of_marked_subentries(GBDATA *gbd);
-GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring);
-GBDATA *GB_following_marked(GBDATA *gbd, const char *keystring, size_t skip_over);
-GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring);
-char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name);
-
-/* adsocket.cxx */
-void GB_usleep(long usec);
-char *GB_read_fp(FILE *in);
-char *GB_read_file(const char *path);
-char *GB_map_FILE(FILE *in, int writeable);
-char *GB_map_file(const char *path, int writeable);
-GB_ULONG GB_time_of_day(void);
-long GB_last_saved_clock(GBDATA *gb_main);
-GB_ULONG GB_last_saved_time(GBDATA *gb_main);
-GB_ERROR GB_textprint(const char *path) __ATTR__USERESULT;
-GB_ERROR GB_xterm(void) __ATTR__USERESULT;
-GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) __ATTR__USERESULT_TODO;
-char *GB_executable(GB_CSTR exe_name);
-char *GB_find_executable(GB_CSTR description_of_executable, ...) __ATTR__SENTINEL;
-void GB_setenv(const char *var, const char *value);
-GB_CSTR GB_getenvARB_XTERM(void);
-GB_CSTR GB_getenvARB_XCMD(void);
-GB_CSTR GB_getenvUSER(void);
-GB_CSTR GB_getenvHOME(void);
-GB_CSTR GB_getenvARBHOME(void);
-GB_CSTR GB_getenvARBMACRO(void);
-GB_CSTR GB_getenvARBMACROHOME(void);
-GB_CSTR GB_getenvARBCONFIG(void);
-GB_CSTR GB_getenvPATH(void);
-GB_CSTR GB_getenvARB_GS(void);
-GB_CSTR GB_getenvARB_PDFVIEW(void);
-GB_CSTR GB_getenvARB_TEXTEDIT(void);
-GB_CSTR GB_getenvDOCPATH(void);
-GB_CSTR GB_getenvHTMLDOCPATH(void);
-NOT4PERL gb_getenv_hook GB_install_getenv_hook(gb_getenv_hook hook);
-GB_CSTR GB_getenv(const char *env);
-bool GB_host_is_local(const char *hostname);
-GB_ULONG GB_get_physical_memory(void);
-GB_CSTR GB_append_suffix(const char *name, const char *suffix);
-GB_CSTR GB_canonical_path(const char *anypath);
-GB_CSTR GB_concat_path(GB_CSTR anypath_left, GB_CSTR anypath_right);
-GB_CSTR GB_concat_full_path(const char *anypath_left, const char *anypath_right);
-GB_CSTR GB_unfold_path(const char *pwd_envar, const char *path);
-GB_CSTR GB_path_in_ARBHOME(const char *relative_path);
-GB_CSTR GB_path_in_ARBLIB(const char *relative_path);
-GB_CSTR GB_path_in_arbprop(const char *relative_path);
-GB_CSTR GB_path_in_ARBHOME(const char *relative_path_left, const char *anypath_right);
-GB_CSTR GB_path_in_ARBLIB(const char *relative_path_left, const char *anypath_right);
-FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_fullname);
-char *GB_create_tempfile(const char *name);
-char *GB_unique_filename(const char *name_prefix, const char *suffix);
-void GB_remove_on_exit(const char *filename);
-void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullname, char **res_name_only, char **res_suffix);
 
 #else
 #error ad_prot.h included twice

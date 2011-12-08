@@ -19,8 +19,6 @@
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
-
-class AW_window;
 class AWT_canvas;
 
 void NT_delete_mark_all_cb(void *, AWT_canvas *ntw);
