@@ -1479,6 +1479,10 @@ STATIC_ATTRIBUTED(__ATTR__NORETURN, void Usage()) {
     exit(EXIT_FAILURE);
 }
 
+static int string_comparator(const void *v0, const void *v1) {
+    return strcmp(*(const char **)v0, *(const char **)v1);
+}
+
 int ARB_main(int argc, const char *argv[]) {
     FILE *f;
     const char *t;
@@ -1651,14 +1655,23 @@ int ARB_main(int argc, const char *argv[]) {
         getdecl(stdin, "<from stdin>");
     }
     else {
+        const char *filename[1000];
+        int         fcount = 0;
 
         while (argc > 0 && *argv) {
+            filename[fcount++] = *argv;
+            argc--; argv++;
+        }
+
+        qsort(&filename, fcount, sizeof(filename[0]), string_comparator);
+
+        for (int i = 0; i<fcount; ++i) {
             DEBUG_PRINT("trying new file '");
-            DEBUG_PRINT(*argv);
+            DEBUG_PRINT(filename[i]);
             DEBUG_PRINT("'\n");
 
-            if (!(f = fopen(*argv, "r"))) {
-                perror(*argv);
+            if (!(f = fopen(filename[i], "r"))) {
+                perror(filename[i]);
                 exit(EXIT_FAILURE);
             }
             if (iobuf) setvbuf(f, iobuf, _IOFBF, NEWBUFSIZ);
@@ -1666,8 +1679,7 @@ int ARB_main(int argc, const char *argv[]) {
             linenum      = 1;
             newline_seen = 1;
             glastc       = ' ';
-            getdecl(f, *argv);
-            argc--; argv++;
+            getdecl(f, filename[i]);
             fclose(f);
 
             free(current_file);
