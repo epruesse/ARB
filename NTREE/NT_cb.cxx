@@ -26,8 +26,6 @@
 // AISC_MKPT_PROMOTE:#ifndef AW_BASE_HXX
 // AISC_MKPT_PROMOTE:#include <aw_base.hxx>
 // AISC_MKPT_PROMOTE:#endif
-// AISC_MKPT_PROMOTE:
-// AISC_MKPT_PROMOTE:class AW_window;
 // AISC_MKPT_PROMOTE:class AWT_canvas;
 
 #define AWT_TREE(ntw) DOWNCAST(AWT_graphic_tree *, (ntw)->tree_disp)
