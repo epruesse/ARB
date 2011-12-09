@@ -647,8 +647,9 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
 
             if (gbd) {
                 char *data = GB_read_string(gbd);
-                int len = GB_read_string_count(gbd);
-                group_man->table().add(data, len);
+                int   len  = GB_read_string_count(gbd);
+
+                group_man->update_bases(0, 0, data, len);
             }
         }
 
@@ -663,6 +664,8 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
             // it should create new AA Sequence terminals if the protein viewer is enabled
         }
         delete string;
+
+        insert_into_manager->generate_id_for_groups();
     }
     if (name_term) {
         jump_to_species(name_term, -1, true, ED4_JUMP_KEEP_POSITION);

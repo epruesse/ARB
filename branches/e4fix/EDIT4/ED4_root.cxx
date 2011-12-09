@@ -80,6 +80,7 @@ ED4_returncode ED4_root::refresh_all_windows(int redraw) {
 
     if (main_manager->update_info.delete_requested) {
         main_manager->delete_requested_children();
+        get_device_manager()->generate_id_for_groups(); // update group-counters
         redraw = 1;
     }
 
@@ -332,24 +333,7 @@ void ED4_root::announce_useraction_in(AW_window *aww) {
     }
 }
 
-void ED4_window::announce_deletion(ED4_base *object) {
-    if (cursor.owner_of_cursor == object) { // about to delete owner_of_cursor
-        cursor.HideCursor();
-        e4_assert(!cursor.owner_of_cursor);
-    }
-}
-void ED4_root::announce_deletion(ED4_base *object) {
-    // remove any links which might point to the object
-    // @@@ not triggered by kill_object()
-    for (ED4_window *win = first_window; win; win = win->next) {
-        ED4_LocalWinContext uses(win);
-        win->announce_deletion(object);
-    }
-}
-
-
-ED4_returncode ED4_root::add_to_selected(ED4_terminal *object)
-{
+ED4_returncode ED4_root::add_to_selected(ED4_terminal *object) {
     ED4_base            *tmp_object;
     ED4_level            mlevel;
     ED4_terminal        *sel_object;

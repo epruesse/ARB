@@ -282,66 +282,32 @@ static ARB_ERROR ed4_remove_species_manager_callbacks(ED4_base *base) {
     return NULL;
 }
 
-ED4_returncode ED4_terminal::kill_object()
-{
-    ED4_species_manager *species_manager = get_parent(ED4_L_SPECIES)->to_species_manager();
-    ED4_manager         *parent_manager  = species_manager->parent;
-    ED4_group_manager   *group_manager   = 0;
+inline void remove_from_consensus(ED4_manager *group_or_species_man) {
+    GB_transaction ta(GLOBAL_gb_main);
+    ED4_manager *parent_manager = group_or_species_man->parent;
+    parent_manager->update_consensus(parent_manager, NULL, group_or_species_man);
+    parent_manager->rebuild_consensi(parent_manager, ED4_U_UP);
+}
 
-    if (species_manager->flag.is_consensus)                         // whole group has to be killed
-    {
-        if (parent_manager->is_multi_species_manager() && ED4_new_species_multi_species_manager()==parent_manager) {
+ED4_returncode ED4_terminal::kill_object() {
+    ED4_species_manager *species_manager = get_parent(ED4_L_SPECIES)->to_species_manager();
+
+    if (species_manager->flag.is_consensus) { // kill whole group
+        if (ED4_new_species_multi_species_manager()==species_manager->parent) {
             aw_message("This group has to exist - deleting it isn't allowed");
             return ED4_R_IMPOSSIBLE;
         }
 
-        parent_manager = species_manager;
-        e4_assert(!parent_manager->is_root_group_manager());
-        while (!parent_manager->is_group_manager()) {
-            parent_manager = parent_manager->parent;
-            e4_assert(!parent_manager->is_root_group_manager());
-        }
-        group_manager = parent_manager->to_group_manager();
-
-        parent_manager = group_manager->parent;
-        parent_manager->children->remove_member(group_manager);
-
-        GB_push_transaction (GLOBAL_gb_main);
-        parent_manager->update_consensus(parent_manager, NULL,   group_manager);
-        parent_manager->rebuild_consensi(parent_manager,   ED4_U_UP);
-        GB_pop_transaction (GLOBAL_gb_main);
-        species_manager = NULL;
+        ED4_manager *group_manager = species_manager->get_parent(ED4_L_GROUP)->to_group_manager();
+        remove_from_consensus(group_manager);
+        group_manager->Delete();
     }
-    else
-    {
-        parent_manager->children->remove_member(species_manager);
-        GB_push_transaction (GLOBAL_gb_main);
-        parent_manager->update_consensus(parent_manager,   NULL, species_manager);
-        parent_manager->rebuild_consensi(species_manager, ED4_U_UP);
-        GB_pop_transaction (GLOBAL_gb_main);
+    else { // kill single species/SAI
+        remove_from_consensus(species_manager);
+        species_manager->Delete();
     }
 
-    ED4_device_manager *device_manager = ED4_ROOT->get_device_manager();
-
-    for (int i=0; i<device_manager->children->members(); i++) { // when killing species numbers have to be recalculated
-        ED4_base *member = device_manager->children->member(i);
-
-        if (member->is_area_manager()) {
-            member->to_area_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->generate_id_for_groups();
-        }
-    }
-
-    if (species_manager) {
-        species_manager->parent = NULL;
-        species_manager->remove_all_callbacks();
-        delete species_manager;
-    }
-
-    if (group_manager) {
-        group_manager->parent = NULL;
-        group_manager->route_down_hierarchy(ed4_remove_species_manager_callbacks).expect_no_error();
-        delete group_manager;
-    }
+    ED4_ROOT->refresh_all_windows(0);
 
     return ED4_R_OK;
 }

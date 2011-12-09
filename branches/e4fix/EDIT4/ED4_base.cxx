@@ -20,77 +20,6 @@ ED4_group_manager *ED4_base::is_in_folded_group() const
     return group->is_in_folded_group();
 }
 
-bool ED4_base::remove_deleted_children()
-{
-    e4_assert(0);
-    return false;
-}
-
-bool ED4_terminal::remove_deleted_children()
-{
-    if (tflag.deleted) {
-        if (get_species_pointer() != 0) {
-#if defined(DEBUG)
-            printf("ED4_terminal: has non-zero species_pointer in remove_deleted_children (resetting to zero)\n");
-#endif // DEBUG
-            set_species_pointer(0);
-        }
-        ED4_ROOT->announce_deletion(this);
-        parent->children->remove_member(this);
-        return true;
-    }
-
-    return false;
-}
-bool ED4_sequence_info_terminal::remove_deleted_children()
-{
-    if (tflag.deleted) {
-        if (get_species_pointer() != 0) {
-#if defined(DEBUG)
-            printf("ED4_sequence_info_terminal: has non-zero species_pointer in remove_deleted_children (resetting to zero)\n");
-#endif // DEBUG
-            set_species_pointer(0);
-        }
-        ED4_ROOT->announce_deletion(this);
-        parent->children->remove_member(this);
-        return true;
-    }
-
-    return false;
-}
-
-bool ED4_manager::remove_deleted_children()
-{
-    int  i;
-    bool deletion_occurred = false;
-
- restart :
-
-    for (i=0; i<children->members(); i++) {
-        ED4_base *child = children->member(i);
-        if (child->remove_deleted_children()) {
-            deletion_occurred = true;
-            goto restart;       // because order of children may have changed
-        }
-    }
-
-    if (!children->members()) {
-        if (parent) {
-            ED4_ROOT->announce_deletion(this);
-            parent->children->remove_member(this);
-            return true;
-        }
-#if defined(DEBUG)
-        printf("ED4_manager::remove_deleted_children: I have no parent\n");
-#endif // DEBUG
-    }
-    else if (deletion_occurred) {
-        parent->refresh_requested_by_child();
-    }
-
-    return false;
-}
-
 void ED4_base::changed_by_database()
 {
     e4_assert(0);
@@ -99,7 +28,6 @@ void ED4_base::changed_by_database()
 }
 
 void ED4_manager::changed_by_database() {
-    remove_deleted_children();
     set_refresh(1);
     if (parent) {
         parent->refresh_requested_by_child();
@@ -194,14 +122,12 @@ void ED4_sequence_terminal::deleted_from_database()
 
     dynamic_prop = ED4_properties(dynamic_prop&~(ED4_P_CONSENSUS_RELEVANT|ED4_P_ALIGNMENT_DATA));
 
-    // @@@ hide all cursors pointing to this terminal!
+    if (was_consensus_relevant) { 
+        const char *data     = (const char*)GB_read_old_value();
+        int         data_len = GB_read_old_size();
 
-    const char *data     = (const char*)GB_read_old_value();
-    int         data_len = GB_read_old_size();
+        ED4_multi_species_manager *multi_species_man = get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
-    ED4_multi_species_manager *multi_species_man = get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
-
-    if (was_consensus_relevant) {
         multi_species_man->update_bases(data, data_len, 0);
         multi_species_man->rebuild_consensi(get_parent(ED4_L_SPECIES)->to_species_manager(), ED4_U_UP);
     }
@@ -219,16 +145,6 @@ void ED4_manager::deleted_from_database() {
         multi_man->update_consensus(multi_man, 0, species_man);
         multi_man->rebuild_consensi(species_man, ED4_U_UP);
         GB_pop_transaction(GLOBAL_gb_main);
-
-        ED4_device_manager *device_manager = ED4_ROOT->get_device_manager();
-
-        for (int i=0; i<device_manager->children->members(); i++) { // when killing species numbers have to be recalculated
-            ED4_base *member = device_manager->children->member(i);
-
-            if (member->is_area_manager()) {
-                member->to_area_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->generate_id_for_groups();
-            }
-        }
 
         if (parent) parent->resize_requested_by_child();
         ED4_ROOT->refresh_all_windows(0);
@@ -796,16 +712,17 @@ ED4_AREA_LEVEL  ED4_base::get_area_level(ED4_multi_species_manager **multi_speci
 }
 
 
-void ED4_manager::generate_id_for_groups() {
-    int i;
-
-    for (i=0; i<children->members(); i++) {
-        if (children->member(i)->is_group_manager()) {
-            ED4_multi_species_manager *multi_man = children->member(i)->to_group_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
-
-            multi_man->count_all_children_and_set_group_id();
+void ED4_device_manager::generate_id_for_groups() {
+    for (int i=0; i<children->members(); i++) {
+        ED4_base *member = children->member(i);
+        if (member->is_area_manager()) {
+            member->to_area_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->generate_id_for_groups();
         }
     }
+}
+
+void ED4_multi_species_manager::generate_id_for_groups() {
+    count_all_children_and_set_group_id();
 }
 
 
@@ -827,19 +744,20 @@ int ED4_multi_species_manager::count_all_children_and_set_group_id() // counts a
 
 
     ED4_base *consensus_name_terminal = get_consensus_terminal();
-    name = (char*)GB_calloc(strlen(consensus_name_terminal->id)+10, sizeof(*name));
+    if (consensus_name_terminal) { // top managers dont show consensus
+        name = (char*)GB_calloc(strlen(consensus_name_terminal->id)+10, sizeof(*name));
 
-    for (i=0; consensus_name_terminal->id[i] != '(' && consensus_name_terminal->id[i] != '\0';   i++) {
-        name[i] = consensus_name_terminal->id[i];
+        for (i=0; consensus_name_terminal->id[i] != '(' && consensus_name_terminal->id[i] != '\0';   i++) {
+            name[i] = consensus_name_terminal->id[i];
+        }
+        if (consensus_name_terminal->id[i] != '\0') { // skip space
+            i--;
+        }
+        name[i] = '\0';
+        sprintf(name, "%s (%d)", name, counter);
+
+        freeset(consensus_name_terminal->id, name);
     }
-    if (consensus_name_terminal->id[i] != '\0') { // skip space
-        i--;
-    }
-    name[i] = '\0';
-    sprintf(name, "%s (%d)", name, counter);
-
-    freeset(consensus_name_terminal->id, name);
-
     return counter;
 }
 

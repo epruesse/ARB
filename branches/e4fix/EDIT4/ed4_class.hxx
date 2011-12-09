@@ -572,6 +572,11 @@ public:
 
     void invalidate();
 
+    void announce_deletion(const ED4_base *object) {
+        if (object == calced4base) invalidate();
+        e4_assert(calced4base != object);
+    }
+
     int get_base_position(const ED4_base *base, int sequence_position);
     int get_sequence_position(const ED4_base *base, int base_position);
 
@@ -652,6 +657,11 @@ public:
 
     void set_to_terminal(AW_window *aww, ED4_terminal *terminal, int seq_pos, ED4_CursorJumpType jump_type);
 
+    void announce_deletion(ED4_base *object) {
+        base_position.announce_deletion(object);
+        if (object == owner_of_cursor) owner_of_cursor = NULL; // no need to delete the cursor (deletion triggers full redraw)
+    }
+
     void init();
 
     ED4_window *window() const;
@@ -688,8 +698,8 @@ public:
     void        reset_all_for_new_config(); // reset structures for loading new config
     ED4_window *get_matching_ed4w(AW_window *aww);
 
-    void announce_deletion(ED4_base *object);
-
+    void announce_deletion(ED4_base *object) { cursor.announce_deletion(object); }
+    
     // functions concerned the scrolled area
     ED4_returncode      update_scrolled_rectangle();
     ED4_returncode      set_scrollbar_indents();
@@ -1020,8 +1030,6 @@ public:
     virtual void changed_by_database();
     virtual void deleted_from_database();
 
-    virtual bool remove_deleted_children();
-
     // functions concerned with graphic output
     virtual int adjust_clipping_rectangle();     // sets scrolling area in AW_MIDDLE_AREA
     virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0) = 0;
@@ -1208,8 +1216,6 @@ public:
     virtual void changed_by_database();
     virtual void deleted_from_database();
 
-    virtual bool  remove_deleted_children();
-
     // functions concerned with graphics
     virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode  Resize();
@@ -1263,8 +1269,6 @@ public:
 
     virtual ED4_returncode  update_bases_and_rebuild_consensi(const char *old_seq, int old_len, ED4_base *species, ED4_update_flag update_flag, PosRange range = PosRange::whole());
 
-    void            generate_id_for_groups();
-
     // handle moves across the hierarchy
     virtual ED4_returncode  handle_move(ED4_move_info *moveinfo);
     virtual ED4_base        *get_competent_child(AW_pos x, AW_pos y, ED4_properties relevant_prop);
@@ -1306,8 +1310,6 @@ public:
 
     virtual void changed_by_database();
     virtual void deleted_from_database();
-
-    virtual bool  remove_deleted_children();
 
     // functions concerning graphic output
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0) = 0;
@@ -1474,7 +1476,7 @@ public:
     ED4_returncode refresh_window(int redraw);
     ED4_returncode refresh_all_windows(int redraw);
 
-    void announce_deletion(ED4_base *object); // before deleting an object, announce here
+    inline void announce_deletion(ED4_base *object); // before deleting an object, use this to announce 
 
     // functions concerned with list of selected objects
     ED4_returncode add_to_selected(ED4_terminal *object);
@@ -1512,6 +1514,12 @@ public:
     }
 };
 
+inline void ED4_root::announce_deletion(ED4_base *object) {
+    for (ED4_window *win = first_window; win; win = win->next) {
+        ED4_LocalWinContext uses(win);
+        win->announce_deletion(object);
+    }
+}
 
 // ------------------------
 //      manager classes
@@ -1549,6 +1557,7 @@ class ED4_device_manager : public ED4_manager
 public:
     ED4_device_manager  (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
+    void generate_id_for_groups();
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
 
@@ -1587,6 +1596,8 @@ public:
     // functions concerned with selection
     int         get_no_of_selected_species();
     int         get_no_of_species();
+
+    void generate_id_for_groups();
 
     void        invalidate_species_counters();
     int         has_valid_counters() const      { return species!=-1 && selected_species!=-1; }
@@ -1998,8 +2009,6 @@ public:
     const GBDATA *data() const { return get_species_pointer(); }
 
     virtual int get_length() const { return 1+strlen(id); }
-
-    virtual bool remove_deleted_children();
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
 };

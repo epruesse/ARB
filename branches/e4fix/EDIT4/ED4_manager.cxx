@@ -186,14 +186,13 @@ ED4_returncode ED4_manager::check_out_bases(ED4_base *subbed_base) {
             return res;
         }
     }
-
-    e4_assert(!subbed_base->is_root_group_manager());
-    if (subbed_base->is_group_manager()) { // sub a group
-        return update_bases(&subbed_base->to_group_manager()->table(), 0);
+    else {
+        e4_assert(!subbed_base->is_root_group_manager());
+        if (subbed_base->is_group_manager()) { // sub a group
+            return update_bases(&subbed_base->to_group_manager()->table(), 0);
+        }
+        e4_assert(0); // wrong type
     }
-
-    e4_assert(0); // wrong type
-    
     return ED4_R_OK;
 }
 
@@ -1251,6 +1250,8 @@ void ED4_terminal::delete_requested_children() {
     e4_assert(update_info.delete_requested);
     e4_assert(tflag.deleted);
 
+    ED4_ROOT->announce_deletion(this);
+
     unlink_from_parent();
     delete this;
 }
@@ -1268,6 +1269,8 @@ void ED4_manager::delete_requested_children() {
     update_info.delete_requested = 0;
 
     if (!children->members()) {
+        ED4_ROOT->announce_deletion(this);
+        
         unlink_from_parent();
         delete this;
     }
