@@ -46,6 +46,12 @@ AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL);
 
 ED4_WinContext ED4_WinContext::current_context;
 
+void ED4_WinContext::warn_missing_context() const {
+    e4_assert(0);
+    GBK_dump_backtrace(stderr, "Missing context");
+    aw_message("Missing context - please send information from console to devel@arb-home.de");
+}
+
 ED4_returncode ED4_root::refresh_window_simple(int redraw)
 {
     e4_assert(!main_manager->update_info.delete_requested);

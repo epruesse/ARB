@@ -763,8 +763,8 @@ void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /* callback_flag */)
     }
 }
 
-void ED4_set_iupac(AW_window * /* aww */, char *awar_name, bool /* callback_flag */)
-{
+void ED4_set_iupac(AW_window *aww, char *awar_name, bool /* callback_flag */) {
+    ED4_LocalWinContext uses(aww);
     ED4_cursor *cursor = &current_cursor();
 
     if (cursor->owner_of_cursor) {
@@ -785,7 +785,7 @@ void ED4_set_iupac(AW_window * /* aww */, char *awar_name, bool /* callback_flag
             char  new_char = ED4_encode_iupac(iupac, ED4_ROOT->alignment_type);
 
             seq[seq_pos] = new_char;
-            cursor->owner_of_cursor->write_sequence(seq, len);
+            cursor->owner_of_cursor->to_terminal()->write_sequence(seq, len);
 
             free(iupac);
         }

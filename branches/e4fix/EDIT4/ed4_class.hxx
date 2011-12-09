@@ -1395,6 +1395,9 @@ class ED4_WinContext {
         device = ed4w->get_device();
     }
 
+    void warn_missing_context() const;
+    void expect_context() const { if (!have_context()) warn_missing_context(); }
+
 protected:
     ED4_WinContext() : ed4w(0), device(0) {}
     static ED4_WinContext current_context;
@@ -1403,8 +1406,8 @@ public:
     inline ED4_WinContext(AW_window *aww_);
     ED4_WinContext(ED4_window *ed4w_) { init(ed4w_); }
 
-    AW_device *get_device() const { e4_assert(have_context()); return device; }
-    ED4_window *get_ed4w() const { e4_assert(have_context()); return ed4w; }
+    AW_device *get_device() const { expect_context(); return device; }
+    ED4_window *get_ed4w() const { expect_context(); return ed4w; }
 
     static const ED4_WinContext& get_current_context() { return current_context; }
     static bool dont_have_global_context() { return !current_context.have_context(); }
