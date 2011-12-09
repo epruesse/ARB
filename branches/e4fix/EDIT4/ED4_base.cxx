@@ -311,24 +311,18 @@ bool ED4_base::is_visible(ED4_window *in_ed4w, AW_pos x1, AW_pos y1, AW_pos x2, 
 char *ED4_base::resolve_pointer_to_string_copy(int *) const { return NULL; }
 const char *ED4_base::resolve_pointer_to_char_pntr(int *) const { return NULL; }
 
-GB_ERROR ED4_base::write_sequence(const char * /* seq */, int /* seq_len */)
-{
-    e4_assert(0);
-    return 0;
-}
+ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_CSTR group_name) {
+    // creates group from user menu of AW_Window
 
-
-ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_CSTR group_name)                 // creates group from user menu of AW_Window
-{
-    ED4_species_manager         *species_manager        = NULL;
-    ED4_species_name_terminal   *species_name_terminal  = NULL;
-    ED4_sequence_manager        *sequence_manager       = NULL;
-    ED4_sequence_info_terminal  *sequence_info_terminal = NULL;
-    ED4_sequence_terminal       *sequence_terminal      = NULL;
-    ED4_spacer_terminal         *group_spacer_terminal1 = NULL;
-    ED4_spacer_terminal         *group_spacer_terminal2 = NULL;
-    ED4_multi_species_manager   *multi_species_manager  = NULL;
-    ED4_bracket_terminal        *bracket_terminal       = NULL;
+    ED4_species_manager        *species_manager        = NULL;
+    ED4_species_name_terminal  *species_name_terminal  = NULL;
+    ED4_sequence_manager       *sequence_manager       = NULL;
+    ED4_sequence_info_terminal *sequence_info_terminal = NULL;
+    ED4_sequence_terminal      *sequence_terminal      = NULL;
+    ED4_spacer_terminal        *group_spacer_terminal1 = NULL;
+    ED4_spacer_terminal        *group_spacer_terminal2 = NULL;
+    ED4_multi_species_manager  *multi_species_manager  = NULL;
+    ED4_bracket_terminal       *bracket_terminal       = NULL;
 
     char buffer[35];
 
