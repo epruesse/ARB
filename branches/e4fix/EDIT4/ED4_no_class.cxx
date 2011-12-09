@@ -852,11 +852,11 @@ void ED4_timer(AW_root *, AW_CL cd1, AW_CL cd2)
 }
 
 void ED4_refresh_window(AW_window *aww) {
-    GB_transaction      dummy(GLOBAL_gb_main); // @@@ move down ?
-    ED4_LocalWinContext uses(aww); // @@@ move down ?
-
     ED4_main_manager *mainman = ED4_ROOT->main_manager;
-    if (mainman) { // avoids a crash durin startup
+    if (mainman) { // during startup we have no mainman
+        GB_transaction      ta(GLOBAL_gb_main);
+        ED4_LocalWinContext uses(aww);
+
         if (mainman->update_info.delete_requested) {
             mainman->delete_requested_children();
         }

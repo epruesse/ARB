@@ -1281,7 +1281,7 @@ void ED4_base::update_world_coords_cache() {
 
 
 ED4_returncode ED4_base::clear_background(int color) {
-    if (current_device()) { // @@@ should clear be done for all windows ? 
+    if (current_device()) { // @@@ should clear be done for all windows?
         AW_pos x, y;
         calc_world_coords(&x, &y);
         current_ed4w()->world_to_win_coords(&x, &y);
@@ -1303,7 +1303,7 @@ ED4_returncode ED4_base::clear_background(int color) {
 
 ED4_returncode ED4_base::clear_whole_background() {
     // clear AW_MIDDLE_AREA
-    if (current_device()) {
+    if (current_device()) { // @@@ should clear be done for all windows?
         current_device()->push_clip_scale();
         current_device()->clear(AW_ALL_DEVICES);
         current_device()->pop_clip_scale();
@@ -1312,8 +1312,7 @@ ED4_returncode ED4_base::clear_whole_background() {
     return (ED4_R_OK);
 }
 
-void ED4_base::draw_bb(int color)
-{
+void ED4_base::draw_bb(int color) {
     if (current_device()) {
         current_device()->push_clip_scale();
         if (adjust_clipping_rectangle()) {
