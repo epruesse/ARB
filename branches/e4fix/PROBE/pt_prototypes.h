@@ -19,6 +19,11 @@ long PTD_save_partial_tree(FILE *out, POS_TREE *node, char *partstring, int part
 ARB_ERROR enter_stage_1_build_tree(PT_main *, char *tname) __ATTR__USERESULT;
 ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) __ATTR__USERESULT;
 
+/* PT_debug.cxx */
+void PT_dump_tree_statistics(void);
+void PT_dump_POS_TREE_recursive(POS_TREE *IF_DEBUG (pt), const char *IF_DEBUG (prefix));
+void PT_dump_POS_TREE(POS_TREE *IF_DEBUG (node));
+
 /* PT_etc.cxx */
 void set_table_for_PT_N_mis(int ignored_Nmismatches, int when_less_than_Nmismatches);
 void pt_export_error(PT_local *locs, const char *error);
@@ -107,11 +112,6 @@ void PTD_debug_nodes(void);
 long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, long pos);
 long PTD_write_leafs_to_disk(FILE *out, POS_TREE *node, long pos, long *pnodepos, int *pblock, ARB_ERROR &error);
 ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE **pnode) __ATTR__USERESULT;
-
-/* PT_debug.cxx */
-void PT_dump_tree_statistics(void);
-void PT_dump_POS_TREE_recursive(POS_TREE *IF_DEBUG (pt), const char *IF_DEBUG (prefix));
-void PT_dump_POS_TREE(POS_TREE *IF_DEBUG (node));
 
 /* probe_tree.h */
 template <typename T >int PT_forwhole_chain(POS_TREE *node, T func);

@@ -618,7 +618,7 @@ GB_ERROR AW_root::save_properties(const char *filename) {
     else {
         error = GB_push_transaction(gb_main);
         if (!error) {
-            aw_update_awar_window_geometry(this);
+            aw_update_all_window_geometry_awars(this);
             error = GB_pop_transaction(gb_main);
             if (!error) error = GB_save_in_arbprop(gb_main, filename, "a");
         }

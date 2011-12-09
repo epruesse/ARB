@@ -25,7 +25,7 @@ using namespace std;
 
 #define AWAR_QUESTION "tmp/question"
 
-#define AW_MESSAGE_LISTEN_DELAY 500 // look in ms whether a father died
+#define AW_MESSAGE_LISTEN_DELAY 100 // look in ms whether a father died
 
 int aw_message_cb_result;
 

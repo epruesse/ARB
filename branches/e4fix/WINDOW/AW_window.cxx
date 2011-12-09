@@ -600,35 +600,66 @@ static const char *aw_size_awar_name(AW_window *aww, const char *sub_entry) {
 #define aw_awar_name_width(aww)  aw_size_awar_name((aww), "width")
 #define aw_awar_name_height(aww) aw_size_awar_name((aww), "height")
 
-static void aw_calculate_WM_offsets(AW_window *aww) {
-    if (p_aww(aww)->WM_top_offset == AW_FIX_POS_ON_EXPOSE) {        // very bad hack continued
-        // get last position stored in properties
-        AW_root *root  = aww->get_root();
-        int      oposx = root->awar(aw_awar_name_posx(aww))->read_int();
-        int      oposy = root->awar(aw_awar_name_posy(aww))->read_int();
+void AW_window::create_user_geometry_awars(int posx, int posy, int width, int height) {
+    get_root()->awar_int(aw_awar_name_posx(this), posx);
+    get_root()->awar_int(aw_awar_name_posy(this), posy);
+    get_root()->awar_int(aw_awar_name_width(this), width);
+    get_root()->awar_int(aw_awar_name_height(this), height);
+}
 
-        // get current window position
-        short            posy, posx;
-        AW_window_Motif *motif = p_aww(aww);
-        XtVaGetValues(motif->shell,  XmNx, &posx, XmNy, &posy, NULL);
 
+void AW_window::store_size_in_awars(int width, int height) {
+    get_root()->awar(aw_awar_name_width(this))->write_int(width);
+    get_root()->awar(aw_awar_name_height(this))->write_int(height);
+}
+
+void AW_window::get_size_from_awars(int& width, int& height) {
+    width  = get_root()->awar(aw_awar_name_width(this))->read_int();
+    height = get_root()->awar(aw_awar_name_height(this))->read_int();
+}
+
+void AW_window::store_pos_in_awars(int posx, int posy) {
+    get_root()->awar(aw_awar_name_posx(this))->write_int(posx);
+    get_root()->awar(aw_awar_name_posy(this))->write_int(posy);
+}
+
+void AW_window::get_pos_from_awars(int& posx, int& posy) {
+    posx = get_root()->awar(aw_awar_name_posx(this))->read_int();
+    posy = get_root()->awar(aw_awar_name_posy(this))->read_int();
+}
+
+#undef aw_awar_name_posx
+#undef aw_awar_name_posy
+#undef aw_awar_name_width
+#undef aw_awar_name_height
+
+static void aw_onExpose_calc_WM_offsets(AW_window *aww);
+static void aw_calc_WM_offsets_delayed(AW_root *, AW_CL cl_aww, AW_CL) { aw_onExpose_calc_WM_offsets((AW_window*)cl_aww); }
+
+static void aw_onExpose_calc_WM_offsets(AW_window *aww) {
+    AW_window_Motif *motif = p_aww(aww);
+
+    int posx,  posy;  aww->get_window_content_pos(posx, posy);
+
+    bool knows_window_position = posx != 0 || posy != 0;
+
+    if (!knows_window_position) { // oops - motif has no idea where the window has been placed
+        // assume positions stored in awars are correct and use them.
+        // This works around problems with unclickable GUI-elements when running on 'Unity'
+
+        int oposx, oposy; aww->get_pos_from_awars(oposx, oposy);
+        aww->set_window_frame_pos(oposx, oposy);
+
+        if (!motif->knows_WM_offset()) {
+            aww->get_root()->add_timed_callback(100, aw_calc_WM_offsets_delayed, (AW_CL)aww, 0);
+        }
+    }
+    else if (!motif->knows_WM_offset()) {
+        int oposx, oposy; aww->get_pos_from_awars(oposx, oposy);
         // calculate offset
         motif->WM_top_offset  = posy-oposy;
         motif->WM_left_offset = posx-oposx;
-
-#if defined(DEBUG) && 0
-        printf("aw_calculate_WM_offsets: WM_left_offset=%i WM_top_offset=%i\n", motif->WM_left_offset, motif->WM_top_offset);
-#endif // DEBUG
     }
-
-#if defined(DEBUG) && 0
-    {
-        short posx, posy;
-        AW_window_Motif *motif = p_aww(aww);
-        XtVaGetValues(motif->shell,  XmNx, &posx, XmNy, &posy, NULL);
-        printf("[expose] Position reported by motif: %i/%i\n", posx, posy);
-    }
-#endif // DEBUG
 }
 
 bool AW_cb_struct::is_equal(const AW_cb_struct& other) const {
@@ -951,10 +982,12 @@ void AW_window::get_window_size(int &width, int &height) {
     height = hoffset + _at->max_y_size;
 }
 
-void AW_window::set_window_pos(int x, int y) {
+void AW_window::set_window_frame_pos(int x, int y) {
+    // this will set the position of the frame around the client-area (see also WM_top_offset ..)
     XtVaSetValues(p_w->shell, XmNx, (int)x, XmNy, (int)y, NULL);
 }
-void AW_window::get_window_pos(int& xpos, int& ypos) {
+void AW_window::get_window_content_pos(int& xpos, int& ypos) {
+    // this will report the position of the client-area (see also WM_top_offset ..)
     unsigned short x, y;
     XtVaGetValues(p_w->shell, XmNx, &x, XmNy, &y, NULL);
     xpos = x;
@@ -1681,14 +1714,12 @@ static void aw_window_destroy_cb(Widget,  AW_window *aww, XmAnyCallbackStruct *)
     aww->hide();
 }
 
-static long aw_loop_get_window_geometry(const char *, long val, void *) {
-    AW_window *aww = (AW_window *)val;
-    short posx, posy;
+void aw_update_window_geometry_awars(AW_window *aww) {
+    AW_window_Motif *motif = p_aww(aww);
 
-    AW_root *root = aww->get_root();
+    short          posx, posy;
     unsigned short width, height, borderwidth;
-
-    XtVaGetValues(p_aww(aww)->shell,                // bad hack
+    XtVaGetValues(motif->shell, // bad hack
                   XmNborderWidth, &borderwidth,
                   XmNwidth, &width,
                   XmNheight, &height,
@@ -1696,23 +1727,29 @@ static long aw_loop_get_window_geometry(const char *, long val, void *) {
                   XmNy, &posy,
                   NULL);
 
-    if (p_aww(aww)->WM_top_offset != AW_FIX_POS_ON_EXPOSE) {
-        posy -= p_aww(aww)->WM_top_offset;
+    if (motif->knows_WM_offset()) {
+        posy -= motif->WM_top_offset;
+        posx -= motif->WM_left_offset;
+
+        if (posx<0) posx = 0;
+        if (posy<0) posy = 0;
+
+        aww->store_pos_in_awars(posx, posy);
     }
-    posx -= p_aww(aww)->WM_left_offset;
+#if defined(DEBUG)
+    else {
+        fprintf(stderr, " WM_offsets unknown. Did not update awars!\n");
+    }
+#endif
+    aww->store_size_in_awars(width, height);
+}
 
-    if (posx<0) posx = 0;
-    if (posy<0) posy = 0;
-
-    root->awar(aw_awar_name_width (aww))->write_int(width);
-    root->awar(aw_awar_name_height(aww))->write_int(height);
-    root->awar(aw_awar_name_posx (aww))->write_int(posx);
-    root->awar(aw_awar_name_posy (aww))->write_int(posy);
-
+static long aw_loop_get_window_geometry(const char *, long val, void *) {
+    aw_update_window_geometry_awars((AW_window *)val);
     return val;
 }
 
-void aw_update_awar_window_geometry(AW_root *awr) {
+void aw_update_all_window_geometry_awars(AW_root *awr) {
     GBS_hash_do_loop(awr->hash_for_windows, aw_loop_get_window_geometry, NULL);
 }
 
@@ -1786,45 +1823,20 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
         GBS_write_hash(root->hash_for_windows, aww->get_window_id(), (long)aww);
         bool has_user_geometry = false;
 
-        const char *temp = aw_awar_name_width(aww);
-        root->awar_int(temp, width);
+        aww->create_user_geometry_awars(posx, posy, width, height);
+
+        int user_width, user_height; aww->get_size_from_awars(user_width, user_height);
+        int user_posx,  user_posy;   aww->get_pos_from_awars(user_posx,  user_posy);
+
         if (allow_resize) {
-            int found_width = (int)root->awar(temp)->read_int();
-            if (width != found_width) {
-                has_user_geometry = true;
-                width = found_width;
-            }
+            if (width != user_width) { width = user_width; has_user_geometry = true; }
+            if (height != user_height) { height = user_height; has_user_geometry = true; }
         }
 
-        temp = aw_awar_name_height(aww);
-        root->awar_int(temp, height);
-        if (allow_resize) {
-            int found_height = (int)root->awar(temp)->read_int();
-            if (height != found_height) {
-                has_user_geometry = true;
-                height = found_height;
-            }
-        }
-
-        temp = aw_awar_name_posx(aww);
-        root->awar_int(temp, posx)->set_minmax(0, 4000);
         // @@@ FIXME:  maximum should be set to current screen size minus some offset
         // to ensure that windows do not appear outside screen
-        // same for posy below!
-
-        int found_posx = (int)root->awar(temp)->read_int();
-        if (posx != found_posx) {
-            has_user_geometry = true;
-            posx = found_posx;
-        }
-
-        temp = aw_awar_name_posy(aww);
-        root->awar_int(temp, posy)->set_minmax(0, 3000);
-        int found_posy = (int)root->awar(temp)->read_int();
-        if (posy != found_posy) {
-            has_user_geometry = true;
-            posy = found_posy;
-        }
+        if (posx != user_posx) { posx = user_posx; has_user_geometry = true; }
+        if (posy != user_posy) { posy = user_posy; has_user_geometry = true; }
 
         if (has_user_geometry) {
             aww->recalc_size_atShow(AW_RESIZE_USER); // keep user geometry (only if user size is smaller than default size, the latter is used)
@@ -1859,10 +1871,6 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
     else if (icon_pixmap == XmUNSPECIFIED_PIXMAP) {
         GBK_terminatef("Failed to load icon pixmap for window '%s'\n", aww->window_defaults_name);
     }
-
-#if defined(DEBUG) && 0
-    printf("aw_create_shell: pos=%i/%i size=%i%i\n", posx, posy, width, height);
-#endif // DEBUG
 
     int focusPolicy = root->focus_follows_mouse ? XmPOINTER : XmEXPLICIT;
 
@@ -1952,10 +1960,10 @@ void aw_realize_widget(AW_window *aww) {
         XtManageChild(p_aww(aww)->areas[AW_BOTTOM_AREA]->get_form());
     }
     XtRealizeWidget(p_aww(aww)->shell);
-    p_aww(aww)->WM_top_offset = AW_FIX_POS_ON_EXPOSE;
+    p_aww(aww)->WM_top_offset = AW_CALC_OFFSET_ON_EXPOSE;
 }
 
-void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *windowname, int  width, int height) {
+void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *windowname, int  width, int height) { 
     Widget      main_window;
     Widget      help_popup;
     Widget      help_label;
@@ -1978,183 +1986,183 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     p_w->shell = aw_create_shell(this, true, true, width, height, posx, posy);
 
     main_window = XtVaCreateManagedWidget("mainWindow1",
-            xmMainWindowWidgetClass, p_w->shell,
-            NULL);
+                                          xmMainWindowWidgetClass, p_w->shell,
+                                          NULL);
 
     p_w->menu_bar[0] = XtVaCreateManagedWidget("menu1", xmRowColumnWidgetClass,
-            main_window,
-            XmNrowColumnType, XmMENU_BAR,
-            NULL);
+                                               main_window,
+                                               XmNrowColumnType, XmMENU_BAR,
+                                               NULL);
 
     // create shell for help-cascade
     help_popup = XtVaCreatePopupShell("menu_shell", xmMenuShellWidgetClass,
-            p_w->menu_bar[0],
-            XmNwidth, 1,
-            XmNheight, 1,
-            XmNallowShellResize, true,
-            XmNoverrideRedirect, true,
-            NULL);
+                                      p_w->menu_bar[0],
+                                      XmNwidth, 1,
+                                      XmNheight, 1,
+                                      XmNallowShellResize, true,
+                                      XmNoverrideRedirect, true,
+                                      NULL);
 
     // create row column in Pull-Down shell
     p_w->help_pull_down = XtVaCreateWidget("menu_row_column",
-            xmRowColumnWidgetClass, help_popup,
-            XmNrowColumnType, XmMENU_PULLDOWN,
-            NULL);
+                                           xmRowColumnWidgetClass, help_popup,
+                                           XmNrowColumnType, XmMENU_PULLDOWN,
+                                           NULL);
 
     // create HELP-label in menu bar
     help_label = XtVaCreateManagedWidget("menu1_top_b1",
-            xmCascadeButtonWidgetClass, p_w->menu_bar[0],
-            RES_CONVERT(XmNlabelString, help_button),
-                                          RES_CONVERT(XmNmnemonic, help_mnemonic),
-                                          XmNsubMenuId, p_w->help_pull_down, NULL);
+                                         xmCascadeButtonWidgetClass, p_w->menu_bar[0],
+                                         RES_CONVERT(XmNlabelString, help_button),
+                                         RES_CONVERT(XmNmnemonic, help_mnemonic),
+                                         XmNsubMenuId, p_w->help_pull_down, NULL);
     XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
     root->make_sensitive(help_label, AWM_ALL);
 
     form1 = XtVaCreateManagedWidget("form1",
-    xmFormWidgetClass,
-    main_window,
-    // XmNwidth, width,
-    // XmNheight, height,
-    XmNresizePolicy, XmRESIZE_NONE,
-    // XmNx, 0,
-    // XmNy, 0,
-    NULL);
+                                    xmFormWidgetClass,
+                                    main_window,
+                                    // XmNwidth, width,
+                                    // XmNheight, height,
+                                    XmNresizePolicy, XmRESIZE_NONE,
+                                    // XmNx, 0,
+                                    // XmNy, 0,
+                                    NULL);
 
     p_w->mode_area = XtVaCreateManagedWidget("mode area",
-    xmDrawingAreaWidgetClass,
-    form1,
-    XmNresizePolicy, XmRESIZE_NONE,
-    XmNwidth, 38,
-    XmNheight, height,
-    XmNx, 0,
-    XmNy, 0,
-    XmNleftOffset, 0,
-    XmNtopOffset, 0,
-    XmNbottomAttachment, XmATTACH_FORM,
-    XmNleftAttachment, XmATTACH_POSITION,
-    XmNtopAttachment, XmATTACH_POSITION,
-    XmNmarginHeight, 2,
-    XmNmarginWidth, 1,
-    NULL);
+                                             xmDrawingAreaWidgetClass,
+                                             form1,
+                                             XmNresizePolicy, XmRESIZE_NONE,
+                                             XmNwidth, 38,
+                                             XmNheight, height,
+                                             XmNx, 0,
+                                             XmNy, 0,
+                                             XmNleftOffset, 0,
+                                             XmNtopOffset, 0,
+                                             XmNbottomAttachment, XmATTACH_FORM,
+                                             XmNleftAttachment, XmATTACH_POSITION,
+                                             XmNtopAttachment, XmATTACH_POSITION,
+                                             XmNmarginHeight, 2,
+                                             XmNmarginWidth, 1,
+                                             NULL);
 
     separator = XtVaCreateManagedWidget("separator",
-    xmSeparatorWidgetClass,
-    form1,
-    XmNx, 37,
-    XmNshadowThickness, 4,
-    XmNorientation, XmVERTICAL,
-    XmNbottomAttachment, XmATTACH_FORM,
-    XmNtopAttachment, XmATTACH_FORM,
-    XmNleftAttachment, XmATTACH_NONE,
-    XmNleftWidget, NULL,
-    XmNrightAttachment, XmATTACH_NONE,
-    XmNleftOffset, 70,
-    XmNleftPosition, 0,
-    NULL);
+                                        xmSeparatorWidgetClass,
+                                        form1,
+                                        XmNx, 37,
+                                        XmNshadowThickness, 4,
+                                        XmNorientation, XmVERTICAL,
+                                        XmNbottomAttachment, XmATTACH_FORM,
+                                        XmNtopAttachment, XmATTACH_FORM,
+                                        XmNleftAttachment, XmATTACH_NONE,
+                                        XmNleftWidget, NULL,
+                                        XmNrightAttachment, XmATTACH_NONE,
+                                        XmNleftOffset, 70,
+                                        XmNleftPosition, 0,
+                                        NULL);
 
     form2 = XtVaCreateManagedWidget("form2",
-    xmFormWidgetClass,
-    form1,
-    XmNwidth, width,
-    XmNheight, height,
-    XmNtopOffset, 0,
-    XmNbottomOffset, 0,
-    XmNleftOffset, 0,
-    XmNrightOffset, 0,
-    XmNrightAttachment, XmATTACH_FORM,
-    XmNbottomAttachment, XmATTACH_FORM,
-    XmNleftAttachment, XmATTACH_WIDGET,
-    XmNleftWidget, separator,
-    XmNtopAttachment, XmATTACH_POSITION,
-    XmNresizePolicy, XmRESIZE_NONE,
-    XmNx, 0,
-    XmNy, 0,
-    NULL);
+                                    xmFormWidgetClass,
+                                    form1,
+                                    XmNwidth, width,
+                                    XmNheight, height,
+                                    XmNtopOffset, 0,
+                                    XmNbottomOffset, 0,
+                                    XmNleftOffset, 0,
+                                    XmNrightOffset, 0,
+                                    XmNrightAttachment, XmATTACH_FORM,
+                                    XmNbottomAttachment, XmATTACH_FORM,
+                                    XmNleftAttachment, XmATTACH_WIDGET,
+                                    XmNleftWidget, separator,
+                                    XmNtopAttachment, XmATTACH_POSITION,
+                                    XmNresizePolicy, XmRESIZE_NONE,
+                                    XmNx, 0,
+                                    XmNy, 0,
+                                    NULL);
     p_w->areas[AW_INFO_AREA] =
-    new AW_area_management(root, form2, XtVaCreateManagedWidget("info_area",
-            xmDrawingAreaWidgetClass,
-            form2,
-            XmNheight, 0,
-            XmNbottomAttachment, XmATTACH_NONE,
-            XmNtopAttachment, XmATTACH_FORM,
-            XmNleftAttachment, XmATTACH_FORM,
-            XmNrightAttachment, XmATTACH_FORM,
-            XmNmarginHeight, 2,
-            XmNmarginWidth, 2,
-            NULL));
+        new AW_area_management(root, form2, XtVaCreateManagedWidget("info_area",
+                                                                    xmDrawingAreaWidgetClass,
+                                                                    form2,
+                                                                    XmNheight, 0,
+                                                                    XmNbottomAttachment, XmATTACH_NONE,
+                                                                    XmNtopAttachment, XmATTACH_FORM,
+                                                                    XmNleftAttachment, XmATTACH_FORM,
+                                                                    XmNrightAttachment, XmATTACH_FORM,
+                                                                    XmNmarginHeight, 2,
+                                                                    XmNmarginWidth, 2,
+                                                                    NULL));
 
     p_w->areas[AW_BOTTOM_AREA] =
-    new AW_area_management(root, form2, XtVaCreateManagedWidget("bottom_area",
-            xmDrawingAreaWidgetClass,
-            form2,
-            XmNheight, 0,
-            XmNbottomAttachment, XmATTACH_FORM,
-            XmNtopAttachment, XmATTACH_NONE,
-            XmNleftAttachment, XmATTACH_FORM,
-            XmNrightAttachment, XmATTACH_FORM,
-            NULL));
+        new AW_area_management(root, form2, XtVaCreateManagedWidget("bottom_area",
+                                                                    xmDrawingAreaWidgetClass,
+                                                                    form2,
+                                                                    XmNheight, 0,
+                                                                    XmNbottomAttachment, XmATTACH_FORM,
+                                                                    XmNtopAttachment, XmATTACH_NONE,
+                                                                    XmNleftAttachment, XmATTACH_FORM,
+                                                                    XmNrightAttachment, XmATTACH_FORM,
+                                                                    NULL));
 
     p_w->scroll_bar_horizontal = XtVaCreateManagedWidget("scroll_bar_horizontal",
-    xmScrollBarWidgetClass,
-    form2,
-    XmNheight, 15,
-    XmNminimum, 0,
-    XmNmaximum, AW_SCROLL_MAX,
-    XmNincrement, 10,
-    XmNsliderSize, AW_SCROLL_MAX,
-    XmNrightAttachment, XmATTACH_FORM,
-    XmNbottomAttachment, XmATTACH_FORM,
-    XmNbottomOffset, 0,
-    XmNleftAttachment, XmATTACH_FORM,
-    XmNtopAttachment, XmATTACH_NONE,
-    XmNorientation, XmHORIZONTAL,
-    XmNrightOffset, 18,
-    NULL);
+                                                         xmScrollBarWidgetClass,
+                                                         form2,
+                                                         XmNheight, 15,
+                                                         XmNminimum, 0,
+                                                         XmNmaximum, AW_SCROLL_MAX,
+                                                         XmNincrement, 10,
+                                                         XmNsliderSize, AW_SCROLL_MAX,
+                                                         XmNrightAttachment, XmATTACH_FORM,
+                                                         XmNbottomAttachment, XmATTACH_FORM,
+                                                         XmNbottomOffset, 0,
+                                                         XmNleftAttachment, XmATTACH_FORM,
+                                                         XmNtopAttachment, XmATTACH_NONE,
+                                                         XmNorientation, XmHORIZONTAL,
+                                                         XmNrightOffset, 18,
+                                                         NULL);
 
     p_w->scroll_bar_vertical = XtVaCreateManagedWidget("scroll_bar_vertical",
-    xmScrollBarWidgetClass,
-    form2,
-    XmNwidth, 15,
-    XmNminimum, 0,
-    XmNmaximum, AW_SCROLL_MAX,
-    XmNincrement, 10,
-    XmNsliderSize, AW_SCROLL_MAX,
-    XmNrightAttachment, XmATTACH_FORM,
-    XmNbottomAttachment, XmATTACH_WIDGET,
-    XmNbottomWidget, p_w->scroll_bar_horizontal,
-    XmNbottomOffset, 3,
-    XmNleftOffset, 3,
-    XmNrightOffset, 3,
-    XmNleftAttachment, XmATTACH_NONE,
-    XmNtopAttachment, XmATTACH_WIDGET,
-    XmNtopWidget, INFO_WIDGET,
-    NULL);
+                                                       xmScrollBarWidgetClass,
+                                                       form2,
+                                                       XmNwidth, 15,
+                                                       XmNminimum, 0,
+                                                       XmNmaximum, AW_SCROLL_MAX,
+                                                       XmNincrement, 10,
+                                                       XmNsliderSize, AW_SCROLL_MAX,
+                                                       XmNrightAttachment, XmATTACH_FORM,
+                                                       XmNbottomAttachment, XmATTACH_WIDGET,
+                                                       XmNbottomWidget, p_w->scroll_bar_horizontal,
+                                                       XmNbottomOffset, 3,
+                                                       XmNleftOffset, 3,
+                                                       XmNrightOffset, 3,
+                                                       XmNleftAttachment, XmATTACH_NONE,
+                                                       XmNtopAttachment, XmATTACH_WIDGET,
+                                                       XmNtopWidget, INFO_WIDGET,
+                                                       NULL);
 
     p_w->frame = XtVaCreateManagedWidget("draw_area",
-    xmFrameWidgetClass,
-    form2,
-    XmNshadowType, XmSHADOW_IN,
-    XmNshadowThickness, 2,
-    XmNleftOffset, 3,
-    XmNtopOffset, 3,
-    XmNbottomOffset, 3,
-    XmNrightOffset, 3,
-    XmNbottomAttachment, XmATTACH_WIDGET,
-    XmNbottomWidget, p_w->scroll_bar_horizontal,
-    XmNtopAttachment, XmATTACH_FORM,
-    XmNtopOffset, 0,
-    XmNleftAttachment, XmATTACH_FORM,
-    XmNrightAttachment, XmATTACH_WIDGET,
-    XmNrightWidget, p_w->scroll_bar_vertical,
-    NULL);
+                                         xmFrameWidgetClass,
+                                         form2,
+                                         XmNshadowType, XmSHADOW_IN,
+                                         XmNshadowThickness, 2,
+                                         XmNleftOffset, 3,
+                                         XmNtopOffset, 3,
+                                         XmNbottomOffset, 3,
+                                         XmNrightOffset, 3,
+                                         XmNbottomAttachment, XmATTACH_WIDGET,
+                                         XmNbottomWidget, p_w->scroll_bar_horizontal,
+                                         XmNtopAttachment, XmATTACH_FORM,
+                                         XmNtopOffset, 0,
+                                         XmNleftAttachment, XmATTACH_FORM,
+                                         XmNrightAttachment, XmATTACH_WIDGET,
+                                         XmNrightWidget, p_w->scroll_bar_vertical,
+                                         NULL);
 
     p_w->areas[AW_MIDDLE_AREA] =
-    new AW_area_management(root, p_w->frame, XtVaCreateManagedWidget("draw area",
-            xmDrawingAreaWidgetClass,
-            p_w->frame,
-            XmNmarginHeight, 0,
-            XmNmarginWidth, 0,
-            NULL));
+        new AW_area_management(root, p_w->frame, XtVaCreateManagedWidget("draw area",
+                                                                         xmDrawingAreaWidgetClass,
+                                                                         p_w->frame,
+                                                                         XmNmarginHeight, 0,
+                                                                         XmNmarginWidth, 0,
+                                                                         NULL));
 
     XmMainWindowSetAreas(main_window, p_w->menu_bar[0], (Widget) NULL, (Widget) NULL, (Widget) NULL, form1);
 
@@ -2165,7 +2173,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     create_window_variables();
 }
 
-void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windowname, int width, int height) {
+void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windowname, int width, int height) { 
     Widget      main_window;
     Widget      help_popup;
     Widget      help_label;
@@ -2188,173 +2196,173 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
     p_w->shell = aw_create_shell(this, true, true, width, height, posx, posy);
 
     main_window = XtVaCreateManagedWidget("mainWindow1",
-            xmMainWindowWidgetClass, p_w->shell,
-            NULL);
+                                          xmMainWindowWidgetClass, p_w->shell,
+                                          NULL);
 
     p_w->menu_bar[0] = XtVaCreateManagedWidget("menu1", xmRowColumnWidgetClass,
-            main_window,
-            XmNrowColumnType, XmMENU_BAR,
-            NULL);
+                                               main_window,
+                                               XmNrowColumnType, XmMENU_BAR,
+                                               NULL);
 
     // create shell for help-cascade
     help_popup = XtVaCreatePopupShell("menu_shell", xmMenuShellWidgetClass,
-            p_w->menu_bar[0],
-            XmNwidth, 1,
-            XmNheight, 1,
-            XmNallowShellResize, true,
-            XmNoverrideRedirect, true,
-            NULL);
+                                      p_w->menu_bar[0],
+                                      XmNwidth, 1,
+                                      XmNheight, 1,
+                                      XmNallowShellResize, true,
+                                      XmNoverrideRedirect, true,
+                                      NULL);
 
     // create row column in Pull-Down shell
     p_w->help_pull_down = XtVaCreateWidget("menu_row_column",
-            xmRowColumnWidgetClass, help_popup,
-            XmNrowColumnType, XmMENU_PULLDOWN,
-            NULL);
+                                           xmRowColumnWidgetClass, help_popup,
+                                           XmNrowColumnType, XmMENU_PULLDOWN,
+                                           NULL);
 
     // create HELP-label in menu bar
     help_label = XtVaCreateManagedWidget("menu1_top_b1",
-            xmCascadeButtonWidgetClass, p_w->menu_bar[0],
-            RES_CONVERT(XmNlabelString, help_button),
-                                          RES_CONVERT(XmNmnemonic, help_mnemonic),
-                                          XmNsubMenuId, p_w->help_pull_down, NULL);
+                                         xmCascadeButtonWidgetClass, p_w->menu_bar[0],
+                                         RES_CONVERT(XmNlabelString, help_button),
+                                         RES_CONVERT(XmNmnemonic, help_mnemonic),
+                                         XmNsubMenuId, p_w->help_pull_down, NULL);
     XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
     root->make_sensitive(help_label, AWM_ALL);
 
     form1 = XtVaCreateManagedWidget("form1",
-    xmFormWidgetClass,
-    main_window,
-    // XmNwidth, width,
-    // XmNheight, height,
-    XmNresizePolicy, XmRESIZE_NONE,
-    // XmNx, 0,
-    // XmNy, 0,
-    NULL);
+                                    xmFormWidgetClass,
+                                    main_window,
+                                    // XmNwidth, width,
+                                    // XmNheight, height,
+                                    XmNresizePolicy, XmRESIZE_NONE,
+                                    // XmNx, 0,
+                                    // XmNy, 0,
+                                    NULL);
 
     p_w->mode_area = XtVaCreateManagedWidget("mode area",
-    xmDrawingAreaWidgetClass,
-    form1,
-    XmNresizePolicy, XmRESIZE_NONE,
-    XmNwidth, 17,
-    XmNheight, height,
-    XmNx, 0,
-    XmNy, 0,
-    XmNleftOffset, 0,
-    XmNtopOffset, 0,
-    XmNbottomAttachment, XmATTACH_FORM,
-    XmNleftAttachment, XmATTACH_POSITION,
-    XmNtopAttachment, XmATTACH_POSITION,
-    XmNmarginHeight, 2,
-    XmNmarginWidth, 1,
-    NULL);
+                                             xmDrawingAreaWidgetClass,
+                                             form1,
+                                             XmNresizePolicy, XmRESIZE_NONE,
+                                             XmNwidth, 17,
+                                             XmNheight, height,
+                                             XmNx, 0,
+                                             XmNy, 0,
+                                             XmNleftOffset, 0,
+                                             XmNtopOffset, 0,
+                                             XmNbottomAttachment, XmATTACH_FORM,
+                                             XmNleftAttachment, XmATTACH_POSITION,
+                                             XmNtopAttachment, XmATTACH_POSITION,
+                                             XmNmarginHeight, 2,
+                                             XmNmarginWidth, 1,
+                                             NULL);
 
     separator = p_w->mode_area;
 
     form2 = XtVaCreateManagedWidget("form2",
-    xmFormWidgetClass,
-    form1,
-    XmNwidth, width,
-    XmNheight, height,
-    XmNtopOffset, 0,
-    XmNbottomOffset, 0,
-    XmNleftOffset, 0,
-    XmNrightOffset, 0,
-    XmNrightAttachment, XmATTACH_FORM,
-    XmNbottomAttachment, XmATTACH_FORM,
-    XmNleftAttachment, XmATTACH_WIDGET,
-    XmNleftWidget, separator,
-    XmNtopAttachment, XmATTACH_POSITION,
-    XmNresizePolicy, XmRESIZE_NONE,
-    XmNx, 0,
-    XmNy, 0,
-    NULL);
+                                    xmFormWidgetClass,
+                                    form1,
+                                    XmNwidth, width,
+                                    XmNheight, height,
+                                    XmNtopOffset, 0,
+                                    XmNbottomOffset, 0,
+                                    XmNleftOffset, 0,
+                                    XmNrightOffset, 0,
+                                    XmNrightAttachment, XmATTACH_FORM,
+                                    XmNbottomAttachment, XmATTACH_FORM,
+                                    XmNleftAttachment, XmATTACH_WIDGET,
+                                    XmNleftWidget, separator,
+                                    XmNtopAttachment, XmATTACH_POSITION,
+                                    XmNresizePolicy, XmRESIZE_NONE,
+                                    XmNx, 0,
+                                    XmNy, 0,
+                                    NULL);
     p_w->areas[AW_INFO_AREA] =
-    new AW_area_management(root, form2, XtVaCreateManagedWidget("info_area",
-            xmDrawingAreaWidgetClass,
-            form2,
-            XmNheight, 0,
-            XmNbottomAttachment, XmATTACH_NONE,
-            XmNtopAttachment, XmATTACH_FORM,
-            XmNleftAttachment, XmATTACH_FORM,
-            XmNrightAttachment, XmATTACH_FORM,
-            XmNmarginHeight, 2,
-            XmNmarginWidth, 2,
-            NULL));
+        new AW_area_management(root, form2, XtVaCreateManagedWidget("info_area",
+                                                                    xmDrawingAreaWidgetClass,
+                                                                    form2,
+                                                                    XmNheight, 0,
+                                                                    XmNbottomAttachment, XmATTACH_NONE,
+                                                                    XmNtopAttachment, XmATTACH_FORM,
+                                                                    XmNleftAttachment, XmATTACH_FORM,
+                                                                    XmNrightAttachment, XmATTACH_FORM,
+                                                                    XmNmarginHeight, 2,
+                                                                    XmNmarginWidth, 2,
+                                                                    NULL));
 
     p_w->areas[AW_BOTTOM_AREA] =
-    new AW_area_management(root, form2, XtVaCreateManagedWidget("bottom_area",
-            xmDrawingAreaWidgetClass,
-            form2,
-            XmNheight, 0,
-            XmNbottomAttachment, XmATTACH_FORM,
-            XmNtopAttachment, XmATTACH_NONE,
-            XmNleftAttachment, XmATTACH_FORM,
-            XmNrightAttachment, XmATTACH_FORM,
-            NULL));
+        new AW_area_management(root, form2, XtVaCreateManagedWidget("bottom_area",
+                                                                    xmDrawingAreaWidgetClass,
+                                                                    form2,
+                                                                    XmNheight, 0,
+                                                                    XmNbottomAttachment, XmATTACH_FORM,
+                                                                    XmNtopAttachment, XmATTACH_NONE,
+                                                                    XmNleftAttachment, XmATTACH_FORM,
+                                                                    XmNrightAttachment, XmATTACH_FORM,
+                                                                    NULL));
 
     p_w->scroll_bar_horizontal = XtVaCreateManagedWidget("scroll_bar_horizontal",
-    xmScrollBarWidgetClass,
-    form2,
-    XmNheight, 15,
-    XmNminimum, 0,
-    XmNmaximum, AW_SCROLL_MAX,
-    XmNincrement, 10,
-    XmNsliderSize, AW_SCROLL_MAX,
-    XmNrightAttachment, XmATTACH_FORM,
-    XmNbottomAttachment, XmATTACH_FORM,
-    XmNbottomOffset, 0,
-    XmNleftAttachment, XmATTACH_FORM,
-    XmNtopAttachment, XmATTACH_NONE,
-    XmNorientation, XmHORIZONTAL,
-    XmNrightOffset, 18,
-    NULL);
+                                                         xmScrollBarWidgetClass,
+                                                         form2,
+                                                         XmNheight, 15,
+                                                         XmNminimum, 0,
+                                                         XmNmaximum, AW_SCROLL_MAX,
+                                                         XmNincrement, 10,
+                                                         XmNsliderSize, AW_SCROLL_MAX,
+                                                         XmNrightAttachment, XmATTACH_FORM,
+                                                         XmNbottomAttachment, XmATTACH_FORM,
+                                                         XmNbottomOffset, 0,
+                                                         XmNleftAttachment, XmATTACH_FORM,
+                                                         XmNtopAttachment, XmATTACH_NONE,
+                                                         XmNorientation, XmHORIZONTAL,
+                                                         XmNrightOffset, 18,
+                                                         NULL);
 
     p_w->scroll_bar_vertical = XtVaCreateManagedWidget("scroll_bar_vertical",
-    xmScrollBarWidgetClass,
-    form2,
-    XmNwidth, 15,
-    XmNminimum, 0,
-    XmNmaximum, AW_SCROLL_MAX,
-    XmNincrement, 10,
-    XmNsliderSize, AW_SCROLL_MAX,
-    XmNrightAttachment, XmATTACH_FORM,
-    XmNbottomAttachment, XmATTACH_WIDGET,
-    XmNbottomWidget, p_w->scroll_bar_horizontal,
-    XmNbottomOffset, 3,
-    XmNleftOffset, 3,
-    XmNrightOffset, 3,
-    XmNleftAttachment, XmATTACH_NONE,
-    XmNtopAttachment, XmATTACH_WIDGET,
-    XmNtopWidget, INFO_WIDGET,
-    NULL);
+                                                       xmScrollBarWidgetClass,
+                                                       form2,
+                                                       XmNwidth, 15,
+                                                       XmNminimum, 0,
+                                                       XmNmaximum, AW_SCROLL_MAX,
+                                                       XmNincrement, 10,
+                                                       XmNsliderSize, AW_SCROLL_MAX,
+                                                       XmNrightAttachment, XmATTACH_FORM,
+                                                       XmNbottomAttachment, XmATTACH_WIDGET,
+                                                       XmNbottomWidget, p_w->scroll_bar_horizontal,
+                                                       XmNbottomOffset, 3,
+                                                       XmNleftOffset, 3,
+                                                       XmNrightOffset, 3,
+                                                       XmNleftAttachment, XmATTACH_NONE,
+                                                       XmNtopAttachment, XmATTACH_WIDGET,
+                                                       XmNtopWidget, INFO_WIDGET,
+                                                       NULL);
 
     p_w->frame = XtVaCreateManagedWidget("draw_area",
-    xmFrameWidgetClass,
-    form2,
-    XmNshadowType, XmSHADOW_IN,
-    XmNshadowThickness, 2,
-    XmNleftOffset, 3,
-    XmNtopOffset, 3,
-    XmNbottomOffset, 3,
-    XmNrightOffset, 3,
-    XmNbottomAttachment, XmATTACH_WIDGET,
-    XmNbottomWidget, p_w->scroll_bar_horizontal,
-    XmNtopAttachment, XmATTACH_FORM,
-    XmNtopOffset, 0,
-    XmNleftAttachment, XmATTACH_FORM,
-    XmNrightAttachment, XmATTACH_WIDGET,
-    XmNrightWidget, p_w->scroll_bar_vertical,
-    NULL);
+                                         xmFrameWidgetClass,
+                                         form2,
+                                         XmNshadowType, XmSHADOW_IN,
+                                         XmNshadowThickness, 2,
+                                         XmNleftOffset, 3,
+                                         XmNtopOffset, 3,
+                                         XmNbottomOffset, 3,
+                                         XmNrightOffset, 3,
+                                         XmNbottomAttachment, XmATTACH_WIDGET,
+                                         XmNbottomWidget, p_w->scroll_bar_horizontal,
+                                         XmNtopAttachment, XmATTACH_FORM,
+                                         XmNtopOffset, 0,
+                                         XmNleftAttachment, XmATTACH_FORM,
+                                         XmNrightAttachment, XmATTACH_WIDGET,
+                                         XmNrightWidget, p_w->scroll_bar_vertical,
+                                         NULL);
 
     p_w->areas[AW_MIDDLE_AREA] =
-    new AW_area_management(root, p_w->frame, XtVaCreateManagedWidget("draw area",
-            xmDrawingAreaWidgetClass,
-            p_w->frame,
-            XmNmarginHeight, 0,
-            XmNmarginWidth, 0,
-            NULL));
+        new AW_area_management(root, p_w->frame, XtVaCreateManagedWidget("draw area",
+                                                                         xmDrawingAreaWidgetClass,
+                                                                         p_w->frame,
+                                                                         XmNmarginHeight, 0,
+                                                                         XmNmarginWidth, 0,
+                                                                         NULL));
 
     XmMainWindowSetAreas(main_window, p_w->menu_bar[0], (Widget) NULL,
-    (Widget) NULL, (Widget) NULL, form1);
+                         (Widget) NULL, (Widget) NULL, form1);
 
     aw_realize_widget(this);
 
@@ -2398,7 +2406,7 @@ void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windo
     create_devices();
 }
 
-void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *windowname) {
+void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *windowname) { 
     root = root_in; // for macro
 
     const char *help_button = "HELP";
@@ -2419,56 +2427,56 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
     Widget form1;
 
     main_window = XtVaCreateManagedWidget("mainWindow1",
-            xmMainWindowWidgetClass, p_w->shell,
-            NULL);
+                                          xmMainWindowWidgetClass, p_w->shell,
+                                          NULL);
 
     p_w->menu_bar[0] = XtVaCreateManagedWidget("menu1", xmRowColumnWidgetClass,
-            main_window,
-            XmNrowColumnType, XmMENU_BAR,
-            NULL);
+                                               main_window,
+                                               XmNrowColumnType, XmMENU_BAR,
+                                               NULL);
 
     // create shell for help-cascade
     help_popup = XtVaCreatePopupShell("menu_shell", xmMenuShellWidgetClass,
-            p_w->menu_bar[0],
-            XmNwidth, 1,
-            XmNheight, 1,
-            XmNallowShellResize, true,
-            XmNoverrideRedirect, true,
-            NULL);
+                                      p_w->menu_bar[0],
+                                      XmNwidth, 1,
+                                      XmNheight, 1,
+                                      XmNallowShellResize, true,
+                                      XmNoverrideRedirect, true,
+                                      NULL);
 
     // create row column in Pull-Down shell
     p_w->help_pull_down = XtVaCreateWidget("menu_row_column",
-            xmRowColumnWidgetClass, help_popup,
-            XmNrowColumnType, XmMENU_PULLDOWN,
-            NULL);
+                                           xmRowColumnWidgetClass, help_popup,
+                                           XmNrowColumnType, XmMENU_PULLDOWN,
+                                           NULL);
 
     // create HELP-label in menu bar
     help_label = XtVaCreateManagedWidget("menu1_top_b1",
-            xmCascadeButtonWidgetClass, p_w->menu_bar[0],
-            RES_CONVERT(XmNlabelString, help_button),
-                                          RES_CONVERT(XmNmnemonic, help_mnemonic),
-                                          XmNsubMenuId, p_w->help_pull_down, NULL);
+                                         xmCascadeButtonWidgetClass, p_w->menu_bar[0],
+                                         RES_CONVERT(XmNlabelString, help_button),
+                                         RES_CONVERT(XmNmnemonic, help_mnemonic),
+                                         XmNsubMenuId, p_w->help_pull_down, NULL);
     XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
     root->make_sensitive(help_label, AWM_ALL);
 
     form1 = XtVaCreateManagedWidget("form1",
-    xmFormWidgetClass,
-    main_window,
-    XmNtopOffset, 10,
-    XmNresizePolicy, XmRESIZE_NONE,
-    NULL);
+                                    xmFormWidgetClass,
+                                    main_window,
+                                    XmNtopOffset, 10,
+                                    XmNresizePolicy, XmRESIZE_NONE,
+                                    NULL);
 
     p_w->areas[AW_INFO_AREA] =
-    new AW_area_management(root, form1, XtVaCreateManagedWidget("info_area",
-            xmDrawingAreaWidgetClass,
-            form1,
-            XmNbottomAttachment, XmATTACH_FORM,
-            XmNtopAttachment, XmATTACH_FORM,
-            XmNleftAttachment, XmATTACH_FORM,
-            XmNrightAttachment, XmATTACH_FORM,
-            XmNmarginHeight, 2,
-            XmNmarginWidth, 2,
-            NULL));
+        new AW_area_management(root, form1, XtVaCreateManagedWidget("info_area",
+                                                                    xmDrawingAreaWidgetClass,
+                                                                    form1,
+                                                                    XmNbottomAttachment, XmATTACH_FORM,
+                                                                    XmNtopAttachment, XmATTACH_FORM,
+                                                                    XmNleftAttachment, XmATTACH_FORM,
+                                                                    XmNrightAttachment, XmATTACH_FORM,
+                                                                    XmNmarginHeight, 2,
+                                                                    XmNmarginWidth, 2,
+                                                                    NULL));
 
     aw_realize_widget(this);
 
@@ -3126,22 +3134,20 @@ void AW_window::show_internal(void *cl_grab) {
         }
         else {
             aw_assert(recalc_size_at_show == AW_RESIZE_USER);
-            // check whether user size is too small and increase to minimum (aka default)
-            int default_width, default_height;
-            get_window_size(default_width, default_height);
-            AW_root *tmp_root = get_root();
-            int user_width = tmp_root->awar(aw_awar_name_width(this))->read_int();
-            int user_height = tmp_root->awar(aw_awar_name_height(this))->read_int();
+            // check whether user size is too small and increase to minimum window size
 
-            if (user_width<default_width) user_width = default_width;
-            if (user_height<default_height) user_height = default_height;
+            int min_width, min_height;   get_window_size(min_width, min_height);
+            int user_width, user_height; get_size_from_awars(user_width, user_height);
+
+            if (user_width <min_width)  user_width  = min_width;
+            if (user_height<min_height) user_height = min_height;
 
             set_window_size(user_width, user_height);
         }
         recalc_size_at_show = AW_KEEP_SIZE;
     }
 
-    if (recalc_pos_at_show != AW_KEEP_POS) {
+    {
         int  posx, posy;
         bool setPos = false;
 
@@ -3152,20 +3158,39 @@ void AW_window::show_internal(void *cl_grab) {
             case AW_REPOS_TO_MOUSE: {
                 int mx, my; if (!get_mouse_pos(mx, my)) goto FALLBACK_CENTER;
                 int width, height; get_window_size(width, height);
-                int wx, wy; get_window_pos(wx, wy);
+                int wx, wy; get_window_content_pos(wx, wy);
 
-                int wx2 = wx+width-1;
-                int wy2 = wy+height-1;
+                if (wx || wy) {
+                    if (p_w->knows_WM_offset()) {
+                        wx -= p_w->WM_left_offset;
+                        wy -= p_w->WM_top_offset;
 
-                if (mx<wx || mx>wx2 || my<wy || my>wy2) { // mouse is outside window
+                        width  += p_w->WM_left_offset;
+                        height += p_w->WM_top_offset;
+                    }
+
+                    int wx2 = wx+width-1;
+                    int wy2 = wy+height-1;
+
+                    if (mx<wx) { setPos = true; wx = mx; } else if (mx>wx2) { setPos = true; wx = mx-width+1; }
+                    if (my<wy) { setPos = true; wy = my; } else if (my>wy2) { setPos = true; wy = my-height+1; }
+
+                    posx = wx;
+                    posy = wy;
+                }
+                else {
                     setPos = true;
-                    posx   = mx-width/2; // center window on mouse position
+                    posx   = mx-width/2;
                     posy   = my-height/2;
                 }
+
+                if (posx<0) posx = 0;
+                if (posy<0) posy = 0;
+
                 break;
             }
             case AW_REPOS_TO_CENTER: {
-            FALLBACK_CENTER :
+                  FALLBACK_CENTER :
                 int width, height; get_window_size(width, height);
                 int swidth, sheight; get_screen_size(swidth, sheight);
 
@@ -3176,25 +3201,19 @@ void AW_window::show_internal(void *cl_grab) {
             }
 
             case AW_KEEP_POS:
-                aw_assert(0);
                 break;
         }
 
-        if (setPos) {
-            int currx, curry;
-            get_window_pos(currx, curry);
-            if (currx != posx || curry != posy) {
-#if defined(DEBUG) && 0
-                printf("force position at show_internal: %i/%i\n", posx, posy);
-#endif // DEBUG
-                set_window_pos(posx, posy);
-            }
-        }
+        if (setPos) store_pos_in_awars(posx, posy);
+        else get_pos_from_awars(posx, posy);
+
+        set_window_frame_pos(posx, posy); // always set pos
     }
 
     XtPopup(p_w->shell, grab);
-    if (p_w->WM_top_offset == AW_FIX_POS_ON_EXPOSE) {              // very bad hack
-        set_expose_callback(AW_INFO_AREA, (AW_CB)aw_calculate_WM_offsets, 0, 0);
+    if (!expose_callback_added) {
+        set_expose_callback(AW_INFO_AREA, (AW_CB)aw_onExpose_calc_WM_offsets, 0, 0); // @@@ should be removed after it was called once
+        expose_callback_added = true;
     }
 }
 
@@ -3210,6 +3229,7 @@ void AW_window::show_grabbed() {
 
 void AW_window::hide() {
     if (window_is_shown) {
+        aw_update_window_geometry_awars(this);
         if (hide_cb) hide_cb(this);
         get_root()->window_hide();
         window_is_shown = false;
