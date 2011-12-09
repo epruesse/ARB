@@ -906,12 +906,20 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
     {
         int used_idx = 0;
         for (int name = 0; name < psg.data_count; name++) {
-            if (psg.data[name].inside_group()) {
-                group_idx[used_idx++]                  = name; // store marked group indices
-                unsigned long size                     = psg.data[name].get_size();
-                datasize                              += size;
-                if (datasize<size) datasize            = ULONG_MAX; // avoid overflow!
-                if (size > maxseqlength) maxseqlength  = size;
+            const probe_input_data& pid = psg.data[name];
+
+            if (pid.inside_group()) {
+                group_idx[used_idx++] = name;                  // store marked group indices
+
+                unsigned long size  = pid.get_size();
+                datasize           += size;
+
+                if (size<1 || (unsigned long)size<pdc->probelen) {
+                    fprintf(stderr, "Warning: impossible design request for '%s' (contains only %lu bp)\n", pid.get_name(), size);
+                }
+
+                if (datasize<size) datasize           = ULONG_MAX;  // avoid overflow!
+                if (size > maxseqlength) maxseqlength = size;
             }
         }
         pt_assert(used_idx == group_count);
@@ -945,6 +953,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
 
     char partstring[256];
     PT_init_base_string_counter(partstring, PT_A, partsize);
+
     while (!PT_base_string_counter_eof(partstring)) {
 #if defined(DEBUG)
         fputs("partition='", stdout);
@@ -961,8 +970,11 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
 #endif // DEBUG
 
         for (int g = 0; g<group_count; ++g) {
-            int      name             = group_idx[g];
-            long     possible_tprobes = psg.data[name].get_size()-pdc->probelen+1;
+            int  name             = group_idx[g];
+            long possible_tprobes = psg.data[name].get_size()-pdc->probelen+1;
+
+            if (possible_tprobes<1) possible_tprobes = 1; // avoid wrong hash-size if no/not enough data
+
             GB_HASH *hash_one         = GBS_create_hash(possible_tprobes*hash_multiply, GB_MIND_CASE); // count tprobe occurrences for one group/sequence
             ptnd_add_sequence_to_hash(pdc, hash_one, psg.data[name].get_data(), psg.data[name].get_size(), pdc->probelen, partstring, partsize);
             GBS_hash_do_loop(hash_one, ptnd_collect_hash, hash_outer); // merge hash_one into hash

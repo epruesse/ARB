@@ -104,7 +104,7 @@ class probe_input_data : virtual Noncopyable {      // every taxa's own data
 
     char *data;       // sequence
     long  checksum;   // checksum of sequence
-    int   size;
+    int   size; // @@@ misleading (contains 1 if no bases in sequence)
 
     char   *name;
     char   *fullname;
