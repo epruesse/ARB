@@ -2452,7 +2452,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
     size_t max_parts     = 0;
 
     GBDATA *gb_species = nds_show_all ? GBT_first_species(gb_main) : GBT_first_marked_species(gb_main);
-    {
+    if (gb_species) {
         int skip_over = (y1-y_position)/scaled_branch_distance-2;
         if (skip_over>0) {
             gb_species  = nds_show_all
