@@ -168,16 +168,16 @@ struct HuffTree * ReadHuffmanTree(FILE *fh) {
     UWORD depth;
     UWORD leafbit;
     /* read length first (not used) */
-    size_t dummy = fread(&maxid, sizeof(maxid), 1, fh);
+    (void) fread(&maxid, sizeof(maxid), 1, fh);
     struct HuffTree *ht;
     do {
-        dummy = fread(&cnt, sizeof(cnt), 1, fh);
+        (void) fread(&cnt, sizeof(cnt), 1, fh);
         if (cnt == ~0UL) {
             break;
         }
 
-        dummy = fread(&codelen, sizeof(codelen), 1, fh);
-        dummy = fread(&codec, sizeof(codec), 1, fh);
+        (void) fread(&codelen, sizeof(codelen), 1, fh);
+        (void) fread(&codec, sizeof(codec), 1, fh);
 
         /* build leaf from the root going down */
         ht = root;

@@ -1305,7 +1305,7 @@ void PtpanTree::loadIndexHeader() {
 
     // read id string
     char idstr[16];
-    std::size_t dummy = fread(idstr, 16, 1, fh);
+    (void) fread(idstr, 16, 1, fh);
     if (strncmp("TUM PeTerPAN IDX", idstr, 16)) {
         fclose(fh);
         std::invalid_argument(
@@ -1313,7 +1313,7 @@ void PtpanTree::loadIndexHeader() {
     }
     // check endianness
     ULONG endian = 0;
-    dummy = fread(&endian, sizeof(endian), 1, fh);
+    (void) fread(&endian, sizeof(endian), 1, fh);
     if (endian != 0x01020304) {
         fclose(fh);
         std::invalid_argument(
@@ -1321,7 +1321,7 @@ void PtpanTree::loadIndexHeader() {
     }
     // check file structure version
     UWORD version = 0;
-    dummy = fread(&version, sizeof(version), 1, fh);
+    (void) fread(&version, sizeof(version), 1, fh);
     if (version != FILESTRUCTVERSION) {
         printf(
                 "ERROR: Index (V%d.%d) does not match current file structure version (V%d.%d)!\n",
@@ -1334,7 +1334,7 @@ void PtpanTree::loadIndexHeader() {
 
     // read the rest of the important data
     UWORD alphabet_type;
-    dummy = fread(&alphabet_type, sizeof(alphabet_type), 1, fh);
+    (void) fread(&alphabet_type, sizeof(alphabet_type), 1, fh);
     // init correct alphabet specifics
     switch (AbstractAlphabetSpecifics::intAsType(alphabet_type)) {
     case AbstractAlphabetSpecifics::DNA5:
@@ -1348,16 +1348,16 @@ void PtpanTree::loadIndexHeader() {
         throw std::runtime_error(
                 "PtpanTree::loadIndexHeader() unknown alphabet type!");
     }
-    dummy = fread(&m_AllHashSum, sizeof(m_AllHashSum), 1, fh);
-    dummy = fread(&m_entry_count, sizeof(m_entry_count), 1, fh);
-    dummy = fread(&m_prune_length, sizeof(m_prune_length), 1, fh);
+    (void) fread(&m_AllHashSum, sizeof(m_AllHashSum), 1, fh);
+    (void) fread(&m_entry_count, sizeof(m_entry_count), 1, fh);
+    (void) fread(&m_prune_length, sizeof(m_prune_length), 1, fh);
 
     if (m_verbose) {
         printf("This index contains %ld entries!\n", m_entry_count);
     }
 
     UBYTE feature = '1';
-    dummy = fread(&feature, sizeof(feature), 1, fh);
+    (void) fread(&feature, sizeof(feature), 1, fh);
     if (feature == '0') {
         m_contains_features = true;
     } else {
@@ -1366,7 +1366,7 @@ void PtpanTree::loadIndexHeader() {
 
     // read reference sequence
     ULONG ref_size = 0;
-    dummy = fread(&ref_size, sizeof(ref_size), 1, fh);
+    (void) fread(&ref_size, sizeof(ref_size), 1, fh);
     if (ref_size > 0) {
         m_ref_entry = (struct PTPanReferenceEntry*) malloc(
                 sizeof(struct PTPanReferenceEntry));
@@ -1377,7 +1377,7 @@ void PtpanTree::loadIndexHeader() {
             throw std::runtime_error(
                     "PtpanTree::loadIndexHeader() Out of memory (m_ref_entry->pre_ReferenceSeq)");
         }
-        dummy = fread(m_ref_entry->pre_ReferenceSeq, 1,
+        (void) fread(m_ref_entry->pre_ReferenceSeq, 1,
                 m_ref_entry->pre_ReferenceSeqSize + 1, fh);
         m_ref_entry->pre_ReferenceBaseTable = (ULONG *) calloc(
                 m_ref_entry->pre_ReferenceSeqSize + 1, sizeof(ULONG));
@@ -1385,15 +1385,15 @@ void PtpanTree::loadIndexHeader() {
             throw std::runtime_error(
                     "PtpanTree::loadIndexHeader() Out of memory (m_ref_entry->pre_ReferenceBaseTable)");
         }
-        dummy = fread(m_ref_entry->pre_ReferenceBaseTable, sizeof(ULONG),
+        (void) fread(m_ref_entry->pre_ReferenceBaseTable, sizeof(ULONG),
                 m_ref_entry->pre_ReferenceSeqSize + 1, fh);
     }
     // read custom information
     ULONG size = 0;
-    dummy = fread(&size, sizeof(size), 1, fh);
+    (void) fread(&size, sizeof(size), 1, fh);
     if (size > 0) {
         STRPTR custom = (STRPTR) calloc(size + 1, 1);
-        dummy = fread(custom, 1, size, fh);
+        (void) fread(custom, 1, size, fh);
         m_custom_info = std::string(custom);
         free(custom);
 #ifdef DEBUG
@@ -1408,13 +1408,13 @@ void PtpanTree::loadIndexHeader() {
     while (numentry < m_entry_count) {
         // get name of species on disk
         UWORD len;
-        dummy = fread(&len, sizeof(len), 1, fh);
+        (void) fread(&len, sizeof(len), 1, fh);
         STRPTR filespname = (STRPTR) calloc(len + 1, 1);
-        dummy = fread(filespname, len, 1, fh);
+        (void) fread(filespname, len, 1, fh);
 
-        dummy = fread(&len, sizeof(len), 1, fh);
+        (void) fread(&len, sizeof(len), 1, fh);
         STRPTR fullname = (STRPTR) calloc(len + 1, 1);
-        dummy = fread(fullname, len, 1, fh);
+        (void) fread(fullname, len, 1, fh);
 
         // okay, cannot fail now anymore, allocate a PTPanEntry structure
         pe = (struct PTPanEntry *) calloc(1, sizeof(struct PTPanEntry));
@@ -1426,11 +1426,11 @@ void PtpanTree::loadIndexHeader() {
         pe->pe_FullName = fullname;
 
         /* load in the alignment information */
-        dummy = fread(&pe->pe_SeqDataSize, sizeof(pe->pe_SeqDataSize), 1, fh);
-        dummy = fread(&pe->pe_RawDataSize, sizeof(pe->pe_RawDataSize), 1, fh);
-        dummy = fread(&pe->pe_AbsOffset, sizeof(pe->pe_AbsOffset), 1, fh);
+        (void) fread(&pe->pe_SeqDataSize, sizeof(pe->pe_SeqDataSize), 1, fh);
+        (void) fread(&pe->pe_RawDataSize, sizeof(pe->pe_RawDataSize), 1, fh);
+        (void) fread(&pe->pe_AbsOffset, sizeof(pe->pe_AbsOffset), 1, fh);
         // read compressedSequenceShortcuts
-        dummy = fread(&pe->pe_CompressedShortcutsCount,
+        (void) fread(&pe->pe_CompressedShortcutsCount,
                 sizeof(pe->pe_CompressedShortcutsCount), 1, fh);
         pe->pe_CompressedShortcuts = (struct PTPanComprSeqShortcuts *) calloc(
                 pe->pe_CompressedShortcutsCount,
@@ -1445,7 +1445,7 @@ void PtpanTree::loadIndexHeader() {
         }
 
         ULONG count = 0;
-        dummy = fread(&count, sizeof(count), 1, fh);
+        (void) fread(&count, sizeof(count), 1, fh);
         if (count > 0) {
             pe->pe_FeatureContainer = new PTPanFeatureContainer();
 
@@ -1454,12 +1454,12 @@ void PtpanTree::loadIndexHeader() {
             PTPanFeature *feature;
             for (ULONG i = 0; i < count; i++) {
                 feature = PTPanFeature::createPtpanFeature();
-                dummy = fread(&length, sizeof(length), 1, fh);
+                (void) fread(&length, sizeof(length), 1, fh);
                 STRPTR name = (STRPTR) calloc(length + 1, 1);
-                dummy = fread(name, length, 1, fh);
+                (void) fread(name, length, 1, fh);
                 feature->pf_name = name;
                 // get position count:
-                dummy = fread(&pos_count, sizeof(pos_count), 1, fh);
+                (void) fread(&pos_count, sizeof(pos_count), 1, fh);
                 feature->pf_num_pos = pos_count;
                 feature->pf_pos = PTPanPositionPair::createPtpanPositionPair(
                         pos_count);
@@ -1467,7 +1467,7 @@ void PtpanTree::loadIndexHeader() {
                     feature->pf_pos[j].pop_start = read_byte(fh);
                     feature->pf_pos[j].pop_end = read_byte(fh);
                     UBYTE complement_flag;
-                    dummy = fread(&complement_flag, sizeof(UBYTE), 1, fh);
+                    (void) fread(&complement_flag, sizeof(UBYTE), 1, fh);
                     feature->pf_pos[j].complement =
                             complement_flag == 0 ? false : true;
                 }
@@ -1476,7 +1476,7 @@ void PtpanTree::loadIndexHeader() {
             assert(count == pe->pe_FeatureContainer->size());
         }
 
-        dummy = fread(&pe->pe_SeqDataCompressedSize,
+        (void) fread(&pe->pe_SeqDataCompressedSize,
                 sizeof(pe->pe_SeqDataCompressedSize), 1, fh);
         ULONG pos = ftell(fh);
         pe->pe_SeqDataCompressed = &m_map_file_buffer[pos];
@@ -1525,13 +1525,13 @@ void PtpanTree::loadIndexHeader() {
         pe = (struct PTPanEntry *) pe->pe_Node.ln_Succ;
     }assert(m_entry_map.size() <= m_entry_count);
 
-    dummy = fread(&m_TotalSeqSize, sizeof(m_TotalSeqSize), 1, fh);
-    dummy = fread(&m_TotalSeqCompressedSize, sizeof(m_TotalSeqCompressedSize),
-            1, fh);
-    dummy = fread(&m_TotalRawSize, sizeof(m_TotalRawSize), 1, fh);
+    (void) fread(&m_TotalSeqSize, sizeof(m_TotalSeqSize), 1, fh);
+    (void) fread(&m_TotalSeqCompressedSize, sizeof(m_TotalSeqCompressedSize), 1,
+            fh);
+    (void) fread(&m_TotalRawSize, sizeof(m_TotalRawSize), 1, fh);
 
     UWORD num_partitions;
-    dummy = fread(&num_partitions, sizeof(num_partitions), 1, fh);
+    (void) fread(&num_partitions, sizeof(num_partitions), 1, fh);
 
 #ifdef DEBUG
     printf("\n\nDatabase contains %ld valid entries.\n"
@@ -1553,10 +1553,10 @@ void PtpanTree::loadIndexHeader() {
             throw std::runtime_error(
                     "PtpanTree::loadIndexHeader() Out of memory (PTPanPartition)");
         }
-        dummy = fread(&pp->pp_ID, sizeof(pp->pp_ID), 1, fh);
-        dummy = fread(&pp->pp_Prefix, sizeof(pp->pp_Prefix), 1, fh);
-        dummy = fread(&pp->pp_PrefixLen, sizeof(pp->pp_PrefixLen), 1, fh);
-        dummy = fread(&pp->pp_Size, sizeof(pp->pp_Size), 1, fh);
+        (void) fread(&pp->pp_ID, sizeof(pp->pp_ID), 1, fh);
+        (void) fread(&pp->pp_Prefix, sizeof(pp->pp_Prefix), 1, fh);
+        (void) fread(&pp->pp_PrefixLen, sizeof(pp->pp_PrefixLen), 1, fh);
+        (void) fread(&pp->pp_Size, sizeof(pp->pp_Size), 1, fh);
 
         pp->pp_PartitionName = (STRPTR) calloc(m_index_name.size() + 6, 1);
         strncpy(pp->pp_PartitionName, m_index_name.data(),
@@ -1599,32 +1599,32 @@ void PtpanTree::loadPartitions() {
         }
         /* read id string */
         char idstr[16];
-        std::size_t dummy = fread(idstr, 16, 1, fh);
+        (void) fread(idstr, 16, 1, fh);
         if (strncmp("TUM PeTerPAN P3I", idstr, 16)) {
             fclose(fh);
             throw std::runtime_error(
                     "PtpanTree::loadPartitions() This is no partition file!");
         }
         ULONG hashsum;
-        dummy = fread(&hashsum, sizeof(m_AllHashSum), 1, fh);
+        (void) fread(&hashsum, sizeof(m_AllHashSum), 1, fh);
         if (hashsum != m_AllHashSum) {
             fclose(fh);
             throw std::runtime_error(
                     "PtpanTree::loadPartitions() Partition file does not match index file!");
         }
         /* read partition data */
-        dummy = fread(&(*pit)->pp_ID, sizeof((*pit)->pp_ID), 1, fh);
-        dummy = fread(&(*pit)->pp_Prefix, sizeof((*pit)->pp_Prefix), 1, fh);
-        dummy = fread(&(*pit)->pp_PrefixLen, sizeof((*pit)->pp_PrefixLen), 1,
+        (void) fread(&(*pit)->pp_ID, sizeof((*pit)->pp_ID), 1, fh);
+        (void) fread(&(*pit)->pp_Prefix, sizeof((*pit)->pp_Prefix), 1, fh);
+        (void) fread(&(*pit)->pp_PrefixLen, sizeof((*pit)->pp_PrefixLen), 1,
                 fh);
-        dummy = fread(&(*pit)->pp_Size, sizeof((*pit)->pp_Size), 1, fh);
-        dummy = fread(&(*pit)->pp_TreePruneDepth,
+        (void) fread(&(*pit)->pp_Size, sizeof((*pit)->pp_Size), 1, fh);
+        (void) fread(&(*pit)->pp_TreePruneDepth,
                 sizeof((*pit)->pp_TreePruneDepth), 1, fh);
-        dummy = fread(&(*pit)->pp_TreePruneLength,
+        (void) fread(&(*pit)->pp_TreePruneLength,
                 sizeof((*pit)->pp_TreePruneLength), 1, fh);
-        dummy = fread(&(*pit)->pp_LongDictSize, sizeof((*pit)->pp_LongDictSize),
+        (void) fread(&(*pit)->pp_LongDictSize, sizeof((*pit)->pp_LongDictSize),
                 1, fh);
-        dummy = fread(&(*pit)->pp_LongRelPtrBits,
+        (void) fread(&(*pit)->pp_LongRelPtrBits,
                 sizeof((*pit)->pp_LongRelPtrBits), 1, fh);
 
         /* read huffman tables */
@@ -1634,12 +1634,12 @@ void PtpanTree::loadPartitions() {
 
         /* read compressed dictionary */
         ULONG len;
-        dummy = fread(&len, sizeof(len), 1, fh);
+        (void) fread(&len, sizeof(len), 1, fh);
         (*pit)->pp_LongDictRaw = (ULONG *) malloc(len);
         if ((*pit)->pp_LongDictRaw) {
-            dummy = fread((*pit)->pp_LongDictRaw, len, 1, fh);
+            (void) fread((*pit)->pp_LongDictRaw, len, 1, fh);
             // read compressed tree
-            dummy = fread(&(*pit)->pp_DiskTreeSize,
+            (void) fread(&(*pit)->pp_DiskTreeSize,
                     sizeof((*pit)->pp_DiskTreeSize), 1, fh);
 
             LONG pos = ftell(fh);
@@ -2178,24 +2178,24 @@ void PtpanTree::read_packed_leaf_array(struct PTPanPartition *pp, ULONG pos,
  */
 ULONG PtpanTree::read_byte(FILE *fileheader) const {
     char prefix;
-    std::size_t dummy = fread(&prefix, 1, 1, fileheader);
+    (void) fread(&prefix, 1, 1, fileheader);
     ULONG value = 0;
     switch (prefix) {
     case '0':
         // 00 16bit
-        dummy = fread(&value, 2, 1, fileheader);
+        (void) fread(&value, 2, 1, fileheader);
         break;
     case '1':
         // 01 24bit
-        dummy = fread(&value, 3, 1, fileheader);
+        (void) fread(&value, 3, 1, fileheader);
         break;
     case '2':
         // 10 32bit
-        dummy = fread(&value, 4, 1, fileheader);
+        (void) fread(&value, 4, 1, fileheader);
         break;
     case '3':
         // 11 64bit
-        dummy = fread(&value, sizeof(ULONG), 1, fileheader);
+        (void) fread(&value, sizeof(ULONG), 1, fileheader);
         break;
     default:
         break;
@@ -3957,8 +3957,7 @@ void PtpanTree::create_diff_alignment(const SearchQuery& sq,
         assert(bitpos < pe->pe_SeqDataCompressedSize);
         bitpos -= 3; // bitpos now points to the first character of found seq
 
-        ULONG tarlen = copy_sequence(sq, source_seq, *it, bitpos, &nmismatch,
-                count);
+        (void) copy_sequence(sq, source_seq, *it, bitpos, &nmismatch, count);
 
         if (nmismatch > sq.sq_KillNSeqsAt) {
             // TODO FIXME throw error!

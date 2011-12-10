@@ -726,7 +726,7 @@ void PtpanTreeBuilder::reInitStuff() {
 
     // seek over reference sequence
     ULONG ref_size = 0;
-    ULONG dummy = fread(&ref_size, sizeof(ref_size), 1, m_index_fh);
+    (void) fread(&ref_size, sizeof(ref_size), 1, m_index_fh);
     index += sizeof(ULONG);
 
     if (ref_size > 0) {
@@ -738,7 +738,7 @@ void PtpanTreeBuilder::reInitStuff() {
     }
     // read custom information
     ULONG size = 0;
-    dummy = fread(&size, sizeof(size), 1, m_index_fh);
+    (void) fread(&size, sizeof(size), 1, m_index_fh);
     if (size > 0) {
         fseek(m_index_fh, size, SEEK_CUR);
     }
@@ -747,22 +747,22 @@ void PtpanTreeBuilder::reInitStuff() {
     struct PTPanEntry *pe;
     while (numentry < m_num_entries) {
         UWORD len;
-        dummy = fread(&len, sizeof(len), 1, m_index_fh);
+        (void) fread(&len, sizeof(len), 1, m_index_fh);
         fseek(m_index_fh, len, SEEK_CUR);
-        dummy = fread(&len, sizeof(len), 1, m_index_fh);
+        (void) fread(&len, sizeof(len), 1, m_index_fh);
         fseek(m_index_fh, len, SEEK_CUR);
 
         pe = (struct PTPanEntry *) calloc(1, sizeof(struct PTPanEntry));
         pe->pe_Num = numentry;
 
-        dummy = fread(&pe->pe_SeqDataSize, sizeof(pe->pe_SeqDataSize), 1,
+        (void) fread(&pe->pe_SeqDataSize, sizeof(pe->pe_SeqDataSize), 1,
                 m_index_fh);
-        dummy = fread(&pe->pe_RawDataSize, sizeof(pe->pe_RawDataSize), 1,
+        (void) fread(&pe->pe_RawDataSize, sizeof(pe->pe_RawDataSize), 1,
                 m_index_fh);
-        dummy = fread(&pe->pe_AbsOffset, sizeof(pe->pe_AbsOffset), 1,
+        (void) fread(&pe->pe_AbsOffset, sizeof(pe->pe_AbsOffset), 1,
                 m_index_fh);
 
-        dummy = fread(&pe->pe_CompressedShortcutsCount,
+        (void) fread(&pe->pe_CompressedShortcutsCount,
                 sizeof(pe->pe_CompressedShortcutsCount), 1, m_index_fh);
 
         for (ULONG cnt = 0; cnt < pe->pe_CompressedShortcutsCount; cnt++) {
@@ -772,14 +772,14 @@ void PtpanTreeBuilder::reInitStuff() {
         }
 
         ULONG count = 0;
-        dummy = fread(&count, sizeof(count), 1, m_index_fh);
+        (void) fread(&count, sizeof(count), 1, m_index_fh);
         if (count > 0) {
             ULONG length = 0;
             UWORD pos_count = 0;
             for (ULONG i = 0; i < count; i++) {
-                dummy = fread(&length, sizeof(length), 1, m_index_fh);
+                (void) fread(&length, sizeof(length), 1, m_index_fh);
                 fseek(m_index_fh, length, SEEK_CUR);
-                dummy = fread(&pos_count, sizeof(pos_count), 1, m_index_fh);
+                (void) fread(&pos_count, sizeof(pos_count), 1, m_index_fh);
                 for (UWORD j = 0; j < pos_count; j++) {
                     seek_byte(m_index_fh);
                     seek_byte(m_index_fh);
@@ -788,7 +788,7 @@ void PtpanTreeBuilder::reInitStuff() {
             }
         }
 
-        dummy = fread(&pe->pe_SeqDataCompressedSize,
+        (void) fread(&pe->pe_SeqDataCompressedSize,
                 sizeof(pe->pe_SeqDataCompressedSize), 1, m_index_fh);
 
         index = ftell(m_index_fh);
