@@ -653,7 +653,7 @@ public:
     void jump_sequence_pos(int sequence_pos, ED4_CursorJumpType jump_type);
     void jump_base_pos(int base_pos, ED4_CursorJumpType jump_type);
 
-    int get_screen_relative_pos();
+    int get_screen_relative_pos() const;
     void set_screen_relative_pos(int scroll_to_relpos);
 
     void set_to_terminal(ED4_terminal *terminal, int seq_pos, ED4_CursorJumpType jump_type);

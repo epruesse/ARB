@@ -278,7 +278,7 @@ ED4_returncode ED4_cursor::draw_cursor(AW_pos x, AW_pos y)
                                        ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES),
                                        !awar_edit_direction);
 
-    cursor_shape->draw(current_device(), int(x), int(y));
+    cursor_shape->draw(window()->get_device(), int(x), int(y));
 
 #if defined(DEBUG) && 0
     printf("draw_cursor(%i, %i)\n", int(x), int(y));
@@ -926,9 +926,9 @@ void ED4_cursor::updateAwars()
     aw_root->awar(win->awar_path_for_helixNr)->write_string(helixNr ? helixNr : "");
 }
 
-int ED4_cursor::get_screen_relative_pos() {
-    ED4_coords *coords = &current_ed4w()->coords;
-    return cursor_abs_x - coords->window_left_clip_point;
+int ED4_cursor::get_screen_relative_pos() const {
+    const ED4_coords& coords = window()->coords;
+    return cursor_abs_x - coords.window_left_clip_point;
 }
 void ED4_cursor::set_screen_relative_pos(int scroll_to_relpos) {
     int curr_rel_pos  = get_screen_relative_pos();

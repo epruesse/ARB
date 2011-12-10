@@ -34,9 +34,12 @@
 #include <cctype>
 #include <limits.h>
 
+#include <vector>
+
+using namespace std;
 
 void ED4_calc_terminal_extentions() {
-    AW_device *device = current_device();
+    AW_device *device = ED4_ROOT->first_window->get_device(); // any device
 
     const AW_font_limits& seq_font_limits  = device->get_font_limits(ED4_G_SEQUENCES, 0);
     const AW_font_limits& seq_equal_limits = device->get_font_limits(ED4_G_SEQUENCES, '=');
@@ -120,8 +123,6 @@ void ED4_expose_recalculations() {
         }
         screenwidth = new_screenwidth;
     }
-
-    current_ed4w()->update_scrolled_rectangle(); // @@@ do for all windows ?
 }
 
 void ED4_expose_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
@@ -136,6 +137,7 @@ void ED4_expose_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     }
     else {
         ED4_expose_recalculations(); // this case is needed every time, except the first
+        current_ed4w()->update_scrolled_rectangle();
     }
 
     current_ed4w()->update_window_coords();
@@ -1420,31 +1422,55 @@ void ED4_start_editor_on_configuration(AW_window *aww) {
     free(cn);
 }
 
+struct cursorpos {
+    ED4_cursor& cursor;
+    int screen_rel;
+    int seq;
+
+    cursorpos(ED4_window *win)
+        : cursor(win->cursor),
+          screen_rel(cursor.get_screen_relative_pos()),
+          seq(cursor.get_sequence_pos())
+    {}
+    cursorpos(const cursorpos& other)
+        : cursor(other.cursor),
+          screen_rel(other.screen_rel),
+          seq(other.seq)
+    {}
+    DECLARE_ASSIGNMENT_OPERATOR(cursorpos);
+};
+
+
 void ED4_compression_changed_cb(AW_root *awr) {
     ED4_remap_mode mode    = (ED4_remap_mode)awr->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->read_int();
     int            percent = awr->awar(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT)->read_int();
     GB_transaction ta(GLOBAL_gb_main);
 
     if (ED4_ROOT->root_group_man) {
-        ED4_cursor& cursor  = current_cursor(); // @@@ should be done for all windows (all cursors)
-        int         rel_pos = cursor.get_screen_relative_pos();
-        int         seq_pos = cursor.get_sequence_pos();
+        vector<cursorpos> pos;
 
-        AW_window *aww    = current_aww();
-        AW_device *device = current_device();
+        for (ED4_window *win = ED4_ROOT->first_window; win; win = win->next) {
+            pos.push_back(cursorpos(win));
+            
+            AW_device *device = win->get_device();
+            device->push_clip_scale();
+            device->set_clipall();     // draw nothing
+        }
 
-        ED4_remap *remap = ED4_ROOT->root_group_man->remap();
-        remap->set_mode(mode, percent);
+        ED4_ROOT->root_group_man->remap()->set_mode(mode, percent);
+        ED4_expose_recalculations();
 
-        device->push_clip_scale();
-        device->set_clipall();     // draw nothing
+        for (vector<cursorpos>::const_iterator i = pos.begin(); i != pos.end(); ++i) {
+            ED4_cursor&  cursor = const_cast<ED4_cursor&>(i->cursor);
+            ED4_window  *win    = cursor.window();
 
-        ED4_expose_recalculations(); // @@@ do not perform for all windows
+            win->update_scrolled_rectangle();
 
-        cursor.jump_sequence_pos(seq_pos, ED4_JUMP_KEEP_POSITION);
-        cursor.set_screen_relative_pos(rel_pos);
+            cursor.jump_sequence_pos(i->seq, ED4_JUMP_KEEP_POSITION);
+            cursor.set_screen_relative_pos(i->screen_rel);
 
-        ED4_expose_cb(aww, 0, 0); // does pop_clip_scale + refresh
+            ED4_expose_cb(win->aww, 0, 0); // does pop_clip_scale + refresh
+        }
     }
 }
 

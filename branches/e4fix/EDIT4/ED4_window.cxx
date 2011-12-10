@@ -157,7 +157,7 @@ ED4_returncode ED4_window::update_scrolled_rectangle() {
         slider_pos_horizontal = aww->slider_pos_horizontal;
     }
 
-    const AW_screen_area& area_size = current_device()->get_area_size();
+    const AW_screen_area& area_size = get_device()->get_area_size();
     scrolled_rect.calc_bottomRight_folding_dimensions(area_size.r, area_size.b);
 
     update_window_coords();
