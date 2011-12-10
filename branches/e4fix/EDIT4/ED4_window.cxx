@@ -186,7 +186,7 @@ ED4_returncode ED4_window::set_scrolled_rectangle(ED4_base *x_link, ED4_base *y_
 
     scrolled_rect.link(x_link, y_link, width_link, height_link);
 
-    const AW_screen_area& area_size = current_device()->get_area_size();
+    const AW_screen_area& area_size = get_device()->get_area_size();
 
     AW::Rectangle rect = scrolled_rect.get_world_rect();
     scrolled_rect.create_folding_lines(*this, rect, area_size.r, area_size.b);
@@ -304,7 +304,7 @@ ED4_returncode ED4_window::scroll_rectangle(int dx, int dy)
     AW_pos toptop_y = coords.top_area_y;
     AW_pos topbottom_y = toptop_y + coords.top_area_height - 1;
 
-    current_device()->push_clip_scale();
+    get_device()->push_clip_scale();
 
     // main area
 
@@ -325,7 +325,7 @@ ED4_returncode ED4_window::scroll_rectangle(int dx, int dy)
         else            move_and_update_rectangle(left_x, toptop_y, right_x, topbottom_y, int(dx), 0);
     }
 
-    current_device()->pop_clip_scale();
+    get_device()->pop_clip_scale();
 
     return (ED4_R_OK);
 }

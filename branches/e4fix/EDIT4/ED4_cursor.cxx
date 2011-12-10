@@ -1336,7 +1336,7 @@ ED4_returncode ED4_cursor::show_cursor_at(ED4_terminal *target_terminal, ED4_ind
         DRAW = 1;
     }
 
-    target_terminal->scroll_into_view(current_ed4w());
+    target_terminal->scroll_into_view(window());
 
     AW_pos termw_x, termw_y;
     target_terminal->calc_world_coords(&termw_x, &termw_y);

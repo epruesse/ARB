@@ -603,7 +603,16 @@ extern int ED4_update_global_cursor_awars_allowed;
 
 typedef bool (*ED4_TerminalTest)(ED4_base *terminal, int seqPos);
 
-class ED4_cursor : virtual Noncopyable {
+class ED4_WinContextFree { // denies usage of the following functions in classes derived from this
+    AW_device   *current_device();
+    ED4_window  *current_ed4w();
+    AW_window   *current_aww();
+    ED4_cursor&  current_cursor();
+public:
+    void avoid_warning() {}
+};
+
+class ED4_cursor : virtual Noncopyable, virtual ED4_WinContextFree {
     ED4_window                *win;
     ED4_index                  cursor_abs_x;    // absolute (to terminal) x-position of cursor (absolute world coordinate of edit window)
     int                        screen_position; // number of displayed characters leading the cursor
@@ -671,7 +680,7 @@ public:
     ~ED4_cursor();
 };
 
-class ED4_window : public ED4_foldable { // derived from Noncopyable
+class ED4_window : public ED4_foldable, virtual ED4_WinContextFree { // derived from Noncopyable
     ED4_window(const ED4_window&); // copy-constructor not allowed
 public:
     AW_window              *aww;   // Points to Window
@@ -1415,7 +1424,7 @@ public:
     static bool dont_have_global_context() { return !current_context.have_context(); }
 };
 
-
+// accessors for current context (see also ED4_WinContextFree)
 inline AW_device *current_device() { return ED4_WinContext::get_current_context().get_device(); }
 inline ED4_window *current_ed4w() { return ED4_WinContext::get_current_context().get_ed4w(); }
 inline AW_window *current_aww() { return current_ed4w()->aww; }
