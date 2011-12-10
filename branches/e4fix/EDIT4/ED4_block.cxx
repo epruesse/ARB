@@ -210,7 +210,7 @@ void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
     if (!error) {
         for (CursorPositions::iterator ab = at_base.begin(); ab != at_base.end(); ++ab) {
             ED4_window *win = ab->first;
-            win->cursor.jump_base_pos(win->aww, ab->second, ED4_JUMP_KEEP_VISIBLE); // restore cursor at same base
+            win->cursor.jump_base_pos(ab->second, ED4_JUMP_KEEP_VISIBLE); // restore cursor at same base
             
 #if defined(DEBUG)
             ED4_cursor& cursor = win->cursor;

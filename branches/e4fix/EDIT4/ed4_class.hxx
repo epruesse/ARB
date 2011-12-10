@@ -604,9 +604,10 @@ extern int ED4_update_global_cursor_awars_allowed;
 typedef bool (*ED4_TerminalTest)(ED4_base *terminal, int seqPos);
 
 class ED4_cursor : virtual Noncopyable {
-    ED4_index                  cursor_abs_x; // absolute (to terminal) x-position of cursor (absolute world coordinate of edit window)
+    ED4_window                *win;
+    ED4_index                  cursor_abs_x;    // absolute (to terminal) x-position of cursor (absolute world coordinate of edit window)
     int                        screen_position; // number of displayed characters leading the cursor
-    mutable ED4_base_position  base_position; // # of bases left of cursor
+    mutable ED4_base_position  base_position;   // # of bases left of cursor
     ED4_CursorType             ctype;
     ED4_CursorShape           *cursor_shape;
 
@@ -648,14 +649,14 @@ public:
 
     void invalidate_base_position() { base_position.invalidate(); }
 
-    void jump_screen_pos(AW_window *aww, int screen_pos, ED4_CursorJumpType jump_type);
-    void jump_sequence_pos(AW_window *aww, int sequence_pos, ED4_CursorJumpType jump_type);
-    void jump_base_pos(AW_window *aww, int base_pos, ED4_CursorJumpType jump_type);
+    void jump_screen_pos(int screen_pos, ED4_CursorJumpType jump_type);
+    void jump_sequence_pos(int sequence_pos, ED4_CursorJumpType jump_type);
+    void jump_base_pos(int base_pos, ED4_CursorJumpType jump_type);
 
     int get_screen_relative_pos();
-    void set_screen_relative_pos(AW_window *aww, int scroll_to_relpos);
+    void set_screen_relative_pos(int scroll_to_relpos);
 
-    void set_to_terminal(AW_window *aww, ED4_terminal *terminal, int seq_pos, ED4_CursorJumpType jump_type);
+    void set_to_terminal(ED4_terminal *terminal, int seq_pos, ED4_CursorJumpType jump_type);
 
     void announce_deletion(ED4_base *object) {
         base_position.announce_deletion(object);
@@ -664,23 +665,24 @@ public:
 
     void init();
 
-    ED4_window *window() const;
+    ED4_window *window() const { return win; }
 
-    ED4_cursor();
+    ED4_cursor(ED4_window *win);
     ~ED4_cursor();
 };
 
 class ED4_window : public ED4_foldable { // derived from Noncopyable
     ED4_window(const ED4_window&); // copy-constructor not allowed
 public:
-    AW_window              *aww; // Points to Window
+    AW_window              *aww;   // Points to Window
     ED4_window             *next;
     int                     slider_pos_horizontal;
     int                     slider_pos_vertical;
     ED4_scrolled_rectangle  scrolled_rect;
-    int                     id; // unique id in window-list
+    int                     id;    // unique id in window-list
     ED4_coords              coords;
-    static int              no_of_windows;
+
+    static int no_of_windows;
 
     char awar_path_for_cursor[50];                  // position in current sequence, range = [1;len]
     char awar_path_for_Ecoli[50];                   // position relative to ecoli
@@ -1351,7 +1353,7 @@ public:
 
     GB_ERROR write_sequence(const char *seq, int seq_len);
 
-    void scroll_into_view(AW_window *aww);
+    void scroll_into_view(ED4_window *ed4w);
     inline bool setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfoldGroups, ED4_CursorJumpType jump_type);
 
     ED4_terminal(const ED4_objspec& spec_, GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);

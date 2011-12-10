@@ -218,7 +218,7 @@ static ARB_ERROR call_edit(ED4_base *object, AW_CL cl_work_info) {
                 }
 
                 if (move_cursor) {
-                    current_cursor().jump_sequence_pos(current_aww(), new_work_info.out_seq_position, ED4_JUMP_KEEP_VISIBLE);
+                    current_cursor().jump_sequence_pos(new_work_info.out_seq_position, ED4_JUMP_KEEP_VISIBLE);
                     move_cursor = 0;
                 }
             }
@@ -227,7 +227,7 @@ static ARB_ERROR call_edit(ED4_base *object, AW_CL cl_work_info) {
     return error;
 }
 
-static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
+static void executeKeystroke(AW_event *event, int repeatCount) {
     e4_assert(repeatCount>0);
 
     if (event->keycode!=AW_KEY_NONE) {
@@ -306,7 +306,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
 
                     error = edit_string->edit(work_info);
 
-                    cursor->jump_sequence_pos(aww, work_info->out_seq_position, ED4_JUMP_KEEP_VISIBLE);
+                    cursor->jump_sequence_pos(work_info->out_seq_position, ED4_JUMP_KEEP_VISIBLE);
 
                     work_info->string = 0;
 
@@ -328,7 +328,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
                     ED4_ROOT->main_manager->Show(1, 0);         // @@@ temporary fix for worst-refresh problems
                     // ED4_ROOT->main_manager->Show(); // original version
 
-                    cursor->jump_sequence_pos(aww, work_info->out_seq_position, work_info->cursor_jump);
+                    cursor->jump_sequence_pos(work_info->out_seq_position, work_info->cursor_jump);
                 }
 
                 edit_string->finish_edit();
@@ -357,7 +357,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
 }
 
 void ED4_remote_event(AW_event *faked_event) { // keystrokes forwarded from SECEDIT
-    executeKeystroke(current_aww(), faked_event, 1);
+    executeKeystroke(faked_event, 1);
 }
 
 void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
@@ -387,7 +387,7 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
                     repeatCount++;
                 }
                 else { // other key => execute now
-                    executeKeystroke(aww, &lastEvent, repeatCount);
+                    executeKeystroke(&lastEvent, repeatCount);
                     lastEvent = event;
                     repeatCount = 1;
                 }
@@ -397,13 +397,13 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
 #if defined(DARWIN) || 1
                 // sth goes wrong with OSX -> always execute keystroke
                 // Xfree 4.3 has problems as well, so repeat counting is disabled completely
-                executeKeystroke(aww, &lastEvent, repeatCount);
+                executeKeystroke(&lastEvent, repeatCount);
                 repeatCount                       = 0;
 #else
                 AW_ProcessEventType nextEventType = ED4_ROOT->aw_root->peek_key_event(aww);
 
                 if (nextEventType!=KEY_RELEASED) { // no key waiting => execute now
-                    executeKeystroke(aww, &lastEvent, repeatCount);
+                    executeKeystroke(&lastEvent, repeatCount);
                     repeatCount = 0;
                 }
 #endif
@@ -414,7 +414,7 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
             AW_ProcessEventType nextEventType = ED4_ROOT->aw_root->peek_key_event(aww);
 
             if (nextEventType!=KEY_PRESSED && repeatCount) { // no key follows => execute keystrokes (if any)
-                executeKeystroke(aww, &lastEvent, repeatCount);
+                executeKeystroke(&lastEvent, repeatCount);
                 repeatCount = 0;
             }
 
@@ -656,7 +656,7 @@ void ED4_remote_set_cursor_cb(AW_root *awr, AW_CL /* cd1 */, AW_CL /* cd2 */)
 
     if (pos != -1) {
         ED4_cursor *cursor = &current_cursor();
-        cursor->jump_sequence_pos(current_aww(), pos, ED4_JUMP_CENTERED);
+        cursor->jump_sequence_pos(pos, ED4_JUMP_CENTERED);
         awar->write_int(-1);
     }
 }
@@ -733,7 +733,7 @@ void ED4_jump_to_cursor_position(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_po
         aw_message(error);
     }
     else {
-        cursor->jump_sequence_pos(aww, pos, ED4_JUMP_CENTERED);
+        cursor->jump_sequence_pos(pos, ED4_JUMP_CENTERED);
     }
 }
 
@@ -753,7 +753,7 @@ void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /* callback_flag */)
                 aw_message(GBS_global_string("No helix '%s' found", helix_nr));
             }
             else {
-                cursor->jump_sequence_pos(aww, pos, ED4_JUMP_CENTERED);
+                cursor->jump_sequence_pos(pos, ED4_JUMP_CENTERED);
             }
         }
         else {
@@ -1421,9 +1421,9 @@ void ED4_start_editor_on_configuration(AW_window *aww) {
 }
 
 void ED4_compression_changed_cb(AW_root *awr) {
-    ED4_remap_mode mode = (ED4_remap_mode)awr->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->read_int();
-    int percent = awr->awar(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT)->read_int();
-    GB_transaction transaction_var(GLOBAL_gb_main);
+    ED4_remap_mode mode    = (ED4_remap_mode)awr->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->read_int();
+    int            percent = awr->awar(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT)->read_int();
+    GB_transaction ta(GLOBAL_gb_main);
 
     if (ED4_ROOT->root_group_man) {
         ED4_cursor& cursor  = current_cursor(); // @@@ should be done for all windows (all cursors)
@@ -1439,10 +1439,10 @@ void ED4_compression_changed_cb(AW_root *awr) {
         device->push_clip_scale();
         device->set_clipall();     // draw nothing
 
-        ED4_expose_recalculations();
+        ED4_expose_recalculations(); // @@@ do not perform for all windows
 
-        cursor.jump_sequence_pos(aww, seq_pos, ED4_JUMP_KEEP_POSITION);
-        cursor.set_screen_relative_pos(aww, rel_pos);
+        cursor.jump_sequence_pos(seq_pos, ED4_JUMP_KEEP_POSITION);
+        cursor.set_screen_relative_pos(rel_pos);
 
         ED4_expose_cb(aww, 0, 0); // does pop_clip_scale + refresh
     }

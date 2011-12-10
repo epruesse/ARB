@@ -402,15 +402,16 @@ ED4_window *ED4_window::insert_window(AW_window *new_aww) {
     return temp;
 }
 
-ED4_window::ED4_window(AW_window *window) {
-    aww                   = window;
-    next                  = 0;
-    slider_pos_horizontal = 0;
-    slider_pos_vertical   = 0;
-
-    id        = ++no_of_windows;
+ED4_window::ED4_window(AW_window *window)
+    : aww(window),
+      next(NULL),
+      slider_pos_horizontal(0),
+      slider_pos_vertical(0),
+      id(++no_of_windows),
+      is_hidden(false),
+      cursor(this)
+{
     coords.clear();
-    is_hidden = false;
 
     sprintf(awar_path_for_cursor, AWAR_EDIT_SEQ_POSITION, id);
     ED4_ROOT->aw_root->awar_int(awar_path_for_cursor, 0, AW_ROOT_DEFAULT);
