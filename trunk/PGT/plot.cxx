@@ -169,23 +169,25 @@ FILE *Plot::open_command_pipe()
             GNUPLOT_WINDOW_WIDTH, GNUPLOT_WINDOW_HEIGHT, m_title);
 
     // CREATE A TEMPORARY FILENAME (USING MKSTEMP)
-    m_temp_name= (char *)malloc(17 * sizeof(char));
+    m_temp_name = (char *)malloc(17 * sizeof(char));
     strcpy(m_temp_name, "/tmp/plot_XXXXXX");
-        if((mkstemp(m_temp_name)) == -1) return NULL;
 
-    // AS MKTEMP ALSO CREATES THE FILE ITSELF (WHAT WE DON'T WANT) REMOVE IT
-    // RIGHT AFTER ITS CREATION FOR FURTHER USE AS A PIPE
-    unlink(m_temp_name);
+    FILE *result = NULL;
+    if ((mkstemp(m_temp_name)) != -1) {
+        // AS MKTEMP ALSO CREATES THE FILE ITSELF (WHAT WE DON'T WANT) REMOVE IT
+        // RIGHT AFTER ITS CREATION FOR FURTHER USE AS A PIPE
+        unlink(m_temp_name);
 
-    // CREATE A FIFO PIPE
-    if(mkfifo(m_temp_name, S_IRUSR | S_IWUSR) != 0) return NULL;
-    m_command_pipe= popen(buf, "w");
-
-    m_has_command_pipe= true;
+        // CREATE A FIFO PIPE
+        if (mkfifo(m_temp_name, S_IRUSR | S_IWUSR) == 0) {
+            m_command_pipe     = popen(buf, "w");
+            m_has_command_pipe = true;
+            result             = m_command_pipe;
+        }
+    }
 
     free(buf);
-
-    return m_command_pipe;
+    return result;
 }
 
 

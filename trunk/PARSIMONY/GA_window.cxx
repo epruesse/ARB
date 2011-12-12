@@ -14,7 +14,7 @@
 #include "ap_main.hxx"
 #include "ap_tree_nlen.hxx"
 #include "GA_genetic.hxx"
-#include "phwin.hxx"
+#include <phwin.hxx>
 #include <ntcanvas.hxx>
 
 void start_genetic(GBDATA *);

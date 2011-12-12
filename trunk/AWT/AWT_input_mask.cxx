@@ -2060,7 +2060,7 @@ awt_input_mask_descriptor::~awt_input_mask_descriptor() {
     free(internal_maskname);
     free(title);
 }
-// cppcheck-suppress publicAllocationError
+
 awt_input_mask_descriptor::awt_input_mask_descriptor(const awt_input_mask_descriptor& other) {
     title             = strdup(other.title);
     internal_maskname = strdup(other.internal_maskname);

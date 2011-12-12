@@ -357,7 +357,6 @@ struct AWT_config_mapping {
 
     config_map::iterator begin() { return cmap.begin(); }
     config_map::const_iterator end() const { return cmap.end(); }
-    // cppcheck-suppress functionConst
     config_map::iterator end() { return cmap.end(); }
 };
 
