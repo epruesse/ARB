@@ -8,7 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ed4_secedit.hxx"
+#include <ed4_secedit.hxx>
 
 #include <secedit_extern.hxx>
 #include <arbdb.h>

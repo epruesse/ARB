@@ -26,7 +26,7 @@
 #include <netdb.h>
 #include <setjmp.h>
 
-#include "aisc_com.h"
+#include <aisc_com.h>
 // AISC_MKPT_PROMOTE:#include <aisc_func_types.h>
 #include <attributes.h>
 #include "server.h"

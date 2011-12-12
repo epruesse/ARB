@@ -387,7 +387,6 @@ void AW_common_Xm::install_common_extends_cb(AW_window *aww, AW_area area) {
 // #define SHOW_CLIP_STACK_CHANGES
 #endif // DEBUG
 
-// cppcheck-suppress noConstructor
 class AW_clip_scale_stack {
     // completely private, but accessible by AW_device
     friend class AW_device;

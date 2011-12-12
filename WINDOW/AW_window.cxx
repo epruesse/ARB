@@ -1199,7 +1199,6 @@ void AW_window::set_input_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW
     aram->set_input_callback(this, f, cd1, cd2);
 }
 
-// cppcheck-suppress publicAllocationError
 void AW_area_management::set_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     double_click_cb = new AW_cb_struct(aww, f, cd1, cd2, (char*)0, double_click_cb);
 }
