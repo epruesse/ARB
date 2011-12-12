@@ -1,4 +1,6 @@
 
+# when adding a new lib here, also add a dependency vs 'links' or 'links_non_perl' in ../Makefile 
+
 ARCHS_ALL = \
 	PTCLEAN/PTCLEAN.dummy  \
 	ALIVIEW/ALIVIEW.dummy  \
