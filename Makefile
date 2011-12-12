@@ -698,6 +698,7 @@ arbmainwrapper:
 # - 'depends' and
 # - 'clean'
 #
+# when adding new libs here, also add a dependency vs 'links' or 'links_non_perl' below 
 
 ARCHS = \
 			$(ARCHS_PT_SERVER) \
@@ -1181,57 +1182,58 @@ PERLTOOLS/PERLTOOLS.dummy:		core db SL/FILE_BUFFER/FILE_BUFFER.dummy
 AWT/libAWT.dummy:			links_non_perl
 AWTI/AWTI.dummy:			links_non_perl
 CONSENSUS_TREE/CONSENSUS_TREE.dummy:	links_non_perl
+CONVERTALN/CONVERTALN.dummy:		links_non_perl
 DBSERVER/DBSERVER.dummy:		links_non_perl
 DIST/DIST.dummy:			links_non_perl
 EDIT4/EDIT4.dummy:			links_non_perl templ com
 EISPACK/EISPACK.dummy:			links_non_perl
 GDE/GDE.dummy:				links_non_perl
 GENOM/GENOM.dummy:			links_non_perl
-ISLAND_HOPPING/ISLAND_HOPPING.dummy:	links_non_perl
 GENOM_IMPORT/GENOM_IMPORT.dummy:	links_non_perl
+ISLAND_HOPPING/ISLAND_HOPPING.dummy:	links_non_perl
+MERGE/MERGE.dummy:			links_non_perl
+NTREE/NTREE.dummy:			links_non_perl templ
 PARSIMONY/PARSIMONY.dummy:		links_non_perl
-SEQ_QUALITY/SEQ_QUALITY.dummy:		links_non_perl
+PGT/PGT.dummy:				links_non_perl
 PHYLO/PHYLO.dummy:			links_non_perl
 PRIMER_DESIGN/PRIMER_DESIGN.dummy:	links_non_perl
 PROBE_SET/PROBE_SET.dummy:		links_non_perl link_db
 READSEQ/READSEQ.dummy:			links_non_perl
 RNACMA/RNACMA.dummy:			links_non_perl headerlibs
 SECEDIT/SECEDIT.dummy:			links_non_perl
+SEQ_QUALITY/SEQ_QUALITY.dummy:		links_non_perl
+SERVERCNTRL/SERVERCNTRL.dummy:		links_non_perl com
 SL/ALIVIEW/ALIVIEW.dummy:		links_non_perl
 SL/AP_TREE/AP_TREE.dummy:		links_non_perl
-SL/DB_UI/DB_UI.dummy:			links_non_perl
 SL/ARB_TREE/ARB_TREE.dummy:		links_non_perl
 SL/AW_HELIX/AW_HELIX.dummy:		links_non_perl
+SL/DB_QUERY/DB_QUERY.dummy:		links_non_perl
+SL/DB_SCANNER/DB_SCANNER.dummy:		links_non_perl
+SL/DB_UI/DB_UI.dummy:			links_non_perl
 SL/FAST_ALIGNER/FAST_ALIGNER.dummy:	links_non_perl
 SL/FILTER/FILTER.dummy:			links_non_perl
-SL/DB_SCANNER/DB_SCANNER.dummy:		links_non_perl
 SL/GUI_ALIVIEW/GUI_ALIVIEW.dummy:	links_non_perl
 SL/HELIX/HELIX.dummy:			links_non_perl
 SL/ITEMS/ITEMS.dummy:			links_non_perl
+SL/LOCATION/LOCATION.dummy:		links_non_perl
 SL/MATRIX/MATRIX.dummy:			links_non_perl
 SL/NDS/NDS.dummy:			links_non_perl
 SL/NEIGHBOURJOIN/NEIGHBOURJOIN.dummy:	links_non_perl
 SL/PRONUC/PRONUC.dummy:			links_non_perl
 SL/PTCLEAN/PTCLEAN.dummy:		links_non_perl link_db
+SL/REFENTRIES/REFENTRIES.dummy:		links_non_perl
+SL/REGEXPR/REGEXPR.dummy:		links_non_perl
+SL/SEQIO/SEQIO.dummy:			links_non_perl
 SL/SEQUENCE/SEQUENCE.dummy:		links_non_perl
 SL/TRANSLATE/TRANSLATE.dummy:		links_non_perl
-SL/SEQIO/SEQIO.dummy:			links_non_perl
-SL/REGEXPR/REGEXPR.dummy:		links_non_perl
-SL/REFENTRIES/REFENTRIES.dummy:		links_non_perl
 SL/TREE_READ/TREE_READ.dummy:		links_non_perl
 SL/TREE_WRITE/TREE_WRITE.dummy:		links_non_perl
 SL/TREEDISP/TREEDISP.dummy:		links_non_perl
-SL/DB_QUERY/DB_QUERY.dummy:		links_non_perl
 STAT/STAT.dummy:			links_non_perl
 TREEGEN/TREEGEN.dummy:			links_non_perl
+WETC/WETC.dummy:			links_non_perl
 WINDOW/libWINDOW.dummy:			links_non_perl
 XML/XML.dummy:				links_non_perl
-WETC/WETC.dummy:			links_non_perl
-CONVERTALN/CONVERTALN.dummy:		links_non_perl
-MERGE/MERGE.dummy:			links_non_perl
-PGT/PGT.dummy:				links_non_perl
-NTREE/NTREE.dummy:			links_non_perl templ
-SERVERCNTRL/SERVERCNTRL.dummy:		links_non_perl com
 
 ifeq ($(OPENGL),1)
 GL/glAW/glAW.dummy: links_non_perl
