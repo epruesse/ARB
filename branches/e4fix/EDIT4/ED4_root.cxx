@@ -1269,21 +1269,16 @@ void ED4_menu_perform_block_operation(AW_window */*aww*/, AW_CL type, AW_CL) {
     ED4_perform_block_operation(ED4_blockoperation_type(type));
 }
 
-static void modes_cb(AW_window*, AW_CL cd1, AW_CL)
-{
+static void modes_cb(AW_window*, AW_CL cd1, AW_CL) {
     ED4_ROOT->species_mode = ED4_species_mode(cd1);
+    for (ED4_window *win = ED4_ROOT->first_window; win; win = win->next) {
+        win->aww->select_mode(cd1);
+    }
 }
-void ED4_no_dangerous_modes()
-{
-    switch (ED4_ROOT->species_mode) {
-        case ED4_SM_KILL: {
-            ED4_ROOT->species_mode = ED4_SM_MOVE;
-            current_aww()->select_mode(0);
-            break;
-        }
-        default: {
-            break;
-        }
+
+void ED4_no_dangerous_modes() {
+    if (ED4_ROOT->species_mode == ED4_SM_KILL) {
+        modes_cb(NULL, (AW_CL)ED4_SM_MOVE, 0);
     }
 }
 
