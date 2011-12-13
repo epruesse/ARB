@@ -337,18 +337,20 @@ static int synchronizeCodons(const char *proteins, const char *dna, int minCatch
 // SYNC_LENGTH is the # of codons which will be synchronized (ahead!)
 // before deciding "X was realigned correctly"
 
-GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *neededLength)
-{
+static GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *neededLength) {
     AP_initialize_codon_tables();
 
     GBDATA *gb_source = GBT_get_alignment(gb_main, ali_source); if (!gb_source) return "Please select a valid source alignment";
-    GBDATA *gb_dest   = GBT_get_alignment(gb_main, ali_dest);  if (!gb_dest)   return "Please select a valid destination alignment";
+    GBDATA *gb_dest   = GBT_get_alignment(gb_main, ali_dest);   if (!gb_dest)   return "Please select a valid destination alignment";
 
     long     ali_len            = GBT_get_alignment_len(gb_main, ali_dest);
     long     max_wanted_ali_len = 0;
     GB_ERROR error              = 0;
 
-    arb_progress progress("Re-aligner", GBT_count_marked_species(gb_main));
+    long no_of_marked_species    = GBT_count_marked_species(gb_main);
+    long no_of_realigned_species = 0;
+
+    arb_progress progress("Re-aligner", no_of_marked_species);
     progress.auto_subtitles("Re-aligning species");
 
     int ignore_fail_pos = 0;
@@ -636,10 +638,16 @@ GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *n
 
             // re-alignment successful
             error = GB_write_string(gb_dest_data, buffer);
+
             if (!error) {
-                int writeTableNr = -1;
-                if (allowed_code.strictly_defined(writeTableNr)) {
-                    error = AWT_saveTranslationInfo(gb_species, writeTableNr, 1); // after re-alignment codon_start is always 1
+                int explicit_table_known = allowed_code.explicit_table();
+
+                if (explicit_table_known >= 0) { // we know the exact code -> write codon_start and transl_table
+                    const int codon_start  = 1; // by definition (after realignment)
+                    error = AWT_saveTranslationInfo(gb_species, explicit_table_known, codon_start);
+                }
+                else { // we dont know the exact code -> delete codon_start and transl_table
+                    error = AWT_removeTranslationInfo(gb_species);
                 }
             }
         }
@@ -650,17 +658,19 @@ GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *n
         free(source);
 
         progress.inc_and_check_user_abort(error);
+        no_of_realigned_species++;
     }
 
-    if (max_wanted_ali_len>0) {
-        if (neededLength) *neededLength = max_wanted_ali_len;
+    *neededLength = max_wanted_ali_len;
+
+    if (!error) {
+        int not_realigned = no_of_marked_species - no_of_realigned_species;
+        if (not_realigned>0) {
+            aw_message(GBS_global_string("Did not try to realign %i species (source/dest alignment missing?)", not_realigned));
+        }
     }
 
-    if (error) {
-        return error;
-    }
-
-    error = GBT_check_data(gb_main, ali_dest);
+    if (!error) error = GBT_check_data(gb_main,ali_dest);
 
     return error;
 }
@@ -681,7 +691,7 @@ void transdna_event(AW_window *aww) {
         if (!error) error = arb_transdna(GLOBAL_gb_main, ali_source, ali_dest, &neededLength);
         error = GB_end_transaction(GLOBAL_gb_main, error);
 
-        if (neededLength > 0) {
+        if (!error && neededLength>0) {
             if (retrying || !aw_ask_sure(GBS_global_string("Increase length of '%s' to %li?", ali_dest, neededLength))) {
                 error = GBS_global_string("Missing %li columns in alignment '%s'", neededLength, ali_dest);
             }
@@ -694,7 +704,8 @@ void transdna_event(AW_window *aww) {
                     aw_message(GBS_global_string("Alignment length of '%s' has been set to %li\n"
                                                  "running re-aligner again!",
                                                  ali_dest, neededLength));
-                    retrying = true;
+                    retrying     = true;
+                    neededLength = -1;
                 }
             }
         }

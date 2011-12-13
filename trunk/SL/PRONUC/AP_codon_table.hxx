@@ -71,15 +71,16 @@ public:
         }
     }
 
-    bool strictly_defined(int& nr) {
-        nr = -1;
-        for (int table = 0; table<AWT_CODON_TABLES; ++table) {
-            if (is_allowed(table)) {
-                if (nr != -1) return false;
-                nr = table;
+    int explicit_table() const {
+        // return explicit table number (or -1 if not exactly 1 table is allowed)
+        int table = -1;
+        for (int i = 0; i<AWT_CODON_TABLES; ++i) {
+            if (allowed[i]) {
+                if (table != -1) return -1;
+                table = i;
             }
         }
-        return true;
+        return table;
     }
 };
 
