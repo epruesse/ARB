@@ -19,6 +19,7 @@
 
 GB_ERROR AWT_getTranslationInfo(GBDATA *gb_species, int& arb_transl_table, int &codon_start);
 GB_ERROR AWT_saveTranslationInfo(GBDATA *gb_species, int arb_transl_table, int codon_start);
+GB_ERROR AWT_removeTranslationInfo(GBDATA *gb_species);
 
 int AWT_pro_a_nucs_convert(int arb_code_nr, char *data, size_t size, size_t pos, bool translate_all, bool create_start_codon, bool append_stop_codon, int *translatedSize);
 

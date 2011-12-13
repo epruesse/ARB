@@ -29,6 +29,20 @@ GB_ERROR AWT_saveTranslationInfo(GBDATA *gb_species, int arb_transl_table, int c
     return error;
 }
 
+GB_ERROR AWT_removeTranslationInfo(GBDATA *gb_species) {
+    GB_ERROR error = NULL;
+
+    GBDATA *gb_transl_table    = GB_entry(gb_species, "transl_table");
+    if (gb_transl_table) error = GB_delete(gb_transl_table);
+
+    if (!error) {
+        GBDATA *gb_codon_start    = GB_entry(gb_species, "codon_start");
+        if (gb_codon_start) error = GB_delete(gb_codon_start);
+    }
+
+    return error;
+}
+
 GB_ERROR AWT_getTranslationInfo(GBDATA *gb_item, int& arb_transl_table, int& codon_start) {
     // looks for sub-entries 'transl_table' and 'codon_start' of species (works for genes as well)
     // if found -> test for validity and translate 'transl_table' from EMBL to ARB table number
