@@ -2207,8 +2207,7 @@ void ED4_selected_SAI_changed_cb     (AW_root *aw_root);
 void ED4_init_notFoundMessage();
 void ED4_finish_and_show_notFoundMessage();
 
-extern int  ED4_elements_in_species_container; // # of elements in species container
-void        ED4_undo_redo               (AW_window*, AW_CL undo_type);
+void ED4_undo_redo(AW_window*, AW_CL undo_type);
 
 ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_name);
 ED4_multi_species_manager *ED4_new_species_multi_species_manager();     // returns manager into which new species should be inserted
@@ -2220,7 +2219,6 @@ void ED4_compression_changed_cb(AW_root *awr);
 // functions passed to external c-functions (i.e. as callbacks) have to be declared as 'extern "C"'
 
 extern "C" {
-    void    ED4_species_container_changed_cb(GBDATA *gbd, int *cl, GB_CB_TYPE gbtype);
     void    ED4_sequence_changed_cb(GBDATA *gb_seq, int *cl, GB_CB_TYPE gbtype);
     void    ED4_alignment_length_changed(GBDATA *gb_alignment_len, int *dummy, GB_CB_TYPE gbtype);
 }

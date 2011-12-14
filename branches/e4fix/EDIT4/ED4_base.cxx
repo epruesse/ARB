@@ -180,37 +180,6 @@ void ED4_sequence_changed_cb(GBDATA *gb_seq, int *cl, GB_CB_TYPE gbtype)
     }
 }
 
-int ED4_elements_in_species_container; // # of elements in species container
-void ED4_species_container_changed_cb(GBDATA *gb_species_data, int * /* cl */, GB_CB_TYPE gbtype)
-{
-    if (gbtype==GB_CB_CHANGED) {
-        int nsons = GB_number_of_subentries(gb_species_data);
-
-        if (nsons>ED4_elements_in_species_container) { // new species was created
-#if defined(DEBUG) && 1
-            printf("# of species in species-container changed from %i to %i\n", ED4_elements_in_species_container, nsons);
-            aw_popup_ok("Species container changed!");
-#endif
-            GBDATA *gb_lastSon = GB_search_last_son(gb_species_data);
-
-            if (gb_lastSon) {
-                GBDATA *gb_name = GB_search(gb_lastSon, "name", GB_FIND);
-
-                if (gb_name) {
-                    char *name = GB_read_as_string(gb_name);
-
-                    ED4_get_and_jump_to_species(name);
-#if defined(DEBUG) && 1
-                    printf("new species = '%s'\n", name);
-#endif
-                    free(name);
-                }
-            }
-        }
-        ED4_elements_in_species_container = nsons;
-    }
-}
-
 ED4_species_pointer::ED4_species_pointer()
 {
     species_pointer = 0;

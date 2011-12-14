@@ -656,26 +656,6 @@ GBDATA *gb_search_marked(GBCONTAINER *gbc, GBQUARK key_quark, int firstindex, si
     return NULL;
 }
 
-GBDATA *GB_search_last_son(GBDATA *gbd) {
-    GBCONTAINER    *gbc    = (GBCONTAINER *)gbd;
-    int             index;
-    int             end    = gbc->d.nheader;
-    GBDATA         *gb;
-    gb_header_list *header = GB_DATA_LIST_HEADER(gbc->d);
-
-    for (index = end-1; index>=0; index--) {
-        if (header[index].flags.changed >= GB_DELETED) continue;
-        if ((gb=GB_HEADER_LIST_GBD(header[index]))==NULL)
-        {
-            gb_unfold(gbc, 0, index);
-            header = GB_DATA_LIST_HEADER(gbc->d);
-            gb = GB_HEADER_LIST_GBD(header[index]);
-        }
-        return gb;
-    }
-    return NULL;
-}
-
 long GB_number_of_marked_subentries(GBDATA *gbd) {
     GBCONTAINER    *gbc     = (GBCONTAINER *)gbd;
     int             userbit = GBCONTAINER_MAIN(gbc)->users[0]->userbit;
