@@ -1832,6 +1832,16 @@ void ED4_species_manager::remove_all_callbacks() {
     }
 }
 
+static ARB_ERROR removeAllCallbacks(ED4_base *base) {
+    if (base->is_species_manager()) {
+        base->to_species_manager()->remove_all_callbacks();
+    }
+    return NULL;
+}
+
+void ED4_root::remove_all_callbacks() {
+    root_group_man->route_down_hierarchy(removeAllCallbacks).expect_no_error();
+}
 
 // ------------------------
 //      group managers

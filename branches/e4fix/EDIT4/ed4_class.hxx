@@ -305,6 +305,16 @@ public:
         ptr = other ? other->insert(this) : this;
     }
 
+    ED4_folding_line *delete_member(ED4_folding_line *fl) {
+        ED4_folding_line *result = this;
+        if (this == fl) {
+            result = next;
+            next   = NULL;
+            delete this;
+        }
+        return result;
+    }
+
     AW_pos get_dimension() const { return dimension; }
     const ED4_folding_line *get_next() const { return next; }
 
@@ -356,7 +366,7 @@ public:
     void win_to_world_coords(AW_pos *x, AW_pos *y);
 
     ED4_folding_line *insert_folding_line(AW_pos pos, AW_pos dimension, ED4_properties prop);
-    ED4_returncode  delete_folding_line(ED4_folding_line *fl, ED4_properties prop);
+    void              delete_folding_line(ED4_folding_line *fl, ED4_properties prop);
 };
 
 
@@ -1049,7 +1059,6 @@ public:
 
     ED4_returncode  clear_background(int color=0);
 
-    ED4_returncode clear_whole_background();       // clear AW_MIDDLE_AREA
     bool is_visible(ED4_window *in_ed4w, AW_pos x, AW_pos y, ED4_direction direction);
     bool is_visible(ED4_window *in_ed4w, AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, ED4_direction direction);
 
@@ -1508,6 +1517,8 @@ public:
 
     ED4_index pixel2pos(AW_pos click_x);
 
+    void remove_all_callbacks();
+    
     ED4_root();
     ~ED4_root();
 };
@@ -1569,6 +1580,8 @@ public:
 
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode resize_requested_by_parent();
+    
+    void clear_whole_background();
 };
 
 class ED4_device_manager : public ED4_manager

@@ -763,9 +763,11 @@ ED4_terminal::ED4_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, 
 
 ED4_terminal::~ED4_terminal() {
     delete selection_info;
-    ED4_cursor& cursor = current_cursor();
-    if (this == cursor.owner_of_cursor) {
-        cursor.init();
+    for (ED4_window *window = ED4_ROOT->first_window; window; window=window->next) {
+        ED4_cursor& cursor = window->cursor;
+        if (this == cursor.owner_of_cursor) {
+            cursor.init();
+        }
     }
 }
 

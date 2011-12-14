@@ -1270,15 +1270,16 @@ ED4_returncode ED4_base::clear_background(int color) {
     return (ED4_R_OK);
 }
 
-ED4_returncode ED4_base::clear_whole_background() {
+void ED4_main_manager::clear_whole_background() {
     // clear AW_MIDDLE_AREA
-    if (current_device()) { // @@@ should clear be done for all windows?
-        current_device()->push_clip_scale();
-        current_device()->clear(AW_ALL_DEVICES);
-        current_device()->pop_clip_scale();
+    for (ED4_window *window = ED4_ROOT->first_window; window; window=window->next) {
+        AW_device *device = window->get_device();
+        if (device) {
+            device->push_clip_scale();
+            device->clear(AW_ALL_DEVICES);
+            device->pop_clip_scale();
+        }
     }
-
-    return (ED4_R_OK);
 }
 
 void ED4_base::draw_bb(int color) {
@@ -1324,18 +1325,13 @@ ED4_base::ED4_base(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, AW_pos y
 }
 
 
-ED4_base::~ED4_base() // before calling this function the first time, parent has to be set NULL
-{
-    ED4_base *object;
-    ED4_base *sequence_terminal = NULL;
-    ED4_list_elem *list_elem, *old_elem;
-    ED4_window *ed4w;
-
+ED4_base::~ED4_base() {
+    // before calling this function the first time, parent has to be set NULL
     e4_assert(!parent); // unlink from parent first!
 
-    list_elem = linked_objects.first();
+    ED4_list_elem *list_elem = linked_objects.first();
     while (list_elem) {
-        object = (ED4_base *) list_elem->elem();
+        ED4_base *object = (ED4_base *) list_elem->elem();
         if (object->width_link == this) {
             object->width_link->linked_objects.delete_elem((void *) this);              // delete link and
             object->width_link = NULL;
@@ -1346,7 +1342,7 @@ ED4_base::~ED4_base() // before calling this function the first time, parent has
             object->height_link = NULL;
         }
 
-        old_elem = list_elem;
+        ED4_list_elem *old_elem = list_elem;
         list_elem = list_elem->next();
         linked_objects.delete_elem(old_elem->elem());
     }
@@ -1355,7 +1351,7 @@ ED4_base::~ED4_base() // before calling this function the first time, parent has
     {
         if (ED4_ROOT->main_manager)
         {
-            sequence_terminal = ED4_ROOT->main_manager->search_spec_child_rek(ED4_L_SEQUENCE_STRING);
+            ED4_base *sequence_terminal = ED4_ROOT->main_manager->search_spec_child_rek(ED4_L_SEQUENCE_STRING);
 
             if (sequence_terminal)
                 sequence_terminal->update_info.linked_to_scrolled_rectangle = 1;
@@ -1363,7 +1359,7 @@ ED4_base::~ED4_base() // before calling this function the first time, parent has
             update_info.linked_to_scrolled_rectangle = 0;
             ED4_ROOT->scroll_links.link_for_hor_slider = sequence_terminal;
 
-            ed4w = current_ed4w();
+            ED4_window *ed4w = ED4_ROOT->first_window;
             while (ed4w != NULL) {
                 ed4w->scrolled_rect.replace_x_width_link_to(this, sequence_terminal);
                 ed4w = ed4w->next;

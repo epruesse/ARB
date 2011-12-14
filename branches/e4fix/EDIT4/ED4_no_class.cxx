@@ -830,7 +830,7 @@ void ED4_exit() {
 }
 
 void ED4_quit_editor(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
-    ED4_LocalWinContext uses(aww);
+    ED4_LocalWinContext uses(aww); // @@@ dont use context here
 
     if (ED4_ROOT->first_window == current_ed4w()) { // quit button has been pressed in first window
         ED4_exit();
@@ -1278,14 +1278,8 @@ void group_species_cb(AW_window *aww, AW_CL cl_use_fields, AW_CL) {
     }
 }
 
-void ED4_load_new_config(char *string)
-{
-    char *config_data_top    = NULL;
-    char *config_data_middle = NULL;
-
-    ED4_window     *window;
-    GB_transaction  dummy(GLOBAL_gb_main);
-
+void ED4_load_new_config(char *string) {
+    GB_transaction ta(GLOBAL_gb_main);
 
     ED4_ROOT->main_manager->clear_whole_background();
     ED4_calc_terminal_extentions();
@@ -1294,10 +1288,11 @@ void ED4_load_new_config(char *string)
 
     ED4_init_notFoundMessage();
 
-
     if (ED4_ROOT->selected_objects.no_of_entries() > 0) {
         ED4_ROOT->deselect_all();
     }
+
+    ED4_ROOT->remove_all_callbacks();
 
     ED4_ROOT->scroll_picture.scroll         = 0;
     ED4_ROOT->scroll_picture.old_x          = 0;
@@ -1305,20 +1300,25 @@ void ED4_load_new_config(char *string)
 
     ED4_ROOT->ref_terminals.clear();
 
-    for (window=ED4_ROOT->first_window; window; window=window->next) {
+    for (ED4_window *window = ED4_ROOT->first_window; window; window=window->next) {
         window->cursor.init();
         window->aww->set_horizontal_scrollbar_position (0);
         window->aww->set_vertical_scrollbar_position (0);
     }
 
-    ED4_ROOT->scroll_links.link_for_hor_slider  = NULL;
-    ED4_ROOT->scroll_links.link_for_ver_slider  = NULL;
-    ED4_ROOT->middle_area_man           = NULL;
-    ED4_ROOT->top_area_man              = NULL;
+    ED4_ROOT->scroll_links.link_for_hor_slider = NULL;
+    ED4_ROOT->scroll_links.link_for_ver_slider = NULL;
+    ED4_ROOT->middle_area_man                  = NULL;
+    ED4_ROOT->top_area_man                     = NULL;
+
+    
 
     delete ED4_ROOT->main_manager;
-    ED4_ROOT->main_manager              = NULL;
+    ED4_ROOT->main_manager = NULL;
     delete ED4_ROOT->ecoli_ref;
+
+    char *config_data_top    = NULL;
+    char *config_data_middle = NULL;
     {
         GB_push_transaction(GLOBAL_gb_main);
         GBDATA *gb_configuration = GBT_find_configuration(GLOBAL_gb_main, string);
