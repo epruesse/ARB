@@ -1872,7 +1872,10 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
         error = "Please enter a full_name for the new species";
     }
     else {
-        error                    = GB_begin_transaction(GLOBAL_gb_main);
+        ED4_MostRecentWinContext context;
+
+        error = GB_begin_transaction(GLOBAL_gb_main);
+
         GBDATA *gb_species_data  = GB_search(GLOBAL_gb_main, "species_data",  GB_CREATE_CONTAINER);
         char   *new_species_name = 0;
         char   *acc              = 0;
