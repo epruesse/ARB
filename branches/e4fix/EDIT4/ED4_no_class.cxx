@@ -651,12 +651,12 @@ void ED4_motion_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
     }
 }
 
-void ED4_remote_set_cursor_cb(AW_root *awr, AW_CL /* cd1 */, AW_CL /* cd2 */)
-{
+void ED4_remote_set_cursor_cb(AW_root *awr, AW_CL /* cd1 */, AW_CL /* cd2 */) {
     AW_awar *awar = awr->awar(AWAR_SET_CURSOR_POSITION);
     long     pos  = awar->read_int();
 
     if (pos != -1) {
+        ED4_MostRecentWinContext context;
         ED4_cursor *cursor = &current_cursor();
         cursor->jump_sequence_pos(pos, ED4_JUMP_CENTERED);
         awar->write_int(-1);

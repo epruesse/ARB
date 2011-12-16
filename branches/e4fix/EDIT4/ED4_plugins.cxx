@@ -52,7 +52,7 @@ public:
 
     void announce_current_species(const char *species_name) {
         ED4_base *base = ED4_ROOT->main_manager->find_first_that(ED4_L_SEQUENCE_STRING, has_species_name, (AW_CL)species_name);
-        seq_term       = base->to_sequence_terminal();
+        seq_term       = base ? base->to_sequence_terminal() : NULL;
     }
 
     bool SAIs_visualized() const { return ED4_ROOT->visualizeSAI; }
