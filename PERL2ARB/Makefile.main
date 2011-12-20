@@ -10,7 +10,7 @@ MAKETHIS=$(MAKE) -f $(THIS)
 LIB=$(ARBHOME)/lib
 ARBDB=$(ARBHOME)/ARBDB
 
-# code in -> ../TOOLS/arb_proto_2_xsub.cxx
+# code in -> ../PERLTOOLS/arb_proto_2_xsub.cxx
 ARB_PROTO_2_XSUB=$(ARBHOME)/bin/arb_proto_2_xsub
 
 HEADERS = \
