@@ -870,11 +870,13 @@ static void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL) {
     }
 }
 
+#if defined(DEBUG)
 static void NT_fix_database(AW_window *) {
     GB_ERROR err = 0;
     err = GB_fix_database(GLOBAL_gb_main);
     if (err) aw_message(err);
 }
+#endif
 
 static void relink_pseudo_species_to_organisms(GBDATA *&ref_gb_node, char *&ref_name, GB_HASH *organism_hash) {
     if (ref_gb_node) {
@@ -989,7 +991,7 @@ static void NT_popup_species_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
 
 // --------------------------------------------------------------------------------------------------
 
-static void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
+static void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) { // @@@ test and activate for public
     GBDATA               *gb_main = (GBDATA*)cl_gb_main;
     GBT_TREE_REMOVE_TYPE  mode    = (GBT_TREE_REMOVE_TYPE)cl_mode;
 
