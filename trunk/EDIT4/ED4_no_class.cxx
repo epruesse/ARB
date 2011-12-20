@@ -839,14 +839,6 @@ void ED4_quit_editor(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
     ED4_ROOT->get_ed4w()->is_hidden = true;
 }
 
-static void ED4_load_data(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    ED4_ROOT->use_window(aww);
-}
-
-static void ED4_save_data(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    ED4_ROOT->use_window(aww);
-}
-
 void ED4_timer_refresh()
 {
     GB_begin_transaction(GLOBAL_gb_main);                  // for callbacks from database

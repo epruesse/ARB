@@ -70,39 +70,6 @@ char *GBS_string_2_key(const char *str) // converts any string to a valid key
     return GBS_string_2_key_with_exclusions(str, "");
 }
 
-static void gbs_uppercase(char *str) {
-    char c;
-    while ((c=*str)) {
-        if ((c<='z') && (c>='a')) *str = c - 'a' + 'A';
-        str++;
-    }
-}
-
-#if defined(WARN_TODO)
-#warning replace/implement gbs_memcopy by memmove
-#endif
-static void gbs_memcopy(char *dest, const char *source, long len) {
-    long        i;
-    const char *s;
-    char       *d;
-
-    i = len;
-    s = source;
-    d = dest;
-    if (s < d) {
-        s += i;
-        d += i;
-        while (i--) {
-            *(--d) = *(--s);
-        }
-    }
-    else {
-        while (i--) {
-            *(d++) = *(s++);
-        }
-    }
-}
-
 char *GB_memdup(const char *source, size_t len) {
     char *dest = (char *)malloc(len);
     memcpy(dest, source, len);
@@ -198,30 +165,6 @@ GB_ERROR GB_check_hkey(const char *key) { // goes to header: __ATTR__USERESULT
     }
 
     return err;
-}
-
-static char *gbs_add_path(char *path, char *name) {
-    long i, len, found;
-    char *erg;
-    if (!name) return name;
-    if (!path) {
-        return 0;
-    }
-    if (*name == '/') return name;
-    found = 0;
-    len = strlen(path);
-    for (i=0; i<len; i++) {
-        if (path[i] == '/') found = i+1;
-    }
-    len = found + strlen(name);
-    erg = (char *)GB_calloc(sizeof(char), (size_t)(len + 1));
-    for (i=0; i<found; i++) {
-        erg[i] = path[i];
-    }
-    for (i=found; i<len; i++) {
-        erg[i] = name[i-found];
-    }
-    return erg;
 }
 
 // ---------------------------
@@ -896,7 +839,7 @@ void GBS_fwrite_string(const char *strngi, FILE *out) {
  *  any changes should be done in GBS_fconvert_string too.
  */
 
-static char *GBS_fread_string(FILE *in) {
+static char *GBS_fread_string(FILE *in) { // @@@ should be used when reading things written by GBS_fwrite_string, but it's unused!
     GBS_strstruct *strstr = GBS_stropen(1024);
     int            x;
 

@@ -39,11 +39,6 @@ char *TargetRange::dup_corresponding_part(const char *source, size_t source_len)
     return dup;
 }
 
-static void awtc_ff_message(const char *msg) {
-    GB_warning(msg);
-}
-
-
 // -------------------
 //      FamilyList
 

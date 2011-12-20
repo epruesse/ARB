@@ -42,9 +42,8 @@
 
 AW_HEADER_MAIN
 
-ED4_root     *ED4_ROOT;
-GBDATA       *GLOBAL_gb_main = NULL;                                    // global gb_main for arb_edit4
-static ED4_database *main_db;
+ED4_root *ED4_ROOT;
+GBDATA   *GLOBAL_gb_main = NULL;                                        // global gb_main for arb_edit4
 
 int TERMINALHEIGHT;                                                     // this variable replaces the define
 
@@ -67,13 +66,7 @@ bool         move_cursor;                           // only needed for editing i
 bool         DRAW;
 bool         last_window_reached;                   // needed for refreshing all windows (if TRUE refresh/...-flags will be cleared)
 
-static void ED4_config_change_cb(AW_root *)
-{
-    // @@@ FIXME: ok to be empty ? check!
-}
-
-inline void replaceChars(char *s, char o, char n)
-{
+inline void replaceChars(char *s, char o, char n) {
     while (1) {
         char c = *s++;
         if (!c) {
@@ -152,11 +145,6 @@ static void baum(ED4_base *base)
     printf("\n");
 
     level--;
-}
-
-static void baum(const char *id)
-{
-    baum(ED4_ROOT->root_group_man->search_ID(id));
 }
 
 #endif

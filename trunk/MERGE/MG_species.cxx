@@ -43,7 +43,6 @@ static DbScanner *ad_global_scanner1 = 0;
 static DbScanner *ad_global_scanner2 = 0;
 
 const char *MG_left_AWAR_SPECIES_NAME() { return AWAR_SPECIES1; }
-static const char *MG_right_AWAR_SPECIES_NAME() { return AWAR_SPECIES2; }
 
 void MG_create_species_awars(AW_root *aw_root, AW_default aw_def)
 {

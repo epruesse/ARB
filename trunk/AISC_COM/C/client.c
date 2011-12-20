@@ -31,8 +31,7 @@
 
 static const char *err_connection_problems = "CONNECTION PROBLEMS";
 
-int   aisc_core_on_error = 1;
-static char *aisc_error;
+int aisc_core_on_error = 1;
 
 #define CORE()                                                  \
     do {                                                        \
@@ -426,58 +425,6 @@ int aisc_close(aisc_com *link) {
     return 0;
 }
 
-
-static int aisc_get_message(aisc_com *link)
-{
-    int anz, len;
-    long        size, magic_number;
-    struct timeval timeout;
-    fd_set set;
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 0;
-    FD_ZERO (&set);
-    FD_SET (link->socket, &set);
-
-    if (link->message) free(link->message);
-    link->message_type = 0;
-    link->message = 0;
-
-    anz = select(FD_SETSIZE, &set, NULL, NULL, &timeout);
-
-    if (anz) {
-        len = aisc_c_read(link->socket, (char *)(link->aisc_mes_buffer), 2*sizeof(long));
-        if (len != 2*sizeof(long)) {
-            link->error = err_connection_problems;
-            PRTERR("AISC_ERROR");
-            return -1;
-        }
-        if (!link->aisc_mes_buffer[0]) {
-            link->error = err_connection_problems;
-            PRTERR("AISC_ERROR");
-            return -1;
-        }
-        magic_number = link->aisc_mes_buffer[1]-link->magic;
-        if (magic_number != AISC_CCOM_MESSAGE) {
-            link->error = err_connection_problems;
-            PRTERR("AISC_ERROR");
-            return -1;
-        }
-        size = link->aisc_mes_buffer[0];
-        if (aisc_add_message_queue(link, size*sizeof(long))) return -1;
-    }
-    if (link->message_queue) {
-        client_msg_queue *msg = (client_msg_queue *)link->message_queue;
-        link->message_queue = (int *)msg->next;
-        link->message = msg->message;
-        link->message_type = msg->message_type;
-        free(msg);
-        return link->message_type;
-    }
-    return 0;
-}
-
-
-
 int aisc_get(aisc_com *link, int o_type, long object, ...)
 {
     // goes to header: __ATTR__SENTINEL
@@ -846,139 +793,6 @@ int aisc_create(aisc_com *link, int father_type, long father,
     if (aisc_c_send_bytes_queue(link)) return 1;
     if (aisc_check_error(link)) return 1;
     *object = link->aisc_mes_buffer[0];
-    return 0;
-}
-
-static int aisc_copy(aisc_com *link, int s_type, long source, int father_type,
-                long father, int attribute, int object_type, long *object, ...)
-{
-    // goes to header: __ATTR__SENTINEL
-    int mes_cnt;
-    int len;
-    va_list parg;
-    *object = 0;
-    if (s_type != object_type) {
-        link->error = "OBJECT_TYPE IS DIFFERENT FROM SOURCE_TYPE";
-        PRTERR("AISC_COPY_ERROR");
-        CORE();
-        return 1;
-    }
-
-    mes_cnt = 2;
-    if ((father_type&0xff00ffff)) {
-        link->error = "FATHER UNKNOWN";
-        PRTERR("AISC_COPY_ERROR");
-        CORE();
-        return 1;
-    }
-    link->aisc_mes_buffer[mes_cnt++] = source;
-    link->aisc_mes_buffer[mes_cnt++] = father_type;
-    link->aisc_mes_buffer[mes_cnt++] = father;
-    link->aisc_mes_buffer[mes_cnt++] = attribute;
-    link->aisc_mes_buffer[mes_cnt++] = object_type;
-    if (father_type != (attribute & AISC_OBJ_TYPE_MASK)) {
-        link->error = "ATTRIBUTE TYPE DON'T FIT OBJECT";
-        PRTERR("AISC_COPY_ERROR");
-        CORE();
-        return 1;
-    }
-    va_start(parg, object);
-    if (!(mes_cnt = aisc_collect_sets(link, mes_cnt, parg, object_type, 9))) return 1;
-    link->aisc_mes_buffer[0] = mes_cnt - 2;
-    link->aisc_mes_buffer[1] = AISC_COPY+link->magic;
-    len = aisc_c_write(link->socket, (const char *)(link->aisc_mes_buffer), mes_cnt * sizeof(long));
-    if (!len) {
-        link->error = err_connection_problems;
-        PRTERR("AISC_COPY_ERROR");
-        return 1;
-    }
-    if (aisc_c_send_bytes_queue(link)) return 1;
-    if (aisc_check_error(link)) return 1;
-    *object = link->aisc_mes_buffer[0];
-    return 0;
-}
-
-
-
-static int aisc_delete(aisc_com *link, int object_type, long source)
-{
-    int len, mes_cnt;
-
-    mes_cnt = 2;
-    link->aisc_mes_buffer[mes_cnt++] = object_type;
-    link->aisc_mes_buffer[mes_cnt++] = source;
-    link->aisc_mes_buffer[0] = mes_cnt - 2;
-    link->aisc_mes_buffer[1] = AISC_DELETE+link->magic;
-    len = aisc_c_write(link->socket, (const char *)(link->aisc_mes_buffer), mes_cnt * sizeof(long));
-    if (!len) {
-        link->error = err_connection_problems;
-        PRTERR("AISC_DELETE_ERROR");
-        return 1;
-    }
-    return aisc_check_error(link);
-}
-
-
-static int aisc_find(aisc_com *link,
-              int father_type,
-              long      father,
-              int       attribute,
-              int       object_type,
-              long      *object,
-              char      *ident)
-{
-    int mes_cnt;
-    int i, len;
-    char        *to_free = 0;
-    object_type = object_type;
-    *object = 0;
-    mes_cnt = 2;
-    if ((father_type&0xff00ffff)) {
-        link->error = "FATHER_TYPE UNKNOWN";
-        PRTERR("AISC_FIND_ERROR");
-        CORE();
-        return 1;
-    }
-    if (father_type != (attribute & AISC_OBJ_TYPE_MASK)) {
-        link->error = "ATTRIBUTE TYPE DON'T MACH FATHER";
-        PRTERR("AISC_FIND_ERROR");
-        CORE();
-    }
-    link->aisc_mes_buffer[mes_cnt++] = father_type;
-    link->aisc_mes_buffer[mes_cnt++] = father;
-    link->aisc_mes_buffer[mes_cnt++] = attribute;
-    if (!ident) {
-        link->error = "IDENT == NULL";
-        PRTERR("AISC_FIND_ERROR");
-        CORE();
-        return 1;
-    }
-    len = strlen(ident);
-    if (len >= 32) {
-        sprintf(errbuf, "len(\'%s\') > 32)", ident);
-        link->error = errbuf;
-        PRTERR("AISC_FIND_ERROR");
-        return 1;
-    }
-    if (((long)ident) & 3) {
-        to_free = ident = strdup(ident);
-    }
-    len = (len+1)/sizeof(long)+1;
-    link->aisc_mes_buffer[mes_cnt++] = len;
-    for (i=0; i<len; i++) {
-        link->aisc_mes_buffer[mes_cnt++] = ((long *)ident)[i];
-    }
-    link->aisc_mes_buffer[0] = mes_cnt - 2;
-    link->aisc_mes_buffer[1] = AISC_FIND+link->magic;
-    len = aisc_c_write(link->socket, (const char *)(link->aisc_mes_buffer), mes_cnt * sizeof(long));
-    if (!len) {
-        link->error = err_connection_problems;
-        PRTERR("AISC_FIND_ERROR");
-        return 1;
-    }
-    if (aisc_check_error(link)) return 1;
-    *object = link->aisc_mes_buffer[0];
-    if (to_free) free(to_free);
     return 0;
 }
 

@@ -33,7 +33,7 @@
  * Integration Notes: The main function using this module must have a
  *                    callback to the function
  *                    AW_window *AP_open_cprofile_window( AW_root *aw_root)
- *                    and the function void create_consensus_var
+ *                    and the function void AP_create_consensus_var
  *                    (AW_root *aw_root, AW_default aw_def) has to be called.
  *
  * -----------------------------------------------------------------

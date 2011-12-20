@@ -1331,13 +1331,7 @@ AW_window *create_probe_design_window(AW_root *root, AW_CL cl_gb_main) {
     return aws;
 }
 
-static void print_event(AW_window *aww, AW_CL selection_id, AW_CL name) {
-    char *filename = (char *)name;
-    aww->save_selection_list((AW_selection_list *)selection_id, filename);
-}
-
 // -------------------------------------------------------------------
-
 
 inline void my_strupr(char *s) {
     pd_assert(s);

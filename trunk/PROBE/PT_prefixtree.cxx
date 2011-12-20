@@ -112,24 +112,6 @@ static char *PTM_get_mem(int size) {
     return erg;
 }
 
-static int PTM_destroy_mem() {
-    //! destroys all leftover memory sources
-    int  pos;
-    long i;
-    int  sum;
-
-    sum = 0;
-    for (pos=0; pos<=PTM_MAX_TABLES; pos++) {
-        while (PTM.tables[pos]) {
-            sum += pos;
-            PT_READ_PNTR(((char *)PTM.tables[pos]), i);
-            PTM.tables[pos] = (char *)i;
-        }
-    }
-    pt_assert(sum >= 0);
-    return sum;
-}
-
 static void PTM_free_mem(char *data, int size) {
     //! free memory allocated by PTM_get_mem()
 
@@ -152,18 +134,6 @@ static void PTM_free_mem(char *data, int size) {
         data[sizeof(PT_PNTR)] = PTM_magic;
         PTM.tables[pos] = data;
     }
-}
-
-static void PTM_debug_mem()
-{
-#ifdef PTM_DEBUG
-    int i;
-    for (i=1; i<(PTM_MAX_SIZE>>PTM_LD_ALIGNED); i++) {
-        if (PTM.debug[i]) {
-            printf("Size %5i used %5li times\n", i, PTM.debug[i]);
-        }
-    }
-#endif
 }
 
 PTM2 *PT_init() {
@@ -557,8 +527,7 @@ static long PTD_write_chain_to_disk(FILE * out, POS_TREE * node, long pos, ARB_E
     return pos;
 }
 
-static void PTD_debug_nodes()
-{
+void PTD_debug_nodes() {
 #ifdef ARB_64
     printf ("Inner Node Statistic:\n");
     printf ("   Single Nodes:   %6i\n", psg.stat.single_node);

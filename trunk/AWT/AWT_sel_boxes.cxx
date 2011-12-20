@@ -767,15 +767,3 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
     return aws;
 }
 
-static void awt_set_long(AW_window *aws, AW_CL varname, AW_CL value)   // set an awar
-{
-    aws->get_root()->awar((char *)varname)->write_int((long) value);
-}
-
-static void awt_write_string(AW_window *aws, AW_CL varname, AW_CL value)   // set an awar
-{
-    aws->get_root()->awar((char *)varname)->write_string((char *)value);
-}
-
-
-

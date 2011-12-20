@@ -125,13 +125,9 @@ inline void move_last_elem(CharPtrArray& names, int before_pos) {
         GBT_names_move(names, last_idx, before_pos);
     }
 }
-static void GBT_names_add(StrArray& names, int insert_before, const char *name) {
+void GBT_names_add(ConstStrArray& names, int insert_before, const char *name) {
     // insert a new 'name' before position 'insert_before'
     // if 'insert_before' == -1 (or bigger than array size) -> append at end
-    names.put(strdup(name));
-    move_last_elem(names, insert_before);
-}
-void GBT_names_add(ConstStrArray& names, int insert_before, const char *name) {
     names.put(name);
     move_last_elem(names, insert_before);
 }

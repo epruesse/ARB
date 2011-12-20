@@ -24,11 +24,6 @@ GBDATA* EXP_find_experiment(GBDATA *gb_species, const char *name) {
     // Note: If you know the experiment exists, use EXP_expect_experiment!
     return EXP_find_experiment_rel_exp_data(EXP_get_experiment_data(gb_species), name);
 }
-static GBDATA* EXP_expect_experiment(GBDATA *gb_species, const char *name) {
-    // find existing experiment
-    return GBT_expect_item_rel_item_data(EXP_get_experiment_data(gb_species), "name", name);
-}
-
 GBDATA* EXP_first_experiment_rel_exp_data(GBDATA *gb_experiment_data) {
     return GB_entry(gb_experiment_data, "experiment");
 }

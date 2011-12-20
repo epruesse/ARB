@@ -874,26 +874,6 @@ char *MP_get_comment(int which, const char *str) {
     return result;
 }
 
-static char *MP_remove_comment(char *old_str)
-{
-    char *result = strrchr(old_str, '#');
-    char *help;
-    char *ret_res;
-
-    if (!result)
-        return strdup(old_str);
-
-    *result = 0;
-    help = old_str;
-    while (*help == ' ' || *help == '\t')
-        help ++;
-
-    ret_res = strdup(help);
-    *result = '#';
-
-    return ret_res;
-}
-
 void MP_result_chosen(AW_window */*aww*/) {
     AW_root *aw_root = mp_main->get_aw_root();
     char    *str     = aw_root->awar(MP_AWAR_RESULTPROBES)->read_as_string();

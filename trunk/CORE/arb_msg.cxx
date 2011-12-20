@@ -155,10 +155,6 @@ const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char
     return buffer;
 }
 
-static size_t GBS_last_global_string_size() {
-    return last_global_string_size;
-}
-
 char *GBS_global_string_copy(const char *templat, ...) {
     // goes to header: __ATTR__FORMAT(1)
 

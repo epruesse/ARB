@@ -350,10 +350,6 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
 GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree) {
     return gbt_write_tree(gb_main, gb_tree, tree_name, tree, 0);
 }
-static GB_ERROR GBT_write_plain_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_TREE *tree) {
-    return gbt_write_tree(gb_main, gb_tree, tree_name, tree, 1);
-}
-
 GB_ERROR GBT_write_tree_rem(GBDATA *gb_main, const char *tree_name, const char *remark) {
     return GBT_write_string(GBT_get_tree(gb_main, tree_name), "remark", remark);
 }
@@ -557,18 +553,6 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long st
 GBT_TREE *GBT_read_tree(GBDATA *gb_main, const char *tree_name, long structure_size) {
     //! @see GBT_read_tree_and_size()
     return GBT_read_tree_and_size(gb_main, tree_name, structure_size, 0);
-}
-
-static GBT_TREE *GBT_read_plain_tree(GBDATA *gb_main, GBDATA *gb_ctree, long structure_size, GB_ERROR *error) {
-    GBT_TREE *t;
-
-    gb_assert(error && !*error); // expect cleared error
-
-    GB_push_transaction(gb_main);
-    t = read_tree_and_size_internal(0, gb_ctree, structure_size, 0, error);
-    GB_pop_transaction(gb_main);
-
-    return t;
 }
 
 size_t GBT_count_leafs(const GBT_TREE *tree) {
