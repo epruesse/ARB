@@ -9,7 +9,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ps_pg_tree_functions.cxx"
+#include "ps_pg_tree_functions.hxx"
 #include "ps_filebuffer.hxx"
 
 #include <sys/times.h>

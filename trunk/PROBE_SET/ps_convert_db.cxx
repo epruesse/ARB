@@ -11,7 +11,8 @@
 
 #include "ps_tools.hxx"
 #include "ps_database.hxx"
-#include "ps_pg_tree_functions.cxx"
+#include "ps_pg_tree_functions.hxx"
+#include "ps_pg_specmap.hxx"
 
 #include <sys/times.h>
 
