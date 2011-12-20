@@ -27,7 +27,7 @@ using namespace std;
 
 #define AW_MESSAGE_LISTEN_DELAY 100 // look in ms whether a father died
 
-int aw_message_cb_result;
+static int aw_message_cb_result;
 
 void message_cb(AW_window *, AW_CL cd1) {
     long result = (long)cd1;
@@ -234,8 +234,8 @@ void aw_popup_exit(const char *msg, bool fixedSizeButtons, const char *helpfile)
 // -----------------
 //      aw_input
 
-char       *aw_input_cb_result        = 0;
-static int  aw_string_selected_button = -2;
+static char *aw_input_cb_result        = 0;
+static int   aw_string_selected_button = -2;
 
 int aw_string_selection_button() {
     aw_assert(aw_string_selected_button != -2);
@@ -490,7 +490,7 @@ char *aw_input(const char *prompt, const char *default_input) {
     return aw_input("Enter string", prompt, default_input);
 }
 
-char *aw_input2awar(const char *title, const char *prompt, const char *awar_name) {
+static char *aw_input2awar(const char *title, const char *prompt, const char *awar_name) {
     AW_root *aw_root       = AW_root::SINGLETON;
     AW_awar *awar          = aw_root->awar(awar_name);
     char    *default_value = awar->read_string();

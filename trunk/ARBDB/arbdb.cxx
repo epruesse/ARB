@@ -85,6 +85,20 @@ inline GB_ERROR gb_transactable_type(GB_TYPES type, GBDATA *gbd) {
     }
     return error;
 }
+
+__ATTR__USERESULT static GB_ERROR gb_security_error(GBDATA *gbd) {
+    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
+    const char   *error = GBS_global_string("Protection: Attempt to change a level-%i-'%s'-entry,\n"
+                                            "but your current security level is only %i",
+                                            GB_GET_SECURITY_WRITE(gbd),
+                                            GB_read_key_pntr(gbd),
+                                            Main->security_level);
+#if defined(DEBUG)
+    fprintf(stderr, "%s\n", error);
+#endif // DEBUG
+    return error;
+}
+
 inline GB_ERROR gb_type_writeable_to(GB_TYPES type, GBDATA *gbd) {
     GB_ERROR error = gb_transactable_type(type, gbd);
     if (!error) {
@@ -138,13 +152,13 @@ inline GB_ERROR error_with_dbentry(const char *action, GBDATA *gbd, GB_ERROR err
     } while (0)
 
 
-char *GB_rel(void *struct_address, long rel_address)
+static char *GB_rel(void *struct_address, long rel_address)
 {
     if (!rel_address) return NULL;
     return (char*)struct_address+rel_address;
 }
 
-NOT4PERL GB_ERROR GB_safe_atof(const char *str, double *res) {
+static GB_ERROR GB_safe_atof(const char *str, double *res) {
     GB_ERROR  error = NULL;
     char     *end;
     *res            = strtod(str, &end);
@@ -298,7 +312,7 @@ GB_BUFFER GB_give_buffer2(long size) {
     return give_buffer(&gb_local->buf2, size);
 }
 
-int GB_is_in_buffer(GB_CBUFFER ptr) {
+static int GB_is_in_buffer(GB_CBUFFER ptr) {
     /* returns 1 or 2 if 'ptr' points to gb_local->buf1/buf2
      * returns 0 otherwise
      */
@@ -329,7 +343,7 @@ GB_BUFFER GB_give_other_buffer(GB_CBUFFER buffer, long size) {
         : GB_give_buffer(size);
 }
 
-unsigned char GB_BIT_compress_data[] = {
+static unsigned char GB_BIT_compress_data[] = {
     0x1d, GB_CS_OK,  0, 0,
     0x04, GB_CS_OK,  0, 1,
     0x0a, GB_CS_OK,  0, 2,
@@ -514,7 +528,7 @@ void gb_local_data::announce_db_close(GB_MAIN_TYPE *Main) {
     }
 }
 
-GBDATA *gb_remembered_db() {
+static GBDATA *gb_remembered_db() {
     GB_MAIN_TYPE *Main = gb_local ? gb_local->get_any_open_db() : NULL;
     return Main ? (GBDATA*)Main->data : NULL;
 }
@@ -614,6 +628,43 @@ static void run_close_callbacks(GBDATA *gb_main, gb_close_callback_list *gccs) {
         free(gccs);
         gccs = next;
     }
+}
+
+static gb_callback_list *g_b_old_callback_list = NULL; // points to callback during callback (NULL otherwise)
+static GB_MAIN_TYPE     *g_b_old_main          = NULL; // points to DB root during callback (NULL otherwise)
+
+static GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
+    gb_callback_list *cbl, *cbl_next;
+    g_b_old_main = Main;
+
+    // first all delete callbacks:
+    for (cbl = Main->cbld; cbl;  cbl = cbl_next) {
+        g_b_old_callback_list = cbl;
+        cbl->func(cbl->gbd, cbl->clientdata, GB_CB_DELETE);
+        cbl_next = cbl->next;
+        g_b_old_callback_list = NULL;
+        gb_del_ref_gb_transaction_save(cbl->old);
+        gbm_free_mem(cbl, sizeof(gb_callback_list), GBM_CB_INDEX);
+    }
+
+    Main->cbld_last = NULL;
+    Main->cbld      = NULL;
+
+    // then all update callbacks:
+    for (cbl = Main->cbl; cbl;  cbl = cbl_next) {
+        g_b_old_callback_list = cbl;
+        cbl->func(cbl->gbd, cbl->clientdata, cbl->type);
+        cbl_next = cbl->next;
+        g_b_old_callback_list = NULL;
+        gb_del_ref_gb_transaction_save(cbl->old);
+        gbm_free_mem(cbl, sizeof(gb_callback_list), GBM_CB_INDEX);
+    }
+
+    g_b_old_main   = NULL;
+    Main->cbl_last = NULL;
+    Main->cbl      = NULL;
+
+    return 0;
 }
 
 void GB_close(GBDATA *gbd) {
@@ -907,7 +958,7 @@ long GB_read_floats_count(GBDATA *gbd)
     return GB_GETSIZE(gbd);
 }
 
-float *GB_read_floats(GBDATA *gbd)
+static float *GB_read_floats(GBDATA *gbd)
 {
     GB_CFLOAT *f;
     f = GB_read_floats_pntr(gbd);
@@ -1288,19 +1339,6 @@ int GB_get_my_security(GBDATA *gbd) {
     return GB_MAIN(gbd)->security_level;
 }
 
-GB_ERROR gb_security_error(GBDATA *gbd) { // goes to header: __ATTR__USERESULT
-    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
-    const char   *error = GBS_global_string("Protection: Attempt to change a level-%i-'%s'-entry,\n"
-                                            "but your current security level is only %i",
-                                            GB_GET_SECURITY_WRITE(gbd),
-                                            GB_read_key_pntr(gbd),
-                                            Main->security_level);
-#if defined(DEBUG)
-    fprintf(stderr, "%s\n", error);
-#endif // DEBUG
-    return error;
-}
-
 GB_ERROR GB_write_security_write(GBDATA *gbd, unsigned long level)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
@@ -1537,7 +1575,7 @@ GBDATA *gb_create_container(GBDATA *father, const char *key) {
     return (GBDATA *)gbd;
 }
 
-void gb_rename(GBCONTAINER *gbc, const char *new_key) {
+static void gb_rename(GBCONTAINER *gbc, const char *new_key) {
     gb_rename_entry(gbc, new_key);
 }
 
@@ -1664,6 +1702,56 @@ GBDATA *GB_create_container(GBDATA *father, const char *key) {
     gb_touch_entry((GBDATA *)gbd, GB_CREATED);
     return (GBDATA *)gbd;
 }
+
+// ----------------------
+//      recompression
+
+#if defined(WARN_TODO)
+#warning rename gb_set_compression into gb_recompress (misleading name)
+#endif
+
+static GB_ERROR gb_set_compression(GBDATA *source) {
+    long type;
+    GB_ERROR error = 0;
+    GBDATA *gb_p;
+    char *string;
+
+    GB_test_transaction(source);
+    type = GB_TYPE(source);
+
+    switch (type) {
+        case GB_STRING:
+            string = GB_read_string(source);
+            GB_write_string(source, "");
+            GB_write_string(source, string);
+            free(string);
+            break;
+        case GB_BITS:
+        case GB_BYTES:
+        case GB_INTS:
+        case GB_FLOATS:
+            break;
+        case GB_DB:
+            for (gb_p = GB_child(source); gb_p; gb_p = GB_nextChild(gb_p)) {
+                error = gb_set_compression(gb_p);
+                if (error) break;
+            }
+            break;
+        default:
+            break;
+    }
+    if (error) return error;
+    return 0;
+}
+
+bool GB_allow_compression(GBDATA *gb_main, bool allow_compression) {
+    GB_MAIN_TYPE *Main      = GB_MAIN(gb_main);
+    int           prev_mask = Main->compression_mask;
+    Main->compression_mask  = allow_compression ? -1 : 0;
+
+    return prev_mask == 0 ? false : true;
+}
+
 
 #if defined(WARN_TODO)
 #warning change param for GB_delete to GBDATA **
@@ -1878,56 +1966,6 @@ char* GB_get_subfields(GBDATA *gbd) {
     }
 
     return result;
-}
-
-// ----------------------
-//      recompression
-
-#if defined(WARN_TODO)
-#warning rename gb_set_compression into gb_recompress (misleading name)
-#endif
-
-GB_ERROR gb_set_compression(GBDATA *source)
-{
-    long type;
-    GB_ERROR error = 0;
-    GBDATA *gb_p;
-    char *string;
-
-    GB_test_transaction(source);
-    type = GB_TYPE(source);
-
-    switch (type) {
-        case GB_STRING:
-            string = GB_read_string(source);
-            GB_write_string(source, "");
-            GB_write_string(source, string);
-            free(string);
-            break;
-        case GB_BITS:
-        case GB_BYTES:
-        case GB_INTS:
-        case GB_FLOATS:
-            break;
-        case GB_DB:
-            for (gb_p = GB_child(source); gb_p; gb_p = GB_nextChild(gb_p)) {
-                error = gb_set_compression(gb_p);
-                if (error) break;
-            }
-            break;
-        default:
-            break;
-    }
-    if (error) return error;
-    return 0;
-}
-
-bool GB_allow_compression(GBDATA *gb_main, bool allow_compression) {
-    GB_MAIN_TYPE *Main      = GB_MAIN(gb_main);
-    int           prev_mask = Main->compression_mask;
-    Main->compression_mask  = allow_compression ? -1 : 0;
-
-    return prev_mask == 0 ? false : true;
 }
 
 // --------------------------
@@ -2340,43 +2378,6 @@ void gb_add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, GB_CB fu
     cbl->old = old;
 }
 
-static gb_callback_list *g_b_old_callback_list = NULL; // points to callback during callback (NULL otherwise)
-static GB_MAIN_TYPE     *g_b_old_main          = NULL; // points to DB root during callback (NULL otherwise)
-
-GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
-    gb_callback_list *cbl, *cbl_next;
-    g_b_old_main = Main;
-
-    // first all delete callbacks:
-    for (cbl = Main->cbld; cbl;  cbl = cbl_next) {
-        g_b_old_callback_list = cbl;
-        cbl->func(cbl->gbd, cbl->clientdata, GB_CB_DELETE);
-        cbl_next = cbl->next;
-        g_b_old_callback_list = NULL;
-        gb_del_ref_gb_transaction_save(cbl->old);
-        gbm_free_mem(cbl, sizeof(gb_callback_list), GBM_CB_INDEX);
-    }
-
-    Main->cbld_last = NULL;
-    Main->cbld      = NULL;
-
-    // then all update callbacks:
-    for (cbl = Main->cbl; cbl;  cbl = cbl_next) {
-        g_b_old_callback_list = cbl;
-        cbl->func(cbl->gbd, cbl->clientdata, cbl->type);
-        cbl_next = cbl->next;
-        g_b_old_callback_list = NULL;
-        gb_del_ref_gb_transaction_save(cbl->old);
-        gbm_free_mem(cbl, sizeof(gb_callback_list), GBM_CB_INDEX);
-    }
-
-    g_b_old_main   = NULL;
-    Main->cbl_last = NULL;
-    Main->cbl      = NULL;
-
-    return 0;
-}
-
 GB_MAIN_TYPE *gb_get_main_during_cb() {
     /* if inside a callback, return the DB root of the DB element, the callback was called for.
      * if not inside a callback, return NULL.
@@ -2425,7 +2426,7 @@ GBDATA *GB_get_gb_main_during_cb() {
 
 
 
-GB_CSTR gb_read_pntr_ts(GBDATA *gbd, gb_transaction_save *ts) {
+static GB_CSTR gb_read_pntr_ts(GBDATA *gbd, gb_transaction_save *ts) {
     int         type = GB_TYPE_TS(ts);
     const char *data = GB_GETDATA_TS(ts);
     if (data) {
@@ -2491,7 +2492,7 @@ char *GB_get_callback_info(GBDATA *gbd) {
     return result;
 }
 
-GB_ERROR GB_add_priority_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata, int priority) {
+static GB_ERROR GB_add_priority_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata, int priority) {
     /* Adds a callback to a DB entry.
      *
      * Callbacks with smaller priority values get executed before bigger priority values.
@@ -2873,10 +2874,10 @@ GB_ERROR GB_print_debug_information(void */*dummy_AW_root*/, GBDATA *gb_main) {
     return 0;
 }
 
-int GB_info_deep = 15;
+static int GB_info_deep = 15;
 
 
-int gb_info(GBDATA *gbd, int deep) {
+static int gb_info(GBDATA *gbd, int deep) {
     GBCONTAINER *gbc;
     GB_TYPES type;
     char    *data;

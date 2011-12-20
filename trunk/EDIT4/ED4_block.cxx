@@ -168,7 +168,7 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(ED4_blockoperation b
 
 
 
-void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
+static void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
     GB_ERROR    error    = GB_begin_transaction(GLOBAL_gb_main);
     ED4_cursor *cursor   = &ED4_ROOT->get_ed4w()->cursor;
     int         base_pos = (cursor && cursor->owner_of_cursor != 0) ? cursor->get_base_position() : -1;

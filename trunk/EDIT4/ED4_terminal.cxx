@@ -27,7 +27,7 @@
 // -----------------------------------
 //      static terminal properties
 
-ED4_object_specification tree_terminal_spec =                       // variables which determine static default properties of predefined (sub-)classes
+static ED4_object_specification tree_terminal_spec =                       // variables which determine static default properties of predefined (sub-)classes
 {
     ED4_P_IS_TERMINAL,  // static props
     ED4_L_TREE,         // level
@@ -37,7 +37,7 @@ ED4_object_specification tree_terminal_spec =                       // variables
     0                   // justification value --no meaning for a terminal
 };
 
-ED4_object_specification bracket_terminal_spec =
+static ED4_object_specification bracket_terminal_spec =
 {
     ED4_P_IS_TERMINAL,  // static props
     ED4_L_BRACKET,      // level
@@ -47,7 +47,7 @@ ED4_object_specification bracket_terminal_spec =
     0                   // justification value --no meaning for a terminal
 };
 
-ED4_object_specification species_name_terminal_spec =
+static ED4_object_specification species_name_terminal_spec =
 {
     ED4_P_IS_TERMINAL,  // static props
     ED4_L_SPECIES_NAME, // level
@@ -57,7 +57,7 @@ ED4_object_specification species_name_terminal_spec =
     0                   // justification value --no meaning for a terminal
 };
 
-ED4_object_specification sequence_info_terminal_spec =
+static ED4_object_specification sequence_info_terminal_spec =
 {
     ED4_P_IS_TERMINAL,  // static props
     ED4_L_SEQUENCE_INFO, // level
@@ -67,7 +67,7 @@ ED4_object_specification sequence_info_terminal_spec =
     0                   // justification value --no meaning for a terminal
 };
 
-ED4_object_specification sequence_terminal_spec =
+static ED4_object_specification sequence_terminal_spec =
 {
     ED4_P_IS_TERMINAL,     // static props
     ED4_L_SEQUENCE_STRING, // level
@@ -77,7 +77,7 @@ ED4_object_specification sequence_terminal_spec =
     0                      // justification value --no meaning for a terminal
 };
 
-ED4_object_specification pure_text_terminal_spec =
+static ED4_object_specification pure_text_terminal_spec =
 {
     ED4_P_IS_TERMINAL,     // static props
     ED4_L_PURE_TEXT,       // level
@@ -87,7 +87,7 @@ ED4_object_specification pure_text_terminal_spec =
     0                      // justification value --no meaning for a terminal
 };
 
-ED4_object_specification spacer_terminal_spec =
+static ED4_object_specification spacer_terminal_spec =
 {
     ED4_P_IS_TERMINAL,     // static props
     ED4_L_SPACER,          // level
@@ -97,7 +97,7 @@ ED4_object_specification spacer_terminal_spec =
     0                      // justification value --no meaning for a terminal
 };
 
-ED4_object_specification line_terminal_spec =
+static ED4_object_specification line_terminal_spec =
 {
     ED4_P_IS_TERMINAL,     // static props
     ED4_L_LINE,            // level
@@ -107,7 +107,7 @@ ED4_object_specification line_terminal_spec =
     0                      // justification value --no meaning for a terminal
 };
 
-ED4_object_specification column_stat_terminal_spec =
+static ED4_object_specification column_stat_terminal_spec =
 {
     ED4_P_IS_TERMINAL,     // static props
     ED4_L_COL_STAT,        // level

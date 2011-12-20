@@ -67,7 +67,7 @@ enum SortOrder {
     SORT_COUNT
 };
 
-const char *sort_order_name[SORT_COUNT] = {
+static const char *sort_order_name[SORT_COUNT] = {
     "Unsorted",
     "Name",
     "Name (Container)",
@@ -153,7 +153,7 @@ SortOrder list_entry::sort_order = SORT_NONE;
 //      create AWARs
 // ---------------------
 
-MemDump make_userdefined_MemDump(AW_root *awr) {
+static MemDump make_userdefined_MemDump(AW_root *awr) {
     bool   hex      = awr->awar(AWAR_DUMP_HEX)->read_int();
     bool   ascii    = awr->awar(AWAR_DUMP_ASCII)->read_int();
     bool   space    = awr->awar(AWAR_DUMP_SPACE)->read_int();
@@ -185,8 +185,7 @@ void AWT_create_db_browser_awars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_int(AWAR_DUMP_BLOCK, 8,  aw_def)->add_callback(hexmode_changed_cb); // separate each bytes
 }
 
-// @@@  this may be moved to ARBDB-sources
-GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create) {
+static GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create) { // @@@  this may be moved to ARBDB-sources
     if (str) {
         if (str[0] == '/' && str[1] == 0) { // root
             return GB_get_root(gbd);
@@ -385,7 +384,7 @@ void AWT_announce_db_to_browser(GBDATA *gb_main, const char *description) {
     get_the_browser()->add_db(gb_main, description);
 }
 
-void AWT_announce_properties_to_browser(GBDATA *gb_defaults, const char *defaults_name) {
+static void AWT_announce_properties_to_browser(GBDATA *gb_defaults, const char *defaults_name) {
     AWT_announce_db_to_browser(gb_defaults, GBS_global_string("Properties (%s)", defaults_name));
 }
 

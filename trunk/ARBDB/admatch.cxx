@@ -514,7 +514,7 @@ bool GBS_string_matches_regexp(const char *str, const GBS_string_matcher *expr) 
 #define GBS_MWILD ((char)3)
 #define GBS_WILD  ((char)4)
 
-int GBS_reference_not_found;
+static int GBS_reference_not_found;
 
 STATIC_ATTRIBUTED(__ATTR__USERESULT_TODO,
                   GB_ERROR gbs_build_replace_string(GBS_strstruct *strstruct,

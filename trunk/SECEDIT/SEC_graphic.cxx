@@ -538,7 +538,7 @@ SEC_graphic::~SEC_graphic() {
     delete load_error;
 }
 
-void SEC_structure_changed_cb(GBDATA *gb_seq, SEC_graphic *gfx, GB_CB_TYPE type) {
+static void SEC_structure_changed_cb(GBDATA *gb_seq, SEC_graphic *gfx, GB_CB_TYPE type) {
     if (type == GB_CB_DELETE) {
         gfx->gb_struct     = NULL;
         gfx->gb_struct_ref = NULL;

@@ -22,7 +22,6 @@ const char *gcg_date(const char *input);
 /* embl.cxx */
 int comment_subkey(const char *line, char *key);
 void embl_key_word(const char *line, int index, char *key);
-void embl_origin(Seq &seq, Reader &reader);
 void embl_out_header(const Embl &embl, const Seq &seq, Writer &write);
 void embl_out(const Embl &embl, const Seq &seq, Writer &write);
 int etog(const Embl &embl, GenBank &gbk, const Seq &seq) __ATTR__USERESULT;
@@ -43,18 +42,12 @@ void to_gcg(const FormattedFile &in, const char *outf);
 
 /* genbank.cxx */
 void genbank_key_word(const char *line, int index, char *key);
-void genbank_one_entry_in(char *&datastring, Reader &reader);
-void genbank_source(GenBank &gbk, Reader &reader);
-void genbank_skip_unidentified(Reader &reader, int blank_num);
-void genbank_reference(GenBank &gbk, Reader &reader);
-void genbank_origin(Seq &seq, Reader &reader);
 void genbank_out_header(const GenBank &gbk, const Seq &seq, Writer &write);
 void genbank_out_base_count(const Seq &seq, Writer &write);
 void genbank_out(const GenBank &gbk, const Seq &seq, Writer &write);
 
 /* macke.cxx */
 void macke_origin(Seq &seq, char *&seqabbr, Reader &reader);
-int macke_abbrev(const char *line, char *key, int index);
 void macke_out_header(Writer &write);
 void macke_seq_display_out(const Macke &macke, Writer &write, Format inType, bool first_sequence);
 void macke_seq_info_out(const Macke &macke, Writer &write);

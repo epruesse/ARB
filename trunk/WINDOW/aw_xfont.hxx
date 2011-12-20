@@ -29,7 +29,6 @@ struct appresStruct {
     bool     debug;             // hns 5 Nov 91
     Display *display;
 };
-extern appresStruct appres;
 
 #define DEFAULT      (-1)
 

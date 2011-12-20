@@ -101,6 +101,293 @@ void configDialog::freeStrings()
 }
 
 
+
+bool configDialog::setDefault(bool global)
+{
+    // SET DEFAULT VALUES
+    m_crosshairColorString= const_cast<char*>(DEFAULT_COLOR_CROSSHAIR);
+    m_unmarkedColorString=  const_cast<char*>(DEFAULT_COLOR_UNMARKED);
+    m_markedColorString=    const_cast<char*>(DEFAULT_COLOR_MARKED);
+    m_selectedColorString=  const_cast<char*>(DEFAULT_COLOR_SELECTED);
+    m_textColorString=      const_cast<char*>(DEFAULT_COLOR_TEXT);
+    m_id_protein=           const_cast<char*>(DEFAULT_ID_PROTEIN);
+    m_id_gene=              const_cast<char*>(DEFAULT_ID_GENE);
+    m_info_protein=         const_cast<char*>(DEFAULT_INFO_PROTEIN);
+    m_info_gene=            const_cast<char*>(DEFAULT_INFO_GENE);
+
+    // SET GLOBAL SETTINGS ALSO TO DEFAULT?
+    if(global)
+    {
+        set_CONFIG(CONFIG_PGT_COLOR_CROSSHAIR, m_crosshairColorString);
+        set_CONFIG(CONFIG_PGT_COLOR_UNMARKED, m_unmarkedColorString);
+        set_CONFIG(CONFIG_PGT_COLOR_MARKED, m_markedColorString);
+        set_CONFIG(CONFIG_PGT_COLOR_SELECTED, m_selectedColorString);
+        set_CONFIG(CONFIG_PGT_COLOR_TEXT, m_textColorString);
+        set_CONFIG(CONFIG_PGT_ID_PROTEIN, m_id_protein);
+        set_CONFIG(CONFIG_PGT_ID_GENE, m_id_gene);
+        set_CONFIG(CONFIG_PGT_INFO_PROTEIN, m_info_protein);
+        set_CONFIG(CONFIG_PGT_INFO_GENE, m_info_gene);
+    }
+
+    // UPDATE TEXT FIELD ENTRIES
+    if(m_crosshairText) XtVaSetValues(m_crosshairText, XmNvalue, m_crosshairColorString, NULL);
+    if(m_unmarkedText) XtVaSetValues(m_unmarkedText, XmNvalue, m_unmarkedColorString, NULL);
+    if(m_markedText) XtVaSetValues(m_markedText, XmNvalue, m_markedColorString, NULL);
+    if(m_selectedText) XtVaSetValues(m_selectedText, XmNvalue, m_selectedColorString, NULL);
+    if(m_textText) XtVaSetValues(m_textText, XmNvalue, m_textColorString, NULL);
+    if(m_ID_ProteinText) XtVaSetValues(m_ID_ProteinText, XmNvalue, m_id_protein, NULL);
+    if(m_ID_GeneText) XtVaSetValues(m_ID_GeneText, XmNvalue, m_id_gene, NULL);
+    if(m_info_ProteinText) XtVaSetValues(m_info_ProteinText, XmNvalue, m_info_protein, NULL);
+    if(m_info_GeneText) XtVaSetValues(m_info_GeneText, XmNvalue, m_info_gene, NULL);
+
+    // UPDATE THE DRAWING AREA COLORS
+    updateColors();
+
+    return true;
+}
+
+
+void configDialog::updateColors()
+{
+    if(!m_crosshairArea || !m_unmarkedArea ||
+       !m_markedArea || !m_selectedArea || !m_textArea) return;
+
+    int r, g, b;
+
+    if(hex2rgb(&r, &g, &b, m_crosshairColorString))
+        drawColoredSpot(m_crosshairArea, r, g, b);
+
+    if(hex2rgb(&r, &g, &b, m_unmarkedColorString))
+        drawColoredSpot(m_unmarkedArea, r, g, b);
+
+    if(hex2rgb(&r, &g, &b, m_markedColorString))
+        drawColoredSpot(m_markedArea, r, g, b);
+
+    if(hex2rgb(&r, &g, &b, m_selectedColorString))
+        drawColoredSpot(m_selectedArea, r, g, b);
+
+    if(hex2rgb(&r, &g, &b, m_textColorString))
+        drawColoredSpot(m_textArea, r, g, b);
+}
+
+
+/****************************************************************************
+*  IMAGE DIALOG - SET FOREGROUND COLOR
+****************************************************************************/
+void configDialog::setColor(Display *display, GC gc, int r, int g, int b)
+{
+    XColor xc;
+
+    xc.red= r << 8; xc.green= g << 8; xc.blue= b << 8;
+    xc.flags = DoRed | DoGreen | DoBlue;
+    XAllocColor(display, DefaultColormap(display, DefaultScreen(display)), &xc);
+    XSetForeground(display, gc, xc.pixel);
+}
+
+
+void configDialog::drawColoredSpot(Widget area, int r , int g , int b)
+{
+    if(!area) return;
+
+    // GET DISPLAY + GC
+    Display *display= XtDisplay(area);
+    Window win = XtWindow(area);
+    GC gc= XCreateGC(display, win, 0, 0);
+
+    // GET BACKGROUND COLOR
+    Pixel bg;
+    XtVaGetValues(m_top, XmNbackground, &bg, NULL);
+
+    // FILL BACKGROUND WITH COLOR BG
+    XtVaSetValues(area, XmNbackground, bg, NULL);
+
+    // DRAW THE FILLED CIRCLE
+    setColor(display, gc, r, g, b);
+    XFillArc(display, win, gc, 4, 4, 20, 20, 0, 360*64);
+
+    // DRAW A BLACK BORDER AROUND THE CIRCLE
+    setColor(display, gc, 0, 0, 0);
+    XDrawArc(display, win, gc, 4, 4, 20, 20, 0, 360*64);
+
+    XFlush(display);
+
+    // FREE OUR GC AS WE DON'T NEED IT ANYMORE
+    XFreeGC(display, gc);
+}
+
+
+void configDialog::getCONFIGS()
+{
+    // FREE OLD STRING ENTRIES BEFORE ADDING NEW ONES
+    freeStrings();
+
+    // FETCH AWARS
+    m_crosshairColorString= get_CONFIG(CONFIG_PGT_COLOR_CROSSHAIR);
+    m_unmarkedColorString=  get_CONFIG(CONFIG_PGT_COLOR_UNMARKED);
+    m_markedColorString=    get_CONFIG(CONFIG_PGT_COLOR_MARKED);
+    m_selectedColorString=  get_CONFIG(CONFIG_PGT_COLOR_SELECTED);
+    m_textColorString=      get_CONFIG(CONFIG_PGT_COLOR_TEXT);
+    m_id_protein=           get_CONFIG(CONFIG_PGT_ID_PROTEIN);
+    m_id_gene=              get_CONFIG(CONFIG_PGT_ID_GENE);
+    m_info_protein=         get_CONFIG(CONFIG_PGT_INFO_PROTEIN);
+    m_info_gene=            get_CONFIG(CONFIG_PGT_INFO_GENE);
+
+    // UPDATE TEXT FIELD ENTRIES
+    if(m_crosshairText) XtVaSetValues(m_crosshairText, XmNvalue, m_crosshairColorString, NULL);
+    if(m_unmarkedText) XtVaSetValues(m_unmarkedText, XmNvalue, m_unmarkedColorString, NULL);
+    if(m_markedText) XtVaSetValues(m_markedText, XmNvalue, m_markedColorString, NULL);
+    if(m_selectedText) XtVaSetValues(m_selectedText, XmNvalue, m_selectedColorString, NULL);
+    if(m_textText) XtVaSetValues(m_textText, XmNvalue, m_textColorString, NULL);
+    if(m_ID_ProteinText) XtVaSetValues(m_ID_ProteinText, XmNvalue, m_id_protein, NULL);
+    if(m_ID_GeneText) XtVaSetValues(m_ID_GeneText, XmNvalue, m_id_gene, NULL);
+    if(m_info_ProteinText) XtVaSetValues(m_info_ProteinText, XmNvalue, m_info_protein, NULL);
+    if(m_info_GeneText) XtVaSetValues(m_info_GeneText, XmNvalue, m_info_gene, NULL);
+
+    // UPDATE THE DRAWING AREA COLORS
+    updateColors();
+}
+
+
+void configDialog::setCONFIGS()
+{
+    // CONFIGS - WRITE BACK
+    set_CONFIG(CONFIG_PGT_COLOR_CROSSHAIR, m_crosshairColorString);
+    set_CONFIG(CONFIG_PGT_COLOR_UNMARKED, m_unmarkedColorString);
+    set_CONFIG(CONFIG_PGT_COLOR_MARKED, m_markedColorString);
+    set_CONFIG(CONFIG_PGT_COLOR_SELECTED, m_selectedColorString);
+    set_CONFIG(CONFIG_PGT_COLOR_TEXT, m_textColorString);
+    set_CONFIG(CONFIG_PGT_ID_PROTEIN, m_id_protein);
+    set_CONFIG(CONFIG_PGT_ID_GENE, m_id_gene);
+    set_CONFIG(CONFIG_PGT_INFO_PROTEIN, m_info_protein);
+    set_CONFIG(CONFIG_PGT_INFO_GENE, m_info_gene);
+
+    // GET LOCAL TIME CODE (-> SET TIME OF LAST CHANGE)
+    time_t ttime= time(NULL);
+    char *stime=  asctime(localtime(&ttime));
+
+    // TRIGGER SIGNAL: CONFIG HAS CHANGED...
+    set_config_AWAR(stime);
+}
+
+
+/****************************************************************************
+*  CALLBACK - CANCEL BUTTON PRESSED
+*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
+****************************************************************************/
+static void staticCancelButtonCallback(Widget, XtPointer clientData, XtPointer)
+{
+    // GET POINTER OF THE ORIGINAL CALLER
+    configDialog *cD= (configDialog *)clientData;
+
+    // DESTROY OBJECT
+    cD->~configDialog();
+}
+
+
+/****************************************************************************
+*  CALLBACK - DEFAULT BUTTON PRESSED
+*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
+****************************************************************************/
+static void staticDefaultButtonCallback(Widget, XtPointer clientData, XtPointer)
+{
+    // GET POINTER OF THE ORIGINAL CALLER
+    configDialog *cD= (configDialog *)clientData;
+
+    // SET VALUES TO DEFAULT
+    cD->setDefault(false);
+}
+
+
+/****************************************************************************
+*  CALLBACK - COLOR CHANGED
+*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
+****************************************************************************/
+static void staticOkButtonCallback(Widget, XtPointer clientData, XtPointer)
+{
+    // GET POINTER OF THE ORIGINAL CALLER
+    configDialog *cD= (configDialog *)clientData;
+
+    // SAVE AWARS TO ARB
+    cD->setCONFIGS();
+
+    // DESTROY OBJECT
+    cD->~configDialog();
+}
+
+
+/****************************************************************************
+*  CALLBACK - COLOR/TEXT CHANGED
+*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
+****************************************************************************/
+static void staticTextChangedCallback(Widget widget, XtPointer clientData, XtPointer)
+{
+    // GET POINTER OF THE ORIGINAL CALLER
+    configDialog *cD= (configDialog *)clientData;
+
+    // CALL TEXT CHANGED FUNCTION
+    cD->textChangedCallback(widget);
+}
+
+
+/****************************************************************************
+*  CALLBACK - COLOR/TEXT CHANGED
+****************************************************************************/
+
+inline void setColorFromTextWidget(Widget widget, char *& colorStringVar) {
+    int r, g, b; // DUMMY RGB VALUES
+    char *colorString = XmTextGetString(widget);
+    if(hex2rgb(&r, &g, &b, colorString)) freeset(colorStringVar, colorString);
+    else free(colorString);
+}
+
+void configDialog::textChangedCallback(Widget widget) {
+    if      (widget == m_crosshairText)    setColorFromTextWidget(m_crosshairText, m_crosshairColorString); // CROSSHAIR TEXT-WIDGET CHANGED?
+    else if (widget == m_unmarkedText)     setColorFromTextWidget(m_unmarkedText,  m_unmarkedColorString);  // UNMARKED TEXT-WIDGET CHANGED?
+    else if (widget == m_markedText)       setColorFromTextWidget(m_markedText,    m_markedColorString);    // MARKED TEXT-WIDGET CHANGED?
+    else if (widget == m_selectedText)     setColorFromTextWidget(m_selectedText,  m_selectedColorString);  // SELECTED TEXT-WIDGET CHANGED?
+    else if (widget == m_textText)         setColorFromTextWidget(m_textText,      m_textColorString);      // INFOTEXT TEXT-WIDGET CHANGED?
+    else if (widget == m_ID_ProteinText)   freeset(m_id_protein,   XmTextGetString(m_ID_ProteinText));      // PROTEIN-ID TEXT-WIDGET CHANGED?
+    else if (widget == m_ID_GeneText)      freeset(m_id_gene,      XmTextGetString(m_ID_GeneText));         // GENE-ID TEXT-WIDGET CHANGED?
+    else if (widget == m_info_ProteinText) freeset(m_info_protein, XmTextGetString(m_info_ProteinText));    // PROTEIN-TEXT TEXT-WIDGET CHANGED?
+    else if (widget == m_info_GeneText)    freeset(m_info_gene,    XmTextGetString(m_info_GeneText));       // GENE-TEXT TEXT-WIDGET CHANGED?
+
+    updateColors(); // UPDATE THE COLORS
+}
+
+
+/****************************************************************************
+*  CONVERT INT RGB -> HEX COLOR STRING
+****************************************************************************/
+static char *rgb2hex(int r, int g, int b)
+{
+    // ALL INPUT VALUES IN RANGE?
+    if((r < 0) || (g < 0) || (b < 0) ||
+       (r > 255) || (g > 255) || (b > 255)) return NULL;
+
+    // ALLOCATE MEM FOR HEX COLOR STRING
+    char *hex= (char *)malloc(8 * sizeof(char));
+    if(!hex) return NULL;
+
+    // WRITE COLORS INTO MEM
+    if(sprintf(hex, "#%2X%2X%2X", r, g, b) != 3) return NULL;
+
+    // RETURN POINTER TO HEX STRING
+    return hex;
+}
+
+
+/****************************************************************************
+*  CONVERT HEX STRING -> INT RGB
+****************************************************************************/
+bool hex2rgb(int *r, int *g, int *b, char *hex)
+{
+    // SPLIT THE THREE COLORS
+    if(sscanf(hex, "#%2X%2X%2X", r, g, b) != 3)  return false;
+
+    // RETURN TRUE IF SUCCESSFUL
+    return true;
+}
+
 /****************************************************************************
 *  CONFIG DIALOG - CREATE WINDOW
 ****************************************************************************/
@@ -456,291 +743,4 @@ void configDialog::createWindow()
         NULL);
     XtAddCallback(m_defaultButton, XmNactivateCallback, staticDefaultButtonCallback, this);
 
-}
-
-
-bool configDialog::setDefault(bool global)
-{
-    // SET DEFAULT VALUES
-    m_crosshairColorString= const_cast<char*>(DEFAULT_COLOR_CROSSHAIR);
-    m_unmarkedColorString=  const_cast<char*>(DEFAULT_COLOR_UNMARKED);
-    m_markedColorString=    const_cast<char*>(DEFAULT_COLOR_MARKED);
-    m_selectedColorString=  const_cast<char*>(DEFAULT_COLOR_SELECTED);
-    m_textColorString=      const_cast<char*>(DEFAULT_COLOR_TEXT);
-    m_id_protein=           const_cast<char*>(DEFAULT_ID_PROTEIN);
-    m_id_gene=              const_cast<char*>(DEFAULT_ID_GENE);
-    m_info_protein=         const_cast<char*>(DEFAULT_INFO_PROTEIN);
-    m_info_gene=            const_cast<char*>(DEFAULT_INFO_GENE);
-
-    // SET GLOBAL SETTINGS ALSO TO DEFAULT?
-    if(global)
-    {
-        set_CONFIG(CONFIG_PGT_COLOR_CROSSHAIR, m_crosshairColorString);
-        set_CONFIG(CONFIG_PGT_COLOR_UNMARKED, m_unmarkedColorString);
-        set_CONFIG(CONFIG_PGT_COLOR_MARKED, m_markedColorString);
-        set_CONFIG(CONFIG_PGT_COLOR_SELECTED, m_selectedColorString);
-        set_CONFIG(CONFIG_PGT_COLOR_TEXT, m_textColorString);
-        set_CONFIG(CONFIG_PGT_ID_PROTEIN, m_id_protein);
-        set_CONFIG(CONFIG_PGT_ID_GENE, m_id_gene);
-        set_CONFIG(CONFIG_PGT_INFO_PROTEIN, m_info_protein);
-        set_CONFIG(CONFIG_PGT_INFO_GENE, m_info_gene);
-    }
-
-    // UPDATE TEXT FIELD ENTRIES
-    if(m_crosshairText) XtVaSetValues(m_crosshairText, XmNvalue, m_crosshairColorString, NULL);
-    if(m_unmarkedText) XtVaSetValues(m_unmarkedText, XmNvalue, m_unmarkedColorString, NULL);
-    if(m_markedText) XtVaSetValues(m_markedText, XmNvalue, m_markedColorString, NULL);
-    if(m_selectedText) XtVaSetValues(m_selectedText, XmNvalue, m_selectedColorString, NULL);
-    if(m_textText) XtVaSetValues(m_textText, XmNvalue, m_textColorString, NULL);
-    if(m_ID_ProteinText) XtVaSetValues(m_ID_ProteinText, XmNvalue, m_id_protein, NULL);
-    if(m_ID_GeneText) XtVaSetValues(m_ID_GeneText, XmNvalue, m_id_gene, NULL);
-    if(m_info_ProteinText) XtVaSetValues(m_info_ProteinText, XmNvalue, m_info_protein, NULL);
-    if(m_info_GeneText) XtVaSetValues(m_info_GeneText, XmNvalue, m_info_gene, NULL);
-
-    // UPDATE THE DRAWING AREA COLORS
-    updateColors();
-
-    return true;
-}
-
-
-void configDialog::updateColors()
-{
-    if(!m_crosshairArea || !m_unmarkedArea ||
-       !m_markedArea || !m_selectedArea || !m_textArea) return;
-
-    int r, g, b;
-
-    if(hex2rgb(&r, &g, &b, m_crosshairColorString))
-        drawColoredSpot(m_crosshairArea, r, g, b);
-
-    if(hex2rgb(&r, &g, &b, m_unmarkedColorString))
-        drawColoredSpot(m_unmarkedArea, r, g, b);
-
-    if(hex2rgb(&r, &g, &b, m_markedColorString))
-        drawColoredSpot(m_markedArea, r, g, b);
-
-    if(hex2rgb(&r, &g, &b, m_selectedColorString))
-        drawColoredSpot(m_selectedArea, r, g, b);
-
-    if(hex2rgb(&r, &g, &b, m_textColorString))
-        drawColoredSpot(m_textArea, r, g, b);
-}
-
-
-/****************************************************************************
-*  IMAGE DIALOG - SET FOREGROUND COLOR
-****************************************************************************/
-void configDialog::setColor(Display *display, GC gc, int r, int g, int b)
-{
-    XColor xc;
-
-    xc.red= r << 8; xc.green= g << 8; xc.blue= b << 8;
-    xc.flags = DoRed | DoGreen | DoBlue;
-    XAllocColor(display, DefaultColormap(display, DefaultScreen(display)), &xc);
-    XSetForeground(display, gc, xc.pixel);
-}
-
-
-void configDialog::drawColoredSpot(Widget area, int r , int g , int b)
-{
-    if(!area) return;
-
-    // GET DISPLAY + GC
-    Display *display= XtDisplay(area);
-    Window win = XtWindow(area);
-    GC gc= XCreateGC(display, win, 0, 0);
-
-    // GET BACKGROUND COLOR
-    Pixel bg;
-    XtVaGetValues(m_top, XmNbackground, &bg, NULL);
-
-    // FILL BACKGROUND WITH COLOR BG
-    XtVaSetValues(area, XmNbackground, bg, NULL);
-
-    // DRAW THE FILLED CIRCLE
-    setColor(display, gc, r, g, b);
-    XFillArc(display, win, gc, 4, 4, 20, 20, 0, 360*64);
-
-    // DRAW A BLACK BORDER AROUND THE CIRCLE
-    setColor(display, gc, 0, 0, 0);
-    XDrawArc(display, win, gc, 4, 4, 20, 20, 0, 360*64);
-
-    XFlush(display);
-
-    // FREE OUR GC AS WE DON'T NEED IT ANYMORE
-    XFreeGC(display, gc);
-}
-
-
-void configDialog::getCONFIGS()
-{
-    // FREE OLD STRING ENTRIES BEFORE ADDING NEW ONES
-    freeStrings();
-
-    // FETCH AWARS
-    m_crosshairColorString= get_CONFIG(CONFIG_PGT_COLOR_CROSSHAIR);
-    m_unmarkedColorString=  get_CONFIG(CONFIG_PGT_COLOR_UNMARKED);
-    m_markedColorString=    get_CONFIG(CONFIG_PGT_COLOR_MARKED);
-    m_selectedColorString=  get_CONFIG(CONFIG_PGT_COLOR_SELECTED);
-    m_textColorString=      get_CONFIG(CONFIG_PGT_COLOR_TEXT);
-    m_id_protein=           get_CONFIG(CONFIG_PGT_ID_PROTEIN);
-    m_id_gene=              get_CONFIG(CONFIG_PGT_ID_GENE);
-    m_info_protein=         get_CONFIG(CONFIG_PGT_INFO_PROTEIN);
-    m_info_gene=            get_CONFIG(CONFIG_PGT_INFO_GENE);
-
-    // UPDATE TEXT FIELD ENTRIES
-    if(m_crosshairText) XtVaSetValues(m_crosshairText, XmNvalue, m_crosshairColorString, NULL);
-    if(m_unmarkedText) XtVaSetValues(m_unmarkedText, XmNvalue, m_unmarkedColorString, NULL);
-    if(m_markedText) XtVaSetValues(m_markedText, XmNvalue, m_markedColorString, NULL);
-    if(m_selectedText) XtVaSetValues(m_selectedText, XmNvalue, m_selectedColorString, NULL);
-    if(m_textText) XtVaSetValues(m_textText, XmNvalue, m_textColorString, NULL);
-    if(m_ID_ProteinText) XtVaSetValues(m_ID_ProteinText, XmNvalue, m_id_protein, NULL);
-    if(m_ID_GeneText) XtVaSetValues(m_ID_GeneText, XmNvalue, m_id_gene, NULL);
-    if(m_info_ProteinText) XtVaSetValues(m_info_ProteinText, XmNvalue, m_info_protein, NULL);
-    if(m_info_GeneText) XtVaSetValues(m_info_GeneText, XmNvalue, m_info_gene, NULL);
-
-    // UPDATE THE DRAWING AREA COLORS
-    updateColors();
-}
-
-
-void configDialog::setCONFIGS()
-{
-    // CONFIGS - WRITE BACK
-    set_CONFIG(CONFIG_PGT_COLOR_CROSSHAIR, m_crosshairColorString);
-    set_CONFIG(CONFIG_PGT_COLOR_UNMARKED, m_unmarkedColorString);
-    set_CONFIG(CONFIG_PGT_COLOR_MARKED, m_markedColorString);
-    set_CONFIG(CONFIG_PGT_COLOR_SELECTED, m_selectedColorString);
-    set_CONFIG(CONFIG_PGT_COLOR_TEXT, m_textColorString);
-    set_CONFIG(CONFIG_PGT_ID_PROTEIN, m_id_protein);
-    set_CONFIG(CONFIG_PGT_ID_GENE, m_id_gene);
-    set_CONFIG(CONFIG_PGT_INFO_PROTEIN, m_info_protein);
-    set_CONFIG(CONFIG_PGT_INFO_GENE, m_info_gene);
-
-    // GET LOCAL TIME CODE (-> SET TIME OF LAST CHANGE)
-    time_t ttime= time(NULL);
-    char *stime=  asctime(localtime(&ttime));
-
-    // TRIGGER SIGNAL: CONFIG HAS CHANGED...
-    set_config_AWAR(stime);
-}
-
-
-/****************************************************************************
-*  CALLBACK - CANCEL BUTTON PRESSED
-*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
-****************************************************************************/
-void staticCancelButtonCallback(Widget, XtPointer clientData, XtPointer)
-{
-    // GET POINTER OF THE ORIGINAL CALLER
-    configDialog *cD= (configDialog *)clientData;
-
-    // DESTROY OBJECT
-    cD->~configDialog();
-}
-
-
-/****************************************************************************
-*  CALLBACK - DEFAULT BUTTON PRESSED
-*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
-****************************************************************************/
-void staticDefaultButtonCallback(Widget, XtPointer clientData, XtPointer)
-{
-    // GET POINTER OF THE ORIGINAL CALLER
-    configDialog *cD= (configDialog *)clientData;
-
-    // SET VALUES TO DEFAULT
-    cD->setDefault(false);
-}
-
-
-/****************************************************************************
-*  CALLBACK - COLOR CHANGED
-*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
-****************************************************************************/
-void staticOkButtonCallback(Widget, XtPointer clientData, XtPointer)
-{
-    // GET POINTER OF THE ORIGINAL CALLER
-    configDialog *cD= (configDialog *)clientData;
-
-    // SAVE AWARS TO ARB
-    cD->setCONFIGS();
-
-    // DESTROY OBJECT
-    cD->~configDialog();
-}
-
-
-/****************************************************************************
-*  CALLBACK - COLOR/TEXT CHANGED
-*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
-****************************************************************************/
-void staticTextChangedCallback(Widget widget, XtPointer clientData, XtPointer)
-{
-    // GET POINTER OF THE ORIGINAL CALLER
-    configDialog *cD= (configDialog *)clientData;
-
-    // CALL TEXT CHANGED FUNCTION
-    cD->textChangedCallback(widget);
-}
-
-
-/****************************************************************************
-*  CALLBACK - COLOR/TEXT CHANGED
-****************************************************************************/
-
-inline void setColorFromTextWidget(Widget widget, char *& colorStringVar) {
-    int r, g, b; // DUMMY RGB VALUES
-    char *colorString = XmTextGetString(widget);
-    if(hex2rgb(&r, &g, &b, colorString)) freeset(colorStringVar, colorString);
-    else free(colorString);
-}
-
-void configDialog::textChangedCallback(Widget widget) {
-    if      (widget == m_crosshairText)    setColorFromTextWidget(m_crosshairText, m_crosshairColorString); // CROSSHAIR TEXT-WIDGET CHANGED?
-    else if (widget == m_unmarkedText)     setColorFromTextWidget(m_unmarkedText,  m_unmarkedColorString);  // UNMARKED TEXT-WIDGET CHANGED?
-    else if (widget == m_markedText)       setColorFromTextWidget(m_markedText,    m_markedColorString);    // MARKED TEXT-WIDGET CHANGED?
-    else if (widget == m_selectedText)     setColorFromTextWidget(m_selectedText,  m_selectedColorString);  // SELECTED TEXT-WIDGET CHANGED?
-    else if (widget == m_textText)         setColorFromTextWidget(m_textText,      m_textColorString);      // INFOTEXT TEXT-WIDGET CHANGED?
-    else if (widget == m_ID_ProteinText)   freeset(m_id_protein,   XmTextGetString(m_ID_ProteinText));      // PROTEIN-ID TEXT-WIDGET CHANGED?
-    else if (widget == m_ID_GeneText)      freeset(m_id_gene,      XmTextGetString(m_ID_GeneText));         // GENE-ID TEXT-WIDGET CHANGED?
-    else if (widget == m_info_ProteinText) freeset(m_info_protein, XmTextGetString(m_info_ProteinText));    // PROTEIN-TEXT TEXT-WIDGET CHANGED?
-    else if (widget == m_info_GeneText)    freeset(m_info_gene,    XmTextGetString(m_info_GeneText));       // GENE-TEXT TEXT-WIDGET CHANGED?
-
-    updateColors(); // UPDATE THE COLORS
-}
-
-
-/****************************************************************************
-*  CONVERT INT RGB -> HEX COLOR STRING
-****************************************************************************/
-char *rgb2hex(int r, int g, int b)
-{
-    // ALL INPUT VALUES IN RANGE?
-    if((r < 0) || (g < 0) || (b < 0) ||
-       (r > 255) || (g > 255) || (b > 255)) return NULL;
-
-    // ALLOCATE MEM FOR HEX COLOR STRING
-    char *hex= (char *)malloc(8 * sizeof(char));
-    if(!hex) return NULL;
-
-    // WRITE COLORS INTO MEM
-    if(sprintf(hex, "#%2X%2X%2X", r, g, b) != 3) return NULL;
-
-    // RETURN POINTER TO HEX STRING
-    return hex;
-}
-
-
-/****************************************************************************
-*  CONVERT HEX STRING -> INT RGB
-****************************************************************************/
-bool hex2rgb(int *r, int *g, int *b, char *hex)
-{
-    // SPLIT THE THREE COLORS
-    if(sscanf(hex, "#%2X%2X%2X", r, g, b) != 3)  return false;
-
-    // RETURN TRUE IF SUCCESSFUL
-    return true;
 }

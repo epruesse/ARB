@@ -81,7 +81,6 @@ enum RescanMode {
 
 void species_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, RescanMode mode);
 void gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, RescanMode mode);
-void experiment_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, RescanMode mode);
 
 void species_field_selection_list_scan_unknown_cb(AW_window *aww, GBDATA *gb_main, long bitfilter);
 void species_field_selection_list_delete_unused_cb(AW_window *aww, GBDATA *gb_main, long bitfilter);

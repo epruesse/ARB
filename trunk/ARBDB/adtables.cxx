@@ -40,7 +40,7 @@
  *      }
  */
 
-GBDATA *gbt_table_link_follower(GBDATA *gb_main, GBDATA */*gb_link*/, const char *link) {
+static GBDATA *gbt_table_link_follower(GBDATA *gb_main, GBDATA */*gb_link*/, const char *link) {
     GBDATA *gb_table;
     char save;
     char *sep;

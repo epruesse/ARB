@@ -14,51 +14,6 @@
 
 
 /****************************************************************************
-*  ANALYZE WINDOW - CONSTRUCTOR
-****************************************************************************/
-analyzeWindow::analyzeWindow(MDialog *d)
-    : MDialog(d)
-{
-    // CREATE WINDOW SHELL
-    createShell("");
-
-    // SET A NEW WIDTH AND HEIGHT OF THE SHELL
-    XtVaSetValues(m_shell,
-        XmNwidth, 800,
-        XmNheight, 600,
-        NULL);
-
-    // CREATE MAIN WINDOW WIDGETS
-    createWindow();
-
-    // REALIZE SHELL & WIDGETS
-    realizeShell();
-
-    // SET WINDOW LABEL
-    setDialogTitle("PGT - Data Analyzer");
-
-    // DEBUG...
-
-    m_myplot= new Plot(XtDisplay(m_plotArea), XtWindow(m_plotArea));
-
-    XtAddCallback(m_plotArea, XmNresizeCallback, staticResizeGnuplot, this);
-
-    resizeGnuplot();
-
-    // ...DEBUG
-}
-
-
-/****************************************************************************
-*  ANALYZE WINDOW - DESTRUCTOR
-****************************************************************************/
-analyzeWindow::~analyzeWindow()
-{
-
-}
-
-
-/****************************************************************************
 *  ANALYZE WINDOW - CREATE WINDOW
 ****************************************************************************/
 void analyzeWindow::createWindow()
@@ -167,7 +122,7 @@ void analyzeWindow::resizeGnuplot()
 *  ANALYZE WINDOW - RESIZE THE GNUPLOT WINDOW
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticResizeGnuplot(Widget, XtPointer clientData, XtPointer)
+static void staticResizeGnuplot(Widget, XtPointer clientData, XtPointer)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     analyzeWindow *aW= (analyzeWindow *)clientData;
@@ -175,4 +130,49 @@ void staticResizeGnuplot(Widget, XtPointer clientData, XtPointer)
     // CALL CLASS MEMBER FUNCTION
     aW->resizeGnuplot();
 }
+
+/****************************************************************************
+*  ANALYZE WINDOW - CONSTRUCTOR
+****************************************************************************/
+analyzeWindow::analyzeWindow(MDialog *d)
+    : MDialog(d)
+{
+    // CREATE WINDOW SHELL
+    createShell("");
+
+    // SET A NEW WIDTH AND HEIGHT OF THE SHELL
+    XtVaSetValues(m_shell,
+        XmNwidth, 800,
+        XmNheight, 600,
+        NULL);
+
+    // CREATE MAIN WINDOW WIDGETS
+    createWindow();
+
+    // REALIZE SHELL & WIDGETS
+    realizeShell();
+
+    // SET WINDOW LABEL
+    setDialogTitle("PGT - Data Analyzer");
+
+    // DEBUG...
+
+    m_myplot= new Plot(XtDisplay(m_plotArea), XtWindow(m_plotArea));
+
+    XtAddCallback(m_plotArea, XmNresizeCallback, staticResizeGnuplot, this);
+
+    resizeGnuplot();
+
+    // ...DEBUG
+}
+
+
+/****************************************************************************
+*  ANALYZE WINDOW - DESTRUCTOR
+****************************************************************************/
+analyzeWindow::~analyzeWindow()
+{
+
+}
+
 

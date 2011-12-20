@@ -32,7 +32,6 @@ class AW_window_menu_modes;
 #define AWAR_PROTEIN_NAME    "tmp/exp/protein_name"
 
 void EXP_create_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main);
-GBDATA *EXP_get_current_experiment(GBDATA *gb_main, AW_root *aw_root); // get AWAR_EXPERIMENT_NAME experiment
 
 // --------------------------------------------------------------------------------
 // submenu:

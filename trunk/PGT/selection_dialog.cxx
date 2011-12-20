@@ -89,6 +89,257 @@ selectionDialog::~selectionDialog()
 }
 
 
+
+/****************************************************************************
+*  CALLBACK - EXIT BUTTON CALLBACK
+*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
+****************************************************************************/
+static void staticExitButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
+{
+    // GET POINTER OF THE ORIGINAL CALLER
+    selectionDialog *sD= (selectionDialog *)clientData;
+
+    // CALL CLASS MEMBER FUNCTION
+    sD->exitButtonCallback(widget, callData);
+}
+
+
+/****************************************************************************
+*  CALLBACK - EXIT BUTTON CALLBACK
+****************************************************************************/
+void selectionDialog::exitButtonCallback(Widget, XtPointer)
+{
+    m_opened= false;
+    this->closeDialog();
+}
+
+
+/****************************************************************************
+*  CALLBACK - SPECIES CALLBACK
+*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
+****************************************************************************/
+static void staticSpeciesCallback(Widget widget, XtPointer clientData, XtPointer callData)
+{
+    // GET POINTER OF THE ORIGINAL CALLER
+    selectionDialog *sD= (selectionDialog *)clientData;
+
+    // CALL CLASS MEMBER FUNCTION
+    sD->speciesCallback(widget, callData);
+}
+
+
+/****************************************************************************
+*  CALLBACK - SPECIES CALLBACK
+****************************************************************************/
+void selectionDialog::speciesCallback(Widget, XtPointer callData)
+{
+    // GET CALLBACK DATA
+    XmListCallbackStruct *cbs= (XmListCallbackStruct *)callData;
+    XmStringGetLtoR(cbs->item, XmFONTLIST_DEFAULT_TAG, &m_species);
+
+    // FILL EXPERIMENT LIST
+    getExperimentList(m_experimentList, m_species, true);
+
+    // CLEAR PROTEOME ENTRIES
+    XmListDeleteAllItems(m_proteomeList);
+    XtVaSetValues(m_proteomeText, XmNvalue, "", NULL);
+
+    // TRIGGER ENTRY CHANGED CALLBACK
+    triggerSpeciesChange();
+}
+
+
+/****************************************************************************
+*  CALLBACK - EXPERIMENT CALLBACK
+*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
+****************************************************************************/
+static void staticExperimentCallback(Widget widget, XtPointer clientData, XtPointer callData)
+{
+    // GET POINTER OF THE ORIGINAL CALLER
+    selectionDialog *sD= (selectionDialog *)clientData;
+
+    // CALL CLASS MEMBER FUNCTION
+    sD->experimentCallback(widget, callData);
+}
+
+
+/****************************************************************************
+*  CALLBACK - EXPERIMENT CALLBACK
+****************************************************************************/
+void selectionDialog::experimentCallback(Widget, XtPointer callData)
+{
+    // GET CALLBACK DATA
+    XmListCallbackStruct *cbs= (XmListCallbackStruct *)callData;
+    XmStringGetLtoR(cbs->item, XmFONTLIST_DEFAULT_TAG, &m_experiment);
+
+    // FILL PROTEOME LIST
+    getProteomeList(m_proteomeList, m_species, m_experiment, true);
+
+    // CLEAR PROTEOME TEXT FIELD
+    XtVaSetValues(m_proteomeText, XmNvalue, "", NULL);
+
+    // TRIGGER ENTRY CHANGED CALLBACK
+    triggerExperimentChange();
+}
+
+
+/****************************************************************************
+*  CALLBACK - PROTEOME LIST CALLBACK
+*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
+****************************************************************************/
+static void staticProteomeListCallback(Widget widget, XtPointer clientData, XtPointer callData)
+{
+    // GET POINTER OF THE ORIGINAL CALLER
+    selectionDialog *sD= (selectionDialog *)clientData;
+
+    // CALL CLASS MEMBER FUNCTION
+    sD->proteomeListCallback(widget, callData);
+}
+
+
+/****************************************************************************
+*  CALLBACK - PROTEOME LIST CALLBACK
+****************************************************************************/
+void selectionDialog::proteomeListCallback(Widget, XtPointer callData)
+{
+    // GET CALLBACK DATA
+    XmListCallbackStruct *cbs= (XmListCallbackStruct *)callData;
+    XmStringGetLtoR(cbs->item, XmFONTLIST_DEFAULT_TAG, &m_proteome);
+
+    // SET TEXT FIELD ENTRY
+    XtVaSetValues(m_proteomeText, XmNvalue, m_proteome, NULL);
+
+    // TEXT FIELD TEXT -> M_PROTEOME
+    m_proteome= XmTextGetString(m_proteomeText);
+
+    // TRIGGER ENTRY CHANGED CALLBACK
+    triggerProteomeChange();
+}
+
+
+/****************************************************************************
+*  CALLBACK - PROTEOME TEXT CALLBACK
+*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
+****************************************************************************/
+static void staticProteomeTextCallback(Widget widget, XtPointer clientData, XtPointer callData)
+{
+    // GET POINTER OF THE ORIGINAL CALLER
+    selectionDialog *sD= (selectionDialog *)clientData;
+
+    // CALL CLASS MEMBER FUNCTION
+    sD->proteomeTextCallback(widget, callData);
+}
+
+
+/****************************************************************************
+*  CALLBACK - PROTEOME TEXT CALLBACK
+****************************************************************************/
+void selectionDialog::proteomeTextCallback(Widget, XtPointer)
+{
+    if(m_ignoreProteomeCallback) return;
+
+    // TEXT FIELD TEXT -> M_PROTEOME
+    char *proteome= XmTextGetString(m_proteomeText);
+
+    // DISABLE CALLBACK (OTHERWISE A INFINITE LOOP WOULD OCCUR)
+    m_ignoreProteomeCallback= true;
+
+    // FIX PROTEOME TEXT FOR ARB
+    m_proteome= GBS_string_2_key(proteome);
+
+    // IF THE STRING DIFFERS - THROW WARNING
+    if(strlen(m_proteome) < 3)
+    {
+        XtVaSetValues(m_warning_label,
+            XmNlabelString, CreateDlgString("WARNING - NAME IS TOO SHORT"),
+            NULL);
+    }
+    else if(strcmp(m_proteome, proteome))
+    {
+        XtVaSetValues(m_warning_label,
+            XmNlabelString, CreateDlgString("WARNING - CONTAINS ILLEGAL CHARACTER(S)"),
+            NULL);
+    }
+    else
+    {
+        XtVaSetValues(m_warning_label,
+            XmNlabelString, CreateDlgString(""),
+            NULL);
+    }
+
+    // ENABLE CALLBACK
+    m_ignoreProteomeCallback= false;
+
+    // TRIGGER ENTRY CHANGED CALLBACK
+    triggerProteomeChange();
+}
+
+
+/****************************************************************************
+*  SET SPECIES DATA CHANGED CALLBACK
+****************************************************************************/
+void selectionDialog::setSpeciesCallback(XtCallbackProc callback)
+{
+    m_speciesCallback= callback;
+    m_hasSpeciesCallback= true;
+}
+
+
+/****************************************************************************
+*  TRIGGER SPECIES DATA CHANGED CALLBACK
+****************************************************************************/
+void selectionDialog::triggerSpeciesChange()
+{
+    if(m_hasSpeciesCallback)
+        m_speciesCallback(m_parent_widget, (XtPointer)m_parent_dialog, (XtPointer)&m_species);
+}
+
+
+/****************************************************************************
+*  SET EXPERIMENT DATA CHANGED CALLBACK
+****************************************************************************/
+void selectionDialog::setExperimentCallback(XtCallbackProc callback)
+{
+    m_experimentCallback= callback;
+    m_hasExperimentCallback= true;
+}
+
+
+/****************************************************************************
+*  TRIGGER EXPERIMENT DATA CHANGED CALLBACK
+****************************************************************************/
+void selectionDialog::triggerExperimentChange()
+{
+    if(m_hasExperimentCallback)
+        m_experimentCallback(m_parent_widget, (XtPointer)m_parent_dialog, (XtPointer)&m_experiment);
+}
+
+
+/****************************************************************************
+*  SET PROTEOME DATA CHANGED CALLBACK
+****************************************************************************/
+void selectionDialog::setProteomeCallback(XtCallbackProc callback)
+{
+    m_proteomeCallback= callback;
+    m_hasProteomeCallback= true;
+}
+
+
+/****************************************************************************
+*  TRIGGER PROTEOME DATA CHANGED CALLBACK
+****************************************************************************/
+void selectionDialog::triggerProteomeChange()
+{
+    // TEXT FIELD TEXT -> M_PROTEOME
+    char *proteome= XmTextGetString(m_proteomeText);
+
+    // FIX PROTEOME TEXT FOR ARB
+    m_proteome= GBS_string_2_key(proteome);
+
+    if(m_hasProteomeCallback)
+        m_proteomeCallback(m_parent_widget, (XtPointer)m_parent_dialog, (XtPointer)&m_proteome);
+}
+
 /****************************************************************************
 *  MAIN DIALOG - CREATE WINDOW
 ****************************************************************************/
@@ -250,253 +501,3 @@ void selectionDialog::createWindow()
     XtAddCallback(exitButton, XmNactivateCallback, staticExitButtonCallback, this);
 }
 
-
-/****************************************************************************
-*  CALLBACK - EXIT BUTTON CALLBACK
-*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
-****************************************************************************/
-void staticExitButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
-{
-    // GET POINTER OF THE ORIGINAL CALLER
-    selectionDialog *sD= (selectionDialog *)clientData;
-
-    // CALL CLASS MEMBER FUNCTION
-    sD->exitButtonCallback(widget, callData);
-}
-
-
-/****************************************************************************
-*  CALLBACK - EXIT BUTTON CALLBACK
-****************************************************************************/
-void selectionDialog::exitButtonCallback(Widget, XtPointer)
-{
-    m_opened= false;
-    this->closeDialog();
-}
-
-
-/****************************************************************************
-*  CALLBACK - SPECIES CALLBACK
-*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
-****************************************************************************/
-void staticSpeciesCallback(Widget widget, XtPointer clientData, XtPointer callData)
-{
-    // GET POINTER OF THE ORIGINAL CALLER
-    selectionDialog *sD= (selectionDialog *)clientData;
-
-    // CALL CLASS MEMBER FUNCTION
-    sD->speciesCallback(widget, callData);
-}
-
-
-/****************************************************************************
-*  CALLBACK - SPECIES CALLBACK
-****************************************************************************/
-void selectionDialog::speciesCallback(Widget, XtPointer callData)
-{
-    // GET CALLBACK DATA
-    XmListCallbackStruct *cbs= (XmListCallbackStruct *)callData;
-    XmStringGetLtoR(cbs->item, XmFONTLIST_DEFAULT_TAG, &m_species);
-
-    // FILL EXPERIMENT LIST
-    getExperimentList(m_experimentList, m_species, true);
-
-    // CLEAR PROTEOME ENTRIES
-    XmListDeleteAllItems(m_proteomeList);
-    XtVaSetValues(m_proteomeText, XmNvalue, "", NULL);
-
-    // TRIGGER ENTRY CHANGED CALLBACK
-    triggerSpeciesChange();
-}
-
-
-/****************************************************************************
-*  CALLBACK - EXPERIMENT CALLBACK
-*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
-****************************************************************************/
-void staticExperimentCallback(Widget widget, XtPointer clientData, XtPointer callData)
-{
-    // GET POINTER OF THE ORIGINAL CALLER
-    selectionDialog *sD= (selectionDialog *)clientData;
-
-    // CALL CLASS MEMBER FUNCTION
-    sD->experimentCallback(widget, callData);
-}
-
-
-/****************************************************************************
-*  CALLBACK - EXPERIMENT CALLBACK
-****************************************************************************/
-void selectionDialog::experimentCallback(Widget, XtPointer callData)
-{
-    // GET CALLBACK DATA
-    XmListCallbackStruct *cbs= (XmListCallbackStruct *)callData;
-    XmStringGetLtoR(cbs->item, XmFONTLIST_DEFAULT_TAG, &m_experiment);
-
-    // FILL PROTEOME LIST
-    getProteomeList(m_proteomeList, m_species, m_experiment, true);
-
-    // CLEAR PROTEOME TEXT FIELD
-    XtVaSetValues(m_proteomeText, XmNvalue, "", NULL);
-
-    // TRIGGER ENTRY CHANGED CALLBACK
-    triggerExperimentChange();
-}
-
-
-/****************************************************************************
-*  CALLBACK - PROTEOME LIST CALLBACK
-*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
-****************************************************************************/
-void staticProteomeListCallback(Widget widget, XtPointer clientData, XtPointer callData)
-{
-    // GET POINTER OF THE ORIGINAL CALLER
-    selectionDialog *sD= (selectionDialog *)clientData;
-
-    // CALL CLASS MEMBER FUNCTION
-    sD->proteomeListCallback(widget, callData);
-}
-
-
-/****************************************************************************
-*  CALLBACK - PROTEOME LIST CALLBACK
-****************************************************************************/
-void selectionDialog::proteomeListCallback(Widget, XtPointer callData)
-{
-    // GET CALLBACK DATA
-    XmListCallbackStruct *cbs= (XmListCallbackStruct *)callData;
-    XmStringGetLtoR(cbs->item, XmFONTLIST_DEFAULT_TAG, &m_proteome);
-
-    // SET TEXT FIELD ENTRY
-    XtVaSetValues(m_proteomeText, XmNvalue, m_proteome, NULL);
-
-    // TEXT FIELD TEXT -> M_PROTEOME
-    m_proteome= XmTextGetString(m_proteomeText);
-
-    // TRIGGER ENTRY CHANGED CALLBACK
-    triggerProteomeChange();
-}
-
-
-/****************************************************************************
-*  CALLBACK - PROTEOME TEXT CALLBACK
-*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
-****************************************************************************/
-void staticProteomeTextCallback(Widget widget, XtPointer clientData, XtPointer callData)
-{
-    // GET POINTER OF THE ORIGINAL CALLER
-    selectionDialog *sD= (selectionDialog *)clientData;
-
-    // CALL CLASS MEMBER FUNCTION
-    sD->proteomeTextCallback(widget, callData);
-}
-
-
-/****************************************************************************
-*  CALLBACK - PROTEOME TEXT CALLBACK
-****************************************************************************/
-void selectionDialog::proteomeTextCallback(Widget, XtPointer)
-{
-    if(m_ignoreProteomeCallback) return;
-
-    // TEXT FIELD TEXT -> M_PROTEOME
-    char *proteome= XmTextGetString(m_proteomeText);
-
-    // DISABLE CALLBACK (OTHERWISE A INFINITE LOOP WOULD OCCUR)
-    m_ignoreProteomeCallback= true;
-
-    // FIX PROTEOME TEXT FOR ARB
-    m_proteome= GBS_string_2_key(proteome);
-
-    // IF THE STRING DIFFERS - THROW WARNING
-    if(strlen(m_proteome) < 3)
-    {
-        XtVaSetValues(m_warning_label,
-            XmNlabelString, CreateDlgString("WARNING - NAME IS TOO SHORT"),
-            NULL);
-    }
-    else if(strcmp(m_proteome, proteome))
-    {
-        XtVaSetValues(m_warning_label,
-            XmNlabelString, CreateDlgString("WARNING - CONTAINS ILLEGAL CHARACTER(S)"),
-            NULL);
-    }
-    else
-    {
-        XtVaSetValues(m_warning_label,
-            XmNlabelString, CreateDlgString(""),
-            NULL);
-    }
-
-    // ENABLE CALLBACK
-    m_ignoreProteomeCallback= false;
-
-    // TRIGGER ENTRY CHANGED CALLBACK
-    triggerProteomeChange();
-}
-
-
-/****************************************************************************
-*  SET SPECIES DATA CHANGED CALLBACK
-****************************************************************************/
-void selectionDialog::setSpeciesCallback(XtCallbackProc callback)
-{
-    m_speciesCallback= callback;
-    m_hasSpeciesCallback= true;
-}
-
-
-/****************************************************************************
-*  TRIGGER SPECIES DATA CHANGED CALLBACK
-****************************************************************************/
-void selectionDialog::triggerSpeciesChange()
-{
-    if(m_hasSpeciesCallback)
-        m_speciesCallback(m_parent_widget, (XtPointer)m_parent_dialog, (XtPointer)&m_species);
-}
-
-
-/****************************************************************************
-*  SET EXPERIMENT DATA CHANGED CALLBACK
-****************************************************************************/
-void selectionDialog::setExperimentCallback(XtCallbackProc callback)
-{
-    m_experimentCallback= callback;
-    m_hasExperimentCallback= true;
-}
-
-
-/****************************************************************************
-*  TRIGGER EXPERIMENT DATA CHANGED CALLBACK
-****************************************************************************/
-void selectionDialog::triggerExperimentChange()
-{
-    if(m_hasExperimentCallback)
-        m_experimentCallback(m_parent_widget, (XtPointer)m_parent_dialog, (XtPointer)&m_experiment);
-}
-
-
-/****************************************************************************
-*  SET PROTEOME DATA CHANGED CALLBACK
-****************************************************************************/
-void selectionDialog::setProteomeCallback(XtCallbackProc callback)
-{
-    m_proteomeCallback= callback;
-    m_hasProteomeCallback= true;
-}
-
-
-/****************************************************************************
-*  TRIGGER PROTEOME DATA CHANGED CALLBACK
-****************************************************************************/
-void selectionDialog::triggerProteomeChange()
-{
-    // TEXT FIELD TEXT -> M_PROTEOME
-    char *proteome= XmTextGetString(m_proteomeText);
-
-    // FIX PROTEOME TEXT FOR ARB
-    m_proteome= GBS_string_2_key(proteome);
-
-    if(m_hasProteomeCallback)
-        m_proteomeCallback(m_parent_widget, (XtPointer)m_parent_dialog, (XtPointer)&m_proteome);
-}

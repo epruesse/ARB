@@ -36,53 +36,17 @@ ULONG                       physical_memory = 0;
 // globals of gene-pt-server
 int gene_flag = 0;
 
-gene_struct_list           all_gene_structs;        // stores all gene_structs
+PT_main *aisc_main;
+
+static gene_struct_list    all_gene_structs;         // stores all gene_structs
 gene_struct_index_arb      gene_struct_arb2internal; // sorted by arb species+gene name
 gene_struct_index_internal gene_struct_internal2arb; // sorted by internal name
-
-// ----------------------
-//      Communication
-
-ARB_ERROR pt_init_main_struct(PT_main *, const char *filename) { // __ATTR__USERESULT
-    ARB_ERROR error = probe_read_data_base(filename, true);
-    if (!error) {
-        GB_begin_transaction(psg.gb_main);
-        psg.alignment_name = GBT_get_default_alignment(psg.gb_main);
-        GB_commit_transaction(psg.gb_main);
-        printf("Building PT-Server for alignment '%s'...\n", psg.alignment_name);
-        probe_read_alignments();
-        PT_build_species_hash();
-    }
-    return error;
-}
-
-PT_main *aisc_main; // muss so heissen
-
-int server_shutdown(PT_main *pm, aisc_string passwd) {
-    // password check
-    pm = pm;
-    if (strcmp(passwd, "47@#34543df43%&3667gh")) return 1;
-    fprintf(stderr, "\nARB_PT_SERVER: received shutdown message\n");
-
-    // shutdown clients
-    aisc_broadcast(psg.com_so, 0, "Used PT-server has been shut down");
-
-    // shutdown server
-    aisc_server_shutdown(psg.com_so);
-    PT_exit();
-    exit(EXIT_SUCCESS);
-}
-
-int broadcast(PT_main *main, int) {
-    aisc_broadcast(psg.com_so, main->m_type, main->m_text);
-    return 0;
-}
 
 // ----------------------------------------------
 //      global data initialization / cleanup
 
 static bool psg_initialized = false;
-void PT_init_psg() {
+static void PT_init_psg() {
     pt_assert(!psg_initialized);
     memset((char *)&psg, 0, sizeof(psg));
     int i;
@@ -92,7 +56,7 @@ void PT_init_psg() {
     psg_initialized = true;
 }
 
-void PT_exit_psg() {
+static void PT_exit_psg() {
     static bool executed = false;
     pt_assert(!executed);
     executed             = true;
@@ -127,11 +91,47 @@ void PT_exit_psg() {
     }
 }
 
-void PT_exit() { 
+static void PT_exit() { 
     // unique exit point to ensure cleanup
     if (aisc_main) destroy_PT_main(aisc_main);
     if (psg_initialized) PT_exit_psg();
     PTM_finally_free_all_mem();
+}
+
+// ----------------------
+//      Communication
+
+static ARB_ERROR pt_init_main_struct(PT_main *, const char *filename) { // __ATTR__USERESULT
+    ARB_ERROR error = probe_read_data_base(filename, true);
+    if (!error) {
+        GB_begin_transaction(psg.gb_main);
+        psg.alignment_name = GBT_get_default_alignment(psg.gb_main);
+        GB_commit_transaction(psg.gb_main);
+        printf("Building PT-Server for alignment '%s'...\n", psg.alignment_name);
+        probe_read_alignments();
+        PT_build_species_hash();
+    }
+    return error;
+}
+
+int server_shutdown(PT_main *pm, aisc_string passwd) {
+    // password check
+    pm = pm;
+    if (strcmp(passwd, "47@#34543df43%&3667gh")) return 1;
+    fprintf(stderr, "\nARB_PT_SERVER: received shutdown message\n");
+
+    // shutdown clients
+    aisc_broadcast(psg.com_so, 0, "Used PT-server has been shut down");
+
+    // shutdown server
+    aisc_server_shutdown(psg.com_so);
+    PT_exit();
+    exit(EXIT_SUCCESS);
+}
+
+int broadcast(PT_main *main, int) {
+    aisc_broadcast(psg.com_so, main->m_type, main->m_text);
+    return 0;
 }
 
 // ------------------------------------------------------------------------------ name mapping
@@ -204,7 +204,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR parse_names_into_gene_struct(cons
     return err;
 }
 
-GB_ERROR PT_init_map() { // goes to header: __ATTR__USERESULT
+static GB_ERROR PT_init_map() { // goes to header: __ATTR__USERESULT
     GB_ERROR error = GB_push_transaction(psg.gb_main);
     if (!error) {
         GBDATA *gb_gene_map = GB_entry(psg.gb_main, "gene_map");

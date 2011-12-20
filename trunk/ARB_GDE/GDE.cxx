@@ -18,12 +18,10 @@
 adfiltercbstruct *agde_filtercd = 0;
 
 Gmenu         menu[GDEMAXMENU];
-int           num_menus = 0, repeat_cnt = 0;
-int           DisplayType;
-GmenuItem    *current_item;
+int           num_menus = 0;
 NA_Alignment *DataSet   = NULL;
 
-char GDEBLANK[] = "\0";
+static char GDEBLANK[] = "\0";
 
 #define SLIDERWIDTH 5           // input field width for numbers
 

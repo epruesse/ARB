@@ -641,7 +641,7 @@ static void canvas_to_xfig_and_run_xfig(AW_window *aww, AW_CL cl_ntw) {
     free(xfig);
 }
 
-void canvas_to_printer(AW_window *aww, AW_CL cl_ntw) {
+static void canvas_to_printer(AW_window *aww, AW_CL cl_ntw) {
     AWT_canvas     *ntw       = (AWT_canvas*)cl_ntw;
     GB_transaction  ta(ntw->gb_main);
     AW_root        *awr       = aww->get_root();

@@ -33,7 +33,7 @@ struct aisc_hash_node {
 };
 
 
-aisc_hash_node **aisc_init_hash(int size) {
+static aisc_hash_node **aisc_init_hash(int size) {
     struct aisc_hash_node **tab;
     tab = (aisc_hash_node **) calloc(sizeof(aisc_hash_node *), size);
     tab[0] = (aisc_hash_node *) calloc(sizeof(aisc_hash_node), 1);
@@ -42,7 +42,7 @@ aisc_hash_node **aisc_init_hash(int size) {
     return tab;
 }
 
-int aisc_hash(const char *key, int size) {
+static int aisc_hash(const char *key, int size) {
     unsigned int i, len, x;
     len = strlen(key);
     x = 0;
@@ -53,7 +53,7 @@ int aisc_hash(const char *key, int size) {
     return x;
 }
 
-void aisc_free_key(aisc_hash_node **table, char *key) {
+static void aisc_free_key(aisc_hash_node **table, char *key) {
     long            i, size;
     aisc_hash_node *hn, *hhn;
 
@@ -78,7 +78,7 @@ void aisc_free_key(aisc_hash_node **table, char *key) {
     }
 }
 
-void aisc_free_hash(aisc_hash_node **table)
+static void aisc_free_hash(aisc_hash_node **table)
 {
     long            i, end;
     aisc_hash_node *hn, *hnn;
@@ -95,7 +95,7 @@ void aisc_free_hash(aisc_hash_node **table)
 }
 
 
-void aisc_insert_hash(aisc_hash_node **table, char *key, long data)
+static void aisc_insert_hash(aisc_hash_node **table, char *key, long data)
 {
     long            i, size;
     aisc_hash_node *hn, *hnl;
@@ -256,7 +256,7 @@ struct trf_struct {
     struct trf_dest_struct *dests;
 };
 
-int trf_hash(long p)
+static int trf_hash(long p)
 {
     return (p+(p>>8))&(TRF_HASH_SIZE-1);
 }
@@ -358,7 +358,7 @@ void trf_commit(int errors) {
 // ------------------------------
 //      bytestring functions
 
-int aisc_server_dllint_2_bytestring(dllpublic_ext * pb, bytestring *bs, int offset)
+static int aisc_server_dllint_2_bytestring(dllpublic_ext * pb, bytestring *bs, int offset)
 {
     int *ptr;
     dllheader_ext * mh;
@@ -377,7 +377,7 @@ int aisc_server_dllint_2_bytestring(dllpublic_ext * pb, bytestring *bs, int offs
     return 0;
 }
 
-int aisc_server_dllstring_2_bytestring(dllpublic_ext * pb, bytestring *bs, int offset)
+static int aisc_server_dllstring_2_bytestring(dllpublic_ext * pb, bytestring *bs, int offset)
 {
     int         size;
     int *ptr;

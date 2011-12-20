@@ -38,30 +38,30 @@
 
 //  Global variables
 
-xarray
+static xarray
 *usedxtip, *freextip;
 
-double
+static double
 dLidki[maxpatterns],      //  change in pattern i likelihood with rate
     bestki[maxpatterns],      //  best rate for pattern i
     bestLi[maxpatterns],      //  best likelihood found for pattern i
     patrate[maxpatterns];     //  current rate for pattern i
 
-double
+static double
 xi, xv, ttratio,          //  transition/transversion info
     freqa, freqc, freqg, freqt,  //  base frequencies
     freqr, freqy, invfreqr, invfreqy,
     freqar, freqcy, freqgr, freqty,
     fracchange;    //  random matching frequency (in a sense)
 
-int
+static int
 info[maxsites+1],         //  number of informative nucleotides
     patsite[maxsites+1],      //  site corresponding to pattern
     pattern[maxsites+1],      //  pattern number corresponding to site
     patweight[maxsites+1],    //  weight of given pattern
     weight[maxsites+1];       //  weight of sequence site
 
-int
+static int
 categs,        //  number of rate categories
     endsite,       //  number of unique sequence patterns
     mininfo,       //  minimum number of informative sequences for rate est
@@ -69,7 +69,7 @@ categs,        //  number of rate categories
     sites,         //  number of input sequence positions
     weightsum;     //  sum of weights of positions in analysis
 
-bool
+static bool
 anerror,       //  error flag
     freqsfrom,     //  use empirical base frequencies
     interleaved,   //  input data are in interleaved format
@@ -77,7 +77,7 @@ anerror,       //  error flag
     writefile,     //  put weight and rate data in file
     userweights;   //  use user-supplied position weight mask
 
-char
+static char
 *y[maxsp+1];                    //  sequence data array
 
 
@@ -85,7 +85,7 @@ char
 //                              PROGRAM
 // =======================================================================
 
-void getnums(FILE *INFILE) {
+static void getnums(FILE *INFILE) {
     // input number of species, number of sites
     printf("\n%s, version %s, %s\n\n",
            programName,
@@ -121,13 +121,13 @@ void getnums(FILE *INFILE) {
 }
 
 
-bool digit(int ch) { return (ch >= '0' && ch <= '9'); }
+static bool digit(int ch) { return (ch >= '0' && ch <= '9'); }
 
 
-bool white(int ch) { return (ch == ' ' || ch == '\n' || ch == '\t'); }
+static bool white(int ch) { return (ch == ' ' || ch == '\n' || ch == '\t'); }
 
 
-void uppercase(int *chptr) {
+static void uppercase(int *chptr) {
     // convert character to upper case -- either ASCII or EBCDIC
     int  ch;
     ch = *chptr;
@@ -137,7 +137,7 @@ void uppercase(int *chptr) {
 }
 
 
-int base36(int ch) {
+static int base36(int ch) {
     if      (ch >= '0' && ch <= '9') return (ch - '0');
     else if (ch >= 'A' && ch <= 'I') return (ch - 'A' + 10);
     else if (ch >= 'J' && ch <= 'R') return (ch - 'J' + 19);
@@ -149,7 +149,7 @@ int base36(int ch) {
 }
 
 
-int itobase36(int i) {
+static int itobase36(int i) {
     if      (i <  0) return '?';
     else if (i < 10) return (i      + '0');
     else if (i < 19) return (i - 10 + 'A');
@@ -159,7 +159,7 @@ int itobase36(int i) {
 }
 
 
-int findch(int c, FILE *INFILE) {
+static int findch(int c, FILE *INFILE) {
     int ch;
 
     while ((ch = getc(INFILE)) != EOF && ch != c) ;
@@ -167,7 +167,7 @@ int findch(int c, FILE *INFILE) {
 }
 
 
-void inputweights(FILE *INFILE) {
+static void inputweights(FILE *INFILE) {
     // input the character weights 0, 1, 2 ... 9, A, B, ... Y, Z
     int i, ch, wi;
 
@@ -194,7 +194,7 @@ void inputweights(FILE *INFILE) {
 }
 
 
-void getoptions(FILE *INFILE) {
+static void getoptions(FILE *INFILE) {
     int  ch, i, extranum;
 
     categs      =     0;  //  Number of rate categories
@@ -337,7 +337,7 @@ void getoptions(FILE *INFILE) {
 }
 
 
-void getbasefreqs(FILE *INFILE) {
+static void getbasefreqs(FILE *INFILE) {
     double  suma, sumb;
 
     if (freqsfrom)  printf("Empirical ");
@@ -383,7 +383,7 @@ void getbasefreqs(FILE *INFILE) {
 }
 
 
-void getyspace() {
+static void getyspace() {
     long size;
     int  i;
     char *y0;
@@ -402,7 +402,7 @@ void getyspace() {
 }
 
 
-void setuptree(tree *tr, int numSp) {
+static void setuptree(tree *tr, int numSp) {
     int     i, j;
     nodeptr p = 0, q;
 
@@ -443,7 +443,7 @@ void setuptree(tree *tr, int numSp) {
 }
 
 
-void freeTreeNode(nodeptr p) {
+static void freeTreeNode(nodeptr p) {
     //  Free a tree node (sector)
     if (p) {
         if (p->x) {
@@ -454,7 +454,7 @@ void freeTreeNode(nodeptr p) {
     }
 }
 
-void freeTree(tree *tr) {
+static void freeTree(tree *tr) {
     int  i;
     nodeptr  p, q;
 
@@ -472,7 +472,7 @@ void freeTree(tree *tr) {
 }
 
 
-void getdata(tree *tr, FILE *INFILE) {
+static void getdata(tree *tr, FILE *INFILE) {
      // read sequences
     int  i, j, k, l, basesread, basesnew, ch;
     int  meaning[256];          //  meaning of input characters
@@ -644,7 +644,7 @@ void getdata(tree *tr, FILE *INFILE) {
 }
 
 
-void sitesort() {
+static void sitesort() {
     // Shell sort keeping sites, weights in same order
     int  gap, i, j, jj, jg, k;
     bool  flip, tied;
@@ -674,7 +674,7 @@ void sitesort() {
 }
 
 
-void sitecombcrunch() {
+static void sitecombcrunch() {
     // combine sites that have identical patterns (and nonzero weight)
     int  i, sitei, j, sitej, k;
     bool  tied;
@@ -708,7 +708,7 @@ void sitecombcrunch() {
 }
 
 
-void makeweights() {
+static void makeweights() {
     // make up weights vector to avoid duplicate computations
     int  i;
 
@@ -726,7 +726,7 @@ void makeweights() {
 }
 
 
-void makevalues(tree *tr) {
+static void makevalues(tree *tr) {
     // set up fractional likelihoods at tips
     nodeptr  p;
     int  i, j;
@@ -741,7 +741,7 @@ void makevalues(tree *tr) {
 }
 
 
-void empiricalfreqs(tree *tr) {
+static void empiricalfreqs(tree *tr) {
      // Get empirical base frequencies from the data
     double  sum, suma, sumc, sumg, sumt, wj, fa, fc, fg, ft;
     int  i, j, k, code;
@@ -780,7 +780,7 @@ void empiricalfreqs(tree *tr) {
 }
 
 
-void getinput(tree *tr, FILE *INFILE) {
+static void getinput(tree *tr, FILE *INFILE) {
     getnums(INFILE);                      if (anerror) return;
     getoptions(INFILE);                   if (anerror) return;
     if (!freqsfrom) getbasefreqs(INFILE); if (anerror) return;
@@ -796,7 +796,7 @@ void getinput(tree *tr, FILE *INFILE) {
 }
 
 
-xarray *setupxarray() {
+static xarray *setupxarray() {
     xarray  *x;
     xtype  *data;
 
@@ -820,7 +820,7 @@ xarray *setupxarray() {
 }
 
 
-void linkxarray(int req, int min, xarray **freexptr, xarray **usedxptr) {
+static void linkxarray(int req, int min, xarray **freexptr, xarray **usedxptr) {
     //  Link a set of xarrays
     xarray  *first, *prev, *x;
     int  i;
@@ -855,7 +855,7 @@ void linkxarray(int req, int min, xarray **freexptr, xarray **usedxptr) {
 }
 
 
-void setupnodex(tree *tr) {
+static void setupnodex(tree *tr) {
     nodeptr  p;
     int  i;
 
@@ -865,7 +865,7 @@ void setupnodex(tree *tr) {
     }
 }
 
-xarray *getxtip(nodeptr p) {
+static xarray *getxtip(nodeptr p) {
     xarray *new_xarray;
     bool  splice;
 
@@ -927,7 +927,7 @@ xarray *getxtip(nodeptr p) {
 }
 
 
-xarray *getxnode(nodeptr p) {
+static xarray *getxnode(nodeptr p) {
     // Ensure that internal node p has memory
     nodeptr  s;
 
@@ -945,7 +945,7 @@ xarray *getxnode(nodeptr p) {
 }
 
 
-void newview(nodeptr p) {
+static void newview(nodeptr p) {
     //  Update likelihoods at node
     double   z1, lz1, xvlz1, z2, lz2, xvlz2,
         zz1, zv1, fx1r, fx1y, fx1n, suma1, sumg1, sumc1, sumt1,
@@ -1046,14 +1046,14 @@ void newview(nodeptr p) {
 }
 
 
-void hookup(nodeptr p, nodeptr q, double z) {
+static void hookup(nodeptr p, nodeptr q, double z) {
     p->back = q;
     q->back = p;
     p->z = q->z = z;
 }
 
 
-void initrav(nodeptr p) {
+static void initrav(nodeptr p) {
     if (! p->tip) {
         initrav(p->next->back);
         initrav(p->next->next->back);
@@ -1065,7 +1065,7 @@ void initrav(nodeptr p) {
 //                         Read a tree from a file
 // =======================================================================
 
-int treeFinishCom(FILE *INFILE) {
+static int treeFinishCom(FILE *INFILE) {
     int  ch;
     bool inquote;
 
@@ -1081,7 +1081,7 @@ int treeFinishCom(FILE *INFILE) {
 }
 
 
-int treeGetCh(FILE *INFILE) {
+static int treeGetCh(FILE *INFILE) {
     // get next nonblank, noncomment character
     int  ch;
 
@@ -1096,7 +1096,7 @@ int treeGetCh(FILE *INFILE) {
     return  ch;
 }
 
-void treeFlushLabel(FILE *INFILE) {
+static void treeFlushLabel(FILE *INFILE) {
     int  ch;
     bool done;
 
@@ -1125,7 +1125,7 @@ void treeFlushLabel(FILE *INFILE) {
 }
 
 
-int findTipName(tree *tr, int ch, FILE *INFILE) {
+static int findTipName(tree *tr, int ch, FILE *INFILE) {
     nodeptr  q;
     char    *nameptr, str[nmlngth+1];
     int      i, n;
@@ -1188,7 +1188,7 @@ int findTipName(tree *tr, int ch, FILE *INFILE) {
 }
 
 
-double processLength(FILE *INFILE) {
+static double processLength(FILE *INFILE) {
     double  branch;
     int     ch;
     char    string[41];
@@ -1207,7 +1207,7 @@ double processLength(FILE *INFILE) {
 }
 
 
-void treeFlushLen(FILE *INFILE) {
+static void treeFlushLen(FILE *INFILE) {
     int  ch;
 
     if ((ch = treeGetCh(INFILE)) == ':')
@@ -1217,7 +1217,7 @@ void treeFlushLen(FILE *INFILE) {
 }
 
 
-void treeNeedCh(int c1, const char *where, FILE *INFILE) {
+static void treeNeedCh(int c1, const char *where, FILE *INFILE) {
     int c2, i;
 
     if ((c2 = treeGetCh(INFILE)) == c1)  return;
@@ -1234,7 +1234,7 @@ void treeNeedCh(int c1, const char *where, FILE *INFILE) {
     anerror = true;
 }
 
-void addElementLen(tree *tr, nodeptr p, FILE *INFILE) {
+static void addElementLen(tree *tr, nodeptr p, FILE *INFILE) {
     double   z, branch;
     nodeptr  q;
     int      n, ch;
@@ -1278,7 +1278,7 @@ void addElementLen(tree *tr, nodeptr p, FILE *INFILE) {
 }
 
 
-void uprootTree(tree *tr, nodeptr p) {
+static void uprootTree(tree *tr, nodeptr p) {
     nodeptr  q, r, s;
     int  n;
 
@@ -1315,7 +1315,7 @@ void uprootTree(tree *tr, nodeptr p) {
 }
 
 
-void treeReadLen(tree *tr, FILE *INFILE) {
+static void treeReadLen(tree *tr, FILE *INFILE) {
     nodeptr  p;
     int  i, ch;
 
@@ -1365,7 +1365,7 @@ void treeReadLen(tree *tr, FILE *INFILE) {
 // =======================================================================
 
 
-double evaluate(tree *tr, nodeptr p) {
+static double evaluate(tree *tr, nodeptr p) {
     double   sum, z, lz, xvlz,
         ki, zz, zv, fx1a, fx1c, fx1g, fx1t, fx1r, fx1y, fx2r, fx2y,
         suma, sumb, sumc, term;
@@ -1429,7 +1429,7 @@ double evaluate(tree *tr, nodeptr p) {
 }
 
 
-void dli_dki(nodeptr p) {
+static void dli_dki(nodeptr p) {
     //  d(Li)/d(ki)
     double   z, lz, xvlz;
     double   ki, fx1a, fx1c, fx1g, fx1t, fx1r, fx1y, fx2r, fx2y,
@@ -1486,7 +1486,7 @@ void dli_dki(nodeptr p) {
     }
 }
 
-void spanSubtree(nodeptr p) {
+static void spanSubtree(nodeptr p) {
     dli_dki (p);
 
     if (! p->tip) {
@@ -1496,7 +1496,7 @@ void spanSubtree(nodeptr p) {
 }
 
 
-void findSiteRates(tree *tr, double ki_min, double ki_max, double d_ki, double max_error) {
+static void findSiteRates(tree *tr, double ki_min, double ki_max, double d_ki, double max_error) {
     double  inv_d_ki, ki;
     int     i;
 
@@ -1560,7 +1560,7 @@ void findSiteRates(tree *tr, double ki_min, double ki_max, double d_ki, double m
 }
 
 
-double subtreeLength(nodeptr p) {
+static double subtreeLength(nodeptr p) {
     double sum;
 
     sum = -fracchange * log(p->z);
@@ -1573,7 +1573,7 @@ double subtreeLength(nodeptr p) {
 }
 
 
-double treeLength(tree *tr) {
+static double treeLength(tree *tr) {
     double sum;
 
     sum = subtreeLength(tr->start->back);
@@ -1586,7 +1586,7 @@ double treeLength(tree *tr) {
 }
 
 
-void categorize(int    Sites,
+static void categorize(int    Sites,
                 int    Categs,
                 int    Weight[],                    // one based
                 int    Pattern[],                   // one based
@@ -1645,11 +1645,11 @@ void categorize(int    Sites,
 }
 
 
-char   *arb_filter;
-char   *alignment_name;
-GBDATA *gb_main;
+static char   *arb_filter;
+static char   *alignment_name;
+static GBDATA *gb_main;
 
-void getArbFilter() {
+static void getArbFilter() {
     //! Get the calling filter, needed to expand weights afterwards
     GB_begin_transaction(gb_main);
     arb_filter     = GBT_read_string(gb_main, AWAR_GDE_EXPORT_FILTER);
@@ -1684,7 +1684,7 @@ static GBDATA *create_next_SAI() {
     return gb_sai;
 }
 
-void writeToArb() {
+static void writeToArb() {
     char    type_info[1024];
     char    category_string[1024];
     char   *p;
@@ -1759,7 +1759,7 @@ void writeToArb() {
     GB_commit_transaction(gb_main);
     }
 
-void openArb(const char *dbname) {
+static void openArb(const char *dbname) {
     gb_main = GB_open(dbname, "rw");
     if (!gb_main) {
         if (strcmp(dbname, ":") == 0) {
@@ -1772,7 +1772,7 @@ void openArb(const char *dbname) {
     }
 }
 
-void saveArb(const char *saveAs) {
+static void saveArb(const char *saveAs) {
     GB_ERROR error = GB_save(gb_main, saveAs, "a");
     if (error) {
         GB_warningf("Error saving '%s': %s", saveAs, error);
@@ -1780,11 +1780,11 @@ void saveArb(const char *saveAs) {
     }
 }
 
-void closeArb() {
+static void closeArb() {
     GB_close(gb_main);
 }
 
-void wrfile(FILE   *outfile,
+static void wrfile(FILE   *outfile,
             int     Sites,
             int     Categs,
             int     Weight[],   // one based
@@ -1835,7 +1835,7 @@ void wrfile(FILE   *outfile,
 }
 
 
-void summarize(int treenum) {
+static void summarize(int treenum) {
     int  i;
 
     printf("  Site      Rate\n");
@@ -1881,7 +1881,7 @@ void summarize(int treenum) {
 }
 
 
-void makeUserRates(tree *tr, FILE *INFILE) {
+static void makeUserRates(tree *tr, FILE *INFILE) {
     double  tree_length;
     int     numtrees, which, i;
 

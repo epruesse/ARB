@@ -17,7 +17,6 @@ class arb_progress;
 
 typedef long AW_CL;             // generic client data type (void *)
 
-void MP_take_manual_sequence(AW_window *aww);
 void MP_clear_manual_sequence(AW_window *aww);
 void MP_leftright(AW_window *aww);
 void MP_rightleft(AW_window *aww);
@@ -41,8 +40,6 @@ void MP_selected_chosen(AW_window *aww);
 bool MP_aborted(int gen_cnt, double avg_fit, double min_fit, double max_fit, arb_progress& progress);
 
 char *MP_get_comment(int which, const char *str);
-char *MP_remove_comment(char *);
-char *MP_get_probes(const char *str);
 int   MP_init_local_com_struct();
 
 const char *MP_probe_pt_look_for_server();

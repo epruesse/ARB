@@ -28,7 +28,7 @@
 
 using namespace std;
 
-const char *awt_itemtype_names[AWT_IT_TYPES+1] =
+static const char *awt_itemtype_names[AWT_IT_TYPES+1] =
 {
  "Unknown",
  "Species", "Organism", "Gene", "Experiment",
@@ -726,7 +726,7 @@ static string scan_string_parameter(const string& line, size_t& scan_pos, GB_ERR
     return result;
 }
 
-string list_keywords(const char **allowed_keywords) {
+static string list_keywords(const char **allowed_keywords) {
     string result;
     for (int i = 0; allowed_keywords[i]; ++i) {
         if (i) {

@@ -52,7 +52,7 @@ static void genbank_continue_line(char*& Str, int numb, Reader& reader) {
     }
 }
 
-void genbank_one_entry_in(char*& datastring, Reader& reader) {
+static void genbank_one_entry_in(char*& datastring, Reader& reader) {
     freedup(datastring, reader.line()+Skip_white_space(reader.line(), GBINDENT));
     return genbank_continue_line(datastring, GBINDENT, reader);
 }
@@ -63,7 +63,7 @@ static void genbank_one_comment_entry(char*& datastring, int start_index, Reader
     genbank_continue_line(datastring, 20, reader);
 }
 
-void genbank_source(GenBank& gbk, Reader& reader) {
+static void genbank_source(GenBank& gbk, Reader& reader) {
     // Read in genbank SOURCE lines and also ORGANISM lines.
     genbank_one_entry_in(gbk.source, reader);
     char  key[TOKENSIZE];
@@ -86,14 +86,14 @@ public:
 };
 
 
-void genbank_skip_unidentified(Reader& reader, int blank_num) {
+static void genbank_skip_unidentified(Reader& reader, int blank_num) {
     // Skip the lines of unidentified keyword.
     ++reader;
     startsWithBlanks num_blanks(blank_num);
     reader.skipOverLinesThat(num_blanks);
 }
 
-void genbank_reference(GenBank& gbk, Reader& reader) {
+static void genbank_reference(GenBank& gbk, Reader& reader) {
     // Read in genbank REFERENCE lines.
     int  refnum;
     ASSERT_RESULT(int, 1, sscanf(reader.line() + GBINDENT, "%d", &refnum));
@@ -242,6 +242,21 @@ void GenbankParser::parse_section() {
     parse_keyed_section(key);
 }
 
+static void genbank_origin(Seq& seq, Reader& reader) {
+    // Read in genbank sequence data.
+    ca_assert(seq.is_empty());
+
+    // read in whole sequence data
+    for (++reader; reader.line() && !is_sequence_terminator(reader.line()); ++reader) {
+        if (has_content(reader.line())) {
+            for (int index = 9; reader.line()[index] != '\n' && reader.line()[index] != '\0'; index++) {
+                if (reader.line()[index] != ' ')
+                    seq.add(reader.line()[index]);
+            }
+        }
+    }
+}
+
 void GenbankParser::parse_keyed_section(const char *key) {
     if (str_equal(key, "LOCUS")) {
         genbank_one_entry_in(gbk.locus, reader);
@@ -280,21 +295,6 @@ void GenbankParser::parse_keyed_section(const char *key) {
     }
     else {
         genbank_skip_unidentified(reader, 2);
-    }
-}
-
-void genbank_origin(Seq& seq, Reader& reader) {
-    // Read in genbank sequence data.
-    ca_assert(seq.is_empty());
-
-    // read in whole sequence data
-    for (++reader; reader.line() && !is_sequence_terminator(reader.line()); ++reader) {
-        if (has_content(reader.line())) {
-            for (int index = 9; reader.line()[index] != '\n' && reader.line()[index] != '\0'; index++) {
-                if (reader.line()[index] != ' ')
-                    seq.add(reader.line()[index]);
-            }
-        }
     }
 }
 

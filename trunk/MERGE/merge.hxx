@@ -61,7 +61,6 @@ GB_ERROR   MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest
 int mg_count_queried(GBDATA *gb_main);
 
 const char *MG_left_AWAR_SPECIES_NAME();
-const char *MG_right_AWAR_SPECIES_NAME();
 
 #ifndef MG_MERGE_HXX
 #include "mg_merge.hxx"

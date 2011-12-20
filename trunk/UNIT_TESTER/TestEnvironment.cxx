@@ -387,7 +387,7 @@ static Environment_cb wrapped_cb   = NULL;
 static Mode           wrapped_mode = UNKNOWN;
 static SmartCharPtr   wrapped_error;
 
-void wrapped() { wrapped_error = wrapped_cb(wrapped_mode); }
+static void wrapped() { wrapped_error = wrapped_cb(wrapped_mode); }
 
 class FunInfo {
     Environment_cb     cb;

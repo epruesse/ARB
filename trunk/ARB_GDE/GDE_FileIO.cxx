@@ -8,8 +8,7 @@ int MAX(int a, int b)
     return b;
 }
 
-int MIN(int a, int b)
-{
+static int MIN(int a, int b) {
     if (a<b) return a;
     return b;
 }

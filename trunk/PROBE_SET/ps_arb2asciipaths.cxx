@@ -12,9 +12,9 @@
 #include "ps_filebuffer.hxx"
 #include "ps_pg_tree_functions.cxx"
 
-IDVector *__PATH = new IDVector;
+static IDVector *__PATH = new IDVector;
 
-void PS_print_paths(GBDATA *_pb_node) {
+static void PS_print_paths(GBDATA *_pb_node) {
     //  recursively print the paths to the leaves
 
     // number and species name

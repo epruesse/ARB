@@ -11,7 +11,7 @@
 #include "gb_local.h"
 #include "arbdbt.h"
 
-void GBT_add_item_to_hash(GBDATA *gb_item, GB_HASH *item_hash) {
+static void GBT_add_item_to_hash(GBDATA *gb_item, GB_HASH *item_hash) {
     GBS_write_hash(item_hash, GBT_read_name(gb_item), (long)gb_item);
 }
 

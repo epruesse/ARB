@@ -32,8 +32,104 @@ using namespace std;
 
 
 /****************************************************************************
-*  IMPORT FUNCTION FOR A CSV DATA FILE (OPENS THE FILE AND RETURNS THE DATA)
+*  CREATE AN IMPORT TABLE
 ****************************************************************************/
+static importTable *createImportTable(int rows, int columns)
+{
+    // ALLOCATE MEMORY FOR THE TABLE DATA
+    importTable *table= (importTable *)malloc(sizeof(importTable));
+    if(!table) return NULL;
+
+    // ALLOCATE MEMORY FOR THE CELL DATA
+    char **cells= (char **)malloc(rows * columns * sizeof(char *));
+    if(!cells) return NULL;
+
+    // ALLOCATE MEMORY FOR THE HEADER DATA
+    char **header= (char **)malloc(columns * sizeof(char *));
+    if(!header) return NULL;
+
+    // INIT ALL CELL VALUES WITH NULL
+    int i;
+    for(i= 0; i < (rows * columns); i++) cells[i]= NULL;
+    for(i= 0; i < columns; i++) header[i]= NULL;
+
+    // ALLOCATE MEMORY FOR THE COLUMN TYPE DATA
+    int *columnType= (int *)malloc(columns * sizeof(int));
+    if(!columnType) return NULL;
+
+    // ENTER VALID PREDEFINED VALUES (SHOULD BE CHANGED LATER)
+    table->rows= rows;
+    table->columns= columns;
+    table->cell= cells;
+    table->header= header;
+    table->hasHeader= false;
+    table->columnType= columnType;
+
+    // RETURN POINTER TO TABLE
+    return table;
+}
+
+/****************************************************************************
+*  IDENTIFY ENTRY TYPE
+*  THIS FUNCTION TRIES TO IDENTIFY THE TYPE OF AN ENTRY (STRING, NUMBER)
+****************************************************************************/
+static int identifyType(char *entry)
+{
+    bool has_dot= false;
+    bool has_numeric= true;
+    char *ptr= entry;
+
+    if(!ptr || (*ptr == 0)) return DATATYPE_UNKNOWN;
+
+    while(*ptr)
+    {
+        if((*ptr == '.') || (*ptr == ',')) has_dot= true;
+        else if((*ptr < '0') || (*ptr > '9')) has_numeric= false;
+
+        ptr++;
+    }
+
+    if(has_dot && has_numeric) return DATATYPE_FLOAT;
+    else if(has_numeric) return DATATYPE_INT;
+
+    return DATATYPE_STRING;
+}
+
+
+/****************************************************************************
+*  TRY TO IDENTIFY THE COLUMN TYPE USING THEIR ENTRIES
+****************************************************************************/
+static void identifyColumns(importTable *table)
+{
+    // FUNCTION VARIABLES
+    int rows= table->rows;
+    int columns= table->columns;
+    char **cell= table->cell;
+    int *columnType= table->columnType;
+    int c, r, colType, cellType;
+
+    // TRAVERSE EVERY COLUMN
+    for(c= 0; c < columns; c++)
+    {
+        colType= DATATYPE_UNKNOWN;
+
+        // VIEW ALL ENTRIES AND IDENTIFY THE BEST FITTING TYPE
+        for(r= 1; r < rows; r++)
+        {
+            // GET THE CELLS DATATYPE
+            cellType= identifyType(cell[(r * columns) + c]);
+
+            // CHANGE COLUMN TYPE IF A HIGHER DATATYPE IS FOUND
+            if(cellType > colType) colType= cellType;
+        }
+
+        columnType[c]= colType;
+    }
+}
+
+/****************************************************************************
+ *  IMPORT FUNCTION FOR A CSV DATA FILE (OPENS THE FILE AND RETURNS THE DATA)
+ ****************************************************************************/
 importTable *fileopenCSV(char *filename, int delimiter)
 {
     // DEFINE VARIABLES
@@ -283,45 +379,6 @@ int importCSV(importTable *table, importData *data)
 
 
 /****************************************************************************
-*  CREATE AN IMPORT TABLE
-****************************************************************************/
-importTable *createImportTable(int rows, int columns)
-{
-    // ALLOCATE MEMORY FOR THE TABLE DATA
-    importTable *table= (importTable *)malloc(sizeof(importTable));
-    if(!table) return NULL;
-
-    // ALLOCATE MEMORY FOR THE CELL DATA
-    char **cells= (char **)malloc(rows * columns * sizeof(char *));
-    if(!cells) return NULL;
-
-    // ALLOCATE MEMORY FOR THE HEADER DATA
-    char **header= (char **)malloc(columns * sizeof(char *));
-    if(!header) return NULL;
-
-    // INIT ALL CELL VALUES WITH NULL
-    int i;
-    for(i= 0; i < (rows * columns); i++) cells[i]= NULL;
-    for(i= 0; i < columns; i++) header[i]= NULL;
-
-    // ALLOCATE MEMORY FOR THE COLUMN TYPE DATA
-    int *columnType= (int *)malloc(columns * sizeof(int));
-    if(!columnType) return NULL;
-
-    // ENTER VALID PREDEFINED VALUES (SHOULD BE CHANGED LATER)
-    table->rows= rows;
-    table->columns= columns;
-    table->cell= cells;
-    table->header= header;
-    table->hasHeader= false;
-    table->columnType= columnType;
-
-    // RETURN POINTER TO TABLE
-    return table;
-}
-
-
-/****************************************************************************
 *  FIND XSLT FILES (*.XSL) AS IMPORT FILTERS
 ****************************************************************************/
 XSLTimporter *findXSLTFiles(char *path)
@@ -384,66 +441,5 @@ XSLTimporter *findXSLTFiles(char *path)
 
     return xslt;
 }
-
-
-/****************************************************************************
-*  IDENTIFY ENTRY TYPE
-*  THIS FUNCTION TRIES TO IDENTIFY THE TYPE OF AN ENTRY (STRING, NUMBER)
-****************************************************************************/
-int identifyType(char *entry)
-{
-    bool has_dot= false;
-    bool has_numeric= true;
-    char *ptr= entry;
-
-    if(!ptr || (*ptr == 0)) return DATATYPE_UNKNOWN;
-
-    while(*ptr)
-    {
-        if((*ptr == '.') || (*ptr == ',')) has_dot= true;
-        else if((*ptr < '0') || (*ptr > '9')) has_numeric= false;
-
-        ptr++;
-    }
-
-    if(has_dot && has_numeric) return DATATYPE_FLOAT;
-    else if(has_numeric) return DATATYPE_INT;
-
-    return DATATYPE_STRING;
-}
-
-
-/****************************************************************************
-*  TRY TO IDENTIFY THE COLUMN TYPE USING THEIR ENTRIES
-****************************************************************************/
-void identifyColumns(importTable *table)
-{
-    // FUNCTION VARIABLES
-    int rows= table->rows;
-    int columns= table->columns;
-    char **cell= table->cell;
-    int *columnType= table->columnType;
-    int c, r, colType, cellType;
-
-    // TRAVERSE EVERY COLUMN
-    for(c= 0; c < columns; c++)
-    {
-        colType= DATATYPE_UNKNOWN;
-
-        // VIEW ALL ENTRIES AND IDENTIFY THE BEST FITTING TYPE
-        for(r= 1; r < rows; r++)
-        {
-            // GET THE CELLS DATATYPE
-            cellType= identifyType(cell[(r * columns) + c]);
-
-            // CHANGE COLUMN TYPE IF A HIGHER DATATYPE IS FOUND
-            if(cellType > colType) colType= cellType;
-}
-
-        columnType[c]= colType;
-    }
-}
-
-
 
 

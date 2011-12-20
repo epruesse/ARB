@@ -30,8 +30,6 @@ struct AWT_Codon_Code_Definition {
 #define AWT_CODON_TABLES 17     // number of different Amino-Translation-Tables
 #define AWT_MAX_CODONS 64       // maximum of possible codon (= 4^3)
 
-extern struct AWT_Codon_Code_Definition AWT_codon_def[AWT_CODON_TABLES+1];
-
 const int AWAR_PROTEIN_TYPE_bacterial_code_index = 8; // contains the index of the bacterial code table
 
 // --------------------------------------------------------------------------------

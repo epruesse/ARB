@@ -19,12 +19,12 @@
 extern void display_status(AW_window *, AW_CL, AW_CL);
 GB_ERROR    ph_check_initialized();
 
-void vertical_change_cb(AW_window *aww, void */*cb1*/, void */*cb2*/)
+static void vertical_change_cb(AW_window *aww, void */*cb1*/, void */*cb2*/)
 {
     PH_display::ph_display->monitor_vertical_scroll_cb(aww);
 }
 
-void horizontal_change_cb(AW_window *aww, void */*cb1*/, void */*cb2*/)
+static void horizontal_change_cb(AW_window *aww, void */*cb1*/, void */*cb2*/)
 {
     PH_display::ph_display->monitor_horizontal_scroll_cb(aww);
 }

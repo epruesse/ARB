@@ -15,7 +15,7 @@ Convaln_exception *Convaln_exception::thrown = NULL;
 
 struct TypeSwitch { const char *switchtext; Format format; };
 
-TypeSwitch convertible_type[] = { // see fconv.cxx@format_spec
+static TypeSwitch convertible_type[] = { // see fconv.cxx@format_spec
     { "GenBank",   GENBANK   },
     { "EMBL",      EMBL      },
     { "AE2",       MACKE     },

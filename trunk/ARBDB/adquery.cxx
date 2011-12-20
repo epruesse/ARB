@@ -181,7 +181,7 @@ GBDATA *GB_find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GBDATA *after, s
     return find_sub_by_quark(father, key_quark, GB_NONE, NULL, GB_MIND_CASE, after, skip_over);
 }
 
-NOT4PERL GBDATA *GB_find_subcontent_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after, size_t skip_over) {
+static GBDATA *GB_find_subcontent_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after, size_t skip_over) {
     return find_sub_by_quark(father, key_quark, type, val, case_sens, after, skip_over);
 }
 
@@ -392,7 +392,7 @@ GBDATA *gb_find_by_nr(GBDATA *father, int index) {
     return gb;
 }
 
-char  gb_ctype_table[256];
+static char  gb_ctype_table[256];
 void gb_init_ctype_table() {
     int i;
     for (i=0; i<256; i++) {
@@ -634,7 +634,7 @@ GBDATA *GB_searchOrCreate_float(GBDATA *gb_container, const char *fieldpath, dou
     return gb_float;
 }
 
-GBDATA *gb_search_marked(GBCONTAINER *gbc, GBQUARK key_quark, int firstindex, size_t skip_over) {
+static GBDATA *gb_search_marked(GBCONTAINER *gbc, GBQUARK key_quark, int firstindex, size_t skip_over) {
     int             userbit = GBCONTAINER_MAIN(gbc)->users[0]->userbit;
     int             index;
     int             end     = gbc->d.nheader;
@@ -742,8 +742,7 @@ void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table, 
     gb_assert((GBS_hash_count_elems(Main->command_hash)+1) == table_size);
 }
 
-char *gbs_search_second_x(const char *str)
-{
+static char *gbs_search_second_x(const char *str) {
     int c;
     for (; (c=*str); str++) {
         if (c=='\\') {      // escaped characters
@@ -780,7 +779,7 @@ char *gbs_search_second_bracket(const char *source)
 }
 
 
-char *gbs_search_next_separator(const char *source, const char *seps) {
+static char *gbs_search_next_separator(const char *source, const char *seps) {
     // search the next separator
     static char tab[256];
     static int flag = 0;

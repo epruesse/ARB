@@ -26,8 +26,7 @@ void destree_init(GB_HASH *hash)
    all sons to build the father partition. All partitions are inserted in the
    hashtable */
 // caution: I use the fact that each inner node must have two sons.
-PART *dtree(GBT_TREE *tree, int weight, GBT_LEN len)
-{
+static PART *dtree(GBT_TREE *tree, int weight, GBT_LEN len) {
     PART *p1, *p2, *ph;
     int idx;
 

@@ -121,7 +121,6 @@ extern int                 anz_elem_marked;
 extern int                 anz_elem_unmarked;
 extern unsigned char     **hamming_tab;
 extern int               **system3_tab;
-extern int                 outside_mismatches;
 extern bool                pt_server_different;
 extern bool                new_pt_server;
 

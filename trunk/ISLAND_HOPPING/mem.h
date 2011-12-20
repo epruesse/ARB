@@ -15,11 +15,10 @@
 #include <stdlib.h>
 #endif
 
-void     clearUp(void);
-void    *newBlock(size_t s);
-void     freeBlock_(void **v);
-void   **newMatrix(size_t nrow,size_t ncol,size_t s);
-void     freeMatrix_(void ***m);
+void  *newBlock(size_t s);
+void   freeBlock_(void **v);
+void **newMatrix(size_t nrow,size_t ncol,size_t s);
+void   freeMatrix_(void ***m);
 
 #define newVector(n,s) newBlock((n)*(s))
 

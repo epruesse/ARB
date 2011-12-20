@@ -83,7 +83,7 @@ struct Socinf {
     char              *username;
 };
 
-void g_bcms_delete_Socinf(Socinf *THIS) {
+static void g_bcms_delete_Socinf(Socinf *THIS) {
     freenull(THIS->username);
     THIS->next = 0;
     free(THIS);

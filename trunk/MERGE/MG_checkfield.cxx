@@ -31,7 +31,7 @@
 #define AWAR_ETAG         "/tmp/merge1/chk/tag"
 
 
-int gbs_cmp_strings(char *str1, char *str2, int *tab) { // returns 0 if strings are equal
+static int gbs_cmp_strings(char *str1, char *str2, int *tab) { // returns 0 if strings are equal
     char *s1, *s2;
     int c1, c2;
     s1 = str1;
@@ -49,7 +49,7 @@ int gbs_cmp_strings(char *str1, char *str2, int *tab) { // returns 0 if strings 
 }
 
 
-char *GBS_diff_strings(char *str1, char * &str2, char *exclude, long ToUpper, long correct,
+static char *GBS_diff_strings(char *str1, char * &str2, char *exclude, long ToUpper, long correct,
                        char **res1, char **res2, long *corrrected) {
 
     char  buffer1[256];
@@ -179,7 +179,7 @@ int mg_count_queried(GBDATA *gb_main) {
     return queried;
 }
 
-void mg_check_field_cb(AW_window *aww) {
+static void mg_check_field_cb(AW_window *aww) {
     AW_root  *root    = aww->get_root();
     GB_ERROR  error   = 0;
     char     *source  = root->awar(AWAR_SOURCE_FIELD)->read_string();

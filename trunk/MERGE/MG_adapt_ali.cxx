@@ -598,7 +598,7 @@ char *MG_remap::remap(const char *sequence) {
 
 // --------------------------------------------------------------------------------
 
-MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *reference_species_names, const char *alignment_name) {
+static MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *reference_species_names, const char *alignment_name) {
     MG_remap *rem      = new MG_remap();
     char     *ref_list = strdup(reference_species_names);
 

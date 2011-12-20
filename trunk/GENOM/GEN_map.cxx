@@ -231,7 +231,7 @@ static void GEN_gene_container_cb_installer(bool install, AWT_canvas *gmw, GEN_g
     }
 }
 
-void GEN_jump_cb(AW_window *aww, AW_CL cl_force_center_if_fits) {
+static void GEN_jump_cb(AW_window *aww, AW_CL cl_force_center_if_fits) {
     GEN_map_window *win                  = dynamic_cast<GEN_map_window*>(aww);
     bool            force_center_if_fits = (bool)cl_force_center_if_fits; // center gene if gene fits into display
     gen_assert(win);
@@ -304,7 +304,7 @@ void GEN_jump_cb(AW_window *aww, AW_CL cl_force_center_if_fits) {
     win->get_canvas()->refresh();
 }
 
-void GEN_jump_cb_auto(AW_root *root, GEN_map_window *win, bool force_refresh) {
+static void GEN_jump_cb_auto(AW_root *root, GEN_map_window *win, bool force_refresh) {
     int jump = root->awar(AWAR_GENMAP_AUTO_JUMP)->read_int();
     if (jump) {
         win->get_canvas()->refresh(); // needed to recalculate position
@@ -313,7 +313,7 @@ void GEN_jump_cb_auto(AW_root *root, GEN_map_window *win, bool force_refresh) {
     else if (force_refresh) win->get_canvas()->refresh();
 }
 
-void GEN_local_organism_or_gene_name_changed_cb(AW_root *awr, AW_CL cl_win) {
+static void GEN_local_organism_or_gene_name_changed_cb(AW_root *awr, AW_CL cl_win) {
     GEN_map_window *win = (GEN_map_window*)cl_win;
     win->get_graphic()->reinit_gen_root(win->get_canvas(), false);
     GEN_jump_cb_auto(awr, win, true);
@@ -488,7 +488,7 @@ static void GEN_add_global_awar_callbacks(AW_root *awr) {
 
 // --------------------------------------------------------------------------------
 
-void GEN_mode_event(AW_window *aws, AW_CL cl_win, AW_CL cl_mode) {
+static void GEN_mode_event(AW_window *aws, AW_CL cl_win, AW_CL cl_mode) {
     GEN_map_window   *win  = (GEN_map_window*)cl_win;
     AWT_COMMAND_MODE  mode = (AWT_COMMAND_MODE)cl_mode;
     const char       *text = 0;
@@ -531,7 +531,7 @@ static void GEN_undo_cb(AW_window *, AW_CL undo_type, AW_CL cl_gb_main) {
     }
 }
 
-AW_window *GEN_create_options_window(AW_root *awr) {
+static AW_window *GEN_create_options_window(AW_root *awr) {
     static AW_window_simple *aws = 0;
     if (!aws) {
 
@@ -556,7 +556,7 @@ AW_window *GEN_create_options_window(AW_root *awr) {
     return aws;
 }
 
-AW_window *GEN_create_layout_window(AW_root *awr) {
+static AW_window *GEN_create_layout_window(AW_root *awr) {
     static AW_window_simple *aws = 0;
 
     if (!aws) {
@@ -606,7 +606,7 @@ enum GEN_PERFORM_MODE {
     GEN_PERFORM_MODES, // counter
 };
 
-const char *GEN_PERFORM_MODE_id[GEN_PERFORM_MODES] = {
+static const char *GEN_PERFORM_MODE_id[GEN_PERFORM_MODES] = {
     "org_all",
     "org_current",
     "org_butcur",
@@ -1272,7 +1272,7 @@ static void mark_genes_of_marked_gene_species(AW_window * /* aww */, AW_CL cl_gb
     GBS_free_hash(organism_hash);
 }
 
-AW_window *create_gene_extract_window(AW_root *root, AW_CL cl_mode_param) {
+static AW_window *create_gene_extract_window(AW_root *root, AW_CL cl_mode_param) {
     GEN_extract_mode_param *param     = (GEN_extract_mode_param*)cl_mode_param;
     AW_window_simple       *aws       = new AW_window_simple;
     string                  window_id = performmode_relative_id("EXTRACT_GENE", param->get_perform_mode());
@@ -1317,7 +1317,7 @@ static void GEN_insert_extract_submenu(AW_window_menu_modes *awm, GBDATA *gb_mai
     awm->close_sub_menu();
 }
 
-void GEN_insert_multi_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key,
+static void GEN_insert_multi_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key,
                               const char *help_file, void (*command)(AW_window*, AW_CL, AW_CL), AW_CL command_mode)
 {
     awm->insert_sub_menu(submenu_name, hot_key);
@@ -1347,7 +1347,7 @@ static void GEN_insert_hide_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, 
 }
 
 #if defined(DEBUG)
-AW_window *GEN_create_awar_debug_window(AW_root *aw_root) {
+static AW_window *GEN_create_awar_debug_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
@@ -1441,7 +1441,7 @@ static AW_window *create_colorize_organisms_window(AW_root *aw_root, AW_CL cl_gb
     return QUERY::create_colorize_items_window(aw_root, (GBDATA*)cl_gb_main, ORGANISM_get_selector());
 }
 
-void GEN_popup_organism_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
+static void GEN_popup_organism_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
     // used to avoid that the organisms info window is stored in a menu (or with a button)
     AW_window *aws = DBUI::create_organism_info_window(aww->get_root(), cl_gb_main);
     aws->activate();
@@ -1471,7 +1471,7 @@ static void GEN_create_organism_submenu(AW_window_menu_modes *awm, GBDATA *gb_ma
     if (submenu) awm->close_sub_menu();
 }
 
-void GEN_create_gene_species_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool submenu) {
+static void GEN_create_gene_species_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool submenu) {
     const char *title  = "Gene-Species";
     const char *hotkey = "S";
 
@@ -1550,7 +1550,7 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool f
 
 #undef AWMIMT
 
-void GEN_create_hide_submenu(AW_window_menu_modes *awm, GBDATA *gb_main) {
+static void GEN_create_hide_submenu(AW_window_menu_modes *awm, GBDATA *gb_main) {
     awm->create_menu("Hide", "H", AWM_ALL);
     {
         GEN_insert_hide_submenu(awm, gb_main, "gene_hide_marked",    "Hide marked genes",        "H", "gene_hide.hlp", GEN_HIDE_MARKED);
@@ -1564,7 +1564,7 @@ void GEN_create_hide_submenu(AW_window_menu_modes *awm, GBDATA *gb_main) {
     }
 }
 
-void GEN_set_display_style(AW_window *aww, AW_CL cl_style) {
+static void GEN_set_display_style(AW_window *aww, AW_CL cl_style) {
     GEN_DisplayStyle  style = (GEN_DisplayStyle)cl_style;
     GEN_map_window   *win   = dynamic_cast<GEN_map_window*>(aww);
     gen_assert(win);
@@ -1572,6 +1572,39 @@ void GEN_set_display_style(AW_window *aww, AW_CL cl_style) {
     win->get_root()->awar(AWAR_GENMAP_DISPLAY_TYPE(win->get_nr()))->write_int(style);
     win->get_graphic()->set_display_style(style);
     GEN_map_window_zoom_reset_and_refresh(win);
+}
+
+static AW_window *GEN_create_map(AW_root *aw_root, AW_CL cl_GEN_create_map_param) {
+    // param->window_nr shall be 0 for first window (called from ARB_NTREE)
+    // additional views are always created by the previous window created with GEN_map
+    GEN_create_map_param *param   = (GEN_create_map_param*)cl_GEN_create_map_param;
+    GEN_map_manager      *manager = 0;
+
+    if (!GEN_map_manager::initialized()) {          // first call
+        gen_assert(param->window_nr == 0); // has to be 0 for first call
+
+        GEN_map_manager::initialize(aw_root, param->gb_main);
+        manager = GEN_map_manager::get_map_manager(); // creates the manager
+
+        // global initialization (AWARS etc.) done here :
+
+        GEN_create_genemap_global_awars(aw_root, AW_ROOT_DEFAULT, param->gb_main);
+        GEN_add_global_awar_callbacks(aw_root);
+        {
+            GB_transaction dummy(param->gb_main);
+            GEN_make_node_text_init(param->gb_main);
+        }
+    }
+    else {
+        manager = GEN_map_manager::get_map_manager();
+    }
+
+    GEN_map_window *gmw = manager->get_map_window(param->window_nr);
+    return gmw;
+}
+
+AW_window *GEN_create_first_map(AW_root *aw_root, AW_CL cl_gb_main) {
+    return GEN_create_map(aw_root, (AW_CL)new GEN_create_map_param((GBDATA*)cl_gb_main, 0));
 }
 
 // ____________________________________________________________
@@ -1750,35 +1783,3 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 // -end- of implementation of class GEN_map_window:.
 
 
-AW_window *GEN_create_map(AW_root *aw_root, AW_CL cl_GEN_create_map_param) {
-    // param->window_nr shall be 0 for first window (called from ARB_NTREE)
-    // additional views are always created by the previous window created with GEN_map
-    GEN_create_map_param *param   = (GEN_create_map_param*)cl_GEN_create_map_param;
-    GEN_map_manager      *manager = 0;
-
-    if (!GEN_map_manager::initialized()) {          // first call
-        gen_assert(param->window_nr == 0); // has to be 0 for first call
-
-        GEN_map_manager::initialize(aw_root, param->gb_main);
-        manager = GEN_map_manager::get_map_manager(); // creates the manager
-
-        // global initialization (AWARS etc.) done here :
-
-        GEN_create_genemap_global_awars(aw_root, AW_ROOT_DEFAULT, param->gb_main);
-        GEN_add_global_awar_callbacks(aw_root);
-        {
-            GB_transaction dummy(param->gb_main);
-            GEN_make_node_text_init(param->gb_main);
-        }
-    }
-    else {
-        manager = GEN_map_manager::get_map_manager();
-    }
-
-    GEN_map_window *gmw = manager->get_map_window(param->window_nr);
-    return gmw;
-}
-
-AW_window *GEN_create_first_map(AW_root *aw_root, AW_CL cl_gb_main) {
-    return GEN_create_map(aw_root, (AW_CL)new GEN_create_map_param((GBDATA*)cl_gb_main, 0));
-}

@@ -258,7 +258,7 @@ static int gotoChar(Reader *r, char lookfor) {
     return 0;
 }
 
-char *getLine(Reader *r) {
+static char *getLine(Reader *r) {
     releasePreviousBuffers(r);
 
     {
@@ -560,7 +560,7 @@ static GB_ERROR gb_parse_ascii(Reader *r, GBCONTAINER *gb_parent) {
     return error;
 }
 
-GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbd) {
+static GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbd) {
     /* This loads an ACSII database
      * if path == "-" -> read from stdin
      */
@@ -597,8 +597,7 @@ GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbd) {
 // --------------------------
 //      Read binary files
 
-long gb_read_bin_rek(FILE *in, GBCONTAINER *gbd, long nitems, long version, long reversed)
-{
+static long gb_read_bin_rek(FILE *in, GBCONTAINER *gbd, long nitems, long version, long reversed) {
     long          item;
     long          type, type2;
     GBQUARK       key;
@@ -730,7 +729,7 @@ long gb_read_bin_rek(FILE *in, GBCONTAINER *gbd, long nitems, long version, long
 }
 
 
-long gb_recover_corrupt_file(GBCONTAINER *gbd, FILE *in, GB_ERROR recovery_reason) {
+static long gb_recover_corrupt_file(GBCONTAINER *gbd, FILE *in, GB_ERROR recovery_reason) {
     // search pattern dx xx xx xx string 0
     static FILE *old_in = 0;
     static unsigned char *file = 0;
@@ -782,8 +781,7 @@ static void DEBUG_DUMP_INDENTED(long deep, const char *s) {
 #endif // DEBUG_READ
 
 
-long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long version, long reversed, long deep)
-{
+static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long version, long reversed, long deep) {
     long            item;
     long            type, type2;
     GBQUARK         key;
@@ -993,7 +991,7 @@ long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long version, l
     return 0;
 }
 
-GBDATA *gb_search_system_folder_rek(GBDATA *gbd) {
+static GBDATA *gb_search_system_folder_rek(GBDATA *gbd) {
     GBDATA *gb2;
     GBDATA *gb_result = 0;
     for (gb2 = GB_child(gbd); gb2; gb2 = GB_nextChild(gb2)) {
@@ -1008,7 +1006,7 @@ GBDATA *gb_search_system_folder_rek(GBDATA *gbd) {
 }
 
 
-void gb_search_system_folder(GBDATA *gb_main) {
+static void gb_search_system_folder(GBDATA *gb_main) {
     /* Search a system folder within the database tree
      * and copy it to main level
      */
@@ -1030,8 +1028,7 @@ void gb_search_system_folder(GBDATA *gb_main) {
     GB_warning("***** found (good)");
 }
 
-long gb_read_bin(FILE *in, GBCONTAINER *gbd, int diff_file_allowed)
-{
+static long gb_read_bin(FILE *in, GBCONTAINER *gbd, int diff_file_allowed) {
     int   c = 1;
     long  i;
     long  error;
@@ -1283,7 +1280,7 @@ long gb_read_bin(FILE *in, GBCONTAINER *gbd, int diff_file_allowed)
 // ----------------------
 //      OPEN DATABASE
 
-long gb_next_main_idx_for_mapfile = 0;
+static long gb_next_main_idx_for_mapfile = 0;
 
 void GB_set_next_main_idx(long idx) {
     gb_next_main_idx_for_mapfile = idx;
@@ -1323,7 +1320,7 @@ void gb_release_main_idx(GB_MAIN_TYPE *Main) {
     }
 }
 
-GB_ERROR gb_login_remote(GB_MAIN_TYPE *Main, const char *path, const char *opent) {
+static GB_ERROR gb_login_remote(GB_MAIN_TYPE *Main, const char *path, const char *opent) {
     GBCONTAINER *gbd   = Main->data;
     GB_ERROR     error = NULL;
 

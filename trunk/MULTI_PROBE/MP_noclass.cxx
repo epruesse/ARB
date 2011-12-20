@@ -23,9 +23,7 @@
 
 #include <ctime>
 
-bool MP_is_probe(char *seq);
 int  get_random(int min, int max); // gibt eine Zufallszahl x mit der Eigenschaft : min <= x <= max
-void init_system3_tab();
 
 int        **system3_tab      = NULL;
 static int   system3_tab_size = 0;
@@ -46,16 +44,6 @@ int get_random(int min, int max) {
     mp_assert(min <= max);
     return GB_random(max-min+1)+min;
 }
-
-void MP_new_sequence(AW_window *aww) {
-    mp_main->get_aw_root()->awar_string(MP_AWAR_SEQUENZEINGABE)->write_string("");
-
-    char *res = aw_input2awar("Enter target sequence", MP_AWAR_SEQUENZEINGABE);
-    free(res);
-
-    MP_take_manual_sequence(aww);
-}
-
 
 void MP_close_main(AW_window *aww)
 {
@@ -81,6 +69,19 @@ void MP_close_main(AW_window *aww)
     mp_main->set_stc(NULL);
 
     new_pt_server = true;
+}
+
+static char *MP_get_probes(const char *str) {
+    const char *result = strrchr(str, '#');
+
+    if (!result) {
+        result = str;
+    }
+    else {
+        ++result;
+        result += strspn(result, " \t"); // skip over whitespace
+    }
+    return strdup(result);
 }
 
 void MP_gen_quality(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
@@ -192,24 +193,7 @@ void MP_gen_singleprobe(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     delete new_sing;
 }
 
-void MP_popup_result_window(AW_window */*aww*/) {
-    mp_main->get_mp_window()->create_result_window(mp_main->get_aw_root())->activate();
-    init_system3_tab();
-}
-
-bool MP_aborted(int gen_cnt, double avg_fit, double min_fit, double max_fit, arb_progress& progress) {
-    char view_text[150];
-
-    if (gen_cnt == 0)
-        sprintf(view_text, "Evaluating first generation");
-    else
-        sprintf(view_text, "Gen:%d Avg:%5i Min:%5i Max:%5i", gen_cnt, int(avg_fit), int(min_fit), int(max_fit));
-
-    progress.subtitle(view_text);
-    return progress.aborted();
-}
-
-void init_system3_tab()
+static void init_system3_tab()
 {
     int i, j, k,
         size_hamming_tab,
@@ -300,6 +284,24 @@ void init_system3_tab()
 
 }
 
+void MP_popup_result_window(AW_window */*aww*/) {
+    mp_main->get_mp_window()->create_result_window(mp_main->get_aw_root())->activate();
+    init_system3_tab();
+}
+
+bool MP_aborted(int gen_cnt, double avg_fit, double min_fit, double max_fit, arb_progress& progress) {
+    char view_text[150];
+
+    if (gen_cnt == 0)
+        sprintf(view_text, "Evaluating first generation");
+    else
+        sprintf(view_text, "Gen:%d Avg:%5i Min:%5i Max:%5i", gen_cnt, int(avg_fit), int(min_fit), int(max_fit));
+
+    progress.subtitle(view_text);
+    return progress.aborted();
+}
+
+
 void MP_compute(AW_window *aww, AW_CL cl_gb_main) {
     AW_root         *aw_root = mp_main->get_aw_root();
     AW_window       *aww2;
@@ -372,7 +374,29 @@ void MP_compute(AW_window *aww, AW_CL cl_gb_main) {
     aww2->activate();
 }
 
-void MP_take_manual_sequence(AW_window */*aww*/) {
+static bool MP_is_probe(char *seq) {
+    bool    result=true;
+    char    *s,
+        *seq2;
+
+    if (! seq)
+        return false;
+
+    seq2 = MP_get_probes(seq);
+    if (!seq2 || ! seq2[0])
+        return false;
+
+    s = seq2;
+    while (*s && result)
+    {
+        result = result && MP_probe_tab[(unsigned char)*s];
+        s++;
+    }
+    free(seq2);
+    return result;
+}
+
+static void MP_take_manual_sequence(AW_window */*aww*/) {
     AW_window_simple *aws = mp_main->get_mp_window()->get_window();
     char             *seq = mp_gl_awars.manual_sequence;
     char             *new_seq;
@@ -395,6 +419,14 @@ void MP_take_manual_sequence(AW_window */*aww*/) {
     delete [] new_seq;
 }
 
+void MP_new_sequence(AW_window *aww) {
+    mp_main->get_aw_root()->awar_string(MP_AWAR_SEQUENZEINGABE)->write_string("");
+
+    char *res = aw_input2awar("Enter target sequence", MP_AWAR_SEQUENZEINGABE);
+    free(res);
+
+    MP_take_manual_sequence(aww);
+}
 
 void MP_cache_sonden(AW_window *) { new_pt_server = true; }
 void MP_cache_sonden2(AW_root *) { new_pt_server = true; }
@@ -717,29 +749,6 @@ void    MP_rightleft(AW_window *aww)    // von rechts nach links
     aww->update_selection_list(probelist);
 }
 
-bool MP_is_probe(char *seq)
-{
-    bool    result=true;
-    char    *s,
-        *seq2;
-
-    if (! seq)
-        return false;
-
-    seq2 = MP_get_probes(seq);
-    if (!seq2 || ! seq2[0])
-        return false;
-
-    s = seq2;
-    while (*s && result)
-    {
-        result = result && MP_probe_tab[(unsigned char)*s];
-        s++;
-    }
-    free(seq2);
-    return result;
-}
-
 void MP_selected_chosen(AW_window */*aww*/) {
     char *selected = mp_main->get_aw_root()->awar(MP_AWAR_SELECTEDPROBES)->read_string();
     char *probe;
@@ -865,7 +874,7 @@ char *MP_get_comment(int which, const char *str) {
     return result;
 }
 
-char *MP_remove_comment(char *old_str)
+static char *MP_remove_comment(char *old_str)
 {
     char *result = strrchr(old_str, '#');
     char *help;
@@ -883,19 +892,6 @@ char *MP_remove_comment(char *old_str)
     *result = '#';
 
     return ret_res;
-}
-
-char *MP_get_probes(const char *str) {
-    const char *result = strrchr(str, '#');
-
-    if (!result) {
-        result = str;
-    }
-    else {
-        ++result;
-        result += strspn(result, " \t"); // skip over whitespace
-    }
-    return strdup(result);
 }
 
 void MP_result_chosen(AW_window */*aww*/) {

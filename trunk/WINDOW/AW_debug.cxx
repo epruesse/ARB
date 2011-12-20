@@ -145,7 +145,7 @@ static long collect_callbacks(const char *key, long value, void *cl_callbacks) {
     return value;
 }
 
-int sortedByCallbackLocation(const char *k0, long v0, const char *k1, long v1) {
+static int sortedByCallbackLocation(const char *k0, long v0, const char *k1, long v1) {
     AW_cb_struct *cbs0 = reinterpret_cast<AW_cb_struct*>(v0);
     AW_cb_struct *cbs1 = reinterpret_cast<AW_cb_struct*>(v1);
 

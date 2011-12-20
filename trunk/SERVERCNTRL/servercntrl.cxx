@@ -49,7 +49,7 @@
 
 #define TRIES 1
 
-struct gl_struct {
+static struct gl_struct {
     aisc_com *link;
     long      locs;
     long      com;

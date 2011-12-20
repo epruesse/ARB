@@ -24,7 +24,6 @@
 #define RETURN_ERROR(err)  arb_assert(!GB_have_error()); return (err)
 
 const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char *templat, ...) __ATTR__FORMAT(3);
-size_t GBS_last_global_string_size(void);
 char *GBS_global_string_copy(const char *templat, ...) __ATTR__FORMAT(1);
 const char *GBS_global_string(const char *templat, ...) __ATTR__FORMAT(1);
 GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr);
@@ -39,9 +38,6 @@ GB_ERROR GB_await_error(void);
 void GB_clear_error(void);
 GB_ERROR GB_failedTo_error(const char *do_something, const char *special, GB_ERROR error);
 GB_ERROR GB_append_exportedError(GB_ERROR error);
-class BackTraceInfo *GBK_get_backtrace(size_t skipFramesAtBottom);
-void GBK_dump_former_backtrace(class BackTraceInfo *trace, FILE *out, const char *message);
-void GBK_free_backtrace(class BackTraceInfo *trace);
 void GBK_dump_backtrace(FILE *out, const char *message);
 void GB_internal_error(const char *message);
 void GB_internal_errorf(const char *templat, ...) __ATTR__FORMAT(1);

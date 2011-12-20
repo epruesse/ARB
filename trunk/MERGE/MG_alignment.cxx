@@ -24,7 +24,7 @@
 #define AWAR_ALI1 AWAR1"alignment_name"
 #define AWAR_ALI2 AWAR2"alignment_name"
 
-void MG_alignment_vars_callback(AW_root *aw_root, GBDATA *gbd, long ali_nr)
+static void MG_alignment_vars_callback(AW_root *aw_root, GBDATA *gbd, long ali_nr)
 {
     char buffer[256];
 
@@ -135,7 +135,7 @@ int MG_copy_and_check_alignments(AW_window */*aww*/) {
     return !!error;
 }
 
-void MG_ad_al_delete_cb(AW_window *aww, AW_CL db_nr)
+static void MG_ad_al_delete_cb(AW_window *aww, AW_CL db_nr)
 {
     if (aw_ask_sure("Are you sure to delete all data belonging to this alignment?")) {
         char     buffer[256];
@@ -157,7 +157,7 @@ void MG_ad_al_delete_cb(AW_window *aww, AW_CL db_nr)
 }
 
 
-void MG_ed_al_check_len_cb(AW_window *aww, AW_CL db_nr)
+static void MG_ed_al_check_len_cb(AW_window *aww, AW_CL db_nr)
 {
     char *error = 0;
     char  buffer[256];
@@ -173,7 +173,7 @@ void MG_ed_al_check_len_cb(AW_window *aww, AW_CL db_nr)
     delete use;
 }
 
-void MG_copy_delete_rename(AW_window * aww, AW_CL db_nr, AW_CL dele)
+static void MG_copy_delete_rename(AW_window * aww, AW_CL db_nr, AW_CL dele)
 {
     GBDATA   *gbd    = (db_nr == 1) ? GLOBAL_gb_merge : GLOBAL_gb_dest;
     char     *source = aww->get_root()->awar(GBS_global_string("tmp/merge%li/alignment_name", db_nr))->read_string();
@@ -191,7 +191,7 @@ void MG_copy_delete_rename(AW_window * aww, AW_CL db_nr, AW_CL dele)
 }
 
 
-AW_window *create_alignment_copy_window(AW_root *root, AW_CL db_nr)
+static AW_window *create_alignment_copy_window(AW_root *root, AW_CL db_nr)
 {
     AW_window_simple *aws = new AW_window_simple;
     char header[80];
@@ -217,7 +217,7 @@ AW_window *create_alignment_copy_window(AW_root *root, AW_CL db_nr)
 
     return (AW_window *)aws;
 }
-AW_window *MG_create_alignment_rename_window(AW_root *root, AW_CL db_nr)
+static AW_window *MG_create_alignment_rename_window(AW_root *root, AW_CL db_nr)
 {
     AW_window_simple *aws = new AW_window_simple;
     char header[80];
@@ -244,7 +244,7 @@ AW_window *MG_create_alignment_rename_window(AW_root *root, AW_CL db_nr)
     return (AW_window *)aws;
 }
 
-void MG_aa_create_alignment(AW_window *aww, AW_CL db_nr)
+static void MG_aa_create_alignment(AW_window *aww, AW_CL db_nr)
 {
     GBDATA     *gbd          = (db_nr == 1) ? GLOBAL_gb_merge : GLOBAL_gb_dest;
     const char *name_field   = GBS_global_string("tmp/merge%li/alignment_dest", db_nr);
@@ -257,7 +257,7 @@ void MG_aa_create_alignment(AW_window *aww, AW_CL db_nr)
     free(name);
 }
 
-AW_window *MG_create_alignment_create_window(AW_root *root, AW_CL db_nr)
+static AW_window *MG_create_alignment_create_window(AW_root *root, AW_CL db_nr)
 {
     AW_window_simple *aws = new AW_window_simple;
     char header[80];
@@ -286,7 +286,7 @@ AW_window *MG_create_alignment_create_window(AW_root *root, AW_CL db_nr)
 
 
 
-AW_window *MG_create_alignment_window(AW_root *root, AW_CL db_nr)
+static AW_window *MG_create_alignment_window(AW_root *root, AW_CL db_nr)
 {
     char              buffer[256];
     GBDATA           *gbd = (db_nr == 1) ? GLOBAL_gb_merge : GLOBAL_gb_dest;

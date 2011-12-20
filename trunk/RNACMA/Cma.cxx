@@ -14,8 +14,39 @@
 //>--------------------------Global definitions--------------------------------
 
 // Some local function prototypes.
-bool compareMITuples(MITuple first, MITuple second);
 void unifyCluster(int cluster1, int cluster2, VectorXi & result);
+
+//>-----------------------local helper functions-------------------------------
+
+/**
+ * Helper function for Cma::computeClusters. Compares MITuples by
+ * mutual information value.
+ *
+ * @param first: the first MITuple
+ *
+ * @param second: the second MITuple
+ *
+ * @returns whether the first element should be placed before the second.
+ */
+static bool compareMITuples(MITuple first, MITuple second) {
+    return first.MI > second.MI;
+}
+
+/**
+ * Helper function for Cma::computeClusters. Unites two clusters.
+ *
+ * @param cluster1: the index of the first cluster.
+ *
+ * @param cluster2: the index of the second cluster.
+ */
+void unifyCluster(int cluster1, int cluster2, VectorXi & result) {
+    size_t size = result.size();
+    for (size_t i = 0; i < size; ++i) {
+        if (result[i] == cluster2) {
+            result[i] = cluster1;
+        }
+    }
+}
 
 //>---------------------------Public methods-----------------------------------
 
@@ -468,37 +499,5 @@ double Cma::computeOveralMeanMutualInformation() {
 
     return 2. * MutualInformation.sum() / num_of_seqs / num_of_seqs;
 
-}
-
-//>-----------------------local helper functions-------------------------------
-
-/**
- * Helper function for Cma::computeClusters. Compares MITuples by
- * mutual information value.
- *
- * @param first: the first MITuple
- *
- * @param second: the second MITuple
- *
- * @returns whether the first element should be placed before the second.
- */
-bool compareMITuples(MITuple first, MITuple second) {
-    return first.MI > second.MI;
-}
-
-/**
- * Helper function for Cma::computeClusters. Unites two clusters.
- *
- * @param cluster1: the index of the first cluster.
- *
- * @param cluster2: the index of the second cluster.
- */
-void unifyCluster(int cluster1, int cluster2, VectorXi & result) {
-    size_t size = result.size();
-    for (size_t i = 0; i < size; ++i) {
-        if (result[i] == cluster2) {
-            result[i] = cluster1;
-        }
-    }
 }
 

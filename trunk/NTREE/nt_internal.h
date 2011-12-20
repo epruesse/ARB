@@ -18,18 +18,12 @@
 #endif
 
 AW_window *AP_open_con_expert_window(AW_root *aw_root);
-AW_window *AP_open_consensus_window(AW_root *aw_root);
 AW_window *AP_open_max_freq_window(AW_root *aw_root);
-
-/* AP_conservProfile2Gnuplot.cxx */
-void AP_conservProfile2Gnuplot_callback(AW_window *aww);
-AW_window *AP_createConservationProfileWindow(AW_root *root);
 
 /* AP_cprofile.cxx */
 AW_window *AP_open_cprofile_window(AW_root *aw_root);
 
 /* AP_pos_var_pars.cxx */
-void AP_calc_pos_var_pars(AW_window *aww);
 AW_window *AP_open_pos_var_pars_window(AW_root *root);
 
 /* ColumnStat_2_gnuplot.cxx */
@@ -54,9 +48,8 @@ void NT_system_in_xterm_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_
 
 /* NT_concatenate.cxx */
 void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def);
-AW_window *NT_createConcatenationWindow(AW_root *aw_root);
 AW_window *NT_createMergeSimilarSpeciesWindow(AW_root *aw_root);
-AW_window *NT_createMergeSimilarSpeciesAndConcatenateWindow(AW_root *aw_root);
+AW_window *NT_createConcatenationWindow(AW_root *aw_root);
 
 /* NT_dbrepair.cxx */
 GB_ERROR NT_repair_DB(GBDATA *gb_main);
@@ -67,34 +60,6 @@ void NT_popup_configuration_admin(AW_window *aw_main, AW_CL dummy_1x, AW_CL dumm
 AW_window *NT_start_editor_on_old_configuration(AW_root *awr);
 void NT_start_editor_on_tree(AW_window *, AW_CL cl_use_species_aside, AW_CL dummy_1x);
 
-/* NT_extern.cxx */
-void NT_save_cb(AW_window *aww);
-void NT_save_quick_cb(AW_window *aww);
-void NT_save_quick_as_cb(AW_window *aww);
-void NT_save_as_cb(AW_window *aww);
-AW_window *NT_create_save_quick_as(AW_root *aw_root, char *base_name);
-void NT_database_optimization(AW_window *aww);
-AW_window *NT_create_database_optimization_window(AW_root *aw_root);
-AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name);
-void NT_undo_cb(AW_window *, AW_CL undo_type, AW_CL ntw);
-void NT_undo_info_cb(AW_window *, AW_CL undo_type);
-AW_window *NT_create_tree_setting(AW_root *aw_root);
-void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base);
-AW_window *NT_submit_bug(AW_root *aw_root, int bug_report);
-void NT_focus_cb(AW_window *);
-void NT_modify_cb(AW_window *aww, AW_CL cd1, AW_CL cd2);
-void NT_primer_cb(void);
-void NT_mark_degenerated_branches(AW_window *aww, AW_CL ntwcl);
-void NT_mark_deep_branches(AW_window *aww, AW_CL ntwcl);
-void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl);
-void NT_mark_duplicates(AW_window *aww, AW_CL ntwcl);
-void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL dummy_1x);
-void NT_fix_database(AW_window *);
-void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl);
-void NT_update_marked_counter(AW_window *aww, long count);
-void NT_popup_species_window(AW_window *aww, AW_CL cl_gb_main, AW_CL dummy_1x);
-void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main);
-
 /* NT_import.cxx */
 void NT_import_sequences(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_2x);
 
@@ -102,9 +67,7 @@ void NT_import_sequences(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_2x);
 GB_ERROR NT_format_all_alignments(GBDATA *gb_main);
 
 /* NT_sort.cxx */
-GB_ERROR NT_resort_data_base(GBT_TREE *tree, const char *key1, const char *key2, const char *key3);
 void NT_resort_data_by_phylogeny(AW_window *, AW_CL dummy_1x, AW_CL dummy_2x);
-void NT_resort_data_by_user_criteria(AW_window *aw);
 void NT_build_resort_awars(AW_root *awr, AW_default aw_def);
 AW_window *NT_build_resort_window(AW_root *awr);
 

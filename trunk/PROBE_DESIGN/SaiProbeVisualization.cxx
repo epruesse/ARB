@@ -29,9 +29,9 @@ using namespace std;
 #define PROBE_PREFIX_LENGTH 9
 #define PROBE_SUFFIX_LENGTH 9
 
-saiProbeData *g_pbdata                    = 0;
-static char  *saiValues                   = 0;
-static bool   in_colorDefChanged_callback = false;  // used to avoid colorDef correction
+static saiProbeData *g_pbdata                    = 0;
+static char         *saiValues                   = 0;
+static bool          in_colorDefChanged_callback = false; // used to avoid colorDef correction
 
 #define BUFSIZE 100
 static const char *getAwarName(int awarNo) {

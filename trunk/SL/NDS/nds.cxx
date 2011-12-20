@@ -106,7 +106,8 @@ struct NodeTextBuilder {
         }
     }
 
-} *awt_nds_ms = 0;
+};
+static NodeTextBuilder *awt_nds_ms = 0;
 
 inline const char *viewkeyAwarName(int i, const char *name) {
     nds_assert(i >= 0 && i < NDS_PER_PAGE);
@@ -266,7 +267,7 @@ void create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main) {
     map_viewkeys(aw_root, (AW_CL)awdef, (AW_CL)gb_main); // call once
 }
 
-void awt_pre_to_view(AW_root *aw_root) {
+static void awt_pre_to_view(AW_root *aw_root) {
     char *str = aw_root->awar(AWAR_SELECT_ACISRT_PRE)->read_string();
     char *brk = strchr(str, '#');
     if (brk) {
@@ -753,7 +754,7 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
     return awt_nds_ms->get_buffer();
 }
 
-char *make_node_text_list(GBDATA * gbd, FILE *fp)
+static char *make_node_text_list(GBDATA * gbd, FILE *fp)
 {
     // if mode==0 screen else file
     char       *bp;

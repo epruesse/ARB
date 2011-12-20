@@ -148,7 +148,7 @@ public:
     void set_id(void *ID) { id = ID; }
 };
 
-void AW_variable_update_callback(Widget /*wgt*/, XtPointer variable_update_struct, XtPointer call_data) {
+static void AW_variable_update_callback(Widget /*wgt*/, XtPointer variable_update_struct, XtPointer call_data) {
     VarUpdateInfo *vui = (VarUpdateInfo *) variable_update_struct;
     aw_assert(vui);
 
@@ -238,12 +238,12 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
 }
 
 
-void AW_value_changed_callback(Widget /*wgt*/, XtPointer rooti, XtPointer /*call_data*/) {
+static void AW_value_changed_callback(Widget /*wgt*/, XtPointer rooti, XtPointer /*call_data*/) {
     AW_root *root = (AW_root *)rooti;
     root->value_changed = true;
 }
 
-void aw_attach_widget(Widget scrolledWindowText, AW_at *_at, int default_width = -1) {
+static void aw_attach_widget(Widget scrolledWindowText, AW_at *_at, int default_width = -1) {
     short height = 0;
     short width = 0;
     if (!_at->to_position_exists) {
@@ -1852,25 +1852,22 @@ GB_HASH *AW_window::selection_list_to_hash(AW_selection_list *sel_list, bool cas
     return hash;
 }
 
-extern "C" {
-    int AW_sort_AW_select_table_struct(const void *t1, const void *t2, void *) {
-        return strcmp(static_cast<const AW_selection_list_entry*>(t1)->get_displayed(),
-                      static_cast<const AW_selection_list_entry*>(t2)->get_displayed());
-    }
-    int AW_sort_AW_select_table_struct_backward(const void *t1, const void *t2, void *) {
-        return strcmp(static_cast<const AW_selection_list_entry*>(t2)->get_displayed(),
-                      static_cast<const AW_selection_list_entry*>(t1)->get_displayed());
-    }
-    int AW_isort_AW_select_table_struct(const void *t1, const void *t2, void *) {
-        return ARB_stricmp(static_cast<const AW_selection_list_entry*>(t1)->get_displayed(),
-                           static_cast<const AW_selection_list_entry*>(t2)->get_displayed());
-    }
-    int AW_isort_AW_select_table_struct_backward(const void *t1, const void *t2, void *) {
-        return ARB_stricmp(static_cast<const AW_selection_list_entry*>(t2)->get_displayed(),
-                           static_cast<const AW_selection_list_entry*>(t1)->get_displayed());
-    }
+static int AW_sort_AW_select_table_struct(const void *t1, const void *t2, void *) {
+    return strcmp(static_cast<const AW_selection_list_entry*>(t1)->get_displayed(),
+                  static_cast<const AW_selection_list_entry*>(t2)->get_displayed());
 }
-
+static int AW_sort_AW_select_table_struct_backward(const void *t1, const void *t2, void *) {
+    return strcmp(static_cast<const AW_selection_list_entry*>(t2)->get_displayed(),
+                  static_cast<const AW_selection_list_entry*>(t1)->get_displayed());
+}
+static int AW_isort_AW_select_table_struct(const void *t1, const void *t2, void *) {
+    return ARB_stricmp(static_cast<const AW_selection_list_entry*>(t1)->get_displayed(),
+                       static_cast<const AW_selection_list_entry*>(t2)->get_displayed());
+}
+static int AW_isort_AW_select_table_struct_backward(const void *t1, const void *t2, void *) {
+    return ARB_stricmp(static_cast<const AW_selection_list_entry*>(t2)->get_displayed(),
+                       static_cast<const AW_selection_list_entry*>(t1)->get_displayed());
+}
 
 AW_selection_list* AW_window::copySelectionList(AW_selection_list *sourceList, AW_selection_list *destinationList) {
 

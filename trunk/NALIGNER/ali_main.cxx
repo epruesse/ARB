@@ -17,16 +17,16 @@
 #define ALI_ERROR      "ALI_ERR"
 #define ALI_INTERVALLS "ALI_INT"
 
-ALI_GLOBAL aligs;
+static ALI_GLOBAL aligs;
 
 
 void message(char *errortext);
 
 
-const char *ali_version =
+static const char *ali_version =
     "\nALIGNER   V2.0  (Boris Reichel 5/95)\n";
 
-const char *ali_man_line[] = {
+static const char *ali_man_line[] = {
     "Parameter:",
     "-s<species>       aligne the sequence of <species>",
     "-f<species_1>,...,<species_n>[;<extension_1>,...,<extension_k>]  use specified family and family extension",
@@ -73,7 +73,7 @@ const char *ali_man_line[] = {
 };
 
 
-void print_man() {
+static void print_man() {
     // Print a short parameter description
     int i;
 
@@ -94,7 +94,7 @@ void ali_error(const char *message, const char *func) {
 
 
 
-int get_species(char *species_string, unsigned int species_number, char *buffer) {
+static int get_species(char *species_string, unsigned int species_number, char *buffer) {
     // Get one species of a list
     while (species_number > 0 && *species_string != '\0') {
         while (*species_string != '\0' && *species_string != ',')
@@ -117,7 +117,7 @@ int get_species(char *species_string, unsigned int species_number, char *buffer)
 }
 
 
-int check_base_invariance(char *seq1, char *seq2)
+static int check_base_invariance(char *seq1, char *seq2)
 {
     while (*seq1 != '\0' && !ali_is_base(*seq1))
         seq1++;
@@ -141,7 +141,7 @@ int check_base_invariance(char *seq1, char *seq2)
 }
 
 
-int convert_for_back_write(char *seq_new, char *seq_orig) {
+static int convert_for_back_write(char *seq_new, char *seq_orig) {
     // Convert the working sequenz into the original bases
 
     while (*seq_new != '\0' && (ali_is_dot(*seq_new) || ali_is_gap(*seq_new)))

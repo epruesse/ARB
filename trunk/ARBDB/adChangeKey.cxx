@@ -44,7 +44,7 @@ GB_TYPES GBT_get_type_of_changekey(GBDATA *gb_main, const char *field_name, cons
     return type;
 }
 
-GB_ERROR gbt_set_type_of_changekey(GBDATA *gb_main, const char *field_name, GB_TYPES type, const char *change_key_path) {
+static GB_ERROR gbt_set_type_of_changekey(GBDATA *gb_main, const char *field_name, GB_TYPES type, const char *change_key_path) {
     GB_ERROR  error = NULL;
     GBDATA   *gbd   = GBT_get_changekey(gb_main, field_name, change_key_path);
 

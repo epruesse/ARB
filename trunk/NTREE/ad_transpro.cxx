@@ -211,7 +211,7 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
 #define AWAR_TRANSPRO_XSTART AWAR_TRANSPRO_PREFIX "xstart"
 #define AWAR_TRANSPRO_WRITE  AWAR_TRANSPRO_PREFIX "write"
 
-void transpro_event(AW_window *aww) {
+static void transpro_event(AW_window *aww) {
     GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
     if (!error) {
 #if defined(DEBUG) && 0
@@ -235,7 +235,7 @@ void transpro_event(AW_window *aww) {
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 
-void nt_trans_cursorpos_changed(AW_root *awr) {
+static void nt_trans_cursorpos_changed(AW_root *awr) {
     int pos = bio2info(awr->awar(AWAR_CURSOR_POSITION)->read_int());
     pos = pos % 3;
     awr->awar(AWAR_TRANSPRO_POS)->write_int(pos);
@@ -678,7 +678,7 @@ static GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, 
 #undef SYNC_LENGTH
 
 
-void transdna_event(AW_window *aww) {
+static void transdna_event(AW_window *aww) {
     AW_root  *aw_root      = aww->get_root();
     char     *ali_source   = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
     char     *ali_dest     = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
@@ -747,7 +747,7 @@ AW_window *NT_create_realign_dna_window(AW_root *root) {
 }
 
 
-void create_transpro_menus(AW_window *awmm) {
+static void create_transpro_menus(AW_window *awmm) {
     awmm->insert_menu_topic("dna_2_pro",   "Translate Nucleic to Amino Acid ...",                   "T", "translate_dna_2_pro.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_dna_2_pro_window,   0);
     awmm->insert_menu_topic("realign_dna", "Realign Nucleic Acid according to Aligned Protein ...", "r", "realign_dna.hlp",         AWM_ALL, AW_POPUP, (AW_CL)NT_create_realign_dna_window, 0);
 }

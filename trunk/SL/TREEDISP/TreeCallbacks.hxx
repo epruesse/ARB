@@ -23,18 +23,12 @@
 #endif
 
 void nt_mode_event P_((AW_window *, AWT_canvas *ntw, AWT_COMMAND_MODE mode));
-void NT_count_mark_all_cb P_((void *, AW_CL cl_ntw));
 void NT_mark_all_cb P_((AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode));
-void NT_mark_tree_cb P_((AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode));
-void NT_mark_nontree_cb P_((AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode));
-void NT_mark_color_cb P_((AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode));
-void NT_insert_color_mark_submenu P_((AW_window_menu_modes *awm, AWT_canvas *ntree_canvas, const char *menuname, int mark_basemode));
 void NT_insert_mark_submenus P_((AW_window_menu_modes *awm, AWT_canvas *ntw, int insert_as_submenu));
 void NT_group_tree_cb P_((void *, AWT_canvas *ntw));
 void NT_group_not_marked_cb P_((void *, AWT_canvas *ntw));
 void NT_group_terminal_cb P_((void *, AWT_canvas *ntw));
 void NT_ungroup_all_cb P_((void *, AWT_canvas *ntw));
-void NT_group_not_color_cb P_((AW_window *, AW_CL cl_ntw, AW_CL cl_colornum));
 void NT_insert_color_collapse_submenu P_((AW_window_menu_modes *awm, AWT_canvas *ntree_canvas));
 void NT_resort_tree_cb P_((void *, AWT_canvas *ntw, int type));
 void NT_reset_lzoom_cb P_((void *, AWT_canvas *ntw));

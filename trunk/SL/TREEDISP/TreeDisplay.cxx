@@ -549,12 +549,12 @@ static void show_bootstrap_circle(AW_device *device, const char *bootstrap, doub
     // device->arc(gc, false, center, Vector(radiusx, radiusy), 45, -90, filter); // @@@ use to test AW_device_print::arc_impl
 }
 
-double comp_rot_orientation(AW_clicked_line *cl)
+static double comp_rot_orientation(AW_clicked_line *cl)
 {
     return atan2(cl->y1 - cl->y0, cl->x1 - cl->x0);
 }
 
-double comp_rot_spread(AP_tree *at, AWT_graphic_tree *ntw)
+static double comp_rot_spread(AP_tree *at, AWT_graphic_tree *ntw)
 {
     double zw = 0;
     AP_tree *bt;
@@ -587,14 +587,14 @@ double comp_rot_spread(AP_tree *at, AWT_graphic_tree *ntw)
     return zw;
 }
 
-void AWT_graphic_tree_root_changed(void *cd, AP_tree *old, AP_tree *newroot) {
+static void AWT_graphic_tree_root_changed(void *cd, AP_tree *old, AP_tree *newroot) {
     AWT_graphic_tree *agt = (AWT_graphic_tree*)cd;
     if (agt->tree_root_display == old || agt->tree_root_display->is_inside(old)) {
         agt->tree_root_display = newroot;
     }
 }
 
-void AWT_graphic_tree_node_deleted(void *cd, AP_tree *del) {
+static void AWT_graphic_tree_node_deleted(void *cd, AP_tree *del) {
     AWT_graphic_tree *agt = (AWT_graphic_tree*)cd;
     if (agt->tree_root_display == del) {
         agt->tree_root_display = agt->get_root_node();

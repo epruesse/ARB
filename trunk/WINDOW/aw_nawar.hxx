@@ -91,8 +91,7 @@ struct AW_var_target {
     AW_var_target *next;
 };
 
-void aw_update_window_geometry_awars(AW_window *aww); // one window
-void aw_update_all_window_geometry_awars(AW_root *awr); // all windows
+void aw_update_all_window_geometry_awars(AW_root *awr);
 
 #else
 #error aw_nawar.hxx included twice

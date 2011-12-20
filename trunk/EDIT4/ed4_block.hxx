@@ -40,7 +40,6 @@ int           ED4_get_selected_range(ED4_terminal *term, int *first_column, int 
 
 typedef char *(*ED4_blockoperation)(const char *sequence_data, int len, int repeat, int *new_len, GB_ERROR *error);
 
-void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat);
 void ED4_perform_block_operation(ED4_blockoperation_type type);
 
 AW_window *ED4_create_replace_window(AW_root *root);

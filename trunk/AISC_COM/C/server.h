@@ -7,8 +7,7 @@
 
 /* define ARB attributes: */
 #ifndef ATTRIBUTES_H
-#error You have to include attributes.h before including server.h
-// it's not possible to include attributes here due to link problems 
+# include <attributes.h>
 #endif
 
 
@@ -27,7 +26,7 @@ long aisc_make_sets(long *obj);
 int aisc_broadcast(Hs_struct *hs, int message_type, const char *message);
 Hs_struct *aisc_accept_calls(Hs_struct *hs);
 void aisc_server_shutdown(Hs_struct *hs);
-void aisc_server_shutdown_and_exit(Hs_struct *hs, int exitcode) __ATTR__NORETURN __ATTR__DEPRECATED("cause it hides a call to exit() inside a library");
+void aisc_server_shutdown_and_exit(Hs_struct *hs, int exitcode) __ATTR__NORETURN __ATTR__DEPRECATED_TODO("cause it hides a call to exit() inside a library");
 int aisc_add_destroy_callback(aisc_destroy_callback callback, long clientdata);
 void aisc_remove_destroy_callback(void);
 int aisc_server_save_token(FILE *fd, const char *buffer, int maxsize);

@@ -21,7 +21,7 @@
 struct PTM_struct PTM;
 char PT_count_bits[PT_B_MAX+1][256]; // returns how many bits are set
 
-void PT_init_count_bits() {
+static void PT_init_count_bits() {
     unsigned int base;
     unsigned int count;
     unsigned int i, h, j;
@@ -39,7 +39,7 @@ void PT_init_count_bits() {
     }
 }
 
-void PTM_add_alloc(void *ptr) {
+static void PTM_add_alloc(void *ptr) {
     if (PTM.alloc_counter == PTM.alloc_array_size) {
         if (PTM.alloc_array_size == 0)
             PTM.alloc_array_size = 1;
@@ -67,7 +67,7 @@ void PTM_finally_free_all_mem() {
     free(PTM.alloc_ptr);
 }
 
-char *PTM_get_mem(int size) {
+static char *PTM_get_mem(int size) {
     //! allocate 'size' bytes
 
     int   nsize, pos;
@@ -112,7 +112,7 @@ char *PTM_get_mem(int size) {
     return erg;
 }
 
-int PTM_destroy_mem() {
+static int PTM_destroy_mem() {
     //! destroys all leftover memory sources
     int  pos;
     long i;
@@ -130,7 +130,7 @@ int PTM_destroy_mem() {
     return sum;
 }
 
-void PTM_free_mem(char *data, int size) {
+static void PTM_free_mem(char *data, int size) {
     //! free memory allocated by PTM_get_mem()
 
     pt_assert(size > 0);
@@ -154,7 +154,7 @@ void PTM_free_mem(char *data, int size) {
     }
 }
 
-void PTM_debug_mem()
+static void PTM_debug_mem()
 {
 #ifdef PTM_DEBUG
     int i;
@@ -192,7 +192,7 @@ PTM2 *PT_init() {
 // ------------------------------
 //      functions for stage 1
 
-void PT_change_father(POS_TREE *father, POS_TREE *source, POS_TREE *dest) { // stage 1
+static void PT_change_father(POS_TREE *father, POS_TREE *source, POS_TREE *dest) { // stage 1
     long i, j;
     i = PT_count_bits[PT_B_MAX][father->flags];
     for (; i>0; i--) {
@@ -425,7 +425,7 @@ void PTD_put_short(FILE * out, ULONG i)
     io = buf[1]; putc(io, out);
 }
 
-void PTD_set_object_to_saved_status(POS_TREE * node, long pos, int size) {
+static void PTD_set_object_to_saved_status(POS_TREE * node, long pos, int size) {
     node->flags = 0x20;
     PT_WRITE_PNTR((&node->data), pos);
     if (size < 20) {
@@ -436,7 +436,7 @@ void PTD_set_object_to_saved_status(POS_TREE * node, long pos, int size) {
     }
 }
 
-long PTD_write_tip_to_disk(FILE * out, POS_TREE * node, long pos)
+static long PTD_write_tip_to_disk(FILE * out, POS_TREE * node, long pos)
 {
     int size, cnt;
     putc(node->flags, out);         // save type
@@ -458,7 +458,7 @@ long PTD_write_tip_to_disk(FILE * out, POS_TREE * node, long pos)
     return pos;
 }
 
-int ptd_count_chain_entries(char * entry) {
+static int ptd_count_chain_entries(char * entry) {
     int counter   = 0;
     long next;
     while (entry) {
@@ -470,7 +470,7 @@ int ptd_count_chain_entries(char * entry) {
     return counter;
 }
 
-void ptd_set_chain_references(char *entry, char **entry_tab) {
+static void ptd_set_chain_references(char *entry, char **entry_tab) {
     int counter   = 0;
     long next;
     while (entry) {
@@ -481,7 +481,7 @@ void ptd_set_chain_references(char *entry, char **entry_tab) {
     }
 }
 
-ARB_ERROR ptd_write_chain_entries(FILE * out, long *ppos, char ** entry_tab,  int n_entries, int mainapos) { // __ATTR__USERESULT
+static ARB_ERROR ptd_write_chain_entries(FILE * out, long *ppos, char ** entry_tab,  int n_entries, int mainapos) { // __ATTR__USERESULT
     ARB_ERROR   error;
     int         lastname = 0;
     
@@ -521,7 +521,7 @@ ARB_ERROR ptd_write_chain_entries(FILE * out, long *ppos, char ** entry_tab,  in
 }
 
 
-long PTD_write_chain_to_disk(FILE * out, POS_TREE * node, long pos, ARB_ERROR& error) {
+static long PTD_write_chain_to_disk(FILE * out, POS_TREE * node, long pos, ARB_ERROR& error) {
     char *data;
     long oldpos = pos;
     putc(node->flags, out);         // save type
@@ -557,7 +557,7 @@ long PTD_write_chain_to_disk(FILE * out, POS_TREE * node, long pos, ARB_ERROR& e
     return pos;
 }
 
-void PTD_debug_nodes()
+static void PTD_debug_nodes()
 {
 #ifdef ARB_64
     printf ("Inner Node Statistic:\n");
@@ -584,7 +584,7 @@ void PTD_debug_nodes()
 #endif
 }
 
-long PTD_write_node_to_disk(FILE * out, POS_TREE * node, long *r_poss, long pos) {
+static long PTD_write_node_to_disk(FILE * out, POS_TREE * node, long *r_poss, long pos) {
     int i, size;   // Save node after all descendends are already saved
     POS_TREE *sons;
 

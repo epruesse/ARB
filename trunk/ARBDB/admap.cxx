@@ -197,7 +197,7 @@ static long getrel_GBDATA(long rel_to, GBDATA *gbd) {
 
 static bool writeError;
 
-void ftwrite_aligned(const void *ptr, size_t ali_siz, FILE *fil) {
+static void ftwrite_aligned(const void *ptr, size_t ali_siz, FILE *fil) {
     gb_assert(ali_siz == ALIGN(ali_siz));
     if (!writeError && fwrite((const char *)ptr, 1, ali_siz, fil) != ali_siz) {
         writeError = true;
@@ -207,7 +207,7 @@ void ftwrite_aligned(const void *ptr, size_t ali_siz, FILE *fil) {
 static char alignment_bytes[ALIGN(1)] = { 0 }; // zero-filled buffer with maximum alignment size
 
 
-size_t ftwrite_unaligned(const void *ptr, size_t unali_siz, FILE *fil) {
+static size_t ftwrite_unaligned(const void *ptr, size_t unali_siz, FILE *fil) {
     // ftwrite_unaligned does the same as ftwrite_aligned,
     // but does not access uninitialized memory (that's better for valgrind)
 

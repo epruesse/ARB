@@ -18,10 +18,7 @@ void gb_touch_entry(GBDATA *gbd, GB_CHANGE val);
 void gb_touch_header(GBCONTAINER *gbc);
 void gb_untouch_children(GBCONTAINER *gbc);
 void gb_untouch_me(GBDATA *gbc);
-void gb_set_update_in_server_flags(GBCONTAINER *gbc);
 void gb_create_header_array(GBCONTAINER *gbc, int size);
-void gb_link_entry(GBCONTAINER *father, GBDATA *gbd, long index_pos);
-void gb_unlink_entry(GBDATA *gbd);
 void gb_create_extended(GBDATA *gbd);
 GB_MAIN_TYPE *gb_make_gb_main_type(const char *path);
 char *gb_destroy_main(GB_MAIN_TYPE *Main);
@@ -32,16 +29,12 @@ GBCONTAINER *gb_make_pre_defined_container(GBCONTAINER *father, GBCONTAINER *gbd
 GBCONTAINER *gb_make_container(GBCONTAINER *father, const char *key, long index_pos, GBQUARK keyq);
 void gb_pre_delete_entry(GBDATA *gbd);
 void gb_delete_entry(GBDATA **gbd_ptr);
-void gb_delete_entry(GBCONTAINER **gbc_ptr);
 void gb_delete_dummy_father(GBCONTAINER **dummy_father);
-gb_transaction_save *gb_new_gb_transaction_save(GBDATA *gbd);
 void gb_add_ref_gb_transaction_save(gb_transaction_save *ts);
 void gb_del_ref_gb_transaction_save(gb_transaction_save *ts);
 void gb_del_ref_and_extern_gb_transaction_save(gb_transaction_save *ts);
-void gb_abortdata(GBDATA *gbd);
 void gb_save_extern_data_in_ts(GBDATA *gbd);
 void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index);
-void gb_write_key(GBDATA *gbd, const char *s);
 void gb_create_key_array(GB_MAIN_TYPE *Main, int index);
 long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key);
 void gb_free_all_keys(GB_MAIN_TYPE *Main);
@@ -50,41 +43,18 @@ int gb_abort_transaction_local_rek(GBDATA *gbd, long mode);
 GB_ERROR gb_commit_transaction_local_rek(GBDATA *gbd, long mode, int *pson_created);
 
 /* ad_load.cxx */
-GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbd);
-long gb_read_bin_rek(FILE *in, GBCONTAINER *gbd, long nitems, long version, long reversed);
-long gb_recover_corrupt_file(GBCONTAINER *gbd, FILE *in, GB_ERROR recovery_reason);
-long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long version, long reversed, long deep);
-GBDATA *gb_search_system_folder_rek(GBDATA *gbd);
-void gb_search_system_folder(GBDATA *gb_main);
-long gb_read_bin(FILE *in, GBCONTAINER *gbd, int diff_file_allowed);
 GB_MAIN_IDX gb_make_main_idx(GB_MAIN_TYPE *Main);
 void gb_release_main_idx(GB_MAIN_TYPE *Main);
-GB_ERROR gb_login_remote(GB_MAIN_TYPE *Main, const char *path, const char *opent);
 
 /* ad_save_load.cxx */
 char *gb_findExtension(char *path);
 GB_CSTR gb_oldQuicksaveName(GB_CSTR path, int nr);
 GB_CSTR gb_quicksaveName(GB_CSTR path, int nr);
 GB_CSTR gb_mapfile_name(GB_CSTR path);
-GB_CSTR gb_overwriteName(GB_CSTR path);
-GB_CSTR gb_reffile_name(GB_CSTR path);
-GB_ERROR gb_delete_reference(const char *master);
-GB_ERROR gb_create_reference(const char *master);
-GB_ERROR gb_add_reference(const char *master, const char *changes);
-GB_ERROR gb_remove_all_but_main(GB_MAIN_TYPE *Main, const char *path);
 long gb_ascii_2_bin(const char *source, GBDATA *gbd);
-GB_BUFFER gb_bin_2_ascii(GBDATA *gbd);
 long gb_read_in_long(FILE *in, long reversed);
 long gb_read_number(FILE *in);
-void gb_put_number(long i, FILE *out);
 long gb_read_bin_error(FILE *in, GBDATA *gbd, const char *text);
-long gb_write_out_long(long data, FILE *out);
-int gb_is_writeable(gb_header_list *header, GBDATA *gbd, long version, long diff_save);
-int gb_write_bin_sub_containers(FILE *out, GBCONTAINER *gbc, long version, long diff_save, int is_root);
-long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_save, long index_of_master_file);
-int gb_write_bin(FILE *out, GBDATA *gbd, long version);
-char *gb_full_path(const char *path);
-GB_ERROR gb_check_saveable(GBDATA *gbd, const char *path, const char *flags);
 
 /* adcache.cxx */
 void gb_init_cache(GB_MAIN_TYPE *Main);
@@ -92,7 +62,6 @@ void gb_destroy_cache(GB_MAIN_TYPE *Main);
 char *gb_read_cache(GBDATA *gbd);
 void gb_free_cache(GB_MAIN_TYPE *Main, GBDATA *gbd);
 char *gb_alloc_cache_index(GBDATA *gbd, size_t size);
-void gb_flush_cache(GBDATA *gbd);
 
 /* adcomm.cxx */
 GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long deep, long index_pos) __ATTR__USERESULT;
@@ -120,14 +89,8 @@ gb_compress_list *gb_build_compress_list(const unsigned char *data, long short_f
 char *gb_compress_bits(const char *source, long size, const unsigned char *c_0, long *msize);
 GB_BUFFER gb_uncompress_bits(const char *source, long size, char c_0, char c_1);
 void gb_compress_equal_bytes_2(const char *source, long size, long *msize, char *dest);
-GB_BUFFER gb_compress_equal_bytes(const char *source, long size, long *msize, int last_flag);
-void gb_compress_huffmann_add_to_list(long val, gb_compress_list *element);
-long gb_compress_huffmann_pop(long *val, gb_compress_list **element);
-char *gb_compress_huffmann_rek(gb_compress_list *bc, int bits, int bitcnt, char *dest);
-GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize, int last_flag);
 GB_BUFFER gb_uncompress_bytes(GB_CBUFFER source, long size, long *new_size);
 GB_BUFFER gb_uncompress_longs_old(GB_CBUFFER source, long size, long *new_size);
-GB_BUFFER gb_compress_longs(GB_CBUFFER source, long size, int last_flag);
 GB_DICTIONARY *gb_get_dictionary(GB_MAIN_TYPE *Main, GBQUARK key);
 GB_BUFFER gb_compress_data(GBDATA *gbd, int key, GB_CBUFFER source, long size, long *msize, GB_COMPRESSION_MASK max_compr, bool pre_compressed);
 GB_CBUFFER gb_uncompress_data(GBDATA *gbd, GB_CBUFFER source, long size);
@@ -169,17 +132,13 @@ int gb_isMappedMemory(void *mem);
 GB_ERROR gb_convert_V2_to_V3(GBDATA *gb_main);
 char *gb_uncompress_by_dictionary(GBDATA *gbd, GB_CSTR s_source, long size, long *new_size);
 char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size, long *msize, int last_flag, int search_backward, int search_forward);
-GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem);
 
 /* adquery.cxx */
 GBDATA *gb_find_by_nr(GBDATA *father, int index);
 void gb_init_ctype_table(void);
 GBDATA *gb_search(GBDATA *gbd, const char *str, GB_TYPES create, int internflag);
-GBDATA *gb_search_marked(GBCONTAINER *gbc, GBQUARK key_quark, int firstindex, size_t skip_over);
 void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table, size_t table_size);
-char *gbs_search_second_x(const char *str);
 char *gbs_search_second_bracket(const char *source);
-char *gbs_search_next_separator(const char *source, const char *seps);
 
 /* adsocket.cxx */
 void gbcms_sigpipe(int dummy_1x);
@@ -197,43 +156,28 @@ char *gbcm_read_string(int socket);
 GBCM_ServerResult gbcm_write_long(int socket, long data);
 long gbcm_read_long(int socket);
 
-/* adstring.cxx */
-void gbs_uppercase(char *str);
-void gbs_memcopy(char *dest, const char *source, long len);
-char *gbs_add_path(char *path, char *name);
-
 /* adsystem.cxx */
 GB_ERROR gb_load_dictionary_data(GBDATA *gb_main, const char *key, char **dict_data, long *size);
-GB_DICTIONARY *gb_create_dict(GBDATA *gb_dict);
-void gb_system_key_changed_cb(GBDATA *gbd, int *cl, GB_CB_TYPE type);
-void gb_system_master_changed_cb(GBDATA *gbd, int *cl, GB_CB_TYPE type);
 void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q);
 GB_ERROR gb_save_dictionary_data(GBDATA *gb_main, const char *key, const char *dict, int size);
 GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main) __ATTR__USERESULT;
 
 /* arbdb.cxx */
-GBDATA *gb_remembered_db(void);
 GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos);
 void gb_close_unclosed_DBs(void);
 int gb_read_nr(GBDATA *gbd);
 GB_ERROR gb_write_compressed_pntr(GBDATA *gbd, const char *s, long memsize, long stored_size);
 int gb_get_compression_mask(GB_MAIN_TYPE *Main, GBQUARK key, int gb_type);
-GB_ERROR gb_security_error(GBDATA *gbd) __ATTR__USERESULT;
 GB_CSTR gb_read_key_pntr(GBDATA *gbd);
 GBQUARK gb_key_2_existing_quark(GB_MAIN_TYPE *Main, const char *key);
 GBQUARK gb_key_2_quark(GB_MAIN_TYPE *Main, const char *key);
 GBDATA *gb_create(GBDATA *father, const char *key, GB_TYPES type);
 GBDATA *gb_create_container(GBDATA *father, const char *key);
-void gb_rename(GBCONTAINER *gbc, const char *new_key);
 GB_ERROR gb_delete_force(GBDATA *source);
-GB_ERROR gb_set_compression(GBDATA *source);
 GB_ERROR gb_init_transaction(GBCONTAINER *gbd);
 void gb_add_changed_callback_list(GBDATA *gbd, gb_transaction_save *old, GB_CB_TYPE gbtype, GB_CB func, int *clientdata);
 void gb_add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, GB_CB func, int *clientdata);
-GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main);
 GB_MAIN_TYPE *gb_get_main_during_cb(void);
-GB_CSTR gb_read_pntr_ts(GBDATA *gbd, gb_transaction_save *ts);
-int gb_info(GBDATA *gbd, int deep);
 
 #else
 #error gb_prot.h included twice

@@ -1008,7 +1008,7 @@ enum LinkType {
     LT_PDF     = 64
 };
 
-const char *link_id[] = {
+static const char *link_id[] = {
     "unknown",
     "www",
     "www",

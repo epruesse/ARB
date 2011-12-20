@@ -27,9 +27,8 @@ enum ED4_EDITMODI {
 
 
 // global variables
-extern GBDATA       *GLOBAL_gb_main;
-extern ED4_root     *ED4_ROOT;
-extern ED4_database *main_db;
+extern GBDATA   *GLOBAL_gb_main;
+extern ED4_root *ED4_ROOT;
 
 extern int TERMINALHEIGHT;      // this variable replaces the define
 extern int INFO_TERM_TEXT_YOFFSET;

@@ -56,9 +56,6 @@ typedef struct _XSLTimporter
 
 importTable *fileopenCSV(char *, int);
 int importCSV(importTable *, importData *);
-importTable *createImportTable(int, int);
 XSLTimporter *findXSLTFiles(char *);
-int identifyType(char *);
-void identifyColumns(importTable *);
 
 #endif // FILE_IMPORT_H

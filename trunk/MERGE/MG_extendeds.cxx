@@ -30,7 +30,7 @@ void MG_create_extendeds_awars(AW_root *aw_root, AW_default aw_def)
     aw_root->awar_string(AWAR_EX_DEST2, "",     aw_def);
 }
 
-void MG_extended_rename_cb(AW_window *aww, GBDATA *gbmain, int ex_nr) {
+static void MG_extended_rename_cb(AW_window *aww, GBDATA *gbmain, int ex_nr) {
     char *source = aww->get_root()->awar(GBS_global_string("tmp/merge%i/extended_name", ex_nr))->read_string();
     char *dest   = aww->get_root()->awar(GBS_global_string("tmp/merge%i/extended_dest", ex_nr))->read_string();
 
@@ -56,7 +56,7 @@ void MG_extended_rename_cb(AW_window *aww, GBDATA *gbmain, int ex_nr) {
 
 
 
-AW_window *MG_create_extended_rename_window1(AW_root *root)
+static AW_window *MG_create_extended_rename_window1(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "MERGE_RENAME_SAI_1", "SAI RENAME 1");
@@ -79,7 +79,7 @@ AW_window *MG_create_extended_rename_window1(AW_root *root)
     return (AW_window *)aws;
 }
 
-AW_window *MG_create_extended_rename_window2(AW_root *root)
+static AW_window *MG_create_extended_rename_window2(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "MERGE_RENAME_SAI_2", "SAI RENAME 2");
@@ -102,7 +102,7 @@ AW_window *MG_create_extended_rename_window2(AW_root *root)
     return (AW_window *)aws;
 }
 
-void MG_extended_delete_cb(AW_window *aww, GBDATA *gbmain, int ex_nr) {
+static void MG_extended_delete_cb(AW_window *aww, GBDATA *gbmain, int ex_nr) {
     GB_ERROR error = GB_begin_transaction(gbmain);
 
     if (!error) {
@@ -118,7 +118,7 @@ void MG_extended_delete_cb(AW_window *aww, GBDATA *gbmain, int ex_nr) {
     GB_end_transaction_show_error(gbmain, error, aw_message);
 }
 
-void MG_transfer_extended(AW_window *aww, AW_CL force) {
+static void MG_transfer_extended(AW_window *aww, AW_CL force) {
     AW_root *awr    = aww->get_root();
     char    *source = awr->awar(AWAR_EX_NAME1)->read_string();
     char    *dest   = awr->awar(AWAR_EX_NAME1)->read_string();
@@ -156,7 +156,7 @@ void MG_transfer_extended(AW_window *aww, AW_CL force) {
     free(dest);
 }
 
-void MG_map_extended1(AW_root *aw_root, AW_CL cl_scanner) {
+static void MG_map_extended1(AW_root *aw_root, AW_CL cl_scanner) {
     char *source = aw_root->awar(AWAR_EX_NAME1)->read_string();
     GB_push_transaction(GLOBAL_gb_merge);
     GBDATA *gb_sai = GBT_find_SAI(GLOBAL_gb_merge, source);
@@ -164,7 +164,7 @@ void MG_map_extended1(AW_root *aw_root, AW_CL cl_scanner) {
     GB_pop_transaction(GLOBAL_gb_merge);
     free(source);
 }
-void MG_map_extended2(AW_root *aw_root, AW_CL cl_scanner) {
+static void MG_map_extended2(AW_root *aw_root, AW_CL cl_scanner) {
     char *source = aw_root->awar(AWAR_EX_NAME2)->read_string();
     GB_push_transaction(GLOBAL_gb_dest);
     GBDATA *gb_sai = GBT_find_SAI(GLOBAL_gb_dest, source);

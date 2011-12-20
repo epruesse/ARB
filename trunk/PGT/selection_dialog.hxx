@@ -69,13 +69,4 @@ class selectionDialog : public MDialog { // derived from a Noncopyable
         static bool m_opened;
 };
 
-
-// CALLBACK WRAPPER FUNCTIONS (STATIC)
-void staticExitButtonCallback(Widget, XtPointer, XtPointer);
-void staticSpeciesCallback(Widget, XtPointer, XtPointer);
-void staticExperimentCallback(Widget, XtPointer, XtPointer);
-void staticProteomeListCallback(Widget, XtPointer, XtPointer);
-void staticProteomeTextCallback(Widget, XtPointer, XtPointer);
-
-
 #endif // SELECTION_DIALOG_H

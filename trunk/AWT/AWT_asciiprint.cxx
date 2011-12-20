@@ -17,7 +17,7 @@
 #include <aw_msg.hxx>
 #include <arbdbt.h>
 
-double awt_aps_get_xy_ratio(AW_root *awr) {
+static double awt_aps_get_xy_ratio(AW_root *awr) {
     // AWT_asciiprint_paper_size psize = (AWT_asciiprint_paper_size)awr->awar(AWAR_APRINT_PAPER_SIZE)->read_int();
     AWT_asciiprint_orientation ori = AWT_asciiprint_orientation(awr->awar(AWAR_APRINT_ORIENTATION)->read_int());
     double res = 1.0;
@@ -35,7 +35,7 @@ double awt_aps_get_xy_ratio(AW_root *awr) {
     return res;
 }
 
-int awt_aps_get_default_lines_per_page(AW_root *awr) {
+static int awt_aps_get_default_lines_per_page(AW_root *awr) {
     AWT_asciiprint_orientation ori = AWT_asciiprint_orientation(awr->awar(AWAR_APRINT_ORIENTATION)->read_int());
     switch (ori) {
         case AWT_APRINT_ORIENTATION_PORTRAIT:
@@ -49,7 +49,7 @@ int awt_aps_get_default_lines_per_page(AW_root *awr) {
 }
 
 
-void awt_aps_calc_pages_needed(AW_root *awr) {
+static void awt_aps_calc_pages_needed(AW_root *awr) {
     int mag = awr->awar(AWAR_APRINT_MAGNIFICATION)->read_int();
     if (mag < 25) {
         awr->awar(AWAR_APRINT_MAGNIFICATION)->write_int(mag*2);
@@ -77,7 +77,7 @@ void awt_aps_calc_pages_needed(AW_root *awr) {
 }
 
 
-void awt_aps_set_magnification_to_fit_xpage(AW_root *awr) {
+static void awt_aps_set_magnification_to_fit_xpage(AW_root *awr) {
     int x = awr->awar(AWAR_APRINT_SX)->read_int();
 
     int dx = int(awr->awar(AWAR_APRINT_DX)->read_float()+.5);
@@ -92,7 +92,7 @@ void awt_aps_set_magnification_to_fit_xpage(AW_root *awr) {
     awt_aps_calc_pages_needed(awr);
 }
 
-void awt_aps_set_magnification_to_fit_ypage(AW_root *awr) {
+static void awt_aps_set_magnification_to_fit_ypage(AW_root *awr) {
     int y = awr->awar(AWAR_APRINT_SY)->read_int();
 
     int dy = int(awr->awar(AWAR_APRINT_DY)->read_float()+.5);
@@ -105,13 +105,13 @@ void awt_aps_set_magnification_to_fit_ypage(AW_root *awr) {
     awt_aps_calc_pages_needed(awr);
 }
 
-void awt_aps_set_magnification_to_fit_xpage(AW_window *aww) {
+static void awt_aps_set_magnification_to_fit_xpage(AW_window *aww) {
     awt_aps_set_magnification_to_fit_xpage(aww->get_root());
 }
-void awt_aps_set_magnification_to_fit_ypage(AW_window *aww) {
+static void awt_aps_set_magnification_to_fit_ypage(AW_window *aww) {
     awt_aps_set_magnification_to_fit_ypage(aww->get_root());
 }
-void awt_aps_text_changed(AW_root *awr) {
+static void awt_aps_text_changed(AW_root *awr) {
     char *text = awr->awar(AWAR_APRINT_TEXT)->read_string();
     {
         char *rtext = GBS_replace_tabs_by_spaces(text);
@@ -140,7 +140,7 @@ void awt_aps_text_changed(AW_root *awr) {
     awt_aps_set_magnification_to_fit_xpage(awr);
 }
 
-void AWT_write_file(const char *filename, const char *file) {
+static void AWT_write_file(const char *filename, const char *file) {
     FILE *f = fopen(filename, "r");
     if (f) {
         fclose(f);
@@ -157,7 +157,7 @@ void AWT_write_file(const char *filename, const char *file) {
     fclose(f);
 }
 
-void awt_aps_go(AW_window *aww) {
+static void awt_aps_go(AW_window *aww) {
     AW_root *awr  = aww->get_root();
     char    *text = awr->awar(AWAR_APRINT_TEXT)->read_string();
 

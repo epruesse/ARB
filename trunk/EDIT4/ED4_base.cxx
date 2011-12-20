@@ -268,7 +268,7 @@ void ED4_manager::deleted_from_database()
     }
 }
 
-void ED4_sequence_changed_cb(GBDATA *gb_seq, int *cl, GB_CB_TYPE gbtype)
+static void ED4_sequence_changed_cb(GBDATA *gb_seq, int *cl, GB_CB_TYPE gbtype)
 {
     ED4_base *base = (ED4_base*)(cl);
 

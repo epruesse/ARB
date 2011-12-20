@@ -164,7 +164,7 @@ void SEC_root::position_cursor(bool toCenter, bool evenIfVisible) {
     }
 }
 
-void SEC_toggle_cb(AW_window *, AW_CL cl_secroot, AW_CL) {
+static void SEC_toggle_cb(AW_window *, AW_CL cl_secroot, AW_CL) {
     SEC_root               *root = (SEC_root*)cl_secroot;
     const SEC_db_interface *db   = root->get_db();
 
@@ -173,7 +173,7 @@ void SEC_toggle_cb(AW_window *, AW_CL cl_secroot, AW_CL) {
     db->canvas()->refresh();
 }
 
-void SEC_center_cb(AW_window *, AW_CL cl_secroot, AW_CL) {
+static void SEC_center_cb(AW_window *, AW_CL cl_secroot, AW_CL) {
     SEC_root *root = (SEC_root*)cl_secroot;
     root->position_cursor(true, true);
 }
@@ -246,7 +246,7 @@ static void sec_mode_event(AW_window *aws, AW_CL cl_secroot, AW_CL cl_mode)
     ntw->refresh();
 }
 
-void SEC_undo_cb(AW_window *, AW_CL cl_db, AW_CL cl_undo_type) {
+static void SEC_undo_cb(AW_window *, AW_CL cl_db, AW_CL cl_undo_type) {
     SEC_db_interface *db        = (SEC_db_interface*)cl_db;
     GB_UNDO_TYPE      undo_type = (GB_UNDO_TYPE)cl_undo_type;
 

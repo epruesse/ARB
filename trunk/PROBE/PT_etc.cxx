@@ -95,7 +95,7 @@ const char *virt_fullname(PT_probematch * ml)
     }
 }
 
-int *table_copy(int *mis_table, int length)
+static int *table_copy(int *mis_table, int length)
 {
     // copy one mismatch table to a new one allocating memory
     int *result_table;
@@ -106,7 +106,7 @@ int *table_copy(int *mis_table, int length)
         result_table[i] = mis_table[i];
     return result_table;
 }
-void table_add(int *mis_tabled, int *mis_tables, int length)
+static void table_add(int *mis_tabled, int *mis_tables, int length)
 {
     // add the values of a source table to a destination table
     int i;
@@ -254,7 +254,7 @@ bytestring *PT_unknown_names(PT_pdc *pdc) {
     return &un;
 }
 
-int get_clip_max_from_length(int length) {
+static int get_clip_max_from_length(int length) {
     // compute clip max using the probe length
 
     int    data_size;

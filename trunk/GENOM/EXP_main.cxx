@@ -27,10 +27,10 @@ class AWT_canvas;
 
 using namespace std;
 
-void EXP_species_name_changed_cb(AW_root * /* awr */) {
+static void EXP_species_name_changed_cb(AW_root * /* awr */) {
 }
 
-void EXP_update_combined_cb(AW_root *awr) {
+static void EXP_update_combined_cb(AW_root *awr) {
     char       *organism   = awr->awar(AWAR_ORGANISM_NAME)->read_string();
     char       *experiment = awr->awar(AWAR_EXPERIMENT_NAME)->read_string();
     const char *combined   = GBS_global_string("%s/%s", organism, experiment);

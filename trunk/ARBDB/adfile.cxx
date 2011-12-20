@@ -566,7 +566,7 @@ bool GB_test_textfile_difflines(const char *file1, const char *file2, int expect
     return !error;
 }
 
-size_t GB_test_mem_equal(const unsigned char *buf1, const unsigned char *buf2, size_t common) {
+size_t GB_test_mem_equal(const unsigned char *buf1, const unsigned char *buf2, size_t common) { // used by unit tests
     size_t equal_bytes;
     if (memcmp(buf1, buf2, common) == 0) {
         equal_bytes = common;
@@ -676,7 +676,7 @@ static char *remove_path(const char *fullname, void *cl_path) {
     return strdup(fullname+(ARB_strscmp(fullname, path) == 0 ? strlen(path) : 0));
 }
 
-void GBT_transform_names(StrArray& dest, const StrArray& source, char *transform(const char *, void *), void *client_data) {
+static void GBT_transform_names(StrArray& dest, const StrArray& source, char *transform(const char *, void *), void *client_data) {
     for (int i = 0; source[i]; ++i) dest.put(transform(source[i], client_data));
 }
 

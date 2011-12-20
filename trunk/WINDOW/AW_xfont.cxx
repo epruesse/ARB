@@ -36,7 +36,7 @@
 static bool openwinfonts;
 
 typedef XFontStruct *PIX_FONT;
-appresStruct appres = {
+static appresStruct appres = {
     true,
     false,
     0,
@@ -60,7 +60,7 @@ static const char *known_iso_versions[KNOWN_ISO_VERSIONS] = { "ISO10646", "ISO88
 static const char *known_iso_versions[KNOWN_ISO_VERSIONS] = { "ISO8859", "ISO10646", "*" };
 #endif
 
-struct _xfstruct x_fontinfo[AW_NUM_FONTS] = {
+static struct _xfstruct x_fontinfo[AW_NUM_FONTS] = {
     { "-adobe-times-medium-r-*--",                  (xfont*) NULL }, // #0
     { "-adobe-times-medium-i-*--",                  (xfont*) NULL }, // #1
     { "-adobe-times-bold-r-*--",                    (xfont*) NULL }, // #2
@@ -111,7 +111,7 @@ struct _xfstruct x_fontinfo[AW_NUM_FONTS] = {
     { "-*-terminal-bold-r-*-*-",                    (xfont*) NULL }, // #46
 };
 
-struct _fstruct ps_fontinfo[AW_NUM_FONTS + 1] = {
+static struct _fstruct ps_fontinfo[AW_NUM_FONTS + 1] = {
     // map window fonts to postscript fonts
     // negative values indicate monospaced fonts
     { "Default",                      -1 },

@@ -88,6 +88,37 @@ void create_primer_design_variables(AW_root *aw_root, AW_default aw_def, AW_defa
     aw_root->awar_string(AWAR_PRIMER_TARGET_STRING,                  "", global);
 }
 
+static void create_primer_design_result_window(AW_window *aww)
+{
+    if (!pdrw) {
+        pdrw = new AW_window_simple;
+        pdrw->init(aww->get_root(), "PRD_RESULT", "Primer Design RESULT");
+        pdrw->load_xfig("pd_reslt.fig");
+
+        pdrw->at("close");
+        pdrw->callback((AW_CB0)AW_POPDOWN);
+        pdrw->create_button("CLOSE", "CLOSE", "C");
+
+        pdrw->at("help");
+        pdrw->callback(AW_POPUP_HELP, (AW_CL)"primerdesignresult.hlp");
+        pdrw->create_button("HELP", "HELP", "H");
+
+        pdrw->at("result");
+        pdrw_id = pdrw->create_selection_list(AWAR_PRIMER_TARGET_STRING, NULL, "", 40, 5);
+        pdrw->set_selection_list_suffix(pdrw_id, "primer");
+
+        pdrw->at("save");
+        pdrw->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)pdrw_id);
+        pdrw->create_button("SAVE", "SAVE", "S");
+
+        pdrw->at("print");
+        pdrw->callback(create_print_box_for_selection_lists, (AW_CL)pdrw_id);
+        pdrw->create_button("PRINT", "PRINT", "P");
+    }
+
+    pdrw->show();
+}
+
 static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
     AW_root  *root     = aww->get_root();
     GB_ERROR  error    = 0;
@@ -391,37 +422,6 @@ static void primer_design_event_init(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_
     GEN_free_position(genPos);
     free(selected_gene);
     free(selected_species);
-}
-
-void create_primer_design_result_window(AW_window *aww)
-{
-    if (!pdrw) {
-        pdrw = new AW_window_simple;
-        pdrw->init(aww->get_root(), "PRD_RESULT", "Primer Design RESULT");
-        pdrw->load_xfig("pd_reslt.fig");
-
-        pdrw->at("close");
-        pdrw->callback((AW_CB0)AW_POPDOWN);
-        pdrw->create_button("CLOSE", "CLOSE", "C");
-
-        pdrw->at("help");
-        pdrw->callback(AW_POPUP_HELP, (AW_CL)"primerdesignresult.hlp");
-        pdrw->create_button("HELP", "HELP", "H");
-
-        pdrw->at("result");
-        pdrw_id = pdrw->create_selection_list(AWAR_PRIMER_TARGET_STRING, NULL, "", 40, 5);
-        pdrw->set_selection_list_suffix(pdrw_id, "primer");
-
-        pdrw->at("save");
-        pdrw->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)pdrw_id);
-        pdrw->create_button("SAVE", "SAVE", "S");
-
-        pdrw->at("print");
-        pdrw->callback(create_print_box_for_selection_lists, (AW_CL)pdrw_id);
-        pdrw->create_button("PRINT", "PRINT", "P");
-    }
-
-    pdrw->show();
 }
 
 static AWT_config_mapping_def primer_design_config_mapping[] = {

@@ -45,15 +45,4 @@ class mainDialog : public MDialog { // derived from a Noncopyable
         importDialog *m_importDialog;
 };
 
-
-// CALLBACK WRAPPER FUNCTIONS (STATIC)
-void static_main_ARB_callback(GBDATA *, mainDialog *mD, GB_CB_TYPE);
-void staticOpenImportCallback(Widget, XtPointer, XtPointer);
-void staticOpenImageCallback(Widget, XtPointer, XtPointer);
-void staticOpenAnalyzeCallback(Widget, XtPointer, XtPointer);
-void staticConfigCallback(Widget, XtPointer, XtPointer);
-void staticInfoCallback(Widget, XtPointer, XtPointer);
-void staticExitCallback(Widget, XtPointer, XtPointer);
-void staticPGTInfoCallback(Widget, XtPointer, XtPointer);
-
 #endif // MAIN_DIALOG_H
