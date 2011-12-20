@@ -372,14 +372,14 @@ GB_ERROR GB_append_exportedError(GB_ERROR error) {
 // ---------------------
 //      Backtracing
 
-static class BackTraceInfo *GBK_get_backtrace(size_t skipFramesAtBottom) {
+class BackTraceInfo *GBK_get_backtrace(size_t skipFramesAtBottom) { // only used ifdef TRACE_ALLOCS
     return new BackTraceInfo(skipFramesAtBottom);
 }
-static void GBK_dump_former_backtrace(class BackTraceInfo *trace, FILE *out, const char *message) {
+void GBK_dump_former_backtrace(class BackTraceInfo *trace, FILE *out, const char *message) { // only used ifdef TRACE_ALLOCS
     demangle_backtrace(*trace, out, message);
 }
 
-static void GBK_free_backtrace(class BackTraceInfo *trace) {
+void GBK_free_backtrace(class BackTraceInfo *trace) { // only used ifdef TRACE_ALLOCS
     delete trace;
 }
 

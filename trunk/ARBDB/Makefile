@@ -576,6 +576,7 @@ admalloc.o: gb_memory.h
 admalloc.o: gb_prot.h
 admalloc.o: gb_storage.h
 admalloc.o: gb_tune.h
+admalloc.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
 admalloc.o: $(ARBHOME)/INCLUDE/arb_core.h
 admalloc.o: $(ARBHOME)/INCLUDE/arb_error.h
 admalloc.o: $(ARBHOME)/INCLUDE/arb_msg.h
