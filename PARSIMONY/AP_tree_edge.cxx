@@ -480,7 +480,7 @@ public:
     }
 };
 
-double ap_calc_bootstrap_remark_sub(int seq_len, const char *old, const char *ne) {
+static double ap_calc_bootstrap_remark_sub(int seq_len, const char *old, const char *ne) {
     int i;
     int sum[3];
     sum[0] = 0;
@@ -587,7 +587,7 @@ static void ap_calc_bootstrap_remark(AP_tree_nlen *son_node, AP_BL_MODE mode, co
 }
 
 
-void ap_calc_leaf_branch_length(AP_tree_nlen *leaf) {
+static void ap_calc_leaf_branch_length(AP_tree_nlen *leaf) {
     AP_FLOAT Seq_len = leaf->get_seq()->weighted_base_count();
     if (Seq_len <= 1.0) Seq_len = 1.0;
 
@@ -615,7 +615,7 @@ void ap_calc_leaf_branch_length(AP_tree_nlen *leaf) {
 
 
 
-void ap_calc_branch_lengths(AP_tree_nlen * /* root */, AP_tree_nlen *son, double /* parsbest */, double blen) {
+static void ap_calc_branch_lengths(AP_tree_nlen * /* root */, AP_tree_nlen *son, double /* parsbest */, double blen) {
     static double s_new = 0.0;
     static double s_old = 0.0;
 
@@ -654,7 +654,7 @@ void ap_calc_branch_lengths(AP_tree_nlen * /* root */, AP_tree_nlen *son, double
 }
 const double ap_undef_bl = 10.5;
 
-void ap_check_leaf_bl(AP_tree_nlen *node) {
+static void ap_check_leaf_bl(AP_tree_nlen *node) {
     if (node->is_leaf) {
         if (!node->father->father) {
             if (node->father->leftlen + node->father->rightlen == ap_undef_bl) {

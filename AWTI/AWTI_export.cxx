@@ -35,7 +35,7 @@
 #define AWAR_EXPORT_FILTER_ALI     AWAR_EXPORT_FILTER_PREFIX "/alignment"
 #define AWAR_EXPORT_CUTSTOP        "export/cutstop"
 
-void AWTC_export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_create_select_filter) {
+static void AWTC_export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_create_select_filter) {
     GBDATA           *gb_main = (GBDATA*)cl_gb_main;
     GB_transaction    dummy(gb_main);
     adfiltercbstruct *acbs    = (adfiltercbstruct*)res_from_awt_create_select_filter;
@@ -71,7 +71,7 @@ void AWTC_export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_crea
 
 }
 
-void AWTC_create_export_awars(AW_root *awr, AW_default def) {
+static void AWTC_create_export_awars(AW_root *awr, AW_default def) {
     AW_create_fileselection_awars(awr, AWAR_EXPORT_FORM, GB_path_in_ARBLIB("export"), ".eft", "*", AW_ROOT_DEFAULT, true);
     AW_create_fileselection_awars(awr, AWAR_EXPORT_FILE, "", "", "noname");
 

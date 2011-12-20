@@ -16,7 +16,7 @@
 
 #include <sys/times.h>
 
-void PS_print_times() {
+static void PS_print_times() {
     struct tms time;
     times(&time);
     printf("user (%.3f) system (%.3f)", (float)time.tms_utime/CLOCKS_PER_SEC, (float)time.tms_stime/CLOCKS_PER_SEC);

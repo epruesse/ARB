@@ -24,7 +24,6 @@ void GDE_create_var(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_ge
 
 /* GDE_FileIO.cxx */
 int MAX(int a, int b);
-int MIN(int a, int b);
 void Regroup(NA_Alignment *alignment);
 void ErrorOut5(int code, const char *string);
 char *Calloc(int count, int size);

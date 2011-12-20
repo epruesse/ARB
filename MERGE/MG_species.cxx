@@ -43,7 +43,7 @@ static DbScanner *ad_global_scanner1 = 0;
 static DbScanner *ad_global_scanner2 = 0;
 
 const char *MG_left_AWAR_SPECIES_NAME() { return AWAR_SPECIES1; }
-const char *MG_right_AWAR_SPECIES_NAME() { return AWAR_SPECIES2; }
+static const char *MG_right_AWAR_SPECIES_NAME() { return AWAR_SPECIES2; }
 
 void MG_create_species_awars(AW_root *aw_root, AW_default aw_def)
 {
@@ -56,7 +56,7 @@ void MG_create_species_awars(AW_root *aw_root, AW_default aw_def)
 }
 
 
-void AD_map_species1(AW_root *aw_root)
+static void AD_map_species1(AW_root *aw_root)
 {
     GB_push_transaction(GLOBAL_gb_merge);
     char   *source     = aw_root->awar(AWAR_SPECIES1)->read_string();
@@ -67,7 +67,7 @@ void AD_map_species1(AW_root *aw_root)
     delete source;
 }
 
-void AD_map_species2(AW_root *aw_root)
+static void AD_map_species2(AW_root *aw_root)
 {
     char *source = aw_root->awar(AWAR_SPECIES2)->read_string();
     GB_push_transaction(GLOBAL_gb_dest);
@@ -197,7 +197,7 @@ static bool adaption_enabled(AW_root *awr) {
     return awr->awar(AWAR_REMAP_ENABLE)->read_int() != 0;
 }
 
-void MG_transfer_selected_species(AW_window *aww) {
+static void MG_transfer_selected_species(AW_window *aww) {
     if (MG_copy_and_check_alignments(aww) != 0) return;
 
     AW_root  *aw_root = aww->get_root();
@@ -239,7 +239,7 @@ void MG_transfer_selected_species(AW_window *aww) {
     if (error) aw_message(error);
 }
 
-void MG_transfer_species_list(AW_window *aww) {
+static void MG_transfer_species_list(AW_window *aww) {
     if (MG_copy_and_check_alignments(aww) != 0) return;
 
     GB_ERROR error = NULL;
@@ -287,7 +287,7 @@ void MG_transfer_species_list(AW_window *aww) {
     GB_end_transaction_show_error(GLOBAL_gb_dest, error, aw_message);
 }
 
-void MG_transfer_fields_cb(AW_window *aww) {
+static void MG_transfer_fields_cb(AW_window *aww) {
     if (MG_copy_and_check_alignments(aww) != 0) return;
 
     char     *field  = aww->get_root()->awar(AWAR_FIELD1)->read_string();
@@ -392,7 +392,7 @@ void MG_transfer_fields_cb(AW_window *aww) {
     free(field);
 }
 
-AW_window *MG_transfer_fields(AW_root *aw_root)
+static AW_window *MG_transfer_fields(AW_root *aw_root)
 {
     GB_transaction    dummy(GLOBAL_gb_merge);
     AW_window_simple *aws = new AW_window_simple;
@@ -424,7 +424,7 @@ AW_window *MG_transfer_fields(AW_root *aw_root)
     return (AW_window*)aws;
 }
 
-void MG_move_field_cb(AW_window *aww) {
+static void MG_move_field_cb(AW_window *aww) {
     if (MG_copy_and_check_alignments(aww) != 0) return;
 
     AW_root  *aw_root = aww->get_root();
@@ -499,7 +499,7 @@ void MG_move_field_cb(AW_window *aww) {
     free(field);
 }
 
-AW_window *create_mg_move_fields(AW_root *aw_root)
+static AW_window *create_mg_move_fields(AW_root *aw_root)
 {
     GB_transaction dummy(GLOBAL_gb_merge);
 
@@ -529,7 +529,7 @@ AW_window *create_mg_move_fields(AW_root *aw_root)
     return (AW_window*)aws;
 }
 
-void MG_merge_tagged_field_cb(AW_window *aww) {
+static void MG_merge_tagged_field_cb(AW_window *aww) {
     GB_transaction ta_merge(GLOBAL_gb_merge);
     GB_ERROR       error = GB_begin_transaction(GLOBAL_gb_dest);
 
@@ -585,7 +585,7 @@ void MG_merge_tagged_field_cb(AW_window *aww) {
     GB_end_transaction_show_error(GLOBAL_gb_dest, error, aw_message);
 }
 
-AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
+static AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
 {
     static AW_window_simple *aws = 0;
     if (aws) return aws;
@@ -628,7 +628,7 @@ AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
     return (AW_window*)aws;
 }
 
-GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
+static GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
     //! Make the alignment names equal
     ConstStrArray M_alignment_names;
     ConstStrArray D_alignment_names;

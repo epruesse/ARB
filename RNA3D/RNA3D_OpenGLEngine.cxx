@@ -106,14 +106,14 @@ static bool bHelixNrDispListCreated   = false;
 
 using namespace std;
 
-void ShowVendorInformation() {
+static void ShowVendorInformation() {
     const GLubyte *vendor = NULL;
     vendor = glGetString(GL_VENDOR);   cout<<"Vendor  : "<<vendor<<endl;
     vendor = glGetString(GL_RENDERER); cout<<"Renderer: "<<vendor<<endl;
     vendor = glGetString(GL_VERSION);  cout<<"Version : "<<vendor<<endl;
 }
 
-void initExtensions() {
+static void initExtensions() {
     // check mandatory for extensions
     char missingExtensions[500]="";
     if (!GLEW_VERSION_1_2) {
@@ -158,6 +158,31 @@ void ReshapeOpenGLWindow(GLint width, GLint height) {
     gluPerspective(fViewAngle, fAspectRatio, fClipNear, fClipFar);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+}
+
+static void CalculateRotationMatrix() {
+    static int initialized = 0;
+    GLfloat new_rotation_matrix[16];
+
+    // calculate new rotation matrix
+    glPushMatrix();
+    glLoadIdentity();
+    glRotatef(-rot_x, 1.0, 0.0, 0.0);
+    glRotatef(rot_y, 0.0, 1.0, 0.0);
+    glGetFloatv(GL_MODELVIEW_MATRIX, new_rotation_matrix);
+    glPopMatrix();
+
+    // calculate total rotation
+    glPushMatrix();
+    glLoadIdentity();
+    glMultMatrixf(new_rotation_matrix);
+    if (initialized) {
+        glMultMatrixf(rotation_matrix);
+    }
+
+    glGetFloatv(GL_MODELVIEW_MATRIX, rotation_matrix);
+    initialized = 1;
+    glPopMatrix();
 }
 
 void InitializeOpenGLEngine(GLint width, GLint height) {
@@ -209,31 +234,6 @@ void ComputeRotationXY(int x, int y) {
     rot_x = (GLfloat)(y - RNA3D->saved_y) * RNA3D->ROTATION_SPEED;
     RNA3D->saved_x = x;
     RNA3D->saved_y = y;
-}
-
-void CalculateRotationMatrix() {
-    static int initialized = 0;
-    GLfloat new_rotation_matrix[16];
-
-    // calculate new rotation matrix
-    glPushMatrix();
-    glLoadIdentity();
-    glRotatef(-rot_x, 1.0, 0.0, 0.0);
-    glRotatef(rot_y, 0.0, 1.0, 0.0);
-    glGetFloatv(GL_MODELVIEW_MATRIX, new_rotation_matrix);
-    glPopMatrix();
-
-    // calculate total rotation
-    glPushMatrix();
-    glLoadIdentity();
-    glMultMatrixf(new_rotation_matrix);
-    if (initialized) {
-        glMultMatrixf(rotation_matrix);
-    }
-
-    glGetFloatv(GL_MODELVIEW_MATRIX, rotation_matrix);
-    initialized = 1;
-    glPopMatrix();
 }
 
 void MapDisplayParameters(AW_root *root) {
@@ -435,7 +435,7 @@ void DisplayHelixNrsChanged_CB(AW_root *awr) {
     RefreshOpenGLDisplay();
 }
 
-void DrawStructure() {
+static void DrawStructure() {
     GLRenderer *cRenderer = RNA3D->cRenderer;
 
     // Drawing Molecule Skeleton

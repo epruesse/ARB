@@ -18,8 +18,8 @@
 
 // Einen Binaerbaum erzeugen ueber einen Multitree
 
-NT_NODE *ntree = NULL;
-int ntree_count=0;
+static NT_NODE *ntree = NULL;
+static int ntree_count=0;
 
 
 // returns the referenz of the actual NTree
@@ -135,7 +135,7 @@ static int ntree_cont(int len)
 // Move son from parent-sonlist to new sonlist
 // nson is pointer on element in parent-sonlist
 // sonlist is new sonlist where to move in
-void insert_son(NT_NODE *f_node, NT_NODE *s_node, NSONS *nson)
+static void insert_son(NT_NODE *f_node, NT_NODE *s_node, NSONS *nson)
 {
 
     // Move out of parent-sonlist
@@ -162,7 +162,7 @@ void insert_son(NT_NODE *f_node, NT_NODE *s_node, NSONS *nson)
    has plus it should be possible to insert as many sons as necessary to result
    in a binary tree
    2. for any two brothers A,B: brotherA and brotherB == 0                       */
-int ins_ntree(NT_NODE *tree, PART *newpart)
+static int ins_ntree(NT_NODE *tree, PART *newpart)
 {
     NSONS *nsonp;
     NSONS *nsonp_h;

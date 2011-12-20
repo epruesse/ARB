@@ -72,7 +72,7 @@ void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def) {
 }
 
 // ------------------------Selecting alignments from the database for concatenation----------------------
-void createSelectionList_callBack(conAlignStruct *cas) {
+static void createSelectionList_callBack(conAlignStruct *cas) {
     GBDATA *gb_alignment;
     GBDATA *gb_alignment_name;
     GBDATA *gb_alignment_type;
@@ -129,7 +129,7 @@ static void createSelectionList_callBack_awar(AW_root *IF_ASSERTION_USED(aw_root
 }
 
 
-conAlignStruct* createSelectionList(GBDATA *gb_main, AW_window *aws, const char *awarName) {
+static conAlignStruct* createSelectionList(GBDATA *gb_main, AW_window *aws, const char *awarName) {
 
 #ifdef DEBUG
     static bool ran=false;
@@ -163,7 +163,7 @@ conAlignStruct* createSelectionList(GBDATA *gb_main, AW_window *aws, const char 
 
 }
 
-void selectAlignment(AW_window *aws) {
+static void selectAlignment(AW_window *aws) {
     AW_root *aw_root            = aws->get_root();
     char    *selected_alignment = aw_root->awar(AWAR_CON_DB_ALIGNS)->read_string();
 
@@ -193,7 +193,7 @@ void selectAlignment(AW_window *aws) {
 }
 
 
-void selectAllAlignments(AW_window *aws) {
+static void selectAllAlignments(AW_window *aws) {
     const char *listEntry = db_alignment_list->first_element();
     aws->clear_selection_list(con_alignment_list);
 
@@ -205,13 +205,13 @@ void selectAllAlignments(AW_window *aws) {
     aws->update_selection_list(con_alignment_list);
 }
 
-void clearAlignmentList(AW_window *aws) {
+static void clearAlignmentList(AW_window *aws) {
     aws->clear_selection_list(con_alignment_list);
     aws->insert_default_selection(con_alignment_list, "????", "????");
     aws->update_selection_list(con_alignment_list);
 }
 
-void removeAlignment(AW_window *aws) {
+static void removeAlignment(AW_window *aws) {
     AW_root *aw_root = aws->get_root();
     char *selected_alignment = aw_root->awar(AWAR_CON_CONCAT_ALIGNS)->read_string();
 
@@ -228,7 +228,7 @@ void removeAlignment(AW_window *aws) {
     free(selected_alignment);
 }
 
-void shiftAlignment(AW_window *aws, long direction) {
+static void shiftAlignment(AW_window *aws, long direction) {
     AW_root *aw_root            = aws->get_root();
     char    *selected_alignment = aw_root->awar(AWAR_CON_CONCAT_ALIGNS)->read_string();
 
@@ -246,7 +246,7 @@ void shiftAlignment(AW_window *aws, long direction) {
 
 // ----------  Create SAI to display alignments that were concatenated --------------
 
-GB_ERROR displayAlignmentInfo(GBDATA *gb_main, GB_ERROR error, char *new_ali_name, char *alignment_separator) {
+static GB_ERROR displayAlignmentInfo(GBDATA *gb_main, GB_ERROR error, char *new_ali_name, char *alignment_separator) {
     GBDATA        *gb_extended    = GBT_find_or_create_SAI(gb_main, "Alignment Information");
     GBDATA        *gb_data        = GBT_add_data(gb_extended, new_ali_name, "data", GB_STRING);
     GBS_strstruct *ali_str        = GBS_stropen(GBT_get_alignment_len(gb_main, new_ali_name));
@@ -272,7 +272,7 @@ GB_ERROR displayAlignmentInfo(GBDATA *gb_main, GB_ERROR error, char *new_ali_nam
 }
 
 // ---------------------------------------- Concatenation function ----------------------------------
-void concatenateAlignments(AW_window *aws) {
+static void concatenateAlignments(AW_window *aws) {
     GB_push_transaction(GLOBAL_gb_main);
     arb_progress progress("Concatenating alignments", GBT_count_marked_species(GLOBAL_gb_main));
     AW_root  *aw_root = aws->get_root();
@@ -413,7 +413,7 @@ static void freeSpeciesConcatenateList(SpeciesConcatenateList *scl) {
     }
 }
 
-GB_ERROR checkAndMergeFields(GBDATA *gb_new_species, GB_ERROR error, SpeciesConcatenateList *scl) {
+static GB_ERROR checkAndMergeFields(GBDATA *gb_new_species, GB_ERROR error, SpeciesConcatenateList *scl) {
 
     char *doneFields = strdup(";name;"); // all fields which are already merged
     int   doneLen    = strlen(doneFields);
@@ -570,7 +570,7 @@ GB_ERROR checkAndMergeFields(GBDATA *gb_new_species, GB_ERROR error, SpeciesConc
     return error;
 }
 
-GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, SpeciesConcatenateList *scl) {
+static GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, SpeciesConcatenateList *scl) {
     GB_push_transaction(GLOBAL_gb_main);
 
     GB_ERROR  error           = 0;
@@ -663,7 +663,7 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, Speci
     return gb_new_species;
 }
 
-GB_ERROR checkAndCreateNewField(GBDATA *gb_main, char *new_field_name) {
+static GB_ERROR checkAndCreateNewField(GBDATA *gb_main, char *new_field_name) {
     GB_ERROR error    = GB_check_key(new_field_name);
 
     if (error) return error;
@@ -778,6 +778,63 @@ static void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenate
 }
 
 
+
+static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, int option) {
+    AW_window_simple *aws = new AW_window_simple;
+
+    {
+        char *window_id = GBS_global_string_copy("MERGE_SPECIES_%i", option);
+        aws->init(aw_root, window_id, "MERGE SPECIES WINDOW");
+        free(window_id);
+    }
+    aws->load_xfig("merge_species.fig");
+
+    aws->callback(AW_POPUP_HELP, (AW_CL)"merge_species.hlp");
+    aws->at("help");
+    aws->create_button("HELP", "HELP", "H");
+
+    aws->at("field_select");
+    aws->auto_space(0, 0);
+    aws->callback(AW_POPDOWN);
+    create_selection_list_on_itemfields(GLOBAL_gb_main, aws,
+                                            AWAR_CON_MERGE_FIELD,
+                                            FIELD_FILTER_NDS,
+                                            "field_select",
+                                            0,
+                                            SPECIES_get_selector(),
+                                            20, 30,
+                                            SelectedFields(SF_PSEUDO|SF_HIDDEN),
+                                            "sel_merge_field");
+
+    aws->at("store_sp_no");
+    aws->label_length(20);
+    aws->create_input_field(AWAR_CON_STORE_SIM_SP_NO, 20);
+
+    aws->at("merge");
+    aws->callback(mergeSimilarSpecies, option);
+    aws->create_button("MERGE_SIMILAR_SPECIES", "MERGE SIMILAR SPECIES", "M");
+
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
+
+    return (AW_window *)aws;
+}
+
+AW_window *NT_createMergeSimilarSpeciesWindow(AW_root *aw_root) {
+    static AW_window *aw = 0;
+
+    if (!aw) aw = createMergeSimilarSpeciesWindow(aw_root, 0);
+    return aw;
+}
+
+static AW_window *NT_createMergeSimilarSpeciesAndConcatenateWindow(AW_root *aw_root) {
+    static AW_window *aw = 0;
+
+    if (!aw) aw = createMergeSimilarSpeciesWindow(aw_root, MERGE_SIMILAR_CONCATENATE_ALIGNMENTS);
+    return aw;
+}
+
 // ----------------------------Creating concatenation window-----------------------------------------
 AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     AW_window_simple *aws = new AW_window_simple;
@@ -863,61 +920,4 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     aws->show();
     return (AW_window *)aws;
 }
-
-static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, int option) {
-    AW_window_simple *aws = new AW_window_simple;
-
-    {
-        char *window_id = GBS_global_string_copy("MERGE_SPECIES_%i", option);
-        aws->init(aw_root, window_id, "MERGE SPECIES WINDOW");
-        free(window_id);
-    }
-    aws->load_xfig("merge_species.fig");
-
-    aws->callback(AW_POPUP_HELP, (AW_CL)"merge_species.hlp");
-    aws->at("help");
-    aws->create_button("HELP", "HELP", "H");
-
-    aws->at("field_select");
-    aws->auto_space(0, 0);
-    aws->callback(AW_POPDOWN);
-    create_selection_list_on_itemfields(GLOBAL_gb_main, aws,
-                                            AWAR_CON_MERGE_FIELD,
-                                            FIELD_FILTER_NDS,
-                                            "field_select",
-                                            0,
-                                            SPECIES_get_selector(),
-                                            20, 30,
-                                            SelectedFields(SF_PSEUDO|SF_HIDDEN),
-                                            "sel_merge_field");
-
-    aws->at("store_sp_no");
-    aws->label_length(20);
-    aws->create_input_field(AWAR_CON_STORE_SIM_SP_NO, 20);
-
-    aws->at("merge");
-    aws->callback(mergeSimilarSpecies, option);
-    aws->create_button("MERGE_SIMILAR_SPECIES", "MERGE SIMILAR SPECIES", "M");
-
-    aws->at("close");
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
-
-    return (AW_window *)aws;
-}
-
-AW_window *NT_createMergeSimilarSpeciesWindow(AW_root *aw_root) {
-    static AW_window *aw = 0;
-
-    if (!aw) aw = createMergeSimilarSpeciesWindow(aw_root, 0);
-    return aw;
-}
-
-AW_window *NT_createMergeSimilarSpeciesAndConcatenateWindow(AW_root *aw_root) {
-    static AW_window *aw = 0;
-
-    if (!aw) aw = createMergeSimilarSpeciesWindow(aw_root, MERGE_SIMILAR_CONCATENATE_ALIGNMENTS);
-    return aw;
-}
-
 // -------------------------------------------------------------------------------------------------------

@@ -341,11 +341,11 @@ static void clear_found_attribute() {
     free(found__ATTR__);      found__ATTR__      = 0;
 }
 
-const char *nextNonSpace(const char* ptr) {
+static const char *nextNonSpace(const char* ptr) {
     while (isspace(*ptr)) ++ptr;
     return ptr;
 }
-const char *nextNonWord(const char* ptr) {
+static const char *nextNonWord(const char* ptr) {
     while (isalnum(*ptr) || *ptr == '_') ++ptr;
     return ptr;
 }

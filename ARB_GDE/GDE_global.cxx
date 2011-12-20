@@ -11,16 +11,14 @@
 #include "GDE_extglob.h"
 
 int  DataType;
-int  FileFormat, first_select = FALSE;
-int  DisplayAttr             = 0, OVERWRITE = FALSE;
-int  SCALE                   = 1;
-int  BlockInput              = FALSE;
+int  FileFormat;
+int  OVERWRITE    = FALSE;
+int  BlockInput   = FALSE;
 #ifdef SeeAlloc
-int  TotalCalloc             = 0;
-int  TotalRealloc            = 0;
+int  TotalCalloc  = 0;
+int  TotalRealloc = 0;
 #endif
 char FileName[80];
-char current_dir[1024];
 
 // Months of the year
 const char *GDEmonth[] = {
@@ -86,77 +84,4 @@ int Default_PROColor_LKUP[128] = {
     2, 8, 3, 8, 8, 6, 2, 4, 5, 12, 4, 5, 5, 8, 12, 2,
     8, 4, 2, 2, 12, 5, 6, 12, 6, 8, 12, 12, 12, 12, 12
 };
-
-const char *vert_mito[512] = {
-    "AAA", "Lys", "AAC", "Asn", "AAG", "Lys", "AAT", "Asn", "ACA", "Thr",
-    "ACC", "Thr", "ACG", "Thr", "ACT", "Thr", "AGA", "Ter", "AGC", "Ser",
-    "AGG", "Ter", "AGT", "Ser", "ATA", "Met", "ATC", "Ile", "ATG", "Met",
-    "ATT", "Ile", "CAA", "Gln", "CAC", "His", "CAG", "Gln", "CAT", "His",
-    "CCA", "Pro", "CCC", "Pro", "CCG", "Pro", "CCT", "Pro", "CGA", "Arg",
-    "CGC", "Arg", "CGG", "Arg", "CGT", "Arg", "CTA", "Leu", "CTC", "Leu",
-    "CTG", "Leu", "CTT", "Leu", "GAA", "Glu", "GAC", "Asp", "GAG", "Glu",
-    "GAT", "Asp", "GCA", "Ala", "GCC", "Ala", "GCG", "Ala", "GCT", "Ala",
-    "GGA", "Gly", "GGC", "Gly", "GGG", "Gly", "GGT", "Gly", "GTA", "Val",
-    "GTC", "Val", "GTG", "Val", "GTT", "Val", "TAA", "Ter", "TAC", "Tyr",
-    "TAG", "Ter", "TAT", "Tyr", "TCA", "Ser", "TCC", "Ser", "TCG", "Ser",
-    "TCT", "Ser", "TGA", "Trp", "TGC", "Cys", "TGG", "Trp", "TGT", "Cys",
-    "TTA", "Leu", "TTC", "Phe", "TTG", "Leu", "TTT", "Phe"
-},
-    *mycoplasma[512] = {
-        "AAA", "Lys", "AAC", "Asn", "AAG", "Lys", "AAT", "Asn", "ACA", "Thr",
-        "ACC", "Thr", "ACG", "Thr", "ACT", "Thr", "AGA", "Arg", "AGC", "Ser",
-        "AGG", "Arg", "AGT", "Ser", "ATA", "Ile", "ATC", "Ile", "ATG", "Met",
-        "ATT", "Ile", "CAA", "Gln", "CAC", "His", "CAG", "Gln", "CAT", "His",
-        "CCA", "Pro", "CCC", "Pro", "CCG", "Pro", "CCT", "Pro", "CGA", "Arg",
-        "CGC", "Arg", "CGG", "Arg", "CGT", "Arg", "CTA", "Leu", "CTC", "Leu",
-        "CTG", "Leu", "CTT", "Leu", "GAA", "Glu", "GAC", "Asp", "GAG", "Glu",
-        "GAT", "Asp", "GCA", "Ala", "GCC", "Ala", "GCG", "Ala", "GCT", "Ala",
-        "GGA", "Gly", "GGC", "Gly", "GGG", "Gly", "GGT", "Gly", "GTA", "Val",
-        "GTC", "Val", "GTG", "Val", "GTT", "Val", "TAA", "Ter", "TAC", "Tyr",
-        "TAG", "Ter", "TAT", "Tyr", "TCA", "Ser", "TCC", "Ser", "TCG", "Ser",
-        "TCT", "Ser", "TGA", "Trp", "TGC", "Cys", "TGG", "Trp", "TGT", "Cys",
-        "TTA", "Leu", "TTC", "Phe", "TTG", "Leu", "TTT", "Phe"
-    },
-    *universal[512] = {
-        "AAA", "Lys", "AAC", "Asn", "AAG", "Lys", "AAT", "Asn", "ACA", "Thr",
-        "ACC", "Thr", "ACG", "Thr", "ACT", "Thr", "AGA", "Arg", "AGC", "Ser",
-        "AGG", "Arg", "AGT", "Ser", "ATA", "Ile", "ATC", "Ile", "ATG", "Met",
-        "ATT", "Ile", "CAA", "Gln", "CAC", "His", "CAG", "Gln", "CAT", "His",
-        "CCA", "Pro", "CCC", "Pro", "CCG", "Pro", "CCT", "Pro", "CGA", "Arg",
-        "CGC", "Arg", "CGG", "Arg", "CGT", "Arg", "CTA", "Leu", "CTC", "Leu",
-        "CTG", "Leu", "CTT", "Leu", "GAA", "Glu", "GAC", "Asp", "GAG", "Glu",
-        "GAT", "Asp", "GCA", "Ala", "GCC", "Ala", "GCG", "Ala", "GCT", "Ala",
-        "GGA", "Gly", "GGC", "Gly", "GGG", "Gly", "GGT", "Gly", "GTA", "Val",
-        "GTC", "Val", "GTG", "Val", "GTT", "Val", "TAA", "Ter", "TAC", "Tyr",
-        "TAG", "Ter", "TAT", "Tyr", "TCA", "Ser", "TCC", "Ser", "TCG", "Ser",
-        "TCT", "Ser", "TGA", "Ter", "TGC", "Cys", "TGG", "Trp", "TGT", "Cys",
-        "TTA", "Leu", "TTC", "Phe", "TTG", "Leu", "TTT", "Phe"
-    },
-    *yeast[512] = {
-        "AAA", "Lys", "AAC", "Asn", "AAG", "Lys", "AAT", "Asn", "ACA", "Thr",
-        "ACC", "Thr", "ACG", "Thr", "ACT", "Thr", "AGA", "Arg", "AGC", "Ser",
-        "AGG", "Arg", "AGT", "Ser", "ATA", "Met", "ATC", "Ile", "ATG", "Met",
-        "ATT", "Ile", "CAA", "Gln", "CAC", "His", "CAG", "Gln", "CAT", "His",
-        "CCA", "Pro", "CCC", "Pro", "CCG", "Pro", "CCT", "Pro", "CGA", "Arg",
-        "CGC", "Arg", "CGG", "Arg", "CGT", "Arg", "CTA", "Thr", "CTC", "Thr",
-        "CTG", "Thr", "CTT", "Thr", "GAA", "Glu", "GAC", "Asp", "GAG", "Glu",
-        "GAT", "Asp", "GCA", "Ala", "GCC", "Ala", "GCG", "Ala", "GCT", "Ala",
-        "GGA", "Gly", "GGC", "Gly", "GGG", "Gly", "GGT", "Gly", "GTA", "Val",
-        "GTC", "Val", "GTG", "Val", "GTT", "Val", "TAA", "Ter", "TAC", "Tyr",
-        "TAG", "Ter", "TAT", "Tyr", "TCA", "Ser", "TCC", "Ser", "TCG", "Ser",
-        "TCT", "Ser", "TGA", "Trp", "TGC", "Cys", "TGG", "Trp", "TGT", "Cys",
-        "TTA", "Leu", "TTC", "Phe", "TTG", "Leu", "TTT", "Phe"
-    };
-
-
-const char *three_to_one[23] = {
-    "AlaA", "ArgR", "AsnN", "AspD",
-    "AsxB", "CysC", "GlnQ", "GluE",
-    "GlxZ", "GlyG", "HisH", "IleI",
-    "LeuL", "LysK", "MetM", "PheF",
-    "ProP", "SerS", "ThrT", "TrpW",
-    "TyrY", "ValV", "Ter*"
-};
-
-
 

@@ -3065,7 +3065,7 @@ static char *fake_get_consensus(const char*, int, int) {
     return strdup(get_aligned_data_of(selection_fake_gb_main, "s1"));
 }
 
-void test_install_fakes(GBDATA *gb_main) {
+static void test_install_fakes(GBDATA *gb_main) {
     selection_fake_gb_main = gb_main;
 }
 
@@ -3088,7 +3088,7 @@ static AlignParams test_ali_params_partial = {
 
 // ----------------------------------------
 
-struct arb_unit_test::test_alignment_data TestAlignmentData_TargetAndReferenceHandling[] = {
+static struct arb_unit_test::test_alignment_data TestAlignmentData_TargetAndReferenceHandling[] = {
     { 0, "s1", ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........." }, // reference
     { 0, "s2", "AUCUCCUAAACCCAACCGUAGUUCGAAUUGAGGACUGUAACUC......................................................" }, // align single sequence (same data as reference)
     { 1, "m1", "UAGAGGAUUUGGGUUGGCAUCAAGCUUAACUCCUGACAUUGAG......................................................" }, // align marked sequences.. (complement of reference)
@@ -3324,7 +3324,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
 
 // ----------------------------------------
 
-struct arb_unit_test::test_alignment_data TestAlignmentData_checksumError[] = {
+static struct arb_unit_test::test_alignment_data TestAlignmentData_checksumError[] = {
     { 0, "MtnK1722", "...G-GGC-C-G............CCC-GG--------CAAUGGGGGCGGCCCGGCGGAC----GG--C-UCAGU-A---AAG-UCGUAACAA-GG-UAG-CCGU-AGGGGAA-CCUG-CGGC-UGGAUCACCUCC....." }, // gets aligned
     { 0, "MhnFormi", "...A-CGA-U-C------------CUUCGG--------GGUCG-U-GG-C-GU-A--C------GG--C-UCAGU-A---AAG-UCGUAACAA-GG-UAG-CCGU-AGGGGAA-CCUG-CGGC-UGGAUCACCUCCU...." }, // 1st relative
     { 0, "MhnT1916", "...A-CGA-A-C------------CUU-GU--------GUUCG-U-GG-C-GA-A--C------GG--C-UCAGU-A---AAG-UCGUAACAA-GG-UAG-CCGU-AGGGGAA-CCUG-CGGC-UGGAUCACCUCCU...." }, // next relative

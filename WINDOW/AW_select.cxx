@@ -105,7 +105,7 @@ void AW_selection::refresh() {
 // -------------------------
 //      AW_DB_selection
 
-void AW_DB_selection_refresh_cb(GBDATA *, int *cl_selection, GB_CB_TYPE) {
+static void AW_DB_selection_refresh_cb(GBDATA *, int *cl_selection, GB_CB_TYPE) {
     AW_DB_selection *selection = (AW_DB_selection*)cl_selection;;
     selection->refresh();
 }

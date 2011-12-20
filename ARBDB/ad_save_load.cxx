@@ -92,7 +92,7 @@ GB_CSTR gb_mapfile_name(GB_CSTR path) {
     return mapname;
 }
 
-GB_CSTR gb_overwriteName(GB_CSTR path) {
+static GB_CSTR gb_overwriteName(GB_CSTR path) {
     static SmartCharPtr Oname;
 
     int   len   = strlen(path);
@@ -104,7 +104,7 @@ GB_CSTR gb_overwriteName(GB_CSTR path) {
     return oname;
 }
 
-GB_CSTR gb_reffile_name(GB_CSTR path) {
+static GB_CSTR gb_reffile_name(GB_CSTR path) {
     static SmartCharPtr Refname;
 
     size_t  len     = strlen(path);
@@ -119,7 +119,20 @@ GB_CSTR gb_reffile_name(GB_CSTR path) {
     return refname;
 }
 
-GB_ERROR gb_delete_reference(const char *master) {
+static char *gb_full_path(const char *path) {
+    char *res = 0;
+
+    if (path[0] == '/') res = strdup(path);
+    else {
+        const char *cwd = GB_getcwd();
+
+        if (path[0] == 0) res = strdup(cwd);
+        else res              = GBS_global_string_copy("%s/%s", cwd, path);
+    }
+    return res;
+}
+
+static GB_ERROR gb_delete_reference(const char *master) {
     GB_ERROR    error      = 0;
     char       *fullmaster = gb_full_path(master);
     const char *fullref    = gb_reffile_name(fullmaster);
@@ -130,7 +143,7 @@ GB_ERROR gb_delete_reference(const char *master) {
     return error;
 }
 
-GB_ERROR gb_create_reference(const char *master) {
+static GB_ERROR gb_create_reference(const char *master) {
     char       *fullmaster = gb_full_path(master);
     const char *fullref    = gb_reffile_name(fullmaster);
     GB_ERROR    error      = 0;
@@ -151,7 +164,7 @@ GB_ERROR gb_create_reference(const char *master) {
     return error;
 }
 
-GB_ERROR gb_add_reference(const char *master, const char *changes) {
+static GB_ERROR gb_add_reference(const char *master, const char *changes) {
     char       *fullmaster  = gb_full_path(master);
     char       *fullchanges = gb_full_path(changes);
     const char *fullref     = gb_reffile_name(fullmaster);
@@ -188,7 +201,7 @@ static GB_ERROR gb_remove_quick_saved(GB_MAIN_TYPE *Main, const char *path) {
     RETURN_ERROR(error);
 }
 
-GB_ERROR gb_remove_all_but_main(GB_MAIN_TYPE *Main, const char *path) {
+static GB_ERROR gb_remove_all_but_main(GB_MAIN_TYPE *Main, const char *path) {
     GB_ERROR error = gb_remove_quick_saved(Main, path);
     if (!error) GB_unlink_or_warn(gb_mapfile_name(path), &error); // delete old mapfile
 
@@ -336,8 +349,7 @@ long gb_ascii_2_bin(const char *source, GBDATA *gbd) {
 
 #define GB_PUT(c, out) do { if (c>=10) c+='A'-10; else c += '0'; *(out++) = (char)c; } while (0)
 
-GB_BUFFER gb_bin_2_ascii(GBDATA *gbd)
-{
+static GB_BUFFER gb_bin_2_ascii(GBDATA *gbd) {
     signed char   *s, *out, c, mo;
     unsigned long  i;
     int            j;
@@ -551,7 +563,7 @@ long gb_read_number(FILE *in) {
     }
 }
 
-void gb_put_number(long i, FILE *out) {
+static void gb_put_number(long i, FILE *out) {
     long j;
     if (i< 0x80) { putc((int)i, out); return; }
     if (i<0x4000) {
@@ -592,7 +604,7 @@ long gb_read_bin_error(FILE *in, GBDATA *gbd, const char *text) {
 // --------------------------
 //      Write Binary File
 
-long gb_write_out_long(long data, FILE *out) {
+static long gb_write_out_long(long data, FILE *out) {
     long sdata[1];
     char *p = (char *)sdata, c;
     sdata[0] = data;
@@ -608,7 +620,7 @@ long gb_write_out_long(long data, FILE *out) {
 }
 
 
-int gb_is_writeable(gb_header_list *header, GBDATA *gbd, long version, long diff_save) {
+static int gb_is_writeable(gb_header_list *header, GBDATA *gbd, long version, long diff_save) {
     /* Test whether to write any data to disc.
      *
      * version 1       write only latest data
@@ -627,58 +639,9 @@ int gb_is_writeable(gb_header_list *header, GBDATA *gbd, long version, long diff
     return 1;
 }
 
-int gb_write_bin_sub_containers(FILE *out, GBCONTAINER *gbc, long version, long diff_save, int is_root) {
-    gb_header_list *header;
-    int             i, index;
-    int             counter;
+static int gb_write_bin_sub_containers(FILE *out, GBCONTAINER *gbc, long version, long diff_save, int is_root);
 
-    header = GB_DATA_LIST_HEADER(gbc->d);
-    for (i=0, index = 0; index < gbc->d.nheader; index++) {
-        if (gb_is_writeable(&(header[index]), GB_HEADER_LIST_GBD(header[index]), version, diff_save)) i++;
-    }
-
-    if (!is_root) {
-        gb_put_number(i, out);
-    }
-    else {
-        gb_write_out_long(i, out);
-    }
-
-    counter = 0;
-    for (index = 0; index < gbc->d.nheader; index++) {
-        GBDATA *h_gbd;
-
-        if (header[index].flags.changed == GB_DELETED_IN_MASTER) {  // count deleted items in master, because of index renaming
-            counter ++;
-            continue;
-        }
-
-        h_gbd = GB_HEADER_LIST_GBD(header[index]);
-
-        if (!gb_is_writeable(&(header[index]), h_gbd, version, diff_save)) {
-            if (version <= 1 && header[index].flags.changed == GB_DELETED) {
-                header[index].flags.changed = GB_DELETED_IN_MASTER; // mark deleted in master
-            }
-            continue;
-        }
-
-        if (h_gbd) {
-            i = (int)gb_write_bin_rek(out, h_gbd, version, diff_save, index-counter);
-            if (i) return i;
-        }
-        else {
-            if (header[index].flags.changed == GB_DELETED) {
-                putc(0, out);
-                putc(1, out);
-                gb_put_number(index - counter, out);
-            }
-        }
-    }
-    return 0;
-}
-
-long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_save, long index_of_master_file)
-{
+static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_save, long index_of_master_file) {
     int          i;
     GBCONTAINER *gbc     = 0;
     long         size    = 0;
@@ -768,8 +731,62 @@ long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_save, long
     }
 }
 
+static int gb_write_bin_sub_containers(FILE *out, GBCONTAINER *gbc, long version, long diff_save, int is_root) {
+    gb_header_list *header;
+    int             i, index;
+    int             counter;
 
-int gb_write_bin(FILE *out, GBDATA *gbd, long version) {
+    header = GB_DATA_LIST_HEADER(gbc->d);
+    for (i=0, index = 0; index < gbc->d.nheader; index++) {
+        if (gb_is_writeable(&(header[index]), GB_HEADER_LIST_GBD(header[index]), version, diff_save)) i++;
+    }
+
+    if (!is_root) {
+        gb_put_number(i, out);
+    }
+    else {
+        gb_write_out_long(i, out);
+    }
+
+    counter = 0;
+    for (index = 0; index < gbc->d.nheader; index++) {
+        GBDATA *h_gbd;
+
+        if (header[index].flags.changed == GB_DELETED_IN_MASTER) {  // count deleted items in master, because of index renaming
+            counter ++;
+            continue;
+        }
+
+        h_gbd = GB_HEADER_LIST_GBD(header[index]);
+
+        if (!gb_is_writeable(&(header[index]), h_gbd, version, diff_save)) {
+            if (version <= 1 && header[index].flags.changed == GB_DELETED) {
+                header[index].flags.changed = GB_DELETED_IN_MASTER; // mark deleted in master
+            }
+            continue;
+        }
+
+        if (h_gbd) {
+            i = (int)gb_write_bin_rek(out, h_gbd, version, diff_save, index-counter);
+            if (i) return i;
+        }
+        else {
+            if (header[index].flags.changed == GB_DELETED) {
+                putc(0, out);
+                putc(1, out);
+                gb_put_number(index - counter, out);
+            }
+        }
+    }
+    return 0;
+}
+
+
+
+
+
+
+static int gb_write_bin(FILE *out, GBDATA *gbd, long version) {
     /* version 1 write master arb file
      * version 2 write slave arb file
      */
@@ -870,6 +887,69 @@ GB_ERROR GB_save_in_arbprop(GBDATA *gb, const char *path, const char *savetype) 
     if (!error) error = GB_save_as(gb, fullname, savetype);
     free(fullname);
 
+    return error;
+}
+
+static GB_ERROR gb_check_saveable(GBDATA *gbd, const char *path, const char *flags) {
+    /* Check wether file can be stored at destination
+     *  'f' in flags means 'force' => ignores main->disabled_path
+     *  'q' in flags means 'quick save'
+     *  'n' in flags means destination must be empty
+     */
+
+    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
+    GB_ERROR      error = NULL;
+
+    if (!Main->local_mode) {
+        error = "You cannot save a remote database,\nplease use save button in master program";
+    }
+    else if (Main->opentype == gb_open_read_only_all) {
+        error = "Database is read only";
+    }
+    else if (strchr(path, ':')) {
+        error = "Your database name may not contain a ':' character\nChoose a different name";
+    }
+    else {
+        char *fullpath = gb_full_path(path);
+        if (Main->disabled_path && !strchr(flags, 'f')) {
+            if (GBS_string_matches(fullpath, Main->disabled_path, GB_MIND_CASE)) {
+                error = GBS_global_string("You are not allowed to save your database in this directory,\n"
+                                          "Please select 'save as' and save your data to a different location");
+            }
+        }
+
+        if (!error) {
+            // check whether destination directory exists
+            char *lslash = strrchr(fullpath, '/');
+            if (lslash) {
+                lslash[0] = 0;
+                if (!GB_is_directory(fullpath)) {
+                    error = GBS_global_string("Directory '%s' doesn't exist", fullpath);
+                }
+                lslash[0] = '/';
+            }
+        }
+        free(fullpath);
+    }
+    
+    if (!error && !strchr(flags, 'q')) {
+        long mode = GB_mode_of_link(path);
+        if (mode >= 0 && !(mode & S_IWUSR)) { // no write access -> looks like a master file
+            error = GBS_global_string("Your selected file '%s'\n"
+                                      "already exists and is write protected!\n"
+                                      "This happens e.g. if your file is a MASTER ARB FILE which is\n"
+                                      "used by multiple quicksaved databases.\n"
+                                      "If you want to save it nevertheless, delete it first, but\n"
+                                      "note that doing this will render all these quicksaves useless!",
+                                      path);
+        }
+    }
+    
+    if (!error && strchr(flags, 'n') && GB_time_of_file(path)) {
+        error = GBS_global_string("Your destination file '%s' already exists.\n"
+                                  "Delete it manually!", path);
+    }
+    
     return error;
 }
 
@@ -1190,82 +1270,6 @@ GB_ERROR GB_save_quick(GBDATA *gb, const char *refpath) {
     RETURN_ERROR(error);
 }
 
-char *gb_full_path(const char *path) {
-    char *res = 0;
-
-    if (path[0] == '/') res = strdup(path);
-    else {
-        const char *cwd = GB_getcwd();
-
-        if (path[0] == 0) res = strdup(cwd);
-        else res              = GBS_global_string_copy("%s/%s", cwd, path);
-    }
-    return res;
-}
-
-
-GB_ERROR gb_check_saveable(GBDATA *gbd, const char *path, const char *flags) {
-    /* Check wether file can be stored at destination
-     *  'f' in flags means 'force' => ignores main->disabled_path
-     *  'q' in flags means 'quick save'
-     *  'n' in flags means destination must be empty
-     */
-
-    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
-    GB_ERROR      error = NULL;
-
-    if (!Main->local_mode) {
-        error = "You cannot save a remote database,\nplease use save button in master program";
-    }
-    else if (Main->opentype == gb_open_read_only_all) {
-        error = "Database is read only";
-    }
-    else if (strchr(path, ':')) {
-        error = "Your database name may not contain a ':' character\nChoose a different name";
-    }
-    else {
-        char *fullpath = gb_full_path(path);
-        if (Main->disabled_path && !strchr(flags, 'f')) {
-            if (GBS_string_matches(fullpath, Main->disabled_path, GB_MIND_CASE)) {
-                error = GBS_global_string("You are not allowed to save your database in this directory,\n"
-                                          "Please select 'save as' and save your data to a different location");
-            }
-        }
-
-        if (!error) {
-            // check whether destination directory exists
-            char *lslash = strrchr(fullpath, '/');
-            if (lslash) {
-                lslash[0] = 0;
-                if (!GB_is_directory(fullpath)) {
-                    error = GBS_global_string("Directory '%s' doesn't exist", fullpath);
-                }
-                lslash[0] = '/';
-            }
-        }
-        free(fullpath);
-    }
-    
-    if (!error && !strchr(flags, 'q')) {
-        long mode = GB_mode_of_link(path);
-        if (mode >= 0 && !(mode & S_IWUSR)) { // no write access -> looks like a master file
-            error = GBS_global_string("Your selected file '%s'\n"
-                                      "already exists and is write protected!\n"
-                                      "This happens e.g. if your file is a MASTER ARB FILE which is\n"
-                                      "used by multiple quicksaved databases.\n"
-                                      "If you want to save it nevertheless, delete it first, but\n"
-                                      "note that doing this will render all these quicksaves useless!",
-                                      path);
-        }
-    }
-    
-    if (!error && strchr(flags, 'n') && GB_time_of_file(path)) {
-        error = GBS_global_string("Your destination file '%s' already exists.\n"
-                                  "Delete it manually!", path);
-    }
-    
-    return error;
-}
 
 void GB_disable_path(GBDATA *gbd, const char *path) {
     // disable directories for save

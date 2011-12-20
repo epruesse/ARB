@@ -293,7 +293,33 @@ static void dump_access(const char *title, GB_HASH *hs, double mean_access) {
             "%s: size=%zu elements=%zu mean_access=%.2f hash-speed=%.1f%%\n",
             title, hs->size, hs->nelem, mean_access, 100.0/mean_access);
 }
+
+static double GBS_hash_mean_access_costs(GB_HASH *hs) {
+    /* returns the mean access costs of the hash [1.0 .. inf[
+     * 1.0 is optimal
+     * 2.0 means: hash speed is 50% (1/2.0)
+    */
+    double mean_access = 1.0;
+
+    if (hs->nelem) {
+        int    strcmps_needed = 0;
+        size_t pos;
+
+        for (pos = 0; pos<hs->size; pos++) {
+            int             strcmps = 1;
+            gbs_hash_entry *e;
+
+            for (e = hs->entries[pos]; e; e = e->next) {
+                strcmps_needed += strcmps++;
+            }
+        }
+
+        mean_access = (double)strcmps_needed/hs->nelem;
+    }
+    return mean_access;
+}
 #endif // DEBUG
+
 
 void GBS_optimize_hash(GB_HASH *hs) {
     if (hs->nelem > hs->size) {                     // hash is overfilled (Note: even 50% fillrate is slow)
@@ -357,7 +383,7 @@ char *GBS_hashtab_2_string(GB_HASH *hash) {
 }
 
 
-void GBS_string_2_hashtab(GB_HASH *hash, char *data) { // modifies data
+static void GBS_string_2_hashtab(GB_HASH *hash, char *data) { // modifies data
     char *p, *d, *dp;
     int   c;
     char *nextp;
@@ -516,34 +542,7 @@ long GBS_incr_hash(GB_HASH *hs, const char *key) {
 // #define DUMP_HASH_ENTRIES
 #endif // DEVEL_RALF
 
-#if defined(DEBUG)
-double GBS_hash_mean_access_costs(GB_HASH *hs) {
-    /* returns the mean access costs of the hash [1.0 .. inf[
-     * 1.0 is optimal
-     * 2.0 means: hash speed is 50% (1/2.0)
-    */
-    double mean_access = 1.0;
-
-    if (hs->nelem) {
-        int    strcmps_needed = 0;
-        size_t pos;
-
-        for (pos = 0; pos<hs->size; pos++) {
-            int             strcmps = 1;
-            gbs_hash_entry *e;
-
-            for (e = hs->entries[pos]; e; e = e->next) {
-                strcmps_needed += strcmps++;
-            }
-        }
-
-        mean_access = (double)strcmps_needed/hs->nelem;
-    }
-    return mean_access;
-}
-#endif // DEBUG
-
-void GBS_erase_hash(GB_HASH *hs) {
+static void GBS_erase_hash(GB_HASH *hs) {
     size_t hsize = hs->size;
 
 #if defined(DUMP_HASH_ENTRIES)
@@ -743,7 +742,7 @@ size_t GBS_hash_count_elems(GB_HASH *hs) {
     return count;
 }
 
-size_t GBS_hash_count_value(GB_HASH *hs, long val) {
+static size_t GBS_hash_count_value(GB_HASH *hs, long val) {
     size_t hsize    = hs->size;
     size_t count = 0;
 
@@ -895,11 +894,11 @@ long GBS_write_numhash(GB_NUMHASH *hs, long key, long val) {
     return oldval;
 }
 
-long GBS_numhash_count_elems(GB_NUMHASH *hs) {
+static long GBS_numhash_count_elems(GB_NUMHASH *hs) {
     return hs->nelem;
 }
 
-void GBS_erase_numhash(GB_NUMHASH *hs) {
+static void GBS_erase_numhash(GB_NUMHASH *hs) {
     size_t hsize = hs->size;
 
     for (size_t i=0; i<hsize; i++) {

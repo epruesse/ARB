@@ -18,9 +18,9 @@
 
 #include <arbdbt.h>
 
-PELEM cutmask;                                      // this mask is necessary to cut the not needed bits from the last long
-int   longs = 0;                                    // number of longs per part
-int   plen  = 0;                                    // number of bits per part
+static PELEM cutmask;                                      // this mask is necessary to cut the not needed bits from the last long
+static int   longs = 0;                                    // number of longs per part
+static int   plen  = 0;                                    // number of bits per part
 
 
 void part_init(int len) {
@@ -186,13 +186,13 @@ void part_setlen(PART *p, GBT_LEN len) {
 }
 
 
-void part_setperc(PART *p, int perc) {
+static void part_setperc(PART *p, int perc) {
     //! set the percentaged appearance of this part in "entrytrees"
     p->percent = perc;
 }
 
 
-void part_addperc(PART *p, int perc) {
+static void part_addperc(PART *p, int perc) {
     //! add 'perc' on percent of p
     p->percent += perc;
 }

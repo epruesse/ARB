@@ -20,7 +20,7 @@ using namespace std;
 // AISC_MKPT_PROMOTE:#endif
 
 
-char string_buf[256];
+static char string_buf[256];
 
 char *read_aisc_file(const char *path, const Location *loc) {
     char *buffer = 0;

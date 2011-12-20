@@ -538,7 +538,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, bool *isWarningPtr) {
 }
 
 
-void awt_rename_cb(AW_window *aww, GBDATA *gb_main) {
+static void awt_rename_cb(AW_window *aww, GBDATA *gb_main) {
     GB_ERROR error = AWTC_pars_names(gb_main);
     if (error) aw_message(error);
     aww->get_root()->awar(AWAR_TREE_REFRESH)->touch();

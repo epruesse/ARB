@@ -1769,8 +1769,6 @@ void        ED4_timer_refresh       ();
 
 ARB_ERROR   update_terminal_extension(ED4_base *this_object);
 
-void        ED4_load_new_config         (char *string);
-void        ED4_start_editor_on_configuration   (AW_window *aww);
 AW_window   *ED4_start_editor_on_old_configuration  (AW_root *awr);
 void        ED4_restart_editor          (AW_window *aww, AW_CL, AW_CL);
 void        ED4_save_configuration          (AW_window *aww, AW_CL close_flag);
@@ -1786,8 +1784,6 @@ ARB_ERROR rebuild_consensus(ED4_base *object);
 void ED4_exit() __ATTR__NORETURN;
 
 void        ED4_quit_editor         (AW_window *aww, AW_CL cd1, AW_CL cd2);                 // Be Careful: Is this the last window?
-void        ED4_load_data           (AW_window *aww, AW_CL cd1, AW_CL cd2);
-void        ED4_save_data           (AW_window *aww, AW_CL cd1, AW_CL cd2);
 void        ED4_refresh_window      (AW_window *aww, AW_CL cd1, AW_CL cd2);
 
 void        ED4_store_curpos        (AW_window *aww, AW_CL cd1, AW_CL cd2);
@@ -1826,12 +1822,9 @@ void ED4_init_notFoundMessage();
 void ED4_finish_and_show_notFoundMessage();
 
 extern int  ED4_elements_in_species_container; // # of elements in species container
-void        ED4_undo_redo               (AW_window*, AW_CL undo_type);
 
 ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_name);
 ED4_multi_species_manager *ED4_new_species_multi_species_manager();     // returns manager into which new species should be inserted
-
-void ED4_activate_col_stat(AW_window *aww, AW_CL, AW_CL);
 
 void ED4_compression_changed_cb(AW_root *awr);
 
@@ -1839,7 +1832,6 @@ void ED4_compression_changed_cb(AW_root *awr);
 
 extern "C" {
     void    ED4_species_container_changed_cb(GBDATA *gbd, int *cl, GB_CB_TYPE gbtype);
-    void    ED4_sequence_changed_cb(GBDATA *gb_seq, int *cl, GB_CB_TYPE gbtype);
     void    ED4_alignment_length_changed(GBDATA *gb_alignment_len, int *dummy, GB_CB_TYPE gbtype);
 }
 

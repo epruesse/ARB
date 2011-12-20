@@ -41,8 +41,4 @@ class analyzeWindow : public MDialog { // derived from a Noncopyable
 
 };
 
-
-// CALLBACK WRAPPER FUNCTIONS (STATIC)
-void staticResizeGnuplot(Widget, XtPointer, XtPointer);
-
 #endif // ANALYZE_WINDOW_HXX

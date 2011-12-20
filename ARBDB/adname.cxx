@@ -131,7 +131,7 @@ GB_ERROR GBT_abort_rename_session() {
 
 static const char *currentTreeName = 0;
 
-GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree, int tree_index) {
+static GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree, int tree_index) {
     char buffer[256];
     static int counter = 0;
     if (!tree) return 0;

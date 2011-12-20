@@ -22,6 +22,18 @@
 
 
 /****************************************************************************
+*  ARB AWAR CALLBACK - PROTEIN ENTRY HAS CHANGED
+*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
+****************************************************************************/
+static void static_main_ARB_callback(GBDATA *, mainDialog *mD, GB_CB_TYPE)
+{
+    // CALL CLASS MEMBER FUNCTION
+    mD->ARB_callback();
+}
+
+
+
+/****************************************************************************
 *  MAIN DIALOG - CONSTRUCTOR
 ****************************************************************************/
 mainDialog::mainDialog(Widget p)
@@ -83,97 +95,6 @@ void mainDialog::createWindow()
 }
 
 
-/****************************************************************************
-*  MAIN DIALOG - CREATE TOOLBAR
-****************************************************************************/
-void mainDialog::createToolbar()
-{
-    // CREATE MANAGER WIDGET
-    Widget manager= XtVaCreateManagedWidget("toolbar",
-        xmRowColumnWidgetClass, m_top,
-        XmNmarginHeight, 0,
-        XmNmarginWidth, 0,
-        XmNorientation, XmHORIZONTAL,
-        NULL);
-
-    // GET FOREGROUND AND BACKGROUND PIXEL COLORS
-    Pixel fg, bg;
-    XtVaGetValues(manager, XmNforeground, &fg, XmNbackground, &bg, NULL);
-
-    // OPEN AND IMPORT XPM IMAGES (BUTTON LOGOS)
-    Pixmap analyze_xpm, exit_xpm, import_xpm, visualize_xpm, info_xpm, config_xpm, pgtinfo_xpm;
-    //
-    Screen *s     = XtScreen(manager);
-    analyze_xpm   = PGT_LoadPixmap("analyze.xpm", s, fg, bg);
-    exit_xpm      = PGT_LoadPixmap("exit.xpm", s, fg, bg);
-    import_xpm    = PGT_LoadPixmap("import.xpm", s, fg, bg);
-    visualize_xpm = PGT_LoadPixmap("visualize.xpm", s, fg, bg);
-    info_xpm      = PGT_LoadPixmap("proteininfo.xpm", s, fg, bg);
-    config_xpm    = PGT_LoadPixmap("config.xpm", s, fg, bg);
-    pgtinfo_xpm   = PGT_LoadPixmap("info.xpm", s, fg, bg);
-
-    // CREATE BUTTON: IMPORT
-    Widget importButton= XtVaCreateManagedWidget("importbtn",
-        xmPushButtonWidgetClass, manager,
-        XmNlabelType, XmPIXMAP,
-        XmNlabelPixmap, import_xpm,
-        NULL);
-    XtAddCallback(importButton, XmNactivateCallback, staticOpenImportCallback, this);
-
-    // CREATE BUTTON: VISUALIZE
-    Widget imageButton= XtVaCreateManagedWidget("visualizebtn",
-        xmPushButtonWidgetClass, manager,
-        XmNlabelType, XmPIXMAP,
-        XmNlabelPixmap, visualize_xpm,
-        NULL);
-    XtAddCallback(imageButton, XmNactivateCallback, staticOpenImageCallback, this);
-
-    // CREATE BUTTON: ANALYZE
-    Widget analyzeButton= XtVaCreateManagedWidget("analyzebtn",
-        xmPushButtonWidgetClass, manager,
-        XmNlabelType, XmPIXMAP,
-        XmNlabelPixmap, analyze_xpm,
-        NULL);
-    XtAddCallback(analyzeButton, XmNactivateCallback, staticOpenAnalyzeCallback, this);
-
-    // CREATE BUTTON: INFO
-    Widget infoButton= XtVaCreateManagedWidget("infobtn",
-        xmPushButtonWidgetClass, manager,
-        XmNlabelType, XmPIXMAP,
-        XmNlabelPixmap, info_xpm,
-        NULL);
-    XtAddCallback(infoButton, XmNactivateCallback, staticInfoCallback, this);
-
-    // CREATE BUTTON: CONFIG
-    Widget configButton= XtVaCreateManagedWidget("configbtn",
-        xmPushButtonWidgetClass, manager,
-        XmNlabelType, XmPIXMAP,
-        XmNlabelPixmap, config_xpm,
-        NULL);
-    XtAddCallback(configButton, XmNactivateCallback, staticConfigCallback, this);
-
-    // CREATE BUTTON: PGT INFO
-    Widget pgtinfobutton= XtVaCreateManagedWidget("pgtinfobtn",
-        xmPushButtonWidgetClass, manager,
-        XmNlabelType, XmPIXMAP,
-        XmNlabelPixmap, pgtinfo_xpm,
-        NULL);
-    XtAddCallback(pgtinfobutton, XmNactivateCallback, staticPGTInfoCallback, this);
-
-    // CREATE BUTTON: EXIT
-    Widget exitbutton= XtVaCreateManagedWidget("exitbtn",
-        xmPushButtonWidgetClass, manager,
-        XmNlabelType, XmPIXMAP,
-        XmNlabelPixmap, exit_xpm,
-        NULL);
-    XtAddCallback(exitbutton, XmNactivateCallback, staticExitCallback, this);
-
-    // CREATE HORIZONTAL SEPARATOR WIDGET
-    XtVaCreateManagedWidget("separator",
-        xmSeparatorWidgetClass, m_top,
-        XmNorientation, XmHORIZONTAL,
-        NULL);
-}
 
 
 /****************************************************************************
@@ -317,17 +238,6 @@ void mainDialog::updateListEntries()
 
 /****************************************************************************
 *  ARB AWAR CALLBACK - PROTEIN ENTRY HAS CHANGED
-*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
-****************************************************************************/
-void static_main_ARB_callback(GBDATA *, mainDialog *mD, GB_CB_TYPE)
-{
-    // CALL CLASS MEMBER FUNCTION
-    mD->ARB_callback();
-}
-
-
-/****************************************************************************
-*  ARB AWAR CALLBACK - PROTEIN ENTRY HAS CHANGED
 ****************************************************************************/
 void mainDialog::ARB_callback()
 {
@@ -339,7 +249,7 @@ void mainDialog::ARB_callback()
 *  MAIN DIALOG CALLBACK - OPEN IMPORT WINDOW
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticOpenImportCallback(Widget widget, XtPointer clientData, XtPointer callData)
+static void staticOpenImportCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     mainDialog *mD= (mainDialog *)clientData;
@@ -363,7 +273,7 @@ void mainDialog::openImportCallback(Widget, XtPointer)
 *  MAIN DIALOG CALLBACK - SHOW (TIFF)IMAGE VIEW WINDOW
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticOpenImageCallback(Widget widget, XtPointer clientData, XtPointer callData)
+static void staticOpenImageCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     mainDialog *mD= (mainDialog *)clientData;
@@ -386,7 +296,7 @@ void mainDialog::openImageCallback(Widget, XtPointer)
 *  MAIN DIALOG CALLBACK - SHOW ANALYZE WINDOW
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticOpenAnalyzeCallback(Widget widget, XtPointer clientData, XtPointer callData)
+static void staticOpenAnalyzeCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     mainDialog *mD= (mainDialog *)clientData;
@@ -408,7 +318,7 @@ void mainDialog::openAnalyzeCallback(Widget, XtPointer)
 *  MAIN DIALOG CALLBACK - CONFIG CALL
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticConfigCallback(Widget widget, XtPointer clientData, XtPointer callData)
+static void staticConfigCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     mainDialog *mD= (mainDialog *)clientData;
@@ -431,7 +341,7 @@ void mainDialog::configCallback(Widget, XtPointer)
 *  MAIN DIALOG CALLBACK - INFO CALL
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticInfoCallback(Widget widget, XtPointer clientData, XtPointer callData)
+static void staticInfoCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     mainDialog *mD= (mainDialog *)clientData;
@@ -453,7 +363,7 @@ void mainDialog::infoCallback(Widget, XtPointer)
 *  MAIN DIALOG CALLBACK - EXIT CALL
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticExitCallback(Widget widget, XtPointer clientData, XtPointer callData)
+static void staticExitCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     mainDialog *mD= (mainDialog *)clientData;
@@ -478,7 +388,7 @@ void mainDialog::exitCallback(Widget widget, XtPointer)
 *  MAIN DIALOG CALLBACK - PGT INFO CALL
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticPGTInfoCallback(Widget widget, XtPointer clientData, XtPointer callData)
+static void staticPGTInfoCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     mainDialog *mD= (mainDialog *)clientData;
@@ -513,4 +423,96 @@ void mainDialog::PGTinfoCallback(Widget widget, XtPointer)
 
     // SHOW PGT INFO MESSAGEBOX
     ShowMessageBox(widget, "PGT Information", pgtinfo);
+}
+
+/****************************************************************************
+*  MAIN DIALOG - CREATE TOOLBAR
+****************************************************************************/
+void mainDialog::createToolbar()
+{
+    // CREATE MANAGER WIDGET
+    Widget manager= XtVaCreateManagedWidget("toolbar",
+        xmRowColumnWidgetClass, m_top,
+        XmNmarginHeight, 0,
+        XmNmarginWidth, 0,
+        XmNorientation, XmHORIZONTAL,
+        NULL);
+
+    // GET FOREGROUND AND BACKGROUND PIXEL COLORS
+    Pixel fg, bg;
+    XtVaGetValues(manager, XmNforeground, &fg, XmNbackground, &bg, NULL);
+
+    // OPEN AND IMPORT XPM IMAGES (BUTTON LOGOS)
+    Pixmap analyze_xpm, exit_xpm, import_xpm, visualize_xpm, info_xpm, config_xpm, pgtinfo_xpm;
+    //
+    Screen *s     = XtScreen(manager);
+    analyze_xpm   = PGT_LoadPixmap("analyze.xpm", s, fg, bg);
+    exit_xpm      = PGT_LoadPixmap("exit.xpm", s, fg, bg);
+    import_xpm    = PGT_LoadPixmap("import.xpm", s, fg, bg);
+    visualize_xpm = PGT_LoadPixmap("visualize.xpm", s, fg, bg);
+    info_xpm      = PGT_LoadPixmap("proteininfo.xpm", s, fg, bg);
+    config_xpm    = PGT_LoadPixmap("config.xpm", s, fg, bg);
+    pgtinfo_xpm   = PGT_LoadPixmap("info.xpm", s, fg, bg);
+
+    // CREATE BUTTON: IMPORT
+    Widget importButton= XtVaCreateManagedWidget("importbtn",
+        xmPushButtonWidgetClass, manager,
+        XmNlabelType, XmPIXMAP,
+        XmNlabelPixmap, import_xpm,
+        NULL);
+    XtAddCallback(importButton, XmNactivateCallback, staticOpenImportCallback, this);
+
+    // CREATE BUTTON: VISUALIZE
+    Widget imageButton= XtVaCreateManagedWidget("visualizebtn",
+        xmPushButtonWidgetClass, manager,
+        XmNlabelType, XmPIXMAP,
+        XmNlabelPixmap, visualize_xpm,
+        NULL);
+    XtAddCallback(imageButton, XmNactivateCallback, staticOpenImageCallback, this);
+
+    // CREATE BUTTON: ANALYZE
+    Widget analyzeButton= XtVaCreateManagedWidget("analyzebtn",
+        xmPushButtonWidgetClass, manager,
+        XmNlabelType, XmPIXMAP,
+        XmNlabelPixmap, analyze_xpm,
+        NULL);
+    XtAddCallback(analyzeButton, XmNactivateCallback, staticOpenAnalyzeCallback, this);
+
+    // CREATE BUTTON: INFO
+    Widget infoButton= XtVaCreateManagedWidget("infobtn",
+        xmPushButtonWidgetClass, manager,
+        XmNlabelType, XmPIXMAP,
+        XmNlabelPixmap, info_xpm,
+        NULL);
+    XtAddCallback(infoButton, XmNactivateCallback, staticInfoCallback, this);
+
+    // CREATE BUTTON: CONFIG
+    Widget configButton= XtVaCreateManagedWidget("configbtn",
+        xmPushButtonWidgetClass, manager,
+        XmNlabelType, XmPIXMAP,
+        XmNlabelPixmap, config_xpm,
+        NULL);
+    XtAddCallback(configButton, XmNactivateCallback, staticConfigCallback, this);
+
+    // CREATE BUTTON: PGT INFO
+    Widget pgtinfobutton= XtVaCreateManagedWidget("pgtinfobtn",
+        xmPushButtonWidgetClass, manager,
+        XmNlabelType, XmPIXMAP,
+        XmNlabelPixmap, pgtinfo_xpm,
+        NULL);
+    XtAddCallback(pgtinfobutton, XmNactivateCallback, staticPGTInfoCallback, this);
+
+    // CREATE BUTTON: EXIT
+    Widget exitbutton= XtVaCreateManagedWidget("exitbtn",
+        xmPushButtonWidgetClass, manager,
+        XmNlabelType, XmPIXMAP,
+        XmNlabelPixmap, exit_xpm,
+        NULL);
+    XtAddCallback(exitbutton, XmNactivateCallback, staticExitCallback, this);
+
+    // CREATE HORIZONTAL SEPARATOR WIDGET
+    XtVaCreateManagedWidget("separator",
+        xmSeparatorWidgetClass, m_top,
+        XmNorientation, XmHORIZONTAL,
+        NULL);
 }

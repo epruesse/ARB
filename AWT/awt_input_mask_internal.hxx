@@ -53,8 +53,6 @@ class awt_mask_item;
 class awt_linked_to_item;
 class awt_viewport;
 
-extern const char *awt_itemtype_names[]; // names of itemtypes
-
 // --------------------------------------
 //      class awt_input_mask_id_list
 

@@ -84,7 +84,10 @@ struct aisc_bytes_list {
     char            *data;
     int              size;
     aisc_bytes_list *next;
-} *aisc_server_bytes_first, *aisc_server_bytes_last;
+};
+
+static aisc_bytes_list *aisc_server_bytes_first;
+static aisc_bytes_list *aisc_server_bytes_last;
 
 
 extern char  *aisc_object_names[];
@@ -98,7 +101,7 @@ extern aisc_talking_func_longp *aisc_talking_functions_create[];
 extern aisc_talking_func_long   aisc_talking_functions_delete[];
 
 const char *aisc_server_error;
-int         mdba_make_core = 1;
+static int         mdba_make_core = 1;
 
 const int   ERRORBUFSIZE = 256;
 static char error_buf[ERRORBUFSIZE];
@@ -622,7 +625,7 @@ static long aisc_talking_get(long *in_buf, int size, long *out_buf, int) {
     return out_pos;
 }
 
-int aisc_server_index = -1;
+static int aisc_server_index = -1;
 
 static void aisc_talking_set_index(int *obj, int i) {
     obj = obj;
@@ -1164,7 +1167,7 @@ int aisc_broadcast(Hs_struct *hs, int message_type, const char *message)
     return 0;
 }
 
-int aisc_talking_count;
+static int aisc_talking_count;
 
 #ifdef __cplusplus
 extern "C" {

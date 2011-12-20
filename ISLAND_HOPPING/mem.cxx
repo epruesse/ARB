@@ -19,7 +19,7 @@ static size_t A=0;
 
 // ==========================================================================
 
-void clearUp(void) { void *v;
+static void clearUp(void) { void *v;
     while(D) {v=D; D=((void **)v)[0]; free(v);}
     while(M) {v=M; M=((void **)v)[0]; free(v);}
 }

@@ -187,7 +187,7 @@ static GB_ERROR read_import_format(const char *fullfile, input_format_struct *if
     return error;
 }
 
-GB_ERROR awtc_read_import_format(const char *file) {
+static GB_ERROR awtc_read_import_format(const char *file) {
     char *fullfile = strdup(GB_path_in_ARBHOME(file));
 
     delete awtcig.ifo;
@@ -261,7 +261,7 @@ input_format_struct::~input_format_struct() {
     delete pl;
 }
 
-void awtc_check_input_format(AW_window *aww) {
+static void awtc_check_input_format(AW_window *aww) {
     AW_root  *root = aww->get_root();
     StrArray  files;
     GBS_read_dir(files, GB_path_in_ARBLIB("import"), "*.ift");
@@ -459,7 +459,7 @@ static int awtc_next_file() {
 
     return result;
 }
-char *awtc_read_line(int tab, char *sequencestart, char *sequenceend) {
+static char *awtc_read_line(int tab, char *sequencestart, char *sequenceend) {
     /* two modes:   tab == 0 -> read single lines,
        different files are separated by sequenceend,
        tab != 0 join lines that start after position tab,
@@ -695,7 +695,7 @@ static string expandSetVariables(const SetVariables& variables, const string& so
     return dest;
 }
 
-GB_ERROR awtc_read_data(char *ali_name, int security_write)
+static GB_ERROR awtc_read_data(char *ali_name, int security_write)
 {
     char        num[6];
     char        text[100];
@@ -894,7 +894,7 @@ GB_ERROR awtc_read_data(char *ali_name, int security_write)
     return 0;
 }
 
-void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing database
+static void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing database
 {
     AW_root *awr                     = aww->get_root();
     bool     is_genom_db             = false;

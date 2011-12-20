@@ -1071,9 +1071,8 @@ static DictTree test_dtree(DictTree tree)
 #endif
 
 
-static DictTree new_dtree(cu_str text, long len, long *memcount)
-// creates a new (sub-)tree from 'text' (which has length 'len')
-{
+static DictTree new_dtree(cu_str text, long len, long *memcount) {
+    // creates a new (sub-)tree from 'text' (which has length 'len')
     DictTree tree;
 
     if (len) {
@@ -1104,8 +1103,7 @@ static DictTree new_dtree(cu_str text, long len, long *memcount)
     return tree;
 }
 
-DictTree single2full_dtree(DictTree tree, long *memcount)
-{
+static DictTree single2full_dtree(DictTree tree, long *memcount) {
     if (tree.exists && tree.single->typ==SINGLE_NODE) {
         FullDictTree *full = (FullDictTree*)gbm_get_mem(sizeof(*full), GBM_DICT_INDEX);
         int idx;
@@ -2397,7 +2395,7 @@ static GB_ERROR readAndWrite(O_gbdByKey *gbkp) {
     return error;
 }
 
-GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
+static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
     GB_ERROR error = NULL;
 #if defined(TEST_DICT)
     long uncompressed_sum = 0;

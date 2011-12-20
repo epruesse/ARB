@@ -109,8 +109,9 @@ struct CPRO_struct {
     float Z_it_group;          // last value , needed for smoothing
     float Z_it_equal;          // -^-
     struct CPRO_result_struct result[2]; // info needed for each statistic
-} CPRO;
+};
 
+static CPRO_struct CPRO;
 
 /* -----------------------------------------------------------------
  * Function:                     CPRO_readandallocate
@@ -751,7 +752,7 @@ static float CPRO_statisticaccumulation(long res, long column, unsigned char whi
 
 // reports how many equal,group and differ entries are at a certain distance
 // at a certain column; mode=1 means smoothing is on.
-void CPRO_getfromstatistic(float &equal, float &ingroup, long res, long column, unsigned char which_statistic, char mode)
+static void CPRO_getfromstatistic(float &equal, float &ingroup, long res, long column, unsigned char which_statistic, char mode)
 {
     STATTYPE hits=0, sum=0, group=0, different=0;
     long base=3*res;
@@ -816,11 +817,11 @@ void CPRO_getfromstatistic(float &equal, float &ingroup, long res, long column, 
 
 }
 
-void CPRO_box(AW_device *device, int gc, float l, float t, float width, float high) {
+static void CPRO_box(AW_device *device, int gc, float l, float t, float width, float high) {
     device->box(gc, false, l, t, width, high, 1);
 }
 
-float CPRO_confidinterval(long res, long column, unsigned char which_statistic, char mode)
+static float CPRO_confidinterval(long res, long column, unsigned char which_statistic, char mode)
 {
     STATTYPE hits=0, sum=0, group=0, different=0;
     long base=3*res;
@@ -839,7 +840,7 @@ float CPRO_confidinterval(long res, long column, unsigned char which_statistic, 
     else return (0.0);
 }
 
-void CPRO_drawstatistic (AW_device *device, unsigned char which_statistic)
+static void CPRO_drawstatistic (AW_device *device, unsigned char which_statistic)
 {
     float topdistance=70.0, leftdistance=40.0;
     float rightdistance=20.0, bottomdistance=10.0;
@@ -1017,17 +1018,17 @@ static void CPRO_column_cb(AW_root *awr, AW_window *aws, AW_CL which_statistic)
     CPRO_expose_cb(aws, which_statistic, 0);
 }
 
-void CPRO_columnminus_cb(AW_window *aws) {
+static void CPRO_columnminus_cb(AW_window *aws) {
     if (CPRO.column>1) {
         aws->get_root()->awar(AWAR_CURSOR_POSITION)->write_int(CPRO.column-1);
     }
 }
 
-void CPRO_columnplus_cb(AW_window *aws, AW_CL /* which_statistic */, AW_CL) {
+static void CPRO_columnplus_cb(AW_window *aws, AW_CL /* which_statistic */, AW_CL) {
     aws->get_root()->awar(AWAR_CURSOR_POSITION)->write_int(CPRO.column+1);
 }
 
-void CPRO_savestatistic_cb(AW_window *aw, AW_CL which_statistic)
+static void CPRO_savestatistic_cb(AW_window *aw, AW_CL which_statistic)
 {
     AW_root  *awr      = aw->get_root();
     char     *filename = awr->awar("cpro/save/file_name")->read_string();
@@ -1090,7 +1091,7 @@ void CPRO_savestatistic_cb(AW_window *aw, AW_CL which_statistic)
     aw->hide_or_notify(error);
 }
 
-void CPRO_loadstatistic_cb(AW_window *aw, AW_CL which_statistic)
+static void CPRO_loadstatistic_cb(AW_window *aw, AW_CL which_statistic)
 {
     AW_root  *awr      = aw->get_root();
     char     *filename = awr->awar("cpro/load/file_name")->read_string();
@@ -1221,7 +1222,7 @@ static AW_window *CPRO_loadstatisticwindow_cb(AW_root *aw_root, AW_CL cl_which_s
 }
 
 // search point of resolution when half maximum if reached (for condense)
-float CPRO_gethalfmaximum(long column, float maximum, float firsttoreach,
+static float CPRO_gethalfmaximum(long column, float maximum, float firsttoreach,
                           char transversion, unsigned char which_statistic, char mode)
 {
     float equal, ingroup, interest;
@@ -1251,7 +1252,7 @@ float CPRO_gethalfmaximum(long column, float maximum, float firsttoreach,
 }
 
 // search maximum distance in character (for condense)
-float CPRO_getmaximum(long column, char transversion,
+static float CPRO_getmaximum(long column, char transversion,
                       unsigned char which_statistic, char mode)
 {
     float maximum=-101.0, equal, ingroup, interest, sum, interval;
@@ -1271,7 +1272,7 @@ float CPRO_getmaximum(long column, char transversion,
     return (maximum);
 }
 
-void CPRO_condense_cb(AW_window *aw, AW_CL which_statistic)
+static void CPRO_condense_cb(AW_window *aw, AW_CL which_statistic)
 {
     AW_root *aw_root = aw->get_root();
     char mode=CPRO.result[which_statistic].drawmode;
@@ -1350,7 +1351,7 @@ void CPRO_condense_cb(AW_window *aw, AW_CL which_statistic)
     free(savename);
 }
 
-AW_window *CPRO_condensewindow_cb(AW_root *aw_root, AW_CL which_statistic)
+static AW_window *CPRO_condensewindow_cb(AW_root *aw_root, AW_CL which_statistic)
 {
     char buf[30];
     sprintf(buf, "CONDENSE STATISTIC %ld", (long)which_statistic+1);
@@ -1381,7 +1382,7 @@ AW_window *CPRO_condensewindow_cb(AW_root *aw_root, AW_CL which_statistic)
     return (AW_window *)aws;
 }
 
-AW_window *CPRO_xpert_cb(AW_root *aw_root)
+static AW_window *CPRO_xpert_cb(AW_root *aw_root)
 {
     static AW_window *expertwindow = 0;
     if (expertwindow) return (expertwindow);
@@ -1425,7 +1426,7 @@ AW_window *CPRO_xpert_cb(AW_root *aw_root)
     return expertwindow=(AW_window *)aws;
 }
 
-AW_window *CPRO_showstatistic_cb(AW_root *aw_root, AW_CL which_statistic)
+static AW_window *CPRO_showstatistic_cb(AW_root *aw_root, AW_CL which_statistic)
 {
     char buf[20];
     sprintf(buf, "SHOW STATISTIC %d\n", (int)which_statistic+1);
@@ -1491,7 +1492,7 @@ AW_window *CPRO_showstatistic_cb(AW_root *aw_root, AW_CL which_statistic)
     return (AW_window *)aws;
 }
 
-AW_window *CPRO_calculatewin_cb(AW_root *aw_root, AW_CL which_statistic)
+static AW_window *CPRO_calculatewin_cb(AW_root *aw_root, AW_CL which_statistic)
 {
     char buf[30];
     sprintf(buf, "CALCULATE STATISTIC %ld", (long)which_statistic+1);

@@ -49,7 +49,7 @@ struct MasterSequence {
 
 // --------------------------------------------------------------------------------
 
-Consensus *g_b_new_Consensus(long len) {
+static Consensus *g_b_new_Consensus(long len) {
     Consensus     *gcon = (Consensus *)GB_calloc(sizeof(*gcon), 1);
     unsigned char *data = (unsigned char *)GB_calloc(sizeof(char)*256, len);
 
@@ -62,13 +62,13 @@ Consensus *g_b_new_Consensus(long len) {
 }
 
 
-void g_b_delete_Consensus(Consensus *gcon) {
+static void g_b_delete_Consensus(Consensus *gcon) {
     free(gcon->con[0]);
     free(gcon);
 }
 
 
-void g_b_Consensus_add(Consensus *gcon, unsigned char *seq, long seq_len) {
+static void g_b_Consensus_add(Consensus *gcon, unsigned char *seq, long seq_len) {
     int            i;
     int            li;
     int            c;
@@ -119,7 +119,7 @@ void g_b_Consensus_add(Consensus *gcon, unsigned char *seq, long seq_len) {
     }
 }
 
-char *g_b_Consensus_get_sequence(Consensus *gcon) {
+static char *g_b_Consensus_get_sequence(Consensus *gcon) {
     int pos;
     unsigned char *s;
     unsigned char *max = (unsigned char *)GB_calloc(sizeof(char), gcon->len);
@@ -144,13 +144,13 @@ char *g_b_Consensus_get_sequence(Consensus *gcon) {
 }
 
 
-int g_b_count_leafs(CompressionTree *node) {
+static int g_b_count_leafs(CompressionTree *node) {
     if (node->is_leaf) return 1;
     node->gb_node = 0;
     return (g_b_count_leafs(node->leftson) + g_b_count_leafs(node->rightson));
 }
 
-void g_b_put_sequences_in_container(CompressionTree *ctree, Sequence *seqs, MasterSequence **masters, Consensus *gcon) {
+static void g_b_put_sequences_in_container(CompressionTree *ctree, Sequence *seqs, MasterSequence **masters, Consensus *gcon) {
     if (ctree->is_leaf) {
         if (ctree->index >= 0) {
             GB_CSTR data = GB_read_char_pntr(seqs[ctree->index].gbd);
@@ -169,7 +169,7 @@ void g_b_put_sequences_in_container(CompressionTree *ctree, Sequence *seqs, Mast
     }
 }
 
-void g_b_create_master(CompressionTree *node, Sequence *seqs, MasterSequence **masters, int my_master, const char *ali_name, long seq_len, arb_progress& progress) {
+static void g_b_create_master(CompressionTree *node, Sequence *seqs, MasterSequence **masters, int my_master, const char *ali_name, long seq_len, arb_progress& progress) {
     if (node->is_leaf) {
         if (node->index >= 0) {
             GBDATA *gb_data = GBT_read_sequence(node->gb_node, ali_name);
@@ -352,9 +352,9 @@ inline void g_b_put_number2(int i, unsigned char **s) {
 }
 
 
-char *gb_compress_seq_by_master(const char *master, int master_len, int master_index,
-                                GBQUARK q, const char *seq, long seq_len,
-                                long *memsize, int old_flag) {
+static char *gb_compress_seq_by_master(const char *master, int master_len, int master_index,
+                                       GBQUARK q, const char *seq, long seq_len,
+                                       long *memsize, int old_flag) {
     unsigned char *buffer;
     int            rest = 0;
     unsigned char *d;
@@ -402,8 +402,8 @@ char *gb_compress_seq_by_master(const char *master, int master_len, int master_i
     }
 }
 
-char *gb_compress_sequence_by_master(GBDATA *gbd, const char *master, int master_len, int master_index,
-                                     GBQUARK q, const char *seq, int seq_len, long *memsize)
+static char *gb_compress_sequence_by_master(GBDATA *gbd, const char *master, int master_len, int master_index,
+                                            GBQUARK q, const char *seq, int seq_len, long *memsize)
 {
     long  size;
     char *is  = gb_compress_seq_by_master(master, master_len, master_index, q, seq, seq_len, &size, GB_COMPRESSION_LAST);
@@ -788,7 +788,7 @@ void GBT_compression_test(void */*dummy_AW_root*/, GBDATA *gb_main) {
 
 // ******************** Decompress Sequences ********************
 
-char *g_b_uncompress_single_sequence_by_master(const char *s, const char *master, long size, long *new_size) {
+static char *g_b_uncompress_single_sequence_by_master(const char *s, const char *master, long size, long *new_size) {
     const signed char *source = (signed char *)s;
     char              *dest;
     const char        *m      = master;

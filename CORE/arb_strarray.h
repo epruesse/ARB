@@ -182,7 +182,6 @@ inline void GBT_split_string(ConstStrArray& dest, const char *namelist, char sep
 char *GBT_join_names(const CharPtrArray& names, char separator);
 int   GBT_names_index_of(const CharPtrArray& names, const char *search_for);
 void  GBT_names_erase(CharPtrArray& names, int index);
-void  GBT_names_add(StrArray& names, int insert_before, const char *name);
 void  GBT_names_add(ConstStrArray& names, int insert_before, const char *name);
 void  GBT_names_move(CharPtrArray& names, int old_index, int new_index);
 

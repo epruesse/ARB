@@ -35,7 +35,7 @@ static XtWorkProcId                 workId   = 0;
 //    the animation will continue.
 // ===============================================================================//
 
-Boolean SpinMolecule(XtPointer /* clientData */) {
+static Boolean SpinMolecule(XtPointer /* clientData */) {
     RNA3D->ROTATION_SPEED = 0.05;
     RefreshOpenGLDisplay();
     return false; // leave work proc active
@@ -75,7 +75,7 @@ static void RotateMoleculeStateChanged_cb(AW_root *awr) {
     RefreshOpenGLDisplay();
 }
 
-void ResizeOpenGLWindow(Widget /* w */, XtPointer /* client_data */, XEvent *event, char* /* x */) {
+static void ResizeOpenGLWindow(Widget /* w */, XtPointer /* client_data */, XEvent *event, char* /* x */) {
     XConfigureEvent *evt;
     evt = (XConfigureEvent*) event;
 
@@ -88,11 +88,11 @@ void ResizeOpenGLWindow(Widget /* w */, XtPointer /* client_data */, XEvent *eve
     RefreshOpenGLDisplay();
 }
 
-void KeyReleaseEventHandler(Widget /* w */, XtPointer /* client_data */, XEvent * /* event */, char* /* x */) {
+static void KeyReleaseEventHandler(Widget /* w */, XtPointer /* client_data */, XEvent * /* event */, char* /* x */) {
     RefreshOpenGLDisplay();
 }
 
-void KeyPressEventHandler(Widget /* w */, XtPointer /* client_data */, XEvent *event, char* /* x */) {
+static void KeyPressEventHandler(Widget /* w */, XtPointer /* client_data */, XEvent *event, char* /* x */) {
     char   buffer[1];
     KeySym keysym;
 
@@ -127,7 +127,7 @@ void KeyPressEventHandler(Widget /* w */, XtPointer /* client_data */, XEvent *e
     RefreshOpenGLDisplay();
 }
 
-void ButtonReleaseEventHandler(Widget /* w */, XtPointer /* client_data */, XEvent *event, char* /* x */) {
+static void ButtonReleaseEventHandler(Widget /* w */, XtPointer /* client_data */, XEvent *event, char* /* x */) {
     XButtonEvent *xr;
     xr = (XButtonEvent*) event;
 
@@ -147,7 +147,7 @@ void ButtonReleaseEventHandler(Widget /* w */, XtPointer /* client_data */, XEve
     RefreshOpenGLDisplay();
 }
 
-void ButtonPressEventHandler(Widget /* w */, XtPointer /* client_data */, XEvent *event, char* /* x */) {
+static void ButtonPressEventHandler(Widget /* w */, XtPointer /* client_data */, XEvent *event, char* /* x */) {
 
     XButtonEvent *xp;
     xp = (XButtonEvent*) event;
@@ -179,7 +179,7 @@ void ButtonPressEventHandler(Widget /* w */, XtPointer /* client_data */, XEvent
     RefreshOpenGLDisplay();
 }
 
-void MouseMoveEventHandler(Widget /* w */, XtPointer /* client_data */, XEvent *event, char* /* x */) {
+static void MouseMoveEventHandler(Widget /* w */, XtPointer /* client_data */, XEvent *event, char* /* x */) {
 
     XMotionEvent *xp;
     xp = (XMotionEvent*) event;
@@ -196,7 +196,7 @@ void MouseMoveEventHandler(Widget /* w */, XtPointer /* client_data */, XEvent *
     RefreshOpenGLDisplay();
 }
 
-void ExposeOpenGLWindow(Widget  w, XtPointer /* client_data */, XEvent *event, char* /* x */) {
+static void ExposeOpenGLWindow(Widget  w, XtPointer /* client_data */, XEvent *event, char* /* x */) {
     static bool ok = false;
 
     if (RNA3D->OpenGLEngineState == NOT_CREATED) {

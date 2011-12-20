@@ -73,10 +73,6 @@ class AW_awar : virtual Noncopyable {
 
     void remove_all_callbacks();
     void remove_all_target_vars();
-    bool unlink_from_DB(GBDATA *gb_main);
-
-    friend long AW_unlink_awar_from_DB(const char *key, long cl_awar, void *cl_gb_main);
-    friend void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, int *cl);
 
     void assert_var_type(AW_VARIABLE_TYPE target_var_type);
     
@@ -94,6 +90,8 @@ public:
 
     void unlink();                                  // unconditionally unlink from DB
 
+    bool unlink_from_DB(GBDATA *gb_main);
+    
     void run_callbacks();
     void update_target(AW_var_target*pntr);
     void update_targets();

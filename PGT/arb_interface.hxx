@@ -61,26 +61,19 @@ void CONFIG_disconnect();
 bool ARB_begin_transaction();
 bool ARB_commit_transaction();
 
-bool ARB_connected();
 GBDATA *get_gbData();
-//
-GBDATA *find_species(char *);
+
 GBDATA *find_genome(char *);
-GBDATA *find_genome(GBDATA *);
 GBDATA *find_experiment(char *, char *);
-GBDATA *find_experiment(GBDATA *, char *);
 GBDATA *find_proteome(char *, char *, char *);
 GBDATA *find_proteome(GBDATA *, char *);
 GBDATA *find_proteine_data(char *, char *, char *);
-//
+
 void getSpeciesList(Widget, bool);
 void getExperimentList(Widget, char *, bool);
 void getProteomeList(Widget, char *, char *, bool);
 void getEntryNamesList(Widget, bool);
 
-bool check_create_AWAR(GBDATA *, const char *AWAR_path, bool);
-void set_AWAR(const char *AWAR_path, char *content);
-char *get_AWAR(const char *AWAR_path);
 void set_CONFIG(const char *CONFIG_path, const char *content);
 char *get_CONFIG(const char *CONFIG_path);
 
@@ -90,15 +83,13 @@ void set_proteom_AWAR(char *content);
 void set_protein_AWAR(char *content);
 void set_gene_AWAR(char *content);
 void set_config_AWAR(char *content);
-//
+
 char *get_species_AWAR();
 char *get_experiment_AWAR();
 char *get_proteom_AWAR();
 char *get_protein_AWAR();
 char *get_gene_AWAR();
-char *get_config_AWAR();
 
-//
 class mainDialog;
 class imageDialog;
 

@@ -15,22 +15,14 @@
 
 struct aisc_hash_node;
 
-aisc_hash_node **aisc_init_hash(int size);
-int aisc_hash(const char *key, int size);
-void aisc_free_key(aisc_hash_node **table, char *key);
-void aisc_free_hash(aisc_hash_node **table);
-void aisc_insert_hash(aisc_hash_node **table, char *key, long data);
 long aisc_read_hash(aisc_hash_node **table, const char *key);
 const char *aisc_link(dllpublic_ext *father, dllheader_ext *object);
 const char *aisc_unlink(dllheader_ext *object);
 long aisc_find_lib(dllpublic_ext *parent, char *ident);
-int trf_hash(long p);
 void trf_create(long old, long new_item);
 void trf_link(long old, long *dest);
 void trf_begin(void);
 void trf_commit(int errors);
-int aisc_server_dllint_2_bytestring(dllpublic_ext *pb, bytestring *bs, int offset);
-int aisc_server_dllstring_2_bytestring(dllpublic_ext *pb, bytestring *bs, int offset);
 
 #else
 #error struct_man.h included twice

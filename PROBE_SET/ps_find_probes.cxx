@@ -148,15 +148,15 @@ void PS_print_map_ranges(const char *_map_name, const map<T1, T2> &_map, const b
 // common globals
 //
 
-bool                     __VERBOSE = false;
-SpeciesID                __MAX_ID;
-SpeciesID                __MIN_ID;
-SpeciesID                __SPECIES_COUNT;
-unsigned long            __BITS_IN_MAP;
-PS_BitMap_Counted       *__MAP;
-PS_BitMap_Counted       *__PRESET_MAP;
-IDSet                    __SOURCE_ID_SET;
-PS_BitSet::IndexSet      __TARGET_ID_SET;
+static bool                     __VERBOSE = false;
+static SpeciesID                __MAX_ID;
+static SpeciesID                __MIN_ID;
+static SpeciesID                __SPECIES_COUNT;
+static unsigned long            __BITS_IN_MAP;
+static PS_BitMap_Counted       *__MAP;
+static PS_BitMap_Counted       *__PRESET_MAP;
+static IDSet                    __SOURCE_ID_SET;
+static PS_BitSet::IndexSet      __TARGET_ID_SET;
 
 //
 // globals for PS_calc_next_speciesid_sets,
@@ -172,8 +172,8 @@ PS_BitSet::IndexSet      __TARGET_ID_SET;
 //  to be in __TARGET_ID_SET
 #define __THRESHOLD_PERCENTAGE_NEXT_TARGET_ID_SET 95
 
-SpeciesID               __MIN_SETS_ID;
-SpeciesID               __MAX_SETS_ID;
+static SpeciesID               __MIN_SETS_ID;
+static SpeciesID               __MAX_SETS_ID;
 
 //
 // globals for PS_find_probes
@@ -186,34 +186,34 @@ SpeciesID               __MAX_SETS_ID;
 #define __MIN_PERCENTAGE_SET_MATCH 40
 #define __MAX_PERCENTAGE_SET_MATCH 60
 
-float                   __SOURCE_MIN_MATCH_COUNT;
-float                   __SOURCE_MAX_MATCH_COUNT;
-float                   __TARGET_MIN_MATCH_COUNT;
-float                   __TARGET_MAX_MATCH_COUNT;
-float                   __SOURCE_PERFECT_MATCH_COUNT;
-float                   __TARGET_PERFECT_MATCH_COUNT;
-unsigned long           __PROBES_COUNTER;
-unsigned long           __PROBES_REMOVED;
-PS_CandidatePtr         __CANDIDATES_ROOT;
-unsigned long           __CANDIDATES_COUNTER;
-unsigned long           __CANDIDATES_TODO;
-unsigned long           __CANDIDATES_FINISHED;
-unsigned long           __MAX_DEPTH;
+static float                   __SOURCE_MIN_MATCH_COUNT;
+static float                   __SOURCE_MAX_MATCH_COUNT;
+static float                   __TARGET_MIN_MATCH_COUNT;
+static float                   __TARGET_MAX_MATCH_COUNT;
+static float                   __SOURCE_PERFECT_MATCH_COUNT;
+static float                   __TARGET_PERFECT_MATCH_COUNT;
+static unsigned long           __PROBES_COUNTER;
+static unsigned long           __PROBES_REMOVED;
+static PS_CandidatePtr         __CANDIDATES_ROOT;
+static unsigned long           __CANDIDATES_COUNTER;
+static unsigned long           __CANDIDATES_TODO;
+static unsigned long           __CANDIDATES_FINISHED;
+static unsigned long           __MAX_DEPTH;
 
 //
 // globals for PS_find_probe_for_sets
 //             PS_test_candidate_on_bitmap
 //
 
-IDSet __PATH;
+static IDSet __PATH;
 
 //
 // globals for PS_descend
 //
-char *__PATH_IN_CANDIDATES;
+static char *__PATH_IN_CANDIDATES;
 
 
-unsigned long int PS_test_candidate_on_bitmap(float             *_filling_level = 0,
+static unsigned long int PS_test_candidate_on_bitmap(float             *_filling_level = 0,
                                                PS_BitMap_Counted *_map = 0) {
     //  returns number of locations in __MAP that would be switched
     //  from false to true by __PATH
@@ -278,7 +278,7 @@ unsigned long int PS_test_candidate_on_bitmap(float             *_filling_level 
 }
 
 
-bool PS_test_sets_on_path(float &_distance) {
+static bool PS_test_sets_on_path(float &_distance) {
     long count_matched_source = 0;
     long count_matched_target = 0;
     SpeciesID  path_id;
@@ -314,7 +314,7 @@ bool PS_test_sets_on_path(float &_distance) {
     return false;
 }
 
-void PS_find_probe_for_sets(const PS_NodePtr _ps_node, PS_CandidatePtr _candidate_parent) {
+static void PS_find_probe_for_sets(const PS_NodePtr _ps_node, PS_CandidatePtr _candidate_parent) {
     //  scan subtree starting with _ps_node for candidates
 
     SpeciesID id         = _ps_node->getNum();
@@ -367,7 +367,7 @@ void PS_find_probe_for_sets(const PS_NodePtr _ps_node, PS_CandidatePtr _candidat
     __PATH.erase(id);
 }
 
-void PS_find_probes(const PS_NodePtr _root_node, const int _round, PS_CandidatePtr _candidate_parent, const float _filling_level) {
+static void PS_find_probes(const PS_NodePtr _root_node, const int _round, PS_CandidatePtr _candidate_parent, const float _filling_level) {
     //  scan PS_Node-tree for candidates to raise filling level of __MAP
 
     __PROBES_COUNTER             = 0;
@@ -404,7 +404,7 @@ void PS_find_probes(const PS_NodePtr _root_node, const int _round, PS_CandidateP
     fflush(stdout);
 }
 
-void PS_calc_next_speciesid_sets() {
+static void PS_calc_next_speciesid_sets() {
     //  scan __MAP to find sets of IDs that need differentiation most
 
     //
@@ -539,7 +539,7 @@ void PS_apply_path_to_bitmap(IDSet &_path, const bool _silent = false, PS_BitMap
     if (!_silent) printf("PS_apply_path_to_bitmap() : gain %lu of %lu -- %.2f%%  -> wasted %lu\n", gain, sets, ((float)gain/sets)*100.0, sets-gain);
 }
 
-float PS_filling_level(PS_CandidatePtr _candidate = 0) {
+static float PS_filling_level(PS_CandidatePtr _candidate = 0) {
     //  returns filling level of __MAP
 
     unsigned long trues      = __MAP->getCountOfTrues();
@@ -609,7 +609,7 @@ void PS_GNUPlot(const char *_out_prefix, const long _iteration, const IDSet &_pa
     free(buffer);
 }
 
-PS_CandidatePtr PS_ascend(PS_CandidatePtr _last_candidate) {
+static PS_CandidatePtr PS_ascend(PS_CandidatePtr _last_candidate) {
     //  'remove' _last_candidate from __MAP by applying its parent's
     //  paths to a fresh __MAP
 
@@ -634,7 +634,7 @@ PS_CandidatePtr PS_ascend(PS_CandidatePtr _last_candidate) {
 }
 
 
-void PS_descend(PS_CandidatePtr _candidate_parent, const PS_NodePtr _root_node, unsigned long _depth, const float _filling_level) {
+static void PS_descend(PS_CandidatePtr _candidate_parent, const PS_NodePtr _root_node, unsigned long _depth, const float _filling_level) {
     struct tms before;
     times(&before);
 
@@ -708,7 +708,7 @@ void PS_descend(PS_CandidatePtr _candidate_parent, const PS_NodePtr _root_node, 
     printf("\n"); fflush(stdout);
 }
 
-void PS_make_map_for_candidate(PS_CandidatePtr _candidate) {
+static void PS_make_map_for_candidate(PS_CandidatePtr _candidate) {
     //  make __MAP for _candidate
 
     if (_candidate->map) return; // if candidate already has its map return

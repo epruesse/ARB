@@ -47,7 +47,7 @@ struct Params {
     int         WEIGHTED;
 
     apd_sequence *sequence;
-} P;
+};
 
 
 struct gl_struct {
@@ -55,10 +55,12 @@ struct gl_struct {
     T_PT_LOCS locs;
     T_PT_MAIN com;
     int pd_design_id;
-} pd_gl;
+};
 
+static Params    P;
+static gl_struct pd_gl;
 
-int init_local_com_struct()
+static int init_local_com_struct()
 {
     const char *user = GB_getenvUSER();
 

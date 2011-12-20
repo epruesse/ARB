@@ -44,9 +44,8 @@ void GB_raise_critical_error(const char *msg) {
 // --------------------------------------------------------------------------------
 
 
-char *GBS_string_2_key_with_exclusions(const char *str, const char *additional)
-// converts any string to a valid key (all chars in 'additional' are additionally allowed)
-{
+static char *GBS_string_2_key_with_exclusions(const char *str, const char *additional) {
+    // converts any string to a valid key (all chars in 'additional' are additionally allowed)
     char buf[GB_KEY_LEN_MAX+1];
     int i;
     int c;
@@ -71,8 +70,7 @@ char *GBS_string_2_key(const char *str) // converts any string to a valid key
     return GBS_string_2_key_with_exclusions(str, "");
 }
 
-void gbs_uppercase(char *str)
-{
+static void gbs_uppercase(char *str) {
     char c;
     while ((c=*str)) {
         if ((c<='z') && (c>='a')) *str = c - 'a' + 'A';
@@ -83,8 +81,7 @@ void gbs_uppercase(char *str)
 #if defined(WARN_TODO)
 #warning replace/implement gbs_memcopy by memmove
 #endif
-void gbs_memcopy(char *dest, const char *source, long len)
-{
+static void gbs_memcopy(char *dest, const char *source, long len) {
     long        i;
     const char *s;
     char       *d;
@@ -203,8 +200,7 @@ GB_ERROR GB_check_hkey(const char *key) { // goes to header: __ATTR__USERESULT
     return err;
 }
 
-char *gbs_add_path(char *path, char *name)
-{
+static char *gbs_add_path(char *path, char *name) {
     long i, len, found;
     char *erg;
     if (!name) return name;
@@ -716,7 +712,7 @@ static char *g_bs_get_string_of_tag_hash(GB_HASH *tag_hash) {
     return GBS_strclose(merge_result);
 }
 
-long g_bs_free_hash_of_hashes_elem(const char */*key*/, long val, void *) {
+static long g_bs_free_hash_of_hashes_elem(const char */*key*/, long val, void *) {
     GB_HASH *hash = (GB_HASH*)val;
     if (hash) GBS_free_hash(hash);
     return 0;
@@ -900,7 +896,7 @@ void GBS_fwrite_string(const char *strngi, FILE *out) {
  *  any changes should be done in GBS_fconvert_string too.
  */
 
-char *GBS_fread_string(FILE *in) {
+static char *GBS_fread_string(FILE *in) {
     GBS_strstruct *strstr = GBS_stropen(1024);
     int            x;
 

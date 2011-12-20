@@ -71,7 +71,7 @@ GBDATA* GEN_find_gene(GBDATA *gb_species, const char *name) {
     return gb_gene_data ? GEN_find_gene_rel_gene_data(gb_gene_data, name) : 0;
 }
 
-GBDATA* GEN_create_nonexisting_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name) {
+static GBDATA* GEN_create_nonexisting_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name) {
     GB_ERROR  error   = GB_push_transaction(gb_gene_data);
     GBDATA   *gb_gene = 0;
 
@@ -89,7 +89,7 @@ GBDATA* GEN_create_nonexisting_gene_rel_gene_data(GBDATA *gb_gene_data, const ch
     return gb_gene;
 }
 
-GBDATA* GEN_create_nonexisting_gene(GBDATA *gb_species, const char *name) {
+static GBDATA* GEN_create_nonexisting_gene(GBDATA *gb_species, const char *name) {
     return GEN_create_nonexisting_gene_rel_gene_data(GEN_findOrCreate_gene_data(gb_species), name);
 }
 
@@ -123,7 +123,7 @@ GBDATA* GEN_find_or_create_gene_rel_gene_data(GBDATA *gb_gene_data, const char *
     return gb_gene;
 }
 
-GBDATA* GEN_find_or_create_gene(GBDATA *gb_species, const char *name) {
+static GBDATA* GEN_find_or_create_gene(GBDATA *gb_species, const char *name) {
     return GEN_find_or_create_gene_rel_gene_data(GEN_findOrCreate_gene_data(gb_species), name);
 }
 
@@ -591,7 +591,7 @@ static const char *pseudo_species_hash_key(const char *organism_name, const char
     return GBS_global_string("%s*%s", organism_name, gene_name);
 }
 
-GBDATA *GEN_read_pseudo_species_from_hash(GB_HASH *pseudo_hash, const char *organism_name, const char *gene_name) {
+static GBDATA *GEN_read_pseudo_species_from_hash(GB_HASH *pseudo_hash, const char *organism_name, const char *gene_name) {
     return (GBDATA*)GBS_read_hash(pseudo_hash, pseudo_species_hash_key(organism_name, gene_name));
 }
 
@@ -698,7 +698,7 @@ GBDATA* GEN_first_pseudo_species(GBDATA *gb_main) {
     return GEN_next_pseudo_species(gb_species);
 }
 
-GBDATA* GEN_first_pseudo_species_rel_species_data(GBDATA *gb_species_data) {
+static GBDATA* GEN_first_pseudo_species_rel_species_data(GBDATA *gb_species_data) {
     GBDATA *gb_species = GBT_first_species_rel_species_data(gb_species_data);
 
     if (!gb_species || GEN_is_pseudo_gene_species(gb_species)) return gb_species;
@@ -715,14 +715,7 @@ GBDATA* GEN_next_pseudo_species(GBDATA *gb_species) {
     return gb_species;
 }
 
-GBDATA *GEN_first_marked_pseudo_species(GBDATA *gb_main) {
-    GBDATA *gb_species = GBT_first_marked_species(gb_main);
-
-    if (!gb_species || GEN_is_pseudo_gene_species(gb_species)) return gb_species;
-    return GEN_next_marked_pseudo_species(gb_species);
-}
-
-GBDATA* GEN_next_marked_pseudo_species(GBDATA *gb_species) {
+static GBDATA* GEN_next_marked_pseudo_species(GBDATA *gb_species) {
     if (gb_species) {
         while (1) {
             gb_species = GBT_next_marked_species(gb_species);
@@ -730,6 +723,13 @@ GBDATA* GEN_next_marked_pseudo_species(GBDATA *gb_species) {
         }
     }
     return gb_species;
+}
+
+GBDATA *GEN_first_marked_pseudo_species(GBDATA *gb_main) {
+    GBDATA *gb_species = GBT_first_marked_species(gb_main);
+
+    if (!gb_species || GEN_is_pseudo_gene_species(gb_species)) return gb_species;
+    return GEN_next_marked_pseudo_species(gb_species);
 }
 
 // ------------------
@@ -813,7 +813,7 @@ char *GEN_global_gene_identifier(GBDATA *gb_gene, GBDATA *gb_organism) {
 #include <arb_unit_test.h>
 #include <arb_defs.h>
 
-struct arb_unit_test::test_alignment_data TestAlignmentData_Genome[] = {
+static struct arb_unit_test::test_alignment_data TestAlignmentData_Genome[] = {
     { 0, "spec", "AUCUCCUAAACCCAACCGUAGUUCGAAUUGAG" },
 };
 

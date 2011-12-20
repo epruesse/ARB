@@ -21,7 +21,7 @@
 
 extern GBDATA *GLOBAL_gb_main;
 
-void aed_start_naligning(AW_window *aw) {
+static void aed_start_naligning(AW_window *aw) {
     AW_root *root = aw->get_root();
     char    *buffer;
     int      i, j;
@@ -152,7 +152,7 @@ void create_naligner_variables(AW_root *root, AW_default db1) {
     root->awar_int  ("naligner/det/ic", 5,   db1);
 }
 
-AW_window *create_expert_naligner_window(AW_root *root)
+static AW_window *create_expert_naligner_window(AW_root *root)
 {
     const       int     mwidth = 5;
     AW_window_simple *aws = new AW_window_simple;
@@ -175,7 +175,7 @@ AW_window *create_expert_naligner_window(AW_root *root)
     return (AW_window *)aws;
 }
 
-AW_window *create_special_naligner_window(AW_root *root, AW_CL /*cd2*/) {
+static AW_window *create_special_naligner_window(AW_root *root, AW_CL /*cd2*/) {
     AW_window_simple *aws    = new AW_window_simple;
     const       int   mwidth = 3;
 

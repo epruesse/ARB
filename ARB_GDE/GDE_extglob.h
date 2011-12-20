@@ -28,12 +28,10 @@ class AP_filter;
 extern Gmenu menu[GDEMAXMENU];
 extern int   num_menus;
 extern int   DataType;
-extern int   FileFormat, first_select;
-extern int   DisplayAttr, OVERWRITE;
-extern int   SCALE;
+extern int   FileFormat;
+extern int   OVERWRITE;
 extern int   BlockInput;
 extern char  FileName[80];
-extern char  current_dir[1024];
 
 #ifdef SeeAlloc
 int TotalCalloc  = 0;
@@ -52,13 +50,6 @@ extern int Default_NA_RTrans[];
 // Character->color lookup table
 extern int Default_NAColor_LKUP[];
 extern int Default_PROColor_LKUP[];
-
-extern const char *vert_mito[512];
-extern const char *mycoplasma[512];
-extern const char *universal[512];
-extern const char *yeast[512];
-
-extern const char *three_to_one[23];
 
 #else
 #error GDE_extglob.h included twice

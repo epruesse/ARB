@@ -23,7 +23,6 @@ GB_ERROR GBT_add_new_experiment_changekey(GBDATA *gb_main, const char *name, int
 GB_ERROR GBT_convert_changekey(GBDATA *gb_main, const char *name, GB_TYPES target_type);
 
 /* adRevCompl.cxx */
-char GBT_complementNucleotide(char c, char T_or_U);
 char *GBT_reverseNucSequence(const char *s, int len);
 char *GBT_complementNucSequence(const char *s, int len, char T_or_U);
 NOT4PERL GB_ERROR GBT_determine_T_or_U(GB_alignment_type alignment_type, char *T_or_U, const char *supposed_target);
@@ -35,7 +34,6 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name);
 void GBT_get_alignment_names(ConstStrArray &names, GBDATA *gbd);
 GB_ERROR GBT_check_alignment_name(const char *alignment_name);
 GBDATA *GBT_create_alignment(GBDATA *gbd, const char *name, long len, long aligned, long security, const char *type);
-NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment, GB_HASH *species_name_hash);
 GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *dest, int copy, int dele);
 NOT4PERL GBDATA *GBT_add_data(GBDATA *species, const char *ali_name, const char *key, GB_TYPES type) __ATTR__DEPRECATED_TODO("better use GBT_create_sequence_data()");
 NOT4PERL GBDATA *GBT_create_sequence_data(GBDATA *species, const char *ali_name, const char *key, GB_TYPES type, int security_write);
@@ -167,13 +165,10 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, GB_HASH *s
 void GBT_delete_tree(GBT_TREE *tree);
 GB_ERROR GBT_write_group_name(GBDATA *gb_group_name, const char *new_group_name);
 GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree);
-GB_ERROR GBT_write_plain_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_TREE *tree);
 GB_ERROR GBT_write_tree_rem(GBDATA *gb_main, const char *tree_name, const char *remark);
 GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long structure_size, int *tree_size);
 GBT_TREE *GBT_read_tree(GBDATA *gb_main, const char *tree_name, long structure_size);
-GBT_TREE *GBT_read_plain_tree(GBDATA *gb_main, GBDATA *gb_ctree, long structure_size, GB_ERROR *error);
 size_t GBT_count_leafs(const GBT_TREE *tree);
-GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, bool show_status, GB_HASH *species_hash, int *zombies, int *duplicates);
 GB_ERROR GBT_link_tree(GBT_TREE *tree, GBDATA *gb_main, bool show_status, int *zombies, int *duplicates);
 void GBT_unlink_tree(GBT_TREE *tree);
 GBDATA *GBT_get_tree(GBDATA *gb_main, const char *tree_name);

@@ -82,7 +82,7 @@ static int nseqs;               // # of sequences
 static int weights[MAX_BASETYPES][MAX_BASETYPES];     // weights[b1][b2] : penalty for mutation from base 'b1' to base 'b2'
 
 #if defined(ASSERTION_USED)
-size_t displ_size = 0;
+static size_t displ_size = 0;
 #endif // ASSERTION_USED
 
 static int *displ;                                  // displ == 0 -> base in both , displ<0 -> displ gaps in slave, displ>0 -> displ gaps in master
@@ -471,7 +471,7 @@ static ARB_ERROR init_show_pair(long max_seq_length) {
     return error;
 }
 
-void exit_show_pair()
+static void exit_show_pair()
 {
     freenull(zzd);
     freenull(zzc);

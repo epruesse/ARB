@@ -104,7 +104,7 @@ static void NT_resort_data_base_by_tree(GBT_TREE *tree, GBDATA *gb_species_data)
 }
 
 
-GB_ERROR NT_resort_data_base(GBT_TREE *tree, const char *key1, const char *key2, const char *key3) {
+static GB_ERROR NT_resort_data_base(GBT_TREE *tree, const char *key1, const char *key2, const char *key3) {
     customsort_struct sortBy;
 
     sortBy.key1 = key1;
@@ -143,7 +143,7 @@ void NT_resort_data_by_phylogeny(AW_window *, AW_CL, AW_CL) {
     if (error) aw_message(error);
 }
 
-void NT_resort_data_by_user_criteria(AW_window *aw) {
+static void NT_resort_data_by_user_criteria(AW_window *aw) {
     arb_progress progress("Sorting data");
     
     char *s1 = aw->get_root()->awar("ad_tree/sort_1")->read_string();

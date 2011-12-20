@@ -28,8 +28,8 @@
 #define AWAR_MATRIX_NAMECHARS_TOP  AWAR_MATRIX "namechars_top"
 #define AWAR_MATRIX_NAMECHARS_LEFT AWAR_MATRIX "namechars_left"
 
-void vertical_change_cb  (AW_window *aww, DI_dmatrix *dis) { dis->monitor_vertical_scroll_cb(aww); }
-void horizontal_change_cb(AW_window *aww, DI_dmatrix *dis) { dis->monitor_horizontal_scroll_cb(aww); }
+static void vertical_change_cb  (AW_window *aww, DI_dmatrix *dis) { dis->monitor_vertical_scroll_cb(aww); }
+static void horizontal_change_cb(AW_window *aww, DI_dmatrix *dis) { dis->monitor_horizontal_scroll_cb(aww); }
 
 static void redisplay_needed(AW_window *, DI_dmatrix *dis) {
     dis->display(true);
@@ -568,7 +568,7 @@ void DI_dmatrix::monitor_horizontal_scroll_cb(AW_window *aww) { // draw area
 
 static int update_display_on_dist_change = 1;
 
-void di_view_set_max_d(AW_window *aww, AW_CL cl_max_d, AW_CL /* clmatr */) {
+static void di_view_set_max_d(AW_window *aww, AW_CL cl_max_d, AW_CL /* clmatr */) {
     double   max_d   = cl_max_d*0.01;
     AW_root *aw_root = aww->get_root();
 
@@ -578,7 +578,7 @@ void di_view_set_max_d(AW_window *aww, AW_CL cl_max_d, AW_CL /* clmatr */) {
     aw_root->awar(AWAR_DIST_MAX_DIST)->write_float(max_d);
 }
 
-void di_view_set_distances(AW_root *awr, AW_CL cl_setmax, AW_CL cl_dmatrix) {
+static void di_view_set_distances(AW_root *awr, AW_CL cl_setmax, AW_CL cl_dmatrix) {
     // cl_dmatrix: 0 -> set min and fix max, 1 -> set max and fix min, 2 -> set both
     DI_dmatrix *dmatrix  = (DI_dmatrix *)cl_dmatrix;
     double      max_dist = awr->awar(AWAR_DIST_MAX_DIST)->read_float();
@@ -609,7 +609,7 @@ void di_view_set_distances(AW_root *awr, AW_CL cl_setmax, AW_CL cl_dmatrix) {
     if (update_display_on_dist_change) dmatrix->display(true);
 }
 
-void di_change_dist(AW_window *aww, AW_CL cl_mode) {
+static void di_change_dist(AW_window *aww, AW_CL cl_mode) {
     AW_root *awr = aww->get_root();
     const char *awar_name;
 

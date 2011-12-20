@@ -153,6 +153,26 @@ void EmblParser::parse_section() {
     parse_keyed_section(key);
 }
 
+static void embl_origin(Seq& seq, Reader& reader) {
+    // Read in embl sequence data.
+    ca_assert(seq.is_empty());
+
+    // read in whole sequence data
+    for (++reader;
+         reader.line() && !is_sequence_terminator(reader.line());
+         ++reader
+         )
+    {
+        const char *line = reader.line();
+        for (int idx = 5; line[idx]; ++idx) {
+            char ch = line[idx];
+            if (ch == ' ' || ch == '\n') continue;
+            if (idx>70) continue;
+            seq.add(ch);
+        }
+    }
+}
+
 void EmblParser::parse_keyed_section(const char *key) {
     if (str_equal(key, "ID")) {
         embl_one_entry(reader, embl.ID, key);
@@ -218,25 +238,6 @@ void embl_key_word(const char *line, int index, char *key) {
     parse_key_word(line+index, key, " \t\n");
 }
 
-void embl_origin(Seq& seq, Reader& reader) {
-    // Read in embl sequence data.
-    ca_assert(seq.is_empty());
-
-    // read in whole sequence data
-    for (++reader;
-         reader.line() && !is_sequence_terminator(reader.line());
-         ++reader
-         )
-    {
-        const char *line = reader.line();
-        for (int idx = 5; line[idx]; ++idx) {
-            char ch = line[idx];
-            if (ch == ' ' || ch == '\n') continue;
-            if (idx>70) continue;
-            seq.add(ch);
-        }
-    }
-}
 static void embl_print_lines(Writer& write, const char *key, const char *content, const WrapMode& wrapMode) {
     // Print EMBL entry and wrap around if line over EMBLMAXLINE.
     ca_assert(strlen(key) == 2);

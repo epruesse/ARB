@@ -24,7 +24,7 @@
 
 extern GBDATA *GLOBAL_gb_main;
 
-void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL) {
+static void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL) {
     GLOBAL_gb_dest    = GLOBAL_gb_main;
     AW_window *aww    = DBUI::create_species_query_window(awr, (AW_CL)GLOBAL_gb_main);
     DBUI::unquery_all();

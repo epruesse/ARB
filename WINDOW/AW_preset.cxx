@@ -34,12 +34,12 @@ void AW_save_properties(AW_window *aw) {
 }
 
 
-void aw_message_reload(AW_root *) {
+static void aw_message_reload(AW_root *) {
     aw_message("Sorry, to activate new colors:\n"
                 "   save properties\n"
                 "   and restart application");
 }
-char *aw_glob_font_awar_name = 0;
+static char *aw_glob_font_awar_name = 0;
 
 static void aw_set_color(AW_window *aww, AW_CL cl_color_name) {
     const char *color_name = (const char *)cl_color_name;
@@ -53,7 +53,7 @@ static int hex2dez(char c) {
     return -1;
 }
 
-void aw_incdec_color(AW_window *aww, const char *action) {
+static void aw_incdec_color(AW_window *aww, const char *action) {
     // action is sth like "r+" "b-" "g++" "r--"
     AW_awar *awar  = aww->get_root()->awar(aw_glob_font_awar_name);
     char    *color = awar->read_string();
@@ -99,7 +99,7 @@ void aw_incdec_color(AW_window *aww, const char *action) {
 
 #define AWAR_GLOBAL_COLOR_NAME "tmp/aw/color_label"
 
-void aw_create_color_chooser_window(AW_window *aww, const char *awar_name, const char *label_name) {
+static void aw_create_color_chooser_window(AW_window *aww, const char *awar_name, const char *label_name) {
     AW_root *awr = aww->get_root();
     static AW_window_simple *aws = 0;
     if (!aws) {
@@ -172,7 +172,7 @@ void aw_create_color_chooser_window(AW_window *aww, const char *awar_name, const
     aws->activate();
 }
 
-void AW_preset_create_color_chooser(AW_window *aws, const char *awar_name, const char *label, bool message_reload, bool show_label)
+static void AW_preset_create_color_chooser(AW_window *aws, const char *awar_name, const char *label, bool message_reload, bool show_label)
 {
     if (message_reload) aws->get_root()->awar(awar_name)->add_callback(aw_message_reload);
     if (show_label) {
@@ -187,7 +187,7 @@ void AW_preset_create_color_chooser(AW_window *aws, const char *awar_name, const
     free(color);
 }
 
-void AW_preset_create_font_chooser(AW_window *aws, const char *awar, const char *label, bool message_reload)
+static void AW_preset_create_font_chooser(AW_window *aws, const char *awar, const char *label, bool message_reload)
 {
     if (message_reload) {
         aws->get_root()->awar(awar)->add_callback(aw_message_reload);
@@ -365,7 +365,7 @@ static void aw_gc_changed_cb(AW_root *awr, AW_MGC_awar_cb_struct *cbs, long mode
     }
 }
 
-void aw_gc_color_changed_cb(AW_root *root, AW_MGC_awar_cb_struct *cbs, long mode)
+static void aw_gc_color_changed_cb(AW_root *root, AW_MGC_awar_cb_struct *cbs, long mode)
 {
     char awar_name[256];
     char *colorname;
@@ -393,7 +393,7 @@ void aw_gc_color_changed_cb(AW_root *root, AW_MGC_awar_cb_struct *cbs, long mode
 static bool color_groups_initialized = false;
 static bool use_color_groups = false;
 
-const char *AW_get_color_group_name_awarname(int color_group) {
+static const char *AW_get_color_group_name_awarname(int color_group) {
     if (color_group>0 && color_group <= AW_COLOR_GROUPS) {
         static char buf[sizeof(AWAR_COLOR_GROUPS_PREFIX)+1+4+2+1];
         sprintf(buf, AWAR_COLOR_GROUPS_PREFIX "/name%i", color_group);
@@ -408,19 +408,19 @@ char *AW_get_color_group_name(AW_root *awr, int color_group) {
     return awr->awar(AW_get_color_group_name_awarname(color_group))->read_string();
 }
 
-void AW_color_group_name_changed_cb(AW_root *) {
+static void AW_color_group_name_changed_cb(AW_root *) {
     AW_advice("To activate the new names for color groups you have to\n"
               "save properties and restart the program.",
               AW_ADVICE_TOGGLE, "Color group name has been changed", 0);
 }
-void AW_color_group_usage_changed_cb(AW_root *awr, AW_CL /* cl_ntw */) {
+static void AW_color_group_usage_changed_cb(AW_root *awr, AW_CL /* cl_ntw */) {
     use_color_groups       = awr->awar(AWAR_COLOR_GROUPS_USE)->read_int();
     //     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
     //     ntw->refresh();
     // @@@ FIXME: a working refresh is missing
 }
 
-void AW_init_color_groups(AW_root *awr, AW_default def) {
+static void AW_init_color_groups(AW_root *awr, AW_default def) {
     if (!color_groups_initialized) {
         AW_awar *useAwar = awr->awar_int(AWAR_COLOR_GROUPS_USE, 1, def);
         use_color_groups = useAwar->read_int();
@@ -843,7 +843,7 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
 
             if (gcp.select_color) {
                 aws->button_length(5);
-                AW_preset_create_color_chooser(aws, awar_name, id);
+                AW_preset_create_color_chooser(aws, awar_name, id, false, false);
             }
             aws->create_input_field(awar_name, 7);
 
@@ -890,7 +890,7 @@ struct attached_window {
     struct attached_window *next;
 };
 
-void AW_create_gc_color_groups_name_window(AW_window * /* aww */, AW_CL cl_aw_root, AW_CL cl_gcmgr) {
+static void AW_create_gc_color_groups_name_window(AW_window * /* aww */, AW_CL cl_aw_root, AW_CL cl_gcmgr) {
     AW_root *aw_root = (AW_root*)cl_aw_root;
     static struct attached_window *head = 0;
 
@@ -938,7 +938,7 @@ void AW_create_gc_color_groups_name_window(AW_window * /* aww */, AW_CL cl_aw_ro
     aws->activate();
 }
 
-void AW_create_gc_color_groups_window(AW_window * /* aww */, AW_CL cl_aw_root, AW_CL cl_gcmgr) {
+static void AW_create_gc_color_groups_window(AW_window * /* aww */, AW_CL cl_aw_root, AW_CL cl_gcmgr) {
     aw_assert(color_groups_initialized);
 
     AW_root       *aw_root = (AW_root*)cl_aw_root;

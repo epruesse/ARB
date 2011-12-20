@@ -250,25 +250,7 @@ static void Build2DMipmaps(GLint components, GLint width, GLint height, GLenum f
     free(d);
 }
 
-int APIENTRY pngLoadRaw(const char *filename, pngRawInfo *pinfo) {
-    int result;
-    FILE *fp = fopen(filename, "rb");
-    if (fp == NULL) return 0;
-
-    result = pngLoadRawF(fp, pinfo);
-
-    if (fclose(fp) != 0) {
-        if (result) {
-            free(pinfo->Data);
-            free(pinfo->Palette);
-        }
-        return 0;
-    }
-
-    return result;
-}
-
-int APIENTRY pngLoadRawF(FILE *fp, pngRawInfo *pinfo) {
+static int APIENTRY pngLoadRawF(FILE *fp, pngRawInfo *pinfo) {
     unsigned char header[8];
     png_structp png;
     png_infop   info;
@@ -362,19 +344,25 @@ int APIENTRY pngLoadRawF(FILE *fp, pngRawInfo *pinfo) {
     return 1;
 }
 
-int APIENTRY pngLoad(const char *filename, int mipmap, int trans, pngInfo *pinfo) {
+static int APIENTRY pngLoadRaw(const char *filename, pngRawInfo *pinfo) {
     int result;
     FILE *fp = fopen(filename, "rb");
     if (fp == NULL) return 0;
 
-    result = pngLoadF(fp, mipmap, trans, pinfo);
+    result = pngLoadRawF(fp, pinfo);
 
-    if (fclose(fp) != 0) return 0;
+    if (fclose(fp) != 0) {
+        if (result) {
+            free(pinfo->Data);
+            free(pinfo->Palette);
+        }
+        return 0;
+    }
 
     return result;
 }
 
-int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
+static int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
     GLint pack, unpack;
     unsigned char header[8];
     png_structp png;
@@ -665,6 +653,18 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
     return 1;
 }
 
+static int APIENTRY pngLoad(const char *filename, int mipmap, int trans, pngInfo *pinfo) {
+    int result;
+    FILE *fp = fopen(filename, "rb");
+    if (fp == NULL) return 0;
+
+    result = pngLoadF(fp, mipmap, trans, pinfo);
+
+    if (fclose(fp) != 0) return 0;
+
+    return result;
+}
+
 static unsigned int SetParams(int wrapst, int magfilter, int minfilter) {
     unsigned int id;
 
@@ -688,7 +688,7 @@ unsigned int APIENTRY pngBind(const char *filename, int mipmap, int trans, pngIn
     return 0;
 }
 
-unsigned int APIENTRY pngBindF(FILE *file, int mipmap, int trans, pngInfo *info, int wrapst, int minfilter, int magfilter) {
+static unsigned int APIENTRY pngBindF(FILE *file, int mipmap, int trans, pngInfo *info, int wrapst, int minfilter, int magfilter) {
     unsigned int id = SetParams(wrapst, magfilter, minfilter);
 
     if (id != 0 && pngLoadF(file, mipmap, trans, info))
@@ -696,18 +696,18 @@ unsigned int APIENTRY pngBindF(FILE *file, int mipmap, int trans, pngInfo *info,
     return 0;
 }
 
-void APIENTRY pngSetStencil(unsigned char red, unsigned char green, unsigned char blue) {
+static void APIENTRY pngSetStencil(unsigned char red, unsigned char green, unsigned char blue) {
     StencilRed = red, StencilGreen = green, StencilBlue = blue;
 }
 
-void APIENTRY pngSetAlphaCallback(unsigned char (*callback)(unsigned char red, unsigned char green, unsigned char blue)) {
+static void APIENTRY pngSetAlphaCallback(unsigned char (*callback)(unsigned char red, unsigned char green, unsigned char blue)) {
     if (callback == NULL)
         AlphaCallback = DefaultAlphaCallback;
     else
         AlphaCallback = callback;
 }
 
-void APIENTRY pngSetViewingGamma(double viewingGamma) {
+static void APIENTRY pngSetViewingGamma(double viewingGamma) {
     if (viewingGamma > 0) {
         gammaExplicit = 1;
         screenGamma = 2.2/viewingGamma;
@@ -718,6 +718,6 @@ void APIENTRY pngSetViewingGamma(double viewingGamma) {
     }
 }
 
-void APIENTRY pngSetStandardOrientation(int standardorientation) {
+static void APIENTRY pngSetStandardOrientation(int standardorientation) {
     StandardOrientation = standardorientation;
 }

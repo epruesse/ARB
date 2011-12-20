@@ -28,11 +28,9 @@
 
 // ------------------------------------------------------------
 
-void awt_set_long(AW_window *aws, AW_CL varname, AW_CL value);      // set an awar
 void awt_set_string(AW_window *aws, AW_CL varname, AW_CL value);    // set an awar
 
 void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, const char *title=0);
-void AWT_write_file(const char *filename, const char *file);
 void AWT_show_file(AW_root *awr, const char *filename);
 
 // open database viewer using input-mask-file
@@ -71,7 +69,6 @@ const awt_input_mask_descriptor *AWT_look_input_mask(int id); // id starts with 
 // database browser :
 void AWT_create_db_browser_awars(AW_root *aw_root, AW_default aw_def);
 void AWT_announce_db_to_browser(GBDATA *gb_main, const char *description);
-void AWT_announce_properties_to_browser(GBDATA *gb_defaults, const char *defaults_name);
 void AWT_browser_forget_db(GBDATA *gb_main);
 
 void AWT_create_debug_menu(AW_window *awmm);

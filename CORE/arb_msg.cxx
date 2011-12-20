@@ -155,7 +155,7 @@ const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char
     return buffer;
 }
 
-size_t GBS_last_global_string_size() {
+static size_t GBS_last_global_string_size() {
     return last_global_string_size;
 }
 
@@ -372,14 +372,14 @@ GB_ERROR GB_append_exportedError(GB_ERROR error) {
 // ---------------------
 //      Backtracing
 
-class BackTraceInfo *GBK_get_backtrace(size_t skipFramesAtBottom) {
+static class BackTraceInfo *GBK_get_backtrace(size_t skipFramesAtBottom) {
     return new BackTraceInfo(skipFramesAtBottom);
 }
-void GBK_dump_former_backtrace(class BackTraceInfo *trace, FILE *out, const char *message) {
+static void GBK_dump_former_backtrace(class BackTraceInfo *trace, FILE *out, const char *message) {
     demangle_backtrace(*trace, out, message);
 }
 
-void GBK_free_backtrace(class BackTraceInfo *trace) {
+static void GBK_free_backtrace(class BackTraceInfo *trace) {
     delete trace;
 }
 

@@ -28,7 +28,6 @@
 // to create new experiments:
 #define AWAR_EXPERIMENT_DEST "tmp/experiment/dest"
 
-AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_main);
 void EXP_popup_experiment_window(AW_window *aww, AW_CL cl_gb_main, AW_CL);
 
 #else

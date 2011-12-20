@@ -24,12 +24,12 @@
 /****************************************************************************
 *  GLOBAL VARIABLES, ESSENTIAL FOR THE ARB CONNECTION
 ****************************************************************************/
-GBDATA *global_gbData= NULL;
-GBDATA *global_gbConfig= NULL;
-int global_ARB_connections= 0;
-bool global_ARB_lock= false;
-bool global_ARB_available= false;
-bool global_CONFIG_available= false;
+static GBDATA *global_gbData= NULL;
+static GBDATA *global_gbConfig= NULL;
+static int global_ARB_connections= 0;
+static bool global_ARB_lock= false;
+static bool global_ARB_available= false;
+static bool global_CONFIG_available= false;
 
 
 /****************************************************************************
@@ -157,7 +157,7 @@ bool ARB_commit_transaction()
 /****************************************************************************
 *  REQUEST ARB CONNECTION STATE
 ****************************************************************************/
-bool ARB_connected() { return global_ARB_available; }
+static bool ARB_connected() { return global_ARB_available; }
 
 
 /****************************************************************************
@@ -170,7 +170,7 @@ GBDATA *get_gbData() { return global_gbData; }
 *  FIND ARB SPECIES ENTRY BY SPECIES NAME (CHAR *)
 ****************************************************************************/
 
-GBDATA *find_species(char *name) {
+static GBDATA *find_species(char *name) {
     GBDATA *gb_species = 0;
 
     if (name) {
@@ -184,21 +184,7 @@ GBDATA *find_species(char *name) {
 /****************************************************************************
 *  FIND GENOME ENTRY BY SPECIES NAME AND EXPERIMENT NAME
 ****************************************************************************/
-GBDATA *find_genome(char *sp_name)
-{
-    if(!sp_name) return NULL;
-
-    GBDATA *gb_sp_entry= find_species(sp_name);
-    if(!gb_sp_entry) return NULL;
-
-    return find_genome(gb_sp_entry);
-}
-
-
-/****************************************************************************
-*  FIND GENOME ENTRY BY SPECIES NAME AND EXPERIMENT NAME
-****************************************************************************/
-GBDATA *find_genome(GBDATA *gb_sp_entry)
+static GBDATA *find_genome(GBDATA *gb_sp_entry)
 {
     GBDATA *gb_gene_data= NULL;
 
@@ -215,6 +201,35 @@ GBDATA *find_genome(GBDATA *gb_sp_entry)
 
 
 /****************************************************************************
+*  FIND GENOME ENTRY BY SPECIES NAME AND EXPERIMENT NAME
+****************************************************************************/
+GBDATA *find_genome(char *sp_name)
+{
+    if(!sp_name) return NULL;
+
+    GBDATA *gb_sp_entry= find_species(sp_name);
+    if(!gb_sp_entry) return NULL;
+
+    return find_genome(gb_sp_entry);
+}
+
+
+/****************************************************************************
+*  FIND ARB EXPERIMENT ENTRY BY ARB SPECIES ENTRY AND EXPERIMENT NAME
+****************************************************************************/
+
+static GBDATA *find_experiment(GBDATA *gb_sp_entry, char *name) {
+    GBDATA *gb_exp = 0;
+
+    if (name) {
+        ARB_begin_transaction();
+        gb_exp = EXP_find_experiment(gb_sp_entry, name);
+        ARB_commit_transaction();
+    }
+    return gb_exp;
+}
+
+/****************************************************************************
 *  FIND ARB EXPERIMENT ENTRY BY SPECIES NAME AND EXPERIMENT NAME
 ****************************************************************************/
 GBDATA *find_experiment(char *sp_name, char *name)
@@ -225,21 +240,6 @@ GBDATA *find_experiment(char *sp_name, char *name)
     return find_experiment(gb_sp_entry, name);
 }
 
-
-/****************************************************************************
-*  FIND ARB EXPERIMENT ENTRY BY ARB SPECIES ENTRY AND EXPERIMENT NAME
-****************************************************************************/
-
-GBDATA *find_experiment(GBDATA *gb_sp_entry, char *name) {
-    GBDATA *gb_exp = 0;
-
-    if (name) {
-        ARB_begin_transaction();
-        gb_exp = EXP_find_experiment(gb_sp_entry, name);
-        ARB_commit_transaction();
-    }
-    return gb_exp;
-}
 
 /****************************************************************************
 *  FIND ARB PROTEOME ENTRY BY SPECIES, EXPERIMENT AND PROTEOME NAME
@@ -553,7 +553,7 @@ void getEntryNamesList(Widget list, bool clear= false)
 /****************************************************************************
 *  CHECK AWAR PATH AND CREATE MISSING ENTRIES
 ****************************************************************************/
-bool check_create_AWAR(GBDATA *gb_data, const char *AWAR_path, bool transaction)
+static bool check_create_AWAR(GBDATA *gb_data, const char *AWAR_path, bool transaction)
 {
     // DO WE HAVE A STRING?
     if(AWAR_path == NULL) return false;
@@ -636,7 +636,7 @@ bool check_create_AWAR(GBDATA *gb_data, const char *AWAR_path, bool transaction)
 /****************************************************************************
 *  UPDATES THE CONTENT OF AN AWAR
 ****************************************************************************/
-void set_AWAR(const char *AWAR_path, char *content)
+static void set_AWAR(const char *AWAR_path, char *content)
 {
     GBDATA *gb_data= get_gbData();
 
@@ -657,7 +657,7 @@ void set_AWAR(const char *AWAR_path, char *content)
 /****************************************************************************
 *  FETCH THE CONTENT OF AN AWAR
 ****************************************************************************/
-char *get_AWAR(const char *AWAR_path)
+static char *get_AWAR(const char *AWAR_path)
 {
     char *content;
 
@@ -727,7 +727,7 @@ char *get_experiment_AWAR() { return get_AWAR(AWAR_EXPERIMENT_NAME); }
 char *get_proteom_AWAR() { return get_AWAR(AWAR_PROTEOM_NAME); }
 char *get_protein_AWAR() { return get_AWAR(AWAR_PROTEIN_NAME); }
 char *get_gene_AWAR() { return get_AWAR(AWAR_GENE_NAME); }
-char *get_config_AWAR() { return get_AWAR(AWAR_CONFIG_CHANGED); }
+static char *get_config_AWAR() { return get_AWAR(AWAR_CONFIG_CHANGED); }
 
 
 /****************************************************************************

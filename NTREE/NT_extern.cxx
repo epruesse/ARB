@@ -68,18 +68,18 @@ AW_window *AP_open_cprofile_window(AW_root *root);
 
 AW_window *create_tree_window(AW_root *aw_root, AWT_graphic *awd);
 
-void nt_test_ascii_print(AW_window *aww) {
+static void nt_test_ascii_print(AW_window *aww) {
     AWT_create_ascii_print_window(aww->get_root(), "hello world", "Just a test");
 }
 
-void nt_changesecurity(AW_root *aw_root) {
+static void nt_changesecurity(AW_root *aw_root) {
     int level = aw_root->awar(AWAR_SECURITY_LEVEL)->read_int();
     GB_push_transaction(GLOBAL_gb_main);
     GB_change_my_security(GLOBAL_gb_main, level);
     GB_pop_transaction(GLOBAL_gb_main);
 }
 
-void export_nds_cb(AW_window *aww, AW_CL print_flag) {
+static void export_nds_cb(AW_window *aww, AW_CL print_flag) {
     GB_transaction  dummy(GLOBAL_gb_main);
     GBDATA         *gb_species;
     const char     *buf;
@@ -113,7 +113,7 @@ void export_nds_cb(AW_window *aww, AW_CL print_flag) {
     free(name);
 }
 
-AW_window *create_nds_export_window(AW_root *root) {
+static AW_window *create_nds_export_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "EXPORT_NDS_OF_MARKED", "EXPORT NDS OF MARKED SPECIES");
     aws->load_xfig("sel_box_nds.fig");
@@ -151,7 +151,7 @@ AW_window *create_nds_export_window(AW_root *root) {
     return aws;
 }
 
-void create_export_nds_awars(AW_root *awr, AW_default def)
+static void create_export_nds_awars(AW_root *awr, AW_default def)
 {
     AW_create_fileselection_awars(awr, AWAR_EXPORT_NDS, "", ".nds", "export.nds", def);
     awr->awar_int(AWAR_EXPORT_NDS_SEPARATOR, NDS_OUTPUT_SPACE_PADDED, def);
@@ -245,7 +245,7 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
 }
 
 
-void nt_exit(AW_window *aws) {
+static void nt_exit(AW_window *aws) {
     if (GLOBAL_gb_main) {
         if (GB_read_clients(GLOBAL_gb_main)>=0) {
             if (GB_read_clock(GLOBAL_gb_main) > GB_last_saved_clock(GLOBAL_gb_main)) {
@@ -290,7 +290,7 @@ void nt_exit(AW_window *aws) {
     exit(0);
 }
 
-void NT_save_cb(AW_window *aww) {
+static void NT_save_cb(AW_window *aww) {
     char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
     GB_ERROR error = GB_save(GLOBAL_gb_main, filename, "b");
     delete filename;
@@ -299,7 +299,7 @@ void NT_save_cb(AW_window *aww) {
 }
 
 
-void NT_save_quick_cb(AW_window *aww) {
+static void NT_save_quick_cb(AW_window *aww) {
     char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
     GB_ERROR error = GB_save_quick(GLOBAL_gb_main, filename);
     free(filename);
@@ -307,7 +307,7 @@ void NT_save_quick_cb(AW_window *aww) {
     else AW_refresh_fileselection(aww->get_root(), "tmp/nt/arbdb");
 }
 
-void NT_save_quick_as_cb(AW_window *aww) {
+static void NT_save_quick_as_cb(AW_window *aww) {
     char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
 
     GB_ERROR error = GB_save_quick_as(GLOBAL_gb_main, filename);
@@ -316,7 +316,7 @@ void NT_save_quick_as_cb(AW_window *aww) {
 
     free(filename);
 }
-void NT_save_as_cb(AW_window *aww) {
+static void NT_save_as_cb(AW_window *aww) {
     char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
     char *filetype = aww->get_root()->awar(AWAR_DB_TYPE)->read_string();
 
@@ -328,7 +328,7 @@ void NT_save_as_cb(AW_window *aww) {
     free(filename);
 }
 
-AW_window *NT_create_save_quick_as(AW_root *aw_root, char *base_name)
+static AW_window *NT_create_save_quick_as(AW_root *aw_root, char *base_name)
 {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
@@ -355,7 +355,7 @@ AW_window *NT_create_save_quick_as(AW_root *aw_root, char *base_name)
     return aws;
 }
 
-void NT_database_optimization(AW_window *aww) {
+static void NT_database_optimization(AW_window *aww) {
     arb_progress progress("Optimizing database", 2);
 
     GB_push_my_security(GLOBAL_gb_main);
@@ -390,7 +390,7 @@ void NT_database_optimization(AW_window *aww) {
     aww->hide_or_notify(error);
 }
 
-AW_window *NT_create_database_optimization_window(AW_root *aw_root) {
+static AW_window *NT_create_database_optimization_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
     GB_transaction dummy(GLOBAL_gb_main);
@@ -419,7 +419,7 @@ AW_window *NT_create_database_optimization_window(AW_root *aw_root) {
     return aws;
 }
 
-AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name)
+static AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name)
 {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
@@ -459,7 +459,7 @@ AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name)
     return aws;
 }
 
-void NT_undo_cb(AW_window *, AW_CL undo_type, AW_CL ntw) {
+static void NT_undo_cb(AW_window *, AW_CL undo_type, AW_CL ntw) {
     GB_ERROR error = GB_undo(GLOBAL_gb_main, (GB_UNDO_TYPE)undo_type);
     if (error) aw_message(error);
     else {
@@ -468,7 +468,7 @@ void NT_undo_cb(AW_window *, AW_CL undo_type, AW_CL ntw) {
     }
 }
 
-void NT_undo_info_cb(AW_window *, AW_CL undo_type) {
+static void NT_undo_info_cb(AW_window *, AW_CL undo_type) {
     char *undo_info = GB_undo_info(GLOBAL_gb_main, (GB_UNDO_TYPE)undo_type);
     if (undo_info) {
         aw_message(undo_info);
@@ -502,7 +502,7 @@ static void tree_setting_restore_config(AW_window *aww, const char *stored_strin
     cdef.write(stored_string);
 }
 
-AW_window *NT_create_tree_setting(AW_root *aw_root)
+static AW_window *NT_create_tree_setting(AW_root *aw_root)
 {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
@@ -671,7 +671,7 @@ static char *get_system_info(bool extended) {
     return GBS_strclose(info);
 }
 
-void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base) {
+static void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base) {
     char     *mail_file;
     char     *mail_name = GB_unique_filename("arb_bugreport", "txt");
     FILE     *mail      = GB_fopen_tempfile(mail_name, "wt", &mail_file);
@@ -706,7 +706,7 @@ void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base) {
 }
 
 
-AW_window *NT_submit_bug(AW_root *aw_root, int bug_report) {
+static AW_window *NT_submit_bug(AW_root *aw_root, int bug_report) {
     static AW_window_simple *awss[2] = { 0, 0 };
     if (awss[bug_report]) return (AW_window *)awss[bug_report];
 
@@ -797,12 +797,12 @@ AW_window *NT_submit_bug(AW_root *aw_root, int bug_report) {
     return aws;
 }
 
-void NT_focus_cb(AW_window */*aww*/) {
+static void NT_focus_cb(AW_window */*aww*/) {
     GB_transaction dummy(GLOBAL_gb_main);
 }
 
 
-void NT_modify_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
+static void NT_modify_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
 {
     AWT_canvas *canvas = (AWT_canvas*)cd1;
     AW_window  *aws    = DBUI::create_species_info_window(aww->get_root(), (AW_CL)canvas->gb_main);
@@ -810,12 +810,12 @@ void NT_modify_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
     nt_mode_event(aww, canvas, (AWT_COMMAND_MODE)cd2);
 }
 
-void NT_primer_cb() {
+static void NT_primer_cb() {
     GB_ERROR error = GB_xcmd("arb_primer", true, false);
     if (error) aw_message(error);
 }
 
-void NT_mark_degenerated_branches(AW_window *aww, AW_CL ntwcl) {
+static void NT_mark_degenerated_branches(AW_window *aww, AW_CL ntwcl) {
     char *val = aw_input("Enter degeneration factor [ 1 .. ]");
     if (val) {
         AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
@@ -830,7 +830,7 @@ void NT_mark_degenerated_branches(AW_window *aww, AW_CL ntwcl) {
     }
 }
 
-void NT_mark_deep_branches(AW_window *aww, AW_CL ntwcl) {
+static void NT_mark_deep_branches(AW_window *aww, AW_CL ntwcl) {
     char *val = aw_input("Enter depth [ 1 .. ]");
     if (val) {
         AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
@@ -845,7 +845,7 @@ void NT_mark_deep_branches(AW_window *aww, AW_CL ntwcl) {
     }
 }
 
-void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl) {
+static void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl) {
     char *val = aw_input("Enter min.rel.diff.(%),min.abs.diff");
     if (val) {
         GB_ERROR  error = 0;
@@ -870,7 +870,7 @@ void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl) {
     }
 }
 
-void NT_mark_duplicates(AW_window *aww, AW_CL ntwcl) {
+static void NT_mark_duplicates(AW_window *aww, AW_CL ntwcl) {
     AWT_canvas *ntw = (AWT_canvas *)ntwcl;
     GB_transaction dummy(ntw->gb_main);
     NT_mark_all_cb(aww, (AW_CL)ntw, (AW_CL)0);
@@ -880,7 +880,7 @@ void NT_mark_duplicates(AW_window *aww, AW_CL ntwcl) {
     ntw->refresh();
 }
 
-void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL) {
+static void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL) {
     AWT_canvas     *ntw       = (AWT_canvas *)cl_ntw;
     GB_transaction  dummy(ntw->gb_main);
     AP_tree        *tree_root = AWT_TREE(ntw)->get_root_node();
@@ -894,7 +894,7 @@ void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL) {
     }
 }
 
-void NT_fix_database(AW_window *) {
+static void NT_fix_database(AW_window *) {
     GB_ERROR err = 0;
     err = GB_fix_database(GLOBAL_gb_main);
     if (err) aw_message(err);
@@ -917,7 +917,7 @@ static void relink_pseudo_species_to_organisms(GBDATA *&ref_gb_node, char *&ref_
     }
 }
 
-void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl) {
+static void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl) {
     AWT_canvas     *ntw       = (AWT_canvas *)ntwcl;
     GB_transaction  dummy(ntw->gb_main);
     AP_tree        *tree_root = AWT_TREE(ntw)->get_root_node();
@@ -992,7 +992,7 @@ static AW_window *create_colorize_species_window(AW_root *aw_root) {
     return QUERY::create_colorize_items_window(aw_root, GLOBAL_gb_main, SPECIES_get_selector());
 }
 
-void NT_update_marked_counter(AW_window *aww, long count) {
+static void NT_update_marked_counter(AW_window *aww, long count) {
     const char *buffer = count ? GBS_global_string("%li marked", count) : "";
     aww->get_root()->awar(AWAR_MARKED_SPECIES_COUNTER)->write_string(buffer);
 }
@@ -1006,14 +1006,14 @@ static void nt_auto_count_marked_species(GBDATA*, int* cl_aww, GB_CB_TYPE) {
     nt_count_marked((AW_window*)cl_aww);
 }
 
-void NT_popup_species_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
+static void NT_popup_species_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
     // used to avoid that the species info window is stored in a menu (or with a button)
     DBUI::create_species_info_window(aww->get_root(), cl_gb_main)->activate();
 }
 
 // --------------------------------------------------------------------------------------------------
 
-void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
+static void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
     GBDATA               *gb_main = (GBDATA*)cl_gb_main;
     GBT_TREE_REMOVE_TYPE  mode    = (GBT_TREE_REMOVE_TYPE)cl_mode;
 

@@ -28,7 +28,7 @@ AW_var_target::AW_var_target(void* pntr, AW_var_target *nexti) {
     pointer = pntr;
 }
 
-void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, int *cl) {
+static void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, int *cl) {
     AW_awar *awar = (AW_awar *)cl;
 
     if (awar->gb_origin == gbd) {
@@ -44,18 +44,18 @@ void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, int *cl) {
     awar->update();
 }
 
-extern "C"
-void AW_var_gbdata_callback(GBDATA *, int *cl, GB_CB_TYPE) {
+// extern "C"
+static void AW_var_gbdata_callback(GBDATA *, int *cl, GB_CB_TYPE) {
     AW_awar *awar = (AW_awar *)cl;
     awar->update();
 }
 
-extern "C"
-void AW_var_gbdata_callback_delete(GBDATA *gbd, int *cl, GB_CB_TYPE) {
+// extern "C"
+static void AW_var_gbdata_callback_delete(GBDATA *gbd, int *cl, GB_CB_TYPE) {
     AW_var_gbdata_callback_delete_intern(gbd, cl);
 }
 
-GB_ERROR AW_MSG_UNMAPPED_AWAR = "Error (unmapped AWAR):\n"
+static GB_ERROR AW_MSG_UNMAPPED_AWAR = "Error (unmapped AWAR):\n"
     "You cannot write to this field because it is either deleted or\n"
     "unmapped. Try to select a different item, reselect this and retry.";
 
@@ -257,7 +257,7 @@ bool AW_awar::unlink_from_DB(GBDATA *gb_main) {
     return make_zombie;
 }
 
-long AW_unlink_awar_from_DB(const char */*key*/, long cl_awar, void *cl_gb_main) {
+static long AW_unlink_awar_from_DB(const char */*key*/, long cl_awar, void *cl_gb_main) {
     AW_awar *awar    = (AW_awar*)cl_awar;
     GBDATA  *gb_main = (GBDATA*)cl_gb_main;
 

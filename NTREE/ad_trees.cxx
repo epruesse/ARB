@@ -28,9 +28,9 @@
 
 extern GBDATA *GLOBAL_gb_main;
 
-const char *AWAR_TREE_DEST     = "tmp/ad_tree/tree_dest";
-const char *AWAR_TREE_SECURITY = "tmp/ad_tree/tree_security";
-const char *AWAR_TREE_REM      = "tmp/ad_tree/tree_rem";
+static const char *AWAR_TREE_DEST     = "tmp/ad_tree/tree_dest";
+static const char *AWAR_TREE_SECURITY = "tmp/ad_tree/tree_security";
+static const char *AWAR_TREE_REM      = "tmp/ad_tree/tree_rem";
 
 #define AWAR_TREE_EXPORT           "tmp/ad_tree/export_tree"
 #define AWAR_TREE_IMPORT           "tmp/ad_tree/import_tree"
@@ -47,7 +47,7 @@ const char *AWAR_TREE_REM      = "tmp/ad_tree/tree_rem";
 #define AWAR_TREE_EXPORT_QUOTEMODE          AWAR_TREE_EXPORT_SAVE "/quote_mode"
 #define AWAR_TREE_EXPORT_REPLACE            AWAR_TREE_EXPORT_SAVE "/replace"
 
-void tree_vars_callback(AW_root *aw_root) // Map tree vars to display objects
+static void tree_vars_callback(AW_root *aw_root) // Map tree vars to display objects
 {
     if (GLOBAL_gb_main) {
         GB_push_transaction(GLOBAL_gb_main);
@@ -76,7 +76,7 @@ void tree_vars_callback(AW_root *aw_root) // Map tree vars to display objects
     }
 }
 //  update import tree name depending on file name
-void tree_import_callback(AW_root *aw_root) {
+static void tree_import_callback(AW_root *aw_root) {
     GB_transaction  dummy(GLOBAL_gb_main);
     char           *treename        = aw_root->awar(AWAR_TREE_IMPORT "/file_name")->read_string();
     char           *treename_nopath = strrchr(treename, '/');
@@ -96,7 +96,7 @@ void tree_import_callback(AW_root *aw_root) {
 }
 
 
-void ad_tree_set_security(AW_root *aw_root)
+static void ad_tree_set_security(AW_root *aw_root)
 {
     if (GLOBAL_gb_main) {
         GB_transaction dummy(GLOBAL_gb_main);
@@ -129,7 +129,7 @@ enum ExportNodeType {
     AD_TREE_EXPORT_NODE_NDS
 };
 
-void update_filter_cb(AW_root *root) {
+static void update_filter_cb(AW_root *root) {
     const char *filter_type = 0;
 
     switch (ExportTreeType(root->awar(AWAR_TREE_EXPORT_FORMAT)->read_int())) {
@@ -182,7 +182,7 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def)
     tree_vars_callback(aw_root);
 }
 
-void tree_rename_cb(AW_window *aww) {
+static void tree_rename_cb(AW_window *aww) {
     AW_root  *aw_root   = aww->get_root();
     AW_awar  *awar_tree = aw_root->awar(AWAR_TREE_NAME);
     char     *source    = awar_tree->read_string();
@@ -246,7 +246,7 @@ static GB_ERROR tree_append_remark(GBDATA *gb_tree, const char *add_to_remark) {
     return error;
 }
 
-void tree_copy_cb(AW_window *aww) {
+static void tree_copy_cb(AW_window *aww) {
     char     *source = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
     char     *dest   = aww->get_root()->awar(AWAR_TREE_DEST)->read_string();
     GB_ERROR  error  = GBT_check_tree_name(dest);
@@ -333,7 +333,7 @@ static void tree_save_cb(AW_window *aww) {
     free(tree_name);
 }
 
-AW_window *create_tree_export_window(AW_root *root)
+static AW_window *create_tree_export_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "SAVE_TREE", "TREE SAVE");
@@ -393,7 +393,7 @@ AW_window *create_tree_export_window(AW_root *root)
     return aws;
 }
 
-char *readXmlTree(char *fname) {
+static char *readXmlTree(char *fname) {
     // create a temp file
     char tempFile[]  = "newickXXXXXX";
     int createTempFile = mkstemp(tempFile);
@@ -437,7 +437,7 @@ char *readXmlTree(char *fname) {
     }
 }
 
-void tree_load_cb(AW_window *aww) {
+static void tree_load_cb(AW_window *aww) {
     GB_ERROR  error     = 0;
     AW_root  *aw_root   = aww->get_root();
     char     *tree_name = aw_root->awar(AWAR_TREE_IMPORT "/tree_name")->read_string();
@@ -486,7 +486,7 @@ void tree_load_cb(AW_window *aww) {
     free(tree_name);
 }
 
-AW_window *create_tree_import_window(AW_root *root)
+static AW_window *create_tree_import_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "LOAD_TREE", "TREE LOAD");
@@ -522,7 +522,7 @@ AW_window *create_tree_import_window(AW_root *root)
     return (AW_window *)aws;
 }
 
-AW_window *create_tree_rename_window(AW_root *root)
+static AW_window *create_tree_rename_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "RENAME_TREE", "TREE RENAME");
@@ -545,7 +545,7 @@ AW_window *create_tree_rename_window(AW_root *root)
     return (AW_window *)aws;
 }
 
-AW_window *create_tree_copy_window(AW_root *root)
+static AW_window *create_tree_copy_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "COPY_TREE", "TREE COPY");
@@ -568,7 +568,7 @@ AW_window *create_tree_copy_window(AW_root *root)
     return (AW_window *)aws;
 }
 
-void ad_move_tree_info(AW_window *aww, AW_CL mode) {
+static void ad_move_tree_info(AW_window *aww, AW_CL mode) {
     /* mode == 0 -> move info (=overwrite info from source tree)
      * mode == 1 -> compare info
      * mode == 2 -> add info
@@ -610,7 +610,7 @@ void ad_move_tree_info(AW_window *aww, AW_CL mode) {
     free(log_file);
 }
 
-AW_window *create_tree_diff_window(AW_root *root) {
+static AW_window *create_tree_diff_window(AW_root *root) {
     static AW_window_simple *aws = 0;
     if (aws) return aws;
     GB_transaction dummy(GLOBAL_gb_main);
@@ -642,7 +642,7 @@ AW_window *create_tree_diff_window(AW_root *root) {
 
     return aws;
 }
-AW_window *create_tree_cmp_window(AW_root *root) {
+static AW_window *create_tree_cmp_window(AW_root *root) {
     static AW_window_simple *aws = 0;
     if (aws) return aws;
     GB_transaction dummy(GLOBAL_gb_main);
@@ -680,7 +680,7 @@ AW_window *create_tree_cmp_window(AW_root *root) {
 
     return aws;
 }
-void ad_tr_delete_cb(AW_window *aww) {
+static void ad_tr_delete_cb(AW_window *aww) {
     AW_awar *awar_tree = aww->get_root()->awar(AWAR_TREE_NAME);
     char    *name      = awar_tree->read_string();
 
@@ -745,7 +745,7 @@ static void create_tree_last_window(AW_window *aww) {
     free(source);
 }
 
-void move_tree_pos(AW_window *aww, AW_CL cl_offset) {
+static void move_tree_pos(AW_window *aww, AW_CL cl_offset) {
     // moves the tree in the list of trees
     int   offset = (int)cl_offset;
 

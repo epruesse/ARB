@@ -22,7 +22,7 @@
 /****************************************************************************
 *  CALLBACK FUNCTION (FROM THE WINDOW CLOSE CALLBACK)
 ****************************************************************************/
-void staticWindowCloseCallback(Widget, XtPointer clientData, XtPointer)
+static void staticWindowCloseCallback(Widget, XtPointer clientData, XtPointer)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     MDialog *md= (MDialog *)clientData;

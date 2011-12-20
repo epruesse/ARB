@@ -32,7 +32,7 @@
 static const char *err_connection_problems = "CONNECTION PROBLEMS";
 
 int   aisc_core_on_error = 1;
-char *aisc_error;
+static char *aisc_error;
 
 #define CORE()                                                  \
     do {                                                        \
@@ -43,13 +43,13 @@ char *aisc_error;
 
 aisc_com *aisc_client_link;
 
-int aisc_print_error_to_stderr = 1;
+static int aisc_print_error_to_stderr = 1;
 static char errbuf[300];
 
 #define PRTERR(msg) if (aisc_print_error_to_stderr) fprintf(stderr, "%s: %s\n", msg, link->error);
 
 
-int aisc_c_read(int socket, char *ptr, long size)
+static int aisc_c_read(int socket, char *ptr, long size)
 {
     long        leftsize, readsize;
     leftsize = size;
@@ -63,7 +63,7 @@ int aisc_c_read(int socket, char *ptr, long size)
     return size;
 }
 
-int aisc_c_write(int socket, const char *ptr, int size) {
+static int aisc_c_write(int socket, const char *ptr, int size) {
     int leftsize, writesize;
     leftsize = size;
     writesize = 0;
@@ -99,7 +99,7 @@ static void aisc_c_add_to_bytes_queue(aisc_com *link, char *data, int size)
     }
 }
 
-int aisc_c_send_bytes_queue(aisc_com *link) {
+static int aisc_c_send_bytes_queue(aisc_com *link) {
     int len;
     aisc_bytes_list *bl, *bl_next;
     for (bl = link->aisc_client_bytes_first; bl; bl=bl_next) {
@@ -121,7 +121,7 @@ struct client_msg_queue {
     char             *message;
 };
 
-int aisc_add_message_queue(aisc_com *link, long size)
+static int aisc_add_message_queue(aisc_com *link, long size)
 {
     client_msg_queue *msg    = (client_msg_queue *) calloc(sizeof(client_msg_queue), 1);
     char             *buffer = (char *)calloc(sizeof(char), (size_t)size);
@@ -147,7 +147,7 @@ int aisc_add_message_queue(aisc_com *link, long size)
     return 0;
 }
 
-int aisc_check_error(aisc_com * link)
+static int aisc_check_error(aisc_com * link)
 {
     int         len;
     long        magic_number;
@@ -202,7 +202,7 @@ int aisc_check_error(aisc_com * link)
     return 0;
 }
 
-const char *aisc_client_get_m_id(const char *path, char **m_name, int *id) {
+static const char *aisc_client_get_m_id(const char *path, char **m_name, int *id) {
     // Warning: duplicated in server.c@aisc_get_m_id 
     char           *p;
     char           *mn;
@@ -347,7 +347,7 @@ static const char *aisc_client_open_socket(const char *path, int delay, int do_c
     }
 }
 
-void *aisc_init_client(aisc_com *link)
+static void *aisc_init_client(aisc_com *link)
 {
     int len, mes_cnt;
     mes_cnt = 2;
@@ -427,7 +427,7 @@ int aisc_close(aisc_com *link) {
 }
 
 
-int aisc_get_message(aisc_com *link)
+static int aisc_get_message(aisc_com *link)
 {
     int anz, len;
     long        size, magic_number;
@@ -849,7 +849,7 @@ int aisc_create(aisc_com *link, int father_type, long father,
     return 0;
 }
 
-int aisc_copy(aisc_com *link, int s_type, long source, int father_type,
+static int aisc_copy(aisc_com *link, int s_type, long source, int father_type,
                 long father, int attribute, int object_type, long *object, ...)
 {
     // goes to header: __ATTR__SENTINEL
@@ -900,7 +900,7 @@ int aisc_copy(aisc_com *link, int s_type, long source, int father_type,
 
 
 
-int aisc_delete(aisc_com *link, int object_type, long source)
+static int aisc_delete(aisc_com *link, int object_type, long source)
 {
     int len, mes_cnt;
 
@@ -919,7 +919,7 @@ int aisc_delete(aisc_com *link, int object_type, long source)
 }
 
 
-int aisc_find(aisc_com *link,
+static int aisc_find(aisc_com *link,
               int father_type,
               long      father,
               int       attribute,

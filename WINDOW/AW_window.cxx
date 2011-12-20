@@ -1027,7 +1027,7 @@ bool AW_window::get_mouse_pos(int& x, int& y) {
     return ok;
 }
 
-int is_resize_event(Display *display, XEvent *event, XPointer) {
+static int is_resize_event(Display *display, XEvent *event, XPointer) {
     // Predicate function: checks, if the given event is a ResizeEvent
     if (event && (event->type == ResizeRequest || event->type
             == ConfigureNotify) && event->xany.display == display) {
@@ -1036,7 +1036,7 @@ int is_resize_event(Display *display, XEvent *event, XPointer) {
     return 0;
 }
 
-void cleanupResizeEvents(Display *display) {
+static void cleanupResizeEvents(Display *display) {
     // Removes redundant resize events from the x-event queue
     if (display) {
         XLockDisplay(display);
@@ -1712,7 +1712,7 @@ static void aw_window_destroy_cb(Widget,  AW_window *aww, XmAnyCallbackStruct *)
     aww->hide();
 }
 
-void aw_update_window_geometry_awars(AW_window *aww) {
+static void aw_update_window_geometry_awars(AW_window *aww) {
     AW_window_Motif *motif = p_aww(aww);
 
     short          posx, posy;
@@ -1783,7 +1783,7 @@ static Pixmap getIcon(Screen *screen, const char *iconName, Pixel foreground, Pi
     return pixmap;
 }
 
-void aw_set_delete_window_cb(AW_window *aww, Widget shell, bool allow_close) {
+static void aw_set_delete_window_cb(AW_window *aww, Widget shell, bool allow_close) {
     Atom WM_DELETE_WINDOW = XmInternAtom(XtDisplay(shell), (char*)"WM_DELETE_WINDOW", False);
 
     // remove any previous callbacks

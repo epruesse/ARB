@@ -336,7 +336,6 @@ typedef std::list<gene_struct>                          gene_struct_list;
 typedef std::set<const gene_struct *, ltByInternalName> gene_struct_index_internal;
 typedef std::set<const gene_struct *, ltByArbName>      gene_struct_index_arb;
 
-extern gene_struct_list           all_gene_structs; // stores all gene_structs
 extern gene_struct_index_arb      gene_struct_arb2internal; // sorted by arb species+gene name
 extern gene_struct_index_internal gene_struct_internal2arb; // sorted by internal name
 

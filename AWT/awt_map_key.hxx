@@ -22,9 +22,10 @@ class ed_key {
 public:
     ed_key();
 
-    char        map_key(char) const;
-    void        create_awars(AW_root *root);
-    friend void ed_rehash_mapping(AW_root *awr, ed_key *ek);
+    char map_key(char) const;
+    void create_awars(AW_root *root);
+
+    void rehash_mapping(AW_root *awr);
 };
 
 AW_window *create_key_map_window(AW_root *root);

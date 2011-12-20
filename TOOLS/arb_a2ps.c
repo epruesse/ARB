@@ -242,28 +242,12 @@ typedef enum { BOLD, NORMAL } WEIGHT;           // font weights
 /*
  * Function declarations.
  */
-#ifdef __STDC__
-// Function prototypes
-void usage(int failure);
-void set_global_option(char *arg);
-void set_positional_option(char *arg);
-int mygetc(int *statusp);
-int is_binaryfile(char *name);
-void cut_filename(char *old_name, char *new_name);
-int printchar(unsigned char c);
-void skip_page();
-int fold_line(char *name);
-int cut_line();
-void printpage();
-void startpage();
-void cleanup();
-void endpage();
-void print_page_prologue(int side);
-void init_file_printing(char *name, char *title);
-void print_file(char *name, char *header);
-void print_prologue();
-void print_standard_prologue(char *datestring);
-int main(int argc, char *argv[]);
+
+static void print_page_prologue(int side);
+static void print_standard_prologue(char *datestring);
+static void startpage();
+static void endpage();
+
 #if defined(SYSV) || defined(BSD)
 char *getlogin();
 #endif
@@ -271,91 +255,74 @@ char *getlogin();
 int   gethostname(char *name, int namelen);
 #endif
 
-#else
-// Only forward declarations
-int is_binaryfile();
-void print_standard_prologue();
-void startpage();
-void endpage();
-void print_page_prologue();
-#if defined(SYSV) || defined(BSD)
-char *getlogin();
-#endif
-#if defined(BSD)
-int gethostname();
-#endif
-
-#endif
-
-
 /*
  * Flags related to options.
  */
-int numbering = FALSE;          // Line numbering option
-int folding = TRUE;             // Line folding option
-int restart = FALSE;            // Don't restart page number after each file
-int only_printable = FALSE;     // Replace non printable char by space
-int interpret = TRUE;           // Interpret TAB, FF and BS chars option
-int print_binaries = FALSE;     // Force printing for binary files
-int landscape = TRUE;           // Otherwise portrait format sheets
-int new_landscape = TRUE;       // To scrute changes of landscape option
-int twinpages = TRUE;           // 2 pages per sheet if true, 1 otherwise
-int new_twinpages = TRUE;       // To scrute changes of twinpages option
-int twinfiles = FALSE;          // Allow 2 files per sheet
-int no_header = FALSE;          // TRUE if user doesn't want the header
-int no_border = FALSE;          // Don't print the surrounding border ?
-int printdate = FALSE;          // Print current date as footnote
-int filename_footer = TRUE;     // Print file name at bottom of page
-int no_summary = FALSE;         // Quiet mode?
-WEIGHT fontweight = NORMAL;     // Control font weight: BOLD or NORMAL
-WEIGHT new_fontweight = NORMAL; // To scrute changes of bold option
+static int numbering = FALSE;          // Line numbering option
+static int folding = TRUE;             // Line folding option
+static int restart = FALSE;            // Don't restart page number after each file
+static int only_printable = FALSE;     // Replace non printable char by space
+static int interpret = TRUE;           // Interpret TAB, FF and BS chars option
+static int print_binaries = FALSE;     // Force printing for binary files
+static int landscape = TRUE;           // Otherwise portrait format sheets
+static int new_landscape = TRUE;       // To scrute changes of landscape option
+static int twinpages = TRUE;           // 2 pages per sheet if true, 1 otherwise
+static int new_twinpages = TRUE;       // To scrute changes of twinpages option
+static int twinfiles = FALSE;          // Allow 2 files per sheet
+static int no_header = FALSE;          // TRUE if user doesn't want the header
+static int no_border = FALSE;          // Don't print the surrounding border ?
+static int printdate = FALSE;          // Print current date as footnote
+static int filename_footer = TRUE;     // Print file name at bottom of page
+static int no_summary = FALSE;         // Quiet mode?
+static WEIGHT fontweight = NORMAL;     // Control font weight: BOLD or NORMAL
+static WEIGHT new_fontweight = NORMAL; // To scrute changes of bold option
 #if defined(SYSV) || defined(BSD)
 int login_id = TRUE;            // Print login ID at top of page
 #endif
 #if LPR_PRINT
-int lpr_print = TRUE;           // Fork a lpr process to do the printing
+static int lpr_print = TRUE;           // Fork a lpr process to do the printing
 #ifdef RECTO_VERSO_PRINTING
 int rectoverso = TWOSIDED_DFLT; // Two-side printing
 #endif
 #endif
-int ISOlatin1 = FALSE;          // Print 8-bit characters?
+static int ISOlatin1 = FALSE;          // Print 8-bit characters?
 
 
 /*
  * Counters of different kinds.
  */
-int column = 0;                 // Column number (in current line)
-int line = 0;                   // Line number (in current page)
-int line_number = 0;            // Source line number
-int pages = 0;                  // Number of logical pages printed
-int sheets = 0;                 // Number of physical pages printed
-int old_pages, old_sheets;      // Value before printing current file
-int sheetside = 0;              // Side of the sheet currently printing
-int linesperpage;               // Lines per page
-int lines_requested = 0;        // Lines per page requested by the user
-int new_linesrequest = 0;       // To scrute new values for lines_requested
-int columnsperline;             // Characters per output line
-int nonprinting_chars, chars;   // Number of nonprinting and total chars
-int copies_number = 1;          // Number of copies to print
-int column_width = 8;           // Default column tab width (8)
+static int column = 0;                 // Column number (in current line)
+static int line = 0;                   // Line number (in current page)
+static int line_number = 0;            // Source line number
+static int pages = 0;                  // Number of logical pages printed
+static int sheets = 0;                 // Number of physical pages printed
+static int old_pages, old_sheets;      // Value before printing current file
+static int sheetside = 0;              // Side of the sheet currently printing
+static int linesperpage;               // Lines per page
+static int lines_requested = 0;        // Lines per page requested by the user
+static int new_linesrequest = 0;       // To scrute new values for lines_requested
+static int columnsperline;             // Characters per output line
+static int nonprinting_chars, chars;   // Number of nonprinting and total chars
+static int copies_number = 1;          // Number of copies to print
+static int column_width = 8;           // Default column tab width (8)
 
 
 /*
  * Other global variables.
  */
-int first_page;                 // First page for a file
-int no_files = TRUE;            // No file until now
-int prefix_width;               // Width in characters for line prefix
-float fontsize = 0.0;           // Size of a char for body font
-float new_fontsize = 0.0;       // To scrute new values for fontsize
-char *command;                  // Name of a2ps program
-char *lpr_opt = NULL;           // Options to lpr
-char *header_text = NULL;       // Allow for different header text
-float header_size;              // Size of the page header
-char *prologue = NULL;          // postscript header file
-char current_filename[MAXFILENAME+1];   // Name of the file being printed
-char currentdate[18];           // Date for today
-char filedate[18];              // Last modification time for current file
+static int first_page;                 // First page for a file
+static int no_files = TRUE;            // No file until now
+static int prefix_width;               // Width in characters for line prefix
+static float fontsize = 0.0;           // Size of a char for body font
+static float new_fontsize = 0.0;       // To scrute new values for fontsize
+static char *command;                  // Name of a2ps program
+static char *lpr_opt = NULL;           // Options to lpr
+static char *header_text = NULL;       // Allow for different header text
+static float header_size;              // Size of the page header
+static char *prologue = NULL;          // postscript header file
+static char current_filename[MAXFILENAME+1];   // Name of the file being printed
+static char currentdate[18];           // Date for today
+static char filedate[18];              // Last modification time for current file
 #if defined(SYSV) || defined(BSD)
 char *login = NULL;             // user's login name and host machine
 #endif
@@ -364,8 +331,8 @@ char *login = NULL;             // user's login name and host machine
 /*
  * Sheet dimensions
  */
-double page_height = HEIGHT;    // Paper height
-double page_width = WIDTH;      // Paper width
+static double page_height = HEIGHT;    // Paper height
+static double page_width = WIDTH;      // Paper width
 
 
 //**********************************************************************
@@ -376,10 +343,8 @@ double page_width = WIDTH;      // Paper width
 /*
  * Print a usage message.
  */
-void
-usage(failure)
-     int failure;               // Must we exit with a failure code?
-{
+static void usage(int failure) {
+    // failure: Must we exit with a failure code?
     fprintf(stderr, "A2ps v%s usage: %s [pos. or global options] [ f1 [ [pos. options] f2 ...] ]\n", VERSION, command);
     fprintf(stderr, "pos.   =  -#num\t\tnumber of copies to print\n");
     fprintf(stderr, "          -1\t\tone page per sheet\n");
@@ -433,10 +398,7 @@ usage(failure)
 /*
  * Set an option only if it's global.
  */
-void
-set_global_option(arg)
-     char *arg;
-{
+static void set_global_option(char *arg) {
     switch (arg[1]) {
         case '?':                               // help
         case 'h':
@@ -588,10 +550,7 @@ set_global_option(arg)
  * The -H option is the only exception: it is applied only to the
  * file.
  */
-void
-set_positional_option(arg)
-     char *arg;
-{
+static void set_positional_option(char *arg) {
     int copies;
     int lines;
     float size;
@@ -719,10 +678,7 @@ set_positional_option(arg)
  * produced by nroff (no others sequences are recognized by the moment):
  *        <c><\b><c><\b><c><\b><c>
  */
-int
-mygetc(statusp)
-     int *statusp;
-{
+static int mygetc(int *statusp) {
 #define BUFFER_SIZE     512
     static int curr = 0;
     static int size = 0;
@@ -764,10 +720,7 @@ mygetc(statusp)
 /*
  * Test if we have a binary file.
  */
-int
-is_binaryfile(name)
-     char *name;
-{
+static int is_binaryfile(char *name) {
     if (chars > 120 || pages > 1) {
         first_page = FALSE;
         if (chars && !print_binaries && (nonprinting_chars*100 / chars) >= 60) {
@@ -781,10 +734,7 @@ is_binaryfile(name)
 /*
  * Cut long filenames.
  */
-void
-cut_filename(old_name, new_name)
-     char *old_name, *new_name;
-{
+static void cut_filename(char *old_name, char *new_name) {
     char *p;
     int   i;
     char *separator;
@@ -815,7 +765,7 @@ cut_filename(old_name, new_name)
 /*
  * Print a char in a form accepted by postscript printers.
  */
-int printchar(unsigned char c) {
+static int printchar(unsigned char c) {
 
     if (c >= ' ' && c < 0177) {
         if (c == '(' || c == ')' || c == '\\')
@@ -858,9 +808,7 @@ int printchar(unsigned char c) {
 /*
  * Begins a new logical page.
  */
-void
-skip_page()
-{
+static void skip_page() {
     if (twinpages == FALSE || sheetside == 0) {
         printf("%%%%Page: %d %d\n", sheets+1, sheets+1);
         printf("/pagesave save def\n");
@@ -873,10 +821,7 @@ skip_page()
 /*
  * Fold a line too long.
  */
-int
-fold_line(name)
-     char *name;
-{
+static int fold_line(char *name) {
     column = 0;
     printf(") s\n");
     if (++line >= linesperpage) {
@@ -897,9 +842,7 @@ fold_line(name)
 /*
  * Cut a textline too long to the size of a page line.
  */
-int
-cut_line()
-{
+static int cut_line() {
     int c;
     int status;
 
@@ -915,9 +858,7 @@ cut_line()
 /*
  * Print a physical page.
  */
-void
-printpage()
-{
+static void printpage() {
     sheetside = 0;
     sheets++;
     printf("/sd 0 def\n");
@@ -939,9 +880,7 @@ printpage()
  * Prints page header and page border and
  * initializes printing of the file lines.
  */
-void
-startpage()
-{
+void startpage() {
     if (sheetside == 0) {
 #ifdef RECTO_VERSO_PRINTING
         if (rectoverso && (sheets & 0x1)) {
@@ -972,9 +911,7 @@ startpage()
 /*
  * Terminates printing, flushing last page.
  */
-void
-cleanup()
-{
+static void cleanup() {
     if (twinpages && sheetside == 1)
         printpage();
 #ifdef RECTO_VERSO_PRINTING
@@ -991,9 +928,7 @@ cleanup()
  * Adds a sheet number to the page (footnote) and prints the formatted
  * page (physical impression). Activated at the end of each source page.
  */
-void
-endpage()
-{
+void endpage() {
     if (twinpages && sheetside == 0) {
         sheetside = 1;
         printf("/sd 1 def\n");
@@ -1010,10 +945,7 @@ endpage()
 /*
  * Print the file prologue.
  */
-void
-init_file_printing(name, title)
-     char *name, *title;
-{
+static void init_file_printing(char *name, char *title) {
     int new_format, new_font;
     char *string;
     int lines;
@@ -1111,10 +1043,9 @@ init_file_printing(name, title)
  * Print the prologue necessary for printing each physical page.
  * Adobe convention for page independence is enforced through this routine.
  */
-void
-print_page_prologue(side)
-     int side;                  // Logical page to print (left/right)
-{
+void print_page_prologue(int side) {
+    // side: Logical page to print (left/right)
+
     // General format
     printf("/twp %s def\n", twinpages ? "true" : "false");
     printf("/fnfs %d def\n", landscape ? 11 : twinpages ? 10 : 15);
@@ -1196,10 +1127,7 @@ print_page_prologue(side)
 /*
  * Print one file.
  */
-void
-print_file(name, header)
-     char *name, *header;
-{
+static void print_file(char *name, char *header) {
     int c;
     int nchars;
     int start_line, start_page;
@@ -1393,9 +1321,7 @@ print_file(name, header)
 /*
  * Print the a2ps prologue.
  */
-void
-print_prologue()
-{
+static void print_prologue() {
     int             c;
     FILE           *f;
     char           *datestring;
@@ -1513,10 +1439,7 @@ print_prologue()
 /*
  * Print the standard prologue.
  */
-void
-print_standard_prologue(datestring)
-     char *datestring;
-{
+void print_standard_prologue(char *datestring) {
     printf("%%!PS-Adobe-3.0\n");
     printf("%%%%Creator: A2ps version %s\n", VERSION);
     printf("%%%%CreationDate: %.24s\n", datestring);

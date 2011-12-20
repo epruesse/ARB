@@ -50,7 +50,15 @@ inline void aisc_link(dll_public *dll, AN_revers *revers)   { aisc_link(reinterp
 
 // --------------------------------------------------------------------------------
 
-struct AN_gl_struct  AN_global;
+struct AN_gl_struct {
+    aisc_com  *cl_link;
+    Hs_struct *server_communication;
+    T_AN_MAIN  cl_main;
+    char      *server_name;
+};
+
+
+static struct AN_gl_struct  AN_global;
 AN_main             *aisc_main; // muss so heissen
 
 const int SERVER_VERSION = 5;
@@ -1121,8 +1129,7 @@ static GB_ERROR server_load(AN_main *main)
     return error;
 }
 
-void names_server_shutdown(int exitcode) __ATTR__NORETURN;
-void names_server_shutdown(int exitcode) {
+__ATTR__NORETURN static void names_server_shutdown(int exitcode) {
     aisc_server_shutdown_and_exit(AN_global.server_communication, exitcode); // never returns
 }
 

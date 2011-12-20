@@ -36,7 +36,6 @@
 #define AWAR_PRIMER_DESIGN_APROX_MEM              "primer_design/aprox_mem"
 
 void       create_primer_design_variables(AW_root *aw_root, AW_default aw_def, AW_default global);
-void       create_primer_design_result_window(AW_window *aww);
 AW_window *create_primer_design_window(AW_root *root, AW_CL cl_gb_main);
 
 #else

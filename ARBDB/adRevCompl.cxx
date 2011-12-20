@@ -12,8 +12,7 @@
 #include "arbdbt.h"
 #include <cctype>
 
-char GBT_complementNucleotide(char c, char T_or_U)
-{
+static char GBT_complementNucleotide(char c, char T_or_U) {
     char n = c;
 
     switch (c)

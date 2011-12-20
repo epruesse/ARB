@@ -89,7 +89,7 @@ void ED4_calc_terminal_extentions() {
 #endif // DEBUG
 }
 
-void ED4_expose_recalculations() {
+static void ED4_expose_recalculations() {
     ED4_ROOT->recalc_font_group();
     ED4_calc_terminal_extentions();
 
@@ -839,11 +839,11 @@ void ED4_quit_editor(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
     ED4_ROOT->get_ed4w()->is_hidden = true;
 }
 
-void ED4_load_data(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+static void ED4_load_data(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     ED4_ROOT->use_window(aww);
 }
 
-void ED4_save_data(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+static void ED4_save_data(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     ED4_ROOT->use_window(aww);
 }
 
@@ -1280,7 +1280,7 @@ void group_species_cb(AW_window *aww, AW_CL cl_use_fields, AW_CL) {
     }
 }
 
-void ED4_load_new_config(char *string)
+static void ED4_load_new_config(char *string)
 {
     char *config_data_top    = NULL;
     char *config_data_middle = NULL;
@@ -1420,7 +1420,7 @@ void ED4_new_editor_window(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
 
 
 
-void ED4_start_editor_on_configuration(AW_window *aww) {
+static void ED4_start_editor_on_configuration(AW_window *aww) {
     aww->hide();
     char *cn = aww->get_root()->awar(AWAR_EDIT_CONFIGURATION)->read_string();
 

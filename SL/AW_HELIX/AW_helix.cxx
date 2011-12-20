@@ -28,7 +28,7 @@ struct helix_pair_def {
     BI_PAIR_TYPE pair_type;
 };
 
-helix_pair_def helix_awars[] = {
+static helix_pair_def helix_awars[] = {
     { "Strong_Pair",      HELIX_STRONG_PAIR },
     { "Normal_Pair",      HELIX_PAIR },
     { "Weak_Pair",        HELIX_WEAK_PAIR },
