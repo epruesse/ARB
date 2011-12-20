@@ -110,11 +110,8 @@ static void ed_al_check_len_cb(AW_window *aww)
     if (error) aw_message(error);
     free(use);
 }
-static void ed_al_export_sec_cb(AW_window */*aww*/) {
-    aw_message("This Function is not implemented,\nPlease press 'CHECK' to do this");
-}
-static void ed_al_align_cb(AW_window *aww)
-{
+
+static void ed_al_align_cb(AW_window *aww) {
     char     *use = aww->get_root()->awar("presets/use")->read_string();
     GB_begin_transaction(GLOBAL_gb_main);
     GB_ERROR  err = GBT_format_alignment(GLOBAL_gb_main, use);

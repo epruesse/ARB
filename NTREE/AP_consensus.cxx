@@ -40,7 +40,7 @@
  * Integration Notes: To use this module the main function must have a
  *                    callback to the function
  *                    AW_window *AP_open_consensus_window( AW_root *aw_root)
- *                    and the function void create_consensus_var
+ *                    and the function void AP_create_consensus_var
  *                    (AW_root *aw_root, AW_default aw_def) has to be called.
  *
  * -----------------------------------------------------------------
@@ -706,7 +706,7 @@ static void CON_calculate_cb(AW_window *aw)
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 
-void create_consensus_var(AW_root *aw_root, AW_default aw_def)
+void AP_create_consensus_var(AW_root *aw_root, AW_default aw_def)
 {
     GB_transaction dummy(GLOBAL_gb_main);
     {
@@ -815,87 +815,6 @@ AP_open_con_expert_window(AW_root *aw_root)
 
     return aws;
 }
-
-
-/* -----------------------------------------------------------------
- * Function:           AP_open_consensus_window( AW_root *aw_root)
- *
- * Arguments:
- *
- * Returns:
- *
- * Description:       Draws window, initializes callback for most important
- *                    function, CON_calculate_cb.
- *
- * NOTE:
- *
- * Global Variables referenced:
- *
- * Global Variables modified:
- *
- * AWARs referenced:
- *
- * AWARs modified:
- *
- * Dependencies:      Needs xfig files consens.fig and CON_groups.fig
- * -----------------------------------------------------------------
- */
-static AW_window * AP_open_consensus_window(AW_root *aw_root)
-{
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init(aw_root, "SIMPLE_CONSENSUS", "SIMPLE CONSENSUS");
-    aws->load_xfig("consensus/main.fig");
-
-    GB_push_transaction(GLOBAL_gb_main);
-
-    aws->button_length(6);
-
-    aws->at("cancel"); aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
-
-    aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"consensus.hlp");
-    aws->create_button("HELP", "HELP", "H");
-
-    aws->button_length(15);
-    aws->at("showgroups"); aws->callback(AW_POPUP, (AW_CL)CON_showgroupswin_cb, 0);
-    aws->create_button("SHOW_IUPAC", "show IUPAC...", "s");
-    aws->button_length(10);
-
-    aws->at("which_species");
-    aws->create_toggle_field("tmp/con/which_species", NULL, "");
-    aws->insert_toggle("all", "1", "all");
-    aws->insert_default_toggle("marked",   "1", "marked");
-    aws->update_toggle_field();
-
-    aws->at("which_alignment");
-    awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, "tmp/con/alignment", "*=");
-
-    aws->button_length(15);
-
-    // activation of consensus calculation by button ...
-    aws->at("calculate"); aws->callback((AW_CB0)CON_calculate_cb);
-    aws->create_button("CALCULATE", "CALCULATE", "C");
-
-    aws->at("expert"); aws->callback(AW_POPUP, (AW_CL)AP_open_con_expert_window, 0);
-    aws->create_button("EXPERT", "expert...", "e");
-
-    aws->at("group");
-    aws->create_toggle_field("con/group", NULL, "");
-    aws->insert_toggle("on", "1", "on");
-    aws->insert_default_toggle("off", "1", "off");
-    aws->update_toggle_field();
-
-    aws->at("name");
-    aws->create_input_field("tmp/con/name", 10);
-
-    aws->at("save_box");
-    awt_create_selection_list_on_extendeds(GLOBAL_gb_main, aws, "tmp/con/name");
-
-    GB_pop_transaction(GLOBAL_gb_main);
-
-    return aws;
-}
-
 
 /* -----------------------------------------------------------------
  * Function:           CON_calc_max_freq_cb( AW_window *aw)

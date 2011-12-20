@@ -900,37 +900,6 @@ static void ED4_remove_faligner_entries(AW_window *, AW_CL, AW_CL) {
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 
-static void ED4_turnSpecies(AW_window *aw, AW_CL, AW_CL) {
-    GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
-
-    if (!error) {
-        AW_root *root       = aw->get_root();
-        char    *name       = root->awar(AWAR_SPECIES_NAME)->read_string();
-        char    *ali        = ED4_ROOT->alignment_name;
-        GBDATA  *gb_species = GBT_expect_species(GLOBAL_gb_main, name);
-        GBDATA  *gbd        = gb_species ? GBT_read_sequence(gb_species, ali) : NULL;
-        char    *data       = gbd ? GB_read_string(gbd) : NULL;
-
-        if (!data) error = GB_await_error();
-        else {
-            long length = GB_read_string_count(gbd);
-
-            char T_or_U;
-            error = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "reverse-complement");
-            if (!error) {
-                GBT_reverseComplementNucSequence(data, length, T_or_U);
-                error = GB_write_string(gbd, data);
-            }
-        }
-
-        free(data);
-        free(name);
-    }
-
-    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
-}
-
-
 #if defined(DEBUG) && 0
 
 void ED4_testSplitNMerge(AW_window *aw, AW_CL, AW_CL)
@@ -1435,7 +1404,6 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     awmm->close_sub_menu();
 
 #if !defined(NDEBUG) && 0
-    awmm->insert_menu_topic("turn_sequence", "Turn Sequence",             "T", 0, AWM_ALL, ED4_turnSpecies,     1, 0);
     awmm->insert_menu_topic(0,               "Test (test split & merge)", "T", 0, AWM_ALL, ED4_testSplitNMerge, 1, 0);
 #endif
     

@@ -28,7 +28,7 @@ using namespace std;
 extern void ph_view_matrix_cb(AW_window *);
 extern void ph_view_species_cb(AW_window *, AW_CL, AW_CL);
 extern void ph_view_filter_cb(AW_window *, AW_CL, AW_CL);
-extern void ph_calculate_matrix_cb(AW_window *, AW_CL, AW_CL);
+// extern void ph_calculate_matrix_cb(AW_window *, AW_CL, AW_CL);
 extern void PH_create_save_matrix_window(AW_root *, char *);
 extern void display_status(AW_window *, AW_CL, AW_CL);
 

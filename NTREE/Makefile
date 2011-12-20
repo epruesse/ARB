@@ -498,7 +498,6 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/test_global.h
 
 NT_extern.o: ad_trees.hxx
-NT_extern.o: ap_consensus.hxx
 NT_extern.o: map_viewer.hxx
 NT_extern.o: nt_internal.h
 NT_extern.o: nt_join.hxx

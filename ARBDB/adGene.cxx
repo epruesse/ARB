@@ -89,10 +89,6 @@ static GBDATA* GEN_create_nonexisting_gene_rel_gene_data(GBDATA *gb_gene_data, c
     return gb_gene;
 }
 
-static GBDATA* GEN_create_nonexisting_gene(GBDATA *gb_species, const char *name) {
-    return GEN_create_nonexisting_gene_rel_gene_data(GEN_findOrCreate_gene_data(gb_species), name);
-}
-
 GBDATA* GEN_find_or_create_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name) {
     GBDATA *gb_gene = 0;
 
@@ -121,10 +117,6 @@ GBDATA* GEN_find_or_create_gene_rel_gene_data(GBDATA *gb_gene_data, const char *
         }
     }
     return gb_gene;
-}
-
-static GBDATA* GEN_find_or_create_gene(GBDATA *gb_species, const char *name) {
-    return GEN_find_or_create_gene_rel_gene_data(GEN_findOrCreate_gene_data(gb_species), name);
 }
 
 GBDATA* GEN_first_gene(GBDATA *gb_species) {
@@ -693,13 +685,6 @@ GBDATA *GEN_find_origin_gene(GBDATA *gb_pseudo, GB_HASH *organism_hash) {
 
 GBDATA* GEN_first_pseudo_species(GBDATA *gb_main) {
     GBDATA *gb_species = GBT_first_species(gb_main);
-
-    if (!gb_species || GEN_is_pseudo_gene_species(gb_species)) return gb_species;
-    return GEN_next_pseudo_species(gb_species);
-}
-
-static GBDATA* GEN_first_pseudo_species_rel_species_data(GBDATA *gb_species_data) {
-    GBDATA *gb_species = GBT_first_species_rel_species_data(gb_species_data);
 
     if (!gb_species || GEN_is_pseudo_gene_species(gb_species)) return gb_species;
     return GEN_next_pseudo_species(gb_species);

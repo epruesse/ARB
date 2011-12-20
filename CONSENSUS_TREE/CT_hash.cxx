@@ -181,36 +181,3 @@ void build_sorted_list() {
     Sortedlist = head;
 }
 
-
-static void hash_print() {
-    //! testfunction to print the hashtable
-    int i;
-    HNODE *hnp;
-
-    printf("\n HASHtable \n");
-
-    for (i=0; i< HASH_MAX; i++) {
-        printf("Key: %d \n", i);
-        hnp = Hashlist[i];
-        while (hnp) {
-            printf("node: count %d node ", hnp->part->percent);
-            part_print(hnp->part); printf(" (%d)\n", hnp->part->p[0]);
-            hnp = hnp->next;
-        }
-    }
-}
-
-
-static void sorted_print() {
-    //! testfunction to print the sorted linear list
-    HNODE *hnp;
-
-    printf("\n sorted HASHlist \n");
-
-    hnp = Sortedlist;
-    while (hnp) {
-        printf("node: count %d node ", hnp->part->percent);
-        part_print(hnp->part); printf("\n");
-        hnp = hnp->next;
-    }
-}

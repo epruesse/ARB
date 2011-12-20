@@ -51,45 +51,6 @@ static int sq_round(double value) {
     return x;
 }
 
-static GB_ERROR SQ_reset_quality_calcstate(GBDATA * gb_main) {
-    GB_push_transaction(gb_main);
-
-    GB_ERROR error = NULL;
-    char *alignment_name = GBT_get_default_alignment(gb_main);
-
-    for (GBDATA * gb_species = GBT_first_species(gb_main); gb_species && !error; gb_species
-            = GBT_next_species(gb_species)) {
-        GBDATA *gb_quality = GB_search(gb_species, "quality",
-                GB_CREATE_CONTAINER);
-        if (!gb_quality)
-            error = GB_get_error();
-        else {
-            GBDATA *gb_quality_ali = GB_search(gb_quality, alignment_name,
-                    GB_CREATE_CONTAINER);
-            if (!gb_quality_ali) {
-                error = no_data_error(gb_quality, alignment_name);
-            }
-            else {
-                GBDATA *gb_calcstate = GB_search(gb_quality_ali, "calcstate",
-                        GB_INT);
-                if (!gb_calcstate)
-                    error = GB_get_error();
-                else {
-                    GB_write_int(gb_calcstate, CS_CLEAR); // clear calculation state
-                }
-            }
-        }
-    }
-    free(alignment_name);
-
-    if (error)
-        GB_abort_transaction(gb_main);
-    else
-        GB_pop_transaction(gb_main);
-
-    return error;
-}
-
 GB_ERROR SQ_remove_quality_entries(GBDATA *gb_main) {
     GB_push_transaction(gb_main);
     GB_ERROR error = NULL;
@@ -105,86 +66,6 @@ GB_ERROR SQ_remove_quality_entries(GBDATA *gb_main) {
     else
         GB_pop_transaction(gb_main);
     return error;
-}
-
-static int SQ_get_value(GBDATA * gb_main, const char *option) {
-    int result = 0;
-    char *alignment_name;
-
-    GBDATA *gb_species;
-    GBDATA *gb_name;
-    GBDATA *(*getFirst)(GBDATA *) = 0;
-    GBDATA *(*getNext)(GBDATA *) = 0;
-
-    GB_push_transaction(gb_main);
-    alignment_name = GBT_get_default_alignment(gb_main); seq_assert(alignment_name);
-
-    // marked_only
-    getFirst = GBT_first_marked_species;
-    getNext = GBT_next_marked_species;
-
-    for (gb_species = getFirst(gb_main); gb_species; gb_species = getNext(gb_species)) {
-        gb_name = GB_entry(gb_species, "name");
-
-        if (gb_name) {
-            GBDATA *gb_quality = GB_entry(gb_species, "quality");
-            if (gb_quality) {
-                GBDATA *gb_quality_ali = GB_entry(gb_quality, alignment_name);
-                if (gb_quality_ali) {
-                    GBDATA *gb_result1 = GB_search(gb_quality_ali, option, GB_INT);
-                    result = GB_read_int(gb_result1);
-                }
-            }
-        }
-    }
-    free(alignment_name);
-
-    GB_pop_transaction(gb_main);
-    return result;
-}
-
-static int SQ_get_value_no_tree(GBDATA * gb_main, const char *option) {
-    int result = 0;
-    char *alignment_name;
-
-    GBDATA *read_sequence = 0;
-    GBDATA *gb_species;
-    GBDATA *gb_name;
-    GBDATA *(*getFirst)(GBDATA *) = 0;
-    GBDATA *(*getNext)(GBDATA *) = 0;
-
-    GB_push_transaction(gb_main);
-    alignment_name = GBT_get_default_alignment(gb_main); seq_assert(alignment_name);
-
-    // marked_only
-    getFirst = GBT_first_marked_species;
-    getNext = GBT_next_marked_species;
-
-    for (gb_species = getFirst(gb_main); gb_species; gb_species = getNext(gb_species)) {
-        gb_name = GB_entry(gb_species, "name");
-        if (gb_name) {
-
-            GBDATA *gb_ali = GB_entry(gb_species, alignment_name);
-            if (gb_ali)
-                read_sequence = GB_entry(gb_ali, "data");
-
-            GBDATA *gb_quality = GB_search(gb_species, "quality",
-                    GB_CREATE_CONTAINER);
-            if (gb_quality && read_sequence) {
-                GBDATA *gb_quality_ali = GB_search(gb_quality, alignment_name,
-                        GB_CREATE_CONTAINER);
-                if (gb_quality_ali) {
-                    GBDATA *gb_result1 = GB_search(gb_quality_ali, option,
-                            GB_INT);
-                    result = GB_read_int(gb_result1);
-                }
-            }
-        }
-    }
-    free(alignment_name);
-
-    GB_pop_transaction(gb_main);
-    return result;
 }
 
 GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights, bool marked_only) {

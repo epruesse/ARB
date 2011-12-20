@@ -101,7 +101,6 @@ extern aisc_talking_func_longp *aisc_talking_functions_create[];
 extern aisc_talking_func_long   aisc_talking_functions_delete[];
 
 const char *aisc_server_error;
-static int         mdba_make_core = 1;
 
 const int   ERRORBUFSIZE = 256;
 static char error_buf[ERRORBUFSIZE];
@@ -1166,8 +1165,6 @@ int aisc_broadcast(Hs_struct *hs, int message_type, const char *message)
     free(out_buf);
     return 0;
 }
-
-static int aisc_talking_count;
 
 #ifdef __cplusplus
 extern "C" {

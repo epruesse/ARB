@@ -95,25 +95,6 @@ const char *virt_fullname(PT_probematch * ml)
     }
 }
 
-static int *table_copy(int *mis_table, int length)
-{
-    // copy one mismatch table to a new one allocating memory
-    int *result_table;
-    int i;
-
-    result_table = (int *)calloc(length, sizeof(int));
-    for (i=0; i<length; i++)
-        result_table[i] = mis_table[i];
-    return result_table;
-}
-static void table_add(int *mis_tabled, int *mis_tables, int length)
-{
-    // add the values of a source table to a destination table
-    int i;
-    for (i=0; i<length; i++)
-        mis_tabled[i] += mis_tables[i];
-}
-
 #define MAX_LIST_PART_SIZE 50
 
 static const char *get_list_part(const char *list, int& offset) {
@@ -253,27 +234,6 @@ bytestring *PT_unknown_names(PT_pdc *pdc) {
     }
     return &un;
 }
-
-static int get_clip_max_from_length(int length) {
-    // compute clip max using the probe length
-
-    int    data_size;
-    int    i;
-    double hitperc_zero_mismatches;
-    double half_mismatches;
-    data_size               = psg.data_count * psg.max_size;
-    hitperc_zero_mismatches = (double)data_size;
-    for (i = 0; i < length; i++) {
-        hitperc_zero_mismatches *= .25;
-    }
-    for (half_mismatches = 0; half_mismatches < 100; half_mismatches++) {
-        if (hitperc_zero_mismatches > 1.0 / (3.0 * length))
-            break;
-        hitperc_zero_mismatches *= (3.0 * length);
-    }
-    return (int) (half_mismatches);
-}
-
 
 void PT_init_base_string_counter(char *str, char initval, int size)
 {

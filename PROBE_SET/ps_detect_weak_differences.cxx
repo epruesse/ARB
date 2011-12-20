@@ -33,7 +33,7 @@ static SpeciesID          __ONEMATCH_MIN_ID;
 static SpeciesID          __ONEMATCH_MAX_ID;
 
 #if defined(DEBUG)
-static void PS_print_path() {
+void PS_debug_print_path() {
     printf("__PATH %3zu :", __PATH->size());
     int c = 1;
     for (IDVectorCIter i = __PATH->begin(); i != __PATH->end(); ++i, ++c) {
@@ -43,7 +43,7 @@ static void PS_print_path() {
     printf("\n");
 }
 
-static void PS_print_inverse_path() {
+void PS_debug_print_inverse_path() {
     printf("__INVERSE_PATH %3zu :", __INVERSE_PATH->size());
     int c = 1;
     for (IDVectorCIter i = __INVERSE_PATH->begin(); i != __INVERSE_PATH->end(); ++i, ++c) {

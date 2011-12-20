@@ -152,12 +152,6 @@ inline GB_ERROR error_with_dbentry(const char *action, GBDATA *gbd, GB_ERROR err
     } while (0)
 
 
-static char *GB_rel(void *struct_address, long rel_address)
-{
-    if (!rel_address) return NULL;
-    return (char*)struct_address+rel_address;
-}
-
 static GB_ERROR GB_safe_atof(const char *str, double *res) {
     GB_ERROR  error = NULL;
     char     *end;
@@ -958,7 +952,7 @@ long GB_read_floats_count(GBDATA *gbd)
     return GB_GETSIZE(gbd);
 }
 
-static float *GB_read_floats(GBDATA *gbd)
+static float *GB_read_floats(GBDATA *gbd) // @@@ unused - check usage of floats
 {
     GB_CFLOAT *f;
     f = GB_read_floats_pntr(gbd);

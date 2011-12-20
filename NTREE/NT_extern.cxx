@@ -12,7 +12,6 @@
 #include "nt_internal.h"
 #include "ntree.hxx"
 #include "ad_trees.hxx"
-#include "ap_consensus.hxx"
 #include "seq_quality.h"
 #include "nt_join.hxx"
 
@@ -64,13 +63,7 @@ void create_cprofile_var(AW_root *aw_root, AW_default aw_def);
 void create_insertchar_variables(AW_root *root, AW_default db1);
 AW_window *create_insertchar_window(AW_root *root, AW_default def);
 
-AW_window *AP_open_cprofile_window(AW_root *root);
-
 AW_window *create_tree_window(AW_root *aw_root, AWT_graphic *awd);
-
-static void nt_test_ascii_print(AW_window *aww) {
-    AWT_create_ascii_print_window(aww->get_root(), "hello world", "Just a test");
-}
 
 static void nt_changesecurity(AW_root *aw_root) {
     int level = aw_root->awar(AWAR_SECURITY_LEVEL)->read_int();
@@ -210,7 +203,7 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     create_primer_design_variables(awr, def, GLOBAL_gb_main);
     create_trees_var(awr, def);
     DBUI::create_dbui_awars(awr, def);
-    create_consensus_var(awr, def);
+    AP_create_consensus_var(awr, def);
     GDE_create_var(awr, def, GLOBAL_gb_main);
     create_cprofile_var(awr, def);
     NT_create_transpro_variables(awr, def);
@@ -289,15 +282,6 @@ static void nt_exit(AW_window *aws) {
     }
     exit(0);
 }
-
-static void NT_save_cb(AW_window *aww) {
-    char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
-    GB_ERROR error = GB_save(GLOBAL_gb_main, filename, "b");
-    delete filename;
-    if (error) aw_message(error);
-    else AW_refresh_fileselection(aww->get_root(), "tmp/nt/arbdb");
-}
-
 
 static void NT_save_quick_cb(AW_window *aww) {
     char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
@@ -466,14 +450,6 @@ static void NT_undo_cb(AW_window *, AW_CL undo_type, AW_CL ntw) {
         GB_transaction dummy(GLOBAL_gb_main);
         ((AWT_canvas *)ntw)->refresh();
     }
-}
-
-static void NT_undo_info_cb(AW_window *, AW_CL undo_type) {
-    char *undo_info = GB_undo_info(GLOBAL_gb_main, (GB_UNDO_TYPE)undo_type);
-    if (undo_info) {
-        aw_message(undo_info);
-    }
-    delete undo_info;
 }
 
 static AWT_config_mapping_def tree_setting_config_mapping[] = {

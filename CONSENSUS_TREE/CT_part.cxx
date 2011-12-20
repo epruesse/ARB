@@ -186,17 +186,6 @@ void part_setlen(PART *p, GBT_LEN len) {
 }
 
 
-static void part_setperc(PART *p, int perc) {
-    //! set the percentaged appearance of this part in "entrytrees"
-    p->percent = perc;
-}
-
-
-static void part_addperc(PART *p, int perc) {
-    //! add 'perc' on percent of p
-    p->percent += perc;
-}
-
 void part_copy(PART *source, PART *destination) {
     //! copy source into destination
     for (int i=0; i<longs; i++) destination->p[i] = source->p[i];

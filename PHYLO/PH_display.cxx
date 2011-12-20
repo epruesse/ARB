@@ -29,16 +29,6 @@ static void horizontal_change_cb(AW_window *aww, void */*cb1*/, void */*cb2*/)
     PH_display::ph_display->monitor_horizontal_scroll_cb(aww);
 }
 
-void ph_view_matrix_cb(AW_window */*aww*/)
-{
-    AW_window *main_win = PH_used_windows::windowList->phylo_main_window;
-
-    PH_display::ph_display->initialize(matrix_dpy);
-    PH_display::ph_display->display();
-    main_win->set_vertical_change_callback((AW_CB2)vertical_change_cb, 0, 0);
-    main_win->set_horizontal_change_callback((AW_CB2)horizontal_change_cb, 0, 0);
-}
-
 void ph_view_species_cb(AW_window */*aww*/, AW_CL /*cb1*/, AW_CL /*cb2*/)
 {
     AW_window *main_win = PH_used_windows::windowList->phylo_main_window;
