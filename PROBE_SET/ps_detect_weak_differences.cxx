@@ -32,6 +32,7 @@ static IDID2IDSetMap     *__PAIR2PATH;
 static SpeciesID          __ONEMATCH_MIN_ID;
 static SpeciesID          __ONEMATCH_MAX_ID;
 
+#if defined(DEBUG)
 static void PS_print_path() {
     printf("__PATH %3zu :", __PATH->size());
     int c = 1;
@@ -51,7 +52,7 @@ static void PS_print_inverse_path() {
     }
     printf("\n");
 }
-
+#endif
 
 static void PS_detect_weak_differences_stepdown(const PS_NodePtr _ps_node,
                                           const SpeciesID  _parent_ID,
