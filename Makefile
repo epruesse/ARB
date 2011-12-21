@@ -1575,12 +1575,9 @@ realperl: perltools
 			"cross_cflags=$(cross_cflags) $(dflags)" \
 			"cross_lflags=$(cross_lflags)" \
 			all && \
+		$(MAKE) -C PERL_SCRIPTS/test test && \
 		echo "$(SEP) Make PERL2ARB [done]" ; \
 	) > PERL2ARB.log 2>&1 && (cat PERL2ARB.log;rm PERL2ARB.log)) || (cat PERL2ARB.log;rm PERL2ARB.log;false)
-
-
-testperlscripts: perl 
-	@$(MAKE) -C PERL_SCRIPTS/test test
 
 perl_clean:
 	@$(MAKE) -C PERL2ARB -r -f Makefile.main \
