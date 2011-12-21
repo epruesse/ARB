@@ -35,7 +35,7 @@ NOT4PERL void GB_set_export_sequence_hook(gb_export_sequence_cb escb) {
 // global ACI/SRT debug switch
 static int trace = 0;
 
-void GB_set_ACISRT_trace(int enable) { trace = enable; }
+static void GB_set_ACISRT_trace(int enable) { trace = enable; }
 int GB_get_ACISRT_trace() { return trace; }
 
 

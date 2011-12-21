@@ -1348,7 +1348,7 @@ static GB_ERROR gb_login_remote(GB_MAIN_TYPE *Main, const char *path, const char
     return error;
 }
 
-GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
+static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
     /*! open an ARB database
      *
      * @param opent contains one or more of the following characters:

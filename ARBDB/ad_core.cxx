@@ -321,23 +321,6 @@ static void gb_write_key(GBDATA *gbd, const char *s) {
     gb_write_index_key(GB_FATHER(gbd), gbd->index, new_index);
 }
 
-void gb_rename_entry(GBCONTAINER *gbc, const char *new_key) {
-    GBCONTAINER  *gb_father = GB_FATHER(gbc);
-    GB_MAIN_TYPE *Main      = GBCONTAINER_MAIN(gb_father);
-    GBQUARK       new_keyq;
-    long          new_gbm_index;
-
-    gb_unlink_entry((GBDATA*)gbc);
-
-    new_keyq          = gb_key_2_quark(Main, new_key);
-    new_gbm_index     = GB_QUARK_2_GBMINDEX(Main, new_keyq);
-    GB_GBM_INDEX(gbc) = new_gbm_index;
-
-    gb_link_entry(gb_father, (GBDATA*)gbc, -1);
-    gb_write_key((GBDATA*)gbc, new_key);
-}
-
-
 GBDATA *gb_make_entry(GBCONTAINER * father, const char *key, long index_pos, GBQUARK keyq, GB_TYPES type) {
     // creates a terminal database object
     GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(father);

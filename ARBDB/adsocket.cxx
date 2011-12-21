@@ -516,51 +516,30 @@ GB_ERROR GB_textprint(const char *path) {
     return GB_failedTo_error("print textfile", fpath, error);
 }
 
-GB_ERROR GB_xterm() {
-    // goes to header: __ATTR__USERESULT
-    const char *xt      = GB_getenvARB_XTERM();
-    const char *command = GBS_global_string("%s &", xt);
-    return GBK_system(command);
+// --------------------------------------------------------------------------------
+
+static GB_CSTR getenv_ignore_empty(GB_CSTR envvar) {
+    GB_CSTR result = getenv(envvar);
+    return (result && result[0]) ? result : 0;
 }
 
-GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
-    // goes to header: __ATTR__USERESULT_TODO
-
-    // runs a command in an xterm
-    // if 'background' is true -> run asynchronous
-    // if 'wait_only_if_error' is true -> asynchronous does wait for keypress only if cmd fails
-
-    GBS_strstruct *strstruct = GBS_stropen(1024);
-    const char    *xcmd      = GB_getenvARB_XCMD();
-
-    GBS_strcat(strstruct, "(");
-    GBS_strcat(strstruct, xcmd);
-    GBS_strcat(strstruct, " bash -c 'LD_LIBRARY_PATH=\"");
-    GBS_strcat(strstruct, GB_getenv("LD_LIBRARY_PATH"));
-    GBS_strcat(strstruct, "\";export LD_LIBRARY_PATH; (");
-    GBS_strcat(strstruct, cmd);
-
-    if (background) {
-        if (wait_only_if_error) {
-            GBS_strcat(strstruct, ") || (echo; echo Press RETURN to close Window; read a)' ) &");
+static GB_CSTR GB_getenvPATH() {
+    static const char *path = 0;
+    if (!path) {
+        path = getenv_ignore_empty("PATH");
+        if (!path) {
+            path = GBS_eval_env("/bin:/usr/bin:$(ARBHOME)/bin");
+            GB_informationf("Your PATH variable is empty - using '%s' as search path.", path);
         }
         else {
-            GBS_strcat(strstruct, "; echo; echo Press RETURN to close Window; read a)' ) &");
+            char *arbbin = GBS_eval_env("$(ARBHOME)/bin");
+            if (strstr(path, arbbin) == 0) {
+                GB_warningf("Your PATH variable does not contain '%s'. Things may not work as expected.", arbbin);
+            }
+            free(arbbin);
         }
     }
-    else {
-        if (wait_only_if_error) {
-            GBS_strcat(strstruct, ") || (echo; echo Press RETURN to close Window; read a)' )");
-        }
-        else { // no wait
-            GBS_strcat(strstruct, " )' ) ");
-        }
-    }
-
-    GB_ERROR error = GBK_system(GBS_mempntr(strstruct));
-    GBS_strforget(strstruct);
-
-    return error;
+    return path;
 }
 
 // --------------------------------------------------------------------------------
@@ -634,11 +613,6 @@ static char *GB_find_executable(GB_CSTR description_of_executable, ...) {
 // --------------------------------------------------------------------------------
 // Functions to access the environment variables used by ARB:
 
-static GB_CSTR getenv_ignore_empty(GB_CSTR envvar) {
-    GB_CSTR result = getenv(envvar);
-    return (result && result[0]) ? result : 0;
-}
-
 static char *getenv_executable(GB_CSTR envvar) {
     // get full path of executable defined by 'envvar'
     // returns 0 if
@@ -679,14 +653,14 @@ static char *getenv_existing_directory(GB_CSTR envvar) {
     return result;
 }
 
-void GB_setenv(const char *var, const char *value) {
+static void GB_setenv(const char *var, const char *value) {
     if (setenv(var, value, 1) != 0) {
         GB_warningf("Could not set environment variable '%s'. This might cause problems in subprocesses.\n"
                     "(Reason: %s)", var, strerror(errno));
     }
 }
 
-GB_CSTR GB_getenvARB_XTERM() {
+static GB_CSTR GB_getenvARB_XTERM() {
     static const char *xterm = 0;
     if (!xterm) {
         xterm = getenv_ignore_empty("ARB_XTERM"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XTERM
@@ -695,7 +669,7 @@ GB_CSTR GB_getenvARB_XTERM() {
     return xterm;
 }
 
-GB_CSTR GB_getenvARB_XCMD() {
+static GB_CSTR GB_getenvARB_XCMD() {
     static const char *xcmd = 0;
     if (!xcmd) {
         xcmd = getenv_ignore_empty("ARB_XCMD"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XCMD
@@ -726,7 +700,7 @@ GB_CSTR GB_getenvUSER() {
 }
 
 
-GB_CSTR GB_getenvHOME() {
+static GB_CSTR GB_getenvHOME() {
     static SmartCharPtr Home;
     if (Home.isNull()) {
         char *home = getenv_existing_directory("HOME");
@@ -786,29 +760,10 @@ GB_CSTR GB_getenvARBMACROHOME() {
     return amh;
 }
 
-GB_CSTR GB_getenvARBCONFIG() {
+static GB_CSTR GB_getenvARBCONFIG() {
     static const char *ac = 0;
     if (!ac) ac = getenv_autodirectory("ARBCONFIG", GB_path_in_arbprop("cfgSave")); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBCONFIG
     return ac;
-}
-
-GB_CSTR GB_getenvPATH() {
-    static const char *path = 0;
-    if (!path) {
-        path = getenv_ignore_empty("PATH");
-        if (!path) {
-            path = GBS_eval_env("/bin:/usr/bin:$(ARBHOME)/bin");
-            GB_informationf("Your PATH variable is empty - using '%s' as search path.", path);
-        }
-        else {
-            char *arbbin = GBS_eval_env("$(ARBHOME)/bin");
-            if (strstr(path, arbbin) == 0) {
-                GB_warningf("Your PATH variable does not contain '%s'. Things may not work as expected.", arbbin);
-            }
-            free(arbbin);
-        }
-    }
-    return path;
 }
 
 GB_CSTR GB_getenvARB_GS() {
@@ -985,6 +940,56 @@ GB_ULONG GB_get_physical_memory() {
     arb_assert(usedmemsize != 0);
 
     return usedmemsize;
+}
+
+// ---------------------------
+//      external commands
+
+GB_ERROR GB_xterm() {
+    // goes to header: __ATTR__USERESULT
+    const char *xt      = GB_getenvARB_XTERM();
+    const char *command = GBS_global_string("%s &", xt);
+    return GBK_system(command);
+}
+
+GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
+    // goes to header: __ATTR__USERESULT_TODO
+
+    // runs a command in an xterm
+    // if 'background' is true -> run asynchronous
+    // if 'wait_only_if_error' is true -> asynchronous does wait for keypress only if cmd fails
+
+    GBS_strstruct *strstruct = GBS_stropen(1024);
+    const char    *xcmd      = GB_getenvARB_XCMD();
+
+    GBS_strcat(strstruct, "(");
+    GBS_strcat(strstruct, xcmd);
+    GBS_strcat(strstruct, " bash -c 'LD_LIBRARY_PATH=\"");
+    GBS_strcat(strstruct, GB_getenv("LD_LIBRARY_PATH"));
+    GBS_strcat(strstruct, "\";export LD_LIBRARY_PATH; (");
+    GBS_strcat(strstruct, cmd);
+
+    if (background) {
+        if (wait_only_if_error) {
+            GBS_strcat(strstruct, ") || (echo; echo Press RETURN to close Window; read a)' ) &");
+        }
+        else {
+            GBS_strcat(strstruct, "; echo; echo Press RETURN to close Window; read a)' ) &");
+        }
+    }
+    else {
+        if (wait_only_if_error) {
+            GBS_strcat(strstruct, ") || (echo; echo Press RETURN to close Window; read a)' )");
+        }
+        else { // no wait
+            GBS_strcat(strstruct, " )' ) ");
+        }
+    }
+
+    GB_ERROR error = GBK_system(GBS_mempntr(strstruct));
+    GBS_strforget(strstruct);
+
+    return error;
 }
 
 // ---------------------------------------------

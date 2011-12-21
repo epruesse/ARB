@@ -46,7 +46,6 @@ GB_ERROR GBT_set_default_alignment(GBDATA *gb_main, const char *alignment_name);
 GBDATA *GBT_get_alignment(GBDATA *gb_main, const char *aliname);
 long GBT_get_alignment_len(GBDATA *gb_main, const char *aliname);
 GB_ERROR GBT_set_alignment_len(GBDATA *gb_main, const char *aliname, long new_len);
-int GBT_get_alignment_aligned(GBDATA *gb_main, const char *aliname);
 char *GBT_get_alignment_type_string(GBDATA *gb_main, const char *aliname);
 GB_alignment_type GBT_get_alignment_type(GBDATA *gb_main, const char *aliname);
 bool GBT_is_alignment_protein(GBDATA *gb_main, const char *alignment_name);
@@ -63,7 +62,6 @@ GBDATA *GBT_find_or_create_species_rel_species_data(GBDATA *gb_species_data, con
 GBDATA *GBT_find_or_create_species(GBDATA *gb_main, const char *name);
 GBDATA *GBT_find_or_create_SAI(GBDATA *gb_main, const char *name);
 GBDATA *GBT_find_item_rel_item_data(GBDATA *gb_item_data, const char *id_field, const char *id_value);
-GBDATA *GBT_expect_item_rel_item_data(GBDATA *gb_item_data, const char *id_field, const char *id_value);
 GBDATA *GBT_get_species_data(GBDATA *gb_main);
 GBDATA *GBT_first_marked_species_rel_species_data(GBDATA *gb_species_data);
 GBDATA *GBT_first_marked_species(GBDATA *gb_main);
@@ -75,18 +73,14 @@ GBDATA *GBT_find_species_rel_species_data(GBDATA *gb_species_data, const char *n
 GBDATA *GBT_find_species(GBDATA *gb_main, const char *name);
 GBDATA *GBT_expect_species(GBDATA *gb_main, const char *name);
 GBDATA *GBT_get_SAI_data(GBDATA *gb_main);
-GBDATA *GBT_first_marked_SAI_rel_SAI_data(GBDATA *gb_sai_data);
-GBDATA *GBT_next_marked_SAI(GBDATA *gb_sai);
 GBDATA *GBT_first_SAI_rel_SAI_data(GBDATA *gb_sai_data);
 GBDATA *GBT_first_SAI(GBDATA *gb_main);
 GBDATA *GBT_next_SAI(GBDATA *gb_sai);
 GBDATA *GBT_find_SAI_rel_SAI_data(GBDATA *gb_sai_data, const char *name);
 GBDATA *GBT_find_SAI(GBDATA *gb_main, const char *name);
 GBDATA *GBT_expect_SAI(GBDATA *gb_main, const char *name);
-long GBT_get_item_count(GBDATA *gb_parent_of_container, const char *item_container_name);
 long GBT_get_species_count(GBDATA *gb_main);
 long GBT_get_SAI_count(GBDATA *gb_main);
-char *GBT_create_unique_item_identifier(GBDATA *gb_item_container, const char *id_field, const char *default_id);
 char *GBT_create_unique_species_name(GBDATA *gb_main, const char *default_name);
 void GBT_mark_all(GBDATA *gb_main, int flag);
 void GBT_mark_all_that(GBDATA *gb_main, int flag, int (*condition)(GBDATA *, void *), void *cd);
@@ -114,18 +108,10 @@ GBDATA *GBT_open_table(GBDATA *gb_table_root, const char *table_name, bool read_
 GBDATA *GBT_first_table(GBDATA *gb_main);
 GBDATA *GBT_next_table(GBDATA *gb_table);
 GBDATA *GBT_first_table_entry(GBDATA *gb_table);
-GBDATA *GBT_first_marked_table_entry(GBDATA *gb_table);
 GBDATA *GBT_next_table_entry(GBDATA *gb_table_entry);
-GBDATA *GBT_next_marked_table_entry(GBDATA *gb_table_entry);
-GBDATA *GBT_find_table_entry(GBDATA *gb_table, const char *id);
-GBDATA *GBT_open_table_entry(GBDATA *gb_table, const char *id);
 GBDATA *GBT_first_table_field(GBDATA *gb_table);
-GBDATA *GBT_first_marked_table_field(GBDATA *gb_table);
 GBDATA *GBT_next_table_field(GBDATA *gb_table_field);
-GBDATA *GBT_next_marked_table_field(GBDATA *gb_table_field);
 GBDATA *GBT_find_table_field(GBDATA *gb_table, const char *id);
-GB_TYPES GBT_get_type_of_table_entry_field(GBDATA *gb_table, const char *fieldname);
-GB_ERROR GBT_savely_write_table_entry_field(GBDATA *gb_table, GBDATA *gb_entry, const char *fieldname, const char *value_in_ascii_format);
 GBDATA *GBT_open_table_field(GBDATA *gb_table, const char *fieldname, GB_TYPES type_of_field);
 
 /* adtools.cxx */
@@ -150,12 +136,10 @@ GB_ERROR GBT_write_string(GBDATA *gb_container, const char *fieldpath, const cha
 GB_ERROR GBT_write_int(GBDATA *gb_container, const char *fieldpath, long content);
 GB_ERROR GBT_write_byte(GBDATA *gb_container, const char *fieldpath, unsigned char content);
 GB_ERROR GBT_write_float(GBDATA *gb_container, const char *fieldpath, double content);
-GBDATA *GB_test_link_follower(GBDATA *gb_main, GBDATA *gb_link, const char *link);
 GBDATA *GBT_open(const char *path, const char *opent);
 GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char *action_name);
 GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *awar_name, const char *value);
 GB_ERROR GBT_remote_read_awar(GBDATA *gb_main, const char *application, const char *awar_name);
-const char *GBT_remote_touch_awar(GBDATA *gb_main, const char *application, const char *awar_name);
 char *GB_generate_notification(GBDATA *gb_main, void (*cb)(const char *message, void *client_data), const char *message, void *client_data);
 GB_ERROR GB_remove_last_notification(GBDATA *gb_main);
 GB_ERROR GB_notify(GBDATA *gb_main, int id, const char *message);

@@ -39,15 +39,6 @@ double GB_log_fak(int n) {
 
 static int randomSeeded = 0;
 
-double GB_frandom() {
-    // produces a random number in range [0.0 .. 1.0]
-    if (!randomSeeded) {
-        srand(time(0));
-        randomSeeded = 1;
-    }
-    return ((double)rand())/RAND_MAX;
-}
-
 int GB_random(int range) {
     // produces a random number in range [0 .. range-1]
     if (!randomSeeded) {

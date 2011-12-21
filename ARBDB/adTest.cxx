@@ -209,7 +209,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
     }
 }
 
-void GB_dump(GBDATA *gbd) {
+NOT4PERL void GB_dump(GBDATA *gbd) {
     int max_lines = 2500;
     GB_dump_internal(gbd, &max_lines);
     if (max_lines <= 0) {
@@ -218,7 +218,7 @@ void GB_dump(GBDATA *gbd) {
     }
 }
 
-void GB_dump_no_limit(GBDATA *gbd) {
+NOT4PERL void GB_dump_no_limit(GBDATA *gbd) {
     GB_dump_internal(gbd, 0);
 }
 

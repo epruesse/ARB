@@ -194,7 +194,7 @@ char *GB_find_latest_file(const char *dir, const char *mask) {
     return result;
 }
 
-const char *GB_existing_file(const char *file, bool warn_when_not_found) {
+static const char *GB_existing_file(const char *file, bool warn_when_not_found) {
     // return 'file' if it's an existing readable file
     // return NULL otherwise
 

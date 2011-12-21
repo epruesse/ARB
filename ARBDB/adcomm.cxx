@@ -1654,10 +1654,6 @@ bool GB_is_server(GBDATA *gbd) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     return Main->local_mode;
 }
-bool GB_is_client(GBDATA *gbd) {
-    return !GB_is_server(gbd);
-}
-
 static GB_ERROR gbcmc_unfold_list(int socket, GBDATA * gbd)
 {
     long      readvar[2];

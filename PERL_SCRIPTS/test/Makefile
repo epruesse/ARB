@@ -11,7 +11,7 @@ ARB_PM := $(LIBDIR)/ARB.pm
 ARB_SO := $(LIBDIR)/ARB.$(SO)
 
 help:
-	test		test all perl scripts for syntax
+	@echo "test      tests all perl scripts for syntax"
 
 test: test.stamp
 
