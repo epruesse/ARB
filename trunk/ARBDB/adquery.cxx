@@ -41,7 +41,7 @@ static void build_GBDATA_path(GBDATA *gbd, char **buffer) {
 
 #define BUFFERSIZE 1024
 
-const char *GB_get_GBDATA_path(GBDATA *gbd) {
+static const char *GB_get_GBDATA_path(GBDATA *gbd) {
     static char *orgbuffer = NULL;
     char        *buffer;
 

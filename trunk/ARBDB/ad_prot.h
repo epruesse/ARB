@@ -66,19 +66,17 @@ char *GEN_global_gene_identifier(GBDATA *gb_gene, GBDATA *gb_organism);
 const char *GB_get_type_name(GBDATA *gbd);
 const char *GB_get_db_path(GBDATA *gbd);
 void GB_dump_db_path(GBDATA *gbd);
-void GB_dump(GBDATA *gbd);
-void GB_dump_no_limit(GBDATA *gbd);
+NOT4PERL void GB_dump(GBDATA *gbd);
+NOT4PERL void GB_dump_no_limit(GBDATA *gbd);
 GB_ERROR GB_fix_database(GBDATA *gb_main);
 
 /* ad_load.cxx */
 void GB_set_verbose(void);
 void GB_set_next_main_idx(long idx);
-GBDATA *GB_login(const char *cpath, const char *opent, const char *user);
 GBDATA *GB_open(const char *path, const char *opent);
 
 /* ad_save_load.cxx */
 GB_ERROR GB_save(GBDATA *gb, const char *path, const char *savetype);
-GB_ERROR GB_create_parent_directory(const char *path);
 GB_ERROR GB_create_directory(const char *path);
 GB_ERROR GB_save_in_arbprop(GBDATA *gb, const char *path, const char *savetype);
 GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype);
@@ -96,7 +94,6 @@ void GBCMS_shutdown(GBDATA *gbd);
 bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time);
 long GB_read_clients(GBDATA *gbd);
 bool GB_is_server(GBDATA *gbd);
-bool GB_is_client(GBDATA *gbd);
 GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str, GB_CASE case_sens, GB_SEARCH_TYPE gbs);
 GB_ERROR GB_tell_server_dont_wait(GBDATA *gbd);
 GB_ERROR GB_install_pid(int mode);
@@ -109,7 +106,6 @@ bool GB_is_dictionary_compressed(GBDATA *gbd);
 GB_CSTR GB_getcwd(void);
 char *GB_find_all_files(const char *dir, const char *mask, bool filename_only);
 char *GB_find_latest_file(const char *dir, const char *mask);
-const char *GB_existing_file(const char *file, bool warn_when_not_found);
 char *GB_lib_file(bool warn_when_not_found, const char *libprefix, const char *filename);
 char *GB_property_file(bool warn_when_not_found, const char *filename);
 void GBS_read_dir(StrArray &names, const char *dir, const char *mask);
@@ -159,7 +155,6 @@ GB_ERROR GB_set_undo_mem(GBDATA *gbd, long memsize);
 
 /* adlang1.cxx */
 NOT4PERL void GB_set_export_sequence_hook(gb_export_sequence_cb escb);
-void GB_set_ACISRT_trace(int enable);
 int GB_get_ACISRT_trace(void);
 
 /* adlink.cxx */
@@ -190,7 +185,6 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
 
 /* admath.cxx */
 double GB_log_fak(int n);
-double GB_frandom(void);
 int GB_random(int range);
 
 /* adoptimize.cxx */
@@ -200,7 +194,6 @@ GB_ERROR GB_optimize(GBDATA *gb_main);
 GB_ERROR GBC_await_error(void);
 
 /* adquery.cxx */
-const char *GB_get_GBDATA_path(GBDATA *gbd);
 GBDATA *GB_find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GBDATA *after, size_t skip_over);
 GBDATA *GB_find(GBDATA *gbd, const char *key, GB_SEARCH_TYPE gbs);
 GBDATA *GB_find_string(GBDATA *gbd, const char *key, const char *str, GB_CASE case_sens, GB_SEARCH_TYPE gbs);
@@ -233,19 +226,11 @@ GB_ULONG GB_time_of_day(void);
 long GB_last_saved_clock(GBDATA *gb_main);
 GB_ULONG GB_last_saved_time(GBDATA *gb_main);
 GB_ERROR GB_textprint(const char *path) __ATTR__USERESULT;
-GB_ERROR GB_xterm(void) __ATTR__USERESULT;
-GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) __ATTR__USERESULT_TODO;
 char *GB_executable(GB_CSTR exe_name);
-void GB_setenv(const char *var, const char *value);
-GB_CSTR GB_getenvARB_XTERM(void);
-GB_CSTR GB_getenvARB_XCMD(void);
 GB_CSTR GB_getenvUSER(void);
-GB_CSTR GB_getenvHOME(void);
 GB_CSTR GB_getenvARBHOME(void);
 GB_CSTR GB_getenvARBMACRO(void);
 GB_CSTR GB_getenvARBMACROHOME(void);
-GB_CSTR GB_getenvARBCONFIG(void);
-GB_CSTR GB_getenvPATH(void);
 GB_CSTR GB_getenvARB_GS(void);
 GB_CSTR GB_getenvARB_PDFVIEW(void);
 GB_CSTR GB_getenvARB_TEXTEDIT(void);
@@ -255,6 +240,8 @@ NOT4PERL gb_getenv_hook GB_install_getenv_hook(gb_getenv_hook hook);
 GB_CSTR GB_getenv(const char *env);
 bool GB_host_is_local(const char *hostname);
 GB_ULONG GB_get_physical_memory(void);
+GB_ERROR GB_xterm(void) __ATTR__USERESULT;
+GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) __ATTR__USERESULT_TODO;
 GB_CSTR GB_append_suffix(const char *name, const char *suffix);
 GB_CSTR GB_canonical_path(const char *anypath);
 GB_CSTR GB_concat_path(GB_CSTR anypath_left, GB_CSTR anypath_right);
@@ -271,7 +258,6 @@ void GB_remove_on_exit(const char *filename);
 void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullname, char **res_name_only, char **res_suffix);
 
 /* adstring.cxx */
-void GB_raise_critical_error(const char *msg) __ATTR__NORETURN;
 char *GBS_string_2_key(const char *str);
 char *GB_memdup(const char *source, size_t len);
 GB_ERROR GB_check_key(const char *key) __ATTR__USERESULT;
@@ -326,7 +312,6 @@ GB_BUFFER GB_give_buffer2(long size);
 char *GB_check_out_buffer(GB_CBUFFER buffer);
 GB_BUFFER GB_give_other_buffer(GB_CBUFFER buffer, long size);
 void GB_atexit(void (*exitfun)());
-void GB_exit_gb(void);
 void GB_init_gb(void);
 int GB_open_DBs(void);
 void GB_atclose(GBDATA *gbd, void (*fun)(GBDATA *gb_main, void *client_data), void *client_data);
@@ -342,8 +327,6 @@ GB_CSTR GB_read_char_pntr(GBDATA *gbd);
 char *GB_read_string(GBDATA *gbd);
 long GB_read_string_count(GBDATA *gbd);
 GB_CSTR GB_read_link_pntr(GBDATA *gbd);
-char *GB_read_link(GBDATA *gbd);
-long GB_read_link_count(GBDATA *gbd);
 long GB_read_bits_count(GBDATA *gbd);
 GB_CSTR GB_read_bits_pntr(GBDATA *gbd, char c_0, char c_1);
 char *GB_read_bits(GBDATA *gbd, char c_0, char c_1);
@@ -354,7 +337,6 @@ GB_CUINT4 *GB_read_ints_pntr(GBDATA *gbd);
 long GB_read_ints_count(GBDATA *gbd);
 GB_UINT4 *GB_read_ints(GBDATA *gbd);
 GB_CFLOAT *GB_read_floats_pntr(GBDATA *gbd);
-long GB_read_floats_count(GBDATA *gbd);
 char *GB_read_as_string(GBDATA *gbd);
 long GB_read_from_ints(GBDATA *gbd, long index);
 double GB_read_from_floats(GBDATA *gbd, long index);
@@ -373,7 +355,6 @@ GB_ERROR GB_write_as_string(GBDATA *gbd, const char *val);
 int GB_read_security_write(GBDATA *gbd);
 int GB_read_security_read(GBDATA *gbd);
 int GB_read_security_delete(GBDATA *gbd);
-int GB_get_my_security(GBDATA *gbd);
 GB_ERROR GB_write_security_write(GBDATA *gbd, unsigned long level);
 GB_ERROR GB_write_security_read(GBDATA *gbd, unsigned long level);
 GB_ERROR GB_write_security_delete(GBDATA *gbd, unsigned long level);
@@ -393,7 +374,6 @@ GBDATA *GB_get_father(GBDATA *gbd);
 GBDATA *GB_get_grandfather(GBDATA *gbd);
 GBDATA *GB_get_root(GBDATA *gbd);
 bool GB_check_father(GBDATA *gbd, GBDATA *gb_maybefather);
-int GB_rename(GBDATA *gbc, const char *new_key);
 GBDATA *GB_create(GBDATA *father, const char *key, GB_TYPES type);
 GBDATA *GB_create_container(GBDATA *father, const char *key);
 bool GB_allow_compression(GBDATA *gb_main, bool allow_compression);
@@ -405,8 +385,6 @@ GB_ERROR GB_set_temporary(GBDATA *gbd) __ATTR__USERESULT;
 GB_ERROR GB_clear_temporary(GBDATA *gbd);
 bool GB_is_temporary(GBDATA *gbd);
 bool GB_in_temporary_branch(GBDATA *gbd);
-GB_ERROR GB_push_local_transaction(GBDATA *gbd);
-GB_ERROR GB_pop_local_transaction(GBDATA *gbd);
 GB_ERROR GB_push_transaction(GBDATA *gbd);
 GB_ERROR GB_pop_transaction(GBDATA *gbd);
 GB_ERROR GB_begin_transaction(GBDATA *gbd);
@@ -426,14 +404,10 @@ GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientda
 void GB_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata);
 void GB_remove_all_callbacks_to(GBDATA *gbd, GB_CB_TYPE type, GB_CB func);
 GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata);
-GB_ERROR GB_release(GBDATA *gbd);
-int GB_testlocal(GBDATA *gbd);
 int GB_nsons(GBDATA *gbd);
 void GB_disable_quicksave(GBDATA *gbd, const char *reason);
 GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long listsize);
 GB_ERROR GB_resort_system_folder_to_top(GBDATA *gb_main);
-GB_ERROR GB_write_usr_public(GBDATA *gbd, long flags);
-long GB_read_usr_public(GBDATA *gbd);
 long GB_read_usr_private(GBDATA *gbd);
 GB_ERROR GB_write_usr_private(GBDATA *gbd, long ref);
 void GB_write_flag(GBDATA *gbd, long flag);

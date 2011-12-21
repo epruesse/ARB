@@ -84,7 +84,7 @@ GBDATA *GBT_find_item_rel_item_data(GBDATA *gb_item_data, const char *id_field, 
     return gb_item_id ? GB_get_father(gb_item_id) : 0;
 }
 
-GBDATA *GBT_expect_item_rel_item_data(GBDATA *gb_item_data, const char *id_field, const char *id_value) {
+static GBDATA *GBT_expect_item_rel_item_data(GBDATA *gb_item_data, const char *id_field, const char *id_value) {
     //! like GBT_find_item_rel_item_data(), but also exports an error if the item is not present
 
     GBDATA *gb_found = GBT_find_item_rel_item_data(gb_item_data, id_field, id_value);
@@ -149,15 +149,6 @@ GBDATA *GBT_get_SAI_data(GBDATA *gb_main) {
     return GB_search(gb_main, "extended_data", GB_CREATE_CONTAINER);
 }
 
-GBDATA *GBT_first_marked_SAI_rel_SAI_data(GBDATA *gb_sai_data) {
-    return GB_first_marked(gb_sai_data, "extended");
-}
-
-GBDATA *GBT_next_marked_SAI(GBDATA *gb_sai) {
-    gb_assert(GB_has_key(gb_sai, "extended"));
-    return GB_next_marked(gb_sai, "extended");
-}
-
 // Search SAIs
 GBDATA *GBT_first_SAI_rel_SAI_data(GBDATA *gb_sai_data) {
     return GB_entry(gb_sai_data, "extended");
@@ -191,7 +182,7 @@ GBDATA *GBT_expect_SAI(GBDATA *gb_main, const char *name) {
 // ---------------------
 //      count items
 
-long GBT_get_item_count(GBDATA *gb_parent_of_container, const char *item_container_name) {
+static long GBT_get_item_count(GBDATA *gb_parent_of_container, const char *item_container_name) {
     // returns elements stored in a container
 
     GBDATA *gb_item_data;
@@ -215,7 +206,7 @@ long GBT_get_SAI_count(GBDATA *gb_main) {
 
 // --------------------------------------------------------------------------------
 
-char *GBT_create_unique_item_identifier(GBDATA *gb_item_container, const char *id_field, const char *default_id) {
+static char *GBT_create_unique_item_identifier(GBDATA *gb_item_container, const char *id_field, const char *default_id) {
     // returns an identifier not used by items in 'gb_item_container'
     // 'id_field' is the entry that is used as identifier (e.g. 'name' for species)
     // 'default_id' will be suffixed with a number to generate a unique id

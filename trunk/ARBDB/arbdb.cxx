@@ -391,7 +391,7 @@ static void run_and_destroy_exit_functions(gb_exitfun *fun) {
     }
 }
 
-void GB_exit_gb() {
+static void GB_exit_gb() {
     GB_shell::ensure_inside();
 
     if (gb_local) {
@@ -802,7 +802,7 @@ GB_CSTR GB_read_link_pntr(GBDATA *gbd)
     return GB_read_pntr(gbd);
 }
 
-char *GB_read_link(GBDATA *gbd)
+static char *GB_read_link(GBDATA *gbd)
 {
     const char *d;
     GB_TEST_READ(gbd, GB_LINK, "GB_read_link_pntr");
@@ -810,13 +810,6 @@ char *GB_read_link(GBDATA *gbd)
     if (!d) return NULL;
     return GB_memdup(d, GB_GETSIZE(gbd)+1);
 }
-
-long GB_read_link_count(GBDATA *gbd)
-{
-    GB_TEST_READ(gbd, GB_LINK, "GB_read_link_pntr");
-    return GB_GETSIZE(gbd);
-}
-
 
 long GB_read_bits_count(GBDATA *gbd)
 {
@@ -901,8 +894,7 @@ GB_CUINT4 *GB_read_ints_pntr(GBDATA *gbd)
     }
 }
 
-long GB_read_ints_count(GBDATA *gbd)
-{
+long GB_read_ints_count(GBDATA *gbd) { // used by ../PERL_SCRIPTS/SAI/SAI.pm@read_ints_count
     GB_TEST_READ(gbd, GB_INTS, "GB_read_ints_count");
     return GB_GETSIZE(gbd);
 }
@@ -946,7 +938,7 @@ GB_CFLOAT *GB_read_floats_pntr(GBDATA *gbd)
     return (float *)buf2;
 }
 
-long GB_read_floats_count(GBDATA *gbd)
+static long GB_read_floats_count(GBDATA *gbd)
 {
     GB_TEST_READ(gbd, GB_FLOATS, "GB_read_floats_count");
     return GB_GETSIZE(gbd);
@@ -979,7 +971,7 @@ char *GB_read_as_string(GBDATA *gbd)
 // ------------------------------------------------------------
 //      array type access functions (intended for perl use)
 
-long GB_read_from_ints(GBDATA *gbd, long index) {
+long GB_read_from_ints(GBDATA *gbd, long index) { // used by ../PERL_SCRIPTS/SAI/SAI.pm@read_from_ints
     static GBDATA    *last_gbd = 0;
     static long       count    = 0;
     static GB_CUINT4 *i        = 0;
@@ -1329,10 +1321,6 @@ int GB_read_security_delete(GBDATA *gbd) {
     GB_test_transaction(gbd);
     return GB_GET_SECURITY_DELETE(gbd);
 }
-int GB_get_my_security(GBDATA *gbd) {
-    return GB_MAIN(gbd)->security_level;
-}
-
 GB_ERROR GB_write_security_write(GBDATA *gbd, unsigned long level)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
@@ -1346,7 +1334,7 @@ GB_ERROR GB_write_security_write(GBDATA *gbd, unsigned long level)
     GB_DO_CALLBACKS(gbd);
     return 0;
 }
-GB_ERROR GB_write_security_read(GBDATA *gbd, unsigned long level)
+GB_ERROR GB_write_security_read(GBDATA *gbd, unsigned long level) // @@@ unused 
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     GB_test_transaction(gbd);
@@ -1358,7 +1346,6 @@ GB_ERROR GB_write_security_read(GBDATA *gbd, unsigned long level)
     GB_DO_CALLBACKS(gbd);
     return 0;
 }
-
 GB_ERROR GB_write_security_delete(GBDATA *gbd, unsigned long level)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
@@ -1471,7 +1458,6 @@ GBQUARK gb_key_2_quark(GB_MAIN_TYPE *Main, const char *key) {
     // - create main entry and its dummy father via gb_make_container()
     //
     // Other uses (maybe just to pass GB_MAIN_TYPE instead of GBDATA as GB_key_2_quark likes):
-    // - gb_rename_entry
     // - gb_make_entry
     // - compress_sequence_tree
     // - dictionary compression (several calls)
@@ -1567,42 +1553,6 @@ GBDATA *gb_create_container(GBDATA *father, const char *key) {
     gb_touch_header(GB_FATHER(gbd));
     gb_touch_entry((GBDATA *)gbd, GB_CREATED);
     return (GBDATA *)gbd;
-}
-
-static void gb_rename(GBCONTAINER *gbc, const char *new_key) {
-    gb_rename_entry(gbc, new_key);
-}
-
-int GB_rename(GBDATA *gbc, const char *new_key) {
-    /*! User accessible rename, check everything
-     * returns 0 if successful!
-     */
-    GBCONTAINER *old_father, *new_father;
-    if (GB_check_key(new_key)) {
-        GB_print_error();
-        return -1;
-    }
-
-    GB_test_transaction(gbc);
-    old_father = GB_FATHER(gbc);
-
-    if (GB_TYPE(gbc) != GB_DB) {
-        GB_internal_error("GB_rename has to be called with container");
-        return -1;
-    }
-
-    gb_rename((GBCONTAINER*)gbc, new_key);
-
-    new_father = GB_FATHER(gbc);
-    if (old_father != new_father) {
-        GB_internal_error("father changed during rename");
-        return -1;
-    }
-
-    gb_touch_header(new_father);
-    gb_touch_entry(gbc, GB_NORMAL_CHANGE);
-
-    return 0;
 }
 
 GBDATA *GB_create(GBDATA *father, const char *key, GB_TYPES type) {
@@ -1983,7 +1933,7 @@ GB_ERROR GB_set_temporary(GBDATA *gbd) { // goes to header: __ATTR__USERESULT
     RETURN_ERROR(error);
 }
 
-GB_ERROR GB_clear_temporary(GBDATA *gbd) {
+GB_ERROR GB_clear_temporary(GBDATA *gbd) { // @@@ used in ptpan branch - do not remove
     //! undo effect of GB_set_temporary()
 
     GB_test_transaction(gbd);
@@ -1998,7 +1948,7 @@ bool GB_is_temporary(GBDATA *gbd) {
     return (long)gbd->flags.temporary;
 }
 
-bool GB_in_temporary_branch(GBDATA *gbd) {
+bool GB_in_temporary_branch(GBDATA *gbd) { // @@@ used in ptpan branch - do not remove
     /*! @return true, if 'gbd' is member of a temporary subtree,
      * i.e. if GB_is_temporary(itself or any parent)
      */
@@ -2014,31 +1964,6 @@ bool GB_in_temporary_branch(GBDATA *gbd) {
 // ---------------------
 //      transactions
 
-
-GB_ERROR GB_push_local_transaction(GBDATA *gbd) {
-    /*! Starts a read only transaction.
-     * Be sure that all data is cached. Be extremely careful!
-     */
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    if (Main->transaction>0) {
-        return GB_push_transaction(gbd);
-    }
-    Main->transaction --;
-    return 0;
-}
-
-GB_ERROR GB_pop_local_transaction(GBDATA *gbd) {
-    /*! Stops a read only transaction.
-     * Be sure that all data is cached!
-     */
-
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    if (Main->transaction>0) {
-        return GB_pop_transaction(gbd);
-    }
-    Main->transaction ++;
-    return 0;
-}
 
 GB_ERROR GB_push_transaction(GBDATA *gbd) {
     /*! start a transaction if no transaction is running.
@@ -2628,54 +2553,6 @@ GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clien
     return GB_add_callback(gbd, type, func, clientdata);
 }
 
-GB_ERROR GB_release(GBDATA *gbd) {
-    /*! free cached data in client.
-     *
-     * Warning: pointers into the freed region(s) will get invalid!
-     */
-    GBCONTAINER  *gbc;
-    GBDATA       *gb;
-    int           index;
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-
-    GB_test_transaction(gbd);
-    if (Main->local_mode) return 0;
-    if (GB_ARRAY_FLAGS(gbd).changed && !gbd->flags2.update_in_server) {
-        GB_update_server(gbd);
-    }
-    if (GB_TYPE(gbd) != GB_DB) {
-        GB_ERROR error = GB_export_errorf("You cannot release non container (%s)",
-                                          GB_read_key_pntr(gbd));
-        GB_internal_error(error);
-        return error;
-    }
-    if (gbd->flags2.folded_container) return 0;
-    gbc = (GBCONTAINER *)gbd;
-
-    for (index = 0; index < gbc->d.nheader; index++) {
-        if ((gb = GBCONTAINER_ELEM(gbc, index))) {
-            gb_delete_entry(&gb);
-        }
-    }
-
-    gbc->flags2.folded_container = 1;
-    gb_do_callback_list(Main);       // do all callbacks
-    return 0;
-}
-
-int GB_testlocal(GBDATA *gbd) {
-    /*! test whether data is available as local data
-     *
-     * @return 1 if data is available
-     *
-     * important for callbacks, because only testlocal tested data is available
-     */
-    if (GB_TYPE(gbd) != GB_DB) return 1;            // all non-containers are available
-    if (GB_MAIN(gbd)->local_mode) return 1;         // everything is available in server
-    if (gbd->flags2.folded_container) return 0;
-    return 1;
-}
-
 int GB_nsons(GBDATA *gbd) {
     /*! return number of child entries
      *
@@ -2764,24 +2641,6 @@ GB_ERROR GB_resort_system_folder_to_top(GBDATA *gb_main) {
     error = GB_resort_data_base(gb_main, new_order_list, len);
     free(new_order_list);
     return error;
-}
-
-// -------------------
-//      user flags
-
-GB_ERROR GB_write_usr_public(GBDATA *gbd, long flags) {
-    GB_test_transaction(gbd);
-    if (GB_GET_SECURITY_WRITE(gbd) > GB_MAIN(gbd)->security_level)
-        return gb_security_error(gbd);
-    gbd->flags.user_flags = flags;
-    gb_touch_entry(gbd, GB_NORMAL_CHANGE);
-    return 0;
-}
-
-long GB_read_usr_public(GBDATA *gbd)
-{
-    GB_test_transaction(gbd);
-    return (long)gbd->flags.user_flags;
 }
 
 // ------------------------------

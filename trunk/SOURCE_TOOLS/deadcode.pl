@@ -10,7 +10,7 @@ my @symbol_priority = (
                        '^main$',
                       );
 
-my $reg_file_exclude = qr/\/(GDE|EISPACK|READSEQ)\//;
+my $reg_file_exclude = qr/\/(GDE|EISPACK|READSEQ|PERL2ARB)\//;
 
 
 sub findObjects(\@) {

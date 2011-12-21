@@ -514,7 +514,7 @@ GB_ERROR GBT_write_float(GBDATA *gb_container, const char *fieldpath, double con
 }
 
 
-GBDATA *GB_test_link_follower(GBDATA *gb_main, GBDATA *gb_link, const char *link) {
+static GBDATA *GB_test_link_follower(GBDATA *gb_main, GBDATA *gb_link, const char *link) {
     GBDATA *linktarget = GB_search(gb_main, "tmp/link/string", GB_STRING);
     // GBUSE(gb_link);
     GB_write_string(linktarget, GBS_global_string("Link is '%s'", link));
@@ -588,8 +588,7 @@ GBDATA *GBT_open(const char *path, const char *opent) {
  * Search for
  * - BIO::remote_action         (use of GBT_remote_action)
  * - BIO::remote_awar           (use of GBT_remote_awar)
- * - BIO::remote_read_awar      (use of GBT_remote_read_awar - seems unused)
- * - BIO::remote_touch_awar     (use of GBT_remote_touch_awar - seems unused)
+ * - BIO::remote_read_awar      (use of GBT_remote_read_awar)
  */
 
 
@@ -657,6 +656,8 @@ static GB_ERROR gbt_wait_for_remote_action(GBDATA *gb_main, GBDATA *gb_action, c
 }
 
 GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char *action_name) {
+    // needs to be public (needed by perl-macros)
+
     remote_awars  awars;
     GBDATA       *gb_action;
     GB_ERROR      error = NULL;
@@ -673,6 +674,8 @@ GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char 
 }
 
 GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *awar_name, const char *value) {
+    // needs to be public (needed by perl-macros)
+
     remote_awars  awars;
     GBDATA       *gb_awar;
     GB_ERROR      error = NULL;
@@ -691,6 +694,8 @@ GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *a
 }
 
 GB_ERROR GBT_remote_read_awar(GBDATA *gb_main, const char *application, const char *awar_name) {
+    // needs to be public (needed by perl-macros)
+
     remote_awars  awars;
     GBDATA       *gb_awar;
     GB_ERROR      error = NULL;
@@ -706,24 +711,6 @@ GB_ERROR GBT_remote_read_awar(GBDATA *gb_main, const char *application, const ch
     if (!error) error = gbt_wait_for_remote_action(gb_main, gb_awar, awars.awar_value);
     return error;
 }
-
-const char *GBT_remote_touch_awar(GBDATA *gb_main, const char *application, const char *awar_name) {
-    remote_awars  awars;
-    GBDATA       *gb_awar;
-    GB_ERROR      error = NULL;
-
-    gbt_build_remote_awars(&awars, application);
-    gb_awar = gbt_remote_search_awar(gb_main, awars.awar_awar);
-
-    error             = GB_begin_transaction(gb_main);
-    if (!error) error = GB_write_string(gb_awar, awar_name);
-    if (!error) error = GBT_write_string(gb_main, awars.awar_action, "AWAR_REMOTE_TOUCH");
-    error             = GB_end_transaction(gb_main, error);
-
-    if (!error) error = gbt_wait_for_remote_action(gb_main, gb_awar, awars.awar_result);
-    return error;
-}
-
 
 // ---------------------------
 //      self-notification

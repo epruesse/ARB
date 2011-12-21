@@ -733,11 +733,6 @@ GB_ERROR GBT_set_alignment_len(GBDATA *gb_main, const char *aliname, long new_le
     return error;
 }
 
-int GBT_get_alignment_aligned(GBDATA *gb_main, const char *aliname) {
-    GBDATA *gb_alignment = GBT_get_alignment(gb_main, aliname);
-    return gb_alignment ? *GBT_read_int(gb_alignment, "aligned") : -1;
-}
-
 char *GBT_get_alignment_type_string(GBDATA *gb_main, const char *aliname) {
     char   *result       = NULL;
     GBDATA *gb_alignment = GBT_get_alignment(gb_main, aliname);

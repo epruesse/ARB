@@ -23,7 +23,6 @@ void gb_create_extended(GBDATA *gbd);
 GB_MAIN_TYPE *gb_make_gb_main_type(const char *path);
 char *gb_destroy_main(GB_MAIN_TYPE *Main);
 GBDATA *gb_make_pre_defined_entry(GBCONTAINER *father, GBDATA *gbd, long index_pos, GBQUARK keyq);
-void gb_rename_entry(GBCONTAINER *gbc, const char *new_key);
 GBDATA *gb_make_entry(GBCONTAINER *father, const char *key, long index_pos, GBQUARK keyq, GB_TYPES type);
 GBCONTAINER *gb_make_pre_defined_container(GBCONTAINER *father, GBCONTAINER *gbd, long index_pos, GBQUARK keyq);
 GBCONTAINER *gb_make_container(GBCONTAINER *father, const char *key, long index_pos, GBQUARK keyq);
