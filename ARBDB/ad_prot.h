@@ -28,6 +28,7 @@ GBDATA *GEN_find_gene_data(GBDATA *gb_species);
 GBDATA *GEN_expect_gene_data(GBDATA *gb_species);
 GBDATA *GEN_find_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name);
 GBDATA *GEN_find_gene(GBDATA *gb_species, const char *name);
+GBDATA *GEN_create_nonexisting_gene(GBDATA *gb_species, const char *name);
 GBDATA *GEN_find_or_create_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name);
 GBDATA *GEN_first_gene(GBDATA *gb_species);
 GBDATA *GEN_first_gene_rel_gene_data(GBDATA *gb_gene_data);
