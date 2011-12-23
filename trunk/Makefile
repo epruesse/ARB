@@ -44,11 +44,17 @@ endif
 FORCEMASK = umask 002
 NODIR=--no-print-directory
 
-# ---------------------- [unconditionally used options]
+# ---------------------- [basic compiler setting]
 
-GCC:=gcc
-GPP:=g++ 
+GCC:=$(CC)
+GPP:=$(CXX)
 CPPreal:=cpp
+
+# to use clang-static-analyzer, call make like this:
+# setenv CLANG_STATIC_CHECKER 1 ; scan-build make -j5 build
+ifeq ($(CLANG_STATIC_CHECKER),1)
+CCC_ANALYZER_CPLUSPLUS=1
+endif
 
 # ---------------------- compiler version detection
 
