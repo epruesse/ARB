@@ -51,8 +51,8 @@ AlignedSequenceLoader::AlignedSequenceLoader() {
 
                 string sequence = GB_read_string(gb_data);
 
-                string seq_as_vec[MSA_len];
-                int k = 0;
+                string *seq_as_vec = new string[MSA_len];
+                int     k          = 0;
                 for (string::iterator i = sequence.begin(); i != sequence.end(); ++i) {
                     switch (*i) {
                         case 'A':
@@ -86,6 +86,7 @@ AlignedSequenceLoader::AlignedSequenceLoader() {
 
                 assert((size_t)k == MSA_len);
                 vector<string> seq_vector(&seq_as_vec[0], &seq_as_vec[k]);
+                delete [] seq_as_vec;
 
                 seqs->push_back(seq_vector);
             }
