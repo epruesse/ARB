@@ -242,6 +242,56 @@ namespace arb_test {
     inline char *val2readable(const std::string& s) { return StaticCode::readable_string(s.c_str()); }
 #endif
 
+    // ------------------
+    //      copy
+
+
+    template <typename T>
+    class copy //! makes char* copyable, so it can be handled like most other types
+    {
+        T t;
+    public:
+        copy(const T& t_) : t(t_) {}
+        operator const T&() const { return t; }
+    };
+
+    template <>
+    class copy<const char *> {
+        str t;
+    public:
+        copy(const char *t_) : t(str(t_ ? strdup(t_) : NULL)) {}
+        operator const char *() const { return t.value(); }
+    };
+
+    template <typename T> class copy< copy<T> > { copy(const copy<T>& t_); }; // avoid copies of copies
+
+    template <typename T> inline copy<T> make_copy(const T& t) { return copy<T>(t); }
+
+    inline copy<const char *> make_copy(const char *p) { return copy<const char *>(p); }
+    inline copy<const char *> make_copy(char *p) { return copy<const char *>(p); }
+    inline copy<const char *> make_copy(const unsigned char *p) { return copy<const char *>(reinterpret_cast<const char *>(p)); }
+    inline copy<const char *> make_copy(unsigned char *p) { return copy<const char *>(reinterpret_cast<const char *>(p)); }
+    inline copy<const char *> make_copy(const signed char *p) { return copy<const char *>(reinterpret_cast<const char *>(p)); }
+    inline copy<const char *> make_copy(signed char *p) { return copy<const char *>(reinterpret_cast<const char *>(p)); }
+
+    inline copy<unsigned char> make_copy(char p) { return copy<unsigned char>(p); }
+    inline copy<unsigned char> make_copy(unsigned char p) { return copy<unsigned char>(p); }
+    inline copy<unsigned char> make_copy(signed char p) { return copy<unsigned char>(p); }
+
+    template <typename T> str readable(const copy<T>& v) { return str(val2readable(v)); }
+    template <typename T> str readableHex(const copy<T>& v) { return str(val2readableHex(v)); }
+
+    template <typename T> bool operator == (const copy<T>& v1, const copy<T>& v2) { return static_cast<const T&>(v1) == static_cast<const T&>(v2); }
+    template <typename T> bool operator != (const copy<T>& v1, const copy<T>& v2) { return !(v1 == v2); }
+
+    template <> inline bool operator == <const char *>(const copy<const char *>& v1, const copy<const char *>& v2) {
+        const char *val1 = v1;
+        const char *val2 = v2;
+
+        return (val1 == val2) || (val1 && val2 && (strcmp(val1, val2) == 0));
+    }
+
+
     template <typename T> inline void print(const T& t) { fputs(val2readable(make_copy(t)), stderr); }
     template <typename T> inline void print_hex(const T& t) { fputs(val2hex(make_copy(t)), stderr); }
 
@@ -349,57 +399,6 @@ namespace arb_test {
         if (error) StaticCode::printf("files_are_equal(%s, %s) fails: %s\n", file1, file2, error);
         return !error;
     }
-
-
-    // ------------------
-    //      copy
-
-
-    template <typename T>
-    class copy //! makes char* copyable, so it can be handled like most other types
-    {
-        T t;
-    public:
-        copy(const T& t_) : t(t_) {}
-        operator const T&() const { return t; }
-    };
-
-    template <>
-    class copy<const char *> {
-        str t;
-    public:
-        copy(const char *t_) : t(str(t_ ? strdup(t_) : NULL)) {}
-        operator const char *() const { return t.value(); }
-    };
-
-    template <typename T> class copy< copy<T> > { copy(const copy<T>& t_); }; // avoid copies of copies
-
-    template <typename T> inline copy<T> make_copy(const T& t) { return copy<T>(t); }
-
-    inline copy<const char *> make_copy(const char *p) { return copy<const char *>(p); }
-    inline copy<const char *> make_copy(char *p) { return copy<const char *>(p); }
-    inline copy<const char *> make_copy(const unsigned char *p) { return copy<const char *>(reinterpret_cast<const char *>(p)); }
-    inline copy<const char *> make_copy(unsigned char *p) { return copy<const char *>(reinterpret_cast<const char *>(p)); }
-    inline copy<const char *> make_copy(const signed char *p) { return copy<const char *>(reinterpret_cast<const char *>(p)); }
-    inline copy<const char *> make_copy(signed char *p) { return copy<const char *>(reinterpret_cast<const char *>(p)); }
-
-    inline copy<unsigned char> make_copy(char p) { return copy<unsigned char>(p); }
-    inline copy<unsigned char> make_copy(unsigned char p) { return copy<unsigned char>(p); }
-    inline copy<unsigned char> make_copy(signed char p) { return copy<unsigned char>(p); }
-
-    template <typename T> str readable(const copy<T>& v) { return str(val2readable(v)); }
-    template <typename T> str readableHex(const copy<T>& v) { return str(val2readableHex(v)); }
-
-    template <typename T> bool operator == (const copy<T>& v1, const copy<T>& v2) { return static_cast<const T&>(v1) == static_cast<const T&>(v2); }
-    template <typename T> bool operator != (const copy<T>& v1, const copy<T>& v2) { return !(v1 == v2); }
-
-    template <> inline bool operator == <const char *>(const copy<const char *>& v1, const copy<const char *>& v2) {
-        const char *val1 = v1;
-        const char *val2 = v2;
-
-        return (val1 == val2) || (val1 && val2 && (strcmp(val1, val2) == 0));
-    }
-
 
 
     // -------------------------------
