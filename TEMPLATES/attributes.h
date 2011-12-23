@@ -33,9 +33,29 @@
 #ifndef __GNUC__
 # error You have to use the gnu compiler!
 #endif
-#if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 3))
-# error You have to use gcc 4.3 or above
+
+#if (__GNUC__ < 4)
+#else
+# if (__GNUC__ > 4)
+#  define COMPILER_OK
+# else
+// gcc 4.xx:
+#  ifdef __clang__
+#   if (__GNUC_MINOR__ >= 2)
+#    define COMPILER_OK
+#   endif
+#  else
+#   if (__GNUC_MINOR__ >= 3)
+#    define COMPILER_OK
+#   endif
+#  endif
+# endif
 #endif
+
+#ifndef COMPILER_OK
+# error Wrong compiler version (need at least gcc 4.3 or clang 4.2) 
+#endif
+
 
 #if (__GNUC_MINOR__ > 5 || (__GNUC_MINOR__ == 5 && __GNUC_PATCHLEVEL__ >= 2)) // gcc 4.5.2 and higher
 # define __ATTR__DEPRECATED(reason) __attribute__((deprecated(reason)))
