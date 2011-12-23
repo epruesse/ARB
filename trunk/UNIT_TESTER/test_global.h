@@ -16,7 +16,9 @@
 // do not include here - just test
 // insert includes at ../INCLUDE/arb_assert.h@WhyIncludeHere
 #ifndef _STDARG_H
+#ifndef __STDARG_H
 #error Need cstdarg included
+#endif
 #endif
 #ifndef _STDIO_H
 #error Need cstdio included
