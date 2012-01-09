@@ -1865,11 +1865,18 @@ ED4_index ED4_root::pixel2pos(AW_pos click_x) {
 static char *detectProperties() {
     char *propname = NULL;
 
-    for (int mode = 0; !propname && mode <= 2; ++mode) { // search for properties-database
+    // check if edit4_?na.arb / edit4_ali_???.arb exist in .arb_props
+    for (int mode = 0; !propname && mode <= 1; ++mode) { 
         const char *fullprop = GB_path_in_arbprop(ED4_propertyName(mode));
-        if (mode == 2 || GB_is_regularfile(fullprop)) {
+        if (GB_is_regularfile(fullprop)) {
             freedup(propname, fullprop);
         }
+    }
+
+    // if not, use 'mode 2', i.e. "edit4.arb"
+    // (no full path, we want to load default from arb_defaults)
+    if (!propname) {
+        freedup(propname, ED4_propertyName(2));
     }
 
     GB_informationf("Using properties from '%s'", propname);
