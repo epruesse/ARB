@@ -643,35 +643,21 @@ bool ED4_base::has_parent(ED4_manager *Parent)
 }
 
 
-ED4_AREA_LEVEL  ED4_base::get_area_level(ED4_multi_species_manager **multi_species_manager) const
-{
+ED4_AREA_LEVEL ED4_base::get_area_level(ED4_multi_species_manager **multi_species_manager) const {
+    ED4_base       *area_base = get_parent(ED4_L_AREA);
+    ED4_AREA_LEVEL  result    = ED4_A_ERROR;
 
-    ED4_base *temp_manager;
-    temp_manager = get_parent(ED4_L_AREA);
-    if (!temp_manager) {
-        return ED4_A_ERROR;
-    }
+    if (area_base) {
+        ED4_area_manager *area_man = area_base->to_area_manager();
 
-    ED4_area_manager    *temp_parent;
-    temp_parent = temp_manager->to_area_manager();
+        if      (area_man == ED4_ROOT->top_area_man)    result = ED4_A_TOP_AREA;
+        else if (area_man == ED4_ROOT->middle_area_man) result = ED4_A_MIDDLE_AREA;
 
-    if (temp_parent == ED4_ROOT->top_area_man)
-    {
-        if (multi_species_manager) {
-            *multi_species_manager = temp_parent->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+        if (result != ED4_A_ERROR && multi_species_manager) {
+            *multi_species_manager = area_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
         }
-        return ED4_A_TOP_AREA;
     }
-
-    if (temp_parent == ED4_ROOT->middle_area_man)
-    {
-        if (multi_species_manager) {
-            *multi_species_manager = temp_parent->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
-        }
-        return ED4_A_MIDDLE_AREA;
-    }
-
-    return ED4_A_ERROR;
+    return result;
 }
 
 
