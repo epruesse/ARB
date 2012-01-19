@@ -235,7 +235,6 @@ enum ED4_direction {
     ED4_D_VERTICAL,
     ED4_D_HORIZONTAL,
     ED4_D_ALL_DIRECTION,
-    ED4_D_VERTICAL_ALL
 };
 
 

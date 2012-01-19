@@ -954,6 +954,7 @@ void ED4_cursor::jump_screen_pos(int screen_pos, ED4_CursorJumpType jump_type) {
         return;
     }
 
+    // @@@ move parts of the following section into function is_hidden_by_parent()
     ED4_base *temp_parent = owner_of_cursor;
     while (temp_parent->parent) {
         temp_parent = temp_parent->parent;
@@ -1281,21 +1282,38 @@ bool ED4_cursor::is_partly_visible() const {
     bool visible = false;
 
     switch (owner_of_cursor->get_area_level(0)) {
-        case ED4_A_TOP_AREA: {
-            visible = 
-                owner_of_cursor->is_visible(win, x1, 0, ED4_D_HORIZONTAL) ||
-                owner_of_cursor->is_visible(win, x2, 0, ED4_D_HORIZONTAL);
-            break;
-        }
-        case ED4_A_MIDDLE_AREA:
-            visible = owner_of_cursor->is_visible(window(), x1, y1, x2, y2, ED4_D_ALL_DIRECTION);
-            break;
-        default:
-            break;
+        case ED4_A_TOP_AREA:    visible = win->shows_xpos(x1) || win->shows_xpos(x2); break;
+        case ED4_A_MIDDLE_AREA: visible = win->partly_shows(x1, y1, x2, y2); break;
+        default: break;
     }
 
     return visible;
 }
+
+bool ED4_cursor::is_completely_visible() const {
+    e4_assert(owner_of_cursor);
+    e4_assert(cursor_shape); // cursor is not drawn, cannot test visibility
+
+    AW_pos x, y;
+    owner_of_cursor->calc_world_coords(&x, &y);
+
+    int x1, y1, x2, y2;
+    cursor_shape->get_bounding_box(cursor_abs_x, int(y), x1, y1, x2, y2);
+
+    bool visible = false;
+
+    switch (owner_of_cursor->get_area_level(0)) {
+        case ED4_A_TOP_AREA:    visible = win->shows_xpos(x1) && win->shows_xpos(x2); break;
+        case ED4_A_MIDDLE_AREA: visible = win->completely_shows(x1, y1, x2, y2); break;
+        default: break;
+    }
+
+    return visible;
+}
+
+#if defined(DEBUG) && 0
+#define DUMP_SCROLL_INTO_VIEW
+#endif
 
 void ED4_terminal::scroll_into_view(ED4_window *ed4w) { // scroll y-position only
     ED4_LocalWinContext uses(ed4w);
@@ -1311,31 +1329,32 @@ void ED4_terminal::scroll_into_view(ED4_window *ed4w) { // scroll y-position onl
     bool scroll = false;
     int slider_pos_y;
 
-    AW_pos termw_y_upper = termw_y - term_height; // upper border of terminal
+    AW_pos termw_y_upper = termw_y; // upper border of terminal
+    AW_pos termw_y_lower = termw_y + term_height; // lower border of terminal
 
     if (termw_y_upper > coords->top_area_height) { // don't scroll if terminal is in top area (always visible)
         if (termw_y_upper < coords->window_upper_clip_point) {
-#if defined(DEBUG) && 0
-            printf("termw_y(%i)-term_height(%i) < window_upper_clip_point(%i)\n",
-                   int(termw_y), term_height, int(coords->window_upper_clip_point));
+#ifdef DUMP_SCROLL_INTO_VIEW
+            printf("termw_y_upper(%i) < window_upper_clip_point(%i)\n",
+                   int(termw_y_upper), int(coords->window_upper_clip_point));
 #endif // DEBUG
-            slider_pos_y = int(termw_y - coords->top_area_height - term_height);
+            slider_pos_y = int(termw_y_upper - coords->top_area_height - term_height);
             scroll       = true;
         }
-        else if (termw_y > coords->window_lower_clip_point) {
-#if defined(DEBUG) && 0
-            printf("termw_y(%i) > window_lower_clip_point(%i)\n",
-                   int(termw_y), int(coords->window_lower_clip_point));
+        else if (termw_y_lower > coords->window_lower_clip_point) {
+#ifdef DUMP_SCROLL_INTO_VIEW
+            printf("termw_y_lower(%i) > window_lower_clip_point(%i)\n",
+                   int(termw_y_lower), int(coords->window_lower_clip_point));
 #endif // DEBUG
-            slider_pos_y = int(termw_y - coords->top_area_height - win_ysize);
+            slider_pos_y = int(termw_y_upper - coords->top_area_height - win_ysize);
             scroll       = true;
         }
     }
 
-#if defined(DEBUG) && 0
+#ifdef DUMP_SCROLL_INTO_VIEW
     if (!scroll) {
-        printf("No scroll needed (termw_y=%i termw_y_upper=%i term_height=%i window_upper_clip_point=%i window_lower_clip_point=%i)\n",
-               int(termw_y), int(termw_y_upper), term_height,
+        printf("No scroll needed (termw_y_upper=%i termw_y_lower=%i term_height=%i window_upper_clip_point=%i window_lower_clip_point=%i)\n",
+               int(termw_y_upper), int(termw_y_lower), term_height,
                int(coords->window_upper_clip_point), int(coords->window_lower_clip_point));
     }
 #endif // DEBUG
@@ -1370,7 +1389,7 @@ void ED4_cursor::set_to_terminal(ED4_terminal *terminal, int seq_pos, ED4_Cursor
         int scr_pos = ED4_ROOT->root_group_man->remap()->sequence_to_screen_clipped(seq_pos);
         show_cursor_at(terminal, scr_pos);
 
-        if (!is_partly_visible()) {
+        if (!is_completely_visible()) {
             jump_sequence_pos(seq_pos, jump_type);
         }
     }

@@ -646,6 +646,7 @@ public:
     ED4_base *owner_of_cursor;
 
     bool is_partly_visible() const;
+    bool is_completely_visible() const;
 
     void changeType(ED4_CursorType typ);
     ED4_CursorType  getType() const { return ctype; }
@@ -730,6 +731,10 @@ public:
     ED4_returncode      scroll_rectangle(int dx, int dy);
     ED4_returncode      set_scrolled_rectangle(ED4_base *x_link, ED4_base *y_link, ED4_base *width_link, ED4_base *height_link);
 
+    bool shows_xpos(int x) const { return x >= coords.window_left_clip_point && x <= coords.window_right_clip_point; }
+    bool partly_shows(int x1, int y1, int x2, int y2) const;
+    bool completely_shows(int x1, int y1, int x2, int y2) const;
+    
     void update_window_coords();
 
     AW_device *get_device() const { return aww->get_device(AW_MIDDLE_AREA); }
@@ -1061,9 +1066,6 @@ public:
     virtual bool calc_bounding_box()                                  = 0;
 
     ED4_returncode  clear_background(int color=0);
-
-    bool is_visible(ED4_window *in_ed4w, AW_pos x, AW_pos y, ED4_direction direction);
-    bool is_visible(ED4_window *in_ed4w, AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, ED4_direction direction);
 
     // functions concerned with links in the hierarchy
     ED4_returncode  set_links(ED4_base *width_link, ED4_base *height_link);
@@ -1752,7 +1754,7 @@ public:
     GB_ERROR compile(ED4_root_group_manager *gm);
     int was_changed() const { return changed; }     // mapping changed by last compile ?
 
-    int is_visible(int position) const { return sequence_to_screen(position)>=0; }
+    int is_shown(int position) const { return sequence_to_screen(position)>=0; }
 
     ExplicitRange clip_screen_range(PosRange screen_range) const { return ExplicitRange(screen_range, screen_len-1); }
 };

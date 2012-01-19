@@ -211,50 +211,7 @@ void ED4_species_pointer::Set(GBDATA *gbd, int *clientdata)
 //      ED4_base
 // -----------------
 
-bool ED4_base::is_visible(ED4_window *in_ed4w, AW_pos x, AW_pos y, ED4_direction direction) {
-    // return true if position (world coordinates) is visible in_ed4w
-    // (tests only into direction)
-    bool        visible = true;
-    ED4_coords& coords  = in_ed4w->coords;
-
-    switch (direction)
-    {
-        case ED4_D_HORIZONTAL:
-            if ((long(x)<coords.window_left_clip_point) ||
-                (long(x)>coords.window_right_clip_point)) {
-                visible = false;
-            }
-            break;
-        case ED4_D_VERTICAL:
-            if ((long(y)<coords.window_upper_clip_point) ||
-                (long(y)>coords.window_lower_clip_point)) {
-                visible = false;
-            }
-            break;
-        case ED4_D_VERTICAL_ALL: // special case for scrolling (whole object visible)
-            if ((long(y) < coords.window_upper_clip_point) ||
-                (long(y) + extension.size[HEIGHT] > coords.window_lower_clip_point)) {
-                visible = false;
-            }
-            break;
-        case ED4_D_ALL_DIRECTION:
-            if ((long(x) < coords.window_left_clip_point)  ||
-                (long(x) > coords.window_right_clip_point) ||
-                (long(y) < coords.window_upper_clip_point) ||
-                (long(y) > coords.window_lower_clip_point)) {
-                visible = false;
-            }
-            break;
-        default:
-            visible = false;
-            e4_assert(0);
-            break;
-    }
-
-    return visible;
-}
-
-inline bool ranges_overlap(AW_pos p1, AW_pos p2, int r1, int r2) {
+inline bool ranges_overlap(int p1, int p2, int r1, int r2) {
     // return true if ranges p1..p2 and r1..r2 overlap
     e4_assert(p1 <= p2);
     e4_assert(r1 <= r2);
@@ -262,13 +219,18 @@ inline bool ranges_overlap(AW_pos p1, AW_pos p2, int r1, int r2) {
     return !((r2 <= p1) || (p2 <= r1)); // "exactly adjacent" means "not overlapping"
 }
 
-bool ED4_base::is_visible(ED4_window *in_ed4w, AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, ED4_direction IF_ASSERTION_USED(direction)) {
+inline bool range_contained_in(int p1, int p2, int r1, int r2) {
+    // return true if range p1..p2 is contained in range r1..r2
+    e4_assert(p1 <= p2);
+    e4_assert(r1 <= r2);
+
+    return p1 >= r1 && p2 <= r2;
+}
+
+bool ED4_window::partly_shows(int x1, int y1, int x2, int y2) const {
     // return true if rectangle x1/y1/x2/y2 overlaps with clipped screen
-    e4_assert(direction == ED4_D_ALL_DIRECTION);
     e4_assert(x1 <= x2);
     e4_assert(y1 <= y2);
-
-    ED4_coords& coords  = in_ed4w->coords;
 
     bool visible = (ranges_overlap(x1, x2, coords.window_left_clip_point, coords.window_right_clip_point) &&
                     ranges_overlap(y1, y2, coords.window_upper_clip_point, coords.window_lower_clip_point));
@@ -276,6 +238,16 @@ bool ED4_base::is_visible(ED4_window *in_ed4w, AW_pos x1, AW_pos y1, AW_pos x2, 
     return visible;
 }
 
+bool ED4_window::completely_shows(int x1, int y1, int x2, int y2) const {
+    // return true if rectangle x1/y1/x2/y2 is contained in clipped screen
+    e4_assert(x1 <= x2);
+    e4_assert(y1 <= y2);
+
+    bool visible = (range_contained_in(x1, x2, coords.window_left_clip_point, coords.window_right_clip_point) &&
+                    range_contained_in(y1, y2, coords.window_upper_clip_point, coords.window_lower_clip_point));
+
+    return visible;
+}
 
 char *ED4_base::resolve_pointer_to_string_copy(int *) const { return NULL; }
 const char *ED4_base::resolve_pointer_to_char_pntr(int *) const { return NULL; }
