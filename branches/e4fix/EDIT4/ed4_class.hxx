@@ -611,7 +611,10 @@ enum ED4_CursorType {
 
 extern int ED4_update_global_cursor_awars_allowed;
 
-typedef bool (*ED4_TerminalTest)(ED4_base *terminal, int seqPos);
+struct ED4_TerminalPredicate {
+    virtual ~ED4_TerminalPredicate() {}
+    virtual bool fulfilled_by(const ED4_terminal *) const = 0;
+};
 
 class ED4_WinContextFree { // denies usage of the following functions in classes derived from this
     AW_device   *current_device();
@@ -632,8 +635,8 @@ class ED4_cursor : virtual Noncopyable, virtual ED4_WinContextFree {
 
     ED4_returncode  draw_cursor(AW_pos x, AW_pos y);
     ED4_returncode  delete_cursor(AW_pos del_mark,  ED4_base *target_terminal);
-    ED4_terminal *get_upper_lower_cursor_pos(ED4_manager *starting_point, ED4_cursor_move cursor_move, AW_pos current_y, bool isScreen, ED4_TerminalTest terminal_is_appropriate, int seq_pos);
-    void          updateAwars();
+
+    void updateAwars();
 
     ED4_cursor(const ED4_cursor&); // copy-constructor not allowed
 
@@ -1011,10 +1014,10 @@ class ED4_base : virtual Noncopyable {
 
     // cache world coordinates:
 
-    static int currTimestamp;
-    AW_pos     lastXpos;
-    AW_pos     lastYpos;
-    int        timestamp;
+    static int     currTimestamp;
+    mutable AW_pos lastXpos;
+    mutable AW_pos lastYpos;
+    mutable int    timestamp;
 
 public:
     const ED4_objspec& spec;           // contains information about Objectproperties
@@ -1071,10 +1074,10 @@ public:
 
     // functions concerned with coordinate transformation
 
-    void update_world_coords_cache();
+    void update_world_coords_cache() const;
     void calc_rel_coords(AW_pos *x, AW_pos *y);
 
-    void calc_world_coords(AW_pos *x, AW_pos *y) {
+    void calc_world_coords(AW_pos *x, AW_pos *y) const {
         bool cache_up_to_date = timestamp == currTimestamp;
         if (!cache_up_to_date) {
             update_world_coords_cache();
@@ -2242,6 +2245,4 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access);
 #else
 #error ed4_class included twice
 #endif
-
-
 

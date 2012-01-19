@@ -1061,28 +1061,34 @@ void ED4_cursor::jump_base_pos(int base_pos, ED4_CursorJumpType jump_type) {
     jump_sequence_pos(seq_pos, jump_type);
 }
 
-static bool has_gap_or_base_at(ED4_base *terminal, bool test_for_base, int seq_pos) {
-    bool test_succeeded = false;
+class has_base_at : public ED4_TerminalPredicate {
+    int  seq_pos;
+    bool want_base;
+public:
+    has_base_at(int seq_pos_, bool want_base_) : seq_pos(seq_pos_), want_base(want_base_) {}
+    bool fulfilled_by(const ED4_terminal *terminal) const {
+        bool test_succeeded = false;
 
-    if (terminal->is_sequence_terminal()) {
-        ED4_sequence_terminal *seqTerm = terminal->to_sequence_terminal();
-        int len;
-        char *seq = seqTerm->resolve_pointer_to_string_copy(&len);
-        if (seq) {
-            test_succeeded = len>seq_pos && bool(ADPP_IS_ALIGN_CHARACTER(seq[seq_pos]))!=test_for_base;
+        if (terminal->is_sequence_terminal()) {
+            const ED4_sequence_terminal *seqTerm = terminal->to_sequence_terminal();
+            int len;
+            char *seq = seqTerm->resolve_pointer_to_string_copy(&len);
+            if (seq) {
+                test_succeeded = len>seq_pos && bool(ADPP_IS_ALIGN_CHARACTER(seq[seq_pos]))!=want_base;
+            }
+            free(seq);
         }
-        free(seq);
+
+        return test_succeeded;
     }
+};
 
-#if defined(DEBUG) && 0
-    printf("test_for_base=%i test_succeeded=%i\n", int(test_for_base), int(test_succeeded));
-#endif // DEBUG
-    return test_succeeded;
-}
+struct acceptAnyTerminal : public ED4_TerminalPredicate {
+    bool fulfilled_by(const ED4_terminal *) const { return true; }
+};
 
-static bool has_base_at(ED4_base *terminal, int seq_pos) { return has_gap_or_base_at(terminal, true,  seq_pos); }
-static bool has_gap_at(ED4_base *terminal, int seq_pos) { return has_gap_or_base_at(terminal, false, seq_pos); }
-
+// @@@ replace prototype by function body:
+static ED4_terminal *get_upper_lower_cursor_pos(ED4_manager *starting_point, ED4_cursor_move cursor_move, AW_pos current_y, bool isScreen, const ED4_TerminalPredicate& predicate);
 
 ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
     // move cursor up down
@@ -1110,29 +1116,24 @@ ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
 
         if (result == ED4_R_OK) {
             AW_pos x_dummy, y_world;
-            
+
             owner_of_cursor->calc_world_coords(&x_dummy, &y_world);
 
-            int       seq_pos         = get_sequence_pos();
-            ED4_base *target_terminal = 0;
+            int seq_pos = get_sequence_pos();
+            ED4_terminal *target_terminal = 0;
 
             if (event->keymodifier & AW_KEYMODE_CONTROL) {
-                bool has_base = has_base_at(owner_of_cursor, seq_pos);
+                bool has_base = has_base_at(seq_pos, true).fulfilled_by(owner_of_cursor->to_terminal());
 
                 // stay in current area
-                ED4_manager *start_at_manager = 0;
-                if (owner_of_cursor->has_parent(ED4_ROOT->top_area_man)) {
-                    start_at_manager = ED4_ROOT->top_area_man;
-                }
-                else {
-                    start_at_manager = ED4_ROOT->middle_area_man;
-                }
+                ED4_multi_species_manager *start_at_manager = 0;
+                owner_of_cursor->get_area_level(&start_at_manager);
 
                 if (!endHome) { // not End or Home
-                    target_terminal = get_upper_lower_cursor_pos(start_at_manager, dir, y_world, false, has_base ? has_gap_at : has_base_at, seq_pos);
+                    target_terminal = get_upper_lower_cursor_pos(start_at_manager, dir, y_world, false, has_base_at(seq_pos, !has_base));
                     if (target_terminal && !has_base && ED4_ROOT->aw_root->awar(ED4_AWAR_FAST_CURSOR_JUMP)->read_int()) {  // if jump_over group
                         target_terminal->calc_world_coords(&x_dummy, &y_world);
-                        target_terminal = get_upper_lower_cursor_pos(start_at_manager, dir, y_world, false, has_gap_at, seq_pos);
+                        target_terminal = get_upper_lower_cursor_pos(start_at_manager, dir, y_world, false, has_base_at(seq_pos, false));
                     }
                 }
 
@@ -1141,7 +1142,7 @@ ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
                     target_terminal = get_upper_lower_cursor_pos(start_at_manager,
                                                                  dir == ED4_C_UP ? ED4_C_DOWN : ED4_C_UP, // use opposite movement direction
                                                                  dir == ED4_C_UP ? 0 : INT_MAX, false, // search for top-/bottom-most terminal
-                                                                 0, seq_pos);
+                                                                 acceptAnyTerminal());
                 }
             }
             else {
@@ -1154,11 +1155,11 @@ ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
                         isScreen = true;
                     }
                 }
-                target_terminal = get_upper_lower_cursor_pos(ED4_ROOT->main_manager, dir, y_world, isScreen, 0, seq_pos);
+                target_terminal = get_upper_lower_cursor_pos(ED4_ROOT->main_manager, dir, y_world, isScreen, acceptAnyTerminal());
             }
 
             if (target_terminal) {
-                set_to_terminal(target_terminal->to_terminal(), seq_pos, ED4_JUMP_KEEP_VISIBLE);
+                set_to_terminal(target_terminal, seq_pos, ED4_JUMP_KEEP_VISIBLE);
             }
         }
     }
@@ -1374,76 +1375,63 @@ ED4_returncode ED4_cursor::show_clicked_cursor(AW_pos click_xpos, ED4_terminal *
     return show_cursor_at(target_terminal, scr_pos);
 }
 
-ED4_terminal *ED4_cursor::get_upper_lower_cursor_pos(ED4_manager *starting_point, ED4_cursor_move cursor_move, AW_pos current_y, bool isScreen, ED4_TerminalTest terminal_is_appropriate, int seq_pos)
-{
+static ED4_terminal *get_upper_lower_cursor_pos(ED4_manager *starting_point, ED4_cursor_move cursor_move, AW_pos current_y, bool isScreen, const ED4_TerminalPredicate& predicate) {
     // current_y is y-position of terminal at which search starts.
     // It may be in world or screen coordinates (isScreen marks which is used)
     // This is needed to move the cursor from top- to middle-area w/o scrolling middle-area to top-position.
 
     ED4_terminal *result = 0;
 
-    for (int i=0; i<starting_point->children->members(); i++) {
-        ED4_base *member = starting_point->children->member(i);
+    int m      = 0;
+    int last_m = starting_point->children->members()-1;
+    int incr   = 1;
 
-        AW_pos x, y;
-        member->calc_world_coords(&x, &y);
+    if (cursor_move == ED4_C_UP) {
+        std::swap(m, last_m); incr = -1; // revert search direction
+        e4_assert(!isScreen);            // use screen coordinates for ED4_C_DOWN only!
+    }
 
-        switch (cursor_move) {
-            case ED4_C_UP:
-                e4_assert(!isScreen); // use screen coordinates for ED4_C_DOWN only!
+    while (!result) {
+        ED4_base *member = starting_point->children->member(m);
 
-                if (y < current_y) {
-                    if ((member->is_manager()) && !member->flag.hidden) {
-                        ED4_terminal *result_in_manager = get_upper_lower_cursor_pos(member->to_manager(), cursor_move, current_y, isScreen, terminal_is_appropriate, seq_pos);
-                        if (result_in_manager) result   = result_in_manager;
-                    }
-
-                    if ((member->dynamic_prop & ED4_P_CURSOR_ALLOWED)) {
-                        if (terminal_is_appropriate==0 || terminal_is_appropriate(member, seq_pos)) {
-                            result = member->to_terminal(); // overwrite (i.e. take last matching terminal)
-                        }
-                    }
-                }
-                break;
-
-            case ED4_C_DOWN:
-                if (!result) { // don't overwrite (i.e. take first matching terminal)
-                    if ((member->is_manager()) && !member->flag.hidden) {
-                        result = get_upper_lower_cursor_pos(member->to_manager(), cursor_move, current_y, isScreen, terminal_is_appropriate, seq_pos);
-                    }
-
-                    if (isScreen) window()->world_to_win_coords(&x, &y); // if current_y is screen, convert x/y to screen-coordinates as well
-
-                    if ((member->dynamic_prop & ED4_P_CURSOR_ALLOWED) && y > current_y) {
-                        ED4_multi_species_manager *marea_man = NULL; // probably multi_species_manager of middle_area, otherwise just a dummy
-                        ED4_AREA_LEVEL level                 = member->get_area_level(&marea_man);
-
-                        if (level != ED4_A_MIDDLE_AREA) {
-                            if (terminal_is_appropriate==0 || terminal_is_appropriate(member, seq_pos)) {
-                                result = member->to_terminal();
-                            }
-                        }
-                        else if (level == ED4_A_MIDDLE_AREA) {
-                            AW_pos y_area = marea_man->parent->extension.position[Y_POS];
-                            if (y > y_area) {
-                                member = starting_point->children->member(i);
-                                if (terminal_is_appropriate==0 || terminal_is_appropriate(member, seq_pos)) {
-                                    result = member->to_terminal();
-                                }
-                            }
-                        }
-                    }
-                }
-                break;
-
-            default:
-                e4_assert(0);
-                break;
+        if (member->is_manager()) {
+            if (!member->flag.hidden) { // step over hidden managers (e.g. folded groups)
+                result = get_upper_lower_cursor_pos(member->to_manager(), cursor_move, current_y, isScreen, predicate);
+            }
         }
+        else {
+            if (member->dynamic_prop & ED4_P_CURSOR_ALLOWED) {
+                AW_pos x, y;
+                member->calc_world_coords(&x, &y);
+                if (isScreen) current_ed4w()->world_to_win_coords(&x, &y); // if current_y is screen, convert x/y to screen-coordinates as well
+
+                bool pos_beyond = (cursor_move == ED4_C_UP) ? y<current_y : y>current_y;
+                if (pos_beyond) {
+                    bool skip_top_scrolled = false;
+                    if (isScreen) {
+                        ED4_multi_species_manager *marea_man = NULL;
+                        if (member->get_area_level(&marea_man) == ED4_A_MIDDLE_AREA) {
+                            // previous position was in top-area -> avoid selecting scrolled-out terminals
+                            AW_pos y_area     = marea_man->parent->extension.position[Y_POS];
+                            skip_top_scrolled = y<y_area;
+                        }
+                    }
+
+                    if (!skip_top_scrolled) {
+                        ED4_terminal *term = member->to_terminal();
+                        if (predicate.fulfilled_by(term)) result = term;
+                    }
+                }
+            }
+        }
+
+        if (m == last_m) break;
+        m += incr;
     }
 
     return result;
 }
+
 
 /* --------------------------------------------------------------------------------
    ED4_base_position

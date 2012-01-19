@@ -1221,7 +1221,7 @@ ED4_returncode ED4_base::link_changed(ED4_base *link)
 }
 
 int ED4_base::currTimestamp = 1;
-void ED4_base::update_world_coords_cache() {
+void ED4_base::update_world_coords_cache() const {
     if (parent) {
         parent->calc_world_coords(&lastXpos, &lastYpos);
     }
