@@ -954,12 +954,7 @@ void ED4_cursor::jump_screen_pos(int screen_pos, ED4_CursorJumpType jump_type) {
         return;
     }
 
-    // @@@ move parts of the following section into function is_hidden_by_parent()
-    ED4_base *temp_parent = owner_of_cursor;
-    while (temp_parent->parent) {
-        temp_parent = temp_parent->parent;
-        if (temp_parent->flag.hidden) return; // don't move cursor if terminal is flag.hidden
-    }
+    if (owner_of_cursor->is_hidden()) return; // do not jump if cursor terminal is hidden
 
     AW_pos terminal_x, terminal_y;
     owner_of_cursor->calc_world_coords(&terminal_x, &terminal_y);
@@ -1148,7 +1143,7 @@ static ED4_terminal *get_upper_lower_cursor_pos(ED4_manager *starting_point, ED4
 ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
     // move cursor up down
     ED4_cursor_move dir     = ED4_C_NONE;
-    ED4_returncode result   = ED4_R_OK;
+    ED4_returncode  result  = ED4_R_OK;
     bool            endHome = false;
 
     switch (event->keycode) {
@@ -1160,14 +1155,7 @@ ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
     }
 
     if (dir != ED4_C_NONE) {
-        // don't move cursor if terminal is hidden
-        {
-            ED4_base *temp_parent = owner_of_cursor->parent;
-            while (temp_parent->parent && result == ED4_R_OK) {
-                if (temp_parent->flag.hidden) { result = ED4_R_IMPOSSIBLE; }
-                temp_parent = temp_parent->parent;
-            }
-        }
+        if (owner_of_cursor->is_hidden()) result = ED4_R_IMPOSSIBLE; // don't move cursor if terminal is hidden
 
         if (result == ED4_R_OK) {
             AW_pos x_dummy, y_world;

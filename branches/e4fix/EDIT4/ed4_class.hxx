@@ -1132,6 +1132,8 @@ public:
     virtual const char *resolve_pointer_to_char_pntr(int *str_len = 0) const;
 
     ED4_group_manager  *is_in_folded_group() const;
+    virtual bool is_hidden() const = 0;
+
     char *get_name_of_species();                      // go from terminal to name of species
 
     // functions which refer to the selected object(s), i.e. across the hierarchy
@@ -1318,6 +1320,12 @@ public:
     ED4_returncode hide_children();
     ED4_returncode unhide_children();
 
+    bool is_hidden() const {
+        if (flag.hidden) return true;
+        if (!parent) return false;
+        return parent->is_hidden();
+    }
+
     ED4_manager(const ED4_objspec& spec_, const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_manager();
 };
@@ -1378,6 +1386,8 @@ public:
 
     void scroll_into_view(ED4_window *ed4w);
     inline bool setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfoldGroups, ED4_CursorJumpType jump_type);
+
+    bool is_hidden() const { return parent && parent->is_hidden(); }
 
     ED4_terminal(const ED4_objspec& spec_, GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_terminal();
