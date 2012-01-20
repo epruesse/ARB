@@ -739,8 +739,8 @@ void ED4_jump_to_cursor_position(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_po
     }
 }
 
-void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /* callback_flag */)
-{
+void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /* callback_flag */) {
+    ED4_LocalWinContext uses(aww);
     ED4_cursor *cursor = &current_cursor();
 
     if (cursor->owner_of_cursor) {
