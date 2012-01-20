@@ -120,7 +120,7 @@ void ED4_sequence_terminal::deleted_from_database()
 
     bool was_consensus_relevant = dynamic_prop & ED4_P_CONSENSUS_RELEVANT;
 
-    dynamic_prop = ED4_properties(dynamic_prop&~(ED4_P_CONSENSUS_RELEVANT|ED4_P_ALIGNMENT_DATA));
+    clr_property(ED4_properties(ED4_P_CONSENSUS_RELEVANT|ED4_P_ALIGNMENT_DATA));
 
     if (was_consensus_relevant) { 
         const char *data     = (const char*)GB_read_old_value();
@@ -278,9 +278,9 @@ ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_C
     multi_species_manager = new ED4_multi_species_manager(buffer, BRACKETWIDTH, 0, 0, 0, *group_manager);       // Objekt Gruppen name_terminal noch
     (*group_manager)->children->append_member(multi_species_manager);                                   // auszeichnen
 
-    (*group_manager)->set_properties((ED4_properties) (ED4_P_MOVABLE));
-    multi_species_manager->set_properties((ED4_properties) (ED4_P_IS_HANDLE));
-    bracket_terminal->set_properties((ED4_properties) (ED4_P_IS_HANDLE));
+    (*group_manager)->set_property(ED4_P_MOVABLE);
+    multi_species_manager->set_property(ED4_P_IS_HANDLE);
+    bracket_terminal->set_property(ED4_P_IS_HANDLE);
     bracket_terminal->set_links(NULL, multi_species_manager);
 
     sprintf(buffer, "Group_Spacer_Terminal_Beg.%ld", ED4_counter);                                                      // Spacer at beginning of group
@@ -289,28 +289,28 @@ ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_C
 
     sprintf(buffer, "Consensus_Manager.%ld", ED4_counter);                                                     // Create competence terminal
     species_manager = new ED4_species_manager(buffer, 0, SPACERHEIGHT, 0, 0, multi_species_manager);
-    species_manager->set_properties(ED4_P_MOVABLE);
+    species_manager->set_property(ED4_P_MOVABLE);
     species_manager->flag.is_consensus = 1;
     multi_species_manager->children->append_member(species_manager);
 
 
     species_name_terminal = new ED4_species_name_terminal(group_name, 0, 0, MAXSPECIESWIDTH - BRACKETWIDTH, TERMINALHEIGHT, species_manager);
-    species_name_terminal->set_properties((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));      // only some terminals
+    species_name_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));      // only some terminals
     species_name_terminal->set_links(NULL, ED4_ROOT->ref_terminals.get_ref_sequence());
     species_manager->children->append_member(species_name_terminal);                                                    // properties
 
     sprintf(buffer, "Consensus_Seq_Manager.%ld", ED4_counter);
     sequence_manager = new ED4_sequence_manager(buffer, MAXSPECIESWIDTH, 0, 0, 0, species_manager);
-    sequence_manager->set_properties(ED4_P_MOVABLE);
+    sequence_manager->set_property(ED4_P_MOVABLE);
     species_manager->children->append_member(sequence_manager);
 
     sequence_info_terminal = new ED4_sequence_info_terminal("DATA", 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, sequence_manager);        // Info fuer Gruppe
     sequence_info_terminal->set_links(ED4_ROOT->ref_terminals.get_ref_sequence_info(), ED4_ROOT->ref_terminals.get_ref_sequence_info());
-    sequence_info_terminal->set_properties((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
+    sequence_info_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
     sequence_manager->children->append_member(sequence_info_terminal);
 
     sequence_terminal = new ED4_consensus_sequence_terminal("", SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, sequence_manager);
-    sequence_terminal->set_properties(ED4_P_CURSOR_ALLOWED);
+    sequence_terminal->set_property(ED4_P_CURSOR_ALLOWED);
     sequence_terminal->set_links(ED4_ROOT->ref_terminals.get_ref_sequence(),   ED4_ROOT->ref_terminals.get_ref_sequence());
     sequence_manager->children->append_member(sequence_terminal);
 
@@ -1031,101 +1031,71 @@ ED4_returncode ED4_manager::unhide_children()
     }
 }
 
-ED4_returncode ED4_manager::unfold_group(char *bracket_ID_to_unfold)
-{
-    int i;
+void ED4_bracket_terminal::unfold() {
+    if (parent) {
+        for (int i=0; i < parent->children->members(); i++) {
+            ED4_base *member = parent->children->member(i);
 
-    ED4_base *bracket_terminal = search_ID(bracket_ID_to_unfold);
-    if (!bracket_terminal) return ED4_R_WARNING;
+            if (member->is_multi_species_manager()) {
+                ED4_multi_species_manager *multi_species_manager = member->to_multi_species_manager();
+                multi_species_manager->unhide_children();
+                multi_species_manager->clr_property(ED4_P_IS_FOLDED);
 
-    ED4_manager *temp_parent = bracket_terminal->parent;
-    if (!temp_parent) return ED4_R_WARNING;
-
-    ED4_multi_species_manager *multi_species_manager = NULL;
-    temp_parent->get_area_level(&multi_species_manager);
-
-    for (i=0; i < temp_parent->children->members(); i++) {
-        ED4_base *member = temp_parent->children->member(i);
-
-        if (member->is_multi_species_manager()) {
-            multi_species_manager = member->to_multi_species_manager();
-            multi_species_manager->unhide_children();
-            multi_species_manager->dynamic_prop = ED4_properties(multi_species_manager->dynamic_prop & ~ED4_P_IS_FOLDED);
-
-            ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
-            spacer->extension.size[HEIGHT] = SPACERHEIGHT;
-        }
-    }
-
-    bracket_terminal->dynamic_prop =  ED4_properties(bracket_terminal->dynamic_prop & ~ED4_P_IS_FOLDED);
-    temp_parent->dynamic_prop =  ED4_properties(temp_parent->dynamic_prop & ~ED4_P_IS_FOLDED);
-
-    ED4_ROOT->main_manager->update_info.set_resize(1);
-    ED4_ROOT->main_manager->resize_requested_by_parent();
-
-    return ED4_R_OK;
-}
-
-ED4_returncode ED4_manager::fold_group(char *bracket_ID_to_fold)
-{
-    ED4_base *bracket_terminal;
-    ED4_manager *temp_parent;
-
-    bracket_terminal = search_ID(bracket_ID_to_fold);
-
-    if (!bracket_terminal) return ED4_R_WARNING;
-
-    temp_parent = bracket_terminal->parent;
-    if (!temp_parent) return ED4_R_WARNING;
-
-    ED4_multi_species_manager *multi_species_manager = temp_parent->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
-    ED4_manager *consensus_manager = NULL;
-
-    int consensus_shown = 0;
-    if (!(multi_species_manager->children->member(1)->flag.is_consensus)) { // if consensus is not a top => move to top
-        ED4_members *multi_children = multi_species_manager->children;
-        int i;
-
-        for (i=0; i<multi_children->members(); i++) { // search for consensus
-            if (multi_children->member(i)->flag.is_consensus) {
-                consensus_manager = multi_children->member(i)->to_manager();
-                break;
+                ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
+                spacer->extension.size[HEIGHT] = SPACERHEIGHT;
             }
         }
 
-        if (consensus_manager) {
-            multi_children->move_member(i, 1); // move Consensus to top of list
-            consensus_manager->extension.position[Y_POS] = SPACERHEIGHT;
-            ED4_base::touch_world_cache();
-            consensus_shown = 1;
-        }
+        clr_property(ED4_P_IS_FOLDED);
+        parent->clr_property(ED4_P_IS_FOLDED);
     }
-    else {
-        consensus_shown = 1;
-    }
-
-    if (consensus_shown && ED4_ROOT->aw_root->awar(ED4_AWAR_CONSENSUS_SHOW)->read_int()==0) {
-        consensus_shown = 0;
-    }
-
-    ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
-    if (spacer) {
-        spacer->extension.size[HEIGHT] = consensus_shown ? SPACERHEIGHT : SPACERNOCONSENSUSHEIGHT;
-    }
-
-    multi_species_manager->hide_children();
-    multi_species_manager->set_properties((ED4_properties) (ED4_P_IS_FOLDED));
-
-    bracket_terminal->set_properties((ED4_properties) (ED4_P_IS_FOLDED));
-    temp_parent->set_properties((ED4_properties) (ED4_P_IS_FOLDED));
-
-    // fix scrollbars:
-    ED4_ROOT->main_manager->update_info.set_resize(1);
-    ED4_ROOT->main_manager->resize_requested_by_parent();
-
-    return ED4_R_OK;
 }
 
+void ED4_bracket_terminal::fold() {
+    if (parent) {
+        ED4_multi_species_manager *multi_species_manager = parent->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+        ED4_manager               *consensus_manager     = NULL;
+
+        int consensus_shown = 0;
+        if (!(multi_species_manager->children->member(1)->flag.is_consensus)) { // if consensus is not a top => move to top
+            ED4_members *multi_children = multi_species_manager->children;
+
+            int i;
+            for (i=0; i<multi_children->members(); i++) { // search for consensus
+                if (multi_children->member(i)->flag.is_consensus) {
+                    consensus_manager = multi_children->member(i)->to_manager();
+                    break;
+                }
+            }
+
+            if (consensus_manager) {
+                multi_children->move_member(i, 1); // move Consensus to top of list
+                consensus_manager->extension.position[Y_POS] = SPACERHEIGHT;
+                ED4_base::touch_world_cache();
+                consensus_shown = 1;
+            }
+        }
+        else {
+            consensus_shown = 1;
+        }
+
+        if (consensus_shown && ED4_ROOT->aw_root->awar(ED4_AWAR_CONSENSUS_SHOW)->read_int()==0) {
+            consensus_shown = 0;
+        }
+
+        ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
+        if (spacer) {
+            spacer->extension.size[HEIGHT] = consensus_shown ? SPACERHEIGHT : SPACERNOCONSENSUSHEIGHT;
+        }
+
+        multi_species_manager->hide_children();
+        multi_species_manager->set_property(ED4_P_IS_FOLDED);
+
+        set_property(ED4_P_IS_FOLDED);
+        parent->set_property(ED4_P_IS_FOLDED);
+
+    }
+}
 
 void ED4_base::check_all()
 {
@@ -1150,13 +1120,6 @@ int ED4_base::adjust_clipping_rectangle()
     current_ed4w()->world_to_win_coords(&x, &y);
     return current_device()->reduceClipBorders(int(y), int(y+extension.size[HEIGHT]-1), int(x), int(x+extension.size[WIDTH]-1));
 }
-
-
-void ED4_base::set_properties(ED4_properties prop)
-{
-    dynamic_prop = (ED4_properties) (dynamic_prop | prop);
-}
-
 
 ED4_returncode ED4_base::set_links(ED4_base *temp_width_link, ED4_base *temp_height_link)       // sets links in hierarchy :
 // width-link sets links between objects on same level

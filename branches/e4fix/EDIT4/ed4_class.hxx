@@ -1072,8 +1072,9 @@ public:
     ED4_returncode  link_changed(ED4_base *link);
 
     // functions concerned with special initialization
-    void set_properties  (ED4_properties prop);
-
+    void set_property(ED4_properties prop) { dynamic_prop = (ED4_properties) (dynamic_prop | prop); } 
+    void clr_property(ED4_properties prop) { dynamic_prop = (ED4_properties) (dynamic_prop & ~prop); }
+    
     // functions concerned with coordinate transformation
 
     void update_world_coords_cache() const;
@@ -1312,10 +1313,6 @@ public:
 
     ED4_terminal *get_first_terminal(int start_index=0) const;
     ED4_terminal *get_last_terminal(int start_index=-1) const;
-
-    // general folding functions
-    ED4_returncode  unfold_group(char *bracketID_to_unfold);
-    ED4_returncode  fold_group(char *bracketID_to_fold);
 
     ED4_returncode hide_children();
     ED4_returncode unhide_children();
@@ -1892,6 +1889,9 @@ public:
     virtual ED4_returncode draw();
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
 
+    void fold();
+    void unfold();
+
     ED4_bracket_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_terminal);
@@ -2257,4 +2257,5 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access);
 #else
 #error ed4_class included twice
 #endif
+
 

@@ -994,7 +994,7 @@ void ED4_toggle_detailed_column_stats(AW_window *aww, AW_CL, AW_CL) {
         sprintf(buffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
 
         ED4_sequence_manager *new_seq_man = new ED4_sequence_manager(buffer, 0, 0, 0, 0, multi_seq_man);
-        new_seq_man->set_properties(ED4_P_MOVABLE);
+        new_seq_man->set_property(ED4_P_MOVABLE);
         multi_seq_man->children->append_member(new_seq_man);
 
         int pixel_length = max_seq_terminal_length;
@@ -1012,7 +1012,7 @@ void ED4_toggle_detailed_column_stats(AW_window *aww, AW_CL, AW_CL) {
         ref_colStat_terminal->extension.size[WIDTH]  = pixel_length;
 
         ED4_sequence_info_terminal *new_colStat_info_term = new ED4_sequence_info_terminal("CStat", 0, 0, SEQUENCEINFOSIZE, columnStatHeight, new_seq_man);
-        new_colStat_info_term->set_properties((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
+        new_colStat_info_term->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
         new_colStat_info_term->set_links(ref_colStat_info_terminal, ref_colStat_terminal);
         new_seq_man->children->append_member(new_colStat_info_term);
 
@@ -1131,10 +1131,7 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
 
     {
         ED4_bracket_terminal *bracket = group_manager->get_defined_level(ED4_L_BRACKET)->to_bracket_terminal();
-
-        if (bracket) {
-            group_manager->fold_group(bracket->id);
-        }
+        if (bracket) bracket->fold();
     }
 
     multi_species_manager->resize_requested_by_child();
