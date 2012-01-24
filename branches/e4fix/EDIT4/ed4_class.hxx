@@ -1094,17 +1094,21 @@ public:
     }
 
     // functions which refer to the object as a child, i.e. travelling down the hierarchy
-    virtual ED4_returncode  set_refresh (int clear=1)=0;
+    virtual ED4_returncode  set_refresh(int clear=1)=0;
     virtual ED4_returncode  resize_requested_by_child()=0;
-    virtual ED4_returncode  resize_requested_by_parent()=0;
+    virtual ED4_returncode  resize_requested_by_parent()=0; // @@@ name is wrong! should be resize_requested_children!
 
     virtual void delete_requested_children() = 0;
     virtual void Delete()                    = 0;
+    
+    inline void set_update();
+    virtual void update_requested_children() = 0;
 
     virtual ED4_returncode  calc_size_requested_by_parent()=0;
     virtual ED4_returncode  move_requested_by_parent(ED4_move_info *mi)=0;
     virtual ED4_returncode  event_sent_by_parent(AW_event *event, AW_window *aww);
     virtual ED4_returncode  move_requested_by_child(ED4_move_info *moveinfo)=0;
+
 
     virtual ED4_returncode  handle_move(ED4_move_info *moveinfo) = 0;
 
@@ -1203,7 +1207,7 @@ public:
     Class *ED4_base::toName() {                                                 \
         return const_cast<Class*>(const_cast<const ED4_base*>(this)->toName()); \
     }
-    
+
 #define E4B_DECL_CASTOP(name) E4B_DECL_CASTOP_helper(concat(ED4_,name), concat(to_,name), concat(is_,name))
 #define E4B_IMPL_CASTOP(name) E4B_IMPL_CASTOP_helper(concat(ED4_,name), concat(to_,name), concat(is_,name))
 
@@ -1258,6 +1262,8 @@ public:
     ED4_returncode          clear_refresh();
     virtual ED4_returncode  resize_requested_by_parent();
 
+    virtual void update_requested_children();
+
     virtual void delete_requested_children();
     virtual void Delete();
 
@@ -1280,6 +1286,7 @@ public:
     virtual ED4_returncode  resize_requested_by_child();
     virtual ED4_returncode  refresh_requested_by_child();
     void delete_requested_by_child();
+    void update_requested_by_child();
     
     ED4_base *get_defined_level(ED4_level lev) const;
 
@@ -1327,7 +1334,6 @@ public:
     virtual ~ED4_manager();
 };
 
-
 class ED4_terminal : public ED4_base { // derived from a Noncopyable
 public:
     struct {
@@ -1361,6 +1367,7 @@ public:
     virtual ED4_returncode resize_requested_by_child();
     virtual ED4_returncode resize_requested_by_parent();
 
+    virtual void update_requested_children();
     virtual void delete_requested_children();
     virtual void Delete();
 
@@ -1602,7 +1609,6 @@ class ED4_device_manager : public ED4_manager
 public:
     ED4_device_manager  (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
-    void generate_id_for_groups();
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
 
@@ -1633,8 +1639,10 @@ public:
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 
+    virtual void update_requested_children();
+    virtual void delete_requested_children();
+
     int           count_visible_children(); // is called by a multi_species_manager
-    int           count_all_children_and_set_group_id(); // counts all children of a parent
     ED4_terminal *get_consensus_terminal(); // returns the consensus-terminal or 0
     ED4_species_manager *get_consensus_manager() const; // returns the consensus-manager or 0
 
@@ -1642,7 +1650,7 @@ public:
     int         get_no_of_selected_species();
     int         get_no_of_species();
 
-    void generate_id_for_groups();
+    void update_group_id();
 
     void        invalidate_species_counters();
     int         has_valid_counters() const      { return species!=-1 && selected_species!=-1; }
@@ -2114,6 +2122,13 @@ public:
 // ----------------------------------------------
 //      inlines which need complete classdefs
 
+inline void ED4_base::set_update() {
+    if (!update_info.update_requested) {
+        update_info.update_requested = 1;
+        if (parent) parent->update_requested_by_child();
+    }
+}
+
 inline bool ED4_terminal::setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfoldGroups, ED4_CursorJumpType jump_type) {
     ED4_species_manager *sm = get_parent(ED4_L_SPECIES)->to_species_manager();
     return sm->setCursorTo(cursor, seq_pos, unfoldGroups, jump_type);
@@ -2257,5 +2272,4 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access);
 #else
 #error ed4_class included twice
 #endif
-
 

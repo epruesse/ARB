@@ -651,7 +651,7 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
         }
         delete string;
 
-        insert_into_manager->generate_id_for_groups();
+        insert_into_manager->invalidate_species_counters();
     }
     if (name_term) {
         jump_to_species(name_term, -1, true, ED4_JUMP_KEEP_POSITION);

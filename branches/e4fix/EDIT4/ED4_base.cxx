@@ -293,7 +293,6 @@ ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_C
     species_manager->flag.is_consensus = 1;
     multi_species_manager->children->append_member(species_manager);
 
-
     species_name_terminal = new ED4_species_name_terminal(group_name, 0, 0, MAXSPECIESWIDTH - BRACKETWIDTH, TERMINALHEIGHT, species_manager);
     species_name_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));      // only some terminals
     species_name_terminal->set_links(NULL, ED4_ROOT->ref_terminals.get_ref_sequence());
@@ -318,6 +317,8 @@ ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_C
     group_spacer_terminal2 = new ED4_spacer_terminal(buffer,   0, SPACERHEIGHT + TERMINALHEIGHT, 10, SPACERHEIGHT, multi_species_manager);      // For better Overview
     multi_species_manager->children->append_member(group_spacer_terminal2);
 
+    multi_species_manager->update_requested_by_child();
+    
     ED4_counter ++;
 
     return ED4_R_OK;
@@ -633,53 +634,29 @@ ED4_AREA_LEVEL ED4_base::get_area_level(ED4_multi_species_manager **multi_specie
 }
 
 
-void ED4_device_manager::generate_id_for_groups() {
-    for (int i=0; i<children->members(); i++) {
-        ED4_base *member = children->member(i);
-        if (member->is_area_manager()) {
-            member->to_area_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->generate_id_for_groups();
-        }
-    }
-}
-
-void ED4_multi_species_manager::generate_id_for_groups() {
-    count_all_children_and_set_group_id();
-}
-
-
-int ED4_multi_species_manager::count_all_children_and_set_group_id() // counts all species of a multi_species_manager
-{
-    int   counter = 0;
-    int   i;
-    char *name;
-
-    for (i=0; i<children->members(); i++) {
-        ED4_base *member = children->member(i);
-        if (member->is_species_manager() && !member->flag.is_consensus) {
-            counter ++;
-        }
-        else if (member->is_group_manager()) {
-            counter += member->to_group_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->count_all_children_and_set_group_id();
-        }
-    }
-
-
+void ED4_multi_species_manager::update_group_id() {
     ED4_base *consensus_name_terminal = get_consensus_terminal();
     if (consensus_name_terminal) { // top managers dont show consensus
-        name = (char*)GB_calloc(strlen(consensus_name_terminal->id)+10, sizeof(*name));
+        e4_assert(has_valid_counters());
+        
+        const char *cntid = consensus_name_terminal->id;
+        char       *name  = (char*)GB_calloc(strlen(cntid)+10, sizeof(*name));
 
-        for (i=0; consensus_name_terminal->id[i] != '(' && consensus_name_terminal->id[i] != '\0';   i++) {
-            name[i] = consensus_name_terminal->id[i];
+        int i;
+        for (i=0; cntid[i] != '(' && cntid[i] != '\0';   i++) {
+            name[i] = cntid[i];
         }
-        if (consensus_name_terminal->id[i] != '\0') { // skip space
+        if (cntid[i] != '\0') { // skip space
             i--;
         }
         name[i] = '\0';
-        sprintf(name, "%s (%d)", name, counter);
+        sprintf(name, "%s (%d)", name, species);
 
         freeset(consensus_name_terminal->id, name);
+
+        consensus_name_terminal->set_refresh();
+        consensus_name_terminal->parent->refresh_requested_by_child();
     }
-    return counter;
 }
 
 PosRange ED4_abstract_sequence_terminal::pixel2index(PosRange pixel_range) {

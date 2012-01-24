@@ -631,7 +631,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                                     ED4_base *member = device_manager->children->member(i);
 
                                     if (member->is_area_manager()) {
-                                        member->to_area_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->generate_id_for_groups();
+                                        member->to_area_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->update_requested_by_child();
                                     }
                                 }
                             }
@@ -672,6 +672,8 @@ ED4_returncode  ED4_terminal::calc_size_requested_by_parent()
 {
     return ED4_R_OK;
 }
+
+void ED4_terminal::update_requested_children() {}
 
 bool ED4_terminal::calc_bounding_box() {
     // calculates the smallest rectangle containing the object.

@@ -54,10 +54,7 @@ static void NDS_changed(AW_root *root, AW_CL refresh)
 
     if (int(refresh)) {
         ED4_calc_terminal_extentions();
-        {
-            ARB_ERROR error = ED4_ROOT->main_manager->route_down_hierarchy(update_terminal_extension);
-            aw_message_if(error);
-        }
+        ED4_ROOT->main_manager->route_down_hierarchy(update_terminal_extension).expect_no_error();
         ED4_gc_is_modified_cb(current_aww(), 0, 0);
     }
 }

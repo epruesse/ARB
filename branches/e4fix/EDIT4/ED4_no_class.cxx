@@ -840,11 +840,12 @@ void ED4_quit_editor(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
     current_ed4w()->is_hidden = true;
 }
 
-void ED4_timer_refresh()
-{
+void ED4_timer_refresh() {
     GB_begin_transaction(GLOBAL_gb_main);                  // for callbacks from database
     GB_tell_server_dont_wait(GLOBAL_gb_main);
     GB_commit_transaction(GLOBAL_gb_main);
+
+    // @@@ need to ED4_ROOT->refresh_all_windows(0) here
 }
 
 void ED4_timer(AW_root *, AW_CL cd1, AW_CL cd2)
@@ -1059,22 +1060,26 @@ ARB_ERROR update_terminal_extension(ED4_base *this_object) {
 
 #define SIGNIFICANT_FIELD_CHARS 30 // length used to compare field contents (in createGroupFromSelected)
 
-static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_CSTR field_content)
+static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_CSTR field_content) {
     // creates a new group named group_name
     // if field_name==0 -> all selected species & subgroups are moved to this new group
     // if field_name!=0 -> all selected species containing field_content in field field_name are moved to this new group
-{
-    ED4_group_manager *group_manager = NULL;
-    ED4_ROOT->main_manager->create_group(&group_manager, group_name);
+
+    ED4_group_manager *new_group_manager = NULL;
+    ED4_ROOT->main_manager->create_group(&new_group_manager, group_name);
+
     ED4_manager *top_area = ED4_ROOT->main_manager->search_spec_child_rek(ED4_L_AREA)->to_manager();
-    ED4_multi_species_manager *multi_species_manager = top_area->search_spec_child_rek(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
-    group_manager->extension.position[Y_POS] = 2;
-    ED4_base::touch_world_cache();
-    multi_species_manager->children->append_member(group_manager);
-    group_manager->parent = (ED4_manager *) multi_species_manager;
+    {
+        ED4_multi_species_manager *multi_species_manager = top_area->search_spec_child_rek(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
-    multi_species_manager = group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+        new_group_manager->extension.position[Y_POS] = 2;
+        ED4_base::touch_world_cache();
+        multi_species_manager->children->append_member(new_group_manager);
+        new_group_manager->parent = (ED4_manager *) multi_species_manager;
+    }
+    
+    ED4_multi_species_manager *new_multi_species_manager = new_group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
     ED4_list_elem *list_elem = ED4_ROOT->selected_objects.first();
     while (list_elem) {
@@ -1110,35 +1115,31 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
         }
 
         if (move_object) {
-            object->parent->children->remove_member(object);
-
             ED4_base *base = object->get_parent(ED4_L_MULTI_SPECIES);
             if (base && base->is_multi_species_manager()) {
                 ED4_multi_species_manager *old_multi = base->to_multi_species_manager();
                 old_multi->invalidate_species_counters();
             }
-            multi_species_manager->children->append_member(object);
+            
+            object->parent->children->remove_member(object);
+            new_multi_species_manager->children->append_member(object);
 
-            object->parent = (ED4_manager *)multi_species_manager;
+            object->parent = (ED4_manager *)new_multi_species_manager;
             object->set_width();
         }
 
         list_elem = list_elem->next();
     }
 
-    group_manager->create_consensus(group_manager, NULL);
-    group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->count_all_children_and_set_group_id();
-
+    new_group_manager->create_consensus(new_group_manager, NULL);
+    new_multi_species_manager->invalidate_species_counters();
+    
     {
-        ED4_bracket_terminal *bracket = group_manager->get_defined_level(ED4_L_BRACKET)->to_bracket_terminal();
+        ED4_bracket_terminal *bracket = new_group_manager->get_defined_level(ED4_L_BRACKET)->to_bracket_terminal();
         if (bracket) bracket->fold();
     }
 
-    multi_species_manager->resize_requested_by_child();
-
-    current_ed4w()->update_scrolled_rectangle();
-    current_device()->reset();
-    ED4_ROOT->refresh_all_windows(1);
+    new_multi_species_manager->resize_requested_by_child();
 }
 
 static void group_species(int use_field, AW_window *use_as_main_window) {
@@ -1205,7 +1206,7 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
 
                                 int newlen = doneLen + field_content_len + 1;
                                 char *newDone = (char*)malloc(newlen+1);
-                                GBS_global_string_to_buffer(newDone, newlen, "%s%s;", doneContents, field_content);
+                                GBS_global_string_to_buffer(newDone, newlen+1, "%s%s;", doneContents, field_content);
                                 freeset(doneContents, newDone);
                                 doneLen = newlen;
                             }
