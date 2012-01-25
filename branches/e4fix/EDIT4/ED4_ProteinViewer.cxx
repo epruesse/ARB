@@ -369,13 +369,15 @@ void PV_ManageTerminals(AW_root *root) {
         }
 
     int dispAtCursor = root->awar(AWAR_PV_CURSOR)->read_int();
-    if (dispAtCursor)
-        {
-            // Display Only Terminals Corresponding To The Cursor Position in the multiple alignment
-            ED4_cursor *cursor = &current_cursor();
-            if (cursor->owner_of_cursor) {
+    if (dispAtCursor) {
+        // only display terminals for species at cursor
+        if (ED4_ROOT->get_most_recently_used_window()) { 
+            ED4_MostRecentWinContext context;
+
+            ED4_cursor& cursor = current_cursor();
+            if (cursor.owner_of_cursor) {
                 // Get The Cursor Terminal And The Corresponding Aa_Sequence Terminals And Set The Display Options
-                ED4_terminal *cursorTerminal = cursor->owner_of_cursor->to_terminal();
+                ED4_terminal *cursorTerminal = cursor.owner_of_cursor->to_terminal();
                 if (!cursorTerminal->parent->parent->flag.is_consensus) {
                     for (int i=0; i<PV_AA_Terminals4Species; i++) {
                         // get the corresponding orf_terminal skipping sequence_info terminal
@@ -390,6 +392,7 @@ void PV_ManageTerminals(AW_root *root) {
                 }
             }
         }
+    }
 }
 
 void PV_RefreshWindow(AW_root *root) {
