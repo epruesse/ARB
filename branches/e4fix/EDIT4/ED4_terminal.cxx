@@ -307,8 +307,6 @@ ED4_returncode ED4_terminal::kill_object() {
         species_manager->Delete();
     }
 
-    ED4_ROOT->refresh_all_windows(0);
-
     return ED4_R_OK;
 }
 
@@ -398,6 +396,13 @@ ED4_returncode  ED4_terminal::move_requested_by_parent(ED4_move_info *) { // han
     return (ED4_R_IMPOSSIBLE);
 }
 
+void ED4_multi_species_manager::toggle_selected_species() {
+    if (all_are_selected()) deselect_all_species();
+    else select_all_species();
+
+    ED4_correctBlocktypeAfterSelection();
+}
+
 #if defined(DEBUG) && 1
 static inline void dumpEvent(const char *where, AW_event *event) {
     printf("%s: x=%i y=%i\n", where, event->x, event->y);
@@ -422,11 +427,8 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                     if (is_species_name_terminal()) {
                         switch (ED4_ROOT->species_mode) {
                             case ED4_SM_KILL: {
-                                if (tflag.selected) {
-                                    ED4_ROOT->remove_from_selected(this);
-                                }
+                                if (tflag.selected) ED4_ROOT->remove_from_selected(this);
                                 kill_object();
-                                ED4_ROOT->refresh_all_windows(0);
                                 return ED4_R_BREAK;
                             }
                             case ED4_SM_MOVE: {
@@ -473,7 +475,6 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                         else {
                             to_bracket_terminal()->fold();
                         }
-                        ED4_ROOT->refresh_all_windows(1);
                     }
                     else {
                         if (dynamic_prop & ED4_P_CURSOR_ALLOWED) {
@@ -489,9 +490,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                         ED4_base *group = get_parent(ED4_L_GROUP);
                         if (group) {
                             ED4_multi_species_manager *multi_man = group->to_group_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
-                            multi_man->deselect_all_species();
-                            ED4_correctBlocktypeAfterSelection();
-                            ED4_ROOT->refresh_all_windows(0);
+                            multi_man->toggle_selected_species();
                         }
                     }
                     else if (is_species_name_terminal()) {
@@ -499,35 +498,20 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
 
                         if (parent->flag.is_consensus) { // click on consensus-name
                             ED4_multi_species_manager *multi_man = parent->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
-                            int species = multi_man->get_no_of_species();
-                            int selected = multi_man->get_no_of_selected_species();
-
-                            if (selected==species) { // all species selected => deselect all
-                                multi_man->deselect_all_species();
-                            }
-                            else { // otherwise => select all
-                                multi_man->select_all_species();
-                            }
-
-                            ED4_correctBlocktypeAfterSelection();
-                            ED4_ROOT->refresh_all_windows(0);
-                            return (ED4_R_BREAK);
+                            multi_man->toggle_selected_species();
+                            // return (ED4_R_BREAK);
                         }
                         else if (species_man->flag.is_SAI) {
                             ; // don't mark SAIs
                         }
                         else { // click on species name
                             if (!tflag.selected) { // select if not selected
-                                if (ED4_ROOT->add_to_selected(this) == ED4_R_OK) {
-                                    ED4_correctBlocktypeAfterSelection();
-                                    ED4_ROOT->refresh_all_windows(0);
-                                }
+                                if (ED4_ROOT->add_to_selected(this) == ED4_R_OK) ED4_correctBlocktypeAfterSelection();
                             }
                             else { // deselect if already selected
                                 ED4_ROOT->remove_from_selected(this);
                                 ED4_correctBlocktypeAfterSelection();
-                                ED4_ROOT->refresh_all_windows(0);
-                                return (ED4_R_BREAK);   // in case we were called by event_to selected()
+                                // return (ED4_R_BREAK);   // in case we were called by event_to selected() @@@ why? 
                             }
                         }
                     }
@@ -537,7 +521,6 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                         ED4_no_dangerous_modes();
                         ED4_setColumnblockCorner(event, to_sequence_terminal()); // mark columnblock
                         right_button_started_on_sequence_term = 1;
-                        ED4_ROOT->refresh_all_windows(0);
                     }
                     break;
                 }
@@ -592,7 +575,6 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                     if (is_sequence_terminal() && right_button_started_on_sequence_term) {
                         ED4_no_dangerous_modes();
                         ED4_setColumnblockCorner(event, to_sequence_terminal()); // mark columnblock
-                        ED4_ROOT->refresh_all_windows(0);
                     }
                     break;
                 }
@@ -653,7 +635,6 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                         dumpEvent("Relea", event);
                         ED4_no_dangerous_modes();
                         ED4_setColumnblockCorner(event, to_sequence_terminal()); // mark columnblock
-                        ED4_ROOT->refresh_all_windows(0);
                     }
                     break;
                 }

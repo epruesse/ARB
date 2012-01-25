@@ -669,7 +669,6 @@ void ED4_get_and_jump_to_current(AW_window *aww, AW_CL) {
     char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
     if (name && name[0]) {
         ED4_get_and_jump_to_species(name);
-        ED4_ROOT->refresh_all_windows(0);
     }
     else {
         aw_message("Please select a species");
@@ -678,7 +677,6 @@ void ED4_get_and_jump_to_current(AW_window *aww, AW_CL) {
 
 void ED4_get_and_jump_to_current_from_menu(AW_window *aw, AW_CL cl, AW_CL) {
     ED4_get_and_jump_to_current(aw, cl);
-    ED4_ROOT->refresh_all_windows(0);
 }
 
 void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
@@ -774,8 +772,6 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
     }
 
 #undef BUFFERSIZE
-
-    ED4_ROOT->refresh_all_windows(0);
 }
 
 ED4_returncode ED4_cursor::HideCursor()

@@ -1461,7 +1461,8 @@ inline ED4_cursor& current_cursor() { return current_ed4w()->cursor; }
 class ED4_root : virtual Noncopyable {
     void ED4_ROOT() const { e4_assert(0); } // avoid ED4_root-members use global ED4_ROOT
 
-    ED4_returncode refresh_window_simple(int redraw);
+    ED4_returncode refresh_window_simple(bool redraw);
+    void handle_update_requests(bool& redraw);
 
     ED4_window *most_recently_used_window;
 
@@ -1497,10 +1498,10 @@ public:
     long                     protstruct_len;        // protein structure summary
     ed_key                  *edk;
     ED4_Edit_String         *edit_string;
-    int                      column_stat_activated;
-    int                      column_stat_initialized;
-    int                      visualizeSAI;
-    int                      visualizeSAI_allSpecies;
+    int                      column_stat_activated; // @@@ make bool
+    int                      column_stat_initialized; // @@@ make bool
+    int                      visualizeSAI; // @@@ make bool
+    int                      visualizeSAI_allSpecies; // @@@ make bool
     int                      temp_gc;
     AW_font_group            font_group;
 
@@ -1521,10 +1522,15 @@ public:
     // functions concerned with global refresh and resize
     ED4_returncode resize_all();
 
-    ED4_returncode refresh_window(int redraw);
-    ED4_returncode refresh_all_windows(int redraw);
+    ED4_returncode refresh_window(bool redraw);
+    ED4_returncode refresh_all_windows(bool redraw);
 
-    inline void announce_deletion(ED4_base *object); // before deleting an object, use this to announce 
+    void request_refresh_for_all_terminals();
+    void request_refresh_for_specific_terminals(ED4_level lev);
+    void request_refresh_for_consensus_terminals();
+    void request_refresh_for_sequence_terminals();
+    
+    inline void announce_deletion(ED4_base *object); // before deleting an object, use this to announce
 
     // functions concerned with list of selected objects
     ED4_returncode add_to_selected(ED4_terminal *object);
@@ -1647,19 +1653,22 @@ public:
     ED4_species_manager *get_consensus_manager() const; // returns the consensus-manager or 0
 
     // functions concerned with selection
-    int         get_no_of_selected_species();
-    int         get_no_of_species();
+    int get_no_of_selected_species();
+    int get_no_of_species();
 
     void update_group_id();
 
-    void        invalidate_species_counters();
-    int         has_valid_counters() const      { return species!=-1 && selected_species!=-1; }
+    void invalidate_species_counters();
+    int  has_valid_counters() const { return species != -1 && selected_species!=-1; }
+    bool all_are_selected() const { e4_assert(has_valid_counters()); return species == selected_species; }
 
-    void        select_all_species();
-    void        deselect_all_species();
-    void        invert_selection_of_all_species();
-    void        select_marked_species(int select);
-    void        mark_selected_species(int mark);
+    void select_all_species();
+    void deselect_all_species();
+    void invert_selection_of_all_species();
+    void select_marked_species(int select);
+    void mark_selected_species(int mark);
+
+    void toggle_selected_species();
 };
 
 class ED4_abstract_group_manager : public ED4_manager {

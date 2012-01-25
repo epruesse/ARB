@@ -52,9 +52,49 @@ void ED4_WinContext::warn_missing_context() const {
     aw_message("Missing context - please send information from console to devel@arb-home.de");
 }
 
-ED4_returncode ED4_root::refresh_window_simple(int redraw)
-{
+static ARB_ERROR request_terminal_refresh(ED4_base *base, AW_CL cl_level) {
+    ED4_level lev = ED4_level(cl_level);
+    if (lev == ED4_L_NO_LEVEL || (base->spec.level&lev) != 0) {
+        if (base->is_terminal()) {
+            ED4_terminal *term = base->to_terminal();
+            term->set_refresh();
+            term->parent->refresh_requested_by_child();
+        }
+    }
+    return NULL;
+}
+
+void ED4_root::request_refresh_for_all_terminals() {
+    main_manager->route_down_hierarchy(request_terminal_refresh, ED4_L_NO_LEVEL).expect_no_error();
+}
+
+void ED4_root::request_refresh_for_specific_terminals(ED4_level lev) {
+    main_manager->route_down_hierarchy(request_terminal_refresh, lev).expect_no_error();
+}
+
+
+static ARB_ERROR request_sequence_refresh(ED4_base *base, AW_CL cl_consensi) {
+    ARB_ERROR error;
+    if (base->spec.level & ED4_L_SPECIES) {
+        bool consensi = bool(cl_consensi);
+        if (base->flag.is_consensus == consensi) {
+            error = base->to_manager()->route_down_hierarchy(request_terminal_refresh, ED4_L_SEQUENCE_STRING);
+        }
+    }
+    return error;
+}
+
+// if you want to refresh consensi AND sequences you may use request_refresh_for_specific_terminals(ED4_L_SEQUENCE_STRING)
+void ED4_root::request_refresh_for_consensus_terminals() {
+    main_manager->route_down_hierarchy(request_sequence_refresh, true).expect_no_error();
+}
+void ED4_root::request_refresh_for_sequence_terminals() {
+    main_manager->route_down_hierarchy(request_sequence_refresh, false).expect_no_error();
+}
+
+ED4_returncode ED4_root::refresh_window_simple(bool redraw) {
     e4_assert(!main_manager->update_info.delete_requested);
+    e4_assert(!main_manager->update_info.update_requested);
     e4_assert(!main_manager->update_info.resize);
 
     int refresh_all = 0;
@@ -66,41 +106,36 @@ ED4_returncode ED4_root::refresh_window_simple(int redraw)
     return (ED4_R_OK);
 }
 
-ED4_returncode ED4_root::refresh_window(int redraw) // this function should only be used for window specific updates (i.e. cursor placement)
-{
+void ED4_root::handle_update_requests(bool& redraw) {
     if (main_manager->update_info.delete_requested) {
         main_manager->delete_requested_children();
-        redraw = 1;
-    }
-
-    while (main_manager->update_info.resize) {
-        main_manager->resize_requested_by_parent();
-        redraw = 1;
-    }
-
-    return refresh_window_simple(redraw);
-}
-
-ED4_returncode ED4_root::refresh_all_windows(int redraw) {
-    last_window_reached = 0;
-
-    if (main_manager->update_info.delete_requested) {
-        main_manager->delete_requested_children();
-        redraw = 1;
+        redraw = true;
     }
 
     if (main_manager->update_info.update_requested) {
         main_manager->update_requested_children();
-        redraw = 1;
+        redraw = true;
     }
 
     while (main_manager->update_info.resize) {
         main_manager->resize_requested_by_parent();
-        redraw = 1;
+        redraw = true;
     }
+}
 
-    ED4_window *window = first_window;
+ED4_returncode ED4_root::refresh_window(bool redraw) {
+    // this function should only be used for window specific updates (i.e. cursor placement)
+    handle_update_requests(redraw); // @@@ problematic (causes refresh w/o win-context, clears flags w/o handling all windows)
+    return refresh_window_simple(redraw);
+}
+
+ED4_returncode ED4_root::refresh_all_windows(bool redraw) {
     GB_transaction dummy(GLOBAL_gb_main);
+    last_window_reached = 0;
+
+    handle_update_requests(redraw);
+    
+    ED4_window *window = first_window;
     while (window) {
         if (!window->next) last_window_reached = 1;
         ED4_LocalWinContext uses(window);
@@ -1032,28 +1067,28 @@ void ED4_testSplitNMerge(AW_window *aw, AW_CL, AW_CL)
 
 #endif
 
-static void col_stat_activated(AW_window *)
-{
-    ED4_ROOT->column_stat_initialized = 1;
-    ED4_ROOT->column_stat_activated = 1;
-    ED4_ROOT->refresh_all_windows(1);
+inline void set_col_stat_activated_and_refresh(bool activated) {
+    ED4_ROOT->column_stat_activated = activated;
+    ED4_ROOT->request_refresh_for_sequence_terminals(); 
 }
 
-void ED4_activate_col_stat(AW_window *aww, AW_CL, AW_CL) {
+static void col_stat_activated(AW_window *) {
+    ED4_ROOT->column_stat_initialized  = 1;
+    set_col_stat_activated_and_refresh(true);
+}
+
+static void activate_col_stat(AW_window *aww, AW_CL, AW_CL) {
     if (!ED4_ROOT->column_stat_initialized) {
         AW_window *aww_st = STAT_create_main_window(ED4_ROOT->aw_root, ED4_ROOT->st_ml, (AW_CB0)col_stat_activated, (AW_window *)aww);
         aww_st->show();
-        return;
     }
     else { // re-activate
-        ED4_ROOT->column_stat_activated = 1;
-        ED4_ROOT->refresh_all_windows(1);
+        set_col_stat_activated_and_refresh(true);
     }
 }
 static void disable_col_stat(AW_window *, AW_CL, AW_CL) {
     if (ED4_ROOT->column_stat_initialized && ED4_ROOT->column_stat_activated) {
-        ED4_ROOT->column_stat_activated = 0;
-        ED4_ROOT->refresh_all_windows(1);
+        set_col_stat_activated_and_refresh(false);
     }
 }
 
@@ -1558,10 +1593,10 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("show_all",      "Show all bases ",                   "a", "set_reference.hlp", AWM_ALL, ED4_set_reference_species, 1, 0);
     awmm->insert_menu_topic("show_diff",     "Show only differences to selected", "d", "set_reference.hlp", AWM_ALL, ED4_set_reference_species, 0, 0);
     SEP________________________SEP;
-    awmm->insert_menu_topic("enable_col_stat",  "Activate column statistics", "v", "st_ml.hlp", AWM_EXP, ED4_activate_col_stat,          0, 0);
-    awmm->insert_menu_topic("disable_col_stat", "Disable column statistics",  "i", "st_ml.hlp", AWM_EXP, disable_col_stat,               0, 0);
+    awmm->insert_menu_topic("enable_col_stat",  "Activate column statistics", "v", "st_ml.hlp", AWM_EXP, activate_col_stat,                0, 0);
+    awmm->insert_menu_topic("disable_col_stat", "Disable column statistics",  "i", "st_ml.hlp", AWM_EXP, disable_col_stat,                 0, 0);
     awmm->insert_menu_topic("detail_col_stat",  "Toggle detailed Col.-Stat.", "c", "st_ml.hlp", AWM_EXP, ED4_toggle_detailed_column_stats, 0, 0);
-    awmm->insert_menu_topic("dcs_threshold",    "Set threshold for D.c.s.",   "f", "st_ml.hlp", AWM_EXP, ED4_set_col_stat_threshold,     1, 0);
+    awmm->insert_menu_topic("dcs_threshold",    "Set threshold for D.c.s.",   "f", "st_ml.hlp", AWM_EXP, ED4_set_col_stat_threshold,       0, 0);
     SEP________________________SEP;
     awmm->insert_menu_topic("visualize_SAI", "Visualize SAIs", "z", "visualizeSAI.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_createVisualizeSAI_window, 0);
     // Enable ProteinViewer only for DNA sequence type

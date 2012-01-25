@@ -327,7 +327,7 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                 else {
                     error = edit_string->edit(work_info);
 
-                    ED4_ROOT->main_manager->Show(1, 0);         // @@@ temporary fix for worst-refresh problems
+                    ED4_ROOT->main_manager->Show(1, 0); // temporary fix for worst-refresh problems (@@@ fixme)
                     // ED4_ROOT->main_manager->Show(); // original version
 
                     cursor->jump_sequence_pos(work_info->out_seq_position, work_info->cursor_jump);
@@ -348,7 +348,6 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                         ED4_sequence_terminal *seq_term = terminal->to_sequence_terminal();
                         seq_term->results().searchAgain();
                     }
-                    ED4_ROOT->refresh_all_windows(0);
                 }
 
                 delete edit_string;
@@ -841,15 +840,15 @@ void ED4_quit_editor(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
 }
 
 void ED4_timer_refresh() {
-    GB_begin_transaction(GLOBAL_gb_main);                  // for callbacks from database
+    // get all changes from server
+    GB_begin_transaction(GLOBAL_gb_main);
     GB_tell_server_dont_wait(GLOBAL_gb_main);
     GB_commit_transaction(GLOBAL_gb_main);
 
-    // @@@ need to ED4_ROOT->refresh_all_windows(0) here
+    ED4_ROOT->refresh_all_windows(0); // do delayed refresh
 }
 
-void ED4_timer(AW_root *, AW_CL cd1, AW_CL cd2)
-{
+void ED4_timer(AW_root *, AW_CL cd1, AW_CL cd2) {
     ED4_timer_refresh();
     ED4_ROOT->aw_root->add_timed_callback(200, ED4_timer, cd1, cd2);
 }
@@ -928,7 +927,7 @@ void ED4_columnStat_terminal::set_threshold(double aThreshold) {
     e4_assert(threshold_is_set());
 }
 
-void ED4_set_col_stat_threshold(AW_window * /* aww */, AW_CL cl_do_refresh, AW_CL) {
+void ED4_set_col_stat_threshold(AW_window *, AW_CL, AW_CL) {
     double default_threshold = 90.0;
     if (ED4_columnStat_terminal::threshold_is_set()) {
         default_threshold = ED4_columnStat_terminal::get_threshold();
@@ -945,9 +944,7 @@ void ED4_set_col_stat_threshold(AW_window * /* aww */, AW_CL cl_do_refresh, AW_C
         }
         else {
             ED4_columnStat_terminal::set_threshold(input_threshold);
-            if (int(cl_do_refresh)) {
-                ED4_ROOT->refresh_all_windows(1);
-            }
+            ED4_ROOT->request_refresh_for_specific_terminals(ED4_L_COL_STAT);
         }
         free(input);
     }
@@ -1026,7 +1023,6 @@ void ED4_toggle_detailed_column_stats(AW_window *aww, AW_CL, AW_CL) {
 
         new_seq_man->resize_requested_by_child();
     }
-    ED4_ROOT->refresh_all_windows(0);
 }
 
 ARB_ERROR update_terminal_extension(ED4_base *this_object) {
@@ -1339,7 +1335,6 @@ void ED4_load_new_config(char *string) {
     ED4_ROOT->first_window->reset_all_for_new_config();
 
     ED4_ROOT->create_hierarchy(config_data_middle, config_data_top);
-    ED4_ROOT->refresh_all_windows(1);
 
     free(config_data_middle);
     free(config_data_top);
@@ -2200,15 +2195,8 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                 }
             }
 
-            if (error) {
-                GB_abort_transaction(GLOBAL_gb_main);
-            }
-            else {
-                GB_pop_transaction(GLOBAL_gb_main);
-
-                ED4_get_and_jump_to_species(new_species_name);
-                ED4_ROOT->refresh_all_windows(1);
-            }
+            error = GB_end_transaction(GLOBAL_gb_main, error);
+            if (!error) ED4_get_and_jump_to_species(new_species_name);
         }
 
         free(addid);

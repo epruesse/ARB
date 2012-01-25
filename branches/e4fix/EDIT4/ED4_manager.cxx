@@ -12,8 +12,9 @@
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_protein_2nd_structure.hxx"
 
-// #define TEST_REFRESH_FLAG
-
+#if defined(DEBUG)
+#define TEST_REFRESH_FLAG
+#endif
 
 // -----------------------------------------------------------------
 //      Manager static properties (used by manager-constructors)
@@ -258,8 +259,8 @@ ED4_returncode ED4_manager::update_bases_and_rebuild_consensi(const char *old_se
         else if (ED4_ROOT->alignment_type == GB_AT_AA) { 
             GB_ERROR err = ED4_pfold_set_SAI(&ED4_ROOT->protstruct, GLOBAL_gb_main, ED4_ROOT->alignment_name, &ED4_ROOT->protstruct_len);
             if (err) { aw_message(err); result = ED4_R_WARNING; }
-            ED4_ROOT->refresh_all_windows(0); // @@@ crazy slowdown ? 
-            ED4_expose_all_windows();
+            // ED4_ROOT->refresh_all_windows(0); // @@@ crazy slowdown ? 
+            // ED4_expose_all_windows();
         }
     }
     return result;
@@ -743,6 +744,7 @@ int ED4_manager::refresh_flag_ok() {
 
         if (child->update_info.refresh==1 && update_info.refresh==0) {
             printf("Forgotten refresh-flag in '%s' (son of '%s')\n", child->id, id);
+            fflush(stdout);
             return 0;
         }
     }
@@ -929,9 +931,6 @@ ED4_returncode ED4_terminal::Resize() {
 ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
 #ifdef TEST_REFRESH_FLAG
     e4_assert(refresh_flag_ok());
-#endif
-#if defined(DEBUG) && 0
-    printf("Show main_manager\n");
 #endif
 
     AW_device *device = current_device();

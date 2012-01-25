@@ -29,16 +29,7 @@ void ED4_base::changed_by_database()
 
 void ED4_manager::changed_by_database() {
     set_refresh(1);
-    if (parent) {
-        parent->refresh_requested_by_child();
-    }
-    else {
-#if defined(DEBUG)
-        printf("ED4_manager::changed_by_database: I have no parent!\n");
-#endif // DEBUG
-    }
-
-    ED4_ROOT->refresh_all_windows(0);
+    if (parent) parent->refresh_requested_by_child();
 }
 
 void ED4_terminal::changed_by_database()
@@ -147,10 +138,8 @@ void ED4_manager::deleted_from_database() {
         GB_pop_transaction(GLOBAL_gb_main);
 
         if (parent) parent->resize_requested_by_child();
-        ED4_ROOT->refresh_all_windows(0);
-
-        parent = 0;
-        //      delete this; // @@@ crashes when removing callback deleted_from_database()
+        // parent = 0;
+        // delete this; // @@@ crashes when removing callback deleted_from_database()
     }
     else {
         e4_assert(0);
