@@ -89,16 +89,16 @@ void ED4_root::request_refresh_for_sequence_terminals() {
 }
 
 ED4_returncode ED4_root::refresh_window_simple(bool redraw) {
-    e4_assert(!main_manager->update_info.delete_requested);
-    e4_assert(!main_manager->update_info.update_requested);
-    e4_assert(!main_manager->update_info.resize);
-
+    // if 'redraw' -> update everything (ignoring refresh flag)
     int refresh_all = 0;
     if (redraw) {
         main_manager->update_info.set_clear_at_refresh(1);
         refresh_all = 1;
     }
     main_manager->Show(refresh_all, 0);
+    if (redraw) {
+        main_manager->update_info.set_clear_at_refresh(0);
+    }
     return (ED4_R_OK);
 }
 
@@ -117,31 +117,38 @@ void ED4_root::handle_update_requests(bool& redraw) {
         main_manager->resize_requested_by_parent();
         redraw = true;
     }
+
+    // make sure all update request have been handled:
+    e4_assert(!main_manager->update_info.delete_requested);
+    e4_assert(!main_manager->update_info.update_requested);
+    e4_assert(!main_manager->update_info.resize);
 }
 
-ED4_returncode ED4_root::refresh_window(bool redraw) {
+ED4_returncode ED4_root::special_window_refresh() {
     // this function should only be used for window specific updates (i.e. cursor placement)
-    handle_update_requests(redraw); // @@@ problematic (causes refresh w/o win-context, clears flags w/o handling all windows)
+    bool redraw = true; 
+    handle_update_requests(redraw); // @@@ problematic (causes refresh w/o win-context)
     return refresh_window_simple(redraw);
+    // do NOT clear_refresh_requests here!! this is no full refresh!
 }
 
 ED4_returncode ED4_root::refresh_all_windows(bool redraw) {
+    // if 'redraw' -> update everything (ignoring refresh flag)
     GB_transaction dummy(GLOBAL_gb_main);
-    last_window_reached = 0;
 
     handle_update_requests(redraw);
     
     ED4_window *window = first_window;
     while (window) {
-        if (!window->next) last_window_reached = 1;
         ED4_LocalWinContext uses(window);
         refresh_window_simple(redraw);
         window = window->next;
     }
 
+    if (main_manager->update_info.refresh) main_manager->clear_refresh();
+
     return (ED4_R_OK);
 }
-
 
 void ED4_foldable::win_to_world_coords(AW_pos *xPtr, AW_pos *yPtr) {
     // calculates transformation from window to world coordinates in a given window
@@ -826,17 +833,17 @@ void ED4_root::copy_window_struct(ED4_window *source,   ED4_window *destination)
 }
 
 
-void ED4_reload_helix_cb(AW_window *aww) {
+static void reload_helix_cb() { 
     const char *err = ED4_ROOT->helix->init(GLOBAL_gb_main);
     if (err) aw_message(err);
-    ED4_refresh_window(aww);
+    ED4_request_full_refresh();
 }
 
 
-void ED4_reload_ecoli_cb(AW_window *aww) {
+static void reload_ecoli_cb() {
     const char *err = ED4_ROOT->ecoli_ref->init(GLOBAL_gb_main);
     if (err) aw_message(err);
-    ED4_refresh_window(aww);
+    ED4_request_full_refresh();
 }
 
 // --------------------------------------------------------------------------------
@@ -1283,7 +1290,7 @@ static void ED4_menu_select(AW_window *aww, AW_CL type, AW_CL) {
         }
     }
 
-    ED4_refresh_window(aww);
+    ED4_request_full_refresh();
 }
 
 void ED4_menu_perform_block_operation(AW_window */*aww*/, AW_CL type, AW_CL) {
@@ -1475,12 +1482,12 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     // ------------------------------
 
     awmm->create_menu("Edit", "E", AWM_ALL);
-    awmm->insert_menu_topic("refresh",      "Refresh [Ctrl-L]",           "f", 0, AWM_ALL, (AW_CB)ED4_refresh_window,            0, 0);
+    awmm->insert_menu_topic("refresh",      "Refresh [Ctrl-L]",           "f", 0, AWM_ALL, (AW_CB)ED4_request_full_refresh,       0, 0);
     awmm->insert_menu_topic("load_current", "Load current species [GET]", "G", 0, AWM_ALL, ED4_get_and_jump_to_current_from_menu, 0, 0);
-    awmm->insert_menu_topic("load_marked",  "Load marked species",        "m", 0, AWM_ALL, ED4_get_marked_from_menu,             0, 0);
+    awmm->insert_menu_topic("load_marked",  "Load marked species",        "m", 0, AWM_ALL, ED4_get_marked_from_menu,              0, 0);
     SEP________________________SEP;
-    awmm->insert_menu_topic("refresh_ecoli",       "Reload Ecoli sequence",        "E", "ecoliref.hlp", AWM_ALL, (AW_CB)ED4_reload_ecoli_cb, 0, 0);
-    awmm->insert_menu_topic("refresh_helix",       "Reload Helix",                 "H", "helix.hlp",    AWM_ALL, (AW_CB)ED4_reload_helix_cb, 0, 0);
+    awmm->insert_menu_topic("refresh_ecoli",       "Reload Ecoli sequence",        "E", "ecoliref.hlp", AWM_ALL, (AW_CB)reload_ecoli_cb, 0, 0);
+    awmm->insert_menu_topic("refresh_helix",       "Reload Helix",                 "H", "helix.hlp",    AWM_ALL, (AW_CB)reload_helix_cb, 0, 0);
     awmm->insert_menu_topic("helix_jump_opposite", "Jump helix opposite [Ctrl-J]", "J", 0,              AWM_ALL, ED4_helix_jump_opposite,    0, 0);
     SEP________________________SEP;
 
@@ -1934,8 +1941,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     return (ED4_R_OK);
 }
 
-AW_window *ED4_root::create_new_window()                            // only the first time, other cases: generate_window
-{
+AW_window *ED4_root::create_new_window() {
+    // only the first window, other windows are generated by generate_window
     AW_device  *device     = NULL;
     ED4_window *new_window = NULL;
 
@@ -1945,14 +1952,13 @@ AW_window *ED4_root::create_new_window()                            // only the 
     
     ED4_calc_terminal_extentions();
 
-    last_window_reached     = 1;
     DRAW                    = 1;
     move_cursor             = 0;
     max_seq_terminal_length = 0;
 
     ED4_init_notFoundMessage();
 
-    return (new_window->aww);
+    return new_window->aww;
 }
 
 ED4_index ED4_root::pixel2pos(AW_pos click_x) {

@@ -609,7 +609,7 @@ enum ED4_CursorType {
 
 };
 
-extern int ED4_update_global_cursor_awars_allowed;
+extern bool ED4_update_global_cursor_awars_allowed; // update selected species/SAI/cursor position
 
 struct ED4_TerminalPredicate {
     virtual ~ED4_TerminalPredicate() {}
@@ -1522,7 +1522,7 @@ public:
     // functions concerned with global refresh and resize
     ED4_returncode resize_all();
 
-    ED4_returncode refresh_window(bool redraw);
+    ED4_returncode special_window_refresh();
     ED4_returncode refresh_all_windows(bool redraw);
 
     void request_refresh_for_all_terminals();
@@ -2222,7 +2222,7 @@ ARB_ERROR rebuild_consensus(ED4_base *object);
 void ED4_exit() __ATTR__NORETURN;
 
 void        ED4_quit_editor         (AW_window *aww, AW_CL cd1, AW_CL cd2);                 // Be Careful: Is this the last window?
-void        ED4_refresh_window      (AW_window *aww);
+void        ED4_request_full_refresh();
 
 void        ED4_store_curpos        (AW_window *aww, AW_CL cd1, AW_CL cd2);
 void        ED4_restore_curpos      (AW_window *aww, AW_CL cd1, AW_CL cd2);

@@ -143,7 +143,7 @@ void ED4_expose_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     current_ed4w()->update_window_coords();
 
     current_device()->reset();
-    ED4_ROOT->refresh_window(1);
+    ED4_ROOT->special_window_refresh();
 
     GB_pop_transaction(GLOBAL_gb_main);
 }
@@ -850,20 +850,7 @@ void ED4_timer(AW_root *, AW_CL cd1, AW_CL cd2) {
     ED4_ROOT->aw_root->add_timed_callback(200, ED4_timer, cd1, cd2);
 }
 
-void ED4_refresh_window(AW_window *aww) {
-    ED4_main_manager *mainman = ED4_ROOT->main_manager;
-    if (mainman) { // during startup we have no mainman
-        GB_transaction      ta(GLOBAL_gb_main);
-        ED4_LocalWinContext uses(aww);
-
-        if (mainman->update_info.delete_requested) {
-            mainman->delete_requested_children();
-        }
-
-        mainman->update_info.set_clear_at_refresh(1);
-        mainman->Show(1);
-    }
-}
+void ED4_request_full_refresh() { ED4_ROOT->main_manager->request_refresh(); }
 
 void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL ) {
     ED4_LocalWinContext uses(aww);
@@ -907,7 +894,7 @@ void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL ) {
         }
     }
 
-    ED4_refresh_window(aww);
+    ED4_ROOT->request_refresh_for_sequence_terminals();
 }
 
 static void show_detailed_column_stats_activated(AW_window *aww) {

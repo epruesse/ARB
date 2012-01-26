@@ -935,12 +935,7 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
 
     AW_device *device = current_device();
 
-    if (flag.hidden) {
-        if (last_window_reached && update_info.refresh) {
-            clear_refresh();
-        }
-    }
-    else if (refresh_all || update_info.refresh) {
+    if (!flag.hidden && (refresh_all || update_info.refresh)) {
         const AW_screen_area& area_rect = device->get_area_size();
 
         // if update all -> clear_background
@@ -958,47 +953,24 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
 
         int x1, y1, x2, y2;
         ED4_window& win = *current_ed4w();
-        int old_last_window_reached = last_window_reached;
-
-        last_window_reached = 0;
         x1 = area_rect.l;
         for (const ED4_folding_line *flv = win.get_vertical_folding(); ; flv = flv->get_next()) {
-            int lastColumn = 0;
-
             if (flv) {
                 x2 = int(flv->get_pos()); // @@@ use AW_INT ? 
-                if (!flv->get_next() && x2==area_rect.r) {
-                    lastColumn = 1;
-                }
             }
             else {
                 x2 = area_rect.r;
-                lastColumn = 1;
-                if (x1==x2) {
-                    break; // do not draw last range, if it's only 1 pixel width
-                }
+                if (x1==x2) break; // do not draw last range, if it's only 1 pixel width
             }
 
             y1 = area_rect.t;
             for (const ED4_folding_line *flh = win.get_horizontal_folding(); ; flh = flh->get_next()) {
-                int lastRow = 0;
-
                 if (flh) {
                     y2 = int(flh->get_pos()); // @@@ use AW_INT ? 
-                    if (!flh->get_next() && y2==area_rect.b) {
-                        lastRow = 1;
-                    }
                 }
                 else {
                     y2 = area_rect.b;
-                    lastRow = 1;
-                    if (y1==y2) {
-                        break; // do not draw last range, if it's only 1 pixel high
-                    }
-                }
-
-                if (lastRow && lastColumn) {
-                    last_window_reached = old_last_window_reached;
+                    if (y1==y2) break; // do not draw last range, if it's only 1 pixel high
                 }
 
                 device->push_clip_scale();
@@ -1006,11 +978,6 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
                     ED4_manager::Show(refresh_all, is_cleared);
                 }
                 device->pop_clip_scale();
-
-                if (last_window_reached) {
-                    update_info.set_refresh(0);
-                    update_info.set_clear_at_refresh(0);
-                }
 
                 if (!flh) break; // break out after drawing lowest range
                 y1 = y2;
@@ -1058,11 +1025,6 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
     e4_assert(refresh_flag_ok());
 #endif
 
-    if (flag.hidden) {
-        if (last_window_reached && update_info.refresh) {
-            clear_refresh();
-        }
-    }
     if (!flag.hidden && (refresh_all || update_info.refresh)) {
         if (update_info.clear_at_refresh && !is_cleared) {
             clear_background();
@@ -1182,17 +1144,6 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
                     device->pop_clip_scale();
                 }
             }
-
-            if (last_window_reached) {
-                if (!flags_cleared && child->is_manager() && child->update_info.refresh) {
-                    // if we didn't show a manager we must clear its children's refresh flags
-                    child->to_manager()->clear_refresh();
-                }
-                else {
-                    child->update_info.set_refresh(0);
-                    child->update_info.set_clear_at_refresh(0);
-                }
-            }
         }
     }
 
@@ -1221,6 +1172,7 @@ ED4_returncode ED4_manager::clear_refresh() {
     }
 
     update_info.set_refresh(0);
+    update_info.set_clear_at_refresh(0);
 
     return ED4_R_OK;
 }

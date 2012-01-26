@@ -65,7 +65,6 @@ ED4_EDITMODI awar_edit_mode;
 long         awar_edit_direction;
 bool         move_cursor;                           // only needed for editing in consensus
 bool         DRAW;
-bool         last_window_reached;                   // needed for refreshing all windows (if TRUE refresh/...-flags will be cleared)
 
 void ED4_config_change_cb(AW_root *)
 {
@@ -498,6 +497,9 @@ const char *ED4_propertyName(int mode) {
 static void ED4_postcbcb(AW_window *aww) {
     ED4_ROOT->announce_useraction_in(aww);
 }
+static void seq_colors_changed_cb(AW_window *) {
+    ED4_ROOT->request_refresh_for_sequence_terminals();
+}
 
 int ARB_main(int argc, const char *argv[]) {
     const char *data_path = ":";
@@ -561,7 +563,7 @@ int ARB_main(int argc, const char *argv[]) {
     ed4_create_all_awars(ED4_ROOT->aw_root, config_name);
 
     ED4_ROOT->st_ml = STAT_create_ST_ML(GLOBAL_gb_main);
-    ED4_ROOT->sequence_colors = new AWT_seq_colors(AW_ROOT_DEFAULT, ED4_G_SEQUENCES, (AW_CB)ED4_refresh_window, 0, 0);
+    ED4_ROOT->sequence_colors = new AWT_seq_colors(AW_ROOT_DEFAULT, ED4_G_SEQUENCES, (AW_CB)seq_colors_changed_cb, 0, 0);
 
     ED4_ROOT->edk = new ed_key;
     ED4_ROOT->edk->create_awars(ED4_ROOT->aw_root);

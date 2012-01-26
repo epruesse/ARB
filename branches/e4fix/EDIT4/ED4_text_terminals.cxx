@@ -610,6 +610,8 @@ ED4_returncode ED4_text_terminal::Show(int IF_ASSERTION_USED(refresh_all), int i
     }
     current_device()->pop_clip_scale();
 
+    // @@@ only request refresh of cursor and draw it at end of window-refresh ? might fix missing parts of cursor
+    // maybe do this check at top-level 
     ED4_cursor *cursor = &current_cursor();
     if (this == cursor->owner_of_cursor) {
         current_device()->push_clip_scale();

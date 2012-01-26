@@ -360,11 +360,11 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
 
 #define EXPAND_SIZE 0
     if (window()->get_device()->reduceClipBorders(ymin-EXPAND_SIZE, ymax+1+EXPAND_SIZE, xmin-EXPAND_SIZE, xmax+1+EXPAND_SIZE)) {
-        // refresh terminal
-        int old_allowed_to_draw = allowed_to_draw;
-        allowed_to_draw = 0;
-        ED4_ROOT->refresh_window(1);
-        allowed_to_draw = old_allowed_to_draw;
+        // refresh terminal to hide cursor
+        bool previous = allowed_to_draw;
+        allowed_to_draw = false;
+        ED4_ROOT->special_window_refresh();
+        allowed_to_draw = previous;
     }
     dev->pop_clip_scale();
 
@@ -374,7 +374,7 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
 
 ED4_cursor::ED4_cursor(ED4_window *win_) : win(win_) {
     init();
-    allowed_to_draw = 1;
+    allowed_to_draw = true;
     cursor_shape    = 0;
 
     ctype = (ED4_CursorType)(ED4_ROOT->aw_root->awar(ED4_AWAR_CURSOR_TYPE)->read_int()%ED4_CURSOR_TYPES);
@@ -800,7 +800,7 @@ void ED4_cursor::changeType(ED4_CursorType typ)
     }
 }
 
-int ED4_update_global_cursor_awars_allowed = true;
+bool ED4_update_global_cursor_awars_allowed = true;
 
 void ED4_cursor::updateAwars()
 {
@@ -1012,7 +1012,7 @@ void ED4_cursor::jump_screen_pos(int screen_pos, ED4_CursorJumpType jump_type) {
 
     delete_cursor(cursor_abs_x, owner_of_cursor);
 
-    int old_allowed_to_draw = allowed_to_draw;
+    bool previous = allowed_to_draw;
     if (scroll_new_to >= 0) {   // scroll
         int rel_x_new     = abs_x_new-coords->window_left_clip_point;
         int scroll_amount = rel_x_new-scroll_new_to;
@@ -1027,19 +1027,19 @@ void ED4_cursor::jump_screen_pos(int screen_pos, ED4_CursorJumpType jump_type) {
 #if defined(TRACE_JUMPS)
             printf("jump_screen_pos auto-scrolls %i\n", scroll_amount);
 #endif
-            allowed_to_draw = 0;
+            allowed_to_draw = false;
             ED4_horizontal_change_cb(aww, 0, 0);
         }
     }
 
-    allowed_to_draw = 1;
+    allowed_to_draw = true;
     if (cursor_diff >= 0) {
         ShowCursor(cursor_diff*length_of_char, ED4_C_RIGHT, ABS(cursor_diff));
     }
     else {
         ShowCursor(cursor_diff*length_of_char, ED4_C_LEFT, ABS(cursor_diff));
     }
-    allowed_to_draw = old_allowed_to_draw;
+    allowed_to_draw = previous;
 }
 
 void ED4_cursor::jump_sequence_pos(int seq_pos, ED4_CursorJumpType jump_type) {
@@ -1213,21 +1213,20 @@ void ED4_cursor::set_abs_x()
 }
 
 
-ED4_returncode ED4_cursor::ShowCursor(ED4_index offset_x, ED4_cursor_move move, int move_pos)
-{
+ED4_returncode ED4_cursor::ShowCursor(ED4_index offset_x, ED4_cursor_move move, int move_pos) {
     AW_pos x=0, y=0, x_help = 0, y_help;
 
     owner_of_cursor->calc_world_coords(&x, &y);
 
-    switch (move)
-    {
-        case ED4_C_RIGHT:
-            screen_position += move_pos;
-            break;
-        case ED4_C_LEFT:
-            screen_position -= move_pos;
-            break;
-        case ED4_C_NONE:
+    int old_allow = ED4_update_global_cursor_awars_allowed;
+    ED4_update_global_cursor_awars_allowed = true;
+
+    switch (move) {
+        case ED4_C_RIGHT: screen_position += move_pos; break;
+        case ED4_C_LEFT:  screen_position -= move_pos; break;
+
+        case ED4_C_NONE: // no move - only redisplay
+            ED4_update_global_cursor_awars_allowed = false; // dont update here, otherwise refresh will disable cursor movement!
             break;
         default:
             e4_assert(0);
@@ -1235,6 +1234,7 @@ ED4_returncode ED4_cursor::ShowCursor(ED4_index offset_x, ED4_cursor_move move, 
     }
 
     updateAwars();
+    ED4_update_global_cursor_awars_allowed = old_allow;
 
     x_help = cursor_abs_x + offset_x;
     y_help = y;
@@ -1390,7 +1390,6 @@ ED4_returncode ED4_cursor::show_cursor_at(ED4_terminal *target_terminal, ED4_ind
 
         owner_of_cursor->request_refresh(); // we have to refresh old owner of cursor
         owner_of_cursor = NULL;
-        ED4_ROOT->refresh_window(0);
         DRAW = 1;
     }
 
