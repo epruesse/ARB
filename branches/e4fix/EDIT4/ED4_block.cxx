@@ -66,7 +66,7 @@ static void col_block_refresh_on_seq_term(ED4_sequence_terminal *seq_term) {
     }
 }
 
-static void refresh_selected(bool refresh_name_terminals) { // @@@ rename
+static void refresh_selected(bool refresh_name_terminals) {
     ED4_list_elem *listElem = ED4_ROOT->selected_objects.first();
     while (listElem) {
         ED4_selection_entry       *selected  = (ED4_selection_entry*)listElem->elem();

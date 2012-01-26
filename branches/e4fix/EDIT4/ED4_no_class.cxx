@@ -898,7 +898,7 @@ void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL ) {
 }
 
 static void show_detailed_column_stats_activated(AW_window *aww) {
-    ED4_ROOT->column_stat_initialized = 1;
+    ED4_ROOT->column_stat_initialized = true;
     ED4_toggle_detailed_column_stats(aww, 0, 0);
 }
 

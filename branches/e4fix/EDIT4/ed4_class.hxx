@@ -1498,12 +1498,14 @@ public:
     long                     protstruct_len;        // protein structure summary
     ed_key                  *edk;
     ED4_Edit_String         *edit_string;
-    int                      column_stat_activated; // @@@ make bool
-    int                      column_stat_initialized; // @@@ make bool
-    int                      visualizeSAI; // @@@ make bool
-    int                      visualizeSAI_allSpecies; // @@@ make bool
-    int                      temp_gc;
-    AW_font_group            font_group;
+
+    bool column_stat_activated;
+    bool column_stat_initialized;
+    bool visualizeSAI;
+    bool visualizeSAI_allSpecies;
+
+    int temp_gc;
+    AW_font_group font_group;
 
     void announce_useraction_in(AW_window *aww);
     ED4_window *get_most_recently_used_window() const { return most_recently_used_window; }

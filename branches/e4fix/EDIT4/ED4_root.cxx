@@ -1064,7 +1064,7 @@ inline void set_col_stat_activated_and_refresh(bool activated) {
 }
 
 static void col_stat_activated(AW_window *) {
-    ED4_ROOT->column_stat_initialized  = 1;
+    ED4_ROOT->column_stat_initialized  = true;
     set_col_stat_activated_and_refresh(true);
 }
 
@@ -2016,10 +2016,10 @@ ED4_root::ED4_root()
       protstruct_len(0),
       edk(0),
       edit_string(0),
-      column_stat_activated(0),
-      column_stat_initialized(0),
-      visualizeSAI(0),
-      visualizeSAI_allSpecies(0),
+      column_stat_activated(false),
+      column_stat_initialized(false),
+      visualizeSAI(false),
+      visualizeSAI_allSpecies(false),
       temp_gc(0)
 {}
 

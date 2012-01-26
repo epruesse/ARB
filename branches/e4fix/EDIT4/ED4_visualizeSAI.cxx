@@ -807,6 +807,3 @@ AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
     return aws;
 }
 
-bool ED4_SAIs_visualized() {
-    return ED4_ROOT->visualizeSAI;
-}
