@@ -252,8 +252,7 @@ GB_ERROR ED4_terminal::write_sequence(const char *seq, int seq_len)
             aw_message("Couldn't read old sequence data");
         }
 
-        set_refresh();
-        parent->refresh_requested_by_child();
+        request_refresh();
     }
 
     if (old_seq) free(old_seq);
@@ -268,9 +267,7 @@ ED4_returncode ED4_terminal::remove_callbacks()                     // removes c
         set_species_pointer(0);
         tflag.deleted = 1; // @@@ why ?
         clr_property(ED4_P_CURSOR_ALLOWED);
-
-        set_refresh();
-        parent->refresh_requested_by_child();
+        request_refresh();
     }
     return ED4_R_OK;
 }
@@ -453,8 +450,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
 
                                 if (gbd) {
                                     GB_write_flag(gbd, !GB_read_flag(gbd));
-                                    set_refresh();
-                                    parent->refresh_requested_by_child();
+                                    request_refresh();
                                     // ProtView: Refreshing orf terminals
                                     if (ED4_ROOT->alignment_type ==  GB_AT_DNA) {
                                         PV_RefreshWindow(aww->get_root());
@@ -691,8 +687,7 @@ bool ED4_terminal::calc_bounding_box() {
             current_list_elem = current_list_elem->next();
         }
 
-        set_refresh(1); // clear on refresh (was done anyway due to default parameter)
-        parent->refresh_requested_by_child();
+        request_refresh();
     }
 
     return bb_changed;
@@ -709,11 +704,10 @@ ED4_returncode ED4_terminal::resize_requested_by_parent() {
 }
 
 
-ED4_returncode ED4_terminal::set_refresh(int clear)                 // sets refresh flag of current object
-{
+void ED4_terminal::request_refresh(int clear) {
     update_info.set_refresh(1);
     update_info.set_clear_at_refresh(clear);
-    return (ED4_R_OK);
+    if (parent) parent->refresh_requested_by_child();
 }
 
 

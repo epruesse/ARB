@@ -27,10 +27,7 @@ void ED4_base::changed_by_database()
     // without defining changed_by_database for this type
 }
 
-void ED4_manager::changed_by_database() {
-    set_refresh(1);
-    if (parent) parent->refresh_requested_by_child();
-}
+void ED4_manager::changed_by_database() { request_refresh(); }
 
 void ED4_terminal::changed_by_database()
 {
@@ -72,11 +69,8 @@ void ED4_terminal::changed_by_database()
 
                 if (dynamic_prop & ED4_P_CONSENSUS_RELEVANT) {
                     ED4_multi_species_manager *multiman = get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
-
                     multiman->update_bases_and_rebuild_consensi(dup_data, data_len, spman, ED4_U_UP);
-
-                    set_refresh(1);
-                    parent->refresh_requested_by_child();
+                    request_refresh();
                 }
 
                 delete [] dup_data;
@@ -643,8 +637,7 @@ void ED4_multi_species_manager::update_group_id() {
 
         freeset(consensus_name_terminal->id, name);
 
-        consensus_name_terminal->set_refresh();
-        consensus_name_terminal->parent->refresh_requested_by_child();
+        consensus_name_terminal->request_refresh();
     }
 }
 

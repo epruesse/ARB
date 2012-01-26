@@ -423,19 +423,7 @@ struct ConsensusBuildParams {
 static ConsensusBuildParams *BK = NULL; // @@@ make member of ED4_char_table ?
 
 void ED4_consensus_definition_changed(AW_root*, AW_CL, AW_CL) {
-    ED4_terminal *terminal = ED4_ROOT->root_group_man->get_first_terminal();
-
-    e4_assert(terminal);
-    while (terminal) {
-        if (terminal->parent->parent->flag.is_consensus) {
-            terminal->set_refresh();
-            terminal->parent->refresh_requested_by_child();
-        }
-        terminal = terminal->get_next_terminal();
-    }
-
     delete BK; BK = 0; // invalidate
-
     ED4_ROOT->request_refresh_for_consensus_terminals();
 }
 

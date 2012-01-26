@@ -1285,11 +1285,7 @@ void ED4_multi_species_manager::update_requested_children() {
         ED4_group_manager *group_man    = parent->to_group_manager();
         ED4_base          *bracket_base = group_man->get_defined_level(ED4_L_BRACKET);
 
-        if (bracket_base && bracket_base->is_bracket_terminal()) {
-            ED4_bracket_terminal *bracket_term = bracket_base->to_bracket_terminal();
-            bracket_term->set_refresh();
-            bracket_term->parent->refresh_requested_by_child();
-        }
+        if (bracket_base) bracket_base->request_refresh();
     }
 }
 
@@ -1333,20 +1329,18 @@ void ED4_manager::Delete() {
     }
 }
 
-ED4_returncode ED4_manager::set_refresh(int clear) {
-    // sets refresh flag of current object and his children
-    ED4_index   current_index;
-    ED4_base    *current_child;
-
+void ED4_manager::request_refresh(int clear) {
+    // sets refresh flag of current object and its children
     update_info.set_refresh(1);
     update_info.set_clear_at_refresh(clear);
 
-    current_index = 0;
-    while ((current_child = children->member(current_index++)) != NULL) {
-        current_child->set_refresh(0);
-    }
+    if (parent) parent->refresh_requested_by_child();
 
-    return (ED4_R_OK);
+    ED4_index  current_index = 0;
+    ED4_base  *current_child;
+    while ((current_child = children->member(current_index++)) != NULL) {
+        current_child->request_refresh(0); // do not trigger clear for childs
+    }
 }
 
 
@@ -1486,11 +1480,7 @@ void ED4_multi_species_manager::set_species_counters(int no_of_species, int no_o
         selected_species = no_of_selected;
 
         ED4_base *gm = get_parent(ED4_L_GROUP);
-        if (gm) {
-            ED4_bracket_terminal *bracket = gm->to_manager()->search_spec_child_rek(ED4_L_BRACKET)->to_bracket_terminal();
-            bracket->set_refresh();
-            bracket->parent->refresh_requested_by_child();
-        }
+        if (gm) gm->to_manager()->search_spec_child_rek(ED4_L_BRACKET)->request_refresh();
 
         ED4_base *ms = get_parent(ED4_L_MULTI_SPECIES);
         if (ms) {
@@ -2110,15 +2100,13 @@ ED4_root_group_manager::ED4_root_group_manager(const char *temp_id, AW_pos x, AW
     my_remap.mark_compile_needed_force();
 }
 
-int ED4_root_group_manager::update_remap()
-{
+int ED4_root_group_manager::update_remap() {
     int remapped = 0;
 
     if (my_remap.compile_needed()) {
         my_remap.compile(this);
         if (my_remap.was_changed()) {
-            ED4_ROOT->main_manager->set_refresh();
-            ED4_ROOT->main_manager->refresh_requested_by_child();
+            ED4_ROOT->main_manager->request_refresh();
             remapped = 1;
         }
     }

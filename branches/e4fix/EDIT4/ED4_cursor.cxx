@@ -303,8 +303,7 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
 
     // refresh own terminal + terminal above + terminal below
 
-    target_terminal->set_refresh();
-    target_terminal->parent->refresh_requested_by_child();
+    target_terminal->request_refresh();
 
     {
         ED4_terminal *term = target_terminal->to_terminal();
@@ -318,8 +317,7 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
                 done = 1;
             }
             else if ((term->is_sequence_terminal()) && !term->is_in_folded_group()) {
-                term->set_refresh();
-                term->parent->refresh_requested_by_child();
+                term->request_refresh();
                 done = 1;
             }
 
@@ -1390,8 +1388,7 @@ ED4_returncode ED4_cursor::show_cursor_at(ED4_terminal *target_terminal, ED4_ind
             delete_cursor(cursor_abs_x, owner_of_cursor);
         }
 
-        owner_of_cursor->set_refresh(); // we have to refresh old owner of cursor
-        owner_of_cursor->parent->refresh_requested_by_child();
+        owner_of_cursor->request_refresh(); // we have to refresh old owner of cursor
         owner_of_cursor = NULL;
         ED4_ROOT->refresh_window(0);
         DRAW = 1;

@@ -55,11 +55,7 @@ void ED4_WinContext::warn_missing_context() const {
 static ARB_ERROR request_terminal_refresh(ED4_base *base, AW_CL cl_level) {
     ED4_level lev = ED4_level(cl_level);
     if (lev == ED4_L_NO_LEVEL || (base->spec.level&lev) != 0) {
-        if (base->is_terminal()) {
-            ED4_terminal *term = base->to_terminal();
-            term->set_refresh();
-            term->parent->refresh_requested_by_child();
-        }
+        if (base->is_terminal()) base->request_refresh();
     }
     return NULL;
 }
@@ -344,14 +340,9 @@ ED4_returncode  ED4_root::remove_from_selected(ED4_terminal *object)
             }
 #endif
 
-            name_term->set_refresh(1);
-            name_term->parent->refresh_requested_by_child();
-
+            name_term->request_refresh();
             ED4_sequence_terminal *seq_term = object->to_species_name_terminal()->corresponding_sequence_terminal();
-            if (seq_term) {
-                seq_term->set_refresh(1);
-                seq_term->parent->refresh_requested_by_child();
-            }
+            if (seq_term) seq_term->request_refresh();
 
             // ProtView: Refresh corresponding orf terminals
             if (alignment_type == GB_AT_DNA) {
@@ -362,8 +353,7 @@ ED4_returncode  ED4_root::remove_from_selected(ED4_terminal *object)
             multi_man->invalidate_species_counters();
         }
         else {
-            object->set_refresh();
-            object->parent->refresh_requested_by_child();
+            object->request_refresh();
         }
     }
 
@@ -452,14 +442,9 @@ ED4_returncode ED4_root::add_to_selected(ED4_terminal *object) {
             }
 #endif
 
-            name_term->set_refresh();
-            name_term->parent->refresh_requested_by_child();
-
+            name_term->request_refresh();
             ED4_sequence_terminal *seq_term = object->to_species_name_terminal()->corresponding_sequence_terminal();
-            if (seq_term) {
-                seq_term->set_refresh();
-                seq_term->parent->refresh_requested_by_child();
-            }
+            if (seq_term) seq_term->request_refresh();
 
             // ProtView: Refresh corresponding orf terminals
             if (alignment_type == GB_AT_DNA) {
@@ -471,8 +456,7 @@ ED4_returncode ED4_root::add_to_selected(ED4_terminal *object) {
         }
         else {
             e4_assert(0); // test ob ueberhaupt was anderes als species_name_terminals verwendet wird
-            object->set_refresh();
-            object->parent->refresh_requested_by_child();
+            object->request_refresh();
         }
 
         return (ED4_R_OK);
@@ -1115,12 +1099,7 @@ void ED4_undo_redo(AW_window *aww, AW_CL undo_type) {
         GB_begin_transaction(GLOBAL_gb_main);
         GB_commit_transaction(GLOBAL_gb_main);
         ED4_cursor *cursor = &current_cursor();
-        if (cursor->owner_of_cursor) {
-            ED4_terminal *terminal = cursor->owner_of_cursor->to_terminal();
-
-            terminal->set_refresh();
-            terminal->parent->refresh_requested_by_child();
-        }
+        if (cursor->owner_of_cursor) cursor->owner_of_cursor->request_refresh();
     }
 }
 

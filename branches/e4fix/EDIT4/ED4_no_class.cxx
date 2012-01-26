@@ -210,9 +210,7 @@ static ARB_ERROR call_edit(ED4_base *object, AW_CL cl_work_info) {
                 }
 
                 if (new_work_info.refresh_needed) {
-                    object->set_refresh();
-                    object->parent->refresh_requested_by_child();
-
+                    object->request_refresh();
                     if (object->is_sequence_terminal()) {
                         ED4_sequence_terminal *seq_term = object->to_sequence_terminal();
                         seq_term->results().searchAgain();
@@ -342,8 +340,7 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                 if (work_info->refresh_needed) {
                     GB_transaction dummy(GLOBAL_gb_main);
 
-                    terminal->set_refresh();
-                    terminal->parent->refresh_requested_by_child();
+                    terminal->request_refresh();
                     if (terminal->is_sequence_terminal()) {
                         ED4_sequence_terminal *seq_term = terminal->to_sequence_terminal();
                         seq_term->results().searchAgain();
@@ -1379,9 +1376,7 @@ ARB_ERROR rebuild_consensus(ED4_base *object) {
         spec_man->do_callbacks();
 
         ED4_base *sequence_data_terminal = object->search_spec_child_rek(ED4_L_SEQUENCE_STRING);
-
-        sequence_data_terminal->set_refresh();
-        sequence_data_terminal->parent->refresh_requested_by_child();
+        sequence_data_terminal->request_refresh();
     }
     return NULL;
 }

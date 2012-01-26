@@ -1094,7 +1094,7 @@ public:
     }
 
     // functions which refer to the object as a child, i.e. travelling down the hierarchy
-    virtual ED4_returncode  set_refresh(int clear=1)=0;
+    virtual void request_refresh(int clear=1)=0;
     virtual ED4_returncode  resize_requested_by_child()=0;
     virtual ED4_returncode  resize_requested_by_parent()=0; // @@@ name is wrong! should be resize_requested_children!
 
@@ -1257,10 +1257,10 @@ public:
     ED4_returncode distribute_children();
 
     // top-down functions, means travelling down the hierarchy
-    virtual ED4_returncode  event_sent_by_parent(AW_event *event, AW_window *aww);
-    virtual ED4_returncode  set_refresh(int clear=1);
-    ED4_returncode          clear_refresh();
-    virtual ED4_returncode  resize_requested_by_parent();
+    virtual ED4_returncode event_sent_by_parent(AW_event *event, AW_window *aww);
+    virtual void request_refresh(int clear=1);
+    ED4_returncode clear_refresh();
+    virtual ED4_returncode resize_requested_by_parent();
 
     virtual void update_requested_children();
 
@@ -1363,7 +1363,7 @@ public:
     ED4_returncode draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text = NULL, int cursor_y=-1);
 
     // functions which concern the object as a child
-    virtual ED4_returncode set_refresh(int clear=1);
+    virtual void request_refresh(int clear=1);
     virtual ED4_returncode resize_requested_by_child();
     virtual ED4_returncode resize_requested_by_parent();
 
