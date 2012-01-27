@@ -792,13 +792,6 @@ void ED4_set_iupac(AW_window *aww, char *awar_name, bool /* callback_flag */) {
     }
 }
 
-void ED4_gc_is_modified_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
-    ED4_LocalWinContext uses(aww);
-
-    ED4_resize_cb(aww, cd1, cd2);
-    ED4_expose_cb(aww, cd1, cd2);
-}
-
 void ED4_exit() {
     ED4_ROOT->aw_root->unlink_awars_from_DB(GLOBAL_gb_main);
 
