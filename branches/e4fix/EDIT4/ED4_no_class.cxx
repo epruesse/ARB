@@ -1024,9 +1024,7 @@ ARB_ERROR update_terminal_extension(ED4_base *this_object) {
         }
     }
 
-    if (this_object->parent) {
-        this_object->parent->resize_requested_by_child();
-    }
+    this_object->request_resize();
 
     return NULL;
 }

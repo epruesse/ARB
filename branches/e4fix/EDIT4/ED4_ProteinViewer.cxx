@@ -834,7 +834,7 @@ void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_species_man
 
             ED4_counter++;
 
-            new_SeqManager->resize_requested_by_child();
+            new_SeqManager->request_resize();
         }
 }
 
@@ -904,21 +904,20 @@ void PV_CreateAllTerminals(AW_root *root) {
     for (terminal = ED4_ROOT->root_group_man->get_first_terminal();
          terminal;
          terminal = terminal->get_next_terminal())
-        {
-            if (terminal->is_sequence_terminal()) {
-                ED4_sequence_terminal *seqTerminal = terminal->to_sequence_terminal();
-                if (seqTerminal->species_name)
-                    {
-                        ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
-                        if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI)
-                            {
-                                PV_AddNewAAseqTerminals(seqTerminal, speciesManager);
-                            }
-                    }
+    {
+        if (terminal->is_sequence_terminal()) {
+            ED4_sequence_terminal *seqTerminal = terminal->to_sequence_terminal();
+            if (seqTerminal->species_name)
+            {
+                ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
+                if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI)
+                {
+                    PV_AddNewAAseqTerminals(seqTerminal, speciesManager);
+                }
             }
         }
-    ED4_ROOT->main_manager->update_info.set_resize(1);
-    ED4_ROOT->main_manager->resize_requested_by_parent();
+    }
+    ED4_ROOT->main_manager->request_resize(); // @@@ instead needs to be called whenever adding or deleting PV-terminals
 
     gTerminalsCreated = true;
 

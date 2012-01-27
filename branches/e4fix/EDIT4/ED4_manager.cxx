@@ -707,16 +707,6 @@ ED4_returncode  ED4_manager::event_sent_by_parent(AW_event *event, AW_window *aw
     return (returncode);
 }
 
-ED4_returncode  ED4_manager::calc_size_requested_by_parent() {
-    if (calc_bounding_box()) {
-        if (parent) {
-            parent->resize_requested_by_child();
-        }
-    }
-
-    return (ED4_R_OK);
-}
-
 ED4_returncode  ED4_manager::refresh_requested_by_child() {
     // handles a refresh-request from a child
     if (!update_info.refresh) { // determine if there were more refresh requests already => no need to tell parent about it
@@ -752,18 +742,31 @@ int ED4_manager::refresh_flag_ok() {
     return 1;
 }
 
+inline void ED4_base::resize_requested_by_link(ED4_base *link) {
+    e4_assert((width_link == link) || (height_link == link)); // wrong link
+    if (calc_bounding_box()) request_resize();
+}
+
+void ED4_base::request_resize_of_linked() {
+    ED4_list_elem *current_list_elem = linked_objects.first();
+    while (current_list_elem) {
+        ED4_base *object = (ED4_base *) current_list_elem->elem();
+        if (object) object->resize_requested_by_link(this);
+        current_list_elem = current_list_elem->next();
+    }
+}
+
 bool ED4_manager::calc_bounding_box() {
     // calculates the smallest rectangle containing the object.
     // returns true if bounding box has changed.
-    AW_pos         sum_width  = 0;
-    AW_pos         sum_height = 0;
-    AW_pos         max_x      = 0;
-    AW_pos         max_y      = 0;
-    AW_pos         dummy      = 0;
-    ED4_index      i          = 0;
-    bool           bb_changed = false;
-    ED4_list_elem *current_list_elem;
-    ED4_base      *child, *object;
+    AW_pos     sum_width  = 0;
+    AW_pos     sum_height = 0;
+    AW_pos     max_x      = 0;
+    AW_pos     max_y      = 0;
+    AW_pos     dummy      = 0;
+    ED4_index  i          = 0;
+    bool       bb_changed = false;
+    ED4_base  *child;
 
     // initialize with first child
     while ((child = children->member(i++)) != NULL) { // check all children
@@ -808,17 +811,7 @@ bool ED4_manager::calc_bounding_box() {
         }
     }
 
-    if (bb_changed) { // tell linked objects about our change of bounding box
-        current_list_elem = linked_objects.first();
-        while (current_list_elem) {
-            object = (ED4_base *) current_list_elem->elem();
-            if (object) {
-                object->link_changed(this);
-            }
-
-            current_list_elem = current_list_elem->next();
-        }
-    }
+    if (bb_changed) request_resize_of_linked();
     return bb_changed;
 }
 
@@ -872,7 +865,7 @@ ED4_returncode ED4_manager::distribute_children() {
     return (ED4_R_OK);
 }
 
-ED4_returncode ED4_manager::resize_requested_by_parent() {
+void ED4_manager::resize_requested_children() {
     if (update_info.resize) { // object wants to resize
         update_info.set_resize(0); // first clear the resize flag (remember it could be set again from somewhere below the hierarchy)
 
@@ -883,49 +876,26 @@ ED4_returncode ED4_manager::resize_requested_by_parent() {
             if (!child) break;
 
             child->update_info.set_resize(1);
-            child->resize_requested_by_parent();
+            child->resize_requested_children();
         }
 
         distribute_children();
-        if (calc_bounding_box()) {                      // recalculate current object's bounding_box
-            resize_requested_by_child();
-        }
+        if (calc_bounding_box()) request_resize();
     }
-
-    return ED4_R_OK;
 }
-ED4_returncode ED4_root_group_manager::resize_requested_by_parent() {
-    ED4_returncode result = ED4_R_OK;
-
+void ED4_root_group_manager::resize_requested_children() {
     if (update_info.resize) {
-        update_remap();
-        result = ED4_manager::resize_requested_by_parent();
+        update_remap(); // @@@ should this better be handled by an update request?
+        ED4_manager::resize_requested_children();
     }
-
-    return result;
 }
 
 static void update_scrolled_rectangles(ED4_window *win) { win->update_scrolled_rectangle(); }
-ED4_returncode ED4_main_manager::resize_requested_by_parent() {
+void ED4_main_manager::resize_requested_children() {
     if (update_info.resize) {
-        ED4_manager::resize_requested_by_parent();
+        ED4_manager::resize_requested_children();
         ED4_with_all_edit_windows(update_scrolled_rectangles);
     }
-    return ED4_R_OK;
-}
-
-ED4_returncode ED4_manager::Resize() {
-    if (!flag.hidden) {
-        while (update_info.resize) {
-            resize_requested_by_parent();
-            if (parent) break;
-        }
-    }
-
-    return ED4_R_OK;
-}
-ED4_returncode ED4_terminal::Resize() {
-    return ED4_R_OK;
 }
 
 ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
@@ -1177,18 +1147,7 @@ ED4_returncode ED4_manager::clear_refresh() {
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_manager::resize_requested_by_child() {
-    // handles a resize-request from a child
-    if (!update_info.resize) {  // this is the first resize request
-        if (parent) {           // if we have a parent, tell him about our resize
-            parent->resize_requested_by_child();
-        }
-        update_info.set_resize(1);
-    }
-    return ED4_R_OK;
-}
-
-void ED4_manager::update_requested_by_child() {
+void ED4_manager::update_requested_by_child() { // @@@ same as set_update -> DRY
     if (!update_info.update_requested) {
         if (parent) parent->update_requested_by_child();
         update_info.update_requested = 1;
@@ -1882,14 +1841,6 @@ inline void ED4_remap::set_sequence_to_screen(int pos, int newVal) {
         changed = 1;
     }
 }
-void ED4_remap::mark_compile_needed() {
-    if (mode!=ED4_RM_NONE && !update_needed) {
-        update_needed = 1;
-        if (ED4_ROOT && ED4_ROOT->root_group_man) {                     // test if root_group_man already exists
-            ED4_ROOT->root_group_man->resize_requested_by_child();      // remapping is recompiled while re-displaying the root_group_manager
-        }
-    }
-}
 void ED4_remap::mark_compile_needed_force() {
     if (!update_needed) {
         update_needed = 1;
@@ -1898,6 +1849,10 @@ void ED4_remap::mark_compile_needed_force() {
         }
     }
 }
+void ED4_remap::mark_compile_needed() {
+    if (mode!=ED4_RM_NONE) mark_compile_needed_force();
+}
+
 GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
 {
     e4_assert(update_needed);

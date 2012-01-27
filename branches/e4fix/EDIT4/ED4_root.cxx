@@ -110,11 +110,11 @@ void ED4_root::handle_update_requests(bool& redraw) {
 
     if (main_manager->update_info.update_requested) {
         main_manager->update_requested_children();
-        redraw = true;
+        redraw = true; // @@@ needed ? 
     }
 
     while (main_manager->update_info.resize) {
-        main_manager->resize_requested_by_parent();
+        main_manager->resize_requested_children();
         redraw = true;
     }
 
@@ -472,13 +472,10 @@ ED4_returncode ED4_root::add_to_selected(ED4_terminal *object) {
     return (ED4_R_IMPOSSIBLE);
 }
 
-ED4_returncode ED4_root::resize_all()
-{
+void ED4_root::resize_all() {
     while (main_manager->update_info.resize) {
-        main_manager->resize_requested_by_parent();
+        main_manager->resize_requested_children();
     }
-
-    return (ED4_R_OK);
 }
 
 static ARB_ERROR change_char_table_length(ED4_base *base, AW_CL new_length) {
@@ -738,7 +735,6 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
 
     first_window->update_window_coords();
     resize_all();
-
 
     main_manager->route_down_hierarchy(force_group_update).expect_no_error();
 

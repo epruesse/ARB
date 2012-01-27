@@ -1062,14 +1062,11 @@ public:
     // functions concerned with graphic output
     virtual int adjust_clipping_rectangle();     // sets scrolling area in AW_MIDDLE_AREA
     virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0) = 0;
-    virtual ED4_returncode  Resize()                                  = 0;
     virtual bool calc_bounding_box()                                  = 0;
 
     ED4_returncode  clear_background(int color=0);
 
-    // functions concerned with links in the hierarchy
-    ED4_returncode  set_links(ED4_base *width_link, ED4_base *height_link);
-    ED4_returncode  link_changed(ED4_base *link);
+    void set_links(ED4_base *width_link, ED4_base *height_link);
 
     // functions concerned with special initialization
     void set_property(ED4_properties prop) { dynamic_prop = (ED4_properties) (dynamic_prop | prop); } 
@@ -1094,17 +1091,19 @@ public:
     }
 
     // functions which refer to the object as a child, i.e. travelling down the hierarchy
-    virtual void request_refresh(int clear=1)=0;
-    virtual ED4_returncode  resize_requested_by_child()=0;
-    virtual ED4_returncode  resize_requested_by_parent()=0; // @@@ name is wrong! should be resize_requested_children!
+    virtual void request_refresh(int clear=1) = 0;
+
+    inline void request_resize();
+    void request_resize_of_linked();
+    void resize_requested_by_link(ED4_base *link);
+    virtual void resize_requested_children() = 0;
 
     virtual void delete_requested_children() = 0;
     virtual void Delete()                    = 0;
-    
+
     inline void set_update();
     virtual void update_requested_children() = 0;
 
-    virtual ED4_returncode  calc_size_requested_by_parent()=0;
     virtual ED4_returncode  move_requested_by_parent(ED4_move_info *mi)=0;
     virtual ED4_returncode  event_sent_by_parent(AW_event *event, AW_window *aww);
     virtual ED4_returncode  move_requested_by_child(ED4_move_info *moveinfo)=0;
@@ -1251,23 +1250,23 @@ public:
 
     // functions concerned with graphics
     virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0);
-    virtual ED4_returncode  Resize();
     virtual bool calc_bounding_box();
 
     ED4_returncode distribute_children();
 
     // top-down functions, means travelling down the hierarchy
     virtual ED4_returncode event_sent_by_parent(AW_event *event, AW_window *aww);
+
     virtual void request_refresh(int clear=1);
     ED4_returncode clear_refresh();
-    virtual ED4_returncode resize_requested_by_parent();
+
+    virtual void resize_requested_children();
 
     virtual void update_requested_children();
 
     virtual void delete_requested_children();
     virtual void Delete();
 
-    virtual ED4_returncode  calc_size_requested_by_parent();
     virtual ED4_returncode  move_requested_by_parent(ED4_move_info *mi);
 
     void create_consensus(ED4_abstract_group_manager *upper_group_manager, arb_progress *progress);
@@ -1283,7 +1282,7 @@ public:
 
      // bottom-up functions
     virtual ED4_returncode  move_requested_by_child(ED4_move_info *moveinfo);
-    virtual ED4_returncode  resize_requested_by_child();
+    inline void resize_requested_by_child();
     virtual ED4_returncode  refresh_requested_by_child();
     void delete_requested_by_child();
     void update_requested_by_child();
@@ -1321,8 +1320,8 @@ public:
     ED4_terminal *get_first_terminal(int start_index=0) const;
     ED4_terminal *get_last_terminal(int start_index=-1) const;
 
-    ED4_returncode hide_children();
-    ED4_returncode unhide_children();
+    void hide_children();
+    void unhide_children();
 
     bool is_hidden() const {
         if (flag.hidden) return true;
@@ -1353,19 +1352,17 @@ public:
 
     // functions concerning graphic output
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0) = 0;
-    virtual ED4_returncode Resize();
     virtual ED4_returncode draw() = 0;
 
     virtual int  adjust_clipping_rectangle();
     virtual bool calc_bounding_box();
-    virtual ED4_returncode  calc_size_requested_by_parent();
 
     ED4_returncode draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text = NULL, int cursor_y=-1);
 
     // functions which concern the object as a child
     virtual void request_refresh(int clear=1);
-    virtual ED4_returncode resize_requested_by_child();
-    virtual ED4_returncode resize_requested_by_parent();
+
+    virtual void resize_requested_children();
 
     virtual void update_requested_children();
     virtual void delete_requested_children();
@@ -1522,7 +1519,7 @@ public:
     void copy_window_struct(ED4_window *source,   ED4_window *destination);
 
     // functions concerned with global refresh and resize
-    ED4_returncode resize_all();
+    void resize_all();
 
     ED4_returncode special_window_refresh();
     ED4_returncode refresh_all_windows(bool redraw);
@@ -1606,7 +1603,7 @@ public:
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
-    virtual ED4_returncode resize_requested_by_parent();
+    virtual void resize_requested_children();
     
     void clear_whole_background();
 };
@@ -1801,7 +1798,7 @@ public:
     ED4_remap *remap() { return &my_remap; }
 
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
-    virtual ED4_returncode resize_requested_by_parent();
+    virtual void resize_requested_children();
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_abstract_group_manager);
 };
@@ -2133,12 +2130,22 @@ public:
 // ----------------------------------------------
 //      inlines which need complete classdefs
 
-inline void ED4_base::set_update() {
+inline void ED4_base::set_update() { // @@@ rename into request_update
     if (!update_info.update_requested) {
         update_info.update_requested = 1;
         if (parent) parent->update_requested_by_child();
     }
 }
+
+inline void ED4_base::request_resize() {
+    update_info.set_resize(1);
+    if (parent) parent->resize_requested_by_child();
+}
+
+void ED4_manager::resize_requested_by_child() { 
+    if (!update_info.resize) request_resize();
+}
+
 
 inline bool ED4_terminal::setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfoldGroups, ED4_CursorJumpType jump_type) {
     ED4_species_manager *sm = get_parent(ED4_L_SPECIES)->to_species_manager();

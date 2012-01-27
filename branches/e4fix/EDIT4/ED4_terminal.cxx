@@ -332,12 +332,6 @@ ED4_base *ED4_terminal::get_competent_child(AW_pos /* x */, AW_pos /* y */, ED4_
     return NULL;
 }
 
-ED4_returncode ED4_terminal::resize_requested_by_child()
-{
-    e4_assert(0);
-    return ED4_R_IMPOSSIBLE;
-}
-
 ED4_returncode ED4_terminal::draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text, int cursor_y)      // draws drag box of object at location abs_x, abs_y
 {
     ED4_index      i;
@@ -644,21 +638,13 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
     return (ED4_R_OK);
 }
 
-
-ED4_returncode  ED4_terminal::calc_size_requested_by_parent()
-{
-    return ED4_R_OK;
-}
-
 void ED4_terminal::update_requested_children() {}
 
 bool ED4_terminal::calc_bounding_box() {
     // calculates the smallest rectangle containing the object.
     // requests refresh and returns true if bounding box has changed.
-    
-    bool           bb_changed = false;
-    ED4_list_elem *current_list_elem;
-    ED4_base      *object;
+
+    bool bb_changed = false;
 
     if (width_link) {
         if (extension.size[WIDTH] != width_link->extension.size[WIDTH]) {   // all bounding Boxes have the same size !!!
@@ -676,31 +662,18 @@ bool ED4_terminal::calc_bounding_box() {
 
 
     if (bb_changed) {
-        current_list_elem = linked_objects.first();
-        while (current_list_elem) {
-            object = (ED4_base *) current_list_elem->elem();
-
-            if (object != NULL) {
-                object->link_changed(this);
-            }
-
-            current_list_elem = current_list_elem->next();
-        }
-
+        request_resize_of_linked();
         request_refresh();
     }
-
     return bb_changed;
 }
 
-ED4_returncode ED4_terminal::resize_requested_by_parent() {
+void ED4_terminal::resize_requested_children() {
     if (update_info.resize) { // likes to resize?
-        if (calc_bounding_box()) { // size changed?
-            parent->resize_requested_by_child(); // tell parent!
+        if (calc_bounding_box()) { 
+            request_resize();
         }
     }
-
-    return ED4_R_OK;
 }
 
 

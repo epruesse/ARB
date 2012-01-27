@@ -643,8 +643,7 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
             if (ED4_ROOT->alignment_type == GB_AT_DNA) {
                 PV_AddCorrespondingOrfTerminals(name_term);
             }
-            ED4_ROOT->main_manager->update_info.set_resize(1);
-            ED4_ROOT->main_manager->resize_requested_by_parent();
+            ED4_ROOT->main_manager->request_resize(); // @@@ instead needs to be called whenever adding or deleting PV-terminals
             // it should create new AA Sequence terminals if the protein viewer is enabled
         }
         delete string;
@@ -757,9 +756,7 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
             if (ED4_ROOT->alignment_type == GB_AT_DNA) {
                 PV_AddOrfTerminalsToLoadedSpecies();
             }
-
-            ED4_ROOT->main_manager->update_info.set_resize(1);
-            ED4_ROOT->main_manager->resize_requested_by_parent();
+            ED4_ROOT->main_manager->request_resize(); // @@@ instead needs to be called whenever adding or deleting PV-terminals
         }
 
         delete [] buffer;
