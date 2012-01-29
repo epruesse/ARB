@@ -126,6 +126,9 @@ void ED4_root::handle_update_requests(bool& redraw) {
 
 ED4_returncode ED4_root::special_window_refresh() {
     // this function should only be used for window specific updates (i.e. cursor placement)
+
+    e4_assert(ED4_WinContext::have_context());
+    
     bool redraw = true; 
     handle_update_requests(redraw); // @@@ problematic (causes refresh w/o win-context)
     return refresh_window_simple(redraw);

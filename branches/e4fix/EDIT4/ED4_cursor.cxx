@@ -361,6 +361,7 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
 #define EXPAND_SIZE 0
     if (window()->get_device()->reduceClipBorders(ymin-EXPAND_SIZE, ymax+1+EXPAND_SIZE, xmin-EXPAND_SIZE, xmax+1+EXPAND_SIZE)) {
         // refresh terminal to hide cursor
+        ED4_LocalWinContext uses(window());
         bool previous = allowed_to_draw;
         allowed_to_draw = false;
         ED4_ROOT->special_window_refresh();

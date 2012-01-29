@@ -1424,7 +1424,7 @@ class ED4_WinContext {
     ED4_window *ed4w;
     AW_device  *device;
 
-    bool have_context() const { return ed4w; }
+    bool is_set() const { return ed4w; }
     void init(ED4_window *ew) {
         e4_assert(ew);
         ed4w   = ew;
@@ -1432,7 +1432,7 @@ class ED4_WinContext {
     }
 
     void warn_missing_context() const;
-    void expect_context() const { if (!have_context()) warn_missing_context(); }
+    void expect_context() const { if (!is_set()) warn_missing_context(); }
 
 protected:
     ED4_WinContext() : ed4w(0), device(0) {}
@@ -1446,7 +1446,7 @@ public:
     ED4_window *get_ed4w() const { expect_context(); return ed4w; }
 
     static const ED4_WinContext& get_current_context() { return current_context; }
-    static bool dont_have_global_context() { return !current_context.have_context(); }
+    static bool have_context() { return current_context.is_set(); }
 };
 
 // accessors for current context (see also ED4_WinContextFree)
@@ -1560,7 +1560,7 @@ class ED4_MostRecentWinContext : virtual Noncopyable {
     ED4_LocalWinContext *most_recent;
 public:
     ED4_MostRecentWinContext() : most_recent(0) {
-        if (ED4_WinContext::dont_have_global_context()) {
+        if (!ED4_WinContext::have_context()) {
             most_recent = new ED4_LocalWinContext(ED4_ROOT->get_most_recently_used_window());
         }
     }

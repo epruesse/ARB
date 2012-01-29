@@ -647,7 +647,7 @@ int ARB_main(int argc, const char *argv[]) {
 
     AWT_install_postcb_cb(ED4_postcbcb);
     AWT_install_cb_guards();
-    e4_assert(ED4_WinContext::dont_have_global_context()); // context shall be local
+    e4_assert(!ED4_WinContext::have_context()); // no global context shall be active
     ED4_ROOT->aw_root->main_loop(); // enter main-loop
 
     return EXIT_SUCCESS;
