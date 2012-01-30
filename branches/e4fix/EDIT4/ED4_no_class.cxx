@@ -465,7 +465,7 @@ static int get_max_slider_xpos() {
     AW_pos max_xpos = horizontal_link->extension.size[WIDTH] // overall width of virtual scrolling area
         - (rect.r - x); // minus width of visible scroll-area (== relative width of horizontal scrollbar)
 
-    if (max_xpos<0) max_xpos = 0; // happens when window-content is smaller than window (e.g. if ARB_EDIT4 is not filled)
+    if (max_xpos<0) max_xpos = 0; // happens when window-content is smaller than window (e.g. if (folded) alignment is narrow)
     return int(max_xpos+0.5);
 }
 
@@ -476,8 +476,8 @@ static int get_max_slider_ypos() {
     ED4_base *vertical_link = ED4_ROOT->scroll_links.link_for_ver_slider;
     vertical_link->calc_world_coords(&x, &y);
 
-    AW_pos max_ypos = vertical_link->extension.size[HEIGHT] // overall width of virtual scrolling area
-        - (rect.b - y); // minus width of visible scroll-area (== relative width of horizontal scrollbar)
+    AW_pos max_ypos = vertical_link->extension.size[HEIGHT] // overall height of virtual scrolling area
+        - (rect.b - y); // minus height of visible scroll-area (== relative height of vertical scrollbar)
 
     if (max_ypos<0) max_ypos = 0; // happens when window-content is smaller than window (e.g. if ARB_EDIT4 is not filled)
     return int(max_ypos+0.5);
