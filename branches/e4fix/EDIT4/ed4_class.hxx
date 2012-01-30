@@ -478,11 +478,12 @@ public:
         set_rect(rect);
         update_folding_line_positions();
     }
-    
+
     void calc_bottomRight_folding_dimensions(int area_width, int area_height) {
         AW_pos dim;
-        if (bottom() > area_height) { // our world doesn't fit vertically in our window
-            dim = bottom()-area_height; // calc dimension of bottom folding line
+        if (bottom() > area_height) {   // our world doesn't fit vertically in our window
+            dim = bottom()-area_height; // calc dimension of both horizontal folding lines
+            scroll_top->set_dimension(min(dim, scroll_top->get_dimension()));
             scroll_bottom->set_dimension(max(0, int(dim - scroll_top->get_dimension())));
         }
         else {
@@ -491,10 +492,14 @@ public:
             scroll_top->set_dimension(0);
         }
 
+        // e4_assert(scroll_top->dimension >= 0); // @@@ reactivate when refresh is fixed (or better move into set_dimension)
+        // e4_assert(scroll_bottom->dimension >= 0);
+        e4_assert(dim == (scroll_top->get_dimension()+scroll_bottom->get_dimension()));
         scroll_bottom->set_pos(world.bottom()-dim);
 
-        if (right()>area_width) { // our world doesn't fit horizontally in our window =>
-            dim = right()-area_width; // calc dimension of right folding line
+        if (right()>area_width) {     // our world doesn't fit horizontally in our window
+            dim = right()-area_width; // calc dimension of both vertical folding lines
+            scroll_left->set_dimension(min(dim, scroll_left->get_dimension()));
             scroll_right->set_dimension(max(0, int(dim - scroll_left->get_dimension())));
         }
         else {
@@ -503,6 +508,9 @@ public:
             scroll_left->set_dimension(0);
         }
 
+        // e4_assert(scroll_left->dimension >= 0); // @@@ reactivate when refresh is fixed (or better move into set_dimension)
+        // e4_assert(scroll_right->dimension >= 0);
+        e4_assert(dim == (scroll_left->get_dimension()+scroll_right->get_dimension()));
         scroll_right->set_pos(world.right()-dim);
 
         folding_dimensions_calculated = true;
