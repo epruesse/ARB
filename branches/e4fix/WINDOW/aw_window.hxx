@@ -46,6 +46,8 @@ struct GB_HASH;
 class AW_at;
 #endif
 
+enum AW_orientation { AW_HORIZONTAL, AW_VERTICAL };
+
 class AW_at_size {
     int  to_offset_x;                               // here we use offsets (not positions like in AW_at)
     int  to_offset_y;
@@ -390,6 +392,7 @@ public:
     void set_vertical_scrollbar_top_indent(int indent);
     void set_vertical_scrollbar_bottom_indent(int indent);
 
+    void update_scrollbar_settings_from_awars(AW_orientation orientation);
 
     void create_user_geometry_awars(int posx, int posy, int width, int height);
     

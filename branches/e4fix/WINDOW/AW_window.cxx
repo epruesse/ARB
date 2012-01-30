@@ -403,125 +403,94 @@ AW_pos AW_window::get_scrolled_picture_height() const {
 
 void AW_window::calculate_scrollbars() {
     AW_screen_area screen;
-
-    int  slider_size_horizontal;
-    int  slider_size_vertical;
-    bool vertical, horizontal;
-    int  position_of_slider;
-    int  slider_max;
-
-    vertical = horizontal = true; // es gibt verticalen & horizontalen scrollbar
-
     this->_get_area_size(AW_MIDDLE_AREA, &screen);
 
     // HORIZONTAL
-    slider_max = (int)get_scrolled_picture_width();
-    if (slider_max <1) {
-        slider_max = 1;
+    {
+        int slider_max = (int)get_scrolled_picture_width();
+        if (slider_max <1) {
+            slider_max = 1;
+            XtVaSetValues(p_w->scroll_bar_horizontal, XmNsliderSize, 1, NULL);
+        }
+
+        bool      use_horizontal_bar     = true;
+        const int scrolled_area_width    = int(screen.r-left_indent_of_horizontal_scrollbar);
+        int       slider_size_horizontal = scrolled_area_width;
+
+        if (slider_size_horizontal < 1) slider_size_horizontal = 1; // ist der slider zu klein (<1) ?
+        if (slider_size_horizontal > slider_max) { // Schirm groesser als Bild
+            slider_size_horizontal = slider_max; // slider nimmt ganze laenge ein
+            XtVaSetValues(p_w->scroll_bar_horizontal, XmNvalue, 0, NULL); // slider ganz links setzen
+            use_horizontal_bar = false; // kein horizontaler slider mehr
+        }
+
+        // check wether XmNValue is to big
+        int position_of_slider;
+        XtVaGetValues(p_w->scroll_bar_horizontal, XmNvalue, &position_of_slider, NULL);
+        if (position_of_slider > (slider_max-slider_size_horizontal)) { // steht der slider fuer slidergroesse zu rechts ?
+            position_of_slider = slider_max-slider_size_horizontal; // -1 ? vielleicht !
+            if (position_of_slider < 0) position_of_slider = 0;
+            XtVaSetValues(p_w->scroll_bar_horizontal, XmNvalue, position_of_slider, NULL);
+        }
+        // Anpassung fuer resize, wenn unbeschriebener Bereich vergroessert wird
+        if (-slider_pos_horizontal + get_scrolled_picture_width() < scrolled_area_width) {
+            if (use_horizontal_bar) {
+                slider_pos_horizontal = (int)(get_scrolled_picture_width() - scrolled_area_width);
+            }
+            else {
+                slider_pos_horizontal = 0; // slider nach ganz oben, da alles sichtbar
+            }
+        }
+
         XtVaSetValues(p_w->scroll_bar_horizontal, XmNsliderSize, 1, NULL);
-    }
+        XtVaSetValues(p_w->scroll_bar_horizontal, XmNmaximum, slider_max, NULL);
+        XtVaSetValues(p_w->scroll_bar_horizontal, XmNsliderSize, slider_size_horizontal, NULL);
 
-    slider_size_horizontal = (int)((screen.r
-            -left_indent_of_horizontal_scrollbar));
-    if (slider_size_horizontal < 1)
-        slider_size_horizontal = 1; // ist der slider zu klein (<1) ?
-    if (slider_size_horizontal > slider_max) { // Schirm groesser als Bild
-        slider_size_horizontal = slider_max; // slider nimmt ganze laenge ein
-        XtVaSetValues(p_w->scroll_bar_horizontal, XmNvalue, 0, NULL); // slider ganz links setzen
-        horizontal = false; // kein horizontaler slider mehr
+        update_scrollbar_settings_from_awars(AW_HORIZONTAL);
     }
-
-    // check wether XmNValue is to big
-    XtVaGetValues(p_w->scroll_bar_horizontal, XmNvalue, &position_of_slider,
-            NULL);
-    if (position_of_slider > (slider_max-slider_size_horizontal)) { // steht der slider fuer slidergroesse zu rechts ?
-        position_of_slider = slider_max-slider_size_horizontal; // -1 ? vielleicht !
-        if (position_of_slider < 0)
-            position_of_slider = 0;
-        XtVaSetValues(p_w->scroll_bar_horizontal, XmNvalue, position_of_slider,
-                NULL);
-    }
-    // Anpassung fuer resize, wenn unbeschriebener Bereich vergroessert wird
-    if (-slider_pos_horizontal + get_scrolled_picture_width() < screen.r
-            -left_indent_of_horizontal_scrollbar) {
-        if (horizontal) {
-            slider_pos_horizontal = (int)(get_scrolled_picture_width()
-                    - (screen.r-left_indent_of_horizontal_scrollbar));
-        }
-        else {
-            slider_pos_horizontal = 0; // slider nach ganz oben, da alles sichtbar
-        }
-    }
-    XtVaSetValues(p_w->scroll_bar_horizontal, XmNsliderSize, 1, NULL);
-    XtVaSetValues(p_w->scroll_bar_horizontal, XmNmaximum, slider_max, NULL);
-    XtVaSetValues(p_w->scroll_bar_horizontal, XmNsliderSize,
-            slider_size_horizontal, NULL);
-    char buffer[200];
-    sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);
-    XtVaSetValues(p_w->scroll_bar_horizontal, XmNpageIncrement, (int)((screen.r
-            -left_indent_of_horizontal_scrollbar)*(get_root()->awar(buffer)->read_int()*0.01)),
-    NULL);
-
-    sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
-    XtVaSetValues(p_w->scroll_bar_horizontal, XmNincrement, (int)(get_root()->awar(buffer)->read_int()), NULL);
-
-    sprintf(buffer, "window/%s/scroll_delay_horizontal", window_defaults_name);
-    XtVaSetValues(p_w->scroll_bar_horizontal, XmNrepeatDelay, (int)(get_root()->awar(buffer)->read_int()), NULL);
 
     // VERTICAL
-    slider_max = (int)get_scrolled_picture_height();
-    if (slider_max <1) {
-        slider_max = 1;
+    {
+        int slider_max = (int)get_scrolled_picture_height();
+        if (slider_max <1) {
+            slider_max = 1;
+            XtVaSetValues(p_w->scroll_bar_vertical, XmNsliderSize, 1, NULL);
+        }
+
+        bool      use_vertical_bar     = true;
+        const int scrolled_area_height = int(screen.b-top_indent_of_vertical_scrollbar-bottom_indent_of_vertical_scrollbar);
+        int       slider_size_vertical = scrolled_area_height;
+
+        if (slider_size_vertical < 1) slider_size_vertical = 1;
+        if (slider_size_vertical > slider_max) {
+            slider_size_vertical = slider_max;
+            XtVaSetValues(p_w->scroll_bar_vertical, XmNvalue, 0, NULL);
+            use_vertical_bar = false;
+        }
+
+        // check wether XmNValue is to big
+        int position_of_slider;
+        XtVaGetValues(p_w->scroll_bar_vertical, XmNvalue, &position_of_slider, NULL);
+        if (position_of_slider > (slider_max-slider_size_vertical)) {
+            position_of_slider = slider_max-slider_size_vertical; // -1 ? vielleicht !
+            if (position_of_slider < 0) position_of_slider = 0;
+            XtVaSetValues(p_w->scroll_bar_vertical, XmNvalue, position_of_slider, NULL);
+        }
+        // Anpassung fuer resize, wenn unbeschriebener Bereich vergroessert wird
+        if (-slider_pos_vertical + get_scrolled_picture_height() < scrolled_area_height) {
+            if (use_vertical_bar) {
+                slider_pos_vertical = (int)(get_scrolled_picture_height() - scrolled_area_height);
+            }
+            else {
+                slider_pos_vertical = 0; // slider nach ganz oben, da alles sichtbar
+            }
+        }
         XtVaSetValues(p_w->scroll_bar_vertical, XmNsliderSize, 1, NULL);
-    }
+        XtVaSetValues(p_w->scroll_bar_vertical, XmNmaximum, slider_max, NULL);
+        XtVaSetValues(p_w->scroll_bar_vertical, XmNsliderSize, slider_size_vertical, NULL);
 
-    slider_size_vertical = (int)((screen.b-top_indent_of_vertical_scrollbar
-            -bottom_indent_of_vertical_scrollbar));
-    if (slider_size_vertical < 1)
-        slider_size_vertical = 1;
-    if (slider_size_vertical > slider_max) {
-        slider_size_vertical = slider_max;
-        XtVaSetValues(p_w->scroll_bar_vertical, XmNvalue, 0, NULL);
-        vertical = false;
+        update_scrollbar_settings_from_awars(AW_VERTICAL);
     }
-
-    // check wether XmNValue is to big
-    XtVaGetValues(p_w->scroll_bar_vertical, XmNvalue, &position_of_slider, NULL);
-    if (position_of_slider > (slider_max-slider_size_vertical)) {
-        position_of_slider = slider_max-slider_size_vertical; // -1 ? vielleicht !
-        if (position_of_slider < 0)
-            position_of_slider = 0;
-        XtVaSetValues(p_w->scroll_bar_vertical, XmNvalue, position_of_slider,
-                NULL);
-    }
-    // Anpassung fuer resize, wenn unbeschriebener Bereich vergroessert wird
-    if (-slider_pos_vertical + get_scrolled_picture_height() < screen.b
-            -top_indent_of_vertical_scrollbar
-            -bottom_indent_of_vertical_scrollbar) {
-        if (vertical) {
-            slider_pos_vertical = (int)(get_scrolled_picture_height()
-                    - (screen.b-top_indent_of_vertical_scrollbar
-                            -bottom_indent_of_vertical_scrollbar));
-        }
-        else {
-            slider_pos_vertical = 0; // slider nach ganz oben, da alles sichtbar
-        }
-    }
-    XtVaSetValues(p_w->scroll_bar_vertical, XmNsliderSize, 1, NULL);
-    XtVaSetValues(p_w->scroll_bar_vertical, XmNmaximum, slider_max, NULL);
-    XtVaSetValues(p_w->scroll_bar_vertical, XmNsliderSize,
-            slider_size_vertical, NULL);
-    sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);
-    XtVaSetValues(p_w->scroll_bar_vertical, XmNpageIncrement, (int)((screen.b
-            -top_indent_of_vertical_scrollbar
-            -bottom_indent_of_vertical_scrollbar)*(get_root()->awar(buffer)->read_int()*0.01)),
-    NULL);
-
-    sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
-    XtVaSetValues(p_w->scroll_bar_vertical, XmNincrement, (int)(get_root()->awar(buffer)->read_int()), NULL);
-
-    sprintf(buffer, "window/%s/scroll_delay_vertical", window_defaults_name);
-    XtVaSetValues(p_w->scroll_bar_vertical, XmNrepeatDelay, (int)(get_root()->awar(buffer)->read_int()), NULL);
 }
 
 void AW_window::set_vertical_scrollbar_position(int position) {
@@ -1470,89 +1439,71 @@ void AW_window::_get_area_size(AW_area area, AW_screen_area *square) {
     *square = aram->get_common()->get_screen();
 }
 
-static void horizontal_scrollbar_redefinition_cb(class AW_root */*aw_root*/, AW_CL cd1, AW_CL cd2) {
+void AW_window::update_scrollbar_settings_from_awars(AW_orientation orientation) {
     AW_screen_area screen;
+    _get_area_size(AW_MIDDLE_AREA, &screen);
 
+    // @@@ DRY awar code
+    
     char buffer[200];
-    AW_window *aw = (AW_window *)cd1;
-    Widget w = (Widget)cd2;
+    if (orientation == AW_HORIZONTAL) {
+        sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name); 
+        XtVaSetValues(p_w->scroll_bar_horizontal, XmNpageIncrement, (int)((screen.r-left_indent_of_horizontal_scrollbar)*(get_root()->awar(buffer)->read_int()*0.01)), NULL);
 
-    aw->_get_area_size(AW_MIDDLE_AREA, &screen);
+        sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
+        XtVaSetValues(p_w->scroll_bar_horizontal, XmNincrement, (int)(get_root()->awar(buffer)->read_int()), NULL);
 
-    sprintf(buffer, "window/%s/horizontal_page_increment",
-            aw->window_defaults_name);
-    XtVaSetValues(w, XmNpageIncrement, (int)((screen.r
-            -aw->left_indent_of_horizontal_scrollbar)*(aw->get_root()->awar(buffer)->read_int()*0.01)), NULL);
+        sprintf(buffer, "window/%s/scroll_delay_horizontal", window_defaults_name);
+        XtVaSetValues(p_w->scroll_bar_horizontal, XmNrepeatDelay, (int)(get_root()->awar(buffer)->read_int()), NULL);
+    }
+    else {
+        sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);
+        XtVaSetValues(p_w->scroll_bar_vertical, XmNpageIncrement, (int)((screen.b-top_indent_of_vertical_scrollbar-bottom_indent_of_vertical_scrollbar)*(get_root()->awar(buffer)->read_int()*0.01)), NULL);
 
-    sprintf(buffer, "window/%s/scroll_width_horizontal",
-            aw->window_defaults_name);
-    XtVaSetValues(w, XmNincrement, (int)(aw->get_root()->awar(buffer)->read_int()), NULL);
+        sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
+        XtVaSetValues(p_w->scroll_bar_vertical, XmNincrement, (int)(get_root()->awar(buffer)->read_int()), NULL);
 
-    sprintf(buffer, "window/%s/scroll_delay_horizontal",
-            aw->window_defaults_name);
-    XtVaSetValues(w, XmNrepeatDelay, (int)(aw->get_root()->awar(buffer)->read_int()), NULL);
-
+        sprintf(buffer, "window/%s/scroll_delay_vertical", window_defaults_name);
+        XtVaSetValues(p_w->scroll_bar_vertical, XmNrepeatDelay, (int)(get_root()->awar(buffer)->read_int()), NULL);
+    }
 }
 
-static void vertical_scrollbar_redefinition_cb(class AW_root */*aw_root*/, AW_CL cd1, AW_CL cd2) {
-    AW_screen_area screen;
+static void horizontal_scrollbar_redefinition_cb(AW_root*, AW_CL cd) {
+    AW_window *aw = (AW_window *)cd;
+    aw->update_scrollbar_settings_from_awars(AW_HORIZONTAL);
+}
 
-    char buffer[200];
-    AW_window *aw = (AW_window *)cd1;
-    Widget w = (Widget)cd2;
-
-    aw->_get_area_size(AW_MIDDLE_AREA, &screen);
-
-    sprintf(buffer, "window/%s/vertical_page_increment",
-            aw->window_defaults_name);
-    XtVaSetValues(w, XmNpageIncrement, (int)((screen.b
-            -aw->top_indent_of_vertical_scrollbar
-            -aw->bottom_indent_of_vertical_scrollbar)*(aw->get_root()->awar(buffer)->read_int()*0.01)), NULL);
-
-    sprintf(buffer, "window/%s/scroll_width_vertical", aw->window_defaults_name);
-    XtVaSetValues(w, XmNincrement, (int)(aw->get_root()->awar(buffer)->read_int()), NULL);
-
-    sprintf(buffer, "window/%s/scroll_delay_vertical", aw->window_defaults_name);
-    XtVaSetValues(w, XmNrepeatDelay, (int)(aw->get_root()->awar(buffer)->read_int()), NULL);
+static void vertical_scrollbar_redefinition_cb(AW_root*, AW_CL cd) {
+    AW_window *aw = (AW_window *)cd;
+    aw->update_scrollbar_settings_from_awars(AW_VERTICAL);
 }
 
 void AW_window::create_window_variables() {
-
     char buffer[200];
-    memset(buffer, 0, 200);
+
     sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);
     get_root()->awar_int(buffer, 50);
-    get_root()->awar(buffer)->add_callback(
-            (AW_RCB)horizontal_scrollbar_redefinition_cb, (AW_CL)this,
-            (AW_CL)p_w->scroll_bar_horizontal);
+    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
 
     sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);
     get_root()->awar_int(buffer, 50);
-    get_root()->awar(buffer)->add_callback((AW_RCB)vertical_scrollbar_redefinition_cb,
-            (AW_CL)this, (AW_CL)p_w->scroll_bar_vertical);
-
-    sprintf(buffer, "window/%s/scroll_delay_vertical", window_defaults_name);
-    get_root()->awar_int(buffer, 20);
-    get_root()->awar(buffer)->add_callback((AW_RCB)vertical_scrollbar_redefinition_cb,
-            (AW_CL)this, (AW_CL)p_w->scroll_bar_vertical);
+    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
 
     sprintf(buffer, "window/%s/scroll_delay_horizontal", window_defaults_name);
     get_root()->awar_int(buffer, 20);
-    get_root()->awar(buffer)->add_callback(
-            (AW_RCB)horizontal_scrollbar_redefinition_cb, (AW_CL)this,
-            (AW_CL)p_w->scroll_bar_horizontal);
+    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
+
+    sprintf(buffer, "window/%s/scroll_delay_vertical", window_defaults_name);
+    get_root()->awar_int(buffer, 20);
+    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
 
     sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
     get_root()->awar_int(buffer, 9);
-    get_root()->awar(buffer)->add_callback(
-            (AW_RCB)horizontal_scrollbar_redefinition_cb, (AW_CL)this,
-            (AW_CL)p_w->scroll_bar_horizontal);
+    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
 
     sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
     get_root()->awar_int(buffer, 20);
-    get_root()->awar(buffer)->add_callback((AW_RCB)vertical_scrollbar_redefinition_cb,
-            (AW_CL)this, (AW_CL)p_w->scroll_bar_vertical);
-
+    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
 }
 
 void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
