@@ -45,7 +45,7 @@ class EntryTempMarker : virtual Noncopyable {
                 if (strcmp(keyname, "gene_map")      == 0) return ALL;
                 if (strcmp(keyname, "species_data")  == 0) return SOME_OF_SPECIES_DATA;
                 if (strcmp(keyname, "extended_data") == 0) return SOME_OF_EXTENDED_DATA;
-                if (strcmp(keyname, "presets")       == 0) return SOME_OF_PRESETS;
+                if (strcmp(keyname, "presets")       == 0) return ALL;
                 break;
 
             case SOME_OF_SPECIES_DATA:
@@ -55,7 +55,9 @@ class EntryTempMarker : virtual Noncopyable {
             case SOME_OF_EXTENDED_DATA:
                 if (strcmp(keyname, "extended") == 0) {
                     const char *sainame = GBT_read_name(gbd);
-                    if (strcmp(sainame, "ECOLI") == 0) return SOME_OF_EXTENDED; // only "need" ECOLI 
+                    if (strcmp(sainame, "ECOLI") == 0) return SOME_OF_EXTENDED; 
+                    if (strcmp(sainame, "HELIX") == 0) return SOME_OF_EXTENDED;
+                    if (strcmp(sainame, "HELIX_NR") == 0) return SOME_OF_EXTENDED;
                 }
                 break;
 
@@ -68,10 +70,6 @@ class EntryTempMarker : virtual Noncopyable {
                 if (strcmp(keyname, "acc")       == 0) return ALL;
                 if (strcmp(keyname, "full_name") == 0) return ALL;
                 if (strcmp(keyname, ali_name)    == 0) return SOME_OF_ALI_CONTAINER;
-                break;
-
-            case SOME_OF_PRESETS:
-                if (strcmp(keyname, "use") == 0) return ALL;
                 break;
 
             case SOME_OF_ALI_CONTAINER:
