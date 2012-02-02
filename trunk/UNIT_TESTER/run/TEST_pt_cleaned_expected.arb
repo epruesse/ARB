@@ -1,6 +1,43 @@
 /*ARBDB ASCII*/
 genom_db		%i 0
 presets			%% (%
+	alignment	:6000	%% (%
+		alignment_name	:7600	"ali_mini"
+		alignment_len	:7000	%i 187
+		aligned		:7000	%i 1
+		alignment_write_security	:7600	%i 0
+		alignment_type	:7000	"rna"
+		auto_format		%i 0
+		alignment_rem		"<NONE>"
+		%) /*alignment*/
+
+	key_data		%% (%
+		key			%% (%
+			key_name		"name"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"acc"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_mini"
+			key_type		%i 15
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_mini/data"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		%) /*key_data*/
+
 	use			"ali_mini"
 	%) /*presets*/
 
