@@ -126,41 +126,22 @@ void ED4_expose_recalculations() {
 }
 
 void ED4_expose_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    static bool dummy = 0;
-
     ED4_LocalWinContext uses(aww);
+    GB_transaction      ta(GLOBAL_gb_main);
 
-    GB_push_transaction(GLOBAL_gb_main);
-
-    if (!dummy) {
-        dummy = 1;
-    }
-    else {
-        ED4_expose_recalculations(); // this case is needed every time, except the first
-        current_ed4w()->update_scrolled_rectangle();
-    }
-
-    current_ed4w()->update_window_coords();
+    ED4_expose_recalculations();
+    current_ed4w()->update_scrolled_rectangle();
 
     current_device()->reset();
     ED4_ROOT->special_window_refresh();
-
-    GB_pop_transaction(GLOBAL_gb_main);
 }
 
 void ED4_resize_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     ED4_LocalWinContext uses(aww);
-
-    GB_push_transaction(GLOBAL_gb_main);
+    GB_transaction      ta(GLOBAL_gb_main);
 
     current_device()->reset();
-
     current_ed4w()->update_scrolled_rectangle();
-
-    current_ed4w()->slider_pos_horizontal = aww->slider_pos_horizontal;
-    current_ed4w()->slider_pos_vertical  = aww->slider_pos_vertical;
-
-    GB_pop_transaction(GLOBAL_gb_main);
 }
 
 static ARB_ERROR call_edit(ED4_base *object, AW_CL cl_work_info) {
