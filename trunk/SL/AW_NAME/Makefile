@@ -87,6 +87,7 @@ AW_rename.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+AW_rename.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/bytestring.h

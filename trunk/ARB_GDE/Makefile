@@ -129,6 +129,7 @@ GDE_event.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+GDE_event.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/awt_filter.hxx

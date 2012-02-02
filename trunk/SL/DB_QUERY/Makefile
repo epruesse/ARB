@@ -54,6 +54,7 @@ db_query.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+db_query.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_window.hxx

@@ -24,6 +24,7 @@
 #include <awt_filter.hxx>
 #include <arb_progress.h>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 #include <gui_aliview.hxx>
 
 #include <TreeCallbacks.hxx>

@@ -47,6 +47,7 @@
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 #include <aw_device.hxx>
 
 #include <arbdbt.h>

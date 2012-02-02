@@ -12,6 +12,7 @@
 #include "aw_awar.hxx"
 #include "aw_detach.hxx"
 #include "aw_msg.hxx"
+#include "aw_question.hxx"
 #include <arbdb.h>
 #include <arb_file.h>
 #include <sys/stat.h>

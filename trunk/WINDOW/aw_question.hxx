@@ -21,8 +21,14 @@
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
+#ifndef _GLIBCXX_CSTDLIB
+#include <cstdlib>
+#endif
 
-// for simple questions use :  int aw_message(const char *msg, const char *buttons)
+// for simple questions use: int aw_question(const char *msg, const char *buttons, ...)
 //
 // if you ask the same question in a loop, it is recommended to use AW_repeated_question
 // to avoid asking the same question again and again.
@@ -57,6 +63,10 @@ public:
     // if add_abort is true an 'ABORT' button is added behind the last
 };
 
+int  aw_question  (const char *msg, const char *buttons, bool fixedSizeButtons = true, const char *helpfile = 0);
+bool aw_ask_sure  (const char *msg, bool fixedSizeButtons = true, const char *helpfile = 0);
+void aw_popup_ok  (const char *msg, bool fixedSizeButtons = true, const char *helpfile = 0);
+void aw_popup_exit(const char *msg, bool fixedSizeButtons = true, const char *helpfile = 0) __ATTR__NORETURN;
 
 #else
 #error aw_question.hxx included twice

@@ -22,6 +22,7 @@
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 
 #include <arbdbt.h>
 

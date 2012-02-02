@@ -19,6 +19,7 @@
 #include <aw_awar_defs.hxx>
 #include <aw_detach.hxx>
 #include <aw_msg.hxx>
+#include <aw_question.hxx>
 #include <arbdbt.h>
 #include <adGene.h>
 #include <Location.h>

@@ -19,6 +19,7 @@
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 
 #include <arb_progress.h>
 #include <arb_file.h>

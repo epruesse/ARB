@@ -28,6 +28,7 @@
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 
 AP_tree_nlen *PARS_global::get_root_node() {
     return DOWNCAST(AP_tree_nlen*, tree->get_root_node());

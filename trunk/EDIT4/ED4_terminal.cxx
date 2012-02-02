@@ -20,6 +20,7 @@
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 #include <awt_seq_colors.hxx>
 #include <st_window.hxx>
 #include <arbdb.h>
