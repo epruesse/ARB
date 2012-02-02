@@ -141,39 +141,42 @@ AW::Rectangle ED4_scrolled_rectangle::get_world_rect() const {
     return AW::Rectangle(AW::Position(x, y), size);
 }
 
-ED4_returncode ED4_window::update_scrolled_rectangle() {
-    if (!scrolled_rect.exists())
-        return ED4_R_IMPOSSIBLE;
+void ED4_window::update_scrolled_rectangle() {
+    if (scrolled_rect.exists()) {
+        e4_assert(scrolled_rect.is_linked());
 
-    AW::Rectangle srect = scrolled_rect.get_world_rect();
-    scrolled_rect.set_rect_and_update_folding_line_positions(srect);
+        AW::Rectangle srect = scrolled_rect.get_world_rect();
+        scrolled_rect.set_rect_and_update_folding_line_positions(srect);
 
-    {
-        // update dimension and window position of folding lines at the borders of scrolled rectangle
+        // if slider positions stored in AW_window and ED4_window differ,
+        // we correct folding line dimensions:
+        
+        {
+            // update dimension and window position of folding lines at the borders of scrolled rectangle
+            int dx = aww->slider_pos_horizontal - slider_pos_horizontal;
+            int dy = aww->slider_pos_vertical - slider_pos_vertical;
 
-        int dx = aww->slider_pos_horizontal - slider_pos_horizontal;
-        int dy = aww->slider_pos_vertical - slider_pos_vertical;
+            scrolled_rect.add_to_top_left_dimension(dx, dy);
+        }
 
-        scrolled_rect.add_to_top_left_dimension(dx, dy);
+        const AW_screen_area& area_size = get_device()->get_area_size();
+        scrolled_rect.calc_bottomRight_folding_dimensions(area_size.r, area_size.b);
+
+        update_window_coords(); // @@@ do at end of this function? (since it uses aww-slider_pos_horizontal,
+                                // which might get modified by calculate_scrollbars below);
+
+        // update window scrollbars
+        AW_world rect = { 0, srect.height(), 0, srect.width() };
+        set_scrollbar_indents();
+        aww->tell_scrolled_picture_size(rect);
+        aww->calculate_scrollbars();
+
+        check_valid_scrollbar_values(); // test that AW_window slider positions and folding line dimensions are in sync
     }
 
-    if (scrolled_rect.is_linked()) {
-        slider_pos_vertical   = aww->slider_pos_vertical;
-        slider_pos_horizontal = aww->slider_pos_horizontal;
-    }
-
-    const AW_screen_area& area_size = get_device()->get_area_size();
-    scrolled_rect.calc_bottomRight_folding_dimensions(area_size.r, area_size.b);
-
-    update_window_coords();
-
-    // update window scrollbars
-    AW_world rect = { 0, srect.height()-1, 0, srect.width()-1 };
-    set_scrollbar_indents();
-    aww->tell_scrolled_picture_size(rect);
-    aww->calculate_scrollbars();
-
-    return ED4_R_OK;
+    // store synced slider positions in ED4_window
+    slider_pos_vertical   = aww->slider_pos_vertical;
+    slider_pos_horizontal = aww->slider_pos_horizontal;
 }
 
 ED4_returncode ED4_window::set_scrolled_rectangle(ED4_base *x_link, ED4_base *y_link, ED4_base *width_link, ED4_base *height_link) {
@@ -335,14 +338,12 @@ ED4_returncode ED4_window::scroll_rectangle(int dx, int dy)
     return (ED4_R_OK);
 }
 
-ED4_returncode ED4_window::set_scrollbar_indents() {
-    if (!scrolled_rect.exists()) return ED4_R_IMPOSSIBLE;
-    
-    AW::Rectangle rect = scrolled_rect.get_window_rect();
-    aww->set_vertical_scrollbar_top_indent(rect.top() + SLIDER_OFFSET);
-    aww->set_horizontal_scrollbar_left_indent(rect.left() + SLIDER_OFFSET);
-
-    return ED4_R_OK;
+void ED4_window::set_scrollbar_indents() {
+    if (scrolled_rect.exists()) {
+        AW::Rectangle rect = scrolled_rect.get_window_rect();
+        aww->set_vertical_scrollbar_top_indent(rect.top() + SLIDER_OFFSET);
+        aww->set_horizontal_scrollbar_left_indent(rect.left() + SLIDER_OFFSET);
+    }
 }
 
 

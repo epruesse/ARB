@@ -318,8 +318,10 @@ public:
     AW_pos get_dimension() const { return dimension; }
     const ED4_folding_line *get_next() const { return next; }
 
-    void set_dimension(AW_pos dim) { dimension = dim; }
-    void add_to_dimension(AW_pos offset) { dimension += offset; }
+    void warn_illegal_dimension();
+
+    void set_dimension(AW_pos dim) { dimension = dim; warn_illegal_dimension(); }
+    void add_to_dimension(AW_pos offset) { dimension += offset; warn_illegal_dimension(); }
 
     void set_pos(AW_pos p) { pos = p; }
     AW_pos get_pos() const { return pos; }
@@ -425,6 +427,8 @@ public:
         init_pos_size();
     }
 
+    AW_pos top_dim() const { return scroll_top->get_dimension(); }
+    AW_pos left_dim() const { return scroll_left->get_dimension(); }
 
     bool exists() const { return scroll_top && scroll_bottom && scroll_left && scroll_right; }
     bool is_linked() const {
@@ -480,6 +484,9 @@ public:
     }
 
     void calc_bottomRight_folding_dimensions(int area_width, int area_height) {
+        area_width  -= SLIDER_OFFSET;
+        area_height -= SLIDER_OFFSET;
+
         AW_pos dim;
         if (bottom() > area_height) {   // our world doesn't fit vertically in our window
             dim = bottom()-area_height; // calc dimension of both horizontal folding lines
@@ -492,10 +499,8 @@ public:
             scroll_top->set_dimension(0);
         }
 
-        // e4_assert(scroll_top->dimension >= 0); // @@@ reactivate when refresh is fixed (or better move into set_dimension)
-        // e4_assert(scroll_bottom->dimension >= 0);
         e4_assert(dim == (scroll_top->get_dimension()+scroll_bottom->get_dimension()));
-        scroll_bottom->set_pos(world.bottom()-dim);
+        scroll_bottom->set_pos(world.bottom()-dim+SLIDER_OFFSET);
 
         if (right()>area_width) {     // our world doesn't fit horizontally in our window
             dim = right()-area_width; // calc dimension of both vertical folding lines
@@ -508,10 +513,8 @@ public:
             scroll_left->set_dimension(0);
         }
 
-        // e4_assert(scroll_left->dimension >= 0); // @@@ reactivate when refresh is fixed (or better move into set_dimension)
-        // e4_assert(scroll_right->dimension >= 0);
         e4_assert(dim == (scroll_left->get_dimension()+scroll_right->get_dimension()));
-        scroll_right->set_pos(world.right()-dim);
+        scroll_right->set_pos(world.right()-dim+SLIDER_OFFSET);
 
         folding_dimensions_calculated = true;
     }
@@ -537,7 +540,6 @@ public:
 
         init_folding_lines();
     }
-
 };
 
 class ED4_list_elem : virtual Noncopyable {
@@ -704,6 +706,9 @@ public:
 
 class ED4_window : public ED4_foldable, virtual ED4_WinContextFree { // derived from Noncopyable
     ED4_window(const ED4_window&); // copy-constructor not allowed
+
+    void set_scrollbar_indents();
+
 public:
     AW_window              *aww;   // Points to Window
     ED4_window             *next;
@@ -734,10 +739,32 @@ public:
     void announce_deletion(ED4_base *object) { cursor.announce_deletion(object); }
     
     // functions concerned the scrolled area
-    ED4_returncode      update_scrolled_rectangle();
-    ED4_returncode      set_scrollbar_indents();
-    ED4_returncode      scroll_rectangle(int dx, int dy);
-    ED4_returncode      set_scrolled_rectangle(ED4_base *x_link, ED4_base *y_link, ED4_base *width_link, ED4_base *height_link);
+    void update_scrolled_rectangle();
+    ED4_returncode scroll_rectangle(int dx, int dy);
+    ED4_returncode set_scrolled_rectangle(ED4_base *x_link, ED4_base *y_link, ED4_base *width_link, ED4_base *height_link);
+
+    bool scrollbars_and_scrolledRect_inSync() const {
+        // Scrolling in EDIT4 window uses redundant data
+        // - dimension of folding lines
+        // - slider positions in AW_window and ED4_window
+        // This function checks whether they are in sync.
+        
+        bool inSync                    = 
+            (scrolled_rect.top_dim()  == aww->slider_pos_vertical) &&
+            (scrolled_rect.left_dim() == aww->slider_pos_horizontal);
+
+#if defined(DEBUG)
+        if (!inSync) {
+            fputs("scrollbars not in sync with scrolled_rect:\n", stderr);
+            fprintf(stderr, "    aww->slider_pos_vertical  =%i scrolled_rect->top_dim() =%f\n", aww->slider_pos_vertical, scrolled_rect.top_dim());
+            fprintf(stderr, "    aww->slider_pos_horizontal=%i scrolled_rect->left_dim()=%f\n", aww->slider_pos_horizontal, scrolled_rect.left_dim());
+        }
+#endif
+
+        return inSync;
+    }
+
+    void check_valid_scrollbar_values() { e4_assert(scrollbars_and_scrolledRect_inSync()); }
 
     bool shows_xpos(int x) const { return x >= coords.window_left_clip_point && x <= coords.window_right_clip_point; }
     bool partly_shows(int x1, int y1, int x2, int y2) const;

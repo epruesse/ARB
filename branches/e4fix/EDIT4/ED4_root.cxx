@@ -46,6 +46,16 @@ AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL);
 
 ED4_WinContext ED4_WinContext::current_context;
 
+void ED4_folding_line::warn_illegal_dimension() {
+#if defined(DEBUG)
+    if (dimension<0.0) {
+        // e4_assert(0); // crashes gdb when called from scrollbar callback - so instead only dump backtrace
+        const char *msg = GBS_global_string("illegal dimension %f\n", dimension);
+        GBK_dump_backtrace(stderr, msg);
+    }
+#endif
+}
+
 void ED4_WinContext::warn_missing_context() const {
     e4_assert(0);
     GBK_dump_backtrace(stderr, "Missing context");
