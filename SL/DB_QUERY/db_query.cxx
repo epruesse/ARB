@@ -526,14 +526,7 @@ static void delete_queried_species_cb(AW_window*, AW_CL cl_query) {
         }
     }
 
-    int cancel;
-    {
-        char *question = GBS_global_string_copy("Are you sure to delete %li %s", cnt, selector.items_name);
-        cancel         = aw_question(question, "OK,CANCEL");
-        free(question);
-    }
-
-    if (cancel) {
+    if (!cnt || !aw_ask_sure(GBS_global_string("Are you sure to delete %li %s", cnt, selector.items_name))) {
         GB_abort_transaction(query->gb_main);
         return;
     }

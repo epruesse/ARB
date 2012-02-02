@@ -264,22 +264,9 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
 
     unsigned long i;
 
-    enum ReplaceMode {
-        REPLACE_SPEC      = 0,
-        REIMPORT_SEQ      = 1,
-        SKIP_IMPORT       = 2,
-        REPLACE_SPEC_ALL  = 3,
-        REIMPORT_SEQ_ALL  = 4,
-        SKIP_IMPORT_ALL   = 5
-    } replace_mode = REPLACE_SPEC;
-
-    enum ChangeMode {
-        ACCEPT_CHANGE     = 0,
-        REJECT_CHANGE     = 1,
-        ACCEPT_CHANGE_ALL = 2,
-        REJECT_CHANGE_ALL = 3
-    } change_mode = ACCEPT_CHANGE;
-
+    AW_repeated_question overwrite_question;
+    AW_repeated_question checksum_change_question;
+    
     arb_progress progress("importing", dataset->numelements-oldnumelements+1); // +1 avoids zero-progress
     for (i = oldnumelements; !error && i < dataset->numelements; i++) {
         NA_Sequence *sequ = dataset->element+i;
@@ -329,45 +316,33 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
                 GB_push_my_security(db_access.gb_main);
 
                 if (gb_species) {   // new element that already exists !!!!
-                    if (replace_mode != REPLACE_SPEC_ALL &&
-                        replace_mode != REIMPORT_SEQ_ALL &&
-                        replace_mode != SKIP_IMPORT_ALL)
-                    {
-                        const char *question =
-                            GBS_global_string("You are (re-)importing a species '%s'.\n"
-                                              "That species already exists in your database!\n"
-                                              "\n"
-                                              "Possible actions:\n"
-                                              "\n"
-                                              "       - overwrite existing species (all fields)\n"
-                                              "       - overwrite the sequence (does not change other fields)\n"
-                                              "       - skip import of the species\n"
-                                              "\n"
-                                              "Note: After aligning it's recommended to choose 'overwrite sequence'.",
-                                              savename);
+                    const char *question =
+                        GBS_global_string("You are (re-)importing a species '%s'.\n"
+                                          "That species already exists in your database!\n"
+                                          "\n"
+                                          "Possible actions:\n"
+                                          "\n"
+                                          "       - overwrite existing species (all fields)\n"
+                                          "       - overwrite the sequence (does not change other fields)\n"
+                                          "       - skip import of the species\n"
+                                          "\n"
+                                          "Note: After aligning it's recommended to choose 'overwrite sequence'.",
+                                          savename);
 
-                        replace_mode = (ReplaceMode)aw_question(question,
-                                                                "Overwrite species,Overwrite sequence only,Skip entry,"
-                                                                "^Overwrite ALL species,Overwrite ALL sequences,Skip ALL entries");
-                    }
+
+                    enum ReplaceMode { REPLACE_SPEC = 0, REIMPORT_SEQ = 1, SKIP_IMPORT  = 2, }
+                    replace_mode = (ReplaceMode)overwrite_question.get_answer(question, "Overwrite species,Overwrite sequence only,Skip entry", "all", false);
 
                     switch (replace_mode) {
-                        default:
-                            gde_assert(0);
-                            // fall-through
                         case SKIP_IMPORT:
-                        case SKIP_IMPORT_ALL:
                             gb_species = 0;
                             break;
-
                         case REPLACE_SPEC:
-                        case REPLACE_SPEC_ALL:
                             error      = GB_delete(gb_species);
                             gb_species = NULL;
                             if (error) break;
                             // fall-through
                         case REIMPORT_SEQ:
-                        case REIMPORT_SEQ_ALL:
                             gb_species = GBT_find_or_create_species_rel_species_data(gb_species_data, savename);
                             if (!gb_species) error = GB_await_error();
                             break;
@@ -393,19 +368,14 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
                             long        new_checksum = GBS_checksum(new_seq, 1, "-.");
 
                             if (old_checksum != new_checksum) {
-                                if (change_mode != ACCEPT_CHANGE_ALL &&
-                                    change_mode != REJECT_CHANGE_ALL)
-                                {
-                                    const char *question = GBS_global_string("Warning: Sequence checksum of '%s' has changed\n", savename);
+                                const char *question = GBS_global_string("Warning: Sequence checksum of '%s' has changed\n", savename);
+                                enum ChangeMode {
+                                    ACCEPT_CHANGE = 0,
+                                    REJECT_CHANGE = 1,
+                                } change_mode = (ChangeMode)checksum_change_question.get_answer(question, "Accept change,Reject", "all", false);
+                                
+                                if (change_mode == REJECT_CHANGE) writeSequence = false;
 
-                                    change_mode = (ChangeMode)aw_question(question,
-                                                                          "Accept change,Reject (do not import),"
-                                                                          "^Accept ALL,Reject ALL");
-                                }
-
-                                if (change_mode == REJECT_CHANGE || change_mode == REJECT_CHANGE_ALL) {
-                                    writeSequence = false;
-                                }
                                 aw_message(GBS_global_string("Warning: Sequence checksum for '%s' has changed (%s)",
                                                              savename, writeSequence ? "accepted" : "rejected"));
                             }

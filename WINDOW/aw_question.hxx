@@ -44,9 +44,9 @@ private:
     char *helpfile;
 
 public:
-    AW_repeated_question(bool dont_ask_again_ = false)
+    AW_repeated_question()
         : answer(0),
-          dont_ask_again(dont_ask_again_),
+          dont_ask_again(false),
           buttons_used(0),
           helpfile(0)
     {}

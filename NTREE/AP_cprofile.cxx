@@ -579,10 +579,9 @@ static void CPRO_calculate_cb(AW_window *aw, AW_CL which_statistic)
     else if (versus==2) strcpy(CPRO.result[which_statistic].which_species, "m vs all");
     else strcpy(CPRO.result[which_statistic].which_species, "all vs all");
 
-    if ((faultmessage=GB_push_transaction(GLOBAL_gb_main)))
-    {
-        aw_question(faultmessage, "OK,EXIT");
-        delete   align;
+    if ((faultmessage=GB_push_transaction(GLOBAL_gb_main))) {
+        aw_message(faultmessage);
+        free(align);
         return;
     }
 
@@ -624,9 +623,8 @@ static void CPRO_calculate_cb(AW_window *aw, AW_CL which_statistic)
 
     CPRO_deallocate(speciesdata, speciesdatabase);
     free(align);
-    if ((faultmessage=GB_pop_transaction(GLOBAL_gb_main)))
-    {
-        aw_question(faultmessage, "OK,EXIT");
+    if ((faultmessage=GB_pop_transaction(GLOBAL_gb_main))) {
+        aw_message(faultmessage);
         return;
     }
 
