@@ -74,6 +74,7 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+fast_aligner.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx

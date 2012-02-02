@@ -150,6 +150,7 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
@@ -269,6 +270,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+SEC_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx

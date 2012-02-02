@@ -16,6 +16,7 @@
 #include "aw_window_Xm.hxx"
 #include "aw_msg.hxx"
 #include "aw_root.hxx"
+#include "aw_question.hxx"
 
 #include <arb_str.h>
 #include <arb_strbuf.h>

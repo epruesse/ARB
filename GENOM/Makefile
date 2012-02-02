@@ -64,6 +64,7 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_detach.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+EXP_interface.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -195,6 +196,7 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_detach.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+GEN_interface.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_window.hxx

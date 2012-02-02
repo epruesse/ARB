@@ -22,6 +22,7 @@
 #include <aw_awar_defs.hxx>
 #include <aw_detach.hxx>
 #include <aw_msg.hxx>
+#include <aw_question.hxx>
 #include <algorithm>
 #include <arb_progress.h>
 #include <item_sel_list.h>

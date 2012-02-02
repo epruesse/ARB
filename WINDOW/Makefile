@@ -113,6 +113,7 @@ AW_button.o: aw_keysym.hxx
 AW_button.o: aw_msg.hxx
 AW_button.o: aw_nawar.hxx
 AW_button.o: aw_position.hxx
+AW_button.o: aw_question.hxx
 AW_button.o: aw_root.hxx
 AW_button.o: aw_scalar.hxx
 AW_button.o: aw_select.hxx
@@ -347,6 +348,7 @@ AW_nawar.o: aw_base.hxx
 AW_nawar.o: aw_detach.hxx
 AW_nawar.o: aw_msg.hxx
 AW_nawar.o: aw_nawar.hxx
+AW_nawar.o: aw_question.hxx
 AW_nawar.o: aw_root.hxx
 AW_nawar.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -494,6 +496,7 @@ AW_status.o: aw_awars.hxx
 AW_status.o: aw_base.hxx
 AW_status.o: aw_keysym.hxx
 AW_status.o: aw_msg.hxx
+AW_status.o: aw_question.hxx
 AW_status.o: aw_root.hxx
 AW_status.o: aw_status.hxx
 AW_status.o: aw_window.hxx

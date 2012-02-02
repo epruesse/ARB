@@ -85,6 +85,7 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+MG_alignment.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
@@ -229,6 +230,7 @@ MG_main.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+MG_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -318,6 +320,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+MG_species.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_select.hxx

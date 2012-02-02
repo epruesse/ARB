@@ -19,6 +19,7 @@
 #include <AW_rename.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 #include <GenomeImport.h>
 #include <GEN.hxx>
 #include <adGene.h>

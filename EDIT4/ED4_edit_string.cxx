@@ -11,6 +11,7 @@
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 #include <aw_advice.hxx>
 #include <cctype>
 

@@ -48,6 +48,7 @@
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 #include <arb_strbuf.h>
 #include <arb_strarray.h>
 #include <arb_file.h>

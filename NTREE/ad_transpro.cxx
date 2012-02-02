@@ -17,6 +17,7 @@
 #include <aw_awars.hxx>
 #include <aw_window.hxx>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <arbdbt.h>

@@ -196,6 +196,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
@@ -254,6 +255,7 @@ PARS_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+PARS_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt.hxx

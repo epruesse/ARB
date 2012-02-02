@@ -140,6 +140,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
