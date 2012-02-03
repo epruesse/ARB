@@ -318,11 +318,14 @@ AW_help.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_help.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_help.o: $(ARBHOME)/INCLUDE/test_global.h
 
+AW_modal.o: aw_advice.hxx
 AW_modal.o: aw_awar.hxx
 AW_modal.o: aw_base.hxx
 AW_modal.o: aw_file.hxx
 AW_modal.o: aw_global.hxx
 AW_modal.o: aw_keysym.hxx
+AW_modal.o: aw_msg.hxx
+AW_modal.o: aw_question.hxx
 AW_modal.o: aw_root.hxx
 AW_modal.o: aw_window.hxx
 AW_modal.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -384,6 +387,7 @@ AW_preset.o: aw_keysym.hxx
 AW_preset.o: aw_msg.hxx
 AW_preset.o: aw_position.hxx
 AW_preset.o: aw_preset.hxx
+AW_preset.o: aw_question.hxx
 AW_preset.o: aw_root.hxx
 AW_preset.o: aw_window.hxx
 AW_preset.o: $(ARBHOME)/INCLUDE/ad_prot.h

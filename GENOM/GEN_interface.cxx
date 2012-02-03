@@ -909,7 +909,7 @@ static AW_window *create_gene_create_window(AW_root *root, AW_CL cl_gb_main) {
 }
 
 static void gene_delete_cb(AW_window *aww, AW_CL cl_gb_main) {
-    if (aw_ask_sure("Are you sure to delete the gene?")) {
+    if (aw_ask_sure("gene_delete", "Are you sure to delete the gene?")) {
         GBDATA         *gb_main = (GBDATA*)cl_gb_main;
         GB_transaction  ta(gb_main);
         GB_ERROR        error   = 0;

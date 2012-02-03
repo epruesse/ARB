@@ -310,7 +310,7 @@ static void export_structure_to_file(AW_window *, AW_CL cl_db)
     }
 
     free(filename);
-    if (error) aw_popup_ok(error);
+    if (error) aw_message(error);
 }
 
 inline GB_ERROR expectedError(const char *expected) {
@@ -429,7 +429,7 @@ static void import_structure_from_file(AW_window *, AW_CL cl_db) {
         }
         free(filename);
     }
-    if (error) aw_popup_ok(error);
+    if (error) aw_message(error);
 }
 
 #undef ASS
@@ -497,7 +497,7 @@ static void SEC_new_structure(AW_window *, AW_CL cl_db, AW_CL) {
     GB_ERROR error = 0;
     bool     done  = false;
 
-    switch (aw_question("Create new structure?", "Default bone,Copy current,Abort")) {
+    switch (aw_question(NULL, "Create new structure?", "Default bone,Copy current,Abort")) {
         case 0:                 // default bone
             error = structure->copyTo("Default");
             if (!error) {
@@ -528,7 +528,7 @@ static void SEC_delete_structure(AW_window *, AW_CL cl_db, AW_CL) {
     SEC_structure_toggler *structure = db->structure();
 
     if (structure->getCount()>1) {
-        if (aw_ask_sure(GBS_global_string("Are you sure to delete structure '%s'?", structure->name()))) {
+        if (aw_ask_sure("delete_sec_structure", GBS_global_string("Are you sure to delete structure '%s'?", structure->name()))) {
             GB_ERROR error = structure->remove();
             if (error) aw_message(error);
             db->canvas()->refresh();

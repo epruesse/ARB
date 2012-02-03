@@ -54,7 +54,7 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
             if (!gb_dest) {
                 const char *msg = GBS_global_string("You have not selected a destination alignment\n"
                                                     "Shall I create one ('%s_pro') for you?", ali_source);
-                if (!aw_ask_sure(msg)) {
+                if (!aw_ask_sure("create_protein_ali", msg)) {
                     error = "Cancelled by user";
                 }
                 else {
@@ -693,7 +693,7 @@ static void transdna_event(AW_window *aww) {
         error = GB_end_transaction(GLOBAL_gb_main, error);
 
         if (!error && neededLength>0) {
-            if (retrying || !aw_ask_sure(GBS_global_string("Increase length of '%s' to %li?", ali_dest, neededLength))) {
+            if (retrying || !aw_ask_sure("increase_ali_length", GBS_global_string("Increase length of '%s' to %li?", ali_dest, neededLength))) {
                 error = GBS_global_string("Missing %li columns in alignment '%s'", neededLength, ali_dest);
             }
             else {

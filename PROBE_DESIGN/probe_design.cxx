@@ -498,7 +498,8 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
                                          "You'll have to re-build the PT server.", unames));
             abort = true;
         }
-        else if (aw_question(GBS_global_string("Your PT server is not up to date or wrongly chosen\n"
+        else if (aw_question("ptserver_add_unknown",
+                             GBS_global_string("Your PT server is not up to date or wrongly chosen\n"
                                                "  The following names are new to it:\n"
                                                "  %s\n"
                                                "  This version allows you to quickly add the unknown sequences\n"
@@ -1407,13 +1408,7 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
                 }
             }
 
-            int cont = 1;
-            if (resolutions>5000) {
-                const char *warning = GBS_global_string("Resolution of this string will result in %i single strings", resolutions);
-                cont = aw_question(warning, "Abort,Continue");
-            }
-
-            if (cont) { // continue with resolution?
+            { 
                 int *resolution_idx = new int[bases_to_resolve];
                 int *resolution_max_idx = new int[bases_to_resolve];
                 {
@@ -1657,9 +1652,8 @@ static void pd_start_pt_server(AW_window *aww) {
 
 static void pd_kill_pt_server(AW_window *aww, AW_CL kill_all)
 {
-    if (aw_ask_sure(GBS_global_string("Are you sure to stop %s",
-                                      kill_all ? "all servers" : "that server")))
-    {
+    if (aw_ask_sure("kill_ptserver",
+                    GBS_global_string("Are you sure to stop %s", kill_all ? "all servers" : "that server"))) {
         long min = 0;
         long max = 0;
 
@@ -1746,8 +1740,9 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
     const char *server_tag  = GBS_ptserver_tag(server_num);
 
     if (!error &&
-        aw_question("This function will send your currently loaded data as the new data to the pt_server !!!\n"
-                    "The server will need a long time (up to several hours) to analyse the data.\n"
+        aw_question("update_ptserver",
+                    "This function will send your loaded database to the pt_server,\n"
+                    "which will need a long time (up to several hours) to analyse the data.\n"
                     "Until the new server has analyzed all data, no server functions are available.\n\n"
                     "Note 1: You must have the write permissions to do that ($ARBHOME/lib/pts/xxx))\n"
                     "Note 2: The server will do the job in background,\n"

@@ -140,18 +140,19 @@ static void advice_hide_and_close_cb(AW_window *aww, AW_CL cl_id, AW_CL type) {
 void AW_reactivate_all_advices() {
     AW_awar *awar_disabled = get_disabled_advices();
 
-    char *disabled = awar_disabled->read_string();
-    char *nosemi   = GBS_string_eval(disabled, ";=", NULL);
-    int   entries  = strlen(disabled)-strlen(nosemi);
+    char       *disabled = awar_disabled->read_string();
+    char       *nosemi   = GBS_string_eval(disabled, ";=", NULL);
+    int         entries  = strlen(disabled)-strlen(nosemi);
+    const char *msg      = "No advices were disabled yet.";
 
     if (entries>0) {
         aw_assert(entries>1);
         entries--;
-        aw_message(GBS_global_string("Enabled %i advices", entries));
+        msg = GBS_global_string("Reactivated %i advices (for this session)\n"
+                                "To reactivate them for future sessions, save properties.",
+                                entries);
     }
-    else {
-        aw_message("No advices were disabled yet.");
-    }
+    aw_message(msg);
 
     free(nosemi);
     free(disabled);

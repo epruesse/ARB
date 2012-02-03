@@ -1990,7 +1990,7 @@ GB_ERROR AW_window::load_selection_list(AW_selection_list *selection_list, const
             if (ko) {
                 if (selection_list->value_equal_display) { // here no comma should occur
                     if (correct_old_format == -1) {
-                        correct_old_format = aw_ask_sure(GBS_global_string("'%s' seems to be in old selection-list-format. Try to correct?", fname));
+                        correct_old_format = aw_ask_sure(NULL, GBS_global_string("'%s' seems to be in old selection-list-format. Try to correct?", fname));
                     }
 
                     if (correct_old_format == 1) {

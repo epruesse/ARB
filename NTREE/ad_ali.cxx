@@ -79,7 +79,7 @@ void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def)
 }
 
 static void ad_al_delete_cb(AW_window *aww) {
-    if (aw_ask_sure("Are you sure to delete all data belonging to this alignment")) {
+    if (aw_ask_sure("delete_ali_data", "Are you sure to delete all data belonging to this alignment")) {
         char           *source = aww->get_root()->awar("presets/use")->read_string();
         GB_transaction  ta(GLOBAL_gb_main);
         GB_ERROR        error  = GBT_rename_alignment(GLOBAL_gb_main, source, 0, 0, 1);

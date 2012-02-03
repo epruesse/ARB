@@ -250,17 +250,18 @@ static void nt_exit(AW_window *aws) {
                 secs =  GB_time_of_day(); // simulate "just saved"
 #endif // DEBUG
 
+                const char *quit_buttons = "Quit ARB,Do NOT quit";
                 if (secs) {
                     secs = GB_time_of_day() - secs;
                     if (secs>10) {
                         char *question = GBS_global_string_copy("You last saved your data %li:%li minutes ago\nSure to quit ?", secs/60, secs%60);
-                        int   dontQuit = aw_question(question, "QUIT ARB,DO NOT QUIT");
+                        int   dontQuit = aw_question("quit_arb", question, quit_buttons);
                         free(question);
                         if (dontQuit) return;
                     }
                 }
                 else {
-                    if (aw_question("You never saved any data\nSure to quit ???", "QUIT ARB,DO NOT QUIT")) return;
+                    if (aw_question("quit_arb", "You never saved any data\nSure to quit ???", quit_buttons)) return;
                 }
             }
         }
