@@ -137,7 +137,7 @@ static void advice_hide_and_close_cb(AW_window *aww, AW_CL cl_id, AW_CL type) {
 
 // -------------------------------------------
 
-void AWT_reactivate_all_advices() {
+void AW_reactivate_all_advices() {
     AW_awar *awar_disabled = get_disabled_advices();
 
     char *disabled = awar_disabled->read_string();

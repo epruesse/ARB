@@ -1536,8 +1536,6 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     awmm->insert_menu_topic("props_seq_colors", "Set Sequence Colors ",   "S", "no help", AWM_ALL, AW_POPUP, (AW_CL)create_seq_colors_window, (AW_CL)sequence_colors);
 
     SEP________________________SEP;
-    awmm->insert_menu_topic("enable_advices", "Reactivate advices",       "R", "advice.hlp", AWM_ALL, (AW_CB) AWT_reactivate_all_advices, 0, 0);
-    SEP________________________SEP;
 
     static AW_cb_struct *expose_cb = 0;
     if (!expose_cb) expose_cb = new AW_cb_struct(awmm, (AW_CB)ED4_expose_cb, 0, 0);
@@ -1547,6 +1545,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
 
     awmm->insert_menu_topic("props_key_map", "Key Mappings ",              "K", "nekey_map.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_key_map_window, 0);
     awmm->insert_menu_topic("props_nds",     "Select visible info (NDS) ", "D", "ed4_nds.hlp",   AWM_ALL, AW_POPUP, (AW_CL)ED4_create_nds_window, 0);
+    SEP________________________SEP;
+    AW_insert_common_property_menu_entries(awmm);
     SEP________________________SEP;
     awmm->insert_sub_menu("Save properties ...", "a");
     {
