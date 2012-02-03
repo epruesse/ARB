@@ -1094,3 +1094,9 @@ AW_window *AW_preset_window(AW_root *root) {
     return (AW_window *)aws;
 
 }
+
+static void add_common_property_menu_entries(AW_window *aw) {
+    aw->insert_menu_topic("enable_advices", "Reactivate advices", "R", "advice.hlp", AWM_ALL, (AW_CB) AW_reactivate_all_advices, 0, 0);
+}
+void AW_insert_common_property_menu_entries(AW_window_menu_modes *awmm) { add_common_property_menu_entries(awmm); }
+void AW_insert_common_property_menu_entries(AW_window_simple_menu *awsm) { add_common_property_menu_entries(awsm); }

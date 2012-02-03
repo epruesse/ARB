@@ -27,6 +27,9 @@ void AW_save_specific_properties(AW_window *aw, const char *filename);
 
 AW_window *AW_preset_window(AW_root *root);
 
+void AW_insert_common_property_menu_entries(AW_window_menu_modes *awmm);
+void AW_insert_common_property_menu_entries(AW_window_simple_menu *awsm);
+
 enum AW_GCM_AREA {
     AW_GCM_DATA_AREA,
     AW_GCM_WINDOW_AREA
