@@ -20,6 +20,7 @@
 #include "aw_msg.hxx"
 #include "aw_status.hxx"
 #include "aw_root.hxx"
+#include "aw_question.hxx"
 
 #include <arbdbt.h>
 #include <arb_handlers.h>
