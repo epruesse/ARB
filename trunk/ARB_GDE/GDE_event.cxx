@@ -331,7 +331,7 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
 
 
                     enum ReplaceMode { REPLACE_SPEC = 0, REIMPORT_SEQ = 1, SKIP_IMPORT  = 2, }
-                    replace_mode = (ReplaceMode)overwrite_question.get_answer(question, "Overwrite species,Overwrite sequence only,Skip entry", "all", false);
+                    replace_mode = (ReplaceMode)overwrite_question.get_answer("GDE_overwrite", question, "Overwrite species,Overwrite sequence only,Skip entry", "all", false);
 
                     switch (replace_mode) {
                         case SKIP_IMPORT:
@@ -372,7 +372,7 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
                                 enum ChangeMode {
                                     ACCEPT_CHANGE = 0,
                                     REJECT_CHANGE = 1,
-                                } change_mode = (ChangeMode)checksum_change_question.get_answer(question, "Accept change,Reject", "all", false);
+                                } change_mode = (ChangeMode)checksum_change_question.get_answer("GDE_accept", question, "Accept change,Reject", "all", false);
                                 
                                 if (change_mode == REJECT_CHANGE) writeSequence = false;
 

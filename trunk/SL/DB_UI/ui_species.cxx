@@ -233,7 +233,7 @@ static void species_rename_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
                 error = GB_write_string(gb_full_name, new_full_name);
             }
             if (!error) {
-                if (aw_ask_sure("Do you want to re-create the 'name' field?")) {
+                if (aw_ask_sure("recreate_name_field", "Do you want to re-create the 'name' field?")) {
                     arb_progress progress("Recreating species name", 1);
                     error = AWTC_recreate_name(gb_species);
                     if (!error) aw_root->awar(AWAR_SPECIES_NAME)->write_string(GBT_read_name(gb_species)); // set focus
@@ -258,7 +258,7 @@ static void species_delete_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
     if (!gb_species) {
         error = "Please select a species first";
     }
-    else if (aw_ask_sure(GBS_global_string("Are you sure to delete the species '%s'?", name))) {
+    else if (aw_ask_sure("info_delete_species", GBS_global_string("Are you sure to delete the species '%s'?", name))) {
         GB_transaction ta(gb_main);
         error = GB_delete(gb_species);
         error = ta.close(error);
@@ -967,7 +967,7 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL cl_query) {
     }
 
     if (strcmp(dest_field, "name")==0) {
-        int answer = aw_question("CAUTION! This will destroy all name-fields of the listed species.\n",
+        int answer = aw_question(NULL, "CAUTION! This will destroy all name-fields of the listed species.\n",
                                  "Continue and destroy all name-fields,Abort");
 
         if (answer==1) {

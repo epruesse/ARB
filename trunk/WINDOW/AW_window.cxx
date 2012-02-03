@@ -1706,7 +1706,7 @@ static void aw_window_destroy_cb(Widget,  AW_window *aww, XmAnyCallbackStruct *)
     AW_root *root = aww->get_root();
     if ((p_global->main_aww == aww) || !p_global->main_aww->is_shown()) {
 #ifdef NDEBUG
-        if (aw_question("Are you sure to quit?", "YES,NO")) return;
+        if (!aw_ask_sure("quit_by_X", "Are you sure to quit?")) return;
 #endif
         exit(0);
     }

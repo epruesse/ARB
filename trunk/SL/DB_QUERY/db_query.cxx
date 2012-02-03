@@ -526,7 +526,7 @@ static void delete_queried_species_cb(AW_window*, AW_CL cl_query) {
         }
     }
 
-    if (!cnt || !aw_ask_sure(GBS_global_string("Are you sure to delete %li %s", cnt, selector.items_name))) {
+    if (!cnt || !aw_ask_sure("delete_queried_species", GBS_global_string("Are you sure to delete %li %s", cnt, selector.items_name))) {
         GB_abort_transaction(query->gb_main);
         return;
     }
@@ -1559,7 +1559,8 @@ static void modify_fields_of_queried_cb(AW_window*, AW_CL cl_query) {
         bool abort = false;
         switch (selector.type) {
             case QUERY_ITEM_SPECIES: {
-                if (aw_question("WARNING WARNING WARNING!!! You now try to rename the species\n"
+                if (aw_question("corrupt_species_names",
+                                "WARNING WARNING WARNING!!! You now try to rename the species\n"
                                 "    The name is used to link database entries and trees\n"
                                 "    ->  ALL TREES WILL BE LOST\n"
                                 "    ->  The new name MUST be UNIQUE"
@@ -1568,7 +1569,8 @@ static void modify_fields_of_queried_cb(AW_window*, AW_CL cl_query) {
                 break;
             }
             case QUERY_ITEM_GENES: {
-                if (aw_question("WARNING! You now try to rename the gene\n"
+                if (aw_question("corrupt_gene_names",
+                                "WARNING! You now try to rename the gene\n"
                                 "    ->  Pseudo-species will loose their link to the gene"
                                 "    ->  The new name MUST be UNIQUE"
                                 "        if not you will corrupt the database!",
@@ -1576,7 +1578,8 @@ static void modify_fields_of_queried_cb(AW_window*, AW_CL cl_query) {
                 break;
             }
             case QUERY_ITEM_EXPERIMENTS: {
-                if (aw_question("WARNING! You now try to rename the experiment\n"
+                if (aw_question("corrupt_experiment_names", 
+                                "WARNING! You now try to rename the experiment\n"
                                 "    ->  The new name MUST be UNIQUE"
                                 "        if not you will corrupt the database!",
                                 "Let's Go,Cancel")) abort = true;
@@ -1604,7 +1607,7 @@ static void modify_fields_of_queried_cb(AW_window*, AW_CL cl_query) {
             GBDATA *gb_key_data = GB_search(query->gb_main, selector.change_key_path, GB_CREATE_CONTAINER);
             while (!error && !(gb_key_name = GB_find_string(gb_key_data, CHANGEKEY_NAME, key, GB_IGNORE_CASE, SEARCH_GRANDCHILD))) {
                 const char *question = GBS_global_string("The destination field '%s' does not exists", key);
-                if (aw_question(question, "Create Field (Type STRING),Cancel")) {
+                if (aw_question("create_dest_field_from_mod_queried", question, "Create Field (Type STRING),Cancel")) {
                     error = "Aborted by user";
                 }
                 else {
@@ -1620,7 +1623,7 @@ static void modify_fields_of_queried_cb(AW_window*, AW_CL cl_query) {
             if (!gb_key_type) error = GB_await_error();
             else {
                 if (GB_read_int(gb_key_type)!=GB_STRING &&
-                    aw_question("Writing to a non-STRING database field may lead to conversion problems.", "Abort,Continue")==0)
+                    aw_question("write_non_string_field", "Writing to a non-STRING database field may lead to conversion problems.", "Abort,Continue")==0)
                 {
                     error = "Aborted by user";
                 }

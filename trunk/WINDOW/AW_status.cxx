@@ -403,7 +403,8 @@ static void aw_status_timer_event(AW_root *awr, AW_CL, AW_CL)
     fprintf(stderr, "in aw_status_timer_event\n"); fflush(stdout);
 #endif // TRACE_STATUS_MORE
     if (aw_stg.mode == AW_STATUS_ABORT) {
-        int action = aw_question("Couldn't quit properly in time.\n"
+        int action = aw_question(NULL,
+                                 "Couldn't quit properly in time.\n"
                                  "Either wait again for the abortion,\n"
                                  "kill the calculating process or\n"
                                  "continue the calculation.",
@@ -448,7 +449,7 @@ static void aw_status_kill(AW_window *aws)
         }
     }
     else {
-        if (!aw_ask_sure("Are you sure to abort running calculation?")) {
+        if (!aw_ask_sure("aw_status_kill", "Are you sure to abort running calculation?")) {
             return; // don't abort
         }
         aw_stg.mode = AW_STATUS_ABORT;

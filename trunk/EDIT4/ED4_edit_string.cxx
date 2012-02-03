@@ -1073,16 +1073,9 @@ GB_ERROR ED4_Edit_String::edit(ED4_work_info *info) {
 
         if (write_fault) {
             e4_assert(info->mode==AD_NOWRITE);
-
-            if (is_remapped_sequence) {
-                int check = aw_question("Please check 'Preferences/Options/OSC/Show all gaps' in order to edit remarks", "Ok,Check it for me");
-                if (check) {
-                    ED4_ROOT->aw_root->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->write_int(ED4_RM_NONE);
-                }
-            }
-            else {
-                aw_message("This terminal is write-protected!");
-            }
+            aw_message(is_remapped_sequence
+                       ? "Check 'Show all gaps' when editing remarks"
+                       : "This terminal is write-protected!");
         }
     }
 

@@ -145,7 +145,7 @@ static void AWT_write_file(const char *filename, const char *file) {
     FILE *f = fopen(filename, "r");
     if (f) {
         fclose(f);
-        if (aw_question(GBS_global_string("File '%s' already exist", filename), "Overwrite,Cancel")) {
+        if (aw_question("overwrite_file", GBS_global_string("File '%s' already exist", filename), "Overwrite,Cancel")) {
             return;
         }
     }

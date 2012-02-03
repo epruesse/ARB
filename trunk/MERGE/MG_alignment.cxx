@@ -138,7 +138,7 @@ int MG_copy_and_check_alignments(AW_window */*aww*/) {
 
 static void MG_ad_al_delete_cb(AW_window *aww, AW_CL db_nr)
 {
-    if (aw_ask_sure("Are you sure to delete all data belonging to this alignment?")) {
+    if (aw_ask_sure("merge_delete_ali", "Are you sure to delete all data belonging to this alignment?")) {
         char     buffer[256];
         sprintf(buffer, "tmp/merge%li/alignment_name", db_nr);
 

@@ -97,7 +97,7 @@ public:
             if (IS_AMINO()) {
                 complement = 0;
                 root->awar(awarList->complement)->write_int(0);
-                aw_question(GBS_global_string("Search for complement is not supported for this alignment type"), "Disable");
+                aw_message("Search for complement is not supported for this alignment type (has been disabled)");
             }
         }
     }
@@ -991,7 +991,8 @@ void ED4_SearchResults::addSearchPosition(ED4_SearchPosition *pos) {
 
     ++result_counter;
     if (result_counter >= max_allowed_results) {
-        if (aw_question(GBS_global_string("More than %i results found!", result_counter), "Allow more,That's enough") == 0) {
+        if (aw_question("many_search_results", 
+                        GBS_global_string("More than %i results found!", result_counter), "Allow more,That's enough") == 0) {
             max_allowed_results = max_allowed_results*2;
         }
         else {
@@ -1535,7 +1536,7 @@ static void save_search_paras_to_file(AW_window *aw, AW_CL cl_type) {
             fclose(in);
 
             char *question = GBS_global_string_copy("'%s' already exists", filename);
-            if (aw_question(question, "Overwrite,Cancel") != 0) {
+            if (aw_question("overwrite_search_params", question, "Overwrite,Cancel") != 0) {
                 error = "Wont overwrite existing file";
             }
         }
@@ -1584,7 +1585,7 @@ static void save_search_paras_to_file(AW_window *aw, AW_CL cl_type) {
         }
     }
 
-    if (error) aw_popup_ok(error);
+    if (error) aw_message(error);
     else AW_POPDOWN(aw);
 
     free(filename);
@@ -1647,7 +1648,7 @@ static void load_search_paras_from_file(AW_window *aw, AW_CL cl_type) {
         fclose(in);
     }
 
-    if (error) aw_popup_ok(error);
+    if (error) aw_message(error);
     else AW_POPDOWN(aw);
     
     free(filename);

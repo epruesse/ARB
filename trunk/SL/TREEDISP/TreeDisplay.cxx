@@ -612,7 +612,7 @@ void AWT_graphic_tree::toggle_group(AP_tree * at) {
         if (gname) {
             const char *msg = GBS_global_string("What to do with group '%s'?", gname);
 
-            switch (aw_question(msg, "Rename,Destroy,Cancel")) {
+            switch (aw_question(NULL, msg, "Rename,Destroy,Cancel")) {
                 case 0: {                                                    // rename
                     char *new_gname = aw_input("Rename group", "Change group name:", at->name);
                     if (new_gname) {

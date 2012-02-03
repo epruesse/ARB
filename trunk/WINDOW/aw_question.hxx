@@ -28,16 +28,22 @@
 #include <cstdlib>
 #endif
 
-// for simple questions use: int aw_question(const char *msg, const char *buttons, ...)
-//
 // if you ask the same question in a loop, it is recommended to use AW_repeated_question
 // to avoid asking the same question again and again.
 //
 // Usage : 1. Create a new instance of AW_repeated_question outside the loop
 //         2. call get_answer() inside the loop
 
+// The second way to get rid of unwanted questions is by using a 'uniqueID'
+// - if uniqueID is set, a toggle "Never ask me again" will be added to the question-popup.
+// - if uniqueID is NULL, no such toggle will appear (i.e. the popup can NOT be suppressed!)
+// The latter is recommended
+// - whenever the buttons get generated dynamically
+// - when not asking is REALLY dangerous
+//
+// Whenever you change the meaning of a question, it is mandatory that you change the uniqueID!!!
+
 class AW_repeated_question : virtual Noncopyable {
-private:
     int   answer;
     bool  dont_ask_again;
     char *buttons_used;
@@ -57,16 +63,20 @@ public:
 
     void add_help(const char *help_file); // when called, a help button is added to the prompter
 
-    int get_answer(const char *question, const char *buttons, const char *to_all, bool add_abort);
+    int get_answer(const char *uniqueID, const char *question, const char *buttons, const char *to_all, bool add_abort);
     // return 0 for first button, 1 for second button, 2 for third button, ...
     // the single buttons are separated by commas (i.e. "YES,NO")
     // if add_abort is true an 'ABORT' button is added behind the last
 };
 
-int  aw_question  (const char *msg, const char *buttons, bool fixedSizeButtons = true, const char *helpfile = 0);
-bool aw_ask_sure  (const char *msg, bool fixedSizeButtons = true, const char *helpfile = 0);
-void aw_popup_ok  (const char *msg, bool fixedSizeButtons = true, const char *helpfile = 0);
-void aw_popup_exit(const char *msg, bool fixedSizeButtons = true, const char *helpfile = 0) __ATTR__NORETURN;
+int  aw_question(const char *uniqueID, const char *msg, const char *buttons, bool fixedSizeButtons = true, const char *helpfile = 0);
+bool aw_ask_sure(const char *uniqueID, const char *msg);
+
+// the following functions should only be used in very special cases - please use aw_message if possible!
+void aw_popup_ok  (const char *msg);
+void aw_popup_exit(const char *msg) __ATTR__NORETURN;
+
+void AW_reactivate_all_questions();
 
 #else
 #error aw_question.hxx included twice

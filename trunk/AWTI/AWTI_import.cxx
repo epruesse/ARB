@@ -746,7 +746,7 @@ static GB_ERROR awtc_read_data(char *ali_name, int security_write)
                                                 "    This might be the result of a wrong input format\n"
                                                 "    or a long comment in a sequence\n", file, line);
 
-                switch (aw_question(msg, "Continue Reading,Continue Reading (Never ask again),Abort")) {
+                switch (aw_question("import_long_lines", msg, "Continue Reading,Continue Reading (Never ask again),Abort")) {
                     case 0:
                         max_line *= 2;
                         break;
@@ -1124,7 +1124,8 @@ static void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or ex
         progress.inc();
 
         if (ask_generate_names) {
-            if (aw_question("You may generate short names using the full_name and accession entry of the species",
+            if (aw_question("generate_short_names",
+                            "You may generate short names using the full_name and accession entry of the species",
                             "Generate new short names (recommended),Use found names")==0)
             {
                 progress.subtitle("Pass 3: Generate unique names");

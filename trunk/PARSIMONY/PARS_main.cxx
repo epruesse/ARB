@@ -1213,11 +1213,14 @@ static GB_ERROR pars_check_size(AW_root *awr) {
 
     long tree_size = GBT_size_of_tree(GLOBAL_gb_main, tree_name);
     if (tree_size == -1) {
-        error = GB_export_error("Please select an existing tree");
+        error = "Please select an existing tree";
     }
     else {
-        if ((unsigned long)(ali_len * tree_size * 4 / 1000) > GB_get_physical_memory()) {
-            error  = GB_export_error("Very big tree");
+        unsigned long expected_memuse = (ali_len * tree_size * 4 / 1000);
+        if (expected_memuse > GB_get_physical_memory()) {
+            error  = GBS_global_string("Estimated memory usage (%s) exceeds physical memory (will swap)\n"
+                                       "(did you specify a filter?)",
+                                       GBS_readable_size(expected_memuse, "b"));
         }
     }
     free(filter);
@@ -1240,11 +1243,13 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     AW_root        *awr   = aw_parent->get_root();
     GB_begin_transaction(GLOBAL_gb_main);
     {
-        GB_ERROR error = pars_check_size(awr);
-        if (error) {
-            if (!aw_ask_sure("This program will need a lot of computer memory\n"
-                             "    (Hint: the use of a filter often helps)\n"
-                             "Do you want to continue?")) {
+        GB_ERROR warning = pars_check_size(awr);
+        if (warning) {
+            char *question = GBS_global_string_copy("%s\nDo you want to continue?", warning);
+            bool  cont     = aw_ask_sure("swap_warning", question);
+            free(question);
+
+            if (!cont) {
                 GB_commit_transaction(GLOBAL_gb_main);
                 return;
             }

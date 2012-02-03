@@ -197,7 +197,8 @@ GB_ERROR GEN_testAndRemoveTranslations(GBDATA *gb_gene_data, void (*warn)(AW_CL 
                                 wrong_start_codon++;
                                 AW_repeated_question* q = ok_to_ignore_wrong_start_codon;
 
-                                if (q->get_answer("Translation differs only in start codon",
+                                if (q->get_answer("only_start_codon_differs",
+                                                  "Translation differs only in start codon",
                                                   "Ignore and remove,Keep translation", "all", false) == 0) {
                                     retry++;
                                 }
