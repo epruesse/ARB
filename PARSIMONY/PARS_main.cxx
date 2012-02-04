@@ -1183,12 +1183,12 @@ static void init_TEST_menu(AW_window_menu_modes *awm, AWT_canvas *ntw)
     awm->insert_menu_topic(0, "Set branchlens",     "b", "", AWM_ALL, (AW_CB)TESTMENU_setBranchlen,      (AW_CL)ntw, 0);
     awm->insert_menu_topic(0, "Sort tree by name",  "o", "", AWM_ALL, (AW_CB)TESTMENU_sortTreeByName,    (AW_CL)ntw, 0);
     awm->insert_menu_topic(0, "Build & dump chain", "c", "", AWM_ALL, (AW_CB)TESTMENU_buildAndDumpChain, (AW_CL)ntw, 0);
-    awm->insert_separator();
+    awm->sep______________();
     awm->insert_menu_topic(0, "Add marked species",          "A", "pa_quick.hlp", AWM_ALL, (AW_CB)TESTMENU_quick_add,       (AW_CL)ntw, NT_ADD_MARKED);
     awm->insert_menu_topic(0, "Add marked species + NNI",    "N", "pa_add.hlp",   AWM_ALL, (AW_CB)TESTMENU_add,             (AW_CL)ntw, NT_ADD_MARKED);
     awm->insert_menu_topic(0, "Remove & add marked species", "o", "pa_add.hlp",   AWM_ALL, (AW_CB)TESTMENU_rquick_add_test, (AW_CL)ntw, NT_ADD_MARKED);
     awm->insert_menu_topic(0, "Remove & add marked + NNI",   "v", "pa_add.hlp",   AWM_ALL, (AW_CB)TESTMENU_radd,            (AW_CL)ntw, NT_ADD_MARKED);
-    awm->insert_separator();
+    awm->sep______________();
     awm->insert_menu_topic(0, "Add selected species",       "l", "pa_quick_sel.hlp", AWM_ALL, (AW_CB)TESTMENU_quick_add, (AW_CL)ntw, NT_ADD_SELECTED);
     awm->insert_menu_topic(0, "Add selected species + NNI", "I", "pa_add_sel.hlp",   AWM_ALL, (AW_CB)TESTMENU_add,       (AW_CL)ntw, NT_ADD_SELECTED);
 }
@@ -1337,20 +1337,20 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
 
         awm->insert_menu_topic("nds",       "NDS (Node Display Setup) ...",      "N", "props_nds.hlp",   AWM_ALL, AW_POPUP, (AW_CL)AWT_create_nds_window, (AW_CL)ntw->gb_main);
 
-        awm->insert_separator();
+        awm->sep______________();
         awm->insert_menu_topic("tree_2_xfig", "Export tree to XFIG ...", "E", "tree2file.hlp", AWM_ALL, AWT_popup_tree_export_window, (AW_CL)ntw, 0);
         awm->insert_menu_topic("tree_print",  "Print tree ...",          "P", "tree2prt.hlp",  AWM_ALL, AWT_popup_print_window,       (AW_CL)ntw, 0);
-        awm->insert_separator();
+        awm->sep______________();
         awm->insert_sub_menu("Collapse/Expand Tree",         "C");
         {
             awm->insert_menu_topic("tree_group_all",        "Group All",            "A", "tgroupall.hlp",   AWM_ALL,    (AW_CB)NT_group_tree_cb,    (AW_CL)ntw, 0);
             awm->insert_menu_topic("tree_group_not_marked", "Group All Except Marked",  "M", "tgroupnmrkd.hlp", AWM_ALL,    (AW_CB)NT_group_not_marked_cb,  (AW_CL)ntw, 0);
             awm->insert_menu_topic("tree_ungroup_all",      "Ungroup All",          "U", "tungroupall.hlp", AWM_ALL,    (AW_CB)NT_ungroup_all_cb,   (AW_CL)ntw, 0);
-            awm->insert_separator();
+            awm->sep______________();
             NT_insert_color_collapse_submenu(awm, ntw);
         }
         awm->close_sub_menu();
-        awm->insert_separator();
+        awm->sep______________();
         awm->insert_sub_menu("Remove Species from Tree",     "R");
         {
             awm->insert_menu_topic("tree_remove_deleted", "Remove Zombies", "Z", "trm_del.hlp",    AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_DELETED|AWT_REMOVE_BUT_DONT_FREE);
@@ -1364,14 +1364,14 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
             awm->insert_menu_topic("add_marked_nni",     "Add Marked Species + Local Optimization (NNI)",   "N", "pa_add.hlp",       AWM_ALL, (AW_CB)NT_add,        (AW_CL)ntw, NT_ADD_MARKED);
             awm->insert_menu_topic("rm_add_marked",      "Remove & Add Marked Species",                     "R", "pa_add.hlp",       AWM_ALL, (AW_CB)NT_rquick_add, (AW_CL)ntw, NT_ADD_MARKED);
             awm->insert_menu_topic("rm_add_marked_nni|", "Remove & Add Marked + Local Optimization (NNI)",  "L", "pa_add.hlp",       AWM_ALL, (AW_CB)NT_radd,       (AW_CL)ntw, NT_ADD_MARKED);
-            awm->insert_separator();
+            awm->sep______________();
             awm->insert_menu_topic("add_marked_partial", "Add Marked Partial Species",                      "P", "pa_partial.hlp",   AWM_ALL, NT_partial_add,       (AW_CL)ntw, (AW_CL)0);
-            awm->insert_separator();
+            awm->sep______________();
             awm->insert_menu_topic("add_selected",       "Add Selected Species",                            "S", "pa_quick_sel.hlp", AWM_ALL, (AW_CB)NT_quick_add,  (AW_CL)ntw, NT_ADD_SELECTED);
             awm->insert_menu_topic("add_selected_nni",   "Add Selected Species + Local Optimization (NNI)", "O", "pa_add_sel.hlp",   AWM_ALL, (AW_CB)NT_add,        (AW_CL)ntw, NT_ADD_SELECTED);
         }
         awm->close_sub_menu();
-        awm->insert_separator();
+        awm->sep______________();
         awm->insert_sub_menu("Tree Optimization",        "O");
         {
             awm->insert_menu_topic("nni",           "Local Optimization (NNI) of Marked Visible Nodes", "L", "",        AWM_ALL,    (AW_CB)NT_recursiveNNI, (AW_CL)ntw, 0);
@@ -1379,10 +1379,10 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
         }
         awm->close_sub_menu();
         awm->insert_menu_topic("reset", "Reset optimal parsimony", "s", "", AWM_ALL, (AW_CB)pars_reset_optimal_parsimony, (AW_CL)ntw, 0);
-        awm->insert_separator();
+        awm->sep______________();
         awm->insert_menu_topic("beautify_tree",       "Beautify Tree",            "B", "resorttree.hlp",       AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 0);
         awm->insert_menu_topic("calc_branch_lengths", "Calculate Branch Lengths", "L", "pa_branchlengths.hlp", AWM_ALL, (AW_CB)NT_branch_lengths, (AW_CL)ntw, 0);
-        awm->insert_separator();
+        awm->sep______________();
         awm->insert_menu_topic("calc_upper_bootstrap_indep", "Calculate Upper Bootstrap Limit (dependent NNI)",   "d", "pa_bootstrap.hlp", AWM_ALL, (AW_CB)NT_bootstrap,        (AW_CL)ntw, 0);
         awm->insert_menu_topic("calc_upper_bootstrap_dep",   "Calculate Upper Bootstrap Limit (independent NNI)", "i", "pa_bootstrap.hlp", AWM_ALL, (AW_CB)NT_bootstrap,        (AW_CL)ntw, 1);
         awm->insert_menu_topic("tree_remove_remark",         "Remove Bootstrap Values",                           "V", "trm_boot.hlp",     AWM_ALL, (AW_CB)NT_remove_bootstrap, (AW_CL)ntw, 0);
@@ -1404,9 +1404,9 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
         awm->insert_menu_topic("props_tree",  "Tree: Colors and Fonts ...", "C", "pars_props_data.hlp",  AWM_ALL, AW_POPUP,(AW_CL)AW_create_gc_window,     (AW_CL)aw_gc_manager);
         awm->insert_menu_topic("props_tree2", "Tree: Settings ...",         "T", "nt_tree_settings.hlp", AWM_ALL, AW_POPUP,(AW_CL)NT_create_tree_setting,  (AW_CL)ntw);
         awm->insert_menu_topic("props_kl",    "KERN. LIN ...",              "K", "kernlin.hlp",          AWM_ALL, AW_POPUP,(AW_CL)create_kernighan_window, 0);
-        awm->insert_separator();
+        awm->sep______________();
         AW_insert_common_property_menu_entries(awm);
-        awm->insert_separator();
+        awm->sep______________();
         awm->insert_menu_topic("save_props",  "Save Defaults (pars.arb)",   "D", "savedef.hlp",          AWM_ALL,          (AW_CB)AW_save_properties,      0, 0);
     }
     awm->button_length(5);

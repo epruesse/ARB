@@ -2390,7 +2390,7 @@ void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_ite
                 aw_message(GBS_global_string("Unknown @ITEMTYPE '%s' in '%s'", descriptor->get_itemtypename(), descriptor->get_internal_maskname()));
             }
         }
-        if (entries_made) awm->insert_separator();
+        if (entries_made) awm->sep______________();
     }
 
     {

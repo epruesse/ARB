@@ -241,9 +241,9 @@ void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest
             awm->insert_menu_topic("quitnstart", "Quit & Start DB II", "D", "quit.hlp", AWM_ALL, MG_exit, 1, 0);
         }
 
-        awm->insert_separator();
+        awm->sep______________();
         AW_insert_common_property_menu_entries(awm);
-        awm->insert_separator();
+        awm->sep______________();
         awm->insert_menu_topic("save_props", "Save properties (ntree.arb)", "p", "savedef.hlp", AWM_ALL, (AW_CB)AW_save_properties, 0, 0);
 
         awm->button_length(30);

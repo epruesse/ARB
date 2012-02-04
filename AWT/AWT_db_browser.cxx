@@ -1013,7 +1013,7 @@ void AWT_create_debug_menu(AW_window *awmm) {
 
     awmm->insert_menu_topic("-db_browser", "Browse loaded database(s)", "B", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_db_browser, 0);
 
-    awmm->insert_separator();
+    awmm->sep______________();
     {
         awmm->insert_sub_menu("Callbacks (dangerous! use at your own risk)", "C", AWM_ALL);
         awmm->insert_menu_topic("!run_all_cbs_alph",  "Call all callbacks (alpha-order)",     "a", "", AWM_ALL, callallcallbacks, 0,  0);
@@ -1022,12 +1022,12 @@ void AWT_create_debug_menu(AW_window *awmm) {
         awmm->insert_menu_topic("!run_all_cbs_nloc",  "Call all callbacks (code-reverse)",    "o", "", AWM_ALL, callallcallbacks, 3,  0);
         awmm->insert_menu_topic("!run_all_cbs_rnd",   "Call all callbacks (random)",          "r", "", AWM_ALL, callallcallbacks, 10, 0);
         awmm->insert_menu_topic("!run_all_cbs_inf",   "Call all callbacks (random repeated)", "p", "", AWM_ALL, callallcallbacks, 11, 0);
-        awmm->insert_separator();
+        awmm->sep______________();
         awmm->insert_menu_topic("!forget_called_cbs", "Forget called",     "F", "", AWM_ALL, callallcallbacks, -1, 0);
         awmm->insert_menu_topic("!mark_all_called",   "Mark all called",   "M", "", AWM_ALL, callallcallbacks, -2, 0);
         awmm->close_sub_menu();
     }
-    awmm->insert_separator();
+    awmm->sep______________();
 
 }
 
