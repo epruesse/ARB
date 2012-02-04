@@ -1559,7 +1559,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
                 break;
             }
         }
-        e4_assert(default_mode != -1);
+        if (default_mode == -1) default_mode = 2; // no properties yet -> use 'edit4.arb'
 
         const char *entry = GBS_global_string("Save loaded Properties (%s)", ED4_propertyName(default_mode));
         awmm->insert_menu_topic("save_loaded_props", entry, "l", "e4_defaults.hlp", AWM_ALL, ED4_save_properties, (AW_CL)default_mode, 0);
@@ -1872,11 +1872,8 @@ static char *detectProperties() {
 
     // if not, use 'mode 2', i.e. "edit4.arb"
     // (no full path, we want to load default from arb_defaults)
-    if (!propname) {
-        freedup(propname, ED4_propertyName(2));
-    }
+    if (!propname) propname = strdup(ED4_propertyName(2));
 
-    GB_informationf("Using properties from '%s'", propname);
     return propname;
 }
 

@@ -459,20 +459,25 @@ const char *ED4_propertyName(int mode) {
 
     e4_assert(mode >= 0 && mode <= 2);
 
-    if (mode == 2) return "edit4.arb";
-
-    static char *ali_name = 0;
-    static char *ali_type = 0;
-    static char *result = 0;
-
-    if (!ali_name) {
-        GB_transaction dummy(GLOBAL_gb_main);
-        ali_name = GBT_get_default_alignment(GLOBAL_gb_main);
-        ali_type = GBT_get_alignment_type_string(GLOBAL_gb_main, ali_name);
-        result   = new char[21+strlen(ali_name)];
+    const char *result;
+    if (mode == 2) {
+        result = "edit4.arb";
     }
+    else {
+        static char *ali_name = 0;
+        static char *ali_type = 0;
+        static char *result_copy = 0;
 
-    sprintf(result, "edit4_%s.arb", mode == 0 ? ali_name : ali_type);
+        if (!ali_name) {
+            GB_transaction dummy(GLOBAL_gb_main);
+            ali_name = GBT_get_default_alignment(GLOBAL_gb_main);
+            ali_type = GBT_get_alignment_type_string(GLOBAL_gb_main, ali_name);
+            result_copy   = new char[21+strlen(ali_name)];
+        }
+
+        sprintf(result_copy, "edit4_%s.arb", mode == 0 ? ali_name : ali_type);
+        result = result_copy;
+    }
 
     return result;
 }
