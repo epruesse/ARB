@@ -1623,7 +1623,9 @@ static void modify_fields_of_queried_cb(AW_window*, AW_CL cl_query) {
             if (!gb_key_type) error = GB_await_error();
             else {
                 if (GB_read_int(gb_key_type)!=GB_STRING &&
-                    aw_question("write_non_string_field", "Writing to a non-STRING database field may lead to conversion problems.", "Abort,Continue")==0)
+                    aw_question("write_non_string_field",
+                                "Writing to a non-STRING database field may lead to conversion problems.",
+                                "Continue,Abort"))
                 {
                     error = "Aborted by user";
                 }
