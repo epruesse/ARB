@@ -21,9 +21,6 @@
 #define AWAR_SEQ_NAME_SELECTOR_NA      AWAR_SEQ_PATH   "na/select"
 #define AWAR_SEQ_NAME_SELECTOR_AA      AWAR_SEQ_PATH   "aa/select"
 
-#define AWT_SEQ_COLORS_MAX_SET   5
-#define AWT_SEQ_COLORS_MAX_ELEMS 28 // has to be a even number!
-
 class AWT_seq_colors {
     int   base_gc;
     AW_CL cd1;

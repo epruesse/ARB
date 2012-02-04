@@ -8,9 +8,9 @@ UP	e4.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Change Colors Of Sequences
+TITLE		Sequence color mapping
 
-OCCURRENCE	ARB_EDIT4
+OCCURRENCE	ARB_EDIT4/Properties/Sequence color mapping
 
 DESCRIPTION	The ARB_EDIT4 editor uses two tables to translate the
 		original sequence into a colored displayed sequence:
@@ -19,23 +19,26 @@ DESCRIPTION	The ARB_EDIT4 editor uses two tables to translate the
 
                       Each character in each sequence is translated into
                       a new character and a color index (0..9) using the definitions
-                      from the 'SEQUENCE COLORS' subwindow.
+                      from the 'Sequence color mapping' subwindow.
 
-                      - There are different sets (S_0 .. S_#) of color shemes,
-                        one column for each set.
+                      - There are different sets (1..8) of color shemes,
+                        using two columns for each set.
 
-                      - In the first row you may choose which set is used for translation.
+                      - At the top of the window you may choose which set is used
+                        for translation of nucleotides and aminoacids.
 
                       - The first column shows the characters which should be
                         translated/replaced.
 
-                      - The nth + 1 column holds the data for translation set n.
+                      - The Nth + 1 column holds the translation instruction for set N.
                         Each of its fields has two characters:
 
-                           1. the character which should replace the original value,
-                           or '=' if no translation should be performed.
+                        - the character which should replace the original value,
+                          or '=' if no translation should be performed.
 
-                           2. A color index for this character, between 0 and 9.
+                        - a color index for this character, between 0 and 9.
+
+                        The default for the translation instruction is '=0' 
 
                 Second Step:
 
@@ -58,6 +61,6 @@ EXAMPLES	You may use this feature to show:
 		- A simplified version of your amino acid alignment.
 		- Only YR instead of ACGTU
 		- Only ambiguous symbols
-		- ...
+		- etc.
 
 BUGS		No bugs known
