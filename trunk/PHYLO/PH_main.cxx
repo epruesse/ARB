@@ -471,9 +471,9 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
     awm->create_menu("Properties", "P");
     awm->insert_menu_topic("props_menu", "Menu: Colors and Fonts ...",  "M", "props_frame.hlp",   AWM_ALL, AW_POPUP,(AW_CL)AW_preset_window,    0);
     awm->insert_menu_topic("props_data", "Data: Colors and Fonts ...",  "D", "ph_props_data.hlp", AWM_ALL, AW_POPUP,(AW_CL)AW_create_gc_window, (AW_CL)gcmiddle);
-    awm->insert_separator();
+    awm->sep______________();
     AW_insert_common_property_menu_entries(awm);
-    awm->insert_separator();
+    awm->sep______________();
     awm->insert_menu_topic("save_props", "Save Properties (phylo.arb)", "S", "savedef.hlp",       AWM_ALL,          (AW_CB)AW_save_properties,  0, 0);
 
 

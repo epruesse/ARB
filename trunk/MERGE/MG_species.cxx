@@ -1034,7 +1034,7 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
     aws->insert_menu_topic("merge_field_of_listed_to_new_field", "Merge field of listed species of DB1 with different fields of same species of DB2 ", "D",
                             "mergetaggedfield.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_mg_merge_tagged_fields, 0);
 
-    aws->insert_separator();
+    aws->sep______________();
     aws->insert_menu_topic("def_gene_species_field_xfer", "Define field transfer for gene-species", "g", "gene_species_field_transfer.hlp",
                            AWM_ALL, AW_POPUP, (AW_CL)MG_gene_species_create_field_transfer_def_window, 0);
 

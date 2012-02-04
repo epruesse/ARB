@@ -2983,17 +2983,10 @@ void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const cha
     root->make_sensitive(button, mask);
 }
 
-void AW_window::insert_separator() {
+void AW_window::sep______________() {
     // create one help-sub-menu-point
     XtVaCreateManagedWidget("", xmSeparatorWidgetClass,
                             p_w->menu_bar[p_w->menu_deep],
-                            NULL);
-}
-
-void AW_window::insert_separator_help() {
-    // create one help-sub-menu-point
-    XtVaCreateManagedWidget("", xmSeparatorWidgetClass,
-                            p_w->help_pull_down,
                             NULL);
 }
 

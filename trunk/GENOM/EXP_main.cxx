@@ -117,8 +117,6 @@ static void EXP_run_pgt(AW_window *aww, AW_CL, AW_CL) {
     AW_system(aww, "arb_pgt &", 0);
 }
 
-#define AWMIMT awm->insert_menu_topic
-
 void EXP_create_experiments_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool submenu) {
     const char *title  = "Experiment";
     const char *hotkey = "x";
@@ -127,16 +125,16 @@ void EXP_create_experiments_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, 
     else awm->create_menu(title, hotkey, AWM_ALL);
 
     {
-        AWMIMT("experiment_info",   "Experiment information", "i", "experiment_info.hlp",   AWM_ALL, EXP_popup_experiment_window, (AW_CL)gb_main,                            0);
-        AWMIMT("experiment_search", "Search and query",       "q", "experiment_search.hlp", AWM_ALL, AW_POPUP,                    (AW_CL)EXP_create_experiment_query_window, (AW_CL)gb_main);
+        awm->insert_menu_topic("experiment_info",   "Experiment information", "i", "experiment_info.hlp",   AWM_ALL, EXP_popup_experiment_window, (AW_CL)gb_main,                            0);
+        awm->insert_menu_topic("experiment_search", "Search and query",       "q", "experiment_search.hlp", AWM_ALL, AW_POPUP,                    (AW_CL)EXP_create_experiment_query_window, (AW_CL)gb_main);
 
         EXP_create_mask_submenu(awm, gb_main);
 
-        awm->insert_separator();
-        AWMIMT("experiment_colors",     "Colors ...",           "C",    "mark_colors.hlp", AWM_ALL, AW_POPUP,  (AW_CL)create_colorize_experiments_window, (AW_CL)gb_main);
+        awm->sep______________();
+        awm->insert_menu_topic("experiment_colors",     "Colors ...",           "C",    "mark_colors.hlp", AWM_ALL, AW_POPUP,  (AW_CL)create_colorize_experiments_window, (AW_CL)gb_main);
 
-        awm->insert_separator();
-        AWMIMT("pgt", "Proteom Genome Toolkit (PGT)", "P", "pgt.hlp", AWM_ALL, EXP_run_pgt, 0, 0);
+        awm->sep______________();
+        awm->insert_menu_topic("pgt", "Proteom Genome Toolkit (PGT)", "P", "pgt.hlp", AWM_ALL, EXP_run_pgt, 0, 0);
     }
     if (submenu) awm->close_sub_menu();
 }

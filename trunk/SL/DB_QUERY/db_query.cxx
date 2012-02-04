@@ -2836,19 +2836,19 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
     }
     if (awtqs->use_menu) {
         sprintf(buffer, "Set Protection of Fields of Listed %s", Items); query_rel_menu_entry(aws, "s_prot_of_listed", query_id, buffer, "P", "set_protection.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_set_protection_window, (AW_CL)query);
-        aws->insert_separator();
+        aws->sep______________();
         sprintf(buffer, "Mark Listed %s, don't Change Rest",   Items); query_rel_menu_entry(aws, "mark_listed",             query_id, buffer, "M", "mark.hlp", AWM_ALL, mark_queried_cb, (AW_CL)query, (AW_CL)1 | 8);
         sprintf(buffer, "Mark Listed %s, Unmark Rest",         Items); query_rel_menu_entry(aws, "mark_listed_unmark_rest", query_id, buffer, "L", "mark.hlp", AWM_ALL, mark_queried_cb, (AW_CL)query, (AW_CL)1);
         sprintf(buffer, "Unmark Listed %s, don't Change Rest", Items); query_rel_menu_entry(aws, "unmark_listed",           query_id, buffer, "U", "mark.hlp", AWM_ALL, mark_queried_cb, (AW_CL)query, (AW_CL)0 | 8);
         sprintf(buffer, "Unmark Listed %s, Mark Rest",         Items); query_rel_menu_entry(aws, "unmark_listed_mark_rest", query_id, buffer, "R", "mark.hlp", AWM_ALL, mark_queried_cb, (AW_CL)query, (AW_CL)0);
-        aws->insert_separator();
+        aws->sep______________();
 
 
         sprintf(buffer, "Set Color of Listed %s", Items);    query_rel_menu_entry(aws, "set_color_of_listed", query_id, buffer, "C", "set_color_of_listed.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_colorize_queried_window, (AW_CL)query);
 
         if (query->gb_ref) {
             dbq_assert(query->selector.type == QUERY_ITEM_SPECIES); // stuff below works only for species
-            aws->insert_separator();
+            aws->sep______________();
             if (query->expect_hit_in_ref_list) {
                 aws->insert_menu_topic("search_equal_fields_and_listed_in_I", "Search entries existing in both DBs and listed in the DB I hitlist", "S",
                                        "search_equal_fields.hlp", AWM_ALL, perform_query_cb, (AW_CL)query, EXT_QUERY_COMPARE_LINES);

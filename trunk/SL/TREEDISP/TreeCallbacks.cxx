@@ -324,7 +324,7 @@ static void nt_insert_mark_topics(AW_window_menu_modes *awm, AW_active mask, AWT
     nt_insert_mark_topic(awm, mask, attrib, "mark_all",            "Mark all %sSpecies%s",                    "M", "sp_mrk_all.hlp",    (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(1+affect));
     nt_insert_mark_topic(awm, mask, attrib, "unmark_all",          "Unmark all %sSpecies%s",                  "U", "sp_umrk_all.hlp",   (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(0+affect));
     nt_insert_mark_topic(awm, mask, attrib, "swap_marked",         "Invert marks of all %sSpecies%s",         "I", "sp_invert_mrk.hlp", (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(2+affect));
-    awm->insert_separator();
+    awm->sep______________();
 
     char *label = create_mark_menu_entry(attrib, "%sSpecies%s in Tree");
 
@@ -352,9 +352,9 @@ void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw, int ins
 
     {
         awm->insert_menu_topic("count_marked",  "Count Marked Species",     "C", "sp_count_mrk.hlp", AWM_ALL, (AW_CB)NT_count_mark_all_cb,      (AW_CL)ntw, 0);
-        awm->insert_separator();
+        awm->sep______________();
         nt_insert_mark_topics(awm, AWM_ALL, ntw, 0, 0);
-        awm->insert_separator();
+        awm->sep______________();
 
         awm->insert_sub_menu("Complete sequences", "o");
         nt_insert_mark_topics(awm, AWM_EXP, ntw, 4, "complete");
