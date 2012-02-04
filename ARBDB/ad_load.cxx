@@ -1357,7 +1357,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
      * - 'c' create (if not found)
      * - 's'     read only ???
      * - 'D' looks for default in $ARBHOME/lib/arb_default if file is not found in ~/.arb_prop
-     *       (only work combined with mode 'c') 
+     *       (only works combined with mode 'c') 
      * - memory usage:
      *   - 't' small memory usage
      *   - 'm' medium
@@ -1515,7 +1515,6 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                             dbCreated = true;
                         }
                         else {
-                            fprintf(stderr, "Using properties from '%s'\n", found_path);
                             freeset(path, found_path);
                             input = fopen(path, "rb");
                         }
@@ -1532,6 +1531,9 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                 }
             }
             if (input) {
+                if (strchr(opent, 'D')) { // we are loading properties -> be verboose
+                    fprintf(stderr, "Using properties from '%s'\n", path);
+                }
                 time_of_main_file = GB_time_of_file(path);
 
                 if (input != stdin) i = gb_read_in_long(input, 0);
