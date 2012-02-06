@@ -949,7 +949,11 @@ static GB_ERROR gb_check_saveable(GBDATA *gbd, const char *path, const char *fla
         error = GBS_global_string("Your destination file '%s' already exists.\n"
                                   "Delete it manually!", path);
     }
-    
+
+#if (MEMORY_TEST==1)
+    if (!error && strchr(flags, 'm')) error = "Impossible to use mapfiles (ARBDB is MEMORY_TEST mode 1)";
+#endif
+
     return error;
 }
 
