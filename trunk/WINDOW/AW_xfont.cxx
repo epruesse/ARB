@@ -32,15 +32,10 @@
 
 // --------------------------------------------------------------------------------
 
+typedef XFontStruct *PIX_FONT;
 
 static bool openwinfonts;
-
-typedef XFontStruct *PIX_FONT;
-static appresStruct appres = {
-    true,
-    false,
-    0,
-};
+static bool is_scalable[AW_NUM_FONTS];     // whether the font is scalable
 
 // defines the preferred xfontsel-'rgstry' values (most wanted first)
 
@@ -218,14 +213,11 @@ static int parsesize(const char *fontname) {
     return size;
 }
 
-void aw_root_init_font(Display *tool_d)
-{
-    if (appres.display) return;
+void aw_root_init_font(Display *display) {
+    static bool initialized = false;
+    if (initialized) return;
 
-    appres.display = tool_d;
-#if defined(DUMP_FONT_LOOKUP)
-    appres.debug   = true;
-#endif // DUMP_FONT_LOOKUP
+    initialized = true;
 
     /* Now initialize the font structure for the X fonts corresponding to the
      * Postscript fonts for the canvas.  OpenWindows can use any LaserWriter
@@ -233,59 +225,62 @@ void aw_root_init_font(Display *tool_d)
      * it.
      */
 
-    /* if the user hasn't disallowed off scalable fonts, check that the
-       server really has them by checking for font of 0-0 size */
+    // check for OpenWindow-style fonts, otherwise check for scalable font
     openwinfonts = false;
-    if (appres.SCALABLEFONTS) {
+    {
         char **fontlist;
         int    count;
 
-#if defined(DUMP_FONT_LOOKUP)
-        printf("Searching for SCALABLEFONTS\n");
-#endif // DUMP_FONT_LOOKUP
-
         // first look for OpenWindow style font names (e.g. times-roman)
-        if ((fontlist = XListFonts(tool_d, ps_fontinfo[1].name, 1, &count))!=0) {
-            openwinfonts = true;        // yes, use them
-            for (int f=0; f<AW_NUM_FONTS; f++) {     // copy the OpenWindow font names
+        if ((fontlist = XListFonts(display, ps_fontinfo[1].name, 1, &count))!=0) {
+            openwinfonts = true;
+            for (int f=0; f<AW_NUM_FONTS; f++) { // copy the OpenWindow font names ( = postscript fontnames?)
                 x_fontinfo[f].templat = ps_fontinfo[f+1].name;
+                is_scalable[f]        = true;
 #if defined(DUMP_FONT_LOOKUP)
                 printf("ps_fontinfo[f+1].name='%s'\n", ps_fontinfo[f+1].name);
 #endif // DUMP_FONT_LOOKUP
             }
             XFreeFontNames(fontlist);
+#if defined(DUMP_FONT_LOOKUP)
+            printf("Using OpenWindow fonts\n");
+#endif
         }
         else {
-            char templat[200];
-            strcpy(templat, x_fontinfo[0].templat); // nope, check for font size 0
-            strcat(templat, "0-0-*-*-*-*-*-*");
-            if ((fontlist = XListFonts(tool_d, templat, 1, &count))!=0) {
+            for (int f = 0; f < AW_NUM_FONTS; f++) {
+                char templat[200];
+                strcpy(templat, x_fontinfo[f].templat);
+                strcat(templat, "0-0-*-*-*-*-*-*");
+
+                if ((fontlist = XListFonts(display, templat, 1, &count)) != 0) {
+                    // font with size zero exists -> this font is scalable
+                    is_scalable[f] = true;
+                    XFreeFontNames(fontlist);
+                }
+                else {
+                    is_scalable[f] = false;
+                }
 #if defined(DUMP_FONT_LOOKUP)
-                printf("Using SCALABLEFONTS!\n");
+                printf("Using %s font for '%s'\n", is_scalable[f] ? "scalable" : "fixed", x_fontinfo[f].templat);
 #endif // DUMP_FONT_LOOKUP
-                XFreeFontNames(fontlist);
-            }
-            else {
-#if defined(DUMP_FONT_LOOKUP)
-                printf("Not using SCALABLEFONTS!\n");
-#endif // DUMP_FONT_LOOKUP
-                appres.SCALABLEFONTS = false;   // none, turn off request for them
             }
         }
     }
 
-    /* no scalable fonts - query the server for all the font
-       names and sizes and build a list of them */
-
     struct found_font { const char *fn; int s; };
 
-    if (!appres.SCALABLEFONTS) {
+    if (!openwinfonts) {
         found_font *flist = new found_font[FONT_EXAMINE_MAX];
 
         for (int f = 0; f < AW_NUM_FONTS; f++) {
+            if (is_scalable[f]) continue;
+
+            // for all non-scalable fonts:
+            // query the server for all the font names and sizes and build a list of them
+            
             char **fontlist[KNOWN_ISO_VERSIONS];
             int    iso;
-            int    found_fonts      = 0;
+            int    found_fonts = 0;
 
             for (iso = 0; iso<KNOWN_ISO_VERSIONS; ++iso) fontlist[iso] = 0;
 
@@ -293,7 +288,7 @@ void aw_root_init_font(Display *tool_d)
                 char *font_template = GBS_global_string_copy("%s*-*-*-*-*-*-%s-*", x_fontinfo[f].templat, known_iso_versions[iso]);
                 int   count;
 
-                fontlist[iso] = XListFonts(tool_d, font_template, FONT_EXAMINE_MAX, &count);
+                fontlist[iso] = XListFonts(display, font_template, FONT_EXAMINE_MAX, &count);
                 if (fontlist[iso]) {
                     if ((found_fonts+count) >= FONT_EXAMINE_MAX) {
                         printf("Warning: Too many fonts found for '%s..%s' - ARB can't examine all fonts\n", x_fontinfo[f].templat, known_iso_versions[iso]);
@@ -367,12 +362,18 @@ void aw_root_init_font(Display *tool_d)
 
 #if defined(DUMP_FONT_DETAILS)
 static void dumpFontInformation(xfont *xf) {
-    printf("Font information for '%s':\n", xf->fname);
+    printf("Font information for '%s'", xf->fname);
     XFontStruct *xfs = xf->fstruct;
-    printf("- max letter ascent  = %2i\n", xfs->max_bounds.ascent);
-    printf("- max letter descent = %2i\n", xfs->max_bounds.descent);
-    printf("- max letter height  = %2i\n", xfs->max_bounds.ascent + xfs->max_bounds.descent);
-    printf("- max letter width   = %2i\n", xfs->max_bounds.width);
+    if (xfs) {
+        printf(":\n");
+        printf("- max letter ascent  = %2i\n", xfs->max_bounds.ascent);
+        printf("- max letter descent = %2i\n", xfs->max_bounds.descent);
+        printf("- max letter height  = %2i\n", xfs->max_bounds.ascent + xfs->max_bounds.descent);
+        printf("- max letter width   = %2i\n", xfs->max_bounds.width);
+    }
+    else {
+        printf(" (not available, font is not loaded)\n");
+    }
 }
 #endif // DEBUG
 
@@ -415,13 +416,13 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
     if (!nf) nf = x_fontinfo[0].xfontlist;
     oldnf = nf;
     if (nf != NULL) {
-        if (nf->size > s && !appres.SCALABLEFONTS) {
+        if (nf->size > s && !is_scalable[f]) {
             found = true;
         }
         else {
             while (nf != NULL) {
                 if (nf->size == s ||
-                    (!appres.SCALABLEFONTS && (nf->size >= s && oldnf->size <= s)))
+                    (!is_scalable[f] && (nf->size >= s && oldnf->size <= s)))
                 {
                     found = true;
                     break;
@@ -434,14 +435,18 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
     if (found) {                // found exact size (or only larger available)
         if (verboose) {
             if (s < nf->size) fprintf(stderr, "Font size %d not found, using larger %d point\n", s, nf->size);
-            if (appres.debug) fprintf(stderr, "Detected font %s\n", nf->fname);
+#if defined(DUMP_FONT_LOOKUP)
+            fprintf(stderr, "Detected font %s\n", nf->fname);
+#endif
         }
     }
-    else if (!appres.SCALABLEFONTS) { // not found, use largest available
+    else if (!is_scalable[f]) { // not found, use largest available
         nf = oldnf;
         if (verboose) {
             if (s > nf->size) fprintf(stderr, "Font size %d not found, using smaller %d point\n", s, nf->size);
-            if (appres.debug) fprintf(stderr, "Using font %s for size %d\n", nf->fname, s);
+#if defined(DUMP_FONT_LOOKUP)
+            fprintf(stderr, "Using font %s for size %d\n", nf->fname, s);
+#endif
         }
     }
     else { // SCALABLE; none yet of that size, alloc one and put it in the list
@@ -502,7 +507,9 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
             ; // assume its available (or use XQueryFont to reduce server-client bandwidth)
         }
         else {
-            if (appres.debug && verboose) fprintf(stderr, "Loading font '%s'\n", nf->fname);
+#if defined(DUMP_FONT_LOOKUP)
+            if (verboose) fprintf(stderr, "Loading font '%s'\n", nf->fname);
+#endif
             PIX_FONT fontst = XLoadQueryFont(tool_d, nf->fname);
             if (fontst == NULL) {
                 fprintf(stderr, "ARB fontpackage: Unexpectedly couldn't load font '%s', falling back to '%s' (f=%i, s=%i)\n", nf->fname, NORMAL_FONT, f, s);
