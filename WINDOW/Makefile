@@ -631,6 +631,7 @@ AW_xfont.o: $(ARBHOME)/INCLUDE/cb.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_xfont.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_xkey.o: aw_keysym.hxx
