@@ -1702,6 +1702,7 @@ int main(int argc, char **argv) {
 
     free(current_file);
     free(current_dir);
+    free(iobuf);
 
     return EXIT_SUCCESS;
 }
