@@ -166,6 +166,14 @@ public:
     static void set_AW_postcb_cb(AW_postcb_cb postcb_cb) {
         postcb = postcb_cb;
     }
+
+    static void useraction_init() {
+        if (guard_before) guard_before();
+    }
+    static void useraction_done(AW_window *aw) {
+        if (guard_after) guard_after();
+        if (postcb) postcb(aw);
+    }
 };
 
 

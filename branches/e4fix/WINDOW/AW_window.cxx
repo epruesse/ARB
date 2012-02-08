@@ -724,8 +724,8 @@ void AW_cb_struct::run_callback() {
 #endif // TRACE_CALLBACKS
     }
 
-    if (guard_before) guard_before();
-
+    useraction_init();
+    
     if (f == AW_POPUP) {
         if (pop_up_window) { // already exists
             pop_up_window->activate();
@@ -746,8 +746,8 @@ void AW_cb_struct::run_callback() {
     else {
         f(aw, cd1, cd2);
     }
-    if (guard_after) guard_after();
-    if (postcb) postcb(aw);
+
+    useraction_done(aw);
 }
 
 bool AW_cb_struct::contains(void (*g)(AW_window*, AW_CL, AW_CL)) {
