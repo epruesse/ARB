@@ -502,9 +502,18 @@ GB_ERROR GBK_system(const char *system_command) {
     int      res   = system(system_command);
     GB_ERROR error = NULL;
     if (res) {
-        error = GBS_global_string("System call failed (result=%i)\n"
-                                  "System call was '%s'\n"
-                                  "(Note: console window may contain additional information)", res, system_command);
+        if (res == -1) {
+            error = GB_IO_error("forking", system_command);
+            error = GBS_global_string("System call failed (Reason: %s)", error);
+        }
+        else {
+            error = GBS_global_string("System call failed (result=%i)", res);
+        }
+
+        error = GBS_global_string("%s\n"
+                                  "System call was '%s'%s",
+                                  error, system_command,
+                                  res == -1 ? "" : "\n(Note: console window may contain additional information)");
     }
     return error;
 }
