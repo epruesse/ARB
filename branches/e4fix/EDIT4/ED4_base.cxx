@@ -626,14 +626,11 @@ void ED4_multi_species_manager::update_group_id() {
         char       *name  = (char*)GB_calloc(strlen(cntid)+10, sizeof(*name));
 
         int i;
-        for (i=0; cntid[i] != '(' && cntid[i] != '\0';   i++) {
+        for (i=0; cntid[i] && cntid[i] != '(';   i++) {
             name[i] = cntid[i];
         }
-        if (cntid[i] != '\0') { // skip space
-            i--;
-        }
-        name[i] = '\0';
-        sprintf(name, "%s (%d)", name, species);
+        if (i>0 && cntid[i-1] == ' ') --i; // skip terminal space
+        sprintf(name+i, " (%d)", species);
 
         freeset(consensus_name_terminal->id, name);
 
