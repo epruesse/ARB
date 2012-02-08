@@ -16,6 +16,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <arb_msg.h>
+
 // AISC_MKPT_PROMOTE:struct aisc_hash_node;
 
 // ---------------------
@@ -272,17 +274,13 @@ void trf_create(long old, long new_item) {
     i = trf_hash(old);
     for (ts = trf_sp[i]; ts; ts = ts->next) {
         if (ts->old == old) {
-            if (ts->new_item && (ts->new_item != new_item)) {
-                fprintf(stderr, "ERROR IN trf_create:\n");
-                *(int *) NULL = 0;
-            }
-            else {
-                ts->new_item = new_item;
-                for (tds = ts->dests; tds; tds = ntds) {
-                    *tds->dest = new_item;
-                    ntds = tds->next;
-                    free(tds);
-                }
+            if (ts->new_item && (ts->new_item != new_item)) GBK_terminate("error in trf_create");
+
+            ts->new_item = new_item;
+            for (tds = ts->dests; tds; tds = ntds) {
+                *tds->dest = new_item;
+                ntds = tds->next;
+                free(tds);
             }
             return;
         }
@@ -335,10 +333,7 @@ void trf_commit(int errors) {
         for (i = 0; i < TRF_HASH_SIZE; i++) {
             for (ts = trf_sp[i]; ts; ts = nts) {
                 if (errors) {
-                    if (ts->dests) {
-                        fprintf(stderr, "ERROR IN trf_commit:\n");
-                        *(int *) NULL = 0;
-                    }
+                    if (ts->dests) GBK_terminate("error in trf_commit");
                 }
                 else {
                     for (tds = ts->dests; tds; tds = ntds) {
