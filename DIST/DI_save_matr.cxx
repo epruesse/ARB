@@ -94,7 +94,7 @@ const char *DI_MATRIX::save(char *filename, enum DI_SAVE_TYPE type)
                         fputc('\n', out);
                     }
 
-                    free(eos_reached);
+                    delete [] eos_reached;
                 }
 
                 // print data lines :
