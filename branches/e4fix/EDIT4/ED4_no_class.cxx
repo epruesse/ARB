@@ -97,7 +97,7 @@ void ED4_expose_recalculations() {
     ED4_calc_terminal_extentions();
 
 #if defined(WARN_TODO)
-#warning below calculations have to be done at startup as well - maybe call expose_cb once after create_hierarchy.
+#warning below calculations have to be done at startup as well
 #endif
 
     ED4_ROOT->ref_terminals.get_ref_sequence_info()->extension.size[HEIGHT] = TERMINALHEIGHT;
@@ -123,25 +123,6 @@ void ED4_expose_recalculations() {
         }
         screenwidth = new_screenwidth;
     }
-}
-
-void ED4_expose_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    ED4_LocalWinContext uses(aww);
-    GB_transaction      ta(GLOBAL_gb_main);
-
-    ED4_expose_recalculations();
-    current_ed4w()->update_scrolled_rectangle();
-
-    current_device()->reset();
-    ED4_ROOT->special_window_refresh();
-}
-
-void ED4_resize_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    ED4_LocalWinContext uses(aww);
-    GB_transaction      ta(GLOBAL_gb_main);
-
-    current_device()->reset();
-    current_ed4w()->update_scrolled_rectangle();
 }
 
 static ARB_ERROR call_edit(ED4_base *object, AW_CL cl_work_info) {
@@ -854,6 +835,11 @@ void ED4_request_full_instant_refresh() {
     ED4_trigger_instant_refresh();
 }
 
+void ED4_request_relayout() {
+    ED4_expose_recalculations();
+    ED4_ROOT->main_manager->request_resize();
+    ED4_trigger_instant_refresh();
+}
 
 void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL ) {
     ED4_LocalWinContext uses(aww);
@@ -1427,10 +1413,6 @@ void ED4_compression_changed_cb(AW_root *awr) {
 
         for (ED4_window *win = ED4_ROOT->first_window; win; win = win->next) {
             pos.push_back(cursorpos(win));
-            
-            AW_device *device = win->get_device();
-            device->push_clip_scale();
-            device->set_clipall();     // draw nothing
         }
 
         ED4_ROOT->root_group_man->remap()->set_mode(mode, percent);
@@ -1440,13 +1422,13 @@ void ED4_compression_changed_cb(AW_root *awr) {
             ED4_cursor&  cursor = const_cast<ED4_cursor&>(i->cursor);
             ED4_window  *win    = cursor.window();
 
-            win->update_scrolled_rectangle();
+            win->update_scrolled_rectangle(); // @@@ needed ? 
 
             cursor.jump_sequence_pos(i->seq, ED4_JUMP_KEEP_POSITION);
             cursor.set_screen_relative_pos(i->screen_rel);
-
-            ED4_expose_cb(win->aww, 0, 0); // does pop_clip_scale + refresh
         }
+
+        ED4_request_full_instant_refresh();
     }
 }
 

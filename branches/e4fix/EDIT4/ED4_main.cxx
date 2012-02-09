@@ -331,12 +331,6 @@ static void ED4_edit_direction_changed(AW_root * /* awr */) {
     ED4_with_all_edit_windows(redraw_cursor);
 }
 
-static void ED4_trigger_relayout(AW_root *) {
-    ED4_expose_recalculations();
-    ED4_ROOT->main_manager->request_resize();
-    ED4_trigger_instant_refresh();
-}
-
 static void ed4_bind_mainDB_awar_callbacks(AW_root *root) {
     // callbacks to main DB awars are bound later
     // (otherwise its easy to crash the editor by clicking around in ARB_NTREE during editor startup)
@@ -393,8 +387,8 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     root->awar_int(AWAR_INSERT_MODE, 1)->add_callback(ed4_change_edit_mode, (AW_CL)0);
 
     root->awar_int(AWAR_EDIT_DIRECTION, 1)->add_target_var(&awar_edit_direction)->add_callback(ED4_edit_direction_changed);
-    root->awar_int(AWAR_EDIT_HELIX_SPACING, 0)->add_target_var(&ED4_ROOT->helix_add_spacing)->add_callback(ED4_trigger_relayout);
-    root->awar_int(AWAR_EDIT_TERMINAL_SPACING, 0)->add_target_var(&ED4_ROOT->terminal_add_spacing)->add_callback(ED4_trigger_relayout);
+    root->awar_int(AWAR_EDIT_HELIX_SPACING, 0)->add_target_var(&ED4_ROOT->helix_add_spacing)->add_callback((AW_RCB0)ED4_request_relayout);
+    root->awar_int(AWAR_EDIT_TERMINAL_SPACING, 0)->add_target_var(&ED4_ROOT->terminal_add_spacing)->add_callback((AW_RCB0)ED4_request_relayout);
     root->awar_int(AWAR_EDIT_TITLE_MODE, 0);
 
     ed4_changesecurity(root, 0);

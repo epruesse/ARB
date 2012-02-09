@@ -2222,14 +2222,10 @@ extern      ST_ML *st_ml;
 
 void ED4_with_all_edit_windows(void (*cb)(ED4_window *));
 
-void ED4_expose_cb(AW_window *aww, AW_CL cd1, AW_CL cd2);
-
 void ED4_expose_recalculations();
-
-void        ED4_calc_terminal_extentions();
+void ED4_calc_terminal_extentions();
 
 void        ED4_input_cb            (AW_window *aww, AW_CL cd1, AW_CL cd2);
-void        ED4_resize_cb           (AW_window *aww, AW_CL cd1, AW_CL cd2);
 
 void ED4_remote_event(AW_event *faked_event);
 
@@ -2245,6 +2241,7 @@ void        group_species_cb        (AW_window *aww, AW_CL cd1, AW_CL cd2);
 AW_window   *ED4_create_group_species_by_field_window(AW_root *aw_root);
 
 void ED4_trigger_instant_refresh();
+void ED4_request_relayout();
 void ED4_request_full_refresh();
 void ED4_request_full_instant_refresh();
 

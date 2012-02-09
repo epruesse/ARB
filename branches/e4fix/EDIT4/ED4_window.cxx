@@ -13,6 +13,7 @@
 #include "ed4_tools.hxx"
 #include <aw_awar.hxx>
 #include <aw_root.hxx>
+#include <arbdb.h>
 
 int ED4_window::no_of_windows = 0;                  // static variable has to be initialized only once
 
@@ -372,6 +373,25 @@ void ED4_window::delete_window(ED4_window *window) {
     ED4_ROOT->aw_root->awar(temp->awar_path_for_IUPAC)->write_string(ED4_IUPAC_EMPTY);
     ED4_ROOT->aw_root->awar(temp->awar_path_for_helixNr)->write_string("");
     delete temp;
+}
+
+static void ED4_expose_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+    ED4_LocalWinContext uses(aww);
+    GB_transaction      ta(GLOBAL_gb_main);
+
+    ED4_expose_recalculations();
+    current_ed4w()->update_scrolled_rectangle();
+
+    current_device()->reset();
+    ED4_ROOT->special_window_refresh();
+}
+
+static void ED4_resize_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+    ED4_LocalWinContext uses(aww);
+    GB_transaction      ta(GLOBAL_gb_main);
+
+    current_device()->reset();
+    current_ed4w()->update_scrolled_rectangle();
 }
 
 
