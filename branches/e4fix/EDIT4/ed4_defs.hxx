@@ -11,6 +11,11 @@
 #include <arbdb_base.h>
 #endif
 
+#if defined(DEBUG)
+// #define TRACE_REFRESH
+#endif
+
+
 class  ED4_root;
 class  ED4_database;
 struct GBS_strstruct;

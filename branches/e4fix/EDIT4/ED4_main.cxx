@@ -331,14 +331,10 @@ static void ED4_edit_direction_changed(AW_root * /* awr */) {
     ED4_with_all_edit_windows(redraw_cursor);
 }
 
-void ED4_expose_all_windows() {
-    for (ED4_window *ew = ED4_ROOT->first_window; ew; ew = ew->next) {
-        ED4_expose_cb(ew->aww, 0, 0);
-    }
-}
-
-static void ED4_do_expose(AW_root *) {
-    ED4_expose_all_windows();
+static void ED4_trigger_relayout(AW_root *) {
+    ED4_expose_recalculations();
+    ED4_ROOT->main_manager->request_resize();
+    ED4_trigger_instant_refresh();
 }
 
 static void ed4_bind_mainDB_awar_callbacks(AW_root *root) {
@@ -397,8 +393,8 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     root->awar_int(AWAR_INSERT_MODE, 1)->add_callback(ed4_change_edit_mode, (AW_CL)0);
 
     root->awar_int(AWAR_EDIT_DIRECTION, 1)->add_target_var(&awar_edit_direction)->add_callback(ED4_edit_direction_changed);
-    root->awar_int(AWAR_EDIT_HELIX_SPACING, 0)->add_target_var(&ED4_ROOT->helix_add_spacing)->add_callback(ED4_do_expose);
-    root->awar_int(AWAR_EDIT_TERMINAL_SPACING, 0)->add_target_var(&ED4_ROOT->terminal_add_spacing)->add_callback(ED4_do_expose);
+    root->awar_int(AWAR_EDIT_HELIX_SPACING, 0)->add_target_var(&ED4_ROOT->helix_add_spacing)->add_callback(ED4_trigger_relayout);
+    root->awar_int(AWAR_EDIT_TERMINAL_SPACING, 0)->add_target_var(&ED4_ROOT->terminal_add_spacing)->add_callback(ED4_trigger_relayout);
     root->awar_int(AWAR_EDIT_TITLE_MODE, 0);
 
     ed4_changesecurity(root, 0);
@@ -496,6 +492,7 @@ const char *ED4_propertyName(int mode) {
 
 static void ED4_postcbcb(AW_window *aww) {
     ED4_ROOT->announce_useraction_in(aww);
+    ED4_trigger_instant_refresh();
 }
 static void seq_colors_changed_cb(AW_window *) {
     ED4_ROOT->request_refresh_for_sequence_terminals();

@@ -1031,7 +1031,8 @@ static void ED4_pfold_select_SAI_and_update_option_menu(AW_window *aww, AW_CL om
     free(selected_sai);
     free(sai_filter);
     aww->update_option_menu();
-    ED4_expose_all_windows();
+    // ED4_expose_all_windows();
+    // @@@ need update here ?
 }
 
 

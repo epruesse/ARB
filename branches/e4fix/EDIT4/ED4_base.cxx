@@ -1094,6 +1094,9 @@ void ED4_base::update_world_coords_cache() const {
     timestamp = currTimestamp;
 }
 
+#if defined(DEBUG)
+// #define VISIBLE_AREA_REFRESH
+#endif
 
 ED4_returncode ED4_base::clear_background(int color) {
     if (current_device()) { // @@@ should clear be done for all windows?
@@ -1104,7 +1107,15 @@ ED4_returncode ED4_base::clear_background(int color) {
         current_device()->push_clip_scale();
         if (adjust_clipping_rectangle()) {
             if (!color) {
+#if defined(VISIBLE_AREA_REFRESH)
+                // for debugging draw each clear in different color:
+                static int gc_area = ED4_G_FIRST_COLOR_GROUP;
+
+                current_device()->box(gc_area, true, x, y, extension.size[WIDTH], extension.size[HEIGHT]);
+                gc_area = (gc_area == ED4_G_LAST_COLOR_GROUP) ? ED4_G_FIRST_COLOR_GROUP : gc_area+1;
+#else // !defined(VISIBLE_AREA_REFRESH)
                 current_device()->clear_part(x, y, extension.size[WIDTH], extension.size[HEIGHT], AW_ALL_DEVICES);
+#endif
             }
             else {
                 // fill range with color for debugging

@@ -102,6 +102,9 @@ ED4_returncode ED4_root::refresh_window_simple(bool redraw) {
     // if 'redraw' -> update everything (ignoring refresh flag)
     int refresh_all = 0;
     if (redraw) {
+#if defined(TRACE_REFRESH)
+        fprintf(stderr, "- clear display (refresh_window_simple(redraw=true) called)\n"); fflush(stderr);
+#endif
         main_manager->update_info.set_clear_at_refresh(1);
         refresh_all = 1;
     }
@@ -114,16 +117,25 @@ ED4_returncode ED4_root::refresh_window_simple(bool redraw) {
 
 void ED4_root::handle_update_requests(bool& redraw) {
     if (main_manager->update_info.delete_requested) {
+#if defined(TRACE_REFRESH)
+        fprintf(stderr, "- handling requested deletes\n"); fflush(stderr);
+#endif
         main_manager->delete_requested_children();
         redraw = true;
     }
 
     if (main_manager->update_info.update_requested) {
+#if defined(TRACE_REFRESH)
+        fprintf(stderr, "- handling requested updates\n"); fflush(stderr);
+#endif
         main_manager->update_requested_children();
         redraw = true; // @@@ needed ? 
     }
 
     while (main_manager->update_info.resize) {
+#if defined(TRACE_REFRESH)
+        fprintf(stderr, "- handling requested resizes\n"); fflush(stderr);
+#endif
         main_manager->resize_requested_children();
         redraw = true;
     }
@@ -135,12 +147,11 @@ void ED4_root::handle_update_requests(bool& redraw) {
 }
 
 ED4_returncode ED4_root::special_window_refresh() {
-    // this function should only be used for window specific updates (i.e. cursor placement)
-
+    // this function should only be used for window specific updates (e.g. cursor placement/deletion)
     e4_assert(ED4_WinContext::have_context());
     
     bool redraw = true; 
-    handle_update_requests(redraw); // @@@ problematic (causes refresh w/o win-context)
+    handle_update_requests(redraw);
     return refresh_window_simple(redraw);
     // do NOT clear_refresh_requests here!! this is no full refresh!
 }
@@ -782,8 +793,7 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
         win = win->next;
     }
 
-    aw_root->add_timed_callback(200, ED4_timer, (AW_CL)0, (AW_CL)0);
-
+    ED4_trigger_instant_refresh();
     ED4_finish_and_show_notFoundMessage();
 
     return (ED4_R_OK);
@@ -971,7 +981,7 @@ static GBDATA *get_first_selected_species(int *total_no_of_selected_species)
 
 struct AlignDataAccess dataAccess_4_aligner = {
     1,                                              // default is to do a refresh
-    ED4_timer_refresh,                              // with this function
+    ED4_trigger_instant_refresh,                    // with this function
     get_group_consensus,                            // aligner fetches consensus of group of species via this function
     get_selected_range,                             // aligner fetches column range of selection via this function
     get_first_selected_species,                     // aligner fetches first and..
@@ -1365,6 +1375,11 @@ static AW_window *ED4_create_gc_window(AW_root *aw_root, AW_gc_manager id) {
     return gc_win;
 }
 
+static void refresh_on_gc_change_cb(AW_window *, AW_CL, AW_CL) {
+    ED4_expose_recalculations();
+    ED4_request_full_instant_refresh();
+}
+
 ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_window)
 {
     AW_window_menu_modes *awmm;
@@ -1409,16 +1424,14 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     }
 
     ED4_LocalWinContext uses(*new_window);
-    
-    // each window has its own gc-manager
+
+                                                    // each window has its own gc-manager
     aw_gc_manager = AW_manage_GC(awmm,              // window
                                  *device,           // device-handle of window
                                  ED4_G_STANDARD,    // GC_Standard configuration
                                  ED4_G_DRAG,
                                  AW_GCM_DATA_AREA,
-                                 ED4_expose_cb,     // callback function
-                                 1,                 // AW_CL for callback function
-                                 0,                 // AW_CL for callback function
+                                 refresh_on_gc_change_cb, 0, 0, // callback triggering refresh on gc-change
                                  true,              // use color groups
 
                                  "#f8f8f8",

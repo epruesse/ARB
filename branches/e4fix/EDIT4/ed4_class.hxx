@@ -2223,7 +2223,8 @@ extern      ST_ML *st_ml;
 void ED4_with_all_edit_windows(void (*cb)(ED4_window *));
 
 void ED4_expose_cb(AW_window *aww, AW_CL cd1, AW_CL cd2);
-void ED4_expose_all_windows();
+
+void ED4_expose_recalculations();
 
 void        ED4_calc_terminal_extentions();
 
@@ -2243,8 +2244,9 @@ void        ED4_no_dangerous_modes      ();
 void        group_species_cb        (AW_window *aww, AW_CL cd1, AW_CL cd2);
 AW_window   *ED4_create_group_species_by_field_window(AW_root *aw_root);
 
-void        ED4_timer           (AW_root   *ar,  AW_CL cd1, AW_CL cd2);
-void        ED4_timer_refresh       ();
+void ED4_trigger_instant_refresh();
+void ED4_request_full_refresh();
+void ED4_request_full_instant_refresh();
 
 ARB_ERROR   update_terminal_extension(ED4_base *this_object);
 
@@ -2265,7 +2267,6 @@ ARB_ERROR rebuild_consensus(ED4_base *object);
 void ED4_exit() __ATTR__NORETURN;
 
 void        ED4_quit_editor         (AW_window *aww, AW_CL cd1, AW_CL cd2);                 // Be Careful: Is this the last window?
-void        ED4_request_full_refresh();
 
 void        ED4_store_curpos        (AW_window *aww, AW_CL cd1, AW_CL cd2);
 void        ED4_restore_curpos      (AW_window *aww, AW_CL cd1, AW_CL cd2);

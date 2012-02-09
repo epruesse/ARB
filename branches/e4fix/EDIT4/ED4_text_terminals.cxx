@@ -329,7 +329,11 @@ ED4_returncode ED4_sequence_terminal::draw() {
     static int    color_is_used[ED4_G_DRAG];
     static char **colored_strings        = 0;
     static int    len_of_colored_strings = 0;
-    
+
+#if defined(TRACE_REFRESH)
+    fprintf(stderr, "ED4_sequence_terminal::draw for id='%s'\n", id); fflush(stderr);
+#endif
+
     AW_device *device = current_device();
 
     int max_seq_len;

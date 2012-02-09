@@ -434,10 +434,12 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
             break;
         }
     }
+
+    ED4_trigger_instant_refresh();
 }
 
 static int get_max_slider_xpos() {
-    const AW_screen_area& rect = current_device()->get_area_size(); 
+    const AW_screen_area& rect = current_device()->get_area_size();
 
     AW_pos x, y;
     ED4_base *horizontal_link = ED4_ROOT->scroll_links.link_for_hor_slider;
@@ -810,21 +812,48 @@ void ED4_quit_editor(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
     current_ed4w()->is_hidden = true;
 }
 
-void ED4_timer_refresh() {
+static int timer_calls           = 0;
+static int timer_calls_triggered = 0;
+
+static void ED4_timer(AW_root *, AW_CL, AW_CL);
+
+inline void trigger_refresh(bool instant) {
+    ED4_ROOT->aw_root->add_timed_callback(instant ? 1 : 2000, ED4_timer, 0, 0);
+    timer_calls_triggered++;
+}
+
+static void ED4_timer(AW_root *, AW_CL, AW_CL) {
+    timer_calls++;
+
+#if defined(TRACE_REFRESH)
+    fprintf(stderr, "ED4_timer\n"); fflush(stderr);
+#endif
     // get all changes from server
     GB_begin_transaction(GLOBAL_gb_main);
     GB_tell_server_dont_wait(GLOBAL_gb_main);
     GB_commit_transaction(GLOBAL_gb_main);
 
-    ED4_ROOT->refresh_all_windows(0); // do delayed refresh
+    ED4_ROOT->refresh_all_windows(0);
+
+    if (timer_calls == timer_calls_triggered) {
+        trigger_refresh(false);
+    }
 }
 
-void ED4_timer(AW_root *, AW_CL cd1, AW_CL cd2) {
-    ED4_timer_refresh();
-    ED4_ROOT->aw_root->add_timed_callback(200, ED4_timer, cd1, cd2);
+void ED4_trigger_instant_refresh() {
+#if defined(TRACE_REFRESH)
+    fprintf(stderr, "ED4_trigger_instant_refresh\n"); fflush(stderr);
+#endif
+    trigger_refresh(true);
+}
+void ED4_request_full_refresh() {
+    ED4_ROOT->main_manager->request_refresh();
+}
+void ED4_request_full_instant_refresh() {
+    ED4_request_full_refresh();
+    ED4_trigger_instant_refresh();
 }
 
-void ED4_request_full_refresh() { ED4_ROOT->main_manager->request_refresh(); }
 
 void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL ) {
     ED4_LocalWinContext uses(aww);

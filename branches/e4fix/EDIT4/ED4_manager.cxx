@@ -259,8 +259,6 @@ ED4_returncode ED4_manager::update_bases_and_rebuild_consensi(const char *old_se
         else if (ED4_ROOT->alignment_type == GB_AT_AA) { 
             GB_ERROR err = ED4_pfold_set_SAI(&ED4_ROOT->protstruct, GLOBAL_gb_main, ED4_ROOT->alignment_name, &ED4_ROOT->protstruct_len);
             if (err) { aw_message(err); result = ED4_R_WARNING; }
-            // ED4_ROOT->refresh_all_windows(0); // @@@ crazy slowdown ? 
-            // ED4_expose_all_windows();
         }
     }
     return result;
@@ -906,6 +904,9 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
     AW_device *device = current_device();
 
     if (!flag.hidden && (refresh_all || update_info.refresh)) {
+#if defined(TRACE_REFRESH)
+        fprintf(stderr, "- really paint in ED4_main_manager::Show(refresh_all=%i, is_cleared=%i)\n", refresh_all, is_cleared); fflush(stderr);
+#endif
         const AW_screen_area& area_rect = device->get_area_size();
 
         // if update all -> clear_background
@@ -956,23 +957,23 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
 
             x1 = x2;
         }
+
+        // to avoid text clipping problems between top and middle area we redraw the top-middle-spacer :
+        {
+            device->push_clip_scale();
+            const AW_screen_area& clip_rect = device->get_cliprect();
+            device->set_top_clip_border(clip_rect.t-TERMINALHEIGHT);
+
+            int char_width = ED4_ROOT->font_group.get_max_width();
+            device->set_left_clip_border(clip_rect.l-char_width);
+            device->set_right_clip_border(clip_rect.r+char_width);
+
+            get_top_middle_spacer_terminal()->Show(true, false);
+            get_top_middle_line_terminal()->Show(true, false);
+            device->pop_clip_scale();
+        }
+
     }
-
-    // to avoid text clipping problems between top and middle area we redraw the top-middle-spacer :
-    {
-        device->push_clip_scale();
-        const AW_screen_area& clip_rect = device->get_cliprect();
-        device->set_top_clip_border(clip_rect.t-TERMINALHEIGHT);
-
-        int char_width = ED4_ROOT->font_group.get_max_width();
-        device->set_left_clip_border(clip_rect.l-char_width);
-        device->set_right_clip_border(clip_rect.r+char_width);
-
-        get_top_middle_spacer_terminal()->Show(true, false);
-        get_top_middle_line_terminal()->Show(true, false);
-        device->pop_clip_scale();
-    }
-
 #ifdef TEST_REFRESH_FLAG
     e4_assert(refresh_flag_ok());
 #endif
