@@ -488,7 +488,7 @@ static void ED4_postcbcb(AW_window *aww) {
     ED4_ROOT->announce_useraction_in(aww);
     ED4_trigger_instant_refresh();
 }
-static void seq_colors_changed_cb(AW_window *) {
+static void seq_colors_changed_cb() {
     ED4_ROOT->request_refresh_for_sequence_terminals();
 }
 
@@ -553,8 +553,8 @@ int ARB_main(int argc, const char *argv[]) {
     ED4_ROOT->init_alignment();
     ed4_create_all_awars(ED4_ROOT->aw_root, config_name);
 
-    ED4_ROOT->st_ml = STAT_create_ST_ML(GLOBAL_gb_main);
-    ED4_ROOT->sequence_colors = new AWT_seq_colors(AW_ROOT_DEFAULT, ED4_G_SEQUENCES, (AW_CB)seq_colors_changed_cb, 0, 0);
+    ED4_ROOT->st_ml           = STAT_create_ST_ML(GLOBAL_gb_main);
+    ED4_ROOT->sequence_colors = new AWT_seq_colors(ED4_G_SEQUENCES, seq_colors_changed_cb);
 
     ED4_ROOT->edk = new ed_key;
     ED4_ROOT->edk->create_awars(ED4_ROOT->aw_root);
@@ -582,7 +582,7 @@ int ARB_main(int argc, const char *argv[]) {
     }
 
     if (err) aw_message(err); // write to console
-    ED4_ROOT->sequence_colors->aww = ED4_ROOT->create_new_window(); // create first editor window
+    ED4_ROOT->create_new_window(); // create first editor window
     if (err) aw_message(err); // write again to status window
 
     ED4_objspec::init_object_specs();

@@ -22,18 +22,12 @@
 #define AWAR_SEQ_NAME_SELECTOR_AA      AWAR_SEQ_PATH   "aa/select"
 
 class AWT_seq_colors {
-    int   base_gc;
-    AW_CL cd1;
-    AW_CL cd2;
-    AW_CB callback;
-    int   cbexists;
+    int base_gc;
+    void (*cb)();
 
 public:
-    AW_window *aww;
-    GBDATA    *gb_def;
-
-    void       run_cb();
-    void       reload();
+    void run_cb() const { if (cb) cb(); }
+    void reload();
 
     // real public
     char char_2_gc[256];         // translate to gc
@@ -41,7 +35,7 @@ public:
     char char_2_gc_aa[256];      // translate to gc  - for aminoacid sequence
     char char_2_char_aa[256];    // translate to char - for aminoacid sequence
 
-    AWT_seq_colors(GBDATA *gb_default, int base_gc, AW_CB cb, AW_CL cd1, AW_CL cd2);
+    AWT_seq_colors(int baseGC, void (*changed_cb)());
 };
 
 class AWT_reference : virtual Noncopyable {
