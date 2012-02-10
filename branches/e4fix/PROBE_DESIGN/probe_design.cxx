@@ -1160,7 +1160,7 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
 
     root->awar_int   (AWAR_MIN_MISMATCHES,      0,       db);
     root->awar_int   (AWAR_MAX_MISMATCHES,      0,       db);
-    root->awar_string(AWAR_TARGET_STRING,       "",      db);
+    root->awar_string(AWAR_TARGET_STRING,       0,       db);
 
     root->awar_string(AWAR_PD_MATCH_NHITS,      "[none]",props);
     root->awar_int   (AWAR_PD_MATCH_NMATCHES,   1,       props);

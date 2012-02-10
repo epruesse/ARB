@@ -88,8 +88,12 @@ static void create_seq_color_awars(AW_root *awr, AWT_seq_colors *asc) {
         awr->awar_string(awar_name, default_characters(elem));
 
         for (int cset = 0; cset<SEQ_COLOR_SETS; ++cset) {
-            awar_name = GBS_global_string(AWAR_SEQ_NAME_TEMPLATE, cset, elem);
-            awr->awar_string(awar_name, default_color(cset, elem));
+            awar_name         = GBS_global_string(AWAR_SEQ_NAME_TEMPLATE, cset, elem);
+            AW_awar *awar_col = awr->awar_string(awar_name, default_color(cset, elem));
+
+            if (strcmp(awar_col->read_char_pntr(), "=0") == 0) { // translate old->new default
+                awar_col->write_string("");
+            }
         }
     }
 
@@ -226,7 +230,6 @@ void AWT_seq_colors::reload() {
             sprintf(buf, AWAR_SEQ_NAME_TEMPLATE, (int)cset, elem);
             char *val = GBT_read_string(gb_def, buf);
 
-            if (strcmp(val, "=0") == 0) GBT_write_string(gb_def, buf, ""); // replace '=0' stored in props with ''
             if (!val[0]) freedup(val, "=0"); // interpret '' as '  = 0'
 
             if (strlen(val) != 2 || val[1] >'9' || val[1] < '0') {

@@ -85,7 +85,7 @@ void create_primer_design_variables(AW_root *aw_root, AW_default aw_def, AW_defa
 
     aw_root->awar_string(AWAR_PRIMER_DESIGN_APROX_MEM,             "", aw_def);
 
-    aw_root->awar_string(AWAR_PRIMER_TARGET_STRING,                  "", global);
+    aw_root->awar_string(AWAR_PRIMER_TARGET_STRING,                0, global);
 }
 
 static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {

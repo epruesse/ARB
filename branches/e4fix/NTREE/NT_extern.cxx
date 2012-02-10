@@ -291,11 +291,14 @@ void nt_exit(AW_window *aws) {
 }
 
 void NT_save_cb(AW_window *aww) {
-    char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
+    AW_root *awr      = aww->get_root();
+    char    *filename = awr->awar(AWAR_DB_PATH)->read_string();
+
+    awr->dont_save_awars_with_default_value(GLOBAL_gb_main);
     GB_ERROR error = GB_save(GLOBAL_gb_main, filename, "b");
     delete filename;
     if (error) aw_message(error);
-    else AW_refresh_fileselection(aww->get_root(), "tmp/nt/arbdb");
+    else     AW_refresh_fileselection(awr, "tmp/nt/arbdb");
 }
 
 
@@ -308,20 +311,22 @@ void NT_save_quick_cb(AW_window *aww) {
 }
 
 void NT_save_quick_as_cb(AW_window *aww) {
-    char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
-
-    GB_ERROR error = GB_save_quick_as(GLOBAL_gb_main, filename);
-    if (!error) AW_refresh_fileselection(aww->get_root(), "tmp/nt/arbdb");
+    AW_root  *awr      = aww->get_root();
+    char     *filename = awr->awar(AWAR_DB_PATH)->read_string();
+    GB_ERROR  error    = GB_save_quick_as(GLOBAL_gb_main, filename);
+    if (!error) AW_refresh_fileselection(awr, "tmp/nt/arbdb");
     aww->hide_or_notify(error);
 
     free(filename);
 }
 void NT_save_as_cb(AW_window *aww) {
-    char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
-    char *filetype = aww->get_root()->awar(AWAR_DB_TYPE)->read_string();
+    AW_root *awr      = aww->get_root();
+    char    *filename = awr->awar(AWAR_DB_PATH)->read_string();
+    char    *filetype = awr->awar(AWAR_DB_TYPE)->read_string();
 
+    awr->dont_save_awars_with_default_value(GLOBAL_gb_main);
     GB_ERROR error = GB_save(GLOBAL_gb_main, filename, filetype);
-    if (!error) AW_refresh_fileselection(aww->get_root(), "tmp/nt/arbdb");
+    if (!error) AW_refresh_fileselection(awr, "tmp/nt/arbdb");
     aww->hide_or_notify(error);
 
     free(filetype);

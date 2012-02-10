@@ -48,16 +48,20 @@ STATIC_ATTRIBUTED(__ATTR__NORETURN, void MG_exit(AW_window *aww, AW_CL cl_reload
 
 bool mg_save_enabled = true;
 
-void MG_save_merge_cb(AW_window *aww)
-{
-    char *name = aww->get_root()->awar(AWAR_MERGE_DB"/file_name")->read_string();
+void MG_save_merge_cb(AW_window *aww) {
+    AW_root *awr  = aww->get_root();
+    char    *name = awr->awar(AWAR_MERGE_DB"/file_name")->read_string();
+
     GB_begin_transaction(GLOBAL_gb_merge);
+    awr->dont_save_awars_with_default_value(GLOBAL_gb_merge);
     GBT_check_data(GLOBAL_gb_merge, 0);
     GB_commit_transaction(GLOBAL_gb_merge);
+
     GB_ERROR error = GB_save(GLOBAL_gb_merge, name, "b");
     if (error) aw_message(error);
-    else AW_refresh_fileselection(aww->get_root(), AWAR_MERGE_DB);
-    delete name;
+    else AW_refresh_fileselection(awr, AWAR_MERGE_DB);
+
+    free(name);
 }
 
 AW_window *MG_save_source_cb(AW_root *aw_root, char *base_name)
@@ -84,19 +88,21 @@ AW_window *MG_save_source_cb(AW_root *aw_root, char *base_name)
     return (AW_window *)aws;
 }
 
-void MG_save_cb(AW_window *aww)
-{
-    char *name = aww->get_root()->awar(AWAR_MAIN_DB"/file_name")->read_string();
-    char *type = aww->get_root()->awar(AWAR_MAIN_DB"/type")->read_string();
+void MG_save_cb(AW_window *aww) {
+    AW_root *awr  = aww->get_root();
+    char    *name = awr->awar(AWAR_MAIN_DB"/file_name")->read_string();
+    char    *type = awr->awar(AWAR_MAIN_DB"/type")->read_string();
 
     arb_progress progress("Saving database");
+
     GB_begin_transaction(GLOBAL_gb_dest);
+    awr->dont_save_awars_with_default_value(GLOBAL_gb_dest);
     GBT_check_data(GLOBAL_gb_dest, 0);
     GB_commit_transaction(GLOBAL_gb_dest);
-    
+
     GB_ERROR error = GB_save(GLOBAL_gb_dest, name, type);
     if (error) aw_message(error);
-    else AW_refresh_fileselection(aww->get_root(), AWAR_MAIN_DB);
+    else AW_refresh_fileselection(awr, AWAR_MAIN_DB);
 
     free(type);
     free(name);

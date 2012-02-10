@@ -13,7 +13,9 @@
 #include "aw_detach.hxx"
 #include "aw_msg.hxx"
 #include <arbdb.h>
+#include <arb_str.h>
 #include <arb_file.h>
+#include <list>
 #include <sys/stat.h>
 
 #define AWAR_EPS 0.00000001
@@ -144,6 +146,29 @@ WRITE_SKELETON(write_string, const char*, "%s", GB_write_string) // defines rewr
 
 AW_awar *AW_root::awar_no_error(const char *var_name) {
     return (AW_awar *)GBS_read_hash(hash_table_for_variables, var_name);
+}
+
+static long awar_set_temp_if_is_default(const char *, long val, void *cl_gb_main) {
+    AW_awar *awar = (AW_awar*)val;
+    awar->set_temp_if_is_default((GBDATA*)cl_gb_main);
+    return val;
+}
+
+void AW_root::dont_save_awars_with_default_value(GBDATA *gb_main) {
+    // this should only be called
+    // - before saving properties
+    // - before saving any main application DB that may contain AWARs
+    //
+    // Note: uninstanciated AWARs will not be affected, so different applications with
+    //       different AWAR subsets should be no problem.
+    //       'different applications' here e.g. also includes different calls to arb_ntree
+    //       (e.g. merge-tool, importer, tree-window, ...)
+    //       
+    // Problems arise when an awar with the same name is used for two different purposes
+    // or with different default values (regardless whether in properties or main-DB).
+    // But this has already been problematic before.
+    
+    GBS_hash_do_loop(hash_table_for_variables, awar_set_temp_if_is_default, (void*)gb_main);
 }
 
 // for string
@@ -476,11 +501,13 @@ void AW_awar::update() {
     this->update_targets();
     this->run_callbacks();
 
-    aw_assert(is_valid()); 
+    aw_assert(is_valid());
 }
 
+bool AW_awar::allowed_to_run_callbacks = true;
+
 void AW_awar::run_callbacks() {
-    AW_root_cblist::call(callback_list, root);
+    if (allowed_to_run_callbacks) AW_root_cblist::call(callback_list, root);
 }
 
 void AW_awar::update_target(AW_var_target *pntr) {
@@ -490,10 +517,7 @@ void AW_awar::update_target(AW_var_target *pntr) {
         case AW_STRING: this->get((char **)pntr->pointer); break;
         case AW_FLOAT:  this->get((float *)pntr->pointer); break;
         case AW_INT:    this->get((long *)pntr->pointer); break;
-        default:
-            aw_assert(0);
-            GB_warning("Unknown awar type");
-            break;
+        default: aw_assert(0); GB_warning("Unknown awar type"); break;
     }
 }
 
@@ -505,9 +529,36 @@ void AW_awar::update_targets() {
     }
 }
 
+void AW_awar::set_temp_if_is_default(GBDATA *gb_main) {
+    if (!in_tmp_branch &&                 // ignore AWARs in 'tmp/'
+        gb_origin      &&                 // ignore unbound awars (zombies)
+        member_of_DB(gb_origin, gb_main)) // ignore awars in "other" DB (main-DB vs properties)
+    {
+        bool has_default_value   = false;
+        aw_assert(GB_get_transaction_level(gb_origin)<1); // make sure allowed_to_run_callbacks works as expected
+        allowed_to_run_callbacks = false;                 // avoid AWAR-change-callbacks
+        {
+            GB_transaction ta(gb_origin);
+            switch (variable_type) {
+                case AW_STRING:  has_default_value = ARB_strNULLcmp(GB_read_char_pntr(gb_origin), default_value.s) == 0; break;
+                case AW_INT:     has_default_value = GB_read_int(gb_origin)     == default_value.l; break;
+                case AW_FLOAT:   has_default_value = GB_read_float(gb_origin)   == default_value.d; break;
+                case AW_POINTER: has_default_value = GB_read_pointer(gb_origin) == default_value.p; break;
+                default: aw_assert(0); GB_warning("Unknown awar type"); break;
+            }
+
+            if (GB_is_temporary(gb_origin) != has_default_value) {
+                GB_ERROR error = has_default_value ? GB_set_temporary(gb_origin) : GB_clear_temporary(gb_origin);
+                if (error) GB_warning(GBS_global_string("Failed to set temporary for AWAR '%s' (Reason: %s)", awar_name, error));
+            }
+        }
+        allowed_to_run_callbacks = true;
+    }
+}
+
 AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *var_value, double var_double_value, AW_default default_file, AW_root *rooti) {
     memset((char *)this, 0, sizeof(AW_awar));
-    GB_transaction dummy((GBDATA *)default_file);
+    GB_transaction ta(default_file);
 
     aw_assert(var_name && var_name[0] != 0);
 
@@ -518,11 +569,13 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *va
 
     this->awar_name = strdup(var_name);
     this->root      = rooti;
-    GBDATA *gb_def  = GB_search((GBDATA *)default_file, var_name, GB_FIND);
+    GBDATA *gb_def  = GB_search(default_file, var_name, GB_FIND);
+
+    in_tmp_branch = strncmp(var_name, "tmp/", 4) == 0;
 
     GB_TYPES wanted_gbtype = (GB_TYPES)var_type;
 
-    if (gb_def) {                                   // belege Variable mit Datenbankwert
+    if (gb_def) { // use value stored in DB
         GB_TYPES gbtype = GB_read_type(gb_def);
 
         if (gbtype != wanted_gbtype) {
@@ -533,42 +586,54 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *va
         }
     }
 
-    if (!gb_def) {                                  // belege Variable mit Programmwert
-        gb_def = GB_search((GBDATA *)default_file, var_name, wanted_gbtype);
+    // store default-value in member
+    switch (var_type) {
+        case AW_STRING:  default_value.s = nulldup(var_value); break;
+        case AW_INT:     default_value.l = (long)var_value; break;
+        case AW_FLOAT:   default_value.d = var_double_value; break;
+        case AW_POINTER: default_value.p = (void*)var_value; break;
+        default: aw_assert(0); break;
+    }
+
+    if (!gb_def) { // set AWAR to default value
+        gb_def = GB_search(default_file, var_name, wanted_gbtype);
 
         switch (var_type) {
             case AW_STRING:
 #if defined(DUMP_AWAR_CHANGES)
-                fprintf(stderr, "creating awar_string '%s' with default value '%s'\n", var_name, (char*)var_value);
+                fprintf(stderr, "creating awar_string '%s' with default value '%s'\n", var_name, default_value.s);
 #endif // DUMP_AWAR_CHANGES
-                GB_write_string(gb_def, (char *)var_value);
+                GB_write_string(gb_def, default_value.s);
                 break;
 
-            case AW_INT:
+            case AW_INT: {
 #if defined(DUMP_AWAR_CHANGES)
-                fprintf(stderr, "creating awar_int '%s' with default value '%li'\n", var_name, (long)var_value);
+                fprintf(stderr, "creating awar_int '%s' with default value '%li'\n", var_name, default_value.l);
 #endif // DUMP_AWAR_CHANGES
-                GB_write_int(gb_def, (long)var_value);
+                GB_write_int(gb_def, default_value.l);
                 break;
-
+            }
             case AW_FLOAT:
 #if defined(DUMP_AWAR_CHANGES)
-                fprintf(stderr, "creating awar_float '%s' with default value '%f'\n", var_name, (double)var_double_value);
+                fprintf(stderr, "creating awar_float '%s' with default value '%f'\n", var_name, default_value.d);
 #endif // DUMP_AWAR_CHANGES
-                GB_write_float(gb_def, (double)var_double_value);
+                GB_write_float(gb_def, default_value.d);
                 break;
 
-            case AW_POINTER:
+            case AW_POINTER: {
 #if defined(DUMP_AWAR_CHANGES)
-                fprintf(stderr, "creating awar_pointer '%s' with default value '%p'\n", var_name, (void*)var_value);
+                fprintf(stderr, "creating awar_pointer '%s' with default value '%p'\n", var_name, default_value.p);
 #endif // DUMP_AWAR_CHANGES
-                GB_write_pointer(gb_def, (void*)var_value);
+                GB_write_pointer(gb_def, default_value.p);
                 break;
-
+            }
             default:
                 GB_warningf("AWAR '%s' cannot be created because of disallowed type", var_name);
                 break;
         }
+
+        GB_ERROR error = GB_set_temporary(gb_def);
+        if (error) GB_warningf("AWAR '%s': failed to set temporary on creation (Reason: %s)", var_name, error);
     }
 
     variable_type   = var_type;
@@ -581,6 +646,7 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *va
 AW_awar::~AW_awar() {
     unlink();
     untie_all_widgets();
+    if (variable_type == AW_STRING) free(default_value.s);
     free(awar_name);
 }
 
@@ -604,8 +670,40 @@ AW_default AW_root::load_properties(const char *default_name) {
 
         GBK_terminatef("Error loading properties '%s': %s", shown_name, error);
     }
-    
+
     return (AW_default) gb_default;
+}
+
+typedef std::list<GBDATA*> DataPointers;
+
+static GB_ERROR set_parents_with_only_temp_childs_temp(GBDATA *gbd, DataPointers& made_temp) {
+    GB_ERROR error = NULL;
+
+    if (GB_read_type(gbd) == GB_DB && !GB_is_temporary(gbd)) {
+        bool has_savable_child = false;
+        for (GBDATA *gb_child = GB_child(gbd); gb_child && !error; gb_child = GB_nextChild(gb_child)) {
+            bool is_tmp = GB_is_temporary(gb_child);
+            if (!is_tmp) {
+                error              = set_parents_with_only_temp_childs_temp(gb_child, made_temp);
+                if (!error) is_tmp = GB_is_temporary(gb_child);         // may have changed
+
+                if (!is_tmp) has_savable_child = true;
+            }
+        }
+        if (!error && !has_savable_child) {
+            error = GB_set_temporary(gbd);
+            made_temp.push_back(gbd);
+        }
+    }
+
+    return error;
+}
+static GB_ERROR clear_temp_flags(DataPointers& made_temp) {
+    GB_ERROR error = NULL;
+    for (DataPointers::iterator mt = made_temp.begin(); mt != made_temp.end() && !error; ++mt) {
+        error = GB_clear_temporary(*mt);
+    }
+    return error;
 }
 
 GB_ERROR AW_root::save_properties(const char *filename) {
@@ -620,7 +718,14 @@ GB_ERROR AW_root::save_properties(const char *filename) {
         if (!error) {
             aw_update_all_window_geometry_awars(this);
             error = GB_pop_transaction(gb_main);
-            if (!error) error = GB_save_in_arbprop(gb_main, filename, "a");
+            if (!error) {
+                dont_save_awars_with_default_value(gb_main);
+
+                DataPointers made_temp;
+                error             = set_parents_with_only_temp_childs_temp(gb_main, made_temp); // avoid saving empty containers
+                if (!error) error = GB_save_in_arbprop(gb_main, filename, "a");
+                if (!error) error = clear_temp_flags(made_temp);
+            }
         }
     }
 
