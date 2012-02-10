@@ -40,7 +40,7 @@ class EntryTempMarker : virtual Noncopyable {
     Need data_needed(GBDATA *gbd, const char *keyname, Need from) const {
         switch (from) {
             case SOME_OF_ROOT:
-                if (strcmp(keyname, "__SYSTEM__")    == 0) return ALL;
+                if (strcmp(keyname, GB_SYSTEM_FOLDER)== 0) return ALL;
                 if (strcmp(keyname, "genom_db")      == 0) return ALL;
                 if (strcmp(keyname, "gene_map")      == 0) return ALL;
                 if (strcmp(keyname, "species_data")  == 0) return SOME_OF_SPECIES_DATA;

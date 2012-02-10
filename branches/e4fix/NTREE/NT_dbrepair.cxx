@@ -765,13 +765,13 @@ static char *readFirstCompressedDataOf(GBDATA *gbd, GBQUARK key_quark) {
 
 static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
     GB_transaction  ta(gb_main);
-    GBDATA         *gb_key_data = GB_search(gb_main, "__SYSTEM__/@key_data", GB_FIND);
+    GBDATA         *gb_key_data = GB_search(gb_main, GB_SYSTEM_FOLDER "/" GB_SYSTEM_KEY_DATA, GB_FIND);
     GB_ERROR        error       = 0;
 
     Dict::gb_main = gb_main;
 
     if (!gb_key_data) {
-        error = "No @key_data found.. DB corrupted?";
+        error = "No " GB_SYSTEM_KEY_DATA " found.. DB corrupted?";
     }
     else {
         KeyCounter kcount;      // strlwr(keyname) -> count
