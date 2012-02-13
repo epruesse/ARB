@@ -40,32 +40,32 @@ void BI_helix::_init()
     pairs[HELIX_NONE]=strdup("");
     char_bind[HELIX_NONE] = strdup(" ");
 
-    pairs[HELIX_STRONG_PAIR]=strdup("CG");
-    char_bind[HELIX_STRONG_PAIR] = strdup("-");
+    pairs[HELIX_STRONG_PAIR]=strdup("CG AT AU");
+    char_bind[HELIX_STRONG_PAIR] = strdup("~");
 
-    pairs[HELIX_PAIR]=strdup("AU GU");
+    pairs[HELIX_PAIR]=strdup("GT GU");
     char_bind[HELIX_PAIR] = strdup("-");
 
-    pairs[HELIX_WEAK_PAIR]=strdup("GA GT");
-    char_bind[HELIX_WEAK_PAIR] = strdup(".");
+    pairs[HELIX_WEAK_PAIR]=strdup("GA");
+    char_bind[HELIX_WEAK_PAIR] = strdup("=");
 
-    pairs[HELIX_NO_PAIR]=strdup("AA AC CC CT CU TU");
+    pairs[HELIX_NO_PAIR]=strdup("AA AC CC CT CU GG TU");
     char_bind[HELIX_NO_PAIR] = strdup("#");
 
     pairs[HELIX_USER0]=strdup(".A .C .G .T .U");
-    char_bind[HELIX_USER0] = strdup("?");
+    char_bind[HELIX_USER0] = strdup("*");
 
     pairs[HELIX_USER1]=strdup("-A -C -G -T -U");
     char_bind[HELIX_USER1] = strdup("#");
 
-    pairs[HELIX_USER2]=strdup(".. --");
-    char_bind[HELIX_USER2] = strdup(" ");
+    pairs[HELIX_USER2]=strdup("UU TT");
+    char_bind[HELIX_USER2] = strdup("+");
 
-    pairs[HELIX_USER3]=strdup(".-");
-    char_bind[HELIX_USER3] = strdup(" ");
+    pairs[HELIX_USER3]=strdup("");
+    char_bind[HELIX_USER3] = strdup("");
 
     pairs[HELIX_DEFAULT]=strdup("");
-    char_bind[HELIX_DEFAULT] = strdup("?");
+    char_bind[HELIX_DEFAULT] = strdup("");
 
     for (i=HELIX_NON_STANDARD0; i<=HELIX_NON_STANDARD9; i++) {
         pairs[i] = strdup("");

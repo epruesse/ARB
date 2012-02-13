@@ -2390,10 +2390,10 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
 
 void FastAligner_create_variables(AW_root *root, AW_default db1)
 {
-    root->awar_string(FA_AWAR_REFERENCE_NAME, "<undef>", db1);
+    root->awar_string(FA_AWAR_REFERENCE_NAME, "", db1);
 
     root->awar_int(FA_AWAR_TO_ALIGN,  FA_CURRENT,        db1);
-    root->awar_int(FA_AWAR_REFERENCE, FA_REF_CONSENSUS,  db1);
+    root->awar_int(FA_AWAR_REFERENCE, FA_REF_EXPLICIT,   db1);
     root->awar_int(FA_AWAR_RANGE,     FA_WHOLE_SEQUENCE, db1);
 
     AW_awar *ali_protect = root->awar_int(FA_AWAR_PROTECTION, 0, db1);
