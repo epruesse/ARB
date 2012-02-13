@@ -71,7 +71,6 @@ AN_local, LOCAL,    2,  (~local communication buffer~), {
     aisc_string, full_name,  t,    rw,   ,      FULL_NAME, 9,     "",                      (~the full name of a species~);
     aisc_string, acc,        t,    rw,   ,      ACCESSION, 10,    "",                      (~accession number~);
     aisc_string, add_id,     t,    rw,   ,      ADDID,     11,    "",                      (~additional id data~);
-    int,         use_advice, t,    rw,   ,      USEADVICE, 12,    ,                        (~use the advice~);
     aisc_string, advice,     t,    rw,   ,      ADVICE,    13,    "",                      (~advice for the short name~);
     aisc_string, get_short,  %,    r,    ,      GET_SHORT, 14,    ,                        (~get a short name~);
     int,         del_short,  %,    r,    ,      DEL_SHORT, 15,    ,                        (~forget stored short name~);
