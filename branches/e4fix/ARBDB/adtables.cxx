@@ -40,6 +40,13 @@
  *      }
  */
 
+static GBDATA *GBT_find_table_entry(GBDATA *gb_table, const char *id) {
+    GBDATA *gb_entries = GB_entry(gb_table, "entries");
+    GBDATA *gb_entry_name = GB_find_string(gb_entries, "name", id, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+    if (!gb_entry_name) return NULL;
+    return GB_get_father(gb_entry_name);
+}
+
 static GBDATA *gbt_table_link_follower(GBDATA *gb_main, GBDATA */*gb_link*/, const char *link) {
     GBDATA *gb_table;
     char save;
@@ -139,36 +146,9 @@ GBDATA *GBT_first_table_entry(GBDATA *gb_table) {
     return GB_entry(gb_entries, "entry");
 }
 
-GBDATA *GBT_first_marked_table_entry(GBDATA *gb_table) {
-    GBDATA *gb_entries = GB_entry(gb_table, "entries");
-    return GB_first_marked(gb_entries, "entry");
-}
-
 GBDATA *GBT_next_table_entry(GBDATA *gb_table_entry) {
     gb_assert(GB_has_key(gb_table_entry, "entry"));
     return GB_nextEntry(gb_table_entry);
-}
-
-GBDATA *GBT_next_marked_table_entry(GBDATA *gb_table_entry) {
-    return GB_next_marked(gb_table_entry, "entry");
-}
-
-GBDATA *GBT_find_table_entry(GBDATA *gb_table, const char *id) {
-    GBDATA *gb_entries = GB_entry(gb_table, "entries");
-    GBDATA *gb_entry_name = GB_find_string(gb_entries, "name", id, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
-    if (!gb_entry_name) return NULL;
-    return GB_get_father(gb_entry_name);
-}
-
-GBDATA *GBT_open_table_entry(GBDATA *gb_table, const char *id) {
-    GBDATA *gb_entries = GB_entry(gb_table, "entries");
-    GBDATA *gb_entry_name = GB_find_string(gb_entries, "name", id, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
-    GBDATA *gb_entry;
-    if (gb_entry_name) GB_get_father(gb_entry_name);
-    gb_entry = GB_create_container(gb_entries, "entry");
-    gb_entry_name = GB_create(gb_entry, "name", GB_STRING);
-    GB_write_string(gb_entry_name, id);
-    return gb_entry;
 }
 
 GBDATA *GBT_first_table_field(GBDATA *gb_table) {
@@ -176,17 +156,9 @@ GBDATA *GBT_first_table_field(GBDATA *gb_table) {
     return GB_entry(gb_fields, "field");
 }
 
-GBDATA *GBT_first_marked_table_field(GBDATA *gb_table) {
-    GBDATA *gb_fields = GB_entry(gb_table, "fields");
-    return GB_first_marked(gb_fields, "field");
-}
 GBDATA *GBT_next_table_field(GBDATA *gb_table_field) {
     gb_assert(GB_has_key(gb_table_field, "field"));
     return GB_nextEntry(gb_table_field);
-}
-
-GBDATA *GBT_next_marked_table_field(GBDATA *gb_table_field) {
-    return GB_next_marked(gb_table_field, "field");
 }
 
 GBDATA *GBT_find_table_field(GBDATA *gb_table, const char *id) {
@@ -194,25 +166,6 @@ GBDATA *GBT_find_table_field(GBDATA *gb_table, const char *id) {
     GBDATA *gb_field_name = GB_find_string(gb_fields, "name", id, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     if (!gb_field_name) return NULL;
     return GB_get_father(gb_field_name);
-}
-
-GB_TYPES GBT_get_type_of_table_entry_field(GBDATA *gb_table, const char *fieldname) {
-    GBDATA *gb_fields = GB_entry(gb_table, "fields");
-    GBDATA *gb_field_name = GB_find_string(gb_fields, "name", fieldname, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
-    GBDATA *gb_field_type;
-    if (!gb_field_name) return GB_NONE;
-    gb_field_type = GB_entry(gb_field_name, "type");
-    return (GB_TYPES) GB_read_int(gb_field_type);
-}
-
-GB_ERROR GBT_savely_write_table_entry_field(GBDATA *gb_table, GBDATA *gb_entry, const char *fieldname, const char *value_in_ascii_format) {
-    GBDATA *gb_entry_field;
-    GB_TYPES type = GBT_get_type_of_table_entry_field(gb_table, fieldname);
-    if (type == GB_NONE) {
-        return GB_export_errorf("There is no field description '%s' for your table", fieldname);
-    }
-    gb_entry_field = GB_search(gb_entry, "fieldname", type);
-    return GB_write_as_string(gb_entry_field, value_in_ascii_format);
 }
 
 GBDATA *GBT_open_table_field(GBDATA *gb_table, const char *fieldname, GB_TYPES type_of_field) {

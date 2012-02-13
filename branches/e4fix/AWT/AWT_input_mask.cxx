@@ -20,6 +20,7 @@
 #include <aw_edit.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
+#include <aw_question.hxx>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -2245,7 +2246,7 @@ static void create_new_mask_cb(AW_window *aww) {
     struct stat  st;
 
     if (stat(maskfullname.c_str(), &st) == 0) { // file exists
-        int answer = aw_question("File does already exist", "Open mask,Cancel");
+        int answer = aw_question("overwrite_mask", "File does already exist", "Open mask,Cancel");
         switch (answer) {
             case 0:
                 openMask   = true;

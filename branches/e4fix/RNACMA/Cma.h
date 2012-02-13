@@ -36,7 +36,7 @@ using Eigen::MatrixXd;
 // Vector of maps to store the histogram of sequences.
 typedef vector<map<int, int> > MapVecType;
 // Vector of vectors to store the aligned sequences (each one represented by a vector)
-typedef vector<vector<string> > VecVecType;
+typedef vector<vector<string> > VecVecType; // @@@ string always is length 1. this should be vector<vector<char>> or vector<string>
 // Matrix of maps to store the joint histogram of sequences.
 typedef vector<MapVecType> MapMatrixType;
 
@@ -63,12 +63,12 @@ private:
     /**
      * The alphabet considered.
      */
-    vector<string> alphabet;
+    vector<string> alphabet; // @@@ string always is length 1. this should be vector<char>
     /**
      * A map from alphabet letters to integers. This speeds things considerably up,
      * and we use less memory.
      */
-    map<string, int> alphabet_map;
+    map<string, int> alphabet_map; // @@@ string is length 1 most of the time, disregarding alphabet_map["total"] which is used as global counter. this should be vector<char>
     /**
      * The number of sequences in the MSA.
      */

@@ -25,8 +25,7 @@ GEN_SERVER_OBJECTS = GENC/aisc_global.o GENC/aisc_server.o
 GEN_SERVER_INCLUDES = C/aisc_server.h
 GEN_SERVER_EXTERN_PROTO = GENH/aisc_server_extern.h
 
-CLIENT_OBJECTS = O/client.o O/debug.o
-GEN_CLIENT_OBJECTS = GENC/aisc_debug_globals.o
+CLIENT_OBJECTS = O/client.o 
 CLIENT_INCLUDES = C/client_privat.h C/client.h
 
 AISC_EXTERNALS = C/aisc_extern.c $(PRIVATE_SERVER_OBJECTS:.o=.c)
@@ -114,9 +113,6 @@ $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS): \
 					$(GEN_SERVER_OBJECTS:.o=.c) \
 					$(PRIVATE_SERVER_OBJECTS:.o=.c)
 	$(COMPILER) -c -o $@ $(@:.o=.c) -IGENH -I. -IC -DAISC_SAVE_$(AISC_SAVE) $(POST_COMPILE)
-
-$(GEN_CLIENT_OBJECTS): $(GEN_INCLUDES) $(GEN_CLIENT_OBJECTS:.o=.c)
-	$(CLIENTCOMPILER) -c -o $@ $(@:.o=.c) -IGENH -I. -IC $(POST_COMPILE)
 
 O/%.o: C/%.c $(GEN_INCLUDES) $(CLIENT_INCLUDES) C/server.h
 	$(COMPILER) -c -o $@ $< -IGENH -I. -IC $(POST_COMPILE)

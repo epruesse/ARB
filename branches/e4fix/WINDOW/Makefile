@@ -113,6 +113,7 @@ AW_button.o: aw_keysym.hxx
 AW_button.o: aw_msg.hxx
 AW_button.o: aw_nawar.hxx
 AW_button.o: aw_position.hxx
+AW_button.o: aw_question.hxx
 AW_button.o: aw_root.hxx
 AW_button.o: aw_scalar.hxx
 AW_button.o: aw_select.hxx
@@ -317,11 +318,14 @@ AW_help.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_help.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_help.o: $(ARBHOME)/INCLUDE/test_global.h
 
+AW_modal.o: aw_advice.hxx
 AW_modal.o: aw_awar.hxx
 AW_modal.o: aw_base.hxx
 AW_modal.o: aw_file.hxx
 AW_modal.o: aw_global.hxx
 AW_modal.o: aw_keysym.hxx
+AW_modal.o: aw_msg.hxx
+AW_modal.o: aw_question.hxx
 AW_modal.o: aw_root.hxx
 AW_modal.o: aw_window.hxx
 AW_modal.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -347,6 +351,7 @@ AW_nawar.o: aw_base.hxx
 AW_nawar.o: aw_detach.hxx
 AW_nawar.o: aw_msg.hxx
 AW_nawar.o: aw_nawar.hxx
+AW_nawar.o: aw_question.hxx
 AW_nawar.o: aw_root.hxx
 AW_nawar.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -383,6 +388,7 @@ AW_preset.o: aw_keysym.hxx
 AW_preset.o: aw_msg.hxx
 AW_preset.o: aw_position.hxx
 AW_preset.o: aw_preset.hxx
+AW_preset.o: aw_question.hxx
 AW_preset.o: aw_root.hxx
 AW_preset.o: aw_window.hxx
 AW_preset.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -495,6 +501,7 @@ AW_status.o: aw_awars.hxx
 AW_status.o: aw_base.hxx
 AW_status.o: aw_keysym.hxx
 AW_status.o: aw_msg.hxx
+AW_status.o: aw_question.hxx
 AW_status.o: aw_root.hxx
 AW_status.o: aw_status.hxx
 AW_status.o: aw_window.hxx
@@ -528,6 +535,7 @@ AW_window.o: aw_keysym.hxx
 AW_window.o: aw_msg.hxx
 AW_window.o: aw_nawar.hxx
 AW_window.o: aw_position.hxx
+AW_window.o: aw_question.hxx
 AW_window.o: aw_root.hxx
 AW_window.o: aw_scalar.hxx
 AW_window.o: aw_select.hxx

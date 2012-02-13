@@ -12,6 +12,7 @@
 #include "aw_awar.hxx"
 #include "aw_detach.hxx"
 #include "aw_msg.hxx"
+#include "aw_question.hxx"
 #include <arbdb.h>
 #include <arb_str.h>
 #include <arb_file.h>
@@ -820,7 +821,7 @@ void AW_create_fileselection_awars(AW_root *awr, const char *awar_base,
 
     char *dir = awar_dir->read_string();
     if (dir[0] && !GB_is_directory(dir)) {
-        if (aw_ask_sure(GBS_global_string("Directory '%s' does not exist. Create?", dir))) {
+        if (aw_ask_sure("create_directory", GBS_global_string("Directory '%s' does not exist. Create?", dir))) {
             GB_ERROR error = GB_create_directory(dir);
             if (error) aw_message(GBS_global_string("Failed to create directory '%s' (Reason: %s)", dir, error));
         }

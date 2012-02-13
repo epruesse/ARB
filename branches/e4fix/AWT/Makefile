@@ -48,6 +48,7 @@ AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/cb.h
@@ -145,6 +146,7 @@ AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/cb.h
@@ -220,6 +222,7 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/cb.h

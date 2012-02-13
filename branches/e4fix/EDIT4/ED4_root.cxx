@@ -34,6 +34,7 @@
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 #include <aw_advice.hxx>
 #include "../WINDOW/aw_status.hxx" // @@@ hack - obsolete when EDIT4 status works like elsewhere
 #include <arb_version.h>
@@ -1630,8 +1631,6 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("props_seq_colors", "Sequence color mapping", "S", "sequence_colors.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_seq_colors_window, (AW_CL)sequence_colors);
 
     SEP________________________SEP;
-    awmm->insert_menu_topic("enable_advices", "Reactivate advices",       "R", "advice.hlp", AWM_ALL, (AW_CB) AWT_reactivate_all_advices, 0, 0);
-    SEP________________________SEP;
 
     static AW_cb_struct *refresh_all_cb = 0;
     if (!refresh_all_cb) refresh_all_cb = new AW_cb_struct(awmm, (AW_CB)ED4_request_relayout);
@@ -1641,6 +1640,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     awmm->insert_menu_topic("props_key_map", "Key Mappings ",              "K", "nekey_map.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_key_map_window, 0);
     awmm->insert_menu_topic("props_nds",     "Select visible info (NDS) ", "D", "ed4_nds.hlp",   AWM_ALL, AW_POPUP, (AW_CL)ED4_create_nds_window, 0);
+    SEP________________________SEP;
+    AW_insert_common_property_menu_entries(awmm);
     SEP________________________SEP;
     awmm->insert_sub_menu("Save properties ...", "a");
     {
@@ -1969,11 +1970,18 @@ ED4_index ED4_root::pixel2pos(AW_pos click_x) {
 static char *detectProperties() {
     char *propname = NULL;
 
-    for (int mode = 0; !propname && mode <= 2; ++mode) { // search for properties-database
+    // check if edit4_?na.arb / edit4_ali_???.arb exist in .arb_props
+    for (int mode = 0; !propname && mode <= 1; ++mode) { 
         const char *fullprop = GB_path_in_arbprop(ED4_propertyName(mode));
-        if (mode == 2 || GB_is_regularfile(fullprop)) {
+        if (GB_is_regularfile(fullprop)) {
             freedup(propname, fullprop);
         }
+    }
+
+    // if not, use 'mode 2', i.e. "edit4.arb"
+    // (no full path, we want to load default from arb_defaults)
+    if (!propname) {
+        freedup(propname, ED4_propertyName(2));
     }
 
     GB_informationf("Using properties from '%s'", propname);

@@ -383,7 +383,9 @@ char *GBS_hashtab_2_string(GB_HASH *hash) {
 }
 
 
-static void GBS_string_2_hashtab(GB_HASH *hash, char *data) { // modifies data
+#if defined(UNIT_TESTS)
+static void GBS_string_2_hashtab(GB_HASH *hash, char *data) { // currently only used in unit tests below
+    // modifies data
     char *p, *d, *dp;
     int   c;
     char *nextp;
@@ -423,6 +425,7 @@ static void GBS_string_2_hashtab(GB_HASH *hash, char *data) { // modifies data
         GBS_write_hash_no_strdup(hash, str, val);
     }
 }
+#endif
 
 static gbs_hash_entry *find_hash_entry(const GB_HASH *hs, const char *key, size_t *index) {
     gbs_hash_entry *e;
@@ -742,6 +745,7 @@ size_t GBS_hash_count_elems(GB_HASH *hs) {
     return count;
 }
 
+#if defined(UNIT_TESTS)
 static size_t GBS_hash_count_value(GB_HASH *hs, long val) {
     size_t hsize    = hs->size;
     size_t count = 0;
@@ -758,6 +762,7 @@ static size_t GBS_hash_count_value(GB_HASH *hs, long val) {
 
     return count;
 }
+#endif
 
 const char *GBS_hash_next_element_that(GB_HASH *hs, const char *last_key, bool (*condition)(const char *key, long val, void *cd), void *cd) {
     /* Returns the key of the next element after 'last_key' matching 'condition' (i.e. where condition returns true).
@@ -894,9 +899,11 @@ long GBS_write_numhash(GB_NUMHASH *hs, long key, long val) {
     return oldval;
 }
 
+#if defined(UNIT_TESTS)
 static long GBS_numhash_count_elems(GB_NUMHASH *hs) {
     return hs->nelem;
 }
+#endif
 
 static void GBS_erase_numhash(GB_NUMHASH *hs) {
     size_t hsize = hs->size;

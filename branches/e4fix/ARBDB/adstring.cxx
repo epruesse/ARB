@@ -26,24 +26,6 @@
 
 #include <valgrind.h>
 
-// -----------------------
-//      error handling
-
-void GB_raise_critical_error(const char *msg) {
-    // goes to header: __ATTR__NORETURN
-    fprintf(stderr, "------------------------------------------------------------\n");
-    fprintf(stderr, "A critical error occurred in ARB\nError-Message: %s\n", msg);
-#if defined(DEBUG)
-    fprintf(stderr, "Run the debugger to find the location where the error was raised.\n");
-#endif // DEBUG
-    fprintf(stderr, "------------------------------------------------------------\n");
-    gb_assert(0);
-    exit(-1);
-}
-
-// --------------------------------------------------------------------------------
-
-
 static char *GBS_string_2_key_with_exclusions(const char *str, const char *additional) {
     // converts any string to a valid key (all chars in 'additional' are additionally allowed)
     char buf[GB_KEY_LEN_MAX+1];

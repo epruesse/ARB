@@ -82,6 +82,7 @@ ad_ali.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+ad_ali.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
@@ -186,6 +187,7 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+ad_transpro.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
@@ -305,6 +307,7 @@ AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
@@ -396,6 +399,7 @@ NT_cb.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+NT_cb.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
@@ -458,8 +462,7 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-NT_dbrepair.o: $(ARBHOME)/INCLUDE/cb.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/EXP.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/GEN.hxx
@@ -537,6 +540,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_window.hxx

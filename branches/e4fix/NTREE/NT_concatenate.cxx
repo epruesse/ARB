@@ -299,7 +299,7 @@ static void concatenateAlignments(AW_window *aws) {
         char   *seq_type            = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();
 
         if (gb_alignment_exists) {    // check wheather new alignment exists or not, if yes prompt user to overwrite the existing alignment; if no create an empty alignment
-            bool overwrite = aw_ask_sure(GBS_global_string("Existing data in alignment \"%s\" may be overwritten. Do you want to continue?", new_ali_name));
+            bool overwrite = aw_ask_sure("concat_ali_overwrite", GBS_global_string("Existing data in alignment \"%s\" may be overwritten. Do you want to continue?", new_ali_name));
             if (!overwrite) {
                 error = "Alignment exists! Quitting function...";
             }
@@ -340,7 +340,7 @@ static void concatenateAlignments(AW_window *aws) {
                     else {
                         char *speciesName = GB_read_string(GB_entry(gb_species, "full_name"));
                         char *question    = GBS_global_string_copy("\"%s\" alignment doesn't exist in \"%s\"!", const_ali_name, speciesName);
-                        int skip_ali      = ask_about_missing_alignment.get_answer(question, "Insert Gaps for Missing Alignment,Skip Missing Alignment", "all", true);
+                        int skip_ali      = ask_about_missing_alignment.get_answer("insert_gaps_for_missing_ali", question, "Insert Gaps for Missing Alignment,Skip Missing Alignment", "all", true);
                         if (!skip_ali) {
                             ali_len = GBT_get_alignment_len(GLOBAL_gb_main, const_ali_name);
                             for (int j = 0; j<ali_len; j++) {   GBS_strcat(str_seq, "."); }
@@ -654,7 +654,7 @@ static GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species
     error = GB_end_transaction(GLOBAL_gb_main, error);
     if (error) {
         gb_new_species = 0;
-        aw_popup_ok(error);
+        aw_message(error);
     }
 
     free(acc);
@@ -670,7 +670,8 @@ static GB_ERROR checkAndCreateNewField(GBDATA *gb_main, char *new_field_name) {
     else {
         error = GBT_add_new_changekey(gb_main, new_field_name, GB_STRING);
         if (error) {
-            bool overwrite = aw_ask_sure(GBS_global_string("\"%s\" field exists! Do you want to overwrite the existing field?", new_field_name));
+            bool overwrite = aw_ask_sure("merge_similar_overwrite_field",
+                                         GBS_global_string("\"%s\" field exists! Do you want to overwrite the existing field?", new_field_name));
             if (!overwrite) return error;
         }
     }

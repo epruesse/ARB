@@ -89,6 +89,7 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+AWTI_import.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_select.hxx

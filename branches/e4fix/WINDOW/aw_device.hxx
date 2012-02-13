@@ -550,12 +550,14 @@ public:
 
     // @@@ rename to 'polygone' and pass 'filled' parameter
     bool filled_area(int gc, int npoints, const AW_pos *points, AW_bitset filteri = AW_ALL_DEVICES_SCALED)  {
-        AW::Position pos[npoints];
+        AW::Position *pos = new AW::Position[npoints];
         for (int n = 0; n<npoints; ++n) {
             pos[n].setx(points[n*2]);
             pos[n].sety(points[n*2+1]);
         }
-        return filled_area_impl(gc, npoints, pos, filteri);
+        bool result = filled_area_impl(gc, npoints, pos, filteri);
+        delete [] pos;
+        return result;
     }
     bool filled_area(int gc, int npos, const AW::Position *pos, AW_bitset filteri = AW_ALL_DEVICES_SCALED)  {
         return filled_area_impl(gc, npos, pos, filteri);

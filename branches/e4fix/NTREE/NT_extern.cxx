@@ -48,6 +48,7 @@
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 #include <arb_strbuf.h>
 #include <arb_strarray.h>
 #include <arb_file.h>
@@ -249,17 +250,18 @@ static void nt_exit(AW_window *aws) {
                 secs =  GB_time_of_day(); // simulate "just saved"
 #endif // DEBUG
 
+                const char *quit_buttons = "Quit ARB,Do NOT quit";
                 if (secs) {
                     secs = GB_time_of_day() - secs;
                     if (secs>10) {
                         char *question = GBS_global_string_copy("You last saved your data %li:%li minutes ago\nSure to quit ?", secs/60, secs%60);
-                        int   dontQuit = aw_question(question, "QUIT ARB,DO NOT QUIT");
+                        int   dontQuit = aw_question("quit_arb", question, quit_buttons);
                         free(question);
                         if (dontQuit) return;
                     }
                 }
                 else {
-                    if (aw_question("You never saved any data\nSure to quit ???", "QUIT ARB,DO NOT QUIT")) return;
+                    if (aw_question("quit_arb", "You never saved any data\nSure to quit ???", quit_buttons)) return;
                 }
             }
         }
@@ -883,11 +885,13 @@ static void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL) {
     }
 }
 
+#if defined(DEBUG)
 static void NT_fix_database(AW_window *) {
     GB_ERROR err = 0;
     err = GB_fix_database(GLOBAL_gb_main);
     if (err) aw_message(err);
 }
+#endif
 
 static void relink_pseudo_species_to_organisms(GBDATA *&ref_gb_node, char *&ref_name, GB_HASH *organism_hash) {
     if (ref_gb_node) {
@@ -1002,7 +1006,7 @@ static void NT_popup_species_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
 
 // --------------------------------------------------------------------------------------------------
 
-static void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
+static void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) { // @@@ test and activate for public
     GBDATA               *gb_main = (GBDATA*)cl_gb_main;
     GBT_TREE_REMOVE_TYPE  mode    = (GBT_TREE_REMOVE_TYPE)cl_mode;
 
@@ -1576,9 +1580,10 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->close_sub_menu();
             AWMIMT("props_www", "Search world wide web (WWW)", "W", "props_www.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window, (AW_CL)GLOBAL_gb_main);
             SEP________________________SEP();
-            AWMIMT("enable_advices", "Reactivate advices",         "R", "advice.hlp", AWM_ALL, (AW_CB) AWT_reactivate_all_advices, 0, 0);
             AWMIMT("!toggle_expert", "Toggle expert mode",         "x", 0,            AWM_ALL, NT_toggle_expert_mode,              0, 0);
             AWMIMT("!toggle_focus",  "Toggle focus follows mouse", "f", 0,            AWM_ALL, NT_toggle_focus_policy,             0, 0);
+            SEP________________________SEP();
+            AW_insert_common_property_menu_entries(awm);
             SEP________________________SEP();
             AWMIMT("save_props", "Save properties (ntree.arb)", "S", "savedef.hlp", AWM_ALL, (AW_CB) AW_save_properties, 0, 0);
         }

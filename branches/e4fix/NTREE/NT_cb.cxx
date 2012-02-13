@@ -17,6 +17,7 @@
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 #include <aw_msg.hxx>
 #include <arbdbt.h>
 
@@ -31,7 +32,8 @@
 #define AWT_TREE(ntw) DOWNCAST(AWT_graphic_tree *, (ntw)->tree_disp)
 
 void NT_delete_mark_all_cb(void *, AWT_canvas *ntw) {
-    if (aw_ask_sure("Are you sure to delete species ??\n"
+    if (aw_ask_sure("delete_marked_species",
+                    "Are you sure to delete species ??\n"
                     "This will destroy primary data !!!"))
     {
         {

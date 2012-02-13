@@ -24,7 +24,7 @@ void AW_repeated_question::add_help(const char *help_file) {
     freedup(helpfile, help_file);
 }
 
-int AW_repeated_question::get_answer(const char *question, const char *buttons, const char *to_all, bool add_abort)
+int AW_repeated_question::get_answer(const char *uniqueID, const char *question, const char *buttons, const char *to_all, bool add_abort)
 {
     if (!buttons_used) {
         buttons_used = strdup(buttons);
@@ -80,7 +80,7 @@ int AW_repeated_question::get_answer(const char *question, const char *buttons, 
             free(all);
         }
 
-        int user_answer = aw_question(question, new_buttons, true, helpfile);
+        int user_answer = aw_question(uniqueID, question, new_buttons, true, helpfile);
 
         if (dont_ask_again) {   // ask question as normal when called first (dont_ask_again later)
             answer = user_answer;

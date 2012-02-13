@@ -245,6 +245,7 @@ ED4_edit_string.o: $(ARBHOME)/INCLUDE/AW_helix.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/awt_map_key.hxx
@@ -397,10 +398,9 @@ ED4_members.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-ED4_members.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ED4_members.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-ED4_members.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_members.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_members.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_members.o: $(ARBHOME)/INCLUDE/pos_range.h
@@ -733,6 +733,7 @@ ED4_root.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+ED4_root.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -781,6 +782,7 @@ ED4_search.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+ED4_search.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
@@ -821,6 +823,7 @@ ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
@@ -946,6 +949,7 @@ ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx

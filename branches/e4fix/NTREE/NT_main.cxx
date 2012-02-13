@@ -108,7 +108,7 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
                         case FA_SKIP_ALL:   perform_format = false; break;
                         default: {
                             char *qtext  = GBS_global_string_copy("Alignment '%s' is not formatted. Format?", ali_name);
-                            int   answer = question.get_answer(qtext, "Format,Skip,Always format,Always skip", "all", false);
+                            int   answer = question.get_answer("format_alignments", qtext, "Format,Skip,Always format,Always skip", "all", false);
 
                             switch (answer) {
                                 case 2:
@@ -243,7 +243,7 @@ static void nt_delete_database(AW_window *aww) {
     char    *db_server = aw_root->awar(AWAR_DB_PATH)->read_string();
 
     if (strlen(db_server)) {
-        if (aw_ask_sure(GBS_global_string("Are you sure to delete database %s\nNote: there is no way to undelete it afterwards", db_server))) {
+        if (aw_ask_sure(NULL, GBS_global_string("Are you sure to delete database %s\nNote: there is no way to undelete it afterwards", db_server))) {
             GB_ERROR error = 0;
             error = GB_delete_database(db_server);
             if (error) {
@@ -478,12 +478,12 @@ static ARB_ERROR check_argument_for_mode(const char *database, char *&browser_st
                         const char *msg = GBS_global_string("'%s' is neither a known option nor a legal file- or directory-name.\n(Error: %s)",
                                                             full_path, load_file_err);
 
-                        int ans = aw_question(msg, "Browser,Exit");
+                        int ans = aw_question(NULL, msg, "Browser,Exit");
                         action  = ans ? EXIT : BROWSE_DB;
                     }
                     else {
                         const char *msg = GBS_global_string("Your file is not an original arb file\n(%s)", load_file_err);
-                        action          = (Action)aw_question(msg, "Continue (dangerous),Start Converter,Browser,Exit");
+                        action          = (Action)aw_question(NULL, msg, "Continue (dangerous),Start Converter,Browser,Exit");
                     }
                 }
 

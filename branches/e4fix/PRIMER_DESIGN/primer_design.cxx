@@ -23,6 +23,7 @@
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 
 #include <arbdbt.h>
 #include <adGene.h>
@@ -126,7 +127,7 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
     long int  length   = 0;
 
     if ((get_estimated_memory(root)/1024.0) > GB_get_physical_memory()) {
-        if (aw_question("ARB may crash due to memory problems.", "Continue, Abort") == 1) {
+        if (aw_question(NULL, "ARB may crash due to memory problems.", "Continue, Abort") == 1) {
             return;
         }
     }

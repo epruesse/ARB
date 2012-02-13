@@ -89,6 +89,10 @@ static GBDATA* GEN_create_nonexisting_gene_rel_gene_data(GBDATA *gb_gene_data, c
     return gb_gene;
 }
 
+GBDATA* GEN_create_nonexisting_gene(GBDATA *gb_species, const char *name) { // needed by ../PERL_SCRIPTS/GENOME/GI.pm@create_nonexisting_gene
+    return GEN_create_nonexisting_gene_rel_gene_data(GEN_findOrCreate_gene_data(gb_species), name); 
+} 
+
 GBDATA* GEN_find_or_create_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name) {
     GBDATA *gb_gene = 0;
 

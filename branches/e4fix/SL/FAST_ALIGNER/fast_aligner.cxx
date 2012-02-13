@@ -22,6 +22,7 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 
 #include <arbdbt.h>
 
@@ -1540,7 +1541,7 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                             message = GBS_global_string("'%s' seems to be the other way round (score: %li, score if turned: %li)",
                                                         toAlignSequence->name(), long(bestScore+.5), long(bestMirroredScore+.5));
                         }
-                        turnIt = aw_question(message, "Turn sequence,Leave sequence alone")==0;
+                        turnIt = aw_question("fastali_turn_sequence", message, "Turn sequence,Leave sequence alone")==0;
                     }
                     else {
                         fa_assert(turnAllowed == FA_TURN_ALWAYS);

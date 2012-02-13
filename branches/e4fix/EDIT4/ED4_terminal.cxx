@@ -20,6 +20,7 @@
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 #include <awt_seq_colors.hxx>
 #include <st_window.hxx>
 #include <arbdb.h>
@@ -214,7 +215,7 @@ GB_ERROR ED4_terminal::write_sequence(const char *seq, int seq_len)
         long new_checksum = GBS_checksum(seq, 1, "-.");
 
         if (old_checksum != new_checksum) {
-            if (aw_question("Checksum changed!", "Allow, Reject") == 1) {
+            if (aw_question(NULL, "Checksum changed!", "Allow, Reject") == 1) {
                 allow_write_data = false;
             }
 
@@ -1200,7 +1201,7 @@ GB_CSTR ED4_columnStat_terminal::build_probe_match_string(PosRange range) const 
 
 ED4_returncode ED4_columnStat_terminal::draw() {
     if (!update_likelihood()) {
-        aw_popup_ok("Can't calculate likelihood.");
+        aw_message("Can't calculate likelihood.");
         return ED4_R_IMPOSSIBLE;
     }
 

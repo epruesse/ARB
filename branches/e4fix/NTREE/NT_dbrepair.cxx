@@ -20,7 +20,7 @@
 #include <aw_color_groups.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
-#include <aw_root.hxx>
+#include <aw_question.hxx>
 
 #include <arb_str.h>
 #include <arb_strarray.h>

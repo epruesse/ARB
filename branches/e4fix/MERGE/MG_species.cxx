@@ -19,6 +19,7 @@
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 #include <arb_str.h>
 #include <arb_strbuf.h>
 
@@ -686,7 +687,8 @@ static GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
                     GBS_strcat(str, "ABORT");
 
                     b = GBS_strclose(str);
-                    aliid = aw_question("There are more than one possible alignment targets\n"
+                    aliid = aw_question(NULL,
+                                        "There are more than one possible alignment targets\n"
                                         "Choose one destination alignment or ABORT", b);
                     free(b);
                     if (aliid >= d) {
@@ -771,7 +773,8 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
                 freeset(m_name, newname);
             }
             else {
-                switch (aw_question(GBS_global_string("Warning:  There is a name conflict for species '%s'\n"
+                switch (aw_question("merge_existing_species",
+                                    GBS_global_string("Warning:  There is a name conflict for species '%s'\n"
                                                       "  You may:\n"
                                                       "  - Overwrite existing species\n"
                                                       "  - Overwrite all species with name conflicts\n"

@@ -20,6 +20,7 @@
 #include <aw_preset.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
 
@@ -464,7 +465,7 @@ static void createCopyClrTransTable(AW_window *aws, AW_CL cl_mode) {
 }
 
 static void deleteColorTranslationTable(AW_window *aws) {
-    bool delete_table = aw_ask_sure("Are you sure you want to delete the selected COLOR TRANSLATION TABLE?");
+    bool delete_table = aw_ask_sure("del_color_table", "Are you sure you want to delete the selected COLOR TRANSLATION TABLE?");
     if (delete_table) {
         AW_root *aw_root = aws->get_root();
         char *clrTabName = aw_root->awar_string(AWAR_SAI_CLR_TRANS_TABLE)->read_string();

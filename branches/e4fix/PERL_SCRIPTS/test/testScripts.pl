@@ -98,6 +98,19 @@ sub test_script($$) {
   return 1;
 }
 
+my %failed_test = (); # scripts in this directory (key=failed script,value=1)
+my $failed_bioperl = 0; # script in BIOPERL directory
+my $failed_normal  = 0; # other scripts
+
+sub announce_failure($) {
+  my ($script) = @_;
+  if ($script =~ /\/PERL_SCRIPTS\/test\//) {
+    $failed_test{$'} = 1;
+  }
+  elsif ($script =~ /\/PERL_SCRIPTS\/BIOPERL\//) { $failed_bioperl++; }
+  else { $failed_normal++; }
+}
+
 sub main() {
   $arbhome = $ENV{ARBHOME};
   if (not defined $arbhome) { die "ARBHOME undefined"; }
@@ -115,12 +128,35 @@ sub main() {
   # print "Existing perl scripts:\n";
   # foreach (@scripts) { print "- '$_'\n"; }
 
-  my $failed = 0;
-  foreach (@modules) { if (test_script($_,1)==0) { $failed++; } }
-  foreach (@scripts) { if (test_script($_,0)==0) { $failed++; } }
+  foreach (@modules) { if (test_script($_,1)==0) { announce_failure($_); } }
+  foreach (@scripts) { if (test_script($_,0)==0) { announce_failure($_); } }
 
-  if ($failed>0) {
-    die "$failed perl scripts failed to compile\n";
+  $| = 1;
+
+  if (defined $failed_test{'check_lint.pl'}) {
+    print "Assuming Lint/LintSubs is not installed (cannot test whether perl modules compile)\n";
+  }
+  else {
+    my $failed = $failed_normal+$failed_bioperl;
+
+    if (defined $failed_test{'check_arb.pl'}) {
+      die "Fatal error: Failed to load ARB perl module\n";
+    }
+    if (defined $failed_test{'check_bioperl.pl'}) {
+      print "Assuming BIOPERL is not installed\n";
+      if ($failed_bioperl==0) {
+        die "but all BIOPERL scripts compiled - sth is completely wrong here\n";
+      }
+      print "accepting $failed_bioperl failing scripts that use BIOPERL\n";
+      $failed -= $failed_bioperl;
+    }
+    else {
+      print "Assuming BIOPERL is installed\n";
+    }
+
+    if ($failed>0) {
+      die "$failed scripts failed to compile\n";
+    }
   }
 }
 main();

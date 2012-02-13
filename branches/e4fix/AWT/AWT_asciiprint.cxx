@@ -13,6 +13,7 @@
 
 #include <aw_window.hxx>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <arbdbt.h>
@@ -144,7 +145,7 @@ static void AWT_write_file(const char *filename, const char *file) {
     FILE *f = fopen(filename, "r");
     if (f) {
         fclose(f);
-        if (aw_question(GBS_global_string("File '%s' already exist", filename), "Overwrite,Cancel")) {
+        if (aw_question("overwrite_file", GBS_global_string("File '%s' already exist", filename), "Overwrite,Cancel")) {
             return;
         }
     }

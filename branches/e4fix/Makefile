@@ -44,11 +44,17 @@ endif
 FORCEMASK = umask 002
 NODIR=--no-print-directory
 
-# ---------------------- [unconditionally used options]
+# ---------------------- [basic compiler setting]
 
-GCC:=gcc
-GPP:=g++ 
+GCC:=$(CC)
+GPP:=$(CXX)
 CPPreal:=cpp
+
+# to use clang-static-analyzer, call make like this:
+# setenv CLANG_STATIC_CHECKER 1 ; scan-build make -j5 build
+ifeq ($(CLANG_STATIC_CHECKER),1)
+CCC_ANALYZER_CPLUSPLUS=1
+endif
 
 # ---------------------- compiler version detection
 
@@ -1572,8 +1578,14 @@ endif
 
 # ---------------------------------------- perl
 
+ifeq ($(ARB_64),$(BUILDHOST_64))
+TEST_PERL_SCRIPTS=$(MAKE) -C PERL_SCRIPTS/test test
+else
+TEST_PERL_SCRIPTS=echo "skipping perl script compilation (when cross-compiling)"
+endif
+
 realperl: perltools
-	@(( \
+	(( \
 		echo "$(SEP) Make PERL2ARB" ; \
 		time $(MAKE) -C PERL2ARB -r -f Makefile.main \
 			"AUTODEPENDS=1" \
@@ -1581,12 +1593,9 @@ realperl: perltools
 			"cross_cflags=$(cross_cflags) $(dflags)" \
 			"cross_lflags=$(cross_lflags)" \
 			all && \
+		$(TEST_PERL_SCRIPTS) && \
 		echo "$(SEP) Make PERL2ARB [done]" ; \
 	) > PERL2ARB.log 2>&1 && (cat PERL2ARB.log;rm PERL2ARB.log)) || (cat PERL2ARB.log;rm PERL2ARB.log;false)
-
-
-testperlscripts: perl 
-	@$(MAKE) -C PERL_SCRIPTS/test test
 
 perl_clean:
 	@$(MAKE) -C PERL2ARB -r -f Makefile.main \

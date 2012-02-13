@@ -23,6 +23,7 @@
 #include <aw_awar_defs.hxx>
 #include <aw_detach.hxx>
 #include <aw_msg.hxx>
+#include <aw_question.hxx>
 #include <arbdbt.h>
 
 using namespace std;
@@ -272,7 +273,7 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root, AW_CL cl_gb_main
 }
 
 static void experiment_delete_cb(AW_window *aww, AW_CL cl_gb_main) {
-    if (aw_ask_sure("Are you sure to delete the experiment")) {
+    if (aw_ask_sure("experiment_delete", "Are you sure to delete the experiment")) {
         GBDATA         *gb_main       = (GBDATA*)cl_gb_main;
         GB_transaction  ta(gb_main);
         GB_ERROR        error         = 0;

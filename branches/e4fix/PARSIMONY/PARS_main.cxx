@@ -24,6 +24,7 @@
 #include <awt_filter.hxx>
 #include <arb_progress.h>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 #include <gui_aliview.hxx>
 
 #include <TreeCallbacks.hxx>
@@ -1212,11 +1213,14 @@ static GB_ERROR pars_check_size(AW_root *awr) {
 
     long tree_size = GBT_size_of_tree(GLOBAL_gb_main, tree_name);
     if (tree_size == -1) {
-        error = GB_export_error("Please select an existing tree");
+        error = "Please select an existing tree";
     }
     else {
-        if ((unsigned long)(ali_len * tree_size * 4 / 1000) > GB_get_physical_memory()) {
-            error  = GB_export_error("Very big tree");
+        unsigned long expected_memuse = (ali_len * tree_size * 4 / 1000);
+        if (expected_memuse > GB_get_physical_memory()) {
+            error  = GBS_global_string("Estimated memory usage (%s) exceeds physical memory (will swap)\n"
+                                       "(did you specify a filter?)",
+                                       GBS_readable_size(expected_memuse, "b"));
         }
     }
     free(filter);
@@ -1239,11 +1243,13 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     AW_root        *awr   = aw_parent->get_root();
     GB_begin_transaction(GLOBAL_gb_main);
     {
-        GB_ERROR error = pars_check_size(awr);
-        if (error) {
-            if (!aw_ask_sure("This program will need a lot of computer memory\n"
-                             "    (Hint: the use of a filter often helps)\n"
-                             "Do you want to continue?")) {
+        GB_ERROR warning = pars_check_size(awr);
+        if (warning) {
+            char *question = GBS_global_string_copy("%s\nDo you want to continue?", warning);
+            bool  cont     = aw_ask_sure("swap_warning", question);
+            free(question);
+
+            if (!cont) {
                 GB_commit_transaction(GLOBAL_gb_main);
                 return;
             }
@@ -1386,21 +1392,24 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     init_TEST_menu(awm, ntw);
 #endif // TESTMENU
 
+    awm->create_menu("Reset", "R", AWM_ALL);
+    {
+        awm->insert_menu_topic("reset_logical_zoom",    "Logical Zoom",   "L", "rst_log_zoom.hlp", AWM_ALL, (AW_CB)NT_reset_lzoom_cb, (AW_CL)ntw, 0);
+        awm->insert_menu_topic("reset_physical_zoom",   "Physical Zoom",  "P", "rst_phys_zoom.hlp", AWM_ALL, (AW_CB)NT_reset_pzoom_cb, (AW_CL)ntw, 0);
+    }
+
     awm->create_menu("Properties", "r", AWM_ALL);
     {
         awm->insert_menu_topic("props_menu",  "Menu: Colors and Fonts ...", "M", "props_frame.hlp",      AWM_ALL, AW_POPUP,(AW_CL)AW_preset_window,        0);
         awm->insert_menu_topic("props_tree",  "Tree: Colors and Fonts ...", "C", "pars_props_data.hlp",  AWM_ALL, AW_POPUP,(AW_CL)AW_create_gc_window,     (AW_CL)aw_gc_manager);
         awm->insert_menu_topic("props_tree2", "Tree: Settings ...",         "T", "nt_tree_settings.hlp", AWM_ALL, AW_POPUP,(AW_CL)NT_create_tree_setting,  (AW_CL)ntw);
         awm->insert_menu_topic("props_kl",    "KERN. LIN ...",              "K", "kernlin.hlp",          AWM_ALL, AW_POPUP,(AW_CL)create_kernighan_window, 0);
+        awm->insert_separator();
+        AW_insert_common_property_menu_entries(awm);
+        awm->insert_separator();
         awm->insert_menu_topic("save_props",  "Save Defaults (pars.arb)",   "D", "savedef.hlp",          AWM_ALL,          (AW_CB)AW_save_properties,      0, 0);
     }
     awm->button_length(5);
-
-    awm->create_menu("ETC", "E", AWM_ALL);
-    {
-        awm->insert_menu_topic("reset_logical_zoom",    "Reset Logical Zoom",   "L", "rst_log_zoom.hlp", AWM_ALL, (AW_CB)NT_reset_lzoom_cb, (AW_CL)ntw, 0);
-        awm->insert_menu_topic("reset_physical_zoom",   "Reset Physical Zoom",  "P", "rst_phys_zoom.hlp", AWM_ALL, (AW_CB)NT_reset_pzoom_cb, (AW_CL)ntw, 0);
-    }
 
     awm->insert_help_topic("How to use Help",    "H", "help.hlp",     AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"help.hlp",     0);
     awm->insert_help_topic("ARB Help",           "A", "arb.hlp",      AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb.hlp",      0);

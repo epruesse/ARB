@@ -20,6 +20,7 @@
 #include <aw_preset.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <aw_question.hxx>
 #include <arbdbt.h>
 
 #include <vector>
@@ -112,7 +113,7 @@ static GB_ERROR change_constraints(SEC_base *elem) {
             }
 
             sec_assert(error);
-            aw_popup_ok(error);
+            aw_message(error);
 
             char *retry = aw_input(question, answer);
             free(answer);

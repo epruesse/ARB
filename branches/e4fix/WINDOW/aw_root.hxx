@@ -30,11 +30,6 @@ typedef AW_window *(*AW_PPP)(AW_root*, AW_CL, AW_CL);
 
 typedef char *AW_error;
 
-int  aw_question  (const char *msg, const char *buttons, bool fixedSizeButtons = true, const char *helpfile = 0);
-bool aw_ask_sure  (const char *msg, bool fixedSizeButtons = true, const char *helpfile = 0);
-void aw_popup_ok  (const char *msg, bool fixedSizeButtons = true, const char *helpfile = 0);
-void aw_popup_exit(const char *msg, bool fixedSizeButtons = true, const char *helpfile = 0) __ATTR__NORETURN;
-
 // asynchronous messages:
 extern char AW_ERROR_BUFFER[1024];
 

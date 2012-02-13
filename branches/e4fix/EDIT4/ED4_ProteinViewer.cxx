@@ -465,7 +465,7 @@ static void PV_WriteTranslatedSequenceToDB(ED4_orf_terminal *aaSeqTerm, char *sp
                             if (gb_seq_data) {
                                 e4_assert(ASKtoOverWriteData);
                                 question = GBS_global_string_copy("\"%s\" contain data in the alignment \"%s\"!", spName, newAlignmentName);
-                                skip_sp  = ASKtoOverWriteData->get_answer(question, "Overwrite, Skip Species", "all", false);
+                                skip_sp  = ASKtoOverWriteData->get_answer("overwrite_translated", question, "Overwrite, Skip Species", "all", false);
                             }
                             if (skip_sp) {
                                 error = GBS_global_string_copy("%s You chose to skip this Species!", question);
@@ -540,10 +540,7 @@ static void PV_SaveData(AW_window */*aww*/) {
             }
         if (giNewAlignments>0) {
             char *msg = GBS_global_string_copy("Protein data saved to NEW alignments.\n%d new alignments were created and named ali_prot_ProtView_XXXX", giNewAlignments);
-
-            aw_popup_ok(msg, false);
             aw_message(msg);
-
             free(msg);
 
             giNewAlignments = 0;
