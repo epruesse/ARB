@@ -469,9 +469,9 @@ static void EXP_create_field_items(AW_window *aws, GBDATA *gb_main) {
     aws->insert_menu_topic("exp_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_fields_reorder_window, (AW_CL)bis);
     aws->insert_menu_topic("exp_delete_field",   "Delete/Hide Field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_delete_window, (AW_CL)bis);
     aws->insert_menu_topic("exp_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_create_window, (AW_CL)bis);
-    aws->insert_separator();
+    aws->sep______________();
     aws->insert_menu_topic("exp_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)experiment_field_selection_list_unhide_all_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
-    aws->insert_separator();
+    aws->sep______________();
     aws->insert_menu_topic("exp_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)experiment_field_selection_list_scan_unknown_cb,  (AW_CL)gb_main, FIELD_FILTER_NDS);
     aws->insert_menu_topic("exp_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)experiment_field_selection_list_delete_unused_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
     aws->insert_menu_topic("exp_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)experiment_field_selection_list_update_cb,        (AW_CL)gb_main, FIELD_FILTER_NDS);
@@ -514,7 +514,7 @@ static AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_mai
         aws->insert_menu_topic("experiment_rename", "Rename ...", "R", "spa_rename.hlp", AD_F_ALL, AW_POPUP,                    (AW_CL)create_experiment_rename_window, (AW_CL)gb_main);
         aws->insert_menu_topic("experiment_copy",   "Copy ...",   "y", "spa_copy.hlp",   AD_F_ALL, AW_POPUP,                    (AW_CL)create_experiment_copy_window,   (AW_CL)gb_main);
         aws->insert_menu_topic("experiment_create", "Create ...", "C", "spa_create.hlp", AD_F_ALL, AW_POPUP,                    (AW_CL)create_experiment_create_window, (AW_CL)gb_main);
-        aws->insert_separator();
+        aws->sep______________();
 
         aws->create_menu("FIELDS", "F", AD_F_ALL);
         EXP_create_field_items(aws, gb_main);

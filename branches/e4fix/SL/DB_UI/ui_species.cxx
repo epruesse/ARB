@@ -914,9 +914,9 @@ void DBUI::insert_field_admin_menuitems(AW_window *aws, GBDATA *gb_main) {
     aws->insert_menu_topic("spec_delete_field",   "Delete/Hide fields ...", "D", "spaf_delete.hlp",  AWM_EXP, AW_POPUP, (AW_CL)create_field_delete_window,  (AW_CL)bis);
     aws->insert_menu_topic("spec_create_field",   "Create fields ...",      "C", "spaf_create.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_field_create_window,  (AW_CL)bis);
     aws->insert_menu_topic("spec_convert_field",  "Convert fields ...",     "t", "spaf_convert.hlp", AWM_EXP, AW_POPUP, (AW_CL)create_field_convert_window, (AW_CL)bis);
-    aws->insert_separator();
+    aws->sep______________();
     aws->insert_menu_topic("spec_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AWM_ALL, (AW_CB)species_field_selection_list_unhide_all_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
-    aws->insert_separator();
+    aws->sep______________();
     aws->insert_menu_topic("spec_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AWM_ALL, (AW_CB)species_field_selection_list_scan_unknown_cb,  (AW_CL)gb_main, FIELD_FILTER_NDS);
     aws->insert_menu_topic("spec_del_unused_fields",   "Forget unused fields",  "e", "scandb.hlp", AWM_ALL, (AW_CB)species_field_selection_list_delete_unused_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
     aws->insert_menu_topic("spec_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AWM_ALL, (AW_CB)species_field_selection_list_update_cb,        (AW_CL)gb_main, FIELD_FILTER_NDS);
@@ -1358,7 +1358,7 @@ static AW_window *create_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main
         aws->insert_menu_topic("species_copy",          "Copy",           "y", "spa_copy.hlp",    AWM_ALL, species_copy_cb,       (AW_CL)gb_main,                      0);
         aws->insert_menu_topic("species_create",        "Create",         "C", "spa_create.hlp",  AWM_ALL, AW_POPUP,                 (AW_CL)create_species_create_window, (AW_CL)gb_main);
         aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI", "S", "sp_sp_2_ext.hlp", AWM_ALL, move_species_to_extended, (AW_CL)gb_main,                      0);
-        aws->insert_separator();
+        aws->sep______________();
 
         aws->create_menu("FIELDS", "F", AWM_ALL);
         insert_field_admin_menuitems(aws, gb_main);

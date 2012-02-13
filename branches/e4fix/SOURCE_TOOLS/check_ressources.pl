@@ -353,8 +353,6 @@ sub isHelpRef($) {
 my @defs =
   (
    # regexp for function,                  param numbers, expectInIndex, isRessource,
-   [ qr/\b(AWMIMT)\b/,                     [ 2 ],         \%pixmap,      \&isBitmapRef,   ],
-   [ qr/\b(AWMIMT)\b/,                     [ 4 ],         \%helpfile,    \&isHelpRef,     ],
    [ qr/\b(AW_POPUP_HELP)\b/,              [ 2 ],         \%helpfile,    \&isHelpRef,     ],
    [ qr/\b(PGT_LoadPixmap)\b/,             [ 1 ],         \%pixmap,      \&isPGTres,      ],
    [ qr/\b(callback)\b/,                   [ -1, -2 ],    \%helpfile,    \&isHelpPopup,   ],

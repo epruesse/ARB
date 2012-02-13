@@ -2246,7 +2246,7 @@ static void create_new_mask_cb(AW_window *aww) {
     struct stat  st;
 
     if (stat(maskfullname.c_str(), &st) == 0) { // file exists
-        int answer = aw_question("overwrite_mask", "File does already exist", "Open mask,Cancel");
+        int answer = aw_question("overwrite_mask", "File does already exist", "Overwrite mask,Cancel");
         switch (answer) {
             case 0:
                 openMask   = true;
@@ -2390,7 +2390,7 @@ void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_ite
                 aw_message(GBS_global_string("Unknown @ITEMTYPE '%s' in '%s'", descriptor->get_itemtypename(), descriptor->get_internal_maskname()));
             }
         }
-        if (entries_made) awm->insert_separator();
+        if (entries_made) awm->sep______________();
     }
 
     {

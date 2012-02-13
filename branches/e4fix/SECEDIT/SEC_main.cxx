@@ -740,26 +740,26 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     awm->insert_menu_topic("secedit_new", "New structure", "N", 0, AWM_ALL, SEC_new_structure, (AW_CL)db, 0);
     awm->insert_menu_topic("secedit_rename", "Rename structure", "R", 0, AWM_ALL, SEC_rename_structure, (AW_CL)db, 0);
     awm->insert_menu_topic("secedit_delete", "Delete structure", "D", 0, AWM_ALL, SEC_delete_structure, (AW_CL)db, 0);
-    awm->insert_separator();
+    awm->sep______________();
     awm->insert_menu_topic("secedit_import", "Load structure", "L", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_import, (AW_CL)db);
     awm->insert_menu_topic("secedit_export", "Save structure", "S", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_export, (AW_CL)db);
-    awm->insert_separator();
+    awm->sep______________();
     awm->insert_menu_topic("secStruct2xfig", "Export Structure to XFIG", "X", "sec_layout.hlp",  AWM_ALL, AWT_popup_sec_export_window, (AW_CL)ntw, 0);
     awm->insert_menu_topic("print_secedit",  "Print Structure",          "P", "secedit2prt.hlp", AWM_ALL, AWT_popup_print_window,      (AW_CL)ntw, 0);
-    awm->insert_separator();
+    awm->sep______________();
 
     awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
 
     awm->create_menu("Properties", "P", AWM_ALL);
     awm->insert_menu_topic("sec_display", "Display options", "D", "sec_display.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_display_window, 0);
-    awm->insert_separator();
+    awm->sep______________();
     awm->insert_menu_topic("props_secedit", "Change Colors and Fonts", "C", "secedit_props_data.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager);
-    awm->insert_separator();
+    awm->sep______________();
     awm->insert_menu_topic("sync_search_colors", "Sync search colors with EDIT4", "s", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)1, 0);
     awm->insert_menu_topic("sync_range_colors",  "Sync range colors with EDIT4",  "r", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)2, 0);
     awm->insert_menu_topic("sync_other_colors",  "Sync other colors with EDIT4",  "o", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)4, 0);
     awm->insert_menu_topic("sync_all_colors",    "Sync all colors with EDIT4",    "a", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)(1|2|4), 0);
-    awm->insert_separator();
+    awm->sep______________();
     awm->insert_menu_topic("sec_save_props",    "How to save properties",   "p", "savedef.hlp", AWM_ALL, (AW_CB) AW_POPUP_HELP, (AW_CL)"sec_props.hlp", 0);
 
     awm->create_mode("pzoom.bitmap",       "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_ZOOM);

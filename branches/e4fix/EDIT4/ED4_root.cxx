@@ -1434,8 +1434,6 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     static AW_gc_manager first_gc_manager = 0;
     if (!first_gc_manager) first_gc_manager = aw_gc_manager;
 
-#define SEP________________________SEP awmm->insert_separator()
-
     // ------------------------------
     //  File
     // ------------------------------
@@ -1449,12 +1447,12 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("new_win",        "New Editor Window",     "W", 0, AWM_ALL, ED4_new_editor_window,         0,                                             0);
     awmm->insert_menu_topic("save_config",    "Save Configuration",    "S", 0, AWM_ALL, (AW_CB)ED4_save_configuration, (AW_CL) 0,                                     (int)0);
     awmm->insert_menu_topic("save_config_as", "Save Configuration As", "A", 0, AWM_ALL, AW_POPUP,                      (AW_CL) ED4_save_configuration_as_open_window, (int)0);
-    SEP________________________SEP;
+    awmm->sep______________();
     awmm->insert_menu_topic("load_config",   "Load Configuration",   "L", 0, AWM_ALL, AW_POPUP,           (AW_CL)ED4_start_editor_on_old_configuration, 0);
     awmm->insert_menu_topic("reload_config", "Reload Configuration", "R", 0, AWM_ALL, ED4_restart_editor, 0,                                            0);
-    SEP________________________SEP;
+    awmm->sep______________();
     GDE_load_menu(awmm, AWM_ALL, "Print");
-    SEP________________________SEP;
+    awmm->sep______________();
 
     if (clone) awmm->insert_menu_topic("close", "CLOSE", "C", 0, AWM_ALL, ED4_quit_editor, 0, 0);
     else       awmm->insert_menu_topic("quit",   "QUIT",  "Q", 0, AWM_ALL, ED4_quit_editor, 0, 0);
@@ -1467,7 +1465,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("create_species",                "Create new species",                "n", 0, AWM_ALL, AW_POPUP, (AW_CL)ED4_create_new_seq_window, (int)0);
     awmm->insert_menu_topic("create_species_from_consensus", "Create new species from consensus", "u", 0, AWM_ALL, AW_POPUP, (AW_CL)ED4_create_new_seq_window, (int)1);
     awmm->insert_menu_topic("copy_species",                  "Copy current species",              "C", 0, AWM_ALL, AW_POPUP, (AW_CL)ED4_create_new_seq_window, (int)2);
-    SEP________________________SEP;
+    awmm->sep______________();
     awmm->insert_menu_topic("create_group",           "Create new Group",              "G", 0, AWM_ALL, group_species_cb, 0, 0);
     awmm->insert_menu_topic("create_groups_by_field", "Create new groups using Field", "F", 0, AWM_ALL, group_species_cb, 1, 0);
 
@@ -1479,11 +1477,11 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("refresh",      "Refresh [Ctrl-L]",           "f", 0, AWM_ALL, (AW_CB)ED4_request_full_refresh,       0, 0);
     awmm->insert_menu_topic("load_current", "Load current species [GET]", "G", 0, AWM_ALL, ED4_get_and_jump_to_current_from_menu, 0, 0);
     awmm->insert_menu_topic("load_marked",  "Load marked species",        "m", 0, AWM_ALL, ED4_get_marked_from_menu,              0, 0);
-    SEP________________________SEP;
+    awmm->sep______________();
     awmm->insert_menu_topic("refresh_ecoli",       "Reload Ecoli sequence",        "E", "ecoliref.hlp", AWM_ALL, (AW_CB)reload_ecoli_cb, 0, 0);
     awmm->insert_menu_topic("refresh_helix",       "Reload Helix",                 "H", "helix.hlp",    AWM_ALL, (AW_CB)reload_helix_cb, 0, 0);
     awmm->insert_menu_topic("helix_jump_opposite", "Jump helix opposite [Ctrl-J]", "J", 0,              AWM_ALL, ED4_helix_jump_opposite,    0, 0);
-    SEP________________________SEP;
+    awmm->sep______________();
 
     awmm->insert_sub_menu("Set protection of current ", "p");
     {
@@ -1502,17 +1500,17 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic(0,               "Test (test split & merge)", "T", 0, AWM_ALL, ED4_testSplitNMerge, 1, 0);
 #endif
     
-    SEP________________________SEP;
+    awmm->sep______________();
     awmm->insert_menu_topic("fast_aligner",       INTEGRATED_ALIGNERS_TITLE " [Ctrl-A]", "I", "faligner.hlp",     AWM_ALL,            AW_POPUP,                               (AW_CL)ED4_create_faligner_window, (AW_CL)&dataAccess_4_aligner);
     awmm->insert_menu_topic("fast_align_set_ref", "Set aligner reference [Ctrl-R]",      "R", "faligner.hlp",     AWM_ALL,            (AW_CB)FastAligner_set_reference_species, (AW_CL)aw_root,                    0);
     awmm->insert_menu_topic("align_sequence",     "Old aligner from ARB_EDIT",           "O", "ne_align_seq.hlp", AWM_EXP,            AW_POPUP,                               (AW_CL)create_naligner_window,     0);
     awmm->insert_menu_topic("sina",               "SINA (SILVA Incremental Aligner)",    "S", "sina_main.hlp",    sina_mask(aw_root), show_sina_window,                       (AW_CL)&dataAccess_4_aligner,      0);
     awmm->insert_menu_topic("del_ali_tmp",        "Remove all aligner Entries",          "v", 0,                  AWM_ALL,            ED4_remove_faligner_entries,            1,                                 0);
-    SEP________________________SEP;
+    awmm->sep______________();
     awmm->insert_menu_topic("missing_bases", "Dot potentially missing bases", "D", "missbase.hlp", AWM_EXP, ED4_popup_dot_missing_bases_window, 0, 0);
 
     if (alignment_type == GB_AT_RNA) { // if the database contains valid alignment of rRNA sequences
-        SEP________________________SEP;
+        awmm->sep______________();
         awmm->insert_menu_topic("sec_edit", "Edit secondary structure", "c", "arb_secedit.hlp", AWM_ALL, ED4_start_plugin, (AW_CL)GLOBAL_gb_main, (AW_CL)"SECEDIT");
 #if defined(ARB_OPENGL)
         awmm->insert_menu_topic("rna3d", "View 3D molecule", "3", "rna3d_general.hlp", AWM_ALL, ED4_start_plugin, (AW_CL)GLOBAL_gb_main, (AW_CL)"RNA3D");
@@ -1560,23 +1558,23 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
         }
     }
     awmm->close_sub_menu();
-    SEP________________________SEP;
+    awmm->sep______________();
     awmm->insert_sub_menu("Cursor position ", "p");
     awmm->insert_menu_topic("store_curpos",   "Store cursor position",    "S", 0, AWM_ALL, ED4_store_curpos,        0, 0);
     awmm->insert_menu_topic("restore_curpos", "Restore cursor position ", "R", 0, AWM_ALL, ED4_restore_curpos,      0, 0);
     awmm->insert_menu_topic("clear_curpos",   "Clear stored positions",   "C", 0, AWM_ALL, ED4_clear_stored_curpos, 0, 0);
     awmm->close_sub_menu();
 
-    SEP________________________SEP;
+    awmm->sep______________();
     awmm->insert_menu_topic("change_cursor", "Change cursor type",                "t", 0,                   AWM_ALL, ED4_change_cursor,         0, 0);
     awmm->insert_menu_topic("show_all",      "Show all bases ",                   "a", "set_reference.hlp", AWM_ALL, ED4_set_reference_species, 1, 0);
     awmm->insert_menu_topic("show_diff",     "Show only differences to selected", "d", "set_reference.hlp", AWM_ALL, ED4_set_reference_species, 0, 0);
-    SEP________________________SEP;
+    awmm->sep______________();
     awmm->insert_menu_topic("enable_col_stat",  "Activate column statistics", "v", "st_ml.hlp", AWM_EXP, activate_col_stat,                0, 0);
     awmm->insert_menu_topic("disable_col_stat", "Disable column statistics",  "i", "st_ml.hlp", AWM_EXP, disable_col_stat,                 0, 0);
     awmm->insert_menu_topic("detail_col_stat",  "Toggle detailed Col.-Stat.", "c", "st_ml.hlp", AWM_EXP, ED4_toggle_detailed_column_stats, 0, 0);
     awmm->insert_menu_topic("dcs_threshold",    "Set threshold for D.c.s.",   "f", "st_ml.hlp", AWM_EXP, ED4_set_col_stat_threshold,       0, 0);
-    SEP________________________SEP;
+    awmm->sep______________();
     awmm->insert_menu_topic("visualize_SAI", "Visualize SAIs", "z", "visualizeSAI.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_createVisualizeSAI_window, 0);
     // Enable ProteinViewer only for DNA sequence type
     if (alignment_type == GB_AT_DNA) {
@@ -1593,25 +1591,25 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("deselect_marked", "Deselect marked species", "k", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_DESELECT_MARKED), 0);
     awmm->insert_menu_topic("select_all",      "Select all species",      "S", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_ALL),             0);
     awmm->insert_menu_topic("deselect_all",    "Deselect all species",    "D", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_NONE),            0);
-    SEP________________________SEP;
+    awmm->sep______________();
     awmm->insert_menu_topic("mark_selected",   "Mark selected species",   "M", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_MARK_SELECTED),   0);
     awmm->insert_menu_topic("unmark_selected", "Unmark selected species", "n", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_UNMARK_SELECTED), 0);
     awmm->insert_menu_topic("unmark_all",      "Unmark all species",      "U", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_UNMARK_ALL),      0);
-    SEP________________________SEP;
+    awmm->sep______________();
     awmm->insert_menu_topic("invert_all",   "Invert selected species", "I", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_INVERT),       0);
     awmm->insert_menu_topic("invert_group", "Invert group",            "g", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_INVERT_GROUP), 0);
-    SEP________________________SEP;
+    awmm->sep______________();
     awmm->insert_menu_topic("lowcase", "Change to lower case ", "w", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_LOWER_CASE), 0);
     awmm->insert_menu_topic("upcase",  "Change to upper case",  "p", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_UPPER_CASE), 0);
-    SEP________________________SEP;
+    awmm->sep______________();
     awmm->insert_menu_topic("reverse",            "Reverse selection ",    "v", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_REVERSE),            0);
     awmm->insert_menu_topic("complement",         "Complement selection ", "o", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_COMPLEMENT),         0);
     awmm->insert_menu_topic("reverse_complement", "Reverse complement",    "t", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_REVERSE_COMPLEMENT), 0);
-    SEP________________________SEP;
+    awmm->sep______________();
     awmm->insert_menu_topic("unalignBlockLeft",  "Unalign block",       "a", "e4_block.hlp",   AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_UNALIGN),                                0);
     awmm->insert_menu_topic("unalignBlockRight", "Unalign block right", "b", "e4_block.hlp",   AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_UNALIGN_RIGHT),                          0);
     awmm->insert_menu_topic("replace",           "Search & Replace ",   "h", "e4_replace.hlp", AWM_ALL, AW_POPUP,                              (AW_CL)               ED4_create_replace_window, 0);
-    SEP________________________SEP;
+    awmm->sep______________();
     awmm->insert_menu_topic("toggle_block_type", "Line block <-> Column block", "C", "e4_block.hlp", AWM_ALL, ED4_menu_select,                  AW_CL(ED4_MS_TOGGLE_BLOCKTYPE), 0);
     awmm->insert_menu_topic("shift_left",        "Shift block left ",           "l", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_SHIFT_LEFT),       0);
     awmm->insert_menu_topic("shift_right",       "Shift block right",           "r", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_SHIFT_RIGHT),      0);
@@ -1625,12 +1623,12 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("props_frame",     "Frame Settings ",       "F", 0,                  AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window,                       0);
     awmm->insert_menu_topic("props_options",   "Editor Options ",       "O", "e4_options.hlp",   AWM_ALL, AW_POPUP, (AW_CL)ED4_create_level_1_options_window,      0);
     awmm->insert_menu_topic("props_consensus", "Consensus Definition ", "u", "e4_consensus.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_create_consensus_definition_window, 0);
-    SEP________________________SEP;
+    awmm->sep______________();
 
     awmm->insert_menu_topic("props_data",       "Change Colors & Fonts ", "C", 0,                     AWM_ALL, AW_POPUP, (AW_CL)ED4_create_gc_window,     (AW_CL)first_gc_manager);
     awmm->insert_menu_topic("props_seq_colors", "Sequence color mapping", "S", "sequence_colors.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_seq_colors_window, (AW_CL)sequence_colors);
 
-    SEP________________________SEP;
+    awmm->sep______________();
 
     static AW_cb_struct *refresh_all_cb = 0;
     if (!refresh_all_cb) refresh_all_cb = new AW_cb_struct(awmm, (AW_CB)ED4_request_relayout);
@@ -1640,9 +1638,9 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     awmm->insert_menu_topic("props_key_map", "Key Mappings ",              "K", "nekey_map.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_key_map_window, 0);
     awmm->insert_menu_topic("props_nds",     "Select visible info (NDS) ", "D", "ed4_nds.hlp",   AWM_ALL, AW_POPUP, (AW_CL)ED4_create_nds_window, 0);
-    SEP________________________SEP;
+    awmm->sep______________();
     AW_insert_common_property_menu_entries(awmm);
-    SEP________________________SEP;
+    awmm->sep______________();
     awmm->insert_sub_menu("Save properties ...", "a");
     {
         static const char * const tag[] = { "save_alispecific_props", "save_alitype_props", "save_props" };
@@ -1656,11 +1654,11 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
                 break;
             }
         }
-        e4_assert(default_mode != -1);
+        if (default_mode == -1) default_mode = 2; // no properties yet -> use 'edit4.arb'
 
         const char *entry = GBS_global_string("Save loaded Properties (%s)", ED4_propertyName(default_mode));
         awmm->insert_menu_topic("save_loaded_props", entry, "l", "e4_defaults.hlp", AWM_ALL, ED4_save_properties, (AW_CL)default_mode, 0);
-        SEP________________________SEP;
+        awmm->sep______________();
 
         for (int mode = 2; mode >= 0; --mode) {
             char hotkey[] = "x";
@@ -1674,8 +1672,6 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_help_topic("ARB_EDIT4 help",     "E", "e4.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"e4.hlp", 0);
 
     // ----------------------------------------------------------------------------------------------------
-
-#undef SEP________________________SEP
 
     aw_root->awar_int(AWAR_EDIT_TITLE_MODE)->add_callback((AW_RCB1)title_mode_changed, (AW_CL)awmm);
     awmm->set_bottom_area_height(0);   // No bottom area
@@ -1980,11 +1976,8 @@ static char *detectProperties() {
 
     // if not, use 'mode 2', i.e. "edit4.arb"
     // (no full path, we want to load default from arb_defaults)
-    if (!propname) {
-        freedup(propname, ED4_propertyName(2));
-    }
+    if (!propname) propname = strdup(ED4_propertyName(2));
 
-    GB_informationf("Using properties from '%s'", propname);
     return propname;
 }
 

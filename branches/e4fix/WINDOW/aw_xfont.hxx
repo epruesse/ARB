@@ -24,12 +24,6 @@ struct _xfstruct {
     xfont      *xfontlist;      // linked list of X fonts for different point sizes
 };
 
-struct appresStruct {
-    bool     SCALABLEFONTS;     // hns 5 Nov 91
-    bool     debug;             // hns 5 Nov 91
-    Display *display;
-};
-
 #define DEFAULT      (-1)
 
 #else
