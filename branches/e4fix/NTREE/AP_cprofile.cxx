@@ -699,7 +699,7 @@ void create_cprofile_var(AW_root *aw_root, AW_default aw_def)
     aw_root->awar_string("cpro/which_species", "marked", aw_def);
     aw_root->awar_string("cpro/which_result", "transversion", aw_def);
     aw_root->awar_string("cpro/countgaps", "", aw_def);
-    aw_root->awar_string("cpro/condensename", "PVD", aw_def);
+    aw_root->awar_string("cpro/condensename", "", aw_def);
     aw_root->awar_float("cpro/transratio", 0.5, aw_def);
     aw_root->awar_int(AWAR_CURSOR_POSITION, info2bio(0), GLOBAL_gb_main);
     aw_root->awar_int("cpro/maxdistance", 100, aw_def);

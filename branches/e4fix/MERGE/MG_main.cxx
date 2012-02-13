@@ -432,7 +432,6 @@ void MG_create_all_awars(AW_root *awr, AW_default aw_def, const char *fname_one,
     MG_create_gene_species_awars(awr, aw_def);
 
     MG_create_rename_awars(awr, aw_def);
-    AWTC_create_rename_awars(awr, aw_def);
 
 #if defined(DEBUG)
     AWT_create_db_browser_awars(awr, aw_def);

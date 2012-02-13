@@ -18,9 +18,6 @@
 #include <arbdbt.h>
 #endif
 
-#define AWT_RENAME_USE_ADVICE "awt_rename/use_advice"
-#define AWT_RENAME_SAVE_DATA  "awt_rename/save_data"
-
 #define AWAR_NAMESERVER_ADDID "nt/nameserver_addid"
 
 // --------------------------------------------------------------------------------

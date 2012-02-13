@@ -25,8 +25,6 @@
 
 #define NNI_MODES // uncomment to hide NNI/K.L. mode buttons
 
-// #define AWAR_TREE AWAR_TREE
-
 #define AWAR_PARS_TYPE      "pars/pars_type"
 
 enum PARS_pars_type {

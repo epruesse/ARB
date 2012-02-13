@@ -169,10 +169,10 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
 
     awr->awar_string(AWAR_FOOTER, "", def);
     if (GB_read_clients(GLOBAL_gb_main)>=0) {
-        awr->awar_string(AWAR_TREE, "tree_main", GLOBAL_gb_main);
+        awr->awar_string(AWAR_TREE, "", GLOBAL_gb_main);
     }
     else {
-        awr->awar_string(AWAR_TREE, "tree_main", def);
+        awr->awar_string(AWAR_TREE, "", def);
     }
 
     awr->awar_string(AWAR_SPECIES_NAME, "",     GLOBAL_gb_main);
@@ -214,7 +214,6 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     NT_create_alignment_vars(awr, def);
     create_nds_vars(awr, def, GLOBAL_gb_main);
     create_export_nds_awars(awr, def);
-    AWTC_create_rename_awars(awr, def);
     awt_create_dtree_awars(awr, GLOBAL_gb_main);
 
     awr->awar_string(AWAR_ERROR_MESSAGES, "", GLOBAL_gb_main);
