@@ -9,7 +9,7 @@
 /* ================================================================ */
 
 
-char *static_pntr                 = 0; // see ../TOOLS/arb_proto_2_xsub.cxx@static_pntr
+char *static_pntr                 = 0; // see ../PERLTOOLS/arb_proto_2_xsub.cxx@static_pntr
 
 static GB_HASH *gbp_cp_hash_table = 0;
 

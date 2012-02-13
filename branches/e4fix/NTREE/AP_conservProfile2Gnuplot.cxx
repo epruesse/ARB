@@ -64,7 +64,7 @@ static void AP_conservProfile2Gnuplot_callback(AW_window *aww) {
 }
 
 
-static AW_window *AP_createConservationProfileWindow(AW_root *root) {
+static AW_window *AP_createConservationProfileWindow(AW_root *root) { // @@@ unused! test and add to menu if useful 
 
     AW_window_simple *aws = new AW_window_simple;
 

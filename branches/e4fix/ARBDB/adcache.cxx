@@ -283,18 +283,6 @@ char *gb_alloc_cache_index(GBDATA *gbd, size_t size) {
         return data;
 }
 
-static void gb_flush_cache(GBDATA *gbd) {
-    gb_cache& cache = GB_MAIN(gbd)->cache;
-
-    while (cache.oldest_entry) {
-        gb_cache_idx index = cache.oldest_entry;
-        unlink_cache_entry(cache, index);
-        flush_cache_entry(cache, index);
-    }
-
-    gb_assert(cache.sum_data_size == 0);
-}
-
 char *GB_set_cache_size(GBDATA *gbd, size_t size) {
     gb_cache& cache = GB_MAIN(gbd)->cache;
 

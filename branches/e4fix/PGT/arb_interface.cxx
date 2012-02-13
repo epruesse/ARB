@@ -153,13 +153,6 @@ bool ARB_commit_transaction()
     return true;
 }
 
-
-/****************************************************************************
-*  REQUEST ARB CONNECTION STATE
-****************************************************************************/
-static bool ARB_connected() { return global_ARB_available; }
-
-
 /****************************************************************************
 *  RETURN CURRENT GBDATA ENTRY
 ****************************************************************************/
@@ -727,7 +720,6 @@ char *get_experiment_AWAR() { return get_AWAR(AWAR_EXPERIMENT_NAME); }
 char *get_proteom_AWAR() { return get_AWAR(AWAR_PROTEOM_NAME); }
 char *get_protein_AWAR() { return get_AWAR(AWAR_PROTEIN_NAME); }
 char *get_gene_AWAR() { return get_AWAR(AWAR_GENE_NAME); }
-static char *get_config_AWAR() { return get_AWAR(AWAR_CONFIG_CHANGED); }
 
 
 /****************************************************************************

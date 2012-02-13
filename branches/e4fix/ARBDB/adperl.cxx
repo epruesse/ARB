@@ -126,7 +126,7 @@ static known_enum string2enum_or_die(const char *enum_name, const char *string, 
  * - write a reverse-wrapper                                    (example: GBP_string_to_gb_search_types)
  *
  * [Code-Tag: enum_conversion_functions]
- * see also ../TOOLS/arb_proto_2_xsub.cxx@enum_type_replacement
+ * see also ../PERLTOOLS/arb_proto_2_xsub.cxx@enum_type_replacement
  */
 
 // ------------------------

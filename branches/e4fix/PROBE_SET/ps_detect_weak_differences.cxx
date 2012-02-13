@@ -32,7 +32,8 @@ static IDID2IDSetMap     *__PAIR2PATH;
 static SpeciesID          __ONEMATCH_MIN_ID;
 static SpeciesID          __ONEMATCH_MAX_ID;
 
-static void PS_print_path() {
+#if defined(DEBUG)
+void PS_debug_print_path() {
     printf("__PATH %3zu :", __PATH->size());
     int c = 1;
     for (IDVectorCIter i = __PATH->begin(); i != __PATH->end(); ++i, ++c) {
@@ -42,7 +43,7 @@ static void PS_print_path() {
     printf("\n");
 }
 
-static void PS_print_inverse_path() {
+void PS_debug_print_inverse_path() {
     printf("__INVERSE_PATH %3zu :", __INVERSE_PATH->size());
     int c = 1;
     for (IDVectorCIter i = __INVERSE_PATH->begin(); i != __INVERSE_PATH->end(); ++i, ++c) {
@@ -51,7 +52,7 @@ static void PS_print_inverse_path() {
     }
     printf("\n");
 }
-
+#endif
 
 static void PS_detect_weak_differences_stepdown(const PS_NodePtr _ps_node,
                                           const SpeciesID  _parent_ID,

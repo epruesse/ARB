@@ -24,14 +24,7 @@ char       MP_probe_tab[256];                       // zum checken, ob ein einge
 int        remembered_mismatches;
 int        anz_elem_marked     = 0;
 int        anz_elem_unmarked   = 0;
-static int        outside_mismatches  = 0;
 bool       pt_server_different = false;
-
-static double MAXMARKEDFACTOR = 1.0;
-static double MINUNMARKEDFACTOR = 1.0;
-static double SUMMARKEDFACTOR = 1.0;
-static double SUMUNMARKEDFACTOR = 1.0;
-
 
 MP_Main::MP_Main(AW_root *awr, AWT_canvas *canvas) {
     aw_root = awr;

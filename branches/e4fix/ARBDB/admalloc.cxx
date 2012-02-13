@@ -16,6 +16,7 @@
 #include <climits>
 #include <set>
 
+#include <arb_backtrace.h>
 #include "gb_storage.h"
 
 // #define DUMP_MEMBLKS

@@ -126,7 +126,7 @@ fb_test.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ps_arb2asciipaths.o: ps_defs.hxx
 ps_arb2asciipaths.o: ps_filebuffer.hxx
-ps_arb2asciipaths.o: ps_pg_tree_functions.cxx
+ps_arb2asciipaths.o: ps_pg_tree_functions.hxx
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -145,7 +145,8 @@ ps_convert_db.o: ps_database.hxx
 ps_convert_db.o: ps_defs.hxx
 ps_convert_db.o: ps_filebuffer.hxx
 ps_convert_db.o: ps_node.hxx
-ps_convert_db.o: ps_pg_tree_functions.cxx
+ps_convert_db.o: ps_pg_specmap.hxx
+ps_convert_db.o: ps_pg_tree_functions.hxx
 ps_convert_db.o: ps_tools.hxx
 ps_convert_db.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -221,7 +222,7 @@ ps_find_probes.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ps_get_probes.o: ps_defs.hxx
 ps_get_probes.o: ps_filebuffer.hxx
-ps_get_probes.o: ps_pg_tree_functions.cxx
+ps_get_probes.o: ps_pg_tree_functions.hxx
 ps_get_probes.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/arb_core.h

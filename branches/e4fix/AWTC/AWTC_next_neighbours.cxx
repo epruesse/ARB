@@ -20,11 +20,6 @@
 
 #include <climits>
 
-static void awtc_ff_message(const char *msg) {
-    GB_warning(msg);
-}
-
-
 // -------------------
 //      FamilyList
 

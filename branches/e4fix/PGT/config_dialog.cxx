@@ -356,27 +356,6 @@ void configDialog::textChangedCallback(Widget widget) {
 
 
 /****************************************************************************
-*  CONVERT INT RGB -> HEX COLOR STRING
-****************************************************************************/
-static char *rgb2hex(int r, int g, int b)
-{
-    // ALL INPUT VALUES IN RANGE?
-    if((r < 0) || (g < 0) || (b < 0) ||
-       (r > 255) || (g > 255) || (b > 255)) return NULL;
-
-    // ALLOCATE MEM FOR HEX COLOR STRING
-    char *hex= (char *)malloc(8 * sizeof(char));
-    if(!hex) return NULL;
-
-    // WRITE COLORS INTO MEM
-    if(sprintf(hex, "#%2X%2X%2X", r, g, b) != 3) return NULL;
-
-    // RETURN POINTER TO HEX STRING
-    return hex;
-}
-
-
-/****************************************************************************
 *  CONVERT HEX STRING -> INT RGB
 ****************************************************************************/
 bool hex2rgb(int *r, int *g, int *b, char *hex)
