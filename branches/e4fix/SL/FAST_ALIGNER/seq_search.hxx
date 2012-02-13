@@ -35,8 +35,6 @@
 #define MAX_TRIPLES (SEQ_CHARS*SEQ_CHARS*SEQ_CHARS+1) // one faked triple for all non-char triples
 #define GAP_CHARS   ".-~?"      // Characters treated as gaps
 
-void messagef(const char *format, ...) __ATTR__FORMAT(1);
-
 static inline int max(int i1, int i2) { return i1>i2 ? i1 : i2; }
 static inline bool is_ali_gap(char c)  { return strchr(GAP_CHARS, c)!=0; }
 

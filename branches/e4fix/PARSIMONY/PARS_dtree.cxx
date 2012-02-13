@@ -67,7 +67,7 @@ void PARS_tree_init(AWT_graphic_tree *agt) {
     agt->tree_static->set_root_changed_callback(AWT_graphic_parsimony_root_changed, agt);
 }
 
-double funktion_quadratisch(double wert, double *param_list, int param_anz) {
+static double funktion_quadratisch(double wert, double *param_list, int param_anz) {
     if (param_anz != 3) {
         ap_assert(0); // wrong number of parameters
         return 0;
@@ -76,7 +76,7 @@ double funktion_quadratisch(double wert, double *param_list, int param_anz) {
 }
 
 
-void PARS_kernighan_cb(AP_tree *tree) {
+static void PARS_kernighan_cb(AP_tree *tree) {
     GB_push_transaction(GLOBAL_gb_main);
 
     long prevCombineCount = AP_sequence::combine_count();

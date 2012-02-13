@@ -38,7 +38,7 @@ static const char *internal_export_commands[] = {
     NULL
 };
 
-EXPORT_CMD check_internal(const char *command) {
+static EXPORT_CMD check_internal(const char *command) {
     EXPORT_CMD cmd = EXPORT_INVALID;
     for (int i = 0; internal_export_commands[i]; ++i) {
         if (strcmp(command, internal_export_commands[i]) == 0) {
@@ -427,7 +427,7 @@ const char *export_sequence_data::get_export_sequence(GBDATA *gb_species, size_t
 
 static export_sequence_data *esd = 0;
 
-extern "C" const char *exported_sequence(GBDATA *gb_species, size_t *seq_len, GB_ERROR *error) {
+static const char *exported_sequence(GBDATA *gb_species, size_t *seq_len, GB_ERROR *error) {
     sio_assert(esd);
     return esd->get_export_sequence(gb_species, *seq_len, *error);
 }

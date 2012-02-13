@@ -18,12 +18,12 @@
 
 //  GLOBALS
 
-PS_NodePtr __ROOT;
-int        __PROBE_LENGTH;
-SpeciesID  __MIN_ID;
-SpeciesID  __MAX_ID;
+static PS_NodePtr __ROOT;
+static int        __PROBE_LENGTH;
+static SpeciesID  __MIN_ID;
+static SpeciesID  __MAX_ID;
 
-void PS_detect_probe_length(GBDATA *_ARB_node) {
+static void PS_detect_probe_length(GBDATA *_ARB_node) {
     //  recursively walk through database to first probe and get its length
     __PROBE_LENGTH = -1;
 

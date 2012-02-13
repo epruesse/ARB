@@ -873,7 +873,7 @@ static void reload_ecoli_cb() {
 
 typedef ARB_ERROR (*ED4_Species_Callback)(GBDATA*, AW_CL);
 
-ARB_ERROR do_sth_with_species(ED4_base *base, AW_CL cl_spec_cb, AW_CL cd) {
+static ARB_ERROR do_sth_with_species(ED4_base *base, AW_CL cl_spec_cb, AW_CL cd) {
     ARB_ERROR error = NULL;
 
     if (base->is_species_manager()) {
@@ -995,13 +995,13 @@ static ARB_ERROR ED4_delete_temp_entries(GBDATA *species, AW_CL cl_alignment_nam
     return FastAligner_delete_temp_entries(species, (GB_CSTR)cl_alignment_name);
 }
 
-void ED4_remove_faligner_entries(AW_window *, AW_CL, AW_CL) {
+static void ED4_remove_faligner_entries(AW_window *, AW_CL, AW_CL) {
     ARB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
     if (!error) error = ED4_with_all_loaded_species(ED4_delete_temp_entries, (AW_CL)ED4_ROOT->alignment_name);
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 
-void ED4_turnSpecies(AW_window *aw, AW_CL, AW_CL) {
+static void ED4_turnSpecies(AW_window *aw, AW_CL, AW_CL) {
     GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
 
     if (!error) {
@@ -1116,7 +1116,7 @@ static void title_mode_changed(AW_root *aw_root, AW_window *aww)
     }
 }
 
-void ED4_undo_redo(AW_window *aww, AW_CL undo_type) {
+static void ED4_undo_redo(AW_window *aww, AW_CL undo_type) {
     ED4_LocalWinContext uses(aww);
     GB_ERROR error = GB_undo(GLOBAL_gb_main, (GB_UNDO_TYPE)undo_type);
 
@@ -1131,11 +1131,11 @@ void ED4_undo_redo(AW_window *aww, AW_CL undo_type) {
     }
 }
 
-void ED4_clear_errors(AW_window *aww, AW_CL) {
+static void ED4_clear_errors(AW_window *aww, AW_CL) {
     aw_clear_message_cb(aww);
 }
 
-AW_window *ED4_zoom_message_window(AW_root *root, AW_CL)
+static AW_window *ED4_zoom_message_window(AW_root *root, AW_CL)
 {
     AW_window_simple *aws = new AW_window_simple;
 
@@ -1157,7 +1157,7 @@ AW_window *ED4_zoom_message_window(AW_root *root, AW_CL)
 }
 
 
-char *cat(char *toBuf, const char *s1, const char *s2)
+static char *cat(char *toBuf, const char *s1, const char *s2)
 {
     char *buf = toBuf;
 
@@ -1196,7 +1196,7 @@ static void insert_search_fields(AW_window_menu_modes *awmm,
     awmm->create_toggle(show_awar_name);
 }
 
-void ED4_set_protection(AW_window *aww, AW_CL cd1, AW_CL /* cd2 */) {
+static void ED4_set_protection(AW_window *aww, AW_CL cd1, AW_CL /* cd2 */) {
     ED4_LocalWinContext uses(aww);
     ED4_cursor *cursor = &current_cursor();
     GB_ERROR    error  = 0;
@@ -1314,7 +1314,7 @@ static void ED4_menu_select(AW_window *aww, AW_CL type, AW_CL) {
     ED4_request_full_refresh();
 }
 
-void ED4_menu_perform_block_operation(AW_window */*aww*/, AW_CL type, AW_CL) {
+static void ED4_menu_perform_block_operation(AW_window */*aww*/, AW_CL type, AW_CL) {
     ED4_perform_block_operation(ED4_blockoperation_type(type));
 }
 

@@ -1437,7 +1437,7 @@ void ED4_search_cb(AW_window *, AW_CL searchDescriptor, AW_CL cl_ed4w) {
     }
 }
 
-void ED4_mark_matching_species(AW_window * /* aww */, AW_CL cl_pattern) {
+static void ED4_mark_matching_species(AW_window * /* aww */, AW_CL cl_pattern) {
     ED4_SearchPositionType  pattern  = ED4_SearchPositionType(cl_pattern);
     ED4_terminal           *terminal = ED4_ROOT->root_group_man->get_first_terminal();
     GB_transaction          ta(GLOBAL_gb_main);

@@ -104,7 +104,7 @@ class probe_input_data : virtual Noncopyable {      // every taxa's own data
 
     char *data;       // sequence
     long  checksum;   // checksum of sequence
-    int   size;
+    int   size; // @@@ misleading (contains 1 if no bases in sequence)
 
     char   *name;
     char   *fullname;
@@ -336,7 +336,6 @@ typedef std::list<gene_struct>                          gene_struct_list;
 typedef std::set<const gene_struct *, ltByInternalName> gene_struct_index_internal;
 typedef std::set<const gene_struct *, ltByArbName>      gene_struct_index_arb;
 
-extern gene_struct_list           all_gene_structs; // stores all gene_structs
 extern gene_struct_index_arb      gene_struct_arb2internal; // sorted by arb species+gene name
 extern gene_struct_index_internal gene_struct_internal2arb; // sorted by internal name
 

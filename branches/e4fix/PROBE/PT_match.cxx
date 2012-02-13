@@ -118,7 +118,7 @@ struct PT_store_match_in {
     }
 };
 
-int read_names_and_pos(PT_local *locs, POS_TREE *pt) {
+static int read_names_and_pos(PT_local *locs, POS_TREE *pt) {
     //! go down the tree to chains and leafs; copy names, positions and mismatches in locs structure
 
     int            base;
@@ -171,7 +171,7 @@ int read_names_and_pos(PT_local *locs, POS_TREE *pt) {
     return 0;
 }
 
-int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatches, double wmismatches, int N_mismatches, int height) {
+static int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatches, double wmismatches, int N_mismatches, int height) {
     //! search down the tree to find matching species for the given probe
 
     int       name, pos;
@@ -303,7 +303,7 @@ static int pt_sort_compare_match(const void *PT_probematch_ptr1, const void *PT_
     return cmp;
 }
 
-void pt_sort_match_list(PT_local * locs)
+static void pt_sort_match_list(PT_local * locs)
 {
     PT_probematch **my_list;
     int             list_len;
@@ -363,7 +363,7 @@ static double calc_position_wmis(int pos, int seq_len, double y1, double y2)
     return (double)(((double)(pos * (seq_len - 1 - pos)) / (double)((seq_len - 1) * (seq_len - 1)))* (double)(y2*4.0) + y1);
 }
 
-void pt_build_pos_to_weight(PT_MATCH_TYPE type, const char *sequence) {
+static void pt_build_pos_to_weight(PT_MATCH_TYPE type, const char *sequence) {
     delete [] psg.pos_to_weight;
     int slen = strlen(sequence);
     psg.pos_to_weight = new double[slen+1];

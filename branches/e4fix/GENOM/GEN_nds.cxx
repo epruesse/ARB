@@ -36,8 +36,9 @@ struct GEN_NodeTextBuilder {
     char *parsing[GEN_NDS_COUNT];
     long  count;
     int   errorclip;
+};
 
-} *gen_nds_ms = 0;
+static GEN_NodeTextBuilder *gen_nds_ms = 0;
 
 //  -----------------------------------------------------
 //      void GEN_make_node_text_init(GBDATA *gb_main)
@@ -282,7 +283,7 @@ void GEN_create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main, GB
 //  ---------------------------------------------------------------------------------------
 //      void GEN_create_select_nds_window(AW_window *aww,char *key_text,AW_CL cgb_main)
 //  ---------------------------------------------------------------------------------------
-void GEN_create_select_nds_window(AW_window *aww, char *key_text, AW_CL cgb_main)
+static void GEN_create_select_nds_window(AW_window *aww, char *key_text, AW_CL cgb_main)
 {
 #if defined(WARN_TODO)
 #warning make this function more general like popup_select_species_field_window

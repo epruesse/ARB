@@ -174,7 +174,7 @@ void AWT_ptserver_selection::refresh_all() {
         (*pts_sel)->refresh();
     }
 }
-void awt_refresh_all_pt_server_selection_lists() {
+static void awt_refresh_all_pt_server_selection_lists() {
     AWT_ptserver_selection::refresh_all();
 }
 static void track_log_cb(AW_root *awr) {
@@ -321,7 +321,7 @@ struct awt_sel_list_for_tables {
     const char        *table_name;
 };
 
-void awt_create_selection_list_on_tables_cb(GBDATA *, struct awt_sel_list_for_tables *cbs) {
+static void awt_create_selection_list_on_tables_cb(GBDATA *, struct awt_sel_list_for_tables *cbs) {
     cbs->aws->clear_selection_list(cbs->id);
     GBDATA *gb_table;
     for (gb_table = GBT_first_table(cbs->gb_main);
@@ -363,7 +363,7 @@ void awt_create_selection_list_on_tables(GBDATA *gb_main, AW_window *aws, const 
     GB_pop_transaction(gb_main);
 }
 
-void awt_create_selection_list_on_table_fields_cb(GBDATA *, struct awt_sel_list_for_tables *cbs) {
+static void awt_create_selection_list_on_table_fields_cb(GBDATA *, struct awt_sel_list_for_tables *cbs) {
     cbs->aws->clear_selection_list(cbs->id);
     GBDATA  *gb_table = GBT_open_table(cbs->gb_main, cbs->table_name, true); // read only
     GBDATA *gb_table_field;
@@ -590,7 +590,7 @@ void *awt_create_selection_list_on_extendeds(GBDATA *gb_main, AW_window *aws, co
 
 // ******************** selection boxes on saving selection lists ********************
 
-void create_save_box_for_selection_lists_save(AW_window *aws, AW_CL selidcd, AW_CL basenamecd)
+static void create_save_box_for_selection_lists_save(AW_window *aws, AW_CL selidcd, AW_CL basenamecd)
 {
     AW_selection_list *selid       = (AW_selection_list *)selidcd;
     char              *awar_prefix = (char *)basenamecd;
@@ -656,7 +656,7 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
     return aws;
 }
 
-void AWT_load_list(AW_window *aww, AW_CL sel_id, AW_CL ibase_name)
+static void AWT_load_list(AW_window *aww, AW_CL sel_id, AW_CL ibase_name)
 {
     AW_selection_list * selid       = (AW_selection_list *)sel_id;
     char *basename = (char *)ibase_name;
@@ -767,12 +767,12 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
     return aws;
 }
 
-void awt_set_long(AW_window *aws, AW_CL varname, AW_CL value)   // set an awar
+static void awt_set_long(AW_window *aws, AW_CL varname, AW_CL value)   // set an awar
 {
     aws->get_root()->awar((char *)varname)->write_int((long) value);
 }
 
-void awt_write_string(AW_window *aws, AW_CL varname, AW_CL value)   // set an awar
+static void awt_write_string(AW_window *aws, AW_CL varname, AW_CL value)   // set an awar
 {
     aws->get_root()->awar((char *)varname)->write_string((char *)value);
 }

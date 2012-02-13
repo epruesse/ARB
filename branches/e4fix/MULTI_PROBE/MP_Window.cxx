@@ -197,7 +197,7 @@ static GB_ERROR parse_probe_list_entry(const char *one_line, char*& probe_string
 }
 
 
-void mp_load_list(AW_window *aww, AW_selection_list *selection_list, char *base_name)
+static void mp_load_list(AW_window *aww, AW_selection_list *selection_list, char *base_name)
 {
     aww->clear_selection_list(selection_list);
     char *data;

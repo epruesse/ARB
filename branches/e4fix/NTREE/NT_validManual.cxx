@@ -41,7 +41,7 @@ void NT_createValidNamesAwars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_INPUT_INITIALS,    "",      aw_def);
 }
 
-void fillSelNamList(selectValidNameStruct* svnp) {
+static void fillSelNamList(selectValidNameStruct* svnp) {
     const char* searchstr = svnp -> initials;
     size_t length = strlen(searchstr);
     svnp-> aws-> clear_selection_list(svnp->validNamesList);
@@ -91,7 +91,7 @@ void fillSelNamList(selectValidNameStruct* svnp) {
     }
 }
 
-void updateValNameList(AW_root *awr, AW_CL cl_svnp) {
+static void updateValNameList(AW_root *awr, AW_CL cl_svnp) {
     selectValidNameStruct *svnp = reinterpret_cast<selectValidNameStruct*>(cl_svnp);
     const char* selectedName = awr->awar(AWAR_INPUT_INITIALS)->read_string();
 
@@ -105,7 +105,7 @@ void updateValNameList(AW_root *awr, AW_CL cl_svnp) {
 #endif
 }
 
-selectValidNameStruct* createValNameList(GBDATA *gb_main, AW_window *aws, const char *awarName) {
+static selectValidNameStruct* createValNameList(GBDATA *gb_main, AW_window *aws, const char *awarName) {
 #if defined(DUMP)
     aw_message("ValidNameSelectionList was created");
 #endif // DUMP
@@ -122,7 +122,7 @@ selectValidNameStruct* createValNameList(GBDATA *gb_main, AW_window *aws, const 
 }
 
 // this function transfer a the selected valid name upon mouse click on select button to selected species
-void selectValidNameFromList(AW_window* selManWindowRoot, AW_CL, AW_CL)
+static void selectValidNameFromList(AW_window* selManWindowRoot, AW_CL, AW_CL)
 
 {
     char *selectedValName     = selManWindowRoot->get_root()->awar(AWAR_SELECTED_VALNAME)->read_string();

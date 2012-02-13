@@ -68,16 +68,7 @@ class configDialog : public MDialog { // derived from a Noncopyable
 
 
 // HELPER CONVERSION BETWEEN STRING AND RGB COLORS
-char *rgb2hex(int, int, int);
 bool hex2rgb(int *, int *, int *, char *);
-
-
-// CALLBACK WRAPPER FUNCTIONS (STATIC)
-void staticCancelButtonCallback(Widget, XtPointer, XtPointer);
-void staticDefaultButtonCallback(Widget, XtPointer, XtPointer);
-void staticOkButtonCallback(Widget, XtPointer, XtPointer);
-void staticTextChangedCallback(Widget, XtPointer, XtPointer);
-
 
 #endif // CONFIG_DIALOG_H
 

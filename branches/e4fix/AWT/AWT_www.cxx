@@ -141,7 +141,7 @@ GB_ERROR awt_openURL_by_gbd(AW_root *aw_root, GBDATA *gb_main, GBDATA *gbd, cons
     return error;
 }
 
-void awt_openDefaultURL_on_species(AW_window *aww, GBDATA *gb_main) {
+static void awt_openDefaultURL_on_species(AW_window *aww, GBDATA *gb_main) {
     GB_transaction  tscope(gb_main);
     AW_root        *aw_root          = aww->get_root();
     GB_ERROR        error            = 0;
@@ -157,8 +157,8 @@ void awt_openDefaultURL_on_species(AW_window *aww, GBDATA *gb_main) {
     if (error) aw_message(error);
     delete selected_species;
 }
-// a crazy implementation of a toggle field
-void awt_www_select_change(AW_window *aww, AW_CL selected) {
+
+static void awt_www_select_change(AW_window *aww, AW_CL selected) {
     int i;
     AW_root *aw_root = aww->get_root();
     for (i=0; i<WWW_COUNT; i++) {

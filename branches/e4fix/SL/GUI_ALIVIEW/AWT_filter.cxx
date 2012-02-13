@@ -10,7 +10,7 @@
 #include <arb_strbuf.h>
 
 //! recalc filter
-void awt_create_select_filter_window_aw_cb(void *, struct adfiltercbstruct *cbs)
+static void awt_create_select_filter_window_aw_cb(void *, struct adfiltercbstruct *cbs)
 {       // update the variables
     AW_root *aw_root = cbs->awr;
     char    buffer[256];
@@ -150,7 +150,7 @@ static void awt_add_sequences_to_list(struct adfiltercbstruct *cbs, const char *
     }
 }
 
-void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruct *cbs) {
+static void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruct *cbs) {
     // update list widget and variables
     GB_push_transaction(cbs->gb_main);
     GBDATA *gb_extended;

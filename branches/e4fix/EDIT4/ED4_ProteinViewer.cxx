@@ -58,7 +58,7 @@ static int  giNewAlignments         = 0;
 
 static AW_repeated_question *ASKtoOverWriteData = 0;
 
-bool PV_LookForNewTerminals(AW_root *root) {
+static bool PV_LookForNewTerminals(AW_root *root) {
     bool bTerminalsFound = true;
 
     int all = root->awar(AWAR_PV_DISPLAY_ALL)->read_int();
@@ -116,17 +116,17 @@ bool PV_LookForNewTerminals(AW_root *root) {
     return bTerminalsFound;
 }
 
-void PV_HideTerminal(ED4_orf_terminal *orfTerm) {
+static void PV_HideTerminal(ED4_orf_terminal *orfTerm) {
     ED4_sequence_manager *seqManager = orfTerm->get_parent(ED4_L_SEQUENCE)->to_sequence_manager();
     seqManager->hide_children();
 }
 
-void PV_UnHideTerminal(ED4_orf_terminal *orfTerm) {
+static void PV_UnHideTerminal(ED4_orf_terminal *orfTerm) {
     ED4_sequence_manager *seqManager = orfTerm->get_parent(ED4_L_SEQUENCE)->to_sequence_manager();
     seqManager->unhide_children();
 }
 
-void PV_HideAllTerminals() {
+static void PV_HideAllTerminals() {
     ED4_terminal *terminal = 0;
     for (terminal = ED4_ROOT->root_group_man->get_first_terminal();
          terminal;
@@ -152,7 +152,7 @@ void PV_HideAllTerminals() {
 }
 
 
-void PV_ManageTerminalDisplay(AW_root *root, ED4_orf_terminal *orfTerm, long int DispMode) {
+static void PV_ManageTerminalDisplay(AW_root *root, ED4_orf_terminal *orfTerm, long int DispMode) {
 
     int all, af_1, af_2, af_3, ac_1, ac_2, ac_3, adb;
     all =  root->awar(AWAR_PV_DISPLAY_ALL)->read_int();
@@ -272,7 +272,7 @@ void PV_ManageTerminalDisplay(AW_root *root, ED4_orf_terminal *orfTerm, long int
         }
 }
 
-void PV_ManageTerminals(AW_root *root) {
+static void PV_ManageTerminals(AW_root *root) {
 
     // First Hide all orf Terminals
     PV_HideAllTerminals();
@@ -502,7 +502,7 @@ static void PV_WriteTranslatedSequenceToDB(ED4_orf_terminal *aaSeqTerm, char *sp
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 
-void PV_SaveData(AW_window */*aww*/) {
+static void PV_SaveData(AW_window */*aww*/) {
     // IDEA:
     // 1. walk thru the orf terminals
     // 2. check the visibility status
@@ -677,7 +677,7 @@ static void TranslateGeneToAminoAcidSequence(AW_root * /* root */, ED4_orf_termi
     if (error) aw_message(GBS_global_string("Error: %s", error));
 }
 
-void PV_PrintMissingDBentryInformation() {
+static void PV_PrintMissingDBentryInformation() {
     if (gMissingCodonStart>0) {
         aw_message(GBS_global_string("WARNING:  'codon start' entry not found in %d of %d species! Using 1st base as codon start...",
                                      gMissingCodonStart,
@@ -692,7 +692,7 @@ void PV_PrintMissingDBentryInformation() {
     }
 }
 
-void PV_DisplayAminoAcidNames(AW_root *root) {
+static void PV_DisplayAminoAcidNames(AW_root *root) {
     GB_transaction dummy(GLOBAL_gb_main);
 
     ED4_terminal *terminal = 0;
@@ -732,11 +732,11 @@ void PV_DisplayAminoAcidNames(AW_root *root) {
     PV_RefreshWindow(root);
 }
 
-void PV_RefreshDisplay(AW_root *root) {
+static void PV_RefreshDisplay(AW_root *root) {
     PV_DisplayAminoAcidNames(root);
 }
 
-void PV_RefreshProtViewDisplay(AW_window *aww) {
+static void PV_RefreshProtViewDisplay(AW_window *aww) {
     if (gTerminalsCreated) {
         PV_RefreshDisplay(aww->get_root());
     }
@@ -783,7 +783,7 @@ void PV_SequenceUpdate_CB(GB_CB_TYPE gbtype)
         }
 }
 
-void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_species_manager *speciesManager) {
+static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_species_manager *speciesManager) {
     int  translationMode = 0;
     char namebuffer[BUFFERSIZE];
     for (int i = 0; i<PV_AA_Terminals4Species; i++)
@@ -881,7 +881,7 @@ void PV_AddOrfTerminalsToLoadedSpecies() {
    }
 }
 
-void PV_CreateAllTerminals(AW_root *root) {
+static void PV_CreateAllTerminals(AW_root *root) {
     // 1. Get the species terminal pointer
     // 2. Append the second terminal
     // 3. resize the multi-species manager
@@ -940,7 +940,7 @@ void PV_CallBackFunction(AW_root *root) {
 // --------------------------------------------------------------------------------
 //        Binding callback function to the AWARS
 // --------------------------------------------------------------------------------
-void PV_AddCallBacks(AW_root *awr) {
+static void PV_AddCallBacks(AW_root *awr) {
 
     awr->awar(AWAR_PV_DISPLAY_ALL)->add_callback(PV_CallBackFunction);
     awr->awar(AWAR_PROTVIEW_FORWARD_STRAND_1)->add_callback(PV_CallBackFunction);

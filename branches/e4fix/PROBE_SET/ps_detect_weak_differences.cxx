@@ -17,22 +17,22 @@
 #include <sys/times.h>
 
 // common globals
-SpeciesID          __MAX_ID;
-SpeciesID          __MIN_ID;
-PS_BitMap_Fast    *__MAP;
+static SpeciesID          __MAX_ID;
+static SpeciesID          __MIN_ID;
+static PS_BitMap_Fast    *__MAP;
 // globals for PS_detect_weak_differences
-IDVector          *__PATH;
-IDVector          *__INVERSE_PATH;
-unsigned long int  __COUNT_SET_OPS  = 0;
-unsigned long int  __COUNT_SET_OPS2 = 0;
-char              *__NODES_LEFT;
+static IDVector          *__PATH;
+static IDVector          *__INVERSE_PATH;
+static unsigned long int  __COUNT_SET_OPS  = 0;
+static unsigned long int  __COUNT_SET_OPS2 = 0;
+static char              *__NODES_LEFT;
 // globals for PS_print_and_evaluate_map
-IDSet             *__PATHSET;
-IDID2IDSetMap     *__PAIR2PATH;
-SpeciesID          __ONEMATCH_MIN_ID;
-SpeciesID          __ONEMATCH_MAX_ID;
+static IDSet             *__PATHSET;
+static IDID2IDSetMap     *__PAIR2PATH;
+static SpeciesID          __ONEMATCH_MIN_ID;
+static SpeciesID          __ONEMATCH_MAX_ID;
 
-void PS_print_path() {
+static void PS_print_path() {
     printf("__PATH %3zu :", __PATH->size());
     int c = 1;
     for (IDVectorCIter i = __PATH->begin(); i != __PATH->end(); ++i, ++c) {
@@ -42,7 +42,7 @@ void PS_print_path() {
     printf("\n");
 }
 
-void PS_print_inverse_path() {
+static void PS_print_inverse_path() {
     printf("__INVERSE_PATH %3zu :", __INVERSE_PATH->size());
     int c = 1;
     for (IDVectorCIter i = __INVERSE_PATH->begin(); i != __INVERSE_PATH->end(); ++i, ++c) {
@@ -53,7 +53,7 @@ void PS_print_inverse_path() {
 }
 
 
-void PS_detect_weak_differences_stepdown(const PS_NodePtr _ps_node,
+static void PS_detect_weak_differences_stepdown(const PS_NodePtr _ps_node,
                                           const SpeciesID  _parent_ID,
                                           const long       _depth) {
     //  Recursively walk through tree and make a bool-matrix of SpeciesID's
@@ -189,7 +189,7 @@ void PS_detect_weak_differences_stepdown(const PS_NodePtr _ps_node,
     }
 }
 
-void PS_detect_weak_differences(const PS_NodePtr _root_node) {
+static void PS_detect_weak_differences(const PS_NodePtr _root_node) {
     //
     // make bitmap
     //
@@ -283,7 +283,7 @@ void PS_find_probes_for_pairs(const PS_NodePtr _ps_node, ID2IDSet &_pairs) {
     __PATHSET->erase(id);
 }
 
-void PS_print_and_evaluate_map(const PS_NodePtr _root_node, const char *_result_filename) {
+static void PS_print_and_evaluate_map(const PS_NodePtr _root_node, const char *_result_filename) {
     //
     // print and evaluate bitmap
     //

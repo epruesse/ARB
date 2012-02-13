@@ -1243,7 +1243,7 @@ void group_species_cb(AW_window *aww, AW_CL cl_use_fields, AW_CL) {
     }
 }
 
-void ED4_load_new_config(char *string) {
+static void ED4_load_new_config(char *string) {
     GB_transaction ta(GLOBAL_gb_main);
 
     ED4_ROOT->main_manager->clear_whole_background();
@@ -1376,7 +1376,7 @@ void ED4_new_editor_window(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
 
 
 
-void ED4_start_editor_on_configuration(AW_window *aww) {
+static void ED4_start_editor_on_configuration(AW_window *aww) {
     aww->hide();
     char *cn = aww->get_root()->awar(AWAR_EDIT_CONFIGURATION)->read_string();
 

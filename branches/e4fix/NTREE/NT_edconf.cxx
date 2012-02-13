@@ -87,7 +87,7 @@ static void mark_species(GBT_TREE *node, Store_species **extra_marked_species) {
 
 
 
-GBT_TREE *rightmost_leaf(GBT_TREE *node) {
+static GBT_TREE *rightmost_leaf(GBT_TREE *node) {
     nt_assert(node);
     while (!node->is_leaf) {
         node = node->rightson;
@@ -96,7 +96,7 @@ GBT_TREE *rightmost_leaf(GBT_TREE *node) {
     return node;
 }
 
-GBT_TREE *left_neighbour_leaf(GBT_TREE *node) {
+static GBT_TREE *left_neighbour_leaf(GBT_TREE *node) {
     if (node) {
         GBT_TREE *father = node->father;
         while (father) {
@@ -115,7 +115,7 @@ GBT_TREE *left_neighbour_leaf(GBT_TREE *node) {
     return 0;
 }
 
-int nt_build_conf_string_rek(GB_HASH *used, GBT_TREE *tree, GBS_strstruct *memfile,
+static int nt_build_conf_string_rek(GB_HASH *used, GBT_TREE *tree, GBS_strstruct *memfile,
                              Store_species **extra_marked_species, int use_species_aside,
                              int *auto_mark, int marked_at_left, int *marked_at_right)
 {
@@ -274,7 +274,7 @@ static long nt_build_sai_string_by_hash(const char *key, long val, void *cd_sai_
 }
 
 
-void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile) {
+static void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile) {
     //! collect all Sais, place some SAI in top area, rest in middle
 
     GBDATA *gb_sai_data = GBT_get_SAI_data(GLOBAL_gb_main);
@@ -327,7 +327,7 @@ void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile) {
     }
 }
 
-void nt_build_conf_marked(GB_HASH *used, GBS_strstruct *file) {
+static void nt_build_conf_marked(GB_HASH *used, GBS_strstruct *file) {
     GBS_chrcat(file, 1);            // Separated by 1
     GBS_strcat(file, "FMore Sequences");
     GBDATA *gb_species;
@@ -357,7 +357,7 @@ enum extractType {
     CONF_COMBINE // logical AND
 };
 
-void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType) {
+static void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType) {
     GB_transaction  dummy2(GLOBAL_gb_main);         // open close transaction
     AW_root        *aw_root = aww->get_root();
     char           *cn      = aw_root->awar(AWAR_CONFIGURATION)->read_string();
@@ -452,7 +452,7 @@ void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType) {
     free(cn);
 }
 
-void nt_delete_configuration(AW_window *aww) {
+static void nt_delete_configuration(AW_window *aww) {
     GB_transaction transaction_var(GLOBAL_gb_main);
     char *cn = aww->get_root()->awar(AWAR_CONFIGURATION)->read_string();
     GBDATA *gb_configuration = GBT_find_configuration(GLOBAL_gb_main, cn);
@@ -546,7 +546,7 @@ static void nt_store_configuration(AW_window *) {
     aw_message_if(err);
 }
 
-void nt_rename_configuration(AW_window *aww) {
+static void nt_rename_configuration(AW_window *aww) {
     AW_awar  *awar_curr_cfg = aww->get_root()->awar(AWAR_CONFIGURATION);
     char     *old_name      = awar_curr_cfg->read_string();
     GB_ERROR  err           = 0;

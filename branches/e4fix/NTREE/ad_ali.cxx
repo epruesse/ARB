@@ -18,7 +18,7 @@
 extern GBDATA *GLOBAL_gb_main;
 
 
-void alignment_vars_callback(AW_root *aw_root)
+static void alignment_vars_callback(AW_root *aw_root)
 {
     GB_push_transaction(GLOBAL_gb_main);
     char    *use = aw_root->awar("presets/use")->read_string();
@@ -77,7 +77,7 @@ void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def)
     GB_pop_transaction(GLOBAL_gb_main);
 }
 
-void ad_al_delete_cb(AW_window *aww) {
+static void ad_al_delete_cb(AW_window *aww) {
     if (aw_ask_sure("Are you sure to delete all data belonging to this alignment")) {
         char           *source = aww->get_root()->awar("presets/use")->read_string();
         GB_transaction  ta(GLOBAL_gb_main);
@@ -92,7 +92,7 @@ void ad_al_delete_cb(AW_window *aww) {
 }
 
 
-void ed_al_check_auto_format(AW_window *aww) {
+static void ed_al_check_auto_format(AW_window *aww) {
     AW_root *awr = aww->get_root();
     char    *use = awr->awar("presets/use")->read_string();
     if (strcmp(use, "ali_genom") == 0) {
@@ -100,7 +100,7 @@ void ed_al_check_auto_format(AW_window *aww) {
     }
 }
 
-void ed_al_check_len_cb(AW_window *aww)
+static void ed_al_check_len_cb(AW_window *aww)
 {
     char *error = 0;
     char *use = aww->get_root()->awar("presets/use")->read_string();
@@ -110,10 +110,10 @@ void ed_al_check_len_cb(AW_window *aww)
     if (error) aw_message(error);
     free(use);
 }
-void ed_al_export_sec_cb(AW_window */*aww*/) {
+static void ed_al_export_sec_cb(AW_window */*aww*/) {
     aw_message("This Function is not implemented,\nPlease press 'CHECK' to do this");
 }
-void ed_al_align_cb(AW_window *aww)
+static void ed_al_align_cb(AW_window *aww)
 {
     char     *use = aww->get_root()->awar("presets/use")->read_string();
     GB_begin_transaction(GLOBAL_gb_main);
@@ -124,7 +124,7 @@ void ed_al_align_cb(AW_window *aww)
     ed_al_check_len_cb(aww);
 }
 
-void aa_copy_delete_rename(AW_window *aww, AW_CL copy, AW_CL dele) {
+static void aa_copy_delete_rename(AW_window *aww, AW_CL copy, AW_CL dele) {
     char *source = aww->get_root()->awar("presets/use")->read_string();
     char *dest   = aww->get_root()->awar("presets/alignment_dest")->read_string();
 
@@ -143,7 +143,7 @@ void aa_copy_delete_rename(AW_window *aww, AW_CL copy, AW_CL dele) {
     free(dest);
 }
 
-AW_window *create_alignment_copy_window(AW_root *root)
+static AW_window *create_alignment_copy_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "COPY_ALIGNMENT", "ALIGNMENT COPY");
@@ -165,7 +165,7 @@ AW_window *create_alignment_copy_window(AW_root *root)
 
     return (AW_window *)aws;
 }
-AW_window *create_alignment_rename_window(AW_root *root)
+static AW_window *create_alignment_rename_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "RENAME_ALIGNMENT", "ALIGNMENT RENAME");
@@ -188,7 +188,7 @@ AW_window *create_alignment_rename_window(AW_root *root)
     return (AW_window *)aws;
 }
 
-void aa_create_alignment(AW_window *aww) {
+static void aa_create_alignment(AW_window *aww) {
     GB_ERROR  error = GB_begin_transaction(GLOBAL_gb_main);
     if (!error) {
         char   *name             = aww->get_root()->awar("presets/alignment_dest")->read_string();
@@ -204,7 +204,7 @@ void aa_create_alignment(AW_window *aww) {
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 
-AW_window *create_alignment_create_window(AW_root *root)
+static AW_window *create_alignment_create_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "CREATE_ALIGNMENT", "ALIGNMENT CREATE");

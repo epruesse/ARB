@@ -124,7 +124,7 @@ void gb_untouch_me(GBDATA * gbc) {
     }
 }
 
-void gb_set_update_in_server_flags(GBCONTAINER * gbc) {
+static void gb_set_update_in_server_flags(GBCONTAINER * gbc) {
     int             index;
     GBDATA         *gbd;
 
@@ -172,8 +172,7 @@ void gb_create_header_array(GBCONTAINER *gbc, int size) {
     SET_GB_DATA_LIST_HEADER(gbc->d, nl);
 }
 
-void gb_link_entry(GBCONTAINER* father, GBDATA * gbd, long index_pos)
-{
+static void gb_link_entry(GBCONTAINER* father, GBDATA * gbd, long index_pos) {
     /* if index_pos == -1 -> to end of data;
        else special index position; error when data already exists in index pos */
 
@@ -220,8 +219,7 @@ void gb_link_entry(GBCONTAINER* father, GBDATA * gbd, long index_pos)
     father->d.size++;
 }
 
-void gb_unlink_entry(GBDATA * gbd)
-{
+static void gb_unlink_entry(GBDATA * gbd) {
     GBCONTAINER *father = GB_FATHER(gbd);
 
     if (father)
@@ -307,6 +305,20 @@ GBDATA *gb_make_pre_defined_entry(GBCONTAINER *father, GBDATA *gbd, long index_p
     gb_write_index_key(father, gbd->index, keyq);
 
     return gbd;
+}
+
+static void gb_write_key(GBDATA *gbd, const char *s) {
+    GBQUARK new_index = 0;
+
+    if (s) {
+        GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+        new_index          = (int)GBS_read_hash(Main->key_2_index_hash, s);
+
+        if (!new_index) {                           // create new index
+            new_index = (int)gb_create_key(Main, s, true);
+        }
+    }
+    gb_write_index_key(GB_FATHER(gbd), gbd->index, new_index);
 }
 
 void gb_rename_entry(GBCONTAINER *gbc, const char *new_key) {
@@ -464,25 +476,7 @@ void gb_pre_delete_entry(GBDATA *gbd) {
     GB_DELETE_EXT(gbd, gbm_index);
 }
 
-void gb_delete_entry(GBDATA **gbd_ptr) {
-    GBDATA *gbd       = *gbd_ptr;
-    long    type      = GB_TYPE(gbd);
-
-    if (type == GB_DB) {
-        gb_delete_entry((GBCONTAINER**)gbd_ptr);
-    }
-    else {
-        long gbm_index = GB_GBM_INDEX(gbd);
-
-        gb_pre_delete_entry(gbd);
-        if (type >= GB_BITS) GB_FREEDATA(gbd);
-        gbm_free_mem(gbd, sizeof(GBDATA), gbm_index);
-        
-        *gbd_ptr = 0;                               // avoid further usage
-    }
-}
-
-void gb_delete_entry(GBCONTAINER **gbc_ptr) {
+static void gb_delete_entry(GBCONTAINER **gbc_ptr) {
     GBCONTAINER *gbc       = *gbc_ptr;
     long         gbm_index = GB_GBM_INDEX(gbc);
 
@@ -510,6 +504,25 @@ void gb_delete_entry(GBCONTAINER **gbc_ptr) {
 
     *gbc_ptr = 0;                                   // avoid further usage
 }
+
+void gb_delete_entry(GBDATA **gbd_ptr) {
+    GBDATA *gbd       = *gbd_ptr;
+    long    type      = GB_TYPE(gbd);
+
+    if (type == GB_DB) {
+        gb_delete_entry((GBCONTAINER**)gbd_ptr);
+    }
+    else {
+        long gbm_index = GB_GBM_INDEX(gbd);
+
+        gb_pre_delete_entry(gbd);
+        if (type >= GB_BITS) GB_FREEDATA(gbd);
+        gbm_free_mem(gbd, sizeof(GBDATA), gbm_index);
+        
+        *gbd_ptr = 0;                               // avoid further usage
+    }
+}
+
 
 static void gb_delete_main_entry(GBCONTAINER **gb_main_ptr) {
     GBCONTAINER *gb_main  = *gb_main_ptr;
@@ -562,7 +575,7 @@ void gb_delete_dummy_father(GBCONTAINER **dummy_father) {
 // ---------------------
 //      Data Storage
 
-gb_transaction_save *gb_new_gb_transaction_save(GBDATA *gbd) {
+static gb_transaction_save *gb_new_gb_transaction_save(GBDATA *gbd) {
     // Note: does not increment the refcounter
     gb_transaction_save *ts = (gb_transaction_save *)gbm_get_mem(sizeof(gb_transaction_save), GBM_CB_INDEX);
 
@@ -611,7 +624,7 @@ void gb_del_ref_and_extern_gb_transaction_save(gb_transaction_save *ts) {
     gb_del_ref_gb_transaction_save(ts);
 }
 
-void gb_abortdata(GBDATA *gbd) {
+static void gb_abortdata(GBDATA *gbd) {
     gb_transaction_save *old;
 
     GB_INDEX_CHECK_OUT(gbd);
@@ -694,20 +707,6 @@ void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index) {
     }
 
     hls[index].flags.key_quark = new_index;
-}
-
-void gb_write_key(GBDATA *gbd, const char *s) {
-    GBQUARK new_index = 0;
-
-    if (s) {
-        GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-        new_index          = (int)GBS_read_hash(Main->key_2_index_hash, s);
-
-        if (!new_index) {                           // create new index
-            new_index = (int)gb_create_key(Main, s, true);
-        }
-    }
-    gb_write_index_key(GB_FATHER(gbd), gbd->index, new_index);
 }
 
 void gb_create_key_array(GB_MAIN_TYPE *Main, int index) {

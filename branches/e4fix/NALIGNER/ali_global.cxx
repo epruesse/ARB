@@ -40,7 +40,7 @@
 #define USE_SPECIFIED_FAMILY_DEFAULT 0
 
 
-double default_substitute_matrix[5][5] = {
+static double default_substitute_matrix[5][5] = {
     // a    c    g    u    -
     { 0.0, 3.0, 1.0, 3.0, 5.0 }, // a
     { 3.0, 0.0, 3.0, 1.0, 5.0 }, // c
@@ -49,7 +49,7 @@ double default_substitute_matrix[5][5] = {
     { 5.0, 5.0, 5.0, 5.0, 0.0 } // -
 };
 
-double default_binding_matrix[5][5] = {
+static double default_binding_matrix[5][5] = {
     // a    c    g    u    -
     { 9.9, 9.9, 2.0, 0.9, 9.9 }, // a
     { 9.9, 9.9, 0.6, 9.9, 9.9 }, // c

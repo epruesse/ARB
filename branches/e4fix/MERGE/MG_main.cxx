@@ -46,9 +46,9 @@ STATIC_ATTRIBUTED(__ATTR__NORETURN, void MG_exit(AW_window *aww, AW_CL cl_reload
     exit(EXIT_SUCCESS);
 }
 
-bool mg_save_enabled = true;
+static bool mg_save_enabled = true;
 
-void MG_save_merge_cb(AW_window *aww) {
+static void MG_save_merge_cb(AW_window *aww) {
     AW_root *awr  = aww->get_root();
     char    *name = awr->awar(AWAR_MERGE_DB"/file_name")->read_string();
 
@@ -64,7 +64,7 @@ void MG_save_merge_cb(AW_window *aww) {
     free(name);
 }
 
-AW_window *MG_save_source_cb(AW_root *aw_root, char *base_name)
+static AW_window *MG_save_source_cb(AW_root *aw_root, char *base_name)
 {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
@@ -88,7 +88,7 @@ AW_window *MG_save_source_cb(AW_root *aw_root, char *base_name)
     return (AW_window *)aws;
 }
 
-void MG_save_cb(AW_window *aww) {
+static void MG_save_cb(AW_window *aww) {
     AW_root *awr  = aww->get_root();
     char    *name = awr->awar(AWAR_MAIN_DB"/file_name")->read_string();
     char    *type = awr->awar(AWAR_MAIN_DB"/type")->read_string();
@@ -108,7 +108,7 @@ void MG_save_cb(AW_window *aww) {
     free(name);
 }
 
-AW_window *MG_save_result_cb(AW_root *aw_root, char *base_name)
+static AW_window *MG_save_result_cb(AW_root *aw_root, char *base_name)
 {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
@@ -146,7 +146,7 @@ AW_window *MG_save_result_cb(AW_root *aw_root, char *base_name)
     return (AW_window *)aws;
 }
 
-void MG_save_quick_result_cb(AW_window *aww) {
+static void MG_save_quick_result_cb(AW_window *aww) {
     char *name = aww->get_root()->awar(AWAR_MAIN_DB"/file_name")->read_string();
 
     arb_progress progress("Saving database");
@@ -314,7 +314,7 @@ void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest
     }
 }
 
-void MG_start_cb(AW_window *aww)
+static void MG_start_cb(AW_window *aww)
 {
     AW_root  *awr   = aww->get_root();
     GB_ERROR  error = 0;
@@ -372,7 +372,7 @@ void MG_start_cb(AW_window *aww)
 }
 
 
-AW_window *create_merge_init_window(AW_root *awr)
+static AW_window *create_merge_init_window(AW_root *awr)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(awr, "MERGE_SELECT_DATABASES", "MERGE SELECT TWO DATABASES");

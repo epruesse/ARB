@@ -95,7 +95,7 @@ BI_helix::~BI_helix() {
     }
 }
 
-long BI_helix_check_error(const char *key, long val, void *) {
+static long BI_helix_check_error(const char *key, long val, void *) {
     struct helix_stack *stack = (struct helix_stack *)val;
     if (!BI_helix::get_error() && stack) { // don't overwrite existing error
         BI_helix::set_error(GBS_global_string("Too many '%c' in Helix '%s' pos %li", stack->c, key, stack->pos));
@@ -104,7 +104,7 @@ long BI_helix_check_error(const char *key, long val, void *) {
 }
 
 
-long BI_helix_free_hash(const char *, long val, void *) {
+static long BI_helix_free_hash(const char *, long val, void *) {
     struct helix_stack *stack = (struct helix_stack *)val;
     struct helix_stack *next;
     for (; stack; stack = next) {

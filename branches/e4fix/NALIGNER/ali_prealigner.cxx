@@ -11,7 +11,7 @@
 #include "ali_prealigner.hxx"
 #include "ali_aligner.hxx"
 
-unsigned long   random_stat[6] = { 0, 0, 0, 0, 0, 0 };
+static unsigned long   random_stat[6] = { 0, 0, 0, 0, 0, 0 };
 
 void ali_prealigner_mask::insert(ALI_MAP * in_map, float costs) {
     // Insert a new map

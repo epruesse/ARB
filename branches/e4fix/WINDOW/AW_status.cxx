@@ -94,7 +94,9 @@ struct aw_stg_struct {
     long       last_est_count;
     long       last_estimation[AW_EST_BUFFER];
     long       last_used_est;
-} aw_stg = {
+};
+
+static aw_stg_struct aw_stg = {
     { 0, 0 },                                       // fd_to
     { 0, 0 },                                       // fd_from
     AW_STATUS_OK,                                   // mode

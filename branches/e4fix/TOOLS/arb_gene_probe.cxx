@@ -218,7 +218,7 @@ static GB_ERROR create_data_entry(GBDATA *gb_species2, const char *sequence, int
 }
 
 #if defined(DEBUG)
-void CHECK_SEMI_ESCAPED(const char *name) {
+static void CHECK_SEMI_ESCAPED(const char *name) {
     // checks whether all ";\\" are escaped
     while (*name) {
         gp_assert(*name != ';'); // oops, unescaped ';'

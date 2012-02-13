@@ -24,7 +24,7 @@ extern GBDATA *GLOBAL_gb_main;
 #define AWAR_SPECIES_JOIN_SEP   "/tmp/NT/species_join/separator"
 #define AWAR_SPECIES_JOIN_SEP2  "/tmp/NT/species_join/separator_sequences"
 
-GB_ERROR nt_species_join(GBDATA *dest, GBDATA *source, int deep, char *sep, char *sep2) {
+static GB_ERROR nt_species_join(GBDATA *dest, GBDATA *source, int deep, char *sep, char *sep2) {
     GB_TYPES dtype = GB_read_type(dest);
     GB_TYPES stype = GB_read_type(source);
     if (dtype != stype) return 0;
@@ -104,7 +104,7 @@ GB_ERROR nt_species_join(GBDATA *dest, GBDATA *source, int deep, char *sep, char
     return error;
 }
 
-void species_rename_join(AW_window *aww) {
+static void species_rename_join(AW_window *aww) {
     char     *field = aww->get_root()->awar(AWAR_SPECIES_JOIN_FIELD)->read_string();
     char     *sep   = aww->get_root()->awar(AWAR_SPECIES_JOIN_SEP)->read_string();
     char     *sep2  = aww->get_root()->awar(AWAR_SPECIES_JOIN_SEP2)->read_string();

@@ -338,7 +338,7 @@ GB_BUFFER gb_uncompress_bits(const char *source, long size, char c_0, char c_1)
  * 1..119      [byte]+                 'command' data bytes follow
  */
 
-char *g_b_write_run(char *dest, int scount, int lastbyte) {
+static char *g_b_write_run(char *dest, int scount, int lastbyte) {
     while (scount> 0xffff) {
         *(dest++) = 0x100-122;
         *(dest++) = 0xff;
@@ -444,7 +444,7 @@ void gb_compress_equal_bytes_2(const char *source, long size, long *msize, char 
     if (*msize >size*9/8) printf("ssize %d, dsize %d\n", (int)size, (int)*msize);
 }
 
-GB_BUFFER gb_compress_equal_bytes(const char *source, long size, long *msize, int last_flag) {
+static GB_BUFFER gb_compress_equal_bytes(const char *source, long size, long *msize, int last_flag) {
     char *dest;
     char *buffer;
 
@@ -463,8 +463,7 @@ struct huffmann_list {
 
 static huffmann_list *huffmann_listhead = NULL;
 
-void gb_compress_huffmann_add_to_list(long val, gb_compress_list *element)
-{
+static void gb_compress_huffmann_add_to_list(long val, gb_compress_list *element) {
     huffmann_list *dat, *search, *searchlast;
 
     dat          = (huffmann_list *)gbm_get_mem(sizeof(huffmann_list), GBM_CB_INDEX);
@@ -491,8 +490,7 @@ void gb_compress_huffmann_add_to_list(long val, gb_compress_list *element)
     }
 }
 
-long gb_compress_huffmann_pop(long *val, gb_compress_list **element)
-{
+static long gb_compress_huffmann_pop(long *val, gb_compress_list **element) {
     huffmann_list *dat;
     if ((dat = huffmann_listhead)) {
         huffmann_listhead = dat->next;
@@ -507,8 +505,7 @@ long gb_compress_huffmann_pop(long *val, gb_compress_list **element)
     }
 }
 
-char *gb_compress_huffmann_rek(gb_compress_list *bc, int bits, int bitcnt, char *dest)
-{
+static char *gb_compress_huffmann_rek(gb_compress_list *bc, int bits, int bitcnt, char *dest) {
     if (bc->command == GB_CD_NODE) {
         dest = gb_compress_huffmann_rek(bc->son[0], (bits<<1), bitcnt+1, dest);
         dest = gb_compress_huffmann_rek(bc->son[1], (bits<<1)+1, bitcnt+1, dest);
@@ -526,8 +523,7 @@ char *gb_compress_huffmann_rek(gb_compress_list *bc, int bits, int bitcnt, char 
     }
 }
 
-GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize, int last_flag)
-{
+static GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize, int last_flag) {
     char          *buffer;
     unsigned char *s;
     char          *dest;
@@ -834,7 +830,7 @@ static GB_BUFFER gb_uncompress_longs(GB_CBUFFER data, long size, long *new_size)
     return res;
 }
 
-GB_BUFFER gb_compress_longs(GB_CBUFFER source, long size, int last_flag) {
+static GB_BUFFER gb_compress_longs(GB_CBUFFER source, long size, int last_flag) {
     long        mi, i;
     const char *p;
     char       *s0, *s1, *s2, *s3;

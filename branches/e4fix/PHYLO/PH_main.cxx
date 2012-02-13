@@ -43,7 +43,7 @@ GB_ERROR ph_check_initialized() {
     return 0;
 }
 
-void create_filter_text()
+static void create_filter_text()
 {
     filter_text = (char **) calloc(FILTER_MODES, sizeof (char *));
     for (int i=0; i<FILTER_MODES; i++) filter_text[i] = new char[100];
@@ -56,7 +56,7 @@ void create_filter_text()
     strcpy(filter_text[TREAT_AS_REGULAR],     "treat as regular character                        ");
 }
 
-void startup_sequence_cb(AW_window *aww, AW_CL cd1, AW_CL cl_aww) {
+static void startup_sequence_cb(AW_window *aww, AW_CL cd1, AW_CL cl_aww) {
     if (aww) aww->hide();
     AW_root *aw_root = (AW_root *) cd1;
     // loading database
@@ -103,7 +103,7 @@ void expose_callb(AW_window */*aw*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
 }
 
 
-void resize_callb(AW_window */*aw*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+static void resize_callb(AW_window */*aw*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     if (PH_display::ph_display) {
         PH_display::ph_display->resized();
         PH_display::ph_display->display();
@@ -249,7 +249,7 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
     return error;
 }
 
-void PH_save_ml_multiline_cb(AW_window *aww) {
+static void PH_save_ml_multiline_cb(AW_window *aww) {
     GB_begin_transaction(GLOBAL_gb_main);
     GB_ERROR error = 0;
     char *fname = aww->get_root()->awar("tmp/phylo/markerlinename")->read_string();
@@ -279,7 +279,7 @@ void PH_save_ml_multiline_cb(AW_window *aww) {
     }
 }
 
-void PH_save_ml_cb(AW_window *aww) {
+static void PH_save_ml_cb(AW_window *aww) {
     GB_begin_transaction(GLOBAL_gb_main);
     GB_ERROR error = 0;
 
@@ -383,7 +383,7 @@ void PH_save_ml_cb(AW_window *aww) {
 }
 
 
-AW_window *PH_save_markerline(AW_root *root, AW_CL cl_multi_line)
+static AW_window *PH_save_markerline(AW_root *root, AW_CL cl_multi_line)
 {
     int multi_line = int(cl_multi_line); // ==1 -> save three SAI's usable as column percentage
 
@@ -422,7 +422,7 @@ AW_window *PH_save_markerline(AW_root *root, AW_CL cl_multi_line)
     return aws;
 }
 
-AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AWT_graphic * /*awd*/) {
+static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AWT_graphic * /*awd*/) {
     AW_window_menu_modes *awm = new AW_window_menu_modes();
     awm->init(aw_root, "ARB_PHYLO", "ARB_PHYLO", 830, 630);
 
@@ -500,7 +500,7 @@ AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AWT_graph
 }
 
 
-AW_window *create_select_alignment_window(AW_root *aw_root, AW_CL cl_aww)
+static AW_window *create_select_alignment_window(AW_root *aw_root, AW_CL cl_aww)
 {
     AW_window_simple *aws = new AW_window_simple;
 

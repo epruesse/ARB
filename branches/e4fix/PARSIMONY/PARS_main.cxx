@@ -74,7 +74,7 @@ STATIC_ATTRIBUTED(__ATTR__NORETURN, void pars_exit(AW_window *aww)) {
     exit(0);
 }
 
-void PARS_export_cb(AW_window *aww, AWT_canvas *, AW_CL mode) {
+static void PARS_export_cb(AW_window *aww, AWT_canvas *, AW_CL mode) {
     if (mode &1) {      // export tree
         pars_export_tree();
     }
@@ -84,13 +84,13 @@ void PARS_export_cb(AW_window *aww, AWT_canvas *, AW_CL mode) {
     }
 }
 
-void AP_user_push_cb(AW_window *aww, AWT_canvas *)
+static void AP_user_push_cb(AW_window *aww, AWT_canvas *)
 {
     ap_main->user_push();
     aww->get_root()->awar(AWAR_STACKPOINTER)->write_int(ap_main->get_user_push_counter());
 }
 
-void AP_user_pop_cb(AW_window *aww, AWT_canvas *ntw)
+static void AP_user_pop_cb(AW_window *aww, AWT_canvas *ntw)
 {
     if (ap_main->get_user_push_counter()<=0) {
         aw_message("No tree on stack.");

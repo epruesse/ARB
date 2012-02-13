@@ -25,7 +25,7 @@ void create_insertchar_variables(AW_root *root, AW_default db1) {
     root->awar_string("insertchar/characters", "", db1);
 }
 
-void awt_inserchar_event(AW_window *aws, AW_CL awcl_mode) {
+static void awt_inserchar_event(AW_window *aws, AW_CL awcl_mode) {
     int mode = (int)awcl_mode; // 1 = insert, -1 = delete
     nt_assert(mode == -1 || mode == 1);
 

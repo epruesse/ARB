@@ -151,7 +151,7 @@ static void st_check_cb(AW_window *aww, AW_CL cl_st_check_cb_data) {
     if (error) aw_message(error);
 }
 
-void STAT_create_awars(AW_root *root, GBDATA *gb_main) {
+static void STAT_create_awars(AW_root *root, GBDATA *gb_main) {
     root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-",    gb_main);
     root->awar_string(AWAR_TREE,              "tree_main", gb_main);
 

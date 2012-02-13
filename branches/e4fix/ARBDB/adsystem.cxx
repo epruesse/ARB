@@ -65,7 +65,7 @@ GB_ERROR gb_load_dictionary_data(GBDATA *gb_main, const char *key, char **dict_d
     return error;
 }
 
-GB_DICTIONARY *gb_create_dict(GBDATA *gb_dict) {
+static GB_DICTIONARY *gb_create_dict(GBDATA *gb_dict) {
     GB_DICTIONARY *dict = (GB_DICTIONARY *)GB_calloc(sizeof(GB_DICTIONARY), 1);
     const char    *data;
     GB_NINT       *idata;
@@ -85,11 +85,11 @@ GB_DICTIONARY *gb_create_dict(GBDATA *gb_dict) {
     return dict;
 }
 
-void delete_gb_dictionary(GB_DICTIONARY *dict) {
+static void delete_gb_dictionary(GB_DICTIONARY *dict) {
     free(dict);
 }
 
-void gb_system_key_changed_cb(GBDATA *gbd, int *cl, GB_CB_TYPE type) {
+static void gb_system_key_changed_cb(GBDATA *gbd, int *cl, GB_CB_TYPE type) {
     GBQUARK q = (GBQUARK)(long) cl;
 
     if (type == GB_CB_DELETE) {
@@ -104,7 +104,7 @@ void gb_system_key_changed_cb(GBDATA *gbd, int *cl, GB_CB_TYPE type) {
     }
 }
 
-void gb_system_master_changed_cb(GBDATA *gbd, int *cl, GB_CB_TYPE type) {
+static void gb_system_master_changed_cb(GBDATA *gbd, int *cl, GB_CB_TYPE type) {
     GBQUARK q = (GBQUARK)(long) cl;
     if (type == GB_CB_DELETE) {
         GB_MAIN_TYPE *Main = gb_get_main_during_cb();
@@ -271,6 +271,13 @@ struct DictData {
     long  size;
 };
 
+static void GB_free_dictionary(DictData *dd) {
+    if (dd) {
+        if (dd->data) gbm_free_mem(dd->data, dd->size, GBM_DICT_INDEX);
+        free(dd);
+    }
+}
+
 DictData *GB_get_dictionary(GBDATA *gb_main, const char *key) {
     /* return DictData or
      * NULL if no dictionary or error occurred
@@ -299,9 +306,3 @@ GB_ERROR GB_set_dictionary(GBDATA *gb_main, const char *key, const DictData *dd)
     return error;
 }
 
-void GB_free_dictionary(DictData *dd) {
-    if (dd) {
-        if (dd->data) gbm_free_mem(dd->data, dd->size, GBM_DICT_INDEX);
-        free(dd);
-    }
-}

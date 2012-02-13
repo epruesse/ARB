@@ -298,7 +298,7 @@ GB_ERROR AP_pos_var::save_sai(const char *sai_name) {
 
 
 // Calculate the positional variability: window interface
-void AP_calc_pos_var_pars(AW_window *aww) {
+static void AP_calc_pos_var_pars(AW_window *aww) {
     AW_root        *root  = aww->get_root();
     GB_transaction  dummy(GLOBAL_gb_main);
     char           *tree_name;

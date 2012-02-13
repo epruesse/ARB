@@ -28,7 +28,7 @@ void MG_create_trees_awar(AW_root *aw_root, AW_default aw_def)
     aw_root->awar_string(AWAR_TREE_DEST2, "",   aw_def);
 }
 
-void MG_tree_rename_cb(AW_window *aww, GBDATA *gbd, int tree_nr) {
+static void MG_tree_rename_cb(AW_window *aww, GBDATA *gbd, int tree_nr) {
     const char *tsource = tree_nr == 1 ? AWAR_TREE_NAME1 : AWAR_TREE_NAME2;
     const char *tdest   = tree_nr == 1 ? AWAR_TREE_DEST1 : AWAR_TREE_DEST2;
     char       *source  = aww->get_root()->awar(tsource)->read_string();
@@ -67,7 +67,7 @@ void MG_tree_rename_cb(AW_window *aww, GBDATA *gbd, int tree_nr) {
     free(dest);
 }
 
-AW_window *MG_create_tree_rename_window1(AW_root *root)
+static AW_window *MG_create_tree_rename_window1(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "MERGE_RENAME_TREE_1", "TREE RENAME 1");
@@ -90,7 +90,7 @@ AW_window *MG_create_tree_rename_window1(AW_root *root)
     return (AW_window *)aws;
 }
 
-AW_window *MG_create_tree_rename_window2(AW_root *root)
+static AW_window *MG_create_tree_rename_window2(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "MERGE_RENAME_TREE_2", "TREE RENAME 2");
@@ -112,7 +112,7 @@ AW_window *MG_create_tree_rename_window2(AW_root *root)
 
     return (AW_window *)aws;
 }
-void MG_tr_delete_cb(AW_window *aww, GBDATA *gbd, long tree_nr) {
+static void MG_tr_delete_cb(AW_window *aww, GBDATA *gbd, long tree_nr) {
     const char *tsource = tree_nr == 1 ? AWAR_TREE_NAME1 : AWAR_TREE_NAME2;
     char       *source  = aww->get_root()->awar(tsource)->read_string();
     GB_ERROR    error   = GB_begin_transaction(gbd);
@@ -129,7 +129,7 @@ void MG_tr_delete_cb(AW_window *aww, GBDATA *gbd, long tree_nr) {
     GB_end_transaction_show_error(gbd, error, aw_message);
     free(source);
 }
-void MG_transfer_tree(AW_window *aww) {
+static void MG_transfer_tree(AW_window *aww) {
     AW_root *awr    = aww->get_root();
     char    *source = awr->awar(AWAR_TREE_NAME1)->read_string();
     char    *dest   = awr->awar(AWAR_TREE_NAME1)->read_string();

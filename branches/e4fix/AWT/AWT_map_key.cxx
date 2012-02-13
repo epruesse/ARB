@@ -24,10 +24,9 @@ char ed_key::map_key(char k) const {
     return map[i];
 }
 
-void ed_rehash_mapping(AW_root *awr, ed_key *ek)
-{
+void ed_key::rehash_mapping(AW_root *awr) {
     int i;
-    for (i=0; i<256; i++) ek->map[i] = i;
+    for (i=0; i<256; i++) map[i] = i;
     char source[256];
     char dest[256];
     char *ps, *pd;
@@ -39,12 +38,16 @@ void ed_rehash_mapping(AW_root *awr, ed_key *ek)
             ps = awr->awar(source)->read_string();
             pd = awr->awar(dest)->read_string();
             if (strlen(ps) && strlen(pd)) {
-                ek->map[(unsigned char)ps[0]] = pd[0];
+                map[(unsigned char)ps[0]] = pd[0];
             }
             free(ps);
             free(pd);
         }
     }
+}
+
+static void ed_rehash_mapping(AW_root *awr, ed_key *ek) {
+    ek->rehash_mapping(awr);
 }
 
 void ed_key::create_awars(AW_root *awr)

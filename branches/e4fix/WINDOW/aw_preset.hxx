@@ -61,10 +61,6 @@ AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager id); // opens the
 // otherwise they save the same window properties)
 AW_window *AW_create_gc_window_named(AW_root * aw_root, AW_gc_manager id_par, const char *wid, const char *windowname);
 
-
-void AW_preset_create_font_chooser(AW_window *aws, const char *awar, const char *label, bool message_reload = false);
-void AW_preset_create_color_chooser(AW_window *aws, const char *awar, const char *label, bool message_reload = false, bool show_label = false);
-
 void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, bool has_font_info, const char *id0, ...) __ATTR__SENTINEL;
 
 #else

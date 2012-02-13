@@ -8,6 +8,14 @@
 
 #define MACKELIMIT 10000
 
+static int macke_abbrev(const char *line, char *key, int index) {
+    // Get the key from a macke line.
+    // returns index behind delimiting ':'
+    index   = Skip_white_space(line, index);
+    int len = parse_key_word(line+index, key, " :\t\n");
+    return index+len+1;
+}
+
 static void macke_continue_line(const char *key, char *oldname, char*& var, Reader& reader) {
     // Append macke continue line.
 
@@ -65,14 +73,6 @@ void macke_origin(Seq& seq, char*& seqabbr, Reader& reader) {
     // Read in sequence data in macke file.
     ca_assert(seqabbr);                   // = macke.seqabbr
     macke_read_seq(seq, seqabbr, reader);
-}
-
-int macke_abbrev(const char *line, char *key, int index) {
-    // Get the key from a macke line.
-    // returns index behind delimiting ':'
-    index   = Skip_white_space(line, index);
-    int len = parse_key_word(line+index, key, " :\t\n");
-    return index+len+1;
 }
 
 void macke_out_header(Writer& write) {

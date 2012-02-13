@@ -44,7 +44,7 @@ AW_HEADER_MAIN
 
 ED4_root     *ED4_ROOT;
 GBDATA       *GLOBAL_gb_main = NULL;                                    // global gb_main for arb_edit4
-ED4_database *main_db;
+static ED4_database *main_db;
 
 int TERMINALHEIGHT;                                                     // this variable replaces the define
 
@@ -66,7 +66,7 @@ long         awar_edit_direction;
 bool         move_cursor;                           // only needed for editing in consensus
 bool         DRAW;
 
-void ED4_config_change_cb(AW_root *)
+static void ED4_config_change_cb(AW_root *)
 {
     // @@@ FIXME: ok to be empty ? check!
 }
@@ -134,7 +134,7 @@ static void children(ED4_manager *manager)
     }
 }
 
-void baum(ED4_base *base)
+static void baum(ED4_base *base)
 {
     static int level;
 
@@ -153,7 +153,7 @@ void baum(ED4_base *base)
     level--;
 }
 
-void baum(const char *id)
+static void baum(const char *id)
 {
     baum(ED4_ROOT->root_group_man->search_ID(id));
 }
@@ -279,7 +279,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
     return 0;
 }
 
-char *ED4_create_sequences_for_gde(AW_CL, GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies, long &maxalign) {
+static char *ED4_create_sequences_for_gde(AW_CL, GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies, long &maxalign) {
     int top     = ED4_ROOT->aw_root->awar("gde/top_area")->read_int();
     int tops    = ED4_ROOT->aw_root->awar("gde/top_area_sai")->read_int();
     int toph    = ED4_ROOT->aw_root->awar("gde/top_area_helix")->read_int();

@@ -20,7 +20,7 @@
 
 #include <arbdbt.h>
 
-void ad_table_field_reorder_cb(AW_window *aws, awt_table *awtt) {
+static void ad_table_field_reorder_cb(AW_window *aws, awt_table *awtt) {
     char *source = aws->get_root()->awar(awtt->awar_field_reorder_source)->read_string();
     char *dest   = aws->get_root()->awar(awtt->awar_field_reorder_dest)  ->read_string();
 
@@ -69,7 +69,7 @@ void ad_table_field_reorder_cb(AW_window *aws, awt_table *awtt) {
     free(source);
 }
 
-AW_window *create_ad_table_field_reorder_window(AW_root *root, awt_table *awtt)
+static AW_window *create_ad_table_field_reorder_window(AW_root *root, awt_table *awtt)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "REORDER_FIELDS", "REORDER FIELDS");
@@ -98,7 +98,7 @@ AW_window *create_ad_table_field_reorder_window(AW_root *root, awt_table *awtt)
     return (AW_window *)aws;
 }
 
-void awt_table_field_hide_cb(AW_window *aws, awt_table *awtt) {
+static void awt_table_field_hide_cb(AW_window *aws, awt_table *awtt) {
     GB_begin_transaction(awtt->gb_main);
     GB_ERROR  error    = 0;
     GBDATA   *gb_table = GBT_open_table(awtt->gb_main, awtt->table_name, true);
@@ -118,7 +118,7 @@ void awt_table_field_hide_cb(AW_window *aws, awt_table *awtt) {
     GB_end_transaction_show_error(awtt->gb_main, error, aw_message);
 }
 
-void awt_table_field_delete_cb(AW_window *aws, awt_table *awtt) {
+static void awt_table_field_delete_cb(AW_window *aws, awt_table *awtt) {
     GB_begin_transaction(awtt->gb_main);
 
     GB_ERROR  error    = 0;
@@ -149,7 +149,7 @@ void awt_table_field_delete_cb(AW_window *aws, awt_table *awtt) {
 }
 
 
-void ad_table_field_create_cb(AW_window *aws, awt_table *awtt) {
+static void ad_table_field_create_cb(AW_window *aws, awt_table *awtt) {
     GB_push_transaction(awtt->gb_main);
     char *name = aws->get_root()->awar(awtt->awar_field_new_name)->read_string();
     GB_ERROR error = GB_check_key(name);
@@ -176,7 +176,7 @@ void ad_table_field_create_cb(AW_window *aws, awt_table *awtt) {
     GB_pop_transaction(awtt->gb_main);
 }
 
-AW_window *create_ad_table_field_create_window(AW_root *root, awt_table *awtt) {
+static AW_window *create_ad_table_field_create_window(AW_root *root, awt_table *awtt) {
     static AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "CREATE_FIELD", "CREATE A NEW FIELD");
     aws->load_xfig("ad_fcrea.fig");
@@ -240,7 +240,7 @@ awt_table::~awt_table() {
     free(awar_selected_field);
 }
 
-void   awt_map_table_field_rem(AW_root *aw_root, awt_table *awtt) {
+static void   awt_map_table_field_rem(AW_root *aw_root, awt_table *awtt) {
     GB_transaction tscope(awtt->gb_main);
     GBDATA *gb_table = GBT_open_table(awtt->gb_main, awtt->table_name, true);
     if (!gb_table) {
@@ -258,7 +258,7 @@ void   awt_map_table_field_rem(AW_root *aw_root, awt_table *awtt) {
     aw_root->awar(awtt->awar_field_rem)->map(gb_desc);
 }
 
-void create_ad_table_field_admin(AW_window *aww, GBDATA *gb_main, const char *tname) {
+static void create_ad_table_field_admin(AW_window *aww, GBDATA *gb_main, const char *tname) {
     static GB_HASH *table_to_win_hash = GBS_create_hash(256, GB_MIND_CASE);
     AW_root        *aw_root           = aww->get_root();
     char           *table_name;
@@ -327,7 +327,7 @@ void create_ad_table_field_admin(AW_window *aww, GBDATA *gb_main, const char *tn
 
 // #define AWAR_TABLE_IMPORT "tmp/ad_table/import_table"
 
-void table_vars_callback(AW_root *aw_root, GBDATA *gb_main)     // Map table vars to display objects
+static void table_vars_callback(AW_root *aw_root, GBDATA *gb_main)     // Map table vars to display objects
 {
     GB_push_transaction(gb_main);
     char *tablename = aw_root->awar(AWAR_TABLE_NAME)->read_string();
@@ -348,7 +348,7 @@ void table_vars_callback(AW_root *aw_root, GBDATA *gb_main)     // Map table var
 
 
 
-void table_rename_cb(AW_window *aww, GBDATA *gb_main) {
+static void table_rename_cb(AW_window *aww, GBDATA *gb_main) {
     GB_ERROR  error  = 0;
     char     *source = aww->get_root()->awar(AWAR_TABLE_NAME)->read_string();
     char     *dest   = aww->get_root()->awar(AWAR_TABLE_DEST)->read_string();
@@ -373,7 +373,7 @@ void table_rename_cb(AW_window *aww, GBDATA *gb_main) {
     free(dest);
 }
 
-void table_copy_cb(AW_window *aww, GBDATA *gb_main) {
+static void table_copy_cb(AW_window *aww, GBDATA *gb_main) {
     GB_ERROR  error  = 0;
     char     *source = aww->get_root()->awar(AWAR_TABLE_NAME)->read_string();
     char     *dest   = aww->get_root()->awar(AWAR_TABLE_DEST)->read_string();
@@ -400,7 +400,7 @@ void table_copy_cb(AW_window *aww, GBDATA *gb_main) {
     free(source);
     free(dest);
 }
-void table_create_cb(AW_window *aww, GBDATA *gb_main) {
+static void table_create_cb(AW_window *aww, GBDATA *gb_main) {
     char     *dest  = aww->get_root()->awar(AWAR_TABLE_DEST)->read_string();
     GB_ERROR  error = GB_begin_transaction(gb_main);
     if (!error) {
@@ -415,7 +415,7 @@ void table_create_cb(AW_window *aww, GBDATA *gb_main) {
     free(dest);
 }
 
-AW_window *create_table_rename_window(AW_root *root, GBDATA *gb_main)
+static AW_window *create_table_rename_window(AW_root *root, GBDATA *gb_main)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "RENAME_TABLE", "TABLE RENAME");
@@ -438,7 +438,7 @@ AW_window *create_table_rename_window(AW_root *root, GBDATA *gb_main)
     return (AW_window *)aws;
 }
 
-AW_window *create_table_copy_window(AW_root *root, GBDATA *gb_main)
+static AW_window *create_table_copy_window(AW_root *root, GBDATA *gb_main)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "COPY_TABLE", "TABLE COPY");
@@ -460,7 +460,7 @@ AW_window *create_table_copy_window(AW_root *root, GBDATA *gb_main)
 
     return (AW_window *)aws;
 }
-AW_window *create_table_create_window(AW_root *root, GBDATA *gb_main)
+static AW_window *create_table_create_window(AW_root *root, GBDATA *gb_main)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "CREATE_TABLE", "TABLE CREATE");
@@ -482,7 +482,7 @@ AW_window *create_table_create_window(AW_root *root, GBDATA *gb_main)
 
     return (AW_window *)aws;
 }
-void awt_table_delete_cb(AW_window *aww, GBDATA *gb_main) {
+static void awt_table_delete_cb(AW_window *aww, GBDATA *gb_main) {
     GB_ERROR  error  = 0;
     char     *source = aww->get_root()->awar(AWAR_TABLE_NAME)->read_string();
 
@@ -499,7 +499,7 @@ void awt_table_delete_cb(AW_window *aww, GBDATA *gb_main) {
     free(source);
 }
 
-void create_tables_var(GBDATA *gb_main, AW_root *aw_root) {
+static void create_tables_var(GBDATA *gb_main, AW_root *aw_root) {
     aw_root->awar_string(AWAR_TABLE_NAME);
     aw_root->awar_string(AWAR_TABLE_DEST);
     aw_root->awar_string(AWAR_TABLE_REM, "no rem");

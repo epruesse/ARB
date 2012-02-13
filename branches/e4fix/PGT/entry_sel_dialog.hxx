@@ -41,10 +41,4 @@ class entrySelectionDialog : public MDialog { // derived from a Noncopyable
         static bool m_opened;
 };
 
-
-// CALLBACK WRAPPER FUNCTIONS (STATIC)
-void staticEntrySelExitButtonCallback(Widget, XtPointer, XtPointer);
-void staticListCallback(Widget, XtPointer, XtPointer);
-
-
 #endif // ENTRY_SELECTION_DIALOG_H

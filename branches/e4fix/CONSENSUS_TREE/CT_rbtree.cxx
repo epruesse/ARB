@@ -27,7 +27,7 @@ void rb_init(const CharPtrArray& names) {
 }
 
 
-char *get_name(int idx) {
+static char *get_name(int idx) {
     // get the name of a leaf from the index
     char *t;
     t = strdup((*name_tbl)[idx]);
@@ -36,7 +36,7 @@ char *get_name(int idx) {
 
 
 // build a remark with the percentage representation of the partition
-char *rb_remark(const char *info, int perc, char *txt)
+static char *rb_remark(const char *info, int perc, char *txt)
 {
     char *txt2;
 
@@ -56,7 +56,7 @@ char *rb_remark(const char *info, int perc, char *txt)
 
 // doing all the work for rb_gettree() :-)
 // convert a Ntree into a GBT-Tree
-RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
+static RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
 {
     NSONS *nsonp;
     int idx;

@@ -285,8 +285,7 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
 #if defined(WARN_TODO)
 #warning gbcms_close is unused
 #endif
-long gbcms_close(gbcmc_comm *link)
-{
+long gbcms_close(gbcmc_comm *link) {
     if (link->socket) {
         close(link->socket);
         link->socket = 0;
@@ -588,7 +587,7 @@ char *GB_executable(GB_CSTR exe_name) {
     return found ? strdup(buffer) : 0;
 }
 
-char *GB_find_executable(GB_CSTR description_of_executable, ...) {
+static char *GB_find_executable(GB_CSTR description_of_executable, ...) {
     // goes to header: __ATTR__SENTINEL
     /* search the path for an executable with any of the given names (...)
      * if any is found, it's full path is returned
@@ -1119,6 +1118,10 @@ GB_CSTR GB_unfold_path(const char *pwd_envar, const char *path) {
     return GB_concat_full_path(pwd, path);
 }
 
+static GB_CSTR GB_path_in_ARBHOME(const char *relative_path_left, const char *anypath_right) {
+    return GB_path_in_ARBHOME(GB_concat_path(relative_path_left, anypath_right));
+}
+
 GB_CSTR GB_path_in_ARBHOME(const char *relative_path) {
     return GB_unfold_path("ARBHOME", relative_path);
 }
@@ -1127,9 +1130,6 @@ GB_CSTR GB_path_in_ARBLIB(const char *relative_path) {
 }
 GB_CSTR GB_path_in_arbprop(const char *relative_path) {
     return GB_unfold_path("HOME", GB_concat_path(".arb_prop", relative_path));
-}
-GB_CSTR GB_path_in_ARBHOME(const char *relative_path_left, const char *anypath_right) {
-    return GB_path_in_ARBHOME(GB_concat_path(relative_path_left, anypath_right));
 }
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path_left, const char *anypath_right) {
     return GB_path_in_ARBLIB(GB_concat_path(relative_path_left, anypath_right));

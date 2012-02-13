@@ -57,7 +57,8 @@ struct aw_help_global_struct {
     AW_selection_list   *upid;
     AW_selection_list   *downid;
     char    *history;
-}   aw_help_global;
+};
+static aw_help_global_struct aw_help_global;
 
 static char *get_full_qualified_help_file_name(const char *helpfile, bool path_for_edit = false) {
     GB_CSTR   result             = 0;

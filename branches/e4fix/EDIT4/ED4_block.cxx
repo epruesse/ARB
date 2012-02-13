@@ -248,7 +248,7 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(ED4_blockoperation b
     return error;
 }
 
-void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
+static void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
     GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
 
     typedef map<ED4_window*, int> CursorPositions;
@@ -258,7 +258,6 @@ void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
         ED4_cursor& cursor = win->cursor;
         if (cursor.owner_of_cursor) at_base[win] = cursor.get_base_position();
     }
-
 
     switch (block.get_type()) {
         case ED4_BT_NOBLOCK: {

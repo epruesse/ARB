@@ -44,10 +44,11 @@ struct arb_prm_struct : virtual Noncopyable {
         free(outname);
     }
 
-} aprm;
+};
+static arb_prm_struct aprm;
 
 
-GB_ERROR arb_prm_menu() {
+static GB_ERROR arb_prm_menu() {
     int i;
     printf(" Please select an Alignment:\n");
     for (i=1; aprm.alignment_names[i-1]; ++i) {
@@ -104,7 +105,7 @@ GB_ERROR arb_prm_menu() {
     return error;
 }
 
-GB_ERROR arb_prm_read(int /* prmanz */) {
+static GB_ERROR arb_prm_read(int /* prmanz */) {
     GBDATA     *gb_presets;
     GBDATA     *gb_source;
     GBDATA     *gb_species;
@@ -167,7 +168,7 @@ GB_ERROR arb_prm_read(int /* prmanz */) {
     return NULL;
 }
 
-long arb_count_keys(const char * /* key */, long val, void *)
+static long arb_count_keys(const char * /* key */, long val, void *)
 {
     if (val >1) {
         aprm.key_cnt++;
@@ -178,7 +179,7 @@ long arb_count_keys(const char * /* key */, long val, void *)
     return val;
 }
 
-long arb_print_primer(const char *key, long val, void *)
+static long arb_print_primer(const char *key, long val, void *)
 {
     if (val <= 1) return val;
     int gc = 0;
@@ -193,7 +194,7 @@ long arb_print_primer(const char *key, long val, void *)
 
 #define is_base(c) (((c>='a') && (c<='z')) || ((c>='A')&&(c<='Z')))
 
-int primer_print(char *dest, char * source, int size)
+static int primer_print(char *dest, char * source, int size)
 {
     char c;
     c = *(source++);
@@ -214,7 +215,7 @@ int primer_print(char *dest, char * source, int size)
 }
 
 
-long arb_reduce_primer_len(const char *key, long val, void *cl_hash) {
+static long arb_reduce_primer_len(const char *key, long val, void *cl_hash) {
     GB_HASH* hash = (GB_HASH*)cl_hash;
     char     buffer[256];
     int      size = strlen(key)-aprm.reduce;
@@ -226,7 +227,7 @@ long arb_reduce_primer_len(const char *key, long val, void *cl_hash) {
     return val;
 }
 
-void arb_prm_primer(int /* prmanz */)
+static void arb_prm_primer(int /* prmanz */)
 {
     GB_HASH *hash;
     GB_HASH *mhash;

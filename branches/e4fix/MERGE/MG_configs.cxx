@@ -34,7 +34,7 @@ void MG_create_config_awar(AW_root *aw_root, AW_default aw_def)
     aw_root->awar_string(AWAR_CONFIG_DEST2, "",   aw_def);
 }
 
-void MG_config_rename_cb(AW_window *aww, GBDATA *gbd, int config_nr) {
+static void MG_config_rename_cb(AW_window *aww, GBDATA *gbd, int config_nr) {
     const char *tsource = config_nr == 1 ? AWAR_CONFIG_NAME1 : AWAR_CONFIG_NAME2;
     const char *tdest   = config_nr == 1 ? AWAR_CONFIG_DEST1 : AWAR_CONFIG_DEST2;
     char       *source  = aww->get_root()->awar(tsource)->read_string();
@@ -65,7 +65,7 @@ void MG_config_rename_cb(AW_window *aww, GBDATA *gbd, int config_nr) {
     free(dest);
 }
 
-AW_window *MG_create_config_rename_window1(AW_root *root) {
+static AW_window *MG_create_config_rename_window1(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "MERGE_RENAME_CONFIG_1", "CONFIGURATION RENAME 1");
     aws->load_xfig("ad_al_si.fig");
@@ -87,7 +87,7 @@ AW_window *MG_create_config_rename_window1(AW_root *root) {
     return (AW_window *)aws;
 }
 
-AW_window *MG_create_config_rename_window2(AW_root *root) {
+static AW_window *MG_create_config_rename_window2(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "MERGE_RENAME_CONFIG_2", "CONFIGURATION RENAME 2");
     aws->load_xfig("ad_al_si.fig");
@@ -109,7 +109,7 @@ AW_window *MG_create_config_rename_window2(AW_root *root) {
     return (AW_window *)aws;
 }
 
-void MG_config_delete_cb(AW_window *aww, GBDATA *gbd, long config_nr) {
+static void MG_config_delete_cb(AW_window *aww, GBDATA *gbd, long config_nr) {
 
     const char *config_name_awar = config_nr == 1 ? AWAR_CONFIG_NAME1 : AWAR_CONFIG_NAME2;
     char       *config_name      = aww->get_root()->awar(config_name_awar)->read_string();
@@ -134,7 +134,7 @@ void MG_config_delete_cb(AW_window *aww, GBDATA *gbd, long config_nr) {
     free(config_name);
 }
 
-void MG_transfer_config(AW_window *aww) {
+static void MG_transfer_config(AW_window *aww) {
     AW_root *awr    = aww->get_root();
     char    *source = awr->awar(AWAR_CONFIG_NAME1)->read_string();
     char    *dest   = awr->awar(AWAR_CONFIG_NAME1)->read_string();

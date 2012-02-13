@@ -101,7 +101,7 @@ enum {
  *                               of ED4_char_table::build_consensus_string()
  * -----------------------------------------------------------------
  */
-void CON_evaluatestatistic(char   *&result, int **statistic, char **groupflags,
+static void CON_evaluatestatistic(char   *&result, int **statistic, char **groupflags,
                            char    *groupnames, int alignlength, double fupper, int lower,
                            double   fconsidbound, int gapbound, int countgap, int numgroups)
 {
@@ -209,7 +209,7 @@ void CON_evaluatestatistic(char   *&result, int **statistic, char **groupflags,
  * Dependencies:                 .
  * -----------------------------------------------------------------
  */
-int CON_makegrouptable(char **gf, char *groupnames,
+static int CON_makegrouptable(char **gf, char *groupnames,
                        int isamino, int groupallowed)
 {
     for (int j=0; j<MAX_GROUPS; j++) {
@@ -293,7 +293,7 @@ int CON_makegrouptable(char **gf, char *groupnames,
  */
 
 
-long CON_makestatistic(int **statistic, int *convtable, char *align, int onlymarked)
+static long CON_makestatistic(int **statistic, int *convtable, char *align, int onlymarked)
 {
     long maxalignlen=GBT_get_alignment_len(GLOBAL_gb_main, align);
     GBDATA *gb_species, *alidata;
@@ -370,7 +370,7 @@ long CON_makestatistic(int **statistic, int *convtable, char *align, int onlymar
  * Dependencies:                 .
  * -----------------------------------------------------------------
  */
-void CON_maketables(int *convtable, int **statistic, long maxalignlen, int isamino)
+static void CON_maketables(int *convtable, int **statistic, long maxalignlen, int isamino)
 {
     int i;
     for (i=0; i<256; i++) { convtable[i]=0; }
@@ -405,7 +405,7 @@ void CON_maketables(int *convtable, int **statistic, long maxalignlen, int isami
 }
 
 // export results into database
-GB_ERROR CON_export(char *savename, char *align, int **statistic, char *result, int *convtable, char *groupnames, int onlymarked, long nrofspecies, long maxalignlen, int countgaps, int gapbound, int groupallowed, double fconsidbound, double fupper, int lower, int resultiscomplex)
+static GB_ERROR CON_export(char *savename, char *align, int **statistic, char *result, int *convtable, char *groupnames, int onlymarked, long nrofspecies, long maxalignlen, int countgaps, int gapbound, int groupallowed, double fconsidbound, double fupper, int lower, int resultiscomplex)
 {
     GB_ERROR    err;
     const char *off    = "off";
@@ -557,7 +557,7 @@ GB_ERROR CON_export(char *savename, char *align, int **statistic, char *result, 
 }
 
 
-void CON_cleartables(int **statistic, int isamino) {
+static void CON_cleartables(int **statistic, int isamino) {
     int i;
     int no_of_tables = isamino ? MAX_AMINOS : MAX_BASES;
 
@@ -609,7 +609,7 @@ void CON_cleartables(int **statistic, int isamino) {
  *                               CON_evaluatestatistic
  * -----------------------------------------------------------------
  */
-void CON_calculate_cb(AW_window *aw)
+static void CON_calculate_cb(AW_window *aw)
 {
     AW_root  *awr   = aw->get_root();
     char     *align = awr->awar("tmp/con/alignment")->read_string();
@@ -730,8 +730,7 @@ void create_consensus_var(AW_root *aw_root, AW_default aw_def)
 }
 
 // Open window to show IUPAC tables
-AW_window *
-CON_showgroupswin_cb(AW_root *aw_root)
+static AW_window * CON_showgroupswin_cb(AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "SHOW_IUPAC", "Show IUPAC");
@@ -841,8 +840,7 @@ AP_open_con_expert_window(AW_root *aw_root)
  * Dependencies:      Needs xfig files consens.fig and CON_groups.fig
  * -----------------------------------------------------------------
  */
-AW_window *
-AP_open_consensus_window(AW_root *aw_root)
+static AW_window * AP_open_consensus_window(AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "SIMPLE_CONSENSUS", "SIMPLE CONSENSUS");
@@ -909,7 +907,7 @@ AP_open_consensus_window(AW_root *aw_root)
  * -----------------------------------------------------------------
  */
 
-void CON_calc_max_freq_cb(AW_window *aw) {
+static void CON_calc_max_freq_cb(AW_window *aw) {
 
     AW_root *awr=aw->get_root();
     long maxalignlen, i;

@@ -135,7 +135,7 @@ int Bitvector::readbit(int pos)
 
 
 
-void permutation(int k, int n)
+static void permutation(int k, int n)
 {
     int h, i, j;
     int c[1000];
@@ -161,7 +161,7 @@ void permutation(int k, int n)
     }
 }
 
-void permute (int k, int n)
+static void permute (int k, int n)
 {
     int i;
     for (i=1; i<k+1; i++)

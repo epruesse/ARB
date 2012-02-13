@@ -26,7 +26,8 @@ struct PT_debug {
     int tips[DEBUG_TREE_DEEP];
     int chains[DEBUG_TREE_DEEP];
     int chaincount;
-    } *ptds;
+};
+static PT_debug *ptds;
 
 struct PT_chain_count {
     int operator() (const DataLoc&) {

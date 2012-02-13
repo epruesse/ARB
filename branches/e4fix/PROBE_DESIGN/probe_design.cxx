@@ -81,9 +81,9 @@
 
 // ----------------------------------------
 
-saiProbeData *g_spd = 0;
+static saiProbeData *g_spd = 0;
 
-struct gl_struct {
+static struct gl_struct {
     aisc_com *link;
     T_PT_LOCS locs;
     T_PT_MAIN com;
@@ -117,7 +117,7 @@ struct AutoMatchSettings {
 
 static AutoMatchSettings auto_match_cb_settings;
 
-void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam); // prototype
+static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam); // prototype
 
 static void auto_match_cb(AW_root *root) {
     if (!auto_match_cb_settings.disable) {
@@ -223,7 +223,7 @@ static void popup_probe_design_result_window(AW_window *aww, AW_CL cl_gb_main) {
     pd_gl.pd_design->activate();
 }
 
-int init_local_com_struct()
+static int init_local_com_struct()
 {
     const char *user = GB_getenvUSER();
 
@@ -262,7 +262,7 @@ static GB_ERROR gene_requires(GBDATA *gb_gene, const char *whats_required) {
     return GBS_global_string("Gene '%s' of organism '%s' needs %s", GBT_read_name(gb_gene), GBT_read_name(gb_species), whats_required);
 }
 
-GB_ERROR pd_get_the_names(GBDATA *gb_main, bytestring &bs, bytestring &checksum) {
+static GB_ERROR pd_get_the_names(GBDATA *gb_main, bytestring &bs, bytestring &checksum) {
     GBS_strstruct *names     = GBS_stropen(1024);
     GBS_strstruct *checksums = GBS_stropen(1024);
     GB_ERROR       error     = 0;
@@ -300,7 +300,7 @@ GB_ERROR pd_get_the_names(GBDATA *gb_main, bytestring &bs, bytestring &checksum)
     return error;
 }
 
-GB_ERROR pd_get_the_gene_names(GBDATA *gb_main, bytestring &bs, bytestring &checksum) {
+static GB_ERROR pd_get_the_gene_names(GBDATA *gb_main, bytestring &bs, bytestring &checksum) {
     GBS_strstruct *names     = GBS_stropen(1024);
     GBS_strstruct *checksums = GBS_stropen(1024);
     GB_ERROR       error     = 0;
@@ -402,7 +402,7 @@ static int ecolipos2int(const char *awar_val) {
     return i>0 ? i : -1;
 }
 
-void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
+static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
     AW_root     *root    = aww->get_root();
     T_PT_PDC     pdc;
     T_PT_TPROBE  tprobe;
@@ -663,7 +663,7 @@ void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
 
 static bool allow_probe_match_event = true;
 
-void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
+static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
     if (allow_probe_match_event) {
         ProbeMatchEventParam *event_param  = (ProbeMatchEventParam*)cl_ProbeMatchEventParam;
         AW_selection_list    *selection_id = event_param ? event_param->selection_id : NULL;
@@ -1182,7 +1182,7 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_string(AWAR_SPV_SELECTED_PROBE, "",     db); // For highlighting the selected PROBE
 }
 
-AW_window *create_probe_expert_window(AW_root *root, AW_CL for_design) {
+static AW_window *create_probe_expert_window(AW_root *root, AW_CL for_design) {
     AW_window_simple *aws = new AW_window_simple;
     if (for_design) {
         aws->init(root, "PD_exp", "Probe Design (Expert)");
@@ -1331,7 +1331,7 @@ AW_window *create_probe_design_window(AW_root *root, AW_CL cl_gb_main) {
     return aws;
 }
 
-void print_event(AW_window *aww, AW_CL selection_id, AW_CL name) {
+static void print_event(AW_window *aww, AW_CL selection_id, AW_CL name) {
     char *filename = (char *)name;
     aww->save_selection_list((AW_selection_list *)selection_id, filename);
 }
@@ -1660,7 +1660,7 @@ static void pd_start_pt_server(AW_window *aww) {
     if (error) aw_message(error);
 }
 
-void pd_kill_pt_server(AW_window *aww, AW_CL kill_all)
+static void pd_kill_pt_server(AW_window *aww, AW_CL kill_all)
 {
     if (aw_ask_sure(GBS_global_string("Are you sure to stop %s",
                                       kill_all ? "all servers" : "that server")))
@@ -1702,7 +1702,7 @@ void pd_kill_pt_server(AW_window *aww, AW_CL kill_all)
     }
 }
 
-void pd_query_pt_server(AW_window *aww) {
+static void pd_query_pt_server(AW_window *aww) {
     const char *server_tag = GBS_ptserver_tag(aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
 
     GBS_strstruct *strstruct = GBS_stropen(1024);

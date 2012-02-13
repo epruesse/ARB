@@ -350,7 +350,7 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
 GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree) {
     return gbt_write_tree(gb_main, gb_tree, tree_name, tree, 0);
 }
-GB_ERROR GBT_write_plain_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_TREE *tree) {
+static GB_ERROR GBT_write_plain_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_TREE *tree) {
     return gbt_write_tree(gb_main, gb_tree, tree_name, tree, 1);
 }
 
@@ -361,8 +361,7 @@ GB_ERROR GBT_write_tree_rem(GBDATA *gb_main, const char *tree_name, const char *
 // ----------------------------
 //      tree read functions
 
-GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, long structure_size, int size_of_tree, GB_ERROR *error)
-{
+static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, long structure_size, int size_of_tree, GB_ERROR *error) {
     GBT_TREE    *node;
     GBDATA      *gb_group_name;
     char         c;
@@ -560,7 +559,7 @@ GBT_TREE *GBT_read_tree(GBDATA *gb_main, const char *tree_name, long structure_s
     return GBT_read_tree_and_size(gb_main, tree_name, structure_size, 0);
 }
 
-GBT_TREE *GBT_read_plain_tree(GBDATA *gb_main, GBDATA *gb_ctree, long structure_size, GB_ERROR *error) {
+static GBT_TREE *GBT_read_plain_tree(GBDATA *gb_main, GBDATA *gb_ctree, long structure_size, GB_ERROR *error) {
     GBT_TREE *t;
 
     gb_assert(error && !*error); // expect cleared error
@@ -614,7 +613,7 @@ static GB_ERROR gbt_link_tree_to_hash_rek(GBT_TREE *tree, link_tree_data *ltd) {
     return error;
 }
 
-GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, bool show_status, GB_HASH *species_hash, int *zombies, int *duplicates) {
+static GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, bool show_status, GB_HASH *species_hash, int *zombies, int *duplicates) {
     GB_ERROR       error;
     link_tree_data ltd;
     long           leafs = 0;

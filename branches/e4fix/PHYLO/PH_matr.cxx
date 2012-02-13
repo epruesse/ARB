@@ -31,7 +31,7 @@ extern void ph_view_matrix_cb(AW_window *);
 static AP_smatrix *global_ratematrix = 0;
 
 
-void set_globel_r_m_value(AW_root *aw_root, long i, long j) {
+static void set_globel_r_m_value(AW_root *aw_root, long i, long j) {
     char buffer[256];
     sprintf(buffer, "phyl/ratematrix/val_%li_%li", i, j);
     global_ratematrix->set(i, j, aw_root->awar(buffer)->read_float());
@@ -86,7 +86,7 @@ void PH_create_matrix_variables(AW_root *aw_root, AW_default def)
 
 
 
-void ph_calculate_matrix_cb(AW_window *aww, AW_CL /*cb1*/, AW_CL /*cb2*/) {
+static void ph_calculate_matrix_cb(AW_window *aww, AW_CL /*cb1*/, AW_CL /*cb2*/) {
     char *cancel, *transformation;
 
     if (!PHDATA::ROOT) {
@@ -121,7 +121,7 @@ void ph_calculate_matrix_cb(AW_window *aww, AW_CL /*cb1*/, AW_CL /*cb2*/) {
     if (!error) ph_view_matrix_cb(aww); // call callback directly to see what you did
 }
 
-void ph_save_matrix_cb(AW_window *aww)
+static void ph_save_matrix_cb(AW_window *aww)
 {
     // save the matrix
     if (PHDATA::ROOT) {
@@ -133,7 +133,7 @@ void ph_save_matrix_cb(AW_window *aww)
     }
 }
 
-AW_window *PH_create_save_matrix_window(AW_root *aw_root, char *base_name)
+static AW_window *PH_create_save_matrix_window(AW_root *aw_root, char *base_name)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "SAVE_MATRIX", "SAVE MATRIX TO FILE");
@@ -155,7 +155,7 @@ AW_window *PH_create_save_matrix_window(AW_root *aw_root, char *base_name)
 }
 
 
-AW_window *awt_create_select_cancel_window(AW_root *aw_root)
+static AW_window *awt_create_select_cancel_window(AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "CANCEL_SELECT", "CANCEL SELECT");
@@ -171,7 +171,7 @@ AW_window *awt_create_select_cancel_window(AW_root *aw_root)
 }
 
 
-AW_window *PH_create_matrix_window(AW_root *aw_root)
+static AW_window *PH_create_matrix_window(AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "DISTANCE_TABLE", "DistanceTable");

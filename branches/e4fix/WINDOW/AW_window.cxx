@@ -996,7 +996,7 @@ bool AW_window::get_mouse_pos(int& x, int& y) {
     return ok;
 }
 
-int is_resize_event(Display *display, XEvent *event, XPointer) {
+static int is_resize_event(Display *display, XEvent *event, XPointer) {
     // Predicate function: checks, if the given event is a ResizeEvent
     if (event && (event->type == ResizeRequest || event->type
             == ConfigureNotify) && event->xany.display == display) {
@@ -1005,7 +1005,7 @@ int is_resize_event(Display *display, XEvent *event, XPointer) {
     return 0;
 }
 
-void cleanupResizeEvents(Display *display) {
+static void cleanupResizeEvents(Display *display) {
     // Removes redundant resize events from the x-event queue
     if (display) {
         XLockDisplay(display);
@@ -1168,7 +1168,6 @@ void AW_window::set_input_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW
     aram->set_input_callback(this, f, cd1, cd2);
 }
 
-// cppcheck-suppress publicAllocationError
 void AW_area_management::set_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     double_click_cb = new AW_cb_struct(aww, f, cd1, cd2, (char*)0, double_click_cb);
 }
@@ -1670,7 +1669,7 @@ static void aw_window_destroy_cb(Widget,  AW_window *aww, XmAnyCallbackStruct *)
     aww->hide();
 }
 
-void aw_update_window_geometry_awars(AW_window *aww) {
+static void aw_update_window_geometry_awars(AW_window *aww) {
     AW_window_Motif *motif = p_aww(aww);
 
     short          posx, posy;
@@ -1741,7 +1740,7 @@ static Pixmap getIcon(Screen *screen, const char *iconName, Pixel foreground, Pi
     return pixmap;
 }
 
-void aw_set_delete_window_cb(AW_window *aww, Widget shell, bool allow_close) {
+static void aw_set_delete_window_cb(AW_window *aww, Widget shell, bool allow_close) {
     Atom WM_DELETE_WINDOW = XmInternAtom(XtDisplay(shell), (char*)"WM_DELETE_WINDOW", False);
 
     // remove any previous callbacks

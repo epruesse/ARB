@@ -41,7 +41,7 @@ using namespace std;
 
 // --------------------------------------------------------------------------------
 
-void GEN_select_gene(GBDATA* /* gb_main */, AW_root *aw_root, const char *item_name) {
+static void GEN_select_gene(GBDATA* /* gb_main */, AW_root *aw_root, const char *item_name) {
     char *organism  = strdup(item_name);
     char *gene = strchr(organism, '/');
 
@@ -179,6 +179,19 @@ static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, QUERY_RANGE range) {
     return gb_organism ? GEN_expect_gene_data(gb_organism) : 0;
 }
 
+static GBDATA *GEN_get_current_gene(GBDATA *gb_main, AW_root *aw_root) {
+    GBDATA *gb_species = GEN_get_current_organism(gb_main, aw_root);
+    GBDATA *gb_gene    = 0;
+
+    if (gb_species) {
+        char *gene_name = aw_root->awar(AWAR_GENE_NAME)->read_string();
+        gb_gene         = GEN_find_gene(gb_species, gene_name);
+        free(gene_name);
+    }
+
+    return gb_gene;
+}
+
 static GBDATA *first_gene_in_range(GBDATA *gb_gene_data, QUERY_RANGE range) {
     GBDATA *gb_first = NULL;
     switch (range) {
@@ -223,7 +236,7 @@ static struct MutableItemSelector GEN_item_selector = {
 
 ItemSelector& GEN_get_selector() { return GEN_item_selector; }
 
-void GEN_species_name_changed_cb(AW_root *awr, AW_CL cl_gb_main) {
+static void GEN_species_name_changed_cb(AW_root *awr, AW_CL cl_gb_main) {
     char           *species_name = awr->awar(AWAR_SPECIES_NAME)->read_string();
     GBDATA         *gb_main      = (GBDATA*)cl_gb_main;
     GB_transaction  ta(gb_main);
@@ -250,7 +263,7 @@ static void auto_select_pseudo_species(AW_root *awr, GBDATA *gb_main, const char
                                                : organism);               // otherwise select organism
 }
 
-void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
+static void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
     GB_transaction  dummy(gb_main);
     GBDATA         *gb_gene      = GEN_get_current_gene(gb_main, awr);
     bool            clear        = true;
@@ -356,20 +369,6 @@ GBDATA* GEN_get_current_gene_data(GBDATA *gb_main, AW_root *aw_root) {
 
     return gb_gene_data;
 }
-
-GBDATA *GEN_get_current_gene(GBDATA *gb_main, AW_root *aw_root) {
-    GBDATA *gb_species = GEN_get_current_organism(gb_main, aw_root);
-    GBDATA *gb_gene    = 0;
-
-    if (gb_species) {
-        char *gene_name = aw_root->awar(AWAR_GENE_NAME)->read_string();
-        gb_gene         = GEN_find_gene(gb_species, gene_name);
-        free(gene_name);
-    }
-
-    return gb_gene;
-}
-
 
 static QUERY::DbQuery *GLOBAL_gene_query      = 0;
 

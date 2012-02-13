@@ -20,7 +20,7 @@
 
 #include <climits>
 
-void awtc_ff_message(const char *msg) {
+static void awtc_ff_message(const char *msg) {
     GB_warning(msg);
 }
 

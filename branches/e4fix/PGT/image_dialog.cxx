@@ -14,7 +14,7 @@
 #include "selection_dialog.hxx"
 #include "config_dialog.hxx"
 #include "help_dialog.hxx"
-#include "math.h"
+#include <math.h>
 #include <X11/cursorfont.h>
 
 #define ai_assert(cond) arb_assert(cond)

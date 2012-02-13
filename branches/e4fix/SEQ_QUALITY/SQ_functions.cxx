@@ -51,7 +51,7 @@ static int sq_round(double value) {
     return x;
 }
 
-GB_ERROR SQ_reset_quality_calcstate(GBDATA * gb_main) {
+static GB_ERROR SQ_reset_quality_calcstate(GBDATA * gb_main) {
     GB_push_transaction(gb_main);
 
     GB_ERROR error = NULL;
@@ -107,7 +107,7 @@ GB_ERROR SQ_remove_quality_entries(GBDATA *gb_main) {
     return error;
 }
 
-int SQ_get_value(GBDATA * gb_main, const char *option) {
+static int SQ_get_value(GBDATA * gb_main, const char *option) {
     int result = 0;
     char *alignment_name;
 
@@ -143,7 +143,7 @@ int SQ_get_value(GBDATA * gb_main, const char *option) {
     return result;
 }
 
-int SQ_get_value_no_tree(GBDATA * gb_main, const char *option) {
+static int SQ_get_value_no_tree(GBDATA * gb_main, const char *option) {
     int result = 0;
     char *alignment_name;
 
@@ -385,7 +385,7 @@ GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights, bool marked_o
     return error;
 }
 
-char *SQ_fetch_filtered_sequence(GBDATA * read_sequence, AP_filter * filter) {
+static char *SQ_fetch_filtered_sequence(GBDATA * read_sequence, AP_filter * filter) {
     char *filteredSequence = 0;
     if (read_sequence) {
         const char   *rawSequence        = GB_read_char_pntr(read_sequence);
@@ -402,7 +402,7 @@ char *SQ_fetch_filtered_sequence(GBDATA * read_sequence, AP_filter * filter) {
     return filteredSequence;
 }
 
-GB_ERROR SQ_pass1(SQ_GroupData * globalData, GBDATA * gb_main, GBT_TREE * node, AP_filter * filter) {
+static GB_ERROR SQ_pass1(SQ_GroupData * globalData, GBDATA * gb_main, GBT_TREE * node, AP_filter * filter) {
     char *alignment_name;
     GBDATA *read_sequence = 0;
     GBDATA *gb_species;
@@ -576,7 +576,7 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData * globalData, GBDATA * gb_main, AP_filter
     return error;
 }
 
-GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main,
+static GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main,
         GBT_TREE * node, AP_filter * filter) {
     char *alignment_name;
 
@@ -998,7 +998,7 @@ int SQ_count_nodes(GBT_TREE *node) {
     return GBT_count_leafs(node)*2-1;
 }
 
-void create_multi_level_consensus(GBT_TREE * node, SQ_GroupData * data) {
+static void create_multi_level_consensus(GBT_TREE * node, SQ_GroupData * data) {
     SQ_GroupData *newData = data->clone(); // save actual consensus
     *newData = *data;
     group_dict[node->name] = newData; // and link it with an name

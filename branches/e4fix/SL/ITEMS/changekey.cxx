@@ -156,7 +156,7 @@ void gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, RescanMod
     GB_pop_transaction(gb_main);
 }
 
-void experiment_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, RescanMode mode) {
+static void experiment_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, RescanMode mode) {
     GB_push_transaction(gb_main);
     GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
 

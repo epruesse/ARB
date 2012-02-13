@@ -149,7 +149,7 @@ STATIC_ATTRIBUTED(__ATTR__NORETURN, void UNITTEST_sigsegv_handler(int sig)) {
 
 #define SECOND 1000000
 
-UnitTestResult execute_guarded_ClientCode(UnitTest_function fun, long *duration_usec) {
+static UnitTestResult execute_guarded_ClientCode(UnitTest_function fun, long *duration_usec) {
     SigHandler old_int_handler  = INSTALL_SIGHANDLER(SIGINT,  UNITTEST_sigsegv_handler, "execute_guarded");
     SigHandler old_term_handler = INSTALL_SIGHANDLER(SIGTERM, UNITTEST_sigsegv_handler, "execute_guarded");
     SigHandler old_segv_handler = INSTALL_SIGHANDLER(SIGSEGV, UNITTEST_sigsegv_handler, "execute_guarded");

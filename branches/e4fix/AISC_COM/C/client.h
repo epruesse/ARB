@@ -15,24 +15,13 @@
 
 #include <client_types.h>
 
-int aisc_c_read(int socket, char *ptr, long size);
-int aisc_c_write(int socket, const char *ptr, int size);
-int aisc_c_send_bytes_queue(aisc_com *link);
-int aisc_add_message_queue(aisc_com *link, long size);
-int aisc_check_error(aisc_com *link);
-const char *aisc_client_get_m_id(const char *path, char **m_name, int *id);
-void *aisc_init_client(aisc_com *link);
 aisc_com *aisc_open(const char *path, long *mgr, long magic);
 int aisc_close(aisc_com *link);
-int aisc_get_message(aisc_com *link);
 int aisc_get(aisc_com *link, int o_type, long object, ...) __ATTR__SENTINEL;
 long *aisc_debug_info(aisc_com *link, int o_type, long object, int attribute);
 int aisc_put(aisc_com *link, int o_type, long object, ...) __ATTR__SENTINEL;
 int aisc_nput(aisc_com *link, int o_type, long object, ...) __ATTR__SENTINEL;
 int aisc_create(aisc_com *link, int father_type, long father, int attribute, int object_type, long *object, ...) __ATTR__SENTINEL;
-int aisc_copy(aisc_com *link, int s_type, long source, int father_type, long father, int attribute, int object_type, long *object, ...) __ATTR__SENTINEL;
-int aisc_delete(aisc_com *link, int object_type, long source);
-int aisc_find(aisc_com *link, int father_type, long father, int attribute, int object_type, long *object, char *ident);
 
 #else
 #error client.h included twice

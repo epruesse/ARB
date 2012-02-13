@@ -59,10 +59,10 @@
 
 // --------------------------------------------------------------------------------
 
-DI_MATRIX  *DI_MATRIX::ROOT = 0;
-DI_dmatrix *di_dmatrix      = 0;
+DI_MATRIX *DI_MATRIX::ROOT = 0;
 
-AP_matrix DI_dna_matrix(AP_MAX);
+static DI_dmatrix *di_dmatrix = 0;
+static AP_matrix   DI_dna_matrix(AP_MAX);
 
 static void delete_matrix_cb(AW_root *)
 {
@@ -231,7 +231,7 @@ DI_MATRIX::~DI_MATRIX()
     delete aliview;
 }
 
-extern "C" int qsort_strcmp(const void *str1ptr, const void *str2ptr) {
+static int qsort_strcmp(const void *str1ptr, const void *str2ptr) {
     GB_CSTR s1 = *(GB_CSTR*)str1ptr;
     GB_CSTR s2 = *(GB_CSTR*)str2ptr;
 

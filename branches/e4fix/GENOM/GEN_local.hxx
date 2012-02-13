@@ -70,8 +70,6 @@ struct GEN_create_map_param {
     GEN_create_map_param(GBDATA *gb_main_, int window_nr_) : gb_main(gb_main_) , window_nr(window_nr_) { }
 };
 
-AW_window *GEN_create_map(AW_root *aw_root, AW_CL cl_GEN_create_map_param);
-
 GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data);
 
 // --------------------------------------------------------------------------------

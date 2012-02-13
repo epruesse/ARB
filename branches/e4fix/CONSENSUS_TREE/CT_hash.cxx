@@ -16,24 +16,11 @@
 
 // Hashtabelle fuer parts
 
-int Hash_max_count=0;
-HNODE *Hashlist[HASH_MAX];
-HNODE *Sortedlist = NULL;
+static int Hash_max_count=0;
+static HNODE *Hashlist[HASH_MAX];
+static HNODE *Sortedlist = NULL;
 
-void hash_init() {
-    //! initialize Hashtable and free old data
-    Hash_max_count = 0;
-    hash_free();
-}
-
-
-void hash_settreecount(int tree_count) {
-    //! set number of trees
-    Tree_count = tree_count;
-}
-
-
-void hash_free() {
+static void hash_free() {
     //! free Hashtable and Sortedlist
     int i;
     HNODE *hnp, *hnp_help;
@@ -59,6 +46,16 @@ void hash_free() {
     Sortedlist = NULL;
 }
 
+void hash_init() {
+    //! initialize Hashtable and free old data
+    Hash_max_count = 0;
+    hash_free();
+}
+
+void hash_settreecount(int tree_count) {
+    //! set number of trees
+    Tree_count = tree_count;
+}
 
 PART *hash_getpart() {
     /*! return the first element (with the highest hitnumber) from the linear sorted
@@ -185,7 +182,7 @@ void build_sorted_list() {
 }
 
 
-void hash_print() {
+static void hash_print() {
     //! testfunction to print the hashtable
     int i;
     HNODE *hnp;
@@ -204,7 +201,7 @@ void hash_print() {
 }
 
 
-void sorted_print() {
+static void sorted_print() {
     //! testfunction to print the sorted linear list
     HNODE *hnp;
 

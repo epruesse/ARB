@@ -76,6 +76,11 @@ GBDATA *GBT_create_configuration(GBDATA *gb_main, const char *name) {
     return gb_config;
 }
 
+static void GBT_free_configuration_data(GBT_config *data) {
+    free(data->top_area);
+    free(data->middle_area);
+    free(data);
+}
 
 GBT_config *GBT_load_configuration_data(GBDATA *gb_main, const char *name, GB_ERROR *error) {
     GBT_config *config = 0;
@@ -121,12 +126,6 @@ GB_ERROR GBT_save_configuration_data(GBT_config *config, GBDATA *gb_main, const 
     }
 
     return GB_end_transaction(gb_main, error);
-}
-
-void GBT_free_configuration_data(GBT_config *data) {
-    free(data->top_area);
-    free(data->middle_area);
-    free(data);
 }
 
 GBT_config_parser *GBT_start_config_parser(const char *config_string) {

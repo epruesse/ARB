@@ -29,7 +29,7 @@ using namespace std;
 
 #define AD_F_ALL AWM_ALL
 
-GBDATA* EXP_get_current_experiment_data(GBDATA *gb_main, AW_root *aw_root) {
+static GBDATA* EXP_get_current_experiment_data(GBDATA *gb_main, AW_root *aw_root) {
     GBDATA *gb_species         = GEN_get_current_organism(gb_main, aw_root);
     GBDATA *gb_experiment_data = 0;
 
@@ -151,6 +151,19 @@ static GBDATA *EXP_get_next_experiment_data(GBDATA *gb_experiment_data, QUERY_RA
     return gb_organism ? EXP_get_experiment_data(gb_organism) : 0;
 }
 
+static GBDATA *EXP_get_current_experiment(GBDATA *gb_main, AW_root *aw_root) {
+    GBDATA *gb_organism    = GEN_get_current_organism(gb_main, aw_root);
+    GBDATA *gb_experiment = 0;
+
+    if (gb_organism) {
+        char *experiment_name = aw_root->awar(AWAR_EXPERIMENT_NAME)->read_string();
+        gb_experiment         = EXP_find_experiment(gb_organism, experiment_name);
+        free(experiment_name);
+    }
+
+    return gb_experiment;
+}
+
 static GBDATA *first_experiment_in_range(GBDATA *gb_experiment_data, QUERY_RANGE range) {
     GBDATA *gb_first = NULL;
     switch (range) {
@@ -195,21 +208,9 @@ static struct MutableItemSelector EXP_item_selector = {
 
 ItemSelector& EXP_get_selector() { return EXP_item_selector; }
 
-GBDATA *EXP_get_current_experiment(GBDATA *gb_main, AW_root *aw_root) {
-    GBDATA *gb_organism    = GEN_get_current_organism(gb_main, aw_root);
-    GBDATA *gb_experiment = 0;
-
-    if (gb_organism) {
-        char *experiment_name = aw_root->awar(AWAR_EXPERIMENT_NAME)->read_string();
-        gb_experiment         = EXP_find_experiment(gb_organism, experiment_name);
-        free(experiment_name);
-    }
-
-    return gb_experiment;
-}
-
 static QUERY::DbQuery *GLOBAL_experiment_query = 0;
 
+static AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_main);
 
 #if defined(WARN_TODO)
 #warning move EXP_create_experiment_query_window to SL/DB_UI
@@ -433,7 +434,7 @@ static AW_window *create_experiment_copy_window(AW_root *root, AW_CL cl_gb_main)
     return (AW_window *)aws;
 }
 
-AW_window *create_experiment_create_window(AW_root *root, AW_CL cl_gb_main) {
+static AW_window *create_experiment_create_window(AW_root *root, AW_CL cl_gb_main) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "CREATE_EXPERIMENT", "EXPERIMENT CREATE");
     aws->load_xfig("ad_al_si.fig");
@@ -480,7 +481,7 @@ static void EXP_create_field_items(AW_window *aws, GBDATA *gb_main) {
 #endif
 
 
-AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_main) {
+static AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_main) {
     static AW_window_simple_menu *aws = 0;
 
     if (!aws) {

@@ -97,7 +97,7 @@ void nt_mode_event(AW_window */*aws*/, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
 //      Basic mark/unmark callbacks :
 // ---------------------------------------
 
-void NT_count_mark_all_cb(void *, AW_CL cl_ntw) {
+static void NT_count_mark_all_cb(void *, AW_CL cl_ntw) {
     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
     GB_push_transaction(ntw->gb_main);
 
@@ -174,7 +174,7 @@ void NT_mark_all_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
     ntw->refresh();
 }
 
-void NT_mark_tree_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
+static void NT_mark_tree_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
 {
     AWT_canvas       *ntw       = (AWT_canvas*)cl_ntw;
     int               mark_mode = (int)cl_mark_mode;
@@ -241,7 +241,7 @@ static int mark_nontree_cb(GBDATA *gb_species, void *cb_data) {
     return mark_me;
 }
 
-void NT_mark_nontree_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
+static void NT_mark_nontree_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
 {
     AWT_canvas                  *ntw       = (AWT_canvas*)cl_ntw;
     int                          mark_mode = (int)cl_mark_mode;
@@ -268,7 +268,7 @@ void NT_mark_nontree_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
     ntw->refresh();
 }
 
-void NT_mark_color_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
+static void NT_mark_color_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
 {
     AWT_canvas *ntw       = (AWT_canvas*)cl_ntw;
     int         mark_mode = (int)cl_mark_mode;
@@ -297,7 +297,7 @@ void NT_mark_color_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
 }
 
 
-void NT_insert_color_mark_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_canvas, const char *menuname, int mark_basemode) {
+static void NT_insert_color_mark_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_canvas, const char *menuname, int mark_basemode) {
 #define MAXLABEL 40
 #define MAXENTRY 20
     awm->insert_sub_menu(menuname, "");
@@ -477,7 +477,7 @@ void NT_group_not_marked_cb(void *, AWT_canvas *ntw) { nt_group_tree(ntw, 1, 0);
 void NT_group_terminal_cb  (void *, AWT_canvas *ntw) { nt_group_tree(ntw, 2, 0); }
 void NT_ungroup_all_cb     (void *, AWT_canvas *ntw) { nt_group_tree(ntw, 4, 0); }
 
-void NT_group_not_color_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_colornum) {
+static void NT_group_not_color_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_colornum) {
     AWT_canvas     *ntw      = (AWT_canvas*)cl_ntw;
     int             colornum = (int)cl_colornum;
 
