@@ -2129,7 +2129,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                                 progress.inc_and_check_user_abort(error);
                             }
                             free(doneFields);
-                            free(fieldStat);
+                            delete [] fieldStat;
                         }
                         freeSpeciesMergeList(sml); sml = 0;
                     }
