@@ -81,7 +81,7 @@ ED4_returncode ED4_consensus_sequence_terminal::draw() {
         if (index_range.is_empty()) return ED4_R_OK;
 
         ExplicitRange seq_range = ExplicitRange(rm->screen_to_sequence(index_range), MAXSEQUENCECHARACTERLENGTH);
-        index_range             = rm->sequence_to_screen_clipped(seq_range);
+        index_range             = rm->sequence_to_screen(seq_range);
 
         char *cons = 0;
         if (!seq_range.is_empty()) {
@@ -201,7 +201,7 @@ ED4_returncode ED4_orf_terminal::draw() {
     ExplicitRange index_range = rm->clip_screen_range(calc_update_interval());
     {
         int max_seq_len = aaSeqLen;
-        int max_seq_pos = rm->sequence_to_screen_clipped(max_seq_len-1);
+        int max_seq_pos = rm->sequence_to_screen(max_seq_len-1);
         index_range     = ExplicitRange(PosRange(index_range), max_seq_pos);
     }
 
@@ -356,7 +356,7 @@ ED4_returncode ED4_sequence_terminal::draw() {
     int right = index_range.end();
 
     {
-        int max_seq_pos = rm->sequence_to_screen_clipped(max_seq_len-1);
+        int max_seq_pos = rm->sequence_to_screen(max_seq_len-1);
 
         if (right>max_seq_len) right = max_seq_pos;
         if (left>right) {
@@ -510,7 +510,7 @@ ED4_returncode ED4_sequence_terminal::draw() {
 
     // output helix
     if (ED4_ROOT->helix->is_enabled()) { // should do a remap
-        int screen_length = rm->clipped_sequence_to_screen(ED4_ROOT->helix->size());
+        int screen_length = rm->clipped_sequence_to_screen_PLAIN(ED4_ROOT->helix->size());
         e4_assert(screen_length >= 0);
         if ((right+1) < screen_length) {
             screen_length = right+1;
@@ -531,7 +531,7 @@ ED4_returncode ED4_sequence_terminal::draw() {
     if (ED4_ROOT->protstruct) {
         ED4_species_manager *spec_man = get_parent(ED4_L_SPECIES)->to_species_manager();
         if (!spec_man->flag.is_SAI && ED4_ROOT->aw_root->awar(PFOLD_AWAR_ENABLE)->read_int()) {  // should do a remap
-            int screen_length = rm->clipped_sequence_to_screen(ED4_ROOT->protstruct_len);
+            int screen_length = rm->clipped_sequence_to_screen_PLAIN(ED4_ROOT->protstruct_len);
             e4_assert(screen_length >= 0);
             if ((right+1) < screen_length) {
                 screen_length = right+1;

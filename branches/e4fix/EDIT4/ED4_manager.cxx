@@ -1816,17 +1816,17 @@ int ED4_remap::screen_to_sequence(int screen_pos) const {
     e4_assert(screen_pos>=0 && size_t(screen_pos)<screen_len);
     return screen_to_sequence_tab[screen_pos];
 }
-int ED4_remap::clipped_sequence_to_screen(int sequence_pos) const {
+int ED4_remap::clipped_sequence_to_screen_PLAIN(int sequence_pos) const {
     if (sequence_pos<0) {
         sequence_pos = 0;
     }
     else if (size_t(sequence_pos)>sequence_len) {
         sequence_pos = sequence_len;
     }
-    return sequence_to_screen(sequence_pos);
+    return sequence_to_screen_PLAIN(sequence_pos);
 }
-int ED4_remap::sequence_to_screen_clipped(int sequence_pos) const {
-    int scr_pos = sequence_to_screen(sequence_pos);
+int ED4_remap::sequence_to_screen(int sequence_pos) const {
+    int scr_pos = sequence_to_screen_PLAIN(sequence_pos);
     if (scr_pos<0) scr_pos = -scr_pos;
     return scr_pos;
 }

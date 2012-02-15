@@ -523,9 +523,9 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
                 const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
 
                 PosRange screen_range = rm->clip_screen_range(seq_term->calc_interval_displayed_in_rectangle(&area_rect));
-                int      scr_pos      = rm->sequence_to_screen_clipped(seq_pos);
+                int      scr_pos      = rm->sequence_to_screen(seq_pos);
 
-                PosRange block_screen_range = rm->sequence_to_screen_clipped(block.get_range());
+                PosRange block_screen_range = rm->sequence_to_screen(block.get_range());
                 PosRange block_visible_part = intersection(screen_range, block_screen_range);
                 
                 if (block_visible_part.is_empty()) {

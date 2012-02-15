@@ -1041,7 +1041,7 @@ void ED4_cursor::jump_screen_pos(int screen_pos, ED4_CursorJumpType jump_type) {
 }
 
 void ED4_cursor::jump_sequence_pos(int seq_pos, ED4_CursorJumpType jump_type) {
-    int screen_pos = ED4_ROOT->root_group_man->remap()->sequence_to_screen_clipped(seq_pos);
+    int screen_pos = ED4_ROOT->root_group_man->remap()->sequence_to_screen(seq_pos);
     jump_screen_pos(screen_pos, jump_type);
 }
 
@@ -1367,7 +1367,7 @@ void ED4_cursor::set_to_terminal(ED4_terminal *terminal, int seq_pos, ED4_Cursor
             }
         }
 
-        int scr_pos = ED4_ROOT->root_group_man->remap()->sequence_to_screen_clipped(seq_pos);
+        int scr_pos = ED4_ROOT->root_group_man->remap()->sequence_to_screen(seq_pos);
         show_cursor_at(terminal, scr_pos);
 
         if (!is_completely_visible()) {
