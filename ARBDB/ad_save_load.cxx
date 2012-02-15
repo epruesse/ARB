@@ -1141,7 +1141,9 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, const char *path) {
                 error = GBS_global_string("Save Changes is missing master ARB file '%s',\n"
                                           "    save database first", Main->path);
             }
-            fclose(fmaster);
+            else {
+                fclose(fmaster);
+            }
         }
         if (!error) {
             if (GB_unlink(path)<0) { // delete old file
@@ -1222,7 +1224,9 @@ GB_ERROR GB_save_quick(GBDATA *gb, const char *refpath) {
             error = GBS_global_string("Quick save is missing master ARB file '%s',\n"
                                       "save database first", refpath);
         }
-        fclose(fmaster);
+        else {
+            fclose(fmaster);
+        }
     }
     if (!error && !Main->local_mode) error = "You cannot save a remote database";
     if (!error) {

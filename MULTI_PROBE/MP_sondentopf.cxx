@@ -99,14 +99,12 @@ Sonde* ST_Container::get_cached_sonde(char* name)
 Sondentopf::Sondentopf(MO_Liste *BL, MO_Liste *AL)
 {
     Listenliste = new List<void*>;
-    color_hash  = GBS_create_hash(BL->get_laenge()*1.25+1, GB_IGNORE_CASE);
-    if (!BL)
-    {
+    if (!BL) {
         aw_message("List of species is empty. Terminating program");
         exit(333);
     }
-    if (!AL)
-    {
+    color_hash  = GBS_create_hash(BL->get_laenge()*1.25+1, GB_IGNORE_CASE);
+    if (!AL) {
         aw_message("List of marked species is empty. Terminating program");
         exit(334);
     }
@@ -295,8 +293,8 @@ probe_tabs* Sondentopf::fill_Stat_Arrays()
 }
 
 
-void Sondentopf::gen_color_hash(positiontype anz_sonden)
-{
+void Sondentopf::gen_color_hash(positiontype anz_sonden) {
+    if (!anz_sonden) return;
 
     List<Sonde>*    Sondenliste = LIST(Listenliste->get_first());
     double**        Mergefeld;
@@ -315,10 +313,6 @@ void Sondentopf::gen_color_hash(positiontype anz_sonden)
         AllowedMismatchFeld[i] = (int) sonde->get_Allowed_Mismatch_no(0);
         sonde = Sondenliste->get_next();
     }
-
-
-    if (!anz_sonden)
-        return;
 
 
     Mergefeld = gen_Mergefeld();

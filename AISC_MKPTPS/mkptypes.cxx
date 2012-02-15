@@ -1716,6 +1716,8 @@ int ARB_main(int argc, const char *argv[]) {
     free(current_file);
     free(current_dir);
 
+    free(iobuf);
+
     return EXIT_SUCCESS;
 }
 

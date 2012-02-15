@@ -1199,8 +1199,6 @@ void imageDialog::set_ARB_image_path(const char *path)
 ****************************************************************************/
 int imageDialog::updateImage()
 {
-    // CREATE BUFFER
-    char *buf= (char *)malloc(1024 * sizeof(char));
     char *filename;
     char *file;
 
@@ -1246,11 +1244,12 @@ int imageDialog::updateImage()
     else if(*(file+1)) file++; // REMOVE '/' CHAR FROM BEGINNING
 
     // SET WINDOW TITLE
-    sprintf(buf, "PGT - Image View (%s)", file);
-    setDialogTitle(buf);
-
-    // FREE BUFFER
-    free(buf);
+    {
+        char *buf= (char *)malloc(1024 * sizeof(char));
+        sprintf(buf, "PGT - Image View (%s)", file);
+        setDialogTitle(buf);
+        free(buf);
+    }
 
     return 0;
 }

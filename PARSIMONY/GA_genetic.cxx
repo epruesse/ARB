@@ -328,12 +328,12 @@ AP_tree *GA_genetic::read_tree_rek(char **data)
 
         node->leftson = read_tree_rek(data);
         if (!node->leftson) {
-            free(node);
+            delete node;
             return 0;
         }
         node->rightson = read_tree_rek(data);
         if (!node->rightson) {
-            free(node);
+            delete node;
             return 0;
         }
         node->leftson->father = node;
@@ -369,10 +369,10 @@ AP_ERR *GA_genetic::write_tree(GBDATA *gb_cluster, GA_tree *ga_tree)
     GBDATA * gb_tree;
     GBDATA * gb_id;
 
-    treename = new char[20];
     if (!gb_cluster) {
         return new AP_ERR("write tree", "no gbdata !");
     }
+    treename = new char[20];
     GB_push_transaction(gb_main);
     if (ga_tree->id < 0) {
         ga_tree->id = GB_read_int(gb_treeName);
@@ -404,7 +404,7 @@ AP_ERR *GA_genetic::write_tree(GBDATA *gb_cluster, GA_tree *ga_tree)
         GBT_write_tree(gb_main, 0, 0, (GBT_TREE *)ga_tree->tree);
     }
     free(treedata);
-    delete treename;
+    delete [] treename;
     /*
       gb_nnodes = GB_search(gb_tree,"nnodes",GB_CREATE);
       error = GB_write_int(gb_nnodes,size);
@@ -800,12 +800,11 @@ AP_ERR * GA_genetic::delete_job(GBDATA *gb_job) {
     GBDATA * gbp;
     GBDATA *gbt;
     GBDATA *gb_cluster, *gbcl;
-    GA_job *job;
-    job = new GA_job;
     GBDATA *jobcl;
 
     if (gb_job == 0)
         return new AP_ERR("delete_job", "no job given !");
+    GA_job *job = new GA_job;
     jobcl = GB_get_father(gb_job);
 
     gbp = GB_entry(gb_job, "cluster0"); if (gbp) job->cluster0 = (int)GB_read_int(gbp);

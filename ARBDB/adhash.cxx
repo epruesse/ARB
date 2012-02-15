@@ -792,6 +792,7 @@ const char *GBS_hash_next_element_that(GB_HASH *hs, const char *last_key, bool (
         }
     }
 
+    // cppcheck-suppress nullPointer
     return e ? e->key : NULL;
 }
 

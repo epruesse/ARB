@@ -28,15 +28,12 @@ PH_filter::PH_filter()
     memset ((char *)this, 0, sizeof(PH_filter));
 }
 
-char *PH_filter::init(char *ifilter, char *zerobases, long size)
-{
-    int             i;
-
-    delete  filter;
+char *PH_filter::init(char *ifilter, char *zerobases, long size) {
+    delete [] filter;
     filter = new char[size];
     filter_len = size;
     real_len = 0;
-    for (i = 0; i < size; i++) {
+    for (int i = 0; i < size; i++) {
         if (zerobases) {
             if (strchr(zerobases, ifilter[i])) {
                 filter[i] = 0;
@@ -60,22 +57,19 @@ char *PH_filter::init(char *ifilter, char *zerobases, long size)
     return 0;
 }
 
-char *PH_filter::init(long size)
-{
-    int             i;
-    delete  filter;
+char *PH_filter::init(long size) {
+    delete [] filter;
     filter = new char[size];
     real_len = filter_len = size;
-    for (i = 0; i < size; i++) {
+    for (int i = 0; i < size; i++) {
         filter[i] = 1;
     }
     update = PH_timer();
     return 0;
 }
 
-PH_filter::~PH_filter()
-{
-    delete filter;
+PH_filter::~PH_filter() {
+    delete [] filter;
 }
 
 inline void strlwr(char *s) {
@@ -135,7 +129,7 @@ float *PH_filter::calculate_column_homology() {
     num_all_chars = strlen(all_chars);
 
     // initialize variables
-    delete mline;
+    free(mline);
     delete options_vector;
     mline = (float *) calloc((int) PHDATA::ROOT->get_seq_len(), sizeof(float));
 
@@ -364,7 +358,7 @@ float *PH_filter::calculate_column_homology() {
         return mline;
     }
     else {
-        delete mline;
+        free(mline);
         return 0;
     }
 }
