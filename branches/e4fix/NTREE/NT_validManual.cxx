@@ -49,7 +49,7 @@ static void fillSelNamList(selectValidNameStruct* svnp) {
     GB_begin_transaction(GLOBAL_gb_main);
 
     GBDATA* GB_validNamesCont = GB_entry(GLOBAL_gb_main, "VALID_NAMES");
-    if (!GB_validNamesCont) { std::cout << "validNames Container not found" << std:: cout; }
+    if (!GB_validNamesCont) { std::cout << "validNames Container not found\n"; }
 
     GB_ERROR err = 0;
 

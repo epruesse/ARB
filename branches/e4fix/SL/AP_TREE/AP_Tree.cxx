@@ -42,15 +42,13 @@ AP_rates::AP_rates() {
     memset ((char *)this, 0, sizeof(AP_rates));
 }
 
-char *AP_rates::init(AP_filter *fil)
-{
-    int i;
+char *AP_rates::init(AP_filter *fil) {
     if (fil->get_timestamp() <= this->update) return 0;
 
     rate_len = fil->get_filtered_length();
-    delete rates;
+    delete [] rates;
     rates = new AP_FLOAT[rate_len];
-    for (i=0; i<rate_len; i++) {
+    for (int i=0; i<rate_len; i++) {
         rates[i] = 1.0;
     }
     this->update = fil->get_timestamp();
@@ -59,12 +57,12 @@ char *AP_rates::init(AP_filter *fil)
 
 char *AP_rates::init(AP_FLOAT * ra, AP_filter *fil)
 {
-    int i, j;
     if (fil->get_timestamp() <= this->update) return 0;
 
     rate_len = fil->get_filtered_length();
-    delete rates;
+    delete [] rates;
     rates = new AP_FLOAT[rate_len];
+    int i, j;
     for (j=i=0; i<rate_len; j++) {
         if (fil->use_position(j)) {
             rates[i++] = ra[j];
@@ -74,7 +72,7 @@ char *AP_rates::init(AP_FLOAT * ra, AP_filter *fil)
     return 0;
 }
 
-AP_rates::~AP_rates()   { if (rates) delete(rates); }
+AP_rates::~AP_rates() { delete [] rates; }
 
 
 /*!***************************************************************************************

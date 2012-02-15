@@ -499,13 +499,13 @@ static GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, 
                             }
 
                             if (sync_possibilities==0) {
-                                delete sync_possible_with_catchup;
+                                delete [] sync_possible_with_catchup;
                                 failed = 1;
                                 fail_reason = "Can't synchronize after 'X'";
                                 break;
                             }
                             if (sync_possibilities>1) {
-                                delete sync_possible_with_catchup;
+                                delete [] sync_possible_with_catchup;
                                 failed = 1;
                                 fail_reason = "Not enough data behind 'X' (please contact ARB-Support)";
                                 break;
@@ -513,7 +513,7 @@ static GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, 
 
                             nt_assert(sync_possibilities==1);
                             catchUp = sync_possible_with_catchup[0];
-                            delete sync_possible_with_catchup;
+                            delete [] sync_possible_with_catchup;
                         }
                         else if (!synchronizeCodons(protein, d, x_count, x_count*3, &catchUp, allowed_code, allowed_code_left)) {
                             failed = 1;

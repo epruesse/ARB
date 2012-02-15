@@ -301,9 +301,9 @@ static int FindType(char *name, int *dtype, int *ftype)
                 }
             }
         }
+        fclose(file);
     }
 
-    fclose(file);
     return result;
 }
 
@@ -698,6 +698,7 @@ void ReadCMask(const char *filename)
             if (curlen == 0)
             {
                 Warning("illegal format in colormask");
+                fclose(file);
                 return;
             }
             if (strlen(curname) != 0)
@@ -738,6 +739,7 @@ void ReadCMask(const char *filename)
                     if (fgets(in_line, GBUFSIZ, file)==NULL)
                     {
                         Warning("illegal format in colormask");
+                        fclose(file);
                         return;
                     }
                     /*  Fixed so that the keyword nodash causes the colormask to be mapped

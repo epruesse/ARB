@@ -399,19 +399,22 @@ static char *readXmlTree(char *fname) {
     int createTempFile = mkstemp(tempFile);
 
     if (createTempFile) {
-        char          *tmpFname = strdup(fname);
-        char          *tmp      = 0;
-        GBS_strstruct *buf      = GBS_stropen(strlen(fname));
+        GBS_strstruct *buf = GBS_stropen(strlen(fname));
 
         // extract path from fname in order to place a copy of dtd file required to validate xml file
-        for (char *tok = strtok(tmpFname, "/"); tok;) {
-            tmp = tok;
-            tok = strtok(0, "/");
-            if (tok) {
-                GBS_strcat(buf, "/");
-                GBS_strcat(buf, tmp);
+        {
+            char *tmpFname = strdup(fname);
+            for (char *tok = strtok(tmpFname, "/"); tok;) {
+                char *tmp = tok;
+                tok = strtok(0, "/");
+                if (tok) {
+                    GBS_strcat(buf, "/");
+                    GBS_strcat(buf, tmp);
+                }
             }
+            free(tmpFname);
         }
+
         char *path = GBS_strclose(buf);
 
         // linking arb_tree.dtd file to the Path from where xml file is loaded

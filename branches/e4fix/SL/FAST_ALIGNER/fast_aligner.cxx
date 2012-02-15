@@ -1444,7 +1444,8 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
         }
 
         if (error) {
-            return error; // @@@ leaks ? 
+            delete toAlignSequence;
+            return error; // @@@ leaks ?
         }
 
         while (next_relatives) {
@@ -2076,9 +2077,8 @@ ARB_ERROR Aligner::alignToExplicitReference(GBDATA *gb_species_data, int max_seq
             ExplicitReference  target(alignment, &referenceFastSeq, gb_reference, max_seq_length, ali_params);
 
             error = alignTargetsToReference(target, gb_species_data);
-
-            delete referenceSeq;
         }
+        delete referenceSeq;
     }
     return error;
 }

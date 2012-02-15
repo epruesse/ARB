@@ -71,42 +71,50 @@ int ARB_main(int argc, const char *argv[]) {
                 char          *evaldup = strdup(eval);
                 char          *right   = strchr(evaldup, '=');
                 int            patched = false;
+
+                int result = 0;
                 if (!right) {
                     fprintf(stderr, "'=' not found in replace string\n");
-                    return -1;
+                    result = -1;
                 }
-                if (strlen(right) > strlen(evaldup)) {
-                    fprintf(stderr, "You cannot replace a shorter string by a longer one!!!\n");
-                    return -1;
-                }
-
-                *(right++) = 0;
-                unsigned long i;
-                int leftsize = strlen(evaldup);
-                size -= leftsize;
-                for (i=0; i<size; i++) {
-                    if (!strncmp(data+i, evaldup, leftsize)) {
-                        strcpy(data+i, right);
-                        patched = true;
-                    }
-                }
-                if (patched) {
-                    out = fopen(fname, "w");
-                    if (out) {
-                        if (fwrite(data, (unsigned int)size, 1, out) != 1) {
-                            fprintf(stderr, "Write failed %s\n", fname);
-                            return -1;
-                        }
-                        fprintf(out, "%s", data);
-                        fclose(out);
-                        printf("File %s parsed\n", fname);
+                else {
+                    if (strlen(right) > strlen(evaldup)) {
+                        fprintf(stderr, "You cannot replace a shorter string by a longer one!!!\n");
+                        result = -1;
                     }
                     else {
-                        fprintf(stderr, "Write failed %s\n", fname);
-                        return -1;
+                        *(right++) = 0;
+                        unsigned long i;
+                        int leftsize = strlen(evaldup);
+                        size -= leftsize;
+                        for (i=0; i<size; i++) {
+                            if (!strncmp(data+i, evaldup, leftsize)) {
+                                strcpy(data+i, right);
+                                patched = true;
+                            }
+                        }
+                        if (patched) {
+                            out = fopen(fname, "w");
+                            if (out) {
+                                if (fwrite(data, (unsigned int)size, 1, out) != 1) {
+                                    fprintf(stderr, "Write failed %s\n", fname);
+                                    result = -1;
+                                }
+                                else {
+                                    fprintf(out, "%s", data);
+                                    printf("File %s parsed\n", fname);
+                                }
+                                fclose(out);
+                            }
+                            else {
+                                fprintf(stderr, "Write failed %s\n", fname);
+                                result = -1;
+                            }
+                        }
                     }
                 }
-                return 0;
+                free(evaldup);
+                return result;
             }
 
             if (linemode) {

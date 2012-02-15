@@ -1114,6 +1114,7 @@ static void print_XML_Text_expanding_links(const string& text, size_t lineNo) {
             LinkType type        = detectLinkType(link_target);
             string   dest        = link_target;
 
+            // cppcheck-suppress unusedScopedObject
             XML_Text(text.substr(0, found));
 
             {
@@ -1194,6 +1195,7 @@ void Helpfile::writeXML(FILE *out, const string& page_name) {
 #endif // DEBUG
 
     {
+        // cppcheck-suppress unusedScopedObject
         XML_Comment(string("automatically generated from ../")+inputfile+' ');
     }
 

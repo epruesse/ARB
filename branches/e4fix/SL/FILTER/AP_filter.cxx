@@ -136,7 +136,7 @@ void AP_filter::enable_simplify(AWT_FILTER_SIMPLIFY type) {
 }
 
 void AP_filter::calc_filterpos_2_seqpos() {
-    delete filterpos_2_seqpos;
+    delete [] filterpos_2_seqpos;
     filterpos_2_seqpos = new size_t[real_len];
     size_t i, j;
     for (i=j=0; i<filter_len; ++i) {

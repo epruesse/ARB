@@ -56,6 +56,6 @@ GenerationDuplicates::~GenerationDuplicates()
     for (int i=0; i<intern_size; i++)
         delete next[i];
 
-    delete next_mism;
+    delete [] next_mism;
     delete next;
 }

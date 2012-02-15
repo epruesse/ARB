@@ -297,7 +297,7 @@ static void mp_load_list(AW_window *aww, AW_selection_list *selection_list, char
             }
 
             aww->insert_selection(selection_list, real_disp, real_disp);
-            delete real_disp;
+            delete [] real_disp;
         }
     }
 

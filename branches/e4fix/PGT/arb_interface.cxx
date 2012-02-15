@@ -551,11 +551,11 @@ static bool check_create_AWAR(GBDATA *gb_data, const char *AWAR_path, bool trans
     // DO WE HAVE A STRING?
     if(AWAR_path == NULL) return false;
 
-    // CREATE BUFFER
-    char *buf= (char *)malloc(1024 * sizeof(char));
-    strncpy(buf, AWAR_path, 1023);
-
     if(!gb_data) return false;
+
+    // CREATE BUFFER
+    char *buf = (char *)malloc(1024 * sizeof(char));
+    strncpy(buf, AWAR_path, 1023);
 
     // FIRST COUNT TOKENS
     int count= 0;

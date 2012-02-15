@@ -138,8 +138,8 @@ void PHDATA::print() {
 GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */, PH_TRANSFORMATION /* transformation */) {
     if (nentries<=1) return "There are no species selected";
 
-    char       *filter;
-    matrix                 = new AP_smatrix(nentries);
+    matrix = new AP_smatrix(nentries);
+
     long        i, j, column, reference_table[256];
     long        options_vector[OPT_COUNT];
     const char *real_chars, *low_chars, *rest_chars;
@@ -207,7 +207,7 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
     }
     distance_table->set(reference_table[(unsigned char)'.'], reference_table[(unsigned char)'-'], 0.0);
 
-    filter=strdup(aw_root->awar("phyl/filter/filter")->read_string());
+    char *filter = aw_root->awar("phyl/filter/filter")->read_string();
 
     // set compare-table according to options_vector
     switch (options_vector[OPT_FILTER_POINT]) // '.' in column
@@ -288,5 +288,7 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
         matrix = NULL;
     }
 
+    free(filter);
+    
     return error;
 }

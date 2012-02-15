@@ -61,6 +61,7 @@ static int is_a_unused_reading_buffer(ReadingBuffer *rb) {
 #endif // CHECK_RELEASED_BUFFERS
 
 static ReadingBuffer *allocate_ReadingBuffer() {
+    // cppcheck-suppress mismatchSize
     ReadingBuffer *rb = (ReadingBuffer*)malloc(sizeof(*rb)+READING_BUFFER_SIZE);
     rb->data          = ((char*)rb)+sizeof(*rb);
     rb->next          = 0;

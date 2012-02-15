@@ -13,6 +13,7 @@ TRUNK->BRANCH
                 8310 8311 8312 8313 -> 8382
                 8314 8315 8316 8317 8318 8319 8320 8321 8322 8323 8324 8325 8326 8327 8328 8351 8352 8355 8356 8357 8358 8359 -> 8383
                 8360 8361 8363 8364 8365 8366 8367 -> 8384
+                8393 -> 8394
 
     skipped patches (depends, already there, ...)
 
@@ -20,7 +21,7 @@ TRUNK->BRANCH
 
         --- current try above
 
-    not reviewed: 8386:HEAD
+    not reviewed: 8395:HEAD
 
 BRANCH->TRUNK
 

@@ -36,35 +36,34 @@ using namespace std;
 ****************************************************************************/
 static importTable *createImportTable(int rows, int columns)
 {
-    // ALLOCATE MEMORY FOR THE TABLE DATA
-    importTable *table= (importTable *)malloc(sizeof(importTable));
-    if(!table) return NULL;
+    importTable  *table  = (importTable *)malloc(sizeof(importTable));
+    char        **cells  = (char **)malloc(rows * columns * sizeof(char *));
+    char        **header = (char **)malloc(columns * sizeof(char *));
 
-    // ALLOCATE MEMORY FOR THE CELL DATA
-    char **cells= (char **)malloc(rows * columns * sizeof(char *));
-    if(!cells) return NULL;
+    if (table && cells && header) {
+        // INIT ALL CELL VALUES WITH NULL
+        int i;
+        for(i= 0; i < (rows * columns); i++) cells[i]= NULL;
+        for(i= 0; i < columns; i++) header[i]= NULL;
 
-    // ALLOCATE MEMORY FOR THE HEADER DATA
-    char **header= (char **)malloc(columns * sizeof(char *));
-    if(!header) return NULL;
+        // ALLOCATE MEMORY FOR THE COLUMN TYPE DATA
+        int *columnType= (int *)malloc(columns * sizeof(int));
+        if(!columnType) return NULL;
 
-    // INIT ALL CELL VALUES WITH NULL
-    int i;
-    for(i= 0; i < (rows * columns); i++) cells[i]= NULL;
-    for(i= 0; i < columns; i++) header[i]= NULL;
-
-    // ALLOCATE MEMORY FOR THE COLUMN TYPE DATA
-    int *columnType= (int *)malloc(columns * sizeof(int));
-    if(!columnType) return NULL;
-
-    // ENTER VALID PREDEFINED VALUES (SHOULD BE CHANGED LATER)
-    table->rows= rows;
-    table->columns= columns;
-    table->cell= cells;
-    table->header= header;
-    table->hasHeader= false;
-    table->columnType= columnType;
-
+        // ENTER VALID PREDEFINED VALUES (SHOULD BE CHANGED LATER)
+        table->rows= rows;
+        table->columns= columns;
+        table->cell= cells;
+        table->header= header;
+        table->hasHeader= false;
+        table->columnType= columnType;
+    }
+    else {
+        free(table);
+        free(cells);
+        free(header);
+    }
+    
     // RETURN POINTER TO TABLE
     return table;
 }
@@ -436,6 +435,7 @@ XSLTimporter *findXSLTFiles(char *path)
             count++;
         }
     }
+    closedir(dir);
 
     xslt->number= count;
 

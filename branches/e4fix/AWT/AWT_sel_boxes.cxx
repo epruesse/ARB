@@ -534,9 +534,8 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *, void *cbsid) {
             sname[0] = 1;
             char *text = (char *)GBS_global_string("Selected Species: '%s'", name);
             cbs->aws->insert_selection(cbs->id, text, sname);
-            delete name;
         }
-        delete name;
+        free(name);
     }
     cbs->aws->insert_default_selection(cbs->id, "- none -", "none");
     cbs->aws->update_selection_list(cbs->id);
