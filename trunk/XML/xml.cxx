@@ -127,7 +127,7 @@ XML_Tag::XML_Tag(const string &name_)
 
 XML_Tag::~XML_Tag() {
     FILE *out = the_XML_Document->Out();
-    if (son) throw string("XML_Tag has son in destructor");
+    xml_assert(!son);
     close(out);
 
     delete attribute;

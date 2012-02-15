@@ -249,9 +249,11 @@ void PS_find_probes_for_pairs(const PS_NodePtr _ps_node, ID2IDSet &_pairs) {
                 printf("found path for (%i,%i) at %p ", pair->first, pair->second, &(*_ps_node));
                 _ps_node->printOnlyMe();
                 (*__PAIR2PATH)[*pair] = *__PATHSET;     // store path
+                
+                bool scanMinMax = (pair->first == __ONEMATCH_MIN_ID) || (pair->second == __ONEMATCH_MAX_ID);
                 _pairs.erase(pair);                     // remove found pair
-                // scan pairs for new min,max IDs
-                if ((pair->first == __ONEMATCH_MIN_ID) || (pair->second == __ONEMATCH_MAX_ID)) {
+                if (scanMinMax) {
+                    // scan pairs for new min,max IDs
                     __ONEMATCH_MIN_ID = __MAX_ID;
                     __ONEMATCH_MAX_ID = -1;
                     for (ID2IDSetCIter p=_pairs.begin(); p != _pairs.end(); ++p) {

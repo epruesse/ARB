@@ -49,8 +49,9 @@ static void AP_conservProfile2Gnuplot_callback(AW_window *aww) {
         free(legend);
         free(smooth);
         free(fname);
+
+        fclose(cmdFile);
     }
-    fclose(cmdFile);
 
     if (!error) {
         char *script = GBS_global_string_copy("gnuplot %s && rm -f %s", command_file, command_file);

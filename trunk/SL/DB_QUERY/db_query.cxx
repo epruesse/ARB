@@ -2159,6 +2159,7 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
     }
     dbq_assert(!(mode == COLORIZE_INVALID));
 
+    // cppcheck-suppress nullPointer
     ItemSelector& Sel  = mode == COLORIZE_LISTED ? query->selector : *sel;
     const char   *what = mode == COLORIZE_LISTED ? "listed" : "marked";
 
