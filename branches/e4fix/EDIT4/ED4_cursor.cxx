@@ -276,7 +276,7 @@ ED4_returncode ED4_cursor::draw_cursor(AW_pos x, AW_pos y)
     cursor_shape = new ED4_CursorShape(ctype,
                                        SEQ_TERM_TEXT_YOFFSET+2,
                                        ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES),
-                                       !awar_edit_direction);
+                                       !awar_edit_rightward);
 
     cursor_shape->draw(window()->get_device(), int(x), int(y));
 

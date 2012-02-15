@@ -1818,7 +1818,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->create_text_toggle(AWAR_INSERT_MODE, "Replace", "Insert", 7);
 
     awmm->at("direct");
-    awmm->create_toggle(AWAR_EDIT_DIRECTION, "#edit/3to5.bitmap", "#edit/5to3.bitmap", 7);
+    awmm->create_toggle(AWAR_EDIT_RIGHTWARD, "#edit/3to5.bitmap", "#edit/5to3.bitmap", 7);
 
     // ------------------------
     //      secedit / rna3d
