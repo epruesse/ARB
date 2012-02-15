@@ -1493,7 +1493,7 @@ inline ED4_cursor& current_cursor() { return current_ed4w()->cursor; }
 class ED4_root : virtual Noncopyable {
     void ED4_ROOT() const { e4_assert(0); } // avoid ED4_root-members use global ED4_ROOT
 
-    ED4_returncode refresh_window_simple(bool redraw);
+    void refresh_window_simple(bool redraw);
     void handle_update_requests(bool& redraw);
 
     ED4_window *most_recently_used_window;
@@ -1556,7 +1556,7 @@ public:
     // functions concerned with global refresh and resize
     void resize_all();
 
-    ED4_returncode special_window_refresh();
+    void special_window_refresh(bool handle_updates);
     ED4_returncode refresh_all_windows(bool redraw);
 
     void request_refresh_for_all_terminals();
@@ -1837,7 +1837,7 @@ public:
 
     ED4_root_group_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
-    int update_remap(); // TRUE if mapping has changed
+    bool update_remap(); // 'true' if mapping has changed
 
     const ED4_remap *remap() const { return &my_remap; }
     ED4_remap *remap() { return &my_remap; }

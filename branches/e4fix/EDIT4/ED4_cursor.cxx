@@ -266,8 +266,7 @@ ED4_CursorShape::ED4_CursorShape(ED4_CursorType typ, /* int x, int y, */ int ter
    ED4_cursor
    -------------------------------------------------------------------------------- */
 
-ED4_returncode ED4_cursor::draw_cursor(AW_pos x, AW_pos y)
-{
+ED4_returncode ED4_cursor::draw_cursor(AW_pos x, AW_pos y) { // @@@ remove return value
     if (cursor_shape) {
         delete cursor_shape;
         cursor_shape = 0;
@@ -280,10 +279,10 @@ ED4_returncode ED4_cursor::draw_cursor(AW_pos x, AW_pos y)
 
     cursor_shape->draw(window()->get_device(), int(x), int(y));
 
-#if defined(DEBUG) && 0
+#if defined(TRACE_REFRESH)
     printf("draw_cursor(%i, %i)\n", int(x), int(y));
 #endif // DEBUG
-
+    
     return ED4_R_OK;
 }
 
@@ -303,41 +302,40 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
 
     // refresh own terminal + terminal above + terminal below
 
-    target_terminal->request_refresh();
+    const int     MAX_AFFECTED = 3;
+    int           affected     = 0;
+    ED4_terminal *affected_terminal[MAX_AFFECTED];
+
+    affected_terminal[affected++] = target_terminal->to_terminal();
 
     {
         ED4_terminal *term = target_terminal->to_terminal();
-        int backward = 1;
+        bool backward = true;
 
         while (1) {
             int done = 0;
 
             term = backward ? term->get_prev_terminal() : term->get_next_terminal();
-            if (!term) {
-                done = 1;
-            }
+            if (!term) done = 1;
             else if ((term->is_sequence_terminal()) && !term->is_in_folded_group()) {
-                term->request_refresh();
-                done = 1;
+                affected_terminal[affected++] = term;
+                done                          = 1;
             }
 
             if (done) {
-                if (!backward) {
-                    break;
-                }
-                backward = 0;
+                if (!backward) break;
+                backward = false;
                 term = target_terminal->to_terminal();
             }
         }
+    }
 
-        term = target_terminal->to_terminal();
-        while (1) {
-            term = term->get_next_terminal();
-            if (!term) {
-                break;
-            }
-
-        }
+    bool refresh_was_requested[MAX_AFFECTED];
+    e4_assert(affected >= 1 && affected <= MAX_AFFECTED);
+    for (int a = 0; a<affected; ++a) {
+        ED4_terminal *term       = affected_terminal[a];
+        refresh_was_requested[a] = term->update_info.refresh;
+        term->request_refresh();
     }
 
     // clear rectangle where cursor is displayed
@@ -364,10 +362,15 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
         ED4_LocalWinContext uses(window());
         bool previous = allowed_to_draw;
         allowed_to_draw = false;
-        ED4_ROOT->special_window_refresh();
+        ED4_ROOT->special_window_refresh(false);
         allowed_to_draw = previous;
     }
     dev->pop_clip_scale();
+
+    // restore old refresh flags (to avoid refresh of 3 complete terminals when cursor changes)
+    for (int a = 0; a<affected; ++a) {
+        affected_terminal[a]->update_info.refresh = refresh_was_requested[a];
+    }
 
     return (ED4_R_OK);
 }
@@ -1254,6 +1257,8 @@ bool ED4_cursor::is_partly_visible() const {
     e4_assert(owner_of_cursor);
     e4_assert(cursor_shape); // cursor is not drawn, cannot test visibility
 
+    if (owner_of_cursor->is_in_folded_group()) return false;
+    
     AW_pos x, y;
     owner_of_cursor->calc_world_coords(&x, &y);
 
@@ -1274,6 +1279,8 @@ bool ED4_cursor::is_partly_visible() const {
 bool ED4_cursor::is_completely_visible() const {
     e4_assert(owner_of_cursor);
     e4_assert(cursor_shape); // cursor is not drawn, cannot test visibility
+
+    if (owner_of_cursor->is_in_folded_group()) return false;
 
     AW_pos x, y;
     owner_of_cursor->calc_world_coords(&x, &y);
@@ -1385,8 +1392,6 @@ ED4_returncode ED4_cursor::show_cursor_at(ED4_terminal *target_terminal, ED4_ind
         if (is_partly_visible()) {
             delete_cursor(cursor_abs_x, owner_of_cursor);
         }
-
-        owner_of_cursor->request_refresh(); // we have to refresh old owner of cursor
         owner_of_cursor = NULL;
         DRAW = 1;
     }

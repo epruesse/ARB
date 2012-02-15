@@ -121,6 +121,7 @@ void ED4_expose_recalculations() {
         if (new_screenwidth == screenwidth) { // mapping did not change
             break;
         }
+        // @@@ request resize for all terminals ? 
         screenwidth = new_screenwidth;
     }
 }
@@ -286,10 +287,6 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                 }
                 else {
                     error = edit_string->edit(work_info);
-
-                    ED4_ROOT->main_manager->Show(1, 0); // temporary fix for worst-refresh problems (@@@ fixme)
-                    // ED4_ROOT->main_manager->Show(); // original version
-
                     cursor->jump_sequence_pos(work_info->out_seq_position, work_info->cursor_jump);
                 }
 
