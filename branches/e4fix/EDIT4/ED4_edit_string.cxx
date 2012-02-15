@@ -345,8 +345,8 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
     e4_assert(nrepeat>0);
 
     long old_seq_pos = seq_pos;
-    int screen_len = remap->sequence_to_screen_clipped(seq_len);
-    int cursorpos = remap->sequence_to_screen_clipped(seq_pos);
+    int  screen_len  = remap->sequence_to_screen_clipped(seq_len);
+    int  cursorpos   = remap->sequence_to_screen_clipped(seq_pos);
 
     char str[2];
     str[0] = key;
@@ -1098,7 +1098,8 @@ GB_ERROR ED4_Edit_String::edit(ED4_work_info *info) {
     }
 
     if (!info->rightward) {
-        info->char_position = remap->sequence_to_screen(info->out_seq_position);
+        info->char_position    = remap->sequence_to_screen(info->out_seq_position);
+        e4_assert(info->char_position >= 0);
         info->char_position--;
         info->out_seq_position = remap->screen_to_sequence(info->char_position);
     }

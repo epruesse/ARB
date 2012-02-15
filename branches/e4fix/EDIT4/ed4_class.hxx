@@ -1770,14 +1770,24 @@ public:
     ~ED4_remap();
 
     int screen_to_sequence(int screen_pos) const;
-    int sequence_to_screen(int sequence_pos) const;
 
-    int clipped_sequence_to_screen(int sequence_pos) const;
-    int sequence_to_screen_clipped(int sequence_pos) const;
+    int sequence_to_screen(int sequence_pos) const { // @@@ rename 
+        e4_assert(sequence_pos>=0 && size_t(sequence_pos)<=sequence_len);
+        return sequence_to_screen_tab[sequence_pos];
+    }
+    int shown_sequence_to_screen(int sequence_pos) const {
+        // as well works for sequence_pos == MAXSEQUENCECHARACTERLENGTH
+        int screen_pos = sequence_to_screen(sequence_pos);
+        e4_assert(screen_pos >= 0); // sequence_pos expected to be visible (i.e. not folded away)
+        return screen_pos;
+    }
 
-    PosRange sequence_to_screen(PosRange range) const {
+    int clipped_sequence_to_screen(int sequence_pos) const; // @@@ rename 
+    int sequence_to_screen_clipped(int sequence_pos) const; // @@@ rename 
+
+    PosRange sequence_to_screen_clipped(PosRange range) const { // @@@ rename
         e4_assert(!range.is_empty());
-        return PosRange(sequence_to_screen(range.start()), sequence_to_screen(range.end()));
+        return PosRange(sequence_to_screen_clipped(range.start()), sequence_to_screen_clipped(range.end()));
     }
     PosRange screen_to_sequence(PosRange range) const {
         e4_assert(!range.is_empty());

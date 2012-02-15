@@ -1810,15 +1810,11 @@ ED4_remap::~ED4_remap() {
     delete [] sequence_to_screen_tab;
 }
 int ED4_remap::screen_to_sequence(int screen_pos) const {
-    if (size_t(screen_pos)>=screen_len) {
+    if (size_t(screen_pos) == screen_len) {
         return screen_to_sequence_tab[screen_len-1];
     }
     e4_assert(screen_pos>=0 && size_t(screen_pos)<screen_len);
     return screen_to_sequence_tab[screen_pos];
-}
-int ED4_remap::sequence_to_screen(int sequence_pos) const {
-    e4_assert(sequence_pos>=0 && size_t(sequence_pos)<=sequence_len);
-    return sequence_to_screen_tab[sequence_pos];
 }
 int ED4_remap::clipped_sequence_to_screen(int sequence_pos) const {
     if (sequence_pos<0) {
@@ -1827,8 +1823,7 @@ int ED4_remap::clipped_sequence_to_screen(int sequence_pos) const {
     else if (size_t(sequence_pos)>sequence_len) {
         sequence_pos = sequence_len;
     }
-
-    return sequence_to_screen_tab[sequence_pos];
+    return sequence_to_screen(sequence_pos);
 }
 int ED4_remap::sequence_to_screen_clipped(int sequence_pos) const {
     int scr_pos = sequence_to_screen(sequence_pos);

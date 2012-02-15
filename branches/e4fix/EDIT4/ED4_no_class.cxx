@@ -104,7 +104,7 @@ void ED4_expose_recalculations() {
     ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[HEIGHT]      = TERMINALHEIGHT;
     ED4_ROOT->ref_terminals.get_ref_sequence_info()->extension.size[WIDTH]  = MAXINFOWIDTH;
 
-    int screenwidth = ED4_ROOT->root_group_man->remap()->sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
+    int screenwidth = ED4_ROOT->root_group_man->remap()->shown_sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
     while (1) {
         ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[WIDTH] =
             ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES) *
@@ -117,7 +117,7 @@ void ED4_expose_recalculations() {
 
         ED4_ROOT->resize_all(); // may change mapping
 
-        int new_screenwidth = ED4_ROOT->root_group_man->remap()->sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
+        int new_screenwidth = ED4_ROOT->root_group_man->remap()->shown_sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
         if (new_screenwidth == screenwidth) { // mapping did not change
             break;
         }
@@ -222,13 +222,13 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                 work_info->working_terminal = terminal;
 
                 if (terminal->is_sequence_terminal()) {
-                    work_info->mode        = awar_edit_mode;
+                    work_info->mode           = awar_edit_mode;
                     work_info->rightward   = awar_edit_rightward;
-                    work_info->is_sequence = 1;
+                    work_info->is_sequence    = 1;
                 }
                 else {
                     work_info->rightward   = true;
-                    work_info->is_sequence = 0;
+                    work_info->is_sequence    = 0;
 
                     if (terminal->is_pure_text_terminal()) {
                         work_info->mode = awar_edit_mode;
