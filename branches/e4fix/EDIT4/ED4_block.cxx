@@ -298,7 +298,7 @@ static void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat)
             ED4_cursor& cursor = win->cursor;
             if (cursor.owner_of_cursor) {
                 int bp_now = cursor.get_base_position();
-                e4_assert(bp_now == ab->second);
+                e4_assert(bp_now == ab->second); // @@@ restore cursor does not work properly with 2 windows
             }
 #endif
         }
