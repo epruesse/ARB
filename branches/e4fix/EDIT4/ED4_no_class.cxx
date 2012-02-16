@@ -2160,6 +2160,9 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
             error = GB_end_transaction(GLOBAL_gb_main, error);
             if (!error) ED4_get_and_jump_to_species(new_species_name);
         }
+        else {
+            GB_abort_transaction(GLOBAL_gb_main);
+        }
 
         free(addid);
         free(acc);
