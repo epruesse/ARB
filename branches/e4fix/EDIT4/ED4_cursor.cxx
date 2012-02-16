@@ -1315,27 +1315,31 @@ void ED4_terminal::scroll_into_view(ED4_window *ed4w) { // scroll y-position onl
     int win_ysize   = coords->window_lower_clip_point - coords->window_upper_clip_point + 1;
 
     bool scroll = false;
-    int slider_pos_y;
+    int  slider_pos_y;
+
+    ED4_cursor_move direction = ED4_C_NONE;
 
     AW_pos termw_y_upper = termw_y; // upper border of terminal
     AW_pos termw_y_lower = termw_y + term_height; // lower border of terminal
 
     if (termw_y_upper > coords->top_area_height) { // don't scroll if terminal is in top area (always visible)
-        if (termw_y_upper < coords->window_upper_clip_point) {
+        if (termw_y_upper < coords->window_upper_clip_point) { // scroll up
 #ifdef DUMP_SCROLL_INTO_VIEW
             printf("termw_y_upper(%i) < window_upper_clip_point(%i)\n",
                    int(termw_y_upper), int(coords->window_upper_clip_point));
 #endif // DEBUG
             slider_pos_y = int(termw_y_upper - coords->top_area_height - term_height);
             scroll       = true;
+            direction    = ED4_C_UP;
         }
-        else if (termw_y_lower > coords->window_lower_clip_point) {
+        else if (termw_y_lower > coords->window_lower_clip_point) { // scroll down
 #ifdef DUMP_SCROLL_INTO_VIEW
             printf("termw_y_lower(%i) > window_lower_clip_point(%i)\n",
                    int(termw_y_lower), int(coords->window_lower_clip_point));
 #endif // DEBUG
             slider_pos_y = int(termw_y_upper - coords->top_area_height - win_ysize);
             scroll       = true;
+            direction    = ED4_C_DOWN;
         }
     }
 
@@ -1352,6 +1356,19 @@ void ED4_terminal::scroll_into_view(ED4_window *ed4w) { // scroll y-position onl
 
         int pic_ysize         = int(aww->get_scrolled_picture_height());
         int slider_pos_yrange = pic_ysize - win_ysize;
+
+        if (slider_pos_yrange<0) { // win_ysize > pic_ysize
+            slider_pos_y = 0;
+        }
+        else {
+            ED4_multi_species_manager *start_at_manager = 0;
+            get_area_level(&start_at_manager);
+            
+            ED4_terminal *nextTerm = get_upper_lower_cursor_pos(start_at_manager, direction, termw_y, false, acceptAnyTerminal());
+            if (!nextTerm) { // no next term in this area
+                slider_pos_y = direction == ED4_C_UP ? 0 : slider_pos_yrange; // scroll to limit
+            }
+        }
 
         if (slider_pos_y>slider_pos_yrange) slider_pos_y = slider_pos_yrange;
         if (slider_pos_y<0) slider_pos_y                 = 0;
