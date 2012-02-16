@@ -28,7 +28,7 @@ using namespace std;
 
 #define AWAR_QUESTION "tmp/question"
 
-#define AW_MESSAGE_LISTEN_DELAY 100 // look in ms whether a father died
+#define AW_MESSAGE_LISTEN_DELAY 500 // look in ms whether a father died
 
 static int aw_message_cb_result;
 
@@ -48,8 +48,7 @@ static void aw_message_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2)
 #endif // TRACE_STATUS_MORE
 
     AW_window *aww = ((AW_window *)cl1);
-    if (aww->is_shown()) { // if still shown, then auto-activate to avoid that user minimizes prompter
-        aww->activate();
+    if (aww->is_shown()) {
         awr->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, cl1, cl2);
     }
 }
