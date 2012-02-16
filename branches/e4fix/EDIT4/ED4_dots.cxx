@@ -108,7 +108,7 @@ static void dot_missing_bases(AW_window *aww) {
 
     if (selected) {
         species_man = selected->get_parent(ED4_L_SPECIES)->to_species_manager();
-        if (species_man && !species_man->flag.is_consensus) species_man = 0;
+        if (species_man && !species_man->flag.is_cons_manager) species_man = 0;
     }
 
     if (!species_man) {

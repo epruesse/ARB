@@ -133,9 +133,9 @@ static ARB_ERROR call_edit(ED4_base *object, AW_CL cl_work_info) {
     if (object->is_terminal()) {
         ED4_base *species_manager = object->get_parent(ED4_L_SPECIES);
 
-        if (species_manager && !species_manager->flag.is_SAI) { // don't edit SAI's if editing the consensus
+        if (species_manager && !species_manager->flag.is_SAI_manager) { // don't edit SAI's if editing the consensus
             if ((object->dynamic_prop & ED4_P_CURSOR_ALLOWED) &&
-                !species_manager->flag.is_consensus           &&
+                !species_manager->flag.is_cons_manager        &&
                 (object->dynamic_prop & ED4_P_ALIGNMENT_DATA)) // edit all aligned data - even if not consensus relevant
             {
                 ED4_work_info *work_info = (ED4_work_info*)cl_work_info;
@@ -168,7 +168,7 @@ static ARB_ERROR call_edit(ED4_base *object, AW_CL cl_work_info) {
                 error = ED4_ROOT->edit_string->edit(&new_work_info);
 
                 if (!error && new_work_info.out_string) {
-                    e4_assert(species_manager->flag.is_consensus);
+                    e4_assert(species_manager->flag.is_cons_manager);
                     object->id = new_work_info.out_string;
                 }
 
@@ -261,7 +261,7 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
 
                 GB_push_transaction(GLOBAL_gb_main);
 
-                if (species_manager->flag.is_consensus) {
+                if (species_manager->flag.is_cons_manager) {
                     ED4_group_manager *group_manager = terminal->get_parent(ED4_L_GROUP)->to_group_manager();
 
                     e4_assert(terminal->id == 0); // @@@ safety-belt for terminal->id-misuse
@@ -729,7 +729,7 @@ void ED4_set_iupac(AW_window *aww, char *awar_name, bool /* callback_flag */) {
     if (cursor->owner_of_cursor) {
         ED4_species_manager *species_manager =  cursor->owner_of_cursor->get_parent(ED4_L_SPECIES)->to_species_manager();
 
-        if (species_manager->flag.is_consensus) {
+        if (species_manager->flag.is_cons_manager) {
             aw_message("You cannot change the consensus");
             return;
         }
@@ -852,13 +852,13 @@ void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL ) {
             ED4_terminal *terminal = cursor->owner_of_cursor->to_terminal();
             ED4_manager *manager = terminal->parent->parent->to_manager();
 
-            if (manager->flag.is_consensus) {
+            if (manager->flag.is_cons_manager) {
                 ED4_char_table *table = &terminal->get_parent(ED4_L_GROUP)->to_group_manager()->table();
                 char *consensus = table->build_consensus_string();
 
                 ED4_ROOT->reference->init("CONSENSUS", consensus, table->size());
             }
-            else if (manager->parent->flag.is_SAI) {
+            else if (manager->parent->flag.is_SAI_manager) {
                 char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
                 int   datalen;
                 char *data = terminal->resolve_pointer_to_string_copy(&datalen);
@@ -934,7 +934,7 @@ void ED4_toggle_detailed_column_stats(AW_window *aww, AW_CL, AW_CL) {
 
     ED4_terminal *cursor_terminal = cursor->owner_of_cursor->to_terminal();
     ED4_manager *cursor_manager = cursor_terminal->parent->parent->to_manager();
-    if (!cursor_terminal->is_sequence_terminal() || cursor_manager->flag.is_consensus || cursor_manager->parent->flag.is_SAI) {
+    if (!cursor_terminal->is_sequence_terminal() || cursor_manager->flag.is_cons_manager || cursor_manager->parent->flag.is_SAI_manager) {
         aw_message("Display of column-statistic-details is only possible for species!");
         return;
     }
@@ -1051,7 +1051,7 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
         object = object->get_parent(ED4_L_SPECIES);
         int move_object = 1;
 
-        if (object->flag.is_consensus) {
+        if (object->flag.is_cons_manager) {
             object = object->get_parent(ED4_L_GROUP);
             if (field_name) move_object = 0; // don't move groups if moving by field_name
         }
@@ -1139,7 +1139,7 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
             while (list_elem && !error) {
                 ED4_base *object = ((ED4_selection_entry *) list_elem->elem())->object;
                 object = object->get_parent(ED4_L_SPECIES);
-                if (!object->flag.is_consensus) {
+                if (!object->flag.is_cons_manager) {
                     GBDATA *gb_species = object->get_species_pointer();
                     GBDATA *gb_field   = NULL;
 
@@ -1342,7 +1342,7 @@ void ed4_change_edit_mode(AW_root *root, AW_CL cd1)
 }
 
 ARB_ERROR rebuild_consensus(ED4_base *object) {
-    if (object->flag.is_consensus) {
+    if (object->flag.is_cons_manager) {
         ED4_species_manager *spec_man = object->to_species_manager();
         spec_man->do_callbacks();
 
@@ -1764,7 +1764,7 @@ static ARB_ERROR add_species_to_merge_list(ED4_base *base, AW_CL cl_SpeciesMerge
     if (base->is_species_name_terminal()) {
         ED4_species_name_terminal *name_term = base->to_species_name_terminal();
 
-        if (name_term->parent->flag.is_consensus == 0) {
+        if (name_term->parent->flag.is_cons_manager == 0) {
             char   *species_name    = name_term->resolve_pointer_to_string_copy();
             GBDATA *gb_species_data = (GBDATA*)cl_gb_species_data;
             GBDATA *gb_species      = GBT_find_species_rel_species_data(gb_species_data, species_name);
@@ -1847,7 +1847,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                 if (cursor->owner_of_cursor) {
                     cursor_terminal = cursor->owner_of_cursor->to_terminal();
 
-                    if (cursor_terminal->parent->parent->flag.is_consensus) {
+                    if (cursor_terminal->parent->parent->flag.is_cons_manager) {
                         where_we_are = ON_KONSENSUS;
                     }
                     else {

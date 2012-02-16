@@ -175,14 +175,14 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
 
             if (sequence_terminal->parent) {
                 ED4_manager *cons_man = sequence_terminal->parent->parent;
-                if (cons_man && cons_man->flag.is_consensus) { // consensus
+                if (cons_man && cons_man->flag.is_cons_manager) { // consensus
                     show = show_consensus;
                     is_consensus = 1;
                 }
             }
 
             if (show==-1) {
-                if (species_manager->flag.is_SAI) {
+                if (species_manager->flag.is_SAI_manager) {
                     show = show_SAI;
                     is_SAI = 1;
                 }

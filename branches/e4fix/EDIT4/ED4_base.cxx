@@ -273,7 +273,7 @@ ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_C
     sprintf(buffer, "Consensus_Manager.%ld", ED4_counter);                                                     // Create competence terminal
     species_manager = new ED4_species_manager(buffer, 0, SPACERHEIGHT, 0, 0, multi_species_manager);
     species_manager->set_property(ED4_P_MOVABLE);
-    species_manager->flag.is_consensus = 1;
+    species_manager->flag.is_cons_manager = 1;
     multi_species_manager->children->append_member(species_manager);
 
     species_name_terminal = new ED4_species_name_terminal(group_name, 0, 0, MAXSPECIESWIDTH - BRACKETWIDTH, TERMINALHEIGHT, species_manager);
@@ -336,7 +336,7 @@ ED4_returncode ED4_base::generate_configuration_string(char **generated_string)
         old_size   = strlen(*generated_string);
         old_string = *generated_string;
 
-        if (parent->flag.is_consensus) {
+        if (parent->flag.is_cons_manager) {
             dummy = new char[strlen(id)+1];
 
             for (i=0; id[i] != '(' && id[i] != '\0'; i++)
@@ -362,11 +362,11 @@ ED4_returncode ED4_base::generate_configuration_string(char **generated_string)
             (*generated_string)[i] = 0;
 
 
-        if (parent->flag.is_consensus) { // in consensus terminals the brackets have to be eliminated
+        if (parent->flag.is_cons_manager) { // in consensus terminals the brackets have to be eliminated
             strcat (*generated_string, dummy);
             delete [] dummy;
         }
-        else if (parent->parent->parent->flag.is_SAI) { // if Species_manager has flag is_SAI
+        else if (parent->parent->parent->flag.is_SAI_manager) { // if Species_manager has flag is_SAI
             strcat(*generated_string, "S");
             strcat(*generated_string, species_name);
         }
@@ -405,9 +405,9 @@ ED4_returncode ED4_base::generate_configuration_string(char **generated_string)
         // moving Consensus to top of list is essentially
 
         // for creating the string
-        if (!(multi_species_manager->children->member(1)->flag.is_consensus)) {
+        if (!(multi_species_manager->children->member(1)->flag.is_cons_manager)) {
             for (i=0; i < multi_species_manager->children->members(); i++) {
-                if (multi_species_manager->children->member(i)->flag.is_consensus) {
+                if (multi_species_manager->children->member(i)->flag.is_cons_manager) {
                     consensus_manager = multi_species_manager->children->member(i)->to_manager();
                     break;
                 }
@@ -839,7 +839,7 @@ ED4_returncode ED4_base::set_width() {
 
     int i;
 
-    if (is_species_manager() && !flag.is_consensus && !parent->flag.is_consensus) {
+    if (is_species_manager() && !flag.is_cons_manager && !parent->flag.is_cons_manager) {
         ED4_species_manager    *species_manager    = to_species_manager();
         ED4_multi_name_manager *multi_name_manager = species_manager->get_defined_level(ED4_L_MULTI_NAME)->to_multi_name_manager();     // case I'm a species
         ED4_terminal           *consensus_terminal = parent->to_multi_species_manager()->get_consensus_terminal();
@@ -955,7 +955,7 @@ ED4_returncode  ED4_base::event_sent_by_parent(AW_event * /* event */, AW_window
 void ED4_manager::hide_children() {
     for (int i=0; i<children->members(); i++) {
         ED4_base *member = children->member(i);
-        if (!member->is_spacer_terminal() && !member->flag.is_consensus) { // don't hide spacer and Consensus
+        if (!member->is_spacer_terminal() && !member->flag.is_cons_manager) { // don't hide spacer and Consensus
             member->flag.hidden = 1;
         }
     }
@@ -998,12 +998,12 @@ void ED4_bracket_terminal::fold() {
         ED4_manager               *consensus_manager     = NULL;
 
         int consensus_shown = 0;
-        if (!(multi_species_manager->children->member(1)->flag.is_consensus)) { // if consensus is not a top => move to top
+        if (!(multi_species_manager->children->member(1)->flag.is_cons_manager)) { // if consensus is not a top => move to top
             ED4_members *multi_children = multi_species_manager->children;
 
             int i;
             for (i=0; i<multi_children->members(); i++) { // search for consensus
-                if (multi_children->member(i)->flag.is_consensus) {
+                if (multi_children->member(i)->flag.is_cons_manager) {
                     consensus_manager = multi_children->member(i)->to_manager();
                     break;
                 }

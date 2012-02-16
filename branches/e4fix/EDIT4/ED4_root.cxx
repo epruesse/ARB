@@ -84,7 +84,7 @@ static ARB_ERROR request_sequence_refresh(ED4_base *base, AW_CL cl_consensi) {
     ARB_ERROR error;
     if (base->spec.level & ED4_L_SPECIES) {
         bool consensi = bool(cl_consensi);
-        if (base->flag.is_consensus == consensi) {
+        if (base->flag.is_cons_manager == consensi) {
             error = base->to_manager()->route_down_hierarchy(request_terminal_refresh, ED4_L_SEQUENCE_STRING);
         }
     }
@@ -363,7 +363,7 @@ ED4_returncode  ED4_root::remove_from_selected(ED4_terminal *object)
             else {
                 ED4_species_manager *spec_man = name_term->get_parent(ED4_L_SPECIES)->to_species_manager();
 
-                if (spec_man->flag.is_consensus) {
+                if (spec_man->flag.is_cons_manager) {
                     printf("removed consensus '%s'\n", name_term->id);
                 }
                 else {
@@ -465,7 +465,7 @@ ED4_returncode ED4_root::add_to_selected(ED4_terminal *object) {
             }
             else {
                 ED4_species_manager *spec_man = name_term->get_parent(ED4_L_SPECIES)->to_species_manager();
-                if (spec_man->flag.is_consensus) {
+                if (spec_man->flag.is_cons_manager) {
                     printf("added consensus '%s'\n", name_term->id);
                 }
                 else {

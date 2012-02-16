@@ -1075,8 +1075,8 @@ public:
     ED4_update_info  update_info;                   // info about things to be done for the object, i.e. refresh; flag structure
     struct {
         unsigned int hidden : 1;                    // flag whether object is hidden or not
-        unsigned int is_consensus : 1;              // indicates whether object is consensus(manager)
-        unsigned int is_SAI : 1;                    // indicates whether object is extendend
+        unsigned int is_cons_manager : 1;           // indicates whether object is consensus manager
+        unsigned int is_SAI_manager : 1;            // indicates whether object is SAI manager
     } flag;
 
     void draw_bb(int color);

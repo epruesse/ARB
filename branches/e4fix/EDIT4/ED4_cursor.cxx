@@ -816,7 +816,7 @@ void ED4_cursor::updateAwars()
             if (species_name) {
                 ED4_manager *cursor_manager = cursor_terminal->parent->parent->to_manager();
 
-                if (cursor_manager->parent->flag.is_SAI) {
+                if (cursor_manager->parent->flag.is_SAI_manager) {
                     static char *last_set_SAI = 0;
                     if (!last_set_SAI || strcmp(last_set_SAI, species_name) != 0) {
                         freedup(last_set_SAI, species_name);
@@ -890,7 +890,7 @@ void ED4_cursor::updateAwars()
 
         char at[2] = "\0";
 
-        if (species_manager->flag.is_consensus) {
+        if (species_manager->flag.is_cons_manager) {
             ED4_group_manager *group_manager = owner_of_cursor->get_parent(ED4_L_GROUP)->to_group_manager();
             ED4_char_table&    groupTab      = group_manager->table();
             if (seq_pos<groupTab.size()) {
@@ -1496,7 +1496,7 @@ void ED4_base_position::calc4base(const ED4_base *base)
     species_manager->add_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
 
     bool (*isGap_fun)(char);
-    if (species_manager->flag.is_consensus) {
+    if (species_manager->flag.is_cons_manager) {
         ED4_group_manager *group_manager = base->get_parent(ED4_L_GROUP)->to_group_manager();
 
         seq       = group_manager->table().build_consensus_string();
