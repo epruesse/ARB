@@ -390,8 +390,13 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
             case AW_KEY_END: {
                 int new_seq_pos = get_next_visible_base(seq_len, -1);
                 if (new_seq_pos>=0) {
-                    new_seq_pos++;
-                    seq_pos = new_seq_pos==seq_pos ? seq_len : new_seq_pos;
+                    int new_gap_pos = get_next_visible_gap(new_seq_pos, 1);
+                    if (new_gap_pos >= 0) {
+                        seq_pos = new_gap_pos==seq_pos ? seq_len : new_gap_pos;
+                    }
+                    else {
+                        seq_pos = seq_len;
+                    }
                 }
                 else {
                     seq_pos = seq_len;
