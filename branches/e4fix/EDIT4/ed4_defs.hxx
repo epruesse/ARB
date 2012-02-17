@@ -243,22 +243,23 @@ enum ED4_direction {
 
 class ED4_base;
 class ED4_terminal;
+class ED4_species_name_terminal;
 
 struct ED4_move_info
 {
-    ED4_base         *object;            // object to be moved
-    AW_pos      end_x, end_y;      // position to move to
-    ED4_movemode    mode;              // move mode
-    ED4_level           preferred_parent;  // level to move to
+    ED4_base     *object;                // object to be moved
+    AW_pos        end_x, end_y;          // position to move to
+    ED4_movemode  mode;                  // move mode
+    ED4_level     preferred_parent;      // level to move to
 };
 
-struct ED4_selection_entry
-{
-    AW_pos               drag_off_x, drag_off_y;
-    AW_pos               drag_old_x, drag_old_y;
-    AW_pos               actual_width, actual_height;
-    int          old_event_y;
-    ED4_terminal     *object;
+struct ED4_selection_entry {
+    AW_pos drag_off_x, drag_off_y;
+    AW_pos drag_old_x, drag_old_y;
+    AW_pos actual_width, actual_height;
+    int    old_event_y;
+
+    ED4_species_name_terminal *object;
 };
 
 
