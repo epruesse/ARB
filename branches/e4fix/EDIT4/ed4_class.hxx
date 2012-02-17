@@ -156,9 +156,7 @@ class ed_key;
 
 
 
-class EDB_root_bact {
-
-public:
+struct EDB_root_bact {
     char *make_string();
     char *make_top_bot_string();
 
@@ -563,8 +561,6 @@ class ED4_list : virtual Noncopyable {
     ED4_list_elem *my_last;
     ED4_index      my_no_of_entries;
 
-    ED4_list(const ED4_list&);  // copy-constructor not allowed
-
 public:
 
     ED4_list_elem *first() const { return my_first; }
@@ -648,8 +644,6 @@ class ED4_cursor : virtual Noncopyable, virtual ED4_WinContextFree {
 
     void updateAwars();
 
-    ED4_cursor(const ED4_cursor&); // copy-constructor not allowed
-
 public:
 
     bool      allowed_to_draw;  // needed for cursor handling
@@ -709,8 +703,6 @@ public:
 };
 
 class ED4_window : public ED4_foldable, virtual ED4_WinContextFree { // derived from Noncopyable
-    ED4_window(const ED4_window&); // copy-constructor not allowed
-
     void set_scrollbar_indents();
 
 public:
@@ -784,7 +776,6 @@ public:
 
 class ED4_members : virtual Noncopyable {
     // contains children related functions from members of a manager
-    ED4_members(const ED4_members&);    // copy-constructor not allowed
 
     ED4_manager  *my_owner;     // who is controlling this object
     ED4_base    **memberList;
@@ -831,7 +822,7 @@ public:
 #define SHORT_TABLE_MAX_VALUE 0xff
 #define LONG_TABLE_ELEM_SIZE  4
 
-class ED4_bases_table {
+class ED4_bases_table : virtual Noncopyable {
     int table_entry_size;       // how many bytes are used for each element of 'no_of_bases' (1 or 4 bytes)
     union {
         unsigned char *shortTable;
@@ -873,8 +864,6 @@ class ED4_bases_table {
 #endif
         return no_of_bases.shortTable[offset];
     }
-
-    ED4_bases_table(const ED4_bases_table&);    // copy-constructor not allowed
 
 public:
 
@@ -946,8 +935,6 @@ class ED4_char_table : virtual Noncopyable {
     static GB_alignment_type  ali_type;
 
     static inline void set_char_to_index(unsigned char c, int index);
-
-    ED4_char_table(const ED4_char_table&); // copy-constructor not allowed
 
     void add(const ED4_char_table& other, int start, int end);
     void sub(const ED4_char_table& other, int start, int end);
@@ -1298,10 +1285,7 @@ public:
     inline bool is_species_seq_terminal() const;
 };
 
-class ED4_manager : public ED4_base { // derived from a Noncopyable
-    ED4_manager(const ED4_manager&); // copy-constructor not allowed
-
-public:
+struct ED4_manager : public ED4_base { // derived from a Noncopyable
     ED4_members *children;
 
     DECLARE_DUMP_FOR_BASECLASS(ED4_manager, ED4_base);
@@ -1396,8 +1380,7 @@ public:
     virtual ~ED4_manager();
 };
 
-class ED4_terminal : public ED4_base { // derived from a Noncopyable
-public:
+struct ED4_terminal : public ED4_base { // derived from a Noncopyable
     struct {
         unsigned int dragged : 1;                   // Flag for 'Object dragged'
         unsigned int deleted : 1;
@@ -1611,8 +1594,7 @@ public:
 
 ED4_WinContext::ED4_WinContext(AW_window *aww_) { init(ED4_ROOT->first_window->get_matching_ed4w(aww_)); }
 
-class ED4_LocalWinContext : private ED4_WinContext {
-public:
+struct ED4_LocalWinContext : private ED4_WinContext {
     ED4_LocalWinContext(AW_window *aww) : ED4_WinContext(current_context) { current_context = ED4_WinContext(aww); }
     ED4_LocalWinContext(ED4_window *ew) : ED4_WinContext(current_context) { current_context = ED4_WinContext(ew); }
     ~ED4_LocalWinContext() { current_context = *this; }
@@ -1652,7 +1634,6 @@ class ED4_main_manager : public ED4_manager { // derived from a Noncopyable
     ED4_terminal *top_middle_line;
     ED4_terminal *top_middle_spacer;
 
-    ED4_main_manager(const ED4_main_manager&); // copy-constructor not allowed
 public:
     ED4_main_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
@@ -1670,26 +1651,17 @@ public:
     void clear_whole_background();
 };
 
-class ED4_device_manager : public ED4_manager
-{
-    ED4_device_manager(const ED4_device_manager&); // copy-constructor not allowed
-public:
+struct ED4_device_manager : public ED4_manager {
     ED4_device_manager  (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
 
-class ED4_area_manager : public ED4_manager
-{
-    ED4_area_manager(const ED4_area_manager&); // copy-constructor not allowed
-public:
+struct ED4_area_manager : public ED4_manager {
     ED4_area_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
 
-class ED4_multi_species_manager : public ED4_manager
-{
+class ED4_multi_species_manager : public ED4_manager {
     int species;    // # of species (-1 == unknown)
     int selected_species; // # of selected species (-1 == unknown)
 
@@ -1698,8 +1670,6 @@ class ED4_multi_species_manager : public ED4_manager
     void    count_species(int *speciesPtr, int *selectedPtr) const;
 #endif
     void    update_species_counters();
-
-    ED4_multi_species_manager(const ED4_multi_species_manager&); // copy-constructor not allowed
 
 public:
     ED4_multi_species_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
@@ -1748,14 +1718,9 @@ public:
     const ED4_bases_table&  table(unsigned char c) const { return table().table(c); }
 };
 
-class ED4_group_manager : public ED4_abstract_group_manager {
-    ED4_group_manager(const ED4_group_manager&); // copy-constructor not allowed
-
-public:
+struct ED4_group_manager : public ED4_abstract_group_manager {
     ED4_group_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_abstract_group_manager);
-
     void reinit_char_table();
 };
 
@@ -1788,8 +1753,6 @@ class ED4_remap : virtual Noncopyable {
     int update_needed;          // remapping should be recompiled
 
     inline void set_sequence_to_screen(int pos, int newVal);
-
-    ED4_remap(const ED4_remap&); // copy-constructor not allowed
 
 public:
 
@@ -1854,14 +1817,9 @@ public:
     ExplicitRange clip_screen_range(PosRange screen_range) const { return ExplicitRange(screen_range, screen_len-1); }
 };
 
-class ED4_root_group_manager : public ED4_abstract_group_manager
-{
+class ED4_root_group_manager : public ED4_abstract_group_manager {
     ED4_remap my_remap;
-
-    ED4_root_group_manager(const ED4_root_group_manager&); // copy-constructor not allowed
-
 public:
-
     ED4_root_group_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
     bool update_remap(); // 'true' if mapping has changed
@@ -1897,7 +1855,6 @@ class ED4_species_manager : public ED4_manager {
     ED4_species_type type;
     bool selected;
 
-    ED4_species_manager(const ED4_species_manager&); // copy-constructor not allowed
 public:
     ED4_species_manager(ED4_species_type type_, const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_species_manager   ();
@@ -1948,45 +1905,26 @@ inline bool ED4_cursor::in_consensus_terminal()   const { return owner_of_cursor
 inline bool ED4_cursor::in_SAI_terminal()         const { return owner_of_cursor && owner_of_cursor->is_SAI_terminal(); }
 
 
-class ED4_multi_sequence_manager : public ED4_manager
-{
-    ED4_multi_sequence_manager(const ED4_multi_sequence_manager&); // copy-constructor not allowed
-public:
+struct ED4_multi_sequence_manager : public ED4_manager {
     ED4_multi_sequence_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
 
-class ED4_sequence_manager : public ED4_manager
-{
-    ED4_sequence_manager(const ED4_sequence_manager&); // copy-constructor not allowed
-public:
+struct ED4_sequence_manager : public ED4_manager {
     ED4_sequence_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
 
-class ED4_multi_name_manager : public ED4_manager
-{
-    // contains info concerning the species
-    // it's linked into speciesmanager
-
-    ED4_multi_name_manager(const ED4_multi_name_manager&); // copy-constructor not allowed
-public:
+struct ED4_multi_name_manager : public ED4_manager {
+    // member of ED4_species_manager (contains ED4_name_manager for name and info)
     ED4_multi_name_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
 
 
-class ED4_name_manager : public ED4_manager
-{
-    // contains speciesname and other info concerning the species
-    // it's linked into speciesmanager
-    ED4_name_manager(const ED4_name_manager&); // copy-constructor not allowed
-public:
+struct ED4_name_manager : public ED4_manager {
+    // member of ED4_multi_name_manager (contains speciesname or other info concerning the species)
     ED4_name_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
 
@@ -1995,10 +1933,7 @@ public:
 //      terminal classes
 
 
-class ED4_tree_terminal : public ED4_terminal
-{
-    ED4_tree_terminal(const ED4_tree_terminal&); // copy-constructor not allowed
-public:
+struct ED4_tree_terminal : public ED4_terminal {
     virtual ED4_returncode draw();
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
 
@@ -2007,10 +1942,7 @@ public:
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_terminal);
 };
 
-class ED4_bracket_terminal : public ED4_terminal
-{
-    ED4_bracket_terminal(const ED4_bracket_terminal&); // copy-constructor not allowed
-public:
+struct ED4_bracket_terminal : public ED4_terminal {
     virtual ED4_returncode draw();
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
 
@@ -2022,9 +1954,7 @@ public:
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_terminal);
 };
 
-class ED4_text_terminal : public ED4_terminal {
-    ED4_text_terminal(const ED4_text_terminal&); // copy-constructor not allowed
-public:
+struct ED4_text_terminal : public ED4_terminal {
     // functions concerning graphic output
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode draw();
@@ -2095,7 +2025,6 @@ class ED4_sequence_terminal : public ED4_abstract_sequence_terminal { // derived
     mutable ED4_SearchResults searchResults;
 
     virtual ED4_returncode draw();
-    ED4_sequence_terminal(const ED4_sequence_terminal&); // copy-constructor not allowed
 
 public:
 
@@ -2126,7 +2055,6 @@ class ED4_columnStat_terminal : public ED4_text_terminal { // derived from a Non
 
     int update_likelihood();
 
-    ED4_columnStat_terminal(const ED4_columnStat_terminal&); // copy-constructor not allowed
 public:
     // functions concerning graphic output
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
@@ -2147,12 +2075,7 @@ public:
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
 };
 
-class ED4_species_name_terminal : public ED4_text_terminal
-{
-    ED4_species_name_terminal(const ED4_species_name_terminal&); // copy-constructor not allowed
-public:
-    // functions concerning graphic output
-
+struct ED4_species_name_terminal : public ED4_text_terminal {
     ED4_species_name_terminal(GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
     GB_CSTR get_displayed_text() const;
@@ -2166,10 +2089,7 @@ public:
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
 };
 
-class ED4_sequence_info_terminal : public ED4_text_terminal
-{
-    ED4_sequence_info_terminal(const ED4_sequence_info_terminal&); // copy-constructor not allowed
-public:
+struct ED4_sequence_info_terminal : public ED4_text_terminal {
     ED4_sequence_info_terminal(const char *id, /* GBDATA *gbd, */ AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
     ED4_species_name_terminal *corresponding_species_name_terminal() const {
@@ -2186,10 +2106,7 @@ public:
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
 };
 
-class ED4_pure_text_terminal : public ED4_text_terminal
-{
-    ED4_pure_text_terminal(const ED4_pure_text_terminal&);  // copy-constructor not allowed
-public:
+struct ED4_pure_text_terminal : public ED4_text_terminal {
     ED4_pure_text_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
     virtual int get_length() const { int len; resolve_pointer_to_char_pntr(&len); return len; }
@@ -2197,11 +2114,8 @@ public:
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
 };
 
-class ED4_consensus_sequence_terminal : public ED4_sequence_terminal
-{
+class ED4_consensus_sequence_terminal : public ED4_sequence_terminal {
     virtual ED4_returncode draw();
-    ED4_consensus_sequence_terminal(const ED4_consensus_sequence_terminal&); // copy-constructor not allowed
-
     ED4_char_table& get_char_table() const { return get_parent(ED4_L_GROUP)->to_group_manager()->table(); }
 public:
     ED4_consensus_sequence_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
@@ -2211,10 +2125,7 @@ public:
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_sequence_terminal);
 };
 
-class ED4_spacer_terminal : public ED4_terminal
-{
-    ED4_spacer_terminal(const ED4_spacer_terminal&); // copy-constructor not allowed
-public:
+struct ED4_spacer_terminal : public ED4_terminal {
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode draw();
 
@@ -2223,10 +2134,7 @@ public:
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_terminal);
 };
 
-class ED4_line_terminal : public ED4_terminal
-{
-    ED4_line_terminal(const ED4_line_terminal&); // copy-constructor not allowed
-public:
+struct ED4_line_terminal : public ED4_terminal {
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode draw();
 
