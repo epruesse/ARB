@@ -1751,7 +1751,7 @@ static ARB_ERROR add_species_to_merge_list(ED4_base *base, AW_CL cl_SpeciesMerge
     if (base->is_species_name_terminal()) {
         ED4_species_name_terminal *name_term = base->to_species_name_terminal();
 
-        if (!name_term->parent->mflag.is_cons_manager) {
+        if (!name_term->inside_consensus_manager()) {
             char   *species_name    = name_term->resolve_pointer_to_string_copy();
             GBDATA *gb_species_data = (GBDATA*)cl_gb_species_data;
             GBDATA *gb_species      = GBT_find_species_rel_species_data(gb_species_data, species_name);

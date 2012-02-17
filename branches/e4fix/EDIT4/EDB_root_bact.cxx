@@ -107,7 +107,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
     species_manager = new ED4_species_manager(namebuffer, 0, local_count_position, 0, 0, multi_species_manager);
     species_manager->set_property(ED4_P_MOVABLE);
     if (datamode == ED4_D_EXTENDED) {
-        species_manager->mflag.is_SAI_manager = 1;
+        species_manager->smflag.is_SAI_manager = 1;
         ED4_abstract_group_manager *group_man = species_manager->get_parent(ED4_level(ED4_L_GROUP|ED4_L_ROOTGROUP))->to_abstract_group_manager();
         group_man->table().ignore_me(); // ignore SAI tables (does not work - instead ignore SAIs when calculating consensus)
     }
@@ -558,7 +558,7 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
     sprintf(namebuffer, "Consensus_Manager.%ld", ED4_counter);                             // Create competence terminal
     species_manager = new ED4_species_manager(namebuffer, 0, height_spacer, 0, 0, *multi_species_manager);
     species_manager->set_property(ED4_P_MOVABLE);
-    species_manager->mflag.is_cons_manager = 1;
+    species_manager->smflag.is_cons_manager = 1;
     (*multi_species_manager)->children->append_member(species_manager);
 
     species_name_terminal = new ED4_species_name_terminal(groupname, 0, 0, MAXSPECIESWIDTH-(group_depth*BRACKETWIDTH),   height_terminal, species_manager);

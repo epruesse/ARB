@@ -1301,11 +1301,6 @@ class ED4_manager : public ED4_base { // derived from a Noncopyable
 public:
     ED4_members *children;
 
-    struct {
-        unsigned int is_cons_manager : 1;           // indicates whether object is consensus manager (on level ED4_L_SPECIES)
-        unsigned int is_SAI_manager : 1;            // indicates whether object is SAI manager       (on level ED4_L_SPECIES)
-    } mflag;
-    
     DECLARE_DUMP_FOR_BASECLASS(ED4_manager, ED4_base);
 
     int refresh_flag_ok();
@@ -1458,30 +1453,6 @@ public:
     ED4_terminal(const ED4_objspec& spec_, GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_terminal();
 };
-
-inline bool ED4_base::is_consensus_manager()    const { return is_manager() && to_manager()->mflag.is_cons_manager; }
-inline bool ED4_base::is_SAI_manager()          const { return is_manager() && to_manager()->mflag.is_SAI_manager; }
-inline bool ED4_base::is_species_seq_manager()  const { return is_species_manager() && !is_SAI_manager() && !is_consensus_manager(); }
-
-inline ED4_species_type ED4_base::get_species_type() const {
-    ED4_base *sman = get_parent(ED4_L_SPECIES);
-    if (!sman) return ED4_SP_NONE;
-    if (sman->is_consensus_manager()) return ED4_SP_CONSENSUS;
-    if (sman->is_SAI_manager()) return ED4_SP_SAI;
-    return ED4_SP_SPECIES;
-}
-
-inline bool ED4_base::inside_consensus_manager()   const { return get_species_type() == ED4_SP_CONSENSUS; }
-inline bool ED4_base::inside_SAI_manager()         const { return get_species_type() == ED4_SP_SAI; }
-inline bool ED4_base::inside_species_seq_manager() const { return get_species_type() == ED4_SP_SPECIES; }
-
-inline bool ED4_base::is_consensus_terminal()   const { return is_sequence_terminal() && inside_consensus_manager(); }
-inline bool ED4_base::is_SAI_terminal()         const { return is_sequence_terminal() && inside_SAI_manager(); }
-inline bool ED4_base::is_species_seq_terminal() const { return is_sequence_terminal() && inside_species_seq_manager(); }
-
-inline bool ED4_cursor::in_species_seq_terminal() const { return owner_of_cursor && owner_of_cursor->is_species_seq_terminal(); }
-inline bool ED4_cursor::in_consensus_terminal()   const { return owner_of_cursor && owner_of_cursor->is_consensus_terminal(); }
-inline bool ED4_cursor::in_SAI_terminal()         const { return owner_of_cursor && owner_of_cursor->is_SAI_terminal(); }
 
 enum ED4_species_mode {
     ED4_SM_MOVE,
@@ -1929,6 +1900,11 @@ public:
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 
+    struct {
+        unsigned int is_cons_manager : 1;           // indicates whether object is consensus manager
+        unsigned int is_SAI_manager : 1;            // indicates whether object is SAI manager
+    } smflag;
+    
     bool setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfold_groups, ED4_CursorJumpType jump_type);
 
     void add_sequence_changed_cb(ED4_species_manager_cb cb, AW_CL cd);
@@ -1937,6 +1913,33 @@ public:
 
     void do_callbacks();
 };
+
+inline bool ED4_base::is_consensus_manager()    const { return is_species_manager() && to_species_manager()->smflag.is_cons_manager; }
+inline bool ED4_base::is_SAI_manager()          const { return is_species_manager() && to_species_manager()->smflag.is_SAI_manager; }
+inline bool ED4_base::is_species_seq_manager()  const { return !is_SAI_manager() && !is_consensus_manager(); }
+
+inline ED4_species_type ED4_base::get_species_type() const {
+    ED4_base *sman = get_parent(ED4_L_SPECIES);
+    if (!sman || !sman->is_species_manager()) return ED4_SP_NONE;
+
+    ED4_species_manager *spec_man = sman->to_species_manager();
+    if (spec_man->smflag.is_cons_manager) return ED4_SP_CONSENSUS;
+    if (spec_man->smflag.is_SAI_manager)  return ED4_SP_SAI;
+    return ED4_SP_SPECIES;
+}
+
+inline bool ED4_base::inside_consensus_manager()   const { return get_species_type() == ED4_SP_CONSENSUS; }
+inline bool ED4_base::inside_SAI_manager()         const { return get_species_type() == ED4_SP_SAI; }
+inline bool ED4_base::inside_species_seq_manager() const { return get_species_type() == ED4_SP_SPECIES; }
+
+inline bool ED4_base::is_consensus_terminal()   const { return is_sequence_terminal() && inside_consensus_manager(); }
+inline bool ED4_base::is_SAI_terminal()         const { return is_sequence_terminal() && inside_SAI_manager(); }
+inline bool ED4_base::is_species_seq_terminal() const { return is_sequence_terminal() && inside_species_seq_manager(); }
+
+inline bool ED4_cursor::in_species_seq_terminal() const { return owner_of_cursor && owner_of_cursor->is_species_seq_terminal(); }
+inline bool ED4_cursor::in_consensus_terminal()   const { return owner_of_cursor && owner_of_cursor->is_consensus_terminal(); }
+inline bool ED4_cursor::in_SAI_terminal()         const { return owner_of_cursor && owner_of_cursor->is_SAI_terminal(); }
+
 
 class ED4_multi_sequence_manager : public ED4_manager
 {

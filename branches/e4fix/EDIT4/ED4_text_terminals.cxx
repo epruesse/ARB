@@ -435,9 +435,9 @@ ED4_returncode ED4_sequence_terminal::draw() {
 
         const char *saiColors = 0;
 
-        if (species_name                   &&
-            ED4_ROOT->visualizeSAI         &&
-            !spec_man->mflag.is_SAI_manager &&
+        if (species_name                     &&
+            ED4_ROOT->visualizeSAI           &&
+            !spec_man->smflag.is_SAI_manager &&
             (is_marked || ED4_ROOT->visualizeSAI_allSpecies))
         {
             saiColors = ED4_getSaiColorString(ED4_ROOT->aw_root, seq_start, seq_end);
@@ -530,7 +530,7 @@ ED4_returncode ED4_sequence_terminal::draw() {
     // output protein structure match
     if (ED4_ROOT->protstruct) {
         ED4_species_manager *spec_man = get_parent(ED4_L_SPECIES)->to_species_manager();
-        if (!spec_man->mflag.is_SAI_manager && ED4_ROOT->aw_root->awar(PFOLD_AWAR_ENABLE)->read_int()) {  // should do a remap
+        if (!spec_man->smflag.is_SAI_manager && ED4_ROOT->aw_root->awar(PFOLD_AWAR_ENABLE)->read_int()) {  // should do a remap
             int screen_length = rm->clipped_sequence_to_screen_PLAIN(ED4_ROOT->protstruct_len);
             e4_assert(screen_length >= 0);
             if ((right+1) < screen_length) {

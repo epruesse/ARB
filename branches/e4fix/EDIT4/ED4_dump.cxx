@@ -151,10 +151,17 @@ void ED4_members::dump(size_t indent) const {
 // managers and terminals
 
 void ED4_manager::dump_base(size_t indent) const {
-    openDump(indent, "ED4_Manager", (void*)this);
+    openDump(indent, "ED4_manager", (void*)this);
     ED4_base::dump_base(NEXT_INDENT);
-    print_indented(NEXT_INDENT, GBS_global_string("mflag.is_cons_manager = %i", mflag.is_cons_manager));
-    print_indented(NEXT_INDENT, GBS_global_string("mflag.is_SAI_manager  = %i", mflag.is_SAI_manager));
+    children->dump(NEXT_INDENT);
+    closeDump(indent);
+}
+
+void ED4_species_manager::dump(size_t indent) const {
+    openDump(indent, "ED4_species_manager", (void*)this);
+    ED4_base::dump_base(NEXT_INDENT);
+    print_indented(NEXT_INDENT, GBS_global_string("smflag.is_cons_manager = %i", smflag.is_cons_manager));
+    print_indented(NEXT_INDENT, GBS_global_string("smflag.is_SAI_manager  = %i", smflag.is_SAI_manager));
     children->dump(NEXT_INDENT);
     closeDump(indent);
 }
@@ -203,7 +210,6 @@ STANDARD_DUMP_LEAF(ED4_root_group_manager);
 STANDARD_DUMP_LEAF(ED4_sequence_info_terminal);
 STANDARD_DUMP_LEAF(ED4_sequence_manager);
 STANDARD_DUMP_LEAF(ED4_spacer_terminal);
-STANDARD_DUMP_LEAF(ED4_species_manager);
 STANDARD_DUMP_LEAF(ED4_species_name_terminal);
 STANDARD_DUMP_LEAF(ED4_tree_terminal);
 
