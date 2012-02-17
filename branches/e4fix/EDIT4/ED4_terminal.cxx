@@ -290,7 +290,7 @@ inline void remove_from_consensus(ED4_manager *group_or_species_man) {
 ED4_returncode ED4_terminal::kill_object() {
     ED4_species_manager *species_manager = get_parent(ED4_L_SPECIES)->to_species_manager();
 
-    if (species_manager->flag.is_cons_manager) { // kill whole group
+    if (species_manager->is_consensus_manager()) { // kill whole group
         if (ED4_new_species_multi_species_manager()==species_manager->parent) {
             aw_message("This group has to exist - deleting it isn't allowed");
             return ED4_R_IMPOSSIBLE;
@@ -389,8 +389,8 @@ ED4_returncode  ED4_terminal::move_requested_by_parent(ED4_move_info *) { // han
 }
 
 void ED4_multi_species_manager::toggle_selected_species() {
-    if (all_are_selected()) deselect_all_species();
-    else select_all_species();
+    if (all_are_selected()) deselect_all_species_and_SAI();
+    else select_all_species(); // @@@ should select everything here
 
     ED4_correctBlocktypeAfterSelection();
 }
@@ -487,22 +487,17 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                     else if (is_species_name_terminal()) {
                         ED4_species_manager *species_man = get_parent(ED4_L_SPECIES)->to_species_manager();
 
-                        if (parent->flag.is_cons_manager) { // click on consensus-name
-                            ED4_multi_species_manager *multi_man = parent->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+                        if (species_man->is_consensus_manager()) { // click on consensus-name
+                            ED4_multi_species_manager *multi_man = species_man->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
                             multi_man->toggle_selected_species();
-                            // return (ED4_R_BREAK);
                         }
-                        else if (species_man->flag.is_SAI_manager) {
-                            ; // don't mark SAIs
-                        }
-                        else { // click on species name
+                        else if (species_man->is_species_seq_manager()) { // click on species name
                             if (!tflag.selected) { // select if not selected
                                 if (ED4_ROOT->add_to_selected(this) == ED4_R_OK) ED4_correctBlocktypeAfterSelection();
                             }
                             else { // deselect if already selected
                                 ED4_ROOT->remove_from_selected(this);
                                 ED4_correctBlocktypeAfterSelection();
-                                // return (ED4_R_BREAK);   // in case we were called by event_to selected() @@@ why? 
                             }
                         }
                     }
@@ -914,7 +909,9 @@ GB_CSTR ED4_species_name_terminal::get_displayed_text() const
     }
     memset(real_name, 0, allocatedSize);
 
-    if (parent->flag.is_cons_manager) {
+    ED4_species_manager *spec_man = get_parent(ED4_L_SPECIES)->to_species_manager();
+
+    if (spec_man->is_consensus_manager()) {
         char *db_pointer = resolve_pointer_to_string_copy();
         char *bracket = strchr(db_pointer, '(');
 
@@ -943,7 +940,7 @@ GB_CSTR ED4_species_name_terminal::get_displayed_text() const
 
         free(db_pointer);
     }
-    else if (parent->parent->parent->flag.is_SAI_manager) { // whether species_manager has is_SAI flag
+    else if (spec_man->is_SAI_manager()) {
         char *db_pointer = resolve_pointer_to_string_copy();
 
         strcpy(real_name, "SAI: ");
@@ -958,9 +955,7 @@ GB_CSTR ED4_species_name_terminal::get_displayed_text() const
         free(db_pointer);
     }
     else { // normal species
-        ED4_species_manager *species_man = get_parent(ED4_L_SPECIES)->to_species_manager();
-        char *result = ED4_get_NDS_text(species_man);
-
+        char *result = ED4_get_NDS_text(spec_man);
         strncpy(real_name, result, BUFFERSIZE);
         free(result);
     }

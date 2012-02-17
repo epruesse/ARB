@@ -691,6 +691,10 @@ public:
 
     void set_to_terminal(ED4_terminal *terminal, int seq_pos, ED4_CursorJumpType jump_type);
 
+    inline bool in_species_seq_terminal() const;
+    inline bool in_consensus_terminal() const;
+    inline bool in_SAI_terminal() const;
+    
     void announce_deletion(ED4_base *object) {
         base_position.announce_deletion(object);
         if (object == owner_of_cursor) owner_of_cursor = NULL; // no need to delete the cursor (deletion triggers full redraw)
@@ -1047,6 +1051,13 @@ typedef ARB_ERROR (*ED4_cb)(ED4_base *, AW_CL, AW_CL);
 typedef ARB_ERROR (*ED4_cb1)(ED4_base *, AW_CL);
 typedef ARB_ERROR (*ED4_cb0)(ED4_base *);
 
+enum ED4_species_type {
+    ED4_SP_NONE, 
+    ED4_SP_SPECIES, 
+    ED4_SP_SAI, 
+    ED4_SP_CONSENSUS, 
+};
+
 class ED4_base : virtual Noncopyable {
     // base object
 
@@ -1075,8 +1086,6 @@ public:
     ED4_update_info  update_info;                   // info about things to be done for the object, i.e. refresh; flag structure
     struct {
         unsigned int hidden : 1;                    // flag whether object is hidden or not
-        unsigned int is_cons_manager : 1;           // indicates whether object is consensus manager
-        unsigned int is_SAI_manager : 1;            // indicates whether object is SAI manager
     } flag;
 
     void draw_bb(int color);
@@ -1268,6 +1277,22 @@ public:
     E4B_DECL_CASTOP(species_name_terminal);  // to_species_name_terminal
     E4B_DECL_CASTOP(terminal);               // to_terminal
     E4B_DECL_CASTOP(text_terminal);          // to_text_terminal
+
+    // discriminate between different sequence managers:
+
+    inline bool is_consensus_manager() const;
+    inline bool is_SAI_manager() const;
+    inline bool is_species_seq_manager() const;
+
+    inline ED4_species_type get_species_type() const; // works for all items (recursively) contained in ED4_species_manager
+
+    inline bool inside_consensus_manager() const;
+    inline bool inside_SAI_manager() const;
+    inline bool inside_species_seq_manager() const;
+
+    inline bool is_consensus_terminal() const;
+    inline bool is_SAI_terminal() const;
+    inline bool is_species_seq_terminal() const;
 };
 
 class ED4_manager : public ED4_base { // derived from a Noncopyable
@@ -1276,6 +1301,11 @@ class ED4_manager : public ED4_base { // derived from a Noncopyable
 public:
     ED4_members *children;
 
+    struct {
+        unsigned int is_cons_manager : 1;           // indicates whether object is consensus manager (on level ED4_L_SPECIES)
+        unsigned int is_SAI_manager : 1;            // indicates whether object is SAI manager       (on level ED4_L_SPECIES)
+    } mflag;
+    
     DECLARE_DUMP_FOR_BASECLASS(ED4_manager, ED4_base);
 
     int refresh_flag_ok();
@@ -1428,6 +1458,30 @@ public:
     ED4_terminal(const ED4_objspec& spec_, GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_terminal();
 };
+
+inline bool ED4_base::is_consensus_manager()    const { return is_manager() && to_manager()->mflag.is_cons_manager; }
+inline bool ED4_base::is_SAI_manager()          const { return is_manager() && to_manager()->mflag.is_SAI_manager; }
+inline bool ED4_base::is_species_seq_manager()  const { return is_species_manager() && !is_SAI_manager() && !is_consensus_manager(); }
+
+inline ED4_species_type ED4_base::get_species_type() const {
+    ED4_base *sman = get_parent(ED4_L_SPECIES);
+    if (!sman) return ED4_SP_NONE;
+    if (sman->is_consensus_manager()) return ED4_SP_CONSENSUS;
+    if (sman->is_SAI_manager()) return ED4_SP_SAI;
+    return ED4_SP_SPECIES;
+}
+
+inline bool ED4_base::inside_consensus_manager()   const { return get_species_type() == ED4_SP_CONSENSUS; }
+inline bool ED4_base::inside_SAI_manager()         const { return get_species_type() == ED4_SP_SAI; }
+inline bool ED4_base::inside_species_seq_manager() const { return get_species_type() == ED4_SP_SPECIES; }
+
+inline bool ED4_base::is_consensus_terminal()   const { return is_sequence_terminal() && inside_consensus_manager(); }
+inline bool ED4_base::is_SAI_terminal()         const { return is_sequence_terminal() && inside_SAI_manager(); }
+inline bool ED4_base::is_species_seq_terminal() const { return is_sequence_terminal() && inside_species_seq_manager(); }
+
+inline bool ED4_cursor::in_species_seq_terminal() const { return owner_of_cursor && owner_of_cursor->is_species_seq_terminal(); }
+inline bool ED4_cursor::in_consensus_terminal()   const { return owner_of_cursor && owner_of_cursor->is_consensus_terminal(); }
+inline bool ED4_cursor::in_SAI_terminal()         const { return owner_of_cursor && owner_of_cursor->is_SAI_terminal(); }
 
 enum ED4_species_mode {
     ED4_SM_MOVE,
@@ -1697,10 +1751,10 @@ public:
     bool all_are_selected() const { e4_assert(has_valid_counters()); return species == selected_species; }
 
     void select_all_species();
-    void deselect_all_species();
+    void deselect_all_species_and_SAI();
     void invert_selection_of_all_species();
-    void select_marked_species(int select);
-    void mark_selected_species(int mark);
+    void marked_species_select(bool select);
+    void selected_species_mark(bool mark);
 
     void toggle_selected_species();
 };

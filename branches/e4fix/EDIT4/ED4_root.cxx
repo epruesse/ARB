@@ -84,7 +84,7 @@ static ARB_ERROR request_sequence_refresh(ED4_base *base, AW_CL cl_consensi) {
     ARB_ERROR error;
     if (base->spec.level & ED4_L_SPECIES) {
         bool consensi = bool(cl_consensi);
-        if (base->flag.is_cons_manager == consensi) {
+        if (base->is_consensus_manager() == consensi) {
             error = base->to_manager()->route_down_hierarchy(request_terminal_refresh, ED4_L_SEQUENCE_STRING);
         }
     }
@@ -330,10 +330,10 @@ short ED4_root::is_primary_selection(ED4_terminal *object)
 ED4_returncode ED4_root::deselect_all()
 {
     ED4_multi_species_manager *main_multi_man = middle_area_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+    main_multi_man->deselect_all_species_and_SAI();
 
-    main_multi_man->deselect_all_species();
     main_multi_man = top_area_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
-    main_multi_man->deselect_all_species();
+    main_multi_man->deselect_all_species_and_SAI();
 
     return ED4_R_OK;
 }
@@ -363,7 +363,7 @@ ED4_returncode  ED4_root::remove_from_selected(ED4_terminal *object)
             else {
                 ED4_species_manager *spec_man = name_term->get_parent(ED4_L_SPECIES)->to_species_manager();
 
-                if (spec_man->flag.is_cons_manager) {
+                if (spec_man->is_consensus_manager()) {
                     printf("removed consensus '%s'\n", name_term->id);
                 }
                 else {
@@ -465,7 +465,7 @@ ED4_returncode ED4_root::add_to_selected(ED4_terminal *object) {
             }
             else {
                 ED4_species_manager *spec_man = name_term->get_parent(ED4_L_SPECIES)->to_species_manager();
-                if (spec_man->flag.is_cons_manager) {
+                if (spec_man->is_consensus_manager()) {
                     printf("added consensus '%s'\n", name_term->id);
                 }
                 else {
@@ -1229,12 +1229,12 @@ static void ED4_menu_select(AW_window *aww, AW_CL type, AW_CL) {
             break;
         }
         case ED4_MS_SELECT_MARKED: {
-            middle_multi_man->select_marked_species(1);
+            middle_multi_man->marked_species_select(true);
             ED4_correctBlocktypeAfterSelection();
             break;
         }
         case ED4_MS_DESELECT_MARKED: {
-            middle_multi_man->select_marked_species(0);
+            middle_multi_man->marked_species_select(false);
             ED4_correctBlocktypeAfterSelection();
             break;
         }
@@ -1243,12 +1243,12 @@ static void ED4_menu_select(AW_window *aww, AW_CL type, AW_CL) {
             break;
         }
         case ED4_MS_MARK_SELECTED: {
-            middle_multi_man->mark_selected_species(1);
+            middle_multi_man->selected_species_mark(true);
             ED4_correctBlocktypeAfterSelection();
             break;
         }
         case ED4_MS_UNMARK_SELECTED: {
-            middle_multi_man->mark_selected_species(0);
+            middle_multi_man->selected_species_mark(false);
             ED4_correctBlocktypeAfterSelection();
             break;
         }
@@ -1588,7 +1588,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("select_marked",   "Select marked species",   "e", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_SELECT_MARKED),   0);
     awmm->insert_menu_topic("deselect_marked", "Deselect marked species", "k", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_DESELECT_MARKED), 0);
     awmm->insert_menu_topic("select_all",      "Select all species",      "S", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_ALL),             0);
-    awmm->insert_menu_topic("deselect_all",    "Deselect all species",    "D", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_NONE),            0);
+    awmm->insert_menu_topic("deselect_all",    "Deselect all",            "D", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_NONE),            0);
     awmm->sep______________();
     awmm->insert_menu_topic("mark_selected",   "Mark selected species",   "M", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_MARK_SELECTED),   0);
     awmm->insert_menu_topic("unmark_selected", "Unmark selected species", "n", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_UNMARK_SELECTED), 0);

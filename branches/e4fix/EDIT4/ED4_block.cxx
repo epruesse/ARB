@@ -379,8 +379,7 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
                 }
                 else { // select it
                     ED4_species_manager *species_man = name_term->get_parent(ED4_L_SPECIES)->to_species_manager();
-
-                    if (!species_man->flag.is_cons_manager) {
+                    if (!species_man->is_consensus_manager()) {
                         ED4_ROOT->add_to_selected(name_term);
                     }
                 }
@@ -396,8 +395,7 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
                 while (term) {
                     if (term->is_species_name_terminal() && term->tflag.selected) {
                         ED4_species_manager *species_man = term->get_parent(ED4_L_SPECIES)->to_species_manager();
-
-                        if (!species_man->flag.is_cons_manager) {
+                        if (!species_man->is_consensus_manager()) {
                             ED4_ROOT->remove_from_selected(term);
                         }
                     }
@@ -411,8 +409,7 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
                 while (term && term!=term1) {
                     if (term->is_species_name_terminal() && term->tflag.selected) {
                         ED4_species_manager *species_man = term->get_parent(ED4_L_SPECIES)->to_species_manager();
-
-                        if (!species_man->flag.is_cons_manager) {
+                        if (!species_man->is_consensus_manager()) {
                             ED4_ROOT->remove_from_selected(term);
                         }
                     }
