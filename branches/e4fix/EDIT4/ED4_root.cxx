@@ -338,7 +338,7 @@ ED4_returncode ED4_root::deselect_all()
     return ED4_R_OK;
 }
 
-ED4_returncode  ED4_root::remove_from_selected(ED4_terminal *object)
+ED4_returncode  ED4_root::remove_from_selected(ED4_terminal *object) // @@@ change param to ED4_species_name_terminal ? and later to ED4_species_manager
 {
     if (object == NULL)
         return (ED4_R_IMPOSSIBLE);
@@ -347,8 +347,8 @@ ED4_returncode  ED4_root::remove_from_selected(ED4_terminal *object)
         selected_objects.delete_elem((void *) object->selection_info);
 
         delete object->selection_info;
-        object->selection_info = NULL;
-        object->tflag.selected = 0;
+        object->selection_info    = NULL;
+        object->containing_species_manager()->set_selected(false);
         object->tflag.dragged = 0;
 
         if (object->is_species_name_terminal()) {
@@ -445,14 +445,15 @@ ED4_returncode ED4_root::add_to_selected(ED4_terminal *object) {
             object->selection_info->actual_height = object->extension.size[HEIGHT];
         }
 
-        object->selection_info->drag_old_x = 0;
-        object->selection_info->drag_old_y = 0;
-        object->selection_info->drag_off_x = 0;
-        object->selection_info->drag_off_y = 0;
+        object->selection_info->drag_old_x  = 0;
+        object->selection_info->drag_old_y  = 0;
+        object->selection_info->drag_off_x  = 0;
+        object->selection_info->drag_off_y  = 0;
         object->selection_info->old_event_y = 0;
-        object->selection_info->object = object;
+        object->selection_info->object      = object;
         selected_objects.append_elem_backwards((void *) object->selection_info);
-        object->tflag.selected = 1;
+
+        object->containing_species_manager()->set_selected(true);
 
         if (object->is_species_name_terminal()) {
             ED4_species_name_terminal *name_term = object->to_species_name_terminal();

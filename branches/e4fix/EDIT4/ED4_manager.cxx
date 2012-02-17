@@ -1444,14 +1444,9 @@ void ED4_multi_species_manager::count_species(int *speciesPtr, int *selectedPtr)
         }
         else if (member->is_species_manager()) {
             ED4_species_manager *species_man = member->to_species_manager();
-
             if (!species_man->is_consensus_manager()) {
-                ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
-
                 sp++;
-                if (species_name->tflag.selected) {
-                    sel++;
-                }
+                if (species_man->is_selected()) sel++;
             }
         }
     }
@@ -1482,12 +1477,8 @@ void ED4_multi_species_manager::update_species_counters() {
             ED4_species_manager *species_man = member->to_species_manager();
 
             if (!species_man->is_consensus_manager()) {
-                ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
-
                 sp++;
-                if (species_name->tflag.selected) {
-                    sel++;
-                }
+                if (species_man->is_selected()) sel++;
             }
         }
     }
@@ -1513,16 +1504,13 @@ void ED4_multi_species_manager::select_all_species() {
 
             if (!species_man->is_consensus_manager()) {
                 sp++;
-
-                ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
-
-                if (species_man->is_SAI_manager()) {
-                    if (species_name->tflag.selected) sel++;
+                if (!species_man->is_selected()) {
+                    if (!species_man->is_SAI_manager()) {
+                        ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
+                        ED4_ROOT->add_to_selected(species_name);
+                    }
                 }
-                else {
-                    sel++;
-                    if (!species_name->tflag.selected) ED4_ROOT->add_to_selected(species_name);
-                }
+                if (species_man->is_selected()) sel++;
             }
         }
     }
@@ -1545,9 +1533,8 @@ void ED4_multi_species_manager::deselect_all_species_and_SAI() {
 
             if (!species_man->is_consensus_manager()) {
                 sp++;
-                ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
-
-                if (species_name->tflag.selected) {
+                if (species_man->is_selected()) {
+                    ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
                     ED4_ROOT->remove_from_selected(species_name);
                 }
             }
@@ -1577,13 +1564,14 @@ void ED4_multi_species_manager::invert_selection_of_all_species() {
 
             if (!species_man->is_consensus_manager()) {
                 sp++;
-                ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
 
                 if (!species_man->is_SAI_manager()) {
-                    if (species_name->tflag.selected) ED4_ROOT->remove_from_selected(species_name);
-                    else                              ED4_ROOT->add_to_selected(species_name);
+                    ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
+
+                    if (species_man->is_selected()) ED4_ROOT->remove_from_selected(species_name);
+                    else                            ED4_ROOT->add_to_selected(species_name);
                 }
-                if (species_name->tflag.selected) sel++;
+                if (species_man->is_selected()) sel++;
             }
         }
         else {
@@ -1618,25 +1606,22 @@ void ED4_multi_species_manager::marked_species_select(bool select) {
                 e4_assert(gbd);
                 int is_marked = GB_read_flag(gbd);
 
-                ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
                 if (is_marked) {
                     if (select) { // select marked
-                        if (!species_name->tflag.selected) {
+                        if (!species_man->is_selected()) {
+                            ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
                             ED4_ROOT->add_to_selected(species_name);
                         }
-                        sel++;
                     }
                     else { // de-select marked
-                        if (species_name->tflag.selected) {
+                        if (species_man->is_selected()) {
+                            ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
                             ED4_ROOT->remove_from_selected(species_name);
                         }
                     }
                 }
-                else {
-                    if (species_name->tflag.selected) {
-                        sel++;
-                    }
-                }
+
+                if (species_man->is_selected()) sel++;
             }
         }
         else {
@@ -1663,10 +1648,8 @@ void ED4_multi_species_manager::selected_species_mark(bool mark) {
             ED4_species_manager *species_man = member->to_species_manager();
 
             if (species_man->is_species_seq_manager()) {
-                ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
-
                 sp++;
-                if (species_name->tflag.selected) {
+                if (species_man->is_selected()) {
                     GBDATA *gbd = species_man->get_species_pointer();
                     e4_assert(gbd);
 
@@ -1708,7 +1691,8 @@ ED4_terminal *ED4_multi_species_manager::get_consensus_terminal() {
 
 ED4_species_manager::ED4_species_manager(ED4_species_type type_, const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
     ED4_manager(species_manager_spec, temp_id, x, y, width, height, temp_parent),
-    type(type_)
+    type(type_),
+    selected(false)
 {
     e4_assert(type != ED4_SP_NONE);
 }

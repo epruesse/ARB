@@ -419,7 +419,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                     if (is_species_name_terminal()) {
                         switch (ED4_ROOT->species_mode) {
                             case ED4_SM_KILL: {
-                                if (tflag.selected) ED4_ROOT->remove_from_selected(this);
+                                if (containing_species_manager()->is_selected()) ED4_ROOT->remove_from_selected(this);
                                 kill_object();
                                 return ED4_R_BREAK;
                             }
@@ -429,7 +429,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                                 other_x = event->x;
                                 other_y = event->y;
 
-                                if (!tflag.selected) {
+                                if (!containing_species_manager()->is_selected()) {
                                     ED4_ROOT->add_to_selected(dragged_name_terminal);
                                     dragged_was_selected = 0;
                                     ED4_ROOT->main_manager->Show(); // @@@ critical direct call to Show (fix: do NOT select on drag)
@@ -491,8 +491,8 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                             ED4_multi_species_manager *multi_man = species_man->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
                             multi_man->toggle_selected_species();
                         }
-                        else if (species_man->is_species_seq_manager()) { // click on species name
-                            if (!tflag.selected) { // select if not selected
+                        else { // click on species or SAI name
+                            if (!species_man->is_selected()) { // select if not selected
                                 if (ED4_ROOT->add_to_selected(this) == ED4_R_OK) ED4_correctBlocktypeAfterSelection();
                             }
                             else { // deselect if already selected

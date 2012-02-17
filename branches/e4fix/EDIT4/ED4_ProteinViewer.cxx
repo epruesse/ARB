@@ -318,8 +318,7 @@ static void PV_ManageTerminals(AW_root *root) {
                     // we are in the sequence terminal section of a species
                     // walk through all the corresponding ORF terminals for the species and
                     // hide or unhide the terminals based on the display options set by the user
-                    ED4_species_name_terminal *speciesNameTerm = speciesManager->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
-                    if (speciesNameTerm->tflag.selected) {
+                    if (speciesManager->is_selected()) {
                         for (int i=0; i<PV_AA_Terminals4Species; i++) {
                             // get the corresponding orf_terminal skipping sequence_info terminal
                             // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
