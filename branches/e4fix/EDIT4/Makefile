@@ -36,6 +36,7 @@ ED4_base.o: ed4_class.hxx
 ED4_base.o: ed4_defs.hxx
 ED4_base.o: ed4_edit_string.hxx
 ED4_base.o: ed4_extern.hxx
+ED4_base.o: ed4_list.hxx
 ED4_base.o: ed4_search.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_base.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -74,6 +75,7 @@ ED4_block.o: ed4_block.hxx
 ED4_block.o: ed4_class.hxx
 ED4_block.o: ed4_defs.hxx
 ED4_block.o: ed4_edit_string.hxx
+ED4_block.o: ed4_list.hxx
 ED4_block.o: ed4_search.hxx
 ED4_block.o: ed4_tools.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -114,6 +116,7 @@ ED4_cursor.o: ed4_class.hxx
 ED4_cursor.o: ed4_defs.hxx
 ED4_cursor.o: ed4_edit_string.hxx
 ED4_cursor.o: ed4_extern.hxx
+ED4_cursor.o: ed4_list.hxx
 ED4_cursor.o: ed4_ProteinViewer.hxx
 ED4_cursor.o: ed4_search.hxx
 ED4_cursor.o: ed4_tools.hxx
@@ -159,6 +162,7 @@ ED4_cursor.o: $(ARBHOME)/INCLUDE/test_unit.h
 ED4_dots.o: ed4_class.hxx
 ED4_dots.o: ed4_defs.hxx
 ED4_dots.o: ed4_dots.hxx
+ED4_dots.o: ed4_list.hxx
 ED4_dots.o: ed4_search.hxx
 ED4_dots.o: ed4_visualizeSAI.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -193,6 +197,7 @@ ED4_dots.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ED4_dump.o: ed4_class.hxx
 ED4_dump.o: ed4_defs.hxx
+ED4_dump.o: ed4_list.hxx
 ED4_dump.o: ed4_search.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -222,6 +227,7 @@ ED4_edit_string.o: ed4_awars.hxx
 ED4_edit_string.o: ed4_class.hxx
 ED4_edit_string.o: ed4_defs.hxx
 ED4_edit_string.o: ed4_edit_string.hxx
+ED4_edit_string.o: ed4_list.hxx
 ED4_edit_string.o: ed4_search.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -259,35 +265,13 @@ ED4_edit_string.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/test_global.h
 
-ED4_list.o: ed4_class.hxx
-ED4_list.o: ed4_defs.hxx
-ED4_list.o: ed4_search.hxx
-ED4_list.o: $(ARBHOME)/INCLUDE/arb_assert.h
-ED4_list.o: $(ARBHOME)/INCLUDE/arb_core.h
-ED4_list.o: $(ARBHOME)/INCLUDE/arb_error.h
-ED4_list.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-ED4_list.o: $(ARBHOME)/INCLUDE/arbtools.h
-ED4_list.o: $(ARBHOME)/INCLUDE/attributes.h
-ED4_list.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-ED4_list.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
-ED4_list.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-ED4_list.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
-ED4_list.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-ED4_list.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-ED4_list.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ED4_list.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-ED4_list.o: $(ARBHOME)/INCLUDE/downcast.h
-ED4_list.o: $(ARBHOME)/INCLUDE/dupstr.h
-ED4_list.o: $(ARBHOME)/INCLUDE/pos_range.h
-ED4_list.o: $(ARBHOME)/INCLUDE/smartptr.h
-ED4_list.o: $(ARBHOME)/INCLUDE/test_global.h
-
 ED4_main.o: ed4_awars.hxx
 ED4_main.o: ed4_class.hxx
 ED4_main.o: ed4_defs.hxx
 ED4_main.o: ed4_dots.hxx
 ED4_main.o: ed4_edit_string.hxx
 ED4_main.o: ed4_extern.hxx
+ED4_main.o: ed4_list.hxx
 ED4_main.o: ed4_naligner.hxx
 ED4_main.o: ed4_nds.hxx
 ED4_main.o: ed4_protein_2nd_structure.hxx
@@ -343,6 +327,7 @@ ED4_manager.o: ed4_awars.hxx
 ED4_manager.o: ed4_class.hxx
 ED4_manager.o: ed4_defs.hxx
 ED4_manager.o: ed4_edit_string.hxx
+ED4_manager.o: ed4_list.hxx
 ED4_manager.o: ed4_protein_2nd_structure.hxx
 ED4_manager.o: ed4_ProteinViewer.hxx
 ED4_manager.o: ed4_search.hxx
@@ -380,6 +365,7 @@ ED4_manager.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ED4_members.o: ed4_class.hxx
 ED4_members.o: ed4_defs.hxx
+ED4_members.o: ed4_list.hxx
 ED4_members.o: ed4_search.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_members.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -411,6 +397,7 @@ ED4_mini_classes.o: ed4_awars.hxx
 ED4_mini_classes.o: ed4_class.hxx
 ED4_mini_classes.o: ed4_defs.hxx
 ED4_mini_classes.o: ed4_edit_string.hxx
+ED4_mini_classes.o: ed4_list.hxx
 ED4_mini_classes.o: ed4_search.hxx
 ED4_mini_classes.o: ed4_tools.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -468,6 +455,7 @@ ED4_naligner.o: $(ARBHOME)/INCLUDE/test_global.h
 ED4_nds.o: ed4_awars.hxx
 ED4_nds.o: ed4_class.hxx
 ED4_nds.o: ed4_defs.hxx
+ED4_nds.o: ed4_list.hxx
 ED4_nds.o: ed4_search.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -504,6 +492,7 @@ ED4_no_class.o: ed4_class.hxx
 ED4_no_class.o: ed4_defs.hxx
 ED4_no_class.o: ed4_edit_string.hxx
 ED4_no_class.o: ed4_extern.hxx
+ED4_no_class.o: ed4_list.hxx
 ED4_no_class.o: ed4_nds.hxx
 ED4_no_class.o: ed4_search.hxx
 ED4_no_class.o: ed4_tools.hxx
@@ -554,6 +543,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ED4_objspec.o: ed4_class.hxx
 ED4_objspec.o: ed4_defs.hxx
+ED4_objspec.o: ed4_list.hxx
 ED4_objspec.o: ed4_search.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_objspec.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -579,6 +569,7 @@ ED4_objspec.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 ED4_plugins.o: ed4_class.hxx
 ED4_plugins.o: ed4_defs.hxx
+ED4_plugins.o: ed4_list.hxx
 ED4_plugins.o: ed4_plugins.hxx
 ED4_plugins.o: ed4_search.hxx
 ED4_plugins.o: ed4_visualizeSAI.hxx
@@ -614,6 +605,7 @@ ED4_plugins.o: $(ARBHOME)/INCLUDE/test_unit.h
 ED4_protein_2nd_structure.o: ed4_awars.hxx
 ED4_protein_2nd_structure.o: ed4_class.hxx
 ED4_protein_2nd_structure.o: ed4_defs.hxx
+ED4_protein_2nd_structure.o: ed4_list.hxx
 ED4_protein_2nd_structure.o: ed4_protein_2nd_structure.hxx
 ED4_protein_2nd_structure.o: ed4_search.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -648,6 +640,7 @@ ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ED4_ProteinViewer.o: ed4_class.hxx
 ED4_ProteinViewer.o: ed4_defs.hxx
+ED4_ProteinViewer.o: ed4_list.hxx
 ED4_ProteinViewer.o: ed4_ProteinViewer.hxx
 ED4_ProteinViewer.o: ed4_search.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -695,6 +688,7 @@ ED4_root.o: ed4_class.hxx
 ED4_root.o: ed4_defs.hxx
 ED4_root.o: ed4_dots.hxx
 ED4_root.o: ed4_extern.hxx
+ED4_root.o: ed4_list.hxx
 ED4_root.o: ed4_naligner.hxx
 ED4_root.o: ed4_nds.hxx
 ED4_root.o: ed4_plugins.hxx
@@ -757,6 +751,7 @@ ED4_search.o: ed4_awars.hxx
 ED4_search.o: ed4_class.hxx
 ED4_search.o: ed4_defs.hxx
 ED4_search.o: ed4_extern.hxx
+ED4_search.o: ed4_list.hxx
 ED4_search.o: ed4_search.hxx
 ED4_search.o: ed4_tools.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -801,6 +796,7 @@ ED4_terminal.o: ed4_class.hxx
 ED4_terminal.o: ed4_defs.hxx
 ED4_terminal.o: ed4_edit_string.hxx
 ED4_terminal.o: ed4_extern.hxx
+ED4_terminal.o: ed4_list.hxx
 ED4_terminal.o: ed4_nds.hxx
 ED4_terminal.o: ed4_ProteinViewer.hxx
 ED4_terminal.o: ed4_search.hxx
@@ -842,6 +838,7 @@ ED4_text_terminals.o: ed4_class.hxx
 ED4_text_terminals.o: ed4_defs.hxx
 ED4_text_terminals.o: ed4_edit_string.hxx
 ED4_text_terminals.o: ed4_extern.hxx
+ED4_text_terminals.o: ed4_list.hxx
 ED4_text_terminals.o: ed4_nds.hxx
 ED4_text_terminals.o: ed4_protein_2nd_structure.hxx
 ED4_text_terminals.o: ed4_ProteinViewer.hxx
@@ -887,6 +884,7 @@ ED4_tools.o: ed4_awars.hxx
 ED4_tools.o: ed4_class.hxx
 ED4_tools.o: ed4_defs.hxx
 ED4_tools.o: ed4_edit_string.hxx
+ED4_tools.o: ed4_list.hxx
 ED4_tools.o: ed4_search.hxx
 ED4_tools.o: ed4_tools.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -923,6 +921,7 @@ ED4_tools.o: $(ARBHOME)/INCLUDE/test_global.h
 ED4_visualizeSAI.o: ed4_class.hxx
 ED4_visualizeSAI.o: ed4_defs.hxx
 ED4_visualizeSAI.o: ed4_extern.hxx
+ED4_visualizeSAI.o: ed4_list.hxx
 ED4_visualizeSAI.o: ed4_search.hxx
 ED4_visualizeSAI.o: ed4_visualizeSAI.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -965,6 +964,7 @@ ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/test_global.h
 ED4_window.o: ed4_class.hxx
 ED4_window.o: ed4_defs.hxx
 ED4_window.o: ed4_extern.hxx
+ED4_window.o: ed4_list.hxx
 ED4_window.o: ed4_search.hxx
 ED4_window.o: ed4_tools.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -997,6 +997,7 @@ ED4_window.o: $(ARBHOME)/INCLUDE/test_global.h
 EDB_root_bact.o: ed4_class.hxx
 EDB_root_bact.o: ed4_defs.hxx
 EDB_root_bact.o: ed4_extern.hxx
+EDB_root_bact.o: ed4_list.hxx
 EDB_root_bact.o: ed4_search.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/ad_config.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/ad_prot.h

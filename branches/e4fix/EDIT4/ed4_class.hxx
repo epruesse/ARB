@@ -83,6 +83,9 @@
 #ifndef ED4_SEARCH_HXX
 #include "ed4_search.hxx"
 #endif
+#ifndef ED4_LIST_HXX
+#include "ed4_list.hxx"
+#endif
 #ifndef _GLIBCXX_SET
 #include <set>
 #endif
@@ -538,41 +541,6 @@ public:
 
         init_folding_lines();
     }
-};
-
-class ED4_list_elem : virtual Noncopyable {
-    void          *my_elem;
-    ED4_list_elem *my_next;
-public:
-    ED4_list_elem(void *element) { my_elem = element; my_next = 0; }
-    ~ED4_list_elem() {}
-
-    ED4_list_elem *next() const { return my_next; }
-    void *elem() const { return my_elem; }
-
-    void set_next(ED4_list_elem *the_next) { my_next = the_next; }
-};
-
-
-class ED4_list : virtual Noncopyable {
-    // class which implements a general purpose linked list of void*
-
-    ED4_list_elem *my_first;
-    ED4_list_elem *my_last;
-    ED4_index      my_no_of_entries;
-
-public:
-
-    ED4_list_elem *first() const { return my_first; }
-    ED4_list_elem *last() const { return my_last; }
-    ED4_index no_of_entries() const { return my_no_of_entries; }
-
-    ED4_returncode  append_elem(void *elem);
-    ED4_returncode  delete_elem(void *elem);
-    ED4_returncode  append_elem_backwards(void *elem);
-    short has_elem(void *elem);
-
-    ED4_list();
 };
 
 class ED4_base_position : private BasePosition { // derived from a Noncopyable
