@@ -395,7 +395,7 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
                     if (term->is_species_name_terminal()) {
                         ED4_species_manager *species_man = term->containing_species_manager();
                         if (species_man->is_selected() && !species_man->is_consensus_manager()) {
-                            ED4_ROOT->remove_from_selected(term);
+                            ED4_ROOT->remove_from_selected(term->to_species_name_terminal());
                         }
                     }
                     if (term==last_term2) break;
@@ -409,7 +409,7 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
                     if (term->is_species_name_terminal()) {
                         ED4_species_manager *species_man = term->containing_species_manager();
                         if (species_man->is_selected() && !species_man->is_consensus_manager()) {
-                            ED4_ROOT->remove_from_selected(term);
+                            ED4_ROOT->remove_from_selected(term->to_species_name_terminal());
                         }
                     }
                     term = term->get_next_terminal();

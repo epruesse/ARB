@@ -419,7 +419,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                     if (is_species_name_terminal()) {
                         switch (ED4_ROOT->species_mode) {
                             case ED4_SM_KILL: {
-                                if (containing_species_manager()->is_selected()) ED4_ROOT->remove_from_selected(this);
+                                if (containing_species_manager()->is_selected()) ED4_ROOT->remove_from_selected(this->to_species_name_terminal());
                                 kill_object();
                                 return ED4_R_BREAK;
                             }
@@ -493,10 +493,10 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                         }
                         else { // click on species or SAI name
                             if (!species_man->is_selected()) { // select if not selected
-                                if (ED4_ROOT->add_to_selected(this) == ED4_R_OK) ED4_correctBlocktypeAfterSelection();
+                                if (ED4_ROOT->add_to_selected(this->to_species_name_terminal()) == ED4_R_OK) ED4_correctBlocktypeAfterSelection();
                             }
                             else { // deselect if already selected
-                                ED4_ROOT->remove_from_selected(this);
+                                ED4_ROOT->remove_from_selected(this->to_species_name_terminal());
                                 ED4_correctBlocktypeAfterSelection();
                             }
                         }
@@ -539,7 +539,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
 
                         GB_CSTR text = dragged_name_terminal->get_displayed_text();
 
-                        if (dragged_name_terminal->tflag.dragged) {
+                        if (dragged_name_terminal->dragged) {
                             dragged_name_terminal->draw_drag_box(sel_info->drag_old_x, sel_info->drag_old_y, text, sel_info->old_event_y);
                         }
 
@@ -552,7 +552,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                         sel_info->drag_old_y = new_y;
                         sel_info->old_event_y = event->y;
 
-                        dragged_name_terminal->tflag.dragged = 1;
+                        dragged_name_terminal->dragged = true;
                     }
 
                     break;
@@ -571,13 +571,13 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
             switch (event->button) {
                 case ED4_B_LEFT_BUTTON: {
                     if (dragged_name_terminal) {
-                        if (dragged_name_terminal->tflag.dragged) {
+                        if (dragged_name_terminal->dragged) {
                             {
                                 char                *db_pointer = dragged_name_terminal->resolve_pointer_to_string_copy();
                                 ED4_selection_entry *sel_info   = dragged_name_terminal->selection_info;
 
                                 dragged_name_terminal->draw_drag_box(sel_info->drag_old_x, sel_info->drag_old_y, db_pointer, sel_info->old_event_y);
-                                dragged_name_terminal->tflag.dragged = 0;
+                                dragged_name_terminal->dragged = false;
 
                                 free(db_pointer);
                             }
@@ -700,13 +700,11 @@ ED4_terminal::ED4_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, 
     ED4_base(spec_, temp_id, x, y, width, height, temp_parent)
 {
     memset((char*)&tflag, 0, sizeof(tflag));
-    selection_info   = 0;
     curr_timestamp = 0;
 }
 
 
 ED4_terminal::~ED4_terminal() {
-    delete selection_info;
     for (ED4_window *window = ED4_ROOT->first_window; window; window=window->next) {
         ED4_cursor& cursor = window->cursor;
         if (this == cursor.owner_of_cursor) {
@@ -891,7 +889,8 @@ ED4_returncode ED4_bracket_terminal::draw() {
 }
 
 ED4_species_name_terminal::ED4_species_name_terminal(GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_text_terminal(species_name_terminal_spec, temp_id, x, y, width, height, temp_parent)
+    ED4_text_terminal(species_name_terminal_spec, temp_id, x, y, width, height, temp_parent),
+    selection_info(NULL)
 {
 }
 

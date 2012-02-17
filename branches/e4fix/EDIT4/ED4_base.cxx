@@ -845,37 +845,38 @@ ED4_returncode ED4_base::set_width() {
 
     if (is_species_manager()) {
         ED4_species_manager *species_manager = to_species_manager();
-        e4_assert(!species_manager->is_consensus_manager()); // do not call set_width with consensus manager!
 
-        ED4_multi_name_manager *multi_name_manager = species_manager->get_defined_level(ED4_L_MULTI_NAME)->to_multi_name_manager();     // case I'm a species
-        ED4_terminal           *consensus_terminal = parent->to_multi_species_manager()->get_consensus_terminal();
+        if (!species_manager->is_consensus_manager()) {
+            ED4_multi_name_manager *multi_name_manager = species_manager->get_defined_level(ED4_L_MULTI_NAME)->to_multi_name_manager();     // case I'm a species
+            ED4_terminal           *consensus_terminal = parent->to_multi_species_manager()->get_consensus_terminal();
 
-        for (int i=0; i < multi_name_manager->children->members(); i++) {
-            ED4_name_manager *name_manager = multi_name_manager->children->member(i)->to_name_manager();
-            ED4_base         *nameTerm     = name_manager->children->member(0);
-            int               width        = consensus_terminal ? consensus_terminal->extension.size[WIDTH] : MAXSPECIESWIDTH;
+            for (int i=0; i < multi_name_manager->children->members(); i++) {
+                ED4_name_manager *name_manager = multi_name_manager->children->member(i)->to_name_manager();
+                ED4_base         *nameTerm     = name_manager->children->member(0);
+                int               width        = consensus_terminal ? consensus_terminal->extension.size[WIDTH] : MAXSPECIESWIDTH;
 
-            nameTerm->extension.size[WIDTH] = width;
-            nameTerm->request_resize();
-        }
-
-        for (int i=0; i < species_manager->children->members(); i++) { // adjust all managers as far as possible
-            ED4_base *smember = species_manager->children->member(i);
-            if (consensus_terminal) {
-                ED4_base *kmember = consensus_terminal->parent->children->member(i);
-                if (kmember) {
-                    smember->extension.position[X_POS] = kmember->extension.position[X_POS];
-                    ED4_base::touch_world_cache();
-                }
+                nameTerm->extension.size[WIDTH] = width;
+                nameTerm->request_resize();
             }
-            else { // got no consensus
-                ED4_species_manager *a_species = parent->get_defined_level(ED4_L_SPECIES)->to_species_manager();
-                if (a_species) {
-                    smember->extension.position[X_POS] = a_species->children->member(i)->extension.position[X_POS];
-                    ED4_base::touch_world_cache();
+
+            for (int i=0; i < species_manager->children->members(); i++) { // adjust all managers as far as possible
+                ED4_base *smember = species_manager->children->member(i);
+                if (consensus_terminal) {
+                    ED4_base *kmember = consensus_terminal->parent->children->member(i);
+                    if (kmember) {
+                        smember->extension.position[X_POS] = kmember->extension.position[X_POS];
+                        ED4_base::touch_world_cache();
+                    }
                 }
+                else { // got no consensus
+                    ED4_species_manager *a_species = parent->get_defined_level(ED4_L_SPECIES)->to_species_manager();
+                    if (a_species) {
+                        smember->extension.position[X_POS] = a_species->children->member(i)->extension.position[X_POS];
+                        ED4_base::touch_world_cache();
+                    }
+                }
+                smember->request_resize();
             }
-            smember->request_resize();
         }
     }
     else if (is_group_manager()) {

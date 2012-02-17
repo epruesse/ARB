@@ -570,7 +570,7 @@ public:
     ED4_returncode  append_elem(void *elem);
     ED4_returncode  delete_elem(void *elem);
     ED4_returncode  append_elem_backwards(void *elem);
-    short is_elem(void *elem);
+    short has_elem(void *elem);
 
     ED4_list();
 };
@@ -1381,12 +1381,9 @@ struct ED4_manager : public ED4_base { // derived from a Noncopyable
 };
 
 struct ED4_terminal : public ED4_base { // derived from a Noncopyable
-    struct {
-        unsigned int dragged : 1;                   // Flag for 'Object dragged'
-        unsigned int deleted : 1;
-    } tflag;
-    ED4_selection_entry *selection_info;            // Info about i.e. Position
-    long                 curr_timestamp;
+    struct { unsigned int deleted : 1; } tflag; // @@@ go bool
+
+    long curr_timestamp;
 
     DECLARE_DUMP_FOR_BASECLASS(ED4_terminal,ED4_base);
 
@@ -1573,13 +1570,12 @@ public:
     void request_refresh_for_specific_terminals(ED4_level lev);
     void request_refresh_for_consensus_terminals();
     void request_refresh_for_sequence_terminals();
-    
+
     inline void announce_deletion(ED4_base *object); // before deleting an object, use this to announce
 
-    // functions concerned with list of selected objects
-    ED4_returncode add_to_selected(ED4_terminal *object);
-    ED4_returncode remove_from_selected(ED4_terminal *object);
-    short is_primary_selection(ED4_terminal *object);
+     // functions concerned with list of selected objects
+    ED4_returncode add_to_selected(ED4_species_name_terminal *object);
+    void remove_from_selected(ED4_species_name_terminal *object);
     ED4_returncode deselect_all();
 
     ED4_returncode get_area_rectangle(AW_screen_area *rect, AW_pos x, AW_pos y);
@@ -1865,7 +1861,7 @@ public:
 
     bool is_selected() const { return selected; }
     void set_selected(bool select) {
-        e4_assert(type != ED4_SP_CONSENSUS); // it's not allowed to select a consensus
+        // e4_assert(type != ED4_SP_CONSENSUS); // it's not allowed to select a consensus // @@@ happens atm when moving a group
         selected = select;
     }
 
@@ -2075,8 +2071,12 @@ public:
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
 };
 
-struct ED4_species_name_terminal : public ED4_text_terminal {
+struct ED4_species_name_terminal : public ED4_text_terminal { // derived from a Noncopyable
     ED4_species_name_terminal(GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
+    ~ED4_species_name_terminal() { delete selection_info; }
+
+    ED4_selection_entry *selection_info;            // Info about i.e. Position
+    bool dragged;
 
     GB_CSTR get_displayed_text() const;
     virtual int get_length() const { return strlen(get_displayed_text()); }
