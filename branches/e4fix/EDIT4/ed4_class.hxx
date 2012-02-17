@@ -1202,6 +1202,11 @@ public:
     inline const Class *toName() const;                 \
     inline Class *toName();
 
+#define E4B_AVOID_CAST__helper(Class,toName,isName)     \
+    const Class *toName() const;                        \
+        Class *toName();                                \
+        int isName();
+
 #define E4B_IMPL_CASTOP_helper(Class,toName,isName)                             \
     const Class *ED4_base::toName() const {                                     \
         e4_assert(isName());                                                    \
@@ -1211,8 +1216,9 @@ public:
         return const_cast<Class*>(const_cast<const ED4_base*>(this)->toName()); \
     }
 
-#define E4B_DECL_CASTOP(name) E4B_DECL_CASTOP_helper(concat(ED4_,name), concat(to_,name), concat(is_,name))
-#define E4B_IMPL_CASTOP(name) E4B_IMPL_CASTOP_helper(concat(ED4_,name), concat(to_,name), concat(is_,name))
+#define E4B_DECL_CASTOP(name)          E4B_DECL_CASTOP_helper(concat(ED4_,name), concat(to_,name), concat(is_,name))
+#define E4B_AVOID_UNNEEDED_CASTS(name) E4B_AVOID_CAST__helper(concat(ED4_,name), concat(to_,name), concat(is_,name))
+#define E4B_IMPL_CASTOP(name)          E4B_IMPL_CASTOP_helper(concat(ED4_,name), concat(to_,name), concat(is_,name))
 
     E4B_DECL_CASTOP(area_manager);           // to_area_manager
     E4B_DECL_CASTOP(abstract_group_manager); // to_abstract_group_manager
@@ -1261,6 +1267,7 @@ public:
 struct ED4_manager : public ED4_base { // derived from a Noncopyable
     ED4_members *children;
 
+    E4B_AVOID_UNNEEDED_CASTS(manager);
     DECLARE_DUMP_FOR_BASECLASS(ED4_manager, ED4_base);
 
     int refresh_flag_ok();
@@ -1354,6 +1361,8 @@ struct ED4_manager : public ED4_base { // derived from a Noncopyable
 };
 
 struct ED4_terminal : public ED4_base { // derived from a Noncopyable
+    E4B_AVOID_UNNEEDED_CASTS(terminal);
+
     struct { unsigned int deleted : 1; } tflag; // @@@ go bool
 
     long curr_timestamp;
@@ -1598,7 +1607,9 @@ inline void ED4_root::announce_deletion(ED4_base *object) {
 
 class ED4_main_manager : public ED4_manager { // derived from a Noncopyable
     // first in hierarchy
-    
+
+    E4B_AVOID_UNNEEDED_CASTS(main_manager);
+
     // these terminals are redrawn after refresh (with increase clipping area)
     // to revert text from middle area drawn into top area:
     ED4_terminal *top_middle_line;
@@ -1622,17 +1633,21 @@ public:
 };
 
 struct ED4_device_manager : public ED4_manager {
+    E4B_AVOID_UNNEEDED_CASTS(device_manager);
     ED4_device_manager  (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
 
 struct ED4_area_manager : public ED4_manager {
+    E4B_AVOID_UNNEEDED_CASTS(area_manager);
     ED4_area_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
 
 class ED4_multi_species_manager : public ED4_manager {
-    int species;    // # of species (-1 == unknown)
+    E4B_AVOID_UNNEEDED_CASTS(multi_species_manager);
+
+    int species;          // # of species (-1 == unknown)
     int selected_species; // # of selected species (-1 == unknown)
 
     void    set_species_counters(int no_of_species, int no_of_selected);
@@ -1673,6 +1688,7 @@ public:
 };
 
 class ED4_abstract_group_manager : public ED4_manager {
+    E4B_AVOID_UNNEEDED_CASTS(abstract_group_manager);
 protected:
     ED4_char_table my_table; // table concerning Consensusfunction
 
@@ -1689,6 +1705,7 @@ public:
 };
 
 struct ED4_group_manager : public ED4_abstract_group_manager {
+    E4B_AVOID_UNNEEDED_CASTS(group_manager);
     ED4_group_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_abstract_group_manager);
     void reinit_char_table();
@@ -1788,6 +1805,7 @@ public:
 };
 
 class ED4_root_group_manager : public ED4_abstract_group_manager {
+    E4B_AVOID_UNNEEDED_CASTS(root_group_manager);
     ED4_remap my_remap;
 public:
     ED4_root_group_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
@@ -1820,6 +1838,8 @@ public:
 };
 
 class ED4_species_manager : public ED4_manager {
+    E4B_AVOID_UNNEEDED_CASTS(species_manager);
+    
     std::set<ED4_species_manager_cb_data> callbacks;
 
     ED4_species_type type;
@@ -1876,16 +1896,19 @@ inline bool ED4_cursor::in_SAI_terminal()         const { return owner_of_cursor
 
 
 struct ED4_multi_sequence_manager : public ED4_manager {
+    E4B_AVOID_UNNEEDED_CASTS(multi_sequence_manager);
     ED4_multi_sequence_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
 
 struct ED4_sequence_manager : public ED4_manager {
+    E4B_AVOID_UNNEEDED_CASTS(sequence_manager);
     ED4_sequence_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
 
 struct ED4_multi_name_manager : public ED4_manager {
+    E4B_AVOID_UNNEEDED_CASTS(multi_name_manager);
     // member of ED4_species_manager (contains ED4_name_manager for name and info)
     ED4_multi_name_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
@@ -1893,6 +1916,7 @@ struct ED4_multi_name_manager : public ED4_manager {
 
 
 struct ED4_name_manager : public ED4_manager {
+    E4B_AVOID_UNNEEDED_CASTS(name_manager);
     // member of ED4_multi_name_manager (contains speciesname or other info concerning the species)
     ED4_name_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
@@ -1904,6 +1928,8 @@ struct ED4_name_manager : public ED4_manager {
 
 
 struct ED4_tree_terminal : public ED4_terminal {
+    E4B_AVOID_UNNEEDED_CASTS(tree_terminal);
+    
     virtual ED4_returncode draw();
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
 
@@ -1913,6 +1939,8 @@ struct ED4_tree_terminal : public ED4_terminal {
 };
 
 struct ED4_bracket_terminal : public ED4_terminal {
+    E4B_AVOID_UNNEEDED_CASTS(bracket_terminal);
+
     virtual ED4_returncode draw();
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
 
@@ -1925,6 +1953,8 @@ struct ED4_bracket_terminal : public ED4_terminal {
 };
 
 struct ED4_text_terminal : public ED4_terminal {
+    E4B_AVOID_UNNEEDED_CASTS(text_terminal);
+    
     // functions concerning graphic output
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode draw();
@@ -1942,6 +1972,7 @@ class ED4_abstract_sequence_terminal : public ED4_text_terminal { // derived fro
 
     PosRange pixel2index(PosRange pixel_range);
 
+    E4B_AVOID_UNNEEDED_CASTS(abstract_sequence_terminal);
 public:
     char *species_name; // @@@ wrong place (may be member of ED4_sequence_manager)
 
@@ -1974,7 +2005,7 @@ class ED4_orf_terminal : public ED4_abstract_sequence_terminal { // derived from
     int   aaStrandType;
 
     virtual ED4_returncode draw();
-    ED4_orf_terminal(const ED4_orf_terminal&);
+    E4B_AVOID_UNNEEDED_CASTS(orf_terminal);
 public:
     ED4_orf_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_orf_terminal();
@@ -1996,6 +2027,8 @@ class ED4_sequence_terminal : public ED4_abstract_sequence_terminal { // derived
 
     virtual ED4_returncode draw();
 
+    E4B_AVOID_UNNEEDED_CASTS(sequence_terminal);
+    
 public:
 
     AP_tree *st_ml_node;
@@ -2025,11 +2058,13 @@ class ED4_columnStat_terminal : public ED4_text_terminal { // derived from a Non
 
     int update_likelihood();
 
+    E4B_AVOID_UNNEEDED_CASTS(columnStat_terminal);
+
 public:
     // functions concerning graphic output
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode draw();
-    virtual int get_length() const { return corresponding_sequence_terminal()->to_text_terminal()->get_length(); }
+    virtual int get_length() const { return corresponding_sequence_terminal()->get_length(); }
 
     static int threshold_is_set();
     static void set_threshold(double aThreshold);
@@ -2049,6 +2084,8 @@ struct ED4_species_name_terminal : public ED4_text_terminal { // derived from a 
     ED4_species_name_terminal(GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_species_name_terminal() { delete selection_info; }
 
+    E4B_AVOID_UNNEEDED_CASTS(species_name_terminal);
+
     ED4_selection_entry *selection_info;            // Info about i.e. Position
     bool dragged;
 
@@ -2064,6 +2101,8 @@ struct ED4_species_name_terminal : public ED4_text_terminal { // derived from a 
 };
 
 struct ED4_sequence_info_terminal : public ED4_text_terminal {
+    E4B_AVOID_UNNEEDED_CASTS(sequence_info_terminal);
+    
     ED4_sequence_info_terminal(const char *id, /* GBDATA *gbd, */ AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
     ED4_species_name_terminal *corresponding_species_name_terminal() const {
@@ -2081,6 +2120,8 @@ struct ED4_sequence_info_terminal : public ED4_text_terminal {
 };
 
 struct ED4_pure_text_terminal : public ED4_text_terminal {
+    E4B_AVOID_UNNEEDED_CASTS(pure_text_terminal);
+    
     ED4_pure_text_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
     virtual int get_length() const { int len; resolve_pointer_to_char_pntr(&len); return len; }
@@ -2089,6 +2130,8 @@ struct ED4_pure_text_terminal : public ED4_text_terminal {
 };
 
 class ED4_consensus_sequence_terminal : public ED4_sequence_terminal {
+    E4B_AVOID_UNNEEDED_CASTS(consensus_sequence_terminal);
+    
     virtual ED4_returncode draw();
     ED4_char_table& get_char_table() const { return get_parent(ED4_L_GROUP)->to_group_manager()->table(); }
 public:
@@ -2100,6 +2143,8 @@ public:
 };
 
 struct ED4_spacer_terminal : public ED4_terminal {
+    E4B_AVOID_UNNEEDED_CASTS(spacer_terminal);
+    
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode draw();
 
@@ -2109,6 +2154,8 @@ struct ED4_spacer_terminal : public ED4_terminal {
 };
 
 struct ED4_line_terminal : public ED4_terminal {
+    E4B_AVOID_UNNEEDED_CASTS(line_terminal);
+    
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode draw();
 

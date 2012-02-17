@@ -897,7 +897,7 @@ static char *get_group_consensus(const char *species_name, PosRange range) {
 static bool get_selected_range(PosRange& range) {
     ED4_selected_elem *listElem = ED4_ROOT->selected_objects->first();
     if (listElem) {
-        ED4_sequence_terminal *seqTerm = listElem->elem()->object->to_species_name_terminal()->corresponding_sequence_terminal();
+        ED4_sequence_terminal *seqTerm = listElem->elem()->object->corresponding_sequence_terminal();
         return ED4_get_selected_range(seqTerm, range);
     }
     return false;

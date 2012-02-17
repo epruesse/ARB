@@ -70,7 +70,7 @@ static void col_block_refresh_on_seq_term(ED4_sequence_terminal *seq_term) {
 static void refresh_selected(bool refresh_name_terminals) {
     ED4_selected_elem *listElem = ED4_ROOT->selected_objects->first();
     while (listElem) {
-        ED4_species_name_terminal *name_term = listElem->elem()->object->to_species_name_terminal();
+        ED4_species_name_terminal *name_term = listElem->elem()->object;
         ED4_sequence_terminal     *seq_term  = name_term->corresponding_sequence_terminal();
 
         if (refresh_name_terminals) name_term->request_refresh();
@@ -269,7 +269,7 @@ static void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat)
         case ED4_BT_COLUMNBLOCK: {
             ED4_selected_elem *listElem = ED4_ROOT->selected_objects->first();
             while (listElem && !error) {
-                ED4_species_name_terminal *nameTerm = listElem->elem()->object->to_species_name_terminal();
+                ED4_species_name_terminal *nameTerm = listElem->elem()->object;
                 ED4_sequence_terminal     *seqTerm  = nameTerm->corresponding_sequence_terminal();
 
                 error = block.get_type() == ED4_BT_LINEBLOCK
@@ -474,7 +474,7 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
                     AW_pos xpos, ypos;
 
                     while (listElem) {
-                        ED4_species_name_terminal *name_term = listElem->elem()->object->to_species_name_terminal();
+                        ED4_species_name_terminal *name_term = listElem->elem()->object;
                         name_term->calc_world_coords(&xpos, &ypos);
 
                         if (ypos<min_term_y) {
