@@ -271,9 +271,8 @@ ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_C
     multi_species_manager->children->append_member(group_spacer_terminal1);
 
     sprintf(buffer, "Consensus_Manager.%ld", ED4_counter);                                                     // Create competence terminal
-    species_manager = new ED4_species_manager(buffer, 0, SPACERHEIGHT, 0, 0, multi_species_manager);
+    species_manager = new ED4_species_manager(ED4_SP_CONSENSUS, buffer, 0, SPACERHEIGHT, 0, 0, multi_species_manager);
     species_manager->set_property(ED4_P_MOVABLE);
-    species_manager->smflag.is_cons_manager = 1;
     multi_species_manager->children->append_member(species_manager);
 
     species_name_terminal = new ED4_species_name_terminal(group_name, 0, 0, MAXSPECIESWIDTH - BRACKETWIDTH, TERMINALHEIGHT, species_manager);

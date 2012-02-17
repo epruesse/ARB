@@ -157,11 +157,19 @@ void ED4_manager::dump_base(size_t indent) const {
     closeDump(indent);
 }
 
+inline const char *readable_ED4_species_type(ED4_species_type type) {
+    switch (type) {
+        case ED4_SP_CONSENSUS: return "Consensus";
+        case ED4_SP_SAI:       return "SAI";
+        case ED4_SP_SPECIES:   return "Species";
+        case ED4_SP_NONE:      return "None (invalid!)";
+    }
+}
+
 void ED4_species_manager::dump(size_t indent) const {
     openDump(indent, "ED4_species_manager", (void*)this);
     ED4_base::dump_base(NEXT_INDENT);
-    print_indented(NEXT_INDENT, GBS_global_string("smflag.is_cons_manager = %i", smflag.is_cons_manager));
-    print_indented(NEXT_INDENT, GBS_global_string("smflag.is_SAI_manager  = %i", smflag.is_SAI_manager));
+    print_indented(NEXT_INDENT, GBS_global_string("type                   = %s", readable_ED4_species_type(type)));
     children->dump(NEXT_INDENT);
     closeDump(indent);
 }

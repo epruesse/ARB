@@ -1889,21 +1889,19 @@ public:
     }
 };
 
-class ED4_species_manager : public ED4_manager
-{
+class ED4_species_manager : public ED4_manager {
     std::set<ED4_species_manager_cb_data> callbacks;
+
+    ED4_species_type type;
 
     ED4_species_manager(const ED4_species_manager&); // copy-constructor not allowed
 public:
-    ED4_species_manager (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
+    ED4_species_manager(ED4_species_type type_, const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_species_manager   ();
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 
-    struct {
-        unsigned int is_cons_manager : 1;           // indicates whether object is consensus manager
-        unsigned int is_SAI_manager : 1;            // indicates whether object is SAI manager
-    } smflag;
+    ED4_species_type get_type() const { return type; }
     
     bool setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfold_groups, ED4_CursorJumpType jump_type);
 
@@ -1914,18 +1912,13 @@ public:
     void do_callbacks();
 };
 
-inline bool ED4_base::is_consensus_manager()    const { return is_species_manager() && to_species_manager()->smflag.is_cons_manager; }
-inline bool ED4_base::is_SAI_manager()          const { return is_species_manager() && to_species_manager()->smflag.is_SAI_manager; }
-inline bool ED4_base::is_species_seq_manager()  const { return !is_SAI_manager() && !is_consensus_manager(); }
+inline bool ED4_base::is_consensus_manager()    const { return is_species_manager() && to_species_manager()->get_type() == ED4_SP_CONSENSUS; }
+inline bool ED4_base::is_SAI_manager()          const { return is_species_manager() && to_species_manager()->get_type() == ED4_SP_SAI; }
+inline bool ED4_base::is_species_seq_manager()  const { return is_species_manager() && to_species_manager()->get_type() == ED4_SP_SPECIES; }
 
 inline ED4_species_type ED4_base::get_species_type() const {
     ED4_base *sman = get_parent(ED4_L_SPECIES);
-    if (!sman || !sman->is_species_manager()) return ED4_SP_NONE;
-
-    ED4_species_manager *spec_man = sman->to_species_manager();
-    if (spec_man->smflag.is_cons_manager) return ED4_SP_CONSENSUS;
-    if (spec_man->smflag.is_SAI_manager)  return ED4_SP_SAI;
-    return ED4_SP_SPECIES;
+    return (sman && sman->is_species_manager()) ? sman->to_species_manager()->get_type() : ED4_SP_NONE;
 }
 
 inline bool ED4_base::inside_consensus_manager()   const { return get_species_type() == ED4_SP_CONSENSUS; }

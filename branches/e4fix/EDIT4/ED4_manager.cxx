@@ -1706,9 +1706,11 @@ ED4_terminal *ED4_multi_species_manager::get_consensus_terminal() {
 //      ED4_species_manager
 // --------------------------------------------------------------------------------
 
-ED4_species_manager::ED4_species_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_manager(species_manager_spec, temp_id, x, y, width, height, temp_parent)
+ED4_species_manager::ED4_species_manager(ED4_species_type type_, const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+    ED4_manager(species_manager_spec, temp_id, x, y, width, height, temp_parent),
+    type(type_)
 {
+    e4_assert(type != ED4_SP_NONE);
 }
 
 #if defined(DEBUG)
