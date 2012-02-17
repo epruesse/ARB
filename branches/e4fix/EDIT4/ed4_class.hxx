@@ -83,9 +83,6 @@
 #ifndef ED4_SEARCH_HXX
 #include "ed4_search.hxx"
 #endif
-#ifndef ED4_LIST_HXX
-#include "ed4_list.hxx"
-#endif
 #ifndef _GLIBCXX_SET
 #include <set>
 #endif
@@ -123,7 +120,6 @@ class ED4_device_manager;
 class ED4_folding_line;
 class ED4_group_manager;
 class ED4_line_terminal;
-class ED4_list;
 class ED4_main_manager;
 class ED4_manager;
 class ED4_members;
@@ -157,6 +153,14 @@ class arb_progress;
 class ST_ML;
 class ed_key;
 
+template <class T> class ED4_list;      // derived from Noncopyable
+template <class T> class ED4_list_elem; // derived from Noncopyable
+
+typedef ED4_list<ED4_base>      ED4_base_list;
+typedef ED4_list_elem<ED4_base> ED4_base_list_elem;
+
+typedef ED4_list<ED4_selection_entry>      ED4_selected_list;
+typedef ED4_list_elem<ED4_selection_entry> ED4_selected_elem;
 
 
 struct EDB_root_bact {
@@ -1010,7 +1014,7 @@ enum ED4_species_type {
     ED4_SP_NONE, 
     ED4_SP_SPECIES, 
     ED4_SP_SAI, 
-    ED4_SP_CONSENSUS, 
+    ED4_SP_CONSENSUS,
 };
 
 class ED4_base : virtual Noncopyable {
@@ -1025,11 +1029,13 @@ class ED4_base : virtual Noncopyable {
     mutable AW_pos lastYpos;
     mutable int    timestamp;
 
+    ED4_base_list *linked_objects;                  // linked list of objects which are depending from this object
+
 public:
     const ED4_objspec& spec;           // contains information about Objectproperties
 
     ED4_manager *parent;                            // Points to parent
-    
+
 
     ED4_properties   dynamic_prop;                  // contains info about what i am, what i can do, what i should do
     char            *id;                            // globally unique name in hierarchy
@@ -1037,7 +1043,6 @@ public:
     ED4_base        *width_link;                    // concerning the hierarchy
     ED4_base        *height_link;                   // concerning the hierarchy
     ED4_extension    extension;                     // contains relative info about graphical properties
-    ED4_list         linked_objects;                // linked list of objects which are depending from this object
     ED4_update_info  update_info;                   // info about things to be done for the object, i.e. refresh; flag structure
     struct {
         unsigned int hidden : 1;                    // flag whether object is hidden or not
@@ -1465,6 +1470,7 @@ inline ED4_window *current_ed4w() { return ED4_WinContext::get_current_context()
 inline AW_window *current_aww() { return current_ed4w()->aww; }
 inline ED4_cursor& current_cursor() { return current_ed4w()->cursor; }
 
+
 class ED4_root : virtual Noncopyable {
     void ED4_ROOT() const { e4_assert(0); } // avoid ED4_root-members use global ED4_ROOT
 
@@ -1484,7 +1490,7 @@ public:
     ED4_area_manager        *top_area_man;
     ED4_root_group_manager  *root_group_man;
     EDB_root_bact           *database;              // Points to Object which controls Data
-    ED4_list                 selected_objects;
+    ED4_selected_list       *selected_objects;
     ED4_scroll_links         scroll_links;
     bool                     folding_action;        // flag tells whether action was folding action or not
     ED4_reference_terminals  ref_terminals;
