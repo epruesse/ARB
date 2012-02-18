@@ -614,7 +614,7 @@ class ED4_cursor : virtual Noncopyable, virtual ED4_WinContextFree {
     ED4_returncode  draw_cursor(AW_pos x, AW_pos y);
     ED4_returncode  delete_cursor(AW_pos del_mark,  ED4_base *target_terminal);
 
-    void updateAwars();
+    void updateAwars(bool new_term_selected);
 
 public:
 
