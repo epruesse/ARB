@@ -1680,7 +1680,7 @@ public:
     int  has_valid_counters() const { return species != -1 && selected_species!=-1; }
     bool all_are_selected() const { e4_assert(has_valid_counters()); return species == selected_species; }
 
-    void select_all_species();
+    void select_all(bool only_species);
     void deselect_all_species_and_SAI();
     void invert_selection_of_all_species();
     void marked_species_select(bool select);

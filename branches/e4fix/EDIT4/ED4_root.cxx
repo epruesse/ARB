@@ -1172,7 +1172,7 @@ static void ED4_menu_select(AW_window *aww, AW_CL type, AW_CL) {
             break;
         }
         case ED4_MS_ALL: {
-            middle_multi_man->select_all_species();
+            middle_multi_man->select_all(true); // only species
             ED4_correctBlocktypeAfterSelection();
             break;
         }
