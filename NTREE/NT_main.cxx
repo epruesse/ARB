@@ -342,10 +342,10 @@ static AW_window *nt_create_intro_window(AW_root *awr) {
 }
 
 static void AWAR_DB_PATH_changed_cb(AW_root *awr) {
-    static int avoid_recursion = 0;
+    static bool avoid_recursion = false;
 
     if (!avoid_recursion) {
-        avoid_recursion = 1;
+        LocallyModify<bool> flag(avoid_recursion, true);
 
         char *value  = awr->awar(AWAR_DB_PATH)->read_string();
         char *lslash = strrchr(value, '/');
@@ -363,8 +363,6 @@ static void AWAR_DB_PATH_changed_cb(AW_root *awr) {
         }
 
         free(value);
-
-        avoid_recursion = 0;
     }
 }
 

@@ -36,10 +36,8 @@ static void awar_updated_cb(AW_root * /* aw_root */, AW_CL cl_awar) {
 
         aw_assert(gbd);             // should exists
 
-        in_global_awar_cb = true;
+        LocallyModify<bool> flag(in_global_awar_cb, true);
         GB_write_string(gbd, content);
-        in_global_awar_cb = false;
-
         free(content);
     }
 }
@@ -49,9 +47,8 @@ static void db_updated_cb(GBDATA *gbd, int *cl_awar, GB_CB_TYPE /* cbtype */) {
         AW_awar        *awar = (AW_awar*)cl_awar;
         GB_transaction  dummy(gb_main4awar);
 
-        in_global_awar_cb = true;
+        LocallyModify<bool> flag(in_global_awar_cb, true);
         awar->write_as_string(GB_read_char_pntr(gbd));
-        in_global_awar_cb = false;
     }
 }
 

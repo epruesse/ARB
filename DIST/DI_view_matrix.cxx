@@ -566,15 +566,16 @@ void DI_dmatrix::monitor_horizontal_scroll_cb(AW_window *aww) { // draw area
     }
 }
 
-static int update_display_on_dist_change = 1;
+static bool update_display_on_dist_change = true;
 
 static void di_view_set_max_d(AW_window *aww, AW_CL cl_max_d, AW_CL /* clmatr */) {
     double   max_d   = cl_max_d*0.01;
     AW_root *aw_root = aww->get_root();
 
-    update_display_on_dist_change = 0;
-    aw_root->awar(AWAR_DIST_MIN_DIST)->write_float(0.0);
-    update_display_on_dist_change = 1;
+    {
+        LocallyModify<bool> flag(update_display_on_dist_change, false);
+        aw_root->awar(AWAR_DIST_MIN_DIST)->write_float(0.0);
+    }
     aw_root->awar(AWAR_DIST_MAX_DIST)->write_float(max_d);
 }
 
@@ -583,29 +584,28 @@ static void di_view_set_distances(AW_root *awr, AW_CL cl_setmax, AW_CL cl_dmatri
     DI_dmatrix *dmatrix  = (DI_dmatrix *)cl_dmatrix;
     double      max_dist = awr->awar(AWAR_DIST_MAX_DIST)->read_float();
     double      min_dist = awr->awar(AWAR_DIST_MIN_DIST)->read_float();
-    int         old      = update_display_on_dist_change;
 
-    update_display_on_dist_change = 0;
+    {
+        LocallyModify<bool> flag(update_display_on_dist_change, false);
 
-    switch (cl_setmax) {
-        case 2:                 // both
-            dmatrix->set_slider_max(max_dist);
-            // fall-through
-        case 0:                 // set min and fix max
-            dmatrix->set_slider_min(min_dist);
-            if (min_dist>max_dist) awr->awar(AWAR_DIST_MAX_DIST)->write_float(min_dist);
-            break;
-        case 1:                 // set max and fix min
-            dmatrix->set_slider_max(max_dist);
-            if (min_dist>max_dist) awr->awar(AWAR_DIST_MIN_DIST)->write_float(max_dist);
-            break;
+        switch (cl_setmax) {
+            case 2:                 // both
+                dmatrix->set_slider_max(max_dist);
+                // fall-through
+            case 0:                 // set min and fix max
+                dmatrix->set_slider_min(min_dist);
+                if (min_dist>max_dist) awr->awar(AWAR_DIST_MAX_DIST)->write_float(min_dist);
+                break;
+            case 1:                 // set max and fix min
+                dmatrix->set_slider_max(max_dist);
+                if (min_dist>max_dist) awr->awar(AWAR_DIST_MIN_DIST)->write_float(max_dist);
+                break;
 
-        default:
-            di_assert(0);
-            break;
+            default:
+                di_assert(0);
+                break;
+        }
     }
-
-    update_display_on_dist_change = old;
     if (update_display_on_dist_change) dmatrix->display(true);
 }
 

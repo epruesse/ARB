@@ -297,7 +297,7 @@ static bool allow_callbacks = true;
 
 static void MG_current_field_def_changed_cb(AW_root *aw_root) {
     if (allow_callbacks) {
-        allow_callbacks = false;
+        LocallyModify<bool> flag(allow_callbacks, false);
 
         char *cur_field = aw_root->awar(AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD)->read_string();
         check_and_correct_current_field(cur_field);
@@ -331,8 +331,6 @@ static void MG_current_field_def_changed_cb(AW_root *aw_root) {
         }
 
         free(cur_field);
-
-        allow_callbacks = true;
     }
 }
 

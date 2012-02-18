@@ -788,7 +788,7 @@ static void child_changed_cb(AW_root *aw_root) {
         else {
             static bool avoid_recursion = false;
             if (!avoid_recursion) {
-                avoid_recursion = true;
+                LocallyModify<bool> flag(avoid_recursion, true);
 
                 char *fullpath;
                 if (strcmp(path, "/") == 0) {
@@ -854,7 +854,6 @@ static void child_changed_cb(AW_root *aw_root) {
                 aw_root->awar(AWAR_DBB_INFO)->write_string(info.c_str());
 
                 free(fullpath);
-                avoid_recursion = false;
             }
         }
 
@@ -866,9 +865,10 @@ static void child_changed_cb(AW_root *aw_root) {
 static void path_changed_cb(AW_root *aw_root) {
     static bool avoid_recursion = false;
     if (!avoid_recursion) {
-        avoid_recursion         = true;
-        DB_browser *browser     = get_the_browser();
-        char       *goto_child  = 0;
+        LocallyModify<bool> flag(avoid_recursion, true);
+
+        DB_browser *browser    = get_the_browser();
+        char       *goto_child = 0;
 
         {
             GBDATA         *gb_main   = browser->get_db();
@@ -895,8 +895,6 @@ static void path_changed_cb(AW_root *aw_root) {
 
         update_browser_selection_list(aw_root, (AW_CL)browser->get_window(aw_root), (AW_CL)browser->get_browser_id());
         aw_root->awar(AWAR_DBB_BROWSE)->write_string(goto_child ? goto_child : "");
-
-        avoid_recursion = false;
     }
 }
 static void db_changed_cb(AW_root *aw_root) {
@@ -1000,9 +998,8 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
 static void callallcallbacks(AW_window *aww, AW_CL mode, AW_CL) {
     static bool running = false; // avoid deadlock
     if (!running) {
-        running = true;
+        LocallyModify<bool> flag(running, true);
         aww->get_root()->callallcallbacks(mode);
-        running = false;
     }
 }
 

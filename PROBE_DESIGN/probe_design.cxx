@@ -1031,9 +1031,8 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
         free(bs.data);
         free(probe);
 
-        allow_probe_match_event = false;
+        LocallyModify<bool> flag(allow_probe_match_event, false);
         root->awar(AWAR_TREE_REFRESH)->touch();
-        allow_probe_match_event = true;
     }
 
     return;
@@ -1102,10 +1101,8 @@ static void selected_match_changed_cb(AW_root *root) {
     }
 
     {
-        bool prev               = allow_probe_match_event;
-        allow_probe_match_event = false; // avoid recursion
+        LocallyModify<bool> flag(allow_probe_match_event, false); // avoid recursion
         root->awar(AWAR_TARGET_STRING)->touch(); // forces editor to jump to probe match in gene
-        allow_probe_match_event = prev;
     }
 
     free(selected_match);
