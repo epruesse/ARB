@@ -1077,14 +1077,14 @@ void ED4_base::set_links(ED4_base *new_width, ED4_base *new_height) {
     // height-link sets links between objects on different levels
 
     if (new_width) {
-        if (width_link) width_link->linked_objects->delete_elem(this);
+        if (width_link) width_link->linked_objects->remove_elem(this);
         width_link = new_width;
         if (!new_width->linked_objects) new_width->linked_objects = new ED4_base_list;
         new_width->linked_objects->append_elem(this);
     }
 
     if (new_height) {
-        if (height_link) height_link->linked_objects->delete_elem(this);
+        if (height_link) height_link->linked_objects->remove_elem(this);
         height_link = new_height;
         if (!new_height->linked_objects) new_height->linked_objects = new ED4_base_list;
         new_height->linked_objects->append_elem(this);
@@ -1200,22 +1200,22 @@ ED4_base::~ED4_base() {
     e4_assert(!parent); // unlink from parent first!
 
     if (linked_objects) {
-        ED4_base_list_elem *list_elem = linked_objects->first();
+        ED4_base_list_elem *list_elem = linked_objects->head();
         while (list_elem) {
             ED4_base *object = list_elem->elem();
             if (object->width_link == this) {
-                object->width_link->linked_objects->delete_elem(this);              // delete link and
+                object->width_link->linked_objects->remove_elem(this);              // delete link and
                 object->width_link = NULL;
             }
 
             if (object->height_link == this) {
-                object->height_link->linked_objects->delete_elem(this);             // delete link and
+                object->height_link->linked_objects->remove_elem(this);             // delete link and
                 object->height_link = NULL;
             }
 
             ED4_base_list_elem *old_elem = list_elem;
             list_elem = list_elem->next();
-            linked_objects->delete_elem(old_elem->elem());
+            linked_objects->remove_elem(old_elem->elem());
         }
         delete linked_objects;
     }
@@ -1241,12 +1241,12 @@ ED4_base::~ED4_base() {
     }
 
     if (width_link) {
-        width_link->linked_objects->delete_elem(this);
+        width_link->linked_objects->remove_elem(this);
         width_link = NULL;
     }
 
     if (height_link) {
-        height_link->linked_objects->delete_elem(this);
+        height_link->linked_objects->remove_elem(this);
         height_link = NULL;
     }
 

@@ -330,7 +330,7 @@ ED4_returncode ED4_root::deselect_all()
 void ED4_root::remove_from_selected(ED4_species_name_terminal *name_term) { // @@@ change param to ED4_species_manager ?
     if (name_term) {
         if ((selected_objects->has_elem(name_term->selection_info))) {
-            selected_objects->delete_elem(name_term->selection_info);
+            selected_objects->remove_elem(name_term->selection_info);
 
             delete name_term->selection_info;
             name_term->selection_info    = NULL;
@@ -411,8 +411,10 @@ ED4_returncode ED4_root::add_to_selected(ED4_species_name_terminal *name_term) {
         sel_info->drag_off_x  = 0;
         sel_info->drag_off_y  = 0;
         sel_info->old_event_y = 0;
-        sel_info->object      = name_term;
-        selected_objects->append_elem_backwards(sel_info);
+
+        sel_info->object = name_term;
+
+        selected_objects->prepend_elem(sel_info);
 
         name_term->containing_species_manager()->set_selected(true);
 
@@ -895,7 +897,7 @@ static char *get_group_consensus(const char *species_name, PosRange range) {
 }
 
 static bool get_selected_range(PosRange& range) {
-    ED4_selected_elem *listElem = ED4_ROOT->selected_objects->first();
+    ED4_selected_elem *listElem = ED4_ROOT->selected_objects->head();
     if (listElem) {
         ED4_sequence_terminal *seqTerm = listElem->elem()->object->corresponding_sequence_terminal();
         return ED4_get_selected_range(seqTerm, range);
@@ -915,14 +917,14 @@ static GBDATA *get_next_selected_species() {
 
 static GBDATA *get_first_selected_species(int *total_no_of_selected_species)
 {
-    int selected = ED4_ROOT->selected_objects->no_of_entries();
+    int selected = ED4_ROOT->selected_objects->size();
 
     if (total_no_of_selected_species) {
         *total_no_of_selected_species = selected;
     }
 
     if (selected) {
-        curr_aligner_elem = ED4_ROOT->selected_objects->first();
+        curr_aligner_elem = ED4_ROOT->selected_objects->head();
     }
     else {
         curr_aligner_elem = 0;

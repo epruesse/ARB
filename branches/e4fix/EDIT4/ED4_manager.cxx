@@ -547,8 +547,8 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
 
         // now do move action => determine insertion offsets and insert object
 
-        if (ED4_ROOT->selected_objects->no_of_entries()>1) {
-            list_elem = ED4_ROOT->selected_objects->first();
+        if (ED4_ROOT->selected_objects->size()>1) {
+            list_elem = ED4_ROOT->selected_objects->head();
             while (list_elem != NULL) {
                 sel_info   = list_elem->elem();
                 sel_object = sel_info->object;
@@ -748,7 +748,7 @@ inline void ED4_base::resize_requested_by_link(ED4_base *link) {
 
 void ED4_base::request_resize_of_linked() {
     if (linked_objects) {
-        ED4_base_list_elem *current_list_elem = linked_objects->first();
+        ED4_base_list_elem *current_list_elem = linked_objects->head();
         while (current_list_elem) {
             ED4_base *object = current_list_elem->elem();
             object->resize_requested_by_link(this);

@@ -1198,14 +1198,14 @@ public:
 
     // use the following functions to cast ED4_base to derived classes:
 
-#define E4B_DECL_CASTOP_helper(Class,toName,isName)     \
+#define E4B_DECL_CASTOP_helper(Class,toName)            \
     inline const Class *toName() const;                 \
     inline Class *toName();
-
+    
 #define E4B_AVOID_CAST__helper(Class,toName,isName)     \
     const Class *toName() const;                        \
-        Class *toName();                                \
-        int isName();
+    Class *toName();                                    \
+    int isName() const;
 
 #define E4B_IMPL_CASTOP_helper(Class,toName,isName)                             \
     const Class *ED4_base::toName() const {                                     \
@@ -1216,7 +1216,7 @@ public:
         return const_cast<Class*>(const_cast<const ED4_base*>(this)->toName()); \
     }
 
-#define E4B_DECL_CASTOP(name)          E4B_DECL_CASTOP_helper(concat(ED4_,name), concat(to_,name), concat(is_,name))
+#define E4B_DECL_CASTOP(name)          E4B_DECL_CASTOP_helper(concat(ED4_,name), concat(to_,name))
 #define E4B_AVOID_UNNEEDED_CASTS(name) E4B_AVOID_CAST__helper(concat(ED4_,name), concat(to_,name), concat(is_,name))
 #define E4B_IMPL_CASTOP(name)          E4B_IMPL_CASTOP_helper(concat(ED4_,name), concat(to_,name), concat(is_,name))
 

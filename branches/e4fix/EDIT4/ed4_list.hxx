@@ -13,121 +13,98 @@
 
 template <class T>
 class ED4_list_elem : virtual Noncopyable {
-    T             *my_elem;
-    ED4_list_elem *my_next;
+    T             *m_elem;
+    ED4_list_elem *m_next;
 public:
-    ED4_list_elem(T *element) { my_elem = element; my_next = 0; }
-    ~ED4_list_elem() {}
+    ED4_list_elem(T *element)
+        : m_elem(element),
+          m_next(NULL)
+    { e4_assert(element); }
 
-    ED4_list_elem *next() const { return my_next; }
-    T *elem() const { return my_elem; }
+    ED4_list_elem *next() const { return m_next; }
+    T *elem() const { return m_elem; }
 
-    void set_next(ED4_list_elem *the_next) { my_next = the_next; }
+    void set_next(ED4_list_elem *the_next) { m_next = the_next; }
 };
 
 template <class T>
 class ED4_list : virtual Noncopyable {
-    ED4_list_elem<T> *my_first;
-    ED4_list_elem<T> *my_last;
+    ED4_list_elem<T> *first;
+    ED4_list_elem<T> *last;
 
-    ED4_index my_no_of_entries;
+    int count;
 
 public:
 
-    ED4_list() {
-        my_first = NULL;
-        my_last  = NULL;
-        my_no_of_entries = 0;
-    }
+    ED4_list()
+        : first(NULL),
+          last(NULL),
+          count(0)
+    {}
 
-    ED4_list_elem<T> *first() const { return my_first; }
-    ED4_list_elem<T> *last() const { return my_last; }
-    ED4_index no_of_entries() const { return my_no_of_entries; }
+    ED4_list_elem<T> *head() const { return first; }
+    ED4_list_elem<T> *tail() const { return last; }
+    int size() const { return count; }
 
-    ED4_returncode append_elem(T *elem) {
-        if (!elem) return (ED4_R_IMPOSSIBLE);
-
+    void append_elem(T *elem) {
         ED4_list_elem<T> *new_list_elem = new ED4_list_elem<T>(elem);
-
-        if (my_first == NULL) {
-            my_first = new_list_elem;
-            my_last = new_list_elem;
+        if (!first) {
+            first = new_list_elem;
+            last  = new_list_elem;
         }
         else {
-            my_last->set_next(new_list_elem);
-            my_last = new_list_elem;
+            last->set_next(new_list_elem);
+            last = new_list_elem;
         }
-
-        my_no_of_entries++;
-        return (ED4_R_OK);
+        count++;
     }
 
-    ED4_returncode  delete_elem(T *elem) {
-        ED4_list_elem<T> *current_list_elem  = first();
-        ED4_list_elem<T> *previous_list_elem = NULL;
-
-        while (current_list_elem && current_list_elem->elem()!=elem) {
-            previous_list_elem = current_list_elem;
-            current_list_elem  = current_list_elem->next();
-        }
-
-        if (current_list_elem == NULL) {
-            return (ED4_R_IMPOSSIBLE);
-        }
-
-        if (current_list_elem == first()) {
-            if (current_list_elem == last()) {
-                my_last = NULL;
-            }
-            my_first = current_list_elem->next();
-        }
-        else
-        {
-            previous_list_elem->set_next(current_list_elem->next());
-
-            if (current_list_elem == last()) {
-                my_last = previous_list_elem;
-            }
-        }
-
-        my_no_of_entries--;
-        delete current_list_elem;
-        return (ED4_R_OK);
-    }
-    
-    ED4_returncode  append_elem_backwards(T *elem) {
-        ED4_list_elem<T> *new_list_elem;
-
-        if (elem == NULL) return (ED4_R_IMPOSSIBLE);
-
-        new_list_elem = new ED4_list_elem<T>(elem);
-
-        if (!first()) {
-            my_first = new_list_elem;
-            my_last = new_list_elem;
+    void prepend_elem(T *elem) {
+        ED4_list_elem<T> *new_list_elem = new ED4_list_elem<T>(elem);
+        if (!first) {
+            first = new_list_elem;
+            last  = new_list_elem;
         }
         else {
-            new_list_elem->set_next(first());
-            my_first = new_list_elem;
+            new_list_elem->set_next(first);
+            first = new_list_elem;
+        }
+        count++;
+    }
+
+    void remove_elem(const T *elem) {
+        ED4_list_elem<T> *curr  = first;
+        ED4_list_elem<T> *pred = NULL;
+
+        while (curr && curr->elem() != elem) {
+            pred = curr;
+            curr  = curr->next();
         }
 
-        my_no_of_entries++;
-
-        return (ED4_R_OK);
-    }
-    
-    short has_elem(T *elem) {
-        ED4_list_elem<T> *current_list_elem = first();
-
-        if (elem == NULL) return (0);
-
-        while (current_list_elem && current_list_elem->elem()!=elem) {
-            current_list_elem = current_list_elem->next();
+        if (curr) {
+            if (curr == first) {
+                if (curr == last) last = NULL;
+                first = curr->next();
+            }
+            else {
+                pred->set_next(curr->next());
+                if (curr == last) last = pred;
+            }
+            count--;
+            delete curr;
         }
-
-        return current_list_elem!=0;
     }
     
+    bool has_elem(const T *elem) const {
+        if (!elem || !count) return false;
+        
+        ED4_list_elem<T> *curr = first;
+        while (curr && curr->elem()!=elem) {
+            curr = curr->next();
+        }
+        return curr != 0;
+    }
+
 };
 
 #else

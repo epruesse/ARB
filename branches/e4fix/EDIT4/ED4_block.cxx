@@ -68,7 +68,7 @@ static void col_block_refresh_on_seq_term(ED4_sequence_terminal *seq_term) {
 }
 
 static void refresh_selected(bool refresh_name_terminals) {
-    ED4_selected_elem *listElem = ED4_ROOT->selected_objects->first();
+    ED4_selected_elem *listElem = ED4_ROOT->selected_objects->head();
     while (listElem) {
         ED4_species_name_terminal *name_term = listElem->elem()->object;
         ED4_sequence_terminal     *seq_term  = name_term->corresponding_sequence_terminal();
@@ -118,7 +118,7 @@ void ED4_block::toggle_type() {
 void ED4_block::autocorrect_type() {
     // this has to be called every time the selection has changed
 
-    if (ED4_ROOT->selected_objects->first()==0) { // no objects are selected
+    if (ED4_ROOT->selected_objects->head()==0) { // no objects are selected
         set_type(ED4_BT_NOBLOCK);
     }
     else {
@@ -267,7 +267,7 @@ static void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat)
         case ED4_BT_LINEBLOCK:
         case ED4_BT_MODIFIED_COLUMNBLOCK:
         case ED4_BT_COLUMNBLOCK: {
-            ED4_selected_elem *listElem = ED4_ROOT->selected_objects->first();
+            ED4_selected_elem *listElem = ED4_ROOT->selected_objects->head();
             while (listElem && !error) {
                 ED4_species_name_terminal *nameTerm = listElem->elem()->object;
                 ED4_sequence_terminal     *seqTerm  = nameTerm->corresponding_sequence_terminal();
@@ -463,7 +463,7 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
             else { // expand columnblock (search nearest corner/border -> fix opposite corner/border)
                 e4_assert(block.get_type()==ED4_BT_COLUMNBLOCK || block.get_type()==ED4_BT_MODIFIED_COLUMNBLOCK);
 
-                ED4_selected_elem *listElem = ED4_ROOT->selected_objects->first();
+                ED4_selected_elem *listElem = ED4_ROOT->selected_objects->head();
                 e4_assert(listElem);
 
                 if (block.get_type()==ED4_BT_COLUMNBLOCK) {
