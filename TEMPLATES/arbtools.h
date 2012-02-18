@@ -80,6 +80,8 @@ class LocallyModify {
 public:
     LocallyModify(T& var_, T localValue) : var(var_), prevValue(var) { var = localValue; }
     ~LocallyModify() { var = prevValue; }
+
+    T old_value() const { return prevValue; }
 };
 
 #else
