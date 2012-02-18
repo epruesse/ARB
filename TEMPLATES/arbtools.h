@@ -73,6 +73,15 @@ public:
 
 #define DEFINE_ITERATORS(type) DEFINE_NAMED_ITERATORS(type,type)
 
+template<typename T>
+class LocallyModify {
+    T& var;
+    T  prevValue;
+public:
+    LocallyModify(T& var_, T localValue) : var(var_), prevValue(var) { var = localValue; }
+    ~LocallyModify() { var = prevValue; }
+};
+
 #else
 #error arbtools.h included twice
 #endif // ARBTOOLS_H
