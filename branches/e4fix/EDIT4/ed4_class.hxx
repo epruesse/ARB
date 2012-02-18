@@ -624,6 +624,8 @@ public:
     bool is_partly_visible() const;
     bool is_completely_visible() const;
 
+    bool is_hidden_inside_group() const;
+
     void changeType(ED4_CursorType typ);
     ED4_CursorType  getType() const { return ctype; }
 
@@ -2318,4 +2320,5 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access);
 #else
 #error ed4_class included twice
 #endif
+
 

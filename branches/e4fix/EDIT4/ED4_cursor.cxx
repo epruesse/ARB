@@ -281,23 +281,20 @@ ED4_returncode ED4_cursor::draw_cursor(AW_pos x, AW_pos y) { // @@@ remove retur
 
 #if defined(TRACE_REFRESH)
     printf("draw_cursor(%i, %i)\n", int(x), int(y));
-#endif // DEBUG
+#endif // TRACE_REFRESH
     
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_terminal)
-{
+ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_terminal) {
     AW_pos x, y;
-    ED4_base *temp_parent;
-
     target_terminal->calc_world_coords(&x, &y);
-    temp_parent = target_terminal->get_parent(ED4_L_SPECIES);
+    ED4_base *temp_parent = target_terminal->get_parent(ED4_L_SPECIES);
     if (!temp_parent || temp_parent->flag.hidden || !is_partly_visible()) {
         return ED4_R_BREAK;
     }
+    
     x = del_mark;
-
     win->world_to_win_coords(&x, &y);
 
     // refresh own terminal + terminal above + terminal below
@@ -350,9 +347,9 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
 
     dev->clear_part(xmin, ymin, xmax-xmin+1, ymax-ymin+1, AW_ALL_DEVICES);
 
-#if defined(DEBUG) && 0
+#if defined(TRACE_REFRESH)
     printf("delete_cursor(%i, %i)\n", int(x), int(y));
-#endif // DEBUG
+#endif // TRACE_REFRESH
 
     dev->set_font_overlap(true);
 
@@ -1242,13 +1239,26 @@ ED4_returncode ED4_cursor::ShowCursor(ED4_index offset_x, ED4_cursor_move move, 
     return (ED4_R_OK);
 }
 
+bool ED4_cursor::is_hidden_inside_group() const {
+    if (!owner_of_cursor) return false;
+    if (!owner_of_cursor->is_in_folded_group()) return false;
+    if (in_consensus_terminal()) {
+        ED4_base *group_man = owner_of_cursor->get_parent(ED4_L_GROUP);
+        e4_assert(group_man);
+        return group_man->is_in_folded_group();
+    }
+    return true;
+}
 
 bool ED4_cursor::is_partly_visible() const {
     e4_assert(owner_of_cursor);
     e4_assert(cursor_shape); // cursor is not drawn, cannot test visibility
 
-    if (owner_of_cursor->is_in_folded_group()) return false;
-    
+    if (is_hidden_inside_group()) {
+        printf("is_hidden_inside_group=true\n");
+        return false;
+    }
+
     AW_pos x, y;
     owner_of_cursor->calc_world_coords(&x, &y);
 
@@ -1270,7 +1280,7 @@ bool ED4_cursor::is_completely_visible() const {
     e4_assert(owner_of_cursor);
     e4_assert(cursor_shape); // cursor is not drawn, cannot test visibility
 
-    if (owner_of_cursor->is_in_folded_group()) return false;
+    if (is_hidden_inside_group()) return false;
 
     AW_pos x, y;
     owner_of_cursor->calc_world_coords(&x, &y);
