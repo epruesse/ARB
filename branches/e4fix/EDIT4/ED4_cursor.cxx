@@ -357,10 +357,8 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
     if (window()->get_device()->reduceClipBorders(ymin-EXPAND_SIZE, ymax+1+EXPAND_SIZE, xmin-EXPAND_SIZE, xmax+1+EXPAND_SIZE)) {
         // refresh terminal to hide cursor
         ED4_LocalWinContext uses(window());
-        bool previous = allowed_to_draw;
-        allowed_to_draw = false;
+        LocallyModify<bool> flag(allowed_to_draw, false);
         ED4_ROOT->special_window_refresh(false);
-        allowed_to_draw = previous;
     }
     dev->pop_clip_scale();
 
@@ -487,11 +485,7 @@ static void select_named_sequence_terminal(const char *name) {
     }
 }
 
-void ED4_selected_SAI_changed_cb(AW_root * /* aw_root */)
-{
-    bool old                               = ED4_update_global_cursor_awars_allowed;
-    ED4_update_global_cursor_awars_allowed = false;
-
+void ED4_selected_SAI_changed_cb(AW_root * /* aw_root */) {
     if (!ignore_selected_SAI_changes_cb) {
         char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SAI_NAME);
 
@@ -499,25 +493,21 @@ void ED4_selected_SAI_changed_cb(AW_root * /* aw_root */)
 #if defined(TRACE_JUMPS)
             printf("Selected SAI is '%s'\n", name);
 #endif // DEBUG
-
+            LocallyModify<bool> flag(ED4_update_global_cursor_awars_allowed, false);
             select_named_sequence_terminal(name);
             free(name);
         }
     }
-    ED4_update_global_cursor_awars_allowed = old;
 }
 
-void ED4_selected_species_changed_cb(AW_root * /* aw_root */)
-{
-    bool old                               = ED4_update_global_cursor_awars_allowed;
-    ED4_update_global_cursor_awars_allowed = false;
-
+void ED4_selected_species_changed_cb(AW_root * /* aw_root */) {
     if (!ignore_selected_species_changes_cb) {
         char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
         if (name && name[0]) {
 #if defined(TRACE_JUMPS)
             printf("Selected species is '%s'\n", name);
 #endif
+            LocallyModify<bool> flag(ED4_update_global_cursor_awars_allowed, false);
             select_named_sequence_terminal(name);
         }
         free(name);
@@ -527,7 +517,6 @@ void ED4_selected_species_changed_cb(AW_root * /* aw_root */)
         printf("Change ignored because ignore_selected_species_changes_cb!\n");
 #endif
     }
-    ED4_update_global_cursor_awars_allowed = old;
 }
 
 void ED4_jump_to_current_species(AW_window *aww, AW_CL) {
@@ -802,13 +791,11 @@ static void trace_termChange_in_global_awar(ED4_terminal *term, char*& last_valu
 
     if (!last_value || strcmp(last_value, species_name) != 0) {
         freeset(last_value, species_name);
-        bool old    = ignore_flag;
-        ignore_flag = true;
+        LocallyModify<bool> raise(ignore_flag, true);
 #if defined(TRACE_JUMPS)
         fprintf(stderr, "Writing '%s' to awar '%s'\n", species_name, awar_name);
 #endif
         GBT_write_string(GLOBAL_gb_main, awar_name, species_name);
-        ignore_flag = old;
     }
     else {
         free(species_name);
@@ -1000,7 +987,6 @@ void ED4_cursor::jump_screen_pos(int screen_pos, ED4_CursorJumpType jump_type) {
 
     delete_cursor(cursor_abs_x, owner_of_cursor);
 
-    bool previous = allowed_to_draw;
     if (scroll_new_to >= 0) {   // scroll
         int rel_x_new     = abs_x_new-coords->window_left_clip_point;
         int scroll_amount = rel_x_new-scroll_new_to;
@@ -1015,19 +1001,18 @@ void ED4_cursor::jump_screen_pos(int screen_pos, ED4_CursorJumpType jump_type) {
 #if defined(TRACE_JUMPS)
             printf("jump_screen_pos auto-scrolls %i\n", scroll_amount);
 #endif
-            allowed_to_draw = false;
+            LocallyModify<bool> flag(allowed_to_draw, false);
             ED4_horizontal_change_cb(aww, 0, 0);
         }
     }
 
-    allowed_to_draw = true;
+    LocallyModify<bool> flag(allowed_to_draw, true);
     if (cursor_diff >= 0) {
         ShowCursor(cursor_diff*length_of_char, ED4_C_RIGHT, ABS(cursor_diff));
     }
     else {
         ShowCursor(cursor_diff*length_of_char, ED4_C_LEFT, ABS(cursor_diff));
     }
-    allowed_to_draw = previous;
 }
 
 void ED4_cursor::jump_sequence_pos(int seq_pos, ED4_CursorJumpType jump_type) {
@@ -1193,8 +1178,7 @@ ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
     return result;
 }
 
-void ED4_cursor::set_abs_x()
-{
+void ED4_cursor::set_abs_x() {
     AW_pos x, y;
     owner_of_cursor->calc_world_coords(&x, &y);
     cursor_abs_x = int(get_sequence_pos()*ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES) + CHARACTEROFFSET + x);
@@ -1206,23 +1190,17 @@ ED4_returncode ED4_cursor::ShowCursor(ED4_index offset_x, ED4_cursor_move move, 
 
     owner_of_cursor->calc_world_coords(&x, &y);
 
-    int old_allow = ED4_update_global_cursor_awars_allowed;
-    ED4_update_global_cursor_awars_allowed = true;
-
     switch (move) {
         case ED4_C_RIGHT: screen_position += move_pos; break;
         case ED4_C_LEFT:  screen_position -= move_pos; break;
-
-        case ED4_C_NONE: // no move - only redisplay
-            ED4_update_global_cursor_awars_allowed = false; // dont update here, otherwise refresh will disable cursor movement!
-            break;
-        default:
-            e4_assert(0);
-            break;
+        case ED4_C_NONE: break; // no move - only redisplay
+        default: e4_assert(0); break;
     }
 
-    updateAwars(false);
-    ED4_update_global_cursor_awars_allowed = old_allow;
+    {
+        LocallyModify<bool> flag(ED4_update_global_cursor_awars_allowed, ED4_update_global_cursor_awars_allowed && move != ED4_C_NONE);
+        updateAwars(false);
+    }
 
     x_help = cursor_abs_x + offset_x;
     y_help = y;
