@@ -432,7 +432,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                                 if (!containing_species_manager()->is_selected()) {
                                     ED4_ROOT->add_to_selected(dragged_name_terminal);
                                     dragged_was_selected = 0;
-                                    ED4_ROOT->main_manager->Show(); // @@@ critical direct call to Show (fix: do NOT select on drag)
+                                    ED4_trigger_instant_refresh();
                                 }
                                 else {
                                     dragged_was_selected = 1;
