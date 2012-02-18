@@ -105,7 +105,7 @@ void SAI_graphic::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_cli
 
 static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
     if (!in_colorDefChanged_callback) {
-        in_colorDefChanged_callback = true;
+        LocallyModify<bool> flag(in_colorDefChanged_callback, true);
         unsigned char charUsed[256]; memset(charUsed, 255, 256);
         {
             for (int i=0; i<10;  i++) {
@@ -140,7 +140,6 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
                 awr->awar_string(getAwarName(i))->write_string((char *)s[i]);
             }
         }
-        in_colorDefChanged_callback = false;
     }
     awr->awar(AWAR_SPV_DISP_SAI)->touch(); // refreshes the display
 }

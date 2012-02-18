@@ -82,7 +82,7 @@ static bool in_awar_changed_callback  = false;
 
 static void item_changed_cb(GBDATA * /* gb_item */, int *cl_awt_linked_to_item, GB_CB_TYPE type) {
     if (!in_item_changed_callback) { // avoid deadlock
-        in_item_changed_callback      = true;
+        LocallyModify<bool> flag(in_item_changed_callback, true);
         awt_linked_to_item *item_link = (awt_linked_to_item*)cl_awt_linked_to_item;
 
         if (type&GB_CB_DELETE) { // handled child was deleted
@@ -95,14 +95,12 @@ static void item_changed_cb(GBDATA * /* gb_item */, int *cl_awt_linked_to_item, 
         else if (type&GB_CB_CHANGED) { // only changed
             item_link->general_item_change();
         }
-
-        in_item_changed_callback = false;
     }
 }
 
 static void field_changed_cb(GBDATA * /* gb_item */, int *cl_awt_input_handler, GB_CB_TYPE type) {
     if (!in_field_changed_callback) { // avoid deadlock
-        in_field_changed_callback  = true;
+        LocallyModify<bool> flag(in_field_changed_callback, true);
         awt_input_handler *handler = (awt_input_handler*)cl_awt_input_handler;
 
         if (type&GB_CB_DELETE) { // field was deleted from db -> relink this item
@@ -111,17 +109,15 @@ static void field_changed_cb(GBDATA * /* gb_item */, int *cl_awt_input_handler, 
         else if (type&GB_CB_CHANGED) {
             handler->db_changed();  // database entry was changed
         }
-        in_field_changed_callback = false;
     }
 }
 
 static void awar_changed_cb(AW_root * /* awr */, AW_CL cl_awt_mask_awar_item) {
     if (!in_awar_changed_callback) { // avoid deadlock
-        in_awar_changed_callback   = true;
+        LocallyModify<bool> flag(in_awar_changed_callback, true);
         awt_mask_awar_item *item = (awt_mask_awar_item*)cl_awt_mask_awar_item;
         awt_assert(item);
         if (item) item->awar_changed();
-        in_awar_changed_callback   = false;
     }
 }
 

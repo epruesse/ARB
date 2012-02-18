@@ -61,7 +61,7 @@ static void react_to_command(GBDATA *gb_main) {
     static bool in_reaction = false;
 
     if (!in_reaction) {
-        in_reaction = true;
+        LocallyModify<bool> flag(in_reaction, true);
 
         command_triggered = false;
 
@@ -121,7 +121,6 @@ static void react_to_command(GBDATA *gb_main) {
             if (error) fprintf(stderr, "arb_db_server: failed to react to command '%s' (reason: %s)\n", command, error);
         }
         free(command);
-        in_reaction = false;
     }
 }
 

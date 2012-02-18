@@ -252,11 +252,13 @@ int aw_question(const char *uniqueID, const char *question, const char *buttons,
         fprintf(stderr, "add aw_message_timer_listen_event with delay = %i\n", AW_MESSAGE_LISTEN_DELAY); fflush(stdout);
 #endif // TRACE_STATUS_MORE
         root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
-        root->disable_callbacks = true;
-        while (aw_message_cb_result == -13) {
-            root->process_events();
+
+        {
+            LocallyModify<bool> flag(root->disable_callbacks, true);
+            while (aw_message_cb_result == -13) {
+                root->process_events();
+            }
         }
-        root->disable_callbacks = false;
         aw_msg->hide();
 
         if (awar_name_neverAskAgain) {
@@ -557,11 +559,12 @@ char *aw_input(const char *title, const char *prompt, const char *default_input)
     aw_input_cb_result = dummy;
 
     root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
-    root->disable_callbacks = true;
-    while (aw_input_cb_result == dummy) {
-        root->process_events();
+    {
+        LocallyModify<bool> flag(root->disable_callbacks, true);
+        while (aw_input_cb_result == dummy) {
+            root->process_events();
+        }
     }
-    root->disable_callbacks = false;
     aw_msg->hide();
 
     if (aw_input_cb_result) input_history_insert(aw_input_cb_result, true);
@@ -676,36 +679,36 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     aw_input_cb_result = dummy;
 
     root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
-    root->disable_callbacks = true;
+    {
+        LocallyModify<bool> flag(root->disable_callbacks, true);
 
-    char *last_input = root->awar(AW_INPUT_AWAR)->read_string();
-    while (aw_input_cb_result == dummy) {
-        root->process_events();
+        char *last_input = root->awar(AW_INPUT_AWAR)->read_string();
+        while (aw_input_cb_result == dummy) {
+            root->process_events();
 
-        char *this_input = root->awar(AW_INPUT_AWAR)->read_string();
-        if (strcmp(this_input, last_input) != 0) {
-            if (check_fun) {
-                char *corrected_input = check_fun(this_input);
-                if (corrected_input) {
-                    if (strcmp(corrected_input, this_input) != 0) {
-                        root->awar(AW_INPUT_AWAR)->write_string(corrected_input);
+            char *this_input = root->awar(AW_INPUT_AWAR)->read_string();
+            if (strcmp(this_input, last_input) != 0) {
+                if (check_fun) {
+                    char *corrected_input = check_fun(this_input);
+                    if (corrected_input) {
+                        if (strcmp(corrected_input, this_input) != 0) {
+                            root->awar(AW_INPUT_AWAR)->write_string(corrected_input);
+                        }
+                        free(corrected_input);
                     }
-                    free(corrected_input);
                 }
+                reassign(last_input, this_input);
             }
-            reassign(last_input, this_input);
-        }
-        free(this_input);
+            free(this_input);
 
-        if (!aw_msg->is_shown()) { // somebody hided/closed the window
-            input_cb(aw_msg, (AW_CL)-1); // CANCEL
-            break;
+            if (!aw_msg->is_shown()) { // somebody hided/closed the window
+                input_cb(aw_msg, (AW_CL)-1); // CANCEL
+                break;
+            }
         }
+
+        free(last_input);
     }
-
-    free(last_input);
-
-    root->disable_callbacks = false;
     aw_msg->hide();
 
     return aw_input_cb_result;
@@ -780,11 +783,12 @@ char *aw_file_selection(const char *title, const char *dir, const char *def_name
     aw_input_cb_result = dummy;
 
     root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
-    root->disable_callbacks = true;
-    while (aw_input_cb_result == dummy) {
-        root->process_events();
+    {
+        LocallyModify<bool> flag(root->disable_callbacks, true);
+        while (aw_input_cb_result == dummy) {
+            root->process_events();
+        }
     }
-    root->disable_callbacks = false;
     aw_msg->hide();
 
     return aw_input_cb_result;

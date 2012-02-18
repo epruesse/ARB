@@ -84,11 +84,11 @@ static long run_test(test_fun fun, long loops, double *perCall) {
     usecs      *= SECOND;
     usecs      += t2.tv_usec - t1.tv_usec;
 
-    static int recurse = 1;
-    if (recurse == 1) {
-        recurse  = 0;
+    static bool recurse = true;
+    if (recurse) {
+        recurse  = false;
         usecs   -= callDelay(loops);
-        recurse  = 1;
+        recurse  = true;
     }
 
     *perCall = double(usecs)/loops;
