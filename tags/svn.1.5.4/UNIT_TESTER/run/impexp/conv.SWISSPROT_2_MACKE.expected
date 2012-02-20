@@ -1,0 +1,75 @@
+#-
+#-
+#-	editor
+#-	Sat Oct 23 01:43:05 2010
+#-
+#-
+#-	Reference sequence:  MA32_HUMAN
+#-	Attributes:
+#=		MA32_HUMAN	in  out  vis  prt   ord  dna  lin  5>3  func ref
+#-
+#:MA32_HUMAN:name:Homo sapiens (Human).
+#:MA32_HUMAN:date:01-FEB-1995
+#:MA32_HUMAN:acs:Q07021;
+#:MA32_HUMAN:auth:Honore,B., Madsen,P., Rasmussen,H.H., Vandekerckhove,J.,
+#:MA32_HUMAN:auth:Celis,J.E. and Leffers,H.
+#:MA32_HUMAN:jour:Gene 134, 283-287 (1993)
+#:MA32_HUMAN:title:Cloning and expression of a cDNA covering the complete
+#:MA32_HUMAN:title:coding region of the P32 subunit of human pre-mRNA splicing
+#:MA32_HUMAN:title:factor SF2.
+#:MA32_HUMAN:rem:ref:1
+#:MA32_HUMAN:rem:ref:2
+#:MA32_HUMAN:rem:auth:Krainer,A.R., Mayeda,A., Kozak,D. and Binns,G.
+#:MA32_HUMAN:rem:jour:Cell 66, 383-394 (1991)
+#:MA32_HUMAN:rem:title:Functional expression of cloned human splicing factor
+#:MA32_HUMAN:rem::  SF2: homology to RNA-binding proteins, U1 70K, and
+#:MA32_HUMAN:rem::  Drosophila splicing regulators.
+#:MA32_HUMAN:rem:ref:3
+#:MA32_HUMAN:rem:auth:Ghebrehiwet,B., Lim,B.L., Peerschke,E.I., Willis,A.C.
+#:MA32_HUMAN:rem::  and Reid,K.B.
+#:MA32_HUMAN:rem:jour:J. Exp. Med. 179, 1809-1821 (1994)
+#:MA32_HUMAN:rem:title:Isolation, cDNA cloning, and overexpression of a 33-kD
+#:MA32_HUMAN:rem::  cell surface glycoprotein that binds to the globular
+#:MA32_HUMAN:rem::  'heads' of C1q.
+#:MA32_HUMAN:rem:ref:4
+#:MA32_HUMAN:rem:auth:Jiang,J., Zhang,Y., Krainer,A.R. and Xu,R.-M.
+#:MA32_HUMAN:rem:jour:Proc. Natl. Acad. Sci. U.S.A. 96, 3572-3577 (1999)
+#:MA32_HUMAN:rem:title:Crystal structure of human p32, a doughnut-shaped
+#:MA32_HUMAN:rem::  acidic mitochondrial matrix protein.
+#:MA32_HUMAN:rem:KEYWORDS:Mitochondrion; Transit peptide; 3D-structure.
+#:MA32_HUMAN:rem:GenBank ACCESSION:Q07021;
+#:MA32_HUMAN:rem:-!- FUNCTION: NOT KNOWN. BINDS TO THE GLOBULAR "HEADS" OF C1Q
+#:MA32_HUMAN:rem:THUS
+#:MA32_HUMAN:rem:    INHIBITING C1 ACTIVATION.
+#:MA32_HUMAN:rem:-!- SUBCELLULAR LOCATION: MITOCHONDRIAL MATRIX.
+#:MA32_HUMAN:rem:-!- SIMILARITY: BELONGS TO THE MAM33 FAMILY.
+#:MA32_HUMAN:rem:-!- CAUTION: WAS ORIGINALLY (REF.1 AND REF.2) THOUGHT TO BE A
+#:MA32_HUMAN:rem:PRE-MRNA
+#:MA32_HUMAN:rem:    SPLICING FACTOR THAT PLAYS A ROLE IN PREVENTING EXON
+#:MA32_HUMAN:rem:SKIPPING,
+#:MA32_HUMAN:rem:    ENSURING THE ACCURACY OF SPLICING AND REGULATING
+#:MA32_HUMAN:rem:ALTERNATIVE
+#:MA32_HUMAN:rem:    SPLICING.
+#:MA32_HUMAN:rem:--------------------------------------------------------------
+#:MA32_HUMAN:rem:------------
+#:MA32_HUMAN:rem:This SWISS-PROT entry is copyright. It is produced through a
+#:MA32_HUMAN:rem:collaboration
+#:MA32_HUMAN:rem:between  the Swiss Institute of Bioinformatics  and the  EMBL
+#:MA32_HUMAN:rem:outstation -
+#:MA32_HUMAN:rem:the European Bioinformatics Institute.  There are no 
+#:MA32_HUMAN:rem:restrictions on  its
+#:MA32_HUMAN:rem:use  by  non-profit  institutions as long  as its content  is
+#:MA32_HUMAN:rem:in  no  way
+#:MA32_HUMAN:rem:modified and this statement is not removed.  Usage  by  and
+#:MA32_HUMAN:rem:for commercial
+#:MA32_HUMAN:rem:entities requires a license agreement (See http://www.isb-sib.
+#:MA32_HUMAN:rem:ch/announce/
+#:MA32_HUMAN:rem:or send an email to license@isb-sib.ch).
+#:MA32_HUMAN:rem:--------------------------------------------------------------
+#:MA32_HUMAN:rem:------------
+MA32_HUMAN     0 MLPLLRCVPRVLGSSVAGLRAAAPASPFRQLLQPAPRLCTRPFGLLSVRA
+MA32_HUMAN    50 GSERRPGLLRPRGPCACGCGCGSLHTDGDKAFVDFLSDEIKEERKIQKHK
+MA32_HUMAN   100 TLPKMSGGWELELNGTEAKLVRKVAGEKITVTFNINNSIPPTFDGEEEPS
+MA32_HUMAN   150 QGQKVEEQEPELTSTPNFVVEVIKNDDGKKALVLDCHYPEDEVGQEDEAE
+MA32_HUMAN   200 SDIFSIREVSFQSTGESEWKDTNYTLNTDSLDWALYDHLMDFLADRGVDN
+MA32_HUMAN   250 TFADELVELSTALEHQEYITFLEDLKSFVKSQ

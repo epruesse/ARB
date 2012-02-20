@@ -1,0 +1,4 @@
+# libraries needed to link against PARSIMONY/PARSIMONY.a
+
+SL/GUI_ALIVIEW/GUI_ALIVIEW.a
+SL/TREEDISP/TREEDISP.a
