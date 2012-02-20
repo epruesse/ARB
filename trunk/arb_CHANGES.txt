@@ -14,6 +14,24 @@ Major changes for next release:
  - many internal refactorings
 
 
+Fixes for arb_5.3:
+
+ * bugfixes
+   - fixed wrong absolute/ecoli position reported for some designed probes
+   - decompression error handling (pt-server build issues)
+   - fixed 'codon_start' generated with wrong type
+   - fixed a buffer overflow in ACI
+   - report failures to write to /tmp
+ * changes
+   - markSpecies.pl:
+     mark by accession number
+     partial/ambiguous matches
+ * internal fixes
+   - compilation fixes for OSX
+   - some patches for debian version (removed refs to xview, textedit, removed molphy(protml))
+   - removed obsolete dependency from libXp
+
+
 Fixes for arb_5.2:
 
  * bugfixes
