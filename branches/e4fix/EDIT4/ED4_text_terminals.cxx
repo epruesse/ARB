@@ -509,44 +509,32 @@ ED4_returncode ED4_sequence_terminal::draw() {
     device->set_vertical_font_overlap(true);
 
     // output helix
-    if (ED4_ROOT->helix->is_enabled()) { // should do a remap
-        int screen_length = rm->clipped_sequence_to_screen_PLAIN(ED4_ROOT->helix->size());
-        e4_assert(screen_length >= 0);
-        if ((right+1) < screen_length) {
-            screen_length = right+1;
-        }
-        if (screen_length) {
-            char         *db_pointer = resolve_pointer_to_string_copy();
-            // AW_click_cd cd(device, (AW_CL)max_seq_len);
-            ShowHelix_cd  cd         = { ED4_ROOT->helix, max_seq_len };
-            device->text_overlay(ED4_G_HELIX,
-                                 (char *)db_pointer, screen_length,
-                                 AW::Position(text_x,  text_y + ED4_ROOT->helix_spacing), 0.0,  AW_ALL_DEVICES_UNSCALED,
-                                 (AW_CL)&cd, 1.0, 1.0, ED4_show_helix_on_device);
-            free(db_pointer);
-        }
+    if (ED4_ROOT->helix->is_enabled()) {
+        int   db_len;
+        char *db_pointer = resolve_pointer_to_string_copy(&db_len);
+
+        e4_assert(db_len == ED4_ROOT->helix->size());
+        ShowHelix_cd  cd         = { ED4_ROOT->helix, max_seq_len };
+        device->text_overlay(ED4_G_HELIX,
+                             (char *)db_pointer, db_len,
+                             AW::Position(text_x,  text_y + ED4_ROOT->helix_spacing), 0.0,  AW_ALL_DEVICES_UNSCALED,
+                             (AW_CL)&cd, 1.0, 1.0, ED4_show_helix_on_device);
+        free(db_pointer);
     }
 
     // output protein structure match
     if (ED4_ROOT->protstruct) {
         ED4_species_manager *spec_man = get_parent(ED4_L_SPECIES)->to_species_manager();
         if (spec_man->get_type() != ED4_SP_SAI && ED4_ROOT->aw_root->awar(PFOLD_AWAR_ENABLE)->read_int()) {  // should do a remap
-            int screen_length = rm->clipped_sequence_to_screen_PLAIN(ED4_ROOT->protstruct_len);
-            e4_assert(screen_length >= 0);
-            if ((right+1) < screen_length) {
-                screen_length = right+1;
-            }
-            if (screen_length) {
-                // get protein structure (primary or secondary) from the species
-                char *protstruct = resolve_pointer_to_string_copy();
-                if (protstruct) {
-                    // AW_click_cd cd(device, (AW_CL)max_seq_len);
-                    device->text_overlay(ED4_G_HELIX,
-                                         protstruct, screen_length,
-                                         AW::Position(text_x,  text_y + ED4_ROOT->helix_spacing),  0.0,  AW_ALL_DEVICES_UNSCALED,
-                                         (AW_CL)ED4_ROOT->protstruct, 1.0, 1.0, ED4_show_protein_match_on_device);
-                    free(protstruct);
-                }
+            int   db_len;
+            char *protstruct = resolve_pointer_to_string_copy(&db_len);
+                
+            if (protstruct) {
+                device->text_overlay(ED4_G_HELIX,
+                                     protstruct, db_len,
+                                     AW::Position(text_x,  text_y + ED4_ROOT->helix_spacing),  0.0,  AW_ALL_DEVICES_UNSCALED,
+                                     (AW_CL)ED4_ROOT->protstruct, 1.0, 1.0, ED4_show_protein_match_on_device);
+                free(protstruct);
             }
         }
     }

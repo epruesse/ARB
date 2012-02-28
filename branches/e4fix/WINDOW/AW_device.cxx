@@ -597,7 +597,12 @@ bool AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eith
     }
 
     aw_assert(opt_len == textlen);
-    aw_assert(int(strlen(opt_str)) >= textlen);
+
+
+#if defined(DEBUG)
+    int opt_str_len = int(strlen(opt_str));
+    aw_assert(opt_str_len >= textlen);
+#endif
 
     if (alignment) {
         AW_pos width = get_string_size(gc, opt_str, textlen);

@@ -460,9 +460,8 @@ void ED4_root::resize_all() {
 }
 
 static ARB_ERROR change_char_table_length(ED4_base *base, AW_CL new_length) {
-    e4_assert(!base->is_root_group_manager());
-    if (base->is_group_manager()) {
-        ED4_group_manager *group_man = base->to_group_manager();
+    if (base->is_abstract_group_manager()) {
+        ED4_abstract_group_manager *group_man = base->to_abstract_group_manager();
         group_man->table().change_table_length(new_length);
     }
     return NULL;
