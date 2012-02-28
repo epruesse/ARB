@@ -971,7 +971,7 @@ ED4_sequence_info_terminal::ED4_sequence_info_terminal(const char *temp_id, /* G
 }
 
 ED4_consensus_sequence_terminal::ED4_consensus_sequence_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_sequence_terminal(temp_id, x, y, width, height, temp_parent)
+    : ED4_sequence_terminal(temp_id, x, y, width, height, temp_parent, false)
 {
     species_name = NULL;
 }
@@ -1007,8 +1007,9 @@ ED4_orf_terminal::~ED4_orf_terminal()
     free(aaColor);
 }
 
-ED4_sequence_terminal::ED4_sequence_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_abstract_sequence_terminal(sequence_terminal_spec, temp_id, x, y, width, height, temp_parent)
+ED4_sequence_terminal::ED4_sequence_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool shall_display_secstruct_info_)
+    : ED4_abstract_sequence_terminal(sequence_terminal_spec, temp_id, x, y, width, height, temp_parent),
+      shall_display_secstruct_info(shall_display_secstruct_info_)
 {
     st_ml_node = NULL;
 }
