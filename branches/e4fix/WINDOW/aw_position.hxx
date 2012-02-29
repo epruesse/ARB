@@ -335,11 +335,12 @@ namespace AW {
         bool contains(const LineVector& lvec) const { return contains(lvec.start()) && contains(lvec.head()); }
 
         bool distinct_from(const Rectangle& rect) const {
+            // returns false for adjacent rectangles (even if they only share one corner)
             return
-                top()       >= rect.bottom() ||
-                rect.top()  >= bottom()      ||
-                left()      >= rect.right()  ||
-                rect.left() >= right();
+                top()       > rect.bottom() ||
+                rect.top()  > bottom()      ||
+                left()      > rect.right()  ||
+                rect.left() > right();
         }
         bool overlaps_with(const Rectangle& rect) const { return !distinct_from(rect); }
 
