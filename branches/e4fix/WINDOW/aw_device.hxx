@@ -572,10 +572,12 @@ public:
 
 
     // ********* X11 Device only ********
-    virtual void    clear(AW_bitset filteri);
-    virtual void    clear_part(AW_pos x, AW_pos y, AW_pos width, AW_pos height, AW_bitset filteri);
+    virtual void clear(AW_bitset filteri);
+    virtual void clear_part(const AW::Rectangle& rect, AW_bitset filteri);
 
-    void clear_part(const AW::Rectangle&rect, AW_bitset filteri) { clear_part(rect.xpos(), rect.ypos(), rect.width(), rect.height(), filteri); }
+    void clear_part(AW_pos x, AW_pos y, AW_pos width, AW_pos height, AW_bitset filteri) {
+        clear_part(AW::Rectangle(AW::Position(x, y), AW::Vector(width, height)), filteri);
+    }
 
     virtual void    clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri);
     virtual void    move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y);

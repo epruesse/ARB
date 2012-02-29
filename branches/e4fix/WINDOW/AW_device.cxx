@@ -534,7 +534,7 @@ bool AW_device::generic_filled_area(int gc, int npos, const Position *pos, AW_bi
 
 
 void AW_device::clear(AW_bitset /* filteri */) {}
-void AW_device::clear_part(AW_pos /* x */, AW_pos /* y */, AW_pos /* width */, AW_pos /* height */, AW_bitset /* filteri */) {}
+void AW_device::clear_part(const Rectangle& /* rect */, AW_bitset /* filteri */) {}
 void AW_device::clear_text(int /* gc */, const char * /* string */, AW_pos /* x */, AW_pos /* y */, AW_pos /* alignment */, AW_bitset /* filteri */) {}
 void AW_device::move_region(AW_pos /* src_x */, AW_pos /* src_y */, AW_pos /* width */, AW_pos /* height */, AW_pos /* dest_x */, AW_pos /* dest_y */) {}
 void AW_device::fast() {}

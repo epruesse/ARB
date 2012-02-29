@@ -28,7 +28,7 @@ public:
     AW_DEVICE_TYPE type();
 
     void clear(AW_bitset filteri);
-    void clear_part(AW_pos x, AW_pos y, AW_pos width, AW_pos height, AW_bitset filteri);
+    void clear_part(const AW::Rectangle& rect, AW_bitset filteri);
     void clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
 
     void flush();
