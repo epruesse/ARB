@@ -139,7 +139,7 @@ bool AW_clipable::box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x
 bool AW_clipable::box_clip(const Rectangle& rect, Rectangle& clippedRect) { // @@@ maybe return clippedRect as AW_screen_area
     if (completely_clipped()) return false;
 
-    Rectangle clipRect(clip_rect, INCLUSIVE_OUTLINE);
+    Rectangle clipRect(clip_rect);
     if (rect.distinct_from(clipRect))
         return false;
 

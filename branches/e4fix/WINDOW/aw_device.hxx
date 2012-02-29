@@ -244,7 +244,7 @@ public:
             is_leftof_clip(pos.xpos()) || is_rightof_clip(pos.xpos());
     }
     bool is_outside_clip(AW::Rectangle rect) const {
-        return !rect.overlaps_with(AW::Rectangle(get_cliprect(), AW::INCLUSIVE_OUTLINE));
+        return !rect.overlaps_with(AW::Rectangle(get_cliprect()));
     }
 
     bool clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out);
@@ -443,7 +443,7 @@ public:
     void reset(); // pops all clip_scales
 
     const AW_screen_area& get_area_size() const;
-    AW::Rectangle get_rtransformed_cliprect() const { return rtransform(AW::Rectangle(get_cliprect(), AW::INCLUSIVE_OUTLINE)); }
+    AW::Rectangle get_rtransformed_cliprect() const { return rtransform(AW::Rectangle(get_cliprect())); }
 
     void set_filter(AW_bitset filteri);   // set the main filter mask
 
