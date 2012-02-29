@@ -354,7 +354,7 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
     dev->set_font_overlap(true);
 
 #define EXPAND_SIZE 0
-    if (window()->get_device()->reduceClipBorders(ymin-EXPAND_SIZE, ymax+1+EXPAND_SIZE, xmin-EXPAND_SIZE, xmax+1+EXPAND_SIZE)) {
+    if (window()->get_device()->reduceClipBorders(ymin-EXPAND_SIZE, ymax+EXPAND_SIZE, xmin-EXPAND_SIZE, xmax+EXPAND_SIZE)) {
         // refresh terminal to hide cursor
         ED4_LocalWinContext uses(window());
         LocallyModify<bool> flag(allowed_to_draw, false);
