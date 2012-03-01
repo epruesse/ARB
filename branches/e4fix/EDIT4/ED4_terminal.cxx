@@ -775,16 +775,17 @@ ED4_returncode ED4_bracket_terminal::Show(int IF_ASSERTION_USED(refresh_all), in
 
 
 ED4_returncode ED4_bracket_terminal::draw() {
-    ED4_index   i;
-    AW_pos      x, y,
-        width  = extension.size[WIDTH] - 1,
-        height = extension.size[HEIGHT] - 1,
-        margin = 0;
-    AW_pos      line_x0[3], line_y0[3];
-    AW_pos      line_x1[3], line_y1[3];
-    AW_pos      arrow_x0[6], arrow_y0[6];
-    AW_pos      arrow_x1[6], arrow_y1[6];
+    ED4_index i;
+    AW_pos    x, y;
+    AW_pos    width  = extension.size[WIDTH] - 1;
+    AW_pos    height = extension.size[HEIGHT] - 1;
+    AW_pos    margin = 0;
+    AW_pos    line_x0[3], line_y0[3];
+    AW_pos    line_x1[3], line_y1[3];
+    AW_pos    arrow_x0[6], arrow_y0[6];
+    AW_pos    arrow_x1[6], arrow_y1[6];
 
+    
 
     calc_world_coords(&x, &y);
     current_ed4w()->world_to_win_coords(&x, &y);
@@ -799,15 +800,30 @@ ED4_returncode ED4_bracket_terminal::draw() {
     line_x1[1] = x + margin + 2;
     line_y1[1] = y + height - margin - 2;
 
+#if 0
     line_x0[2] = x + margin + 2;
     line_y0[2] = y + height - margin - 2;
     line_x1[2] = x + margin + 2;
     line_y1[2] = y + margin + 2;
+#else
+    line_x0[2] = x + margin + 2;
+    line_y0[2] = y + margin + 2;
+    line_x1[2] = x + margin + 2;
+    line_y1[2] = y + height - margin - 2;
+#endif
+
+    // current_device()->set_line_attributes(ED4_G_STANDARD, 1, AW_SOLID);
 
     ED4_group_manager *group_man = get_parent(ED4_L_GROUP)->to_group_manager();
     ED4_multi_species_manager *multi_man = group_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
     if (multi_man->get_no_of_selected_species()) {  // if multi_species_manager contains selected species
+#if defined(DEBUG) && 1
+        static bool toggle = false;
+        toggle             = !toggle;
+        current_device()->box(toggle ? ED4_G_SELECTED : ED4_G_SELECTED+1, true, x, y, extension.size[WIDTH], extension.size[HEIGHT]);
+#else // !defined(DEBUG)
         current_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], extension.size[HEIGHT]);
+#endif
     }
 
     if (dynamic_prop & ED4_P_IS_FOLDED) { // paint triangle for folded group

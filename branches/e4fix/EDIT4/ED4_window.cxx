@@ -217,7 +217,7 @@ static inline void clear_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, A
     rect.r = int(x2);
     ED4_set_clipping_rectangle(&rect);
 
-#if defined(DEBUG) && 0
+#if defined(DEBUG) && 1
     static int toggle = 0;
     current_device()->box(ED4_G_COLOR_2+toggle, true, x1, y1, x2-x1, y2-y1, AW_ALL_DEVICES_SCALED);    // fill range with color (for testing)
     toggle = (toggle+1)&7;
