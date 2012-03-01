@@ -817,7 +817,7 @@ ED4_returncode ED4_bracket_terminal::draw() {
     ED4_group_manager *group_man = get_parent(ED4_L_GROUP)->to_group_manager();
     ED4_multi_species_manager *multi_man = group_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
     if (multi_man->get_no_of_selected_species()) {  // if multi_species_manager contains selected species
-#if defined(DEBUG) && 1
+#if defined(DEBUG) && 0 
         static bool toggle = false;
         toggle             = !toggle;
         current_device()->box(toggle ? ED4_G_SELECTED : ED4_G_SELECTED+1, true, x, y, extension.size[WIDTH], extension.size[HEIGHT]);

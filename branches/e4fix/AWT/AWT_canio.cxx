@@ -160,7 +160,7 @@ static Rectangle get_drawsize(AWT_canvas *ntw, bool draw_all) {
         drawsize = size_device->get_size_information();
     }
     else {
-        drawsize = Rectangle(size_device->get_area_size());
+        drawsize = Rectangle(size_device->get_area_size(), INCLUSIVE_OUTLINE);
     }
 
     return drawsize;
