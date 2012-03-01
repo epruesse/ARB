@@ -2148,13 +2148,15 @@ public:
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_sequence_terminal);
 };
 
-struct ED4_spacer_terminal : public ED4_terminal {
+class ED4_spacer_terminal : public ED4_terminal {
     E4B_AVOID_UNNEEDED_CASTS(spacer_terminal);
-    
+    bool shallDraw; // true -> spacer is really drawn (otherwise it's only a placeholder)
+
+public:
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode draw();
 
-    ED4_spacer_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
+    ED4_spacer_terminal(const char *id, bool shallDraw_, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_terminal);
 };

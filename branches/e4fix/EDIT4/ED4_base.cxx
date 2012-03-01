@@ -268,7 +268,7 @@ ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_C
     bracket_terminal->set_links(NULL, multi_species_manager);
 
     sprintf(buffer, "Group_Spacer_Terminal_Beg.%ld", ED4_counter);                                                      // Spacer at beginning of group
-    group_spacer_terminal1 = new ED4_spacer_terminal(buffer,   0, 0, 10, SPACERHEIGHT, multi_species_manager);  // For better Overview
+    group_spacer_terminal1 = new ED4_spacer_terminal(buffer, true, 0, 0, 10, SPACERHEIGHT, multi_species_manager);  // For better Overview
     multi_species_manager->children->append_member(group_spacer_terminal1);
 
     sprintf(buffer, "Consensus_Manager.%ld", ED4_counter);                                                     // Create competence terminal
@@ -297,7 +297,7 @@ ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_C
     sequence_manager->children->append_member(sequence_terminal);
 
     sprintf(buffer, "Group_Spacer_Terminal_End.%ld", ED4_counter);                                                      // Spacer at beginning of group
-    group_spacer_terminal2 = new ED4_spacer_terminal(buffer,   0, SPACERHEIGHT + TERMINALHEIGHT, 10, SPACERHEIGHT, multi_species_manager);      // For better Overview
+    group_spacer_terminal2 = new ED4_spacer_terminal(buffer, true, 0, SPACERHEIGHT + TERMINALHEIGHT, 10, SPACERHEIGHT, multi_species_manager);      // For better Overview
     multi_species_manager->children->append_member(group_spacer_terminal2);
 
     multi_species_manager->update_requested_by_child();

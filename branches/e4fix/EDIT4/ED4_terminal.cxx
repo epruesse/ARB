@@ -1040,17 +1040,18 @@ ED4_pure_text_terminal::ED4_pure_text_terminal(const char *temp_id, AW_pos x, AW
 {
 }
 
-ED4_returncode ED4_spacer_terminal::Show(int /* refresh_all */, int is_cleared) // a spacer terminal doesn't show anything - it's just a dummy terminal
-{
-    if (update_info.clear_at_refresh && !is_cleared) {
-        clear_background();
+ED4_returncode ED4_spacer_terminal::Show(int /* refresh_all */, int is_cleared) {
+    if (shallDraw) {
+        if (update_info.clear_at_refresh && !is_cleared) {
+            clear_background();
+        }
+        draw();
     }
-    draw();
     return ED4_R_OK;
 }
 
 
-ED4_returncode ED4_spacer_terminal::draw() {
+ED4_returncode ED4_spacer_terminal::draw() {  
 #if defined(DEBUG) && 0
     clear_background(ED4_G_FIRST_COLOR_GROUP); // draw colored spacers to make them visible
 #else
@@ -1059,8 +1060,9 @@ ED4_returncode ED4_spacer_terminal::draw() {
     return (ED4_R_OK);
 }
 
-ED4_spacer_terminal::ED4_spacer_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_terminal(spacer_terminal_spec, temp_id, x, y, width, height, temp_parent)
+ED4_spacer_terminal::ED4_spacer_terminal(const char *temp_id, bool shallDraw_, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_terminal(spacer_terminal_spec, temp_id, x, y, width, height, temp_parent),
+      shallDraw(shallDraw_)
 {
 }
 
