@@ -1491,6 +1491,7 @@ tags: $(TAG_SOURCE_LISTS)
 LINKSTAMP=SOURCE_TOOLS/generate_all_links.stamp
 
 links: checks $(LINKSTAMP) arbmainwrapper
+links_no_checks: $(LINKSTAMP) arbmainwrapper
 
 forcelinks:
 	-rm $(LINKSTAMP)
@@ -1506,7 +1507,7 @@ clean_links:
 	@rm -f $(LINKSTAMP) lib/inputMasks/format.readme
 
 redo_links: clean_links
-	$(MAKE) links
+	$(MAKE) links_no_checks
 
 #********************************************************************************
 
