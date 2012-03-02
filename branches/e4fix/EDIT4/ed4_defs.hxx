@@ -7,6 +7,9 @@
 #ifndef AW_WINDOW_HXX
 #include <aw_window.hxx>
 #endif
+#ifndef AW_POSITION_HXX
+#include <aw_position.hxx>
+#endif
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
@@ -272,6 +275,9 @@ struct ED4_extension // contains info about graphical properties
 
     AW_pos    size[2];          // width and height
     ED4_index y_folded;         // remember old position of consensus when folding group
+
+    AW::Vector get_size() const { return AW::Vector(size[WIDTH], size[HEIGHT]); }
+    AW::Vector get_parent_offset() const { return AW::Vector(position[X_POS], position[Y_POS]); }
 
 #if defined(IMPLEMENT_DUMP)
     void dump(size_t indent) const;

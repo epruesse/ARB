@@ -1092,18 +1092,6 @@ void ED4_base::set_links(ED4_base *new_width, ED4_base *new_height) {
 }
 
 int ED4_base::currTimestamp = 1;
-void ED4_base::update_world_coords_cache() const {
-    if (parent) {
-        parent->calc_world_coords(&lastXpos, &lastYpos);
-    }
-    else {
-        lastXpos = 0;
-        lastYpos = 0;
-    }
-    lastXpos += extension.position[X_POS];
-    lastYpos += extension.position[Y_POS];
-    timestamp = currTimestamp;
-}
 
 #if defined(DEBUG)
 // #define VISIBLE_AREA_REFRESH

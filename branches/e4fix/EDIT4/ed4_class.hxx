@@ -370,8 +370,30 @@ public:
     const ED4_folding_line *get_horizontal_folding() { return horizontal_fl; }
     const ED4_folding_line *get_vertical_folding() { return vertical_fl; }
 
-    void world_to_win_coords(AW_pos *x, AW_pos *y);
-    void win_to_world_coords(AW_pos *x, AW_pos *y);
+    void world_to_win_coords(AW_pos *xPtr, AW_pos *yPtr) const { // @@@ old style
+        // Calculates transformation from world to window coordinates in a given window.
+        // world-coordinates inside folded range result in window coordinates lower than folding line position.
+        e4_assert(!is_reset());
+        *xPtr = vertical_fl->world2win(*xPtr);
+        *yPtr = horizontal_fl->world2win(*yPtr);
+    }
+    void win_to_world_coords(AW_pos *xPtr, AW_pos *yPtr) const { // @@@ old style
+        // calculates transformation from window to world coordinates in a given window
+        e4_assert(!is_reset());
+        *xPtr = vertical_fl->win2world(*xPtr);
+        *yPtr = horizontal_fl->win2world(*yPtr);
+    }
+
+    AW::Position world_to_win_coords(const AW::Position& pos) const {
+        e4_assert(!is_reset());
+        return AW::Position(vertical_fl->world2win(pos.xpos()),
+                            horizontal_fl->world2win(pos.ypos()));
+    }
+    AW::Position win_to_world_coords(const AW::Position& pos) const {
+        e4_assert(!is_reset());
+        return AW::Position(vertical_fl->win2world(pos.xpos()),
+                            horizontal_fl->win2world(pos.ypos()));
+    }
 
     ED4_folding_line *insert_folding_line(AW_pos pos, AW_pos dimension, ED4_properties prop);
     void              delete_folding_line(ED4_folding_line *fl, ED4_properties prop);
@@ -1027,10 +1049,9 @@ class ED4_base : virtual Noncopyable {
 
     // cache world coordinates:
 
-    static int     currTimestamp;
-    mutable AW_pos lastXpos;
-    mutable AW_pos lastYpos;
-    mutable int    timestamp;
+    static int           currTimestamp;
+    mutable AW::Position lastPos;
+    mutable int          timestamp;
 
     ED4_base_list *linked_objects;                  // linked list of objects which are depending from this object
 
@@ -1081,20 +1102,40 @@ public:
     
     // functions concerned with coordinate transformation
 
-    void update_world_coords_cache() const;
     void calc_rel_coords(AW_pos *x, AW_pos *y);
 
     void calc_world_coords(AW_pos *x, AW_pos *y) const {
+        update_world_coords_cache();
+        *x = lastPos.xpos();
+        *y = lastPos.ypos();
+    }
+    const AW::Position& calc_world_coords() const {
+        update_world_coords_cache();
+        return lastPos;
+    }
+
+    void update_world_coords_cache() const {
         bool cache_up_to_date = timestamp == currTimestamp;
         if (!cache_up_to_date) {
-            update_world_coords_cache();
+            if (parent) {
+                ED4_base *pab = (ED4_base*)parent;
+                lastPos = pab->calc_world_coords();
+            }
+            else {
+                lastPos = AW::Origin;
+            }
+            lastPos.move(extension.get_parent_offset());
+            timestamp = currTimestamp;
         }
-        *x = lastXpos;
-        *y = lastYpos;
     }
 
     static void touch_world_cache() {
         currTimestamp++;
+    }
+
+    AW::Rectangle get_screen_area(ED4_window *ed4w) const {
+        AW::Position pos = ed4w->world_to_win_coords(calc_world_coords());
+        return AW::Rectangle(pos, extension.get_size());
     }
 
     // functions which refer to the object as a child, i.e. travelling down the hierarchy
