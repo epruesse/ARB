@@ -72,7 +72,7 @@ extern bool         DRAW;
 #define HEIGHT      1
 
 // size of some display elements:
-#define BRACKETWIDTH    10
+#define BRACKETWIDTH    11
 #define SPACERHEIGHT    5
 #define SPACERNOCONSENSUSHEIGHT 15 // height of spacer at top of group (used if consensus is hidden and group is folded)
 #define SEQUENCEINFOSIZE 50

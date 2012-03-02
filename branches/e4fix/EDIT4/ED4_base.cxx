@@ -1061,14 +1061,10 @@ void ED4_base::check_all()
     printf("***********************************************\n\n");
 }
 
-int ED4_base::adjust_clipping_rectangle()
-// return 0 if clipping rectangle disappeared (nothing left to draw)
-{
-    AW_pos x, y;
-
-    calc_world_coords(&x, &y);
-    current_ed4w()->world_to_win_coords(&x, &y);
-    return current_device()->reduceClipBorders(int(y), int(y+extension.size[HEIGHT]-1), int(x), int(x+extension.size[WIDTH]-1));
+int ED4_base::adjust_clipping_rectangle() {
+    // return 0 if clipping rectangle disappeared (nothing left to draw)
+    AW::Rectangle base_area = get_win_area(current_ed4w());
+    return current_device()->reduceClipBorders(base_area.top(), base_area.bottom(), base_area.left(), base_area.right());
 }
 
 void ED4_base::set_links(ED4_base *new_width, ED4_base *new_height) {

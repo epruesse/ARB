@@ -1088,7 +1088,7 @@ public:
     virtual void deleted_from_database();
 
     // functions concerned with graphic output
-    virtual int adjust_clipping_rectangle();     // sets scrolling area in AW_MIDDLE_AREA
+    int adjust_clipping_rectangle();
     virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0) = 0;
     virtual bool calc_bounding_box()                                  = 0;
 
@@ -1133,9 +1133,9 @@ public:
         currTimestamp++;
     }
 
-    AW::Rectangle get_screen_area(ED4_window *ed4w) const {
+    AW::Rectangle get_win_area(ED4_window *ed4w) const {
         AW::Position pos = ed4w->world_to_win_coords(calc_world_coords());
-        return AW::Rectangle(pos, extension.get_size());
+        return AW::Rectangle(pos, extension.get_size()-AW::Vector(1, 1));
     }
 
     // functions which refer to the object as a child, i.e. travelling down the hierarchy
@@ -1422,7 +1422,6 @@ struct ED4_terminal : public ED4_base { // derived from a Noncopyable
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0) = 0;
     virtual ED4_returncode draw() = 0;
 
-    virtual int  adjust_clipping_rectangle();
     virtual bool calc_bounding_box();
 
     ED4_returncode draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text = NULL, int cursor_y=-1);
