@@ -1602,28 +1602,29 @@ void ED4_multi_species_manager::marked_species_select(bool select) {
         else if (member->is_species_manager()) {
             ED4_species_manager *species_man = member->to_species_manager();
 
-            if (species_man->is_species_seq_manager()) {
+            if (!species_man->is_consensus_manager()) {
                 sp++;
 
-                GBDATA *gbd = species_man->get_species_pointer();
-                e4_assert(gbd);
-                int is_marked = GB_read_flag(gbd);
+                if (species_man->is_species_seq_manager()) {
+                    GBDATA *gbd = species_man->get_species_pointer();
+                    e4_assert(gbd);
+                    int is_marked = GB_read_flag(gbd);
 
-                if (is_marked) {
-                    if (select) { // select marked
-                        if (!species_man->is_selected()) {
-                            ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
-                            ED4_ROOT->add_to_selected(species_name);
+                    if (is_marked) {
+                        if (select) { // select marked
+                            if (!species_man->is_selected()) {
+                                ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
+                                ED4_ROOT->add_to_selected(species_name);
+                            }
                         }
-                    }
-                    else { // de-select marked
-                        if (species_man->is_selected()) {
-                            ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
-                            ED4_ROOT->remove_from_selected(species_name);
+                        else { // de-select marked
+                            if (species_man->is_selected()) {
+                                ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
+                                ED4_ROOT->remove_from_selected(species_name);
+                            }
                         }
                     }
                 }
-
                 if (species_man->is_selected()) sel++;
             }
         }
@@ -1650,13 +1651,15 @@ void ED4_multi_species_manager::selected_species_mark(bool mark) {
         else if (member->is_species_manager()) {
             ED4_species_manager *species_man = member->to_species_manager();
 
-            if (species_man->is_species_seq_manager()) {
+            if (!species_man->is_consensus_manager()) {
                 sp++;
                 if (species_man->is_selected()) {
-                    GBDATA *gbd = species_man->get_species_pointer();
-                    e4_assert(gbd);
+                    if (species_man->is_species_seq_manager()) {
+                        GBDATA *gbd = species_man->get_species_pointer();
+                        e4_assert(gbd);
 
-                    GB_write_flag(gbd, mark ? 1 : 0);
+                        GB_write_flag(gbd, mark ? 1 : 0);
+                    }
                     sel++;
                 }
             }
