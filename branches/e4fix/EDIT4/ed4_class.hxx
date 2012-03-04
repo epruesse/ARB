@@ -1685,6 +1685,10 @@ struct ED4_area_manager : public ED4_manager {
     E4B_AVOID_UNNEEDED_CASTS(area_manager);
     ED4_area_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
+
+    ED4_multi_species_manager *get_multi_species_manager() const {
+        return get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+    }
 };
 
 class ED4_multi_species_manager : public ED4_manager {
@@ -1742,9 +1746,13 @@ public:
 
     ED4_char_table&         table() { return my_table; }
     const ED4_char_table&   table() const { return my_table; }
-    
+
     ED4_bases_table& table(unsigned char c) { return table().table(c); }
-    const ED4_bases_table&  table(unsigned char c) const { return table().table(c); }
+    const ED4_bases_table& table(unsigned char c) const { return table().table(c); }
+
+    ED4_multi_species_manager *get_multi_species_manager() const {
+        return get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+    }
 };
 
 struct ED4_group_manager : public ED4_abstract_group_manager {

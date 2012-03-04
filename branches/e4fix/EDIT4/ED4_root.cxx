@@ -303,10 +303,10 @@ void TEST_win_2_world() {
 
 ED4_returncode ED4_root::deselect_all()
 {
-    ED4_multi_species_manager *main_multi_man = middle_area_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+    ED4_multi_species_manager *main_multi_man = middle_area_man->get_multi_species_manager();
     main_multi_man->deselect_all_species_and_SAI();
 
-    main_multi_man = top_area_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+    main_multi_man = top_area_man->get_multi_species_manager();
     main_multi_man->deselect_all_species_and_SAI();
 
     return ED4_R_OK;
@@ -1170,7 +1170,7 @@ enum MenuSelectType {
 static void ED4_menu_select(AW_window *aww, AW_CL type, AW_CL) {
     GB_transaction dummy(GLOBAL_gb_main);
     MenuSelectType select = MenuSelectType(type);
-    ED4_multi_species_manager *middle_multi_man = ED4_ROOT->middle_area_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+    ED4_multi_species_manager *middle_multi_man = ED4_ROOT->middle_area_man->get_multi_species_manager();
 
     e4_assert(middle_multi_man);
 

@@ -480,8 +480,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                     if (is_bracket_terminal()) { // right click on bracket terminal
                         ED4_base *group = get_parent(ED4_L_GROUP);
                         if (group) {
-                            ED4_multi_species_manager *multi_man = group->to_group_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
-                            multi_man->toggle_selected_species();
+                            group->to_group_manager()->get_multi_species_manager()->toggle_selected_species();
                         }
                     }
                     else if (is_species_name_terminal()) {
@@ -599,7 +598,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                                     ED4_base *member = device_manager->children->member(i);
 
                                     if (member->is_area_manager()) {
-                                        member->to_area_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->update_requested_by_child();
+                                        member->to_area_manager()->get_multi_species_manager()->update_requested_by_child();
                                     }
                                 }
                             }
@@ -768,9 +767,7 @@ ED4_returncode ED4_bracket_terminal::draw() {
     Rectangle  term_area = get_win_area(current_ed4w());
     AW_device *device    = current_device();
 
-    ED4_group_manager         *group_man = get_parent(ED4_L_GROUP)->to_group_manager();
-    ED4_multi_species_manager *multi_man = group_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
-
+    ED4_multi_species_manager *multi_man = get_parent(ED4_L_GROUP)->to_group_manager()->get_multi_species_manager();
     if (multi_man->get_no_of_selected_species()) {  // if multi_species_manager contains selected species
 #if defined(DEBUG) && 0
         static bool toggle = false;

@@ -406,7 +406,7 @@ ED4_returncode ED4_base::generate_configuration_string(char **generated_string)
             strcat(*generated_string, "G");
         }
 
-        multi_species_manager = to_group_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+        multi_species_manager = to_group_manager()->get_multi_species_manager();
 
         // move consensus to top of list (essential!)
         // @@@ code below is duplicated in ED4_bracket_terminal::fold() 
@@ -617,7 +617,7 @@ ED4_AREA_LEVEL ED4_base::get_area_level(ED4_multi_species_manager **multi_specie
         else if (area_man == ED4_ROOT->middle_area_man) result = ED4_A_MIDDLE_AREA;
 
         if (result != ED4_A_ERROR && multi_species_manager) {
-            *multi_species_manager = area_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+            *multi_species_manager = area_man->get_multi_species_manager();
         }
     }
     return result;
@@ -775,7 +775,7 @@ int ED4_multi_species_manager::count_visible_children() // is called by a multi_
                 counter ++;
             }
             else {
-                ED4_multi_species_manager *multi_species_manager = group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+                ED4_multi_species_manager *multi_species_manager = group_manager->get_multi_species_manager();
                 counter += multi_species_manager->count_visible_children();
             }
         }
@@ -882,7 +882,7 @@ ED4_returncode ED4_base::set_width() {
     }
     else if (is_group_manager()) {
         ED4_group_manager         *group_manager           = to_group_manager();
-        ED4_multi_species_manager *multi_species_manager   = group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+        ED4_multi_species_manager *multi_species_manager   = group_manager->get_multi_species_manager();
         ED4_terminal              *mark_consensus_terminal = multi_species_manager->get_consensus_terminal();
         ED4_terminal              *consensus_terminal      = parent->to_multi_species_manager()->get_consensus_terminal();
 

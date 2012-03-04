@@ -1020,10 +1020,8 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
     ED4_group_manager *new_group_manager = NULL;
     ED4_ROOT->main_manager->create_group(&new_group_manager, group_name);
 
-    ED4_manager *top_area = ED4_ROOT->main_manager->search_spec_child_rek(ED4_L_AREA)->to_manager();
-
     {
-        ED4_multi_species_manager *multi_species_manager = top_area->search_spec_child_rek(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+        ED4_multi_species_manager *multi_species_manager = ED4_ROOT->top_area_man->get_multi_species_manager();
 
         new_group_manager->extension.position[Y_POS] = 2;
         ED4_base::touch_world_cache();
@@ -1031,7 +1029,7 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
         new_group_manager->parent = (ED4_manager *) multi_species_manager;
     }
     
-    ED4_multi_species_manager *new_multi_species_manager = new_group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+    ED4_multi_species_manager *new_multi_species_manager = new_group_manager->get_multi_species_manager();
 
     ED4_selected_elem *list_elem = ED4_ROOT->selected_objects->head();
     while (list_elem) {
