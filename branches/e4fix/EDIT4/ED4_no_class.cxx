@@ -211,7 +211,7 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                 work_info->out_string       = NULL;         // nur falls new malloc
                 work_info->repeat_count     = repeatCount;
 
-                ED4_terminal *terminal = cursor->owner_of_cursor->to_terminal();
+                ED4_terminal *terminal = cursor->owner_of_cursor;
                 e4_assert(terminal->is_text_terminal());
 
                 work_info->working_terminal = terminal;
@@ -735,7 +735,7 @@ void ED4_set_iupac(AW_window *aww, char *awar_name, bool /* callback_flag */) {
                 char  new_char = ED4_encode_iupac(iupac, ED4_ROOT->alignment_type);
 
                 seq[seq_pos] = new_char;
-                cursor->owner_of_cursor->to_terminal()->write_sequence(seq, len);
+                cursor->owner_of_cursor->write_sequence(seq, len);
 
                 free(iupac);
             }
@@ -1831,7 +1831,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                 ED4_cursor *cursor = &current_cursor();
 
                 if (cursor->owner_of_cursor) {
-                    cursor_terminal = cursor->owner_of_cursor->to_terminal();
+                    cursor_terminal = cursor->owner_of_cursor;
                     where_we_are    = cursor_terminal->is_consensus_terminal() ? ON_CONSENSUS : ON_SPECIES;
                 }
             }

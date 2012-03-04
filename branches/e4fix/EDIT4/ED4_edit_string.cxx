@@ -339,7 +339,7 @@ static GB_ERROR toggle_cursor_group_folding() {
     GB_ERROR      error  = NULL;
     ED4_cursor&   cursor = current_cursor();
     if (cursor.owner_of_cursor) {
-        ED4_terminal *cursor_term = cursor.owner_of_cursor->to_terminal();
+        ED4_terminal *cursor_term = cursor.owner_of_cursor;
 
         if (cursor_term->is_in_folded_group()) {
             // cursor not visible -> unfold group which hides cursor
