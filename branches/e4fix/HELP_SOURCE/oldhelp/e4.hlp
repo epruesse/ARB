@@ -225,6 +225,10 @@ DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
 
                                 Fold/unfold group
 
+                        ALT+UP/DOWN
+
+                                Jump to previous/next group consensus
+
 	Messages:
 
 		Many (less serious) errors will not be announced by a popup

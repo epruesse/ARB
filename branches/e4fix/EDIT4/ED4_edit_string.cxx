@@ -683,11 +683,9 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
 
                 break;
 
-            case AW_KEY_RETURN: {
-                printf("return pressed\n");
+            case AW_KEY_RETURN: 
                 ad_err = toggle_cursor_group_folding();
-                break;
-            }
+                break; 
 
             case AW_KEY_ASCII: {
 

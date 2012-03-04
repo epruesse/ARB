@@ -1107,6 +1107,10 @@ static ED4_terminal *get_upper_lower_cursor_pos(ED4_manager *starting_point, ED4
     return result;
 }
 
+struct acceptConsensusTerminal : public ED4_TerminalPredicate {
+    bool fulfilled_by(const ED4_terminal *term) const { return term->is_consensus_terminal(); }
+};
+
 ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
     // move cursor up down
     ED4_cursor_move dir     = ED4_C_NONE;
@@ -1132,12 +1136,12 @@ ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
             int seq_pos = get_sequence_pos();
             ED4_terminal *target_terminal = 0;
 
+            // stay in current area
+            ED4_multi_species_manager *start_at_manager = 0;
+            ED4_AREA_LEVEL             area_level       = owner_of_cursor->get_area_level(&start_at_manager);
+
             if (event->keymodifier & AW_KEYMODE_CONTROL) {
                 bool has_base = has_base_at(seq_pos, true).fulfilled_by(owner_of_cursor);
-
-                // stay in current area
-                ED4_multi_species_manager *start_at_manager = 0;
-                owner_of_cursor->get_area_level(&start_at_manager);
 
                 if (!endHome) { // not End or Home
                     target_terminal = get_upper_lower_cursor_pos(start_at_manager, dir, y_world, false, has_base_at(seq_pos, !has_base));
@@ -1157,15 +1161,19 @@ ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
             }
             else {
                 e4_assert(!endHome); // END and HOME w/o Ctrl should not call move_cursor()
-
-                bool isScreen = false;
-                if (dir == ED4_C_DOWN) {
-                    if (owner_of_cursor->get_area_level(NULL) == ED4_A_TOP_AREA) {
-                        window()->world_to_win_coords(&x_dummy, &y_world); // special handling to move cursor from top to bottom area
-                        isScreen = true;
-                    }
+                if (event->keymodifier & AW_KEYMODE_ALT) {
+                    target_terminal = get_upper_lower_cursor_pos(start_at_manager, dir, y_world, false, acceptConsensusTerminal());
                 }
-                target_terminal = get_upper_lower_cursor_pos(ED4_ROOT->main_manager, dir, y_world, isScreen, acceptAnyTerminal());
+                else {
+                    bool isScreen = false;
+                    if (dir == ED4_C_DOWN) {
+                        if (area_level == ED4_A_TOP_AREA) {
+                            window()->world_to_win_coords(&x_dummy, &y_world); // special handling to move cursor from top to bottom area
+                            isScreen = true;
+                        }
+                    }
+                    target_terminal = get_upper_lower_cursor_pos(ED4_ROOT->main_manager, dir, y_world, isScreen, acceptAnyTerminal());
+                }
             }
 
             if (target_terminal) {
