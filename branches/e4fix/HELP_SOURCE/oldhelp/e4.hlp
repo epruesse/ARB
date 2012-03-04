@@ -221,6 +221,10 @@ DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
 
 				Jumps to the first/last sequence.
 
+                        ENTER
+
+                                Fold/unfold group
+
 	Messages:
 
 		Many (less serious) errors will not be announced by a popup
