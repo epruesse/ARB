@@ -625,7 +625,7 @@ ED4_AREA_LEVEL ED4_base::get_area_level(ED4_multi_species_manager **multi_specie
 
 
 void ED4_multi_species_manager::update_group_id() {
-    ED4_base *consensus_name_terminal = get_consensus_terminal();
+    ED4_species_name_terminal *consensus_name_terminal = get_consensus_name_terminal();
     if (consensus_name_terminal) { // top managers dont show consensus
         e4_assert(has_valid_counters());
         
@@ -848,8 +848,8 @@ ED4_returncode ED4_base::set_width() {
         ED4_species_manager *species_manager = to_species_manager();
 
         if (!species_manager->is_consensus_manager()) {
-            ED4_multi_name_manager *multi_name_manager = species_manager->get_defined_level(ED4_L_MULTI_NAME)->to_multi_name_manager();     // case I'm a species
-            ED4_terminal           *consensus_terminal = parent->to_multi_species_manager()->get_consensus_terminal();
+            ED4_multi_name_manager    *multi_name_manager = species_manager->get_defined_level(ED4_L_MULTI_NAME)->to_multi_name_manager();  // case I'm a species
+            ED4_species_name_terminal *consensus_terminal = parent->to_multi_species_manager()->get_consensus_name_terminal();
 
             for (int i=0; i < multi_name_manager->children->members(); i++) {
                 ED4_name_manager *name_manager = multi_name_manager->children->member(i)->to_name_manager();
@@ -883,8 +883,8 @@ ED4_returncode ED4_base::set_width() {
     else if (is_group_manager()) {
         ED4_group_manager         *group_manager           = to_group_manager();
         ED4_multi_species_manager *multi_species_manager   = group_manager->get_multi_species_manager();
-        ED4_terminal              *mark_consensus_terminal = multi_species_manager->get_consensus_terminal();
-        ED4_terminal              *consensus_terminal      = parent->to_multi_species_manager()->get_consensus_terminal();
+        ED4_species_name_terminal *mark_consensus_terminal = multi_species_manager->get_consensus_name_terminal();
+        ED4_species_name_terminal *consensus_terminal      = parent->to_multi_species_manager()->get_consensus_name_terminal();
 
         if (consensus_terminal) { // we're a group in another group
             mark_consensus_terminal->extension.size[WIDTH] = consensus_terminal->extension.size[WIDTH] - BRACKETWIDTH;

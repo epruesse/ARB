@@ -1711,9 +1711,10 @@ public:
     virtual void update_requested_children();
     virtual void delete_requested_children();
 
-    int           count_visible_children(); // is called by a multi_species_manager
-    ED4_terminal *get_consensus_terminal(); // returns the consensus-terminal or 0
-    ED4_species_manager *get_consensus_manager() const; // returns the consensus-manager or 0
+    int count_visible_children();           // is called by a multi_species_manager
+
+    ED4_species_manager       *get_consensus_manager() const;       // returns the consensus-manager or NULL
+    ED4_species_name_terminal *get_consensus_name_terminal() const; // returns the consensus-name-terminal or NULL
 
     // functions concerned with selection
     int get_no_of_selected_species();
@@ -1917,6 +1918,8 @@ public:
     void remove_all_callbacks();
 
     void do_callbacks();
+
+    ED4_species_name_terminal *get_name_terminal() const { return children->member(0)->to_species_name_terminal(); }
 };
 
 inline ED4_species_manager *ED4_base::containing_species_manager() const {
@@ -2272,6 +2275,11 @@ E4B_IMPL_CASTOP(text_terminal);          // to_text_terminal
 
 inline ED4_device_manager *ED4_root::get_device_manager() {
     return main_manager->search_spec_child_rek(ED4_L_DEVICE)->to_device_manager();
+}
+
+inline ED4_species_name_terminal *ED4_multi_species_manager::get_consensus_name_terminal() const { 
+    ED4_species_manager *consensus_man = get_consensus_manager();
+    return consensus_man ? consensus_man->get_name_terminal() : NULL;
 }
 
 // --------------------------------------------

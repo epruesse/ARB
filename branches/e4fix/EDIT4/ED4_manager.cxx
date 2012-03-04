@@ -1684,12 +1684,6 @@ ED4_species_manager *ED4_multi_species_manager::get_consensus_manager() const {
     return consensus_manager;
 }
 
-ED4_terminal *ED4_multi_species_manager::get_consensus_terminal() {
-    // returns the consensus-name-terminal of a multi_species manager
-    ED4_species_manager *consensus_man = get_consensus_manager();
-    return consensus_man ? consensus_man->children->member(0)->to_terminal() : 0;
-}
-
 // --------------------------------------------------------------------------------
 //      ED4_species_manager
 // --------------------------------------------------------------------------------
