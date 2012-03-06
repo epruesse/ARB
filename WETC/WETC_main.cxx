@@ -34,7 +34,7 @@ int ARB_main(int argc, const char *argv[]) {
             AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_WETC");
 
             AWT_show_file(aw_root, file);
-            aw_root->window_hide();
+            aw_root->window_hide(NULL);
             AWT_install_cb_guards();
             aw_root->main_loop();
         }

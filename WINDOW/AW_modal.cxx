@@ -242,8 +242,7 @@ int aw_question(const char *uniqueID, const char *question, const char *buttons,
 #endif
         }
         free(hindex);
-        aw_msg->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
-        aw_msg->show_grabbed();
+        aw_msg->show_modal();
 
         free(button_list);
         aw_message_cb_result = -13;
@@ -553,8 +552,7 @@ char *aw_input(const char *title, const char *prompt, const char *default_input)
     else aw_msg->set_window_title(title);
 
     aw_msg->window_fit();
-    aw_msg->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
-    aw_msg->show_grabbed();
+    aw_msg->show_modal();
     char dummy[]       = "";
     aw_input_cb_result = dummy;
 
@@ -673,8 +671,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     aw_msg->update_selection_list(sel);
 
     // do modal loop :
-    aw_msg->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
-    aw_msg->show_grabbed();
+    aw_msg->show_modal();
     char dummy[] = "";
     aw_input_cb_result = dummy;
 
@@ -777,8 +774,7 @@ char *aw_file_selection(const char *title, const char *dir, const char *def_name
         aw_msg->window_fit();
     }
 
-    aw_msg->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
-    aw_msg->show_grabbed();
+    aw_msg->show_modal();
     char dummy[] = "";
     aw_input_cb_result = dummy;
 

@@ -212,8 +212,6 @@ class AW_window : virtual Noncopyable {
     void all_menus_created() const;
     void create_toggle(const char *var_name, aw_toggle_data *tdata);
 
-    void show_internal(void *grab);
-
 protected:
     AW_root *root;
 
@@ -261,7 +259,7 @@ public:
     void allow_delete_window(bool allow_close);
     void on_hide(aw_hide_cb call_on_hide) { hide_cb = call_on_hide; }
 
-    void show_grabbed();
+    void show_modal();
     void set_window_title_intern(char *title);
 
     int calculate_string_width(int columns) const;

@@ -727,13 +727,25 @@ void AW_cb_struct::run_callback() {
         }
 
         if (!allow) {
-            // don't warn about the following callbacks, just silently ignore them
-            bool silentlyIgnore =
+            // do not change position of modal dialog, when one of the following callbacks happens - just raise it
+            // (other callbacks like pressing a button, will position the modal dialog under mouse)
+            bool onlyRaise =
                 aw->is_expose_callback(AW_MIDDLE_AREA, f) ||
+                aw->is_focus_callback(f) ||
+                root->is_focus_callback((AW_RCB)f) ||
                 aw->is_resize_callback(AW_MIDDLE_AREA, f);
 
-            if (!silentlyIgnore) { // otherwise remind the user to answer the prompt:
-                aw_message("That has been ignored. Answer the prompt first!");
+            if (root->current_modal_window) { 
+                AW_window *awmodal = root->current_modal_window;
+
+                AW_PosRecalc prev = awmodal->get_recalc_pos_atShow();
+                if (onlyRaise) awmodal->recalc_pos_atShow(AW_KEEP_POS);
+                awmodal->activate();
+                awmodal->recalc_pos_atShow(prev);
+            }
+            else {
+                aw_message("Internal error (callback suppressed when no modal dialog active)");
+                aw_assert(0);
             }
 #if defined(TRACE_CALLBACKS)
             printf("suppressing callback %p\n", f);
@@ -3127,9 +3139,7 @@ void AW_window::wm_activate() {
     }
 }
 
-void AW_window::show_internal(void *cl_grab) {
-    XtGrabKind grab = *(XtGrabKind*)cl_grab;
-
+void AW_window::show() {
     if (!window_is_shown) {
         all_menus_created();
         get_root()->window_show();
@@ -3218,28 +3228,24 @@ void AW_window::show_internal(void *cl_grab) {
         set_window_frame_pos(posx, posy); // always set pos
     }
 
-    XtPopup(p_w->shell, grab);
+    XtPopup(p_w->shell, XtGrabNone);
     if (!expose_callback_added) {
         set_expose_callback(AW_INFO_AREA, (AW_CB)aw_onExpose_calc_WM_offsets, 0, 0); // @@@ should be removed after it was called once
         expose_callback_added = true;
     }
 }
 
-void AW_window::show() {
-    XtGrabKind grab = XtGrabNone;
-    show_internal(&grab);
-}
-
-void AW_window::show_grabbed() {
-    XtGrabKind grab = XtGrabExclusive;
-    show_internal(&grab);
+void AW_window::show_modal() {
+    recalc_pos_atShow(AW_REPOS_TO_MOUSE);
+    get_root()->current_modal_window = this;
+    show();
 }
 
 void AW_window::hide() {
     if (window_is_shown) {
         aw_update_window_geometry_awars(this);
         if (hide_cb) hide_cb(this);
-        get_root()->window_hide();
+        get_root()->window_hide(this);
         window_is_shown = false;
     }
     XtPopdown(p_w->shell);
@@ -3260,10 +3266,13 @@ void AW_root::window_show() {
     active_windows++;
 }
 
-void AW_root::window_hide() {
+void AW_root::window_hide(AW_window *aww) {
     active_windows--;
     if (active_windows<0) {
         exit(0);
+    }
+    if (current_modal_window == aww) {
+        current_modal_window = NULL;
     }
 }
 

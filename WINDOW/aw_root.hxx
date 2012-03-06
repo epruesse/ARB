@@ -90,11 +90,12 @@ public:
     char          *program_name;
 
     bool            disable_callbacks;
+    AW_window      *current_modal_window;
     AW_root_cblist *focus_callback_list;
 
     int  active_windows;
     void window_show();         // a window is set to screen
-    void window_hide();
+    void window_hide(AW_window *aww);
 
     // the read only public section:
     short       font_width;
