@@ -374,7 +374,7 @@ void AWT_resize_cb(AW_window *, AWT_canvas *ntw, AW_CL) {
 }
 
 
-static void focus_cb(AW_window *, AWT_canvas *ntw) {
+static void canvas_focus_cb(AW_window *, AWT_canvas *ntw) {
     if (ntw->gb_main) {
         ntw->push_transaction();
 
@@ -742,7 +742,7 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_g
     aww->set_expose_callback(AW_MIDDLE_AREA, (AW_CB)AWT_expose_cb, (AW_CL)this, 0);
     aww->set_resize_callback(AW_MIDDLE_AREA, (AW_CB)AWT_resize_cb, (AW_CL)this, 0);
     aww->set_input_callback(AW_MIDDLE_AREA, (AW_CB)input_event, (AW_CL)this, 0);
-    aww->set_focus_callback((AW_CB)focus_cb, (AW_CL)this, 0);
+    aww->set_focus_callback((AW_CB)canvas_focus_cb, (AW_CL)this, 0);
 
     aww->set_motion_callback(AW_MIDDLE_AREA, (AW_CB)motion_event, (AW_CL)this, 0);
     aww->set_horizontal_change_callback((AW_CB)scroll_hor_cb, (AW_CL)this, 0);

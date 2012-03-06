@@ -884,6 +884,13 @@ void AW_normal_cursor(AW_root *root) {
     p_global->set_cursor(0, 0, 0);
 }
 
+// ---------------
+//      popup
+
+void AW_window::set_popup_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    p_w->popup_cb = new AW_cb_struct(this, f, cd1, cd2, 0, p_w->popup_cb);
+}
+
 // --------------
 //      focus
 
@@ -893,22 +900,31 @@ static void AW_root_focusCB(Widget /*wgt*/, XtPointer awrp, XEvent*, Boolean*) {
     AW_root_cblist::call(aw_root->focus_callback_list, aw_root);
 }
 
-void AW_root::set_focus_callback(AW_RCB f, AW_CL cd1, AW_CL cd2) {
-    AW_root_cblist::add(focus_callback_list, AW_root_callback(f, cd1, cd2));
+void AW_root::set_focus_callback(AW_RCB fcb, AW_CL cd1, AW_CL cd2) {
+    AW_root_cblist::add(focus_callback_list, AW_root_callback(fcb, cd1, cd2));
+}
+bool AW_root::is_focus_callback(AW_RCB fcb) const {
+    return focus_callback_list && focus_callback_list->contains(AW_root_callback(fcb, 0, 0));
 }
 
-static void AW_focusCB(Widget /*wgt*/, XtPointer aw_cb_struct, XEvent*, Boolean*) {
-    AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
-    cbs->run_callback();
+static void AW_focusCB(Widget /*wgt*/, XtPointer cl_aww, XEvent*, Boolean*) {
+    AW_window *aww = (AW_window*)cl_aww;
+    aww->run_focus_callback();
 }
-
-void AW_window::set_popup_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    p_w->popup_cb = new AW_cb_struct(this, f, cd1, cd2, 0, p_w->popup_cb);
+void AW_window::run_focus_callback() {
+    if (focus_cb) focus_cb->run_callback();
 }
 
 void AW_window::set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    XtAddEventHandler(MIDDLE_WIDGET, EnterWindowMask, FALSE,
-    AW_focusCB, (XtPointer) new AW_cb_struct(this, f, cd1, cd2, 0));
+    if (!focus_cb) {
+        XtAddEventHandler(MIDDLE_WIDGET, EnterWindowMask, FALSE, AW_focusCB, (XtPointer) this);
+    }
+    if (!focus_cb || !focus_cb->contains(f)) {
+        focus_cb = new AW_cb_struct(this, f, cd1, cd2, 0, focus_cb);
+    }
+}
+bool AW_window::is_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL)) {
+    return focus_cb && focus_cb->contains(f);
 }
 
 // ---------------
