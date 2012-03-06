@@ -206,6 +206,8 @@ class AW_window : virtual Noncopyable {
     aw_hide_cb         hide_cb;
 
     bool expose_callback_added;
+
+    AW_cb_struct *focus_cb;
     
     void all_menus_created() const;
     void create_toggle(const char *var_name, aw_toggle_data *tdata);
@@ -254,6 +256,8 @@ public:
         recalc_size_at_show = sr;
     }
 
+    void run_focus_callback();
+    
     void allow_delete_window(bool allow_close);
     void on_hide(aw_hide_cb call_on_hide) { hide_cb = call_on_hide; }
 
@@ -332,6 +336,7 @@ public:
 
     void set_popup_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
+    bool is_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL));
 
     void set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
     void set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);

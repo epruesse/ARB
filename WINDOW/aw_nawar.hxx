@@ -82,6 +82,13 @@ public:
     static void call(AW_root_cblist*& listhead, AW_root *root) {
         if (listhead) listhead->call(root);
     }
+
+    bool contains(const AW_root_callback& cb) const {
+        return (cb == callback) || (next && next->contains(cb));
+    }
+    static bool contains(const AW_root_cblist*& listhead, const AW_root_callback& cb) {
+        return listhead && listhead->contains(cb);
+    }
 };
 
 struct AW_var_target {
