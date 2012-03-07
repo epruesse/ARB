@@ -41,8 +41,6 @@
 #include <ctime>
 #include <cmath>
 
-#define di_assert(cond) arb_assert(cond)
-
 // --------------------------------------------------------------------------------
 
 #define AWAR_DIST_BOOTSTRAP_COUNT AWAR_DIST_PREFIX "bootstrap/count"
@@ -59,12 +57,12 @@
 
 // --------------------------------------------------------------------------------
 
-DI_MATRIX *DI_MATRIX::ROOT = 0;
+DI_GLOBAL_MATRIX GLOBAL_MATRIX;
 
 static DI_dmatrix *di_dmatrix = 0;
 static AP_matrix   DI_dna_matrix(AP_MAX);
 
-static void hide_di_dmatrix() {
+static void refresh_matrix_display() {
     if (di_dmatrix) {
         di_dmatrix->resized();
         di_dmatrix->display(false);
@@ -72,8 +70,7 @@ static void hide_di_dmatrix() {
 }
 
 static void delete_matrix_cb(AW_root *) {
-    DI_MATRIX::delete_ROOT();
-    hide_di_dmatrix();
+    GLOBAL_MATRIX.forget();
 }
 
 static AW_window *create_dna_matrix_window(AW_root *aw_root) {
@@ -882,7 +879,7 @@ GB_ERROR DI_MATRIX::calculate_pro(DI_TRANSFORMATION transformation, bool *aborte
 STATIC_ATTRIBUTED(__ATTR__USERESULT, GB_ERROR di_calculate_matrix(AW_window *aww, const WeightedFilter *weighted_filter, bool bootstrap_flag, bool show_warnings, bool *aborted_flag)) {
     // sets 'aborted_flag' to true, if it is non-NULL and the calculation has been aborted
     GB_push_transaction(GLOBAL_gb_main);
-    if (DI_MATRIX::ROOT) {
+    if (GLOBAL_MATRIX.exists()) {
         GB_pop_transaction(GLOBAL_gb_main);
         return 0;
     }
@@ -930,14 +927,14 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, GB_ERROR di_calculate_matrix(AW_window *aww
         if (aborted) {
             di_assert(error);
             if (aborted_flag) *aborted_flag = true;
-            DI_MATRIX::replace_ROOT(phm);
+            GLOBAL_MATRIX.replaceBy(phm);
         }
         else if (error) {
             delete phm;
-            DI_MATRIX::delete_ROOT();
+            GLOBAL_MATRIX.forget();
         }
         else {
-            DI_MATRIX::replace_ROOT(phm);
+            GLOBAL_MATRIX.replaceBy(phm);
         }
     }
     free(load_what);
@@ -986,8 +983,7 @@ static void di_mark_by_distance(AW_window *aww, AW_CL cl_weightedFilter) {
                 AliView           *aliview         = weighted_filter->create_aliview(use);
 
                 if (!error) {
-                    DI_MATRIX *old_root = DI_MATRIX::ROOT;
-                    DI_MATRIX::ROOT = 0;
+                    DI_MATRIX *prev_global = GLOBAL_MATRIX.swap(NULL);
 
                     size_t speciesCount   = GBT_get_species_count(GLOBAL_gb_main);
                     bool   markedSelected = false;
@@ -1027,8 +1023,8 @@ static void di_mark_by_distance(AW_window *aww, AW_CL cl_weightedFilter) {
                         progress.inc_and_check_user_abort(error);
                     }
 
-                    di_assert(DI_MATRIX::ROOT == 0);
-                    DI_MATRIX::ROOT = old_root;
+                    di_assert(!GLOBAL_MATRIX.exists());
+                    ASSERT_RESULT(DI_MATRIX*, NULL, GLOBAL_MATRIX.swap(prev_global));
                 }
 
                 delete aliview;
@@ -1059,6 +1055,8 @@ static void di_view_matrix_cb(AW_window *aww, AW_CL cl_sparam) {
     di_dmatrix->init();
     di_dmatrix->display(false);
 
+    GLOBAL_MATRIX.set_changed_cb(refresh_matrix_display);
+
     viewer->activate();
 }
 
@@ -1070,7 +1068,7 @@ static void di_save_matrix_cb(AW_window *aww, AW_CL cl_weightedFilter) {
         char              *filename = aww->get_root()->awar(AWAR_DIST_SAVE_MATRIX_FILENAME)->read_string();
         enum DI_SAVE_TYPE  type     = (enum DI_SAVE_TYPE)aww->get_root()->awar(AWAR_DIST_SAVE_MATRIX_TYPE)->read_int();
 
-        DI_MATRIX::ROOT->save(filename, type);
+        GLOBAL_MATRIX.get()->save(filename, type);
         free(filename);
     }
     AW_refresh_fileselection(aww->get_root(), AWAR_DIST_SAVE_MATRIX_BASE);
@@ -1179,11 +1177,12 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
         }
 
         if (bootstrap_flag) {
-            di_assert(DI_MATRIX::ROOT == 0);
+            GLOBAL_MATRIX.forget();
+            GLOBAL_MATRIX.set_changed_cb(NULL); // otherwise matrix window will repeatedly pop up/down
 
             error = di_calculate_matrix(aww, weighted_filter, bootstrap_flag, true, NULL);
             if (!error) {
-                DI_MATRIX *matr = DI_MATRIX::ROOT;
+                DI_MATRIX *matr = GLOBAL_MATRIX.get();
                 if (!matr) {
                     error = "unexpected error in di_calculate_matrix_cb (data missing)";
                 }
@@ -1205,7 +1204,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
     do {
         if (error) break;
 
-        DI_MATRIX::delete_ROOT();
+        if (bootstrap_flag) GLOBAL_MATRIX.forget();
 
         bool aborted = false;
         error        = di_calculate_matrix(aww, weighted_filter, bootstrap_flag, !bootstrap_flag, &aborted);
@@ -1214,12 +1213,12 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
             break;              // end of bootstrap
         }
 
-        if (!DI_MATRIX::ROOT) {
+        if (!GLOBAL_MATRIX.exists()) {
             error = "unexpected error in di_calculate_matrix_cb (data missing)";
             break;
         }
 
-        DI_MATRIX  *matr  = DI_MATRIX::ROOT;
+        DI_MATRIX  *matr  = GLOBAL_MATRIX.get();
         char     **names = (char **)calloc(sizeof(char *), (size_t)matr->nentries+2);
         for (long i=0; i<matr->nentries; i++) {
             names[i] = matr->entries[i]->name;
@@ -1270,14 +1269,13 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
 
     if (bootstrap_flag) {
         if (all_names) delete all_names;
+        GLOBAL_MATRIX.forget();
     }
 #if defined(DEBUG)
     else {
         di_assert(all_names == 0);
     }
 #endif // DEBUG
-
-    DI_MATRIX::delete_ROOT();
 
     if (error) aw_message(error);
     progress->done();
@@ -1288,7 +1286,7 @@ static void di_autodetect_callback(AW_window *aww)
 {
     GB_push_transaction(GLOBAL_gb_main);
 
-    DI_MATRIX::delete_ROOT();
+    GLOBAL_MATRIX.forget();
 
     AW_root *aw_root = aww->get_root();
     char    *use     = aw_root->awar(AWAR_DIST_ALIGNMENT)->read_string();
@@ -1339,7 +1337,7 @@ static void di_autodetect_callback(AW_window *aww)
 
             LoadWhat all_flag = (strcmp(load_what, "all") == 0) ? DI_LOAD_ALL : DI_LOAD_MARKED;
 
-            DI_MATRIX::delete_ROOT();
+            GLOBAL_MATRIX.forget();
 
             phm.load(all_flag, sort_tree_name, true, NULL);
 
@@ -1370,8 +1368,8 @@ STATIC_ATTRIBUTED(__ATTR__NORETURN, void di_exit(AW_window *aww)) {
 }
 
 static void di_calculate_full_matrix_cb(AW_window *aww, AW_CL cl_weightedFilter) {
-    if (DI_MATRIX::ROOT && DI_MATRIX::ROOT->matrix_type == DI_MATRIX_FULL) return;
-    delete_matrix_cb(0);
+    GLOBAL_MATRIX.forget_if_not_has_type(DI_MATRIX_FULL);
+
     WeightedFilter *weighted_filter = (WeightedFilter*)cl_weightedFilter;
     GB_ERROR        error           = di_calculate_matrix(aww, weighted_filter, 0, true, NULL);
 
@@ -1388,14 +1386,12 @@ static void di_compress_tree_cb(AW_window *aww, AW_CL cl_weightedFilter) {
         error = GB_await_error();
     }
     else {
-        if (DI_MATRIX::ROOT && DI_MATRIX::ROOT->matrix_type!=DI_MATRIX_COMPRESSED) {
-            delete_matrix_cb(0);        // delete wrong matrix !!!
-        }
+        GLOBAL_MATRIX.forget_if_not_has_type(DI_MATRIX_COMPRESSED);
 
         WeightedFilter *weighted_filter = (WeightedFilter*)cl_weightedFilter;
         error = di_calculate_matrix(aww, weighted_filter, 0, true, NULL);
-        if (!error && !DI_MATRIX::ROOT) error = "Failed to calculate your matrix (bug?)";
-        if (!error) error = DI_MATRIX::ROOT->compress(tree);
+        if (!error && !GLOBAL_MATRIX.exists()) error = "Failed to calculate your matrix (bug?)";
+        if (!error) error = GLOBAL_MATRIX.get()->compress(tree);
 
         GBT_delete_tree(tree);
     }
