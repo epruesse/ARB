@@ -562,6 +562,43 @@ size_t GBT_count_leafs(const GBT_TREE *tree) {
     return GBT_count_leafs(tree->leftson) + GBT_count_leafs(tree->rightson);
 }
 
+static GB_ERROR gbt_invalid_because(const GBT_TREE *tree, const char *reason) {
+    return GBS_global_string("((GBT_TREE*)0x%p) %s", tree, reason);
+}
+
+inline bool has_son(const GBT_TREE *father, const GBT_TREE *son) {
+    return !father->is_leaf && (father->leftson == son || father->rightson == son);
+}
+
+static GB_ERROR gbt_is_invalid(bool is_root, const GBT_TREE *tree) {
+    if (tree->father) {
+        if (!has_son(tree->father, tree)) return gbt_invalid_because(tree, "is not son of its father");
+    }
+    else {
+        if (!is_root) return gbt_invalid_because(tree, "has no father (but isn't root)");
+    }
+
+    GB_ERROR error = NULL;
+    if (tree->is_leaf) {
+        if (tree->leftson) return gbt_invalid_because(tree, "is leaf, but has leftson");
+        if (tree->rightson) return gbt_invalid_because(tree, "is leaf, but has rightson");
+    }
+    else {
+        if (!tree->leftson) return gbt_invalid_because(tree, "is inner node, but has no leftson");
+        if (!tree->rightson) return gbt_invalid_because(tree, "is inner node, but has no rightson");
+
+        error             = gbt_is_invalid(false, tree->leftson);
+        if (!error) error = gbt_is_invalid(false, tree->rightson);
+    }
+    return error;
+}
+
+GB_ERROR GBT_is_invalid(const GBT_TREE *tree) {
+    if (tree->father) return gbt_invalid_because(tree, "is expected to be the root-node, but has father");
+    if (tree->is_leaf) return gbt_invalid_because(tree, "is expected to be the root-node, but is a leaf (tree too small)");
+    return gbt_is_invalid(true, tree);
+}
+
 // -------------------------------------------
 //      link the tree tips to the database
 

@@ -80,6 +80,7 @@ static RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
         return info;
     }
 
+
     gbtnode->is_leaf = false;
     if (info->percent < 10000) {
         gbtnode->remark_branch = rb_remark("", info->percent, gbtnode->remark_branch);
@@ -92,13 +93,18 @@ static RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
     free(info_res);
 
     nsonp = nsonp->next;
-    if (!nsonp) return info;
+    if (!nsonp) {
+        arb_assert(0); // @@@ invalid tree would be generated here (only leftson)
+        return info;
+    }
 
     // rightson
     info_res = rbtree(nsonp->node, gbtnode);
     gbtnode->rightson = info_res->node;
     gbtnode->rightlen = info_res->len;
     free(info_res);
+
+    arb_assert(nsonp->next == NULL); // otherwise some sons would be silently dropped
 
     return info;
 }

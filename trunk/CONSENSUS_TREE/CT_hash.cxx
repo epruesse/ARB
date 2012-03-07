@@ -85,17 +85,16 @@ void hash_insert(PART *part, int weight) {
      * @param part the one to insert, is destructed afterwards
      * @param weight  the weight of the part
      */
-    int key;
     HNODE *hp;
 
     part_standard(part);
 
-    key = part_key(part);
+    int key = part_key(part);
     key %= HASH_MAX;
 
     if (Hashlist[key]) {
         for (hp=Hashlist[key]; hp; hp=hp->next) {
-            if (part_cmp(hp->part, part)) { // if in list
+            if (parts_equal(hp->part, part)) { // if in list
                 // tree-add tree-id
                 hp->part->percent += weight;
                 hp->part->len += ((float) weight) * part->len;

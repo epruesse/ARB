@@ -82,7 +82,7 @@ void part_free(PART *p) {
 
 
 PART *part_root() {
-    /*! build a partion that totally consists of 111111...1111 that is needed to
+    /*! build a partition that totally consists of 111111...1111 that is needed to
      * build the root of a specific ntree
      */
     int i;
@@ -151,7 +151,7 @@ void part_or(PART *source, PART *destination) {
 }
 
 
-int part_cmp(PART *p1, PART *p2) {
+int parts_equal(PART *p1, PART *p2) {
     /*! compare two parts
      * @return 1 if equal, 0 otherwise
      */
@@ -166,19 +166,18 @@ int part_cmp(PART *p1, PART *p2) {
 
 
 int part_key(PART *p) {
-    //! calculate a hashkey from part 'p'
+     //! calculate a hashkey from part 'p'
     int i;
     PELEM ph=0;
-
+ 
     for (i=0; i<longs; i++) {
-        ph ^= p->p[i];
-    }
+         ph ^= p->p[i];
+     }
     i = (int) ph;
     if (i<0) i *= -1;
-
+ 
     return i;
 }
-
 
 void part_setlen(PART *p, GBT_LEN len) {
     //! set the len of this edge (this part)
