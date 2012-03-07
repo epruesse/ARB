@@ -1244,7 +1244,11 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
     } while (bootstrap_flag && loop_count != bootstrap_count);
 
     if (!error) {
-        if (bootstrap_flag) tree = get_ctree();
+        if (bootstrap_flag) {
+            tree  = get_ctree();
+            error = GBT_is_invalid(tree);
+            di_assert(!error);
+        }
 
         char *tree_name = aw_root->awar(AWAR_DIST_TREE_STD_NAME)->read_string();
         GB_begin_transaction(GLOBAL_gb_main);

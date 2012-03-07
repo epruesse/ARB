@@ -54,22 +54,22 @@ void insert_ctree(GBT_TREE *tree, int weight)
    that represent the same partition son1 == ~son2 to do this we must split
    the fist son-partition in two parts through logical calculation there
    could only be one son! */
-GBT_TREE *get_ctree()
-{
-    PART *p;
-    NT_NODE *n;
-
+GBT_TREE *get_ctree() {
     hash_settreecount(Tree_count);
     ntree_init();
     build_sorted_list();
-    p = hash_getpart();
-    while (p != NULL) {
-        insert_ntree(p);
-        p = hash_getpart();
+
+    {
+        PART *p = hash_getpart();
+        while (p != NULL) {
+            insert_ntree(p);
+            p = hash_getpart();
+        }
     }
-    n = ntree_get();
+    
+    NT_NODE *n = ntree_get();
     if (n->son_list->next == NULL) { // if father has only one son
-        p  = part_new();
+        PART *p  = part_new();
         n->son_list->node->part->len /= 2;
         part_copy(n->son_list->node->part, p);
         part_invert(p);
@@ -77,7 +77,7 @@ GBT_TREE *get_ctree()
         n = ntree_get();
     }
     else {  // if father has tree sons
-        arb_assert(0); // this case should happen nerver!
+        arb_assert(0); // this case should never happen!
     }
 
     return rb_gettree(n);

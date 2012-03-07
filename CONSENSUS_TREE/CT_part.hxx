@@ -20,7 +20,7 @@ typedef unsigned int PELEM;
 struct PART {
     PELEM   *p;
     GBT_LEN  len;               // Length between two knots
-    int      percent;           // Count how often this partion appears
+    int      percent;           // Count how often this partition appears
     char    *source;            // From which tree comes the partition
 };
 
@@ -30,13 +30,15 @@ PART *part_new();
 PART *part_root();
 void  part_setbit(PART *p, int pos);
 int   son(PART *son, PART *father);
-int   brothers(PART *p1, PART *p2); void part_invert(PART *p);
+int   brothers(PART *p1, PART *p2);
+void  part_invert(PART *p);
 void  part_or(PART *s, PART *d);
 void  part_copy(PART *s, PART *d);
 void  part_standard(PART *p);
 int   calc_index(PART *p);
 void  part_free(PART *p);
-int   part_cmp(PART *p1, PART *p2); int part_key(PART *p);
+int   parts_equal(PART *p1, PART *p2);
+int   part_key(PART *p);
 void  part_setlen(PART *p, GBT_LEN len);
 
 #else

@@ -219,8 +219,8 @@ static int ins_ntree(NT_NODE *tree, PART *newpart)
 
 
 
-/* Insert a partition in the NTree. To do this I try two insert it in both
-   possible representations. ins_ntree do the hole work. If it fit in none
+/* Insert a partition in the NTree. To do this I try to insert it in both
+   possible representations. ins_ntree does the whole work. If it fits in none
    of them I delete the partition.
    attention: The partition is destructed afterwards.
    The tree is never empty, because it is initialized with a root */
@@ -228,6 +228,7 @@ void insert_ntree(PART *part)
 {
     ntree_count++;
     if (!ins_ntree(ntree, part)) {
+        // @@@ really ok to insert the inverted subtree here ? 
         part_invert(part);
         if (!ins_ntree(ntree, part)) {
             ntree_count--;
