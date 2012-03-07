@@ -131,8 +131,11 @@ public:
     GB_ERROR calculate_pro(DI_TRANSFORMATION transformation, bool *aborted_flag);
     void analyse();
 
-    int search_group(GBT_TREE *node, GB_HASH *hash, long *groupcnt, char *groupname, DI_ENTRY **groups);     // @@ OLIVER
+    int   search_group(GBT_TREE *node, GB_HASH *hash, long *groupcnt, char *groupname, DI_ENTRY **groups);   // @@ OLIVER
     char *compress(GBT_TREE *tree);
+
+    static void replace_ROOT(DI_MATRIX *newRoot) { delete ROOT; ROOT = newRoot; }
+    static void delete_ROOT() { replace_ROOT(NULL); }
 };
 
 class WeightedFilter;
