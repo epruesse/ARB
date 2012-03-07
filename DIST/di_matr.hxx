@@ -21,6 +21,7 @@
 #include <AP_matrix.hxx>
 #endif
 
+#define di_assert(cond) arb_assert(cond)
 
 #define AWAR_DIST_PREFIX           "dist/"
 #define AWAR_DIST_CORR_TRANS       AWAR_DIST_PREFIX "correction/trans"
@@ -89,6 +90,8 @@ class BI_helix;
 
 enum LoadWhat { DI_LOAD_ALL, DI_LOAD_MARKED, DI_LOAD_LIST };
 
+typedef void (*DI_MATRIX_CB)();
+
 class DI_MATRIX : virtual Noncopyable {
     friend class DI_ENTRY;
 
@@ -100,12 +103,11 @@ class DI_MATRIX : virtual Noncopyable {
     AliView *aliview;
 
 public:
-    bool               is_AA;
-    DI_ENTRY         **entries;
-    long               nentries;
-    static DI_MATRIX  *ROOT;
-    AP_smatrix        *matrix;
-    DI_MATRIX_TYPE     matrix_type;
+    bool             is_AA;
+    DI_ENTRY       **entries;
+    long             nentries;
+    AP_smatrix      *matrix;
+    DI_MATRIX_TYPE   matrix_type;
 
     DI_MATRIX(const AliView& aliview, AW_root *awr);
     ~DI_MATRIX();
@@ -133,10 +135,45 @@ public:
 
     int   search_group(GBT_TREE *node, GB_HASH *hash, long *groupcnt, char *groupname, DI_ENTRY **groups);   // @@ OLIVER
     char *compress(GBT_TREE *tree);
-
-    static void replace_ROOT(DI_MATRIX *newRoot) { delete ROOT; ROOT = newRoot; }
-    static void delete_ROOT() { replace_ROOT(NULL); }
 };
+
+class DI_GLOBAL_MATRIX : virtual Noncopyable {
+    DI_MATRIX    *matrix;
+    DI_MATRIX_CB  changed_cb;
+
+    void announce_change() { if (changed_cb) changed_cb(); }
+
+public:
+    DI_GLOBAL_MATRIX() : matrix(NULL), changed_cb(NULL) {}
+    ~DI_GLOBAL_MATRIX() { forget(); }
+
+    DI_MATRIX *get() { return matrix; }
+    void set(DI_MATRIX *new_global) { di_assert(!matrix); matrix = new_global; announce_change(); }
+    void forget() { delete matrix; matrix = NULL; announce_change(); }
+    void replaceBy(DI_MATRIX *new_global) { forget(); set(new_global); }
+
+    bool exists() const { return matrix != NULL; }
+
+    void set_changed_cb(DI_MATRIX_CB cb) {
+        announce_change();
+        changed_cb = cb;
+    }
+
+    DI_MATRIX *swap(DI_MATRIX *other) {
+        DI_MATRIX *prev = matrix;
+        matrix          = other;
+        announce_change();
+        return prev;
+    }
+
+    void forget_if_not_has_type(DI_MATRIX_TYPE wanted_type) {
+        if (matrix && matrix->matrix_type != wanted_type) {
+            forget();
+        }
+    }
+};
+
+extern DI_GLOBAL_MATRIX GLOBAL_MATRIX;
 
 class WeightedFilter;
 struct save_matrix_params {

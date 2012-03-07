@@ -122,7 +122,7 @@ void DI_dmatrix::init (DI_MATRIX *matrix) {
 
 DI_MATRIX *DI_dmatrix::get_matrix() {
     if (di_matrix) return di_matrix;
-    return DI_MATRIX::ROOT;
+    return GLOBAL_MATRIX.get();
 }
 
 void DI_dmatrix::resized() {
