@@ -64,14 +64,16 @@ DI_MATRIX *DI_MATRIX::ROOT = 0;
 static DI_dmatrix *di_dmatrix = 0;
 static AP_matrix   DI_dna_matrix(AP_MAX);
 
-static void delete_matrix_cb(AW_root *)
-{
-    delete DI_MATRIX::ROOT;
-    DI_MATRIX::ROOT = 0;
+static void hide_di_dmatrix() {
     if (di_dmatrix) {
         di_dmatrix->resized();
         di_dmatrix->display(false);
     }
+}
+
+static void delete_matrix_cb(AW_root *) {
+    DI_MATRIX::delete_ROOT();
+    hide_di_dmatrix();
 }
 
 static AW_window *create_dna_matrix_window(AW_root *aw_root) {
@@ -924,19 +926,18 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, GB_ERROR di_calculate_matrix(AW_window *aww
             if (phm->is_AA) error = phm->calculate_pro(trans, &aborted);
             else error            = phm->calculate(aw_root, cancel, 0.0, trans, &aborted);
         }
-        delete DI_MATRIX::ROOT;
 
         if (aborted) {
             di_assert(error);
             if (aborted_flag) *aborted_flag = true;
-            DI_MATRIX::ROOT = phm;
+            DI_MATRIX::replace_ROOT(phm);
         }
         else if (error) {
             delete phm;
-            DI_MATRIX::ROOT = 0;
+            DI_MATRIX::delete_ROOT();
         }
         else {
-            DI_MATRIX::ROOT = phm;
+            DI_MATRIX::replace_ROOT(phm);
         }
     }
     free(load_what);
@@ -1204,8 +1205,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
     do {
         if (error) break;
 
-        delete DI_MATRIX::ROOT;
-        DI_MATRIX::ROOT = 0;
+        DI_MATRIX::delete_ROOT();
 
         bool aborted = false;
         error        = di_calculate_matrix(aww, weighted_filter, bootstrap_flag, !bootstrap_flag, &aborted);
@@ -1277,7 +1277,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
     }
 #endif // DEBUG
 
-    delete DI_MATRIX::ROOT; DI_MATRIX::ROOT = 0;
+    DI_MATRIX::delete_ROOT();
 
     if (error) aw_message(error);
     progress->done();
@@ -1287,10 +1287,9 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
 static void di_autodetect_callback(AW_window *aww)
 {
     GB_push_transaction(GLOBAL_gb_main);
-    if (DI_MATRIX::ROOT) {
-        delete DI_MATRIX::ROOT;
-        DI_MATRIX::ROOT = 0;
-    }
+
+    DI_MATRIX::delete_ROOT();
+
     AW_root *aw_root = aww->get_root();
     char    *use     = aw_root->awar(AWAR_DIST_ALIGNMENT)->read_string();
     long     ali_len = GBT_get_alignment_len(GLOBAL_gb_main, use);
@@ -1331,26 +1330,29 @@ static void di_autodetect_callback(AW_window *aww)
         delete ap_filter;
     }
 
-    DI_MATRIX *phm = new DI_MATRIX(*aliview, aw_root);
+    {
+        DI_MATRIX phm(*aliview, aw_root);
 
-    char *load_what      = aw_root->awar(AWAR_DIST_WHICH_SPECIES)->read_string();
-    char *sort_tree_name = aw_root->awar(AWAR_DIST_TREE_SORT_NAME)->read_string();
+        {
+            char *load_what      = aw_root->awar(AWAR_DIST_WHICH_SPECIES)->read_string();
+            char *sort_tree_name = aw_root->awar(AWAR_DIST_TREE_SORT_NAME)->read_string();
 
-    LoadWhat all_flag = (strcmp(load_what, "all") == 0) ? DI_LOAD_ALL : DI_LOAD_MARKED;
+            LoadWhat all_flag = (strcmp(load_what, "all") == 0) ? DI_LOAD_ALL : DI_LOAD_MARKED;
 
-    delete phm->ROOT;
-    phm->ROOT = 0;
+            DI_MATRIX::delete_ROOT();
 
-    phm->load(all_flag, sort_tree_name, true, NULL);
-    free(sort_tree_name);
-    GB_pop_transaction(GLOBAL_gb_main);
+            phm.load(all_flag, sort_tree_name, true, NULL);
 
-    progress.subtitle("Search Correction");
+            free(sort_tree_name);
+            free(load_what);
+        }
 
-    phm->analyse();
-    delete phm;
+        GB_pop_transaction(GLOBAL_gb_main);
 
-    free(load_what);
+        progress.subtitle("Search Correction");
+
+        phm.analyse();
+    }
 
     free(cancel);
     delete aliview;
@@ -1374,11 +1376,6 @@ static void di_calculate_full_matrix_cb(AW_window *aww, AW_CL cl_weightedFilter)
     GB_ERROR        error           = di_calculate_matrix(aww, weighted_filter, 0, true, NULL);
 
     aw_message_if(error);
-
-    if (di_dmatrix) {
-        di_dmatrix->resized();
-        di_dmatrix->display(false);
-    }
 }
 
 static void di_compress_tree_cb(AW_window *aww, AW_CL cl_weightedFilter) {
@@ -1403,12 +1400,7 @@ static void di_compress_tree_cb(AW_window *aww, AW_CL cl_weightedFilter) {
         GBT_delete_tree(tree);
     }
     free(treename);
-    
     aw_message_if(error);
-    if (di_dmatrix) {
-        di_dmatrix->resized();
-        di_dmatrix->display(false);
-    }
 }
 
 static void di_define_sort_tree_name_cb(AW_window *aww) {
