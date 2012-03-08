@@ -4,6 +4,7 @@ TOOLS := \
 	arb_2_ascii \
 	arb_2_bin \
 	arb_a2ps \
+	arb_consensus_tree \
 	arb_dnarates \
 	arb_export_rates \
 	arb_export_tree \
@@ -25,10 +26,11 @@ TOOLS += arb_test
 endif
 endif
 
-LIB_ARBDB            := $(LIBPATH) $(ARBDB_LIB)
-LIBS_ARB_PROBE       := ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a
-LIBS_ARB_READ_TREE   := ../SL/TREE_READ/TREE_READ.a
-LIBS_ARB_EXPORT_TREE := ../SL/TREE_WRITE/TREE_WRITE.a ../XML/XML.a $(LIBS_ARB_READ_TREE)
+LIB_ARBDB               := $(LIBPATH) $(ARBDB_LIB)
+LIBS_ARB_PROBE          := ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a
+LIBS_ARB_READ_TREE      := ../SL/TREE_READ/TREE_READ.a
+LIBS_ARB_EXPORT_TREE    := ../SL/TREE_WRITE/TREE_WRITE.a ../XML/XML.a $(LIBS_ARB_READ_TREE)
+LIBS_ARB_CONSENSUS_TREE := $(LIBS_ARB_EXPORT_TREE) ../CONSENSUS_TREE/CONSENSUS_TREE.a
 
 OBJECTS:=$(addsuffix .o,$(TOOLS))
 BINARIES:=$(addprefix $(ARBHOME)/bin/,$(TOOLS))
@@ -49,6 +51,9 @@ $(ARBHOME)/bin/arb_read_tree: arb_read_tree.o  $(LIBS_ARB_READ_TREE)
 
 $(ARBHOME)/bin/arb_export_tree: arb_export_tree.o  $(LIBS_ARB_EXPORT_TREE)
 	$(LINK_EXECUTABLE) $@ $< $(LIBS_ARB_EXPORT_TREE) $(LIB_ARBDB) $(EXECLIBS) 
+
+$(ARBHOME)/bin/arb_consensus_tree: arb_consensus_tree.o  $(LIBS_ARB_CONSENSUS_TREE)
+	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS_ARB_CONSENSUS_TREE) $(LIB_ARBDB) $(EXECLIBS) 
 
 $(ARBHOME)/bin/arb_a2ps: arb_a2ps.o
 	$(LINK_EXECUTABLE) $@ $(use_ARB_main_C) $< $(LIB_ARBDB) $(EXECLIBS)
@@ -114,6 +119,33 @@ arb_2_bin.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_2_bin.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_2_bin.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_2_bin.o: $(ARBHOME)/INCLUDE/test_global.h
+
+arb_consensus_tree.o: command_output.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_core.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_error.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_file.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_msg.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_str.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_strarray.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_string.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arbdbt.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arbtools.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/CT_ctree.hxx
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/nds.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/smartptr.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/test_unit.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/TreeRead.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/TreeWrite.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h
 
 arb_dnarates.o: DNAml_rates_1_0.h
 arb_dnarates.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -310,6 +342,7 @@ arb_replace.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_replace.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_replace.o: $(ARBHOME)/INCLUDE/test_global.h
 
+arb_test.o: command_output.h
 arb_test.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_test.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_assert.h
