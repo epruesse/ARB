@@ -305,7 +305,7 @@ static char *complete_newick_comment(const char *comment) {
     return GBS_strclose(out);
 }
 
-GB_ERROR TREE_write_Newick(GBDATA *gb_main, char *tree_name, const TREE_node_text_gen *node_gen, bool save_branchlengths, bool save_bootstraps, bool save_groupnames, bool pretty, TREE_node_quoting quoteMode, char *path)
+GB_ERROR TREE_write_Newick(GBDATA *gb_main, char *tree_name, const TREE_node_text_gen *node_gen, bool save_branchlengths, bool save_bootstraps, bool save_groupnames, bool pretty, TREE_node_quoting quoteMode, const char *path)
 {
     GB_ERROR  error  = 0;
     FILE     *output = fopen(path, "w");

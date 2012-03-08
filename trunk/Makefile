@@ -1890,6 +1890,7 @@ UNITS_TESTED_FIRST = \
 	ARBDB/ARBDB.test \
 	TOOLS/arb_test.test \
 	TOOLS/arb_probe.test \
+	TOOLS/arb_consensus_tree.test \
 	AWTC/AWTC.test \
 
 UNITS_TESTED = \

@@ -57,6 +57,7 @@ SL/TREEDISP/TREEDISP.a
 SL/TREE_READ/TREE_READ.a
 SL/TREE_WRITE/TREE_WRITE.a
 STAT/STAT.a
+TOOLS/arb_consensus_tree.o
 TOOLS/arb_probe.o
 TOOLS/arb_test.o
 WETC/WETC.a
