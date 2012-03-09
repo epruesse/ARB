@@ -81,7 +81,7 @@ void part_cleanup() {
 }
 
 #if defined(NTREE_DEBUG_FUNCTIONS)
-void part_print(PART *p) {
+void part_print(const PART *p) {
     // ! Testfunction to print a part
     int i, j, k=0;
     PELEM l;
@@ -137,31 +137,28 @@ void part_setbit(PART *p, int pos) {
 
 
 
-int son(PART *son, PART *father) {
+bool is_son_of(const PART *son, const PART *father) {
     /*! test if the part 'son' is possibly a son of the part 'father'.
      *
      * A father defined in this context as a part covers every bit of his son. needed in CT_ntree
      */
-    int i;
 
-    for (i=0; i<longs; i++) {
-        if ((son->p[i] & father->p[i]) != son->p[i]) return 0;
+    for (int i=0; i<longs; i++) {
+        if ((son->p[i] & father->p[i]) != son->p[i]) return false;
     }
-    return 1;
+    return true;
 }
 
 
-int brothers(PART *p1, PART *p2) {
+bool are_brothers(const PART *p1, const PART *p2) {
     /*! test if two parts are brothers.
      *
      * "brothers" means that p1 and p2 do not share common bits
      */
-    int i;
-
-    for (i=0; i<longs; i++) {
-        if (p1->p[i] & p2->p[i]) return 0;
+    for (int i=0; i<longs; i++) {
+        if (p1->p[i] & p2->p[i]) return false;
     }
-    return 1;
+    return true;
 }
 
 
@@ -172,7 +169,7 @@ void part_invert(PART *p) {
 }
 
 
-void part_or(PART *source, PART *destination) {
+void part_or(const PART *source, PART *destination) {
     //! destination = source or destination
     for (int i=0; i<longs; i++) {
         destination->p[i] |= source->p[i];
@@ -180,21 +177,18 @@ void part_or(PART *source, PART *destination) {
 }
 
 
-int parts_equal(PART *p1, PART *p2) {
-    /*! compare two parts
-     * @return 1 if equal, 0 otherwise
+bool parts_equal(const PART *p1, const PART *p2) {
+    /*! return true if p1 and p2 are equal
      */
-    int i;
-
-    for (i=0; i<longs; i++) {
-        if (p1->p[i] != p2->p[i]) return 0;
+    for (int i=0; i<longs; i++) {
+        if (p1->p[i] != p2->p[i]) return false;
     }
 
-    return 1;
+    return true;
 }
 
 
-int part_key(PART *p) {
+int part_key(const PART *p) {
      //! calculate a hashkey from part 'p'
     int i;
     PELEM ph=0;
@@ -214,7 +208,7 @@ void part_setlen(PART *p, GBT_LEN len) {
 }
 
 #if defined(DUMP_DROPS)
-int part_size(PART *p) {
+int part_size(const PART *p) {
     //! count the number of leafs in partition
     int leafs = 0;
     for (int i = 0; i<longs; ++i) {
@@ -230,7 +224,7 @@ int part_size(PART *p) {
 }
 #endif
 
-void part_copy(PART *source, PART *destination) {
+void part_copy(const PART *source, PART *destination) {
     //! copy source into destination
     for (int i=0; i<longs; i++) destination->p[i] = source->p[i];
 
@@ -249,7 +243,7 @@ void part_standard(PART *p) {
 }
 
 
-int calc_index(PART *p) {
+int calc_index(const PART *p) {
     /*! calculate the first bit set in p,
      *
      * this is only useful if only one bit is set,

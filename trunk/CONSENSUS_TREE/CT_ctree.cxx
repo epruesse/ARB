@@ -90,6 +90,7 @@ GBT_TREE *get_ctree() {
 
 #if defined(NTREE_DEBUG_FUNCTIONS)
     // print_ntree(n, 2);
+    arb_assert(is_well_formed(n));
 #endif
 
     GBT_TREE *result_tree = rb_gettree(n);

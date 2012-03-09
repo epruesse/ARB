@@ -33,23 +33,25 @@ void part_cleanup();
 PART *part_new();
 PART *part_root();
 void  part_setbit(PART *p, int pos);
-int   son(PART *son, PART *father);
-int   brothers(PART *p1, PART *p2);
-void  part_invert(PART *p);
-void  part_or(PART *s, PART *d);
-void  part_copy(PART *s, PART *d);
-void  part_standard(PART *p);
-int   calc_index(PART *p);
-void  part_free(PART *p);
-int   parts_equal(PART *p1, PART *p2);
-int   part_key(PART *p);
-void  part_setlen(PART *p, GBT_LEN len);
+
+bool is_son_of(const PART *son, const PART *father); // @@@ bool result
+bool are_brothers(const PART *p1, const PART *p2);
+bool parts_equal(const PART *p1, const PART *p2); // @@@ 
+
+void part_invert(PART *p);
+void part_or(const PART *s, PART *d);
+void part_copy(const PART *s, PART *d);
+void part_standard(PART *p);
+int  calc_index(const PART *p);
+void part_free(PART *p);
+int  part_key(const PART *p);
+void part_setlen(PART *p, GBT_LEN len);
 
 #if defined(NTREE_DEBUG_FUNCTIONS)
-void  part_print(PART *p);
+void  part_print(const PART *p);
 #endif
 #if defined(DUMP_DROPS)
-int part_size(PART *p);
+int part_size(const PART *p);
 #endif
 
 #else
