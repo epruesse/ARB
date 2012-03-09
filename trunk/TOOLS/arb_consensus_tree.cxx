@@ -325,7 +325,11 @@ void TEST_consensus_tree_direct() {
         TEST_ASSERT_EQUAL__BROKEN(GBT_is_invalid(tree), NULL);
         // GBT_delete_tree(tree); // @@@ crashes
     }
-    
+
+}
+
+void TEST_consensus_tree_direct_is_deterministic() {
+    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(TEST_consensus_tree_direct);
 }
 
 void TEST_consensus_tree() {
