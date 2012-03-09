@@ -378,9 +378,19 @@ void TEST_arb_consensus_tree() {
                          // " consense/1/bootstrapped_5.tree"
                          ,
                          "database  created");
-
     TEST_ASSERT_TEXTFILE_DIFFLINES(savename(1), expected_name(1), 1);
     TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename(1)));
+    
+    TEST_STDOUT_CONTAINS("arb_consensus_tree"
+                         " -w consense/2/consense.tree"
+                         " consense/2/bootstrapped_1.tree"
+                         " consense/2/bootstrapped_2.tree"
+                         " consense/2/bootstrapped_3.tree"
+                         " consense/2/bootstrapped_4.tree"
+                         ,
+                         "database  created");
+    TEST_ASSERT_TEXTFILE_DIFFLINES(savename(2), expected_name(2), 1);
+    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename(2)));
     
     MISSING_TEST("log");
 }
