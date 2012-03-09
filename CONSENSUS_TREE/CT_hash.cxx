@@ -136,6 +136,9 @@ void build_sorted_list() {
      * build for every hitnumber one list and put all elements with that hitnumber
      * in it. After that i connect the list together, what results in a sorted list
      */
+
+    arb_assert(!Sortedlist);
+    
     HNODE *hnp, *hnp_help;
     HNODE **heads, **tails, *head, *tail;
     int i, idx;

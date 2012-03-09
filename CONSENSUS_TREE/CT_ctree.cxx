@@ -27,7 +27,7 @@ void ctree_init(int node_count, const CharPtrArray& names) {
     Name_hash = GBS_create_hash(node_count, GB_MIND_CASE);
 
     for (int i=0; i< node_count; i++) {
-        GBS_write_hash(Name_hash, names[i], (long) i);
+        GBS_write_hash(Name_hash, names[i], i+1);
     }
 
     part_init(node_count);  // Amount of Bits used
@@ -88,6 +88,10 @@ GBT_TREE *get_ctree() {
         arb_assert(0); // this case should never happen!
     }
 
+#if defined(NTREE_DEBUG_FUNCTIONS)
+    // print_ntree(n, 2);
+#endif
+
     GBT_TREE *result_tree = rb_gettree(n);
     ntree_cleanup();
     return result_tree;
@@ -100,5 +104,6 @@ int get_tree_count() {
 
 int get_species_index(const char *name) {
     int idx = GBS_read_hash(Name_hash, name);
-    return idx;
+    arb_assert(idx>0); // given 'name' is unknown
+    return idx-1;
 }
