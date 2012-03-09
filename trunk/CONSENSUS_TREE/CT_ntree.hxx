@@ -30,8 +30,9 @@ struct NSONS {
 
 
 void ntree_init();
-void insert_ntree(PART *part);
+void ntree_cleanup();
 
+void insert_ntree(PART *part);
 NT_NODE *ntree_get();
 
 #else

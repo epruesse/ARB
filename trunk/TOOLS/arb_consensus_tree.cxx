@@ -143,7 +143,8 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
             }
 
             consense_tree = get_ctree();
-
+            ctree_cleanup();
+            
             if (sort_generated_tree) {
                 consense_tree = sort_tree(consense_tree); // bring tree into a stable form, there seems to be sth random in ctree
                 // @@@ determine what behaves random, could be an error as well
@@ -356,8 +357,12 @@ void TEST_consensus_tree_2() {
 }
 
 void TEST_consensus_tree_2_is_deterministic() {
+#if 1
     TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(TEST_consensus_tree_2);
     TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename(2)));
+#else
+    TEST_consensus_tree_2();
+#endif
 }
 
 void TEST_arb_consensus_tree() {

@@ -23,9 +23,13 @@ static const CharPtrArray *name_tbl = NULL;
 
 void rb_init(const CharPtrArray& names) {
     // Initialize the module
-    name_tbl = &names; // @@@ use a copy for safety ? 
+    arb_assert(!name_tbl);
+    name_tbl = &names; // @@@ use a copy for safety ?
 }
 
+void rb_cleanup() {
+    name_tbl = NULL;
+}
 
 static char *get_name(int idx) {
     // get the name of a leaf from the index

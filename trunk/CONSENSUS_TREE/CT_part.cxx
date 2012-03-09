@@ -18,32 +18,68 @@
 
 #include <arbdbt.h>
 
-static PELEM cutmask;                                      // this mask is necessary to cut the not needed bits from the last long
-static int   longs = 0;                                    // number of longs per part
-static int   plen  = 0;                                    // number of bits per part
+#if defined(DEBUG)
+// #define DUMP_PART_INIT
+#endif
 
 
-void part_init(int len) {
-    /*! Function to initialize the variables above
+static PELEM cutmask = 0; // this mask is used to zero unused bits from the last long
+static int   longs   = 0; // number of longs per part
+static int   plen    = 0; // number of bits per part
+
+#define BITS_PER_PELEM (sizeof(PELEM)*8)
+
+#if defined(DUMP_PART_INIT) || defined(UNIT_TESTS)
+static const char *readable_cutmask(PELEM mask) {
+    static char readable[BITS_PER_PELEM+1];
+    memset(readable, '0', BITS_PER_PELEM);
+    readable[BITS_PER_PELEM]        = 0;
+
+    for (int b = BITS_PER_PELEM-1; b >= 0; --b) {
+        if (mask&1) readable[b] = '1';
+        mask = mask>>1;
+    }
+    return readable;
+}
+#endif
+
+void part_init(const int len) {
+    /*! Function to initialize the global variables above
      * @param len number of bits the part should content
      *
      * result: calculate cutmask, longs, plen
      */
-    int i, j;
 
-    // cutmask is necessary to cut unused bits
-    j = 8 * sizeof(PELEM);
-    j = len % j;
-    if (!j) j += 8 * sizeof(PELEM);
+    arb_assert(!cutmask && !longs && !plen); // forgot to call part_cleanup?
+    
+    int j      = len % BITS_PER_PELEM;
+    if (!j) j += BITS_PER_PELEM;
+
     cutmask = 0;
-    for (i=0; i<j; i++) {
+    for (int i=0; i<j; i++) {
         cutmask <<= 1;
         cutmask |= 1;
     }
     longs = (((len + 7) / 8)+sizeof(PELEM)-1) / sizeof(PELEM);
-    plen = len;
+    plen  = len;
+
+#if defined(DEBUG)
+    size_t possible = longs*BITS_PER_PELEM;
+    arb_assert((possible-plen)<BITS_PER_PELEM); // longs is too big (wasted space)
+
+#if defined(DUMP_PART_INIT)
+    printf("leafs=%i\n", len);
+    printf("cutmask='%s'\n", readable_cutmask(cutmask));
+    printf("longs=%i (can hold %zu bits)\n", longs, possible);
+    printf("plen=%i\n", plen);
+#endif
+#endif
 }
 
+void part_cleanup() {
+    cutmask = 0;
+    longs   = plen = 0;
+}
 
 void part_print(PART *p) {
     // ! Testfunction to print a part
@@ -192,7 +228,7 @@ int part_size(PART *p) {
         PELEM e                    = p->p[i];
         // arb_assert((e&cutmask) == e); // @@@ fails sometimes - why?
         e                          = e&cutmask;
-        for (int b = 0; b<(sizeof(e)*8); ++b) {
+        for (size_t b = 0; b<(sizeof(e)*8); ++b) {
             if (e&1) leafs++;
             e = e>>1;
         }
@@ -250,3 +286,51 @@ int calc_index(PART *p) {
     return pos-1;
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+void TEST_part_init() {
+    part_init(0);
+    TEST_ASSERT_EQUAL(plen, 0);
+    TEST_ASSERT_EQUAL(longs, 0);
+    // cutmask doesnt matter
+    part_cleanup();
+
+    part_init(1);
+    TEST_ASSERT_EQUAL(plen, 1);
+    TEST_ASSERT_EQUAL(longs, 1);
+    TEST_ASSERT_EQUAL(readable_cutmask(cutmask), "00000000000000000000000000000001");
+    part_cleanup();
+
+    part_init(31);
+    TEST_ASSERT_EQUAL(plen, 31);
+    TEST_ASSERT_EQUAL(longs, 1);
+    TEST_ASSERT_EQUAL(readable_cutmask(cutmask), "01111111111111111111111111111111");
+    part_cleanup();
+
+    part_init(32);
+    TEST_ASSERT_EQUAL(plen, 32);
+    TEST_ASSERT_EQUAL(longs, 1);
+    TEST_ASSERT_EQUAL(readable_cutmask(cutmask), "11111111111111111111111111111111");
+    part_cleanup();
+
+    part_init(33);
+    TEST_ASSERT_EQUAL(plen, 33);
+    TEST_ASSERT_EQUAL(longs, 2);
+    TEST_ASSERT_EQUAL(readable_cutmask(cutmask), "00000000000000000000000000000001");
+    part_cleanup();
+
+    part_init(95);
+    TEST_ASSERT_EQUAL(plen, 95);
+    TEST_ASSERT_EQUAL(longs, 3);
+    TEST_ASSERT_EQUAL(readable_cutmask(cutmask), "01111111111111111111111111111111");
+    part_cleanup();
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

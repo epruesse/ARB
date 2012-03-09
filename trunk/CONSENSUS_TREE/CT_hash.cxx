@@ -11,14 +11,15 @@
 #include "CT_hash.hxx"
 #include "CT_ntree.hxx"
 #include "CT_mem.hxx"
+#include "CT_ctree.hxx"
 
 #include <arbdbt.h>
 
 // Hashtabelle fuer parts
 
-static int Hash_max_count=0;
+static int    Hash_max_count = 0;
 static HNODE *Hashlist[HASH_MAX];
-static HNODE *Sortedlist = NULL;
+static HNODE *Sortedlist     = NULL;
 
 static void hash_free() {
     //! free Hashtable and Sortedlist
@@ -47,14 +48,19 @@ static void hash_free() {
 }
 
 void hash_init() {
-    //! initialize Hashtable and free old data
-    Hash_max_count = 0;
-    hash_free();
+    //! initialize Hashtable
+    arb_assert(!Sortedlist); // forgot to call hash_cleanup
+    arb_assert(!Hash_max_count);
+
+    for (int i = 0; i<HASH_MAX; ++i) {
+        Hashlist[i] = NULL;
+    }
 }
 
-void hash_settreecount(int tree_count) {
-    //! set number of trees
-    Tree_count = tree_count;
+void hash_cleanup() {
+    //! free old data
+    hash_free();
+    Hash_max_count = 0;
 }
 
 PART *hash_getpart() {
@@ -74,7 +80,7 @@ PART *hash_getpart() {
     free(hnp);
     p->len /= (float) p->percent;
     p->percent *= 10000;
-    p->percent /= Tree_count;
+    p->percent /= get_tree_count();
 
     return  p;
 }

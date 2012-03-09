@@ -1830,7 +1830,6 @@ UNITS_WORKING = \
 	$(RNA3D_TEST) \
 	ARB_GDE/ARB_GDE.test \
 	AWTI/AWTI.test \
-	CONSENSUS_TREE/CONSENSUS_TREE.test \
 	DIST/DIST.test \
 	EISPACK/EISPACK.test \
 	GENOM/GENOM.test \
@@ -1888,9 +1887,10 @@ UNITS_UNTESTABLE_ATM = \
 
 UNITS_TESTED_FIRST = \
 	ARBDB/ARBDB.test \
+	CONSENSUS_TREE/CONSENSUS_TREE.test \
+	TOOLS/arb_consensus_tree.test \
 	TOOLS/arb_test.test \
 	TOOLS/arb_probe.test \
-	TOOLS/arb_consensus_tree.test \
 	AWTC/AWTC.test \
 
 UNITS_TESTED = \

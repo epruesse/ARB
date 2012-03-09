@@ -1272,6 +1272,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
     // aw_status(); // remove 'abort' flag (@@@ got no equiv for arb_progress yet. really needed?)
 
     if (bootstrap_flag) {
+        ctree_cleanup();
         if (all_names) delete all_names;
         GLOBAL_MATRIX.forget();
     }

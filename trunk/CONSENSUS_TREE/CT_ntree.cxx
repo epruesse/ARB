@@ -18,8 +18,8 @@
 
 // Einen Binaerbaum erzeugen ueber einen Multitree
 
-static NT_NODE *ntree = NULL;
-static int ntree_count=0;
+static NT_NODE *ntree       = NULL;
+static int      ntree_count = 0;
 
 
 // returns the referenz of the actual NTree
@@ -110,17 +110,19 @@ static void del_tree(NT_NODE *tree)
 
 
 // Initialization of the tree
-void ntree_init()
-{
-    PART *r;
+void ntree_init() {
+    arb_assert(!ntree); // forgot to call ntree_cleanup ? 
 
+    // Set root to max. partition
+    PART *r     = part_root();
+    ntree = new_ntnode(r);
+
+    ntree_count = 0;
+}
+void ntree_cleanup() {
     // Destruct old tree
     del_tree(ntree);
-    // Set root = max. partition
     ntree = NULL;
-    r=part_root();
-    ntree=new_ntnode(r);
-
     ntree_count = 0;
 }
 
