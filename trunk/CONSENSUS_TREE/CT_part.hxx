@@ -14,9 +14,8 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
-
-#if defined(DEBUG)
-#define DUMP_DROPS
+#ifndef CT_DEF_HXX
+#include "CT_def.hxx"
 #endif
 
 typedef unsigned int PELEM;
@@ -31,7 +30,6 @@ struct PART {
 void part_init(int len);
 void part_cleanup();
 
-void  part_print(PART *p);
 PART *part_new();
 PART *part_root();
 void  part_setbit(PART *p, int pos);
@@ -47,6 +45,9 @@ int   parts_equal(PART *p1, PART *p2);
 int   part_key(PART *p);
 void  part_setlen(PART *p, GBT_LEN len);
 
+#if defined(NTREE_DEBUG_FUNCTIONS)
+void  part_print(PART *p);
+#endif
 #if defined(DUMP_DROPS)
 int part_size(PART *p);
 #endif

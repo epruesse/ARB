@@ -12,10 +12,6 @@
 #include "CT_mem.hxx"
 #include <arbdbt.h>
 
-#if defined(DEBUG)
-// #define NTREE_DEBUG_FUNCTIONS
-#endif // DEBUG
-
 // Einen Binaerbaum erzeugen ueber einen Multitree
 
 static NT_NODE *ntree       = NULL;
@@ -28,52 +24,6 @@ NT_NODE *ntree_get()
     return ntree;
 }
 
-
-#if defined(NTREE_DEBUG_FUNCTIONS)
-// testfunction to print a NTree
-void print_ntree(NT_NODE *tree)
-{
-    NSONS *nsonp;
-    if (tree == NULL) {
-        printf("tree is empty\n");
-        return;
-    }
-
-    // print father
-    printf("(");
-    part_print(tree->part);
-
-    // and sons
-    for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
-        print_ntree(nsonp->node);
-    }
-
-    printf(")");
-}
-
-// Testfunction to print the indexnumbers of the tree
-void print_ntindex(NT_NODE *tree)
-{
-    NSONS *nsonp;
-    PART  *p = part_new();
-
-    // print father
-    printf("(");
-    for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
-        part_or(nsonp->node->part, p);
-    }
-    printf("%d", tree->part->p[0]);
-
-    // and sons
-    for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
-        print_ntindex(nsonp->node);
-    }
-
-    printf(")");
-
-    part_free(p);
-}
-#endif
 
 // build a new node and store the partition p in it
 static NT_NODE *new_ntnode(PART *p)
@@ -238,3 +188,68 @@ void insert_ntree(PART *part)
         }
     }
 }
+
+// --------------------------------------------------------------------------------
+
+#if defined(NTREE_DEBUG_FUNCTIONS)
+
+inline void do_indent(int indent) {
+    for (int i = 0; i<indent; ++i) fputc(' ', stdout);
+}
+
+void print_ntree(NT_NODE *tree, int indent) {
+    // testfunction to print a NTree
+
+    NSONS *nsonp;
+    if (tree == NULL) {
+        do_indent(indent); 
+        fputs("tree is empty\n", stdout);
+        return;
+    }
+
+    // print father
+    do_indent(indent);
+    fputs("(\n", stdout);
+
+    // indent++;
+
+    do_indent(indent);
+    part_print(tree->part);
+    fputc('\n', stdout);
+
+    // and sons
+    for (nsonp=tree->son_list; nsonp; nsonp = nsonp->next) {
+        print_ntree(nsonp->node, indent);
+    }
+
+    // indent--;
+    
+    do_indent(indent);
+    fputs(")\n", stdout);
+}
+
+void print_ntindex(NT_NODE *tree) {
+    // Testfunction to print the indexnumbers of the tree
+
+    NSONS *nsonp;
+    PART  *p = part_new();
+
+    // print father
+    printf("(");
+    for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
+        part_or(nsonp->node->part, p);
+    }
+    printf("%d", tree->part->p[0]);
+
+    // and sons
+    for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
+        print_ntindex(nsonp->node);
+    }
+
+    printf(")");
+
+    part_free(p);
+}
+
+#endif
+

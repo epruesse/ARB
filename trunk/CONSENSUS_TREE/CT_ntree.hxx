@@ -35,6 +35,12 @@ void ntree_cleanup();
 void insert_ntree(PART *part);
 NT_NODE *ntree_get();
 
+#if defined(NTREE_DEBUG_FUNCTIONS)
+void print_ntree(NT_NODE *tree, int indent);
+void print_ntindex(NT_NODE *tree);
+#endif
+
+
 #else
 #error CT_ntree.hxx included twice
 #endif // CT_NTREE_HXX

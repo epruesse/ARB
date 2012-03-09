@@ -19,7 +19,6 @@
 #include <arbdbt.h>
 
 #if defined(DEBUG)
-// #define DUMP_PART_INIT
 #endif
 
 
@@ -81,6 +80,7 @@ void part_cleanup() {
     longs   = plen = 0;
 }
 
+#if defined(NTREE_DEBUG_FUNCTIONS)
 void part_print(PART *p) {
     // ! Testfunction to print a part
     int i, j, k=0;
@@ -99,6 +99,7 @@ void part_print(PART *p) {
 
     printf(":%.2f,%d%%: ", p->len, p->percent);
 }
+#endif
 
 PART *part_new() {
     //! construct new part
@@ -121,13 +122,9 @@ PART *part_root() {
     /*! build a partition that totally consists of 111111...1111 that is needed to
      * build the root of a specific ntree
      */
-    int i;
-    PART *p;
-    p = part_new();
-    for (i=0; i<longs; i++) {
-        p->p[i] = ~p->p[i];
-    }
-    p->p[longs-1] &= cutmask;
+
+    PART *p = part_new();
+    part_invert(p);
     return p;
 }
 
@@ -157,8 +154,7 @@ int son(PART *son, PART *father) {
 int brothers(PART *p1, PART *p2) {
     /*! test if two parts are brothers.
      *
-     * "brothers" means that every bit in p1 is different from p2 and vice versa.
-     * needed in CT_ntree
+     * "brothers" means that p1 and p2 do not share common bits
      */
     int i;
 
@@ -171,10 +167,7 @@ int brothers(PART *p1, PART *p2) {
 
 void part_invert(PART *p) {
     //! invert a part
-    int i;
-
-    for (i=0; i<longs; i++)
-        p->p[i] = ~p->p[i];
+    for (int i=0; i<longs; i++) p->p[i] = ~p->p[i];
     p->p[longs-1] &= cutmask;
 }
 
@@ -252,13 +245,7 @@ void part_standard(PART *p) {
      * two parts are equal if one is just the inverted version of the other.
      * so the standard is defined that the version is the representant, whose first bit is equal 1
      */
-    int i;
-
-    if (p->p[0] & 1) return;
-
-    for (i=0; i<longs; i++)
-        p->p[i] = ~ p->p[i];
-    p->p[longs-1] &= cutmask;
+    if ((p->p[0] & 1) == 0) part_invert(p);
 }
 
 
