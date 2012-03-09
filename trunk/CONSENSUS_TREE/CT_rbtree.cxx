@@ -94,7 +94,7 @@ static RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
 
     nsonp = nsonp->next;
     if (!nsonp) {
-        // arb_assert(0); // @@@ invalid tree would be generated here (only leftson)
+        // arb_assert(0); // @@@ invalid tree would be generated here (only leftson); see ../TOOLS/arb_consensus_tree.cxx@disabled_single_son_assertion
         return info;
     }
 
@@ -104,7 +104,7 @@ static RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
     gbtnode->rightlen = info_res->len;
     free(info_res);
 
-    arb_assert(nsonp->next == NULL); // otherwise some sons would be silently dropped
+    // arb_assert(nsonp->next == NULL); // @@@ otherwise some sons would be silently dropped; see  ../TOOLS/arb_consensus_tree.cxx@disabled_multifurc_assertion
 
     return info;
 }
