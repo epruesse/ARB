@@ -129,7 +129,7 @@ static int ins_ntree(NT_NODE *tree, PART *newpart)
 
     // test if part fit under one son of tree -> recursion
     for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
-        if (son(newpart, nsonp->node->part)) {
+        if (is_son_of(newpart, nsonp->node->part)) {
             return ins_ntree(nsonp->node, newpart);
         }
     }
@@ -137,8 +137,8 @@ static int ins_ntree(NT_NODE *tree, PART *newpart)
     // If partition is not a son maybe it is a brother
     // If it is neither brother nor son -> don't fit here
     for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
-        if (!brothers(nsonp->node->part, newpart)) {
-            if (!son(nsonp->node->part, newpart)) {
+        if (!are_brothers(nsonp->node->part, newpart)) {
+            if (!is_son_of(nsonp->node->part, newpart)) {
                 return 0;
             }
         }
@@ -152,7 +152,7 @@ static int ins_ntree(NT_NODE *tree, PART *newpart)
     while (nsonp) {
 
         nsonp_h = nsonp->next;
-        if (son(nsonp->node->part, newpart)) {
+        if (is_son_of(nsonp->node->part, newpart)) {
             insert_son(tree, newntnode, nsonp);
         }
         nsonp = nsonp_h;
@@ -249,6 +249,42 @@ void print_ntindex(NT_NODE *tree) {
     printf(")");
 
     part_free(p);
+}
+
+int ntree_count_sons(NT_NODE *tree) {
+    int sons = 0;
+    if (tree->son_list) {
+        for (NSONS *node = tree->son_list; node; node = node->next) {
+            sons++;
+        }
+    }
+    return sons;
+}
+
+bool is_well_formed(NT_NODE *tree) {
+    // checks whether
+    // - tree has sons
+    // - all sons are part of father 
+    // - all sons are distinct
+    // - father is sum of sons
+    
+    int sons = ntree_count_sons(tree);
+
+    if (!sons) return false;
+
+    bool well_formed = true;
+
+    PART *pmerge = part_new();
+    for (NSONS *nson = tree->son_list; nson; nson = nson->next) {
+        PART *pson = nson->node->part;
+
+        if (!is_son_of(pson, tree->part)) well_formed = false;
+        if (!are_brothers(pson, pmerge)) well_formed   = false;
+        part_or(pson, pmerge);
+    }
+    if (!parts_equal(tree->part, pmerge)) well_formed = false;
+    part_free(pmerge);
+    return well_formed;
 }
 
 #endif
