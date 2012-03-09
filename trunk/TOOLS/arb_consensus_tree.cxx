@@ -84,7 +84,7 @@ inline GBT_TREE *sort_tree(GBT_TREE *tree) {
     return sort_tree(tree, dummy);
 }
 
-static GBT_TREE *build_consensus_tree(const ConstStrArray& input_trees, GB_ERROR& error) {
+static GBT_TREE *build_consensus_tree(const ConstStrArray& input_trees, GB_ERROR& error, bool sort_generated_tree) {
     // read all input trees, generate and return consensus tree
 
     arb_assert(!error);
@@ -143,8 +143,11 @@ static GBT_TREE *build_consensus_tree(const ConstStrArray& input_trees, GB_ERROR
             }
 
             consense_tree = get_ctree();
-            consense_tree = sort_tree(consense_tree); // bring tree into a stable form, there seems to be sth random in ctree
-                                                      // @@@ determine what behaves random, could be an error as well
+
+            if (sort_generated_tree) {
+                consense_tree = sort_tree(consense_tree); // bring tree into a stable form, there seems to be sth random in ctree
+                // @@@ determine what behaves random, could be an error as well
+            }
         }
 
         for (size_t i = 0; i<input_trees.size(); ++i) {
@@ -247,7 +250,7 @@ int ARB_main(int argc, const char *argv[]) {
         if (!error && input_tree_names.empty()) error = "no input trees specified";
         
         if (!error) {
-            GBT_TREE *cons_tree = build_consensus_tree(input_tree_names, error);
+            GBT_TREE *cons_tree = build_consensus_tree(input_tree_names, error, true);
 
             if (!cons_tree) {
                 error = GBS_global_string("Failed to build consense tree (Reason: %s)", error);
@@ -291,22 +294,38 @@ void TEST_consensus_tree_direct() {
     input_tree_names.put("consense/1/bootstrapped_2.tree");
     input_tree_names.put("consense/1/bootstrapped_3.tree");
     input_tree_names.put("consense/1/bootstrapped_4.tree");
-    // input_tree_names.put("consense/1/bootstrapped_5.tree"); // @@@ buggy when added
 
-    GBT_TREE *tree = build_consensus_tree(input_tree_names, error);
-    TEST_ASSERT(!error);
-    TEST_ASSERT(tree);
+    {
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, true);
+        TEST_ASSERT(!error);
+        TEST_ASSERT(tree);
 
-    TEST_ASSERT_EQUAL(GBT_count_leafs(tree), 22);
+        TEST_ASSERT_EQUAL(GBT_count_leafs(tree), 22);
 
-    TEST_ASSERT_NO_ERROR(save_tree_as_newick(tree, SAVENAME1));
+        TEST_ASSERT_NO_ERROR(save_tree_as_newick(tree, SAVENAME1));
 
-    // ../UNIT_TESTER/run/consense/1/consense.tree
+        // ../UNIT_TESTER/run/consense/1/consense.tree
 
-    TEST_ASSERT_TEXTFILE_DIFFLINES(SAVENAME1, EXPECTED1, 1);
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(SAVENAME1));
+        TEST_ASSERT_TEXTFILE_DIFFLINES(SAVENAME1, EXPECTED1, 1);
+        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(SAVENAME1));
 
-    GBT_delete_tree(tree);
+        GBT_delete_tree(tree);
+    }
+
+
+    // ----------------------------------------
+    // if all five source trees are used, CONSENSUS_TREE produces an invalid tree
+    input_tree_names.put("consense/1/bootstrapped_5.tree");
+
+    {
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, false); // do not sort (crashes)
+        TEST_ASSERT(!error);
+        TEST_ASSERT(tree);
+
+        TEST_ASSERT_EQUAL__BROKEN(GBT_is_invalid(tree), NULL);
+        // GBT_delete_tree(tree); // @@@ crashes
+    }
+    
 }
 
 void TEST_consensus_tree() {
