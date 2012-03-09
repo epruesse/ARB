@@ -15,6 +15,10 @@
 #include <arbdb_base.h>
 #endif
 
+#if defined(DEBUG)
+#define DUMP_DROPS
+#endif
+
 typedef unsigned int PELEM;
 
 struct PART {
@@ -40,6 +44,10 @@ void  part_free(PART *p);
 int   parts_equal(PART *p1, PART *p2);
 int   part_key(PART *p);
 void  part_setlen(PART *p, GBT_LEN len);
+
+#if defined(DUMP_DROPS)
+int part_size(PART *p);
+#endif
 
 #else
 #error CT_part.hxx included twice

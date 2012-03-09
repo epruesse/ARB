@@ -53,7 +53,6 @@ static char *rb_remark(const char *info, int perc, char *txt)
     return txt;
 }
 
-
 // doing all the work for rb_gettree() :-)
 // convert a Ntree into a GBT-Tree
 static RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
@@ -105,6 +104,16 @@ static RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
     free(info_res);
 
     // arb_assert(nsonp->next == NULL); // @@@ otherwise some sons would be silently dropped; see  ../TOOLS/arb_consensus_tree.cxx@disabled_multifurc_assertion
+#if defined(DUMP_DROPS)
+    int dropped_sons = 0;
+    int dropped_leafs = 0;
+    while (nsonp->next) {
+        dropped_sons++;
+        dropped_leafs += part_size(nsonp->node->part);
+        nsonp          = nsonp->next;
+    }
+    if (dropped_sons>0) printf("Warning: dropped %i sons (containing %i leafs)\n", dropped_sons, dropped_leafs);
+#endif
 
     return info;
 }
@@ -116,7 +125,10 @@ GBT_TREE *rb_gettree(NT_NODE *tree)
     RB_INFO *info;
     GBT_TREE *gbttree;
 
-    info = rbtree(tree, NULL);
+#if defined(DUMP_DROPS)
+    printf("------------------------------\n");
+#endif
+    info    = rbtree(tree, NULL);
     gbttree = info->node;
     free(info);
 
