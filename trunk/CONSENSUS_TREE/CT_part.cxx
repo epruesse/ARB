@@ -184,6 +184,22 @@ void part_setlen(PART *p, GBT_LEN len) {
     p->len = len;
 }
 
+#if defined(DUMP_DROPS)
+int part_size(PART *p) {
+    //! count the number of leafs in partition
+    int leafs = 0;
+    for (int i = 0; i<longs; ++i) {
+        PELEM e                    = p->p[i];
+        // arb_assert((e&cutmask) == e); // @@@ fails sometimes - why?
+        e                          = e&cutmask;
+        for (int b = 0; b<(sizeof(e)*8); ++b) {
+            if (e&1) leafs++;
+            e = e>>1;
+        }
+    }
+    return leafs;
+}
+#endif
 
 void part_copy(PART *source, PART *destination) {
     //! copy source into destination
