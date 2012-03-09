@@ -84,7 +84,7 @@ inline GBT_TREE *sort_tree(GBT_TREE *tree) {
     return sort_tree(tree, dummy);
 }
 
-static GBT_TREE *build_consensus_tree(const ConstStrArray& input_trees, GB_ERROR& error, bool sort_generated_tree) {
+static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR& error, bool sort_generated_tree) {
     // read all input trees, generate and return consensus tree
 
     arb_assert(!error);
@@ -284,38 +284,42 @@ int ARB_main(int argc, const char *argv[]) {
 
 #include "command_output.h"
 
-#define SAVENAME1 "consense/1/consense.tree"
-#define EXPECTED1 "consense/1/consense_expected.tree"
+static const char *savename(int dir) { return GBS_global_string("consense/%i/consense.tree", dir); }
+static const char *expected_name(int dir) { return GBS_global_string("consense/%i/consense_expected.tree", dir); }
+static char *inputname(int dir, int tree) { return GBS_global_string_copy("consense/%i/bootstrapped_%i.tree", dir, tree); }
 
-void TEST_consensus_tree_direct() {
-    GB_ERROR      error = NULL;
-    ConstStrArray input_tree_names;
-    input_tree_names.put("consense/1/bootstrapped_1.tree");
-    input_tree_names.put("consense/1/bootstrapped_2.tree");
-    input_tree_names.put("consense/1/bootstrapped_3.tree");
-    input_tree_names.put("consense/1/bootstrapped_4.tree");
+static void add_inputnames(StrArray& to, int dir, int first_tree, int last_tree) {
+    for (int t = first_tree; t <= last_tree; ++t) {
+        to.put(inputname(dir, t));
+    }
+}
+
+void NOTEST_consensus_tree_1() { // @@@ disabled (does not work together with TEST_consensus_tree_2)
+    GB_ERROR error = NULL;
+    StrArray input_tree_names;
+    add_inputnames(input_tree_names, 1, 1, 4);
 
     {
+        // build_consensus_tree here fails the disabled assertion in ../CONSENSUS_TREE/CT_rbtree.cxx@disabled_single_son_assertion
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, true);
         TEST_ASSERT(!error);
         TEST_ASSERT(tree);
 
         TEST_ASSERT_EQUAL(GBT_count_leafs(tree), 22);
 
-        TEST_ASSERT_NO_ERROR(save_tree_as_newick(tree, SAVENAME1));
+        TEST_ASSERT_NO_ERROR(save_tree_as_newick(tree, savename(1)));
 
         // ../UNIT_TESTER/run/consense/1/consense.tree
 
-        TEST_ASSERT_TEXTFILE_DIFFLINES(SAVENAME1, EXPECTED1, 1);
-        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(SAVENAME1));
+        TEST_ASSERT_TEXTFILE_DIFFLINES(savename(1), expected_name(1), 1);
+        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename(1)));
 
         GBT_delete_tree(tree);
     }
 
-
     // ----------------------------------------
     // if all five source trees are used, CONSENSUS_TREE produces an invalid tree
-    input_tree_names.put("consense/1/bootstrapped_5.tree");
+    input_tree_names.put(inputname(1, 5));
 
     {
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, false); // do not sort (crashes)
@@ -325,19 +329,43 @@ void TEST_consensus_tree_direct() {
         TEST_ASSERT_EQUAL__BROKEN(GBT_is_invalid(tree), NULL);
         // GBT_delete_tree(tree); // @@@ crashes
     }
-
 }
 
-void TEST_consensus_tree_direct_is_deterministic() {
-    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(TEST_consensus_tree_direct);
+void TEST_consensus_tree_2() {
+    GB_ERROR      error = NULL;
+    StrArray input_tree_names;
+    add_inputnames(input_tree_names, 2, 1, 4);
+
+    {
+        // build_consensus_tree here fails the disabled assertion in ../CONSENSUS_TREE/CT_rbtree.cxx@disabled_multifurc_assertion
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, true);
+        TEST_ASSERT(!error);
+        TEST_ASSERT(tree);
+
+        TEST_ASSERT_EQUAL__BROKEN(GBT_count_leafs(tree), 59);
+
+        TEST_ASSERT_NO_ERROR(save_tree_as_newick(tree, savename(2)));
+
+        // ../UNIT_TESTER/run/consense/2/consense.tree
+
+        TEST_ASSERT_TEXTFILE_DIFFLINES(savename(2), expected_name(2), 1);
+        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename(2)));
+
+        GBT_delete_tree(tree);
+    }
 }
 
-void TEST_consensus_tree() {
+void TEST_consensus_tree_2_is_deterministic() {
+    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(TEST_consensus_tree_2);
+    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename(2)));
+}
+
+void TEST_arb_consensus_tree() {
     TEST_STDOUT_CONTAINS("(arb_consensus_tree -x || true)", "Unknown switch '-x'");
     TEST_STDOUT_CONTAINS("(arb_consensus_tree -w sth || true)", "no input trees specified");
                        
     TEST_STDOUT_CONTAINS("arb_consensus_tree"
-                         " -w " SAVENAME1
+                         " -w consense/1/consense.tree"
                          " consense/1/bootstrapped_1.tree"
                          " consense/1/bootstrapped_2.tree"
                          " consense/1/bootstrapped_3.tree"
@@ -346,8 +374,8 @@ void TEST_consensus_tree() {
                          ,
                          "database  created");
 
-    TEST_ASSERT_TEXTFILE_DIFFLINES(SAVENAME1, EXPECTED1, 1);
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(SAVENAME1));
+    TEST_ASSERT_TEXTFILE_DIFFLINES(savename(1), expected_name(1), 1);
+    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename(1)));
     
     MISSING_TEST("log");
 }
