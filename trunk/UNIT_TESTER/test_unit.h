@@ -1172,29 +1172,62 @@ namespace arb_test {
 // TEST_ASSERT_SEGFAULT and TEST_ASSERT_CODE_ASSERTION_FAILS
 // only work if binary is linked with ARBDB
 
-
 #ifdef ENABLE_CRASH_TESTS
-# ifdef ASSERTION_USED
-#  define TEST_INTERNAL_SEGFAULT_ASSERTION(cb,wantAssert)               \
-    do {                                                                \
-         bool& assertion_failed =                                       \
-             arb_test::test_data().assertion_failed;                    \
-         bool old_state = assertion_failed;                             \
-         assertion_failed = false;                                      \
-         TEST_ASSERT(GBK_raises_SIGSEGV(cb,true));                      \
-         if (!GBK_running_on_valgrind())                                \
-             TEST_ASSERT(assertion_failed == wantAssert);               \
-         assertion_failed = old_state;                                  \
-    } while (0)
-#  define TEST_ASSERT_CODE_ASSERTION_FAILS(cb) TEST_INTERNAL_SEGFAULT_ASSERTION(cb,true)
-#  define TEST_ASSERT_SEGFAULT(cb)             TEST_INTERNAL_SEGFAULT_ASSERTION(cb,false)
-# else // ENABLE_CRASH_TESTS but no ASSERTION_USED (test segfaults in NDEBUG mode)
-#  define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)
-#  define TEST_ASSERT_SEGFAULT(cb)             TEST_ASSERT(GBK_raises_SIGSEGV(cb,true))
+# ifdef ARB_CORE_H
+
+const bool DOES_SEGFAULT       = true;
+const bool DOESNT_SEGFAULT     = false;
+const bool FAILS_ASSERTION     = true;
+const bool FULFILLS_ASSERTIONS = false;
+
+#  ifdef ASSERTION_USED
+inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV, bool expect_assert_fail) {
+    using namespace arb_test;
+
+    bool& assertion_failed = test_data().assertion_failed;
+    bool  old_state        = assertion_failed;
+
+    expect_assert_fail = expect_assert_fail && !GBK_running_on_valgrind(); // under valgrind assertions never fail
+
+    match_expectation SEGV       = that(GBK_raises_SIGSEGV(cb,true)).equals(expect_SEGV);
+    match_expectation assertfail = that(assertion_failed).equals(expect_assert_fail);
+
+    match_expectation expected = all().of(SEGV, assertfail);
+
+    assertion_failed = old_state;
+    return expected;
+}
+#  else
+inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV) {
+    using namespace arb_test;
+    return that(GBK_raises_SIGSEGV(cb,true)).equals(expect_SEGV);
+}
+#  endif
 # endif
+
+# ifdef ASSERTION_USED
+
+#  define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)           TEST_EXPECT(expect_callback(cb, DOES_SEGFAULT, FAILS_ASSERTION))
+#  define TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(cb) TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS))
+#  define TEST_ASSERT_SEGFAULT(cb)                       TEST_EXPECT(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS)) 
+#  define TEST_ASSERT_SEGFAULT__UNWANTED(cb)             TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS))
+
+# else // ENABLE_CRASH_TESTS but no ASSERTION_USED (test segfaults in NDEBUG mode)
+
+#  define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)
+#  define TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(cb)
+#  define TEST_ASSERT_SEGFAULT(cb)                       TEST_EXPECT(expect_callback(cb, DOES_SEGFAULT)) 
+#  define TEST_ASSERT_SEGFAULT__UNWANTED(cb)             TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT))
+
+# endif
+
 #else // not ENABLE_CRASH_TESTS (i.e. skip these tests completely)
+
 # define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)
+# define TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(cb)
 # define TEST_ASSERT_SEGFAULT(cb)
+# define TEST_ASSERT_SEGFAULT__UNWANTED(cb)
+
 #endif
 
 // --------------------------------------------------------------------------------
