@@ -50,6 +50,7 @@ CT_ctree.o: $(ARBHOME)/INCLUDE/dupstr.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/smartptr.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/test_global.h
 
+CT_dtree.o: CT_ctree.hxx
 CT_dtree.o: CT_dtree.hxx
 CT_dtree.o: CT_hash.hxx
 CT_dtree.o: CT_part.hxx
@@ -69,6 +70,7 @@ CT_dtree.o: $(ARBHOME)/INCLUDE/dupstr.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/smartptr.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/test_global.h
 
+CT_hash.o: CT_ctree.hxx
 CT_hash.o: CT_hash.hxx
 CT_hash.o: CT_mem.hxx
 CT_hash.o: CT_ntree.hxx
@@ -125,6 +127,7 @@ CT_part.o: $(ARBHOME)/INCLUDE/attributes.h
 CT_part.o: $(ARBHOME)/INCLUDE/dupstr.h
 CT_part.o: $(ARBHOME)/INCLUDE/smartptr.h
 CT_part.o: $(ARBHOME)/INCLUDE/test_global.h
+CT_part.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 CT_rbtree.o: CT_mem.hxx
 CT_rbtree.o: CT_ntree.hxx

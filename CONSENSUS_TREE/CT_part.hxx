@@ -28,7 +28,9 @@ struct PART {
     char    *source;            // From which tree comes the partition
 };
 
-void  part_init(int len);
+void part_init(int len);
+void part_cleanup();
+
 void  part_print(PART *p);
 PART *part_new();
 PART *part_root();

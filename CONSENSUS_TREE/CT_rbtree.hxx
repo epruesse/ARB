@@ -23,6 +23,7 @@ struct RB_INFO {
 
 
 void rb_init(const class CharPtrArray& names);
+void rb_cleanup();
 
 GBT_TREE *rb_gettree(NT_NODE *tree);
 

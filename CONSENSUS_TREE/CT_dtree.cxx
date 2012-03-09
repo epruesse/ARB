@@ -10,16 +10,11 @@
 
 #include "CT_dtree.hxx"
 #include "CT_hash.hxx"
+#include "CT_ctree.hxx"
 #include <arbdbt.h>
 
 // destruct gbt-tree and build parts
 // insert afterwards in Hashtable
-
-
-void destree_init(GB_HASH *hash)
-{
-    Name_hash = hash;
-}
 
 
 /* destruct GBT-Tree and build partitions. This is done recursive by concatenate
@@ -32,7 +27,7 @@ static PART *dtree(GBT_TREE *tree, int weight, GBT_LEN len) {
 
     if (tree->is_leaf) {
         ph = part_new();
-        idx = GBS_read_hash(Name_hash, tree->name);
+        idx = get_species_index(tree->name);
         part_setbit(ph, idx);
         part_setlen(ph, len);
         return ph;

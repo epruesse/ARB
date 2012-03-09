@@ -20,12 +20,11 @@ struct HNODE {
     HNODE *next;
 };
 
-extern int      Tree_count;
-extern GB_HASH *Name_hash;
-
 #define HASH_MAX 123
 
-void  hash_init();
+void hash_init();
+void hash_cleanup();
+
 void  hash_settreecount(int tree_count);
 PART *hash_getpart();
 void  hash_insert(PART *part, int weight);
