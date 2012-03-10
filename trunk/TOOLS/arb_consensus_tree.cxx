@@ -332,7 +332,42 @@ void NOTEST_consensus_tree_1() { // @@@ disabled (does not work together with TE
     }
 }
 
-void TEST_consensus_tree_2() {
+void TEST_consensus_tree_1_single() {
+    GB_ERROR error = NULL;
+    StrArray input_tree_names;
+    add_inputnames(input_tree_names, 1, 1, 1);
+
+    {
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, true);
+        TEST_ASSERT(!error);
+        TEST_ASSERT(tree);
+
+        TEST_ASSERT_EQUAL(GBT_count_leafs(tree), 22);
+
+        TEST_ASSERT_NO_ERROR(save_tree_as_newick(tree, savename(1)));
+
+        // ../UNIT_TESTER/run/consense/1/consense.tree
+
+        TEST_ASSERT_TEXTFILE_DIFFLINES(savename(1), "consense/1/consense_expected_single.tree", 1);
+        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename(1)));
+
+        GBT_delete_tree(tree);
+    }
+}
+
+void TEST_consensus_tree_1_single_is_deterministic() {
+#if 1
+    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(TEST_consensus_tree_1_single);
+    const char  *saved = savename(1);
+    if (GB_is_regularfile(saved)) {
+        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saved));
+    }
+#else
+    TEST_consensus_tree_1_single();
+#endif
+}
+
+void NOTEST_consensus_tree_2() {
     GB_ERROR      error = NULL;
     StrArray input_tree_names;
     add_inputnames(input_tree_names, 2, 1, 4);
@@ -356,9 +391,9 @@ void TEST_consensus_tree_2() {
     }
 }
 
-void TEST_consensus_tree_2_is_deterministic() {
+void NOTEST_consensus_tree_2_is_deterministic() {
 #if 1
-    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(TEST_consensus_tree_2);
+    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(NOTEST_consensus_tree_2);
     const char  *saved = savename(2);
     if (GB_is_regularfile(saved)) {
         TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saved));
@@ -368,7 +403,7 @@ void TEST_consensus_tree_2_is_deterministic() {
 #endif
 }
 
-void TEST_arb_consensus_tree() {
+void NOTEST_arb_consensus_tree() {
     TEST_STDOUT_CONTAINS("(arb_consensus_tree -x || true)", "Unknown switch '-x'");
     TEST_STDOUT_CONTAINS("(arb_consensus_tree -w sth || true)", "no input trees specified");
                        
