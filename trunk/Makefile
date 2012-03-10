@@ -1256,6 +1256,7 @@ TOOLS/TOOLS.dummy : links_non_perl link_db \
 	SERVERCNTRL/SERVERCNTRL.dummy \
 	SL/TREE_WRITE/TREE_WRITE.dummy \
 	SL/TREE_READ/TREE_READ.dummy \
+	CONSENSUS_TREE/CONSENSUS_TREE.dummy \
 	XML/XML.dummy \
 
 AWTC/AWTC.dummy :   			com
