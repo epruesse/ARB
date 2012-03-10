@@ -359,7 +359,10 @@ void TEST_consensus_tree_2() {
 void TEST_consensus_tree_2_is_deterministic() {
 #if 1
     TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(TEST_consensus_tree_2);
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename(2)));
+    const char  *saved = savename(2);
+    if (GB_is_regularfile(saved)) {
+        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saved));
+    }
 #else
     TEST_consensus_tree_2();
 #endif
