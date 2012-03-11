@@ -97,7 +97,7 @@ static RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
 
     nsonp = nsonp->next;
     if (!nsonp) {
-        arb_assert(0); // @@@ invalid tree would be generated here (only leftson); need an example where this occurs; see ../TOOLS/arb_consensus_tree.cxx@disabled_single_son_assertion
+        // arb_assert(0); // @@@ invalid tree would be generated here (only leftson); see ../TOOLS/arb_consensus_tree.cxx@disabled_single_son_assertion
         return info;
     }
 
