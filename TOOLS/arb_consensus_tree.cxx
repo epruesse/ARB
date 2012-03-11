@@ -19,8 +19,9 @@
 #include <TreeWrite.h>
 #include <CT_ctree.hxx>
 #include <TreeRead.h>
-#include <map>
 #include <math.h>
+#include <map>
+#include <string>
 
 using namespace std;
 
@@ -63,10 +64,10 @@ static GBT_TREE *sort_tree(GBT_TREE *tree, subtreestat &subtree) {
             }
             else {
                 cmp = strcmp(tree->leftson->name, tree->rightson->name);
-                arb_assert(cmp != 0); // otherwise unstable - use more data to sort
             }
         }
 
+        arb_assert(cmp != 0); // otherwise unstable - use more data to sort
         if (cmp>0) { // swap branches
             std::swap(tree->leftlen, tree->rightlen);
             std::swap(tree->leftson, tree->rightson);
@@ -84,7 +85,7 @@ inline GBT_TREE *sort_tree(GBT_TREE *tree) {
     return sort_tree(tree, dummy);
 }
 
-static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR& error, bool sort_generated_tree) {
+static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR& error, bool sort_generated_tree, size_t& different_species) {
     // read all input trees, generate and return consensus tree
 
     arb_assert(!error);
@@ -98,8 +99,8 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
         GBT_TREE *tree[input_trees.size()];
         StrArray  comment;
 
-        typedef map<const char*, size_t> OccurCount;
-        OccurCount species_occurred;
+        typedef map<string, size_t> OccurCount;
+        OccurCount                  species_occurred;
 
         for (size_t i = 0; !error && i<input_trees.size(); ++i) {
             char *found_comment = NULL;
@@ -134,8 +135,11 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
             ConstStrArray species_names;
 
             for (OccurCount::iterator s = species_occurred.begin(); s != species_occurred.end(); ++s) {
-                species_names.put(s->first);
+                species_names.put(s->first.c_str());
             }
+
+            species_names.sort((CharPtrArray_compare_fun)strcmp, NULL); // sort names to make results deterministic
+            different_species = species_names.size();
 
             ctree_init(species_count, species_names);
             for (size_t i = 0; i<input_trees.size(); ++i) {
@@ -249,14 +253,21 @@ int ARB_main(int argc, const char *argv[]) {
         }
 
         if (!error && input_tree_names.empty()) error = "no input trees specified";
-        
+
         if (!error) {
-            GBT_TREE *cons_tree = build_consensus_tree(input_tree_names, error, true);
+            size_t species_count;
+            GBT_TREE *cons_tree = build_consensus_tree(input_tree_names, error, true, species_count);
 
             if (!cons_tree) {
                 error = GBS_global_string("Failed to build consense tree (Reason: %s)", error);
             }
             else {
+                size_t leafs   = GBT_count_leafs(cons_tree);
+                double percent = size_t((leafs*1000)/species_count)/10.0;
+
+                printf("Generated tree contains %.1f%% of species (%zu of %zu found in input trees)\n",
+                       percent, leafs, species_count);
+
                 if (savename) {
                     error = save_tree_as_newick(cons_tree, savename);
                 }
@@ -285,8 +296,8 @@ int ARB_main(int argc, const char *argv[]) {
 
 #include "command_output.h"
 
-static const char *savename(int dir) { return GBS_global_string("consense/%i/consense.tree", dir); }
-static const char *expected_name(int dir) { return GBS_global_string("consense/%i/consense_expected.tree", dir); }
+static char *savename(int dir) { return GBS_global_string_copy("consense/%i/consense.tree", dir); }
+static char *expected_name(int dir) { return GBS_global_string_copy("consense/%i/consense_expected.tree", dir); }
 static char *inputname(int dir, int tree) { return GBS_global_string_copy("consense/%i/bootstrapped_%i.tree", dir, tree); }
 
 static void add_inputnames(StrArray& to, int dir, int first_tree, int last_tree) {
@@ -295,40 +306,34 @@ static void add_inputnames(StrArray& to, int dir, int first_tree, int last_tree)
     }
 }
 
-void NOTEST_consensus_tree_1() { // @@@ disabled (does not work together with TEST_consensus_tree_2)
+void TEST_consensus_tree_1() {
     GB_ERROR error = NULL;
     StrArray input_tree_names;
-    add_inputnames(input_tree_names, 1, 1, 4);
+    add_inputnames(input_tree_names, 1, 1, 5);
 
     {
-        // build_consensus_tree here fails the disabled assertion in ../CONSENSUS_TREE/CT_rbtree.cxx@disabled_single_son_assertion
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, true);
+        size_t species_count;
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, true, species_count);
         TEST_ASSERT(!error);
         TEST_ASSERT(tree);
 
-        TEST_ASSERT_EQUAL(GBT_count_leafs(tree), 22);
+        TEST_ASSERT_EQUAL(species_count, 22);
+        TEST_ASSERT_EQUAL(GBT_count_leafs(tree), species_count);
 
-        TEST_ASSERT_NO_ERROR(save_tree_as_newick(tree, savename(1)));
+        char *saveas   = savename(1);
+        char *expected = expected_name(1);
+        
+        TEST_ASSERT_NO_ERROR(save_tree_as_newick(tree, saveas));
 
         // ../UNIT_TESTER/run/consense/1/consense.tree
 
-        TEST_ASSERT_TEXTFILE_DIFFLINES(savename(1), expected_name(1), 1);
-        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename(1)));
+        TEST_ASSERT_TEXTFILE_DIFFLINES(saveas, expected, 1);
+        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
+        
+        free(expected);
+        free(saveas);
 
         GBT_delete_tree(tree);
-    }
-
-    // ----------------------------------------
-    // if all five source trees are used, CONSENSUS_TREE produces an invalid tree
-    input_tree_names.put(inputname(1, 5));
-
-    {
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, false); // do not sort (crashes)
-        TEST_ASSERT(!error);
-        TEST_ASSERT(tree);
-
-        TEST_ASSERT_EQUAL__BROKEN(GBT_is_invalid(tree), NULL);
-        // GBT_delete_tree(tree); // @@@ crashes
     }
 }
 
@@ -338,99 +343,112 @@ void TEST_consensus_tree_1_single() {
     add_inputnames(input_tree_names, 1, 1, 1);
 
     {
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, true);
+        size_t species_count;
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, true, species_count);
         TEST_ASSERT(!error);
         TEST_ASSERT(tree);
 
-        TEST_ASSERT_EQUAL(GBT_count_leafs(tree), 22);
+        TEST_ASSERT_EQUAL(species_count, 22);
+        TEST_ASSERT_EQUAL(GBT_count_leafs(tree), species_count);
 
-        TEST_ASSERT_NO_ERROR(save_tree_as_newick(tree, savename(1)));
+        char       *saveas   = savename(1);
+        const char *expected = "consense/1/consense_expected_single.tree";
+
+        TEST_ASSERT_NO_ERROR(save_tree_as_newick(tree, saveas));
 
         // ../UNIT_TESTER/run/consense/1/consense.tree
 
-        TEST_ASSERT_TEXTFILE_DIFFLINES(savename(1), "consense/1/consense_expected_single.tree", 1);
-        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename(1)));
+        TEST_ASSERT_TEXTFILE_DIFFLINES(saveas, expected, 1);
+        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
+
+        free(saveas);
 
         GBT_delete_tree(tree);
     }
 }
 
-void TEST_consensus_tree_1_single_is_deterministic() {
-#if 1
-    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(TEST_consensus_tree_1_single);
-    const char  *saved = savename(1);
-    if (GB_is_regularfile(saved)) {
-        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saved));
-    }
-#else
-    TEST_consensus_tree_1_single();
-#endif
-}
-
-void NOTEST_consensus_tree_2() {
+void TEST_consensus_tree_2_lost_branches() {
     GB_ERROR      error = NULL;
     StrArray input_tree_names;
     add_inputnames(input_tree_names, 2, 1, 4);
 
     {
+        size_t species_count;
         // build_consensus_tree here fails the disabled assertion in ../CONSENSUS_TREE/CT_rbtree.cxx@disabled_multifurc_assertion
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, true);
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, true, species_count);
         TEST_ASSERT(!error);
         TEST_ASSERT(tree);
 
-        TEST_ASSERT_EQUAL__BROKEN(GBT_count_leafs(tree), 59);
+        TEST_ASSERT_EQUAL(species_count, 59);
+        TEST_ASSERT_EQUAL__BROKEN(GBT_count_leafs(tree), species_count);
 
-        TEST_ASSERT_NO_ERROR(save_tree_as_newick(tree, savename(2)));
+        char *saveas   = savename(2);
+        char *expected = expected_name(2);
+        
+        TEST_ASSERT_NO_ERROR(save_tree_as_newick(tree, saveas));
 
         // ../UNIT_TESTER/run/consense/2/consense.tree
 
-        TEST_ASSERT_TEXTFILE_DIFFLINES(savename(2), expected_name(2), 1);
-        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename(2)));
+        TEST_ASSERT_TEXTFILE_DIFFLINES(saveas, expected, 1);
+        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
+
+        free(expected);
+        free(saveas);
 
         GBT_delete_tree(tree);
     }
 }
 
-void NOTEST_consensus_tree_2_is_deterministic() {
-#if 1
-    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(NOTEST_consensus_tree_2);
-    const char  *saved = savename(2);
-    if (GB_is_regularfile(saved)) {
-        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saved));
-    }
-#else
-    TEST_consensus_tree_2();
-#endif
+void TEST_consensus_tree_generation_is_deterministic() {
+    TEST_consensus_tree_2_lost_branches();
+    TEST_consensus_tree_1();
+    TEST_consensus_tree_1_single();
 }
 
-void NOTEST_arb_consensus_tree() {
+void TEST_arb_consensus_tree() {
     TEST_STDOUT_CONTAINS("(arb_consensus_tree -x || true)", "Unknown switch '-x'");
     TEST_STDOUT_CONTAINS("(arb_consensus_tree -w sth || true)", "no input trees specified");
-                       
-    TEST_STDOUT_CONTAINS("arb_consensus_tree"
-                         " -w consense/1/consense.tree"
-                         " consense/1/bootstrapped_1.tree"
-                         " consense/1/bootstrapped_2.tree"
-                         " consense/1/bootstrapped_3.tree"
-                         " consense/1/bootstrapped_4.tree"
-                         // " consense/1/bootstrapped_5.tree"
-                         ,
-                         "database  created");
-    TEST_ASSERT_TEXTFILE_DIFFLINES(savename(1), expected_name(1), 1);
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename(1)));
+
+    {
+        char *saveas   = savename(1);
+        char *expected = expected_name(1);
     
-    TEST_STDOUT_CONTAINS("arb_consensus_tree"
-                         " -w consense/2/consense.tree"
-                         " consense/2/bootstrapped_1.tree"
-                         " consense/2/bootstrapped_2.tree"
-                         " consense/2/bootstrapped_3.tree"
-                         " consense/2/bootstrapped_4.tree"
-                         ,
-                         "database  created");
-    TEST_ASSERT_TEXTFILE_DIFFLINES(savename(2), expected_name(2), 1);
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename(2)));
+        TEST_STDOUT_CONTAINS("arb_consensus_tree"
+                             " -w consense/1/consense.tree"
+                             " consense/1/bootstrapped_1.tree"
+                             " consense/1/bootstrapped_2.tree"
+                             " consense/1/bootstrapped_3.tree"
+                             " consense/1/bootstrapped_4.tree"
+                             " consense/1/bootstrapped_5.tree"
+                             ,
+                             "database  created");
+
+        TEST_ASSERT_TEXTFILE_DIFFLINES(saveas, expected, 1);
+        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
+
+        free(expected);
+        free(saveas);
+    }
+
+    {
+        char *saveas   = savename(2);
+        char *expected = expected_name(2);
     
-    MISSING_TEST("log");
+        TEST_STDOUT_CONTAINS("arb_consensus_tree"
+                             " -w consense/2/consense.tree"
+                             " consense/2/bootstrapped_1.tree"
+                             " consense/2/bootstrapped_2.tree"
+                             " consense/2/bootstrapped_3.tree"
+                             " consense/2/bootstrapped_4.tree"
+                             ,
+                             "database  created");
+
+        TEST_ASSERT_TEXTFILE_DIFFLINES(saveas, expected, 1);
+        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
+        
+        free(expected);
+        free(saveas);
+    }
 }
 
 #endif // UNIT_TESTS

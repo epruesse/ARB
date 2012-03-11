@@ -20,10 +20,18 @@ static int      Tree_count = 0;
 static GB_HASH *Name_hash  = 0;
 
 void ctree_init(int node_count, const CharPtrArray& names) {
-    /*  node_count  number of different leafs
-        names       name of each leaf   */
+    /* node_count  number of different leafs // @@@ unneeded (use names.size())
+     * names       leafnames (=species names)
+     *
+     * Note: the explicit order of the branches in the generated tree
+     *       depends on the order of the names.
+     * 
+     * The topology of the generated tree will be identical (regardless of the branch-order)
+     */
 
     arb_assert(!Name_hash); // forgot to call ctree_cleanup?
+    arb_assert(names.size() == node_count);
+
     Name_hash = GBS_create_hash(node_count, GB_MIND_CASE);
 
     for (int i=0; i< node_count; i++) {
@@ -74,7 +82,7 @@ GBT_TREE *get_ctree() {
             p = hash_getpart();
         }
     }
-    
+
     NT_NODE *n = ntree_get();
     if (n->son_list->next == NULL) { // if father has only one son
         PART *p  = part_new();
@@ -95,6 +103,7 @@ GBT_TREE *get_ctree() {
 
     GBT_TREE *result_tree = rb_gettree(n);
     ntree_cleanup();
+
     return result_tree;
 }
 
