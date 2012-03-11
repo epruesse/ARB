@@ -34,7 +34,7 @@ void ntree_cleanup();
 
 int ntree_count_sons(NT_NODE *tree);
 
-void insert_ntree(PART *part);
+void insert_ntree(PART*& part);
 NT_NODE *ntree_get();
 
 #if defined(NTREE_DEBUG_FUNCTIONS)

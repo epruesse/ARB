@@ -15,7 +15,7 @@
 #include <arbdb_base.h>
 #endif
 
-void des_tree(GBT_TREE *tree, int weight);
+void remember_subtrees(const GBT_TREE *tree, int weight);
 
 #else
 #error CT_dtree.hxx included twice

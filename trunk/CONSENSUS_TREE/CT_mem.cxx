@@ -4,12 +4,8 @@
 #include <cstring>
 #include <cstdio>
 
-void *getmem(size_t size)
-{
-    void *p;
-
-    p = malloc(size);
-
+void *getmem(size_t size) {
+    void *p = malloc(size);
     if (!p) {
         fprintf(stderr, "Error occurred in Module CONSENSUS! Not enough Memory left\n");
         return 0;

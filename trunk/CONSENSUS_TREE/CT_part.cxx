@@ -111,12 +111,17 @@ PART *part_new() {
     return p;
 }
 
-void part_free(PART *p) {
+void part_free(PART*& p) {
     //! destroy part
     free(p->p);
     free(p);
+    p = NULL;
 }
 
+bool part_is_valid(const PART *p) {
+    PELEM last = p->p[longs-1];
+    return (last&cutmask) == last;
+}
 
 PART *part_root() {
     /*! build a partition that totally consists of 111111...1111 that is needed to
@@ -125,6 +130,7 @@ PART *part_root() {
 
     PART *p = part_new();
     part_invert(p);
+    arb_assert(part_is_valid(p));
     return p;
 }
 
@@ -132,7 +138,9 @@ PART *part_root() {
 void part_setbit(PART *p, int pos) {
     /*! set the bit of the part 'p' at the position 'pos'
      */
+    arb_assert(part_is_valid(p));
     p->p[(pos / sizeof(PELEM) / 8)] |= (1 << (pos % (sizeof(PELEM)*8)));
+    arb_assert(part_is_valid(p));
 }
 
 
@@ -143,9 +151,19 @@ bool is_son_of(const PART *son, const PART *father) {
      * A father defined in this context as a part covers every bit of his son. needed in CT_ntree
      */
 
+    arb_assert(part_is_valid(son));
+    arb_assert(part_is_valid(father));
+    
+    bool is_equal = true;
     for (int i=0; i<longs; i++) {
-        if ((son->p[i] & father->p[i]) != son->p[i]) return false;
+        PELEM s = son->p[i];
+        PELEM f = father->p[i];
+
+        if ((s&f) != s) return false; // father has not all son bits set 
+        if (s != f) is_equal = false;
     }
+
+    arb_assert(!is_equal); // if is_equal, father and son are identical (which is wrong)
     return true;
 }
 
@@ -155,6 +173,10 @@ bool are_brothers(const PART *p1, const PART *p2) {
      *
      * "brothers" means that p1 and p2 do not share common bits
      */
+
+    arb_assert(part_is_valid(p1));
+    arb_assert(part_is_valid(p2));
+
     for (int i=0; i<longs; i++) {
         if (p1->p[i] & p2->p[i]) return false;
     }
@@ -164,22 +186,36 @@ bool are_brothers(const PART *p1, const PART *p2) {
 
 void part_invert(PART *p) {
     //! invert a part
+    //
+    // Each edge in a tree connects two subtrees.
+    // These subtrees are represented by inverse partitions
+
+    arb_assert(part_is_valid(p));
     for (int i=0; i<longs; i++) p->p[i] = ~p->p[i];
     p->p[longs-1] &= cutmask;
+    arb_assert(part_is_valid(p));
 }
 
 
 void part_or(const PART *source, PART *destination) {
     //! destination = source or destination
+    arb_assert(part_is_valid(source));
+    arb_assert(part_is_valid(destination));
+    
     for (int i=0; i<longs; i++) {
         destination->p[i] |= source->p[i];
     }
+
+    arb_assert(part_is_valid(destination));
 }
 
 
 bool parts_equal(const PART *p1, const PART *p2) {
     /*! return true if p1 and p2 are equal
      */
+    arb_assert(part_is_valid(p1));
+    arb_assert(part_is_valid(p2));
+
     for (int i=0; i<longs; i++) {
         if (p1->p[i] != p2->p[i]) return false;
     }
@@ -192,10 +228,12 @@ int part_key(const PART *p) {
      //! calculate a hashkey from part 'p'
     int i;
     PELEM ph=0;
- 
+
+    arb_assert(part_is_valid(p));
+
     for (i=0; i<longs; i++) {
-         ph ^= p->p[i];
-     }
+        ph ^= p->p[i];
+    }
     i = (int) ph;
     if (i<0) i *= -1;
  
@@ -204,6 +242,7 @@ int part_key(const PART *p) {
 
 void part_setlen(PART *p, GBT_LEN len) {
     //! set the len of this edge (this part)
+    arb_assert(part_is_valid(p));
     p->len = len;
 }
 
@@ -212,9 +251,10 @@ int part_size(const PART *p) {
     //! count the number of leafs in partition
     int leafs = 0;
     for (int i = 0; i<longs; ++i) {
-        PELEM e                    = p->p[i];
-        // arb_assert((e&cutmask) == e); // @@@ fails sometimes - why?
-        e                          = e&cutmask;
+        PELEM e = p->p[i];
+
+        if (i == (longs-1)) e = e&cutmask;
+
         for (size_t b = 0; b<(sizeof(e)*8); ++b) {
             if (e&1) leafs++;
             e = e>>1;
@@ -226,10 +266,14 @@ int part_size(const PART *p) {
 
 void part_copy(const PART *source, PART *destination) {
     //! copy source into destination
+    arb_assert(part_is_valid(source));
+
     for (int i=0; i<longs; i++) destination->p[i] = source->p[i];
 
     destination->len     = source->len;
     destination->percent = source->percent;
+    
+    arb_assert(part_is_valid(destination));
 }
 
 
@@ -239,7 +283,9 @@ void part_standard(PART *p) {
      * two parts are equal if one is just the inverted version of the other.
      * so the standard is defined that the version is the representant, whose first bit is equal 1
      */
+    arb_assert(part_is_valid(p));
     if ((p->p[0] & 1) == 0) part_invert(p);
+    arb_assert(part_is_valid(p));
 }
 
 
@@ -251,6 +297,7 @@ int calc_index(const PART *p) {
      *
      * ATTENTION: p must be != NULL
      */
+    arb_assert(part_is_valid(p));
     int i, pos=0;
     PELEM p_temp;
 

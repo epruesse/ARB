@@ -17,7 +17,7 @@
 
 // Hashtabelle fuer parts
 
-static int    Hash_max_count = 0;
+static int    max_part_percent = 0;
 static HNODE *Hashlist[HASH_MAX];
 static HNODE *Sortedlist     = NULL;
 
@@ -50,7 +50,7 @@ static void hash_free() {
 void hash_init() {
     //! initialize Hashtable
     arb_assert(!Sortedlist); // forgot to call hash_cleanup
-    arb_assert(!Hash_max_count);
+    arb_assert(!max_part_percent);
 
     for (int i = 0; i<HASH_MAX; ++i) {
         Hashlist[i] = NULL;
@@ -60,7 +60,7 @@ void hash_init() {
 void hash_cleanup() {
     //! free old data
     hash_free();
-    Hash_max_count = 0;
+    max_part_percent = 0;
 }
 
 PART *hash_getpart() {
@@ -85,48 +85,43 @@ PART *hash_getpart() {
     return  p;
 }
 
+inline void track_max_part_percent(int pc) { if (pc>max_part_percent) max_part_percent = pc; }
 
-void hash_insert(PART *part, int weight) {
-    /*! insert part in hashtable with weight
+void hash_insert(PART*& part, int weight) {
+    /*! insert part in hashtable with weight (destroys/reassigns part)
      * @param part the one to insert, is destructed afterwards
      * @param weight  the weight of the part
      */
-    HNODE *hp;
 
     part_standard(part);
 
     int key = part_key(part);
     key %= HASH_MAX;
 
+    HNODE *hp = 0;
     if (Hashlist[key]) {
         for (hp=Hashlist[key]; hp; hp=hp->next) {
-            if (parts_equal(hp->part, part)) { // if in list
-                // tree-add tree-id
-                hp->part->percent += weight;
-                hp->part->len += ((float) weight) * part->len;
-                part_free(part);
-                if (hp->part->percent > Hash_max_count)
-                    Hash_max_count = hp->part->percent;
-                return;
-            }
+            if (parts_equal(hp->part, part)) break;
         }
     }
 
-    // Not yet in list -> insert
-    hp = (HNODE *) getmem(sizeof(HNODE));
-    part->percent = weight;
-    part->len *= ((float) weight);
-    hp->part = part;
-    if (weight > Hash_max_count)
-        Hash_max_count = weight;
+    part->percent  = weight;
+    part->len     *= weight;
 
-    if (!Hashlist[key]) {
+    if (hp) {
+        hp->part->percent += part->percent;
+        hp->part->len     += part->len;
+        part_free(part);
+    }
+    else {
+        hp            = (HNODE *) getmem(sizeof(HNODE));
+        hp->part      = part;
+        hp->next      = Hashlist[key];
         Hashlist[key] = hp;
-        return;
     }
 
-    hp->next = Hashlist[key];
-    Hashlist[key] = hp;
+    part = NULL;
+    track_max_part_percent(hp->part->percent);
 }
 
 
@@ -143,8 +138,8 @@ void build_sorted_list() {
     HNODE **heads, **tails, *head, *tail;
     int i, idx;
 
-    heads = (HNODE **) getmem(Hash_max_count*sizeof(HNODE *));
-    tails = (HNODE**)  getmem(Hash_max_count*sizeof(HNODE *));
+    heads = (HNODE **) getmem(max_part_percent*sizeof(HNODE *));
+    tails = (HNODE**)  getmem(max_part_percent*sizeof(HNODE *));
 
     // build one list for each countvalue
 
@@ -170,7 +165,7 @@ void build_sorted_list() {
     head = NULL;
     tail = NULL;
     // concatenate lists
-    for (i=Hash_max_count-1; i>=0; i--) {
+    for (i=max_part_percent-1; i>=0; i--) {
         if (heads[i]) {
             if (!head) {
                 head = heads[i];
