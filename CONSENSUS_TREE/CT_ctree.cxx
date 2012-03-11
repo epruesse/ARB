@@ -61,7 +61,7 @@ void ctree_cleanup() {
 void insert_ctree(GBT_TREE *tree, int weight)
 {
     Tree_count += weight;
-    des_tree(tree, weight);
+    remember_subtrees(tree, weight);
 }
 
 

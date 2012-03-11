@@ -31,19 +31,23 @@ void part_init(int len);
 void part_cleanup();
 
 PART *part_new();
+void  part_free(PART*& p);
+
 PART *part_root();
-void  part_setbit(PART *p, int pos);
 
-bool is_son_of(const PART *son, const PART *father); // @@@ bool result
-bool are_brothers(const PART *p1, const PART *p2);
-bool parts_equal(const PART *p1, const PART *p2); // @@@ 
+bool part_is_valid(const PART *p);
 
+void part_setbit(PART *p, int pos);
 void part_invert(PART *p);
 void part_or(const PART *s, PART *d);
 void part_copy(const PART *s, PART *d);
 void part_standard(PART *p);
+
+bool is_son_of(const PART *son, const PART *father);
+bool are_brothers(const PART *p1, const PART *p2);
+bool parts_equal(const PART *p1, const PART *p2);
+
 int  calc_index(const PART *p);
-void part_free(PART *p);
 int  part_key(const PART *p);
 void part_setlen(PART *p, GBT_LEN len);
 

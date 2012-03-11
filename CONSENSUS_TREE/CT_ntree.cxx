@@ -14,66 +14,56 @@
 
 // Einen Binaerbaum erzeugen ueber einen Multitree
 
-static NT_NODE *ntree       = NULL;
-static int      ntree_count = 0;
+static NT_NODE *ntree = NULL;
 
 
-// returns the referenz of the actual NTree
-NT_NODE *ntree_get()
-{
+NT_NODE *ntree_get() {
+    // returns the current ntree
     return ntree;
 }
 
 
-// build a new node and store the partition p in it
-static NT_NODE *new_ntnode(PART *p)
-{
-    NT_NODE *n;
-
-    n = (NT_NODE *) getmem(sizeof(NT_NODE));
-    n->part = p;
+static NT_NODE *new_ntnode(PART*& p) {
+    // build a new node and store the partition p in it
+    NT_NODE *n  = (NT_NODE *) getmem(sizeof(NT_NODE));
+    n->part     = p;
     n->son_list = NULL;
+
+    p = NULL;
     return n;
 }
 
 
-// delete the tree
-static void del_tree(NT_NODE *tree)
-{
-    NSONS *nsonp, *nson_help;
+static void del_tree(NT_NODE *tree) {
+    // delete the tree
+    if (tree) {
+        for (NSONS *nsonp = tree->son_list; nsonp;) {
+            NSONS *nson_next = nsonp->next;
+            del_tree(nsonp->node);
+            free(nsonp);
+            nsonp = nson_next;
+        }
+        tree->son_list = NULL;
 
-    if (!tree) return;
-
-    for (nsonp=tree->son_list; nsonp;) {
-        nson_help = nsonp->next;
-        del_tree(nsonp->node);
-        free(nsonp);
-        nsonp = nson_help;
+        // now is leaf
+        part_free(tree->part);
+        tree->part = NULL;
+        freenull(tree);
     }
-    tree->son_list = NULL;
-
-    // now is leaf
-    part_free((tree->part));
-    tree->part = NULL;
-    freenull(tree);
 }
 
 
-// Initialization of the tree
 void ntree_init() {
-    arb_assert(!ntree); // forgot to call ntree_cleanup ? 
-
-    // Set root to max. partition
-    PART *r     = part_root();
-    ntree = new_ntnode(r);
-
-    ntree_count = 0;
+    // Initialization of the tree
+    arb_assert(!ntree);              // forgot to call ntree_cleanup ?
+    PART *root = part_root();
+    ntree      = new_ntnode(root); // Set root to completely filled partition
 }
+
 void ntree_cleanup() {
     // Destruct old tree
     del_tree(ntree);
     ntree = NULL;
-    ntree_count = 0;
 }
 
 #if 0
@@ -84,109 +74,120 @@ static int ntree_cont(int len)
 }
 #endif
 
-// Move son from parent-sonlist to new sonlist
-// nson is pointer on element in parent-sonlist
-// sonlist is new sonlist where to move in
-static void insert_son(NT_NODE *f_node, NT_NODE *s_node, NSONS *nson)
-{
+static void move_son(NT_NODE *f_node, NT_NODE *s_node, NSONS *nson) {
+    // Move son from parent-sonlist to new sonlist
+    // nson is pointer on element in parent-sonlist
+    // sonlist is new sonlist where to move in
 
     // Move out of parent-sonlist
-    if (nson == f_node->son_list)
-        f_node->son_list = f_node->son_list->next;
-    if (nson->prev)
-        nson->prev->next = nson->next;
-    if (nson->next)
-        nson->next->prev = nson->prev;
+    
+    if (nson == f_node->son_list) f_node->son_list = f_node->son_list->next;
+    if (nson->prev) nson->prev->next = nson->next;
+    if (nson->next) nson->next->prev = nson->prev;
 
     // Move in node-sonlist
     nson->next = s_node->son_list;
     nson->prev = NULL;
-    if (s_node->son_list)
-        s_node->son_list->prev = nson;
-    s_node->son_list = nson;
+    
+    if (s_node->son_list) s_node->son_list->prev = nson;
+    s_node->son_list                             = nson;
 }
 
 
-/* Construct a multitree under that constrain that it is possible for the tree
-   be a binary tree in the end. To enable this it is important to follow two
-   ideas:
-   1. a son fits only under a father if the father has every bit set that the son
-   has plus it should be possible to insert as many sons as necessary to result
-   in a binary tree
-   2. for any two brothers A,B: brotherA and brotherB == 0                       */
-static int ins_ntree(NT_NODE *tree, PART *newpart)
-{
-    NSONS *nsonp;
-    NSONS *nsonp_h;
-    NT_NODE *newntnode;
+static int ins_ntree(NT_NODE *tree, PART*& newpart) {
+    /* Construct a multitree under the constraint,
+     * that the final tree may result in a binary tree.
+     *
+     * To ensure this, it is important to follow two ideas:
+     *
+     * 1. a son only fits below a father
+     *    - if the father has all son-bits set AND
+     *    - the father is different from the son (so it is possible to add a brother) 
+     *
+     * 2. brothers are distinct (i.e. they do not share any bits)
+     */
 
     // Tree is leaf
     if (!tree->son_list) {
-        tree->son_list = (NSONS *) getmem(sizeof(NSONS));
+        tree->son_list       = (NSONS *) getmem(sizeof(NSONS));
         tree->son_list->node = new_ntnode(newpart);
         return 1;
     }
 
     // test if part fit under one son of tree -> recursion
-    for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
+    for (NSONS *nsonp = tree->son_list; nsonp; nsonp=nsonp->next) {
         if (is_son_of(newpart, nsonp->node->part)) {
-            return ins_ntree(nsonp->node, newpart);
+            int res = ins_ntree(nsonp->node, newpart);
+            arb_assert(contradicted(newpart, res));
+            return res;
         }
     }
 
     // If partition is not a son maybe it is a brother
     // If it is neither brother nor son -> don't fit here
-    for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
+    for (NSONS *nsonp = tree->son_list; nsonp; nsonp=nsonp->next) {
         if (!are_brothers(nsonp->node->part, newpart)) {
+            // newpart is not distinct from nsonp
             if (!is_son_of(nsonp->node->part, newpart)) {
+                arb_assert(newpart);
                 return 0;
             }
+            // accept if nsonp is son of newpart (will be pulled down below) 
         }
     }
 
     // Okay, insert part here ...
-    newntnode = new_ntnode(newpart);
+    NT_NODE *newntnode = new_ntnode(newpart);
 
-    // Move sons from parent-sonlist in nt_node-sonlist
-    nsonp = tree->son_list;
-    while (nsonp) {
-
-        nsonp_h = nsonp->next;
-        if (is_son_of(nsonp->node->part, newpart)) {
-            insert_son(tree, newntnode, nsonp);
+    // Move sons from parent-sonlist into the new sons sonlist
+    {
+        NSONS *nsonp = tree->son_list;
+        while (nsonp) {
+            NSONS *nsonp_next = nsonp->next;
+            if (is_son_of(nsonp->node->part, newntnode->part)) {
+                move_son(tree, newntnode, nsonp);
+            }
+            nsonp = nsonp_next;
         }
-        nsonp = nsonp_h;
     }
 
     // insert nsons-elem in son-list of father
-    nsonp = (NSONS *) getmem(sizeof(NSONS));
-    nsonp->node = newntnode;
-    nsonp->prev = NULL;
-    nsonp->next = tree->son_list;
-    if (tree->son_list)
-        tree->son_list->prev = nsonp;
-    tree->son_list = nsonp;
+    {
+        NSONS *new_son = (NSONS *) getmem(sizeof(NSONS));
+    
+        new_son->node = newntnode;
+        new_son->prev = NULL;
+        new_son->next = tree->son_list;
+
+        if (tree->son_list) tree->son_list->prev = new_son;
+        tree->son_list                           = new_son;
+    }
+
+    arb_assert(!newpart);
+
     return 1;
 }
 
 
 
-/* Insert a partition in the NTree. To do this I try to insert it in both
-   possible representations. ins_ntree does the whole work. If it fits in none
-   of them I delete the partition.
-   attention: The partition is destructed afterwards.
-   The tree is never empty, because it is initialized with a root */
-void insert_ntree(PART *part)
-{
-    ntree_count++;
+void insert_ntree(PART*& part) {
+    /* Insert a partition in the NTree.
+     * 
+     * Tries both representations, normal and inverse partition,  which
+     * represent the two subtrees at both sides of one edge.
+     *
+     * If neither can be inserted, the partition gets dropped.
+     */
+
+    arb_assert(part_is_valid(part));
+     
     if (!ins_ntree(ntree, part)) {
-        // @@@ really ok to insert the inverted subtree here ? 
-        part_invert(part);
+        part_invert(part); 
         if (!ins_ntree(ntree, part)) {
-            ntree_count--;
-            part_free(part);
+            part_free(part); // drop non-fitting partition
         }
     }
+    arb_assert(!part);
 }
 
 // --------------------------------------------------------------------------------

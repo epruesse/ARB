@@ -17,46 +17,45 @@
 // insert afterwards in Hashtable
 
 
-/* destruct GBT-Tree and build partitions. This is done recursive by concatenate
-   all sons to build the father partition. All partitions are inserted in the
-   hashtable */
-// caution: I use the fact that each inner node must have two sons.
-static PART *dtree(GBT_TREE *tree, int weight, GBT_LEN len) {
-    PART *p1, *p2, *ph;
-    int idx;
-
+static PART *dtree(const GBT_TREE *tree, int weight, GBT_LEN len) {
+    /* destruct GBT-Tree and build partitions. This is done recursive by concatenate
+       all sons to build the father partition. All partitions are inserted in the
+       hashtable */
+    // caution: I use the fact that each inner node must have two sons.
+    PART *ptree = part_new();
     if (tree->is_leaf) {
-        ph = part_new();
-        idx = get_species_index(tree->name);
-        part_setbit(ph, idx);
-        part_setlen(ph, len);
-        return ph;
+        part_setbit(ptree, get_species_index(tree->name));
     }
+    else {
+        // In any possible case left and rightson always exist ...
+        PART *p1 = dtree(tree->leftson, weight, tree->leftlen);
+        PART *p2 = dtree(tree->rightson, weight, tree->rightlen);
 
-    // In any possible case left and rightson always exist ...
-    p1 = dtree(tree->leftson, weight, tree->leftlen);
-    ph = part_new();
-    part_copy(p1, ph);
-    hash_insert(ph, weight);
+        arb_assert(are_brothers(p1, p2));
 
-    p2 = dtree(tree->rightson, weight, tree->rightlen);
-    part_or(p2, p1);
-    hash_insert(p2, weight);
-    part_setlen(p1, len);
-    return p1;
+        part_copy(p1, ptree);
+        part_or(p2, ptree);
+
+        hash_insert(p1, weight);
+        hash_insert(p2, weight);
+    }
+    part_setlen(ptree, len);
+    return ptree;
 }
 
 
-/* it is necessary to destruct the left and the right side separately, because
-   the root is only a virtual node and must be ignored. Moreover the left and
-   rightson are the same partition. So I may only insert right son.            */
-void des_tree(GBT_TREE *tree, int weight)
-{
-    PART *p;
+void remember_subtrees(const GBT_TREE *tree, int weight) {
+    /* it is necessary to destruct the left and the right side separately, because
+       the root is only a virtual node and must be ignored. Moreover the left and
+       rightson are the same partition. So I may only insert right son. */
 
-    p = dtree(tree->leftson, weight, 0.0);
-    part_free(p);
-    p = dtree(tree->rightson, weight, 0.0);
-    part_setlen(p, (tree->leftlen + tree->rightlen));
-    hash_insert(p, weight);
+    PART *p1 = dtree(tree->leftson, weight, 0.0);
+    PART *p2 = dtree(tree->rightson, weight, 0.0);
+
+    arb_assert(are_brothers(p1, p2));
+
+    part_free(p1);
+
+    part_setlen(p2, (tree->leftlen + tree->rightlen));
+    hash_insert(p2, weight);
 }

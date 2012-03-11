@@ -27,7 +27,7 @@ void hash_cleanup();
 
 void  hash_settreecount(int tree_count);
 PART *hash_getpart();
-void  hash_insert(PART *part, int weight);
+void  hash_insert(PART*& part, int weight);
 void  build_sorted_list();
 
 #else
