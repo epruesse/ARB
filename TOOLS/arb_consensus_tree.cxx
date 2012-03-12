@@ -336,6 +336,16 @@ void TEST_consensus_tree_1() {
         GBT_delete_tree(tree);
     }
 }
+static double calc_intree_distance(GBT_TREE *tree) {
+    if (tree->is_leaf) return 0.0;
+    return
+        tree->leftlen +
+        tree->rightlen +
+        calc_intree_distance(tree->leftson) +
+        calc_intree_distance(tree->rightson);
+}
+
+#define LENSUM_EPSILON .000001
 
 void TEST_consensus_tree_1_single() {
     GB_ERROR error = NULL;
@@ -350,6 +360,7 @@ void TEST_consensus_tree_1_single() {
 
         TEST_ASSERT_EQUAL(species_count, 22);
         TEST_ASSERT_EQUAL(GBT_count_leafs(tree), species_count);
+        TEST_ASSERT_SIMILAR(calc_intree_distance(tree), 0.924610, LENSUM_EPSILON);
 
         char       *saveas   = savename(1);
         const char *expected = "consense/1/consense_expected_single.tree";
@@ -381,6 +392,7 @@ void TEST_consensus_tree_2_lost_branches() {
 
         TEST_ASSERT_EQUAL(species_count, 59);
         TEST_ASSERT_EQUAL__BROKEN(GBT_count_leafs(tree), species_count);
+        TEST_ASSERT_SIMILAR(calc_intree_distance(tree), 2.061705, LENSUM_EPSILON);
 
         char *saveas   = savename(2);
         char *expected = expected_name(2);
@@ -412,6 +424,7 @@ void TEST_consensus_tree_3() {
 
         TEST_ASSERT_EQUAL(species_count, 128);
         TEST_ASSERT_EQUAL__BROKEN(GBT_count_leafs(tree), species_count);
+        TEST_ASSERT_SIMILAR(calc_intree_distance(tree), 2.167715, LENSUM_EPSILON);
 
         char *saveas   = savename(3);
         char *expected = expected_name(3);
