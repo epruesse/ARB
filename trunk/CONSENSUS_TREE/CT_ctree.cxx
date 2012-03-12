@@ -83,21 +83,33 @@ GBT_TREE *get_ctree() {
         }
     }
 
-    NT_NODE *n = ntree_get();
-    if (n->son_list->next == NULL) { // if father has only one son
-        PART *p  = part_new();
-        n->son_list->node->part->len /= 2;
-        part_copy(n->son_list->node->part, p);
-        part_invert(p);
-        insert_ntree(p);
+    NT_NODE *n    = ntree_get();
+    int      sons = ntree_count_sons(n);
+
+    if (sons == 1) {
+        PART *part_single  = n->son_list->node->part;
+        part_single->len  /= 2;
+
+        PART *part_inverse = part_new();
+        part_copy(part_single, part_inverse);
+        part_invert(part_inverse);
+
+#if defined(DEBUG)
+        printf("Inverse part inserted at root:\n");
+        part_print(part_inverse);
+        fputc('\n', stdout);
+#endif
+
+        insert_ntree(part_inverse);
+
         n = ntree_get();
     }
-    else {  // if father has tree sons
+    else {
         arb_assert(0); // this case should never happen!
     }
-
+    arb_assert(ntree_count_sons(n) == 2);
+    
 #if defined(NTREE_DEBUG_FUNCTIONS)
-    // print_ntree(n, 2);
     arb_assert(is_well_formed(n));
 #endif
 

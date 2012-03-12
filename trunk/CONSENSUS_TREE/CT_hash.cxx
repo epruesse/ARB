@@ -19,32 +19,23 @@
 
 static int    max_part_percent = 0;
 static HNODE *Hashlist[HASH_MAX];
-static HNODE *Sortedlist     = NULL;
+static HNODE *Sortedlist       = NULL;
+
+static void free_HNODE(HNODE*& hn) {
+    while (hn) {
+        HNODE *next = hn->next;
+        part_free(hn->part);
+        free(hn);
+        
+        hn = next;
+    }
+    hn = NULL;
+}
 
 static void hash_free() {
     //! free Hashtable and Sortedlist
-    int i;
-    HNODE *hnp, *hnp_help;
-
-    for (i=0; i< HASH_MAX; i++) {
-        hnp = Hashlist[i];
-        while (hnp) {
-            hnp_help = hnp->next;
-            part_free(hnp->part);
-            free(hnp);
-            hnp = hnp_help;
-        }
-        Hashlist[i] = NULL;
-    }
-
-    hnp = Sortedlist;
-    while (hnp) {
-        hnp_help = hnp->next;
-        part_free(hnp->part);
-        free(hnp);
-        hnp = hnp_help;
-    }
-    Sortedlist = NULL;
+    for (int i=0; i< HASH_MAX; i++) free_HNODE(Hashlist[i]);
+    free_HNODE(Sortedlist);
 }
 
 void hash_init() {
@@ -69,20 +60,19 @@ PART *hash_getpart() {
      * calculate the average pathlength.
      * The element is removed from the list afterwards
      */
-    HNODE *hnp;
-    PART *p;
+    PART *p = NULL;
+    if (Sortedlist) {
+        HNODE *hnp = Sortedlist;
+        Sortedlist = hnp->next;
+        p          = hnp->part;
+        free(hnp);
 
-    if (!Sortedlist) return NULL;
-
-    hnp = Sortedlist;
-    Sortedlist = hnp->next;
-    p = hnp->part;
-    free(hnp);
-    p->len /= (float) p->percent;
-    p->percent *= 10000;
-    p->percent /= get_tree_count();
-
-    return  p;
+        // @@@ code below is wrong placed 
+        p->len     /= (float) p->percent;
+        p->percent *= 10000;
+        p->percent /= get_tree_count();
+    }
+    return p;
 }
 
 inline void track_max_part_percent(int pc) { if (pc>max_part_percent) max_part_percent = pc; }
@@ -134,20 +124,19 @@ void build_sorted_list() {
 
     arb_assert(!Sortedlist);
     
-    HNODE *hnp, *hnp_help;
-    HNODE **heads, **tails, *head, *tail;
-    int i, idx;
-
-    heads = (HNODE **) getmem(max_part_percent*sizeof(HNODE *));
-    tails = (HNODE**)  getmem(max_part_percent*sizeof(HNODE *));
+    HNODE **heads = (HNODE **) getmem(max_part_percent*sizeof(HNODE *));
+    HNODE **tails = (HNODE**)  getmem(max_part_percent*sizeof(HNODE *));
 
     // build one list for each countvalue
 
-    for (i=0; i< HASH_MAX; i++) {
-        hnp = Hashlist[i];
+    for (int i=0; i< HASH_MAX; i++) {
+        HNODE *hnp = Hashlist[i];
         while (hnp) {
-            hnp_help = hnp->next;
-            idx = hnp->part->percent-1;
+            HNODE *hnp_next = hnp->next;
+            int    idx      = hnp->part->percent-1;
+
+            arb_assert(idx >= 0 && idx<max_part_percent);
+
             if (heads[idx]) {
                 hnp->next = heads[idx];
                 heads[idx] = hnp;
@@ -157,15 +146,15 @@ void build_sorted_list() {
                 hnp->next = NULL;
             }
 
-            hnp = hnp_help;
+            hnp = hnp_next;
         }
         Hashlist[i] = NULL;
     }
 
-    head = NULL;
-    tail = NULL;
+    HNODE *head = NULL;
+    HNODE *tail = NULL;
     // concatenate lists
-    for (i=max_part_percent-1; i>=0; i--) {
+    for (int i=max_part_percent-1; i>=0; i--) {
         if (heads[i]) {
             if (!head) {
                 head = heads[i];

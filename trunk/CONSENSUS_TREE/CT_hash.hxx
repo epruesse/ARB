@@ -20,7 +20,7 @@ struct HNODE {
     HNODE *next;
 };
 
-#define HASH_MAX 123
+#define HASH_MAX 123 // @@@ increase when tree generation is stable
 
 void hash_init();
 void hash_cleanup();
