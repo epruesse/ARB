@@ -15,7 +15,6 @@
 // debug flags
 #if defined(DEBUG)
 
-#define DUMP_DROPS            // dump dropped branches
 #define NTREE_DEBUG_FUNCTIONS // debug function for NTREE
 #define DUMP_PART_INIT        // dump part initialization
 
