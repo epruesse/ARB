@@ -399,30 +399,24 @@ void TEST_consensus_tree_2_lost_branches() {
     }
 }
 
-void TEST_consensus_tree_3_invalid_tree() {
+void TEST_consensus_tree_3() {
     GB_ERROR      error = NULL;
     StrArray input_tree_names;
     add_inputnames(input_tree_names, 3, 1, 3);
 
     {
         size_t species_count;
-        // build_consensus_tree here fails the disabled assertion in ../CONSENSUS_TREE/CT_rbtree.cxx@disabled_single_son_assertion
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, false, species_count); // @@@ do not sort (crashes)
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, true, species_count);
         TEST_ASSERT(!error);
         TEST_ASSERT(tree);
 
         TEST_ASSERT_EQUAL(species_count, 128);
-
-#if 0
-        // normal test (run when it generates a valid tree)
-        TEST_ASSERT_EQUAL__BROKEN(GBT_count_leafs(tree), species_count); // @@@ cannot count (crashes)
+        TEST_ASSERT_EQUAL__BROKEN(GBT_count_leafs(tree), species_count);
 
         char *saveas   = savename(3);
         char *expected = expected_name(3);
         
         TEST_ASSERT_NO_ERROR(save_tree_as_newick(tree, saveas));
-
-        // ../UNIT_TESTER/run/consense/2/consense.tree
 
         TEST_ASSERT_TEXTFILE_DIFFLINES(saveas, expected, 1);
         TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
@@ -431,14 +425,11 @@ void TEST_consensus_tree_3_invalid_tree() {
         free(saveas);
 
         GBT_delete_tree(tree);
-#else
-        TEST_ASSERT_EQUAL__BROKEN(GBT_is_invalid(tree), NULL);
-        TEST_ASSERT_CONTAINS(GBT_is_invalid(tree), "is inner node, but has no rightson");
-#endif
     }
 }
 
 void TEST_consensus_tree_generation_is_deterministic() {
+    TEST_consensus_tree_3();
     TEST_consensus_tree_2_lost_branches();
     TEST_consensus_tree_1();
     TEST_consensus_tree_1_single();
