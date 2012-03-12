@@ -268,10 +268,10 @@ bool is_well_formed(NT_NODE *tree) {
     // - all sons are part of father 
     // - all sons are distinct
     // - father is sum of sons
-    
+
     int sons = ntree_count_sons(tree);
 
-    if (!sons) return false;
+    if (!sons) return part_size(tree->part) == 1; // leafs should contain single species
 
     bool well_formed = true;
 
@@ -280,8 +280,9 @@ bool is_well_formed(NT_NODE *tree) {
         PART *pson = nson->node->part;
 
         if (!is_son_of(pson, tree->part)) well_formed = false;
-        if (!are_brothers(pson, pmerge)) well_formed   = false;
+        if (!are_brothers(pson, pmerge)) well_formed  = false;
         part_or(pson, pmerge);
+        if (!is_well_formed(nson->node)) well_formed = false;
     }
     if (!parts_equal(tree->part, pmerge)) well_formed = false;
     part_free(pmerge);
