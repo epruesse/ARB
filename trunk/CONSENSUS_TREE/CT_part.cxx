@@ -224,20 +224,16 @@ bool parts_equal(const PART *p1, const PART *p2) {
 }
 
 
-int part_key(const PART *p) {
-     //! calculate a hashkey from part 'p'
-    int i;
-    PELEM ph=0;
-
+unsigned part_key(const PART *p) {
+    //! calculate a hashkey from part 'p'
     arb_assert(part_is_valid(p));
 
-    for (i=0; i<longs; i++) {
+    PELEM ph = 0;
+    for (int i=0; i<longs; i++) {
         ph ^= p->p[i];
     }
-    i = (int) ph;
-    if (i<0) i *= -1;
  
-    return i;
+    return ph;
 }
 
 void part_setlen(PART *p, GBT_LEN len) {

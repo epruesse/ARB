@@ -95,7 +95,7 @@ void hash_insert(PART*& part, int weight) {
 
     part_standard(part);
 
-    int key = part_key(part);
+    unsigned key = part_key(part);
     key %= HASH_MAX;
 
     HNODE *hp = 0;

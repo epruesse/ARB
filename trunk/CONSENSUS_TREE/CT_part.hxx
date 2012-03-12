@@ -48,7 +48,7 @@ bool are_brothers(const PART *p1, const PART *p2);
 bool parts_equal(const PART *p1, const PART *p2);
 
 int  calc_index(const PART *p);
-int  part_key(const PART *p);
+unsigned part_key(const PART *p);
 void part_setlen(PART *p, GBT_LEN len);
 
 #if defined(NTREE_DEBUG_FUNCTIONS)
