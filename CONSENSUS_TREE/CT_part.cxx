@@ -242,7 +242,7 @@ void part_setlen(PART *p, GBT_LEN len) {
     p->len = len;
 }
 
-#if defined(DUMP_DROPS)
+#if defined(NTREE_DEBUG_FUNCTIONS)
 int part_size(const PART *p) {
     //! count the number of leafs in partition
     int leafs = 0;

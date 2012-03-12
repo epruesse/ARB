@@ -391,8 +391,8 @@ void TEST_consensus_tree_2_lost_branches() {
         TEST_ASSERT(tree);
 
         TEST_ASSERT_EQUAL(species_count, 59);
-        TEST_ASSERT_EQUAL__BROKEN(GBT_count_leafs(tree), species_count);
-        TEST_ASSERT_SIMILAR(calc_intree_distance(tree), 2.061705, LENSUM_EPSILON);
+        TEST_ASSERT_EQUAL(GBT_count_leafs(tree), species_count);
+        TEST_ASSERT_SIMILAR(calc_intree_distance(tree), 2.917387, LENSUM_EPSILON);
 
         char *saveas   = savename(2);
         char *expected = expected_name(2);
@@ -423,8 +423,8 @@ void TEST_consensus_tree_3() {
         TEST_ASSERT(tree);
 
         TEST_ASSERT_EQUAL(species_count, 128);
-        TEST_ASSERT_EQUAL__BROKEN(GBT_count_leafs(tree), species_count);
-        TEST_ASSERT_SIMILAR(calc_intree_distance(tree), 2.167715, LENSUM_EPSILON);
+        TEST_ASSERT_EQUAL(GBT_count_leafs(tree), species_count);
+        TEST_ASSERT_SIMILAR(calc_intree_distance(tree), 2.169135, LENSUM_EPSILON);
 
         char *saveas   = savename(3);
         char *expected = expected_name(3);
@@ -441,6 +441,9 @@ void TEST_consensus_tree_3() {
     }
 }
 
+#define REPEATED_TESTS
+
+#if defined(REPEATED_TESTS)
 void TEST_consensus_tree_generation_is_deterministic() {
     TEST_consensus_tree_3();
     TEST_consensus_tree_2_lost_branches();
@@ -493,6 +496,7 @@ void TEST_arb_consensus_tree() {
         free(saveas);
     }
 }
+#endif
 
 #endif // UNIT_TESTS
 

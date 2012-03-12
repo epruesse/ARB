@@ -53,8 +53,6 @@ void part_setlen(PART *p, GBT_LEN len);
 
 #if defined(NTREE_DEBUG_FUNCTIONS)
 void  part_print(const PART *p);
-#endif
-#if defined(DUMP_DROPS)
 int part_size(const PART *p);
 #endif
 
