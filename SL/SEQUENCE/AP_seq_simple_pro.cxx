@@ -37,16 +37,13 @@ void AP_sequence_simple_protein::set(const char *isequence) {
     const AP_filter *filt      = get_filter();
     const uchar     *simplify  = filt->get_simplify_table();
     int              sindex    = s2str['s']->index;
-    const size_t    *bootstrap = filt->get_bootstrap();
 
-    unsigned char  c;
-    if (bootstrap) {
+    if (filt->does_bootstrap()) {
         int iseqlen = strlen(isequence);
-        int i;
-        for (i = filt->get_filtered_length()-1; i>=0; i--) {
-            int pos = bootstrap[i];
+        for (int i = filt->get_filtered_length()-1; i>=0; i--) {
+            int pos = filt->bootstrapped_seqpos(i);
             if (pos >= iseqlen) continue;
-            c = s[pos];
+            unsigned char c = s[pos];
             if (! (s2str[c])) {     // unknown character
                 continue;
             }
@@ -59,7 +56,7 @@ void AP_sequence_simple_protein::set(const char *isequence) {
         size_t i, j;
         size_t flen = filt->get_length();
         for (i = j = 0; i < flen; ++i) {
-            c = s[i];
+            unsigned char c = s[i];
             if (!c) break;
             if (filt->use_position(i)) {
                 if (s2str[c]) {

@@ -41,9 +41,7 @@ class AP_filter {
     uchar               simplify[256];              // base -> simplified base
     AWT_FILTER_SIMPLIFY simplify_type;
 
-    // if not NULL, then sizeof(bootstrap) == real_len
-    // bootstrap[i] points to random original positions [0..filter_len[
-    size_t *bootstrap;
+    size_t *bootstrap; // bootstrap[i] points to random filter positions [0..real_len[
 
     size_t *filterpos_2_seqpos;                     // filterpos -> sequencepos
 
@@ -51,6 +49,14 @@ class AP_filter {
 
     void init(size_t size);
     void make_permeable(size_t size);
+
+    size_t bootstrapped_filterpos(size_t bpos) const {
+        af_assert(does_bootstrap());
+        af_assert(bpos<real_len);
+        size_t fpos = bootstrap[bpos];
+        af_assert(fpos<real_len);
+        return fpos;
+    }
 
 public:
     AP_filter(size_t size); // permeable filter (passes all columns)
@@ -86,7 +92,14 @@ public:
     }
 
     void enable_bootstrap();
-    const size_t *get_bootstrap() const { return bootstrap; }
+    bool does_bootstrap() const { return bootstrap; }
+
+    size_t bootstrapped_seqpos(size_t bpos) const {
+        size_t fpos   = bootstrapped_filterpos(bpos);
+        size_t spos = (get_filterpos_2_seqpos())[fpos];
+        af_assert(spos<filter_len);
+        return spos;
+    }
 
     char *to_string() const;                        // convert to 0/1 string
 

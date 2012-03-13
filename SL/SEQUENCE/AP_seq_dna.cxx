@@ -55,17 +55,17 @@ void AP_sequence_parsimony::set(const char *isequence)
     const uchar *simplify = get_filter()->get_simplify_table();
     if (!table) this->build_table();
 
-    const size_t *bootstrap = get_filter()->get_bootstrap();
-    if (bootstrap) {
+    const AP_filter *filt = get_filter();
+    if (filt->does_bootstrap()) {
         size_t iseqlen = strlen(isequence);
 
         for (size_t i = 0; i<sequence_len; ++i) {
-            size_t pos = bootstrap[i]; // contains random indices
+            size_t pos = filt->bootstrapped_seqpos(i); // random indices (but same for all species)
 
             ap_assert(pos<iseqlen);
             if (pos >= iseqlen) continue;
 
-            unsigned char c = (unsigned char)isequence[pos];   // @@@ muss ueber mapping tabelle aufgefaltet werden 10/99
+            unsigned char c = (unsigned char)isequence[pos];
 
 #if defined(SHOW_SEQ)
             fputc(simplify[c], stdout);
@@ -75,10 +75,9 @@ void AP_sequence_parsimony::set(const char *isequence)
         }
     }
     else {
-        const AP_filter *filt       = get_filter();
-        int              left_bases = sequence_len;
-        int              filter_len = filt->get_length();
-        int              oidx       = 0;            // for output sequence
+        int left_bases = sequence_len;
+        int filter_len = filt->get_length();
+        int oidx       = 0;                         // for output sequence
 
         for (int idx = 0; idx<filter_len && left_bases; ++idx) {
             if (filt->use_position(idx)) {
