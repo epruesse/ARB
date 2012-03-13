@@ -145,7 +145,7 @@ void AP_sequence_protein::set(const char *isequence)
     size_t sequence_len = get_sequence_length();
     seq_prot            = new AP_PROTEINS[sequence_len+1];
 
-    ap_assert(get_filter()->get_bootstrap() == 0); // bootstrapping not implemented for protein parsimony
+    ap_assert(!get_filter()->does_bootstrap()); // bootstrapping not implemented for protein parsimony
 
     const AP_filter *filt       = get_filter();
     const uchar     *simplify   = filt->get_simplify_table();

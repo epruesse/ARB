@@ -41,8 +41,8 @@ AP_filter::AP_filter(const AP_filter& other)
     memcpy(filter_mask, other.filter_mask, filter_len*sizeof(*filter_mask));
     memcpy(simplify, other.simplify, sizeof(simplify)*sizeof(*simplify));
     if (other.bootstrap) {
-        bootstrap = new size_t[filter_len];
-        memcpy(bootstrap, other.bootstrap, filter_len*sizeof(*bootstrap));
+        bootstrap = new size_t[real_len];
+        memcpy(bootstrap, other.bootstrap, real_len*sizeof(*bootstrap));
     }
     if (other.filterpos_2_seqpos) {
         filterpos_2_seqpos = new size_t[real_len];
@@ -153,7 +153,7 @@ void AP_filter::enable_bootstrap() {
     af_assert(filter_len < RAND_MAX);
 
     for (size_t i = 0; i<real_len; ++i) {
-        int r = GB_random(filter_len);
+        int r = GB_random(real_len);
         af_assert(r >= 0);     // otherwise overflow in random number generator
         bootstrap[i] = r;
     }
