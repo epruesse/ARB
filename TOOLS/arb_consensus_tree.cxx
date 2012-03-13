@@ -306,6 +306,8 @@ static void add_inputnames(StrArray& to, int dir, int first_tree, int last_tree)
     }
 }
 
+// #define TEST_AUTO_UPDATE // uncomment to update expected trees
+
 void TEST_consensus_tree_1() {
     GB_ERROR error = NULL;
     StrArray input_tree_names;
@@ -327,7 +329,11 @@ void TEST_consensus_tree_1() {
 
         // ../UNIT_TESTER/run/consense/1/consense.tree
 
+#if defined(TEST_AUTO_UPDATE)
+        system(GBS_global_string("cp %s %s", saveas, expected));
+#else // !defined(TEST_AUTO_UPDATE)
         TEST_ASSERT_TEXTFILE_DIFFLINES(saveas, expected, 1);
+#endif
         TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
         
         free(expected);
@@ -369,7 +375,11 @@ void TEST_consensus_tree_1_single() {
 
         // ../UNIT_TESTER/run/consense/1/consense.tree
 
+#if defined(TEST_AUTO_UPDATE)
+        system(GBS_global_string("cp %s %s", saveas, expected));
+#else // !defined(TEST_AUTO_UPDATE)
         TEST_ASSERT_TEXTFILE_DIFFLINES(saveas, expected, 1);
+#endif
         TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
 
         free(saveas);
@@ -401,7 +411,11 @@ void TEST_consensus_tree_2_lost_branches() {
 
         // ../UNIT_TESTER/run/consense/2/consense.tree
 
+#if defined(TEST_AUTO_UPDATE)
+        system(GBS_global_string("cp %s %s", saveas, expected));
+#else // !defined(TEST_AUTO_UPDATE)
         TEST_ASSERT_TEXTFILE_DIFFLINES(saveas, expected, 1);
+#endif
         TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
 
         free(expected);
@@ -431,7 +445,11 @@ void TEST_consensus_tree_3() {
         
         TEST_ASSERT_NO_ERROR(save_tree_as_newick(tree, saveas));
 
+#if defined(TEST_AUTO_UPDATE)
+        system(GBS_global_string("cp %s %s", saveas, expected));
+#else // !defined(TEST_AUTO_UPDATE)
         TEST_ASSERT_TEXTFILE_DIFFLINES(saveas, expected, 1);
+#endif
         TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
 
         free(expected);
@@ -469,7 +487,7 @@ void TEST_arb_consensus_tree() {
                              ,
                              "database  created");
 
-        TEST_ASSERT_TEXTFILE_DIFFLINES(saveas, expected, 1);
+        TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(saveas, expected, 0);
         TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
 
         free(expected);
@@ -489,7 +507,7 @@ void TEST_arb_consensus_tree() {
                              ,
                              "database  created");
 
-        TEST_ASSERT_TEXTFILE_DIFFLINES(saveas, expected, 1);
+        TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(saveas, expected, 0);
         TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
         
         free(expected);
