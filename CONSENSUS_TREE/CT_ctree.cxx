@@ -46,7 +46,7 @@ void ctree_init(int node_count, const CharPtrArray& names) {
 }
 
 void ctree_cleanup() {
-    GBS_free_hash(Name_hash);
+    if (Name_hash) GBS_free_hash(Name_hash);
     Name_hash  = 0;
     Tree_count = 0;
     
