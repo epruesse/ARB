@@ -74,6 +74,16 @@ static int ntree_cont(int len)
 }
 #endif
 
+int ntree_count_sons(NT_NODE *tree) {
+    int sons = 0;
+    if (tree->son_list) {
+        for (NSONS *node = tree->son_list; node; node = node->next) {
+            sons++;
+        }
+    }
+    return sons;
+}
+
 static void move_son(NT_NODE *f_node, NT_NODE *s_node, NSONS *nson) {
     // Move son from parent-sonlist to new sonlist
     // nson is pointer on element in parent-sonlist
@@ -250,16 +260,6 @@ void print_ntindex(NT_NODE *tree) {
     printf(")");
 
     part_free(p);
-}
-
-int ntree_count_sons(NT_NODE *tree) {
-    int sons = 0;
-    if (tree->son_list) {
-        for (NSONS *node = tree->son_list; node; node = node->next) {
-            sons++;
-        }
-    }
-    return sons;
 }
 
 bool is_well_formed(NT_NODE *tree) {
