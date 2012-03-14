@@ -22,9 +22,10 @@
 #endif
 
 
-static PELEM cutmask = 0; // this mask is used to zero unused bits from the last long
-static int   longs   = 0; // number of longs per part
-static int   plen    = 0; // number of bits per part
+static PELEM  cutmask = 0; // this mask is used to zero unused bits from the last long
+static int    longs   = 0; // number of longs per part
+static int    plen    = 0; // number of bits per part ( = overall number of species)
+static size_t id      = 0; // unique id (depending on part creation order, which depends on the added trees)
 
 #define BITS_PER_PELEM (sizeof(PELEM)*8)
 
@@ -50,7 +51,7 @@ void part_init(const int len) {
      */
 
     arb_assert(!cutmask && !longs && !plen); // forgot to call part_cleanup?
-    
+
     int j      = len % BITS_PER_PELEM;
     if (!j) j += BITS_PER_PELEM;
 
@@ -77,7 +78,9 @@ void part_init(const int len) {
 
 void part_cleanup() {
     cutmask = 0;
-    longs   = plen = 0;
+    longs   = 0;
+    plen    = 0;
+    id      = 0;
 }
 
 #if defined(NTREE_DEBUG_FUNCTIONS)
@@ -103,10 +106,10 @@ void part_print(const PART *p) {
 
 PART *part_new() {
     //! construct new part
-    PART *p;
+    PART *p = (PART *) getmem(sizeof(PART));
 
-    p = (PART *) getmem(sizeof(PART));
-    p->p = (PELEM *) getmem(longs * sizeof(PELEM));
+    p->p  = (PELEM *) getmem(longs * sizeof(PELEM));
+    p->id = id++;
 
     return p;
 }
@@ -242,8 +245,7 @@ void part_setlen(PART *p, GBT_LEN len) {
     p->len = len;
 }
 
-#if defined(NTREE_DEBUG_FUNCTIONS)
-int part_size(const PART *p) {
+int part_size(const PART *p) { // @@@ speed me up
     //! count the number of leafs in partition
     int leafs = 0;
     for (int i = 0; i<longs; ++i) {
@@ -258,7 +260,15 @@ int part_size(const PART *p) {
     }
     return leafs;
 }
-#endif
+
+bool is_leaf_edge(const PART *p) {
+    int size     = part_size(p);
+    return size == 1 || size == (plen-1);
+}
+
+int distance_to_tree_center(const PART *p) {
+    return abs(plen/2 - part_size(p));
+}
 
 void part_copy(const PART *source, PART *destination) {
     //! copy source into destination

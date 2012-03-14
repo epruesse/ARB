@@ -15,6 +15,7 @@
 
 #include <arbdbt.h>
 #include <arb_strarray.h>
+#include <arb_sort.h>
 
 
 #define RMSTRLEN 81
@@ -54,7 +55,55 @@ static char *rb_remark(const char *info, int perc, char *txt) {
     return txt;
 }
 
-static RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father) {
+static int GBT_TREE_order(const GBT_TREE *t1, const GBT_TREE *t2) {
+    // define a strict order on trees
+
+    int cmp = t1->is_leaf - t2->is_leaf; // leafs first
+    if (!cmp) {
+        GBT_LEN l1 = t1->leftlen+t1->rightlen;
+        GBT_LEN l2 = t2->leftlen+t2->rightlen;
+
+        double fcmp = l2 - l1; // insert smaller len first
+        cmp         = fcmp<0 ? -1 : (fcmp>0 ? 1 : 0);
+
+        if (!cmp) {
+            if (t1->is_leaf) {
+                cmp = strcmp(t1->name, t2->name);
+            }
+            else {
+                int cll = GBT_TREE_order(t1->leftson, t2->leftson);
+                int clr = GBT_TREE_order(t1->leftson, t2->rightson);
+                int crl = GBT_TREE_order(t1->rightson, t2->leftson);
+                int crr = GBT_TREE_order(t1->rightson, t2->rightson);
+
+                cmp = cll+clr+crl+crr;
+                arb_assert(cmp); // order not strict enough
+            }
+        }
+    }
+    return cmp;
+}
+
+static int RB_INFO_order(const void *v1, const void *v2, void *) {
+    // defines a strict order on RB_INFOs
+
+    const RB_INFO *i1 = (const RB_INFO *)v1;
+    const RB_INFO *i2 = (const RB_INFO *)v2;
+
+    int cmp = i1->percent - i2->percent; // insert more probable branches first
+
+    if (!cmp) {
+        double fcmp = i2->len - i1->len; // insert smaller len first
+        cmp         = fcmp<0 ? -1 : (fcmp>0 ? 1 : 0);
+
+        if (!cmp) {
+            cmp = GBT_TREE_order(i1->node, i2->node);
+        }
+    }
+    return cmp;
+}
+
+static RB_INFO *rbtree(const NT_NODE *tree, GBT_TREE *father) {
     // doing all the work for rb_gettree() :-)
     // convert a Ntree into a GBT-Tree
     
@@ -88,6 +137,8 @@ static RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father) {
                 son_info[sidx++] = rbtree(nsonp->node, NULL);
                 nsonp            = nsonp->next;
             }
+
+            GB_sort((void**)son_info, 0, sidx, RB_INFO_order, NULL); // bring sons into strict order
         }
 
         while (multifurc>1) {
@@ -142,7 +193,7 @@ static RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father) {
 }
 
 
-GBT_TREE *rb_gettree(NT_NODE *tree) {
+GBT_TREE *rb_gettree(const NT_NODE *tree) {
     // reconstruct GBT Tree from Ntree. Ntree is not destructed afterwards!
     RB_INFO  *info    = rbtree(tree, NULL);
     GBT_TREE *gbttree = info->node;

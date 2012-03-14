@@ -17,7 +17,7 @@
 static NT_NODE *ntree = NULL;
 
 
-NT_NODE *ntree_get() {
+const NT_NODE *ntree_get() {
     // returns the current ntree
     return ntree;
 }
@@ -74,7 +74,7 @@ static int ntree_cont(int len)
 }
 #endif
 
-int ntree_count_sons(NT_NODE *tree) {
+int ntree_count_sons(const NT_NODE *tree) {
     int sons = 0;
     if (tree->son_list) {
         for (NSONS *node = tree->son_list; node; node = node->next) {
@@ -104,6 +104,7 @@ static void move_son(NT_NODE *f_node, NT_NODE *s_node, NSONS *nson) {
 }
 
 
+
 static int ins_ntree(NT_NODE *tree, PART*& newpart) {
     /* Construct a multitree under the constraint,
      * that the final tree may result in a binary tree.
@@ -119,8 +120,15 @@ static int ins_ntree(NT_NODE *tree, PART*& newpart) {
 
     // Tree is leaf
     if (!tree->son_list) {
+#if defined(DUMP_PART_INSERTION) 
+        fputs("ins_ntree part=", stdout);
+        part_print(newpart);
+        printf(" dist2center=%i\n", distance_to_tree_center(newpart));
+#endif
+
         tree->son_list       = (NSONS *) getmem(sizeof(NSONS));
         tree->son_list->node = new_ntnode(newpart);
+
         return 1;
     }
 
@@ -145,6 +153,12 @@ static int ins_ntree(NT_NODE *tree, PART*& newpart) {
             // accept if nsonp is son of newpart (will be pulled down below) 
         }
     }
+
+#if defined(DUMP_PART_INSERTION)
+        fputs("ins_ntree part=", stdout);
+        part_print(newpart);
+        printf(" dist2center=%i\n", distance_to_tree_center(newpart));
+#endif
 
     // Okay, insert part here ...
     NT_NODE *newntnode = new_ntnode(newpart);
@@ -190,11 +204,26 @@ void insert_ntree(PART*& part) {
      */
 
     arb_assert(part_is_valid(part));
-     
-    if (!ins_ntree(ntree, part)) {
-        part_invert(part); 
+
+    bool firstCall = ntree->son_list == NULL;
+    if (firstCall) {
+        part->len /= 2; // insert as root-edge -> distribute length
+
+        PART *inverse = part_new();
+        part_copy(part, inverse);
+        part_invert(inverse);
+
+        ASSERT_RESULT(bool, true, ins_ntree(ntree, part));
+        ASSERT_RESULT(bool, true, ins_ntree(ntree, inverse));
+
+        arb_assert(!inverse);
+    }
+    else {
         if (!ins_ntree(ntree, part)) {
-            part_free(part); // drop non-fitting partition
+            part_invert(part);
+            if (!ins_ntree(ntree, part)) {
+                part_free(part); // drop non-fitting partition
+            }
         }
     }
     arb_assert(!part);
@@ -222,7 +251,7 @@ void print_ntree(NT_NODE *tree, int indent) {
     do_indent(indent);
     fputs("(\n", stdout);
 
-    // indent++;
+    indent++;
 
     do_indent(indent);
     part_print(tree->part);
@@ -233,7 +262,7 @@ void print_ntree(NT_NODE *tree, int indent) {
         print_ntree(nsonp->node, indent);
     }
 
-    // indent--;
+    indent--;
     
     do_indent(indent);
     fputs(")\n", stdout);
@@ -262,7 +291,7 @@ void print_ntindex(NT_NODE *tree) {
     part_free(p);
 }
 
-bool is_well_formed(NT_NODE *tree) {
+bool is_well_formed(const NT_NODE *tree) {
     // checks whether
     // - tree has sons
     // - all sons are part of father 

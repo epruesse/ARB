@@ -25,67 +25,7 @@
 
 using namespace std;
 
-struct subtreestat {
-    int      nodes;
-    GBT_LEN  lensum;
-    char    *smallestName;
-
-    subtreestat()
-        : nodes(0),
-          lensum(-1), 
-          smallestName(0)
-    {}
-};
-
-static GBT_TREE *sort_tree(GBT_TREE *tree, subtreestat &subtree) {
-    if (tree->is_leaf) {
-        subtree.nodes        = 1;
-        subtree.lensum       = 0;
-        subtree.smallestName = tree->name;
-    }
-    else {
-        subtreestat left, right;
-
-        tree->leftson  = sort_tree(tree->leftson,  left);
-        tree->rightson = sort_tree(tree->rightson, right);
-
-        left.lensum  += tree->leftlen;
-        right.lensum += tree->rightlen;
-
-        subtree.nodes        = left.nodes+right.nodes;
-        subtree.lensum       = left.lensum+right.lensum;
-        subtree.smallestName = strcmp(left.smallestName, right.smallestName)<0 ? left.smallestName : right.smallestName;
-
-        int cmp = left.nodes - right.nodes;
-        if (!cmp) {
-            GBT_LEN lendiff = left.lensum - right.lensum;
-            if (lendiff != 0.0) {
-                cmp = lendiff/fabs(lendiff)*2;
-            }
-            else {
-                cmp = strcmp(tree->leftson->name, tree->rightson->name);
-            }
-        }
-
-        arb_assert(cmp != 0); // otherwise unstable - use more data to sort
-        if (cmp>0) { // swap branches
-            std::swap(tree->leftlen, tree->rightlen);
-            std::swap(tree->leftson, tree->rightson);
-        }
-    }
-
-    arb_assert(subtree.nodes);
-    arb_assert(subtree.lensum >= 0.0);
-    arb_assert(subtree.smallestName);
-    return tree;
-}
-
-inline GBT_TREE *sort_tree(GBT_TREE *tree) {
-    subtreestat dummy;
-    return sort_tree(tree, dummy);
-}
-
-static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR& error, bool sort_generated_tree, size_t& different_species) {
+static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR& error, size_t& different_species) {
     // read all input trees, generate and return consensus tree
 
     arb_assert(!error);
@@ -138,7 +78,6 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
                 species_names.put(s->first.c_str());
             }
 
-            species_names.sort((CharPtrArray_compare_fun)strcmp, NULL); // sort names to make results deterministic
             different_species = species_names.size();
 
             ctree_init(species_count, species_names);
@@ -148,11 +87,6 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
 
             consense_tree = get_ctree();
             ctree_cleanup();
-            
-            if (sort_generated_tree) {
-                consense_tree = sort_tree(consense_tree); // bring tree into a stable form, there seems to be sth random in ctree
-                // @@@ determine what behaves random, could be an error as well
-            }
         }
 
         for (size_t i = 0; i<input_trees.size(); ++i) {
@@ -256,7 +190,7 @@ int ARB_main(int argc, const char *argv[]) {
 
         if (!error) {
             size_t species_count;
-            GBT_TREE *cons_tree = build_consensus_tree(input_tree_names, error, true, species_count);
+            GBT_TREE *cons_tree = build_consensus_tree(input_tree_names, error, species_count);
 
             if (!cons_tree) {
                 error = GBS_global_string("Failed to build consense tree (Reason: %s)", error);
@@ -326,7 +260,7 @@ void TEST_consensus_tree_1() {
 
     {
         size_t species_count;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, true, species_count);
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count);
         TEST_ASSERT(!error);
         TEST_ASSERT(tree);
 
@@ -361,7 +295,7 @@ void TEST_consensus_tree_1_single() {
 
     {
         size_t species_count;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, true, species_count);
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count);
         TEST_ASSERT(!error);
         TEST_ASSERT(tree);
 
@@ -389,21 +323,20 @@ void TEST_consensus_tree_1_single() {
     }
 }
 
-void TEST_consensus_tree_2_lost_branches() {
+void TEST_consensus_tree_2() {
     GB_ERROR      error = NULL;
     StrArray input_tree_names;
     add_inputnames(input_tree_names, 2, 1, 4);
 
     {
         size_t species_count;
-        // build_consensus_tree here fails the disabled assertion in ../CONSENSUS_TREE/CT_rbtree.cxx@disabled_multifurc_assertion
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, true, species_count);
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count);
         TEST_ASSERT(!error);
         TEST_ASSERT(tree);
 
         TEST_ASSERT_EQUAL(species_count, 59);
         TEST_ASSERT_EQUAL(GBT_count_leafs(tree), species_count);
-        TEST_ASSERT_SIMILAR(calc_intree_distance(tree), 2.917387, LENSUM_EPSILON);
+        TEST_ASSERT_SIMILAR(calc_intree_distance(tree), 2.789272, LENSUM_EPSILON);
 
         char *saveas   = savename(2);
         char *expected = expected_name(2);
@@ -433,13 +366,13 @@ void TEST_consensus_tree_3() {
 
     {
         size_t species_count;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, true, species_count);
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count);
         TEST_ASSERT(!error);
         TEST_ASSERT(tree);
 
         TEST_ASSERT_EQUAL(species_count, 128);
         TEST_ASSERT_EQUAL(GBT_count_leafs(tree), species_count);
-        TEST_ASSERT_SIMILAR(calc_intree_distance(tree), 2.169135, LENSUM_EPSILON);
+        TEST_ASSERT_SIMILAR(calc_intree_distance(tree), 2.171485, LENSUM_EPSILON);
 
         char *saveas   = savename(3);
         char *expected = expected_name(3);
@@ -465,7 +398,7 @@ void TEST_consensus_tree_3() {
 #if defined(REPEATED_TESTS)
 void TEST_consensus_tree_generation_is_deterministic() {
     TEST_consensus_tree_3();
-    TEST_consensus_tree_2_lost_branches();
+    TEST_consensus_tree_2();
     TEST_consensus_tree_1();
     TEST_consensus_tree_1_single();
 }

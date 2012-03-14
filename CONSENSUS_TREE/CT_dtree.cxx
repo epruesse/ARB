@@ -59,3 +59,4 @@ void remember_subtrees(const GBT_TREE *tree, int weight) {
     part_setlen(p2, (tree->leftlen + tree->rightlen));
     hash_insert(p2, weight);
 }
+

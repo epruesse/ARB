@@ -14,6 +14,7 @@
 #include "CT_ctree.hxx"
 
 #include <arbdbt.h>
+#include <arb_sort.h>
 
 // Hashtabelle fuer parts
 
@@ -114,6 +115,32 @@ void hash_insert(PART*& part, int weight) {
     track_max_part_percent(hp->part->percent);
 }
 
+static int HNODE_order(const void *v1, const void *v2, void *) {
+    // defines a strict order on HNODEs
+    const HNODE *h1 = (const HNODE *)v1;
+    const HNODE *h2 = (const HNODE *)v2;
+
+    const PART *p1 = h1->part;
+    const PART *p2 = h2->part;
+
+    int centerdist1 = distance_to_tree_center(p1);
+    int centerdist2 = distance_to_tree_center(p2);
+
+    int cmp = centerdist1-centerdist2; // insert central edges first
+
+    if (!cmp) {
+        double fcmp = p1->len - p2->len; // insert bigger len first
+        cmp = fcmp<0 ? -1 : (fcmp>0 ? 1 : 0);
+
+        if (!cmp) {
+            cmp = p1->id - p2->id; // strict by definition
+            arb_assert(cmp);
+        }
+    }
+
+    return cmp;
+}
+
 
 void build_sorted_list() {
     /*! sort the current hash list in a linear sorted list, the current hash
@@ -123,26 +150,36 @@ void build_sorted_list() {
      */
 
     arb_assert(!Sortedlist);
-    
-    HNODE **heads = (HNODE **) getmem(max_part_percent*sizeof(HNODE *));
-    HNODE **tails = (HNODE**)  getmem(max_part_percent*sizeof(HNODE *));
 
-    // build one list for each countvalue
+    int list_count = max_part_percent+1;
 
+    HNODE  **heads = (HNODE**)getmem(list_count*sizeof(*heads));
+    HNODE  **tails = (HNODE**)getmem(list_count*sizeof(*tails));
+    size_t  *size  = (size_t*)getmem(list_count*sizeof(*size));
+
+    // build one list for each branch-probability
     for (int i=0; i< HASH_MAX; i++) {
         HNODE *hnp = Hashlist[i];
         while (hnp) {
             HNODE *hnp_next = hnp->next;
-            int    idx      = hnp->part->percent-1;
 
-            arb_assert(idx >= 0 && idx<max_part_percent);
+            int prio = hnp->part->percent;
+            arb_assert(prio>0);
 
-            if (heads[idx]) {
-                hnp->next = heads[idx];
-                heads[idx] = hnp;
+            if (is_leaf_edge(hnp->part)) {
+                prio = 0; // add leaf edges in a final step 
+            }
+
+            size[prio]++;
+
+            arb_assert(prio >= 0 && prio <= max_part_percent);
+
+            if (heads[prio]) {
+                hnp->next = heads[prio];
+                heads[prio] = hnp;
             }
             else {
-                heads[idx] = tails[idx] = hnp;
+                heads[prio] = tails[prio] = hnp;
                 hnp->next = NULL;
             }
 
@@ -151,24 +188,49 @@ void build_sorted_list() {
         Hashlist[i] = NULL;
     }
 
+    // sort each list (should be strict sort)
+    for (int idx = 0; idx<list_count; idx++) {
+        if (heads[idx]) {
+            HNODE **array = (HNODE**)getmem(size[idx]*sizeof(*array));
+            {
+                HNODE *head = heads[idx];
+                for (size_t a = 0; head; a++, head = head->next) {
+                    array[a] = head;
+                }
+            }
+            GB_sort((void**)array, 0, size[idx], HNODE_order, NULL);
+            for (size_t a = 1; a<size[idx]; ++a) {
+                array[a-1]->next = array[a];
+            }
+
+            heads[idx] = array[0];
+            tails[idx] = array[size[idx]-1];
+
+            tails[idx]->next = NULL;
+
+            free(array);
+        }
+    }
+
+    // concatenate lists in reverse order
     HNODE *head = NULL;
     HNODE *tail = NULL;
-    // concatenate lists
-    for (int i=max_part_percent-1; i>=0; i--) {
-        if (heads[i]) {
+    for (int prio = list_count-1; prio>=0; prio--) {
+        if (heads[prio]) {
             if (!head) {
-                head = heads[i];
-                tail = tails[i];
+                head = heads[prio];
+                tail = tails[prio];
             }
             else {
-                tail->next = heads[i];
-                tail = tails[i];
+                tail->next = heads[prio];
+                tail = tails[prio];
             }
         }
     }
 
-    free(heads);
+    free(size);
     free(tails);
+    free(heads);
 
     Sortedlist = head;
 }
