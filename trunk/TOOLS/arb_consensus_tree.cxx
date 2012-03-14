@@ -306,6 +306,17 @@ static void add_inputnames(StrArray& to, int dir, int first_tree, int last_tree)
     }
 }
 
+static double calc_intree_distance(GBT_TREE *tree) {
+    if (tree->is_leaf) return 0.0;
+    return
+        tree->leftlen +
+        tree->rightlen +
+        calc_intree_distance(tree->leftson) +
+        calc_intree_distance(tree->rightson);
+}
+
+#define LENSUM_EPSILON .000001
+
 // #define TEST_AUTO_UPDATE // uncomment to update expected trees
 
 void TEST_consensus_tree_1() {
@@ -321,6 +332,7 @@ void TEST_consensus_tree_1() {
 
         TEST_ASSERT_EQUAL(species_count, 22);
         TEST_ASSERT_EQUAL(GBT_count_leafs(tree), species_count);
+        TEST_ASSERT_SIMILAR(calc_intree_distance(tree), 0.925779, LENSUM_EPSILON);
 
         char *saveas   = savename(1);
         char *expected = expected_name(1);
@@ -342,17 +354,6 @@ void TEST_consensus_tree_1() {
         GBT_delete_tree(tree);
     }
 }
-static double calc_intree_distance(GBT_TREE *tree) {
-    if (tree->is_leaf) return 0.0;
-    return
-        tree->leftlen +
-        tree->rightlen +
-        calc_intree_distance(tree->leftson) +
-        calc_intree_distance(tree->rightson);
-}
-
-#define LENSUM_EPSILON .000001
-
 void TEST_consensus_tree_1_single() {
     GB_ERROR error = NULL;
     StrArray input_tree_names;
