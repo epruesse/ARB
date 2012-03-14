@@ -878,8 +878,16 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, GB_ERROR di_calculate_matrix(AW_window *aww
     {
         DI_MATRIX *phm   = new DI_MATRIX(*aliview, aw_root);
         phm->matrix_type = DI_MATRIX_FULL;
-        MatrixOrder order(GLOBAL_gb_main, sort_tree_name);
-        phm->load(all_flag, order, show_warnings, NULL);
+
+        static char        *last_sort_tree_name = 0;
+        static MatrixOrder *last_order          = 0;
+
+        if (!last_sort_tree_name || !sort_tree_name || strcmp(last_sort_tree_name, sort_tree_name) != 0) {
+            last_sort_tree_name = nulldup(sort_tree_name);
+            last_order = new MatrixOrder(GLOBAL_gb_main, sort_tree_name);
+        }
+        di_assert(last_order);
+        phm->load(all_flag, *last_order, show_warnings, NULL);
 
         free(sort_tree_name);
         GB_pop_transaction(GLOBAL_gb_main);
@@ -961,6 +969,7 @@ static void di_mark_by_distance(AW_window *aww, AW_CL cl_weightedFilter) {
                     bool   markedSelected = false;
 
                     arb_progress progress("Mark species by distance", speciesCount);
+                    MatrixOrder  order(GLOBAL_gb_main, NULL);
 
                     for (GBDATA *gb_species = GBT_first_species(GLOBAL_gb_main);
                          gb_species && !error;
@@ -970,7 +979,6 @@ static void di_mark_by_distance(AW_window *aww, AW_CL cl_weightedFilter) {
                         phm->matrix_type       = DI_MATRIX_FULL;
                         GBDATA *species_pair[] = { gb_selected, gb_species, NULL };
 
-                        MatrixOrder order(GLOBAL_gb_main, NULL);
                         phm->load(DI_LOAD_LIST, order, false, species_pair);
 
                         if (phm->is_AA) {
