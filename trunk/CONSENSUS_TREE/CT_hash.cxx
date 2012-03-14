@@ -13,7 +13,6 @@
 #include "CT_mem.hxx"
 #include "CT_ctree.hxx"
 
-#include <arbdbt.h>
 #include <arb_sort.h>
 
 // Hashtabelle fuer parts
@@ -55,7 +54,7 @@ void hash_cleanup() {
     max_part_percent = 0;
 }
 
-PART *hash_getpart() {
+PART *hash_getpart(int source_trees) {
     /*! return the first element (with the highest hitnumber) from the linear sorted
      * list and calculate percentaged appearance of this partition in all trees and
      * calculate the average pathlength.
@@ -68,10 +67,10 @@ PART *hash_getpart() {
         p          = hnp->part;
         free(hnp);
 
-        // @@@ code below is wrong placed 
+        // @@@ code below is badly placed 
         p->len     /= (float) p->percent;
         p->percent *= 10000;
-        p->percent /= get_tree_count();
+        p->percent /= source_trees;
     }
     return p;
 }

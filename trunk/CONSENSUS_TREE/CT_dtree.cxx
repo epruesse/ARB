@@ -11,13 +11,12 @@
 #include "CT_dtree.hxx"
 #include "CT_hash.hxx"
 #include "CT_ctree.hxx"
-#include <arbdbt.h>
 
 // destruct gbt-tree and build parts
 // insert afterwards in Hashtable
 
 
-static PART *dtree(const GBT_TREE *tree, int weight, GBT_LEN len) {
+PART *ConsensusTree::dtree(const GBT_TREE *tree, int weight, GBT_LEN len) {
     /* destruct GBT-Tree and build partitions. This is done recursive by concatenate
        all sons to build the father partition. All partitions are inserted in the
        hashtable */
@@ -44,7 +43,7 @@ static PART *dtree(const GBT_TREE *tree, int weight, GBT_LEN len) {
 }
 
 
-void remember_subtrees(const GBT_TREE *tree, int weight) {
+void ConsensusTree::remember_subtrees(const GBT_TREE *tree, int weight) {
     /* it is necessary to destruct the left and the right side separately, because
        the root is only a virtual node and must be ignored. Moreover the left and
        rightson are the same partition. So I may only insert right son. */

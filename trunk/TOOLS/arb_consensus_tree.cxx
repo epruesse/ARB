@@ -71,7 +71,6 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
         }
 
         if (!error) {
-            size_t        species_count = species_occurred.size();
             ConstStrArray species_names;
 
             for (OccurCount::iterator s = species_occurred.begin(); s != species_occurred.end(); ++s) {
@@ -80,13 +79,12 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
 
             different_species = species_names.size();
 
-            ctree_init(species_count, species_names);
+            ConsensusTree ctree(species_names);
             for (size_t i = 0; i<input_trees.size(); ++i) {
-                insert_ctree(tree[i], 1);
+                ctree.insert(tree[i], 1);
             }
 
-            consense_tree = get_ctree();
-            ctree_cleanup();
+            consense_tree = ctree.get_consensus_tree();
         }
 
         for (size_t i = 0; i<input_trees.size(); ++i) {

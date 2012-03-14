@@ -1160,7 +1160,8 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
 
     WeightedFilter *weighted_filter = (WeightedFilter*)cl_weightedFilter;
 
-    SmartPtr<arb_progress> progress;
+    SmartPtr<arb_progress>  progress;
+    SmartPtr<ConsensusTree> ctree;
 
     if (!error) {
         if (bootstrap_flag) {
@@ -1193,7 +1194,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
                     for (long i=0; i<matr->nentries; i++) {
                         all_names->put(strdup(matr->entries[i]->name));
                     }
-                    ctree_init(matr->nentries, *all_names);
+                    ctree = new ConsensusTree(*all_names);
                 }
             }
             loop_count++;
@@ -1226,7 +1227,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
         tree = neighbourjoining(names, matr->matrix->m, matr->nentries, sizeof(GBT_TREE));
 
         if (bootstrap_flag) {
-            insert_ctree(tree, 1);
+            ctree->insert(tree, 1);
             GBT_delete_tree(tree); tree = 0;
             loop_count++;
             progress->inc();
@@ -1245,7 +1246,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
 
     if (!error) {
         if (bootstrap_flag) {
-            tree  = get_ctree();
+            tree  = ctree->get_consensus_tree();
             error = GBT_is_invalid(tree);
             di_assert(!error);
         }
@@ -1272,7 +1273,6 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
     // aw_status(); // remove 'abort' flag (@@@ got no equiv for arb_progress yet. really needed?)
 
     if (bootstrap_flag) {
-        ctree_cleanup();
         if (all_names) delete all_names;
         GLOBAL_MATRIX.forget();
     }
