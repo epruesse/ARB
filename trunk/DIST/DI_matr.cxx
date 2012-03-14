@@ -231,39 +231,6 @@ DI_MATRIX::~DI_MATRIX()
     delete aliview;
 }
 
-class MatrixOrder {
-    GB_HASH *name2pos; // key = species name, value = order in sort_tree [1..n]
-                       // if no sort tree was specified, name2pos is NULL
-    int      leafs;    // number of leafs
-
-
-    void insert_in_hash(GBT_TREE *tree) {
-        if (tree->is_leaf) {
-            arb_assert(tree->name);
-            ASSERT_RESULT(long, 0, GBS_write_hash(name2pos, tree->name, ++leafs));
-        }
-        else {
-            insert_in_hash(tree->rightson);
-            insert_in_hash(tree->leftson);
-        }
-    }
-
-public:
-    MatrixOrder(GBDATA *gb_main, GB_CSTR sort_tree_name);
-
-    bool defined() const { return leafs; }
-    int get_size() const { return leafs; }
-
-    int get_index(const char *name) const {
-        // return 1 for lowest and 'leafs' for highest species in sort-tee
-        // return 0 for all species missing in sort-tree
-        arb_assert(defined());
-        return GBS_read_hash(name2pos, name);
-    }
-
-    void applyTo(class TreeOrderedSpecies **gb_species_array, size_t array_size);
-};
-
 struct TreeOrderedSpecies {
     GBDATA  *gbd;
     int      order_index;
@@ -278,18 +245,20 @@ MatrixOrder::MatrixOrder(GBDATA *gb_main, GB_CSTR sort_tree_name)
     : name2pos(NULL),
       leafs(0)
 {
-    int size;
-    GBT_TREE *sort_tree = GBT_read_tree_and_size(gb_main, sort_tree_name, sizeof(GBT_TREE), &size);
+    if (sort_tree_name) {
+        int size;
+        GBT_TREE *sort_tree = GBT_read_tree_and_size(gb_main, sort_tree_name, sizeof(GBT_TREE), &size);
 
-    if (sort_tree) {
-        leafs    = size+1;
-        name2pos = GBS_create_hash(leafs, GB_IGNORE_CASE);
+        if (sort_tree) {
+            leafs    = size+1;
+            name2pos = GBS_create_hash(leafs, GB_IGNORE_CASE);
 
-        IF_DEBUG(int leafsLoaded = leafs);
-        leafs = 0;
-        insert_in_hash(sort_tree);
+            IF_DEBUG(int leafsLoaded = leafs);
+            leafs = 0;
+            insert_in_hash(sort_tree);
 
-        arb_assert(leafsLoaded == leafs);
+            arb_assert(leafsLoaded == leafs);
+        }
     }
 }
 static int TreeOrderedSpecies_cmp(const void *p1, const void *p2, void *) {
@@ -299,11 +268,11 @@ static int TreeOrderedSpecies_cmp(const void *p1, const void *p2, void *) {
     return s2->order_index - s1->order_index;
 }
 
-void MatrixOrder::applyTo(TreeOrderedSpecies **species_array, size_t array_size) {
+void MatrixOrder::applyTo(TreeOrderedSpecies **species_array, size_t array_size) const {
     GB_sort((void**)species_array, 0, array_size, TreeOrderedSpecies_cmp, NULL);
 }
 
-char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings, GBDATA **species_list) {
+char *DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warnings, GBDATA **species_list) {
     GBDATA     *gb_main = get_gb_main();
     const char *use     = get_aliname();
 
@@ -317,8 +286,6 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
     entries = (DI_ENTRY **)calloc(sizeof(DI_ENTRY*), (size_t)entries_mem_size);
 
     nentries = 0;
-
-    MatrixOrder order(gb_main, sort_tree_name);
 
     int no_of_species = -1;
     switch (what) {
@@ -911,7 +878,8 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, GB_ERROR di_calculate_matrix(AW_window *aww
     {
         DI_MATRIX *phm   = new DI_MATRIX(*aliview, aw_root);
         phm->matrix_type = DI_MATRIX_FULL;
-        phm->load(all_flag, sort_tree_name, show_warnings, NULL);
+        MatrixOrder order(GLOBAL_gb_main, sort_tree_name);
+        phm->load(all_flag, order, show_warnings, NULL);
 
         free(sort_tree_name);
         GB_pop_transaction(GLOBAL_gb_main);
@@ -1002,7 +970,8 @@ static void di_mark_by_distance(AW_window *aww, AW_CL cl_weightedFilter) {
                         phm->matrix_type       = DI_MATRIX_FULL;
                         GBDATA *species_pair[] = { gb_selected, gb_species, NULL };
 
-                        phm->load(DI_LOAD_LIST, NULL, false, species_pair);
+                        MatrixOrder order(GLOBAL_gb_main, NULL);
+                        phm->load(DI_LOAD_LIST, order, false, species_pair);
 
                         if (phm->is_AA) {
                             error = phm->calculate_pro(trans, NULL);
@@ -1348,7 +1317,8 @@ static void di_autodetect_callback(AW_window *aww)
 
             GLOBAL_MATRIX.forget();
 
-            phm.load(all_flag, sort_tree_name, true, NULL);
+            MatrixOrder order(GLOBAL_gb_main, sort_tree_name);
+            phm.load(all_flag, order, true, NULL);
 
             free(sort_tree_name);
             free(load_what);

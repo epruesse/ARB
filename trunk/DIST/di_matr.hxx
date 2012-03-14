@@ -90,6 +90,38 @@ class BI_helix;
 
 enum LoadWhat { DI_LOAD_ALL, DI_LOAD_MARKED, DI_LOAD_LIST };
 
+class MatrixOrder {
+    GB_HASH *name2pos; // key = species name, value = order in sort_tree [1..n]
+                       // if no sort tree was specified, name2pos is NULL
+    int      leafs;    // number of leafs
+
+
+    void insert_in_hash(GBT_TREE *tree) {
+        if (tree->is_leaf) {
+            arb_assert(tree->name);
+            ASSERT_RESULT(long, 0, GBS_write_hash(name2pos, tree->name, ++leafs));
+        }
+        else {
+            insert_in_hash(tree->rightson);
+            insert_in_hash(tree->leftson);
+        }
+    }
+
+public:
+    MatrixOrder(GBDATA *gb_main, GB_CSTR sort_tree_name);
+
+    bool defined() const { return leafs; }
+    int get_size() const { return leafs; }
+
+    int get_index(const char *name) const {
+        // return 1 for lowest and 'leafs' for highest species in sort-tee
+        // return 0 for all species missing in sort-tree
+        return defined() ? GBS_read_hash(name2pos, name) : -1;
+    }
+
+    void applyTo(class TreeOrderedSpecies **gb_species_array, size_t array_size) const;
+};
+
 typedef void (*DI_MATRIX_CB)();
 
 class DI_MATRIX : virtual Noncopyable {
@@ -116,7 +148,7 @@ public:
     const char *get_aliname() const { return aliview->get_aliname(); }
     const AliView *get_aliview() const { return aliview; }
 
-    char *load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings, GBDATA **species_list);
+    char *load(LoadWhat what, const MatrixOrder& order, bool show_warnings, GBDATA **species_list);
     char *unload();
     const char *save(char *filename, enum DI_SAVE_TYPE type);
 
