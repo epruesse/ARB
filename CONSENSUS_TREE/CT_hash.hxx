@@ -25,8 +25,7 @@ struct HNODE {
 void hash_init();
 void hash_cleanup();
 
-void  hash_settreecount(int tree_count);
-PART *hash_getpart();
+PART *hash_getpart(int source_trees);
 void  hash_insert(PART*& part, int weight);
 void  build_sorted_list();
 

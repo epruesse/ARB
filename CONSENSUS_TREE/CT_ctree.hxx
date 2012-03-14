@@ -11,17 +11,38 @@
 #ifndef CT_CTREE_HXX
 #define CT_CTREE_HXX
 
-struct GBT_TREE;
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
 
-void ctree_init(int node_count, const class CharPtrArray& names);
-void ctree_cleanup();
+class CharPtrArray;
+class PART;
 
-void insert_ctree(GBT_TREE *tree, int weight);
+class ConsensusTree : virtual Noncopyable {
+    int      Tree_count; // not really tree count, but sum of weights of added trees
+    GB_HASH *Name_hash;
 
-int get_tree_count();
-int get_species_index(const char *name);
 
-GBT_TREE *get_ctree();
+    PART *dtree(const GBT_TREE *tree, int weight, GBT_LEN len);
+    void remember_subtrees(const GBT_TREE *tree, int weight);
+
+    int get_species_index(const char *name) const {
+        int idx = GBS_read_hash(Name_hash, name);
+        arb_assert(idx>0); // given 'name' is unknown
+        return idx-1;
+    }
+
+public:
+    ConsensusTree(const class CharPtrArray& names);
+    ~ConsensusTree();
+
+    void insert(GBT_TREE *tree, int weight);
+
+    GBT_TREE *get_consensus_tree();
+};
 
 #else
 #error CT_ctree.hxx included twice
