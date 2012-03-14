@@ -443,11 +443,11 @@ static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_
 }
 
 
-static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, int structure_size, int size, GB_ERROR *error) {
+static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, int structure_size, int node_count, GB_ERROR *error) {
     GBDATA   **gb_tree_nodes;
     GBT_TREE  *node = 0;
 
-    gb_tree_nodes = (GBDATA **)GB_calloc(sizeof(GBDATA *), (size_t)size);
+    gb_tree_nodes = (GBDATA **)GB_calloc(sizeof(GBDATA *), (size_t)node_count);
     if (gb_tree) {
         GBDATA *gb_node;
 
@@ -457,7 +457,7 @@ static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, 
             if (!gbd) continue;
 
             i = GB_read_int(gbd);
-            if (i<0 || i >= size) {
+            if (i<0 || i >= node_count) {
                 *error = "An inner node of the tree is corrupt";
             }
             else {
@@ -472,7 +472,7 @@ static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, 
 
         startid[0] = 0;
         fbuf       = cptr[0] = GB_read_string(gb_ctree);
-        node       = gbt_read_tree_rek(cptr, startid, gb_tree_nodes, structure_size, (int)size, error);
+        node       = gbt_read_tree_rek(cptr, startid, gb_tree_nodes, structure_size, (int)node_count, error);
         free (fbuf);
     }
 
@@ -494,7 +494,7 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long st
      *
      * @param tree_name is the name of the tree in the db
      *
-     * @param tree_size if != NULL -> gets set to "size of tree"
+     * @param tree_size if != NULL -> gets set to "size of tree" (aka number of leafs minus 1)
      *
      * @return
      * - NULL if any error occurs (which is exported then)
@@ -533,7 +533,7 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long st
                             GBT_TREE *tree = read_tree_and_size_internal(gb_tree, gb_ctree, structure_size, size, &error);
                             if (!error) {
                                 gb_assert(tree);
-                                if (tree_size) *tree_size = size; // return size of tree
+                                if (tree_size) *tree_size = size; // return size of tree (=leafs-1)
                                 return tree;
                             }
 
@@ -708,10 +708,16 @@ GBDATA *GBT_get_tree(GBDATA *gb_main, const char *tree_name) {
 }
 
 long GBT_size_of_tree(GBDATA *gb_main, const char *tree_name) {
+    // returns number of inner nodes as in binary tree
+    //
+    // Note:
+    //        leafs                        = size + 1
+    //        inner nodes in unrooted tree = size - 1
+
     GBDATA *gb_tree = GBT_get_tree(gb_main, tree_name);
     GBDATA *gb_nnodes;
     if (!gb_tree) return -1;
-    gb_nnodes = GB_entry(gb_tree, "nnodes");
+    gb_nnodes       = GB_entry(gb_tree, "nnodes");
     if (!gb_nnodes) return -1;
     return GB_read_int(gb_nnodes);
 }
