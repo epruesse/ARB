@@ -14,10 +14,9 @@
 
 // debug flags
 #if defined(DEBUG)
-
 #define NTREE_DEBUG_FUNCTIONS // debug function for NTREE
-#define DUMP_PART_INIT        // dump part initialization
-
+// #define DUMP_PART_INIT
+// #define DUMP_PART_INSERTION
 #endif // DEBUG
 
 

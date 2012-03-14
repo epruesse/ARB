@@ -25,6 +25,7 @@ struct PART {
     GBT_LEN  len;               // Length between two knots
     int      percent;           // Count how often this partition appears
     char    *source;            // From which tree comes the partition
+    size_t   id;
 };
 
 void part_init(int len);
@@ -51,9 +52,12 @@ int  calc_index(const PART *p);
 unsigned part_key(const PART *p);
 void part_setlen(PART *p, GBT_LEN len);
 
+int distance_to_tree_center(const PART *p);
+int part_size(const PART *p);
+bool is_leaf_edge(const PART *p);
+
 #if defined(NTREE_DEBUG_FUNCTIONS)
 void  part_print(const PART *p);
-int part_size(const PART *p);
 #endif
 
 #else
