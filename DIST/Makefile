@@ -201,6 +201,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_error.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_msg.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_progress.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_sort.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_matr.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx

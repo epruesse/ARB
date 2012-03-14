@@ -40,6 +40,7 @@
 #include <climits>
 #include <ctime>
 #include <cmath>
+#include <arb_sort.h>
 
 // --------------------------------------------------------------------------------
 
@@ -230,11 +231,76 @@ DI_MATRIX::~DI_MATRIX()
     delete aliview;
 }
 
-static int qsort_strcmp(const void *str1ptr, const void *str2ptr) {
-    GB_CSTR s1 = *(GB_CSTR*)str1ptr;
-    GB_CSTR s2 = *(GB_CSTR*)str2ptr;
+class MatrixOrder {
+    GB_HASH *name2pos; // key = species name, value = order in sort_tree [1..n]
+                       // if no sort tree was specified, name2pos is NULL
+    int      leafs;    // number of leafs
 
-    return strcmp(s1, s2);
+
+    void insert_in_hash(GBT_TREE *tree) {
+        if (tree->is_leaf) {
+            arb_assert(tree->name);
+            ASSERT_RESULT(long, 0, GBS_write_hash(name2pos, tree->name, ++leafs));
+        }
+        else {
+            insert_in_hash(tree->rightson);
+            insert_in_hash(tree->leftson);
+        }
+    }
+
+public:
+    MatrixOrder(GBDATA *gb_main, GB_CSTR sort_tree_name);
+
+    bool defined() const { return leafs; }
+    int get_size() const { return leafs; }
+
+    int get_index(const char *name) const {
+        // return 1 for lowest and 'leafs' for highest species in sort-tee
+        // return 0 for all species missing in sort-tree
+        arb_assert(defined());
+        return GBS_read_hash(name2pos, name);
+    }
+
+    void applyTo(class TreeOrderedSpecies **gb_species_array, size_t array_size);
+};
+
+struct TreeOrderedSpecies {
+    GBDATA  *gbd;
+    int      order_index;
+
+    TreeOrderedSpecies(const MatrixOrder& order, GBDATA *gb_spec)
+        : gbd(gb_spec),
+          order_index(order.get_index(GBT_read_name(gbd)))
+    {}
+};
+
+MatrixOrder::MatrixOrder(GBDATA *gb_main, GB_CSTR sort_tree_name)
+    : name2pos(NULL),
+      leafs(0)
+{
+    int size;
+    GBT_TREE *sort_tree = GBT_read_tree_and_size(gb_main, sort_tree_name, sizeof(GBT_TREE), &size);
+
+    if (sort_tree) {
+        leafs    = size+1;
+        name2pos = GBS_create_hash(leafs, GB_IGNORE_CASE);
+
+        IF_DEBUG(int leafsLoaded = leafs);
+        leafs = 0;
+        insert_in_hash(sort_tree);
+
+        arb_assert(leafsLoaded == leafs);
+    }
+}
+static int TreeOrderedSpecies_cmp(const void *p1, const void *p2, void *) {
+    TreeOrderedSpecies *s1 = (TreeOrderedSpecies*)p1;
+    TreeOrderedSpecies *s2 = (TreeOrderedSpecies*)p2;
+
+    return s2->order_index - s1->order_index;
+}
+
+void MatrixOrder::applyTo(TreeOrderedSpecies **species_array, size_t array_size) {
+    GB_sort((void**)species_array, 0, array_size, TreeOrderedSpecies_cmp, NULL);
 }
 
 char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings, GBDATA **species_list) {
@@ -251,12 +317,8 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
     entries = (DI_ENTRY **)calloc(sizeof(DI_ENTRY*), (size_t)entries_mem_size);
 
     nentries = 0;
-    DI_ENTRY *phentry;
 
-    int tree_size;
-    GBT_TREE *sort_tree = GBT_read_tree_and_size(gb_main, sort_tree_name, sizeof(GBT_TREE), &tree_size);
-    tree_size++;
-    GB_CSTR *species_in_sort_tree = 0;
+    MatrixOrder order(gb_main, sort_tree_name);
 
     int no_of_species = -1;
     switch (what) {
@@ -271,131 +333,73 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
             for (no_of_species = 0; species_list[no_of_species]; ++no_of_species) ;
             break;
     }
-    int in_tree_species         = 0;
-    int out_tree_species        = no_of_species;
-    int unknown_species_in_tree = 0;
 
-    if (!sort_tree) {
+    TreeOrderedSpecies *species_to_load[no_of_species];
+
+    {
+        int i = 0;
+        switch (what) {
+            case DI_LOAD_ALL: {
+                for (GBDATA *gb_species = GBT_first_species_rel_species_data(gb_species_data); gb_species; gb_species = GBT_next_species(gb_species), ++i) {
+                    species_to_load[i] = new TreeOrderedSpecies(order, gb_species);
+                }
+                break;
+            }
+            case DI_LOAD_MARKED: {
+                for (GBDATA *gb_species = GBT_first_marked_species_rel_species_data(gb_species_data); gb_species; gb_species = GBT_next_marked_species(gb_species), ++i) {
+                    species_to_load[i] = new TreeOrderedSpecies(order, gb_species);
+                }
+                break;
+            }
+            case DI_LOAD_LIST: {
+                for (i = 0; species_list[i]; ++i) {
+                    species_to_load[i] = new TreeOrderedSpecies(order, species_list[i]);
+                }
+                break;
+            }
+        }
+        arb_assert(i == no_of_species);
+    }
+
+    if (order.defined()) {
+        order.applyTo(species_to_load, no_of_species);
+        if (show_warnings) {
+            int species_not_in_sort_tree = 0;
+            for (int i = 0; i<no_of_species; ++i) {
+                if (!species_to_load[i]->order_index) {
+                    species_not_in_sort_tree++;
+                }
+            }
+            if (species_not_in_sort_tree) {
+                aw_message(GBS_global_string("%i of the affected species are not in sort-tree", species_not_in_sort_tree));
+            }
+        }
+    }
+    else {
         if (show_warnings) {
             aw_message("No valid tree given to sort matrix (using default database order)");
         }
     }
-    else {
-        species_in_sort_tree = GBT_get_names_of_species_in_tree(sort_tree, NULL);
 
-        {
-            GB_NUMHASH *shallLoad = 0;
-            if (what == DI_LOAD_LIST) {
-                shallLoad = GBS_create_numhash(no_of_species);
-                for (int i = 0; species_list[i]; ++i) {
-                    GBS_write_numhash(shallLoad, (long)species_list[i], 1);
-                }
-            }
-
-            for (int i=0; i<tree_size; i++) { // read all marked species in tree
-                GBDATA *gb_species = GBT_find_species_rel_species_data(gb_species_data, species_in_sort_tree[i]);
-                if (!gb_species) {
-                    if (show_warnings) {
-                        aw_message(GBS_global_string("Species '%s' found in tree '%s' but NOT in database.",
-                                                     species_in_sort_tree[i], sort_tree_name));
-                    }
-                    unknown_species_in_tree++;
-                    continue;
-                }
-
-                if ((what == DI_LOAD_ALL)                                ||
-                    (what == DI_LOAD_MARKED && GB_read_flag(gb_species)) ||
-                    (what == DI_LOAD_LIST && GBS_read_numhash(shallLoad, (long)gb_species)))
-                {
-                    in_tree_species++;
-                    phentry = new DI_ENTRY(gb_species, this);
-                    if (phentry->sequence) {    // a species found
-                        entries[nentries++] = phentry;
-                        if (nentries == entries_mem_size) {
-                            entries_mem_size += 1000;
-                            entries = (DI_ENTRY **)realloc(entries, (size_t)(sizeof(DI_ENTRY*)*entries_mem_size));
-                        }
-                    }
-                    else {
-                        delete phentry;
-                    }
-                }
-            }
-
-            if (shallLoad) GBS_free_numhash(shallLoad);
-        }
-        out_tree_species = no_of_species-in_tree_species; // # of species not loaded yet (because not in tree)
-        di_assert(out_tree_species>=0);
-        if (out_tree_species) {
-            qsort(species_in_sort_tree, tree_size, sizeof(*species_in_sort_tree), qsort_strcmp); // sort species names
-#if defined(DEBUG) && 0
-            printf("Sorted tree:\n");
-            for (int x=0; x<tree_size; x++) {
-                printf("- %s\n", species_in_sort_tree[x]);
-            }
-#endif
-        }
+    if (no_of_species>entries_mem_size) {
+        entries_mem_size = no_of_species;
+        entries = (DI_ENTRY **)realloc(entries, (size_t)(sizeof(DI_ENTRY*)*entries_mem_size));
     }
 
-    if (unknown_species_in_tree && show_warnings) {
-        aw_message(GBS_global_string("We found %i species in tree '%s' which are not in database.\n"
-                                     "This does not affect the current calculation, but you should think about it.",
-                                     unknown_species_in_tree, sort_tree_name));
-    }
-
-    di_assert(out_tree_species>=0);
-    if (out_tree_species) { // there are species outside the tree (or no valid sort tree selected) => load all marked species not loaded yet
-        int count   = 0;
-        int listIdx = 0;
-
-        GBDATA *gb_species = NULL;
-        switch (what) {
-            case DI_LOAD_ALL:    gb_species = GBT_first_species_rel_species_data(gb_species_data); break;
-            case DI_LOAD_MARKED: gb_species = GBT_first_marked_species_rel_species_data(gb_species_data); break;
-            case DI_LOAD_LIST:   gb_species = species_list[listIdx++]; break;
+    for (int i = 0; i<no_of_species; ++i) {
+        DI_ENTRY *phentry = new DI_ENTRY(species_to_load[i]->gbd, this);
+        if (phentry->sequence) {    // a species found
+            arb_assert(nentries<entries_mem_size);
+            entries[nentries++] = phentry;
         }
-
-        while (gb_species) {
-            int load_species = 0;
-
-            if (in_tree_species) { // test if species already loaded
-                const char *species_name = GBT_read_name(gb_species);
-                if (bsearch(&species_name, species_in_sort_tree, tree_size, sizeof(*species_in_sort_tree), qsort_strcmp)==0) {
-                    load_species = 1;
-                }
-            }
-            else {
-                load_species = 1;
-            }
-
-            if (load_species) {
-                count++;
-                phentry = new DI_ENTRY(gb_species, this);
-                if (phentry->sequence) {    // a species found
-                    entries[nentries++] = phentry;
-                    if (nentries == entries_mem_size) {
-                        entries_mem_size += 1000;
-                        entries = (DI_ENTRY **)realloc(entries, sizeof(DI_ENTRY*)*entries_mem_size);
-                    }
-                }
-                else {
-                    delete phentry;
-                }
-            }
-
-            switch (what) {
-                case DI_LOAD_ALL:    gb_species = GBT_next_species(gb_species); break;
-                case DI_LOAD_MARKED: gb_species = GBT_next_marked_species(gb_species); break;
-                case DI_LOAD_LIST:   gb_species = species_list[listIdx++]; break;
-            }
+        else {
+            delete phentry;
         }
+        delete species_to_load[i];
+        species_to_load[i] = NULL;
     }
-
-    free(species_in_sort_tree);
-    if (sort_tree) GBT_delete_tree(sort_tree);
 
     GB_pop_transaction(gb_main);
-
     return 0;
 }
 
@@ -1615,3 +1619,4 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     GB_pop_transaction(GLOBAL_gb_main);
     return aws;
 }
+
