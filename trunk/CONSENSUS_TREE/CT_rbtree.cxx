@@ -10,34 +10,19 @@
 
 // Reconstruct GBT-tree from Ntree
 
-#include "CT_rbtree.hxx"
-
-#include <arbdbt.h>
-#include <arb_strarray.h>
+#include "CT_ntree.hxx"
+#include "CT_ctree.hxx"
 #include <arb_sort.h>
 
 
+struct RB_INFO {
+    GBT_LEN   len;
+    GBT_TREE *node;
+    int       percent;
+};
+
+
 #define RMSTRLEN 81
-
-static const CharPtrArray *name_tbl = NULL;
-
-void rb_init(const CharPtrArray& names) {
-    // Initialize the module
-    arb_assert(!name_tbl);
-    name_tbl = &names; // @@@ use a copy for safety ?
-}
-
-void rb_cleanup() {
-    name_tbl = NULL;
-}
-
-static char *get_name(int idx) {
-    // get the name of a leaf from the index
-    char *t;
-    t = strdup((*name_tbl)[idx]);
-    return t;
-}
-
 
 static char *rb_remark(const char *info, int perc, char *txt) {
     // build a remark with the percentage representation of the partition
@@ -102,7 +87,7 @@ static int RB_INFO_order(const void *v1, const void *v2, void *) {
     return cmp;
 }
 
-static RB_INFO *rbtree(const NT_NODE *tree, GBT_TREE *father) {
+RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, GBT_TREE *father) {
     // doing all the work for rb_gettree() :-)
     // convert a Ntree into a GBT-Tree
     
@@ -118,7 +103,7 @@ static RB_INFO *rbtree(const NT_NODE *tree, GBT_TREE *father) {
     if (!nsonp) {                                        // if node is leaf
         int idx = tree->part->index();
 
-        gbtnode->name    = get_name(idx);
+        gbtnode->name    = strdup(get_species_name(idx));
         gbtnode->is_leaf = true;
     }
     else {
@@ -192,7 +177,7 @@ static RB_INFO *rbtree(const NT_NODE *tree, GBT_TREE *father) {
 }
 
 
-GBT_TREE *rb_gettree(const NT_NODE *tree) {
+GBT_TREE *ConsensusTree::rb_gettree(const NT_NODE *tree) {
     // reconstruct GBT Tree from Ntree. Ntree is not destructed afterwards!
     RB_INFO  *info    = rbtree(tree, NULL);
     GBT_TREE *gbttree = info->node;
