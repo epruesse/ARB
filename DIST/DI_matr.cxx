@@ -35,7 +35,6 @@
 #include <aw_root.hxx>
 
 #include <gui_aliview.hxx>
-#include <arb_strarray.h>
 
 #include <climits>
 #include <ctime>

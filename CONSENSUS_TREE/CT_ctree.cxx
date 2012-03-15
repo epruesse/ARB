@@ -10,15 +10,14 @@
 
 #include "CT_ctree.hxx"
 #include "CT_hash.hxx"
-#include "CT_rbtree.hxx"
 #include "CT_dtree.hxx"
+#include "CT_ntree.hxx"
 
-#include <arb_strarray.h>
-
-ConsensusTree::ConsensusTree(const class CharPtrArray& names)
+ConsensusTree::ConsensusTree(const class CharPtrArray& names_)
     : Tree_count(0),
       Name_hash(NULL),
-      size(NULL)
+      size(NULL),
+      names(names_)
 {
     // names = leafnames (=species names)
 
@@ -28,19 +27,14 @@ ConsensusTree::ConsensusTree(const class CharPtrArray& names)
         GBS_write_hash(Name_hash, names[i], i+1);
     }
 
-    size = new PartitionSize(leaf_count);
-
+    size     = new PartitionSize(leaf_count);
     registry = new PartRegistry();
-
-    rb_init(names);
 }
 
 ConsensusTree::~ConsensusTree() {
     if (Name_hash) GBS_free_hash(Name_hash);
     Name_hash  = 0;
     Tree_count = 0;
-
-    rb_cleanup();
 
     delete registry;
     delete size;

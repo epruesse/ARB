@@ -17,9 +17,12 @@
 #ifndef ARBDBT_H
 #include <arbdbt.h>
 #endif
+#ifndef ARB_STRARRAY_H
+#include <arb_strarray.h>
+#endif
 
-class CharPtrArray;
 class PART;
+class NT_NODE;
 class PartitionSize;
 class PartRegistry;
 
@@ -30,6 +33,8 @@ class ConsensusTree : virtual Noncopyable {
     PartitionSize *size;
     PartRegistry  *registry;
 
+    const CharPtrArray& names;
+
     PART *dtree(const GBT_TREE *tree, int weight, GBT_LEN len);
     void remember_subtrees(const GBT_TREE *tree, int weight);
 
@@ -39,13 +44,22 @@ class ConsensusTree : virtual Noncopyable {
         return idx-1;
     }
 
+    const char *get_species_name(int idx) const {
+        return names[idx];
+    }
+
+    class RB_INFO *rbtree(const NT_NODE *tree, GBT_TREE *father);
+    GBT_TREE      *rb_gettree(const NT_NODE *tree);
+
+
 public:
-    ConsensusTree(const class CharPtrArray& names);
+    ConsensusTree(const CharPtrArray& names_);
     ~ConsensusTree();
 
     void insert(GBT_TREE *tree, int weight);
 
     GBT_TREE *get_consensus_tree();
+
 };
 
 #else

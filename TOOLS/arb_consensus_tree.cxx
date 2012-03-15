@@ -84,6 +84,10 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
                 ctree.insert(tree[i], 1);
             }
 
+#if defined(DEBUG)
+            ConsensusTree influence(species_names); // @@@ make sure ConsensusTree does not depend on any local data 
+#endif
+            
             consense_tree = ctree.get_consensus_tree();
         }
 
@@ -441,7 +445,7 @@ void TEST_arb_consensus_tree() {
 
         TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(saveas, expected, 0);
         TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
-        
+
         free(expected);
         free(saveas);
     }
