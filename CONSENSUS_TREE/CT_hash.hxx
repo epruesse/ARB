@@ -20,14 +20,23 @@ struct HNODE {
     HNODE *next;
 };
 
-#define HASH_MAX 123 // @@@ increase when tree generation is stable
+class PartRegistry : virtual Noncopyable {
+    int     hash_size;
+    int     max_part_percent;
+    HNODE **Hashlist;
+    HNODE  *Sortedlist;
 
-void hash_init();
-void hash_cleanup();
+    inline void track_max_part_percent(int pc) { if (pc>max_part_percent) max_part_percent = pc; }
 
-PART *hash_getpart(int source_trees);
-void  hash_insert(PART*& part, int weight);
-void  build_sorted_list();
+public:
+    PartRegistry();
+    ~PartRegistry();
+
+    PART *get_part(int source_trees);
+    void  insert(PART*& part, int weight);
+
+    void  build_sorted_list();
+};
 
 #else
 #error CT_hash.hxx included twice

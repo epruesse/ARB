@@ -36,8 +36,8 @@ PART *ConsensusTree::dtree(const GBT_TREE *tree, int weight, GBT_LEN len) {
         ptree = p1->clone();
         ptree->add_from(p2);
 
-        hash_insert(p1, weight);
-        hash_insert(p2, weight);
+        registry->insert(p1, weight);
+        registry->insert(p2, weight);
     }
     ptree->set_len(len);
     return ptree;
@@ -57,6 +57,6 @@ void ConsensusTree::remember_subtrees(const GBT_TREE *tree, int weight) {
     delete p1;
 
     p2->set_len(tree->leftlen + tree->rightlen);
-    hash_insert(p2, weight);
+    registry->insert(p2, weight);
 }
 

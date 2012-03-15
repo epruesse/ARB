@@ -22,14 +22,16 @@ ConsensusTree::ConsensusTree(const class CharPtrArray& names)
 {
     // names = leafnames (=species names)
 
-    int node_count = names.size();
-    Name_hash = GBS_create_hash(node_count, GB_MIND_CASE);
-    for (int i=0; i< node_count; i++) {
+    int leaf_count = names.size();
+    Name_hash = GBS_create_hash(leaf_count, GB_MIND_CASE);
+    for (int i=0; i< leaf_count; i++) {
         GBS_write_hash(Name_hash, names[i], i+1);
     }
 
-    size = new PartitionSize(node_count);
-    hash_init();
+    size = new PartitionSize(leaf_count);
+
+    registry = new PartRegistry();
+
     rb_init(names);
 }
 
@@ -39,8 +41,8 @@ ConsensusTree::~ConsensusTree() {
     Tree_count = 0;
 
     rb_cleanup();
-    hash_cleanup();
 
+    delete registry;
     delete size;
 }
 
@@ -60,13 +62,13 @@ GBT_TREE *ConsensusTree::get_consensus_tree() {
        could only be one son! */
 
     ntree_init(size);
-    build_sorted_list();
+    registry->build_sorted_list();
 
     {
-        PART *p = hash_getpart(Tree_count);
+        PART *p = registry->get_part(Tree_count);
         while (p != NULL) {
             insert_ntree(p);
-            p = hash_getpart(Tree_count);
+            p = registry->get_part(Tree_count);
         }
     }
 
