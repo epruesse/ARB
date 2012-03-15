@@ -14,18 +14,10 @@
 // Each leaf in a GBT-Tree is represented as one Bit in the Partition
 
 #include "CT_part.hxx"
-#include "CT_mem.hxx"
-
 #include <arbdbt.h>
 
 #if defined(DEBUG)
 #endif
-
-
-static PELEM  cutmask = 0; // this mask is used to zero unused bits from the last long
-static int    longs   = 0; // number of longs per part
-static int    plen    = 0; // number of bits per part ( = overall number of species)
-static size_t id      = 0; // unique id (depending on part creation order, which depends on the added trees)
 
 #define BITS_PER_PELEM (sizeof(PELEM)*8)
 
@@ -43,56 +35,51 @@ static const char *readable_cutmask(PELEM mask) {
 }
 #endif
 
-void part_init(const int len) {
+PartitionSize::PartitionSize(const int len)
+    : cutmask(0),
+      longs((((len + 7) / 8)+sizeof(PELEM)-1) / sizeof(PELEM)),
+      bits(len),
+      id(0)
+{
     /*! Function to initialize the global variables above
      * @param len number of bits the part should content
      *
      * result: calculate cutmask, longs, plen
      */
 
-    arb_assert(!cutmask && !longs && !plen); // forgot to call part_cleanup?
-
     int j      = len % BITS_PER_PELEM;
     if (!j) j += BITS_PER_PELEM;
 
-    cutmask = 0;
     for (int i=0; i<j; i++) {
         cutmask <<= 1;
         cutmask |= 1;
     }
-    longs = (((len + 7) / 8)+sizeof(PELEM)-1) / sizeof(PELEM);
-    plen  = len;
 
 #if defined(DEBUG)
     size_t possible = longs*BITS_PER_PELEM;
-    arb_assert((possible-plen)<BITS_PER_PELEM); // longs is too big (wasted space)
+    arb_assert((possible-bits)<BITS_PER_PELEM); // longs is too big (wasted space)
 
 #if defined(DUMP_PART_INIT)
     printf("leafs=%i\n", len);
     printf("cutmask='%s'\n", readable_cutmask(cutmask));
     printf("longs=%i (can hold %zu bits)\n", longs, possible);
-    printf("plen=%i\n", plen);
+    printf("bits=%i\n", bits);
 #endif
 #endif
-}
-
-void part_cleanup() {
-    cutmask = 0;
-    longs   = 0;
-    plen    = 0;
-    id      = 0;
 }
 
 #if defined(NTREE_DEBUG_FUNCTIONS)
-void part_print(const PART *p) {
+void PART::print() const {
     // ! Testfunction to print a part
     int i, j, k=0;
     PELEM l;
 
+    int longs = get_longs();
+    int plen = info->get_bits();
     for (i=0; i<longs; i++) {
         l = 1;
         for (j=0; k<plen && size_t(j)<sizeof(PELEM)*8; j++, k++) {
-            if (p->p[i] & l)
+            if (p[i] & l)
                 printf("1");
             else
                 printf("0");
@@ -100,66 +87,35 @@ void part_print(const PART *p) {
         }
     }
 
-    printf(":%.2f,%d%%: ", p->len, p->percent);
+    printf(":%.2f,%d%%: ", len, percent);
 }
 #endif
 
-PART *part_new() {
-    //! construct new part
-    PART *p = (PART *) getmem(sizeof(PART));
-
-    p->p  = (PELEM *) getmem(longs * sizeof(PELEM));
-    p->id = id++;
-
-    return p;
-}
-
-void part_free(PART*& p) {
-    //! destroy part
-    free(p->p);
-    free(p);
-    p = NULL;
-}
-
-bool part_is_valid(const PART *p) {
-    PELEM last = p->p[longs-1];
-    return (last&cutmask) == last;
-}
-
-PART *part_root() {
+PART *PartitionSize::create_root() const {
     /*! build a partition that totally consists of 111111...1111 that is needed to
      * build the root of a specific ntree
      */
 
-    PART *p = part_new();
-    part_invert(p);
-    arb_assert(part_is_valid(p));
+    PART *p = new PART(this);
+    p->invert();
+    arb_assert(p->is_valid());
     return p;
 }
 
 
-void part_setbit(PART *p, int pos) {
-    /*! set the bit of the part 'p' at the position 'pos'
-     */
-    arb_assert(part_is_valid(p));
-    p->p[(pos / sizeof(PELEM) / 8)] |= (1 << (pos % (sizeof(PELEM)*8)));
-    arb_assert(part_is_valid(p));
-}
-
-
-
-bool is_son_of(const PART *son, const PART *father) {
+bool PART::is_son_of(const PART *father) const {
     /*! test if the part 'son' is possibly a son of the part 'father'.
      *
      * A father defined in this context as a part covers every bit of his son. needed in CT_ntree
      */
 
-    arb_assert(part_is_valid(son));
-    arb_assert(part_is_valid(father));
+    arb_assert(is_valid());
+    arb_assert(father->is_valid());
     
     bool is_equal = true;
+    int longs = get_longs();
     for (int i=0; i<longs; i++) {
-        PELEM s = son->p[i];
+        PELEM s = p[i];
         PELEM f = father->p[i];
 
         if ((s&f) != s) return false; // father has not all son bits set 
@@ -171,87 +127,97 @@ bool is_son_of(const PART *son, const PART *father) {
 }
 
 
-bool are_brothers(const PART *p1, const PART *p2) {
-    /*! test if two parts are brothers.
-     *
-     * "brothers" means that p1 and p2 do not share common bits
+bool PART::overlaps_with(const PART *other) const {
+    /*! test if two parts overlap (i.e. share common bits)
      */
 
-    arb_assert(part_is_valid(p1));
-    arb_assert(part_is_valid(p2));
+    arb_assert(is_valid());
+    arb_assert(other->is_valid());
 
+    int longs = get_longs();
     for (int i=0; i<longs; i++) {
-        if (p1->p[i] & p2->p[i]) return false;
+        if (p[i] & other->p[i]) return true;
     }
-    return true;
+    return false;
 }
 
-
-void part_invert(PART *p) {
+void PART::invert() {
     //! invert a part
     //
     // Each edge in a tree connects two subtrees.
     // These subtrees are represented by inverse partitions
 
-    arb_assert(part_is_valid(p));
-    for (int i=0; i<longs; i++) p->p[i] = ~p->p[i];
-    p->p[longs-1] &= cutmask;
-    arb_assert(part_is_valid(p));
+    arb_assert(is_valid());
+    
+    int longs = get_longs();
+    for (int i=0; i<longs; i++) {
+        p[i] = ~p[i];
+    }
+    p[longs-1] &= get_cutmask();
+
+    members = get_maxsize()-members;
+
+    arb_assert(is_valid());
 }
 
-
-void part_or(const PART *source, PART *destination) {
+void PART::add_from(const PART *source) {
     //! destination = source or destination
-    arb_assert(part_is_valid(source));
-    arb_assert(part_is_valid(destination));
-    
+    arb_assert(source->is_valid());
+    arb_assert(is_valid());
+
+    bool distinct = distinct_from(source);
+
+    int longs = get_longs();
     for (int i=0; i<longs; i++) {
-        destination->p[i] |= source->p[i];
+        p[i] |= source->p[i];
     }
 
-    arb_assert(part_is_valid(destination));
+    if (distinct) {
+        members += source->members;
+    }
+    else {
+        members = count_members();
+    }
+
+    arb_assert(is_valid());
 }
 
 
-bool parts_equal(const PART *p1, const PART *p2) {
+bool PART::equals(const PART *other) const {
     /*! return true if p1 and p2 are equal
      */
-    arb_assert(part_is_valid(p1));
-    arb_assert(part_is_valid(p2));
+    arb_assert(is_valid());
+    arb_assert(other->is_valid());
 
+    int longs = get_longs();
     for (int i=0; i<longs; i++) {
-        if (p1->p[i] != p2->p[i]) return false;
+        if (p[i] != other->p[i]) return false;
     }
-
     return true;
 }
 
 
-unsigned part_key(const PART *p) {
-    //! calculate a hashkey from part 'p'
-    arb_assert(part_is_valid(p));
+unsigned PART::key() const {
+    //! calculate a hashkey from part
+    arb_assert(is_valid());
 
     PELEM ph = 0;
+    int longs = get_longs();
     for (int i=0; i<longs; i++) {
-        ph ^= p->p[i];
+        ph ^= p[i];
     }
  
     return ph;
 }
 
-void part_setlen(PART *p, GBT_LEN len) {
-    //! set the len of this edge (this part)
-    arb_assert(part_is_valid(p));
-    p->len = len;
-}
-
-int part_size(const PART *p) { // @@@ speed me up
+int PART::count_members() const { 
     //! count the number of leafs in partition
     int leafs = 0;
+    int longs = get_longs();
     for (int i = 0; i<longs; ++i) {
-        PELEM e = p->p[i];
+        PELEM e = p[i];
 
-        if (i == (longs-1)) e = e&cutmask;
+        if (i == (longs-1)) e = e&get_cutmask();
 
         for (size_t b = 0; b<(sizeof(e)*8); ++b) {
             if (e&1) leafs++;
@@ -261,54 +227,32 @@ int part_size(const PART *p) { // @@@ speed me up
     return leafs;
 }
 
-bool is_leaf_edge(const PART *p) {
-    int size     = part_size(p);
-    return size == 1 || size == (plen-1);
-}
-
-int distance_to_tree_center(const PART *p) {
-    return abs(plen/2 - part_size(p));
-}
-
-void part_copy(const PART *source, PART *destination) {
-    //! copy source into destination
-    arb_assert(part_is_valid(source));
-
-    for (int i=0; i<longs; i++) destination->p[i] = source->p[i];
-
-    destination->len     = source->len;
-    destination->percent = source->percent;
-    
-    arb_assert(part_is_valid(destination));
-}
-
-
-void part_standard(PART *p) {
-    /*! standardize the partitions
+void PART::standardize() {
+    /*! standardize the partition
      *
      * two parts are equal if one is just the inverted version of the other.
      * so the standard is defined that the version is the representant, whose first bit is equal 1
      */
-    arb_assert(part_is_valid(p));
-    if ((p->p[0] & 1) == 0) part_invert(p);
-    arb_assert(part_is_valid(p));
+    arb_assert(is_valid());
+    if ((p[0] & 1) == 0) invert();
+    arb_assert(is_valid());
 }
 
-
-int calc_index(const PART *p) {
+int PART::index() const {
     /*! calculate the first bit set in p,
      *
      * this is only useful if only one bit is set,
-     * this is used toidentify leafs in a ntree
+     * this is used to identify leafs in a ntree
      *
      * ATTENTION: p must be != NULL
      */
-    arb_assert(part_is_valid(p));
-    int i, pos=0;
-    PELEM p_temp;
+    arb_assert(is_valid());
+    arb_assert(is_leaf_edge());
 
-    for (i=0; i<longs; i++) {
-        p_temp = p->p[i];
+    int pos   = 0;
+    int longs = get_longs();
+    for (int i=0; i<longs; i++) {
+        PELEM p_temp = p[i];
         pos = i * sizeof(PELEM) * 8;
         if (p_temp) {
             for (; p_temp; p_temp >>= 1, pos++) {
@@ -327,44 +271,52 @@ int calc_index(const PART *p) {
 #include <test_unit.h>
 #endif
 
-void TEST_part_init() {
-    part_init(0);
-    TEST_ASSERT_EQUAL(plen, 0);
-    TEST_ASSERT_EQUAL(longs, 0);
-    // cutmask doesnt matter
-    part_cleanup();
+void TEST_PartRegistry() {
+    {
+        PartitionSize reg(0);
+        TEST_ASSERT_EQUAL(reg.get_bits(), 0);
+        TEST_ASSERT_EQUAL(reg.get_longs(), 0);
+        // cutmask doesnt matter
+    }
 
-    part_init(1);
-    TEST_ASSERT_EQUAL(plen, 1);
-    TEST_ASSERT_EQUAL(longs, 1);
-    TEST_ASSERT_EQUAL(readable_cutmask(cutmask), "00000000000000000000000000000001");
-    part_cleanup();
+    {
+        PartitionSize reg(1);
+        TEST_ASSERT_EQUAL(reg.get_bits(), 1);
+        TEST_ASSERT_EQUAL(reg.get_longs(), 1);
+        TEST_ASSERT_EQUAL(readable_cutmask(reg.get_cutmask()), "00000000000000000000000000000001");
+    }
 
-    part_init(31);
-    TEST_ASSERT_EQUAL(plen, 31);
-    TEST_ASSERT_EQUAL(longs, 1);
-    TEST_ASSERT_EQUAL(readable_cutmask(cutmask), "01111111111111111111111111111111");
-    part_cleanup();
+    {
+        PartitionSize reg(31);
+        TEST_ASSERT_EQUAL(reg.get_bits(), 31);
+        TEST_ASSERT_EQUAL(reg.get_longs(), 1);
+        TEST_ASSERT_EQUAL(readable_cutmask(reg.get_cutmask()), "01111111111111111111111111111111");
+    }
 
-    part_init(32);
-    TEST_ASSERT_EQUAL(plen, 32);
-    TEST_ASSERT_EQUAL(longs, 1);
-    TEST_ASSERT_EQUAL(readable_cutmask(cutmask), "11111111111111111111111111111111");
-    part_cleanup();
+    {
+        PartitionSize reg(32);
+        TEST_ASSERT_EQUAL(reg.get_bits(), 32);
+        TEST_ASSERT_EQUAL(reg.get_longs(), 1);
+        TEST_ASSERT_EQUAL(readable_cutmask(reg.get_cutmask()), "11111111111111111111111111111111");
+    }
 
-    part_init(33);
-    TEST_ASSERT_EQUAL(plen, 33);
-    TEST_ASSERT_EQUAL(longs, 2);
-    TEST_ASSERT_EQUAL(readable_cutmask(cutmask), "00000000000000000000000000000001");
-    part_cleanup();
+    {
+        PartitionSize reg(33);
+        TEST_ASSERT_EQUAL(reg.get_bits(), 33);
+        TEST_ASSERT_EQUAL(reg.get_longs(), 2);
+        TEST_ASSERT_EQUAL(readable_cutmask(reg.get_cutmask()), "00000000000000000000000000000001");
+    }
 
-    part_init(95);
-    TEST_ASSERT_EQUAL(plen, 95);
-    TEST_ASSERT_EQUAL(longs, 3);
-    TEST_ASSERT_EQUAL(readable_cutmask(cutmask), "01111111111111111111111111111111");
-    part_cleanup();
+    {
+        PartitionSize reg(95);
+        TEST_ASSERT_EQUAL(reg.get_bits(), 95);
+        TEST_ASSERT_EQUAL(reg.get_longs(), 3);
+        TEST_ASSERT_EQUAL(readable_cutmask(reg.get_cutmask()), "01111111111111111111111111111111");
+    }
 }
 
 #endif // UNIT_TESTS
 
 // --------------------------------------------------------------------------------
+
+

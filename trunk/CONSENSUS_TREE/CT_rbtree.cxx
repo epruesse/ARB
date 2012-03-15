@@ -11,7 +11,6 @@
 // Reconstruct GBT-tree from Ntree
 
 #include "CT_rbtree.hxx"
-#include "CT_mem.hxx"
 
 #include <arbdbt.h>
 #include <arb_strarray.h>
@@ -112,12 +111,12 @@ static RB_INFO *rbtree(const NT_NODE *tree, GBT_TREE *father) {
 
     RB_INFO *info = (RB_INFO *) getmem(sizeof(RB_INFO));
     info->node    = gbtnode;                             // return-information
-    info->percent = tree->part->percent;
-    info->len     = tree->part->len;
+    info->percent = tree->part->get_percent();
+    info->len     = tree->part->get_len();
 
     NSONS *nsonp = tree->son_list;
     if (!nsonp) {                                        // if node is leaf
-        int idx = calc_index(tree->part);
+        int idx = tree->part->index();
 
         gbtnode->name    = get_name(idx);
         gbtnode->is_leaf = true;

@@ -10,7 +10,6 @@
 
 #include "CT_hash.hxx"
 #include "CT_ntree.hxx"
-#include "CT_mem.hxx"
 #include "CT_ctree.hxx"
 
 #include <arb_sort.h>
@@ -24,7 +23,7 @@ static HNODE *Sortedlist       = NULL;
 static void free_HNODE(HNODE*& hn) {
     while (hn) {
         HNODE *next = hn->next;
-        part_free(hn->part);
+        delete hn->part;
         free(hn);
         
         hn = next;
@@ -68,9 +67,8 @@ PART *hash_getpart(int source_trees) {
         free(hnp);
 
         // @@@ code below is badly placed 
-        p->len     /= (float) p->percent;
-        p->percent *= 10000;
-        p->percent /= source_trees;
+        p->set_len(p->get_len()/(float)p->get_percent());
+        p->set_percent((p->get_percent()*10000)/source_trees);
     }
     return p;
 }
@@ -83,25 +81,25 @@ void hash_insert(PART*& part, int weight) {
      * @param weight  the weight of the part
      */
 
-    part_standard(part);
+    part->standardize();
 
-    unsigned key = part_key(part);
+    unsigned key = part->key();
     key %= HASH_MAX;
 
     HNODE *hp = 0;
     if (Hashlist[key]) {
         for (hp=Hashlist[key]; hp; hp=hp->next) {
-            if (parts_equal(hp->part, part)) break;
+            if (hp->part->equals(part)) break;
         }
     }
 
-    part->percent  = weight;
-    part->len     *= weight;
+    part->set_percent(weight);
+    part->set_len(part->get_len()*weight); // @@@ 
 
     if (hp) {
-        hp->part->percent += part->percent;
-        hp->part->len     += part->len;
-        part_free(part);
+        hp->part->set_percent(hp->part->get_percent()+part->get_percent());
+        hp->part->set_len(hp->part->get_len() + part->get_len());
+        delete part;
     }
     else {
         hp            = (HNODE *) getmem(sizeof(HNODE));
@@ -111,7 +109,26 @@ void hash_insert(PART*& part, int weight) {
     }
 
     part = NULL;
-    track_max_part_percent(hp->part->percent);
+    track_max_part_percent(hp->part->get_percent());
+}
+
+int PART::strict_cmp(const PART *other) const {
+    int centerdist1 = distance_to_tree_center();
+    int centerdist2 = other->distance_to_tree_center();
+
+    int cmp = centerdist1-centerdist2; // insert central edges first
+
+    if (!cmp) {
+        double fcmp = get_len() - other->get_len(); // insert bigger len first
+        cmp = fcmp<0 ? -1 : (fcmp>0 ? 1 : 0);
+
+        if (!cmp) {
+            cmp = id - other->id; // strict by definition
+            arb_assert(cmp);
+        }
+    }
+
+    return cmp;
 }
 
 static int HNODE_order(const void *v1, const void *v2, void *) {
@@ -119,25 +136,7 @@ static int HNODE_order(const void *v1, const void *v2, void *) {
     const HNODE *h1 = (const HNODE *)v1;
     const HNODE *h2 = (const HNODE *)v2;
 
-    const PART *p1 = h1->part;
-    const PART *p2 = h2->part;
-
-    int centerdist1 = distance_to_tree_center(p1);
-    int centerdist2 = distance_to_tree_center(p2);
-
-    int cmp = centerdist1-centerdist2; // insert central edges first
-
-    if (!cmp) {
-        double fcmp = p1->len - p2->len; // insert bigger len first
-        cmp = fcmp<0 ? -1 : (fcmp>0 ? 1 : 0);
-
-        if (!cmp) {
-            cmp = p1->id - p2->id; // strict by definition
-            arb_assert(cmp);
-        }
-    }
-
-    return cmp;
+    return h1->part->strict_cmp(h2->part);
 }
 
 
@@ -162,10 +161,10 @@ void build_sorted_list() {
         while (hnp) {
             HNODE *hnp_next = hnp->next;
 
-            int prio = hnp->part->percent;
+            int prio = hnp->part->get_percent();
             arb_assert(prio>0);
 
-            if (is_leaf_edge(hnp->part)) {
+            if (hnp->part->is_leaf_edge()) {
                 prio = 0; // add leaf edges in a final step 
             }
 

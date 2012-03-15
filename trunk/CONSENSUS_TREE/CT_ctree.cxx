@@ -17,7 +17,8 @@
 
 ConsensusTree::ConsensusTree(const class CharPtrArray& names)
     : Tree_count(0),
-      Name_hash(NULL)
+      Name_hash(NULL),
+      size(NULL)
 {
     // names = leafnames (=species names)
 
@@ -27,7 +28,7 @@ ConsensusTree::ConsensusTree(const class CharPtrArray& names)
         GBS_write_hash(Name_hash, names[i], i+1);
     }
 
-    part_init(node_count);  // Amount of Bits used
+    size = new PartitionSize(node_count);
     hash_init();
     rb_init(names);
 }
@@ -36,10 +37,11 @@ ConsensusTree::~ConsensusTree() {
     if (Name_hash) GBS_free_hash(Name_hash);
     Name_hash  = 0;
     Tree_count = 0;
-    
+
     rb_cleanup();
     hash_cleanup();
-    part_cleanup();
+
+    delete size;
 }
 
 void ConsensusTree::insert(GBT_TREE *tree, int weight) {
@@ -57,7 +59,7 @@ GBT_TREE *ConsensusTree::get_consensus_tree() {
        the fist son-partition in two parts through logical calculation there
        could only be one son! */
 
-    ntree_init();
+    ntree_init(size);
     build_sorted_list();
 
     {

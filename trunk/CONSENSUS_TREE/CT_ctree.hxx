@@ -25,6 +25,7 @@ class ConsensusTree : virtual Noncopyable {
     int      Tree_count; // not really tree count, but sum of weights of added trees
     GB_HASH *Name_hash;
 
+    class PartitionSize *size;
 
     PART *dtree(const GBT_TREE *tree, int weight, GBT_LEN len);
     void remember_subtrees(const GBT_TREE *tree, int weight);

@@ -9,7 +9,6 @@
 // ============================================================= //
 
 #include "CT_ntree.hxx"
-#include "CT_mem.hxx"
 #include <arbdbt.h>
 
 // Einen Binaerbaum erzeugen ueber einen Multitree
@@ -46,17 +45,17 @@ static void del_tree(NT_NODE *tree) {
         tree->son_list = NULL;
 
         // now is leaf
-        part_free(tree->part);
+        delete tree->part;
         tree->part = NULL;
         freenull(tree);
     }
 }
 
 
-void ntree_init() {
+void ntree_init(const PartitionSize *registry) {
     // Initialization of the tree
     arb_assert(!ntree);              // forgot to call ntree_cleanup ?
-    PART *root = part_root();
+    PART *root = registry->create_root();
     ntree      = new_ntnode(root); // Set root to completely filled partition
 }
 
@@ -122,8 +121,8 @@ static int ins_ntree(NT_NODE *tree, PART*& newpart) {
     if (!tree->son_list) {
 #if defined(DUMP_PART_INSERTION) 
         fputs("ins_ntree part=", stdout);
-        part_print(newpart);
-        printf(" dist2center=%i\n", distance_to_tree_center(newpart));
+        newpart->print();
+        printf(" dist2center=%i\n", newpart->distance_to_tree_center());
 #endif
 
         tree->son_list       = (NSONS *) getmem(sizeof(NSONS));
@@ -134,7 +133,7 @@ static int ins_ntree(NT_NODE *tree, PART*& newpart) {
 
     // test if part fit under one son of tree -> recursion
     for (NSONS *nsonp = tree->son_list; nsonp; nsonp=nsonp->next) {
-        if (is_son_of(newpart, nsonp->node->part)) {
+        if (newpart->is_son_of(nsonp->node->part)) {
             int res = ins_ntree(nsonp->node, newpart);
             arb_assert(contradicted(newpart, res));
             return res;
@@ -144,9 +143,8 @@ static int ins_ntree(NT_NODE *tree, PART*& newpart) {
     // If partition is not a son maybe it is a brother
     // If it is neither brother nor son -> don't fit here
     for (NSONS *nsonp = tree->son_list; nsonp; nsonp=nsonp->next) {
-        if (!are_brothers(nsonp->node->part, newpart)) {
-            // newpart is not distinct from nsonp
-            if (!is_son_of(nsonp->node->part, newpart)) {
+        if (nsonp->node->part->overlaps_with(newpart)) {
+            if (!nsonp->node->part->is_son_of(newpart)) {
                 arb_assert(newpart);
                 return 0;
             }
@@ -156,8 +154,8 @@ static int ins_ntree(NT_NODE *tree, PART*& newpart) {
 
 #if defined(DUMP_PART_INSERTION)
         fputs("ins_ntree part=", stdout);
-        part_print(newpart);
-        printf(" dist2center=%i\n", distance_to_tree_center(newpart));
+        newpart->print();
+        printf(" dist2center=%i\n", newpart->distance_to_tree_center());
 #endif
 
     // Okay, insert part here ...
@@ -168,7 +166,7 @@ static int ins_ntree(NT_NODE *tree, PART*& newpart) {
         NSONS *nsonp = tree->son_list;
         while (nsonp) {
             NSONS *nsonp_next = nsonp->next;
-            if (is_son_of(nsonp->node->part, newntnode->part)) {
+            if (nsonp->node->part->is_son_of(newntnode->part)) {
                 move_son(tree, newntnode, nsonp);
             }
             nsonp = nsonp_next;
@@ -203,15 +201,14 @@ void insert_ntree(PART*& part) {
      * If neither can be inserted, the partition gets dropped.
      */
 
-    arb_assert(part_is_valid(part));
+    arb_assert(part->is_valid());
 
     bool firstCall = ntree->son_list == NULL;
     if (firstCall) {
-        part->len /= 2; // insert as root-edge -> distribute length
+        part->set_len(part->get_len()/2); // insert as root-edge -> distribute length
 
-        PART *inverse = part_new();
-        part_copy(part, inverse);
-        part_invert(inverse);
+        PART *inverse = part->clone();
+        inverse->invert();
 
         ASSERT_RESULT(bool, true, ins_ntree(ntree, part));
         ASSERT_RESULT(bool, true, ins_ntree(ntree, inverse));
@@ -220,9 +217,10 @@ void insert_ntree(PART*& part) {
     }
     else {
         if (!ins_ntree(ntree, part)) {
-            part_invert(part);
+            part->invert();
             if (!ins_ntree(ntree, part)) {
-                part_free(part); // drop non-fitting partition
+                delete part; // drop non-fitting partition
+                part = NULL;
             }
         }
     }
@@ -254,7 +252,7 @@ void print_ntree(NT_NODE *tree, int indent) {
     indent++;
 
     do_indent(indent);
-    part_print(tree->part);
+    tree->part->print();
     fputc('\n', stdout);
 
     // and sons
@@ -268,29 +266,6 @@ void print_ntree(NT_NODE *tree, int indent) {
     fputs(")\n", stdout);
 }
 
-void print_ntindex(NT_NODE *tree) {
-    // Testfunction to print the indexnumbers of the tree
-
-    NSONS *nsonp;
-    PART  *p = part_new();
-
-    // print father
-    printf("(");
-    for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
-        part_or(nsonp->node->part, p);
-    }
-    printf("%d", tree->part->p[0]);
-
-    // and sons
-    for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
-        print_ntindex(nsonp->node);
-    }
-
-    printf(")");
-
-    part_free(p);
-}
-
 bool is_well_formed(const NT_NODE *tree) {
     // checks whether
     // - tree has sons
@@ -300,21 +275,39 @@ bool is_well_formed(const NT_NODE *tree) {
 
     int sons = ntree_count_sons(tree);
 
-    if (!sons) return part_size(tree->part) == 1; // leafs should contain single species
+    if (!sons) return tree->part->get_members() == 1; // leafs should contain single species
 
     bool well_formed = true;
 
-    PART *pmerge = part_new();
+    arb_assert(tree->son_list);
+    
+    PART *pmerge = 0;
     for (NSONS *nson = tree->son_list; nson; nson = nson->next) {
         PART *pson = nson->node->part;
 
-        if (!is_son_of(pson, tree->part)) well_formed = false;
-        if (!are_brothers(pson, pmerge)) well_formed  = false;
-        part_or(pson, pmerge);
-        if (!is_well_formed(nson->node)) well_formed = false;
+        if (!pson->is_son_of(tree->part)) {
+            well_formed = false;
+        }
+        if (pmerge) {
+            if (pson->overlaps_with(pmerge)) {
+                well_formed  = false;
+            }
+            pmerge->add_from(pson);
+        }
+        else {
+            pmerge = pson->clone();
+        }
+        if (!is_well_formed(nson->node)) {
+            well_formed = false;
+            is_well_formed(nson->node);
+        }
     }
-    if (!parts_equal(tree->part, pmerge)) well_formed = false;
-    part_free(pmerge);
+    arb_assert(pmerge);
+    if (tree->part->differs(pmerge)) {
+        well_formed = false;
+    }
+    delete pmerge;
+
     return well_formed;
 }
 

@@ -29,7 +29,7 @@ struct NSONS {
 };
 
 
-void ntree_init();
+void ntree_init(const PartitionSize *size);
 void ntree_cleanup();
 
 int ntree_count_sons(const NT_NODE *tree);
@@ -39,7 +39,6 @@ const NT_NODE *ntree_get();
 
 #if defined(NTREE_DEBUG_FUNCTIONS)
 void print_ntree(NT_NODE *tree, int indent);
-void print_ntindex(NT_NODE *tree);
 bool is_well_formed(const NT_NODE *tree);
 #endif
 
