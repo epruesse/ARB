@@ -69,6 +69,63 @@ sub do_init() {
 }
 # --------------------------------------------------------------------------------
 
+my $expand_list_read = 0;
+my @expand_list = ();
+
+sub read_expand_list() {
+  my $expand_list = "../SOURCE_TOOLS/valgrind2grep.lst";
+
+  my $dir = `pwd`;
+  open(LIST,'<'.$expand_list) || die "can't read '$expand_list' (Reason: $!) in dir '$dir'";
+  my $line;
+  while (defined($line=<LIST>)) {
+    chomp($line);
+    push @expand_list, $line;
+  }
+  close(LIST);
+
+  $expand_list_read = 1;
+}
+
+my %expanded = (); # key=$filename, value=ref to array of possible expanded filenames.
+
+sub get_expanded_filenames($) {
+  my ($file) = @_;
+
+  my $found_r = $expanded{$file};
+  if (not defined $found_r) {
+    if ($expand_list_read==0) { read_expand_list(); }
+    my @expanded = ();
+    foreach (@expand_list) { if (/$file$/) { push @expanded, $_; } }
+    $expanded{$file} = \@expanded;
+    $found_r = $expanded{$file};
+  }
+  return @$found_r;
+}
+
+sub print_expand_pathless_messages($) {
+  my ($line) = @_;
+  chomp($line);
+  if ($line =~ /^([a-z0-9_\.]+):([0-9:]+):/oi) {
+    my ($file,$lineCol,$rest) = ($1,$2,$');
+    my @expanded = get_expanded_filenames($file);
+
+    if (scalar(@expanded)==0) {
+      print "$file:$lineCol: [unknown -> call 'make valgrind_update'] $rest\n";
+    }
+    else {
+      foreach (@expanded) {
+        print "$_:$lineCol: $rest\n";
+      }
+    }
+  }
+  else {
+    print $line."\n";
+  }
+}
+
+# --------------------------------------------------------------------------------
+
 my $tests    = 0;
 my $skipped  = 0;
 my $passed   = 0;
@@ -125,7 +182,7 @@ sub parse_log($) {
   if ($dump_log==1) {
     open(LOG,$log) || die "can't open '$log' (Reason: $!)";
     my $line;
-    while (defined($line=<LOG>)) { print $line; }
+    while (defined($line=<LOG>)) { print_expand_pathless_messages($line); }
     close(LOG);
   }
   else {
