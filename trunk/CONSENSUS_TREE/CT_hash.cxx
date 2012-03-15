@@ -16,10 +16,6 @@
 
 // Hashtabelle fuer parts
 
-static int    max_part_percent = 0;
-static HNODE *Hashlist[HASH_MAX];
-static HNODE *Sortedlist       = NULL;
-
 static void free_HNODE(HNODE*& hn) {
     while (hn) {
         HNODE *next = hn->next;
@@ -31,29 +27,25 @@ static void free_HNODE(HNODE*& hn) {
     hn = NULL;
 }
 
-static void hash_free() {
-    //! free Hashtable and Sortedlist
-    for (int i=0; i< HASH_MAX; i++) free_HNODE(Hashlist[i]);
-    free_HNODE(Sortedlist);
-}
-
-void hash_init() {
-    //! initialize Hashtable
-    arb_assert(!Sortedlist); // forgot to call hash_cleanup
-    arb_assert(!max_part_percent);
-
-    for (int i = 0; i<HASH_MAX; ++i) {
+PartRegistry::PartRegistry()
+    : hash_size(3373),
+      max_part_percent(0),
+      Sortedlist(NULL)
+{
+    typedef HNODE *HNODEptr;
+    Hashlist = new HNODEptr[hash_size];
+    for (int i = 0; i<hash_size; ++i) {
         Hashlist[i] = NULL;
     }
 }
 
-void hash_cleanup() {
-    //! free old data
-    hash_free();
-    max_part_percent = 0;
+PartRegistry::~PartRegistry() {
+    for (int i=0; i< hash_size; i++) free_HNODE(Hashlist[i]);
+    delete [] Hashlist;
+    free_HNODE(Sortedlist);
 }
 
-PART *hash_getpart(int source_trees) {
+PART *PartRegistry::get_part(int source_trees) {
     /*! return the first element (with the highest hitnumber) from the linear sorted
      * list and calculate percentaged appearance of this partition in all trees and
      * calculate the average pathlength.
@@ -73,9 +65,7 @@ PART *hash_getpart(int source_trees) {
     return p;
 }
 
-inline void track_max_part_percent(int pc) { if (pc>max_part_percent) max_part_percent = pc; }
-
-void hash_insert(PART*& part, int weight) {
+void  PartRegistry::insert(PART*& part, int weight) {
     /*! insert part in hashtable with weight (destroys/reassigns part)
      * @param part the one to insert, is destructed afterwards
      * @param weight  the weight of the part
@@ -84,7 +74,7 @@ void hash_insert(PART*& part, int weight) {
     part->standardize();
 
     unsigned key = part->key();
-    key %= HASH_MAX;
+    key %= hash_size;
 
     HNODE *hp = 0;
     if (Hashlist[key]) {
@@ -94,7 +84,7 @@ void hash_insert(PART*& part, int weight) {
     }
 
     part->set_percent(weight);
-    part->set_len(part->get_len()*weight); // @@@ 
+    part->set_len(part->get_len()*weight); // @@@
 
     if (hp) {
         hp->part->set_percent(hp->part->get_percent()+part->get_percent());
@@ -140,7 +130,7 @@ static int HNODE_order(const void *v1, const void *v2, void *) {
 }
 
 
-void build_sorted_list() {
+void  PartRegistry::build_sorted_list() {
     /*! sort the current hash list in a linear sorted list, the current hash
      * is empty afterwards. I use a simple trick speed up the function:
      * build for every hitnumber one list and put all elements with that hitnumber
@@ -156,7 +146,7 @@ void build_sorted_list() {
     size_t  *size  = (size_t*)getmem(list_count*sizeof(*size));
 
     // build one list for each branch-probability
-    for (int i=0; i< HASH_MAX; i++) {
+    for (int i=0; i< hash_size; i++) {
         HNODE *hnp = Hashlist[i];
         while (hnp) {
             HNODE *hnp_next = hnp->next;
@@ -232,4 +222,5 @@ void build_sorted_list() {
 
     Sortedlist = head;
 }
+
 
