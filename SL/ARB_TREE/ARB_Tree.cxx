@@ -95,7 +95,7 @@ GB_ERROR ARB_tree_root::loadFromDB(const char *name) {
         GBT_TREE *gbt_tree   = GBT_read_tree(gb_main, name, -sizeof(GBT_TREE));
         if (!gbt_tree) error = GB_await_error();
         else {
-            gb_tree             = GBT_get_tree(gb_main, name);
+            gb_tree             = GBT_find_tree(gb_main, name);
             if (!gb_tree) error = GB_await_error();
             else {
                 error = GB_add_callback(gb_tree, GB_CB_DELETE, tree_deleted_cbwrapper, (int*)this);

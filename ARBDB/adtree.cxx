@@ -351,7 +351,7 @@ GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name,
     return gbt_write_tree(gb_main, gb_tree, tree_name, tree, 0);
 }
 GB_ERROR GBT_write_tree_rem(GBDATA *gb_main, const char *tree_name, const char *remark) {
-    return GBT_write_string(GBT_get_tree(gb_main, tree_name), "remark", remark);
+    return GBT_write_string(GBT_find_tree(gb_main, tree_name), "remark", remark);
 }
 
 // ----------------------------
@@ -509,7 +509,7 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long st
     else {
         error = GBT_check_tree_name(tree_name);
         if (!error) {
-            GBDATA *gb_tree = GBT_get_tree(gb_main, tree_name);
+            GBDATA *gb_tree = GBT_find_tree(gb_main, tree_name);
 
             if (!gb_tree) {
                 error = GBS_global_string("Could not find tree '%s'", tree_name);
@@ -698,7 +698,7 @@ void GBT_unlink_tree(GBT_TREE *tree) {
 }
 
 
-GBDATA *GBT_get_tree(GBDATA *gb_main, const char *tree_name) {
+GBDATA *GBT_find_tree(GBDATA *gb_main, const char *tree_name) {
     /*! @return
      * - DB tree container associated with tree_name
      * - NULL if no such tree exists
@@ -714,7 +714,7 @@ long GBT_size_of_tree(GBDATA *gb_main, const char *tree_name) {
     //        leafs                        = size + 1
     //        inner nodes in unrooted tree = size - 1
 
-    GBDATA *gb_tree = GBT_get_tree(gb_main, tree_name);
+    GBDATA *gb_tree = GBT_find_tree(gb_main, tree_name);
     GBDATA *gb_nnodes;
     if (!gb_tree) return -1;
     gb_nnodes       = GB_entry(gb_tree, "nnodes");
@@ -753,7 +753,7 @@ const char *GBT_tree_info_string(GBDATA *gb_main, const char *tree_name, int max
     // maxTreeNameLen shall be the max len of the longest tree name (or -1 -> do not format)
 
     const char *result  = 0;
-    GBDATA     *gb_tree = GBT_get_tree(gb_main, tree_name);
+    GBDATA     *gb_tree = GBT_find_tree(gb_main, tree_name);
 
     if (!gb_tree) {
         GB_export_errorf("tree '%s' not found", tree_name);
@@ -821,7 +821,7 @@ char *GBT_get_name_of_next_tree(GBDATA *gb_main, const char *tree_name) {
     GBDATA *gb_tree = 0;
 
     if (tree_name) {
-        gb_tree = GBT_get_tree(gb_main, tree_name);
+        gb_tree = GBT_find_tree(gb_main, tree_name);
         gb_tree = GB_nextChild(gb_tree);
     }
     if (!gb_tree) {

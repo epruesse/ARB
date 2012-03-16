@@ -156,7 +156,7 @@ size_t GBT_count_leafs(const GBT_TREE *tree);
 GB_ERROR GBT_is_invalid(const GBT_TREE *tree);
 GB_ERROR GBT_link_tree(GBT_TREE *tree, GBDATA *gb_main, bool show_status, int *zombies, int *duplicates);
 void GBT_unlink_tree(GBT_TREE *tree);
-GBDATA *GBT_get_tree(GBDATA *gb_main, const char *tree_name);
+GBDATA *GBT_find_tree(GBDATA *gb_main, const char *tree_name);
 long GBT_size_of_tree(GBDATA *gb_main, const char *tree_name);
 char *GBT_find_largest_tree(GBDATA *gb_main);
 char *GBT_find_latest_tree(GBDATA *gb_main);
