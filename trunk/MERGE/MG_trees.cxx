@@ -118,7 +118,7 @@ static void MG_tr_delete_cb(AW_window *aww, GBDATA *gbd, long tree_nr) {
     GB_ERROR    error   = GB_begin_transaction(gbd);
 
     if (!error) {
-        GBDATA *gb_tree = GBT_get_tree(gbd, source);
+        GBDATA *gb_tree = GBT_find_tree(gbd, source);
 
         if (gb_tree) error = GB_delete(gb_tree);
         else {

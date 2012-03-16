@@ -243,7 +243,7 @@ GB_ERROR TREE_write_XML(GBDATA *gb_main, const char *db_name, const char *tree_n
             if (!error && node_gen) node_gen->init(gb_main);
 
             if (!error) {
-                GBDATA *tree_cont   = GBT_get_tree(gb_main, tree_name);
+                GBDATA *tree_cont   = GBT_find_tree(gb_main, tree_name);
                 GBDATA *tree_remark = GB_entry(tree_cont, "remark");
 
                 XML_Document xml_doc("ARB_TREE", "arb_tree.dtd", output);
@@ -322,7 +322,7 @@ GB_ERROR TREE_write_Newick(GBDATA *gb_main, char *tree_name, const TREE_node_tex
 
             if (!error) {
                 char   *remark      = 0;
-                GBDATA *tree_cont   = GBT_get_tree(gb_main, tree_name);
+                GBDATA *tree_cont   = GBT_find_tree(gb_main, tree_name);
                 GBDATA *tree_remark = GB_entry(tree_cont, "remark");
 
                 if (tree_remark) {

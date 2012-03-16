@@ -1687,7 +1687,7 @@ static cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_na
         else     *error   = GBT_link_tree(tree, gb_main, false, 0, 0);
 
         if (!*error) {
-            GBDATA *gb_tree = GBT_get_tree(gb_main, tree_name);
+            GBDATA *gb_tree = GBT_find_tree(gb_main, tree_name);
             if (!gb_tree) {
                 *error = GBS_global_string("Can't find tree '%s'", tree_name);
             }

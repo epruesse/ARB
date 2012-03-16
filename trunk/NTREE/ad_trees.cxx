@@ -52,7 +52,7 @@ static void tree_vars_callback(AW_root *aw_root) // Map tree vars to display obj
     if (GLOBAL_gb_main) {
         GB_push_transaction(GLOBAL_gb_main);
         char *treename = aw_root->awar(AWAR_TREE_NAME)->read_string();
-        GBDATA *ali_cont = GBT_get_tree(GLOBAL_gb_main, treename);
+        GBDATA *ali_cont = GBT_find_tree(GLOBAL_gb_main, treename);
         if (!ali_cont) {
             aw_root->awar(AWAR_TREE_SECURITY)->unmap();
             aw_root->awar(AWAR_TREE_REM)->unmap();
@@ -101,7 +101,7 @@ static void ad_tree_set_security(AW_root *aw_root)
     if (GLOBAL_gb_main) {
         GB_transaction dummy(GLOBAL_gb_main);
         char *treename = aw_root->awar(AWAR_TREE_NAME)->read_string();
-        GBDATA *ali_cont = GBT_get_tree(GLOBAL_gb_main, treename);
+        GBDATA *ali_cont = GBT_find_tree(GLOBAL_gb_main, treename);
         if (ali_cont) {
             long prot = aw_root->awar(AWAR_TREE_SECURITY)->read_int();
             long old;
@@ -699,7 +699,7 @@ static void ad_tr_delete_cb(AW_window *aww) {
     // 2. delete old tree
     {
         GB_ERROR  error   = GB_begin_transaction(GLOBAL_gb_main);
-        GBDATA   *gb_tree = GBT_get_tree(GLOBAL_gb_main, name);
+        GBDATA   *gb_tree = GBT_find_tree(GLOBAL_gb_main, name);
         if (gb_tree) {
             char *newname = GBT_get_name_of_next_tree(GLOBAL_gb_main, name);
             error = GB_delete(gb_tree);
