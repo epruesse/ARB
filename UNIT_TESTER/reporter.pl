@@ -75,6 +75,11 @@ my @expand_list = ();
 sub read_expand_list() {
   my $expand_list = "../SOURCE_TOOLS/valgrind2grep.lst";
 
+  if (not -f $expand_list) {
+    my $cmd = '(cd ../SOURCE_TOOLS; make valgrind_update)';
+    system($cmd)==0 || die "failed to execute '$cmd' (Reason: $?)";
+  }
+
   my $dir = `pwd`;
   open(LIST,'<'.$expand_list) || die "can't read '$expand_list' (Reason: $!) in dir '$dir'";
   my $line;
