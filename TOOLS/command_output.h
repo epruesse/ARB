@@ -52,14 +52,22 @@ public:
         else {
             if (try_valgrind) make_valgrinded_call(escaped);
 
-            char *cmd = GBS_global_string_copy("bash -c '%s >stdout.log 2>stderr.log'", escaped);
+            pid_t pid = getpid();
+
+            char *stdout_log = GBS_global_string_copy("stdout_%i.log", pid);
+            char *stderr_log = GBS_global_string_copy("stderr_%i.log", pid);
+
+            char *cmd = GBS_global_string_copy("bash -c '%s >%s 2>%s'", escaped, stdout_log, stderr_log);
 
             appendError(GBK_system(cmd));
             free(cmd);
             free(escaped);
 
-            stdoutput = readAndUnlink("stdout.log");
-            stderrput = readAndUnlink("stderr.log");
+            stdoutput = readAndUnlink(stdout_log);
+            stderrput = readAndUnlink(stderr_log);
+
+            free(stderr_log);
+            free(stdout_log);
         }
         if (error) {
             printf("command '%s'\n"
