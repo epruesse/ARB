@@ -308,16 +308,9 @@ GBDATA *gb_make_pre_defined_entry(GBCONTAINER *father, GBDATA *gbd, long index_p
 }
 
 static void gb_write_key(GBDATA *gbd, const char *s) {
-    GBQUARK new_index = 0;
-
-    if (s) {
-        GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-        new_index          = (int)GBS_read_hash(Main->key_2_index_hash, s);
-
-        if (!new_index) {                           // create new index
-            new_index = (int)gb_create_key(Main, s, true);
-        }
-    }
+    GB_MAIN_TYPE *Main        = GB_MAIN(gbd);
+    GBQUARK       new_index   = GBS_read_hash(Main->key_2_index_hash, s);
+    if (!new_index) new_index = (int)gb_create_key(Main, s, true); // create new index
     gb_write_index_key(GB_FATHER(gbd), gbd->index, new_index);
 }
 
@@ -439,8 +432,9 @@ void gb_pre_delete_entry(GBDATA *gbd) {
         gbm_free_mem(cb, sizeof(gb_callback), gbm_index);
     }
 
-    if (GB_FATHER(gbd)) {
-        gb_write_key(gbd, 0);
+    {
+        GBCONTAINER *gb_father = GB_FATHER(gbd);
+        if (gb_father) gb_write_index_key(gb_father, gbd->index, 0);
     }
     gb_unlink_entry(gbd);
 
