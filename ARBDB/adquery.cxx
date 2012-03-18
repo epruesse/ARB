@@ -282,14 +282,16 @@ static GBDATA *gb_find_internal(GBDATA *gbd, const char *key, GB_TYPES type, con
         }
 
         if (gbc) {
-            GBQUARK key_quark = key ? GB_key_2_quark(gbd, key) : -1;
+            GBQUARK key_quark = GB_find_existing_quark(gbd, key);
 
-            if (gbs == SEARCH_CHILD) {
-                result = GB_find_subcontent_by_quark((GBDATA*)gbc, key_quark, type, val, case_sens, after, 0);
-            }
-            else {
-                gb_assert(gbs == SEARCH_GRANDCHILD);
-                result = find_sub_sub_by_quark((GBDATA*)gbc, key, key_quark, type, val, case_sens, after);
+            if (key_quark) { // only search if 'key' is known to db
+                if (gbs == SEARCH_CHILD) {
+                    result = GB_find_subcontent_by_quark((GBDATA*)gbc, key_quark, type, val, case_sens, after, 0);
+                }
+                else {
+                    gb_assert(gbs == SEARCH_GRANDCHILD);
+                    result = find_sub_sub_by_quark((GBDATA*)gbc, key, key_quark, type, val, case_sens, after);
+                }
             }
         }
     }
@@ -696,31 +698,18 @@ long GB_number_of_marked_subentries(GBDATA *gbd) {
 
 
 GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring) {
-    GBCONTAINER *gbc = (GBCONTAINER *)gbd;
-    GBQUARK key_quark;
-    if (keystring) {
-        key_quark = GB_key_2_quark(gbd, keystring);
-    }
-    else {
-        key_quark = -1;
-    }
+    GBCONTAINER *gbc       = (GBCONTAINER *)gbd;
+    GBQUARK      key_quark = GB_find_existing_quark(gbd, keystring);
     GB_test_transaction(gbd);
-    return gb_search_marked(gbc, key_quark, 0, 0);
+    return key_quark ? gb_search_marked(gbc, key_quark, 0, 0) : NULL;
 }
 
 
 GBDATA *GB_following_marked(GBDATA *gbd, const char *keystring, size_t skip_over) {
-    GBCONTAINER *gbc = GB_FATHER(gbd);
-    GBQUARK key_quark;
-
-    if (keystring) {
-        key_quark = GB_key_2_quark(gbd, keystring);
-    }
-    else {
-        key_quark = -1;
-    }
+    GBCONTAINER *gbc       = GB_FATHER(gbd);
+    GBQUARK      key_quark = GB_find_existing_quark(gbd, keystring);
     GB_test_transaction(gbd);
-    return gb_search_marked(gbc, key_quark, (int)gbd->index+1, skip_over);
+    return key_quark ? gb_search_marked(gbc, key_quark, (int)gbd->index+1, skip_over) : NULL;
 }
 
 GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring) {

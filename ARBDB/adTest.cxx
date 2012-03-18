@@ -240,7 +240,7 @@ static GB_ERROR gb_fix_recursive(GBDATA *gbd) {
             GB_MAIN_TYPE *Main         = GB_MAIN(gbd);
             const char   *new_key_try  = GBS_global_string("illegal_zero_key_%s", GB_get_type_name(gbd));
             char         *new_key_name = GBS_string_2_key(new_key_try);
-            GBQUARK       keyq         = gb_key_2_quark(Main, new_key_name);
+            GBQUARK       keyq         = gb_find_or_create_quark(Main, new_key_name);
 
             printf("new_key_name='%s'\n", new_key_name);
 
