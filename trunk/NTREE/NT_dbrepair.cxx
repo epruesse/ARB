@@ -601,7 +601,7 @@ public:
 
     void testCompressed(GBDATA *gb_main) {
         nt_assert(!compressionTested);
-        compressed        = testDictionaryCompression(gb_main, GB_key_2_quark(gb_main, name.c_str()), true);
+        compressed        = testDictionaryCompression(gb_main, GB_find_or_create_quark(gb_main, name.c_str()), true);
         compressionTested = true;
     }
 
@@ -640,7 +640,7 @@ public:
             bool     works = false;
             GB_ERROR error = assignToKey(key);
 
-            if (!error) works    = testDictionaryCompression(gb_main, GB_key_2_quark(gb_main, key.c_str()), false);
+            if (!error) works    = testDictionaryCompression(gb_main, GB_find_or_create_quark(gb_main, key.c_str()), false);
             decompressWorks[key] = works;
 
             GB_ERROR err2 = unassignFromKey(key);
@@ -868,7 +868,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
                 for (StringSet::iterator ki = notDecompressible.begin(); !error && ki != notDecompressible.end(); ++ki) {
                     const string& keyname    = *ki;
 
-                    error = deleteDataOfKey(gb_main, GB_key_2_quark(gb_main, keyname.c_str()), deletedData, deleted, notDeleted);
+                    error = deleteDataOfKey(gb_main, GB_find_or_create_quark(gb_main, keyname.c_str()), deletedData, deleted, notDeleted);
                     ++progress;
                 }
 
@@ -898,7 +898,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
                         if (d->mayBeUsedWith(keyname) && d->canDecompress(keyname)) {
                             error = d->assignToKey(keyname);
                             if (!error) {
-                                char *data = readFirstCompressedDataOf(gb_main, GB_key_2_quark(gb_main, keyname.c_str()));
+                                char *data = readFirstCompressedDataOf(gb_main, GB_find_or_create_quark(gb_main, keyname.c_str()));
 
                                 nt_assert(data);
                                 possible++;

@@ -208,7 +208,7 @@ GB_ERROR gb_save_dictionary_data(GBDATA *gb_main, const char *key, const char *d
         GB_pop_my_security(gb_main);
     }
     if (!error) {
-        GBQUARK q = gb_key_2_quark(Main, key);
+        GBQUARK q = gb_find_or_create_quark(Main, key);
         gb_load_single_key_data(gb_main, q);
     }
     return error;
@@ -236,7 +236,7 @@ GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main) { // goes to header:
                     const char *name = GB_read_char_pntr(gb_name);
                     if (!name) error = GB_await_error();
                     else {
-                        GBQUARK quark = gb_key_2_quark(Main, name);
+                        GBQUARK quark = gb_find_or_create_quark(Main, name);
                         if (quark<=0 || quark >= Main->sizeofkeys || !Main->keys[quark].key) {
                             error = GB_delete(gb_key);  // delete unused key
                         }
@@ -247,10 +247,10 @@ GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main) { // goes to header:
 
             if (!error) error = GB_create_index(gb_key_data, "@name", GB_MIND_CASE, Main->sizeofkeys*2); // create key index
             if (!error) {
-                gb_key_2_quark(Main, "@name");
-                gb_key_2_quark(Main, "@key");
-                gb_key_2_quark(Main, "@dictionary");
-                gb_key_2_quark(Main, "compression_mask");
+                ASSERT_RESULT_PREDICATE(isAbove<int>(0), gb_find_or_create_quark(Main, "@name"));
+                ASSERT_RESULT_PREDICATE(isAbove<int>(0), gb_find_or_create_quark(Main, "@key"));
+                ASSERT_RESULT_PREDICATE(isAbove<int>(0), gb_find_or_create_quark(Main, "@dictionary"));
+                ASSERT_RESULT_PREDICATE(isAbove<int>(0), gb_find_or_create_quark(Main, "compression_mask"));
 
                 for (int key=1; key<Main->sizeofkeys; key++) {
                     char *k = Main->keys[key].key;

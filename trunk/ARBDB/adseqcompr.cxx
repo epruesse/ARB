@@ -488,7 +488,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                 GBDATA              *old_gb_master_ali = 0;
                 Sequence            *seqs              = 0;
                 GB_MAIN_TYPE        *Main              = GB_MAIN(gb_main);
-                GBQUARK              ali_quark         = gb_key_2_quark(Main, ali_name);
+                GBQUARK              ali_quark         = gb_find_or_create_quark(Main, ali_name);
                 unsigned long long   sumorg            = 0;
                 unsigned long long   sumold            = 0;
                 unsigned long long   sumnew            = 0;

@@ -29,7 +29,7 @@ typedef const char *GB_CBUFFER;                     // points to a piece of mem 
 struct GBDATA;
 struct GB_HASH;
 
-typedef int GBQUARK;
+typedef int GBQUARK; // -1 = any quark, 0 = no quark, >0 explicit quark
 
 typedef float GBT_LEN;
 struct        GBT_TREE;

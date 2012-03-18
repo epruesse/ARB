@@ -1421,55 +1421,40 @@ GB_CSTR gb_read_key_pntr(GBDATA *gbd) {
 }
 
 
-GBQUARK gb_key_2_existing_quark(GB_MAIN_TYPE *Main, const char *key) {
-    /*! @return existing quark for 'key'
-     *          -1 = key is NULL
-     *           0 = no quark exists
-     *        else = quark
-     */
+GBQUARK gb_find_existing_quark(GB_MAIN_TYPE *Main, const char *key) {
+    //! @return existing quark for 'key' (-1 if key == NULL, 0 if key is unknown)
+    return key ? GBS_read_hash(Main->key_2_index_hash, key) : -1;
+}
 
-    GBQUARK quark  = -1;
-    if (key) quark = GBS_read_hash(Main->key_2_index_hash, key);
+GBQUARK gb_find_or_create_quark(GB_MAIN_TYPE *Main, const char *key) {
+    //! @return existing or newly created quark for 'key'
+    GBQUARK quark     = gb_find_existing_quark(Main, key);
+    if (!quark) quark = gb_create_key(Main, key, true);
     return quark;
 }
 
-GBQUARK GB_key_2_quark(GBDATA *gbd, const char *key) {
-    /*! find or create quark for 'key'
-     * @return -1 if key is NULL, else existing or created quark
-     */
-
-    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
-    GBQUARK       quark = gb_key_2_existing_quark(Main, key);
-    if (!quark) quark   = gb_create_key(GB_MAIN(gbd), key, true);
-    return quark;
-}
-
-#if defined(WARN_TODO)
-#warning add gb_NULLkey_2_quark allowing NULL as key
-#endif
-
-GBQUARK gb_key_2_quark(GB_MAIN_TYPE *Main, const char *key) {
-    // similar to GB_key_2_quark, 
+GBQUARK gb_find_or_create_NULL_quark(GB_MAIN_TYPE *Main, const char *key) {
+    // similar to gb_find_or_create_quark,
     // but if 'key' is NULL, quark 0 will be returned.
-    // 
+    //
     // Use this function with care.
     //
     // Known good use:
     // - create main entry and its dummy father via gb_make_container()
-    //
-    // Other uses (maybe just to pass GB_MAIN_TYPE instead of GBDATA as GB_key_2_quark likes):
-    // - gb_make_entry
-    // - compress_sequence_tree
-    // - dictionary compression (several calls)
 
-    GBQUARK quark = 0;
-    if (key) {
-        quark             = gb_key_2_existing_quark(Main, key);
-        if (!quark) quark = gb_create_key(Main, key, true);
-        gb_assert(quark>0);
-    }
-    return quark;
+    return key ? gb_find_or_create_quark(Main, key) : 0;
 }
+
+GBQUARK GB_find_existing_quark(GBDATA *gbd, const char *key) {
+    //! @return existing quark for 'key' (-1 if key == NULL, 0 if key is unknown)
+    return gb_find_existing_quark(GB_MAIN(gbd), key);
+}
+
+GBQUARK GB_find_or_create_quark(GBDATA *gbd, const char *key) {
+    //! @return existing or newly created quark for 'key'
+    return gb_find_or_create_quark(GB_MAIN(gbd), key);
+}
+
 
 // ---------------------------------------------
 
@@ -1478,8 +1463,8 @@ GBQUARK GB_get_quark(GBDATA *gbd) {
 }
 
 bool GB_has_key(GBDATA *gbd, const char *key) {
-    GBQUARK quark = GB_key_2_quark(gbd, key);
-    return (quark == GB_get_quark(gbd));
+    GBQUARK quark = GB_find_existing_quark(gbd, key); 
+    return quark && (quark == GB_get_quark(gbd));
 }
 
 // ---------------------------------------------

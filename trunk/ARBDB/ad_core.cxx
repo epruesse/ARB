@@ -318,7 +318,7 @@ GBDATA *gb_make_entry(GBCONTAINER * father, const char *key, long index_pos, GBQ
     // creates a terminal database object
     GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(father);
 
-    if (!keyq) keyq = gb_key_2_quark(Main, key);
+    if (!keyq) keyq = gb_find_or_create_quark(Main, key);
 
     long    gbm_index = GB_QUARK_2_GBMINDEX(Main, keyq);
     GBDATA *gbd       = (GBDATA *) gbm_get_mem(sizeof(GBDATA), gbm_index);
@@ -385,7 +385,7 @@ GBCONTAINER *gb_make_container(GBCONTAINER * father, const char *key, long index
     {
         GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(father);
 
-        if (!keyq) keyq = gb_key_2_quark(Main, key);
+        if (!keyq) keyq = gb_find_or_create_NULL_quark(Main, key);
         gbm_index = GB_QUARK_2_GBMINDEX(Main, keyq);
         gbd = (GBCONTAINER *) gbm_get_mem(sizeof(GBCONTAINER), gbm_index);
         GB_GBM_INDEX(gbd) = gbm_index;
@@ -506,7 +506,7 @@ static void gb_delete_main_entry(GBCONTAINER **gb_main_ptr) {
     
     gb_assert(GB_TYPE(gb_main) == GB_DB);
 
-    GBQUARK sys_quark = gb_key_2_existing_quark(GB_MAIN((GBDATA*)gb_main), GB_SYSTEM_FOLDER);
+    GBQUARK sys_quark = gb_find_existing_quark(GB_MAIN((GBDATA*)gb_main), GB_SYSTEM_FOLDER);
 
     // Note: sys_quark may be 0 (happens when destroying client db which never established a connection).
     // In this case no system folder/quark has been created (and we do no longer try to create it)

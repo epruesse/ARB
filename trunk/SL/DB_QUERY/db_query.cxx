@@ -757,7 +757,7 @@ void query_info::initFields(DbQuery *query, int idx, query_operator aqo, AW_root
         else rek = true;
     }
     else {
-        keyquark = GB_key_2_quark(gb_main, key);
+        keyquark = GB_find_or_create_quark(gb_main, key);
     }
 
     detect_query_type();

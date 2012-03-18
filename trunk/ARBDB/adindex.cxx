@@ -133,7 +133,7 @@ GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long e
     }
     else {
         GBCONTAINER    *gbc       = (GBCONTAINER *)gbd;
-        GBQUARK         key_quark = GB_key_2_quark(gbd, key);
+        GBQUARK         key_quark = GB_find_or_create_quark(gbd, key);
         gb_index_files *ifs;
 
         GB_INDEX_FIND(gbc, ifs, key_quark);
