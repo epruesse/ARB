@@ -624,10 +624,11 @@ class query_info : virtual Noncopyable {
     GBDATA     *gb_main;
     const char *tree;                               // name of current default tree (needed for ACI)
 
-    bool                 rek;                       // is 'key' hierarchical ?
-    query_field_type match_field;               // type of search key
-    GBQUARK              keyquark;                  // valid only if match_field == AQFT_EXPLICIT
-    query_type       type;                      // type of 'query'
+    bool             rek;                           // is 'key' hierarchical ?
+    query_field_type match_field;                   // type of search key
+    GBQUARK          keyquark;                      // valid only if match_field == AQFT_EXPLICIT
+    query_type       type;                          // type of 'query'
+
     struct {                                        // used for some values of 'type'
         string     str;
         GBS_regex *regexp;
@@ -1201,11 +1202,22 @@ static void perform_query_cb(AW_window*, AW_CL cl_query, AW_CL cl_ext_query) {
 
                                     string this_hit_reason;
 
-                                    GBDATA               *gb_key      = this_qinfo->get_first_key(gb_item);
+                                    GBDATA           *gb_key      = this_qinfo->get_first_key(gb_item);
                                     query_field_type  match_field = this_qinfo->get_match_field();
-                                    bool                  this_hit    = (match_field == AQFT_ALL_FIELDS);
+                                    bool              this_hit    = (match_field == AQFT_ALL_FIELDS);
 
-                                    char *data       = gb_key ? GB_read_as_string(gb_key) : strdup(""); // assume "" for explicit fields that don't exist
+
+                                    char *data = NULL;
+                                    if (!gb_key) {
+                                        if (!GB_have_error()) {
+                                            // non-existing field -> assume "" as default value
+                                            // (needed to search for missing field using '!=*' ?)
+                                            data = strdup("");
+                                        }
+                                    }
+                                    else {
+                                        data = GB_read_as_string(gb_key);
+                                    }
                                     if (!data) error = GB_await_error();
 
                                     while (data) {
@@ -1320,6 +1332,8 @@ static void perform_query_cb(AW_window*, AW_CL cl_query, AW_CL cl_ext_query) {
                     }
                 }
             }
+
+            if (error) progress.done();
         }
     }
 
