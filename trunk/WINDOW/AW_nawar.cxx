@@ -405,79 +405,70 @@ AW_VARIABLE_TYPE AW_awar::get_type() const {
 }
 
 void AW_awar::update() {
-    bool out_of_range = false;
+    bool fix_value = false;
 
     aw_assert(is_valid()); 
     
     if (gb_var && ((pp.f.min != pp.f.max) || pp.srt)) {
-        float fl;
-        char *str;
         switch (variable_type) {
             case AW_INT: {
-                long lo;
-
-                lo = this->read_int();
+                long lo = read_int();
                 if (lo < pp.f.min -.5) {
-                    out_of_range = true;
+                    fix_value = true;
                     lo = (int)(pp.f.min + 0.5);
                 }
                 if (lo>pp.f.max + .5) {
-                    out_of_range = true;
+                    fix_value = true;
                     lo = (int)(pp.f.max + 0.5);
                 }
-                if (out_of_range) {
+                if (fix_value) {
                     if (root) root->changer_of_variable = 0;
-                    this->write_int(lo);
-                    aw_assert(is_valid()); 
-                    return;
+                    write_int(lo);
                 }
                 break;
             }
-            case AW_FLOAT:
-                fl = this->read_float();
+            case AW_FLOAT: {
+                float fl = read_float();
                 if (fl < pp.f.min) {
-                    out_of_range = true;
+                    fix_value = true;
                     fl = pp.f.min+AWAR_EPS;
                 }
                 if (fl>pp.f.max) {
-                    out_of_range = true;
+                    fix_value = true;
                     fl = pp.f.max-AWAR_EPS;
                 }
-                if (out_of_range) {
+                if (fix_value) {
                     if (root) root->changer_of_variable = 0;
-                    this->write_float(fl); 
-                    aw_assert(is_valid()); 
-                    return;
+                    write_float(fl); 
                 }
                 break;
+            }
+            case AW_STRING: {
+                char *str = read_string();
+                char *n   = GBS_string_eval(str, pp.srt, 0);
+                
+                if (!n) GBK_terminatef("SRT ERROR %s %s", pp.srt, GB_await_error());
 
-            case AW_STRING:
-                str = this->read_string();
-                char *n;
-                n = GBS_string_eval(str, pp.srt, 0);
-                if (!n) {
-                    GBK_terminatef("SRT ERROR %s %s", pp.srt, GB_await_error());
+                if (strcmp(n, str) != 0) {
+                    fix_value = true;
+                    if (root) root->changer_of_variable = 0;
+                    write_string(n);
                 }
-                else {
-                    if (strcmp(n, str)) {
-                        this->write_string(n);
-                        free(n);
-                        free(str);
-                        aw_assert(is_valid()); 
-                        return;
-                    }
-                    free(n);
-                }
+                free(n);
                 free(str);
                 break;
+            }
             default:
                 break;
         }
     }
-    this->update_targets();
-    this->run_callbacks();
 
-    aw_assert(is_valid()); 
+    if (!fix_value) { // function was already recalled by write_xxx() above
+        this->update_targets();
+        this->run_callbacks();
+    }
+
+    aw_assert(is_valid());
 }
 
 void AW_awar::run_callbacks() {
