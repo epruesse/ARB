@@ -101,7 +101,7 @@ sub get_expanded_filenames($) {
   if (not defined $found_r) {
     if ($expand_list_read==0) { read_expand_list(); }
     my @expanded = ();
-    foreach (@expand_list) { if (/$file$/) { push @expanded, $_; } }
+    foreach (@expand_list) { if (/\/$file$/) { push @expanded, $_; } }
     $expanded{$file} = \@expanded;
     $found_r = $expanded{$file};
   }
