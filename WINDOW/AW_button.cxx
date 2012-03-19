@@ -970,7 +970,11 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
                                             (_at->attach_any) ? NULL : XmNx, (int)(_at->x_for_next_button + xoff_for_label),
                                             XmNy, (int)(_at->y_for_next_button + 5) - 8,
                                             NULL);
-        if (_at->attach_any) aw_attach_widget(textField, _at);
+        if (_at->attach_any) {
+            _at->x_for_next_button += xoff_for_label;
+            aw_attach_widget(textField, _at);
+            _at->x_for_next_button -= xoff_for_label;
+        }
     }
 
     free(str);
@@ -1044,7 +1048,7 @@ void AW_window::create_text_field(const char *var_name, int columns, int rows) {
     short          height_of_last_widget = 0;
     int            width_of_text         = 0;
     int            height_of_text        = 0;
-    int            xoff_for_label      = 0;
+    int            xoff_for_label        = 0;
 
     AW_awar *vs = root->awar(var_name);
     str         = root->awar(var_name)->read_string();
@@ -2307,7 +2311,7 @@ void AW_window::create_toggle_field(const char *var_name, int orientation) {
     Widget label_for_toggle;
     Widget toggle_field;
 
-    int xoff_for_label         = 0;
+    int xoff_for_label           = 0;
     int width_of_label           = 0;
     int x_for_position_of_option = 0;
 
