@@ -119,6 +119,7 @@ AW_button.o: aw_scalar.hxx
 AW_button.o: aw_select.hxx
 AW_button.o: aw_window.hxx
 AW_button.o: aw_window_Xm.hxx
+AW_button.o: aw_xargs.hxx
 AW_button.o: aw_Xm.hxx
 AW_button.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -541,6 +542,7 @@ AW_window.o: aw_select.hxx
 AW_window.o: aw_status.hxx
 AW_window.o: aw_window.hxx
 AW_window.o: aw_window_Xm.hxx
+AW_window.o: aw_xargs.hxx
 AW_window.o: aw_xfig.hxx
 AW_window.o: aw_xkey.hxx
 AW_window.o: aw_Xm.hxx

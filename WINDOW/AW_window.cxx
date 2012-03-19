@@ -21,6 +21,7 @@
 #include "aw_status.hxx"
 #include "aw_root.hxx"
 #include "aw_question.hxx"
+#include "aw_xargs.hxx"
 
 #include <arbdbt.h>
 #include <arb_handlers.h>
@@ -1901,33 +1902,25 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
 
     int focusPolicy = root->focus_follows_mouse ? XmPOINTER : XmEXPLICIT;
 
-    if (!p_global->main_widget || !p_global->main_aww->is_shown()) {
-        shell = XtVaCreatePopupShell("editor", applicationShellWidgetClass,
-                                     father,
-                                     XmNwidth, width,
-                                     XmNheight, height,
-                                     XmNx, posx,
-                                     XmNy, posy,
-                                     XmNtitle, aww->window_name,
-                                     XmNiconName, aww->window_name,
-                                     XmNkeyboardFocusPolicy, focusPolicy,
-                                     XmNdeleteResponse, XmDO_NOTHING,
-                                     XtNiconPixmap, icon_pixmap,
-                                     NULL);
-    }
-    else {
-        shell = XtVaCreatePopupShell("transient", transientShellWidgetClass,
-                                     father,
-                                     XmNwidth, width,
-                                     XmNheight, height,
-                                     XmNx, posx,
-                                     XmNy, posy,
-                                     XmNtitle, aww->window_name,
-                                     XmNiconName, aww->window_name,
-                                     XmNkeyboardFocusPolicy, focusPolicy,
-                                     XmNdeleteResponse, XmDO_NOTHING,
-                                     XtNiconPixmap, icon_pixmap,
-                                     NULL);
+    {
+        aw_xargs args(9);
+
+        args.add(XmNwidth, width);
+        args.add(XmNheight, height);
+        args.add(XmNx, posx);
+        args.add(XmNy, posy);
+        args.add(XmNtitle, (XtArgVal)aww->window_name);
+        args.add(XmNiconName, (XtArgVal)aww->window_name);
+        args.add(XmNkeyboardFocusPolicy, focusPolicy);
+        args.add(XmNdeleteResponse, XmDO_NOTHING);
+        args.add(XtNiconPixmap, icon_pixmap);
+
+        if (!p_global->main_widget || !p_global->main_aww->is_shown()) {
+            shell = XtCreatePopupShell("editor", applicationShellWidgetClass, father, args.list(), args.size());
+        }
+        else {
+            shell = XtCreatePopupShell("transient", transientShellWidgetClass, father, args.list(), args.size());
+        }
     }
     XtAddEventHandler(shell, EnterWindowMask, FALSE, AW_root_focusCB, (XtPointer) aww->get_root());
 

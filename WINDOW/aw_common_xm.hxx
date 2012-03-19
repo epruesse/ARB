@@ -22,6 +22,7 @@
 #include <X11/Xlib.h>
 #endif
 
+
 class AW_common_Xm;
 
 // @@@ misleading name (not motif dependent)
