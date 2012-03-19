@@ -909,12 +909,12 @@ void AW_window::create_inverse_toggle(const char *var_name) {
 //      input fields
 
 void AW_window::create_input_field(const char *var_name,   int columns) {
-    Widget         textField              = 0;
-    Widget         tmp_label              = 0;
+    Widget         textField      = 0;
+    Widget         tmp_label      = 0;
     AW_cb_struct  *cbs;
     VarUpdateInfo *vui;
-    char          *str; 
-    int            x_correcting_for_label = 0;
+    char          *str;
+    int            xoff_for_label = 0;
 
     if (!columns) columns = _at->length_of_buttons;
 
@@ -946,14 +946,14 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
                                             XmNy, (int)(_at->y_for_next_button) + root->y_correction_for_input_labels -1,
                                             NULL);
         if (_at->attach_any) aw_attach_widget(tmp_label, _at);
-        x_correcting_for_label = width_of_input_label + 10;
+        xoff_for_label = width_of_input_label + 10;
     }
 
 
-    int width_of_last_widget = x_correcting_for_label + width_of_input + 2;
+    int width_of_last_widget = xoff_for_label + width_of_input + 2;
 
     if (_at->to_position_exists) {
-        width_of_input = _at->to_position_x - _at->x_for_next_button - x_correcting_for_label + 2;
+        width_of_input = _at->to_position_x - _at->x_for_next_button - xoff_for_label + 2;
         width_of_last_widget = _at->to_position_x - _at->x_for_next_button;
     }
 
@@ -967,7 +967,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
                                             XmNvalue, str,
                                             XmNfontList, p_global->fontlist,
                                             XmNbackground, _at->background_color,
-                                            (_at->attach_any) ? NULL : XmNx, (int)(_at->x_for_next_button + x_correcting_for_label),
+                                            (_at->attach_any) ? NULL : XmNx, (int)(_at->x_for_next_button + xoff_for_label),
                                             XmNy, (int)(_at->y_for_next_button + 5) - 8,
                                             NULL);
         if (_at->attach_any) aw_attach_widget(textField, _at);
@@ -1009,14 +1009,14 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     int height_of_last_widget = height;
 
     if (_at->correct_for_at_center == 1) {   // middle centered
-        XtVaSetValues(textField, XmNx, ((int)(_at->x_for_next_button + x_correcting_for_label) - (int)(width_of_last_widget/2) + 1), NULL);
+        XtVaSetValues(textField, XmNx, ((int)(_at->x_for_next_button + xoff_for_label) - (int)(width_of_last_widget/2) + 1), NULL);
         if (tmp_label) {
             XtVaSetValues(tmp_label, XmNx, ((int)(_at->x_for_next_button) - (int)(width_of_last_widget/2) + 1), NULL);
         }
         width_of_last_widget = width_of_last_widget / 2;
     }
     if (_at->correct_for_at_center == 2) {   // right centered
-        XtVaSetValues(textField, XmNx, (int)(_at->x_for_next_button + x_correcting_for_label - width_of_last_widget + 3), NULL);
+        XtVaSetValues(textField, XmNx, (int)(_at->x_for_next_button + xoff_for_label - width_of_last_widget + 3), NULL);
         if (tmp_label) {
             XtVaSetValues(tmp_label, XmNx, (int)(_at->x_for_next_button - width_of_last_widget + 3), NULL);
         }
@@ -1036,15 +1036,15 @@ void AW_window::update_input_field(Widget widget, const char *var_value) {
 void AW_window::create_text_field(const char *var_name, int columns, int rows) {
     Widget         scrolledWindowText;
     Widget         scrolledText;
-    Widget         tmp_label              = 0;
+    Widget         tmp_label             = 0;
     AW_cb_struct  *cbs;
     VarUpdateInfo *vui;
-    char          *str                    = NULL;
-    short          width_of_last_widget   = 0;
-    short          height_of_last_widget  = 0;
-    int            width_of_text          = 0;
-    int            height_of_text         = 0;
-    int            x_correcting_for_label = 0;
+    char          *str                   = NULL;
+    short          width_of_last_widget  = 0;
+    short          height_of_last_widget = 0;
+    int            width_of_text         = 0;
+    int            height_of_text        = 0;
+    int            xoff_for_label      = 0;
 
     AW_awar *vs = root->awar(var_name);
     str         = root->awar(var_name)->read_string();
@@ -1071,7 +1071,7 @@ void AW_window::create_text_field(const char *var_name, int columns, int rows) {
                                             XmNfontList, p_global->fontlist,
                                             NULL);
 
-        x_correcting_for_label = width_of_text_label + 10;
+        xoff_for_label = width_of_text_label + 10;
 
     }
 
@@ -1087,7 +1087,7 @@ void AW_window::create_text_field(const char *var_name, int columns, int rows) {
             args.assign_to_widget(scrolledWindowText);
 
             aw_attach_widget(scrolledWindowText, _at);
-            width_of_text = _at->to_position_x - _at->x_for_next_button - x_correcting_for_label - 18;
+            width_of_text = _at->to_position_x - _at->x_for_next_button - xoff_for_label - 18;
             if (_at->y_for_next_button < _at->to_position_y - 18) {
                 height_of_text = _at->to_position_y - _at->y_for_next_button - 18;
             }
@@ -1118,15 +1118,15 @@ void AW_window::create_text_field(const char *var_name, int columns, int rows) {
         XtVaGetValues(scrolledWindowText,   XmNheight, &height_of_last_widget,
                       XmNwidth, &width_of_last_widget, NULL);
 
-        width_of_last_widget += (short)x_correcting_for_label;
+        width_of_last_widget += (short)xoff_for_label;
 
         switch (_at->correct_for_at_center) {
             case 0: // left centered
-                XtVaSetValues(scrolledWindowText, XmNx, (int)(_at->x_for_next_button + x_correcting_for_label), NULL);
+                XtVaSetValues(scrolledWindowText, XmNx, (int)(_at->x_for_next_button + xoff_for_label), NULL);
                 break;
 
             case 1: // middle centered
-                XtVaSetValues(scrolledWindowText, XmNx, (int)(_at->x_for_next_button + x_correcting_for_label - (width_of_last_widget/2)), NULL);
+                XtVaSetValues(scrolledWindowText, XmNx, (int)(_at->x_for_next_button + xoff_for_label - (width_of_last_widget/2)), NULL);
                 if (_at->label_for_inputfield) {
                     XtVaSetValues(tmp_label, XmNx, (int)(_at->x_for_next_button - (width_of_last_widget/2)), NULL);
                 }
@@ -1134,7 +1134,7 @@ void AW_window::create_text_field(const char *var_name, int columns, int rows) {
                 break;
 
             case 2: // right centered
-                XtVaSetValues(scrolledWindowText, XmNx, (int)(_at->x_for_next_button + x_correcting_for_label - width_of_last_widget),     NULL);
+                XtVaSetValues(scrolledWindowText, XmNx, (int)(_at->x_for_next_button + xoff_for_label - width_of_last_widget),     NULL);
                 if (_at->label_for_inputfield) {
                     XtVaSetValues(tmp_label, XmNx, (int)(_at->x_for_next_button - width_of_last_widget), NULL);
                 }
@@ -2306,10 +2306,13 @@ void AW_window::create_toggle_field(const char *var_name, int orientation) {
 
     Widget label_for_toggle;
     Widget toggle_field;
-    int x_correcting_for_label = 0;
-    int width_of_label = 0;
+
+    int xoff_for_label         = 0;
+    int width_of_label           = 0;
     int x_for_position_of_option = 0;
+
     const char *tmp_label = "";
+
     if (_at->label_for_inputfield) {
         tmp_label = _at->label_for_inputfield;
     }
@@ -2340,18 +2343,18 @@ void AW_window::create_toggle_field(const char *var_name, int orientation) {
                                                    XmNfontList, p_global->fontlist,
                                                    NULL);
 
-        _at->saved_x_correction_for_label = x_correcting_for_label = width_of_label + 10;
+        _at->saved_xoff_for_label = xoff_for_label = width_of_label + 10;
 
         p_w->toggle_label = label_for_toggle;
     }
     else {
         p_w->toggle_label = NULL;
-        _at->saved_x_correction_for_label = 0;
+        _at->saved_xoff_for_label = 0;
     }
 
     {
         aw_xargs args(6);
-        args.add(XmNx,              x_for_position_of_option + x_correcting_for_label);
+        args.add(XmNx,              x_for_position_of_option + xoff_for_label);
         args.add(XmNy,              _at->y_for_next_button - 2);
         args.add(XmNradioBehavior,  True);
         args.add(XmNradioAlwaysOne, True);
@@ -2516,21 +2519,21 @@ void AW_window::update_toggle_field(int toggle_field_number) {
             short length;
             short height;
             XtVaGetValues(p_w->toggle_field, XmNwidth, &length, XmNheight, &height, NULL);
-            length                += (short)_at->saved_x_correction_for_label;
+            length                += (short)_at->saved_xoff_for_label;
 
             int width_of_last_widget  = length;
             int height_of_last_widget = height;
 
             if (toggle_field_list->correct_for_at_center_intern) {
                 if (toggle_field_list->correct_for_at_center_intern == 1) {   // middle centered
-                    XtVaSetValues(p_w->toggle_field, XmNx, (short)((short)_at->saved_x - (short)(length/2) + (short)_at->saved_x_correction_for_label), NULL);
+                    XtVaSetValues(p_w->toggle_field, XmNx, (short)((short)_at->saved_x - (short)(length/2) + (short)_at->saved_xoff_for_label), NULL);
                     if (p_w->toggle_label) {
                         XtVaSetValues(p_w->toggle_label, XmNx, (short)((short)_at->saved_x - (short)(length/2)), NULL);
                     }
                     width_of_last_widget = width_of_last_widget / 2;
                 }
                 if (toggle_field_list->correct_for_at_center_intern == 2) {   // right centered
-                    XtVaSetValues(p_w->toggle_field, XmNx, (short)((short)_at->saved_x - length + (short)_at->saved_x_correction_for_label), NULL);
+                    XtVaSetValues(p_w->toggle_field, XmNx, (short)((short)_at->saved_x - length + (short)_at->saved_xoff_for_label), NULL);
                     if (p_w->toggle_label) {
                         XtVaSetValues(p_w->toggle_label, XmNx, (short)((short)_at->saved_x - length),    NULL);
                     }

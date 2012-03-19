@@ -39,7 +39,7 @@ public:
 
     int biggest_height_of_buttons;
 
-    short saved_x_correction_for_label;
+    short saved_xoff_for_label;
 
     short saved_x;
     bool  correct_for_at_string;
