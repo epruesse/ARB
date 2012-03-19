@@ -37,20 +37,14 @@
 
 #define AW_MOTIF_LABEL
 
-#define RES_LABEL_CONVERT(str)                                     \
-    XmNlabelType, (str[0]=='#') ? XmPIXMAP : XmSTRING,             \
-    XtVaTypedArg, (str[0]=='#') ? XmNlabelPixmap : XmNlabelString, \
-    XmRString,                                                     \
-    aw_str_2_label(str, this),                                     \
-    strlen(aw_str_2_label(str, this))+1
-
-#define RES_LABEL_CONVERT2(str, aww)                               \
+#define RES_LABEL_CONVERT_AWW(str,aww)                             \
     XmNlabelType, (str[0]=='#') ? XmPIXMAP : XmSTRING,             \
     XtVaTypedArg, (str[0]=='#') ? XmNlabelPixmap : XmNlabelString, \
     XmRString,                                                     \
     aw_str_2_label(str, aww),                                      \
     strlen(aw_str_2_label(str, aww))+1
 
+#define RES_LABEL_CONVERT(str) RES_LABEL_CONVERT_AWW(str, this)
 
 #define AW_JUSTIFY_LABEL(widget, corr)                                                \
     switch (corr) {                                                                   \

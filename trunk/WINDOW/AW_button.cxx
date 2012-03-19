@@ -17,6 +17,7 @@
 #include "aw_msg.hxx"
 #include "aw_root.hxx"
 #include "aw_question.hxx"
+#include "aw_xargs.hxx"
 
 #include <arb_str.h>
 #include <arb_strbuf.h>
@@ -697,66 +698,44 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
         }
     }
 
-    Widget  button       = 0;
-    char   *mwidth       = let_motif_choose_size ? 0 : XmNwidth; // 0 means autodetect by motif
-    char   *mheight      = let_motif_choose_size ? 0 : XmNheight;
+    Widget button = 0;
 
-    if (_callback) {
-        if (_at->attach_any) { // attached button with callback
-            button = XtVaCreateManagedWidget("button",
-                                             xmPushButtonWidgetClass,
-                                             fatherwidget,
-                                             RES_LABEL_CONVERT(buttonlabel),
-                                             XmNx, (int)(x_button),
-                                             XmNy, (int)(y_button),
-                                             XmNshadowThickness, _at->shadow_thickness,
-                                             XmNalignment, XmALIGNMENT_CENTER,
-                                             XmNfontList, p_global->fontlist,
-                                             XmNbackground, _at->background_color,
-                                             mwidth, (int)width_of_button, // may terminate the list
-                                             mheight, (int)height_of_button, // may terminate the list
-                                             NULL);
-            aw_attach_widget(button, _at);
+    {
+        aw_xargs args(9);
+        args.add(XmNx, x_button);
+        args.add(XmNy, y_button);
+
+        args.add(XmNfontList,   (XtArgVal)p_global->fontlist);
+        args.add(XmNbackground, _at->background_color);
+
+        if (!let_motif_choose_size) {
+            args.add(XmNwidth,  width_of_button);
+            args.add(XmNheight, height_of_button);
         }
-        else { // unattached button with callback
-            button = XtVaCreateManagedWidget("label",
-                                             xmPushButtonWidgetClass,
-                                             fatherwidget,
-                                             RES_LABEL_CONVERT(buttonlabel),
-                                             XmNx, (int)(x_button),
-                                             XmNy, (int)(y_button),
-                                             XmNrecomputeSize, false,
-                                             XmNshadowThickness, _at->shadow_thickness,
-                                             XmNalignment, XmALIGNMENT_CENTER,
-                                             XmNfontList, p_global->fontlist,
-                                             XmNbackground, _at->background_color,
-                                             mwidth, (int)width_of_button, // may terminate the list
-                                             mheight, (int)height_of_button, // may terminate the list
-                                             NULL);
+
+        if (_callback) {
+            args.add(XmNshadowThickness, _at->shadow_thickness);
+            args.add(XmNalignment,       XmALIGNMENT_CENTER);
+
+            button = XtVaCreateManagedWidget("button", xmPushButtonWidgetClass, fatherwidget, RES_LABEL_CONVERT(buttonlabel), NULL);
         }
-        AW_label_in_awar_list(this, button, buttonlabel);
-        root->make_sensitive(button, _at->widget_mask);
-    }
-    else { // button w/o callback (flat, not clickable)
-        long alignment = (org_correct_for_at_center == 1) ? XmALIGNMENT_CENTER : XmALIGNMENT_BEGINNING;
+        else { // button w/o callback (flat, not clickable)
+            button = XtVaCreateManagedWidget("label", xmLabelWidgetClass, parent_widget, RES_LABEL_CONVERT(buttonlabel), NULL);
+            args.add(XmNalignment, (org_correct_for_at_center == 1) ? XmALIGNMENT_CENTER : XmALIGNMENT_BEGINNING);
+        }
 
-        button = XtVaCreateManagedWidget("label",
-                                         xmLabelWidgetClass,
-                                         parent_widget,
-                                         XmNrecomputeSize, false,
-                                         XmNx, (int)(x_button),
-                                         XmNy, (int)(y_button),
-                                         XmNalignment, alignment, // alignment of text inside button
-                                         // XmNalignment, XmALIGNMENT_BEGINNING, // alignment of text inside button
-                                         RES_LABEL_CONVERT(buttonlabel),
-                                         XmNfontList, p_global->fontlist,
-                                         XmNbackground, _at->background_color,
-                                         mwidth, (int)width_of_button, // may terminate the list
-                                         mheight, (int)height_of_button, // may terminate the list
-                                         NULL);
-
+        if (!_at->attach_any || !_callback) args.add(XmNrecomputeSize, false);
+        args.assign_to_widget(button);
         if (_at->attach_any) aw_attach_widget(button, _at);
-        AW_JUSTIFY_LABEL(button, _at->correct_for_at_center);
+
+        if (_callback) {
+            root->make_sensitive(button, _at->widget_mask);
+        }
+        else {
+            aw_assert(_at->correct_for_at_center == 0);
+            AW_JUSTIFY_LABEL(button, _at->correct_for_at_center); // @@@ strange, again sets XmNalignment (already done above). maybe some relict. does nothing if (_at->correct_for_at_center == 0)
+        }
+
         AW_label_in_awar_list(this, button, buttonlabel);
     }
 
@@ -1096,34 +1075,29 @@ void AW_window::create_text_field(const char *var_name, int columns, int rows) {
 
     }
 
+    {
+        aw_xargs args(6);
+        args.add(XmNscrollingPolicy,        XmAPPLICATION_DEFINED);
+        args.add(XmNvisualPolicy,           XmVARIABLE);
+        args.add(XmNscrollBarDisplayPolicy, XmSTATIC);
+        args.add(XmNfontList,               (XtArgVal)p_global->fontlist);
 
-    if (_at->to_position_exists) {
-        scrolledWindowText = XtVaCreateManagedWidget("scrolledWindowList1",
-                                                     xmScrolledWindowWidgetClass,
-                                                     INFO_FORM,
-                                                     XmNscrollingPolicy, XmAPPLICATION_DEFINED,
-                                                     XmNvisualPolicy, XmVARIABLE,
-                                                     XmNscrollBarDisplayPolicy, XmSTATIC,
-                                                     XmNfontList,          p_global->fontlist,
-                                                     NULL);
-        aw_attach_widget(scrolledWindowText, _at);
+        if (_at->to_position_exists) {
+            scrolledWindowText = XtVaCreateManagedWidget("scrolledWindowList1", xmScrolledWindowWidgetClass, INFO_FORM, NULL);
+            args.assign_to_widget(scrolledWindowText);
 
-        width_of_text = _at->to_position_x - _at->x_for_next_button - x_correcting_for_label - 18;
-        if (_at->y_for_next_button < _at->to_position_y - 18) {
-            height_of_text = _at->to_position_y - _at->y_for_next_button - 18;
+            aw_attach_widget(scrolledWindowText, _at);
+            width_of_text = _at->to_position_x - _at->x_for_next_button - x_correcting_for_label - 18;
+            if (_at->y_for_next_button < _at->to_position_y - 18) {
+                height_of_text = _at->to_position_y - _at->y_for_next_button - 18;
+            }
         }
-    }
-    else {
-        scrolledWindowText = XtVaCreateManagedWidget("scrolledWindowText",
-                                                     xmScrolledWindowWidgetClass,
-                                                     INFO_WIDGET,
-                                                     XmNscrollingPolicy, XmAPPLICATION_DEFINED,
-                                                     XmNvisualPolicy, XmVARIABLE,
-                                                     XmNscrollBarDisplayPolicy, XmSTATIC,
-                                                     XmNx, (int)10,
-                                                     XmNy, (int)_at->y_for_next_button,
-                                                     XmNfontList, p_global->fontlist,
-                                                     NULL);
+        else {
+            scrolledWindowText = XtVaCreateManagedWidget("scrolledWindowText", xmScrolledWindowWidgetClass, INFO_WIDGET, NULL);
+            args.add(XmNx, 10);
+            args.add(XmNy, _at->y_for_next_button);
+            args.assign_to_widget(scrolledWindowText);
+        }
     }
 
     TuneBackground(scrolledWindowText, TUNE_INPUT);
@@ -1237,40 +1211,37 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, const 
     }
 
 
-    width_of_list = this->calculate_string_width(columns) + 9;
+    width_of_list  = this->calculate_string_width(columns) + 9;
     height_of_list = this->calculate_string_height(rows, 4*rows) + 9;
 
+    {
+        aw_xargs args(7);
+        args.add(XmNvisualPolicy,           XmVARIABLE);
+        args.add(XmNscrollBarDisplayPolicy, XmSTATIC);
+        args.add(XmNshadowThickness,        0);
+        args.add(XmNfontList,               (XtArgVal)p_global->fontlist);
 
-    if (_at->to_position_exists) {
-        width_of_list = _at->to_position_x - _at->x_for_next_button - width_of_label - 18;
-        if (_at->y_for_next_button  < _at->to_position_y - 18) {
-            height_of_list = _at->to_position_y - _at->y_for_next_button - 18;
+        if (_at->to_position_exists) {
+            width_of_list = _at->to_position_x - _at->x_for_next_button - width_of_label - 18;
+            if (_at->y_for_next_button  < _at->to_position_y - 18) {
+                height_of_list = _at->to_position_y - _at->y_for_next_button - 18;
+            }
+            scrolledWindowList = XtVaCreateManagedWidget("scrolledWindowList1", xmScrolledWindowWidgetClass, INFO_FORM, NULL);
+
+            args.assign_to_widget(scrolledWindowList);
+            aw_attach_widget(scrolledWindowList, _at);
+
+            width_of_last_widget = _at->to_position_x - _at->x_for_next_button;
+            height_of_last_widget = _at->to_position_y - _at->y_for_next_button;
         }
-        scrolledWindowList = XtVaCreateManagedWidget("scrolledWindowList1",
-                                                     xmScrolledWindowWidgetClass,
-                                                     INFO_FORM,
-                                                     XmNvisualPolicy, XmVARIABLE,
-                                                     XmNscrollBarDisplayPolicy, XmSTATIC,
-                                                     XmNshadowThickness, 0,
-                                                     XmNfontList,          p_global->fontlist,
-                                                     NULL);
-        aw_attach_widget(scrolledWindowList, _at);
+        else {
+            scrolledWindowList = XtVaCreateManagedWidget("scrolledWindowList1", xmScrolledWindowWidgetClass, INFO_WIDGET, NULL);
 
-        width_of_last_widget = _at->to_position_x - _at->x_for_next_button;
-        height_of_last_widget = _at->to_position_y - _at->y_for_next_button;
-    }
-    else {
-        scrolledWindowList = XtVaCreateManagedWidget("scrolledWindowList1",
-                                                     xmScrolledWindowWidgetClass,
-                                                     INFO_WIDGET,
-                                                     XmNscrollingPolicy, XmAPPLICATION_DEFINED,
-                                                     XmNvisualPolicy, XmVARIABLE,
-                                                     XmNscrollBarDisplayPolicy, XmSTATIC,
-                                                     XmNshadowThickness, 0,
-                                                     XmNx, (int)10,
-                                                     XmNy, (int)(_at->y_for_next_button),
-                                                     XmNfontList, p_global->fontlist,
-                                                     NULL);
+            args.add(XmNscrollingPolicy, XmAPPLICATION_DEFINED);
+            args.add(XmNx, 10);
+            args.add(XmNy, _at->y_for_next_button);
+            args.assign_to_widget(scrolledWindowList);
+        }
     }
 
     {
@@ -2067,58 +2038,47 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *var_name, AW_la
                                   XmNrowColumnType, XmMENU_PULLDOWN,
                                   XmNfontList, p_global->fontlist,
                                   NULL);
+    {
+        aw_xargs args(3);
+        args.add(XmNfontList, (XtArgVal)p_global->fontlist);
+        args.add(XmNx, x_for_position_of_menu);
+        args.add(XmNy, _at->y_for_next_button - 5);
 
-    if (tmp_label) {
-        char *help_label;
-        int   width_help_label, height_help_label;
-        calculate_label_size(this, &width_help_label, &height_help_label, false, tmp_label);
-        // @@@ FIXME: use height_help_label for Y-alignment
+        if (tmp_label) {
+            char *help_label;
+            int   width_help_label, height_help_label;
+            calculate_label_size(this, &width_help_label, &height_help_label, false, tmp_label);
+            // @@@ FIXME: use height_help_label for Y-alignment
 
 #if defined(DUMP_BUTTON_CREATION)
-        printf("width_help_label=%i label='%s'\n", width_help_label, tmp_label);
+            printf("width_help_label=%i label='%s'\n", width_help_label, tmp_label);
 #endif // DUMP_BUTTON_CREATION
 
-        help_label = this->align_string(tmp_label, width_help_label);
-        if (mnemonic && mnemonic[0] && strchr(tmp_label, mnemonic[0])) {
+            help_label = this->align_string(tmp_label, width_help_label);
             optionMenu1 = XtVaCreateManagedWidget("optionMenu1",
                                                   xmRowColumnWidgetClass,
                                                   INFO_WIDGET,
                                                   XmNrowColumnType, XmMENU_OPTION,
                                                   XmNsubMenuId, optionMenu,
-                                                  XmNfontList, p_global->fontlist,
-                                                  XmNx, (int)x_for_position_of_menu,
-                                                  XmNy, (int)(_at->y_for_next_button - 5),
                                                   RES_CONVERT(XmNlabelString, help_label),
-                                                  RES_CONVERT(XmNmnemonic, mnemonic),
                                                   NULL);
+
+            if (mnemonic && mnemonic[0] && strchr(tmp_label, mnemonic[0])) {
+                XtVaSetValues(optionMenu1, RES_CONVERT(XmNmnemonic, mnemonic), NULL);
+            }
+            args.assign_to_widget(optionMenu1);
+            free(help_label);
         }
         else {
             optionMenu1 = XtVaCreateManagedWidget("optionMenu1",
                                                   xmRowColumnWidgetClass,
-                                                  INFO_WIDGET,
+                                                  (_at->attach_any) ? INFO_FORM : INFO_WIDGET,
                                                   XmNrowColumnType, XmMENU_OPTION,
                                                   XmNsubMenuId, optionMenu,
-                                                  XmNfontList, p_global->fontlist,
-                                                  XmNx, (int)x_for_position_of_menu,
-                                                  XmNy, (int)(_at->y_for_next_button - 5),
-                                                  RES_CONVERT(XmNlabelString, help_label),
+                                                  RES_CONVERT(XmNlabelString, ""),
                                                   NULL);
-        }
-        free(help_label);
-    }
-    else {
-        optionMenu1 = XtVaCreateManagedWidget("optionMenu1",
-                                              xmRowColumnWidgetClass,
-                                              (_at->attach_any) ? INFO_FORM : INFO_WIDGET,
-                                              XmNrowColumnType, XmMENU_OPTION,
-                                              XmNsubMenuId, optionMenu,
-                                              XmNfontList, p_global->fontlist,
-                                              XmNx, (int)x_for_position_of_menu,
-                                              XmNy, (int)(_at->y_for_next_button - 5),
-                                              RES_CONVERT(XmNlabelString, ""),
-                                              NULL);
-        if (_at->attach_any) {
-            aw_attach_widget(optionMenu1, _at);
+            args.assign_to_widget(optionMenu1);
+            if (_at->attach_any) aw_attach_widget(optionMenu1, _at);
         }
     }
 
@@ -2389,28 +2349,18 @@ void AW_window::create_toggle_field(const char *var_name, int orientation) {
         _at->saved_x_correction_for_label = 0;
     }
 
-    if (orientation) {
-        toggle_field = XtVaCreateManagedWidget("rowColumn for toggle field",
-                                               xmRowColumnWidgetClass,
-                                               (_at->attach_any) ? INFO_FORM : INFO_WIDGET,
-                                               XmNorientation, XmHORIZONTAL,
-                                               XmNx, (int)(x_for_position_of_option + x_correcting_for_label),
-                                               XmNy, (int)(_at->y_for_next_button - 2),
-                                               XmNradioBehavior, True,
-                                               XmNradioAlwaysOne, True,
-                                               XmNfontList, p_global->fontlist,
-                                               NULL);
-    }
-    else {
-        toggle_field = XtVaCreateManagedWidget("rowColumn for toggle field",
-                                               xmRowColumnWidgetClass,
-                                               (_at->attach_any) ? INFO_FORM : INFO_WIDGET,
-                                               XmNx, (int)(x_for_position_of_option + x_correcting_for_label),
-                                               XmNy, (int)(_at->y_for_next_button - 2),
-                                               XmNradioBehavior, True,
-                                               XmNradioAlwaysOne, True,
-                                               XmNfontList, p_global->fontlist,
-                                               NULL);
+    {
+        aw_xargs args(6);
+        args.add(XmNx,              x_for_position_of_option + x_correcting_for_label);
+        args.add(XmNy,              _at->y_for_next_button - 2);
+        args.add(XmNradioBehavior,  True);
+        args.add(XmNradioAlwaysOne, True);
+        args.add(XmNfontList,       (XtArgVal)p_global->fontlist);
+        args.add(XmNorientation,    orientation ? XmHORIZONTAL : XmVERTICAL);
+        
+        toggle_field = XtVaCreateManagedWidget("rowColumn for toggle field", xmRowColumnWidgetClass, (_at->attach_any) ? INFO_FORM : INFO_WIDGET, NULL);
+
+        args.assign_to_widget(toggle_field);
     }
     if (_at->attach_any) {
         aw_attach_widget(toggle_field, _at, 300);
@@ -2448,7 +2398,7 @@ static Widget _aw_create_toggle_entry(AW_window *aww, Widget toggle_field,
     toggleButton = XtVaCreateManagedWidget("toggleButton",
                                            xmToggleButtonWidgetClass,
                                            toggle_field,
-                                           RES_LABEL_CONVERT2(label, aww),
+                                           RES_LABEL_CONVERT_AWW(label, aww),
                                            RES_CONVERT(XmNmnemonic, mnemonic),
                                            XmNindicatorSize, 16,
                                            XmNfontList, p_global->fontlist,
