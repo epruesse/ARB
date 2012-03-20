@@ -87,7 +87,7 @@ void PART::print() const {
         }
     }
 
-    printf(":%.2f,%d%%: ", len, percent);
+    printf(":%.2f,%d%%:  dist2center=%i\n", len, percent, distance_to_tree_center());
 }
 #endif
 
@@ -96,7 +96,7 @@ PART *PartitionSize::create_root() const {
      * build the root of a specific ntree
      */
 
-    PART *p = new PART(this);
+    PART *p = new PART(this, 0);
     p->invert();
     arb_assert(p->is_valid());
     return p;
@@ -118,11 +118,12 @@ bool PART::is_son_of(const PART *father) const {
         PELEM s = p[i];
         PELEM f = father->p[i];
 
-        if ((s&f) != s) return false; // father has not all son bits set 
+        if ((s&f) != s) return false; // father has not all son bits set
         if (s != f) is_equal = false;
     }
 
-    arb_assert(!is_equal); // if is_equal, father and son are identical (which is wrong)
+    arb_assert(!is_equal); // if is_equal, father and son are identical (which is wrong);
+                           // e.g. happens when PartRegistry stores multiple instances of the same part
     return true;
 }
 
@@ -165,7 +166,7 @@ void PART::add_from(const PART *source) {
     arb_assert(source->is_valid());
     arb_assert(is_valid());
 
-    bool distinct = distinct_from(source);
+    bool distinct = disjunct_from(source);
 
     int longs = get_longs();
     for (int i=0; i<longs; i++) {
@@ -227,14 +228,18 @@ int PART::count_members() const {
     return leafs;
 }
 
-void PART::standardize() {
+bool PART::is_standardized() const { // @@@ inline
+    return p[0] & 1;
+}
+
+void PART::standardize() { // @@@ inline or elim
     /*! standardize the partition
      *
      * two parts are equal if one is just the inverted version of the other.
      * so the standard is defined that the version is the representant, whose first bit is equal 1
      */
     arb_assert(is_valid());
-    if ((p[0] & 1) == 0) invert();
+    if (!is_standardized()) invert();
     arb_assert(is_valid());
 }
 
@@ -263,6 +268,62 @@ int PART::index() const {
     }
     return pos-1;
 }
+
+int PART::insertionOrder_cmp(const PART *other) const {
+    // defines order in which edges will be inserted into the consensus tree
+
+    if (this == other) return 0;
+
+    int cmp = is_leaf_edge() - other->is_leaf_edge();
+
+    if (!cmp) {
+        cmp = other->percent - percent;
+
+        if (!cmp) {
+            int centerdist1 = distance_to_tree_center();
+            int centerdist2 = other->distance_to_tree_center();
+
+            cmp = centerdist1-centerdist2; // insert central edges first
+
+            if (!cmp) {
+                double fcmp = get_len() - other->get_len(); // insert bigger len first
+                cmp = fcmp<0 ? -1 : (fcmp>0 ? 1 : 0);
+
+                if (!cmp) {
+                    cmp = id - other->id; // strict by definition
+                    arb_assert(cmp);
+                }
+            }
+        }
+    }
+
+    return cmp;
+}
+inline int PELEM_cmp(const PELEM& p1, const PELEM& p2) {
+    return p1<p2 ? -1 : (p1>p2 ? 1 : 0);
+}
+
+int PART::topological_cmp(const PART *other) const {
+    // define a strict order on topologies defined by edges
+    
+    if (this == other) return 0;
+
+    arb_assert(is_standardized());
+    arb_assert(other->is_standardized());
+
+    int cmp = members - other->members;
+    if (!cmp) {
+        int longs = get_longs();
+        for (int i = 0; !cmp && i<longs; ++i) {
+            cmp = PELEM_cmp(p[i], other->p[i]);
+        }
+    }
+
+    arb_assert(contradicted(cmp, equals(other)));
+
+    return cmp;
+}
+
 
 // --------------------------------------------------------------------------------
 

@@ -14,28 +14,33 @@
 #ifndef CT_PART_HXX
 #include "CT_part.hxx"
 #endif
+#ifndef _GLIBCXX_SET
+#include <set>
+#endif
+#ifndef _GLIBCXX_VECTOR
+#include <vector>
+#endif
 
-struct HNODE {
-    PART  *part;
-    HNODE *next;
-};
+typedef PART *PARTptr;
+typedef std::set<PARTptr, bool (*)(const PART *, const PART *)> PartSet;
+typedef std::vector<PARTptr> PartVector;
+
+inline bool topological_less(const PART *p1, const PART *p2) { return p1->topological_cmp(p2)<0; }
 
 class PartRegistry : virtual Noncopyable {
-    int     hash_size;
-    int     max_part_percent;
-    HNODE **Hashlist;
-    HNODE  *Sortedlist;
-
-    inline void track_max_part_percent(int pc) { if (pc>max_part_percent) max_part_percent = pc; }
+    PartSet    parts;
+    PartVector sorted;
+    size_t     retrieved;
 
 public:
-    PartRegistry();
-    ~PartRegistry();
+    PartRegistry()
+        : parts(topological_less), 
+          retrieved(0)
+    {}
 
-    PART *get_part(int source_trees);
-    void  insert(PART*& part, int weight);
-
-    void  build_sorted_list();
+    void  insert(PART*& part);
+    void  build_sorted_list(int overall_weight);
+    PART *get_part();
 };
 
 #else

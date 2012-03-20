@@ -8,7 +8,6 @@
 //                                                               //
 // ============================================================= //
 
-#include "CT_dtree.hxx"
 #include "CT_hash.hxx"
 #include "CT_ctree.hxx"
 
@@ -23,7 +22,7 @@ PART *ConsensusTree::dtree(const GBT_TREE *tree, int weight, GBT_LEN len) {
     // caution: I use the fact that each inner node must have two sons.
     PART *ptree = 0;
     if (tree->is_leaf) {
-        ptree = new PART(size);
+        ptree = new PART(size, weight);
         ptree->setbit(get_species_index(tree->name));
     }
     else {
@@ -31,13 +30,13 @@ PART *ConsensusTree::dtree(const GBT_TREE *tree, int weight, GBT_LEN len) {
         PART *p1 = dtree(tree->leftson, weight, tree->leftlen);
         PART *p2 = dtree(tree->rightson, weight, tree->rightlen);
 
-        arb_assert(p1->distinct_from(p2));
+        arb_assert(p1->disjunct_from(p2));
 
         ptree = p1->clone();
         ptree->add_from(p2);
 
-        registry->insert(p1, weight);
-        registry->insert(p2, weight);
+        registry->insert(p1);
+        registry->insert(p2);
     }
     ptree->set_len(len);
     return ptree;
@@ -52,11 +51,11 @@ void ConsensusTree::remember_subtrees(const GBT_TREE *tree, int weight) {
     PART *p1 = dtree(tree->leftson, weight, 0.0);
     PART *p2 = dtree(tree->rightson, weight, 0.0);
 
-    arb_assert(p1->distinct_from(p2));
+    arb_assert(p1->disjunct_from(p2));
 
     delete p1;
 
     p2->set_len(tree->leftlen + tree->rightlen);
-    registry->insert(p2, weight);
+    registry->insert(p2);
 }
 

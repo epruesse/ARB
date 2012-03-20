@@ -120,9 +120,7 @@ static int ins_ntree(NT_NODE *tree, PART*& newpart) {
     // Tree is leaf
     if (!tree->son_list) {
 #if defined(DUMP_PART_INSERTION) 
-        fputs("ins_ntree part=", stdout);
-        newpart->print();
-        printf(" dist2center=%i\n", newpart->distance_to_tree_center());
+        fputs("ins_ntree part=", stdout); newpart->print();
 #endif
 
         tree->son_list       = (NSONS *) getmem(sizeof(NSONS));
@@ -153,9 +151,7 @@ static int ins_ntree(NT_NODE *tree, PART*& newpart) {
     }
 
 #if defined(DUMP_PART_INSERTION)
-        fputs("ins_ntree part=", stdout);
-        newpart->print();
-        printf(" dist2center=%i\n", newpart->distance_to_tree_center());
+        fputs("ins_ntree part=", stdout); newpart->print();
 #endif
 
     // Okay, insert part here ...
@@ -253,7 +249,6 @@ void print_ntree(NT_NODE *tree, int indent) {
 
     do_indent(indent);
     tree->part->print();
-    fputc('\n', stdout);
 
     // and sons
     for (nsonp=tree->son_list; nsonp; nsonp = nsonp->next) {

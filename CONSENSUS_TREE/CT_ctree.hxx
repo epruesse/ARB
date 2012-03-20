@@ -27,7 +27,7 @@ class PartitionSize;
 class PartRegistry;
 
 class ConsensusTree : virtual Noncopyable {
-    int      Tree_count; // not really tree count, but sum of weights of added trees
+    int      overall_weight; 
     GB_HASH *Name_hash;
 
     PartitionSize *size;
