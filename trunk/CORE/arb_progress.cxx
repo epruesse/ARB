@@ -80,7 +80,7 @@ class concrete_counter: public arb_progress_counter { // derived from a Noncopya
         progress->update_gauge(my_counter/maxcount);
         if (auto_subtitle_prefix) {
             int count = int(my_counter+1);
-            if (count>last_auto_counter) {
+            if (count>last_auto_counter && count <= maxcount) {
                 const char *autosub = GBS_global_string("%s #%i/%i", auto_subtitle_prefix, count, maxcount);
                 progress->set_text(LEVEL_SUBTITLE, autosub);
                 last_auto_counter   = count;
