@@ -28,7 +28,7 @@ PART *PartRegistry::get_part() {
     return p;
 }
 
-void  PartRegistry::insert(PART*& part) {
+void PartRegistry::put_part(PART*& part) {
     //! insert part in PartRegistry (destroys/reassigns part)
 
     arb_assert(sorted.empty()); // too late, already build_sorted_list
@@ -50,7 +50,7 @@ inline bool insertionOrder_less(const PART *p1, const PART *p2) {
     return p1->insertionOrder_cmp(p2)<0;
 }
 
-void  PartRegistry::build_sorted_list(int overall_weight) {
+void PartRegistry::build_sorted_list(double overall_weight) {
     //! sort the parts into insertion order.
 
     arb_assert(sorted.empty());

@@ -38,8 +38,8 @@ public:
           retrieved(0)
     {}
 
-    void  insert(PART*& part);
-    void  build_sorted_list(int overall_weight);
+    void  put_part(PART*& part);
+    void  build_sorted_list(double overall_weight);
     PART *get_part();
 };
 

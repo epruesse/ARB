@@ -25,8 +25,9 @@
 
 using namespace std;
 
-static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR& error, size_t& different_species) {
+static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR& error, size_t& different_species, double weight) {
     // read all input trees, generate and return consensus tree
+    // (Note: the 'weight' used here doesn't matter atm, since all trees are added with the same weight)
 
     arb_assert(!error);
     error = NULL;
@@ -81,7 +82,7 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
 
             ConsensusTree ctree(species_names);
             for (size_t i = 0; i<input_trees.size(); ++i) {
-                ctree.insert(tree[i], 1);
+                ctree.insert(tree[i], weight);
             }
 
 #if defined(DEBUG)
@@ -192,7 +193,7 @@ int ARB_main(int argc, const char *argv[]) {
 
         if (!error) {
             size_t species_count;
-            GBT_TREE *cons_tree = build_consensus_tree(input_tree_names, error, species_count);
+            GBT_TREE *cons_tree = build_consensus_tree(input_tree_names, error, species_count, 1.0);
 
             if (!cons_tree) {
                 error = GBS_global_string("Failed to build consense tree (Reason: %s)", error);
@@ -260,35 +261,35 @@ void TEST_consensus_tree_1() {
     StrArray input_tree_names;
     add_inputnames(input_tree_names, 1, 1, 5);
 
-    {
-        size_t species_count;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count);
-        TEST_ASSERT(!error);
-        TEST_ASSERT(tree);
+    size_t    species_count;
+    GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 0.7);
 
-        TEST_ASSERT_EQUAL(species_count, 22);
-        TEST_ASSERT_EQUAL(GBT_count_leafs(tree), species_count);
-        TEST_ASSERT_SIMILAR(calc_intree_distance(tree), 0.925779, LENSUM_EPSILON);
+    TEST_ASSERT(!error);
+    TEST_ASSERT(tree);
 
-        char *saveas   = savename(1);
-        char *expected = expected_name(1);
+    TEST_ASSERT_EQUAL(species_count, 22);
+    TEST_ASSERT_EQUAL(GBT_count_leafs(tree), species_count);
+
+    TEST_ASSERT_SIMILAR(calc_intree_distance(tree), 0.925779, LENSUM_EPSILON);
         
-        TEST_ASSERT_NO_ERROR(save_tree_as_newick(tree, saveas));
+    char *saveas   = savename(1);
+    char *expected = expected_name(1);
 
-        // ../UNIT_TESTER/run/consense/1/consense.tree
+    TEST_ASSERT_NO_ERROR(save_tree_as_newick(tree, saveas));
+
+    // ../UNIT_TESTER/run/consense/1/consense.tree
 
 #if defined(TEST_AUTO_UPDATE)
-        system(GBS_global_string("cp %s %s", saveas, expected));
+    system(GBS_global_string("cp %s %s", saveas, expected));
 #else // !defined(TEST_AUTO_UPDATE)
-        TEST_ASSERT_TEXTFILE_DIFFLINES(saveas, expected, 1);
+    TEST_ASSERT_TEXTFILE_DIFFLINES(saveas, expected, 1);
 #endif
-        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
+    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
         
-        free(expected);
-        free(saveas);
+    free(expected);
+    free(saveas);
 
-        GBT_delete_tree(tree);
-    }
+    GBT_delete_tree(tree);
 }
 void TEST_consensus_tree_1_single() {
     GB_ERROR error = NULL;
@@ -297,7 +298,7 @@ void TEST_consensus_tree_1_single() {
 
     {
         size_t species_count;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count);
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 0.01);
         TEST_ASSERT(!error);
         TEST_ASSERT(tree);
 
@@ -332,7 +333,7 @@ void TEST_consensus_tree_2() {
 
     {
         size_t species_count;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count);
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 2.5);
         TEST_ASSERT(!error);
         TEST_ASSERT(tree);
 
@@ -368,7 +369,7 @@ void TEST_consensus_tree_3() {
 
     {
         size_t species_count;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count);
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
         TEST_ASSERT(!error);
         TEST_ASSERT(tree);
 
