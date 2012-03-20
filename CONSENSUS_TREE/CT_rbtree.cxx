@@ -18,7 +18,7 @@
 struct RB_INFO {
     GBT_LEN   len;
     GBT_TREE *node;
-    int       percent;
+    int       percent; // branch probability [0..100]
 };
 
 
@@ -27,7 +27,7 @@ struct RB_INFO {
 static char *rb_remark(const char *info, int perc, char *txt) {
     // build a remark with the percentage representation of the partition
     char *txt2 = (char *) getmem(RMSTRLEN);
-    sprintf(txt2, "%s%i%%", info, perc/100);
+    sprintf(txt2, "%s%i%%", info, perc);
     if (txt) {
         strcat(txt, txt2);
         free(txt2);
@@ -96,7 +96,7 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, GBT_TREE *father) {
 
     RB_INFO *info = (RB_INFO *) getmem(sizeof(RB_INFO));
     info->node    = gbtnode;                             // return-information
-    info->percent = tree->part->get_percent();
+    info->percent = int(tree->part->get_percent()/100.0+.5); 
     info->len     = tree->part->get_len();
 
     NSONS *nsonp = tree->son_list;
@@ -108,7 +108,7 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, GBT_TREE *father) {
     }
     else {
         gbtnode->is_leaf = false;
-        if (info->percent < 10000) {
+        if (info->percent < 100) {
             gbtnode->remark_branch = rb_remark("", info->percent, gbtnode->remark_branch);
         }
 
