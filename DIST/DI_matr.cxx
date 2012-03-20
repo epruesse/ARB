@@ -906,9 +906,8 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, GB_ERROR di_calculate_matrix(AW_window *aww
         if (aborted) {
             di_assert(error);
             if (aborted_flag) *aborted_flag = true;
-            GLOBAL_MATRIX.replaceBy(phm);
         }
-        else if (error) {
+        if (error) {
             delete phm;
             GLOBAL_MATRIX.forget();
         }
@@ -1177,18 +1176,16 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
                     ctree = new ConsensusTree(*all_names);
                 }
             }
-            loop_count++;
-            progress->inc();
         }
     }
 
     do {
         if (error) break;
 
-        if (bootstrap_flag) GLOBAL_MATRIX.forget();
-
         bool aborted = false;
-        error        = di_calculate_matrix(aww, weighted_filter, bootstrap_flag, !bootstrap_flag, &aborted);
+
+        if (bootstrap_flag && loop_count) GLOBAL_MATRIX.forget(); // in first loop we already have a valid matrix
+        error = di_calculate_matrix(aww, weighted_filter, bootstrap_flag, !bootstrap_flag, &aborted);
         if (error && aborted) {
             error = 0;          // clear error (otherwise no tree will be read below)
             break;              // end of bootstrap
@@ -1211,7 +1208,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
             GBT_delete_tree(tree); tree = 0;
             loop_count++;
             progress->inc();
-            if (!bootstrap_count) {
+            if (!bootstrap_count) { // when waiting for kill
                 int        t     = time(0);
                 static int tlast = 0;
 
