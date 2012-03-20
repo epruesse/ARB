@@ -27,7 +27,7 @@ class PartitionSize;
 class PartRegistry;
 
 class ConsensusTree : virtual Noncopyable {
-    int      overall_weight; 
+    double   overall_weight;
     GB_HASH *Name_hash;
 
     PartitionSize *size;
@@ -35,8 +35,8 @@ class ConsensusTree : virtual Noncopyable {
 
     const CharPtrArray& names;
 
-    PART *dtree(const GBT_TREE *tree, int weight, GBT_LEN len);
-    void remember_subtrees(const GBT_TREE *tree, int weight);
+    PART *dtree(const GBT_TREE *tree, double weight, GBT_LEN len);
+    void remember_subtrees(const GBT_TREE *tree, double weight);
 
     int get_species_index(const char *name) const {
         int idx = GBS_read_hash(Name_hash, name);
@@ -56,7 +56,7 @@ public:
     ConsensusTree(const CharPtrArray& names_);
     ~ConsensusTree();
 
-    void insert(GBT_TREE *tree, int weight);
+    void insert(GBT_TREE *tree, double weight);
 
     GBT_TREE *get_consensus_tree();
 

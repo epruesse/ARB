@@ -87,7 +87,7 @@ void PART::print() const {
         }
     }
 
-    printf(":%.2f,%d%%:  dist2center=%i\n", len, percent, distance_to_tree_center());
+    printf("  len=%.5f  prob=%5.1f%%  leaf=%i  dist2center=%i\n", len, weight*100.0, is_leaf_edge(), distance_to_tree_center());
 }
 #endif
 
@@ -96,7 +96,7 @@ PART *PartitionSize::create_root() const {
      * build the root of a specific ntree
      */
 
-    PART *p = new PART(this, 0);
+    PART *p = new PART(this, 1.0);
     p->invert();
     arb_assert(p->is_valid());
     return p;
@@ -277,8 +277,7 @@ int PART::insertionOrder_cmp(const PART *other) const {
     int cmp = is_leaf_edge() - other->is_leaf_edge();
 
     if (!cmp) {
-        cmp = other->percent - percent;
-
+        cmp = double_cmp(weight, other->weight); // insert bigger weight first
         if (!cmp) {
             int centerdist1 = distance_to_tree_center();
             int centerdist2 = other->distance_to_tree_center();
@@ -286,9 +285,7 @@ int PART::insertionOrder_cmp(const PART *other) const {
             cmp = centerdist1-centerdist2; // insert central edges first
 
             if (!cmp) {
-                double fcmp = get_len() - other->get_len(); // insert bigger len first
-                cmp = fcmp<0 ? -1 : (fcmp>0 ? 1 : 0);
-
+                cmp = double_cmp(other->get_len(), get_len()); // insert bigger len first
                 if (!cmp) {
                     cmp = id - other->id; // strict by definition
                     arb_assert(cmp);

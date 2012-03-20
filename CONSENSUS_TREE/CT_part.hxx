@@ -54,8 +54,8 @@ class PART {
     const class PartitionSize *info;
 
     PELEM   *p;
-    GBT_LEN  len;               // Length between two nodes
-    int      percent;           // Count how often this partition appears
+    GBT_LEN  len;               // length between two nodes (weighted by weight)
+    double   weight;            // sum of weights
     size_t   id;
 
     int members;
@@ -64,7 +64,7 @@ class PART {
         : info(other.info),
           p(info->alloc_mem()),
           len(other.len),
-          percent(other.percent),
+          weight(other.weight),
           id(info->get_unique_id()), 
           members(other.members)
     {
@@ -72,21 +72,30 @@ class PART {
         for (int i = 0; i<longs; ++i) {
             p[i] = other.p[i];
         }
+        arb_assert(is_valid());
     }
     DECLARE_ASSIGNMENT_OPERATOR(PART);
 
     int count_members() const;
 
+    void set_weight(double pc) {
+        double lenScale  = pc/weight;
+        weight           = pc;
+        len             *= lenScale;
+    }
+
 public:
 
-    PART(const PartitionSize* size_info, int weight)
+    PART(const PartitionSize* size_info, double weight_)
         : info(size_info),
           p(info->alloc_mem()),
           len(0),
-          percent(weight),
+          weight(weight_),
           id(info->get_unique_id()),
           members(0)
-    {}
+    {
+        arb_assert(is_valid());
+    }
     ~PART() {
         free(p);
     }
@@ -102,8 +111,9 @@ public:
 
         bool only_valid_bits    = (last&get_cutmask()) == last;
         bool valid_member_count = members >= 0 && members <= get_maxsize();
+        bool valid_weight       = weight>0.0;
 
-        return only_valid_bits && valid_member_count;
+        return only_valid_bits && valid_member_count && valid_weight;
     }
 
     void setbit(int pos) {
@@ -121,20 +131,25 @@ public:
 
         arb_assert(is_valid());
     }
-    void set_len(GBT_LEN length) { arb_assert(is_valid()); len = length; }
-    GBT_LEN get_len() const { return len; }
-
-    void set_percent(int pc) { percent = pc; }
-    int get_percent() const { return percent; }
-
-    void add(const PART* other) {
-        set_percent(get_percent()+other->get_percent());
-        set_len(get_len()+other->get_len());
+    void set_len(GBT_LEN length) {
+        arb_assert(is_valid());
+        len = length*weight;
+    }
+    GBT_LEN get_len() const {
+        return len/weight;
     }
 
-    void takeMean(int overall_weight) {
-        set_len(get_len()/(float)get_percent());
-        set_percent((get_percent()*10000)/overall_weight);
+    double get_weight() const { return weight; }
+
+    void add(const PART* other) {
+        weight += other->weight;
+        len    += other->len;
+    }
+
+    void takeMean(double overall_weight) {
+        set_weight(get_weight()/overall_weight);
+        arb_assert(is_valid());
+        arb_assert(weight <= 1.0);
     }
 
     void invert();

@@ -39,7 +39,7 @@ ConsensusTree::~ConsensusTree() {
     delete size;
 }
 
-void ConsensusTree::insert(GBT_TREE *tree, int weight) {
+void ConsensusTree::insert(GBT_TREE *tree, double weight) {
     // Insert a GBT-tree in the Hash-Table
     // The GBT-tree is destructed afterwards!
     overall_weight += weight;

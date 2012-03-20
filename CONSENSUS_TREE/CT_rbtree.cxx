@@ -47,9 +47,7 @@ static int GBT_TREE_order(const GBT_TREE *t1, const GBT_TREE *t2) {
         GBT_LEN l1 = t1->leftlen+t1->rightlen;
         GBT_LEN l2 = t2->leftlen+t2->rightlen;
 
-        double fcmp = l2 - l1; // insert smaller len first
-        cmp         = fcmp<0 ? -1 : (fcmp>0 ? 1 : 0);
-
+        cmp = double_cmp(l1, l2); // insert smaller len first
         if (!cmp) {
             if (t1->is_leaf) {
                 cmp = strcmp(t1->name, t2->name);
@@ -77,9 +75,7 @@ static int RB_INFO_order(const void *v1, const void *v2, void *) {
     int cmp = i1->percent - i2->percent; // insert more probable branches first
 
     if (!cmp) {
-        double fcmp = i2->len - i1->len; // insert smaller len first
-        cmp         = fcmp<0 ? -1 : (fcmp>0 ? 1 : 0);
-
+        cmp = double_cmp(i1->len, i2->len); // insert smaller len first
         if (!cmp) {
             cmp = GBT_TREE_order(i1->node, i2->node);
         }
@@ -96,7 +92,7 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, GBT_TREE *father) {
 
     RB_INFO *info = (RB_INFO *) getmem(sizeof(RB_INFO));
     info->node    = gbtnode;                             // return-information
-    info->percent = int(tree->part->get_percent()/100.0+.5); 
+    info->percent = int(tree->part->get_weight()*100.0+.5); 
     info->len     = tree->part->get_len();
 
     NSONS *nsonp = tree->son_list;
