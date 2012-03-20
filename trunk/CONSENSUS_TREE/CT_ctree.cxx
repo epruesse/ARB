@@ -10,11 +10,10 @@
 
 #include "CT_ctree.hxx"
 #include "CT_hash.hxx"
-#include "CT_dtree.hxx"
 #include "CT_ntree.hxx"
 
 ConsensusTree::ConsensusTree(const class CharPtrArray& names_)
-    : Tree_count(0),
+    : overall_weight(0),
       Name_hash(NULL),
       size(NULL),
       names(names_)
@@ -32,10 +31,10 @@ ConsensusTree::ConsensusTree(const class CharPtrArray& names_)
 }
 
 ConsensusTree::~ConsensusTree() {
-    if (Name_hash) GBS_free_hash(Name_hash);
-    Name_hash  = 0;
-    Tree_count = 0;
-
+    if (Name_hash) {
+        GBS_free_hash(Name_hash);
+        Name_hash  = 0;
+    }
     delete registry;
     delete size;
 }
@@ -43,7 +42,7 @@ ConsensusTree::~ConsensusTree() {
 void ConsensusTree::insert(GBT_TREE *tree, int weight) {
     // Insert a GBT-tree in the Hash-Table
     // The GBT-tree is destructed afterwards!
-    Tree_count += weight;
+    overall_weight += weight;
     remember_subtrees(tree, weight);
 }
 
@@ -56,13 +55,13 @@ GBT_TREE *ConsensusTree::get_consensus_tree() {
        could only be one son! */
 
     ntree_init(size);
-    registry->build_sorted_list();
+    registry->build_sorted_list(overall_weight);
 
     {
-        PART *p = registry->get_part(Tree_count);
+        PART *p = registry->get_part();
         while (p != NULL) {
             insert_ntree(p);
-            p = registry->get_part(Tree_count);
+            p = registry->get_part();
         }
     }
 

@@ -54,7 +54,7 @@ class PART {
     const class PartitionSize *info;
 
     PELEM   *p;
-    GBT_LEN  len;               // Length between two knots
+    GBT_LEN  len;               // Length between two nodes
     int      percent;           // Count how often this partition appears
     size_t   id;
 
@@ -79,11 +79,11 @@ class PART {
 
 public:
 
-    PART(const PartitionSize* size_info)
+    PART(const PartitionSize* size_info, int weight)
         : info(size_info),
           p(info->alloc_mem()),
           len(0),
-          percent(0),
+          percent(weight),
           id(info->get_unique_id()),
           members(0)
     {}
@@ -120,7 +120,6 @@ public:
         }
 
         arb_assert(is_valid());
-
     }
     void set_len(GBT_LEN length) { arb_assert(is_valid()); len = length; }
     GBT_LEN get_len() const { return len; }
@@ -128,7 +127,18 @@ public:
     void set_percent(int pc) { percent = pc; }
     int get_percent() const { return percent; }
 
+    void add(const PART* other) {
+        set_percent(get_percent()+other->get_percent());
+        set_len(get_len()+other->get_len());
+    }
+
+    void takeMean(int overall_weight) {
+        set_len(get_len()/(float)get_percent());
+        set_percent((get_percent()*10000)/overall_weight);
+    }
+
     void invert();
+    bool is_standardized() const;
     void standardize();
 
     void add_from(const PART *source);
@@ -136,7 +146,7 @@ public:
     bool is_son_of(const PART *father) const;
 
     bool overlaps_with(const PART *other) const;
-    bool distinct_from(const PART *other) const { return !overlaps_with(other); }
+    bool disjunct_from(const PART *other) const { return !overlaps_with(other); }
 
     bool equals(const PART *other) const;
     bool differs(const PART *other) const { return !equals(other); }
@@ -149,7 +159,8 @@ public:
     bool is_leaf_edge() const { int size = members; return size == 1 || size == (get_maxsize()-1); }
     int distance_to_tree_center() const { return abs(get_maxsize()/2 - members); }
 
-    int strict_cmp(const PART *other) const;
+    int insertionOrder_cmp(const PART *other) const;
+    int topological_cmp(const PART *other) const;
     
 #if defined(NTREE_DEBUG_FUNCTIONS)
     void print() const;
