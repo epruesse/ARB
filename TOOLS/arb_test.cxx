@@ -113,10 +113,11 @@ static GB_ERROR removeVaryingDateFromTreeRemarks(const char *dbname) {
     if (!gb_main) error = GB_await_error();
     else {
         {
-            GB_transaction  ta(gb_main);
-            GBDATA         *gb_tree_data    = GB_entry(gb_main, "tree_data");
-            const char     *truncate_after  = "\nunittest-tree\n";
-            size_t          truncate_offset = strlen(truncate_after);
+            GB_transaction ta(gb_main);
+
+            GBDATA     *gb_tree_data    = GBT_get_tree_data(gb_main);
+            const char *truncate_after  = "\nunittest-tree\n";
+            size_t      truncate_offset = strlen(truncate_after);
 
             if (!gb_tree_data) error = GB_await_error();
             else {

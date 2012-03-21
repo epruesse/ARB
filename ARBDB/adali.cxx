@@ -484,14 +484,11 @@ GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *de
 
     GB_ERROR  error            = 0;
     int       is_case_error    = 0;
-    GBDATA   *gb_presets       = GB_entry(gbMain, "presets");
-    GBDATA   *gb_species_data  = GB_entry(gbMain, "species_data");
-    GBDATA   *gb_extended_data = GB_entry(gbMain, "extended_data");
+    GBDATA   *gb_presets       = GBT_get_presets(gbMain);
+    GBDATA   *gb_species_data  = GBT_get_species_data(gbMain);
+    GBDATA   *gb_extended_data = GBT_get_SAI_data(gbMain);
 
-    if (!gb_presets)            error = "presets not found";
-    else if (!gb_species_data)  error = "species_data not found";
-    else if (!gb_extended_data) error = "extended_data not found";
-
+    if (!gb_presets || !gb_species_data || !gb_extended_data) error = GB_await_error();
 
     // create copy and/or delete old alignment description
     if (!error) {

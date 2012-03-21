@@ -502,15 +502,10 @@ int ARB_main(int argc, const char *argv[]) {
         GB_request_undo_type(gb_main, GB_UNDO_NONE); // disable arbdb builtin undo
         GB_begin_transaction(gb_main);
 
-        GBDATA *gb_species_data     = GB_entry(gb_main, "species_data");
-        GBDATA *gb_species_data_new = GB_create_container(gb_main, "species_data"); // introducing a second 'species_data' container
+        GBDATA *gb_species_data     = GBT_get_species_data(gb_main);
+        GBDATA *gb_species_data_new = GBT_create(gb_main, "species_data", 7); // create a second 'species_data' container
 
-        if (!gb_species_data) {
-            error = "database does not contains any species";
-        }
-        else if (!gb_species_data_new) {
-            error = GB_await_error();
-        }
+        if (!gb_species_data_new) error = GB_await_error();
 
         int non_ali_genom_species = 0;
         int ali_genom_species     = 0;
