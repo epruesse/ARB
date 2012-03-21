@@ -222,7 +222,7 @@ static void tree_copy_or_rename_cb(AW_window *aww, bool do_copy) {
     if (!error) {
         error = GB_begin_transaction(GLOBAL_gb_main);
         if (!error) {
-            GBDATA *gb_tree_data = GB_search(GLOBAL_gb_main, "tree_data", GB_CREATE_CONTAINER);
+            GBDATA *gb_tree_data = GBT_get_tree_data(GLOBAL_gb_main);
 
             if (!gb_tree_data) error = GB_await_error();
             else {
@@ -741,7 +741,7 @@ static void create_tree_last_window(AW_window *aww) {
 
     GB_begin_transaction(GLOBAL_gb_main);
 
-    GBDATA *gb_tree_data = GB_search(GLOBAL_gb_main, "tree_data", GB_CREATE_CONTAINER);
+    GBDATA *gb_tree_data = GBT_get_tree_data(GLOBAL_gb_main);
     GBDATA *gb_tree_name = GB_entry(gb_tree_data, source);
 
     if (!gb_tree_name) {

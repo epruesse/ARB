@@ -39,7 +39,7 @@ static void MG_tree_rename_cb(AW_window *aww, GBDATA *gbd, int tree_nr) {
         error = GB_begin_transaction(gbd);
 
         if (!error) {
-            GBDATA *gb_tree_data     = GB_search(gbd, "tree_data", GB_CREATE_CONTAINER);
+            GBDATA *gb_tree_data     = GBT_get_tree_data(gbd);
             if (!gb_tree_data) error = GB_await_error();
             else {
                 GBDATA *gb_tree_name = GB_entry(gb_tree_data, source);
@@ -138,8 +138,8 @@ static void MG_transfer_tree(AW_window *aww) {
     if (!error) error = GB_begin_transaction(GLOBAL_gb_merge);
 
     if (!error) {
-        GBDATA *gb_tree_data1 = GB_search(GLOBAL_gb_merge, "tree_data", GB_CREATE_CONTAINER);
-        GBDATA *gb_tree_data2 = GB_search(GLOBAL_gb_dest, "tree_data", GB_CREATE_CONTAINER);
+        GBDATA *gb_tree_data1 = GBT_get_tree_data(GLOBAL_gb_merge);
+        GBDATA *gb_tree_data2 = GBT_get_tree_data(GLOBAL_gb_dest);
 
         if (!gb_tree_data1 || !gb_tree_data2) error = GB_await_error();
         else {

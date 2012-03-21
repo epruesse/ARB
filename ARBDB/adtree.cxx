@@ -16,6 +16,13 @@
 #define GBT_PUT_DATA 1
 #define GBT_GET_SIZE 0
 
+// ----------------
+//      basics
+
+GBDATA *GBT_get_tree_data(GBDATA *gb_main) {
+    return GB_search(gb_main, "tree_data", GB_CREATE_CONTAINER);
+}
+
 // ----------------------
 //      remove leafs
 
@@ -285,7 +292,7 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
             else {
                 error = GBT_check_tree_name(tree_name);
                 if (!error) {
-                    GBDATA *gb_tree_data = GB_search(gb_main, "tree_data", GB_CREATE_CONTAINER);
+                    GBDATA *gb_tree_data = GBT_get_tree_data(gb_main);
                     gb_tree              = GB_search(gb_tree_data, tree_name, GB_CREATE_CONTAINER);
 
                     if (!gb_tree) error = GB_await_error();
@@ -697,13 +704,12 @@ void GBT_unlink_tree(GBT_TREE *tree) {
     }
 }
 
-
 GBDATA *GBT_find_tree(GBDATA *gb_main, const char *tree_name) {
     /*! @return
      * - DB tree container associated with tree_name
      * - NULL if no such tree exists
      */
-    GBDATA *gb_treedata = GB_search(gb_main, "tree_data", GB_CREATE_CONTAINER);
+    GBDATA *gb_treedata = GBT_get_tree_data(gb_main);
     return GB_entry(gb_treedata, tree_name);
 }
 
@@ -725,7 +731,7 @@ long GBT_size_of_tree(GBDATA *gb_main, const char *tree_name) {
 char *GBT_find_largest_tree(GBDATA *gb_main) {
     char   *largest     = 0;
     long    maxnodes    = 0;
-    GBDATA *gb_treedata = GB_search(gb_main, "tree_data", GB_CREATE_CONTAINER);
+    GBDATA *gb_treedata = GBT_get_tree_data(gb_main);
     GBDATA *gb_tree;
 
     for (gb_tree = GB_child(gb_treedata);
@@ -825,7 +831,7 @@ char *GBT_get_name_of_next_tree(GBDATA *gb_main, const char *tree_name) {
         gb_tree = GB_nextChild(gb_tree);
     }
     if (!gb_tree) {
-        GBDATA *gb_treedata = GB_search(gb_main, "tree_data", GB_CREATE_CONTAINER);
+        GBDATA *gb_treedata = GBT_get_tree_data(gb_main);
         gb_tree = GB_child(gb_treedata);
     }
 
