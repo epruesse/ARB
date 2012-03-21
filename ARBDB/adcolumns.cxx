@@ -319,9 +319,9 @@ static GB_ERROR gbt_insert_character_secstructs(GBDATA *gb_secstructs, const ins
 
 static GB_ERROR GBT_check_lengths(GBDATA *Main, const char *alignment_name) {
     GB_ERROR  error            = 0;
-    GBDATA   *gb_presets       = GBT_find_or_create(Main, "presets", 7);
-    GBDATA   *gb_species_data  = GBT_find_or_create(Main, "species_data", 7);
-    GBDATA   *gb_extended_data = GBT_find_or_create(Main, "extended_data", 7);
+    GBDATA   *gb_presets       = GBT_get_presets(Main);
+    GBDATA   *gb_species_data  = GBT_get_species_data(Main);
+    GBDATA   *gb_extended_data = GBT_get_SAI_data(Main);
     GBDATA   *gb_secstructs    = GB_search(Main, "secedit/structs", GB_CREATE_CONTAINER);
     GBDATA   *gb_ali;
 
@@ -386,9 +386,9 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
     }
     else {
         GBDATA *gb_ali;
-        GBDATA *gb_presets       = GBT_find_or_create(Main, "presets", 7);
-        GBDATA *gb_species_data  = GBT_find_or_create(Main, "species_data", 7);
-        GBDATA *gb_extended_data = GBT_find_or_create(Main, "extended_data", 7);
+        GBDATA *gb_presets       = GBT_get_presets(Main);
+        GBDATA *gb_species_data  = GBT_get_species_data(Main);
+        GBDATA *gb_extended_data = GBT_get_SAI_data(Main);
         GBDATA *gb_secstructs    = GB_search(Main, "secedit/structs", GB_CREATE_CONTAINER);
         char    char_delete_list[256];
 
