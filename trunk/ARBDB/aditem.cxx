@@ -444,7 +444,7 @@ const char *GBT_get_name(GBDATA *gb_item) {
 GBDATA **GBT_gen_species_array(GBDATA *gb_main, long *pspeccnt)
 {
     GBDATA *gb_species;
-    GBDATA *gb_species_data = GBT_find_or_create(gb_main, "species_data", 7);
+    GBDATA *gb_species_data = GBT_get_species_data(gb_main);
     GBDATA **result;
     *pspeccnt = 0;
     for (gb_species = GBT_first_species_rel_species_data(gb_species_data);

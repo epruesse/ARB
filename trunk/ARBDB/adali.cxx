@@ -35,7 +35,7 @@ GBDATA *GBT_get_presets(GBDATA *gb_main) {
 
 int GBT_count_alignments(GBDATA *gb_main) {
     int     count      = 0;
-    GBDATA *gb_presets = GBT_find_or_create(gb_main, "presets", 7);
+    GBDATA *gb_presets = GBT_get_presets(gb_main);
     for (GBDATA *gb_ali = GB_entry(gb_presets, "alignment");
          gb_ali;
          gb_ali = GB_nextEntry(gb_ali))
@@ -57,8 +57,8 @@ static GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment, G
      * - afterwards it will contain value  == 2 for each species where an alignment has been found.
      */
 
-    GBDATA *gb_species_data  = GBT_find_or_create(gb_main, "species_data", 7);
-    GBDATA *gb_extended_data = GBT_find_or_create(gb_main, "extended_data", 7);
+    GBDATA *gb_species_data  = GBT_get_species_data(gb_main);
+    GBDATA *gb_extended_data = GBT_get_SAI_data(gb_main);
 
     GB_ERROR  error      = 0;
     char     *ali_name   = GBT_read_string(preset_alignment, "alignment_name");
@@ -226,12 +226,13 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name) {
      * otherwise -> check only one alignment
      */
     GB_ERROR  error             = 0;
-    GBDATA   *gb_sd             = GBT_find_or_create(Main, "species_data", 7);
-    GBDATA   *gb_presets        = GBT_find_or_create(Main, "presets", 7);
+    GBDATA   *gb_sd             = GBT_get_species_data(Main);
+    GBDATA   *gb_presets        = GBT_get_presets(Main);
     GB_HASH  *species_name_hash = 0;
 
-    GBT_find_or_create(Main, "extended_data", 7);
-    GBT_find_or_create(Main, "tree_data", 7);
+    // create rest of main containers
+    GBT_get_SAI_data(Main);
+    GBT_get_tree_data(Main);
 
     if (alignment_name) {
         GBDATA *gb_ali_name = GB_find_string(gb_presets, "alignment_name", alignment_name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
