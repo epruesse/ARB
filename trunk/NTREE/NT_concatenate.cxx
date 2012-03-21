@@ -391,7 +391,7 @@ static void concatenateAlignments(AW_window *aws) {
 
 static void addSpeciesToConcatenateList(SpeciesConcatenateList **sclp, GB_CSTR species_name) {
 
-    GBDATA *gb_species_data = GB_search(GLOBAL_gb_main, "species_data",  GB_CREATE_CONTAINER);
+    GBDATA *gb_species_data = GBT_get_species_data(GLOBAL_gb_main);
     GBDATA *gb_species      = GBT_find_species_rel_species_data(gb_species_data, species_name);
 
     if (gb_species) {
@@ -574,7 +574,7 @@ static GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species
     GB_push_transaction(GLOBAL_gb_main);
 
     GB_ERROR  error           = 0;
-    GBDATA   *gb_species_data = GB_search(GLOBAL_gb_main, "species_data",  GB_CREATE_CONTAINER);
+    GBDATA   *gb_species_data = GBT_get_species_data(GLOBAL_gb_main);
 
     // data needed for name generation
     char *full_name = 0;

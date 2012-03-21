@@ -201,8 +201,8 @@ static void mg_check_field_cb(AW_window *aww) {
         if (!error) {
             error = GB_begin_transaction(GLOBAL_gb_dest);
 
-            GBDATA *gb_species_data1 = GB_search(GLOBAL_gb_merge, "species_data", GB_CREATE_CONTAINER);
-            GBDATA *gb_species_data2 = GB_search(GLOBAL_gb_dest,  "species_data", GB_CREATE_CONTAINER);
+            GBDATA *gb_species_data1 = GBT_get_species_data(GLOBAL_gb_merge);
+            GBDATA *gb_species_data2 = GBT_get_species_data(GLOBAL_gb_dest);
 
             GBDATA *gb_species1;
             GBDATA *gb_species2;

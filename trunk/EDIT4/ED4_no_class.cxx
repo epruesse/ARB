@@ -1847,7 +1847,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
     }
     else {
         error                    = GB_begin_transaction(GLOBAL_gb_main);
-        GBDATA *gb_species_data  = GB_search(GLOBAL_gb_main, "species_data",  GB_CREATE_CONTAINER);
+        GBDATA *gb_species_data  = GBT_get_species_data(GLOBAL_gb_main);
         char   *new_species_name = 0;
         char   *acc              = 0;
         char   *addid            = 0;

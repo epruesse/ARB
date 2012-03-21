@@ -92,7 +92,7 @@ AP_tree_root::AP_tree_root(AliView *aliView, const AP_tree& tree_proto, AP_seque
     GBDATA         *gb_main = get_gb_main();
     GB_transaction  ta(gb_main);
 
-    gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
+    gb_species_data = GBT_get_species_data(gb_main);
     gb_table_data   = GB_search(gb_main, "table_data", GB_CREATE_CONTAINER);
 }
 

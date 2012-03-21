@@ -144,7 +144,7 @@ static CPRO_struct CPRO;
 static void CPRO_readandallocate(char **&speciesdata, GBDATA **&speciesdatabase,
                                  char versus, char *align)
 {
-    GBDATA *gb_species_data = GB_search(GLOBAL_gb_main, "species_data", GB_FIND);
+    GBDATA *gb_species_data = GBT_get_species_data(GLOBAL_gb_main);
     GBDATA *gb_species;
 
     {

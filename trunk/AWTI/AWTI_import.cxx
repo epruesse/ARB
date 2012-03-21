@@ -701,7 +701,7 @@ static GB_ERROR awtc_read_data(char *ali_name, int security_write)
     char        num[6];
     char        text[100];
     static int  counter         = 0;
-    GBDATA     *gb_species_data = GB_search(GB_MAIN, "species_data", GB_CREATE_CONTAINER);
+    GBDATA     *gb_species_data = GBT_get_species_data(GB_MAIN);
     GBDATA     *gb_species;
     char       *p;
 
@@ -966,7 +966,7 @@ static void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or ex
 
                 for (count = 0; fnames[count]; ++count) ; // count filenames
 
-                GBDATA *gb_species_data = GB_search(GB_MAIN, "species_data", GB_CREATE_CONTAINER);
+                GBDATA *gb_species_data = GBT_get_species_data(GB_MAIN);
                 ImportSession import_session(gb_species_data, count*10);
 
                 // close the above transaction and do each importfile in separate transaction

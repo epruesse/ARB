@@ -817,7 +817,7 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
 
             GB_push_transaction(gb_main);
 
-            GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
+            GBDATA *gb_species_data = GBT_get_species_data(gb_main);
             if (mark && !error) {
                 if (show_status) progress->subtitle(gene_flag ? "Unmarking all species and genes" : "Unmarking all species");
                 for (GBDATA *gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
@@ -1898,8 +1898,7 @@ static void pg_result_selected(AW_window * /* aww */, AW_CL cl_gb_main) {
 
         GBT_mark_all(gb_main, 0); // unmark all species
 
-        GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_FIND);
-        pd_assert(gb_species_data);
+        GBDATA *gb_species_data = GBT_get_species_data(gb_main);
         GBDATA *pg_group = GB_search(pg_global.pg_main, "probe_groups/group", GB_FIND);
         long count = 0;
         long marked = 0;

@@ -1425,7 +1425,7 @@ void QUERY::search_duplicated_field_content(AW_window *, DbQuery *query, bool to
         GB_transaction dumy(query->gb_main);
         ItemSelector&  selector = query->selector;
 
-        GBDATA      *gb_species_data = GB_search(query->gb_main, "species_data", GB_CREATE_CONTAINER);
+        GBDATA      *gb_species_data = GBT_get_species_data(query->gb_main);
         long         hashsize;
         QUERY_RANGE  range           = QUERY_ALL_ITEMS;
         QUERY_TYPES  type            = (QUERY_TYPES)aw_root->awar(query->awar_by)->read_int();

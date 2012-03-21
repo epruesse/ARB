@@ -308,7 +308,7 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
             }
         }
         else {                  // save as sequence
-            GBDATA *gb_species_data     = GB_search(db_access.gb_main, "species_data", GB_CREATE_CONTAINER);
+            GBDATA *gb_species_data     = GBT_get_species_data(db_access.gb_main);
             if (!gb_species_data) error = GB_await_error();
             else {
                 GBDATA *gb_species = GBT_find_species_rel_species_data(gb_species_data, savename);

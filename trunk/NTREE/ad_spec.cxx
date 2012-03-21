@@ -249,7 +249,7 @@ void launch_MapViewer_cb(GBDATA *gbd, AD_MAP_VIEWER_TYPE type) {
 
     if (!error) {
         const char *species_name    = "";
-        GBDATA     *gb_species_data = GB_search(GLOBAL_gb_main, "species_data", GB_CREATE_CONTAINER);
+        GBDATA     *gb_species_data = GBT_get_species_data(GLOBAL_gb_main);
 
         if (gbd && GB_get_father(gbd) == gb_species_data) {
             species_name = GBT_read_name(gbd);

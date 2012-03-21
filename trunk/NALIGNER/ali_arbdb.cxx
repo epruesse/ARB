@@ -54,7 +54,7 @@ char *ALI_ARBDB::get_sequence_string(char *name, int and_mark)
     GBDATA *gb_species_data;
     GBDATA *gb_seq;
 
-    gb_species_data = GB_search(gb_main, "species_data", GB_FIND);
+    gb_species_data = GBT_get_species_data(gb_main);
 
     gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     if (gb_seq) {
@@ -80,7 +80,7 @@ ALI_SEQUENCE *ALI_ARBDB::get_sequence(char *name, int and_mark)
     GBDATA *gb_species_data;
     GBDATA *gb_seq;
 
-    gb_species_data = GB_search(gb_main, "species_data", GB_FIND);
+    gb_species_data = GBT_get_species_data(gb_main);
 
     gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     if (gb_seq) {
@@ -121,7 +121,7 @@ char *ALI_ARBDB::get_SAI(char *name) {
 
 int ALI_ARBDB::put_sequence_string(char *name, char *sequence) {
     GB_change_my_security(gb_main, 6);
-    GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_FIND);
+    GBDATA *gb_species_data = GBT_get_species_data(gb_main);
 
     GBDATA *gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     if (gb_seq) {
@@ -138,7 +138,7 @@ int ALI_ARBDB::put_sequence_string(char *name, char *sequence) {
 
 int ALI_ARBDB::put_sequence(char *name, ALI_SEQUENCE *sequence) {
     GB_change_my_security(gb_main, 6);
-    GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_FIND);
+    GBDATA *gb_species_data = GBT_get_species_data(gb_main);
 
     GBDATA *gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     if (gb_seq) {

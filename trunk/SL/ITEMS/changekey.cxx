@@ -96,7 +96,7 @@ static void show_all_changekeys(GBDATA *gb_main, const char *change_key_path) {
 
 void species_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, RescanMode mode) {
     GB_push_transaction(gb_main);
-    GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
+    GBDATA *gb_species_data = GBT_get_species_data(gb_main);
 
     StrArray names;
     GBT_scan_db(names, gb_species_data, 0);
@@ -127,7 +127,7 @@ void species_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, Rescan
 
 void gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, RescanMode mode) {
     GB_push_transaction(gb_main);
-    GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
+    GBDATA *gb_species_data = GBT_get_species_data(gb_main);
 
     StrArray names;
     GBT_scan_db(names, gb_species_data, GENE_DATA_PATH);
@@ -158,7 +158,7 @@ void gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, RescanMod
 
 static void experiment_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, RescanMode mode) {
     GB_push_transaction(gb_main);
-    GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
+    GBDATA *gb_species_data = GBT_get_species_data(gb_main);
 
     StrArray names;
     GBT_scan_db(names, gb_species_data, EXPERIMENT_DATA_PATH);
