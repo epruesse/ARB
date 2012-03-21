@@ -1324,7 +1324,7 @@ int GB_read_security_delete(GBDATA *gbd) {
 GB_ERROR GB_write_security_write(GBDATA *gbd, unsigned long level)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    GB_test_transaction(gbd);
+    GB_test_transaction(Main);
 
     if (GB_GET_SECURITY_WRITE(gbd)>Main->security_level)
         return gb_security_error(gbd);
@@ -1337,7 +1337,7 @@ GB_ERROR GB_write_security_write(GBDATA *gbd, unsigned long level)
 GB_ERROR GB_write_security_read(GBDATA *gbd, unsigned long level) // @@@ unused 
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    GB_test_transaction(gbd);
+    GB_test_transaction(Main);
     if (GB_GET_SECURITY_WRITE(gbd)>Main->security_level)
         return gb_security_error(gbd);
     if (GB_GET_SECURITY_READ(gbd) == level) return 0;
@@ -1349,7 +1349,7 @@ GB_ERROR GB_write_security_read(GBDATA *gbd, unsigned long level) // @@@ unused
 GB_ERROR GB_write_security_delete(GBDATA *gbd, unsigned long level)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    GB_test_transaction(gbd);
+    GB_test_transaction(Main);
     if (GB_GET_SECURITY_WRITE(gbd)>Main->security_level)
         return gb_security_error(gbd);
     if (GB_GET_SECURITY_DELETE(gbd) == level) return 0;
@@ -1361,7 +1361,7 @@ GB_ERROR GB_write_security_delete(GBDATA *gbd, unsigned long level)
 GB_ERROR GB_write_security_levels(GBDATA *gbd, unsigned long readlevel, unsigned long writelevel, unsigned long deletelevel)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    GB_test_transaction(gbd);
+    GB_test_transaction(Main);
     if (GB_GET_SECURITY_WRITE(gbd)>Main->security_level)
         return gb_security_error(gbd);
     GB_PUT_SECURITY_WRITE(gbd, writelevel);
@@ -2656,13 +2656,13 @@ GB_ERROR GB_write_usr_private(GBDATA *gbd, long ref) {
 //      mark DB entries
 
 void GB_write_flag(GBDATA *gbd, long flag) {
-    GBCONTAINER *gbc  = (GBCONTAINER *)gbd;
-    int          prev;
-    int          ubit = GB_MAIN(gbd)->users[0]->userbit;
+    GBCONTAINER  *gbc  = (GBCONTAINER *)gbd;
+    GB_MAIN_TYPE *Main = GB_MAIN(gbc);
 
-    GB_test_transaction(gbd);
+    GB_test_transaction(Main);
 
-    prev = GB_ARRAY_FLAGS(gbc).flags;
+    int ubit = Main->users[0]->userbit;
+    int prev = GB_ARRAY_FLAGS(gbc).flags;
     gbd->flags.saved_flags = prev;
 
     if (flag) {

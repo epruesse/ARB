@@ -700,7 +700,7 @@ long GB_number_of_marked_subentries(GBDATA *gbd) {
 GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring) {
     GBCONTAINER *gbc       = (GBCONTAINER *)gbd;
     GBQUARK      key_quark = GB_find_existing_quark(gbd, keystring);
-    GB_test_transaction(gbd);
+    GB_test_transaction(gbc);
     return key_quark ? gb_search_marked(gbc, key_quark, 0, 0) : NULL;
 }
 
@@ -708,7 +708,7 @@ GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring) {
 GBDATA *GB_following_marked(GBDATA *gbd, const char *keystring, size_t skip_over) {
     GBCONTAINER *gbc       = GB_FATHER(gbd);
     GBQUARK      key_quark = GB_find_existing_quark(gbd, keystring);
-    GB_test_transaction(gbd);
+    GB_test_transaction(gbc);
     return key_quark ? gb_search_marked(gbc, key_quark, (int)gbd->index+1, skip_over) : NULL;
 }
 

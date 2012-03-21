@@ -18,11 +18,13 @@
 #include "gb_data.h"
 #endif
 
-inline void GB_test_transaction(GBDATA *gbd) {
-    if (!GB_MAIN(gbd)->transaction) {
+inline void GB_test_transaction(GB_MAIN_TYPE *Main) {
+    if (!Main->transaction) {
         GBK_terminate("No running transaction");
     }
 }
+inline void GB_test_transaction(GBDATA *gbd) { GB_test_transaction(GB_MAIN(gbd)); }
+inline void GB_test_transaction(GBCONTAINER *gbc) { GB_test_transaction(GB_MAIN(gbc)); }
 
 #else
 #error gb_ta.h included twice
