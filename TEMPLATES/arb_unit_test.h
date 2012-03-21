@@ -29,7 +29,7 @@ namespace arb_unit_test {
         GB_allow_compression(gb_main, use_compression);
 
         if (!error) {
-            GBDATA *gb_species_data     = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
+            GBDATA *gb_species_data     = GBT_get_species_data(gb_main);
             if (!gb_species_data) error = GB_await_error();
             else {
                 long    ali_len          = strlen(ali_data[0].data);

@@ -101,7 +101,7 @@ static void count_mark_all_cb(void *, AW_CL cl_ntw) {
     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
     GB_push_transaction(ntw->gb_main);
 
-    GBDATA *gb_species_data = GB_search(ntw->gb_main, "species_data", GB_CREATE_CONTAINER);
+    GBDATA *gb_species_data = GBT_get_species_data(ntw->gb_main);
     long    count           = GB_number_of_marked_subentries(gb_species_data);
 
     GB_pop_transaction(ntw->gb_main);

@@ -162,7 +162,7 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
     {
         GB_push_transaction(db);
 
-        GBDATA *gb_species_data = GB_search(db, "species_data", GB_CREATE_CONTAINER);
+        GBDATA *gb_species_data = GBT_get_species_data(db);
         GB_add_callback(gb_species_data, GB_CB_CHANGED, (GB_CB)delete_matrix_cb, 0);
 
         GB_pop_transaction(db);
@@ -279,7 +279,7 @@ char *DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warning
 
     seq_len          = GBT_get_alignment_len(gb_main, use);
     is_AA            = GBT_is_alignment_protein(gb_main, use);
-    gb_species_data  = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
+    gb_species_data  = GBT_get_species_data(gb_main);
     entries_mem_size = 1000;
 
     entries = (DI_ENTRY **)calloc(sizeof(DI_ENTRY*), (size_t)entries_mem_size);

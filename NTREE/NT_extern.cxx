@@ -1798,7 +1798,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->callback(NT_popup_configuration_admin, 0, 0);
     awm->create_button(0, AWAR_MARKED_SPECIES_COUNTER);
     {
-        GBDATA *gb_species_data = GB_search(GLOBAL_gb_main, "species_data", GB_CREATE_CONTAINER);
+        GBDATA *gb_species_data = GBT_get_species_data(GLOBAL_gb_main);
         GB_add_callback(gb_species_data, GB_CB_CHANGED, nt_auto_count_marked_species, (int*)awm);
         nt_count_marked(awm);
     }

@@ -2191,7 +2191,7 @@ ARB_ERROR Aligner::run() {
     }
 
     if (!error) {
-        GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
+        GBDATA *gb_species_data = GBT_get_species_data(gb_main);
         int max_seq_length = GBT_get_alignment_len(gb_main, alignment);
 
         if (reference) error          = alignToExplicitReference(gb_species_data, max_seq_length);

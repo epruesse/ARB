@@ -21,13 +21,12 @@
 
 using namespace std;
 
-GBDATA *GBT_find_or_create(GBDATA *Main, const char *key, long delete_level)
-{
-    GBDATA *gbd;
-    gbd = GB_entry(Main, key);
-    if (gbd) return gbd;
-    gbd = GB_create_container(Main, key);
-    GB_write_security_delete(gbd, delete_level);
+GBDATA *GBT_find_or_create(GBDATA *father, const char *key, long delete_level) {
+    GBDATA *gbd = GB_entry(father, key);
+    if (!gbd) {
+        gbd = GB_create_container(father, key);
+        GB_write_security_delete(gbd, delete_level);
+    }
     return gbd;
 }
 

@@ -216,8 +216,8 @@ static void MG_transfer_selected_species(AW_window *aww) {
         if (!error) {
             MG_remaps rm(GLOBAL_gb_merge, GLOBAL_gb_dest, adaption_enabled(aw_root), get_reference_species_names(aw_root));
 
-            GBDATA *gb_species_data1 = GB_search(GLOBAL_gb_merge, "species_data", GB_CREATE_CONTAINER);
-            GBDATA *gb_species_data2 = GB_search(GLOBAL_gb_dest, "species_data", GB_CREATE_CONTAINER);
+            GBDATA *gb_species_data1 = GBT_get_species_data(GLOBAL_gb_merge);
+            GBDATA *gb_species_data2 = GBT_get_species_data(GLOBAL_gb_dest);
 
             bool is_genome_db1 = GEN_is_genome_db(GLOBAL_gb_merge, -1);
             bool is_genome_db2 = GEN_is_genome_db(GLOBAL_gb_dest, -1);
@@ -264,7 +264,7 @@ static void MG_transfer_species_list(AW_window *aww) {
          gb_species1 = GBT_next_species(gb_species1))
     {
         if (IS_QUERIED_SPECIES(gb_species1)) {
-            GBDATA *gb_species_data2 = GB_search(GLOBAL_gb_dest, "species_data", GB_CREATE_CONTAINER);
+            GBDATA *gb_species_data2 = GBT_get_species_data(GLOBAL_gb_dest);
 
             error = MG_transfer_one_species(aw_root, rm,
                                             NULL, gb_species_data2,
@@ -304,7 +304,7 @@ static void MG_transfer_fields_cb(AW_window *aww) {
         GB_begin_transaction(GLOBAL_gb_merge);
         GB_begin_transaction(GLOBAL_gb_dest);
 
-        GBDATA *gb_dest_species_data  = GB_search(GLOBAL_gb_dest, "species_data", GB_CREATE_CONTAINER);
+        GBDATA *gb_dest_species_data  = GBT_get_species_data(GLOBAL_gb_dest);
         bool    transfer_of_alignment = GBS_string_matches(field, "ali_*/data", GB_MIND_CASE);
 
         arb_progress progress("Transferring fields of listed", mg_count_queried(GLOBAL_gb_merge));
@@ -543,7 +543,7 @@ static void MG_merge_tagged_field_cb(AW_window *aww) {
 
         arb_progress progress("Merging tagged fields", mg_count_queried(GLOBAL_gb_merge));
         
-        GBDATA *gb_dest_species_data     = GB_search(GLOBAL_gb_dest, "species_data", GB_CREATE_CONTAINER);
+        GBDATA *gb_dest_species_data     = GBT_get_species_data(GLOBAL_gb_dest);
         if (!gb_dest_species_data) error = GB_await_error();
         else {
             for (GBDATA * gb_species1 = GBT_first_species(GLOBAL_gb_merge);
@@ -734,8 +734,8 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
     error = MG_equal_alignments(true);
     if (error) goto end;
 
-    M_species_data = GB_search(GLOBAL_gb_merge, "species_data", GB_CREATE_CONTAINER);
-    D_species_data = GB_search(GLOBAL_gb_dest, "species_data", GB_CREATE_CONTAINER);
+    M_species_data = GBT_get_species_data(GLOBAL_gb_merge);
+    D_species_data = GBT_get_species_data(GLOBAL_gb_dest);
 
     GBDATA *M_species;
     GBDATA *D_species;

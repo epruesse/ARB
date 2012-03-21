@@ -575,7 +575,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                     SmartPtr<arb_progress> progress;
 
                     for (pass = 1; pass <= 2; ++pass) {
-                        GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
+                        GBDATA *gb_species_data = GBT_get_species_data(gb_main);
                         GBDATA *gb_species;
                         int     count           = 0;
 

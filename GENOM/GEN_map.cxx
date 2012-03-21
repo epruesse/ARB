@@ -1122,7 +1122,7 @@ static void gene_extract_cb(AW_window *aww, AW_CL cl_GEN_extract_mode_param) {
                 GEN_perform_command(aww, gb_main, param->get_perform_mode(), do_mark_command_for_one_species, GEN_COUNT_MARKED, 0);
 
                 GB_transaction  ta(gb_main);
-                GBDATA         *gb_species_data = GB_search(gb_main, "species_data",  GB_CREATE_CONTAINER);
+                GBDATA         *gb_species_data = GBT_get_species_data(gb_main);
                 eg2ps                           = new EG2PS_data(ali, gb_species_data, gen_count_marked_genes);
             }
 

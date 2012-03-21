@@ -45,7 +45,7 @@ GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag) {
     GB_ERROR error = GB_push_transaction(gb_main);
     if (!error) {
         NameSession.gb_main         = gb_main;
-        NameSession.gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
+        NameSession.gb_species_data = GBT_get_species_data(gb_main);
 
         if (!all_flag) { // this is meant to be used for single or few species
             int hash_size = 128;

@@ -125,7 +125,7 @@ static void species_create_cb(AW_window * aww, AW_CL cl_gb_main) {
     GB_ERROR  error   = GB_begin_transaction(gb_main);
 
     if (!error) {
-        GBDATA *gb_species_data     = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
+        GBDATA *gb_species_data     = GBT_get_species_data(gb_main);
         if (!gb_species_data) error = GB_await_error();
         else {
             GBDATA *gb_dest = GBT_find_species_rel_species_data(gb_species_data, dest);
