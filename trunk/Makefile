@@ -1484,7 +1484,7 @@ tags: $(TAG_SOURCE_LISTS)
 	$(ETAGS) -a $(ETAGS_TYPES) -L $(TAG_SOURCE_CODE)
 	$(ETAGS) -a $(ETAGS_FUN)   -L $(TAG_SOURCE_CODE)
 	$(ETAGS) -a $(ETAGS_REST)  -L $(TAG_SOURCE_CODE)
-	mv $(TAGFILE_TMP) $(TAGFILE)
+	mv_if_diff $(TAGFILE_TMP) $(TAGFILE)
 	rm $(TAG_SOURCE_LISTS)
 
 #********************************************************************************
