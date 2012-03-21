@@ -99,7 +99,7 @@ static GBDATA *GBT_expect_item_rel_item_data(GBDATA *gb_item_data, const char *i
 // --------------------------------------------------------------------------------
 
 GBDATA *GBT_get_species_data(GBDATA *gb_main) {
-    return GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
+    return GBT_find_or_create(gb_main, "species_data", 7);
 }
 
 GBDATA *GBT_first_marked_species_rel_species_data(GBDATA *gb_species_data) {
@@ -146,7 +146,7 @@ GBDATA *GBT_expect_species(GBDATA *gb_main, const char *name) {
 // --------------------------------------------------------------------------------
 
 GBDATA *GBT_get_SAI_data(GBDATA *gb_main) {
-    return GB_search(gb_main, "extended_data", GB_CREATE_CONTAINER);
+    return GBT_find_or_create(gb_main, "extended_data", 7);
 }
 
 // Search SAIs

@@ -20,7 +20,7 @@
 //      basics
 
 GBDATA *GBT_get_tree_data(GBDATA *gb_main) {
-    return GB_search(gb_main, "tree_data", GB_CREATE_CONTAINER);
+    return GBT_find_or_create(gb_main, "tree_data", 7);
 }
 
 // ----------------------
