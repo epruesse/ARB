@@ -72,7 +72,7 @@ void awt_create_selection_list_on_alignments(GBDATA *gb_main, AW_window *aws, co
     GBDATA *gb_presets;
     {
         GB_transaction ta(gb_main);
-        gb_presets = GB_search(gb_main, "presets", GB_CREATE_CONTAINER);
+        gb_presets = GBT_get_presets(gb_main);
     }
     AW_selection_list *sellist = aws->create_selection_list(varname, 0, "", 20, 3);
     (new AWT_alignment_selection(aws, sellist, gb_presets, comm))->refresh(); // belongs to window now

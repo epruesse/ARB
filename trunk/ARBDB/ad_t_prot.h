@@ -29,6 +29,7 @@ NOT4PERL GB_ERROR GBT_determine_T_or_U(GB_alignment_type alignment_type, char *T
 NOT4PERL void GBT_reverseComplementNucSequence(char *seq, long length, char T_or_U);
 
 /* adali.cxx */
+GBDATA *GBT_get_presets(GBDATA *gb_main);
 int GBT_count_alignments(GBDATA *gb_main);
 GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name);
 void GBT_get_alignment_names(ConstStrArray &names, GBDATA *gbd);

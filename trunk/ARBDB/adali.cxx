@@ -29,6 +29,10 @@ static long check_for_species_without_data(const char *species_name, long value,
 #warning GBT_check_data ignores given 'alignment_name' if we have a default alignment. seems wrong!
 #endif
 
+GBDATA *GBT_get_presets(GBDATA *gb_main) {
+    return GB_search(gb_main, "presets", GB_CREATE_CONTAINER);
+}
+
 int GBT_count_alignments(GBDATA *gb_main) {
     int     count      = 0;
     GBDATA *gb_presets = GBT_find_or_create(gb_main, "presets", 7);
@@ -310,7 +314,7 @@ void GBT_get_alignment_names(ConstStrArray& names, GBDATA *gbd) {
      * (Note: use GBT_free_names() to free result)
      */
 
-    GBDATA *presets = GB_search(gbd, "presets", GB_CREATE_CONTAINER);
+    GBDATA *presets = GBT_get_presets(gbd);
     for (GBDATA *ali = GB_entry(presets, "alignment"); ali; ali = GB_nextEntry(ali)) {
         GBDATA *name = GB_entry(ali, "alignment_name");
         names.put(name ? GB_read_char_pntr(name) : "<unnamed alignment>");
@@ -384,7 +388,7 @@ GBDATA *GBT_create_alignment(GBDATA *gbd, const char *name, long len, long align
      * NULL (in this case an error has been exported)
      */
     GB_ERROR  error      = NULL;
-    GBDATA   *gb_presets = GB_search(gbd, "presets", GB_CREATE_CONTAINER);
+    GBDATA   *gb_presets = GBT_get_presets(gbd);
     GBDATA   *result     = NULL;
 
     if (!gb_presets) {
@@ -701,7 +705,7 @@ GB_ERROR GBT_set_default_alignment(GBDATA *gb_main, const char *alignment_name) 
 }
 
 GBDATA *GBT_get_alignment(GBDATA *gb_main, const char *aliname) {
-    GBDATA *gb_presets        = GB_search(gb_main, "presets", GB_CREATE_CONTAINER);
+    GBDATA *gb_presets        = GBT_get_presets(gb_main);
     GBDATA *gb_alignment_name = GB_find_string(gb_presets, "alignment_name", aliname, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 
     if (!gb_alignment_name) {
