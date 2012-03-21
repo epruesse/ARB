@@ -25,7 +25,7 @@ arb_dnarates		%% (%
 	sai_count		%i 1
 	%) /*arb_dnarates*/
 
-extended_data		%% (%
+extended_data	:7000	%% (%
 	extended		%$ (%
 		name			"POS_VAR_BY_ML_1"
 		ali_16s			%% (%

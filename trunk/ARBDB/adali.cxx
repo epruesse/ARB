@@ -30,7 +30,7 @@ static long check_for_species_without_data(const char *species_name, long value,
 #endif
 
 GBDATA *GBT_get_presets(GBDATA *gb_main) {
-    return GB_search(gb_main, "presets", GB_CREATE_CONTAINER);
+    return GBT_find_or_create(gb_main, "presets", 7);
 }
 
 int GBT_count_alignments(GBDATA *gb_main) {
