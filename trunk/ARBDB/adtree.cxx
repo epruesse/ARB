@@ -810,12 +810,10 @@ GB_ERROR GBT_check_tree_name(const char *tree_name)
 
 void GBT_get_tree_names(ConstStrArray& names, GBDATA *Main) {
     // stores tree names in 'names'
-    GBDATA *gb_treedata = GB_entry(Main, "tree_data");
-    if (gb_treedata) {
-        names.reserve(GB_number_of_subentries(gb_treedata));
-        for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree; gb_tree = GB_nextChild(gb_tree)) {
-            names.put(GB_read_key_pntr(gb_tree));
-        }
+    GBDATA *gb_treedata = GBT_get_tree_data(Main);
+    names.reserve(GB_number_of_subentries(gb_treedata));
+    for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree; gb_tree = GB_nextChild(gb_tree)) {
+        names.put(GB_read_key_pntr(gb_tree));
     }
 }
 
@@ -865,14 +863,9 @@ GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree, size_t *count) {
 
 char *GBT_existing_tree(GBDATA *gb_main, const char *tree_name) {
     // search for an existing or an alternate tree
-    GBDATA *gb_tree     = 0;
-    GBDATA *gb_treedata = GB_entry(gb_main, "tree_data");
-
-    if (gb_treedata) {
-        gb_tree = GB_entry(gb_treedata, tree_name);
-        if (!gb_tree) gb_tree = GB_child(gb_treedata); // take any tree
-    }
-
+    GBDATA *gb_treedata = GBT_get_tree_data(gb_main);
+    GBDATA *gb_tree = GB_entry(gb_treedata, tree_name);
+    if (!gb_tree) gb_tree = GB_child(gb_treedata); // take any tree
     return gb_tree ? GB_read_key(gb_tree) : NULL;
 }
 

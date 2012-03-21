@@ -81,15 +81,9 @@ ARB_ERROR probe_read_data_base(const char *name, bool readOnly) { // goes to hea
     else {
         error = GB_begin_transaction(gb_main);
         if (!error) {
-            GBDATA *gb_species_data = GB_entry(gb_main, "species_data");
-            if (!gb_species_data) {
-                error = GBS_global_string("Database %s is empty (no species_data)", name);
-            }
-            else {
-                psg.gb_main         = gb_main;
-                psg.gb_species_data = gb_species_data;
-                psg.gb_sai_data     = GBT_get_SAI_data(gb_main);
-            }
+            psg.gb_main         = gb_main;
+            psg.gb_species_data = GBT_get_species_data(gb_main);
+            psg.gb_sai_data     = GBT_get_SAI_data(gb_main);
         }
         error = GB_end_transaction(gb_main, error);
     }

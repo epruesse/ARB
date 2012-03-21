@@ -61,14 +61,13 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
         arb_progress progress("Formatting alignments", ali_count);
         err = GBT_check_data(gb_main, 0);
 
-        AW_repeated_question  question;
-        GBDATA               *gb_presets = GB_entry(gb_main, "presets");
-
+        AW_repeated_question question;
         question.add_help("prompt/format_alignments.hlp");
 
+        GBDATA *gb_presets = GBT_get_presets(gb_main);
         for (GBDATA *gb_ali = GB_entry(gb_presets, "alignment");
              gb_ali && !err;
-             gb_ali = GB_nextEntry(gb_ali))
+             gb_ali        = GB_nextEntry(gb_ali))
         {
             GBDATA *gb_aligned = GB_search(gb_ali, "aligned", GB_INT);
 

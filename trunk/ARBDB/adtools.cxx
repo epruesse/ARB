@@ -21,12 +21,21 @@
 
 using namespace std;
 
+GBDATA *GBT_create(GBDATA *father, const char *key, long delete_level) {
+    GBDATA *gbd = GB_create_container(father, key);
+    if (gbd) {
+        GB_ERROR error = GB_write_security_delete(gbd, delete_level);
+        if (error) {
+            GB_export_error(error);
+            gbd = NULL; // assuming caller will abort the transaction
+        }
+    }
+    return gbd;
+}
+
 GBDATA *GBT_find_or_create(GBDATA *father, const char *key, long delete_level) {
     GBDATA *gbd = GB_entry(father, key);
-    if (!gbd) {
-        gbd = GB_create_container(father, key);
-        GB_write_security_delete(gbd, delete_level);
-    }
+    if (!gbd) gbd = GBT_create(father, key, delete_level);
     return gbd;
 }
 
@@ -542,7 +551,7 @@ GBDATA *GBT_open(const char *path, const char *opent) {
             GB_transaction ta(gbd);
 
             if (!strchr(path, ':')) {
-                GBDATA *species_data = GB_search(gbd, "species_data", GB_FIND);
+                GBDATA *species_data = GB_search(gbd, "species_data", GB_FIND); // do NOT create species_data here!
                 if (species_data) {
                     long hash_size = max(GB_number_of_subentries(species_data), GBT_SPECIES_INDEX_SIZE);
                     error          = GB_create_index(species_data, "name", GB_IGNORE_CASE, hash_size);

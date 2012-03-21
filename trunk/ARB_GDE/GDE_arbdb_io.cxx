@@ -328,22 +328,17 @@ int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress
 
 
 int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon) {
-    GBDATA *gb_species_data;
-    GBDATA *gb_species;
-
-    // ARB_NT END
     dataset->gb_main = db_access.gb_main;
 
     // Alignment choosen ?
 
-    gb_species_data = GB_entry(dataset->gb_main, "species_data");
-    ErrorOut5(gb_species_data!=0, "species_data not found");
-
-    long     maxalignlen   = GBT_get_alignment_len(db_access.gb_main, dataset->alignment_name);
+    GBDATA  *gb_species_data = GBT_get_species_data(dataset->gb_main);
+    long     maxalignlen     = GBT_get_alignment_len(db_access.gb_main, dataset->alignment_name);
     GBDATA **the_species;
-    long     numberspecies = 0;
-    long     missingdata   = 0;
+    long     numberspecies   = 0;
+    long     missingdata     = 0;
 
+    GBDATA *gb_species;
     if (marked) gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
     else gb_species        = GBT_first_species_rel_species_data(gb_species_data);
 

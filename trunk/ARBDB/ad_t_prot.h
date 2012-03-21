@@ -116,6 +116,7 @@ GBDATA *GBT_find_table_field(GBDATA *gb_table, const char *id);
 GBDATA *GBT_open_table_field(GBDATA *gb_table, const char *fieldname, GB_TYPES type_of_field);
 
 /* adtools.cxx */
+GBDATA *GBT_create(GBDATA *father, const char *key, long delete_level);
 GBDATA *GBT_find_or_create(GBDATA *father, const char *key, long delete_level);
 char *GBT_get_default_helix(GBDATA *);
 char *GBT_get_default_helix_nr(GBDATA *);

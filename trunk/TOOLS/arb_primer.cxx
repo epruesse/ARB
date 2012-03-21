@@ -106,58 +106,53 @@ static GB_ERROR arb_prm_menu() {
 }
 
 static GB_ERROR arb_prm_read(int /* prmanz */) {
-    GBDATA     *gb_presets;
-    GBDATA     *gb_source;
-    GBDATA     *gb_species;
-    GBDATA     *gb_source_data;
-    GBDATA     *gb_len;
-    int         sp_count;
-    char       *data;
-    const char *hdata;
+    GBDATA *gb_presets = GBT_get_presets(aprm.gb_main);
+    {
+        GBDATA *gb_source = GB_find_string(gb_presets, "alignment_name", aprm.source, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+        GBDATA *gb_len    = GB_brother(gb_source, "alignment_len");
+        aprm.al_len       = GB_read_int(gb_len);
+    }
 
-    gb_presets = GB_entry(aprm.gb_main, "presets");
+    int sp_count = GBT_count_marked_species(aprm.gb_main);
+    aprm.data    = (char **)calloc(sp_count, sizeof(char *));
 
-    gb_source = GB_find_string(gb_presets, "alignment_name", aprm.source, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
-    gb_len = GB_brother(gb_source, "alignment_len");
-    aprm.al_len = GB_read_int(gb_len);
-
-
-    sp_count = GBT_count_marked_species(aprm.gb_main);
-
-    aprm.data = (char **)calloc(sp_count, sizeof(char *));
     sp_count = 0;
-    for (gb_species = GBT_first_marked_species(aprm.gb_main);
-            gb_species;
-            gb_species = GBT_next_marked_species(gb_species)) {
+    for (GBDATA *gb_species = GBT_first_marked_species(aprm.gb_main);
+         gb_species;
+         gb_species = GBT_next_marked_species(gb_species))
+    {
+        GBDATA *gb_source = GB_entry(gb_species, aprm.source);
+        if (gb_source) {
+            GBDATA *gb_source_data = GB_entry(gb_source, "data");
+            if (gb_source_data) {
+                const char *hdata = GB_read_char_pntr(gb_source_data);
 
-        gb_source = GB_entry(gb_species, aprm.source);
-        if (!gb_source) continue;
-        gb_source_data = GB_entry(gb_source, "data");
-        if (!gb_source_data) continue;
-        data = (char *)calloc(sizeof(char), aprm.al_len+1);
-        hdata = GB_read_char_pntr(gb_source_data);
-        if (!hdata) {
-            GB_print_error();
-            continue;
-        }
-        aprm.data[sp_count ++] = data;
-        if (sp_count % 50 == 0)  printf("Reading taxa %i\n", sp_count);
-        {
-            int i, size; char c;
-            size = GB_read_string_count(gb_source_data);
-            for (i=0; i<size; i++) {
-                c = hdata[i];
-                if ((c>='a') && (c<='z')) {
-                    data[i] = c-'a'+'A';
+                if (!hdata) {
+                    GB_print_error();
                 }
                 else {
-                    data[i] = c;
+                    char *data             = (char *)calloc(sizeof(char), aprm.al_len+1);
+                    aprm.data[sp_count ++] = data;
+                    
+                    if (sp_count % 50 == 0) printf("Reading taxa %i\n", sp_count);
+
+                    int size = GB_read_string_count(gb_source_data);
+                    int i;
+                    for (i=0; i<size; i++) {
+                        char c = hdata[i];
+                        if ((c>='a') && (c<='z')) {
+                            data[i] = c-'a'+'A';
+                        }
+                        else {
+                            data[i] = c;
+                        }
+                    }
+                    for (; i<aprm.al_len; i++) {
+                        data[i] = '.';
+                    }
+                    data[i] = 0;
                 }
             }
-            for (; i<aprm.al_len; i++) {
-                data[i] = '.';
-            }
-            data[i] = 0;
         }
     }
     printf("%i taxa read\n", sp_count);
