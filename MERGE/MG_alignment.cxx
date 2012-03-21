@@ -111,7 +111,7 @@ int MG_copy_and_check_alignments(AW_window */*aww*/) {
             GBDATA *gb_ali1 = GBT_get_alignment(GLOBAL_gb_merge, name);
             mg_assert(gb_ali1);
 
-            if (!gb_presets2) gb_presets2 = GB_search(GLOBAL_gb_dest, "presets", GB_CREATE_CONTAINER);
+            if (!gb_presets2) gb_presets2 = GBT_get_presets(GLOBAL_gb_dest);
 
             gb_ali2 = GB_create_container(gb_presets2, "alignment");
             GB_copy(gb_ali2, gb_ali1);

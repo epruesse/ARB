@@ -154,7 +154,7 @@ static conAlignStruct* createSelectionList(GBDATA *gb_main, AW_window *aws, cons
     createSelectionList_callBack(cas); // calling callback to get the alignments in the database
 
     GB_push_transaction(gb_main);
-    gb_presets = GB_search(gb_main, "presets", GB_CREATE_CONTAINER);
+    gb_presets = GBT_get_presets(gb_main);
     GB_add_callback(gb_presets, GB_CB_CHANGED, createSelectionList_callBack_gb, (int *)cas);
     GB_pop_transaction(gb_main);
 
@@ -293,7 +293,7 @@ static void concatenateAlignments(AW_window *aws) {
     GB_ERROR error     = GBT_check_alignment_name(new_ali_name);
 
     if (!error) {
-        GBDATA *gb_presets          = GB_search(GLOBAL_gb_main, "presets", GB_CREATE_CONTAINER);
+        GBDATA *gb_presets          = GBT_get_presets(GLOBAL_gb_main);
         GBDATA *gb_alignment_exists = GB_find_string(gb_presets, "alignment_name", new_ali_name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
         GBDATA *gb_new_alignment    = 0;
         char   *seq_type            = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();
