@@ -243,15 +243,12 @@ static int make_PT_family_list(PT_family *ffinder, const FamilyStat& famStat) {
     return 0;
 }
 
-inline int probe_is_ok(char *probe, int probe_len, char first_c, char second_c)
-{
+inline bool probe_is_ok(char *probe, int probe_len) {
     //! Check the probe for inconsistencies
-    if (probe_len < 2 || probe[0] != first_c || probe[1] != second_c)
-        return 0;
-    for (int i = 2; i < probe_len; i++)
+    for (int i = 0; i < probe_len; i++)
         if (probe[i] < PT_A || probe[i] > PT_T)
-            return 0;
-    return 1;
+            return false;
+    return true;
 }
 
 inline void revert_sequence(char *seq, int len) {
@@ -281,13 +278,12 @@ int find_family(PT_family *ffinder, bytestring *species) {
     char *sequence     = species->data; // sequence data passed by caller
     int   sequence_len = probe_compress_sequence(sequence, species->size);
 
-    // if find_type > 0 -> search only probes starting with 'A' (quick but less accurate)
-    char last_first_c = ffinder->find_type ? PT_A : PT_T;
+    bool use_all_probes = ffinder->only_A_probes == 0;
 
     ProbeTraversal::restrictMatchesToRegion(ffinder->range_start, ffinder->range_end, probe_len);
 
     FamilyStat famStat(psg.data_count);
-    
+
     // Note: code depends on order of ../AWTC/awtc_next_neighbours.hxx@FF_complement_dep
     for (int cmode = 1; cmode <= 8; cmode *= 2) {
         switch (cmode) {
@@ -303,13 +299,11 @@ int find_family(PT_family *ffinder, bytestring *species) {
         }
 
         if ((complement&cmode) != 0) {
-            for (char first_c = PT_A; first_c <= last_first_c; ++first_c) {
-                for (char second_c = PT_A; second_c <= PT_T; ++second_c) {
-                    char *last_probe = sequence+sequence_len-probe_len;
-                    for (char *probe = sequence; probe < last_probe; ++probe) {
-                        if (probe_is_ok(probe, probe_len, first_c, second_c)) {
-                            ProbeTraversal(probe, probe_len, mismatch_nr, famStat).mark_matching(psg.pt);
-                        }
+            char *last_probe = sequence+sequence_len-probe_len;
+            for (char *probe = sequence; probe < last_probe; ++probe) {
+                if (use_all_probes || probe[0] == PT_A) {
+                    if (probe_is_ok(probe, probe_len)) {
+                        ProbeTraversal(probe, probe_len, mismatch_nr, famStat).mark_matching(psg.pt);
                     }
                 }
             }
