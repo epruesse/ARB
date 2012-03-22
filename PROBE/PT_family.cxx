@@ -63,7 +63,7 @@ public:
 
     void calc_rel_matches(int probe_len, int sequence_length)  {
         for (size_t i = 0; i < size; i++) {
-            int max_poss_matches = psg.data[i].get_size() - probe_len + 1; // @@@ wrong if target range is used!
+            int max_poss_matches = std::max(psg.data[i].get_size(), sequence_length) - probe_len + 1; // @@@ wrong if target range is used!
             famstat[i].calc_rel_match(max_poss_matches);
         }
     }
