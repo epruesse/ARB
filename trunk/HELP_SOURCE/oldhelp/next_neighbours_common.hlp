@@ -60,14 +60,14 @@ SECTION         PARAMETERS
 
                        The maximum absolute score is
 
-                           (length of relatives sequence) - (oligo length) + 1 
+                           (max basecount of source/target sequence) - (oligo length) + 1 
 
                        Practically this score is not reached (even not for the sequence itself), because
                        several possible oligos are skipped, namely all oligos containing IUPAC
                        codes, N's or dots. The PT-server as well will not report matches hitting
                        ambiguous positions or sequence endings.
 
-                       The maximum relative score is 100% (also rarely reached). It is calculated versus
+                       The maximum relative score is 100% (also never reached). It is calculated versus
                        the maximum absolute score as described above (also see NOTES below).
 
                        If mismatches are used, each position may be hit by several oligos from the source
