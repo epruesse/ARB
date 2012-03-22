@@ -336,46 +336,78 @@ void TEST_SLOW_PT_FamilyFinder() {
     for (int relativeMatches = 0; relativeMatches <= 1; ++relativeMatches) {
         for (int fastMode = 0; fastMode <= 1; ++fastMode) {
             for (int partial = 0; partial <= 1; ++partial) {
-                PT_FamilyFinder ff(gb_main, TEST_SERVER_ID, partial ? 10 : 18, 1, fastMode, relativeMatches);
+                for (int shortOligo = 0; shortOligo <= 1; ++shortOligo) {
+                    int oligoLen = shortOligo ? (partial ? 3 : 6) : (partial ? 10 : 18);
+                    
+                    PT_FamilyFinder ff(gb_main, TEST_SERVER_ID, oligoLen, 1, fastMode, relativeMatches);
 
-                // database: ../UNIT_TESTER/run/TEST_pt.arb
+                    // database: ../UNIT_TESTER/run/TEST_pt.arb
 
-                const char *sequence;
-                if (partial) {
-                    ff.restrict_2_region(TargetRange(39, 91)); // alignment range of bases 30-69 of sequence of 'LgtLytic' 
-                    sequence = "UCUAGCUUGCUAGACGGGUGGCGAG" "GGUAACCGUAGGGGA"; // bases 30-54 of sequence of 'LgtLytic' + 15 bases from 'DcdNodos' (outside region)
-                }
-                else {
-                    // sequence of 'LgtLytic' in TEST_pt.arb:
-                    sequence = "AGAGUUUGAUCAAGUCGAACGGCAGCACAGUCUAGCUUGCUAGACGGGUGGCGAGUGGCGAACGGACUUGGGGAAACUCAAGCUAAUACCGCAUAAUCAUGACUGGGGUGAAGUCGUAACAAGGUAGCCGUAGGGGAACCUGCGGCUGGAUCACCUCCUN";
-                }
-
-                TEST_ASSERT_NO_ERROR(ff.searchFamily(sequence, FF_FORWARD, 4));
-
-                if (partial) {
-                    // len: 40 bp (-15 bp)
-                    // Ns: 0 bp
-                    // oligolen: 10bp
-                    // est. matches: len-oligolen+1-Ns = 40-15-10+1-0 = 16
-
-                    if (fastMode == 0) { // full-search
-                        TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/19/59.37500,VblVulni/5/15.62500,VbhChole/4/12.50000,DcdNodos/4/12.50000");
+                    const char *sequence;
+                    if (partial) {
+                        ff.restrict_2_region(TargetRange(39, 91)); // alignment range of bases 30-69 of sequence of 'LgtLytic' 
+                        sequence = "UCUAGCUUGCUAGACGGGUGGCGAG" "GGUAACCGUAGGGGA"; // bases 30-54 of sequence of 'LgtLytic' + 15 bases from 'DcdNodos' (outside region)
                     }
-                    else { // fast-search
-                        TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/3/9.37500,VblVulni/1/3.12500,FrhhPhil/1/3.12500,DcdNodos/1/3.12500");
+                    else {
+                        // sequence of 'LgtLytic' in TEST_pt.arb:
+                        sequence = "AGAGUUUGAUCAAGUCGAACGGCAGCACAGUCUAGCUUGCUAGACGGGUGGCGAGUGGCGAACGGACUUGGGGAAACUCAAGCUAAUACCGCAUAAUCAUGACUGGGGUGAAGUCGUAACAAGGUAGCCGUAGGGGAACCUGCGGCUGGAUCACCUCCUN";
                     }
-                }
-                else {
-                    // len: 160 bp
-                    // Ns: 1 bp
-                    // oligolen: 18bp
-                    // est. matches: len-oligolen+1-Ns = 160-18+1-1 = 142
 
-                    if (fastMode == 0) { // full-search
-                        TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/142/98.61111,HllHalod/62/43.35664,AclPleur/59/40.97222,PtVVVulg/52/36.11111");
+                    TEST_ASSERT_NO_ERROR(ff.searchFamily(sequence, FF_FORWARD, 4));
+
+                    if (partial) {
+                        // len: 40 bp (-15 bp)
+                        // Ns: 0 bp
+
+                        if (shortOligo) {
+                            // oligolen: 3bp
+                            // est. matches: len-oligolen+1-Ns = 40-15-3+1-0 = 23
+
+                            if (fastMode == 0) { // full-search
+                                TEST_ASSERT_EQUAL(ff.results2string(), "VbrFurni/388/994.87179,VbhChole/333/853.84615,ClfPerfr/317/812.82051,VblVulni/316/810.25641");
+                            }
+                            else { // fast-search
+                                TEST_ASSERT_EQUAL(ff.results2string(), "VbrFurni/62/158.97436,VblVulni/55/141.02564,VbhChole/55/141.02564,ClfPerfr/55/141.02564");
+                            }
+                        }
+                        else {
+                            // oligolen: 10bp
+                            // est. matches: len-oligolen+1-Ns = 40-15-10+1-0 = 16
+
+                            if (fastMode == 0) { // full-search
+                                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/19/59.37500,VblVulni/5/15.62500,VbhChole/4/12.50000,DcdNodos/4/12.50000");
+                            }
+                            else { // fast-search
+                                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/3/9.37500,VblVulni/1/3.12500,FrhhPhil/1/3.12500,DcdNodos/1/3.12500");
+                            }
+                        }
                     }
-                    else { // fast-search
-                        TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.77778,HllHalod/18/12.58741,AclPleur/17/11.80556,VbhChole/15/10.41667");
+                    else {
+                        // len: 160 bp
+                        // Ns: 1 bp
+
+                        if (shortOligo) {
+                            // oligolen: 6bp
+                            // est. matches: len-oligolen+1-Ns = 160-6+1-1 = 154
+
+                            if (fastMode == 0) { // full-search
+                                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/291/186.53846,AclPleur/278/178.20513,HllHalod/247/159.35484,VbrFurni/246/157.69231");
+                            }
+                            else { // fast-search
+                                TEST_ASSERT_EQUAL(ff.results2string(), "AclPleur/70/44.87179,LgtLytic/67/42.94872,Stsssola/63/40.90909,HllHalod/60/38.70968");
+                            }
+                        }
+                        else {
+                            // oligolen: 18bp
+                            // est. matches: len-oligolen+1-Ns = 160-18+1-1 = 142
+
+                            if (fastMode == 0) { // full-search
+                                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/142/98.61111,HllHalod/62/43.35664,AclPleur/59/40.97222,PtVVVulg/52/36.11111");
+                            }
+                            else { // fast-search
+                                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.77778,HllHalod/18/12.58741,AclPleur/17/11.80556,VbhChole/15/10.41667");
+                            }
+                        }
                     }
                 }
             }
