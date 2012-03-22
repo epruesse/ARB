@@ -364,10 +364,20 @@ void TEST_SLOW_PT_FamilyFinder() {
                             // est. matches: len-oligolen+1-Ns = 40-15-3+1-0 = 23
 
                             if (fastMode == 0) { // full-search
-                                TEST_ASSERT_EQUAL(ff.results2string(), "Bl0LLL00/38/97.43590,CltBotul/38/97.43590,BcSSSS00/38/97.43590,ClnCorin/38/97.43590");
+                                if (relativeMatches) {
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "DsssDesu/38/38.77551,CltBotul/38/34.23423,PsAAAA00/38/32.75862,Bl0LLL00/38/25.67568");
+                                }
+                                else {
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "Bl0LLL00/38/25.67568,CltBotul/38/34.23423,BcSSSS00/38/22.89157,ClnCorin/38/25.16556");
+                                }
                             }
                             else { // fast-search
-                                TEST_ASSERT_EQUAL(ff.results2string(), "Bl0LLL00/7/17.94872,CltBotul/7/17.94872,BcSSSS00/7/17.94872,ClnCorin/7/17.94872");
+                                if (relativeMatches) {
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "DsssDesu/7/7.14286,CltBotul/7/6.30631,PsAAAA00/7/6.03448,Bl0LLL00/7/4.72973");
+                                }
+                                else {
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "Bl0LLL00/7/4.72973,CltBotul/7/6.30631,BcSSSS00/7/4.21687,ClnCorin/7/4.63576");
+                                }
                             }
                         }
                         else {
@@ -375,10 +385,15 @@ void TEST_SLOW_PT_FamilyFinder() {
                             // est. matches: len-oligolen+1-Ns = 40-15-10+1-0 = 16
 
                             if (fastMode == 0) { // full-search
-                                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/18/56.25000,VblVulni/5/15.62500,VbhChole/4/12.50000,DcdNodos/4/12.50000");
+                                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/18/11.76471,VblVulni/5/3.24675,VbhChole/4/2.59740,DcdNodos/4/2.59740");
                             }
                             else { // fast-search
-                                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/3/9.37500,VblVulni/1/3.12500,FrhhPhil/1/3.12500,DcdNodos/1/3.12500");
+                                if (relativeMatches) {
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/3/1.96078,FrhhPhil/1/0.68027,VblVulni/1/0.64935,DcdNodos/1/0.64935");
+                                }
+                                else {
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/3/1.96078,VblVulni/1/0.64935,FrhhPhil/1/0.68027,DcdNodos/1/0.64935");
+                                }
                             }
                         }
                     }
@@ -392,18 +407,18 @@ void TEST_SLOW_PT_FamilyFinder() {
 
                             if (fastMode == 0) { // full-search
                                 if (relativeMatches) {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/153/98.07692,AclPleur/138/88.46154,DsssDesu/84/88.42105,CltBotul/95/87.96296");
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/153/97.45223,DsssDesu/84/88.42105,CltBotul/95/87.96296,PsAAAA00/97/85.84071");
                                 }
                                 else {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/153/98.07692,AclPleur/138/88.46154,HllHalod/133/85.80645,VbhChole/133/85.25641");
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/153/97.45223,AclPleur/138/82.63473,HllHalod/133/85.80645,VbhChole/133/84.17722");
                                 }
                             }
                             else { // fast-search
                                 if (relativeMatches) {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/42/26.92308,AclPleur/38/24.35897,CltBotul/26/24.07407,PsAAAA00/27/23.89381");
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/42/26.75159,CltBotul/26/24.07407,PsAAAA00/27/23.89381,VblVulni/37/23.41772");
                                 }
                                 else {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/42/26.92308,AclPleur/38/24.35897,VblVulni/37/23.71795,Stsssola/36/23.37662");
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/42/26.75159,AclPleur/38/22.75449,VblVulni/37/23.41772,Stsssola/36/23.37662");
                                 }
                             }
                         }
@@ -412,10 +427,15 @@ void TEST_SLOW_PT_FamilyFinder() {
                             // est. matches: len-oligolen+1-Ns = 160-18+1-1 = 142
 
                             if (fastMode == 0) { // full-search
-                                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/142/98.61111,HllHalod/62/43.35664,AclPleur/59/40.97222,PtVVVulg/52/36.11111");
+                                if (relativeMatches) {
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/142/97.93103,HllHalod/62/43.35664,AclPleur/59/38.06452,PbrPropi/51/35.91549");
+                                }
+                                else {
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/142/97.93103,HllHalod/62/43.35664,AclPleur/59/38.06452,PtVVVulg/52/34.21053");
+                                }
                             }
                             else { // fast-search
-                                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.77778,HllHalod/18/12.58741,AclPleur/17/11.80556,VbhChole/15/10.41667");
+                                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.58621,HllHalod/18/12.58741,AclPleur/17/10.96774,VbhChole/15/10.27397");
                             }
                         }
                     }
