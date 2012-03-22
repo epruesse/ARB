@@ -60,16 +60,19 @@ SECTION         PARAMETERS
 
                        The maximum absolute score is
 
-                           (length of relatives sequence) minus (oligo length)
+                           (length of relatives sequence) - (oligo length) + 1 
 
-                       Practically this score is rarely reached, because several possible oligos are
-                       skipped, namely
+                       Practically this score is not reached (even not for the sequence itself), because
+                       several possible oligos are skipped, namely all oligos containing IUPAC
+                       codes, N's or dots. The PT-server as well will not report matches hitting
+                       ambiguous positions or sequence endings.
 
-                                - all oligos starting with 2 identical nucleotides
-                                - all oligos containing IUPAC codes (or N's)
+                       The maximum relative score is 100% (also rarely reached). It is calculated versus
+                       the maximum absolute score as described above (also see NOTES below).
 
-                       If mismatches are used, each oligo may hit at several positions. Thus the
-                       maximum relative score may exceed 100% (and the maximum absolute score may
+                       If mismatches are used, each position may be hit by several oligos from the source
+                       sequence. 
+                       Thus the maximum relative score may exceed 100% (and the maximum absolute score may
                        exceed its theoretical maximum).
 
                        If you use 'Quick mode' the mean relative score will be approx. 25% (assuming
@@ -81,8 +84,7 @@ SECTION         PARAMETERS
                             - 'Complete mode' and
                             - your sequences contain no IUPACs and no repetitions,
 
-                       you will get a score of 100% (or sequenceLength-oligoLength) for
-                       the selected species itself and its duplicates.
+                       you will get a score near 100% for the selected species itself and its duplicates.
 
                 Complement:
 
@@ -101,9 +103,14 @@ SECTION         PARAMETERS
                        Restrict the alignment range in which oligos may match.
                        Hits outside that range will not be considered.
 
-NOTES		None
+NOTES           Special effort is taken to eliminate multi-matches, which were ignored in past versions.
+                That resulted in relative scores far beyond 100%, especially for small oligo-lengths.
+
+                Now e.g. an oligo occurring 3 times in the source sequence will give atmost 3 absolute
+                hitpoints to any target sequence - even if it occurs there far more often.
 
 EXAMPLES	None
 
-WARNINGS	None
+WARNINGS	Use mismatches with care!
 
+BUGS		Relative score is not scaled to the maximum possible hits in the target range.
