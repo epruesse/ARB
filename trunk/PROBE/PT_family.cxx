@@ -17,17 +17,19 @@
 
 #include <algorithm>
 #include <vector>
+#include <map>
 
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_family_list *family)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(family)); }
 
 
 class HitCounter {
-    int    count;     // Counter for matches
-    double rel_count; // match_count / (seq_len - probe_len + 1)
+    int    last_count; // previous counter value (used to limit multi-matches)
+    int    count;      // Counter for matches
+    double rel_count;  // match_count / (seq_len - probe_len + 1)
 
 public:
-    HitCounter() : count(0), rel_count(0.0) {}
+    HitCounter() : last_count(0), count(0), rel_count(0.0) {}
 
     void inc() { count++; }
     void calc_rel_match(int max_poss_matches) {
@@ -39,6 +41,16 @@ public:
 
     int get_match_count() const { return count; }
     const double& get_rel_match_count() const { return rel_count; }
+
+    void limit_multi_matches(int source_count) {
+        // 'source_count' specifies how often the probe occurs in source
+        int last_inc      = count-last_count;
+        int multi_matches = last_inc-source_count;
+        if (multi_matches>0) {
+            count -= multi_matches;
+        }
+        last_count = count; // reset for next traversal
+    }
 };
 
 class FamilyStat : virtual Noncopyable {
@@ -53,6 +65,12 @@ public:
         for (size_t i = 0; i < size; i++) {
             int max_poss_matches = std::min(psg.data[i].get_size(), sequence_length) - probe_len + 1;
             famstat[i].calc_rel_match(max_poss_matches);
+        }
+    }
+
+    void limit_multi_matches(int source_count) {
+        for (size_t i = 0; i < size; i++) {
+            famstat[i].limit_multi_matches(source_count);
         }
     }
 
@@ -268,6 +286,46 @@ inline void complement_sequence(char *seq, int len) {
     for (int i = 0; i<len; i++) seq[i] = complement[int(seq[i])];
 }
 
+class probe_comparator {
+    int probe_len;
+public:
+    probe_comparator(int len) : probe_len(len) {}
+    bool operator()(const char *p1, const char *p2) {
+        bool isless = false;
+        for (int o = 0; o<probe_len; ++o) {
+            if (p1[o] != p2[o]) {
+                isless = p1[o]<p2[o];
+                break;
+            }
+        }
+        return isless;
+    }
+};
+
+typedef std::map<const char *, int, probe_comparator> ProbeMap;
+typedef ProbeMap::const_iterator                      ProbeIter;
+
+class ProbeRegistry {
+    ProbeMap probes;
+
+public:
+    ProbeRegistry(int probe_len)
+        : probes(probe_comparator(probe_len))
+    {}
+    void add(const char *seq) {
+        ProbeMap::iterator found = probes.find(seq);
+        if (found == probes.end()) {
+            probes[seq] = 1;
+        }
+        else {
+            found->second++;
+        }
+    }
+
+    ProbeIter begin() { return probes.begin(); }
+    ProbeIter end() { return probes.end(); }
+};
+
 int find_family(PT_family *ffinder, bytestring *species) {
     //! make sorted list of family members of species
 
@@ -284,6 +342,9 @@ int find_family(PT_family *ffinder, bytestring *species) {
 
     FamilyStat famStat(psg.data_count);
 
+    char *seq[4];
+    int   seq_count = 0;
+
     // Note: code depends on order of ../AWTC/awtc_next_neighbours.hxx@FF_complement_dep
     for (int cmode = 1; cmode <= 8; cmode *= 2) {
         switch (cmode) {
@@ -299,22 +360,42 @@ int find_family(PT_family *ffinder, bytestring *species) {
         }
 
         if ((complement&cmode) != 0) {
-            char *last_probe = sequence+sequence_len-probe_len;
-            for (char *probe = sequence; probe < last_probe; ++probe) {
-                if (use_all_probes || probe[0] == PT_A) {
-                    if (probe_is_ok(probe, probe_len)) {
-                        ProbeTraversal(probe, probe_len, mismatch_nr, famStat).mark_matching(psg.pt);
-                    }
+            seq[seq_count] = (char*)malloc(sequence_len+1);
+            memcpy(seq[seq_count], sequence, sequence_len+1);
+            seq_count++;
+        }
+    }
+
+    ProbeRegistry occurring_probes(probe_len);
+
+    for (int s = 0; s<seq_count; s++) {
+        char *last_probe = seq[s]+sequence_len-probe_len;
+        for (char *probe = seq[s]; probe < last_probe; ++probe) {
+            if (use_all_probes || probe[0] == PT_A) {
+                if (probe_is_ok(probe, probe_len)) {
+                    occurring_probes.add(probe);
                 }
             }
         }
     }
 
+    for (ProbeIter p = occurring_probes.begin(); p != occurring_probes.end(); ++p)  {
+        const char *probe  = p->first;
+        int         occurs = p->second;
+
+        ProbeTraversal(probe, probe_len, mismatch_nr, famStat).mark_matching(psg.pt);
+        famStat.limit_multi_matches(occurs);
+    }
+
     famStat.calc_rel_matches(ffinder->pr_len, sequence_len);
     make_PT_family_list(ffinder, famStat);
 
+    for (int s = 0; s<seq_count; s++) {
+        free(seq[s]);
+    }
+
     ProbeTraversal::unrestrictMatchesToRegion();
-    
+
     free(species->data);
     return 0;
 }

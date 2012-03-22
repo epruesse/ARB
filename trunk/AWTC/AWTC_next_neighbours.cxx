@@ -364,10 +364,10 @@ void TEST_SLOW_PT_FamilyFinder() {
                             // est. matches: len-oligolen+1-Ns = 40-15-3+1-0 = 23
 
                             if (fastMode == 0) { // full-search
-                                TEST_ASSERT_EQUAL(ff.results2string(), "VbrFurni/388/994.87179,VbhChole/333/853.84615,ClfPerfr/317/812.82051,VblVulni/316/810.25641");
+                                TEST_ASSERT_EQUAL(ff.results2string(), "Bl0LLL00/38/97.43590,CltBotul/38/97.43590,BcSSSS00/38/97.43590,ClnCorin/38/97.43590");
                             }
                             else { // fast-search
-                                TEST_ASSERT_EQUAL(ff.results2string(), "VbrFurni/62/158.97436,VblVulni/55/141.02564,VbhChole/55/141.02564,ClfPerfr/55/141.02564");
+                                TEST_ASSERT_EQUAL(ff.results2string(), "Bl0LLL00/7/17.94872,CltBotul/7/17.94872,BcSSSS00/7/17.94872,ClnCorin/7/17.94872");
                             }
                         }
                         else {
@@ -375,7 +375,7 @@ void TEST_SLOW_PT_FamilyFinder() {
                             // est. matches: len-oligolen+1-Ns = 40-15-10+1-0 = 16
 
                             if (fastMode == 0) { // full-search
-                                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/19/59.37500,VblVulni/5/15.62500,VbhChole/4/12.50000,DcdNodos/4/12.50000");
+                                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/18/56.25000,VblVulni/5/15.62500,VbhChole/4/12.50000,DcdNodos/4/12.50000");
                             }
                             else { // fast-search
                                 TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/3/9.37500,VblVulni/1/3.12500,FrhhPhil/1/3.12500,DcdNodos/1/3.12500");
@@ -391,10 +391,20 @@ void TEST_SLOW_PT_FamilyFinder() {
                             // est. matches: len-oligolen+1-Ns = 160-6+1-1 = 154
 
                             if (fastMode == 0) { // full-search
-                                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/291/186.53846,AclPleur/278/178.20513,HllHalod/247/159.35484,VbrFurni/246/157.69231");
+                                if (relativeMatches) {
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/153/98.07692,AclPleur/138/88.46154,DsssDesu/84/88.42105,CltBotul/95/87.96296");
+                                }
+                                else {
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/153/98.07692,AclPleur/138/88.46154,HllHalod/133/85.80645,VbhChole/133/85.25641");
+                                }
                             }
                             else { // fast-search
-                                TEST_ASSERT_EQUAL(ff.results2string(), "AclPleur/70/44.87179,LgtLytic/67/42.94872,Stsssola/63/40.90909,HllHalod/60/38.70968");
+                                if (relativeMatches) {
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/42/26.92308,AclPleur/38/24.35897,CltBotul/26/24.07407,PsAAAA00/27/23.89381");
+                                }
+                                else {
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/42/26.92308,AclPleur/38/24.35897,VblVulni/37/23.71795,Stsssola/36/23.37662");
+                                }
                             }
                         }
                         else {
