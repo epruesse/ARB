@@ -480,7 +480,8 @@ void aw_detect_text_size(const char *text, size_t& width, size_t& height) {
 }
 
 void AW_window::create_autosize_button(const char *macro_name, AW_label buttonlabel, const  char *mnemonic, unsigned xtraSpace) {
-    aw_assert(buttonlabel[0] != '#');               // use create_button() for graphical buttons!
+    aw_assert(buttonlabel[0] != '#');    // use create_button() for graphical buttons!
+    aw_assert(!_at->to_position_exists); // wont work if to-position exists
 
     AW_awar *is_awar = get_root()->label_is_awar(buttonlabel);
     size_t   width, height;
