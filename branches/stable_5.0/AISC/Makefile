@@ -11,7 +11,7 @@ $(BINARY):	$(OBJECTS)
 	$(CPP) $(cflags) -o $@ $(OBJECTS)
 
 .c.o:
-	$(CPP) $(cflags) -c $< $(AINCLUDES)
+	$(CPP) -x c++ $(cflags) -c $< $(AINCLUDES)
 
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)

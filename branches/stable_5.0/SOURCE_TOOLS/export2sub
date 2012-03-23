@@ -24,3 +24,7 @@ export MAKEDEPENDFLAGS MAKEDEPEND
 
 export SEP
 
+# support for clang static checker
+export CLANG_STATIC_CHECKER
+export CCC_ANALYZER_CPLUSPLUS
+
