@@ -118,10 +118,10 @@ class InsertData {
 public:
 
     bool quick_add_flag;
-    InsertData(bool quick, long spec_count)
+    InsertData(bool quick, long spec_count, int add_progress_steps)
         : abort_flag(false),
           currentspecies(0),
-          progress(GBS_global_string("Inserting %li species", spec_count), spec_count), 
+          progress(GBS_global_string("Inserting %li species", spec_count), spec_count+add_progress_steps),
           quick_add_flag(quick)
     {
     }
@@ -136,6 +136,8 @@ public:
         progress.inc();
         abort_flag = progress.aborted();
     }
+
+    arb_progress& get_progress() { return progress; }
 };
 
 static long insert_species_in_tree_test(const char *key, long val, void *cd_isits) {
@@ -531,7 +533,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick, int t
 
         long       max_species = 0;
         GBS_hash_do_loop(hash, count_hash_elements, &max_species);
-        InsertData isits(quick, max_species);
+        InsertData isits(quick, max_species, 1); // 1 extra step for calc_branchlengths below
 
         if (test) {
             GBS_hash_do_loop(hash, insert_species_in_tree_test, &isits);
@@ -548,6 +550,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick, int t
 
         if (rootNode()) {
             rootEdge()->calc_branchlengths();
+            ++isits.get_progress();
 
             ASSERT_VALID_TREE(rootNode());
             rootNode()->compute_tree(GLOBAL_gb_main);
@@ -563,6 +566,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick, int t
         }
         else {
             error = "Tree lost (no leafs left)";
+            isits.get_progress().done();
         }
     }
 
