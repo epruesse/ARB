@@ -22,16 +22,37 @@
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_family_list *family)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(family)); }
 
+struct TraversalHitLimit {
+    int id;    // "unique" for each traversal
+    int limit; // max hits allowed to each target seq for this traversal
+
+    TraversalHitLimit(int id_, int limit_)
+        : id(id_), limit(limit_)
+    { pt_assert(limit>0); }
+};
 
 class HitCounter {
-    int    last_count; // previous counter value (used to limit multi-matches)
+    int    trav_id;    // current traversal id
+    int    trav_hits;  // how many hits have been counted during traversal 'trav_id' ?
     int    count;      // Counter for matches
     double rel_count;  // match_count / (seq_len - probe_len + 1)
 
 public:
-    HitCounter() : last_count(0), count(0), rel_count(0.0) {}
+    HitCounter() : trav_id(-1), trav_hits(0), count(0), rel_count(0.0) {}
 
-    void inc() { count++; }
+    void inc(const TraversalHitLimit& traversal) {
+        if (traversal.id != trav_id) { // first hit during this traversal
+            trav_id  = traversal.id;
+            trav_hits = 1; // reset
+            count++;
+        }
+        else {
+            if (trav_hits<traversal.limit) {
+                trav_hits++;
+                count++;
+            }
+        }
+    }
     void calc_rel_match(int max_poss_matches) {
         rel_count = max_poss_matches>0 ? double(count)/max_poss_matches : 0;
     }
@@ -41,24 +62,19 @@ public:
 
     int get_match_count() const { return count; }
     const double& get_rel_match_count() const { return rel_count; }
-
-    void limit_multi_matches(int source_count) {
-        // 'source_count' specifies how often the probe occurs in source
-        int last_inc      = count-last_count;
-        int multi_matches = last_inc-source_count;
-        if (multi_matches>0) {
-            count -= multi_matches;
-        }
-        last_count = count; // reset for next traversal
-    }
 };
 
 class FamilyStat : virtual Noncopyable {
-    size_t      size;
-    HitCounter *famstat;
+    size_t             size;
+    HitCounter        *famstat;
+    TraversalHitLimit  trav_info;
 
 public:
-    FamilyStat(size_t size_) : size(size_), famstat(new HitCounter[size]) { }
+    FamilyStat(size_t size_)
+        : size(size_),
+          famstat(new HitCounter[size]),
+          trav_info(-1, 1)
+    {}
     ~FamilyStat() { delete [] famstat; }
 
     void calc_rel_matches(int probe_len, int sequence_length)  {
@@ -68,15 +84,13 @@ public:
         }
     }
 
-    void limit_multi_matches(int source_count) {
-        for (size_t i = 0; i < size; i++) {
-            famstat[i].limit_multi_matches(source_count);
-        }
-    }
-
     const HitCounter& hits(size_t idx) const { pt_assert(idx<size); return famstat[idx]; }
 
-    void count_match(size_t idx) { famstat[idx].inc(); }
+    void limit_hits_for_next_traversal(int hit_limit) {
+        trav_info.id++;
+        trav_info.limit = hit_limit;
+    }
+    void count_match(size_t idx) { famstat[idx].inc(trav_info); }
 
     bool less_abs(int a, int b) const { return famstat[a].less_abs(famstat[b]); }
     bool less_rel(int a, int b) const { return famstat[a].less_rel(famstat[b]); }
@@ -380,11 +394,11 @@ int find_family(PT_family *ffinder, bytestring *species) {
     }
 
     for (ProbeIter p = occurring_probes.begin(); p != occurring_probes.end(); ++p)  {
-        const char *probe  = p->first;
-        int         occurs = p->second;
+        const char *probe           = p->first;
+        int         occur_in_source = p->second;
 
+        famStat.limit_hits_for_next_traversal(occur_in_source);
         ProbeTraversal(probe, probe_len, mismatch_nr, famStat).mark_matching(psg.pt);
-        famStat.limit_multi_matches(occurs);
     }
 
     famStat.calc_rel_matches(ffinder->pr_len, sequence_len);
