@@ -49,8 +49,10 @@ using namespace QUERY;
 #define AWAR_NN_COMPLEMENT  AWAR_NN_BASE "complement"
 
 // next neighbours of selected only:
-#define AWAR_NN_MAX_HITS  AWAR_NN_BASE "max_hits"
-#define AWAR_NN_HIT_COUNT "tmp/" AWAR_NN_BASE "hit_count"
+#define AWAR_NN_MAX_HITS    AWAR_NN_BASE "max_hits"
+#define AWAR_NN_HIT_COUNT   "tmp/" AWAR_NN_BASE "hit_count"
+#define AWAR_NN_AUTO_SEARCH "tmp/" AWAR_NN_BASE "auto_search"
+#define AWAR_NN_AUTO_MARK   "tmp/" AWAR_NN_BASE "auto_mark"
 
 // next neighbours of listed only:
 #define AWAR_NN_DEST_FIELD     AWAR_NN_BASE "dest_field"
@@ -938,6 +940,38 @@ inline int get_and_fix_range_from_awar(AW_awar *awar) {
     return ipos;
 }
 
+class NN_GlobalData {
+    DbQuery           *query;
+    AW_selection_list *sel_id;     // result list from create_next_neighbours_selected_window()
+    AW_window         *aww_sel_id; // window containing sel_id
+
+public:
+    NN_GlobalData() : query(0), sel_id(0) {}
+
+    void set_query(DbQuery *new_query) {
+        if (new_query != query) {
+            ui_assert(!query); // need redesign b4 changing query works
+            query = new_query;
+        }
+    }
+    void set_result_list(AW_window *new_aww, AW_selection_list *new_sel_id) {
+        if (new_sel_id != sel_id) {
+            ui_assert(!sel_id); // need redesign b4 changing query works
+            ui_assert(!aww_sel_id); // need redesign b4 changing query works
+            sel_id     = new_sel_id;
+            aww_sel_id = new_aww;
+        }
+    }
+
+    DbQuery *get_query() const { ui_assert(query); return query; }
+
+    AW_selection_list *get_result_list() const { ui_assert(sel_id); return sel_id; }
+    AW_window *get_aww() const { ui_assert(aww_sel_id); return aww_sel_id; }
+
+    GBDATA *get_gb_main() const { return query_get_gb_main(get_query()); }
+};
+static NN_GlobalData NN_GLOBAL;
+
 static TargetRange get_nn_range_from_awars(AW_root *aw_root) {
     int start = get_and_fix_range_from_awar(aw_root->awar(AWAR_NN_RANGE_START));
     int end   = get_and_fix_range_from_awar(aw_root->awar(AWAR_NN_RANGE_END));
@@ -949,8 +983,8 @@ inline char *read_sequence_region(GBDATA *gb_data, const TargetRange& range) {
     return range.dup_corresponding_part(GB_read_char_pntr(gb_data), GB_read_count(gb_data));
 }
 
-static void awtc_nn_search_all_listed(AW_window *aww, AW_CL cl_query) {
-    DbQuery *query   = (DbQuery *)cl_query;
+static void awtc_nn_search_all_listed(AW_window *aww) {
+    DbQuery *query   = NN_GLOBAL.get_query();
     GBDATA  *gb_main = query_get_gb_main(query);
 
     ui_assert(get_queried_itemtype(query).type == QUERY_ITEM_SPECIES);
@@ -975,95 +1009,117 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL cl_query) {
         }
     }
 
-    long         max = count_queried_items(query, QUERY_ALL_ITEMS);
-    arb_progress progress("Searching next neighbours", max);
-    progress.auto_subtitles("Species");
+    long max = count_queried_items(query, QUERY_ALL_ITEMS);
+    if (!max) {
+        error = "No species listed in query";
+    }
+    else {
+        arb_progress progress("Searching next neighbours", max);
+        progress.auto_subtitles("Species");
 
-    int            pts            = aw_root->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
-    char          *ali_name       = aw_root->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
-    int            oligo_len      = aw_root->awar(AWAR_NN_OLIGO_LEN)->read_int();
-    int            mismatches     = aw_root->awar(AWAR_NN_MISMATCHES)->read_int();
-    bool           fast_mode      = aw_root->awar(AWAR_NN_FAST_MODE)->read_int();
-    FF_complement  compl_mode     = static_cast<FF_complement>(aw_root->awar(AWAR_NN_COMPLEMENT)->read_int());
-    bool           rel_matches    = aw_root->awar(AWAR_NN_REL_MATCHES)->read_int();
-    int            wanted_entries = aw_root->awar(AWAR_NN_WANTED_ENTRIES)->read_int();
-    bool           scored_entries = aw_root->awar(AWAR_NN_SCORED_ENTRIES)->read_int();
-    int            min_score      = aw_root->awar(AWAR_NN_MIN_SCORE)->read_int();
+        int            pts            = aw_root->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
+        char          *ali_name       = aw_root->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
+        int            oligo_len      = aw_root->awar(AWAR_NN_OLIGO_LEN)->read_int();
+        int            mismatches     = aw_root->awar(AWAR_NN_MISMATCHES)->read_int();
+        bool           fast_mode      = aw_root->awar(AWAR_NN_FAST_MODE)->read_int();
+        FF_complement  compl_mode     = static_cast<FF_complement>(aw_root->awar(AWAR_NN_COMPLEMENT)->read_int());
+        bool           rel_matches    = aw_root->awar(AWAR_NN_REL_MATCHES)->read_int();
+        int            wanted_entries = aw_root->awar(AWAR_NN_WANTED_ENTRIES)->read_int();
+        bool           scored_entries = aw_root->awar(AWAR_NN_SCORED_ENTRIES)->read_int();
+        int            min_score      = aw_root->awar(AWAR_NN_MIN_SCORE)->read_int();
 
-    TargetRange org_range = get_nn_range_from_awars(aw_root);
+        TargetRange org_range = get_nn_range_from_awars(aw_root);
 
-    for (GBDATA *gb_species = GBT_first_species(gb_main);
-         !error && gb_species;
-         gb_species = GBT_next_species(gb_species))
-    {
-        if (!IS_QUERIED(gb_species, query)) continue;
+        for (GBDATA *gb_species = GBT_first_species(gb_main);
+             !error && gb_species;
+             gb_species = GBT_next_species(gb_species))
+        {
+            if (!IS_QUERIED(gb_species, query)) continue;
 
-        GBDATA *gb_data = GBT_read_sequence(gb_species, ali_name);
-        if (gb_data) {
-            TargetRange      range    = org_range; // modified by read_sequence_region
-            char            *sequence = read_sequence_region(gb_data, range);
-            PT_FamilyFinder  ff(gb_main, pts, oligo_len, mismatches, fast_mode, rel_matches);
+            GBDATA *gb_data = GBT_read_sequence(gb_species, ali_name);
+            if (gb_data) {
+                TargetRange      range    = org_range; // modified by read_sequence_region
+                char            *sequence = read_sequence_region(gb_data, range);
+                PT_FamilyFinder  ff(gb_main, pts, oligo_len, mismatches, fast_mode, rel_matches);
 
-            ff.restrict_2_region(range);
+                ff.restrict_2_region(range);
 
-            error = ff.searchFamily(sequence, compl_mode, wanted_entries);
-            if (!error) {
-                const FamilyList *fm = ff.getFamilyList();
+                error = ff.searchFamily(sequence, compl_mode, wanted_entries);
+                if (!error) {
+                    const FamilyList *fm = ff.getFamilyList();
 
-                GBS_strstruct *value = NULL;
-                while (fm) {
-                    const char *thisValue = 0;
-                    if (rel_matches) {
-                        if ((fm->rel_matches*100) > min_score) {
-                            thisValue = scored_entries
-                                ? GBS_global_string("%.1f%%:%s", fm->rel_matches*100, fm->name)
-                                : fm->name;
-                        }
-                    }
-                    else {
-                        if (fm->matches > min_score) {
-                            thisValue = scored_entries
-                                ? GBS_global_string("%li:%s", fm->matches, fm->name)
-                                : fm->name;
-                        }
-                    }
-
-                    if (thisValue) {
-                        if (value == NULL) { // first entry
-                            value = GBS_stropen(1000);
+                    GBS_strstruct *value = NULL;
+                    while (fm) {
+                        const char *thisValue = 0;
+                        if (rel_matches) {
+                            if ((fm->rel_matches*100) > min_score) {
+                                thisValue = scored_entries
+                                    ? GBS_global_string("%.1f%%:%s", fm->rel_matches*100, fm->name)
+                                    : fm->name;
+                            }
                         }
                         else {
-                            GBS_chrcat(value, ';');
+                            if (fm->matches > min_score) {
+                                thisValue = scored_entries
+                                    ? GBS_global_string("%li:%s", fm->matches, fm->name)
+                                    : fm->name;
+                            }
                         }
-                        GBS_strcat(value, thisValue);
+
+                        if (thisValue) {
+                            if (value == NULL) { // first entry
+                                value = GBS_stropen(1000);
+                            }
+                            else {
+                                GBS_chrcat(value, ';');
+                            }
+                            GBS_strcat(value, thisValue);
+                        }
+
+                        fm = fm->next;
                     }
 
-                    fm = fm->next;
-                }
+                    if (value) {
+                        GBDATA *gb_dest = GB_search(gb_species, dest_field, dest_type);
 
-                if (value) {
-                    GBDATA *gb_dest = GB_search(gb_species, dest_field, dest_type);
-
-                    error = GB_write_as_string(gb_dest, GBS_mempntr(value));
-                    GBS_strforget(value);
+                        error = GB_write_as_string(gb_dest, GBS_mempntr(value));
+                        GBS_strforget(value);
+                    }
+                    else {
+                        GBDATA *gb_dest = GB_search(gb_species, dest_field, GB_FIND);
+                        if (gb_dest) error = GB_delete(gb_dest);
+                    }
                 }
-                else {
-                    GBDATA *gb_dest = GB_search(gb_species, dest_field, GB_FIND);
-                    if (gb_dest) error = GB_delete(gb_dest);
-                }
+                free(sequence);
             }
-            free(sequence);
+            progress.inc_and_check_user_abort(error);
         }
-        progress.inc_and_check_user_abort(error);
+        free(ali_name);
     }
     GB_end_transaction_show_error(gb_main, error, aw_message);
     free(dest_field);
-    free(ali_name);
 }
 
-static void awtc_nn_search(AW_window *aww, AW_CL id, AW_CL cl_gb_main) {
+static void awtc_mark_hits(AW_window *) {
+    AW_selection_list *id        = NN_GLOBAL.get_result_list();
+    AW_window         *aww       = NN_GLOBAL.get_aww();
+    GB_HASH           *list_hash = aww->selection_list_to_hash(id, false);
+    GBDATA            *gb_main   = NN_GLOBAL.get_gb_main();
+
+    GB_transaction ta(gb_main);
+    for (GBDATA *gb_species = GBT_first_species(gb_main);
+         gb_species;
+         gb_species = GBT_next_species(gb_species))
+    {
+        int hit = GBS_read_hash(list_hash, GBT_get_name(gb_species));
+        GB_write_flag(gb_species, hit);
+    }
+}
+
+static void awtc_nn_search(AW_window*) {
+    AW_window   *aww      = NN_GLOBAL.get_aww();
     AW_root     *aw_root  = aww->get_root();
-    GBDATA      *gb_main  = (GBDATA*)cl_gb_main;
+    GBDATA      *gb_main  = NN_GLOBAL.get_gb_main();
     GB_ERROR     error    = 0;
     TargetRange  range    = get_nn_range_from_awars(aw_root);
     char        *sequence = 0;
@@ -1113,7 +1169,7 @@ static void awtc_nn_search(AW_window *aww, AW_CL id, AW_CL cl_gb_main) {
 
     // update result list
     {
-        AW_selection_list* sel = (AW_selection_list *)id;
+        AW_selection_list* sel = NN_GLOBAL.get_result_list();
         aww->clear_selection_list(sel);
 
         int hits = 0;
@@ -1142,13 +1198,17 @@ static void awtc_nn_search(AW_window *aww, AW_CL id, AW_CL cl_gb_main) {
             hits = ff.getRealHits();
         }
         aw_root->awar(AWAR_NN_HIT_COUNT)->write_int(hits);
+        if (aw_root->awar(AWAR_NN_AUTO_MARK)->read_int()) {
+            awtc_mark_hits(NULL);
+            aw_root->awar(AWAR_TREE_REFRESH)->touch();
+        }
         aww->update_selection_list(sel);
     }
 
     free(sequence);
 }
 
-static void awtc_move_hits(AW_window *aww, AW_CL id, AW_CL cl_query) {
+static void awtc_move_hits(AW_window *aww) {
     AW_root *aw_root         = aww->get_root();
     char    *current_species = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
 
@@ -1156,10 +1216,26 @@ static void awtc_move_hits(AW_window *aww, AW_CL id, AW_CL cl_query) {
 
     char *hit_description = GBS_global_string_copy("<neighbour of %s: %%s>", current_species);
 
-    copy_selection_list_2_query_box((DbQuery *)cl_query, (AW_selection_list *)id, hit_description);
+    copy_selection_list_2_query_box(NN_GLOBAL.get_query(), NN_GLOBAL.get_result_list(), hit_description);
 
     free(hit_description);
     free(current_species);
+}
+
+static void nn_do_autosearch_cb(AW_root *) {
+    awtc_nn_search(NULL);
+}
+
+static void nn_auto_search_changed_cb(AW_root *awr) {
+    int auto_search = awr->awar(AWAR_NN_AUTO_SEARCH)->read_int();
+
+    AW_awar *awar_sel_species = awr->awar(AWAR_SPECIES_NAME);
+    if (auto_search) {
+        awar_sel_species->add_callback(nn_do_autosearch_cb);
+    }
+    else {
+        awar_sel_species->remove_callback(nn_do_autosearch_cb);
+    }
 }
 
 static void create_next_neighbours_vars(AW_root *aw_root) {
@@ -1169,8 +1245,10 @@ static void create_next_neighbours_vars(AW_root *aw_root) {
         aw_root->awar_int(AWAR_PROBE_ADMIN_PT_SERVER);
         aw_root->awar_int(AWAR_NN_COMPLEMENT,  FF_FORWARD);
 
-        aw_root->awar_int(AWAR_NN_MAX_HITS,  50);
-        aw_root->awar_int(AWAR_NN_HIT_COUNT, 0);
+        aw_root->awar_int(AWAR_NN_MAX_HITS,    50);
+        aw_root->awar_int(AWAR_NN_HIT_COUNT,   0);
+        aw_root->awar_int(AWAR_NN_AUTO_SEARCH, 0)->add_callback(nn_auto_search_changed_cb);
+        aw_root->awar_int(AWAR_NN_AUTO_MARK,   0);
 
         aw_root->awar_string(AWAR_NN_DEST_FIELD, "tmp");
         aw_root->awar_int(AWAR_NN_WANTED_ENTRIES, 5);
@@ -1212,6 +1290,7 @@ static void create_common_next_neighbour_fields(AW_window *aws) {
 
 static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, AW_CL cl_query) {
     static AW_window_simple *aws = 0;
+    NN_GLOBAL.set_query((DbQuery*)cl_query);
     if (!aws) {
         create_next_neighbours_vars(aw_root);
 
@@ -1245,7 +1324,7 @@ static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, AW_CL c
                                                 SPECIES_get_selector(), 20, 10);
 
         aws->at("go");
-        aws->callback(awtc_nn_search_all_listed, cl_query);
+        aws->callback(awtc_nn_search_all_listed);
         aws->create_button("WRITE_FIELDS", "Write to field");
     }
     return aws;
@@ -1253,6 +1332,7 @@ static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, AW_CL c
 
 static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL cl_query) {
     static AW_window_simple *aws = 0;
+    NN_GLOBAL.set_query((DbQuery*)cl_query);
     if (!aws) {
         create_next_neighbours_vars(aw_root);
 
@@ -1278,16 +1358,29 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL
 
         aws->at("hits");
         AW_selection_list *id = aws->create_selection_list(AWAR_SPECIES_NAME);
+        NN_GLOBAL.set_result_list(aws, id);
         aws->insert_default_selection(id, "No hits found", "");
         aws->update_selection_list(id);
 
         aws->at("go");
-        aws->callback(awtc_nn_search, (AW_CL)id, (AW_CL)query_get_gb_main((DbQuery*)cl_query));
+        aws->callback(awtc_nn_search);
         aws->create_button("SEARCH", "SEARCH");
 
+        aws->at("auto_go");
+        aws->label("Auto on selection change");
+        aws->create_toggle(AWAR_NN_AUTO_SEARCH);
+        
+        aws->at("mark");
+        aws->callback(awtc_mark_hits);
+        aws->create_autosize_button("MARK_HITS", "Mark hits");
+
+        aws->at("auto_mark");
+        aws->label("Auto");
+        aws->create_toggle(AWAR_NN_AUTO_MARK);
+
         aws->at("move");
-        aws->callback(awtc_move_hits, (AW_CL)id, cl_query);
-        aws->create_button("MOVE_TO_HITLIST", "MOVE TO HITLIST");
+        aws->callback(awtc_move_hits);
+        aws->create_autosize_button("MOVE_TO_HITLIST", "Move to hitlist");
 
     }
     return aws;

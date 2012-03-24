@@ -24,18 +24,27 @@ SECTION         DESCRIPTION
                 When you press the SEARCH button, the next relatives of the selected species are listed
                 in the Hits-box.
 
+                If you check 'Auto on selection change' the search will start everytime the currently
+                selected species changes.
+
                 Then number of species listed there is limited by the number given in
                 the 'Results' field. Enter 0 to get unlimited output.
 
-                When you press the 'MOVE TO HITLIST' button, the species list is transferred to
+                When you press the 'Move to hitlist' button, the species list is transferred to
                 the species search result list, where you're able to apply further actions to the
-                found relatives (like mark or modify them).
+                found relatives.
                   * Depending on the settings of 'Search/Add/Keep species' in the main query-window
                     the species list is either replaced, added or kept.
                   * Depending on the setting of 'that match/don't match the query' either the list of
                     found relatives is applied or the rest of the species.
 
-NOTES		None
+                When you press the 'Mark hits' button, all species listed in the 'Hits' list will be
+                marked (and all other species will be unmarked).
+
+                If you check 'Auto' behind the 'Mark hits' button this will be done automatically
+                after each search.
+
+NOTES		Try auto-mark together with auto-search!
 
 EXAMPLES	None
 
