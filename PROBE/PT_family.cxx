@@ -22,6 +22,11 @@
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_family_list *family)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(family)); }
 
+inline int double_cmp(double d1, const double d2) {
+    double d = d1-d2;
+    return d<0 ? -1 : (d>0 ? 1 : 0);
+}
+
 struct TraversalHitLimit {
     int id;    // "unique" for each traversal
     int limit; // max hits allowed to each target seq for this traversal
@@ -57,8 +62,8 @@ public:
         rel_count = max_poss_matches>0 ? double(count)/max_poss_matches : 0;
     }
 
-    bool less_abs(const HitCounter& other) const { return count < other.count; }
-    bool less_rel(const HitCounter& other) const { return rel_count < other.rel_count; }
+    int cmp_abs(const HitCounter& other) const { return count - other.count; }
+    int cmp_rel(const HitCounter& other) const { return double_cmp(rel_count, other.rel_count); }
 
     int get_match_count() const { return count; }
     const double& get_rel_match_count() const { return rel_count; }
@@ -92,8 +97,8 @@ public:
     }
     void count_match(size_t idx) { famstat[idx].inc(trav_info); }
 
-    bool less_abs(int a, int b) const { return famstat[a].less_abs(famstat[b]); }
-    bool less_rel(int a, int b) const { return famstat[a].less_rel(famstat[b]); }
+    int cmp_abs(int a, int b) const { int cmp = famstat[a].cmp_abs(famstat[b]); return cmp ? cmp : a-b; }
+    int cmp_rel(int a, int b) const { int cmp = famstat[a].cmp_rel(famstat[b]); return cmp ? cmp : a-b; }
 };
 
 class ProbeTraversal {
@@ -210,13 +215,13 @@ void ProbeTraversal::mark_all(POS_TREE *pt) const {
 struct cmp_probe_abs {
     const FamilyStat& fam_stat;
     cmp_probe_abs(const FamilyStat& fam_stat_) : fam_stat(fam_stat_) {}
-    bool operator()(int a, int b) { return fam_stat.less_abs(b, a); }
+    bool operator()(int a, int b) { return fam_stat.cmp_abs(a, b) > 0; } // biggest scores 1st
 };
 
 struct cmp_probe_rel {
     const FamilyStat& fam_stat;
     cmp_probe_rel(const FamilyStat& fam_stat_) : fam_stat(fam_stat_) {}
-    bool operator()(int a, int b) { return fam_stat.less_rel(b, a); }
+    bool operator()(int a, int b) { return fam_stat.cmp_rel(a, b) > 0; } // biggest scores 1st
 };
 
 static int make_PT_family_list(PT_family *ffinder, const FamilyStat& famStat) {
