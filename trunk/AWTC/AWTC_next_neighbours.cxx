@@ -368,7 +368,7 @@ void TEST_SLOW_PT_FamilyFinder() {
                                     TEST_ASSERT_EQUAL(ff.results2string(), "DsssDesu/38/38.77551,CltBotul/38/34.23423,PsAAAA00/38/32.75862,Bl0LLL00/38/25.67568");
                                 }
                                 else {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "Bl0LLL00/38/25.67568,CltBotul/38/34.23423,BcSSSS00/38/22.89157,ClnCorin/38/25.16556");
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "PtVVVulg/38/22.75449,AclPleur/38/22.35294,VbhChole/38/23.60248,VblVulni/38/23.60248");
                                 }
                             }
                             else { // fast-search
@@ -376,7 +376,7 @@ void TEST_SLOW_PT_FamilyFinder() {
                                     TEST_ASSERT_EQUAL(ff.results2string(), "DsssDesu/7/7.14286,CltBotul/7/6.30631,PsAAAA00/7/6.03448,Bl0LLL00/7/4.72973");
                                 }
                                 else {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "Bl0LLL00/7/4.72973,CltBotul/7/6.30631,BcSSSS00/7/4.21687,ClnCorin/7/4.63576");
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "PtVVVulg/7/4.19162,AclPleur/7/4.11765,VbhChole/7/4.34783,VblVulni/7/4.34783");
                                 }
                             }
                         }
@@ -392,7 +392,7 @@ void TEST_SLOW_PT_FamilyFinder() {
                                     TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/3/1.96078,FrhhPhil/1/0.68027,VblVulni/1/0.64935,DcdNodos/1/0.64935");
                                 }
                                 else {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/3/1.96078,VblVulni/1/0.64935,FrhhPhil/1/0.68027,DcdNodos/1/0.64935");
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/3/1.96078,AclPleur/1/0.61350,VblVulni/1/0.64935,FrhhPhil/1/0.68027");
                                 }
                             }
                         }
@@ -410,7 +410,7 @@ void TEST_SLOW_PT_FamilyFinder() {
                                     TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/153/97.45223,HllHalod/133/85.25641,VbhChole/133/84.17722,VblVulni/133/84.17722");
                                 }
                                 else {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/153/97.45223,AclPleur/138/82.63473,HllHalod/133/85.25641,VbhChole/133/84.17722");
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/153/97.45223,AclPleur/138/82.63473,VbhChole/133/84.17722,VblVulni/133/84.17722");
                                 }
                             }
                             else { // fast-search
@@ -418,7 +418,7 @@ void TEST_SLOW_PT_FamilyFinder() {
                                     TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/42/26.75159,VblVulni/37/23.41772,HllHalod/36/23.07692,Stsssola/36/23.07692");
                                 }
                                 else {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/42/26.75159,AclPleur/38/22.75449,VblVulni/37/23.41772,Stsssola/36/23.07692");
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/42/26.75159,AclPleur/38/22.75449,VblVulni/37/23.41772,VbhChole/36/22.78481");
                                 }
                             }
                         }
@@ -435,7 +435,12 @@ void TEST_SLOW_PT_FamilyFinder() {
                                 }
                             }
                             else { // fast-search
-                                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.58621,HllHalod/18/12.50000,AclPleur/17/10.96774,VbhChole/15/10.27397");
+                                if (relativeMatches) {
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.58621,HllHalod/18/12.50000,AclPleur/17/10.96774,VbhChole/15/10.27397");
+                                }
+                                else {
+                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.58621,HllHalod/18/12.50000,AclPleur/17/10.96774,PtVVVulg/15/9.86842");
+                                }
                             }
                         }
                     }
