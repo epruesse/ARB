@@ -164,7 +164,7 @@ PT_family, FAMILYFINDER, 12, (~next relative search~), {
     int,            pr_len,               t,    rw,     ,       PROBE_LEN,         9,      12,                   (~Length of probes~);
     int,            mis_nr,               t,    rw,     ,       MISMATCH_NUMBER,   10,     0,                    (~Number of mismatches~);
     int,            only_A_probes,        t,    rw,     ,       FIND_TYPE,         11,     0,                    (~Type of search: 0 = search all, 1 = only a*~);
-    int,            complement,           t,    rw,     ,       COMPLEMENT,        12,     1,                    (~Search for complement? (combination of: fwd=1, rev=2, rev.compl=4, compl=8)~);
+    int,            complement,           t,    rw,     ,       COMPLEMENT,        12,     1,                    (~Search for complement? (see FF_complement)~);
     PT_family_list, fl,                   d,    r,      ,       FAMILY_LIST,       13,     ,                     (~Sorted List of family~);     # note: This uses 80 AND 81!
     int,            list_size,            t,    r,      ,       FAMILY_LIST_SIZE,  15,     ,                     (~size of result list~);
     int,            sort_type,            t,    rw,     ,       SORT_TYPE,         16,     0,                    (~Type of sorting 0 = MATCHES, 1 = REL_MATCHES~);

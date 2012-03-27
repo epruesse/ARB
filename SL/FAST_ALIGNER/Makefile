@@ -83,6 +83,7 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/cb.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/dupstr.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/island_hopping.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/PT_global_defs.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/smartptr.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/test_global.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/test_unit.h

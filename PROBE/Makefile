@@ -123,6 +123,7 @@ PT_etc.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_family.o: probe.h
 PT_family.o: probe_tree.h
+PT_family.o: PT_global_defs.h
 PT_family.o: pt_prototypes.h
 PT_family.o: PT_rangeCheck.h
 PT_family.o: $(ARBHOME)/INCLUDE/ad_prot.h
