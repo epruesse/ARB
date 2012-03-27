@@ -121,7 +121,7 @@ public:
     void unrestrict() { range = TargetRange(-1, -1); }
     const TargetRange& get_TargetRange() const { return range; }
 
-    virtual GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results) = 0;
+    virtual GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results, double min_score) = 0;
 
     const FamilyList *getFamilyList() const { return family_list; }
     void delete_family_list();
@@ -144,7 +144,7 @@ class PT_FamilyFinder : public FamilyFinder { // derived from a Noncopyable
 
     GB_ERROR init_communication();
     GB_ERROR open(const char *servername);
-    GB_ERROR retrieve_family(const char *sequence, FF_complement compl_mode, int max_results) __ATTR__USERESULT;
+    GB_ERROR retrieve_family(const char *sequence, FF_complement compl_mode, int max_results, double min_score) __ATTR__USERESULT;
     void     close();
 
 public:
@@ -152,7 +152,7 @@ public:
     PT_FamilyFinder(GBDATA *gb_main_, int server_id_, int oligo_len_, int mismatches_, bool fast_flag_, bool rel_matches_);
     ~PT_FamilyFinder();
 
-    GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results) __ATTR__USERESULT;
+    GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results, double min_score) __ATTR__USERESULT;
 
     const char *results2string();
 };

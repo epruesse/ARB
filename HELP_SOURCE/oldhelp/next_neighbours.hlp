@@ -30,6 +30,8 @@ SECTION         DESCRIPTION
                 Then number of species listed there is limited by the number given in
                 the 'Results' field. Enter 0 to get unlimited output.
 
+                You may also limit the listed relatives by specifying a required minimal score.
+
                 When you press the 'Move to hitlist' button, the species list is transferred to
                 the species search result list, where you're able to apply further actions to the
                 found relatives.

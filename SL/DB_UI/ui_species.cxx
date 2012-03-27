@@ -35,33 +35,37 @@ using namespace QUERY;
 #define AWAR_SPECIES_DEST "tmp/adspec/dest"
 #define AWAR_SPECIES_INFO "tmp/adspec/info"
 #define AWAR_SPECIES_KEY  "tmp/adspec/key"
+
 #define AWAR_FIELD_REORDER_SOURCE "tmp/ad_reorder/source"
 #define AWAR_FIELD_REORDER_DEST   "tmp/ad_reorder/dest"
 #define AWAR_FIELD_REORDER_ORDER  "tmp/ad_reorder/order"
+
 #define AWAR_FIELD_CREATE_NAME "tmp/adfield/name"
 #define AWAR_FIELD_CREATE_TYPE "tmp/adfield/type"
 #define AWAR_FIELD_DELETE      "tmp/adfield/source"
+
 #define AWAR_FIELD_CONVERT_SOURCE "tmp/adconvert/source"
 #define AWAR_FIELD_CONVERT_NAME   "tmp/adconvert/name"
 #define AWAR_FIELD_CONVERT_TYPE   "tmp/adconvert/type"
 
 // next neighbours of listed and selected:
+// more defined in ../../AWTC/awtc_next_neighbours.hxx@AWAR_NN_BASE
 #define AWAR_NN_COMPLEMENT  AWAR_NN_BASE "complement"
+#define AWAR_NN_RANGE_START AWAR_NN_BASE "range_start"
+#define AWAR_NN_RANGE_END   AWAR_NN_BASE "range_end"
+#define AWAR_NN_MIN_SCORE   AWAR_NN_BASE "min_scored"
+#define AWAR_NN_MAX_HITS    AWAR_NN_BASE "max_hits"
 
 // next neighbours of selected only:
-#define AWAR_NN_MAX_HITS    AWAR_NN_BASE "max_hits"
-#define AWAR_NN_HIT_COUNT   "tmp/" AWAR_NN_BASE "hit_count"
-#define AWAR_NN_AUTO_SEARCH "tmp/" AWAR_NN_BASE "auto_search"
-#define AWAR_NN_AUTO_MARK   "tmp/" AWAR_NN_BASE "auto_mark"
+#define AWAR_NN_BASE_SELECTED        AWAR_NN_BASE "selected/"
+#define AWAR_NN_SELECTED_HIT_COUNT   "tmp/" AWAR_NN_BASE_SELECTED "hit_count"
+#define AWAR_NN_SELECTED_AUTO_SEARCH "tmp/" AWAR_NN_BASE_SELECTED "auto_search"
+#define AWAR_NN_SELECTED_AUTO_MARK   "tmp/" AWAR_NN_BASE_SELECTED "auto_mark"
 
 // next neighbours of listed only:
-#define AWAR_NN_DEST_FIELD     AWAR_NN_BASE "dest_field"
-#define AWAR_NN_WANTED_ENTRIES AWAR_NN_BASE "wanted_entries"
-#define AWAR_NN_SCORED_ENTRIES AWAR_NN_BASE "scored_entries"
-#define AWAR_NN_MIN_SCORE      AWAR_NN_BASE "min_score"
-#define AWAR_NN_RANGE_START    AWAR_NN_BASE "range_start"
-#define AWAR_NN_RANGE_END      AWAR_NN_BASE "range_end"
-
+#define AWAR_NN_BASE_LISTED           AWAR_NN_BASE "listed/"
+#define AWAR_NN_LISTED_DEST_FIELD     AWAR_NN_BASE_LISTED "dest_field"
+#define AWAR_NN_LISTED_SCORED_ENTRIES AWAR_NN_BASE_LISTED "scored_entries"
 
 enum ReorderMode {
     // real orders
@@ -992,7 +996,7 @@ static void awtc_nn_search_all_listed(AW_window *aww) {
     GB_begin_transaction(gb_main);
 
     AW_root *aw_root    = aww->get_root();
-    char    *dest_field = aw_root->awar(AWAR_NN_DEST_FIELD)->read_string();
+    char    *dest_field = aw_root->awar(AWAR_NN_LISTED_DEST_FIELD)->read_string();
 
     GB_ERROR error     = 0;
     GB_TYPES dest_type = GBT_get_type_of_changekey(gb_main, dest_field, CHANGE_KEY_PATH);
@@ -1024,9 +1028,9 @@ static void awtc_nn_search_all_listed(AW_window *aww) {
         bool           fast_mode      = aw_root->awar(AWAR_NN_FAST_MODE)->read_int();
         FF_complement  compl_mode     = static_cast<FF_complement>(aw_root->awar(AWAR_NN_COMPLEMENT)->read_int());
         bool           rel_matches    = aw_root->awar(AWAR_NN_REL_MATCHES)->read_int();
-        int            wanted_entries = aw_root->awar(AWAR_NN_WANTED_ENTRIES)->read_int();
-        bool           scored_entries = aw_root->awar(AWAR_NN_SCORED_ENTRIES)->read_int();
-        int            min_score      = aw_root->awar(AWAR_NN_MIN_SCORE)->read_int();
+        int            wanted_entries = aw_root->awar(AWAR_NN_MAX_HITS)->read_int();
+        bool           scored_entries = aw_root->awar(AWAR_NN_LISTED_SCORED_ENTRIES)->read_int();
+        double         min_score      = aw_root->awar(AWAR_NN_MIN_SCORE)->read_float();
 
         TargetRange org_range = get_nn_range_from_awars(aw_root);
 
@@ -1044,7 +1048,7 @@ static void awtc_nn_search_all_listed(AW_window *aww) {
 
                 ff.restrict_2_region(range);
 
-                error = ff.searchFamily(sequence, compl_mode, wanted_entries);
+                error = ff.searchFamily(sequence, compl_mode, wanted_entries, min_score); 
                 if (!error) {
                     const FamilyList *fm = ff.getFamilyList();
 
@@ -1052,18 +1056,16 @@ static void awtc_nn_search_all_listed(AW_window *aww) {
                     while (fm) {
                         const char *thisValue = 0;
                         if (rel_matches) {
-                            if ((fm->rel_matches*100) > min_score) {
-                                thisValue = scored_entries
-                                    ? GBS_global_string("%.1f%%:%s", fm->rel_matches*100, fm->name)
-                                    : fm->name;
-                            }
+                            ui_assert((fm->rel_matches*100) >= min_score); // filtered by ptserver
+                            thisValue = scored_entries
+                                ? GBS_global_string("%.1f%%:%s", fm->rel_matches*100, fm->name)
+                                : fm->name;
                         }
                         else {
-                            if (fm->matches > min_score) {
-                                thisValue = scored_entries
-                                    ? GBS_global_string("%li:%s", fm->matches, fm->name)
-                                    : fm->name;
-                            }
+                            ui_assert(fm->matches >= min_score); // filtered by ptserver
+                            thisValue = scored_entries
+                                ? GBS_global_string("%li:%s", fm->matches, fm->name)
+                                : fm->name;
                         }
 
                         if (thisValue) {
@@ -1147,11 +1149,12 @@ static void awtc_nn_search(AW_window*) {
         free(sel_species);
     }
 
-    int  pts         = aw_root->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
-    int  oligo_len   = aw_root->awar(AWAR_NN_OLIGO_LEN)->read_int();
-    int  mismatches  = aw_root->awar(AWAR_NN_MISMATCHES)->read_int();
-    bool fast_mode   = aw_root->awar(AWAR_NN_FAST_MODE)->read_int();
-    bool rel_matches = aw_root->awar(AWAR_NN_REL_MATCHES)->read_int();
+    int    pts         = aw_root->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
+    int    oligo_len   = aw_root->awar(AWAR_NN_OLIGO_LEN)->read_int();
+    int    mismatches  = aw_root->awar(AWAR_NN_MISMATCHES)->read_int();
+    bool   fast_mode   = aw_root->awar(AWAR_NN_FAST_MODE)->read_int();
+    bool   rel_matches = aw_root->awar(AWAR_NN_REL_MATCHES)->read_int();
+    double min_score   = aw_root->awar(AWAR_NN_MIN_SCORE)->read_float();
 
 
     PT_FamilyFinder ff(gb_main, pts, oligo_len, mismatches, fast_mode, rel_matches);
@@ -1164,7 +1167,7 @@ static void awtc_nn_search(AW_window*) {
         FF_complement compl_mode = static_cast<FF_complement>(aw_root->awar(AWAR_NN_COMPLEMENT)->read_int());
         max_hits                 = aw_root->awar(AWAR_NN_MAX_HITS)->read_int();
 
-        error = ff.searchFamily(sequence, compl_mode, max_hits);
+        error = ff.searchFamily(sequence, compl_mode, max_hits, min_score);
     }
 
     // update result list
@@ -1178,8 +1181,9 @@ static void awtc_nn_search(AW_window*) {
             aww->insert_default_selection(sel, "<Error>", "");
         }
         else {
-            int count    = 1;
-            int numWidth = log(max_hits)/log(10)+1;
+            int count     = 1;
+            int shownHits = max_hits>0 ? max_hits : ff.getRealHits();
+            int numWidth  = log(shownHits)/log(10)+1;
 
             for (const FamilyList *fm = ff.getFamilyList(); fm; fm = fm->next) {
                 const char *dis;
@@ -1197,8 +1201,8 @@ static void awtc_nn_search(AW_window*) {
             aww->insert_default_selection(sel, ff.hits_were_truncated() ? "<List truncated>" : "<No more hits>", "");
             hits = ff.getRealHits();
         }
-        aw_root->awar(AWAR_NN_HIT_COUNT)->write_int(hits);
-        if (aw_root->awar(AWAR_NN_AUTO_MARK)->read_int()) {
+        aw_root->awar(AWAR_NN_SELECTED_HIT_COUNT)->write_int(hits);
+        if (aw_root->awar(AWAR_NN_SELECTED_AUTO_MARK)->read_int()) {
             awtc_mark_hits(NULL);
             aw_root->awar(AWAR_TREE_REFRESH)->touch();
         }
@@ -1227,7 +1231,7 @@ static void nn_do_autosearch_cb(AW_root *) {
 }
 
 static void nn_auto_search_changed_cb(AW_root *awr) {
-    int auto_search = awr->awar(AWAR_NN_AUTO_SEARCH)->read_int();
+    int auto_search = awr->awar(AWAR_NN_SELECTED_AUTO_SEARCH)->read_int();
 
     AW_awar *awar_sel_species = awr->awar(AWAR_SPECIES_NAME);
     if (auto_search) {
@@ -1245,18 +1249,17 @@ static void create_next_neighbours_vars(AW_root *aw_root) {
         aw_root->awar_int(AWAR_PROBE_ADMIN_PT_SERVER);
         aw_root->awar_int(AWAR_NN_COMPLEMENT,  FF_FORWARD);
 
-        aw_root->awar_int(AWAR_NN_MAX_HITS,    50);
-        aw_root->awar_int(AWAR_NN_HIT_COUNT,   0);
-        aw_root->awar_int(AWAR_NN_AUTO_SEARCH, 0)->add_callback(nn_auto_search_changed_cb);
-        aw_root->awar_int(AWAR_NN_AUTO_MARK,   0);
-
-        aw_root->awar_string(AWAR_NN_DEST_FIELD, "tmp");
-        aw_root->awar_int(AWAR_NN_WANTED_ENTRIES, 5);
-        aw_root->awar_int(AWAR_NN_SCORED_ENTRIES, 1);
-        aw_root->awar_int(AWAR_NN_MIN_SCORE,      80);
-
         aw_root->awar_string(AWAR_NN_RANGE_START, "");
         aw_root->awar_string(AWAR_NN_RANGE_END,   "");
+        aw_root->awar_int   (AWAR_NN_MAX_HITS,    10);
+        aw_root->awar_float (AWAR_NN_MIN_SCORE,   80);
+        
+        aw_root->awar_int(AWAR_NN_SELECTED_HIT_COUNT,   0);
+        aw_root->awar_int(AWAR_NN_SELECTED_AUTO_SEARCH, 0)->add_callback(nn_auto_search_changed_cb);
+        aw_root->awar_int(AWAR_NN_SELECTED_AUTO_MARK,   0);
+
+        aw_root->awar_string(AWAR_NN_LISTED_DEST_FIELD,     "tmp");
+        aw_root->awar_int   (AWAR_NN_LISTED_SCORED_ENTRIES, 1);
 
         AWTC_create_common_next_neighbour_vars(aw_root);
 
@@ -1286,6 +1289,12 @@ static void create_common_next_neighbour_fields(AW_window *aws) {
     aws->insert_option        ("rev + compl",        "", FF_REVERSE|FF_COMPLEMENT);
     aws->insert_option        ("any",                "", FF_FORWARD|FF_REVERSE|FF_COMPLEMENT|FF_REVERSE_COMPLEMENT);
     aws->update_option_menu();
+
+    aws->at("results");
+    aws->create_input_field(AWAR_NN_MAX_HITS, 3);
+    
+    aws->at("min_score");
+    aws->create_input_field(AWAR_NN_MIN_SCORE, 6);
 }
 
 static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, AW_CL cl_query) {
@@ -1308,24 +1317,18 @@ static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, AW_CL c
 
         create_common_next_neighbour_fields(aws);
 
-        aws->at("entries");
-        aws->create_input_field(AWAR_NN_WANTED_ENTRIES, 3);
-
         aws->at("add_score");
-        aws->create_toggle(AWAR_NN_SCORED_ENTRIES);
-
-        aws->at("min_score");
-        aws->create_input_field(AWAR_NN_MIN_SCORE, 5);
-
+        aws->create_toggle(AWAR_NN_LISTED_SCORED_ENTRIES);
+        
         aws->at("field");
         create_selection_list_on_itemfields(query_get_gb_main((DbQuery*)cl_query),
-                                                aws, AWAR_NN_DEST_FIELD,
+                                                aws, AWAR_NN_LISTED_DEST_FIELD,
                                                 (1<<GB_INT) | (1<<GB_STRING), "field", 0,
                                                 SPECIES_get_selector(), 20, 10);
 
         aws->at("go");
         aws->callback(awtc_nn_search_all_listed);
-        aws->create_button("WRITE_FIELDS", "Write to field");
+        aws->create_autosize_button("WRITE_FIELDS", "Write to field");
     }
     return aws;
 }
@@ -1337,7 +1340,7 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL
         create_next_neighbours_vars(aw_root);
 
         aws = new AW_window_simple;
-        aws->init(aw_root, "SEARCH_NEXT_RELATIVE_OF_SELECTED", "Search Next Neighbours");
+        aws->init(aw_root, "SEARCH_NEXT_RELATIVE_OF_SELECTED", "Search Next Neighbours of Selected");
         aws->load_xfig("ad_spec_nn.fig");
 
         aws->at("close");
@@ -1350,11 +1353,8 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL
 
         create_common_next_neighbour_fields(aws);
 
-        aws->at("results");
-        aws->create_input_field(AWAR_NN_MAX_HITS, 3);
-
         aws->at("hit_count");
-        aws->create_button(0, AWAR_NN_HIT_COUNT, 0, "+");
+        aws->create_button(0, AWAR_NN_SELECTED_HIT_COUNT, 0, "+");
 
         aws->at("hits");
         AW_selection_list *id = aws->create_selection_list(AWAR_SPECIES_NAME);
@@ -1368,7 +1368,7 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL
 
         aws->at("auto_go");
         aws->label("Auto on selection change");
-        aws->create_toggle(AWAR_NN_AUTO_SEARCH);
+        aws->create_toggle(AWAR_NN_SELECTED_AUTO_SEARCH);
         
         aws->at("mark");
         aws->callback(awtc_mark_hits);
@@ -1376,7 +1376,7 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL
 
         aws->at("auto_mark");
         aws->label("Auto");
-        aws->create_toggle(AWAR_NN_AUTO_MARK);
+        aws->create_toggle(AWAR_NN_SELECTED_AUTO_MARK);
 
         aws->at("move");
         aws->callback(awtc_move_hits);

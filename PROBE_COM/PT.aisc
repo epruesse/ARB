@@ -168,9 +168,10 @@ PT_family, FAMILYFINDER, 12, (~next relative search~), {
     PT_family_list, fl,                   d,    r,      ,       FAMILY_LIST,       13,     ,                     (~Sorted List of family~);     # note: This uses 80 AND 81!
     int,            list_size,            t,    r,      ,       FAMILY_LIST_SIZE,  15,     ,                     (~size of result list~);
     int,            sort_type,            t,    rw,     ,       SORT_TYPE,         16,     0,                    (~Type of sorting 0 = MATCHES, 1 = REL_MATCHES~);
-    int,            sort_max,             t,    rw,     ,       SORT_MAX,          17,     0,                    (~Sort only best FF_SORT_MAX sequences~);
+    int,            sort_max,             t,    rw,     ,       SORT_MAX,          17,     0,                    (~Sort only the SORT_MAX best hits~);
     int,            range_start,          t,    rw,     ,       RANGE_STARTPOS,    18,     -1,                   (~if != -1 -> ignore matches starting left of that position [0..N-1]~);
     int,            range_end,            t,    rw,     ,       RANGE_ENDPOS,      19,     -1,                   (~if != -1 -> ignore matches ending right  of that position [0..N-1]~);
+    double,         min_score,            t,    rw,     ,       MIN_SCORE,         20,     0,                    (~Skip results with rel or abs score below MIN_SCORE (affects reported FAMILY_LIST_SIZE)~);
 };
 
 # used below in LOCS/MATCH_STRING

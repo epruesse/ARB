@@ -180,7 +180,7 @@ void PT_FamilyFinder::close() {
     locs = 0;
 }
 
-GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement compl_mode, int max_results) {
+GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement compl_mode, int max_results, double min_score) {
     delete_family_list();
 
     char     *compressed_sequence = GB_command_interpreter(gb_main, sequence, "|keep(acgtunACGTUN)", 0, 0);
@@ -209,6 +209,7 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
                         FAMILYFINDER_FIND_TYPE,       long(fast_flag),          // 0: complete search, 1: quick search (only search oligos starting with 'A')
                         FAMILYFINDER_SORT_TYPE,       long(uses_rel_matches()), // 0: matches, 1: relative matches (0 hardcoded till July 2008)
                         FAMILYFINDER_SORT_MAX,        long(max_results),        // speed up family sorting (only sort retrieved results)
+                        FAMILYFINDER_MIN_SCORE,       min_score,                // limit hits by score
                         FAMILYFINDER_COMPLEMENT,      long(compl_mode),         // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement (1 hardcoded in PT-Server till July 2008)
                         FAMILYFINDER_RANGE_STARTPOS,  long(range.get_start()),
                         FAMILYFINDER_RANGE_ENDPOS,    long(range.get_end()),
@@ -257,7 +258,7 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
     return error;
 }
 
-GB_ERROR PT_FamilyFinder::searchFamily(const char *sequence, FF_complement compl_mode, int max_results) {
+GB_ERROR PT_FamilyFinder::searchFamily(const char *sequence, FF_complement compl_mode, int max_results, double min_score) {
     // searches the PT-server for species related to 'sequence'.
     //
     // relation-score is calculated by fragmenting the sequence into oligos of length 'oligo_len' and
@@ -266,10 +267,12 @@ GB_ERROR PT_FamilyFinder::searchFamily(const char *sequence, FF_complement compl
     // 'max_results' limits the length of the generated result list (low scores deleted first)
     //               if < 1 -> don't limit
     //
+    // 'min_score' limits the results by score (use 0 for unlimited results)
+    //
     // When using restrict_2_region(), only pass the corresponding part via 'sequence' (not the full alignment)
 
     GB_ERROR error = open(GBS_ptserver_tag(server_id));
-    if (!error) error = retrieve_family(sequence, compl_mode, max_results);
+    if (!error) error = retrieve_family(sequence, compl_mode, max_results, min_score);
     close();
     return error;
 }
@@ -337,109 +340,155 @@ void TEST_SLOW_PT_FamilyFinder() {
         for (int fastMode = 0; fastMode <= 1; ++fastMode) {
             for (int partial = 0; partial <= 1; ++partial) {
                 for (int shortOligo = 0; shortOligo <= 1; ++shortOligo) {
-                    int oligoLen = shortOligo ? (partial ? 3 : 6) : (partial ? 10 : 18);
-                    
-                    PT_FamilyFinder ff(gb_main, TEST_SERVER_ID, oligoLen, 1, fastMode, relativeMatches);
+                    for (int limit_min_score = 0; limit_min_score <= 1; ++limit_min_score) {
+                        int oligoLen = shortOligo ? (partial ? 3 : 6) : (partial ? 10 : 18);
 
-                    // database: ../UNIT_TESTER/run/TEST_pt.arb
+                        PT_FamilyFinder ff(gb_main, TEST_SERVER_ID, oligoLen, 1, fastMode, relativeMatches);
 
-                    const char *sequence;
-                    if (partial) {
-                        ff.restrict_2_region(TargetRange(39, 91)); // alignment range of bases 30-69 of sequence of 'LgtLytic' 
-                        sequence = "UCUAGCUUGCUAGACGGGUGGCGAG" "GGUAACCGUAGGGGA"; // bases 30-54 of sequence of 'LgtLytic' + 15 bases from 'DcdNodos' (outside region)
-                    }
-                    else {
-                        // sequence of 'LgtLytic' in TEST_pt.arb:
-                        sequence = "AGAGUUUGAUCAAGUCGAACGGCAGCACAGUCUAGCUUGCUAGACGGGUGGCGAGUGGCGAACGGACUUGGGGAAACUCAAGCUAAUACCGCAUAAUCAUGACUGGGGUGAAGUCGUAACAAGGUAGCCGUAGGGGAACCUGCGGCUGGAUCACCUCCUN";
-                    }
+                        // database: ../UNIT_TESTER/run/TEST_pt.arb
 
-                    TEST_ASSERT_NO_ERROR(ff.searchFamily(sequence, FF_FORWARD, 4));
+                        const char *sequence;
+                        if (partial) {
+                            ff.restrict_2_region(TargetRange(39, 91)); // alignment range of bases 30-69 of sequence of 'LgtLytic' 
+                            sequence = "UCUAGCUUGCUAGACGGGUGGCGAG" "GGUAACCGUAGGGGA"; // bases 30-54 of sequence of 'LgtLytic' + 15 bases from 'DcdNodos' (outside region)
+                        }
+                        else {
+                            // sequence of 'LgtLytic' in TEST_pt.arb:
+                            sequence = "AGAGUUUGAUCAAGUCGAACGGCAGCACAGUCUAGCUUGCUAGACGGGUGGCGAGUGGCGAACGGACUUGGGGAAACUCAAGCUAAUACCGCAUAAUCAUGACUGGGGUGAAGUCGUAACAAGGUAGCCGUAGGGGAACCUGCGGCUGGAUCACCUCCUN";
+                        }
 
-                    if (partial) {
-                        // len: 40 bp (-15 bp)
-                        // Ns: 0 bp
+                        double min_score = 0;
+                        if (limit_min_score) {
+                            if (fastMode) continue;
 
-                        if (shortOligo) {
-                            // oligolen: 3bp
-                            // est. matches: len-oligolen+1-Ns = 40-15-3+1-0 = 23
-
-                            if (fastMode == 0) { // full-search
-                                if (relativeMatches) {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "DsssDesu/38/38.77551,CltBotul/38/34.23423,PsAAAA00/38/32.75862,Bl0LLL00/38/25.67568");
+                            if (partial) {
+                                if (shortOligo) {
+                                    min_score = relativeMatches ? 32.8 : 0;
                                 }
                                 else {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "PtVVVulg/38/22.75449,AclPleur/38/22.35294,VbhChole/38/23.60248,VblVulni/38/23.60248");
+                                    min_score = relativeMatches ? 0 : 5;
                                 }
                             }
-                            else { // fast-search
-                                if (relativeMatches) {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "DsssDesu/7/7.14286,CltBotul/7/6.30631,PsAAAA00/7/6.03448,Bl0LLL00/7/4.72973");
+                            else {
+                                if (shortOligo) {
+                                    min_score = relativeMatches ? 0 : 134;
                                 }
                                 else {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "PtVVVulg/7/4.19162,AclPleur/7/4.11765,VbhChole/7/4.34783,VblVulni/7/4.34783");
+                                    min_score = relativeMatches ? 38 : 0;
+                                }
+                            }
+
+                            if (min_score == 0) continue;
+                        }
+
+                        TEST_ASSERT_NO_ERROR(ff.searchFamily(sequence, FF_FORWARD, 4, min_score));
+
+                        if (partial) {
+                            // len: 40 bp (-15 bp)
+                            // Ns: 0 bp
+
+                            if (shortOligo) {
+                                // oligolen: 3bp
+                                // est. matches: len-oligolen+1-Ns = 40-15-3+1-0 = 23
+
+                                if (fastMode == 0) { // full-search
+                                    if (relativeMatches) {
+                                        if (limit_min_score) {
+                                            TEST_ASSERT_EQUAL(ff.results2string(), "DsssDesu/38/38.77551,CltBotul/38/34.23423");
+                                        }
+                                        else {
+                                            TEST_ASSERT_EQUAL(ff.results2string(), "DsssDesu/38/38.77551,CltBotul/38/34.23423,PsAAAA00/38/32.75862,Bl0LLL00/38/25.67568");
+                                        }
+                                    }
+                                    else {
+                                        TEST_ASSERT_EQUAL(ff.results2string(), "PtVVVulg/38/22.75449,AclPleur/38/22.35294,VbhChole/38/23.60248,VblVulni/38/23.60248");
+                                    }
+                                }
+                                else { // fast-search
+                                    if (relativeMatches) {
+                                        TEST_ASSERT_EQUAL(ff.results2string(), "DsssDesu/7/7.14286,CltBotul/7/6.30631,PsAAAA00/7/6.03448,Bl0LLL00/7/4.72973");
+                                    }
+                                    else {
+                                        TEST_ASSERT_EQUAL(ff.results2string(), "PtVVVulg/7/4.19162,AclPleur/7/4.11765,VbhChole/7/4.34783,VblVulni/7/4.34783");
+                                    }
+                                }
+                            }
+                            else {
+                                // oligolen: 10bp
+                                // est. matches: len-oligolen+1-Ns = 40-15-10+1-0 = 16
+
+                                if (fastMode == 0) { // full-search
+                                    if (limit_min_score) {
+                                        TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/18/11.76471,VblVulni/5/3.24675");
+                                    }
+                                    else {
+                                        TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/18/11.76471,VblVulni/5/3.24675,VbhChole/4/2.59740,DcdNodos/4/2.59740");
+                                    }
+                                }
+                                else { // fast-search
+                                    if (relativeMatches) {
+                                        TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/3/1.96078,FrhhPhil/1/0.68027,VblVulni/1/0.64935,DcdNodos/1/0.64935");
+                                    }
+                                    else {
+                                        TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/3/1.96078,AclPleur/1/0.61350,VblVulni/1/0.64935,FrhhPhil/1/0.68027");
+                                    }
                                 }
                             }
                         }
                         else {
-                            // oligolen: 10bp
-                            // est. matches: len-oligolen+1-Ns = 40-15-10+1-0 = 16
+                            // len: 160 bp
+                            // Ns: 1 bp
 
-                            if (fastMode == 0) { // full-search
-                                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/18/11.76471,VblVulni/5/3.24675,VbhChole/4/2.59740,DcdNodos/4/2.59740");
-                            }
-                            else { // fast-search
-                                if (relativeMatches) {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/3/1.96078,FrhhPhil/1/0.68027,VblVulni/1/0.64935,DcdNodos/1/0.64935");
-                                }
-                                else {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/3/1.96078,AclPleur/1/0.61350,VblVulni/1/0.64935,FrhhPhil/1/0.68027");
-                                }
-                            }
-                        }
-                    }
-                    else {
-                        // len: 160 bp
-                        // Ns: 1 bp
+                            if (shortOligo) {
+                                // oligolen: 6bp
+                                // est. matches: len-oligolen+1-Ns = 160-6+1-1 = 154
 
-                        if (shortOligo) {
-                            // oligolen: 6bp
-                            // est. matches: len-oligolen+1-Ns = 160-6+1-1 = 154
+                                if (fastMode == 0) { // full-search
+                                    if (relativeMatches) {
+                                        TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/153/97.45223,HllHalod/133/85.25641,VbhChole/133/84.17722,VblVulni/133/84.17722");
+                                    }
+                                    else {
+                                        if (limit_min_score) {
+                                            TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/153/97.45223,AclPleur/138/82.63473");
+                                        }
+                                        else {
+                                            TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/153/97.45223,AclPleur/138/82.63473,VbhChole/133/84.17722,VblVulni/133/84.17722");
+                                        }
+                                    }
+                                }
+                                else { // fast-search
+                                    if (relativeMatches) {
+                                        TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/42/26.75159,VblVulni/37/23.41772,HllHalod/36/23.07692,Stsssola/36/23.07692");
+                                    }
+                                    else {
+                                        TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/42/26.75159,AclPleur/38/22.75449,VblVulni/37/23.41772,VbhChole/36/22.78481");
+                                    }
+                                }
+                            }
+                            else {
+                                // oligolen: 18bp
+                                // est. matches: len-oligolen+1-Ns = 160-18+1-1 = 142
 
-                            if (fastMode == 0) { // full-search
-                                if (relativeMatches) {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/153/97.45223,HllHalod/133/85.25641,VbhChole/133/84.17722,VblVulni/133/84.17722");
+                                if (fastMode == 0) { // full-search
+                                    if (relativeMatches) {
+                                        if (limit_min_score) {
+                                            TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/142/97.93103,HllHalod/62/43.05556,AclPleur/59/38.06452");
+                                        }
+                                        else {
+                                            TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/142/97.93103,HllHalod/62/43.05556,AclPleur/59/38.06452,PbrPropi/51/35.41667");
+                                        }
+                                    }
+                                    else {
+                                        TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/142/97.93103,HllHalod/62/43.05556,AclPleur/59/38.06452,PtVVVulg/52/34.21053");
+                                    }
                                 }
-                                else {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/153/97.45223,AclPleur/138/82.63473,VbhChole/133/84.17722,VblVulni/133/84.17722");
-                                }
-                            }
-                            else { // fast-search
-                                if (relativeMatches) {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/42/26.75159,VblVulni/37/23.41772,HllHalod/36/23.07692,Stsssola/36/23.07692");
-                                }
-                                else {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/42/26.75159,AclPleur/38/22.75449,VblVulni/37/23.41772,VbhChole/36/22.78481");
-                                }
-                            }
-                        }
-                        else {
-                            // oligolen: 18bp
-                            // est. matches: len-oligolen+1-Ns = 160-18+1-1 = 142
-
-                            if (fastMode == 0) { // full-search
-                                if (relativeMatches) {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/142/97.93103,HllHalod/62/43.05556,AclPleur/59/38.06452,PbrPropi/51/35.41667");
-                                }
-                                else {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/142/97.93103,HllHalod/62/43.05556,AclPleur/59/38.06452,PtVVVulg/52/34.21053");
-                                }
-                            }
-                            else { // fast-search
-                                if (relativeMatches) {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.58621,HllHalod/18/12.50000,AclPleur/17/10.96774,VbhChole/15/10.27397");
-                                }
-                                else {
-                                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.58621,HllHalod/18/12.50000,AclPleur/17/10.96774,PtVVVulg/15/9.86842");
+                                else { // fast-search
+                                    if (relativeMatches) {
+                                        TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.58621,HllHalod/18/12.50000,AclPleur/17/10.96774,VbhChole/15/10.27397");
+                                    }
+                                    else {
+                                        TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.58621,HllHalod/18/12.50000,AclPleur/17/10.96774,PtVVVulg/15/9.86842");
+                                    }
                                 }
                             }
                         }
