@@ -26,9 +26,15 @@ SECTION         PARAMETERS
                         Specifies the field into which the information about found relatives
                         is written.
 
-                Entries
+                Results
 
-                        Limits the number of relatives written into the DB field
+                        Maximum number of relatives written into the DB field.
+                        Use 0 (or empty field) for unlimited number of relatives.
+
+                Min.score
+
+                        Only write relatives with a score equal or above the specified score
+                        into the DB field.
 
                 Add score
 

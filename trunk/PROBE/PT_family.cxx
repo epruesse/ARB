@@ -234,31 +234,56 @@ static int make_PT_family_list(PT_family *ffinder, const FamilyStat& famStat) {
     std::vector<int> sorted;
     sorted.resize(psg.data_count);
 
-    for (int i = 0; i < psg.data_count; i++) sorted[i] = i;
+    size_t matching_results = psg.data_count;
+    if (ffinder->min_score == 0) { // collect all hits
+        for (int i = 0; i < psg.data_count; i++) sorted[i] = i;
+    }
+    else {
+        int j = 0;
+        if (ffinder->sort_type == 0) { // filter by absolut score
+            int min_score = ffinder->min_score;
+            for (int i = 0; i < psg.data_count; i++) {
+                const HitCounter& ps = famStat.hits(i);
+                if (ps.get_match_count() >= min_score) {
+                    sorted[j++] = i;
+                }
+            }
+        }
+        else { // filter by relative score
+            double min_score_d = double(ffinder->min_score)/100.0;
+            for (int i = 0; i < psg.data_count; i++) {
+                const HitCounter& ps = famStat.hits(i);
+                if (ps.get_rel_match_count()>min_score_d) {
+                    sorted[j++] = i;
+                }
+            }
+        }
+        matching_results = j;
+    }
 
-    bool sort_all = ffinder->sort_max == 0 || ffinder->sort_max >= psg.data_count;
+    bool sort_all = ffinder->sort_max == 0 || ffinder->sort_max >= matching_results;
 
-    if (ffinder->sort_type == 0) {
+    if (ffinder->sort_type == 0) { // sort by absolut score
         if (sort_all) {
             std::sort(sorted.begin(), sorted.end(), cmp_probe_abs(famStat));
         }
         else {
-            std::partial_sort(sorted.begin(), sorted.begin() + ffinder->sort_max, sorted.begin() + psg.data_count, cmp_probe_abs(famStat));
+            std::partial_sort(sorted.begin(), sorted.begin() + ffinder->sort_max, sorted.begin() + matching_results, cmp_probe_abs(famStat));
         }
     }
-    else {
+    else { // sort by relative score
         if (sort_all) {
             std::sort(sorted.begin(), sorted.begin() + psg.data_count, cmp_probe_rel(famStat));
         }
         else {
-            std::partial_sort(sorted.begin(), sorted.begin() + ffinder->sort_max, sorted.begin() + psg.data_count, cmp_probe_rel(famStat));
+            std::partial_sort(sorted.begin(), sorted.begin() + ffinder->sort_max, sorted.begin() + matching_results, cmp_probe_rel(famStat));
         }
     }
 
     // build new list
     int real_hits = 0;
 
-    int end = (sort_all) ? psg.data_count : ffinder->sort_max;
+    int end = (sort_all) ? matching_results : ffinder->sort_max;
     for (int i = 0; i < end; i++) {
         probe_input_data& pid = psg.data[sorted[i]];
         const HitCounter& ps  = famStat.hits(sorted[i]);

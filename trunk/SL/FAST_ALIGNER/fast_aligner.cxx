@@ -1501,8 +1501,10 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                 turnAllowed = FA_TURN_NEVER; // makes no sense if we're using partial relative search
             }
 
-            error = familyFinder->searchFamily(findRelsBySeq, FF_FORWARD, relativesToTest+1);
+            error = familyFinder->searchFamily(findRelsBySeq, FF_FORWARD, relativesToTest+1, 0); // @@@ make min_score configurable
 
+            // @@@ case where no relative found (due to min score) handle how ? abort ? warn ?
+            
             double bestScore = 0;
             if (!error) {
 #if defined(DEBUG)
@@ -1542,7 +1544,7 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                 error = GBT_determine_T_or_U(global_alignmentType, &T_or_U, "reverse-complement");
                 GBT_reverseComplementNucSequence(mirroredSequence, length, T_or_U);
 
-                error = familyFinder->searchFamily(mirroredSequence, FF_FORWARD, relativesToTest+1);
+                error = familyFinder->searchFamily(mirroredSequence, FF_FORWARD, relativesToTest+1, 0); // @@@ make min_score configurable
                 if (!error) {
 #if defined(DEBUG)
                     double lastScore = -1;
@@ -2913,7 +2915,7 @@ public:
           oligo_len(oligo_len_)
     {}
 
-    GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results) {
+    GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results, double min_score) { // @@@ use min_score
         // 'sequence' has to contain full sequence or part corresponding to 'range'
 
         TEST_ASSERT(compl_mode == FF_FORWARD); // not fit for other modes
