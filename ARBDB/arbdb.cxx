@@ -157,7 +157,12 @@ static GB_ERROR GB_safe_atof(const char *str, double *res) {
     char     *end;
     *res            = strtod(str, &end);
     if (end == str || end[0] != 0) {
-        error = GBS_global_string("cannot convert '%s' to double", str);
+        if (!str[0]) {
+            *res = 0.0;
+        }
+        else {
+            error = GBS_global_string("cannot convert '%s' to double", str);
+        }
     }
     return error;
 }
