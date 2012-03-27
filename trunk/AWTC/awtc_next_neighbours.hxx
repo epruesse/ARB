@@ -26,6 +26,9 @@
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
+#ifndef PT_GLOBAL_DEFS_H
+#include <PT_global_defs.h>
+#endif
 
 #define ff_assert(bed) arb_assert(bed)
 
@@ -47,15 +50,6 @@ public:
 };
 
 struct aisc_com;
-
-enum FF_complement {
-    FF_FORWARD            = 1,
-    FF_REVERSE            = 2,
-    FF_REVERSE_COMPLEMENT = 4,
-    FF_COMPLEMENT         = 8,
-
-    // do NOT change the order here w/o fixing ../PROBE/PT_family.cxx@FF_complement_dep
-};
 
 class TargetRange { // @@@ move somewhere else, if needed independently from FamilyFinder
     int start; // -1 == unlimited

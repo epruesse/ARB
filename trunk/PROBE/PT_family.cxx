@@ -13,6 +13,7 @@
 
 #include <struct_man.h>
 #include <PT_server_prototypes.h>
+#include "PT_global_defs.h"
 #include <arbdbt.h>
 
 #include <algorithm>
@@ -389,16 +390,16 @@ int find_family(PT_family *ffinder, bytestring *species) {
     char *seq[4];
     int   seq_count = 0;
 
-    // Note: code depends on order of ../AWTC/awtc_next_neighbours.hxx@FF_complement_dep
+    // Note: loop-logic depends on order of ../AWTC/awtc_next_neighbours.hxx@FF_complement_dep
     for (int cmode = 1; cmode <= 8; cmode *= 2) {
         switch (cmode) {
-            case 1:             // forward
+            case FF_FORWARD:
                 break;
-            case 2:             // rev
-            case 8:             // compl
+            case FF_REVERSE:
+            case FF_COMPLEMENT:
                 revert_sequence(sequence, sequence_len); // build reverse sequence
                 break;
-            case 4:             // revcompl
+            case FF_REVERSE_COMPLEMENT:
                 complement_sequence(sequence, sequence_len); // build complement sequence
                 break;
         }
