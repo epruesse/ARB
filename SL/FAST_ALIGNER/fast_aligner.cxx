@@ -2400,7 +2400,8 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
                                                            root->awar(AWAR_NN_OLIGO_LEN)->read_int(),
                                                            root->awar(AWAR_NN_MISMATCHES)->read_int(),
                                                            root->awar(AWAR_NN_FAST_MODE)->read_int(),
-                                                           root->awar(AWAR_NN_REL_MATCHES)->read_int()),
+                                                           root->awar(AWAR_NN_REL_MATCHES)->read_int(),
+                                                           RSS_BOTH_MIN), // old scaling as b4 [8520] @@@ make configurable
                                        pt_server_alignment,
                                        root->awar(FA_AWAR_NEXT_RELATIVES)->read_int());
 
@@ -2909,7 +2910,7 @@ class FakeFamilyFinder: public FamilyFinder { // derived from a Noncopyable
 
 public:
     FakeFamilyFinder(GBDATA *gb_main_, string ali_name_, bool rel_matches_, size_t oligo_len_)
-        : FamilyFinder(rel_matches_),
+        : FamilyFinder(rel_matches_, RSS_BOTH_MIN),
           gb_main(gb_main_),
           ali_name(ali_name_), 
           oligo_len(oligo_len_)

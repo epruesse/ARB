@@ -71,21 +71,31 @@ public:
 };
 
 class FamilyStat : virtual Noncopyable {
-    size_t             size;
-    HitCounter        *famstat;
-    TraversalHitLimit  trav_info;
+    size_t                size;
+    HitCounter           *famstat;
+    TraversalHitLimit     trav_info;
+    RelativeScoreScaling  scaling;
 
 public:
-    FamilyStat(size_t size_)
+    FamilyStat(size_t size_, RelativeScoreScaling scaling_)
         : size(size_),
           famstat(new HitCounter[size]),
-          trav_info(-1, 1)
+          trav_info(-1, 1),
+          scaling(scaling_)
     {}
     ~FamilyStat() { delete [] famstat; }
 
     void calc_rel_matches(int probe_len, int sequence_length)  {
         for (size_t i = 0; i < size; i++) {
-            int max_poss_matches = std::max(psg.data[i].get_size(), sequence_length) - probe_len + 1; // @@@ wrong if target range is used!
+            int full_length = 0;
+            switch (scaling) {
+                case RSS_SOURCE:   full_length = sequence_length; break;
+                case RSS_TARGET:   full_length = psg.data[i].get_size(); break;
+                case RSS_BOTH_MIN: full_length = std::min(psg.data[i].get_size(), sequence_length); break; 
+                case RSS_BOTH_MAX: full_length = std::max(psg.data[i].get_size(), sequence_length); break;
+            }
+            int max_poss_matches = full_length - probe_len + 1; // @@@ wrong if target range is used!
+
             famstat[i].calc_rel_match(max_poss_matches);
         }
     }
@@ -262,7 +272,7 @@ static int make_PT_family_list(PT_family *ffinder, const FamilyStat& famStat) {
         matching_results = j;
     }
 
-    bool sort_all = ffinder->sort_max == 0 || ffinder->sort_max >= matching_results;
+    bool sort_all = ffinder->sort_max == 0 || ffinder->sort_max >= int(matching_results);
 
     if (ffinder->sort_type == 0) { // sort by absolut score
         if (sort_all) {
@@ -385,7 +395,7 @@ int find_family(PT_family *ffinder, bytestring *species) {
 
     ProbeTraversal::restrictMatchesToRegion(ffinder->range_start, ffinder->range_end, probe_len);
 
-    FamilyStat famStat(psg.data_count);
+    FamilyStat famStat(psg.data_count, RelativeScoreScaling(ffinder->rel_scoring));
 
     char *seq[4];
     int   seq_count = 0;

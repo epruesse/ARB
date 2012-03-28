@@ -50,41 +50,75 @@ SECTION         PARAMETERS
                        faster than the 'Complete mode'. For some sequence types it completely fails,
                        e.g. if there are repetitive areas containing many 'AAAAA'
 
+                       Relative and absolute scores will be approx. 1/4 (compared with complete mode) 
+
                 Match score:
 
                        absolute:        returns the absolute number of hits
-                       relative:        returns the number of hits relative to maximum possible hits
+                       relative:        returns the number of hits relative to some maximum (see score-scaling)
 
-                       The score depends on several other parameters like number of allowed mismatches,
-                       search mode, oligo length and complement settings.
+                       Absolute hits:
 
-                       The maximum absolute score is
+                                Absolute hits are the number of oligos which occur in the source sequence
+                                and in the targeted sequences (i.e. in the relatives of the source sequence).
 
-                           (max basecount of source/target sequence) - (oligo length) + 1 
+                                If an oligo occurs multiple times in source or target sequence, it only
+                                creates the minimum number of hits (e.g. if it occurs twice in source and
+                                three times in a target, only two hits will be counted for that target).
 
-                       Practically this score is not reached (even not for the sequence itself), because
-                       several possible oligos are skipped, namely all oligos containing IUPAC
-                       codes, N's or dots. The PT-server as well will not report matches hitting
-                       ambiguous positions or sequence endings.
+                                The theoretical maximum for absolute hits is
 
-                       The maximum relative score is 100% (also never reached). It is calculated versus
-                       the maximum absolute score as described above (also see NOTES below).
+                                    maxhits = minimumBasecount(source, target) - oligolen + 1
 
-                       If mismatches are used, each position may be hit by several oligos from the source
-                       sequence. 
-                       Thus the maximum relative score may exceed 100% (and the maximum absolute score may
-                       exceed its theoretical maximum).
+                                In practice that value is rarely or never reached because several oligos
+                                are skipped, namely all oligos containing IUPAC codes, N's or dots.
+                                The PT-server as well will not report matches hitting ambiguous positions
+                                or sequence endings.
 
-                       If you use 'Quick mode' the mean relative score will be approx. 25% (assuming
-                       that 25% of the possible oligos start with an 'A').
+                                The number of absolute hits is as well affected by other parameters:
 
-                       That means.. only if you use
+                                - using quick search will only produces around 25% of the hits as using
+                                  complete search (assuming that 25% of all oligo starts with an 'A')
+                                - searching for complement or reverse will duplicate the number of possible
+                                  hits. Searching for all 4 reverse/complement-combinations will produce
+                                  4 times as many hits as a plain forward search.
 
-                            - 0 mismatches,
-                            - 'Complete mode' and
-                            - your sequences contain no IUPACs and no repetitions,
+                       Relative score:
 
-                       you will get a score near 100% for the selected species itself and its duplicates.
+                                The relative score is absolute hits scaled versus a maximum POC (possible oligo count).
+                                You can specify which maximum POC to use with the selection button next to
+                                the score selection button:
+
+                                        to source POC         maximum possible oligos in source
+                                        to target POC         maximum possible oligos in target
+                                        to minimum POC        minimum possible oligos in source or target
+                                        to maximum POC        maximum possible oligos in source or target
+
+                                'to source POC' will report ~100% score for partial source versus
+                                all full sequences containing the part.
+
+                                'to target POC' will report ~100% score for all partial target sequences
+                                which are contained in the source sequence.
+
+                                'to minimum POC' will report ~100% score if source is part of target or vice versa
+                                (this was the default method in previous ARB versions). 
+
+                                'to maximum POC' will report ~100% score if source and target contain each other, i.e.
+                                if they have an identical oligo distribution. If either source or target is missing
+                                some bases, the score will lower.
+
+
+                                When using 'quick search mode' the max. relative score will be 25% (if 25% of
+                                the oligos start with 'A').
+
+                                When searching for forward and reverse-complement, the theoretical max. relative
+                                score will be 200%. In practice it won't find much hits on the reverse-complement
+                                strand. So you'll get similar scores as without reverse-complement, but especially
+                                if you lower the oligo size, you'll probably reach scores above 100%.
+
+
+                                The EDIT4 aligner currently always uses 'to minimum POC'. 
+
 
                 Complement:
 
@@ -92,9 +126,11 @@ SECTION         PARAMETERS
                        reverse:             Match only reverse oligos
                        complement:          Match only complement oligos
                        reverse-complement:  Match only reverse-complement oligos
-                       and all combinations of these.
 
-                       The combinations may affect the score as well!
+                       The remaining options are combinations of the above.
+
+                       The combinations will affect the score, especially for shorter oligos.
+                       Please read the section about 'Relative score' above to avoid confusion.
 
                        Note: Not available for EDIT4 aligner.
 

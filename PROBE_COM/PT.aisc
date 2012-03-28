@@ -172,6 +172,7 @@ PT_family, FAMILYFINDER, 12, (~next relative search~), {
     int,            range_start,          t,    rw,     ,       RANGE_STARTPOS,    18,     -1,                   (~if != -1 -> ignore matches starting left of that position [0..N-1]~);
     int,            range_end,            t,    rw,     ,       RANGE_ENDPOS,      19,     -1,                   (~if != -1 -> ignore matches ending right  of that position [0..N-1]~);
     double,         min_score,            t,    rw,     ,       MIN_SCORE,         20,     0,                    (~Skip results with rel or abs score below MIN_SCORE (affects reported FAMILY_LIST_SIZE)~);
+    int,            rel_scoring,          t,    rw,     ,       REL_SCORING,       21,     0,                    (~relative scoring scaling mode (see RelativeScoreScaling)~);
 };
 
 # used below in LOCS/MATCH_STRING
