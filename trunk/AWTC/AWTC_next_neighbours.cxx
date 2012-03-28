@@ -400,11 +400,12 @@ void TEST_SLOW_PT_FamilyFinder() {
     test.shortOligo       = true; TEST_ASSERT_RELATIVES(test, "LgtLytic/153/97.45223,AclPleur/138/82.63473,VbhChole/133/84.17722,VblVulni/133/84.17722");
     test.relativeMatches  = true; TEST_ASSERT_RELATIVES(test, "LgtLytic/153/97.45223,HllHalod/133/85.25641,VbhChole/133/84.17722,VblVulni/133/84.17722");
     test.fastMode         = true; TEST_ASSERT_RELATIVES(test, "LgtLytic/42/26.75159,VblVulni/37/23.41772,HllHalod/36/23.07692,Stsssola/36/23.07692");
-    test.min_score        = 26.5; TEST_ASSERT_RELATIVES(test, "LgtLytic/42/26.75159");
-    test.min_score        = 27.0; TEST_ASSERT_RELATIVES(test, "");
+    test.min_score        = 26.7; TEST_ASSERT_RELATIVES(test, "LgtLytic/42/26.75159");
+    test.min_score        = 26.8; TEST_ASSERT_RELATIVES(test, "");
     test                  = ______RESET;
     test.fastMode         = true; TEST_ASSERT_RELATIVES(test, "LgtLytic/40/27.58621,HllHalod/18/12.50000,AclPleur/17/10.96774,PtVVVulg/15/9.86842");
-    test.min_score        = 17.5; TEST_ASSERT_REL__BROK(test, "LgtLytic/40/27.58621,HllHalod/18/12.50000"); // @@@ lists AclPleur, but should not
+    test.min_score        = 17.0; TEST_ASSERT_RELATIVES(test, "LgtLytic/40/27.58621,HllHalod/18/12.50000,AclPleur/17/10.96774");
+    test.min_score        = 17.5; TEST_ASSERT_RELATIVES(test, "LgtLytic/40/27.58621,HllHalod/18/12.50000");
     test                  = ______RESET;
 
     GB_close(gb_main);
