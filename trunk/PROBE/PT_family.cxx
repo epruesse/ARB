@@ -384,7 +384,13 @@ public:
 int find_family(PT_family *ffinder, bytestring *species) {
     //! make sorted list of family members of species
 
-    int probe_len   = ffinder->pr_len;
+    int probe_len = ffinder->pr_len;
+
+    if (probe_len<1) {
+        freedup(ffinder->ff_error, "minimum oligo length is 1");
+        return 0;
+    }
+
     int mismatch_nr = ffinder->mis_nr;
     int complement  = ffinder->complement; // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement
 
