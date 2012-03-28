@@ -221,38 +221,46 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
             error = "Communication error with PT server ('retrieve_family')";
         }
         else {
-            
+            char *ff_error;
+
             // Read family list
             T_PT_FAMILYLIST f_list;
             aisc_get(link, PT_FAMILYFINDER, ffinder,
                      FAMILYFINDER_FAMILY_LIST,      &f_list,
                      FAMILYFINDER_FAMILY_LIST_SIZE, &real_hits,
+                     FAMILYFINDER_ERROR,            &ff_error,
                      NULL);
 
-            hits_truncated = false;
-            if (max_results<1) max_results = INT_MAX;
-
-            FamilyList *tail = NULL;
-            while (f_list) {
-                if (max_results == 0) {
-                    hits_truncated = true;
-                    break;
-                }
-                max_results--;
-
-                FamilyList *fl = new FamilyList();
-
-                (tail ? tail->next : family_list) = fl;
-                tail                              = fl;
-                fl->next                          = NULL;
-
-                aisc_get(link, PT_FAMILYLIST, f_list,
-                         FAMILYLIST_NAME,        &fl->name,
-                         FAMILYLIST_MATCHES,     &fl->matches,
-                         FAMILYLIST_REL_MATCHES, &fl->rel_matches,
-                         FAMILYLIST_NEXT,        &f_list,
-                         NULL);
+            if (ff_error[0]) {
+                error = GBS_global_string("PTSERVER: %s", ff_error);
             }
+            else {
+                hits_truncated = false;
+                if (max_results<1) max_results = INT_MAX;
+
+                FamilyList *tail = NULL;
+                while (f_list) {
+                    if (max_results == 0) {
+                        hits_truncated = true;
+                        break;
+                    }
+                    max_results--;
+
+                    FamilyList *fl = new FamilyList();
+
+                    (tail ? tail->next : family_list) = fl;
+                    tail                              = fl;
+                    fl->next                          = NULL;
+
+                    aisc_get(link, PT_FAMILYLIST, f_list,
+                             FAMILYLIST_NAME,        &fl->name,
+                             FAMILYLIST_MATCHES,     &fl->matches,
+                             FAMILYLIST_REL_MATCHES, &fl->rel_matches,
+                             FAMILYLIST_NEXT,        &f_list,
+                             NULL);
+                }
+            }
+            free(ff_error);
         }
 
         free(compressed_sequence);
@@ -401,6 +409,13 @@ void TEST_SLOW_PT_FamilyFinder() {
     TEST_SETUP_GLOBAL_ENVIRONMENT("ptserver");
 
     GBDATA *gb_main = GB_open("no.arb", "c");
+
+    // check some error cases
+    {
+        PT_FamilyFinder ffe(gb_main, TEST_SERVER_ID, 0, 1, 0, 0, RSS_BOTH_MAX);
+        TEST_ASSERT_CONTAINS(ffe.searchFamily("whatever", FF_FORWARD, 4, 0.0), "minimum oligo length is 1");
+    }
+    
     ff_tester test(gb_main);
 
     ff_tester ______RESET = test; TEST_ASSERT_RELATIVES(test, "LgtLytic/142/97.93103,HllHalod/62/43.05556,AclPleur/59/38.06452,PtVVVulg/52/34.21053");
