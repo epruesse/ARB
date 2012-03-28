@@ -242,7 +242,7 @@ static int make_PT_family_list(PT_family *ffinder, const FamilyStat& famStat) {
     else {
         int j = 0;
         if (ffinder->sort_type == 0) { // filter by absolut score
-            int min_score = ffinder->min_score;
+            double min_score = ffinder->min_score; 
             for (int i = 0; i < psg.data_count; i++) {
                 const HitCounter& ps = famStat.hits(i);
                 if (ps.get_match_count() >= min_score) {
@@ -251,10 +251,10 @@ static int make_PT_family_list(PT_family *ffinder, const FamilyStat& famStat) {
             }
         }
         else { // filter by relative score
-            double min_score_d = double(ffinder->min_score)/100.0;
+            double min_score_rel = double(ffinder->min_score)/100.0;
             for (int i = 0; i < psg.data_count; i++) {
                 const HitCounter& ps = famStat.hits(i);
-                if (ps.get_rel_match_count()>min_score_d) {
+                if (ps.get_rel_match_count()>min_score_rel) {
                     sorted[j++] = i;
                 }
             }
