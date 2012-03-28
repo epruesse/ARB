@@ -21,6 +21,13 @@ enum FF_complement {
     // do NOT change the order here w/o fixing ../PROBE/PT_family.cxx@FF_complement_dep
 };
 
+enum RelativeScoreScaling {
+    RSS_BOTH_MIN = 0, // scale versus minimum basecount of source+target seq (hardcoded before [8520])
+    RSS_BOTH_MAX,     // scale versus maximum basecount of source+target seq
+    RSS_SOURCE,       // scale versus source basecount
+    RSS_TARGET,       // scale versus target basecount
+};
+
 #else
 #error PT_global_defs.h included twice
 #endif // PT_GLOBAL_DEFS_H

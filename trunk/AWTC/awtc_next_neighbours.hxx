@@ -87,8 +87,9 @@ public:
 
 
 class FamilyFinder : virtual Noncopyable {
-    bool rel_matches;
-    
+    bool                 rel_matches;
+    RelativeScoreScaling scaling;
+
 protected:
     FamilyList *family_list;
 
@@ -102,7 +103,7 @@ protected:
     TargetRange range;
 
 public:
-    FamilyFinder(bool rel_matches_);
+    FamilyFinder(bool rel_matches_, RelativeScoreScaling scaling_);
     virtual ~FamilyFinder();
 
     void restrict_2_region(const TargetRange& range_) {
@@ -119,9 +120,10 @@ public:
 
     const FamilyList *getFamilyList() const { return family_list; }
     void delete_family_list();
-    
+
     bool hits_were_truncated() const { return hits_truncated; }
     bool uses_rel_matches() const { return rel_matches; }
+    RelativeScoreScaling get_scaling() const { return scaling; }
     int getRealHits() const { return real_hits; }
 };
 
@@ -143,7 +145,7 @@ class PT_FamilyFinder : public FamilyFinder { // derived from a Noncopyable
 
 public:
 
-    PT_FamilyFinder(GBDATA *gb_main_, int server_id_, int oligo_len_, int mismatches_, bool fast_flag_, bool rel_matches_);
+    PT_FamilyFinder(GBDATA *gb_main_, int server_id_, int oligo_len_, int mismatches_, bool fast_flag_, bool rel_matches_, RelativeScoreScaling scaling_);
     ~PT_FamilyFinder();
 
     GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results, double min_score) __ATTR__USERESULT;
@@ -159,6 +161,7 @@ public:
 #define AWAR_NN_MISMATCHES  AWAR_NN_BASE "mismatches"
 #define AWAR_NN_FAST_MODE   AWAR_NN_BASE "fast_mode"
 #define AWAR_NN_REL_MATCHES AWAR_NN_BASE "rel_matches"
+#define AWAR_NN_REL_SCALING AWAR_NN_BASE "scaling"
 
 class AW_root;
 class AW_window;

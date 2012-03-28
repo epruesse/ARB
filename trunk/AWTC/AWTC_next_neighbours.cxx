@@ -92,8 +92,9 @@ FamilyList *FamilyList::insertSortedBy_rel_matches(FamilyList *other) {
 // ---------------------
 //      FamilyFinder
 
-FamilyFinder::FamilyFinder(bool rel_matches_)
+FamilyFinder::FamilyFinder(bool rel_matches_, RelativeScoreScaling scaling_)
     : rel_matches(rel_matches_),
+      scaling(scaling_), 
       family_list(NULL),
       hits_truncated(false),
       real_hits(-1),
@@ -113,8 +114,8 @@ void FamilyFinder::delete_family_list() {
 // ------------------------
 //      PT_FamilyFinder
 
-PT_FamilyFinder::PT_FamilyFinder(GBDATA *gb_main_, int server_id_, int oligo_len_, int mismatches_, bool fast_flag_, bool rel_matches_)
-    : FamilyFinder(rel_matches_), 
+PT_FamilyFinder::PT_FamilyFinder(GBDATA *gb_main_, int server_id_, int oligo_len_, int mismatches_, bool fast_flag_, bool rel_matches_, RelativeScoreScaling scaling_)
+    : FamilyFinder(rel_matches_, scaling_), 
       gb_main(gb_main_),
       server_id(server_id_),
       oligo_len(oligo_len_),
@@ -208,6 +209,7 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
                         FAMILYFINDER_MISMATCH_NUMBER, long(mismatches),         // number of mismatches (0 hardcoded till July 2008)
                         FAMILYFINDER_FIND_TYPE,       long(fast_flag),          // 0: complete search, 1: quick search (only search oligos starting with 'A')
                         FAMILYFINDER_SORT_TYPE,       long(uses_rel_matches()), // 0: matches, 1: relative matches (0 hardcoded till July 2008)
+                        FAMILYFINDER_REL_SCORING,     long(get_scaling()),      // scaling of relative scores
                         FAMILYFINDER_SORT_MAX,        long(max_results),        // speed up family sorting (only sort retrieved results)
                         FAMILYFINDER_MIN_SCORE,       min_score,                // limit hits by score
                         FAMILYFINDER_COMPLEMENT,      long(compl_mode),         // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement (1 hardcoded in PT-Server till July 2008)
@@ -322,6 +324,13 @@ void AWTC_create_common_next_neighbour_fields(AW_window *aws) {
     aws->insert_default_option("relative", "", 1);
     aws->update_option_menu();
 
+    aws->at("scaling");
+    aws->create_option_menu(AWAR_NN_REL_SCALING, 0, 0);
+    aws->insert_option        ("to source POC",  "", RSS_SOURCE);
+    aws->insert_option        ("to target POC",  "", RSS_TARGET);
+    aws->insert_default_option("to maximum POC", "", RSS_BOTH_MAX);
+    aws->insert_option        ("to minimum POC", "", RSS_BOTH_MIN);
+    aws->update_option_menu();
 }
 
 // --------------------------------------------------------------------------------
@@ -332,12 +341,14 @@ void AWTC_create_common_next_neighbour_fields(AW_window *aws) {
 
 class ff_tester {
     GBDATA *gb_main;
-public: 
-    bool   relativeMatches;
-    bool   fastMode;
-    bool   partial;
-    bool   shortOligo;
-    double min_score;
+public:
+    bool    relativeMatches;
+    bool    fastMode;
+    bool    partial;
+    bool    shortOligo;
+    double  min_score;
+
+    RelativeScoreScaling scaling;
 
     ff_tester(GBDATA *gb_main_)
         : gb_main(gb_main_),
@@ -345,12 +356,13 @@ public:
           fastMode(false),
           partial(false),
           shortOligo(false),
-          min_score(0.0)
+          min_score(0.0),
+          scaling(RSS_BOTH_MAX)
     {}
 
     const char *get_result(GB_ERROR& error) {
         int             oligoLen = shortOligo ? (partial ? 3 : 6) : (partial ? 10 : 18);
-        PT_FamilyFinder ff(gb_main, TEST_SERVER_ID, oligoLen, 1, fastMode, relativeMatches);
+        PT_FamilyFinder ff(gb_main, TEST_SERVER_ID, oligoLen, 1, fastMode, relativeMatches, scaling);
         
         const char *sequence;
         if (partial) {
@@ -407,6 +419,21 @@ void TEST_SLOW_PT_FamilyFinder() {
     test.min_score        = 17.0; TEST_ASSERT_RELATIVES(test, "LgtLytic/40/27.58621,HllHalod/18/12.50000,AclPleur/17/10.96774");
     test.min_score        = 17.5; TEST_ASSERT_RELATIVES(test, "LgtLytic/40/27.58621,HllHalod/18/12.50000");
     test                  = ______RESET;
+
+    test.shortOligo      = true;
+    test.relativeMatches = true;
+    test.scaling         = RSS_BOTH_MAX; TEST_ASSERT_RELATIVES(test, "LgtLytic/153/97.45223,HllHalod/133/85.25641,VbhChole/133/84.17722,VblVulni/133/84.17722");
+    test.scaling         = RSS_BOTH_MIN; TEST_ASSERT_RELATIVES(test, "LgtLytic/153/98.07692,AclPleur/138/88.46154,DsssDesu/84/88.42105,CltBotul/95/87.96296");
+    test.scaling         = RSS_TARGET;   TEST_ASSERT_RELATIVES(test, "LgtLytic/153/97.45223,DsssDesu/84/88.42105,CltBotul/95/87.96296,PsAAAA00/97/85.84071");
+    test.scaling         = RSS_SOURCE;   TEST_ASSERT_RELATIVES(test, "LgtLytic/153/98.07692,AclPleur/138/88.46154,VbhChole/133/85.25641,VblVulni/133/85.25641");
+    test.partial         = true;
+    test.shortOligo      = false;
+    test.scaling         = RSS_BOTH_MAX; TEST_ASSERT_RELATIVES(test, "LgtLytic/18/11.76471,VblVulni/5/3.24675,VbhChole/4/2.59740,DcdNodos/4/2.59740");
+    test.scaling         = RSS_BOTH_MIN; TEST_ASSERT_RELATIVES(test, "LgtLytic/18/56.25000,VblVulni/5/15.62500,VbhChole/4/12.50000,DcdNodos/4/12.50000");
+    test.scaling         = RSS_TARGET;   TEST_ASSERT_RELATIVES(test, "LgtLytic/18/11.76471,VblVulni/5/3.24675,VbhChole/4/2.59740,DcdNodos/4/2.59740");
+    test.scaling         = RSS_SOURCE;   TEST_ASSERT_RELATIVES(test, "LgtLytic/18/56.25000,VblVulni/5/15.62500,VbhChole/4/12.50000,DcdNodos/4/12.50000");
+    test                 = ______RESET;
+
 
     GB_close(gb_main);
 }
