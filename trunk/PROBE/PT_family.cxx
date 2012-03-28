@@ -41,7 +41,7 @@ class HitCounter {
     int    trav_id;    // current traversal id
     int    trav_hits;  // how many hits have been counted during traversal 'trav_id' ?
     int    count;      // Counter for matches
-    double rel_count;  // match_count / (seq_len - probe_len + 1)
+    double rel_count;  // match_count / (seqlen - oligolen + 1). seqlen depends on RelativeScoreScaling
 
 public:
     HitCounter() : trav_id(-1), trav_hits(0), count(0), rel_count(0.0) {}
@@ -85,7 +85,7 @@ public:
     {}
     ~FamilyStat() { delete [] famstat; }
 
-    void calc_rel_matches(int probe_len, int sequence_length)  {
+    void calc_rel_matches(int oligo_len, int sequence_length)  {
         for (size_t i = 0; i < size; i++) {
             int full_length = 0;
             switch (scaling) {
@@ -94,7 +94,7 @@ public:
                 case RSS_BOTH_MIN: full_length = std::min(psg.data[i].get_size(), sequence_length); break; 
                 case RSS_BOTH_MAX: full_length = std::max(psg.data[i].get_size(), sequence_length); break;
             }
-            int max_poss_matches = full_length - probe_len + 1; // @@@ wrong if target range is used!
+            int max_poss_matches = full_length - oligo_len + 1; // @@@ wrong if target range is used!
 
             famstat[i].calc_rel_match(max_poss_matches);
         }
@@ -112,10 +112,10 @@ public:
     int cmp_rel(int a, int b) const { int cmp = famstat[a].cmp_rel(famstat[b]); return cmp ? cmp : a-b; }
 };
 
-class ProbeTraversal {
+class PT_Traversal {
     static Range range;
 
-    const char *probe;
+    const char *oligo;
     int         height;
     int         needed_positions;
     int         accept_mismatches;
@@ -128,7 +128,7 @@ class ProbeTraversal {
         }
     }
 
-    bool at_end() const { return *probe == PT_QU; }
+    bool at_end() const { return *oligo == PT_QU; }
 
     bool too_many_mismatches() const { return accept_mismatches<0; }
 
@@ -139,7 +139,7 @@ class ProbeTraversal {
     void match_one_char(char c) {
         pt_assert(match_possible()); // avoid unneeded calls 
         
-        if (*probe++ != c) accept_mismatches--;
+        if (*oligo++ != c) accept_mismatches--;
         needed_positions--;
         height++;
     }
@@ -153,15 +153,15 @@ class ProbeTraversal {
 
 public:
 
-    static void restrictMatchesToRegion(int start, int end, int probe_len) {
-        range  = Range(start, end, probe_len);
+    static void restrictMatchesToRegion(int start, int end, int oligo_len) {
+        range  = Range(start, end, oligo_len);
     }
     static void unrestrictMatchesToRegion() {
         range  = Range(-1, -1, -1);
     }
 
-    ProbeTraversal(const char *probe_, int needed_positions_, int accept_mismatches_, FamilyStat& fam_stat_)
-        : probe(probe_),
+    PT_Traversal(const char *oligo_, int needed_positions_, int accept_mismatches_, FamilyStat& fam_stat_)
+        : oligo(oligo_),
           height(0),
           needed_positions(needed_positions_),
           accept_mismatches(accept_mismatches_),
@@ -174,15 +174,15 @@ public:
         //! Increment match_count for matched postree-tips
         if (did_match()) count_match(loc);
         else if (match_possible()) {
-            ProbeTraversal(*this).match_rest_and_mark(loc);
+            PT_Traversal(*this).match_rest_and_mark(loc);
         }
         return 0;
     }
 };
 
-Range ProbeTraversal::range(-1, -1, -1);
+Range PT_Traversal::range(-1, -1, -1);
 
-void ProbeTraversal::mark_matching(POS_TREE *pt) const {
+void PT_Traversal::mark_matching(POS_TREE *pt) const {
     //! Traverse pos(sub)tree through matching branches and increment 'match_count'
 
     pt_assert(pt);
@@ -193,7 +193,7 @@ void ProbeTraversal::mark_matching(POS_TREE *pt) const {
         for (int base = PT_N; base < PT_B_MAX; base++) {
             POS_TREE *pt_son = PT_read_son(pt, (PT_BASES)base);
             if (pt_son && !at_end()) {
-                ProbeTraversal sub(*this);
+                PT_Traversal sub(*this);
                 sub.match_one_char(base);
                 if (!sub.too_many_mismatches()) {
                     if (sub.did_match()) sub.mark_all(pt_son);
@@ -207,7 +207,7 @@ void ProbeTraversal::mark_matching(POS_TREE *pt) const {
     }
 }
 
-void ProbeTraversal::mark_all(POS_TREE *pt) const {
+void PT_Traversal::mark_all(POS_TREE *pt) const {
     pt_assert(pt);
     pt_assert(!too_many_mismatches());
     pt_assert(did_match());
@@ -223,15 +223,15 @@ void ProbeTraversal::mark_all(POS_TREE *pt) const {
     }
 }
 
-struct cmp_probe_abs {
+struct oligo_cmp_abs {
     const FamilyStat& fam_stat;
-    cmp_probe_abs(const FamilyStat& fam_stat_) : fam_stat(fam_stat_) {}
+    oligo_cmp_abs(const FamilyStat& fam_stat_) : fam_stat(fam_stat_) {}
     bool operator()(int a, int b) { return fam_stat.cmp_abs(a, b) > 0; } // biggest scores 1st
 };
 
-struct cmp_probe_rel {
+struct oligo_cmp_rel {
     const FamilyStat& fam_stat;
-    cmp_probe_rel(const FamilyStat& fam_stat_) : fam_stat(fam_stat_) {}
+    oligo_cmp_rel(const FamilyStat& fam_stat_) : fam_stat(fam_stat_) {}
     bool operator()(int a, int b) { return fam_stat.cmp_rel(a, b) > 0; } // biggest scores 1st
 };
 
@@ -276,18 +276,18 @@ static int make_PT_family_list(PT_family *ffinder, const FamilyStat& famStat) {
 
     if (ffinder->sort_type == 0) { // sort by absolut score
         if (sort_all) {
-            std::sort(sorted.begin(), sorted.end(), cmp_probe_abs(famStat));
+            std::sort(sorted.begin(), sorted.end(), oligo_cmp_abs(famStat));
         }
         else {
-            std::partial_sort(sorted.begin(), sorted.begin() + ffinder->sort_max, sorted.begin() + matching_results, cmp_probe_abs(famStat));
+            std::partial_sort(sorted.begin(), sorted.begin() + ffinder->sort_max, sorted.begin() + matching_results, oligo_cmp_abs(famStat));
         }
     }
     else { // sort by relative score
         if (sort_all) {
-            std::sort(sorted.begin(), sorted.begin() + psg.data_count, cmp_probe_rel(famStat));
+            std::sort(sorted.begin(), sorted.begin() + psg.data_count, oligo_cmp_rel(famStat));
         }
         else {
-            std::partial_sort(sorted.begin(), sorted.begin() + ffinder->sort_max, sorted.begin() + matching_results, cmp_probe_rel(famStat));
+            std::partial_sort(sorted.begin(), sorted.begin() + ffinder->sort_max, sorted.begin() + matching_results, oligo_cmp_rel(famStat));
         }
     }
 
@@ -316,12 +316,12 @@ static int make_PT_family_list(PT_family *ffinder, const FamilyStat& famStat) {
     return 0;
 }
 
-inline bool probe_is_ok(char *probe, int probe_len) {
-    //! Check the probe for inconsistencies
-    for (int i = 0; i < probe_len; i++)
-        if (probe[i] < PT_A || probe[i] > PT_T)
-            return false;
-    return true;
+inline bool contains_ambiguities(char *oligo, int oligo_len) {
+    //! Check the oligo for ambiguities
+    for (int i = 0; i < oligo_len; i++)
+        if (oligo[i] < PT_A || oligo[i] > PT_T)
+            return true;
+    return false;
 }
 
 inline void revert_sequence(char *seq, int len) {
@@ -341,13 +341,13 @@ inline void complement_sequence(char *seq, int len) {
     for (int i = 0; i<len; i++) seq[i] = complement[int(seq[i])];
 }
 
-class probe_comparator {
-    int probe_len;
+class oligo_comparator {
+    int oligo_len;
 public:
-    probe_comparator(int len) : probe_len(len) {}
+    oligo_comparator(int len) : oligo_len(len) {}
     bool operator()(const char *p1, const char *p2) {
         bool isless = false;
-        for (int o = 0; o<probe_len; ++o) {
+        for (int o = 0; o<oligo_len; ++o) {
             if (p1[o] != p2[o]) {
                 isless = p1[o]<p2[o];
                 break;
@@ -357,36 +357,30 @@ public:
     }
 };
 
-typedef std::map<const char *, int, probe_comparator> ProbeMap;
-typedef ProbeMap::const_iterator                      ProbeIter;
+typedef std::map<const char *, int, oligo_comparator> OligoMap;
+typedef OligoMap::const_iterator                      OligoIter;
 
-class ProbeRegistry {
-    ProbeMap probes;
-
+class OligoRegistry {
+    OligoMap oligos;
 public:
-    ProbeRegistry(int probe_len)
-        : probes(probe_comparator(probe_len))
+    OligoRegistry(int oligo_len)
+        : oligos(oligo_comparator(oligo_len))
     {}
     void add(const char *seq) {
-        ProbeMap::iterator found = probes.find(seq);
-        if (found == probes.end()) {
-            probes[seq] = 1;
-        }
-        else {
-            found->second++;
-        }
+        OligoMap::iterator found = oligos.find(seq);
+        if (found == oligos.end()) oligos[seq] = 1;
+        else found->second++;
     }
-
-    ProbeIter begin() { return probes.begin(); }
-    ProbeIter end() { return probes.end(); }
+    OligoIter begin() { return oligos.begin(); }
+    OligoIter end() { return oligos.end(); }
 };
 
 int find_family(PT_family *ffinder, bytestring *species) {
     //! make sorted list of family members of species
 
-    int probe_len = ffinder->pr_len;
+    int oligo_len = ffinder->pr_len;
 
-    if (probe_len<1) {
+    if (oligo_len<1) {
         freedup(ffinder->ff_error, "minimum oligo length is 1");
         return 0;
     }
@@ -397,9 +391,9 @@ int find_family(PT_family *ffinder, bytestring *species) {
     char *sequence     = species->data; // sequence data passed by caller
     int   sequence_len = probe_compress_sequence(sequence, species->size);
 
-    bool use_all_probes = ffinder->only_A_probes == 0;
+    bool use_all_oligos = ffinder->only_A_probes == 0;
 
-    ProbeTraversal::restrictMatchesToRegion(ffinder->range_start, ffinder->range_end, probe_len);
+    PT_Traversal::restrictMatchesToRegion(ffinder->range_start, ffinder->range_end, oligo_len);
 
     FamilyStat famStat(psg.data_count, RelativeScoreScaling(ffinder->rel_scoring));
 
@@ -427,25 +421,25 @@ int find_family(PT_family *ffinder, bytestring *species) {
         }
     }
 
-    ProbeRegistry occurring_probes(probe_len);
+    OligoRegistry occurring_oligos(oligo_len);
 
     for (int s = 0; s<seq_count; s++) {
-        char *last_probe = seq[s]+sequence_len-probe_len;
-        for (char *probe = seq[s]; probe < last_probe; ++probe) {
-            if (use_all_probes || probe[0] == PT_A) {
-                if (probe_is_ok(probe, probe_len)) {
-                    occurring_probes.add(probe);
+        char *last_oligo = seq[s]+sequence_len-oligo_len;
+        for (char *oligo = seq[s]; oligo < last_oligo; ++oligo) {
+            if (use_all_oligos || oligo[0] == PT_A) {
+                if (!contains_ambiguities(oligo, oligo_len)) {
+                    occurring_oligos.add(oligo);
                 }
             }
         }
     }
 
-    for (ProbeIter p = occurring_probes.begin(); p != occurring_probes.end(); ++p)  {
-        const char *probe           = p->first;
-        int         occur_in_source = p->second;
+    for (OligoIter o = occurring_oligos.begin(); o != occurring_oligos.end(); ++o)  {
+        const char *oligo       = o->first;
+        int         occur_count = o->second;
 
-        famStat.limit_hits_for_next_traversal(occur_in_source);
-        ProbeTraversal(probe, probe_len, mismatch_nr, famStat).mark_matching(psg.pt);
+        famStat.limit_hits_for_next_traversal(occur_count);
+        PT_Traversal(oligo, oligo_len, mismatch_nr, famStat).mark_matching(psg.pt);
     }
 
     famStat.calc_rel_matches(ffinder->pr_len, sequence_len);
@@ -455,7 +449,7 @@ int find_family(PT_family *ffinder, bytestring *species) {
         free(seq[s]);
     }
 
-    ProbeTraversal::unrestrictMatchesToRegion();
+    PT_Traversal::unrestrictMatchesToRegion();
 
     free(species->data);
     return 0;
