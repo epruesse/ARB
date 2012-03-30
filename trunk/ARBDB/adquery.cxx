@@ -508,7 +508,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
             separator = *s2;
             *(s2++)   = 0; // @@@ do not modify key!
             if (separator == '-') {
-                if ((*s2)  != '>') {
+                if (s2[0] != '>') {
                     GB_export_errorf("Invalid key for gb_search '%s'", str);
                     return NULL;
                 }
@@ -1264,7 +1264,13 @@ void TEST_DB_search() {
             TEST_ASSERT_EQUAL(gb_any_child, GB_search(db.gb_main, "container1/entry", GB_FIND));
 
             TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_main, "zic-zac", GB_FIND), "Invalid key for gb_search 'zic-zac'");
-            // TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_main, "->bla", GB_FIND), "bla");
+
+            // check link-syntax
+            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_main, "->entry", GB_FIND), "Invalid key for gb_search '->entry'");
+            TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_search(db.gb_main, "entry->bla", GB_FIND));
+            TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_search(db.gb_main, "container1/entry->nowhere", GB_FIND));
+            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_main, "container1/entry->nowhere", GB_STRING), "Cannot create links on the fly in GB_search");
+            TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_search(db.gb_main, "entry->", GB_FIND)); // valid ? just deref link
 
             TEST_ASSERT_EQUAL(GB_search(gb_any_child, "..", GB_FIND), db.gb_cont1);
             TEST_ASSERT_EQUAL(GB_search(gb_any_child, "../..", GB_FIND), db.gb_main);
