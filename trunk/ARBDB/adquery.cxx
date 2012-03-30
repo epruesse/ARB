@@ -427,18 +427,11 @@ char *GB_first_non_key_char(const char *str) {
     return gb_first_non_key_character(str);
 }
 
-GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag)
-{
+GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag) {
     /* finds a hierarchical key,
-       if create != GB_FIND(==0), then create the key
-       force types if ! internflag
-    */
-
-    char   *s1, *s2;
-    GBDATA *gbp, *gbsp;
-    int     len;
-    int     separator = 0;
-    char    buffer[GB_PATH_MAX];
+     * if create != GB_FIND(==0), then create the key
+     * force types if ! internflag
+     */
 
     GB_test_transaction(gbd);
     if (!str) {
@@ -449,8 +442,8 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
         str++;
     }
 
-    if (!gb_first_non_key_character(str)) {
-        gbsp = GB_entry(gbd, str);
+    if (!gb_first_non_key_character(str)) { // @@@ executed twice when 'str' contains non-key-chars 
+        GBDATA *gbsp = GB_entry(gbd, str);
         if (gbsp && create) {
             GB_TYPES oldType = GB_TYPE(gbsp);
             if (create != oldType) { // type mismatch
@@ -459,28 +452,20 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
             }
         }
         if (!gbsp && create) {
-            if (internflag) { // @@@ DRY
-                if (create == GB_CREATE_CONTAINER) {
-                    gbsp = gb_create_container(gbd, str);
-                }
-                else {
-                    gbsp = gb_create(gbd, str, create);
-                }
+            if (create == GB_CREATE_CONTAINER) {
+                gbsp = internflag ? gb_create_container(gbd, str) : GB_create_container(gbd, str);
             }
             else {
-                if (create == GB_CREATE_CONTAINER) {
-                    gbsp = GB_create_container(gbd, str);
-                }
-                else {
-                    gbsp = gb_create(gbd, str, create);
-                }
+                gbsp = gb_create(gbd, str, create);
             }
-            if (!gbsp) GB_print_error();
+            gb_assert(gbsp || GB_have_error());
         }
         return gbsp;
     }
+
+    char buffer[GB_PATH_MAX]; // @@@ remove limit / avoid copy
     {
-        len = strlen(str)+1;
+        int len = strlen(str)+1;
         if (len > GB_PATH_MAX) {
             GB_internal_errorf("Path Length '%i' exceeded by '%s'", GB_PATH_MAX, str);
             return NULL;
@@ -488,9 +473,12 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
         memcpy(buffer, str, len);
     }
 
-    gbp = gbd;
-    for (s1 = buffer; s1; s1 = s2) {
-        s2 = gb_first_non_key_character(s1);
+    GBDATA *gbp = gbd;
+    char   *s2;
+
+    for (char *s1 = buffer; s1; s1 = s2) {
+        s2            = gb_first_non_key_character(s1);
+        int separator = 0;
         if (s2) {
             if (s1 == s2) { // non-key char at start of key
                 bool valid_dd = s1[0] == '.' && s1[1] == '.' && (!s1[2] || s1[2] == '/');
@@ -507,6 +495,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
             // non-key char inside key
             separator = *s2;
             *(s2++)   = 0; // @@@ do not modify key!
+
             if (separator == '-') {
                 if (s2[0] != '>') {
                     GB_export_errorf("Invalid key for gb_search '%s'", str);
@@ -516,7 +505,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
             }
         }
 
-        gbsp = GB_entry(gbp, s1);
+        GBDATA *gbsp = GB_entry(gbp, s1);
         if (gbsp && separator == '-') { // follow link !!!
             if (GB_TYPE(gbsp) != GB_LINK) {
                 if (create) {
@@ -1331,6 +1320,10 @@ void TEST_DB_search() {
 
             TEST_ASSERT_EQUAL(gb_float, gb_float_same);
             TEST_ASSERT_SIMILAR(GB_read_float(gb_float), 0.815, 0.0001);
+
+            TEST_ASSERT_EQUAL  (GB_read_char_pntr(GB_searchOrCreate_string(db.gb_cont_misc, "sub1/str",    "blub")), "blub");
+            TEST_ASSERT_EQUAL  (GB_read_int      (GB_searchOrCreate_int   (db.gb_cont_misc, "sub2/int",    2012)),   2012);
+            TEST_ASSERT_SIMILAR(GB_read_float    (GB_searchOrCreate_float (db.gb_cont_misc, "sub3/float", 3.1415)), 3.1415, 0.0001);
 
             TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_searchOrCreate_float (db.gb_cont_misc, "int",   0.815), "has wrong type");
             TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_searchOrCreate_float (db.gb_cont_misc, "str",   0.815), "has wrong type");
