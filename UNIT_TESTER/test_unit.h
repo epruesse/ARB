@@ -1151,6 +1151,18 @@ namespace arb_test {
 #define TEST_ASSERT_NORESULT__ERROREXPORTED_EQUALS(create_result,expected)   TEST_ASSERT_NORESULT__ERROREXPORTED__CHECKERROR(create_result,expected,(void*)NULL)
 #define TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(create_result,expected) TEST_ASSERT_NORESULT__ERROREXPORTED__CHECKERROR(create_result,(void*)NULL,expected)
 
+#define TEST_ASSERT_NORESULT__NOERROREXPORTED(create_result)                                    \
+    do {                                                                                        \
+        TEST_CLEAR_EXPORTED_ERROR();                                                            \
+        bool have_result = (create_result);                                                     \
+        const char *error_ = TEST_EXPORTED_ERROR();                                             \
+        if (have_result) {                                                                      \
+            if (error_) {                                                                       \
+                TEST_WARNING("Error '%s' exported (when result returned)", error_);             \
+            }                                                                                   \
+        }                                                                                       \
+        TEST_EXPECT(all().of(that(have_result).equals(false), that(error_).equals(NULL)));      \
+    } while (0)
 
 #define TEST_ASSERT_RESULT__NOERROREXPORTED(create_result)                                      \
     do {                                                                                        \

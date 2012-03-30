@@ -490,56 +490,62 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
 
     gbp = gbd;
     for (s1 = buffer; s1; s1 = s2) {
-
         s2 = gb_first_non_key_character(s1);
         if (s2) {
-            arb_assert(s2>s1); // @@@ otherwise following code bugs
+            if (s1 == s2) { // non-key char at start of key
+                bool valid_dd = s1[0] == '.' && s1[1] == '.' && (!s1[2] || s1[2] == '/');
+                if (!valid_dd) {
+                    GB_export_errorf("Invalid key for gb_search '%s'", str);
+                    return NULL;
+                }
+
+                gbp = GB_get_father(gbp);
+                s2  = s1[2] ? s1+3 : 0;
+                continue;
+            }
+
+            // non-key char inside key
             separator = *s2;
-            *(s2++)   = 0;
+            *(s2++)   = 0; // @@@ do not modify key!
             if (separator == '-') {
                 if ((*s2)  != '>') {
                     GB_export_errorf("Invalid key for gb_search '%s'", str);
-                    GB_print_error();
                     return NULL;
                 }
                 s2++;
             }
         }
 
-        if (strcmp("..", s1) == 0) { // @@@ never true, ".." is destroyed by code above
-            UNCOVERED(); // @@@ cover when bug fixed
-            gbsp = GB_get_father(gbp);
-        }
-        else {
-            gbsp = GB_entry(gbp, s1);
-            if (gbsp && separator == '-') { // follow link !!!
-                if (GB_TYPE(gbsp) != GB_LINK) {
-                    if (create) {
-                        GB_export_error("Cannot create links on the fly in GB_search");
-                        GB_print_error();
-                    }
-                    return NULL;
+        gbsp = GB_entry(gbp, s1);
+        if (gbsp && separator == '-') { // follow link !!!
+            if (GB_TYPE(gbsp) != GB_LINK) {
+                if (create) {
+                    GB_export_error("Cannot create links on the fly in GB_search");
+                    GB_print_error();
                 }
-                gbsp = GB_follow_link(gbsp);
-                separator = 0;
-                if (!gbsp) return NULL; // cannot resolve link
+                return NULL;
             }
-            while (gbsp && create) {
-                if (s2) {                           // non terminal
-                    if (GB_DB == GB_TYPE(gbsp)) break;
-                }
-                else {                              // terminal
-                    if (create == GB_TYPE(gbsp)) break;
-                }
+            gbsp = GB_follow_link(gbsp);
+            separator = 0;
+            if (!gbsp) return NULL; // cannot resolve link
+        }
 
-                // db-entry has wrong type
-                // (this happens if ARBDB-client-code is inconsistent and uses the same field with 2 different types)
-                // "solution": delete and recreate entry
-                GB_internal_errorf("Inconsistent Type %u:%u '%s':'%s', repairing database", create, GB_TYPE(gbsp), str, s1);
-                GB_delete(gbsp);
-                gbsp = GB_entry(gbd, s1);
+        while (gbsp && create) {
+            if (s2) {                           // non terminal
+                if (GB_DB == GB_TYPE(gbsp)) break;
             }
+            else {                              // terminal
+                if (create == GB_TYPE(gbsp)) break;
+            }
+
+            // db-entry has wrong type
+            // (this happens if ARBDB-client-code is inconsistent and uses the same field with 2 different types)
+            // "solution": delete and recreate entry
+            GB_internal_errorf("Inconsistent Type %u:%u '%s':'%s', repairing database", create, GB_TYPE(gbsp), str, s1);
+            GB_delete(gbsp);
+            gbsp = GB_entry(gbd, s1);
         }
+
         if (!gbsp) {
             if (!create) return NULL; // read only mode
             if (separator == '-') {
@@ -1238,10 +1244,8 @@ struct TestDB : virtual Noncopyable {
 
 static TestDB *crash_db = 0;
 
-static void search_crash_1() { GB_searchOrCreate_string(crash_db->gb_cont_misc, "*", "bla"); }
 static void search_crash_2() { GB_searchOrCreate_string(crash_db->gb_cont_misc, "int*", "bla"); }
 static void search_crash_3() { GB_searchOrCreate_string(crash_db->gb_cont_misc, "sth_else*", "bla"); }
-static void search_crash_4() { GBDATA *gb_any_child = GB_child(crash_db->gb_cont1); GB_search(gb_any_child, "..", GB_FIND); }
 
 void TEST_DB_search() {
     TestDB db;
@@ -1259,8 +1263,16 @@ void TEST_DB_search() {
             TEST_ASSERT_EQUAL(gb_any_child, GB_entry(db.gb_cont1, "entry"));
             TEST_ASSERT_EQUAL(gb_any_child, GB_search(db.gb_main, "container1/entry", GB_FIND));
 
-            // TEST_ASSERT_EQUAL__BROKEN(GB_search(gb_any_child, "..", GB_FIND), db.gb_cont1); // @@@ "older" bug in gb_search (now crashes due to assertion added)
-            crash_db = &db; TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(search_crash_4); // enable test above when fixed
+            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_main, "zic-zac", GB_FIND), "Invalid key for gb_search 'zic-zac'");
+            // TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_main, "->bla", GB_FIND), "bla");
+
+            TEST_ASSERT_EQUAL(GB_search(gb_any_child, "..", GB_FIND), db.gb_cont1);
+            TEST_ASSERT_EQUAL(GB_search(gb_any_child, "../..", GB_FIND), db.gb_main);
+            TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_search(gb_any_child, "../../..", GB_FIND));
+
+            TEST_ASSERT_EQUAL__BROKEN(GB_search(gb_any_child, "/", GB_FIND), db.gb_main); // @@@ shall return main entry
+            TEST_ASSERT_EQUAL(GB_search(gb_any_child, "/container1/..", GB_FIND), db.gb_main);
+            TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_search(gb_any_child, "/..", GB_FIND)); // main has no parent
         }
 
         {
@@ -1274,19 +1286,22 @@ void TEST_DB_search() {
             TEST_ASSERT_EQUAL(GB_read_key_pntr(gb_child3), "item");
             TEST_ASSERT_EQUAL(GB_read_key_pntr(gb_child4), "other");
 
-            TEST_ASSERT_NULL(GB_entry(db.gb_cont2, "entry"));
+            TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_entry(db.gb_cont2, "entry"));
             TEST_ASSERT_EQUAL(GB_entry(db.gb_cont2, "item"),  gb_child1);
             TEST_ASSERT_EQUAL(GB_entry(db.gb_cont2, "other"), gb_child2);
 
             TEST_ASSERT_EQUAL(GB_nextEntry(gb_child1), gb_child3);
             TEST_ASSERT_EQUAL(GB_nextEntry(gb_child2), gb_child4);
 
+            TEST_ASSERT_EQUAL(GB_search(gb_child3, "../item", GB_FIND), gb_child1);
+            TEST_ASSERT_EQUAL(GB_search(gb_child3, "../other", GB_FIND), gb_child2);
+            TEST_ASSERT_EQUAL(GB_search(gb_child3, "../other/../item", GB_FIND), gb_child1);
         }
 
         {
             GBDATA *gb_last_child = GB_search_last_son(db.gb_cont2); TEST_ASSERT(gb_last_child);
-            TEST_ASSERT_NULL(GB_nextChild(gb_last_child));
-            TEST_ASSERT_NULL(GB_search_last_son(db.gb_cont_empty)); // no last son in empty container
+            TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_nextChild(gb_last_child));
+            TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_search_last_son(db.gb_cont_empty)); // no last son in empty container
         }
 
         // ------------------------
@@ -1318,15 +1333,14 @@ void TEST_DB_search() {
             TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_searchOrCreate_string(db.gb_cont_misc, "float", "bla"), "has wrong type");
             TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_searchOrCreate_string(db.gb_cont_misc, "int",   "bla"), "has wrong type");
 
-            // TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_searchOrCreate_string(db.gb_cont_misc, "*", "bla"), "has wrong type"); // @@@ fails assertion
-            crash_db = &db; TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(search_crash_1); // enable test above when fixed
+            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_searchOrCreate_string(db.gb_cont_misc, "*", "bla"), "Invalid key for gb_search '*'");
             // TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_searchOrCreate_string(db.gb_cont_misc, "int*", "bla"), "has wrong type"); // @@@ internal error
             crash_db = &db; TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(search_crash_2); // enable test above when fixed
             // TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_searchOrCreate_string(db.gb_cont_misc, "sth_else*", "bla"), "has wrong type"); // @@@ crash somewhere else
             crash_db = &db; TEST_ASSERT_SEGFAULT__UNWANTED(search_crash_3); // enable test above when fixed
 
             GBDATA *gb_entry;
-            TEST_ASSERT_NULL(GB_search(db.gb_cont_misc, "subcont/entry", GB_FIND));
+            TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_search(db.gb_cont_misc, "subcont/entry", GB_FIND));
             TEST_ASSERT_RESULT__NOERROREXPORTED(gb_entry = GB_search(db.gb_cont_misc, "subcont/entry", GB_INT));
             TEST_ASSERT_EQUAL(GB_read_int(gb_entry), 0);
 
@@ -1355,18 +1369,18 @@ void TEST_DB_search() {
             TEST_ASSERT_NULL(GB_find_string(db.gb_cont_misc, "str", "blub", GB_MIND_CASE, SEARCH_CHILD));
 
             GBDATA *gb_name;
-            TEST_ASSERT_NOTNULL(GB_find_string          (db.gb_cont1, "name", "entry 77",  GB_MIND_CASE,   SEARCH_GRANDCHILD));
-            TEST_ASSERT_NOTNULL(GB_find_string          (db.gb_cont1, "name", "entry 99",  GB_MIND_CASE,   SEARCH_GRANDCHILD));
-            TEST_ASSERT_NULL   (GB_find_string          (db.gb_cont1, "name", "entry 100", GB_MIND_CASE,   SEARCH_GRANDCHILD));
-            TEST_ASSERT_NULL   (GB_find_string          (db.gb_cont1, "name", "ENTRY 13",  GB_MIND_CASE,   SEARCH_GRANDCHILD));
-            TEST_ASSERT_NOTNULL(gb_name = GB_find_string(db.gb_cont1, "name", "ENTRY 13",  GB_IGNORE_CASE, SEARCH_GRANDCHILD));
+            TEST_ASSERT_NOTNULL                  (GB_find_string          (db.gb_cont1, "name", "entry 77",  GB_MIND_CASE,   SEARCH_GRANDCHILD));
+            TEST_ASSERT_NOTNULL                  (GB_find_string          (db.gb_cont1, "name", "entry 99",  GB_MIND_CASE,   SEARCH_GRANDCHILD));
+            TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_find_string          (db.gb_cont1, "name", "entry 100", GB_MIND_CASE,   SEARCH_GRANDCHILD));
+            TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_find_string          (db.gb_cont1, "name", "ENTRY 13",  GB_MIND_CASE,   SEARCH_GRANDCHILD));
+            TEST_ASSERT_NOTNULL                  (gb_name = GB_find_string(db.gb_cont1, "name", "ENTRY 13",  GB_IGNORE_CASE, SEARCH_GRANDCHILD));
 
             GBDATA *gb_sub;
             TEST_ASSERT_NOTNULL(gb_sub = GB_get_father(gb_name));        TEST_ASSERT_EQUAL(GBT_get_name(gb_sub), "entry 13");
             TEST_ASSERT_NOTNULL(gb_sub = GB_followingEntry(gb_sub, 0));  TEST_ASSERT_EQUAL(GBT_get_name(gb_sub), "entry 14");
             TEST_ASSERT_NOTNULL(gb_sub = GB_followingEntry(gb_sub, 1));  TEST_ASSERT_EQUAL(GBT_get_name(gb_sub), "entry 16");
             TEST_ASSERT_NOTNULL(gb_sub = GB_followingEntry(gb_sub, 10)); TEST_ASSERT_EQUAL(GBT_get_name(gb_sub), "entry 27");
-            TEST_ASSERT_NULL(GB_followingEntry(gb_sub, -1U)); 
+            TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_followingEntry(gb_sub, -1U)); 
             TEST_ASSERT_NOTNULL(gb_sub = GB_brother(gb_sub, "entry"));   TEST_ASSERT_EQUAL(GBT_get_name(gb_sub), "entry 0");
 
             TEST_ASSERT_EQUAL(gb_bla = GB_search(gb_4711, "/misc/str", GB_FIND), gb_str);
@@ -1399,13 +1413,13 @@ void TEST_DB_search() {
         TEST_ASSERT_EQUAL(GB_number_of_marked_subentries(db.gb_cont1), 15);
         TEST_ASSERT_EQUAL(GB_number_of_marked_subentries(db.gb_cont2), 3);
 
-        TEST_ASSERT_NULL(GB_first_marked(db.gb_cont2, "entry"));
+        TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_first_marked(db.gb_cont2, "entry"));
 
         GBDATA *gb_marked;
         TEST_ASSERT_NOTNULL(gb_marked = GB_first_marked(db.gb_cont2, "item"));
         TEST_ASSERT_EQUAL(GBT_get_name(gb_marked), "item 0");
 
-        TEST_ASSERT_NULL(GB_following_marked(gb_marked, "item", 1)); // skip over last
+        TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_following_marked(gb_marked, "item", 1)); // skip over last
         
         TEST_ASSERT_NOTNULL(gb_marked = GB_next_marked(gb_marked, "item")); // find last
         TEST_ASSERT_EQUAL(GBT_get_name(gb_marked), "item 14");
