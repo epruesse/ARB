@@ -741,6 +741,7 @@ adquery.o: $(ARBHOME)/INCLUDE/attributes.h
 adquery.o: $(ARBHOME)/INCLUDE/dupstr.h
 adquery.o: $(ARBHOME)/INCLUDE/smartptr.h
 adquery.o: $(ARBHOME)/INCLUDE/test_global.h
+adquery.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adRevCompl.o: ad_prot.h
 adRevCompl.o: ad_t_prot.h
