@@ -409,25 +409,23 @@ void gb_init_ctype_table() {
     }
 }
 
-inline char *gb_first_non_key_character(const char *str) {
-    const char *s = str;
-    int c;
+inline const char *gb_first_non_key_character(const char *str) {
     while (1) {
-        c = *s;
+        int c = *str;
         if (!gb_ctype_table[c]) {
             if (c == 0) break;
-            return (char *)(s);
+            return str;
         }
-        s++;
+        str++;
     }
     return NULL;
 }
 
-char *GB_first_non_key_char(const char *str) {
+const char *GB_first_non_key_char(const char *str) {
     return gb_first_non_key_character(str);
 }
 
-GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag) {
+GBDATA *gb_search(GBDATA *gbd, const char *str, GB_TYPES create, int internflag) {
     /* finds a hierarchical key,
      * if create != GB_FIND(==0), then create the key
      * force types if ! internflag
@@ -477,7 +475,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
     char   *s2;
 
     for (char *s1 = buffer; s1; s1 = s2) {
-        s2            = gb_first_non_key_character(s1);
+        s2            = (char*)gb_first_non_key_character(s1);
         int separator = 0;
         if (s2) {
             if (s1 == s2) { // non-key char at start of key

@@ -59,14 +59,14 @@ static GB_ERROR gbt_set_type_of_changekey(GBDATA *gb_main, const char *field_nam
 
 
 GB_ERROR GBT_add_new_changekey_to_keypath(GBDATA *gb_main, const char *name, int type, const char *keypath) {
-    GB_ERROR  error  = NULL;
-    GBDATA   *gb_key = GBT_get_changekey(gb_main, name, keypath);
-    char     *c      = GB_first_non_key_char(name);
+    GB_ERROR    error  = NULL;
+    GBDATA     *gb_key = GBT_get_changekey(gb_main, name, keypath);
+    const char *c      = GB_first_non_key_char(name);
 
     if (c) {
         char *new_name = strdup(name);
 
-        *GB_first_non_key_char(new_name) = 0;
+        *(char*)GB_first_non_key_char(new_name) = 0;
 
         if      (*c == '/') error = GBT_add_new_changekey(gb_main, new_name, GB_DB);
         else if (*c == '-') error = GBT_add_new_changekey(gb_main, new_name, GB_LINK);

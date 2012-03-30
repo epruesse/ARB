@@ -204,7 +204,7 @@ GBDATA *GB_entry(GBDATA *father, const char *key);
 GBDATA *GB_nextEntry(GBDATA *entry);
 GBDATA *GB_followingEntry(GBDATA *entry, size_t skip_over);
 GBDATA *GB_brother(GBDATA *entry, const char *key);
-char *GB_first_non_key_char(const char *str);
+const char *GB_first_non_key_char(const char *str);
 GBDATA *GB_search(GBDATA *gbd, const char *fieldpath, GB_TYPES create);
 GBDATA *GB_searchOrCreate_string(GBDATA *gb_container, const char *fieldpath, const char *default_value);
 GBDATA *GB_searchOrCreate_int(GBDATA *gb_container, const char *fieldpath, long default_value);
