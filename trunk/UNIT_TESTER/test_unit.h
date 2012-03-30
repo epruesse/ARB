@@ -34,6 +34,9 @@
 #if defined(_GLIBCXX_STRING)
 #define TESTS_KNOW_STRING
 #endif
+#ifdef ARBDB_BASE_H
+#define TESTS_KNOW_ARBDB
+#endif
 
 
 #define ENABLE_CRASH_TESTS // comment out this line to get rid of provoked SEGVs (e.g. while debugging test-code)
@@ -240,6 +243,9 @@ namespace arb_test {
 
 #ifdef TESTS_KNOW_STRING
     inline char *val2readable(const std::string& s) { return StaticCode::readable_string(s.c_str()); }
+#endif
+#if defined(TESTS_KNOW_ARBDB)
+    inline char *val2readable(const GBDATA* gbd) { return StaticCode::strf("%p", gbd); }
 #endif
 
     // ------------------
@@ -664,7 +670,6 @@ namespace arb_test {
         return matchable_value<const char *>(other.c_str(), code_);
     }
 #endif
-    
     template <typename T> template <typename U>
     inline match_expectation matchable_value<T>::equals_expectation(bool wanted, const U& other, const char *code_) const {
         return predicate_expectation(wanted, make_predicate(equals<T>, "equals", "differs"), make_matchable_value<T,U>(other, code_));
@@ -1121,7 +1126,7 @@ namespace arb_test {
         }                                                               \
     } while (0)
 
-#define TEST_ASSERT_NORESULT__ERROREXPORTED_CHECKERROR(create_result,equal,contains)    \
+#define TEST_ASSERT_NORESULT__ERROREXPORTED__CHECKERROR(create_result,equal,contains)    \
     do {                                                                                \
         TEST_CLEAR_EXPORTED_ERROR();                                                    \
         bool have_result = (create_result);                                             \
@@ -1142,8 +1147,10 @@ namespace arb_test {
     } while (0)
 
 
-#define TEST_ASSERT_NORESULT__ERROREXPORTED(create_result) TEST_ASSERT_NORESULT__ERROREXPORTED_CHECKERROR(create_result,(void*)NULL,(void*)NULL) 
-    
+#define TEST_ASSERT_NORESULT__ERROREXPORTED(create_result)                   TEST_ASSERT_NORESULT__ERROREXPORTED__CHECKERROR(create_result,(void*)NULL,(void*)NULL)
+#define TEST_ASSERT_NORESULT__ERROREXPORTED_EQUALS(create_result,expected)   TEST_ASSERT_NORESULT__ERROREXPORTED__CHECKERROR(create_result,expected,(void*)NULL)
+#define TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(create_result,expected) TEST_ASSERT_NORESULT__ERROREXPORTED__CHECKERROR(create_result,(void*)NULL,expected)
+
 
 #define TEST_ASSERT_RESULT__NOERROREXPORTED(create_result)                                      \
     do {                                                                                        \
@@ -1235,9 +1242,6 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 #define TEST_ASSERT_EQUAL(e1,t2)         TEST_EXPECT(that(e1).equals(t2))
 #define TEST_ASSERT_EQUAL__BROKEN(e1,t2) TEST_EXPECT__BROKEN(that(e1).equals(t2))
 
-#define TEST_ASSERT_NULL(n)         TEST_ASSERT_EQUAL(n, (typeof(n))NULL)
-#define TEST_ASSERT_NULL__BROKEN(n) TEST_ASSERT_EQUAL__BROKEN(n, (typeof(n))NULL)
-
 #define TEST_ASSERT_SIMILAR(e1,t2,epsilon)         TEST_EXPECT(that(e1).is(epsilon_similar(epsilon), t2))
 #define TEST_ASSERT_SIMILAR__BROKEN(e1,t2,epsilon) TEST_EXPECT__BROKEN(that(e1).is(epsilon_similar(epsilon), t2))
 
@@ -1249,6 +1253,11 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 #define TEST_ASSERT_IN_RANGE(val,lower,upper) TEST_EXPECT(all().of(that(val).more_or_equal(lower), that(val).less_or_equal(upper)))
 
 #define TEST_ASSERT_CONTAINS(str, part) TEST_EXPECT(that(str).is(containing(), part))
+
+#define TEST_ASSERT_NULL(n)            TEST_ASSERT_EQUAL(n, (typeof(n))NULL)
+#define TEST_ASSERT_NULL__BROKEN(n)    TEST_ASSERT_EQUAL__BROKEN(n, (typeof(n))NULL)
+#define TEST_ASSERT_NOTNULL(n)         TEST_ASSERT_DIFFERENT(n, (typeof(n))NULL)
+#define TEST_ASSERT_NOTNULL__BROKEN(n) TEST_ASSERT_DIFFERENT__BROKEN(n, (typeof(n))NULL)
 
 // --------------------------------------------------------------------------------
 // the following macros only work when
