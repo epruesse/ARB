@@ -761,7 +761,7 @@ namespace arb_test {
     // ------------------------------------------------
     //      matchable + matcher (for expectations)
 
-    const int MAX_GROUP_SIZE = 3;
+    const int MAX_GROUP_SIZE = 4;
     class expectation_group : public matchable //! group of expectation. matchable with group_matcher
     {
         int          count;
@@ -939,7 +939,7 @@ namespace arb_test {
         static group_matcher none() { return group_matcher(0, 0); }
         static group_matcher atleast(int min_) { return group_matcher(min_, -1); }
         static group_matcher atmost(int max_) { return group_matcher(0, max_); }
-        static group_matcher exacly(int amount) { return group_matcher(amount, amount); }
+        static group_matcher exactly(int amount) { return group_matcher(amount, amount); }
 
         // match_expectation factories
         match_expectation of(const expectation& e) const {
@@ -950,6 +950,9 @@ namespace arb_test {
         }
         match_expectation of(const expectation& e1, const expectation& e2, const expectation& e3) const {
             return match_expectation(expectation_group(e1, e2).add(e3), *this);
+        }
+        match_expectation of(const expectation& e1, const expectation& e2, const expectation& e3, const expectation& e4) const {
+            return match_expectation(expectation_group(e1, e2).add(e3).add(e4), *this);
         }
 
         void dump_brief_description(const matchable& thing) const {
@@ -988,7 +991,7 @@ namespace arb_test {
     inline group_matcher none() { return group_matcher::none(); }
     inline group_matcher atleast(int min) { return group_matcher::atleast(min); }
     inline group_matcher atmost(int max) { return group_matcher::atmost(max); }
-    inline group_matcher exacly(int amount) { return group_matcher::exacly(amount); }
+    inline group_matcher exactly(int amount) { return group_matcher::exactly(amount); }
 
     inline match_expectation wrong(const expectation& e) { return none().of(e); }
 };
@@ -1009,6 +1012,8 @@ namespace arb_test {
 
 #define is(pred,arg)     predicate_expectation(true, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
 #define is_not(pred,arg) predicate_expectation(false, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
+
+#define contains(val) is(containing(),val)
 
 #define that(thing) CREATE_matchable(MATCHABLE_ARGS_TYPED(thing))
 
@@ -1069,124 +1074,72 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_ASSERT_NO_ERROR(error_cond)                                \
-    do {                                                                \
-        const char *error_ = (error_cond);                              \
-        if (error_) {                                                   \
-            TEST_ERROR2("call '%s' returns unexpected error '%s'",      \
-                        #error_cond, error_);                           \
-        }                                                               \
-    } while (0)
+namespace arb_test {
+    inline match_expectation reports_error(const char *error) { return that(error).differs(NULL); }
+    inline match_expectation doesnt_report_error(const char *error) { return that(error).equals(NULL); }
+    inline match_expectation reported_error_contains(const char *error, const char *part) { return error ? that(error).contains(part) : that(error).differs(NULL); }
+};
 
-#define TEST_ASSERT_ERROR(error_cond)                                   \
-    do {                                                                \
-        if (!(error_cond)) {                                            \
-            TEST_ERROR("Expected to see error from '%s'", #error_cond); \
-        }                                                               \
-    } while (0)
-
-
-#define TEST_ASSERT_NO_ERROR__BROKEN(error_cond)                                \
-    do {                                                                        \
-        const char *error_ = (error_cond);                                      \
-        if (error_) {                                                           \
-            TEST_WARNING2("Known broken behavior ('%s' reports error '%s')",    \
-                          #error_cond, error_);                                 \
-        }                                                                       \
-        else {                                                                  \
-            TEST_ERROR("Formerly broken test '%s' succeeds (reports no error)", \
-                       #error_cond);                                            \
-        }                                                                       \
-    } while (0)
-
-#define TEST_ASSERT_ERROR__BROKEN(error_cond)                                           \
-    do {                                                                                \
-        const char *error_ = (error_cond);                                              \
-        if (!error_) {                                                                  \
-            TEST_WARNING("Known broken behavior ('%s' fails to report error)",          \
-                         #error_cond);                                                  \
-        }                                                                               \
-        else {                                                                          \
-            TEST_ERROR2("Former broken test '%s' succeeds (reports error '%s')",        \
-                        #error_cond, error_);                                           \
-        }                                                                               \
-    } while (0)
-
+#define TEST_ASSERT_ERROR_CONTAINS(call,part)         TEST_EXPECT        (reported_error_contains(call, part))
+#define TEST_ASSERT_ERROR_CONTAINS__BROKEN(call,part) TEST_EXPECT__BROKEN(reported_error_contains(call, part))
+#define TEST_ASSERT_NO_ERROR(call)                    TEST_EXPECT        (doesnt_report_error(call))
+#define TEST_ASSERT_NO_ERROR__BROKEN(call)            TEST_EXPECT__BROKEN(doesnt_report_error(call))
 
 // --------------------------------------------------------------------------------
 
-#define TEST_EXPORTED_ERROR() (GB_have_error() ? GB_await_error() : NULL)
+#ifdef ARB_MSG_H
 
-#define TEST_CLEAR_EXPORTED_ERROR()                                     \
-    do {                                                                \
-        const char *error_ = TEST_EXPORTED_ERROR();                     \
-        if (error_) {                                                   \
-            TEST_WARNING("detected and cleared exported error '%s'",    \
-                         error_);                                       \
-        }                                                               \
-    } while (0)
+namespace arb_test {
+    inline GB_ERROR get_exported_error() { return GB_have_error() ? GB_await_error() : NULL; }
+    inline match_expectation no_forgotten_error_exported() { return that(get_exported_error()).equals(NULL); }
 
-#define TEST_ASSERT_NORESULT__ERROREXPORTED__CHECKERROR(create_result,equal,contains)    \
-    do {                                                                                \
-        TEST_CLEAR_EXPORTED_ERROR();                                                    \
-        bool have_result = (create_result);                                             \
-        const char *error_ = TEST_EXPORTED_ERROR();                                     \
-        if (have_result) {                                                              \
-            if (error_) {                                                               \
-                TEST_WARNING("Error '%s' exported (when result returned)",              \
-                             error_);                                                   \
-            }                                                                           \
-            TEST_ERROR("Expected '%s' to return NULL", #create_result);                 \
-        }                                                                               \
-        else if (!error_) {                                                             \
-            TEST_ERROR("'%s' (w/o result) should always export error",                  \
-                       #create_result);                                                 \
-        }                                                                               \
-        if (equal) TEST_ASSERT_EQUAL(error_, equal);                                    \
-        if (contains) TEST_ASSERT_CONTAINS(error_, contains);                           \
-    } while (0)
+    class calling {
+        bool     result;
+        GB_ERROR error;
+    public:
+        calling(bool call)
+            : result(call),
+              error(get_exported_error())
+        {}
 
+        // functions below try to make failing expectations more readable
+        match_expectation returns_result() const { return that(result).equals(true); }
+        match_expectation doesnt_return_result() const { return that(result).equals(false); }
+        match_expectation exports_error() const { return that(error).differs(NULL); }
+        match_expectation doesnt_export_error() const { return that(error).equals(NULL); }
+        match_expectation exports_error_containing(const char *expected_part) const {
+            return error ? that(error).contains(expected_part) : exports_error();
+        }
 
-#define TEST_ASSERT_NORESULT__ERROREXPORTED(create_result)                   TEST_ASSERT_NORESULT__ERROREXPORTED__CHECKERROR(create_result,(void*)NULL,(void*)NULL)
-#define TEST_ASSERT_NORESULT__ERROREXPORTED_EQUALS(create_result,expected)   TEST_ASSERT_NORESULT__ERROREXPORTED__CHECKERROR(create_result,expected,(void*)NULL)
-#define TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(create_result,expected) TEST_ASSERT_NORESULT__ERROREXPORTED__CHECKERROR(create_result,(void*)NULL,expected)
+        match_expectation either_result_or_error() const { return exactly(1).of(returns_result(), exports_error()); }
 
-#define TEST_ASSERT_NORESULT__NOERROREXPORTED(create_result)                                    \
-    do {                                                                                        \
-        TEST_CLEAR_EXPORTED_ERROR();                                                            \
-        bool have_result = (create_result);                                                     \
-        const char *error_ = TEST_EXPORTED_ERROR();                                             \
-        if (have_result) {                                                                      \
-            if (error_) {                                                                       \
-                TEST_WARNING("Error '%s' exported (when result returned)", error_);             \
-            }                                                                                   \
-        }                                                                                       \
-        TEST_EXPECT(all().of(that(have_result).equals(false), that(error_).equals(NULL)));      \
-    } while (0)
+        match_expectation does_neither_return_result_nor_export_error() const {
+            return all().of(doesnt_return_result(),
+                            doesnt_export_error());
+        }
+        match_expectation returns_result_and_doesnt_export_error() const {
+            return all().of(either_result_or_error(),
+                            returns_result(),
+                            doesnt_export_error());
+        }
+        match_expectation doesnt_return_result_but_exports_error_containing(const char *expected_part) const {
+            return all().of(either_result_or_error(),
+                            doesnt_return_result(), 
+                            exports_error_containing(expected_part));
+        }
+    };
+};
 
-#define TEST_ASSERT_RESULT__NOERROREXPORTED(create_result)                                      \
-    do {                                                                                        \
-        TEST_CLEAR_EXPORTED_ERROR();                                                            \
-        bool have_result = (create_result);                                                     \
-        const char *error_ = TEST_EXPORTED_ERROR();                                             \
-        if (have_result) {                                                                      \
-            if (error_) {                                                                       \
-                TEST_ERROR("Error '%s' exported (when result returned)",                        \
-                           error_);                                                             \
-            }                                                                                   \
-        }                                                                                       \
-        else {                                                                                  \
-            if (!error_) {                                                                      \
-                TEST_WARNING("'%s' (w/o result) should always export error",                    \
-                             #create_result);                                                   \
-            }                                                                                   \
-            else {                                                                              \
-                TEST_WARNING("exported error is '%s'", error_);                                 \
-            }                                                                                   \
-            TEST_ERROR2("Expected '%s' to return sth (exported=%s)", #create_result, error_);   \
-        }                                                                                       \
-    } while (0)
+#define TEST_ASSERT_ERROR_CLEAR() TEST_EXPECT(no_forgotten_error_exported())
 
+#define TEST_ASSERT_RESULT__NOERROREXPORTED(create_result)                                do { TEST_ASSERT_ERROR_CLEAR(); TEST_EXPECT        (calling((create_result)).returns_result_and_doesnt_export_error()); } while(0)
+#define TEST_ASSERT_RESULT__NOERROREXPORTED__BROKEN(create_result)                        do { TEST_ASSERT_ERROR_CLEAR(); TEST_EXPECT__BROKEN(calling((create_result)).returns_result_and_doesnt_export_error()); } while(0)
+#define TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(create_result,expected_part)         do { TEST_ASSERT_ERROR_CLEAR(); TEST_EXPECT        (calling((create_result)).doesnt_return_result_but_exports_error_containing(expected_part)); } while(0)
+#define TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS__BROKEN(create_result,expected_part) do { TEST_ASSERT_ERROR_CLEAR(); TEST_EXPECT__BROKEN(calling((create_result)).doesnt_return_result_but_exports_error_containing(expected_part)); } while(0)
+#define TEST_ASSERT_NORESULT__NOERROREXPORTED(create_result)                              do { TEST_ASSERT_ERROR_CLEAR(); TEST_EXPECT        (calling((create_result)).does_neither_return_result_nor_export_error()); } while(0)
+#define TEST_ASSERT_NORESULT__NOERROREXPORTED__BROKEN(create_result)                      do { TEST_ASSERT_ERROR_CLEAR(); TEST_EXPECT__BROKEN(calling((create_result)).does_neither_return_result_nor_export_error()); } while(0)
+
+#endif
 // --------------------------------------------------------------------------------
 // TEST_ASSERT_SEGFAULT and TEST_ASSERT_CODE_ASSERTION_FAILS
 // only work if binary is linked with ARBDB

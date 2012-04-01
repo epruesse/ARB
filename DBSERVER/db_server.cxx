@@ -308,7 +308,7 @@ inline GB_ERROR valgrinded_system(const char *cmdline) {
 
 #define RUN_TOOL(cmdline)            valgrinded_system(cmdline)
 #define TEST_RUN_TOOL(cmdline)       TEST_ASSERT_NO_ERROR(RUN_TOOL(cmdline))
-#define TEST_RUN_TOOL_FAILS(cmdline) TEST_ASSERT_ERROR(RUN_TOOL(cmdline))
+#define TEST_RUN_TOOL_FAILS(cmdline) TEST_ASSERT_ERROR_CONTAINS(RUN_TOOL(cmdline), "System call failed")
 
 inline bool server_is_down(const char *tcp) {
     char     *ping_cmd = strdup(GBS_global_string("arb_db_server -T%s -Cping", tcp));

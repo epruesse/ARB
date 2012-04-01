@@ -1318,8 +1318,8 @@ void TEST_SLOW_loadsave() {
     TEST_loadsave_CLEANUP();
 
     // test non-existing DB
-    TEST_ASSERT_NORESULT__ERROREXPORTED(GB_open("nonexisting.arb", "r"));
-    TEST_ASSERT_NORESULT__ERROREXPORTED(GB_open("nonexisting.arb", "rw"));
+    TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_open("nonexisting.arb", "r"), "'nonexisting.arb' not found");
+    TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_open("nonexisting.arb", "rw"), "'nonexisting.arb' not found");
     {
         GBDATA *gb_new;
         TEST_ASSERT_RESULT__NOERROREXPORTED(gb_new = GB_open("nonexisting.arb", "w")); // create new DB
@@ -1396,8 +1396,8 @@ void TEST_SLOW_loadsave() {
         // check wether quicksave can be disabled
         GB_disable_quicksave(gb_a2b, "test it");
 
-        TEST_ASSERT_ERROR(GB_save_quick(gb_a2b, "a2b.arb"));
-        TEST_ASSERT_ERROR(GB_save_quick_as(gb_a2b, "a2b.arb"));
+        TEST_ASSERT_ERROR_CONTAINS(GB_save_quick(gb_a2b, "a2b.arb"), "Save Changes Disabled");
+        TEST_ASSERT_ERROR_CONTAINS(GB_save_quick_as(gb_a2b, "a2b.arb"), "Save Changes Disabled");
 
         const char *mod_db = "a2b_modified.arb";
         TEST_ASSERT_NO_ERROR(GB_save_as(gb_a2b, mod_db, "b")); // save modified DB
@@ -1418,12 +1418,12 @@ void TEST_SLOW_loadsave() {
             TEST_ASSERT_NO_ERROR(GB_save_quick(gb_master, "master.arb"));
             TEST_ASSERT_NO_ERROR(GB_save_quick_as(gb_master, "master.arb"));
 
-            TEST_ASSERT_ERROR(GB_save_quick(gb_master, "renamed.arb")); // quicksave with wrong name
+            TEST_ASSERT_ERROR_CONTAINS(GB_save_quick(gb_master, "renamed.arb"), "master file rename"); // quicksave with wrong name
 
             // check if master gets protected by creating slave-DB
             TEST_ASSERT_NO_ERROR(GB_save_as(gb_master, "master.arb", "b")); // overwrite
             TEST_ASSERT_NO_ERROR(GB_save_quick_as(gb_master, "slave.arb")); // create slave -> master now protected
-            TEST_ASSERT_ERROR(GB_save_as(gb_master, "master.arb", "b")); // overwrite should fail now
+            TEST_ASSERT_ERROR_CONTAINS(GB_save_as(gb_master, "master.arb", "b"), "already exists and is write protected"); // overwrite should fail now
 
             {
                 GBDATA *gb_slave = GB_open("slave.arb", "rw"); TEST_ASSERT(gb_slave); // load slave DB
@@ -1437,13 +1437,13 @@ void TEST_SLOW_loadsave() {
 
         // test various error conditions:
 
-        TEST_ASSERT_ERROR(GB_save_as(gb_b2b, "", "b")); // empty name
+        TEST_ASSERT_ERROR_CONTAINS(GB_save_as(gb_b2b, "", "b"), "specify a savename"); // empty name
 
         TEST_ASSERT_NO_ERROR(GB_set_mode_of_file(mod_db, 0444)); // write-protect
-        TEST_ASSERT_ERROR(GB_save_as(gb_b2b, mod_db, "b")); // try to overwrite write-protected DB
+        TEST_ASSERT_ERROR_CONTAINS(GB_save_as(gb_b2b, mod_db, "b"), "already exists and is write protected"); // try to overwrite write-protected DB
 
-        TEST_ASSERT_ERROR(GB_save_quick_as(gb_b2b, NULL)); // no name
-        TEST_ASSERT_ERROR(GB_save_quick_as(gb_b2b, "")); // empty name
+        TEST_ASSERT_ERROR_CONTAINS(GB_save_quick_as(gb_b2b, NULL), "specify a file name"); // no name
+        TEST_ASSERT_ERROR_CONTAINS(GB_save_quick_as(gb_b2b, ""), "specify a file name"); // empty name
 
         GB_close(gb_b2b);
         GB_close(gb_a2b);

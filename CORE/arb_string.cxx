@@ -216,11 +216,11 @@ void TEST_arbtest_expectations() {
     TEST_EXPECT(atmost(2).of(n1, n2));
     TEST_EXPECT(wrong(atmost(2).of(a1, a2, a3)));
 
-    TEST_EXPECT(exacly(1).of(ff1, nf1, nf2));
-    TEST_EXPECT(wrong(exacly(1).of(nf1, nf2)));
-    TEST_EXPECT(wrong(exacly(1).of(nf1, nf2, nf3)));
-    TEST_EXPECT(wrong(exacly(1).of(ff1, ff2, nf2)));
-    TEST_EXPECT(wrong(exacly(1).of(ff1, ff2, ff3)));
+    TEST_EXPECT(exactly(1).of(ff1, nf1, nf2));
+    TEST_EXPECT(wrong(exactly(1).of(nf1, nf2)));
+    TEST_EXPECT(wrong(exactly(1).of(nf1, nf2, nf3)));
+    TEST_EXPECT(wrong(exactly(1).of(ff1, ff2, nf2)));
+    TEST_EXPECT(wrong(exactly(1).of(ff1, ff2, ff3)));
 
 }
 
