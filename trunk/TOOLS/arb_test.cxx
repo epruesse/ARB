@@ -298,7 +298,7 @@ void TEST_arb_export_tree() {
                        "");                                                                      // without error!
     TEST_OUTPUT_EQUALS("arb_export_tree tree_nosuch " TREE_DB,
                        ";\n",                                                                    // shall export an empty newick tree
-                       "arb_export_tree: Tree 'tree_nosuch' does not exist in DB '" TREE_DB "'\n"); // with error!
+                       "arb_export_tree from '" TREE_DB "': ARB ERROR: Failed to read tree 'tree_nosuch' (Reason: tree not found)\n"); // with error!
 }
 
 static char *notification_result = NULL;
