@@ -37,7 +37,7 @@
     (tree_obj_ptr)->name = 0;                                   \
     (tree_obj_ptr)->remark_branch = 0
 
-#define AWAR_ERROR_CONTAINER    "tmp/message/pending"
+#define ERROR_CONTAINER_PATH    "tmp/message/pending"
 
 #ifdef FAKE_VTAB_PTR
 // if defined, FAKE_VTAB_PTR contains 'char'
