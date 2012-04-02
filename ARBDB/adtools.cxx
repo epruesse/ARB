@@ -229,7 +229,8 @@ void GBT_install_message_handler(GBDATA *gb_main) {
     GBDATA *gb_pending_messages;
 
     GB_push_transaction(gb_main);
-    gb_pending_messages = GB_search(gb_main, AWAR_ERROR_CONTAINER, GB_CREATE_CONTAINER);
+    gb_pending_messages = GB_search(gb_main, ERROR_CONTAINER_PATH, GB_CREATE_CONTAINER);
+    gb_assert(gb_pending_messages);
     GB_add_callback(gb_pending_messages, GB_CB_SON_CREATED, new_gbt_message_created_cb, 0);
     GB_pop_transaction(gb_main);
 
@@ -252,7 +253,7 @@ void GBT_message(GBDATA *gb_main, const char *msg) {
     GB_ERROR error = GB_push_transaction(gb_main);
 
     if (!error) {
-        GBDATA *gb_pending_messages = GB_search(gb_main, AWAR_ERROR_CONTAINER, GB_CREATE_CONTAINER);
+        GBDATA *gb_pending_messages = GB_search(gb_main, ERROR_CONTAINER_PATH, GB_CREATE_CONTAINER);
         GBDATA *gb_msg              = gb_pending_messages ? GB_create(gb_pending_messages, "msg", GB_STRING) : 0;
 
         if (!gb_msg) error = GB_await_error();
