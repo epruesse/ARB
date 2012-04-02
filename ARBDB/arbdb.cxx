@@ -1589,6 +1589,7 @@ GBDATA *GB_create(GBDATA *father, const char *key, GB_TYPES type) {
         }
     }
 
+    // @@@ DRY vs gb_create
     gbd = gb_make_entry((GBCONTAINER *)father, key, -1, 0, type);
     gb_touch_header(GB_FATHER(gbd));
     gb_touch_entry(gbd, GB_CREATED);

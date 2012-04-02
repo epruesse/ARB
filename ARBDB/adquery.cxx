@@ -409,7 +409,7 @@ void gb_init_ctype_table() {
     }
 }
 
-inline const char *gb_first_non_key_character(const char *str) {
+inline const char *first_non_key_character(const char *str) {
     while (1) {
         int c = *str;
         if (!gb_ctype_table[c]) {
@@ -422,142 +422,138 @@ inline const char *gb_first_non_key_character(const char *str) {
 }
 
 const char *GB_first_non_key_char(const char *str) {
-    return gb_first_non_key_character(str);
+    return first_non_key_character(str);
 }
 
-GBDATA *gb_search(GBDATA *gbd, const char *str, GB_TYPES create, int internflag) {
+inline GBDATA *find_or_create(GBDATA *gb_parent, const char *key, GB_TYPES create, bool internflag) {
+    gb_assert(!first_non_key_character(key));
+
+    GBDATA *gbd = GB_entry(gb_parent, key);
+    if (create) {
+        if (gbd) {
+            GB_TYPES oldType = GB_TYPE(gbd);
+            if (create != oldType) { // type mismatch
+                GB_export_errorf("Inconsistent type for field '%s' (existing=%i, expected=%i)", key, oldType, create);
+                gbd = NULL;
+            }
+        }
+        else {
+            if (create == GB_CREATE_CONTAINER) {
+                gbd = internflag ? gb_create_container(gb_parent, key) : GB_create_container(gb_parent, key);
+            }
+            else {
+                gbd = gb_create(gb_parent, key, create);
+            }
+            gb_assert(gbd || GB_have_error());
+        }
+    }
+    return gbd;
+}
+
+GBDATA *gb_search(GBDATA *gbd, const char *key, GB_TYPES create, int internflag) {
     /* finds a hierarchical key,
      * if create != GB_FIND(==0), then create the key
      * force types if ! internflag
      */
 
+    // gb_assert(!GB_have_error()); // @@@ enable later
+
     GB_test_transaction(gbd);
-    if (!str) {
-        return GB_child(gbd);
-    }
-    if (*str == '/') {
+
+    if (!key) return NULL; // was allowed in the past (and returned the 1st child). now returns NULL
+    
+    if (key[0] == '/') {
         gbd = GB_get_root(gbd);
-        str++;
+        key++;
     }
 
-    if (!gb_first_non_key_character(str)) { // @@@ executed twice when 'str' contains non-key-chars 
-        GBDATA *gbsp = GB_entry(gbd, str);
-        if (gbsp && create) {
-            GB_TYPES oldType = GB_TYPE(gbsp);
-            if (create != oldType) { // type mismatch
-                GB_export_errorf("Inconsistent type for field '%s' (existing=%i, expected=%i)", str, oldType, create);
-                return NULL;
-            }
-        }
-        if (!gbsp && create) {
-            if (create == GB_CREATE_CONTAINER) {
-                gbsp = internflag ? gb_create_container(gbd, str) : GB_create_container(gbd, str);
-            }
-            else {
-                gbsp = gb_create(gbd, str, create);
-            }
-            gb_assert(gbsp || GB_have_error());
-        }
-        return gbsp;
+    if (!key[0]) {
+        return gbd;
     }
 
-    char buffer[GB_PATH_MAX]; // @@@ remove limit / avoid copy
-    {
-        int len = strlen(str)+1;
-        if (len > GB_PATH_MAX) {
-            GB_internal_errorf("Path Length '%i' exceeded by '%s'", GB_PATH_MAX, str);
-            return NULL;
+    GBDATA     *gb_result     = NULL;
+    const char *separator     = first_non_key_character(key);
+    if (!separator) gb_result = find_or_create(gbd, key, create, internflag);
+    else {
+        int  len = separator-key;
+        char firstKey[len+1];
+        memcpy(firstKey, key, len);
+        firstKey[len] = 0;
+
+        char invalid_char = 0;
+
+        switch (separator[0]) {
+            case '/': {
+                GBDATA *gb_sub = find_or_create(gbd, firstKey, create ? GB_CREATE_CONTAINER : GB_FIND, internflag);
+                if (gb_sub) {
+                    if (GB_TYPE(gb_sub) == GB_DB) {
+                        if (separator[1] == '/') {
+                            GB_export_errorf("Invalid '//' in key '%s'", key);
+                        }
+                        else {
+                            gb_result = gb_search(gb_sub, separator+1, create, internflag);
+                        }
+                    }
+                    else {
+                        GB_export_errorf("terminal entry '%s' cannot be used as container", firstKey);
+                    }
+                }
+                break;
+            }
+            case '.': {
+                if (separator[1] != '.') invalid_char = separator[0];
+                else {
+                    GBDATA *gb_parent = GB_get_father(gbd);
+                    if (gb_parent) {
+                        switch (separator[2]) {
+                            case 0:   gb_result    = gb_parent; break;
+                            case '/': gb_result    = gb_search(gb_parent, separator+3, create, internflag); break;
+                            default : invalid_char = separator[2]; break;
+                        }
+                    }
+                    else { // ".." at root-node
+                        if (create) {
+                            GB_export_error("cannot use '..' at root node");
+                        }
+                    }
+                }
+                break;
+            }
+            case '-':
+                if (separator[1] != '>') invalid_char = separator[0];
+                else {
+                    if (firstKey[0]) {
+                        GBDATA *gb_link = GB_entry(gbd, firstKey);
+                        if (!gb_link) {
+                            if (create) {
+                                GB_export_error("Cannot create links on the fly in gb_search");
+                            }
+                        }
+                        else {
+                            if (GB_TYPE(gb_link) == GB_LINK) {
+                                GBDATA *gb_target = GB_follow_link(gb_link);
+                                if (!gb_target) GB_export_errorf("Link '%s' points nowhere", firstKey);
+                                else    gb_result = gb_search(gb_target, separator+2, create, internflag);
+                            }
+                            else GB_export_errorf("'%s' exists, but is not a link", firstKey);
+                        }
+                    }
+                    else GB_export_errorf("Missing linkname before '->' in '%s'", key);
+                }
+                break;
+
+            default:
+                invalid_char = separator[0];
+                break;
         }
-        memcpy(buffer, str, len);
+
+        if (invalid_char) {
+            gb_assert(!gb_result);
+            GB_export_errorf("Invalid char '%c' in key '%s'", invalid_char, key);
+        }
     }
-
-    GBDATA *gbp = gbd;
-    char   *s2;
-
-    for (char *s1 = buffer; s1; s1 = s2) {
-        s2            = (char*)gb_first_non_key_character(s1);
-        int separator = 0;
-        if (s2) {
-            if (s1 == s2) { // non-key char at start of key
-                bool valid_dd = s1[0] == '.' && s1[1] == '.' && (!s1[2] || s1[2] == '/');
-                if (!valid_dd) {
-                    GB_export_errorf("Invalid key for gb_search '%s'", str);
-                    return NULL;
-                }
-
-                gbp = GB_get_father(gbp);
-                s2  = s1[2] ? s1+3 : 0;
-                continue;
-            }
-
-            // non-key char inside key
-            separator = *s2;
-            *(s2++)   = 0; // @@@ do not modify key!
-
-            if (separator == '-') {
-                if (s2[0] != '>') {
-                    GB_export_errorf("Invalid key for gb_search '%s'", str);
-                    return NULL;
-                }
-                s2++;
-            }
-        }
-
-        GBDATA *gbsp = GB_entry(gbp, s1);
-        if (gbsp && separator == '-') { // follow link !!!
-            if (GB_TYPE(gbsp) != GB_LINK) {
-                if (create) {
-                    GB_export_error("Cannot create links on the fly in GB_search");
-                    GB_print_error();
-                }
-                return NULL;
-            }
-            gbsp = GB_follow_link(gbsp);
-            separator = 0;
-            if (!gbsp) return NULL; // cannot resolve link
-        }
-
-        while (gbsp && create) {
-            if (s2) {                           // non terminal
-                if (GB_DB == GB_TYPE(gbsp)) break;
-            }
-            else {                              // terminal
-                if (create == GB_TYPE(gbsp)) break;
-            }
-
-            // db-entry has wrong type
-            // (this happens if ARBDB-client-code is inconsistent and uses the same field with 2 different types)
-            // "solution": delete and recreate entry
-            GB_internal_errorf("Inconsistent Type %u:%u '%s':'%s', repairing database", create, GB_TYPE(gbsp), str, s1);
-            GB_delete(gbsp);
-            gbsp = GB_entry(gbd, s1);
-        }
-
-        if (!gbsp) {
-            if (!create) return NULL; // read only mode
-            if (separator == '-') {
-                GB_export_error("Cannot create linked objects");
-                return NULL; // do not create linked objects
-            }
-
-            if (s2 || (create == GB_CREATE_CONTAINER)) {
-                gbsp = internflag
-                    ? gb_create_container(gbp, s1)
-                    : GB_create_container(gbp, s1);
-            }
-            else {
-                gbsp = GB_create(gbp, s1, (GB_TYPES)create);
-                if (create == GB_STRING) {
-                    GB_ERROR error = GB_write_string(gbsp, "");
-                    if (error) GB_internal_error("Couldn't write to just created string entry");
-                }
-            }
-
-            if (!gbsp) return NULL;
-        }
-        gbp = gbsp;
-    }
-    return gbp;
+    gb_assert(!(gb_result && GB_have_error()));
+    return gb_result;
 }
 
 
@@ -1229,11 +1225,6 @@ struct TestDB : virtual Noncopyable {
     }
 };
 
-static TestDB *crash_db = 0;
-
-static void search_crash_2() { GB_searchOrCreate_string(crash_db->gb_cont_misc, "int*", "bla"); }
-static void search_crash_3() { GB_searchOrCreate_string(crash_db->gb_cont_misc, "sth_else*", "bla"); }
-
 void TEST_DB_search() {
     TestDB db;
     TEST_ASSERT_NO_ERROR(db.error);
@@ -1250,20 +1241,27 @@ void TEST_DB_search() {
             TEST_ASSERT_EQUAL(gb_any_child, GB_entry(db.gb_cont1, "entry"));
             TEST_ASSERT_EQUAL(gb_any_child, GB_search(db.gb_main, "container1/entry", GB_FIND));
 
-            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_main, "zic-zac", GB_FIND), "Invalid key for gb_search 'zic-zac'");
+            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_main, "zic-zac", GB_FIND), "Invalid char '-' in key 'zic-zac'");
 
             // check link-syntax
-            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_main, "->entry", GB_FIND), "Invalid key for gb_search '->entry'");
+            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_main, "->entry", GB_FIND), "Missing linkname before '->' in '->entry'");
             TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_search(db.gb_main, "entry->bla", GB_FIND));
-            TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_search(db.gb_main, "container1/entry->nowhere", GB_FIND));
-            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_main, "container1/entry->nowhere", GB_STRING), "Cannot create links on the fly in GB_search");
+            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_main, "container1/entry->nowhere", GB_FIND), "'entry' exists, but is not a link");
+            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_main, "container1/nosuchentry->nowhere", GB_STRING), "Cannot create links on the fly in gb_search");
             TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_search(db.gb_main, "entry->", GB_FIND)); // valid ? just deref link
 
+            // check ..
             TEST_ASSERT_EQUAL(GB_search(gb_any_child, "..", GB_FIND), db.gb_cont1);
             TEST_ASSERT_EQUAL(GB_search(gb_any_child, "../..", GB_FIND), db.gb_main);
+            // above main entry
             TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_search(gb_any_child, "../../..", GB_FIND));
+            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(gb_any_child, "../../../impossible", GB_STRING), "cannot use '..' at root node");
 
-            TEST_ASSERT_EQUAL__BROKEN(GB_search(gb_any_child, "/", GB_FIND), db.gb_main); // @@@ shall return main entry
+            TEST_ASSERT_EQUAL(GB_search(gb_any_child, "", GB_FIND), gb_any_child); // return self
+            TEST_ASSERT_EQUAL(GB_search(gb_any_child, "/container1/", GB_FIND), db.gb_cont1); // accept trailing slash for container ..
+            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(gb_any_child, "/container1/entry/name/", GB_FIND), "terminal entry 'name' cannot be used as container"); // .. but not for normal entries
+
+            TEST_ASSERT_EQUAL(GB_search(gb_any_child, "/", GB_FIND), db.gb_main);
             TEST_ASSERT_EQUAL(GB_search(gb_any_child, "/container1/..", GB_FIND), db.gb_main);
             TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_search(gb_any_child, "/..", GB_FIND)); // main has no parent
         }
@@ -1286,6 +1284,7 @@ void TEST_DB_search() {
             TEST_ASSERT_EQUAL(GB_nextEntry(gb_child1), gb_child3);
             TEST_ASSERT_EQUAL(GB_nextEntry(gb_child2), gb_child4);
 
+            // check ..
             TEST_ASSERT_EQUAL(GB_search(gb_child3, "../item", GB_FIND), gb_child1);
             TEST_ASSERT_EQUAL(GB_search(gb_child3, "../other", GB_FIND), gb_child2);
             TEST_ASSERT_EQUAL(GB_search(gb_child3, "../other/../item", GB_FIND), gb_child1);
@@ -1330,11 +1329,9 @@ void TEST_DB_search() {
             TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_searchOrCreate_string(db.gb_cont_misc, "float", "bla"), "has wrong type");
             TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_searchOrCreate_string(db.gb_cont_misc, "int",   "bla"), "has wrong type");
 
-            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_searchOrCreate_string(db.gb_cont_misc, "*", "bla"), "Invalid key for gb_search '*'");
-            // TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_searchOrCreate_string(db.gb_cont_misc, "int*", "bla"), "has wrong type"); // @@@ internal error
-            crash_db = &db; TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(search_crash_2); // enable test above when fixed
-            // TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_searchOrCreate_string(db.gb_cont_misc, "sth_else*", "bla"), "has wrong type"); // @@@ crash somewhere else
-            crash_db = &db; TEST_ASSERT_SEGFAULT__UNWANTED(search_crash_3); // enable test above when fixed
+            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_searchOrCreate_string(db.gb_cont_misc, "*", "bla"), "Invalid char '*' in key '*'");
+            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_searchOrCreate_string(db.gb_cont_misc, "int*", "bla"), "Invalid char '*' in key 'int*'");
+            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_searchOrCreate_string(db.gb_cont_misc, "sth_else*", "bla"), "Invalid char '*' in key 'sth_else*'");
 
             GBDATA *gb_entry;
             TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_search(db.gb_cont_misc, "subcont/entry", GB_FIND));
@@ -1383,11 +1380,7 @@ void TEST_DB_search() {
             TEST_ASSERT_EQUAL(gb_bla = GB_search(gb_4711, "/misc/str", GB_FIND), gb_str);
 
             // keyless search
-            TEST_ASSERT_EQUAL(GB_search(db.gb_cont_misc, NULL, GB_FIND), gb_str);
-            TEST_ASSERT_EQUAL(GB_search(db.gb_cont_misc, NULL, GB_STRING), gb_str); // only correct cause gb_str is 1st child
-            TEST_ASSERT_EQUAL__BROKEN(GB_search(db.gb_cont_misc, NULL, GB_INT), gb_int);
-            TEST_ASSERT_EQUAL__BROKEN(GB_search(db.gb_cont_misc, NULL, GB_FLOAT), gb_float);
-            TEST_ASSERT_EQUAL__BROKEN(GB_search(db.gb_cont_misc, NULL, GB_DB), gb_cont1);
+            TEST_ASSERT_NORESULT__NOERROREXPORTED(GB_search(db.gb_cont_misc, NULL, GB_FIND));
 
             // ----------------------------
             //      GB_get_GBDATA_path
@@ -1402,6 +1395,13 @@ void TEST_DB_search() {
 
             TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "str", GB_INT), "Inconsistent type for field");
             TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "subcont", GB_STRING), "Inconsistent type for field");
+        }
+
+        {
+            // check invalid searches
+            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "sub/inva*lid", GB_INT), "Invalid char '*' in key 'inva*lid'");
+            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "sub/1 3", GB_INT), "Invalid char ' ' in key '1 3'");
+            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "sub//sub", GB_INT), "Invalid '//' in key 'sub//sub'");
         }
 
         // ---------------
