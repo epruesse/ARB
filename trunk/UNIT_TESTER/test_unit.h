@@ -955,6 +955,10 @@ namespace arb_test {
             return match_expectation(expectation_group(e1, e2).add(e3).add(e4), *this);
         }
 
+        match_expectation ofgroup(const expectation_group& group) {
+            return match_expectation(group, *this);
+        }
+
         void dump_brief_description(const matchable& thing) const {
             if (max == -1) {
                 if (min == -1) {
