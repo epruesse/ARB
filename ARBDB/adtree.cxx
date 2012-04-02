@@ -519,22 +519,22 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long st
             GBDATA *gb_tree = GBT_find_tree(gb_main, tree_name);
 
             if (!gb_tree) {
-                error = GBS_global_string("Could not find tree '%s'", tree_name);
+                error = "tree not found";
             }
             else {
                 GBDATA *gb_nnodes = GB_entry(gb_tree, "nnodes");
                 if (!gb_nnodes) {
-                    error = GBS_global_string("Tree '%s' is empty", tree_name);
+                    error = "tree is empty";
                 }
                 else {
                     long size = GB_read_int(gb_nnodes);
                     if (!size) {
-                        error = GBS_global_string("Tree '%s' has zero size", tree_name);
+                        error = "has no nodes";
                     }
                     else {
                         GBDATA *gb_ctree = GB_search(gb_tree, "tree", GB_FIND);
                         if (!gb_ctree) {
-                            error = "Sorry - old tree format no longer supported";
+                            error = "old unsupported tree format";
                         }
                         else { // "new" style tree
                             GBT_TREE *tree = read_tree_and_size_internal(gb_tree, gb_ctree, structure_size, size, &error);
@@ -553,7 +553,7 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long st
     }
 
     gb_assert(error);
-    GB_export_errorf("Couldn't read tree '%s' (Reason: %s)", tree_name, error);
+    GB_export_errorf("Failed to read tree '%s' (Reason: %s)", tree_name, error);
     return NULL;
 }
 

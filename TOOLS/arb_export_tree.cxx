@@ -70,11 +70,14 @@ int main(int argc, char **argv) {
                         error = TREE_export_tree(gb_main, stdout, tree, trifurcated, branchlens, doublequotes);
                         GBT_delete_tree(tree);
                     }
-                    else if (tree_name[0] && strcmp(tree_name, "????") != 0) {
-                        // ignore tree names '????' and '' (no error, just export empty tree)
-                        char *warning = GBS_global_string_copy("arb_export_tree: Tree '%s' does not exist in DB '%s'", tree_name, db_name);
-                        GBT_message(gb_main, warning);
-                        free(warning);
+                    else {
+                        GB_ERROR why_cant_read = GB_await_error();
+                        if (tree_name[0] && strcmp(tree_name, "????") != 0) {
+                            // ignore tree names '????' and '' (no error, just export empty tree)
+                            char *warning = GBS_global_string_copy("arb_export_tree from '%s': %s", db_name, why_cant_read);
+                            GBT_message(gb_main, warning);
+                            free(warning);
+                        }
                     }
                 }
 
