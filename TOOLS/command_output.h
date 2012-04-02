@@ -25,6 +25,8 @@
 // --------------------------------------------------------------------------------
 
 class CommandOutput : virtual Noncopyable {
+    // support class to test CLI of arb-tools
+
     char     *stdoutput; // output from command
     char     *stderrput;
     GB_ERROR  error;
@@ -82,37 +84,58 @@ public:
         free(stdoutput);
     }
 
-    GB_ERROR get_error() const { return error; }
-    const char *get_stdoutput() const { return stdoutput; }
-    const char *get_stderrput() const { return stderrput; }
+    arb_test::match_expectation Equals(const char *expected_std, const char *expected_err) {
+        using namespace arb_test;
+        expectation_group expected(that(error).equals(NULL));
+        if (expected_std) expected.add(that(stdoutput).equals(expected_std));
+        if (expected_err) expected.add(that(stderrput).equals(expected_err));
+        return all().ofgroup(expected);
+    }
+    arb_test::match_expectation Contains(const char *expected_std, const char *expected_err) {
+        using namespace arb_test;
+        expectation_group expected(that(error).equals(NULL));
+        if (expected_std) expected.add(that(stdoutput).contains(expected_std));
+        if (expected_err) expected.add(that(stderrput).contains(expected_err));
+        return all().ofgroup(expected);
+    }
+    arb_test::match_expectation has_checksum(uint32_t expected_checksum) {
+        uint32_t css      = GBS_checksum(stdoutput, false, "");
+        uint32_t cse      = GBS_checksum(stderrput, false, "");
+        uint32_t checksum = css^cse;
+        using namespace arb_test;
+        return all().of(that(error).equals(NULL),
+                        that(checksum).equals(expected_checksum));
+    }
 };
 
 // --------------------------------------------------------------------------------
 
-#define TEST_OUTPUT_EQUALS(cmd, expected_std, expected_err)             \
-    do {                                                                \
-        CommandOutput out(cmd, expected_err == NULL);                   \
-        TEST_ASSERT_NO_ERROR(out.get_error());                          \
-        if (expected_std) { TEST_ASSERT_EQUAL(out.get_stdoutput(), expected_std); } \
-        if (expected_err) { TEST_ASSERT_EQUAL(out.get_stderrput(), expected_err); } \
+#define TEST_OUTPUT_EQUALS(cmd, expected_std, expected_err)                                             \
+    do {                                                                                                \
+        bool try_valgrind = (expected_err == NULL);                                                     \
+        TEST_EXPECT(CommandOutput(cmd, try_valgrind).Equals(expected_std, expected_err));               \
     } while(0)
 
-#define TEST_OUTPUT_CONTAINS(cmd, expected_std, expected_err)           \
-    do {                                                                \
-        CommandOutput out(cmd, expected_err == NULL);                   \
-        TEST_ASSERT_NO_ERROR(out.get_error());                          \
-        if (expected_std) { TEST_ASSERT_CONTAINS(out.get_stdoutput(), expected_std); } \
-        if (expected_err) { TEST_ASSERT_CONTAINS(out.get_stderrput(), expected_err); } \
+#define TEST_OUTPUT_EQUALS__BROKEN(cmd, expected_std, expected_err)                                     \
+    do {                                                                                                \
+        bool try_valgrind = (expected_err == NULL);                                                     \
+        TEST_EXPECT__BROKEN(CommandOutput(cmd, try_valgrind).Equals(expected_std, expected_err));       \
     } while(0)
 
-#define TEST_OUTPUT_HAS_CHECKSUM(cmd, checksum)                         \
-    do {                                                                \
-        CommandOutput out(cmd, false);                                  \
-        TEST_ASSERT_NO_ERROR(out.get_error());                          \
-        uint32_t      css = GBS_checksum(out.get_stdoutput(), false, ""); \
-        uint32_t      cse = GBS_checksum(out.get_stderrput(), false, ""); \
-        TEST_ASSERT_EQUAL(css^cse, uint32_t(checksum));                 \
+#define TEST_OUTPUT_CONTAINS(cmd, expected_std, expected_err)                                           \
+    do {                                                                                                \
+        bool try_valgrind = (expected_err == NULL);                                                     \
+        TEST_EXPECT(CommandOutput(cmd, try_valgrind).Contains(expected_std, expected_err));             \
     } while(0)
+
+#define TEST_OUTPUT_CONTAINS__BROKEN(cmd, expected_std, expected_err)                                   \
+    do {                                                                                                \
+        bool try_valgrind = (expected_err == NULL);                                                     \
+        TEST_EXPECT__BROKEN(CommandOutput(cmd, try_valgrind).Contains(expected_std, expected_err));     \
+    } while(0)
+
+#define TEST_OUTPUT_HAS_CHECKSUM(cmd,checksum)         TEST_EXPECT        (CommandOutput(cmd, false).has_checksum(checksum))
+#define TEST_OUTPUT_HAS_CHECKSUM__BROKEN(cmd,checksum) TEST_EXPECT__BROKEN(CommandOutput(cmd, false).has_checksum(checksum))
 
 #define TEST_STDOUT_EQUALS(cmd, expected_std) TEST_OUTPUT_EQUALS(cmd, expected_std, (const char *)NULL)
 #define TEST_STDERR_EQUALS(cmd, expected_err) TEST_OUTPUT_EQUALS(cmd, (const char *)NULL, expected_err)
