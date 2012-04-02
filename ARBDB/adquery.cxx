@@ -508,7 +508,9 @@ GBDATA *gb_search(GBDATA *gbd, const char *key, GB_TYPES create, int internflag)
                         switch (separator[2]) {
                             case 0:   gb_result    = gb_parent; break;
                             case '/': gb_result    = gb_search(gb_parent, separator+3, create, internflag); break;
-                            default : invalid_char = separator[2]; break;
+                            default:
+                                GB_export_errorf("Expected '/' after '..' in key '%s'", key);
+                                break;
                         }
                     }
                     else { // ".." at root-node
@@ -1402,6 +1404,7 @@ void TEST_DB_search() {
             TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "sub/inva*lid", GB_INT), "Invalid char '*' in key 'inva*lid'");
             TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "sub/1 3", GB_INT), "Invalid char ' ' in key '1 3'");
             TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "sub//sub", GB_INT), "Invalid '//' in key 'sub//sub'");
+            TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "sub/..sub", GB_INT), "Expected '/' after '..' in key '..sub'");
         }
 
         // ---------------
