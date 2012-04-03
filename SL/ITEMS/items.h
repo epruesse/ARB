@@ -69,6 +69,8 @@ struct MutableItemSelector { // @@@ remove AW_root arguments!
     GBDATA *(*get_parent)(GBDATA *gb_item);     // if 'parent_selector' is defined, this function returns the parent of the item
 };
 
+#define AWAR_KEY_SELECT "tmp/viewkeys/key_select"
+
 void popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_gb_main);
 
 struct MutableBoundItemSel {

@@ -261,7 +261,7 @@ void create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main) {
         }
     }
 
-    aw_root->awar_string("tmp/viewkeys/key_text_select", "", awdef);
+    aw_root->awar_string(AWAR_KEY_SELECT, "", awdef);
     GB_pop_transaction(gb_main);
 
     map_viewkeys(aw_root, (AW_CL)awdef, (AW_CL)gb_main); // call once
