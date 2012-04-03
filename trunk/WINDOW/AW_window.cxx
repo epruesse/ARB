@@ -779,7 +779,7 @@ void AW_cb_struct::run_callback() {
             AW_PPP g = (AW_PPP)cd1;
             if (g) {
                 pop_up_window = g(aw->get_root(), cd2, 0);
-                pop_up_window->show();
+                pop_up_window->activate();
             }
             else {
                 aw_message("not implemented -- please report to devel@arb-home.de");
@@ -3133,10 +3133,12 @@ void AW_window::wm_activate() {
 }
 
 void AW_window::show() {
+    bool was_shown = true;
     if (!window_is_shown) {
         all_menus_created();
         get_root()->window_show();
         window_is_shown = true;
+        was_shown       = false;
     }
 
     if (recalc_size_at_show != AW_KEEP_SIZE) {
@@ -3169,34 +3171,36 @@ void AW_window::show() {
             case AW_REPOS_TO_MOUSE: {
                 int mx, my; if (!get_mouse_pos(mx, my)) goto FALLBACK_CENTER;
                 int width, height; get_window_size(width, height);
-                int wx, wy; get_window_content_pos(wx, wy);
+                {
+                    int wx, wy; get_window_content_pos(wx, wy);
+                    if (wx || wy) {
+                        if (p_w->knows_WM_offset()) {
+                            wx -= p_w->WM_left_offset;
+                            wy -= p_w->WM_top_offset;
 
-                if (wx || wy) {
-                    if (p_w->knows_WM_offset()) {
-                        wx -= p_w->WM_left_offset;
-                        wy -= p_w->WM_top_offset;
-
-                        width  += p_w->WM_left_offset;
-                        height += p_w->WM_top_offset;
+                            // add size of window decoration
+                            width  += p_w->WM_left_offset;
+                            height += p_w->WM_top_offset;
+                        }
                     }
-
-                    int wx2 = wx+width-1;
-                    int wy2 = wy+height-1;
-
-                    if (mx<wx) { setPos = true; wx = mx; } else if (mx>wx2) { setPos = true; wx = mx-width+1; }
-                    if (my<wy) { setPos = true; wy = my; } else if (my>wy2) { setPos = true; wy = my-height+1; }
-
-                    posx = wx;
-                    posy = wy;
-                }
-                else {
-                    setPos = true;
-                    posx   = mx-width/2;
-                    posy   = my-height/2;
                 }
 
-                if (posx<0) posx = 0;
-                if (posy<0) posy = 0;
+                setPos = true;
+                posx   = mx-width/2;
+                posy   = my-height/2;
+                
+                // avoid windows outside of screen
+                {
+                    int swidth, sheight; get_screen_size(swidth, sheight);
+                    int maxx = swidth-width;
+                    int maxy = sheight-height;
+
+                    if (posx>maxx) posx = maxx;
+                    if (posy>maxy) posy = maxy;
+
+                    if (posx<0) posx = 0;
+                    if (posy<0) posy = 0;
+                }
 
                 break;
             }
@@ -3212,6 +3216,10 @@ void AW_window::show() {
             }
 
             case AW_KEEP_POS:
+                if (was_shown) {
+                    // user might have moved the window -> store (new) positions
+                    aw_update_window_geometry_awars(this);
+                }
                 break;
         }
 
@@ -3231,7 +3239,7 @@ void AW_window::show() {
 void AW_window::show_modal() {
     recalc_pos_atShow(AW_REPOS_TO_MOUSE);
     get_root()->current_modal_window = this;
-    show();
+    activate();
 }
 
 void AW_window::hide() {
