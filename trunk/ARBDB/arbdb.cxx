@@ -2561,47 +2561,43 @@ void GB_disable_quicksave(GBDATA *gbd, const char *reason) {
 }
 
 GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long listsize) {
-    long            new_index;
-    GBCONTAINER    *father;
-    gb_header_list *hl, h;
+    {
+        long client_count = GB_read_clients(gb_main);
+        if (client_count<0)
+            return "Sorry: this program is not the arbdb server, you cannot resort your data";
 
-    if (GB_read_clients(gb_main)<0)
-        return "Sorry: this program is not the arbdb server, you cannot resort your data";
-
-    if (GB_read_clients(gb_main)>0)
-        return GBS_global_string("There are %li clients (editors, tree programs) connected to this server,\n"
-                                "please close clients and rerun operation",
-                                GB_read_clients(gb_main));
+        if (client_count>0)
+            return GBS_global_string("There are %li clients (editors, tree programs) connected to this server.\n"
+                                     "You need to these close clients before you can run this operation.",
+                                     client_count);
+    }
 
     if (listsize <= 0) return 0;
 
-    father = GB_FATHER(new_order_list[0]);
+    GBCONTAINER *father = GB_FATHER(new_order_list[0]);
     GB_disable_quicksave(gb_main, "some entries in the database got a new order");
-    hl = GB_DATA_LIST_HEADER(father->d);
 
-    for (new_index = 0; new_index< listsize; new_index++)
-    {
+    gb_header_list *hl = GB_DATA_LIST_HEADER(father->d);
+    for (long new_index = 0; new_index< listsize; new_index++) {
         long old_index = new_order_list[new_index]->index;
 
-        if (old_index < new_index)
+        if (old_index < new_index) {
             GB_warningf("Warning at resort database: entry exists twice: %li and %li",
                         old_index, new_index);
-        else
-        {
-            GBDATA *ngb;
-            GBDATA *ogb;
-            ogb = GB_HEADER_LIST_GBD(hl[old_index]);
-            ngb = GB_HEADER_LIST_GBD(hl[new_index]);
+        }
+        else {
+            GBDATA *ogb = GB_HEADER_LIST_GBD(hl[old_index]);
+            GBDATA *ngb = GB_HEADER_LIST_GBD(hl[new_index]);
 
-            h = hl[new_index];
+            gb_header_list h = hl[new_index];
             hl[new_index] = hl[old_index];
             hl[old_index] = h;              // Warning: Relative Pointers are incorrect !!!
 
             SET_GB_HEADER_LIST_GBD(hl[old_index], ngb);
             SET_GB_HEADER_LIST_GBD(hl[new_index], ogb);
 
-            if (ngb)    ngb->index = old_index;
-            if (ogb)    ogb->index = new_index;
+            if (ngb) ngb->index = old_index;
+            if (ogb) ogb->index = new_index;
         }
     }
 
