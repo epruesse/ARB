@@ -104,9 +104,9 @@ struct gb_flag_types3 {                                                 // user 
 
 struct gb_data_list {
     GB_REL_HLS rel_header;
-    int        headermemsize;
-    int        size;                                                    // number of valid items
-    int        nheader;                                                 // size + deleted items
+    int        headermemsize; // array size (allocated entries)
+    int        size;          // number of valid (non-deleted) items - not valid in transaction mode
+    int        nheader;       // index of next new entry
 };
 
 inline gb_header_list *GB_DATA_LIST_HEADER(gb_data_list& dl) {
@@ -196,3 +196,6 @@ inline GB_MAIN_TYPE *GB_MAIN_NO_FATHER(GBDATA *gbd)     { return GB_TYPE(gbd) ==
 #else
 #error gb_data.h included twice
 #endif // GB_DATA_H
+
+
+
