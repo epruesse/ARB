@@ -150,8 +150,8 @@ void gb_create_header_array(GBCONTAINER *gbc, int size) {
 
     if ((ol=GB_DATA_LIST_HEADER(gbc->d))!=NULL)
     {
-        int     idx,
-            maxidx = gbc->d.headermemsize; // ???: oder ->d.nheader
+        int idx;
+        int maxidx = gbc->d.headermemsize; // ???: oder ->d.nheader
 
         for (idx=0; idx<maxidx; idx++)
         {
@@ -473,7 +473,7 @@ static void gb_delete_entry(GBCONTAINER **gbc_ptr) {
 
     gb_destroy_indices(gbc);
     gb_header_list *hls;
-    
+
     if ((hls=GB_DATA_LIST_HEADER(gbc->d)) != NULL) {
         gbm_free_mem(hls, sizeof(gb_header_list) * gbc->d.headermemsize, GBM_HEADER_INDEX);
     }

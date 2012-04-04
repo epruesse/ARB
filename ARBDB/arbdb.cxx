@@ -2780,25 +2780,17 @@ int GB_info(GBDATA *gbd)
     return gb_info(gbd, 0);
 }
 
-long GB_number_of_subentries(GBDATA *gbd)
-{
+long GB_number_of_subentries(GBDATA *gbd) {
     long subentries = -1;
 
     if (GB_TYPE(gbd) == GB_DB) {
-        GBCONTAINER *gbc = (GBCONTAINER*)gbd;
+        GBCONTAINER    *gbc    = (GBCONTAINER*)gbd;
+        gb_header_list *header = GB_DATA_LIST_HEADER(gbc->d);
 
-        if (GB_is_server(gbd)) {
-            subentries = gbc->d.size; // @@@ wrong
-        }
-        else { // client really needs to count entries in header
-            int             end    = gbc->d.nheader;
-            gb_header_list *header = GB_DATA_LIST_HEADER(gbc->d);
-            int             index;
-
-            subentries = 0;
-            for (index = 0; index<end; index++) {
-                if ((int)header[index].flags.changed < GB_DELETED) subentries++;
-            }
+        subentries = 0;
+        int end     = gbc->d.nheader;
+        for (int index = 0; index<end; index++) {
+            if (header[index].flags.changed < GB_DELETED) subentries++;
         }
     }
 
@@ -2831,8 +2823,8 @@ void TEST_GB_number_of_subentries() {
 
     {
         GB_transaction ta(gb_main);
-        
-        GBDATA *gb_cont = GB_create_container(gb_main, "container");
+
+        GBDATA   *gb_cont = GB_create_container(gb_main, "container");
         TEST_ASSERT_EQUAL(GB_number_of_subentries(gb_cont), 0);
 
         TEST_ASSERT_RESULT__NOERROREXPORTED(GB_create(gb_cont, "entry", GB_STRING));
@@ -2844,11 +2836,11 @@ void TEST_GB_number_of_subentries() {
             TEST_ASSERT_EQUAL(GB_number_of_subentries(gb_cont), 2);
 
             TEST_ASSERT_NO_ERROR(GB_delete(gb_entry));
-            TEST_ASSERT_EQUAL__BROKEN(GB_number_of_subentries(gb_cont), 1); // when fixed enable tests below
+            TEST_ASSERT_EQUAL(GB_number_of_subentries(gb_cont), 1);
         }
-        
-        // TEST_ASSERT_RESULT__NOERROREXPORTED(GB_create(gb_cont, "entry", GB_STRING));
-        // TEST_ASSERT_EQUAL(GB_number_of_subentries(gb_cont), 2);
+
+        TEST_ASSERT_RESULT__NOERROREXPORTED(GB_create(gb_cont, "entry", GB_STRING));
+        TEST_ASSERT_EQUAL(GB_number_of_subentries(gb_cont), 2);
     }
 
     GB_close(gb_main);
