@@ -62,6 +62,11 @@ enum GBT_TREE_REMOVE_TYPE {
     // see ../SL/AP_TREE/AP_Tree.hxx@sync_GBT_TREE_REMOVE_TYPE_AWT_REMOVE_TYPE
 };
 
+enum GBT_ORDER_MODE {
+    GBT_BEHIND, 
+    GBT_INFRONTOF, 
+};
+    
 #define GBT_TREE_AWAR_SRT       " = :\n=:*=tree_*1:tree_tree_*=tree_*1"
 #define GBT_ALI_AWAR_SRT        " =:\n=:*=ali_*1:ali_ali_*=ali_*1"
 

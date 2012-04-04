@@ -92,7 +92,7 @@ struct AWT_tree_selection: public AW_DB_selection {
         GB_transaction  ta(gb_main);
 
         ConstStrArray tree_names;
-        GBT_get_tree_names(tree_names, gb_main);
+        GBT_get_tree_names(tree_names, gb_main, true);
 
         if (!tree_names.empty()) {
             int maxTreeNameLen = 0;
