@@ -170,7 +170,7 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
     // rename species in trees
     {
         ConstStrArray tree_names;
-        GBT_get_tree_names(tree_names, NameSession.gb_main);
+        GBT_get_tree_names(tree_names, NameSession.gb_main, false);
 
         if (!tree_names.empty()) {
             int          tree_count = tree_names.size();

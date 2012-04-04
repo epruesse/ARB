@@ -1001,7 +1001,7 @@ static void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main
     GB_transaction ta(gb_main);
 
     ConstStrArray tree_names;
-    GBT_get_tree_names(tree_names, gb_main);
+    GBT_get_tree_names(tree_names, gb_main, false);
 
     if (!tree_names.empty()) {
         int           treeCount    = tree_names.size();
