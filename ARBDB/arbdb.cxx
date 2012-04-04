@@ -2788,7 +2788,7 @@ long GB_number_of_subentries(GBDATA *gbd)
         GBCONTAINER *gbc = (GBCONTAINER*)gbd;
 
         if (GB_is_server(gbd)) {
-            subentries = gbc->d.size;
+            subentries = gbc->d.size; // @@@ wrong
         }
         else { // client really needs to count entries in header
             int             end    = gbc->d.nheader;
@@ -2823,6 +2823,35 @@ void TEST_GB_shell() {
     }
 
     TEST_ASSERT_SEGFAULT(test_opendb); // should be impossible to open db w/o shell
+}
+
+void TEST_GB_number_of_subentries() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("no.arb", "c");
+
+    {
+        GB_transaction ta(gb_main);
+        
+        GBDATA *gb_cont = GB_create_container(gb_main, "container");
+        TEST_ASSERT_EQUAL(GB_number_of_subentries(gb_cont), 0);
+
+        TEST_ASSERT_RESULT__NOERROREXPORTED(GB_create(gb_cont, "entry", GB_STRING));
+        TEST_ASSERT_EQUAL(GB_number_of_subentries(gb_cont), 1);
+
+        {
+            GBDATA *gb_entry;
+            TEST_ASSERT_RESULT__NOERROREXPORTED(gb_entry = GB_create(gb_cont, "entry", GB_STRING));
+            TEST_ASSERT_EQUAL(GB_number_of_subentries(gb_cont), 2);
+
+            TEST_ASSERT_NO_ERROR(GB_delete(gb_entry));
+            TEST_ASSERT_EQUAL__BROKEN(GB_number_of_subentries(gb_cont), 1); // when fixed enable tests below
+        }
+        
+        // TEST_ASSERT_RESULT__NOERROREXPORTED(GB_create(gb_cont, "entry", GB_STRING));
+        // TEST_ASSERT_EQUAL(GB_number_of_subentries(gb_cont), 2);
+    }
+
+    GB_close(gb_main);
 }
 
 #endif
