@@ -11,6 +11,7 @@
 #include <TreeWrite.h>
 #include <arbdbt.h>
 #include <arb_handlers.h>
+#include <arb_global_defs.h>
 
 int main(int argc, char **argv) {
     int exitcode = EXIT_SUCCESS;
@@ -72,8 +73,8 @@ int main(int argc, char **argv) {
                     }
                     else {
                         GB_ERROR why_cant_read = GB_await_error();
-                        if (tree_name[0] && strcmp(tree_name, "????") != 0) {
-                            // ignore tree names '????' and '' (no error, just export empty tree)
+                        if (tree_name[0] && strcmp(tree_name, NO_TREE_SELECTED) != 0) {
+                            // if no tree selected -> no error, just export empty tree
                             char *warning = GBS_global_string_copy("arb_export_tree from '%s': %s", db_name, why_cant_read);
                             GBT_message(gb_main, warning);
                             free(warning);

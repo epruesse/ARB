@@ -92,6 +92,7 @@ SQ_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_error.h
+SQ_main.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_progress.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_string.h

@@ -17,6 +17,7 @@
 #include <arb_strbuf.h>
 #include <cctype>
 #include <aw_msg.hxx>
+#include <arb_global_defs.h>
 
 #define ta_assert(cond) arb_assert(cond)
 
@@ -50,7 +51,7 @@ namespace TreeAdmin {
             if (!gb_tree) error = "Please select tree to delete";
             else {
                 GBDATA *gb_next = GBT_get_next_tree(gb_tree);
-                awar_tree->write_string(gb_next ? GBT_get_tree_name(gb_next) : "?????"); // @@@ globally define content for "no tree"
+                awar_tree->write_string(gb_next ? GBT_get_tree_name(gb_next) : NO_TREE_SELECTED);
             }
             error = ta.close(error);
         }
