@@ -215,38 +215,20 @@ static void tree_copy_or_rename_cb(AW_window *aww, bool do_copy) {
     char     *dest      = aw_root->awar(AWAR_TREE_DEST)->read_string();
     GB_ERROR  error     = NULL;
 
-    if (!error && !dest[0])                  error = "Please enter new tree name";
-    if (!error && strcmp(source, dest) == 0) error = "You need to enter a modified name";
-    if (!error)                              error = GBT_check_tree_name(dest);;
-
+    if (!error && !dest[0]) error = "Please enter new tree name";
     if (!error) {
         error = GB_begin_transaction(GLOBAL_gb_main);
         if (!error) {
-            GBDATA *gb_tree_data = GBT_get_tree_data(GLOBAL_gb_main);
-
-            if (!gb_tree_data) error = GB_await_error();
-            else {
-                GBDATA *gb_source = GB_entry(gb_tree_data, source);
-                GBDATA *gb_dest   = GB_entry(gb_tree_data, dest);
-
-                if (gb_dest) error         = GBS_global_string("Tree '%s' already exists", dest);
-                else if (!gb_source) error = "Please select a tree";
-                else {
-                    gb_dest = GB_create_container(gb_tree_data, dest);
-
-                    if (!gb_dest) error = GB_await_error();
-                    else {
-                        error = GB_copy(gb_dest, gb_source);
-                        if (!error) {
-                            if (do_copy) {
-                                error = tree_append_remark(gb_dest, GBS_global_string("[created as copy of '%s']", source));
-                            }
-                            else { // rename
-                                error = GB_delete(gb_source);
-                            }
-                        }
-                    }
+            if (do_copy) {
+                error = GBT_copy_tree(GLOBAL_gb_main, source, dest);
+                if (!error) {
+                    GBDATA *gb_new_tree = GBT_find_tree(GLOBAL_gb_main, dest);
+                    nt_assert(gb_new_tree);
+                    error = tree_append_remark(gb_new_tree, GBS_global_string("[created as copy of '%s']", source));
                 }
+            }
+            else {
+                error = GBT_rename_tree(GLOBAL_gb_main, source, dest);
             }
         }
 
@@ -697,39 +679,33 @@ static AW_window *create_tree_cmp_window(AW_root *root) {
     return aws;
 }
 static void ad_tr_delete_cb(AW_window *aww) {
-    AW_awar *awar_tree = aww->get_root()->awar(AWAR_TREE_NAME);
-    char    *name      = awar_tree->read_string();
+    AW_awar  *awar_tree = aww->get_root()->awar(AWAR_TREE_NAME);
+    char     *name      = awar_tree->read_string();
+    GBDATA   *gb_tree;
+    GB_ERROR  error     = NULL;
 
-    // 1. switch to next tree
+    // 1. TA: switch to next tree
     {
         GB_transaction ta(GLOBAL_gb_main);
-        char *newname = GBT_get_name_of_next_tree(GLOBAL_gb_main, name);
-
-        awar_tree->write_string(!newname || (strcmp(newname, name) == 0) ? "" : newname);
-        free(newname);
+        gb_tree = GBT_find_tree(GLOBAL_gb_main, name);
+        if (!gb_tree) error = "Please select tree to delete";
+        else {
+            GBDATA *gb_next = GBT_get_next_tree(gb_tree);
+            awar_tree->write_string(gb_next ? GBT_get_tree_name(gb_next) : "?????"); // @@@ globally define content for "no tree"
+        }
+        ta.close(error);
     }
 
-    // 2. delete old tree
-    {
-        GB_ERROR  error   = GB_begin_transaction(GLOBAL_gb_main);
-        GBDATA   *gb_tree = GBT_find_tree(GLOBAL_gb_main, name);
-        if (gb_tree) {
-            char *newname = GBT_get_name_of_next_tree(GLOBAL_gb_main, name);
-            error = GB_delete(gb_tree);
-            if (!error && newname) {
-                awar_tree->write_string(strcmp(newname, name) == 0 ? "" : newname);
-            }
-            free(newname);
-        }
-        else {
-            error = "Please select a tree first";
-        }
+    // 2. TA: delete old tree
+    if (!error) {
+        GB_transaction ta(GLOBAL_gb_main);
+        error = GB_delete(gb_tree);
+        ta.close(error);
+    }
 
-        error = GB_end_transaction(GLOBAL_gb_main, error);
-        if (error) {
-            aw_message(error);
-            awar_tree->write_string(name); // switch back to failed tree
-        }
+    if (error) {
+        aw_message(error);
+        awar_tree->write_string(name); // switch back to failed tree
     }
 
     free(name);
@@ -741,16 +717,15 @@ static void create_tree_last_window(AW_window *aww) {
 
     GB_begin_transaction(GLOBAL_gb_main);
 
-    GBDATA *gb_tree_data = GBT_get_tree_data(GLOBAL_gb_main);
-    GBDATA *gb_tree_name = GB_entry(gb_tree_data, source);
-
+    GBDATA *gb_tree_name = GBT_find_tree(GLOBAL_gb_main, source);
     if (!gb_tree_name) {
         error = GB_export_error("No tree selected.");
     }
     else {
-        GBDATA *gb_dest   = GB_create_container(gb_tree_data, source);
-        error             = GB_copy(gb_dest, gb_tree_name);
-        if (!error) error = GB_delete(gb_tree_name);
+        GBDATA *gb_bottom_tree = GBT_find_bottom_tree(GLOBAL_gb_main);
+        if (gb_bottom_tree && gb_bottom_tree != gb_tree_name) {
+            error = GBT_move_tree(gb_tree_name, GBT_BEHIND, gb_bottom_tree);
+        }
     }
 
     if (!error) GB_commit_transaction(GLOBAL_gb_main);

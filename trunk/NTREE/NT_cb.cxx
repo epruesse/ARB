@@ -81,13 +81,10 @@ AW_window * NT_open_select_tree_window(AW_root *awr, char *awar_tree) {
     return (AW_window *)aws;
 }
 
-void NT_select_last_tree(AW_window *aww, char *awar_tree) {
+void NT_select_bottom_tree(AW_window *aww, char *awar_tree) {
     GB_transaction dummy(GLOBAL_gb_main);
-    char *ltree = GBT_find_latest_tree(GLOBAL_gb_main);
-    if (ltree) {
-        aww->get_root()->awar(awar_tree)->write_string(ltree);
-        free(ltree);
-    }
+    const char *ltree = GBT_name_of_bottom_tree(GLOBAL_gb_main);
+    if (ltree) aww->get_root()->awar(awar_tree)->write_string(ltree);
 }
 
 AW_window *NT_open_select_alignment_window(AW_root *awr)

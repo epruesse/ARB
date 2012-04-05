@@ -358,10 +358,9 @@ AW_window *AP_open_pos_var_pars_window(AW_root *root) {
     aws->load_xfig("cpro/parsimony.fig");
 
     root->awar_string(AWAR_PVP_SAI, "POS_VAR_BY_PARSIMONY", AW_ROOT_DEFAULT);
-    char *largest_tree = GBT_find_largest_tree(GLOBAL_gb_main);
+    const char *largest_tree = GBT_name_of_largest_tree(GLOBAL_gb_main);
     root->awar_string(AWAR_PVP_TREE, "tree_full", AW_ROOT_DEFAULT);
     root->awar(AWAR_PVP_TREE)->write_string(largest_tree);
-    freenull(largest_tree);
 
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");

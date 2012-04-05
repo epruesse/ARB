@@ -160,16 +160,24 @@ GB_ERROR GBT_is_invalid(const GBT_TREE *tree);
 GB_ERROR GBT_link_tree(GBT_TREE *tree, GBDATA *gb_main, bool show_status, int *zombies, int *duplicates);
 void GBT_unlink_tree(GBT_TREE *tree);
 GBDATA *GBT_find_tree(GBDATA *gb_main, const char *tree_name);
-long GBT_size_of_tree(GBDATA *gb_main, const char *tree_name);
-char *GBT_find_largest_tree(GBDATA *gb_main);
-char *GBT_find_latest_tree(GBDATA *gb_main);
-const char *GBT_tree_info_string(GBDATA *gb_main, const char *tree_name, int maxTreeNameLen);
+GBDATA *GBT_find_largest_tree(GBDATA *gb_main);
+GBDATA *GBT_tree_infrontof(GBDATA *gb_tree);
+GBDATA *GBT_tree_behind(GBDATA *gb_tree);
+GBDATA *GBT_find_top_tree(GBDATA *gb_main);
+GBDATA *GBT_find_bottom_tree(GBDATA *gb_main);
+const char *GBT_existing_tree(GBDATA *gb_main, const char *tree_name);
+GBDATA *GBT_get_next_tree(GBDATA *gb_tree);
+const char *GBT_get_tree_name(GBDATA *gb_tree);
 GB_ERROR GBT_check_tree_name(const char *tree_name);
+const char *GBT_name_of_largest_tree(GBDATA *gb_main);
+const char *GBT_name_of_bottom_tree(GBDATA *gb_main);
+const char *GBT_tree_info_string(GBDATA *gb_main, const char *tree_name, int maxTreeNameLen);
+long GBT_size_of_tree(GBDATA *gb_main, const char *tree_name);
 void GBT_get_tree_names(ConstStrArray &names, GBDATA *gb_main, bool sorted);
 NOT4PERL GB_ERROR GBT_move_tree(GBDATA *gb_moved_tree, GBT_ORDER_MODE mode, GBDATA *gb_target_tree);
-char *GBT_get_name_of_next_tree(GBDATA *gb_main, const char *tree_name);
+GB_ERROR GBT_copy_tree(GBDATA *gb_main, const char *source_name, const char *dest_name);
+GB_ERROR GBT_rename_tree(GBDATA *gb_main, const char *source_name, const char *dest_name);
 GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree, size_t *count);
-char *GBT_existing_tree(GBDATA *gb_main, const char *tree_name);
 
 #else
 #error ad_t_prot.h included twice
