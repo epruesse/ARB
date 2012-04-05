@@ -728,14 +728,12 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, con
         if (!error) {
             error = GB_begin_transaction(gb_main);
             if (!error) {
-                char *to_free = NULL;
-
                 GB_push_my_security(gb_main);
 
                 if (!tree_name || !strlen(tree_name)) {
-                    to_free   = GBT_find_largest_tree(gb_main);
-                    tree_name = to_free;
+                    tree_name = GBT_name_of_largest_tree(gb_main);
                 }
+
                 {
                     CompressionTree *ctree   = (CompressionTree *)GBT_read_tree(gb_main, tree_name, -sizeof(CompressionTree));
                     if (!ctree) error = GBS_global_string("Tree %s not found in database", tree_name);
@@ -749,8 +747,6 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, con
 
                 GB_pop_my_security(gb_main);
                 error = GB_end_transaction(gb_main, error);
-
-                if (to_free) free(to_free);
             }
             ASSERT_NO_ERROR(GB_request_undo_type(gb_main, prev_undo_type));
         }

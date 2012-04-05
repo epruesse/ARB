@@ -381,9 +381,8 @@ static AW_window *NT_create_database_optimization_window(AW_root *aw_root) {
     if (aws) return (AW_window *)aws;
     GB_transaction dummy(GLOBAL_gb_main);
 
-    char *largest_tree = GBT_find_largest_tree(GLOBAL_gb_main);
+    const char *largest_tree = GBT_name_of_largest_tree(GLOBAL_gb_main);
     aw_root->awar_string("tmp/nt/arbdb/optimize_tree_name", largest_tree);
-    free(largest_tree);
 
     aws = new AW_window_simple;
     aws->init(aw_root, "OPTIMIZE_DATABASE", "OPTIMIZE DATABASE");
@@ -1091,10 +1090,10 @@ static AW_window *create_mark_by_refentries_window(AW_root *awr, AW_CL cl_gbmain
 
 static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     GB_push_transaction(GLOBAL_gb_main);
-    AW_gc_manager  aw_gc_manager;
-    char          *awar_tree;
-    char           window_title[256];
-    awar_tree = (char *)GB_calloc(sizeof(char), strlen(AWAR_TREE) + 10); // do not free this
+    AW_gc_manager aw_gc_manager;
+    
+    char  window_title[256];
+    char * const awar_tree = (char *)GB_calloc(sizeof(char), strlen(AWAR_TREE) + 10);          // do not free this
 
     if (clone) {
         sprintf(awar_tree, AWAR_TREE "_%li", clone);
@@ -1124,11 +1123,12 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     }
 
     {
-        char *tree_name          = awr->awar_string(awar_tree)->read_string();
-        char *existing_tree_name = GBT_existing_tree(GLOBAL_gb_main, tree_name);
+        AW_awar    *tree_awar          = awr->awar_string(awar_tree);
+        const char *tree_name          = tree_awar->read_char_pntr();
+        const char *existing_tree_name = GBT_existing_tree(GLOBAL_gb_main, tree_name);
 
         if (existing_tree_name) {
-            awr->awar(awar_tree)->write_string(existing_tree_name);
+            tree_awar->write_string(existing_tree_name);
             NT_reload_tree_event(awr, ntw, 1); // load first tree
         }
         else {
@@ -1136,10 +1136,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             GLOBAL_NT.tree->set_tree_type(AP_LIST_NDS, ntw); // no tree -> show NDS list
         }
 
-        awr->awar(awar_tree)->add_callback((AW_RCB)NT_reload_tree_event, (AW_CL)ntw, 1);
-
-        free(existing_tree_name);
-        free(tree_name);
+        tree_awar->add_callback((AW_RCB)NT_reload_tree_event, (AW_CL)ntw, 1);
     }
 
     awr->awar(AWAR_SPECIES_NAME)->add_callback((AW_RCB)NT_jump_cb_auto, (AW_CL)ntw, 0);
@@ -1487,7 +1484,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         awm->sep______________();
 
         awm->insert_menu_topic(awm->local_id("tree_select"),        "Select Tree",      "T", 0, AWM_ALL, AW_POPUP, (AW_CL)NT_open_select_tree_window, (AW_CL)awar_tree);
-        awm->insert_menu_topic(awm->local_id("tree_select_latest"), "Select Last Tree", "L", 0, AWM_ALL,          (AW_CB)NT_select_last_tree,        (AW_CL)awar_tree, 0);
+        awm->insert_menu_topic(awm->local_id("tree_select_latest"), "Select Last Tree", "L", 0, AWM_ALL,          (AW_CB)NT_select_bottom_tree,        (AW_CL)awar_tree, 0);
 
         awm->sep______________();
 

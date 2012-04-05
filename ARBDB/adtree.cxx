@@ -13,6 +13,7 @@
 #include "gb_local.h"
 #include <arb_strarray.h>
 #include <set>
+#include <limits.h>
 
 #define GBT_PUT_DATA 1
 #define GBT_GET_SIZE 0
@@ -705,56 +706,231 @@ void GBT_unlink_tree(GBT_TREE *tree) {
     }
 }
 
+// ---------------------
+//      trees order
+
+inline int get_tree_idx(GBDATA *gb_tree) {
+    GBDATA *gb_order = GB_entry(gb_tree, "order");
+    int     idx      = 0;
+    if (gb_order) {
+        idx = GB_read_int(gb_order);
+        gb_assert(idx>0); // invalid index
+    }
+    return idx;
+}
+
+inline int get_max_tree_idx(GBDATA *gb_treedata) {
+    int max_idx = 0;
+    for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree; gb_tree = GB_nextChild(gb_tree)) {
+        int idx = get_tree_idx(gb_tree);
+        if (idx>max_idx) max_idx = idx;
+    }
+    return max_idx;
+}
+
+inline GBDATA *get_tree_with_idx(GBDATA *gb_treedata, int at_idx) {
+    GBDATA *gb_found = NULL;
+    for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree && !gb_found; gb_tree = GB_nextChild(gb_tree)) {
+        int idx = get_tree_idx(gb_tree);
+        gb_assert(idx);
+        if (idx == at_idx) {
+            gb_found = gb_tree;
+        }
+    }
+    return gb_found;
+}
+
+inline GBDATA *get_tree_infrontof_idx(GBDATA *gb_treedata, int infrontof_idx) {
+    GBDATA *gb_infrontof = NULL;
+    if (infrontof_idx) {
+        int best_idx = 0;
+        for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree; gb_tree = GB_nextChild(gb_tree)) {
+            int idx = get_tree_idx(gb_tree);
+            gb_assert(idx);
+            if (idx>best_idx && idx<infrontof_idx) {
+                best_idx     = idx;
+                gb_infrontof = gb_tree;
+            }
+        }
+    }
+    return gb_infrontof;
+}
+
+inline GBDATA *get_tree_behind_idx(GBDATA *gb_treedata, int behind_idx) {
+    GBDATA *gb_behind = NULL;
+    if (behind_idx) {
+        int best_idx = INT_MAX;
+        for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree; gb_tree = GB_nextChild(gb_tree)) {
+            int idx = get_tree_idx(gb_tree);
+            gb_assert(idx);
+            if (idx>behind_idx && idx<best_idx) {
+                best_idx  = idx;
+                gb_behind = gb_tree;
+            }
+        }
+    }
+    return gb_behind;
+}
+
+inline GB_ERROR set_tree_idx(GBDATA *gb_tree, int idx) {
+    GB_ERROR  error    = NULL;
+    GBDATA   *gb_order = GB_entry(gb_tree, "order");
+    if (!gb_order) {
+        gb_order = GB_create(gb_tree, "order", GB_INT);
+        if (!gb_order) error = GB_await_error();
+    }
+    if (!error) error = GB_write_int(gb_order, idx);
+    return error;
+}
+
+static GB_ERROR reserve_tree_idx(GBDATA *gb_treedata, int idx) {
+    GB_ERROR  error   = NULL;
+    GBDATA   *gb_tree = get_tree_with_idx(gb_treedata, idx);
+    if (gb_tree) {
+        error = reserve_tree_idx(gb_treedata, idx+1);
+        if (!error) error = set_tree_idx(gb_tree, idx+1);
+    }
+    return error;
+}
+
+static void ensure_trees_have_order(GBDATA *gb_treedata) {
+    GBDATA *gb_main = GB_get_father(gb_treedata);
+
+    gb_assert(GB_get_root(gb_main)       == gb_main);
+    gb_assert(GBT_get_tree_data(gb_main) == gb_treedata);
+
+    GB_ERROR  error              = NULL;
+    GBDATA   *gb_tree_order_flag = GB_search(gb_main, "/tmp/trees_have_order", GB_INT);
+
+    if (!gb_tree_order_flag) error = GB_await_error();
+    else {
+        if (GB_read_int(gb_tree_order_flag) == 0) { // not checked yet
+            int max_idx = get_max_tree_idx(gb_treedata);
+            for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree && !error; gb_tree = GB_nextChild(gb_tree)) {
+                if (!get_tree_idx(gb_tree)) {
+                    error = set_tree_idx(gb_tree, ++max_idx);
+                }
+            }
+            if (!error) error = GB_write_int(gb_tree_order_flag, 1);
+        }
+    }
+    if (error) GBK_terminatef("failed to order trees (Reason: %s)", error);
+}
+
+// ----------------------
+//      search trees
+
 GBDATA *GBT_find_tree(GBDATA *gb_main, const char *tree_name) {
     /*! @return
      * - DB tree container associated with tree_name
      * - NULL if no such tree exists
      */
-    GBDATA *gb_treedata = GBT_get_tree_data(gb_main);
-    return GB_entry(gb_treedata, tree_name);
+    return GB_entry(GBT_get_tree_data(gb_main), tree_name);
 }
 
-long GBT_size_of_tree(GBDATA *gb_main, const char *tree_name) {
-    // returns number of inner nodes as in binary tree
-    //
-    // Note:
-    //        leafs                        = size + 1
-    //        inner nodes in unrooted tree = size - 1
-
-    GBDATA *gb_tree = GBT_find_tree(gb_main, tree_name);
-    GBDATA *gb_nnodes;
-    if (!gb_tree) return -1;
-    gb_nnodes       = GB_entry(gb_tree, "nnodes");
-    if (!gb_nnodes) return -1;
-    return GB_read_int(gb_nnodes);
+inline bool is_tree(GBDATA *gb_tree) {
+    if (!gb_tree) return false;
+    GBDATA *gb_tree_data = GB_get_father(gb_tree);
+    return gb_tree_data && GB_has_key(gb_tree_data, "tree_data");
 }
 
-char *GBT_find_largest_tree(GBDATA *gb_main) {
-    char   *largest     = 0;
-    long    maxnodes    = 0;
-    GBDATA *gb_treedata = GBT_get_tree_data(gb_main);
-    GBDATA *gb_tree;
+inline GBDATA *get_first_tree(GBDATA *gb_main) {
+    return GB_child(GBT_get_tree_data(gb_main));
+}
 
-    for (gb_tree = GB_child(gb_treedata);
-         gb_tree;
-         gb_tree = GB_nextChild(gb_tree))
-    {
+inline GBDATA *get_next_tree(GBDATA *gb_tree) {
+    if (!gb_tree) return NULL;
+    gb_assert(is_tree(gb_tree));
+    return GB_nextChild(gb_tree);
+}
+
+GBDATA *GBT_find_largest_tree(GBDATA *gb_main) {
+    long    maxnodes   = 0;
+    GBDATA *gb_largest = NULL;
+
+    for (GBDATA *gb_tree = get_first_tree(gb_main); gb_tree; gb_tree = get_next_tree(gb_tree)) {
         long *nnodes = GBT_read_int(gb_tree, "nnodes");
         if (nnodes && *nnodes>maxnodes) {
-            freeset(largest, GB_read_key(gb_tree));
-            maxnodes = *nnodes;
+            gb_largest = gb_tree;
+            maxnodes   = *nnodes;
         }
     }
-    return largest;
+    return gb_largest;
 }
 
-char *GBT_find_latest_tree(GBDATA *gb_main) {
-    ConstStrArray names;
-    GBT_get_tree_names(names, gb_main, true);
-    
-    int count = names.size();
-    return count ? strdup(names[count-1]) : NULL;
+GBDATA *GBT_tree_infrontof(GBDATA *gb_tree) {
+    GBDATA *gb_treedata = GB_get_father(gb_tree);
+    ensure_trees_have_order(gb_treedata);
+    return get_tree_infrontof_idx(gb_treedata, get_tree_idx(gb_tree));
 }
+GBDATA *GBT_tree_behind(GBDATA *gb_tree) {
+    GBDATA *gb_treedata = GB_get_father(gb_tree);
+    ensure_trees_have_order(gb_treedata);
+    return get_tree_behind_idx(gb_treedata, get_tree_idx(gb_tree));
+}
+
+GBDATA *GBT_find_top_tree(GBDATA *gb_main) {
+    GBDATA *gb_treedata = GBT_get_tree_data(gb_main);
+    ensure_trees_have_order(gb_treedata);
+
+    GBDATA *gb_top = get_tree_with_idx(gb_treedata, 1);
+    if (!gb_top) gb_top = get_tree_behind_idx(gb_treedata, 1);
+    return gb_top;
+}
+GBDATA *GBT_find_bottom_tree(GBDATA *gb_main) {
+    GBDATA *gb_treedata = GBT_get_tree_data(gb_main);
+    ensure_trees_have_order(gb_treedata);
+    return get_tree_infrontof_idx(gb_treedata, INT_MAX);
+}
+
+const char *GBT_existing_tree(GBDATA *gb_main, const char *tree_name) {
+    // search for a specify existing tree (and fallback to any existing)
+    GBDATA *gb_tree       = GBT_find_tree(gb_main, tree_name);
+    if (!gb_tree) gb_tree = get_first_tree(gb_main);
+    return GBT_get_tree_name(gb_tree);
+}
+
+GBDATA *GBT_get_next_tree(GBDATA *gb_tree) {
+    GBDATA *gb_other = NULL;
+    if (gb_tree) {
+        gb_other = GBT_tree_behind(gb_tree);
+        if (!gb_other) gb_other = GBT_find_top_tree(GB_get_root(gb_tree));
+    }
+    return gb_other;
+}
+
+// --------------------
+//      tree names
+
+const char *GBT_get_tree_name(GBDATA *gb_tree) {
+    if (!gb_tree) return NULL;
+    gb_assert(is_tree(gb_tree));
+    return GB_read_key_pntr(gb_tree);
+}
+
+GB_ERROR GBT_check_tree_name(const char *tree_name) {
+    GB_ERROR error = GB_check_key(tree_name);
+    if (!error) {
+        if (strncmp(tree_name, "tree_", 5) != 0) {
+            error = "has to start with 'tree_'";
+        }
+    }
+    if (error) {
+        error = GBS_global_string("not a valid treename '%s' (Reason: %s)", tree_name, error);
+    }
+    return error;
+}
+
+const char *GBT_name_of_largest_tree(GBDATA *gb_main) {
+    return GBT_get_tree_name(GBT_find_largest_tree(gb_main));
+}
+
+const char *GBT_name_of_bottom_tree(GBDATA *gb_main) {
+    return GBT_get_tree_name(GBT_find_bottom_tree(gb_main));
+}
+
+// -------------------
+//      tree info
 
 const char *GBT_tree_info_string(GBDATA *gb_main, const char *tree_name, int maxTreeNameLen) {
     // maxTreeNameLen shall be the max len of the longest tree name (or -1 -> do not format)
@@ -799,87 +975,21 @@ const char *GBT_tree_info_string(GBDATA *gb_main, const char *tree_name, int max
     return result;
 }
 
-GB_ERROR GBT_check_tree_name(const char *tree_name)
-{
-    GB_ERROR error;
-    if ((error = GB_check_key(tree_name))) return error;
-    if (strncmp(tree_name, "tree_", 5)) {
-        return GB_export_errorf("your treename '%s' does not begin with 'tree_'", tree_name);
-    }
-    return 0;
+long GBT_size_of_tree(GBDATA *gb_main, const char *tree_name) {
+    // returns number of inner nodes as in binary tree
+    //
+    // Note:
+    //        leafs                        = size + 1
+    //        inner nodes in unrooted tree = size - 1
+
+    GBDATA *gb_tree = GBT_find_tree(gb_main, tree_name);
+    GBDATA *gb_nnodes;
+    if (!gb_tree) return -1;
+    gb_nnodes       = GB_entry(gb_tree, "nnodes");
+    if (!gb_nnodes) return -1;
+    return GB_read_int(gb_nnodes);
 }
 
-// ---------------------
-//      trees order
-
-inline int get_tree_idx(GBDATA *gb_tree) {
-    GBDATA *gb_order = GB_entry(gb_tree, "order");
-    int     idx      = 0;
-    if (gb_order) {
-        idx = GB_read_int(gb_order);
-        gb_assert(idx>0); // invalid index
-    }
-    return idx;
-}
-
-inline int get_max_tree_idx(GBDATA *gb_treedata) {
-    int max_idx = 0;
-    for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree; gb_tree = GB_nextChild(gb_tree)) {
-        int idx = get_tree_idx(gb_tree);
-        if (idx>max_idx) max_idx = idx;
-    }
-    return max_idx;
-}
-
-inline GBDATA *get_tree_by_idx(GBDATA *gb_treedata, int idx) {
-    GBDATA *gb_found = NULL;
-    for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree && !gb_found; gb_tree = GB_nextChild(gb_tree)) {
-        if (get_tree_idx(gb_tree) == idx) gb_found = gb_tree;
-    }
-    return gb_found;
-}
-
-inline GB_ERROR set_tree_idx(GBDATA *gb_tree, int idx) {
-    gb_assert(!get_tree_by_idx(GB_get_father(gb_tree), idx)); // duplicate index
-
-    GB_ERROR  error    = NULL;
-    GBDATA   *gb_order = GB_entry(gb_tree, "order");
-    if (!gb_order) {
-        gb_order = GB_create(gb_tree, "order", GB_INT);
-        if (!gb_order) error = GB_await_error();
-    }
-    if (!error) error = GB_write_int(gb_order, idx);
-    return error;
-}
-
-static GB_ERROR reserve_tree_idx(GBDATA *gb_treedata, int idx) {
-    GB_ERROR  error   = NULL;
-    GBDATA   *gb_tree = get_tree_by_idx(gb_treedata, idx);
-    if (gb_tree) {
-        error = reserve_tree_idx(gb_treedata, idx+1);
-        if (!error) error = set_tree_idx(gb_tree, idx+1);
-    }
-    return error;
-}
-
-static void ensure_trees_have_order(GBDATA *gb_main) {
-    GB_ERROR  error              = NULL;
-    GBDATA   *gb_tree_order_flag = GB_search(gb_main, "/tmp/trees_have_order", GB_INT);
-
-    if (!gb_tree_order_flag) error = GB_await_error();
-    else {
-        if (GB_read_int(gb_tree_order_flag) == 0) { // not checked yet
-            GBDATA *gb_treedata = GBT_get_tree_data(gb_main);
-            int     max_idx     = get_max_tree_idx(gb_treedata);
-
-            for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree && !error; gb_tree = GB_nextChild(gb_tree)) {
-                if (!get_tree_idx(gb_tree)) error = set_tree_idx(gb_tree, ++max_idx);
-            }
-            if (!error) error = GB_write_int(gb_tree_order_flag, 1);
-        }
-    }
-    if (error) GBK_terminatef("failed to sort trees (Reason: %s)", error);
-}
 
 struct indexed_name {
     int         idx;
@@ -891,10 +1001,10 @@ struct indexed_name {
 void GBT_get_tree_names(ConstStrArray& names, GBDATA *gb_main, bool sorted) {
     // stores tree names in 'names'
 
-    ensure_trees_have_order(gb_main);
-
     GBDATA *gb_treedata = GBT_get_tree_data(gb_main);
-    int     tree_count  = GB_number_of_subentries(gb_treedata);
+    ensure_trees_have_order(gb_treedata);
+
+    long tree_count = GB_number_of_subentries(gb_treedata);
 
     names.reserve(tree_count);
     typedef std::set<indexed_name> ordered_trees;
@@ -912,18 +1022,46 @@ void GBT_get_tree_names(ConstStrArray& names, GBDATA *gb_main, bool sorted) {
         }
     }
 
+    if (tree_count != (long)trees.size()) { // there are duplicated "order" entries
+        gb_assert(sorted); // should not happen in unsorted mode
+
+        typedef std::set<int> ints;
+
+        ints    used_indices;
+        GBDATA *gb_first_tree = GB_child(gb_treedata);
+        GBDATA *gb_tree       = gb_first_tree;
+
+        while (gb_tree) {
+            int idx = get_tree_idx(gb_tree);
+            if (used_indices.find(idx) != used_indices.end()) { // duplicate order
+                GB_ERROR error    = reserve_tree_idx(gb_treedata, idx+1);
+                if (!error) error = set_tree_idx(gb_tree, idx+1);
+                if (error) GBK_terminatef("failed to fix tree-order (Reason: %s)", error);
+
+                // now restart
+                used_indices.clear();
+                gb_tree = gb_first_tree;
+            }
+            else {
+                used_indices.insert(idx);
+                gb_tree = GB_nextChild(gb_tree);
+            }
+        }
+        GBT_get_tree_names(names, gb_main, sorted);
+        return;
+    }
+
     for (ordered_trees::const_iterator t = trees.begin(); t != trees.end(); ++t) {
         names.put(t->name);
     }
 }
 
 NOT4PERL GB_ERROR GBT_move_tree(GBDATA *gb_moved_tree, GBT_ORDER_MODE mode, GBDATA *gb_target_tree) {
+    // moves 'gb_moved_tree' next to 'gb_target_tree' (only changes tree-order) 
     gb_assert(gb_moved_tree && gb_target_tree);
 
     GBDATA *gb_treedata = GB_get_father(gb_moved_tree);
-    GBDATA *gb_main     = GB_get_root(gb_treedata);
-
-    ensure_trees_have_order(gb_main);
+    ensure_trees_have_order(gb_treedata);
 
     int target_idx = get_tree_idx(gb_target_tree);
     gb_assert(target_idx);
@@ -936,23 +1074,69 @@ NOT4PERL GB_ERROR GBT_move_tree(GBDATA *gb_moved_tree, GBT_ORDER_MODE mode, GBDA
     return error;
 }
 
-char *GBT_get_name_of_next_tree(GBDATA *gb_main, const char *tree_name) {
-    /* returns a heap-copy of the name of the next tree behind 'tree_name'.
-     * If 'tree_name' is NULL or points to the last tree, returns the first tree.
-     * If no tree exists, returns NULL.
-     */
-    GBDATA *gb_tree = 0;
+static GBDATA *get_source_and_check_target_tree(GBDATA *gb_main, const char *source_tree, const char *dest_tree, GB_ERROR& error) {
+    GBDATA *gb_source_tree = NULL;
 
-    if (tree_name) {
-        gb_tree = GBT_find_tree(gb_main, tree_name);
-        gb_tree = GB_nextChild(gb_tree);
-    }
-    if (!gb_tree) {
-        GBDATA *gb_treedata = GBT_get_tree_data(gb_main);
-        gb_tree = GB_child(gb_treedata);
+    error             = GBT_check_tree_name(source_tree);
+    if (!error) error = GBT_check_tree_name(dest_tree);
+    
+    if (!error && strcmp(source_tree, dest_tree) == 0) error = "source- and dest-tree are the same";
+
+    if (!error) {
+        gb_source_tree = GBT_find_tree(gb_main, source_tree);
+        if (!gb_source_tree) error = GBS_global_string("tree '%s' not found", source_tree);
+        else {
+            GBDATA *gb_dest_tree = GBT_find_tree(gb_main, dest_tree);
+            if (gb_dest_tree) {
+                error = GBS_global_string("tree '%s' already exists", dest_tree);
+                gb_source_tree = NULL;
+            }
+        }
     }
 
-    return gb_tree ? GB_read_key(gb_tree) : NULL;
+    gb_assert(contradicted(error, gb_source_tree));
+    return gb_source_tree;
+}
+
+static GBDATA *copy_tree_container(GBDATA *gb_source_tree, const char *newName, GB_ERROR& error) {
+    GBDATA *gb_treedata  = GB_get_father(gb_source_tree);
+    GBDATA *gb_dest_tree = GB_create_container(gb_treedata, newName);
+
+    if (!gb_dest_tree) error = GB_await_error();
+    else error               = GB_copy(gb_dest_tree, gb_source_tree);
+
+    gb_assert(contradicted(error, gb_dest_tree));
+    return gb_dest_tree;
+}
+
+GB_ERROR GBT_copy_tree(GBDATA *gb_main, const char *source_name, const char *dest_name) {
+    GB_ERROR  error;
+    GBDATA   *gb_source_tree = get_source_and_check_target_tree(gb_main, source_name, dest_name, error);
+
+    if (gb_source_tree) {
+        GBDATA *gb_dest_tree = copy_tree_container(gb_source_tree, dest_name, error);
+        if (gb_dest_tree) {
+            int source_idx = get_tree_idx(gb_source_tree);
+            int dest_idx   = source_idx+1;
+
+            error             = reserve_tree_idx(GB_get_father(gb_dest_tree), dest_idx);
+            if (!error) error = set_tree_idx(gb_dest_tree, dest_idx);
+        }
+    }
+
+    return error;
+}
+
+GB_ERROR GBT_rename_tree(GBDATA *gb_main, const char *source_name, const char *dest_name) {
+    GB_ERROR  error;
+    GBDATA   *gb_source_tree = get_source_and_check_target_tree(gb_main, source_name, dest_name, error);
+
+    if (gb_source_tree) {
+        GBDATA *gb_dest_tree = copy_tree_container(gb_source_tree, dest_name, error);
+        if (gb_dest_tree) error = GB_delete(gb_source_tree);
+    }
+
+    return error;
 }
 
 static GB_CSTR *fill_species_name_array(GB_CSTR *current, const GBT_TREE *tree) {
@@ -980,14 +1164,6 @@ GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree, size_t *count) {
     return result;
 }
 
-char *GBT_existing_tree(GBDATA *gb_main, const char *tree_name) {
-    // search for an existing or an alternate tree
-    GBDATA *gb_treedata = GBT_get_tree_data(gb_main);
-    GBDATA *gb_tree = GB_entry(gb_treedata, tree_name);
-    if (!gb_tree) gb_tree = GB_child(gb_treedata); // take any tree
-    return gb_tree ? GB_read_key(gb_tree) : NULL;
-}
-
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS
@@ -1004,6 +1180,15 @@ static const char *getTreeOrder(GBDATA *gb_main) {
     RETURN_LOCAL_ALLOC(size_and_names);
 }
 
+void TEST_tree_names() {
+    TEST_ASSERT_ERROR_CONTAINS(GBT_check_tree_name(""),               "not a valid treename");
+    TEST_ASSERT_ERROR_CONTAINS(GBT_check_tree_name("not_a_treename"), "not a valid treename");
+    TEST_ASSERT_ERROR_CONTAINS(GBT_check_tree_name("tree_bad.dot"),   "not a valid treename");
+
+    TEST_ASSERT_NO_ERROR(GBT_check_tree_name("tree_")); // ugly but ok
+    TEST_ASSERT_NO_ERROR(GBT_check_tree_name("tree_ok"));
+}
+
 void TEST_tree() {
     GB_shell  shell;
     GBDATA   *gb_main = GB_open("TEST_trees.arb", "r");
@@ -1012,25 +1197,18 @@ void TEST_tree() {
         GB_transaction ta(gb_main);
 
         {
-            char *tree_name = GBT_find_largest_tree(gb_main);
-            TEST_ASSERT_EQUAL(tree_name, "tree_test");
-            {
-                char *next_tree_name = GBT_get_name_of_next_tree(gb_main, tree_name);
-                TEST_ASSERT_EQUAL(next_tree_name, "tree_tree2");
-                freeset(next_tree_name, GBT_get_name_of_next_tree(gb_main, next_tree_name));
-                TEST_ASSERT_EQUAL(next_tree_name, "tree_nj");
-                free(next_tree_name);
-            }
+            TEST_ASSERT_EQUAL(GBT_name_of_largest_tree(gb_main), "tree_test");
 
-            freeset(tree_name, GBT_find_latest_tree(gb_main));
-            TEST_ASSERT_EQUAL(tree_name, "tree_nj_bs");
-            long nodes = GBT_size_of_tree(gb_main, tree_name);
+            TEST_ASSERT_EQUAL(GBT_get_tree_name(GBT_find_top_tree(gb_main)), "tree_test");
+            TEST_ASSERT_EQUAL(GBT_name_of_bottom_tree(gb_main), "tree_nj_bs");
+
+            long nodes = GBT_size_of_tree(gb_main, "tree_nj_bs");
             TEST_ASSERT_EQUAL(nodes, 5);
-            TEST_ASSERT_EQUAL(GBT_tree_info_string(gb_main, tree_name, -1), "tree_nj_bs       (6:0)  PRG=dnadist CORR=none FILTER=none PKG=ARB");
-            TEST_ASSERT_EQUAL(GBT_tree_info_string(gb_main, tree_name, 20), "tree_nj_bs                 (6:0)  PRG=dnadist CORR=none FILTER=none PKG=ARB");
+            TEST_ASSERT_EQUAL(GBT_tree_info_string(gb_main, "tree_nj_bs", -1), "tree_nj_bs       (6:0)  PRG=dnadist CORR=none FILTER=none PKG=ARB");
+            TEST_ASSERT_EQUAL(GBT_tree_info_string(gb_main, "tree_nj_bs", 20), "tree_nj_bs                 (6:0)  PRG=dnadist CORR=none FILTER=none PKG=ARB");
 
             {
-                GBT_TREE *tree = GBT_read_tree(gb_main, tree_name, sizeof(GBT_TREE));
+                GBT_TREE *tree = GBT_read_tree(gb_main, "tree_nj_bs", sizeof(GBT_TREE));
 
                 TEST_ASSERT(tree);
 
@@ -1051,15 +1229,8 @@ void TEST_tree() {
                 GBT_delete_tree(tree);
             }
 
-            {
-                char *ex_tree_name = GBT_existing_tree(gb_main, tree_name);
-                TEST_ASSERT_EQUAL(ex_tree_name, tree_name);
-                freeset(ex_tree_name, GBT_existing_tree(gb_main, "tree_nosuch"));
-                TEST_ASSERT_EQUAL(ex_tree_name, "tree_test");
-                free(ex_tree_name);
-            }
-
-            free(tree_name);
+            TEST_ASSERT_EQUAL(GBT_existing_tree(gb_main, "tree_nj_bs"), "tree_nj_bs");
+            TEST_ASSERT_EQUAL(GBT_existing_tree(gb_main, "tree_nosuch"), "tree_test");
         }
 
         // changing tree order
@@ -1074,6 +1245,16 @@ void TEST_tree() {
             TEST_ASSERT_NO_ERROR(GBT_move_tree(gb_test, GBT_BEHIND, gb_nj_bs)); // move to bottom
             TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "4:tree_tree2|tree_nj|tree_nj_bs|tree_test");
 
+            TEST_ASSERT_EQUAL(GBT_tree_behind(gb_tree2), gb_nj);
+            TEST_ASSERT_EQUAL(GBT_tree_behind(gb_nj), gb_nj_bs);
+            TEST_ASSERT_EQUAL(GBT_tree_behind(gb_nj_bs), gb_test);
+            TEST_ASSERT_NULL(GBT_tree_behind(gb_test));
+
+            TEST_ASSERT_NULL(GBT_tree_infrontof(gb_tree2));
+            TEST_ASSERT_EQUAL(GBT_tree_infrontof(gb_nj), gb_tree2);
+            TEST_ASSERT_EQUAL(GBT_tree_infrontof(gb_nj_bs), gb_nj);
+            TEST_ASSERT_EQUAL(GBT_tree_infrontof(gb_test), gb_nj_bs);
+
             TEST_ASSERT_NO_ERROR(GBT_move_tree(gb_test, GBT_INFRONTOF, gb_tree2)); // move to top
             TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "4:tree_test|tree_tree2|tree_nj|tree_nj_bs");
 
@@ -1082,9 +1263,40 @@ void TEST_tree() {
 
             TEST_ASSERT_NO_ERROR(GBT_move_tree(gb_nj_bs, GBT_INFRONTOF, gb_nj));
             TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "4:tree_tree2|tree_test|tree_nj_bs|tree_nj");
-            
+
             TEST_ASSERT_NO_ERROR(GBT_move_tree(gb_nj_bs, GBT_INFRONTOF, gb_nj_bs)); // noop
             TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "4:tree_tree2|tree_test|tree_nj_bs|tree_nj");
+
+            TEST_ASSERT_EQUAL(GBT_get_tree_name(GBT_find_top_tree(gb_main)), "tree_tree2");
+
+            TEST_ASSERT_EQUAL(GBT_get_tree_name(GBT_get_next_tree(gb_nj_bs)), "tree_nj");
+            TEST_ASSERT_EQUAL(GBT_get_tree_name(GBT_get_next_tree(gb_nj)), "tree_tree2"); // last -> first
+        }
+
+        // check tree order is maintained by copy, rename and delete
+
+        {
+            // copy
+            TEST_ASSERT_ERROR_CONTAINS(GBT_copy_tree(gb_main, "tree_nosuch", "tree_whatever"), "tree 'tree_nosuch' not found");
+            TEST_ASSERT_ERROR_CONTAINS(GBT_copy_tree(gb_main, "tree_test",   "tree_test"),     "source- and dest-tree are the same");
+            TEST_ASSERT_ERROR_CONTAINS(GBT_copy_tree(gb_main, "tree_tree2",  "tree_test"),     "tree 'tree_test' already exists");
+
+            TEST_ASSERT_NO_ERROR(GBT_copy_tree(gb_main, "tree_test", "tree_test_copy"));
+            TEST_ASSERT(GBT_find_tree(gb_main, "tree_test_copy"));
+            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "5:tree_tree2|tree_test|tree_test_copy|tree_nj_bs|tree_nj");
+
+            // rename
+            TEST_ASSERT_NO_ERROR(GBT_rename_tree(gb_main, "tree_nj", "tree_renamed_nj"));
+            TEST_ASSERT(GBT_find_tree(gb_main, "tree_renamed_nj"));
+            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "5:tree_tree2|tree_test|tree_test_copy|tree_nj_bs|tree_renamed_nj");
+
+            TEST_ASSERT_NO_ERROR(GBT_rename_tree(gb_main, "tree_tree2", "tree_renamed_tree2"));
+            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "5:tree_renamed_tree2|tree_test|tree_test_copy|tree_nj_bs|tree_renamed_nj");
+
+            TEST_ASSERT_NO_ERROR(GBT_rename_tree(gb_main, "tree_test_copy", "tree_renamed_test_copy"));
+            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "5:tree_renamed_tree2|tree_test|tree_renamed_test_copy|tree_nj_bs|tree_renamed_nj");
+
+            // @@@ test delete
         }
     }
 
