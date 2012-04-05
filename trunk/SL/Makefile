@@ -2,6 +2,7 @@
 # when adding a new lib here, also add a dependency vs 'links' or 'links_non_perl' in ../Makefile 
 
 ARCHS_ALL = \
+	TREE_ADMIN/TREE_ADMIN.dummy  \
 	PTCLEAN/PTCLEAN.dummy  \
 	ALIVIEW/ALIVIEW.dummy  \
 	AP_TREE/AP_TREE.dummy  \

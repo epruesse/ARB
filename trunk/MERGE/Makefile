@@ -359,3 +359,4 @@ MG_trees.o: $(ARBHOME)/INCLUDE/cb.h
 MG_trees.o: $(ARBHOME)/INCLUDE/dupstr.h
 MG_trees.o: $(ARBHOME)/INCLUDE/smartptr.h
 MG_trees.o: $(ARBHOME)/INCLUDE/test_global.h
+MG_trees.o: $(ARBHOME)/INCLUDE/TreeAdmin.h

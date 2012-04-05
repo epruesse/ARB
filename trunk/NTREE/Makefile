@@ -229,6 +229,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_trees.o: $(ARBHOME)/INCLUDE/nds.h
 ad_trees.o: $(ARBHOME)/INCLUDE/smartptr.h
 ad_trees.o: $(ARBHOME)/INCLUDE/test_global.h
+ad_trees.o: $(ARBHOME)/INCLUDE/TreeAdmin.h
 ad_trees.o: $(ARBHOME)/INCLUDE/TreeRead.h
 ad_trees.o: $(ARBHOME)/INCLUDE/TreeWrite.h
 
