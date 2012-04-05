@@ -291,6 +291,7 @@ symlink_file ../SL/SEQUENCE/AP_sequence.hxx INCLUDE/AP_sequence.hxx &&
 symlink_file ../SL/TRANSLATE/Translate.hxx INCLUDE/Translate.hxx &&
 symlink_file ../SL/TREEDISP/TreeCallbacks.hxx INCLUDE/TreeCallbacks.hxx &&
 symlink_file ../SL/TREEDISP/TreeDisplay.hxx INCLUDE/TreeDisplay.hxx &&
+symlink_file ../SL/TREE_ADMIN/TreeAdmin.h INCLUDE/TreeAdmin.h &&
 symlink_file ../SL/TREE_READ/TreeRead.h INCLUDE/TreeRead.h &&
 symlink_file ../SL/TREE_WRITE/TreeWrite.h INCLUDE/TreeWrite.h &&
 symlink_file ../STAT/st_window.hxx INCLUDE/st_window.hxx &&

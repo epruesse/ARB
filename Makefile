@@ -827,6 +827,7 @@ ARCHS_NTREE = \
 		SL/LOCATION/LOCATION.a \
 		SL/TRANSLATE/TRANSLATE.a \
 		SL/TREEDISP/TREEDISP.a \
+		SL/TREE_ADMIN/TREE_ADMIN.a \
 		SL/TREE_READ/TREE_READ.a \
 		SL/TREE_WRITE/TREE_WRITE.a \
 		STAT/STAT.a \
@@ -1232,6 +1233,7 @@ SL/REGEXPR/REGEXPR.dummy:		links_non_perl
 SL/SEQIO/SEQIO.dummy:			links_non_perl
 SL/SEQUENCE/SEQUENCE.dummy:		links_non_perl
 SL/TRANSLATE/TRANSLATE.dummy:		links_non_perl
+SL/TREE_ADMIN/TREE_ADMIN.dummy:		links_non_perl
 SL/TREE_READ/TREE_READ.dummy:		links_non_perl
 SL/TREE_WRITE/TREE_WRITE.dummy:		links_non_perl
 SL/TREEDISP/TREEDISP.dummy:		links_non_perl
@@ -1868,6 +1870,7 @@ UNITS_WORKING = \
 	SL/REGEXPR/REGEXPR.test \
 	SL/SEQUENCE/SEQUENCE.test \
 	SL/TRANSLATE/TRANSLATE.test \
+	SL/TREE_ADMIN/TREE_ADMIN.test \
 	SL/TREE_READ/TREE_READ.test \
 	SL/TREE_WRITE/TREE_WRITE.test \
 	STAT/STAT.test \

@@ -11,26 +11,29 @@
 #include "ad_trees.hxx"
 #include "nt_tree_cmp.hxx"
 
+#include <TreeAdmin.h>
 #include <TreeRead.h>
 #include <TreeWrite.h>
+
 #include <awt_sel_boxes.hxx>
+
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_edit.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+
 #include <arbdbt.h>
 #include <arb_strbuf.h>
 #include <arb_file.h>
-#include <cctype>
 
+#include <cctype>
 
 #define nt_assert(bed) arb_assert(bed)
 
 extern GBDATA *GLOBAL_gb_main;
 
-static const char *AWAR_TREE_DEST     = "tmp/ad_tree/tree_dest";
 static const char *AWAR_TREE_SECURITY = "tmp/ad_tree/tree_security";
 static const char *AWAR_TREE_REM      = "tmp/ad_tree/tree_rem";
 
@@ -151,12 +154,13 @@ static void update_filter_cb(AW_root *root) {
     root->awar(AWAR_TREE_EXPORT_FILTER)->write_string(filter_type);
 }
 
-void create_trees_var(AW_root *aw_root, AW_default aw_def)
-{
-    AW_awar *awar_tree_name = aw_root->awar_string(AWAR_TREE_NAME,        0,  aw_def)->set_srt(GBT_TREE_AWAR_SRT);
-    aw_root->awar_string(AWAR_TREE_DEST,        0,  aw_def) ->set_srt(GBT_TREE_AWAR_SRT);
-    aw_root->awar_int(AWAR_TREE_SECURITY,       0,  aw_def);
-    aw_root->awar_string(AWAR_TREE_REM,         0,  aw_def);
+void create_trees_var(AW_root *aw_root, AW_default aw_def) {
+    AW_awar *awar_tree_name = aw_root->awar_string(AWAR_TREE_NAME, 0, aw_def)->set_srt(GBT_TREE_AWAR_SRT);
+
+    TreeAdmin::create_awars(aw_root, aw_def);
+
+    aw_root->awar_int   (AWAR_TREE_SECURITY, 0, aw_def);
+    aw_root->awar_string(AWAR_TREE_REM,      0, aw_def);
 
     AW_create_fileselection_awars(aw_root, AWAR_TREE_EXPORT, "", ".tree", "treefile", aw_def);
     aw_root->awar_int(AWAR_TREE_EXPORT_FORMAT, AD_TREE_EXPORT_FORMAT_NEWICK, aw_def)-> add_callback(update_filter_cb);
@@ -183,67 +187,6 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def)
     update_filter_cb(aw_root);
     tree_vars_callback(aw_root);
 }
-
-static GB_ERROR tree_append_remark(GBDATA *gb_tree, const char *add_to_remark) {
-    GB_ERROR  error       = 0;
-    GBDATA   *gb_remark   = GB_search(gb_tree, "remark", GB_STRING);
-    if (!gb_remark) error = GB_await_error();
-    else {
-        char *old_remark       = GB_read_string(gb_remark);
-        if (!old_remark) error = GB_await_error();
-        else {
-            GBS_strstruct *new_remark = GBS_stropen(2000);
-
-            GBS_strcat(new_remark, old_remark);
-            GBS_chrcat(new_remark, '\n');
-            GBS_strcat(new_remark, add_to_remark);
-
-            error = GB_write_string(gb_remark, GBS_mempntr(new_remark));
-
-            GBS_strforget(new_remark);
-        }
-        free(old_remark);
-    }
-    return error;
-}
-
-
-static void tree_copy_or_rename_cb(AW_window *aww, bool do_copy) {
-    AW_root  *aw_root   = aww->get_root();
-    AW_awar  *awar_tree = aw_root->awar(AWAR_TREE_NAME);
-    char     *source    = awar_tree->read_string();
-    char     *dest      = aw_root->awar(AWAR_TREE_DEST)->read_string();
-    GB_ERROR  error     = NULL;
-
-    if (!error && !dest[0]) error = "Please enter new tree name";
-    if (!error) {
-        error = GB_begin_transaction(GLOBAL_gb_main);
-        if (!error) {
-            if (do_copy) {
-                error = GBT_copy_tree(GLOBAL_gb_main, source, dest);
-                if (!error) {
-                    GBDATA *gb_new_tree = GBT_find_tree(GLOBAL_gb_main, dest);
-                    nt_assert(gb_new_tree);
-                    error = tree_append_remark(gb_new_tree, GBS_global_string("[created as copy of '%s']", source));
-                }
-            }
-            else {
-                error = GBT_rename_tree(GLOBAL_gb_main, source, dest);
-            }
-        }
-
-        if (!error) awar_tree->write_string(dest);
-        error = GB_end_transaction(GLOBAL_gb_main, error);
-    }
-
-    aww->hide_or_notify(error);
-
-    free(dest);
-    free(source);
-}
-
-static void tree_rename_cb(AW_window *aww) { tree_copy_or_rename_cb(aww, false); }
-static void tree_copy_cb  (AW_window *aww) { tree_copy_or_rename_cb(aww, true);  }
 
 static void tree_save_cb(AW_window *aww) {
     AW_root  *aw_root   = aww->get_root();
@@ -489,83 +432,6 @@ static AW_window *create_tree_import_window(AW_root *root)
     return (AW_window *)aws;
 }
 
-static void current_as_dest_treename_cb(AW_window *aww) {
-    AW_root *awr = aww->get_root();
-    awr->awar(AWAR_TREE_DEST)->write_string(awr->awar(AWAR_TREE_NAME)->read_char_pntr());
-}
-
-static void make_dest_treename_unique_cb(AW_window *aww) {
-    // generated a unique treename
-
-    AW_root *awr       = aww->get_root();
-    AW_awar *awar_dest = awr->awar(AWAR_TREE_DEST);
-
-    char *name = awar_dest->read_string();
-    int   len  = strlen(name);
-
-    for (int p = len-1; p >= 0; --p) {
-        bool auto_modified = isdigit(name[p]) || name[p] == '_';
-        if (!auto_modified) break;
-        name[p] = 0;
-    }
-
-    {
-        GB_transaction ta(GLOBAL_gb_main);
-
-        if (!GBT_find_tree(GLOBAL_gb_main, name)) {
-            awar_dest->write_string("");
-            awar_dest->write_string(name);
-        }
-        else {
-            for (int i = 2; ; i++) {
-                const char *testName = GBS_global_string("%s_%i", name, i);
-                if (!GBT_find_tree(GLOBAL_gb_main, testName)) { // found unique name
-                    awar_dest->write_string(testName);
-                    break;
-                }
-            }
-        }
-    }
-
-    free(name);
-}
-
-static AW_window *create_tree_copy_or_rename_window(AW_root *root, const char *win_id, const char *win_title, const char *go_label, void (*go_cb)(AW_window*)) {
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init(root, win_id, win_title);
-
-    aws->at(10, 10);
-    aws->auto_space(10, 10);
-
-    aws->at_newline();
-    aws->label("Current:");
-    aws->callback(current_as_dest_treename_cb);
-    aws->at_set_to(true, false, -10, 25);
-    aws->create_button("use_current", AWAR_TREE_NAME);
-
-    aws->at_newline();
-    aws->label("New:    ");
-    aws->at_set_to(true, false, -10, 30);
-    aws->create_input_field(AWAR_TREE_DEST);
-
-    aws->at_newline();
-    aws->callback(go_cb);
-    aws->create_autosize_button("GO", go_label, "");
-
-    aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_autosize_button("CLOSE", "Abort", "A");
-
-    aws->callback(make_dest_treename_unique_cb);
-    aws->create_autosize_button("UNIQUE", "Unique name", "U");
-    
-    aws->at_newline();
-
-    return aws;
-}
-
-static AW_window *create_tree_rename_window(AW_root *root) { return create_tree_copy_or_rename_window(root, "RENAME_TREE", "Rename Tree", "Rename Tree", tree_rename_cb); }
-static AW_window *create_tree_copy_window  (AW_root *root) { return create_tree_copy_or_rename_window(root, "COPY_TREE",   "Copy Tree",   "Copy Tree",   tree_copy_cb);   }
-
 static void ad_move_tree_info(AW_window *aww, AW_CL mode) {
     /* mode == 0 -> move info (=overwrite info from source tree)
      * mode == 1 -> compare info
@@ -589,8 +455,9 @@ static void ad_move_tree_info(AW_window *aww, AW_CL mode) {
     }
 
     if (!error) {
-        char *t1 = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
-        char *t2 = aww->get_root()->awar(AWAR_TREE_DEST)->read_string();
+        AW_root *awr = aww->get_root();
+        char    *t1  = awr->awar(AWAR_TREE_NAME)->read_string();
+        char    *t2  = TreeAdmin::dest_tree_awar(awr)->read_string();
 
         AWT_move_info(GLOBAL_gb_main, t1, t2, log_file, compare_node_info, delete_old_nodes, nodes_with_marked_only);
         if (log_file) {
@@ -624,13 +491,10 @@ static AW_window *create_tree_diff_window(AW_root *root) {
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
-    root->awar_string(AWAR_TREE_NAME);
-    root->awar_string(AWAR_TREE_DEST);
-
     aws->at("tree1");
     awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, AWAR_TREE_NAME);
     aws->at("tree2");
-    awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, AWAR_TREE_DEST);
+    awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, TreeAdmin::dest_tree_awar(root)->awar_name);
 
     aws->button_length(20);
 
@@ -656,13 +520,10 @@ static AW_window *create_tree_cmp_window(AW_root *root) {
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
-    root->awar_string(AWAR_TREE_NAME);
-    root->awar_string(AWAR_TREE_DEST);
-
     aws->at("tree1");
     awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, AWAR_TREE_NAME);
     aws->at("tree2");
-    awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, AWAR_TREE_DEST);
+    awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, TreeAdmin::dest_tree_awar(root)->awar_name);
 
     aws->at("move");
     aws->callback(ad_move_tree_info, 0); // move
@@ -677,38 +538,6 @@ static AW_window *create_tree_cmp_window(AW_root *root) {
     aws->create_toggle(AWAR_NODE_INFO_ONLY_MARKED);
 
     return aws;
-}
-static void ad_tr_delete_cb(AW_window *aww) {
-    AW_awar  *awar_tree = aww->get_root()->awar(AWAR_TREE_NAME);
-    char     *name      = awar_tree->read_string();
-    GBDATA   *gb_tree;
-    GB_ERROR  error     = NULL;
-
-    // 1. TA: switch to next tree
-    {
-        GB_transaction ta(GLOBAL_gb_main);
-        gb_tree = GBT_find_tree(GLOBAL_gb_main, name);
-        if (!gb_tree) error = "Please select tree to delete";
-        else {
-            GBDATA *gb_next = GBT_get_next_tree(gb_tree);
-            awar_tree->write_string(gb_next ? GBT_get_tree_name(gb_next) : "?????"); // @@@ globally define content for "no tree"
-        }
-        error = ta.close(error);
-    }
-
-    // 2. TA: delete old tree
-    if (!error) {
-        GB_transaction ta(GLOBAL_gb_main);
-        error = GB_delete(gb_tree);
-        error = ta.close(error);
-    }
-
-    if (error) {
-        aw_message(error);
-        awar_tree->write_string(name); // switch back to failed tree
-    }
-
-    free(name);
 }
 
 enum tree_pos {
@@ -784,16 +613,18 @@ AW_window *create_trees_window(AW_root *aw_root) {
 
         aws->button_length(20);
 
+        static TreeAdmin::Spec spec(GLOBAL_gb_main, AWAR_TREE_NAME);
+        
         aws->at("delete");
-        aws->callback(ad_tr_delete_cb);
+        aws->callback(TreeAdmin::delete_tree_cb, (AW_CL)&spec);
         aws->create_button("DELETE", "Delete", "D");
 
         aws->at("rename");
-        aws->callback(AW_POPUP, (AW_CL)create_tree_rename_window, 0);
+        aws->callback(AW_POPUP, (AW_CL)TreeAdmin::create_rename_window, (AW_CL)&spec);
         aws->create_button("RENAME", "Rename", "R");
 
         aws->at("copy");
-        aws->callback(AW_POPUP, (AW_CL)create_tree_copy_window, 0);
+        aws->callback(AW_POPUP, (AW_CL)TreeAdmin::create_copy_window, (AW_CL)&spec);
         aws->create_button("COPY", "Copy", "C");
 
         aws->at("move");
@@ -816,10 +647,6 @@ AW_window *create_trees_window(AW_root *aw_root) {
 
         aws->button_length(0);
 
-#if defined(DEBUG)
-#if defined(WARN_TODO)
-#warning implement tree move buttons
-#endif
         aws->at("upall");
         aws->callback(move_tree_pos, TREE_TOP);
         aws->create_button("moveTop", "#moveTop.bitmap", 0);
@@ -831,7 +658,6 @@ AW_window *create_trees_window(AW_root *aw_root) {
         aws->at("down");
         aws->callback(move_tree_pos, TREE_DOWN);
         aws->create_button("moveDown", "#moveDown.bitmap", 0);
-#endif // DEBUG
 
         aws->at("downall");
         aws->callback(move_tree_pos, TREE_BOTTOM);
