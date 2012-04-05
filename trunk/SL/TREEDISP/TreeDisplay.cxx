@@ -22,6 +22,7 @@
 #include <arb_strarray.h>
 
 #include <iostream>
+#include <arb_global_defs.h>
 
 /*!*************************
   class AP_tree
@@ -1717,7 +1718,7 @@ void AWT_graphic_tree::unload() {
 GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name, AW_CL /* cl_link_to_database */, AW_CL /* cl_insert_delete_cbs */) {
     GB_ERROR error = 0;
 
-    if (name[0] == 0 || strcmp(name, "tree_????") == 0) { // no tree selected
+    if (name[0] == 0 || strcmp(name, NO_TREE_SELECTED) == 0) {
         unload();
         zombies    = 0;
         duplicates = 0;

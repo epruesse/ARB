@@ -40,6 +40,7 @@
 #include <ctime>
 #include <cmath>
 #include <arb_sort.h>
+#include <arb_global_defs.h>
 
 // --------------------------------------------------------------------------------
 
@@ -144,7 +145,7 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
         aw_root->awar_string(AWAR_DIST_TREE_SORT_NAME, currentTree, def)->add_callback(delete_matrix_cb);
         free(currentTree);
     }
-    aw_root->awar_string(AWAR_DIST_TREE_COMP_NAME, "?????", def)->add_callback(delete_matrix_cb);
+    aw_root->awar_string(AWAR_DIST_TREE_COMP_NAME, NO_TREE_SELECTED, def)->add_callback(delete_matrix_cb);
 
     aw_root->awar_int(AWAR_DIST_BOOTSTRAP_COUNT, 1000, def);
 

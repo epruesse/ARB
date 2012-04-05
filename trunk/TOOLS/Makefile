@@ -187,6 +187,7 @@ arb_export_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arb_error.h
+arb_export_tree.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arb_string.h

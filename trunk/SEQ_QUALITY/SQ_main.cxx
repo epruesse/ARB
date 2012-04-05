@@ -25,6 +25,7 @@
 
 #include <arb_progress.h>
 #include <arbdbt.h>
+#include <arb_global_defs.h>
 
 // --------------------------------------------------------------------------------
 
@@ -77,9 +78,9 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
     arb_progress main_progress("Calculating sequence quality");
 
     {
-        char *treename = aw_root->awar(AWAR_TREE)->read_string(); // contains "tree_????" if no tree is selected
+        char *treename = aw_root->awar(AWAR_TREE)->read_string();
 
-        if (treename && strcmp(treename, "tree_????") != 0) {
+        if (treename && strcmp(treename, NO_TREE_SELECTED) != 0) {
             error = GB_push_transaction(gb_main);
 
             if (!error) {

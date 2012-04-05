@@ -27,6 +27,7 @@
 #include <arb_file.h>
 
 #include <list>
+#include <arb_global_defs.h>
 
 using namespace std;
 
@@ -113,7 +114,7 @@ struct AWT_tree_selection: public AW_DB_selection {
                 }
             }
         }
-        insert_default_selection("????", "????");
+        insert_default_selection("<no tree>", NO_TREE_SELECTED); 
     }
 };
 
