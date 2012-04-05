@@ -963,6 +963,7 @@ adtree.o: gb_local.h
 adtree.o: gb_prot.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_error.h
+adtree.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_progress.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_strarray.h

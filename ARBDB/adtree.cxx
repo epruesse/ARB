@@ -14,6 +14,7 @@
 #include <arb_strarray.h>
 #include <set>
 #include <limits.h>
+#include <arb_global_defs.h>
 
 #define GBT_PUT_DATA 1
 #define GBT_GET_SIZE 0
@@ -894,8 +895,12 @@ GBDATA *GBT_get_next_tree(GBDATA *gb_tree) {
     GBDATA *gb_other = NULL;
     if (gb_tree) {
         gb_other = GBT_tree_behind(gb_tree);
-        if (!gb_other) gb_other = GBT_find_top_tree(GB_get_root(gb_tree));
+        if (!gb_other) {
+            gb_other = GBT_find_top_tree(GB_get_root(gb_tree));
+            if (gb_other == gb_tree) gb_other = NULL;
+        }
     }
+    gb_assert(gb_other != gb_tree);
     return gb_other;
 }
 
@@ -976,18 +981,20 @@ const char *GBT_tree_info_string(GBDATA *gb_main, const char *tree_name, int max
 }
 
 long GBT_size_of_tree(GBDATA *gb_main, const char *tree_name) {
-    // returns number of inner nodes as in binary tree
-    //
+    // return the number of inner nodes in binary tree (or -1 if unknown)
     // Note:
     //        leafs                        = size + 1
     //        inner nodes in unrooted tree = size - 1
 
+    long    nnodes  = -1;
     GBDATA *gb_tree = GBT_find_tree(gb_main, tree_name);
-    GBDATA *gb_nnodes;
-    if (!gb_tree) return -1;
-    gb_nnodes       = GB_entry(gb_tree, "nnodes");
-    if (!gb_nnodes) return -1;
-    return GB_read_int(gb_nnodes);
+    if (gb_tree) {
+        GBDATA *gb_nnodes = GB_entry(gb_tree, "nnodes");
+        if (gb_nnodes) {
+            nnodes = GB_read_int(gb_nnodes);
+        }
+    }
+    return nnodes;
 }
 
 
@@ -1079,7 +1086,11 @@ static GBDATA *get_source_and_check_target_tree(GBDATA *gb_main, const char *sou
 
     error             = GBT_check_tree_name(source_tree);
     if (!error) error = GBT_check_tree_name(dest_tree);
-    
+
+    if (error && strcmp(source_tree, NO_TREE_SELECTED) == 0) {
+        error = "No tree selected";
+    }
+
     if (!error && strcmp(source_tree, dest_tree) == 0) error = "source- and dest-tree are the same";
 
     if (!error) {
@@ -1197,13 +1208,15 @@ void TEST_tree() {
         GB_transaction ta(gb_main);
 
         {
+            TEST_ASSERT_NULL(GBT_get_tree_name(NULL));
+            
             TEST_ASSERT_EQUAL(GBT_name_of_largest_tree(gb_main), "tree_test");
 
             TEST_ASSERT_EQUAL(GBT_get_tree_name(GBT_find_top_tree(gb_main)), "tree_test");
             TEST_ASSERT_EQUAL(GBT_name_of_bottom_tree(gb_main), "tree_nj_bs");
 
-            long nodes = GBT_size_of_tree(gb_main, "tree_nj_bs");
-            TEST_ASSERT_EQUAL(nodes, 5);
+            long inner_nodes = GBT_size_of_tree(gb_main, "tree_nj_bs");
+            TEST_ASSERT_EQUAL(inner_nodes, 5);
             TEST_ASSERT_EQUAL(GBT_tree_info_string(gb_main, "tree_nj_bs", -1), "tree_nj_bs       (6:0)  PRG=dnadist CORR=none FILTER=none PKG=ARB");
             TEST_ASSERT_EQUAL(GBT_tree_info_string(gb_main, "tree_nj_bs", 20), "tree_nj_bs                 (6:0)  PRG=dnadist CORR=none FILTER=none PKG=ARB");
 
@@ -1212,16 +1225,17 @@ void TEST_tree() {
 
                 TEST_ASSERT(tree);
 
-                size_t    count;
-                size_t    count2  = GBT_count_leafs(tree);
-                GB_CSTR  *species = GBT_get_names_of_species_in_tree(tree, &count);
-                StrArray  species2;
+                size_t leaf_count = GBT_count_leafs(tree);
 
+                size_t   species_count;
+                GB_CSTR *species = GBT_get_names_of_species_in_tree(tree, &species_count);
+
+                StrArray  species2;
                 for (int i = 0; species[i]; ++i) species2.put(strdup(species[i]));
 
-                TEST_ASSERT_EQUAL(count, count2);
-                TEST_ASSERT_EQUAL__BROKEN(long(count), nodes); // @@@ why differ?
-                char  *joined = GBT_join_names(species2, '*');
+                TEST_ASSERT_EQUAL(species_count, leaf_count);
+                TEST_ASSERT_EQUAL(long(species_count), inner_nodes+1);
+                char *joined = GBT_join_names(species2, '*');
                 TEST_ASSERT_EQUAL(joined, "CloButyr*CloButy2*CorGluta*CorAquat*CurCitre*CytAquat");
                 free(joined);
                 free(species);
@@ -1296,7 +1310,63 @@ void TEST_tree() {
             TEST_ASSERT_NO_ERROR(GBT_rename_tree(gb_main, "tree_test_copy", "tree_renamed_test_copy"));
             TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "5:tree_renamed_tree2|tree_test|tree_renamed_test_copy|tree_nj_bs|tree_renamed_nj");
 
-            // @@@ test delete
+            // delete
+
+            GBDATA *gb_nj_bs             = GBT_find_tree(gb_main, "tree_nj_bs");
+            GBDATA *gb_renamed_nj        = GBT_find_tree(gb_main, "tree_renamed_nj");
+            GBDATA *gb_renamed_test_copy = GBT_find_tree(gb_main, "tree_renamed_test_copy");
+            GBDATA *gb_renamed_tree2     = GBT_find_tree(gb_main, "tree_renamed_tree2");
+            GBDATA *gb_test              = GBT_find_tree(gb_main, "tree_test");
+
+            TEST_ASSERT_NO_ERROR(GB_delete(gb_renamed_tree2));
+            TEST_ASSERT_NO_ERROR(GB_delete(gb_renamed_test_copy));
+            TEST_ASSERT_NO_ERROR(GB_delete(gb_renamed_nj));
+
+            // .. two trees left
+
+            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "2:tree_test|tree_nj_bs");
+
+            TEST_ASSERT_EQUAL(GBT_find_largest_tree(gb_main), gb_test);
+            TEST_ASSERT_EQUAL(GBT_find_top_tree(gb_main), gb_test);
+            TEST_ASSERT_EQUAL(GBT_find_bottom_tree(gb_main), gb_nj_bs);
+            
+            TEST_ASSERT_EQUAL(GBT_get_next_tree(gb_test), gb_nj_bs);
+            TEST_ASSERT_EQUAL(GBT_get_next_tree(gb_nj_bs), gb_test);
+
+            TEST_ASSERT_NULL (GBT_tree_infrontof(gb_test));
+            TEST_ASSERT_EQUAL(GBT_tree_behind   (gb_test), gb_nj_bs);
+            
+            TEST_ASSERT_EQUAL(GBT_tree_infrontof(gb_nj_bs), gb_test);
+            TEST_ASSERT_NULL (GBT_tree_behind   (gb_nj_bs));
+
+            TEST_ASSERT_NO_ERROR(GBT_move_tree(gb_test, GBT_BEHIND, gb_nj_bs)); // move to bottom
+            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "2:tree_nj_bs|tree_test");
+            TEST_ASSERT_NO_ERROR(GBT_move_tree(gb_test, GBT_INFRONTOF, gb_nj_bs)); // move to top
+            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "2:tree_test|tree_nj_bs");
+            
+            TEST_ASSERT_NO_ERROR(GB_delete(gb_nj_bs));
+
+            // .. one tree left
+
+            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "1:tree_test");
+
+            TEST_ASSERT_EQUAL(GBT_find_largest_tree(gb_main), gb_test);
+            TEST_ASSERT_EQUAL(GBT_find_top_tree(gb_main), gb_test);
+            TEST_ASSERT_EQUAL(GBT_find_bottom_tree(gb_main), gb_test);
+            
+            TEST_ASSERT_NULL(GBT_get_next_tree(gb_test)); // no other tree left
+            TEST_ASSERT_NULL(GBT_tree_behind(gb_test));
+            TEST_ASSERT_NULL(GBT_tree_infrontof(gb_test));
+
+            TEST_ASSERT_NO_ERROR(GB_delete(gb_test));
+
+            // .. no tree left
+            
+            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "0:");
+
+            TEST_ASSERT_NULL(GBT_find_tree(gb_main, "tree_test"));
+            TEST_ASSERT_NULL(GBT_existing_tree(gb_main, "tree_whatever"));
+            TEST_ASSERT_NULL(GBT_find_largest_tree(gb_main));
         }
     }
 
