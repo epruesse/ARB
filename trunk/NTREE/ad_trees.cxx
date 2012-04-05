@@ -693,14 +693,14 @@ static void ad_tr_delete_cb(AW_window *aww) {
             GBDATA *gb_next = GBT_get_next_tree(gb_tree);
             awar_tree->write_string(gb_next ? GBT_get_tree_name(gb_next) : "?????"); // @@@ globally define content for "no tree"
         }
-        ta.close(error);
+        error = ta.close(error);
     }
 
     // 2. TA: delete old tree
     if (!error) {
         GB_transaction ta(GLOBAL_gb_main);
         error = GB_delete(gb_tree);
-        ta.close(error);
+        error = ta.close(error);
     }
 
     if (error) {
@@ -711,42 +711,60 @@ static void ad_tr_delete_cb(AW_window *aww) {
     free(name);
 }
 
-static void create_tree_last_window(AW_window *aww) {
-    GB_ERROR  error  = 0;
-    char     *source = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
+enum tree_pos {
+    TREE_TOP, 
+    TREE_UP, 
+    TREE_DOWN, 
+    TREE_BOTTOM, 
+};
 
-    GB_begin_transaction(GLOBAL_gb_main);
+static void move_tree_pos(AW_window *aww, AW_CL cl_treepos) {
+    // moves the tree in the list of trees
 
-    GBDATA *gb_tree_name = GBT_find_tree(GLOBAL_gb_main, source);
-    if (!gb_tree_name) {
-        error = GB_export_error("No tree selected.");
+    tree_pos  dest      = (tree_pos)cl_treepos;
+    char     *tree_name = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
+    GB_ERROR  error     = NULL;
+
+    GB_transaction ta(GLOBAL_gb_main);
+    GBDATA *gb_treedata   = GBT_get_tree_data(GLOBAL_gb_main);
+    GBDATA *gb_moved_tree = GB_entry(gb_treedata, tree_name);
+
+    if (!gb_moved_tree) {
+        error = "No tree selected";
     }
     else {
-        GBDATA *gb_bottom_tree = GBT_find_bottom_tree(GLOBAL_gb_main);
-        if (gb_bottom_tree && gb_bottom_tree != gb_tree_name) {
-            error = GBT_move_tree(gb_tree_name, GBT_BEHIND, gb_bottom_tree);
+        GBT_ORDER_MODE  move_mode;
+        GBDATA         *gb_target_tree = NULL;
+
+        switch (dest) {
+            case TREE_UP:
+                move_mode      = GBT_INFRONTOF;
+                gb_target_tree = GBT_tree_infrontof(gb_moved_tree);
+                if (gb_target_tree) break;
+                // fall-through
+            case TREE_BOTTOM:
+                move_mode      = GBT_BEHIND;
+                gb_target_tree = GBT_find_bottom_tree(GLOBAL_gb_main);
+                break;
+
+            case TREE_DOWN:
+                move_mode      = GBT_BEHIND;
+                gb_target_tree = GBT_tree_behind(gb_moved_tree);
+                if (gb_target_tree) break;
+                // fall-through
+            case TREE_TOP:
+                move_mode      = GBT_INFRONTOF;
+                gb_target_tree = GBT_find_top_tree(GLOBAL_gb_main);
+                break;
+        }
+
+        if (gb_target_tree && gb_target_tree != gb_moved_tree) {
+            error = GBT_move_tree(gb_moved_tree, move_mode, gb_target_tree);
         }
     }
 
-    if (!error) GB_commit_transaction(GLOBAL_gb_main);
-    else GB_abort_transaction(GLOBAL_gb_main);
-
     if (error) aw_message(error);
-
-    free(source);
-}
-
-static void move_tree_pos(AW_window *aww, AW_CL cl_offset) {
-    // moves the tree in the list of trees
-    int   offset = (int)cl_offset;
-
-    if (offset == 9999) {
-        create_tree_last_window(aww);
-    }
-    else {
-        aw_message("Not implemented yet.");
-        // @@@ FIXME: implement other cases
-    }
+    free(tree_name);
 }
 
 AW_window *create_trees_window(AW_root *aw_root) {
@@ -803,21 +821,21 @@ AW_window *create_trees_window(AW_root *aw_root) {
 #warning implement tree move buttons
 #endif
         aws->at("upall");
-        aws->callback(move_tree_pos, (AW_CL)-9999);
-        aws->create_button("moveUpAll", "#moveUpAll.bitmap", 0);
+        aws->callback(move_tree_pos, TREE_TOP);
+        aws->create_button("moveTop", "#moveTop.bitmap", 0);
 
         aws->at("up");
-        aws->callback(move_tree_pos, (AW_CL)-1);
+        aws->callback(move_tree_pos, TREE_UP);
         aws->create_button("moveUp", "#moveUp.bitmap", 0);
 
         aws->at("down");
-        aws->callback(move_tree_pos, (AW_CL)1);
+        aws->callback(move_tree_pos, TREE_DOWN);
         aws->create_button("moveDown", "#moveDown.bitmap", 0);
 #endif // DEBUG
 
         aws->at("downall");
-        aws->callback(move_tree_pos, (AW_CL)9999);
-        aws->create_button("moveDownAll", "#moveDownAll.bitmap", 0);
+        aws->callback(move_tree_pos, TREE_BOTTOM);
+        aws->create_button("moveBottom", "#moveBottom.bitmap", 0);
 
 
         aws->at("list");
