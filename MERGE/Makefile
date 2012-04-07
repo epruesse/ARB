@@ -58,9 +58,7 @@ MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arbtools.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-MG_adapt_ali.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-MG_adapt_ali.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/dupstr.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/smartptr.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/test_global.h

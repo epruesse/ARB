@@ -18,6 +18,7 @@
 #include <aw_awar.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
+#include <aw_window.hxx>
 #include <arb_progress.h>
 #include <arbdbt.h>
 
@@ -28,9 +29,9 @@ using namespace std;
 
 // find species/SAIs to preserve alignment
 
-#define AWAR_REMAP_CANDIDATE     "tmp/merge/remap_candidates"
-#define AWAR_REMAP_ALIGNMENT     "tmp/merge/remap_alignment"
-#define AWAR_REMAP_SEL_REFERENCE "tmp/merge/remap_reference"
+#define AWAR_REMAP_CANDIDATE     AWAR_MERGE_TMP "remap_candidates"
+#define AWAR_REMAP_ALIGNMENT     AWAR_MERGE_TMP "remap_alignment"
+#define AWAR_REMAP_SEL_REFERENCE AWAR_MERGE_TMP "remap_reference"
 
 struct preserve_para {
     AW_window         *window;
@@ -41,8 +42,8 @@ struct preserve_para {
 
 static void get_global_alignments(ConstStrArray& ali_names) {
     // get all alignment names available in both databases
-    GBT_get_alignment_names(ali_names, GLOBAL_gb_merge);
-    GBDATA *gb_presets = GBT_get_presets(GLOBAL_gb_dest);
+    GBT_get_alignment_names(ali_names, GLOBAL_gb_src);
+    GBDATA *gb_presets = GBT_get_presets(GLOBAL_gb_dst);
 
     int i;
     for (i = 0; ali_names[i]; ++i) {
@@ -169,13 +170,13 @@ typedef set< SmartPtr<Candidate> > Candidates;
 
 static void find_species_candidates(Candidates& candidates, const CharPtrArray& ali_names) {
     // collect names of all species in source database
-    GB_HASH      *src_species = GBT_create_species_hash(GLOBAL_gb_merge);
+    GB_HASH      *src_species = GBT_create_species_hash(GLOBAL_gb_src);
     long          src_count   = GBS_hash_count_elems(src_species);
     arb_progress  progress("Examining species", src_count);
     bool          aborted     = false;
 
     // find existing species in destination database
-    for (GBDATA *gb_dst_species = GBT_first_species(GLOBAL_gb_dest);
+    for (GBDATA *gb_dst_species = GBT_first_species(GLOBAL_gb_dst);
          gb_dst_species && !aborted;
          gb_dst_species = GBT_next_species(gb_dst_species))
     {
@@ -204,12 +205,12 @@ static void find_species_candidates(Candidates& candidates, const CharPtrArray& 
 
 static void find_SAI_candidates(Candidates& candidates, const CharPtrArray& ali_names) {
     // add all candidate SAIs to 'candidates'
-    GB_HASH      *src_SAIs  = GBT_create_SAI_hash(GLOBAL_gb_merge);
+    GB_HASH      *src_SAIs  = GBT_create_SAI_hash(GLOBAL_gb_src);
     long          src_count = GBS_hash_count_elems(src_SAIs);
     arb_progress  progress("Examining SAIs", src_count);
 
     // find existing SAIs in destination database
-    for (GBDATA *gb_dst_SAI = GBT_first_SAI(GLOBAL_gb_dest);
+    for (GBDATA *gb_dst_SAI = GBT_first_SAI(GLOBAL_gb_dst);
          gb_dst_SAI;
          gb_dst_SAI = GBT_next_SAI(gb_dst_SAI))
     {
@@ -238,8 +239,8 @@ static void find_SAI_candidates(Candidates& candidates, const CharPtrArray& ali_
 static void calculate_preserves_cb(AW_window *, AW_CL cl_para) {
     // FIND button (rebuild candidates list)
 
-    GB_transaction ta1(GLOBAL_gb_merge);
-    GB_transaction ta2(GLOBAL_gb_dest);
+    GB_transaction ta1(GLOBAL_gb_src);
+    GB_transaction ta2(GLOBAL_gb_dst);
 
     preserve_para *para = (preserve_para*)cl_para;
     clear_candidates(para);
@@ -387,18 +388,18 @@ static void raise_reference_cb(AW_window *aww) {
 
 static void test_references_cb(AW_window *aww) {
     char           *reference_species_names = aww->get_root()->awar(AWAR_REMAP_SPECIES_LIST)->read_string();
-    GB_transaction  tm(GLOBAL_gb_merge);
-    GB_transaction  td(GLOBAL_gb_dest);
+    GB_transaction  tm(GLOBAL_gb_src);
+    GB_transaction  td(GLOBAL_gb_dst);
     
-    MG_remaps test_mapping(GLOBAL_gb_merge, GLOBAL_gb_dest, true, reference_species_names); // will raise aw_message's in case of problems
+    MG_remaps test_mapping(GLOBAL_gb_src, GLOBAL_gb_dst, true, reference_species_names); // will raise aw_message's in case of problems
 
     free(reference_species_names);
 }
 
 static void init_preserve_awars(AW_root *aw_root) {
-    aw_root->awar_string(AWAR_REMAP_ALIGNMENT,     "", GLOBAL_gb_dest);
-    aw_root->awar_string(AWAR_REMAP_CANDIDATE,     "", GLOBAL_gb_dest);
-    aw_root->awar_string(AWAR_REMAP_SEL_REFERENCE, "", GLOBAL_gb_dest);
+    aw_root->awar_string(AWAR_REMAP_ALIGNMENT,     "", GLOBAL_gb_dst);
+    aw_root->awar_string(AWAR_REMAP_CANDIDATE,     "", GLOBAL_gb_dst);
+    aw_root->awar_string(AWAR_REMAP_SEL_REFERENCE, "", GLOBAL_gb_dst);
 }
 
 AW_window *MG_select_preserves_cb(AW_root *aw_root) {
@@ -471,8 +472,8 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
     para->cand_id = aws->create_selection_list(AWAR_REMAP_CANDIDATE, 0, "", 10, 30);
 
     {
-        GB_transaction ta1(GLOBAL_gb_merge);
-        GB_transaction ta2(GLOBAL_gb_dest);
+        GB_transaction ta1(GLOBAL_gb_src);
+        GB_transaction ta2(GLOBAL_gb_dst);
 
         init_alignments(para);
         clear_candidates(para);

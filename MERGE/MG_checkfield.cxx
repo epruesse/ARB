@@ -23,12 +23,14 @@
 
 #include <cctype>
 
-#define AWAR_SOURCE_FIELD "/tmp/merge1/chk/source"
-#define AWAR_DEST_FIELD   "/tmp/merge1/chk/dest"
-#define AWAR_TOUPPER      "/tmp/merge1/chk/ToUpper"
-#define AWAR_EXCLUDE      "/tmp/merge1/chk/exclude"
-#define AWAR_CORRECT      "/tmp/merge1/chk/correct"
-#define AWAR_ETAG         "/tmp/merge1/chk/tag"
+#define AWAR_CHECK AWAR_MERGE_TMP "chk/"
+
+#define AWAR_SOURCE_FIELD AWAR_CHECK "source"
+#define AWAR_DEST_FIELD   AWAR_CHECK "dest"
+#define AWAR_TOUPPER      AWAR_CHECK "ToUpper"
+#define AWAR_EXCLUDE      AWAR_CHECK "exclude"
+#define AWAR_CORRECT      AWAR_CHECK "correct"
+#define AWAR_ETAG         AWAR_CHECK "tag"
 
 
 static int gbs_cmp_strings(char *str1, char *str2, int *tab) { // returns 0 if strings are equal
@@ -196,19 +198,19 @@ static void mg_check_field_cb(AW_window *aww) {
         error = "Please select a dest field";
     }
     else {
-        error = GB_begin_transaction(GLOBAL_gb_merge);
+        error = GB_begin_transaction(GLOBAL_gb_src);
 
         if (!error) {
-            error = GB_begin_transaction(GLOBAL_gb_dest);
+            error = GB_begin_transaction(GLOBAL_gb_dst);
 
-            GBDATA *gb_species_data1 = GBT_get_species_data(GLOBAL_gb_merge);
-            GBDATA *gb_species_data2 = GBT_get_species_data(GLOBAL_gb_dest);
+            GBDATA *gb_species_data1 = GBT_get_species_data(GLOBAL_gb_src);
+            GBDATA *gb_species_data2 = GBT_get_species_data(GLOBAL_gb_dst);
 
             GBDATA *gb_species1;
             GBDATA *gb_species2;
 
             // First step: count selected species
-            arb_progress progress("Checking fields", mg_count_queried(GLOBAL_gb_merge));
+            arb_progress progress("Checking fields", mg_count_queried(GLOBAL_gb_src));
 
             // Delete all 'dest' fields in gb_database 2
             for (gb_species2 = GBT_first_species_rel_species_data(gb_species_data2);
@@ -277,8 +279,8 @@ static void mg_check_field_cb(AW_window *aww) {
                 }
             }
 
-            error = GB_end_transaction(GLOBAL_gb_merge, error);
-            error = GB_end_transaction(GLOBAL_gb_dest, error);
+            error = GB_end_transaction(GLOBAL_gb_src, error);
+            error = GB_end_transaction(GLOBAL_gb_dst, error);
         }
     }
     if (error) aw_message(error);
@@ -324,14 +326,14 @@ AW_window *create_mg_check_fields(AW_root *aw_root) {
     aws->at("tag");
     aws->create_input_field(AWAR_ETAG, 6);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_dest, aws, AWAR_SOURCE_FIELD,
+    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_SOURCE_FIELD,
                                             FIELD_FILTER_STRING, "source", 0, SPECIES_get_selector(), 20, 10);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_dest, aws, AWAR_DEST_FIELD,
+    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_DEST_FIELD,
                                             (1<<GB_STRING)|(1<<GB_INT), "dest", 0, SPECIES_get_selector(), 20, 10);
 
 #if defined(WARN_TODO)
-#warning check code above. Maybe one call has to get GLOBAL_gb_merge ?
+#warning check code above. Maybe one call has to get GLOBAL_gb_src ?
 #endif
 
 

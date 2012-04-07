@@ -23,69 +23,48 @@
 #include <arb_str.h>
 #include <arb_strbuf.h>
 
-#define AWAR1 "tmp/merge1/"
-#define AWAR2 "tmp/merge2/"
-#define AWAR_SPECIES1 AWAR1"name"
-#define AWAR_SPECIES2 AWAR2"name"
+#define AWAR_SPECIES_SRC AWAR_MERGE_TMP_SRC "name"
+#define AWAR_FIELD_SRC   AWAR_MERGE_TMP_SRC "field"
+#define AWAR_TAG_SRC     AWAR_MERGE_TMP_SRC "tag"
 
-#define AWAR_SPECIES1_DEST AWAR1"dest"
-#define AWAR_SPECIES2_DEST AWAR2"dest"
-#define AWAR_FIELD1 AWAR1"field"
-#define AWAR_FIELD2 AWAR2"field"
+#define AWAR_SPECIES_DST AWAR_MERGE_TMP_DST "name"
+#define AWAR_FIELD_DST   AWAR_MERGE_TMP_DST "field"
+#define AWAR_TAG_DST     AWAR_MERGE_TMP_DST "tag"
 
-#define AWAR_TAG1 AWAR1"tag"
-#define AWAR_TAG2 AWAR2"tag"
+#define AWAR_TAG_DEL AWAR_MERGE_TMP "tagdel"
+#define AWAR_APPEND  AWAR_MERGE_TMP "append"
 
-#define AWAR_TAG_DEL1 AWAR1"tagdel"
+static DbScanner *scanner_src = 0;
+static DbScanner *scanner_dst = 0;
 
-#define AWAR_APPEND AWAR2"append"
+const char *MG_left_AWAR_SPECIES_NAME() { return AWAR_SPECIES_SRC; }
 
-static DbScanner *ad_global_scanner1 = 0;
-static DbScanner *ad_global_scanner2 = 0;
-
-const char *MG_left_AWAR_SPECIES_NAME() { return AWAR_SPECIES1; }
-
-void MG_create_species_awars(AW_root *aw_root, AW_default aw_def)
-{
-    aw_root->awar_string(AWAR_SPECIES1, "",     aw_def);
-    aw_root->awar_string(AWAR_SPECIES2, "",     aw_def);
-    aw_root->awar_string(AWAR_SPECIES1_DEST, "",    aw_def);
-    aw_root->awar_string(AWAR_SPECIES2_DEST, "",    aw_def);
-    aw_root->awar_string(AWAR_FIELD1, "",   aw_def);
+void MG_create_species_awars(AW_root *aw_root, AW_default aw_def) {
+    aw_root->awar_string(AWAR_SPECIES_SRC, "", aw_def);
+    aw_root->awar_string(AWAR_SPECIES_DST, "", aw_def);
+    aw_root->awar_string(AWAR_FIELD_SRC,   "", aw_def);
     aw_root->awar_int(AWAR_APPEND);
 }
 
+static void MG_map_species(AW_root *aw_root, AW_CL db_nr) {
+    GBDATA     *gb_main   = get_gb_main(db_nr);
+    const char *awar_name = db_nr == 1 ? AWAR_SPECIES_SRC : AWAR_SPECIES_DST;
+    DbScanner  *scanner   = db_nr == 1 ? scanner_src : scanner_dst;
 
-static void AD_map_species1(AW_root *aw_root)
-{
-    GB_push_transaction(GLOBAL_gb_merge);
-    char   *source     = aw_root->awar(AWAR_SPECIES1)->read_string();
-    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_merge, source);
-
-    if (gb_species) map_db_scanner(ad_global_scanner1, gb_species, CHANGE_KEY_PATH);
-    GB_pop_transaction(GLOBAL_gb_merge);
-    delete source;
-}
-
-static void AD_map_species2(AW_root *aw_root)
-{
-    char *source = aw_root->awar(AWAR_SPECIES2)->read_string();
-    GB_push_transaction(GLOBAL_gb_dest);
-    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_dest, source);
-    if (gb_species) {
-        map_db_scanner(ad_global_scanner2, gb_species, CHANGE_KEY_PATH);
-    }
-    GB_pop_transaction(GLOBAL_gb_dest);
-    delete source;
+    GB_transaction ta(gb_main);
+    char   *selected_species = aw_root->awar(awar_name)->read_string();
+    GBDATA *gb_species       = GBT_find_species(gb_main, selected_species);
+    if (gb_species) map_db_scanner(scanner, gb_species, awar_name);
+    free(selected_species);
 }
 
 static GB_ERROR MG_transfer_fields_info(char *fieldname = NULL) {
-    GBDATA   *gb_key_data = GB_search(GLOBAL_gb_merge, CHANGE_KEY_PATH, GB_CREATE_CONTAINER);
+    GBDATA   *gb_key_data = GB_search(GLOBAL_gb_src, CHANGE_KEY_PATH, GB_CREATE_CONTAINER);
     GB_ERROR  error       = 0;
 
     if (!gb_key_data) error = GB_await_error();
     else {
-        if (!GB_search(GLOBAL_gb_dest, CHANGE_KEY_PATH, GB_CREATE_CONTAINER)) error = GB_await_error();
+        if (!GB_search(GLOBAL_gb_dst, CHANGE_KEY_PATH, GB_CREATE_CONTAINER)) error = GB_await_error();
         else {
             for (GBDATA *gb_key = GB_entry(gb_key_data, CHANGEKEY);
                  gb_key && !error;
@@ -98,7 +77,7 @@ static GB_ERROR MG_transfer_fields_info(char *fieldname = NULL) {
                         char *name = GB_read_string(gb_key_name);
 
                         if (!fieldname || strcmp(fieldname, name) == 0) {
-                            error = GBT_add_new_changekey(GLOBAL_gb_dest, name, (int)GB_read_int(gb_key_type));
+                            error = GBT_add_new_changekey(GLOBAL_gb_dst, name, (int)GB_read_int(gb_key_type));
                         }
                         free(name);
                     }
@@ -141,7 +120,7 @@ static GB_ERROR MG_transfer_one_species(AW_root *aw_root, MG_remaps& remap,
                 const char *origin        = GEN_origin_organism(gb_species1);
                 GBDATA     *dest_organism = dest_species_hash
                     ? (GBDATA*)GBS_read_hash(dest_species_hash, origin)
-                    : GEN_find_organism(GLOBAL_gb_dest, origin);
+                    : GEN_find_organism(GLOBAL_gb_dst, origin);
 
                 if (dest_organism) transfer_fields = true;
                 else {
@@ -201,7 +180,7 @@ static void MG_transfer_selected_species(AW_window *aww) {
     if (MG_copy_and_check_alignments(aww) != 0) return;
 
     AW_root  *aw_root = aww->get_root();
-    char     *source  = aw_root->awar(AWAR_SPECIES1)->read_string();
+    char     *source  = aw_root->awar(AWAR_SPECIES_SRC)->read_string();
     GB_ERROR  error   = NULL;
 
     if (!source || !source[0]) {
@@ -210,17 +189,17 @@ static void MG_transfer_selected_species(AW_window *aww) {
     else {
         arb_progress progress("Transferring selected species");
 
-        error             = GB_begin_transaction(GLOBAL_gb_merge);
-        if (!error) error = GB_begin_transaction(GLOBAL_gb_dest);
+        error             = GB_begin_transaction(GLOBAL_gb_src);
+        if (!error) error = GB_begin_transaction(GLOBAL_gb_dst);
 
         if (!error) {
-            MG_remaps rm(GLOBAL_gb_merge, GLOBAL_gb_dest, adaption_enabled(aw_root), get_reference_species_names(aw_root));
+            MG_remaps rm(GLOBAL_gb_src, GLOBAL_gb_dst, adaption_enabled(aw_root), get_reference_species_names(aw_root));
 
-            GBDATA *gb_species_data1 = GBT_get_species_data(GLOBAL_gb_merge);
-            GBDATA *gb_species_data2 = GBT_get_species_data(GLOBAL_gb_dest);
+            GBDATA *gb_species_data1 = GBT_get_species_data(GLOBAL_gb_src);
+            GBDATA *gb_species_data2 = GBT_get_species_data(GLOBAL_gb_dst);
 
-            bool is_genome_db1 = GEN_is_genome_db(GLOBAL_gb_merge, -1);
-            bool is_genome_db2 = GEN_is_genome_db(GLOBAL_gb_dest, -1);
+            bool is_genome_db1 = GEN_is_genome_db(GLOBAL_gb_src, -1);
+            bool is_genome_db2 = GEN_is_genome_db(GLOBAL_gb_dst, -1);
 
             error = MG_transfer_one_species(aw_root, rm,
                                             gb_species_data1, gb_species_data2,
@@ -232,8 +211,8 @@ static void MG_transfer_selected_species(AW_window *aww) {
 
         if (!error) error = MG_transfer_fields_info();
 
-        error = GB_end_transaction(GLOBAL_gb_merge, error);
-        error = GB_end_transaction(GLOBAL_gb_dest, error);
+        error = GB_end_transaction(GLOBAL_gb_src, error);
+        error = GB_end_transaction(GLOBAL_gb_dst, error);
     }
 
     if (error) aw_message(error);
@@ -243,28 +222,28 @@ static void MG_transfer_species_list(AW_window *aww) {
     if (MG_copy_and_check_alignments(aww) != 0) return;
 
     GB_ERROR error = NULL;
-    GB_begin_transaction(GLOBAL_gb_merge);
-    GB_begin_transaction(GLOBAL_gb_dest);
+    GB_begin_transaction(GLOBAL_gb_src);
+    GB_begin_transaction(GLOBAL_gb_dst);
 
-    bool is_genome_db1 = GEN_is_genome_db(GLOBAL_gb_merge, -1);
-    bool is_genome_db2 = GEN_is_genome_db(GLOBAL_gb_dest, -1);
+    bool is_genome_db1 = GEN_is_genome_db(GLOBAL_gb_src, -1);
+    bool is_genome_db2 = GEN_is_genome_db(GLOBAL_gb_dst, -1);
 
     GB_HASH *error_suppressor     = GBS_create_hash(50, GB_IGNORE_CASE);
-    GB_HASH *dest_species_hash    = GBT_create_species_hash(GLOBAL_gb_dest);
-    GB_HASH *source_organism_hash = is_genome_db1 ? GBT_create_organism_hash(GLOBAL_gb_merge) : 0;
+    GB_HASH *dest_species_hash    = GBT_create_species_hash(GLOBAL_gb_dst);
+    GB_HASH *source_organism_hash = is_genome_db1 ? GBT_create_organism_hash(GLOBAL_gb_src) : 0;
 
     AW_root   *aw_root = aww->get_root();
-    MG_remaps  rm(GLOBAL_gb_merge, GLOBAL_gb_dest, adaption_enabled(aw_root), get_reference_species_names(aw_root));
+    MG_remaps  rm(GLOBAL_gb_src, GLOBAL_gb_dst, adaption_enabled(aw_root), get_reference_species_names(aw_root));
 
     GBDATA *gb_species1;
-    arb_progress progress("Transferring listed species", mg_count_queried(GLOBAL_gb_merge));
+    arb_progress progress("Transferring listed species", mg_count_queried(GLOBAL_gb_src));
     
-    for (gb_species1 = GBT_first_species(GLOBAL_gb_merge);
+    for (gb_species1 = GBT_first_species(GLOBAL_gb_src);
          gb_species1;
          gb_species1 = GBT_next_species(gb_species1))
     {
         if (IS_QUERIED_SPECIES(gb_species1)) {
-            GBDATA *gb_species_data2 = GBT_get_species_data(GLOBAL_gb_dest);
+            GBDATA *gb_species_data2 = GBT_get_species_data(GLOBAL_gb_dst);
 
             error = MG_transfer_one_species(aw_root, rm,
                                             NULL, gb_species_data2,
@@ -283,14 +262,14 @@ static void MG_transfer_species_list(AW_window *aww) {
 
     if (!error) error = MG_transfer_fields_info();
 
-    error = GB_end_transaction(GLOBAL_gb_merge, error);
-    GB_end_transaction_show_error(GLOBAL_gb_dest, error, aw_message);
+    error = GB_end_transaction(GLOBAL_gb_src, error);
+    GB_end_transaction_show_error(GLOBAL_gb_dst, error, aw_message);
 }
 
 static void MG_transfer_fields_cb(AW_window *aww) {
     if (MG_copy_and_check_alignments(aww) != 0) return;
 
-    char     *field  = aww->get_root()->awar(AWAR_FIELD1)->read_string();
+    char     *field  = aww->get_root()->awar(AWAR_FIELD_SRC)->read_string();
     long      append = aww->get_root()->awar(AWAR_APPEND)->read_int();
     GB_ERROR  error  = 0;
 
@@ -301,18 +280,18 @@ static void MG_transfer_fields_cb(AW_window *aww) {
         error = "Transferring the 'name' field is forbidden";
     }
     else {
-        GB_begin_transaction(GLOBAL_gb_merge);
-        GB_begin_transaction(GLOBAL_gb_dest);
+        GB_begin_transaction(GLOBAL_gb_src);
+        GB_begin_transaction(GLOBAL_gb_dst);
 
-        GBDATA *gb_dest_species_data  = GBT_get_species_data(GLOBAL_gb_dest);
+        GBDATA *gb_dest_species_data  = GBT_get_species_data(GLOBAL_gb_dst);
         bool    transfer_of_alignment = GBS_string_matches(field, "ali_*/data", GB_MIND_CASE);
 
-        arb_progress progress("Transferring fields of listed", mg_count_queried(GLOBAL_gb_merge));
+        arb_progress progress("Transferring fields of listed", mg_count_queried(GLOBAL_gb_src));
 
         AW_root   *aw_root = aww->get_root();
-        MG_remaps  rm(GLOBAL_gb_merge, GLOBAL_gb_dest, adaption_enabled(aw_root), get_reference_species_names(aw_root));
+        MG_remaps  rm(GLOBAL_gb_src, GLOBAL_gb_dst, adaption_enabled(aw_root), get_reference_species_names(aw_root));
 
-        for (GBDATA *gb_species1 = GBT_first_species(GLOBAL_gb_merge);
+        for (GBDATA *gb_species1 = GBT_first_species(GLOBAL_gb_src);
              gb_species1 && !error;
              gb_species1 = GBT_next_species(gb_species1))
         {
@@ -384,8 +363,8 @@ static void MG_transfer_fields_cb(AW_window *aww) {
 
         if (!error) error = MG_transfer_fields_info(field);
 
-        error = GB_end_transaction(GLOBAL_gb_merge, error);
-        error = GB_end_transaction(GLOBAL_gb_dest, error);
+        error = GB_end_transaction(GLOBAL_gb_src, error);
+        error = GB_end_transaction(GLOBAL_gb_dst, error);
     }
 
     if (error) aw_message(error);
@@ -394,7 +373,7 @@ static void MG_transfer_fields_cb(AW_window *aww) {
 
 static AW_window *MG_transfer_fields(AW_root *aw_root)
 {
-    GB_transaction    dummy(GLOBAL_gb_merge);
+    GB_transaction    dummy(GLOBAL_gb_src);
     AW_window_simple *aws = new AW_window_simple;
 
     aws->init(aw_root, "MERGE_TRANSFER_FIELD", "TRANSFER FIELD");
@@ -416,8 +395,8 @@ static AW_window *MG_transfer_fields(AW_root *aw_root)
     aws->at("append");
     aws->create_toggle(AWAR_APPEND);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_merge,
-                                            aws, AWAR_FIELD1,
+    create_selection_list_on_itemfields(GLOBAL_gb_src,
+                                            aws, AWAR_FIELD_SRC,
                                             FIELD_FILTER_NDS,
                                             "scandb", "rescandb", SPECIES_get_selector(), 20, 10);
 
@@ -428,7 +407,7 @@ static void MG_move_field_cb(AW_window *aww) {
     if (MG_copy_and_check_alignments(aww) != 0) return;
 
     AW_root  *aw_root = aww->get_root();
-    char     *field   = aww->get_root()->awar(AWAR_FIELD1)->read_string();
+    char     *field   = aww->get_root()->awar(AWAR_FIELD_SRC)->read_string();
     GB_ERROR  error   = 0;
 
     if (field[0] == 0) {
@@ -439,18 +418,18 @@ static void MG_move_field_cb(AW_window *aww) {
     }
     else {
         arb_progress progress("Cross Move field");
-        error             = GB_begin_transaction(GLOBAL_gb_merge);
-        if (!error) error = GB_begin_transaction(GLOBAL_gb_dest);
+        error             = GB_begin_transaction(GLOBAL_gb_src);
+        if (!error) error = GB_begin_transaction(GLOBAL_gb_dst);
 
         if (!error) {
             GBDATA *gb_species1;
             GBDATA *gb_species2;
             {
-                char *source = aw_root->awar(AWAR_SPECIES1)->read_string();
-                char *dest   = aw_root->awar(AWAR_SPECIES2)->read_string();
+                char *source = aw_root->awar(AWAR_SPECIES_SRC)->read_string();
+                char *dest   = aw_root->awar(AWAR_SPECIES_DST)->read_string();
 
-                gb_species1 = GBT_find_species(GLOBAL_gb_merge, source);
-                gb_species2 = GBT_find_species(GLOBAL_gb_dest, dest);
+                gb_species1 = GBT_find_species(GLOBAL_gb_src, source);
+                gb_species2 = GBT_find_species(GLOBAL_gb_dst, dest);
 
                 free(dest);
                 free(source);
@@ -490,8 +469,8 @@ static void MG_move_field_cb(AW_window *aww) {
         }
         if (!error) error = MG_transfer_fields_info(field);
 
-        error = GB_end_transaction(GLOBAL_gb_merge, error);
-        error = GB_end_transaction(GLOBAL_gb_dest, error);
+        error = GB_end_transaction(GLOBAL_gb_src, error);
+        error = GB_end_transaction(GLOBAL_gb_dst, error);
     }
 
     if (error) aw_message(error);
@@ -501,7 +480,7 @@ static void MG_move_field_cb(AW_window *aww) {
 
 static AW_window *create_mg_move_fields(AW_root *aw_root)
 {
-    GB_transaction dummy(GLOBAL_gb_merge);
+    GB_transaction dummy(GLOBAL_gb_src);
 
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "MERGE_CROSS_MOVE_FIELD", "CROSS MOVE FIELD");
@@ -521,8 +500,8 @@ static AW_window *create_mg_move_fields(AW_root *aw_root)
     aws->create_button("HELP", "HELP");
 
 
-    create_selection_list_on_itemfields(GLOBAL_gb_merge,
-                                            aws, AWAR_FIELD1,
+    create_selection_list_on_itemfields(GLOBAL_gb_src,
+                                            aws, AWAR_FIELD_SRC,
                                             FIELD_FILTER_NDS,
                                             "scandb", "rescandb", SPECIES_get_selector(), 20, 10);
 
@@ -530,23 +509,23 @@ static AW_window *create_mg_move_fields(AW_root *aw_root)
 }
 
 static void MG_merge_tagged_field_cb(AW_window *aww) {
-    GB_transaction ta_merge(GLOBAL_gb_merge);
-    GB_ERROR       error = GB_begin_transaction(GLOBAL_gb_dest);
+    GB_transaction ta_merge(GLOBAL_gb_src);
+    GB_ERROR       error = GB_begin_transaction(GLOBAL_gb_dst);
 
     if (!error) {
         AW_root *awr      = aww->get_root();
-        char    *f1       = awr->awar(AWAR_FIELD1)->read_string();
-        char    *f2       = awr->awar(AWAR_FIELD2)->read_string();
-        char    *tag1     = awr->awar(AWAR_TAG1)->read_string();
-        char    *tag2     = awr->awar(AWAR_TAG2)->read_string();
-        char    *tag_del1 = awr->awar(AWAR_TAG_DEL1)->read_string();
+        char    *f1       = awr->awar(AWAR_FIELD_SRC)->read_string();
+        char    *f2       = awr->awar(AWAR_FIELD_DST)->read_string();
+        char    *tag1     = awr->awar(AWAR_TAG_SRC)->read_string();
+        char    *tag2     = awr->awar(AWAR_TAG_DST)->read_string();
+        char    *tag_del1 = awr->awar(AWAR_TAG_DEL)->read_string();
 
-        arb_progress progress("Merging tagged fields", mg_count_queried(GLOBAL_gb_merge));
+        arb_progress progress("Merging tagged fields", mg_count_queried(GLOBAL_gb_src));
         
-        GBDATA *gb_dest_species_data     = GBT_get_species_data(GLOBAL_gb_dest);
+        GBDATA *gb_dest_species_data     = GBT_get_species_data(GLOBAL_gb_dst);
         if (!gb_dest_species_data) error = GB_await_error();
         else {
-            for (GBDATA * gb_species1 = GBT_first_species(GLOBAL_gb_merge);
+            for (GBDATA * gb_species1 = GBT_first_species(GLOBAL_gb_src);
                  gb_species1 && !error;
                  gb_species1 = GBT_next_species(gb_species1))
             {
@@ -582,7 +561,7 @@ static void MG_merge_tagged_field_cb(AW_window *aww) {
         free(f2);
         free(f1);
     }
-    GB_end_transaction_show_error(GLOBAL_gb_dest, error, aw_message);
+    GB_end_transaction_show_error(GLOBAL_gb_dst, error, aw_message);
 }
 
 static AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
@@ -590,15 +569,15 @@ static AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
     static AW_window_simple *aws = 0;
     if (aws) return aws;
 
-    GB_transaction dummy(GLOBAL_gb_merge);
+    GB_transaction dummy(GLOBAL_gb_src);
 
-    aw_root->awar_string(AWAR_FIELD1, "full_name");
-    aw_root->awar_string(AWAR_FIELD2, "full_name");
+    aw_root->awar_string(AWAR_FIELD_SRC, "full_name");
+    aw_root->awar_string(AWAR_FIELD_DST, "full_name");
 
-    aw_root->awar_string(AWAR_TAG1, "S");
-    aw_root->awar_string(AWAR_TAG2, "D");
+    aw_root->awar_string(AWAR_TAG_SRC, "S");
+    aw_root->awar_string(AWAR_TAG_DST, "D");
 
-    aw_root->awar_string(AWAR_TAG_DEL1, "S*");
+    aw_root->awar_string(AWAR_TAG_DEL, "S*");
 
     aws = new AW_window_simple;
     aws->init(aw_root, "MERGE_TAGGED_FIELDS", "MERGE TAGGED FIELDS");
@@ -617,13 +596,13 @@ static AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
     aws->callback(AW_POPUP_HELP, (AW_CL)"mergetaggedfield.hlp");
     aws->create_button("HELP", "HELP");
 
-    aws->at("tag1");    aws->create_input_field(AWAR_TAG1, 5);
-    aws->at("tag2");    aws->create_input_field(AWAR_TAG2, 5);
+    aws->at("tag1");    aws->create_input_field(AWAR_TAG_SRC, 5);
+    aws->at("tag2");    aws->create_input_field(AWAR_TAG_DST, 5);
 
-    aws->at("del1");    aws->create_input_field(AWAR_TAG_DEL1, 5);
+    aws->at("del1");    aws->create_input_field(AWAR_TAG_DEL, 5);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_merge, aws, AWAR_FIELD1, FIELD_FILTER_NDS, "fields1", 0, SPECIES_get_selector(), 20, 10);
-    create_selection_list_on_itemfields(GLOBAL_gb_dest,  aws, AWAR_FIELD2, FIELD_FILTER_NDS, "fields2", 0, SPECIES_get_selector(), 20, 10);
+    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, FIELD_FILTER_NDS, "fields1", 0, SPECIES_get_selector(), 20, 10);
+    create_selection_list_on_itemfields(GLOBAL_gb_dst,  aws, AWAR_FIELD_DST, FIELD_FILTER_NDS, "fields2", 0, SPECIES_get_selector(), 20, 10);
 
     return (AW_window*)aws;
 }
@@ -632,8 +611,8 @@ static GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
     //! Make the alignment names equal
     ConstStrArray M_alignment_names;
     ConstStrArray D_alignment_names;
-    GBT_get_alignment_names(M_alignment_names, GLOBAL_gb_merge);
-    GBT_get_alignment_names(D_alignment_names, GLOBAL_gb_dest);
+    GBT_get_alignment_names(M_alignment_names, GLOBAL_gb_src);
+    GBT_get_alignment_names(D_alignment_names, GLOBAL_gb_dst);
 
     GB_ERROR    error = 0;
     const char *dest  = 0;
@@ -642,10 +621,10 @@ static GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
         error =  GB_export_error("No source sequences found");
     }
     else {
-        char *type = GBT_get_alignment_type_string(GLOBAL_gb_merge, M_alignment_names[0]);
+        char *type = GBT_get_alignment_type_string(GLOBAL_gb_src, M_alignment_names[0]);
 
         for (int d = D_alignment_names.size()-1; d>0; --d) {
-            char *type2 = GBT_get_alignment_type_string(GLOBAL_gb_dest, D_alignment_names[d]);
+            char *type2 = GBT_get_alignment_type_string(GLOBAL_gb_dst, D_alignment_names[d]);
             if (strcmp(type, type2) != 0) D_alignment_names.remove(d--);
             free(type2);
         }
@@ -700,13 +679,13 @@ static GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
                 break;
         }
         if (!error && dest && strcmp(M_alignment_names[0], dest) != 0) {
-            error = GBT_rename_alignment(GLOBAL_gb_merge, M_alignment_names[0], dest, 1, 1);
+            error = GBT_rename_alignment(GLOBAL_gb_src, M_alignment_names[0], dest, 1, 1);
             if (error) {
                 error = GBS_global_string("Failed to rename alignment '%s' to '%s' (Reason: %s)",
                                           M_alignment_names[0], dest, error);
             }
             else {
-                GBT_add_new_changekey(GLOBAL_gb_merge, GBS_global_string("%s/data", dest), GB_STRING);
+                GBT_add_new_changekey(GLOBAL_gb_src, GBS_global_string("%s/data", dest), GB_STRING);
             }
         }
         free(type);
@@ -726,16 +705,16 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
     int          autorenameall  = 0;
     GB_HASH     *D_species_hash = 0;
 
-    GB_push_my_security(GLOBAL_gb_merge);
-    GB_push_my_security(GLOBAL_gb_dest);
-    GB_begin_transaction(GLOBAL_gb_merge);
-    GB_begin_transaction(GLOBAL_gb_dest);
+    GB_push_my_security(GLOBAL_gb_src);
+    GB_push_my_security(GLOBAL_gb_dst);
+    GB_begin_transaction(GLOBAL_gb_src);
+    GB_begin_transaction(GLOBAL_gb_dst);
 
     error = MG_equal_alignments(true);
     if (error) goto end;
 
-    M_species_data = GBT_get_species_data(GLOBAL_gb_merge);
-    D_species_data = GBT_get_species_data(GLOBAL_gb_dest);
+    M_species_data = GBT_get_species_data(GLOBAL_gb_src);
+    D_species_data = GBT_get_species_data(GLOBAL_gb_dst);
 
     GBDATA *M_species;
     GBDATA *D_species;
@@ -747,7 +726,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
 
         // create hash containing all species from gb_dest,
         // but sized to hold all species from both DBs:
-        D_species_hash = GBT_create_species_hash_sized(GLOBAL_gb_dest, M_species_count+D_species_count);
+        D_species_hash = GBT_create_species_hash_sized(GLOBAL_gb_dst, M_species_count+D_species_count);
     }
 
     for (M_species = GB_entry(M_species_data, "species"); M_species; M_species = GB_nextEntry(M_species)) {
@@ -835,11 +814,11 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
     if (!error) error = MG_transfer_fields_info();
     if (!error) awr->awar(AWAR_SPECIES_NAME)->write_string(m_name);
 
-    error = GB_end_transaction(GLOBAL_gb_merge, error);
-    GB_end_transaction_show_error(GLOBAL_gb_dest, error, aw_message);
+    error = GB_end_transaction(GLOBAL_gb_src, error);
+    GB_end_transaction_show_error(GLOBAL_gb_dst, error, aw_message);
 
-    GB_pop_my_security(GLOBAL_gb_merge);
-    GB_pop_my_security(GLOBAL_gb_dest);
+    GB_pop_my_security(GLOBAL_gb_src);
+    GB_pop_my_security(GLOBAL_gb_dst);
 
     return error;
 }
@@ -849,32 +828,32 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
 //  ---------------------------
 
 static void mg_select_species1(GBDATA*,  AW_root *aw_root, const char *item_name) {
-    aw_root->awar(AWAR_SPECIES1)->write_string(item_name);
+    aw_root->awar(AWAR_SPECIES_SRC)->write_string(item_name);
 }
 static void mg_select_species2(GBDATA*,  AW_root *aw_root, const char *item_name) {
-    aw_root->awar(AWAR_SPECIES2)->write_string(item_name);
+    aw_root->awar(AWAR_SPECIES_DST)->write_string(item_name);
 }
 
 static GBDATA *mg_get_first_species_data1(GBDATA *, AW_root *, QUERY_RANGE) {
-    return GBT_get_species_data(GLOBAL_gb_merge);
+    return GBT_get_species_data(GLOBAL_gb_src);
 }
 static GBDATA *mg_get_first_species_data2(GBDATA *, AW_root *, QUERY_RANGE) {
-    return GBT_get_species_data(GLOBAL_gb_dest);
+    return GBT_get_species_data(GLOBAL_gb_dst);
 }
 
 static GBDATA *mg_get_selected_species1(GBDATA * /* gb_main */, AW_root *aw_root) {
-    GB_transaction dummy(GLOBAL_gb_merge);
-    char   *species_name            = aw_root->awar(AWAR_SPECIES1)->read_string();
+    GB_transaction dummy(GLOBAL_gb_src);
+    char   *species_name            = aw_root->awar(AWAR_SPECIES_SRC)->read_string();
     GBDATA *gb_species              = 0;
-    if (species_name[0]) gb_species = GBT_find_species(GLOBAL_gb_merge, species_name);
+    if (species_name[0]) gb_species = GBT_find_species(GLOBAL_gb_src, species_name);
     free(species_name);
     return gb_species;
 }
 static GBDATA *mg_get_selected_species2(GBDATA * /* gb_main */, AW_root *aw_root) {
-    GB_transaction dummy(GLOBAL_gb_dest);
-    char   *species_name            = aw_root->awar(AWAR_SPECIES2)->read_string();
+    GB_transaction dummy(GLOBAL_gb_dst);
+    char   *species_name            = aw_root->awar(AWAR_SPECIES_DST)->read_string();
     GBDATA *gb_species              = 0;
-    if (species_name[0]) gb_species = GBT_find_species(GLOBAL_gb_dest, species_name);
+    if (species_name[0]) gb_species = GBT_find_species(GLOBAL_gb_dst, species_name);
     free(species_name);
     return gb_species;
 }
@@ -902,8 +881,8 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
     static AW_window_simple_menu *aws = 0;
     if (aws) return (AW_window *)aws;
 
-    awr->awar_string(AWAR_REMAP_SPECIES_LIST, "ecoli", GLOBAL_gb_dest);
-    awr->awar_int(AWAR_REMAP_ENABLE, 0, GLOBAL_gb_dest);
+    awr->awar_string(AWAR_REMAP_SPECIES_LIST, "ecoli", GLOBAL_gb_dst);
+    awr->awar_int(AWAR_REMAP_ENABLE, 0, GLOBAL_gb_dst);
 
     aws = new AW_window_simple_menu;
     aws->init(awr, "MERGE_TRANSFER_SPECIES", "TRANSFER SPECIES");
@@ -922,10 +901,10 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
         QUERY::query_spec awtqs(MG_species_selector[0]);
         aws->create_menu("DB_I_Expert", "D");
 
-        awtqs.gb_main                = GLOBAL_gb_merge;
-        awtqs.gb_ref                 = GLOBAL_gb_dest;
+        awtqs.gb_main                = GLOBAL_gb_src;
+        awtqs.gb_ref                 = GLOBAL_gb_dst;
         awtqs.expect_hit_in_ref_list = false;
-        awtqs.species_name           = AWAR_SPECIES1;
+        awtqs.species_name           = AWAR_SPECIES_SRC;
         awtqs.tree_name              = 0;               // no selected tree here -> can't use tree related ACI commands without specifying a tree
         awtqs.select_bit             = 1;
         awtqs.ere_pos_fig            = "ere1";
@@ -948,18 +927,18 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
 
         create_query_box(aws, &awtqs, "db1");
 
-        DbScanner *scanner = create_db_scanner(GLOBAL_gb_merge, aws, "box1", 0, 0, 0, DB_SCANNER, 0, 0, FIELD_FILTER_NDS, awtqs.get_queried_itemtype());
-        ad_global_scanner1 = scanner;
-        aws->get_root()->awar(AWAR_SPECIES1)->add_callback(AD_map_species1);
+        DbScanner *scanner = create_db_scanner(GLOBAL_gb_src, aws, "box1", 0, 0, 0, DB_SCANNER, 0, 0, FIELD_FILTER_NDS, awtqs.get_queried_itemtype());
+        scanner_src = scanner;
+        aws->get_root()->awar(AWAR_SPECIES_SRC)->add_callback(MG_map_species, 1);
     }
     {
         QUERY::query_spec awtqs(MG_species_selector[1]);
         aws->create_menu("DB_II_Expert", "B");
 
-        awtqs.gb_main                = GLOBAL_gb_dest;
-        awtqs.gb_ref                 = GLOBAL_gb_merge;
+        awtqs.gb_main                = GLOBAL_gb_dst;
+        awtqs.gb_ref                 = GLOBAL_gb_src;
         awtqs.expect_hit_in_ref_list = true;
-        awtqs.species_name           = AWAR_SPECIES2;
+        awtqs.species_name           = AWAR_SPECIES_DST;
         awtqs.select_bit             = 1;
         awtqs.ere_pos_fig            = "ere2";
         awtqs.by_pos_fig             = "by2";
@@ -981,9 +960,9 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
 
         create_query_box(aws, &awtqs, "db2");
 
-        DbScanner *scanner = create_db_scanner(GLOBAL_gb_dest, aws, "box2", 0, 0, 0, DB_SCANNER, 0, 0, FIELD_FILTER_NDS, awtqs.get_queried_itemtype());
-        ad_global_scanner2 = scanner;
-        aws->get_root()->awar(AWAR_SPECIES2)->add_callback(AD_map_species2);
+        DbScanner *scanner = create_db_scanner(GLOBAL_gb_dst, aws, "box2", 0, 0, 0, DB_SCANNER, 0, 0, FIELD_FILTER_NDS, awtqs.get_queried_itemtype());
+        scanner_dst = scanner;
+        aws->get_root()->awar(AWAR_SPECIES_DST)->add_callback(MG_map_species, 2);
     }
 
     // big transfer buttons:

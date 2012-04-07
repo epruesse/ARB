@@ -14,17 +14,18 @@
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
+#include <aw_window.hxx>
 #include <arb_progress.h>
 
 // --------------------------------------------------------------------------------
 
-#define AWAR_MERGE_ADDID "tmp/merge1/addid"
-#define AWAR_DEST_ADDID  "tmp/merge2/addid"
+#define AWAR_ADDID_SRC  AWAR_MERGE_TMP_SRC "addid"
+#define AWAR_ADDID_DST  AWAR_MERGE_TMP_DST "addid"
 
-#define AWAR_ADDID_MATCH   "tmp/merge/addidmatch"
-#define AWAR_RENAME_STATUS "tmp/merge/renamestat"
-#define AWAR_ALLOW_DUPS    "tmp/merge/allowdups"
-#define AWAR_OVERRIDE      "tmp/merge/override"
+#define AWAR_ADDID_MATCH   AWAR_MERGE_TMP "addidmatch"
+#define AWAR_RENAME_STATUS AWAR_MERGE_TMP "renamestat"
+#define AWAR_ALLOW_DUPS    AWAR_MERGE_TMP "allowdups"
+#define AWAR_OVERRIDE      AWAR_MERGE_TMP "override"
 
 // --------------------------------------------------------------------------------
 
@@ -38,8 +39,8 @@ void MG_create_rename_awars(AW_root *aw_root, AW_default aw_def) {
 // --------------------------------------------------------------------------------
 
 static const char *addids_match_info(AW_root *aw_root) {
-    char       *addid1 = aw_root->awar(AWAR_MERGE_ADDID)->read_string();
-    char       *addid2 = aw_root->awar(AWAR_DEST_ADDID)->read_string();
+    char       *addid1 = aw_root->awar(AWAR_ADDID_SRC)->read_string();
+    char       *addid2 = aw_root->awar(AWAR_ADDID_DST)->read_string();
     const char *result = (strcmp(addid1, addid2) == 0) ? "Ok" : "MISMATCH!";
 
     free(addid2);
@@ -81,8 +82,8 @@ void MG_create_db_dependent_rename_awars(AW_root *aw_root, GBDATA *gb_merge, GBD
         }
 
         if (!error) {
-            AW_awar *awar_addid1 = aw_root->awar_string(AWAR_MERGE_ADDID, "xxx", gb_merge);
-            AW_awar *awar_addid2 = aw_root->awar_string(AWAR_DEST_ADDID, "xxx", gb_dest);
+            AW_awar *awar_addid1 = aw_root->awar_string(AWAR_ADDID_SRC, "xxx", gb_merge);
+            AW_awar *awar_addid2 = aw_root->awar_string(AWAR_ADDID_DST, "xxx", gb_dest);
 
             awar_addid1->unmap(); awar_addid1->map(gb_addid1);
             awar_addid2->unmap(); awar_addid2->map(gb_addid2);
@@ -145,8 +146,8 @@ static void rename_both_databases(AW_window *aww) {
     bool      allowDups = aw_root->awar(AWAR_ALLOW_DUPS)->read_int();
 
     if (strcmp(match, "Ok") == 0) {
-        error = renameDB("source", GLOBAL_gb_merge, allowDups);
-        if (!error) error = renameDB("destination", GLOBAL_gb_dest, allowDups);
+        error = renameDB("source", GLOBAL_gb_src, allowDups);
+        if (!error) error = renameDB("destination", GLOBAL_gb_dst, allowDups);
     }
     else {
         error = "Denying rename - additional fields have to match!";
@@ -188,10 +189,10 @@ AW_window *MG_merge_names_cb(AW_root *awr) {
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("addid1");
-        aws->create_input_field(AWAR_MERGE_ADDID, 10);
+        aws->create_input_field(AWAR_ADDID_SRC, 10);
 
         aws->at("addid2");
-        aws->create_input_field(AWAR_DEST_ADDID, 10);
+        aws->create_input_field(AWAR_ADDID_DST, 10);
 
         aws->at("dups");
         aws->label("Allow merging duplicates (dangerous! see HELP)");

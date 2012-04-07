@@ -562,18 +562,18 @@ int ARB_main(int argc, const char *argv[]) {
 
             if (mode == EXPORT) {
                 MG_create_all_awars(aw_root, AW_ROOT_DEFAULT, ":", "noname.arb");
-                GLOBAL_gb_merge = GBT_open(":", "rw");
-                if (!GLOBAL_gb_merge) {
+                GLOBAL_gb_src = GBT_open(":", "rw");
+                if (!GLOBAL_gb_src) {
                     error = GB_await_error();
                 }
                 else {
 #if defined(DEBUG)
-                    AWT_announce_db_to_browser(GLOBAL_gb_merge, "Current database (:)");
+                    AWT_announce_db_to_browser(GLOBAL_gb_src, "Current database (:)");
 #endif // DEBUG
 
-                    GLOBAL_gb_dest = GBT_open("noname.arb", "cw");
+                    GLOBAL_gb_dst = GBT_open("noname.arb", "cw");
 #if defined(DEBUG)
-                    AWT_announce_db_to_browser(GLOBAL_gb_dest, "New database (noname.arb)");
+                    AWT_announce_db_to_browser(GLOBAL_gb_dst, "New database (noname.arb)");
 #endif // DEBUG
 
                     MG_start_cb2(NULL, aw_root, true, true);

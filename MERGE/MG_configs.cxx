@@ -19,26 +19,24 @@
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
+#include <aw_window.hxx>
 #include <arbdb.h>
 
-#define AWAR_CONFIG_NAME1 "tmp/merge1/config_name"
-#define AWAR_CONFIG_DEST1 "tmp/merge1/config_dest"
-#define AWAR_CONFIG_NAME2 "tmp/merge2/config_name"
-#define AWAR_CONFIG_DEST2 "tmp/merge2/config_dest"
+#define AWAR_CONFIG_NAME_SRC AWAR_MERGE_TMP_SRC "name"
+#define AWAR_CONFIG_NAME_DST AWAR_MERGE_TMP_DST "name"
+#define AWAR_CONFIG_NEWNAME  AWAR_MERGE_TMP "newname"
 
 void MG_create_config_awar(AW_root *aw_root, AW_default aw_def)
 {
-    aw_root->awar_string(AWAR_CONFIG_NAME1, "",   aw_def);
-    aw_root->awar_string(AWAR_CONFIG_DEST1, "",   aw_def);
-    aw_root->awar_string(AWAR_CONFIG_NAME2, "",   aw_def);
-    aw_root->awar_string(AWAR_CONFIG_DEST2, "",   aw_def);
+    aw_root->awar_string(AWAR_CONFIG_NAME_SRC, "",   aw_def);
+    aw_root->awar_string(AWAR_CONFIG_NAME_DST, "",   aw_def);
+    aw_root->awar_string(AWAR_CONFIG_NEWNAME, "",   aw_def);
 }
 
-static void MG_config_rename_cb(AW_window *aww, GBDATA *gbd, int config_nr) {
-    const char *tsource = config_nr == 1 ? AWAR_CONFIG_NAME1 : AWAR_CONFIG_NAME2;
-    const char *tdest   = config_nr == 1 ? AWAR_CONFIG_DEST1 : AWAR_CONFIG_DEST2;
+static void MG_config_rename_cb(AW_window *aww, GBDATA *gbd, int db_nr) {
+    const char *tsource = db_nr == 1 ? AWAR_CONFIG_NAME_SRC : AWAR_CONFIG_NAME_DST;
     char       *source  = aww->get_root()->awar(tsource)->read_string();
-    char       *dest    = aww->get_root()->awar(tdest)->read_string();
+    char       *dest    = aww->get_root()->awar(AWAR_CONFIG_NEWNAME)->read_string();
 
     GB_ERROR error = GB_check_key(dest);
     if (!error) {
@@ -65,9 +63,14 @@ static void MG_config_rename_cb(AW_window *aww, GBDATA *gbd, int config_nr) {
     free(dest);
 }
 
-static AW_window *MG_create_config_rename_window1(AW_root *root) {
+static AW_window *MG_create_config_rename_window(AW_root *root, AW_CL db_nr) {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(root, "MERGE_RENAME_CONFIG_1", "CONFIGURATION RENAME 1");
+    if (db_nr == 1) {
+        aws->init(root, "MERGE_RENAME_CONFIG_1", "CONFIGURATION RENAME 1");
+    }
+    else {
+        aws->init(root, "MERGE_RENAME_CONFIG_2", "CONFIGURATION RENAME 2");
+    }
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback((AW_CB0)AW_POPDOWN);
@@ -78,46 +81,24 @@ static AW_window *MG_create_config_rename_window1(AW_root *root) {
     aws->create_autosize_button(0, "Please enter the new name\nof the configuration");
 
     aws->at("input");
-    aws->create_input_field(AWAR_CONFIG_DEST1, 15);
+    aws->create_input_field(AWAR_CONFIG_NEWNAME, 15);
 
     aws->at("ok");
-    aws->callback((AW_CB)MG_config_rename_cb, (AW_CL)GLOBAL_gb_merge, 1);
+    aws->callback((AW_CB)MG_config_rename_cb, (AW_CL)GLOBAL_gb_dst, db_nr);
     aws->create_button("GO", "GO", "G");
 
-    return (AW_window *)aws;
+    return aws;
 }
 
-static AW_window *MG_create_config_rename_window2(AW_root *root) {
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init(root, "MERGE_RENAME_CONFIG_2", "CONFIGURATION RENAME 2");
-    aws->load_xfig("ad_al_si.fig");
-
-    aws->callback((AW_CB0)AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
-
-    aws->at("label");
-    aws->create_autosize_button(0, "Please enter the new name\nof the configuration");
-
-    aws->at("input");
-    aws->create_input_field(AWAR_CONFIG_DEST2, 15);
-
-    aws->at("ok");
-    aws->callback((AW_CB)MG_config_rename_cb, (AW_CL)GLOBAL_gb_dest, 2);
-    aws->create_button("GO", "GO", "G");
-
-    return (AW_window *)aws;
-}
-
-static void MG_config_delete_cb(AW_window *aww, GBDATA *gbd, long config_nr) {
-
-    const char *config_name_awar = config_nr == 1 ? AWAR_CONFIG_NAME1 : AWAR_CONFIG_NAME2;
+static void MG_config_delete_cb(AW_window *aww, AW_CL db_nr) {
+    const char *config_name_awar = db_nr == 1 ? AWAR_CONFIG_NAME_SRC : AWAR_CONFIG_NAME_DST;
     char       *config_name      = aww->get_root()->awar(config_name_awar)->read_string();
 
-    GB_ERROR    error = GB_begin_transaction(gbd);
+    GBDATA   *gb_main = get_gb_main(db_nr);
+    GB_ERROR  error   = GB_begin_transaction(gb_main);
 
     if (!error) {
-        GBDATA *gb_config_data = GB_search(gbd, CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
+        GBDATA *gb_config_data = GB_search(gb_main, CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
         GBDATA *gb_config_name = GB_find_string(gb_config_data, "name", config_name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 
         if (gb_config_name) {
@@ -129,22 +110,22 @@ static void MG_config_delete_cb(AW_window *aww, GBDATA *gbd, long config_nr) {
         }
     }
 
-    GB_end_transaction_show_error(gbd, error, aw_message);
+    GB_end_transaction_show_error(gb_main, error, aw_message);
 
     free(config_name);
 }
 
 static void MG_transfer_config(AW_window *aww) {
     AW_root *awr    = aww->get_root();
-    char    *source = awr->awar(AWAR_CONFIG_NAME1)->read_string();
-    char    *dest   = awr->awar(AWAR_CONFIG_NAME1)->read_string();
+    char    *source = awr->awar(AWAR_CONFIG_NAME_SRC)->read_string();
+    char    *dest   = awr->awar(AWAR_CONFIG_NAME_SRC)->read_string();
 
-    GB_ERROR error = GB_begin_transaction(GLOBAL_gb_dest);
+    GB_ERROR error = GB_begin_transaction(GLOBAL_gb_dst);
     if (!error) {
-        error = GB_begin_transaction(GLOBAL_gb_merge);
+        error = GB_begin_transaction(GLOBAL_gb_src);
         if (!error) {
-            GBDATA *gb_config_data1 = GB_search(GLOBAL_gb_merge, CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
-            GBDATA *gb_config_data2 = GB_search(GLOBAL_gb_dest,  CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
+            GBDATA *gb_config_data1 = GB_search(GLOBAL_gb_src, CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
+            GBDATA *gb_config_data2 = GB_search(GLOBAL_gb_dst,  CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
             GBDATA *gb_cfgname_1    = GB_find_string(gb_config_data1, "name", source, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
             GBDATA *gb_cfgname_2    = GB_find_string(gb_config_data2, "name", dest,   GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 
@@ -161,8 +142,8 @@ static void MG_transfer_config(AW_window *aww) {
             }
         }
     }
-    error = GB_end_transaction(GLOBAL_gb_merge, error);
-    error = GB_end_transaction(GLOBAL_gb_dest, error);
+    error = GB_end_transaction(GLOBAL_gb_src, error);
+    error = GB_end_transaction(GLOBAL_gb_dst, error);
 
     if (error) aw_message(error);
 
@@ -188,25 +169,25 @@ AW_window *MG_merge_configs_cb(AW_root *awr) {
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("configs1");
-    awt_create_selection_list_on_configurations(GLOBAL_gb_merge, (AW_window *)aws, AWAR_CONFIG_NAME1);
+    awt_create_selection_list_on_configurations(GLOBAL_gb_src, aws, AWAR_CONFIG_NAME_SRC);
 
     aws->at("configs2");
-    awt_create_selection_list_on_configurations(GLOBAL_gb_dest, (AW_window *)aws, AWAR_CONFIG_NAME2);
+    awt_create_selection_list_on_configurations(GLOBAL_gb_dst, aws, AWAR_CONFIG_NAME_DST);
 
     aws->at("delete1");
-    aws->callback((AW_CB)MG_config_delete_cb, (AW_CL)GLOBAL_gb_merge, 1);
+    aws->callback(MG_config_delete_cb, 1);
     aws->create_button("DELETE CONFIG_DB1", "Delete Config");
 
     aws->at("delete2");
-    aws->callback((AW_CB)MG_config_delete_cb, (AW_CL)GLOBAL_gb_dest, 2);
+    aws->callback(MG_config_delete_cb, 2);
     aws->create_button("DELETE_CONFIG_DB2", "Delete Config");
 
     aws->at("rename1");
-    aws->callback((AW_CB1)AW_POPUP, (AW_CL)MG_create_config_rename_window1);
+    aws->callback(AW_POPUP, (AW_CL)MG_create_config_rename_window, 1);
     aws->create_button("RENAME_CONFIG_DB1", "Rename Config");
 
     aws->at("rename2");
-    aws->callback((AW_CB1)AW_POPUP, (AW_CL)MG_create_config_rename_window2);
+    aws->callback(AW_POPUP, (AW_CL)MG_create_config_rename_window, 2);
     aws->create_button("RENAME_CONFIG_DB2", "Rename Config");
 
     aws->at("transfer");
