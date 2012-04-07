@@ -87,7 +87,7 @@ public:
     const char *operator[](int i) const {
         arb_assert(ok());
         arb_assert(i >= 0 && size_t(i) <= elems); // allow sentinel access
-        return str[i];
+        return elems ? str[i] : NULL;
     }
     
     void swap(int i1, int i2) {

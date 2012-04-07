@@ -158,6 +158,40 @@ void GBT_names_move(CharPtrArray& names, int old_index, int new_index) {
 #ifdef UNIT_TESTS
 #include <test_unit.h>
 
+void TEST_StrArray() {
+    StrArray array;
+
+    TEST_ASSERT(array.empty());
+    TEST_ASSERT_EQUAL(array.size(), 0);
+    TEST_ASSERT_NULL(array[0]);
+
+    array.put(strdup("first"));
+
+    TEST_ASSERT(!array.empty());
+    TEST_ASSERT_EQUAL(array.size(), 1);
+    TEST_ASSERT_EQUAL(array[0], "first");
+    TEST_ASSERT_NULL(array[1]);
+
+    array.put(strdup("second"));
+    
+    TEST_ASSERT_EQUAL(array.size(), 2);
+    TEST_ASSERT_EQUAL(array[0], "first");
+    TEST_ASSERT_EQUAL(array[1], "second");
+    TEST_ASSERT_NULL(array[2]);
+
+    array.remove(0);
+
+    TEST_ASSERT_EQUAL(array.size(), 1);
+    TEST_ASSERT_EQUAL(array[0], "second");
+    TEST_ASSERT_NULL(array[1]);
+    
+    array.remove(0);
+
+    TEST_ASSERT(array.empty());
+    TEST_ASSERT_EQUAL(array.size(), 0);
+    TEST_ASSERT_NULL(array[0]);
+}
+
 #define TEST_SPLIT_JOIN(str,sep)                        \
     do {                                                \
         ConstStrArray cnames;                           \
