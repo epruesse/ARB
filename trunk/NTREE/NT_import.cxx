@@ -25,7 +25,7 @@
 extern GBDATA *GLOBAL_gb_main;
 
 static void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL) {
-    GLOBAL_gb_dest    = GLOBAL_gb_main;
+    GLOBAL_gb_dst     = GLOBAL_gb_main;
     AW_window *aww    = DBUI::create_species_query_window(awr, (AW_CL)GLOBAL_gb_main);
     DBUI::unquery_all();
     GB_ERROR   error  = MG_simple_merge(awr);
@@ -39,28 +39,28 @@ void NT_import_sequences(AW_window *aww, AW_CL, AW_CL) {
     /*! Opens the "Import Sequences" dialog from the ARB main window (ARB_NTREE)
      */
 
-    if (GLOBAL_gb_merge) {
+    if (GLOBAL_gb_src) {
 #if defined(DEBUG)
-        AWT_browser_forget_db(GLOBAL_gb_merge);
+        AWT_browser_forget_db(GLOBAL_gb_src);
 #endif // DEBUG
-        GB_close(GLOBAL_gb_merge);
+        GB_close(GLOBAL_gb_src);
     }
 
     AW_root *awr = aww->get_root();
 
     awr->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE); // value is overwritten below
 
-    GLOBAL_gb_merge = open_AWTC_import_window(aww->get_root(), "", false, GLOBAL_gb_main, (AW_RCB)nt_seq_load_cb, 0, 0);
+    GLOBAL_gb_src = open_AWTC_import_window(aww->get_root(), "", false, GLOBAL_gb_main, (AW_RCB)nt_seq_load_cb, 0, 0);
 
     // change awar values (import window just opened!)
 
     int gb_main_is_genom_db, gb_merge_is_genom_db;
     {
         GB_transaction t1(GLOBAL_gb_main);
-        GB_transaction t2(GLOBAL_gb_merge);
+        GB_transaction t2(GLOBAL_gb_src);
 
         gb_main_is_genom_db  = GEN_is_genome_db(GLOBAL_gb_main, 0);
-        gb_merge_is_genom_db = GEN_is_genome_db(GLOBAL_gb_merge, gb_main_is_genom_db);
+        gb_merge_is_genom_db = GEN_is_genome_db(GLOBAL_gb_src, gb_main_is_genom_db);
     }
 
     nt_assert(gb_main_is_genom_db == gb_merge_is_genom_db);

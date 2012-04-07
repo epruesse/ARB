@@ -12,8 +12,13 @@
 #ifndef MG_MERGE_HXX
 #define MG_MERGE_HXX
 
-extern GBDATA *GLOBAL_gb_merge;
-extern GBDATA *GLOBAL_gb_dest;
+#ifndef ARB_CORE_H
+#include <arb_core.h>
+#endif
+
+
+extern GBDATA *GLOBAL_gb_src;
+extern GBDATA *GLOBAL_gb_dst;
 
 AW_window *create_MG_main_window(AW_root *aw_root);
 void       MG_create_all_awars(AW_root *awr, AW_default aw_def, const char *fname_one = "db1.arb", const char *fname_two = "db2.arb");

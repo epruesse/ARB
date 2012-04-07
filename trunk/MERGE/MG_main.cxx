@@ -24,25 +24,25 @@
 #include <arb_progress.h>
 #include <arb_file.h>
 
-GBDATA *GLOBAL_gb_merge = NULL;
-GBDATA *GLOBAL_gb_dest  = NULL;
+GBDATA *GLOBAL_gb_src = NULL;
+GBDATA *GLOBAL_gb_dst = NULL;
 
 STATIC_ATTRIBUTED(__ATTR__NORETURN, void MG_exit(AW_window *aww, AW_CL cl_reload_db2, AW_CL)) {
     int reload_db2 = (int)cl_reload_db2;
 
     if (reload_db2) {
-        char       *db2_name = aww->get_root()->awar(AWAR_MAIN_DB"/file_name")->read_string();
+        char       *db2_name = aww->get_root()->awar(AWAR_DB_DST"/file_name")->read_string();
         const char *cmd      = GBS_global_string("arb_ntree '%s' &", db2_name);
         int         result   = system(cmd);
         if (result != 0) fprintf(stderr, "Error running '%s'\n", cmd);
         free(db2_name);
     }
 
-    aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_merge);
-    aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_dest);
+    aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_src);
+    aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_dst);
     
-    GB_close(GLOBAL_gb_merge);
-    GB_close(GLOBAL_gb_dest);
+    GB_close(GLOBAL_gb_src);
+    GB_close(GLOBAL_gb_dst);
     
     exit(EXIT_SUCCESS);
 }
@@ -51,13 +51,13 @@ static bool mg_save_enabled = true;
 
 static void MG_save_merge_cb(AW_window *aww)
 {
-    char *name = aww->get_root()->awar(AWAR_MERGE_DB"/file_name")->read_string();
-    GB_begin_transaction(GLOBAL_gb_merge);
-    GBT_check_data(GLOBAL_gb_merge, 0);
-    GB_commit_transaction(GLOBAL_gb_merge);
-    GB_ERROR error = GB_save(GLOBAL_gb_merge, name, "b");
+    char *name = aww->get_root()->awar(AWAR_DB_SRC"/file_name")->read_string();
+    GB_begin_transaction(GLOBAL_gb_src);
+    GBT_check_data(GLOBAL_gb_src, 0);
+    GB_commit_transaction(GLOBAL_gb_src);
+    GB_ERROR error = GB_save(GLOBAL_gb_src, name, "b");
     if (error) aw_message(error);
-    else AW_refresh_fileselection(aww->get_root(), AWAR_MERGE_DB);
+    else AW_refresh_fileselection(aww->get_root(), AWAR_DB_SRC);
     delete name;
 }
 
@@ -87,17 +87,17 @@ static AW_window *MG_save_source_cb(AW_root *aw_root, char *base_name)
 
 static void MG_save_cb(AW_window *aww)
 {
-    char *name = aww->get_root()->awar(AWAR_MAIN_DB"/file_name")->read_string();
-    char *type = aww->get_root()->awar(AWAR_MAIN_DB"/type")->read_string();
+    char *name = aww->get_root()->awar(AWAR_DB_DST"/file_name")->read_string();
+    char *type = aww->get_root()->awar(AWAR_DB_DST"/type")->read_string();
 
     arb_progress progress("Saving database");
-    GB_begin_transaction(GLOBAL_gb_dest);
-    GBT_check_data(GLOBAL_gb_dest, 0);
-    GB_commit_transaction(GLOBAL_gb_dest);
+    GB_begin_transaction(GLOBAL_gb_dst);
+    GBT_check_data(GLOBAL_gb_dst, 0);
+    GB_commit_transaction(GLOBAL_gb_dst);
     
-    GB_ERROR error = GB_save(GLOBAL_gb_dest, name, type);
+    GB_ERROR error = GB_save(GLOBAL_gb_dst, name, type);
     if (error) aw_message(error);
-    else AW_refresh_fileselection(aww->get_root(), AWAR_MAIN_DB);
+    else AW_refresh_fileselection(aww->get_root(), AWAR_DB_DST);
 
     free(type);
     free(name);
@@ -107,7 +107,7 @@ static AW_window *MG_save_result_cb(AW_root *aw_root, char *base_name)
 {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
-    aw_root->awar_string(AWAR_DB_COMMENT, "<no description>", GLOBAL_gb_dest);
+    aw_root->awar_string(AWAR_DB_COMMENT, "<no description>", GLOBAL_gb_dst);
 
     aws = new AW_window_simple;
     aws->init(aw_root, "MERGE_SAVE_WHOLE_DB", "SAVE WHOLE DATABASE");
@@ -120,7 +120,7 @@ static AW_window *MG_save_result_cb(AW_root *aw_root, char *base_name)
 
     aws->at("user");
     aws->label("Type");
-    aws->create_option_menu(AWAR_MAIN_DB"/type");
+    aws->create_option_menu(AWAR_DB_DST"/type");
     aws->insert_option("Binary", "B", "b");
     aws->insert_option("Bin (with FastLoad File)", "f", "bm");
     aws->update_option_menu();
@@ -142,16 +142,16 @@ static AW_window *MG_save_result_cb(AW_root *aw_root, char *base_name)
 }
 
 static void MG_save_quick_result_cb(AW_window *aww) {
-    char *name = aww->get_root()->awar(AWAR_MAIN_DB"/file_name")->read_string();
+    char *name = aww->get_root()->awar(AWAR_DB_DST"/file_name")->read_string();
 
     arb_progress progress("Saving database");
-    GB_begin_transaction(GLOBAL_gb_dest);
-    GBT_check_data(GLOBAL_gb_dest, 0);
-    GB_commit_transaction(GLOBAL_gb_dest);
+    GB_begin_transaction(GLOBAL_gb_dst);
+    GBT_check_data(GLOBAL_gb_dst, 0);
+    GB_commit_transaction(GLOBAL_gb_dst);
     
-    GB_ERROR error = GB_save_quick_as(GLOBAL_gb_dest, name);
+    GB_ERROR error = GB_save_quick_as(GLOBAL_gb_dst, name);
     if (error) aw_message(error);
-    else AW_refresh_fileselection(aww->get_root(), AWAR_MAIN_DB);
+    else AW_refresh_fileselection(aww->get_root(), AWAR_DB_DST);
 
     free(name);
 }
@@ -184,14 +184,14 @@ void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest
     mg_save_enabled = save_enabled;
 
     {
-        GB_transaction ta_merge(GLOBAL_gb_merge);
-        GB_transaction ta_dest(GLOBAL_gb_dest);
+        GB_transaction ta_merge(GLOBAL_gb_src);
+        GB_transaction ta_dest(GLOBAL_gb_dst);
 
-        GBT_mark_all(GLOBAL_gb_dest, 0); // unmark everything in dest DB
+        GBT_mark_all(GLOBAL_gb_dst, 0); // unmark everything in dest DB
 
         // set DB-type to non-genome (compatibility to old DBs)
         // when exporting to new DB (dest_is_new == true) -> use DB-type of merge-DB
-        bool merge_is_genome = GEN_is_genome_db(GLOBAL_gb_merge, 0);
+        bool merge_is_genome = GEN_is_genome_db(GLOBAL_gb_src, 0);
 
         int dest_genome = 0;
         if (dest_is_new) {
@@ -203,23 +203,23 @@ void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest
             }
         }
 
-        GEN_is_genome_db(GLOBAL_gb_dest, dest_genome); // does not change anything if type is already defined
+        GEN_is_genome_db(GLOBAL_gb_dst, dest_genome); // does not change anything if type is already defined
     }
 
     {
-        GB_transaction ta_merge(GLOBAL_gb_merge);
-        GB_transaction ta_dest(GLOBAL_gb_dest);
+        GB_transaction ta_merge(GLOBAL_gb_src);
+        GB_transaction ta_dest(GLOBAL_gb_dst);
 
-        GB_change_my_security(GLOBAL_gb_dest, 6);
-        GB_change_my_security(GLOBAL_gb_merge, 6);
+        GB_change_my_security(GLOBAL_gb_dst, 6);
+        GB_change_my_security(GLOBAL_gb_src, 6);
         if (aww) aww->hide();
 
-        MG_create_db_dependent_awars(aw_root, GLOBAL_gb_merge, GLOBAL_gb_dest);
+        MG_create_db_dependent_awars(aw_root, GLOBAL_gb_src, GLOBAL_gb_dst);
     }
 
     {
-        GB_transaction ta_merge(GLOBAL_gb_merge);
-        GB_transaction ta_dest(GLOBAL_gb_dest);
+        GB_transaction ta_merge(GLOBAL_gb_src);
+        GB_transaction ta_dest(GLOBAL_gb_dst);
 
         MG_set_renamed(false, aw_root, "Not renamed yet.");
 
@@ -232,8 +232,8 @@ void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest
 #endif // DEBUG
 
         awm->create_menu("File", "F", AWM_ALL);
-        if (mg_save_enabled && GB_read_clients(GLOBAL_gb_merge)>=0) {
-            awm->insert_menu_topic("save_DB1", "Save Data Base I ...",      "S", "save_as.hlp", AWM_ALL, AW_POPUP, (AW_CL)MG_save_source_cb, (AW_CL)AWAR_MERGE_DB);
+        if (mg_save_enabled && GB_read_clients(GLOBAL_gb_src)>=0) {
+            awm->insert_menu_topic("save_DB1", "Save Data Base I ...",      "S", "save_as.hlp", AWM_ALL, AW_POPUP, (AW_CL)MG_save_source_cb, (AW_CL)AWAR_DB_SRC);
         }
 
         awm->insert_menu_topic("quit", "Quit",              "Q", "quit.hlp", AWM_ALL, MG_exit, 0, 0);
@@ -248,7 +248,7 @@ void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest
 
         awm->button_length(30);
 
-        if (GB_read_clients(GLOBAL_gb_merge)>=0) { // merge two databases
+        if (GB_read_clients(GLOBAL_gb_src)>=0) { // merge two databases
             awm->at("alignment");
             awm->callback((AW_CB1)AW_POPUP, (AW_CL)MG_merge_alignment_cb);
             awm->help_text("mg_alignment.hlp");
@@ -283,9 +283,9 @@ void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest
         awm->help_text("mg_configs.hlp");
         awm->create_button("TRANSFER_CONFIGS", "Transfer configurations ...");
 
-        if (mg_save_enabled && GB_read_clients(GLOBAL_gb_dest)>=0) {      // No need to save when importing data
+        if (mg_save_enabled && GB_read_clients(GLOBAL_gb_dst)>=0) {      // No need to save when importing data
             awm->at("save");
-            awm->callback(AW_POPUP, (AW_CL)MG_save_result_cb, (AW_CL)AWAR_MAIN_DB);
+            awm->callback(AW_POPUP, (AW_CL)MG_save_result_cb, (AW_CL)AWAR_DB_DST);
             awm->create_button("SAVE_WHOLE_DB2", "Save whole DB II as ...");
 
             awm->at("save_quick");
@@ -297,10 +297,10 @@ void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest
         awm->button_length(15);
 
         awm->at("db1");
-        awm->create_button(0, AWAR_MERGE_DB"/file_name");
+        awm->create_button(0, AWAR_DB_SRC"/file_name");
 
         awm->at("db2");
-        awm->create_button(0, AWAR_MAIN_DB"/file_name");
+        awm->create_button(0, AWAR_DB_DST"/file_name");
 
         awm->button_length(0);
         awm->shadow_width(1);
@@ -317,7 +317,7 @@ static void MG_start_cb(AW_window *aww)
     AW_root  *awr   = aww->get_root();
     GB_ERROR  error = 0;
     {
-        char *merge = awr->awar(AWAR_MERGE_DB"/file_name")->read_string();
+        char *merge = awr->awar(AWAR_DB_SRC"/file_name")->read_string();
         if (!strlen(merge) || (strcmp(merge, ":") && GB_size_of_file(merge)<=0)) {
             error = GBS_global_string("Cannot find DB I '%s'", merge);
         }
@@ -325,20 +325,20 @@ static void MG_start_cb(AW_window *aww)
             arb_progress progress("Loading databases");
 
 #if defined(WARN_TODO)
-#warning where are GLOBAL_gb_merge / GLOBAL_gb_dest closed ?
+#warning where are GLOBAL_gb_src / GLOBAL_gb_dst closed ?
 #warning when closing them, call AWT_browser_forget_db as well
 #endif
             progress.subtitle("DATABASE I");
-            GLOBAL_gb_merge             = GBT_open(merge, "rw");
-            if (!GLOBAL_gb_merge) error = GB_await_error();
+            GLOBAL_gb_src             = GBT_open(merge, "rw");
+            if (!GLOBAL_gb_src) error = GB_await_error();
             else {
 #if defined(DEBUG)
-                AWT_announce_db_to_browser(GLOBAL_gb_merge, GBS_global_string("Database I (source; %s)", merge));
+                AWT_announce_db_to_browser(GLOBAL_gb_src, GBS_global_string("Database I (source; %s)", merge));
 #endif // DEBUG
 
                 progress.subtitle("DATABASE II");
 
-                char       *main      = awr->awar(AWAR_MAIN_DB"/file_name")->read_string();
+                char       *main      = awr->awar(AWAR_DB_DST"/file_name")->read_string();
                 const char *open_mode = 0;
 
                 if (main[0] == 0) {
@@ -353,10 +353,10 @@ static void MG_start_cb(AW_window *aww)
                 }
 
                 if (!error) {
-                    GLOBAL_gb_dest             = GBT_open(main, open_mode);
-                    if (!GLOBAL_gb_dest) error = GB_await_error();
+                    GLOBAL_gb_dst             = GBT_open(main, open_mode);
+                    if (!GLOBAL_gb_dst) error = GB_await_error();
 #if defined(DEBUG)
-                    else AWT_announce_db_to_browser(GLOBAL_gb_dest, GBS_global_string("Database II (destination; %s)", main));
+                    else AWT_announce_db_to_browser(GLOBAL_gb_dst, GBS_global_string("Database II (destination; %s)", main));
 #endif // DEBUG
                 }
                 free(main);
@@ -387,16 +387,16 @@ static AW_window *create_merge_init_window(AW_root *awr)
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
-    AW_create_fileselection(aws, AWAR_MERGE_DB, "");
+    AW_create_fileselection(aws, AWAR_DB_SRC, "");
     aws->at("type");
-    aws->create_option_menu(AWAR_MERGE_DB"/filter");
+    aws->create_option_menu(AWAR_DB_SRC"/filter");
     aws->insert_option("ARB", "A", "arb");
     aws->insert_default_option("OTHER", "O", "");
     aws->update_option_menu();
 
-    AW_create_fileselection(aws, AWAR_MAIN_DB, "m");
+    AW_create_fileselection(aws, AWAR_DB_DST, "m");
     aws->at("mtype");
-    aws->create_option_menu(AWAR_MAIN_DB"/filter");
+    aws->create_option_menu(AWAR_DB_DST"/filter");
     aws->insert_option("ARB", "A", "arb");
     aws->insert_default_option("OTHER", "O", "");
     aws->update_option_menu();
@@ -413,10 +413,10 @@ static AW_window *create_merge_init_window(AW_root *awr)
 
 void MG_create_all_awars(AW_root *awr, AW_default aw_def, const char *fname_one, const char *fname_two)
 {
-    AW_create_fileselection_awars(awr, AWAR_MAIN_DB, "", ".arb", fname_two, aw_def);
-    awr->awar_string(AWAR_MAIN_DB"/type", "b", aw_def);
+    AW_create_fileselection_awars(awr, AWAR_DB_DST, "", ".arb", fname_two, aw_def);
+    awr->awar_string(AWAR_DB_DST"/type", "b", aw_def);
 
-    AW_create_fileselection_awars(awr, AWAR_MERGE_DB, "", ".arb", fname_one, aw_def);
+    AW_create_fileselection_awars(awr, AWAR_DB_SRC, "", ".arb", fname_one, aw_def);
 
     MG_create_trees_awar(awr, aw_def);
     MG_create_config_awar(awr, aw_def);

@@ -19,28 +19,29 @@
 #include <aw_awar.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
+#include <aw_window.hxx>
 #include <adGene.h>
 #include <arbdbt.h>
 #include <arb_str.h>
 
 using namespace std;
 
+#define AWAR_MERGE_GENE_SPECIES_SAV AWAR_MERGE_SAV "gene_species/"
+#define AWAR_MERGE_GENE_SPECIES_TMP AWAR_MERGE_TMP "gene_species/"
+
 // for input :
-#define AWAR_MERGE_GENE_SPECIES_BASE_TMP "tmp/" AWAR_MERGE_GENE_SPECIES_BASE
 
-#define AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD AWAR_MERGE_GENE_SPECIES_BASE_TMP "current"
-#define AWAR_MERGE_GENE_SPECIES_DEST          AWAR_MERGE_GENE_SPECIES_BASE_TMP "dest"
-
-#define AWAR_MERGE_GENE_SPECIES_SOURCE AWAR_MERGE_GENE_SPECIES_BASE_TMP "source"
-#define AWAR_MERGE_GENE_SPECIES_METHOD AWAR_MERGE_GENE_SPECIES_BASE_TMP "method"
-#define AWAR_MERGE_GENE_SPECIES_ACI    AWAR_MERGE_GENE_SPECIES_BASE_TMP "aci"
-
-#define AWAR_MERGE_GENE_SPECIES_EXAMPLE     AWAR_MERGE_GENE_SPECIES_BASE_TMP "example"
-#define AWAR_MERGE_GENE_SPECIES_FIELDS_SAVE AWAR_MERGE_GENE_SPECIES_BASE_TMP "save" // only used to save/load config
+#define AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD AWAR_MERGE_GENE_SPECIES_TMP "current"
+#define AWAR_MERGE_GENE_SPECIES_DEST          AWAR_MERGE_GENE_SPECIES_TMP "dest"
+#define AWAR_MERGE_GENE_SPECIES_SOURCE        AWAR_MERGE_GENE_SPECIES_TMP "source"
+#define AWAR_MERGE_GENE_SPECIES_METHOD        AWAR_MERGE_GENE_SPECIES_TMP "method"
+#define AWAR_MERGE_GENE_SPECIES_ACI           AWAR_MERGE_GENE_SPECIES_TMP "aci"
+#define AWAR_MERGE_GENE_SPECIES_EXAMPLE       AWAR_MERGE_GENE_SPECIES_TMP "example"
+#define AWAR_MERGE_GENE_SPECIES_FIELDS_SAVE   AWAR_MERGE_GENE_SPECIES_TMP "save" // only used to save/load config
 
 // saved awars :
-#define AWAR_MERGE_GENE_SPECIES_CREATE_FIELDS AWAR_MERGE_GENE_SPECIES_BASE "activated"
-#define AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS   AWAR_MERGE_GENE_SPECIES_BASE "field_defs"
+#define AWAR_MERGE_GENE_SPECIES_CREATE_FIELDS AWAR_MERGE_GENE_SPECIES_SAV "activated"
+#define AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS   AWAR_MERGE_GENE_SPECIES_SAV "field_defs"
 
 enum CreationMethod {
     MG_CREATE_COPY_ORGANISM,
@@ -84,7 +85,7 @@ inline char *strcpydest(char *dest, const char *src) {
 inline const char *field_awar(const char *field_name, const char *subfield) {
     static char buffer[BUFSIZE];
 
-    char *end = strcpydest(strcpydest(buffer, AWAR_MERGE_GENE_SPECIES_BASE"def_"), field_name);
+    char *end = strcpydest(strcpydest(buffer, AWAR_MERGE_GENE_SPECIES_SAV"def_"), field_name);
     *end++ = '/';
     IF_DEBUG(end=) strcpydest(end, subfield);
 
@@ -158,12 +159,12 @@ static char *MG_create_field_content(GBDATA *gb_species, CreationMethod method, 
 
         if (method == MG_CREATE_USING_ACI_ONLY) {
             mg_assert(!result);
-            aci_result = GB_command_interpreter(GLOBAL_gb_merge, "", aci, gb_species, 0);
+            aci_result = GB_command_interpreter(GLOBAL_gb_src, "", aci, gb_species, 0);
             if (!aci_result) error = GB_await_error();
         }
         else {
             if (aci && aci[0]) {
-                aci_result = GB_command_interpreter(GLOBAL_gb_merge, result ? result : "", aci, gb_origin, 0);
+                aci_result = GB_command_interpreter(GLOBAL_gb_src, result ? result : "", aci, gb_origin, 0);
                 if (!aci_result) error = GB_await_error();
             }
         }
@@ -266,8 +267,8 @@ static void MG_update_example(AW_root *aw_root) {
 
     if (!curr_species || !curr_species[0]) error = "No species selected.";
     else {
-        GB_transaction  dummy(GLOBAL_gb_merge);
-        GBDATA         *gb_species = GBT_find_species(GLOBAL_gb_merge, curr_species);
+        GB_transaction  dummy(GLOBAL_gb_src);
+        GBDATA         *gb_species = GBT_find_species(GLOBAL_gb_src, curr_species);
 
         if (!gb_species)                                    error = GB_export_errorf("No such species: '%s'", curr_species);
         else if (!GEN_is_pseudo_gene_species(gb_species))   error = "Selected species is no gene-species";

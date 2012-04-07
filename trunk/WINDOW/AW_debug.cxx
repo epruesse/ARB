@@ -60,6 +60,9 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "quit",           1);
     GBS_write_hash(dontCallHash, "ARB_EDIT4/QUIT", 1);
     GBS_write_hash(dontCallHash, "ARB_INTRO/CANCEL", 1);
+    
+    GBS_write_hash(dontCallHash, "MERGE_SELECT_DATABASES/QUIT", 1);
+    GBS_write_hash(dontCallHash, "quitnstart", 1);
 
     // avoid start of some external programs:
 #if 1
@@ -92,6 +95,8 @@ static void build_dontCallHash() {
     // avoid saving
     GBS_write_hash(dontCallHash, "save_changes", 3);
     GBS_write_hash(dontCallHash, "save_props",   3);
+
+    GBS_write_hash(dontCallHash, "save_DB1", 3);
 
 #if 1
 #if defined(WARN_TODO)
