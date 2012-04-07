@@ -12,20 +12,28 @@ TITLE		Transfer Trees
 
 OCCURRENCE	ARB_INTRO <MERGE TWO ARB DATABASES> ARB_MERGE <Transfer Trees>
 
-DESCRIPTION	Transferres trees.
+DESCRIPTION	Transfers trees.
 
 		Press the 'Transfer Trees' button of the 'ARB_MERGE' window to
                 display the 'MERGE TREES' window.
 
-		Select source tree from the left (database I) 'Trees' subwindow
-                and the destination from the right (database II) 'Trees'
-                subwindow.
+		Select source tree from the left tree-list and the destination from the
+                right tree-list.
 
-		Press the 'Transfer Tree' button below the 'Tree' subwindows.
+                Choose whether to
+                - transfer the selected tree only or
+                - transfer all, existing or missing trees
+
+		Press the 'Transfer' button below the 'Tree' subwindows.
 
 		To delete or rename trees in the individual databases press the
-                corresponding buttons below the 'Tree' subwindows.
+                corresponding buttons below the 'Tree' lists.
 
+                If you check 'Overwrite trees?', existing trees in the destination
+                database will be overwritten.
+
+                Existing trees will be overwritten without changing their position.
+                New trees will be inserted behind the tree selected in the right tree-list.
 
 NOTES		None
 
