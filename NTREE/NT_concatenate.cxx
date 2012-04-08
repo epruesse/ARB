@@ -232,12 +232,14 @@ static void shiftAlignment(AW_window *aws, long direction) {
     AW_root *aw_root            = aws->get_root();
     char    *selected_alignment = aw_root->awar(AWAR_CON_CONCAT_ALIGNS)->read_string();
 
+    nt_assert(abs(direction) >= 1 && abs(direction) <= 2);
+
     if (selected_alignment && selected_alignment[0] && selected_alignment[0] != '?') {
         StrArray listContent;
         aws->selection_list_to_array(listContent, con_alignment_list, true);
-        
+
         int old_pos = GBT_names_index_of(listContent, selected_alignment);
-        GBT_names_move(listContent, old_pos, old_pos+direction);
+        GBT_names_move(listContent, old_pos, abs(direction) == 1 ? old_pos+direction : (direction<0 ? 0 : -1));
         aws->init_selection_list_from_array(con_alignment_list, listContent, con_alignment_list->get_default_value());
     }
 
@@ -840,7 +842,7 @@ static AW_window *NT_createMergeSimilarSpeciesAndConcatenateWindow(AW_root *aw_r
 AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(aw_root, "CONCATENATE_ALIGNMENTS", "CONCATENATION WINDOW");
+    aws->init(aw_root, "CONCAT_ALIGNMENTS", "Concatenate Alignments");
     aws->load_xfig("concatenate.fig");
 
     aws->button_length(8);
@@ -857,7 +859,7 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     conAlignStruct *cas = createSelectionList(GLOBAL_gb_main, (AW_window *)aws, AWAR_CON_DB_ALIGNS);
 
     aws->at("concatAligns");
-    con_alignment_list = aws->create_selection_list(AWAR_CON_CONCAT_ALIGNS, "concatAligns", "N");
+    con_alignment_list = aws->create_selection_list(AWAR_CON_CONCAT_ALIGNS);
     aws->insert_default_selection(con_alignment_list, "????", "????");
     aws->update_selection_list(con_alignment_list);
 
@@ -869,54 +871,38 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     aws->update_option_menu();
     aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->add_callback(createSelectionList_callBack_awar, (AW_CL)cas); // associating selection list callback to sequence type awar
 
-    aws->at("add");
-    aws->button_length(6);
-    aws->callback(selectAlignment);
-    aws->create_button("ADD", "#moveRight.bitmap");
-
-    aws->at("addAll");
-    aws->button_length(6);
-    aws->callback(selectAllAlignments);
-    aws->create_button("ADDALL", "#moveAll.bitmap");
-
-    aws->at("remove");
-    aws->button_length(6);
-    aws->callback(removeAlignment);
-    aws->create_button("REMOVE", "#moveLeft.bitmap");
-
-    aws->at("up");
     aws->button_length(0);
-    aws->callback(shiftAlignment, -1); // shift upwards
-    aws->create_button("up", "#moveUp.bitmap", 0);
 
-    aws->at("down");
-    aws->button_length(0);
-    aws->callback(shiftAlignment, 1); // shift downwards
-    aws->create_button("down", "#moveDown.bitmap", 0);
+    aws->at("all");  aws->callback(selectAllAlignments); aws->create_button("ADDALL", "#moveAllRight.bitmap");
+    aws->at("add");  aws->callback(selectAlignment);     aws->create_button("ADD",    "#moveRight.bitmap");
+    aws->at("rem");  aws->callback(removeAlignment);     aws->create_button("REMOVE", "#moveLeft.bitmap");
+    aws->at("clr");  aws->callback(clearAlignmentList);  aws->create_button("CLEAR",  "#moveAllLeft.bitmap");
 
-    aws->at("clearList");
-    aws->callback(clearAlignmentList);
-    aws->create_button("CLEAR", "CLEAR LIST", "R");
+    aws->at("top");  aws->callback(shiftAlignment, -2);  aws->create_button("top",    "#moveTop.bitmap",    0);
+    aws->at("up");   aws->callback(shiftAlignment, -1);  aws->create_button("up",     "#moveUp.bitmap",     0);
+    aws->at("down"); aws->callback(shiftAlignment, 1);   aws->create_button("down",   "#moveDown.bitmap",   0);
+    aws->at("bot");  aws->callback(shiftAlignment, 2);   aws->create_button("bottom", "#moveBottom.bitmap", 0);
 
     aws->at("aliName");
     aws->label_length(15);
-    aws->create_input_field(AWAR_CON_NEW_ALIGNMENT_NAME, 20);
+    aws->create_input_field(AWAR_CON_NEW_ALIGNMENT_NAME, 25);
 
     aws->at("aliSeparator");
     aws->label_length(5);
-    aws->create_input_field(AWAR_CON_ALIGNMENT_SEPARATOR, 5);
+    aws->create_input_field(AWAR_CON_ALIGNMENT_SEPARATOR, 10);
 
-    aws->at("concatenate");
+    aws->button_length(22);
+    aws->auto_space(5, 5);
+    aws->at("go");
+
     aws->callback((AW_CB0)concatenateAlignments);
     aws->create_button("CONCATENATE", "CONCATENATE", "A");
 
-    aws->at("merge_species");
     aws->callback(AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesWindow, 0);
     aws->create_button("MERGE_SPECIES", "MERGE SIMILAR SPECIES", "M");
 
-    aws->at("merge_concatenate");
     aws->callback(AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesAndConcatenateWindow, 0);
-    aws->create_button("MERGE_CONCATENATE", "MERGE and CONCATENATE", "S");
+    aws->create_button("MERGE_CONCATENATE", "MERGE & CONCATENATE", "S");
 
     aws->show();
     return (AW_window *)aws;

@@ -598,7 +598,8 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
                 height_of_button = height+gpadding;
             }
             else {
-                aw_assert(0);   // oops - failed to detect bitmap size
+                err = GBS_global_string("button gfx error: %s", err);
+                aw_message(err);
                 let_motif_choose_size = true;
             }
         }
