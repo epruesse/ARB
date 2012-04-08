@@ -34,23 +34,28 @@
 
 extern GBDATA *GLOBAL_gb_main;
 
-static const char *AWAR_TREE_SECURITY = "tmp/ad_tree/tree_security";
-static const char *AWAR_TREE_REM      = "tmp/ad_tree/tree_rem";
+#define AWAR_TREE_SAV "ad_tree/"
+#define AWAR_TREE_TMP "tmp/ad_tree/"
 
-#define AWAR_TREE_EXPORT           "tmp/ad_tree/export_tree"
-#define AWAR_TREE_IMPORT           "tmp/ad_tree/import_tree"
-#define AWAR_NODE_INFO_ONLY_MARKED "tmp/ad_tree/import_only_marked_node_info"
-#define AWAR_TREE_EXPORT_SAVE      "ad_tree/export_tree"
+#define AWAR_TREE_SECURITY         AWAR_TREE_TMP "tree_security"
+#define AWAR_TREE_REM              AWAR_TREE_TMP "tree_rem"
+#define AWAR_TREE_IMPORT           AWAR_TREE_TMP "import_tree"
+#define AWAR_NODE_INFO_ONLY_MARKED AWAR_TREE_TMP "import_only_marked_node_info"
 
-#define AWAR_TREE_EXPORT_FILTER             AWAR_TREE_EXPORT "/filter"
-#define AWAR_TREE_EXPORT_FORMAT             AWAR_TREE_EXPORT_SAVE "/format"
-#define AWAR_TREE_EXPORT_NDS                AWAR_TREE_EXPORT_SAVE "/NDS"
-#define AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS AWAR_TREE_EXPORT_SAVE "/bootstraps"
-#define AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS AWAR_TREE_EXPORT_SAVE "/branchlens"
-#define AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES AWAR_TREE_EXPORT_SAVE "/groupnames"
-#define AWAR_TREE_EXPORT_HIDE_FOLDED_GROUPS AWAR_TREE_EXPORT_SAVE "/hide_folded"
-#define AWAR_TREE_EXPORT_QUOTEMODE          AWAR_TREE_EXPORT_SAVE "/quote_mode"
-#define AWAR_TREE_EXPORT_REPLACE            AWAR_TREE_EXPORT_SAVE "/replace"
+#define AWAR_TREE_EXPORT_FILEBASE AWAR_TREE_TMP "export_tree"
+#define AWAR_TREE_EXPORT_FILTER   AWAR_TREE_EXPORT_FILEBASE "/filter"
+#define AWAR_TREE_EXPORT_NAME     AWAR_TREE_EXPORT_FILEBASE "/file_name"
+
+#define AWAR_TREE_EXPORT_SAV AWAR_TREE_SAV "export_tree/"
+
+#define AWAR_TREE_EXPORT_FORMAT             AWAR_TREE_EXPORT_SAV "format"
+#define AWAR_TREE_EXPORT_NDS                AWAR_TREE_EXPORT_SAV "NDS"
+#define AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS AWAR_TREE_EXPORT_SAV "bootstraps"
+#define AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS AWAR_TREE_EXPORT_SAV "branchlens"
+#define AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES AWAR_TREE_EXPORT_SAV "groupnames"
+#define AWAR_TREE_EXPORT_HIDE_FOLDED_GROUPS AWAR_TREE_EXPORT_SAV "hide_folded"
+#define AWAR_TREE_EXPORT_QUOTEMODE          AWAR_TREE_EXPORT_SAV "quote_mode"
+#define AWAR_TREE_EXPORT_REPLACE            AWAR_TREE_EXPORT_SAV "replace"
 
 static void tree_vars_callback(AW_root *aw_root) // Map tree vars to display objects
 {
@@ -73,7 +78,7 @@ static void tree_vars_callback(AW_root *aw_root) // Map tree vars to display obj
         }
         char *suffix = aw_root->awar(AWAR_TREE_EXPORT_FILTER)->read_string();
         char *fname  = GBS_string_eval(treename, GBS_global_string("*=*1.%s:tree_*=*1", suffix), 0);
-        aw_root->awar(AWAR_TREE_EXPORT "/file_name")->write_string(fname); // create default file name
+        aw_root->awar(AWAR_TREE_EXPORT_NAME)->write_string(fname); // create default file name
         free(fname);
         free(suffix);
         GB_pop_transaction(GLOBAL_gb_main);
@@ -162,7 +167,7 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_int   (AWAR_TREE_SECURITY, 0, aw_def);
     aw_root->awar_string(AWAR_TREE_REM,      0, aw_def);
 
-    AW_create_fileselection_awars(aw_root, AWAR_TREE_EXPORT, "", ".tree", "treefile", aw_def);
+    AW_create_fileselection_awars(aw_root, AWAR_TREE_EXPORT_FILEBASE, "", ".tree", "treefile", aw_def);
     aw_root->awar_int(AWAR_TREE_EXPORT_FORMAT, AD_TREE_EXPORT_FORMAT_NEWICK, aw_def)-> add_callback(update_filter_cb);
     aw_root->awar_int(AWAR_TREE_EXPORT_NDS,  AD_TREE_EXPORT_NODE_SPECIES_NAME, aw_def)-> add_callback(update_filter_cb);
 
@@ -198,7 +203,7 @@ static void tree_save_cb(AW_window *aww) {
         error = "Please select a tree first";
     }
     else {
-        char *fname   = aw_root->awar(AWAR_TREE_EXPORT "/file_name")->read_string();
+        char *fname   = aw_root->awar(AWAR_TREE_EXPORT_NAME)->read_string();
         char *db_name = aw_root->awar(AWAR_DB_NAME)->read_string();
 
         bool                use_NDS    = ExportNodeType(aw_root->awar(AWAR_TREE_EXPORT_NDS)->read_int()) == AD_TREE_EXPORT_NODE_NDS;
@@ -229,7 +234,7 @@ static void tree_save_cb(AW_window *aww) {
                 break;
         }
 
-        AW_refresh_fileselection(aw_root, AWAR_TREE_EXPORT);
+        AW_refresh_fileselection(aw_root, AWAR_TREE_EXPORT_FILEBASE);
 
         delete node_gen;
         free(db_name);
@@ -261,7 +266,7 @@ static AW_window *create_tree_export_window(AW_root *root)
     aws->insert_option("ARB_XML TREE FORMAT",                  "X", AD_TREE_EXPORT_FORMAT_XML);
     aws->update_option_menu();
 
-    AW_create_fileselection(aws, AWAR_TREE_EXPORT "");
+    AW_create_fileselection(aws, AWAR_TREE_EXPORT_FILEBASE);
 
     aws->at("user2");
     aws->auto_space(10, 10);
@@ -611,6 +616,26 @@ AW_window *create_trees_window(AW_root *aw_root) {
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
+        aws->button_length(40);
+        
+        aws->at("sel");
+        aws->create_button(0, AWAR_TREE_NAME, 0, "+");
+
+        aws->at("security");
+        aws->create_option_menu(AWAR_TREE_SECURITY);
+        aws->insert_option("0", "0", 0);
+        aws->insert_option("1", "1", 1);
+        aws->insert_option("2", "2", 2);
+        aws->insert_option("3", "3", 3);
+        aws->insert_option("4", "4", 4);
+        aws->insert_option("5", "5", 5);
+        aws->insert_default_option("6", "6", 6);
+        aws->update_option_menu();
+
+        aws->at("rem");
+        aws->create_text_field(AWAR_TREE_REM);
+
+        
         aws->button_length(20);
 
         static TreeAdmin::Spec spec(GLOBAL_gb_main, AWAR_TREE_NAME);
@@ -647,39 +672,14 @@ AW_window *create_trees_window(AW_root *aw_root) {
 
         aws->button_length(0);
 
-        aws->at("upall");
-        aws->callback(move_tree_pos, TREE_TOP);
-        aws->create_button("moveTop", "#moveTop.bitmap", 0);
-
-        aws->at("up");
-        aws->callback(move_tree_pos, TREE_UP);
-        aws->create_button("moveUp", "#moveUp.bitmap", 0);
-
-        aws->at("down");
-        aws->callback(move_tree_pos, TREE_DOWN);
-        aws->create_button("moveDown", "#moveDown.bitmap", 0);
-
-        aws->at("downall");
-        aws->callback(move_tree_pos, TREE_BOTTOM);
-        aws->create_button("moveBottom", "#moveBottom.bitmap", 0);
-
+        aws->at("top");  aws->callback(move_tree_pos, TREE_TOP);    aws->create_button("moveTop",    "#moveTop.bitmap",    0);
+        aws->at("up");   aws->callback(move_tree_pos, TREE_UP);     aws->create_button("moveUp",     "#moveUp.bitmap",     0);
+        aws->at("down"); aws->callback(move_tree_pos, TREE_DOWN);   aws->create_button("moveDown",   "#moveDown.bitmap",   0);
+        aws->at("bot");  aws->callback(move_tree_pos, TREE_BOTTOM); aws->create_button("moveBottom", "#moveBottom.bitmap", 0);
 
         aws->at("list");
         awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, AWAR_TREE_NAME);
 
-        aws->at("security");
-        aws->create_option_menu(AWAR_TREE_SECURITY);
-        aws->insert_option("0", "0", 0);
-        aws->insert_option("1", "1", 1);
-        aws->insert_option("2", "2", 2);
-        aws->insert_option("3", "3", 3);
-        aws->insert_option("4", "4", 4);
-        aws->insert_option("5", "5", 5);
-        aws->insert_default_option("6", "6", 6);
-        aws->update_option_menu();
-
-        aws->at("rem");
-        aws->create_text_field(AWAR_TREE_REM);
     }
 
     return (AW_window *)aws;
