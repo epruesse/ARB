@@ -40,6 +40,7 @@ include config.makefile
 ifeq ($(LD_LIBRARY_PATH),'')
 LD_LIBRARY_PATH:=${ARBHOME}/lib
 endif
+export LD_LIBRARY_PATH:=${ARBHOME}/LIBLINK:$(LD_LIBRARY_PATH)
 
 FORCEMASK = umask 002
 NODIR=--no-print-directory
@@ -1341,7 +1342,7 @@ dep_graph:
 help:   HELP_SOURCE/HELP_SOURCE.dummy
 
 # @@@ when backtracing code is in libCORE, link vs ARBDB is no longer needed 
-HELP_SOURCE/HELP_SOURCE.dummy: libs xml menus
+HELP_SOURCE/HELP_SOURCE.dummy: link_db xml menus
 
 db:	ARBDB/libARBDB.dummy
 core:	CORE/libCORE.dummy
