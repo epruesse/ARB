@@ -60,6 +60,7 @@ OBJECTS = $(GB_O) $(GB_T) $(GB_PP) $(GB_X)
 $(MAIN): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
 	touch $@
+	cp $(@:.a=).$(SHARED_LIB_SUFFIX) ../lib
 
 .cxx.o:
 	$(CPPLIB) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)

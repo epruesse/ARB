@@ -40,7 +40,6 @@ include config.makefile
 ifeq ($(LD_LIBRARY_PATH),'')
 LD_LIBRARY_PATH:=${ARBHOME}/lib
 endif
-export LD_LIBRARY_PATH:=${ARBHOME}/LIBLINK:$(LD_LIBRARY_PATH)
 
 FORCEMASK = umask 002
 NODIR=--no-print-directory
@@ -646,7 +645,7 @@ ARBDB_LIB=-lARBDB $(CORE_LIB)
 LIBS = $(ARBDB_LIB) $(SYSLIBS)
 GUI_LIBS = $(LIBS) -lWINDOW -lAWT $(XLIBS)
 
-LIBPATH = -L$(ARBHOME)/LIBLINK
+LIBPATH = -L$(ARBHOME)/lib
 
 DEST_LIB = lib
 DEST_BIN = bin
@@ -1088,7 +1087,7 @@ $(NAMES): $(ARCHS_NAMES:.a=.dummy) link_db
 
 #***********************************	SHARED LIBRARIES SECTION  **************************************
 
-prepare_libdir: libs addlibs
+prepare_libdir: addlibs
 
 addlibs:
 	(perl $(ARBHOME)/SOURCE_TOOLS/provide_libs.pl \
@@ -1096,19 +1095,6 @@ addlibs:
 				"opengl=$(OPENGL)" \
 				"link_static=$(LINK_STATIC)" \
 	)
-
-lib/libCORE.$(SHARED_LIB_SUFFIX):	core
-lib/libARBDB.$(SHARED_LIB_SUFFIX):	db
-lib/libWINDOW.$(SHARED_LIB_SUFFIX):	aw
-lib/libAWT.$(SHARED_LIB_SUFFIX):	awt
-
-libs:   lib/libCORE.$(SHARED_LIB_SUFFIX) \
-	lib/libARBDB.$(SHARED_LIB_SUFFIX) \
-	lib/libWINDOW.$(SHARED_LIB_SUFFIX) \
-	lib/libAWT.$(SHARED_LIB_SUFFIX)
-
-lib/lib%.$(SHARED_LIB_SUFFIX): LIBLINK/lib%.$(SHARED_LIB_SUFFIX)
-	cp $< $@
 
 #***************************************************************************************
 #			Recursive calls to sub-makefiles
@@ -1648,7 +1634,6 @@ clean_directories:
 	-rm -rf \
 		$(ARBHOME)/PROBE_SET/bin \
 		$(ARBHOME)/INCLUDE \
-		$(ARBHOME)/LIBLINK \
 
 libclean:
 	-find $(ARBHOME) -type f \( -name '*.a' ! -type l \) -exec rm -f {} \;

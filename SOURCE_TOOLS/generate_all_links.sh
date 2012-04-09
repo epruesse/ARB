@@ -116,20 +116,12 @@ makedir PROBE_COM/GENC &&
 makedir PROBE_COM/GENH &&
 makedir PROBE_COM/O &&
 
-makedir LIBLINK &&
 makedir lib/help &&
 
 (test -d lib/pts || makedir lib/pts) &&
 
-# Liblink
-
-symlink_maybe_no_target ../CORE/libCORE.so LIBLINK/libCORE.so &&
-symlink_maybe_no_target ../ARBDB/libARBDB.so LIBLINK/libARBDB.so &&
-symlink_maybe_no_target ../AWT/libAWT.so LIBLINK/libAWT.so &&
-symlink_maybe_no_target ../WINDOW/libWINDOW.so LIBLINK/libWINDOW.so &&
-
 # Motif stuff
-(test -z $MOTIF_LIBPATH || symlink_file $MOTIF_LIBPATH LIBLINK/libXm.so.3) &&
+(test -z $MOTIF_LIBPATH || symlink_file $MOTIF_LIBPATH lib/libXm.so.3) &&
 
 # Links in bin directory
 ( cd bin ; make all; cd .. ) &&

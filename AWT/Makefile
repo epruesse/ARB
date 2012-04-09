@@ -8,6 +8,7 @@ OBJECTS=$(subst .cxx,.o,$(CXX))
 $(MAIN): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
 	touch $@
+	cp $(@:.a=).$(SHARED_LIB_SUFFIX) ../lib
 
 .cxx.o:
 	$(CPPLIB) $(cflags) -c $<  $(CPPINCLUDES) $(POST_COMPILE)
