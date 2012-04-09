@@ -45,7 +45,6 @@ my %dir2targets = (
                    'HELP_SOURCE'  => 'help',
                    'INCLUDE'      => 'all',
                    'lib'          => 'help libs perl',
-                   'LIBLINK'      => 'libs',
                    'PERL2ARB'     => 'perl',
                    'PERL_SCRIPTS' => 'testperlscripts',
                    'PROBE_SET'    => 'pst',

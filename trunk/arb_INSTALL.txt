@@ -85,7 +85,7 @@ To build ARB from source
 
       export ARBHOME=`pwd`
       export PATH=$ARBHOME/bin:$PATH
-      export LD_LIBRARY_PATH=$ARBHOME/LIBLINK:$LD_LIBRARY_PATH
+      export LD_LIBRARY_PATH=$ARBHOME/lib:$LD_LIBRARY_PATH
 
 5. Now either
 

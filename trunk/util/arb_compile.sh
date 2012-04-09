@@ -125,9 +125,9 @@ else
     else
         PATH=$ARBHOME/bin:$PATH
         if [ !$?LD_LIBRARY_PATH ]; then
-            LD_LIBRARY_PATH=$ARBHOME/LIBLINK
+            LD_LIBRARY_PATH=$ARBHOME/lib
         fi
-        LD_LIBRARY_PATH=$ARBHOME/LIBLINK:$LD_LIBRARY_PATH
+        LD_LIBRARY_PATH=$ARBHOME/lib:$LD_LIBRARY_PATH
 
         export ARBHOME PATH LD_LIBRARY_PATH
 
