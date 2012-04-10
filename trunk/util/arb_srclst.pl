@@ -18,6 +18,7 @@ my @skipped_directories = (
                            qr/\/UNIT_TESTER\/logs$/o,
                            qr/\/UNIT_TESTER\/tests$/o,
                            qr/^\.\/ARB_SOURCE_DOC/o,
+                           qr/^\.\/dep_graphs/o,
                            qr/^\.\/INCLUDE$/o,
                            qr/^\.\/lib\/help$/o,
                            qr/^\.\/lib\/help_html$/o,
@@ -28,6 +29,8 @@ my @skipped_directories = (
                            qr/_COM\/GEN[CH]$/o,
                            qr/_COM\/O$/o,
                            qr/_GEN$/o,
+                           # needed by ralf:
+                           qr/^\.\/test_arb_make_targets_logs/o,
                           );
 
 # first used/skipped match wins (exception see @3 below)
