@@ -490,6 +490,8 @@ int ARB_main(int argc, const char *argv[]) {
     const char *inputname  = argv[1];
     const char *outputname = argv[2];
 
+    // GBK_terminate("test-crash of arb_gene_probe");
+    
     printf("Converting '%s' -> '%s' ..\n", inputname, outputname);
 
     GB_ERROR  error   = 0;
