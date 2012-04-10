@@ -347,6 +347,8 @@ static Error ptserver_gene(Mode mode) {
             test_ptserver_activate(false, TEST_GENESERVER_ID);                     // first kill pt-server (otherwise we may test an outdated pt-server)
             TEST_ASSERT_NO_ERROR(GBK_system("arb_gene_probe TEST_gpt_src.arb TEST_gpt.arb")); // prepare gene-ptserver-db (forcing rebuild)
 
+            // GBK_terminatef("test-crash of test_environment"); 
+
 #if defined(TEST_AUTO_UPDATE)
             TEST_COPY_FILE("TEST_gpt.arb", "TEST_gpt.arb.expected");
 #else // !defined(TEST_AUTO_UPDATE)
@@ -501,7 +503,7 @@ public:
 
         env_assert(!(perform_change && wait_for_change));
 
-        if (perform_change) set_to(mode);
+        if (perform_change) error = set_to(mode);
 
         if (wait_for_change) {
             bool reached = false;

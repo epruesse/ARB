@@ -5,8 +5,11 @@ notarget:
 
 include Makefile.setup.include
 
+TEST_BASE=`pwd`
+
 TEST_REPORTER = ./reporter.pl
 TEST_LOG_DIR = ./logs
+TEST_FLAG_DIR = ./flags
 
 PATCHNAMEBASE:=TestsOk
 PATCHNAMESUFFIX:=
@@ -38,8 +41,18 @@ PATCHNAMESUFFIX:=$(subst :,_,$(PATCHNAMESUFFIX))
 
 # -------------------- targets
 
+failed_to_clean:
+	@echo "$(TEST_BASE)/Makefile.suite:45: Error: Failed to clean environment"
+	@echo "If there are any changing*.flag files listed here:"
+	@ls -al $(TEST_FLAG_DIR)/changing*.flag
+	@echo "then some test_environment failed to setup or cleanup properly!"
+	@echo "[Note: removing flag-files now to avoid failure of next test-run]"
+	rm $(TEST_FLAG_DIR)/changing*.flag
+	@echo "$(TEST_BASE)/$(TEST_LOG_DIR):0: Hint: if no error is reported further below, you may also find the cause in these log-files"
+# do NOT fail here, otherwise reporter will get no chance to list failure-reason 
+
 cleanup_environment:
-	./test_environment clean || echo "Failed to clean environment (maybe some setup/cleanup crashed?)"
+	./test_environment clean || $(MAKE) -f Makefile.suite failed_to_clean
 ifeq ($(VALGRIND_EXTERNAL),E)
 	./valgrind/arb_valgrind_logged WAIT
 endif
