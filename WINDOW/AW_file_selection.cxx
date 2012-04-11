@@ -731,7 +731,19 @@ void TEST_path_unfolding() {
 
     TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PWD", "/bin"),                strdup("/bin"));
     TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PWD", "../tests"),            strdup(GB_path_in_ARBHOME("UNIT_TESTER/tests")));
-    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PT_SERVER_HOME", "."),        strdup(GB_path_in_ARBLIB("pts")));
+    {
+        // test fails if
+        char *pts_path_in_arblib = strdup(GB_path_in_ARBLIB("pts"));
+        char *pts_unfold_path    = AW_unfold_path("PT_SERVER_HOME", ".");
+        if (GB_is_directory(pts_path_in_arblib)) {
+            TEST_ASSERT_EQUAL(pts_path_in_arblib, pts_unfold_path);
+        }
+        else {
+            TEST_ASSERT_EQUAL__BROKEN(pts_path_in_arblib, pts_unfold_path); // fails if directory does not exist
+        }
+        free(pts_unfold_path);
+        free(pts_path_in_arblib);
+    }
     TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("ARB_NONEXISTING_ENVAR", "."), strdup(currDir));
 }
 
