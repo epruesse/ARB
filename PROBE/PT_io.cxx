@@ -46,30 +46,6 @@ int compress_data(char *probestring) {
     return 0;
 }
 
-void PT_base_2_string(char *id_string, long len) {
-    //! get a string with readable bases from a string with PT_?
-    char    c;
-    char    *src,
-        *dest;
-    if (!len) len = strlen(id_string);
-    dest = src = id_string;
-
-    while ((len--)>0) {
-        c=*(src++);
-        switch (c) {
-            case PT_A: *(dest++)  = 'A'; break;
-            case PT_C: *(dest++)  = 'C'; break;
-            case PT_G: *(dest++)  = 'G'; break;
-            case PT_T: *(dest++)  = 'U'; break;
-            case PT_N: *(dest++)  = 'N'; break;
-            case 0: *(dest++)     = '0'; break;
-            default: *(dest++)    = c; break;
-        }
-
-    }
-    *dest = '\0';
-}
-
 ARB_ERROR probe_read_data_base(const char *name, bool readOnly) { // goes to header: __ATTR__USERESULT
     ARB_ERROR error;
     GB_set_verbose();

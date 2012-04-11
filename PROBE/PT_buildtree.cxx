@@ -284,7 +284,6 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                 if (error) break;
 
 #ifdef PTM_DEBUG
-                PTM_debug_mem();
                 PTD_debug_nodes();
 #endif
                 PT_inc_base_string_count(partstring, PT_N, PT_B_MAX, partsize);
@@ -294,7 +293,6 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                 if (partsize) {
                     pos = PTD_save_partial_tree(out, pt, NULL, 0, pos, &last_obj, error);
 #ifdef PTM_DEBUG
-                    PTM_debug_mem();
                     PTD_debug_nodes();
 #endif
                 }
@@ -381,6 +379,12 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USE
             fclose(in);
         }
     }
+
+#if defined(PTM_DUMP_PTREE)
+    char *dumpfile = GBS_global_string_copy("%s.dump", tname);
+    PT_dump_POS_TREE_to_file(dumpfile);
+    free(dumpfile);
+#endif
 
     return error;
 }

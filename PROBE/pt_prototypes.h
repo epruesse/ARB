@@ -20,8 +20,9 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) __ATTR__USERESUL
 
 /* PT_debug.cxx */
 void PT_dump_tree_statistics(void);
-void PT_dump_POS_TREE_recursive(POS_TREE *IF_DEBUG (pt), const char *IF_DEBUG (prefix));
-void PT_dump_POS_TREE(POS_TREE *IF_DEBUG (node));
+void PT_dump_POS_TREE_recursive(POS_TREE *IF_DEBUG (pt), const char *IF_DEBUG (prefix), FILE *IF_DEBUG (out));
+void PT_dump_POS_TREE(POS_TREE *IF_DEBUG (node), FILE *IF_DEBUG (out));
+void PT_dump_POS_TREE_to_file(const char *IF_DEBUG (dumpfile));
 
 /* PT_etc.cxx */
 void set_table_for_PT_N_mis(int ignored_Nmismatches, int when_less_than_Nmismatches);
@@ -41,7 +42,6 @@ int PT_find_exProb(PT_exProb *pep, int dummy_1x);
 
 /* PT_io.cxx */
 int compress_data(char *probestring);
-void PT_base_2_string(char *id_string, long len);
 ARB_ERROR probe_read_data_base(const char *name, bool readOnly) __ATTR__USERESULT;
 int probe_compress_sequence(char *seq, int seqsize);
 char *probe_read_alignment(int j, int *psize);
@@ -55,9 +55,9 @@ int broadcast(PT_main *main, int dummy_1x);
 int ARB_main(int argc, const char *argv[]);
 
 /* PT_match.cxx */
-char *reverse_probe(char *probe, int probe_length);
+char *reverse_probe(char *probe);
 int PT_complement(int base);
-void complement_probe(char *probe, int probe_length);
+void complement_probe(char *probe);
 int probe_match(PT_local *locs, aisc_string probestring);
 char *get_match_overlay(PT_probematch *ml);
 bytestring *match_string(PT_local *locs);

@@ -325,17 +325,18 @@ static void pt_sort_match_list(PT_local * locs)
     }
     free(my_list);
 }
-char *reverse_probe(char *probe, int probe_length) {
-    //! mirror a probe
+char *reverse_probe(char *probe) {
+    //! reverse order of bases in a probe
 
-    int   i, j;
-    char *rev_probe;
-    if (!probe_length) probe_length = strlen(probe);
-    rev_probe                       = (char *)malloc(probe_length * sizeof(char)+1);
-    j                               = probe_length - 1;
-    for (i=0; i< probe_length; i++)
-        rev_probe[j--]              = probe[i];
-    rev_probe[probe_length]         = '\0';
+    const int  probe_length = strlen(probe);
+    char      *rev_probe    = (char *)malloc(probe_length * sizeof(char)+1);
+    const int  end          = probe_length-1;
+
+    for (int i=0; i< probe_length; i++) {
+        rev_probe[end-i] = probe[i];
+    }
+
+    rev_probe[probe_length] = 0;
     return rev_probe;
 }
 int PT_complement(int base)
@@ -348,12 +349,9 @@ int PT_complement(int base)
         default:        return base;
     }
 }
-void complement_probe(char *probe, int probe_length) {
+void complement_probe(char *probe) {
     //! build the complement of a probe
-
-    int i;
-    if (!probe_length) probe_length = strlen(probe);
-    for (i=0; i< probe_length; i++) {
+    for (int i=0; probe[i]; i++) {
         probe[i] = PT_complement(probe[i]);
     }
 }
@@ -431,7 +429,7 @@ int probe_match(PT_local * locs, aisc_string probestring) {
 
     set_table_for_PT_N_mis(locs->pm_nmatches_ignored, locs->pm_nmatches_limit);
     if (locs->pm_complement) {
-        complement_probe(probestring, 0);
+        complement_probe(probestring);
     }
     psg.reversed = 0;
 
@@ -446,8 +444,8 @@ int probe_match(PT_local * locs, aisc_string probestring) {
 
     if (locs->pm_reversed) {
         psg.reversed = 1;
-        rev_pro      = reverse_probe(probestring, 0);
-        complement_probe(rev_pro, 0);
+        rev_pro      = reverse_probe(probestring);
+        complement_probe(rev_pro);
         freeset(locs->pm_csequence, psg.main_probe = strdup(rev_pro));
         
         get_info_about_probe(locs, rev_pro, psg.pt, 0, 0.0, 0, 0);
@@ -589,7 +587,7 @@ char *get_match_overlay(PT_probematch *ml)
         ref[pr_pos+11+pr_len] = psg.data[ml->name].get_data()[al_pos];
     }
     ref[10+pr_len] = '-';
-    PT_base_2_string(ref, 0);
+    PT_base_2_string(ref);
 
     return ref;
 }
@@ -648,7 +646,7 @@ static const char *get_match_hinfo_formatted(PT_probematch *ml, const format_pro
 
         if (ml->N_mismatches >= 0) { //
             char *seq = strdup(ml->sequence);
-            PT_base_2_string(seq, 0);
+            PT_base_2_string(seq);
 
             GBS_strcat(memfile, "         '");
             GBS_strcat(memfile, seq);

@@ -24,7 +24,8 @@
 #define pt_assert(bed) arb_assert(bed)
 
 #if defined(DEBUG)
-// #define PTM_DEBUG
+// # define PTM_DEBUG
+// # define PTM_DUMP_PTREE
 #endif // DEBUG
 
 typedef unsigned long ULONG;
@@ -69,6 +70,19 @@ enum PT_BASES {
     PT_B_MAX,
     PT_B_UNDEF,
 };
+
+inline char PT_base_2_char(PT_BASES base) {
+    static char table[] = "0NACGU";
+    return base<PT_B_MAX ? table[base] : (char)base;
+}
+
+inline void PT_base_2_string(char *id_string) {
+    //! get a string with readable bases from a string with PT_?
+    for (int i = 0; id_string[i]; ++i) {
+        id_string[i] = PT_base_2_char(PT_BASES(id_string[i]));
+    }
+}
+
 
 // -----------------
 //      POS TREE
