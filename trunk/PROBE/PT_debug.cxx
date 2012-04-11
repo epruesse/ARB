@@ -123,32 +123,24 @@ void PT_dump_tree_statistics() {
 
 #if defined(DEBUG)
 
-inline char PT_BASES_2_char(PT_BASES i) {
-    static char buffer[] = "x";
-
-    buffer[0] = i;
-    PT_base_2_string(buffer, 1);
-
-    return buffer[0];
-}
-
 class PT_dump_leaf {
     const char *prefix;
+    FILE       *out;
 public:
-    PT_dump_leaf(const char *Prefix) : prefix(Prefix) {}
+    PT_dump_leaf(const char *Prefix, FILE *Out) : prefix(Prefix), out(Out) {}
 
     int operator()(const DataLoc& leaf) {
         struct probe_input_data& data = psg.data[leaf.name];
 
         PT_BASES b = (PT_BASES)data.get_data()[leaf.rpos];
 
-        printf("%s[%c] %s apos=%i rpos=%i\n", prefix, PT_BASES_2_char(b), data.get_name(), leaf.apos, leaf.rpos);
+        fprintf(out, "%s[%c] %s@%i>%i\n", prefix, PT_base_2_char(b), data.get_name(), leaf.apos, leaf.rpos);
         return 0;
     }
 };
 #endif // DEBUG
 
-void PT_dump_POS_TREE_recursive(POS_TREE *IF_DEBUG(pt), const char *IF_DEBUG(prefix)) {
+void PT_dump_POS_TREE_recursive(POS_TREE *IF_DEBUG(pt), const char *IF_DEBUG(prefix), FILE *IF_DEBUG(out)) {
 #if defined(DEBUG)
     switch (PT_read_type(pt)) {
         case PT_NT_NODE:
@@ -156,27 +148,27 @@ void PT_dump_POS_TREE_recursive(POS_TREE *IF_DEBUG(pt), const char *IF_DEBUG(pre
                 PT_BASES  b   = PT_BASES(i);
                 POS_TREE *son = PT_read_son(pt, b);
                 if (son) {
-                    char *subPrefix = GBS_global_string_copy("%s%c", prefix, b == PT_QU ? '.' : PT_BASES_2_char(b));
-                    PT_dump_POS_TREE_recursive(son, subPrefix);
+                    char *subPrefix = GBS_global_string_copy("%s%c", prefix, b == PT_QU ? '.' : PT_base_2_char(b));
+                    PT_dump_POS_TREE_recursive(son, subPrefix, out);
                     free(subPrefix);
                 }
             }
             break;
         case PT_NT_LEAF: {
             char         *subPrefix = GBS_global_string_copy("{l} %s", prefix);
-            PT_dump_leaf  dump_leaf(subPrefix);
+            PT_dump_leaf  dump_leaf(subPrefix, out);
             dump_leaf(DataLoc(pt));
             free(subPrefix);
             break;
         }
         case PT_NT_CHAIN: {
             char *subPrefix = GBS_global_string_copy("{c} %s", prefix);
-            PT_forwhole_chain(pt, PT_dump_leaf(subPrefix));
+            PT_forwhole_chain(pt, PT_dump_leaf(subPrefix, out));
             free(subPrefix);
             break;
         }
         default:
-            printf("%s [unhandled]\n", prefix);
+            fprintf(out, "%s [unhandled]\n", prefix);
             pt_assert(0);
             break;
     }
@@ -185,39 +177,52 @@ void PT_dump_POS_TREE_recursive(POS_TREE *IF_DEBUG(pt), const char *IF_DEBUG(pre
 
 // --------------------------------------------------------------------------------
 
-void PT_dump_POS_TREE(POS_TREE * IF_DEBUG(node)) {
+void PT_dump_POS_TREE(POS_TREE * IF_DEBUG(node), FILE *IF_DEBUG(out)) {
     // Debug function for all stages
 #if defined(DEBUG)
-    if (!node) printf("Zero node\n");
+    if (!node) fputs("<zero node>\n", out);
 
     {
         long i;
         PT_READ_PNTR(&node->data, i);
-        printf("node father 0x%lx\n", i);
+        fprintf(out, "node father 0x%lx\n", i);
     }
 
     switch (PT_read_type(node)) {
         case PT_NT_LEAF: {
             DataLoc loc(node);
-            printf("leaf %i:%i,%i\n", loc.name, loc.rpos, loc.apos);
+            fprintf(out, "leaf %i:%i,%i\n", loc.name, loc.rpos, loc.apos);
             break;
         }
         case PT_NT_NODE:
             for (long i = 0; i < PT_B_MAX; i++) {
-                printf("%6li:0x%p\n", i, PT_read_son(node, (PT_BASES)i));
+                fprintf(out, "%6li:0x%p\n", i, PT_read_son(node, (PT_BASES)i));
             }
             break;
         case PT_NT_CHAIN:
-            printf("chain:\n");
+            fputs("chain:\n", out);
             PT_forwhole_chain(node, PTD_chain_print());
             break;
         case PT_NT_SAVED:
-            printf("saved:\n");
+            fputs("saved:\n", out);
             break;
         default:
-            printf("?????\n");
+            fputs("<invalid node type>\n", out);
             break;
     }
 #endif
 }
+
+
+void PT_dump_POS_TREE_to_file(const char *IF_DEBUG(dumpfile)) {
+#if defined(DEBUG)
+    FILE *dump = fopen(dumpfile, "wt");
+    if (!dump) {
+        GBK_terminate(GB_IO_error("writing", dumpfile));
+    }
+    PT_dump_POS_TREE_recursive(psg.pt, "", dump);
+    fclose(dump);
+#endif
+}
+
 
