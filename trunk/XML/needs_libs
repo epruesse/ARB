@@ -1,4 +1,4 @@
 # libraries needed to link against XML/XML.a
 
-ARBDB/libARBDB.so
+lib/libARBDB.so
 

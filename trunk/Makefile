@@ -1130,6 +1130,17 @@ include SOURCE_TOOLS/export2sub
 		"cflags=noCflags" \
 		clean
 
+
+# stop wrong targets
+target_is_missing_lib_prefix:
+	@echo "Error: Denied to build shared library target with missing 'lib'-prefix"
+	false
+
+ARBDB/ARBDB.dummy:   target_is_missing_lib_prefix
+CORE/CORE.dummy:     target_is_missing_lib_prefix
+AWT/AWT.dummy:       target_is_missing_lib_prefix
+WINDOW/WINDOW.dummy: target_is_missing_lib_prefix
+
 # rule to generate main target (normally a library):
 %.dummy:
 	@( export ID=$$$$; LANG=C; \
@@ -1260,13 +1271,6 @@ PROBE_DESIGN/PROBE_DESIGN.dummy : 	com
 NALIGNER/NALIGNER.dummy : 		com
 
 ARB_GDE/ARB_GDE.dummy : 		proto_tools
-
-# synonyms for some dummy targets
-
-ARBDB/ARBDB.dummy:		ARBDB/libARBDB.dummy
-CORE/CORE.dummy:		CORE/libCORE.dummy
-AWT/AWT.dummy:			AWT/libAWT.dummy 
-WINDOW/WINDOW.dummy:		WINDOW/libWINDOW.dummy
 
 #***************************************************************************************
 #			Short aliases to make targets
@@ -1876,7 +1880,7 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
-	ARBDB/ARBDB.test \
+	ARBDB/libARBDB.test \
 	CONSENSUS_TREE/CONSENSUS_TREE.test \
 	TOOLS/arb_consensus_tree.test \
 	TOOLS/arb_test.test \
@@ -1885,8 +1889,8 @@ UNITS_TESTED_FIRST = \
 
 UNITS_TESTED = \
 	DBSERVER/DBSERVER.test \
-	AWT/AWT.test \
-	CORE/CORE.test \
+	AWT/libAWT.test \
+	CORE/libCORE.test \
 	SL/TREEDISP/TREEDISP.test \
 	NTREE/NTREE.test \
 	AISC_MKPTPS/mkptypes.test \
@@ -1896,7 +1900,7 @@ UNITS_TESTED = \
 	SERVERCNTRL/SERVERCNTRL.test \
 	SL/FAST_ALIGNER/FAST_ALIGNER.test \
 	SL/PRONUC/PRONUC.test \
-	WINDOW/WINDOW.test \
+	WINDOW/libWINDOW.test \
 	HELP_SOURCE/arb_help2xml.test \
 	CONVERTALN/CONVERTALN.test \
 	SL/SEQIO/SEQIO.test \

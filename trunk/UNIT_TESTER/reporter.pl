@@ -300,6 +300,28 @@ sub do_report() {
   return undef;
 }
 
+sub check_obsolete_restricts() {
+  my $restrict = $ENV{CHECK_RESTRICT};
+  if (not defined $restrict) {
+    print "Can't check restriction (empty)\n";
+  }
+  else {
+    $restrict = ':'.$restrict.':';
+    if ($restrict =~ /:(WINDOW|ARBDB|AWT|CORE):/) {
+      my $lib = $1;
+      my $msl = 'Makefile.setup.local';
+
+      print "UNIT_TESTER/$msl:1: Error: Obsolete restriction '$lib' (should be 'lib$lib')\n";
+      my $grepcmd = "grep -n \'RESTRICT_LIB.*=.*$lib\' $msl";
+      open(GREP,$grepcmd.'|') || die "can't execute '$grepcmd' (Reason: $?)";
+      foreach (<GREP>) {
+        print "UNIT_TESTER/$msl:$_";
+      }
+      die;
+    }
+  }
+}
+
 # --------------------------------------------------------------------------------
 
 sub main() {
@@ -328,6 +350,7 @@ sub main() {
     print "       slow-delay    >0 => run slow tests only every slow-delay minutes\n";
   }
   else {
+    check_obsolete_restricts();
     eval { $error = &$cb(); };
     if ($@) { $error = $@; }
   }

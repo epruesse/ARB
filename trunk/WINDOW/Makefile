@@ -30,10 +30,18 @@ OBJECTS = \
 		aw_scalar.o \
 
 
-$(MAIN): $(OBJECTS)
-	$(LINK_SHARED_LIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
-	touch $@
-	cp $(@:.a=).$(SHARED_LIB_SUFFIX) ../lib
+LIB_SHARED=../lib/$(MAIN:.a=).$(SHARED_LIB_SUFFIX)
+
+it: do_$(MAIN)
+
+do_WINDOW.a:
+	@echo "Error: MAIN='$(MAIN)' is set wrong"
+	false
+
+do_libWINDOW.a: $(LIB_SHARED)
+
+$(LIB_SHARED): $(OBJECTS)
+	$(LINK_SHARED_LIB) $(LIB_SHARED) $(OBJECTS)
 
 .cxx.o:
 	$(CPPLIB) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)

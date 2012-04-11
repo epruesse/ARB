@@ -1,6 +1,6 @@
 # libraries needed to link against SL/FAST_ALIGNER/FAST_ALIGNER.a
 
-AWT/libAWT.so
+lib/libAWT.so
 AWTC/AWTC.a
 ISLAND_HOPPING/ISLAND_HOPPING.a
 SL/HELIX/HELIX.a
