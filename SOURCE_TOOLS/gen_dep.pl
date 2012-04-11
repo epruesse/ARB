@@ -35,6 +35,7 @@ sub main() {
 
     my $base = $lib;
     $base =~ s/\.(a|o|so)$//;
+    if ($base =~ /^lib\/lib/) { $base = $'.'/'.$'; }
 
     print "$base.$suffix:";
     foreach (@depends_on) {

@@ -1,6 +1,4 @@
-ARBDB/libARBDB.so
 ARB_GDE/ARB_GDE.a
-AWT/libAWT.so
 AWTC/AWTC.a
 AWTI/AWTI.a
 CONSENSUS_TREE/CONSENSUS_TREE.a
@@ -62,5 +60,8 @@ TOOLS/arb_consensus_tree.o
 TOOLS/arb_probe.o
 TOOLS/arb_test.o
 WETC/WETC.a
-WINDOW/libWINDOW.so
 XML/XML.a
+lib/libARBDB.so
+lib/libAWT.so
+lib/libWINDOW.so
+lib/libCORE.so

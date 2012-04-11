@@ -57,10 +57,19 @@ GB_X =  \
 
 OBJECTS = $(GB_O) $(GB_T) $(GB_PP) $(GB_X)
 
-$(MAIN): $(OBJECTS)
-	$(LINK_SHARED_LIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
-	touch $@
-	cp $(@:.a=).$(SHARED_LIB_SUFFIX) ../lib
+LIB_SHARED=../lib/$(MAIN:.a=).$(SHARED_LIB_SUFFIX)
+
+# MAIN contains .a (instead of wanted .so). Translate via do_...-target
+it: do_$(MAIN)
+
+do_ARBDB.a:
+	@echo "Error: MAIN='$(MAIN)' is set wrong"
+	false
+
+do_libARBDB.a: $(LIB_SHARED)
+
+$(LIB_SHARED): $(OBJECTS)
+	$(LINK_SHARED_LIB) $(LIB_SHARED) $(OBJECTS)
 
 .cxx.o:
 	$(CPPLIB) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)

@@ -95,8 +95,14 @@ sub dependencyFile2target($) {
     else {
       $libname = substr($suffix,1);
       $libname =~ s/\_(so|a|o)$/\.$1/o;
+      if ($1 eq 'so') {
+        $dir = 'lib';
+      }
     }
     $target = $dir.'/'.$libname;
+    if ($target eq 'lib/lib.dummy') {
+      die "Generated invalid target '$target'";
+    }
   }
   else {
     die "Illegal dependency file '$depfile'";
@@ -115,16 +121,26 @@ sub target2dependencyFile($) {
   my $dir     = dirOf($target);
 
   if (defined $dir) {
-    my $lastdir    = filenameOf($dir);
-    my $defaultLib = $dir.'/'.$lastdir.'.a';
-
-    if ($target eq $defaultLib) {
-      $depfile = $dir.'/'.$libdepend_file;
+    if ($dir eq 'lib') {
+      if ($target =~ /^lib\/lib([A-Z]+)\.so$/) {
+        $depfile = $1.'/'.$libdepend_file.'.lib'.$1.'_so';
+      }
+      else {
+        $depfile = "failed to parse libname from '$target'";
+      }
     }
     else {
-      my $targetName =  filenameOf($target);
-      $targetName    =~ s/\.(so|a|o)$/_$1/o;
-      $depfile       =  $dir.'/'.$libdepend_file.'.'.$targetName;
+      my $lastdir    = filenameOf($dir);
+      my $defaultLib = $dir.'/'.$lastdir.'.a';
+
+      if ($target eq $defaultLib) {
+        $depfile = $dir.'/'.$libdepend_file;
+      }
+      else {
+        my $targetName =  filenameOf($target);
+        $targetName    =~ s/\.(so|a|o)$/_$1/o;
+        $depfile       =  $dir.'/'.$libdepend_file.'.'.$targetName;
+      }
     }
   }
   else { # no dir -> must be executable
@@ -490,10 +506,10 @@ sub find_dep_decl_files($\@) {
 }
 
 my %dep2lib = (
-               'ARBDB/needs_libs.libARBDB_so'   => 'ARBDB/libARBDB.so',
-               'AWT/needs_libs.libAWT_so'       => 'AWT/libAWT.so',
-               'CORE/needs_libs.libCORE_so'     => 'CORE/libCORE.so',
-               'WINDOW/needs_libs.libWINDOW_so' => 'WINDOW/libWINDOW.so',
+               'ARBDB/needs_libs.libARBDB_so'   => 'lib/libARBDB.so',
+               'AWT/needs_libs.libAWT_so'       => 'lib/libAWT.so',
+               'CORE/needs_libs.libCORE_so'     => 'lib/libCORE.so',
+               'WINDOW/needs_libs.libWINDOW_so' => 'lib/libWINDOW.so',
 
                'GL/glAW/needs_libs.libglAW_a'       => 'GL/glAW/libglAW.a',
                'GL/glpng/needs_libs.libglpng_arb_a' => 'GL/glpng/libglpng_arb.a',
@@ -663,14 +679,26 @@ sub generateDependencyGraph(\@\@$) {
 
 sub pushDirsTo($\@\@) {
   my ($pathPrefix,$depends_r,$out_r) = @_;
+  my @out = ();
   foreach my $dep (@$depends_r) {
-    if (is_library($dep)) {
+    if (is_static_lib($dep)) {
       my $dir  = dirOf($dep);
       defined $dir || die "no dir for '$dep'";
       my $name = filenameOf($dir);
-      push @$out_r, prefix($pathPrefix,$dir.'/'.$name);
+      push @out, prefix($pathPrefix,$dir.'/'.$name);
+    }
+    elsif (is_dynamic_lib($dep)) {
+      if ($dep =~ /^lib\/lib([A-Z]+)\.so/) {
+        my $base = $1;
+        push @out, prefix($pathPrefix,$base.'/'.$base);
+      }
+      else {
+        die "malformed (unexpected) dependency name for shared lib ('$dep')";
+      }
     }
   }
+
+  foreach (sort @out) { push @$out_r, $_; }
 }
 
 sub pushFilesTo($\@\@) {

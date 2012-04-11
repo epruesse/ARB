@@ -33,7 +33,7 @@ ISSHAREDLIB=$(findstring $(UNITDIR),$(SHAREDLIBS))
 ISEXEOBJECT=$(findstring $(UNITDIR),$(EXEOBJDIRS))
 
 ifneq ($(ISSHAREDLIB),)
-	UNITLIB=lib$(UNITLIBNAME).so
+	UNITLIB=$(UNITLIBNAME).so
 else
 ifneq ($(ISEXEOBJECT),)
 	UNITLIB=$(UNITLIBNAME).o
@@ -44,7 +44,11 @@ endif
 
 UNIQUE_NAME=test_$(subst /,_,$(subst .,_,$(UNITDIR)_$(UNITLIB)))
 
+ifneq ($(ISSHAREDLIB),)
+FULLLIB=$(ARBHOME)/lib/$(UNITLIB)
+else
 FULLLIB=$(FULLUNITDIR)/$(UNITLIB)
+endif
 
 DESTDIR=tests
 RUNDIR=run# see also UnitTester.cxx@chdir

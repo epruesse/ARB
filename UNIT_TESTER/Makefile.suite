@@ -72,7 +72,7 @@ init:
 #ifeq ($(VALGRIND_EXTERNAL),E)
 	./valgrind/arb_valgrind_logged INIT "$(VALGRIND_EXTERNAL)" $(CHECK_LEAKS)
 #endif
-	@$(TEST_REPORTER) init $(TEST_LOG_DIR) $(SKIP_SLOW)
+	(export CHECK_RESTRICT=$(RESTRICT_LIB); $(TEST_REPORTER) init $(TEST_LOG_DIR) $(SKIP_SLOW))
 
 cleanup: update_patches_if_passed
 	@echo "$(SEP) All unit tests passed"

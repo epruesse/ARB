@@ -5,10 +5,19 @@
 CXX=$(wildcard *.cxx)
 OBJECTS=$(subst .cxx,.o,$(CXX))
 
-$(MAIN): $(OBJECTS)
-	$(LINK_SHARED_LIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
-	touch $@
-	cp $(@:.a=).$(SHARED_LIB_SUFFIX) ../lib
+LIB_SHARED=../lib/$(MAIN:.a=).$(SHARED_LIB_SUFFIX)
+
+# MAIN contains .a (instead of wanted .so). Translate via do_...-target
+it: do_$(MAIN)
+
+do_AWT.a:
+	@echo "Error: MAIN='$(MAIN)' is set wrong"
+	false
+
+do_libAWT.a: $(LIB_SHARED)
+
+$(LIB_SHARED): $(OBJECTS)
+	$(LINK_SHARED_LIB) $(LIB_SHARED) $(OBJECTS)
 
 .cxx.o:
 	$(CPPLIB) $(cflags) -c $<  $(CPPINCLUDES) $(POST_COMPILE)
