@@ -214,6 +214,7 @@ my @skipped_when_matchesFull = (
                                 qr/^\.\/UNIT_TESTER\/run\/TEST_g?pt\.arb$/o,
                                 qr/^\.\/UNIT_TESTER\/run\/.*\.ARM$/o,
                                 qr/^\.\/UNIT_TESTER\/run\/.*\.ARF$/o,
+                                qr/^\.\/UNIT_TESTER\/Makefile\.setup\.local\.last$/o,
                                 qr/date\.xsl$/o,
                                );
 
