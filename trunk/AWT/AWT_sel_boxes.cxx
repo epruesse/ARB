@@ -25,9 +25,9 @@
 #include <arb_strbuf.h>
 #include <arb_strarray.h>
 #include <arb_file.h>
+#include <arb_global_defs.h>
 
 #include <list>
-#include <arb_global_defs.h>
 
 using namespace std;
 
@@ -42,7 +42,7 @@ public:
         : AW_DB_selection(win_, sellist_, gb_presets)
         , ali_type_match(nulldup(ali_type_match_))
     {}
-
+    
     void fill() {
         GBDATA         *gb_presets = get_gbd();
         GB_transaction  ta(gb_presets);
@@ -62,23 +62,34 @@ public:
         }
         insert_default_selection("????", "????");
     }
+
+    void reconfigure(const char *new_ali_type_match) {
+        freedup(ali_type_match, new_ali_type_match);
+        refresh();
+    }
 };
 
-void awt_create_selection_list_on_alignments(GBDATA *gb_main, AW_window *aws, const char *varname, const char *comm) {
+AW_DB_selection *awt_create_selection_list_on_alignments(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match) {
     // Create selection lists on alignments
     //
-    // if comm is set, then only insert alignments,
-    // where 'comm' GBS_string_eval's the alignment type
+    // if 'ali_type_match' is set, then only insert alignments,
+    // where 'ali_type_match' GBS_string_eval's the alignment type
 
     GBDATA *gb_presets;
     {
         GB_transaction ta(gb_main);
         gb_presets = GBT_get_presets(gb_main);
     }
-    AW_selection_list *sellist = aws->create_selection_list(varname, 0, "", 20, 3);
-    (new AWT_alignment_selection(aws, sellist, gb_presets, comm))->refresh(); // belongs to window now
+    AW_selection_list       *sellist = aws->create_selection_list(varname, 0, "", 20, 3);
+    AWT_alignment_selection *alisel  = new AWT_alignment_selection(aws, sellist, gb_presets, ali_type_match);
+    alisel->refresh(); // belongs to window now
+    return alisel;
 }
 
+void awt_reconfigure_selection_list_on_alignments(AW_DB_selection *dbsel, const char *ali_type_match) {
+    AWT_alignment_selection *alisel = dynamic_cast<AWT_alignment_selection*>(dbsel);
+    alisel->reconfigure(ali_type_match);
+}
 
 // ---------------------------------
 //      selection boxes on trees

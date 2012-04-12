@@ -40,15 +40,6 @@ using namespace std;
 #define MOVE_DOWN  0
 #define MOVE_UP    1
 
-struct conAlignStruct {
-    GBDATA            *gb_main;
-    AW_window         *aws;
-    AW_root           *awr;
-    AW_selection_list *db_id;
-    AW_selection_list *con_id;
-    char              *seqType;
-};
-
 struct SpeciesConcatenateList {
     GBDATA *species;
     char   *species_name;
@@ -58,7 +49,6 @@ struct SpeciesConcatenateList {
 
 extern GBDATA            *GLOBAL_gb_main;
 static AW_selection_list *con_alignment_list;
-static AW_selection_list *db_alignment_list;
 
 // --------------------------creating and initializing AWARS----------------------------------------
 void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def) {
@@ -72,64 +62,19 @@ void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def) {
 }
 
 // ------------------------Selecting alignments from the database for concatenation----------------------
-static void createSelectionList_callBack(conAlignStruct *cas) {
-    GBDATA *gb_alignment;
-    GBDATA *gb_alignment_name;
-    GBDATA *gb_alignment_type;
-    char   *alignment_name;
-    char   *alignment_type;
 
-    GB_push_transaction(GLOBAL_gb_main);  // opening a transaction if not opened yet
+inline char *get_alitype_eval(AW_root *aw_root) {
+    return GBS_global_string_copy("%s=", aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_char_pntr()); 
+}
 
-    AW_root *aw_root = cas->aws->get_root();
-    char *ali_type   = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();
-    freeset(ali_type, GBS_global_string_copy("%s=", ali_type));
-
-    cas->aws->clear_selection_list(cas->db_id); // clearing the selection list
-
-    for (gb_alignment = GB_search(GLOBAL_gb_main, "presets/alignment", GB_FIND);
-         gb_alignment;
-         gb_alignment = GB_nextEntry(gb_alignment))
-        {
-            gb_alignment_type = GB_entry(gb_alignment, "alignment_type");
-            gb_alignment_name = GB_entry(gb_alignment, "alignment_name");
-            alignment_type    = GB_read_string(gb_alignment_type);
-            alignment_name    = GB_read_string(gb_alignment_name);
-
-            char *str = GBS_string_eval(alignment_type, ali_type, 0);   // selecting the alignments of the selected sequence type
-            if (!*str) {
-                cas->aws->insert_selection(cas->db_id, alignment_name, alignment_name);     // inserting to the selection list
-            }
-            free(str);
-            free(alignment_type);
-            free(alignment_name);
-        }
-    cas->aws->insert_default_selection(cas->db_id, "????", "????");
-    cas->aws->update_selection_list(cas->db_id);
-
-    GB_pop_transaction(GLOBAL_gb_main); // closing a transaction
+void alitype_changed_cb(AW_root *aw_root, AW_CL cl_db_sel) {
+    AW_DB_selection *db_sel   = (AW_DB_selection*)cl_db_sel;
+    char            *ali_type = get_alitype_eval(aw_root);
+    awt_reconfigure_selection_list_on_alignments(db_sel, ali_type);
     free(ali_type);
 }
 
-static void createSelectionList_callBack_gb(GBDATA*, int *cl_cas, GB_CB_TYPE cbtype) {
-    if (cbtype == GB_CB_CHANGED) {
-        conAlignStruct *cas = (conAlignStruct*)cl_cas;
-        createSelectionList_callBack(cas);
-    }
-}
-
-static void createSelectionList_callBack_awar(AW_root *IF_ASSERTION_USED(aw_root), AW_CL cl_cas) {
-    conAlignStruct *cas = (conAlignStruct*)cl_cas;
-    nt_assert(aw_root==cas->aws->get_root());
-    createSelectionList_callBack(cas);
-    // clear the selected alignments and set default to ????
-    cas->aws->clear_selection_list(con_alignment_list);
-    cas->aws->insert_default_selection(con_alignment_list, "????", "????");
-    cas->aws->update_selection_list(con_alignment_list);
-}
-
-
-static conAlignStruct* createSelectionList(GBDATA *gb_main, AW_window *aws, const char *awarName) {
+static AW_DB_selection* createSelectionList(GBDATA *gb_main, AW_window *aws, const char *awarName) {
 
 #ifdef DEBUG
     static bool ran=false;
@@ -137,39 +82,24 @@ static conAlignStruct* createSelectionList(GBDATA *gb_main, AW_window *aws, cons
     ran=true;                 // prevents calling this function for the second time
 #endif
 
-    GBDATA *gb_presets;
-    AW_root *aw_root  = aws->get_root();
-    char    *ali_type = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();  // reading sequence type from the concatenation window
-    ali_type          = GBS_global_string_copy("%s=", ali_type);               // copying the awar with '=' appended to it
-
-    db_alignment_list = aws->create_selection_list(awarName, 0, "", 10, 20);
-
-    conAlignStruct *cas = 0;
-    cas          = new conAlignStruct; // don't free (used in callback)
-    cas->aws     = aws;
-    cas->gb_main = gb_main;
-    cas->db_id   = db_alignment_list;
-    cas->seqType  = 0; if (ali_type) cas->seqType = strdup(ali_type);  // assigning the sequence type to struct cas
-
-    createSelectionList_callBack(cas); // calling callback to get the alignments in the database
-
-    GB_push_transaction(gb_main);
-    gb_presets = GBT_get_presets(gb_main);
-    GB_add_callback(gb_presets, GB_CB_CHANGED, createSelectionList_callBack_gb, (int *)cas);
-    GB_pop_transaction(gb_main);
+    AW_root         *aw_root  = aws->get_root();
+    char            *ali_type = get_alitype_eval(aw_root);
+    AW_DB_selection *db_sel   = awt_create_selection_list_on_alignments(gb_main, aws, awarName, ali_type);
 
     free(ali_type);
-    return cas;
-
+    return db_sel;
 }
 
-static void selectAlignment(AW_window *aws) {
+static void selectAlignment(AW_window *aws, AW_CL cl_db_sel) {
+    AW_DB_selection *db_sel = (AW_DB_selection*)cl_db_sel;
+
     AW_root *aw_root            = aws->get_root();
     char    *selected_alignment = aw_root->awar(AWAR_CON_DB_ALIGNS)->read_string();
 
     if (selected_alignment && selected_alignment[0] != 0 && selected_alignment[0] != '?') {
-        int  left_index  = aws->get_index_of_element(db_alignment_list, selected_alignment);
-        bool entry_found = false;
+        AW_selection_list *db_alignment_list = db_sel->get_sellist();
+        int                left_index        = aws->get_index_of_element(db_alignment_list, selected_alignment);
+        bool               entry_found       = false;
 
         // browse thru the entries and insert the selection if not in the selected list
         for (const char *listEntry = con_alignment_list->first_element();
@@ -186,14 +116,17 @@ static void selectAlignment(AW_window *aws) {
             aws->update_selection_list(con_alignment_list);
         }
 
-        aws->select_element_at_index(db_alignment_list, left_index+1); // go down 1 position on left side
+        aws->select_element_at_index(db_alignment_list, left_index+1);           // go down 1 position on left side
         aw_root->awar(AWAR_CON_CONCAT_ALIGNS)->write_string(selected_alignment); // position right side to newly added or already existing alignment
     }
     free(selected_alignment);
 }
 
 
-static void selectAllAlignments(AW_window *aws) {
+static void selectAllAlignments(AW_window *aws, AW_CL cl_db_sel) {
+    AW_DB_selection   *db_sel            = (AW_DB_selection*)cl_db_sel;
+    AW_selection_list *db_alignment_list = db_sel->get_sellist();
+
     const char *listEntry = db_alignment_list->first_element();
     aws->clear_selection_list(con_alignment_list);
 
@@ -386,6 +319,9 @@ static void concatenateAlignments(AW_window *aws) {
         char *nfield = GBS_global_string_copy("%s/data", new_ali_name);
         error        = GBT_add_new_changekey(GLOBAL_gb_main, nfield, GB_STRING);
         free(nfield);
+    }
+    else {
+        progress.done();
     }
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
     free(new_ali_name);
@@ -856,7 +792,7 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("dbAligns");
-    conAlignStruct *cas = createSelectionList(GLOBAL_gb_main, (AW_window *)aws, AWAR_CON_DB_ALIGNS);
+    AW_DB_selection *db_sel = createSelectionList(GLOBAL_gb_main, aws, AWAR_CON_DB_ALIGNS);
 
     aws->at("concatAligns");
     con_alignment_list = aws->create_selection_list(AWAR_CON_CONCAT_ALIGNS);
@@ -869,19 +805,19 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     aws->insert_option("RNA", "r", "rna");
     aws->insert_default_option("PROTEIN", "p", "ami");
     aws->update_option_menu();
-    aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->add_callback(createSelectionList_callBack_awar, (AW_CL)cas); // associating selection list callback to sequence type awar
+    aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->add_callback(alitype_changed_cb, (AW_CL)db_sel); 
 
     aws->button_length(0);
 
-    aws->at("all");  aws->callback(selectAllAlignments); aws->create_button("ADDALL", "#moveAllRight.bitmap");
-    aws->at("add");  aws->callback(selectAlignment);     aws->create_button("ADD",    "#moveRight.bitmap");
-    aws->at("rem");  aws->callback(removeAlignment);     aws->create_button("REMOVE", "#moveLeft.bitmap");
-    aws->at("clr");  aws->callback(clearAlignmentList);  aws->create_button("CLEAR",  "#moveAllLeft.bitmap");
+    aws->at("all"); aws->callback(selectAllAlignments, (AW_CL)db_sel); aws->create_button("ADDALL", "#moveAllRight.bitmap");
+    aws->at("add"); aws->callback(selectAlignment,     (AW_CL)db_sel); aws->create_button("ADD",    "#moveRight.bitmap");
+    aws->at("rem"); aws->callback(removeAlignment);                    aws->create_button("REMOVE", "#moveLeft.bitmap");
+    aws->at("clr"); aws->callback(clearAlignmentList);                 aws->create_button("CLEAR",  "#moveAllLeft.bitmap");
 
-    aws->at("top");  aws->callback(shiftAlignment, -2);  aws->create_button("top",    "#moveTop.bitmap",    0);
-    aws->at("up");   aws->callback(shiftAlignment, -1);  aws->create_button("up",     "#moveUp.bitmap",     0);
-    aws->at("down"); aws->callback(shiftAlignment, 1);   aws->create_button("down",   "#moveDown.bitmap",   0);
-    aws->at("bot");  aws->callback(shiftAlignment, 2);   aws->create_button("bottom", "#moveBottom.bitmap", 0);
+    aws->at("top");  aws->callback(shiftAlignment, -2); aws->create_button("top",    "#moveTop.bitmap",    0);
+    aws->at("up");   aws->callback(shiftAlignment, -1); aws->create_button("up",     "#moveUp.bitmap",     0);
+    aws->at("down"); aws->callback(shiftAlignment, 1);  aws->create_button("down",   "#moveDown.bitmap",   0);
+    aws->at("bot");  aws->callback(shiftAlignment, 2);  aws->create_button("bottom", "#moveBottom.bitmap", 0);
 
     aws->at("aliName");
     aws->label_length(15);

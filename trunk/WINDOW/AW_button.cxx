@@ -1372,6 +1372,8 @@ void AW_window::conc_list(AW_selection_list *from_list, AW_selection_list *to_li
 
 // -----------------------------------------
 //      iterator through selection list:
+//
+// @@@ stuff below should be part of class AW_selection_list
 
 static AW_selection_list_entry *current_list_table = 0;
 
