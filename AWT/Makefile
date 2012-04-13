@@ -282,6 +282,17 @@ AWT_map_key.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/test_global.h
 
+AWT_modules.o: awt_modules.hxx
+AWT_modules.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AWT_modules.o: $(ARBHOME)/INCLUDE/arb_core.h
+AWT_modules.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AWT_modules.o: $(ARBHOME)/INCLUDE/arbtools.h
+AWT_modules.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AWT_modules.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+AWT_modules.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_modules.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_modules.o: $(ARBHOME)/INCLUDE/test_global.h
+
 AWT_sel_boxes.o: awt.hxx
 AWT_sel_boxes.o: awt_sel_boxes.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/ad_config.h
