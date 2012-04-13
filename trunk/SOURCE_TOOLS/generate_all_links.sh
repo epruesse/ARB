@@ -210,6 +210,7 @@ symlink_file ../AWT/awt_hotkeys.hxx INCLUDE/awt_hotkeys.hxx &&
 symlink_file ../AWT/awt_input_mask.hxx INCLUDE/awt_input_mask.hxx &&
 symlink_file ../AWT/awt_macro.hxx INCLUDE/awt_macro.hxx &&
 symlink_file ../AWT/awt_map_key.hxx INCLUDE/awt_map_key.hxx &&
+symlink_file ../AWT/awt_modules.hxx INCLUDE/awt_modules.hxx &&
 symlink_file ../AWT/awt_sel_boxes.hxx INCLUDE/awt_sel_boxes.hxx &&
 symlink_file ../AWT/awt_seq_colors.hxx INCLUDE/awt_seq_colors.hxx &&
 symlink_file ../AWT/awt_www.hxx INCLUDE/awt_www.hxx &&

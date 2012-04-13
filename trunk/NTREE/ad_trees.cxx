@@ -16,6 +16,7 @@
 #include <TreeWrite.h>
 
 #include <awt_sel_boxes.hxx>
+#include <awt_modules.hxx>
 
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
@@ -545,17 +546,9 @@ static AW_window *create_tree_cmp_window(AW_root *root) {
     return aws;
 }
 
-enum tree_pos {
-    TREE_TOP, 
-    TREE_UP, 
-    TREE_DOWN, 
-    TREE_BOTTOM, 
-};
-
-static void move_tree_pos(AW_window *aww, AW_CL cl_treepos) {
+static void reorder_trees_cb(AW_window *aww, awt_reorder_mode dest, AW_CL) {
     // moves the tree in the list of trees
 
-    tree_pos  dest      = (tree_pos)cl_treepos;
     char     *tree_name = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
     GB_ERROR  error     = NULL;
 
@@ -571,22 +564,22 @@ static void move_tree_pos(AW_window *aww, AW_CL cl_treepos) {
         GBDATA         *gb_target_tree = NULL;
 
         switch (dest) {
-            case TREE_UP:
+            case ARM_UP:
                 move_mode      = GBT_INFRONTOF;
                 gb_target_tree = GBT_tree_infrontof(gb_moved_tree);
                 if (gb_target_tree) break;
-                // fall-through
-            case TREE_BOTTOM:
+                // fall-through (move top-tree up = move to bottom)
+            case ARM_BOTTOM:
                 move_mode      = GBT_BEHIND;
                 gb_target_tree = GBT_find_bottom_tree(GLOBAL_gb_main);
                 break;
 
-            case TREE_DOWN:
+            case ARM_DOWN:
                 move_mode      = GBT_BEHIND;
                 gb_target_tree = GBT_tree_behind(gb_moved_tree);
                 if (gb_target_tree) break;
-                // fall-through
-            case TREE_TOP:
+                // fall-through (move bottom-tree down = move to top)
+            case ARM_TOP:
                 move_mode      = GBT_INFRONTOF;
                 gb_target_tree = GBT_find_top_tree(GLOBAL_gb_main);
                 break;
@@ -672,15 +665,13 @@ AW_window *create_trees_window(AW_root *aw_root) {
 
         aws->button_length(0);
 
-        aws->at("top");  aws->callback(move_tree_pos, TREE_TOP);    aws->create_button("moveTop",    "#moveTop.bitmap",    0);
-        aws->at("up");   aws->callback(move_tree_pos, TREE_UP);     aws->create_button("moveUp",     "#moveUp.bitmap",     0);
-        aws->at("down"); aws->callback(move_tree_pos, TREE_DOWN);   aws->create_button("moveDown",   "#moveDown.bitmap",   0);
-        aws->at("bot");  aws->callback(move_tree_pos, TREE_BOTTOM); aws->create_button("moveBottom", "#moveBottom.bitmap", 0);
+        aws->at("sort");
+        awt_create_order_buttons(aws, reorder_trees_cb, 0);
 
         aws->at("list");
         awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, AWAR_TREE_NAME);
 
     }
 
-    return (AW_window *)aws;
+    return aws;
 }

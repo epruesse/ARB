@@ -23,6 +23,7 @@
 #include <arb_progress.h>
 #include <arb_strbuf.h>
 #include <arb_strarray.h>
+#include <awt_modules.hxx>
 
 #define nt_assert(bed) arb_assert(bed)
 
@@ -161,18 +162,23 @@ static void removeAlignment(AW_window *aws) {
     free(selected_alignment);
 }
 
-static void shiftAlignment(AW_window *aws, long direction) {
+static void reorder_alignments_cb(AW_window *aws, awt_reorder_mode dest, AW_CL) {
     AW_root *aw_root            = aws->get_root();
     char    *selected_alignment = aw_root->awar(AWAR_CON_CONCAT_ALIGNS)->read_string();
-
-    nt_assert(abs(direction) >= 1 && abs(direction) <= 2);
 
     if (selected_alignment && selected_alignment[0] && selected_alignment[0] != '?') {
         StrArray listContent;
         aws->selection_list_to_array(listContent, con_alignment_list, true);
 
         int old_pos = GBT_names_index_of(listContent, selected_alignment);
-        GBT_names_move(listContent, old_pos, abs(direction) == 1 ? old_pos+direction : (direction<0 ? 0 : -1));
+        int new_pos;
+        switch (dest) {
+            case ARM_TOP:    new_pos= 0;         break;
+            case ARM_UP:     new_pos= old_pos-1; break;
+            case ARM_DOWN:   new_pos= old_pos+1; break;
+            case ARM_BOTTOM: new_pos= -1;        break;
+        }
+        GBT_names_move(listContent, old_pos, new_pos);
         aws->init_selection_list_from_array(con_alignment_list, listContent, con_alignment_list->get_default_value());
     }
 
@@ -814,10 +820,8 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     aws->at("rem"); aws->callback(removeAlignment);                    aws->create_button("REMOVE", "#moveLeft.bitmap");
     aws->at("clr"); aws->callback(clearAlignmentList);                 aws->create_button("CLEAR",  "#moveAllLeft.bitmap");
 
-    aws->at("top");  aws->callback(shiftAlignment, -2); aws->create_button("top",    "#moveTop.bitmap",    0);
-    aws->at("up");   aws->callback(shiftAlignment, -1); aws->create_button("up",     "#moveUp.bitmap",     0);
-    aws->at("down"); aws->callback(shiftAlignment, 1);  aws->create_button("down",   "#moveDown.bitmap",   0);
-    aws->at("bot");  aws->callback(shiftAlignment, 2);  aws->create_button("bottom", "#moveBottom.bitmap", 0);
+    aws->at("sort");
+    awt_create_order_buttons(aws, reorder_alignments_cb, 0);
 
     aws->at("aliName");
     aws->label_length(15);
@@ -841,6 +845,6 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     aws->create_button("MERGE_CONCATENATE", "MERGE & CONCATENATE", "S");
 
     aws->show();
-    return (AW_window *)aws;
+    return aws;
 }
 // -------------------------------------------------------------------------------------------------------

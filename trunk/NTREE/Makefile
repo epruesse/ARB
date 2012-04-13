@@ -223,6 +223,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/awt_modules.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/cb.h
 ad_trees.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -435,6 +436,7 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_modules.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/cb.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/dupstr.h
