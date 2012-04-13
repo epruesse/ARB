@@ -42,7 +42,6 @@ public:
     short saved_xoff_for_label;
 
     short saved_x;
-    bool  correct_for_at_string;
     int   correct_for_at_center;
     short x_for_newline;
 
