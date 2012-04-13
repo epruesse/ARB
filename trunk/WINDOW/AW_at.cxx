@@ -166,10 +166,10 @@ void AW_window::at_newline() {
 
 void AW_window::at(const char *at_id) {
     char to_position[100]; memset(to_position, 0, sizeof(to_position));
-    _at->attach_y              = _at->attach_x = false;
-    _at->attach_ly             = _at->attach_lx = false;
-    _at->attach_any            = false;
-    _at->correct_for_at_string = true;
+
+    _at->attach_y   = _at->attach_x = false;
+    _at->attach_ly  = _at->attach_lx = false;
+    _at->attach_any = false;
 
     if (!xfig_data) GBK_terminatef("no xfig-data loaded, can't position at(\"%s\")", at_id);
 
@@ -300,7 +300,6 @@ void AW_window::unset_at_commands() {
     _callback   = NULL;
     _d_callback = NULL;
 
-    _at->correct_for_at_string = false;
     _at->correct_for_at_center = 0;
     _at->to_position_exists    = false;
     _at->highlight             = false;
@@ -440,6 +439,7 @@ void AW_at_auto::store(const AW_at *at) {
 
     xfn  = at->x_for_newline;
     xfnb = at->x_for_next_button;
+    yfnb = at->y_for_next_button;
     bhob = at->biggest_height_of_buttons;
 }
 
@@ -452,5 +452,6 @@ void AW_at_auto::restore(AW_at *at) const {
 
     at->x_for_newline             = xfn;
     at->x_for_next_button         = xfnb;
+    at->y_for_next_button         = yfnb;
     at->biggest_height_of_buttons = bhob;
 }
