@@ -67,9 +67,15 @@ my $SOURCE_TOOLS = $ARBHOME.'/SOURCE_TOOLS';
 
 sub dir2name($$$) {
   my ($dir,$prefix,$suffix) = @_;
-  my $name;
-  if ($dir =~ /\/([^\/]+)$/) { $name = $dir.'/'.$prefix.$1.$suffix; }
-  elsif ($dir ne '')         { $name = $dir.'/'.$prefix.$dir.$suffix; }
+
+  if ($dir eq '') { return undef; }
+
+  my $lastname = $dir;
+  if ($dir =~ /\/([^\/]+)$/) { $lastname = $1; }
+
+  my $useddir = ($suffix eq '.so') ? 'lib' : $dir;
+  my $name    = $useddir.'/'.$prefix.$lastname.$suffix;
+
   return $name;
 }
 
