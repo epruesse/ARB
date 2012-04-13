@@ -37,21 +37,25 @@ int  AW_window::get_button_height() const { return _at->height_of_buttons; }
 void AW_window::highlight() { _at->highlight = true; }
 
 void AW_window::auto_increment(int x, int y) {
-    _at->auto_increment_x          = x;
-    _at->auto_increment_y          = y;
+    _at->do_auto_increment = true;
+    _at->auto_increment_x  = x;
+    _at->auto_increment_y  = y;
+
+    _at->do_auto_space = false;
+
     _at->x_for_newline             = _at->x_for_next_button;
-    _at->do_auto_space             = false;
-    _at->do_auto_increment         = true;
     _at->biggest_height_of_buttons = 0;
 }
 
 
 void AW_window::auto_space(int x, int y) {
-    _at->auto_space_x              = x;
-    _at->auto_space_y              = y;
+    _at->do_auto_space = true;
+    _at->auto_space_x  = x;
+    _at->auto_space_y  = y;
+    
+    _at->do_auto_increment = false;
+
     _at->x_for_newline             = _at->x_for_next_button;
-    _at->do_auto_space             = true;
-    _at->do_auto_increment         = false;
     _at->biggest_height_of_buttons = 0;
 }
 
@@ -412,6 +416,8 @@ void AW_at_size::restore(AW_at *at) const {
     at->attach_any = attach_any;
 }
 
+
+
 // ----------------------
 //      AW_at_maxsize
 
@@ -422,4 +428,29 @@ void AW_at_maxsize::store(const AW_at *at) {
 void AW_at_maxsize::restore(AW_at *at) const {
     at->max_x_size = maxx;
     at->max_y_size = maxy;
+}
+
+// --------------------
+//      AW_at_auto
+
+void AW_at_auto::store(const AW_at *at) {
+    if   (at->do_auto_increment) { type = INC;   x = at->auto_increment_x; y = at->auto_increment_y; }
+    else if (at->do_auto_space)  { type = SPACE; x = at->auto_space_x;     y = at->auto_space_y;     }
+    else                         { type = OFF; }
+
+    xfn  = at->x_for_newline;
+    xfnb = at->x_for_next_button;
+    bhob = at->biggest_height_of_buttons;
+}
+
+void AW_at_auto::restore(AW_at *at) const {
+    at->do_auto_space     = (type == SPACE);
+    at->do_auto_increment = (type == INC);
+
+    if      (at->do_auto_space)     { at->auto_space_x     = x; at->auto_space_y     = y; }
+    else if (at->do_auto_increment) { at->auto_increment_x = x; at->auto_increment_y = y; }
+
+    at->x_for_newline             = xfn;
+    at->x_for_next_button         = xfnb;
+    at->biggest_height_of_buttons = bhob;
 }
