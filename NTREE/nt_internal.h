@@ -101,6 +101,9 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root);
 AW_window *NT_create_realign_dna_window(AW_root *root);
 void NT_create_transpro_variables(AW_root *root, AW_default db1);
 
+/* ad_trees.cxx */
+AW_window *NT_create_consense_window(AW_root *aw_root);
+
 #else
 #error nt_internal.h included twice
 #endif /* NT_INTERNAL_H */

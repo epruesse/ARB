@@ -28,8 +28,12 @@
 #include <arbdbt.h>
 #include <arb_strbuf.h>
 #include <arb_file.h>
+#include <arb_strarray.h>
+#include <arb_progress.h>
 
 #include <cctype>
+#include <aw_select.hxx>
+#include <CT_ctree.hxx>
 
 #define nt_assert(bed) arb_assert(bed)
 
@@ -57,6 +61,13 @@ extern GBDATA *GLOBAL_gb_main;
 #define AWAR_TREE_EXPORT_HIDE_FOLDED_GROUPS AWAR_TREE_EXPORT_SAV "hide_folded"
 #define AWAR_TREE_EXPORT_QUOTEMODE          AWAR_TREE_EXPORT_SAV "quote_mode"
 #define AWAR_TREE_EXPORT_REPLACE            AWAR_TREE_EXPORT_SAV "replace"
+
+
+#define AWAR_TREE_CONSENSE_TMP AWAR_TREE_TMP "consense/"
+#define AWAR_TREE_CONSENSE_SAV AWAR_TREE_SAV "consense/"
+
+#define AWAR_TREE_CONSENSE_TREE     AWAR_TREE_CONSENSE_SAV "tree"
+#define AWAR_TREE_CONSENSE_SELECTED AWAR_TREE_CONSENSE_TMP "selected"
 
 static void tree_vars_callback(AW_root *aw_root) // Map tree vars to display objects
 {
@@ -181,7 +192,7 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def) {
 
     AW_create_fileselection_awars(aw_root, AWAR_TREE_IMPORT, "", ".tree", "treefile", aw_def);
 
-    aw_root->awar_string(AWAR_TREE_IMPORT "/tree_name", "tree_",    aw_def) ->set_srt(GBT_TREE_AWAR_SRT);
+    aw_root->awar_string(AWAR_TREE_IMPORT "/tree_name", "tree_",    aw_def)->set_srt(GBT_TREE_AWAR_SRT);
 
     aw_root->awar(AWAR_TREE_IMPORT "/file_name")->add_callback(tree_import_callback);
     awar_tree_name->add_callback(tree_vars_callback);
@@ -190,6 +201,9 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def) {
 
     aw_root->awar_int(AWAR_NODE_INFO_ONLY_MARKED, 0,    aw_def);
 
+    aw_root->awar_string(AWAR_TREE_CONSENSE_TREE, "tree_consense", aw_def)->set_srt(GBT_TREE_AWAR_SRT);
+    aw_root->awar_string(AWAR_TREE_CONSENSE_SELECTED, "", aw_def);
+    
     update_filter_cb(aw_root);
     tree_vars_callback(aw_root);
 }
@@ -594,7 +608,7 @@ static void reorder_trees_cb(AW_window *aww, awt_reorder_mode dest, AW_CL) {
     free(tree_name);
 }
 
-AW_window *create_trees_window(AW_root *aw_root) {
+AW_window *create_trees_window(AW_root *aw_root) { // @@@ rename
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
@@ -665,13 +679,100 @@ AW_window *create_trees_window(AW_root *aw_root) {
 
         aws->button_length(0);
 
+        aws->at("list");
+        awt_create_selection_list_on_trees(GLOBAL_gb_main, aws, AWAR_TREE_NAME);
+        
         aws->at("sort");
         awt_create_order_buttons(aws, reorder_trees_cb, 0);
-
-        aws->at("list");
-        awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, AWAR_TREE_NAME);
-
     }
 
     return aws;
 }
+
+// -----------------------
+//      consense tree
+
+
+static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
+    AW_root  *aw_root = aww->get_root();
+    GB_ERROR  error   = NULL;
+
+    // const char *cons_tree_name = TreeAdmin::dest_tree_awar(aw_root)->read_char_pntr();
+    const char *cons_tree_name = aw_root->awar(AWAR_TREE_CONSENSE_TREE)->read_char_pntr();
+    if (!cons_tree_name || !cons_tree_name[0]) {
+        error = "No name specified for the consensus tree";
+    }
+    else {
+        AW_selection *selected_trees = (AW_selection*)cl_selected_trees;
+
+        StrArray tree_names;
+        selected_trees->get_values(tree_names);
+
+        if (tree_names.size()<2) {
+            error = "Not enough trees selected (at least 2 needed)";
+        }
+        else {
+            GBDATA *gb_main = GLOBAL_gb_main;
+            GB_transaction ta(gb_main);
+
+            {
+                arb_progress         progress("Building consensus tree", tree_names.size()+1);
+                ConsensusTreeBuilder tree_builder;
+
+                for (size_t t = 0; t<tree_names.size(); ++t) {
+                    progress.subtitle(GBS_global_string("Adding %s", tree_names[t]));
+                    GBT_TREE *tree = GBT_read_tree(gb_main, tree_names[t], sizeof(*tree));
+                    tree_builder.add(tree, 1.0);
+                    ++progress;
+                }
+
+                progress.subtitle("consense construction");
+                size_t species_count;
+                GBT_TREE *cons_tree = tree_builder.get(species_count);
+                nt_assert(cons_tree);
+                error               = GBT_write_tree(gb_main, 0, cons_tree_name, cons_tree);
+                ++progress;
+
+                if (error) progress.done();
+            }
+
+            error = ta.close(error);
+        }
+    }
+
+    if (!error) {
+        aw_root->awar(AWAR_TREE_NAME)->write_string(cons_tree_name); // show in main window
+    }
+
+    aw_message_if(error);
+}
+
+AW_window *NT_create_consense_window(AW_root *aw_root) {
+    static AW_window_simple *aws = 0;
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(aw_root, "CONSENSE_TREE", "Consense Tree");
+        aws->load_xfig("ad_cons_tree.fig");
+        
+        aws->callback(AW_POPDOWN);
+        aws->at("close");
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->callback(AW_POPUP_HELP, (AW_CL)"consense_tree.hlp");
+        aws->at("help");
+        aws->create_button("HELP", "HELP", "H");
+
+        aws->at("list");
+        AW_DB_selection *all_trees      = awt_create_selection_list_on_trees(GLOBAL_gb_main, aws, AWAR_TREE_CONSENSE_SELECTED);
+        AW_selection    *selected_trees = awt_create_subset_selection_list(aws, all_trees->get_sellist(), "selected", "add", "sort");
+
+        aws->at("name");
+        aws->create_input_field(AWAR_TREE_CONSENSE_TREE);
+
+        aws->at("build");
+        aws->callback(create_consense_tree_cb, AW_CL(selected_trees));
+        aws->create_autosize_button("BUILD", "Build consense tree", "B");
+    }
+    return aws;
+}
+

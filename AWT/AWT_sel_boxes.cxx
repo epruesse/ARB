@@ -129,14 +129,16 @@ struct AWT_tree_selection: public AW_DB_selection {
     }
 };
 
-void awt_create_selection_list_on_trees(GBDATA *gb_main, AW_window *aws, const char *varname) {
+AW_DB_selection *awt_create_selection_list_on_trees(GBDATA *gb_main, AW_window *aws, const char *varname) {
     GBDATA *gb_tree_data;
     {
         GB_transaction ta(gb_main);
         gb_tree_data = GBT_get_tree_data(gb_main);
     }
-    AW_selection_list *sellist = aws->create_selection_list(varname, 0, "", 40, 4);
-    (new AWT_tree_selection(aws, sellist, gb_tree_data))->refresh(); // belongs to window now
+    AW_selection_list  *sellist = aws->create_selection_list(varname, 0, "", 40, 4);
+    AWT_tree_selection *treesel = new AWT_tree_selection(aws, sellist, gb_tree_data); // owned by nobody
+    treesel->refresh();
+    return treesel;
 }
 
 
