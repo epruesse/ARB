@@ -28,9 +28,9 @@
 #include <arb_global_defs.h>
 
 #include <list>
+#include "awt_modules.hxx"
 
 using namespace std;
-
 
 // --------------------------------------
 //      selection boxes on alignments
@@ -60,7 +60,7 @@ public:
             free(alignment_type);
             free(alignment_name);
         }
-        insert_default_selection("????", "????");
+        insert_default_selection(DISPLAY_NONE, NO_ALI_SELECTED);
     }
 
     void reconfigure(const char *new_ali_type_match) {
@@ -125,7 +125,7 @@ struct AWT_tree_selection: public AW_DB_selection {
                 }
             }
         }
-        insert_default_selection("<no tree>", NO_TREE_SELECTED); 
+        insert_default_selection(DISPLAY_NONE, NO_TREE_SELECTED); 
     }
 };
 
@@ -436,7 +436,7 @@ public:
         if (!config.empty()) {
             for (int c = 0; config[c]; c++) insert_selection(config[c], config[c]);
         }
-        insert_default_selection("????", "????");
+        insert_default_selection(DISPLAY_NONE, "????");
     }
 };
 
@@ -549,7 +549,7 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *, void *cbsid) {
         }
         free(name);
     }
-    cbs->aws->insert_default_selection(cbs->id, "- none -", "none");
+    cbs->aws->insert_default_selection(cbs->id, DISPLAY_NONE, "none");
     cbs->aws->update_selection_list(cbs->id);
 
 #if defined(DEVEL_RALF)
@@ -776,5 +776,172 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
     aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
 
     return aws;
+}
+
+// --------------------------------------------------------------------------------
+
+#define SUBSET_NOELEM_DISPLAY "<none>"
+
+class AW_subset_selection : public AW_selection {
+    AW_selection_list& parent_sellist;
+
+    static void finish_fill_box(AW_window *aww, AW_selection_list *parent_sellist, AW_selection_list *sub_sellist) {
+        aww->insert_default_selection(sub_sellist, parent_sellist->get_default_display(), parent_sellist->get_default_value());
+        aww->update_selection_list(sub_sellist);
+    }
+
+    static AW_selection_list *create_box(AW_window *aww, AW_selection_list& parent_sellist) {
+        const char *parent_awar_name = parent_sellist.variable_name;
+        awt_assert(parent_awar_name[0] != '/');
+        awt_assert(parent_sellist.variable_type == AW_STRING); // only impl for strings
+
+        AW_root *aw_root   = aww->get_root();
+        char    *awar_name = GBS_global_string_copy("tmp/subsel/%s", parent_awar_name);
+
+        aw_root->awar_string(awar_name);
+
+        AW_selection_list *sub_sellist = aww->create_selection_list(awar_name);
+        finish_fill_box(aww, &parent_sellist, sub_sellist);
+
+        free(awar_name);
+
+        return sub_sellist;
+    }
+
+public:
+    AW_subset_selection(AW_window *aww, AW_selection_list& parent_sellist_)
+        : AW_selection(aww, create_box(aww, parent_sellist_)),
+          parent_sellist(parent_sellist_)
+    {}
+
+    AW_selection_list *get_parent_sellist() const { return &parent_sellist; }
+
+    const char *default_select_value() const { return parent_sellist.get_default_value(); }
+    const char *default_select_display() const { return parent_sellist.get_default_display(); }
+
+    void get_subset(StrArray& subset) {
+        get_win()->selection_list_to_array(subset, get_sellist(), true);
+    }
+
+    void fill() { awt_assert(0); } // unused
+
+    void collect_subset_cb(awt_collect_mode what) {
+        AW_selection_list *subset_list = get_sellist();
+        AW_selection_list *whole_list  = get_parent_sellist();
+        AW_window         *aws         = get_win();
+
+        switch(what) {
+            case ACM_FILL:   {
+                // @@@ only add not already added elements (do not remove existing order)
+                const char *listEntry = whole_list->first_element();
+                aws->clear_selection_list(subset_list);
+
+                while (listEntry) {
+                    aws->insert_selection(subset_list, listEntry, listEntry);
+                    listEntry = whole_list->next_element();
+                }
+                finish_fill_box(aws, whole_list, subset_list);
+                break;
+            }
+            case ACM_ADD: {
+                if (!whole_list->default_is_selected()) {
+                    AW_root    *aw_root     = aws->get_root();
+                    const char *selected    = whole_list->get_awar_value(aw_root);
+                    int         left_index  = aws->get_index_of_element(whole_list, selected);
+                    bool        entry_found = false;
+
+                    // browse thru the entries and insert the selection if not in the selected list
+                    for (const char *listEntry = subset_list->first_element();
+                         !entry_found && listEntry;
+                         listEntry = subset_list->next_element())
+                    {
+                        if (strcmp(listEntry, selected) == 0) {
+                            entry_found = true; // entry does already exist in right list
+                        }
+                    }
+
+                    if (!entry_found) { // if not yet in right list
+                        aws->insert_selection(subset_list, selected, selected);
+                        aws->update_selection_list(subset_list);
+                    }
+
+                    aws->select_element_at_index(whole_list, left_index+1);           // go down 1 position on left side
+                    subset_list->set_awar_value(aw_root, selected); // position right side to newly added or already existing alignment
+                }
+
+                break;
+            }
+            case ACM_REMOVE: {
+                if (!subset_list->default_is_selected()) {
+                    AW_root *aw_root      = aws->get_root();
+                    char    *selected     = strdup(subset_list->get_awar_value(aw_root));
+                    int      old_position = aws->get_index_of_element(subset_list, selected);
+
+                    aws->delete_selection_from_list(subset_list, selected);
+                    finish_fill_box(aws, whole_list, subset_list);
+
+                    aws->select_element_at_index(subset_list, old_position);
+                    whole_list->set_awar_value(aw_root, selected); // set left selection to deleted alignment
+                    free(selected);
+                }
+                break;
+            }
+            case ACM_EMPTY:
+                aws->clear_selection_list(subset_list);
+                finish_fill_box(aws, whole_list, subset_list);
+                break;
+        }
+    }
+    void reorder_subset_cb(awt_reorder_mode dest) {
+        AW_selection_list *subset_list = get_sellist();
+
+        if (!subset_list->default_is_selected()) {
+            AW_root    *aw_root  = get_root();
+            const char *selected = subset_list->get_awar_value(aw_root);
+
+            StrArray listContent;
+            get_win()->selection_list_to_array(listContent, subset_list, true);
+
+            int old_pos = GBT_names_index_of(listContent, selected);
+            if (old_pos >= 0) {
+                int new_pos;
+                switch (dest) {
+                    case ARM_TOP:    new_pos= 0;         break;
+                    case ARM_UP:     new_pos= old_pos-1; break;
+                    case ARM_DOWN:   new_pos= old_pos+1; break;
+                    case ARM_BOTTOM: new_pos= -1;        break;
+                }
+                if (old_pos != new_pos) {
+                    GBT_names_move(listContent, old_pos, new_pos);
+                    get_win()->init_selection_list_from_array(subset_list, listContent, subset_list->get_default_value());
+                }
+            }
+        }
+    }
+};
+
+static void collect_subset_cb(AW_window *, awt_collect_mode what, AW_CL cl_subsel) { ((AW_subset_selection*)cl_subsel)->collect_subset_cb(what); }
+static void reorder_subset_cb(AW_window *, awt_reorder_mode dest, AW_CL cl_subsel) { ((AW_subset_selection*)cl_subsel)->reorder_subset_cb(dest); }
+
+AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list *parent_selection, const char *at_box, const char *at_add, const char *at_sort) {
+    awt_assert(parent_selection);
+
+    aww->at(at_box);
+    int x_list = aww->get_at_xposition();
+
+    AW_subset_selection *subsel = new AW_subset_selection(aww, *parent_selection);
+
+    aww->button_length(0);
+
+    aww->at(at_add);
+    int x_buttons = aww->get_at_xposition();
+
+    bool move_rightwards = x_list>x_buttons;
+    awt_create_collect_buttons(aww, move_rightwards, collect_subset_cb, (AW_CL)subsel);
+
+    aww->at(at_sort);
+    awt_create_order_buttons(aww, reorder_subset_cb, (AW_CL)subsel);
+
+    return subsel;
 }
 

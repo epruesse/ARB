@@ -53,6 +53,14 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
 
 // -------------------------------
 
+class AW_selection;
+class AW_selection_list;
+class ConstStrArray;
+
+AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list *select_subset_from, const char *at_box, const char *at_add, const char *at_sort);
+
+// -------------------------------
+
 AW_window *create_save_box_for_selection_lists(AW_root *aw_root, AW_CL selid);
 AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid);
 void create_print_box_for_selection_lists(AW_window *aw_window, AW_CL selid);

@@ -54,19 +54,21 @@ const char *AW_selection_list::next_element() {
     return loop_pntr->value.get_string();
 }
 
-const char *AW_selection_list::first_selected() {
-    int i;
+const char *AW_selection_list::get_selected_value() const { // @@@ refactor
+    int                      i;
     AW_selection_list_entry *lt;
-    loop_pntr = 0;
+    AW_selection_list_entry *found = 0;
+    
     for (i=1, lt = list_table; lt; i++, lt = lt->next) {
         lt->is_selected = XmListPosSelected(select_list_widget, i);
-        if (lt->is_selected && !loop_pntr) loop_pntr = lt;
+        if (lt->is_selected && !found) found = lt;
     }
+
     if (default_select) {
         default_select->is_selected = XmListPosSelected(select_list_widget, i);
-        if (default_select->is_selected && !loop_pntr) loop_pntr = default_select;
+        if (default_select->is_selected && !found) found = default_select;
     }
-    return loop_pntr ? loop_pntr->value.get_string() : NULL;
+    return found ? found->value.get_string() : NULL;
 }
 
 const char *AW_selection_list::get_awar_value(AW_root *aw_root) const {
@@ -80,6 +82,10 @@ void AW_selection_list::set_awar_value(AW_root *aw_root, const char *new_value) 
 const char *AW_selection_list::get_default_value() const {
     return default_select ? default_select->value.get_string() : NULL;
 }
+const char *AW_selection_list::get_default_display() const {
+    return default_select ? default_select->get_displayed() : NULL;
+}
+
 
 size_t AW_selection_list::size() {
     AW_selection_list_entry *lt    = list_table;
@@ -90,6 +96,10 @@ size_t AW_selection_list::size() {
         lt = lt->next;
     }
     return count;
+}
+
+bool AW_selection_list::default_is_selected() const {
+    return strcmp(get_selected_value(), get_default_value()) == 0;
 }
 
 // ---------------------
