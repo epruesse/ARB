@@ -557,7 +557,7 @@ static GB_ERROR checkAndCreateNewField(GBDATA *gb_main, char *new_field_name) {
     return 0;
 }
 
-static void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenateAlignments, AW_CL cl_subsel) {
+static void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenateAlignments, AW_CL cl_selected_alis) {
     GB_ERROR error = NULL;
     arb_progress wrapper;
     {
@@ -654,7 +654,7 @@ static void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenate
         GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
     }
     // Concatenate alignments of the merged species if cl_mergeSimilarConcatenateAlignments = MERGE_SIMILAR_CONCATENATE_ALIGNMENTS
-    if (cl_mergeSimilarConcatenateAlignments && !error) concatenateAlignments(aws, cl_subsel);
+    if (cl_mergeSimilarConcatenateAlignments && !error) concatenateAlignments(aws, cl_selected_alis);
 }
 
 
@@ -731,8 +731,8 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("dbAligns");
-    AW_DB_selection *db_sel  = createSelectionList(GLOBAL_gb_main, aws, AWAR_CON_DB_ALIGNS);
-    AW_selection    *sub_sel = awt_create_subset_selection_list(aws, db_sel->get_sellist(), "concatAligns", "collect", "sort");
+    AW_DB_selection *all_alis = createSelectionList(GLOBAL_gb_main, aws, AWAR_CON_DB_ALIGNS);
+    AW_selection    *sel_alis = awt_create_subset_selection_list(aws, all_alis->get_sellist(), "concatAligns", "collect", "sort");
 
     aws->at("type");
     aws->create_option_menu(AWAR_CON_SEQUENCE_TYPE);
@@ -740,7 +740,7 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     aws->insert_option("RNA", "r", "rna");
     aws->insert_default_option("PROTEIN", "p", "ami");
     aws->update_option_menu();
-    aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->add_callback(alitype_changed_cb, (AW_CL)db_sel);
+    aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->add_callback(alitype_changed_cb, (AW_CL)all_alis);
 
     aws->button_length(0);
 
@@ -756,13 +756,13 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     aws->auto_space(5, 5);
     aws->at("go");
 
-    aws->callback(concatenateAlignments, (AW_CL)sub_sel);
+    aws->callback(concatenateAlignments, (AW_CL)sel_alis);
     aws->create_button("CONCATENATE", "CONCATENATE", "A");
 
     aws->callback(AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesWindow, 0);
     aws->create_button("MERGE_SPECIES", "MERGE SIMILAR SPECIES", "M");
 
-    aws->callback(AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesAndConcatenateWindow, (AW_CL)sub_sel);
+    aws->callback(AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesAndConcatenateWindow, (AW_CL)sel_alis);
     aws->create_button("MERGE_CONCATENATE", "MERGE & CONCATENATE", "S");
 
     aws->show();
