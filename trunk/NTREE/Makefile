@@ -206,6 +206,8 @@ ad_trees.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_file.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ad_trees.o: $(ARBHOME)/INCLUDE/arb_progress.h
+ad_trees.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -222,10 +224,12 @@ ad_trees.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_modules.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/cb.h
+ad_trees.o: $(ARBHOME)/INCLUDE/CT_ctree.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_trees.o: $(ARBHOME)/INCLUDE/nds.h
 ad_trees.o: $(ARBHOME)/INCLUDE/smartptr.h
