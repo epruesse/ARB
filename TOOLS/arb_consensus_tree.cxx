@@ -10,18 +10,10 @@
 //                                                               //
 // ============================================================= //
 
-#include <cstdio>
-#include <cstdlib>
-#include <arb_msg.h>
-#include <arb_str.h>
-#include <arb_strarray.h>
-#include <arbdbt.h>
-#include <TreeWrite.h>
 #include <CT_ctree.hxx>
 #include <TreeRead.h>
-#include <math.h>
-#include <map>
-#include <string>
+#include <TreeWrite.h>
+#include <arb_str.h>
 
 using namespace std;
 
@@ -37,68 +29,28 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
         error = "no trees given";
     }
     else {
-        GBT_TREE *tree[input_trees.size()];
-        StrArray  comment;
-
-        typedef map<string, size_t> OccurCount;
-        OccurCount                  species_occurred;
+        ConsensusTreeBuilder tree_builder;
 
         for (size_t i = 0; !error && i<input_trees.size(); ++i) {
-            char *found_comment = NULL;
-            char *warning       = NULL;
+            char *warning = NULL;
 
-            tree[i] = TREE_load(input_trees[i], sizeof(*tree[i]), &found_comment, 1, &warning);
-            if (!tree[i]) {
+            GBT_TREE *tree = TREE_load(input_trees[i], sizeof(*tree), NULL, 1, &warning);
+            if (!tree) {
                 error = GBS_global_string("Failed to load tree '%s'", input_trees[i]);
             }
             else {
-                comment.put(found_comment);
-
-                size_t   name_count;
-                GB_CSTR *names = GBT_get_names_of_species_in_tree(tree[i], &name_count);
-
-                for (size_t n = 0; n<name_count; ++n) {
-                    const char *name = names[n];
-                    if (species_occurred.find(name) == species_occurred.end()) {
-                        species_occurred[name] = 1;
-                    }
-                    else {
-                        species_occurred[name]++;
-                    }
-                }
-
-                free(names);
+                tree_builder.add(tree, weight);
             }
         }
 
         if (!error) {
-            ConstStrArray species_names;
-
-            for (OccurCount::iterator s = species_occurred.begin(); s != species_occurred.end(); ++s) {
-                species_names.put(s->first.c_str());
-            }
-
-            different_species = species_names.size();
-
-            ConsensusTree ctree(species_names);
-            for (size_t i = 0; i<input_trees.size(); ++i) {
-                ctree.insert(tree[i], weight);
-            }
-
-#if defined(DEBUG)
-            ConsensusTree influence(species_names); // @@@ make sure ConsensusTree does not depend on any local data 
-#endif
-            
-            consense_tree = ctree.get_consensus_tree();
-        }
-
-        for (size_t i = 0; i<input_trees.size(); ++i) {
-            GBT_delete_tree(tree[i]);
+            consense_tree = tree_builder.get(different_species);
         }
     }
     arb_assert(contradicted(consense_tree, error));
     return consense_tree;
 }
+
 static char *create_tree_name(const char *savename) {
     // create a DB treename (using savename as hint)
     char *tree_name;

@@ -20,6 +20,15 @@
 #ifndef ARB_STRARRAY_H
 #include <arb_strarray.h>
 #endif
+#ifndef _GLIBCXX_MAP
+#include <map>
+#endif
+#ifndef _GLIBCXX_VECTOR
+#include <vector>
+#endif
+#ifndef _GLIBCXX_STRING
+#include <string>
+#endif
 
 class PART;
 class NT_NODE;
@@ -61,6 +70,74 @@ public:
     GBT_TREE *get_consensus_tree();
 
 };
+
+
+class ConsensusTreeBuilder {
+    // wrapper for ConsensusTree
+    // - automatically collects species occurring in added trees (has to be done by caller of ConsensusTree)
+    // - uses much more memory than using ConsensusTree directly, since it stores all added trees
+    // 
+    // Not helpful for consensing thousands of trees like bootstrapping does
+
+    typedef std::map<std::string, size_t> OccurCount;
+    typedef std::vector<GBT_TREE*>        Trees;
+    typedef std::vector<double>           Weights;
+
+    OccurCount species_occurred;
+    Trees      trees;
+    Weights    weights;
+
+public:
+    ~ConsensusTreeBuilder() {
+        for (size_t i = 0; i<trees.size(); ++i) {
+            GBT_delete_tree(trees[i]);
+        }
+    }
+
+    void add(GBT_TREE*& tree, double weight) {
+        trees.push_back(tree);
+        weights.push_back(weight);
+
+        size_t   name_count;
+        GB_CSTR *names = GBT_get_names_of_species_in_tree(tree, &name_count);
+
+        for (size_t n = 0; n<name_count; ++n) {
+            const char *name = names[n];
+            if (species_occurred.find(name) == species_occurred.end()) {
+                species_occurred[name] = 1;
+            }
+            else {
+                species_occurred[name]++;
+            }
+        }
+
+        free(names);
+        tree = NULL;
+    }
+
+    GBT_TREE *get(size_t& different_species) {
+        ConstStrArray species_names;
+
+        for (OccurCount::iterator s = species_occurred.begin(); s != species_occurred.end(); ++s) {
+            species_names.put(s->first.c_str());
+        }
+
+        different_species = species_occurred.size();
+        ConsensusTree ctree(species_names);
+        for (size_t i = 0; i<trees.size(); ++i) {
+            ctree.insert(trees[i], weights[i]);
+        }
+
+#if defined(DEBUG) 
+        // if class ConsensusTree does depend on any local data,
+        // instanciating another instance will interfere:
+        ConsensusTree influence(species_names);
+#endif
+
+        return ctree.get_consensus_tree();
+    }
+};
+
 
 #else
 #error CT_ctree.hxx included twice
