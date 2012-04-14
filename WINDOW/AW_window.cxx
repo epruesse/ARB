@@ -3528,34 +3528,42 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind, const char *rm_b
 
     if (tmp_awar[0]) {
         GB_ERROR error = 0;
-        if (strcmp(action, "AWAR_REMOTE_READ") == 0) {
-            char *read_value = this->awar(tmp_awar)->read_as_string();
-            GBT_write_string(gb_main, awar_value, read_value);
-#if defined(DUMP_REMOTE_ACTIONS)
-            printf("remote command 'AWAR_REMOTE_READ' awar='%s' value='%s'\n", tmp_awar, read_value);
-#endif // DUMP_REMOTE_ACTIONS
-            free(read_value);
-            // clear action (AWAR_REMOTE_READ is just a pseudo-action) :
-            action[0] = 0;
-            GBT_write_string(gb_main, awar_action, "");
-        }
-        else if (strcmp(action, "AWAR_REMOTE_TOUCH") == 0) {
-            this->awar(tmp_awar)->touch();
-#if defined(DUMP_REMOTE_ACTIONS)
-            printf("remote command 'AWAR_REMOTE_TOUCH' awar='%s'\n", tmp_awar);
-#endif // DUMP_REMOTE_ACTIONS
-            // clear action (AWAR_REMOTE_TOUCH is just a pseudo-action) :
-            action[0] = 0;
-            GBT_write_string(gb_main, awar_action, "");
+        AW_awar *found_awar = awar_no_error(tmp_awar);
+        if (!found_awar) {
+            error = GBS_global_string("Unknown variable '%s'", tmp_awar);
         }
         else {
+            if (strcmp(action, "AWAR_REMOTE_READ") == 0) {
+                char *read_value = this->awar(tmp_awar)->read_as_string();
+                GBT_write_string(gb_main, awar_value, read_value);
 #if defined(DUMP_REMOTE_ACTIONS)
-            printf("remote command (write awar) awar='%s' value='%s'\n", tmp_awar, value);
+                printf("remote command 'AWAR_REMOTE_READ' awar='%s' value='%s'\n", tmp_awar, read_value);
 #endif // DUMP_REMOTE_ACTIONS
-            error = this->awar(tmp_awar)->write_as_string(value);
+                free(read_value);
+                // clear action (AWAR_REMOTE_READ is just a pseudo-action) :
+                action[0]        = 0;
+                GBT_write_string(gb_main, awar_action, "");
+            }
+            else if (strcmp(action, "AWAR_REMOTE_TOUCH") == 0) {
+                this->awar(tmp_awar)->touch();
+#if defined(DUMP_REMOTE_ACTIONS)
+                printf("remote command 'AWAR_REMOTE_TOUCH' awar='%s'\n", tmp_awar);
+#endif // DUMP_REMOTE_ACTIONS
+                // clear action (AWAR_REMOTE_TOUCH is just a pseudo-action) :
+                action[0] = 0;
+                GBT_write_string(gb_main, awar_action, "");
+            }
+            else {
+#if defined(DUMP_REMOTE_ACTIONS)
+                printf("remote command (write awar) awar='%s' value='%s'\n", tmp_awar, value);
+#endif // DUMP_REMOTE_ACTIONS
+                error = this->awar(tmp_awar)->write_as_string(value);
+            }
         }
         GBT_write_string(gb_main, awar_result, error ? error : "");
         GBT_write_string(gb_main, awar_awar, ""); // tell perl-client call has completed (BIO::remote_awar and BIO:remote_read_awar)
+
+        aw_message_if(error);
     }
     GB_pop_transaction(gb_main);
 
