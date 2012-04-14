@@ -22,6 +22,7 @@
 
 class AW_selection_list {
     AW_selection_list_entry *loop_pntr; // @@@ better use some kind of selection-list iterator
+
 public:
     AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti);
 
@@ -49,12 +50,15 @@ public:
     void set_awar_value(AW_root *aw_root, const char *new_value);
 
     const char *get_default_value() const;
+    const char *get_default_display() const;
 
-    const char *first_selected(); // may differ from get_awar_value() if default selected
+    const char *get_selected_value() const; // may differ from get_awar_value() if default is selected (returns value passed to insert_default_selection) 
 
     // the following iterator does NOT iterate over default-element:
     const char *first_element();
     const char *next_element();
+
+    bool default_is_selected() const;
 };
 
 
@@ -79,6 +83,9 @@ public:
     
     void insert_selection(const char *displayed, int32_t value) { win->insert_selection(sellist, displayed, value); }
     void insert_default_selection(const char *displayed, int32_t value) { win->insert_default_selection(sellist, displayed, value); }
+
+    void get_values(StrArray& intoArray) { get_win()->selection_list_to_array(intoArray, get_sellist(), true); }
+    void get_displayed(StrArray& intoArray) { get_win()->selection_list_to_array(intoArray, get_sellist(), false); }
 };
 
 

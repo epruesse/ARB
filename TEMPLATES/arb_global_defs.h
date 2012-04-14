@@ -13,6 +13,10 @@
 #define ARB_GLOBAL_DEFS_H
 
 #define NO_TREE_SELECTED "tree_?????"
+#define NO_ALI_SELECTED  "????"
+
+#define DISPLAY_NONE "<< none >>"
+
 
 #else
 #error arb_global_defs.h included twice

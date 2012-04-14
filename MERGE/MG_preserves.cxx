@@ -20,6 +20,7 @@
 #include <aw_msg.hxx>
 #include <aw_window.hxx>
 #include <arb_progress.h>
+#include <arb_global_defs.h>
 #include <arbdbt.h>
 
 #include <set>
@@ -65,7 +66,7 @@ static void clear_candidates(preserve_para *para) {
     AW_selection_list *id  = para->cand_id;
 
     aww->clear_selection_list(id);
-    aww->insert_default_selection(id, "????", "????");
+    aww->insert_default_selection(id, DISPLAY_NONE, NO_ALI_SELECTED);
     aww->update_selection_list(id);
 }
 
@@ -422,12 +423,12 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
 
     preserve_para *para = new preserve_para; // do not free (is passed to callback)
     para->window        = aws;
-    
+
     aws->at("ali");
     para->ali_id = aws->create_selection_list(AWAR_REMAP_ALIGNMENT, 0, "", 10, 30);
 
     // ----------
-    
+
     aws->at("adapt");
     aws->label("Adapt alignments");
     aws->create_toggle(AWAR_REMAP_ENABLE);

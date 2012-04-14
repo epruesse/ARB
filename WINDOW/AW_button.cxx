@@ -1697,7 +1697,7 @@ void AW_window::init_selection_list_from_array(AW_selection_list *selection_list
     if (!defInserted) insert_default_selection(selection_list, defaultEntryCopy, defaultEntryCopy);
     update_selection_list(selection_list);
 
-    const char *selected = selection_list->first_selected();
+    const char *selected = selection_list->get_selected_value();
     if (selected) get_root()->awar(selection_list->variable_name)->write_string(selected);
 
     free(defaultEntryCopy);
