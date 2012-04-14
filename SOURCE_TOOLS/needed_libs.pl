@@ -514,11 +514,6 @@ my %dep2lib = (
                'GL/glAW/needs_libs.libglAW_a'       => 'GL/glAW/libglAW.a',
                'GL/glpng/needs_libs.libglpng_arb_a' => 'GL/glpng/libglpng_arb.a',
 
-               'AISC_MKPTPS/needs_libs.mkptypes_o'     => 'AISC_MKPTPS/mkptypes.o',
-               'HELP_SOURCE/needs_libs.arb_help2xml_o' => 'HELP_SOURCE/arb_help2xml.o',
-               'TOOLS/needs_libs.arb_probe_o'          => 'TOOLS/arb_probe.o',
-               'TOOLS/needs_libs.arb_test_o'           => 'TOOLS/arb_test.o',
-
                'PROBE_COM/needs_libs.client_a' => 'PROBE_COM/client.a',
                'PROBE_COM/needs_libs.server_a' => 'PROBE_COM/server.a',
                'NAMES_COM/needs_libs.client_a' => 'NAMES_COM/client.a',
@@ -538,13 +533,28 @@ sub libdepend_file_2_libname($) {
       if ($dep =~ /BINDEP\/needs_libs\./) {
         $dep = $';
       }
-      elsif ($dir =~ /^(.*)\/([^\/]*)/) {
-        my ($path,$lastdir) = ($1,$2);
-        $path =~ s/^.\///;
-        $dep = $path.'/'.$lastdir.'/'.$lastdir.'.a';
-      }
       else {
-        $dep = $dir.'/'.$dir.'.a';
+        my ($prefix,$targetdir) = ('',undef);
+
+        if ($dir =~ /^(.*)\/([^\/]*)/) {
+          my ($path,$lastdir) = ($1,$2);
+          $path =~ s/^.\///;
+          $prefix = $path.'/';
+          $targetdir = $lastdir;
+        }
+        else {
+          $targetdir = $dir;
+        }
+
+        my $target = undef;
+        if ($name =~ /^needs_libs\.(.*)_o$/) {
+          $target = $targetdir.'/'.$1.'.o';
+        }
+        else {
+          $target = $targetdir.'/'.$targetdir.'.a';
+        }
+
+        $dep = $prefix.$target;
       }
     }
   }
@@ -610,7 +620,7 @@ sub generateDependencyGraph(\@\@$) {
     }
   }
 
-  my %is_target = map { $_ => 1; } @$targets_r; 
+  my %is_target = map { $_ => 1; } @$targets_r;
 
   foreach my $target (@$depends_r) {
     my $deps_r = $dependencies_of{$target};
@@ -620,7 +630,7 @@ sub generateDependencyGraph(\@\@$) {
       use Carp;
       Carp::confess("no target_type for '$target'");
     }
-
+    
     my $dtarget = dot_label($target);
 
     my $color = 'black';
