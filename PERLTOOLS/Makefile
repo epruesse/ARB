@@ -7,7 +7,6 @@ LIB_ARBDB            := $(LIBPATH) $(ARBDB_LIB)
 LIBS_ARB_PROBE       := ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a
 LIBS_ARB_READ_TREE   := ../SL/TREE_READ/TREE_READ.a
 LIBS_ARB_EXPORT_TREE := ../SL/TREE_WRITE/TREE_WRITE.a ../XML/XML.a $(LIBS_ARB_READ_TREE)
-LIBS_ARB_PROTO_2_XSUB:= ../SL/FILE_BUFFER/FILE_BUFFER.a
 
 OBJECTS:=$(addsuffix .o,$(TOOLS))
 BINARIES:=$(addprefix $(ARBHOME)/bin/,$(TOOLS))
@@ -19,9 +18,6 @@ all: $(BINARIES)
 
 %.o: %.c
 	$(ACC) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
-
-$(ARBHOME)/bin/arb_proto_2_xsub: arb_proto_2_xsub.o  $(LIBS_ARB_PROTO_2_XSUB)
-	$(LINK_EXECUTABLE) $@ $< $(LIBS_ARB_PROTO_2_XSUB) $(LIB_ARBDB) $(EXECLIBS)
 
 $(ARBHOME)/bin/%: %.o
 	$(LINK_EXECUTABLE) $@ $< $(LIB_ARBDB) $(EXECLIBS)

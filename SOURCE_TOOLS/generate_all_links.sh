@@ -232,6 +232,7 @@ symlink_file ../CORE/arb_string.h INCLUDE/arb_string.h &&
 symlink_file ../CORE/arb_strarray.h INCLUDE/arb_strarray.h &&
 symlink_file ../CORE/arb_handlers.h INCLUDE/arb_handlers.h &&
 symlink_file ../CORE/arb_progress.h INCLUDE/arb_progress.h &&
+symlink_file ../CORE/FileBuffer.h INCLUDE/FileBuffer.h &&
 symlink_file ../DIST/dist.hxx INCLUDE/dist.hxx &&
 symlink_file ../EDIT4/ed4_extern.hxx INCLUDE/ed4_extern.hxx &&
 symlink_file ../EDIT4/ed4_plugins.hxx INCLUDE/ed4_plugins.hxx &&
@@ -259,7 +260,6 @@ symlink_file ../SL/DB_QUERY/db_query.h INCLUDE/db_query.h &&
 symlink_file ../SL/DB_UI/dbui.h INCLUDE/dbui.h &&
 symlink_file ../SL/SEQIO/seqio.hxx INCLUDE/seqio.hxx &&
 symlink_file ../SL/FAST_ALIGNER/fast_aligner.hxx INCLUDE/fast_aligner.hxx &&
-symlink_file ../SL/FILE_BUFFER/FileBuffer.h INCLUDE/FileBuffer.h &&
 symlink_file ../SL/FILTER/AP_filter.hxx INCLUDE/AP_filter.hxx &&
 symlink_file ../SL/GUI_ALIVIEW/ColumnStat.hxx INCLUDE/ColumnStat.hxx &&
 symlink_file ../SL/GUI_ALIVIEW/awt_filter.hxx INCLUDE/awt_filter.hxx &&

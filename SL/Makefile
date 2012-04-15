@@ -14,8 +14,6 @@ ARCHS_ALL = \
 	DB_UI/DB_UI.dummy  \
 	SEQIO/SEQIO.dummy  \
 	FAST_ALIGNER/FAST_ALIGNER.dummy  \
-	FILE_BUFFER/FILE_BUFFER.dummy  \
-	FILTER/FILTER.dummy  \
 	GUI_ALIVIEW/GUI_ALIVIEW.dummy  \
 	HELIX/HELIX.dummy  \
 	ITEMS/ITEMS.dummy  \
