@@ -30,8 +30,7 @@ void AW_create_fileselection(AW_window *aws, const char *awar_prefix, const char
 void AW_refresh_fileselection(AW_root *awr, const char *awar_prefix); 
 
 char *AW_get_selected_fullname(AW_root *awr, const char *awar_prefix);
-
-
+void AW_set_selected_fullname(AW_root *awr, const char *awar_prefix, const char *to_fullname);
 
 #else
 #error aw_file.hxx included twice

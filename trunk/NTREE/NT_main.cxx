@@ -197,7 +197,7 @@ static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_root, bool install_c
         }
     }
 
-    if (!error && autorun_macro) awt_execute_macro(aw_root, autorun_macro);
+    if (!error && autorun_macro) awt_execute_macro(GLOBAL_gb_main, aw_root, autorun_macro);
     return error;
 }
 

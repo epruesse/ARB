@@ -664,9 +664,42 @@ static GB_ERROR gbt_wait_for_remote_action(GBDATA *gb_main, GBDATA *gb_action, c
     return error; // may be error or result
 }
 
+static void mark_as_macro_executor(GBDATA *gb_main, bool mark) {
+    // call this with 'mark' = true to mark yourself as "client running a macro"
+    // -> GB_close with automatically announce termination of this client to main DB (MACRO_TRIGGER_CONTAINER/terminated)
+    // do NOT call with 'mark' = false
+
+    static bool client_is_macro_executor = false;
+    if (mark) {
+        if (!client_is_macro_executor) {
+            GB_atclose(gb_main, (void (*)(GBDATA*, void*))mark_as_macro_executor, 0);
+            client_is_macro_executor = true;
+        }
+    }
+    else {
+        // called via GB_atclose callback (i.e. at end of currently executed macro file)
+        GB_ERROR error = NULL;
+        gb_assert(client_is_macro_executor);
+        if (client_is_macro_executor) {
+            GB_transaction ta(gb_main);
+
+            GBDATA *gb_terminated = GB_search(gb_main, MACRO_TRIGGER_CONTAINER "/terminated", GB_FIND);
+            gb_assert(gb_terminated); // should have been created by macro caller
+            if (gb_terminated) {
+                error = GB_write_int(gb_terminated, GB_read_int(gb_terminated)+1); // notify macro caller
+            }
+
+            error = ta.close(error);
+        }
+        if (error) GBT_message(gb_main, error);
+    }
+}
+
 GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char *action_name) {
     // needs to be public (needed by perl-macros)
 
+    mark_as_macro_executor(gb_main, true);
+    
     remote_awars  awars;
     GBDATA       *gb_action;
     GB_ERROR      error = NULL;
@@ -684,6 +717,8 @@ GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char 
 
 GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *awar_name, const char *value) {
     // needs to be public (needed by perl-macros)
+
+    mark_as_macro_executor(gb_main, true);
 
     remote_awars  awars;
     GBDATA       *gb_awar;
@@ -704,6 +739,8 @@ GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *a
 
 GB_ERROR GBT_remote_read_awar(GBDATA *gb_main, const char *application, const char *awar_name) {
     // needs to be public (needed by perl-macros)
+
+    mark_as_macro_executor(gb_main, true);
 
     remote_awars  awars;
     GBDATA       *gb_awar;

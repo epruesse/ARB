@@ -156,7 +156,7 @@ public:
 
     GB_ERROR start_macro_recording(const char *file, const char *application_id, const char *stop_action_name);
     GB_ERROR stop_macro_recording();
-    GB_ERROR execute_macro(const char *file);
+    GB_ERROR execute_macro(GBDATA *gb_main, const char *file, AW_RCB1 execution_done_cb, AW_CL client_data);
 
     void define_remote_command(struct AW_cb_struct *cbs);
     GB_ERROR check_for_remote_command(AW_default gb_main, const char *rm_base);

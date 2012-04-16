@@ -30,24 +30,39 @@
 #define AWAR_MACRO_RECORDING_MACRO_TEXT AWAR_MACRO_BASE"/button_label"
 
 static void awt_delete_macro_cb(AW_window *aww) {
-    AW_root *awr = aww->get_root();
-    char    *mn  = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
+    AW_root *awr       = aww->get_root();
+    char    *macroName = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
 
-    if (GB_unlink(mn)<0) aw_message(GB_await_error());
+    if (GB_unlink(macroName)<0) aw_message(GB_await_error());
     else AW_refresh_fileselection(awr, AWAR_MACRO_BASE);
 
-    free(mn);
+    free(macroName);
 }
 
+static void macro_execution_finished(AW_root *awr, AW_CL cl_macroName) {
+    char *macroName = (char*)cl_macroName;
+
+#if defined(DEBUG)
+    fprintf(stderr, "macro_execution_finished(%s)\n", macroName);
+#endif
+
+    AW_set_selected_fullname(awr, AWAR_MACRO_BASE, macroName); // reset selected macro (needed if macro calls other macro(s)) 
+    
+    free(macroName);
+}
+
+static void awt_exec_macro_cb(AW_window *aww, AW_CL cl_gb_main) {
+    GBDATA  *gb_main   = (GBDATA*)cl_gb_main;
+    AW_root *awr       = aww->get_root();
+    char    *macroName = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
 
 
-static void awt_exec_macro_cb(AW_window *aww) {
-    AW_root  *awr   = aww->get_root();
-    char     *mn    = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
-    GB_ERROR  error = awr->execute_macro(mn);
+    GB_ERROR error = awr->execute_macro(gb_main, macroName, macro_execution_finished, (AW_CL)macroName);
 
-    if (error) aw_message(error);
-    free(mn);
+    if (error) {
+        aw_message(error);
+        free(macroName); // only free in error-case (see macro_execution_finished)
+    }
 }
 
 static void awt_start_macro_cb(AW_window *aww, const char *application_name_for_macros) {
@@ -57,11 +72,14 @@ static void awt_start_macro_cb(AW_window *aww, const char *application_name_for_
     GB_ERROR  error;
 
     if (!toggle) {
-        char *sac = GBS_global_string_copy("%s/%s", aww->window_defaults_name, AWAR_MACRO_RECORDING_MACRO_TEXT);
-        char *mn  = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
-        error     = awr->start_macro_recording(mn, application_name_for_macros, sac);
-        free(mn);
+        char *sac       = GBS_global_string_copy("%s/%s", aww->window_defaults_name, AWAR_MACRO_RECORDING_MACRO_TEXT);
+        char *macroName = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
+
+        error = awr->start_macro_recording(macroName, application_name_for_macros, sac);
+
+        free(macroName);
         free(sac);
+
         if (!error) {
             awr->awar(AWAR_MACRO_RECORDING_MACRO_TEXT)->write_string("STOP");
             toggle = 1;
@@ -83,10 +101,11 @@ static void awt_edit_macro_cb(AW_window *aww) {
 }
 
 
-AW_window *awt_open_macro_window(AW_root *aw_root, const char *application_id) {
+void awt_popup_macro_window(AW_window *aww, const char *application_id, GBDATA *gb_main) {
     static AW_window_simple *aws = 0;
-
     if (!aws) {
+        AW_root *aw_root = aww->get_root();
+
         aws = new AW_window_simple;
         aws->init(aw_root, "MACROS", "MACROS");
         aws->load_xfig("macro_select.fig");
@@ -110,12 +129,12 @@ AW_window *awt_open_macro_window(AW_root *aw_root, const char *application_id) {
         aws->at("edit"); aws->callback(awt_edit_macro_cb);
         aws->create_button("EDIT", "EDIT");
 
-        aws->at("exec"); aws->callback(awt_exec_macro_cb);
+        aws->at("exec"); aws->callback(awt_exec_macro_cb, (AW_CL)gb_main);
         aws->create_button("EXECUTE", "EXECUTE");
 
         AW_create_fileselection(aws, AWAR_MACRO_BASE, "", "ARBMACROHOME^ARBMACRO");
     }
-    return aws;
+    aws->activate();
 }
 
 inline char *find_macro_in(const char *dir, const char *macroname) {
@@ -124,13 +143,13 @@ inline char *find_macro_in(const char *dir, const char *macroname) {
     return full;
 }
 
-void awt_execute_macro(AW_root *root, const char *macroname) {
+void awt_execute_macro(GBDATA *gb_main, AW_root *root, const char *macroname) {
     char *fullname          = find_macro_in(GB_getenvARBMACROHOME(), macroname);
     if (!fullname) fullname = find_macro_in(GB_getenvARBMACRO(), macroname);
 
     GB_ERROR error       = 0;
     if (!fullname) error = "file not found";
-    else     error       = root->execute_macro(fullname);
+    else     error       = root->execute_macro(gb_main, fullname, NULL, NULL);
 
     if (error) {
         aw_message(GBS_global_string("Can't execute macro '%s' (Reason: %s)", macroname, error));
