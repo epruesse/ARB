@@ -672,6 +672,10 @@ void GB_close(GBDATA *gbd) {
 
     gb_assert(Main->transaction <= 0); // transaction running -> you can't close DB yet!
 
+    gb_assert((GBDATA*)Main->data == gbd);
+    run_close_callbacks(gbd, Main->close_callbacks);
+    Main->close_callbacks = 0;
+    
     if (!Main->local_mode) {
         long result            = gbcmc_close(Main->c_link);
         if (result != 0) error = GBS_global_string("gbcmc_close returns %li", result);
@@ -680,10 +684,7 @@ void GB_close(GBDATA *gbd) {
     gbcm_logout(Main, NULL);                        // logout default user
     
     if (!error) {
-        gb_assert((GBDATA*)Main->data == gbd);
-
-        run_close_callbacks(gbd, Main->close_callbacks);
-        Main->close_callbacks = 0;
+        gb_assert(Main->close_callbacks == 0);
 
         gb_delete_dummy_father(&Main->dummy_father);
         Main->data = NULL;

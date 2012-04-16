@@ -696,6 +696,10 @@ char *AW_get_selected_fullname(AW_root *awr, const char *awar_prefix) {
     return file;
 }
 
+void AW_set_selected_fullname(AW_root *awr, const char *awar_prefix, const char *to_fullname) {
+    awr->awar(GBS_global_string("%s/file_name", awar_prefix))->write_string(to_fullname);
+}
+
 void AW_refresh_fileselection(AW_root *awr, const char *awar_prefix) {
     // call optionally to force instant refresh
     // (automatic refresh is done every SELBOX_AUTOREFRESH_FREQUENCY)

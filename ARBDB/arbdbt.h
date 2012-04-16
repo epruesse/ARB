@@ -38,6 +38,7 @@
     (tree_obj_ptr)->remark_branch = 0
 
 #define ERROR_CONTAINER_PATH    "tmp/message/pending"
+#define MACRO_TRIGGER_CONTAINER "tmp/remote/trigger"
 
 #ifdef FAKE_VTAB_PTR
 // if defined, FAKE_VTAB_PTR contains 'char'
