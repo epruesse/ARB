@@ -318,7 +318,7 @@ void GB_atclose(GBDATA *gbd, void (*fun)(GBDATA *gb_main, void *client_data), vo
 void GB_close(GBDATA *gbd);
 long GB_read_int(GBDATA *gbd);
 int GB_read_byte(GBDATA *gbd);
-void *GB_read_pointer(GBDATA *gbd);
+GBDATA *GB_read_pointer(GBDATA *gbd);
 double GB_read_float(GBDATA *gbd);
 long GB_read_count(GBDATA *gbd);
 long GB_read_memuse(GBDATA *gbd);
@@ -342,7 +342,7 @@ long GB_read_from_ints(GBDATA *gbd, long index);
 double GB_read_from_floats(GBDATA *gbd, long index);
 GB_ERROR GB_write_byte(GBDATA *gbd, int i);
 GB_ERROR GB_write_int(GBDATA *gbd, long i);
-GB_ERROR GB_write_pointer(GBDATA *gbd, void *pointer);
+GB_ERROR GB_write_pointer(GBDATA *gbd, GBDATA *pointer);
 GB_ERROR GB_write_float(GBDATA *gbd, double f);
 GB_ERROR GB_write_pntr(GBDATA *gbd, const char *s, long bytes_size, long stored_size);
 GB_ERROR GB_write_string(GBDATA *gbd, const char *s);

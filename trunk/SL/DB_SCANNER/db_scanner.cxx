@@ -81,7 +81,7 @@ static GBDATA *get_mapped_item_and_begin_trans(AW_CL arbdb_scanid) {
     cbs->may_be_an_error = false;
     GB_push_transaction(cbs->gb_main);
 
-    GBDATA *gbd = (GBDATA *)aw_root->awar(cbs->awarname_current_item)->read_pointer();
+    GBDATA *gbd = aw_root->awar(cbs->awarname_current_item)->read_pointer();
 
     if (!cbs->gb_user || !gbd || cbs->may_be_an_error) { // something changed in the database
         return NULL;
@@ -277,13 +277,12 @@ static void toggle_marked_cb(AW_window *aws, DbScanner *cbs, char *awar_name)
 }
 
 static void remap_edit_box(GBDATA *, DbScanner *cbs) {
-    GBDATA *gbd;
     cbs->may_be_an_error = false;
     GB_push_transaction(cbs->gb_main);
     if (cbs->may_be_an_error) {     // sorry
         cbs->aws->get_root()->awar(cbs->awarname_current_item)->write_pointer(NULL);
     }
-    gbd = (GBDATA *)cbs->aws->get_root()->awar(cbs->awarname_current_item)->read_pointer();
+    GBDATA *gbd = cbs->aws->get_root()->awar(cbs->awarname_current_item)->read_pointer();
 
     if (cbs->gb_edit) {
         GB_remove_callback(cbs->gb_edit, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE),
@@ -563,7 +562,7 @@ static void scanner_changed_cb(GBDATA *, DbScanner *cbs, GB_CB_TYPE gbtype) {
                 break;
         }
     }
-    aws->insert_default_selection(cbs->id, "", (void*)NULL);
+    aws->insert_default_selection(cbs->id, "", (GBDATA*)NULL);
     aws->update_selection_list(cbs->id);
     if (cbs->gb_user) {
         GB_transaction ta(cbs->gb_main);
