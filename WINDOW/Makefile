@@ -305,6 +305,7 @@ AW_help.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_macro.o: aw_awar.hxx
 AW_macro.o: aw_base.hxx
 AW_macro.o: aw_macro.hxx
+AW_macro.o: aw_msg.hxx
 AW_macro.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_macro.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_macro.o: $(ARBHOME)/INCLUDE/arb_assert.h

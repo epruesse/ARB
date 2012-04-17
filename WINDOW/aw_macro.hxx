@@ -37,6 +37,7 @@ class RecordingMacro : virtual Noncopyable {
     void write_quoted_param(const char *value) const { write(",\""); write(value); write('\"'); }
 
     void write_dated_comment(const char *what) const;
+    void warn_unrecordable(const char *what) const;
 
 public:
     RecordingMacro(const char *filename, const char *application_id_, const char *stop_action_name_);
