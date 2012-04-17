@@ -18,6 +18,7 @@
 #include "aw_root.hxx"
 #include "aw_question.hxx"
 #include "aw_xargs.hxx"
+#include "aw_macro.hxx"
 
 #include <arb_str.h>
 #include <arb_strbuf.h>
@@ -223,17 +224,7 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
         aw_message(error);
     }
     else {
-        if (root->prvt->recording_macro_file) {
-            fprintf(root->prvt->recording_macro_file, "BIO::remote_awar($gb_main,\"%s\",", root->prvt->application_name_for_macros);
-            GBS_fwrite_string(awar->awar_name, root->prvt->recording_macro_file);
-            fprintf(root->prvt->recording_macro_file, ",");
-
-            char *svalue = awar->read_as_string();
-            GBS_fwrite_string(svalue, root->prvt->recording_macro_file);
-            free(svalue);
-
-            fprintf(root->prvt->recording_macro_file, ");\n");
-        }
+        if (root->prvt->recording) root->prvt->recording->record_awar_change(awar);
         if (cbs) cbs->run_callback();
         root->value_changed = false;
     }

@@ -52,6 +52,7 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
+#include "aw_macro.hxx"
 
 AW_root *AW_root::SINGLETON = NULL;
 
@@ -850,15 +851,7 @@ void AW_server_callback(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call
         return;
     }
 
-    if (root->prvt->recording_macro_file) {
-        if (cbs->id && strcmp(cbs->id, root->prvt->stop_action_name)) {
-            fprintf(root->prvt->recording_macro_file,
-                    "BIO::remote_action($gb_main,\"%s\",",
-                    root->prvt->application_name_for_macros);
-            GBS_fwrite_string(cbs->id, root->prvt->recording_macro_file);
-            fprintf(root->prvt->recording_macro_file, ");\n");
-        }
-    }
+    if (root->prvt->recording) root->prvt->recording->record_action(cbs->id);
 
     if (cbs->f == AW_POPUP) {
         cbs->run_callback();
@@ -3423,51 +3416,25 @@ void AW_window::_set_activate_callback(void *widget) {
 
 GB_ERROR AW_root::start_macro_recording(const char *file, const char *application_id, const char *stop_action_name) {
     GB_ERROR error = NULL;
-    if (prvt->recording_macro_file) {
-        error = "Already recording macro";
-    }
+    if (prvt->recording) error = "Already recording macro";
     else {
-        char *path               = NULL;
-        if (file[0] == '/') path = strdup(file);
-        else  path               = GBS_global_string_copy("%s/%s", GB_getenvARBMACROHOME(), file);
-
-        char *macro_header       = GB_read_file(GB_path_in_ARBLIB("macro.head"));
-        if (!macro_header) error = GB_await_error();
-        else {
-            prvt->recording_macro_file = fopen(path, "w");
-
-            if (prvt->recording_macro_file) {
-                prvt->stop_action_name            = strdup(stop_action_name);
-                prvt->application_name_for_macros = strdup(application_id);
-
-                fprintf(prvt->recording_macro_file, "%s", macro_header);
-                reassign(prvt->recording_macro_path, path);
-            }
-            else error = GB_IO_error("recording to", file);
-            free(macro_header);
-        }
-        free(path);
+        prvt->recording = new RecordingMacro(file, application_id, stop_action_name);
+        error           = prvt->recording->has_error();
+        if (error) ASSERT_NO_ERROR(stop_macro_recording());
     }
     return error;
 }
 
 GB_ERROR AW_root::stop_macro_recording() {
     GB_ERROR error = NULL;
-    if (!prvt->recording_macro_file) {
+    if (!prvt->recording) {
         error = "Not recording macro";
     }
     else {
-        fprintf(prvt->recording_macro_file, "ARB::close($gb_main);");
-        fclose(prvt->recording_macro_file);
+        error = prvt->recording->stop();
 
-        long mode = GB_mode_of_file(prvt->recording_macro_path);
-        error     = GB_set_mode_of_file(prvt->recording_macro_path, mode | ((mode >> 2)& 0111));
-
-        prvt->recording_macro_file = 0;
-
-        freenull(prvt->recording_macro_path);
-        freenull(prvt->stop_action_name);
-        freenull(prvt->application_name_for_macros);
+        delete prvt->recording;
+        prvt->recording = NULL;
     }
     return error;
 }
