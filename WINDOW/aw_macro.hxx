@@ -39,6 +39,8 @@ class RecordingMacro : virtual Noncopyable {
     void write_dated_comment(const char *what) const;
     void warn_unrecordable(const char *what) const;
 
+    void flush() const { fflush(out); }
+
 public:
     RecordingMacro(const char *filename, const char *application_id_, const char *stop_action_name_);
     ~RecordingMacro() {

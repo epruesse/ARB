@@ -53,6 +53,7 @@ RecordingMacro::RecordingMacro(const char *filename, const char *application_id_
     }
 
     aw_assert(implicated(error, !out));
+    flush();
 }
 
 void RecordingMacro::record_action(const char *action_id) {
@@ -66,6 +67,7 @@ void RecordingMacro::record_action(const char *action_id) {
         write(','); GBS_fwrite_string(action_id, out);
         write(");\n");
     }
+    flush();
 }
 
 void RecordingMacro::record_awar_change(AW_awar *awar) {
@@ -81,9 +83,10 @@ void RecordingMacro::record_awar_change(AW_awar *awar) {
         write(','); GBS_fwrite_string(awar->awar_name, out);
         write(','); GBS_fwrite_string(svalue, out);
         write(");\n");
-    
+
         free(svalue);
     }
+    flush();
 }
 
 GB_ERROR RecordingMacro::stop() {
