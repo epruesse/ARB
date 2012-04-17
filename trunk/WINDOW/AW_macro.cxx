@@ -27,7 +27,7 @@ void RecordingMacro::warn_unrecordable(const char *what) const {
 }
 
 
-RecordingMacro::RecordingMacro(const char *filename, const char *application_id_, const char *stop_action_name_)
+RecordingMacro::RecordingMacro(const char *filename, const char *application_id_, const char *stop_action_name_, bool expand_existing)
     : stop_action_name(strdup(stop_action_name_)),
       application_id(strdup(application_id_)),
       path(NULL),
@@ -38,22 +38,37 @@ RecordingMacro::RecordingMacro(const char *filename, const char *application_id_
         ? strdup(filename)
         : GBS_global_string_copy("%s/%s", GB_getenvARBMACROHOME(), filename);
 
-    char *macro_header       = GB_read_file(GB_path_in_ARBLIB("macro.head"));
-    if (!macro_header) error = GB_await_error();
-    else {
-        out = fopen(path, "w");
+    if (expand_existing && !GB_is_readablefile(path)) error = "Can only expand existing macros";
 
-        if (out) {
-            write(macro_header);
-            write_dated_comment("recording started");
+    if (!error) {
+        char *content = NULL;
+        {
+            const char *from    = expand_existing ? path : GB_path_in_ARBLIB("macro.head");
+            content             = GB_read_file(from);
+            if (!content) error = GB_await_error();
+            else {
+                if (expand_existing) {
+                    // cut off end of macro
+                    char *close = strstr(content, "ARB::close");
+                    if (close) close[0] = 0;
+                }
+            }
         }
-        else error = GB_IO_error("recording to", filename);
 
-        free(macro_header);
+        if (!error) {
+            out = fopen(path, "w");
+
+            if (out) {
+                write(content);
+                write_dated_comment(expand_existing ? "recording resumed" : "recording started");
+                flush();
+            }
+            else error = GB_IO_error("recording to", filename);
+        }
+
+        free(content);
+        aw_assert(implicated(error, !out));
     }
-
-    aw_assert(implicated(error, !out));
-    flush();
 }
 
 void RecordingMacro::record_action(const char *action_id) {
