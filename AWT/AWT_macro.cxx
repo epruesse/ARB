@@ -75,7 +75,12 @@ static void awt_start_macro_cb(AW_window *aww, const char *application_name_for_
     if (!toggle) {
         char *sac       = GBS_global_string_copy("%s/%s", aww->window_defaults_name, AWAR_MACRO_RECORD_ID);
         char *macroName = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
-        error = awr->start_macro_recording(macroName, application_name_for_macros, sac);
+        if (GB_is_directory(macroName)) {
+            error = "Please specify name of macro to record";
+        }
+        else {
+            error = awr->start_macro_recording(macroName, application_name_for_macros, sac);
+        }
         free(macroName);
         free(sac);
 

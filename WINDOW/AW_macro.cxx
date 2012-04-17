@@ -43,13 +43,15 @@ RecordingMacro::RecordingMacro(const char *filename, const char *application_id_
     else {
         out = fopen(path, "w");
 
-        if (out) write(macro_header);
+        if (out) {
+            write(macro_header);
+            write_dated_comment("recording started");
+        }
         else error = GB_IO_error("recording to", filename);
 
         free(macro_header);
     }
 
-    write_dated_comment("recording started");
     aw_assert(implicated(error, !out));
 }
 
@@ -85,16 +87,16 @@ void RecordingMacro::record_awar_change(AW_awar *awar) {
 }
 
 GB_ERROR RecordingMacro::stop() {
-    write_dated_comment("recording stopped");
-    
-    write("ARB::close($gb_main);\n");
-    fclose(out);
+    if (out) {
+        write_dated_comment("recording stopped");
+        write("ARB::close($gb_main);\n");
+        fclose(out);
 
-    long mode = GB_mode_of_file(path);
-    error     = GB_set_mode_of_file(path, mode | ((mode >> 2)& 0111));
+        long mode = GB_mode_of_file(path);
+        error     = GB_set_mode_of_file(path, mode | ((mode >> 2)& 0111));
 
-    out = 0;
-
+        out = 0;
+    }
     return error;
 }
 
