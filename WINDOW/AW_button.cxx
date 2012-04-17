@@ -178,25 +178,28 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
         GB_add_callback(awar->gb_var, GB_CB_CHANGED, record_awar_change, (int*)awar);
     }
 
+    bool run_cb = true;
     switch (widget_type) {
         case AW_WIDGET_INPUT_FIELD:
-        case AW_WIDGET_TEXT_FIELD: {
-            if (!root->value_changed) return;
-
-            char *new_text = XmTextGetString((widget));
-            error          = awar->write_as_string(new_text);
-            XtFree(new_text);
+        case AW_WIDGET_TEXT_FIELD:
+            if (!root->value_changed) {
+                run_cb = false;
+            }
+            else {
+                char *new_text = XmTextGetString((widget));
+                error          = awar->write_as_string(new_text);
+                XtFree(new_text);
+            }
             break;
-        }
+
         case AW_WIDGET_TOGGLE:
             root->changer_of_variable = 0;
             error = awar->toggle_toggle();
             break;
 
-        case AW_WIDGET_TOGGLE_FIELD: {
+        case AW_WIDGET_TOGGLE_FIELD:
             if (XmToggleButtonGetState(widget) == False) break; // no toggle is selected (?)
             // fall-through
-        }
         case AW_WIDGET_CHOICE_MENU:
             error = value.write_to(awar);
             break;
@@ -222,6 +225,7 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
             XtFree(selected);
             break;
         }
+
         case AW_WIDGET_LABEL_FIELD:
             break;
 
@@ -241,7 +245,7 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
         aw_message(error);
     }
     else {
-        if (cbs) cbs->run_callback();
+        if (cbs && run_cb) cbs->run_callback();
         root->value_changed = false;
     }
 }
