@@ -3420,7 +3420,7 @@ GB_ERROR AW_root::start_macro_recording(const char *file, const char *applicatio
     else {
         prvt->recording = new RecordingMacro(file, application_id, stop_action_name);
         error           = prvt->recording->has_error();
-        if (error) ASSERT_NO_ERROR(stop_macro_recording());
+        if (error) stop_macro_recording();
     }
     return error;
 }
