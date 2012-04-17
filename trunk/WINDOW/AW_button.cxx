@@ -158,12 +158,24 @@ static void AW_variable_update_callback(Widget /*wgt*/, XtPointer variable_updat
     vui->change_from_widget(call_data);
 }
 
+static void record_awar_change(GBDATA*, int *cl_awar, GB_CB_TYPE cb_type) {
+    AW_awar *awar = (AW_awar*)cl_awar;
+    aw_assert(cb_type == GB_CB_CHANGED);
+    awar->root->prvt->recording->record_awar_change(awar);
+}
+
 void VarUpdateInfo::change_from_widget(XtPointer call_data) {
     GB_ERROR  error = NULL;
     AW_root  *root  = awar->root;
 
     if (root->value_changed) {
         root->changer_of_variable = widget;
+    }
+
+    if (root->prvt->recording) {
+        // add a callback which writes macro-code (BEFORE any other callback happens; last added, first calledback)
+        GB_transaction ta(awar->gb_var);
+        GB_add_callback(awar->gb_var, GB_CB_CHANGED, record_awar_change, (int*)awar);
     }
 
     switch (widget_type) {
@@ -218,13 +230,17 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
             break;
     }
 
+    if (root->prvt->recording) {
+        GB_transaction ta(awar->gb_var);
+        GB_remove_callback(awar->gb_var, GB_CB_CHANGED, record_awar_change, (int*)awar);
+    }
+
     if (error) {
         root->changer_of_variable = 0;
         awar->update();
         aw_message(error);
     }
     else {
-        if (root->prvt->recording) root->prvt->recording->record_awar_change(awar);
         if (cbs) cbs->run_callback();
         root->value_changed = false;
     }
