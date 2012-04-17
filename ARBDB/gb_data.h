@@ -41,7 +41,7 @@ struct GB_INTern {
 
 union gb_data_base_type_union {
     int32_t            i;
-    void              *ptr;
+    GBDATA            *ptr;
     GB_INTern_strings  istr;
     GB_INTern          in;
     gb_extern_data     ex;

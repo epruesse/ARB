@@ -139,13 +139,13 @@ public:
     char       *read_as_string();
     long        read_int();
     double      read_float();
-    void       *read_pointer();
+    GBDATA     *read_pointer();
 
     GB_ERROR write_string(const char *aw_string);
     GB_ERROR write_as_string(const char *aw_string);
     GB_ERROR write_int(long aw_int);
     GB_ERROR write_float(double aw_double);
-    GB_ERROR write_pointer(void *aw_pointer);
+    GB_ERROR write_pointer(GBDATA *aw_pointer);
 
     GB_ERROR write_as(char *aw_value) { return write_as_string(aw_value); };
 
@@ -154,7 +154,7 @@ public:
     GB_ERROR rewrite_as_string(const char *aw_string);
     GB_ERROR rewrite_int(long aw_int);
     GB_ERROR rewrite_float(double aw_double);
-    GB_ERROR rewrite_pointer(void *aw_pointer);
+    GB_ERROR rewrite_pointer(GBDATA *aw_pointer);
 
     GB_ERROR rewrite_as(char *aw_value) { return rewrite_as_string(aw_value); };
 

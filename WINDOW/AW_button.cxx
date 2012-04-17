@@ -1577,7 +1577,7 @@ void AW_window::insert_default_selection(AW_selection_list *selection_list, cons
     selection_list->default_select = new AW_selection_list_entry(displayed, value);
 }
 
-void AW_window::insert_selection(AW_selection_list * selection_list, const char *displayed, void *pointer) {
+void AW_window::insert_selection(AW_selection_list * selection_list, const char *displayed, GBDATA *pointer) {
     if (selection_list->variable_type != AW_POINTER) {
         selection_type_mismatch("pointer");
         return;
@@ -1592,7 +1592,7 @@ void AW_window::insert_selection(AW_selection_list * selection_list, const char 
     }
 }
 
-void AW_window::insert_default_selection(AW_selection_list * selection_list, const char *displayed, void *pointer) {
+void AW_window::insert_default_selection(AW_selection_list * selection_list, const char *displayed, GBDATA *pointer) {
     if (selection_list->variable_type != AW_POINTER) {
         selection_type_mismatch("pointer");
         return;
@@ -1756,7 +1756,7 @@ void AW_window::update_selection_list_intern(AW_selection_list *selection_list) 
             break;
         }
         case AW_POINTER: {
-            void *var_value = awar->read_pointer();
+            GBDATA *var_value = awar->read_pointer();
             for (lt = selection_list->list_table; lt; lt = lt->next) {
                 if (var_value == lt->value.get_pointer()) {
                     found = true;

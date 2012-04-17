@@ -726,7 +726,7 @@ int GB_read_byte(GBDATA *gbd)
     return gbd->info.i;
 }
 
-void *GB_read_pointer(GBDATA *gbd) {
+GBDATA *GB_read_pointer(GBDATA *gbd) {
     GB_TEST_READ(gbd, GB_POINTER, "GB_read_pointer");
     return gbd->info.ptr;
 }
@@ -1068,7 +1068,7 @@ GB_ERROR GB_write_int(GBDATA *gbd, long i) {
     return 0;
 }
 
-GB_ERROR GB_write_pointer(GBDATA *gbd, void *pointer) {
+GB_ERROR GB_write_pointer(GBDATA *gbd, GBDATA *pointer) {
     GB_TEST_WRITE(gbd, GB_POINTER, "GB_write_pointer");
     if (gbd->info.ptr != pointer) {
         gb_save_extern_data_in_ts(gbd);

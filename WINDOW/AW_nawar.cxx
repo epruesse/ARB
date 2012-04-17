@@ -93,7 +93,7 @@ double AW_awar::read_float() {
     return GB_read_float(gb_var);
 }
 
-void *AW_awar::read_pointer() {
+GBDATA *AW_awar::read_pointer() {
     if (!gb_var) return NULL;
     GB_transaction ta(gb_var);
     return GB_read_pointer(gb_var);
@@ -128,7 +128,7 @@ WRITE_SKELETON(write_string, const char*, "%s", GB_write_string) // defines rewr
     WRITE_SKELETON(write_int, long, "%li", GB_write_int) // defines rewrite_int
     WRITE_SKELETON(write_float, double, "%f", GB_write_float) // defines rewrite_float
     WRITE_SKELETON(write_as_string, const char*, "%s", GB_write_as_string) // defines rewrite_as_string
-    WRITE_SKELETON(write_pointer, void*, "%p", GB_write_pointer) // defines rewrite_pointer
+    WRITE_SKELETON(write_pointer, GBDATA*, "%p", GB_write_pointer) // defines rewrite_pointer
 
 #undef WRITE_SKELETON
 #undef concat
@@ -554,7 +554,7 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *va
 #if defined(DUMP_AWAR_CHANGES)
                 fprintf(stderr, "creating awar_pointer '%s' with default value '%p'\n", var_name, (void*)var_value);
 #endif // DUMP_AWAR_CHANGES
-                GB_write_pointer(gb_def, (void*)var_value);
+                GB_write_pointer(gb_def, (GBDATA*)var_value);
                 break;
 
             default:
