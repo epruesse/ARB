@@ -28,6 +28,7 @@
 
 #define AWAR_MACRO_BASE                 "tmp/macro"
 #define AWAR_MACRO_RECORDING_MACRO_TEXT AWAR_MACRO_BASE"/button_label"
+#define AWAR_MACRO_RECORD_ID            "macro_record"
 
 static void awt_delete_macro_cb(AW_window *aww) {
     AW_root *awr       = aww->get_root();
@@ -72,11 +73,9 @@ static void awt_start_macro_cb(AW_window *aww, const char *application_name_for_
     GB_ERROR  error;
 
     if (!toggle) {
-        char *sac       = GBS_global_string_copy("%s/%s", aww->window_defaults_name, AWAR_MACRO_RECORDING_MACRO_TEXT);
+        char *sac       = GBS_global_string_copy("%s/%s", aww->window_defaults_name, AWAR_MACRO_RECORD_ID);
         char *macroName = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
-
         error = awr->start_macro_recording(macroName, application_name_for_macros, sac);
-
         free(macroName);
         free(sac);
 
@@ -121,7 +120,7 @@ void awt_popup_macro_window(AW_window *aww, const char *application_id, GBDATA *
         aws->create_button("HELP", "HELP");
 
         aws->at("start"); aws->callback((AW_CB1)awt_start_macro_cb, (AW_CL)application_id);
-        aws->create_button(0, AWAR_MACRO_RECORDING_MACRO_TEXT);
+        aws->create_button(AWAR_MACRO_RECORD_ID, AWAR_MACRO_RECORDING_MACRO_TEXT);
 
         aws->at("delete"); aws->callback(awt_delete_macro_cb);
         aws->create_button("DELETE", "DELETE");
