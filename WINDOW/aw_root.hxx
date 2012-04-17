@@ -154,8 +154,9 @@ public:
     void make_sensitive(Widget w, AW_active mask);
     bool remove_button_from_sens_list(Widget button);
 
-    GB_ERROR start_macro_recording(const char *file, const char *application_id, const char *stop_action_name);
+    GB_ERROR start_macro_recording(const char *file, const char *application_id, const char *stop_action_name, bool expand_existing);
     GB_ERROR stop_macro_recording();
+    bool is_recording_macro() const;
     GB_ERROR execute_macro(GBDATA *gb_main, const char *file, AW_RCB1 execution_done_cb, AW_CL client_data);
 
     void define_remote_command(struct AW_cb_struct *cbs);
@@ -186,4 +187,5 @@ void AW_system(AW_window *aww, const char *command, const char *auto_help_file);
 #else
 #error aw_root.hxx included twice
 #endif
+
 

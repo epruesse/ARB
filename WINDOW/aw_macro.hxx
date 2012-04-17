@@ -42,7 +42,7 @@ class RecordingMacro : virtual Noncopyable {
     void flush() const { fflush(out); }
 
 public:
-    RecordingMacro(const char *filename, const char *application_id_, const char *stop_action_name_);
+    RecordingMacro(const char *filename, const char *application_id_, const char *stop_action_name_, bool expand_existing);
     ~RecordingMacro() {
         aw_assert(!out); // forgot to call stop()
         free(path);

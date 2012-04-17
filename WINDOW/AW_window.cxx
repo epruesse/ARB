@@ -3414,11 +3414,11 @@ void AW_window::_set_activate_callback(void *widget) {
     _callback = NULL;
 }
 
-GB_ERROR AW_root::start_macro_recording(const char *file, const char *application_id, const char *stop_action_name) {
+GB_ERROR AW_root::start_macro_recording(const char *file, const char *application_id, const char *stop_action_name, bool expand_existing) {
     GB_ERROR error = NULL;
     if (prvt->recording) error = "Already recording macro";
     else {
-        prvt->recording = new RecordingMacro(file, application_id, stop_action_name);
+        prvt->recording = new RecordingMacro(file, application_id, stop_action_name, expand_existing);
         error           = prvt->recording->has_error();
         if (error) stop_macro_recording();
     }
@@ -3438,6 +3438,8 @@ GB_ERROR AW_root::stop_macro_recording() {
     }
     return error;
 }
+
+bool AW_root::is_recording_macro() const { return prvt->recording; }
 
 class ExecutingMacro {
     AW_RCB1 done_cb;
