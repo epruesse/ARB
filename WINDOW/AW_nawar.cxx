@@ -108,18 +108,19 @@ GBDATA *AW_awar::read_pointer() {
 
 #define concat(x, y) x##y
 
-#define WRITE_SKELETON(self, type, format, func)        \
+#define WRITE_BODY(self,format,func)                    \
+    if (!gb_var) return AW_MSG_UNMAPPED_AWAR;           \
+    GB_transaction ta(gb_var);                          \
+    AWAR_CHANGE_DUMP(awar_name, #self, format);         \
+    GB_ERROR error = func(gb_var, para)
+
+#define WRITE_SKELETON(self,type,format,func)           \
     GB_ERROR AW_awar::self(type para) {                 \
-        if (!gb_var) return AW_MSG_UNMAPPED_AWAR;       \
-        GB_transaction ta(gb_var);                      \
-        AWAR_CHANGE_DUMP(awar_name, #self, format);     \
-        return func(gb_var, para);                      \
+        WRITE_BODY(self, format, func);                 \
+        return error;                                   \
     }                                                   \
-    GB_ERROR AW_awar::concat(re, self)(type para) {     \
-        if (!gb_var) return AW_MSG_UNMAPPED_AWAR;       \
-        GB_transaction ta(gb_var);                      \
-        AWAR_CHANGE_DUMP(awar_name, #self, format);     \
-        GB_ERROR       error = func(gb_var, para);      \
+    GB_ERROR AW_awar::concat(re,self)(type para) {      \
+        WRITE_BODY(self, format, func);                 \
         GB_touch(gb_var);                               \
         return error;                                   \
     }
