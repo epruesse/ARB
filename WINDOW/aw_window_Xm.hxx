@@ -209,8 +209,8 @@ public:
     void set_click_time(long click_time_) { click_time = click_time_; }
 };
 
-
 class AW_selection_list;
+class RecordingMacro;
 
 class AW_root_Motif : virtual Noncopyable {
     Widget           last_widget;                   // last created (sensitive) widget
@@ -248,10 +248,8 @@ public:
     Window   old_cursor_window;
     bool     no_exit;
 
-    char    *recording_macro_path;
-    FILE    *recording_macro_file;
-    char    *application_name_for_macros;
-    char    *stop_action_name;
+    RecordingMacro *recording;
+
     GB_HASH *action_hash;
 
     AW_root_Motif();
