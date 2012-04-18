@@ -18,17 +18,11 @@
 #ifndef _GLIBCXX_CSTDIO
 #include <cstdio>
 #endif
-
-// --------------------------------------------------------------------------------
-// c++-interface
-
-#ifdef __cplusplus
-
-#ifndef ARBTOOLS_H
-#include <arbtools.h>
-#endif
 #ifndef _GLIBCXX_STRING
 #include <string>
+#endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
 #endif
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -117,8 +111,6 @@ public:
         }
     }
 };
-
-#endif // __cplusplus
 
 #else
 #error FileBuffer.h included twice

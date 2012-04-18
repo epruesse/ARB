@@ -423,7 +423,7 @@ char *GB_read_fp(FILE *in) {
     return GBS_strclose(buf);
 }
 
-char *GB_read_file(const char *path) {
+char *GB_read_file(const char *path) { // consider using class FileContent instead
     /*! read content of file 'path' into string (heap-copy)
      *
      * if path is '-', read from STDIN
