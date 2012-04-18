@@ -29,9 +29,11 @@ SECTION         ADJUSTMENTS
 
                 Align
 
-                                Align selected or all marked sequences.
+                                Align current, marked or selected sequences.
+
                                 If you type 'Ctrl-A' in the main editor window
-                                this option is set to selected species.
+                                this option is set to align the current species and
+                                the aligner gets called.
 
 		Reference
 
