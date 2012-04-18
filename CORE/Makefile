@@ -156,3 +156,15 @@ FileBuffer.o: $(ARBHOME)/INCLUDE/arbtools.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/dupstr.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/smartptr.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/test_global.h
+
+FileContent.o: arb_core.h
+FileContent.o: arb_msg.h
+FileContent.o: arb_strarray.h
+FileContent.o: arb_string.h
+FileContent.o: FileBuffer.h
+FileContent.o: FileContent.h
+FileContent.o: $(ARBHOME)/INCLUDE/arb_assert.h
+FileContent.o: $(ARBHOME)/INCLUDE/arbtools.h
+FileContent.o: $(ARBHOME)/INCLUDE/attributes.h
+FileContent.o: $(ARBHOME)/INCLUDE/dupstr.h
+FileContent.o: $(ARBHOME)/INCLUDE/test_global.h
