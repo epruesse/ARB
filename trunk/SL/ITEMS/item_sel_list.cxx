@@ -91,7 +91,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
                                                          size_t          columns,
                                                          size_t          visible_rows,
                                                          SelectedFields  field_filter,
-                                                         const char     *popup_button_id)
+                                                         const char     *popup_button_id) // @@@ button id is not needed - only causes xtra macro command 
 {
     /* show fields of a item (e.g. species, SAI, gene)
      * 'varname'                is the awar set by the selection list

@@ -41,6 +41,8 @@ class RecordingMacro : virtual Noncopyable {
 
     void flush() const { fflush(out); }
 
+    void post_process();
+
 public:
     RecordingMacro(const char *filename, const char *application_id_, const char *stop_action_name_, bool expand_existing);
     ~RecordingMacro() {

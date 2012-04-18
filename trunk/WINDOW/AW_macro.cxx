@@ -13,6 +13,9 @@
 #include "aw_msg.hxx"
 #include <arbdbt.h>
 #include <arb_file.h>
+#include <arb_defs.h>
+#include <FileContent.h>
+#include <cctype>
 
 void RecordingMacro::write_dated_comment(const char *what) const {
     write("# ");
@@ -38,7 +41,9 @@ RecordingMacro::RecordingMacro(const char *filename, const char *application_id_
         ? strdup(filename)
         : GBS_global_string_copy("%s/%s", GB_getenvARBMACROHOME(), filename);
 
-    if (expand_existing && !GB_is_readablefile(path)) error = "Can only expand existing macros";
+    if (expand_existing && !GB_is_readablefile(path)) {
+        error = GBS_global_string("Can only expand existing macros (no such file: %s)", path);
+    }
 
     if (!error) {
         char *content = NULL;
@@ -110,6 +115,8 @@ GB_ERROR RecordingMacro::stop() {
         write("ARB::close($gb_main);\n");
         fclose(out);
 
+        post_process();
+
         long mode = GB_mode_of_file(path);
         error     = GB_set_mode_of_file(path, mode | ((mode >> 2)& 0111));
 
@@ -118,3 +125,169 @@ GB_ERROR RecordingMacro::stop() {
     return error;
 }
 
+// -------------------------
+//      post processing
+
+inline char *parse_quoted_string(const char *& line) {
+    // read '"string"' from start of line.
+    // return 'string'.
+    // skips spaces.
+
+    while (isspace(line[0])) ++line;
+    if (line[0] == '\"') {
+        const char *other_quote = strchr(line+1, '\"');
+        if (other_quote) {
+            char *str = GB_strpartdup(line+1, other_quote-1);
+            line      = other_quote+1;
+            while (isspace(line[0])) ++line;
+            return str;
+        }
+    }
+    return NULL;
+}
+
+inline char *modifies_awar(const char *line, char *& app_id) {
+    // return awar_name, if line modifies an awar.
+    // return NULL otherwise
+    //
+    // if 'app_id' is NULL, it'll be set to found application id.
+    // otherwise it'll be checked against found id. function returns NULL on mimatch.
+
+    while (isspace(line[0])) ++line;
+
+    const char cmd[]  = "BIO::remote_awar($gb_main,";
+    const int cmd_len = ARRAY_ELEMS(cmd)-1;
+
+    if (strncmp(line, cmd, cmd_len) == 0) {
+        line     += cmd_len;
+        char *id  = parse_quoted_string(line);
+        if (app_id) {
+            bool app_id_differs = strcmp(app_id, id) != 0;
+            free(id);
+            if (app_id_differs) return NULL;
+        }
+        else {
+            app_id = id;
+        }
+        if (line[0] == ',') {
+            ++line;
+            char *awar = parse_quoted_string(line);
+            return awar;
+        }
+    }
+    return NULL;
+}
+
+inline bool is_comment(const char *line) {
+    int i = 0;
+    while (isspace(line[i])) ++i;
+    return line[i] == '#';
+}
+
+void RecordingMacro::post_process() {
+    aw_assert(!error);
+
+    FileContent macro(path);
+    error = macro.has_error();
+    if (!error) {
+        StrArray& line = macro.lines();
+
+        // remove duplicate awar-changes
+        for (size_t i = 0; i<line.size(); ++i) {
+            char *app_id   = NULL;
+            char *mod_awar = modifies_awar(line[i], app_id);
+            if (mod_awar) {
+                for (size_t n = i+1; n<line.size(); ++n) {
+                    if (!is_comment(line[n])) {
+                        char *mod_next_awar = modifies_awar(line[n], app_id);
+                        if (mod_next_awar) {
+                            if (strcmp(mod_awar, mod_next_awar) == 0) {
+                                // seen two lines (i and n) which modify the same awar
+                                // -> remove the 1st line
+                                line.remove(i);
+
+                                // make sure that it also works for 3 or more consecutive modifications
+                                aw_assert(i>0);
+                                i--;
+                            }
+                            free(mod_next_awar);
+                        }
+                        break;
+                    }
+                }
+                free(mod_awar);
+            }
+            free(app_id);
+        }
+        error = macro.save();
+    }
+}
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+#define TEST_PARSE_QUOTED_STRING(in,res_exp,out_exp) do {       \
+        const char *line = (in);                                \
+        char *res =parse_quoted_string(line);                   \
+        TEST_ASSERT_EQUAL(res, res_exp);                        \
+        TEST_ASSERT_EQUAL(line, out_exp);                       \
+        free(res);                                              \
+    } while(0)
+
+#define TEST_MODIFIES_AWAR(cmd,app_exp,awar_exp,app_in) do {                            \
+        char *app  = app_in;                                                            \
+        char *awar = modifies_awar(cmd, app);                                           \
+        TEST_EXPECT(all().of(that(awar).equals(awar_exp), that(app).equals(app_exp)));  \
+        free(awar);                                                                     \
+        free(app);                                                                      \
+    } while(0)
+
+void TEST_parse() {
+    TEST_PARSE_QUOTED_STRING("", NULL, "");
+    TEST_PARSE_QUOTED_STRING("\"str\"", "str", "");
+    TEST_PARSE_QUOTED_STRING("\"part\", rest", "part", ", rest");
+    TEST_PARSE_QUOTED_STRING("\"\"", "", "");
+    TEST_PARSE_QUOTED_STRING("\"\"rest", "", "rest");
+    TEST_PARSE_QUOTED_STRING("\"unmatched", NULL, "\"unmatched");
+
+    TEST_MODIFIES_AWAR("# BIO::remote_awar($gb_main,\"app\", \"awar_name\", \"value\");", NULL, NULL, NULL);
+    TEST_MODIFIES_AWAR("BIO::remote_awar($gb_main,\"app\", \"awar_name\", \"value\");", "app", "awar_name", NULL);
+    TEST_MODIFIES_AWAR("BIO::remote_awar($gb_main,\"app\", \"awar_name\", \"value\");", "app", "awar_name", strdup("app"));
+    TEST_MODIFIES_AWAR("BIO::remote_awar($gb_main,\"app\", \"awar_name\", \"value\");", "diff", NULL, strdup("diff"));
+
+    TEST_MODIFIES_AWAR("   \t BIO::remote_awar($gb_main,\"app\", \"awar_name\", \"value\");", "app", "awar_name", NULL);
+}
+
+#define RUN_TOOL_NEVER_VALGRIND(cmdline)      GBK_system(cmdline)
+#define TEST_RUN_TOOL_NEVER_VALGRIND(cmdline) TEST_ASSERT_NO_ERROR(RUN_TOOL_NEVER_VALGRIND(cmdline))
+
+void TEST_post_process() {
+    const char *source   = "general/pp.amc";
+    const char *dest     = "general/pp_out.amc";
+    const char *expected = "general/pp_exp.amc";
+
+    TEST_RUN_TOOL_NEVER_VALGRIND(GBS_global_string("cp %s %s", source, dest));
+
+    char *fulldest = strdup(GB_path_in_ARBHOME(GB_concat_path("UNIT_TESTER/run", dest)));
+    TEST_ASSERT(GB_is_readablefile(fulldest));
+
+    {
+        RecordingMacro recording(fulldest, "whatever", "whatever", true);
+
+        TEST_ASSERT_NO_ERROR(recording.has_error());
+        TEST_ASSERT_NO_ERROR(recording.stop()); // triggers post_process
+    }
+
+    TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(dest, expected, 0);
+    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(dest));
+
+    free(fulldest);
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
