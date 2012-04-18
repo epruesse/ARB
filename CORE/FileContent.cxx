@@ -13,6 +13,7 @@
 #include "FileBuffer.h"
 #include "arb_msg.h"
 #include "arb_string.h"
+#include "arb_file.h"
 
 using namespace std;
 
@@ -48,3 +49,52 @@ GB_ERROR FileContent::save() {
     return error;
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+arb_test::match_expectation arrays_equal(const StrArray& expected, const StrArray& got) {
+    using namespace   arb_test;
+    match_expectation same_size = that(expected.size()).equals(got.size());
+    if (same_size.fulfilled()) {
+        for (size_t i = 0; i<expected.size(); ++i) {
+            match_expectation eq = that(expected[i]).equals(got[i]);
+            if (!eq.fulfilled()) {
+                return all().of(same_size, eq);
+            }
+        }
+    }
+    return same_size;
+}
+
+#define TEST_ASSERT_READS_SAME(fc,name) do {                     \
+        FileContent oc(name);                                    \
+        TEST_EXPECT(arrays_equal(fc.lines(), oc.lines()));       \
+    } while(0)
+
+void TEST_linefeed_conversion() {
+    const char *funix   = "general/text.input";      // LF
+    const char *fdos    = "general/dos.input";       // CR LF
+    const char *fmac    = "general/mac.input";       // CR
+    const char *fbroken = "general/broken_LF.input"; // LF CR
+
+    const int LINES = 6;
+
+    FileContent cunix(funix);
+    TEST_ASSERT_EQUAL(cunix.lines().size(), LINES);
+
+    TEST_ASSERT_EQUAL(GB_size_of_file(fmac),    GB_size_of_file(funix));
+    TEST_ASSERT_EQUAL(GB_size_of_file(fdos),    GB_size_of_file(funix)+LINES);
+    TEST_ASSERT_EQUAL(GB_size_of_file(fbroken), GB_size_of_file(fdos));
+
+    TEST_ASSERT_READS_SAME(cunix,fdos);
+    TEST_ASSERT_READS_SAME(cunix,fmac);
+    TEST_ASSERT_READS_SAME(cunix,fbroken);
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
