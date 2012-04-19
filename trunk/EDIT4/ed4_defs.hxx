@@ -109,28 +109,28 @@ inline int ABS(int x)       { return x<0 ? -x : x; }
 #define ED4_SCROLL_OVERLAP 20   // 15 Pixels overlap
 
 
-enum ED4_level {
-    ED4_L_NO_LEVEL           = 0x0,
-    ED4_L_ROOT               = 0x1,
-    ED4_L_DEVICE             = 0x2,
-    ED4_L_AREA               = 0x4,
-    ED4_L_MULTI_SPECIES      = 0x8,
-    ED4_L_SPECIES            = 0x10,
-    ED4_L_MULTI_SEQUENCE     = 0x20,
-    ED4_L_SEQUENCE           = 0x40,
-    ED4_L_TREE               = 0x80,
-    ED4_L_SPECIES_NAME       = 0x100,
-    ED4_L_SEQUENCE_INFO      = 0x200,               // evtl. aendern fuer Name-Manager und group-manager
-    ED4_L_SEQUENCE_STRING    = 0x400,
-    ED4_L_AA_SEQUENCE_STRING = 0x600,               // ykadi
-    ED4_L_SPACER             = 0x800,
-    ED4_L_LINE               = 0x1000,
-    ED4_L_MULTI_NAME         = 0x2000,
-    ED4_L_NAME_MANAGER       = 0x4000,
-    ED4_L_GROUP              = 0x8000,
-    ED4_L_BRACKET            = 0x10000,
-    ED4_L_PURE_TEXT          = 0x20000,
-    ED4_L_COL_STAT           = 0x40000
+enum ED4_level { // has to contain bit values 
+    ED4_L_NO_LEVEL        = 0,
+    ED4_L_ROOT            = 0x1,
+    ED4_L_DEVICE          = 0x2,
+    ED4_L_AREA            = 0x4,
+    ED4_L_MULTI_SPECIES   = 0x8,
+    ED4_L_SPECIES         = 0x10,
+    ED4_L_MULTI_SEQUENCE  = 0x20,
+    ED4_L_SEQUENCE        = 0x40,
+    ED4_L_TREE            = 0x80,
+    ED4_L_SPECIES_NAME    = 0x100,
+    ED4_L_SEQUENCE_INFO   = 0x200,                 
+    ED4_L_SEQUENCE_STRING = 0x400,
+    ED4_L_ORF             = 0x800, 
+    ED4_L_SPACER          = 0x1000,
+    ED4_L_LINE            = 0x2000,
+    ED4_L_MULTI_NAME      = 0x4000,
+    ED4_L_NAME_MANAGER    = 0x8000,
+    ED4_L_GROUP           = 0x10000, 
+    ED4_L_BRACKET         = 0x20000,
+    ED4_L_PURE_TEXT       = 0x40000,
+    ED4_L_COL_STAT        = 0x80000, 
 };
 
 enum ED4_datamode {

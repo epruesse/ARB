@@ -7,6 +7,8 @@
 
 #define e4_assert(bed) arb_assert(bed)
 
+#define concat(a,b) a##b
+
 #ifdef DEBUG
 # define IMPLEMENT_DUMP         // comment out this line to skip compilation of the dump() methods
 #endif
@@ -29,7 +31,71 @@
 #ifndef BI_BASEPOS_HXX
 #include <BI_basepos.hxx>
 #endif
+#ifndef DOWNCAST_H
+#include <downcast.h>
+#endif
 
+#if defined(IMPLEMENT_DUMP) // ------------------------------
+
+#if 0
+#define WARN(msg) void dummy_to_produce_a_warning(int msg) {}
+#else
+#define WARN(msg)
+#endif
+
+#define EMPTY_FUNCTION(name)         void name() const {}
+#define EMPTY_FUNCTION_VERBOSE(name) void name(int je_mappelle_##name) const {}
+
+#define DERIVABLEFROM(base) concat(prohibited_leafclass_derivation,base)
+
+#define COMMON_FOR_BASES()                      \
+    virtual void dump(size_t indent) const = 0; \
+
+#define COMMON_FOR_DERIVABLE(self)               \
+    void dump_base(size_t indent) const;         \
+    EMPTY_FUNCTION(DERIVABLEFROM(self));         \
+        
+#define COMMON_FOR_DERIVED(mybase)                                              \
+    void dump_my_base(size_t indent) const { mybase::dump_base(indent); }       \
+    virtual const char *baseclassname() const { return #mybase; }               \
+    
+#define COMMON_FOR_INSTANCIABLE(mybase)         \
+    virtual void dump(size_t indent) const;     \
+
+#define DECLARE_DUMP_FOR_ROOTCLASS(self)        \
+    COMMON_FOR_BASES();                         \
+    COMMON_FOR_DERIVABLE(self);                 \
+
+#define DECLARE_DUMP_FOR_BASECLASS(self,mybase) \
+    COMMON_FOR_BASES();                         \
+    COMMON_FOR_DERIVABLE(self);                 \
+    COMMON_FOR_DERIVED(mybase);                 \
+
+#define DECLARE_DUMP_FOR_MIDCLASS(self,mybase)  \
+    WARN(midclass_is_unwanted);                 \
+    COMMON_FOR_DERIVABLE(self);                 \
+    COMMON_FOR_DERIVED(mybase);                 \
+    COMMON_FOR_INSTANCIABLE(mybase);            \
+    
+#define DECLARE_DUMP_FOR_LEAFCLASS(mybase)              \
+    virtual void leaf() { DERIVABLEFROM(mybase)(); }    \
+    COMMON_FOR_DERIVED(mybase);                         \
+    COMMON_FOR_INSTANCIABLE(mybase);                    \
+
+#else
+#define DECLARE_DUMP_FOR_ROOTCLASS(self)
+#define DECLARE_DUMP_FOR_BASECLASS(self,mybase)
+#define DECLARE_DUMP_FOR_MIDCLASS(self,mybase)
+#define DECLARE_DUMP_FOR_LEAFCLASS(mybase)
+
+#endif // IMPLEMENT_DUMP ------------------------------
+
+
+
+// #define LIMIT_TOP_AREA_SPACE // if defined, top area is size-limited
+#ifdef LIMIT_TOP_AREA_SPACE
+#define MAX_TOP_AREA_SIZE 10    // size limit for top-area
+#endif
 
 #define ed4_beep() do { fputc(char(7), stdout); fflush(stdout); } while (0)
 
@@ -71,7 +137,7 @@ class ED4_root_group_manager;
 class ED4_sequence_info_terminal;
 class ED4_sequence_manager;
 class ED4_sequence_terminal;
-class ED4_AA_sequence_terminal;
+class ED4_orf_terminal;
 class ED4_spacer_terminal;
 class ED4_species_manager;
 class ED4_species_name_terminal;
@@ -687,10 +753,7 @@ public:
 
     void draw_bb(int color);
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const = 0;
-    void dump_base(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_ROOTCLASS(ED4_base);
 
     // function for species_pointer
 
@@ -792,70 +855,82 @@ public:
     ED4_returncode      generate_configuration_string(char **generated_string);
 
     virtual ED4_returncode  remove_callbacks();
-    ED4_terminal        *get_consensus_relevant_terminal();
+    
+    const ED4_terminal *get_consensus_relevant_terminal() const;
 
     ED4_base(GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_base();
 
     // use the following functions to test which derived class we have
 
-    int is_terminal()               const { return !this || spec->static_prop & ED4_P_IS_TERMINAL; }
+    int is_terminal()               const { e4_assert(this); return spec->static_prop & ED4_P_IS_TERMINAL; }
 
-    int is_text_terminal()          const { return !this || spec->level & (ED4_L_SPECIES_NAME|ED4_L_SEQUENCE_INFO|ED4_L_SEQUENCE_STRING|ED4_L_PURE_TEXT|ED4_L_COL_STAT); }
+    int is_text_terminal()          const { e4_assert(this); return spec->level & (ED4_L_SPECIES_NAME|ED4_L_SEQUENCE_INFO|ED4_L_SEQUENCE_STRING|ED4_L_PURE_TEXT|ED4_L_COL_STAT); }
 
-    int is_species_name_terminal()  const { return !this || spec->level & ED4_L_SPECIES_NAME; }
-    int is_sequence_info_terminal() const { return !this || spec->level & ED4_L_SEQUENCE_INFO; }
-    int is_sequence_terminal()      const { return !this || spec->level & ED4_L_SEQUENCE_STRING; }
-    int is_aa_sequence_terminal()      const { return !this || spec->level & ED4_L_AA_SEQUENCE_STRING; } // ykadi
-    int is_pure_text_terminal()     const { return !this || spec->level & ED4_L_PURE_TEXT; }
-    int is_columnStat_terminal()    const { return !this || spec->level & ED4_L_COL_STAT; }
+    int is_species_name_terminal()  const { e4_assert(this); return spec->level & ED4_L_SPECIES_NAME; }
 
-    int is_bracket_terminal()       const { return !this || spec->level & ED4_L_BRACKET; }
-    int is_spacer_terminal()        const { return !this || spec->level & ED4_L_SPACER; }
-    int is_line_terminal()          const { return !this || spec->level & ED4_L_LINE; }
+    int is_sequence_info_terminal() const { e4_assert(this); return spec->level & ED4_L_SEQUENCE_INFO; }
+    int is_sequence_terminal()      const { e4_assert(this); return spec->level & ED4_L_SEQUENCE_STRING; }
+    int is_orf_terminal()           const { e4_assert(this); return spec->level & ED4_L_ORF; }
 
-    int is_manager()                const { return !this || spec->static_prop & ED4_P_IS_MANAGER; }
+    int is_pure_text_terminal()     const { e4_assert(this); return spec->level & ED4_L_PURE_TEXT; }
+    int is_columnStat_terminal()    const { e4_assert(this); return spec->level & ED4_L_COL_STAT; }
 
-    int is_sequence_manager()       const { return !this || spec->level & ED4_L_SEQUENCE; }
-    int is_multi_name_manager()     const { return !this || spec->level & ED4_L_MULTI_NAME; }
-    int is_name_manager()           const { return !this || spec->level & ED4_L_NAME_MANAGER; }
-    int is_multi_species_manager()  const { return !this || spec->level & ED4_L_MULTI_SPECIES; }
-    int is_multi_sequence_manager() const { return !this || spec->level & ED4_L_MULTI_SEQUENCE; }
-    int is_device_manager()         const { return !this || spec->level & ED4_L_DEVICE; }
-    int is_group_manager()          const { return !this || spec->level & ED4_L_GROUP; }
-    int is_species_manager()        const { return !this || spec->level & ED4_L_SPECIES; }
-    int is_area_manager()           const { return !this || spec->level & ED4_L_AREA; }
+    int is_bracket_terminal()       const { e4_assert(this); return spec->level & ED4_L_BRACKET; }
+    int is_spacer_terminal()        const { e4_assert(this); return spec->level & ED4_L_SPACER; }
+    int is_line_terminal()          const { e4_assert(this); return spec->level & ED4_L_LINE; }
+
+    int is_manager()                const { e4_assert(this); return spec->static_prop & ED4_P_IS_MANAGER; }
+
+    int is_sequence_manager()       const { e4_assert(this); return spec->level & ED4_L_SEQUENCE; }
+    int is_multi_name_manager()     const { e4_assert(this); return spec->level & ED4_L_MULTI_NAME; }
+    int is_name_manager()           const { e4_assert(this); return spec->level & ED4_L_NAME_MANAGER; }
+    int is_multi_species_manager()  const { e4_assert(this); return spec->level & ED4_L_MULTI_SPECIES; }
+    int is_multi_sequence_manager() const { e4_assert(this); return spec->level & ED4_L_MULTI_SEQUENCE; }
+    int is_device_manager()         const { e4_assert(this); return spec->level & ED4_L_DEVICE; }
+    int is_group_manager()          const { e4_assert(this); return spec->level & ED4_L_GROUP; }
+    int is_species_manager()        const { e4_assert(this); return spec->level & ED4_L_SPECIES; }
+    int is_area_manager()           const { e4_assert(this); return spec->level & ED4_L_AREA; }
 
     // use the following functions to cast ED4_base to derived classes:
 
-    ED4_base                    *to_base() const                    { e4_assert(is_terminal() || is_manager());         return (ED4_base *)this; }
+#define E4B_DECL_CASTOP_helper(Class,toName,isName)     \
+    inline const Class *toName() const;                 \
+    inline Class *toName();
 
-    ED4_terminal                *to_terminal() const                { e4_assert(is_terminal());         return (ED4_terminal *)this; }
-
-    ED4_text_terminal           *to_text_terminal() const           { e4_assert(is_text_terminal());    return (ED4_text_terminal *)this; }
-
-    ED4_species_name_terminal   *to_species_name_terminal() const   { e4_assert(is_species_name_terminal()); return (ED4_species_name_terminal *)this; }
-    ED4_sequence_info_terminal  *to_sequence_info_terminal() const  { e4_assert(is_sequence_info_terminal()); return (ED4_sequence_info_terminal*)this; }
-    ED4_sequence_terminal       *to_sequence_terminal() const       { e4_assert(is_sequence_terminal());    return (ED4_sequence_terminal*)this; }
-    ED4_AA_sequence_terminal  *to_aa_sequence_terminal() const       { e4_assert(is_aa_sequence_terminal());    return (ED4_AA_sequence_terminal*)this; } // ykadi
-    ED4_pure_text_terminal      *to_pure_text_terminal() const      { e4_assert(is_pure_text_terminal());   return (ED4_pure_text_terminal*)this; }
-    ED4_columnStat_terminal     *to_columnStat_terminal() const     { e4_assert(is_columnStat_terminal());  return (ED4_columnStat_terminal*)this; }
-
-    ED4_bracket_terminal        *to_bracket_terminal() const        { e4_assert(is_bracket_terminal());     return (ED4_bracket_terminal*)this; }
-    ED4_spacer_terminal         *to_spacer_terminal() const         { e4_assert(is_spacer_terminal());  return (ED4_spacer_terminal*)this; }
-    ED4_line_terminal           *to_line_terminal() const           { e4_assert(is_line_terminal());    return (ED4_line_terminal*)this; }
-
-    ED4_manager                 *to_manager() const                 { e4_assert(is_manager());      return (ED4_manager *)this; }
-
-    ED4_sequence_manager        *to_sequence_manager() const        { e4_assert(is_sequence_manager());     return (ED4_sequence_manager*)this; }
-    ED4_multi_name_manager      *to_multi_name_manager() const      { e4_assert(is_multi_name_manager());   return (ED4_multi_name_manager *)this; }
-    ED4_name_manager            *to_name_manager() const            { e4_assert(is_name_manager());     return (ED4_name_manager *)this; }
-    ED4_multi_species_manager   *to_multi_species_manager() const   { e4_assert(is_multi_species_manager()); return (ED4_multi_species_manager *)this; }
-    ED4_multi_sequence_manager  *to_multi_sequence_manager() const  { e4_assert(is_multi_sequence_manager()); return (ED4_multi_sequence_manager *)this; }
-    ED4_device_manager          *to_device_manager() const          { e4_assert(is_device_manager());   return (ED4_device_manager *)this; }
-    ED4_group_manager           *to_group_manager() const           { e4_assert(is_group_manager());    return (ED4_group_manager *)this; }
-    ED4_species_manager         *to_species_manager() const         { e4_assert(is_species_manager());  return (ED4_species_manager *)this; }
-    ED4_area_manager            *to_area_manager() const            { e4_assert(is_area_manager());     return (ED4_area_manager *)this; }
+#define E4B_IMPL_CASTOP_helper(Class,toName,isName)                             \
+    const Class *ED4_base::toName() const {                                     \
+        e4_assert(isName());                                                    \
+        return DOWNCAST(const Class*, this);                                    \
+    }                                                                           \
+    Class *ED4_base::toName() {                                                 \
+        return const_cast<Class*>(const_cast<const ED4_base*>(this)->toName()); \
+    }
+    
+#define E4B_DECL_CASTOP(name) E4B_DECL_CASTOP_helper(concat(ED4_,name), concat(to_,name), concat(is_,name))
+#define E4B_IMPL_CASTOP(name) E4B_IMPL_CASTOP_helper(concat(ED4_,name), concat(to_,name), concat(is_,name))
+    
+    E4B_DECL_CASTOP(area_manager);
+    E4B_DECL_CASTOP(bracket_terminal);
+    E4B_DECL_CASTOP(columnStat_terminal);
+    E4B_DECL_CASTOP(device_manager);
+    E4B_DECL_CASTOP(group_manager);
+    E4B_DECL_CASTOP(line_terminal);
+    E4B_DECL_CASTOP(manager);
+    E4B_DECL_CASTOP(multi_name_manager);
+    E4B_DECL_CASTOP(multi_sequence_manager);
+    E4B_DECL_CASTOP(multi_species_manager);
+    E4B_DECL_CASTOP(name_manager);
+    E4B_DECL_CASTOP(orf_terminal);
+    E4B_DECL_CASTOP(pure_text_terminal);
+    E4B_DECL_CASTOP(sequence_info_terminal);
+    E4B_DECL_CASTOP(sequence_manager);
+    E4B_DECL_CASTOP(sequence_terminal);
+    E4B_DECL_CASTOP(spacer_terminal);
+    E4B_DECL_CASTOP(species_manager);
+    E4B_DECL_CASTOP(species_name_terminal);
+    E4B_DECL_CASTOP(terminal);
+    E4B_DECL_CASTOP(text_terminal);
 };
 
 class ED4_manager : public ED4_base { // derived from a Noncopyable
@@ -863,11 +938,8 @@ class ED4_manager : public ED4_base { // derived from a Noncopyable
 
 public:
     ED4_members *children;
-    bool         is_group;
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_BASECLASS(ED4_manager, ED4_base);
 
     int refresh_flag_ok();
 
@@ -946,7 +1018,7 @@ public:
     virtual ED4_returncode      make_children_visible();
     virtual ED4_returncode  hide_children();
 
-    ED4_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_manager();
 };
 
@@ -958,13 +1030,11 @@ public:
         unsigned int selected : 1;                  // Flag for 'Object selected'
         unsigned int dragged : 1;                   // Flag for 'Object dragged'
         unsigned int deleted : 1;
-    } flag;
+    } tflag;
     ED4_selection_entry *selection_info;            // Info about i.e. Position
     long                 actual_timestamp;
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_BASECLASS(ED4_terminal,ED4_base);
 
     // callbacks
 
@@ -1166,7 +1236,7 @@ class ED4_main_manager : public ED4_manager { // derived from a Noncopyable
 
     ED4_main_manager(const ED4_main_manager&); // copy-constructor not allowed
 public:
-    ED4_main_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_main_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_main_manager();
 
     void set_top_middle_spacer_terminal(ED4_terminal *top_middle_spacer_) { top_middle_spacer = top_middle_spacer_; }
@@ -1175,9 +1245,8 @@ public:
     ED4_terminal *get_top_middle_spacer_terminal() const { return top_middle_spacer; }
     ED4_terminal *get_top_middle_line_terminal() const { return top_middle_line; }
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
+
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode resize_requested_by_parent();
 };
@@ -1186,23 +1255,20 @@ class ED4_device_manager : public ED4_manager
 {
     ED4_device_manager(const ED4_device_manager&); // copy-constructor not allowed
 public:
-    ED4_device_manager  (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_device_manager  (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_device_manager ();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
 
 class ED4_area_manager : public ED4_manager
 {
     ED4_area_manager(const ED4_area_manager&); // copy-constructor not allowed
 public:
-    ED4_area_manager    (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_area_manager    (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_area_manager   ();
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
 
 class ED4_multi_species_manager : public ED4_manager
@@ -1219,12 +1285,10 @@ class ED4_multi_species_manager : public ED4_manager
     ED4_multi_species_manager(const ED4_multi_species_manager&); // copy-constructor not allowed
 
 public:
-    ED4_multi_species_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_multi_species_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_multi_species_manager();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 
     int           count_visible_children(); // is called by a multi_species_manager
     int           count_all_children_and_set_group_id(); // counts all children of a parent
@@ -1255,12 +1319,10 @@ protected:
 
 public:
 
-    ED4_group_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_group_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_group_manager();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_MIDCLASS(ED4_group_manager, ED4_manager);
 
     ED4_char_table&         table() { return my_table; }
     const ED4_char_table&   table() const { return my_table; }
@@ -1366,6 +1428,8 @@ public:
 
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode resize_requested_by_parent();
+
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_group_manager);
 };
 
 typedef void (*ED4_species_manager_cb)(ED4_species_manager*, AW_CL);
@@ -1390,12 +1454,10 @@ class ED4_species_manager : public ED4_manager
 
     ED4_species_manager(const ED4_species_manager&); // copy-constructor not allowed
 public:
-    ED4_species_manager (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_species_manager (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_species_manager   ();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 
     bool setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfold_groups, ED4_CursorJumpType jump_type);
 
@@ -1410,24 +1472,20 @@ class ED4_multi_sequence_manager : public ED4_manager
 {
     ED4_multi_sequence_manager(const ED4_multi_sequence_manager&); // copy-constructor not allowed
 public:
-    ED4_multi_sequence_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_multi_sequence_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_multi_sequence_manager();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
 
 class ED4_sequence_manager : public ED4_manager
 {
     ED4_sequence_manager(const ED4_sequence_manager&); // copy-constructor not allowed
 public:
-    ED4_sequence_manager    (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_sequence_manager    (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_sequence_manager   ();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
 
 class ED4_multi_name_manager : public ED4_manager
@@ -1437,12 +1495,10 @@ class ED4_multi_name_manager : public ED4_manager
 
     ED4_multi_name_manager(const ED4_multi_name_manager&); // copy-constructor not allowed
 public:
-    ED4_multi_name_manager  (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_multi_name_manager  (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_multi_name_manager ();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
 
 
@@ -1452,12 +1508,10 @@ class ED4_name_manager : public ED4_manager
     // it's linked into speciesmanager
     ED4_name_manager(const ED4_name_manager&); // copy-constructor not allowed
 public:
-    ED4_name_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
+    ED4_name_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_name_manager();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
 
 
@@ -1475,9 +1529,7 @@ public:
     ED4_tree_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_tree_terminal();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_terminal);
 };
 
 class ED4_bracket_terminal : public ED4_terminal
@@ -1490,9 +1542,7 @@ public:
     ED4_bracket_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_bracket_terminal();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_terminal);
 };
 
 class ED4_text_terminal : public ED4_terminal {
@@ -1508,18 +1558,17 @@ public:
     ED4_text_terminal(GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_text_terminal();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_BASECLASS(ED4_text_terminal, ED4_terminal);
 };
 
-class ED4_sequence_terminal_basic : public ED4_text_terminal { // derived from a Noncopyable
+class ED4_abstract_sequence_terminal : public ED4_text_terminal { // derived from a Noncopyable
+    
 public:
+    char *species_name; // @@@ wrong place (may be member of ED4_sequence_manager)
 
-    char *species_name;
 
-    ED4_sequence_terminal_basic(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    virtual ~ED4_sequence_terminal_basic();
+    ED4_abstract_sequence_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
+    virtual ~ED4_abstract_sequence_terminal();
 
     virtual GB_alignment_type GetAliType() = 0;
     virtual int get_length() const { int len; resolve_pointer_to_char_pntr(&len); return len; }
@@ -1530,10 +1579,11 @@ public:
     void calc_intervall_displayed_in_rectangle(AW_screen_area *area_rect, long *left_index, long *right_index);
     void calc_update_intervall(long *left_index, long *right_index);
 
+    DECLARE_DUMP_FOR_BASECLASS(ED4_abstract_sequence_terminal, ED4_text_terminal);
 };
 
-class ED4_AA_sequence_terminal : public ED4_sequence_terminal_basic { // derived from a Noncopyable
-    // NOTE: ED4_AA_sequence_terminal is a separate terminal class used to display Open Reading Frames (ORFs)
+class ED4_orf_terminal : public ED4_abstract_sequence_terminal { // derived from a Noncopyable
+    // NOTE: ED4_orf_terminal is a separate terminal class used to display Open Reading Frames (ORFs)
     //       for the corresponding gene (DNA) sequence. It is used in ProteinViewer Module and should not be
     //       used for drawing aminoacid sequence alone as in protein alignment. Aminoacid sequences are
     //       handled by the standard "ED4_sequence_terminal" class.
@@ -1544,10 +1594,10 @@ class ED4_AA_sequence_terminal : public ED4_sequence_terminal_basic { // derived
     int   aaStrandType;
 
     virtual ED4_returncode  draw(int only_text = 0);
-    ED4_AA_sequence_terminal(const ED4_AA_sequence_terminal&);
+    ED4_orf_terminal(const ED4_orf_terminal&);
 public:
-    ED4_AA_sequence_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    virtual ~ED4_AA_sequence_terminal();
+    ED4_orf_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
+    virtual ~ED4_orf_terminal();
 
     virtual GB_alignment_type GetAliType();
 
@@ -1557,9 +1607,11 @@ public:
     
     int GET_aaStartPos () { return aaStartPos; }
     int GET_aaStrandType () { return aaStrandType; }
+
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_abstract_sequence_terminal);
 };
 
-class ED4_sequence_terminal : public ED4_sequence_terminal_basic { // derived from a Noncopyable
+class ED4_sequence_terminal : public ED4_abstract_sequence_terminal { // derived from a Noncopyable
     mutable ED4_SearchResults searchResults;
 
     virtual ED4_returncode  draw(int only_text = 0);
@@ -1575,7 +1627,7 @@ public:
     virtual GB_alignment_type GetAliType();
 
     virtual void deleted_from_database();
-    virtual int get_length() const { return ED4_sequence_terminal_basic::get_length(); }
+    virtual int get_length() const { return ED4_abstract_sequence_terminal::get_length(); }
 
     ED4_SearchResults& results() const { return searchResults; }
 
@@ -1584,9 +1636,7 @@ public:
         return col_term ? col_term->to_columnStat_terminal() : 0;
     }
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_MIDCLASS(ED4_sequence_terminal,ED4_abstract_sequence_terminal);
 };
 
 class ED4_columnStat_terminal : public ED4_text_terminal { // derived from a Noncopyable
@@ -1615,9 +1665,7 @@ public:
     ED4_columnStat_terminal(GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_columnStat_terminal();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
 };
 
 class ED4_species_name_terminal : public ED4_text_terminal
@@ -1637,9 +1685,7 @@ public:
         return seq_term ? seq_term->to_sequence_terminal() : 0;
     }
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
 };
 
 class ED4_sequence_info_terminal : public ED4_text_terminal
@@ -1662,9 +1708,7 @@ public:
 
     virtual bool remove_deleted_children();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
 };
 
 class ED4_pure_text_terminal : public ED4_text_terminal
@@ -1676,9 +1720,7 @@ public:
 
     virtual int get_length() const { int len; resolve_pointer_to_char_pntr(&len); return len; }
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
 };
 
 class ED4_consensus_sequence_terminal : public ED4_sequence_terminal
@@ -1693,9 +1735,7 @@ public:
 
     virtual int get_length() const;
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_sequence_terminal);
 };
 
 class ED4_spacer_terminal : public ED4_terminal
@@ -1708,9 +1748,7 @@ public:
     ED4_spacer_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_spacer_terminal();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_terminal);
 };
 
 class ED4_line_terminal : public ED4_terminal
@@ -1723,9 +1761,7 @@ public:
     ED4_line_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_line_terminal();
 
-#if defined(IMPLEMENT_DUMP)
-    virtual void dump(size_t indent) const;
-#endif // IMPLEMENT_DUMP
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_terminal);
 };
 
 
@@ -1736,6 +1772,28 @@ inline bool ED4_terminal::setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfo
     ED4_species_manager *sm = get_parent(ED4_L_SPECIES)->to_species_manager();
     return sm->setCursorTo(cursor, seq_pos, unfoldGroups, jump_type);
 }
+
+E4B_IMPL_CASTOP(area_manager);
+E4B_IMPL_CASTOP(bracket_terminal);
+E4B_IMPL_CASTOP(columnStat_terminal);
+E4B_IMPL_CASTOP(device_manager);
+E4B_IMPL_CASTOP(group_manager);
+E4B_IMPL_CASTOP(line_terminal);
+E4B_IMPL_CASTOP(manager);
+E4B_IMPL_CASTOP(multi_name_manager);
+E4B_IMPL_CASTOP(multi_sequence_manager);
+E4B_IMPL_CASTOP(multi_species_manager);
+E4B_IMPL_CASTOP(name_manager);
+E4B_IMPL_CASTOP(orf_terminal);
+E4B_IMPL_CASTOP(pure_text_terminal);
+E4B_IMPL_CASTOP(sequence_info_terminal);
+E4B_IMPL_CASTOP(sequence_manager);
+E4B_IMPL_CASTOP(sequence_terminal);
+E4B_IMPL_CASTOP(spacer_terminal);
+E4B_IMPL_CASTOP(species_manager);
+E4B_IMPL_CASTOP(species_name_terminal);
+E4B_IMPL_CASTOP(terminal);
+E4B_IMPL_CASTOP(text_terminal);
 
 // --------------------------------------------
 //      Prototype functions without a class
