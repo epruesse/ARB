@@ -698,6 +698,7 @@ bool AW_cb_struct::is_equal(const AW_cb_struct& other) const {
 
 AW_cb_struct_guard AW_cb_struct::guard_before = NULL;
 AW_cb_struct_guard AW_cb_struct::guard_after  = NULL;
+AW_postcb_cb       AW_cb_struct::postcb       = NULL;
 
 void AW_cb_struct::run_callback() {
     if (next) next->run_callback();                 // callback the whole list
@@ -792,8 +793,8 @@ void AW_cb_struct::run_callback() {
     else {
         f(aw, cd1, cd2);
     }
-
     if (guard_after) guard_after();
+    if (postcb) postcb(aw);
 }
 
 bool AW_cb_struct::contains(void (*g)(AW_window*, AW_CL, AW_CL)) {

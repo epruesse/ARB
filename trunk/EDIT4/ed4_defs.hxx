@@ -273,11 +273,12 @@ struct ED4_extension // contains info about graphical properties
 #endif // IMPLEMENT_DUMP
 };
 
-struct ED4_scroll_picture
-{
-    bool    scroll;
-    long    old_x;
-    long    old_y;
+struct ED4_scroll_picture {
+    bool scroll;
+    long old_x;
+    long old_y;
+
+    ED4_scroll_picture() : scroll(false), old_x(0), old_y(0) {}
 };
 
 enum ED4_CursorJumpType {

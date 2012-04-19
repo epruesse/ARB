@@ -75,7 +75,7 @@ ED4_returncode ED4_root::refresh_window(int redraw) // this function should only
 
 ED4_returncode ED4_root::refresh_all_windows(int redraw)
 {
-    ED4_window *old_window = get_ed4w();
+    ED4_window *old_window = curr_ed4w();
 
     last_window_reached = 0;
 
@@ -104,46 +104,69 @@ ED4_returncode ED4_root::refresh_all_windows(int redraw)
 }
 
 
-ED4_returncode ED4_root::win_to_world_coords(AW_window *aww, AW_pos *x, AW_pos *y)              // calculates transformation from window to
-{                                                   // world coordinates in a given window
-    ED4_window        *current_window;
-    ED4_folding_line  *current_fl;
-    AW_pos             temp_x, temp_y;
+void ED4_window::win_to_world_coords(AW_pos *xPtr, AW_pos *yPtr) {
+    // calculates transformation from window to world coordinates in a given window
+    const AW_pos x = *xPtr;
+    const AW_pos y = *yPtr;
 
-    current_window = first_window->get_matching_ed4w(aww);
+    AW_pos temp_x = x;
+    AW_pos temp_y = y;
 
-    if (current_window == NULL)
-        return (ED4_R_WARNING);
-
-    temp_x = *x;
-    temp_y = *y;
-
-    current_fl = current_window->vertical_fl;                           // calculate x-offset due to vertical folding lines
-    while ((current_fl != NULL) && (*x >= current_fl->world_pos[X_POS]))
-    {
+    ED4_folding_line *current_fl = vertical_fl;                            // calculate x-offset due to vertical folding lines
+    while ((current_fl != NULL) && (x >= current_fl->window_pos[X_POS])) {
         if ((current_fl->length == INFINITE) ||
-                ((*y >= current_fl->window_pos[Y_POS]) && (*y <= (current_fl->window_pos[Y_POS] + current_fl->length))))
+            ((y >= current_fl->window_pos[Y_POS]) && (y <= (current_fl->window_pos[Y_POS] + current_fl->length))))
+        {
             temp_x += current_fl->dimension;
-
+        }
         current_fl = current_fl->next;
     }
 
-    current_fl = current_window->horizontal_fl;                         // calculate y-offset due to horizontal folding lines
-    while ((current_fl != NULL) && (*y >= current_fl->world_pos[Y_POS]))
-    {
+    current_fl = horizontal_fl;                         // calculate y-offset due to horizontal folding lines
+    while ((current_fl != NULL) && (y >= current_fl->window_pos[Y_POS])) {
         if ((current_fl->length == INFINITE) ||
-                  ((*x >= current_fl->window_pos[X_POS]) && (*x <= (current_fl->window_pos[X_POS] + current_fl->length))))
+            ((x >= current_fl->window_pos[X_POS]) && (x <= (current_fl->window_pos[X_POS] + current_fl->length))))
+        {
             temp_y += current_fl->dimension;
-
+        }
         current_fl = current_fl->next;
     }
 
-    *x = temp_x;
-    *y = temp_y;
-
-    return (ED4_R_OK);
+    *xPtr = temp_x;
+    *yPtr = temp_y;
 }
 
+void ED4_window::world_to_win_coords(AW_pos *xPtr, AW_pos *yPtr) {
+    // calculates transformation from world to window coordinates in a given window
+    const AW_pos x = *xPtr;
+    const AW_pos y = *yPtr;
+
+    AW_pos temp_x = x;
+    AW_pos temp_y = y;
+
+    ED4_folding_line *current_fl = vertical_fl;                          // calculate x-offset due to vertical folding lines
+    while (current_fl && (x>=current_fl->world_pos[X_POS])) {
+        if ((current_fl->length == INFINITE) ||
+            ((y >= current_fl->world_pos[Y_POS]) && (y <= current_fl->world_pos[Y_POS] + current_fl->length)))
+        {
+            temp_x -= current_fl->dimension;
+        }
+        current_fl = current_fl->next;
+    }
+
+    current_fl = horizontal_fl;                     // calculate y-offset due to horizontal folding lines
+    while (current_fl && (y >= current_fl->world_pos[Y_POS])) {
+        if ((current_fl->length == INFINITE) ||
+            ((x >= current_fl->world_pos[X_POS]) && (x <= (current_fl->world_pos[X_POS] + current_fl->length))))
+        {
+            temp_y -= current_fl->dimension;
+        }
+        current_fl = current_fl->next;
+    }
+
+    *xPtr = temp_x;
+    *yPtr = temp_y;
+}
 
 short ED4_root::is_primary_selection(ED4_terminal *object)
 {
@@ -228,10 +251,18 @@ ED4_returncode  ED4_root::remove_from_selected(ED4_terminal *object)
     return (ED4_R_OK);
 }
 
+void ED4_root::announce_useraction_in(AW_window *aww) {
+    for (ED4_window *win = first_window; win; win = win->next) {
+        if (win->aww == aww) {
+            most_recently_used_window = win;
+        }
+    }
+}
+
 void ED4_root::announce_deletion(ED4_base *object) {
     // remove any links which might point to the object
 
-    ED4_cursor& cursor = get_ed4w()->cursor;
+    ED4_cursor& cursor = curr_ed4w()->cursor;
     if (cursor.owner_of_cursor == object) { // about to delete owner_of_cursor
         cursor.HideCursor();
         e4_assert(cursor.owner_of_cursor != object);
@@ -420,7 +451,7 @@ ED4_returncode ED4_root::init_alignment() {
 void ED4_root::recalc_font_group() {
     font_group.unregisterAll();
     for (int f=ED4_G_FIRST_FONT; f<=ED4_G_LAST_FONT; f++) {
-        font_group.registerFont(get_device(), f);
+        font_group.registerFont(curr_device(), f);
     }
 }
 
@@ -651,10 +682,10 @@ ED4_returncode ED4_root::get_area_rectangle(AW_screen_area *rect, AW_pos x, AW_p
     // returns win-coordinates of area (defined by folding lines) which contains position x/y
     ED4_folding_line      *flv, *flh;
     int                    x1, x2, y1, y2;
-    const AW_screen_area&  area_rect = get_device()->get_area_size();
+    const AW_screen_area&  area_rect = curr_device()->get_area_size();
 
     x1 = area_rect.l;
-    for (flv=get_ed4w()->vertical_fl; ; flv = flv->next) {
+    for (flv=curr_ed4w()->vertical_fl; ; flv = flv->next) {
         if (flv) {
             e4_assert(flv->length==INFINITE);
             x2 = int(flv->window_pos[X_POS]);
@@ -667,7 +698,7 @@ ED4_returncode ED4_root::get_area_rectangle(AW_screen_area *rect, AW_pos x, AW_p
         }
 
         y1 = area_rect.t;
-        for (flh=get_ed4w()->horizontal_fl; ; flh = flh->next) {
+        for (flh=curr_ed4w()->horizontal_fl; ; flh = flh->next) {
             if (flh) {
                 e4_assert(flh->length==INFINITE);
                 y2 = int(flh->window_pos[Y_POS]);
@@ -693,52 +724,6 @@ ED4_returncode ED4_root::get_area_rectangle(AW_screen_area *rect, AW_pos x, AW_p
         if (!flv) break;
     }
     return ED4_R_IMPOSSIBLE; // no area contains x/y :-(
-}
-
-ED4_returncode ED4_root::world_to_win_coords(AW_window *IF_ASSERTION_USED(aww), AW_pos *xPtr, AW_pos *yPtr)  // calculates transformation from world to window
-{                                               // coordinates in a given window
-    ED4_window      *current_window;
-    ED4_folding_line    *current_fl;
-    AW_pos      temp_x, temp_y, x, y;
-
-    current_window = get_ed4w();
-    e4_assert(current_window==first_window->get_matching_ed4w(aww));
-
-    if (! current_window) {
-        e4_assert(0);
-        return (ED4_R_WARNING);   // should never occur
-    }
-
-    temp_x = x = *xPtr;
-    temp_y = y = *yPtr;
-
-    current_fl = current_window->vertical_fl;                       // calculate x-offset due to vertical folding lines
-    while (current_fl && (x>=current_fl->world_pos[X_POS])) {
-        if ((current_fl->length == INFINITE) ||
-            ((y >= current_fl->world_pos[Y_POS]) &&
-             (y <= current_fl->world_pos[Y_POS] + current_fl->length)))
-        {
-            temp_x -= current_fl->dimension;
-
-        }
-        current_fl = current_fl->next;
-    }
-
-    current_fl = current_window->horizontal_fl;                     // calculate y-offset due to horizontal folding lines
-    while (current_fl && (y >= current_fl->world_pos[Y_POS])) {
-        if ((current_fl->length == INFINITE) ||
-            ((x >= current_fl->world_pos[X_POS]) &&
-             (x <= (current_fl->world_pos[X_POS] + current_fl->length))))
-        {
-            temp_y -= current_fl->dimension;
-        }
-        current_fl = current_fl->next;
-    }
-
-    *xPtr = temp_x;
-    *yPtr = temp_y;
-
-    return (ED4_R_OK);
 }
 
 void ED4_root::copy_window_struct(ED4_window *source,   ED4_window *destination)
@@ -991,7 +976,7 @@ static void ED4_undo_redo(AW_window*, AW_CL undo_type)
     else {
         GB_begin_transaction(GLOBAL_gb_main);
         GB_commit_transaction(GLOBAL_gb_main);
-        ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
+        ED4_cursor *cursor = &current_cursor();
         if (cursor->owner_of_cursor) {
             ED4_terminal *terminal = cursor->owner_of_cursor->to_terminal();
 
@@ -1005,7 +990,7 @@ void aw_clear_message_cb(AW_window *aww);
 
 static void ED4_clear_errors(AW_window*, AW_CL)
 {
-    aw_clear_message_cb(ED4_ROOT->get_aww());
+    aw_clear_message_cb(current_aww());
 }
 
 static AW_window *ED4_zoom_message_window(AW_root *root, AW_CL)
@@ -1070,7 +1055,7 @@ static void insert_search_fields(AW_window_menu_modes *awmm,
 }
 
 static void ED4_set_protection(AW_window * /* aww */, AW_CL cd1, AW_CL /* cd2 */) {
-    ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
+    ED4_cursor *cursor = &current_cursor();
     GB_ERROR    error  = 0;
 
     if (cursor->owner_of_cursor) {
@@ -1199,7 +1184,7 @@ void ED4_no_dangerous_modes()
     switch (ED4_ROOT->species_mode) {
         case ED4_SM_KILL: {
             ED4_ROOT->species_mode = ED4_SM_MOVE;
-            ED4_ROOT->get_aww()->select_mode(0);
+            current_aww()->select_mode(0);
             break;
         }
         default: {
@@ -1627,24 +1612,24 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     awmm->at("helixnrTxt"); awmm->create_button(0, "Helix#");
 
     awmm->at("pos");
-    awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) get_ed4w()->awar_path_for_cursor, AW_CL(ED4_POS_SEQUENCE));
-    awmm->create_input_field(get_ed4w()->awar_path_for_cursor, 7);
+    awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) curr_ed4w()->awar_path_for_cursor, AW_CL(ED4_POS_SEQUENCE));
+    awmm->create_input_field(curr_ed4w()->awar_path_for_cursor, 7);
 
     awmm->at("ecoli");
-    awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) get_ed4w()->awar_path_for_Ecoli, AW_CL(ED4_POS_ECOLI));
-    awmm->create_input_field(get_ed4w()->awar_path_for_Ecoli, 6);
+    awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) curr_ed4w()->awar_path_for_Ecoli, AW_CL(ED4_POS_ECOLI));
+    awmm->create_input_field(curr_ed4w()->awar_path_for_Ecoli, 6);
 
     awmm->at("base");
-    awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) get_ed4w()->awar_path_for_basePos, AW_CL(ED4_POS_BASE));
-    awmm->create_input_field(get_ed4w()->awar_path_for_basePos, 6);
+    awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) curr_ed4w()->awar_path_for_basePos, AW_CL(ED4_POS_BASE));
+    awmm->create_input_field(curr_ed4w()->awar_path_for_basePos, 6);
 
     awmm->at("iupac");
-    awmm->callback((AW_CB)ED4_set_iupac, (AW_CL) get_ed4w()->awar_path_for_IUPAC, AW_CL(0));
-    awmm->create_input_field(get_ed4w()->awar_path_for_IUPAC, 4);
+    awmm->callback((AW_CB)ED4_set_iupac, (AW_CL) curr_ed4w()->awar_path_for_IUPAC, AW_CL(0));
+    awmm->create_input_field(curr_ed4w()->awar_path_for_IUPAC, 4);
 
     awmm->at("helixnr");
-    awmm->callback((AW_CB)ED4_set_helixnr, (AW_CL) get_ed4w()->awar_path_for_helixNr, AW_CL(0));
-    awmm->create_input_field(get_ed4w()->awar_path_for_helixNr, 5);
+    awmm->callback((AW_CB)ED4_set_helixnr, (AW_CL) curr_ed4w()->awar_path_for_helixNr, AW_CL(0));
+    awmm->create_input_field(curr_ed4w()->awar_path_for_helixNr, 5);
 
     // ---------------------------
     //      jump/get/undo/redo
@@ -1873,15 +1858,40 @@ static char *detectProperties() {
     return propname;
 }
 
-ED4_root::ED4_root() {
-    memset((char *)this, 0, sizeof(*this));
-
-    db_name  = detectProperties();
-    aw_root  = AWT_create_root(db_name, "ARB_EDIT4");
-    props_db = AW_ROOT_DEFAULT;
-
-    species_mode = ED4_SM_MOVE;
-}
+ED4_root::ED4_root()
+    : most_recently_used_window(0), 
+      db_name(detectProperties()),
+      aw_root(AWT_create_root(db_name, "ARB_EDIT4")),
+      props_db(AW_ROOT_DEFAULT),
+      first_window(0),
+      main_manager(0),
+      middle_area_man(0),
+      top_area_man(0),
+      root_group_man(0),
+      database(0),
+      folding_action(0),
+      species_mode(ED4_SM_MOVE),
+      ecoli_ref(0),
+      alignment_name(0),
+      alignment_type(GB_AT_UNKNOWN),
+      reference(0),
+      sequence_colors(0),
+      aw_gc_manager(0),
+      st_ml(0),
+      helix(0),
+      helix_spacing(0),
+      helix_add_spacing(0),
+      terminal_add_spacing(0),
+      protstruct(0),
+      protstruct_len(0),
+      edk(0),
+      edit_string(0),
+      column_stat_activated(0),
+      column_stat_initialized(0),
+      visualizeSAI(0),
+      visualizeSAI_allSpecies(0),
+      temp_gc(0)
+{}
 
 
 ED4_root::~ED4_root() {

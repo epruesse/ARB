@@ -329,7 +329,7 @@ bool ED4_base::is_visible(AW_pos x, AW_pos y, ED4_direction direction) {
     // indicates whether x, y are in the visible scrolling area
     // x, y are calculated by calc_world_coords
     bool        visible = true;
-    ED4_coords& coords  = ED4_ROOT->get_ed4w()->coords;
+    ED4_coords& coords  = current_ed4w()->coords;
 
     switch (direction)
     {
@@ -383,7 +383,7 @@ bool ED4_base::is_visible(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, ED4_direct
     e4_assert(x1 <= x2);
     e4_assert(y1 <= y2);
 
-    ED4_coords& coords  = ED4_ROOT->get_ed4w()->coords;
+    ED4_coords& coords  = current_ed4w()->coords;
 
     bool visible = (ranges_overlap(x1, x2, coords.window_left_clip_point, coords.window_right_clip_point) &&
                     ranges_overlap(y1, y2, coords.window_upper_clip_point, coords.window_lower_clip_point));
@@ -855,7 +855,7 @@ PosRange ED4_abstract_sequence_terminal::pixel2index(PosRange pixel_range) {
 PosRange ED4_abstract_sequence_terminal::calc_interval_displayed_in_rectangle(AW_screen_area *rect) { // rect contains win-coords
     AW_pos x, y;
     calc_world_coords(&x, &y);
-    ED4_ROOT->world_to_win_coords(ED4_ROOT->get_ed4w()->aww, &x, &y);
+    current_ed4w()->world_to_win_coords(&x, &y);
 
     int rel_left_x  = int(rect->l-x);
     int rel_right_x = int(rect->r-x);
@@ -867,9 +867,9 @@ PosRange ED4_abstract_sequence_terminal::calc_update_interval() {
     AW_pos x, y;
     calc_world_coords(&x, &y);
 
-    const AW_screen_area& clip_rect = ED4_ROOT->get_device()->get_cliprect();
+    const AW_screen_area& clip_rect = current_device()->get_cliprect();
 
-    int scroll_shift = ED4_ROOT->get_ed4w()->coords.window_left_clip_point-x; // Verschiebung der Sequenz (durch Scrollen) == slider Position
+    int scroll_shift = current_ed4w()->coords.window_left_clip_point-x; // Verschiebung der Sequenz (durch Scrollen) == slider Position
     int rel_left_x   = int(clip_rect.l - x + scroll_shift);                   // Abstand vom linken Terminalrand zum Anfang des Clipping rectangles + scroll_shift
     int rel_right_x  = int(clip_rect.r - x + scroll_shift);
 
@@ -1308,8 +1308,8 @@ int ED4_base::adjust_clipping_rectangle()
     AW_pos x, y;
 
     calc_world_coords(&x, &y);
-    ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x, &y);
-    return ED4_ROOT->get_device()->reduceClipBorders(int(y), int(y+extension.size[HEIGHT]-1), int(x), int(x+extension.size[WIDTH]-1));
+    current_ed4w()->world_to_win_coords(&x, &y);
+    return current_device()->reduceClipBorders(int(y), int(y+extension.size[HEIGHT]-1), int(x), int(x+extension.size[WIDTH]-1));
 }
 
 
@@ -1371,31 +1371,31 @@ void ED4_base::update_world_coords_cache() {
 ED4_returncode ED4_base::clear_background(int color) {
     AW_pos x, y;
 
-    if (ED4_ROOT->get_device()) {
+    if (current_device()) {
         calc_world_coords(&x, &y);
-        ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x, &y);
+        current_ed4w()->world_to_win_coords(&x, &y);
 
-        ED4_ROOT->get_device()->push_clip_scale();
+        current_device()->push_clip_scale();
         if (adjust_clipping_rectangle()) {
             if (!color) {
-                ED4_ROOT->get_device()->clear_part(x, y, extension.size[WIDTH], extension.size[HEIGHT], AW_ALL_DEVICES);
+                current_device()->clear_part(x, y, extension.size[WIDTH], extension.size[HEIGHT], AW_ALL_DEVICES);
             }
             else {
                 // fill range with color for debugging
-                ED4_ROOT->get_device()->box(color, true, x, y, extension.size[WIDTH], extension.size[HEIGHT]);
+                current_device()->box(color, true, x, y, extension.size[WIDTH], extension.size[HEIGHT]);
             }
         }
-        ED4_ROOT->get_device()->pop_clip_scale();
+        current_device()->pop_clip_scale();
     }
     return (ED4_R_OK);
 }
 
 ED4_returncode ED4_base::clear_whole_background() {
     // clear AW_MIDDLE_AREA
-    if (ED4_ROOT->get_device()) {
-        ED4_ROOT->get_device()->push_clip_scale();
-        ED4_ROOT->get_device()->clear(AW_ALL_DEVICES);
-        ED4_ROOT->get_device()->pop_clip_scale();
+    if (current_device()) {
+        current_device()->push_clip_scale();
+        current_device()->clear(AW_ALL_DEVICES);
+        current_device()->pop_clip_scale();
     }
 
     return (ED4_R_OK);
@@ -1403,15 +1403,15 @@ ED4_returncode ED4_base::clear_whole_background() {
 
 void ED4_base::draw_bb(int color)
 {
-    if (ED4_ROOT->get_device()) {
-        ED4_ROOT->get_device()->push_clip_scale();
+    if (current_device()) {
+        current_device()->push_clip_scale();
         if (adjust_clipping_rectangle()) {
             AW_pos x1, y1;
             calc_world_coords(&x1, &y1);
-            ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x1, &y1);
-            ED4_ROOT->get_device()->box(color, false, x1, y1, extension.size[WIDTH]-1, extension.size[HEIGHT]-1);
+            current_ed4w()->world_to_win_coords(&x1, &y1);
+            current_device()->box(color, false, x1, y1, extension.size[WIDTH]-1, extension.size[HEIGHT]-1);
         }
-        ED4_ROOT->get_device()->pop_clip_scale();
+        current_device()->pop_clip_scale();
     }
 }
 
@@ -1484,7 +1484,7 @@ ED4_base::~ED4_base() // before calling this function the first time, parent has
             update_info.linked_to_scrolled_rectangle = 0;
             ED4_ROOT->scroll_links.link_for_hor_slider = sequence_terminal;
 
-            ed4w = ED4_ROOT->get_ed4w();
+            ed4w = current_ed4w();
             while (ed4w != NULL)
             {
                 if (ed4w->scrolled_rect.x_link == this)

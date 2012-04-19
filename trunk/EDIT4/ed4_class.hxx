@@ -290,18 +290,20 @@ public:
     AW_pos            world_pos[2];
     AW_pos            window_pos[2];
     AW_pos            length;
-    AW_pos            dimension;
+    AW_pos            dimension; // amount of pixel folded away
     ED4_base         *link;
     ED4_folding_line *next;
 
     ED4_folding_line();
+
+    
 };
 
-struct ED4_scroll_links
-{
+struct ED4_scroll_links {
     ED4_base *link_for_hor_slider;
     ED4_base *link_for_ver_slider;
 
+    ED4_scroll_links() : link_for_hor_slider(0), link_for_ver_slider(0) {}
 };
 
 struct ED4_scrolled_rectangle {
@@ -507,6 +509,10 @@ public:
     ED4_folding_line    *insert_folding_line(AW_pos world_x, AW_pos world_y, AW_pos length, AW_pos dimension, ED4_base *link, ED4_properties prop);
     ED4_returncode  delete_folding_line(ED4_folding_line *fl, ED4_properties prop);
 
+    // functions concerning coordinate transformation
+    void world_to_win_coords(AW_pos *x, AW_pos *y);
+    void win_to_world_coords(AW_pos *x, AW_pos *y);
+    
     ED4_window(AW_window *window);
     ~ED4_window();
 };
@@ -1118,7 +1124,7 @@ public:
     // functions concerning graphic output
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0) = 0;
     virtual ED4_returncode Resize();
-    virtual ED4_returncode draw(int only_text = 0)                   = 0;
+    virtual ED4_returncode draw() = 0;
 
     virtual int   adjust_clipping_rectangle();
     virtual short calc_bounding_box();
@@ -1182,15 +1188,40 @@ public:
     ~ED4_reference_terminals() { clear(); }
 };
 
+class ED4_WinContext {
+    ED4_window *ed4w;
+    AW_device  *device;
 
-class ED4_root : virtual Noncopyable {
-    int ED4_ROOT;
-    ED4_root(const ED4_root&);                      // copy-constructor not allowed
+    bool have_context() const { return ed4w; }
+    void init(ED4_window *ew) {
+        e4_assert(ew);
+        ed4w   = ew;
+        device = ed4w->aww->get_device(AW_MIDDLE_AREA);
+    }
 
 public:
-    AW_root                 *aw_root;               // Points to 'AW-Window-Controller'
-    AW_default               props_db;              // Default Properties database
-    char                    *db_name;               // name of Default Properties database (complete path)
+    ED4_WinContext() : ed4w(0), device(0) {}
+
+    inline ED4_WinContext(AW_window *aww_);
+    ED4_WinContext(ED4_window *ed4w_) { init(ed4w_); }
+
+    AW_device *get_device() const { e4_assert(have_context()); return device; }
+    ED4_window *get_ed4w() const { e4_assert(have_context()); return ed4w; }
+};
+
+class ED4_root : virtual Noncopyable {
+    void ED4_ROOT() const { e4_assert(0); } // avoid ED4_root-members use global ED4_ROOT
+
+    ED4_returncode refresh_window_simple(int redraw);
+
+    ED4_WinContext  context;
+    ED4_window     *most_recently_used_window;
+
+public:
+    char       *db_name;                            // name of Default Properties database (complete path)
+    AW_root    *aw_root;                            // Points to 'AW-Window-Controller'
+    AW_default  props_db;                           // Default Properties database
+
     ED4_window              *first_window;          // Points to List of Main Windows of ED4
     ED4_main_manager        *main_manager;          // Points to Main manager of ED4
     ED4_area_manager        *middle_area_man;       // Points to middle area
@@ -1222,70 +1253,45 @@ public:
     int                      column_stat_initialized;
     int                      visualizeSAI;
     int                      visualizeSAI_allSpecies;
+    int                      temp_gc;
+    AW_font_group            font_group;
 
-private:
-    AW_window  *tmp_aww;
-    ED4_window *tmp_ed4w;
-    AW_device  *tmp_device;
-
-public:
-    void use_window(AW_window *aww) {
-        if (aww != tmp_aww) {
-            e4_assert(aww);
-            tmp_aww    = aww;
-            tmp_device = aww->get_device(AW_MIDDLE_AREA);
-            e4_assert(tmp_device);
-            tmp_ed4w = first_window->get_matching_ed4w(aww);
-            e4_assert(tmp_ed4w);
-        }
-    }
-    void use_window(ED4_window *ed4w) {
-        e4_assert(ed4w);
-        tmp_ed4w   = ed4w;
-        tmp_aww    = ed4w->aww;
-        tmp_device = tmp_aww->get_device(AW_MIDDLE_AREA);
-        e4_assert(tmp_device);
-    }
+    void use_window(AW_window *aww) { context = ED4_WinContext(aww); }
+    void use_window(ED4_window *ed4w) { context = ED4_WinContext(ed4w); }
     void use_first_window() { use_window(first_window); }
 
-    AW_window *get_aww() const { e4_assert(tmp_aww); return tmp_aww; }
-    AW_device *get_device() const { e4_assert(tmp_device); return tmp_device; }
-    ED4_window *get_ed4w() const { e4_assert(tmp_ed4w); return tmp_ed4w; }
+    AW_device *curr_device() const { return context.get_device(); }
+    ED4_window *curr_ed4w() const { return context.get_ed4w(); }
+    AW_window *curr_aww() const { return context.get_ed4w()->aww; }
+
+    void announce_useraction_in(AW_window *aww);
+    ED4_window *get_most_recently_used_window() const { return most_recently_used_window; }
 
     inline ED4_device_manager *get_device_manager();
-
-    int            temp_gc;
-    AW_font_group  font_group;
 
     // Initializing functions
     ED4_returncode  create_hierarchy(char *area_string_middle, char *area_string_top);
     ED4_returncode  init_alignment();
     void recalc_font_group();
 
-    AW_window       *create_new_window();
-    ED4_returncode  generate_window(AW_device **device, ED4_window **new_window);
-    void        copy_window_struct(ED4_window *source,   ED4_window *destination);
+    AW_window *create_new_window();
+    ED4_returncode generate_window(AW_device **device, ED4_window **new_window);
+    void copy_window_struct(ED4_window *source,   ED4_window *destination);
 
     // functions concerned with global refresh and resize
-    ED4_returncode      resize_all();
+    ED4_returncode resize_all();
 
-private:
-    ED4_returncode      refresh_window_simple(int redraw);
-public:
-    ED4_returncode      refresh_window(int redraw);
-    ED4_returncode  refresh_all_windows(int redraw);
+    ED4_returncode refresh_window(int redraw);
+    ED4_returncode refresh_all_windows(int redraw);
 
     void announce_deletion(ED4_base *object); // before deleting an object, announce here
 
     // functions concerned with list of selected objects
-    ED4_returncode  add_to_selected(ED4_terminal *object);
-    ED4_returncode  remove_from_selected(ED4_terminal *object);
-    short               is_primary_selection(ED4_terminal *object);
-    ED4_returncode      deselect_all();
+    ED4_returncode add_to_selected(ED4_terminal *object);
+    ED4_returncode remove_from_selected(ED4_terminal *object);
+    short is_primary_selection(ED4_terminal *object);
+    ED4_returncode deselect_all();
 
-    // functions concerning coordinate transformation
-    ED4_returncode world_to_win_coords(AW_window *aww, AW_pos *x, AW_pos *y);
-    ED4_returncode win_to_world_coords(AW_window *aww, AW_pos *x, AW_pos *y);
     ED4_returncode get_area_rectangle(AW_screen_area *rect, AW_pos x, AW_pos y);
 
     ED4_index pixel2pos(AW_pos click_x);
@@ -1293,6 +1299,15 @@ public:
     ED4_root();
     ~ED4_root();
 };
+
+inline AW_window *current_aww() { return ED4_ROOT->curr_aww(); }
+inline AW_device *current_device() { return ED4_ROOT->curr_device(); }
+inline ED4_window *current_ed4w() { return ED4_ROOT->curr_ed4w(); }
+inline ED4_cursor& current_cursor() { return current_ed4w()->cursor; }
+
+ED4_WinContext::ED4_WinContext(AW_window *aww_) {
+    init(ED4_ROOT->first_window->get_matching_ed4w(aww_));
+}
 
 // ------------------------
 //      manager classes
@@ -1599,8 +1614,8 @@ class ED4_tree_terminal : public ED4_terminal
 {
     ED4_tree_terminal(const ED4_tree_terminal&); // copy-constructor not allowed
 public:
-    virtual ED4_returncode  draw(int only_text=0);
-    virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0);
+    virtual ED4_returncode draw();
+    virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
 
     ED4_tree_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
@@ -1611,8 +1626,8 @@ class ED4_bracket_terminal : public ED4_terminal
 {
     ED4_bracket_terminal(const ED4_bracket_terminal&); // copy-constructor not allowed
 public:
-    virtual ED4_returncode  draw(int only_text = 0);
-    virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0);
+    virtual ED4_returncode draw();
+    virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
 
     ED4_bracket_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
@@ -1623,8 +1638,8 @@ class ED4_text_terminal : public ED4_terminal {
     ED4_text_terminal(const ED4_text_terminal&); // copy-constructor not allowed
 public:
     // functions concerning graphic output
-    virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0);
-    virtual ED4_returncode      draw(int only_text=0);
+    virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
+    virtual ED4_returncode draw();
 
     virtual int get_length() const = 0;
     virtual void deleted_from_database();
@@ -1670,7 +1685,7 @@ class ED4_orf_terminal : public ED4_abstract_sequence_terminal { // derived from
     int   aaStartPos;
     int   aaStrandType;
 
-    virtual ED4_returncode  draw(int only_text = 0);
+    virtual ED4_returncode draw();
     ED4_orf_terminal(const ED4_orf_terminal&);
 public:
     ED4_orf_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
@@ -1691,7 +1706,7 @@ public:
 class ED4_sequence_terminal : public ED4_abstract_sequence_terminal { // derived from a Noncopyable
     mutable ED4_SearchResults searchResults;
 
-    virtual ED4_returncode  draw(int only_text = 0);
+    virtual ED4_returncode draw();
     ED4_sequence_terminal(const ED4_sequence_terminal&); // copy-constructor not allowed
 
 public:
@@ -1727,7 +1742,7 @@ class ED4_columnStat_terminal : public ED4_text_terminal { // derived from a Non
 public:
     // functions concerning graphic output
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
-    virtual ED4_returncode draw(int only_text=0);
+    virtual ED4_returncode draw();
     virtual int get_length() const { return corresponding_sequence_terminal()->to_text_terminal()->get_length(); }
 
     static int threshold_is_set();
@@ -1773,7 +1788,7 @@ public:
         return get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
     }
 
-    virtual ED4_returncode draw(int only_text = 0);
+    virtual ED4_returncode draw();
 
     GBDATA *data() { return get_species_pointer(); }
     const GBDATA *data() const { return get_species_pointer(); }
@@ -1798,7 +1813,7 @@ public:
 
 class ED4_consensus_sequence_terminal : public ED4_sequence_terminal
 {
-    virtual ED4_returncode  draw(int only_text = 0);
+    virtual ED4_returncode draw();
     ED4_consensus_sequence_terminal(const ED4_consensus_sequence_terminal&); // copy-constructor not allowed
 
     ED4_char_table& get_char_table() const { return get_parent(ED4_L_GROUP)->to_group_manager()->table(); }
@@ -1814,8 +1829,8 @@ class ED4_spacer_terminal : public ED4_terminal
 {
     ED4_spacer_terminal(const ED4_spacer_terminal&); // copy-constructor not allowed
 public:
-    virtual ED4_returncode      Show(int refresh_all=0, int is_cleared=0);
-    virtual ED4_returncode      draw(int only_text = 0);
+    virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
+    virtual ED4_returncode draw();
 
     ED4_spacer_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
@@ -1826,8 +1841,8 @@ class ED4_line_terminal : public ED4_terminal
 {
     ED4_line_terminal(const ED4_line_terminal&); // copy-constructor not allowed
 public:
-    virtual ED4_returncode      Show(int refresh_all=0, int is_cleared=0);
-    virtual ED4_returncode  draw(int only_text = 0);
+    virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
+    virtual ED4_returncode draw();
 
     ED4_line_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
@@ -1975,3 +1990,4 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access);
 #else
 #error ed4_class included twice
 #endif
+

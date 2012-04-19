@@ -309,7 +309,7 @@ static void ED4_gap_chars_changed(AW_root *root) {
 }
 
 static void ED4_edit_direction_changed(AW_root * /* awr */) {
-    ED4_ROOT->get_ed4w()->cursor.redraw();
+    current_cursor().redraw();
 }
 
 void ED4_expose_all_windows() {
@@ -480,6 +480,10 @@ const char *ED4_propertyName(int mode) {
     return result;
 }
 
+static void ED4_postcbcb(AW_window *aww) {
+    ED4_ROOT->announce_useraction_in(aww);
+}
+
 int ARB_main(int argc, const char *argv[]) {
     const char *data_path = ":";
     const char *err = NULL;
@@ -634,6 +638,7 @@ int ARB_main(int argc, const char *argv[]) {
         PV_CallBackFunction(ED4_ROOT->aw_root);
     }
 
+    AWT_install_postcb_cb(ED4_postcbcb);
     AWT_install_cb_guards();
     ED4_ROOT->aw_root->main_loop(); // enter main-loop
 

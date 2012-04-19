@@ -278,7 +278,7 @@ ED4_returncode ED4_cursor::draw_cursor(AW_pos x, AW_pos y)
                                        ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES),
                                        !awar_edit_direction);
 
-    cursor_shape->draw(ED4_ROOT->get_device(), int(x), int(y));
+    cursor_shape->draw(current_device(), int(x), int(y));
 
 #if defined(DEBUG) && 0
     printf("draw_cursor(%i, %i)\n", int(x), int(y));
@@ -298,7 +298,7 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
         return ED4_R_BREAK;
     }
     x = del_mark;
-    ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x, &y);
+    window()->world_to_win_coords(&x, &y);
 
     // refresh own terminal + terminal above + terminal below
 
@@ -343,7 +343,7 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
 
     // clear rectangle where cursor is displayed
 
-    AW_device *dev = ED4_ROOT->get_device();
+    AW_device *dev = current_device();
     dev->push_clip_scale();
 
     int xmin, xmax, ymin, ymax;
@@ -360,7 +360,7 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
     dev->set_font_overlap(true);
 
 #define EXPAND_SIZE 0
-    if (ED4_ROOT->get_device()->reduceClipBorders(ymin-EXPAND_SIZE, ymax+1+EXPAND_SIZE, xmin-EXPAND_SIZE, xmax+1+EXPAND_SIZE)) {
+    if (current_device()->reduceClipBorders(ymin-EXPAND_SIZE, ymax+1+EXPAND_SIZE, xmin-EXPAND_SIZE, xmax+1+EXPAND_SIZE)) {
         // refresh terminal
         int old_allowed_to_draw = allowed_to_draw;
         allowed_to_draw = 0;
@@ -436,7 +436,7 @@ bool ED4_species_manager::setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfo
         ED4_terminal *terminal = search_spec_child_rek(ED4_L_SEQUENCE_STRING)->to_terminal();
         if (terminal) {
             if (seq_pos == -1) seq_pos = cursor->get_sequence_pos();
-            cursor->set_to_terminal(ED4_ROOT->get_aww(), terminal, seq_pos, jump_type);
+            cursor->set_to_terminal(current_aww(), terminal, seq_pos, jump_type);
             return true;
         }
     }
@@ -447,7 +447,7 @@ bool ED4_species_manager::setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfo
 static void jump_to_species(ED4_species_name_terminal *name_term, int seq_pos, bool unfold_groups, ED4_CursorJumpType jump_type)
 {
     ED4_species_manager *species_manager = name_term->get_parent(ED4_L_SPECIES)->to_species_manager();
-    ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
+    ED4_cursor *cursor = &current_cursor();
     bool jumped = false;
 
     if (species_manager) jumped = species_manager->setCursorTo(cursor, seq_pos, unfold_groups, jump_type);
@@ -469,7 +469,7 @@ static void select_named_sequence_terminal(const char *name) {
         // lookup current name term
         ED4_species_name_terminal *cursor_name_term = 0;
         {
-            ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
+            ED4_cursor *cursor = &current_cursor();
             if (cursor) {
                 ED4_sequence_terminal *cursor_seq_term = 0;
 
@@ -822,7 +822,7 @@ int ED4_update_global_cursor_awars_allowed = true;
 void ED4_cursor::updateAwars()
 {
     AW_root     *aw_root = ED4_ROOT->aw_root;
-    ED4_window  *win = ED4_ROOT->get_ed4w();
+    ED4_window  *win = current_ed4w();
     int         seq_pos = get_sequence_pos();
 
     if (ED4_update_global_cursor_awars_allowed) {
@@ -940,7 +940,7 @@ void ED4_cursor::updateAwars()
 }
 
 int ED4_cursor::get_screen_relative_pos() {
-    ED4_coords *coords = &ED4_ROOT->get_ed4w()->coords;
+    ED4_coords *coords = &current_ed4w()->coords;
     return cursor_abs_x - coords->window_left_clip_point;
 }
 void ED4_cursor::set_screen_relative_pos(AW_window *aww, int scroll_to_relpos) {
@@ -995,7 +995,7 @@ void ED4_cursor::jump_screen_pos(AW_window *aww, int screen_pos, ED4_CursorJumpT
         return; // don`t move out of terminal
     }
 
-    ED4_coords *coords = &ED4_ROOT->get_ed4w()->coords;
+    ED4_coords *coords = &current_ed4w()->coords;
 
     int screen_width  = coords->window_right_clip_point-coords->window_left_clip_point;
     int scroll_new_to = -1;     // if >0 -> scroll abs_x_new to this screen-relative position
@@ -1119,7 +1119,7 @@ ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
 
         if (result == ED4_R_OK) {
             AW_pos     x_dummy, y_world;
-            AW_window *aww      = ED4_ROOT->get_aww();
+            AW_window *aww      = current_aww();
 
             owner_of_cursor->calc_world_coords(&x_dummy, &y_world);
 
@@ -1159,7 +1159,7 @@ ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
 
                 bool isScreen = false;
                 if (dir == ED4_C_DOWN) {
-                    ED4_ROOT->world_to_win_coords(aww, &x_dummy, &y_world); // special handling to move cursor from top to bottom area
+                    window()->world_to_win_coords(&x_dummy, &y_world); // special handling to move cursor from top to bottom area
                     isScreen = true;
                 }
                 target_terminal = get_upper_lower_cursor_pos(ED4_ROOT->main_manager, dir, y_world, isScreen, 0, seq_pos);
@@ -1208,7 +1208,7 @@ ED4_returncode ED4_cursor::ShowCursor(ED4_index offset_x, ED4_cursor_move move, 
     x_help = cursor_abs_x + offset_x;
     y_help = y;
 
-    ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x_help, &y_help);
+    window()->world_to_win_coords(&x_help, &y_help);
 
     if (allowed_to_draw) draw_cursor(x_help, y_help);
 #if defined(DEBUG) && 0
@@ -1253,7 +1253,7 @@ void ED4_terminal::scroll_into_view(AW_window *aww) { // scroll y-position only
     AW_pos termw_x, termw_y;
     calc_world_coords(&termw_x, &termw_y);
 
-    ED4_coords *coords  = &ED4_ROOT->get_ed4w()->coords;
+    ED4_coords *coords  = &current_ed4w()->coords;
 
     int term_height = int(extension.size[1]);
     int win_ysize   = coords->window_lower_clip_point - coords->window_upper_clip_point + 1;
@@ -1345,7 +1345,7 @@ ED4_returncode ED4_cursor::show_cursor_at(ED4_terminal *target_terminal, ED4_ind
         DRAW = 1;
     }
 
-    target_terminal->scroll_into_view(ED4_ROOT->get_aww());
+    target_terminal->scroll_into_view(current_aww());
 
     AW_pos termw_x, termw_y;
     target_terminal->calc_world_coords(&termw_x, &termw_y);
@@ -1359,7 +1359,7 @@ ED4_returncode ED4_cursor::show_cursor_at(ED4_terminal *target_terminal, ED4_ind
 
     AW_pos win_x = world_x;
     AW_pos win_y = world_y;
-    ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &win_x, &win_y);
+    window()->world_to_win_coords(&win_x, &win_y);
 
     cursor_abs_x = (long int)world_x;
     owner_of_cursor = target_terminal;
@@ -1419,7 +1419,7 @@ ED4_terminal *ED4_cursor::get_upper_lower_cursor_pos(ED4_manager *starting_point
                         result = get_upper_lower_cursor_pos(member->to_manager(), cursor_move, current_y, isScreen, terminal_is_appropriate, seq_pos);
                     }
 
-                    if (isScreen) ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x, &y); // if current_y is screen, convert x/y to screen-coordinates as well
+                    if (isScreen) window()->world_to_win_coords(&x, &y); // if current_y is screen, convert x/y to screen-coordinates as well
 
                     if ((member->dynamic_prop & ED4_P_CURSOR_ALLOWED) && y > current_y) {
                         ED4_multi_species_manager *marea_man = NULL; // probably multi_species_manager of middle_area, otherwise just a dummy
@@ -1593,7 +1593,7 @@ void ED4_store_curpos(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
 {
     GB_transaction dummy(GLOBAL_gb_main);
     ED4_ROOT->use_window(aww);
-    ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
+    ED4_cursor *cursor = &current_cursor();
     if (!cursor->owner_of_cursor) {
         aw_message("First you have to place the cursor.");
         return;
@@ -1606,7 +1606,7 @@ void ED4_restore_curpos(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
 {
     GB_transaction dummy(GLOBAL_gb_main);
     ED4_ROOT->use_window(aww);
-    ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
+    ED4_cursor *cursor = &current_cursor();
 
     CursorPos *pos = CursorPos::get_head();
     if (!pos) {
@@ -1631,7 +1631,7 @@ void ED4_helix_jump_opposite(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
 {
     GB_transaction  dummy(GLOBAL_gb_main);
     ED4_ROOT->use_window(aww);
-    ED4_cursor     *cursor = &ED4_ROOT->get_ed4w()->cursor;
+    ED4_cursor     *cursor = &current_cursor();
 
     if (!cursor->owner_of_cursor) {
         aw_message("First you have to place the cursor.");
@@ -1652,7 +1652,7 @@ void ED4_helix_jump_opposite(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
 }
 
 void ED4_change_cursor(AW_window * /* aww */, AW_CL /* cd1 */, AW_CL /* cd2 */) {
-    ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
+    ED4_cursor *cursor = &current_cursor();
     ED4_CursorType typ = cursor->getType();
 
     cursor->changeType((ED4_CursorType)((typ+1)%ED4_CURSOR_TYPES));
