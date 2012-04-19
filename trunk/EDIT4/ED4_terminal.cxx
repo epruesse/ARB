@@ -1330,7 +1330,7 @@ ED4_returncode ED4_columnStat_terminal::draw(int /* only_text */)
     ED4_sequence_terminal *seq_term = corresponding_sequence_terminal();
     const ED4_remap       *rm       = ED4_ROOT->root_group_man->remap();
     
-    PosRange index_range = rm->clip_screen_range(seq_term->calc_update_intervall());
+    PosRange index_range = rm->clip_screen_range(seq_term->calc_update_interval());
     {
         int max_seq_len = seq_term->get_length();
         int max_seq_pos = rm->sequence_to_screen_clipped(max_seq_len);

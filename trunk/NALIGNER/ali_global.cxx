@@ -29,8 +29,8 @@
 #define ERROR_COUNT_DEFAULT                2
 #define MAX_NUMBER_OF_MAPS_DEFAULT         10 // 100
 #define MAX_NUMBER_OF_MAPS_ALIGNER_DEFAULT 2
-#define INTERVALL_BORDER_DEFAULT           5
-#define INTERVALL_CENTER_DEFAULT           5
+#define INTERVAL_BORDER_DEFAULT            5
+#define INTERVAL_CENTER_DEFAULT            5
 
 // ACHTUNG: muss noch durch parameter belegbar sein
 #define MATCHES_MIN_DEFAULT          1000
@@ -87,8 +87,8 @@ void ALI_GLOBAL::init(int *argc, const char *argv[])
     preali_context.max_number_of_maps = MAX_NUMBER_OF_MAPS_DEFAULT;
     preali_context.max_number_of_maps_aligner =
         MAX_NUMBER_OF_MAPS_ALIGNER_DEFAULT;
-    preali_context.intervall_border = INTERVALL_BORDER_DEFAULT;
-    preali_context.intervall_center = INTERVALL_CENTER_DEFAULT;
+    preali_context.interval_border = INTERVAL_BORDER_DEFAULT;
+    preali_context.interval_center = INTERVAL_CENTER_DEFAULT;
     preali_context.max_cost_of_sub_percent = MAX_COST_OF_SUB_PERCENT_DEFAULT;
     preali_context.max_cost_of_helix = MAX_COST_OF_HELIX;
     preali_context.error_count = ERROR_COUNT_DEFAULT;
@@ -323,7 +323,7 @@ void ALI_GLOBAL::init(int *argc, const char *argv[])
         if (strncmp("-ib", argv[i], 3) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 3;
-            ret = sscanf(pos, "%d", &preali_context.intervall_border);
+            ret = sscanf(pos, "%d", &preali_context.interval_border);
             if (ret != 1) {
                 ali_warning("Wrong format for -ib");
                 break;
@@ -332,7 +332,7 @@ void ALI_GLOBAL::init(int *argc, const char *argv[])
         if (strncmp("-ic", argv[i], 3) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 3;
-            ret = sscanf(pos, "%d", &preali_context.intervall_center);
+            ret = sscanf(pos, "%d", &preali_context.interval_center);
             if (ret != 1) {
                 ali_warning("Wrong format for -ic");
                 break;

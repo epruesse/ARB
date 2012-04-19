@@ -236,22 +236,21 @@ void probe_combi_statistic::crossover_Probes(probe_combi_statistic *pcombi2)    
     int rand_cross_pos1,                        // Position an der der Crossover aufgefuehrt wird.
         rand_cross_pos2,
         rand_no_of_cross,                       // Anzahl der Austauschaktionen. (mind. 1)
-        random_intervall = mp_gl_awars.no_of_probes - 1;
+        random_interval = mp_gl_awars.no_of_probes - 1;
     probe_combi_statistic *f1, *f2;
 
-    rand_no_of_cross = random_intervall ? get_random(1, random_intervall) : 0;
+    rand_no_of_cross = random_interval ? get_random(1, random_interval) : 0;
 
     for (int i = 0; i < rand_no_of_cross; i++)              // eigentliche Crossover Schleife
     {
-        rand_cross_pos1 = get_random(0, random_intervall);
-        rand_cross_pos2 = get_random(0, random_intervall);
+        rand_cross_pos1 = get_random(0, random_interval);
+        rand_cross_pos2 = get_random(0, random_interval);
 
-        swap(& probe_combi[rand_cross_pos1], & pcombi2->probe_combi[rand_cross_pos2]);
+        swap(& probe_combi[rand_cross_pos1],          & pcombi2->probe_combi[rand_cross_pos2]);
+        swap(& probe_combi[rand_cross_pos1],          & probe_combi[random_interval]);       // um keine Listen zu verwenden
+        swap(& pcombi2->probe_combi[rand_cross_pos2], & pcombi2->probe_combi[random_interval]);         // wird im Array getauscht
 
-        swap(& probe_combi[rand_cross_pos1],    & probe_combi[random_intervall]);       // um keine Listen zu verwenden
-        swap(& pcombi2->probe_combi[rand_cross_pos2],    & pcombi2->probe_combi[random_intervall]);         // wird im Array getauscht
-
-        random_intervall--;
+        random_interval--;
     }
 
     while (true)        // Crossovernachbehandlung, um duplikate in Kombinationen zu vermeiden

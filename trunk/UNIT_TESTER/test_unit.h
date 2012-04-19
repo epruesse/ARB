@@ -109,7 +109,7 @@ namespace arb_test {
         const char *get_file() const { return file; }
         int get_line() const { return line; }
 
-        __attribute__((format(printf, 2, 3))) void warningf(const char *format, ...) const {
+        __attribute__((format(printf, 2, 3))) bool warningf(const char *format, ...) const {
             GlobalTestData& global = test_data();
             if (global.show_warnings) {
                 FlushedOutput yes;
@@ -117,6 +117,7 @@ namespace arb_test {
                 GlobalTestData::print_annotation();
                 global.warnings++;
             }
+            return global.show_warnings;
         }
 
         __attribute__((format(printf, 3, 4))) void errorf(bool fail, const char *format, ...) const {
@@ -450,7 +451,7 @@ namespace arb_test {
         virtual void announce_failure() const { TRIGGER_ASSERTION(false); }
 
         void err(const char *format) const { loc.errorf(false, format, code); }
-        void warn(const char *format) const { loc.warningf(format, code); }
+        bool warn(const char *format) const { return loc.warningf(format, code); }
         
     public:
         asserter(const expectation& e, const char *nontmp_code, const char *file, int line)
@@ -476,23 +477,42 @@ namespace arb_test {
                 announce_failure();
             }
             else {
-                warn("Expectation '%s' known as broken (accepted until fixed)");
-                print("Broken because\n");
-                expected->explain(2); print('\n');
+                if (warn("Expectation '%s' known as broken (accepted until fixed)")) {
+                    print("Broken because\n");
+                    expected->explain(2); print('\n');
+                }
             }
         }
+
         void expect_wanted_behavior() const {
             if (expected->fulfilled()) {
                 err("Wanted behavior '%s' reached");
                 announce_failure();
             }
             else {
-                warn("Wanted behavior: '%s'");
-                print("Unsatisfied because\n");
-                expected->explain(2); print('\n');
+                if (warn("Wanted behavior: '%s'")) {
+                    print("Unsatisfied because\n");
+                    expected->explain(2); print('\n');
+                }
             }
         }
 
+        void expect_brokenif(bool condition, const char *condcode) {
+            GlobalTestData& global = test_data();
+
+            char *old_annotation = nulldup(global.get_annotation());
+            char *new_annotation = StaticCode::strf("when (%s) is %s; %s",
+                                                    condcode,
+                                                    str(val2readable(condition)).value(),
+                                                    old_annotation ? old_annotation : "");
+
+            global.annotate(new_annotation);
+            if (condition) expect_broken(); else expect_that();
+            global.annotate(old_annotation);
+
+            free(new_annotation);
+            free(old_annotation);
+        }
     };
 
     class debug_asserter : public asserter {
@@ -1024,6 +1044,8 @@ namespace arb_test {
 #define TEST_EXPECT(EXPCTN) do { using namespace arb_test; asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).expect_that(); } while(0)
 #define TEST_EXPECT__BROKEN(EXPCTN) do { using namespace arb_test; asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).expect_broken(); } while(0)
 #define TEST_EXPECT__WANTED(EXPCTN) do { using namespace arb_test; asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).expect_wanted_behavior(); } while(0)
+
+#define TEST_EXPECT__BROKENIF(COND,EXPCTN) do { using namespace arb_test; asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).expect_brokenif(COND,#COND); } while(0)
 
 #define DEBUG_TEST_EXPECT(EXPCTN) do {                                                  \
         using namespace arb_test;                                                       \

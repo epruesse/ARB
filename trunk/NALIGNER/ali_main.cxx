@@ -11,11 +11,11 @@
 #include "ali_global.hxx"
 
 
-#define HELIX_PAIRS    "helix_pairs"
-#define HELIX_LINE     "helix_line"
-#define ALI_CONSENSUS  "ALI_CON"
-#define ALI_ERROR      "ALI_ERR"
-#define ALI_INTERVALLS "ALI_INT"
+#define HELIX_PAIRS   "helix_pairs"
+#define HELIX_LINE    "helix_line"
+#define ALI_CONSENSUS "ALI_CON"
+#define ALI_ERROR     "ALI_ERR"
+#define ALI_INTERVALS "ALI_INT"
 
 static ALI_GLOBAL aligs;
 

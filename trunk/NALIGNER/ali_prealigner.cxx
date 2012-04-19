@@ -201,9 +201,9 @@ void ali_prealigner_mask::delete_expensive(ALI_PREALIGNER_CONTEXT * context, ALI
                 }
                 // Segment without helix
                 else {
-                    if (end_seq - start_seq + 1 >= (unsigned long)((2 * context->intervall_border) + context->intervall_center)) {
-                        for (i = start_seq; i < start_seq + context->intervall_border; i++) map->undefine(i);
-                        for (i = end_seq; i > end_seq - context->intervall_border; i--) map->undefine(i);
+                    if (end_seq - start_seq + 1 >= (unsigned long)((2 * context->interval_border) + context->interval_center)) {
+                        for (i = start_seq; i < start_seq + context->interval_border; i++) map->undefine(i);
+                        for (i = end_seq; i > end_seq - context->interval_border; i--) map->undefine(i);
                     }
                     else {
                         for (i = start_seq; i <= end_seq; i++) map->undefine(i);

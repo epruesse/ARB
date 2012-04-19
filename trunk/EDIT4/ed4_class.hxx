@@ -1652,8 +1652,8 @@ public:
     ED4_species_name_terminal *corresponding_species_name_terminal() const {
         return get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
     }
-    PosRange calc_intervall_displayed_in_rectangle(AW_screen_area *area_rect);
-    PosRange calc_update_intervall();
+    PosRange calc_interval_displayed_in_rectangle(AW_screen_area *area_rect);
+    PosRange calc_update_interval();
 
     DECLARE_DUMP_FOR_BASECLASS(ED4_abstract_sequence_terminal, ED4_text_terminal);
 };

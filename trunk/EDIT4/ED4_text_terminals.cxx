@@ -56,7 +56,7 @@ ED4_returncode ED4_consensus_sequence_terminal::draw(int /* only_text */) {
     calc_world_coords(&x, &y);
     ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x, &y);
 
-    PosRange index_range = calc_update_intervall();
+    PosRange index_range = calc_update_interval();
     if (index_range.is_empty()) return ED4_R_OK;
 
     AW_pos text_x = x + CHARACTEROFFSET; // don't change
@@ -200,7 +200,7 @@ ED4_returncode ED4_orf_terminal::draw(int /* only_text */) {
 
     const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
 
-    ExplicitRange index_range = rm->clip_screen_range(calc_update_intervall());
+    ExplicitRange index_range = rm->clip_screen_range(calc_update_interval());
     {
         int max_seq_len = aaSeqLen;
         int max_seq_pos = rm->sequence_to_screen_clipped(max_seq_len-1);
@@ -347,7 +347,7 @@ ED4_returncode ED4_sequence_terminal::draw(int /* only_text */) {
 
     const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
 
-    ExplicitRange index_range = rm->clip_screen_range(calc_update_intervall());
+    ExplicitRange index_range = rm->clip_screen_range(calc_update_interval());
     if (index_range.is_empty()) return ED4_R_OK;
 
     int left  = index_range.start(); // @@@ do similar to ED4_orf_terminal::draw here
@@ -649,6 +649,7 @@ ED4_returncode ED4_text_terminal::draw(int /* only_text */)
             GBDATA *gbd = species_man->get_species_pointer();
 
             if (gbd) {
+                GB_transaction ta(gbd);
                 is_marked = GB_read_flag(gbd);
             }
 
