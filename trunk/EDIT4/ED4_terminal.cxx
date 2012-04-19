@@ -1100,6 +1100,7 @@ ED4_orf_terminal::ED4_orf_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_p
     : ED4_abstract_sequence_terminal(orf_terminal_spec, temp_id, x, y, width, height, temp_parent)
 {
     aaSequence   = 0;
+    aaSeqLen     = 0;
     aaColor      = 0;
     aaStartPos   = 0;
     aaStrandType = 0;
@@ -1271,7 +1272,7 @@ inline int find_significant_positions(int sig, int like_A, int like_C, int like_
 
 #define PROBE_MATCH_TARGET_STRING_LENGTH 32
 
-GB_CSTR ED4_columnStat_terminal::build_probe_match_string(int start_pos, int end_pos) const {
+GB_CSTR ED4_columnStat_terminal::build_probe_match_string(PosRange range) const {
     static char            result[PROBE_MATCH_TARGET_STRING_LENGTH+1]; // see create_probe_match_window() for length
     int                    max_insert   = PROBE_MATCH_TARGET_STRING_LENGTH;
     char                  *r            = result;
@@ -1279,7 +1280,7 @@ GB_CSTR ED4_columnStat_terminal::build_probe_match_string(int start_pos, int end
     ED4_sequence_terminal *seq_term     = corresponding_sequence_terminal()->to_sequence_terminal();
     char                  *seq          = seq_term->resolve_pointer_to_string_copy();
 
-    for (int pos=start_pos; pos<=end_pos; pos++) {
+    for (int pos=range.start(); pos<=range.end(); pos++) {
         int found = find_significant_positions(significance, likelihood[0][pos], likelihood[1][pos], likelihood[2][pos], likelihood[3][pos], 0);
 
         if (found || strchr("-=.", seq[pos])==0) {
@@ -1325,20 +1326,21 @@ ED4_returncode ED4_columnStat_terminal::draw(int /* only_text */)
     AW_pos text_x = x + CHARACTEROFFSET;
     AW_pos text_y = y + term_height - font_height;
 
-    AW_device *device = ED4_ROOT->get_device();
+    AW_device             *device   = ED4_ROOT->get_device();
     ED4_sequence_terminal *seq_term = corresponding_sequence_terminal();
-    const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
-    long left, right;
-    seq_term->calc_update_intervall(&left, &right);
-    rm->clip_screen_range(&left, &right);
-
+    const ED4_remap       *rm       = ED4_ROOT->root_group_man->remap();
+    
+    PosRange index_range = rm->clip_screen_range(seq_term->calc_update_intervall());
     {
         int max_seq_len = seq_term->get_length();
         int max_seq_pos = rm->sequence_to_screen_clipped(max_seq_len);
 
-        if (right>max_seq_len) right = max_seq_pos;
-        if (left>right) return ED4_R_OK;
+        index_range = ExplicitRange(index_range, max_seq_pos);
+        if (index_range.is_empty()) return ED4_R_OK;
     }
+
+    const int left  = index_range.start();
+    const int right = index_range.end();
 
     char *sbuffer = new char[right+2];  // used to build displayed terminal content  (values = '0'-'9')
     memset(sbuffer, ' ', right+1);
@@ -1354,22 +1356,23 @@ ED4_returncode ED4_columnStat_terminal::draw(int /* only_text */)
         // all columns with one (or sum of two) probability above 'significance' are back-colored in ED4_G_CBACK_0
         // the responsible probabilities (one or two) are back-colored in ED4_G_CBACK_1..ED4_G_CBACK_9
 
-        int color = ED4_G_STANDARD;
+        int color     = ED4_G_STANDARD;
         int old_color = ED4_G_STANDARD;
-        AW_pos x2 = text_x + font_width*left + 1;
-        AW_pos old_x2 = x2;
-        int i;
-        int selection_col1, selection_col2;
-        int is_selected = ED4_get_selected_range(seq_term, &selection_col1, &selection_col2);
 
-        for (i=left; i<=right; i++, x2+=font_width) { // colorize significant columns in ALL rows
+        AW_pos x2     = text_x + font_width*left + 1;
+        AW_pos old_x2 = x2;
+
+        PosRange selection;
+        bool     is_selected = ED4_get_selected_range(seq_term, selection);
+
+        for (int i=left; i<=right; i++, x2+=font_width) { // colorize significant columns in ALL rows
             int p = rm->screen_to_sequence(i);
             int found = find_significant_positions(significance, likelihood[0][p], likelihood[1][p], likelihood[2][p], likelihood[3][p], 0);
 
             if (found)  color = ED4_G_CBACK_0;
             else    color = ED4_G_STANDARD;
 
-            if (is_selected && p>=selection_col1 && p<=selection_col2) {
+            if (is_selected && selection.contains(p)) {
                 color = ED4_G_SELECTED;
             }
 
@@ -1388,7 +1391,7 @@ ED4_returncode ED4_columnStat_terminal::draw(int /* only_text */)
         color = ED4_G_STANDARD;
         x2 = text_x + font_width*left + 1;
 
-        for (i=left; i<=right; i++, x2+=font_width) { // colorize significant columns in SINGLE rows
+        for (int i=left; i<=right; i++, x2+=font_width) { // colorize significant columns in SINGLE rows
             int p = rm->screen_to_sequence(i);
             int sum;
             int found = find_significant_positions(significance, likelihood[0][p], likelihood[1][p], likelihood[2][p], likelihood[3][p], &sum);

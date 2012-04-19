@@ -263,7 +263,7 @@ if (not defined $ARBHOME) {
   die "'ARBHOME' not defined";
 }
 
-my $time_stamp = $ARBHOME.'/SOURCE_TOOLS/tabBrake.stamp';
+my $time_stamp = $ARBHOME.'/SOURCE_TOOLS/stamp.tabBrake';
 my $exitcode   = 0;
 if (-f $time_stamp) {
   $files_newer_than = getModtime($time_stamp);

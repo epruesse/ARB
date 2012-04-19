@@ -18,6 +18,9 @@
 #ifndef ARB_CORE_H
 #include <arb_core.h>
 #endif
+#ifndef POS_RANGE_H
+#include <pos_range.h>
+#endif
 
 class IslandHopping;
 
@@ -58,7 +61,7 @@ class IslandHopping : virtual Noncopyable {
 
     int alignment_length;
 
-    int firstColumn;
+    int firstColumn; // @@@ go PosRange
     int lastColumn;
 
     const char *ref_sequence;   // with gaps
@@ -120,9 +123,9 @@ public:
         toAlign_helix = hel;
     }
 
-    void set_range(int first_col,int last_col) {
-        firstColumn=first_col;
-        lastColumn=last_col;
+    void set_range(PosRange range) {
+        firstColumn = range.start();
+        lastColumn  = range.end();
     }
 
     const char *get_result() const { return output_sequence; }

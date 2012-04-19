@@ -52,6 +52,7 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/cb.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/client.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/client_types.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/pos_range.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/PT_com.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/PT_global_defs.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/servercntrl.h

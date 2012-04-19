@@ -146,7 +146,7 @@ void ED4_bases_table::sub(const ED4_bases_table& other, int start, int end)
         }
     }
 }
-void ED4_bases_table::sub_and_add(const ED4_bases_table& Sub, const ED4_bases_table& Add, UpdateRange range)
+void ED4_bases_table::sub_and_add(const ED4_bases_table& Sub, const ED4_bases_table& Add, PosRange range)
 {
     e4_assert(no_of_entries==Sub.no_of_entries);
     e4_assert(no_of_entries==Add.no_of_entries);
@@ -472,30 +472,33 @@ void ED4_consensus_display_changed(AW_root *root, AW_CL, AW_CL) {
     ED4_ROOT->refresh_all_windows(1);
 }
 
-char *ED4_char_table::build_consensus_string(int left_idx, int right_index) const {
-    if (right_index<0) right_index = size()-1;
+char *ED4_char_table::build_consensus_string(PosRange r) const {
+    ExplicitRange  range(r, size());
+    long           entries = range.size();
+    char          *new_buf = (char*)malloc(entries+1);
 
-    long  entr    = right_index-left_idx+1;
-    char *new_buf = (char*)malloc(entr+1);
-    new_buf[entr] = 0;
-    build_consensus_string_to(new_buf, left_idx, right_index);
+    build_consensus_string_to(new_buf, range);
+    new_buf[entries] = 0;
+
     return new_buf;
 }
 
-void ED4_char_table::build_consensus_string_to(char *consensus_string, int left_idx, int right_idx) const {
-    // 'consensus_string' has to be a buffer of size 'right_idx-left_idx+2'
+void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitRange range) const {
+    // 'consensus_string' has to be a buffer of size 'range.size()+1'
     // Note : Always check that consensus behavior is identical to that used in CON_evaluatestatistic()
 
     if (!BK) BK = new ConsensusBuildParams(ED4_ROOT->aw_root);
 
     e4_assert(consensus_string);
-    e4_assert(right_idx<size());
-    if (right_idx==-1 || right_idx>=size()) right_idx = size()-1;
+    e4_assert(range.end()<size());
 
 #define PERCENT(part, all)      ((100*(part))/(all))
 #define MAX_BASES_TABLES 41     // 25
 
     e4_assert(used_bases_tables<=MAX_BASES_TABLES);     // this is correct for DNA/RNA -> build_consensus_string() must be corrected for AMI/PRO
+
+    int left_idx  = range.start();
+    int right_idx = range.end();
 
     if (sequences) {
         for (int i=left_idx; i<=right_idx; i++) {
@@ -766,7 +769,7 @@ ED4_char_table::~ED4_char_table()
     delete [] bases_table;
 }
 
-const UpdateRange *ED4_char_table::changed_range(const ED4_char_table& other) const
+const PosRange *ED4_char_table::changed_range(const ED4_char_table& other) const
 {
     int i;
     int Size = size();
@@ -790,9 +793,10 @@ const UpdateRange *ED4_char_table::changed_range(const ED4_char_table& other) co
             }
 
             e4_assert(start<=end);
-            static UpdateRange range;
-            
-            range = UpdateRange(start, end);
+
+            static PosRange range;
+            range = PosRange(start, end);
+
             return &range;
         }
     }
@@ -859,7 +863,7 @@ void ED4_char_table::sub_and_add(const ED4_char_table& Sub, const ED4_char_table
     Sub.test();
     Add.test();
 
-    const UpdateRange *range = Sub.changed_range(Add);
+    const PosRange *range = Sub.changed_range(Add);
     if (range) {
         prepare_to_add_elements(Add.added_sequences()-Sub.added_sequences());
         sub_and_add(Sub, Add, *range);
@@ -868,13 +872,13 @@ void ED4_char_table::sub_and_add(const ED4_char_table& Sub, const ED4_char_table
     test();
 }
 
-void ED4_char_table::sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add, UpdateRange range) {
+void ED4_char_table::sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add, PosRange range) {
     test();
     Sub.test();
     Add.test();
 
     e4_assert(!Sub.ignore && !Add.ignore);
-    e4_assert(range.is_restricted());
+    e4_assert(range.is_part());
 
     int i;
     for (i=0; i<used_bases_tables; i++) {
@@ -884,7 +888,7 @@ void ED4_char_table::sub_and_add(const ED4_char_table& Sub, const ED4_char_table
     test();
 }
 
-const UpdateRange *ED4_char_table::changed_range(const char *string1, const char *string2, int min_len)
+const PosRange *ED4_char_table::changed_range(const char *string1, const char *string2, int min_len)
 {
     const unsigned long *range1 = (const unsigned long *)string1;
     const unsigned long *range2 = (const unsigned long *)string2;
@@ -951,8 +955,8 @@ const UpdateRange *ED4_char_table::changed_range(const char *string1, const char
 
     e4_assert(start<=end);
 
-    static UpdateRange range;
-    range = UpdateRange(start, end);
+    static PosRange range;
+    range = PosRange(start, end);
 
     return &range;
 }
@@ -1029,7 +1033,7 @@ void ED4_char_table::sub(const char *scan_string, int len)
     test();
 }
 
-void ED4_char_table::sub_and_add(const char *old_string, const char *new_string, UpdateRange range) {
+void ED4_char_table::sub_and_add(const char *old_string, const char *new_string, PosRange range) {
     test();
     int start = range.start();
     int end   = range.end();

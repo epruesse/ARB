@@ -36,7 +36,7 @@ void          ED4_setBlocktype(ED4_blocktype bt);
 void          ED4_toggle_block_type();
 void          ED4_correctBlocktypeAfterSelection();
 void          ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term);
-int           ED4_get_selected_range(ED4_terminal *term, int *first_column, int *last_column);
+bool          ED4_get_selected_range(ED4_terminal *term, PosRange& range);
 
 typedef char *(*ED4_blockoperation)(const char *sequence_data, int len, int repeat, int *new_len, GB_ERROR *error);
 

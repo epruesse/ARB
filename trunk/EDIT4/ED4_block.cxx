@@ -20,7 +20,7 @@ static ED4_blocktype blocktype = ED4_BT_NOBLOCK;
 // linerange for COLUMNBLOCK is stored in EDIT4 marks,
 // columnrange for COLUMNBLOCK is stored here:
 
-static int range_col1, range_col2;
+static PosRange blockrange;
 static int columnBlockUsed = 0;
 
 // --------------------------------------------------------------------------------
@@ -31,7 +31,7 @@ static void col_block_refresh_on_seq_term(ED4_sequence_terminal *seq_term) {
 
     ED4_columnStat_terminal *colStatTerm = seq_term->corresponding_columnStat_terminal();
     if (colStatTerm) {
-        const char *probe_match_pattern = colStatTerm->build_probe_match_string(range_col1, range_col2);
+        const char *probe_match_pattern = colStatTerm->build_probe_match_string(blockrange);
         int len = strlen(probe_match_pattern);
 
         if (len>=4) {
@@ -111,50 +111,47 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(ED4_blockoperation b
 
     if (gbd) {
         char *seq = GB_read_string(gbd);
-        int len = GB_read_string_count(gbd);
+        int   len = GB_read_string_count(gbd);
 
-        if (range_col1>=len || range_col2>=len) {
-            error = "Column-range exceeds sequence length";
-        }
-        else {
-            int len_part = range_col2-range_col1+1;
-            char *seq_part = seq+range_col1;
-            int new_len;
-            char *new_seq_part = block_operation(seq_part, len_part, repeat, &new_len, &error);
+        ExplicitRange range(blockrange, len);
 
-            if (new_seq_part) {
-                if (new_len<len_part) {
-                    memcpy(seq_part, new_seq_part, new_len);
-                    char gap = '-';
-                    if (seq_part[len_part-1] == '.' || seq_part[len_part] == '.') gap = '.';
+        int   len_part     = range.size();
+        char *seq_part     = seq+range.start();
+        int   new_len;
+        char *new_seq_part = block_operation(seq_part, len_part, repeat, &new_len, &error);
 
-                    for (int l=new_len; l<len_part; l++) {
-                        seq_part[l] = gap;
+        if (new_seq_part) {
+            if (new_len<len_part) {
+                memcpy(seq_part, new_seq_part, new_len);
+                char gap = '-';
+                if (seq_part[len_part-1] == '.' || seq_part[len_part] == '.') gap = '.';
+
+                for (int l=new_len; l<len_part; l++) {
+                    seq_part[l] = gap;
+                }
+            }
+            else if (new_len>len_part) {
+                for (int l=new_len-1; l>=len_part; l--) {
+                    if (!ADPP_IS_ALIGN_CHARACTER(new_seq_part[l])) {
+                        error = "Result of block-operation to large (not enough gaps at end of marked columnblock)";
+                        break;
                     }
                 }
-                else if (new_len>len_part) {
-                    for (int l=new_len-1; l>=len_part; l--) {
-                        if (!ADPP_IS_ALIGN_CHARACTER(new_seq_part[l])) {
-                            error = "Result of block-operation to large (not enough gaps at end of marked columnblock)";
-                            break;
-                        }
-                    }
 
-                    if (!error) { // there are enough gaps at end of sequence
-                        memcpy(seq_part, new_seq_part, len_part);
-                    }
-                }
-                else {
+                if (!error) { // there are enough gaps at end of sequence
                     memcpy(seq_part, new_seq_part, len_part);
                 }
-                delete new_seq_part;
+            }
+            else {
+                memcpy(seq_part, new_seq_part, len_part);
+            }
+            delete new_seq_part;
 
+            if (!error) {
+                error = GB_write_as_string(gbd, seq);
                 if (!error) {
-                    error = GB_write_as_string(gbd, seq);
-                    if (!error) {
-                        term->set_refresh();
-                        term->parent->refresh_requested_by_child();
-                    }
+                    term->set_refresh();
+                    term->parent->refresh_requested_by_child();
                 }
             }
         }
@@ -207,21 +204,21 @@ static void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat)
     }
 }
 
-int ED4_get_selected_range(ED4_terminal *term, int *first_column, int *last_column) {
-    if (blocktype==ED4_BT_NOBLOCK) return 0;
+bool ED4_get_selected_range(ED4_terminal *term, PosRange& range) {
+    if (blocktype==ED4_BT_NOBLOCK) return false;
+
+    ED4_species_name_terminal *name_term = term->to_sequence_terminal()->corresponding_species_name_terminal();
+    if (!name_term->tflag.selected) return false;
 
     if (blocktype==ED4_BT_COLUMNBLOCK || blocktype==ED4_BT_MODIFIED_COLUMNBLOCK) {
-        *first_column = range_col1;
-        *last_column = range_col2;
+        range = blockrange;
     }
     else {
         e4_assert(blocktype==ED4_BT_LINEBLOCK);
-        *first_column = 0;
-        *last_column = -1;
+        range = PosRange::whole();
     }
 
-    ED4_species_name_terminal *name_term = term->to_sequence_terminal()->corresponding_species_name_terminal();
-    return name_term->tflag.selected;
+    return true;
 }
 
 ED4_blocktype ED4_getBlocktype() {
@@ -306,15 +303,13 @@ void ED4_correctBlocktypeAfterSelection() { // this has to be called every time 
 
 static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_terminal *term2, ED4_index pos1, ED4_index pos2, int initial_call) {
     static ED4_sequence_terminal *last_term1, *last_term2;
-    static ED4_index last_pos1, last_pos2;
+    static PosRange               last_range;
 
     if (pos1>pos2) {
-        range_col1 = pos2;
-        range_col2 = pos1;
+        blockrange = PosRange(pos2, pos1);
     }
     else {
-        range_col1 = pos1;
-        range_col2 = pos2;
+        blockrange = PosRange(pos1, pos2);
     }
 
     if (blocktype==ED4_BT_MODIFIED_COLUMNBLOCK) {
@@ -346,7 +341,7 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
         int do_below = 1; // we have to update terminals between term2 and last_term2
 
         ED4_terminal *term          = term1;
-        int           xRangeChanged = last_pos1!=range_col1 || last_pos2!=range_col2;
+        int           xRangeChanged = blockrange != last_range;
 
         while (term) {
             if (term->is_sequence_terminal()) {
@@ -412,8 +407,7 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
 
     last_term1 = term1;
     last_term2 = term2;
-    last_pos1 = range_col1;
-    last_pos2 = range_col2;
+    last_range = blockrange;
 }
 
 void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) {
@@ -496,7 +490,6 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
                     fix_term = fix_name_term->corresponding_sequence_terminal();
                 }
 
-                long scr_col1, scr_col2;
                 AW_screen_area area_rect;
                 {
                     AW_pos ex = event->x;
@@ -512,21 +505,19 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
 
                 const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
 
-                seq_term->calc_intervall_displayed_in_rectangle(&area_rect, &scr_col1, &scr_col2);
-                rm->clip_screen_range(&scr_col1, &scr_col2);
+                PosRange screen_range = rm->clip_screen_range(seq_term->calc_intervall_displayed_in_rectangle(&area_rect));
+                int      scr_pos      = rm->sequence_to_screen(seq_pos);
 
-                int range_scr_col1 = rm->sequence_to_screen(range_col1);
-                int range_scr_col2 = rm->sequence_to_screen(range_col2);
-                int scr_pos = rm->sequence_to_screen(seq_pos);
+                PosRange block_visible_part = intersection(screen_range, rm->sequence_to_screen(blockrange));
 
-                int use_scr_col1 = range_scr_col1<scr_col1 ? scr_col1 : range_scr_col1;
-                int use_scr_col2 = range_scr_col2>scr_col2 ? scr_col2 : range_scr_col2;
+                int dist_left  = abs(scr_pos-block_visible_part.start());
+                int dist_right = abs(scr_pos-block_visible_part.end());
 
-                if (abs(scr_pos-use_scr_col1) < abs(scr_pos-use_scr_col2)) { // scr_pos is closer to use_scr_col1
-                    fix_pos = range_col2;
+                if (dist_left < dist_right) {   // click nearer to left border of visible part of block
+                    fix_pos = blockrange.end(); // keep right block-border
                 }
                 else {
-                    fix_pos = range_col1;
+                    fix_pos = blockrange.start();
                 }
 
                 select_and_update(fix_term, seq_term, fix_pos, seq_pos, 0);
