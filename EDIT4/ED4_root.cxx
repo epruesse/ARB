@@ -178,8 +178,8 @@ ED4_returncode  ED4_root::remove_from_selected(ED4_terminal *object)
 
         delete object->selection_info;
         object->selection_info = NULL;
-        object->flag.selected = 0;
-        object->flag.dragged = 0;
+        object->tflag.selected = 0;
+        object->tflag.dragged = 0;
 
         if (object->is_species_name_terminal()) {
             ED4_species_name_terminal *name_term = object->to_species_name_terminal();
@@ -211,7 +211,7 @@ ED4_returncode  ED4_root::remove_from_selected(ED4_terminal *object)
                 seq_term->parent->refresh_requested_by_child();
             }
 
-            // ProtView: Refresh corresponding AA_sequence terminals
+            // ProtView: Refresh corresponding orf terminals
             if (alignment_type == GB_AT_DNA) {
                 PV_CallBackFunction(this->aw_root);
             }
@@ -292,7 +292,7 @@ ED4_returncode ED4_root::add_to_selected(ED4_terminal *object)
         object->selection_info->old_event_y = 0;
         object->selection_info->object = object;
         selected_objects.append_elem_backwards((void *) object->selection_info);
-        object->flag.selected = 1;
+        object->tflag.selected = 1;
 
         if (object->is_species_name_terminal()) {
             ED4_species_name_terminal *name_term = object->to_species_name_terminal();
@@ -323,7 +323,7 @@ ED4_returncode ED4_root::add_to_selected(ED4_terminal *object)
                 seq_term->parent->refresh_requested_by_child();
             }
 
-            // ProtView: Refresh corresponding AA_sequence terminals
+            // ProtView: Refresh corresponding orf terminals
             if (alignment_type == GB_AT_DNA) {
                 PV_CallBackFunction(this->aw_root);
             }

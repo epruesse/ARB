@@ -38,6 +38,7 @@ namespace iupac {
         AA_GROUP_COUNT = AA_GROUP_ILLEGAL, // count of real groups plus none-"group"
     };
     Amino_Group get_amino_group_for(char aa);
+    char get_amino_consensus_char(Amino_Group ag);
 
     // -------------
     //      Nucs

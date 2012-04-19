@@ -655,7 +655,7 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
         if (name_term) {
             // new AAseqTerminals should be created if it is in ProtView mode
             if (ED4_ROOT->alignment_type == GB_AT_DNA) {
-                PV_AddCorrespondingAAseqTerminals(name_term);
+                PV_AddCorrespondingOrfTerminals(name_term);
             }
             ED4_ROOT->main_manager->update_info.set_resize(1);
             ED4_ROOT->main_manager->resize_requested_by_parent();
@@ -769,15 +769,15 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
         if (inserted) {
             // new AAseqTerminals should be created if it is in ProtView mode
             if (ED4_ROOT->alignment_type == GB_AT_DNA) {
-                PV_AddAAseqTerminalsToLoadedSpecies();
+                PV_AddOrfTerminalsToLoadedSpecies();
             }
 
             ED4_ROOT->main_manager->update_info.set_resize(1);
             ED4_ROOT->main_manager->resize_requested_by_parent();
         }
 
-        delete buffer;
-        delete default_alignment;
+        delete [] buffer;
+        free(default_alignment);
     }
     else {
         aw_message("No species marked.");
@@ -913,7 +913,7 @@ void ED4_cursor::updateAwars()
             len = seq_pos+1; // fake
         }
         else {
-            seq = owner_of_cursor->resolve_pointer_to_string_copy(&len);
+            seq = owner_of_cursor->resolve_pointer_to_string_copy(&len); 
         }
 
         e4_assert(seq);
@@ -1505,7 +1505,7 @@ void ED4_base_position::calc4base(const ED4_base *base)
         isGap_fun = is_consensus_gap;
     }
     else {
-        seq = base->resolve_pointer_to_string_copy(&len);
+        seq = base->resolve_pointer_to_string_copy(&len); 
         e4_assert((int)strlen(seq) == len);
         isGap_fun = is_gap;
     }
@@ -1666,7 +1666,7 @@ void ED4_change_cursor(AW_window * /* aww */, AW_CL /* cd1 */, AW_CL /* cd2 */) 
 class fake_man_4test : public ED4_species_manager {
 public:
     fake_man_4test()
-        : ED4_species_manager("fake", 0, 0, 0, 0, NULL, false)
+        : ED4_species_manager("fake", 0, 0, 0, 0, NULL)
     {
     }
 };

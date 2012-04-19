@@ -467,7 +467,7 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
     if (!fill_id) {
         long entr = size();
 
-        fill_id = new char[entr+1];
+        fill_id = (char*)malloc(entr+1);
         fill_id[entr] = 0;
     }
 
@@ -563,7 +563,7 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
                             }
                         }
 
-                        kchar = "?ADHIF"[bestGroup]; // @@@ DRY!
+                        kchar = iupac::get_amino_consensus_char(iupac::Amino_Group(bestGroup));
                     }
                 }
                 else {
@@ -572,6 +572,7 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
 
                     kchar  = index_to_upperChar(max_j);
                     kcount = max_base;
+                    e4_assert(kchar);
                 }
 
                 // show as upper or lower case ?
@@ -588,6 +589,7 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
                     consensus_string[i] = '.';
                 }
             }
+            e4_assert(consensus_string[i]);
         }
     }
     else {

@@ -116,13 +116,13 @@ static bool PV_LookForNewTerminals(AW_root *root) {
     return bTerminalsFound;
 }
 
-static void PV_HideTerminal(ED4_AA_sequence_terminal *aaSeqTerminal) {
-    ED4_sequence_manager *seqManager = aaSeqTerminal->get_parent(ED4_L_SEQUENCE)->to_sequence_manager();
+static void PV_HideTerminal(ED4_orf_terminal *orfTerm) {
+    ED4_sequence_manager *seqManager = orfTerm->get_parent(ED4_L_SEQUENCE)->to_sequence_manager();
     seqManager->hide_children();
 }
 
-static void PV_UnHideTerminal(ED4_AA_sequence_terminal *aaSeqTerminal) {
-    ED4_sequence_manager *seqManager = aaSeqTerminal->get_parent(ED4_L_SEQUENCE)->to_sequence_manager();
+static void PV_UnHideTerminal(ED4_orf_terminal *orfTerm) {
+    ED4_sequence_manager *seqManager = orfTerm->get_parent(ED4_L_SEQUENCE)->to_sequence_manager();
     seqManager->make_children_visible();
 }
 
@@ -137,13 +137,13 @@ static void PV_HideAllTerminals() {
                 if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) {
                     // hide all AA_Sequence terminals
                     for (int i=0; i<PV_AA_Terminals4Species; i++) {
-                        // get the corresponding AA_sequence_terminal skipping sequence_info terminal
+                        // get the corresponding orf_terminal skipping sequence_info terminal
                         // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
                         terminal = terminal->get_next_terminal()->get_next_terminal();
-                        // Make sure it is AA sequence terminal
-                        if (terminal->is_aa_sequence_terminal()) {
-                            ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
-                            PV_HideTerminal(aaSeqTerminal);
+                        // Make sure it is ORF terminal
+                        if (terminal->is_orf_terminal()) {
+                            ED4_orf_terminal *orfTerm = terminal->to_orf_terminal();
+                            PV_HideTerminal(orfTerm);
                         }
                     }
                 }
@@ -152,8 +152,7 @@ static void PV_HideAllTerminals() {
 }
 
 
-static void PV_ManageTerminalDisplay(AW_root *root, ED4_AA_sequence_terminal *aaSeqTerminal, long int DispMode) {
-
+static void PV_ManageTerminalDisplay(AW_root *root, ED4_orf_terminal *orfTerm, long int DispMode) {
     int all, af_1, af_2, af_3, ac_1, ac_2, ac_3, adb;
     all =  root->awar(AWAR_PV_DISPLAY_ALL)->read_int();
     adb = root->awar(AWAR_PROTVIEW_DEFINED_FIELDS)->read_int();
@@ -195,36 +194,36 @@ static void PV_ManageTerminalDisplay(AW_root *root, ED4_AA_sequence_terminal *aa
     cc_3 = root->awar(AWAR_PV_CURSOR_CS_3)->read_int();
 
     // Get the AA sequence flag - says which strand we are in
-    int aaStrandType = int(aaSeqTerminal->GET_aaStrandType());
+    int aaStrandType = int(orfTerm->GET_aaStrandType());
     // Check the display options and make visible or hide the AA seq terminal
     switch (aaStrandType)
         {
         case FORWARD_STRAND:
             {
-                int aaStartPos = int(aaSeqTerminal->GET_aaStartPos());
+                int aaStartPos = int(orfTerm->GET_aaStartPos());
                 switch (aaStartPos) {
                 case 1:
                     switch (DispMode) {
-                    case PV_ALL:      (all && af_1) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-                    case PV_MARKED:   (mrk && mf_1) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-                    case PV_SELECTED: (sel && sf_1) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-                    case PV_CURSOR:   (cur && cf_1) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
+                    case PV_ALL:      (all && af_1) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+                    case PV_MARKED:   (mrk && mf_1) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+                    case PV_SELECTED: (sel && sf_1) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+                    case PV_CURSOR:   (cur && cf_1) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
                     }
                     break;
                 case 2:
                     switch (DispMode) {
-                    case PV_ALL:      (all && af_2) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-                    case PV_MARKED:   (mrk && mf_2) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-                    case PV_SELECTED: (sel && sf_2) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-                    case PV_CURSOR:   (cur && cf_2) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
+                    case PV_ALL:      (all && af_2) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+                    case PV_MARKED:   (mrk && mf_2) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+                    case PV_SELECTED: (sel && sf_2) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+                    case PV_CURSOR:   (cur && cf_2) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
                     }
                     break;
                 case 3:
                     switch (DispMode) {
-                    case PV_ALL:      (all && af_3) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-                    case PV_MARKED:   (mrk && mf_3) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-                    case PV_SELECTED: (sel && sf_3) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-                    case PV_CURSOR:   (cur && cf_3) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
+                    case PV_ALL:      (all && af_3) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+                    case PV_MARKED:   (mrk && mf_3) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+                    case PV_SELECTED: (sel && sf_3) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+                    case PV_CURSOR:   (cur && cf_3) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
                     }
                     break;
                 }
@@ -232,30 +231,30 @@ static void PV_ManageTerminalDisplay(AW_root *root, ED4_AA_sequence_terminal *aa
             break;
         case COMPLEMENTARY_STRAND:
             {
-                int aaStartPos = int(aaSeqTerminal->GET_aaStartPos());
+                int aaStartPos = int(orfTerm->GET_aaStartPos());
                 switch (aaStartPos) {
                 case 1:
                     switch (DispMode) {
-                    case PV_ALL:      (all && ac_1) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-                    case PV_MARKED:   (mrk && mc_1) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-                    case PV_SELECTED: (sel && sc_1) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-                    case PV_CURSOR:   (cur && cc_1) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
+                    case PV_ALL:      (all && ac_1) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+                    case PV_MARKED:   (mrk && mc_1) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+                    case PV_SELECTED: (sel && sc_1) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+                    case PV_CURSOR:   (cur && cc_1) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
                     }
                     break;
                 case 2:
                     switch (DispMode) {
-                    case PV_ALL:      (all && ac_2) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-                    case PV_MARKED:   (mrk && mc_2) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-                    case PV_SELECTED: (sel && sc_2) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-                    case PV_CURSOR:   (cur && cc_2) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
+                    case PV_ALL:      (all && ac_2) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+                    case PV_MARKED:   (mrk && mc_2) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+                    case PV_SELECTED: (sel && sc_2) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+                    case PV_CURSOR:   (cur && cc_2) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
                     }
                     break;
                 case 3:
                     switch (DispMode) {
-                    case PV_ALL:      (all && ac_3) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-                    case PV_MARKED:   (mrk && mc_3) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-                    case PV_SELECTED: (sel && sc_3) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-                    case PV_CURSOR:   (cur && cc_3) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
+                    case PV_ALL:      (all && ac_3) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+                    case PV_MARKED:   (mrk && mc_3) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+                    case PV_SELECTED: (sel && sc_3) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+                    case PV_CURSOR:   (cur && cc_3) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
                     }
                     break;
                 }
@@ -263,10 +262,10 @@ static void PV_ManageTerminalDisplay(AW_root *root, ED4_AA_sequence_terminal *aa
             break;
         case DB_FIELD_STRAND:
             switch (DispMode) {
-            case PV_ALL:      (all && adb) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-            case PV_MARKED:   (mrk && mdb) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-            case PV_SELECTED: (sel && sdb) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
-            case PV_CURSOR:   (cur && cdb) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
+            case PV_ALL:      (all && adb) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+            case PV_MARKED:   (mrk && mdb) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+            case PV_SELECTED: (sel && sdb) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
+            case PV_CURSOR:   (cur && cdb) ? PV_UnHideTerminal(orfTerm) : PV_HideTerminal(orfTerm); break;
             }
             break;
         }
@@ -274,7 +273,7 @@ static void PV_ManageTerminalDisplay(AW_root *root, ED4_AA_sequence_terminal *aa
 
 static void PV_ManageTerminals(AW_root *root) {
 
-    // First Hide all AA_sequence Terminals
+    // First Hide all orf Terminals
     PV_HideAllTerminals();
 
     int dispAll = root->awar(AWAR_PV_DISPLAY_ALL)->read_int();
@@ -289,16 +288,16 @@ static void PV_ManageTerminals(AW_root *root) {
                     ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
                     if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) {
                         // we are in the sequence terminal section of a species
-                        // walk through all the corresponding AA sequence terminals for the species and
+                        // walk through all the corresponding ORF terminals for the species and
                         // hide or unhide the terminals based on the display options set by the user
                         for (int i=0; i<PV_AA_Terminals4Species; i++) {
-                            // get the corresponding AA_sequence_terminal skipping sequence_info terminal
+                            // get the corresponding orf_terminal skipping sequence_info terminal
                             // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
                             terminal = terminal->get_next_terminal()->get_next_terminal();
-                            // Make sure it is AA sequence terminal
-                            if (terminal->is_aa_sequence_terminal()) {
-                                ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
-                                PV_ManageTerminalDisplay(root, aaSeqTerminal, PV_ALL);
+                            // Make sure it is ORF terminal
+                            if (terminal->is_orf_terminal()) {
+                                ED4_orf_terminal *orfTerm = terminal->to_orf_terminal();
+                                PV_ManageTerminalDisplay(root, orfTerm, PV_ALL);
                             }
                         }
                     }
@@ -322,13 +321,13 @@ static void PV_ManageTerminals(AW_root *root) {
                             {
                                 ED4_terminal *terminal = spNameTerm->corresponding_sequence_terminal();
                                 for (int i=0; i<PV_AA_Terminals4Species; i++) {
-                                    // get the corresponding AA_sequence_terminal skipping sequence_info terminal
+                                    // get the corresponding orf_terminal skipping sequence_info terminal
                                     // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
                                     terminal = terminal->get_next_terminal()->get_next_terminal();
-                                    // Make sure it is AA sequence terminal
-                                    if (terminal->is_aa_sequence_terminal()) {
-                                        ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
-                                        PV_ManageTerminalDisplay(root, aaSeqTerminal, PV_MARKED);
+                                    // Make sure it is ORF terminal
+                                    if (terminal->is_orf_terminal()) {
+                                        ED4_orf_terminal *orfTerm = terminal->to_orf_terminal();
+                                        PV_ManageTerminalDisplay(root, orfTerm, PV_MARKED);
                                     }
                                 }
                             }
@@ -348,18 +347,18 @@ static void PV_ManageTerminals(AW_root *root) {
                         ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
                         if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) {
                             // we are in the sequence terminal section of a species
-                            // walk through all the corresponding AA sequence terminals for the species and
+                            // walk through all the corresponding ORF terminals for the species and
                             // hide or unhide the terminals based on the display options set by the user
                             ED4_species_name_terminal *speciesNameTerm = speciesManager->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
-                            if (speciesNameTerm->flag.selected) {
+                            if (speciesNameTerm->tflag.selected) {
                                 for (int i=0; i<PV_AA_Terminals4Species; i++) {
-                                    // get the corresponding AA_sequence_terminal skipping sequence_info terminal
+                                    // get the corresponding orf_terminal skipping sequence_info terminal
                                     // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
                                     terminal = terminal->get_next_terminal()->get_next_terminal();
-                                    // Make sure it is AA sequence terminal
-                                    if (terminal->is_aa_sequence_terminal()) {
-                                        ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
-                                        PV_ManageTerminalDisplay(root, aaSeqTerminal, PV_SELECTED);
+                                    // Make sure it is ORF terminal
+                                    if (terminal->is_orf_terminal()) {
+                                        ED4_orf_terminal *orfTerm = terminal->to_orf_terminal();
+                                        PV_ManageTerminalDisplay(root, orfTerm, PV_SELECTED);
                                     }
                                 }
                             }
@@ -378,13 +377,13 @@ static void PV_ManageTerminals(AW_root *root) {
                 ED4_terminal *cursorTerminal = cursor->owner_of_cursor->to_terminal();
                 if (!cursorTerminal->parent->parent->flag.is_consensus) {
                     for (int i=0; i<PV_AA_Terminals4Species; i++) {
-                        // get the corresponding AA_sequence_terminal skipping sequence_info terminal
+                        // get the corresponding orf_terminal skipping sequence_info terminal
                         // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
                         cursorTerminal = cursorTerminal->get_next_terminal()->get_next_terminal();
-                        // Make sure it is AA sequence terminal
-                        if (cursorTerminal->is_aa_sequence_terminal()) {
-                            ED4_AA_sequence_terminal *aaSeqTerminal = cursorTerminal->to_aa_sequence_terminal();
-                            PV_ManageTerminalDisplay(root, aaSeqTerminal, PV_CURSOR);
+                        // Make sure it is ORF terminal
+                        if (cursorTerminal->is_orf_terminal()) {
+                            ED4_orf_terminal *orfTerm = cursorTerminal->to_orf_terminal();
+                            PV_ManageTerminalDisplay(root, orfTerm, PV_CURSOR);
                         }
                     }
                 }
@@ -415,7 +414,7 @@ static GB_ERROR PV_ComplementarySequence(char *sequence) {
     return error;
 }
 
-static void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, char *spName) {
+static void PV_WriteTranslatedSequenceToDB(ED4_orf_terminal *aaSeqTerm, char *spName) {
     GB_ERROR  error      = GB_begin_transaction(GLOBAL_gb_main);
     GBDATA   *gb_species = GBT_find_species(GLOBAL_gb_main, spName);
     if (!gb_species) error = GBS_global_string("Species '%s' does not exist", spName);
@@ -502,7 +501,7 @@ static void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, 
 
 static void PV_SaveData(AW_window */*aww*/) {
     // IDEA:
-    // 1. walk thru the AA_sequence terminals
+    // 1. walk thru the orf terminals
     // 2. check the visibility status
     // 3. select only the visible terminals
     // 4. get the corresponding species name
@@ -522,14 +521,14 @@ static void PV_SaveData(AW_window */*aww*/) {
                     ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
                     if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) {
                         for (int i=0; i<PV_AA_Terminals4Species; i++) {
-                            // get the corresponding AA_sequence_terminal skipping sequence_info terminal
+                            // get the corresponding orf_terminal skipping sequence_info terminal
                             terminal = terminal->get_next_terminal()->get_next_terminal();
-                            // Make sure it is AA sequence terminal
-                            if (terminal->is_aa_sequence_terminal()) {
-                                ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
-                                    ED4_base *base = (ED4_base*)aaSeqTerminal;
+                            // Make sure it is ORF terminal
+                            if (terminal->is_orf_terminal()) {
+                                ED4_orf_terminal *orfTerm = terminal->to_orf_terminal();
+                                    ED4_base *base = (ED4_base*)orfTerm;
                                     if (!base->flag.hidden) {
-                                        PV_WriteTranslatedSequenceToDB(aaSeqTerminal, speciesName);
+                                        PV_WriteTranslatedSequenceToDB(orfTerm, speciesName);
                                     }
                             }
                         }
@@ -547,7 +546,7 @@ static void PV_SaveData(AW_window */*aww*/) {
     gbWritingData = false;
 }
 
-static void TranslateGeneToAminoAcidSequence(AW_root * /* root */, ED4_AA_sequence_terminal *seqTerm, char *speciesName, int startPos4Translation, int translationMode) {
+static void TranslateGeneToAminoAcidSequence(AW_root * /* root */, ED4_orf_terminal *seqTerm, char *speciesName, int startPos4Translation, int translationMode) {
     // This function translates gene sequence to aminoacid sequence and stores translation into the respective AA_Sequence_terminal
     GB_ERROR  error        = NULL;
     GBDATA   *gb_species   = GBT_find_species(GLOBAL_gb_main, speciesName);
@@ -703,20 +702,20 @@ static void PV_DisplayAminoAcidNames(AW_root *root) {
                 if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI)
                     {
                         // we are in the sequence terminal section of a species
-                        // walk through all the corresponding AA sequence terminals for the species and
+                        // walk through all the corresponding ORF terminals for the species and
                         // hide or unhide the terminals based on the display options set by the user
                         for (int i=0; i<PV_AA_Terminals4Species; i++)
                             {
-                                // get the corresponding AA_sequence_terminal skipping sequence_info terminal
+                                // get the corresponding orf_terminal skipping sequence_info terminal
                                 terminal = terminal->get_next_terminal()->get_next_terminal();
-                                // Make sure it is AA sequence terminal
-                                if (terminal->is_aa_sequence_terminal()) {
-                                    ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
-                                    // we are in AA sequence terminal
-                                    int   aaStartPos = int(aaSeqTerminal->GET_aaStartPos());
-                                    int aaStrandType = int(aaSeqTerminal->GET_aaStrandType());
-                                    // retranslate the genesequence and store it to the AA_sequence_terminal
-                                    TranslateGeneToAminoAcidSequence(root, aaSeqTerminal, speciesName, aaStartPos-1, aaStrandType);
+                                // Make sure it is ORF terminal
+                                if (terminal->is_orf_terminal()) {
+                                    ED4_orf_terminal *orfTerm = terminal->to_orf_terminal();
+                                    // we are in ORF terminal
+                                    int   aaStartPos = int(orfTerm->GET_aaStartPos());
+                                    int aaStrandType = int(orfTerm->GET_aaStrandType());
+                                    // retranslate the genesequence and store it to the orf_terminal
+                                    TranslateGeneToAminoAcidSequence(root, orfTerm, speciesName, aaStartPos-1, aaStrandType);
                                 }
                             }
                     }
@@ -737,7 +736,7 @@ static void PV_RefreshProtViewDisplay(AW_window *aww) {
     }
 }
 
-void PV_AA_SequenceUpdate_CB(GB_CB_TYPE gbtype)
+void PV_SequenceUpdate_CB(GB_CB_TYPE gbtype)
 {
     if (gbtype==GB_CB_CHANGED &&
         gTerminalsCreated &&
@@ -757,17 +756,17 @@ void PV_AA_SequenceUpdate_CB(GB_CB_TYPE gbtype)
 
                         for (int i=0; i<PV_AA_Terminals4Species; i++)
                             {
-                                // get the corresponding AA_sequence_terminal skipping sequence_info terminal
+                                // get the corresponding orf_terminal skipping sequence_info terminal
                                 // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
                                 cursorTerminal = cursorTerminal->get_next_terminal()->get_next_terminal();
-                                // Make sure it is AA sequence terminal
-                                if (cursorTerminal->is_aa_sequence_terminal()) {
-                                    ED4_AA_sequence_terminal *aaSeqTerminal = cursorTerminal->to_aa_sequence_terminal();
+                                // Make sure it is ORF terminal
+                                if (cursorTerminal->is_orf_terminal()) {
+                                    ED4_orf_terminal *orfTerm = cursorTerminal->to_orf_terminal();
                                         // Get the AA sequence flag - says which strand we are in
-                                        int   aaStartPos = int(aaSeqTerminal->GET_aaStartPos());
-                                        int aaStrandType = int(aaSeqTerminal->GET_aaStrandType());
-                                        // retranslate the genesequence and store it to the AA_sequence_terminal
-                                        TranslateGeneToAminoAcidSequence(ED4_ROOT->aw_root, aaSeqTerminal, speciesName, aaStartPos-1, aaStrandType);
+                                        int   aaStartPos = int(orfTerm->GET_aaStartPos());
+                                        int aaStrandType = int(orfTerm->GET_aaStrandType());
+                                        // retranslate the genesequence and store it to the orf_terminal
+                                        TranslateGeneToAminoAcidSequence(ED4_ROOT->aw_root, orfTerm, speciesName, aaStartPos-1, aaStrandType);
                                 }
                             }
                         // Print missing DB entries
@@ -805,9 +804,9 @@ static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_spec
             new_SeqInfoTerminal->set_links(seqInfoTerminal, seqInfoTerminal);
             new_SeqManager->children->append_member(new_SeqInfoTerminal);
 
-            ED4_AA_sequence_terminal *AA_SeqTerminal = 0;
+            ED4_orf_terminal *AA_SeqTerminal = 0;
             sprintf(namebuffer, "AA_Sequence_Term%ld.%d", ED4_counter, count++);
-            AA_SeqTerminal = new ED4_AA_sequence_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, new_SeqManager);
+            AA_SeqTerminal = new ED4_orf_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, new_SeqManager);
             AA_SeqTerminal->set_links(seqTerminal, seqTerminal);
 
             char       *speciesName    = seqTerminal->species_name;
@@ -833,7 +832,7 @@ static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_spec
         }
 }
 
-void PV_AddCorrespondingAAseqTerminals(ED4_species_name_terminal *spNameTerm) {
+void PV_AddCorrespondingOrfTerminals(ED4_species_name_terminal *spNameTerm) {
     if (gTerminalsCreated) {
         if (spNameTerm && spNameTerm->is_species_name_terminal())
             {
@@ -845,7 +844,7 @@ void PV_AddCorrespondingAAseqTerminals(ED4_species_name_terminal *spNameTerm) {
     }
 }
 
-void PV_AddAAseqTerminalsToLoadedSpecies() {
+void PV_AddOrfTerminalsToLoadedSpecies() {
    if (gTerminalsCreated) {
        GB_transaction dummy(GLOBAL_gb_main);
             int marked = GBT_count_marked_species(GLOBAL_gb_main);
@@ -890,7 +889,7 @@ static void PV_CreateAllTerminals(AW_root *root) {
 
     GB_transaction dummy(GLOBAL_gb_main);
 
-    // Number of AA sequence terminals to be created = 3 forward strands + 3 complementary strands + 1 DB field strand
+    // Number of ORF terminals to be created = 3 forward strands + 3 complementary strands + 1 DB field strand
     // totally 7 strands has to be created
     int aaTerminalsToBeCreated = FORWARD_STRANDS + COMPLEMENTARY_STRANDS + DB_FIELD_STRANDS;
     PV_AA_Terminals4Species = aaTerminalsToBeCreated;

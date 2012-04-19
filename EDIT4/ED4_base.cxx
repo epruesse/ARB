@@ -29,7 +29,7 @@ bool ED4_base::remove_deleted_children()
 
 bool ED4_terminal::remove_deleted_children()
 {
-    if (flag.deleted) {
+    if (tflag.deleted) {
         if (get_species_pointer() != 0) {
 #if defined(DEBUG)
             printf("ED4_terminal: has non-zero species_pointer in remove_deleted_children (resetting to zero)\n");
@@ -45,7 +45,7 @@ bool ED4_terminal::remove_deleted_children()
 }
 bool ED4_sequence_info_terminal::remove_deleted_children()
 {
-    if (flag.deleted) {
+    if (tflag.deleted) {
         if (get_species_pointer() != 0) {
 #if defined(DEBUG)
             printf("ED4_sequence_info_terminal: has non-zero species_pointer in remove_deleted_children (resetting to zero)\n");
@@ -189,7 +189,7 @@ void ED4_text_terminal::deleted_from_database()
         printf("- Deleting name terminal\n");
 #endif // DEBUG
         ED4_name_manager *name_man = parent->to_name_manager();
-        flag.deleted               = 1;
+        tflag.deleted              = 1;
         name_man->delete_requested_by_child();
     }
     else if (parent->is_sequence_manager()) {
@@ -197,7 +197,7 @@ void ED4_text_terminal::deleted_from_database()
         printf("- Deleting sequence terminal\n");
 #endif // DEBUG
         ED4_sequence_manager *seq_man = parent->to_sequence_manager();
-        flag.deleted                  = 1;
+        tflag.deleted                 = 1;
         seq_man->delete_requested_by_child();
     }
     else {
@@ -230,7 +230,7 @@ void ED4_sequence_terminal::deleted_from_database()
     }
 
     ED4_sequence_manager *seq_man = parent->to_sequence_manager();
-    flag.deleted = 1;
+    tflag.deleted                 = 1;
     seq_man->delete_requested_by_child();
 }
 void ED4_manager::deleted_from_database()
@@ -524,7 +524,7 @@ ED4_returncode ED4_base::generate_configuration_string(char **generated_string)
     ED4_manager *consensus_manager = NULL;
 
     if (is_species_name_terminal() &&
-        !((ED4_terminal *)this)->flag.deleted) { // wenn multi_name_manager mehrere name_terminals hat, dann muss das echte name_terminal markiert sein
+        !((ED4_terminal *)this)->tflag.deleted) { // wenn multi_name_manager mehrere name_terminals hat, dann muss das echte name_terminal markiert sein
 
         old_size   = strlen(*generated_string);
         old_string = *generated_string;
@@ -877,7 +877,7 @@ int ED4_multi_species_manager::count_all_children_and_set_group_id() // counts a
     return counter;
 }
 
-void ED4_sequence_terminal_basic::calc_intervall_displayed_in_rectangle(AW_screen_area *rect, long *left_index, long *right_index) { // rect contains win-coords
+void ED4_abstract_sequence_terminal::calc_intervall_displayed_in_rectangle(AW_screen_area *rect, long *left_index, long *right_index) { // rect contains win-coords
     AW_pos x, y;
     int    length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
 
@@ -894,7 +894,7 @@ void ED4_sequence_terminal_basic::calc_intervall_displayed_in_rectangle(AW_scree
     if (*left_index < 0) *left_index = 0;
 }
 
-void ED4_sequence_terminal_basic::calc_update_intervall(long *left_index, long *right_index)
+void ED4_abstract_sequence_terminal::calc_update_intervall(long *left_index, long *right_index)
 {
     AW_pos x, y;
     int    length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
@@ -936,8 +936,8 @@ void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager, arb_p
         ED4_base *member = children->member(i);
 
         if (member->is_species_manager()) {
-            ED4_species_manager *species_manager = member->to_species_manager();
-            ED4_terminal *sequence_data_terminal = species_manager->get_consensus_relevant_terminal();
+            ED4_species_manager *species_manager        = member->to_species_manager();
+            const ED4_terminal  *sequence_data_terminal = species_manager->get_consensus_relevant_terminal();
 
             if (sequence_data_terminal) {
                 int   db_pointer_len;
@@ -967,8 +967,7 @@ void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager, arb_p
     }
 }
 
-ED4_terminal *ED4_base::get_consensus_relevant_terminal()
-{
+const ED4_terminal *ED4_base::get_consensus_relevant_terminal() const {
     int i;
 
     if (is_terminal()) {
@@ -978,9 +977,10 @@ ED4_terminal *ED4_base::get_consensus_relevant_terminal()
         return NULL;
     }
 
-    ED4_manager  *manager           = this->to_manager();
-    ED4_terminal *relevant_terminal = 0;
-    int           members           = manager->children->members();
+    const ED4_manager  *manager           = this->to_manager();
+    const ED4_terminal *relevant_terminal = 0;
+
+    int members = manager->children->members();
 
     for (i=0; !relevant_terminal && i<members; ++i) {
         ED4_base     *member = manager->children->member(i);
