@@ -77,6 +77,7 @@ void AWT_create_debug_menu(AW_window *awmm);
 AW_root *AWT_create_root(const char *properties, const char *program);
 
 void AWT_install_cb_guards();
+void AWT_install_postcb_cb(AW_postcb_cb postcb_cb);
 
 #else
 #error awt.hxx included twice

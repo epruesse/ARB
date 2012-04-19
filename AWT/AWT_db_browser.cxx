@@ -1073,4 +1073,7 @@ void AWT_install_cb_guards() {
     awt_assert(!GB_have_error());
     AW_cb_struct::set_AW_cb_guards(before_callback_guard, after_callback_guard);
 }
+void AWT_install_postcb_cb(AW_postcb_cb postcb_cb) {
+    AW_cb_struct::set_AW_postcb_cb(postcb_cb);
+}
 

@@ -672,7 +672,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             break;
                         }
                         case 'A': { // CTRL-A = Start Fast-Aligner
-                            AW_window *aw_tmp = ED4_ROOT->get_aww();
+                            AW_window *aw_tmp = current_aww();
                             if (is_consensus) { cannot_handle = 1; return 0; };
                             if (mode==AD_NOWRITE) { write_fault = 1; return 0; }
 
@@ -778,7 +778,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                         }
                         case 'S': { // CTRL-S = Repeat last search
                             ad_err      = ED4_repeat_last_search();
-                            seq_pos     = ED4_ROOT->get_ed4w()->cursor.get_sequence_pos();
+                            seq_pos     = current_cursor().get_sequence_pos();
                             cursor_jump = ED4_JUMP_KEEP_POSITION;
                             break;
                         }

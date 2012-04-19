@@ -371,7 +371,7 @@ static void PV_ManageTerminals(AW_root *root) {
     if (dispAtCursor)
         {
             // Display Only Terminals Corresponding To The Cursor Position in the multiple alignment
-            ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
+            ED4_cursor *cursor = &current_cursor();
             if (cursor->owner_of_cursor) {
                 // Get The Cursor Terminal And The Corresponding Aa_Sequence Terminals And Set The Display Options
                 ED4_terminal *cursorTerminal = cursor->owner_of_cursor->to_terminal();
@@ -745,7 +745,7 @@ void PV_SequenceUpdate_CB(GB_CB_TYPE gbtype)
         {
             GB_transaction dummy(GLOBAL_gb_main);
 
-            ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
+            ED4_cursor *cursor = &current_cursor();
             if (cursor->owner_of_cursor) {
                 ED4_terminal *cursorTerminal = cursor->owner_of_cursor->to_terminal();
 

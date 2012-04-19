@@ -247,7 +247,7 @@ ED4_returncode ED4_window::update_scrolled_rectangle()
         delta = aww->slider_pos_vertical - slider_pos_vertical;
         scrolled_rect.scroll_top->dimension += delta;
     }
-    const AW_screen_area& area_size = ED4_ROOT->get_device()->get_area_size();
+    const AW_screen_area& area_size = current_device()->get_area_size();
 
     if (scrolled_rect.height_link != NULL) slider_pos_vertical   = aww->slider_pos_vertical;
     if (scrolled_rect.width_link  != NULL) slider_pos_horizontal = aww->slider_pos_horizontal;
@@ -320,7 +320,7 @@ ED4_returncode ED4_window::set_scrolled_rectangle(AW_pos world_x, AW_pos world_y
         height = height_link->extension.size[HEIGHT];
     }
 
-    const AW_screen_area& area_size = ED4_ROOT->get_device()->get_area_size();
+    const AW_screen_area& area_size = current_device()->get_area_size();
 
     if ((area_size.r <= world_x) || (area_size.b <= world_y)) {
         return ED4_R_IMPOSSIBLE;
@@ -364,10 +364,10 @@ static inline void clear_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, A
 
 #if defined(DEBUG) && 0
     static int toggle = 0;
-    ED4_ROOT->get_device()->box(ED4_G_COLOR_2+toggle, x1, y1, x2-x1+1, y2-y1+1, AW_ALL_DEVICES_SCALED, 0, 0);    // fill range with color (for testing)
+    current_device()->box(ED4_G_COLOR_2+toggle, x1, y1, x2-x1+1, y2-y1+1, AW_ALL_DEVICES_SCALED, 0, 0);    // fill range with color (for testing)
     toggle = (toggle+1)&7;
 #else
-    ED4_ROOT->get_device()->clear_part(x1, y1, x2-x1+1, y2-y1+1, AW_ALL_DEVICES);
+    current_device()->clear_part(x1, y1, x2-x1+1, y2-y1+1, AW_ALL_DEVICES);
 #endif
 
     ED4_ROOT->main_manager->to_manager()->Show(1, 1);
@@ -394,7 +394,7 @@ static inline void move_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, AW
         ED4_set_clipping_rectangle(&rect);
     }
 
-    AW_device *device = ED4_ROOT->get_device();
+    AW_device *device = current_device();
     device->move_region(fx, fy, xs, ys, tx, ty);
 
     if (dy<0) { // scroll to the top
@@ -456,7 +456,7 @@ ED4_returncode ED4_window::scroll_rectangle(int dx, int dy)
     AW_pos toptop_y = coords.top_area_y;
     AW_pos topbottom_y = toptop_y + coords.top_area_height - 1;
 
-    ED4_ROOT->get_device()->push_clip_scale();
+    current_device()->push_clip_scale();
 
     // main area
 
@@ -477,7 +477,7 @@ ED4_returncode ED4_window::scroll_rectangle(int dx, int dy)
         else            move_and_update_rectangle(left_x, toptop_y, right_x, topbottom_y, int(dx), 0);
     }
 
-    ED4_ROOT->get_device()->pop_clip_scale();
+    current_device()->pop_clip_scale();
 
     return (ED4_R_OK);
 }
