@@ -58,10 +58,10 @@ GB_ERROR FileContent::save() {
 
 arb_test::match_expectation arrays_equal(const StrArray& expected, const StrArray& got) {
     using namespace   arb_test;
-    match_expectation same_size = that(expected.size()).equals(got.size());
+    match_expectation same_size = that(expected.size()).is_equal_to(got.size());
     if (same_size.fulfilled()) {
         for (size_t i = 0; i<expected.size(); ++i) {
-            match_expectation eq = that(expected[i]).equals(got[i]);
+            match_expectation eq = that(expected[i]).is_equal_to(got[i]);
             if (!eq.fulfilled()) {
                 return all().of(same_size, eq);
             }

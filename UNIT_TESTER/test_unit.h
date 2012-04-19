@@ -1005,8 +1005,8 @@ namespace arb_test {
 #define MATCHABLE_ARGS_UNTYPED(val) val, #val
 #define MATCHABLE_ARGS_TYPED(val)   make_copy(val), #val
 
-#define equals(val)  equals_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
-#define differs(val) equals_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
+#define is_equal_to(val)  equals_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
+#define does_differ_from(val) equals_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
 
 #define less_than(val) lessThan_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
 #define more_than(val) moreThan_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
@@ -1017,7 +1017,7 @@ namespace arb_test {
 #define is(pred,arg)     predicate_expectation(true, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
 #define is_not(pred,arg) predicate_expectation(false, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
 
-#define contains(val) is(containing(),val)
+#define does_contain(val) is(containing(),val)
 
 #define that(thing) CREATE_matchable(MATCHABLE_ARGS_TYPED(thing))
 
@@ -1062,8 +1062,8 @@ namespace arb_test {
             TEST_WARNING("Known broken behavior ('%s' fails)", #cond);  \
     } while (0)
 
-#define TEST_ASSERT_ZERO(cond)         TEST_EXPECT(that(cond).equals(0))
-#define TEST_ASSERT_ZERO__BROKEN(cond) TEST_EXPECT__BROKEN(that(cond).equals(0))
+#define TEST_ASSERT_ZERO(cond)         TEST_EXPECT(that(cond).is_equal_to(0))
+#define TEST_ASSERT_ZERO__BROKEN(cond) TEST_EXPECT__BROKEN(that(cond).is_equal_to(0))
 
 #define TEST_ASSERT_ZERO_OR_SHOW_ERRNO(iocond)                  \
     do {                                                        \
@@ -1079,9 +1079,9 @@ namespace arb_test {
 // --------------------------------------------------------------------------------
 
 namespace arb_test {
-    inline match_expectation reports_error(const char *error) { return that(error).differs(NULL); }
-    inline match_expectation doesnt_report_error(const char *error) { return that(error).equals(NULL); }
-    inline match_expectation reported_error_contains(const char *error, const char *part) { return error ? that(error).contains(part) : that(error).differs(NULL); }
+    inline match_expectation reports_error(const char *error) { return that(error).does_differ_from(NULL); }
+    inline match_expectation doesnt_report_error(const char *error) { return that(error).is_equal_to(NULL); }
+    inline match_expectation reported_error_contains(const char *error, const char *part) { return error ? that(error).does_contain(part) : that(error).does_differ_from(NULL); }
 };
 
 #define TEST_ASSERT_ERROR_CONTAINS(call,part)         TEST_EXPECT        (reported_error_contains(call, part))
@@ -1095,7 +1095,7 @@ namespace arb_test {
 
 namespace arb_test {
     inline GB_ERROR get_exported_error() { return GB_have_error() ? GB_await_error() : NULL; }
-    inline match_expectation no_forgotten_error_exported() { return that(get_exported_error()).equals(NULL); }
+    inline match_expectation no_forgotten_error_exported() { return that(get_exported_error()).is_equal_to(NULL); }
 
     class calling {
         bool     result;
@@ -1107,12 +1107,12 @@ namespace arb_test {
         {}
 
         // functions below try to make failing expectations more readable
-        match_expectation returns_result() const { return that(result).equals(true); }
-        match_expectation doesnt_return_result() const { return that(result).equals(false); }
-        match_expectation exports_error() const { return that(error).differs(NULL); }
-        match_expectation doesnt_export_error() const { return that(error).equals(NULL); }
+        match_expectation returns_result() const { return that(result).is_equal_to(true); }
+        match_expectation doesnt_return_result() const { return that(result).is_equal_to(false); }
+        match_expectation exports_error() const { return that(error).does_differ_from(NULL); }
+        match_expectation doesnt_export_error() const { return that(error).is_equal_to(NULL); }
         match_expectation exports_error_containing(const char *expected_part) const {
-            return error ? that(error).contains(expected_part) : exports_error();
+            return error ? that(error).does_contain(expected_part) : exports_error();
         }
 
         match_expectation either_result_or_error() const { return exactly(1).of(returns_result(), exports_error()); }
@@ -1165,8 +1165,8 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 
     expect_assert_fail = expect_assert_fail && !GBK_running_on_valgrind(); // under valgrind assertions never fail
 
-    match_expectation SEGV       = that(GBK_raises_SIGSEGV(cb,true)).equals(expect_SEGV);
-    match_expectation assertfail = that(assertion_failed).equals(expect_assert_fail);
+    match_expectation SEGV       = that(GBK_raises_SIGSEGV(cb,true)).is_equal_to(expect_SEGV);
+    match_expectation assertfail = that(assertion_failed).is_equal_to(expect_assert_fail);
 
     match_expectation expected = all().of(SEGV, assertfail);
 
@@ -1208,14 +1208,14 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 
 // --------------------------------------------------------------------------------
 
-#define TEST_ASSERT_EQUAL(e1,t2)         TEST_EXPECT(that(e1).equals(t2))
-#define TEST_ASSERT_EQUAL__BROKEN(e1,t2) TEST_EXPECT__BROKEN(that(e1).equals(t2))
+#define TEST_ASSERT_EQUAL(e1,t2)         TEST_EXPECT(that(e1).is_equal_to(t2))
+#define TEST_ASSERT_EQUAL__BROKEN(e1,t2) TEST_EXPECT__BROKEN(that(e1).is_equal_to(t2))
 
 #define TEST_ASSERT_SIMILAR(e1,t2,epsilon)         TEST_EXPECT(that(e1).is(epsilon_similar(epsilon), t2))
 #define TEST_ASSERT_SIMILAR__BROKEN(e1,t2,epsilon) TEST_EXPECT__BROKEN(that(e1).is(epsilon_similar(epsilon), t2))
 
-#define TEST_ASSERT_DIFFERENT(e1,t2)         TEST_EXPECT(that(e1).differs(t2));
-#define TEST_ASSERT_DIFFERENT__BROKEN(e1,t2) TEST_EXPECT__BROKEN(that(e1).differs(t2));
+#define TEST_ASSERT_DIFFERENT(e1,t2)         TEST_EXPECT(that(e1).does_differ_from(t2));
+#define TEST_ASSERT_DIFFERENT__BROKEN(e1,t2) TEST_EXPECT__BROKEN(that(e1).does_differ_from(t2));
 
 #define TEST_ASSERT_LOWER_EQUAL(lower,upper)  TEST_EXPECT(that(lower).less_or_equal(upper))
 #define TEST_ASSERT_LOWER(lower,upper)        TEST_EXPECT(that(lower).less_than(upper))
