@@ -127,11 +127,16 @@ endif
 
 ifeq ($(DEBUG),1)
 	dflags := -DDEBUG
-	cflags := -O0 -g -g3 -ggdb -ggdb3
-#	cflags := -O2 -g -g3 -ggdb -ggdb3 # use this for callgrind (force inlining)
- ifndef DARWIN
+
+	gdb_common := -g -g3 -ggdb -ggdb3
+
+	cflags := -O0 $(gdb_common) # (using dwarf - cant debug inlines here, incredible slow on showing variable content)
+#	cflags := -O0  $(gdb_common) -gstabs+  # using stabs+ (enable this for bigger debug session: debugs inlines, quick var inspect, BUT valgrind stops working :/)
+#	cflags := -O0  $(gdb_common) -gstabs  # using stabs (same here IIRC)
+#	cflags := -O2 $(gdb_common) # use this for callgrind (force inlining)
+ifndef DARWIN
 	lflags += -g
- endif
+endif
 
 # control how much you get spammed
 	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
