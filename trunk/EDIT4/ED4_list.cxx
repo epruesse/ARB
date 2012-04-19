@@ -104,9 +104,3 @@ ED4_list::ED4_list()
     my_last  = NULL;
     my_no_of_entries = 0;
 }
-
-
-ED4_list::~ED4_list()
-{
-}
-

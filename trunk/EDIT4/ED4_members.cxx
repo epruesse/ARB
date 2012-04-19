@@ -67,6 +67,7 @@ ED4_returncode ED4_members::search_target_species(ED4_extension *location,   ED4
              (location->position[rel_pos] >= (current_member->extension.position[rel_pos] + abs_pos)) &&        // just as long as possibility exists, to find the object
              (location->position[rel_pos] >= abs_pos && location->position[rel_pos] <= current_member->parent->extension.size[rel_size] + abs_pos))
     {
+        e4_assert(!current_member->is_root_group_manager());
         if (current_member->is_group_manager() &&
             !current_member->flag.hidden &&
             !current_member->flag.is_consensus) { // search_clicked_member for multi_species_manager in groups
@@ -157,7 +158,7 @@ ED4_returncode ED4_members::insert_member(ED4_base *new_member)                 
     ED4_index   index;
     ED4_properties      prop;
 
-    prop = owner()->spec->static_prop;                                          // properties of parent object
+    prop = owner()->spec.static_prop;                                          // properties of parent object
 
     if ((index = search_member(&(new_member->extension), prop)) < 0) {          // search list for a suitable position
         index = 0;                                                              // list was empty
@@ -192,6 +193,8 @@ ED4_returncode ED4_members::insert_member(ED4_base *new_member)                 
 ED4_returncode ED4_members::append_member(ED4_base *new_member) {
     ED4_index index = no_of_members;
 
+    e4_assert(owner()->spec.allowed_to_contain(new_member->spec.level));
+ 
     if (index>=size_of_list) { // ensure free element
         ED4_index new_size_of_list = (size_of_list*3)/2;        // resize to 1.5*size_of_list
         ED4_base **new_member_list = (ED4_base**)GB_calloc(new_size_of_list, sizeof(*new_member_list));
@@ -222,6 +225,8 @@ ED4_returncode ED4_members::append_member(ED4_base *new_member) {
     memberList[index] = new_member;
     no_of_members++;
     new_member->index = index;
+
+    owner()->spec.announce_added(new_member->spec.level);
 
     owner()->resize_requested_by_child();
     return ED4_R_OK;

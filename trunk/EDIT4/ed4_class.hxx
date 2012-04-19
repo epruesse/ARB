@@ -111,6 +111,7 @@ enum PositionType {
 
 class ED4_Edit_String;
 class ED4_area_manager;
+class ED4_abstract_group_manager;
 class ED4_base;
 class ED4_bases_table;
 class ED4_bracket_terminal;
@@ -220,24 +221,64 @@ public:
     char *generate_config_string(char *confname);
 
 
-    EDB_root_bact();
-    ~EDB_root_bact();
+    EDB_root_bact() {}
 };
 
-struct ED4_object_specification
-{
+#define SPECIFIED_OBJECT_TYPES 21
+
+class ED4_objspec : public Noncopyable {
+    static bool object_specs_initialized;
+    static bool descendants_uptodate;
+
+    mutable ED4_level used_children;         // in any object of this type
+    mutable ED4_level possible_descendants;  // below any object of this type (depends on used_children)
+    mutable ED4_level allowed_descendants;   // below any object of this type (depends on allowed_children)
+
+    void calc_descendants() const;
+
+public:
     ED4_properties static_prop;
     ED4_level      level;
     ED4_level      allowed_children;
     ED4_level      handled_level;
     ED4_level      restriction_level;
-    float          justification; // Justification of Object, which is controlled by a manager
+
+    ED4_objspec(ED4_properties static_prop_, ED4_level level_, ED4_level allowed_children_, ED4_level handled_level_, ED4_level restriction_level_);
 
 #if defined(IMPLEMENT_DUMP)
     void dump(size_t indent) const;
 #endif // IMPLEMENT_DUMP
 
-};                              // Manager coordinates Layout
+    static void init_object_specs();
+
+    bool is_manager() const { return static_prop & ED4_P_IS_MANAGER; }
+    bool is_terminal() const { return static_prop & ED4_P_IS_TERMINAL; }
+
+    bool allowed_to_contain(ED4_level child_level) const {
+        // e4_assert(object_specs_initialized); // @@@ cant check here.. but where
+        e4_assert(is_manager()); // terminals can't contain anything - your test is senseless
+        return allowed_children & child_level;
+    }
+
+    void announce_added(ED4_level child_level) const {
+        e4_assert(allowed_to_contain(child_level));
+        used_children          = ED4_level(used_children|child_level);
+        descendants_uptodate = false;
+    }
+
+    static void recalc_descendants();
+
+    ED4_level get_possible_descendants() const { 
+        e4_assert(is_manager());
+        if (!descendants_uptodate) recalc_descendants();
+        return possible_descendants;
+    }
+    ED4_level get_allowed_descendants() const { // (allowed = possible + those allowed to add, but not added anywhere)
+        e4_assert(is_manager());
+        if (!descendants_uptodate) recalc_descendants();
+        return allowed_descendants;
+    }
+};
 
 class ED4_folding_line : virtual Noncopyable {
     // properties of an object, i.e. concerning rectangles on screen showing sequences
@@ -251,7 +292,6 @@ public:
     ED4_folding_line *next;
 
     ED4_folding_line();
-    ~ED4_folding_line();
 };
 
 struct ED4_scroll_links
@@ -317,14 +357,12 @@ public:
     short is_elem(void *elem);
 
     ED4_list();
-    ~ED4_list();
 };
 
 class ED4_base_position : private BasePosition { // derived from a Noncopyable
     const ED4_base *calced4base;
 
     void calc4base(const ED4_base *base);
-    ED4_base_position(const ED4_base_position&); // copy-constructor not allowed
     void set_base(const ED4_base *base) { if (calced4base != base) calc4base(base); }
 
 public:
@@ -724,7 +762,6 @@ class ED4_base : virtual Noncopyable {
     // base object
 
     ED4_species_pointer my_species_pointer;
-    ED4_base(const ED4_base&);  // copy-constructor not allowed
 
     // cache world coordinates:
 
@@ -734,17 +771,19 @@ class ED4_base : virtual Noncopyable {
     int        timestamp;
 
 public:
+    const ED4_objspec& spec;           // contains information about Objectproperties
 
-    ED4_manager              *parent;               // Points to parent
-    ED4_object_specification *spec;                 // contains information about Objectproperties
-    ED4_properties            dynamic_prop;         // contains info about what i am, what i can do, what i should do
-    char                     *id;                   // globally unique name in hierarchy
-    ED4_index                 index;                // defines the order of child objects
-    ED4_base                 *width_link;           // concerning the hierarchy
-    ED4_base                 *height_link;          // concerning the hierarchy
-    ED4_extension             extension;            // contains relative info about graphical properties
-    ED4_list                  linked_objects;       // linked list of objects which are depending from this object
-    ED4_update_info           update_info;          // info about things to be done for the object, i.e. refresh; flag structure
+    ED4_manager *parent;                            // Points to parent
+    
+
+    ED4_properties   dynamic_prop;                  // contains info about what i am, what i can do, what i should do
+    char            *id;                            // globally unique name in hierarchy
+    ED4_index        index;                         // defines the order of child objects
+    ED4_base        *width_link;                    // concerning the hierarchy
+    ED4_base        *height_link;                   // concerning the hierarchy
+    ED4_extension    extension;                     // contains relative info about graphical properties
+    ED4_list         linked_objects;                // linked list of objects which are depending from this object
+    ED4_update_info  update_info;                   // info about things to be done for the object, i.e. refresh; flag structure
     struct {
         unsigned int hidden : 1;                    // flag whether object is hidden or not
         unsigned int is_consensus : 1;              // indicates whether object is consensus(manager)
@@ -858,39 +897,43 @@ public:
     
     const ED4_terminal *get_consensus_relevant_terminal() const;
 
-    ED4_base(GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
+    ED4_base(const ED4_objspec& spec_, GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_base();
 
     // use the following functions to test which derived class we have
 
-    int is_terminal()               const { e4_assert(this); return spec->static_prop & ED4_P_IS_TERMINAL; }
+    int is_terminal()               const { e4_assert(this); return spec.static_prop & ED4_P_IS_TERMINAL; }
 
-    int is_text_terminal()          const { e4_assert(this); return spec->level & (ED4_L_SPECIES_NAME|ED4_L_SEQUENCE_INFO|ED4_L_SEQUENCE_STRING|ED4_L_PURE_TEXT|ED4_L_COL_STAT); }
+    int is_text_terminal()          const { e4_assert(this); return spec.level & (ED4_L_SPECIES_NAME|ED4_L_SEQUENCE_INFO|ED4_L_SEQUENCE_STRING|ED4_L_PURE_TEXT|ED4_L_COL_STAT); }
 
-    int is_species_name_terminal()  const { e4_assert(this); return spec->level & ED4_L_SPECIES_NAME; }
+    int is_species_name_terminal()  const { e4_assert(this); return spec.level & ED4_L_SPECIES_NAME; }
 
-    int is_sequence_info_terminal() const { e4_assert(this); return spec->level & ED4_L_SEQUENCE_INFO; }
-    int is_sequence_terminal()      const { e4_assert(this); return spec->level & ED4_L_SEQUENCE_STRING; }
-    int is_orf_terminal()           const { e4_assert(this); return spec->level & ED4_L_ORF; }
+    int is_sequence_info_terminal() const { e4_assert(this); return spec.level & ED4_L_SEQUENCE_INFO; }
+    int is_sequence_terminal()      const { e4_assert(this); return spec.level & ED4_L_SEQUENCE_STRING; }
+    int is_orf_terminal()           const { e4_assert(this); return spec.level & ED4_L_ORF; }
 
-    int is_pure_text_terminal()     const { e4_assert(this); return spec->level & ED4_L_PURE_TEXT; }
-    int is_columnStat_terminal()    const { e4_assert(this); return spec->level & ED4_L_COL_STAT; }
+    int is_pure_text_terminal()     const { e4_assert(this); return spec.level & ED4_L_PURE_TEXT; }
+    int is_columnStat_terminal()    const { e4_assert(this); return spec.level & ED4_L_COL_STAT; }
 
-    int is_bracket_terminal()       const { e4_assert(this); return spec->level & ED4_L_BRACKET; }
-    int is_spacer_terminal()        const { e4_assert(this); return spec->level & ED4_L_SPACER; }
-    int is_line_terminal()          const { e4_assert(this); return spec->level & ED4_L_LINE; }
+    int is_bracket_terminal()       const { e4_assert(this); return spec.level & ED4_L_BRACKET; }
+    int is_spacer_terminal()        const { e4_assert(this); return spec.level & ED4_L_SPACER; }
+    int is_line_terminal()          const { e4_assert(this); return spec.level & ED4_L_LINE; }
 
-    int is_manager()                const { e4_assert(this); return spec->static_prop & ED4_P_IS_MANAGER; }
+    int is_manager()                const { e4_assert(this); return spec.static_prop & ED4_P_IS_MANAGER; }
 
-    int is_sequence_manager()       const { e4_assert(this); return spec->level & ED4_L_SEQUENCE; }
-    int is_multi_name_manager()     const { e4_assert(this); return spec->level & ED4_L_MULTI_NAME; }
-    int is_name_manager()           const { e4_assert(this); return spec->level & ED4_L_NAME_MANAGER; }
-    int is_multi_species_manager()  const { e4_assert(this); return spec->level & ED4_L_MULTI_SPECIES; }
-    int is_multi_sequence_manager() const { e4_assert(this); return spec->level & ED4_L_MULTI_SEQUENCE; }
-    int is_device_manager()         const { e4_assert(this); return spec->level & ED4_L_DEVICE; }
-    int is_group_manager()          const { e4_assert(this); return spec->level & ED4_L_GROUP; }
-    int is_species_manager()        const { e4_assert(this); return spec->level & ED4_L_SPECIES; }
-    int is_area_manager()           const { e4_assert(this); return spec->level & ED4_L_AREA; }
+    int is_sequence_manager()       const { e4_assert(this); return spec.level & ED4_L_SEQUENCE; }
+    int is_multi_name_manager()     const { e4_assert(this); return spec.level & ED4_L_MULTI_NAME; }
+    int is_name_manager()           const { e4_assert(this); return spec.level & ED4_L_NAME_MANAGER; }
+    int is_multi_species_manager()  const { e4_assert(this); return spec.level & ED4_L_MULTI_SPECIES; }
+    int is_multi_sequence_manager() const { e4_assert(this); return spec.level & ED4_L_MULTI_SEQUENCE; }
+    int is_device_manager()         const { e4_assert(this); return spec.level & ED4_L_DEVICE; }
+
+    int is_group_manager()          const { e4_assert(this); return spec.level & ED4_L_GROUP; }
+    int is_root_group_manager()     const { e4_assert(this); return spec.level & ED4_L_ROOTGROUP; }
+    int is_abstract_group_manager() const { e4_assert(this); return spec.level & (ED4_L_GROUP|ED4_L_ROOTGROUP); }
+    
+    int is_species_manager()        const { e4_assert(this); return spec.level & ED4_L_SPECIES; }
+    int is_area_manager()           const { e4_assert(this); return spec.level & ED4_L_AREA; }
 
     // use the following functions to cast ED4_base to derived classes:
 
@@ -909,28 +952,30 @@ public:
     
 #define E4B_DECL_CASTOP(name) E4B_DECL_CASTOP_helper(concat(ED4_,name), concat(to_,name), concat(is_,name))
 #define E4B_IMPL_CASTOP(name) E4B_IMPL_CASTOP_helper(concat(ED4_,name), concat(to_,name), concat(is_,name))
-    
-    E4B_DECL_CASTOP(area_manager);
-    E4B_DECL_CASTOP(bracket_terminal);
-    E4B_DECL_CASTOP(columnStat_terminal);
-    E4B_DECL_CASTOP(device_manager);
-    E4B_DECL_CASTOP(group_manager);
-    E4B_DECL_CASTOP(line_terminal);
-    E4B_DECL_CASTOP(manager);
-    E4B_DECL_CASTOP(multi_name_manager);
-    E4B_DECL_CASTOP(multi_sequence_manager);
-    E4B_DECL_CASTOP(multi_species_manager);
-    E4B_DECL_CASTOP(name_manager);
-    E4B_DECL_CASTOP(orf_terminal);
-    E4B_DECL_CASTOP(pure_text_terminal);
-    E4B_DECL_CASTOP(sequence_info_terminal);
-    E4B_DECL_CASTOP(sequence_manager);
-    E4B_DECL_CASTOP(sequence_terminal);
-    E4B_DECL_CASTOP(spacer_terminal);
-    E4B_DECL_CASTOP(species_manager);
-    E4B_DECL_CASTOP(species_name_terminal);
-    E4B_DECL_CASTOP(terminal);
-    E4B_DECL_CASTOP(text_terminal);
+
+    E4B_DECL_CASTOP(area_manager);           // to_area_manager
+    E4B_DECL_CASTOP(abstract_group_manager); // to_abstract_group_manager
+    E4B_DECL_CASTOP(bracket_terminal);       // to_bracket_terminal
+    E4B_DECL_CASTOP(columnStat_terminal);    // to_columnStat_terminal
+    E4B_DECL_CASTOP(device_manager);         // to_device_manager
+    E4B_DECL_CASTOP(group_manager);          // to_group_manager
+    E4B_DECL_CASTOP(line_terminal);          // to_line_terminal
+    E4B_DECL_CASTOP(manager);                // to_manager
+    E4B_DECL_CASTOP(multi_name_manager);     // to_multi_name_manager
+    E4B_DECL_CASTOP(multi_sequence_manager); // to_multi_sequence_manager
+    E4B_DECL_CASTOP(multi_species_manager);  // to_multi_species_manager
+    E4B_DECL_CASTOP(name_manager);           // to_name_manager
+    E4B_DECL_CASTOP(orf_terminal);           // to_orf_terminal
+    E4B_DECL_CASTOP(pure_text_terminal);     // to_pure_text_terminal
+    E4B_DECL_CASTOP(root_group_manager);     // to_root_group_manager
+    E4B_DECL_CASTOP(sequence_info_terminal); // to_sequence_info_terminal
+    E4B_DECL_CASTOP(sequence_manager);       // to_sequence_manager
+    E4B_DECL_CASTOP(sequence_terminal);      // to_sequence_terminal
+    E4B_DECL_CASTOP(spacer_terminal);        // to_spacer_terminal
+    E4B_DECL_CASTOP(species_manager);        // to_species_manager
+    E4B_DECL_CASTOP(species_name_terminal);  // to_species_name_terminal
+    E4B_DECL_CASTOP(terminal);               // to_terminal
+    E4B_DECL_CASTOP(text_terminal);          // to_text_terminal
 };
 
 class ED4_manager : public ED4_base { // derived from a Noncopyable
@@ -966,7 +1011,7 @@ public:
     virtual ED4_returncode  calc_size_requested_by_parent();
     virtual ED4_returncode  move_requested_by_parent(ED4_move_info *mi);
 
-    void create_consensus(ED4_group_manager *upper_group_manager, arb_progress *progress);
+    void create_consensus(ED4_abstract_group_manager *upper_group_manager, arb_progress *progress);
 
     virtual ARB_ERROR route_down_hierarchy(ED4_cb cb, AW_CL cd1, AW_CL cd2);
     virtual ARB_ERROR route_down_hierarchy(ED4_cb1 cb, AW_CL cd) { return route_down_hierarchy(ED4_cb(cb), cd, 0); }
@@ -1018,13 +1063,12 @@ public:
     virtual ED4_returncode      make_children_visible();
     virtual ED4_returncode  hide_children();
 
-    ED4_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
+    ED4_manager(const ED4_objspec& spec_, const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_manager();
 };
 
 
 class ED4_terminal : public ED4_base { // derived from a Noncopyable
-    ED4_terminal(const ED4_terminal&);              // copy-constructor not allowed
 public:
     struct {
         unsigned int selected : 1;                  // Flag for 'Object selected'
@@ -1080,7 +1124,7 @@ public:
     void scroll_into_view(AW_window *aww);
     inline bool setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfoldGroups, ED4_CursorJumpType jump_type);
 
-    ED4_terminal(GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
+    ED4_terminal(const ED4_objspec& spec_, GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_terminal();
 };
 
@@ -1237,7 +1281,6 @@ class ED4_main_manager : public ED4_manager { // derived from a Noncopyable
     ED4_main_manager(const ED4_main_manager&); // copy-constructor not allowed
 public:
     ED4_main_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    ~ED4_main_manager();
 
     void set_top_middle_spacer_terminal(ED4_terminal *top_middle_spacer_) { top_middle_spacer = top_middle_spacer_; }
     void set_top_middle_line_terminal(ED4_terminal *top_middle_line_) { top_middle_line = top_middle_line_; }
@@ -1256,7 +1299,6 @@ class ED4_device_manager : public ED4_manager
     ED4_device_manager(const ED4_device_manager&); // copy-constructor not allowed
 public:
     ED4_device_manager  (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    ~ED4_device_manager ();
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
@@ -1265,8 +1307,7 @@ class ED4_area_manager : public ED4_manager
 {
     ED4_area_manager(const ED4_area_manager&); // copy-constructor not allowed
 public:
-    ED4_area_manager    (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    ~ED4_area_manager   ();
+    ED4_area_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
@@ -1286,7 +1327,6 @@ class ED4_multi_species_manager : public ED4_manager
 
 public:
     ED4_multi_species_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    ~ED4_multi_species_manager();
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 
@@ -1309,26 +1349,29 @@ public:
     void        mark_selected_species(int mark);
 };
 
-class ED4_group_manager : public ED4_manager
-{
-    ED4_group_manager(const ED4_group_manager&); // copy-constructor not allowed
-
+class ED4_abstract_group_manager : public ED4_manager {
 protected:
-
     ED4_char_table my_table; // table concerning Consensusfunction
 
 public:
+    ED4_abstract_group_manager(const ED4_objspec& spec_, const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
-    ED4_group_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    virtual ~ED4_group_manager();
-
-    DECLARE_DUMP_FOR_MIDCLASS(ED4_group_manager, ED4_manager);
+    DECLARE_DUMP_FOR_BASECLASS(ED4_abstract_group_manager, ED4_manager);
 
     ED4_char_table&         table() { return my_table; }
     const ED4_char_table&   table() const { return my_table; }
-
-    ED4_bases_table&        table(unsigned char c) { return table().table(c); }
+    
+    ED4_bases_table& table(unsigned char c) { return table().table(c); }
     const ED4_bases_table&  table(unsigned char c) const { return table().table(c); }
+};
+
+class ED4_group_manager : public ED4_abstract_group_manager {
+    ED4_group_manager(const ED4_group_manager&); // copy-constructor not allowed
+
+public:
+    ED4_group_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
+
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_abstract_group_manager);
 
     void reinit_char_table();
 };
@@ -1410,7 +1453,7 @@ public:
     }
 };
 
-class ED4_root_group_manager : public ED4_group_manager
+class ED4_root_group_manager : public ED4_abstract_group_manager
 {
     ED4_remap my_remap;
 
@@ -1419,7 +1462,6 @@ class ED4_root_group_manager : public ED4_group_manager
 public:
 
     ED4_root_group_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    ~ED4_root_group_manager();
 
     int update_remap(); // TRUE if mapping has changed
 
@@ -1429,7 +1471,7 @@ public:
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode resize_requested_by_parent();
 
-    DECLARE_DUMP_FOR_LEAFCLASS(ED4_group_manager);
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_abstract_group_manager);
 };
 
 typedef void (*ED4_species_manager_cb)(ED4_species_manager*, AW_CL);
@@ -1473,7 +1515,6 @@ class ED4_multi_sequence_manager : public ED4_manager
     ED4_multi_sequence_manager(const ED4_multi_sequence_manager&); // copy-constructor not allowed
 public:
     ED4_multi_sequence_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    ~ED4_multi_sequence_manager();
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
@@ -1482,8 +1523,7 @@ class ED4_sequence_manager : public ED4_manager
 {
     ED4_sequence_manager(const ED4_sequence_manager&); // copy-constructor not allowed
 public:
-    ED4_sequence_manager    (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    ~ED4_sequence_manager   ();
+    ED4_sequence_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
@@ -1495,8 +1535,7 @@ class ED4_multi_name_manager : public ED4_manager
 
     ED4_multi_name_manager(const ED4_multi_name_manager&); // copy-constructor not allowed
 public:
-    ED4_multi_name_manager  (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    virtual ~ED4_multi_name_manager ();
+    ED4_multi_name_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
@@ -1509,7 +1548,6 @@ class ED4_name_manager : public ED4_manager
     ED4_name_manager(const ED4_name_manager&); // copy-constructor not allowed
 public:
     ED4_name_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    ~ED4_name_manager();
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
@@ -1527,7 +1565,6 @@ public:
     virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0);
 
     ED4_tree_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    ~ED4_tree_terminal();
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_terminal);
 };
@@ -1540,7 +1577,6 @@ public:
     virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0);
 
     ED4_bracket_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    ~ED4_bracket_terminal();
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_terminal);
 };
@@ -1555,8 +1591,8 @@ public:
     virtual int get_length() const = 0;
     virtual void deleted_from_database();
 
-    ED4_text_terminal(GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    virtual ~ED4_text_terminal();
+    ED4_text_terminal(const ED4_objspec& spec_, GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
+    virtual ~ED4_text_terminal() {}
 
     DECLARE_DUMP_FOR_BASECLASS(ED4_text_terminal, ED4_terminal);
 };
@@ -1567,7 +1603,7 @@ public:
     char *species_name; // @@@ wrong place (may be member of ED4_sequence_manager)
 
 
-    ED4_abstract_sequence_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
+    ED4_abstract_sequence_terminal(const ED4_objspec& spec_, const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_abstract_sequence_terminal();
 
     virtual GB_alignment_type GetAliType() = 0;
@@ -1622,7 +1658,6 @@ public:
     AP_tree *st_ml_node;
 
     ED4_sequence_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    virtual ~ED4_sequence_terminal();
 
     virtual GB_alignment_type GetAliType();
 
@@ -1675,7 +1710,6 @@ public:
     // functions concerning graphic output
 
     ED4_species_name_terminal(GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    ~ED4_species_name_terminal();
 
     GB_CSTR get_displayed_text() const;
     virtual int get_length() const { return strlen(get_displayed_text()); }
@@ -1693,7 +1727,6 @@ class ED4_sequence_info_terminal : public ED4_text_terminal
     ED4_sequence_info_terminal(const ED4_sequence_info_terminal&); // copy-constructor not allowed
 public:
     ED4_sequence_info_terminal(const char *id, /* GBDATA *gbd, */ AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    virtual ~ED4_sequence_info_terminal();
 
     ED4_species_name_terminal *corresponding_species_name_terminal() const {
         return get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
@@ -1716,7 +1749,6 @@ class ED4_pure_text_terminal : public ED4_text_terminal
     ED4_pure_text_terminal(const ED4_pure_text_terminal&);  // copy-constructor not allowed
 public:
     ED4_pure_text_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    ~ED4_pure_text_terminal();
 
     virtual int get_length() const { int len; resolve_pointer_to_char_pntr(&len); return len; }
 
@@ -1731,7 +1763,6 @@ class ED4_consensus_sequence_terminal : public ED4_sequence_terminal
     ED4_char_table& get_char_table() const { return get_parent(ED4_L_GROUP)->to_group_manager()->table(); }
 public:
     ED4_consensus_sequence_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    virtual ~ED4_consensus_sequence_terminal();
 
     virtual int get_length() const;
 
@@ -1746,7 +1777,6 @@ public:
     virtual ED4_returncode      draw(int only_text = 0);
 
     ED4_spacer_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    ~ED4_spacer_terminal();
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_terminal);
 };
@@ -1759,7 +1789,6 @@ public:
     virtual ED4_returncode  draw(int only_text = 0);
 
     ED4_line_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    ~ED4_line_terminal();
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_terminal);
 };
@@ -1773,27 +1802,29 @@ inline bool ED4_terminal::setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfo
     return sm->setCursorTo(cursor, seq_pos, unfoldGroups, jump_type);
 }
 
-E4B_IMPL_CASTOP(area_manager);
-E4B_IMPL_CASTOP(bracket_terminal);
-E4B_IMPL_CASTOP(columnStat_terminal);
-E4B_IMPL_CASTOP(device_manager);
-E4B_IMPL_CASTOP(group_manager);
-E4B_IMPL_CASTOP(line_terminal);
-E4B_IMPL_CASTOP(manager);
-E4B_IMPL_CASTOP(multi_name_manager);
-E4B_IMPL_CASTOP(multi_sequence_manager);
-E4B_IMPL_CASTOP(multi_species_manager);
-E4B_IMPL_CASTOP(name_manager);
-E4B_IMPL_CASTOP(orf_terminal);
-E4B_IMPL_CASTOP(pure_text_terminal);
-E4B_IMPL_CASTOP(sequence_info_terminal);
-E4B_IMPL_CASTOP(sequence_manager);
-E4B_IMPL_CASTOP(sequence_terminal);
-E4B_IMPL_CASTOP(spacer_terminal);
-E4B_IMPL_CASTOP(species_manager);
-E4B_IMPL_CASTOP(species_name_terminal);
-E4B_IMPL_CASTOP(terminal);
-E4B_IMPL_CASTOP(text_terminal);
+E4B_IMPL_CASTOP(area_manager);           // to_area_manager
+E4B_IMPL_CASTOP(abstract_group_manager); // to_abstract_group_manager
+E4B_IMPL_CASTOP(bracket_terminal);       // to_bracket_terminal
+E4B_IMPL_CASTOP(columnStat_terminal);    // to_columnStat_terminal
+E4B_IMPL_CASTOP(device_manager);         // to_device_manager
+E4B_IMPL_CASTOP(group_manager);          // to_group_manager
+E4B_IMPL_CASTOP(line_terminal);          // to_line_terminal
+E4B_IMPL_CASTOP(manager);                // to_manager
+E4B_IMPL_CASTOP(multi_name_manager);     // to_multi_name_manager
+E4B_IMPL_CASTOP(multi_sequence_manager); // to_multi_sequence_manager
+E4B_IMPL_CASTOP(multi_species_manager);  // to_multi_species_manager
+E4B_IMPL_CASTOP(name_manager);           // to_name_manager
+E4B_IMPL_CASTOP(orf_terminal);           // to_orf_terminal
+E4B_IMPL_CASTOP(pure_text_terminal);     // to_pure_text_terminal
+E4B_IMPL_CASTOP(root_group_manager);     // to_root_group_manager
+E4B_IMPL_CASTOP(sequence_info_terminal); // to_sequence_info_terminal
+E4B_IMPL_CASTOP(sequence_manager);       // to_sequence_manager
+E4B_IMPL_CASTOP(sequence_terminal);      // to_sequence_terminal
+E4B_IMPL_CASTOP(spacer_terminal);        // to_spacer_terminal
+E4B_IMPL_CASTOP(species_manager);        // to_species_manager
+E4B_IMPL_CASTOP(species_name_terminal);  // to_species_name_terminal
+E4B_IMPL_CASTOP(terminal);               // to_terminal
+E4B_IMPL_CASTOP(text_terminal);          // to_text_terminal
 
 // --------------------------------------------
 //      Prototype functions without a class
@@ -1899,3 +1930,4 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access);
 #else
 #error ed4_class included twice
 #endif
+

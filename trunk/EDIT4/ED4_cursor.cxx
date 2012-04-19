@@ -1663,44 +1663,6 @@ void ED4_change_cursor(AW_window * /* aww */, AW_CL /* cd1 */, AW_CL /* cd2 */) 
 #include <test_unit.h>
 #include <test_helpers.h>
 
-class fake_man_4test : public ED4_species_manager {
-public:
-    fake_man_4test()
-        : ED4_species_manager("fake", 0, 0, 0, 0, NULL)
-    {
-    }
-};
-class fake_base_4test : public ED4_base {  // derived from a Noncopyable
-    const char *seq;
-    int         size;
-public:
-    fake_base_4test(fake_man_4test *fake_man, const char *seq_, int size_)
-        : ED4_base("fake", 0, 0, 0, 0, fake_man),
-          seq(seq_),
-          size(size_)
-    {}
-
-    int get_length() const { return size; }
-    char *resolve_pointer_to_string_copy(int *len) const { *len = size; return strdup(seq); }
-
-    void dump(size_t) const {}
-    ED4_returncode Show(int, int) { return ED4_R_OK; }
-    ED4_returncode Resize() { return ED4_R_OK; }
-    short int calc_bounding_box() { return -1; }
-    ED4_returncode set_refresh(int) { return ED4_R_OK; }
-    ED4_returncode resize_requested_by_child() { return ED4_R_OK; }
-    ED4_returncode resize_requested_by_parent() { return ED4_R_OK; }
-    ED4_returncode delete_requested_by_parent() { return ED4_R_OK; }
-    ED4_returncode delete_requested_children() { return ED4_R_OK; }
-    ED4_returncode calc_size_requested_by_parent() { return ED4_R_OK; }
-    ED4_returncode move_requested_by_parent(ED4_move_info*) { return ED4_R_OK; }
-    ED4_returncode move_requested_by_child(ED4_move_info*) { return ED4_R_OK; }
-    ED4_returncode handle_move(ED4_move_info*) { return ED4_R_OK; }
-    ED4_base* search_ID(const char*) { return NULL; }
-    ED4_base* get_competent_child(AW_pos, AW_pos, ED4_properties) { return NULL; }
-    ED4_base* get_competent_clicked_child(AW_pos, AW_pos, ED4_properties) { return NULL; }
-};
-
 struct test_absrel {
     bool torel;
     test_absrel(bool r) : torel(r) {}
@@ -1738,14 +1700,13 @@ struct test_ecoli : public test_absrel {
 };
 
 struct test_basepos : public test_absrel {
-    fake_base_4test&   base;
-    ED4_base_position& bpos;
-    test_basepos(fake_base_4test& base_, ED4_base_position& bpos_, bool to_rel)
-        : test_absrel(to_rel), base(base_), bpos(bpos_) {}
-    int a2r(int a) const { return bpos.get_base_position(&base, a); }
-    int r2a(int r) const { return bpos.get_sequence_position(&base, r); }
-    int abs_size() const { return bpos.get_abs_len(&base); }
-    int rel_size() const { return bpos.get_base_count(&base); }
+    BasePosition& bpos;
+    test_basepos(BasePosition& bpos_, bool to_rel)
+        : test_absrel(to_rel), bpos(bpos_) {}
+    int a2r(int a) const { return bpos.abs_2_rel(a); }
+    int r2a(int r) const { return bpos.rel_2_abs(r); }
+    int abs_size() const { return bpos.abs_count(); }
+    int rel_size() const { return bpos.base_count(); }
 };
 
 #define TEST_ABSREL_EQUALS(tester,expected) do {        \
@@ -1762,14 +1723,12 @@ struct test_basepos : public test_absrel {
     } while(0)
 
 
-#define TEST_BASE_POS_EQUALS(data,a2r,r2a) do {                         \
-        fake_man_4test man;                                             \
-        fake_base_4test base(&man, data, strlen(data));                 \
-        {                                                               \
-            ED4_base_position bpos;                                     \
-            TEST_ABSREL_EQUALS(test_basepos(base, bpos, true), a2r);    \
-            TEST_ABSREL_EQUALS(test_basepos(base, bpos, false), r2a);   \
-        }                                                               \
+#define TEST_BASE_POS_EQUALS(data,a2r,r2a) do {                                 \
+        {                                                                       \
+            BasePosition bpos(data, strlen(data), CharPredicate(is_gap));       \
+            TEST_ABSREL_EQUALS(test_basepos(bpos, true), a2r);                  \
+            TEST_ABSREL_EQUALS(test_basepos(bpos, false), r2a);                 \
+        }                                                                       \
     } while(0)
 
 void TEST_BI_ecoli_ref() {
@@ -1794,8 +1753,7 @@ void TEST_BI_ecoli_ref() {
     TEST_ECOLIREF_EQUALS("--A", 3, "  [0]  0  0  0  1  [1]", "  [0]  2  [2]");
 }
 
-void TEST_ED4_base_position() {
-    ED4_ROOT = NULL;
+void TEST_base_position() {
     ED4_init_is_align_character("-"); // count '.' as base
 
     TEST_BASE_POS_EQUALS("-.AC-G-T-.",
