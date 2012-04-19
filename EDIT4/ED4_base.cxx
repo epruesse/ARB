@@ -150,12 +150,12 @@ void ED4_terminal::changed_by_database()
 #endif
 
                 ED4_species_manager *spman = get_parent(ED4_L_SPECIES)->to_species_manager();
-                spman->do_callbacks();
+                spman->do_callbacks(); // @@@ removed cb called here (when editing consensus; occur only once ? ) -> ED4_cursor.cxx@INVALID_CB_HANDLING 
 
                 if (dynamic_prop & ED4_P_CONSENSUS_RELEVANT) {
                     ED4_multi_species_manager *multiman = get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
-                    multiman->check_bases_and_rebuild_consensi(dup_data, data_len, spman, ED4_U_UP);
+                    multiman->update_bases_and_rebuild_consensi(dup_data, data_len, spman, ED4_U_UP);
 
                     set_refresh(1);
                     parent->refresh_requested_by_child();
@@ -194,13 +194,13 @@ void ED4_sequence_terminal::deleted_from_database()
 
     // @@@ hide all cursors pointing to this terminal!
 
-    char *data = (char*)GB_read_old_value();
-    int data_len = GB_read_old_size();
+    const char *data     = (const char*)GB_read_old_value();
+    int         data_len = GB_read_old_size();
 
     ED4_multi_species_manager *multi_species_man = get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
     if (was_consensus_relevant) {
-        multi_species_man->check_bases(data, data_len, 0);
+        multi_species_man->update_bases(data, data_len, 0);
         multi_species_man->rebuild_consensi(get_parent(ED4_L_SPECIES)->to_species_manager(), ED4_U_UP);
     }
 
@@ -312,7 +312,7 @@ void ED4_species_pointer::remove_callback(int *clientdata)
     GB_remove_callback(species_pointer, (GB_CB_TYPE) (GB_CB_CHANGED|GB_CB_DELETE), (GB_CB)ED4_sequence_changed_cb, clientdata);
     GB_pop_transaction(GLOBAL_gb_main);
 }
-void ED4_species_pointer::set_species_pointer(GBDATA *gbd, int *clientdata)
+void ED4_species_pointer::Set(GBDATA *gbd, int *clientdata)
 {
     if (species_pointer) remove_callback(clientdata);
     species_pointer = gbd;

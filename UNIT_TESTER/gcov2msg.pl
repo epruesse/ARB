@@ -5,17 +5,58 @@ use warnings;
 
 use Cwd;
 
-my $showCoverageForAll = 0; # show coverage only for files containing tests (recommended setting)
-# my $showCoverageForAll = 1; # show coverage for all files
-
-my $showCoverageForFilesMatching = qr/.*/; # show all files
-# my $showCoverageForFilesMatching = qr/.*(adlang|adquery).*/; # show only some files
-# my $showCoverageForFilesMatching = qr/.*(adlang).*/; # show only some files
-
-# my $sortBySectionSize = 0; # sort by location
-my $sortBySectionSize = 1; # sort by section size
-
 my $verbose = 0;
+
+my $showCoverageForAll; # 1=all; 0=files containing tests only
+my $showCoverageForFilesMatching; # regexpr filter for covered files
+my $sortBySectionSize; # 0=by location; 1=by section size
+
+sub setup() {
+  sub env_defined_non_empty($) {
+    my ($varname) = @_;
+    my $value = $ENV{$varname};
+    if (not defined $value) { die "environment variable $varname is undefined"; }
+    if ($value eq '') { die "environment variable $varname is empty"; }
+    chomp($value);
+    $value =~ s/^\s+//go;
+    $value =~ s/\s+$//go;
+
+    if ($value =~ /^'(.*)'$/o) { $value = $1; }
+    return $value;
+  }
+
+  my $SORT_COVERAGE     = env_defined_non_empty('SORT_COVERAGE');
+  my $RESTRICT_COVERAGE = env_defined_non_empty('RESTRICT_COVERAGE');
+
+  print "SORT_COVERAGE='$SORT_COVERAGE'\n";
+  print "RESTRICT_COVERAGE='$RESTRICT_COVERAGE'\n";
+
+  $showCoverageForAll = 1;
+  $showCoverageForFilesMatching = qr/.*/;
+
+  if ($RESTRICT_COVERAGE eq 'NO') {
+    ;
+  }
+  elsif ($RESTRICT_COVERAGE eq 'MODULE') {
+    my $RESTRICT_MODULE   = env_defined_non_empty('RESTRICT_MODULE');
+    print "RESTRICT_MODULE='$RESTRICT_MODULE'";
+    if ($RESTRICT_MODULE eq '.') {
+      print " (restricting to tested modules)\n";
+      $showCoverageForAll = 0;
+    }
+    else {
+      print "\n";
+      $showCoverageForFilesMatching = qr/$RESTRICT_MODULE/;
+    }
+  }
+  else {
+    $showCoverageForFilesMatching = qr/$RESTRICT_COVERAGE/;
+  }
+
+  if ($SORT_COVERAGE eq 'LOCATION') { $sortBySectionSize = 0; }
+  elsif ($SORT_COVERAGE eq 'SIZE') { $sortBySectionSize = 1; }
+  else { die "SORT_COVERAGE '$SORT_COVERAGE' is unknown"; }
+}
 
 # --------------------------------------------------------------------------------
 
@@ -245,6 +286,8 @@ sub die_usage($) {
 sub main() {
   my $args = scalar(@ARGV);
   if ($args<1) { die_usage("Missing argument\n"); }
+
+  setup();
 
   my $dir;
   my @srcdirs;

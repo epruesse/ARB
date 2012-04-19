@@ -200,12 +200,10 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
 
                 if (is_consensus) {
                     ED4_group_manager *group_manager = sequence_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
-                    int size = group_manager->table().size();
-
-                    seq       = (char*)GB_calloc(size+1, sizeof(char));
-                    seq[size] = 0;
-                    seq       = group_manager->table().build_consensus_string(0, size-1, seq);
-                    seq_len   = size;
+                    ED4_char_table&    groupTab      = group_manager->table();
+                    
+                    seq     = groupTab.build_consensus_string();
+                    seq_len = groupTab.size();
 
                     e4_assert(strlen(seq) == size_t(seq_len));
 

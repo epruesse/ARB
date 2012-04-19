@@ -314,14 +314,14 @@ struct ED4_work_info
 
 struct ED4_update_info // if you add new elements, please ensure to initialize them in ED4_base::ED4_base()
 {
-    unsigned int        resize : 1;
-    unsigned int        refresh : 1;
-    unsigned int    clear_at_refresh : 1;
-    unsigned int        linked_to_folding_line : 1;
-    unsigned int        linked_to_scrolled_rectangle : 1;
-    unsigned int        refresh_horizontal_scrolling : 1;
-    unsigned int        refresh_vertical_scrolling : 1;
-    unsigned int    delete_requested : 1;
+    unsigned int resize : 1;
+    unsigned int refresh : 1;
+    unsigned int clear_at_refresh : 1;
+    unsigned int linked_to_folding_line : 1;
+    unsigned int linked_to_scrolled_rectangle : 1;
+    unsigned int refresh_horizontal_scrolling : 1;
+    unsigned int refresh_vertical_scrolling : 1;
+    unsigned int delete_requested : 1;
 
     void set_clear_at_refresh(int value) {
         clear_at_refresh = value;

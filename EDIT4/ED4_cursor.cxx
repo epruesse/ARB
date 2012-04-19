@@ -904,30 +904,30 @@ void ED4_cursor::updateAwars()
 
     if (owner_of_cursor) {
         ED4_species_manager *species_manager = owner_of_cursor->get_parent(ED4_L_SPECIES)->to_species_manager();
-        int                  len;
-        char                *seq;
+
+        char at[2] = "\0";
 
         if (species_manager->flag.is_consensus) {
             ED4_group_manager *group_manager = owner_of_cursor->get_parent(ED4_L_GROUP)->to_group_manager();
-
-            seq = group_manager->table().build_consensus_string(seq_pos, seq_pos, 0);
-            len = seq_pos+1; // fake
+            ED4_char_table&    groupTab      = group_manager->table();
+            if (seq_pos<groupTab.size()) {
+                groupTab.build_consensus_string_to(at, seq_pos, seq_pos);
+            }
         }
         else {
-            seq = owner_of_cursor->resolve_pointer_to_string_copy(&len); 
+            int         len;
+            const char *seq = owner_of_cursor->resolve_pointer_to_char_pntr(&len);
+
+            if (seq_pos<len) at[0] = seq[seq_pos];
         }
 
-        e4_assert(seq);
-
-        if (seq_pos<len) {
-            char base = seq[seq_pos];
+        if (at[0]) {
+            char base = at[0];
             const char *i = ED4_decode_iupac(base, ED4_ROOT->alignment_type);
 
             e4_assert(strlen(i)<=MAXIUPAC);
             strcpy(iupac, i);
         }
-
-        free(seq);
     }
 
 #undef MAXIUPAC
@@ -1473,7 +1473,7 @@ static void ed4_bp_sequence_changed_cb(ED4_species_manager *, AW_CL cl_base_pos)
 void ED4_base_position::invalidate() {
     if (calced4base) {
         ED4_species_manager *species_manager = calced4base->get_parent(ED4_L_SPECIES)->to_species_manager();
-        species_manager->remove_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
+        species_manager->remove_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this); // @@@ removes cb called later -> ED4_base.cxx@INVALID_CB_HANDLING 
 
         calced4base = 0;
     }

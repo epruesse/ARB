@@ -37,6 +37,17 @@ int ED4_consensus_sequence_terminal::get_length() const {
     return get_char_table().size();
 }
 
+inline void ensure_buffer(char*& buffer, size_t& buffer_size, size_t needed) {
+    if (needed>buffer_size) {
+        delete [] buffer;
+        buffer_size = needed+10;
+        buffer      = new char[buffer_size];
+
+        memset(buffer, ' ', buffer_size-1);
+        buffer[buffer_size-1] = 0;
+    }
+}
+
 ED4_returncode ED4_consensus_sequence_terminal::draw(int /* only_text */)
 {
     AW_pos x, y;
@@ -67,12 +78,7 @@ ED4_returncode ED4_consensus_sequence_terminal::draw(int /* only_text */)
 
         const char *no_data = "No consensus data";
         size_t      len     = strlen(no_data);
-        if (buffer_size <= len) {
-            delete buffer;
-            buffer_size = len+10;
-            buffer      = new char[buffer_size];
-            memset(buffer, ' ',  buffer_size); // previously buffer was filled with zero's
-        }
+        ensure_buffer(buffer, buffer_size, len+1);
         memcpy(buffer, no_data, len);
         right_index = buffer_size-1;
     }
@@ -88,35 +94,25 @@ ED4_returncode ED4_consensus_sequence_terminal::draw(int /* only_text */)
             seq_end = rm->screen_to_sequence(right_index);
         }
 
-        char *cons = GB_give_buffer(seq_end+1);
-        cons = get_char_table().build_consensus_string(seq_start, seq_end, cons);
-
-        if (size_t(right_index) >= buffer_size) {
-            delete [] buffer;
-            buffer_size = right_index + 10;
-            e4_assert(buffer_size>0);
-            buffer      = new char[buffer_size+1];
-
-            memset(buffer, ' ',  buffer_size); // previously buffer was filled with zero's
-            buffer[buffer_size] = 0;
+        char *cons = 0;
+        if (seq_start <= seq_end) {
+            cons = GB_give_buffer(seq_end-seq_start+2);
+            get_char_table().build_consensus_string_to(cons, seq_start, seq_end);
         }
 
+        ensure_buffer(buffer, buffer_size, right_index+1);
 
-        {
-            int pos;
-            for (pos = left_index; pos <= right_index; pos++) {
-                int seq_pos = rm->screen_to_sequence(pos);
-                if (seq_pos<0) {
-                    buffer[pos] = ' ';
-                }
-                else {
-                    buffer[pos] = cons[seq_pos];
-                    e4_assert(buffer[pos]);
-                }
+        for (int pos = left_index; pos <= right_index; pos++) {
+            int seq_pos = rm->screen_to_sequence(pos);
+            if (seq_pos<0) {
+                buffer[pos] = ' ';
+            }
+            else {
+                buffer[pos] = cons[seq_pos-seq_start];
+                e4_assert(buffer[pos]);
             }
         }
     }
-
 
     if (buffer_size) {
         ED4_ROOT->get_device()->set_vertical_font_overlap(true);

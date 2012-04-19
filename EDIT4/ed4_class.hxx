@@ -553,6 +553,24 @@ public:
 // # define TEST_BASES_TABLE
 #endif
 
+class UpdateRange {
+    int start_pos;
+    int end_pos;
+
+public:
+    UpdateRange() : start_pos(0), end_pos(-1) {}
+    UpdateRange(int from, int to) : start_pos(from), end_pos(to) {}
+
+    int start() const { return start_pos; }
+    int end() const {
+        e4_assert(end_pos != -1);
+        return end_pos;
+    }
+
+    bool is_full_range() const { return start_pos == 0 && end_pos == -1; }
+    bool is_restricted() const { return !is_full_range(); }
+};
+
 #define SHORT_TABLE_ELEM_SIZE 1
 #define SHORT_TABLE_MAX_VALUE 0xff
 #define LONG_TABLE_ELEM_SIZE  4
@@ -616,17 +634,32 @@ public:
 
     int operator[](int offset) const { return table_entry_size==SHORT_TABLE_ELEM_SIZE ? get_elem_short(offset) : get_elem_long(offset); }
 
-    void inc_short(int offset)  { set_elem_short(offset, get_elem_short(offset)+1); }
-    void dec_short(int offset)  { set_elem_short(offset, get_elem_short(offset)-1); }
-    void inc_long(int offset)   { set_elem_long(offset, get_elem_long(offset)+1); }
-    void dec_long(int offset)   { set_elem_long(offset, get_elem_long(offset)-1); }
+    void inc_short(int offset)  {
+        int old = get_elem_short(offset);
+        e4_assert(old<255);
+        set_elem_short(offset, old+1);
+    }
+    void dec_short(int offset)  {
+        int old = get_elem_short(offset);
+        e4_assert(old>0);
+        set_elem_short(offset, old-1);
+    }
+    void inc_long(int offset)   {
+        int old = get_elem_long(offset);
+        set_elem_long(offset, old+1);
+    }
+    void dec_long(int offset)   {
+        int old = get_elem_long(offset);
+        e4_assert(old>0);
+        set_elem_long(offset, old-1);
+    }
 
     int firstDifference(const ED4_bases_table& other, int start, int end, int *firstDifferentPos) const;
     int lastDifference(const ED4_bases_table& other, int start, int end, int *lastDifferentPos) const;
 
     void add(const ED4_bases_table& other, int start, int end);
     void sub(const ED4_bases_table& other, int start, int end);
-    void sub_and_add(const ED4_bases_table& Sub, const ED4_bases_table& Add, int start, int end);
+    void sub_and_add(const ED4_bases_table& Sub, const ED4_bases_table& Add, UpdateRange range);
 
     void change_table_length(int new_length, int default_entry);
 
@@ -642,21 +675,21 @@ typedef ED4_bases_table *ED4_bases_table_ptr;
 # define TEST_CHAR_TABLE_INTEGRITY // uncomment to remove tests for ED4_char_table
 #endif // DEBUG
 
-
 class ED4_char_table : virtual Noncopyable {
     ED4_bases_table_ptr *bases_table;
     int                  sequences; // # of sequences added to the table
     int                  ignore; // this table will be ignored when calculating tables higher in hierarchy
     // (used to suppress SAI in root_group_man tables)
 
-    static bool           initialized;
-    static unsigned char  char_to_index_tab[MAXCHARTABLE];
-    static unsigned char *upper_index_chars;
-    static unsigned char *lower_index_chars;
-    static int            used_bases_tables; // size of 'bases_table'
+    // @@@ move statics into own class:
+    static bool               initialized;
+    static unsigned char      char_to_index_tab[MAXCHARTABLE];
+    static unsigned char     *upper_index_chars;
+    static unsigned char     *lower_index_chars;
+    static int                used_bases_tables; // size of 'bases_table'
+    static GB_alignment_type  ali_type;
 
-    inline void         set_char_to_index(unsigned char c, int index);
-    inline void         set_string_to_index(const char *s, int index);
+    static inline void set_char_to_index(unsigned char c, int index);
 
     ED4_char_table(const ED4_char_table&); // copy-constructor not allowed
 
@@ -690,6 +723,8 @@ public:
     ED4_char_table(int maxseqlength=0);
     ~ED4_char_table();
 
+    static void initial_setup(const char *gap_chars, GB_alignment_type ali_type_);
+
     void ignore_me() { ignore = 1; }
     int is_ignored() const { return ignore; }
 
@@ -710,19 +745,21 @@ public:
     ED4_bases_table&        table(int c)        { e4_assert(c>0 && c<MAXCHARTABLE); return linear_table(char_to_index_tab[c]); }
     const ED4_bases_table&  table(int c) const  { e4_assert(c>0 && c<MAXCHARTABLE); return linear_table(char_to_index_tab[c]); }
 
-    int changed_range(const ED4_char_table& other, int *start, int *end) const;
-    static int changed_range(const char *string1, const char *string2, int min_len, int *start, int *end);
+    const UpdateRange *changed_range(const ED4_char_table& other) const;
+    static const UpdateRange *changed_range(const char *string1, const char *string2, int min_len);
 
     void add(const ED4_char_table& other);
     void sub(const ED4_char_table& other);
     void sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add);
-    void sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add, int start, int end);
+    void sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add, UpdateRange range);
 
     void add(const char *string, int len);
     void sub(const char *string, int len);
-    void sub_and_add(const char *old_string, const char *new_string, int start, int end);
+    void sub_and_add(const char *old_string, const char *new_string, UpdateRange range);
 
-    char *build_consensus_string(int left_idx=0, int right_index=-1, char *fill_id=0) const;
+    void build_consensus_string_to(char *buffer, int left_idx, int right_index) const;
+    char *build_consensus_string(int left_idx, int right_index) const;
+    char *build_consensus_string() const { return build_consensus_string(0, -1); }
 
     void change_table_length(int new_length);
 };
@@ -743,8 +780,8 @@ public:
     ED4_species_pointer();
     ~ED4_species_pointer();
 
-    GBDATA *get_species_pointer() const { return species_pointer; }
-    void set_species_pointer(GBDATA *gbd, int *clientdata);
+    GBDATA *Get() const { return species_pointer; } 
+    void Set(GBDATA *gbd, int *clientdata);
     void notify_deleted() {
         species_pointer=0;
     }
@@ -796,8 +833,8 @@ public:
 
     // function for species_pointer
 
-    GBDATA *get_species_pointer() const { return my_species_pointer.get_species_pointer(); }
-    void set_species_pointer(GBDATA *gbd) { my_species_pointer.set_species_pointer(gbd, (int*)(this)); }
+    GBDATA *get_species_pointer() const { return my_species_pointer.Get(); }
+    void set_species_pointer(GBDATA *gbd) { my_species_pointer.Set(gbd, (int*)(this)); }
     int has_callback() const { return get_species_pointer()!=0; }
 
     // callbacks
@@ -1035,17 +1072,17 @@ public:
 
     ED4_returncode      create_group(ED4_group_manager **group_manager, GB_CSTR group_name);
 
-    virtual ED4_returncode  update_consensus(ED4_manager *old_parent, ED4_manager *new_parent, ED4_base *sequence, int start_pos = 0, int end_pos = -1);
+    void update_consensus(ED4_manager *old_parent, ED4_manager *new_parent, ED4_base *sequence);
     virtual ED4_returncode  rebuild_consensi(ED4_base *start_species, ED4_update_flag update_flag);
 
-    virtual ED4_returncode  check_in_bases(ED4_base *added_base, int start_pos=0, int end_pos=-1);
-    virtual ED4_returncode  check_out_bases(ED4_base *subbed_base, int start_pos=0, int end_pos=-1);
-    virtual ED4_returncode  check_bases(const ED4_base *old_base, const ED4_base *new_base, int start_pos=0, int end_pos=-1);
-    virtual ED4_returncode  check_bases(const char *old_seq, int old_len, const char *new_seq, int new_len, int start_pos=0, int end_pos=-1);
-    virtual ED4_returncode  check_bases(const char *old_seq, int old_len, const ED4_base *new_base, int start_pos=0, int end_pos=-1);
-    virtual ED4_returncode  check_bases(const ED4_char_table *old_table, const ED4_char_table *new_table, int start_pos=0, int end_pos=-1);
+    virtual ED4_returncode  check_in_bases(ED4_base *added_base);
+    virtual ED4_returncode  check_out_bases(ED4_base *subbed_base);
+    virtual ED4_returncode  update_bases(const ED4_base *old_base, const ED4_base *new_base, UpdateRange range = UpdateRange());
+    virtual ED4_returncode  update_bases(const char *old_seq, int old_len, const char *new_seq, int new_len, UpdateRange range = UpdateRange());
+    virtual ED4_returncode  update_bases(const char *old_seq, int old_len, const ED4_base *new_base, UpdateRange range = UpdateRange());
+    virtual ED4_returncode  update_bases(const ED4_char_table *old_table, const ED4_char_table *new_table, UpdateRange range = UpdateRange());
 
-    virtual ED4_returncode  check_bases_and_rebuild_consensi(const char *old_seq, int old_len, ED4_base *species, ED4_update_flag update_flag, int start_pos=0, int end_pos=-1);
+    virtual ED4_returncode  update_bases_and_rebuild_consensi(const char *old_seq, int old_len, ED4_base *species, ED4_update_flag update_flag, UpdateRange range = UpdateRange());
 
     void            generate_id_for_groups();
 
@@ -1942,6 +1979,3 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access);
 #else
 #error ed4_class included twice
 #endif
-
-
-

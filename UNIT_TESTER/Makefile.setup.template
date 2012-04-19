@@ -25,7 +25,20 @@ CHECK_LEAKS=1# check definite leaks
 
 # ---------- restrict tests to modules matching regexpr 'RESTRICT_MODULE': 
 RESTRICT_MODULE='.'
-#RESTRICT_MODULE='MG_species\.cxx'
+#RESTRICT_MODULE='ED4_mini_classes\.cxx'
+#RESTRICT_MODULE='(ED4_mini_classes|ED4_cursor)\.cxx'
+
+# ---------- restrict what coverage is displayed
+# to activate COVERAGE edit ../config.makefile@COVERAGE
+
+RESTRICT_COVERAGE=MODULE # only show for RESTRICT_MODULE (if '.' -> restrict to tested modules)
+#RESTRICT_COVERAGE=NO # show all
+#RESTRICT_COVERAGE='(ED4_mini_classes|ED4_cursor)\.cxx'
+
+# ---------- define how uncovered sections are sorted
+
+SORT_COVERAGE=LOCATION # line order 
+#SORT_COVERAGE=SIZE # sort by size (biggest uncovered region first)
 
 # ---------- restrict tests to library with basename
 # (empty=no restriction, ':'-separated list of allowed test-names)

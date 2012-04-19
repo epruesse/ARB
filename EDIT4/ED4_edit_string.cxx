@@ -1115,9 +1115,8 @@ void ED4_Edit_String::finish_edit()
     }
 }
 
-void ED4_Edit_String::init_edit()
-{
-    delete old_seq; old_seq = 0;
+void ED4_Edit_String::init_edit() {
+    freenull(old_seq);
     seq_len = 0;
     seq = 0;
     gbd = 0;
