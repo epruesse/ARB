@@ -82,12 +82,12 @@ static const char *getClrDefAwar(const char *awarName) {
 
 static void setVisualizeSAI_cb(AW_root *awr) {
     ED4_ROOT->visualizeSAI = awr->awar(AWAR_SAI_ENABLE)->read_int();
-    ED4_ROOT->refresh_all_windows(1); // refresh editor
+    ED4_ROOT->request_refresh_for_sequence_terminals();
 }
 
 static void setVisualizeSAI_options_cb(AW_root *awr) {
     ED4_ROOT->visualizeSAI_allSpecies = awr->awar(AWAR_SAI_ALL_SPECIES)->read_int();
-    ED4_ROOT->refresh_all_windows(1); // refresh editor
+    ED4_ROOT->request_refresh_for_sequence_terminals();
 }
 
 static bool colorTransTable_exists(AW_root *awr, const char *name) {
@@ -185,9 +185,7 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
         free(clrTabName);
         inCallback = old_inCallback;
 
-        if (!inCallback) {
-            ED4_ROOT->refresh_all_windows(1); // refresh editor
-        }
+        if (!inCallback) ED4_ROOT->request_refresh_for_sequence_terminals();
 
         in_colorDefChanged_callback = false;
     }
@@ -261,9 +259,7 @@ static void colorDefTabNameChanged_callback(AW_root *awr) {
     inCallback = old_inCallback;
     free(clrTabName);
 
-    if (!inCallback && clrDefinitionsChanged) {
-        ED4_ROOT->refresh_all_windows(1); // refresh editor
-    }
+    if (!inCallback && clrDefinitionsChanged) ED4_ROOT->request_refresh_for_sequence_terminals();
 }
 
 static void refresh_display_cb(GBDATA *, int *, GB_CB_TYPE cb_type) {
@@ -271,7 +267,7 @@ static void refresh_display_cb(GBDATA *, int *, GB_CB_TYPE cb_type) {
         ED4_ROOT->aw_root->awar(AWAR_SAI_ENABLE)->read_int())
     {
         clrDefinitionsChanged = 1;
-        ED4_ROOT->refresh_all_windows(1); // refresh editor when current SAI is changed
+        ED4_ROOT->request_refresh_for_sequence_terminals();
     }
 }
 
@@ -313,9 +309,9 @@ static void saiChanged_callback(AW_root *awr) {
     inCallback = old_inCallback;
 
     if (!inCallback && clrDefinitionsChanged) {
-        ED4_ROOT->refresh_all_windows(1); // refresh editor
         // SAI changed notify Global SAI Awar AWAR_SAI_GLOBAL
         awr->awar(AWAR_SAI_GLOBAL)->write_string(saiName);
+        ED4_ROOT->request_refresh_for_sequence_terminals();
     }
     free(saiName);
 }

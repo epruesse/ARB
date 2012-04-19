@@ -11,6 +11,11 @@
 #include <arbdb_base.h>
 #endif
 
+#if defined(DEBUG)
+// #define TRACE_REFRESH
+#endif
+
+
 class  ED4_root;
 class  ED4_database;
 struct GBS_strstruct;
@@ -50,7 +55,6 @@ extern ED4_EDITMODI awar_edit_mode;
 extern long         awar_edit_direction;
 extern bool         move_cursor;                    // only needed for editing in consensus
 extern bool         DRAW;
-extern bool         last_window_reached;            // only needed for refreshing all windows
 
 // globally used defines and flags
 

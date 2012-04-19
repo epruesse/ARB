@@ -248,6 +248,7 @@ public:
     void set_screen(const AW_screen_area& screen_) {
         // set clipping coordinates
         screen = screen_;
+        aw_assert(screen.t == 0 && screen.l == 0);
     }
 
     AW_rgb get_color(AW_color_idx color) const {

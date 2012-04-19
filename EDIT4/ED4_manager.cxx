@@ -12,8 +12,9 @@
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_protein_2nd_structure.hxx"
 
-// #define TEST_REFRESH_FLAG
-
+#if defined(DEBUG)
+#define TEST_REFRESH_FLAG
+#endif
 
 // -----------------------------------------------------------------
 //      Manager static properties (used by manager-constructors)
@@ -258,8 +259,6 @@ ED4_returncode ED4_manager::update_bases_and_rebuild_consensi(const char *old_se
         else if (ED4_ROOT->alignment_type == GB_AT_AA) { 
             GB_ERROR err = ED4_pfold_set_SAI(&ED4_ROOT->protstruct, GLOBAL_gb_main, ED4_ROOT->alignment_name, &ED4_ROOT->protstruct_len);
             if (err) { aw_message(err); result = ED4_R_WARNING; }
-            ED4_ROOT->refresh_all_windows(0); // @@@ crazy slowdown ? 
-            ED4_expose_all_windows();
         }
     }
     return result;
@@ -706,16 +705,6 @@ ED4_returncode  ED4_manager::event_sent_by_parent(AW_event *event, AW_window *aw
     return (returncode);
 }
 
-ED4_returncode  ED4_manager::calc_size_requested_by_parent() {
-    if (calc_bounding_box()) {
-        if (parent) {
-            parent->resize_requested_by_child();
-        }
-    }
-
-    return (ED4_R_OK);
-}
-
 ED4_returncode  ED4_manager::refresh_requested_by_child() {
     // handles a refresh-request from a child
     if (!update_info.refresh) { // determine if there were more refresh requests already => no need to tell parent about it
@@ -743,6 +732,7 @@ int ED4_manager::refresh_flag_ok() {
 
         if (child->update_info.refresh==1 && update_info.refresh==0) {
             printf("Forgotten refresh-flag in '%s' (son of '%s')\n", child->id, id);
+            fflush(stdout);
             return 0;
         }
     }
@@ -750,18 +740,31 @@ int ED4_manager::refresh_flag_ok() {
     return 1;
 }
 
+inline void ED4_base::resize_requested_by_link(ED4_base *link) {
+    e4_assert((width_link == link) || (height_link == link)); // wrong link
+    if (calc_bounding_box()) request_resize();
+}
+
+void ED4_base::request_resize_of_linked() {
+    ED4_list_elem *current_list_elem = linked_objects.first();
+    while (current_list_elem) {
+        ED4_base *object = (ED4_base *) current_list_elem->elem();
+        if (object) object->resize_requested_by_link(this);
+        current_list_elem = current_list_elem->next();
+    }
+}
+
 bool ED4_manager::calc_bounding_box() {
     // calculates the smallest rectangle containing the object.
     // returns true if bounding box has changed.
-    AW_pos         sum_width  = 0;
-    AW_pos         sum_height = 0;
-    AW_pos         max_x      = 0;
-    AW_pos         max_y      = 0;
-    AW_pos         dummy      = 0;
-    ED4_index      i          = 0;
-    bool           bb_changed = false;
-    ED4_list_elem *current_list_elem;
-    ED4_base      *child, *object;
+    AW_pos     sum_width  = 0;
+    AW_pos     sum_height = 0;
+    AW_pos     max_x      = 0;
+    AW_pos     max_y      = 0;
+    AW_pos     dummy      = 0;
+    ED4_index  i          = 0;
+    bool       bb_changed = false;
+    ED4_base  *child;
 
     // initialize with first child
     while ((child = children->member(i++)) != NULL) { // check all children
@@ -806,17 +809,7 @@ bool ED4_manager::calc_bounding_box() {
         }
     }
 
-    if (bb_changed) { // tell linked objects about our change of bounding box
-        current_list_elem = linked_objects.first();
-        while (current_list_elem) {
-            object = (ED4_base *) current_list_elem->elem();
-            if (object) {
-                object->link_changed(this);
-            }
-
-            current_list_elem = current_list_elem->next();
-        }
-    }
+    if (bb_changed) request_resize_of_linked();
     return bb_changed;
 }
 
@@ -870,7 +863,7 @@ ED4_returncode ED4_manager::distribute_children() {
     return (ED4_R_OK);
 }
 
-ED4_returncode ED4_manager::resize_requested_by_parent() {
+void ED4_manager::resize_requested_children() {
     if (update_info.resize) { // object wants to resize
         update_info.set_resize(0); // first clear the resize flag (remember it could be set again from somewhere below the hierarchy)
 
@@ -881,67 +874,39 @@ ED4_returncode ED4_manager::resize_requested_by_parent() {
             if (!child) break;
 
             child->update_info.set_resize(1);
-            child->resize_requested_by_parent();
+            child->resize_requested_children();
         }
 
         distribute_children();
-        if (calc_bounding_box()) {                      // recalculate current object's bounding_box
-            resize_requested_by_child();
-        }
+        if (calc_bounding_box()) request_resize();
     }
-
-    return ED4_R_OK;
 }
-ED4_returncode ED4_root_group_manager::resize_requested_by_parent() {
-    ED4_returncode result = ED4_R_OK;
-
+void ED4_root_group_manager::resize_requested_children() {
     if (update_info.resize) {
-        update_remap();
-        result = ED4_manager::resize_requested_by_parent();
+        update_remap(); // @@@ should this better be handled by an update request?
+        ED4_manager::resize_requested_children();
     }
-
-    return result;
 }
 
 static void update_scrolled_rectangles(ED4_window *win) { win->update_scrolled_rectangle(); }
-ED4_returncode ED4_main_manager::resize_requested_by_parent() {
+void ED4_main_manager::resize_requested_children() {
     if (update_info.resize) {
-        ED4_manager::resize_requested_by_parent();
+        ED4_manager::resize_requested_children();
         ED4_with_all_edit_windows(update_scrolled_rectangles);
     }
-    return ED4_R_OK;
-}
-
-ED4_returncode ED4_manager::Resize() {
-    if (!flag.hidden) {
-        while (update_info.resize) {
-            resize_requested_by_parent();
-            if (parent) break;
-        }
-    }
-
-    return ED4_R_OK;
-}
-ED4_returncode ED4_terminal::Resize() {
-    return ED4_R_OK;
 }
 
 ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
 #ifdef TEST_REFRESH_FLAG
     e4_assert(refresh_flag_ok());
 #endif
-#if defined(DEBUG) && 0
-    printf("Show main_manager\n");
-#endif
 
     AW_device *device = current_device();
 
-    if (flag.hidden) {
-        if (last_window_reached && update_info.refresh) {
-            clear_refresh();
-        }
-    }
-    else if (refresh_all || update_info.refresh) {
+    if (!flag.hidden && (refresh_all || update_info.refresh)) {
+#if defined(TRACE_REFRESH)
+        fprintf(stderr, "- really paint in ED4_main_manager::Show(refresh_all=%i, is_cleared=%i)\n", refresh_all, is_cleared); fflush(stderr);
+#endif
         const AW_screen_area& area_rect = device->get_area_size();
 
         // if update all -> clear_background
@@ -959,47 +924,24 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
 
         int x1, y1, x2, y2;
         ED4_window& win = *current_ed4w();
-        int old_last_window_reached = last_window_reached;
-
-        last_window_reached = 0;
         x1 = area_rect.l;
         for (const ED4_folding_line *flv = win.get_vertical_folding(); ; flv = flv->get_next()) {
-            int lastColumn = 0;
-
             if (flv) {
                 x2 = int(flv->get_pos()); // @@@ use AW_INT ? 
-                if (!flv->get_next() && x2==area_rect.r) {
-                    lastColumn = 1;
-                }
             }
             else {
                 x2 = area_rect.r;
-                lastColumn = 1;
-                if (x1==x2) {
-                    break; // do not draw last range, if it's only 1 pixel width
-                }
+                if (x1==x2) break; // do not draw last range, if it's only 1 pixel width
             }
 
             y1 = area_rect.t;
             for (const ED4_folding_line *flh = win.get_horizontal_folding(); ; flh = flh->get_next()) {
-                int lastRow = 0;
-
                 if (flh) {
                     y2 = int(flh->get_pos()); // @@@ use AW_INT ? 
-                    if (!flh->get_next() && y2==area_rect.b) {
-                        lastRow = 1;
-                    }
                 }
                 else {
                     y2 = area_rect.b;
-                    lastRow = 1;
-                    if (y1==y2) {
-                        break; // do not draw last range, if it's only 1 pixel high
-                    }
-                }
-
-                if (lastRow && lastColumn) {
-                    last_window_reached = old_last_window_reached;
+                    if (y1==y2) break; // do not draw last range, if it's only 1 pixel high
                 }
 
                 device->push_clip_scale();
@@ -1008,11 +950,6 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
                 }
                 device->pop_clip_scale();
 
-                if (last_window_reached) {
-                    update_info.set_refresh(0);
-                    update_info.set_clear_at_refresh(0);
-                }
-
                 if (!flh) break; // break out after drawing lowest range
                 y1 = y2;
             }
@@ -1020,23 +957,23 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
 
             x1 = x2;
         }
+
+        // to avoid text clipping problems between top and middle area we redraw the top-middle-spacer :
+        {
+            device->push_clip_scale();
+            const AW_screen_area& clip_rect = device->get_cliprect();
+            device->set_top_clip_border(clip_rect.t-TERMINALHEIGHT);
+
+            int char_width = ED4_ROOT->font_group.get_max_width();
+            device->set_left_clip_border(clip_rect.l-char_width);
+            device->set_right_clip_border(clip_rect.r+char_width);
+
+            get_top_middle_spacer_terminal()->Show(true, false);
+            get_top_middle_line_terminal()->Show(true, false);
+            device->pop_clip_scale();
+        }
+
     }
-
-    // to avoid text clipping problems between top and middle area we redraw the top-middle-spacer :
-    {
-        device->push_clip_scale();
-        const AW_screen_area& clip_rect = device->get_cliprect();
-        device->set_top_clip_border(clip_rect.t-TERMINALHEIGHT);
-
-        int char_width = ED4_ROOT->font_group.get_max_width();
-        device->set_left_clip_border(clip_rect.l-char_width);
-        device->set_right_clip_border(clip_rect.r+char_width);
-
-        get_top_middle_spacer_terminal()->Show(true, false);
-        get_top_middle_line_terminal()->Show(true, false);
-        device->pop_clip_scale();
-    }
-
 #ifdef TEST_REFRESH_FLAG
     e4_assert(refresh_flag_ok());
 #endif
@@ -1059,11 +996,6 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
     e4_assert(refresh_flag_ok());
 #endif
 
-    if (flag.hidden) {
-        if (last_window_reached && update_info.refresh) {
-            clear_refresh();
-        }
-    }
     if (!flag.hidden && (refresh_all || update_info.refresh)) {
         if (update_info.clear_at_refresh && !is_cleared) {
             clear_background();
@@ -1183,17 +1115,6 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
                     device->pop_clip_scale();
                 }
             }
-
-            if (last_window_reached) {
-                if (!flags_cleared && child->is_manager() && child->update_info.refresh) {
-                    // if we didn't show a manager we must clear its children's refresh flags
-                    child->to_manager()->clear_refresh();
-                }
-                else {
-                    child->update_info.set_refresh(0);
-                    child->update_info.set_clear_at_refresh(0);
-                }
-            }
         }
     }
 
@@ -1222,22 +1143,12 @@ ED4_returncode ED4_manager::clear_refresh() {
     }
 
     update_info.set_refresh(0);
+    update_info.set_clear_at_refresh(0);
 
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_manager::resize_requested_by_child() {
-    // handles a resize-request from a child
-    if (!update_info.resize) {  // this is the first resize request
-        if (parent) {           // if we have a parent, tell him about our resize
-            parent->resize_requested_by_child();
-        }
-        update_info.set_resize(1);
-    }
-    return ED4_R_OK;
-}
-
-void ED4_manager::update_requested_by_child() {
+void ED4_manager::update_requested_by_child() { // @@@ same as set_update -> DRY
     if (!update_info.update_requested) {
         if (parent) parent->update_requested_by_child();
         update_info.update_requested = 1;
@@ -1286,11 +1197,7 @@ void ED4_multi_species_manager::update_requested_children() {
         ED4_group_manager *group_man    = parent->to_group_manager();
         ED4_base          *bracket_base = group_man->get_defined_level(ED4_L_BRACKET);
 
-        if (bracket_base && bracket_base->is_bracket_terminal()) {
-            ED4_bracket_terminal *bracket_term = bracket_base->to_bracket_terminal();
-            bracket_term->set_refresh();
-            bracket_term->parent->refresh_requested_by_child();
-        }
+        if (bracket_base) bracket_base->request_refresh();
     }
 }
 
@@ -1334,20 +1241,18 @@ void ED4_manager::Delete() {
     }
 }
 
-ED4_returncode ED4_manager::set_refresh(int clear) {
-    // sets refresh flag of current object and his children
-    ED4_index   current_index;
-    ED4_base    *current_child;
-
+void ED4_manager::request_refresh(int clear) {
+    // sets refresh flag of current object and its children
     update_info.set_refresh(1);
     update_info.set_clear_at_refresh(clear);
 
-    current_index = 0;
-    while ((current_child = children->member(current_index++)) != NULL) {
-        current_child->set_refresh(0);
-    }
+    if (parent) parent->refresh_requested_by_child();
 
-    return (ED4_R_OK);
+    ED4_index  current_index = 0;
+    ED4_base  *current_child;
+    while ((current_child = children->member(current_index++)) != NULL) {
+        current_child->request_refresh(0); // do not trigger clear for childs
+    }
 }
 
 
@@ -1487,11 +1392,7 @@ void ED4_multi_species_manager::set_species_counters(int no_of_species, int no_o
         selected_species = no_of_selected;
 
         ED4_base *gm = get_parent(ED4_L_GROUP);
-        if (gm) {
-            ED4_bracket_terminal *bracket = gm->to_manager()->search_spec_child_rek(ED4_L_BRACKET)->to_bracket_terminal();
-            bracket->set_refresh();
-            bracket->parent->refresh_requested_by_child();
-        }
+        if (gm) gm->to_manager()->search_spec_child_rek(ED4_L_BRACKET)->request_refresh();
 
         ED4_base *ms = get_parent(ED4_L_MULTI_SPECIES);
         if (ms) {
@@ -1941,14 +1842,6 @@ inline void ED4_remap::set_sequence_to_screen(int pos, int newVal) {
         changed = 1;
     }
 }
-void ED4_remap::mark_compile_needed() {
-    if (mode!=ED4_RM_NONE && !update_needed) {
-        update_needed = 1;
-        if (ED4_ROOT && ED4_ROOT->root_group_man) {                     // test if root_group_man already exists
-            ED4_ROOT->root_group_man->resize_requested_by_child();      // remapping is recompiled while re-displaying the root_group_manager
-        }
-    }
-}
 void ED4_remap::mark_compile_needed_force() {
     if (!update_needed) {
         update_needed = 1;
@@ -1957,6 +1850,10 @@ void ED4_remap::mark_compile_needed_force() {
         }
     }
 }
+void ED4_remap::mark_compile_needed() {
+    if (mode!=ED4_RM_NONE) mark_compile_needed_force();
+}
+
 GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
 {
     e4_assert(update_needed);
@@ -2111,15 +2008,13 @@ ED4_root_group_manager::ED4_root_group_manager(const char *temp_id, AW_pos x, AW
     my_remap.mark_compile_needed_force();
 }
 
-int ED4_root_group_manager::update_remap()
-{
+int ED4_root_group_manager::update_remap() {
     int remapped = 0;
 
     if (my_remap.compile_needed()) {
         my_remap.compile(this);
         if (my_remap.was_changed()) {
-            ED4_ROOT->main_manager->set_refresh();
-            ED4_ROOT->main_manager->refresh_requested_by_child();
+            ED4_ROOT->main_manager->request_refresh();
             remapped = 1;
         }
     }

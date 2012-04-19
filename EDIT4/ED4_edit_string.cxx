@@ -772,7 +772,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             break;
                         }
                         case 'L': {  // CTRL-L = Refresh
-                            ED4_refresh_window(current_aww());
+                            ED4_request_full_refresh();
                             cursor_jump = ED4_JUMP_CENTERED;
                             break;
                         }

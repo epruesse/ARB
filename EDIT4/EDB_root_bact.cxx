@@ -583,7 +583,6 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
     sequence_terminal->set_property(ED4_P_CURSOR_ALLOWED);
     sequence_terminal->set_links(ref_sequence_terminal, ref_sequence_terminal);
     sequence_manager->children->append_member(sequence_terminal);
-    sequence_terminal->parent->resize_requested_by_child();
 
     (*y) += height_terminal + height_spacer;
 

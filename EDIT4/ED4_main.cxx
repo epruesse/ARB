@@ -64,7 +64,6 @@ ED4_EDITMODI awar_edit_mode;
 long         awar_edit_direction;
 bool         move_cursor;                           // only needed for editing in consensus
 bool         DRAW;
-bool         last_window_reached;                   // needed for refreshing all windows (if TRUE refresh/...-flags will be cleared)
 
 inline void replaceChars(char *s, char o, char n) {
     while (1) {
@@ -320,16 +319,6 @@ static void ED4_edit_direction_changed(AW_root * /* awr */) {
     ED4_with_all_edit_windows(redraw_cursor);
 }
 
-void ED4_expose_all_windows() {
-    for (ED4_window *ew = ED4_ROOT->first_window; ew; ew = ew->next) {
-        ED4_expose_cb(ew->aww, 0, 0);
-    }
-}
-
-static void ED4_do_expose(AW_root *) {
-    ED4_expose_all_windows();
-}
-
 static void ed4_bind_mainDB_awar_callbacks(AW_root *root) {
     // callbacks to main DB awars are bound later
     // (otherwise its easy to crash the editor by clicking around in ARB_NTREE during editor startup)
@@ -386,8 +375,8 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     root->awar_int(AWAR_INSERT_MODE, 1)->add_callback(ed4_change_edit_mode, (AW_CL)0);
 
     root->awar_int(AWAR_EDIT_DIRECTION, 1)->add_target_var(&awar_edit_direction)->add_callback(ED4_edit_direction_changed);
-    root->awar_int(AWAR_EDIT_HELIX_SPACING, 0)->add_target_var(&ED4_ROOT->helix_add_spacing)->add_callback(ED4_do_expose);
-    root->awar_int(AWAR_EDIT_TERMINAL_SPACING, 0)->add_target_var(&ED4_ROOT->terminal_add_spacing)->add_callback(ED4_do_expose);
+    root->awar_int(AWAR_EDIT_HELIX_SPACING, 0)->add_target_var(&ED4_ROOT->helix_add_spacing)->add_callback((AW_RCB0)ED4_request_relayout);
+    root->awar_int(AWAR_EDIT_TERMINAL_SPACING, 0)->add_target_var(&ED4_ROOT->terminal_add_spacing)->add_callback((AW_RCB0)ED4_request_relayout);
     root->awar_int(AWAR_EDIT_TITLE_MODE, 0);
 
     ed4_changesecurity(root, 0);
@@ -490,6 +479,10 @@ const char *ED4_propertyName(int mode) {
 
 static void ED4_postcbcb(AW_window *aww) {
     ED4_ROOT->announce_useraction_in(aww);
+    ED4_trigger_instant_refresh();
+}
+static void seq_colors_changed_cb(AW_window *) {
+    ED4_ROOT->request_refresh_for_sequence_terminals();
 }
 
 int ARB_main(int argc, const char *argv[]) {
@@ -554,7 +547,7 @@ int ARB_main(int argc, const char *argv[]) {
     ed4_create_all_awars(ED4_ROOT->aw_root, config_name);
 
     ED4_ROOT->st_ml = STAT_create_ST_ML(GLOBAL_gb_main);
-    ED4_ROOT->sequence_colors = new AWT_seq_colors(AW_ROOT_DEFAULT, ED4_G_SEQUENCES, (AW_CB)ED4_refresh_window, 0, 0);
+    ED4_ROOT->sequence_colors = new AWT_seq_colors(AW_ROOT_DEFAULT, ED4_G_SEQUENCES, (AW_CB)seq_colors_changed_cb, 0, 0);
 
     ED4_ROOT->edk = new ed_key;
     ED4_ROOT->edk->create_awars(ED4_ROOT->aw_root);
@@ -638,7 +631,7 @@ int ARB_main(int argc, const char *argv[]) {
 
     AWT_install_postcb_cb(ED4_postcbcb);
     AWT_install_cb_guards();
-    e4_assert(ED4_WinContext::dont_have_global_context()); // context shall be local
+    e4_assert(!ED4_WinContext::have_context()); // no global context shall be active
     ED4_ROOT->aw_root->main_loop(); // enter main-loop
 
     return EXIT_SUCCESS;

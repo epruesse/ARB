@@ -16,8 +16,6 @@
 #include "gb_key.h"
 #include "gb_dict.h"
 
-#define GB_SYSTEM_KEY_DATA "@key_data"
-
 static GB_CSTR gb_read_dict_data(GBDATA *gb_dict, long *size) {
     GB_CSTR data = 0;
     if (gb_dict->flags.compressed_data) {

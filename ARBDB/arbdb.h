@@ -24,6 +24,9 @@
 #include <stdint.h>
 #endif
 
+#define GB_SYSTEM_FOLDER   "__SYSTEM__"
+#define GB_SYSTEM_KEY_DATA "@key_data"
+
 // ---------------------
 //      simple types
 

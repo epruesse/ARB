@@ -18,6 +18,10 @@
 #ifndef _GLIBCXX_CCTYPE
 #include <cctype>
 #endif
+#ifndef _GLIBCXX_CSTRING
+#include <cstring>
+#endif
+
 
 inline int ARB_stricmp(const char *s1, const char *s2) {
     //! Like strcmp but ignoring case
@@ -46,6 +50,17 @@ inline int ARB_strscmp(const char *s1, const char *s2) {
     }
     return cmp;
 }
+
+inline int ARB_strNULLcmp(const char *s1, const char *s2) {
+    /*! Like strcmp, but allows NULL as arguments
+     * NULL is bigger than anything else (i.e. it sorts "missing" values to the end)
+     */
+    return
+        s1
+        ? (s2 ? strcmp(s1, s2) : -1)
+        : (s2 ? 1 : 0);
+}
+
 
 inline void ARB_strupper(char *s) { for (int i = 0; s[i]; ++i) s[i] = toupper(s[i]); } // strupr
 inline void ARB_strlower(char *s) { for (int i = 0; s[i]; ++i) s[i] = tolower(s[i]); } // strlwr

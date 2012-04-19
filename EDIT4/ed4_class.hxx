@@ -324,8 +324,10 @@ public:
     AW_pos get_dimension() const { return dimension; }
     const ED4_folding_line *get_next() const { return next; }
 
-    void set_dimension(AW_pos dim) { dimension = dim; }
-    void add_to_dimension(AW_pos offset) { dimension += offset; }
+    void warn_illegal_dimension();
+
+    void set_dimension(AW_pos dim) { dimension = dim; warn_illegal_dimension(); }
+    void add_to_dimension(AW_pos offset) { dimension += offset; warn_illegal_dimension(); }
 
     void set_pos(AW_pos p) { pos = p; }
     AW_pos get_pos() const { return pos; }
@@ -431,6 +433,8 @@ public:
         init_pos_size();
     }
 
+    AW_pos top_dim() const { return scroll_top->get_dimension(); }
+    AW_pos left_dim() const { return scroll_left->get_dimension(); }
 
     bool exists() const { return scroll_top && scroll_bottom && scroll_left && scroll_right; }
     bool is_linked() const {
@@ -484,11 +488,15 @@ public:
         set_rect(rect);
         update_folding_line_positions();
     }
-    
+
     void calc_bottomRight_folding_dimensions(int area_width, int area_height) {
+        area_width  -= SLIDER_OFFSET;
+        area_height -= SLIDER_OFFSET;
+
         AW_pos dim;
-        if (bottom() > area_height) { // our world doesn't fit vertically in our window
-            dim = bottom()-area_height; // calc dimension of bottom folding line
+        if (bottom() > area_height) {   // our world doesn't fit vertically in our window
+            dim = bottom()-area_height; // calc dimension of both horizontal folding lines
+            scroll_top->set_dimension(min(dim, scroll_top->get_dimension()));
             scroll_bottom->set_dimension(max(0, int(dim - scroll_top->get_dimension())));
         }
         else {
@@ -497,10 +505,12 @@ public:
             scroll_top->set_dimension(0);
         }
 
-        scroll_bottom->set_pos(world.bottom()-dim);
+        e4_assert(dim == (scroll_top->get_dimension()+scroll_bottom->get_dimension()));
+        scroll_bottom->set_pos(world.bottom()-dim+SLIDER_OFFSET);
 
-        if (right()>area_width) { // our world doesn't fit horizontally in our window =>
-            dim = right()-area_width; // calc dimension of right folding line
+        if (right()>area_width) {     // our world doesn't fit horizontally in our window
+            dim = right()-area_width; // calc dimension of both vertical folding lines
+            scroll_left->set_dimension(min(dim, scroll_left->get_dimension()));
             scroll_right->set_dimension(max(0, int(dim - scroll_left->get_dimension())));
         }
         else {
@@ -509,7 +519,8 @@ public:
             scroll_left->set_dimension(0);
         }
 
-        scroll_right->set_pos(world.right()-dim);
+        e4_assert(dim == (scroll_left->get_dimension()+scroll_right->get_dimension()));
+        scroll_right->set_pos(world.right()-dim+SLIDER_OFFSET);
 
         folding_dimensions_calculated = true;
     }
@@ -535,7 +546,6 @@ public:
 
         init_folding_lines();
     }
-
 };
 
 class ED4_list_elem : virtual Noncopyable {
@@ -615,7 +625,7 @@ enum ED4_CursorType {
 
 };
 
-extern int ED4_update_global_cursor_awars_allowed;
+extern bool ED4_update_global_cursor_awars_allowed; // update selected species/SAI/cursor position
 
 struct ED4_TerminalPredicate {
     virtual ~ED4_TerminalPredicate() {}
@@ -702,6 +712,9 @@ public:
 
 class ED4_window : public ED4_foldable, virtual ED4_WinContextFree { // derived from Noncopyable
     ED4_window(const ED4_window&); // copy-constructor not allowed
+
+    void set_scrollbar_indents();
+
 public:
     AW_window              *aww;   // Points to Window
     ED4_window             *next;
@@ -732,10 +745,32 @@ public:
     void announce_deletion(ED4_base *object) { cursor.announce_deletion(object); }
     
     // functions concerned the scrolled area
-    ED4_returncode      update_scrolled_rectangle();
-    ED4_returncode      set_scrollbar_indents();
-    ED4_returncode      scroll_rectangle(int dx, int dy);
-    ED4_returncode      set_scrolled_rectangle(ED4_base *x_link, ED4_base *y_link, ED4_base *width_link, ED4_base *height_link);
+    void update_scrolled_rectangle();
+    ED4_returncode scroll_rectangle(int dx, int dy);
+    ED4_returncode set_scrolled_rectangle(ED4_base *x_link, ED4_base *y_link, ED4_base *width_link, ED4_base *height_link);
+
+    bool scrollbars_and_scrolledRect_inSync() const {
+        // Scrolling in EDIT4 window uses redundant data
+        // - dimension of folding lines
+        // - slider positions in AW_window and ED4_window
+        // This function checks whether they are in sync.
+        
+        bool inSync                    = 
+            (scrolled_rect.top_dim()  == aww->slider_pos_vertical) &&
+            (scrolled_rect.left_dim() == aww->slider_pos_horizontal);
+
+#if defined(DEBUG)
+        if (!inSync) {
+            fputs("scrollbars not in sync with scrolled_rect:\n", stderr);
+            fprintf(stderr, "    aww->slider_pos_vertical  =%i scrolled_rect->top_dim() =%f\n", aww->slider_pos_vertical, scrolled_rect.top_dim());
+            fprintf(stderr, "    aww->slider_pos_horizontal=%i scrolled_rect->left_dim()=%f\n", aww->slider_pos_horizontal, scrolled_rect.left_dim());
+        }
+#endif
+
+        return inSync;
+    }
+
+    void check_valid_scrollbar_values() { e4_assert(scrollbars_and_scrolledRect_inSync()); }
 
     bool shows_xpos(int x) const { return x >= coords.window_left_clip_point && x <= coords.window_right_clip_point; }
     bool partly_shows(int x1, int y1, int x2, int y2) const;
@@ -1068,14 +1103,11 @@ public:
     // functions concerned with graphic output
     virtual int adjust_clipping_rectangle();     // sets scrolling area in AW_MIDDLE_AREA
     virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0) = 0;
-    virtual ED4_returncode  Resize()                                  = 0;
     virtual bool calc_bounding_box()                                  = 0;
 
     ED4_returncode  clear_background(int color=0);
 
-    // functions concerned with links in the hierarchy
-    ED4_returncode  set_links(ED4_base *width_link, ED4_base *height_link);
-    ED4_returncode  link_changed(ED4_base *link);
+    void set_links(ED4_base *width_link, ED4_base *height_link);
 
     // functions concerned with special initialization
     void set_property(ED4_properties prop) { dynamic_prop = (ED4_properties) (dynamic_prop | prop); } 
@@ -1100,17 +1132,19 @@ public:
     }
 
     // functions which refer to the object as a child, i.e. travelling down the hierarchy
-    virtual ED4_returncode  set_refresh(int clear=1)=0;
-    virtual ED4_returncode  resize_requested_by_child()=0;
-    virtual ED4_returncode  resize_requested_by_parent()=0; // @@@ name is wrong! should be resize_requested_children!
+    virtual void request_refresh(int clear=1) = 0;
+
+    inline void request_resize();
+    void request_resize_of_linked();
+    void resize_requested_by_link(ED4_base *link);
+    virtual void resize_requested_children() = 0;
 
     virtual void delete_requested_children() = 0;
     virtual void Delete()                    = 0;
-    
+
     inline void set_update();
     virtual void update_requested_children() = 0;
 
-    virtual ED4_returncode  calc_size_requested_by_parent()=0;
     virtual ED4_returncode  move_requested_by_parent(ED4_move_info *mi)=0;
     virtual ED4_returncode  event_sent_by_parent(AW_event *event, AW_window *aww);
     virtual ED4_returncode  move_requested_by_child(ED4_move_info *moveinfo)=0;
@@ -1257,23 +1291,23 @@ public:
 
     // functions concerned with graphics
     virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0);
-    virtual ED4_returncode  Resize();
     virtual bool calc_bounding_box();
 
     ED4_returncode distribute_children();
 
     // top-down functions, means travelling down the hierarchy
-    virtual ED4_returncode  event_sent_by_parent(AW_event *event, AW_window *aww);
-    virtual ED4_returncode  set_refresh(int clear=1);
-    ED4_returncode          clear_refresh();
-    virtual ED4_returncode  resize_requested_by_parent();
+    virtual ED4_returncode event_sent_by_parent(AW_event *event, AW_window *aww);
+
+    virtual void request_refresh(int clear=1);
+    ED4_returncode clear_refresh();
+
+    virtual void resize_requested_children();
 
     virtual void update_requested_children();
 
     virtual void delete_requested_children();
     virtual void Delete();
 
-    virtual ED4_returncode  calc_size_requested_by_parent();
     virtual ED4_returncode  move_requested_by_parent(ED4_move_info *mi);
 
     void create_consensus(ED4_abstract_group_manager *upper_group_manager, arb_progress *progress);
@@ -1289,7 +1323,7 @@ public:
 
      // bottom-up functions
     virtual ED4_returncode  move_requested_by_child(ED4_move_info *moveinfo);
-    virtual ED4_returncode  resize_requested_by_child();
+    inline void resize_requested_by_child();
     virtual ED4_returncode  refresh_requested_by_child();
     void delete_requested_by_child();
     void update_requested_by_child();
@@ -1327,8 +1361,8 @@ public:
     ED4_terminal *get_first_terminal(int start_index=0) const;
     ED4_terminal *get_last_terminal(int start_index=-1) const;
 
-    ED4_returncode hide_children();
-    ED4_returncode unhide_children();
+    void hide_children();
+    void unhide_children();
 
     bool is_hidden() const {
         if (flag.hidden) return true;
@@ -1359,19 +1393,17 @@ public:
 
     // functions concerning graphic output
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0) = 0;
-    virtual ED4_returncode Resize();
     virtual ED4_returncode draw() = 0;
 
     virtual int  adjust_clipping_rectangle();
     virtual bool calc_bounding_box();
-    virtual ED4_returncode  calc_size_requested_by_parent();
 
     ED4_returncode draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text = NULL, int cursor_y=-1);
 
     // functions which concern the object as a child
-    virtual ED4_returncode set_refresh(int clear=1);
-    virtual ED4_returncode resize_requested_by_child();
-    virtual ED4_returncode resize_requested_by_parent();
+    virtual void request_refresh(int clear=1);
+
+    virtual void resize_requested_children();
 
     virtual void update_requested_children();
     virtual void delete_requested_children();
@@ -1433,7 +1465,7 @@ class ED4_WinContext {
     ED4_window *ed4w;
     AW_device  *device;
 
-    bool have_context() const { return ed4w; }
+    bool is_set() const { return ed4w; }
     void init(ED4_window *ew) {
         e4_assert(ew);
         ed4w   = ew;
@@ -1441,7 +1473,7 @@ class ED4_WinContext {
     }
 
     void warn_missing_context() const;
-    void expect_context() const { if (!have_context()) warn_missing_context(); }
+    void expect_context() const { if (!is_set()) warn_missing_context(); }
 
 protected:
     ED4_WinContext() : ed4w(0), device(0) {}
@@ -1455,7 +1487,7 @@ public:
     ED4_window *get_ed4w() const { expect_context(); return ed4w; }
 
     static const ED4_WinContext& get_current_context() { return current_context; }
-    static bool dont_have_global_context() { return !current_context.have_context(); }
+    static bool have_context() { return current_context.is_set(); }
 };
 
 // accessors for current context (see also ED4_WinContextFree)
@@ -1467,7 +1499,8 @@ inline ED4_cursor& current_cursor() { return current_ed4w()->cursor; }
 class ED4_root : virtual Noncopyable {
     void ED4_ROOT() const { e4_assert(0); } // avoid ED4_root-members use global ED4_ROOT
 
-    ED4_returncode refresh_window_simple(int redraw);
+    ED4_returncode refresh_window_simple(bool redraw);
+    void handle_update_requests(bool& redraw);
 
     ED4_window *most_recently_used_window;
 
@@ -1503,12 +1536,14 @@ public:
     long                     protstruct_len;        // protein structure summary
     ed_key                  *edk;
     ED4_Edit_String         *edit_string;
-    int                      column_stat_activated;
-    int                      column_stat_initialized;
-    int                      visualizeSAI;
-    int                      visualizeSAI_allSpecies;
-    int                      temp_gc;
-    AW_font_group            font_group;
+
+    bool column_stat_activated;
+    bool column_stat_initialized;
+    bool visualizeSAI;
+    bool visualizeSAI_allSpecies;
+
+    int temp_gc;
+    AW_font_group font_group;
 
     void announce_useraction_in(AW_window *aww);
     ED4_window *get_most_recently_used_window() const { return most_recently_used_window; }
@@ -1525,12 +1560,17 @@ public:
     void copy_window_struct(ED4_window *source,   ED4_window *destination);
 
     // functions concerned with global refresh and resize
-    ED4_returncode resize_all();
+    void resize_all();
 
-    ED4_returncode refresh_window(int redraw);
-    ED4_returncode refresh_all_windows(int redraw);
+    ED4_returncode special_window_refresh();
+    ED4_returncode refresh_all_windows(bool redraw);
 
-    inline void announce_deletion(ED4_base *object); // before deleting an object, use this to announce 
+    void request_refresh_for_all_terminals();
+    void request_refresh_for_specific_terminals(ED4_level lev);
+    void request_refresh_for_consensus_terminals();
+    void request_refresh_for_sequence_terminals();
+    
+    inline void announce_deletion(ED4_base *object); // before deleting an object, use this to announce
 
     // functions concerned with list of selected objects
     ED4_returncode add_to_selected(ED4_terminal *object);
@@ -1561,7 +1601,7 @@ class ED4_MostRecentWinContext : virtual Noncopyable {
     ED4_LocalWinContext *most_recent;
 public:
     ED4_MostRecentWinContext() : most_recent(0) {
-        if (ED4_WinContext::dont_have_global_context()) {
+        if (!ED4_WinContext::have_context()) {
             most_recent = new ED4_LocalWinContext(ED4_ROOT->get_most_recently_used_window());
         }
     }
@@ -1604,7 +1644,7 @@ public:
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
-    virtual ED4_returncode resize_requested_by_parent();
+    virtual void resize_requested_children();
     
     void clear_whole_background();
 };
@@ -1653,19 +1693,22 @@ public:
     ED4_species_manager *get_consensus_manager() const; // returns the consensus-manager or 0
 
     // functions concerned with selection
-    int         get_no_of_selected_species();
-    int         get_no_of_species();
+    int get_no_of_selected_species();
+    int get_no_of_species();
 
     void update_group_id();
 
-    void        invalidate_species_counters();
-    int         has_valid_counters() const      { return species!=-1 && selected_species!=-1; }
+    void invalidate_species_counters();
+    int  has_valid_counters() const { return species != -1 && selected_species!=-1; }
+    bool all_are_selected() const { e4_assert(has_valid_counters()); return species == selected_species; }
 
-    void        select_all_species();
-    void        deselect_all_species();
-    void        invert_selection_of_all_species();
-    void        select_marked_species(int select);
-    void        mark_selected_species(int mark);
+    void select_all_species();
+    void deselect_all_species();
+    void invert_selection_of_all_species();
+    void select_marked_species(int select);
+    void mark_selected_species(int mark);
+
+    void toggle_selected_species();
 };
 
 class ED4_abstract_group_manager : public ED4_manager {
@@ -1796,7 +1839,7 @@ public:
     ED4_remap *remap() { return &my_remap; }
 
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
-    virtual ED4_returncode resize_requested_by_parent();
+    virtual void resize_requested_children();
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_abstract_group_manager);
 };
@@ -2128,12 +2171,22 @@ public:
 // ----------------------------------------------
 //      inlines which need complete classdefs
 
-inline void ED4_base::set_update() {
+inline void ED4_base::set_update() { // @@@ rename into request_update
     if (!update_info.update_requested) {
         update_info.update_requested = 1;
         if (parent) parent->update_requested_by_child();
     }
 }
+
+inline void ED4_base::request_resize() {
+    update_info.set_resize(1);
+    if (parent) parent->resize_requested_by_child();
+}
+
+void ED4_manager::resize_requested_by_child() { 
+    if (!update_info.resize) request_resize();
+}
+
 
 inline bool ED4_terminal::setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfoldGroups, ED4_CursorJumpType jump_type) {
     ED4_species_manager *sm = get_parent(ED4_L_SPECIES)->to_species_manager();
@@ -2175,17 +2228,13 @@ extern      ST_ML *st_ml;
 
 void ED4_with_all_edit_windows(void (*cb)(ED4_window *));
 
-void ED4_expose_cb(AW_window *aww, AW_CL cd1, AW_CL cd2);
-void ED4_expose_all_windows();
-
-void        ED4_calc_terminal_extentions();
+void ED4_expose_recalculations();
+void ED4_calc_terminal_extentions();
 
 void        ED4_input_cb            (AW_window *aww, AW_CL cd1, AW_CL cd2);
-void        ED4_resize_cb           (AW_window *aww, AW_CL cd1, AW_CL cd2);
 
 void ED4_remote_event(AW_event *faked_event);
 
-void        ED4_gc_is_modified_cb(AW_window *aww, AW_CL cd1, AW_CL cd2);
 void        ED4_quit(AW_window *aww, AW_CL cd1, AW_CL cd2);
 
 void        ED4_motion_cb           (AW_window *aww, AW_CL cd1, AW_CL cd2);
@@ -2197,8 +2246,10 @@ void        ED4_no_dangerous_modes      ();
 void        group_species_cb        (AW_window *aww, AW_CL cd1, AW_CL cd2);
 AW_window   *ED4_create_group_species_by_field_window(AW_root *aw_root);
 
-void        ED4_timer           (AW_root   *ar,  AW_CL cd1, AW_CL cd2);
-void        ED4_timer_refresh       ();
+void ED4_trigger_instant_refresh();
+void ED4_request_relayout();
+void ED4_request_full_refresh();
+void ED4_request_full_instant_refresh();
 
 ARB_ERROR   update_terminal_extension(ED4_base *this_object);
 
@@ -2217,7 +2268,6 @@ ARB_ERROR rebuild_consensus(ED4_base *object);
 void ED4_exit() __ATTR__NORETURN;
 
 void        ED4_quit_editor         (AW_window *aww, AW_CL cd1, AW_CL cd2);                 // Be Careful: Is this the last window?
-void        ED4_refresh_window      (AW_window *aww);
 
 void        ED4_store_curpos        (AW_window *aww, AW_CL cd1, AW_CL cd2);
 void        ED4_restore_curpos      (AW_window *aww, AW_CL cd1, AW_CL cd2);

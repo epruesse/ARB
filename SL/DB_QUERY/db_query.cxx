@@ -25,6 +25,7 @@
 
 #include <arb_strbuf.h>
 #include <arb_sort.h>
+#include <arb_str.h>
 
 #include <list>
 #include <string>
@@ -271,13 +272,6 @@ struct hits_sort_params {
     QUERY_RESULT_ORDER  order[MAX_CRITERIA];
 };
 
-inline int strNULLcmp(const char *str1, const char *str2) {
-    return
-        str1
-        ? (str2 ? strcmp(str1, str2) : -1)
-        : (str2 ? 1 : 0);
-}
-
 static int compare_hits(const void *cl_item1, const void *cl_item2, void *cl_param) {
     hits_sort_params *param = static_cast<hits_sort_params*>(cl_param);
 
@@ -301,7 +295,7 @@ static int compare_hits(const void *cl_item1, const void *cl_item2, void *cl_par
                 char *field1 = GBT_read_as_string(gb_item1, param->first_key);
                 char *field2 = GBT_read_as_string(gb_item2, param->first_key);
 
-                cmp = strNULLcmp(field1, field2);
+                cmp = ARB_strNULLcmp(field1, field2);
 
                 free(field2);
                 free(field1);
@@ -315,7 +309,7 @@ static int compare_hits(const void *cl_item1, const void *cl_item2, void *cl_par
                     char *pid1 = selector.generate_item_id(query->gb_main, gb_parent1);
                     char *pid2 = selector.generate_item_id(query->gb_main, gb_parent2);
 
-                    cmp = strNULLcmp(pid1, pid2);
+                    cmp = ARB_strNULLcmp(pid1, pid2);
 
                     free(pid2);
                     free(pid1);
@@ -338,7 +332,7 @@ static int compare_hits(const void *cl_item1, const void *cl_item2, void *cl_par
                 const char *id2   = GBT_read_char_pntr(gb_item2, selector.id_field);
                 const char *info1 = reinterpret_cast<const char *>(GBS_read_hash(query->hit_description, id1));
                 const char *info2 = reinterpret_cast<const char *>(GBS_read_hash(query->hit_description, id2));
-                cmp = strNULLcmp(info1, info2);
+                cmp = ARB_strNULLcmp(info1, info2);
                 break;
             }
             case QUERY_SORT_REVERSE: {
@@ -2887,3 +2881,24 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
     return query;
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+void TEST_nullcmp() {
+    const char *whatever = "bla";
+    TEST_ASSERT_EQUAL(ARB_strNULLcmp(NULL, NULL), 0);
+    TEST_ASSERT_EQUAL(ARB_strNULLcmp(whatever, whatever), 0);
+    TEST_ASSERT_EQUAL(ARB_strNULLcmp("a", "b"), -1);
+
+    // document uncommon behavior: NULL is bigger than any other text!
+    TEST_ASSERT_EQUAL(ARB_strNULLcmp(whatever, NULL), -1);
+    TEST_ASSERT_EQUAL(ARB_strNULLcmp(NULL, whatever), 1);
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
