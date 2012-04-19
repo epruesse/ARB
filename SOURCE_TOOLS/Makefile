@@ -18,7 +18,7 @@ mainwrapper: $(OBJECTS)
 # --------------------------------------------------------------------------------
 
 clean:
-		rm -f *.stamp valgrind2grep.lst postcompile.sav $(OBJECTS)
+		rm -f stamp.* valgrind2grep.lst postcompile.sav $(OBJECTS)
 
 valgrind_update:
 		./arb_valgrind update

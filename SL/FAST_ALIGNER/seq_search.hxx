@@ -97,6 +97,7 @@ class CompactedSequence : virtual Noncopyable { // compacts a string (gaps remov
     }
 
     int no_of_gaps_before(int cPos) const {
+        // returns -1 if 'cPos' is no legal compressed position
         int leftMostGap;
         if (cPos>0) {
             leftMostGap = expdPosition(cPos-1)+1;
@@ -107,6 +108,7 @@ class CompactedSequence : virtual Noncopyable { // compacts a string (gaps remov
         return expdPosition(cPos)-leftMostGap;
     }
     int no_of_gaps_after(int cPos) const {
+        // returns -1 if 'cPos' is no legal compressed position
         int rightMostGap;
         if (cPos<(length()-1)) {
             rightMostGap = expdPosition(cPos+1)-1;
@@ -202,6 +204,13 @@ public:
         }
         return res;
     }
+
+#if defined(ASSERTION_USED)
+    bool may_refer_to_same_part_as(const CompactedSubSequence& other) const {
+        return length() == other.length() &&
+            strcmp(text(), other.text()) == 0;
+    }
+#endif
 };
 
 class SequencePosition {

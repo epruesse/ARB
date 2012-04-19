@@ -976,14 +976,14 @@ public:
 };
 static NN_GlobalData NN_GLOBAL;
 
-static TargetRange get_nn_range_from_awars(AW_root *aw_root) {
+static PosRange get_nn_range_from_awars(AW_root *aw_root) {
     int start = get_and_fix_range_from_awar(aw_root->awar(AWAR_NN_RANGE_START));
     int end   = get_and_fix_range_from_awar(aw_root->awar(AWAR_NN_RANGE_END));
 
-    return TargetRange(start, end);
+    return PosRange(start, end);
 }
 
-inline char *read_sequence_region(GBDATA *gb_data, const TargetRange& range) {
+inline char *read_sequence_region(GBDATA *gb_data, const PosRange& range) {
     return range.dup_corresponding_part(GB_read_char_pntr(gb_data), GB_read_count(gb_data));
 }
 
@@ -1034,17 +1034,16 @@ static void awtc_nn_search_all_listed(AW_window *aww) {
         FF_complement        compl_mode  = static_cast<FF_complement>(aw_root->awar(AWAR_NN_COMPLEMENT)->read_int());
         RelativeScoreScaling rel_scaling = static_cast<RelativeScoreScaling>(aw_root->awar(AWAR_NN_REL_SCALING)->read_int());
 
-        TargetRange org_range = get_nn_range_from_awars(aw_root);
+        PosRange org_range = get_nn_range_from_awars(aw_root);
 
         for (GBDATA *gb_species = GBT_first_species(gb_main);
              !error && gb_species;
              gb_species = GBT_next_species(gb_species))
         {
             if (!IS_QUERIED(gb_species, query)) continue;
-
             GBDATA *gb_data = GBT_read_sequence(gb_species, ali_name);
             if (gb_data) {
-                TargetRange      range    = org_range; // modified by read_sequence_region
+                PosRange         range    = org_range; // modified by read_sequence_region
                 char            *sequence = read_sequence_region(gb_data, range);
                 PT_FamilyFinder  ff(gb_main, pts, oligo_len, mismatches, fast_mode, rel_matches, rel_scaling);
 
@@ -1121,12 +1120,12 @@ static void awtc_mark_hits(AW_window *) {
 }
 
 static void awtc_nn_search(AW_window*) {
-    AW_window   *aww      = NN_GLOBAL.get_aww();
-    AW_root     *aw_root  = aww->get_root();
-    GBDATA      *gb_main  = NN_GLOBAL.get_gb_main();
-    GB_ERROR     error    = 0;
-    TargetRange  range    = get_nn_range_from_awars(aw_root);
-    char        *sequence = 0;
+    AW_window *aww      = NN_GLOBAL.get_aww();
+    AW_root   *aw_root  = aww->get_root();
+    GBDATA    *gb_main  = NN_GLOBAL.get_gb_main();
+    GB_ERROR   error    = 0;
+    PosRange   range    = get_nn_range_from_awars(aw_root);
+    char      *sequence = 0;
     {
         GB_transaction  ta(gb_main);
 

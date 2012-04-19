@@ -20,25 +20,6 @@
 
 #include <climits>
 
-// --------------------
-//      TargetRange
-
-void TargetRange::copy_corresponding_part(char *dest, const char *source, size_t source_len) const {
-    // dest and source may overlap
-
-    ff_assert(source_len == strlen(source));
-
-    int size   = length(source_len);
-    memmove(dest, source+first_pos(), size);
-    dest[size] = 0;
-}
-
-char *TargetRange::dup_corresponding_part(const char *source, size_t source_len) const {
-    char *dup = (char*)malloc(length(source_len)+1);
-    copy_corresponding_part(dup, source, source_len);
-    return dup;
-}
-
 // -------------------
 //      FamilyList
 
@@ -187,9 +168,8 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
     char     *compressed_sequence = GB_command_interpreter(gb_main, sequence, "|keep(acgtunACGTUN)", 0, 0);
     GB_ERROR  error               = NULL;
 
-    if (!compressed_sequence) {
-        error = GB_await_error();
-    }
+    if      (!compressed_sequence)    error = GB_await_error();
+    else if (!compressed_sequence[0]) error = "No data in sequence(-region)";
     else {
         bytestring bs;
         bs.data = compressed_sequence;
@@ -201,6 +181,8 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
          * first member is big enough
          */
 
+        ff_assert(!range.is_empty());
+         
         // create and init family finder object
         T_PT_FAMILYFINDER ffinder;
         if (aisc_create(link, PT_LOCS, locs,
@@ -213,8 +195,8 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
                         FAMILYFINDER_SORT_MAX,        long(max_results),        // speed up family sorting (only sort retrieved results)
                         FAMILYFINDER_MIN_SCORE,       min_score,                // limit hits by score
                         FAMILYFINDER_COMPLEMENT,      long(compl_mode),         // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement (1 hardcoded in PT-Server till July 2008)
-                        FAMILYFINDER_RANGE_STARTPOS,  long(range.get_start()),
-                        FAMILYFINDER_RANGE_ENDPOS,    long(range.get_end()),
+                        FAMILYFINDER_RANGE_STARTPOS,  long(range.start()),
+                        FAMILYFINDER_RANGE_ENDPOS,    long(range.is_limited() ? range.end() : -1),
                         FAMILYFINDER_FIND_FAMILY,     &bs,                      // RPC (has to be last parameter!)
                         NULL))
         {
@@ -281,9 +263,12 @@ GB_ERROR PT_FamilyFinder::searchFamily(const char *sequence, FF_complement compl
     //
     // When using restrict_2_region(), only pass the corresponding part via 'sequence' (not the full alignment)
 
-    GB_ERROR error = open(GBS_ptserver_tag(server_id));
-    if (!error) error = retrieve_family(sequence, compl_mode, max_results, min_score);
-    close();
+    GB_ERROR error = range.is_empty() ? "Specified range is empty" : NULL;
+    if (!error) {
+        error             = open(GBS_ptserver_tag(server_id));
+        if (!error) error = retrieve_family(sequence, compl_mode, max_results, min_score);
+        close();
+    }
     return error;
 }
 
@@ -374,7 +359,7 @@ public:
         
         const char *sequence;
         if (partial) {
-            ff.restrict_2_region(TargetRange(39, 91)); // alignment range of bases 30-69 of sequence of 'LgtLytic'
+            ff.restrict_2_region(PosRange(39, 91)); // alignment range of bases 30-69 of sequence of 'LgtLytic'
             sequence = "UCUAGCUUGCUAGACGGGUGGCGAG" "GGUAACCGUAGGGGA"; // bases 30-54 of sequence of 'LgtLytic' + 15 bases from 'DcdNodos' (outside region)
         }
         else {
@@ -449,38 +434,7 @@ void TEST_SLOW_PT_FamilyFinder() {
     test.scaling         = RSS_SOURCE;   TEST_ASSERT_RELATIVES(test, "LgtLytic/18/56.25000,VblVulni/5/15.62500,VbhChole/4/12.50000,DcdNodos/4/12.50000");
     test                 = ______RESET;
 
-
     GB_close(gb_main);
-}
-
-void TEST_TargetRange() {
-    char          dest[100];
-    const char   *source     = "0123456789";
-    const size_t  source_len = strlen(source);
-
-    TargetRange(-1, 2).copy_corresponding_part(dest, source, source_len);
-    TEST_ASSERT_EQUAL(dest, "012");
-
-    TargetRange(2, 5).copy_corresponding_part(dest, source, source_len);
-    TEST_ASSERT_EQUAL(dest, "2345");
-
-    TargetRange(7, -1).copy_corresponding_part(dest, source, source_len);
-    TEST_ASSERT_EQUAL(dest, "789");
-
-    TargetRange(9, 1000).copy_corresponding_part(dest, source, source_len);
-    TEST_ASSERT_EQUAL(dest, "9");
-
-    TargetRange(900, 1000).copy_corresponding_part(dest, source, source_len);
-    TEST_ASSERT_EQUAL(dest, "");
-
-    // make sure dest and source may overlap:
-    strcpy(dest, source);
-    TargetRange(-1, -1).copy_corresponding_part(dest+1, dest, source_len);
-    TEST_ASSERT_EQUAL(dest+1, source);
-
-    strcpy(dest, source);
-    TargetRange(-1, -1).copy_corresponding_part(dest, dest+1, source_len-1);
-    TEST_ASSERT_EQUAL(dest, source+1);
 }
 
 #endif

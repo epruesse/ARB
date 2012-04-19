@@ -841,44 +841,37 @@ int ED4_multi_species_manager::count_all_children_and_set_group_id() // counts a
     return counter;
 }
 
-void ED4_abstract_sequence_terminal::calc_intervall_displayed_in_rectangle(AW_screen_area *rect, long *left_index, long *right_index) { // rect contains win-coords
-    AW_pos x, y;
-    int    length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
+PosRange ED4_abstract_sequence_terminal::pixel2index(PosRange pixel_range) {
+    int length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
 
+    int left_index  = int((pixel_range.start()-CHARACTEROFFSET)/length_of_char);
+    int right_index = int((pixel_range.end()  -CHARACTEROFFSET)/length_of_char) + 1;
+
+    return PosRange(left_index, std::min(right_index, MAXSEQUENCECHARACTERLENGTH-1));
+}
+
+PosRange ED4_abstract_sequence_terminal::calc_intervall_displayed_in_rectangle(AW_screen_area *rect) { // rect contains win-coords
+    AW_pos x, y;
     calc_world_coords(&x, &y);
     ED4_ROOT->world_to_win_coords(ED4_ROOT->get_ed4w()->aww, &x, &y);
 
-    int rel_left_x =  (int)(rect->l-x);
-    int rel_right_x = (int)(rect->r-x);
+    int rel_left_x  = int(rect->l-x);
+    int rel_right_x = int(rect->r-x);
 
-    *left_index  = (int)((rel_left_x-CHARACTEROFFSET)/length_of_char);
-    *right_index = (int)((rel_right_x-CHARACTEROFFSET)/length_of_char) + 1;
-
-    if (*right_index > MAXSEQUENCECHARACTERLENGTH) *right_index = MAXSEQUENCECHARACTERLENGTH;
-    if (*left_index < 0) *left_index = 0;
+    return pixel2index(PosRange(rel_left_x, rel_right_x)); // changed behavior: clip at MAXSEQUENCECHARACTERLENGTH-1 (was MAXSEQUENCECHARACTERLENGTH)
 }
 
-void ED4_abstract_sequence_terminal::calc_update_intervall(long *left_index, long *right_index)
-{
+PosRange ED4_abstract_sequence_terminal::calc_update_intervall() {
     AW_pos x, y;
-    int    length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
-
     calc_world_coords(&x, &y);
-    AW_device *dev = ED4_ROOT->get_device();
-    ED4_coords *coords = &ED4_ROOT->get_ed4w()->coords;
 
-    const AW_screen_area& clip_rect = dev->get_cliprect();
+    const AW_screen_area& clip_rect = ED4_ROOT->get_device()->get_cliprect();
 
-    int rel_left_x =  (int)((clip_rect.l-x)  // Abstand vom linken Terminalrand zum Anfang des Clipping rectangles
-                            + (coords->window_left_clip_point-x)); // Verschiebung der Sequenz (durch Scrollen) == slider Position
+    int scroll_shift = ED4_ROOT->get_ed4w()->coords.window_left_clip_point-x; // Verschiebung der Sequenz (durch Scrollen) == slider Position
+    int rel_left_x   = int(clip_rect.l - x + scroll_shift);                   // Abstand vom linken Terminalrand zum Anfang des Clipping rectangles + scroll_shift
+    int rel_right_x  = int(clip_rect.r - x + scroll_shift);
 
-    int rel_right_x = (int)((clip_rect.r-x) + (coords->window_left_clip_point-x));
-
-    *left_index  = (int)((rel_left_x-CHARACTEROFFSET)/length_of_char);
-    *right_index = (int)((rel_right_x-CHARACTEROFFSET)/length_of_char) + 1;
-
-    if (*right_index >= MAXSEQUENCECHARACTERLENGTH) *right_index = MAXSEQUENCECHARACTERLENGTH-1;
-    if (*left_index < 0) *left_index                             = 0;
+    return pixel2index(PosRange(rel_left_x, rel_right_x));
 }
 
 void ED4_manager::create_consensus(ED4_abstract_group_manager *upper_group_manager, arb_progress *progress) {

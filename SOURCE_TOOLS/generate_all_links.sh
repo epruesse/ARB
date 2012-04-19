@@ -234,6 +234,7 @@ symlink_file ../CORE/arb_handlers.h INCLUDE/arb_handlers.h &&
 symlink_file ../CORE/arb_progress.h INCLUDE/arb_progress.h &&
 symlink_file ../CORE/FileBuffer.h INCLUDE/FileBuffer.h &&
 symlink_file ../CORE/FileContent.h INCLUDE/FileContent.h &&
+symlink_file ../CORE/pos_range.h INCLUDE/pos_range.h &&
 symlink_file ../DIST/dist.hxx INCLUDE/dist.hxx &&
 symlink_file ../EDIT4/ed4_extern.hxx INCLUDE/ed4_extern.hxx &&
 symlink_file ../EDIT4/ed4_plugins.hxx INCLUDE/ed4_plugins.hxx &&

@@ -14,21 +14,16 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
-#ifndef ATTRIBUTES_H
-#include <attributes.h>
-#endif
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
-#ifndef _GLIBCXX_ALGORITHM
-#include <algorithm>
-#endif
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
 #ifndef PT_GLOBAL_DEFS_H
 #include <PT_global_defs.h>
 #endif
+#ifndef POS_RANGE_H
+#include <pos_range.h>
+#endif
+
 
 #define ff_assert(bed) arb_assert(bed)
 
@@ -51,41 +46,6 @@ public:
 
 struct aisc_com;
 
-class TargetRange { // @@@ move somewhere else, if needed independently from FamilyFinder
-    int start; // -1 == unlimited
-    int end;   // -1 == unlimited
-
-public:
-    TargetRange() : start(-1), end(-1) {}
-    TargetRange(int start_, int end_) : start(start_), end(end_) {
-        ff_assert(start >= -1);
-        ff_assert(end >= -1);
-    }
-
-    int get_start() const { return start; }
-    int get_end() const { return end; }
-
-    int first_pos() const  { return start == -1 ? 0 : start; }
-    int last_pos(const int global_len) const {
-        const int max_global_pos = global_len-1;
-        return end == -1 ? max_global_pos : std::min(end, max_global_pos);
-    }
-
-    int length(size_t global_len) const {
-        int len = last_pos(global_len)-first_pos()+1;
-        return len<0 ? 0 : len;
-    }
-
-    bool is_restricted() const { return start != -1 || end != -1; }
-
-    void copy_corresponding_part(char *dest, const char *source, size_t source_len) const;
-    char *dup_corresponding_part(const char *source, size_t source_len) const __ATTR__USERESULT;
-
-    bool operator == (const TargetRange& other) const { return start == other.start && end == other.end; }
-    bool operator != (const TargetRange& other) const { return !(*this == other); }
-};
-
-
 class FamilyFinder : virtual Noncopyable {
     bool                 rel_matches;
     RelativeScoreScaling scaling;
@@ -100,21 +60,21 @@ protected:
 #endif 
     long real_hits;
 
-    TargetRange range;
+    PosRange range;
 
 public:
     FamilyFinder(bool rel_matches_, RelativeScoreScaling scaling_);
     virtual ~FamilyFinder();
 
-    void restrict_2_region(const TargetRange& range_) {
+    void restrict_2_region(const PosRange& range_) {
         // Restrict oligo search to 'range_'
         // Only oligos which are completely inside that region are used for calculating relationship.
         // Has to be called before calling searchFamily.
         range = range_;
     }
 
-    void unrestrict() { range = TargetRange(-1, -1); }
-    const TargetRange& get_TargetRange() const { return range; }
+    void unrestrict() { range = PosRange(-1, -1); }
+    const PosRange& get_TargetRange() const { return range; }
 
     virtual GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results, double min_score) = 0;
 

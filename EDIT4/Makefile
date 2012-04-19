@@ -66,6 +66,7 @@ ED4_base.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_base.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_base.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_base.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_base.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_base.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -105,6 +106,7 @@ ED4_block.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_block.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_block.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_block.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
+ED4_block.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_block.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_block.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -149,6 +151,7 @@ ED4_cursor.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_cursor.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/test_global.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/test_helpers.h
@@ -185,6 +188,7 @@ ED4_dots.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_dots.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -211,6 +215,7 @@ ED4_dump.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_dump.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -251,6 +256,7 @@ ED4_edit_string.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
+ED4_edit_string.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -273,6 +279,7 @@ ED4_list.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_list.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_list.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_list.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_list.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_list.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_list.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -328,6 +335,7 @@ ED4_main.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_main.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_main.o: $(ARBHOME)/INCLUDE/gde.hxx
+ED4_main.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_main.o: $(ARBHOME)/INCLUDE/st_window.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -367,6 +375,7 @@ ED4_manager.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_manager.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -395,6 +404,7 @@ ED4_members.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_members.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_members.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_members.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_members.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -424,6 +434,7 @@ ED4_mini_classes.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/iupac.h
+ED4_mini_classes.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/test_global.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/test_unit.h
@@ -485,6 +496,7 @@ ED4_nds.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_nds.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -536,6 +548,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/items.h
+ED4_no_class.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/st_window.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -559,6 +572,7 @@ ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_objspec.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_objspec.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_objspec.o: $(ARBHOME)/INCLUDE/static_assert.h
 ED4_objspec.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -591,6 +605,7 @@ ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_plugins.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/rna3d_extern.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/secedit_extern.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -628,6 +643,7 @@ ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -668,6 +684,7 @@ ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/test_global.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/Translate.hxx
@@ -729,6 +746,7 @@ ED4_root.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_root.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_root.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/gde.hxx
+ED4_root.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_root.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_root.o: $(ARBHOME)/INCLUDE/st_window.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/svn_revision.h
@@ -772,6 +790,7 @@ ED4_search.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_search.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_search.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_search.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
+ED4_search.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_search.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_search.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -811,6 +830,7 @@ ED4_terminal.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_terminal.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/st_window.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -857,6 +877,7 @@ ED4_text_terminals.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_text_terminals.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/st_window.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -894,6 +915,7 @@ ED4_tools.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/iupac.h
+ED4_tools.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -935,6 +957,7 @@ ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -962,6 +985,7 @@ ED4_window.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_window.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_window.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_window.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_window.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_window.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -995,6 +1019,7 @@ EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/downcast.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/dupstr.h
+EDB_root_bact.o: $(ARBHOME)/INCLUDE/pos_range.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/smartptr.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -1030,6 +1055,7 @@ graph_aligner_gui.o: $(ARBHOME)/INCLUDE/client.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/client_types.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/dupstr.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/pos_range.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/PT_com.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/servercntrl.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/smartptr.h

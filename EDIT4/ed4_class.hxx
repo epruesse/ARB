@@ -4,6 +4,9 @@
 #ifndef AW_FONT_GROUP_HXX
 #include <aw_font_group.hxx>
 #endif
+#ifndef POS_RANGE_H
+#include <pos_range.h>
+#endif
 
 #define e4_assert(bed) arb_assert(bed)
 
@@ -553,24 +556,6 @@ public:
 // # define TEST_BASES_TABLE
 #endif
 
-class UpdateRange {
-    int start_pos;
-    int end_pos;
-
-public:
-    UpdateRange() : start_pos(0), end_pos(-1) {}
-    UpdateRange(int from, int to) : start_pos(from), end_pos(to) {}
-
-    int start() const { return start_pos; }
-    int end() const {
-        e4_assert(end_pos != -1);
-        return end_pos;
-    }
-
-    bool is_full_range() const { return start_pos == 0 && end_pos == -1; }
-    bool is_restricted() const { return !is_full_range(); }
-};
-
 #define SHORT_TABLE_ELEM_SIZE 1
 #define SHORT_TABLE_MAX_VALUE 0xff
 #define LONG_TABLE_ELEM_SIZE  4
@@ -659,7 +644,7 @@ public:
 
     void add(const ED4_bases_table& other, int start, int end);
     void sub(const ED4_bases_table& other, int start, int end);
-    void sub_and_add(const ED4_bases_table& Sub, const ED4_bases_table& Add, UpdateRange range);
+    void sub_and_add(const ED4_bases_table& Sub, const ED4_bases_table& Add, PosRange range);
 
     void change_table_length(int new_length, int default_entry);
 
@@ -745,21 +730,21 @@ public:
     ED4_bases_table&        table(int c)        { e4_assert(c>0 && c<MAXCHARTABLE); return linear_table(char_to_index_tab[c]); }
     const ED4_bases_table&  table(int c) const  { e4_assert(c>0 && c<MAXCHARTABLE); return linear_table(char_to_index_tab[c]); }
 
-    const UpdateRange *changed_range(const ED4_char_table& other) const;
-    static const UpdateRange *changed_range(const char *string1, const char *string2, int min_len);
+    const PosRange *changed_range(const ED4_char_table& other) const;
+    static const PosRange *changed_range(const char *string1, const char *string2, int min_len);
 
     void add(const ED4_char_table& other);
     void sub(const ED4_char_table& other);
     void sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add);
-    void sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add, UpdateRange range);
+    void sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add, PosRange range);
 
     void add(const char *string, int len);
     void sub(const char *string, int len);
-    void sub_and_add(const char *old_string, const char *new_string, UpdateRange range);
+    void sub_and_add(const char *old_string, const char *new_string, PosRange range);
 
-    void build_consensus_string_to(char *buffer, int left_idx, int right_index) const;
-    char *build_consensus_string(int left_idx, int right_index) const;
-    char *build_consensus_string() const { return build_consensus_string(0, -1); }
+    void build_consensus_string_to(char *buffer, ExplicitRange range) const;
+    char *build_consensus_string(PosRange range) const;
+    char *build_consensus_string() const { return build_consensus_string(PosRange::whole()); }
 
     void change_table_length(int new_length);
 };
@@ -1077,12 +1062,12 @@ public:
 
     virtual ED4_returncode  check_in_bases(ED4_base *added_base);
     virtual ED4_returncode  check_out_bases(ED4_base *subbed_base);
-    virtual ED4_returncode  update_bases(const ED4_base *old_base, const ED4_base *new_base, UpdateRange range = UpdateRange());
-    virtual ED4_returncode  update_bases(const char *old_seq, int old_len, const char *new_seq, int new_len, UpdateRange range = UpdateRange());
-    virtual ED4_returncode  update_bases(const char *old_seq, int old_len, const ED4_base *new_base, UpdateRange range = UpdateRange());
-    virtual ED4_returncode  update_bases(const ED4_char_table *old_table, const ED4_char_table *new_table, UpdateRange range = UpdateRange());
+    virtual ED4_returncode  update_bases(const ED4_base *old_base, const ED4_base *new_base, PosRange range = PosRange::whole());
+    virtual ED4_returncode  update_bases(const char *old_seq, int old_len, const char *new_seq, int new_len, PosRange range = PosRange::whole());
+    virtual ED4_returncode  update_bases(const char *old_seq, int old_len, const ED4_base *new_base, PosRange range = PosRange::whole());
+    virtual ED4_returncode  update_bases(const ED4_char_table *old_table, const ED4_char_table *new_table, PosRange range = PosRange::whole());
 
-    virtual ED4_returncode  update_bases_and_rebuild_consensi(const char *old_seq, int old_len, ED4_base *species, ED4_update_flag update_flag, UpdateRange range = UpdateRange());
+    virtual ED4_returncode  update_bases_and_rebuild_consensi(const char *old_seq, int old_len, ED4_base *species, ED4_update_flag update_flag, PosRange range = PosRange::whole());
 
     void            generate_id_for_groups();
 
@@ -1449,7 +1434,6 @@ class ED4_remap : virtual Noncopyable {
     int changed;            // remap-table changed at last compile
     int update_needed;          // remapping should be recompiled
 
-    long clip(long pos, long min_pos, long max_pos) const { return pos<min_pos ? min_pos : (pos<=max_pos ? pos : max_pos); }
     inline void set_sequence_to_screen(int pos, int newVal);
 
     ED4_remap(const ED4_remap&); // copy-constructor not allowed
@@ -1461,8 +1445,20 @@ public:
 
     int screen_to_sequence(int screen_pos) const;
     int sequence_to_screen(int sequence_pos) const;
+
     int clipped_sequence_to_screen(int sequence_pos) const;
     int sequence_to_screen_clipped(int sequence_pos) const;
+
+    PosRange sequence_to_screen(PosRange range) const {
+        e4_assert(!range.is_empty());
+        return PosRange(sequence_to_screen(range.start()), sequence_to_screen(range.end()));
+    }
+    PosRange screen_to_sequence(PosRange range) const {
+        e4_assert(!range.is_empty());
+        if (range.is_unlimited()) return PosRange::from(screen_to_sequence(range.start()));
+        return PosRange(screen_to_sequence(range.start()), screen_to_sequence(range.end()));
+    }
+
     size_t get_max_screen_pos() const { return screen_len-1; }
 
     ED4_remap_mode get_mode() const { return mode; }
@@ -1492,10 +1488,7 @@ public:
 
     int is_visible(int position) const { return sequence_to_screen(position)>=0; }
 
-    void clip_screen_range(long *left_screen_pos, long *right_screen_pos) const {
-        *right_screen_pos = clip(*right_screen_pos, 0, screen_len-1);
-        *left_screen_pos = clip(*left_screen_pos, 0, screen_len-1);
-    }
+    ExplicitRange clip_screen_range(PosRange screen_range) const { return ExplicitRange(screen_range, screen_len-1); }
 };
 
 class ED4_root_group_manager : public ED4_abstract_group_manager
@@ -1643,7 +1636,9 @@ public:
 };
 
 class ED4_abstract_sequence_terminal : public ED4_text_terminal { // derived from a Noncopyable
-    
+
+    PosRange pixel2index(PosRange pixel_range);
+
 public:
     char *species_name; // @@@ wrong place (may be member of ED4_sequence_manager)
 
@@ -1657,8 +1652,8 @@ public:
     ED4_species_name_terminal *corresponding_species_name_terminal() const {
         return get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
     }
-    void calc_intervall_displayed_in_rectangle(AW_screen_area *area_rect, long *left_index, long *right_index);
-    void calc_update_intervall(long *left_index, long *right_index);
+    PosRange calc_intervall_displayed_in_rectangle(AW_screen_area *area_rect);
+    PosRange calc_update_intervall();
 
     DECLARE_DUMP_FOR_BASECLASS(ED4_abstract_sequence_terminal, ED4_text_terminal);
 };
@@ -1670,6 +1665,7 @@ class ED4_orf_terminal : public ED4_abstract_sequence_terminal { // derived from
     //       handled by the standard "ED4_sequence_terminal" class.
 
     char *aaSequence;
+    size_t aaSeqLen;
     char *aaColor;
     int   aaStartPos;
     int   aaStrandType;
@@ -1683,9 +1679,9 @@ public:
     virtual GB_alignment_type GetAliType();
 
     void SET_aaSeqFlags (int startPos, int strandType) { aaStartPos = startPos; aaStrandType = strandType; }
-    void SET_aaSequence(const char *aaSeq) { freedup(aaSequence, aaSeq); }
+    void SET_aaSequence(const char *aaSeq) { freedup(aaSequence, aaSeq); aaSeqLen = strlen(aaSequence); }
     void SET_aaColor(const char *aaSeq) { freedup(aaColor, aaSeq); }
-    
+
     int GET_aaStartPos () { return aaStartPos; }
     int GET_aaStrandType () { return aaStrandType; }
 
@@ -1740,7 +1736,7 @@ public:
 
     ED4_sequence_terminal *corresponding_sequence_terminal() const { return get_parent(ED4_L_MULTI_SEQUENCE)->search_spec_child_rek(ED4_L_SEQUENCE_STRING)->to_sequence_terminal(); }
 
-    GB_CSTR build_probe_match_string(int start_pos, int end_pos) const;
+    GB_CSTR build_probe_match_string(PosRange range) const;
 
     ED4_columnStat_terminal(GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_columnStat_terminal();

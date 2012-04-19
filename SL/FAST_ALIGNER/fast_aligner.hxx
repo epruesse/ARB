@@ -18,11 +18,14 @@
 #ifndef ARB_ERROR_H
 #include <arb_error.h>
 #endif
+#ifndef POS_RANGE_H
+#include <pos_range.h>
+#endif
 
 #define INTEGRATED_ALIGNERS_TITLE "Integrated Aligners"
 
-typedef char*   (*Aligner_get_consensus_func)(const char *species_name, int start_pos, int end_pos);
-typedef int     (*Aligner_get_selected_range)(int *firstColumn, int *lastColumn);
+typedef char*   (*Aligner_get_consensus_func)(const char *species_name, PosRange range);
+typedef bool    (*Aligner_get_selected_range)(PosRange& range);
 typedef GBDATA* (*Aligner_get_first_selected_species)(int *total_no_of_selected_species);
 typedef GBDATA* (*Aligner_get_next_selected_species)(void);
 

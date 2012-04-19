@@ -341,35 +341,35 @@ struct ED4_update_info // if you add new elements, please ensure to initialize t
 struct ED4_coords
 {
     long top_area_x,
-    top_area_y,
-    top_area_height,
+        top_area_y,
+        top_area_height,
 
-    middle_area_x,
-    middle_area_y,
+        middle_area_x,
+        middle_area_y,
 
-    window_width,               // of whole window (top and middle area and ... )
-    window_height,              // of whole window (top and middle area and ... )
+        window_width,               // of whole window (top and middle area and ... )
+        window_height,              // of whole window (top and middle area and ... )
 
-    window_upper_clip_point,        // absolute coordinate of upper visible clipping point in middle area
-    window_lower_clip_point,        // absolute coordinate of lower visible clipping point in middle area
-    window_left_clip_point,         // absolute coordinate of left  visible clipping point in top and middle area
-    window_right_clip_point;        // absolute coordinate of right visible clipping point in top and middle area
+        window_upper_clip_point,        // absolute coordinate of upper visible clipping point in middle area
+        window_lower_clip_point,        // absolute coordinate of lower visible clipping point in middle area
+        window_left_clip_point,         // absolute coordinate of left  visible clipping point in top and middle area
+        window_right_clip_point;        // absolute coordinate of right visible clipping point in top and middle area
 
     void clear() {
-    top_area_x = 0;
-    top_area_y = 0;
-    top_area_height = 0;
+        top_area_x = 0;
+        top_area_y = 0;
+        top_area_height = 0;
 
-    middle_area_x = 0;
-    middle_area_y = 0;
+        middle_area_x = 0;
+        middle_area_y = 0;
 
-    window_width = 0;
-    window_height = 0;
+        window_width = 0;
+        window_height = 0;
 
-    window_upper_clip_point = 0;
-    window_lower_clip_point = 0;
-    window_left_clip_point = 0;
-    window_right_clip_point = 0;
+        window_upper_clip_point = 0;
+        window_lower_clip_point = 0;
+        window_left_clip_point = 0;
+        window_right_clip_point = 0;
     }
 };
 
