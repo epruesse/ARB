@@ -1207,9 +1207,7 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
 ED4_returncode ED4_manager::clear_refresh() {
     e4_assert(update_info.refresh);
 
-    int i;
-
-    for (i=0; i<children->members(); i++) {
+    for (int i=0; i<children->members(); i++) {
         ED4_base *child = children->member(i);
 
         if (child->update_info.refresh) {
@@ -1239,13 +1237,18 @@ ED4_returncode ED4_manager::resize_requested_by_child() {
     return ED4_R_OK;
 }
 
+void ED4_manager::update_requested_by_child() {
+    if (!update_info.update_requested) {
+        if (parent) parent->update_requested_by_child();
+        update_info.update_requested = 1;
+    }
+}
 void ED4_manager::delete_requested_by_child() {
     if (!update_info.delete_requested) {
         if (parent) parent->delete_requested_by_child();
         update_info.delete_requested = 1;
     }
 }
-
 void ED4_terminal::delete_requested_children() {
     e4_assert(update_info.delete_requested);
     e4_assert(tflag.deleted);
@@ -1254,6 +1257,41 @@ void ED4_terminal::delete_requested_children() {
 
     unlink_from_parent();
     delete this;
+}
+
+void ED4_manager::update_requested_children() {
+    e4_assert(update_info.update_requested);
+
+    for (int i=0; i<children->members(); i++) {
+        ED4_base *child = children->member(i);
+        if (child->update_info.update_requested) {
+            child->update_requested_children();
+        }
+    }
+
+    update_info.update_requested = 0;
+}
+
+void ED4_multi_species_manager::update_requested_children() {
+    e4_assert(update_info.update_requested);
+    ED4_manager::update_requested_children();
+    update_species_counters();
+    update_group_id();
+
+    ED4_base *group_base = get_parent(ED4_L_GROUP);
+    if (group_base) {
+        e4_assert(group_base->is_group_manager());
+        e4_assert(!group_base->is_root_group_manager());
+
+        ED4_group_manager *group_man    = parent->to_group_manager();
+        ED4_base          *bracket_base = group_man->get_defined_level(ED4_L_BRACKET);
+
+        if (bracket_base && bracket_base->is_bracket_terminal()) {
+            ED4_bracket_terminal *bracket_term = bracket_base->to_bracket_terminal();
+            bracket_term->set_refresh();
+            bracket_term->parent->refresh_requested_by_child();
+        }
+    }
 }
 
 void ED4_manager::delete_requested_children() {
@@ -1274,6 +1312,12 @@ void ED4_manager::delete_requested_children() {
         unlink_from_parent();
         delete this;
     }
+}
+
+void ED4_multi_species_manager::delete_requested_children() {
+    e4_assert(update_info.delete_requested);
+    invalidate_species_counters();
+    ED4_manager::delete_requested_children();
 }
 
 void ED4_terminal::Delete() {
@@ -1411,26 +1455,10 @@ void ED4_multi_species_manager::invalidate_species_counters() {
         species          = -1;
         selected_species = -1;
 
-        set_refresh();
-        parent->refresh_requested_by_child();
-
-        e4_assert(!parent->is_root_group_manager());
-        if (parent->is_group_manager()) {
-            ED4_group_manager *group_man = parent->to_group_manager();
-            ED4_base          *base      = group_man->get_defined_level(ED4_L_BRACKET);
-
-            if (base && base->is_bracket_terminal()) {
-                ED4_bracket_terminal *bracket_term = base->to_bracket_terminal();
-
-                bracket_term->set_refresh();
-                bracket_term->parent->refresh_requested_by_child();
-            }
-        }
-
         ED4_base *pms = get_parent(ED4_L_MULTI_SPECIES);
-        if (pms) {
-            pms->to_multi_species_manager()->invalidate_species_counters();
-        }
+        if (pms) pms->to_multi_species_manager()->invalidate_species_counters();
+        
+        update_requested_by_child();
     }
 }
 
@@ -1449,13 +1477,13 @@ void ED4_multi_species_manager::set_species_counters(int no_of_species, int no_o
     if (species!=no_of_species || selected_species!=no_of_selected) {
         int species_diff  = no_of_species-species;
         int selected_diff = no_of_selected-selected_species;
-        int quickSet      = 1;
 
+        int quickSet = 1;
         if (species==-1 || selected_species==-1) {
             quickSet = 0;
         }
 
-        species = no_of_species;
+        species          = no_of_species;
         selected_species = no_of_selected;
 
         ED4_base *gm = get_parent(ED4_L_GROUP);
@@ -1469,9 +1497,7 @@ void ED4_multi_species_manager::set_species_counters(int no_of_species, int no_o
         if (ms) {
             ED4_multi_species_manager *parent_multi_species_man = ms->to_multi_species_manager();
 
-            if (!quickSet) {
-                parent_multi_species_man->invalidate_species_counters();
-            }
+            if (!quickSet) parent_multi_species_man->invalidate_species_counters();
 
             if (parent_multi_species_man->has_valid_counters()) {
                 parent_multi_species_man->set_species_counters(parent_multi_species_man->species+species_diff,
@@ -1832,6 +1858,16 @@ void ED4_species_manager::remove_all_callbacks() {
     }
 }
 
+static ARB_ERROR removeAllCallbacks(ED4_base *base) {
+    if (base->is_species_manager()) {
+        base->to_species_manager()->remove_all_callbacks();
+    }
+    return NULL;
+}
+
+void ED4_root::remove_all_callbacks() {
+    root_group_man->route_down_hierarchy(removeAllCallbacks).expect_no_error();
+}
 
 // ------------------------
 //      group managers

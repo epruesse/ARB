@@ -118,9 +118,14 @@ ED4_window *ED4_window::get_matching_ed4w(AW_window *aw) {
 
 
 
-ED4_returncode ED4_foldable::delete_folding_line(ED4_folding_line */*fl*/, ED4_properties /*prop*/) {
-    e4_assert(0); // not implement - cause it's unused
-    return ED4_R_OK;
+void ED4_foldable::delete_folding_line(ED4_folding_line *fl, ED4_properties prop) {
+    if (prop == ED4_P_HORIZONTAL) {
+        horizontal_fl = horizontal_fl->delete_member(fl);
+    }
+    else {
+        e4_assert(prop == ED4_P_VERTICAL);
+        vertical_fl = vertical_fl->delete_member(fl);
+    }
 }
 
 AW::Rectangle ED4_scrolled_rectangle::get_world_rect() const {

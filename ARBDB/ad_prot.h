@@ -209,7 +209,6 @@ GBDATA *GB_search(GBDATA *gbd, const char *fieldpath, GB_TYPES create);
 GBDATA *GB_searchOrCreate_string(GBDATA *gb_container, const char *fieldpath, const char *default_value);
 GBDATA *GB_searchOrCreate_int(GBDATA *gb_container, const char *fieldpath, long default_value);
 GBDATA *GB_searchOrCreate_float(GBDATA *gb_container, const char *fieldpath, double default_value);
-GBDATA *GB_search_last_son(GBDATA *gbd);
 long GB_number_of_marked_subentries(GBDATA *gbd);
 GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring);
 GBDATA *GB_following_marked(GBDATA *gbd, const char *keystring, size_t skip_over);

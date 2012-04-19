@@ -311,6 +311,16 @@ public:
         ptr = other ? other->insert(this) : this;
     }
 
+    ED4_folding_line *delete_member(ED4_folding_line *fl) {
+        ED4_folding_line *result = this;
+        if (this == fl) {
+            result = next;
+            next   = NULL;
+            delete this;
+        }
+        return result;
+    }
+
     AW_pos get_dimension() const { return dimension; }
     const ED4_folding_line *get_next() const { return next; }
 
@@ -362,7 +372,7 @@ public:
     void win_to_world_coords(AW_pos *x, AW_pos *y);
 
     ED4_folding_line *insert_folding_line(AW_pos pos, AW_pos dimension, ED4_properties prop);
-    ED4_returncode  delete_folding_line(ED4_folding_line *fl, ED4_properties prop);
+    void              delete_folding_line(ED4_folding_line *fl, ED4_properties prop);
 };
 
 
@@ -607,7 +617,10 @@ enum ED4_CursorType {
 
 extern int ED4_update_global_cursor_awars_allowed;
 
-typedef bool (*ED4_TerminalTest)(ED4_base *terminal, int seqPos);
+struct ED4_TerminalPredicate {
+    virtual ~ED4_TerminalPredicate() {}
+    virtual bool fulfilled_by(const ED4_terminal *) const = 0;
+};
 
 class ED4_WinContextFree { // denies usage of the following functions in classes derived from this
     AW_device   *current_device();
@@ -628,8 +641,8 @@ class ED4_cursor : virtual Noncopyable, virtual ED4_WinContextFree {
 
     ED4_returncode  draw_cursor(AW_pos x, AW_pos y);
     ED4_returncode  delete_cursor(AW_pos del_mark,  ED4_base *target_terminal);
-    ED4_terminal *get_upper_lower_cursor_pos(ED4_manager *starting_point, ED4_cursor_move cursor_move, AW_pos current_y, bool isScreen, ED4_TerminalTest terminal_is_appropriate, int seq_pos);
-    void          updateAwars();
+
+    void updateAwars();
 
     ED4_cursor(const ED4_cursor&); // copy-constructor not allowed
 
@@ -639,6 +652,7 @@ public:
     ED4_base *owner_of_cursor;
 
     bool is_partly_visible() const;
+    bool is_completely_visible() const;
 
     void changeType(ED4_CursorType typ);
     ED4_CursorType  getType() const { return ctype; }
@@ -723,6 +737,10 @@ public:
     ED4_returncode      scroll_rectangle(int dx, int dy);
     ED4_returncode      set_scrolled_rectangle(ED4_base *x_link, ED4_base *y_link, ED4_base *width_link, ED4_base *height_link);
 
+    bool shows_xpos(int x) const { return x >= coords.window_left_clip_point && x <= coords.window_right_clip_point; }
+    bool partly_shows(int x1, int y1, int x2, int y2) const;
+    bool completely_shows(int x1, int y1, int x2, int y2) const;
+    
     void update_window_coords();
 
     AW_device *get_device() const { return aww->get_device(AW_MIDDLE_AREA); }
@@ -1007,10 +1025,10 @@ class ED4_base : virtual Noncopyable {
 
     // cache world coordinates:
 
-    static int currTimestamp;
-    AW_pos     lastXpos;
-    AW_pos     lastYpos;
-    int        timestamp;
+    static int     currTimestamp;
+    mutable AW_pos lastXpos;
+    mutable AW_pos lastYpos;
+    mutable int    timestamp;
 
 public:
     const ED4_objspec& spec;           // contains information about Objectproperties
@@ -1055,23 +1073,20 @@ public:
 
     ED4_returncode  clear_background(int color=0);
 
-    ED4_returncode clear_whole_background();       // clear AW_MIDDLE_AREA
-    bool is_visible(ED4_window *in_ed4w, AW_pos x, AW_pos y, ED4_direction direction);
-    bool is_visible(ED4_window *in_ed4w, AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, ED4_direction direction);
-
     // functions concerned with links in the hierarchy
     ED4_returncode  set_links(ED4_base *width_link, ED4_base *height_link);
     ED4_returncode  link_changed(ED4_base *link);
 
     // functions concerned with special initialization
-    void set_properties  (ED4_properties prop);
-
+    void set_property(ED4_properties prop) { dynamic_prop = (ED4_properties) (dynamic_prop | prop); } 
+    void clr_property(ED4_properties prop) { dynamic_prop = (ED4_properties) (dynamic_prop & ~prop); }
+    
     // functions concerned with coordinate transformation
 
-    void update_world_coords_cache();
+    void update_world_coords_cache() const;
     void calc_rel_coords(AW_pos *x, AW_pos *y);
 
-    void calc_world_coords(AW_pos *x, AW_pos *y) {
+    void calc_world_coords(AW_pos *x, AW_pos *y) const {
         bool cache_up_to_date = timestamp == currTimestamp;
         if (!cache_up_to_date) {
             update_world_coords_cache();
@@ -1085,17 +1100,21 @@ public:
     }
 
     // functions which refer to the object as a child, i.e. travelling down the hierarchy
-    virtual ED4_returncode  set_refresh (int clear=1)=0;
+    virtual ED4_returncode  set_refresh(int clear=1)=0;
     virtual ED4_returncode  resize_requested_by_child()=0;
-    virtual ED4_returncode  resize_requested_by_parent()=0;
+    virtual ED4_returncode  resize_requested_by_parent()=0; // @@@ name is wrong! should be resize_requested_children!
 
     virtual void delete_requested_children() = 0;
     virtual void Delete()                    = 0;
+    
+    inline void set_update();
+    virtual void update_requested_children() = 0;
 
     virtual ED4_returncode  calc_size_requested_by_parent()=0;
     virtual ED4_returncode  move_requested_by_parent(ED4_move_info *mi)=0;
     virtual ED4_returncode  event_sent_by_parent(AW_event *event, AW_window *aww);
     virtual ED4_returncode  move_requested_by_child(ED4_move_info *moveinfo)=0;
+
 
     virtual ED4_returncode  handle_move(ED4_move_info *moveinfo) = 0;
 
@@ -1124,6 +1143,8 @@ public:
     virtual const char *resolve_pointer_to_char_pntr(int *str_len = 0) const;
 
     ED4_group_manager  *is_in_folded_group() const;
+    virtual bool is_hidden() const = 0;
+
     char *get_name_of_species();                      // go from terminal to name of species
 
     // functions which refer to the selected object(s), i.e. across the hierarchy
@@ -1192,7 +1213,7 @@ public:
     Class *ED4_base::toName() {                                                 \
         return const_cast<Class*>(const_cast<const ED4_base*>(this)->toName()); \
     }
-    
+
 #define E4B_DECL_CASTOP(name) E4B_DECL_CASTOP_helper(concat(ED4_,name), concat(to_,name), concat(is_,name))
 #define E4B_IMPL_CASTOP(name) E4B_IMPL_CASTOP_helper(concat(ED4_,name), concat(to_,name), concat(is_,name))
 
@@ -1247,6 +1268,8 @@ public:
     ED4_returncode          clear_refresh();
     virtual ED4_returncode  resize_requested_by_parent();
 
+    virtual void update_requested_children();
+
     virtual void delete_requested_children();
     virtual void Delete();
 
@@ -1269,6 +1292,7 @@ public:
     virtual ED4_returncode  resize_requested_by_child();
     virtual ED4_returncode  refresh_requested_by_child();
     void delete_requested_by_child();
+    void update_requested_by_child();
     
     ED4_base *get_defined_level(ED4_level lev) const;
 
@@ -1303,17 +1327,18 @@ public:
     ED4_terminal *get_first_terminal(int start_index=0) const;
     ED4_terminal *get_last_terminal(int start_index=-1) const;
 
-    // general folding functions
-    ED4_returncode  unfold_group(char *bracketID_to_unfold);
-    ED4_returncode  fold_group(char *bracketID_to_fold);
-
     ED4_returncode hide_children();
     ED4_returncode unhide_children();
+
+    bool is_hidden() const {
+        if (flag.hidden) return true;
+        if (!parent) return false;
+        return parent->is_hidden();
+    }
 
     ED4_manager(const ED4_objspec& spec_, const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_manager();
 };
-
 
 class ED4_terminal : public ED4_base { // derived from a Noncopyable
 public:
@@ -1348,6 +1373,7 @@ public:
     virtual ED4_returncode resize_requested_by_child();
     virtual ED4_returncode resize_requested_by_parent();
 
+    virtual void update_requested_children();
     virtual void delete_requested_children();
     virtual void Delete();
 
@@ -1370,6 +1396,8 @@ public:
 
     void scroll_into_view(ED4_window *ed4w);
     inline bool setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfoldGroups, ED4_CursorJumpType jump_type);
+
+    bool is_hidden() const { return parent && parent->is_hidden(); }
 
     ED4_terminal(const ED4_objspec& spec_, GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_terminal();
@@ -1514,6 +1542,8 @@ public:
 
     ED4_index pixel2pos(AW_pos click_x);
 
+    void remove_all_callbacks();
+    
     ED4_root();
     ~ED4_root();
 };
@@ -1575,6 +1605,8 @@ public:
 
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode resize_requested_by_parent();
+    
+    void clear_whole_background();
 };
 
 class ED4_device_manager : public ED4_manager
@@ -1583,7 +1615,6 @@ class ED4_device_manager : public ED4_manager
 public:
     ED4_device_manager  (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
-    void generate_id_for_groups();
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 };
 
@@ -1614,8 +1645,10 @@ public:
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 
+    virtual void update_requested_children();
+    virtual void delete_requested_children();
+
     int           count_visible_children(); // is called by a multi_species_manager
-    int           count_all_children_and_set_group_id(); // counts all children of a parent
     ED4_terminal *get_consensus_terminal(); // returns the consensus-terminal or 0
     ED4_species_manager *get_consensus_manager() const; // returns the consensus-manager or 0
 
@@ -1623,7 +1656,7 @@ public:
     int         get_no_of_selected_species();
     int         get_no_of_species();
 
-    void generate_id_for_groups();
+    void update_group_id();
 
     void        invalidate_species_counters();
     int         has_valid_counters() const      { return species!=-1 && selected_species!=-1; }
@@ -1742,7 +1775,7 @@ public:
     GB_ERROR compile(ED4_root_group_manager *gm);
     int was_changed() const { return changed; }     // mapping changed by last compile ?
 
-    int is_visible(int position) const { return sequence_to_screen(position)>=0; }
+    int is_shown(int position) const { return sequence_to_screen(position)>=0; }
 
     ExplicitRange clip_screen_range(PosRange screen_range) const { return ExplicitRange(screen_range, screen_len-1); }
 };
@@ -1869,6 +1902,9 @@ class ED4_bracket_terminal : public ED4_terminal
 public:
     virtual ED4_returncode draw();
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
+
+    void fold();
+    void unfold();
 
     ED4_bracket_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
@@ -2092,6 +2128,13 @@ public:
 // ----------------------------------------------
 //      inlines which need complete classdefs
 
+inline void ED4_base::set_update() {
+    if (!update_info.update_requested) {
+        update_info.update_requested = 1;
+        if (parent) parent->update_requested_by_child();
+    }
+}
+
 inline bool ED4_terminal::setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfoldGroups, ED4_CursorJumpType jump_type) {
     ED4_species_manager *sm = get_parent(ED4_L_SPECIES)->to_species_manager();
     return sm->setCursorTo(cursor, seq_pos, unfoldGroups, jump_type);
@@ -2211,8 +2254,6 @@ void ED4_selected_SAI_changed_cb     (AW_root *aw_root);
 void ED4_init_notFoundMessage();
 void ED4_finish_and_show_notFoundMessage();
 
-extern int  ED4_elements_in_species_container; // # of elements in species container
-
 ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_name);
 ED4_multi_species_manager *ED4_new_species_multi_species_manager();     // returns manager into which new species should be inserted
 
@@ -2221,7 +2262,6 @@ void ED4_compression_changed_cb(AW_root *awr);
 // functions passed to external c-functions (i.e. as callbacks) have to be declared as 'extern "C"'
 
 extern "C" {
-    void    ED4_species_container_changed_cb(GBDATA *gbd, int *cl, GB_CB_TYPE gbtype);
     void    ED4_alignment_length_changed(GBDATA *gb_alignment_len, int *dummy, GB_CB_TYPE gbtype);
 }
 
@@ -2231,6 +2271,4 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access);
 #else
 #error ed4_class included twice
 #endif
-
-
 

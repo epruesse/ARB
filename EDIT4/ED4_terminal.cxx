@@ -267,8 +267,8 @@ ED4_returncode ED4_terminal::remove_callbacks()                     // removes c
 {
     if (get_species_pointer()) {
         set_species_pointer(0);
-        tflag.deleted = 1; // @@@ why ? 
-        dynamic_prop = (ED4_properties) (dynamic_prop & ~ED4_P_CURSOR_ALLOWED);
+        tflag.deleted = 1; // @@@ why ?
+        clr_property(ED4_P_CURSOR_ALLOWED);
 
         set_refresh();
         parent->refresh_requested_by_child();
@@ -469,10 +469,10 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                     }
                     else if (is_bracket_terminal()) { // fold/unfold group
                         if (dynamic_prop & ED4_P_IS_FOLDED) {
-                            ED4_ROOT->main_manager->unfold_group(id);
+                            to_bracket_terminal()->unfold();
                         }
                         else {
-                            ED4_ROOT->main_manager->fold_group(id);
+                            to_bracket_terminal()->fold();
                         }
                         ED4_ROOT->refresh_all_windows(1);
                     }
@@ -632,7 +632,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                                     ED4_base *member = device_manager->children->member(i);
 
                                     if (member->is_area_manager()) {
-                                        member->to_area_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->generate_id_for_groups();
+                                        member->to_area_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->update_requested_by_child();
                                     }
                                 }
                             }
@@ -673,6 +673,8 @@ ED4_returncode  ED4_terminal::calc_size_requested_by_parent()
 {
     return ED4_R_OK;
 }
+
+void ED4_terminal::update_requested_children() {}
 
 bool ED4_terminal::calc_bounding_box() {
     // calculates the smallest rectangle containing the object.
@@ -764,9 +766,11 @@ ED4_terminal::ED4_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, 
 
 ED4_terminal::~ED4_terminal() {
     delete selection_info;
-    ED4_cursor& cursor = current_cursor();
-    if (this == cursor.owner_of_cursor) {
-        cursor.init();
+    for (ED4_window *window = ED4_ROOT->first_window; window; window=window->next) {
+        ED4_cursor& cursor = window->cursor;
+        if (this == cursor.owner_of_cursor) {
+            cursor.init();
+        }
     }
 }
 

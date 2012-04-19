@@ -561,9 +561,7 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
             }
             // @@@ what if nf->fstruct is 0 now ?
         }
-#ifndef DEVEL_JB
-        aw_assert(nf->fname);
-#endif
+        // aw_assert(nf->fname); // fails e.g. for screen-medium-r, but font nevertheless seems to be usable
     } // scalable
 
     bool font_found = true;

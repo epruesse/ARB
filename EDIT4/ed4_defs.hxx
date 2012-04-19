@@ -234,7 +234,6 @@ enum ED4_direction {
     ED4_D_VERTICAL,
     ED4_D_HORIZONTAL,
     ED4_D_ALL_DIRECTION,
-    ED4_D_VERTICAL_ALL
 };
 
 
@@ -323,6 +322,7 @@ struct ED4_update_info // if you add new elements, please ensure to initialize t
     unsigned int refresh_horizontal_scrolling : 1;
     unsigned int refresh_vertical_scrolling : 1;
     unsigned int delete_requested : 1;
+    unsigned int update_requested : 1;
 
     void set_clear_at_refresh(int value) {
         clear_at_refresh = value;
