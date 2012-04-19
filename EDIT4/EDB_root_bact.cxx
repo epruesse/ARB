@@ -49,7 +49,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
                                         ED4_sequence_terminal      *ref_sequence_terminal,
                                         char                       *str,
                                         ED4_index                  *y,
-                                        ED4_index                   actual_local_position,
+                                        ED4_index                   curr_local_position,
                                         ED4_index                  *length_of_terminals,
                                         int                         group_depth,
                                         ED4_datamode                datamode)
@@ -100,7 +100,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
     }
 
     terminal_height = TERMINALHEIGHT;
-    local_count_position = actual_local_position;
+    local_count_position = curr_local_position;
 
     sprintf(namebuffer, "Species_Manager.%ld.%d", ED4_counter, count_too);
 
@@ -143,7 +143,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
     name_coords = seq_coords = 0;
 
     if (!(multi_species_manager->flag.hidden)) {
-        *length_of_terminals = local_count_position-actual_local_position;
+        *length_of_terminals = local_count_position-curr_local_position;
         *y += *length_of_terminals; // needed for global coordinates of manager
     }
 
@@ -167,7 +167,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
     long       string_length;
     char       namebuffer[NAME_BUFFERSIZE];
 
-    device = ED4_ROOT->first_window->aww->get_device(AW_MIDDLE_AREA);
+    device = ED4_ROOT->first_window->get_device();
 
     if (alignment_flag == ED4_A_DEFAULT) {
         gb_ali_xxx = GB_entry(gb_datamode, ED4_ROOT->alignment_name);
@@ -325,7 +325,7 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_sp
                                             char                       *str,
                                             int                        *index,
                                             ED4_index                  *y,
-                                            ED4_index                   actual_local_position,
+                                            ED4_index                   curr_local_position,
                                             ED4_index                  *length_of_terminals, // height of terminals is meant
                                             int                         group_depth,
                                             arb_progress               *progress)
@@ -341,7 +341,7 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_sp
     ED4_returncode retCode                    = ED4_R_OK;
 
     ship = (char*)GB_calloc(SHIPSIZE, sizeof(*ship));
-    local_count_position = actual_local_position;
+    local_count_position = curr_local_position;
 
     do {
         if (word == 0) { // word is needed for jump over separator
@@ -576,7 +576,7 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
     sequence_info_terminal->set_properties((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
     sequence_manager->children->append_member(sequence_info_terminal);
 
-    device = ED4_ROOT->first_window->aww->get_device(AW_MIDDLE_AREA);
+    device = ED4_ROOT->first_window->get_device();
     pixel_length = device->get_string_size(ED4_G_SEQUENCES, CONSENSUS,   0);
 
     sequence_terminal = new ED4_consensus_sequence_terminal(CONSENSUS, SEQUENCEINFOSIZE, 0, pixel_length + 10, height_terminal, sequence_manager);

@@ -308,8 +308,16 @@ static void ED4_gap_chars_changed(AW_root *root) {
     free(gap_chars);
 }
 
+void ED4_with_all_edit_windows(void (*cb)(ED4_window *)) {
+    for (ED4_window *win = ED4_ROOT->first_window; win; win = win->next) {
+        ED4_LocalWinContext uses(win);
+        cb(win);
+    }
+}
+
+static void redraw_cursor(ED4_window *win) { win->cursor.redraw(); }
 static void ED4_edit_direction_changed(AW_root * /* awr */) {
-    current_cursor().redraw();
+    ED4_with_all_edit_windows(redraw_cursor);
 }
 
 void ED4_expose_all_windows() {
@@ -546,7 +554,7 @@ int ARB_main(int argc, const char *argv[]) {
     ed4_create_all_awars(ED4_ROOT->aw_root, config_name);
 
     ED4_ROOT->st_ml = STAT_create_ST_ML(GLOBAL_gb_main);
-    ED4_ROOT->sequence_colors = new AWT_seq_colors(AW_ROOT_DEFAULT, ED4_G_SEQUENCES, ED4_refresh_window, 0, 0);
+    ED4_ROOT->sequence_colors = new AWT_seq_colors(AW_ROOT_DEFAULT, ED4_G_SEQUENCES, (AW_CB)ED4_refresh_window, 0, 0);
 
     ED4_ROOT->edk = new ed_key;
     ED4_ROOT->edk->create_awars(ED4_ROOT->aw_root);
@@ -581,6 +589,7 @@ int ARB_main(int argc, const char *argv[]) {
     
     {
         int found_config = 0;
+        ED4_LocalWinContext uses(ED4_ROOT->first_window);
 
         if (config_name)
         {
@@ -640,6 +649,7 @@ int ARB_main(int argc, const char *argv[]) {
 
     AWT_install_postcb_cb(ED4_postcbcb);
     AWT_install_cb_guards();
+    e4_assert(ED4_WinContext::dont_have_global_context()); // context shall be local
     ED4_ROOT->aw_root->main_loop(); // enter main-loop
 
     return EXIT_SUCCESS;

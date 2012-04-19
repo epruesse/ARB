@@ -244,7 +244,7 @@ GB_ERROR ED4_terminal::write_sequence(const char *seq, int seq_len)
 
     if (!err && dynamic_prop&ED4_P_CONSENSUS_RELEVANT) {
         if (old_seq) {
-            actual_timestamp = GB_read_clock(GLOBAL_gb_main);
+            curr_timestamp = GB_read_clock(GLOBAL_gb_main);
 
             get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager()
                 ->update_bases_and_rebuild_consensi(old_seq, old_seq_len, get_parent(ED4_L_SPECIES)->to_species_manager(), ED4_U_UP); // bases_check
@@ -276,73 +276,39 @@ ED4_returncode ED4_terminal::remove_callbacks()                     // removes c
     return ED4_R_OK;
 }
 
-static ARB_ERROR ed4_remove_species_manager_callbacks(ED4_base *base) {
+static ARB_ERROR ed4_remove_species_manager_callbacks(ED4_base *base) { // @@@ unused since [8286]
     if (base->is_species_manager()) {
         base->to_species_manager()->remove_all_callbacks();
     }
     return NULL;
 }
 
-ED4_returncode ED4_terminal::kill_object()
-{
-    ED4_species_manager *species_manager = get_parent(ED4_L_SPECIES)->to_species_manager();
-    ED4_manager         *parent_manager  = species_manager->parent;
-    ED4_group_manager   *group_manager   = 0;
+inline void remove_from_consensus(ED4_manager *group_or_species_man) {
+    GB_transaction ta(GLOBAL_gb_main);
+    ED4_manager *parent_manager = group_or_species_man->parent;
+    parent_manager->update_consensus(parent_manager, NULL, group_or_species_man);
+    parent_manager->rebuild_consensi(parent_manager, ED4_U_UP);
+}
 
-    if (species_manager->flag.is_consensus)                         // whole group has to be killed
-    {
-        if (parent_manager->is_multi_species_manager() && ED4_new_species_multi_species_manager()==parent_manager) {
+ED4_returncode ED4_terminal::kill_object() {
+    ED4_species_manager *species_manager = get_parent(ED4_L_SPECIES)->to_species_manager();
+
+    if (species_manager->flag.is_consensus) { // kill whole group
+        if (ED4_new_species_multi_species_manager()==species_manager->parent) {
             aw_message("This group has to exist - deleting it isn't allowed");
             return ED4_R_IMPOSSIBLE;
         }
 
-        parent_manager = species_manager;
-        e4_assert(!parent_manager->is_root_group_manager());
-        while (!parent_manager->is_group_manager()) {
-            parent_manager = parent_manager->parent;
-            e4_assert(!parent_manager->is_root_group_manager());
-        }
-        group_manager = parent_manager->to_group_manager();
-
-        parent_manager = group_manager->parent;
-        parent_manager->children->remove_member(group_manager);
-
-        GB_push_transaction (GLOBAL_gb_main);
-        parent_manager->update_consensus(parent_manager, NULL,   group_manager);
-        parent_manager->rebuild_consensi(parent_manager,   ED4_U_UP);
-        GB_pop_transaction (GLOBAL_gb_main);
-        species_manager = NULL;
+        ED4_manager *group_manager = species_manager->get_parent(ED4_L_GROUP)->to_group_manager();
+        remove_from_consensus(group_manager);
+        group_manager->Delete();
     }
-    else
-    {
-        parent_manager->children->remove_member(species_manager);
-        GB_push_transaction (GLOBAL_gb_main);
-        parent_manager->update_consensus(parent_manager,   NULL, species_manager);
-        parent_manager->rebuild_consensi(species_manager, ED4_U_UP);
-        GB_pop_transaction (GLOBAL_gb_main);
+    else { // kill single species/SAI
+        remove_from_consensus(species_manager);
+        species_manager->Delete();
     }
 
-    ED4_device_manager *device_manager = ED4_ROOT->get_device_manager();
-
-    for (int i=0; i<device_manager->children->members(); i++) { // when killing species numbers have to be recalculated
-        ED4_base *member = device_manager->children->member(i);
-
-        if (member->is_area_manager()) {
-            member->to_area_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->generate_id_for_groups();
-        }
-    }
-
-    if (species_manager) {
-        species_manager->parent = NULL;
-        species_manager->remove_all_callbacks();
-        delete species_manager;
-    }
-
-    if (group_manager) {
-        group_manager->parent = NULL;
-        group_manager->route_down_hierarchy(ed4_remove_species_manager_callbacks).expect_no_error();
-        delete group_manager;
-    }
+    ED4_ROOT->refresh_all_windows(0);
 
     return ED4_R_OK;
 }
@@ -708,23 +674,25 @@ ED4_returncode  ED4_terminal::calc_size_requested_by_parent()
     return ED4_R_OK;
 }
 
-short ED4_terminal::calc_bounding_box()
-{
-    short            bb_changed = 0;
-    ED4_list_elem   *current_list_elem;
-    ED4_base        *object;
+bool ED4_terminal::calc_bounding_box() {
+    // calculates the smallest rectangle containing the object.
+    // requests refresh and returns true if bounding box has changed.
+    
+    bool           bb_changed = false;
+    ED4_list_elem *current_list_elem;
+    ED4_base      *object;
 
     if (width_link) {
         if (extension.size[WIDTH] != width_link->extension.size[WIDTH]) {   // all bounding Boxes have the same size !!!
             extension.size[WIDTH] = width_link->extension.size[WIDTH];
-            bb_changed = 1;
+            bb_changed = true;
         }
     }
 
     if (height_link) {
         if (extension.size[HEIGHT] != height_link->extension.size[HEIGHT]) {
             extension.size[HEIGHT] = height_link->extension.size[HEIGHT];
-            bb_changed = 1;
+            bb_changed = true;
         }
     }
 
@@ -745,7 +713,7 @@ short ED4_terminal::calc_bounding_box()
         parent->refresh_requested_by_child();
     }
 
-    return (bb_changed);
+    return bb_changed;
 }
 
 ED4_returncode ED4_terminal::resize_requested_by_parent() {
@@ -790,15 +758,12 @@ ED4_terminal::ED4_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, 
 {
     memset((char*)&tflag, 0, sizeof(tflag));
     selection_info   = 0;
-    actual_timestamp = 0;
+    curr_timestamp = 0;
 }
 
 
-ED4_terminal::~ED4_terminal()
-{
-    if (selection_info) {
-        delete selection_info;
-    }
+ED4_terminal::~ED4_terminal() {
+    delete selection_info;
     ED4_cursor& cursor = current_cursor();
     if (this == cursor.owner_of_cursor) {
         cursor.init();

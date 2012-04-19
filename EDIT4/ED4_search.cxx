@@ -727,52 +727,56 @@ static void searchParamsChanged(AW_root *root, AW_CL cl_type, AW_CL cl_action)
     }
 
     if (settings[type]->get_autoJump() && (action & DO_AUTO_JUMP)) { // auto jump
-        ED4_cursor *cursor = &current_cursor();
-        bool jumped = false;
+        for (ED4_window *win = ED4_ROOT->first_window; win; win = win->next) {
+            ED4_LocalWinContext uses(win);
 
-        if (cursor->owner_of_cursor && cursor->owner_of_cursor->is_sequence_terminal()) {
-            int pos = cursor->get_sequence_pos();
-            ED4_sequence_terminal *seq_term = cursor->owner_of_cursor->to_sequence_terminal();
-            ED4_SearchResults *result = &seq_term->results();
+            ED4_cursor *cursor = &current_cursor();
+            bool        jumped = false;
 
-            result->search(seq_term);
-            ED4_SearchPosition *found = result->get_last_starting_before(type, pos+1, 0);
-            int bestPos = -1;
+            if (cursor->owner_of_cursor && cursor->owner_of_cursor->is_sequence_terminal()) {
+                int pos = cursor->get_sequence_pos();
+                ED4_sequence_terminal *seq_term = cursor->owner_of_cursor->to_sequence_terminal();
+                ED4_SearchResults *result = &seq_term->results();
 
-            if (found) {
-                bestPos = found->get_start_pos();
-            }
+                result->search(seq_term);
+                ED4_SearchPosition *found = result->get_last_starting_before(type, pos+1, 0);
+                int bestPos = -1;
 
-            if (pos>=1) {
-                found = result->get_first_starting_after(type, pos-1, 0);
                 if (found) {
-                    int next_pos = found->get_start_pos();
+                    bestPos = found->get_start_pos();
+                }
 
-                    if (abs(pos-next_pos)<abs(pos-bestPos)) {
-                        bestPos = next_pos;
+                if (pos>=1) {
+                    found = result->get_first_starting_after(type, pos-1, 0);
+                    if (found) {
+                        int next_pos = found->get_start_pos();
+
+                        if (abs(pos-next_pos)<abs(pos-bestPos)) {
+                            bestPos = next_pos;
+                        }
+                    }
+                }
+
+                if (bestPos!=-1) {
+                    if (bestPos == pos) {
+                        jumped = true; // already there
+                    }
+                    else {
+                        jumped = seq_term->setCursorTo(cursor, bestPos, 1, ED4_JUMP_KEEP_POSITION);
                     }
                 }
             }
 
-            if (bestPos!=-1) {
-                if (bestPos == pos) {
-                    jumped = true; // already there
-                }
-                else {
-                    jumped = seq_term->setCursorTo(cursor, bestPos, 1, ED4_JUMP_KEEP_POSITION);
-                }
+            if (!jumped) {
+                ED4_search_cb(0, ED4_encodeSearchDescriptor(+1, type), (AW_CL)current_ed4w());
             }
-        }
-
-        if (!jumped) {
-            ED4_search(0, ED4_encodeSearchDescriptor(+1, type));
         }
     }
 
     if (action & REFRESH_ALWAYS) {
         bool old_update                        = ED4_update_global_cursor_awars_allowed;
         ED4_update_global_cursor_awars_allowed = false;
-        ED4_refresh_window(current_aww(), 0, 0);
+        ED4_ROOT->refresh_all_windows(1);
         ED4_update_global_cursor_awars_allowed = old_update;
     }
 
@@ -1333,24 +1337,28 @@ inline void decodeSearchDescriptor(int descriptor, int *direction, ED4_SearchPos
 
 static AW_CL last_searchDescriptor = -1;
 
-GB_ERROR ED4_repeat_last_search() {
+GB_ERROR ED4_repeat_last_search(ED4_window *ed4w) {
     if (int(last_searchDescriptor)==-1) {
         return GBS_global_string("You have to search first, before you can repeat a search.");
     }
 
-    ED4_search(0, last_searchDescriptor);
+    ED4_search_cb(0, last_searchDescriptor, (AW_CL)ed4w);
     return 0;
 }
 
-void ED4_search(AW_window * /* aww */, AW_CL searchDescriptor)
-{
-    int direction;
-    ED4_SearchPositionType pattern;
-    int searchOnlyForShownPatterns;
+void ED4_search_cb(AW_window *, AW_CL searchDescriptor, AW_CL cl_ed4w) {
+    ED4_window *ed4w = (ED4_window*)cl_ed4w;
+    e4_assert(ed4w);
+
+    ED4_LocalWinContext uses(ed4w);
 
     last_searchDescriptor = searchDescriptor;
+
+    int                    direction;
+    ED4_SearchPositionType pattern;
     decodeSearchDescriptor(searchDescriptor, &direction, &pattern);
-    searchOnlyForShownPatterns = pattern==ED4_ANY_PATTERN;
+
+    int searchOnlyForShownPatterns = pattern==ED4_ANY_PATTERN;
 
     // detect position where to start searching
 
@@ -1737,10 +1745,12 @@ static void search_restore_config(AW_window *aww, const char *stored_string, AW_
 }
 
 
-AW_window *ED4_create_search_window(AW_root *root, AW_CL cl) {
-    ED4_SearchPositionType  type     = ED4_SearchPositionType(cl);
-    SearchAwarList         *awarList = &awar_list[type];
-    AW_window_simple       *aws      = new AW_window_simple;
+AW_window *ED4_create_search_window(AW_root *root, AW_CL cl_type_and_ed4w) {
+    ED4_search_type_and_ed4w *taw      = (ED4_search_type_and_ed4w*)cl_type_and_ed4w;
+    ED4_SearchPositionType    type     = taw->type;
+    ED4_window               *ed4w     = taw->ed4w;
+    SearchAwarList           *awarList = &awar_list[type];
+    AW_window_simple         *aws      = new AW_window_simple;
 
     ED4_aws_init(root, aws, "%s_search", "%s Search", ED4_SearchPositionTypeId[type]);
     aws->load_xfig("edit4/search.fig");
@@ -1762,11 +1772,11 @@ AW_window *ED4_create_search_window(AW_root *root, AW_CL cl) {
     aws->create_button("SAVE", "SAVE", "S");
 
     aws->at("next");
-    aws->callback(ED4_search, (AW_CL)ED4_encodeSearchDescriptor(+1, type));
+    aws->callback(ED4_search_cb, (AW_CL)ED4_encodeSearchDescriptor(+1, type), (AW_CL)ed4w);
     aws->create_button("SEARCH_NEXT", "#edit/next.bitmap", "N");
 
     aws->at("previous");
-    aws->callback(ED4_search, (AW_CL)ED4_encodeSearchDescriptor(-1, type));
+    aws->callback(ED4_search_cb, (AW_CL)ED4_encodeSearchDescriptor(-1, type), (AW_CL)ed4w);
     aws->create_button("SEARCH_LAST", "#edit/last.bitmap", "L");
 
     aws->at("mark");

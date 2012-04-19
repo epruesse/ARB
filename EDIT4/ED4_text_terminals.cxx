@@ -270,7 +270,7 @@ ED4_returncode ED4_orf_terminal::draw() {
         // paint background
         if ((iDisplayMode == PV_AA_CODE) || (iDisplayMode == PV_AA_BOX)) {
             AW_pos     width        = ED4_ROOT->font_group.get_width(ED4_G_HELIX);
-            const int  real_left    = index_range.start(); // @@@ inline
+            const int  real_left    = index_range.start();
             const int  real_right   = index_range.end();
             AW_pos     x2           = text_x + width*real_left;
             AW_pos     x1           = x2;

@@ -34,9 +34,12 @@
 #include <cctype>
 #include <limits.h>
 
+#include <vector>
+
+using namespace std;
 
 void ED4_calc_terminal_extentions() {
-    AW_device *device = current_device();
+    AW_device *device = ED4_ROOT->first_window->get_device(); // any device
 
     const AW_font_limits& seq_font_limits  = device->get_font_limits(ED4_G_SEQUENCES, 0);
     const AW_font_limits& seq_equal_limits = device->get_font_limits(ED4_G_SEQUENCES, '=');
@@ -120,14 +123,12 @@ static void ED4_expose_recalculations() {
         }
         screenwidth = new_screenwidth;
     }
-
-    current_ed4w()->update_scrolled_rectangle(); // @@@ do for all windows ?
 }
 
 void ED4_expose_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     static bool dummy = 0;
 
-    ED4_ROOT->use_window(aww);
+    ED4_LocalWinContext uses(aww);
 
     GB_push_transaction(GLOBAL_gb_main);
 
@@ -136,6 +137,7 @@ void ED4_expose_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     }
     else {
         ED4_expose_recalculations(); // this case is needed every time, except the first
+        current_ed4w()->update_scrolled_rectangle();
     }
 
     current_ed4w()->update_window_coords();
@@ -147,7 +149,7 @@ void ED4_expose_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
 }
 
 void ED4_resize_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    ED4_ROOT->use_window(aww);
+    ED4_LocalWinContext uses(aww);
 
     GB_push_transaction(GLOBAL_gb_main);
 
@@ -218,7 +220,7 @@ static ARB_ERROR call_edit(ED4_base *object, AW_CL cl_work_info) {
                 }
 
                 if (move_cursor) {
-                    current_cursor().jump_sequence_pos(current_aww(), new_work_info.out_seq_position, ED4_JUMP_KEEP_VISIBLE);
+                    current_cursor().jump_sequence_pos(new_work_info.out_seq_position, ED4_JUMP_KEEP_VISIBLE);
                     move_cursor = 0;
                 }
             }
@@ -227,7 +229,7 @@ static ARB_ERROR call_edit(ED4_base *object, AW_CL cl_work_info) {
     return error;
 }
 
-static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
+static void executeKeystroke(AW_event *event, int repeatCount) {
     e4_assert(repeatCount>0);
 
     if (event->keycode!=AW_KEY_NONE) {
@@ -306,7 +308,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
 
                     error = edit_string->edit(work_info);
 
-                    cursor->jump_sequence_pos(aww, work_info->out_seq_position, ED4_JUMP_KEEP_VISIBLE);
+                    cursor->jump_sequence_pos(work_info->out_seq_position, ED4_JUMP_KEEP_VISIBLE);
 
                     work_info->string = 0;
 
@@ -328,7 +330,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
                     ED4_ROOT->main_manager->Show(1, 0);         // @@@ temporary fix for worst-refresh problems
                     // ED4_ROOT->main_manager->Show(); // original version
 
-                    cursor->jump_sequence_pos(aww, work_info->out_seq_position, work_info->cursor_jump);
+                    cursor->jump_sequence_pos(work_info->out_seq_position, work_info->cursor_jump);
                 }
 
                 edit_string->finish_edit();
@@ -357,7 +359,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
 }
 
 void ED4_remote_event(AW_event *faked_event) { // keystrokes forwarded from SECEDIT
-    executeKeystroke(current_aww(), faked_event, 1);
+    executeKeystroke(faked_event, 1);
 }
 
 void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
@@ -366,7 +368,7 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
     static AW_event lastEvent;
     static int repeatCount;
 
-    ED4_ROOT->use_window(aww);
+    ED4_LocalWinContext uses(aww);
 
     aww->get_event(&event);
 
@@ -387,7 +389,7 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
                     repeatCount++;
                 }
                 else { // other key => execute now
-                    executeKeystroke(aww, &lastEvent, repeatCount);
+                    executeKeystroke(&lastEvent, repeatCount);
                     lastEvent = event;
                     repeatCount = 1;
                 }
@@ -397,13 +399,13 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
 #if defined(DARWIN) || 1
                 // sth goes wrong with OSX -> always execute keystroke
                 // Xfree 4.3 has problems as well, so repeat counting is disabled completely
-                executeKeystroke(aww, &lastEvent, repeatCount);
+                executeKeystroke(&lastEvent, repeatCount);
                 repeatCount                       = 0;
 #else
                 AW_ProcessEventType nextEventType = ED4_ROOT->aw_root->peek_key_event(aww);
 
                 if (nextEventType!=KEY_RELEASED) { // no key waiting => execute now
-                    executeKeystroke(aww, &lastEvent, repeatCount);
+                    executeKeystroke(&lastEvent, repeatCount);
                     repeatCount = 0;
                 }
 #endif
@@ -414,7 +416,7 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
             AW_ProcessEventType nextEventType = ED4_ROOT->aw_root->peek_key_event(aww);
 
             if (nextEventType!=KEY_PRESSED && repeatCount) { // no key follows => execute keystrokes (if any)
-                executeKeystroke(aww, &lastEvent, repeatCount);
+                executeKeystroke(&lastEvent, repeatCount);
                 repeatCount = 0;
             }
 
@@ -486,7 +488,7 @@ static int get_max_slider_ypos() {
 }
 
 void ED4_vertical_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    ED4_ROOT->use_window(aww);
+    ED4_LocalWinContext uses(aww);
 
     GB_push_transaction(GLOBAL_gb_main);
 
@@ -513,7 +515,7 @@ void ED4_vertical_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
 }
 
 void ED4_horizontal_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    ED4_ROOT->use_window(aww);
+    ED4_LocalWinContext uses(aww);
 
     GB_push_transaction(GLOBAL_gb_main);
 
@@ -540,7 +542,7 @@ void ED4_horizontal_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
 }
 
 void ED4_scrollbar_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    ED4_ROOT->use_window(aww);
+    ED4_LocalWinContext uses(aww);
 
     GB_push_transaction(GLOBAL_gb_main);
 
@@ -582,7 +584,7 @@ void ED4_scrollbar_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
 void ED4_motion_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
     AW_event event;
 
-    ED4_ROOT->use_window(aww);
+    ED4_LocalWinContext uses(aww);
 
     aww->get_event(&event);
 
@@ -656,18 +658,17 @@ void ED4_remote_set_cursor_cb(AW_root *awr, AW_CL /* cd1 */, AW_CL /* cd2 */)
 
     if (pos != -1) {
         ED4_cursor *cursor = &current_cursor();
-        cursor->jump_sequence_pos(current_aww(), pos, ED4_JUMP_CENTERED);
+        cursor->jump_sequence_pos(pos, ED4_JUMP_CENTERED);
         awar->write_int(-1);
     }
 }
 
 void ED4_jump_to_cursor_position(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_pos_type) {
-    const char   *awar_name = (const char *)cl_awar_name;
-    PositionType  posType   = (PositionType)cl_pos_type;
-    ED4_ROOT->use_window(aww);
-
-    ED4_cursor *cursor = &current_cursor();
-    GB_ERROR    error  = 0;
+    const char          *awar_name = (const char *)cl_awar_name;
+    PositionType         posType   = (PositionType)cl_pos_type;
+    ED4_LocalWinContext  uses(aww);
+    ED4_cursor          *cursor    = &current_cursor();
+    GB_ERROR             error     = 0;
 
     long pos = aww->get_root()->awar(awar_name)->read_int();
 
@@ -734,7 +735,7 @@ void ED4_jump_to_cursor_position(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_po
         aw_message(error);
     }
     else {
-        cursor->jump_sequence_pos(aww, pos, ED4_JUMP_CENTERED);
+        cursor->jump_sequence_pos(pos, ED4_JUMP_CENTERED);
     }
 }
 
@@ -754,7 +755,7 @@ void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /* callback_flag */)
                 aw_message(GBS_global_string("No helix '%s' found", helix_nr));
             }
             else {
-                cursor->jump_sequence_pos(aww, pos, ED4_JUMP_CENTERED);
+                cursor->jump_sequence_pos(pos, ED4_JUMP_CENTERED);
             }
         }
         else {
@@ -764,8 +765,8 @@ void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /* callback_flag */)
     }
 }
 
-void ED4_set_iupac(AW_window * /* aww */, char *awar_name, bool /* callback_flag */)
-{
+void ED4_set_iupac(AW_window *aww, char *awar_name, bool /* callback_flag */) {
+    ED4_LocalWinContext uses(aww);
     ED4_cursor *cursor = &current_cursor();
 
     if (cursor->owner_of_cursor) {
@@ -786,7 +787,7 @@ void ED4_set_iupac(AW_window * /* aww */, char *awar_name, bool /* callback_flag
             char  new_char = ED4_encode_iupac(iupac, ED4_ROOT->alignment_type);
 
             seq[seq_pos] = new_char;
-            cursor->owner_of_cursor->write_sequence(seq, len);
+            cursor->owner_of_cursor->to_terminal()->write_sequence(seq, len);
 
             free(iupac);
         }
@@ -795,9 +796,8 @@ void ED4_set_iupac(AW_window * /* aww */, char *awar_name, bool /* callback_flag
     }
 }
 
-void ED4_gc_is_modified(AW_window *aww, AW_CL cd1, AW_CL cd2)                       // callback if gc is modified
-{
-    ED4_ROOT->use_window(aww);
+void ED4_gc_is_modified_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
+    ED4_LocalWinContext uses(aww);
 
     ED4_resize_cb(aww, cd1, cd2);
     ED4_expose_cb(aww, cd1, cd2);
@@ -830,7 +830,7 @@ void ED4_exit() {
 }
 
 void ED4_quit_editor(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
-    ED4_ROOT->use_window(aww);
+    ED4_LocalWinContext uses(aww);
 
     if (ED4_ROOT->first_window == current_ed4w()) { // quit button has been pressed in first window
         ED4_exit();
@@ -853,16 +853,12 @@ void ED4_timer(AW_root *, AW_CL cd1, AW_CL cd2)
     ED4_ROOT->aw_root->add_timed_callback(200, ED4_timer, cd1, cd2);
 }
 
-void ED4_refresh_window(AW_window *aww, AW_CL cd_called_from_menu, AW_CL /* cd2 */)
-{
-    GB_transaction dummy(GLOBAL_gb_main);
-
-    if (int(cd_called_from_menu)) {
-        ED4_ROOT->use_window(aww);
-    }
-
+void ED4_refresh_window(AW_window *aww) {
     ED4_main_manager *mainman = ED4_ROOT->main_manager;
-    if (mainman) { // avoids a crash durin startup
+    if (mainman) { // during startup we have no mainman
+        GB_transaction      ta(GLOBAL_gb_main);
+        ED4_LocalWinContext uses(aww);
+
         if (mainman->update_info.delete_requested) {
             mainman->delete_requested_children();
         }
@@ -872,7 +868,8 @@ void ED4_refresh_window(AW_window *aww, AW_CL cd_called_from_menu, AW_CL /* cd2 
     }
 }
 
-void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL cd2) {
+void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL ) {
+    ED4_LocalWinContext uses(aww);
     GB_transaction dummy(GLOBAL_gb_main);
 
     if (disable) {
@@ -913,7 +910,7 @@ void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL cd2) {
         }
     }
 
-    ED4_refresh_window(aww, 0, cd2);
+    ED4_refresh_window(aww);
 }
 
 static void show_detailed_column_stats_activated(AW_window *aww) {
@@ -955,12 +952,12 @@ void ED4_set_col_stat_threshold(AW_window * /* aww */, AW_CL cl_do_refresh, AW_C
     }
 }
 
-void ED4_toggle_detailed_column_stats(AW_window *aww, AW_CL, AW_CL)
-{
+void ED4_toggle_detailed_column_stats(AW_window *aww, AW_CL, AW_CL) {
     while (!ED4_columnStat_terminal::threshold_is_set()) {
         ED4_set_col_stat_threshold(aww, 0, 0);
     }
 
+    ED4_LocalWinContext uses(aww);
     ED4_cursor *cursor = &current_cursor();
     if (!cursor->owner_of_cursor) {
         aw_message("First you have to place your cursor");
@@ -1151,7 +1148,7 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
     GB_ERROR error = 0;
     GB_push_transaction(GLOBAL_gb_main);
 
-    ED4_ROOT->use_window(use_as_main_window);
+    ED4_LocalWinContext uses(use_as_main_window);
 
     if (!use_field) {
         char *group_name = aw_input("Enter name for new group:");
@@ -1396,27 +1393,23 @@ ARB_ERROR rebuild_consensus(ED4_base *object) {
     return NULL;
 }
 
-void ED4_new_editor_window(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
-{
-    ED4_ROOT->use_window(aww);
+void ED4_new_editor_window(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
+    ED4_LocalWinContext uses(aww);
 
     AW_device  *device;
     ED4_window *new_window = 0;
 
-    if (ED4_ROOT->generate_window(&device, &new_window) == ED4_R_BREAK)  // don't open more than five windows
-        return;
+    if (ED4_ROOT->generate_window(&device, &new_window) != ED4_R_BREAK) {
+        ED4_LocalWinContext now_uses(new_window);
 
-    ED4_ROOT->use_window(new_window);
+        new_window->set_scrolled_rectangle(ED4_ROOT->scroll_links.link_for_hor_slider,
+                                           ED4_ROOT->scroll_links.link_for_ver_slider,
+                                           ED4_ROOT->scroll_links.link_for_hor_slider,
+                                           ED4_ROOT->scroll_links.link_for_ver_slider);
 
-    new_window->set_scrolled_rectangle(ED4_ROOT->scroll_links.link_for_hor_slider,
-                                       ED4_ROOT->scroll_links.link_for_ver_slider,
-                                       ED4_ROOT->scroll_links.link_for_hor_slider,
-                                       ED4_ROOT->scroll_links.link_for_ver_slider);
-
-    new_window->aww->show();
-    new_window->update_scrolled_rectangle();
-
-    ED4_ROOT->use_window(aww);
+        new_window->aww->show();
+        new_window->update_scrolled_rectangle();
+    }
 }
 
 
@@ -1429,31 +1422,55 @@ static void ED4_start_editor_on_configuration(AW_window *aww) {
     free(cn);
 }
 
+struct cursorpos {
+    ED4_cursor& cursor;
+    int screen_rel;
+    int seq;
+
+    cursorpos(ED4_window *win)
+        : cursor(win->cursor),
+          screen_rel(cursor.get_screen_relative_pos()),
+          seq(cursor.get_sequence_pos())
+    {}
+    cursorpos(const cursorpos& other)
+        : cursor(other.cursor),
+          screen_rel(other.screen_rel),
+          seq(other.seq)
+    {}
+    DECLARE_ASSIGNMENT_OPERATOR(cursorpos);
+};
+
+
 void ED4_compression_changed_cb(AW_root *awr) {
-    ED4_remap_mode mode = (ED4_remap_mode)awr->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->read_int();
-    int percent = awr->awar(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT)->read_int();
-    GB_transaction transaction_var(GLOBAL_gb_main);
+    ED4_remap_mode mode    = (ED4_remap_mode)awr->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->read_int();
+    int            percent = awr->awar(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT)->read_int();
+    GB_transaction ta(GLOBAL_gb_main);
 
     if (ED4_ROOT->root_group_man) {
-        ED4_cursor& cursor  = current_cursor(); // @@@ should be done for all windows (all cursors)
-        int         rel_pos = cursor.get_screen_relative_pos();
-        int         seq_pos = cursor.get_sequence_pos();
+        vector<cursorpos> pos;
 
-        AW_window *aww    = current_aww();
-        AW_device *device = current_device();
+        for (ED4_window *win = ED4_ROOT->first_window; win; win = win->next) {
+            pos.push_back(cursorpos(win));
+            
+            AW_device *device = win->get_device();
+            device->push_clip_scale();
+            device->set_clipall();     // draw nothing
+        }
 
-        ED4_remap *remap = ED4_ROOT->root_group_man->remap();
-        remap->set_mode(mode, percent);
-
-        device->push_clip_scale();
-        device->set_clipall();     // draw nothing
-
+        ED4_ROOT->root_group_man->remap()->set_mode(mode, percent);
         ED4_expose_recalculations();
 
-        cursor.jump_sequence_pos(aww, seq_pos, ED4_JUMP_KEEP_POSITION);
-        cursor.set_screen_relative_pos(aww, rel_pos);
+        for (vector<cursorpos>::const_iterator i = pos.begin(); i != pos.end(); ++i) {
+            ED4_cursor&  cursor = const_cast<ED4_cursor&>(i->cursor);
+            ED4_window  *win    = cursor.window();
 
-        ED4_expose_cb(aww, 0, 0); // does pop_clip_scale + refresh
+            win->update_scrolled_rectangle();
+
+            cursor.jump_sequence_pos(i->seq, ED4_JUMP_KEEP_POSITION);
+            cursor.set_screen_relative_pos(i->screen_rel);
+
+            ED4_expose_cb(win->aww, 0, 0); // does pop_clip_scale + refresh
+        }
     }
 }
 
@@ -2085,15 +2102,15 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                                                     }
                                                 }
                                                 else { // different field contents
-                                                    int actualStat;
-                                                    for (actualStat=1; actualStat<nextStat; actualStat++) {
+                                                    int currStat;
+                                                    for (currStat=1; currStat<nextStat; currStat++) {
                                                         int names_len = 1; // open bracket
                                                         SpeciesMergeList *sl2 = sml;
                                                         i = 0;
                                                         char *content = 0;
 
                                                         while (sl2) {
-                                                            if (fieldStat[i]==actualStat) {
+                                                            if (fieldStat[i]==currStat) {
                                                                 names_len += strlen(sl2->species_name)+1;
                                                                 if (!content) {
                                                                     gb_field = GB_search(sl2->species, fieldName, GB_FIND);
@@ -2114,7 +2131,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                                                         i = 0;
                                                         int first = 1;
                                                         while (sl2) {
-                                                            if (fieldStat[i]==actualStat) {
+                                                            if (fieldStat[i]==currStat) {
                                                                 add += sprintf(add, "%c%s", first ? '{' : ';', sl2->species_name);
                                                                 first = 0;
                                                             }

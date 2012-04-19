@@ -1841,12 +1841,13 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
     if (width >aww->_at->max_x_size) aww->_at->max_x_size = width;
     if (height>aww->_at->max_y_size) aww->_at->max_y_size = height;
 
+    bool has_user_geometry = false;
     if (!GBS_read_hash(root->hash_for_windows, aww->get_window_id())) {
         GBS_write_hash(root->hash_for_windows, aww->get_window_id(), (long)aww);
-        bool has_user_geometry = false;
 
         aww->create_user_geometry_awars(posx, posy, width, height);
-
+    }
+    {
         int user_width, user_height; aww->get_size_from_awars(user_width, user_height);
         int user_posx,  user_posy;   aww->get_pos_from_awars(user_posx,  user_posy);
 
@@ -1867,7 +1868,7 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
             aww->recalc_pos_atShow(AW_REPOS_TO_MOUSE_ONCE); // popup the window at current mouse position
         }
     }
-
+    
     if (allow_resize) {
         // create the window big enough to ensure that all widgets
         // are created in visible area (otherwise widget are crippled).

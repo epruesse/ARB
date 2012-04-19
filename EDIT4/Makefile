@@ -689,6 +689,7 @@ ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/test_global.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/Translate.hxx
 
+ED4_root.o: ../WINDOW/aw_status.hxx
 ED4_root.o: ed4_awars.hxx
 ED4_root.o: ed4_block.hxx
 ED4_root.o: ed4_class.hxx

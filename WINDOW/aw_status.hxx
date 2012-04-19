@@ -24,6 +24,9 @@ bool aw_status_title(const char *text); // return 1 if exit button is pressed + 
 void aw_openstatus(const char *title); // show status
 void aw_closestatus();                 // hide status
 
+// special for EDIT4 (obsolete - nobody listens to EDIT4-errors)
+void aw_clear_message_cb(AW_window *aww);
+
 #else
 #error aw_status.hxx included twice
 #endif // AW_STATUS_HXX
