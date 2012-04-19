@@ -20,13 +20,6 @@
 
 #include <cctype>
 
-// -------------------------
-//      ED4_folding_line
-
-ED4_folding_line::ED4_folding_line() {
-    memset((char *)this, 0, sizeof(*this));
-}
-
 // ------------------------
 //      ED4_bases_table
 

@@ -1369,9 +1369,8 @@ void ED4_base::update_world_coords_cache() {
 
 
 ED4_returncode ED4_base::clear_background(int color) {
-    AW_pos x, y;
-
-    if (current_device()) {
+    if (current_device()) { // @@@ should clear be done for all windows ? 
+        AW_pos x, y;
         calc_world_coords(&x, &y);
         current_ed4w()->world_to_win_coords(&x, &y);
 
@@ -1485,14 +1484,8 @@ ED4_base::~ED4_base() // before calling this function the first time, parent has
             ED4_ROOT->scroll_links.link_for_hor_slider = sequence_terminal;
 
             ed4w = current_ed4w();
-            while (ed4w != NULL)
-            {
-                if (ed4w->scrolled_rect.x_link == this)
-                    ed4w->scrolled_rect.x_link = sequence_terminal;
-
-                if (ed4w->scrolled_rect.width_link == this)
-                    ed4w->scrolled_rect.width_link = sequence_terminal;
-
+            while (ed4w != NULL) {
+                ed4w->scrolled_rect.replace_x_width_link_to(this, sequence_terminal);
                 ed4w = ed4w->next;
             }
         }
