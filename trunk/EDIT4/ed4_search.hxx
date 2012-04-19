@@ -27,10 +27,12 @@ enum ED4_SEARCH_GAPS {
     ED4_SG_IGNORE_GAPS
 };
 
-void       ED4_search(AW_window *aww, AW_CL searchDescriptor);
-GB_ERROR   ED4_repeat_last_search();
-AW_window *ED4_create_search_window(AW_root *root, AW_CL type);
-void       ED4_create_search_awars(AW_root *root);
+void ED4_search_cb(AW_window *aww, AW_CL searchDescriptor, AW_CL cl_ed4w);
+
+GB_ERROR ED4_repeat_last_search(class ED4_window *ed4w);
+AW_window *ED4_create_search_window(AW_root *root, AW_CL cl_type_and_ed4w);
+
+void ED4_create_search_awars(AW_root *root);
 
 // --------------------------------------------------------------------------------
 
@@ -48,6 +50,14 @@ enum ED4_SearchPositionType {
     ED4_SIG2_PATTERN,
     ED4_SIG3_PATTERN,
     ED4_ANY_PATTERN
+};
+
+struct ED4_search_type_and_ed4w {
+    ED4_SearchPositionType  type;
+    ED4_window             *ed4w;
+
+    ED4_search_type_and_ed4w(ED4_SearchPositionType type_, ED4_window *ed4w_)
+        : type(type_), ed4w(ed4w_) {}
 };
 
 extern const char *ED4_SearchPositionTypeId[];

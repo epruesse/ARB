@@ -186,14 +186,13 @@ ED4_returncode ED4_manager::check_out_bases(ED4_base *subbed_base) {
             return res;
         }
     }
-
-    e4_assert(!subbed_base->is_root_group_manager());
-    if (subbed_base->is_group_manager()) { // sub a group
-        return update_bases(&subbed_base->to_group_manager()->table(), 0);
+    else {
+        e4_assert(!subbed_base->is_root_group_manager());
+        if (subbed_base->is_group_manager()) { // sub a group
+            return update_bases(&subbed_base->to_group_manager()->table(), 0);
+        }
+        e4_assert(0); // wrong type
     }
-
-    e4_assert(0); // wrong type
-    
     return ED4_R_OK;
 }
 
@@ -751,16 +750,16 @@ int ED4_manager::refresh_flag_ok() {
     return 1;
 }
 
-short ED4_manager::calc_bounding_box() {
-    // calculates the smallest rectangle containing the object and
-    // gives information if something has changed
+bool ED4_manager::calc_bounding_box() {
+    // calculates the smallest rectangle containing the object.
+    // returns true if bounding box has changed.
     AW_pos         sum_width  = 0;
     AW_pos         sum_height = 0;
     AW_pos         max_x      = 0;
     AW_pos         max_y      = 0;
     AW_pos         dummy      = 0;
     ED4_index      i          = 0;
-    short          bb_changed = 0;
+    bool           bb_changed = false;
     ED4_list_elem *current_list_elem;
     ED4_base      *child, *object;
 
@@ -787,28 +786,27 @@ short ED4_manager::calc_bounding_box() {
     if (spec.static_prop & ED4_P_HORIZONTAL) {
         if (int(extension.size[WIDTH]) != int(max_x)) { // because compares between floats fail sometimes (AW_pos==float)
             extension.size[WIDTH] = max_x;
-            bb_changed = 1;
+            bb_changed = true;
         }
 
         if (int(extension.size[HEIGHT]) != int(sum_height)) {
             extension.size[HEIGHT] = sum_height;
-            bb_changed = 1;
+            bb_changed = true;
         }
     }
 
     if (spec.static_prop & ED4_P_VERTICAL) {
         if (int(extension.size[WIDTH]) != int(sum_width)) {
             extension.size[WIDTH] = sum_width;
-            bb_changed = 1;
+            bb_changed = true;
         }
         if (int(extension.size[HEIGHT]) != int(max_y)) {
             extension.size[HEIGHT] = max_y;
-            bb_changed = 1;
+            bb_changed = true;
         }
     }
 
     if (bb_changed) { // tell linked objects about our change of bounding box
-
         current_list_elem = linked_objects.first();
         while (current_list_elem) {
             object = (ED4_base *) current_list_elem->elem();
@@ -819,7 +817,7 @@ short ED4_manager::calc_bounding_box() {
             current_list_elem = current_list_elem->next();
         }
     }
-    return (bb_changed);
+    return bb_changed;
 }
 
 ED4_returncode ED4_manager::distribute_children() {
@@ -905,10 +903,11 @@ ED4_returncode ED4_root_group_manager::resize_requested_by_parent() {
     return result;
 }
 
+static void update_scrolled_rectangles(ED4_window *win) { win->update_scrolled_rectangle(); }
 ED4_returncode ED4_main_manager::resize_requested_by_parent() {
     if (update_info.resize) {
         ED4_manager::resize_requested_by_parent();
-        current_ed4w()->update_scrolled_rectangle();
+        ED4_with_all_edit_windows(update_scrolled_rectangles);
     }
     return ED4_R_OK;
 }
@@ -1251,6 +1250,8 @@ void ED4_terminal::delete_requested_children() {
     e4_assert(update_info.delete_requested);
     e4_assert(tflag.deleted);
 
+    ED4_ROOT->announce_deletion(this);
+
     unlink_from_parent();
     delete this;
 }
@@ -1268,6 +1269,8 @@ void ED4_manager::delete_requested_children() {
     update_info.delete_requested = 0;
 
     if (!children->members()) {
+        ED4_ROOT->announce_deletion(this);
+        
         unlink_from_parent();
         delete this;
     }

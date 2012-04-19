@@ -440,7 +440,7 @@ public:
     const AW_click_cd *get_click_cd() const { return click_cd; }
     AW_bitset get_filter() const { return filter; }
 
-    void reset();
+    void reset(); // pops all clip_scales
 
     const AW_screen_area& get_area_size() const;
     AW::Rectangle get_rtransformed_cliprect() const { return rtransform(AW::Rectangle(get_cliprect(), AW::INCLUSIVE_OUTLINE)); }

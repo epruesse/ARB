@@ -98,8 +98,9 @@ static ARB_ERROR dot_sequence_by_consensus(ED4_base *base, AW_CL cl_insert_stat)
 }
 
 static void dot_missing_bases(AW_window *aww) {
-    ED4_window *ed4w     = current_ed4w();
-    ED4_cursor *cursor   = &ed4w->cursor;
+    ED4_MostRecentWinContext context;
+
+    ED4_cursor *cursor   = &current_cursor();
     ED4_base   *selected = cursor->owner_of_cursor;
 
     ARB_ERROR            error       = 0;
@@ -232,7 +233,7 @@ void ED4_popup_dot_missing_bases_window(AW_window *editor_window, AW_CL, AW_CL) 
     AW_root                 *aw_root = editor_window->get_root();
     static AW_window_simple *aws     = 0;
 
-    ED4_ROOT->use_window(editor_window);
+    ED4_LocalWinContext uses(editor_window);
 
     if (!aws) {
         aws = new AW_window_simple;

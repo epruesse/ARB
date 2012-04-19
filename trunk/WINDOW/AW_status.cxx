@@ -749,11 +749,9 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
     awr->add_timed_callback_never_disabled(delay, aw_status_timer_listen_event, 0, 0);
 }
 
-void aw_clear_message_cb(AW_window *aww)
-{
-    int i;
+void aw_clear_message_cb(AW_window *aww) {
     AW_root *awr = aww->get_root();
-    for (i = 0; i< AW_MESSAGE_LINES; i++) freenull(aw_stg.lines[i]);
+    for (int i = 0; i< AW_MESSAGE_LINES; i++) freenull(aw_stg.lines[i]);
     awr->awar(AWAR_ERROR_MESSAGES)->write_string("");
 }
 

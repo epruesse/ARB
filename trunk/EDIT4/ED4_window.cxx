@@ -105,8 +105,14 @@ ED4_folding_line* ED4_foldable::insert_folding_line(AW_pos world_pos, AW_pos dim
 }
 
 ED4_window *ED4_window::get_matching_ed4w(AW_window *aw) {
+    e4_assert(aw);
+    
     ED4_window *window = ED4_ROOT->first_window;
-    while (window && window->aww != aw) window = window->next;
+    while (window && window->aww != aw) {
+        window = window->next;
+    }
+    
+    e4_assert(window); // aw is not an edit-window
     return window;
 }
 
@@ -151,7 +157,7 @@ ED4_returncode ED4_window::update_scrolled_rectangle() {
         slider_pos_horizontal = aww->slider_pos_horizontal;
     }
 
-    const AW_screen_area& area_size = current_device()->get_area_size();
+    const AW_screen_area& area_size = get_device()->get_area_size();
     scrolled_rect.calc_bottomRight_folding_dimensions(area_size.r, area_size.b);
 
     update_window_coords();
@@ -180,7 +186,7 @@ ED4_returncode ED4_window::set_scrolled_rectangle(ED4_base *x_link, ED4_base *y_
 
     scrolled_rect.link(x_link, y_link, width_link, height_link);
 
-    const AW_screen_area& area_size = current_device()->get_area_size();
+    const AW_screen_area& area_size = get_device()->get_area_size();
 
     AW::Rectangle rect = scrolled_rect.get_world_rect();
     scrolled_rect.create_folding_lines(*this, rect, area_size.r, area_size.b);
@@ -298,7 +304,7 @@ ED4_returncode ED4_window::scroll_rectangle(int dx, int dy)
     AW_pos toptop_y = coords.top_area_y;
     AW_pos topbottom_y = toptop_y + coords.top_area_height - 1;
 
-    current_device()->push_clip_scale();
+    get_device()->push_clip_scale();
 
     // main area
 
@@ -319,7 +325,7 @@ ED4_returncode ED4_window::scroll_rectangle(int dx, int dy)
         else            move_and_update_rectangle(left_x, toptop_y, right_x, topbottom_y, int(dx), 0);
     }
 
-    current_device()->pop_clip_scale();
+    get_device()->pop_clip_scale();
 
     return (ED4_R_OK);
 }
@@ -335,17 +341,13 @@ ED4_returncode ED4_window::set_scrollbar_indents() {
 }
 
 
-void ED4_window::delete_window(ED4_window *window)  // delete from window list
-{
+void ED4_window::delete_window(ED4_window *window) {
+    // delete from window list
     ED4_window *temp, *temp2;
 
     if (window == ED4_ROOT->first_window) {
         temp = ED4_ROOT->first_window;                  // delete temp afterwards
         ED4_ROOT->first_window = ED4_ROOT->first_window->next;
-
-        if (no_of_windows > 1) {
-            ED4_ROOT->use_first_window();
-        }
     }
     else {
         temp = temp2 = ED4_ROOT->first_window;
@@ -356,8 +358,6 @@ void ED4_window::delete_window(ED4_window *window)  // delete from window list
         }
 
         temp2->next = temp->next;
-
-        ED4_ROOT->use_window(temp2);
     }
 
     ED4_ROOT->aw_root->awar(temp->awar_path_for_cursor)->write_int(0);              // save in database
@@ -369,8 +369,7 @@ void ED4_window::delete_window(ED4_window *window)  // delete from window list
 }
 
 
-ED4_window *ED4_window::insert_window(AW_window *new_aww)
-{
+ED4_window *ED4_window::insert_window(AW_window *new_aww) {
     ED4_window *last, *temp;
 
     temp = ED4_ROOT->first_window;          // append at end of window list
@@ -398,21 +397,21 @@ ED4_window *ED4_window::insert_window(AW_window *new_aww)
     new_aww->set_horizontal_change_callback(ED4_horizontal_change_cb, 0, 0);
     new_aww->set_vertical_change_callback  (ED4_vertical_change_cb,   0, 0);
 
-    ED4_ROOT->use_window(temp);
     ED4_ROOT->temp_gc = ED4_G_STANDARD;
 
     return temp;
 }
 
-ED4_window::ED4_window(AW_window *window) {
-    aww                   = window;
-    next                  = 0;
-    slider_pos_horizontal = 0;
-    slider_pos_vertical   = 0;
-
-    id        = ++no_of_windows;
+ED4_window::ED4_window(AW_window *window)
+    : aww(window),
+      next(NULL),
+      slider_pos_horizontal(0),
+      slider_pos_vertical(0),
+      id(++no_of_windows),
+      is_hidden(false),
+      cursor(this)
+{
     coords.clear();
-    is_hidden = false;
 
     sprintf(awar_path_for_cursor, AWAR_EDIT_SEQ_POSITION, id);
     ED4_ROOT->aw_root->awar_int(awar_path_for_cursor, 0, AW_ROOT_DEFAULT);

@@ -397,8 +397,7 @@ void PV_RefreshWindow(AW_root *root) {
         PV_ManageTerminals(root);
     }
     // Refresh all windows
-     ED4_refresh_window(0, 0, 0);
-     ED4_ROOT->refresh_all_windows(0);
+    ED4_ROOT->refresh_all_windows(0);
 }
 
 static GB_ERROR PV_ComplementarySequence(char *sequence) {

@@ -12,6 +12,9 @@
 
 #include <climits>
 #include <cctype>
+#include <map>
+
+using namespace std;
 
 // --------------------------------------------------------------------------------
 
@@ -162,13 +165,17 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(ED4_blockoperation b
     return error;
 }
 
-
-
 static void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
-    GB_ERROR               error    = GB_begin_transaction(GLOBAL_gb_main);
-    ED4_sequence_terminal *err_term = 0;
-    ED4_cursor            *cursor   = &current_cursor();
-    int                    base_pos = (cursor && cursor->owner_of_cursor != 0) ? cursor->get_base_position() : -1;
+    GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
+
+    typedef map<ED4_window*, int> CursorPositions;
+    CursorPositions at_base;
+
+    for (ED4_window *win = ED4_ROOT->first_window; win; win = win->next) {
+        ED4_cursor& cursor = win->cursor;
+        if (cursor.owner_of_cursor) at_base[win] = cursor.get_base_position();
+    }
+
 
     switch (blocktype) {
         case ED4_BT_NOBLOCK: {
@@ -200,8 +207,19 @@ static void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat)
     if (error) error = GBS_global_string("[In block operation] %s", error);
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 
-    if (!error && base_pos != -1) {
-        cursor->jump_base_pos(current_aww(), base_pos, ED4_JUMP_KEEP_VISIBLE); // restore cursor at same base
+    if (!error) {
+        for (CursorPositions::iterator ab = at_base.begin(); ab != at_base.end(); ++ab) {
+            ED4_window *win = ab->first;
+            win->cursor.jump_base_pos(ab->second, ED4_JUMP_KEEP_VISIBLE); // restore cursor at same base
+            
+#if defined(DEBUG)
+            ED4_cursor& cursor = win->cursor;
+            if (cursor.owner_of_cursor) {
+                int bp_now = cursor.get_base_position();
+                e4_assert(bp_now == ab->second);
+            }
+#endif
+        }
     }
 }
 
