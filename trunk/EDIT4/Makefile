@@ -968,9 +968,13 @@ ED4_window.o: ed4_defs.hxx
 ED4_window.o: ed4_extern.hxx
 ED4_window.o: ed4_search.hxx
 ED4_window.o: ed4_tools.hxx
+ED4_window.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_window.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ED4_window.o: $(ARBHOME)/INCLUDE/arb_string.h
+ED4_window.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_window.o: $(ARBHOME)/INCLUDE/attributes.h

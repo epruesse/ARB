@@ -153,13 +153,13 @@ ED4_returncode ED4_members::search_target_species(ED4_extension *location,   ED4
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_members::insert_member(ED4_base *new_member)                         // inserts a new member into current owners's member array and
-{                                                                                       // asks to adjust owner's bounding box
-    ED4_index   index;
-    ED4_properties      prop;
+ED4_returncode ED4_members::insert_member(ED4_base *new_member) {
+    // inserts a new member into current owners's member array and
+    // asks to adjust owner's bounding box
 
-    prop = owner()->spec.static_prop;                                          // properties of parent object
+    ED4_properties prop = owner()->spec.static_prop; // properties of parent object
 
+    ED4_index index;
     if ((index = search_member(&(new_member->extension), prop)) < 0) {          // search list for a suitable position
         index = 0;                                                              // list was empty
     }
@@ -185,7 +185,7 @@ ED4_returncode ED4_members::insert_member(ED4_base *new_member)                 
     no_of_members ++;
     new_member->index = index;
 
-    owner()->resize_requested_by_child();                                       // tell owner about resize
+    owner()->request_resize(); // tell owner about resize
 
     return (ED4_R_OK);
 }
@@ -227,8 +227,8 @@ ED4_returncode ED4_members::append_member(ED4_base *new_member) {
     new_member->index = index;
 
     owner()->spec.announce_added(new_member->spec.level);
+    owner()->request_resize();
 
-    owner()->resize_requested_by_child();
     return ED4_R_OK;
 }
 
@@ -249,7 +249,7 @@ ED4_returncode ED4_members::remove_member(ED4_base *member_to_del)
     no_of_members--;
     e4_assert(members_ok());
 
-    owner()->resize_requested_by_child(); // tell owner about resize
+    owner()->request_resize();
 
     return (ED4_R_OK);
 }

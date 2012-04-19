@@ -40,6 +40,7 @@ db_query.o: $(ARBHOME)/INCLUDE/arb_error.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_msg.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_progress.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_sort.h
+db_query.o: $(ARBHOME)/INCLUDE/arb_str.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_string.h
 db_query.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -65,3 +66,4 @@ db_query.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 db_query.o: $(ARBHOME)/INCLUDE/items.h
 db_query.o: $(ARBHOME)/INCLUDE/smartptr.h
 db_query.o: $(ARBHOME)/INCLUDE/test_global.h
+db_query.o: $(ARBHOME)/INCLUDE/test_unit.h

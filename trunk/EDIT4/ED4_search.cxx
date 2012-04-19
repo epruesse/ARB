@@ -773,13 +773,7 @@ static void searchParamsChanged(AW_root *root, AW_CL cl_type, AW_CL cl_action)
         }
     }
 
-    if (action & REFRESH_ALWAYS) {
-        bool old_update                        = ED4_update_global_cursor_awars_allowed;
-        ED4_update_global_cursor_awars_allowed = false;
-        ED4_ROOT->refresh_all_windows(1);
-        ED4_update_global_cursor_awars_allowed = old_update;
-    }
-
+    if (action & REFRESH_ALWAYS) ED4_ROOT->request_refresh_for_sequence_terminals();
     root->awar(ED4_AWAR_SEARCH_RESULT_CHANGED)->touch(); // trigger refresh in SECEDIT
 }
 

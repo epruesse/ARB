@@ -253,8 +253,7 @@ GB_ERROR ED4_terminal::write_sequence(const char *seq, int seq_len)
             aw_message("Couldn't read old sequence data");
         }
 
-        set_refresh();
-        parent->refresh_requested_by_child();
+        request_refresh();
     }
 
     if (old_seq) free(old_seq);
@@ -269,9 +268,7 @@ ED4_returncode ED4_terminal::remove_callbacks()                     // removes c
         set_species_pointer(0);
         tflag.deleted = 1; // @@@ why ?
         clr_property(ED4_P_CURSOR_ALLOWED);
-
-        set_refresh();
-        parent->refresh_requested_by_child();
+        request_refresh();
     }
     return ED4_R_OK;
 }
@@ -308,8 +305,6 @@ ED4_returncode ED4_terminal::kill_object() {
         species_manager->Delete();
     }
 
-    ED4_ROOT->refresh_all_windows(0);
-
     return ED4_R_OK;
 }
 
@@ -336,12 +331,6 @@ ED4_base *ED4_terminal::get_competent_child(AW_pos /* x */, AW_pos /* y */, ED4_
 {
     e4_assert(0);
     return NULL;
-}
-
-ED4_returncode ED4_terminal::resize_requested_by_child()
-{
-    e4_assert(0);
-    return ED4_R_IMPOSSIBLE;
 }
 
 ED4_returncode ED4_terminal::draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text, int cursor_y)      // draws drag box of object at location abs_x, abs_y
@@ -399,6 +388,13 @@ ED4_returncode  ED4_terminal::move_requested_by_parent(ED4_move_info *) { // han
     return (ED4_R_IMPOSSIBLE);
 }
 
+void ED4_multi_species_manager::toggle_selected_species() {
+    if (all_are_selected()) deselect_all_species();
+    else select_all_species();
+
+    ED4_correctBlocktypeAfterSelection();
+}
+
 #if defined(DEBUG) && 1
 static inline void dumpEvent(const char *where, AW_event *event) {
     printf("%s: x=%i y=%i\n", where, event->x, event->y);
@@ -423,11 +419,8 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                     if (is_species_name_terminal()) {
                         switch (ED4_ROOT->species_mode) {
                             case ED4_SM_KILL: {
-                                if (tflag.selected) {
-                                    ED4_ROOT->remove_from_selected(this);
-                                }
+                                if (tflag.selected) ED4_ROOT->remove_from_selected(this);
                                 kill_object();
-                                ED4_ROOT->refresh_all_windows(0);
                                 return ED4_R_BREAK;
                             }
                             case ED4_SM_MOVE: {
@@ -452,8 +445,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
 
                                 if (gbd) {
                                     GB_write_flag(gbd, !GB_read_flag(gbd));
-                                    set_refresh();
-                                    parent->refresh_requested_by_child();
+                                    request_refresh();
                                     // ProtView: Refreshing orf terminals
                                     if (ED4_ROOT->alignment_type ==  GB_AT_DNA) {
                                         PV_RefreshWindow(aww->get_root());
@@ -474,7 +466,6 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                         else {
                             to_bracket_terminal()->fold();
                         }
-                        ED4_ROOT->refresh_all_windows(1);
                     }
                     else {
                         if (dynamic_prop & ED4_P_CURSOR_ALLOWED) {
@@ -490,9 +481,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                         ED4_base *group = get_parent(ED4_L_GROUP);
                         if (group) {
                             ED4_multi_species_manager *multi_man = group->to_group_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
-                            multi_man->deselect_all_species();
-                            ED4_correctBlocktypeAfterSelection();
-                            ED4_ROOT->refresh_all_windows(0);
+                            multi_man->toggle_selected_species();
                         }
                     }
                     else if (is_species_name_terminal()) {
@@ -500,35 +489,20 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
 
                         if (parent->flag.is_consensus) { // click on consensus-name
                             ED4_multi_species_manager *multi_man = parent->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
-                            int species = multi_man->get_no_of_species();
-                            int selected = multi_man->get_no_of_selected_species();
-
-                            if (selected==species) { // all species selected => deselect all
-                                multi_man->deselect_all_species();
-                            }
-                            else { // otherwise => select all
-                                multi_man->select_all_species();
-                            }
-
-                            ED4_correctBlocktypeAfterSelection();
-                            ED4_ROOT->refresh_all_windows(0);
-                            return (ED4_R_BREAK);
+                            multi_man->toggle_selected_species();
+                            // return (ED4_R_BREAK);
                         }
                         else if (species_man->flag.is_SAI) {
                             ; // don't mark SAIs
                         }
                         else { // click on species name
                             if (!tflag.selected) { // select if not selected
-                                if (ED4_ROOT->add_to_selected(this) == ED4_R_OK) {
-                                    ED4_correctBlocktypeAfterSelection();
-                                    ED4_ROOT->refresh_all_windows(0);
-                                }
+                                if (ED4_ROOT->add_to_selected(this) == ED4_R_OK) ED4_correctBlocktypeAfterSelection();
                             }
                             else { // deselect if already selected
                                 ED4_ROOT->remove_from_selected(this);
                                 ED4_correctBlocktypeAfterSelection();
-                                ED4_ROOT->refresh_all_windows(0);
-                                return (ED4_R_BREAK);   // in case we were called by event_to selected()
+                                // return (ED4_R_BREAK);   // in case we were called by event_to selected() @@@ why? 
                             }
                         }
                     }
@@ -538,7 +512,6 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                         ED4_no_dangerous_modes();
                         ED4_setColumnblockCorner(event, to_sequence_terminal()); // mark columnblock
                         right_button_started_on_sequence_term = 1;
-                        ED4_ROOT->refresh_all_windows(0);
                     }
                     break;
                 }
@@ -593,7 +566,6 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                     if (is_sequence_terminal() && right_button_started_on_sequence_term) {
                         ED4_no_dangerous_modes();
                         ED4_setColumnblockCorner(event, to_sequence_terminal()); // mark columnblock
-                        ED4_ROOT->refresh_all_windows(0);
                     }
                     break;
                 }
@@ -641,8 +613,6 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                             ED4_ROOT->remove_from_selected(dragged_name_terminal);
                         }
 
-                        ED4_expose_cb(current_aww(), 0, 0);
-
                         pressed_left_button = 0;
                         dragged_name_terminal = 0;
                     }
@@ -654,7 +624,6 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                         dumpEvent("Relea", event);
                         ED4_no_dangerous_modes();
                         ED4_setColumnblockCorner(event, to_sequence_terminal()); // mark columnblock
-                        ED4_ROOT->refresh_all_windows(0);
                     }
                     break;
                 }
@@ -668,21 +637,13 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
     return (ED4_R_OK);
 }
 
-
-ED4_returncode  ED4_terminal::calc_size_requested_by_parent()
-{
-    return ED4_R_OK;
-}
-
 void ED4_terminal::update_requested_children() {}
 
 bool ED4_terminal::calc_bounding_box() {
     // calculates the smallest rectangle containing the object.
     // requests refresh and returns true if bounding box has changed.
-    
-    bool           bb_changed = false;
-    ED4_list_elem *current_list_elem;
-    ED4_base      *object;
+
+    bool bb_changed = false;
 
     if (width_link) {
         if (extension.size[WIDTH] != width_link->extension.size[WIDTH]) {   // all bounding Boxes have the same size !!!
@@ -700,40 +661,25 @@ bool ED4_terminal::calc_bounding_box() {
 
 
     if (bb_changed) {
-        current_list_elem = linked_objects.first();
-        while (current_list_elem) {
-            object = (ED4_base *) current_list_elem->elem();
-
-            if (object != NULL) {
-                object->link_changed(this);
-            }
-
-            current_list_elem = current_list_elem->next();
-        }
-
-        set_refresh(1); // clear on refresh (was done anyway due to default parameter)
-        parent->refresh_requested_by_child();
+        request_resize_of_linked();
+        request_refresh();
     }
-
     return bb_changed;
 }
 
-ED4_returncode ED4_terminal::resize_requested_by_parent() {
+void ED4_terminal::resize_requested_children() {
     if (update_info.resize) { // likes to resize?
-        if (calc_bounding_box()) { // size changed?
-            parent->resize_requested_by_child(); // tell parent!
+        if (calc_bounding_box()) { 
+            request_resize();
         }
     }
-
-    return ED4_R_OK;
 }
 
 
-ED4_returncode ED4_terminal::set_refresh(int clear)                 // sets refresh flag of current object
-{
+void ED4_terminal::request_refresh(int clear) {
     update_info.set_refresh(1);
     update_info.set_clear_at_refresh(clear);
-    return (ED4_R_OK);
+    if (parent) parent->refresh_requested_by_child();
 }
 
 

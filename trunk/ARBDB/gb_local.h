@@ -26,8 +26,6 @@
 #define GBTUM_MAGIC_NUMBER_FILTER 0xffffff00
 #define GBTUM_MAGIC_REVERSED      0x00844817
 
-#define GB_SYSTEM_FOLDER   "__SYSTEM__"
-
 // ---------------------
 //      simple types
 

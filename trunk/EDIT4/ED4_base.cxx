@@ -28,19 +28,7 @@ void ED4_base::changed_by_database()
     // without defining changed_by_database for this type
 }
 
-void ED4_manager::changed_by_database() {
-    set_refresh(1);
-    if (parent) {
-        parent->refresh_requested_by_child();
-    }
-    else {
-#if defined(DEBUG)
-        printf("ED4_manager::changed_by_database: I have no parent!\n");
-#endif // DEBUG
-    }
-
-    ED4_ROOT->refresh_all_windows(0);
-}
+void ED4_manager::changed_by_database() { request_refresh(); }
 
 void ED4_terminal::changed_by_database()
 {
@@ -82,11 +70,8 @@ void ED4_terminal::changed_by_database()
 
                 if (dynamic_prop & ED4_P_CONSENSUS_RELEVANT) {
                     ED4_multi_species_manager *multiman = get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
-
                     multiman->update_bases_and_rebuild_consensi(dup_data, data_len, spman, ED4_U_UP);
-
-                    set_refresh(1);
-                    parent->refresh_requested_by_child();
+                    request_refresh();
                 }
 
                 delete [] dup_data;
@@ -147,11 +132,9 @@ void ED4_manager::deleted_from_database() {
         multi_man->rebuild_consensi(species_man, ED4_U_UP);
         GB_pop_transaction(GLOBAL_gb_main);
 
-        if (parent) parent->resize_requested_by_child();
-        ED4_ROOT->refresh_all_windows(0);
-
-        parent = 0;
-        //      delete this; // @@@ crashes when removing callback deleted_from_database()
+        request_resize();
+        // parent = 0;
+        // delete this; // @@@ crashes when removing callback deleted_from_database()
     }
     else {
         e4_assert(0);
@@ -644,19 +627,15 @@ void ED4_multi_species_manager::update_group_id() {
         char       *name  = (char*)GB_calloc(strlen(cntid)+10, sizeof(*name));
 
         int i;
-        for (i=0; cntid[i] != '(' && cntid[i] != '\0';   i++) {
+        for (i=0; cntid[i] && cntid[i] != '(';   i++) {
             name[i] = cntid[i];
         }
-        if (cntid[i] != '\0') { // skip space
-            i--;
-        }
-        name[i] = '\0';
-        sprintf(name, "%s (%d)", name, species);
+        if (i>0 && cntid[i-1] == ' ') --i; // skip terminal space
+        sprintf(name+i, " (%d)", species);
 
         freeset(consensus_name_terminal->id, name);
 
-        consensus_name_terminal->set_refresh();
-        consensus_name_terminal->parent->refresh_requested_by_child();
+        consensus_name_terminal->request_refresh();
     }
 }
 
@@ -855,25 +834,24 @@ ED4_base *ED4_manager::get_defined_level(ED4_level lev) const
     return NULL;                                                                // nothing found
 }
 
-ED4_returncode ED4_base::set_width()                                            // sets object length of terminals to Consensus_Name_terminal if existing
-{                                                                               // else to MAXSPECIESWIDTH
-    int                 i;
+ED4_returncode ED4_base::set_width() {
+    // sets object length of terminals to Consensus_Name_terminal if existing
+    // else to MAXSPECIESWIDTH
+
+    int i;
 
     if (is_species_manager() && !flag.is_consensus && !parent->flag.is_consensus) {
-        ED4_species_manager *species_manager = to_species_manager();
+        ED4_species_manager    *species_manager    = to_species_manager();
         ED4_multi_name_manager *multi_name_manager = species_manager->get_defined_level(ED4_L_MULTI_NAME)->to_multi_name_manager();     // case I'm a species
-        ED4_terminal *consensus_terminal = parent->to_multi_species_manager()->get_consensus_terminal();
+        ED4_terminal           *consensus_terminal = parent->to_multi_species_manager()->get_consensus_terminal();
 
         for (i=0; i < multi_name_manager->children->members(); i++) {
             ED4_name_manager *name_manager = multi_name_manager->children->member(i)->to_name_manager();
-            if (consensus_terminal) {
-                name_manager->children->member(0)->extension.size[WIDTH] = consensus_terminal->extension.size[WIDTH];
-            }
-            else {
-                name_manager->children->member(0)->extension.size[WIDTH] = MAXSPECIESWIDTH;
-            }
+            ED4_base         *nameTerm     = name_manager->children->member(0);
+            int               width        = consensus_terminal ? consensus_terminal->extension.size[WIDTH] : MAXSPECIESWIDTH;
 
-            name_manager->resize_requested_by_child();
+            nameTerm->extension.size[WIDTH] = width;
+            nameTerm->request_resize();
         }
 
         for (i=0; i < species_manager->children->members(); i++) { // adjust all managers as far as possible
@@ -892,14 +870,14 @@ ED4_returncode ED4_base::set_width()                                            
                     ED4_base::touch_world_cache();
                 }
             }
-            species_manager->children->member(i)->resize_requested_by_child();
+            smember->request_resize();
         }
     }
     else if (is_group_manager()) {
-        ED4_group_manager *group_manager = this->to_group_manager();
-        ED4_multi_species_manager *multi_species_manager = group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
-        ED4_terminal *mark_consensus_terminal = multi_species_manager->get_consensus_terminal();
-        ED4_terminal *consensus_terminal = parent->to_multi_species_manager()->get_consensus_terminal();
+        ED4_group_manager         *group_manager           = to_group_manager();
+        ED4_multi_species_manager *multi_species_manager   = group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+        ED4_terminal              *mark_consensus_terminal = multi_species_manager->get_consensus_terminal();
+        ED4_terminal              *consensus_terminal      = parent->to_multi_species_manager()->get_consensus_terminal();
 
         if (consensus_terminal) { // we're a group in another group
             mark_consensus_terminal->extension.size[WIDTH] = consensus_terminal->extension.size[WIDTH] - BRACKETWIDTH;
@@ -908,7 +886,7 @@ ED4_returncode ED4_base::set_width()                                            
             mark_consensus_terminal->extension.size[WIDTH] = MAXSPECIESWIDTH - BRACKETWIDTH;
         }
 
-        mark_consensus_terminal->parent->resize_requested_by_child();
+        mark_consensus_terminal->request_resize();
 
         for (i=0; i < multi_species_manager->children->members(); i++) {
             multi_species_manager->children->member(i)->set_width();
@@ -975,37 +953,23 @@ ED4_returncode  ED4_base::event_sent_by_parent(AW_event * /* event */, AW_window
     return (ED4_R_OK);
 }
 
-ED4_returncode ED4_manager::hide_children() {
-    int i;
-
-    for (i=0; i<children->members(); i++) {
+void ED4_manager::hide_children() {
+    for (int i=0; i<children->members(); i++) {
         ED4_base *member = children->member(i);
         if (!member->is_spacer_terminal() && !member->flag.is_consensus) { // don't hide spacer and Consensus
             member->flag.hidden = 1;
         }
     }
-
-    update_info.set_resize(1);
-    resize_requested_by_parent();
-
-    return ED4_R_OK;
+    request_resize();
 }
 
 
-ED4_returncode ED4_manager::unhide_children()
-{
-    if (!children) {
-        return ED4_R_WARNING;
-    }
-    else {
+void ED4_manager::unhide_children() {
+    if (children) {
         for (int i=0; i < children->members(); i++) {
             children->member(i)->flag.hidden = 0; // make child visible
         }
-
-        update_info.set_resize(1);
-        resize_requested_by_parent();
-
-        return ED4_R_OK;
+        request_resize();
     }
 }
 
@@ -1099,38 +1063,22 @@ int ED4_base::adjust_clipping_rectangle()
     return current_device()->reduceClipBorders(int(y), int(y+extension.size[HEIGHT]-1), int(x), int(x+extension.size[WIDTH]-1));
 }
 
-ED4_returncode ED4_base::set_links(ED4_base *temp_width_link, ED4_base *temp_height_link)       // sets links in hierarchy :
-// width-link sets links between objects on same level
-{                                                                                               // height-link sets links between objects on different levels
-    if (temp_width_link)
-    {
-        if (width_link)                                                         // if object already has a link
-            width_link->linked_objects.delete_elem((void *) this);              // delete link and
+void ED4_base::set_links(ED4_base *new_width, ED4_base *new_height) {
+    // sets links in hierarchy :
+    // width-link sets links between objects on same level
+    // height-link sets links between objects on different levels
 
-        width_link = temp_width_link;                                           // set new link to temp_width_link
-        temp_width_link->linked_objects.append_elem((void *) this);
+    if (new_width) {
+        if (width_link) width_link->linked_objects.delete_elem((void *) this);
+        width_link = new_width;
+        new_width->linked_objects.append_elem((void *) this);
     }
 
-    if (temp_height_link)
-    {
-        if (height_link != NULL)
-            height_link->linked_objects.delete_elem((void *) this);
-
-        height_link = temp_height_link;
-        temp_height_link->linked_objects.append_elem((void *) this);
+    if (new_height) {
+        if (height_link) height_link->linked_objects.delete_elem((void *) this);
+        height_link = new_height;
+        new_height->linked_objects.append_elem((void *) this);
     }
-
-    return (ED4_R_OK);
-}
-
-ED4_returncode ED4_base::link_changed(ED4_base *link)
-{
-    if ((width_link == link) || (height_link == link))
-        if (calc_bounding_box())
-            if (parent != NULL)
-                parent->resize_requested_by_child();
-
-    return (ED4_R_OK);
 }
 
 int ED4_base::currTimestamp = 1;
@@ -1147,6 +1095,9 @@ void ED4_base::update_world_coords_cache() const {
     timestamp = currTimestamp;
 }
 
+#if defined(DEBUG)
+// #define VISIBLE_AREA_REFRESH
+#endif
 
 ED4_returncode ED4_base::clear_background(int color) {
     if (current_device()) { // @@@ should clear be done for all windows?
@@ -1157,7 +1108,15 @@ ED4_returncode ED4_base::clear_background(int color) {
         current_device()->push_clip_scale();
         if (adjust_clipping_rectangle()) {
             if (!color) {
+#if defined(VISIBLE_AREA_REFRESH)
+                // for debugging draw each clear in different color:
+                static int gc_area = ED4_G_FIRST_COLOR_GROUP;
+
+                current_device()->box(gc_area, true, x, y, extension.size[WIDTH], extension.size[HEIGHT]);
+                gc_area = (gc_area == ED4_G_LAST_COLOR_GROUP) ? ED4_G_FIRST_COLOR_GROUP : gc_area+1;
+#else // !defined(VISIBLE_AREA_REFRESH)
                 current_device()->clear_part(x, y, extension.size[WIDTH], extension.size[HEIGHT], AW_ALL_DEVICES);
+#endif
             }
             else {
                 // fill range with color for debugging

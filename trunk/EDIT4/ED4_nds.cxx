@@ -38,24 +38,20 @@ void ED4_get_NDS_sizes(int *width, int *brackets) {
     *brackets = ED4_ROOT->aw_root->awar(ED4_AWAR_NDS_BRACKETS)->read_int();
 }
 
-static void NDS_changed(AW_root *root, AW_CL refresh)
-{
+static void NDS_changed(AW_root *root, AW_CL refresh) {
     int toggle = root->awar(ED4_AWAR_NDS_SELECT)->read_int();
-    char buf[256];
 
+    char buf[256];
     sprintf(buf, ED4_AWAR_NDS_ACI_TEMPLATE, toggle);
-    if (NDS_command) {
-        free(NDS_command);
-    }
-    NDS_command = root->awar(buf)->read_string();
+    freeset(NDS_command, root->awar(buf)->read_string());
 
     sprintf(buf, ED4_AWAR_NDS_WIDTH_TEMPLATE, toggle);
     NDS_width = root->awar(buf)->read_int();
 
-    if (int(refresh)) {
+    if (refresh) {
         ED4_calc_terminal_extentions();
         ED4_ROOT->main_manager->route_down_hierarchy(update_terminal_extension).expect_no_error();
-        ED4_gc_is_modified_cb(current_aww(), 0, 0);
+        ED4_ROOT->main_manager->request_resize();
     }
 }
 

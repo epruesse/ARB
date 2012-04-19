@@ -329,7 +329,11 @@ ED4_returncode ED4_sequence_terminal::draw() {
     static int    color_is_used[ED4_G_DRAG];
     static char **colored_strings        = 0;
     static int    len_of_colored_strings = 0;
-    
+
+#if defined(TRACE_REFRESH)
+    fprintf(stderr, "ED4_sequence_terminal::draw for id='%s'\n", id); fflush(stderr);
+#endif
+
     AW_device *device = current_device();
 
     int max_seq_len;
@@ -610,6 +614,8 @@ ED4_returncode ED4_text_terminal::Show(int IF_ASSERTION_USED(refresh_all), int i
     }
     current_device()->pop_clip_scale();
 
+    // @@@ only request refresh of cursor and draw it at end of window-refresh ? might fix missing parts of cursor
+    // maybe do this check at top-level 
     ED4_cursor *cursor = &current_cursor();
     if (this == cursor->owner_of_cursor) {
         current_device()->push_clip_scale();

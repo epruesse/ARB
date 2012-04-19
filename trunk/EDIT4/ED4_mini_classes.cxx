@@ -423,20 +423,8 @@ struct ConsensusBuildParams {
 static ConsensusBuildParams *BK = NULL; // @@@ make member of ED4_char_table ?
 
 void ED4_consensus_definition_changed(AW_root*, AW_CL, AW_CL) {
-    ED4_terminal *terminal = ED4_ROOT->root_group_man->get_first_terminal();
-
-    e4_assert(terminal);
-    while (terminal) {
-        if (terminal->parent->parent->flag.is_consensus) {
-            terminal->set_refresh();
-            terminal->parent->refresh_requested_by_child();
-        }
-        terminal = terminal->get_next_terminal();
-    }
-
     delete BK; BK = 0; // invalidate
-
-    ED4_ROOT->refresh_all_windows(1);
+    ED4_ROOT->request_refresh_for_consensus_terminals();
 }
 
 static ARB_ERROR toggle_consensus_display(ED4_base *base, AW_CL show) {
@@ -462,7 +450,6 @@ static ARB_ERROR toggle_consensus_display(ED4_base *base, AW_CL show) {
 void ED4_consensus_display_changed(AW_root *root, AW_CL, AW_CL) {
     int show = root->awar(ED4_AWAR_CONSENSUS_SHOW)->read_int();
     ED4_ROOT->root_group_man->route_down_hierarchy(toggle_consensus_display, show).expect_no_error();
-    ED4_ROOT->refresh_all_windows(1);
 }
 
 char *ED4_char_table::build_consensus_string(PosRange r) const {

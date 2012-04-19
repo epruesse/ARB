@@ -260,6 +260,7 @@ void ED4_update_info::dump(size_t indent) const {
     print_indented(NEXT_INDENT, GBS_global_string("linked_to_scrolled_rectangle   = %u", linked_to_scrolled_rectangle));
     print_indented(NEXT_INDENT, GBS_global_string("refresh_horizontal_scrolling   = %u", refresh_horizontal_scrolling));
     print_indented(NEXT_INDENT, GBS_global_string("delete_requested               = %u", delete_requested));
+    print_indented(NEXT_INDENT, GBS_global_string("update_requested               = %u", update_requested));
     closeDump(indent);
 }
 

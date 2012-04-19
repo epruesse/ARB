@@ -46,6 +46,8 @@ struct GB_HASH;
 class AW_at;
 #endif
 
+enum AW_orientation { AW_HORIZONTAL, AW_VERTICAL };
+
 class AW_at_size {
     int  to_offset_x;                               // here we use offsets (not positions like in AW_at)
     int  to_offset_y;
@@ -175,6 +177,14 @@ public:
     static void set_AW_postcb_cb(AW_postcb_cb postcb_cb) {
         postcb = postcb_cb;
     }
+
+    static void useraction_init() {
+        if (guard_before) guard_before();
+    }
+    static void useraction_done(AW_window *aw) {
+        if (guard_after) guard_after();
+        if (postcb) postcb(aw);
+    }
 };
 
 
@@ -224,6 +234,9 @@ class AW_window : virtual Noncopyable {
 
     AW_cb_struct *focus_cb;
     
+    int left_indent_of_horizontal_scrollbar;
+    int top_indent_of_vertical_scrollbar;
+
     void all_menus_created() const;
     void create_toggle(const char *var_name, aw_toggle_data *tdata);
 
@@ -296,8 +309,11 @@ public:
 
 
     AW_color_idx alloc_named_data_color(int colnum, char *colorname);
-    void        _get_area_size(AW_area area, AW_screen_area *square);
-    int         label_widget(void *wgt, AW_label str, char *mnemonic=0, int width = 0, int alignment = 0);
+
+    void _get_area_size(AW_area area, AW_screen_area *square);
+    void get_scrollarea_size(AW_screen_area *square);
+    
+    int label_widget(void *wgt, AW_label str, char *mnemonic=0, int width = 0, int alignment = 0);
 
     // ------------------------------
     //      The read only section
@@ -307,15 +323,12 @@ public:
     char *window_defaults_name;
     bool  window_is_shown;
 
-    int left_indent_of_horizontal_scrollbar;
-    int top_indent_of_vertical_scrollbar;
-    int bottom_indent_of_vertical_scrollbar;
     int slider_pos_vertical;
     int slider_pos_horizontal;
     int main_drag_gc;
 
     AW_screen_area *picture;      // the result of tell scrolled
-                                // picture size
+    // picture size
 
     // --------------------------------
     //      The real public section
@@ -402,8 +415,8 @@ public:
     void set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_horizontal_scrollbar_left_indent(int indent);
     void set_vertical_scrollbar_top_indent(int indent);
-    void set_vertical_scrollbar_bottom_indent(int indent);
 
+    void update_scrollbar_settings_from_awars(AW_orientation orientation);
 
     void create_user_geometry_awars(int posx, int posy, int width, int height);
     

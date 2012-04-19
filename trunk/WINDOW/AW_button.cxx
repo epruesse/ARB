@@ -123,23 +123,24 @@ void AW_awar::untie_all_widgets() {
 
 
 class VarUpdateInfo : virtual Noncopyable { // used to refresh single items on change
+    AW_window      *aw_parent;
     Widget          widget;
     AW_widget_type  widget_type;
     AW_awar        *awar;
     AW_scalar       value;
     AW_cb_struct   *cbs;
     void           *id;         // selection id etc ...
-    
+
 public:
-    VarUpdateInfo(Widget w, AW_widget_type wtype, AW_awar *a, AW_cb_struct *cbs_)
-        : widget(w), widget_type(wtype), awar(a),
+    VarUpdateInfo(AW_window *aw, Widget w, AW_widget_type wtype, AW_awar *a, AW_cb_struct *cbs_)
+        : aw_parent(aw), widget(w), widget_type(wtype), awar(a),
           value(a),
           cbs(cbs_), id(NULL)
     {
     }
     template<typename T>
-    VarUpdateInfo(Widget w, AW_widget_type wtype, AW_awar *a, T t, AW_cb_struct *cbs_)
-        : widget(w), widget_type(wtype), awar(a),
+    VarUpdateInfo(AW_window *aw, Widget w, AW_widget_type wtype, AW_awar *a, T t, AW_cb_struct *cbs_)
+        : aw_parent(aw), widget(w), widget_type(wtype), awar(a),
           value(t),
           cbs(cbs_), id(NULL)
     {
@@ -165,6 +166,8 @@ static void record_awar_change(GBDATA*, int *cl_awar, GB_CB_TYPE cb_type) {
 }
 
 void VarUpdateInfo::change_from_widget(XtPointer call_data) {
+    AW_cb_struct::useraction_init();
+    
     GB_ERROR  error = NULL;
     AW_root  *root  = awar->root;
 
@@ -247,7 +250,10 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
     else {
         if (cbs && run_cb) cbs->run_callback();
         root->value_changed = false;
+
     }
+    
+    AW_cb_struct::useraction_done(aw_parent);
 }
 
 
@@ -872,7 +878,7 @@ void AW_window::create_toggle(const char *var_name, aw_toggle_data *tdata) {
     }
 
     VarUpdateInfo *vui;
-    vui = new VarUpdateInfo(p_w->toggle_field, AW_WIDGET_TOGGLE, vs, cbs);
+    vui = new VarUpdateInfo(this, p_w->toggle_field, AW_WIDGET_TOGGLE, vs, cbs);
 
     XtAddCallback(p_w->toggle_field, XmNactivateCallback,
                   (XtCallbackProc) AW_variable_update_callback,
@@ -996,7 +1002,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     cbs = _callback;
 
     // callback for enter
-    vui = new VarUpdateInfo(textField, AW_WIDGET_INPUT_FIELD, vs, cbs);
+    vui = new VarUpdateInfo(this, textField, AW_WIDGET_INPUT_FIELD, vs, cbs);
 
     XtAddCallback(textField, XmNactivateCallback,
                   (XtCallbackProc) AW_variable_update_callback,
@@ -1164,7 +1170,7 @@ void AW_window::create_text_field(const char *var_name, int columns, int rows) {
     cbs = _callback;
 
     // callback for enter
-    vui = new VarUpdateInfo(scrolledText, AW_WIDGET_TEXT_FIELD, vs, cbs);
+    vui = new VarUpdateInfo(this, scrolledText, AW_WIDGET_TEXT_FIELD, vs, cbs);
     XtAddCallback(scrolledText, XmNactivateCallback, (XtCallbackProc) AW_variable_update_callback, (XtPointer) vui);
     // callback for losing focus
     XtAddCallback(scrolledText, XmNlosingFocusCallback, (XtCallbackProc) AW_variable_update_callback, (XtPointer) vui);
@@ -1331,7 +1337,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, const 
 
     // callback for enter
     if (vs) {
-        vui = new VarUpdateInfo(scrolledList, AW_WIDGET_SELECTION_LIST, vs, cbs);
+        vui = new VarUpdateInfo(this, scrolledList, AW_WIDGET_SELECTION_LIST, vs, cbs);
         vui->set_id((void*)p_global->last_selection_list);
 
         XtAddCallback(scrolledList, XmNsingleSelectionCallback,
@@ -2213,7 +2219,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
         // callback for new choice
         XtAddCallback(entry, XmNactivateCallback,
                       (XtCallbackProc) AW_variable_update_callback,
-                      (XtPointer) new VarUpdateInfo(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), var_value, cbs));
+                      (XtPointer) new VarUpdateInfo(this, NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), var_value, cbs));
 
         option_menu_add_option(p_global->current_option_menu, new AW_widget_value_pair(var_value, entry), default_option);
         root->make_sensitive(entry, _at->widget_mask);
@@ -2233,7 +2239,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
         // callback for new choice
         XtAddCallback(entry, XmNactivateCallback,
                       (XtCallbackProc) AW_variable_update_callback,
-                      (XtPointer) new VarUpdateInfo(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), var_value, cbs));
+                      (XtPointer) new VarUpdateInfo(this, NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), var_value, cbs));
 
         option_menu_add_option(p_global->current_option_menu, new AW_widget_value_pair(var_value, entry), default_option);
         root->make_sensitive(entry, _at->widget_mask);
@@ -2253,7 +2259,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
         // callback for new choice
         XtAddCallback(entry, XmNactivateCallback,
                       (XtCallbackProc) AW_variable_update_callback,
-                      (XtPointer) new VarUpdateInfo(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), var_value, cbs));
+                      (XtPointer) new VarUpdateInfo(this, NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), var_value, cbs));
 
         option_menu_add_option(p_global->current_option_menu, new AW_widget_value_pair(var_value, entry), default_option);
         root->make_sensitive(entry, _at->widget_mask);
@@ -2458,7 +2464,7 @@ void AW_window::insert_toggle_internal(AW_label toggle_label, const char *mnemon
     }
     else {
         _aw_create_toggle_entry(this, p_w->toggle_field, toggle_label, mnemonic,
-                                new VarUpdateInfo(NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), var_value, _callback),
+                                new VarUpdateInfo(this, NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), var_value, _callback),
                                 new AW_widget_value_pair(var_value, 0),
                                 default_toggle);
     }
@@ -2469,7 +2475,7 @@ void AW_window::insert_toggle_internal(AW_label toggle_label, const char *mnemon
     }
     else {
         _aw_create_toggle_entry(this, p_w->toggle_field, toggle_label, mnemonic,
-                                new VarUpdateInfo(NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), var_value, _callback),
+                                new VarUpdateInfo(this, NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), var_value, _callback),
                                 new AW_widget_value_pair(var_value, 0),
                                 default_toggle);
     }
@@ -2480,7 +2486,7 @@ void AW_window::insert_toggle_internal(AW_label toggle_label, const char *mnemon
     }
     else {
         _aw_create_toggle_entry(this, p_w->toggle_field, toggle_label, mnemonic,
-                                new VarUpdateInfo(NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), var_value, _callback),
+                                new VarUpdateInfo(this, NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), var_value, _callback),
                                 new AW_widget_value_pair(var_value, 0),
                                 default_toggle);
     }

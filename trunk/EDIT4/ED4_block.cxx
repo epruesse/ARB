@@ -45,8 +45,7 @@ static ED4_block block;
 // --------------------------------------------------------------------------------
 
 static void col_block_refresh_on_seq_term(ED4_sequence_terminal *seq_term) {
-    seq_term->set_refresh(1);
-    seq_term->parent->refresh_requested_by_child();
+    seq_term->request_refresh();
 
     // @@@ code below is more than weird. why do sth with column-stat here ? why write probe match awars here ? 
     ED4_columnStat_terminal *colStatTerm = seq_term->corresponding_columnStat_terminal();
@@ -55,8 +54,7 @@ static void col_block_refresh_on_seq_term(ED4_sequence_terminal *seq_term) {
         int len = strlen(probe_match_pattern);
 
         if (len>=4) {
-            colStatTerm->set_refresh(1);
-            colStatTerm->parent->refresh_requested_by_child();
+            colStatTerm->request_refresh();
 
             // automatically set probe-match awars to appropriate values:
 
@@ -75,10 +73,7 @@ static void refresh_selected(bool refresh_name_terminals) {
         ED4_species_name_terminal *name_term = selected->object->to_species_name_terminal();
         ED4_sequence_terminal     *seq_term  = name_term->corresponding_sequence_terminal();
 
-        if (refresh_name_terminals) {
-            name_term->set_refresh(1);
-            name_term->parent->refresh_requested_by_child();
-        }
+        if (refresh_name_terminals) name_term->request_refresh();
         if (seq_term) col_block_refresh_on_seq_term(seq_term);
 
         listElem = listElem->next();
@@ -188,10 +183,7 @@ static GB_ERROR perform_block_operation_on_whole_sequence(ED4_blockoperation blo
 
             if (!error) {
                 error = GB_write_string(gbd, seq);
-                if (!error) {
-                    term->set_refresh();
-                    term->parent->refresh_requested_by_child();
-                }
+                if (!error) term->request_refresh();
             }
             free(new_seq);
         }
@@ -246,10 +238,7 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(ED4_blockoperation b
 
             if (!error) {
                 error = GB_write_as_string(gbd, seq);
-                if (!error) {
-                    term->set_refresh();
-                    term->parent->refresh_requested_by_child();
-                }
+                if (!error) term->request_refresh();
             }
         }
 
