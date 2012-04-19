@@ -751,6 +751,7 @@ ED4_root.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_root.o: $(ARBHOME)/INCLUDE/st_window.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/svn_revision.h
 ED4_root.o: $(ARBHOME)/INCLUDE/test_global.h
+ED4_root.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 ED4_search.o: ed4_awars.hxx
 ED4_search.o: ed4_class.hxx

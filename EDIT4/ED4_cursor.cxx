@@ -1159,8 +1159,10 @@ ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
 
                 bool isScreen = false;
                 if (dir == ED4_C_DOWN) {
-                    window()->world_to_win_coords(&x_dummy, &y_world); // special handling to move cursor from top to bottom area
-                    isScreen = true;
+                    if (owner_of_cursor->get_area_level(NULL) == ED4_A_TOP_AREA) {
+                        window()->world_to_win_coords(&x_dummy, &y_world); // special handling to move cursor from top to bottom area
+                        isScreen = true;
+                    }
                 }
                 target_terminal = get_upper_lower_cursor_pos(ED4_ROOT->main_manager, dir, y_world, isScreen, 0, seq_pos);
             }

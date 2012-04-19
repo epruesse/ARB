@@ -741,9 +741,7 @@ short ED4_terminal::calc_bounding_box()
             current_list_elem = current_list_elem->next();
         }
 
-        clear_background();
-
-        set_refresh();
+        set_refresh(1); // clear on refresh (was done anyway due to default parameter)
         parent->refresh_requested_by_child();
     }
 
