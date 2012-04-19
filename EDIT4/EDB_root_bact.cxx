@@ -108,7 +108,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
     species_manager->set_properties(ED4_P_MOVABLE);
     if (datamode == ED4_D_EXTENDED) {
         species_manager->flag.is_SAI = 1;
-        ED4_group_manager *group_man = species_manager->get_parent(ED4_L_GROUP)->to_group_manager();
+        ED4_abstract_group_manager *group_man = species_manager->get_parent(ED4_level(ED4_L_GROUP|ED4_L_ROOTGROUP))->to_abstract_group_manager();
         group_man->table().ignore_me(); // ignore SAI tables
     }
     species_manager->set_species_pointer(gb_datamode);
@@ -630,14 +630,5 @@ char *EDB_root_bact::generate_config_string(char *confname)                 // a
     }
 
     return generated_string;
-}
-
-
-EDB_root_bact::EDB_root_bact()
-{
-}
-
-EDB_root_bact::~EDB_root_bact()
-{
 }
 

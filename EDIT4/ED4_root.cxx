@@ -254,7 +254,7 @@ ED4_returncode ED4_root::add_to_selected(ED4_terminal *object)
     if (selected_objects.no_of_entries() > 0) {   // check if object is of the same type as previously selected objects
         sel_info = (ED4_selection_entry *) selected_objects.first()->elem();
         sel_object = sel_info->object;
-        if (object->spec->level != sel_object->spec->level) {   // object levels are different
+        if (object->spec.level != sel_object->spec.level) {   // object levels are different
             return (ED4_R_IMPOSSIBLE);
         }
     }
@@ -265,10 +265,10 @@ ED4_returncode ED4_root::add_to_selected(ED4_terminal *object)
 
         if (object->dynamic_prop & ED4_P_IS_HANDLE)                 // object is a handle for an object up in the hierarchy => search it
         {
-            mlevel = object->spec->handled_level;
+            mlevel = object->spec.handled_level;
             tmp_object = object;
 
-            while ((tmp_object != NULL) && !(tmp_object->spec->level & mlevel)) {
+            while ((tmp_object != NULL) && !(tmp_object->spec.level & mlevel)) {
                 tmp_object = tmp_object->parent;
             }
 
@@ -353,6 +353,7 @@ ED4_returncode ED4_root::resize_all()
 }
 
 static ARB_ERROR change_char_table_length(ED4_base *base, AW_CL new_length) {
+    e4_assert(!base->is_root_group_manager());
     if (base->is_group_manager()) {
         ED4_group_manager *group_man = base->to_group_manager();
         group_man->table().change_table_length(new_length);

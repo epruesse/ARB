@@ -142,12 +142,12 @@ void ED4_base::dump_base(size_t indent) const {
     print_indented(NEXT_INDENT, GBS_global_string("flag.is_consensus  = %i", flag.is_consensus));
     print_indented(NEXT_INDENT, GBS_global_string("flag.is_SAI        = %i", flag.is_SAI));
 
-    if (spec) spec->dump(NEXT_INDENT);
+    if (spec) spec.dump(NEXT_INDENT);
     dumpProperties(NEXT_INDENT, "dynamic_prop", dynamic_prop);
     extension.dump(NEXT_INDENT);
     update_info.dump(NEXT_INDENT);
 #else
-    if (spec) spec->dump(NEXT_INDENT);
+    spec.dump(NEXT_INDENT);
     print_indented(NEXT_INDENT, GBS_global_string("id                 = '%s'", id));
     print_indented(NEXT_INDENT, GBS_global_string("parent             = %p", parent));
     print_indented(NEXT_INDENT, GBS_global_string("flag.is_consensus  = %i", flag.is_consensus));
@@ -197,25 +197,26 @@ void ED4_manager::dump_base(size_t indent) const {
 
 #define STANDARD_DUMP_MID(self) STANDARD_DUMP_BASE(self); STANDARD_DUMP_LEAF(self)
 
+STANDARD_DUMP_BASE(ED4_abstract_group_manager);
+STANDARD_DUMP_BASE(ED4_abstract_sequence_terminal);
 STANDARD_DUMP_BASE(ED4_terminal);
 STANDARD_DUMP_BASE(ED4_text_terminal);
-STANDARD_DUMP_BASE(ED4_abstract_sequence_terminal);
 
-STANDARD_DUMP_MID(ED4_group_manager);
 STANDARD_DUMP_MID(ED4_sequence_terminal);
 
-STANDARD_DUMP_LEAF(ED4_orf_terminal);
 STANDARD_DUMP_LEAF(ED4_area_manager);
 STANDARD_DUMP_LEAF(ED4_bracket_terminal);
 STANDARD_DUMP_LEAF(ED4_columnStat_terminal);
 STANDARD_DUMP_LEAF(ED4_consensus_sequence_terminal);
 STANDARD_DUMP_LEAF(ED4_device_manager);
+STANDARD_DUMP_LEAF(ED4_group_manager);
 STANDARD_DUMP_LEAF(ED4_line_terminal);
 STANDARD_DUMP_LEAF(ED4_main_manager);
 STANDARD_DUMP_LEAF(ED4_multi_name_manager);
 STANDARD_DUMP_LEAF(ED4_multi_sequence_manager);
 STANDARD_DUMP_LEAF(ED4_multi_species_manager);
 STANDARD_DUMP_LEAF(ED4_name_manager);
+STANDARD_DUMP_LEAF(ED4_orf_terminal);
 STANDARD_DUMP_LEAF(ED4_pure_text_terminal);
 STANDARD_DUMP_LEAF(ED4_root_group_manager);
 STANDARD_DUMP_LEAF(ED4_sequence_info_terminal);
@@ -228,14 +229,16 @@ STANDARD_DUMP_LEAF(ED4_tree_terminal);
 // =========================================================================================
 // member structures
 
-void ED4_object_specification::dump(size_t indent) const {
-    openDump(indent, "ED4_object_specification", (void*)this);
+void ED4_objspec::dump(size_t indent) const {
+    openDump(indent, "ED4_objspec", (void*)this);
     dumpProperties(NEXT_INDENT, "static_prop", static_prop);
-    dumpLevel(NEXT_INDENT, "level", level);
-    dumpLevel(NEXT_INDENT, "allowed_children", allowed_children);
-    dumpLevel(NEXT_INDENT, "handled_level", handled_level);
-    dumpLevel(NEXT_INDENT, "restriction_level", restriction_level);
-    print_indented(NEXT_INDENT, GBS_global_string("justification       =%f", justification));
+    dumpLevel(NEXT_INDENT, "level",                level);
+    dumpLevel(NEXT_INDENT, "allowed_children",     allowed_children);
+    dumpLevel(NEXT_INDENT, "used_children",        used_children);
+    dumpLevel(NEXT_INDENT, "allowed_descendants",  allowed_descendants);
+    dumpLevel(NEXT_INDENT, "possible_descendants", possible_descendants);
+    dumpLevel(NEXT_INDENT, "handled_level",        handled_level);
+    dumpLevel(NEXT_INDENT, "restriction_level",    restriction_level);
     closeDump(indent);
 }
 

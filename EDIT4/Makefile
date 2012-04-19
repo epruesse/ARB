@@ -2,45 +2,19 @@
 
 .SUFFIXES: .o .cxx .depend
 
-CPP_OBJECTS = \
-	ED4_protein_2nd_structure.o \
-	ED4_ProteinViewer.o \
-	ED4_search.o \
-	ED4_cursor.o \
-	ED4_dump.o \
-	ED4_nds.o \
-	ED4_plugins.o \
-	ED4_main.o \
-	ED4_mini_classes.o \
-	ED4_edit_string.o \
-	ED4_base.o \
-	ED4_manager.o \
-	ED4_terminal.o \
-	ED4_root.o \
-	EDB_root_bact.o \
-	ED4_window.o \
-	ED4_members.o \
-	ED4_no_class.o \
-	ED4_list.o \
-	ED4_text_terminals.o \
-	ED4_tools.o \
-	ED4_block.o \
-	ED4_visualizeSAI.o \
-	ED4_naligner.o \
-	graph_aligner_gui.o \
-	ED4_dots.o \
+SOURCES=$(wildcard *.cxx)
+OBJECTS=$(subst .cxx,.o,$(SOURCES))
 
-
-$(MAIN): $(CPP_OBJECTS)
-	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
+$(MAIN): $(OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
-	rm -f $(CPP_OBJECTS) *.a
+	rm -f $(OBJECTS) *.a
 
-DEPENDS = $(CPP_OBJECTS:.o=.depend)
+DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile
 	@rm $(DEPENDS)
@@ -564,6 +538,30 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/items.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/st_window.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/test_global.h
+
+ED4_objspec.o: ed4_class.hxx
+ED4_objspec.o: ed4_defs.hxx
+ED4_objspec.o: ed4_search.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/arb_core.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/arbtools.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/downcast.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/smartptr.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/static_assert.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/test_global.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 ED4_plugins.o: ed4_class.hxx
 ED4_plugins.o: ed4_defs.hxx

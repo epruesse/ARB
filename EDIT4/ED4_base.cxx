@@ -671,7 +671,7 @@ ARB_ERROR ED4_manager::route_down_hierarchy(ED4_cb cb, AW_CL cd1, AW_CL cd2) {
 
 ED4_base *ED4_manager::find_first_that(ED4_level level, int (*condition)(ED4_base *to_test, AW_CL arg), AW_CL arg)
 {
-    if ((spec->level&level) && condition(this, arg)) {
+    if ((spec.level&level) && condition(this, arg)) {
         return this;
     }
 
@@ -687,7 +687,7 @@ ED4_base *ED4_manager::find_first_that(ED4_level level, int (*condition)(ED4_bas
                     return found;
                 }
             }
-            else if ((child->spec->level&level) && condition(child, arg)) {
+            else if ((child->spec.level&level) && condition(child, arg)) {
                 return child;
             }
         }
@@ -725,18 +725,18 @@ ED4_returncode ED4_base::remove_callbacks() // removes callbacks
 
 ED4_base *ED4_base::search_spec_child_rek(ED4_level level)   // recursive search for level
 {
-    return spec->level&level ? this : (ED4_base*)NULL;
+    return spec.level&level ? this : (ED4_base*)NULL;
 }
 
 ED4_base *ED4_manager::search_spec_child_rek(ED4_level level)
 {
-    if (spec->level & level) return this;
+    if (spec.level & level) return this;
 
     if (children) {
         int i;
 
         for (i=0; i<children->members(); i++) { // first check children
-            if (children->member(i)->spec->level & level) {
+            if (children->member(i)->spec.level & level) {
                 return children->member(i);
             }
         }
@@ -917,14 +917,14 @@ void ED4_abstract_sequence_terminal::calc_update_intervall(long *left_index, lon
     if (*left_index < 0) *left_index                             = 0;
 }
 
-void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager, arb_progress *progress) {
+void ED4_manager::create_consensus(ED4_abstract_group_manager *upper_group_manager, arb_progress *progress) {
     // creates consensus
     // is called by group manager
 
-    ED4_group_manager *group_manager_for_child = upper_group_manager;
+    ED4_abstract_group_manager *group_manager_for_child = upper_group_manager;
 
-    if (is_group_manager()) {
-        ED4_group_manager *group_manager = to_group_manager();
+    if (is_abstract_group_manager()) {
+        ED4_abstract_group_manager *group_manager = to_abstract_group_manager();
 
         group_manager->table().init(MAXSEQUENCECHARACTERLENGTH);
         group_manager_for_child = group_manager;
@@ -1028,7 +1028,7 @@ ED4_base *ED4_base::get_parent(ED4_level lev) const
 {
     ED4_base *temp_parent = this->parent;
 
-    while (temp_parent && !(temp_parent->spec->level & lev)) {
+    while (temp_parent && !(temp_parent->spec.level & lev)) {
         temp_parent = temp_parent->parent;
     }
 
@@ -1056,7 +1056,7 @@ ED4_base *ED4_manager::get_defined_level(ED4_level lev) const
     int i;
 
     for (i=0; i<children->members(); i++) { // first make a complete search in myself
-        if (children->member(i)->spec->level & lev) {
+        if (children->member(i)->spec.level & lev) {
             return children->member(i);
         }
     }
@@ -1452,7 +1452,8 @@ void ED4_base::draw_bb(int color)
     }
 }
 
-ED4_base::ED4_base(GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+ED4_base::ED4_base(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : spec(spec_)
 {
     index = 0;
     dynamic_prop = ED4_P_NO_PROP;

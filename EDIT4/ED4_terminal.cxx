@@ -28,105 +28,85 @@
 // -----------------------------------
 //      static terminal properties
 
-static ED4_object_specification tree_terminal_spec =                       // variables which determine static default properties of predefined (sub-)classes
-{
+static ED4_objspec tree_terminal_spec(
     ED4_P_IS_TERMINAL,  // static props
     ED4_L_TREE,         // level
     ED4_L_NO_LEVEL,     // allowed children level
     ED4_L_NO_LEVEL,     // handled object
-    ED4_L_NO_LEVEL,     // restriction level
-    0                   // justification value --no meaning for a terminal
-};
+    ED4_L_NO_LEVEL      // restriction level
+    );
 
-static ED4_object_specification bracket_terminal_spec =
-{
+static ED4_objspec bracket_terminal_spec(
     ED4_P_IS_TERMINAL,  // static props
     ED4_L_BRACKET,      // level
     ED4_L_NO_LEVEL,     // allowed children level
     ED4_L_NO_LEVEL,     // handled object
-    ED4_L_NO_LEVEL,     // restriction level
-    0                   // justification value --no meaning for a terminal
-};
+    ED4_L_NO_LEVEL      // restriction level
+    );
 
-static ED4_object_specification species_name_terminal_spec =
-{
+static ED4_objspec species_name_terminal_spec(
     ED4_P_IS_TERMINAL,  // static props
     ED4_L_SPECIES_NAME, // level
     ED4_L_NO_LEVEL,     // allowed children level
     ED4_L_SPECIES,      // handled object
-    ED4_L_NO_LEVEL,     // restriction level
-    0                   // justification value --no meaning for a terminal
-};
+    ED4_L_NO_LEVEL      // restriction level
+    );
 
-static ED4_object_specification sequence_info_terminal_spec =
-{
+static ED4_objspec sequence_info_terminal_spec(
     ED4_P_IS_TERMINAL,  // static props
     ED4_L_SEQUENCE_INFO, // level
     ED4_L_NO_LEVEL,     // allowed children level
     ED4_L_SEQUENCE,     // handled object
-    ED4_L_NO_LEVEL,     // restriction level
-    0                   // justification value --no meaning for a terminal
-};
+    ED4_L_NO_LEVEL      // restriction level
+    );
 
-static ED4_object_specification sequence_terminal_spec =
-{
+static ED4_objspec sequence_terminal_spec(
     ED4_P_IS_TERMINAL,     // static props
     ED4_L_SEQUENCE_STRING, // level
     ED4_L_NO_LEVEL,        // allowed children level
     ED4_L_NO_LEVEL,        // handled object
-    ED4_L_NO_LEVEL,        // restriction level
-    0                      // justification value --no meaning for a terminal
-};
+    ED4_L_NO_LEVEL         // restriction level
+    );
 
-static ED4_object_specification orf_terminal_spec =
-{
+static ED4_objspec orf_terminal_spec(
     ED4_P_IS_TERMINAL,     // static props
     ED4_L_ORF,             // level
     ED4_L_NO_LEVEL,        // allowed children level
     ED4_L_NO_LEVEL,        // handled object
-    ED4_L_NO_LEVEL,        // restriction level
-    0                      // justification value --no meaning for a terminal
-};
+    ED4_L_NO_LEVEL         // restriction level
+    );
 
-static ED4_object_specification pure_text_terminal_spec =
-{
+static ED4_objspec pure_text_terminal_spec(
     ED4_P_IS_TERMINAL,     // static props
     ED4_L_PURE_TEXT,       // level
     ED4_L_NO_LEVEL,        // allowed children level
     ED4_L_NO_LEVEL,        // handled object
-    ED4_L_NO_LEVEL,        // restriction level
-    0                      // justification value --no meaning for a terminal
-};
+    ED4_L_NO_LEVEL         // restriction level
+    );
 
-static ED4_object_specification spacer_terminal_spec =
-{
+static ED4_objspec spacer_terminal_spec(
     ED4_P_IS_TERMINAL,     // static props
     ED4_L_SPACER,          // level
     ED4_L_NO_LEVEL,        // allowed children level
     ED4_L_NO_LEVEL,        // handled object
-    ED4_L_NO_LEVEL,        // restriction level
-    0                      // justification value --no meaning for a terminal
-};
+    ED4_L_NO_LEVEL         // restriction level
+    );
 
-static ED4_object_specification line_terminal_spec =
-{
+static ED4_objspec line_terminal_spec(
     ED4_P_IS_TERMINAL,     // static props
     ED4_L_LINE,            // level
     ED4_L_NO_LEVEL,        // allowed children level
     ED4_L_NO_LEVEL,        // handled object
-    ED4_L_NO_LEVEL,        // restriction level
-    0                      // justification value --no meaning for a terminal
-};
+    ED4_L_NO_LEVEL         // restriction level
+    );
 
-static ED4_object_specification column_stat_terminal_spec =
-{
+static ED4_objspec column_stat_terminal_spec(
     ED4_P_IS_TERMINAL,     // static props
     ED4_L_COL_STAT,        // level
     ED4_L_NO_LEVEL,        // allowed children level
     ED4_L_NO_LEVEL,        // handled object
-    ED4_L_NO_LEVEL,        // restriction level
-    0                      // justification value --no meaning for a terminal
-};
+    ED4_L_NO_LEVEL         // restriction level
+    );
 
 
 char *ED4_terminal::resolve_pointer_to_string_copy(int *str_len) const {
@@ -317,8 +297,10 @@ ED4_returncode ED4_terminal::kill_object()
         }
 
         parent_manager = species_manager;
+        e4_assert(!parent_manager->is_root_group_manager());
         while (!parent_manager->is_group_manager()) {
             parent_manager = parent_manager->parent;
+            e4_assert(!parent_manager->is_root_group_manager());
         }
         group_manager = parent_manager->to_group_manager();
 
@@ -341,7 +323,7 @@ ED4_returncode ED4_terminal::kill_object()
     }
 
     ED4_device_manager *device_manager = ED4_ROOT->main_manager
-        ->get_defined_level(ED4_L_GROUP)->to_group_manager()
+        ->get_defined_level(ED4_L_ROOTGROUP)->to_root_group_manager()
         ->get_defined_level(ED4_L_DEVICE)->to_device_manager();
 
     for (int i=0; i<device_manager->children->members(); i++) { // when killing species numbers have to be recalculated
@@ -681,7 +663,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                             }
                             {
                                 ED4_device_manager *device_manager = ED4_ROOT->main_manager
-                                    ->get_defined_level(ED4_L_GROUP)->to_group_manager()
+                                    ->get_defined_level(ED4_L_ROOTGROUP)->to_root_group_manager()
                                     ->get_defined_level(ED4_L_DEVICE)->to_device_manager();
 
                                 int i;
@@ -825,8 +807,8 @@ int ED4_terminal::adjust_clipping_rectangle() {
 
 
 
-ED4_terminal::ED4_terminal(GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_base(temp_id, x, y, width, height, temp_parent)
+ED4_terminal::ED4_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+    ED4_base(spec_, temp_id, x, y, width, height, temp_parent)
 {
     memset((char*)&flag, 0, sizeof(flag));
     selection_info   = 0;
@@ -846,9 +828,8 @@ ED4_terminal::~ED4_terminal()
 }
 
 ED4_tree_terminal::ED4_tree_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_terminal(temp_id, x, y, width, height, temp_parent)
+    : ED4_terminal(tree_terminal_spec, temp_id, x, y, width, height, temp_parent)
 {
-    spec = &(tree_terminal_spec);
 }
 
 ED4_returncode ED4_tree_terminal::Show(int IF_ASSERTION_USED(refresh_all), int is_cleared)
@@ -887,14 +868,9 @@ ED4_returncode ED4_tree_terminal::draw(int /* only_text */)                  // 
     return (ED4_R_OK);
 }
 
-ED4_tree_terminal::~ED4_tree_terminal()
-{
-}
-
 ED4_bracket_terminal::ED4_bracket_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_terminal(temp_id, x, y, width, height, temp_parent)
+    : ED4_terminal(bracket_terminal_spec, temp_id, x, y, width, height, temp_parent)
 {
-    spec = &(bracket_terminal_spec);
 }
 
 ED4_returncode ED4_bracket_terminal::Show(int IF_ASSERTION_USED(refresh_all), int is_cleared)
@@ -1028,18 +1004,8 @@ ED4_returncode ED4_bracket_terminal::draw(int /* only_text */)                  
     return (ED4_R_OK);
 }
 
-ED4_bracket_terminal::~ED4_bracket_terminal()
-{
-}
-
 ED4_species_name_terminal::ED4_species_name_terminal(GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_text_terminal(temp_id, x, y, width, height, temp_parent)
-{
-    spec = &(species_name_terminal_spec);
-}
-
-
-ED4_species_name_terminal::~ED4_species_name_terminal()
+    ED4_text_terminal(species_name_terminal_spec, temp_id, x, y, width, height, temp_parent)
 {
 }
 
@@ -1115,29 +1081,18 @@ GB_CSTR ED4_species_name_terminal::get_displayed_text() const
 
 
 ED4_sequence_info_terminal::ED4_sequence_info_terminal(const char *temp_id, /* GBDATA *gbd, */ AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_text_terminal(temp_id, x, y, width, height, temp_parent)
-{
-    spec = &(sequence_info_terminal_spec);
-}
-
-
-ED4_sequence_info_terminal::~ED4_sequence_info_terminal()
+    : ED4_text_terminal(sequence_info_terminal_spec, temp_id, x, y, width, height, temp_parent)
 {
 }
 
 ED4_consensus_sequence_terminal::ED4_consensus_sequence_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
     : ED4_sequence_terminal(temp_id, x, y, width, height, temp_parent)
 {
-    spec = &(sequence_terminal_spec);
     species_name = NULL;
 }
 
-ED4_consensus_sequence_terminal::~ED4_consensus_sequence_terminal()
-{
-}
-
-ED4_abstract_sequence_terminal::ED4_abstract_sequence_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_text_terminal(temp_id, x, y, width, height, temp_parent)
+ED4_abstract_sequence_terminal::ED4_abstract_sequence_terminal(const ED4_objspec& spec_, const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_text_terminal(spec_, temp_id, x, y, width, height, temp_parent)
 {
     species_name = NULL;
 }
@@ -1147,11 +1102,10 @@ ED4_abstract_sequence_terminal::~ED4_abstract_sequence_terminal() {
 }
 
 ED4_orf_terminal::ED4_orf_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_abstract_sequence_terminal(temp_id, x, y, width, height, temp_parent)
+    : ED4_abstract_sequence_terminal(orf_terminal_spec, temp_id, x, y, width, height, temp_parent)
 {
-    spec = &(orf_terminal_spec);
     aaSequence   = 0;
-    aaColor   = 0;
+    aaColor      = 0;
     aaStartPos   = 0;
     aaStrandType = 0;
 }
@@ -1168,9 +1122,8 @@ ED4_orf_terminal::~ED4_orf_terminal()
 }
 
 ED4_sequence_terminal::ED4_sequence_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_abstract_sequence_terminal(temp_id, x, y, width, height, temp_parent)
+    : ED4_abstract_sequence_terminal(sequence_terminal_spec, temp_id, x, y, width, height, temp_parent)
 {
-    spec = &(sequence_terminal_spec);
     st_ml_node = NULL;
 }
 
@@ -1179,20 +1132,10 @@ GB_alignment_type ED4_sequence_terminal::GetAliType()
     return ED4_ROOT->alignment_type;
 }
 
-ED4_sequence_terminal::~ED4_sequence_terminal()
-{
-}
-
 ED4_pure_text_terminal::ED4_pure_text_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_text_terminal(temp_id, x, y, width, height, temp_parent)
-{
-    spec = &pure_text_terminal_spec;
-}
-
-ED4_pure_text_terminal::~ED4_pure_text_terminal()
+    : ED4_text_terminal(pure_text_terminal_spec, temp_id, x, y, width, height, temp_parent)
 {
 }
-
 
 ED4_returncode ED4_spacer_terminal::Show(int /* refresh_all */, int is_cleared) // a spacer terminal doesn't show anything - it's just a dummy terminal
 {
@@ -1215,13 +1158,7 @@ ED4_returncode ED4_spacer_terminal::draw(int /* only_text */)                   
 }
 
 ED4_spacer_terminal::ED4_spacer_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_terminal(temp_id, x, y, width, height, temp_parent)
-{
-    spec = &(spacer_terminal_spec);
-}
-
-
-ED4_spacer_terminal::~ED4_spacer_terminal()
+    : ED4_terminal(spacer_terminal_spec, temp_id, x, y, width, height, temp_parent)
 {
 }
 
@@ -1258,12 +1195,7 @@ ED4_returncode ED4_line_terminal::Show(int /* refresh_all */, int is_cleared)
 
 
 ED4_line_terminal::ED4_line_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_terminal(temp_id, x, y, width, height, temp_parent)
-{
-    spec = &(line_terminal_spec);
-}
-
-ED4_line_terminal::~ED4_line_terminal()
+    : ED4_terminal(line_terminal_spec, temp_id, x, y, width, height, temp_parent)
 {
 }
 
@@ -1523,9 +1455,8 @@ int ED4_columnStat_terminal::update_likelihood() {
 }
 
 ED4_columnStat_terminal::ED4_columnStat_terminal(GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_text_terminal(temp_id, x, y, width, height, temp_parent)
+    ED4_text_terminal(column_stat_terminal_spec, temp_id, x, y, width, height, temp_parent)
 {
-    spec = &(column_stat_terminal_spec);
     for (int i=0; i<4; i++) likelihood[i] = 0;
     latest_update = 0;
 }
