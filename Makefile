@@ -293,6 +293,7 @@ cflags += -funit-at-a-time
 cflags += -fPIC
 cflags += -fno-common# link all global data into one namespace
 cflags += -fstrict-aliasing# gcc 3.4
+#cflags += -save-temps# uncomment to see preprocessor output
 
 #---------------------- X11 location
 

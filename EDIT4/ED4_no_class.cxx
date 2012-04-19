@@ -1229,7 +1229,7 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
             error = "Please select some species in order to insert them into new groups";
         }
         else if (!foundField) {
-            error = GB_export_errorf("Field not found: '%s'", field_name);
+            error = GBS_global_string("Field not found: '%s'", field_name);
         }
 
         free(doneContents);
@@ -1851,7 +1851,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
     e4_assert(creation_mode>=0 && creation_mode<=2);
 
     if (!new_species_full_name || new_species_full_name[0]==0) {
-        error = GB_export_error("Please enter a full_name for the new species");
+        error = "Please enter a full_name for the new species";
     }
     else {
         error                    = GB_begin_transaction(GLOBAL_gb_main);

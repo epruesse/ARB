@@ -148,6 +148,7 @@ namespace arb_test {
             unannotate();
             annotation = annotation_ ? strdup(annotation_) : NULL;
         }
+        const char *get_annotation() const { return annotation; }
 
         static void print_annotation() {
             char*& annotation = get_instance().annotation;
