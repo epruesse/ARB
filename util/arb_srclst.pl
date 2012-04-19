@@ -161,6 +161,7 @@ my @used_when_matchesFull = (
                              qr/\/TREEPUZZLE\/.*\.gif$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.a00$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.arb$/o,
+                             qr/\/UNIT_TESTER\/run\/.*\.amc$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.expected$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.fig$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.in$/o,
@@ -466,39 +467,49 @@ sub dumpFiles($);
 sub dumpFiles($) {
   my ($dir) = @_;
 
-  my @subdirs;
-  my @files;
+  eval {
+    my @subdirs;
+    my @files;
 
-  my %CVS;
-  getVCEntries($dir,%CVS);
+    my %CVS;
+    getVCEntries($dir,%CVS);
 
-  opendir(DIR,$dir) || die "can't read directory '$dir' (Reason: $!)";
-  foreach (readdir(DIR)) {
-    if ($_ ne '.' and $_ ne '..') {
-      my $full = $dir.'/'.$_;
-      if (not -l $full) {
-        if (-d $full) {
-          if (useDir($full)==1) {
-            expectVCmember($full,$_,%CVS);
-            push @subdirs, $full;
+    opendir(DIR,$dir) || die "can't read directory '$dir' (Reason: $!)";
+    foreach (readdir(DIR)) {
+      if ($_ ne '.' and $_ ne '..') {
+        my $full = $dir.'/'.$_;
+        if (not -l $full) {
+          if (-d $full) {
+            if (useDir($full)==1) {
+              expectVCmember($full,$_,%CVS);
+              push @subdirs, $full;
+            }
+            else { unexpectVCmember($full,$_,%CVS); }
           }
-          else { unexpectVCmember($full,$_,%CVS); }
-        }
-        elsif (-f $full) {
-          if (useFile($dir,$_)==1) {
-            expectVCmember($full,$_,%CVS);
-            push @files, $full;
+          elsif (-f $full) {
+            if (useFile($dir,$_)==1) {
+              expectVCmember($full,$_,%CVS);
+              push @files, $full;
+            }
+            else { unexpectVCmember($full,$_,%CVS); }
           }
-          else { unexpectVCmember($full,$_,%CVS); }
+          else { die "Unknown: '$full'"; }
         }
-        else { die "Unknown: '$full'"; }
       }
     }
-  }
-  closedir(DIR);
+    closedir(DIR);
 
-  foreach (@files) { print $_."\n"; }
-  foreach (@subdirs) { dumpFiles($_); }
+    foreach (@files) { print $_."\n"; }
+    foreach (@subdirs) { dumpFiles($_); }
+  };
+  if ($@) {
+    my $err = $@;
+    if ($err =~ /at\s(.*\.pl)\sline\s([0-9]+)/) {
+      $err = "$1:$2: Error: $`";
+    }
+    $err =~ s/\n//g;
+    die "$err\n";
+  }
 }
 
 my $args = scalar(@ARGV);

@@ -1741,6 +1741,9 @@ save_test: rmbak
 	@echo "Testing source list.."
 	@util/arb_srclst.pl > /dev/null
 
+save_test_no_error:
+	@-$(MAKE) save_test
+
 rel_minor:
 	touch SOURCE_TOOLS/inc_minor.stamp
 	$(MAKE) do_release
@@ -1956,7 +1959,7 @@ run_tests_faked_arbpid:
 	$(MAKE) $(TEST_MAKE_FLAGS) $(NODIR) $(TESTED_UNITS)
 	@echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
 	+@$(TEST_RUN_SUITE) cleanup
-	$(MAKE) clean_cov
+	@$(MAKE) clean_cov >/dev/null
 
 ut:
 ifeq ($(UNIT_TESTS),1)
@@ -2026,9 +2029,6 @@ endif
 
 build: arb
 	$(MAKE) binlink preplib
-ifeq ("$(DEVELOPER)","SAVETEST")
-	$(MAKE) save_test
-endif
 
 all:
 	@echo "Build time" > $(TIMELOG)
@@ -2042,6 +2042,7 @@ ifeq ($(UNIT_TESTS),1)
 	@$(TIMECMD) $(MAKE) run_tests
 endif
 	@echo "$(SEP) $(MAKE) build [done]"
+	@$(MAKE) save_test_no_error >/dev/null # just show hints
 	@cat $(TIMELOG)
 	@rm $(TIMELOG)
 
