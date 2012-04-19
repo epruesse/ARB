@@ -208,11 +208,17 @@ sub generate_table($$\%\&) {
 
     my $cmp = $prioa - $priob;
 
-    if ($cmp ==0) {
+    if ($cmp == 0) {
       my $loca = $location{$a};
       my $locb = $location{$b};
       if (defined $loca) {
-        if (defined $locb) { $cmp = $loca cmp $locb; }
+        if (defined $locb) {
+          my ($fa,$la,$fb,$lb);
+          if ($loca =~ /^(.*):([0-9]+)$/) { ($fa,$la) = ($1,$2); } else { die "Invalid location '$loca'"; }
+          if ($locb =~ /^(.*):([0-9]+)$/) { ($fb,$lb) = ($1,$2); } else { die "Invalid location '$locb'"; }
+          $cmp = $fa cmp $fb;
+          if ($cmp==0) { $cmp = $la <=> $lb; }
+        }
         else { $cmp = 1; }
       }
       else {

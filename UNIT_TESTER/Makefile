@@ -11,7 +11,7 @@ TESTER_OBJECTS = \
 ENVIRONMENT_OBJECTS = \
 	TestEnvironment.o \
 
-CPP_OBJECTS = $(TESTER_OBJECTS) $(ENVIRONMENT_OBJECTS)
+ALL_OBJECTS = $(TESTER_OBJECTS) $(ENVIRONMENT_OBJECTS)
 
 ARBROOT=..
 
@@ -23,21 +23,21 @@ TEST_ENVIRONMENT_LIBS = \
 $(MAIN): $(TESTER_OBJECTS) test_environment
 	$(LINK_STATIC_LIB) $(MAIN) $(TESTER_OBJECTS)  
 
-$(CPP_OBJECTS): Makefile.setup.local Makefile
+$(ALL_OBJECTS): Makefile.setup.local Makefile
 
-test_environment: $(ENVIRONMENT_OBJECTS) $(TESTER_OBJECTS) $(TEST_ENVIRONMENT_LIBS)
-	$(LINK_EXECUTABLE) test_environment $(ENVIRONMENT_OBJECTS) $(TESTER_OBJECTS) $(LIBPATH) $(ARBDB_LIB) $(TEST_ENVIRONMENT_LIBS) $(EXECLIBS)
+test_environment: $(ALL_OBJECTS) $(TEST_ENVIRONMENT_LIBS)
+	$(LINK_EXECUTABLE) test_environment $(ALL_OBJECTS) $(LIBPATH) $(ARBDB_LIB) $(TEST_ENVIRONMENT_LIBS) $(EXECLIBS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c $< -DDEADLOCKGUARD=$(DEADLOCKGUARD) $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
-	rm -f $(CPP_OBJECTS) *.a test_environment skipslow.stamp
+	rm -f $(ALL_OBJECTS) *.a test_environment skipslow.stamp
 	rm -rf logs tests
 	$(MAKE) -f Makefile.test clean
 
 
-DEPENDS = $(CPP_OBJECTS:.o=.depend)
+DEPENDS = $(ALL_OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile
 	@rm $(DEPENDS)
