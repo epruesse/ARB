@@ -523,14 +523,14 @@ public:
     ED4_base* member(ED4_index i) const { e4_assert(i>=0 && i<size_of_list); return memberList[i]; }
     ED4_index members() const { return no_of_members; }
 
-    ED4_returncode  insert_member   (ED4_base *new_member); // only used to move members with mouse
-    ED4_returncode  append_member   (ED4_base *new_member);
+    ED4_returncode  insert_member(ED4_base *new_member); // only used to move members with mouse
+    ED4_returncode  append_member(ED4_base *new_member);
 
     // an array is chosen instead of a linked list, because destructorhandling is more comfortable in various destructors (manager-destructors)
 
-    ED4_returncode  delete_member       (ED4_base *member);
-    ED4_index search_member       (ED4_extension *location, ED4_properties prop); // search member
-    ED4_returncode  shift_list      (ED4_index start_index, int length);
+    ED4_returncode  remove_member(ED4_base *member);
+    ED4_index       search_member(ED4_extension *location, ED4_properties prop); // search member
+    ED4_returncode  shift_list(ED4_index start_index, int length);
     // list has to be shifted because member_list is an array and not a linked list
 
     ED4_returncode  search_target_species   (ED4_extension *location, ED4_properties prop, ED4_base **found_member, ED4_level return_level);
@@ -848,9 +848,8 @@ public:
     virtual ED4_returncode  resize_requested_by_child()=0;
     virtual ED4_returncode  resize_requested_by_parent()=0;
 
-    virtual ED4_returncode  delete_requested_by_parent()=0;
-    virtual ED4_returncode  delete_requested_by_child();
-    virtual ED4_returncode  delete_requested_children()=0;
+    virtual void delete_requested_children() = 0;
+    virtual void Delete()                    = 0;
 
     virtual ED4_returncode  calc_size_requested_by_parent()=0;
     virtual ED4_returncode  move_requested_by_parent(ED4_move_info *mi)=0;
@@ -866,14 +865,16 @@ public:
     int calc_group_depth();
 
     // general purpose functions
-    virtual ED4_base        *search_ID(const char *id)=0;
-    virtual void        check_all();
-    virtual short           in_border(AW_pos abs_x, AW_pos abs_y, ED4_movemode mode);
+    virtual ED4_base        *search_ID(const char *id) = 0;
+    virtual void  check_all();
+    virtual short in_border(AW_pos abs_x, AW_pos abs_y, ED4_movemode mode);
     virtual ED4_returncode      set_width();
-    ED4_base            *get_parent(ED4_level lev) const;
+    
 
-    ED4_AREA_LEVEL      get_area_level(ED4_multi_species_manager **multi_species_manager=0) const; // returns area we belong to and the next multi species manager of the area
+    ED4_AREA_LEVEL get_area_level(ED4_multi_species_manager **multi_species_manager=0) const; // returns area we belong to and the next multi species manager of the area
 
+    ED4_base *get_parent(ED4_level lev) const;
+    void unlink_from_parent();
     bool has_parent(ED4_manager *Parent);
     bool is_child_of(ED4_manager *Parent) { return has_parent(Parent); }
 
@@ -1005,8 +1006,8 @@ public:
     ED4_returncode      clear_refresh();
     virtual ED4_returncode      resize_requested_by_parent();
 
-    virtual ED4_returncode  delete_requested_by_parent();
-    virtual ED4_returncode  delete_requested_children();
+    virtual void delete_requested_children();
+    virtual void Delete();
 
     virtual ED4_returncode  calc_size_requested_by_parent();
     virtual ED4_returncode  move_requested_by_parent(ED4_move_info *mi);
@@ -1017,14 +1018,18 @@ public:
     virtual ARB_ERROR route_down_hierarchy(ED4_cb1 cb, AW_CL cd) { return route_down_hierarchy(ED4_cb(cb), cd, 0); }
     virtual ARB_ERROR route_down_hierarchy(ED4_cb0 cb) { return route_down_hierarchy(ED4_cb(cb), 0, 0); }
 
-    virtual ED4_base*       find_first_that(ED4_level level, int (*condition)(ED4_base *to_test, AW_CL arg), AW_CL arg);
-    virtual ED4_base*       find_first_that(ED4_level level, int (*condition)(ED4_base *to_test));
+    virtual ED4_base*       find_first_that(ED4_level level, bool (*condition)(ED4_base *to_test, AW_CL arg), AW_CL arg);
+    virtual ED4_base*       find_first_that(ED4_level level, bool (*condition)(ED4_base *to_test)) {
+        return find_first_that(level, (bool(*)(ED4_base*, AW_CL))condition, (AW_CL)0);
+    }
 
-    // bottom-up functions
+     // bottom-up functions
     virtual ED4_returncode  move_requested_by_child(ED4_move_info *moveinfo);
     virtual ED4_returncode  resize_requested_by_child();
     virtual ED4_returncode  refresh_requested_by_child();
-    ED4_base            *get_defined_level(ED4_level lev) const;
+    void delete_requested_by_child();
+    
+    ED4_base *get_defined_level(ED4_level lev) const;
 
     // functions referring the consensus
 
@@ -1060,8 +1065,9 @@ public:
     // general folding functions
     virtual ED4_returncode  unfold_group(char *bracketID_to_unfold);
     virtual ED4_returncode  fold_group(char *bracketID_to_fold);
-    virtual ED4_returncode      make_children_visible();
-    virtual ED4_returncode  hide_children();
+
+    ED4_returncode hide_children();
+    ED4_returncode unhide_children();
 
     ED4_manager(const ED4_objspec& spec_, const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_manager();
@@ -1103,8 +1109,8 @@ public:
     virtual ED4_returncode  resize_requested_by_child();
     virtual ED4_returncode      resize_requested_by_parent();
 
-    virtual ED4_returncode  delete_requested_by_parent();
-    virtual ED4_returncode  delete_requested_children();
+    virtual void delete_requested_children();
+    virtual void Delete();
 
     virtual ED4_returncode  move_requested_by_parent(ED4_move_info *mi);
     virtual ED4_returncode  event_sent_by_parent(AW_event *event, AW_window *aww);
@@ -1223,6 +1229,8 @@ public:
     AW_window *get_aww() const { e4_assert(tmp_aww); return tmp_aww; }
     AW_device *get_device() const { e4_assert(tmp_device); return tmp_device; }
     ED4_window *get_ed4w() const { e4_assert(tmp_ed4w); return tmp_ed4w; }
+
+    inline ED4_device_manager *get_device_manager();
 
     int            temp_gc;
     AW_font_group  font_group;
@@ -1826,6 +1834,10 @@ E4B_IMPL_CASTOP(species_name_terminal);  // to_species_name_terminal
 E4B_IMPL_CASTOP(terminal);               // to_terminal
 E4B_IMPL_CASTOP(text_terminal);          // to_text_terminal
 
+inline ED4_device_manager *ED4_root::get_device_manager() {
+    return main_manager->search_spec_child_rek(ED4_L_DEVICE)->to_device_manager();
+}
+
 // --------------------------------------------
 //      Prototype functions without a class
 
@@ -1884,7 +1896,7 @@ void        ED4_remote_set_cursor_cb    (AW_root *awr, AW_CL, AW_CL);
 void        ED4_change_cursor       (AW_window * /* aww */, AW_CL /* cd1 */, AW_CL /* cd2 */);
 void        ED4_set_reference_species   (AW_window *aww, AW_CL cd1, AW_CL cd2);
 
-void        ED4_show_detailed_column_stats  (AW_window *aww, AW_CL, AW_CL);
+void        ED4_toggle_detailed_column_stats  (AW_window *aww, AW_CL, AW_CL);
 void        ED4_set_col_stat_threshold  (AW_window *aww, AW_CL, AW_CL);
 
 void        ED4_new_editor_window       (AW_window *aww, AW_CL cd1, AW_CL cd2);
@@ -1930,4 +1942,6 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access);
 #else
 #error ed4_class included twice
 #endif
+
+
 

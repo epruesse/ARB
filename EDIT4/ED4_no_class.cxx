@@ -917,7 +917,7 @@ void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL cd2) {
 
 static void show_detailed_column_stats_activated(AW_window *aww) {
     ED4_ROOT->column_stat_initialized = 1;
-    ED4_show_detailed_column_stats(aww, 0, 0);
+    ED4_toggle_detailed_column_stats(aww, 0, 0);
 }
 
 double ED4_columnStat_terminal::threshold = -1;
@@ -954,7 +954,7 @@ void ED4_set_col_stat_threshold(AW_window * /* aww */, AW_CL cl_do_refresh, AW_C
     }
 }
 
-void ED4_show_detailed_column_stats(AW_window *aww, AW_CL, AW_CL)
+void ED4_toggle_detailed_column_stats(AW_window *aww, AW_CL, AW_CL)
 {
     while (!ED4_columnStat_terminal::threshold_is_set()) {
         ED4_set_col_stat_threshold(aww, 0, 0);
@@ -985,40 +985,48 @@ void ED4_show_detailed_column_stats(AW_window *aww, AW_CL, AW_CL)
     }
 
     ED4_multi_sequence_manager *multi_seq_man = cursor_manager->to_multi_sequence_manager();
-    char buffer[35];
-    int count = 1;
-    sprintf(buffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
+    ED4_base *existing_colstat = multi_seq_man->search_spec_child_rek(ED4_L_COL_STAT);
+    if (existing_colstat) {
+        ED4_manager *colstat_seq_man = existing_colstat->get_parent(ED4_L_SEQUENCE)->to_manager();
+        colstat_seq_man->Delete();
+    }
+    else { // add
+        char buffer[35];
+        int count = 1;
+        sprintf(buffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
 
-    ED4_sequence_manager *new_seq_man = new ED4_sequence_manager(buffer, 0, 0, 0, 0, multi_seq_man);
-    new_seq_man->set_properties(ED4_P_MOVABLE);
-    multi_seq_man->children->append_member(new_seq_man);
+        ED4_sequence_manager *new_seq_man = new ED4_sequence_manager(buffer, 0, 0, 0, 0, multi_seq_man);
+        new_seq_man->set_properties(ED4_P_MOVABLE);
+        multi_seq_man->children->append_member(new_seq_man);
 
-    int pixel_length = max_seq_terminal_length;
+        int pixel_length = max_seq_terminal_length;
 #if defined(DEBUG) && 1
-    printf("max_seq_terminal_length=%li\n", max_seq_terminal_length);
+        printf("max_seq_terminal_length=%li\n", max_seq_terminal_length);
 #endif
 
-    AW_pos font_height = ED4_ROOT->font_group.get_height(ED4_G_SEQUENCES);
-    AW_pos columnStatHeight = ceil((COLUMN_STAT_ROWS+0.5 /* reserve a bit more space */)*COLUMN_STAT_ROW_HEIGHT(font_height));
-    ED4_columnStat_terminal *ref_colStat_terminal = ED4_ROOT->ref_terminals.get_ref_column_stat();
-    ref_colStat_terminal->extension.size[HEIGHT] = columnStatHeight;
-    ref_colStat_terminal->extension.size[WIDTH] = pixel_length;
+        AW_pos font_height      = ED4_ROOT->font_group.get_height(ED4_G_SEQUENCES);
+        AW_pos columnStatHeight = ceil((COLUMN_STAT_ROWS+0.5 /* reserve a bit more space */)*COLUMN_STAT_ROW_HEIGHT(font_height));
 
-    ED4_sequence_info_terminal *ref_colStat_info_terminal = ED4_ROOT->ref_terminals.get_ref_column_stat_info();
-    ED4_sequence_info_terminal *new_colStat_info_term = new ED4_sequence_info_terminal("CStat", 0, 0, SEQUENCEINFOSIZE, columnStatHeight, new_seq_man);
-    new_colStat_info_term->set_properties((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
-    new_colStat_info_term->set_links(ref_colStat_info_terminal, ref_colStat_terminal);
-    new_seq_man->children->append_member(new_colStat_info_term);
+        ED4_columnStat_terminal    *ref_colStat_terminal      = ED4_ROOT->ref_terminals.get_ref_column_stat();
+        ED4_sequence_info_terminal *ref_colStat_info_terminal = ED4_ROOT->ref_terminals.get_ref_column_stat_info();
+        
+        ref_colStat_terminal->extension.size[HEIGHT] = columnStatHeight;
+        ref_colStat_terminal->extension.size[WIDTH]  = pixel_length;
 
-    sprintf(buffer, "Column_Statistic_Terminal.%ld.%d", ED4_counter, count++);
-    ED4_columnStat_terminal *new_colStat_term = new ED4_columnStat_terminal(buffer, SEQUENCEINFOSIZE, 0, 0, columnStatHeight, new_seq_man);
-    new_colStat_term->set_properties(ED4_P_CURSOR_ALLOWED);
-    new_colStat_term->set_links(ref_colStat_terminal, ref_colStat_terminal);
-    new_seq_man->children->append_member(new_colStat_term);
+        ED4_sequence_info_terminal *new_colStat_info_term = new ED4_sequence_info_terminal("CStat", 0, 0, SEQUENCEINFOSIZE, columnStatHeight, new_seq_man);
+        new_colStat_info_term->set_properties((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
+        new_colStat_info_term->set_links(ref_colStat_info_terminal, ref_colStat_terminal);
+        new_seq_man->children->append_member(new_colStat_info_term);
 
-    ED4_counter++;
+        sprintf(buffer, "Column_Statistic_Terminal.%ld.%d", ED4_counter, count++);
+        ED4_columnStat_terminal *new_colStat_term = new ED4_columnStat_terminal(buffer, SEQUENCEINFOSIZE, 0, 0, columnStatHeight, new_seq_man);
+        new_colStat_term->set_links(ref_colStat_terminal, ref_colStat_terminal);
+        new_seq_man->children->append_member(new_colStat_term);
 
-    new_seq_man->resize_requested_by_child();
+        ED4_counter++;
+
+        new_seq_man->resize_requested_by_child();
+    }
     ED4_ROOT->refresh_all_windows(0);
 }
 
@@ -1104,7 +1112,7 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
         }
 
         if (move_object) {
-            object->parent->children->delete_member(object);
+            object->parent->children->remove_member(object);
 
             ED4_base *base = object->get_parent(ED4_L_MULTI_SPECIES);
             if (base && base->is_multi_species_manager()) {

@@ -803,19 +803,17 @@ static ARB_ERROR ED4_with_all_loaded_species(ED4_Species_Callback cb, AW_CL cd) 
 //  faligner
 // --------------------------------------------------------------------------------
 
-static int has_species_name(ED4_base *base, AW_CL cl_species_name)
-{
+static bool has_species_name(ED4_base *base, AW_CL cl_species_name) {
     ED4_species_name_terminal *name_term = base->to_species_name_terminal();
     GBDATA *gbd = name_term->get_species_pointer();
 
     if (gbd) {
         const char *name = GB_read_char_pntr(gbd);
         e4_assert(name);
-        int has_name = strcmp(name, (const char*)cl_species_name)==0;
-        return has_name;
+        return strcmp(name, (const char*)cl_species_name)==0;
     }
 
-    return 0;
+    return false;
 }
 
 ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_name)
@@ -1478,7 +1476,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     awmm->sep______________();
     awmm->insert_menu_topic("enable_col_stat",  "Activate column statistics", "v", "st_ml.hlp", AWM_EXP, ED4_activate_col_stat,          0, 0);
     awmm->insert_menu_topic("disable_col_stat", "Disable column statistics",  "i", "st_ml.hlp", AWM_EXP, disable_col_stat,               0, 0);
-    awmm->insert_menu_topic("detail_col_stat",  "Detailed column statistics", "c", "st_ml.hlp", AWM_EXP, ED4_show_detailed_column_stats, 0, 0);
+    awmm->insert_menu_topic("detail_col_stat",  "Toggle detailed Col.-Stat.", "c", "st_ml.hlp", AWM_EXP, ED4_toggle_detailed_column_stats, 0, 0);
     awmm->insert_menu_topic("dcs_threshold",    "Set threshold for D.c.s.",   "f", "st_ml.hlp", AWM_EXP, ED4_set_col_stat_threshold,     1, 0);
     awmm->sep______________();
     awmm->insert_menu_topic("visualize_SAI", "Visualize SAIs", "z", "visualizeSAI.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_createVisualizeSAI_window, 0);

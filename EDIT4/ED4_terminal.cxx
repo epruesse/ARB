@@ -267,7 +267,7 @@ ED4_returncode ED4_terminal::remove_callbacks()                     // removes c
 {
     if (get_species_pointer()) {
         set_species_pointer(0);
-        tflag.deleted = 1;
+        tflag.deleted = 1; // @@@ why ? 
         dynamic_prop = (ED4_properties) (dynamic_prop & ~ED4_P_CURSOR_ALLOWED);
 
         set_refresh();
@@ -305,7 +305,7 @@ ED4_returncode ED4_terminal::kill_object()
         group_manager = parent_manager->to_group_manager();
 
         parent_manager = group_manager->parent;
-        parent_manager->children->delete_member(group_manager);
+        parent_manager->children->remove_member(group_manager);
 
         GB_push_transaction (GLOBAL_gb_main);
         parent_manager->update_consensus(parent_manager, NULL,   group_manager);
@@ -315,16 +315,14 @@ ED4_returncode ED4_terminal::kill_object()
     }
     else
     {
-        parent_manager->children->delete_member(species_manager);
+        parent_manager->children->remove_member(species_manager);
         GB_push_transaction (GLOBAL_gb_main);
         parent_manager->update_consensus(parent_manager,   NULL, species_manager);
         parent_manager->rebuild_consensi(species_manager, ED4_U_UP);
         GB_pop_transaction (GLOBAL_gb_main);
     }
 
-    ED4_device_manager *device_manager = ED4_ROOT->main_manager
-        ->get_defined_level(ED4_L_ROOTGROUP)->to_root_group_manager()
-        ->get_defined_level(ED4_L_DEVICE)->to_device_manager();
+    ED4_device_manager *device_manager = ED4_ROOT->get_device_manager();
 
     for (int i=0; i<device_manager->children->members(); i++) { // when killing species numbers have to be recalculated
         ED4_base *member = device_manager->children->member(i);
@@ -391,7 +389,7 @@ ED4_returncode ED4_terminal::draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text, int
     ED4_extension  location;
 
     if (cursor_y!=-1) {
-        ED4_device_manager *device_manager = ED4_ROOT->main_manager->search_spec_child_rek(ED4_L_DEVICE)->to_device_manager();
+        ED4_device_manager *device_manager = ED4_ROOT->get_device_manager();
         drag_x = 0;
         drag_y = (AW_pos)cursor_y; // cursor_y is already in world coordinates!
         location.position[X_POS] = drag_x;
@@ -662,12 +660,9 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                                 dragged_name_terminal->parent->move_requested_by_child(&mi);
                             }
                             {
-                                ED4_device_manager *device_manager = ED4_ROOT->main_manager
-                                    ->get_defined_level(ED4_L_ROOTGROUP)->to_root_group_manager()
-                                    ->get_defined_level(ED4_L_DEVICE)->to_device_manager();
+                                ED4_device_manager *device_manager = ED4_ROOT->get_device_manager();
 
-                                int i;
-                                for (i=0; i<device_manager->children->members(); i++) { // when moving species numbers have to be recalculated
+                                for (int i=0; i<device_manager->children->members(); i++) { // when moving species numbers have to be recalculated
                                     ED4_base *member = device_manager->children->member(i);
 
                                     if (member->is_area_manager()) {
@@ -810,7 +805,7 @@ int ED4_terminal::adjust_clipping_rectangle() {
 ED4_terminal::ED4_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
     ED4_base(spec_, temp_id, x, y, width, height, temp_parent)
 {
-    memset((char*)&flag, 0, sizeof(flag));
+    memset((char*)&tflag, 0, sizeof(tflag));
     selection_info   = 0;
     actual_timestamp = 0;
 }
@@ -1345,9 +1340,9 @@ ED4_returncode ED4_columnStat_terminal::draw(int /* only_text */)
         if (left>right) return ED4_R_OK;
     }
 
-    char *sbuffer = new char[right+1];  // used to build displayed terminal content  (values = '0'-'9')
-    memset(sbuffer, ' ', right);
-    sbuffer[right] = 0; // eos
+    char *sbuffer = new char[right+2];  // used to build displayed terminal content  (values = '0'-'9')
+    memset(sbuffer, ' ', right+1);
+    sbuffer[right+1] = 0; // eos
 
     AW_pos y2;
     int r;
@@ -1398,7 +1393,7 @@ ED4_returncode ED4_columnStat_terminal::draw(int /* only_text */)
             int sum;
             int found = find_significant_positions(significance, likelihood[0][p], likelihood[1][p], likelihood[2][p], likelihood[3][p], &sum);
 
-            if (found) {
+            if (found && significance<100) {
                 e4_assert(sum>=significance && sum<=100);
                 color = ED4_G_CBACK_1+((sum-significance)*(ED4_G_CBACK_9-ED4_G_CBACK_1))/(100-significance);
                 e4_assert(color>=ED4_G_CBACK_1 && color<=ED4_G_CBACK_9);
@@ -1444,7 +1439,7 @@ ED4_returncode ED4_columnStat_terminal::draw(int /* only_text */)
         device->text(gc, sbuffer, text_x, y2-font_height, 0, AW_SCREEN, right); // draw higher-significant digit
     }
 
-    free(sbuffer);
+    delete [] sbuffer;
     return ED4_R_OK;
 }
 

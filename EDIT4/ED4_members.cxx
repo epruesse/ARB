@@ -232,7 +232,7 @@ ED4_returncode ED4_members::append_member(ED4_base *new_member) {
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_members::delete_member(ED4_base *member_to_del)
+ED4_returncode ED4_members::remove_member(ED4_base *member_to_del)
 {
     if (!member_to_del || (no_of_members <= 0)) {
         return (ED4_R_IMPOSSIBLE);

@@ -37,7 +37,7 @@ bool ED4_terminal::remove_deleted_children()
             set_species_pointer(0);
         }
         ED4_ROOT->announce_deletion(this);
-        parent->children->delete_member(this);
+        parent->children->remove_member(this);
         return true;
     }
 
@@ -53,7 +53,7 @@ bool ED4_sequence_info_terminal::remove_deleted_children()
             set_species_pointer(0);
         }
         ED4_ROOT->announce_deletion(this);
-        parent->children->delete_member(this);
+        parent->children->remove_member(this);
         return true;
     }
 
@@ -78,7 +78,7 @@ bool ED4_manager::remove_deleted_children()
     if (!children->members()) {
         if (parent) {
             ED4_ROOT->announce_deletion(this);
-            parent->children->delete_member(this);
+            parent->children->remove_member(this);
             return true;
         }
 #if defined(DEBUG)
@@ -167,42 +167,17 @@ void ED4_terminal::changed_by_database()
     }
 }
 
-void ED4_base::deleted_from_database()
-{
+void ED4_base::deleted_from_database() {
     my_species_pointer.notify_deleted();
 }
-void ED4_terminal::deleted_from_database()
-{
+
+void ED4_terminal::deleted_from_database() {
     ED4_base::deleted_from_database();
 }
-void ED4_text_terminal::deleted_from_database()
-{
-#if defined(DEBUG)
-    printf("ED4_text_terminal::deleted_from_database (%p)\n", this);
-#endif // DEBUG
+
+void ED4_text_terminal::deleted_from_database() {
     ED4_terminal::deleted_from_database();
-
-    // @@@ hide all cursors pointing to this terminal!
-
-    if (parent->is_name_manager()) {
-#if defined(DEBUG)
-        printf("- Deleting name terminal\n");
-#endif // DEBUG
-        ED4_name_manager *name_man = parent->to_name_manager();
-        tflag.deleted              = 1;
-        name_man->delete_requested_by_child();
-    }
-    else if (parent->is_sequence_manager()) {
-#if defined(DEBUG)
-        printf("- Deleting sequence terminal\n");
-#endif // DEBUG
-        ED4_sequence_manager *seq_man = parent->to_sequence_manager();
-        tflag.deleted                 = 1;
-        seq_man->delete_requested_by_child();
-    }
-    else {
-        e4_assert(0); // not prepared for that situation
-    }
+    parent->Delete();
 }
 
 void ED4_sequence_terminal::deleted_from_database()
@@ -229,28 +204,23 @@ void ED4_sequence_terminal::deleted_from_database()
         multi_species_man->rebuild_consensi(get_parent(ED4_L_SPECIES)->to_species_manager(), ED4_U_UP);
     }
 
-    ED4_sequence_manager *seq_man = parent->to_sequence_manager();
-    tflag.deleted                 = 1;
-    seq_man->delete_requested_by_child();
+    parent->Delete();
 }
-void ED4_manager::deleted_from_database()
-{
+
+void ED4_manager::deleted_from_database() {
     if (is_species_manager()) {
         ED4_species_manager *species_man = to_species_manager();
         ED4_multi_species_manager *multi_man = species_man->parent->to_multi_species_manager();
 
-        multi_man->children->delete_member(species_man);
+        multi_man->children->remove_member(species_man);
         GB_push_transaction(GLOBAL_gb_main);
         multi_man->update_consensus(multi_man, 0, species_man);
         multi_man->rebuild_consensi(species_man, ED4_U_UP);
         GB_pop_transaction(GLOBAL_gb_main);
 
-        ED4_device_manager *device_manager = ED4_ROOT->main_manager
-            ->get_defined_level(ED4_L_GROUP)->to_group_manager()
-            ->get_defined_level(ED4_L_DEVICE)->to_device_manager();
+        ED4_device_manager *device_manager = ED4_ROOT->get_device_manager();
 
-        int i;
-        for (i=0; i<device_manager->children->members(); i++) { // when killing species numbers have to be recalculated
+        for (int i=0; i<device_manager->children->members(); i++) { // when killing species numbers have to be recalculated
             ED4_base *member = device_manager->children->member(i);
 
             if (member->is_area_manager()) {
@@ -607,7 +577,7 @@ ED4_returncode ED4_base::generate_configuration_string(char **generated_string)
             }
 
             e4_assert(consensus_manager);
-            multi_species_manager->children->delete_member(consensus_manager);
+            multi_species_manager->children->remove_member(consensus_manager);
             old_pos                                      = consensus_manager->extension.position[Y_POS];
             consensus_manager->extension.position[Y_POS] = SPACERHEIGHT;
             ED4_base::touch_world_cache();
@@ -642,7 +612,7 @@ ED4_returncode ED4_base::generate_configuration_string(char **generated_string)
         strcat(*generated_string, sep_name);
 
         if (consensus_manager) {
-            multi_species_manager->children->delete_member(consensus_manager);                  // move Consensus back to old position
+            multi_species_manager->children->remove_member(consensus_manager);                  // move Consensus back to old position
             consensus_manager->extension.position[Y_POS] = old_pos;
             ED4_base::touch_world_cache();
             multi_species_manager->children->append_member(consensus_manager);
@@ -669,8 +639,7 @@ ARB_ERROR ED4_manager::route_down_hierarchy(ED4_cb cb, AW_CL cd1, AW_CL cd2) {
     return error;
 }
 
-ED4_base *ED4_manager::find_first_that(ED4_level level, int (*condition)(ED4_base *to_test, AW_CL arg), AW_CL arg)
-{
+ED4_base *ED4_manager::find_first_that(ED4_level level, bool (*condition)(ED4_base *to_test, AW_CL arg), AW_CL arg) {
     if ((spec.level&level) && condition(this, arg)) {
         return this;
     }
@@ -694,11 +663,6 @@ ED4_base *ED4_manager::find_first_that(ED4_level level, int (*condition)(ED4_bas
     }
 
     return 0;
-}
-
-ED4_base *ED4_manager::find_first_that(ED4_level level, int (*condition)(ED4_base *to_test))
-{
-    return find_first_that(level, (int(*)(ED4_base*, AW_CL))condition, (AW_CL)0);
 }
 
 int ED4_base::calc_group_depth()
@@ -1035,6 +999,11 @@ ED4_base *ED4_base::get_parent(ED4_level lev) const
     return temp_parent;
 }
 
+void ED4_base::unlink_from_parent() {
+    e4_assert(parent);
+    parent->children->remove_member(this);
+}
+
 char *ED4_base::get_name_of_species() {
     char                *name        = 0;
     ED4_species_manager *species_man = get_parent(ED4_L_SPECIES)->to_species_manager();
@@ -1194,8 +1163,7 @@ ED4_returncode  ED4_base::event_sent_by_parent(AW_event * /* event */, AW_window
     return (ED4_R_OK);
 }
 
-ED4_returncode ED4_manager::hide_children()
-{
+ED4_returncode ED4_manager::hide_children() {
     int i;
 
     for (i=0; i<children->members(); i++) {
@@ -1212,7 +1180,7 @@ ED4_returncode ED4_manager::hide_children()
 }
 
 
-ED4_returncode ED4_manager::make_children_visible()
+ED4_returncode ED4_manager::unhide_children()
 {
     if (!children) {
         return ED4_R_WARNING;
@@ -1247,7 +1215,7 @@ ED4_returncode ED4_manager::unfold_group(char *bracket_ID_to_unfold)
 
         if (member->is_multi_species_manager()) {
             multi_species_manager = member->to_multi_species_manager();
-            multi_species_manager->make_children_visible();
+            multi_species_manager->unhide_children();
             multi_species_manager->dynamic_prop = ED4_properties(multi_species_manager->dynamic_prop & ~ED4_P_IS_FOLDED);
 
             ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
@@ -1488,6 +1456,8 @@ ED4_base::~ED4_base() // before calling this function the first time, parent has
     ED4_base *sequence_terminal = NULL;
     ED4_list_elem *list_elem, *old_elem;
     ED4_window *ed4w;
+
+    e4_assert(!parent); // unlink from parent first!
 
     list_elem = linked_objects.first();
     while (list_elem) {

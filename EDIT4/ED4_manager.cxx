@@ -571,7 +571,7 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
         }
 
         ED4_base *parent_man = object->get_parent(ED4_L_MULTI_SPECIES);
-        object->parent->children->delete_member(object);
+        object->parent->children->remove_member(object);
         parent_man->to_multi_species_manager()->invalidate_species_counters();
 
         object->extension.position[X_POS] = rel_x + x_off;
@@ -1238,57 +1238,52 @@ ED4_returncode ED4_manager::resize_requested_by_child() {
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_base::delete_requested_by_child() {
+void ED4_manager::delete_requested_by_child() {
     if (!update_info.delete_requested) {
-        if (parent) {
-            parent->delete_requested_by_child();
-        }
+        if (parent) parent->delete_requested_by_child();
         update_info.delete_requested = 1;
     }
-    return ED4_R_OK;
 }
 
-ED4_returncode ED4_terminal::delete_requested_by_parent() {
-    tflag.deleted = 1;
-    return ED4_R_OK;
-}
-ED4_returncode ED4_manager::delete_requested_by_parent() {
-    for (ED4_index i=0; children->member(i); i++) {
-        children->member(i)->delete_requested_by_parent();
-    }
-    return ED4_R_OK;
-}
-
-ED4_returncode ED4_terminal::delete_requested_children() {
+void ED4_terminal::delete_requested_children() {
     e4_assert(update_info.delete_requested);
     e4_assert(tflag.deleted);
 
+    unlink_from_parent();
     delete this;
-    return ED4_R_WARNING;       // == remove all links to me
 }
-ED4_returncode ED4_manager::delete_requested_children() {
+
+void ED4_manager::delete_requested_children() {
     e4_assert(update_info.delete_requested);
 
-    int i;
-    ED4_base *child;
-
-    for (i=0; (child=children->member(i))!=NULL; i++) {
+    for (int i = children->members()-1; i >= 0; --i) {
+        ED4_base *child = children->member(i);
         if (child->update_info.delete_requested) {
-            ED4_returncode removed = child->delete_requested_children();
-            if (removed==ED4_R_WARNING) {
-                children->delete_member(child);
-                if (i) i--;
-            }
+            child->delete_requested_children();
         }
     }
 
     update_info.delete_requested = 0;
-    if (children->members()) return ED4_R_OK;
 
-    delete this;
-    return ED4_R_WARNING;
+    if (!children->members()) {
+        unlink_from_parent();
+        delete this;
+    }
 }
 
+void ED4_terminal::Delete() {
+    if (!tflag.deleted) {
+        tflag.deleted                = 1;
+        update_info.delete_requested = 1;
+        parent->delete_requested_by_child();
+    }
+}
+
+void ED4_manager::Delete() {
+    for (int i=0; i<children->members(); i++) {
+        children->member(i)->Delete();
+    }
+}
 
 ED4_returncode ED4_manager::set_refresh(int clear) {
     // sets refresh flag of current object and his children
@@ -1339,7 +1334,7 @@ ED4_manager::~ED4_manager() {
 
     while (children->members() > 0) {
         current_child = children->member(0);
-        children->delete_member(current_child);
+        children->remove_member(current_child);
         current_child->parent = NULL;
 
         if (current_child->is_terminal())       delete current_child->to_terminal();
