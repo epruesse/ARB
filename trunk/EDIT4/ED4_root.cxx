@@ -829,9 +829,9 @@ static char *get_group_consensus(const char *species_name, int start_pos, int en
     char *consensus = 0;
 
     if (name_term) {
-        ED4_group_manager *group_man = name_term->get_parent(ED4_L_GROUP)->to_group_manager();
+        ED4_abstract_group_manager *group_man = name_term->get_parent(ED4_level(ED4_L_GROUP|ED4_L_ROOTGROUP))->to_abstract_group_manager();
         if (group_man) {
-            consensus = group_man->table().build_consensus_string(start_pos, end_pos, 0);
+            consensus = group_man->table().build_consensus_string(start_pos, end_pos);
         }
     }
 
@@ -1236,11 +1236,11 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access) {
     if (error) aw_message(error);
 }
 
-static void ED4_create_faligner_window(AW_root *awr, AW_CL cl_AlignDataAccess) {
+static AW_window *ED4_create_faligner_window(AW_root *awr, AW_CL cl_AlignDataAccess) {
     AlignDataAccess *data_access = (AlignDataAccess*)cl_AlignDataAccess;
 
     ED4_init_aligner_data_access(data_access);
-    FastAligner_create_window(awr, data_access);
+    return FastAligner_create_window(awr, data_access);
 }
 
 static void ED4_save_properties(AW_window *aw, AW_CL cl_mode, AW_CL) {

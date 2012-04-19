@@ -1388,6 +1388,8 @@ static ARB_ERROR alignToGroupConsensus(GBDATA                     *gb_toAlign,
     char       *consensus    = get_consensus(species_name, ali_params.firstColumn, ali_params.lastColumn);
     size_t      cons_len     = strlen(consensus);
 
+    fa_assert(cons_len);
+
     for (size_t i = 0; i<cons_len; ++i) { // translate consensus to be accepted by aligner
         switch (consensus[i]) {
             case '=': consensus[i] = '-'; break;
@@ -1395,7 +1397,7 @@ static ARB_ERROR alignToGroupConsensus(GBDATA                     *gb_toAlign,
         }
     }
 
-    CompactedSubSequence compacted(consensus, cons_len, "group consensus");
+    CompactedSubSequence compacted(consensus, cons_len, "group consensus", ali_params.firstColumn);
 
     {
         FastSearchSequence fast(compacted);
@@ -3065,8 +3067,10 @@ static GBDATA *fake_next_selected() {
     return selection_fake_gb_last;
 }
 
-static char *fake_get_consensus(const char*, int, int) {
-    return strdup(get_aligned_data_of(selection_fake_gb_main, "s1"));
+static char *fake_get_consensus(const char*, int start, int end) {
+    const char *data = get_aligned_data_of(selection_fake_gb_main, "s1");
+    if (end == -1) return strdup(data+start);
+    return GB_strpartdup(data+start, data+end);
 }
 
 static void test_install_fakes(GBDATA *gb_main) {

@@ -426,6 +426,7 @@ ED4_mini_classes.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/iupac.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/test_global.h
+ED4_mini_classes.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 ED4_naligner.o: ed4_naligner.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/ad_prot.h

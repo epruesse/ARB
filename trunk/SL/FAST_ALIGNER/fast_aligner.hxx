@@ -30,7 +30,7 @@ struct AlignDataAccess {
     int do_refresh;                                 // if do_refresh == TRUE then FastAligner_start() does a refresh
     void (*refresh_display)();                      // via calling refresh_display()
 
-    Aligner_get_consensus_func         get_group_consensus;
+    Aligner_get_consensus_func         get_group_consensus; // changed behavior in [8165]: returns only given range
     Aligner_get_selected_range         get_selected_range;
     Aligner_get_first_selected_species get_first_selected_species;
     Aligner_get_next_selected_species  get_next_selected_species;

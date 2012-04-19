@@ -121,7 +121,7 @@ void ED4_objspec::calc_descendants() const {
                     }
                 }
             }
-            dump(2);
+            // dump(2);
         }
     }
 }

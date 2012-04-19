@@ -247,7 +247,7 @@ GB_ERROR ED4_terminal::write_sequence(const char *seq, int seq_len)
             actual_timestamp = GB_read_clock(GLOBAL_gb_main);
 
             get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager()
-                ->check_bases_and_rebuild_consensi(old_seq, old_seq_len, get_parent(ED4_L_SPECIES)->to_species_manager(), ED4_U_UP); // bases_check
+                ->update_bases_and_rebuild_consensi(old_seq, old_seq_len, get_parent(ED4_L_SPECIES)->to_species_manager(), ED4_U_UP); // bases_check
         }
         else {
             aw_message("Couldn't read old sequence data");
