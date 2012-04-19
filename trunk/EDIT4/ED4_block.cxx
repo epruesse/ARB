@@ -18,13 +18,29 @@ using namespace std;
 
 // --------------------------------------------------------------------------------
 
-static ED4_blocktype blocktype = ED4_BT_NOBLOCK;
+class ED4_block : virtual Noncopyable {
+    // stores columnrange of selected region
+    // (linerange is stored in EDIT4 marks)
+    ED4_blocktype type;
+    bool          columnBlockUsed;
+    PosRange      range;
 
-// linerange for COLUMNBLOCK is stored in EDIT4 marks,
-// columnrange for COLUMNBLOCK is stored here:
+public:
+    ED4_block()
+        : type(ED4_BT_NOBLOCK),
+          columnBlockUsed(false)
+    {}
 
-static PosRange blockrange;
-static int columnBlockUsed = 0;
+    ED4_blocktype get_type() const { return type; }
+    void set_type(ED4_blocktype bt);
+    void toggle_type();
+    void autocorrect_type();
+
+    const PosRange& get_range() const { return range; }
+    void set_range(const PosRange& new_range) { range = new_range; }
+};
+
+static ED4_block block;
 
 // --------------------------------------------------------------------------------
 
@@ -32,9 +48,10 @@ static void col_block_refresh_on_seq_term(ED4_sequence_terminal *seq_term) {
     seq_term->set_refresh(1);
     seq_term->parent->refresh_requested_by_child();
 
+    // @@@ code below is more than weird. why do sth with column-stat here ? why write probe match awars here ? 
     ED4_columnStat_terminal *colStatTerm = seq_term->corresponding_columnStat_terminal();
     if (colStatTerm) {
-        const char *probe_match_pattern = colStatTerm->build_probe_match_string(blockrange);
+        const char *probe_match_pattern = colStatTerm->build_probe_match_string(block.get_range());
         int len = strlen(probe_match_pattern);
 
         if (len>=4) {
@@ -50,6 +67,83 @@ static void col_block_refresh_on_seq_term(ED4_sequence_terminal *seq_term) {
         }
     }
 }
+
+static void refresh_selected(bool refresh_name_terminals) {
+    ED4_list_elem *listElem = ED4_ROOT->selected_objects.first();
+    while (listElem) {
+        ED4_selection_entry       *selected  = (ED4_selection_entry*)listElem->elem();
+        ED4_species_name_terminal *name_term = selected->object->to_species_name_terminal();
+        ED4_sequence_terminal     *seq_term  = name_term->corresponding_sequence_terminal();
+
+        if (refresh_name_terminals) {
+            name_term->set_refresh(1);
+            name_term->parent->refresh_requested_by_child();
+        }
+        if (seq_term) col_block_refresh_on_seq_term(seq_term);
+
+        listElem = listElem->next();
+    }
+}
+
+// --------------------------------------------------------------------------------
+
+void ED4_block::set_type(ED4_blocktype bt) {
+    if (type != bt) {
+        type = bt;
+        refresh_selected(true);
+        if (type==ED4_BT_COLUMNBLOCK || type==ED4_BT_MODIFIED_COLUMNBLOCK) {
+            columnBlockUsed = true;
+        }
+    }
+}
+
+void ED4_block::toggle_type() {
+    switch (type) {
+        case ED4_BT_NOBLOCK: {
+            aw_message("No block selected.");
+            break;
+        }
+        case ED4_BT_LINEBLOCK: {
+            if (columnBlockUsed) {
+                set_type(ED4_BT_MODIFIED_COLUMNBLOCK);
+            }
+            else {
+                aw_message("No columnblock marked so far  - I can't guess the column range");
+            }
+            break;
+        }
+        case ED4_BT_MODIFIED_COLUMNBLOCK:
+        case ED4_BT_COLUMNBLOCK: {
+            set_type(ED4_BT_LINEBLOCK);
+            break;
+        }
+    }
+}
+
+void ED4_block::autocorrect_type() {
+    // this has to be called every time the selection has changed
+
+    if (ED4_ROOT->selected_objects.first()==0) { // no objects are selected
+        set_type(ED4_BT_NOBLOCK);
+    }
+    else {
+        switch (type) {
+            case ED4_BT_NOBLOCK: {
+                set_type(ED4_BT_LINEBLOCK);
+                break;
+            }
+            case ED4_BT_COLUMNBLOCK: {
+                set_type(ED4_BT_MODIFIED_COLUMNBLOCK);
+                break;
+            }
+            case ED4_BT_LINEBLOCK:
+            case ED4_BT_MODIFIED_COLUMNBLOCK: {
+                break;
+            }
+        }
+    }
+}
+
 // --------------------------------------------------------------------------------
 
 // if block_operation() returns NULL => no changes will be made to database
@@ -116,7 +210,7 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(ED4_blockoperation b
         char *seq = GB_read_string(gbd);
         int   len = GB_read_string_count(gbd);
 
-        ExplicitRange range(blockrange, len);
+        ExplicitRange range(block.get_range(), len);
 
         int   len_part     = range.size();
         char *seq_part     = seq+range.start();
@@ -177,7 +271,7 @@ static void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat)
     }
 
 
-    switch (blocktype) {
+    switch (block.get_type()) {
         case ED4_BT_NOBLOCK: {
             aw_message("No block marked -- use right mouse button");
             break;
@@ -190,7 +284,7 @@ static void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat)
                 ED4_selection_entry   *selectionEntry = (ED4_selection_entry*)listElem->elem();
                 ED4_sequence_terminal *seqTerm        = selectionEntry->object->get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SEQUENCE_STRING)->to_sequence_terminal();
 
-                error = blocktype == ED4_BT_LINEBLOCK
+                error = block.get_type() == ED4_BT_LINEBLOCK
                     ? perform_block_operation_on_whole_sequence(block_operation, seqTerm, repeat)
                     : perform_block_operation_on_part_of_sequence(block_operation, seqTerm, repeat);
 
@@ -223,125 +317,41 @@ static void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat)
     }
 }
 
-bool ED4_get_selected_range(ED4_terminal *term, PosRange& range) {
-    if (blocktype==ED4_BT_NOBLOCK) return false;
+bool ED4_get_selected_range(ED4_terminal *term, PosRange& range) { // @@@ function will get useless, when multi-column-blocks are possible
+    if (block.get_type()==ED4_BT_NOBLOCK) return false;
 
     ED4_species_name_terminal *name_term = term->to_sequence_terminal()->corresponding_species_name_terminal();
     if (!name_term->tflag.selected) return false;
 
-    if (blocktype==ED4_BT_COLUMNBLOCK || blocktype==ED4_BT_MODIFIED_COLUMNBLOCK) {
-        range = blockrange;
+    if (block.get_type()==ED4_BT_COLUMNBLOCK || block.get_type()==ED4_BT_MODIFIED_COLUMNBLOCK) {
+        range = block.get_range();
     }
     else {
-        e4_assert(blocktype==ED4_BT_LINEBLOCK);
+        e4_assert(block.get_type()==ED4_BT_LINEBLOCK);
         range = PosRange::whole();
     }
 
     return true;
 }
 
-ED4_blocktype ED4_getBlocktype() {
-    return blocktype;
-}
-void ED4_setBlocktype(ED4_blocktype bt) {
-    if (blocktype!=bt) {
-        blocktype = bt;
-
-        ED4_list_elem *listElem = ED4_ROOT->selected_objects.first();
-        while (listElem) {
-            ED4_selection_entry *selected = (ED4_selection_entry*)listElem->elem();
-            ED4_species_name_terminal *name_term = selected->object->to_species_name_terminal();
-            ED4_sequence_terminal *seq_term = name_term->corresponding_sequence_terminal();
-
-            name_term->set_refresh(1);
-            name_term->parent->refresh_requested_by_child();
-            if (seq_term) col_block_refresh_on_seq_term(seq_term);
-
-            listElem = listElem->next();
-        }
-
-        if (blocktype==ED4_BT_COLUMNBLOCK || blocktype==ED4_BT_MODIFIED_COLUMNBLOCK) {
-            columnBlockUsed = 1;
-        }
-    }
-}
-
-void ED4_toggle_block_type() {
-    switch (blocktype) {
-        case ED4_BT_NOBLOCK: {
-            aw_message("No block selected.");
-            break;
-        }
-        case ED4_BT_LINEBLOCK: {
-            if (columnBlockUsed) {
-                ED4_setBlocktype(ED4_BT_MODIFIED_COLUMNBLOCK);
-            }
-            else {
-                aw_message("No columnblock marked so far  - I can't guess the column range");
-            }
-            break;
-        }
-        case ED4_BT_MODIFIED_COLUMNBLOCK:
-        case ED4_BT_COLUMNBLOCK: {
-            ED4_setBlocktype(ED4_BT_LINEBLOCK);
-            break;
-        }
-        default: {
-            e4_assert(0);
-            break;
-        }
-    }
-}
-
-void ED4_correctBlocktypeAfterSelection() { // this has to be called every time the selection has changed
-
-    if (ED4_ROOT->selected_objects.first()==0) { // no objects are selected
-        ED4_setBlocktype(ED4_BT_NOBLOCK);
-    }
-    else {
-        switch (ED4_getBlocktype()) {
-            case ED4_BT_NOBLOCK: {
-                ED4_setBlocktype(ED4_BT_LINEBLOCK);
-                break;
-            }
-            case ED4_BT_COLUMNBLOCK: {
-                ED4_setBlocktype(ED4_BT_MODIFIED_COLUMNBLOCK);
-                break;
-            }
-            case ED4_BT_LINEBLOCK:
-            case ED4_BT_MODIFIED_COLUMNBLOCK: {
-                break;
-            }
-            default: {
-                e4_assert(0);
-                break;
-            }
-        }
-    }
-}
+ED4_blocktype ED4_getBlocktype() { return block.get_type(); }
+void ED4_setBlocktype(ED4_blocktype bt) { block.set_type(bt); }
+void ED4_toggle_block_type() { block.toggle_type(); }
+void ED4_correctBlocktypeAfterSelection() { block.autocorrect_type(); }
 
 static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_terminal *term2, ED4_index pos1, ED4_index pos2, int initial_call) {
     static ED4_sequence_terminal *last_term1, *last_term2;
     static PosRange               last_range;
 
     if (pos1>pos2) {
-        blockrange = PosRange(pos2, pos1);
+        block.set_range(PosRange(pos2, pos1));
     }
     else {
-        blockrange = PosRange(pos1, pos2);
+        block.set_range(PosRange(pos1, pos2));
     }
 
-    if (blocktype==ED4_BT_MODIFIED_COLUMNBLOCK) {
-        ED4_list_elem *listElem = ED4_ROOT->selected_objects.first();
-        while (listElem) {
-            ED4_selection_entry *selectionEntry = (ED4_selection_entry*)listElem->elem();
-            ED4_species_name_terminal *name_term = selectionEntry->object->to_species_name_terminal();
-            ED4_sequence_terminal *seq_term = name_term->corresponding_sequence_terminal();
-
-            if (seq_term) col_block_refresh_on_seq_term(seq_term);
-
-            listElem = listElem->next();
-        }
+    if (block.get_type()==ED4_BT_MODIFIED_COLUMNBLOCK) {
+        refresh_selected(false);
     }
     else {
         { // ensure term1 is the upper terminal
@@ -360,7 +370,7 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
         int do_below = 1; // we have to update terminals between term2 and last_term2
 
         ED4_terminal *term          = term1;
-        int           xRangeChanged = blockrange != last_range;
+        int           xRangeChanged = block.get_range() != last_range;
 
         while (term) {
             if (term->is_sequence_terminal()) {
@@ -426,7 +436,7 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
 
     last_term1 = term1;
     last_term2 = term2;
-    last_range = blockrange;
+    last_range = block.get_range();
 }
 
 void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) {
@@ -445,16 +455,16 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
 
     switch (event->type) {
         case AW_Mouse_Press: {
-            if (blocktype==ED4_BT_NOBLOCK) { // initial columnblock
-                ED4_setBlocktype(ED4_BT_COLUMNBLOCK);
+            if (block.get_type()==ED4_BT_NOBLOCK) { // initial columnblock
+                block.set_type(ED4_BT_COLUMNBLOCK);
 
                 fix_term = seq_term;
                 fix_pos = seq_pos;
 
                 select_and_update(fix_term, seq_term, fix_pos, seq_pos, 1);
             }
-            else if (blocktype==ED4_BT_LINEBLOCK) { // change lineblock to columnblock
-                ED4_setBlocktype(ED4_BT_MODIFIED_COLUMNBLOCK);
+            else if (block.get_type()==ED4_BT_LINEBLOCK) { // change lineblock to columnblock
+                block.set_type(ED4_BT_MODIFIED_COLUMNBLOCK);
 
                 fix_term = seq_term;
                 if (seq_pos<(MAXSEQUENCECHARACTERLENGTH/2)) { // in first half of sequence
@@ -467,12 +477,12 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
                 select_and_update(fix_term, seq_term, fix_pos, seq_pos, 1);
             }
             else { // expand columnblock (search nearest corner/border -> fix opposite corner/border)
-                e4_assert(blocktype==ED4_BT_COLUMNBLOCK || blocktype==ED4_BT_MODIFIED_COLUMNBLOCK);
+                e4_assert(block.get_type()==ED4_BT_COLUMNBLOCK || block.get_type()==ED4_BT_MODIFIED_COLUMNBLOCK);
 
                 ED4_list_elem *listElem = ED4_ROOT->selected_objects.first();
                 e4_assert(listElem);
 
-                if (blocktype==ED4_BT_COLUMNBLOCK) {
+                if (block.get_type()==ED4_BT_COLUMNBLOCK) {
                     AW_pos min_term_y = LONG_MAX;
                     AW_pos max_term_y = LONG_MIN;
                     ED4_species_name_terminal *min_term = 0;
@@ -527,16 +537,18 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
                 PosRange screen_range = rm->clip_screen_range(seq_term->calc_interval_displayed_in_rectangle(&area_rect));
                 int      scr_pos      = rm->sequence_to_screen(seq_pos);
 
-                PosRange block_visible_part = intersection(screen_range, rm->sequence_to_screen(blockrange));
+                PosRange block_visible_part = intersection(screen_range, rm->sequence_to_screen(block.get_range()));
+
+                // @@@ block_visible_part might be empty (if completely outside screen) -> code below fails
 
                 int dist_left  = abs(scr_pos-block_visible_part.start());
                 int dist_right = abs(scr_pos-block_visible_part.end());
 
                 if (dist_left < dist_right) {   // click nearer to left border of visible part of block
-                    fix_pos = blockrange.end(); // keep right block-border
+                    fix_pos = block.get_range().end(); // keep right block-border
                 }
                 else {
-                    fix_pos = blockrange.start();
+                    fix_pos = block.get_range().start();
                 }
 
                 select_and_update(fix_term, seq_term, fix_pos, seq_pos, 0);
@@ -883,3 +895,4 @@ void ED4_perform_block_operation(ED4_blockoperation_type operationType) {
         }
     }
 }
+

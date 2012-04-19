@@ -651,12 +651,12 @@ void ED4_motion_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
     }
 }
 
-void ED4_remote_set_cursor_cb(AW_root *awr, AW_CL /* cd1 */, AW_CL /* cd2 */)
-{
+void ED4_remote_set_cursor_cb(AW_root *awr, AW_CL /* cd1 */, AW_CL /* cd2 */) {
     AW_awar *awar = awr->awar(AWAR_SET_CURSOR_POSITION);
     long     pos  = awar->read_int();
 
     if (pos != -1) {
+        ED4_MostRecentWinContext context;
         ED4_cursor *cursor = &current_cursor();
         cursor->jump_sequence_pos(pos, ED4_JUMP_CENTERED);
         awar->write_int(-1);
@@ -739,8 +739,8 @@ void ED4_jump_to_cursor_position(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_po
     }
 }
 
-void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /* callback_flag */)
-{
+void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /* callback_flag */) {
+    ED4_LocalWinContext uses(aww);
     ED4_cursor *cursor = &current_cursor();
 
     if (cursor->owner_of_cursor) {
@@ -830,7 +830,7 @@ void ED4_exit() {
 }
 
 void ED4_quit_editor(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
-    ED4_LocalWinContext uses(aww);
+    ED4_LocalWinContext uses(aww); // @@@ dont use context here
 
     if (ED4_ROOT->first_window == current_ed4w()) { // quit button has been pressed in first window
         ED4_exit();
@@ -840,11 +840,12 @@ void ED4_quit_editor(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
     current_ed4w()->is_hidden = true;
 }
 
-void ED4_timer_refresh()
-{
+void ED4_timer_refresh() {
     GB_begin_transaction(GLOBAL_gb_main);                  // for callbacks from database
     GB_tell_server_dont_wait(GLOBAL_gb_main);
     GB_commit_transaction(GLOBAL_gb_main);
+
+    // @@@ need to ED4_ROOT->refresh_all_windows(0) here
 }
 
 void ED4_timer(AW_root *, AW_CL cd1, AW_CL cd2)
@@ -994,7 +995,7 @@ void ED4_toggle_detailed_column_stats(AW_window *aww, AW_CL, AW_CL) {
         sprintf(buffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
 
         ED4_sequence_manager *new_seq_man = new ED4_sequence_manager(buffer, 0, 0, 0, 0, multi_seq_man);
-        new_seq_man->set_properties(ED4_P_MOVABLE);
+        new_seq_man->set_property(ED4_P_MOVABLE);
         multi_seq_man->children->append_member(new_seq_man);
 
         int pixel_length = max_seq_terminal_length;
@@ -1012,7 +1013,7 @@ void ED4_toggle_detailed_column_stats(AW_window *aww, AW_CL, AW_CL) {
         ref_colStat_terminal->extension.size[WIDTH]  = pixel_length;
 
         ED4_sequence_info_terminal *new_colStat_info_term = new ED4_sequence_info_terminal("CStat", 0, 0, SEQUENCEINFOSIZE, columnStatHeight, new_seq_man);
-        new_colStat_info_term->set_properties((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
+        new_colStat_info_term->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
         new_colStat_info_term->set_links(ref_colStat_info_terminal, ref_colStat_terminal);
         new_seq_man->children->append_member(new_colStat_info_term);
 
@@ -1059,22 +1060,26 @@ ARB_ERROR update_terminal_extension(ED4_base *this_object) {
 
 #define SIGNIFICANT_FIELD_CHARS 30 // length used to compare field contents (in createGroupFromSelected)
 
-static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_CSTR field_content)
+static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_CSTR field_content) {
     // creates a new group named group_name
     // if field_name==0 -> all selected species & subgroups are moved to this new group
     // if field_name!=0 -> all selected species containing field_content in field field_name are moved to this new group
-{
-    ED4_group_manager *group_manager = NULL;
-    ED4_ROOT->main_manager->create_group(&group_manager, group_name);
+
+    ED4_group_manager *new_group_manager = NULL;
+    ED4_ROOT->main_manager->create_group(&new_group_manager, group_name);
+
     ED4_manager *top_area = ED4_ROOT->main_manager->search_spec_child_rek(ED4_L_AREA)->to_manager();
-    ED4_multi_species_manager *multi_species_manager = top_area->search_spec_child_rek(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
-    group_manager->extension.position[Y_POS] = 2;
-    ED4_base::touch_world_cache();
-    multi_species_manager->children->append_member(group_manager);
-    group_manager->parent = (ED4_manager *) multi_species_manager;
+    {
+        ED4_multi_species_manager *multi_species_manager = top_area->search_spec_child_rek(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
-    multi_species_manager = group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+        new_group_manager->extension.position[Y_POS] = 2;
+        ED4_base::touch_world_cache();
+        multi_species_manager->children->append_member(new_group_manager);
+        new_group_manager->parent = (ED4_manager *) multi_species_manager;
+    }
+    
+    ED4_multi_species_manager *new_multi_species_manager = new_group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
     ED4_list_elem *list_elem = ED4_ROOT->selected_objects.first();
     while (list_elem) {
@@ -1110,38 +1115,31 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
         }
 
         if (move_object) {
-            object->parent->children->remove_member(object);
-
             ED4_base *base = object->get_parent(ED4_L_MULTI_SPECIES);
             if (base && base->is_multi_species_manager()) {
                 ED4_multi_species_manager *old_multi = base->to_multi_species_manager();
                 old_multi->invalidate_species_counters();
             }
-            multi_species_manager->children->append_member(object);
+            
+            object->parent->children->remove_member(object);
+            new_multi_species_manager->children->append_member(object);
 
-            object->parent = (ED4_manager *)multi_species_manager;
+            object->parent = (ED4_manager *)new_multi_species_manager;
             object->set_width();
         }
 
         list_elem = list_elem->next();
     }
 
-    group_manager->create_consensus(group_manager, NULL);
-    group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->count_all_children_and_set_group_id();
-
+    new_group_manager->create_consensus(new_group_manager, NULL);
+    new_multi_species_manager->invalidate_species_counters();
+    
     {
-        ED4_bracket_terminal *bracket = group_manager->get_defined_level(ED4_L_BRACKET)->to_bracket_terminal();
-
-        if (bracket) {
-            group_manager->fold_group(bracket->id);
-        }
+        ED4_bracket_terminal *bracket = new_group_manager->get_defined_level(ED4_L_BRACKET)->to_bracket_terminal();
+        if (bracket) bracket->fold();
     }
 
-    multi_species_manager->resize_requested_by_child();
-
-    current_ed4w()->update_scrolled_rectangle();
-    current_device()->reset();
-    ED4_ROOT->refresh_all_windows(1);
+    new_multi_species_manager->resize_requested_by_child();
 }
 
 static void group_species(int use_field, AW_window *use_as_main_window) {
@@ -1208,7 +1206,7 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
 
                                 int newlen = doneLen + field_content_len + 1;
                                 char *newDone = (char*)malloc(newlen+1);
-                                GBS_global_string_to_buffer(newDone, newlen, "%s%s;", doneContents, field_content);
+                                GBS_global_string_to_buffer(newDone, newlen+1, "%s%s;", doneContents, field_content);
                                 freeset(doneContents, newDone);
                                 doneLen = newlen;
                             }
@@ -1278,14 +1276,8 @@ void group_species_cb(AW_window *aww, AW_CL cl_use_fields, AW_CL) {
     }
 }
 
-static void ED4_load_new_config(char *string)
-{
-    char *config_data_top    = NULL;
-    char *config_data_middle = NULL;
-
-    ED4_window     *window;
-    GB_transaction  dummy(GLOBAL_gb_main);
-
+static void ED4_load_new_config(char *string) {
+    GB_transaction ta(GLOBAL_gb_main);
 
     ED4_ROOT->main_manager->clear_whole_background();
     ED4_calc_terminal_extentions();
@@ -1294,10 +1286,11 @@ static void ED4_load_new_config(char *string)
 
     ED4_init_notFoundMessage();
 
-
     if (ED4_ROOT->selected_objects.no_of_entries() > 0) {
         ED4_ROOT->deselect_all();
     }
+
+    ED4_ROOT->remove_all_callbacks();
 
     ED4_ROOT->scroll_picture.scroll         = 0;
     ED4_ROOT->scroll_picture.old_x          = 0;
@@ -1305,20 +1298,25 @@ static void ED4_load_new_config(char *string)
 
     ED4_ROOT->ref_terminals.clear();
 
-    for (window=ED4_ROOT->first_window; window; window=window->next) {
+    for (ED4_window *window = ED4_ROOT->first_window; window; window=window->next) {
         window->cursor.init();
         window->aww->set_horizontal_scrollbar_position (0);
         window->aww->set_vertical_scrollbar_position (0);
     }
 
-    ED4_ROOT->scroll_links.link_for_hor_slider  = NULL;
-    ED4_ROOT->scroll_links.link_for_ver_slider  = NULL;
-    ED4_ROOT->middle_area_man           = NULL;
-    ED4_ROOT->top_area_man              = NULL;
+    ED4_ROOT->scroll_links.link_for_hor_slider = NULL;
+    ED4_ROOT->scroll_links.link_for_ver_slider = NULL;
+    ED4_ROOT->middle_area_man                  = NULL;
+    ED4_ROOT->top_area_man                     = NULL;
+
+    
 
     delete ED4_ROOT->main_manager;
-    ED4_ROOT->main_manager              = NULL;
+    ED4_ROOT->main_manager = NULL;
     delete ED4_ROOT->ecoli_ref;
+
+    char *config_data_top    = NULL;
+    char *config_data_middle = NULL;
     {
         GB_push_transaction(GLOBAL_gb_main);
         GBDATA *gb_configuration = GBT_find_configuration(GLOBAL_gb_main, string);
@@ -1872,7 +1870,10 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
         error = "Please enter a full_name for the new species";
     }
     else {
-        error                    = GB_begin_transaction(GLOBAL_gb_main);
+        ED4_MostRecentWinContext context;
+
+        error = GB_begin_transaction(GLOBAL_gb_main);
+
         GBDATA *gb_species_data  = GBT_get_species_data(GLOBAL_gb_main);
         char   *new_species_name = 0;
         char   *acc              = 0;

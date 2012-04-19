@@ -368,13 +368,15 @@ static void PV_ManageTerminals(AW_root *root) {
         }
 
     int dispAtCursor = root->awar(AWAR_PV_CURSOR)->read_int();
-    if (dispAtCursor)
-        {
-            // Display Only Terminals Corresponding To The Cursor Position in the multiple alignment
-            ED4_cursor *cursor = &current_cursor();
-            if (cursor->owner_of_cursor) {
+    if (dispAtCursor) {
+        // only display terminals for species at cursor
+        if (ED4_ROOT->get_most_recently_used_window()) { 
+            ED4_MostRecentWinContext context;
+
+            ED4_cursor& cursor = current_cursor();
+            if (cursor.owner_of_cursor) {
                 // Get The Cursor Terminal And The Corresponding Aa_Sequence Terminals And Set The Display Options
-                ED4_terminal *cursorTerminal = cursor->owner_of_cursor->to_terminal();
+                ED4_terminal *cursorTerminal = cursor.owner_of_cursor->to_terminal();
                 if (!cursorTerminal->parent->parent->flag.is_consensus) {
                     for (int i=0; i<PV_AA_Terminals4Species; i++) {
                         // get the corresponding orf_terminal skipping sequence_info terminal
@@ -389,6 +391,7 @@ static void PV_ManageTerminals(AW_root *root) {
                 }
             }
         }
+    }
 }
 
 void PV_RefreshWindow(AW_root *root) {
@@ -787,7 +790,7 @@ static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_spec
             sprintf(namebuffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
             ED4_multi_sequence_manager *multiSeqManager = speciesManager->search_spec_child_rek(ED4_L_MULTI_SEQUENCE)->to_multi_sequence_manager();
             ED4_sequence_manager         *new_SeqManager = new ED4_sequence_manager(namebuffer, 0, 0, 0, 0, multiSeqManager);
-            new_SeqManager->set_properties(ED4_P_MOVABLE);
+            new_SeqManager->set_property(ED4_P_MOVABLE);
             multiSeqManager->children->append_member(new_SeqManager);
 
             ED4_sequence_info_terminal *new_SeqInfoTerminal = 0;
@@ -798,7 +801,7 @@ static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_spec
             else
                 sprintf(namebuffer, "DBProteinInfo_Term%ld.%d", ED4_counter, count++);
             new_SeqInfoTerminal = new ED4_sequence_info_terminal(namebuffer, 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, new_SeqManager);
-            new_SeqInfoTerminal->set_properties((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
+            new_SeqInfoTerminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
             ED4_sequence_info_terminal *seqInfoTerminal = speciesManager->search_spec_child_rek(ED4_L_SEQUENCE_INFO)->to_sequence_info_terminal();
             new_SeqInfoTerminal->set_links(seqInfoTerminal, seqInfoTerminal);
             new_SeqManager->children->append_member(new_SeqInfoTerminal);

@@ -87,7 +87,11 @@ ED4_returncode ED4_root::refresh_all_windows(int redraw) {
 
     if (main_manager->update_info.delete_requested) {
         main_manager->delete_requested_children();
-        get_device_manager()->generate_id_for_groups(); // update group-counters
+        redraw = 1;
+    }
+
+    if (main_manager->update_info.update_requested) {
+        main_manager->update_requested_children();
         redraw = 1;
     }
 
@@ -525,12 +529,18 @@ void ED4_root::recalc_font_group() {
     }
 }
 
+static ARB_ERROR force_group_update(ED4_base *base) {
+    if (base->is_multi_species_manager()) {
+        base->to_multi_species_manager()->update_requested_by_child();
+    }
+    return NULL;
+}
+
 ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_string_top) // creates internal hierarchy of editor
 {
     int index = 0, x = 0, change = 0;
     ED4_index y = 0, help = 0;
     ED4_base *x_link, *y_link, *width_link, *height_link;
-    ED4_window *new_window;
     long total_no_of_species, total_no_of_groups, group_count, species_count;
 
     // count species and related info (e.g. helix) displayed in the top region
@@ -629,8 +639,6 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
                 main_manager->set_top_middle_line_terminal(top_mid_line_terminal);
 
                 y += TOP_MID_SPACER_HEIGHT; // add top-mid_spacer_terminal height
-
-                top_multi_species_manager->generate_id_for_groups();
             }
 
             // ********** Top Area end **********
@@ -671,8 +679,7 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
 
                 tree_terminal->extension.size[HEIGHT] = y - help;
 
-                mid_multi_species_manager->generate_id_for_groups();
-                y += 10;                                                // add top-mid_spacer_terminal height
+                y += 10; // add top-mid_spacer_terminal height
 
                 mid_bot_line_terminal = new ED4_line_terminal("Mid_Bot_Line_Terminal", 0, y, 0, 3, device_manager);    // width will be set below
                 device_manager->children->append_member(mid_bot_line_terminal);
@@ -708,6 +715,8 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
     resize_all();
 
 
+    main_manager->route_down_hierarchy(force_group_update).expect_no_error();
+
     // build consensi
     {
         arb_progress consensi_progress("Initializing consensi", total_no_of_species+total_no_of_groups+1); // 1 is root_group_man
@@ -731,17 +740,15 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
     width_link  = x_link;
     height_link = y_link;
 
-    new_window = first_window;
-
-    while (new_window) {
-        new_window->set_scrolled_rectangle(x_link, y_link, width_link, height_link);
-        new_window->aww->show();
-        new_window->update_scrolled_rectangle();
-        ED4_refresh_window(new_window->aww);
-        new_window = new_window->next;
+    ED4_window *win = first_window;
+    while (win) {
+        win->set_scrolled_rectangle(x_link, y_link, width_link, height_link);
+        win->aww->show();
+        win->update_scrolled_rectangle();
+        win = win->next;
     }
 
-    aw_root->add_timed_callback(2000, ED4_timer, (AW_CL)0, (AW_CL)0);
+    aw_root->add_timed_callback(200, ED4_timer, (AW_CL)0, (AW_CL)0);
 
     ED4_finish_and_show_notFoundMessage();
 
@@ -1298,7 +1305,7 @@ static AW_window *ED4_create_gc_window(AW_root *aw_root, AW_gc_manager id) {
     return gc_win;
 }
 
-ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new_window)
+ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_window)
 {
     AW_window_menu_modes *awmm;
 

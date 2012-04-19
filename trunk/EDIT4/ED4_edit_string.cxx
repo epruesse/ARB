@@ -294,7 +294,7 @@ long ED4_Edit_String::get_next_visible_base(long position, int direction)
     long pos;
     if (direction < 0) position--;
     for (pos = position; pos>=0 && pos < seq_len; pos += direction) {
-        if (!ADPP_IS_ALIGN_CHARACTER(seq[pos]) && remap->is_visible(pos)) {
+        if (!ADPP_IS_ALIGN_CHARACTER(seq[pos]) && remap->is_shown(pos)) {
             break;
         }
     }
@@ -305,7 +305,7 @@ long ED4_Edit_String::get_next_visible_gap(long position, int direction) {
     long pos;
     if (direction < 0) position--;
     for (pos = position; pos >= 0 && pos < seq_len; pos += direction) {
-        if (ADPP_IS_ALIGN_CHARACTER(seq[pos]) && remap->is_visible(pos)) {
+        if (ADPP_IS_ALIGN_CHARACTER(seq[pos]) && remap->is_shown(pos)) {
             break;
         }
     }
@@ -317,7 +317,7 @@ long ED4_Edit_String::get_next_visible_pos(long position, int direction)
     long pos;
     if (direction < 0) position--;
     for (pos = position; pos >= 0 && pos < seq_len; pos += direction) {
-        if (remap->is_visible(pos)) {
+        if (remap->is_shown(pos)) {
             break;
         }
     }
@@ -414,7 +414,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             do {
                                 seq_pos += direction;
                             }
-                            while (legal_curpos(seq_pos) && !remap->is_visible(seq_pos));
+                            while (legal_curpos(seq_pos) && !remap->is_shown(seq_pos));
                         }
                         break;
                     }

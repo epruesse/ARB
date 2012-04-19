@@ -629,18 +629,7 @@ int ARB_main(int argc, const char *argv[]) {
     }
 
     // now bind DB depending callbacks
-
     ed4_bind_mainDB_awar_callbacks(ED4_ROOT->aw_root);
-    {
-        GB_transaction dummy(GLOBAL_gb_main);
-        GBDATA *species_container = GBT_get_species_data(GLOBAL_gb_main);
-        GB_add_callback(species_container, (GB_CB_TYPE)GB_CB_CHANGED, (GB_CB)ED4_species_container_changed_cb, 0); // callback if species_data changes
-
-        ED4_elements_in_species_container = GB_number_of_subentries(species_container); // store # of species
-#if defined(DEBUG) && 0
-        printf("Species container contains %i species (at startup)\n", ED4_elements_in_species_container);
-#endif
-    }
 
     // Create Additional sequence (aminoacid) terminals to be used in Protein Viewer
     if (ED4_ROOT->alignment_type == GB_AT_DNA) {
