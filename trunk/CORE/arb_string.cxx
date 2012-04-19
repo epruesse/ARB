@@ -170,19 +170,19 @@ void TEST_arbtest_expectations() {
     string boskop      = apple;
     string pomegranate = "Granatapfel";
 
-    TEST_EXPECT(that(apple).equals("Apfel"));
+    TEST_EXPECT(that(apple).is_equal_to("Apfel"));
     
-    TEST_EXPECT(that(apple).differs(pear));
-    TEST_EXPECT(that(apple).equals(boskop));
-    TEST_EXPECT(wrong(that(pomegranate).equals(apple)));
+    TEST_EXPECT(that(apple).does_differ_from(pear));
+    TEST_EXPECT(that(apple).is_equal_to(boskop));
+    TEST_EXPECT(wrong(that(pomegranate).is_equal_to(apple)));
 
-    match_expectation ff1 = that(1.0).equals(2-1);
-    match_expectation ff2 = that(boskop).equals(apple);
-    match_expectation ff3 = that(apple).equals(apple);
+    match_expectation ff1 = that(1.0).is_equal_to(2-1);
+    match_expectation ff2 = that(boskop).is_equal_to(apple);
+    match_expectation ff3 = that(apple).is_equal_to(apple);
 
-    match_expectation nf1 = that(apple).equals(pear);
-    match_expectation nf2 = that(pomegranate).equals(apple);
-    match_expectation nf3 = that(apple).differs(boskop);
+    match_expectation nf1 = that(apple).is_equal_to(pear);
+    match_expectation nf2 = that(pomegranate).is_equal_to(apple);
+    match_expectation nf3 = that(apple).does_differ_from(boskop);
 
     match_expectation a1 = all().of(ff1);
     match_expectation a2 = all().of(ff1, ff2);
@@ -196,7 +196,7 @@ void TEST_arbtest_expectations() {
     match_expectation n2 = none().of(ff1, ff2);
     match_expectation n3 = none().of(ff1, ff2, ff3);
 
-    TEST_EXPECT(wrong(none().of(that(boskop).equals(apple))));
+    TEST_EXPECT(wrong(none().of(that(boskop).is_equal_to(apple))));
     TEST_EXPECT(wrong(n1));
     TEST_EXPECT(wrong(n2));
     TEST_EXPECT(wrong(n3));
@@ -321,9 +321,9 @@ void TEST_user_type_with_expectations() {
     user_type ut3(-4, -8);
     user_type ut4(4, -8);
 
-    TEST_EXPECT(that(ut1).differs(ut12));
-    TEST_EXPECT(that(ut12).equals(ut12.flipped()));
-    TEST_EXPECT(that(ut1).differs(ut1.flipped()));
+    TEST_EXPECT(that(ut1).does_differ_from(ut12));
+    TEST_EXPECT(that(ut12).is_equal_to(ut12.flipped()));
+    TEST_EXPECT(that(ut1).does_differ_from(ut1.flipped()));
 
     TEST_EXPECT(that(ut1).is(in_same_quadrant, ut12));
     TEST_EXPECT(none().of(that(ut1).is(in_same_quadrant, ut2),

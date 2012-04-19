@@ -238,12 +238,13 @@ void RecordingMacro::post_process() {
         free(res);                                              \
     } while(0)
 
-#define TEST_MODIFIES_AWAR(cmd,app_exp,awar_exp,app_in) do {                            \
-        char *app  = app_in;                                                            \
-        char *awar = modifies_awar(cmd, app);                                           \
-        TEST_EXPECT(all().of(that(awar).equals(awar_exp), that(app).equals(app_exp)));  \
-        free(awar);                                                                     \
-        free(app);                                                                      \
+#define TEST_MODIFIES_AWAR(cmd,app_exp,awar_exp,app_in) do {    \
+        char *app  = app_in;                                    \
+        char *awar = modifies_awar(cmd, app);                   \
+        TEST_EXPECT(all().of(that(awar).is_equal_to(awar_exp),  \
+                             that(app).is_equal_to(app_exp)));  \
+        free(awar);                                             \
+        free(app);                                              \
     } while(0)
 
 void TEST_parse() {
