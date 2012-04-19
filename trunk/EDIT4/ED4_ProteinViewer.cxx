@@ -123,7 +123,7 @@ static void PV_HideTerminal(ED4_orf_terminal *orfTerm) {
 
 static void PV_UnHideTerminal(ED4_orf_terminal *orfTerm) {
     ED4_sequence_manager *seqManager = orfTerm->get_parent(ED4_L_SEQUENCE)->to_sequence_manager();
-    seqManager->make_children_visible();
+    seqManager->unhide_children();
 }
 
 static void PV_HideAllTerminals() {

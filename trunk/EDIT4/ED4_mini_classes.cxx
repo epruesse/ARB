@@ -424,7 +424,7 @@ static ARB_ERROR toggle_consensus_display(ED4_base *base, AW_CL show) {
         ED4_spacer_terminal *spacer = consensus_man->parent->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
 
         if (show) {
-            consensus_man->make_children_visible();
+            consensus_man->unhide_children();
             spacer->extension.size[HEIGHT] = SPACERHEIGHT;
         }
         else {

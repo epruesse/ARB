@@ -20,13 +20,13 @@
 
 #define e4_assert(bed) arb_assert(bed)
 
-static int has_species_name(ED4_base *base, AW_CL cl_species_name) {
+static bool has_species_name(ED4_base *base, AW_CL cl_species_name) {
     if (base->is_sequence_terminal()) {
         ED4_sequence_terminal *seq_term = base->to_sequence_terminal();
         const char *species_name = (const char *)cl_species_name;
         return species_name && seq_term && seq_term->species_name && strcmp(species_name, seq_term->species_name)==0;
     }
-    return 0;
+    return false;
 }
 
 // -----------------
