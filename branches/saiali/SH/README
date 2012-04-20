@@ -1,0 +1,42 @@
+
+User scripts
+------------
+
+Scripts stored SH are delivered to users with ARB releases.
+
+
+User scripts:
+
+        arb                                     Used to start arb
+        arb_clean                               Kill running arb processes (does not kill pt servers)
+        arb_installubuntu4arb.sh                Install Ubuntu environment for ARB
+        arb_remote                              Run ARB on a remote machine using ssh
+        arb_panic                               Try to save database of running ARB (e.g. if ARB does not react)
+        arb_repair                              Try to repair a broken database
+        arb_who                                 Show arb processes
+
+        dszmconnect.pl                          adapter between the ARB program package and the DSZM website
+        example_batch_probe_match.sh            probe match from command line
+
+
+Scripts used by ARB or from other scripts:
+
+        arb_dnapars                             wrapper for dnapars
+        arb_echo                                spread parameters to multiple lines
+        arb_fastdnaml                           wrapper for fastdnaml
+        arb_ign                                 used to ignore some arguments from command line
+        arb_ludwig                              (alias for arb_remote)
+        arb_phyml                               wrapper for phyml
+        arb_proml                               wrapper for proml
+        arb_protpars                            wrapper for protpars
+        arb_raxml                               wrapper for raxml
+        arb_sleep                               Keeps terminal windows open for 60 seconds (unused)
+        arb_textedit                            Used to edit textfiles
+        arb_textprint                           Used to print textfiles
+        arb_wait                                Keep terminal windows open until user presses ENTER
+        
+Undocumented / maybe obsolete:
+                                         @@@ FIXME: examine and remove or document these scripts 
+        arb_ale                                 
+        arb_bootstrap
+
