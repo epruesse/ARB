@@ -1671,7 +1671,7 @@ clean2: $(ARCHS:.a=.clean) \
 		perl_clean \
 		clean_directories \
 
-	rm -f *.last_gcc config.makefile.bak TAGS
+	rm -f *.last_gcc config.makefile.bak
 
 # links are needed for cleanup
 clean: redo_links
