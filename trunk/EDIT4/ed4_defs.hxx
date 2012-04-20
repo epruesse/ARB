@@ -13,6 +13,7 @@
 
 #if defined(DEBUG)
 // #define TRACE_REFRESH
+// #define TRACE_JUMPS
 #endif
 
 

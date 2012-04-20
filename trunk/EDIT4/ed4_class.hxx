@@ -620,7 +620,7 @@ class ED4_cursor : virtual Noncopyable, virtual ED4_WinContextFree {
     ED4_returncode  draw_cursor(AW_pos x, AW_pos y);
     ED4_returncode  delete_cursor(AW_pos del_mark,  ED4_base *target_terminal);
 
-    void updateAwars();
+    void updateAwars(bool new_term_selected);
 
 public:
 
@@ -629,6 +629,8 @@ public:
 
     bool is_partly_visible() const;
     bool is_completely_visible() const;
+
+    bool is_hidden_inside_group() const;
 
     void changeType(ED4_CursorType typ);
     ED4_CursorType  getType() const { return ctype; }
@@ -1684,7 +1686,7 @@ public:
     int  has_valid_counters() const { return species != -1 && selected_species!=-1; }
     bool all_are_selected() const { e4_assert(has_valid_counters()); return species == selected_species; }
 
-    void select_all_species();
+    void select_all(bool only_species);
     void deselect_all_species_and_SAI();
     void invert_selection_of_all_species();
     void marked_species_select(bool select);
@@ -2324,4 +2326,5 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access);
 #else
 #error ed4_class included twice
 #endif
+
 

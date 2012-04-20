@@ -281,23 +281,20 @@ ED4_returncode ED4_cursor::draw_cursor(AW_pos x, AW_pos y) { // @@@ remove retur
 
 #if defined(TRACE_REFRESH)
     printf("draw_cursor(%i, %i)\n", int(x), int(y));
-#endif // DEBUG
+#endif // TRACE_REFRESH
     
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_terminal)
-{
+ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_terminal) {
     AW_pos x, y;
-    ED4_base *temp_parent;
-
     target_terminal->calc_world_coords(&x, &y);
-    temp_parent = target_terminal->get_parent(ED4_L_SPECIES);
+    ED4_base *temp_parent = target_terminal->get_parent(ED4_L_SPECIES);
     if (!temp_parent || temp_parent->flag.hidden || !is_partly_visible()) {
         return ED4_R_BREAK;
     }
+    
     x = del_mark;
-
     win->world_to_win_coords(&x, &y);
 
     // refresh own terminal + terminal above + terminal below
@@ -350,9 +347,9 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
 
     dev->clear_part(xmin, ymin, xmax-xmin+1, ymax-ymin+1, AW_ALL_DEVICES);
 
-#if defined(DEBUG) && 0
+#if defined(TRACE_REFRESH)
     printf("delete_cursor(%i, %i)\n", int(x), int(y));
-#endif // DEBUG
+#endif // TRACE_REFRESH
 
     dev->set_font_overlap(true);
 
@@ -445,11 +442,6 @@ static void jump_to_species(ED4_species_name_terminal *name_term, int seq_pos, b
 static bool ignore_selected_species_changes_cb = false;
 static bool ignore_selected_SAI_changes_cb     = false;
 
-#if defined(DEBUG)
-// #define TRACE_JUMPS
-#endif // DEBUG
-
-
 static void select_named_sequence_terminal(const char *name) {
     GB_transaction ta(GLOBAL_gb_main);
     ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(name);
@@ -497,6 +489,7 @@ static void select_named_sequence_terminal(const char *name) {
 
 void ED4_selected_SAI_changed_cb(AW_root * /* aw_root */)
 {
+    bool old                               = ED4_update_global_cursor_awars_allowed;
     ED4_update_global_cursor_awars_allowed = false;
 
     if (!ignore_selected_SAI_changes_cb) {
@@ -511,11 +504,12 @@ void ED4_selected_SAI_changed_cb(AW_root * /* aw_root */)
             free(name);
         }
     }
-    ED4_update_global_cursor_awars_allowed = true;
+    ED4_update_global_cursor_awars_allowed = old;
 }
 
 void ED4_selected_species_changed_cb(AW_root * /* aw_root */)
 {
+    bool old                               = ED4_update_global_cursor_awars_allowed;
     ED4_update_global_cursor_awars_allowed = false;
 
     if (!ignore_selected_species_changes_cb) {
@@ -533,7 +527,7 @@ void ED4_selected_species_changed_cb(AW_root * /* aw_root */)
         printf("Change ignored because ignore_selected_species_changes_cb!\n");
 #endif
     }
-    ED4_update_global_cursor_awars_allowed = true;
+    ED4_update_global_cursor_awars_allowed = old;
 }
 
 void ED4_jump_to_current_species(AW_window *aww, AW_CL) {
@@ -810,6 +804,9 @@ static void trace_termChange_in_global_awar(ED4_terminal *term, char*& last_valu
         freeset(last_value, species_name);
         bool old    = ignore_flag;
         ignore_flag = true;
+#if defined(TRACE_JUMPS)
+        fprintf(stderr, "Writing '%s' to awar '%s'\n", species_name, awar_name);
+#endif
         GBT_write_string(GLOBAL_gb_main, awar_name, species_name);
         ignore_flag = old;
     }
@@ -818,11 +815,11 @@ static void trace_termChange_in_global_awar(ED4_terminal *term, char*& last_valu
     }
 }
 
-void ED4_cursor::updateAwars() {
+void ED4_cursor::updateAwars(bool new_term_selected) {
     AW_root *aw_root = ED4_ROOT->aw_root;
     int      seq_pos = get_sequence_pos();
 
-    if (ED4_update_global_cursor_awars_allowed) {
+    if (ED4_update_global_cursor_awars_allowed && new_term_selected) {
         // @@@ last_set_XXX has to be window-specific (or better cursor specific)
         if (in_SAI_terminal()) {
             static char *last_set_SAI = 0;
@@ -1224,7 +1221,7 @@ ED4_returncode ED4_cursor::ShowCursor(ED4_index offset_x, ED4_cursor_move move, 
             break;
     }
 
-    updateAwars();
+    updateAwars(false);
     ED4_update_global_cursor_awars_allowed = old_allow;
 
     x_help = cursor_abs_x + offset_x;
@@ -1242,13 +1239,26 @@ ED4_returncode ED4_cursor::ShowCursor(ED4_index offset_x, ED4_cursor_move move, 
     return (ED4_R_OK);
 }
 
+bool ED4_cursor::is_hidden_inside_group() const {
+    if (!owner_of_cursor) return false;
+    if (!owner_of_cursor->is_in_folded_group()) return false;
+    if (in_consensus_terminal()) {
+        ED4_base *group_man = owner_of_cursor->get_parent(ED4_L_GROUP);
+        e4_assert(group_man);
+        return group_man->is_in_folded_group();
+    }
+    return true;
+}
 
 bool ED4_cursor::is_partly_visible() const {
     e4_assert(owner_of_cursor);
     e4_assert(cursor_shape); // cursor is not drawn, cannot test visibility
 
-    if (owner_of_cursor->is_in_folded_group()) return false;
-    
+    if (is_hidden_inside_group()) {
+        printf("is_hidden_inside_group=true\n");
+        return false;
+    }
+
     AW_pos x, y;
     owner_of_cursor->calc_world_coords(&x, &y);
 
@@ -1270,7 +1280,7 @@ bool ED4_cursor::is_completely_visible() const {
     e4_assert(owner_of_cursor);
     e4_assert(cursor_shape); // cursor is not drawn, cannot test visibility
 
-    if (owner_of_cursor->is_in_folded_group()) return false;
+    if (is_hidden_inside_group()) return false;
 
     AW_pos x, y;
     owner_of_cursor->calc_world_coords(&x, &y);
@@ -1371,10 +1381,8 @@ void ED4_terminal::scroll_into_view(ED4_window *ed4w) { // scroll y-position onl
 void ED4_cursor::set_to_terminal(ED4_terminal *terminal, int seq_pos, ED4_CursorJumpType jump_type) {
     if (seq_pos == -1) seq_pos = get_sequence_pos();
 
-    if (owner_of_cursor == terminal) {
-        jump_sequence_pos(seq_pos, jump_type);
-    }
-    else {
+    bool new_term_selected = owner_of_cursor != terminal;
+    if (new_term_selected) {
         if (owner_of_cursor) {
             if (get_sequence_pos() != seq_pos) {
                 jump_sequence_pos(seq_pos, jump_type); // position to wanted column -- scrolls horizontally
@@ -1388,13 +1396,17 @@ void ED4_cursor::set_to_terminal(ED4_terminal *terminal, int seq_pos, ED4_Cursor
             jump_sequence_pos(seq_pos, jump_type);
         }
     }
+    else {
+        jump_sequence_pos(seq_pos, jump_type);
+    }
 
     GB_transaction ta(GLOBAL_gb_main);
-    updateAwars();
+    updateAwars(new_term_selected);
 }
 
-ED4_returncode ED4_cursor::show_cursor_at(ED4_terminal *target_terminal, ED4_index scr_pos)
-{
+ED4_returncode ED4_cursor::show_cursor_at(ED4_terminal *target_terminal, ED4_index scr_pos) {
+    bool new_term_selected = owner_of_cursor != target_terminal;
+    
     if (owner_of_cursor) {
         if (is_partly_visible()) {
             delete_cursor(cursor_abs_x, owner_of_cursor);
@@ -1425,7 +1437,7 @@ ED4_returncode ED4_cursor::show_cursor_at(ED4_terminal *target_terminal, ED4_ind
     draw_cursor(win_x, win_y);
 
     GB_transaction gb_dummy(GLOBAL_gb_main);
-    updateAwars();
+    updateAwars(new_term_selected);
 
     return ED4_R_OK;
 }
