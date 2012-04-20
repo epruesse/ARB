@@ -342,7 +342,7 @@ static void PV_ManageTerminals(AW_root *root) {
 
             if (cursor.owner_of_cursor) {
                 // Get The Cursor Terminal And The Corresponding Aa_Sequence Terminals And Set The Display Options
-                ED4_terminal *cursorTerminal = cursor.owner_of_cursor->to_terminal();
+                ED4_terminal *cursorTerminal = cursor.owner_of_cursor;
                 if (cursorTerminal->is_species_seq_terminal()) {
                     for (int i=0; i<PV_AA_Terminals4Species; i++) {
                         // get the corresponding orf_terminal skipping sequence_info terminal
@@ -704,7 +704,7 @@ void PV_SequenceUpdate_CB(GB_CB_TYPE gbtype) {
 
         ED4_cursor *cursor = &current_cursor();
         if (cursor->in_species_seq_terminal()) {
-            ED4_terminal *cursorTerminal = cursor->owner_of_cursor->to_terminal();
+            ED4_terminal *cursorTerminal = cursor->owner_of_cursor;
             char         *speciesName    = cursorTerminal->to_sequence_terminal()->species_name;
             for (int i=0; i<PV_AA_Terminals4Species; i++) {
                 // get the corresponding orf_terminal skipping sequence_info terminal
