@@ -335,8 +335,46 @@ unsigned char ED4_Edit_String::get_gap_type(long pos, int direction)
     return '-';
 }
 
+static GB_ERROR toggle_cursor_group_folding() {
+    GB_ERROR      error  = NULL;
+    ED4_cursor&   cursor = current_cursor();
+    if (cursor.owner_of_cursor) {
+        ED4_terminal *cursor_term = cursor.owner_of_cursor;
+
+        if (cursor_term->is_in_folded_group()) {
+            // cursor not visible -> unfold group which hides cursor
+            cursor_term->setCursorTo(&cursor, cursor.get_sequence_pos(), true, ED4_JUMP_KEEP_POSITION);
+        }
+        else {
+            ED4_base *group = cursor.owner_of_cursor->get_parent(ED4_L_GROUP);
+            if (group) {
+                ED4_group_manager    *group_man    = group->to_group_manager();
+                ED4_bracket_terminal *bracket_term = group_man->get_defined_level(ED4_L_BRACKET)->to_bracket_terminal();
+
+                if (group_man->dynamic_prop & ED4_P_IS_FOLDED) {
+                    bracket_term->unfold();
+                }
+                else {
+                    ED4_species_manager *consensus_man = group_man->get_multi_species_manager()->get_consensus_manager();
+                    if (consensus_man) consensus_man->setCursorTo(&cursor, cursor.get_sequence_pos(), true, ED4_JUMP_KEEP_POSITION);
+
+                    bracket_term->fold();
+                }
+            }
+        }
+    }
+    return error;
+}
+
+static void toggle_mark_of_specData(GBDATA *gb_data) {
+    // toggle mark of species owning data 'gb_data'
+    GB_transaction  ta(gb_data);
+    GBDATA         *gb_species = GB_get_grandfather(gb_data);
+    if (gb_species) GB_write_flag(gb_species, !GB_read_flag(gb_species));
+}
+
 GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char key, int direction, ED4_EDITMODI mode, bool is_consensus,
-                                     long &seq_pos, bool &changed_flag, ED4_CursorJumpType& cursor_jump, bool &cannot_handle, bool &write_fault, GBDATA* gb_data, bool is_sequence)
+                                  long &seq_pos, bool &changed_flag, ED4_CursorJumpType& cursor_jump, bool &cannot_handle, bool &write_fault, GBDATA* gb_data, bool is_sequence)
 {
     changed_flag = 0;
     write_fault = 0;
@@ -651,6 +689,11 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                 }
 
                 break;
+
+            case AW_KEY_RETURN: 
+                ad_err = toggle_cursor_group_folding();
+                break; 
+
             case AW_KEY_ASCII: {
 
                 //      keyboard layout:
@@ -660,6 +703,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                 //      - CTRL-I    Toggle insert/replace               ok
                 //      - CTRL-J    Jump opposite helix position        ok
                 //      - CTRL-L    Refresh                             ok
+                //      - CTRL-M    Invert mark                         ok
                 //      - CTRL-R    set aligner reference species       ok
                 //      - CTRL-S    Repeat last search                  ok
                 //      - CTRL-U    Undo                                @@@ crashes!!!
@@ -779,6 +823,11 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             cursor_jump = ED4_JUMP_CENTERED;
                             break;
                         }
+                        case 'M': // CTRL-M = Invert mark(s)
+                            if (is_consensus) { cannot_handle = 1; return 0; }
+                            toggle_mark_of_specData(gb_data);
+                            break;
+                        
                         case 'S': { // CTRL-S = Repeat last search
                             ad_err      = ED4_repeat_last_search(current_ed4w());
                             seq_pos     = current_cursor().get_sequence_pos();

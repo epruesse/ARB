@@ -577,10 +577,10 @@ public:
 };
 
 class ED4_base_position : private BasePosition { // derived from a Noncopyable
-    const ED4_base *calced4base;
+    const ED4_terminal *calced4term;
 
-    void calc4base(const ED4_base *base);
-    void set_base(const ED4_base *base) { if (calced4base != base) calc4base(base); }
+    void calc4term(const ED4_terminal *term);
+    void set_term(const ED4_terminal *term) { if (calced4term != term) calc4term(term); }
 
 public:
 
@@ -589,16 +589,16 @@ public:
 
     void invalidate();
 
-    void announce_deletion(const ED4_base *object) {
-        if (object == calced4base) invalidate();
-        e4_assert(calced4base != object);
+    void announce_deletion(const ED4_terminal *term) {
+        if (term == calced4term) invalidate();
+        e4_assert(calced4term != term);
     }
 
-    int get_base_position(const ED4_base *base, int sequence_position);
-    int get_sequence_position(const ED4_base *base, int base_position);
+    int get_base_position(const ED4_terminal *base, int sequence_position);
+    int get_sequence_position(const ED4_terminal *base, int base_position);
 
-    int get_base_count(const ED4_base *base) { set_base(base); return base_count(); }
-    int get_abs_len(const ED4_base *base) { set_base(base); return abs_count(); }
+    int get_base_count(const ED4_terminal *term) { set_term(term); return base_count(); }
+    int get_abs_len(const ED4_terminal *term) { set_term(term); return abs_count(); }
 };
 
 class ED4_CursorShape;
@@ -647,8 +647,8 @@ class ED4_cursor : virtual Noncopyable, virtual ED4_WinContextFree {
 
 public:
 
-    bool      allowed_to_draw;  // needed for cursor handling
-    ED4_base *owner_of_cursor;
+    bool          allowed_to_draw; // needed for cursor handling
+    ED4_terminal *owner_of_cursor;
 
     bool is_partly_visible() const;
     bool is_completely_visible() const;
@@ -692,7 +692,7 @@ public:
     inline bool in_consensus_terminal() const;
     inline bool in_SAI_terminal() const;
     
-    void announce_deletion(ED4_base *object) {
+    void announce_deletion(ED4_terminal *object) {
         base_position.announce_deletion(object);
         if (object == owner_of_cursor) owner_of_cursor = NULL; // no need to delete the cursor (deletion triggers full redraw)
     }
@@ -735,7 +735,7 @@ public:
     void        reset_all_for_new_config(); // reset structures for loading new config
     ED4_window *get_matching_ed4w(AW_window *aww);
 
-    void announce_deletion(ED4_base *object) { cursor.announce_deletion(object); }
+    void announce_deletion(ED4_terminal *object) { cursor.announce_deletion(object); }
     
     // functions concerned the scrolled area
     void update_scrolled_rectangle();
@@ -1642,9 +1642,12 @@ public:
 };
 
 inline void ED4_root::announce_deletion(ED4_base *object) {
-    for (ED4_window *win = first_window; win; win = win->next) {
-        ED4_LocalWinContext uses(win);
-        win->announce_deletion(object);
+    if (object->is_terminal()) {
+        ED4_terminal *term = object->to_terminal();
+        for (ED4_window *win = first_window; win; win = win->next) {
+            ED4_LocalWinContext uses(win);
+            win->announce_deletion(term);
+        }
     }
 }
 

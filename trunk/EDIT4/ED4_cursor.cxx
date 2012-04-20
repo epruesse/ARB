@@ -770,7 +770,7 @@ ED4_returncode ED4_cursor::HideCursor()
 void ED4_cursor::changeType(ED4_CursorType typ)
 {
     if (owner_of_cursor) {
-        ED4_base *old_owner_of_cursor = owner_of_cursor;
+        ED4_terminal *old_owner_of_cursor = owner_of_cursor;
 
         HideCursor();
         ctype = typ;
@@ -809,11 +809,11 @@ void ED4_cursor::updateAwars(bool new_term_selected) {
         // @@@ last_set_XXX has to be window-specific (or better cursor specific)
         if (in_SAI_terminal()) {
             static char *last_set_SAI = 0;
-            trace_termChange_in_global_awar(owner_of_cursor->to_terminal(), last_set_SAI, ignore_selected_SAI_changes_cb, AWAR_SAI_NAME);
+            trace_termChange_in_global_awar(owner_of_cursor, last_set_SAI, ignore_selected_SAI_changes_cb, AWAR_SAI_NAME);
         }
         else if (in_species_seq_terminal()) {
             static char *last_set_species = 0;
-            trace_termChange_in_global_awar(owner_of_cursor->to_terminal(), last_set_species, ignore_selected_species_changes_cb, AWAR_SPECIES_NAME);
+            trace_termChange_in_global_awar(owner_of_cursor, last_set_species, ignore_selected_species_changes_cb, AWAR_SPECIES_NAME);
         }
     }
 
@@ -932,7 +932,7 @@ void ED4_cursor::jump_screen_pos(int screen_pos, ED4_CursorJumpType jump_type) {
     printf("jump_screen_pos(%i)\n", screen_pos);
 #endif
 
-    ED4_terminal *term = owner_of_cursor->to_terminal();
+    ED4_terminal *term = owner_of_cursor;
     ED4_window   *ed4w = window();
 
     term->scroll_into_view(ed4w); // correct y-position of terminal
@@ -1107,6 +1107,10 @@ static ED4_terminal *get_upper_lower_cursor_pos(ED4_manager *starting_point, ED4
     return result;
 }
 
+struct acceptConsensusTerminal : public ED4_TerminalPredicate {
+    bool fulfilled_by(const ED4_terminal *term) const { return term->is_consensus_terminal(); }
+};
+
 ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
     // move cursor up down
     ED4_cursor_move dir     = ED4_C_NONE;
@@ -1132,12 +1136,12 @@ ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
             int seq_pos = get_sequence_pos();
             ED4_terminal *target_terminal = 0;
 
-            if (event->keymodifier & AW_KEYMODE_CONTROL) {
-                bool has_base = has_base_at(seq_pos, true).fulfilled_by(owner_of_cursor->to_terminal());
+            // stay in current area
+            ED4_multi_species_manager *start_at_manager = 0;
+            ED4_AREA_LEVEL             area_level       = owner_of_cursor->get_area_level(&start_at_manager);
 
-                // stay in current area
-                ED4_multi_species_manager *start_at_manager = 0;
-                owner_of_cursor->get_area_level(&start_at_manager);
+            if (event->keymodifier & AW_KEYMODE_CONTROL) {
+                bool has_base = has_base_at(seq_pos, true).fulfilled_by(owner_of_cursor);
 
                 if (!endHome) { // not End or Home
                     target_terminal = get_upper_lower_cursor_pos(start_at_manager, dir, y_world, false, has_base_at(seq_pos, !has_base));
@@ -1157,15 +1161,19 @@ ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
             }
             else {
                 e4_assert(!endHome); // END and HOME w/o Ctrl should not call move_cursor()
-
-                bool isScreen = false;
-                if (dir == ED4_C_DOWN) {
-                    if (owner_of_cursor->get_area_level(NULL) == ED4_A_TOP_AREA) {
-                        window()->world_to_win_coords(&x_dummy, &y_world); // special handling to move cursor from top to bottom area
-                        isScreen = true;
-                    }
+                if (event->keymodifier & AW_KEYMODE_ALT) {
+                    target_terminal = get_upper_lower_cursor_pos(start_at_manager, dir, y_world, false, acceptConsensusTerminal());
                 }
-                target_terminal = get_upper_lower_cursor_pos(ED4_ROOT->main_manager, dir, y_world, isScreen, acceptAnyTerminal());
+                else {
+                    bool isScreen = false;
+                    if (dir == ED4_C_DOWN) {
+                        if (area_level == ED4_A_TOP_AREA) {
+                            window()->world_to_win_coords(&x_dummy, &y_world); // special handling to move cursor from top to bottom area
+                            isScreen = true;
+                        }
+                    }
+                    target_terminal = get_upper_lower_cursor_pos(ED4_ROOT->main_manager, dir, y_world, isScreen, acceptAnyTerminal());
+                }
             }
 
             if (target_terminal) {
@@ -1434,7 +1442,7 @@ ED4_returncode ED4_cursor::show_clicked_cursor(AW_pos click_xpos, ED4_terminal *
    -------------------------------------------------------------------------------- */
 
 ED4_base_position::ED4_base_position()
-    : calced4base(0)
+    : calced4term(0)
 {
 }
 
@@ -1448,18 +1456,18 @@ static void ed4_bp_sequence_changed_cb(ED4_species_manager *, AW_CL cl_base_pos)
 }
 
 void ED4_base_position::invalidate() {
-    if (calced4base) {
-        ED4_species_manager *species_manager = calced4base->get_parent(ED4_L_SPECIES)->to_species_manager();
+    if (calced4term) {
+        ED4_species_manager *species_manager = calced4term->get_parent(ED4_L_SPECIES)->to_species_manager();
         species_manager->remove_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this); // @@@ removes cb called later -> ED4_base.cxx@INVALID_CB_HANDLING 
 
-        calced4base = 0;
+        calced4term = 0;
     }
 }
 
 static bool is_gap(char c) { return ED4_is_align_character[safeCharIndex(c)]; }
 static bool is_consensus_gap(char c) { return ED4_is_align_character[safeCharIndex(c)] || c == '='; }
 
-void ED4_base_position::calc4base(const ED4_base *base)
+void ED4_base_position::calc4term(const ED4_terminal *base)
 {
     e4_assert(base);
 
@@ -1467,8 +1475,8 @@ void ED4_base_position::calc4base(const ED4_base *base)
     int                  len;
     char                *seq;
 
-    if (calced4base) {
-        ED4_species_manager *prev_species_manager = calced4base->get_parent(ED4_L_SPECIES)->to_species_manager();
+    if (calced4term) {
+        ED4_species_manager *prev_species_manager = calced4term->get_parent(ED4_L_SPECIES)->to_species_manager();
         prev_species_manager->remove_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
     }
 
@@ -1495,18 +1503,18 @@ void ED4_base_position::calc4base(const ED4_base *base)
 #endif
     CharPredicate pred_is_gap(isGap_fun);
     initialize(seq, len, pred_is_gap);
-    calced4base = base;
+    calced4term = base;
 
     free(seq);
 }
-int ED4_base_position::get_base_position(const ED4_base *base, int sequence_position) {
-    if (!base) return 0;
-    set_base(base);
+int ED4_base_position::get_base_position(const ED4_terminal *term, int sequence_position) {
+    if (!term) return 0;
+    set_term(term);
     return abs_2_rel(sequence_position);
 }
-int ED4_base_position::get_sequence_position(const ED4_base *base, int base_pos) {
-    if (!base) return 0;
-    set_base(base);
+int ED4_base_position::get_sequence_position(const ED4_terminal *term, int base_pos) {
+    if (!term) return 0;
+    set_term(term);
     return rel_2_abs(base_pos);
 }
 
@@ -1575,7 +1583,7 @@ void ED4_store_curpos(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
         aw_message("First you have to place the cursor.");
     }
     else {
-        new CursorPos(cursor->owner_of_cursor->to_terminal(), cursor->get_sequence_pos());
+        new CursorPos(cursor->owner_of_cursor, cursor->get_sequence_pos());
     }
 }
 

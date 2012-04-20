@@ -1361,7 +1361,7 @@ void ED4_search_cb(AW_window *, AW_CL searchDescriptor, AW_CL cl_ed4w) {
 
     ED4_cursor *cursor = &current_cursor();
     if (cursor->owner_of_cursor) { // if cursor is shown -> use cursor position
-        terminal = cursor->owner_of_cursor->to_terminal();
+        terminal = cursor->owner_of_cursor;
         pos = cursor->get_sequence_pos();
     }
     else { // start at end or beginning

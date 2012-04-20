@@ -165,8 +165,8 @@ DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
 		Key mapping:
 
 			Nucleotide (amino acid) and gap symbols can be assigned
-			to any of the letter and symbol keys by using the 'Key
-			Mapping' facility ('Properties' menu).
+			to any of the letter and symbol keys
+                        using 'Properties/Key mappings'.
 
 		Moving nucleotide (amino acid) symbols:
 
@@ -220,6 +220,18 @@ DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
 			CTRL+HOME/END
 
 				Jumps to the first/last sequence.
+
+                        ENTER
+
+                                Fold/unfold group
+
+                        ALT+UP/DOWN
+
+                                Jump to previous/next group consensus
+
+                        Ctrl-M
+
+                                Toggle mark of species/group.
 
 	Messages:
 
