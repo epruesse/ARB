@@ -2,9 +2,11 @@
 UP	arb.hlp
 UP	glossary.hlp
 UP	arb_edit4.hlp
+UP	helix.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-#SUB	subtopic.hlp
+SUB	e4_options.hlp
+SUB	toggle_secinfo.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 

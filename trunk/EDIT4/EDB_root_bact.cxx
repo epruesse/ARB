@@ -138,7 +138,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
     name_coords += terminal_height;
 
     search_sequence_data_rek(multi_sequence_manager, ref_sequence_info_terminal, ref_sequence_terminal, gb_datamode,
-                             count_too, &seq_coords, &max_seq_terminal_length, ED4_A_DEFAULT);
+                             count_too, &seq_coords, &max_seq_terminal_length, ED4_A_DEFAULT, datamode == ED4_D_EXTENDED);
 
     local_count_position += max(name_coords, seq_coords);
     name_coords = seq_coords = 0;
@@ -158,7 +158,8 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                                                        int                         count_too,
                                                        ED4_index                  *seq_coords,
                                                        ED4_index                  *max_sequence_terminal_length,
-                                                       ED4_alignment               alignment_flag)
+                                                       ED4_alignment               alignment_flag,
+                                                       bool                        isSAI)
 {
     AW_device *device;
     int        j          = 0;
@@ -188,7 +189,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
 
         if (type == GB_DB) {  // we have to unpack container
             search_sequence_data_rek(multi_sequence_manager, ref_sequence_info_terminal, ref_sequence_terminal,
-                                     gb_alignment, count_too, seq_coords, max_sequence_terminal_length, ED4_A_CONTAINER);
+                                     gb_alignment, count_too, seq_coords, max_sequence_terminal_length, ED4_A_CONTAINER, isSAI);
         }
         else { // otherwise we enter the data
             char *key_string = GB_read_key(gb_alignment);
@@ -207,21 +208,32 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
 
                 ED4_text_terminal *text_terminal = 0;
 
-                bool is_seq_data = (strcmp(key_string, "data") == 0); // not quite correct since several SAIs also use data
+                bool is_data    = false;
+                bool is_data2   = false;
+                bool is_bits    = false;
+                bool is_quality = false;
 
-                bool is_aligned                        = is_seq_data
-                    || (strcmp(key_string, "data2")   == 0) // used by SAIs with two entries (e.g. first and second digit of 2-digit-numbers)
-                    || (strcmp(key_string, "bits")    == 0) // used by binary SAIs (e.g. MARKERLINE)
-                    || (strcmp(key_string, "quality") == 0); // used by "quality" entry written by chimera check; see ../STAT/ST_quality.cxx@chimera_check_quality_string
+                if      (strcmp(key_string, "data")    == 0) is_data    = true; // SAI or species
+                else if (strcmp(key_string, "data2")   == 0) is_data2   = true; // used by SAIs with two entries (e.g. first and second digit of 2-digit-numbers)
+                else if (strcmp(key_string, "bits")    == 0) is_bits    = true; // used by binary SAIs (e.g. MARKERLINE)
+                else if (strcmp(key_string, "quality") == 0) is_quality = true; // used by "quality" entry written by chimera check; see ../STAT/ST_quality.cxx@chimera_check_quality_string
+
+                bool is_aligned = is_data || is_data2 || is_bits || is_quality;
 
                 if (is_aligned) {
-                    ED4_sequence_terminal *seq_term;
+                    bool shall_display_secinfo = is_data;
+
+                    if (isSAI) {
+                        GBDATA *gb_sai        = GB_get_grandfather(gb_alignment);
+                        GBDATA *gb_disp_sec   = GB_searchOrCreate_int(gb_sai, "showsec", 0);
+                        shall_display_secinfo = GB_read_int(gb_disp_sec);
+                    }
 
                     sprintf(namebuffer, "Sequence_Term%ld.%d", ED4_counter, count_too++);
-                    seq_term               = new ED4_sequence_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, seq_manager);
-                    seq_term->species_name = seq_term->get_name_of_species();
+                    ED4_sequence_terminal *seq_term = new ED4_sequence_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, seq_manager, shall_display_secinfo);
+                    seq_term->species_name          = seq_term->get_name_of_species();
 
-                    if (is_seq_data) seq_term->set_property(ED4_P_CONSENSUS_RELEVANT);
+                    if (is_data) seq_term->set_property(ED4_P_CONSENSUS_RELEVANT);
                     seq_term->set_property(ED4_P_ALIGNMENT_DATA);
 
                     text_terminal = seq_term;
@@ -236,7 +248,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                 seq_manager->children->append_member(text_terminal);
 #if defined(DEBUG)
                 // ensure only 1 terminal is consensus-relevant!
-                if (is_seq_data) {
+                if (is_data) {
                     seq_manager->get_consensus_relevant_terminal(); // does an error otherwise!
                 }
 #endif // DEBUG

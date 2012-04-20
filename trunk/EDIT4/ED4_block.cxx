@@ -331,6 +331,8 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
     static ED4_sequence_terminal *last_term1, *last_term2;
     static PosRange               last_range;
 
+    if (!term1) return; // e.g. when 1st click was into consensus
+
     if (pos1>pos2) {
         block.set_range(PosRange(pos2, pos1));
     }
@@ -440,13 +442,15 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
 
     switch (event->type) {
         case AW_Mouse_Press: {
-            if (block.get_type()==ED4_BT_NOBLOCK) { // initial columnblock
-                block.set_type(ED4_BT_COLUMNBLOCK);
+            if (block.get_type() == ED4_BT_NOBLOCK) { // initial columnblock
+                if (!seq_term->is_consensus_terminal()) {
+                    block.set_type(ED4_BT_COLUMNBLOCK);
 
-                fix_term = seq_term;
-                fix_pos = seq_pos;
+                    fix_term = seq_term;
+                    fix_pos = seq_pos;
 
-                select_and_update(fix_term, seq_term, fix_pos, seq_pos, 1);
+                    select_and_update(fix_term, seq_term, fix_pos, seq_pos, 1);
+                }
             }
             else if (block.get_type()==ED4_BT_LINEBLOCK) { // change lineblock to columnblock
                 block.set_type(ED4_BT_MODIFIED_COLUMNBLOCK);
