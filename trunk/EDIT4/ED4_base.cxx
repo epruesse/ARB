@@ -269,7 +269,7 @@ ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_C
     bracket_terminal->set_links(NULL, multi_species_manager);
 
     sprintf(buffer, "Group_Spacer_Terminal_Beg.%ld", ED4_counter);                                                      // Spacer at beginning of group
-    group_spacer_terminal1 = new ED4_spacer_terminal(buffer,   0, 0, 10, SPACERHEIGHT, multi_species_manager);  // For better Overview
+    group_spacer_terminal1 = new ED4_spacer_terminal(buffer, true, 0, 0, 10, SPACERHEIGHT, multi_species_manager);  // For better Overview
     multi_species_manager->children->append_member(group_spacer_terminal1);
 
     sprintf(buffer, "Consensus_Manager.%ld", ED4_counter);                                                     // Create competence terminal
@@ -298,7 +298,7 @@ ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_C
     sequence_manager->children->append_member(sequence_terminal);
 
     sprintf(buffer, "Group_Spacer_Terminal_End.%ld", ED4_counter);                                                      // Spacer at beginning of group
-    group_spacer_terminal2 = new ED4_spacer_terminal(buffer,   0, SPACERHEIGHT + TERMINALHEIGHT, 10, SPACERHEIGHT, multi_species_manager);      // For better Overview
+    group_spacer_terminal2 = new ED4_spacer_terminal(buffer, true, 0, SPACERHEIGHT + TERMINALHEIGHT, 10, SPACERHEIGHT, multi_species_manager);      // For better Overview
     multi_species_manager->children->append_member(group_spacer_terminal2);
 
     multi_species_manager->update_requested_by_child();
@@ -407,7 +407,7 @@ ED4_returncode ED4_base::generate_configuration_string(char **generated_string)
             strcat(*generated_string, "G");
         }
 
-        multi_species_manager = to_group_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+        multi_species_manager = to_group_manager()->get_multi_species_manager();
 
         // move consensus to top of list (essential!)
         // @@@ code below is duplicated in ED4_bracket_terminal::fold() 
@@ -618,7 +618,7 @@ ED4_AREA_LEVEL ED4_base::get_area_level(ED4_multi_species_manager **multi_specie
         else if (area_man == ED4_ROOT->middle_area_man) result = ED4_A_MIDDLE_AREA;
 
         if (result != ED4_A_ERROR && multi_species_manager) {
-            *multi_species_manager = area_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+            *multi_species_manager = area_man->get_multi_species_manager();
         }
     }
     return result;
@@ -626,7 +626,7 @@ ED4_AREA_LEVEL ED4_base::get_area_level(ED4_multi_species_manager **multi_specie
 
 
 void ED4_multi_species_manager::update_group_id() {
-    ED4_base *consensus_name_terminal = get_consensus_terminal();
+    ED4_species_name_terminal *consensus_name_terminal = get_consensus_name_terminal();
     if (consensus_name_terminal) { // top managers dont show consensus
         e4_assert(has_valid_counters());
         
@@ -776,7 +776,7 @@ int ED4_multi_species_manager::count_visible_children() // is called by a multi_
                 counter ++;
             }
             else {
-                ED4_multi_species_manager *multi_species_manager = group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+                ED4_multi_species_manager *multi_species_manager = group_manager->get_multi_species_manager();
                 counter += multi_species_manager->count_visible_children();
             }
         }
@@ -849,8 +849,8 @@ ED4_returncode ED4_base::set_width() {
         ED4_species_manager *species_manager = to_species_manager();
 
         if (!species_manager->is_consensus_manager()) {
-            ED4_multi_name_manager *multi_name_manager = species_manager->get_defined_level(ED4_L_MULTI_NAME)->to_multi_name_manager();     // case I'm a species
-            ED4_terminal           *consensus_terminal = parent->to_multi_species_manager()->get_consensus_terminal();
+            ED4_multi_name_manager    *multi_name_manager = species_manager->get_defined_level(ED4_L_MULTI_NAME)->to_multi_name_manager();  // case I'm a species
+            ED4_species_name_terminal *consensus_terminal = parent->to_multi_species_manager()->get_consensus_name_terminal();
 
             for (int i=0; i < multi_name_manager->children->members(); i++) {
                 ED4_name_manager *name_manager = multi_name_manager->children->member(i)->to_name_manager();
@@ -883,9 +883,9 @@ ED4_returncode ED4_base::set_width() {
     }
     else if (is_group_manager()) {
         ED4_group_manager         *group_manager           = to_group_manager();
-        ED4_multi_species_manager *multi_species_manager   = group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
-        ED4_terminal              *mark_consensus_terminal = multi_species_manager->get_consensus_terminal();
-        ED4_terminal              *consensus_terminal      = parent->to_multi_species_manager()->get_consensus_terminal();
+        ED4_multi_species_manager *multi_species_manager   = group_manager->get_multi_species_manager();
+        ED4_species_name_terminal *mark_consensus_terminal = multi_species_manager->get_consensus_name_terminal();
+        ED4_species_name_terminal *consensus_terminal      = parent->to_multi_species_manager()->get_consensus_name_terminal();
 
         if (consensus_terminal) { // we're a group in another group
             mark_consensus_terminal->extension.size[WIDTH] = consensus_terminal->extension.size[WIDTH] - BRACKETWIDTH;
@@ -1062,14 +1062,10 @@ void ED4_base::check_all()
     printf("***********************************************\n\n");
 }
 
-int ED4_base::adjust_clipping_rectangle()
-// return 0 if clipping rectangle disappeared (nothing left to draw)
-{
-    AW_pos x, y;
-
-    calc_world_coords(&x, &y);
-    current_ed4w()->world_to_win_coords(&x, &y);
-    return current_device()->reduceClipBorders(int(y), int(y+extension.size[HEIGHT]-1), int(x), int(x+extension.size[WIDTH]-1));
+int ED4_base::adjust_clipping_rectangle() {
+    // return 0 if clipping rectangle disappeared (nothing left to draw)
+    AW::Rectangle base_area = get_win_area(current_ed4w());
+    return current_device()->reduceClipBorders(base_area.top(), base_area.bottom(), base_area.left(), base_area.right());
 }
 
 void ED4_base::set_links(ED4_base *new_width, ED4_base *new_height) {
@@ -1093,18 +1089,6 @@ void ED4_base::set_links(ED4_base *new_width, ED4_base *new_height) {
 }
 
 int ED4_base::currTimestamp = 1;
-void ED4_base::update_world_coords_cache() const {
-    if (parent) {
-        parent->calc_world_coords(&lastXpos, &lastYpos);
-    }
-    else {
-        lastXpos = 0;
-        lastYpos = 0;
-    }
-    lastXpos += extension.position[X_POS];
-    lastYpos += extension.position[Y_POS];
-    timestamp = currTimestamp;
-}
 
 #if defined(DEBUG)
 // #define VISIBLE_AREA_REFRESH

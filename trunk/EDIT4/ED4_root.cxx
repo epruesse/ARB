@@ -176,21 +176,6 @@ ED4_returncode ED4_root::refresh_all_windows(bool redraw) {
     return (ED4_R_OK);
 }
 
-void ED4_foldable::win_to_world_coords(AW_pos *xPtr, AW_pos *yPtr) {
-    // calculates transformation from window to world coordinates in a given window
-    e4_assert(!is_reset());
-    *xPtr = vertical_fl->win2world(*xPtr);
-    *yPtr = horizontal_fl->win2world(*yPtr);
-}
-
-void ED4_foldable::world_to_win_coords(AW_pos *xPtr, AW_pos *yPtr) {
-    // Calculates transformation from world to window coordinates in a given window.
-    // world-coordinates inside folded range result in window coordinates lower than folding line position.
-    e4_assert(!is_reset());
-    *xPtr = vertical_fl->world2win(*xPtr);
-    *yPtr = horizontal_fl->world2win(*yPtr);
-}
-
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS
@@ -318,10 +303,10 @@ void TEST_win_2_world() {
 
 ED4_returncode ED4_root::deselect_all()
 {
-    ED4_multi_species_manager *main_multi_man = middle_area_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+    ED4_multi_species_manager *main_multi_man = middle_area_man->get_multi_species_manager();
     main_multi_man->deselect_all_species_and_SAI();
 
-    main_multi_man = top_area_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+    main_multi_man = top_area_man->get_multi_species_manager();
     main_multi_man->deselect_all_species_and_SAI();
 
     return ED4_R_OK;
@@ -608,13 +593,13 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
                 device_manager->children->append_member(top_area_manager);
                 top_area_man = top_area_manager;
 
-                top_spacer_terminal = new ED4_spacer_terminal("Top_Spacer",   0, 0, 100, 10, top_area_manager);
+                top_spacer_terminal = new ED4_spacer_terminal("Top_Spacer", true, 0, 0, 100, 10, top_area_manager);
                 top_area_manager->children->append_member(top_spacer_terminal);
 
                 top_multi_species_manager = new ED4_multi_species_manager("Top_MultiSpecies_Manager", x, 0, 0, 0, top_area_manager);
                 top_area_manager->children->append_member(top_multi_species_manager);
 
-                top_multi_spacer_terminal_beg = new ED4_spacer_terminal("Top_Multi_Spacer_Terminal_Beg", 0, 0, 0, 3, top_multi_species_manager);
+                top_multi_spacer_terminal_beg = new ED4_spacer_terminal("Top_Multi_Spacer_Terminal_Beg", true, 0, 0, 0, 3, top_multi_species_manager);
                 top_multi_species_manager->children->append_member(top_multi_spacer_terminal_beg);
 
                 y+=3;
@@ -633,7 +618,7 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
                 y += TOP_MID_LINE_HEIGHT;
 
 
-                top_mid_spacer_terminal = new ED4_spacer_terminal("Top_Middle_Spacer", 0, y, 880, TOP_MID_SPACER_HEIGHT,   device_manager);
+                top_mid_spacer_terminal = new ED4_spacer_terminal("Top_Middle_Spacer", true, 0, y, 880, TOP_MID_SPACER_HEIGHT,   device_manager);
                 device_manager->children->append_member(top_mid_spacer_terminal);
 
                 // needed to avoid text-clipping problems:
@@ -659,7 +644,7 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
                 mid_multi_species_manager = new ED4_multi_species_manager("Middle_MultiSpecies_Manager", x, 0, 0, 0, middle_area_manager);
                 middle_area_manager->children->append_member(mid_multi_species_manager);
 
-                mid_multi_spacer_terminal_beg = new ED4_spacer_terminal("Mid_Multi_Spacer_Terminal_Beg", 0, 0, 0, 3, mid_multi_species_manager);
+                mid_multi_spacer_terminal_beg = new ED4_spacer_terminal("Mid_Multi_Spacer_Terminal_Beg", true, 0, 0, 0, 3, mid_multi_species_manager);
                 mid_multi_species_manager->children->append_member(mid_multi_spacer_terminal_beg);
 
                 y+=3;               // dummy height, to create a dummy layout ( to preserve order of objects )
@@ -675,7 +660,7 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
                 }
 
                 {
-                    ED4_spacer_terminal *mid_bot_spacer_terminal = new ED4_spacer_terminal("Middle_Bot_Spacer_Terminal", 0, y, 880, 10, device_manager);
+                    ED4_spacer_terminal *mid_bot_spacer_terminal = new ED4_spacer_terminal("Middle_Bot_Spacer_Terminal", true, 0, y, 880, 10, device_manager);
                     device_manager->children->append_member(mid_bot_spacer_terminal);
                 }
 
@@ -687,7 +672,7 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
                 device_manager->children->append_member(mid_bot_line_terminal);
                 y += 3;
 
-                total_bottom_spacer = new ED4_spacer_terminal("Total_Bottom_Spacer_terminal", 0, y, 0, 10000, device_manager);
+                total_bottom_spacer = new ED4_spacer_terminal("Total_Bottom_Spacer_terminal", true, 0, y, 0, 10000, device_manager);
                 device_manager->children->append_member(total_bottom_spacer);
                 y += 10000;
             }
@@ -1185,7 +1170,7 @@ enum MenuSelectType {
 static void ED4_menu_select(AW_window *aww, AW_CL type, AW_CL) {
     GB_transaction dummy(GLOBAL_gb_main);
     MenuSelectType select = MenuSelectType(type);
-    ED4_multi_species_manager *middle_multi_man = ED4_ROOT->middle_area_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+    ED4_multi_species_manager *middle_multi_man = ED4_ROOT->middle_area_man->get_multi_species_manager();
 
     e4_assert(middle_multi_man);
 

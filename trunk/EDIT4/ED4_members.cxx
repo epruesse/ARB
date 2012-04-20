@@ -39,7 +39,7 @@ ED4_returncode ED4_members::search_target_species(ED4_extension *location,   ED4
     // case for the device_manager:
     if (current_member->is_area_manager()) {
         current_member->to_area_manager()
-            ->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()
+            ->get_multi_species_manager()
             ->children->search_target_species(location, prop, found_member, return_level); // there are always the three areas !!!
 
         if (*found_member) {
@@ -140,7 +140,7 @@ ED4_returncode ED4_members::search_target_species(ED4_extension *location,   ED4
         if (current_member) {
             if (current_member->is_area_manager()) {
                 current_member->to_area_manager()
-                    ->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()
+                    ->get_multi_species_manager()
                     ->children->search_target_species(location, prop, found_member, return_level);      // there are always the three areas !!!
 
                 if (*found_member) {

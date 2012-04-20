@@ -480,8 +480,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                     if (is_bracket_terminal()) { // right click on bracket terminal
                         ED4_base *group = get_parent(ED4_L_GROUP);
                         if (group) {
-                            ED4_multi_species_manager *multi_man = group->to_group_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
-                            multi_man->toggle_selected_species();
+                            group->to_group_manager()->get_multi_species_manager()->toggle_selected_species();
                         }
                     }
                     else if (is_species_name_terminal()) {
@@ -599,7 +598,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                                     ED4_base *member = device_manager->children->member(i);
 
                                     if (member->is_area_manager()) {
-                                        member->to_area_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->update_requested_by_child();
+                                        member->to_area_manager()->get_multi_species_manager()->update_requested_by_child();
                                     }
                                 }
                             }
@@ -684,18 +683,6 @@ ED4_base* ED4_terminal::search_ID(const char *temp_id)
     return (NULL);
 }
 
-
-int ED4_terminal::adjust_clipping_rectangle() {
-    // set scrolling area in AW_MIDDLE_AREA
-    AW_pos x, y;
-    calc_world_coords(&x, &y);
-    current_ed4w()->world_to_win_coords(&x, &y);
-
-    return current_device()->reduceClipBorders(int(y), int(y+extension.size[HEIGHT]-1), int(x), int(x+extension.size[WIDTH]-1));
-}
-
-
-
 ED4_terminal::ED4_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
     ED4_base(spec_, temp_id, x, y, width, height, temp_parent)
 {
@@ -775,114 +762,56 @@ ED4_returncode ED4_bracket_terminal::Show(int IF_ASSERTION_USED(refresh_all), in
 
 
 ED4_returncode ED4_bracket_terminal::draw() {
-    ED4_index   i;
-    AW_pos      x, y,
-        width  = extension.size[WIDTH] - 1,
-        height = extension.size[HEIGHT] - 1,
-        margin = 0;
-    AW_pos      line_x0[3], line_y0[3];
-    AW_pos      line_x1[3], line_y1[3];
-    AW_pos      arrow_x0[6], arrow_y0[6];
-    AW_pos      arrow_x1[6], arrow_y1[6];
+    using namespace AW;
 
+    Rectangle  term_area = get_win_area(current_ed4w());
+    AW_device *device    = current_device();
 
-    calc_world_coords(&x, &y);
-    current_ed4w()->world_to_win_coords(&x, &y);
-
-    line_x0[0] = x + margin + 2;
-    line_y0[0] = y + margin + 2;
-    line_x1[0] = x + width - margin + 2;
-    line_y1[0] = y + margin + 2;
-
-    line_x0[1] = x + width - margin + 2;
-    line_y0[1] = y + height - margin - 2;
-    line_x1[1] = x + margin + 2;
-    line_y1[1] = y + height - margin - 2;
-
-    line_x0[2] = x + margin + 2;
-    line_y0[2] = y + height - margin - 2;
-    line_x1[2] = x + margin + 2;
-    line_y1[2] = y + margin + 2;
-
-    ED4_group_manager *group_man = get_parent(ED4_L_GROUP)->to_group_manager();
-    ED4_multi_species_manager *multi_man = group_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+    ED4_multi_species_manager *multi_man = get_parent(ED4_L_GROUP)->to_group_manager()->get_multi_species_manager();
     if (multi_man->get_no_of_selected_species()) {  // if multi_species_manager contains selected species
-        current_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], extension.size[HEIGHT]);
+#if defined(DEBUG) && 0
+        static bool toggle = false;
+        toggle             = !toggle;
+        device->box(toggle ? ED4_G_SELECTED : ED4_G_SELECTED+1, true, term_area);
+#else // !defined(DEBUG)
+        device->box(ED4_G_SELECTED, true, term_area);
+#endif
     }
 
     if (dynamic_prop & ED4_P_IS_FOLDED) { // paint triangle for folded group
-        arrow_x0[0] = x + margin + 4;
-        arrow_y0[0] = y + margin + 4 + 0;
-        arrow_x1[0] = x + margin + 4;
-        arrow_y1[0] = y + margin + 4 + 10;
+        Position t = term_area.upper_left_corner()+Vector(4,4);
+        Position b = t+Vector(0,12);
 
-        arrow_x0[1] = x + margin + 5;
-        arrow_y0[1] = y + margin + 4 + 1;
-        arrow_x1[1] = x + margin + 5;
-        arrow_y1[1] = y + margin + 4 + 9;
-
-        arrow_x0[2] = x + margin + 6;
-        arrow_y0[2] = y + margin + 4 + 2;
-        arrow_x1[2] = x + margin + 6;
-        arrow_y1[2] = y + margin + 4 + 8;
-
-        arrow_x0[3] = x + margin + 7;
-        arrow_y0[3] = y + margin + 4 + 3;
-        arrow_x1[3] = x + margin + 7;
-        arrow_y1[3] = y + margin + 4 + 7;
-
-        arrow_x0[4] = x + margin + 8;
-        arrow_y0[4] = y + margin + 4 + 4;
-        arrow_x1[4] = x + margin + 8;
-        arrow_y1[4] = y + margin + 4 + 6;
-
-        arrow_x0[5] = x + margin + 9;
-        arrow_y0[5] = y + margin + 4 + 5;
-        arrow_x1[5] = x + margin + 9;
-        arrow_y1[5] = y + margin + 4 + 5;
-
-        for (i = 0; i < 6; i++) {
-            current_device()->line(ED4_G_STANDARD, arrow_x0[i], arrow_y0[i], arrow_x1[i], arrow_y1[i], AW_SCREEN);
+        for (int i = 0; i<6; ++i) {
+            device->line(ED4_G_STANDARD, t, b, AW_SCREEN);
+            t += Vector(1,  1);
+            b += Vector(1, -1);
         }
+        e4_assert(nearlyEqual(t, b));
+        device->line(ED4_G_STANDARD, t, b, AW_SCREEN); // arrowhead
     }
     else {
-        arrow_x0[0] = x + margin + 4 + 0;
-        arrow_y0[0] = y + margin + 4;
-        arrow_x1[0] = x + margin + 4 + 4;
-        arrow_y1[0] = y + margin + 4;
+        Position l = term_area.upper_left_corner()+Vector(4,5);
+        Position r = l+Vector(6,0);
 
-        arrow_x0[1] = x + margin + 4 + 0;
-        arrow_y0[1] = y + margin + 5;
-        arrow_x1[1] = x + margin + 4 + 4;
-        arrow_y1[1] = y + margin + 5;
-
-        arrow_x0[2] = x + margin + 4 + 1;
-        arrow_y0[2] = y + margin + 6;
-        arrow_x1[2] = x + margin + 4 + 3;
-        arrow_y1[2] = y + margin + 6;
-
-        arrow_x0[3] = x + margin + 4 + 1;
-        arrow_y0[3] = y + margin + 7;
-        arrow_x1[3] = x + margin + 4 + 3;
-        arrow_y1[3] = y + margin + 7;
-
-        arrow_x0[4] = x + margin + 4 + 2;
-        arrow_y0[4] = y + margin + 8;
-        arrow_x1[4] = x + margin + 4 + 2;
-        arrow_y1[4] = y + margin + 8;
-
-        arrow_x0[5] = x + margin + 4 + 2;
-        arrow_y0[5] = y + margin + 9;
-        arrow_x1[5] = x + margin + 4 + 2;
-        arrow_y1[5] = y + margin + 9;
-
-        for (i = 0; i < 6; i++) {
-            current_device()->line(ED4_G_STANDARD, arrow_x0[i], arrow_y0[i], arrow_x1[i], arrow_y1[i], AW_SCREEN);
+        for (int i = 0; i<3; ++i) {
+            device->line(ED4_G_STANDARD, l, r, AW_SCREEN);
+            l += Vector( 0, 1);
+            r += Vector( 0, 1);
+            device->line(ED4_G_STANDARD, l, r, AW_SCREEN);
+            l += Vector( 1, 1);
+            r += Vector(-1, 1);
         }
+        e4_assert(nearlyEqual(l, r));
+        device->line(ED4_G_STANDARD, l, r+Vector(0,1), AW_SCREEN); // arrowhead
     }
 
-    for (i = 0; i <= 2; i++) {
-        current_device()->line(ED4_G_STANDARD, line_x0[i], line_y0[i], line_x1[i], line_y1[i], AW_SCREEN);
+    {
+        Rectangle bracket(term_area.upper_left_corner()+Vector(2,2), term_area.diagonal()+Vector(-2,-4));
+
+        device->line(ED4_G_STANDARD, bracket.upper_edge(), AW_SCREEN);
+        device->line(ED4_G_STANDARD, bracket.lower_edge(), AW_SCREEN);
+        device->line(ED4_G_STANDARD, bracket.left_edge(), AW_SCREEN);
     }
 
     return (ED4_R_OK);
@@ -1024,17 +953,18 @@ ED4_pure_text_terminal::ED4_pure_text_terminal(const char *temp_id, AW_pos x, AW
 {
 }
 
-ED4_returncode ED4_spacer_terminal::Show(int /* refresh_all */, int is_cleared) // a spacer terminal doesn't show anything - it's just a dummy terminal
-{
-    if (update_info.clear_at_refresh && !is_cleared) {
-        clear_background();
+ED4_returncode ED4_spacer_terminal::Show(int /* refresh_all */, int is_cleared) {
+    if (shallDraw) {
+        if (update_info.clear_at_refresh && !is_cleared) {
+            clear_background();
+        }
+        draw();
     }
-    draw();
     return ED4_R_OK;
 }
 
 
-ED4_returncode ED4_spacer_terminal::draw() {
+ED4_returncode ED4_spacer_terminal::draw() {  
 #if defined(DEBUG) && 0
     clear_background(ED4_G_FIRST_COLOR_GROUP); // draw colored spacers to make them visible
 #else
@@ -1043,8 +973,9 @@ ED4_returncode ED4_spacer_terminal::draw() {
     return (ED4_R_OK);
 }
 
-ED4_spacer_terminal::ED4_spacer_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_terminal(spacer_terminal_spec, temp_id, x, y, width, height, temp_parent)
+ED4_spacer_terminal::ED4_spacer_terminal(const char *temp_id, bool shallDraw_, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_terminal(spacer_terminal_spec, temp_id, x, y, width, height, temp_parent),
+      shallDraw(shallDraw_)
 {
 }
 

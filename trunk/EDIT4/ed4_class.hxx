@@ -376,8 +376,30 @@ public:
     const ED4_folding_line *get_horizontal_folding() { return horizontal_fl; }
     const ED4_folding_line *get_vertical_folding() { return vertical_fl; }
 
-    void world_to_win_coords(AW_pos *x, AW_pos *y);
-    void win_to_world_coords(AW_pos *x, AW_pos *y);
+    void world_to_win_coords(AW_pos *xPtr, AW_pos *yPtr) const { // @@@ old style
+        // Calculates transformation from world to window coordinates in a given window.
+        // world-coordinates inside folded range result in window coordinates lower than folding line position.
+        e4_assert(!is_reset());
+        *xPtr = vertical_fl->world2win(*xPtr);
+        *yPtr = horizontal_fl->world2win(*yPtr);
+    }
+    void win_to_world_coords(AW_pos *xPtr, AW_pos *yPtr) const { // @@@ old style
+        // calculates transformation from window to world coordinates in a given window
+        e4_assert(!is_reset());
+        *xPtr = vertical_fl->win2world(*xPtr);
+        *yPtr = horizontal_fl->win2world(*yPtr);
+    }
+
+    AW::Position world_to_win_coords(const AW::Position& pos) const {
+        e4_assert(!is_reset());
+        return AW::Position(vertical_fl->world2win(pos.xpos()),
+                            horizontal_fl->world2win(pos.ypos()));
+    }
+    AW::Position win_to_world_coords(const AW::Position& pos) const {
+        e4_assert(!is_reset());
+        return AW::Position(vertical_fl->win2world(pos.xpos()),
+                            horizontal_fl->win2world(pos.ypos()));
+    }
 
     ED4_folding_line *insert_folding_line(AW_pos pos, AW_pos dimension, ED4_properties prop);
     void              delete_folding_line(ED4_folding_line *fl, ED4_properties prop);
@@ -1033,10 +1055,9 @@ class ED4_base : virtual Noncopyable {
 
     // cache world coordinates:
 
-    static int     currTimestamp;
-    mutable AW_pos lastXpos;
-    mutable AW_pos lastYpos;
-    mutable int    timestamp;
+    static int           currTimestamp;
+    mutable AW::Position lastPos;
+    mutable int          timestamp;
 
     ED4_base_list *linked_objects;                  // linked list of objects which are depending from this object
 
@@ -1073,7 +1094,7 @@ public:
     virtual void deleted_from_database();
 
     // functions concerned with graphic output
-    virtual int adjust_clipping_rectangle();     // sets scrolling area in AW_MIDDLE_AREA
+    int adjust_clipping_rectangle();
     virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0) = 0;
     virtual bool calc_bounding_box()                                  = 0;
 
@@ -1087,20 +1108,40 @@ public:
     
     // functions concerned with coordinate transformation
 
-    void update_world_coords_cache() const;
     void calc_rel_coords(AW_pos *x, AW_pos *y);
 
     void calc_world_coords(AW_pos *x, AW_pos *y) const {
+        update_world_coords_cache();
+        *x = lastPos.xpos();
+        *y = lastPos.ypos();
+    }
+    const AW::Position& calc_world_coords() const {
+        update_world_coords_cache();
+        return lastPos;
+    }
+
+    void update_world_coords_cache() const {
         bool cache_up_to_date = timestamp == currTimestamp;
         if (!cache_up_to_date) {
-            update_world_coords_cache();
+            if (parent) {
+                ED4_base *pab = (ED4_base*)parent;
+                lastPos = pab->calc_world_coords();
+            }
+            else {
+                lastPos = AW::Origin;
+            }
+            lastPos.move(extension.get_parent_offset());
+            timestamp = currTimestamp;
         }
-        *x = lastXpos;
-        *y = lastYpos;
     }
 
     static void touch_world_cache() {
         currTimestamp++;
+    }
+
+    AW::Rectangle get_win_area(ED4_window *ed4w) const {
+        AW::Position pos = ed4w->world_to_win_coords(calc_world_coords());
+        return AW::Rectangle(pos, extension.get_size()-AW::Vector(1, 1));
     }
 
     // functions which refer to the object as a child, i.e. travelling down the hierarchy
@@ -1387,7 +1428,6 @@ struct ED4_terminal : public ED4_base { // derived from a Noncopyable
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0) = 0;
     virtual ED4_returncode draw() = 0;
 
-    virtual int  adjust_clipping_rectangle();
     virtual bool calc_bounding_box();
 
     ED4_returncode draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text = NULL, int cursor_y=-1);
@@ -1651,6 +1691,10 @@ struct ED4_area_manager : public ED4_manager {
     E4B_AVOID_UNNEEDED_CASTS(area_manager);
     ED4_area_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
+
+    ED4_multi_species_manager *get_multi_species_manager() const {
+        return get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+    }
 };
 
 class ED4_multi_species_manager : public ED4_manager {
@@ -1673,9 +1717,10 @@ public:
     virtual void update_requested_children();
     virtual void delete_requested_children();
 
-    int           count_visible_children(); // is called by a multi_species_manager
-    ED4_terminal *get_consensus_terminal(); // returns the consensus-terminal or 0
-    ED4_species_manager *get_consensus_manager() const; // returns the consensus-manager or 0
+    int count_visible_children();           // is called by a multi_species_manager
+
+    ED4_species_manager       *get_consensus_manager() const;       // returns the consensus-manager or NULL
+    ED4_species_name_terminal *get_consensus_name_terminal() const; // returns the consensus-name-terminal or NULL
 
     // functions concerned with selection
     int get_no_of_selected_species();
@@ -1708,9 +1753,13 @@ public:
 
     ED4_char_table&         table() { return my_table; }
     const ED4_char_table&   table() const { return my_table; }
-    
+
     ED4_bases_table& table(unsigned char c) { return table().table(c); }
-    const ED4_bases_table&  table(unsigned char c) const { return table().table(c); }
+    const ED4_bases_table& table(unsigned char c) const { return table().table(c); }
+
+    ED4_multi_species_manager *get_multi_species_manager() const {
+        return get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+    }
 };
 
 struct ED4_group_manager : public ED4_abstract_group_manager {
@@ -1875,6 +1924,8 @@ public:
     void remove_all_callbacks();
 
     void do_callbacks();
+
+    ED4_species_name_terminal *get_name_terminal() const { return children->member(0)->to_species_name_terminal(); }
 };
 
 inline ED4_species_manager *ED4_base::containing_species_manager() const {
@@ -2154,13 +2205,15 @@ public:
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_sequence_terminal);
 };
 
-struct ED4_spacer_terminal : public ED4_terminal {
+class ED4_spacer_terminal : public ED4_terminal {
     E4B_AVOID_UNNEEDED_CASTS(spacer_terminal);
-    
+    bool shallDraw; // true -> spacer is really drawn (otherwise it's only a placeholder)
+
+public:
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode draw();
 
-    ED4_spacer_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
+    ED4_spacer_terminal(const char *id, bool shallDraw_, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_terminal);
 };
@@ -2228,6 +2281,11 @@ E4B_IMPL_CASTOP(text_terminal);          // to_text_terminal
 
 inline ED4_device_manager *ED4_root::get_device_manager() {
     return main_manager->search_spec_child_rek(ED4_L_DEVICE)->to_device_manager();
+}
+
+inline ED4_species_name_terminal *ED4_multi_species_manager::get_consensus_name_terminal() const { 
+    ED4_species_manager *consensus_man = get_consensus_manager();
+    return consensus_man ? consensus_man->get_name_terminal() : NULL;
 }
 
 // --------------------------------------------

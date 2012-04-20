@@ -486,8 +486,7 @@ ED4_index EDB_root_bact::scan_string(ED4_multi_species_manager  *parent,
             local_count_position += SPACERHEIGHT;
 
             bracket_terminal->extension.size[HEIGHT] = local_count_position - y_old;
-            group_spacer_terminal = new ED4_spacer_terminal(namebuffer,   0, local_count_position - y_old + SPACERHEIGHT,
-                                                             10, SPACERHEIGHT, multi_species_manager);
+            group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 0, local_count_position - y_old + SPACERHEIGHT, 10, SPACERHEIGHT, multi_species_manager);
             bracket_terminal->set_links(NULL, multi_species_manager);
 
             (*y) += SPACERHEIGHT;
@@ -565,7 +564,7 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
     }
 
     sprintf(namebuffer, "Group_Spacer_Terminal_Beg.%ld", ED4_counter);                      // Spacer at beginning of group
-    group_spacer_terminal = new ED4_spacer_terminal(namebuffer,   0, 0, 10, height_spacer, *multi_species_manager);     // For better Overview
+    group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 0, 0, 10, height_spacer, *multi_species_manager);     // For better Overview
     (*multi_species_manager)->children->append_member(group_spacer_terminal);
 
     sprintf(namebuffer, "Consensus_Manager.%ld", ED4_counter);                             // Create competence terminal

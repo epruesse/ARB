@@ -126,8 +126,7 @@ ED4_returncode ED4_manager::rebuild_consensi(ED4_base *start_species, ED4_update
         case ED4_U_UP:          // rebuild consensus from a certain starting point upwards
             while (temp_parent) {
                 if (temp_parent->is_group_manager()) {
-                    ED4_group_manager *group_manager = temp_parent->to_group_manager();
-                    multi_species_manager = group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+                    multi_species_manager = temp_parent->to_group_manager()->get_multi_species_manager();
                     for (i=0; i<multi_species_manager->children->members(); i++) {
                         if (multi_species_manager->children->member(i)->is_consensus_manager()) {
                             rebuild_consensus(multi_species_manager->children->member(i)).expect_no_error();
@@ -1431,7 +1430,7 @@ void ED4_multi_species_manager::count_species(int *speciesPtr, int *selectedPtr)
         ED4_base *member = children->member(m);
 
         if (member->is_group_manager()) {
-            ED4_multi_species_manager *multi_species_man = member->to_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+            ED4_multi_species_manager *multi_species_man = member->to_group_manager()->get_multi_species_manager();
 
             if (!multi_species_man->has_valid_counters()) {
                 int sp1, sel1;
@@ -1468,7 +1467,7 @@ void ED4_multi_species_manager::update_species_counters() {
         ED4_base *member = children->member(m);
 
         if (member->is_group_manager()) {
-            ED4_multi_species_manager *multi_species_man = member->to_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+            ED4_multi_species_manager *multi_species_man = member->to_group_manager()->get_multi_species_manager();
 
             if (!multi_species_man->has_valid_counters()) {
                 multi_species_man->update_species_counters();
@@ -1497,7 +1496,7 @@ void ED4_multi_species_manager::select_all(bool only_species) {
         ED4_base *member = children->member(m);
 
         if (member->is_group_manager()) {
-            ED4_multi_species_manager *multi_species_man = member->to_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+            ED4_multi_species_manager *multi_species_man = member->to_group_manager()->get_multi_species_manager();
             multi_species_man->select_all(only_species);
             sp += multi_species_man->get_no_of_species();
             sel += multi_species_man->get_no_of_selected_species();
@@ -1527,7 +1526,7 @@ void ED4_multi_species_manager::deselect_all_species_and_SAI() {
         ED4_base *member = children->member(m);
 
         if (member->is_group_manager()) {
-            ED4_multi_species_manager *multi_species_man = member->to_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+            ED4_multi_species_manager *multi_species_man = member->to_group_manager()->get_multi_species_manager();
             multi_species_man->deselect_all_species_and_SAI();
             sp += multi_species_man->get_no_of_species();
         }
@@ -1557,7 +1556,7 @@ void ED4_multi_species_manager::invert_selection_of_all_species() {
         ED4_base *member = children->member(m);
 
         if (member->is_group_manager()) {
-            ED4_multi_species_manager *multi_species_man = member->to_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+            ED4_multi_species_manager *multi_species_man = member->to_group_manager()->get_multi_species_manager();
             multi_species_man->invert_selection_of_all_species();
             sp += multi_species_man->get_no_of_species();
             sel += multi_species_man->get_no_of_selected_species();
@@ -1594,7 +1593,7 @@ void ED4_multi_species_manager::marked_species_select(bool select) {
         ED4_base *member = children->member(m);
 
         if (member->is_group_manager()) {
-            ED4_multi_species_manager *multi_species_man = member->to_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+            ED4_multi_species_manager *multi_species_man = member->to_group_manager()->get_multi_species_manager();
             multi_species_man->marked_species_select(select);
             sp += multi_species_man->get_no_of_species();
             sel += multi_species_man->get_no_of_selected_species();
@@ -1602,28 +1601,29 @@ void ED4_multi_species_manager::marked_species_select(bool select) {
         else if (member->is_species_manager()) {
             ED4_species_manager *species_man = member->to_species_manager();
 
-            if (species_man->is_species_seq_manager()) {
+            if (!species_man->is_consensus_manager()) {
                 sp++;
 
-                GBDATA *gbd = species_man->get_species_pointer();
-                e4_assert(gbd);
-                int is_marked = GB_read_flag(gbd);
+                if (species_man->is_species_seq_manager()) {
+                    GBDATA *gbd = species_man->get_species_pointer();
+                    e4_assert(gbd);
+                    int is_marked = GB_read_flag(gbd);
 
-                if (is_marked) {
-                    if (select) { // select marked
-                        if (!species_man->is_selected()) {
-                            ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
-                            ED4_ROOT->add_to_selected(species_name);
+                    if (is_marked) {
+                        if (select) { // select marked
+                            if (!species_man->is_selected()) {
+                                ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
+                                ED4_ROOT->add_to_selected(species_name);
+                            }
                         }
-                    }
-                    else { // de-select marked
-                        if (species_man->is_selected()) {
-                            ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
-                            ED4_ROOT->remove_from_selected(species_name);
+                        else { // de-select marked
+                            if (species_man->is_selected()) {
+                                ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
+                                ED4_ROOT->remove_from_selected(species_name);
+                            }
                         }
                     }
                 }
-
                 if (species_man->is_selected()) sel++;
             }
         }
@@ -1642,7 +1642,7 @@ void ED4_multi_species_manager::selected_species_mark(bool mark) {
         ED4_base *member = children->member(m);
 
         if (member->is_group_manager()) {
-            ED4_multi_species_manager *multi_species_man = member->to_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+            ED4_multi_species_manager *multi_species_man = member->to_group_manager()->get_multi_species_manager();
             multi_species_man->selected_species_mark(mark);
             sp += multi_species_man->get_no_of_species();
             sel += multi_species_man->get_no_of_selected_species();
@@ -1650,13 +1650,15 @@ void ED4_multi_species_manager::selected_species_mark(bool mark) {
         else if (member->is_species_manager()) {
             ED4_species_manager *species_man = member->to_species_manager();
 
-            if (species_man->is_species_seq_manager()) {
+            if (!species_man->is_consensus_manager()) {
                 sp++;
                 if (species_man->is_selected()) {
-                    GBDATA *gbd = species_man->get_species_pointer();
-                    e4_assert(gbd);
+                    if (species_man->is_species_seq_manager()) {
+                        GBDATA *gbd = species_man->get_species_pointer();
+                        e4_assert(gbd);
 
-                    GB_write_flag(gbd, mark ? 1 : 0);
+                        GB_write_flag(gbd, mark ? 1 : 0);
+                    }
                     sel++;
                 }
             }
@@ -1680,12 +1682,6 @@ ED4_species_manager *ED4_multi_species_manager::get_consensus_manager() const {
     }
 
     return consensus_manager;
-}
-
-ED4_terminal *ED4_multi_species_manager::get_consensus_terminal() {
-    // returns the consensus-name-terminal of a multi_species manager
-    ED4_species_manager *consensus_man = get_consensus_manager();
-    return consensus_man ? consensus_man->children->member(0)->to_terminal() : 0;
 }
 
 // --------------------------------------------------------------------------------

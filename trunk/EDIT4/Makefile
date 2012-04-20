@@ -1034,6 +1034,7 @@ graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx

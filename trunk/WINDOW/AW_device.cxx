@@ -139,7 +139,7 @@ bool AW_clipable::box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x
 bool AW_clipable::box_clip(const Rectangle& rect, Rectangle& clippedRect) { // @@@ maybe return clippedRect as AW_screen_area
     if (completely_clipped()) return false;
 
-    Rectangle clipRect(clip_rect, FAULTY_OLD_CONVERSION); // @@@ fix
+    Rectangle clipRect(clip_rect, UPPER_LEFT_OUTLINE);
     if (rect.distinct_from(clipRect))
         return false;
 
@@ -534,7 +534,7 @@ bool AW_device::generic_filled_area(int gc, int npos, const Position *pos, AW_bi
 
 
 void AW_device::clear(AW_bitset /* filteri */) {}
-void AW_device::clear_part(AW_pos /* x */, AW_pos /* y */, AW_pos /* width */, AW_pos /* height */, AW_bitset /* filteri */) {}
+void AW_device::clear_part(const Rectangle& /* rect */, AW_bitset /* filteri */) {}
 void AW_device::clear_text(int /* gc */, const char * /* string */, AW_pos /* x */, AW_pos /* y */, AW_pos /* alignment */, AW_bitset /* filteri */) {}
 void AW_device::move_region(AW_pos /* src_x */, AW_pos /* src_y */, AW_pos /* width */, AW_pos /* height */, AW_pos /* dest_x */, AW_pos /* dest_y */) {}
 void AW_device::fast() {}
