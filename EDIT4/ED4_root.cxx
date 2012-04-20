@@ -460,9 +460,8 @@ void ED4_root::resize_all() {
 }
 
 static ARB_ERROR change_char_table_length(ED4_base *base, AW_CL new_length) {
-    e4_assert(!base->is_root_group_manager());
-    if (base->is_group_manager()) {
-        ED4_group_manager *group_man = base->to_group_manager();
+    if (base->is_abstract_group_manager()) {
+        ED4_abstract_group_manager *group_man = base->to_abstract_group_manager();
         group_man->table().change_table_length(new_length);
     }
     return NULL;
@@ -579,7 +578,7 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
         int col_stat_term_height = 50; // @@@ Hoehe des ColumnStatistics Terminals ausrechnen
 
         ref_terminals.init(new ED4_sequence_info_terminal("Reference_Sequence_Info_Terminal", /* NULL, */ 250, 0, MAXINFOWIDTH, TERMINALHEIGHT, NULL),
-                           new ED4_sequence_terminal("Reference_Sequence_Terminal", 300, 0, 300, TERMINALHEIGHT, NULL),
+                           new ED4_sequence_terminal("Reference_Sequence_Terminal", 300, 0, 300, TERMINALHEIGHT, NULL, false),
                            new ED4_sequence_info_terminal("Reference_ColumnStatistics_Info_Terminal", /* NULL, */ 250, 0, MAXINFOWIDTH, col_stat_term_height, NULL),
                            new ED4_columnStat_terminal("Reference_ColumnStatistics_Terminal", 300, 0, 300, col_stat_term_height, NULL));
     }
@@ -1022,6 +1021,33 @@ static void activate_col_stat(AW_window *aww, AW_CL, AW_CL) {
 static void disable_col_stat(AW_window *, AW_CL, AW_CL) {
     if (ED4_ROOT->column_stat_initialized && ED4_ROOT->column_stat_activated) {
         set_col_stat_activated_and_refresh(false);
+    }
+}
+
+static void toggle_helix_for_SAI(AW_window *aww, AW_CL, AW_CL) {
+    ED4_LocalWinContext  uses(aww);
+    ED4_cursor          *cursor = &current_cursor();
+
+    if (cursor->in_SAI_terminal()) {
+        ED4_sequence_terminal      *sai_term      = cursor->owner_of_cursor->to_sequence_terminal();
+        ED4_sequence_info_terminal *sai_info_term = sai_term->parent->search_spec_child_rek(ED4_L_SEQUENCE_INFO)->to_sequence_info_terminal();
+
+        GBDATA         *gb_sai_data = sai_info_term->data();
+        GB_transaction  ta(gb_sai_data);
+
+        GBDATA *gb_sai      = GB_get_grandfather(gb_sai_data);
+        GBDATA *gb_disp_sec = GB_searchOrCreate_int(gb_sai, "showsec", 0);
+
+        bool show_sec = 1-bool(GB_read_int(gb_disp_sec));
+        GB_ERROR error = GB_write_int(gb_disp_sec, show_sec);
+        if (!error) {
+            sai_term->set_secstruct_display(show_sec);
+            sai_term->request_refresh();
+        }
+        if (error) aw_message(error);
+    }
+    else {
+        aw_message("Please select an SAI");
     }
 }
 
@@ -1526,7 +1552,9 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("detail_col_stat",  "Toggle detailed Col.-Stat.", "c", "st_ml.hlp", AWM_EXP, ED4_toggle_detailed_column_stats, 0, 0);
     awmm->insert_menu_topic("dcs_threshold",    "Set threshold for D.c.s.",   "f", "st_ml.hlp", AWM_EXP, ED4_set_col_stat_threshold,       0, 0);
     awmm->sep______________();
-    awmm->insert_menu_topic("visualize_SAI", "Visualize SAIs", "z", "visualizeSAI.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_createVisualizeSAI_window, 0);
+    awmm->insert_menu_topic("visualize_SAI", "Visualize SAIs",                "z", "visualizeSAI.hlp",   AWM_ALL, AW_POPUP,             (AW_CL)ED4_createVisualizeSAI_window, 0);
+    awmm->insert_menu_topic("toggle_saisec", "Toggle secondary info for SAI", "T", "toggle_secinfo.hlp", AWM_ALL, toggle_helix_for_SAI, 0,                                    0);
+
     // Enable ProteinViewer only for DNA sequence type
     if (alignment_type == GB_AT_DNA) {
         awmm->insert_menu_topic("Protein_Viewer", "Protein Viewer", "w", "proteinViewer.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_CreateProteinViewer_window, 0);

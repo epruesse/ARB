@@ -205,7 +205,8 @@ struct EDB_root_bact {
                                             int                         count_too,
                                             ED4_index                  *seq_coords,
                                             ED4_index                  *max_seq_terminal_length,
-                                            ED4_alignment               alignment_flag);
+                                            ED4_alignment               alignment_flag,
+                                            bool                        isSAI);
 
     ED4_index scan_string(ED4_multi_species_manager  *parent,
                           ED4_sequence_info_terminal *ref_sequence_info_terminal,
@@ -2032,6 +2033,7 @@ public:
 
 class ED4_sequence_terminal : public ED4_abstract_sequence_terminal { // derived from a Noncopyable
     mutable ED4_SearchResults searchResults;
+    bool shall_display_secstruct_info; // helix or protstruct
 
     virtual ED4_returncode draw();
 
@@ -2041,12 +2043,14 @@ public:
 
     AP_tree *st_ml_node;
 
-    ED4_sequence_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
+    ED4_sequence_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool shall_display_secstruct_info_);
 
     virtual GB_alignment_type GetAliType();
 
     virtual void deleted_from_database();
     virtual int get_length() const { return ED4_abstract_sequence_terminal::get_length(); }
+
+    void set_secstruct_display(bool show) { shall_display_secstruct_info = show; }
 
     ED4_SearchResults& results() const { return searchResults; }
 
@@ -2119,7 +2123,7 @@ struct ED4_sequence_info_terminal : public ED4_text_terminal {
 
     virtual ED4_returncode draw();
 
-    GBDATA *data() { return get_species_pointer(); }
+    GBDATA *data() { return get_species_pointer(); } // DB-entry ("ali_xxx/data")
     const GBDATA *data() const { return get_species_pointer(); }
 
     virtual int get_length() const { return 1+strlen(id); }
