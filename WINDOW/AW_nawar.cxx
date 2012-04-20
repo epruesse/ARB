@@ -179,7 +179,7 @@ AW_awar *AW_root::awar_string(const char *var_name, const char *default_value, A
     if (!vs) {
         default_file = check_properties(default_file);
         vs           = new AW_awar(AW_STRING, var_name, default_value, 0, default_file, this);
-        GBS_write_hash(hash_table_for_variables, (char *)var_name, (long)vs);
+        GBS_write_hash(hash_table_for_variables, var_name, (long)vs);
     }
     return vs;
 }
@@ -190,8 +190,8 @@ AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default 
     AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
         default_file = check_properties(default_file);
-        vs           = new AW_awar(AW_INT, var_name, (char *)default_value, 0, default_file, this);
-        GBS_write_hash(hash_table_for_variables, (char *)var_name, (long)vs);
+        vs           = new AW_awar(AW_INT, var_name, (const char *)default_value, 0, default_file, this);
+        GBS_write_hash(hash_table_for_variables, var_name, (long)vs);
     }
     return vs;
 }
@@ -203,7 +203,7 @@ AW_awar *AW_root::awar_float(const char *var_name, float default_value, AW_defau
     if (!vs) {
         default_file = check_properties(default_file);
         vs           = new AW_awar(AW_FLOAT, var_name, "", (double)default_value, default_file, this);
-        GBS_write_hash(hash_table_for_variables, (char *)var_name, (long)vs);
+        GBS_write_hash(hash_table_for_variables, var_name, (long)vs);
     }
     return vs;
 }
@@ -213,7 +213,7 @@ AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value, AW_def
     if (!vs) {
         default_file = check_properties(default_file);
         vs           = new AW_awar(AW_POINTER, var_name, (const char *)default_value, 0.0, default_file, this);
-        GBS_write_hash(hash_table_for_variables, (char *)var_name, (long)vs);
+        GBS_write_hash(hash_table_for_variables, var_name, (long)vs);
     }
     return vs;
 }
