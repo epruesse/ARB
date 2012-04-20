@@ -299,7 +299,7 @@ static void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat)
             ED4_cursor& cursor = win->cursor;
             if (cursor.owner_of_cursor) {
                 int bp_now = cursor.get_base_position();
-                e4_assert(bp_now == ab->second);
+                e4_assert(bp_now == ab->second); // @@@ restore cursor does not work properly with 2 windows
             }
 #endif
         }
@@ -526,18 +526,28 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
                 PosRange screen_range = rm->clip_screen_range(seq_term->calc_interval_displayed_in_rectangle(&area_rect));
                 int      scr_pos      = rm->sequence_to_screen(seq_pos);
 
-                PosRange block_visible_part = intersection(screen_range, rm->sequence_to_screen(block.get_range()));
-
-                // @@@ block_visible_part might be empty (if completely outside screen) -> code below fails
-
-                int dist_left  = abs(scr_pos-block_visible_part.start());
-                int dist_right = abs(scr_pos-block_visible_part.end());
-
-                if (dist_left < dist_right) {   // click nearer to left border of visible part of block
-                    fix_pos = block.get_range().end(); // keep right block-border
+                PosRange block_screen_range = rm->sequence_to_screen(block.get_range());
+                PosRange block_visible_part = intersection(screen_range, block_screen_range);
+                
+                if (block_visible_part.is_empty()) {
+                    if (scr_pos>block_screen_range.end()) {
+                        fix_pos = block.get_range().start();
+                    }
+                    else {
+                        e4_assert(scr_pos<block_screen_range.start());
+                        fix_pos = block.get_range().end();
+                    }
                 }
                 else {
-                    fix_pos = block.get_range().start();
+                    int dist_left  = abs(scr_pos-block_visible_part.start());
+                    int dist_right = abs(scr_pos-block_visible_part.end());
+
+                    if (dist_left < dist_right) {   // click nearer to left border of visible part of block
+                        fix_pos = block.get_range().end(); // keep right block-border
+                    }
+                    else {
+                        fix_pos = block.get_range().start();
+                    }
                 }
 
                 select_and_update(fix_term, seq_term, fix_pos, seq_pos, 0);

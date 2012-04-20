@@ -883,8 +883,11 @@ void ED4_manager::resize_requested_children() {
 }
 void ED4_root_group_manager::resize_requested_children() {
     if (update_info.resize) {
-        update_remap(); // @@@ should this better be handled by an update request?
+        if (update_remap()) ED4_ROOT->request_refresh_for_specific_terminals(ED4_L_SEQUENCE_STRING);
         ED4_manager::resize_requested_children();
+    }
+    else {
+        e4_assert(!update_remap());
     }
 }
 
@@ -973,6 +976,13 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
             device->pop_clip_scale();
         }
 
+        // always draw cursor
+        ED4_cursor& cursor = current_cursor();
+        if (cursor.owner_of_cursor && cursor.allowed_to_draw) {
+            if (cursor.is_partly_visible()) {
+                cursor.ShowCursor(0, ED4_C_NONE, 0);
+            }
+        }
     }
 #ifdef TEST_REFRESH_FLAG
     e4_assert(refresh_flag_ok());
@@ -983,10 +993,10 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
 
 
 ED4_returncode ED4_root_group_manager::Show(int refresh_all, int is_cleared) {
-    if (update_remap()) {
-#if defined(DEBUG) && 0
-        printf("map updated\n");
-#endif // DEBUG
+    if (update_remap()) { // @@@ dont call here ? 
+#if defined(TRACE_REFRESH)
+        printf("map updated in ED4_root_group_manager::Show (bad?)\n");
+#endif
     }
     return ED4_manager::Show(refresh_all, is_cleared);
 }
@@ -1810,28 +1820,23 @@ ED4_remap::~ED4_remap() {
     delete [] sequence_to_screen_tab;
 }
 int ED4_remap::screen_to_sequence(int screen_pos) const {
-    if (size_t(screen_pos)>=screen_len) {
+    if (size_t(screen_pos) == screen_len) {
         return screen_to_sequence_tab[screen_len-1];
     }
     e4_assert(screen_pos>=0 && size_t(screen_pos)<screen_len);
     return screen_to_sequence_tab[screen_pos];
 }
-int ED4_remap::sequence_to_screen(int sequence_pos) const {
-    e4_assert(sequence_pos>=0 && size_t(sequence_pos)<=sequence_len);
-    return sequence_to_screen_tab[sequence_pos];
-}
-int ED4_remap::clipped_sequence_to_screen(int sequence_pos) const {
+int ED4_remap::clipped_sequence_to_screen_PLAIN(int sequence_pos) const {
     if (sequence_pos<0) {
         sequence_pos = 0;
     }
     else if (size_t(sequence_pos)>sequence_len) {
         sequence_pos = sequence_len;
     }
-
-    return sequence_to_screen_tab[sequence_pos];
+    return sequence_to_screen_PLAIN(sequence_pos);
 }
-int ED4_remap::sequence_to_screen_clipped(int sequence_pos) const {
-    int scr_pos = sequence_to_screen(sequence_pos);
+int ED4_remap::sequence_to_screen(int sequence_pos) const {
+    int scr_pos = sequence_to_screen_PLAIN(sequence_pos);
     if (scr_pos<0) scr_pos = -scr_pos;
     return scr_pos;
 }
@@ -2008,15 +2013,12 @@ ED4_root_group_manager::ED4_root_group_manager(const char *temp_id, AW_pos x, AW
     my_remap.mark_compile_needed_force();
 }
 
-int ED4_root_group_manager::update_remap() {
-    int remapped = 0;
+bool ED4_root_group_manager::update_remap() {
+    bool remapped = false;
 
     if (my_remap.compile_needed()) {
         my_remap.compile(this);
-        if (my_remap.was_changed()) {
-            ED4_ROOT->main_manager->request_refresh();
-            remapped = 1;
-        }
+        if (my_remap.was_changed()) remapped = true;
     }
 
     return remapped;

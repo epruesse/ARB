@@ -345,8 +345,8 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
     e4_assert(nrepeat>0);
 
     long old_seq_pos = seq_pos;
-    int screen_len = remap->sequence_to_screen_clipped(seq_len);
-    int cursorpos = remap->sequence_to_screen_clipped(seq_pos);
+    int  screen_len  = remap->sequence_to_screen(seq_len);
+    int  cursorpos   = remap->sequence_to_screen(seq_pos);
 
     char str[2];
     str[0] = key;
@@ -381,220 +381,222 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
         reinterpret_key = false;
 
         switch (keycode) {
-            case AW_KEY_HOME:
-                {
-                    int new_seq_pos = get_next_visible_base(0, 1);
-                    if (new_seq_pos>=0) seq_pos = new_seq_pos==seq_pos ? 0 : new_seq_pos;
-                    else seq_pos = 0;
-                    break;
-                }
-            case AW_KEY_END:
-                {
-                    int new_seq_pos = get_next_visible_base(seq_len, -1);
-                    if (new_seq_pos>=0) {
-                        new_seq_pos++;
-                        seq_pos = new_seq_pos==seq_pos ? seq_len : new_seq_pos;
+            case AW_KEY_HOME: {
+                int new_seq_pos = get_next_visible_base(0, 1);
+                if (new_seq_pos>=0) seq_pos = new_seq_pos==seq_pos ? 0 : new_seq_pos;
+                else seq_pos = 0;
+                break;
+            }
+            case AW_KEY_END: {
+                int new_seq_pos = get_next_visible_base(seq_len, -1);
+                if (new_seq_pos>=0) {
+                    int new_gap_pos = get_next_visible_gap(new_seq_pos, 1);
+                    if (new_gap_pos >= 0) {
+                        seq_pos = new_gap_pos==seq_pos ? seq_len : new_gap_pos;
                     }
                     else {
                         seq_pos = seq_len;
                     }
+                }
+                else {
+                    seq_pos = seq_len;
+                }
+                break;
+            }
+            case AW_KEY_LEFT:
+            case AW_KEY_RIGHT: {
+                direction = keycode==AW_KEY_RIGHT ? 1 : -1;
+
+                // no key modifier -> just move cursor
+
+                int n = nrepeat;
+
+                if (keymod == 0) {
+                    while (n--) {
+                        do {
+                            seq_pos += direction;
+                        }
+                        while (legal_curpos(seq_pos) && !remap->is_shown(seq_pos));
+                    }
                     break;
                 }
-            case AW_KEY_LEFT:
-            case AW_KEY_RIGHT:
-                {
-                    direction = keycode==AW_KEY_RIGHT ? 1 : -1;
 
-                    // no key modifier -> just move cursor
+                if (mode==AD_NOWRITE) { write_fault = 1; break; }
 
-                    int n = nrepeat;
+                int jump_or_fetch = 0;  // 1=jump selected 2=fetch selected (for repeat only)
+                int push_or_pull = 0;   // 1=push selected 2=pull selected (for repeat only)
 
-                    if (keymod == 0) {
-                        while (n--) {
-                            do {
-                                seq_pos += direction;
-                            }
-                            while (legal_curpos(seq_pos) && !remap->is_shown(seq_pos));
-                        }
+                // ------------------
+                // loop over nrepeat:
+                // ------------------
+
+                while (!ad_err && n-->0 && legal_curpos(seq_pos)) {
+                    cursorpos = remap->sequence_to_screen(seq_pos);
+
+                    int adjacent_scr_pos = cursorpos - (direction<0); // screen position next to the cursor
+                    if (adjacent_scr_pos<0 || size_t(adjacent_scr_pos)>remap->get_max_screen_pos()) {
+                        ad_err = GBS_global_string("Action beyond end of screen!");
                         break;
                     }
 
-                    if (mode==AD_NOWRITE) { write_fault = 1; break; }
+                    int adjacent_seq_pos = remap->screen_to_sequence(adjacent_scr_pos); // _visible_ sequence position next to the cursor
+                    int real_adjacent_seq_pos = seq_pos - (direction<0); // sequence position next to cursor (not necessarily visible)
 
-                    int jump_or_fetch = 0;  // 1=jump selected 2=fetch selected (for repeat only)
-                    int push_or_pull = 0;   // 1=push selected 2=pull selected (for repeat only)
+                    if (adjacent_seq_pos<0 || adjacent_seq_pos>=seq_len) {
+                        ad_err = GBS_global_string("Action beyond end of sequence!");
+                        break;
+                    }
 
-                    // ------------------
-                    // loop over nrepeat:
-                    // ------------------
+                    // Ctrl+Cursor = move cursor to next end of word (or to end of next word)
 
-                    while (!ad_err && n-->0 && legal_curpos(seq_pos)) {
-                        cursorpos = remap->sequence_to_screen_clipped(seq_pos);
+                    if (keymod & AW_KEYMODE_CONTROL) {
+                        if (adjacent_scr_pos>=0) {
+                            long pos = adjacent_seq_pos;
 
-                        int adjacent_scr_pos = cursorpos - (direction<0); // screen position next to the cursor
-                        if (adjacent_scr_pos<0 || size_t(adjacent_scr_pos)>remap->get_max_screen_pos()) {
-                            ad_err = GBS_global_string("Action beyond end of screen!");
-                            break;
-                        }
-
-                        int adjacent_seq_pos = remap->screen_to_sequence(adjacent_scr_pos); // _visible_ sequence position next to the cursor
-                        int real_adjacent_seq_pos = seq_pos - (direction<0); // sequence position next to cursor (not necessarily visible)
-
-                        if (adjacent_seq_pos<0 || adjacent_seq_pos>=seq_len) {
-                            ad_err = GBS_global_string("Action beyond end of sequence!");
-                            break;
-                        }
-
-                        // Ctrl+Cursor = move cursor to next end of word (or to end of next word)
-
-                        if (keymod & AW_KEYMODE_CONTROL) {
-                            if (adjacent_scr_pos>=0) {
-                                long pos = adjacent_seq_pos;
-
-                                if (ED4_ROOT->aw_root->awar(ED4_AWAR_FAST_CURSOR_JUMP)->read_int()) { // should cursor jump over next group?
-                                    if (ADPP_IS_ALIGN_CHARACTER(seq[pos])) {
-                                        pos = get_next_visible_base(pos, direction);
-                                        if (pos>=0) pos = get_next_visible_gap(pos, direction);
-                                    }
-                                    else {
-                                        pos = get_next_visible_gap(pos, direction);
-                                    }
-
-                                    seq_pos = (pos>=0
-                                               ? (direction<0 ? pos+1 : pos)
-                                               : (direction<0 ? 0 : seq_len-1));
+                            if (ED4_ROOT->aw_root->awar(ED4_AWAR_FAST_CURSOR_JUMP)->read_int()) { // should cursor jump over next group?
+                                if (ADPP_IS_ALIGN_CHARACTER(seq[pos])) {
+                                    pos = get_next_visible_base(pos, direction);
+                                    if (pos>=0) pos = get_next_visible_gap(pos, direction);
                                 }
                                 else {
-                                    if (ADPP_IS_ALIGN_CHARACTER(seq[pos]))  { seq_pos = get_next_visible_base(pos, direction); }
-                                    else                    { seq_pos = get_next_visible_gap(pos, direction); }
-
-                                    if (direction<0)    { seq_pos = seq_pos==-1 ? 0       : seq_pos+1; }
-                                    else        { seq_pos = seq_pos==-1 ? seq_len : seq_pos; }
+                                    pos = get_next_visible_gap(pos, direction);
                                 }
+
+                                seq_pos = (pos>=0
+                                           ? (direction<0 ? pos+1 : pos)
+                                           : (direction<0 ? 0 : seq_len-1));
                             }
-                            continue;
+                            else {
+                                if (ADPP_IS_ALIGN_CHARACTER(seq[pos]))  { seq_pos = get_next_visible_base(pos, direction); }
+                                else                    { seq_pos = get_next_visible_gap(pos, direction); }
+
+                                if (direction<0)    { seq_pos = seq_pos==-1 ? 0       : seq_pos+1; }
+                                else        { seq_pos = seq_pos==-1 ? seq_len : seq_pos; }
+                            }
                         }
+                        continue;
+                    }
 
-                        // ALT/META+Cursor = jump & fetch
+                    // ALT/META+Cursor = jump & fetch
 
-                        if (keymod & (AW_KEYMODE_ALT)) {
-                            if (is_consensus) { cannot_handle = 1; return 0; }
+                    if (keymod & (AW_KEYMODE_ALT)) {
+                        if (is_consensus) { cannot_handle = 1; return 0; }
 
-                            if (ADPP_IS_ALIGN_CHARACTER(seq[adjacent_seq_pos])) { // there's a _gap_ next to the cursor -> let's fetch
-                                if (jump_or_fetch!=1) {
-                                    jump_or_fetch = 2;
-                                    long source_pos = get_next_base(adjacent_seq_pos, direction); // position of base to fetch
-                                    if (source_pos==-1) { // there is nothing to fetch
-                                        n = 0;
-                                    }
-                                    else {
-                                        ad_err = moveBase(source_pos, adjacent_seq_pos, get_gap_type(source_pos, direction));
-                                        seq_pos = adjacent_seq_pos + (direction>0);
-                                    }
-                                }
-                                else {
+                        if (ADPP_IS_ALIGN_CHARACTER(seq[adjacent_seq_pos])) { // there's a _gap_ next to the cursor -> let's fetch
+                            if (jump_or_fetch!=1) {
+                                jump_or_fetch = 2;
+                                long source_pos = get_next_base(adjacent_seq_pos, direction); // position of base to fetch
+                                if (source_pos==-1) { // there is nothing to fetch
                                     n = 0;
                                 }
+                                else {
+                                    ad_err = moveBase(source_pos, adjacent_seq_pos, get_gap_type(source_pos, direction));
+                                    seq_pos = adjacent_seq_pos + (direction>0);
+                                }
                             }
-                            else { // there's a _base_ next to the cursor -> let it jump
-                                if (jump_or_fetch!=2) {
-                                    jump_or_fetch = 1;
-                                    int next_gap = adjacent_seq_pos - direction;
+                            else {
+                                n = 0;
+                            }
+                        }
+                        else { // there's a _base_ next to the cursor -> let it jump
+                            if (jump_or_fetch!=2) {
+                                jump_or_fetch = 1;
+                                int next_gap = adjacent_seq_pos - direction;
 
-                                    if (ADPP_IS_ALIGN_CHARACTER(seq[next_gap])) {
-                                        int dest_pos = get_next_base(next_gap, -direction);
+                                if (ADPP_IS_ALIGN_CHARACTER(seq[next_gap])) {
+                                    int dest_pos = get_next_base(next_gap, -direction);
 
-                                        if (dest_pos<0) {
-                                            dest_pos = direction>0 ? 0 : seq_len-1;
-                                        }
-                                        else {
-                                            dest_pos += direction;
-                                        }
+                                    if (dest_pos<0) {
+                                        dest_pos = direction>0 ? 0 : seq_len-1;
+                                    }
+                                    else {
+                                        dest_pos += direction;
+                                    }
 
-                                        if (ADPP_IS_ALIGN_CHARACTER(seq[dest_pos])) {
-                                            ad_err = moveBase(adjacent_seq_pos, dest_pos, get_gap_type(adjacent_seq_pos, direction));
-                                            if (!ad_err) {
-                                                seq_pos = get_next_base(seq_pos, direction)+(direction<0);
-                                                if (seq_pos==-1) {
-                                                    seq_pos = direction<0 ? 0 : seq_len;
-                                                }
+                                    if (ADPP_IS_ALIGN_CHARACTER(seq[dest_pos])) {
+                                        ad_err = moveBase(adjacent_seq_pos, dest_pos, get_gap_type(adjacent_seq_pos, direction));
+                                        if (!ad_err) {
+                                            seq_pos = get_next_base(seq_pos, direction)+(direction<0);
+                                            if (seq_pos==-1) {
+                                                seq_pos = direction<0 ? 0 : seq_len;
                                             }
                                         }
-                                        else {
-                                            e4_assert(0);
-                                        }
                                     }
                                     else {
-                                        ad_err = GBS_global_string("You can only jump single bases.");
+                                        e4_assert(0);
                                     }
                                 }
                                 else {
-                                    n = 0;
+                                    ad_err = GBS_global_string("You can only jump single bases.");
                                 }
                             }
+                            else {
+                                n = 0;
+                            }
+                        }
+
+                        if (!ad_err) {
+                            changed_flag = 1;
+                        }
+
+                        continue;
+                    }
+
+                    // Shift+Cursor = push/pull character
+
+                    if (is_consensus) { cannot_handle = 1; return 0; };
+
+                    if (ADPP_IS_ALIGN_CHARACTER(seq[real_adjacent_seq_pos])) { // pull
+                        long dest_pos = real_adjacent_seq_pos;
+                        long source_pos = real_adjacent_seq_pos-direction;
+
+                        if (!ADPP_IS_ALIGN_CHARACTER(seq[source_pos]) && push_or_pull!=1) {
+                            push_or_pull = 2;
+
+                            long next_gap = get_next_gap(source_pos, -direction);
+                            long last_source = next_gap>=0 ? next_gap : (direction>0 ? 0 : seq_len-1);
+
+                            if (ADPP_IS_ALIGN_CHARACTER(seq[last_source])) {
+                                last_source = get_next_base(last_source, direction);
+                            }
+
+                            ad_err = shiftBases(source_pos, last_source, dest_pos, direction, 0,
+                                                is_sequence ? get_gap_type(last_source, -direction) : '.');
 
                             if (!ad_err) {
+                                seq_pos = dest_pos + (direction>0);
                                 changed_flag = 1;
                             }
-
-                            continue;
                         }
-
-                        // Shift+Cursor = push/pull character
-
-                        if (is_consensus) { cannot_handle = 1; return 0; };
-
-                        if (ADPP_IS_ALIGN_CHARACTER(seq[real_adjacent_seq_pos])) { // pull
-                            long dest_pos = real_adjacent_seq_pos;
-                            long source_pos = real_adjacent_seq_pos-direction;
-
-                            if (!ADPP_IS_ALIGN_CHARACTER(seq[source_pos]) && push_or_pull!=1) {
-                                push_or_pull = 2;
-
-                                long next_gap = get_next_gap(source_pos, -direction);
-                                long last_source = next_gap>=0 ? next_gap : (direction>0 ? 0 : seq_len-1);
-
-                                if (ADPP_IS_ALIGN_CHARACTER(seq[last_source])) {
-                                    last_source = get_next_base(last_source, direction);
-                                }
-
-                                ad_err = shiftBases(source_pos, last_source, dest_pos, direction, 0,
-                                                    is_sequence ? get_gap_type(last_source, -direction) : '.');
-
-                                if (!ad_err) {
-                                    seq_pos = dest_pos + (direction>0);
-                                    changed_flag = 1;
-                                }
-                            }
-                            else {
-                                n = 0;
-                            }
-                        }
-                        else { // push
-                            long next_gap = get_next_gap(adjacent_seq_pos, direction);
-
-                            if (next_gap>=0 && push_or_pull!=2) {
-                                push_or_pull = 1;
-                                long dest_pos = next_gap;
-                                long source_pos = get_next_base(next_gap, -direction);
-                                long last_source = adjacent_seq_pos;
-
-                                e4_assert(source_pos>=0);
-                                ad_err = shiftBases(source_pos, last_source, dest_pos, direction, &dest_pos,
-                                                    is_sequence ? get_gap_type(last_source, -direction) : '.');
-
-                                if (!ad_err) {
-                                    seq_pos = dest_pos + (direction<0);
-                                    changed_flag = 1;
-                                }
-                            }
-                            else {
-                                n = 0;
-                            }
+                        else {
+                            n = 0;
                         }
                     }
-                    break;
+                    else { // push
+                        long next_gap = get_next_gap(adjacent_seq_pos, direction);
+
+                        if (next_gap>=0 && push_or_pull!=2) {
+                            push_or_pull = 1;
+                            long dest_pos = next_gap;
+                            long source_pos = get_next_base(next_gap, -direction);
+                            long last_source = adjacent_seq_pos;
+
+                            e4_assert(source_pos>=0);
+                            ad_err = shiftBases(source_pos, last_source, dest_pos, direction, &dest_pos,
+                                                is_sequence ? get_gap_type(last_source, -direction) : '.');
+
+                            if (!ad_err) {
+                                seq_pos = dest_pos + (direction<0);
+                                changed_flag = 1;
+                            }
+                        }
+                        else {
+                            n = 0;
+                        }
+                    }
                 }
+                break;
+            }
 
             case AW_KEY_BACKSPACE:
                 h = seq_pos;
@@ -773,6 +775,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                         }
                         case 'L': {  // CTRL-L = Refresh
                             ED4_request_full_refresh();
+                            ED4_request_relayout();
                             cursor_jump = ED4_JUMP_CENTERED;
                             break;
                         }
@@ -1098,7 +1101,8 @@ GB_ERROR ED4_Edit_String::edit(ED4_work_info *info) {
     }
 
     if (!info->rightward) {
-        info->char_position = remap->sequence_to_screen(info->out_seq_position);
+        info->char_position    = remap->sequence_to_screen_PLAIN(info->out_seq_position);
+        e4_assert(info->char_position >= 0);
         info->char_position--;
         info->out_seq_position = remap->screen_to_sequence(info->char_position);
     }

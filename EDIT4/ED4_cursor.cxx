@@ -266,8 +266,7 @@ ED4_CursorShape::ED4_CursorShape(ED4_CursorType typ, /* int x, int y, */ int ter
    ED4_cursor
    -------------------------------------------------------------------------------- */
 
-ED4_returncode ED4_cursor::draw_cursor(AW_pos x, AW_pos y)
-{
+ED4_returncode ED4_cursor::draw_cursor(AW_pos x, AW_pos y) { // @@@ remove return value
     if (cursor_shape) {
         delete cursor_shape;
         cursor_shape = 0;
@@ -280,10 +279,10 @@ ED4_returncode ED4_cursor::draw_cursor(AW_pos x, AW_pos y)
 
     cursor_shape->draw(window()->get_device(), int(x), int(y));
 
-#if defined(DEBUG) && 0
+#if defined(TRACE_REFRESH)
     printf("draw_cursor(%i, %i)\n", int(x), int(y));
 #endif // DEBUG
-
+    
     return ED4_R_OK;
 }
 
@@ -303,41 +302,40 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
 
     // refresh own terminal + terminal above + terminal below
 
-    target_terminal->request_refresh();
+    const int     MAX_AFFECTED = 3;
+    int           affected     = 0;
+    ED4_terminal *affected_terminal[MAX_AFFECTED];
+
+    affected_terminal[affected++] = target_terminal->to_terminal();
 
     {
         ED4_terminal *term = target_terminal->to_terminal();
-        int backward = 1;
+        bool backward = true;
 
         while (1) {
             int done = 0;
 
             term = backward ? term->get_prev_terminal() : term->get_next_terminal();
-            if (!term) {
-                done = 1;
-            }
+            if (!term) done = 1;
             else if ((term->is_sequence_terminal()) && !term->is_in_folded_group()) {
-                term->request_refresh();
-                done = 1;
+                affected_terminal[affected++] = term;
+                done                          = 1;
             }
 
             if (done) {
-                if (!backward) {
-                    break;
-                }
-                backward = 0;
+                if (!backward) break;
+                backward = false;
                 term = target_terminal->to_terminal();
             }
         }
+    }
 
-        term = target_terminal->to_terminal();
-        while (1) {
-            term = term->get_next_terminal();
-            if (!term) {
-                break;
-            }
-
-        }
+    bool refresh_was_requested[MAX_AFFECTED];
+    e4_assert(affected >= 1 && affected <= MAX_AFFECTED);
+    for (int a = 0; a<affected; ++a) {
+        ED4_terminal *term       = affected_terminal[a];
+        refresh_was_requested[a] = term->update_info.refresh;
+        term->request_refresh();
     }
 
     // clear rectangle where cursor is displayed
@@ -364,10 +362,15 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
         ED4_LocalWinContext uses(window());
         bool previous = allowed_to_draw;
         allowed_to_draw = false;
-        ED4_ROOT->special_window_refresh();
+        ED4_ROOT->special_window_refresh(false);
         allowed_to_draw = previous;
     }
     dev->pop_clip_scale();
+
+    // restore old refresh flags (to avoid refresh of 3 complete terminals when cursor changes)
+    for (int a = 0; a<affected; ++a) {
+        affected_terminal[a]->update_info.refresh = refresh_was_requested[a];
+    }
 
     return (ED4_R_OK);
 }
@@ -1041,7 +1044,7 @@ void ED4_cursor::jump_screen_pos(int screen_pos, ED4_CursorJumpType jump_type) {
 }
 
 void ED4_cursor::jump_sequence_pos(int seq_pos, ED4_CursorJumpType jump_type) {
-    int screen_pos = ED4_ROOT->root_group_man->remap()->sequence_to_screen_clipped(seq_pos);
+    int screen_pos = ED4_ROOT->root_group_man->remap()->sequence_to_screen(seq_pos);
     jump_screen_pos(screen_pos, jump_type);
 }
 
@@ -1254,6 +1257,8 @@ bool ED4_cursor::is_partly_visible() const {
     e4_assert(owner_of_cursor);
     e4_assert(cursor_shape); // cursor is not drawn, cannot test visibility
 
+    if (owner_of_cursor->is_in_folded_group()) return false;
+    
     AW_pos x, y;
     owner_of_cursor->calc_world_coords(&x, &y);
 
@@ -1274,6 +1279,8 @@ bool ED4_cursor::is_partly_visible() const {
 bool ED4_cursor::is_completely_visible() const {
     e4_assert(owner_of_cursor);
     e4_assert(cursor_shape); // cursor is not drawn, cannot test visibility
+
+    if (owner_of_cursor->is_in_folded_group()) return false;
 
     AW_pos x, y;
     owner_of_cursor->calc_world_coords(&x, &y);
@@ -1308,27 +1315,31 @@ void ED4_terminal::scroll_into_view(ED4_window *ed4w) { // scroll y-position onl
     int win_ysize   = coords->window_lower_clip_point - coords->window_upper_clip_point + 1;
 
     bool scroll = false;
-    int slider_pos_y;
+    int  slider_pos_y;
+
+    ED4_cursor_move direction = ED4_C_NONE;
 
     AW_pos termw_y_upper = termw_y; // upper border of terminal
     AW_pos termw_y_lower = termw_y + term_height; // lower border of terminal
 
     if (termw_y_upper > coords->top_area_height) { // don't scroll if terminal is in top area (always visible)
-        if (termw_y_upper < coords->window_upper_clip_point) {
+        if (termw_y_upper < coords->window_upper_clip_point) { // scroll up
 #ifdef DUMP_SCROLL_INTO_VIEW
             printf("termw_y_upper(%i) < window_upper_clip_point(%i)\n",
                    int(termw_y_upper), int(coords->window_upper_clip_point));
 #endif // DEBUG
             slider_pos_y = int(termw_y_upper - coords->top_area_height - term_height);
             scroll       = true;
+            direction    = ED4_C_UP;
         }
-        else if (termw_y_lower > coords->window_lower_clip_point) {
+        else if (termw_y_lower > coords->window_lower_clip_point) { // scroll down
 #ifdef DUMP_SCROLL_INTO_VIEW
             printf("termw_y_lower(%i) > window_lower_clip_point(%i)\n",
                    int(termw_y_lower), int(coords->window_lower_clip_point));
 #endif // DEBUG
             slider_pos_y = int(termw_y_upper - coords->top_area_height - win_ysize);
             scroll       = true;
+            direction    = ED4_C_DOWN;
         }
     }
 
@@ -1345,6 +1356,19 @@ void ED4_terminal::scroll_into_view(ED4_window *ed4w) { // scroll y-position onl
 
         int pic_ysize         = int(aww->get_scrolled_picture_height());
         int slider_pos_yrange = pic_ysize - win_ysize;
+
+        if (slider_pos_yrange<0) { // win_ysize > pic_ysize
+            slider_pos_y = 0;
+        }
+        else {
+            ED4_multi_species_manager *start_at_manager = 0;
+            get_area_level(&start_at_manager);
+            
+            ED4_terminal *nextTerm = get_upper_lower_cursor_pos(start_at_manager, direction, termw_y, false, acceptAnyTerminal());
+            if (!nextTerm) { // no next term in this area
+                slider_pos_y = direction == ED4_C_UP ? 0 : slider_pos_yrange; // scroll to limit
+            }
+        }
 
         if (slider_pos_y>slider_pos_yrange) slider_pos_y = slider_pos_yrange;
         if (slider_pos_y<0) slider_pos_y                 = 0;
@@ -1367,7 +1391,7 @@ void ED4_cursor::set_to_terminal(ED4_terminal *terminal, int seq_pos, ED4_Cursor
             }
         }
 
-        int scr_pos = ED4_ROOT->root_group_man->remap()->sequence_to_screen_clipped(seq_pos);
+        int scr_pos = ED4_ROOT->root_group_man->remap()->sequence_to_screen(seq_pos);
         show_cursor_at(terminal, scr_pos);
 
         if (!is_completely_visible()) {
@@ -1385,8 +1409,6 @@ ED4_returncode ED4_cursor::show_cursor_at(ED4_terminal *target_terminal, ED4_ind
         if (is_partly_visible()) {
             delete_cursor(cursor_abs_x, owner_of_cursor);
         }
-
-        owner_of_cursor->request_refresh(); // we have to refresh old owner of cursor
         owner_of_cursor = NULL;
         DRAW = 1;
     }
