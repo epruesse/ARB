@@ -287,8 +287,7 @@ static void PV_ManageTerminals(AW_root *root) {
                  gbSpecies = GBT_next_marked_species(gbSpecies))
             {
                 ED4_species_name_terminal *spNameTerm = ED4_find_species_name_terminal(GBT_read_name(gbSpecies));
-                if (spNameTerm && spNameTerm->is_species_name_terminal())
-                {
+                if (spNameTerm) {
                     ED4_terminal *terminal = spNameTerm->corresponding_sequence_terminal();
                     for (int i=0; i<PV_AA_Terminals4Species; i++) {
                         // get the corresponding orf_terminal skipping sequence_info terminal
@@ -784,46 +783,42 @@ static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_spec
 }
 
 void PV_AddCorrespondingOrfTerminals(ED4_species_name_terminal *spNameTerm) {
-    if (gTerminalsCreated) {
-        if (spNameTerm && spNameTerm->is_species_name_terminal())
-            {
-                ED4_sequence_terminal *seqTerminal    = spNameTerm->corresponding_sequence_terminal()->to_sequence_terminal();
-                ED4_species_manager *speciesManager = spNameTerm->get_parent(ED4_L_SPECIES)->to_species_manager();
-                PV_AddNewAAseqTerminals(seqTerminal, speciesManager);
-                PV_RefreshWindow(ED4_ROOT->aw_root);
-            }
+    if (gTerminalsCreated && spNameTerm) {
+        ED4_sequence_terminal *seqTerminal    = spNameTerm->corresponding_sequence_terminal();
+        ED4_species_manager *speciesManager = spNameTerm->get_parent(ED4_L_SPECIES)->to_species_manager();
+        PV_AddNewAAseqTerminals(seqTerminal, speciesManager);
+        PV_RefreshWindow(ED4_ROOT->aw_root);
     }
 }
 
 void PV_AddOrfTerminalsToLoadedSpecies() {
-   if (gTerminalsCreated) {
-       GB_transaction dummy(GLOBAL_gb_main);
-            int marked = GBT_count_marked_species(GLOBAL_gb_main);
-            if (marked) {
-                GBDATA *gbSpecies;
-                for (gbSpecies = GBT_first_marked_species(GLOBAL_gb_main);
-                    gbSpecies;
-                    gbSpecies = GBT_next_marked_species(gbSpecies))
+    if (gTerminalsCreated) {
+        GB_transaction dummy(GLOBAL_gb_main);
+        int marked = GBT_count_marked_species(GLOBAL_gb_main);
+        if (marked) {
+            GBDATA *gbSpecies;
+            for (gbSpecies = GBT_first_marked_species(GLOBAL_gb_main);
+                 gbSpecies;
+                 gbSpecies = GBT_next_marked_species(gbSpecies))
+            {
+                const char *spName = GBT_read_name(gbSpecies);
+                cout<<marked--<<". "<<spName<<endl;
+                ED4_species_name_terminal *spNameTerm = ED4_find_species_name_terminal(spName);
+                if (spNameTerm) {
+                    ED4_terminal *terminal = spNameTerm->corresponding_sequence_terminal();
+                    // $$$ If next terminal is species_name terminal => corresponding AA seq terminal doesn't exist ==> create one $$$
+                    terminal = terminal->get_next_terminal();
+                    if (terminal->is_species_name_terminal() || terminal->is_spacer_terminal())
                     {
-                        const char *spName = GBT_read_name(gbSpecies);
-                        cout<<marked--<<". "<<spName<<endl;
-                        ED4_species_name_terminal *spNameTerm = ED4_find_species_name_terminal(spName);
-                        if (spNameTerm && spNameTerm->is_species_name_terminal())
-                            {
-                                ED4_terminal *terminal = spNameTerm->corresponding_sequence_terminal();
-                                // $$$ If next terminal is species_name terminal => corresponding AA seq terminal doesn't exist ==> create one $$$
-                                terminal = terminal->get_next_terminal();
-                                if (terminal->is_species_name_terminal() || terminal->is_spacer_terminal())
-                                    {
-                                    ED4_sequence_terminal *seqTerminal    = spNameTerm->corresponding_sequence_terminal()->to_sequence_terminal();
-                                    ED4_species_manager *speciesManager = spNameTerm->get_parent(ED4_L_SPECIES)->to_species_manager();
-                                    PV_AddNewAAseqTerminals(seqTerminal, speciesManager);
-                                    }
-                            }
+                        ED4_sequence_terminal *seqTerminal    = spNameTerm->corresponding_sequence_terminal();
+                        ED4_species_manager *speciesManager = spNameTerm->get_parent(ED4_L_SPECIES)->to_species_manager();
+                        PV_AddNewAAseqTerminals(seqTerminal, speciesManager);
                     }
-                PV_RefreshWindow(ED4_ROOT->aw_root);
+                }
             }
-   }
+            PV_RefreshWindow(ED4_ROOT->aw_root);
+        }
+    }
 }
 
 static void PV_CreateAllTerminals(AW_root *root) {

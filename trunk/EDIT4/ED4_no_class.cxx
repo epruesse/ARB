@@ -15,6 +15,7 @@
 #include "ed4_edit_string.hxx"
 #include "ed4_tools.hxx"
 #include "ed4_nds.hxx"
+#include "ed4_list.hxx"
 
 #include <ad_config.h>
 #include <st_window.hxx>
@@ -1032,9 +1033,9 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
     
     ED4_multi_species_manager *new_multi_species_manager = new_group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
-    ED4_list_elem *list_elem = ED4_ROOT->selected_objects.first();
+    ED4_selected_elem *list_elem = ED4_ROOT->selected_objects->head();
     while (list_elem) {
-        ED4_base *object = ((ED4_selection_entry *) list_elem->elem())->object;
+        ED4_base *object = list_elem->elem()->object;
         object = object->get_parent(ED4_L_SPECIES);
         int move_object = 1;
 
@@ -1122,9 +1123,9 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
 
         while (tryAgain && !error) {
             tryAgain = 0;
-            ED4_list_elem *list_elem = ED4_ROOT->selected_objects.first();
+            ED4_selected_elem *list_elem = ED4_ROOT->selected_objects->head();
             while (list_elem && !error) {
-                ED4_base *object = ((ED4_selection_entry *) list_elem->elem())->object;
+                ED4_base *object = list_elem->elem()->object;
                 object = object->get_parent(ED4_L_SPECIES);
                 if (!object->is_consensus_manager()) {
                     GBDATA *gb_species = object->get_species_pointer();
@@ -1237,7 +1238,7 @@ static void ED4_load_new_config(char *string) {
 
     ED4_init_notFoundMessage();
 
-    if (ED4_ROOT->selected_objects.no_of_entries() > 0) {
+    if (ED4_ROOT->selected_objects->size() > 0) {
         ED4_ROOT->deselect_all();
     }
 
