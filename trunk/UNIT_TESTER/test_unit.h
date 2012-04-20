@@ -1198,7 +1198,7 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 #  else
 inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV) {
     using namespace arb_test;
-    return that(GBK_raises_SIGSEGV(cb,true)).equals(expect_SEGV);
+    return that(GBK_raises_SIGSEGV(cb,true)).is_equal_to(expect_SEGV);
 }
 #  endif
 # endif
