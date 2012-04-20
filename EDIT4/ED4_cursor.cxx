@@ -345,8 +345,6 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
     e4_assert(cursor_shape);
     cursor_shape->get_bounding_box(int(x), int(y), xmin, ymin, xmax, ymax);
 
-    dev->clear_part(xmin, ymin, xmax-xmin+1, ymax-ymin+1, AW_ALL_DEVICES);
-
 #if defined(TRACE_REFRESH)
     printf("delete_cursor(%i, %i)\n", int(x), int(y));
 #endif // TRACE_REFRESH
@@ -354,7 +352,8 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
     dev->set_font_overlap(true);
 
 #define EXPAND_SIZE 0
-    if (window()->get_device()->reduceClipBorders(ymin-EXPAND_SIZE, ymax+1+EXPAND_SIZE, xmin-EXPAND_SIZE, xmax+1+EXPAND_SIZE)) {
+    if (dev->reduceClipBorders(ymin-EXPAND_SIZE, ymax+EXPAND_SIZE, xmin-EXPAND_SIZE, xmax+EXPAND_SIZE)) {
+        dev->clear_part(xmin, ymin, xmax-xmin+1, ymax-ymin+1, AW_ALL_DEVICES);
         // refresh terminal to hide cursor
         ED4_LocalWinContext uses(window());
         LocallyModify<bool> flag(allowed_to_draw, false);

@@ -234,7 +234,7 @@ namespace AW {
     //      a positioned vector, representing a line
     // -------------------------------------------------
 
-    enum AW_screen_area_conversion_mode { FAULTY_OLD_CONVERSION, INCLUSIVE_OUTLINE };
+    enum AW_screen_area_conversion_mode { INCLUSIVE_OUTLINE, UPPER_LEFT_OUTLINE };
 
     class LineVector {
         Position Start;         // start point
@@ -251,13 +251,13 @@ namespace AW {
         LineVector(double X1, double Y1, double X2, double Y2) : Start(X1, Y1), ToEnd(X2-X1, Y2-Y1) { ISVALID(*this); }
         explicit LineVector(const AW_screen_area& r, AW_screen_area_conversion_mode mode) {
             switch (mode) {
-                case FAULTY_OLD_CONVERSION:
-                    Start = Position(r.l, r.t);
-                    ToEnd = Vector(r.r-r.l-1, r.b-r.t-1); // @@@ -1 is really strange
-                    break;
                 case INCLUSIVE_OUTLINE:
                     Start = Position(r.l, r.t);
                     ToEnd = Vector(r.r-r.l+1, r.b-r.t+1);
+                    break;
+                case UPPER_LEFT_OUTLINE: 
+                    Start = Position(r.l, r.t);
+                    ToEnd = Vector(r.r-r.l, r.b-r.t);
                     break;
             }
             ISVALID(*this);
@@ -335,11 +335,12 @@ namespace AW {
         bool contains(const LineVector& lvec) const { return contains(lvec.start()) && contains(lvec.head()); }
 
         bool distinct_from(const Rectangle& rect) const {
+            // returns false for adjacent rectangles (even if they only share one corner)
             return
-                top()       >= rect.bottom() ||
-                rect.top()  >= bottom()      ||
-                left()      >= rect.right()  ||
-                rect.left() >= right();
+                top()       > rect.bottom() ||
+                rect.top()  > bottom()      ||
+                left()      > rect.right()  ||
+                rect.left() > right();
         }
         bool overlaps_with(const Rectangle& rect) const { return !distinct_from(rect); }
 

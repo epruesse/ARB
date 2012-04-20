@@ -132,27 +132,18 @@ void AW_device_Xm::clear(AW_bitset filteri) {
     }
 }
 
-void AW_device_Xm::clear_part(AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri) {
+void AW_device_Xm::clear_part(const Rectangle& rect, AW_bitset filteri) {
     if (filteri & filter) {
-        aw_assert(width >= 0);
-        aw_assert(height >= 0);
-
-        AW_pos x1 = x0+width;
-        AW_pos y1 = y0+height;
-
-        AW_pos X0, Y0, X1, Y1;  // Transformed pos
-        this->transform(x0, y0, X0, Y0);
-        this->transform(x1, y1, X1, Y1);
-
-        AW_pos CX0, CY0, CX1, CY1; // Clipped line
-        bool   drawflag = box_clip(X0, Y0, X1, Y1, CX0, CY0, CX1, CY1);
+        Rectangle transRect = transform(rect);
+        Rectangle clippedRect;
+        bool drawflag = box_clip(transRect, clippedRect);
         if (drawflag) {
-            int cx0 = AW_INT(CX0);
-            int cx1 = AW_INT(CX1);
-            int cy0 = AW_INT(CY0);
-            int cy1 = AW_INT(CY1);
-
-            XClearArea(XDRAW_PARAM2(get_common()), cx0, cy0, cx1-cx0+1, cy1-cy0+1, False);
+            XClearArea(XDRAW_PARAM2(get_common()),
+                       AW_INT(clippedRect.left()),
+                       AW_INT(clippedRect.top()),
+                       AW_INT(clippedRect.width())+1, // see aw_device.hxx@WORLD_vs_PIXEL
+                       AW_INT(clippedRect.height())+1,
+                       False);
             AUTO_FLUSH(this);
         }
     }
