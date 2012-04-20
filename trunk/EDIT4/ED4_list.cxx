@@ -84,7 +84,7 @@ ED4_returncode ED4_list::delete_elem(void *elem)
     return (ED4_R_OK);
 }
 
-short ED4_list::is_elem(void *elem)
+short ED4_list::has_elem(void *elem)
 {
     ED4_list_elem       *current_list_elem = first();
 

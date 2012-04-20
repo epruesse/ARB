@@ -428,7 +428,7 @@ void ED4_consensus_definition_changed(AW_root*, AW_CL, AW_CL) {
 }
 
 static ARB_ERROR toggle_consensus_display(ED4_base *base, AW_CL show) {
-    if (base->flag.is_consensus) {
+    if (base->is_consensus_manager()) {
         ED4_manager *consensus_man = base->to_manager();
         ED4_spacer_terminal *spacer = consensus_man->parent->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
 

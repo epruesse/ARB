@@ -803,46 +803,38 @@ void ED4_cursor::changeType(ED4_CursorType typ)
 
 bool ED4_update_global_cursor_awars_allowed = true;
 
-void ED4_cursor::updateAwars()
-{
+static void trace_termChange_in_global_awar(ED4_terminal *term, char*& last_value, bool& ignore_flag, const char *awar_name) {
+    char *species_name = term->get_name_of_species();
+
+    if (!last_value || strcmp(last_value, species_name) != 0) {
+        freeset(last_value, species_name);
+        bool old    = ignore_flag;
+        ignore_flag = true;
+        GBT_write_string(GLOBAL_gb_main, awar_name, species_name);
+        ignore_flag = old;
+    }
+    else {
+        free(species_name);
+    }
+}
+
+void ED4_cursor::updateAwars() {
     AW_root *aw_root = ED4_ROOT->aw_root;
     int      seq_pos = get_sequence_pos();
 
     if (ED4_update_global_cursor_awars_allowed) {
-        if (owner_of_cursor) {
-            ED4_terminal *cursor_terminal = owner_of_cursor->to_terminal();
-            char         *species_name    = cursor_terminal->get_name_of_species();
-
-            if (species_name) {
-                ED4_manager *cursor_manager = cursor_terminal->parent->parent->to_manager();
-
-                if (cursor_manager->parent->flag.is_SAI) {
-                    static char *last_set_SAI = 0;
-                    if (!last_set_SAI || strcmp(last_set_SAI, species_name) != 0) {
-                        freedup(last_set_SAI, species_name);
-
-                        ignore_selected_SAI_changes_cb = true;
-                        GBT_write_string(GLOBAL_gb_main, AWAR_SAI_NAME, species_name);
-                        ignore_selected_SAI_changes_cb = false;
-                    }
-                }
-                else {
-                    static char *last_set_species = 0;
-                    if (!last_set_species || strcmp(last_set_species, species_name) != 0) {
-                        freedup(last_set_species, species_name);
-
-                        ignore_selected_species_changes_cb = true;
-                        GBT_write_string(GLOBAL_gb_main, AWAR_SPECIES_NAME, species_name);
-                        ignore_selected_species_changes_cb = false;
-                    }
-                }
-            }
-            free(species_name);
+        // @@@ last_set_XXX has to be window-specific (or better cursor specific)
+        if (in_SAI_terminal()) {
+            static char *last_set_SAI = 0;
+            trace_termChange_in_global_awar(owner_of_cursor->to_terminal(), last_set_SAI, ignore_selected_SAI_changes_cb, AWAR_SAI_NAME);
+        }
+        else if (in_species_seq_terminal()) {
+            static char *last_set_species = 0;
+            trace_termChange_in_global_awar(owner_of_cursor->to_terminal(), last_set_species, ignore_selected_species_changes_cb, AWAR_SPECIES_NAME);
         }
     }
 
     // update awars for cursor position:
-
     aw_root->awar(win->awar_path_for_cursor)->write_int(info2bio(seq_pos));
     if (ED4_update_global_cursor_awars_allowed) {
         aw_root->awar(AWAR_CURSOR_POSITION)->write_int(info2bio(seq_pos)); // update ARB-global cursor position
@@ -885,19 +877,17 @@ void ED4_cursor::updateAwars()
     char iupac[MAXIUPAC+1];
     strcpy(iupac, ED4_IUPAC_EMPTY);
 
-    if (owner_of_cursor) {
-        ED4_species_manager *species_manager = owner_of_cursor->get_parent(ED4_L_SPECIES)->to_species_manager();
-
+    {
         char at[2] = "\0";
 
-        if (species_manager->flag.is_consensus) {
+        if (in_consensus_terminal()) {
             ED4_group_manager *group_manager = owner_of_cursor->get_parent(ED4_L_GROUP)->to_group_manager();
             ED4_char_table&    groupTab      = group_manager->table();
             if (seq_pos<groupTab.size()) {
                 groupTab.build_consensus_string_to(at, ExplicitRange(seq_pos, seq_pos));
             }
         }
-        else {
+        else if (in_species_seq_terminal() || in_SAI_terminal()) {
             int         len;
             const char *seq = owner_of_cursor->resolve_pointer_to_char_pntr(&len);
 
@@ -1496,7 +1486,7 @@ void ED4_base_position::calc4base(const ED4_base *base)
     species_manager->add_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
 
     bool (*isGap_fun)(char);
-    if (species_manager->flag.is_consensus) {
+    if (species_manager->is_consensus_manager()) {
         ED4_group_manager *group_manager = base->get_parent(ED4_L_GROUP)->to_group_manager();
 
         seq       = group_manager->table().build_consensus_string();

@@ -435,9 +435,9 @@ ED4_returncode ED4_sequence_terminal::draw() {
 
         const char *saiColors = 0;
 
-        if (species_name                                     &&
-            ED4_ROOT->visualizeSAI                           &&
-            !spec_man->flag.is_SAI                           &&
+        if (species_name                       &&
+            ED4_ROOT->visualizeSAI             &&
+            spec_man->get_type() != ED4_SP_SAI &&
             (is_marked || ED4_ROOT->visualizeSAI_allSpecies))
         {
             saiColors = ED4_getSaiColorString(ED4_ROOT->aw_root, seq_start, seq_end);
@@ -530,7 +530,7 @@ ED4_returncode ED4_sequence_terminal::draw() {
     // output protein structure match
     if (ED4_ROOT->protstruct) {
         ED4_species_manager *spec_man = get_parent(ED4_L_SPECIES)->to_species_manager();
-        if (!spec_man->flag.is_SAI && ED4_ROOT->aw_root->awar(PFOLD_AWAR_ENABLE)->read_int()) {  // should do a remap
+        if (spec_man->get_type() != ED4_SP_SAI && ED4_ROOT->aw_root->awar(PFOLD_AWAR_ENABLE)->read_int()) {  // should do a remap
             int screen_length = rm->clipped_sequence_to_screen_PLAIN(ED4_ROOT->protstruct_len);
             e4_assert(screen_length >= 0);
             if ((right+1) < screen_length) {
@@ -589,8 +589,7 @@ ED4_returncode ED4_sequence_info_terminal::draw() {
     strncpy(&buffer[1], this->id, 8);
     buffer[9] = 0;
 
-    ED4_species_name_terminal *name_term = corresponding_species_name_terminal();
-    if (name_term->tflag.selected) {
+    if (containing_species_manager()->is_selected()) {
         current_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], text_y-y+1);
     }
 
@@ -633,10 +632,10 @@ ED4_returncode ED4_text_terminal::draw() {
 
     if (is_species_name_terminal()) {
         GB_CSTR real_name      = to_species_name_terminal()->get_displayed_text();
-        int     is_marked      = 0;
         int     width_of_char;
         int     height_of_char = -1;
-        int     paint_box      = !parent->flag.is_consensus && !parent->parent->parent->flag.is_SAI; // do not paint marked-boxes for consensi and SAIs
+        bool    paint_box      = inside_species_seq_manager();
+        bool    is_marked      = false;
 
         if (paint_box) {
             ED4_species_manager *species_man = get_parent(ED4_L_SPECIES)->to_species_manager();
@@ -658,7 +657,7 @@ ED4_returncode ED4_text_terminal::draw() {
             width_of_char = 0;
         }
 
-        if (tflag.selected) {
+        if (containing_species_manager()->is_selected()) {
             current_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], text_y-y+1);
         }
         current_device()->text(ED4_G_STANDARD, real_name, text_x+width_of_char, text_y, 0, AW_SCREEN, 0);

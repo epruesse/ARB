@@ -100,18 +100,10 @@ static ARB_ERROR dot_sequence_by_consensus(ED4_base *base, AW_CL cl_insert_stat)
 static void dot_missing_bases(AW_window *aww) {
     ED4_MostRecentWinContext context;
 
-    ED4_cursor *cursor   = &current_cursor();
-    ED4_base   *selected = cursor->owner_of_cursor;
+    ED4_cursor *cursor = &current_cursor();
+    ARB_ERROR   error  = 0;
 
-    ARB_ERROR            error       = 0;
-    ED4_species_manager *species_man = 0;
-
-    if (selected) {
-        species_man = selected->get_parent(ED4_L_SPECIES)->to_species_manager();
-        if (species_man && !species_man->flag.is_consensus) species_man = 0;
-    }
-
-    if (!species_man) {
+    if (!cursor->in_consensus_terminal()) {
         error = "No consensus selected";
     }
     else {
@@ -124,7 +116,7 @@ static void dot_missing_bases(AW_window *aww) {
         stat.sequences_checked = 0;
         stat.marked_only       = aw_root->awar(AWAR_DOT_MARKED)->read_int();
 
-        ED4_group_manager *group_manager = selected->get_parent(ED4_L_GROUP)->to_group_manager();
+        ED4_group_manager *group_manager = cursor->owner_of_cursor->get_parent(ED4_L_GROUP)->to_group_manager();
         {
             // build list of positions where consensus contains upper case characters:
             char *consensus = group_manager->table().build_consensus_string();

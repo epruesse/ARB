@@ -290,7 +290,7 @@ inline void remove_from_consensus(ED4_manager *group_or_species_man) {
 ED4_returncode ED4_terminal::kill_object() {
     ED4_species_manager *species_manager = get_parent(ED4_L_SPECIES)->to_species_manager();
 
-    if (species_manager->flag.is_consensus) { // kill whole group
+    if (species_manager->is_consensus_manager()) { // kill whole group
         if (ED4_new_species_multi_species_manager()==species_manager->parent) {
             aw_message("This group has to exist - deleting it isn't allowed");
             return ED4_R_IMPOSSIBLE;
@@ -389,8 +389,8 @@ ED4_returncode  ED4_terminal::move_requested_by_parent(ED4_move_info *) { // han
 }
 
 void ED4_multi_species_manager::toggle_selected_species() {
-    if (all_are_selected()) deselect_all_species();
-    else select_all_species();
+    if (all_are_selected()) deselect_all_species_and_SAI();
+    else select_all_species(); // @@@ should select everything here
 
     ED4_correctBlocktypeAfterSelection();
 }
@@ -419,7 +419,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                     if (is_species_name_terminal()) {
                         switch (ED4_ROOT->species_mode) {
                             case ED4_SM_KILL: {
-                                if (tflag.selected) ED4_ROOT->remove_from_selected(this);
+                                if (containing_species_manager()->is_selected()) ED4_ROOT->remove_from_selected(this->to_species_name_terminal());
                                 kill_object();
                                 return ED4_R_BREAK;
                             }
@@ -429,7 +429,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                                 other_x = event->x;
                                 other_y = event->y;
 
-                                if (!tflag.selected) {
+                                if (!containing_species_manager()->is_selected()) {
                                     ED4_ROOT->add_to_selected(dragged_name_terminal);
                                     dragged_was_selected = 0;
                                     ED4_ROOT->main_manager->Show(); // @@@ critical direct call to Show (fix: do NOT select on drag)
@@ -487,22 +487,17 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                     else if (is_species_name_terminal()) {
                         ED4_species_manager *species_man = get_parent(ED4_L_SPECIES)->to_species_manager();
 
-                        if (parent->flag.is_consensus) { // click on consensus-name
-                            ED4_multi_species_manager *multi_man = parent->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+                        if (species_man->is_consensus_manager()) { // click on consensus-name
+                            ED4_multi_species_manager *multi_man = species_man->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
                             multi_man->toggle_selected_species();
-                            // return (ED4_R_BREAK);
                         }
-                        else if (species_man->flag.is_SAI) {
-                            ; // don't mark SAIs
-                        }
-                        else { // click on species name
-                            if (!tflag.selected) { // select if not selected
-                                if (ED4_ROOT->add_to_selected(this) == ED4_R_OK) ED4_correctBlocktypeAfterSelection();
+                        else { // click on species or SAI name
+                            if (!species_man->is_selected()) { // select if not selected
+                                if (ED4_ROOT->add_to_selected(this->to_species_name_terminal()) == ED4_R_OK) ED4_correctBlocktypeAfterSelection();
                             }
                             else { // deselect if already selected
-                                ED4_ROOT->remove_from_selected(this);
+                                ED4_ROOT->remove_from_selected(this->to_species_name_terminal());
                                 ED4_correctBlocktypeAfterSelection();
-                                // return (ED4_R_BREAK);   // in case we were called by event_to selected() @@@ why? 
                             }
                         }
                     }
@@ -544,7 +539,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
 
                         GB_CSTR text = dragged_name_terminal->get_displayed_text();
 
-                        if (dragged_name_terminal->tflag.dragged) {
+                        if (dragged_name_terminal->dragged) {
                             dragged_name_terminal->draw_drag_box(sel_info->drag_old_x, sel_info->drag_old_y, text, sel_info->old_event_y);
                         }
 
@@ -557,7 +552,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                         sel_info->drag_old_y = new_y;
                         sel_info->old_event_y = event->y;
 
-                        dragged_name_terminal->tflag.dragged = 1;
+                        dragged_name_terminal->dragged = true;
                     }
 
                     break;
@@ -576,13 +571,13 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
             switch (event->button) {
                 case ED4_B_LEFT_BUTTON: {
                     if (dragged_name_terminal) {
-                        if (dragged_name_terminal->tflag.dragged) {
+                        if (dragged_name_terminal->dragged) {
                             {
                                 char                *db_pointer = dragged_name_terminal->resolve_pointer_to_string_copy();
                                 ED4_selection_entry *sel_info   = dragged_name_terminal->selection_info;
 
                                 dragged_name_terminal->draw_drag_box(sel_info->drag_old_x, sel_info->drag_old_y, db_pointer, sel_info->old_event_y);
-                                dragged_name_terminal->tflag.dragged = 0;
+                                dragged_name_terminal->dragged = false;
 
                                 free(db_pointer);
                             }
@@ -705,13 +700,11 @@ ED4_terminal::ED4_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, 
     ED4_base(spec_, temp_id, x, y, width, height, temp_parent)
 {
     memset((char*)&tflag, 0, sizeof(tflag));
-    selection_info   = 0;
     curr_timestamp = 0;
 }
 
 
 ED4_terminal::~ED4_terminal() {
-    delete selection_info;
     for (ED4_window *window = ED4_ROOT->first_window; window; window=window->next) {
         ED4_cursor& cursor = window->cursor;
         if (this == cursor.owner_of_cursor) {
@@ -896,7 +889,8 @@ ED4_returncode ED4_bracket_terminal::draw() {
 }
 
 ED4_species_name_terminal::ED4_species_name_terminal(GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_text_terminal(species_name_terminal_spec, temp_id, x, y, width, height, temp_parent)
+    ED4_text_terminal(species_name_terminal_spec, temp_id, x, y, width, height, temp_parent),
+    selection_info(NULL)
 {
 }
 
@@ -914,7 +908,9 @@ GB_CSTR ED4_species_name_terminal::get_displayed_text() const
     }
     memset(real_name, 0, allocatedSize);
 
-    if (parent->flag.is_consensus) {
+    ED4_species_manager *spec_man = get_parent(ED4_L_SPECIES)->to_species_manager();
+
+    if (spec_man->is_consensus_manager()) {
         char *db_pointer = resolve_pointer_to_string_copy();
         char *bracket = strchr(db_pointer, '(');
 
@@ -943,7 +939,7 @@ GB_CSTR ED4_species_name_terminal::get_displayed_text() const
 
         free(db_pointer);
     }
-    else if (parent->parent->parent->flag.is_SAI) { // whether species_manager has is_SAI flag
+    else if (spec_man->is_SAI_manager()) {
         char *db_pointer = resolve_pointer_to_string_copy();
 
         strcpy(real_name, "SAI: ");
@@ -958,9 +954,7 @@ GB_CSTR ED4_species_name_terminal::get_displayed_text() const
         free(db_pointer);
     }
     else { // normal species
-        ED4_species_manager *species_man = get_parent(ED4_L_SPECIES)->to_species_manager();
-        char *result = ED4_get_NDS_text(species_man);
-
+        char *result = ED4_get_NDS_text(spec_man);
         strncpy(real_name, result, BUFFERSIZE);
         free(result);
     }

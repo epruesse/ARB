@@ -70,7 +70,7 @@ ED4_returncode ED4_members::search_target_species(ED4_extension *location,   ED4
         e4_assert(!current_member->is_root_group_manager());
         if (current_member->is_group_manager() &&
             !current_member->flag.hidden &&
-            !current_member->flag.is_consensus) { // search_clicked_member for multi_species_manager in groups
+            !current_member->is_consensus_manager()) { // search_clicked_member for multi_species_manager in groups
             current_member->to_group_manager()->children->search_target_species(location, prop, found_member, return_level);
         }
         else if (!(current_member->flag.hidden)   &&

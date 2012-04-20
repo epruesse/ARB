@@ -1454,7 +1454,7 @@ static void ED4_mark_matching_species(AW_window * /* aww */, AW_CL cl_pattern) {
 
             if (found) {
                 ED4_species_manager *species_man = seq_terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
-                if (!species_man->flag.is_consensus) {
+                if (species_man->is_species_seq_manager()) {
                     GBDATA *gbd = species_man->get_species_pointer();
                     e4_assert(gbd);
                     GB_write_flag(gbd, 1);
