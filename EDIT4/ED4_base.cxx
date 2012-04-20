@@ -11,6 +11,7 @@
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
 #include "ed4_edit_string.hxx"
+#include "ed4_list.hxx"
 
 ED4_group_manager *ED4_base::is_in_folded_group() const
 {
@@ -1077,15 +1078,17 @@ void ED4_base::set_links(ED4_base *new_width, ED4_base *new_height) {
     // height-link sets links between objects on different levels
 
     if (new_width) {
-        if (width_link) width_link->linked_objects.delete_elem((void *) this);
+        if (width_link) width_link->linked_objects->remove_elem(this);
         width_link = new_width;
-        new_width->linked_objects.append_elem((void *) this);
+        if (!new_width->linked_objects) new_width->linked_objects = new ED4_base_list;
+        new_width->linked_objects->append_elem(this);
     }
 
     if (new_height) {
-        if (height_link) height_link->linked_objects.delete_elem((void *) this);
+        if (height_link) height_link->linked_objects->remove_elem(this);
         height_link = new_height;
-        new_height->linked_objects.append_elem((void *) this);
+        if (!new_height->linked_objects) new_height->linked_objects = new ED4_base_list;
+        new_height->linked_objects->append_elem(this);
     }
 }
 
@@ -1176,6 +1179,8 @@ ED4_base::ED4_base(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, AW_pos y
         strcpy(id, temp_id);
     }
 
+    linked_objects = NULL;
+
     extension.position[X_POS] = x;
     extension.position[Y_POS] = y;
     ED4_base::touch_world_cache();
@@ -1195,22 +1200,25 @@ ED4_base::~ED4_base() {
     // before calling this function the first time, parent has to be set NULL
     e4_assert(!parent); // unlink from parent first!
 
-    ED4_list_elem *list_elem = linked_objects.first();
-    while (list_elem) {
-        ED4_base *object = (ED4_base *) list_elem->elem();
-        if (object->width_link == this) {
-            object->width_link->linked_objects.delete_elem((void *) this);              // delete link and
-            object->width_link = NULL;
-        }
+    if (linked_objects) {
+        ED4_base_list_elem *list_elem = linked_objects->head();
+        while (list_elem) {
+            ED4_base *object = list_elem->elem();
+            if (object->width_link == this) {
+                object->width_link->linked_objects->remove_elem(this);              // delete link and
+                object->width_link = NULL;
+            }
 
-        if (object->height_link == this) {
-            object->height_link->linked_objects.delete_elem((void *) this);             // delete link and
-            object->height_link = NULL;
-        }
+            if (object->height_link == this) {
+                object->height_link->linked_objects->remove_elem(this);             // delete link and
+                object->height_link = NULL;
+            }
 
-        ED4_list_elem *old_elem = list_elem;
-        list_elem = list_elem->next();
-        linked_objects.delete_elem(old_elem->elem());
+            ED4_base_list_elem *old_elem = list_elem;
+            list_elem = list_elem->next();
+            linked_objects->remove_elem(old_elem->elem());
+        }
+        delete linked_objects;
     }
 
     if (update_info.linked_to_scrolled_rectangle)
@@ -1233,15 +1241,13 @@ ED4_base::~ED4_base() {
         }
     }
 
-    if (width_link)
-    {
-        width_link->linked_objects.delete_elem((void *) this);
+    if (width_link) {
+        width_link->linked_objects->remove_elem(this);
         width_link = NULL;
     }
 
-    if (height_link)
-    {
-        height_link->linked_objects.delete_elem((void *) this);
+    if (height_link) {
+        height_link->linked_objects->remove_elem(this);
         height_link = NULL;
     }
 

@@ -9,6 +9,7 @@
 #include "ed4_awars.hxx"
 #include "ed4_edit_string.hxx"
 #include "ed4_tools.hxx"
+#include "ed4_list.hxx"
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_protein_2nd_structure.hxx"
 
@@ -499,7 +500,7 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
     ED4_level            mlevel;
     ED4_terminal        *sel_object;
     ED4_selection_entry *sel_info;
-    ED4_list_elem       *list_elem;
+    ED4_selected_elem   *list_elem;
     bool                 i_am_consensus = 0;
     ED4_base            *found_member   = NULL;
     ED4_extension        loc;
@@ -546,10 +547,10 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
 
         // now do move action => determine insertion offsets and insert object
 
-        if (ED4_ROOT->selected_objects.no_of_entries()>1) {
-            list_elem = ED4_ROOT->selected_objects.first();
+        if (ED4_ROOT->selected_objects->size()>1) {
+            list_elem = ED4_ROOT->selected_objects->head();
             while (list_elem != NULL) {
-                sel_info = (ED4_selection_entry *) list_elem->elem();
+                sel_info   = list_elem->elem();
                 sel_object = sel_info->object;
 
                 if ((sel_object==mi->object)) break;
@@ -746,11 +747,13 @@ inline void ED4_base::resize_requested_by_link(ED4_base *link) {
 }
 
 void ED4_base::request_resize_of_linked() {
-    ED4_list_elem *current_list_elem = linked_objects.first();
-    while (current_list_elem) {
-        ED4_base *object = (ED4_base *) current_list_elem->elem();
-        if (object) object->resize_requested_by_link(this);
-        current_list_elem = current_list_elem->next();
+    if (linked_objects) {
+        ED4_base_list_elem *current_list_elem = linked_objects->head();
+        while (current_list_elem) {
+            ED4_base *object = current_list_elem->elem();
+            object->resize_requested_by_link(this);
+            current_list_elem = current_list_elem->next();
+        }
     }
 }
 

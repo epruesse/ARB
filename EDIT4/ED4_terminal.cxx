@@ -1165,7 +1165,7 @@ GB_CSTR ED4_columnStat_terminal::build_probe_match_string(PosRange range) const 
     int                    max_insert   = PROBE_MATCH_TARGET_STRING_LENGTH;
     char                  *r            = result;
     int                    significance = int(get_threshold());
-    ED4_sequence_terminal *seq_term     = corresponding_sequence_terminal()->to_sequence_terminal();
+    ED4_sequence_terminal *seq_term     = corresponding_sequence_terminal();
     char                  *seq          = seq_term->resolve_pointer_to_string_copy();
 
     for (int pos=range.start(); pos<=range.end(); pos++) {
