@@ -309,8 +309,7 @@ static void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat)
 bool ED4_get_selected_range(ED4_terminal *term, PosRange& range) { // @@@ function will get useless, when multi-column-blocks are possible
     if (block.get_type()==ED4_BT_NOBLOCK) return false;
 
-    ED4_species_name_terminal *name_term = term->to_sequence_terminal()->corresponding_species_name_terminal();
-    if (!name_term->tflag.selected) return false;
+    if (!term->containing_species_manager()->is_selected()) return false;
 
     if (block.get_type()==ED4_BT_COLUMNBLOCK || block.get_type()==ED4_BT_MODIFIED_COLUMNBLOCK) {
         range = block.get_range();
@@ -373,15 +372,14 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
                 }
 
                 ED4_species_name_terminal *name_term = seq_term->corresponding_species_name_terminal();
-                if (name_term->tflag.selected) { // already selected
+                ED4_species_manager *species_man = name_term->containing_species_manager();
+                if (species_man->is_selected()) { // already selected
                     if (xRangeChanged) {
                         col_block_refresh_on_seq_term(seq_term);
                     }
                 }
                 else { // select it
-                    ED4_species_manager *species_man = name_term->get_parent(ED4_L_SPECIES)->to_species_manager();
-
-                    if (!species_man->flag.is_consensus) {
+                    if (!species_man->is_consensus_manager()) {
                         ED4_ROOT->add_to_selected(name_term);
                     }
                 }
@@ -395,11 +393,10 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
         if (!initial_call) {
             if (do_below) {
                 while (term) {
-                    if (term->is_species_name_terminal() && term->tflag.selected) {
-                        ED4_species_manager *species_man = term->get_parent(ED4_L_SPECIES)->to_species_manager();
-
-                        if (!species_man->flag.is_consensus) {
-                            ED4_ROOT->remove_from_selected(term);
+                    if (term->is_species_name_terminal()) {
+                        ED4_species_manager *species_man = term->containing_species_manager();
+                        if (species_man->is_selected() && !species_man->is_consensus_manager()) {
+                            ED4_ROOT->remove_from_selected(term->to_species_name_terminal());
                         }
                     }
                     if (term==last_term2) break;
@@ -410,11 +407,10 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
             if (do_above) {
                 term = last_term1->corresponding_species_name_terminal();
                 while (term && term!=term1) {
-                    if (term->is_species_name_terminal() && term->tflag.selected) {
-                        ED4_species_manager *species_man = term->get_parent(ED4_L_SPECIES)->to_species_manager();
-
-                        if (!species_man->flag.is_consensus) {
-                            ED4_ROOT->remove_from_selected(term);
+                    if (term->is_species_name_terminal()) {
+                        ED4_species_manager *species_man = term->containing_species_manager();
+                        if (species_man->is_selected() && !species_man->is_consensus_manager()) {
+                            ED4_ROOT->remove_from_selected(term->to_species_name_terminal());
                         }
                     }
                     term = term->get_next_terminal();

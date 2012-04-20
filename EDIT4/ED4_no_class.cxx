@@ -130,60 +130,53 @@ static ARB_ERROR call_edit(ED4_base *object, AW_CL cl_work_info) {
     // called after editing consensus to edit single sequences
     GB_ERROR error = NULL;
 
-    if (object->is_terminal()) {
-        ED4_base *species_manager = object->get_parent(ED4_L_SPECIES);
+    if (object->is_species_seq_terminal()) {
+        int expected_prop = ED4_P_CURSOR_ALLOWED|ED4_P_ALIGNMENT_DATA;
 
-        if (species_manager && !species_manager->flag.is_SAI) { // don't edit SAI's if editing the consensus
-            if ((object->dynamic_prop & ED4_P_CURSOR_ALLOWED) &&
-                !species_manager->flag.is_consensus           &&
-                (object->dynamic_prop & ED4_P_ALIGNMENT_DATA)) // edit all aligned data - even if not consensus relevant
-            {
-                ED4_work_info *work_info = (ED4_work_info*)cl_work_info;
-                ED4_work_info  new_work_info;
+        if ((object->dynamic_prop & expected_prop) == expected_prop) {
+            ED4_work_info *work_info = (ED4_work_info*)cl_work_info;
+            ED4_work_info  new_work_info;
 
-                new_work_info.event            = work_info->event;
-                new_work_info.char_position    = work_info->char_position;
-                new_work_info.out_seq_position = work_info->out_seq_position;
-                new_work_info.refresh_needed   = false;
-                new_work_info.cursor_jump      = ED4_JUMP_KEEP_VISIBLE;
-                new_work_info.out_string       = NULL;
-                new_work_info.mode             = work_info->mode;
-                new_work_info.rightward        = work_info->rightward;
-                new_work_info.cannot_handle    = false;
-                new_work_info.is_sequence      = work_info->is_sequence;
-                new_work_info.working_terminal = object->to_terminal();
+            new_work_info.event            = work_info->event;
+            new_work_info.char_position    = work_info->char_position;
+            new_work_info.out_seq_position = work_info->out_seq_position;
+            new_work_info.refresh_needed   = false;
+            new_work_info.cursor_jump      = ED4_JUMP_KEEP_VISIBLE;
+            new_work_info.out_string       = NULL;
+            new_work_info.mode             = work_info->mode;
+            new_work_info.rightward        = work_info->rightward;
+            new_work_info.cannot_handle    = false;
+            new_work_info.is_sequence      = work_info->is_sequence;
+            new_work_info.working_terminal = object->to_terminal();
 
-                if (object->get_species_pointer()) {
-                    new_work_info.gb_data   = object->get_species_pointer();
-                    new_work_info.string    = NULL;
+            if (object->get_species_pointer()) {
+                new_work_info.gb_data   = object->get_species_pointer();
+                new_work_info.string    = NULL;
+            }
+            else {
+                new_work_info.gb_data = NULL;
+                new_work_info.string  = object->id; // @@@ looks obsolete (see [8402] for previous code)
+                e4_assert(0); // assume we never come here
+            }
+
+            new_work_info.repeat_count = 1;
+
+            ED4_ROOT->edit_string->init_edit();
+            error = ED4_ROOT->edit_string->edit(&new_work_info);
+
+            e4_assert(error || !new_work_info.out_string);  
+                
+            if (new_work_info.refresh_needed) {
+                object->request_refresh();
+                if (object->is_sequence_terminal()) {
+                    ED4_sequence_terminal *seq_term = object->to_sequence_terminal();
+                    seq_term->results().searchAgain();
                 }
-                else {
-                    new_work_info.gb_data   = NULL;
-                    new_work_info.string    = object->id;
-                }
+            }
 
-                new_work_info.repeat_count = 1;
-
-                ED4_ROOT->edit_string->init_edit();
-                error = ED4_ROOT->edit_string->edit(&new_work_info);
-
-                if (!error && new_work_info.out_string) {
-                    e4_assert(species_manager->flag.is_consensus);
-                    object->id = new_work_info.out_string;
-                }
-
-                if (new_work_info.refresh_needed) {
-                    object->request_refresh();
-                    if (object->is_sequence_terminal()) {
-                        ED4_sequence_terminal *seq_term = object->to_sequence_terminal();
-                        seq_term->results().searchAgain();
-                    }
-                }
-
-                if (move_cursor) {
-                    current_cursor().jump_sequence_pos(new_work_info.out_seq_position, ED4_JUMP_KEEP_VISIBLE);
-                    move_cursor = 0;
-                }
+            if (move_cursor) {
+                current_cursor().jump_sequence_pos(new_work_info.out_seq_position, ED4_JUMP_KEEP_VISIBLE);
+                move_cursor = 0;
             }
         }
     }
@@ -255,13 +248,12 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                     work_info->string = terminal->id;
                 }
 
-                ED4_Edit_String     *edit_string     = new ED4_Edit_String;
-                ED4_species_manager *species_manager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
-                ARB_ERROR            error           = NULL;
+                ED4_Edit_String *edit_string = new ED4_Edit_String;
+                ARB_ERROR        error       = NULL;
 
                 GB_push_transaction(GLOBAL_gb_main);
 
-                if (species_manager->flag.is_consensus) {
+                if (terminal->is_consensus_terminal()) {
                     ED4_group_manager *group_manager = terminal->get_parent(ED4_L_GROUP)->to_group_manager();
 
                     e4_assert(terminal->id == 0); // @@@ safety-belt for terminal->id-misuse
@@ -727,29 +719,28 @@ void ED4_set_iupac(AW_window *aww, char *awar_name, bool /* callback_flag */) {
     ED4_cursor *cursor = &current_cursor();
 
     if (cursor->owner_of_cursor) {
-        ED4_species_manager *species_manager =  cursor->owner_of_cursor->get_parent(ED4_L_SPECIES)->to_species_manager();
-
-        if (species_manager->flag.is_consensus) {
+        if (cursor->in_consensus_terminal()) {
             aw_message("You cannot change the consensus");
-            return;
         }
-        int len;
-        char *seq = cursor->owner_of_cursor->resolve_pointer_to_string_copy(&len);
-        int seq_pos = cursor->get_sequence_pos();
+        else {
+            int   len;
+            char *seq     = cursor->owner_of_cursor->resolve_pointer_to_string_copy(&len);
+            int   seq_pos = cursor->get_sequence_pos();
 
-        e4_assert(seq);
+            e4_assert(seq);
 
-        if (seq_pos<len) {
-            char *iupac    = ED4_ROOT->aw_root->awar(awar_name)->read_string();
-            char  new_char = ED4_encode_iupac(iupac, ED4_ROOT->alignment_type);
+            if (seq_pos<len) {
+                char *iupac    = ED4_ROOT->aw_root->awar(awar_name)->read_string();
+                char  new_char = ED4_encode_iupac(iupac, ED4_ROOT->alignment_type);
 
-            seq[seq_pos] = new_char;
-            cursor->owner_of_cursor->to_terminal()->write_sequence(seq, len);
+                seq[seq_pos] = new_char;
+                cursor->owner_of_cursor->to_terminal()->write_sequence(seq, len);
 
-            free(iupac);
+                free(iupac);
+            }
+
+            free(seq);
         }
-
-        free(seq);
     }
 }
 
@@ -849,19 +840,17 @@ void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL ) {
         ED4_cursor *cursor = &current_cursor();
 
         if (cursor->owner_of_cursor) {
-            ED4_terminal *terminal = cursor->owner_of_cursor->to_terminal();
-            ED4_manager *manager = terminal->parent->parent->to_manager();
-
-            if (manager->flag.is_consensus) {
-                ED4_char_table *table = &terminal->get_parent(ED4_L_GROUP)->to_group_manager()->table();
-                char *consensus = table->build_consensus_string();
+            if (cursor->in_consensus_terminal()) {
+                ED4_char_table *table     = &cursor->owner_of_cursor->get_parent(ED4_L_GROUP)->to_group_manager()->table();
+                char           *consensus = table->build_consensus_string();
 
                 ED4_ROOT->reference->init("CONSENSUS", consensus, table->size());
+                free(consensus);
             }
-            else if (manager->parent->flag.is_SAI) {
+            else if (cursor->in_SAI_terminal()) {
                 char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
                 int   datalen;
-                char *data = terminal->resolve_pointer_to_string_copy(&datalen);
+                char *data = cursor->owner_of_cursor->resolve_pointer_to_string_copy(&datalen);
 
                 ED4_ROOT->reference->init(name, data, datalen);
 
@@ -925,74 +914,72 @@ void ED4_toggle_detailed_column_stats(AW_window *aww, AW_CL, AW_CL) {
         ED4_set_col_stat_threshold(aww, 0, 0);
     }
 
-    ED4_LocalWinContext uses(aww);
-    ED4_cursor *cursor = &current_cursor();
+    ED4_LocalWinContext  uses(aww);
+    ED4_cursor          *cursor = &current_cursor();
+
+    GB_ERROR error = NULL;
     if (!cursor->owner_of_cursor) {
-        aw_message("First you have to place your cursor");
-        return;
+        error = "First you have to place your cursor";
     }
-
-    ED4_terminal *cursor_terminal = cursor->owner_of_cursor->to_terminal();
-    ED4_manager *cursor_manager = cursor_terminal->parent->parent->to_manager();
-    if (!cursor_terminal->is_sequence_terminal() || cursor_manager->flag.is_consensus || cursor_manager->parent->flag.is_SAI) {
-        aw_message("Display of column-statistic-details is only possible for species!");
-        return;
+    else if (!cursor->in_species_seq_terminal()) {
+        error = "Display of column-statistic-details is only possible for species!";
     }
-
-    ED4_sequence_terminal *seq_term = cursor_terminal->to_sequence_terminal();
-    if (!seq_term->st_ml_node && !(seq_term->st_ml_node = STAT_find_node_by_name(ED4_ROOT->st_ml, seq_term->species_name))) {
-        if (ED4_ROOT->column_stat_initialized) {
-            aw_message("Cannot display column statistics for this species (internal error?)");
-            return;
+    else {
+        ED4_sequence_terminal *seq_term = cursor->owner_of_cursor->to_sequence_terminal();
+        if (!seq_term->st_ml_node && !(seq_term->st_ml_node = STAT_find_node_by_name(ED4_ROOT->st_ml, seq_term->species_name))) {
+            if (ED4_ROOT->column_stat_initialized) {
+                error = "Cannot display column statistics for this species (internal error?)";
+            }
+            else {
+                AW_window *aww_st = STAT_create_main_window(ED4_ROOT->aw_root, ED4_ROOT->st_ml, (AW_CB0)show_detailed_column_stats_activated, (AW_window *)aww);
+                aww_st->show();
+            }
         }
-        AW_window *aww_st = STAT_create_main_window(ED4_ROOT->aw_root, ED4_ROOT->st_ml, (AW_CB0)show_detailed_column_stats_activated, (AW_window *)aww);
-        aww_st->show();
-        return;
-    }
+        else {
+            ED4_multi_sequence_manager *multi_seq_man    = seq_term->get_parent(ED4_L_MULTI_SEQUENCE)->to_multi_sequence_manager();
+            ED4_base                   *existing_colstat = multi_seq_man->search_spec_child_rek(ED4_L_COL_STAT);
 
-    ED4_multi_sequence_manager *multi_seq_man = cursor_manager->to_multi_sequence_manager();
-    ED4_base *existing_colstat = multi_seq_man->search_spec_child_rek(ED4_L_COL_STAT);
-    if (existing_colstat) {
-        ED4_manager *colstat_seq_man = existing_colstat->get_parent(ED4_L_SEQUENCE)->to_manager();
-        colstat_seq_man->Delete();
-    }
-    else { // add
-        char buffer[35];
-        int count = 1;
-        sprintf(buffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
+            if (existing_colstat) {
+                ED4_manager *colstat_seq_man = existing_colstat->get_parent(ED4_L_SEQUENCE)->to_manager();
+                colstat_seq_man->Delete();
+            }
+            else { // add
+                char buffer[35];
+                int count = 1;
+                sprintf(buffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
 
-        ED4_sequence_manager *new_seq_man = new ED4_sequence_manager(buffer, 0, 0, 0, 0, multi_seq_man);
-        new_seq_man->set_property(ED4_P_MOVABLE);
-        multi_seq_man->children->append_member(new_seq_man);
+                ED4_sequence_manager *new_seq_man = new ED4_sequence_manager(buffer, 0, 0, 0, 0, multi_seq_man);
+                new_seq_man->set_property(ED4_P_MOVABLE);
+                multi_seq_man->children->append_member(new_seq_man);
 
-        int pixel_length = max_seq_terminal_length;
-#if defined(DEBUG) && 1
-        printf("max_seq_terminal_length=%li\n", max_seq_terminal_length);
-#endif
+                int    pixel_length     = max_seq_terminal_length;
+                AW_pos font_height      = ED4_ROOT->font_group.get_height(ED4_G_SEQUENCES);
+                AW_pos columnStatHeight = ceil((COLUMN_STAT_ROWS+0.5 /* reserve a bit more space */)*COLUMN_STAT_ROW_HEIGHT(font_height));
 
-        AW_pos font_height      = ED4_ROOT->font_group.get_height(ED4_G_SEQUENCES);
-        AW_pos columnStatHeight = ceil((COLUMN_STAT_ROWS+0.5 /* reserve a bit more space */)*COLUMN_STAT_ROW_HEIGHT(font_height));
-
-        ED4_columnStat_terminal    *ref_colStat_terminal      = ED4_ROOT->ref_terminals.get_ref_column_stat();
-        ED4_sequence_info_terminal *ref_colStat_info_terminal = ED4_ROOT->ref_terminals.get_ref_column_stat_info();
+                ED4_columnStat_terminal    *ref_colStat_terminal      = ED4_ROOT->ref_terminals.get_ref_column_stat();
+                ED4_sequence_info_terminal *ref_colStat_info_terminal = ED4_ROOT->ref_terminals.get_ref_column_stat_info();
         
-        ref_colStat_terminal->extension.size[HEIGHT] = columnStatHeight;
-        ref_colStat_terminal->extension.size[WIDTH]  = pixel_length;
+                ref_colStat_terminal->extension.size[HEIGHT] = columnStatHeight;
+                ref_colStat_terminal->extension.size[WIDTH]  = pixel_length;
 
-        ED4_sequence_info_terminal *new_colStat_info_term = new ED4_sequence_info_terminal("CStat", 0, 0, SEQUENCEINFOSIZE, columnStatHeight, new_seq_man);
-        new_colStat_info_term->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
-        new_colStat_info_term->set_links(ref_colStat_info_terminal, ref_colStat_terminal);
-        new_seq_man->children->append_member(new_colStat_info_term);
+                ED4_sequence_info_terminal *new_colStat_info_term = new ED4_sequence_info_terminal("CStat", 0, 0, SEQUENCEINFOSIZE, columnStatHeight, new_seq_man);
+                new_colStat_info_term->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
+                new_colStat_info_term->set_links(ref_colStat_info_terminal, ref_colStat_terminal);
+                new_seq_man->children->append_member(new_colStat_info_term);
 
-        sprintf(buffer, "Column_Statistic_Terminal.%ld.%d", ED4_counter, count++);
-        ED4_columnStat_terminal *new_colStat_term = new ED4_columnStat_terminal(buffer, SEQUENCEINFOSIZE, 0, 0, columnStatHeight, new_seq_man);
-        new_colStat_term->set_links(ref_colStat_terminal, ref_colStat_terminal);
-        new_seq_man->children->append_member(new_colStat_term);
+                sprintf(buffer, "Column_Statistic_Terminal.%ld.%d", ED4_counter, count++);
+                ED4_columnStat_terminal *new_colStat_term = new ED4_columnStat_terminal(buffer, SEQUENCEINFOSIZE, 0, 0, columnStatHeight, new_seq_man);
+                new_colStat_term->set_links(ref_colStat_terminal, ref_colStat_terminal);
+                new_seq_man->children->append_member(new_colStat_term);
 
-        ED4_counter++;
+                ED4_counter++;
 
-        new_seq_man->resize_requested_by_child();
+                new_seq_man->resize_requested_by_child();
+            }
+        }
     }
+
+    if (error) aw_message(error);
 }
 
 ARB_ERROR update_terminal_extension(ED4_base *this_object) {
@@ -1051,7 +1038,7 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
         object = object->get_parent(ED4_L_SPECIES);
         int move_object = 1;
 
-        if (object->flag.is_consensus) {
+        if (object->is_consensus_manager()) {
             object = object->get_parent(ED4_L_GROUP);
             if (field_name) move_object = 0; // don't move groups if moving by field_name
         }
@@ -1139,7 +1126,7 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
             while (list_elem && !error) {
                 ED4_base *object = ((ED4_selection_entry *) list_elem->elem())->object;
                 object = object->get_parent(ED4_L_SPECIES);
-                if (!object->flag.is_consensus) {
+                if (!object->is_consensus_manager()) {
                     GBDATA *gb_species = object->get_species_pointer();
                     GBDATA *gb_field   = NULL;
 
@@ -1342,7 +1329,7 @@ void ed4_change_edit_mode(AW_root *root, AW_CL cd1)
 }
 
 ARB_ERROR rebuild_consensus(ED4_base *object) {
-    if (object->flag.is_consensus) {
+    if (object->is_consensus_manager()) {
         ED4_species_manager *spec_man = object->to_species_manager();
         spec_man->do_callbacks();
 
@@ -1764,7 +1751,7 @@ static ARB_ERROR add_species_to_merge_list(ED4_base *base, AW_CL cl_SpeciesMerge
     if (base->is_species_name_terminal()) {
         ED4_species_name_terminal *name_term = base->to_species_name_terminal();
 
-        if (name_term->parent->flag.is_consensus == 0) {
+        if (!name_term->inside_consensus_manager()) {
             char   *species_name    = name_term->resolve_pointer_to_string_copy();
             GBDATA *gb_species_data = (GBDATA*)cl_gb_species_data;
             GBDATA *gb_species      = GBT_find_species_rel_species_data(gb_species_data, species_name);
@@ -1837,7 +1824,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
         char   *addid            = 0;
 
         enum e_dataSource { MERGE_FIELDS, COPY_FIELDS } dataSource = (enum e_dataSource)ED4_ROOT->aw_root ->awar(ED4_AWAR_CREATE_FROM_CONS_DATA_SOURCE)->read_int();
-        enum { NOWHERE, ON_SPECIES, ON_KONSENSUS } where_we_are = NOWHERE;
+        enum { NOWHERE, ON_SPECIES, ON_CONSENSUS } where_we_are = NOWHERE;
         ED4_terminal *cursor_terminal = 0;
 
         if (!error) {
@@ -1846,13 +1833,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
 
                 if (cursor->owner_of_cursor) {
                     cursor_terminal = cursor->owner_of_cursor->to_terminal();
-
-                    if (cursor_terminal->parent->parent->flag.is_consensus) {
-                        where_we_are = ON_KONSENSUS;
-                    }
-                    else {
-                        where_we_are = ON_SPECIES;
-                    }
+                    where_we_are    = cursor_terminal->is_consensus_terminal() ? ON_CONSENSUS : ON_SPECIES;
                 }
             }
 

@@ -131,24 +131,12 @@ static void PV_HideAllTerminals() {
     for (terminal = ED4_ROOT->root_group_man->get_first_terminal();
          terminal;
          terminal = terminal->get_next_terminal())
-        {
-            if (terminal->is_sequence_terminal()) {
-                ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
-                if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) {
-                    // hide all AA_Sequence terminals
-                    for (int i=0; i<PV_AA_Terminals4Species; i++) {
-                        // get the corresponding orf_terminal skipping sequence_info terminal
-                        // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
-                        terminal = terminal->get_next_terminal()->get_next_terminal();
-                        // Make sure it is ORF terminal
-                        if (terminal->is_orf_terminal()) {
-                            ED4_orf_terminal *orfTerm = terminal->to_orf_terminal();
-                            PV_HideTerminal(orfTerm);
-                        }
-                    }
-                }
-            }
+    {
+        if (terminal->is_orf_terminal()) { 
+            ED4_orf_terminal *orfTerm = terminal->to_orf_terminal();
+            PV_HideTerminal(orfTerm);
         }
+    }
 }
 
 
@@ -277,19 +265,59 @@ static void PV_ManageTerminals(AW_root *root) {
     PV_HideAllTerminals();
 
     int dispAll = root->awar(AWAR_PV_DISPLAY_ALL)->read_int();
-    if (dispAll)
-    {
-        ED4_terminal *terminal = 0;
-        for (terminal = ED4_ROOT->root_group_man->get_first_terminal();
+    if (dispAll) {
+        for (ED4_terminal *terminal = ED4_ROOT->root_group_man->get_first_terminal();
              terminal;
              terminal = terminal->get_next_terminal())
+        {
+            if (terminal->is_orf_terminal()) {
+                ED4_orf_terminal *orfTerm = terminal->to_orf_terminal();
+                PV_ManageTerminalDisplay(root, orfTerm, PV_ALL);
+            }
+        }
+    }
+
+    int dispMarked = root->awar(AWAR_PV_MARKED)->read_int();
+    if (dispMarked) {
+        GB_transaction dummy(GLOBAL_gb_main);
+        int marked = GBT_count_marked_species(GLOBAL_gb_main);
+        if (marked) {
+            for (GBDATA *gbSpecies = GBT_first_marked_species(GLOBAL_gb_main);
+                 gbSpecies;
+                 gbSpecies = GBT_next_marked_species(gbSpecies))
             {
-                if (terminal->is_sequence_terminal()) {
-                    ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
-                    if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) {
-                        // we are in the sequence terminal section of a species
-                        // walk through all the corresponding ORF terminals for the species and
-                        // hide or unhide the terminals based on the display options set by the user
+                ED4_species_name_terminal *spNameTerm = ED4_find_species_name_terminal(GBT_read_name(gbSpecies));
+                if (spNameTerm && spNameTerm->is_species_name_terminal())
+                {
+                    ED4_terminal *terminal = spNameTerm->corresponding_sequence_terminal();
+                    for (int i=0; i<PV_AA_Terminals4Species; i++) {
+                        // get the corresponding orf_terminal skipping sequence_info terminal
+                        // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
+                        terminal = terminal->get_next_terminal()->get_next_terminal();
+                        // Make sure it is ORF terminal
+                        if (terminal->is_orf_terminal()) {
+                            ED4_orf_terminal *orfTerm = terminal->to_orf_terminal();
+                            PV_ManageTerminalDisplay(root, orfTerm, PV_MARKED);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    int dispSelected = root->awar(AWAR_PV_SELECTED)->read_int();
+    if (dispSelected) {
+        for (ED4_terminal *terminal = ED4_ROOT->root_group_man->get_first_terminal();
+             terminal;
+             terminal = terminal->get_next_terminal())
+        {
+            if (terminal->is_sequence_terminal()) {
+                ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
+                if (speciesManager->is_species_seq_terminal()) {
+                    // we are in the sequence terminal section of a species
+                    // walk through all the corresponding ORF terminals for the species and
+                    // hide or unhide the terminals based on the display options set by the user
+                    if (speciesManager->is_selected()) {
                         for (int i=0; i<PV_AA_Terminals4Species; i++) {
                             // get the corresponding orf_terminal skipping sequence_info terminal
                             // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
@@ -297,87 +325,26 @@ static void PV_ManageTerminals(AW_root *root) {
                             // Make sure it is ORF terminal
                             if (terminal->is_orf_terminal()) {
                                 ED4_orf_terminal *orfTerm = terminal->to_orf_terminal();
-                                PV_ManageTerminalDisplay(root, orfTerm, PV_ALL);
+                                PV_ManageTerminalDisplay(root, orfTerm, PV_SELECTED);
                             }
                         }
                     }
                 }
             }
+        }
     }
-
-    int dispMarked = root->awar(AWAR_PV_MARKED)->read_int();
-    if (dispMarked)
-        {
-            GB_transaction dummy(GLOBAL_gb_main);
-            int marked = GBT_count_marked_species(GLOBAL_gb_main);
-            if (marked) {
-                GBDATA *gbSpecies;
-                for (gbSpecies = GBT_first_marked_species(GLOBAL_gb_main);
-                     gbSpecies;
-                     gbSpecies = GBT_next_marked_species(gbSpecies))
-                {
-                        ED4_species_name_terminal *spNameTerm = ED4_find_species_name_terminal(GBT_read_name(gbSpecies));
-                        if (spNameTerm && spNameTerm->is_species_name_terminal())
-                            {
-                                ED4_terminal *terminal = spNameTerm->corresponding_sequence_terminal();
-                                for (int i=0; i<PV_AA_Terminals4Species; i++) {
-                                    // get the corresponding orf_terminal skipping sequence_info terminal
-                                    // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
-                                    terminal = terminal->get_next_terminal()->get_next_terminal();
-                                    // Make sure it is ORF terminal
-                                    if (terminal->is_orf_terminal()) {
-                                        ED4_orf_terminal *orfTerm = terminal->to_orf_terminal();
-                                        PV_ManageTerminalDisplay(root, orfTerm, PV_MARKED);
-                                    }
-                                }
-                            }
-                    }
-            }
-        }
-
-    int dispSelected = root->awar(AWAR_PV_SELECTED)->read_int();
-    if (dispSelected)
-        {
-            ED4_terminal *terminal = 0;
-            for (terminal = ED4_ROOT->root_group_man->get_first_terminal();
-                 terminal;
-                 terminal = terminal->get_next_terminal())
-                {
-                    if (terminal->is_sequence_terminal()) {
-                        ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
-                        if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) {
-                            // we are in the sequence terminal section of a species
-                            // walk through all the corresponding ORF terminals for the species and
-                            // hide or unhide the terminals based on the display options set by the user
-                            ED4_species_name_terminal *speciesNameTerm = speciesManager->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
-                            if (speciesNameTerm->tflag.selected) {
-                                for (int i=0; i<PV_AA_Terminals4Species; i++) {
-                                    // get the corresponding orf_terminal skipping sequence_info terminal
-                                    // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
-                                    terminal = terminal->get_next_terminal()->get_next_terminal();
-                                    // Make sure it is ORF terminal
-                                    if (terminal->is_orf_terminal()) {
-                                        ED4_orf_terminal *orfTerm = terminal->to_orf_terminal();
-                                        PV_ManageTerminalDisplay(root, orfTerm, PV_SELECTED);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-        }
 
     int dispAtCursor = root->awar(AWAR_PV_CURSOR)->read_int();
     if (dispAtCursor) {
         // only display terminals for species at cursor
-        if (ED4_ROOT->get_most_recently_used_window()) { 
+        if (ED4_ROOT->get_most_recently_used_window()) {
             ED4_MostRecentWinContext context;
+            ED4_cursor&              cursor = current_cursor();
 
-            ED4_cursor& cursor = current_cursor();
             if (cursor.owner_of_cursor) {
                 // Get The Cursor Terminal And The Corresponding Aa_Sequence Terminals And Set The Display Options
                 ED4_terminal *cursorTerminal = cursor.owner_of_cursor->to_terminal();
-                if (!cursorTerminal->parent->parent->flag.is_consensus) {
+                if (cursorTerminal->is_species_seq_terminal()) {
                     for (int i=0; i<PV_AA_Terminals4Species; i++) {
                         // get the corresponding orf_terminal skipping sequence_info terminal
                         // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
@@ -416,7 +383,7 @@ static GB_ERROR PV_ComplementarySequence(char *sequence) {
     return error;
 }
 
-static void PV_WriteTranslatedSequenceToDB(ED4_orf_terminal *aaSeqTerm, char *spName) {
+static void PV_WriteTranslatedSequenceToDB(ED4_orf_terminal *aaSeqTerm, const char *spName) {
     GB_ERROR  error      = GB_begin_transaction(GLOBAL_gb_main);
     GBDATA   *gb_species = GBT_find_species(GLOBAL_gb_main, spName);
     if (!gb_species) error = GBS_global_string("Species '%s' does not exist", spName);
@@ -513,30 +480,27 @@ static void PV_SaveData(AW_window */*aww*/) {
     if (gTerminalsCreated) {
         ASKtoOverWriteData = new AW_repeated_question();
 
-        ED4_terminal *terminal = 0;
-        for (terminal = ED4_ROOT->root_group_man->get_first_terminal();
+        for (ED4_terminal *terminal = ED4_ROOT->root_group_man->get_first_terminal();
              terminal;
              terminal = terminal->get_next_terminal())
-            {
-                if (terminal->is_sequence_terminal()) {
-                    char *speciesName = terminal->to_sequence_terminal()->species_name;
-                    ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
-                    if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) {
-                        for (int i=0; i<PV_AA_Terminals4Species; i++) {
-                            // get the corresponding orf_terminal skipping sequence_info terminal
-                            terminal = terminal->get_next_terminal()->get_next_terminal();
-                            // Make sure it is ORF terminal
-                            if (terminal->is_orf_terminal()) {
-                                ED4_orf_terminal *orfTerm = terminal->to_orf_terminal();
-                                    ED4_base *base = (ED4_base*)orfTerm;
-                                    if (!base->flag.hidden) {
-                                        PV_WriteTranslatedSequenceToDB(orfTerm, speciesName);
-                                    }
-                            }
+        {
+            if (terminal->is_species_seq_terminal()) {
+                const char *speciesName = terminal->to_sequence_terminal()->species_name;
+                
+                for (int i=0; i<PV_AA_Terminals4Species; i++) {
+                    // get the corresponding orf_terminal skipping sequence_info terminal
+                    terminal = terminal->get_next_terminal()->get_next_terminal();
+                    // Make sure it is ORF terminal
+                    if (terminal->is_orf_terminal()) {
+                        ED4_orf_terminal *orfTerm = terminal->to_orf_terminal();
+                        ED4_base *base = (ED4_base*)orfTerm;
+                        if (!base->flag.hidden) {
+                            PV_WriteTranslatedSequenceToDB(orfTerm, speciesName);
                         }
                     }
                 }
             }
+        }
         if (giNewAlignments>0) {
             char *msg = GBS_global_string_copy("Protein data saved to NEW alignments.\n%d new alignments were created and named ali_prot_ProtView_XXXX", giNewAlignments);
             aw_message(msg);
@@ -548,7 +512,7 @@ static void PV_SaveData(AW_window */*aww*/) {
     gbWritingData = false;
 }
 
-static void TranslateGeneToAminoAcidSequence(AW_root * /* root */, ED4_orf_terminal *seqTerm, char *speciesName, int startPos4Translation, int translationMode) {
+static void TranslateGeneToAminoAcidSequence(AW_root * /* root */, ED4_orf_terminal *seqTerm, const char *speciesName, int startPos4Translation, int translationMode) {
     // This function translates gene sequence to aminoacid sequence and stores translation into the respective AA_Sequence_terminal
     GB_ERROR  error        = NULL;
     GBDATA   *gb_species   = GBT_find_species(GLOBAL_gb_main, speciesName);
@@ -691,38 +655,31 @@ static void PV_PrintMissingDBentryInformation() {
 static void PV_DisplayAminoAcidNames(AW_root *root) {
     GB_transaction dummy(GLOBAL_gb_main);
 
-    ED4_terminal *terminal = 0;
-    for (terminal = ED4_ROOT->root_group_man->get_first_terminal();
+    for (ED4_terminal *terminal = ED4_ROOT->root_group_man->get_first_terminal();
          terminal;
          terminal = terminal->get_next_terminal())
-        {
-            if (terminal->is_sequence_terminal()) {
-                ED4_sequence_terminal *seqTerminal = terminal->to_sequence_terminal();
-                char                          *speciesName = seqTerminal->species_name;
+    {
+        if (terminal->is_species_seq_terminal()) {
+            const char *speciesName = terminal->to_sequence_terminal()->species_name;
 
-                ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
-                if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI)
-                    {
-                        // we are in the sequence terminal section of a species
-                        // walk through all the corresponding ORF terminals for the species and
-                        // hide or unhide the terminals based on the display options set by the user
-                        for (int i=0; i<PV_AA_Terminals4Species; i++)
-                            {
-                                // get the corresponding orf_terminal skipping sequence_info terminal
-                                terminal = terminal->get_next_terminal()->get_next_terminal();
-                                // Make sure it is ORF terminal
-                                if (terminal->is_orf_terminal()) {
-                                    ED4_orf_terminal *orfTerm = terminal->to_orf_terminal();
-                                    // we are in ORF terminal
-                                    int   aaStartPos = int(orfTerm->GET_aaStartPos());
-                                    int aaStrandType = int(orfTerm->GET_aaStrandType());
-                                    // retranslate the genesequence and store it to the orf_terminal
-                                    TranslateGeneToAminoAcidSequence(root, orfTerm, speciesName, aaStartPos-1, aaStrandType);
-                                }
-                            }
-                    }
+            // we are in the sequence terminal section of a species
+            // walk through all the corresponding ORF terminals for the species and
+            // hide or unhide the terminals based on the display options set by the user
+            for (int i=0; i<PV_AA_Terminals4Species; i++) {
+                // get the corresponding orf_terminal skipping sequence_info terminal
+                terminal = terminal->get_next_terminal()->get_next_terminal();
+                // Make sure it is ORF terminal
+                if (terminal->is_orf_terminal()) {
+                    ED4_orf_terminal *orfTerm = terminal->to_orf_terminal();
+                    // we are in ORF terminal
+                    int   aaStartPos = int(orfTerm->GET_aaStartPos());
+                    int aaStrandType = int(orfTerm->GET_aaStrandType());
+                    // retranslate the genesequence and store it to the orf_terminal
+                    TranslateGeneToAminoAcidSequence(root, orfTerm, speciesName, aaStartPos-1, aaStrandType);
+                }
             }
         }
+    }
     // Print missing DB entries
     PV_PrintMissingDBentryInformation();
     PV_RefreshWindow(root);
@@ -738,45 +695,37 @@ static void PV_RefreshProtViewDisplay(AW_window *aww) {
     }
 }
 
-void PV_SequenceUpdate_CB(GB_CB_TYPE gbtype)
-{
+void PV_SequenceUpdate_CB(GB_CB_TYPE gbtype) {
     if (gbtype==GB_CB_CHANGED &&
         gTerminalsCreated &&
         (ED4_ROOT->alignment_type == GB_AT_DNA) &&
         !gbWritingData)
-        {
-            GB_transaction dummy(GLOBAL_gb_main);
+    {
+        GB_transaction dummy(GLOBAL_gb_main);
 
-            ED4_cursor *cursor = &current_cursor();
-            if (cursor->owner_of_cursor) {
-                ED4_terminal *cursorTerminal = cursor->owner_of_cursor->to_terminal();
-
-                if (!cursorTerminal->parent->parent->flag.is_consensus)
-                    {
-                        ED4_sequence_terminal *seqTerminal = cursorTerminal->to_sequence_terminal();
-                        char                  *speciesName = seqTerminal->species_name;
-
-                        for (int i=0; i<PV_AA_Terminals4Species; i++)
-                            {
-                                // get the corresponding orf_terminal skipping sequence_info terminal
-                                // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
-                                cursorTerminal = cursorTerminal->get_next_terminal()->get_next_terminal();
-                                // Make sure it is ORF terminal
-                                if (cursorTerminal->is_orf_terminal()) {
-                                    ED4_orf_terminal *orfTerm = cursorTerminal->to_orf_terminal();
-                                        // Get the AA sequence flag - says which strand we are in
-                                        int   aaStartPos = int(orfTerm->GET_aaStartPos());
-                                        int aaStrandType = int(orfTerm->GET_aaStrandType());
-                                        // retranslate the genesequence and store it to the orf_terminal
-                                        TranslateGeneToAminoAcidSequence(ED4_ROOT->aw_root, orfTerm, speciesName, aaStartPos-1, aaStrandType);
-                                }
-                            }
-                        // Print missing DB entries
-                        PV_PrintMissingDBentryInformation();
-                        PV_RefreshWindow(ED4_ROOT->aw_root);
-                    }
+        ED4_cursor *cursor = &current_cursor();
+        if (cursor->in_species_seq_terminal()) {
+            ED4_terminal *cursorTerminal = cursor->owner_of_cursor->to_terminal();
+            char         *speciesName    = cursorTerminal->to_sequence_terminal()->species_name;
+            for (int i=0; i<PV_AA_Terminals4Species; i++) {
+                // get the corresponding orf_terminal skipping sequence_info terminal
+                // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
+                cursorTerminal = cursorTerminal->get_next_terminal()->get_next_terminal();
+                // Make sure it is ORF terminal
+                if (cursorTerminal->is_orf_terminal()) {
+                    ED4_orf_terminal *orfTerm = cursorTerminal->to_orf_terminal();
+                    // Get the AA sequence flag - says which strand we are in
+                    int   aaStartPos = int(orfTerm->GET_aaStartPos());
+                    int aaStrandType = int(orfTerm->GET_aaStrandType());
+                    // retranslate the genesequence and store it to the orf_terminal
+                    TranslateGeneToAminoAcidSequence(ED4_ROOT->aw_root, orfTerm, speciesName, aaStartPos-1, aaStrandType);
+                }
             }
+            // Print missing DB entries
+            PV_PrintMissingDBentryInformation();
+            PV_RefreshWindow(ED4_ROOT->aw_root);
         }
+    }
 }
 
 static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_species_manager *speciesManager) {
@@ -906,8 +855,7 @@ static void PV_CreateAllTerminals(AW_root *root) {
             if (seqTerminal->species_name)
             {
                 ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
-                if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI)
-                {
+                if (speciesManager->is_species_seq_manager()) {
                     PV_AddNewAAseqTerminals(seqTerminal, speciesManager);
                 }
             }

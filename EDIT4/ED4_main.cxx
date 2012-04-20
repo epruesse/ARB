@@ -170,25 +170,20 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
             }
 
             int show = -1;
-            int is_consensus = 0;
-            int is_SAI = 0;
 
-            if (sequence_terminal->parent) {
-                ED4_manager *cons_man = sequence_terminal->parent->parent;
-                if (cons_man && cons_man->flag.is_consensus) { // consensus
-                    show = show_consensus;
-                    is_consensus = 1;
-                }
+            bool is_consensus = false;
+            bool is_SAI       = false;
+
+            if (terminal->is_consensus_terminal()) {
+                is_consensus = true;
+                show         = show_consensus;
             }
-
-            if (show==-1) {
-                if (species_manager->flag.is_SAI) {
-                    show = show_SAI;
-                    is_SAI = 1;
-                }
-                else {
-                    show = show_sequence;
-                }
+            else if (terminal->is_SAI_terminal()) {
+                is_SAI = true;
+                show   = show_SAI;
+            }
+            else {
+                show = show_sequence;
             }
 
             e4_assert(show!=-1);

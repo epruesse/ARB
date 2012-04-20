@@ -128,31 +128,10 @@ static void dumpLevel(size_t indent, const char *varname, ED4_level level) {
 
 void ED4_base::dump_base(size_t indent) const {
     openDump(indent, "ED4_Base", (void*)this);
-#if 0
-    print_indented(NEXT_INDENT, GBS_global_string("my_species_pointer = %p", get_species_pointer()));
-    print_indented(NEXT_INDENT, GBS_global_string("lastXpos           = %f", lastXpos));
-    print_indented(NEXT_INDENT, GBS_global_string("lastYpos           = %f", lastYpos));
-    print_indented(NEXT_INDENT, GBS_global_string("timestamp          = %i", timestamp));
-    print_indented(NEXT_INDENT, GBS_global_string("parent             = %p", parent));
-    print_indented(NEXT_INDENT, GBS_global_string("id                 = '%s'", id));
-    print_indented(NEXT_INDENT, GBS_global_string("index              = %li", index));
-    print_indented(NEXT_INDENT, GBS_global_string("width_link         = %p", width_link));
-    print_indented(NEXT_INDENT, GBS_global_string("height_link        = %p", height_link));
-    print_indented(NEXT_INDENT, GBS_global_string("flag.hidden        = %i", flag.hidden));
-    print_indented(NEXT_INDENT, GBS_global_string("flag.is_consensus  = %i", flag.is_consensus));
-    print_indented(NEXT_INDENT, GBS_global_string("flag.is_SAI        = %i", flag.is_SAI));
-
-    if (spec) spec.dump(NEXT_INDENT);
-    dumpProperties(NEXT_INDENT, "dynamic_prop", dynamic_prop);
-    extension.dump(NEXT_INDENT);
-    update_info.dump(NEXT_INDENT);
-#else
+    
     spec.dump(NEXT_INDENT);
-    print_indented(NEXT_INDENT, GBS_global_string("id                 = '%s'", id));
-    print_indented(NEXT_INDENT, GBS_global_string("parent             = %p", parent));
-    print_indented(NEXT_INDENT, GBS_global_string("flag.is_consensus  = %i", flag.is_consensus));
-    print_indented(NEXT_INDENT, GBS_global_string("flag.is_SAI        = %i", flag.is_SAI));
-#endif
+    print_indented(NEXT_INDENT, GBS_global_string("id                    = '%s'", id));
+    print_indented(NEXT_INDENT, GBS_global_string("parent                = %p", parent));
 
     closeDump(indent);
 }
@@ -172,8 +151,25 @@ void ED4_members::dump(size_t indent) const {
 // managers and terminals
 
 void ED4_manager::dump_base(size_t indent) const {
-    openDump(indent, "ED4_Manager", (void*)this);
+    openDump(indent, "ED4_manager", (void*)this);
     ED4_base::dump_base(NEXT_INDENT);
+    children->dump(NEXT_INDENT);
+    closeDump(indent);
+}
+
+inline const char *readable_ED4_species_type(ED4_species_type type) {
+    switch (type) {
+        case ED4_SP_CONSENSUS: return "Consensus";
+        case ED4_SP_SAI:       return "SAI";
+        case ED4_SP_SPECIES:   return "Species";
+        case ED4_SP_NONE:      return "None (invalid!)";
+    }
+}
+
+void ED4_species_manager::dump(size_t indent) const {
+    openDump(indent, "ED4_species_manager", (void*)this);
+    ED4_base::dump_base(NEXT_INDENT);
+    print_indented(NEXT_INDENT, GBS_global_string("type                   = %s", readable_ED4_species_type(type)));
     children->dump(NEXT_INDENT);
     closeDump(indent);
 }
@@ -222,7 +218,6 @@ STANDARD_DUMP_LEAF(ED4_root_group_manager);
 STANDARD_DUMP_LEAF(ED4_sequence_info_terminal);
 STANDARD_DUMP_LEAF(ED4_sequence_manager);
 STANDARD_DUMP_LEAF(ED4_spacer_terminal);
-STANDARD_DUMP_LEAF(ED4_species_manager);
 STANDARD_DUMP_LEAF(ED4_species_name_terminal);
 STANDARD_DUMP_LEAF(ED4_tree_terminal);
 

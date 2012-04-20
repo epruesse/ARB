@@ -84,7 +84,7 @@ static ARB_ERROR request_sequence_refresh(ED4_base *base, AW_CL cl_consensi) {
     ARB_ERROR error;
     if (base->spec.level & ED4_L_SPECIES) {
         bool consensi = bool(cl_consensi);
-        if (base->flag.is_consensus == consensi) {
+        if (base->is_consensus_manager() == consensi) {
             error = base->to_manager()->route_down_hierarchy(request_terminal_refresh, ED4_L_SEQUENCE_STRING);
         }
     }
@@ -315,44 +315,26 @@ void TEST_win_2_world() {
 
 // --------------------------------------------------------------------------------
 
-short ED4_root::is_primary_selection(ED4_terminal *object)
-{
-    ED4_list_elem        *tmp_elem;
-    ED4_selection_entry  *tmp_entry;
-
-    tmp_elem = (ED4_list_elem *) selected_objects.last();
-    if (!tmp_elem) return 0;
-
-    tmp_entry = (ED4_selection_entry *) tmp_elem->elem();
-    return (tmp_entry != NULL) && (tmp_entry->object == object);
-}
-
 ED4_returncode ED4_root::deselect_all()
 {
     ED4_multi_species_manager *main_multi_man = middle_area_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+    main_multi_man->deselect_all_species_and_SAI();
 
-    main_multi_man->deselect_all_species();
     main_multi_man = top_area_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
-    main_multi_man->deselect_all_species();
+    main_multi_man->deselect_all_species_and_SAI();
 
     return ED4_R_OK;
 }
 
-ED4_returncode  ED4_root::remove_from_selected(ED4_terminal *object)
-{
-    if (object == NULL)
-        return (ED4_R_IMPOSSIBLE);
+void ED4_root::remove_from_selected(ED4_species_name_terminal *name_term) { // @@@ change param to ED4_species_manager ?
+    if (name_term) {
+        if ((selected_objects.has_elem((void *)name_term->selection_info))) {
+            selected_objects.delete_elem((void *)name_term->selection_info);
 
-    if ((selected_objects.is_elem((void *) object->selection_info))) {
-        selected_objects.delete_elem((void *) object->selection_info);
-
-        delete object->selection_info;
-        object->selection_info = NULL;
-        object->tflag.selected = 0;
-        object->tflag.dragged = 0;
-
-        if (object->is_species_name_terminal()) {
-            ED4_species_name_terminal *name_term = object->to_species_name_terminal();
+            delete name_term->selection_info;
+            name_term->selection_info    = NULL;
+            name_term->containing_species_manager()->set_selected(false);
+            name_term->dragged = false; // @@@ caller shall do this
 
 #ifdef DEBUG
             GBDATA *gbd = name_term->get_species_pointer();
@@ -363,7 +345,7 @@ ED4_returncode  ED4_root::remove_from_selected(ED4_terminal *object)
             else {
                 ED4_species_manager *spec_man = name_term->get_parent(ED4_L_SPECIES)->to_species_manager();
 
-                if (spec_man->flag.is_consensus) {
+                if (spec_man->is_consensus_manager()) {
                     printf("removed consensus '%s'\n", name_term->id);
                 }
                 else {
@@ -373,7 +355,7 @@ ED4_returncode  ED4_root::remove_from_selected(ED4_terminal *object)
 #endif
 
             name_term->request_refresh();
-            ED4_sequence_terminal *seq_term = object->to_species_name_terminal()->corresponding_sequence_terminal();
+            ED4_sequence_terminal *seq_term = name_term->corresponding_sequence_terminal();
             if (seq_term) seq_term->request_refresh();
 
             // ProtView: Refresh corresponding orf terminals
@@ -381,15 +363,10 @@ ED4_returncode  ED4_root::remove_from_selected(ED4_terminal *object)
                 PV_CallBackFunction(this->aw_root);
             }
 
-            ED4_multi_species_manager *multi_man = object->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+            ED4_multi_species_manager *multi_man = name_term->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
             multi_man->invalidate_species_counters();
         }
-        else {
-            object->request_refresh();
-        }
     }
-
-    return (ED4_R_OK);
 }
 
 void ED4_root::announce_useraction_in(AW_window *aww) {
@@ -400,96 +377,72 @@ void ED4_root::announce_useraction_in(AW_window *aww) {
     }
 }
 
-ED4_returncode ED4_root::add_to_selected(ED4_terminal *object) {
-    ED4_base            *tmp_object;
-    ED4_level            mlevel;
-    ED4_terminal        *sel_object;
-    ED4_selection_entry *sel_info;
-
-
-    if ((object == NULL) || !(object->dynamic_prop & ED4_P_SELECTABLE)) {   // check if object exists and may be selected
+ED4_returncode ED4_root::add_to_selected(ED4_species_name_terminal *name_term) { // @@@ change param to ED4_species_manager ?
+    if (!name_term || !(name_term->dynamic_prop & ED4_P_SELECTABLE)) {   // check if object exists and may be selected
         return (ED4_R_IMPOSSIBLE);
     }
 
-    if (selected_objects.no_of_entries() > 0) {   // check if object is of the same type as previously selected objects
-        sel_info = (ED4_selection_entry *) selected_objects.first()->elem();
-        sel_object = sel_info->object;
-        if (object->spec.level != sel_object->spec.level) {   // object levels are different
-            return (ED4_R_IMPOSSIBLE);
-        }
-    }
+    if (!(selected_objects.has_elem((void *)name_term->selection_info))) {     // object is really new to our list => calculate current extension and append it
+        ED4_selection_entry *sel_info = new ED4_selection_entry;
+        name_term->selection_info     = sel_info;
 
-
-    if (!(selected_objects.is_elem((void *) object->selection_info))) {     // object is really new to our list => calculate current extension and append it
-        object->selection_info = new ED4_selection_entry;
-
-        if (object->dynamic_prop & ED4_P_IS_HANDLE)                 // object is a handle for an object up in the hierarchy => search it
-        {
-            mlevel = object->spec.handled_level;
-            tmp_object = object;
+        if (name_term->dynamic_prop & ED4_P_IS_HANDLE) { // object is a handle for an object up in the hierarchy => search it
+            ED4_level  mlevel     = name_term->spec.handled_level;
+            ED4_base  *tmp_object = name_term;
 
             while ((tmp_object != NULL) && !(tmp_object->spec.level & mlevel)) {
                 tmp_object = tmp_object->parent;
             }
 
-            if (tmp_object == NULL) {
-                return (ED4_R_WARNING);                 // no target level found
-            }
+            if (!tmp_object) return (ED4_R_WARNING); // no target level found
 
-            object->selection_info->actual_width = tmp_object->extension.size[WIDTH];
-            object->selection_info->actual_height = tmp_object->extension.size[HEIGHT];
+            sel_info->actual_width  = tmp_object->extension.size[WIDTH];
+            sel_info->actual_height = tmp_object->extension.size[HEIGHT];
         }
-        else                                    // selected object is no handle => take it directly
+        else // selected object is no handle => take it directly
         {
-            object->selection_info->actual_width = object->extension.size[WIDTH];
-            object->selection_info->actual_height = object->extension.size[HEIGHT];
+            sel_info->actual_width  = name_term->extension.size[WIDTH];
+            sel_info->actual_height = name_term->extension.size[HEIGHT];
         }
 
-        object->selection_info->drag_old_x = 0;
-        object->selection_info->drag_old_y = 0;
-        object->selection_info->drag_off_x = 0;
-        object->selection_info->drag_off_y = 0;
-        object->selection_info->old_event_y = 0;
-        object->selection_info->object = object;
-        selected_objects.append_elem_backwards((void *) object->selection_info);
-        object->tflag.selected = 1;
+        sel_info->drag_old_x  = 0;
+        sel_info->drag_old_y  = 0;
+        sel_info->drag_off_x  = 0;
+        sel_info->drag_off_y  = 0;
+        sel_info->old_event_y = 0;
+        sel_info->object      = name_term;
+        selected_objects.append_elem_backwards((void *)sel_info);
 
-        if (object->is_species_name_terminal()) {
-            ED4_species_name_terminal *name_term = object->to_species_name_terminal();
+        name_term->containing_species_manager()->set_selected(true);
 
 #ifdef DEBUG
-            GBDATA *gbd = name_term->get_species_pointer();
+        GBDATA *gbd = name_term->get_species_pointer();
 
-            if (gbd) {
-                printf("added term '%s'\n", GB_read_char_pntr(gbd));
-            }
-            else {
-                ED4_species_manager *spec_man = name_term->get_parent(ED4_L_SPECIES)->to_species_manager();
-                if (spec_man->flag.is_consensus) {
-                    printf("added consensus '%s'\n", name_term->id);
-                }
-                else {
-                    printf("added unknown term '%s'\n", name_term->id ? name_term->id : "NULL");
-                }
-            }
-#endif
-
-            name_term->request_refresh();
-            ED4_sequence_terminal *seq_term = object->to_species_name_terminal()->corresponding_sequence_terminal();
-            if (seq_term) seq_term->request_refresh();
-
-            // ProtView: Refresh corresponding orf terminals
-            if (alignment_type == GB_AT_DNA) {
-                PV_CallBackFunction(this->aw_root);
-            }
-
-            ED4_multi_species_manager *multi_man = object->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
-            multi_man->invalidate_species_counters();
+        if (gbd) {
+            printf("added term '%s'\n", GB_read_char_pntr(gbd));
         }
         else {
-            e4_assert(0); // test ob ueberhaupt was anderes als species_name_terminals verwendet wird
-            object->request_refresh();
+            ED4_species_manager *spec_man = name_term->get_parent(ED4_L_SPECIES)->to_species_manager();
+            if (spec_man->is_consensus_manager()) {
+                printf("added consensus '%s'\n", name_term->id);
+            }
+            else {
+                printf("added unknown term '%s'\n", name_term->id ? name_term->id : "NULL");
+            }
         }
+#endif
+
+        name_term->request_refresh();
+        ED4_sequence_terminal *seq_term = name_term->corresponding_sequence_terminal();
+        if (seq_term) seq_term->request_refresh();
+
+        // ProtView: Refresh corresponding orf terminals
+        if (alignment_type == GB_AT_DNA) {
+            PV_CallBackFunction(this->aw_root);
+        }
+
+        ED4_multi_species_manager *multi_man = name_term->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+        multi_man->invalidate_species_counters();
 
         return (ED4_R_OK);
     }
@@ -1229,12 +1182,12 @@ static void ED4_menu_select(AW_window *aww, AW_CL type, AW_CL) {
             break;
         }
         case ED4_MS_SELECT_MARKED: {
-            middle_multi_man->select_marked_species(1);
+            middle_multi_man->marked_species_select(true);
             ED4_correctBlocktypeAfterSelection();
             break;
         }
         case ED4_MS_DESELECT_MARKED: {
-            middle_multi_man->select_marked_species(0);
+            middle_multi_man->marked_species_select(false);
             ED4_correctBlocktypeAfterSelection();
             break;
         }
@@ -1243,12 +1196,12 @@ static void ED4_menu_select(AW_window *aww, AW_CL type, AW_CL) {
             break;
         }
         case ED4_MS_MARK_SELECTED: {
-            middle_multi_man->mark_selected_species(1);
+            middle_multi_man->selected_species_mark(true);
             ED4_correctBlocktypeAfterSelection();
             break;
         }
         case ED4_MS_UNMARK_SELECTED: {
-            middle_multi_man->mark_selected_species(0);
+            middle_multi_man->selected_species_mark(false);
             ED4_correctBlocktypeAfterSelection();
             break;
         }
@@ -1588,7 +1541,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("select_marked",   "Select marked species",   "e", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_SELECT_MARKED),   0);
     awmm->insert_menu_topic("deselect_marked", "Deselect marked species", "k", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_DESELECT_MARKED), 0);
     awmm->insert_menu_topic("select_all",      "Select all species",      "S", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_ALL),             0);
-    awmm->insert_menu_topic("deselect_all",    "Deselect all species",    "D", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_NONE),            0);
+    awmm->insert_menu_topic("deselect_all",    "Deselect all",            "D", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_NONE),            0);
     awmm->sep______________();
     awmm->insert_menu_topic("mark_selected",   "Mark selected species",   "M", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_MARK_SELECTED),   0);
     awmm->insert_menu_topic("unmark_selected", "Unmark selected species", "n", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_UNMARK_SELECTED), 0);
