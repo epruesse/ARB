@@ -1646,7 +1646,7 @@ static void pars_create_all_awars(AW_root *awr, AW_default aw_def)
         GBDATA *gb_tree_name = GB_search(GLOBAL_gb_main, AWAR_TREE, GB_STRING);
         char   *tree_name    = GB_read_string(gb_tree_name);
 
-        awr->awar_string(AWAR_TREE, 0, aw_def)->write_string(tree_name);
+        awr->awar_string(AWAR_TREE, "", aw_def)->write_string(tree_name);
         free(tree_name);
     }
 

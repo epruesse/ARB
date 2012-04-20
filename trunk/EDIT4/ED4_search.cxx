@@ -783,7 +783,7 @@ void ED4_create_search_awars(AW_root *root)
 
     int i;
     for (i=0; i<SEARCH_PATTERNS; i++) {
-        root->awar_string(awar_list[i].pattern, "", GLOBAL_gb_main)                            ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
+        root->awar_string(awar_list[i].pattern, 0, GLOBAL_gb_main)                             ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
         root->awar_int(awar_list[i].case_sensitive, ED4_SC_CASE_INSENSITIVE, GLOBAL_gb_main)   ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
         root->awar_int(awar_list[i].tu, ED4_ST_T_EQUAL_U, GLOBAL_gb_main)                      ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
         root->awar_int(awar_list[i].pat_gaps, ED4_SG_IGNORE_GAPS, GLOBAL_gb_main)              ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);

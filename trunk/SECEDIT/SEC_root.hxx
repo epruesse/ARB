@@ -653,7 +653,7 @@ struct SEC_displayParams {
     bool  show_strSkeleton;     // display the skeleton?
     short skeleton_thickness;
 
-    bool edit_direction;        // true = 5'->3', false = 5'<-3'
+    bool edit_rightward;        // true = 5'->3', false = 5'<-3'
 
 #if defined(DEBUG)
     bool show_debug;            // show debug info in structure display

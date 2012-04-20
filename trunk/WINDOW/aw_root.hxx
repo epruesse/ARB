@@ -133,6 +133,8 @@ public:
     AW_awar *awar(const char *awar);
     AW_awar *awar_no_error(const char *awar);
 
+    void dont_save_awars_with_default_value(GBDATA *gb_main);
+
     AW_awar *awar_string (const char *var_name, const char *default_value = "", AW_default default_file = AW_ROOT_DEFAULT);
     AW_awar *awar_int    (const char *var_name, long default_value = 0,         AW_default default_file = AW_ROOT_DEFAULT);
     AW_awar *awar_float  (const char *var_name, float default_value = 0.0,      AW_default default_file = AW_ROOT_DEFAULT);

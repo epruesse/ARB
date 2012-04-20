@@ -52,7 +52,7 @@ extern GBS_strstruct *not_found_message;            // error message containing 
 
 extern long         max_seq_terminal_length;        // global maximum of sequence terminal length
 extern ED4_EDITMODI awar_edit_mode;
-extern long         awar_edit_direction;
+extern long         awar_edit_rightward;            // 0 = leftward, 1 = rightward
 extern bool         move_cursor;                    // only needed for editing in consensus
 extern bool         DRAW;
 
@@ -297,7 +297,8 @@ struct ED4_work_info
     char     *string;           // pointer to consensus; only if editing the consensus
     long      char_position;    // screen position after cursor
 
-    int     direction;      // contains direction of editing (-1 left, +1 right )
+    bool rightward; // contains direction of editing (0 = leftward, 1 = rightward)
+
     ED4_EDITMODI mode;
 
     bool    is_sequence;        // ==1 -> special handling for sequences

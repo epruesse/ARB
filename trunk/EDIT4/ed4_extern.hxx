@@ -71,7 +71,7 @@ enum ED4_gc {
 
 
 #define ED4_AWAR_SEARCH_RESULT_CHANGED "tmp/search/result_changed" // triggered when search result changes
-#define AWAR_EDIT_DIRECTION            "tmp/edit4/edit_direction"
+#define AWAR_EDIT_RIGHTWARD            "tmp/edit4/edit_direction"
 
 #else
 #error ed4_extern.hxx included twice

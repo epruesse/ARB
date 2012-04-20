@@ -568,11 +568,6 @@ AW_window *AWTC_create_rename_window(AW_root *root, AW_CL gb_main) {
     return (AW_window *)aws;
 }
 
-void AWTC_create_rename_awars(AW_root *root, AW_default db1) {
-    root->awar_int(AWT_RENAME_USE_ADVICE, 0,        db1);
-    root->awar_int(AWT_RENAME_SAVE_DATA, 1,     db1);
-}
-
 UniqueNameDetector::UniqueNameDetector(GBDATA *gb_item_data, int additionalEntries) {
     hash = GBS_create_hash(GB_number_of_subentries(gb_item_data)+additionalEntries, GB_IGNORE_CASE);
 

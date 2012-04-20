@@ -344,7 +344,7 @@ static void GEN_update_combined_cb(AW_root *awr, AW_CL cl_gb_main) {
 
 void GEN_create_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main) {
     aw_root->awar_string(AWAR_COMBINED_GENE_NAME, "", gb_main);
-    aw_root->awar_string(AWAR_GENE_CONTENT, "", gb_main);
+    aw_root->awar_string(AWAR_GENE_CONTENT,       0,  gb_main);
 
     aw_root->awar_string(AWAR_GENE_NAME,     "", gb_main)->add_callback(GEN_update_combined_cb,      (AW_CL)gb_main);
     aw_root->awar_string(AWAR_ORGANISM_NAME, "", gb_main)->add_callback(GEN_update_combined_cb,      (AW_CL)gb_main);

@@ -41,7 +41,7 @@ static void st_ok_cb(AW_window *aww, AW_CL cl_st_ml) {
     ST_ML   *st_ml          = (ST_ML*)cl_st_ml;
     AW_root *root           = aww->get_root();
     char    *alignment_name = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", st_ml->get_gb_main())->read_string();
-    char    *tree_name      = root->awar_string(AWAR_TREE, "tree_stat", st_ml->get_gb_main())->read_string();
+    char    *tree_name      = root->awar_string(AWAR_TREE, "", st_ml->get_gb_main())->read_string();
     int      marked_only    = root->awar_int(ST_ML_AWAR_CQ_MARKED_ONLY)->read_int();
 
     GB_ERROR error = GB_push_transaction(st_ml->get_gb_main());
@@ -75,7 +75,7 @@ AW_window *STAT_create_main_window(AW_root *root, ST_ML *st_ml, AW_CB0 refresh_f
     root->awar_int(ST_ML_AWAR_CQ_MARKED_ONLY, 1);
 
     AW_awar *awar_default_alignment = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", st_ml->get_gb_main());
-    root->awar_string(AWAR_TREE, "tree_main", st_ml->get_gb_main());
+    root->awar_string(AWAR_TREE, "", st_ml->get_gb_main());
 
     st_ml->create_column_statistic(root, ST_ML_AWAR_COLSTAT_NAME, awar_default_alignment);
     st_ml->set_refresh_callback(refresh_func, refreshed_win);
@@ -153,7 +153,7 @@ static void st_check_cb(AW_window *aww, AW_CL cl_st_check_cb_data) {
 
 static void STAT_create_awars(AW_root *root, GBDATA *gb_main) {
     root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-",    gb_main);
-    root->awar_string(AWAR_TREE,              "tree_main", gb_main);
+    root->awar_string(AWAR_TREE,              "", gb_main);
 
     root->awar_string(ST_ML_AWAR_COLSTAT_NAME, "none");
 

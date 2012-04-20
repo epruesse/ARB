@@ -67,6 +67,17 @@ class AW_awar : virtual Noncopyable {
     AW_var_target        *target_list;
     AW_widget_refresh_cb *refresh_list;
 
+    union {
+        char   *s;
+        double  d;
+        long    l;
+        GBDATA *p;
+    } default_value;
+
+    bool in_tmp_branch;
+
+    static bool allowed_to_run_callbacks;
+
 #if defined(DEBUG)
     bool is_global;
 #endif // DEBUG
@@ -75,7 +86,7 @@ class AW_awar : virtual Noncopyable {
     void remove_all_target_vars();
 
     void assert_var_type(AW_VARIABLE_TYPE target_var_type);
-    
+
 public:
     // read only
     class AW_root *root;
@@ -162,6 +173,7 @@ public:
     void     touch();
 
     GB_ERROR make_global() __ATTR__USERESULT;       // should be used by ARB_init_global_awars only
+    void set_temp_if_is_default(GBDATA *gb_main);
 };
 
 
@@ -169,4 +181,5 @@ public:
 #else
 #error aw_awar.hxx included twice
 #endif // AW_AWAR_HXX
+
 
