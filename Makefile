@@ -408,7 +408,12 @@ CPP := $(GPP) $(cppflags)# compile C++
 ACCLIB := $(ACC) $(shared_cflags)# compile C (shared libs)
 CPPLIB := $(CPP) $(shared_cflags)# compile C++ (shared libs)
 
-PP := $(CPPreal)# preprocessor
+# preprocessor
+ifdef DARWIN
+PP := $(GCC) -E -x c-header
+else
+PP := $(CPPreal)
+endif
 
 LINK_STATIC_LIB := ld $(lflags) $(ldynamic) -r -o# link static lib
 LINK_EXECUTABLE := $(GPP) $(lflags) $(cdynamic) -o# link executable (c++)

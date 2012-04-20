@@ -17,6 +17,6 @@ WriteMakefile(
               'CCFLAGS'      => '-arch x86_64',
               'DEFINE'       => '',
               'INC'          => $arb_common::inc,
-              'LIBS'         => $arb_common::libs.' -L/System/Library/Perl/lib/5.10/ -lperl', #System provides 64-bit Perl with Snow Leopard
+              'LIBS'         => $arb_common::libs.' -L@@LIBPERLDIR@@ -lperl', #System provides 64-bit Perl with Snow Leopard
               'LDDLFLAGS'    => '-bundle -flat_namespace',
              );

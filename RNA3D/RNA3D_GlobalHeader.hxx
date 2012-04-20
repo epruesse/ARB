@@ -31,7 +31,11 @@
 // working on ralfs machine
 // working on waltz too
 #include <GL/glew.h>
+#ifdef DARWIN
+#include <GLUT/glut.h>
+#else
 #include <GL/glut.h>
+#endif
 #include <GL/glpng.h>
 
 // @@@ HACK @@@
