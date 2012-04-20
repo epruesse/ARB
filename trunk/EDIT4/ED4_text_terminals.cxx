@@ -80,8 +80,8 @@ ED4_returncode ED4_consensus_sequence_terminal::draw() {
         index_range = rm->clip_screen_range(index_range);
         if (index_range.is_empty()) return ED4_R_OK;
 
-        ExplicitRange seq_range = ExplicitRange(rm->screen_to_sequence(index_range), MAXSEQUENCECHARACTERLENGTH-1);
-        index_range = rm->sequence_to_screen(seq_range);
+        ExplicitRange seq_range = ExplicitRange(rm->screen_to_sequence(index_range), MAXSEQUENCECHARACTERLENGTH);
+        index_range             = rm->sequence_to_screen(seq_range);
 
         char *cons = 0;
         if (!seq_range.is_empty()) {
@@ -201,7 +201,7 @@ ED4_returncode ED4_orf_terminal::draw() {
     ExplicitRange index_range = rm->clip_screen_range(calc_update_interval());
     {
         int max_seq_len = aaSeqLen;
-        int max_seq_pos = rm->sequence_to_screen_clipped(max_seq_len-1);
+        int max_seq_pos = rm->sequence_to_screen(max_seq_len-1);
         index_range     = ExplicitRange(PosRange(index_range), max_seq_pos);
     }
 
@@ -356,7 +356,7 @@ ED4_returncode ED4_sequence_terminal::draw() {
     int right = index_range.end();
 
     {
-        int max_seq_pos = rm->sequence_to_screen_clipped(max_seq_len-1);
+        int max_seq_pos = rm->sequence_to_screen(max_seq_len-1);
 
         if (right>max_seq_len) right = max_seq_pos;
         if (left>right) {
@@ -507,10 +507,11 @@ ED4_returncode ED4_sequence_terminal::draw() {
     }
 
     device->set_vertical_font_overlap(true);
-    
+
     // output helix
     if (ED4_ROOT->helix->is_enabled()) { // should do a remap
-        int screen_length = rm->clipped_sequence_to_screen(ED4_ROOT->helix->size());
+        int screen_length = rm->clipped_sequence_to_screen_PLAIN(ED4_ROOT->helix->size());
+        e4_assert(screen_length >= 0);
         if ((right+1) < screen_length) {
             screen_length = right+1;
         }
@@ -527,22 +528,25 @@ ED4_returncode ED4_sequence_terminal::draw() {
     }
 
     // output protein structure match
-    ED4_species_manager *spec_man = get_parent(ED4_L_SPECIES)->to_species_manager();
-    if (ED4_ROOT->protstruct && !spec_man->flag.is_SAI && ED4_ROOT->aw_root->awar(PFOLD_AWAR_ENABLE)->read_int()) {  // should do a remap
-        int screen_length = rm->clipped_sequence_to_screen(ED4_ROOT->protstruct_len);
-        if ((right+1) < screen_length) {
-            screen_length = right+1;
-        }
-        if (screen_length) {
-            // get protein structure (primary or secondary) from the species
-            char *protstruct = resolve_pointer_to_string_copy();
-            if (protstruct) {
-                // AW_click_cd cd(device, (AW_CL)max_seq_len);
-                device->text_overlay(ED4_G_HELIX,
-                                     protstruct, screen_length,
-                                     AW::Position(text_x,  text_y + ED4_ROOT->helix_spacing),  0.0,  AW_ALL_DEVICES_UNSCALED,
-                                     (AW_CL)ED4_ROOT->protstruct, 1.0, 1.0, ED4_show_protein_match_on_device);
-                free(protstruct);
+    if (ED4_ROOT->protstruct) {
+        ED4_species_manager *spec_man = get_parent(ED4_L_SPECIES)->to_species_manager();
+        if (!spec_man->flag.is_SAI && ED4_ROOT->aw_root->awar(PFOLD_AWAR_ENABLE)->read_int()) {  // should do a remap
+            int screen_length = rm->clipped_sequence_to_screen_PLAIN(ED4_ROOT->protstruct_len);
+            e4_assert(screen_length >= 0);
+            if ((right+1) < screen_length) {
+                screen_length = right+1;
+            }
+            if (screen_length) {
+                // get protein structure (primary or secondary) from the species
+                char *protstruct = resolve_pointer_to_string_copy();
+                if (protstruct) {
+                    // AW_click_cd cd(device, (AW_CL)max_seq_len);
+                    device->text_overlay(ED4_G_HELIX,
+                                         protstruct, screen_length,
+                                         AW::Position(text_x,  text_y + ED4_ROOT->helix_spacing),  0.0,  AW_ALL_DEVICES_UNSCALED,
+                                         (AW_CL)ED4_ROOT->protstruct, 1.0, 1.0, ED4_show_protein_match_on_device);
+                    free(protstruct);
+                }
             }
         }
     }
@@ -613,15 +617,6 @@ ED4_returncode ED4_text_terminal::Show(int IF_ASSERTION_USED(refresh_all), int i
         draw();
     }
     current_device()->pop_clip_scale();
-
-    // @@@ only request refresh of cursor and draw it at end of window-refresh ? might fix missing parts of cursor
-    // maybe do this check at top-level 
-    ED4_cursor *cursor = &current_cursor();
-    if (this == cursor->owner_of_cursor) {
-        current_device()->push_clip_scale();
-        cursor->ShowCursor(0, ED4_C_NONE, 0);
-        current_device()->pop_clip_scale();
-    }
 
     return ED4_R_OK;
 }

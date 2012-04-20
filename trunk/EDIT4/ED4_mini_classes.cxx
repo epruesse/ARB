@@ -477,8 +477,8 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
 
     e4_assert(used_bases_tables<=MAX_BASES_TABLES);     // this is correct for DNA/RNA -> build_consensus_string() must be corrected for AMI/PRO
 
-    int left_idx  = range.start();
-    int right_idx = range.end();
+    const int left_idx  = range.start();
+    const int right_idx = range.end();
 
     if (sequences) {
         for (int i=left_idx; i<=right_idx; i++) {

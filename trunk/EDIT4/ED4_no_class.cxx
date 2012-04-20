@@ -104,7 +104,7 @@ void ED4_expose_recalculations() {
     ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[HEIGHT]      = TERMINALHEIGHT;
     ED4_ROOT->ref_terminals.get_ref_sequence_info()->extension.size[WIDTH]  = MAXINFOWIDTH;
 
-    int screenwidth = ED4_ROOT->root_group_man->remap()->sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
+    int screenwidth = ED4_ROOT->root_group_man->remap()->shown_sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
     while (1) {
         ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[WIDTH] =
             ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES) *
@@ -117,10 +117,11 @@ void ED4_expose_recalculations() {
 
         ED4_ROOT->resize_all(); // may change mapping
 
-        int new_screenwidth = ED4_ROOT->root_group_man->remap()->sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
+        int new_screenwidth = ED4_ROOT->root_group_man->remap()->shown_sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
         if (new_screenwidth == screenwidth) { // mapping did not change
             break;
         }
+        // @@@ request resize for all terminals ? 
         screenwidth = new_screenwidth;
     }
 }
@@ -222,13 +223,13 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                 work_info->working_terminal = terminal;
 
                 if (terminal->is_sequence_terminal()) {
-                    work_info->mode        = awar_edit_mode;
+                    work_info->mode           = awar_edit_mode;
                     work_info->rightward   = awar_edit_rightward;
-                    work_info->is_sequence = 1;
+                    work_info->is_sequence    = 1;
                 }
                 else {
                     work_info->rightward   = true;
-                    work_info->is_sequence = 0;
+                    work_info->is_sequence    = 0;
 
                     if (terminal->is_pure_text_terminal()) {
                         work_info->mode = awar_edit_mode;
@@ -286,10 +287,6 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                 }
                 else {
                     error = edit_string->edit(work_info);
-
-                    ED4_ROOT->main_manager->Show(1, 0); // temporary fix for worst-refresh problems (@@@ fixme)
-                    // ED4_ROOT->main_manager->Show(); // original version
-
                     cursor->jump_sequence_pos(work_info->out_seq_position, work_info->cursor_jump);
                 }
 
@@ -2132,7 +2129,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                                 progress.inc_and_check_user_abort(error);
                             }
                             free(doneFields);
-                            free(fieldStat);
+                            delete [] fieldStat;
                         }
                         freeSpeciesMergeList(sml); sml = 0;
                     }
@@ -2162,6 +2159,9 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
 
             error = GB_end_transaction(GLOBAL_gb_main, error);
             if (!error) ED4_get_and_jump_to_species(new_species_name);
+        }
+        else {
+            GB_abort_transaction(GLOBAL_gb_main);
         }
 
         free(addid);

@@ -432,7 +432,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                                 if (!tflag.selected) {
                                     ED4_ROOT->add_to_selected(dragged_name_terminal);
                                     dragged_was_selected = 0;
-                                    ED4_ROOT->main_manager->Show();
+                                    ED4_ROOT->main_manager->Show(); // @@@ critical direct call to Show (fix: do NOT select on drag)
                                 }
                                 else {
                                     dragged_was_selected = 1;
@@ -1223,7 +1223,7 @@ ED4_returncode ED4_columnStat_terminal::draw() {
     PosRange index_range = rm->clip_screen_range(seq_term->calc_update_interval());
     {
         int max_seq_len = seq_term->get_length();
-        int max_seq_pos = rm->sequence_to_screen_clipped(max_seq_len);
+        int max_seq_pos = rm->sequence_to_screen(max_seq_len);
 
         index_range = ExplicitRange(index_range, max_seq_pos);
         if (index_range.is_empty()) return ED4_R_OK;

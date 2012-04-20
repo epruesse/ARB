@@ -225,7 +225,7 @@ static inline void clear_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, A
     current_device()->clear_part(x1, y1, x2-x1+1, y2-y1+1, AW_ALL_DEVICES);
 #endif
 
-    ED4_ROOT->main_manager->to_manager()->Show(1, 1);
+    ED4_ROOT->main_manager->Show(1, 1); // direct call to Show (critical)
 }
 
 static inline void move_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, int dx, int dy)
@@ -383,7 +383,7 @@ static void ED4_expose_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     current_ed4w()->update_scrolled_rectangle();
 
     current_device()->reset();
-    ED4_ROOT->special_window_refresh();
+    ED4_ROOT->special_window_refresh(true);
 }
 
 static void ED4_resize_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {

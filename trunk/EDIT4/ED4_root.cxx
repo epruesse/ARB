@@ -101,7 +101,7 @@ void ED4_root::request_refresh_for_sequence_terminals() {
     }
 }
 
-ED4_returncode ED4_root::refresh_window_simple(bool redraw) {
+void ED4_root::refresh_window_simple(bool redraw) {
     // if 'redraw' -> update everything (ignoring refresh flag)
     int refresh_all = 0;
     if (redraw) {
@@ -111,11 +111,9 @@ ED4_returncode ED4_root::refresh_window_simple(bool redraw) {
         main_manager->update_info.set_clear_at_refresh(1);
         refresh_all = 1;
     }
+
     main_manager->Show(refresh_all, 0);
-    if (redraw) {
-        main_manager->update_info.set_clear_at_refresh(0);
-    }
-    return (ED4_R_OK);
+    if (redraw) main_manager->update_info.set_clear_at_refresh(0);
 }
 
 void ED4_root::handle_update_requests(bool& redraw) {
@@ -149,13 +147,13 @@ void ED4_root::handle_update_requests(bool& redraw) {
     e4_assert(!main_manager->update_info.resize);
 }
 
-ED4_returncode ED4_root::special_window_refresh() {
+void ED4_root::special_window_refresh(bool handle_updates) {
     // this function should only be used for window specific updates (e.g. cursor placement/deletion)
     e4_assert(ED4_WinContext::have_context());
-    
-    bool redraw = true; 
-    handle_update_requests(redraw);
-    return refresh_window_simple(redraw);
+
+    bool redraw = true;
+    if (handle_updates) handle_update_requests(redraw);
+    refresh_window_simple(redraw);
     // do NOT clear_refresh_requests here!! this is no full refresh!
 }
 
