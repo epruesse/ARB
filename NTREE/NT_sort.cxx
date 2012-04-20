@@ -160,7 +160,7 @@ static void NT_resort_data_by_user_criteria(AW_window *aw) {
 
 void NT_build_resort_awars(AW_root *awr, AW_default aw_def) {
     awr->awar_string("ad_tree/sort_1", "name",      aw_def);
-    awr->awar_string("ad_tree/sort_2", "name",      aw_def);
+    awr->awar_string("ad_tree/sort_2", "full_name", aw_def);
     awr->awar_string("ad_tree/sort_3", "name",      aw_def);
 }
 

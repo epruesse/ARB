@@ -369,6 +369,7 @@ AW_nawar.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/arb_file.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_nawar.o: $(ARBHOME)/INCLUDE/arb_str.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/arbdb_base.h

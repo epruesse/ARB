@@ -185,7 +185,7 @@ void SEC_displayParams::reread(AW_root *aw_root, const ED4_plugin_host& host) {
     skeleton_thickness = aw_root->awar(AWAR_SECEDIT_SKELETON_THICKNESS)->read_int();
     bond_thickness     = aw_root->awar(AWAR_SECEDIT_BOND_THICKNESS)->read_int();
 
-    edit_direction = aw_root->awar(AWAR_EDIT_DIRECTION)->read_int();
+    edit_rightward = aw_root->awar(AWAR_EDIT_RIGHTWARD)->read_int();
 
 #if defined(DEBUG)
     show_debug = aw_root->awar(AWAR_SECEDIT_SHOW_DEBUG)->read_int();
@@ -350,7 +350,7 @@ static const char *refresh_awars[] = {
     AWAR_SECEDIT_SHOW_STR_SKELETON,
     AWAR_SECEDIT_SKELETON_THICKNESS,
     AWAR_SECEDIT_BOND_THICKNESS,
-    AWAR_EDIT_DIRECTION,
+    AWAR_EDIT_RIGHTWARD,
     ED4_AWAR_SEARCH_RESULT_CHANGED,
 #if defined(DEBUG)
     AWAR_SECEDIT_SHOW_DEBUG,

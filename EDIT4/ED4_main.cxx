@@ -61,7 +61,7 @@ GBS_strstruct *not_found_message;
 
 long         max_seq_terminal_length;               // global maximum of sequence terminal length
 ED4_EDITMODI awar_edit_mode;
-long         awar_edit_direction;
+long         awar_edit_rightward;
 bool         move_cursor;                           // only needed for editing in consensus
 bool         DRAW;
 
@@ -374,7 +374,7 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     root->awar_int(AWAR_EDIT_MODE,    0)->add_callback(ed4_change_edit_mode, (AW_CL)0);
     root->awar_int(AWAR_INSERT_MODE, 1)->add_callback(ed4_change_edit_mode, (AW_CL)0);
 
-    root->awar_int(AWAR_EDIT_DIRECTION, 1)->add_target_var(&awar_edit_direction)->add_callback(ED4_edit_direction_changed);
+    root->awar_int(AWAR_EDIT_RIGHTWARD, 1)->add_target_var(&awar_edit_rightward)->add_callback(ED4_edit_direction_changed);
     root->awar_int(AWAR_EDIT_HELIX_SPACING, 0)->add_target_var(&ED4_ROOT->helix_add_spacing)->add_callback((AW_RCB0)ED4_request_relayout);
     root->awar_int(AWAR_EDIT_TERMINAL_SPACING, 0)->add_target_var(&ED4_ROOT->terminal_add_spacing)->add_callback((AW_RCB0)ED4_request_relayout);
     root->awar_int(AWAR_EDIT_TITLE_MODE, 0);
@@ -481,7 +481,7 @@ static void ED4_postcbcb(AW_window *aww) {
     ED4_ROOT->announce_useraction_in(aww);
     ED4_trigger_instant_refresh();
 }
-static void seq_colors_changed_cb(AW_window *) {
+static void seq_colors_changed_cb() {
     ED4_ROOT->request_refresh_for_sequence_terminals();
 }
 
@@ -546,8 +546,8 @@ int ARB_main(int argc, const char *argv[]) {
     ED4_ROOT->init_alignment();
     ed4_create_all_awars(ED4_ROOT->aw_root, config_name);
 
-    ED4_ROOT->st_ml = STAT_create_ST_ML(GLOBAL_gb_main);
-    ED4_ROOT->sequence_colors = new AWT_seq_colors(AW_ROOT_DEFAULT, ED4_G_SEQUENCES, (AW_CB)seq_colors_changed_cb, 0, 0);
+    ED4_ROOT->st_ml           = STAT_create_ST_ML(GLOBAL_gb_main);
+    ED4_ROOT->sequence_colors = new AWT_seq_colors(ED4_G_SEQUENCES, seq_colors_changed_cb);
 
     ED4_ROOT->edk = new ed_key;
     ED4_ROOT->edk->create_awars(ED4_ROOT->aw_root);
@@ -575,7 +575,7 @@ int ARB_main(int argc, const char *argv[]) {
     }
 
     if (err) aw_message(err); // write to console
-    ED4_ROOT->sequence_colors->aww = ED4_ROOT->create_new_window(); // create first editor window
+    ED4_ROOT->create_new_window(); // create first editor window
     if (err) aw_message(err); // write again to status window
 
     ED4_objspec::init_object_specs();

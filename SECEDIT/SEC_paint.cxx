@@ -727,7 +727,7 @@ void SEC_helix_strand::paint_strands(AW_device *device, const Vector& strand_vec
             if (curr->drawn[strand]) {
                 StrandPositionData *prev = &data[curr->previous[strand]];
 
-                int backAbs = disp.edit_direction
+                int backAbs = disp.edit_rightward
                     ? max(prev->abs[strand], curr->abs[strand])
                     : min(prev->abs[strand], curr->abs[strand]);
 
@@ -931,7 +931,7 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
         int nextBack = root->getBackgroundColor(nextAbs);
 
         // paint background (from pos to nextPos)
-        AW_click_cd cd(device, self(), disp.edit_direction ? nextAbs : abs);
+        AW_click_cd cd(device, self(), disp.edit_rightward ? nextAbs : abs);
         root->paintBackgroundColor(device, i == -1 ? BG_PAINT_BOTH : BG_PAINT_SECOND,
                                    pos, back, gc, nextPos, nextBack, nextGc, SEC_SKELE_LOOP);
 
@@ -1072,7 +1072,7 @@ GB_ERROR SEC_root::paint(AW_device *device) {
             Position pos1, pos2;
             size_t curAbs;
 
-            if (displayParams.edit_direction == 1) {
+            if (displayParams.edit_rightward) {
                 pos1   = drawnPositions->drawn_before(cursorAbsPos, &abs1);
                 pos2   = drawnPositions->drawn_after(cursorAbsPos-1, &abs2);
                 curAbs = abs2;
@@ -1109,7 +1109,7 @@ GB_ERROR SEC_root::paint(AW_device *device) {
             device->line(SEC_GC_CURSOR, cursor);
             set_last_drawed_cursor_position(cursor);
 
-            LineVector cursor_dir(cursor.head(), displayParams.edit_direction ? v.rotate270deg() : v.rotate90deg());
+            LineVector cursor_dir(cursor.head(), displayParams.edit_rightward ? v.rotate270deg() : v.rotate90deg());
             device->line(SEC_GC_CURSOR, cursor_dir);
 
 

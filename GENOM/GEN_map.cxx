@@ -1546,8 +1546,6 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool f
     }
 }
 
-#undef awm->insert_menu_topic
-
 static void GEN_create_hide_submenu(AW_window_menu_modes *awm, GBDATA *gb_main) {
     awm->create_menu("Hide", "H", AWM_ALL);
     {

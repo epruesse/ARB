@@ -356,18 +356,17 @@ static void set_autoselect_cb(AW_root *aw_root) {
     }
 }
 
-static void addNewTransTable(AW_root *aw_root, const char *newClrTransTabName, const char *defaultDefinition, bool autoselect) {
+static void addOrUpdateTransTable(AW_root *aw_root, const char *newClrTransTabName, const char *defaultDefinition, bool autoselect) {
     AW_awar *table_def_awar = aw_root->awar_string(getClrDefAwar(newClrTransTabName), defaultDefinition,  AW_ROOT_DEFAULT);
     table_def_awar->write_string(defaultDefinition);
 
-    e4_assert(!colorTransTable_exists(aw_root, newClrTransTabName));
-
-    AW_awar *names_awar = aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES);
-    char    *old_names  = names_awar->read_string();
-    names_awar->write_string(old_names[0]
-                             ? GBS_global_string("%s\n%s", old_names, newClrTransTabName)
-                             : newClrTransTabName); // add new name
-    free(old_names);
+    if (!colorTransTable_exists(aw_root, newClrTransTabName)) {
+        AW_awar    *names_awar = aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES);
+        const char *old_names  = names_awar->read_char_pntr();
+        names_awar->write_string(old_names[0]
+                                 ? GBS_global_string("%s\n%s", old_names, newClrTransTabName)
+                                 : newClrTransTabName); // add new name
+    }
 
     if (autoselect) {
         aw_root->awar(AWAR_SAI_CLR_TRANS_TABLE)->write_string(newClrTransTabName); // select new
@@ -375,9 +374,7 @@ static void addNewTransTable(AW_root *aw_root, const char *newClrTransTabName, c
 }
 
 static void addDefaultTransTable(AW_root *aw_root, const char *newClrTransTabName, const char *defaultDefinition) {
-    if (!colorTransTable_exists(aw_root, newClrTransTabName)) {
-        addNewTransTable(aw_root, newClrTransTabName, defaultDefinition, false);
-    }
+    addOrUpdateTransTable(aw_root, newClrTransTabName, defaultDefinition, false);
 }
 
 void ED4_createVisualizeSAI_Awars(AW_root *aw_root, AW_default aw_def) {  // --- Creating and initializing AWARS -----
@@ -403,18 +400,14 @@ void ED4_createVisualizeSAI_Awars(AW_root *aw_root, AW_default aw_def) {  // ---
     ED4_ROOT->visualizeSAI_allSpecies = aw_root->awar(AWAR_SAI_ALL_SPECIES)->read_int();
 
     // create some defaults:
-    AW_awar *awar_defaults_created = aw_root->awar_int(AWAR_SAI_CLR_DEFAULTS_CREATED, 0,  aw_def);
+    aw_root->awar_int(AWAR_SAI_CLR_DEFAULTS_CREATED, 1,  aw_def); // @@@ Feb 2012 - remove me in some years
 
-    if (awar_defaults_created->read_int() == 0) {
-        addDefaultTransTable(aw_root, "numeric",   "0;1;2;3;4;5;6;7;8;9;");
-        addDefaultTransTable(aw_root, "binary",    ".;+;;;;;;;;;");
-        addDefaultTransTable(aw_root, "consensus", "=ACGTU;;acgtu;.;;;;;;;");
-        addDefaultTransTable(aw_root, "helix",     ";;<>;;;;;[];;;");
-        addDefaultTransTable(aw_root, "xstring",   ";x;;;;;;;;;");
-        addDefaultTransTable(aw_root, "gaps",      ";-.;;;;;;;;;");
-
-        awar_defaults_created->write_int(1);
-    }
+    addDefaultTransTable(aw_root, "numeric",   "0;1;2;3;4;5;6;7;8;9;");
+    addDefaultTransTable(aw_root, "binary",    ".0;;+1;;;;;;;;");
+    addDefaultTransTable(aw_root, "consensus", "=ACGTU;;acgtu;.;;;;;;;");
+    addDefaultTransTable(aw_root, "helix",     ";;<>;;;;;[];;;");
+    addDefaultTransTable(aw_root, "xstring",   ";x;;;;;;;;;");
+    addDefaultTransTable(aw_root, "gaps",      ";-.;;;;;;;;;");
 
     inCallback = true;          // avoid refresh
     saiChanged_callback(aw_root);
@@ -443,7 +436,7 @@ static void createCopyClrTransTable(AW_window *aws, AW_CL cl_mode) {
             aw_message(GBS_global_string("Color translation table '%s' already exists.", newClrTransTabName));
         }
         else {
-            addNewTransTable(aw_root, newClrTransTabName, "", true);
+            addOrUpdateTransTable(aw_root, newClrTransTabName, "", true);
         }
         break;
 
@@ -459,7 +452,7 @@ static void createCopyClrTransTable(AW_window *aws, AW_CL cl_mode) {
         }
         else {
             char *old_def = aw_root->awar(getClrDefAwar(clrTabSourceName))->read_string();
-            addNewTransTable(aw_root, newClrTransTabName, old_def, true);
+            addOrUpdateTransTable(aw_root, newClrTransTabName, old_def, true);
             free(old_def);
         }
         break;

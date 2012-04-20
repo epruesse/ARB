@@ -49,16 +49,20 @@ STATIC_ATTRIBUTED(__ATTR__NORETURN, void MG_exit(AW_window *aww, AW_CL cl_reload
 
 static bool mg_save_enabled = true;
 
-static void MG_save_merge_cb(AW_window *aww)
-{
-    char *name = aww->get_root()->awar(AWAR_DB_SRC"/file_name")->read_string();
+static void MG_save_merge_cb(AW_window *aww) {
+    AW_root *awr  = aww->get_root();
+    char    *name = awr->awar(AWAR_DB_SRC"/file_name")->read_string();
+
     GB_begin_transaction(GLOBAL_gb_src);
+    awr->dont_save_awars_with_default_value(GLOBAL_gb_src);
     GBT_check_data(GLOBAL_gb_src, 0);
     GB_commit_transaction(GLOBAL_gb_src);
+
     GB_ERROR error = GB_save(GLOBAL_gb_src, name, "b");
     if (error) aw_message(error);
-    else AW_refresh_fileselection(aww->get_root(), AWAR_DB_SRC);
-    delete name;
+    else AW_refresh_fileselection(awr, AWAR_DB_SRC);
+
+    free(name);
 }
 
 static AW_window *MG_save_source_cb(AW_root *aw_root, char *base_name)
@@ -85,19 +89,21 @@ static AW_window *MG_save_source_cb(AW_root *aw_root, char *base_name)
     return (AW_window *)aws;
 }
 
-static void MG_save_cb(AW_window *aww)
-{
-    char *name = aww->get_root()->awar(AWAR_DB_DST"/file_name")->read_string();
-    char *type = aww->get_root()->awar(AWAR_DB_DST"/type")->read_string();
+static void MG_save_cb(AW_window *aww) {
+    AW_root *awr  = aww->get_root();
+    char    *name = awr->awar(AWAR_DB_DST"/file_name")->read_string();
+    char    *type = awr->awar(AWAR_DB_DST"/type")->read_string();
 
     arb_progress progress("Saving database");
+
     GB_begin_transaction(GLOBAL_gb_dst);
+    awr->dont_save_awars_with_default_value(GLOBAL_gb_dst);
     GBT_check_data(GLOBAL_gb_dst, 0);
     GB_commit_transaction(GLOBAL_gb_dst);
-    
+
     GB_ERROR error = GB_save(GLOBAL_gb_dst, name, type);
     if (error) aw_message(error);
-    else AW_refresh_fileselection(aww->get_root(), AWAR_DB_DST);
+    else AW_refresh_fileselection(awr, AWAR_DB_DST);
 
     free(type);
     free(name);
@@ -426,7 +432,6 @@ void MG_create_all_awars(AW_root *awr, AW_default aw_def, const char *fname_one,
     MG_create_gene_species_awars(awr, aw_def);
 
     MG_create_rename_awars(awr, aw_def);
-    AWTC_create_rename_awars(awr, aw_def);
 
 #if defined(DEBUG)
     AWT_create_db_browser_awars(awr, aw_def);

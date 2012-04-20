@@ -96,7 +96,9 @@ void ED4_root::request_refresh_for_consensus_terminals() {
     main_manager->route_down_hierarchy(request_sequence_refresh, true).expect_no_error();
 }
 void ED4_root::request_refresh_for_sequence_terminals() {
-    main_manager->route_down_hierarchy(request_sequence_refresh, false).expect_no_error();
+    if (main_manager) {
+        main_manager->route_down_hierarchy(request_sequence_refresh, false).expect_no_error();
+    }
 }
 
 ED4_returncode ED4_root::refresh_window_simple(bool redraw) {
@@ -1816,7 +1818,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->create_text_toggle(AWAR_INSERT_MODE, "Replace", "Insert", 7);
 
     awmm->at("direct");
-    awmm->create_toggle(AWAR_EDIT_DIRECTION, "#edit/3to5.bitmap", "#edit/5to3.bitmap", 7);
+    awmm->create_toggle(AWAR_EDIT_RIGHTWARD, "#edit/3to5.bitmap", "#edit/5to3.bitmap", 7);
 
     // ------------------------
     //      secedit / rna3d

@@ -2393,17 +2393,16 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
 
 void FastAligner_create_variables(AW_root *root, AW_default db1)
 {
-    root->awar_string(FA_AWAR_REFERENCE_NAME, "<undef>", db1);
+    root->awar_string(FA_AWAR_REFERENCE_NAME, "", db1);
 
     root->awar_int(FA_AWAR_TO_ALIGN,  FA_CURRENT,        db1);
-    root->awar_int(FA_AWAR_REFERENCE, FA_REF_CONSENSUS,  db1);
+    root->awar_int(FA_AWAR_REFERENCE, FA_REF_EXPLICIT,   db1);
     root->awar_int(FA_AWAR_RANGE,     FA_WHOLE_SEQUENCE, db1);
 
-#if defined(DEVEL_RALF)
-    root->awar_int(FA_AWAR_PROTECTION, 0, db1)->write_int(6);
-#else
-    root->awar_int(FA_AWAR_PROTECTION, 0, db1)->write_int(0);
-#endif
+    AW_awar *ali_protect = root->awar_int(FA_AWAR_PROTECTION, 0, db1);
+    if (root->awar(AWAR_AWM_MASK)->read_int() == AWM_BASIC) { // weird way to detect expert mode, AWAR_EXPERT is only for NTREE (need method in some library)
+        ali_protect->write_int(0); // reset protection for noobs
+    }
 
     root->awar_int(FA_AWAR_AROUND,             25,                  db1);
     root->awar_int(FA_AWAR_MIRROR,             FA_TURN_INTERACTIVE, db1);

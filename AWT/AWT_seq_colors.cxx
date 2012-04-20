@@ -72,24 +72,28 @@ static const char *default_color(int cset, int elem) {
     return result;
 }
 
-static void awt_awar_changed_cb(GBDATA *, int *cl, GB_CB_TYPE) {
-    AWT_seq_colors *sc = (AWT_seq_colors *)cl;
+static void awt_awar_changed_cb(AW_root *, AW_CL cl_sc) {
+    AWT_seq_colors *sc = (AWT_seq_colors *)cl_sc;
     sc->reload();
 }
 
 static void create_seq_color_awars(AW_root *awr, AWT_seq_colors *asc) {
     awt_assert(!seq_color_awars_created);
 
-    awr->awar_int(AWAR_SEQ_NAME_SELECTOR_NA, default_NUC_set, AW_ROOT_DEFAULT)->add_callback((AW_RCB)awt_awar_changed_cb, (AW_CL)asc, 0);
-    awr->awar_int(AWAR_SEQ_NAME_SELECTOR_AA, default_AMI_set, AW_ROOT_DEFAULT)->add_callback((AW_RCB)awt_awar_changed_cb, (AW_CL)asc, 0);
+    awr->awar_int(AWAR_SEQ_NAME_SELECTOR_NA, default_NUC_set, AW_ROOT_DEFAULT)->add_callback(awt_awar_changed_cb, (AW_CL)asc);
+    awr->awar_int(AWAR_SEQ_NAME_SELECTOR_AA, default_AMI_set, AW_ROOT_DEFAULT)->add_callback(awt_awar_changed_cb, (AW_CL)asc);
 
     for (int elem = 0; elem<SEQ_COLOR_SET_ELEMS; ++elem) {
         const char *awar_name = GBS_global_string(AWAR_SEQ_NAME_STRINGS_TEMPLATE, elem);
-        awr->awar_string(awar_name, default_characters(elem));
+        awr->awar_string(awar_name, default_characters(elem))->add_callback(awt_awar_changed_cb, (AW_CL)asc);
 
         for (int cset = 0; cset<SEQ_COLOR_SETS; ++cset) {
-            awar_name = GBS_global_string(AWAR_SEQ_NAME_TEMPLATE, cset, elem);
-            awr->awar_string(awar_name, default_color(cset, elem));
+            awar_name         = GBS_global_string(AWAR_SEQ_NAME_TEMPLATE, cset, elem);
+            AW_awar *awar_col = awr->awar_string(awar_name, default_color(cset, elem))->add_callback(awt_awar_changed_cb, (AW_CL)asc);
+
+            if (strcmp(awar_col->read_char_pntr(), "=0") == 0) { // translate old->new default
+                awar_col->write_string("");
+            }
         }
     }
 
@@ -186,88 +190,65 @@ AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc) {
     return aws;
 }
 
-void AWT_seq_colors::run_cb() {
-    if (callback && aww) callback(aww, cd1, cd2);
-}
-
 void AWT_seq_colors::reload() {
-    char           buf[256];
-    GB_transaction dummy(gb_def);
-    int  i;
-
-    for (i=0; i<256; i++) {
+    for (int i=0; i<256; i++) {
         char_2_gc[i]   = char_2_gc_aa[i]   = base_gc;
         char_2_char[i] = char_2_char_aa[i] = i;
     }
+
+    AW_root *aw_root = AW_root::SINGLETON;
+
+    if (!seq_color_awars_created) create_seq_color_awars(aw_root, this);
 
     const char *selector_awar[2] = { AWAR_SEQ_NAME_SELECTOR_NA, AWAR_SEQ_NAME_SELECTOR_AA };
 
     for (int selector = 0; selector<2; selector++) {
         long def_set = selector == 0 ? default_NUC_set : default_AMI_set;
-        long cset    = *GBT_readOrCreate_int(gb_def, selector_awar[selector], def_set);
+        long cset    = aw_root->awar(selector_awar[selector])->read_int();
 
         if (cset < 0 || cset >= SEQ_COLOR_SETS) {
             cset = def_set;
         }
 
         for (int elem = 0; elem < SEQ_COLOR_SET_ELEMS; elem++) {
-            sprintf(buf, AWAR_SEQ_NAME_STRINGS_TEMPLATE, elem);
-            unsigned char *sc = (unsigned char *)GBT_readOrCreate_string(gb_def, buf, default_characters(elem));
-            if (!cbexists) {
-                GBDATA *gb_ne = GB_search(gb_def, buf, GB_STRING);
-                GB_ensure_callback(gb_ne, GB_CB_CHANGED, awt_awar_changed_cb, (int *)this);
-                for (int s2=0; s2<SEQ_COLOR_SETS; s2++) {
-                    sprintf(buf, AWAR_SEQ_NAME_TEMPLATE, s2, elem);
-                    GBT_readOrCreate_char_pntr(gb_def, buf, default_color(s2, elem)); // add default if missing
-                    gb_ne = GB_search(gb_def, buf, GB_STRING);
-                    GB_ensure_callback(gb_ne, GB_CB_CHANGED, awt_awar_changed_cb, (int *)this);
-                }
-            }
-            sprintf(buf, AWAR_SEQ_NAME_TEMPLATE, (int)cset, elem);
-            char *val = GBT_read_string(gb_def, buf);
+            char awar_name[256];
 
-            if (strcmp(val, "=0") == 0) GBT_write_string(gb_def, buf, ""); // replace '=0' stored in props with ''
+            sprintf(awar_name, AWAR_SEQ_NAME_STRINGS_TEMPLATE, elem);
+            unsigned char *sc = (unsigned char *)aw_root->awar(awar_name)->read_string();
+
+            sprintf(awar_name, AWAR_SEQ_NAME_TEMPLATE, (int)cset, elem);
+            char *val = aw_root->awar(awar_name)->read_string();
             if (!val[0]) freedup(val, "=0"); // interpret '' as '  = 0'
 
             if (strlen(val) != 2 || val[1] >'9' || val[1] < '0') {
                 aw_message(GB_export_errorf("Error in Color Lookup Table: '%s' is not of type X#", val));
-                delete val;
-                delete sc;
-                continue;
-            }
-
-            if (selector == 0) { // Nucleotide colors
-                for (i=0; sc[i]; i++) {
-                    char_2_gc[sc[i]] = val[1]-'0' + base_gc;
-                    if (val[0] != '=') char_2_char[sc[i]] = val[0];
-                }
             }
             else {
-                for (i=0; sc[i]; i++) {
-                    char_2_gc_aa[sc[i]] = val[1]-'0' + base_gc;
-                    if (val[0] != '=') char_2_char_aa[sc[i]] = val[0];
+                if (selector == 0) { // Nucleotide colors
+                    for (int i=0; sc[i]; i++) {
+                        char_2_gc[sc[i]] = val[1]-'0' + base_gc;
+                        if (val[0] != '=') char_2_char[sc[i]] = val[0];
+                    }
+                }
+                else {
+                    for (int i=0; sc[i]; i++) {
+                        char_2_gc_aa[sc[i]] = val[1]-'0' + base_gc;
+                        if (val[0] != '=') char_2_char_aa[sc[i]] = val[0];
+                    }
                 }
             }
-
             free(val);
             free(sc);
         }
     }
 
-    cbexists = 1;
     run_cb();
 }
 
-AWT_seq_colors::AWT_seq_colors(GBDATA *gb_default, int _base_gc,
-                               AW_CB _cb, AW_CL _cd1, AW_CL _cd2) {
-    aww = 0;
-    cd1 = _cd1;
-    cd2 = _cd2;
-    callback = _cb;
-    gb_def = gb_default;
-    base_gc = _base_gc;
-    GB_transaction dummy(gb_def);
-    cbexists = 0;
+AWT_seq_colors::AWT_seq_colors(int baseGC, void (*changed_cb)()) {
+    cb      = changed_cb;
+    base_gc = baseGC;
+
     this->reload();
 }
 

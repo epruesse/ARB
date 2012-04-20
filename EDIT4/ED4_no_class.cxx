@@ -147,7 +147,7 @@ static ARB_ERROR call_edit(ED4_base *object, AW_CL cl_work_info) {
                 new_work_info.cursor_jump      = ED4_JUMP_KEEP_VISIBLE;
                 new_work_info.out_string       = NULL;
                 new_work_info.mode             = work_info->mode;
-                new_work_info.direction        = work_info->direction;
+                new_work_info.rightward        = work_info->rightward;
                 new_work_info.cannot_handle    = false;
                 new_work_info.is_sequence      = work_info->is_sequence;
                 new_work_info.working_terminal = object->to_terminal();
@@ -223,11 +223,11 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
 
                 if (terminal->is_sequence_terminal()) {
                     work_info->mode        = awar_edit_mode;
-                    work_info->direction   = awar_edit_direction;
+                    work_info->rightward   = awar_edit_rightward;
                     work_info->is_sequence = 1;
                 }
                 else {
-                    work_info->direction   = 1;
+                    work_info->rightward   = true;
                     work_info->is_sequence = 0;
 
                     if (terminal->is_pure_text_terminal()) {

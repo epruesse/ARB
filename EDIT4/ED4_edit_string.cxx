@@ -965,7 +965,7 @@ ED4_Edit_String::~ED4_Edit_String()
 GB_ERROR ED4_Edit_String::edit(ED4_work_info *info) {
     e4_assert(info->working_terminal != 0);
 
-    if (info->direction == 0) { // 5'<-3'
+    if (!info->rightward) { // 5'<-3'
         info->char_position++;
     }
 
@@ -1058,7 +1058,7 @@ GB_ERROR ED4_Edit_String::edit(ED4_work_info *info) {
         err = command(info->event.keymodifier,
                       info->event.keycode,
                       map_key,
-                      info->direction,
+                      info->rightward,
                       info->mode,
                       (int)(info->string!=0),
                       info->out_seq_position,
@@ -1097,7 +1097,7 @@ GB_ERROR ED4_Edit_String::edit(ED4_work_info *info) {
         }
     }
 
-    if (info->direction == 0) {
+    if (!info->rightward) {
         info->char_position = remap->sequence_to_screen(info->out_seq_position);
         info->char_position--;
         info->out_seq_position = remap->screen_to_sequence(info->char_position);
