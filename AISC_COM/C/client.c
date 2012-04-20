@@ -597,8 +597,7 @@ inline char *part_of(const char *str, size_t max_len, size_t str_len) {
 }
 
 static int aisc_collect_sets(aisc_com *link, int mes_cnt, va_list parg, int o_type, int count) {
-    double dummy;
-    int type, o_t;
+    int type, o_t; // @@@ fix locals
     int attribute, code;
     int len, ilen;
     char        *str;
@@ -635,12 +634,13 @@ static int aisc_collect_sets(aisc_com *link, int mes_cnt, va_list parg, int o_ty
                 AISC_DUMP(aisc_collect_sets, int, link->aisc_mes_buffer[mes_cnt-1]);
                 break;
             case AISC_TYPE_DOUBLE: {
-                int *ptr;
-                dummy    = va_arg(parg, double);
-                AISC_DUMP(aisc_collect_sets, double, dummy);
-                ptr = (int*)&dummy;
-                link->aisc_mes_buffer[mes_cnt++] = *ptr++;
-                link->aisc_mes_buffer[mes_cnt++] = *ptr;
+                double_xfer darg;
+
+                darg.as_double = va_arg(parg, double);
+                AISC_DUMP(aisc_collect_sets, double, darg.as_double);
+
+                link->aisc_mes_buffer[mes_cnt++] = darg.as_int[0];
+                link->aisc_mes_buffer[mes_cnt++] = darg.as_int[1];
                 break;
             }
             case AISC_TYPE_STRING:

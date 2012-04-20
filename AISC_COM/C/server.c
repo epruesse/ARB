@@ -493,11 +493,6 @@ static int aisc_s_send_bytes_queue(int socket) {
     return 0;
 }
 
-union double_xfer {
-    double as_double;
-    int    as_int[2];
-};
-
 static long aisc_talking_get(long *in_buf, int size, long *out_buf, int) {
     aisc_server_error = NULL;
 
