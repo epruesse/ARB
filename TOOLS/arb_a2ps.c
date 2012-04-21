@@ -112,6 +112,7 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <errno.h>
 
 #ifdef __STDC__
 #include <stdlib.h>
@@ -1687,7 +1688,11 @@ int ARB_main(int argc, const char *cargv[]) {
 #if LPR_PRINT
     // Start lpr process
     if (lpr_print) {
-        pipe(fd);
+        if (pipe(fd) != 0) {
+            fprintf(stderr, "Could not create pipe (Reason: %s)\n", strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+
         if (fork() == 0) {
             dup2(fd[0], 0);
             close(fd[0]); close(fd[1]);
