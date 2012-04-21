@@ -7,8 +7,6 @@
 #define RM_LOCAL_FILES(in1)     RM_LOCAL_DIR(in1)
 
 #define RUN_IN_WINDOW(cmd)      ${ARB_XCMD} bash -x -c ''LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb/lib}";export LD_LIBRARY_PATH; cmd ;arb_wait''
-//attempt on next line breaks behavior:
-//#define RUN_IN_WINDOW(cmd)      ${ARB_XCMD:-cmdtool} bash -x -c LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb/lib}";export LD_LIBRARY_PATH; cmd ;arb_wait
 
 #include <warning.genmenu>
 
