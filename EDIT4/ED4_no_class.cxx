@@ -624,7 +624,7 @@ void ED4_jump_to_cursor_position(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_po
 
     if (pos>0) pos = bio2info(pos);
     else if (pos<0) { // jump negative (count from back)
-        int last_pos; // [1..]
+        int last_pos = -1; // [1..]
 
         switch (posType) {
             case ED4_POS_SEQUENCE: {
@@ -647,6 +647,7 @@ void ED4_jump_to_cursor_position(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_po
             }
         }
 
+        e4_assert(last_pos != -1);
         pos = bio2info(last_pos+1+pos);
     }
 

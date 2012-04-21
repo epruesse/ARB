@@ -976,7 +976,7 @@ GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype) {
         error = "got no db";
     }
     else {
-        bool saveASCII;
+        bool saveASCII = false;
         if (strchr(savetype, 'a')) saveASCII      = true;
         else if (strchr(savetype, 'b')) saveASCII = false;
         else error = GBS_global_string("Invalid savetype '%s' (expected 'a' or 'b')", savetype);

@@ -466,12 +466,12 @@ static AW_window *CreateDisplayHelices_window(AW_root *aw_root) {
         aws->at("helixSize");
         aws->create_input_field(AWAR_3D_HELIX_SIZE, 5);
         {
-            const char *helixRange;
+            const char  *helixRange = 0;
             Structure3D *s;
 #if defined(WARN_TODO)
 #warning s is not initialized here
 #endif
-            int rnaType = s->FindTypeOfRNA();
+            int          rnaType    = s->FindTypeOfRNA();
 
             switch (rnaType) {
                 case LSU_23S: helixRange = "[1-101]"; break;

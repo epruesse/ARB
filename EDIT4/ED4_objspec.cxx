@@ -77,13 +77,14 @@ public:
     }
 
     void init_object_specs() {
+#if defined(DEBUG)
         for (int i = 1; i<SPECIFIED_OBJECT_TYPES; ++i) {
             if (known_spec[i]) {
                 ED4_objspec& spec = *known_spec[i];
-
                 e4_assert(has_manager_that_may_contain(spec.level));
             }
         }
+#endif
     }
 };
 

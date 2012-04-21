@@ -30,7 +30,7 @@ endif
 # modify cflags for submakefiles 
 
 RAISE_WARNINGS=0# no warnings in this subtree
-UNIT_TESTS=0# no warnings in this subtree
+UNIT_TESTS=0# no tests in this subtree
 
 sub_cflags:=$(cflags)
 

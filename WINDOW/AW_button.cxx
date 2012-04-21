@@ -159,7 +159,7 @@ static void AW_variable_update_callback(Widget /*wgt*/, XtPointer variable_updat
     vui->change_from_widget(call_data);
 }
 
-static void record_awar_change(GBDATA*, int *cl_awar, GB_CB_TYPE cb_type) {
+static void record_awar_change(GBDATA*, int *cl_awar, GB_CB_TYPE IF_DEBUG(cb_type)) {
     AW_awar *awar = (AW_awar*)cl_awar;
     aw_assert(cb_type == GB_CB_CHANGED);
     awar->root->prvt->recording->record_awar_change(awar);

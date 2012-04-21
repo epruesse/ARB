@@ -1,14 +1,27 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 .SUFFIXES: .o .c .cxx .depend
 
+# --------------------------------------------------------------------------------
+# modify cflags 
+
+RAISE_WARNINGS=0# no warnings in this subtree
+
+my_cflags:=$(cflags)
+ifeq ('$(RAISE_WARNINGS)','0')
+my_cflags:=$(subst -W -Wall,-w,$(my_cflags))
+endif
+
+# --------------------------------------------------------------------------------
+
+
 CPP_OBJECTS = island_hopping.o i-hopper.o align.o mem.o trnsprob.o
 
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .c.o:
-	$(ACC) $(cflags) -DARB -c $<  $(CPPINCLUDES) $(POST_COMPILE)
+	$(ACC) $(my_cflags) -DARB -c $<  $(CPPINCLUDES) $(POST_COMPILE)
 .cxx.o:
-	$(CPP) $(cflags) -DARB -c $<  $(CPPINCLUDES) $(POST_COMPILE)
+	$(CPP) $(my_cflags) -DARB -c $<  $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
