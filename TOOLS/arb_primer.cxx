@@ -47,36 +47,40 @@ struct arb_prm_struct : virtual Noncopyable {
 };
 static arb_prm_struct aprm;
 
+inline int getNumFromStdin() {
+    // returns entered number (or 0)
+    int i = 0;
+    if (fgets(aprm.buffer, PRM_BUFFERSIZE, stdin)) {
+        i = atoi(aprm.buffer);
+    }
+    return i;
+}
 
 static GB_ERROR arb_prm_menu() {
-    int i;
     printf(" Please select an Alignment:\n");
+    int i;
     for (i=1; aprm.alignment_names[i-1]; ++i) {
         printf("%i: %s\n", i, aprm.alignment_names[i-1]);
     }
-
     aprm.max_name = i;
-    fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
-    i             = atoi(aprm.buffer);
 
     GB_ERROR error = NULL;
+    i = getNumFromStdin();
     if ((i<1) || (i>=aprm.max_name)) {
         error = GBS_global_string("selection %i out of range", i);
     }
     else {
         aprm.source = aprm.alignment_names[i-1];
+
         printf("This module will search for primers for all positions.\n"
                "   The best result is one primer for all (marked) taxa , the worst case\n"
                "   are n primers for n taxa.\n"
                "   Please specify the maximum number of primers:\n"
-               );
-        fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
-        i           = atoi(aprm.buffer);
-        aprm.prmanz = i;
-        printf("Select minimum length of a primer, the maximum will be (minimum + %i)\n",
-               ADD_LEN);
-        fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
-        i           = atoi(aprm.buffer);
+            );
+        aprm.prmanz = getNumFromStdin();
+
+        printf("Select minimum length of a primer, the maximum will be (minimum + %i)\n", ADD_LEN);
+        i = getNumFromStdin();
         if ((i<4) || (i>30)) {
             error = GBS_global_string("selection %i out of range", i);
         }
@@ -86,8 +90,7 @@ static GB_ERROR arb_prm_menu() {
             printf("There may be short sequences or/and deletes in full sequences\n"
                    "   So a primer normally does not match all sequences\n"
                    "   Specify minimum percentage of species (0-100 %%):\n");
-            fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
-            i = atoi(aprm.buffer);
+            i = getNumFromStdin();
             if ((i<1) || (i>100)) {
                 error = GBS_global_string("selection %i out of range", i);
             }
@@ -95,10 +98,14 @@ static GB_ERROR arb_prm_menu() {
                 aprm.prmsmin = i;
 
                 printf("Write output to file (enter \"\" to write to screen)\n");
-                fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
-                char *lf = strchr(aprm.buffer, '\n');
-                if (lf) lf[0] = 0; // remove linefeed from filename 
-                aprm.outname = strdup(aprm.buffer);
+                if (fgets(aprm.buffer, PRM_BUFFERSIZE, stdin)) {
+                    char *lf      = strchr(aprm.buffer, '\n');
+                    if (lf) lf[0] = 0; // remove linefeed from filename
+                    aprm.outname  = strdup(aprm.buffer);
+                }
+                else {
+                    aprm.outname  = strdup("");
+                }
             }
         }
     }
