@@ -638,10 +638,7 @@ static void set_AWAR(const char *AWAR_path, char *content)
     ARB_begin_transaction();
 
     GBDATA *gb_awar= GB_search(gb_data, AWAR_path, GB_FIND);
-    if (gb_awar) {
-        GB_ERROR error = GB_write_string(gb_awar, content);
-        pgt_assert(!error);
-    }
+    if (gb_awar) ASSERT_NO_ERROR(GB_write_string(gb_awar, content));
 
     ARB_commit_transaction();
 }
@@ -679,11 +676,7 @@ void set_CONFIG(const char *CONFIG_path, const char *content)
     check_create_AWAR(global_gbConfig, CONFIG_path, false);
 
     GBDATA *gb_awar= GB_search(global_gbConfig, CONFIG_path, GB_FIND);
-
-    if(gb_awar) {
-        GB_ERROR error = GB_write_string(gb_awar, content);
-        pgt_assert(!error);
-    }
+    if (gb_awar) ASSERT_NO_ERROR(GB_write_string(gb_awar, content));
 }
 
 

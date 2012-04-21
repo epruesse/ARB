@@ -880,7 +880,7 @@ const PosRange *ED4_char_table::changed_range(const char *string1, const char *s
     int j;
     int k;
 
-    int start, end;
+    int start = -1, end = -1;
 
     for (i=0; i<l; i++) {       // search wordwise (it's faster)
         if (range1[i] != range2[i]) {
@@ -909,6 +909,8 @@ const PosRange *ED4_char_table::changed_range(const char *string1, const char *s
             return 0;
         }
     }
+
+    e4_assert(start != -1 && end != -1);
 
     for (j=r-1; j>=0; j--) {    // search rest backwards
         if (string1[k+j] != string2[k+j]) {

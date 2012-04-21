@@ -1885,7 +1885,7 @@ class Aligner : virtual Noncopyable {
     ARB_ERROR alignToRelatives(GBDATA *gb_species_data, int max_seq_length);
 
     void triggerAction(GBDATA *gb_species, bool has_been_aligned) {
-        bool mark;
+        bool mark = false;
         switch (error_action) {
             case FA_MARK_FAILED:  mark = !has_been_aligned; break;
             case FA_MARK_ALIGNED: mark = has_been_aligned; break;

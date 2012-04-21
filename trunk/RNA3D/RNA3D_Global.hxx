@@ -79,8 +79,8 @@
 struct Vector3 {
     float x, y, z;
 
-    Vector3() {}    // A default constructor
-    Vector3(float X, float Y, float Z) { x = X; y = Y; z = Z; }
+    Vector3() : x(0), y(0), z(0) {}    // default is zero vector
+    Vector3(float X, float Y, float Z) : x(X), y(Y), z(Z) {}
 
     // Overloading Operator(+,-,*,/) functions
 

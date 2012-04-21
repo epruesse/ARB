@@ -262,8 +262,10 @@ inline bool contradicted(bool hypo1, bool hypo2) { return !correlated(hypo1, hyp
 
 #else
 
+template <typename T> inline void dont_warn_unused_result(T) {}
+
 # define ASSERT_RESULT(Type, Expected, Expr) do {       \
-        (void)Expr;                                     \
+        dont_warn_unused_result<Type>(Expr);            \
     } while(0)
 
 # define ASSERT_RESULT_PREDICATE(Pred, Expr) do {       \

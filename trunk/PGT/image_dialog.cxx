@@ -1185,8 +1185,7 @@ void imageDialog::set_ARB_image_path(const char *path)
     if(gb_proteom)
     {
         ARB_begin_transaction();
-        GB_ERROR error = GBT_write_string(gb_proteom, "image_path", path);
-        pgt_assert(!error);
+        ASSERT_NO_ERROR(GBT_write_string(gb_proteom, "image_path", path));
         ARB_commit_transaction();
     }
 

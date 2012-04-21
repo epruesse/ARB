@@ -21,10 +21,12 @@ inline GBDATA *dbserver_container(GBDATA *gb_main) {
 }
 inline GBDATA *dbserver_entry(GBDATA *gb_main, const char *entry) {
     GBDATA *gb_entry = GB_searchOrCreate_string(dbserver_container(gb_main), entry, "<undefined>");
+#if defined(DEBUG)
     if (gb_entry) {
         GBDATA *gb_brother = GB_nextEntry(gb_entry);
         arb_assert(!gb_brother);
     }
+#endif
     return gb_entry;
 }
 
