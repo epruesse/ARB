@@ -159,8 +159,8 @@ int aw_question(const char *uniqueID, const char *question, const char *buttons,
             aw_msg->at(10, 10);
             aw_msg->auto_space(10, 10);
 
-            aw_msg->button_length(question_length+1);
-            aw_msg->button_height(question_lines);
+            aw_msg->button_length(question_length+3);
+            aw_msg->button_height(question_lines+1);
 
             aw_msg->create_button(0, AWAR_QUESTION);
 
@@ -183,7 +183,7 @@ int aw_question(const char *uniqueID, const char *question, const char *buttons,
                     pos = comma+1;
                 }
 
-                aw_msg->button_length(max_button_length+1);
+                aw_msg->button_length(max_button_length+2);
             }
             else {
                 aw_msg->button_length(0);
