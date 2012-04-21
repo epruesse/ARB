@@ -405,10 +405,11 @@ static void aw_status_timer_event(AW_root *awr, AW_CL, AW_CL)
     if (aw_stg.mode == AW_STATUS_ABORT) {
         int action = aw_question(NULL,
                                  "Couldn't quit properly in time.\n"
-                                 "Either wait again for the abortion,\n"
-                                 "kill the calculating process or\n"
-                                 "continue the calculation.",
-                                 "Wait again,Kill,Continue");
+                                 "Now you can either\n"
+                                 "- wait again (recommended),\n"
+                                 "- kill the whole application(!) or\n"
+                                 "- continue.",
+                                 "Wait again,Kill application!,Continue");
 
         switch (action) {
             case 0:
@@ -416,7 +417,7 @@ static void aw_status_timer_event(AW_root *awr, AW_CL, AW_CL)
             case 1: {
                 char buf[255];
                 sprintf(buf, "kill -9 %i", aw_stg.pid);
-                system(buf);
+                aw_message_if(GBK_system(buf));
                 exit(0);
             }
             case 2: {
