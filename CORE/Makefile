@@ -67,8 +67,12 @@ arb_cs.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_file.o: arb_core.h
 arb_file.o: arb_file.h
 arb_file.o: arb_msg.h
+arb_file.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_file.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_file.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_file.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_file.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_file.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 arb_handlers.o: arb_core.h
 arb_handlers.o: arb_handlers.h
