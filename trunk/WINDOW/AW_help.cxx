@@ -174,8 +174,7 @@ static void aw_help_edit_help(AW_window *aww) {
 #endif // DEBUG
 
         const char *copy_cmd = GBS_global_string("cp %s/FORM.hlp %s", base, helpfile); // def_hlp_res("FORM.hlp"); (see check_ressources.pl)
-        printf("[Executing '%s']\n", copy_cmd);
-        system(copy_cmd);
+        aw_message_if(GBK_system(copy_cmd));
     }
 
     AW_edit(helpfile);

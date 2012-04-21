@@ -548,8 +548,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
 
         // call and go...
         progress.subtitle("calling external program");
-        printf("Action: %s\n", Action);
-        system(Action);
+        aw_message_if(GBK_system(Action));
         free(Action);
 
         oldnumelements=DataSet->numelements;

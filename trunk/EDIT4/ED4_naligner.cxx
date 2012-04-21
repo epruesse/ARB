@@ -110,10 +110,10 @@ static void aed_start_naligning(AW_window *aw) {
 
 
     GBS_strcat(strstruct, "echo press \"(return)\" to close window;read a' &");
-    buffer = GBS_strclose(strstruct);
-    system(buffer);
-    printf("%s\n", buffer);
-    delete buffer;
+    buffer         = GBS_strclose(strstruct);
+    GB_ERROR error = GBK_system(buffer);
+    if (error) fputs(error, stderr);
+    free(buffer);
 }
 
 
