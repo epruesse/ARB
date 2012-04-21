@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IS_X_EDITOR=0# no idea
+IS_X_EDITOR=0
 
 if [ -z "$ARB_TEXTEDIT" ]; then
         echo '$ARB_TEXTEDIT is not defined - searching for an editor..'
