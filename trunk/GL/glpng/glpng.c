@@ -251,23 +251,23 @@ static void Build2DMipmaps(GLint components, GLint width, GLint height, GLenum f
 }
 
 static int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
-    GLint pack, unpack;
     unsigned char header[8];
-    png_structp png;
-    png_infop   info;
-    png_infop   endinfo;
-    png_bytep   data;
-    ;
-    png_bytep  *row_p;
+    
+    if (fread(header, 1, 8, fp) != 8) return 0;
+    if (!PNG_CHECK_SIG(header, 8)) return 0;
+
+    GLint        pack, unpack;
+    png_structp  png;
+    png_infop    info;
+    png_infop    endinfo;
+    png_bytep    data;
+    png_bytep   *row_p;
     double       fileGamma;
 
     png_uint_32 width, height, rw, rh;
     int depth, color;
 
     png_uint_32 i;
-
-    fread(header, 1, 8, fp);
-    if (!PNG_CHECK_SIG(header, 8)) return 0;
 
     png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     info = png_create_info_struct(png);

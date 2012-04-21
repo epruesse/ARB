@@ -120,14 +120,12 @@ static void initExtensions() {
         strcat(missingExtensions, "\nOpenGL Version 1.2");
     }
     if (strlen(missingExtensions) > 0) {
-        printf("ERROR: Some needed extensions are not present:%s\n", missingExtensions);
-        char dummy;     scanf("%c", &dummy);        exit(-1);
+        GBK_terminatef("ERROR: Some needed extensions are not present:%s\n", missingExtensions);
     }
-    else {
+
 #ifdef DEBUG
-        printf("DEBUG: All mandatory extensions seem to be ok.\n");
+    printf("DEBUG: All mandatory extensions seem to be ok.\n");
 #endif // DEBUG
-    }
 
     // the following code checks if point sprites could be used and activates them if possible
     missingExtensions[0] = 0;
