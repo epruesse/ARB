@@ -121,7 +121,7 @@ GBDATA *GBT_find_or_create(GBDATA *father, const char *key, long delete_level);
 char *GBT_get_default_helix(GBDATA *);
 char *GBT_get_default_helix_nr(GBDATA *);
 char *GBT_get_default_ref(GBDATA *);
-GB_ERROR GBT_check_arb_file(const char *name);
+GB_ERROR GBT_check_arb_file(const char *name) __ATTR__USERESULT;
 void GBT_scan_db(StrArray &fieldNames, GBDATA *gbd, const char *datapath);
 void GBT_install_message_handler(GBDATA *gb_main);
 void GBT_message(GBDATA *gb_main, const char *msg);

@@ -361,7 +361,7 @@ static char *pixmapPath(const char *pixmapName) {
 
 
 #define MAX_LINE_LENGTH 200
-static GB_ERROR detect_bitmap_size(const char *pixmapname, int *width, int *height) {
+__ATTR__USERESULT static GB_ERROR detect_bitmap_size(const char *pixmapname, int *width, int *height) {
     GB_ERROR err = 0;
 
     *width  = 0;
@@ -382,8 +382,10 @@ static GB_ERROR detect_bitmap_size(const char *pixmapname, int *width, int *heig
         bool done    = false;
 
         while (!done && !err) {
-            fgets(buffer, MAX_LINE_LENGTH, in);
-            if (strchr(buffer, 0)[-1] != '\n') {
+            if (!fgets(buffer, MAX_LINE_LENGTH, in)) {
+                err = GB_IO_error("reading", pixmapname);
+            }
+            else if (strchr(buffer, 0)[-1] != '\n') {
                 err = GBS_global_string("Line too long ('%s')", buffer); // increase MAX_LINE_LENGTH above
             }
             else if (strncmp(buffer, "#define", 7) != 0) {
@@ -401,12 +403,15 @@ static GB_ERROR detect_bitmap_size(const char *pixmapname, int *width, int *heig
 
         if (done && ((*width == 0) || (*height == 0))) {
             if (strstr(buffer, "XPM") != NULL) {
-                fgets(buffer, MAX_LINE_LENGTH, in);
-                fgets(buffer, MAX_LINE_LENGTH, in);
-                char *temp = strtok(buffer+1, " ");
-                *width = atoi(temp);
-                temp = strtok(NULL,  " ");
-                *height = atoi(temp);
+                if (!fgets(buffer, MAX_LINE_LENGTH, in) || !fgets(buffer, MAX_LINE_LENGTH, in)) {
+                    err = GB_IO_error("reading", pixmapname);
+                }
+                else {
+                    char *temp = strtok(buffer+1, " ");
+                    *width     = atoi(temp);
+                    temp       = strtok(NULL,  " ");
+                    *height    = atoi(temp);
+                }
             }
             else {
                 err = "can't detect size";
