@@ -16,12 +16,13 @@
 #include <arbdbt.h>
 #include <arb_str.h>
 #include <arb_file.h>
+#include <static_assert.h>
+#include <arb_defs.h>
 
 #include "gb_storage.h"
 #include "gb_localdata.h"
 #include "gb_map.h"
 #include "gb_load.h"
-#include <static_assert.h>
 #include "ad_io_inline.h"
 
 static int gb_verbose_mode = 0;
@@ -1716,9 +1717,114 @@ GB_ERROR GBT_check_arb_file(const char *name) { // goes to header: __ATTR__USERE
 
 #include <test_unit.h>
 
-void TEST_dummy() {
-    // just here to trigger coverage analysis as long as there are no real tests
-    // (much code from ad_load.cxx is used by ad_save_load.cxx)
+void TEST_io_number() {
+    struct data {
+        long  val;
+        short size_expd;
+    };
+
+    data DATA[] = {
+        { 0x0,      1 },
+        { 0x1,      1 },
+        { 0x7f,     1 },
+                    
+        { 0x80,     2 },
+        { 0x81,     2 },
+        { 0xff,     2 },
+        { 0x100,    2 },
+        { 0x1234,   2 },
+        { 0x3fff,   2 },
+                    
+        { 0x4000,   3 },
+        { 0x4001,   3 },
+        { 0xffff,   3 },
+        { 0x1fffff, 3 },
+
+        { 0x200000, 4 },
+        { 0x7fffff, 4 },
+        { 0x800002, 4 },
+        { 0xffffff, 4 },
+        { 0xfffffff, 4 },
+        
+        { 0x10000000, 5 },
+        { 0x7fffffff, 5 },
+        { 0x80000000, 5 },
+        { 0x80808080, 5 },
+        { 0xffffffff, 5 },
+    };
+
+    const char *numbers   = "numbers.test";
+    long        writeSize = 0;
+    long        readSize  = 0;
+
+    {
+        FILE *out = fopen(numbers, "wb");
+        TEST_ASSERT(out);
+
+        long lastPos = 0;
+        for (size_t i = 0; i<ARRAY_ELEMS(DATA); ++i) {
+            data& d = DATA[i];
+            TEST_ANNOTATE_ASSERT(GBS_global_string("val=0x%lx", d.val));
+            gb_put_number(d.val, out);
+
+            long pos           = ftell(out);
+            long bytes_written = pos-lastPos;
+
+            if (d.val <= 0xfffffff) {
+                TEST_ASSERT_EQUAL(bytes_written, d.size_expd);
+            }
+            else {
+                TEST_ASSERT_EQUAL__BROKEN(bytes_written, d.size_expd);
+            }
+            
+            writeSize += bytes_written;
+
+            lastPos = pos;
+        }
+
+        fclose(out);
+    }
+
+    {
+        FILE *in = fopen(numbers, "rb");
+        TEST_ASSERT(in);
+
+        long lastPos = 0;
+
+        for (size_t i = 0; i<ARRAY_ELEMS(DATA); ++i) {
+            data& d = DATA[i];
+            TEST_ANNOTATE_ASSERT(GBS_global_string("val=0x%lx", d.val));
+
+            long val = gb_get_number(in);
+            if (d.val <= 0xfffffff || d.val == 0xffffffff) {
+                TEST_ASSERT_EQUAL(val, d.val);
+            }
+            else {
+                TEST_ASSERT_EQUAL__BROKEN(val, d.val);
+            }
+
+            long pos        = ftell(in);
+            long bytes_read = pos-lastPos;
+
+            if (d.val <= 0xfffffff) {
+                TEST_ASSERT_EQUAL(bytes_read, d.size_expd);
+            }
+            else {
+                TEST_ASSERT_EQUAL__BROKEN(bytes_read, d.size_expd);
+            }
+
+            readSize += bytes_read;
+
+            lastPos = pos;
+        }
+
+        fclose(in);
+    }
+
+    TEST_ASSERT_EQUAL(GB_size_of_file(numbers), writeSize);
+    TEST_ASSERT_EQUAL(writeSize, readSize);
+
+    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(numbers));
 }
 
 #endif
