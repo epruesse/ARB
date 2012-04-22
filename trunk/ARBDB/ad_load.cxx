@@ -1769,14 +1769,8 @@ void TEST_io_number() {
 
             long pos           = ftell(out);
             long bytes_written = pos-lastPos;
+            TEST_ASSERT_EQUAL(bytes_written, d.size_expd);
 
-            if (d.val <= 0xfffffff) {
-                TEST_ASSERT_EQUAL(bytes_written, d.size_expd);
-            }
-            else {
-                TEST_ASSERT_EQUAL__BROKEN(bytes_written, d.size_expd);
-            }
-            
             writeSize += bytes_written;
 
             lastPos = pos;
@@ -1796,22 +1790,11 @@ void TEST_io_number() {
             TEST_ANNOTATE_ASSERT(GBS_global_string("val=0x%lx", d.val));
 
             long val = gb_get_number(in);
-            if (d.val <= 0xfffffff || d.val == 0xffffffff) {
-                TEST_ASSERT_EQUAL(val, d.val);
-            }
-            else {
-                TEST_ASSERT_EQUAL__BROKEN(val, d.val);
-            }
+            TEST_ASSERT_EQUAL(val, d.val);
 
             long pos        = ftell(in);
             long bytes_read = pos-lastPos;
-
-            if (d.val <= 0xfffffff) {
-                TEST_ASSERT_EQUAL(bytes_read, d.size_expd);
-            }
-            else {
-                TEST_ASSERT_EQUAL__BROKEN(bytes_read, d.size_expd);
-            }
+            TEST_ASSERT_EQUAL(bytes_read, d.size_expd);
 
             readSize += bytes_read;
 
