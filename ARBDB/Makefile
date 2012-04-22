@@ -192,6 +192,7 @@ ad_load.o: gb_prot.h
 ad_load.o: gb_storage.h
 ad_load.o: gb_tune.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_core.h
+ad_load.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_file.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_msg.h

@@ -74,7 +74,8 @@ inline void gb_put_number(long i, FILE *out) {
         putc((int)i, out);
         return;
     }
-    gb_assert(0); // overflow
+    // gb_assert(0); // overflow
+    return;
 }
 
 inline long gb_get_number(FILE *in) {
