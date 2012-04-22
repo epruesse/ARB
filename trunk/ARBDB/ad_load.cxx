@@ -1032,6 +1032,18 @@ static void gb_search_system_folder(GBDATA *gb_main) {
     GB_warning("***** found (good)");
 }
 
+inline bool read_keyword(const char *expected_keyword, FILE *in, GBCONTAINER *gbc) {
+    gb_assert(strlen(expected_keyword) == 4); // mandatory
+
+    long val         = gb_read_in_uint32(in, 0);
+    bool as_expected = strncmp((char*)&val, expected_keyword, 4) == 0;
+    
+    if (!as_expected) {
+        gb_read_bin_error(in, (GBDATA *)gbc, GBS_global_string("keyword '%s' not found", expected_keyword));
+    }
+    return as_expected;
+}
+
 static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
     int   c = 1;
     long  i;
@@ -1052,13 +1064,10 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
         return 1;
     }
 
+    if (!read_keyword("vers", in, gbd)) return 1;
+
+    // detect byte order in ARB file
     i = gb_read_in_uint32(in, 0);
-    if (strncmp((char *)&i, "vers", 4)) {
-        gb_read_bin_error(in, (GBDATA *)gbd, "keyword 'vers' not found");
-        return 1;
-    }
-    i = gb_read_in_uint32(in, 0);
-    
     bool reversed;
     switch (i) {
         case 0x01020304: reversed = false; break;
@@ -1079,18 +1088,14 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
         return 1;
     }
 
-    buffer = GB_give_buffer(256);
-    i = gb_read_in_uint32(in, 0);
-    if (strncmp((char *)&i, "keys", 4)) {
-        gb_read_bin_error(in, (GBDATA *)gbd, "keyword 'keys' not found");
-        return 1;
-    }
+    if (!read_keyword("keys", in, gbd)) return 1;
 
     if (!Main->key_2_index_hash) Main->key_2_index_hash = GBS_create_hash(ALLOWED_KEYS, GB_MIND_CASE);
 
     first_free_key = 0;
     gb_free_all_keys(Main);
 
+    buffer = GB_give_buffer(256);
     while (1) {         // read keys
         long nrefs = 0;
         if (version) {
@@ -1133,11 +1138,8 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
 
     Main->first_free_key = first_free_key;
 
-    i = gb_read_in_uint32(in, 0);
-    if (strncmp((char *)&i, "time", 4)) {
-        gb_read_bin_error(in, (GBDATA *)gbd, "keyword 'time' not found");
-        return 1;
-    }
+    if (!read_keyword("time", in, gbd)) return 1;
+    
     for (j=0; j<(ALLOWED_DATES-1); j++) {         // read times
         p = buffer;
         for (k=0; k<256; k++) {
@@ -1159,11 +1161,8 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
     }
     Main->last_updated = (unsigned int)j;
 
-    i = gb_read_in_uint32(in, 0);
-    if (strncmp((char *)&i, "data", 4)) {
-        gb_read_bin_error(in, (GBDATA *)gbd, "keyword 'data' not found");
-        return 0;
-    }
+    if (!read_keyword("data", in, gbd)) return 1; 
+
     nodecnt = gb_read_in_uint32(in, reversed);
     GB_give_buffer(256);
 
@@ -1250,6 +1249,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
             }
 
             if (Main->clock<=0) Main->clock++;
+            // fall-through
         case 1:
             error = gb_read_bin_rek_V2(in, gbd, nodecnt, version, reversed, 0);
             break;
@@ -1347,6 +1347,12 @@ static GB_ERROR gb_login_remote(GB_MAIN_TYPE *Main, const char *path, const char
         }
     }
     return error;
+}
+
+inline bool is_binary_db_id(int id) {
+    return (id == 0x56430176)
+        || (id == GBTUM_MAGIC_NUMBER)
+        || (id == GBTUM_MAGIC_REVERSED);
 }
 
 static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
@@ -1540,7 +1546,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                 if (input != stdin) i = gb_read_in_uint32(input, 0);
                 else i                = 0;
 
-                if ((i == 0x56430176) || (i == GBTUM_MAGIC_NUMBER) || (i == GBTUM_MAGIC_REVERSED)) {
+                if (is_binary_db_id(i)) {
                     i = gb_read_bin(input, gbd, false);     // read or map whole db
                     gbd = Main->data;
                     fclose(input);
@@ -1578,8 +1584,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                                 GB_warning(warning);
                             }
                             i = gb_read_in_uint32(input, 0);
-                            if ((i == 0x56430176) || (i == GBTUM_MAGIC_NUMBER) || (i == GBTUM_MAGIC_REVERSED))
-                            {
+                            if (is_binary_db_id(i)) {
                                 err = gb_read_bin(input, gbd, true);
                                 fclose (input);
 
@@ -1690,10 +1695,9 @@ GB_ERROR GBT_check_arb_file(const char *name) { // goes to header: __ATTR__USERE
             error = GBS_global_string("Cannot find file '%s'", name);
         }
         else {
-            long i      = gb_read_in_uint32(in, 0);
-            bool is_bin = (i == 0x56430176) || (i == GBTUM_MAGIC_NUMBER) || (i == GBTUM_MAGIC_REVERSED);
+            long i = gb_read_in_uint32(in, 0);
 
-            if (!is_bin) {
+            if (!is_binary_db_id(i)) {
                 rewind(in);
                 char buffer[100];
                 if (!fgets(buffer, 50, in)) {
