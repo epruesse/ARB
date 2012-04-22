@@ -74,6 +74,7 @@ GB_ERROR GB_fix_database(GBDATA *gb_main);
 void GB_set_verbose(void);
 void GB_set_next_main_idx(long idx);
 GBDATA *GB_open(const char *path, const char *opent);
+GB_ERROR GBT_check_arb_file(const char *name) __ATTR__USERESULT;
 
 /* ad_save_load.cxx */
 GB_ERROR GB_save(GBDATA *gb, const char *path, const char *savetype);

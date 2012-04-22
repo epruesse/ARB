@@ -51,8 +51,6 @@ GB_CSTR gb_oldQuicksaveName(GB_CSTR path, int nr);
 GB_CSTR gb_quicksaveName(GB_CSTR path, int nr);
 GB_CSTR gb_mapfile_name(GB_CSTR path);
 long gb_ascii_2_bin(const char *source, GBDATA *gbd);
-long gb_read_in_long(FILE *in, long reversed);
-long gb_read_number(FILE *in);
 long gb_read_bin_error(FILE *in, GBDATA *gbd, const char *text);
 
 /* adcache.cxx */
