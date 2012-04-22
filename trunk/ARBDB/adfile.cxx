@@ -226,10 +226,10 @@ void GBS_read_dir(StrArray& names, const char *dir, const char *mask) {
      * -      in format '/expr/' -> use regular expression (case sensitive)
      * - else it does a simple string match with wildcards ("?*")
      *
-     * Result is a NULL terminated array of char* (sorted alphanumerically)
-     * Use GBT_free_names() to free the result.
+     * Result are inserted into 'names' and 'names' is sorted alphanumerically.
+     * Note: 'names' are not cleared, so several calls with the same StrArray get collected.
      *
-     * In case of error, result is NULL and error is exported
+     * In case of error, result is empty and error is exported.
      *
      * Special case: If 'dir' is the name of a file, return an array with file as only element
      */
@@ -240,22 +240,23 @@ void GBS_read_dir(StrArray& names, const char *dir, const char *mask) {
     DIR  *dirstream = opendir(fulldir);
 
     if (!dirstream) {
-        if (GB_is_readablefile(fulldir)) {
+        if (GB_is_readablefile(fulldir)) { // fixed: returned true for directories before (4/2012)
             names.put(strdup(fulldir));
         }
         else {
+            // @@@ does too much voodoo here - fix
             char *lslash = strrchr(fulldir, '/');
 
             if (lslash) {
                 lslash[0]  = 0;
                 char *name = lslash+1;
                 if (GB_is_directory(fulldir)) {
-                    GBS_read_dir(names, fulldir, name);
+                    GBS_read_dir(names, fulldir, name); // @@@ concat mask to name?
                 }
                 lslash[0] = '/';
             }
 
-            if (names.empty()) GB_export_errorf("can't read directory '%s'", fulldir);
+            if (names.empty()) GB_export_errorf("can't read directory '%s'", fulldir); // @@@ wrong place for error; maybe return error as result
         }
     }
     else {
@@ -696,6 +697,7 @@ void TEST_GBS_read_dir() {
     TEST_JOINED_DIR_CONTENT_EQUALS("GDE/CLUSTAL", "*.c",       "/amenu.c!/clustalv.c!/gcgcheck.c!/myers.c!/sequence.c!/showpair.c!/trees.c!/upgma.c!/util.c");
     TEST_JOINED_DIR_CONTENT_EQUALS("GDE/CLUSTAL", "/s.*\\.c/", "/clustalv.c!/myers.c!/sequence.c!/showpair.c!/trees.c");
     TEST_JOINED_DIR_CONTENT_EQUALS("GDE",         NULL,        "/Makefile!/README");
+    TEST_JOINED_DIR_CONTENT_EQUALS("GDE",         "*",         "/Makefile!/README");
 }
 
 void TEST_find_file() {

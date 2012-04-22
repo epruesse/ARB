@@ -120,15 +120,19 @@ bool GB_is_privatefile(const char *path, bool read_private) {
     return isprivate;
 }
 
-bool GB_is_readablefile(const char *filename) {
-    if (filename) {
-        FILE *in = fopen(filename, "r");
+static bool GB_is_readable(const char *file_or_dir) {
+    if (file_or_dir) {
+        FILE *in = fopen(file_or_dir, "r");
         if (in) {
             fclose(in);
             return true;
         }
     }
     return false;
+}
+
+bool GB_is_readablefile(const char *filename) {
+    return !GB_is_directory(filename) && GB_is_readable(filename);
 }
 
 bool GB_is_directory(const char *path) {
@@ -282,14 +286,17 @@ void TEST_basic_file_checks() {
         TEST_ASSERT(!GB_is_directory(noFile));
         TEST_ASSERT(GB_is_directory(someDir));
         TEST_ASSERT(!GB_is_directory(NULL));
-        
+
         TEST_ASSERT(GB_is_readablefile(linkToFile));
-        TEST_ASSERT__BROKEN(!GB_is_readablefile(linkToDir));
+        TEST_ASSERT(!GB_is_readablefile(linkToDir));
         TEST_ASSERT(!GB_is_readablefile(linkNowhere));
         TEST_ASSERT(GB_is_readablefile(someFile));
         TEST_ASSERT(!GB_is_readablefile(noFile));
-        TEST_ASSERT__BROKEN(!GB_is_readablefile(someDir));
+        TEST_ASSERT(!GB_is_readablefile(someDir));
         TEST_ASSERT(!GB_is_readablefile(NULL));
+        
+        TEST_ASSERT(GB_is_readable(linkToDir));
+        TEST_ASSERT(GB_is_readable(someDir));
 
         TEST_ASSERT_DIFFERENT(GB_mode_of_link(linkToFile), GB_mode_of_file(someFile));
         TEST_ASSERT_DIFFERENT(GB_mode_of_link(linkToDir), GB_mode_of_file(someDir));
