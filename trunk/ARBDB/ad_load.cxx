@@ -22,6 +22,7 @@
 #include "gb_map.h"
 #include "gb_load.h"
 #include <static_assert.h>
+#include "ad_io_inline.h"
 
 static int gb_verbose_mode = 0;
 void GB_set_verbose() {
@@ -599,57 +600,6 @@ static GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbd) {
 // --------------------------
 //      Read binary files
 
-inline void swap(unsigned char& c1, unsigned char& c2) { unsigned char c = c1; c1 = c2; c2 = c; }
-
-inline uint32_t gb_read_in_uint32(FILE *in, bool reversed) {
-    // opposite of gb_write_out_uint32
-    union {
-        uint32_t      as_uint32;
-        unsigned char as_char[4];
-    } data;
-
-    COMPILE_ASSERT(sizeof(data) == 4);
-    COMPILE_ASSERT(sizeof(data.as_uint32) == 4);
-
-    ASSERT_RESULT(size_t, 1, fread(&data, sizeof(data), 1, in));
-    if (reversed) {
-        swap(data.as_char[0], data.as_char[3]);
-        swap(data.as_char[1], data.as_char[2]);
-    }
-    return data.as_uint32;
-}
-
-inline long gb_read_number(FILE *in) {
-    // opposite of gb_put_number
-    unsigned int c0, c1, c2, c3, c4;
-    c0 = getc(in);
-    if (c0 & 0x80) {
-        c1 = getc(in);
-        if (c0 & 0x40) {
-            c2 = getc(in);
-            if (c0 & 0x20) {
-                c3 = getc(in);
-                if (c0 &0x10) {
-                    c4 = getc(in);
-                    return c4 | (c3<<8) | (c2<<16) | (c1<<8);
-                }
-                else {
-                    return (c3) | (c2<<8) | (c1<<16) | ((c0 & 0x0f)<<24);
-                }
-            }
-            else {
-                return (c2) | (c1<<8) | ((c0 & 0x1f)<<16);
-            }
-        }
-        else {
-            return (c1) | ((c0 & 0x3f)<<8);
-        }
-    }
-    else {
-        return c0;
-    }
-}
-
 static long gb_read_bin_rek(FILE *in, GBCONTAINER *gbd, long nitems, long version, bool reversed) {
     long          item;
     long          type, type2;
@@ -876,7 +826,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long ver
             func = getc(in);
             switch (func) {
                 case 1:     //  delete entry
-                    index = (int)gb_read_number(in);
+                    index = (int)gb_get_number(in);
                     if (index >= gbd->d.nheader) {
                         gb_create_header_array(gbd, index+1);
                         header = GB_DATA_LIST_HEADER(gbd->d);
@@ -899,7 +849,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long ver
 
         security = getc(in);
         type2 = (type>>4)&0xf;
-        key = (GBQUARK)gb_read_number(in);
+        key = (GBQUARK)gb_get_number(in);
 
         if (key >= Main->keycnt || !Main->keys[key].key) {
             GB_export_error("Inconsistent Database: Changing field identifier to 'main'");
@@ -911,7 +861,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long ver
         gb2 = NULL;
         gbc = NULL;
         if (version == 2) {
-            index = (int)gb_read_number(in);
+            index = (int)gb_get_number(in);
             if (index >= gbd->d.nheader) {
                 gb_create_header_array(gbd, index+1);
                 header = GB_DATA_LIST_HEADER(gbd->d);
@@ -998,8 +948,8 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long ver
             case GB_BYTES:
             case GB_INTS:
             case GB_FLOATS:
-                size    = gb_read_number(in);
-                memsize = gb_read_number(in);
+                size    = gb_get_number(in);
+                memsize = gb_get_number(in);
 
                 DEBUG_DUMP_INDENTED(deep, GBS_global_string("size=%li memsize=%li", size, memsize));
                 if (GB_CHECKINTERN(size, memsize)) {
@@ -1019,7 +969,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long ver
                 GB_SETSMD(gb2, size, memsize, p);
                 break;
             case GB_DB:
-                size = gb_read_number(in);
+                size = gb_get_number(in);
                 // gbc->d.size  is automatically incremented
                 if (gb_read_bin_rek_V2(in, gbc, size, version, reversed, deep+1)) {
                     if (!GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery) {
@@ -1143,7 +1093,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
     while (1) {         // read keys
         long nrefs = 0;
         if (version) {
-            nrefs = gb_read_number(in);
+            nrefs = gb_get_number(in);
         }
         p = buffer;
         for (k=0; ; k++) {

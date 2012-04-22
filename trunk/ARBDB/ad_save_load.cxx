@@ -17,6 +17,7 @@
 #include "gb_map.h"
 #include "gb_load.h"
 #include "gb_storage.h"
+#include "ad_io_inline.h"
 
 GB_MAIN_TYPE *gb_main_array[GB_MAIN_ARRAY_SIZE];
 
@@ -513,37 +514,6 @@ static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep, long big_hunk) 
 // -------------------------
 //      Read Binary File
 
-inline void gb_put_number(long i, FILE *out) {
-    // opposite of gb_read_number
-    long j;
-    if (i< 0x80) { putc((int)i, out); return; }
-    if (i<0x4000) {
-        j = (i>>8) | 0x80;
-        putc((int)j, out);
-        putc((int)i, out);
-        return;
-    }
-    if (i<0x200000) {
-        j = (i>>16) | 0xC0;
-        putc((int)j, out);
-        j = (i>>8);
-        putc((int)j, out);
-        putc((int)i, out);
-        return;
-    }
-    if (i<0x10000000) {
-        j = (i>>24) | 0xE0;
-        putc((int)j, out);
-        j = (i>>16);
-        putc((int)j, out);
-        j = (i>>8);
-        putc((int)j, out);
-        putc((int)i, out);
-        return;
-    }
-    gb_assert(0); // overflow
-}
-
 long gb_read_bin_error(FILE *in, GBDATA *gbd, const char *text) {
     long p = (long)ftell(in);
     GB_export_errorf("%s in reading GB_file (loc %li=%lX) reading %s\n",
@@ -554,11 +524,6 @@ long gb_read_bin_error(FILE *in, GBDATA *gbd, const char *text) {
 
 // --------------------------
 //      Write Binary File
-
-inline void gb_write_out_uint32(uint32_t data, FILE *out) {
-    // opposite of gb_read_in_uint32
-    ASSERT_RESULT(size_t, 1, fwrite(&data, sizeof(data), 1, out));
-}
 
 static int gb_is_writeable(gb_header_list *header, GBDATA *gbd, long version, long diff_save) {
     /* Test whether to write any data to disc.
