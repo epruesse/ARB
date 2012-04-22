@@ -172,6 +172,7 @@ ad_core.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_core.o: $(ARBHOME)/INCLUDE/smartptr.h
 ad_core.o: $(ARBHOME)/INCLUDE/test_global.h
 
+ad_load.o: ad_io_inline.h
 ad_load.o: ad_prot.h
 ad_load.o: ad_t_prot.h
 ad_load.o: arb_assert.h
@@ -203,6 +204,7 @@ ad_load.o: $(ARBHOME)/INCLUDE/smartptr.h
 ad_load.o: $(ARBHOME)/INCLUDE/static_assert.h
 ad_load.o: $(ARBHOME)/INCLUDE/test_global.h
 
+ad_save_load.o: ad_io_inline.h
 ad_save_load.o: ad_prot.h
 ad_save_load.o: arb_assert.h
 ad_save_load.o: arbdb.h
@@ -227,6 +229,7 @@ ad_save_load.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/smartptr.h
+ad_save_load.o: $(ARBHOME)/INCLUDE/static_assert.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/test_global.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/test_unit.h
 
