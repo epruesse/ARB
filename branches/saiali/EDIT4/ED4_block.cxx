@@ -141,10 +141,10 @@ void ED4_block::autocorrect_type() {
 
 // --------------------------------------------------------------------------------
 
-// if block_operation() returns NULL => no changes will be made to database
+// if block_operation returns NULL => no changes will be made to database
 // otherwise the changed sequence(part) will be written to the database
 
-static GB_ERROR perform_block_operation_on_whole_sequence(ED4_blockoperation block_operation, ED4_sequence_terminal *term, int repeat) {
+static GB_ERROR perform_block_operation_on_whole_sequence(const ED4_block_operator& block_operator, ED4_sequence_terminal *term) {
     GBDATA *gbd = term->get_species_pointer();
     GB_ERROR error = 0;
 
@@ -152,8 +152,9 @@ static GB_ERROR perform_block_operation_on_whole_sequence(ED4_blockoperation blo
         char *seq = GB_read_string(gbd);
         int len = GB_read_string_count(gbd);
 
-        int new_len;
-        char *new_seq = block_operation(seq, len, repeat, &new_len, &error);
+        int   new_len;
+        char *new_seq = block_operator.operate(seq, len, new_len);
+        error         = block_operator.get_error();
 
         if (new_seq) {
             if (new_len<len) {
@@ -194,7 +195,7 @@ static GB_ERROR perform_block_operation_on_whole_sequence(ED4_blockoperation blo
 }
 
 // uses range_col1 till range_col2 as range
-static GB_ERROR perform_block_operation_on_part_of_sequence(ED4_blockoperation block_operation, ED4_sequence_terminal *term, int repeat) {
+static GB_ERROR perform_block_operation_on_part_of_sequence(const ED4_block_operator& block_operator, ED4_sequence_terminal *term) {
     GBDATA *gbd = term->get_species_pointer();
     GB_ERROR error = 0;
 
@@ -207,7 +208,8 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(ED4_blockoperation b
         int   len_part     = range.size();
         char *seq_part     = seq+range.start();
         int   new_len;
-        char *new_seq_part = block_operation(seq_part, len_part, repeat, &new_len, &error);
+        char *new_seq_part = block_operator.operate(seq_part, len_part, new_len);
+        error              = block_operator.get_error();
 
         if (new_seq_part) {
             if (new_len<len_part) {
@@ -248,7 +250,7 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(ED4_blockoperation b
     return error;
 }
 
-static void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
+static void ED4_with_whole_block(const ED4_block_operator& block_operator) {
     GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
 
     typedef map<ED4_window*, int> CursorPositions;
@@ -274,8 +276,8 @@ static void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat)
                 ED4_sequence_terminal     *seqTerm  = nameTerm->corresponding_sequence_terminal();
 
                 error = block.get_type() == ED4_BT_LINEBLOCK
-                    ? perform_block_operation_on_whole_sequence(block_operation, seqTerm, repeat)
-                    : perform_block_operation_on_part_of_sequence(block_operation, seqTerm, repeat);
+                    ? perform_block_operation_on_whole_sequence(block_operator, seqTerm)
+                    : perform_block_operation_on_part_of_sequence(block_operator, seqTerm);
 
                 listElem = listElem->next();
             }
@@ -592,77 +594,83 @@ static int strncmpWithJoker(GB_CSTR s1, GB_CSTR s2, int len) { // s2 contains '?
     return cmp;
 }
 
-static char *oldString, *newString;
-static int oldStringContainsJoker;
+class replace_operator : public ED4_block_operator {
+    const char *oldString;
+    const char *newString;
 
-static char* replace_in_sequence(const char *sequence, int len, int /* repeat */, int *new_len, GB_ERROR*) {
-    int maxlen;
-    int olen = strlen(oldString);
-    int nlen = strlen(newString);
+    bool oldStringContainsJoker;
 
-    if (nlen<=olen) {
-        maxlen = len;
+public:
+    replace_operator(const char *oldString_, const char *newString_)
+        : oldString(oldString_),
+          newString(newString_)
+    {
+        oldStringContainsJoker = strchr(oldString, '?') != 0;
     }
-    else {
-        maxlen = (len/olen+1)*nlen;
-    }
 
-    char *new_seq = (char*)GB_calloc(maxlen+1, sizeof(*new_seq));
-    int replaced = 0;
-    int o = 0;
-    int n = 0;
-    char ostart = oldString[0];
+    char* operate(const char *sequence, int len, int& new_len) const {
+        int maxlen;
+        int olen = strlen(oldString);
+        int nlen = strlen(newString);
 
-    if (oldStringContainsJoker) {
-        while (o<len) {
-            if (strncmpWithJoker(sequence+o, oldString, olen)==0) {
-                memcpy(new_seq+n, newString, nlen);
-                n += nlen;
-                o += olen;
-                replaced++;
-            }
-            else {
-                new_seq[n++] = sequence[o++];
+        if (nlen<=olen) {
+            maxlen = len;
+        }
+        else {
+            maxlen = (len/olen+1)*nlen;
+        }
+
+        char *new_seq = (char*)GB_calloc(maxlen+1, sizeof(*new_seq));
+        int replaced = 0;
+        int o = 0;
+        int n = 0;
+        char ostart = oldString[0];
+
+        if (oldStringContainsJoker) {
+            while (o<len) {
+                if (strncmpWithJoker(sequence+o, oldString, olen)==0) {
+                    memcpy(new_seq+n, newString, nlen);
+                    n += nlen;
+                    o += olen;
+                    replaced++;
+                }
+                else {
+                    new_seq[n++] = sequence[o++];
+                }
             }
         }
-    }
-    else {
-        while (o<len) {
-            if (sequence[o]==ostart && strncmp(sequence+o, oldString, olen)==0) { // occurrence of oldString
-                memcpy(new_seq+n, newString, nlen);
-                n += nlen;
-                o += olen;
-                replaced++;
-            }
-            else {
-                new_seq[n++] = sequence[o++];
+        else {
+            while (o<len) {
+                if (sequence[o]==ostart && strncmp(sequence+o, oldString, olen)==0) { // occurrence of oldString
+                    memcpy(new_seq+n, newString, nlen);
+                    n += nlen;
+                    o += olen;
+                    replaced++;
+                }
+                else {
+                    new_seq[n++] = sequence[o++];
+                }
             }
         }
-    }
-    new_seq[n] = 0;
+        new_seq[n] = 0;
 
-    if (replaced) {
-        if (new_len) {
-            *new_len = n;
+        if (replaced) {
+            new_len = n;
         }
-    }
-    else {
-        delete new_seq;
-        new_seq = 0;
-    }
+        else {
+            delete new_seq;
+            new_seq = 0;
+        }
 
-    return new_seq;
-}
+        return new_seq;
+    }
+};
 
 static void replace_in_block(AW_window*) {
-    oldString = ED4_ROOT->aw_root->awar(ED4_AWAR_REP_SEARCH_PATTERN)->read_string();
-    newString = ED4_ROOT->aw_root->awar(ED4_AWAR_REP_REPLACE_PATTERN)->read_string();
-
-    oldStringContainsJoker = strchr(oldString, '?')!=0;
-    ED4_with_whole_block(replace_in_sequence, 1);
-
-    delete oldString; oldString = 0;
-    delete newString; newString = 0;
+    AW_root *awr = ED4_ROOT->aw_root;
+    ED4_with_whole_block(
+        replace_operator(awr->awar(ED4_AWAR_REP_SEARCH_PATTERN)->read_char_pntr(),
+                         awr->awar(ED4_AWAR_REP_REPLACE_PATTERN)->read_char_pntr()));
 }
 
 AW_window *ED4_create_replace_window(AW_root *root) {
@@ -696,195 +704,159 @@ AW_window *ED4_create_replace_window(AW_root *root) {
 //      Other block operations
 // --------------------------------------------------------------------------------
 
-static char *sequence_to_upper_case(const char *seq, int len, int /* repeat */, int *new_len, GB_ERROR*) {
-    char *new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
-    int l;
+class case_op : public ED4_block_operator {
+    bool to_upper;
+public:
+    case_op(bool to_upper_) : to_upper(to_upper_) {}
 
-    for (l=0; l<len; l++) {
-        new_seq[l] = toupper(seq[l]);
-    }
+    char *operate(const char *seq, int len, int& new_len) const {
+        char *new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
 
-    if (new_len) *new_len = len;
-    return new_seq;
-}
-static char *sequence_to_lower_case(const char *seq, int len, int /* repeat */, int *new_len, GB_ERROR*) {
-    char *new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
-    int l;
-
-    for (l=0; l<len; l++) {
-        new_seq[l] = tolower(seq[l]);
-    }
-
-    if (new_len) *new_len = len;
-    return new_seq;
-}
-
-#define EVEN_REPEAT "repeat-count is even -> no changes!"
-
-static char *reverse_sequence(const char *seq, int len, int repeat, int *new_len, GB_ERROR *error) {
-    if ((repeat&1)==0) { *error = GBS_global_string(EVEN_REPEAT); return 0; }
-
-    char *new_seq = GBT_reverseNucSequence(seq, len);
-    if (new_len) *new_len = len;
-    return new_seq;
-}
-static char *complement_sequence(const char *seq, int len, int repeat, int *new_len, GB_ERROR *error) {
-    if ((repeat&1)==0) {
-        *error = GBS_global_string(EVEN_REPEAT);
-        return 0;
-    }
-
-    char T_or_U;
-    *error = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "complement");
-    if (*error) return 0;
-
-    char *new_seq         = GBT_complementNucSequence(seq, len, T_or_U);
-    if (new_len) *new_len = len;
-    return new_seq;
-}
-static char *reverse_complement_sequence(const char *seq, int len, int repeat, int *new_len, GB_ERROR *error) {
-    if ((repeat&1) == 0) {
-        *error      = GBS_global_string(EVEN_REPEAT);
-        return 0;
-    }
-
-    char T_or_U;
-    *error = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "reverse-complement");
-    if (*error) return 0;
-    char *new_seq1  = GBT_complementNucSequence(seq, len, T_or_U);
-    char *new_seq2  = GBT_reverseNucSequence(new_seq1, len);
-
-    free(new_seq1);
-    if (new_len) *new_len = len;
-    return new_seq2;
-}
-
-static char *unalign_sequence_internal(const char *seq, int len, int *new_len, bool to_the_right) {
-    char *new_seq   = (char*)GB_calloc(len+1, sizeof(*new_seq));
-    int   o         = 0;
-    int   n         = 0;
-    char  gap       = '-';
-
-    if (to_the_right) {
-        if (ADPP_IS_ALIGN_CHARACTER(seq[0])) gap = seq[0]; // use first position of block if it's a gap
-        else if (ADPP_IS_ALIGN_CHARACTER(seq[-1])) gap = seq[-1]; // WARNING:  might be out-side sequence and undefined behavior
-    }
-    else {
-        if (ADPP_IS_ALIGN_CHARACTER(seq[len-1])) gap = seq[len-1]; // use first position of block if it's a gap
-        else if (ADPP_IS_ALIGN_CHARACTER(seq[len])) gap = seq[len]; // otherwise check position behind
-    }
-
-    while (o<len) {
-        if (!ADPP_IS_ALIGN_CHARACTER(seq[o])) new_seq[n++] = seq[o];
-        o++;
-    }
-
-    if (n<len) {                // (move and) dot rest
-        int gapcount = len-n;
-        if (to_the_right) {
-            memmove(new_seq+gapcount, new_seq, n);
-            memset(new_seq, gap, gapcount);
+        if (to_upper) {
+            for (int i=0; i<len; i++) new_seq[i] = toupper(seq[i]);
         }
         else {
-            memset(new_seq+n, gap, gapcount);
+            for (int i=0; i<len; i++) new_seq[i] = tolower(seq[i]);
         }
+        
+        new_len = len;
+        return new_seq;
     }
+};
 
-    if (new_len) *new_len = len;
-    return new_seq;
-}
+class revcomp_op : public ED4_block_operator {
+    bool reverse;
+    bool complement;
+public:
+    revcomp_op(bool reverse_, bool complement_) : reverse(reverse_), complement(complement_) {}
 
-static char *unalign_left_sequence(const char *seq, int len, int /* repeat */, int *new_len, GB_ERROR *) {
-    return unalign_sequence_internal(seq, len, new_len, false);
-}
+    char *operate(const char *seq, int len, int& new_len) const {
+        char *result = NULL;
+        if (complement) {
+            char T_or_U;
+            error = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "reverse-complement");
+            if (error) return NULL;
 
-static char *unalign_right_sequence(const char *seq, int len, int /* repeat */, int *new_len, GB_ERROR *) {
-    return unalign_sequence_internal(seq, len, new_len, true);
-}
+            result = GBT_complementNucSequence(seq, len, T_or_U);
+            if (reverse) freeset(result, GBT_reverseNucSequence(result, len));
+        }
+        else if (reverse) result = GBT_reverseNucSequence(seq, len);
 
-static char *shift_left_sequence(const char *seq, int len, int repeat, int *new_len, GB_ERROR *error) {
-    char *new_seq = 0;
-
-    if (repeat>=len) {
-        *error = "Repeat count exceeds block length";
+        new_len = len;
+        return result;
     }
-    else
-    {
-        int enough_space = 1;
-        for (int i=0; enough_space && i<repeat; i++) {
-            if (!ADPP_IS_ALIGN_CHARACTER(seq[i])) {
-                enough_space = 0;
+};
+
+class unalign_op : public ED4_block_operator {
+    int direction;
+public:
+    unalign_op(int direction_) : direction(direction_) {}
+
+    char *operate(const char *seq, int len, int& new_len) const {
+        bool  rightward = direction>0;
+        char *result    = (char*)GB_calloc(len+1, sizeof(*result));
+        int   o         = 0;
+        int   n         = 0;
+        char  gap       = '-';
+
+        if (rightward) {
+            if      (ADPP_IS_ALIGN_CHARACTER(seq[0]))  gap = seq[0];  // use first position of block if it's a gap
+            else if (ADPP_IS_ALIGN_CHARACTER(seq[-1])) gap = seq[-1]; // WARNING:  might be out-side sequence and undefined behavior
+        }
+        else {
+            if      (ADPP_IS_ALIGN_CHARACTER(seq[len-1])) gap = seq[len-1]; // use first position of block if it's a gap
+            else if (ADPP_IS_ALIGN_CHARACTER(seq[len]))   gap = seq[len];   // otherwise check position behind
+        }
+
+        while (o<len) {
+            if (!ADPP_IS_ALIGN_CHARACTER(seq[o])) result[n++] = seq[o];
+            o++;
+        }
+
+        if (n<len) { // (move and) dot rest
+            int gapcount = len-n;
+            if (rightward) {
+                memmove(result+gapcount, result, n);
+                memset(result, gap, gapcount);
+            }
+            else {
+                memset(result+n, gap, gapcount);
             }
         }
 
-        if (enough_space) {
-            char gap = '-';
+        new_len = len;
+        return result;
+    }
+};
 
-            new_seq               = (char*)GB_calloc(len+1, sizeof(*new_seq));
-            if (new_len) *new_len = len;
-            memcpy(new_seq, seq+repeat, len-repeat);
 
-            if (ADPP_IS_ALIGN_CHARACTER(seq[len-1])) gap    = seq[len-1];
-            else if (ADPP_IS_ALIGN_CHARACTER(seq[len])) gap = seq[len];
+class shift_op : public ED4_block_operator {
+    int direction;
 
-            memset(new_seq+len-repeat, gap, repeat);
+    char *shift_left_sequence(const char *seq, int len, int& new_len) const {
+        char *result = 0;
+
+        if (!ADPP_IS_ALIGN_CHARACTER(seq[0])) {
+            error = "Need a gap at block start for shifting left";
         }
         else {
-            *error = GBS_global_string("Shift left needs %i gap%s at block start", repeat, repeat==1 ? "" : "s");
-        }
-    }
-
-    return new_seq;
-}
-
-static char *shift_right_sequence(const char *seq, int len, int repeat, int *new_len, GB_ERROR *error) {
-    char *new_seq = 0;
-
-    if (repeat>=len) {
-        *error = "Repeat count exceeds block length";
-    }
-    else
-    {
-        int enough_space = 1;
-        for (int i=0; enough_space && i<repeat; i++) {
-            if (!ADPP_IS_ALIGN_CHARACTER(seq[len-i-1])) {
-                enough_space = 0;
-            }
-        }
-
-        if (enough_space) {
             char gap = '-';
+            result   = (char*)GB_calloc(len+1, sizeof(*result));
+            new_len  = len;
+            memcpy(result, seq+1, len-1);
 
-            new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
-            if (new_len) *new_len = len;
+            if      (ADPP_IS_ALIGN_CHARACTER(seq[len-1])) gap = seq[len-1];
+            else if (ADPP_IS_ALIGN_CHARACTER(seq[len  ])) gap = seq[len  ]; // a "working" hack
 
-            if (ADPP_IS_ALIGN_CHARACTER(seq[0])) gap       = seq[0];
-            else if (ADPP_IS_ALIGN_CHARACTER(seq[-1])) gap = seq[-1]; // a working hack
+            result[len-1] = gap;
+        }
+        return result;
+    }
 
-            memset(new_seq, gap, repeat);
-            memcpy(new_seq+repeat, seq, len-repeat);
+    char *shift_right_sequence(const char *seq, int len, int& new_len) const {
+        char *result = 0;
+
+        if (!ADPP_IS_ALIGN_CHARACTER(seq[len-1])) {
+            error = "Need a gap at block end for shifting right";
         }
         else {
-            *error = GBS_global_string("Shift right needs %i gap%s at block end", repeat, repeat==1 ? "" : "s");
+            char gap = '-';
+            result   = (char*)GB_calloc(len+1, sizeof(*result));
+            new_len  = len;
+
+            if      (ADPP_IS_ALIGN_CHARACTER(seq[ 0])) gap = seq[ 0];
+            else if (ADPP_IS_ALIGN_CHARACTER(seq[-1])) gap = seq[-1]; // a "working" hack
+
+            result[0] = gap;
+            memcpy(result+1, seq, len-1);
         }
+        return result;
     }
 
-    return new_seq;
-}
+    
+public:
+    shift_op(int direction_) : direction(direction_) {}
+
+    char *operate(const char *sequence_data, int len, int& new_len) const {
+        if (direction<0) return shift_left_sequence(sequence_data, len, new_len);
+        return shift_right_sequence(sequence_data, len, new_len);
+    }
+};
 
 void ED4_perform_block_operation(ED4_blockoperation_type operationType) {
-    int nrepeat = ED4_ROOT->edit_string->use_nrepeat();
-
     switch (operationType) {
-        case ED4_BO_UPPER_CASE:         ED4_with_whole_block(sequence_to_upper_case, nrepeat);          break;
-        case ED4_BO_LOWER_CASE:         ED4_with_whole_block(sequence_to_lower_case, nrepeat);          break;
-        case ED4_BO_REVERSE:            ED4_with_whole_block(reverse_sequence, nrepeat);                break;
-        case ED4_BO_COMPLEMENT:         ED4_with_whole_block(complement_sequence, nrepeat);             break;
-        case ED4_BO_REVERSE_COMPLEMENT: ED4_with_whole_block(reverse_complement_sequence, nrepeat);     break;
-        case ED4_BO_UNALIGN:            ED4_with_whole_block(unalign_left_sequence, nrepeat);           break;
-        case ED4_BO_UNALIGN_RIGHT:      ED4_with_whole_block(unalign_right_sequence, nrepeat);          break;
-        case ED4_BO_SHIFT_LEFT:         ED4_with_whole_block(shift_left_sequence, nrepeat);             break;
-        case ED4_BO_SHIFT_RIGHT:        ED4_with_whole_block(shift_right_sequence, nrepeat);            break;
+        case ED4_BO_UPPER_CASE: ED4_with_whole_block(case_op(true));  break;
+        case ED4_BO_LOWER_CASE: ED4_with_whole_block(case_op(false)); break;
+
+        case ED4_BO_REVERSE:            ED4_with_whole_block(revcomp_op(true,  false)); break;
+        case ED4_BO_COMPLEMENT:         ED4_with_whole_block(revcomp_op(false, true));  break;
+        case ED4_BO_REVERSE_COMPLEMENT: ED4_with_whole_block(revcomp_op(true,  true));  break;
+
+        case ED4_BO_UNALIGN:       ED4_with_whole_block(unalign_op(-1)); break;
+        case ED4_BO_UNALIGN_RIGHT: ED4_with_whole_block(unalign_op(1));  break;
+            
+        case ED4_BO_SHIFT_LEFT:  ED4_with_whole_block(shift_op(-1)); break;
+        case ED4_BO_SHIFT_RIGHT: ED4_with_whole_block(shift_op(1));  break;
 
         default: {
             e4_assert(0);

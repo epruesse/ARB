@@ -38,7 +38,16 @@ void          ED4_correctBlocktypeAfterSelection();
 void          ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term);
 bool          ED4_get_selected_range(ED4_terminal *term, PosRange& range);
 
-typedef char *(*ED4_blockoperation)(const char *sequence_data, int len, int repeat, int *new_len, GB_ERROR *error);
+class ED4_block_operator {
+protected:
+    mutable GB_ERROR error;
+public:
+    ED4_block_operator() : error(NULL) {}
+    virtual ~ED4_block_operator() {}
+
+    GB_ERROR get_error() const { return error; }
+    virtual char *operate(const char *sequence_data, int len, int& new_len) const = 0;
+};
 
 void ED4_perform_block_operation(ED4_blockoperation_type type);
 
