@@ -45,6 +45,41 @@ static ED4_block block;
 
 // --------------------------------------------------------------------------------
 
+class SeqPart {
+    const char *seq;
+
+    int offset;
+    int len; // of part
+
+    static char to_gap(char c) { return ADPP_IS_ALIGN_CHARACTER(c) ? c : 0; }
+
+public:
+    SeqPart(const char *seq_, int offset_, int len_)
+        : seq(seq_),
+          offset(offset_),
+          len(len_)
+    {}
+
+    const char *data() const { return seq+offset; }
+    int length() const { return len; }
+
+    // detect which gap to use at border of SeqPart:
+    char left_gap() const {
+        char gap                = to_gap(seq[offset]);
+        if (!gap && offset) gap = to_gap(seq[offset-1]);
+        if (!gap) gap           = '-';
+        return gap;
+    }
+    char right_gap() const {
+        char gap      = to_gap(seq[offset+len-1]);
+        if (!gap) gap = to_gap(seq[offset+len]);
+        if (!gap) gap = '-';
+        return gap;
+    }
+};
+
+// --------------------------------------------------------------------------------
+
 static void col_block_refresh_on_seq_term(ED4_sequence_terminal *seq_term) {
     seq_term->request_refresh();
 
@@ -153,7 +188,7 @@ static GB_ERROR perform_block_operation_on_whole_sequence(const ED4_block_operat
         int len = GB_read_string_count(gbd);
 
         int   new_len;
-        char *new_seq = block_operator.operate(seq, len, new_len);
+        char *new_seq = block_operator.operate(SeqPart(seq, 0, len), new_len);
         error         = block_operator.get_error();
 
         if (new_seq) {
@@ -208,7 +243,7 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(const ED4_block_oper
         int   len_part     = range.size();
         char *seq_part     = seq+range.start();
         int   new_len;
-        char *new_seq_part = block_operator.operate(seq_part, len_part, new_len);
+        char *new_seq_part = block_operator.operate(SeqPart(seq, range.start(), len_part), new_len);
         error              = block_operator.get_error();
 
         if (new_seq_part) {
@@ -597,6 +632,9 @@ static int strncmpWithJoker(GB_CSTR s1, GB_CSTR s2, int len) { // s2 contains '?
 class replace_operator : public ED4_block_operator {
     const char *oldString;
     const char *newString;
+    
+    int olen;
+    int nlen;
 
     bool oldStringContainsJoker;
 
@@ -606,12 +644,13 @@ public:
           newString(newString_)
     {
         oldStringContainsJoker = strchr(oldString, '?') != 0;
+        olen = strlen(oldString);
+        nlen = strlen(newString);
     }
 
-    char* operate(const char *sequence, int len, int& new_len) const {
+    char* operate(const SeqPart& part, int& new_len) const {
         int maxlen;
-        int olen = strlen(oldString);
-        int nlen = strlen(newString);
+        int len = part.length();
 
         if (nlen<=olen) {
             maxlen = len;
@@ -620,12 +659,13 @@ public:
             maxlen = (len/olen+1)*nlen;
         }
 
-        char *new_seq = (char*)GB_calloc(maxlen+1, sizeof(*new_seq));
-        int replaced = 0;
-        int o = 0;
-        int n = 0;
-        char ostart = oldString[0];
+        char *new_seq  = (char*)GB_calloc(maxlen+1, sizeof(*new_seq));
+        int   replaced = 0;
+        int   o        = 0;
+        int   n        = 0;
+        char  ostart   = oldString[0];
 
+        const char *sequence = part.data();
         if (oldStringContainsJoker) {
             while (o<len) {
                 if (strncmpWithJoker(sequence+o, oldString, olen)==0) {
@@ -709,8 +749,10 @@ class case_op : public ED4_block_operator {
 public:
     case_op(bool to_upper_) : to_upper(to_upper_) {}
 
-    char *operate(const char *seq, int len, int& new_len) const {
-        char *new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
+    char *operate(const SeqPart& part, int& new_len) const {
+        int         len     = part.length();
+        const char *seq     = part.data();
+        char       *new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
 
         if (to_upper) {
             for (int i=0; i<len; i++) new_seq[i] = toupper(seq[i]);
@@ -730,17 +772,18 @@ class revcomp_op : public ED4_block_operator {
 public:
     revcomp_op(bool reverse_, bool complement_) : reverse(reverse_), complement(complement_) {}
 
-    char *operate(const char *seq, int len, int& new_len) const {
+    char *operate(const SeqPart& part, int& new_len) const {
         char *result = NULL;
+        int   len    = part.length();
         if (complement) {
             char T_or_U;
             error = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "reverse-complement");
             if (error) return NULL;
 
-            result = GBT_complementNucSequence(seq, len, T_or_U);
+            result = GBT_complementNucSequence(part.data(), len, T_or_U);
             if (reverse) freeset(result, GBT_reverseNucSequence(result, len));
         }
-        else if (reverse) result = GBT_reverseNucSequence(seq, len);
+        else if (reverse) result = GBT_reverseNucSequence(part.data(), len);
 
         new_len = len;
         return result;
@@ -752,21 +795,15 @@ class unalign_op : public ED4_block_operator {
 public:
     unalign_op(int direction_) : direction(direction_) {}
 
-    char *operate(const char *seq, int len, int& new_len) const {
-        bool  rightward = direction>0;
-        char *result    = (char*)GB_calloc(len+1, sizeof(*result));
-        int   o         = 0;
-        int   n         = 0;
-        char  gap       = '-';
+    char *operate(const SeqPart& part, int& new_len) const {
+        bool rightward = direction>0;
 
-        if (rightward) {
-            if      (ADPP_IS_ALIGN_CHARACTER(seq[0]))  gap = seq[0];  // use first position of block if it's a gap
-            else if (ADPP_IS_ALIGN_CHARACTER(seq[-1])) gap = seq[-1]; // WARNING:  might be out-side sequence and undefined behavior
-        }
-        else {
-            if      (ADPP_IS_ALIGN_CHARACTER(seq[len-1])) gap = seq[len-1]; // use first position of block if it's a gap
-            else if (ADPP_IS_ALIGN_CHARACTER(seq[len]))   gap = seq[len];   // otherwise check position behind
-        }
+        int         len    = part.length();
+        const char *seq    = part.data();
+        char       *result = (char*)GB_calloc(len+1, sizeof(*result));
+
+        int o = 0;
+        int n = 0;
 
         while (o<len) {
             if (!ADPP_IS_ALIGN_CHARACTER(seq[o])) result[n++] = seq[o];
@@ -777,10 +814,10 @@ public:
             int gapcount = len-n;
             if (rightward) {
                 memmove(result+gapcount, result, n);
-                memset(result, gap, gapcount);
+                memset(result, part.left_gap(), gapcount);
             }
             else {
-                memset(result+n, gap, gapcount);
+                memset(result+n, part.right_gap(), gapcount);
             }
         }
 
@@ -793,41 +830,35 @@ public:
 class shift_op : public ED4_block_operator {
     int direction;
 
-    char *shift_left_sequence(const char *seq, int len, int& new_len) const {
-        char *result = 0;
+    char *shift_left_sequence(const SeqPart& part, int& new_len) const {
+        char       *result = 0;
+        const char *seq    = part.data();
 
         if (!ADPP_IS_ALIGN_CHARACTER(seq[0])) {
             error = "Need a gap at block start for shifting left";
         }
         else {
-            char gap = '-';
-            result   = (char*)GB_calloc(len+1, sizeof(*result));
-            new_len  = len;
+            int len       = part.length();
+            result        = (char*)GB_calloc(len+1, sizeof(*result));
+            new_len       = len;
+            result[len-1] = part.right_gap();
             memcpy(result, seq+1, len-1);
-
-            if      (ADPP_IS_ALIGN_CHARACTER(seq[len-1])) gap = seq[len-1];
-            else if (ADPP_IS_ALIGN_CHARACTER(seq[len  ])) gap = seq[len  ]; // a "working" hack
-
-            result[len-1] = gap;
         }
         return result;
     }
 
-    char *shift_right_sequence(const char *seq, int len, int& new_len) const {
-        char *result = 0;
+    char *shift_right_sequence(const SeqPart& part, int& new_len) const {
+        char       *result = 0;
+        const char *seq    = part.data();
+        int         len    = part.length();
 
         if (!ADPP_IS_ALIGN_CHARACTER(seq[len-1])) {
             error = "Need a gap at block end for shifting right";
         }
         else {
-            char gap = '-';
-            result   = (char*)GB_calloc(len+1, sizeof(*result));
-            new_len  = len;
-
-            if      (ADPP_IS_ALIGN_CHARACTER(seq[ 0])) gap = seq[ 0];
-            else if (ADPP_IS_ALIGN_CHARACTER(seq[-1])) gap = seq[-1]; // a "working" hack
-
-            result[0] = gap;
+            result    = (char*)GB_calloc(len+1, sizeof(*result));
+            new_len   = len;
+            result[0] = part.left_gap();
             memcpy(result+1, seq, len-1);
         }
         return result;
@@ -837,9 +868,10 @@ class shift_op : public ED4_block_operator {
 public:
     shift_op(int direction_) : direction(direction_) {}
 
-    char *operate(const char *sequence_data, int len, int& new_len) const {
-        if (direction<0) return shift_left_sequence(sequence_data, len, new_len);
-        return shift_right_sequence(sequence_data, len, new_len);
+    char *operate(const SeqPart& part, int& new_len) const {
+        return direction<0
+            ? shift_left_sequence(part, new_len)
+            : shift_right_sequence(part, new_len);
     }
 };
 
@@ -854,7 +886,7 @@ void ED4_perform_block_operation(ED4_blockoperation_type operationType) {
 
         case ED4_BO_UNALIGN:       ED4_with_whole_block(unalign_op(-1)); break;
         case ED4_BO_UNALIGN_RIGHT: ED4_with_whole_block(unalign_op(1));  break;
-            
+
         case ED4_BO_SHIFT_LEFT:  ED4_with_whole_block(shift_op(-1)); break;
         case ED4_BO_SHIFT_RIGHT: ED4_with_whole_block(shift_op(1));  break;
 
