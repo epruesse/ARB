@@ -42,15 +42,20 @@ FORCEMASK = umask 002
 
 # ---------------------- [basic compiler setting]
 
-GCC:=$(CC)
-GPP:=$(CXX)
-CPPreal:=cpp
+ifdef DARWIN
+#       GCC,GPP and CPPreal now set in the Portfile
+else
+	GCC:=$(CC)
+	GPP:=$(CXX)
+	CPPreal:=cpp
 
-# to use clang-static-analyzer, call make like this:
-# setenv CLANG_STATIC_CHECKER 1 ; scan-build make -j5 build
-ifeq ($(CLANG_STATIC_CHECKER),1)
-CCC_ANALYZER_CPLUSPLUS=1
+#       to use clang-static-analyzer , call make like this:
+#       setenv CLANG_STATIC_CHECKER 1 ; scan-build make -j5 build
+	ifeq ($(CLANG_STATIC_CHECKER),1)
+		CCC_ANALYZER_CPLUSPLUS=1
+	endif
 endif
+
 
 # ---------------------- compiler version detection
 
@@ -75,10 +80,10 @@ USING_GCC_4XX=$(strip $(foreach version,$(ALLOWED_GCC_4xx_VERSIONS),$(findstring
 #---------------------- define special directories for non standard builds
 
 ifdef DARWIN
-OSX_SDK:=/Developer/SDKs/MacOSX10.5.sdk
-OSX_FW:=/System/Library/Frameworks
-OSX_FW_OPENGL:=$(OSX_FW)/OpenGL.framework/Versions/A/Libraries
-OSX_FW_IMAGEIO:=$(OSX_FW)/ApplicationServices.framework/Versions/A/Frameworks/ImageIO.framework/Versions/A/Resources
+	OSX_FW:=/System/Library/Frameworks
+	OSX_FW_OPENGL:=$(OSX_FW)/OpenGL.framework/Versions/A/Libraries
+	OSX_FW_GLUT:=$(OSX_FW)/GLUT.framework/Versions/A/Libraries
+	OSX_FW_IMAGEIO:=$(OSX_FW)/ApplicationServices.framework/Versions/A/Frameworks/ImageIO.framework/Versions/A/Resources
 endif
 
 #----------------------
@@ -190,7 +195,6 @@ endif
 dflags += -D$(MACH) # define machine
 
 ifdef DARWIN
-	cflags += -no-cpp-precomp 
 	shared_cflags += -fno-common
 else
 	dflags +=  $(shell getconf LFS_CFLAGS)
@@ -203,16 +207,19 @@ cflags += -fPIC
 
 #---------------------- X11 location
 
-XHOME:=/usr/X11R6
-XINCLUDES:=-I$(XHOME)/include
-
 ifdef DARWIN
-	XINCLUDES := -I/sw/include -I$(OSX_SDK)/usr/X11/include -I$(OSX_SDK)/usr/include/krb5 -I/usr/OpenMotif/include #Snow Leopard couldn't find OpenMotif
+	XHOME:=$(PREFIX)
+else
+	XHOME:=/usr/X11R6
 endif
 
+XINCLUDES:=-I$(XHOME)/include
 ifdef DARWIN
-	XLIBS := -L/usr/OpenMotif/lib -lXm -L$(XHOME)/lib -lpng -lXt -lX11 -lXext -lc -lXmu -lXi
-	XLIBS += -lGLU -lGL -Wl,-dylib_file,$(OSX_FW_OPENGL)/libGL.dylib:$(OSX_FW_OPENGL)/libGL.dylib
+	XINCLUDES += -I$(OSX_FW)/GLUT.framework/Headers -I$(OSX_FW)/OpenGL.framework/Headers -I$(OSX_SDK)/usr/include/krb5
+
+	XLIBS := -L$(XHOME)/lib -lXm -lpng -lz -lXt -lX11 -lXext -lXp -lXmu -lXi
+	XLIBS += -Wl,-dylib_file,$(OSX_FW_OPENGL)/libGL.dylib:$(OSX_FW_OPENGL)/libGL.dylib
+	XLIBS += -Wl,-dylib_file,$(OSX_FW_OPENGL)/libGLU.dylib:$(OSX_FW_OPENGL)/libGLU.dylib
 else
 	XLIBS:=-L$(XHOME)/$(CROSS_LIB) -lXm -lXpm -lXt -lXext -lX11
 endif
@@ -224,26 +231,22 @@ ifeq ($(OPENGL),1)
 	GL     := gl # this is the name of the OPENGL base target
 	GL_LIB := -lGL -L$(ARBHOME)/GL/glAW -lglAW
 
- ifdef DEBIAN
-	GL_LIB += -lpthread
- endif
+	ifdef DEBIAN
+		GL_LIB += -lpthread
+	endif
 
-GL_PNGLIBS := -L$(ARBHOME)/GL/glpng -lglpng_arb -lpng
-
- ifdef DARWIN
-	GLEWLIB := -L/usr/lib -lGLEW -L$(OSX_SDK)/usr/X11/lib -lGLw
-	GLUTLIB := -L$(XHOME)/lib -lglut
- else 
+	GL_PNGLIBS := -L$(ARBHOME)/GL/glpng -lglpng_arb -lpng
 	GLEWLIB := -lGLEW -lGLw
-	GLUTLIB := -lglut
- endif
 
-GL_LIBS := $(GL_LIB) $(GLEWLIB) $(GLUTLIB) $(GL_PNGLIBS)
+	ifdef DARWIN
+		GLUTLIB := -glut
+	else
+		GLUTLIB := -lglut
+	endif
 
-#XLIBS += $(GL_LIB)
+	GL_LIBS := $(GL_LIB) $(GLEWLIB) $(GLUTLIB) $(GL_PNGLIBS)
 
 else
-# OPENGL=0
 
 GL_LIBS:=# no opengl -> no libs
 GL:=# don't build ARB openGL libs
@@ -252,11 +255,7 @@ endif
 
 #---------------------- tiff lib:
 
-ifdef DARWIN
-	TIFFLIBS := -L/usr/local/lib -ltiff -L$(OSX_FW_IMAGEIO) -lTIFF  
-else
-	TIFFLIBS := -ltiff
-endif
+TIFFLIBS := -ltiff
 
 #---------------------- basic libs:
 
@@ -327,11 +326,13 @@ endif
 # other used tools
 
 CTAGS := etags
+
 ifdef DARWIN
-	XMKMF := /usr/X11/bin/xmkmf
+	XMKMF := $(PREFIX)/bin/xmkmf
 else
 	XMKMF := /usr/bin/X11/xmkmf
 endif
+
 MAKEDEPEND_PLAIN = makedepend
 
 MAKEDEPEND = $(FORCEMASK);$(MAKEDEPEND_PLAIN)
@@ -541,7 +542,12 @@ ARBDB_LIB=-lARBDB
 ARBDBPP_LIB=-lARBDBPP
 
 LIBS = $(ARBDB_LIB) $(SYSLIBS)
-GUI_LIBS = $(LIBS) -lAW -lAWT $(XLIBS)
+
+ifdef DARWIN
+	GUI_LIBS = -framework GLUT -framework OpenGL $(LIBS) -lAW -lAWT $(XLIBS)
+else
+	GUI_LIBS = $(LIBS) -lAW -lAWT $(XLIBS)
+endif
 
 LIBPATH = -L$(ARBHOME)/LIBLINK
 
