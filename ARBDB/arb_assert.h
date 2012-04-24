@@ -88,8 +88,9 @@
 
 #if defined(__cplusplus)
 inline void provoke_core_dump() {
+    volatile int *np = 0; // if not volatile, the clang compiler will skip the crashing code
     // cppcheck-suppress nullPointer
-    *(int*)0 = 0;
+    *(int*)np = 666;
 }
 #else // !defined(__cplusplus)
 #define provoke_core_dump() do { *(int*)0 = 0; } while(0)
