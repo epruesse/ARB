@@ -830,6 +830,9 @@ public:
             }
         }
 
+        if (memcmp(result, seq, len) == 0) {
+            return NULL;
+        }
         new_len = len;
         return result;
     }
@@ -985,8 +988,8 @@ void TEST_block_operators() {
     TEST_ASSERT_BLOCKOP_PERFORMS(".A-c-G--T-", unalign_op(+1), "....AcGT");
     TEST_ASSERT_BLOCKOP_PERFORMS("AA-c-G--T-", unalign_op(+1), "----AcGT");
 
-    TEST_ASSERT_BLOCKOP_PERFORMS__BROKEN("-ACGT-", unalign_op(-1), NULL);
-    TEST_ASSERT_BLOCKOP_PERFORMS__BROKEN("-ACGT-", unalign_op(+1), NULL);
+    TEST_ASSERT_BLOCKOP_PERFORMS("-ACGT-", unalign_op(-1), NULL);
+    TEST_ASSERT_BLOCKOP_PERFORMS("-ACGT-", unalign_op(+1), NULL);
 
     // shift_op
     TEST_ASSERT_BLOCKOP_PERFORMS("-A-C--", shift_op(+1), "-A-C"); // take gap outside region
