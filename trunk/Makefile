@@ -1220,7 +1220,7 @@ PHYLO/PHYLO.dummy:			links_non_perl
 PRIMER_DESIGN/PRIMER_DESIGN.dummy:	links_non_perl
 PROBE_SET/PROBE_SET.dummy:		links_non_perl link_db
 READSEQ/READSEQ.dummy:			links_non_perl
-RNACMA/RNACMA.dummy:			links_non_perl headerlibs
+RNACMA/RNACMA.dummy:			links_non_perl header_libs
 SECEDIT/SECEDIT.dummy:			links_non_perl
 SEQ_QUALITY/SEQ_QUALITY.dummy:		links_non_perl
 SERVERCNTRL/SERVERCNTRL.dummy:		links_non_perl com
@@ -1520,7 +1520,7 @@ redo_links: clean_links
 
 #********************************************************************************
 
-headerlibs:
+header_libs:
 	$(MAKE) -C HEADERLIBS all
 
 #********************************************************************************
