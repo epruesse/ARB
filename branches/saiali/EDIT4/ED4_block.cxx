@@ -650,7 +650,8 @@ public:
 
     char* operate(const SeqPart& part, int& new_len) const {
         int maxlen;
-        int len = part.length();
+        int len   = part.length();
+        int max_o = len-olen;
 
         if (nlen<=olen) {
             maxlen = len;
@@ -668,7 +669,7 @@ public:
         const char *sequence = part.data();
         if (oldStringContainsJoker) {
             while (o<len) {
-                if (strncmpWithJoker(sequence+o, oldString, olen)==0) {
+                if (o <= max_o && strncmpWithJoker(sequence+o, oldString, olen) == 0) {
                     memcpy(new_seq+n, newString, nlen);
                     n += nlen;
                     o += olen;
@@ -681,7 +682,7 @@ public:
         }
         else {
             while (o<len) {
-                if (sequence[o]==ostart && strncmp(sequence+o, oldString, olen)==0) { // occurrence of oldString
+                if (o <= max_o && sequence[o]==ostart && strncmp(sequence+o, oldString, olen) == 0) { // occurrence of oldString
                     memcpy(new_seq+n, newString, nlen);
                     n += nlen;
                     o += olen;
@@ -949,8 +950,9 @@ void TEST_block_operators() {
     TEST_ASSERT_BLOCKOP_PERFORMS("-ACAG-", replace_op("A?", "Ax"), "AxAx");
 
     TEST_ASSERT_BLOCKOP_PERFORMS("GACAG-", replace_op("GA", "AG"), NULL); // unchanged
-    TEST_ASSERT_BLOCKOP_PERFORMS__BROKEN("GAGAGA", replace_op("GA", "AG"), "AAGG");
-    TEST_ASSERT_BLOCKOP_PERFORMS__BROKEN("GACAGA", replace_op("GA", "AG"), "ACAG");
+    TEST_ASSERT_BLOCKOP_PERFORMS("GAGAGA", replace_op("GA", "AG"), "AAGG"); 
+    TEST_ASSERT_BLOCKOP_PERFORMS("GACAGA", replace_op("GA", "AG"), NULL);
+    TEST_ASSERT_BLOCKOP_PERFORMS("AGAGAG", replace_op("GA", "AG"), "AGAG");
 
     // case_op
     TEST_ASSERT_BLOCKOP_PERFORMS("-AcGuT-", case_op(true), "ACGUT");
