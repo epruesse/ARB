@@ -1243,7 +1243,7 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 #define TEST_ASSERT_LOWER(lower,upper)        TEST_EXPECT(that(lower).less_than(upper))
 #define TEST_ASSERT_IN_RANGE(val,lower,upper) TEST_EXPECT(all().of(that(val).more_or_equal(lower), that(val).less_or_equal(upper)))
 
-#define TEST_ASSERT_CONTAINS(str, part) TEST_EXPECT(that(str).is(containing(), part))
+#define TEST_ASSERT_CONTAINS(str, part) TEST_EXPECT(that(str).does_contain(part))
 
 #define TEST_ASSERT_NULL(n)            TEST_ASSERT_EQUAL(n, (typeof(n))NULL)
 #define TEST_ASSERT_NULL__BROKEN(n)    TEST_ASSERT_EQUAL__BROKEN(n, (typeof(n))NULL)
