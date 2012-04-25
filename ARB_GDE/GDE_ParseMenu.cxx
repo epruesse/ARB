@@ -132,10 +132,17 @@ void ParseMenu() {
 
                 do {
                     c = *from++;
-                    if (c!=last || c!='\'') { // replace '' with '
-                        *to++ = c;
-                        last = c;
+                    if (c == '@' && last == '@') {
+                        // replace "@@" with "'"
+                        // [WHY_USE_DOUBLE_AT]
+                        // - cant use 1 single quote  ("'"). Things inside will not be preprocessed correctly.
+                        // - cant use 2 single quotes ("''") any longer. clang fails on OSX.
+                        to[-1] = '\'';
                     }
+                    else {
+                        *to++ = c;
+                    }
+                    last = c;
                 } while (c!=0);
             }
 
