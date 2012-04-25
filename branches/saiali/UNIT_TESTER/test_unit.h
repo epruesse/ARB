@@ -579,6 +579,7 @@ namespace arb_test {
         }
 
         bool fulfilled() const { return condition->matches(*thing); }
+        bool unfulfilled() const { return !fulfilled(); }
         void explain(int indent) const { condition->dump_expectation(*thing, indent); }
         void dump_brief_description() const { condition->dump_brief_description(*thing); }
     };
@@ -791,6 +792,7 @@ namespace arb_test {
     protected:
 
     public:
+        expectation_group() : count(0) {}
         expectation_group(const expectation& e) : count(1) {
             depend_on[0] = e.clone();
         }

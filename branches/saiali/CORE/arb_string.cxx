@@ -224,6 +224,27 @@ void TEST_arbtest_expectations() {
 
 }
 
+void TEST_expectation_groups() {
+    using namespace arb_test;
+
+    expectation_group no_expectations;
+    TEST_EXPECT(all().ofgroup(no_expectations));
+    TEST_EXPECT(none().ofgroup(no_expectations));
+
+    expectation_group fulfilled_expectation  (that(1).is_equal_to(1));
+    expectation_group unfulfilled_expectation(that(1).is_equal_to(0));
+    expectation_group some_fulfilled_expectations(that(1).is_equal_to(0), that(1).is_equal_to(1));
+
+    TEST_EXPECT(all().ofgroup(fulfilled_expectation));
+    TEST_EXPECT(none().ofgroup(unfulfilled_expectation));
+
+    TEST_ASSERT(none().ofgroup(fulfilled_expectation).unfulfilled());
+    TEST_ASSERT(all().ofgroup(unfulfilled_expectation).unfulfilled());
+    
+    TEST_ASSERT(all().ofgroup(some_fulfilled_expectations).unfulfilled());
+    TEST_ASSERT(none().ofgroup(some_fulfilled_expectations).unfulfilled());
+}
+
 void TEST_replace_old_TEST_ASSERTS_by_expectations() {
     // test various string-types are matchable (w/o casts)
     {
