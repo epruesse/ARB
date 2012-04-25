@@ -111,6 +111,7 @@ ED4_block.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_block.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_block.o: $(ARBHOME)/INCLUDE/test_global.h
+ED4_block.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 ED4_cursor.o: ed4_awars.hxx
 ED4_cursor.o: ed4_class.hxx

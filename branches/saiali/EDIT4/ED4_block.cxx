@@ -629,7 +629,7 @@ static int strncmpWithJoker(GB_CSTR s1, GB_CSTR s2, int len) { // s2 contains '?
     return cmp;
 }
 
-class replace_operator : public ED4_block_operator {
+class replace_op : public ED4_block_operator { // derived from Noncopyable
     const char *oldString;
     const char *newString;
     
@@ -639,7 +639,7 @@ class replace_operator : public ED4_block_operator {
     bool oldStringContainsJoker;
 
 public:
-    replace_operator(const char *oldString_, const char *newString_)
+    replace_op(const char *oldString_, const char *newString_)
         : oldString(oldString_),
           newString(newString_)
     {
@@ -698,8 +698,7 @@ public:
             new_len = n;
         }
         else {
-            delete new_seq;
-            new_seq = 0;
+            freenull(new_seq);
         }
 
         return new_seq;
@@ -709,7 +708,7 @@ public:
 static void replace_in_block(AW_window*) {
     AW_root *awr = ED4_ROOT->aw_root;
     ED4_with_whole_block(
-        replace_operator(awr->awar(ED4_AWAR_REP_SEARCH_PATTERN)->read_char_pntr(),
+        replace_op(awr->awar(ED4_AWAR_REP_SEARCH_PATTERN)->read_char_pntr(),
                          awr->awar(ED4_AWAR_REP_REPLACE_PATTERN)->read_char_pntr()));
 }
 
@@ -769,17 +768,23 @@ public:
 class revcomp_op : public ED4_block_operator {
     bool reverse;
     bool complement;
+    char T_or_U;
+
 public:
-    revcomp_op(bool reverse_, bool complement_) : reverse(reverse_), complement(complement_) {}
+    revcomp_op(GB_alignment_type aliType, bool reverse_, bool complement_)
+        : reverse(reverse_),
+          complement(complement_),
+          T_or_U(0)
+    {
+        if (complement) {
+            error = GBT_determine_T_or_U(aliType, &T_or_U, reverse ? "reverse-complement" : "complement");
+        }
+    }
 
     char *operate(const SeqPart& part, int& new_len) const {
         char *result = NULL;
         int   len    = part.length();
         if (complement) {
-            char T_or_U;
-            error = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "reverse-complement");
-            if (error) return NULL;
-
             result = GBT_complementNucSequence(part.data(), len, T_or_U);
             if (reverse) freeset(result, GBT_reverseNucSequence(result, len));
         }
@@ -788,6 +793,7 @@ public:
         new_len = len;
         return result;
     }
+
 };
 
 class unalign_op : public ED4_block_operator {
@@ -824,8 +830,9 @@ public:
         new_len = len;
         return result;
     }
-};
 
+
+};
 
 class shift_op : public ED4_block_operator {
     int direction;
@@ -880,9 +887,9 @@ void ED4_perform_block_operation(ED4_blockoperation_type operationType) {
         case ED4_BO_UPPER_CASE: ED4_with_whole_block(case_op(true));  break;
         case ED4_BO_LOWER_CASE: ED4_with_whole_block(case_op(false)); break;
 
-        case ED4_BO_REVERSE:            ED4_with_whole_block(revcomp_op(true,  false)); break;
-        case ED4_BO_COMPLEMENT:         ED4_with_whole_block(revcomp_op(false, true));  break;
-        case ED4_BO_REVERSE_COMPLEMENT: ED4_with_whole_block(revcomp_op(true,  true));  break;
+        case ED4_BO_REVERSE:            ED4_with_whole_block(revcomp_op(ED4_ROOT->alignment_type, true,  false)); break;
+        case ED4_BO_COMPLEMENT:         ED4_with_whole_block(revcomp_op(ED4_ROOT->alignment_type, false, true));  break;
+        case ED4_BO_REVERSE_COMPLEMENT: ED4_with_whole_block(revcomp_op(ED4_ROOT->alignment_type, true,  true));  break;
 
         case ED4_BO_UNALIGN:       ED4_with_whole_block(unalign_op(-1)); break;
         case ED4_BO_UNALIGN_RIGHT: ED4_with_whole_block(unalign_op(1));  break;
@@ -897,3 +904,101 @@ void ED4_perform_block_operation(ED4_blockoperation_type operationType) {
     }
 }
 
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+static arb_test::match_expectation blockop_expected_io(const ED4_block_operator& blockop, const char *oversized_input, const char *expected_result, const char *part_of_error) {
+    int      whole_len = strlen(oversized_input);
+    SeqPart  part(oversized_input, 1, whole_len-2);
+    int      new_len; 
+    char    *result    = blockop.operate(part, new_len);
+
+    using namespace arb_test;
+    
+    if (part_of_error) {
+        return all().of(that(blockop.get_error()).does_contain(part_of_error),
+                        that(result).is_equal_to(NULL));
+    }
+
+    if (expected_result) {
+        return all().of(that(blockop.get_error()).is_equal_to(NULL),
+                        that(result).is_equal_to(expected_result),
+                        that(new_len).is_equal_to(whole_len-2));
+    }
+    return all().of(that(blockop.get_error()).is_equal_to(NULL),
+                    that(result).is_equal_to(NULL));
+}
+
+#define TEST_ASSERT_BLOCKOP_PERFORMS(oversized_input,blockop,expected)         TEST_EXPECT(blockop_expected_io(blockop, oversized_input, expected, NULL))
+#define TEST_ASSERT_BLOCKOP_PERFORMS__BROKEN(oversized_input,blockop,expected) TEST_EXPECT__BROKEN(blockop_expected_io(blockop, oversized_input, expected, NULL))
+#define TEST_ASSERT_BLOCKOP_ERRORHAS(oversized_input,blockop,expected)         TEST_EXPECT(blockop_expected_io(blockop, oversized_input, NULL, expected))
+#define TEST_ASSERT_BLOCKOP_ERRORHAS__BROKEN(oversized_input,blockop,expected) TEST_EXPECT__BROKEN(blockop_expected_io(blockop, oversized_input, NULL, expected))
+
+void TEST_block_operators() {
+    ED4_init_is_align_character("-.");
+
+    // replace_op
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-C--", replace_op("-",  "."),  "A.C.");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-C--", replace_op("?",  "."),  "....");
+    TEST_ASSERT_BLOCKOP_PERFORMS("AACAG-", replace_op("AC", "CA"), "CAAG");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-ACAG-", replace_op("A?", "Ax"), "AxAx");
+
+    TEST_ASSERT_BLOCKOP_PERFORMS("GACAG-", replace_op("GA", "AG"), NULL); // unchanged
+    TEST_ASSERT_BLOCKOP_PERFORMS__BROKEN("GAGAGA", replace_op("GA", "AG"), "AAGG");
+    TEST_ASSERT_BLOCKOP_PERFORMS__BROKEN("GACAGA", replace_op("GA", "AG"), "ACAG");
+
+    // case_op
+    TEST_ASSERT_BLOCKOP_PERFORMS("-AcGuT-", case_op(true), "ACGUT");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-AcGuT-", case_op(false), "acgut");
+
+    // revcomp_op
+    TEST_ASSERT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_RNA, false, false), NULL);     // noop
+    TEST_ASSERT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_RNA, true,  false), "TuG-cA");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_RNA, false, true),  "Ug-CaA");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_RNA, true,  true),  "AaC-gU");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_DNA, true,  true),  "AaC-gT");
+    
+    TEST_ASSERT_BLOCKOP_PERFORMS("-AR-DQF-", revcomp_op(GB_AT_AA, false, false), NULL); // noop             
+    TEST_ASSERT_BLOCKOP_PERFORMS("-AR-DQF-", revcomp_op(GB_AT_AA, true,  false), "FQD-RA");
+    TEST_ASSERT_BLOCKOP_ERRORHAS__BROKEN("-AR-DQF-", revcomp_op(GB_AT_AA, false, true),  "complement not available");
+    TEST_ASSERT_BLOCKOP_PERFORMS__BROKEN("-AR-DQF-", revcomp_op(GB_AT_AA, true,  true),  "reverse-complement not available");
+
+    // unalign_op
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G--T-", unalign_op(-1), "AcGT----");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G-T-T", unalign_op(-1), "AcGT----");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G--TT", unalign_op(-1), "AcGT----");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G--T.", unalign_op(-1), "AcGT....");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G-T.T", unalign_op(-1), "AcGT....");
+
+    TEST_ASSERT_BLOCKOP_PERFORMS("A-Ac-G--T-", unalign_op(+1), "----AcGT");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G--T-", unalign_op(+1), "----AcGT");
+    TEST_ASSERT_BLOCKOP_PERFORMS("A.Ac-G--T-", unalign_op(+1), "....AcGT");
+    TEST_ASSERT_BLOCKOP_PERFORMS(".A-c-G--T-", unalign_op(+1), "....AcGT");
+    TEST_ASSERT_BLOCKOP_PERFORMS("AA-c-G--T-", unalign_op(+1), "----AcGT");
+
+    TEST_ASSERT_BLOCKOP_PERFORMS__BROKEN("-ACGT-", unalign_op(-1), NULL);
+    TEST_ASSERT_BLOCKOP_PERFORMS__BROKEN("-ACGT-", unalign_op(+1), NULL);
+
+    // shift_op
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-C--", shift_op(+1), "-A-C"); // take gap outside region
+    TEST_ASSERT_BLOCKOP_PERFORMS(".A-C--", shift_op(+1), ".A-C"); // -"-
+    TEST_ASSERT_BLOCKOP_PERFORMS("-.AC--", shift_op(+1), "..AC"); // take gap inside region
+
+    TEST_ASSERT_BLOCKOP_PERFORMS("--A-C-", shift_op(-1), "A-C-"); // same for other direction
+    TEST_ASSERT_BLOCKOP_PERFORMS("--A-C.", shift_op(-1), "A-C.");
+    TEST_ASSERT_BLOCKOP_PERFORMS("--AC..", shift_op(-1), "AC..");
+
+    TEST_ASSERT_BLOCKOP_PERFORMS("G-TTAC", shift_op(-1), "TTA-"); // no gap reachable
+
+    TEST_ASSERT_BLOCKOP_ERRORHAS("GATTAC", shift_op(-1), "Need a gap at block");  // no space
+    TEST_ASSERT_BLOCKOP_ERRORHAS("GATTAC", shift_op(+1), "Need a gap at block");  // no space
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

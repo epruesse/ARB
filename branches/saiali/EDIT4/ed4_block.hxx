@@ -40,7 +40,7 @@ bool          ED4_get_selected_range(ED4_terminal *term, PosRange& range);
 
 class SeqPart;
 
-class ED4_block_operator {
+class ED4_block_operator : virtual Noncopyable {
 protected:
     mutable GB_ERROR error;
 public:
