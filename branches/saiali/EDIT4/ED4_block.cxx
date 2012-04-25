@@ -925,19 +925,17 @@ static arb_test::match_expectation blockop_expected_io(const ED4_block_operator&
     char    *result    = blockop.operate(part, new_len);
 
     using namespace arb_test;
-    
-    if (part_of_error) {
-        return all().of(that(blockop.get_error()).does_contain(part_of_error),
-                        that(result).is_equal_to(NULL));
-    }
 
-    if (expected_result) {
-        return all().of(that(blockop.get_error()).is_equal_to(NULL),
-                        that(result).is_equal_to(expected_result),
-                        that(new_len).is_equal_to(whole_len-2));
-    }
-    return all().of(that(blockop.get_error()).is_equal_to(NULL),
-                    that(result).is_equal_to(NULL));
+    expectation_group expectations;
+    expectations.add(part_of_error
+                     ? that(blockop.get_error()).does_contain(part_of_error)
+                     : that(blockop.get_error()).is_equal_to(NULL));
+    expectations.add(that(result).is_equal_to(expected_result));
+    if (expected_result) expectations.add(that(new_len).is_equal_to(whole_len-2));
+
+    free(result);
+
+    return all().ofgroup(expectations);
 }
 
 #define TEST_ASSERT_BLOCKOP_PERFORMS(oversized_input,blockop,expected)         TEST_EXPECT(blockop_expected_io(blockop, oversized_input, expected, NULL))
