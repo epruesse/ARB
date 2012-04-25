@@ -288,6 +288,7 @@ void AWTC_create_common_next_neighbour_vars(AW_root *aw_root) {
         aw_root->awar_int(AWAR_NN_MISMATCHES,  0);
         aw_root->awar_int(AWAR_NN_FAST_MODE,   0);
         aw_root->awar_int(AWAR_NN_REL_MATCHES, 1);
+        aw_root->awar_int(AWAR_NN_REL_SCALING, RSS_BOTH_MIN);
 
         created = true;
     }
