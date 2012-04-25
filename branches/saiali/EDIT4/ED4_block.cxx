@@ -784,14 +784,16 @@ public:
 
     char *operate(const SeqPart& part, int& new_len) const {
         char *result = NULL;
-        int   len    = part.length();
-        if (complement) {
-            result = GBT_complementNucSequence(part.data(), len, T_or_U);
-            if (reverse) freeset(result, GBT_reverseNucSequence(result, len));
-        }
-        else if (reverse) result = GBT_reverseNucSequence(part.data(), len);
+        if (!error) {
+            int len = part.length();
+            if (complement) {
+                result = GBT_complementNucSequence(part.data(), len, T_or_U);
+                if (reverse) freeset(result, GBT_reverseNucSequence(result, len));
+            }
+            else if (reverse) result = GBT_reverseNucSequence(part.data(), len);
 
-        new_len = len;
+            new_len = len;
+        }
         return result;
     }
 
@@ -967,8 +969,8 @@ void TEST_block_operators() {
     
     TEST_ASSERT_BLOCKOP_PERFORMS("-AR-DQF-", revcomp_op(GB_AT_AA, false, false), NULL); // noop             
     TEST_ASSERT_BLOCKOP_PERFORMS("-AR-DQF-", revcomp_op(GB_AT_AA, true,  false), "FQD-RA");
-    TEST_ASSERT_BLOCKOP_ERRORHAS__BROKEN("-AR-DQF-", revcomp_op(GB_AT_AA, false, true),  "complement not available");
-    TEST_ASSERT_BLOCKOP_PERFORMS__BROKEN("-AR-DQF-", revcomp_op(GB_AT_AA, true,  true),  "reverse-complement not available");
+    TEST_ASSERT_BLOCKOP_ERRORHAS("-AR-DQF-", revcomp_op(GB_AT_AA, false, true),  "complement not available");
+    TEST_ASSERT_BLOCKOP_ERRORHAS("-AR-DQF-", revcomp_op(GB_AT_AA, true,  true),  "reverse-complement not available");
 
     // unalign_op
     TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G--T-", unalign_op(-1), "AcGT----");
