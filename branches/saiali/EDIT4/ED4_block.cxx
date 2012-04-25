@@ -744,6 +744,17 @@ AW_window *ED4_create_replace_window(AW_root *root) {
 //      Other block operations
 // --------------------------------------------------------------------------------
 
+inline char *dont_return_unchanged(char *result, int& new_len, const SeqPart& part) {
+    if (result) {
+        if (new_len == part.length()) {
+            if (memcmp(result, part.data(), new_len) == 0) {
+                freenull(result);
+            }
+        }
+    }
+    return result;
+}
+
 class case_op : public ED4_block_operator {
     bool to_upper;
 public:
@@ -762,7 +773,7 @@ public:
         }
         
         new_len = len;
-        return new_seq;
+        return dont_return_unchanged(new_seq, new_len, part);
     }
 };
 
@@ -830,11 +841,8 @@ public:
             }
         }
 
-        if (memcmp(result, seq, len) == 0) {
-            return NULL;
-        }
         new_len = len;
-        return result;
+        return dont_return_unchanged(result, new_len, part);
     }
 
 
@@ -882,9 +890,10 @@ public:
     shift_op(int direction_) : direction(direction_) {}
 
     char *operate(const SeqPart& part, int& new_len) const {
-        return direction<0
+        char *result = direction<0
             ? shift_left_sequence(part, new_len)
             : shift_right_sequence(part, new_len);
+        return dont_return_unchanged(result, new_len, part);
     }
 };
 
@@ -946,13 +955,15 @@ static arb_test::match_expectation blockop_expected_io(const ED4_block_operator&
 void TEST_block_operators() {
     ED4_init_is_align_character("-.");
 
+    // Note: make sure tests perform an identity block operation at least once for each operator
+    
     // replace_op
     TEST_ASSERT_BLOCKOP_PERFORMS("-A-C--", replace_op("-",  "."),  "A.C.");
     TEST_ASSERT_BLOCKOP_PERFORMS("-A-C--", replace_op("?",  "."),  "....");
     TEST_ASSERT_BLOCKOP_PERFORMS("AACAG-", replace_op("AC", "CA"), "CAAG");
     TEST_ASSERT_BLOCKOP_PERFORMS("-ACAG-", replace_op("A?", "Ax"), "AxAx");
 
-    TEST_ASSERT_BLOCKOP_PERFORMS("GACAG-", replace_op("GA", "AG"), NULL); // unchanged
+    TEST_ASSERT_BLOCKOP_PERFORMS("GACAG-", replace_op("GA", "AG"), NULL);   // unchanged
     TEST_ASSERT_BLOCKOP_PERFORMS("GAGAGA", replace_op("GA", "AG"), "AAGG"); 
     TEST_ASSERT_BLOCKOP_PERFORMS("GACAGA", replace_op("GA", "AG"), NULL);
     TEST_ASSERT_BLOCKOP_PERFORMS("AGAGAG", replace_op("GA", "AG"), "AGAG");
@@ -960,6 +971,7 @@ void TEST_block_operators() {
     // case_op
     TEST_ASSERT_BLOCKOP_PERFORMS("-AcGuT-", case_op(true), "ACGUT");
     TEST_ASSERT_BLOCKOP_PERFORMS("-AcGuT-", case_op(false), "acgut");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-acgut-", case_op(false), NULL);
 
     // revcomp_op
     TEST_ASSERT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_RNA, false, false), NULL);     // noop
@@ -997,6 +1009,7 @@ void TEST_block_operators() {
     TEST_ASSERT_BLOCKOP_PERFORMS("--A-C-", shift_op(-1), "A-C-"); // same for other direction
     TEST_ASSERT_BLOCKOP_PERFORMS("--A-C.", shift_op(-1), "A-C.");
     TEST_ASSERT_BLOCKOP_PERFORMS("--AC..", shift_op(-1), "AC..");
+    TEST_ASSERT_BLOCKOP_PERFORMS("------", shift_op(-1), NULL);
 
     TEST_ASSERT_BLOCKOP_PERFORMS("G-TTAC", shift_op(-1), "TTA-"); // no gap reachable
 
@@ -1007,3 +1020,4 @@ void TEST_block_operators() {
 #endif // UNIT_TESTS
 
 // --------------------------------------------------------------------------------
+
