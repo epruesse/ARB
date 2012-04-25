@@ -608,25 +608,16 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
 //      Replace
 // --------------------------------------------------------------------------------
 
-static int strncmpWithJoker(GB_CSTR s1, GB_CSTR s2, int len) { // s2 contains '?' as joker
+inline bool matchesUsingWildcard(GB_CSTR s1, GB_CSTR s2, int len) {
+    // s2 may contain '?' as wildcard
     int cmp = 0;
 
-    while (len-- && !cmp) {
-        int c1 = *s1++;
-        int c2 = *s2++;
-
-        if (!c1) {
-            cmp = -1;
-        }
-        else if (!c2) {
-            cmp = 1;
-        }
-        else if (c2!='?') {
-            cmp = c1-c2;
-        }
+    for (int i = 0; i<len && !cmp; ++i) {
+        cmp = int(s1[i])-int(s2[i]);
+        if (cmp && s2[i] == '?') cmp = 0;
     }
 
-    return cmp;
+    return !cmp;
 }
 
 class replace_op : public ED4_block_operator { // derived from Noncopyable
@@ -636,14 +627,11 @@ class replace_op : public ED4_block_operator { // derived from Noncopyable
     int olen;
     int nlen;
 
-    bool oldStringContainsJoker;
-
 public:
     replace_op(const char *oldString_, const char *newString_)
         : oldString(oldString_),
           newString(newString_)
     {
-        oldStringContainsJoker = strchr(oldString, '?') != 0;
         olen = strlen(oldString);
         nlen = strlen(newString);
     }
@@ -664,33 +652,17 @@ public:
         int   replaced = 0;
         int   o        = 0;
         int   n        = 0;
-        char  ostart   = oldString[0];
 
         const char *sequence = part.data();
-        if (oldStringContainsJoker) {
-            while (o<len) {
-                if (o <= max_o && strncmpWithJoker(sequence+o, oldString, olen) == 0) {
-                    memcpy(new_seq+n, newString, nlen);
-                    n += nlen;
-                    o += olen;
-                    replaced++;
-                }
-                else {
-                    new_seq[n++] = sequence[o++];
-                }
+        while (o<len) {
+            if (o <= max_o && matchesUsingWildcard(sequence+o, oldString, olen)) {
+                memcpy(new_seq+n, newString, nlen);
+                n += nlen;
+                o += olen;
+                replaced++;
             }
-        }
-        else {
-            while (o<len) {
-                if (o <= max_o && sequence[o]==ostart && strncmp(sequence+o, oldString, olen) == 0) { // occurrence of oldString
-                    memcpy(new_seq+n, newString, nlen);
-                    n += nlen;
-                    o += olen;
-                    replaced++;
-                }
-                else {
-                    new_seq[n++] = sequence[o++];
-                }
+            else {
+                new_seq[n++] = sequence[o++];
             }
         }
         new_seq[n] = 0;
@@ -710,7 +682,7 @@ static void replace_in_block(AW_window*) {
     AW_root *awr = ED4_ROOT->aw_root;
     ED4_with_whole_block(
         replace_op(awr->awar(ED4_AWAR_REP_SEARCH_PATTERN)->read_char_pntr(),
-                         awr->awar(ED4_AWAR_REP_REPLACE_PATTERN)->read_char_pntr()));
+                   awr->awar(ED4_AWAR_REP_REPLACE_PATTERN)->read_char_pntr()));
 }
 
 AW_window *ED4_create_replace_window(AW_root *root) {
@@ -805,7 +777,7 @@ public:
 
             new_len = len;
         }
-        return result;
+        return dont_return_unchanged(result, new_len, part);
     }
 
 };
@@ -972,6 +944,7 @@ void TEST_block_operators() {
     TEST_ASSERT_BLOCKOP_PERFORMS("-AcGuT-", case_op(true), "ACGUT");
     TEST_ASSERT_BLOCKOP_PERFORMS("-AcGuT-", case_op(false), "acgut");
     TEST_ASSERT_BLOCKOP_PERFORMS("-acgut-", case_op(false), NULL);
+    TEST_ASSERT_BLOCKOP_PERFORMS("-------", case_op(false), NULL);
 
     // revcomp_op
     TEST_ASSERT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_RNA, false, false), NULL);     // noop
@@ -979,6 +952,8 @@ void TEST_block_operators() {
     TEST_ASSERT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_RNA, false, true),  "Ug-CaA");
     TEST_ASSERT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_RNA, true,  true),  "AaC-gU");
     TEST_ASSERT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_DNA, true,  true),  "AaC-gT");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-AcGCgT-", revcomp_op(GB_AT_DNA, true,  true),  NULL);
+    TEST_ASSERT_BLOCKOP_PERFORMS("--------", revcomp_op(GB_AT_DNA, true,  true),  NULL);
     
     TEST_ASSERT_BLOCKOP_PERFORMS("-AR-DQF-", revcomp_op(GB_AT_AA, false, false), NULL); // noop             
     TEST_ASSERT_BLOCKOP_PERFORMS("-AR-DQF-", revcomp_op(GB_AT_AA, true,  false), "FQD-RA");
@@ -1000,6 +975,7 @@ void TEST_block_operators() {
 
     TEST_ASSERT_BLOCKOP_PERFORMS("-ACGT-", unalign_op(-1), NULL);
     TEST_ASSERT_BLOCKOP_PERFORMS("-ACGT-", unalign_op(+1), NULL);
+    TEST_ASSERT_BLOCKOP_PERFORMS("------", unalign_op(+1), NULL);
 
     // shift_op
     TEST_ASSERT_BLOCKOP_PERFORMS("-A-C--", shift_op(+1), "-A-C"); // take gap outside region
