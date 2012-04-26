@@ -66,6 +66,7 @@ endif
 # supported compiler versions:
 
 ALLOWED_GCC_4xx_VERSIONS=\
+	4.2.1 \
 	4.3 4.3.1 4.3.2 4.3.3 4.3.4 \
 	4.4 4.4.1 4.4.3 4.4.5 \
 	4.5.2 \
@@ -124,10 +125,12 @@ extended_cpp_warnings :=# warning flags for C++-compiler only
 
 ifeq ($(DEBUG),0)
 	dflags := -DNDEBUG# defines
-	cflags := -O4# compiler flags (C and C++)
- ifndef DARWIN
-	lflags += -O99# linker flags
- endif
+	ifdef DARWIN
+		cflags := -O3# compiler flags (C and C++)
+	else
+		cflags := -O4# compiler flags (C and C++)
+		lflags += -O99# linker flags
+	endif
 endif
 
 ifeq ($(DEBUG),1)
@@ -385,7 +388,15 @@ ifeq ($(TRACESYM),1)
 	endif
 endif
 
-# ------------------------------------------------------------------------- 
+#---------------------- system dependent commands
+
+ifdef DARWIN
+	TIME:=gtime
+else
+	TIME:=/usr/bin/time
+endif
+
+# -------------------------------------------------------------------------
 #	Don't put any machine/version/etc conditionals below!
 #	(instead define variables above)
 # -------------------------------------------------------------------------
@@ -1591,7 +1602,7 @@ endif
 realperl: perltools
 	(( \
 		echo "$(SEP) Make PERL2ARB" ; \
-		time $(MAKE) -C PERL2ARB -r -f Makefile.main \
+		$(TIME) $(MAKE) -C PERL2ARB -r -f Makefile.main \
 			"AUTODEPENDS=1" \
 			"dflags=$(dflags)" \
 			"cross_cflags=$(cross_cflags) $(dflags)" \
@@ -1997,7 +2008,7 @@ aut:
 
 TIMELOG=$(ARBHOME)/arb_time.log
 TIMEARGS=--append --output=$(TIMELOG) --format=" %E(%S+%U) %P [%C]"
-TIMECMD=/usr/bin/time $(TIMEARGS)
+TIMECMD=$(TIME) $(TIMEARGS)
 
 time_one:
 ifeq ($(ONE_TIMED_TARGET),)
