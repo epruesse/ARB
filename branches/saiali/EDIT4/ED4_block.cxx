@@ -788,8 +788,6 @@ public:
     unalign_op(int direction_) : direction(direction_) {}
 
     char *operate(const SeqPart& part, int& new_len) const {
-        bool rightward = direction>0;
-
         int         len    = part.length();
         const char *seq    = part.data();
         char       *result = (char*)GB_calloc(len+1, sizeof(*result));
@@ -804,12 +802,24 @@ public:
 
         if (n<len) { // (move and) dot rest
             int gapcount = len-n;
-            if (rightward) {
-                memmove(result+gapcount, result, n);
-                memset(result, part.left_gap(), gapcount);
-            }
-            else {
-                memset(result+n, part.right_gap(), gapcount);
+            switch (direction) {
+                case 1: // rightwards
+                    memmove(result+gapcount, result, n);
+                    memset(result, part.left_gap(), gapcount);
+                    break;
+                case 0: { // center
+                    int leftgaps  = gapcount/2;
+                    int rightgaps = gapcount-leftgaps;
+
+                    memmove(result+leftgaps, result, n);
+                    memset(result, part.left_gap(), leftgaps);
+                    memset(result+leftgaps+n, part.right_gap(), rightgaps);
+                    
+                    break;
+                }
+                case -1: // leftwards
+                    memset(result+n, part.right_gap(), gapcount);
+                    break;
             }
         }
 
@@ -878,8 +888,9 @@ void ED4_perform_block_operation(ED4_blockoperation_type operationType) {
         case ED4_BO_COMPLEMENT:         ED4_with_whole_block(revcomp_op(ED4_ROOT->alignment_type, false, true));  break;
         case ED4_BO_REVERSE_COMPLEMENT: ED4_with_whole_block(revcomp_op(ED4_ROOT->alignment_type, true,  true));  break;
 
-        case ED4_BO_UNALIGN:       ED4_with_whole_block(unalign_op(-1)); break;
-        case ED4_BO_UNALIGN_RIGHT: ED4_with_whole_block(unalign_op(1));  break;
+        case ED4_BO_UNALIGN_LEFT:   ED4_with_whole_block(unalign_op(-1)); break;
+        case ED4_BO_UNALIGN_CENTER: ED4_with_whole_block(unalign_op(0));  break;
+        case ED4_BO_UNALIGN_RIGHT:  ED4_with_whole_block(unalign_op(1));  break;
 
         case ED4_BO_SHIFT_LEFT:  ED4_with_whole_block(shift_op(-1)); break;
         case ED4_BO_SHIFT_RIGHT: ED4_with_whole_block(shift_op(1));  break;
@@ -972,6 +983,16 @@ void TEST_block_operators() {
     TEST_ASSERT_BLOCKOP_PERFORMS("A.Ac-G--T-", unalign_op(+1), "....AcGT");
     TEST_ASSERT_BLOCKOP_PERFORMS(".A-c-G--T-", unalign_op(+1), "....AcGT");
     TEST_ASSERT_BLOCKOP_PERFORMS("AA-c-G--T-", unalign_op(+1), "----AcGT");
+
+    TEST_ASSERT_BLOCKOP_PERFORMS("AA-c-G--TT", unalign_op(0), "--AcGT--");
+    TEST_ASSERT_BLOCKOP_PERFORMS(".A-c-G--T-", unalign_op(0), "..AcGT--");
+    TEST_ASSERT_BLOCKOP_PERFORMS(".A-c-G--T.", unalign_op(0), "..AcGT..");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G--T.", unalign_op(0), "--AcGT..");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-Gc-T.", unalign_op(0), "-AcGcT..");
+
+    TEST_ASSERT_BLOCKOP_PERFORMS("-AcGcT.",  unalign_op(0), NULL);
+    TEST_ASSERT_BLOCKOP_PERFORMS("-AcGcT..", unalign_op(0), NULL);
+    TEST_ASSERT_BLOCKOP_PERFORMS("--AcGcT.", unalign_op(0), "AcGcT.");
 
     TEST_ASSERT_BLOCKOP_PERFORMS("-ACGT-", unalign_op(-1), NULL);
     TEST_ASSERT_BLOCKOP_PERFORMS("-ACGT-", unalign_op(+1), NULL);
