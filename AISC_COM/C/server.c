@@ -157,8 +157,8 @@ static const char *test_address_valid(void *address, long key)
     // ----------------------------------------
     // start of critical section
     // (need volatile for modified local auto variables, see man longjump)
-    volatile long  i;
-    volatile int trapped = sigsetjmp(return_after_segv, 1);
+    volatile long i       = 0;
+    volatile int  trapped = sigsetjmp(return_after_segv, 1);
 
     if (trapped == 0) { // normal execution
         i = *(long *)address; // here a SIGSEGV may happen. Execution will continue in else-branch

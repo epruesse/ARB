@@ -241,7 +241,7 @@ AW_window_Motif::AW_window_Motif() {
 }
 
 AW_window::AW_window() {
-    memset((char *)this, 0, sizeof(AW_window));
+    memset((char *)this, 0, sizeof(AW_window)); // @@@ may conflict with vtable - fix
     p_w = new AW_window_Motif;
     _at = new AW_at; // Note to valgrinders : the whole AW_window memory management suffers because Windows are NEVER deleted
     picture = new AW_screen_area;
