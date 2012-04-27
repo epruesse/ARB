@@ -37,7 +37,7 @@ public:
     void toggle_type();
     void autocorrect_type();
 
-    const PosRange& get_range() const { // @@@ rename
+    const PosRange& get_colblock_range() const {
         e4_assert(type == ED4_BT_COLUMNBLOCK || type == ED4_BT_MODIFIED_COLUMNBLOCK); // otherwise range may be undefined
         return range;
     }
@@ -50,7 +50,7 @@ public:
 
             case ED4_BT_COLUMNBLOCK:
             case ED4_BT_MODIFIED_COLUMNBLOCK:
-                return get_range();
+                return get_colblock_range();
 
             case ED4_BT_LINEBLOCK:
                 return PosRange::whole();
@@ -103,7 +103,7 @@ static void col_block_refresh_on_seq_term(ED4_sequence_terminal *seq_term) {
     // @@@ code below is more than weird. why do sth with column-stat here ? why write probe match awars here ? 
     ED4_columnStat_terminal *colStatTerm = seq_term->corresponding_columnStat_terminal();
     if (colStatTerm) {
-        const char *probe_match_pattern = colStatTerm->build_probe_match_string(block.get_range());
+        const char *probe_match_pattern = colStatTerm->build_probe_match_string(block.get_colblock_range());
         int len = strlen(probe_match_pattern);
 
         if (len>=4) {
@@ -255,7 +255,7 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(const ED4_block_oper
         char *seq = GB_read_string(gbd);
         int   len = GB_read_string_count(gbd);
 
-        ExplicitRange range(block.get_range(), len);
+        ExplicitRange range(block.get_colblock_range(), len);
 
         int   len_part     = range.size();
         char *seq_part     = seq+range.start();
@@ -406,7 +406,7 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
         int do_below = 1; // we have to update terminals between term2 and last_term2
 
         ED4_terminal *term          = term1;
-        int           xRangeChanged = block.get_range() != last_range;
+        int           xRangeChanged = block.get_colblock_range() != last_range;
 
         while (term) {
             if (term->is_sequence_terminal()) {
@@ -469,7 +469,7 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
 
     last_term1 = term1;
     last_term2 = term2;
-    last_range = block.get_range();
+    last_range = block.get_colblock_range();
 }
 
 void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) {
@@ -570,16 +570,16 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
                 PosRange screen_range = rm->clip_screen_range(seq_term->calc_interval_displayed_in_rectangle(&area_rect));
                 int      scr_pos      = rm->sequence_to_screen(seq_pos);
 
-                PosRange block_screen_range = rm->sequence_to_screen(block.get_range());
+                PosRange block_screen_range = rm->sequence_to_screen(block.get_colblock_range());
                 PosRange block_visible_part = intersection(screen_range, block_screen_range);
                 
                 if (block_visible_part.is_empty()) {
                     if (scr_pos>block_screen_range.end()) {
-                        fix_pos = block.get_range().start();
+                        fix_pos = block.get_colblock_range().start();
                     }
                     else {
                         e4_assert(scr_pos<block_screen_range.start());
-                        fix_pos = block.get_range().end();
+                        fix_pos = block.get_colblock_range().end();
                     }
                 }
                 else {
@@ -587,10 +587,10 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
                     int dist_right = abs(scr_pos-block_visible_part.end());
 
                     if (dist_left < dist_right) {   // click nearer to left border of visible part of block
-                        fix_pos = block.get_range().end(); // keep right block-border
+                        fix_pos = block.get_colblock_range().end(); // keep right block-border
                     }
                     else {
-                        fix_pos = block.get_range().start();
+                        fix_pos = block.get_colblock_range().start();
                     }
                 }
 
