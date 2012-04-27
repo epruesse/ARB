@@ -29,15 +29,15 @@
 // --------------------------------------------------------------------------------
 
 #define AWAR_SAI_CLR_TAB              "saicolors/"
-#define AWAR_SAI_SELECT               AWAR_SAI_CLR_TAB "select"         // current visualized SAI
-#define AWAR_SAI_CLR_DEF              AWAR_SAI_CLR_TAB "clr_trans_tab/" // container for definitions
-#define AWAR_SAI_ENABLE               AWAR_SAI_CLR_TAB "enable"         // global enable of visualization
-#define AWAR_SAI_ALL_SPECIES          AWAR_SAI_CLR_TAB "all_species"    // 1 = all / 0 = marked
-#define AWAR_SAI_AUTO_SELECT          AWAR_SAI_CLR_TAB "auto_select"    // 1 = auto select / 0 = manual select
-#define AWAR_SAI_CLR_TRANS_TABLE      AWAR_SAI_CLR_TAB "clr_trans_table" // current translation table
+#define AWAR_SAI_VISUALIZED           AWAR_SAI_CLR_TAB "select"             // current visualized SAI
+#define AWAR_SAI_CLR_DEF              AWAR_SAI_CLR_TAB "clr_trans_tab/"     // container for definitions
+#define AWAR_SAI_ENABLE               AWAR_SAI_CLR_TAB "enable"             // global enable of visualization
+#define AWAR_SAI_ALL_SPECIES          AWAR_SAI_CLR_TAB "all_species"        // 1 = all / 0 = marked
+#define AWAR_SAI_AUTO_SELECT          AWAR_SAI_CLR_TAB "auto_select"        // 1 = auto select / 0 = manual select
+#define AWAR_SAI_CLR_TRANS_TABLE      AWAR_SAI_CLR_TAB "clr_trans_table"    // current translation table
 #define AWAR_SAI_CLR_TRANS_TAB_NAMES  AWAR_SAI_CLR_TAB "clr_trans_tab_names" // ;-separated list of existing translation tables
-#define AWAR_SAI_CLR_TRANS_TAB_REL    AWAR_SAI_CLR_TAB "sai_relation/"  // container to store trans tables for each SAI
-#define AWAR_SAI_CLR_DEFAULTS_CREATED AWAR_SAI_CLR_TAB "defaults_created" // whether defaults have been created (create only once)
+#define AWAR_SAI_CLR_TRANS_TAB_REL    AWAR_SAI_CLR_TAB "sai_relation/"      // container to store trans tables for each SAI
+#define AWAR_SAI_CLR_DEFAULTS_CREATED AWAR_SAI_CLR_TAB "defaults_created"   // whether defaults have been created (create only once)
 
 #define AWAR_SAI_CLR_TRANS_TAB_NEW_NAME "tmp/sai/clr_trans_tab_new_name" // textfield to enter translation table name
 #define AWAR_SAI_CLR                    "tmp/sai/color_0" // the definition of the current translation table (number runs from 0 to 9)
@@ -243,7 +243,7 @@ static void colorDefTabNameChanged_callback(AW_root *awr) {
         colorDefChanged_callback(awr, 0); // correct first def manually
         {
             // store the selected table as default for this SAI:
-            char *saiName = awr->awar(AWAR_SAI_SELECT)->read_string();
+            char *saiName = awr->awar(AWAR_SAI_VISUALIZED)->read_string();
             if (saiName[0]) {
                 char buf[100];
                 sprintf(buf, AWAR_SAI_CLR_TRANS_TAB_REL "%s", saiName);
@@ -280,7 +280,7 @@ static void saiChanged_callback(AW_root *awr) {
                 gb_last_SAI = 0;
             }
 
-            saiName = awr->awar(AWAR_SAI_SELECT)->read_string();
+            saiName = awr->awar(AWAR_SAI_VISUALIZED)->read_string();
             char *transTabName = 0;
 
             if (saiName[0]) {
@@ -333,7 +333,7 @@ static void autoselect_cb(AW_root *aw_root) {
 #if defined(DEBUG)
     printf("curr_sai='%s'\n", curr_sai);
 #endif // DEBUG
-    aw_root->awar(AWAR_SAI_SELECT)->write_string(curr_sai);
+    aw_root->awar(AWAR_SAI_VISUALIZED)->write_string(curr_sai);
     free(curr_sai);
 }
 
@@ -374,10 +374,11 @@ static void addDefaultTransTable(AW_root *aw_root, const char *newClrTransTabNam
 }
 
 void ED4_createVisualizeSAI_Awars(AW_root *aw_root, AW_default aw_def) {  // --- Creating and initializing AWARS -----
-    aw_root->awar_int   (AWAR_SAI_ENABLE,                 0,  aw_def);
-    aw_root->awar_int   (AWAR_SAI_ALL_SPECIES,            0,  aw_def);
-    aw_root->awar_int   (AWAR_SAI_AUTO_SELECT,            0,  aw_def);
-    aw_root->awar_string(AWAR_SAI_SELECT,                 "", aw_def);
+    aw_root->awar_int(AWAR_SAI_ENABLE,      0, aw_def);
+    aw_root->awar_int(AWAR_SAI_ALL_SPECIES, 0, aw_def);
+    aw_root->awar_int(AWAR_SAI_AUTO_SELECT, 0, aw_def);
+
+    aw_root->awar_string(AWAR_SAI_VISUALIZED,             "", aw_def);
     aw_root->awar_string(AWAR_SAI_CLR_TRANS_TABLE,        "", aw_def);
     aw_root->awar_string(AWAR_SAI_CLR_TRANS_TAB_NEW_NAME, "", aw_def);
     aw_root->awar_string(AWAR_SAI_CLR_TRANS_TAB_NAMES,    "", aw_def);
@@ -386,10 +387,10 @@ void ED4_createVisualizeSAI_Awars(AW_root *aw_root, AW_default aw_def) {  // ---
        AW_awar *def_awar = aw_root->awar_string(getAwarName(i), "", aw_def);
        def_awar->add_callback(colorDefChanged_callback, (AW_CL)i);
     }
-    aw_root->awar(AWAR_SAI_ENABLE)->add_callback(setVisualizeSAI_cb);
-    aw_root->awar(AWAR_SAI_ALL_SPECIES)->add_callback(setVisualizeSAI_options_cb);
-    aw_root->awar(AWAR_SAI_AUTO_SELECT)->add_callback(set_autoselect_cb);
-    aw_root->awar(AWAR_SAI_SELECT)->add_callback(saiChanged_callback);
+    aw_root->awar(AWAR_SAI_ENABLE)         ->add_callback(setVisualizeSAI_cb);
+    aw_root->awar(AWAR_SAI_ALL_SPECIES)    ->add_callback(setVisualizeSAI_options_cb);
+    aw_root->awar(AWAR_SAI_AUTO_SELECT)    ->add_callback(set_autoselect_cb);
+    aw_root->awar(AWAR_SAI_VISUALIZED)     ->add_callback(saiChanged_callback);
     aw_root->awar(AWAR_SAI_CLR_TRANS_TABLE)->add_callback(colorDefTabNameChanged_callback);
 
     ED4_ROOT->visualizeSAI            = aw_root->awar(AWAR_SAI_ENABLE)->read_int();
@@ -524,7 +525,7 @@ const char *ED4_getSaiColorString(AW_root *awr, int start, int end) {
     }
     else memset(saiColors, 0, sizeof(char)*seqSize);
 
-    char *saiSelected = awr->awar(AWAR_SAI_SELECT)->read_string();
+    char *saiSelected = awr->awar(AWAR_SAI_VISUALIZED)->read_string();
 
     GB_push_transaction(GLOBAL_gb_main);
     char   *alignment_name = GBT_get_default_alignment(GLOBAL_gb_main);
@@ -756,7 +757,7 @@ AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
         aws->create_toggle(AWAR_SAI_ENABLE);
 
         aws->at("sai");
-        ED4_create_SAI_selection_button(aws, AWAR_SAI_SELECT);
+        ED4_create_SAI_selection_button(aws, AWAR_SAI_VISUALIZED);
 
         aws->at("auto_select");
         aws->create_toggle(AWAR_SAI_AUTO_SELECT);
