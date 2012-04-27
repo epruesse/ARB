@@ -902,6 +902,105 @@ void ED4_perform_block_operation(ED4_blockoperation_type operationType) {
     }
 }
 
+// --------------------------------------
+//      modify range of selected sai
+
+#define AWAR_MOD_SAI_SCRIPT "modsai/script"
+
+static void modsai_cb(AW_window *aww) {
+    ED4_MostRecentWinContext context;
+
+    ED4_cursor *cursor = &current_cursor();
+    GB_ERROR    error  = NULL;
+
+    if (!cursor->in_SAI_terminal()) {
+        error = "Please select the SAI you like to modify";
+    }
+    else if (block.get_type() == ED4_BT_NOBLOCK) {
+        error = "Please select the range where the SAI shall be modified";
+    }
+    else {
+        AW_root    *aw_root = aww->get_root();
+        char       *script  = aw_root->awar(AWAR_MOD_SAI_SCRIPT)->read_string();
+        const char *sainame = aw_root->awar(AWAR_SAI_NAME)->read_char_pntr();
+
+        GB_transaction ta(GLOBAL_gb_main);
+        GBDATA *gb_sai = GBT_find_SAI(GLOBAL_gb_main, sainame);
+
+        if (!gb_sai) {
+            error = GB_have_error()
+                ? GB_await_error()
+                : GBS_global_string("Failed to find SAI '%s'", sainame);
+        }
+        else {
+            GBDATA *gb_data = GBT_read_sequence(gb_sai, ED4_ROOT->alignment_name);
+
+            if (!gb_data) error = GB_await_error();
+            else {
+                char *seq = GB_read_string(gb_data);
+                int   len = GB_read_string_count(gb_data);
+
+                const PosRange&  range = block.get_range();
+                char            *part  = range.dup_corresponding_part(seq, len);
+
+                char *result       = GB_command_interpreter(GLOBAL_gb_main, part, script, gb_sai, NULL);
+                if (!result) error = GB_await_error();
+                else {
+                    int reslen   = strlen(result);
+                    if (reslen>range.size()) {
+                        error = GBS_global_string("Cannot insert modified range (result too long; %i>%i)", reslen, range.size());
+                    }
+                    else {
+                        memcpy(seq+range.start(), result, reslen);
+                        int rest = range.size()-reslen;
+                        if (rest>0) memset(seq+range.start()+reslen, '-', rest);
+
+                        error = GB_write_string(gb_data, seq);
+                    }
+                    free(result);
+                }
+
+                free(part);
+                free(seq);
+            }
+        }
+        free(script);
+        error = ta.close(error);
+    }
+
+    aw_message_if(error);
+}
+
+AW_window *ED4_create_modsai_window(AW_root *root) {
+    root->awar_string(AWAR_MOD_SAI_SCRIPT)->write_string("");
+
+    AW_window_simple *aws = new AW_window_simple;
+    aws->init(root, "modsai", "Modify SAI range");
+    aws->load_xfig("edit4/modsai.fig");
+
+    aws->at("close");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "Close", "C");
+
+    aws->at("help");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"e4_modsai.hlp");
+    aws->create_button("HELP", "Help", "H");
+    
+    aws->at("script");
+    aws->create_input_field(AWAR_MOD_SAI_SCRIPT);
+
+    aws->at("go");
+    aws->callback(modsai_cb);
+    aws->create_button("go", "GO");
+
+    aws->at("box");
+    AW_selection_list *sellist = aws->create_selection_list(AWAR_MOD_SAI_SCRIPT);
+    GB_ERROR           error   = aws->load_selection_list(sellist, GB_path_in_ARBLIB("sellists/mod_sequence*.sellst"));
+    aw_message_if(error);
+    
+    return aws;
+}
+
 
 // --------------------------------------------------------------------------------
 

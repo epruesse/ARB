@@ -55,6 +55,7 @@ public:
 void ED4_perform_block_operation(ED4_blockoperation_type type);
 
 AW_window *ED4_create_replace_window(AW_root *root);
+AW_window *ED4_create_modsai_window(AW_root *root);
 
 #else
 #error ed4_block.hxx included twice
