@@ -37,9 +37,8 @@ DESCRIPTION	Extracts data from the database entries of every species and builds 
 			every ACI PROGRAM does.
 
 		Generate new ACI program:
-			Type syntax (see LINK{srt.hlp} and
-			LINK{aci.hlp}) to the 'ACI SRT
-			PROGRAM' subwindow
+			Type the program to the 'ACI SRT PROGRAM' subwindow
+                        (see LINK{srt.hlp}, LINK{aci.hlp} and LINK{reg.hlp}). 
 
 		Width:
 			Defines the width of the display in characters.

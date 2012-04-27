@@ -78,11 +78,11 @@ DESCRIPTION     First of all the converter appends all import files maching
                          - SRT "SRT_STRING"
 
                                start the string replace tool on the current result and
-                               set the output as current result.
+                               set the output as current result (see LINK{srt.hlp}).
 
                          - ACI "ACI_STRING"
 
-                               run the arb command interpreter to change the current result.
+                               run the arb command interpreter to change the current result (see LINK{aci.hlp}).
 
                          - TAG "TAGNAME"
 
