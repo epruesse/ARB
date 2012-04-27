@@ -37,8 +37,25 @@ public:
     void toggle_type();
     void autocorrect_type();
 
-    const PosRange& get_range() const { return range; }
+    const PosRange& get_range() const { // @@@ rename
+        e4_assert(type == ED4_BT_COLUMNBLOCK || type == ED4_BT_MODIFIED_COLUMNBLOCK); // otherwise range may be undefined
+        return range;
+    }
     void set_range(const PosRange& new_range) { range = new_range; }
+
+    PosRange get_range_according_to_type() {
+        switch (type) {
+            case ED4_BT_NOBLOCK:
+                return PosRange::empty();
+
+            case ED4_BT_COLUMNBLOCK:
+            case ED4_BT_MODIFIED_COLUMNBLOCK:
+                return get_range();
+
+            case ED4_BT_LINEBLOCK:
+                return PosRange::whole();
+        }
+    }
 };
 
 static ED4_block block;
@@ -344,18 +361,10 @@ static void ED4_with_whole_block(const ED4_block_operator& block_operator) {
 }
 
 bool ED4_get_selected_range(ED4_terminal *term, PosRange& range) { // @@@ function will get useless, when multi-column-blocks are possible
-    if (block.get_type()==ED4_BT_NOBLOCK) return false;
-
+    if (block.get_type() == ED4_BT_NOBLOCK) return false;
     if (!term->containing_species_manager()->is_selected()) return false;
 
-    if (block.get_type()==ED4_BT_COLUMNBLOCK || block.get_type()==ED4_BT_MODIFIED_COLUMNBLOCK) {
-        range = block.get_range();
-    }
-    else {
-        e4_assert(block.get_type()==ED4_BT_LINEBLOCK);
-        range = PosRange::whole();
-    }
-
+    range = block.get_range_according_to_type();
     return true;
 }
 
@@ -940,8 +949,8 @@ static void modsai_cb(AW_window *aww) {
                 char *seq = GB_read_string(gb_data);
                 int   len = GB_read_string_count(gb_data);
 
-                const PosRange&  range = block.get_range();
-                char            *part  = range.dup_corresponding_part(seq, len);
+                ExplicitRange  range(block.get_range_according_to_type(), len);
+                char          *part = range.dup_corresponding_part(seq, len);
 
                 char *result       = GB_command_interpreter(GLOBAL_gb_main, part, script, gb_sai, NULL);
                 if (!result) error = GB_await_error();
