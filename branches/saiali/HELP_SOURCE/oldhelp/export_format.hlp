@@ -4,8 +4,8 @@ UP	glossary.hlp
 UP	arb_export.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	parser.hlp
-SUB	commands.hlp
+SUB	srt.hlp
+SUB	aci.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 

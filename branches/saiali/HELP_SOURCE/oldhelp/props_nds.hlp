@@ -4,9 +4,7 @@ UP	glossary.hlp
 UP	sp_info.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-#SUB	parser.hlp
-#SUB	commands.hlp
-#SUB	acisrt.hlp
+#SUB	subtopic.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
@@ -68,15 +66,15 @@ DESCRIPTION	Extracts data from the database entries of every species and
                         'SRT_ACI_SELECT' window and select a predefined procedure
                         (see LINK{acisrt.hlp}).
 
-                        The corresponding syntax (see LINK{parser.hlp}
-                        and LINK{commands.hlp}) is displayed in
+                        The corresponding syntax (see LINK{srt.hlp}
+                        and LINK{aci.hlp}) is displayed in
                         the 'ACI SRT PROGRAM' subwindow. The displayed strings can be
                         modified by typing to the subwindows.
 
 		Generate new program:
 
-			Type syntax (see LINK{parser.hlp} and
-			LINK{commands.hlp}) to the 'ACI SRT
+			Type syntax (see LINK{srt.hlp} and
+			LINK{aci.hlp}) to the 'ACI SRT
 			PROGRAM' subwindow
 
 
