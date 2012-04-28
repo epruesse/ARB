@@ -1982,6 +1982,9 @@ GB_ERROR AW_window::load_selection_list(AW_selection_list *selection_list, const
         int correct_old_format = -1;
 
         for (pl = data; pl; pl = nl) {
+            nl              = strchr(pl, '\n');
+            if (nl) *(nl++) = 0;
+
             ko = strchr(pl, ','); // look for ','
 
             if (ko) {
@@ -2001,9 +2004,6 @@ GB_ERROR AW_window::load_selection_list(AW_selection_list *selection_list, const
             else ko         = pl; // if no comma -> display same as value
 
             while (*ko == ' ' || *ko == '\t') ko++;
-
-            nl              = strchr(ko, '\n');
-            if (nl) *(nl++) = 0;
 
             if (ko[0] && pl[0] != '#') this->insert_selection(selection_list, pl, ko);
         }
