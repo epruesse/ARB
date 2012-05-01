@@ -40,9 +40,8 @@ void awt_create_selection_list_on_tables(GBDATA *gb_main, AW_window *aws, const 
 void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, const char *tablename, const char *varname);
 AW_window *AWT_create_tables_admin_window(AW_root *aw_root, GBDATA *gb_main);
 
-void *awt_create_selection_list_on_extendeds(GBDATA *gb_main, AW_window *aws, const char *varname,
-                                             char *(*filter_poc)(GBDATA *gb_ext, AW_CL) = 0, AW_CL filter_cd = 0,
-                                             bool add_sel_species = false);
+typedef char *(*awt_sai_sellist_filter)(GBDATA *, AW_CL);
+void *awt_create_selection_list_on_extendeds(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
 void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid);
 
 void  awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws, const char *varname);
