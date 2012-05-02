@@ -331,29 +331,6 @@ static char* filter_sai(GBDATA *gb_extended, AW_CL) {
     return result;
 }
 
-static AW_window* create_select_sai_window(AW_root *root) {
-    static AW_window_simple *aws = 0;
-    if (aws) return aws;
-
-    aws = new AW_window_simple;
-
-    aws->init(root, "SELECT_SAI", "Select Sai");
-    aws->load_xfig("selectSAI.fig");
-
-    aws->at("selection");
-    aws->callback((AW_CB0)AW_POPDOWN);
-
-    awt_create_selection_list_on_extendeds(GLOBAL_gb_main, (AW_window*) aws,
-                                           GA_AWAR_SAI, filter_sai, (AW_CL)root);
-
-    aws->at("close");
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
-
-    aws->window_fit();
-    return (AW_window*) aws;
-}
-
 static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess, bool adv) {
     int closex, closey, startx, starty, winx, winy;
     const int hgap = 10;
@@ -428,7 +405,11 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
         aws->at_shift(0, hgap);
 
         aws->at_newline();
-        aws->callback(AW_POPUP, (AW_CL)create_select_sai_window, (AW_CL)0);
+
+        static SAI_selection_list_spec spec(GA_AWAR_SAI, GLOBAL_gb_main);
+        spec.define_filter(filter_sai, 0);
+
+        aws->callback(awt_popup_filtered_sai_selection_list, AW_CL(&spec));
         aws->label("Pos. Var.:");
         aws->create_button("SELECT_SAI", GA_AWAR_SAI);
         aws->button_length(12);

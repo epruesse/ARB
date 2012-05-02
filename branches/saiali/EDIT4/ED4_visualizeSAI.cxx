@@ -695,42 +695,12 @@ static AW_window *create_editColorTranslationTable_window(AW_root *aw_root) { //
     return (AW_window *)aws;
 }
 
-static AW_window *openSelectSAI_window(AW_root *aw_root, AW_CL cl_awar_name) {
-    const char *awar_name = reinterpret_cast<const char *>(cl_awar_name);
-
-    static GB_HASH *SAI_window_hash = 0;
-    if (!SAI_window_hash) SAI_window_hash = GBS_create_hash(10, GB_MIND_CASE);
-
-    AW_window_simple *aws = reinterpret_cast<AW_window_simple *>(GBS_read_hash(SAI_window_hash, awar_name));
-
-    if (!aws) {
-        aws = new AW_window_simple;
-        aws->init(aw_root, "SELECT_SAI", "SELECT SAI");
-        aws->load_xfig("selectSAI.fig");
-
-        aws->at("selection");
-        aws->callback((AW_CB0)AW_POPDOWN);
-        awt_create_selection_list_on_extendeds(GLOBAL_gb_main, (AW_window *)aws, awar_name);
-
-        aws->at("close");
-        aws->callback(AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->window_fit();
-
-        GBS_write_hash(SAI_window_hash, awar_name, reinterpret_cast<long>(aws));
-    }
-
-    return aws;
-}
-
-void ED4_create_SAI_selection_button(AW_window *aws, const char *cawar_name) {
-    char *awar_name         = strdup(cawar_name);
-    int   old_button_length = aws->get_button_length();
+void ED4_create_SAI_selection_button(AW_window *aws, const char *awar_name) { // @@@ move to ../AWT/AWT_sel_boxes.cxx
+    int old_button_length = aws->get_button_length();
 
     aws->button_length(30);
 
-    aws->callback(AW_POPUP, (AW_CL)openSelectSAI_window, (AW_CL)awar_name);
+    aws->callback(awt_popup_sai_selection_list, (AW_CL)awar_name, (AW_CL)GLOBAL_gb_main);
     aws->create_button("SELECT_SAI", awar_name);
 
     aws->button_length(old_button_length);

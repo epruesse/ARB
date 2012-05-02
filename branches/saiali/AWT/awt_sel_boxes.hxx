@@ -19,9 +19,41 @@
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 class AP_filter;
 struct adfiltercbstruct;
+
+typedef char *(*awt_sai_sellist_filter)(GBDATA *, AW_CL);
+
+class SAI_selection_list_spec : virtual Noncopyable {
+    char   *awar_name;
+    GBDATA *gb_main;
+
+    awt_sai_sellist_filter filter_poc;
+    AW_CL                  filter_cd;
+
+public:
+    SAI_selection_list_spec(const char *awar_name_, GBDATA *gb_main_)
+        : awar_name(strdup(awar_name_)),
+          gb_main(gb_main_),
+          filter_poc(NULL),
+          filter_cd(0)
+    {}
+    ~SAI_selection_list_spec() { free(awar_name); }
+
+    void define_filter(awt_sai_sellist_filter filter_poc_, AW_CL filter_cd_) {
+        // Warning: do not use different filters for same awar! (wont work as expected)
+        filter_poc = filter_poc_;
+        filter_cd  = filter_cd_;
+    }
+
+    const char *get_awar_name() const { return awar_name; }
+
+    void create_list(AW_window *aws) const;
+};
 
 // -----------------------------------------
 //      various database selection boxes
@@ -40,9 +72,12 @@ void awt_create_selection_list_on_tables(GBDATA *gb_main, AW_window *aws, const 
 void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, const char *tablename, const char *varname);
 AW_window *AWT_create_tables_admin_window(AW_root *aw_root, GBDATA *gb_main);
 
-typedef char *(*awt_sai_sellist_filter)(GBDATA *, AW_CL);
 void *awt_create_selection_list_on_extendeds(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
-void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid);
+void  awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid);
+void awt_popup_sai_selection_list(AW_root *aw_root, AW_CL cl_awar_name, AW_CL cl_gb_main);
+void awt_popup_sai_selection_list(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_gb_main);
+void awt_popup_filtered_sai_selection_list(AW_root *aw_root, AW_CL cl_sai_sellist_spec);
+void awt_popup_filtered_sai_selection_list(AW_window *aww, AW_CL cl_sai_sellist_spec);
 
 void  awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws, const char *varname);
 char *awt_create_string_on_configurations(GBDATA *gb_main);

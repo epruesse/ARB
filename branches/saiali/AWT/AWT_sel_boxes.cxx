@@ -549,6 +549,55 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *, void *cbsid) {
     cbs->refresh();
 }
 
+void SAI_selection_list_spec::create_list(AW_window *aws) const {
+    awt_create_selection_list_on_extendeds(gb_main, aws, awar_name, filter_poc, filter_cd);
+}
+
+void awt_popup_filtered_sai_selection_list(AW_root *aw_root, AW_CL cl_sellist_spec) {
+    const SAI_selection_list_spec *spec      = (const SAI_selection_list_spec*)cl_sellist_spec;
+    const char                    *awar_name = spec->get_awar_name();
+    
+    static GB_HASH *SAI_window_hash       = 0;
+    if (!SAI_window_hash) SAI_window_hash = GBS_create_hash(10, GB_MIND_CASE);
+
+    AW_window_simple *aws = reinterpret_cast<AW_window_simple *>(GBS_read_hash(SAI_window_hash, awar_name));
+
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(aw_root, "SELECT_SAI", "SELECT SAI");
+        aws->load_xfig("select_simple.fig");
+
+        aws->at("selection");
+        aws->callback((AW_CB0)AW_POPDOWN);
+        spec->create_list(aws);
+
+        aws->at("button");
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->window_fit();
+
+        GBS_write_hash(SAI_window_hash, awar_name, reinterpret_cast<long>(aws));
+    }
+
+    aws->activate();
+}
+void awt_popup_filtered_sai_selection_list(AW_window *aww, AW_CL cl_sellist_spec) {
+    awt_popup_filtered_sai_selection_list(aww->get_root(), cl_sellist_spec);
+}
+
+void awt_popup_sai_selection_list(AW_root *aw_root, AW_CL cl_awar_name, AW_CL cl_gb_main) {
+    const char *awar_name = reinterpret_cast<const char *>(cl_awar_name);
+    GBDATA *gb_main = reinterpret_cast<GBDATA *>(cl_gb_main);
+
+    SAI_selection_list_spec spec(awar_name, gb_main);
+    awt_popup_filtered_sai_selection_list(aw_root, AW_CL(&spec));
+}
+
+void awt_popup_sai_selection_list(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_gb_main) {
+    awt_popup_sai_selection_list(aww->get_root(), cl_awar_name, cl_gb_main);
+}
+
 void *awt_create_selection_list_on_extendeds(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
     /* Selection list for all extendeds (SAIs)
      *
@@ -570,7 +619,6 @@ void *awt_create_selection_list_on_extendeds(GBDATA *gb_main, AW_window *aws, co
 
     return (void *)cbs;
 }
-
 
 // ******************** selection boxes on saving selection lists ********************
 
@@ -917,5 +965,6 @@ AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list
 
     return subsel;
 }
+
 
 
