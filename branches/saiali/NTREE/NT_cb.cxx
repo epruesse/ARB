@@ -60,25 +60,26 @@ void NT_delete_mark_all_cb(void *, AWT_canvas *ntw) {
 
 
 AW_window * NT_open_select_tree_window(AW_root *awr, char *awar_tree) {
-    AW_window_simple *aws;
+    AW_window_simple *aws = new AW_window_simple;
 
-    aws = new AW_window_simple;
     aws->init(awr, "SELECT_TREE", "SELECT A TREE");
     aws->load_xfig("select_simple.fig");
 
     aws->at("selection");
     awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, awar_tree);
 
-    aws->at("close");
+    aws->auto_space(5, 5);
+    aws->button_length(6);
+
+    aws->at("button");
     aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("modify");
-    aws->callback(AW_POPUP, (AW_CL)create_trees_window, 0);
+    aws->callback(popup_tree_admin_window, (AW_CL)aws);
     aws->help_text("treeadm.hlp");
-    aws->create_button("MODIFY", "MODIFY", "M");
+    aws->create_button("MODIFY", "ADMIN", "A");
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 void NT_select_bottom_tree(AW_window *aww, char *awar_tree) {
@@ -90,27 +91,29 @@ void NT_select_bottom_tree(AW_window *aww, char *awar_tree) {
 AW_window *NT_open_select_alignment_window(AW_root *awr)
 {
     static AW_window_simple *aws = 0;
-    if (aws) return (AW_window *)aws;
+    if (!aws) {
+        aws = new AW_window_simple;
 
-    aws = new AW_window_simple;
-    aws->init(awr, "SELECT_ALIGNMENT", "SELECT AN ALIGNMENT");
-    aws->load_xfig("select_simple.fig");
+        aws->init(awr, "SELECT_ALIGNMENT", "SELECT AN ALIGNMENT");
+        aws->load_xfig("select_simple.fig");
 
-    aws->at("selection");
-    aws->auto_space(0, 0);
-    aws->callback((AW_CB0)AW_POPDOWN);
-    awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, AWAR_DEFAULT_ALIGNMENT, "*=");
+        aws->at("selection");
+        aws->callback((AW_CB0)AW_POPDOWN);
+        awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, AWAR_DEFAULT_ALIGNMENT, "*=");
 
-    aws->at("close");
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
+        aws->auto_space(5, 5);
+        aws->button_length(6);
 
-    aws->at("modify");
-    aws->callback(AW_POPUP, (AW_CL)NT_create_alignment_window, (AW_CL)aws);
-    aws->help_text("ad_align.hlp");
-    aws->create_button("MODIFY", "MODIFY", "M");
+        aws->at("button");
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->window_fit();
+        aws->callback(AW_POPUP, (AW_CL)NT_create_alignment_window, (AW_CL)aws);
+        aws->help_text("ad_align.hlp");
+        aws->create_button("MODIFY", "ADMIN", "A");
+
+        aws->window_fit();
+    }
     return aws;
 }
 
