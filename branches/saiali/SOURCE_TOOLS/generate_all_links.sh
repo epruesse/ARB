@@ -263,6 +263,7 @@ symlink_file ../SL/DB_UI/dbui.h INCLUDE/dbui.h &&
 symlink_file ../SL/SEQIO/seqio.hxx INCLUDE/seqio.hxx &&
 symlink_file ../SL/FAST_ALIGNER/fast_aligner.hxx INCLUDE/fast_aligner.hxx &&
 symlink_file ../SL/FILTER/AP_filter.hxx INCLUDE/AP_filter.hxx &&
+symlink_file ../SL/FILTER/RangeList.h INCLUDE/RangeList.h &&
 symlink_file ../SL/GUI_ALIVIEW/ColumnStat.hxx INCLUDE/ColumnStat.hxx &&
 symlink_file ../SL/GUI_ALIVIEW/awt_filter.hxx INCLUDE/awt_filter.hxx &&
 symlink_file ../SL/GUI_ALIVIEW/gui_aliview.hxx INCLUDE/gui_aliview.hxx &&

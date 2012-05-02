@@ -28,6 +28,7 @@
 
 #include <arb_defs.h>
 #include <arb_progress.h>
+#include <RangeList.h>
 
 #include <cctype>
 #include <cmath>
@@ -58,6 +59,7 @@ enum FA_range {
     FA_WHOLE_SEQUENCE,          // align whole sequence
     FA_AROUND_CURSOR,           // align xxx positions around current cursor position
     FA_SELECTED_RANGE,          // align selected range
+    FA_SAI_MULTI_RANGE,         // align versus multi range define by SAI
 };
 
 enum FA_turn {
@@ -131,6 +133,8 @@ struct SearchRelativeParams : virtual Noncopyable {
 #define FA_AWAR_NEXT_RELATIVES      FA_AWAR_ROOT "next_relatives"
 #define FA_AWAR_RELATIVE_RANGE      FA_AWAR_ROOT "relrange"
 #define FA_AWAR_PT_SERVER_ALIGNMENT "tmp/" FA_AWAR_ROOT "relative_ali"
+#define FA_AWAR_SAI_RANGE_NAME      FA_AWAR_ROOT "sai/name"
+#define FA_AWAR_SAI_RANGE_CHARS     FA_AWAR_ROOT "sai/chars"
 
 #define FA_AWAR_ISLAND_HOPPING_ROOT  "island_hopping/"
 #define FA_AWAR_USE_ISLAND_HOPPING   FA_AWAR_ISLAND_HOPPING_ROOT "use"
@@ -2271,112 +2275,152 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
         }
     }
 
-    PosRange range               = PosRange::whole();
-    bool     mayRestrictRelRange = true;
+    RangeList ranges;
+    bool      autoRestrictRange4nextRelSearch = true;
 
     if (!error) {
         switch (static_cast<FA_range>(root->awar(FA_AWAR_RANGE)->read_int())) {
             case FA_WHOLE_SEQUENCE:
-                mayRestrictRelRange = false;
+                autoRestrictRange4nextRelSearch = false;
+                ranges.add(PosRange::whole());
                 break;
 
             case FA_AROUND_CURSOR: {
                 int curpos = root->awar(AWAR_CURSOR_POSITION_LOCAL)->read_int();
                 int size = root->awar(FA_AWAR_AROUND)->read_int();
 
-                range = PosRange(curpos-size, curpos+size);
+                ranges.add(PosRange(curpos-size, curpos+size));
                 break;
             }
             case FA_SELECTED_RANGE: {
+                PosRange range;
                 if (!data_access->get_selected_range(range)) {
                     error = "There is no selected species!";
                 }
-#ifdef DEBUG
                 else {
-                    printf("Selected range: %i .. %i\n", range.start(), range.end());
+                    ranges.add(range);
                 }
-#endif
                 break;
             }
-            default: { fa_assert(0); break; }
+
+            case FA_SAI_MULTI_RANGE: {
+                GB_transaction ta(data_access->gb_main);
+
+                char *sai_name = root->awar(FA_AWAR_SAI_RANGE_NAME)->read_string();
+                char *aliuse   = GBT_get_default_alignment(data_access->gb_main);
+
+                GBDATA *gb_sai     = GBT_expect_SAI(data_access->gb_main, sai_name);
+                if (!gb_sai) error = GB_await_error();
+                else {
+                    GBDATA *gb_data = GBT_read_sequence(gb_sai, aliuse);
+                    if (!gb_data) {
+                        error = GB_have_error()
+                            ? GB_await_error()
+                            : GBS_global_string("SAI '%s' has no data in alignment '%s'", sai_name, aliuse);
+                    }
+                    else {
+                        char *sai_data = GB_read_string(gb_data);
+                        char *set_bits = root->awar(FA_AWAR_SAI_RANGE_CHARS)->read_string();
+
+                        ranges = build_RangeList_from_string(sai_data, set_bits);
+
+                        free(set_bits);
+                        free(sai_data);
+                    }
+                }
+                free(aliuse);
+                free(sai_name);
+                break;
+            }
         }
     }
 
     if (!error) {
-        GBDATA *gb_main          = data_access->gb_main;
-        char   *editor_alignment = 0;
-        {
-            GB_transaction  dummy(gb_main);
-            char           *default_alignment = GBT_get_default_alignment(gb_main);
+        for (RangeList::iterator r = ranges.begin(); r != ranges.end() && !error; ++r) {
+            PosRange range = *r;
 
-            editor_alignment = root->awar_string(AWAR_EDITOR_ALIGNMENT, default_alignment)->read_string();
-            free(default_alignment);
-        }
+            GBDATA *gb_main          = data_access->gb_main;
+            char   *editor_alignment = 0;
+            {
+                GB_transaction  dummy(gb_main);
+                char           *default_alignment = GBT_get_default_alignment(gb_main);
 
-        char     *pt_server_alignment = root->awar(FA_AWAR_PT_SERVER_ALIGNMENT)->read_string();
-        PosRange  relRange            = PosRange::whole(); // unrestricted!
-
-        if (mayRestrictRelRange) {
-            AW_awar    *awar_relrange = root->awar(FA_AWAR_RELATIVE_RANGE);
-            const char *relrange      = awar_relrange->read_char_pntr();
-            if (relrange[0]) {
-                int region_plus = atoi(relrange);
-
-                fa_assert(range.is_part());
-
-                relRange = PosRange(range.start()-region_plus, range.end()+region_plus); // restricted
-                awar_relrange->write_as_string(GBS_global_string("%i", region_plus)); // set awar to detected value (avoid misbehavior when it contains ' ' or similar)
+                editor_alignment = root->awar_string(AWAR_EDITOR_ALIGNMENT, default_alignment)->read_string();
+                free(default_alignment);
             }
+
+            char     *pt_server_alignment = root->awar(FA_AWAR_PT_SERVER_ALIGNMENT)->read_string();
+            PosRange  relRange            = PosRange::whole(); // unrestricted!
+
+            if (autoRestrictRange4nextRelSearch) {
+                AW_awar    *awar_relrange = root->awar(FA_AWAR_RELATIVE_RANGE);
+                const char *relrange      = awar_relrange->read_char_pntr();
+                if (relrange[0]) {
+                    int region_plus = atoi(relrange);
+
+                    fa_assert(range.is_part());
+
+                    relRange = PosRange(range.start()-region_plus, range.end()+region_plus); // restricted
+                    awar_relrange->write_as_string(GBS_global_string("%i", region_plus)); // set awar to detected value (avoid misbehavior when it contains ' ' or similar)
+                }
+            }
+
+            if (island_hopper) {
+                island_hopper->set_range(range);
+                range = PosRange::whole();
+            }
+
+            SearchRelativeParams relSearch(new PT_FamilyFinder(gb_main,
+                                                               pt_server_id,
+                                                               root->awar(AWAR_NN_OLIGO_LEN)->read_int(),
+                                                               root->awar(AWAR_NN_MISMATCHES)->read_int(),
+                                                               root->awar(AWAR_NN_FAST_MODE)->read_int(),
+                                                               root->awar(AWAR_NN_REL_MATCHES)->read_int(),
+                                                               RSS_BOTH_MIN), // old scaling as b4 [8520] @@@ make configurable
+                                           pt_server_alignment,
+                                           root->awar(FA_AWAR_NEXT_RELATIVES)->read_int());
+
+            relSearch.getFamilyFinder()->restrict_2_region(relRange);
+
+            struct AlignParams ali_params = {
+                static_cast<FA_report>(root->awar(FA_AWAR_REPORT)->read_int()),
+                root->awar(FA_AWAR_SHOW_GAPS_MESSAGES)->read_int(),
+                range
+            };
+
+            {
+                arb_progress progress("FastAligner");
+                progress.allow_title_reuse();
+
+                int cont_on_error = root->awar(FA_AWAR_CONTINUE_ON_ERROR)->read_int();
+
+                Aligner aligner(gb_main,
+                                alignWhat,
+                                editor_alignment,
+                                toalign,
+                                get_first_selected_species,
+                                get_next_selected_species,
+
+                                reference,
+                                get_consensus ? data_access->get_group_consensus : NULL,
+                                relSearch,
+
+                                static_cast<FA_turn>(root->awar(FA_AWAR_MIRROR)->read_int()),
+                                ali_params,
+                                root->awar(FA_AWAR_PROTECTION)->read_int(),
+                                cont_on_error,
+                                (FA_errorAction)root->awar(FA_AWAR_ACTION_ON_ERROR)->read_int());
+                error = aligner.run();
+
+                if (error && cont_on_error) {
+                    aw_message_if(error);
+                    error = NULL;
+                }
+            }
+
+            free(pt_server_alignment);
+            free(editor_alignment);
         }
-
-        if (island_hopper) {
-            island_hopper->set_range(range);
-            range = PosRange::whole();
-        }
-
-        SearchRelativeParams relSearch(new PT_FamilyFinder(gb_main,
-                                                           pt_server_id,
-                                                           root->awar(AWAR_NN_OLIGO_LEN)->read_int(),
-                                                           root->awar(AWAR_NN_MISMATCHES)->read_int(),
-                                                           root->awar(AWAR_NN_FAST_MODE)->read_int(),
-                                                           root->awar(AWAR_NN_REL_MATCHES)->read_int(),
-                                                           RSS_BOTH_MIN), // old scaling as b4 [8520] @@@ make configurable
-                                       pt_server_alignment,
-                                       root->awar(FA_AWAR_NEXT_RELATIVES)->read_int());
-
-        relSearch.getFamilyFinder()->restrict_2_region(relRange);
-
-        struct AlignParams ali_params = {
-            static_cast<FA_report>(root->awar(FA_AWAR_REPORT)->read_int()),
-            root->awar(FA_AWAR_SHOW_GAPS_MESSAGES)->read_int(),
-            range
-        };
-
-        {
-            arb_progress progress("FastAligner");
-            progress.allow_title_reuse();
-
-            Aligner aligner(gb_main,
-                            alignWhat,
-                            editor_alignment,
-                            toalign,
-                            get_first_selected_species,
-                            get_next_selected_species,
-
-                            reference,
-                            get_consensus ? data_access->get_group_consensus : NULL,
-                            relSearch,
-
-                            static_cast<FA_turn>(root->awar(FA_AWAR_MIRROR)->read_int()),
-                            ali_params,
-                            root->awar(FA_AWAR_PROTECTION)->read_int(),
-                            root->awar(FA_AWAR_CONTINUE_ON_ERROR)->read_int(),
-                            (FA_errorAction)root->awar(FA_AWAR_ACTION_ON_ERROR)->read_int());
-            error = aligner.run();
-        }
-
-        free(pt_server_alignment);
-        free(editor_alignment);
     }
 
     if (island_hopper) {
@@ -2416,6 +2460,9 @@ void FastAligner_create_variables(AW_root *root, AW_default db1)
 
     root->awar_string(FA_AWAR_RELATIVE_RANGE, "", db1);
     root->awar_string(FA_AWAR_PT_SERVER_ALIGNMENT, root->awar(AWAR_DEFAULT_ALIGNMENT)->read_char_pntr(), db1);
+
+    root->awar_string(FA_AWAR_SAI_RANGE_NAME,  "",   db1);
+    root->awar_string(FA_AWAR_SAI_RANGE_CHARS, "x1", db1);
 
     // island hopping:
 
@@ -2662,11 +2709,20 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     aws->create_toggle_field(FA_AWAR_RANGE, "Range", "");
     aws->insert_default_toggle("Whole sequence",            "", FA_WHOLE_SEQUENCE);
     aws->insert_toggle        ("Positions around cursor: ", "", FA_AROUND_CURSOR);
-    aws->insert_toggle        ("Selected Range",            "", FA_SELECTED_RANGE);
+    aws->insert_toggle        ("Selected range",            "", FA_SELECTED_RANGE);
+    aws->insert_toggle        ("Multi-Range by SAI",        "", FA_SAI_MULTI_RANGE);
     aws->update_toggle_field();
 
     aws->at("around");
     aws->create_input_field(FA_AWAR_AROUND, 2);
+
+    aws->at("sai");
+    awt_create_SAI_selection_button(data_access->gb_main, aws, FA_AWAR_SAI_RANGE_NAME);
+    
+    aws->at("rchars");
+    aws->create_input_field(FA_AWAR_SAI_RANGE_CHARS, 2);
+
+    // Protection
 
     aws->at("protection");
     aws->create_option_menu(FA_AWAR_PROTECTION, "Protection", "");

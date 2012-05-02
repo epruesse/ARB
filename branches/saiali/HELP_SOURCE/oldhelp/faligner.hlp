@@ -64,13 +64,19 @@ SECTION         ADJUSTMENTS
 
 		Range
 
-                                Align only a part or whole sequence.
-				If you align only a part of the sequence, then
-				you have to enter the number of columns around
-				the cursor.
+                                Align only a part of or the whole sequence.
 
-				Example: If you align 10 columns around
-                                position 100 then columns 90-110 get aligned.
+				Several possibilities exist for aligning just a part of the sequence:
+				- select 'Positions around cursor' and specify how many positions shall be 
+				  taken into each direction from the cursor position (Example: If you align 
+				  10 columns around position 100 then columns 90-110 will be aligned).
+				- if you use 'Selected range' the column range of the selected block will 
+				  be used.
+				- if you select 'Multi-Range by SAI', the specified SAI will be interpreted as 
+				  a list of ranges. A list of characters defines what is considered a range.
+				  All ranges will be aligned.
+
+				See also LINK{e4_modsai.hlp} for howto create suitable SAIs.
 
 		Turn check
 
