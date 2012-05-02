@@ -1250,7 +1250,6 @@ static void create_next_neighbours_vars(AW_root *aw_root) {
     if (!created) {
         aw_root->awar_int(AWAR_PROBE_ADMIN_PT_SERVER);
         aw_root->awar_int(AWAR_NN_COMPLEMENT,  FF_FORWARD);
-        aw_root->awar_int(AWAR_NN_REL_SCALING, RSS_BOTH_MIN); 
 
         aw_root->awar_string(AWAR_NN_RANGE_START, "");
         aw_root->awar_string(AWAR_NN_RANGE_END,   "");
