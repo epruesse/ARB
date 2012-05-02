@@ -31,8 +31,8 @@ class GBS_strstruct : virtual Noncopyable {
     size_t  pos;
 
     void set_pos(size_t toPos) {
-        pos       = toPos;
-        data[pos] = 0;
+        pos = toPos;
+        if (data) data[pos] = 0;
     }
     void inc_pos(size_t inc) { set_pos(pos+inc); }
 

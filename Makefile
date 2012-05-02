@@ -1875,7 +1875,6 @@ UNITS_WORKING = \
 	SL/AW_HELIX/AW_HELIX.test \
 	SL/AW_NAME/AW_NAME.test \
 	SL/DB_SCANNER/DB_SCANNER.test \
-	SL/FILTER/FILTER.test \
 	SL/GUI_ALIVIEW/GUI_ALIVIEW.test \
 	SL/HELIX/HELIX.test \
 	SL/ITEMS/ITEMS.test \
@@ -1907,6 +1906,7 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
+	SL/FILTER/FILTER.test \
 	ARBDB/libARBDB.test \
 	CONSENSUS_TREE/CONSENSUS_TREE.test \
 	TOOLS/arb_consensus_tree.test \

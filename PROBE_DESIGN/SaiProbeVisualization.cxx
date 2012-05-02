@@ -652,27 +652,6 @@ static AW_window *create_colorTranslationTable_window(AW_root *aw_root) { // cre
     return aws;
 }
 
-static AW_window *createSelectSAI_window(AW_root *aw_root, AW_CL cl_gb_main) {
-    // window to select SAI from the existing SAIs in the database
-    static AW_window_simple *aws = 0;
-    if (!aws) {
-        aws = new AW_window_simple;
-        aws->init(aw_root, "SELECT_SAI", "SELECT SAI");
-        aws->load_xfig("selectSAI.fig");
-
-        aws->at("selection");
-        aws->callback((AW_CB0)AW_POPDOWN);
-        awt_create_selection_list_on_extendeds((GBDATA*)cl_gb_main, (AW_window *)aws, AWAR_SPV_SAI_2_PROBE);
-
-        aws->at("close");
-        aws->callback(AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->window_fit();
-    }
-    return aws;
-}
-
 static AW_window *createDisplayField_window(AW_root *aw_root, AW_CL cl_gb_main) {
     // window to select SAI from the existing SAIs in the database
     static AW_window_simple *aws = 0;
@@ -733,10 +712,10 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
     awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
 
     awm->create_menu("Properties", "P", AWM_ALL);
-    awm->insert_menu_topic("selectDispField", "Select Display Field",      "F", "displayField.hlp", AWM_ALL, AW_POPUP, (AW_CL)createDisplayField_window,           (AW_CL)gb_main);
-    awm->insert_menu_topic("selectSAI",       "Select SAI",                "S", "selectSai.hlp",    AWM_ALL, AW_POPUP, (AW_CL)createSelectSAI_window,              (AW_CL)gb_main);
-    awm->insert_menu_topic("clrTransTable",   "Define Color Translations", "D", "selectSai.hlp",    AWM_ALL, AW_POPUP, (AW_CL)create_colorTranslationTable_window, (AW_CL)0);
-    awm->insert_menu_topic("SetColors",       "Set Colors and Fonts",      "t", "setColors.hlp",    AWM_ALL, AW_POPUP, (AW_CL)createSaiColorWindow,                (AW_CL)aw_gc_manager);
+    awm->insert_menu_topic("selectDispField", "Select Display Field",      "F", "displayField.hlp", AWM_ALL, AW_POPUP,                     AW_CL(createDisplayField_window),           AW_CL(gb_main));
+    awm->insert_menu_topic("selectSAI",       "Select SAI",                "S", NULL,               AWM_ALL, awt_popup_sai_selection_list, AW_CL(AWAR_SPV_SAI_2_PROBE),                AW_CL(gb_main));
+    awm->insert_menu_topic("clrTransTable",   "Define Color Translations", "D", NULL,               AWM_ALL, AW_POPUP,                     AW_CL(create_colorTranslationTable_window), 0);
+    awm->insert_menu_topic("SetColors",       "Set Colors and Fonts",      "t", "setColors.hlp",    AWM_ALL, AW_POPUP,                     AW_CL(createSaiColorWindow),                AW_CL(aw_gc_manager));
 
     addCallBacks(awr, ntw);
 

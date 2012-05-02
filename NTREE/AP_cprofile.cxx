@@ -1376,7 +1376,7 @@ static AW_window *CPRO_condensewindow_cb(AW_root *aw_root, AW_CL which_statistic
     aws->at("name"); aws->create_input_field("cpro/condensename", 11);
 
     aws->at("save_box");
-    awt_create_selection_list_on_extendeds(GLOBAL_gb_main, aws, "cpro/condensename");
+    awt_create_selection_list_on_sai(GLOBAL_gb_main, aws, "cpro/condensename");
 
     return (AW_window *)aws;
 }

@@ -811,7 +811,7 @@ AP_open_con_expert_window(AW_root *aw_root)
     aws->update_toggle_field();
 
     aws->at("save_box");
-    awt_create_selection_list_on_extendeds(GLOBAL_gb_main, aws, "tmp/con/name");
+    awt_create_selection_list_on_sai(GLOBAL_gb_main, aws, "tmp/con/name");
 
     return aws;
 }
@@ -932,7 +932,7 @@ AP_open_max_freq_window(AW_root *aw_root)
     aws->create_input_field(AWAR_MAX_FREQ_SAI_NAME, 1);
 
     aws->at("sai");
-    awt_create_selection_list_on_extendeds(GLOBAL_gb_main, aws, AWAR_MAX_FREQ_SAI_NAME);
+    awt_create_selection_list_on_sai(GLOBAL_gb_main, aws, AWAR_MAX_FREQ_SAI_NAME);
 
     aws->at("gaps");
     aws->create_toggle(AWAR_MAX_FREQ_NO_GAPS);

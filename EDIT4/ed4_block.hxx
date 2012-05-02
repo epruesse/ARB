@@ -25,7 +25,8 @@ enum ED4_blockoperation_type {
     ED4_BO_REVERSE,
     ED4_BO_COMPLEMENT,
     ED4_BO_REVERSE_COMPLEMENT,
-    ED4_BO_UNALIGN,
+    ED4_BO_UNALIGN_LEFT,
+    ED4_BO_UNALIGN_CENTER,
     ED4_BO_UNALIGN_RIGHT,
     ED4_BO_SHIFT_LEFT,
     ED4_BO_SHIFT_RIGHT
@@ -38,11 +39,23 @@ void          ED4_correctBlocktypeAfterSelection();
 void          ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term);
 bool          ED4_get_selected_range(ED4_terminal *term, PosRange& range);
 
-typedef char *(*ED4_blockoperation)(const char *sequence_data, int len, int repeat, int *new_len, GB_ERROR *error);
+class SeqPart;
+
+class ED4_block_operator : virtual Noncopyable {
+protected:
+    mutable GB_ERROR error;
+public:
+    ED4_block_operator() : error(NULL) {}
+    virtual ~ED4_block_operator() {}
+
+    GB_ERROR get_error() const { return error; }
+    virtual char *operate(const SeqPart& part, int& new_len) const = 0;
+};
 
 void ED4_perform_block_operation(ED4_blockoperation_type type);
 
 AW_window *ED4_create_replace_window(AW_root *root);
+AW_window *ED4_create_modsai_window(AW_root *root);
 
 #else
 #error ed4_block.hxx included twice

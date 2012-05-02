@@ -4,8 +4,7 @@ UP	glossary.hlp
 UP	arb_export.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	parser.hlp
-SUB	commands.hlp
+#SUB	subtopic.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
@@ -24,7 +23,7 @@ DESCRIPTION	The export format description file (*.eft) describes
 		#		headerinfo	;Header information
 		BEGIN ...			;the main section
 
-		The main section is part of a 'SRT' (see LINK{glossary.hlp})
+		The main section is part of a 'SRT' (see LINK{srt.hlp})
 		conversion (in fact the main section S is replaced by "*=S" and
 		the SRT is started on an empty string).
 		That means:

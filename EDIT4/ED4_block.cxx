@@ -37,11 +37,63 @@ public:
     void toggle_type();
     void autocorrect_type();
 
-    const PosRange& get_range() const { return range; }
+    const PosRange& get_colblock_range() const {
+        e4_assert(type == ED4_BT_COLUMNBLOCK || type == ED4_BT_MODIFIED_COLUMNBLOCK); // otherwise range may be undefined
+        return range;
+    }
     void set_range(const PosRange& new_range) { range = new_range; }
+
+    PosRange get_range_according_to_type() {
+        switch (type) {
+            case ED4_BT_NOBLOCK:
+                return PosRange::empty();
+
+            case ED4_BT_COLUMNBLOCK:
+            case ED4_BT_MODIFIED_COLUMNBLOCK:
+                return get_colblock_range();
+
+            case ED4_BT_LINEBLOCK:
+                return PosRange::whole();
+        }
+    }
 };
 
 static ED4_block block;
+
+// --------------------------------------------------------------------------------
+
+class SeqPart {
+    const char *seq;
+
+    int offset;
+    int len; // of part
+
+    static char to_gap(char c) { return ADPP_IS_ALIGN_CHARACTER(c) ? c : 0; }
+
+public:
+    SeqPart(const char *seq_, int offset_, int len_)
+        : seq(seq_),
+          offset(offset_),
+          len(len_)
+    {}
+
+    const char *data() const { return seq+offset; }
+    int length() const { return len; }
+
+    // detect which gap to use at border of SeqPart:
+    char left_gap() const {
+        char gap                = to_gap(seq[offset]);
+        if (!gap && offset) gap = to_gap(seq[offset-1]);
+        if (!gap) gap           = '-';
+        return gap;
+    }
+    char right_gap() const {
+        char gap      = to_gap(seq[offset+len-1]);
+        if (!gap) gap = to_gap(seq[offset+len]);
+        if (!gap) gap = '-';
+        return gap;
+    }
+};
 
 // --------------------------------------------------------------------------------
 
@@ -51,7 +103,7 @@ static void col_block_refresh_on_seq_term(ED4_sequence_terminal *seq_term) {
     // @@@ code below is more than weird. why do sth with column-stat here ? why write probe match awars here ? 
     ED4_columnStat_terminal *colStatTerm = seq_term->corresponding_columnStat_terminal();
     if (colStatTerm) {
-        const char *probe_match_pattern = colStatTerm->build_probe_match_string(block.get_range());
+        const char *probe_match_pattern = colStatTerm->build_probe_match_string(block.get_colblock_range());
         int len = strlen(probe_match_pattern);
 
         if (len>=4) {
@@ -141,10 +193,10 @@ void ED4_block::autocorrect_type() {
 
 // --------------------------------------------------------------------------------
 
-// if block_operation() returns NULL => no changes will be made to database
+// if block_operation returns NULL => no changes will be made to database
 // otherwise the changed sequence(part) will be written to the database
 
-static GB_ERROR perform_block_operation_on_whole_sequence(ED4_blockoperation block_operation, ED4_sequence_terminal *term, int repeat) {
+static GB_ERROR perform_block_operation_on_whole_sequence(const ED4_block_operator& block_operator, ED4_sequence_terminal *term) {
     GBDATA *gbd = term->get_species_pointer();
     GB_ERROR error = 0;
 
@@ -152,8 +204,9 @@ static GB_ERROR perform_block_operation_on_whole_sequence(ED4_blockoperation blo
         char *seq = GB_read_string(gbd);
         int len = GB_read_string_count(gbd);
 
-        int new_len;
-        char *new_seq = block_operation(seq, len, repeat, &new_len, &error);
+        int   new_len;
+        char *new_seq = block_operator.operate(SeqPart(seq, 0, len), new_len);
+        error         = block_operator.get_error();
 
         if (new_seq) {
             if (new_len<len) {
@@ -194,7 +247,7 @@ static GB_ERROR perform_block_operation_on_whole_sequence(ED4_blockoperation blo
 }
 
 // uses range_col1 till range_col2 as range
-static GB_ERROR perform_block_operation_on_part_of_sequence(ED4_blockoperation block_operation, ED4_sequence_terminal *term, int repeat) {
+static GB_ERROR perform_block_operation_on_part_of_sequence(const ED4_block_operator& block_operator, ED4_sequence_terminal *term) {
     GBDATA *gbd = term->get_species_pointer();
     GB_ERROR error = 0;
 
@@ -202,12 +255,13 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(ED4_blockoperation b
         char *seq = GB_read_string(gbd);
         int   len = GB_read_string_count(gbd);
 
-        ExplicitRange range(block.get_range(), len);
+        ExplicitRange range(block.get_colblock_range(), len);
 
         int   len_part     = range.size();
         char *seq_part     = seq+range.start();
         int   new_len;
-        char *new_seq_part = block_operation(seq_part, len_part, repeat, &new_len, &error);
+        char *new_seq_part = block_operator.operate(SeqPart(seq, range.start(), len_part), new_len);
+        error              = block_operator.get_error();
 
         if (new_seq_part) {
             if (new_len<len_part) {
@@ -248,7 +302,7 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(ED4_blockoperation b
     return error;
 }
 
-static void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
+static void ED4_with_whole_block(const ED4_block_operator& block_operator) {
     GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
 
     typedef map<ED4_window*, int> CursorPositions;
@@ -274,8 +328,8 @@ static void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat)
                 ED4_sequence_terminal     *seqTerm  = nameTerm->corresponding_sequence_terminal();
 
                 error = block.get_type() == ED4_BT_LINEBLOCK
-                    ? perform_block_operation_on_whole_sequence(block_operation, seqTerm, repeat)
-                    : perform_block_operation_on_part_of_sequence(block_operation, seqTerm, repeat);
+                    ? perform_block_operation_on_whole_sequence(block_operator, seqTerm)
+                    : perform_block_operation_on_part_of_sequence(block_operator, seqTerm);
 
                 listElem = listElem->next();
             }
@@ -307,18 +361,10 @@ static void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat)
 }
 
 bool ED4_get_selected_range(ED4_terminal *term, PosRange& range) { // @@@ function will get useless, when multi-column-blocks are possible
-    if (block.get_type()==ED4_BT_NOBLOCK) return false;
-
+    if (block.get_type() == ED4_BT_NOBLOCK) return false;
     if (!term->containing_species_manager()->is_selected()) return false;
 
-    if (block.get_type()==ED4_BT_COLUMNBLOCK || block.get_type()==ED4_BT_MODIFIED_COLUMNBLOCK) {
-        range = block.get_range();
-    }
-    else {
-        e4_assert(block.get_type()==ED4_BT_LINEBLOCK);
-        range = PosRange::whole();
-    }
-
+    range = block.get_range_according_to_type();
     return true;
 }
 
@@ -360,7 +406,7 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
         int do_below = 1; // we have to update terminals between term2 and last_term2
 
         ED4_terminal *term          = term1;
-        int           xRangeChanged = block.get_range() != last_range;
+        int           xRangeChanged = block.get_colblock_range() != last_range;
 
         while (term) {
             if (term->is_sequence_terminal()) {
@@ -423,7 +469,7 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
 
     last_term1 = term1;
     last_term2 = term2;
-    last_range = block.get_range();
+    last_range = block.get_colblock_range();
 }
 
 void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) {
@@ -524,16 +570,16 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
                 PosRange screen_range = rm->clip_screen_range(seq_term->calc_interval_displayed_in_rectangle(&area_rect));
                 int      scr_pos      = rm->sequence_to_screen(seq_pos);
 
-                PosRange block_screen_range = rm->sequence_to_screen(block.get_range());
+                PosRange block_screen_range = rm->sequence_to_screen(block.get_colblock_range());
                 PosRange block_visible_part = intersection(screen_range, block_screen_range);
                 
                 if (block_visible_part.is_empty()) {
                     if (scr_pos>block_screen_range.end()) {
-                        fix_pos = block.get_range().start();
+                        fix_pos = block.get_colblock_range().start();
                     }
                     else {
                         e4_assert(scr_pos<block_screen_range.start());
-                        fix_pos = block.get_range().end();
+                        fix_pos = block.get_colblock_range().end();
                     }
                 }
                 else {
@@ -541,10 +587,10 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
                     int dist_right = abs(scr_pos-block_visible_part.end());
 
                     if (dist_left < dist_right) {   // click nearer to left border of visible part of block
-                        fix_pos = block.get_range().end(); // keep right block-border
+                        fix_pos = block.get_colblock_range().end(); // keep right block-border
                     }
                     else {
-                        fix_pos = block.get_range().start();
+                        fix_pos = block.get_colblock_range().start();
                     }
                 }
 
@@ -571,51 +617,54 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
 //      Replace
 // --------------------------------------------------------------------------------
 
-static int strncmpWithJoker(GB_CSTR s1, GB_CSTR s2, int len) { // s2 contains '?' as joker
+inline bool matchesUsingWildcard(GB_CSTR s1, GB_CSTR s2, int len) {
+    // s2 may contain '?' as wildcard
     int cmp = 0;
 
-    while (len-- && !cmp) {
-        int c1 = *s1++;
-        int c2 = *s2++;
-
-        if (!c1) {
-            cmp = -1;
-        }
-        else if (!c2) {
-            cmp = 1;
-        }
-        else if (c2!='?') {
-            cmp = c1-c2;
-        }
+    for (int i = 0; i<len && !cmp; ++i) {
+        cmp = int(s1[i])-int(s2[i]);
+        if (cmp && s2[i] == '?') cmp = 0;
     }
 
-    return cmp;
+    return !cmp;
 }
 
-static char *oldString, *newString;
-static int oldStringContainsJoker;
+class replace_op : public ED4_block_operator { // derived from Noncopyable
+    const char *oldString;
+    const char *newString;
+    
+    int olen;
+    int nlen;
 
-static char* replace_in_sequence(const char *sequence, int len, int /* repeat */, int *new_len, GB_ERROR*) {
-    int maxlen;
-    int olen = strlen(oldString);
-    int nlen = strlen(newString);
-
-    if (nlen<=olen) {
-        maxlen = len;
+public:
+    replace_op(const char *oldString_, const char *newString_)
+        : oldString(oldString_),
+          newString(newString_)
+    {
+        olen = strlen(oldString);
+        nlen = strlen(newString);
     }
-    else {
-        maxlen = (len/olen+1)*nlen;
-    }
 
-    char *new_seq = (char*)GB_calloc(maxlen+1, sizeof(*new_seq));
-    int replaced = 0;
-    int o = 0;
-    int n = 0;
-    char ostart = oldString[0];
+    char* operate(const SeqPart& part, int& new_len) const {
+        int maxlen;
+        int len   = part.length();
+        int max_o = len-olen;
 
-    if (oldStringContainsJoker) {
+        if (nlen<=olen) {
+            maxlen = len;
+        }
+        else {
+            maxlen = (len/olen+1)*nlen;
+        }
+
+        char *new_seq  = (char*)GB_calloc(maxlen+1, sizeof(*new_seq));
+        int   replaced = 0;
+        int   o        = 0;
+        int   n        = 0;
+
+        const char *sequence = part.data();
         while (o<len) {
-            if (strncmpWithJoker(sequence+o, oldString, olen)==0) {
+            if (o <= max_o && matchesUsingWildcard(sequence+o, oldString, olen)) {
                 memcpy(new_seq+n, newString, nlen);
                 n += nlen;
                 o += olen;
@@ -625,44 +674,24 @@ static char* replace_in_sequence(const char *sequence, int len, int /* repeat */
                 new_seq[n++] = sequence[o++];
             }
         }
-    }
-    else {
-        while (o<len) {
-            if (sequence[o]==ostart && strncmp(sequence+o, oldString, olen)==0) { // occurrence of oldString
-                memcpy(new_seq+n, newString, nlen);
-                n += nlen;
-                o += olen;
-                replaced++;
-            }
-            else {
-                new_seq[n++] = sequence[o++];
-            }
-        }
-    }
-    new_seq[n] = 0;
+        new_seq[n] = 0;
 
-    if (replaced) {
-        if (new_len) {
-            *new_len = n;
+        if (replaced) {
+            new_len = n;
         }
-    }
-    else {
-        delete new_seq;
-        new_seq = 0;
-    }
+        else {
+            freenull(new_seq);
+        }
 
-    return new_seq;
-}
+        return new_seq;
+    }
+};
 
 static void replace_in_block(AW_window*) {
-    oldString = ED4_ROOT->aw_root->awar(ED4_AWAR_REP_SEARCH_PATTERN)->read_string();
-    newString = ED4_ROOT->aw_root->awar(ED4_AWAR_REP_REPLACE_PATTERN)->read_string();
-
-    oldStringContainsJoker = strchr(oldString, '?')!=0;
-    ED4_with_whole_block(replace_in_sequence, 1);
-
-    delete oldString; oldString = 0;
-    delete newString; newString = 0;
+    AW_root *awr = ED4_ROOT->aw_root;
+    ED4_with_whole_block(
+        replace_op(awr->awar(ED4_AWAR_REP_SEARCH_PATTERN)->read_char_pntr(),
+                   awr->awar(ED4_AWAR_REP_REPLACE_PATTERN)->read_char_pntr()));
 }
 
 AW_window *ED4_create_replace_window(AW_root *root) {
@@ -696,195 +725,184 @@ AW_window *ED4_create_replace_window(AW_root *root) {
 //      Other block operations
 // --------------------------------------------------------------------------------
 
-static char *sequence_to_upper_case(const char *seq, int len, int /* repeat */, int *new_len, GB_ERROR*) {
-    char *new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
-    int l;
-
-    for (l=0; l<len; l++) {
-        new_seq[l] = toupper(seq[l]);
+inline char *dont_return_unchanged(char *result, int& new_len, const SeqPart& part) {
+    if (result) {
+        if (new_len == part.length()) {
+            if (memcmp(result, part.data(), new_len) == 0) {
+                freenull(result);
+            }
+        }
     }
-
-    if (new_len) *new_len = len;
-    return new_seq;
-}
-static char *sequence_to_lower_case(const char *seq, int len, int /* repeat */, int *new_len, GB_ERROR*) {
-    char *new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
-    int l;
-
-    for (l=0; l<len; l++) {
-        new_seq[l] = tolower(seq[l]);
-    }
-
-    if (new_len) *new_len = len;
-    return new_seq;
+    return result;
 }
 
-#define EVEN_REPEAT "repeat-count is even -> no changes!"
+class case_op : public ED4_block_operator {
+    bool to_upper;
+public:
+    case_op(bool to_upper_) : to_upper(to_upper_) {}
 
-static char *reverse_sequence(const char *seq, int len, int repeat, int *new_len, GB_ERROR *error) {
-    if ((repeat&1)==0) { *error = GBS_global_string(EVEN_REPEAT); return 0; }
+    char *operate(const SeqPart& part, int& new_len) const {
+        int         len     = part.length();
+        const char *seq     = part.data();
+        char       *new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
 
-    char *new_seq = GBT_reverseNucSequence(seq, len);
-    if (new_len) *new_len = len;
-    return new_seq;
-}
-static char *complement_sequence(const char *seq, int len, int repeat, int *new_len, GB_ERROR *error) {
-    if ((repeat&1)==0) {
-        *error = GBS_global_string(EVEN_REPEAT);
-        return 0;
-    }
-
-    char T_or_U;
-    *error = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "complement");
-    if (*error) return 0;
-
-    char *new_seq         = GBT_complementNucSequence(seq, len, T_or_U);
-    if (new_len) *new_len = len;
-    return new_seq;
-}
-static char *reverse_complement_sequence(const char *seq, int len, int repeat, int *new_len, GB_ERROR *error) {
-    if ((repeat&1) == 0) {
-        *error      = GBS_global_string(EVEN_REPEAT);
-        return 0;
-    }
-
-    char T_or_U;
-    *error = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "reverse-complement");
-    if (*error) return 0;
-    char *new_seq1  = GBT_complementNucSequence(seq, len, T_or_U);
-    char *new_seq2  = GBT_reverseNucSequence(new_seq1, len);
-
-    free(new_seq1);
-    if (new_len) *new_len = len;
-    return new_seq2;
-}
-
-static char *unalign_sequence_internal(const char *seq, int len, int *new_len, bool to_the_right) {
-    char *new_seq   = (char*)GB_calloc(len+1, sizeof(*new_seq));
-    int   o         = 0;
-    int   n         = 0;
-    char  gap       = '-';
-
-    if (to_the_right) {
-        if (ADPP_IS_ALIGN_CHARACTER(seq[0])) gap = seq[0]; // use first position of block if it's a gap
-        else if (ADPP_IS_ALIGN_CHARACTER(seq[-1])) gap = seq[-1]; // WARNING:  might be out-side sequence and undefined behavior
-    }
-    else {
-        if (ADPP_IS_ALIGN_CHARACTER(seq[len-1])) gap = seq[len-1]; // use first position of block if it's a gap
-        else if (ADPP_IS_ALIGN_CHARACTER(seq[len])) gap = seq[len]; // otherwise check position behind
-    }
-
-    while (o<len) {
-        if (!ADPP_IS_ALIGN_CHARACTER(seq[o])) new_seq[n++] = seq[o];
-        o++;
-    }
-
-    if (n<len) {                // (move and) dot rest
-        int gapcount = len-n;
-        if (to_the_right) {
-            memmove(new_seq+gapcount, new_seq, n);
-            memset(new_seq, gap, gapcount);
+        if (to_upper) {
+            for (int i=0; i<len; i++) new_seq[i] = toupper(seq[i]);
         }
         else {
-            memset(new_seq+n, gap, gapcount);
+            for (int i=0; i<len; i++) new_seq[i] = tolower(seq[i]);
+        }
+        
+        new_len = len;
+        return dont_return_unchanged(new_seq, new_len, part);
+    }
+};
+
+class revcomp_op : public ED4_block_operator {
+    bool reverse;
+    bool complement;
+    char T_or_U;
+
+public:
+    revcomp_op(GB_alignment_type aliType, bool reverse_, bool complement_)
+        : reverse(reverse_),
+          complement(complement_),
+          T_or_U(0)
+    {
+        if (complement) {
+            error = GBT_determine_T_or_U(aliType, &T_or_U, reverse ? "reverse-complement" : "complement");
         }
     }
 
-    if (new_len) *new_len = len;
-    return new_seq;
-}
+    char *operate(const SeqPart& part, int& new_len) const {
+        char *result = NULL;
+        if (!error) {
+            int len = part.length();
+            if (complement) {
+                result = GBT_complementNucSequence(part.data(), len, T_or_U);
+                if (reverse) freeset(result, GBT_reverseNucSequence(result, len));
+            }
+            else if (reverse) result = GBT_reverseNucSequence(part.data(), len);
 
-static char *unalign_left_sequence(const char *seq, int len, int /* repeat */, int *new_len, GB_ERROR *) {
-    return unalign_sequence_internal(seq, len, new_len, false);
-}
-
-static char *unalign_right_sequence(const char *seq, int len, int /* repeat */, int *new_len, GB_ERROR *) {
-    return unalign_sequence_internal(seq, len, new_len, true);
-}
-
-static char *shift_left_sequence(const char *seq, int len, int repeat, int *new_len, GB_ERROR *error) {
-    char *new_seq = 0;
-
-    if (repeat>=len) {
-        *error = "Repeat count exceeds block length";
+            new_len = len;
+        }
+        return dont_return_unchanged(result, new_len, part);
     }
-    else
-    {
-        int enough_space = 1;
-        for (int i=0; enough_space && i<repeat; i++) {
-            if (!ADPP_IS_ALIGN_CHARACTER(seq[i])) {
-                enough_space = 0;
+
+};
+
+class unalign_op : public ED4_block_operator {
+    int direction;
+public:
+    unalign_op(int direction_) : direction(direction_) {}
+
+    char *operate(const SeqPart& part, int& new_len) const {
+        int         len    = part.length();
+        const char *seq    = part.data();
+        char       *result = (char*)GB_calloc(len+1, sizeof(*result));
+
+        int o = 0;
+        int n = 0;
+
+        while (o<len) {
+            if (!ADPP_IS_ALIGN_CHARACTER(seq[o])) result[n++] = seq[o];
+            o++;
+        }
+
+        if (n<len) { // (move and) dot rest
+            int gapcount = len-n;
+            switch (direction) {
+                case 1: // rightwards
+                    memmove(result+gapcount, result, n);
+                    memset(result, part.left_gap(), gapcount);
+                    break;
+                case 0: { // center
+                    int leftgaps  = gapcount/2;
+                    int rightgaps = gapcount-leftgaps;
+
+                    memmove(result+leftgaps, result, n);
+                    memset(result, part.left_gap(), leftgaps);
+                    memset(result+leftgaps+n, part.right_gap(), rightgaps);
+                    
+                    break;
+                }
+                case -1: // leftwards
+                    memset(result+n, part.right_gap(), gapcount);
+                    break;
             }
         }
 
-        if (enough_space) {
-            char gap = '-';
+        new_len = len;
+        return dont_return_unchanged(result, new_len, part);
+    }
 
-            new_seq               = (char*)GB_calloc(len+1, sizeof(*new_seq));
-            if (new_len) *new_len = len;
-            memcpy(new_seq, seq+repeat, len-repeat);
 
-            if (ADPP_IS_ALIGN_CHARACTER(seq[len-1])) gap    = seq[len-1];
-            else if (ADPP_IS_ALIGN_CHARACTER(seq[len])) gap = seq[len];
+};
 
-            memset(new_seq+len-repeat, gap, repeat);
+class shift_op : public ED4_block_operator {
+    int direction;
+
+    char *shift_left_sequence(const SeqPart& part, int& new_len) const {
+        char       *result = 0;
+        const char *seq    = part.data();
+
+        if (!ADPP_IS_ALIGN_CHARACTER(seq[0])) {
+            error = "Need a gap at block start for shifting left";
         }
         else {
-            *error = GBS_global_string("Shift left needs %i gap%s at block start", repeat, repeat==1 ? "" : "s");
+            int len       = part.length();
+            result        = (char*)GB_calloc(len+1, sizeof(*result));
+            new_len       = len;
+            result[len-1] = part.right_gap();
+            memcpy(result, seq+1, len-1);
         }
+        return result;
     }
 
-    return new_seq;
-}
+    char *shift_right_sequence(const SeqPart& part, int& new_len) const {
+        char       *result = 0;
+        const char *seq    = part.data();
+        int         len    = part.length();
 
-static char *shift_right_sequence(const char *seq, int len, int repeat, int *new_len, GB_ERROR *error) {
-    char *new_seq = 0;
-
-    if (repeat>=len) {
-        *error = "Repeat count exceeds block length";
-    }
-    else
-    {
-        int enough_space = 1;
-        for (int i=0; enough_space && i<repeat; i++) {
-            if (!ADPP_IS_ALIGN_CHARACTER(seq[len-i-1])) {
-                enough_space = 0;
-            }
-        }
-
-        if (enough_space) {
-            char gap = '-';
-
-            new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
-            if (new_len) *new_len = len;
-
-            if (ADPP_IS_ALIGN_CHARACTER(seq[0])) gap       = seq[0];
-            else if (ADPP_IS_ALIGN_CHARACTER(seq[-1])) gap = seq[-1]; // a working hack
-
-            memset(new_seq, gap, repeat);
-            memcpy(new_seq+repeat, seq, len-repeat);
+        if (!ADPP_IS_ALIGN_CHARACTER(seq[len-1])) {
+            error = "Need a gap at block end for shifting right";
         }
         else {
-            *error = GBS_global_string("Shift right needs %i gap%s at block end", repeat, repeat==1 ? "" : "s");
+            result    = (char*)GB_calloc(len+1, sizeof(*result));
+            new_len   = len;
+            result[0] = part.left_gap();
+            memcpy(result+1, seq, len-1);
         }
+        return result;
     }
 
-    return new_seq;
-}
+    
+public:
+    shift_op(int direction_) : direction(direction_) {}
+
+    char *operate(const SeqPart& part, int& new_len) const {
+        char *result = direction<0
+            ? shift_left_sequence(part, new_len)
+            : shift_right_sequence(part, new_len);
+        return dont_return_unchanged(result, new_len, part);
+    }
+};
 
 void ED4_perform_block_operation(ED4_blockoperation_type operationType) {
-    int nrepeat = ED4_ROOT->edit_string->use_nrepeat();
-
     switch (operationType) {
-        case ED4_BO_UPPER_CASE:         ED4_with_whole_block(sequence_to_upper_case, nrepeat);          break;
-        case ED4_BO_LOWER_CASE:         ED4_with_whole_block(sequence_to_lower_case, nrepeat);          break;
-        case ED4_BO_REVERSE:            ED4_with_whole_block(reverse_sequence, nrepeat);                break;
-        case ED4_BO_COMPLEMENT:         ED4_with_whole_block(complement_sequence, nrepeat);             break;
-        case ED4_BO_REVERSE_COMPLEMENT: ED4_with_whole_block(reverse_complement_sequence, nrepeat);     break;
-        case ED4_BO_UNALIGN:            ED4_with_whole_block(unalign_left_sequence, nrepeat);           break;
-        case ED4_BO_UNALIGN_RIGHT:      ED4_with_whole_block(unalign_right_sequence, nrepeat);          break;
-        case ED4_BO_SHIFT_LEFT:         ED4_with_whole_block(shift_left_sequence, nrepeat);             break;
-        case ED4_BO_SHIFT_RIGHT:        ED4_with_whole_block(shift_right_sequence, nrepeat);            break;
+        case ED4_BO_UPPER_CASE: ED4_with_whole_block(case_op(true));  break;
+        case ED4_BO_LOWER_CASE: ED4_with_whole_block(case_op(false)); break;
+
+        case ED4_BO_REVERSE:            ED4_with_whole_block(revcomp_op(ED4_ROOT->alignment_type, true,  false)); break;
+        case ED4_BO_COMPLEMENT:         ED4_with_whole_block(revcomp_op(ED4_ROOT->alignment_type, false, true));  break;
+        case ED4_BO_REVERSE_COMPLEMENT: ED4_with_whole_block(revcomp_op(ED4_ROOT->alignment_type, true,  true));  break;
+
+        case ED4_BO_UNALIGN_LEFT:   ED4_with_whole_block(unalign_op(-1)); break;
+        case ED4_BO_UNALIGN_CENTER: ED4_with_whole_block(unalign_op(0));  break;
+        case ED4_BO_UNALIGN_RIGHT:  ED4_with_whole_block(unalign_op(1));  break;
+
+        case ED4_BO_SHIFT_LEFT:  ED4_with_whole_block(shift_op(-1)); break;
+        case ED4_BO_SHIFT_RIGHT: ED4_with_whole_block(shift_op(1));  break;
 
         default: {
             e4_assert(0);
@@ -892,4 +910,219 @@ void ED4_perform_block_operation(ED4_blockoperation_type operationType) {
         }
     }
 }
+
+// --------------------------------------
+//      modify range of selected sai
+
+#define AWAR_MOD_SAI_SCRIPT "modsai/script"
+
+static void modsai_cb(AW_window *aww) {
+    ED4_MostRecentWinContext context;
+
+    ED4_cursor *cursor = &current_cursor();
+    GB_ERROR    error  = NULL;
+
+    if (!cursor->in_SAI_terminal()) {
+        error = "Please select the SAI you like to modify";
+    }
+    else if (block.get_type() == ED4_BT_NOBLOCK) {
+        error = "Please select the range where the SAI shall be modified";
+    }
+    else {
+        AW_root    *aw_root = aww->get_root();
+        char       *script  = aw_root->awar(AWAR_MOD_SAI_SCRIPT)->read_string();
+        const char *sainame = aw_root->awar(AWAR_SAI_NAME)->read_char_pntr();
+
+        GB_transaction ta(GLOBAL_gb_main);
+        GBDATA *gb_sai = GBT_find_SAI(GLOBAL_gb_main, sainame);
+
+        if (!gb_sai) {
+            error = GB_have_error()
+                ? GB_await_error()
+                : GBS_global_string("Failed to find SAI '%s'", sainame);
+        }
+        else {
+            GBDATA *gb_data = GBT_read_sequence(gb_sai, ED4_ROOT->alignment_name);
+
+            if (!gb_data) error = GB_await_error();
+            else {
+                char *seq = GB_read_string(gb_data);
+                int   len = GB_read_string_count(gb_data);
+
+                ExplicitRange  range(block.get_range_according_to_type(), len);
+                char          *part = range.dup_corresponding_part(seq, len);
+
+                char *result       = GB_command_interpreter(GLOBAL_gb_main, part, script, gb_sai, NULL);
+                if (!result) error = GB_await_error();
+                else {
+                    int reslen   = strlen(result);
+                    if (reslen>range.size()) {
+                        error = GBS_global_string("Cannot insert modified range (result too long; %i>%i)", reslen, range.size());
+                    }
+                    else {
+                        memcpy(seq+range.start(), result, reslen);
+                        int rest = range.size()-reslen;
+                        if (rest>0) memset(seq+range.start()+reslen, '-', rest);
+
+                        error = GB_write_string(gb_data, seq);
+                    }
+                    free(result);
+                }
+
+                free(part);
+                free(seq);
+            }
+        }
+        free(script);
+        error = ta.close(error);
+    }
+
+    aw_message_if(error);
+}
+
+AW_window *ED4_create_modsai_window(AW_root *root) {
+    root->awar_string(AWAR_MOD_SAI_SCRIPT)->write_string("");
+
+    AW_window_simple *aws = new AW_window_simple;
+    aws->init(root, "modsai", "Modify SAI range");
+    aws->load_xfig("edit4/modsai.fig");
+
+    aws->at("close");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "Close", "C");
+
+    aws->at("help");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"e4_modsai.hlp");
+    aws->create_button("HELP", "Help", "H");
+    
+    aws->at("script");
+    aws->create_input_field(AWAR_MOD_SAI_SCRIPT);
+
+    aws->at("go");
+    aws->callback(modsai_cb);
+    aws->create_button("go", "GO");
+
+    aws->at("box");
+    AW_selection_list *sellist = aws->create_selection_list(AWAR_MOD_SAI_SCRIPT);
+    GB_ERROR           error   = aws->load_selection_list(sellist, GB_path_in_ARBLIB("sellists/mod_sequence*.sellst"));
+    aw_message_if(error);
+    
+    return aws;
+}
+
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+static arb_test::match_expectation blockop_expected_io(const ED4_block_operator& blockop, const char *oversized_input, const char *expected_result, const char *part_of_error) {
+    int      whole_len = strlen(oversized_input);
+    SeqPart  part(oversized_input, 1, whole_len-2);
+    int      new_len; 
+    char    *result    = blockop.operate(part, new_len);
+
+    using namespace arb_test;
+
+    expectation_group expectations;
+    expectations.add(part_of_error
+                     ? that(blockop.get_error()).does_contain(part_of_error)
+                     : that(blockop.get_error()).is_equal_to(NULL));
+    expectations.add(that(result).is_equal_to(expected_result));
+    if (expected_result) expectations.add(that(new_len).is_equal_to(whole_len-2));
+
+    free(result);
+
+    return all().ofgroup(expectations);
+}
+
+#define TEST_ASSERT_BLOCKOP_PERFORMS(oversized_input,blockop,expected)         TEST_EXPECT(blockop_expected_io(blockop, oversized_input, expected, NULL))
+#define TEST_ASSERT_BLOCKOP_PERFORMS__BROKEN(oversized_input,blockop,expected) TEST_EXPECT__BROKEN(blockop_expected_io(blockop, oversized_input, expected, NULL))
+#define TEST_ASSERT_BLOCKOP_ERRORHAS(oversized_input,blockop,expected)         TEST_EXPECT(blockop_expected_io(blockop, oversized_input, NULL, expected))
+#define TEST_ASSERT_BLOCKOP_ERRORHAS__BROKEN(oversized_input,blockop,expected) TEST_EXPECT__BROKEN(blockop_expected_io(blockop, oversized_input, NULL, expected))
+
+void TEST_block_operators() {
+    ED4_init_is_align_character("-.");
+
+    // Note: make sure tests perform an identity block operation at least once for each operator
+    
+    // replace_op
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-C--", replace_op("-",  "."),  "A.C.");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-C--", replace_op("?",  "."),  "....");
+    TEST_ASSERT_BLOCKOP_PERFORMS("AACAG-", replace_op("AC", "CA"), "CAAG");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-ACAG-", replace_op("A?", "Ax"), "AxAx");
+
+    TEST_ASSERT_BLOCKOP_PERFORMS("GACAG-", replace_op("GA", "AG"), NULL);   // unchanged
+    TEST_ASSERT_BLOCKOP_PERFORMS("GAGAGA", replace_op("GA", "AG"), "AAGG"); 
+    TEST_ASSERT_BLOCKOP_PERFORMS("GACAGA", replace_op("GA", "AG"), NULL);
+    TEST_ASSERT_BLOCKOP_PERFORMS("AGAGAG", replace_op("GA", "AG"), "AGAG");
+
+    // case_op
+    TEST_ASSERT_BLOCKOP_PERFORMS("-AcGuT-", case_op(true), "ACGUT");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-AcGuT-", case_op(false), "acgut");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-acgut-", case_op(false), NULL);
+    TEST_ASSERT_BLOCKOP_PERFORMS("-------", case_op(false), NULL);
+
+    // revcomp_op
+    TEST_ASSERT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_RNA, false, false), NULL);     // noop
+    TEST_ASSERT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_RNA, true,  false), "TuG-cA");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_RNA, false, true),  "Ug-CaA");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_RNA, true,  true),  "AaC-gU");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_DNA, true,  true),  "AaC-gT");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-AcGCgT-", revcomp_op(GB_AT_DNA, true,  true),  NULL);
+    TEST_ASSERT_BLOCKOP_PERFORMS("--------", revcomp_op(GB_AT_DNA, true,  true),  NULL);
+    
+    TEST_ASSERT_BLOCKOP_PERFORMS("-AR-DQF-", revcomp_op(GB_AT_AA, false, false), NULL); // noop             
+    TEST_ASSERT_BLOCKOP_PERFORMS("-AR-DQF-", revcomp_op(GB_AT_AA, true,  false), "FQD-RA");
+    TEST_ASSERT_BLOCKOP_ERRORHAS("-AR-DQF-", revcomp_op(GB_AT_AA, false, true),  "complement not available");
+    TEST_ASSERT_BLOCKOP_ERRORHAS("-AR-DQF-", revcomp_op(GB_AT_AA, true,  true),  "reverse-complement not available");
+
+    // unalign_op
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G--T-", unalign_op(-1), "AcGT----");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G-T-T", unalign_op(-1), "AcGT----");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G--TT", unalign_op(-1), "AcGT----");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G--T.", unalign_op(-1), "AcGT....");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G-T.T", unalign_op(-1), "AcGT....");
+
+    TEST_ASSERT_BLOCKOP_PERFORMS("A-Ac-G--T-", unalign_op(+1), "----AcGT");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G--T-", unalign_op(+1), "----AcGT");
+    TEST_ASSERT_BLOCKOP_PERFORMS("A.Ac-G--T-", unalign_op(+1), "....AcGT");
+    TEST_ASSERT_BLOCKOP_PERFORMS(".A-c-G--T-", unalign_op(+1), "....AcGT");
+    TEST_ASSERT_BLOCKOP_PERFORMS("AA-c-G--T-", unalign_op(+1), "----AcGT");
+
+    TEST_ASSERT_BLOCKOP_PERFORMS("AA-c-G--TT", unalign_op(0), "--AcGT--");
+    TEST_ASSERT_BLOCKOP_PERFORMS(".A-c-G--T-", unalign_op(0), "..AcGT--");
+    TEST_ASSERT_BLOCKOP_PERFORMS(".A-c-G--T.", unalign_op(0), "..AcGT..");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G--T.", unalign_op(0), "--AcGT..");
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-Gc-T.", unalign_op(0), "-AcGcT..");
+
+    TEST_ASSERT_BLOCKOP_PERFORMS("-AcGcT.",  unalign_op(0), NULL);
+    TEST_ASSERT_BLOCKOP_PERFORMS("-AcGcT..", unalign_op(0), NULL);
+    TEST_ASSERT_BLOCKOP_PERFORMS("--AcGcT.", unalign_op(0), "AcGcT.");
+
+    TEST_ASSERT_BLOCKOP_PERFORMS("-ACGT-", unalign_op(-1), NULL);
+    TEST_ASSERT_BLOCKOP_PERFORMS("-ACGT-", unalign_op(+1), NULL);
+    TEST_ASSERT_BLOCKOP_PERFORMS("------", unalign_op(+1), NULL);
+
+    // shift_op
+    TEST_ASSERT_BLOCKOP_PERFORMS("-A-C--", shift_op(+1), "-A-C"); // take gap outside region
+    TEST_ASSERT_BLOCKOP_PERFORMS(".A-C--", shift_op(+1), ".A-C"); // -"-
+    TEST_ASSERT_BLOCKOP_PERFORMS("-.AC--", shift_op(+1), "..AC"); // take gap inside region
+
+    TEST_ASSERT_BLOCKOP_PERFORMS("--A-C-", shift_op(-1), "A-C-"); // same for other direction
+    TEST_ASSERT_BLOCKOP_PERFORMS("--A-C.", shift_op(-1), "A-C.");
+    TEST_ASSERT_BLOCKOP_PERFORMS("--AC..", shift_op(-1), "AC..");
+    TEST_ASSERT_BLOCKOP_PERFORMS("------", shift_op(-1), NULL);
+
+    TEST_ASSERT_BLOCKOP_PERFORMS("G-TTAC", shift_op(-1), "TTA-"); // no gap reachable
+
+    TEST_ASSERT_BLOCKOP_ERRORHAS("GATTAC", shift_op(-1), "Need a gap at block");  // no space
+    TEST_ASSERT_BLOCKOP_ERRORHAS("GATTAC", shift_op(+1), "Need a gap at block");  // no space
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
 

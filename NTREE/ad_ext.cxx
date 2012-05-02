@@ -338,7 +338,7 @@ AW_window *NT_create_extendeds_window(AW_root *aw_root)
         aws->create_button("COPY_TO_SPECIES", "COPY TO\nSPECIES", "C");
 
         aws->at("list");
-        awt_create_selection_list_on_extendeds(GLOBAL_gb_main, (AW_window *)aws, AWAR_SAI_NAME);
+        awt_create_selection_list_on_sai(GLOBAL_gb_main, aws, AWAR_SAI_NAME);
 
         DbScanner *scanner = create_db_scanner(GLOBAL_gb_main, aws, "info", 0, 0, 0, DB_SCANNER, 0, 0, 0, SPECIES_get_selector());
         aws->get_root()->awar(AWAR_SAI_NAME)->add_callback(map_SAI_to_scanner, (AW_CL)scanner);
