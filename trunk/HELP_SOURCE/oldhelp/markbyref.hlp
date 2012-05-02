@@ -25,7 +25,7 @@ DESCRIPTION     Allows to mark all species referred to in the content of a field
                        - to abort if the field is missing or
                        - to continue w/o warning
 
-		Enter an ACI expression (see LINK{commands.hlp}) to postprocess
+		Enter an ACI expression (see LINK{aci.hlp}) to postprocess
 		the field content. The result must be a reference or 
 		reference-list (see above).
 

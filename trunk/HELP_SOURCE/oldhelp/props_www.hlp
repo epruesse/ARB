@@ -3,8 +3,8 @@ UP	arb.hlp
 UP	glossary.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	parser.hlp
-SUB	commands.hlp
+SUB	srt.hlp
+SUB	aci.hlp
 #SUB	acisrt.hlp
 
 

@@ -81,7 +81,6 @@ OLD_HELP_ALL= \
 		)
 
 ifeq ($(TEST_ONE),1)
-#OLD_HELP=$(HLP_SOURCE)/parser.hlp $(HLP_SOURCE)/commands.hlp $(HLP_SOURCE)/FAQS.hlp $(HLP_SOURCE)/acisrt.hlp
 #OLD_HELP=$(HLP_SOURCE)/arb.hlp $(HLP_SOURCE)/version.hlp $(HLP_SOURCE)/translate_dna_2_pro.hlp $(HLP_SOURCE)/species_join.hlp
 OLD_HELP=$(HLP_SOURCE)/version.hlp
 #OLD_HELP=$(HLP_SOURCE)/arb.hlp

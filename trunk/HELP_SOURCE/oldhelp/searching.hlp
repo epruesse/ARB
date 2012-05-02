@@ -64,11 +64,11 @@ SECTION SEARCH EXPRESSION
                            well finds all non-numeric contents. Use something like '>6.999' instead.
 
                - if the first character is '/' then the following regular expression is used
-                 for the query (see LINK{regexpr.hlp}).
+                 for the query (see LINK{reg.hlp}).
 
                - if the first character is '|' then the following ACI expression is evaluated
                  and the query hits, if the evaluation is not "0".
-                 See LINK{commands.hlp}.
+                 See LINK{aci.hlp}.
 
                - if the query string is completely empty, it hits if the selected field does
                  not exist.

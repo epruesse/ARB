@@ -11,8 +11,8 @@
 
 #include "ed4_dots.hxx"
 #include "ed4_class.hxx"
-#include "ed4_visualizeSAI.hxx" // for SAI selection box
 
+#include <awt_sel_boxes.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
@@ -233,6 +233,8 @@ void ED4_popup_dot_missing_bases_window(AW_window *editor_window, AW_CL, AW_CL) 
         aws->init(aw_root, "DOT_MISS_BASES", "Dot potentially missing bases");
         aws->load_xfig("edit4/missbase.fig");
 
+        aws->button_length(10);
+        
         aws->at("close");
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
@@ -246,11 +248,14 @@ void ED4_popup_dot_missing_bases_window(AW_window *editor_window, AW_CL, AW_CL) 
         aws->create_toggle(AWAR_DOT_MARKED);
 
         aws->at("SAI");
-        ED4_create_SAI_selection_button(aws, AWAR_DOT_SAI);
+        aws->button_length(30);
+        awt_create_SAI_selection_button(GLOBAL_gb_main, aws, AWAR_DOT_SAI);
 
         aws->at("SAI_chars");
         aws->label("contains one of");
         aws->create_input_field(AWAR_DOT_SAI_CHARS, 20);
+
+        aws->button_length(10);
 
         aws->at("cons_def");
         aws->label("Change definition of");

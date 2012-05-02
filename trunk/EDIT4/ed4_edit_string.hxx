@@ -18,7 +18,7 @@
 struct ED4_work_info;
 
  // @@@ replace ED4_is_align_character by class containing table (store whereever)
-extern unsigned char ED4_is_align_character[256];
+extern unsigned char *ED4_is_align_character;
 inline bool ADPP_IS_ALIGN_CHARACTER(unsigned char chr) { return ED4_is_align_character[chr] != 0; }
 void ED4_init_is_align_character(GB_CSTR gap_chars);
 

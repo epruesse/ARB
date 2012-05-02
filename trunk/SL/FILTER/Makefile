@@ -2,18 +2,13 @@
 
 .SUFFIXES: .o .c .cxx .depend
 
-C_OBJECTS = 
-CPP_OBJECTS = AP_filter.o
-OBJECTS=$(C_OBJECTS) $(CPP_OBJECTS)
+OBJECTS=$(subst .cxx,.o,$(wildcard *.cxx))
 
 $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
-
-.c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -49,3 +44,14 @@ AP_filter.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_filter.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_filter.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_filter.o: $(ARBHOME)/INCLUDE/test_global.h
+
+RangeList.o: RangeList.h
+RangeList.o: $(ARBHOME)/INCLUDE/arb_assert.h
+RangeList.o: $(ARBHOME)/INCLUDE/arb_core.h
+RangeList.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
+RangeList.o: $(ARBHOME)/INCLUDE/arbtools.h
+RangeList.o: $(ARBHOME)/INCLUDE/attributes.h
+RangeList.o: $(ARBHOME)/INCLUDE/dupstr.h
+RangeList.o: $(ARBHOME)/INCLUDE/pos_range.h
+RangeList.o: $(ARBHOME)/INCLUDE/test_global.h
+RangeList.o: $(ARBHOME)/INCLUDE/test_unit.h

@@ -21,14 +21,15 @@ int ED4_Edit_String::nrepeat = 0;           // # of times command should be repe
 int ED4_Edit_String::nrepeat_zero_requested = 0;    // nrepeat should be set to zero
 int ED4_Edit_String::nrepeat_is_already_set = 0;    // nrepeat was zero (and was set to 1)
 
-unsigned char ED4_is_align_character[256];
+unsigned char *ED4_is_align_character = NULL;
 
-void ED4_init_is_align_character(GB_CSTR gap_chars)
-{
-    memset(ED4_is_align_character, 0, 256);
+void ED4_init_is_align_character(GB_CSTR gap_chars) {
+    static unsigned char array[256];
+    memset(array, 0, 256);
     for (int p = 0; gap_chars[p]; ++p) {
-        ED4_is_align_character[(unsigned char)(gap_chars[p])] = 1;
+        array[(unsigned char)(gap_chars[p])] = 1;
     }
+    ED4_is_align_character = array;
 }
 
 GB_ERROR  ED4_Edit_String::insert(char *text, long position, int direction, int removeAtNextGap) {
