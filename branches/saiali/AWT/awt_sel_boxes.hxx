@@ -72,8 +72,8 @@ void awt_create_selection_list_on_tables(GBDATA *gb_main, AW_window *aws, const 
 void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, const char *tablename, const char *varname);
 AW_window *AWT_create_tables_admin_window(AW_root *aw_root, GBDATA *gb_main);
 
-void *awt_create_selection_list_on_extendeds(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
-void  awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid);
+void *awt_create_selection_list_on_sai(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
+void  awt_selection_list_on_sai_update_cb(GBDATA *dummy, void *cbsid);
 void awt_popup_sai_selection_list(AW_root *aw_root, AW_CL cl_awar_name, AW_CL cl_gb_main);
 void awt_popup_sai_selection_list(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_gb_main);
 void awt_popup_filtered_sai_selection_list(AW_root *aw_root, AW_CL cl_sai_sellist_spec);

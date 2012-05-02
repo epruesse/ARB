@@ -412,7 +412,7 @@ static AW_window *PH_save_markerline(AW_root *root, AW_CL cl_multi_line)
     aws->create_input_field("tmp/phylo/markerlinename");
 
     aws->at("box");
-    awt_create_selection_list_on_extendeds(GLOBAL_gb_main, aws, "tmp/phylo/markerlinename");
+    awt_create_selection_list_on_sai(GLOBAL_gb_main, aws, "tmp/phylo/markerlinename");
 
     aws->at("save");
     if (multi_line)     aws->callback(PH_save_ml_multiline_cb);
