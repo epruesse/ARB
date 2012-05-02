@@ -538,19 +538,27 @@ void AWT_sai_selection::fill() {
     aws->update_selection_list(sel);
 }
 
-void awt_selection_list_on_sai_update_cb(GBDATA *, void *cbsid) {
+void awt_selection_list_on_sai_update_cb(GBDATA *, AWT_sai_selection *saisel) {
     /* update the selection box defined by awt_create_selection_list_on_sai
      *
      * useful only when filterproc is defined
      * (changes to SAIs will automatically callback this function)
      */
 
-    AWT_sai_selection *cbs = (AWT_sai_selection *)cbsid;
-    cbs->refresh();
+    saisel->refresh();
 }
 
-void SAI_selection_list_spec::create_list(AW_window *aws) const {
-    awt_create_selection_list_on_sai(gb_main, aws, awar_name, filter_poc, filter_cd);
+AWT_sai_selection *SAI_selection_list_spec::create_list(AW_window *aws) const {
+    GB_transaction ta(gb_main);
+
+    AW_selection_list *sellist     = aws->create_selection_list(awar_name, 0, "", 40, 4);
+    GBDATA            *gb_sai_data = GBT_get_SAI_data(gb_main);
+    AWT_sai_selection *saisel      = new AWT_sai_selection(aws, sellist, gb_sai_data, filter_poc, filter_cd);
+
+    awt_selection_list_on_sai_update_cb(0, saisel);
+    GB_add_callback(gb_sai_data, GB_CB_CHANGED, (GB_CB)awt_selection_list_on_sai_update_cb, (int *)saisel);
+
+    return saisel;
 }
 
 void awt_popup_filtered_sai_selection_list(AW_root *aw_root, AW_CL cl_sellist_spec) {
@@ -598,7 +606,7 @@ void awt_popup_sai_selection_list(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_g
     awt_popup_sai_selection_list(aww->get_root(), cl_awar_name, cl_gb_main);
 }
 
-void *awt_create_selection_list_on_sai(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
+AWT_sai_selection *awt_create_selection_list_on_sai(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
     /* Selection list for all extendeds (SAIs)
      *
      * if filter_proc is set then show only those items on which
@@ -607,17 +615,9 @@ void *awt_create_selection_list_on_sai(GBDATA *gb_main, AW_window *aws, const ch
     
     // @@@ add parameter popup, like in awt_create_selection_list_on_pt_servers
 
-    GB_push_transaction(gb_main);
-
-    AW_selection_list *sellist          = aws->create_selection_list(varname, 0, "", 40, 4);
-    GBDATA            *gb_sai_data = GBT_get_SAI_data(gb_main);
-    AWT_sai_selection *cbs         = new AWT_sai_selection(aws, sellist, gb_sai_data, filter_poc, filter_cd);
-
-    awt_selection_list_on_sai_update_cb(0, (void *)cbs);
-    GB_add_callback(gb_sai_data, GB_CB_CHANGED, (GB_CB)awt_selection_list_on_sai_update_cb, (int *)cbs);
-    GB_pop_transaction(gb_main);
-
-    return (void *)cbs;
+    SAI_selection_list_spec spec(varname, gb_main);
+    spec.define_filter(filter_poc, filter_cd);
+    return spec.create_list(aws);
 }
 
 // ******************** selection boxes on saving selection lists ********************
