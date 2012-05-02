@@ -607,17 +607,21 @@ void awt_popup_sai_selection_list(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_g
 }
 
 AWT_sai_selection *awt_create_selection_list_on_sai(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
-    /* Selection list for all extendeds (SAIs)
+    /* Selection list for SAIs
      *
      * if filter_proc is set then show only those items on which
      * filter_proc returns a string (string must be a heap copy)
      */
-    
-    // @@@ add parameter popup, like in awt_create_selection_list_on_pt_servers
-
     SAI_selection_list_spec spec(varname, gb_main);
     spec.define_filter(filter_poc, filter_cd);
     return spec.create_list(aws);
+}
+
+void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
+    SAI_selection_list_spec *spec = new SAI_selection_list_spec(varname, gb_main);
+    spec->define_filter(filter_poc, filter_cd);
+    aws->callback(awt_popup_filtered_sai_selection_list, AW_CL(spec));
+    aws->create_button("SELECT_SAI", varname);
 }
 
 // ******************** selection boxes on saving selection lists ********************

@@ -12,7 +12,6 @@
 
 #include <ed4_extern.hxx>
 #include "ed4_class.hxx"
-#include "ed4_visualizeSAI.hxx"
 
 #include <aw_awars.hxx>
 #include <awt_canvas.hxx>
@@ -695,17 +694,6 @@ static AW_window *create_editColorTranslationTable_window(AW_root *aw_root) { //
     return (AW_window *)aws;
 }
 
-void ED4_create_SAI_selection_button(AW_window *aws, const char *awar_name) { // @@@ move to ../AWT/AWT_sel_boxes.cxx
-    int old_button_length = aws->get_button_length();
-
-    aws->button_length(30);
-
-    aws->callback(awt_popup_sai_selection_list, (AW_CL)awar_name, (AW_CL)GLOBAL_gb_main);
-    aws->create_button("SELECT_SAI", awar_name);
-
-    aws->button_length(old_button_length);
-}
-
 AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (!aws) {
@@ -727,7 +715,8 @@ AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
         aws->create_toggle(AWAR_SAI_ENABLE);
 
         aws->at("sai");
-        ED4_create_SAI_selection_button(aws, AWAR_SAI_VISUALIZED);
+        aws->button_length(30);
+        awt_create_SAI_selection_button(GLOBAL_gb_main, aws, AWAR_SAI_VISUALIZED);
 
         aws->at("auto_select");
         aws->create_toggle(AWAR_SAI_AUTO_SELECT);

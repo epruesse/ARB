@@ -406,13 +406,8 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
 
         aws->at_newline();
 
-        static SAI_selection_list_spec spec(GA_AWAR_SAI, GLOBAL_gb_main);
-        spec.define_filter(filter_sai, 0);
-
-        aws->callback(awt_popup_filtered_sai_selection_list, AW_CL(&spec));
         aws->label("Pos. Var.:");
-        aws->create_button("SELECT_SAI", GA_AWAR_SAI);
-        aws->button_length(12);
+        awt_create_SAI_selection_button(GLOBAL_gb_main, aws, GA_AWAR_SAI, filter_sai, 0);
 
         aws->at_newline();
         aws->label("Field used for automatic filter selection");
@@ -531,6 +526,8 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
 
     aws->get_window_size(winx, winy);
     aws->get_at_position(&startx, &starty);
+
+    aws->button_length(12);
 
     aws->at(winx-closex+5, closey);
     aws->callback(AW_POPUP_HELP, (AW_CL) "sina_main.hlp");

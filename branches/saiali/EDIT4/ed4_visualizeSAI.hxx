@@ -20,8 +20,6 @@
 void ED4_createVisualizeSAI_Awars(AW_root *aw_root, AW_default aw_def); // create awars
 AW_window  *ED4_createVisualizeSAI_window(AW_root *aw_root);
 
-void ED4_create_SAI_selection_button(AW_window *aww, const char *cawar_name);
-
 const char *ED4_getSaiColorString(AW_root *awr, int start, int end);
 
 #else
