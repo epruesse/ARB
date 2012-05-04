@@ -259,6 +259,9 @@ MatrixOrder::MatrixOrder(GBDATA *gb_main, GB_CSTR sort_tree_name)
 
             arb_assert(leafsLoaded == leafs);
         }
+        else {
+            GB_clear_error();
+        }
     }
 }
 static int TreeOrderedSpecies_cmp(const void *p1, const void *p2, void *) {
