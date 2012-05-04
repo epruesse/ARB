@@ -924,7 +924,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
 
                             const char *buttons = "Abort";
                             for (int p = 1; p <= possible; ++p) buttons = GBS_global_string("%s,%i", buttons, p);
-                            selected = aw_question(question, buttons, false, NULL);
+                            selected = aw_question("dict_decompress_bug", question, buttons, false, NULL);
                             free(question);
                         }
                         else {
