@@ -899,7 +899,7 @@ const char *GBT_existing_tree(GBDATA *gb_main, const char *tree_name) {
     return GBT_get_tree_name(gb_tree);
 }
 
-GBDATA *GBT_get_next_tree(GBDATA *gb_tree) {
+GBDATA *GBT_find_next_tree(GBDATA *gb_tree) {
     GBDATA *gb_other = NULL;
     if (gb_tree) {
         gb_other = GBT_tree_behind(gb_tree);
@@ -1291,8 +1291,8 @@ void TEST_tree() {
 
             TEST_ASSERT_EQUAL(GBT_get_tree_name(GBT_find_top_tree(gb_main)), "tree_tree2");
 
-            TEST_ASSERT_EQUAL(GBT_get_tree_name(GBT_get_next_tree(gb_nj_bs)), "tree_nj");
-            TEST_ASSERT_EQUAL(GBT_get_tree_name(GBT_get_next_tree(gb_nj)), "tree_tree2"); // last -> first
+            TEST_ASSERT_EQUAL(GBT_get_tree_name(GBT_find_next_tree(gb_nj_bs)), "tree_nj");
+            TEST_ASSERT_EQUAL(GBT_get_tree_name(GBT_find_next_tree(gb_nj)), "tree_tree2"); // last -> first
         }
 
         // check tree order is maintained by copy, rename and delete
@@ -1338,8 +1338,8 @@ void TEST_tree() {
             TEST_ASSERT_EQUAL(GBT_find_top_tree(gb_main), gb_test);
             TEST_ASSERT_EQUAL(GBT_find_bottom_tree(gb_main), gb_nj_bs);
             
-            TEST_ASSERT_EQUAL(GBT_get_next_tree(gb_test), gb_nj_bs);
-            TEST_ASSERT_EQUAL(GBT_get_next_tree(gb_nj_bs), gb_test);
+            TEST_ASSERT_EQUAL(GBT_find_next_tree(gb_test), gb_nj_bs);
+            TEST_ASSERT_EQUAL(GBT_find_next_tree(gb_nj_bs), gb_test);
 
             TEST_ASSERT_NULL (GBT_tree_infrontof(gb_test));
             TEST_ASSERT_EQUAL(GBT_tree_behind   (gb_test), gb_nj_bs);
@@ -1362,7 +1362,7 @@ void TEST_tree() {
             TEST_ASSERT_EQUAL(GBT_find_top_tree(gb_main), gb_test);
             TEST_ASSERT_EQUAL(GBT_find_bottom_tree(gb_main), gb_test);
             
-            TEST_ASSERT_NULL(GBT_get_next_tree(gb_test)); // no other tree left
+            TEST_ASSERT_NULL(GBT_find_next_tree(gb_test)); // no other tree left
             TEST_ASSERT_NULL(GBT_tree_behind(gb_test));
             TEST_ASSERT_NULL(GBT_tree_infrontof(gb_test));
 
