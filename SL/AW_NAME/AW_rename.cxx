@@ -105,7 +105,8 @@ GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
                         strcat(buttons, fieldNames[c] ? fieldNames[c] : nofield);
                     }
 
-                    int answer = aw_question("Select if and which additional DB field you want to use",
+                    int answer = aw_question("nameserv_select",
+                                             "Select if and which additional DB field you want to use",
                                              buttons, false, "namesadmin.hlp");
 
                     error = set_addid(gb_main, fieldNames[answer]);
