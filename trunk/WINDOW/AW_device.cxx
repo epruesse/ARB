@@ -504,8 +504,8 @@ bool AW_device::ready_to_draw(int gc) {
     return get_common()->gc_mapable(gc);
 }
 
-bool AW_device::generic_box(int gc, bool IF_DEBUG(filled), const Rectangle& rect, AW_bitset filteri) {
-    aw_assert(!filled); // not supported
+bool AW_device::generic_box(int gc, bool /*filled*/, const Rectangle& rect, AW_bitset filteri) {
+    // Note: 'filled' is not supported on this device
     int drawflag = 0;
     if (filteri & filter) {
         drawflag |= line_impl(gc, rect.upper_edge(), filteri);
