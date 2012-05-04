@@ -352,6 +352,8 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
                 }
             }
         }
+
+        if (!error) GBT_order_tree(gb_tree);
     }
 
     return error;
@@ -733,7 +735,6 @@ inline GBDATA *get_tree_with_idx(GBDATA *gb_treedata, int at_idx) {
     GBDATA *gb_found = NULL;
     for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree && !gb_found; gb_tree = GB_nextChild(gb_tree)) {
         int idx = get_tree_idx(gb_tree);
-        gb_assert(idx);
         if (idx == at_idx) {
             gb_found = gb_tree;
         }
@@ -816,6 +817,13 @@ static void ensure_trees_have_order(GBDATA *gb_treedata) {
         }
     }
     if (error) GBK_terminatef("failed to order trees (Reason: %s)", error);
+}
+
+void GBT_order_tree(GBDATA *gb_tree) {
+    // if 'gb_tree' has no order yet, move it to the bottom (as done previously)
+    if (!get_tree_idx(gb_tree)) {
+        set_tree_idx(gb_tree, get_max_tree_idx(GB_get_father(gb_tree))+1);
+    }
 }
 
 // ----------------------
