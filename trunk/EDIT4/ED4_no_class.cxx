@@ -307,6 +307,7 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
 }
 
 void ED4_remote_event(AW_event *faked_event) { // keystrokes forwarded from SECEDIT
+    ED4_MostRecentWinContext context;
     executeKeystroke(faked_event, 1);
 }
 
