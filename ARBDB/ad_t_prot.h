@@ -166,7 +166,7 @@ GBDATA *GBT_tree_behind(GBDATA *gb_tree);
 GBDATA *GBT_find_top_tree(GBDATA *gb_main);
 GBDATA *GBT_find_bottom_tree(GBDATA *gb_main);
 const char *GBT_existing_tree(GBDATA *gb_main, const char *tree_name);
-GBDATA *GBT_get_next_tree(GBDATA *gb_tree);
+GBDATA *GBT_find_next_tree(GBDATA *gb_tree);
 const char *GBT_get_tree_name(GBDATA *gb_tree);
 GB_ERROR GBT_check_tree_name(const char *tree_name);
 const char *GBT_name_of_largest_tree(GBDATA *gb_main);

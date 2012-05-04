@@ -185,7 +185,7 @@ static void MG_transfer_tree(AW_window *aww) {
 
         if (what == XFER_SELECTED) {
             GB_transaction  ta(GLOBAL_gb_src);
-            GBDATA         *gb_next = GBT_get_next_tree(GBT_find_tree(GLOBAL_gb_src, source_name));
+            GBDATA         *gb_next = GBT_find_next_tree(GBT_find_tree(GLOBAL_gb_src, source_name));
             awar_tree_source->write_string(gb_next ? GBT_get_tree_name(gb_next) : NO_TREE_SELECTED);
         }
 
