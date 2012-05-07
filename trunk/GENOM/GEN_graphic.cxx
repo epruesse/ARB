@@ -37,9 +37,6 @@ GEN_graphic::GEN_graphic(AW_root *aw_root_, GBDATA *gb_main_, GEN_graphic_cb_ins
     , gen_root(0)
     , want_zoom_reset(false)
 {
-    exports.dont_fit_x  = 0;
-    exports.dont_fit_y  = 0;
-    exports.dont_scroll = 0;
     exports.set_standard_default_padding();
 
     rot_ct.exists = false;
@@ -349,10 +346,6 @@ void GEN_root::paint(AW_device *device) {
                 }
                 break;
             }
-            default: {
-                gen_assert(0);
-                break;
-            }
         }
     }
 }
@@ -390,32 +383,19 @@ void GEN_graphic::reinit_gen_root(AWT_canvas *ntw, bool force_reinit) {
 
 void GEN_graphic::set_display_style(GEN_DisplayStyle type) {
     style = type;
-
+    
     switch (style) {
-        case GEN_DISPLAY_STYLE_RADIAL: {
-            exports.dont_fit_x      = 0;
-            exports.dont_fit_y      = 0;
-            exports.dont_fit_larger = 0;
+        case GEN_DISPLAY_STYLE_RADIAL:
+            exports.fit_mode = AWT_FIT_LARGER;
             break;
-        }
-        case GEN_DISPLAY_STYLE_VERTICAL: {
-            exports.dont_fit_x      = 0;
-            exports.dont_fit_y      = 1;
-            exports.dont_fit_larger = 0;
+
+        case GEN_DISPLAY_STYLE_VERTICAL:
+        case GEN_DISPLAY_STYLE_BOOK:
+            exports.fit_mode = AWT_FIT_SMALLER;
             break;
-        }
-        case GEN_DISPLAY_STYLE_BOOK: {
-            exports.dont_fit_x      = 0;
-            exports.dont_fit_y      = 1;
-            exports.dont_fit_larger = 0;
-            break;
-        }
-        default: {
-            gen_assert(0);
-            break;
-        }
     }
 
-    want_zoom_reset = true;
+    exports.zoom_mode = AWT_ZOOM_BOTH;
+    want_zoom_reset   = true;
 }
 

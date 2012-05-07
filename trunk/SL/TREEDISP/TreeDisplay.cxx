@@ -1642,11 +1642,11 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type, AWT_canvas *ntw) {
     }
     tree_sort = type;
     apply_zoom_settings_for_treetype(ntw); // sets default padding
-    
-    exports.dont_fit_x      = 0;
-    exports.dont_fit_y      = 0;
-    exports.dont_fit_larger = 0;
-    exports.dont_scroll     = 0;
+
+    exports.fit_mode  = AWT_FIT_LARGER;
+    exports.zoom_mode = AWT_ZOOM_BOTH;
+
+    exports.dont_scroll = 0;
 
     switch (type) {
         case AP_TREE_RADIAL:
@@ -1654,17 +1654,20 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type, AWT_canvas *ntw) {
 
         case AP_LIST_SIMPLE:
         case AP_LIST_NDS:
-            exports.dont_fit_x = 1;
-            exports.dont_fit_y = 1;
+            exports.fit_mode  = AWT_FIT_NEVER;
+            exports.zoom_mode = AWT_ZOOM_NEVER;
+
             break;
 
-        case AP_TREE_IRS: // folded dendrogram
-            exports.dont_fit_y  = 1;
+        case AP_TREE_IRS:    // folded dendrogram
+            exports.fit_mode    = AWT_FIT_X;
+            exports.zoom_mode   = AWT_ZOOM_X;
             exports.dont_scroll = 1;
             break;
 
         case AP_TREE_NORMAL: // normal dendrogram
-            exports.dont_fit_y = 1;
+            exports.fit_mode  = AWT_FIT_X;
+            exports.zoom_mode = AWT_ZOOM_X;
             break;
     }
     exports.resize = 1;

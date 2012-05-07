@@ -69,10 +69,9 @@ AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
 }
 
 SAI_graphic::SAI_graphic(AW_root *aw_rooti, GBDATA *gb_maini) {
-    exports.dont_fit_x      = 1;
-    exports.dont_fit_y      = 1;
-    exports.dont_fit_larger = 0;
-    exports.dont_scroll     = 0;
+    exports.zoom_mode = AWT_ZOOM_NEVER;
+    exports.fit_mode  = AWT_FIT_NEVER;
+
     exports.set_standard_default_padding();
 
     this->aw_root = aw_rooti;

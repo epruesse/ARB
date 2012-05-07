@@ -44,6 +44,35 @@ enum AWT_COMMAND_MODE {
 
 #define STANDARD_PADDING 10
 
+// --------------------------------------------------------------------------------
+// AWT_zoom_mode + AWT_fit_mode are correlated, but not strictly coupled
+
+enum AWT_zoom_mode { // bit values!
+    AWT_ZOOM_NEVER = 0,
+    AWT_ZOOM_X     = 1,
+    AWT_ZOOM_Y     = 2,
+    AWT_ZOOM_BOTH  = 3,
+};
+
+enum AWT_fit_mode {
+    AWT_FIT_NEVER,
+    AWT_FIT_LARGER, 
+    AWT_FIT_SMALLER, 
+    AWT_FIT_X, 
+    AWT_FIT_Y, 
+};
+
+// used combinations are:
+// AWT_ZOOM_NEVER + AWT_FIT_NEVER (NDS list, others)
+// AWT_ZOOM_X + AWT_FIT_X (dendrogram tree)
+// AWT_ZOOM_Y + AWT_FIT_Y
+// AWT_ZOOM_BOTH + AWT_FIT_LARGER (radial tree/gene-map; secedit)
+// AWT_ZOOM_BOTH + AWT_FIT_SMALLER (book-style gene-map)
+//
+// other combinations may work as well. some combinations make no sense.
+// --------------------------------------------------------------------------------
+
+
 class AWT_graphic_exports {
     AW_borders default_padding;
     AW_borders padding;
@@ -54,9 +83,10 @@ public:
     unsigned int refresh : 1;
     unsigned int save : 1;
     unsigned int structure_change : 1; // maybe useless
-    unsigned int dont_fit_x : 1;
-    unsigned int dont_fit_y : 1;
-    unsigned int dont_fit_larger : 1;  // true -> use larger scale
+
+    AWT_zoom_mode zoom_mode;
+    AWT_fit_mode  fit_mode;
+
     unsigned int dont_scroll : 1; // normally 0 (1 for IRS tree)
 
     void init();     // like clear, but resets fit, scroll state and padding
@@ -85,6 +115,11 @@ public:
     int get_y_padding() const { return padding.t+padding.b; }
     int get_top_padding() const { return padding.t; }
     int get_left_padding() const { return padding.l; }
+
+    AW::Vector zoomVector(double transToFit) const {
+        return AW::Vector(zoom_mode&AWT_ZOOM_X ? transToFit : 1.0,
+                          zoom_mode&AWT_ZOOM_Y ? transToFit : 1.0);
+    }
 };
 
 class AWT_graphic {

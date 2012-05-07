@@ -32,10 +32,10 @@ void AWT_graphic_exports::init() {
     clear();
     padding.clear();
 
-    dont_fit_x      = 0;
-    dont_fit_y      = 0;
-    dont_fit_larger = 0;
-    dont_scroll     = 0;
+    zoom_mode = AWT_ZOOM_BOTH;
+    fit_mode  = AWT_FIT_LARGER;
+
+    dont_scroll = 0;
 }
 
 inline void AWT_canvas::push_transaction() const { if (gb_main) GB_push_transaction(gb_main); }
@@ -56,18 +56,16 @@ void AWT_canvas::set_vertical_scrollbar_position(AW_window *, int pos) {
 }
 
 void AWT_canvas::set_scrollbars() {
-    AW_pos width = this->worldinfo.r - this->worldinfo.l;
+    AW_pos width  = this->worldinfo.r - this->worldinfo.l;
     AW_pos height = this->worldinfo.b - this->worldinfo.t;
 
     worldsize.l = 0;
-    worldsize.r = width*this->trans_to_fit + tree_disp->exports.get_x_padding();
     worldsize.t = 0;
-    AW_pos scale = this->trans_to_fit;
-    if (tree_disp->exports.dont_fit_y) {
-        scale = 1.0; // @@@ this is ok for dendrogram tree, but breaks scrolling for gene-map (book-style and vertical display modes)
-        // @@@ need a flag which indicates that zoom (trans_to_fit) is not applied to a coordinate (zoom-mode)
-    }
-    worldsize.b = height*scale + tree_disp->exports.get_y_padding();
+
+    AW::Vector zv = tree_disp->exports.zoomVector(trans_to_fit);
+
+    worldsize.r = width *zv.x() + tree_disp->exports.get_x_padding();
+    worldsize.b = height*zv.y() + tree_disp->exports.get_y_padding();
 
     aww->tell_scrolled_picture_size(worldsize);
 
@@ -131,35 +129,20 @@ void AWT_canvas::zoom_reset() {
     AW_pos y_scale = net_window_height/height;
 
     trans_to_fit = -1;
-    if (tree_disp->exports.dont_fit_larger) {
-        trans_to_fit = std::max(x_scale, y_scale);
+    switch (tree_disp->exports.fit_mode) {
+        case AWT_FIT_NEVER:   trans_to_fit = 1.0; break;
+        case AWT_FIT_X:       trans_to_fit = x_scale; break;
+        case AWT_FIT_Y:       trans_to_fit = y_scale; break;
+        case AWT_FIT_LARGER:  trans_to_fit = std::min(x_scale, y_scale); break;
+        case AWT_FIT_SMALLER: trans_to_fit = std::max(x_scale, y_scale); break;
     }
-    else {
-        if (tree_disp->exports.dont_fit_x) {
-            if (tree_disp->exports.dont_fit_y) {
-                trans_to_fit = 1.0;
-            }
-            else {
-                trans_to_fit = y_scale;
-            }
-        }
-        else {
-            if (tree_disp->exports.dont_fit_y) {
-                trans_to_fit = x_scale;
-            }
-            else {
-                trans_to_fit = std::min(x_scale, y_scale);
-            }
-        }
-    }
-
     aw_assert(trans_to_fit > 0);
 
     AW_pos center_shift_x = 0;
     AW_pos center_shift_y = 0;
 
-    if (tree_disp->exports.dont_fit_x == 0) center_shift_x = (net_window_width /trans_to_fit - width)/2;
-    if (tree_disp->exports.dont_fit_y == 0) center_shift_y = (net_window_height/trans_to_fit - height)/2;
+    if (tree_disp->exports.zoom_mode&AWT_ZOOM_X) center_shift_x = (net_window_width /trans_to_fit - width)/2;
+    if (tree_disp->exports.zoom_mode&AWT_ZOOM_Y) center_shift_y = (net_window_height/trans_to_fit - height)/2;
 
     // complete, upper left corner
     this->shift_x_to_fit = - this->worldinfo.l + tree_disp->exports.get_left_padding()/trans_to_fit + center_shift_x;
@@ -196,18 +179,8 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
     if (width<EPS) width = EPS;
     if (height<EPS) height = EPS;
 
-    bool takex = true;
-    bool takey = true;
-
-    // @@@ takex/takey shall depend on zoom-mode (to impl)
-    if (tree_disp->exports.dont_fit_y) takey = false;
-    if (tree_disp->exports.dont_fit_x) takex = false;
-    if (tree_disp->exports.dont_fit_larger) {
-        if (width>height)   takey = false;
-        else                takex = false;
-    }
-
-    if (!takex && !takey) {
+    AWT_zoom_mode zoom_mode = tree_disp->exports.zoom_mode;
+    if (zoom_mode == AWT_ZOOM_NEVER) {
         aw_message("Zoom does not work in this mode");
         return;
     }
@@ -216,16 +189,12 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
     Rectangle wanted;
 
     bool isClick = false;
-    if (takex) {
-        if (takey) {
-            if (wanted_part.line_vector().length()<40.0) isClick = true;
-        }
-        else {
-            if (wanted_part.width()<30.0) isClick = true;
-        }
-    }
-    else {
-        if (wanted_part.height()<30.0) isClick = true;
+    switch (zoom_mode) {
+        case AWT_ZOOM_BOTH: isClick = wanted_part.line_vector().length()<40.0; break;
+        case AWT_ZOOM_X:    isClick = wanted_part.width()<30.0;                break;
+        case AWT_ZOOM_Y:    isClick = wanted_part.height()<30.0;               break;
+
+        case AWT_ZOOM_NEVER: awt_assert(0); break;
     }
 
     if (isClick) { // very small part or single click
@@ -253,7 +222,7 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
     if (!zoomIn) {
         // calculate big rectangle (outside of viewport), which is zoomed into viewport
 
-        if (takex && takey) {
+        if (zoom_mode == AWT_ZOOM_BOTH) {
             double    factor = current.diagonal().length()/wanted.diagonal().length();
             Vector    curr2wanted(current.upper_left_corner(), wanted.upper_left_corner());
             Rectangle big(current.upper_left_corner()+(curr2wanted*-factor), current.diagonal()*factor);
@@ -262,12 +231,12 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
         }
         else {
             double factor;
-            if (takex) {
+            if (zoom_mode == AWT_ZOOM_X) {
                 factor = current.width()/wanted.width();
             }
             else {
+                awt_assert(zoom_mode == AWT_ZOOM_Y);
                 factor = current.height()/wanted.height();
-                awt_assert(takey);
             }
             Vector    curr2wanted_start(current.upper_left_corner(), wanted.upper_left_corner());
             Vector    curr2wanted_end(current.lower_right_corner(), wanted.lower_right_corner());
@@ -279,35 +248,38 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
     }
 
     // scroll
-    shift_x_to_fit = takex ? -wanted.start().xpos() : (shift_x_to_fit+worldinfo.l)*trans_to_fit;
-    shift_y_to_fit = takey ? -wanted.start().ypos() : (shift_y_to_fit+worldinfo.t)*trans_to_fit;
+    shift_x_to_fit = (zoom_mode&AWT_ZOOM_X) ? -wanted.start().xpos() : (shift_x_to_fit+worldinfo.l)*trans_to_fit;
+    shift_y_to_fit = (zoom_mode&AWT_ZOOM_Y) ? -wanted.start().ypos() : (shift_y_to_fit+worldinfo.t)*trans_to_fit;
 
     // scale
     if ((rect.r-rect.l)<EPS) rect.r = rect.l+1;
     if ((rect.b-rect.t)<EPS) rect.b = rect.t+1;
 
     AW_pos max_trans_to_fit;
-    if (takex) {
-        if (takey) { // take both
+    
+    switch (zoom_mode) {
+        case AWT_ZOOM_BOTH:
             trans_to_fit     = max((rect.r-rect.l)/wanted.width(), (rect.b-rect.t)/wanted.height());
             max_trans_to_fit = 32000.0/max(width, height);
-        }
-        else { // takex
-            trans_to_fit = (rect.r-rect.l)/wanted.width();
+            break;
+
+        case AWT_ZOOM_X:
+            trans_to_fit     = (rect.r-rect.l)/wanted.width();
             max_trans_to_fit = 32000.0/width;
-        }
+            break;
+
+        case AWT_ZOOM_Y:
+            trans_to_fit     = (rect.b-rect.t)/wanted.height();
+            max_trans_to_fit = 32000.0/height;
+            break;
+
+        case AWT_ZOOM_NEVER: awt_assert(0); break;
     }
-    else { // takey
-        trans_to_fit = (rect.b-rect.t)/wanted.height();
-        max_trans_to_fit = 32000.0/height;
-    }
-    if (trans_to_fit > max_trans_to_fit) {
-        trans_to_fit = max_trans_to_fit;
-    }
+    trans_to_fit = std::min(trans_to_fit, max_trans_to_fit);
 
     // correct scrolling for "dont_fit"-direction
-    if (takex == 0) shift_x_to_fit = (shift_x_to_fit/trans_to_fit)-worldinfo.l;
-    if (takey == 0) shift_y_to_fit = (shift_y_to_fit/trans_to_fit)-worldinfo.t;
+    if (zoom_mode == AWT_ZOOM_Y) shift_x_to_fit = (shift_x_to_fit/trans_to_fit)-worldinfo.l;
+    if (zoom_mode == AWT_ZOOM_X) shift_y_to_fit = (shift_y_to_fit/trans_to_fit)-worldinfo.t;
 
     set_scrollbars();
 }
@@ -474,79 +446,60 @@ static void input_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
 
 
 void AWT_canvas::set_dragEndpoint(int dragx, int dragy) {
-    bool fit_proportional = false;
-    if (tree_disp) {
-
-        // @@@ shall depend on zoom-mode (to impl)
-        
-        bool dont_fit_x = tree_disp->exports.dont_fit_x;
-        bool dont_fit_y = tree_disp->exports.dont_fit_y;
-
-        if (tree_disp->exports.dont_fit_larger) {
-            AW_pos width  = worldinfo.r-worldinfo.l;
-            AW_pos height = worldinfo.b-worldinfo.t;
-
-            if (width>height) {                     // like dont_fit_x = 1; dont_fit_y = 0;
-                dont_fit_x = true;
-            }
-            else {                                  // like dont_fit_y = 1; dont_fit_x = 0;
-                dont_fit_y = true;
-            }
+    switch (tree_disp->exports.zoom_mode) {
+        case AWT_ZOOM_NEVER: {
+            awt_assert(0);
+            break;
         }
-
-        if (dont_fit_y) {
+        case AWT_ZOOM_X: {
             zoom_drag_sy = rect.t;
             zoom_drag_ey = rect.b-1;
             zoom_drag_ex = dragx;
+            break;
         }
-        else if (dont_fit_x) {
+        case AWT_ZOOM_Y: {
             zoom_drag_sx = rect.l;
             zoom_drag_ex = rect.r-1;
             zoom_drag_ey = dragy;
+            break;
         }
-        else {
-            fit_proportional = true;
-        }
-    }
-    else {
-        fit_proportional = true;
-    }
+        case AWT_ZOOM_BOTH: {
+            zoom_drag_ex = dragx;
+            zoom_drag_ey = dragy;
 
-    if (fit_proportional) {
-        zoom_drag_ex = dragx;
-        zoom_drag_ey = dragy;
+            int drag_sx = zoom_drag_ex-zoom_drag_sx;
+            int drag_sy = zoom_drag_ey-zoom_drag_sy;
 
-        int drag_sx = zoom_drag_ex-zoom_drag_sx;
-        int drag_sy = zoom_drag_ey-zoom_drag_sy;
+            bool   correct_x = false;
+            bool   correct_y = false;
+            double factor;
 
-        bool   correct_x = false;
-        bool   correct_y = false;
-        double factor;
+            int scr_sx = rect.r-rect.l;
+            int scr_sy = rect.b-rect.t;
 
-        int scr_sx = rect.r-rect.l;
-        int scr_sy = rect.b-rect.t;
-
-        if (drag_sx == 0) {
-            if (drag_sy != 0) { factor = double(drag_sy)/scr_sy; correct_x = true; }
-        }
-        else {
-            if (drag_sy == 0) { factor = double(drag_sx)/scr_sx; correct_y = true; }
-            else {
-                double facx = double(drag_sx)/scr_sx;
-                double facy = double(drag_sy)/scr_sy;
-
-                if (fabs(facx)>fabs(facy)) { factor = facx; correct_y = true; }
-                else                       { factor = facy; correct_x = true; }
+            if (drag_sx == 0) {
+                if (drag_sy != 0) { factor = double(drag_sy)/scr_sy; correct_x = true; }
             }
-        }
+            else {
+                if (drag_sy == 0) { factor = double(drag_sx)/scr_sx; correct_y = true; }
+                else {
+                    double facx = double(drag_sx)/scr_sx;
+                    double facy = double(drag_sy)/scr_sy;
 
-        if (correct_x) {
-            int width    = int(scr_sx*factor) * ((drag_sx*drag_sy) < 0 ? -1 : 1);
-            zoom_drag_ex = zoom_drag_sx+width;
-        }
-        else if (correct_y) {
-            int height = int(scr_sy*factor) * ((drag_sx*drag_sy) < 0 ? -1 : 1);
-            zoom_drag_ey = zoom_drag_sy+height;
+                    if (fabs(facx)>fabs(facy)) { factor = facx; correct_y = true; }
+                    else                       { factor = facy; correct_x = true; }
+                }
+            }
+
+            if (correct_x) {
+                int width    = int(scr_sx*factor) * ((drag_sx*drag_sy) < 0 ? -1 : 1);
+                zoom_drag_ex = zoom_drag_sx+width;
+            }
+            else if (correct_y) {
+                int height = int(scr_sy*factor) * ((drag_sx*drag_sy) < 0 ? -1 : 1);
+                zoom_drag_ey = zoom_drag_sy+height;
+            }
+            break;
         }
     }
 }
