@@ -39,9 +39,9 @@ enum GEN_DisplayStyle {
     GEN_DISPLAY_STYLE_RADIAL,
     GEN_DISPLAY_STYLE_BOOK,
     GEN_DISPLAY_STYLE_VERTICAL,
-
-    GEN_DISPLAY_STYLES // counter
 };
+
+#define GEN_DISPLAY_STYLES (GEN_DISPLAY_STYLE_VERTICAL+1)
 
 
 //  -----------------------------------------------
