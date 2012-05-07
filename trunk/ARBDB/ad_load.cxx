@@ -1749,12 +1749,15 @@ void TEST_io_number() {
         { 0x800002, 4 },
         { 0xffffff, 4 },
         { 0xfffffff, 4 },
-        
+
+#if defined(ARB_64)
+        // the following entries are negative on 32bit systems; see ad_io_inline.h@bit-hell
         { 0x10000000, 5 },
         { 0x7fffffff, 5 },
         { 0x80000000, 5 },
         { 0x80808080, 5 },
         { 0xffffffff, 5 },
+#endif
     };
 
     const char *numbers   = "numbers.test";

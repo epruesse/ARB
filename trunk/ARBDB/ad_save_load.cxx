@@ -639,7 +639,6 @@ static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_sav
 static int gb_write_bin_sub_containers(FILE *out, GBCONTAINER *gbc, long version, long diff_save, int is_root) {
     gb_header_list *header;
     uint32_t        i, index;
-    int             counter;
 
     header = GB_DATA_LIST_HEADER(gbc->d);
     gb_assert(gbc->d.nheader >= 0);
@@ -654,7 +653,7 @@ static int gb_write_bin_sub_containers(FILE *out, GBCONTAINER *gbc, long version
         gb_write_out_uint32(i, out);
     }
 
-    counter = 0;
+    uint32_t counter = 0;
     for (index = 0; index < (uint32_t)gbc->d.nheader; index++) {
         GBDATA *h_gbd;
 
