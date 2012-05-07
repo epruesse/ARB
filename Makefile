@@ -1419,7 +1419,7 @@ fa:	SL/FAST_ALIGNER/FAST_ALIGNER.dummy
 
 up_by_remake: depends proto libdepends
 
-up: up_by_remake tags valgrind_update 
+up: up_by_remake tags valgrind_update
 
 #********************************************************************************
 

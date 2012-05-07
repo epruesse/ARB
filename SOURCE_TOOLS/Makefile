@@ -17,7 +17,7 @@ mainwrapper: $(OBJECTS)
 
 # --------------------------------------------------------------------------------
 
-clean:
+clean: dep.clean
 		rm -f stamp.* valgrind2grep.lst postcompile.sav $(OBJECTS)
 
 valgrind_update:
@@ -40,7 +40,7 @@ dep.alltargets.tmp:
 dep.libtargets: dep.alltargets
 	grep -E '\.(a|o|so)' $< > $@ || true
 
-dep.4dummy: dep.libtargets
+dep.4dummy.tmp: dep.libtargets 
 	./gen_dep.pl dummy <$< >$@
 
 libdepends: dep.4dummy
