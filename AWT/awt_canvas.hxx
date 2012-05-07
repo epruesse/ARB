@@ -56,8 +56,8 @@ public:
     unsigned int structure_change : 1; // maybe useless
     unsigned int dont_fit_x : 1;
     unsigned int dont_fit_y : 1;
-    unsigned int dont_fit_larger : 1;  // if xsize>ysize -> dont_fit_x (otherwise dont_fit_y)
-    unsigned int dont_scroll : 1;
+    unsigned int dont_fit_larger : 1;  // true -> use larger scale
+    unsigned int dont_scroll : 1; // normally 0 (1 for IRS tree)
 
     void init();     // like clear, but resets fit, scroll state and padding
     void clear();
