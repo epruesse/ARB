@@ -48,6 +48,14 @@ inline uint32_t gb_read_in_uint32(FILE *in, bool reversed) {
 
 inline void gb_put_number(long b0, FILE *out) {
     // opposite of gb_get_number
+
+    if (b0 < 0) {
+        // if this happens, we are in 32/64bit-hell
+        // if it never fails, gb_put_number/gb_get_number should better work with uint32_t
+        // see also ad_load.cxx@bit-hell
+        GBK_terminate("32/64bit incompatibility detected in DB-engine, please inform devel@arb-home.de");
+    }
+    
     typedef unsigned char uc;
     if (b0 >= 0x80) {
         long b1 = b0>>8;
