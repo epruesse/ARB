@@ -768,7 +768,7 @@ void SEC_helix_strand::paint_strands(AW_device *device, const Vector& strand_vec
                     if (disp.show_debug) device->line(gc, realPos, base_pos);
 #endif // DEBUG
 
-                    device->text(gc, baseBuf, base_pos);
+                    device->text(gc, baseBuf, base_pos, 0.0, AW_ALL_DEVICES_SCALED);
                 }
             }
         }
@@ -948,7 +948,7 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
                 // (which is currently calculated wrong!)
                 if (disp.show_debug) device->line(SEC_GC_LOOP, pos, base_pos);
 #endif // DEBUG
-                device->text(SEC_GC_LOOP, baseBuf, base_pos);
+                device->text(SEC_GC_LOOP, baseBuf, base_pos, 0.0, AW_ALL_DEVICES_SCALED);
             }
             root->announce_base_position(abs, pos);
         }
