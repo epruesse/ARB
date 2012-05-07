@@ -64,7 +64,8 @@ void AWT_canvas::set_scrollbars() {
     worldsize.t = 0;
     AW_pos scale = this->trans_to_fit;
     if (tree_disp->exports.dont_fit_y) {
-        scale = 1.0;
+        scale = 1.0; // @@@ this is ok for dendrogram tree, but breaks scrolling for gene-map (book-style and vertical display modes)
+        // @@@ need a flag which indicates that zoom (trans_to_fit) is not applied to a coordinate (zoom-mode)
     }
     worldsize.b = height*scale + tree_disp->exports.get_y_padding();
 
@@ -129,38 +130,40 @@ void AWT_canvas::zoom_reset() {
     AW_pos x_scale = net_window_width/width;
     AW_pos y_scale = net_window_height/height;
 
+    trans_to_fit = -1;
     if (tree_disp->exports.dont_fit_larger) {
-        if (width>height) {     // like dont_fit_x = 1; dont_fit_y = 0;
-            x_scale = y_scale;
-        }
-        else {                  // like dont_fit_y = 1; dont_fit_x = 0;
-            y_scale = x_scale;
-        }
+        trans_to_fit = std::max(x_scale, y_scale);
     }
     else {
         if (tree_disp->exports.dont_fit_x) {
             if (tree_disp->exports.dont_fit_y) {
-                x_scale = y_scale = 1.0;
+                trans_to_fit = 1.0;
             }
             else {
-                x_scale = y_scale;
+                trans_to_fit = y_scale;
             }
         }
         else {
             if (tree_disp->exports.dont_fit_y) {
-                y_scale = x_scale;
+                trans_to_fit = x_scale;
             }
             else {
-                ;
+                trans_to_fit = std::min(x_scale, y_scale);
             }
         }
     }
 
-    this->trans_to_fit = x_scale;
+    aw_assert(trans_to_fit > 0);
+
+    AW_pos center_shift_x = 0;
+    AW_pos center_shift_y = 0;
+
+    if (tree_disp->exports.dont_fit_x == 0) center_shift_x = (net_window_width /trans_to_fit - width)/2;
+    if (tree_disp->exports.dont_fit_y == 0) center_shift_y = (net_window_height/trans_to_fit - height)/2;
 
     // complete, upper left corner
-    this->shift_x_to_fit = - this->worldinfo.l + tree_disp->exports.get_left_padding()/x_scale;
-    this->shift_y_to_fit = - this->worldinfo.t + tree_disp->exports.get_top_padding()/x_scale;
+    this->shift_x_to_fit = - this->worldinfo.l + tree_disp->exports.get_left_padding()/trans_to_fit + center_shift_x;
+    this->shift_y_to_fit = - this->worldinfo.t + tree_disp->exports.get_top_padding()/trans_to_fit  + center_shift_y;
 
     this->old_hor_scroll_pos  = 0;
     this->old_vert_scroll_pos = 0;
@@ -196,6 +199,7 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
     bool takex = true;
     bool takey = true;
 
+    // @@@ takex/takey shall depend on zoom-mode (to impl)
     if (tree_disp->exports.dont_fit_y) takey = false;
     if (tree_disp->exports.dont_fit_x) takex = false;
     if (tree_disp->exports.dont_fit_larger) {
@@ -472,6 +476,9 @@ static void input_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
 void AWT_canvas::set_dragEndpoint(int dragx, int dragy) {
     bool fit_proportional = false;
     if (tree_disp) {
+
+        // @@@ shall depend on zoom-mode (to impl)
+        
         bool dont_fit_x = tree_disp->exports.dont_fit_x;
         bool dont_fit_y = tree_disp->exports.dont_fit_y;
 
