@@ -156,14 +156,14 @@ void AWT_canvas::zoom_reset() {
     this->set_scrollbars();
 }
 
-void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_part, const Rectangle& current_part) {
+void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_part, const Rectangle& current_part, int percent) {
     // zooms the device.
     //
     // zoomIn == true -> wanted_part is zoomed to current_part
     // zoomIn == false -> current_part is zoomed to wanted_part
     //
     // If wanted_part is very small -> assume mistake (act like single click)
-    // Single click zooms by 10% centering on click position
+    // Single click zooms by 'percent' % centering on click position
 
     init_device(device);
 
@@ -198,22 +198,15 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
     }
 
     if (isClick) { // very small part or single click
-        // -> zoom by 10 % on click position
-        Vector wanted_diagonal = current.diagonal()*0.45;
+        // -> zoom by 'percent' % on click position
+        Position clickPos = device->rtransform(wanted_part.centroid());
 
-        Position clickPos     = device->rtransform(wanted_part.centroid());
-        Position screenCenter = current.centroid();
+        Vector click2UpperLeft  = current.upper_left_corner()-clickPos;
+        Vector click2LowerRight = current.lower_right_corner()-clickPos;
 
-        Vector center2click(screenCenter, clickPos);
-        Vector center2click_zoomed = center2click / 0.9;
+        double scale = (100-percent)/100.0;
 
-        Position clickPos_zoomed = screenCenter+center2click_zoomed;
-        Vector   to_zoomed(clickPos, clickPos_zoomed);
-
-        Position zoomedCenter = screenCenter+to_zoomed;
-
-        // zoom-rectangle around center
-        wanted = Rectangle(zoomedCenter-wanted_diagonal, 2*wanted_diagonal);
+        wanted = Rectangle(clickPos+scale*click2UpperLeft, clickPos+scale*click2LowerRight);
     }
     else {
         wanted = Rectangle(device->rtransform(wanted_part));
@@ -382,7 +375,7 @@ static bool handleZoomEvent(AW_window *aww, AWT_canvas *scr, AW_device *device, 
             Rectangle screen(scr->rect, INCLUSIVE_OUTLINE);
             Rectangle drag(scr->zoom_drag_sx, scr->zoom_drag_sy, scr->zoom_drag_ex, scr->zoom_drag_ey);
 
-            scr->zoom(device, zoomIn, drag, screen);
+            scr->zoom(device, zoomIn, drag, screen, 10);
             AWT_expose_cb(aww, scr, 0);
         }
     }
