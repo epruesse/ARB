@@ -145,18 +145,18 @@ static PaperFormat knownPaperFormat[] = {
 
 // --------------------------------------------------------------------------------
 
-static Rectangle get_drawsize(AWT_canvas *ntw, bool draw_all) {
+static Rectangle get_drawsize(AWT_canvas *scr, bool draw_all) {
     // returns size of drawn graphic in screen-coordinates
     
     Rectangle       drawsize;
-    GB_transaction  ta(ntw->gb_main);
-    AW_device_size *size_device = ntw->aww->get_size_device(AW_MIDDLE_AREA);
+    GB_transaction  ta(scr->gb_main);
+    AW_device_size *size_device = scr->aww->get_size_device(AW_MIDDLE_AREA);
 
     if (draw_all) {
         size_device->reset();
-        size_device->zoom(ntw->trans_to_fit);
+        size_device->zoom(scr->trans_to_fit);
         size_device->set_filter(AW_PRINTER|AW_PRINTER_EXT);
-        ntw->tree_disp->show(size_device);
+        scr->gfx->show(size_device);
         drawsize = size_device->get_size_information();
     }
     else {
@@ -175,12 +175,12 @@ static Rectangle add_border_to_drawsize(const Rectangle& drawsize, double border
                      drawsize.lower_right_corner()+bordersize);
 }
 
-static void awt_print_tree_check_size(void *, AW_CL cl_ntw) {
-    AWT_canvas *ntw         = (AWT_canvas*)cl_ntw;
-    AW_root    *awr         = ntw->awr;
+static void awt_print_tree_check_size(void *, AW_CL cl_canvas) {
+    AWT_canvas *scr         = (AWT_canvas*)cl_canvas;
+    AW_root    *awr         = scr->awr;
     long        draw_all    = awr->awar(AWAR_CANIO_CLIP)->read_int();
     double      border      = awr->awar(AWAR_CANIO_BORDERSIZE)->read_float();
-    Rectangle   drawsize    = get_drawsize(ntw, draw_all);
+    Rectangle   drawsize    = get_drawsize(scr, draw_all);
     Rectangle   with_border = add_border_to_drawsize(drawsize, border);
 
     awr->awar(AWAR_CANIO_GFX_SX)->write_float((with_border.width())/DPI_SCREEN);
@@ -465,7 +465,7 @@ static void resetFiletype(AW_root *awr, const char *filter, const char *defaultF
     free(current_filter);
 }
 
-static void create_print_awars(AW_root *awr, AWT_canvas *ntw) {
+static void create_print_awars(AW_root *awr, AWT_canvas *scr) {
     create_export_awars(awr);
 
     if (!print_awars_created) {
@@ -514,10 +514,10 @@ static void create_print_awars(AW_root *awr, AWT_canvas *ntw) {
         awr->awar(AWAR_CANIO_PAPER_SX)->set_minmax(0.1, 100);
         awr->awar(AWAR_CANIO_PAPER_SY)->set_minmax(0.1, 100);
 
-        awt_print_tree_check_size(0, (AW_CL)ntw);
+        awt_print_tree_check_size(0, (AW_CL)scr);
 
-        awr->awar(AWAR_CANIO_CLIP)->add_callback((AW_RCB1)awt_print_tree_check_size, (AW_CL)ntw);
-        awr->awar(AWAR_CANIO_BORDERSIZE)->add_callback((AW_RCB1)awt_print_tree_check_size, (AW_CL)ntw);
+        awr->awar(AWAR_CANIO_CLIP)->add_callback((AW_RCB1)awt_print_tree_check_size, (AW_CL)scr);
+        awr->awar(AWAR_CANIO_BORDERSIZE)->add_callback((AW_RCB1)awt_print_tree_check_size, (AW_CL)scr);
 
         { // add callbacks for page recalculation
             const char *checked_awars[] = {
@@ -542,30 +542,30 @@ static void create_print_awars(AW_root *awr, AWT_canvas *ntw) {
 
 // --------------------------------------------------------------------------------
 
-static GB_ERROR canvas_to_xfig(AWT_canvas *ntw, const char *xfig_name, bool add_invisibles, double border) {
+static GB_ERROR canvas_to_xfig(AWT_canvas *scr, const char *xfig_name, bool add_invisibles, double border) {
     // if 'add_invisibles' is true => print 2 invisible dots to make fig2dev center correctly
 
-    GB_transaction  ta(ntw->gb_main);
-    AW_root        *awr = ntw->awr;
+    GB_transaction  ta(scr->gb_main);
+    AW_root        *awr = scr->awr;
 
     bool draw_all  = awr->awar(AWAR_CANIO_CLIP)->read_int();
     bool handles   = awr->awar(AWAR_CANIO_HANDLES)->read_int();
     bool use_color = awr->awar(AWAR_CANIO_COLOR)->read_int();
 
-    AW_device_print *device = ntw->aww->get_print_device(AW_MIDDLE_AREA);
+    AW_device_print *device = scr->aww->get_print_device(AW_MIDDLE_AREA);
 
     device->reset();
     device->set_color_mode(use_color);
     GB_ERROR error = device->open(xfig_name);
 
     if (!error) {
-        Rectangle drawsize = get_drawsize(ntw, draw_all);
+        Rectangle drawsize = get_drawsize(scr, draw_all);
         Rectangle world_drawsize;
 
         if (draw_all) {
             Rectangle with_border = add_border_to_drawsize(drawsize, border);
 
-            double zoom = ntw->trans_to_fit;
+            double zoom = scr->trans_to_fit;
             device->zoom(zoom); // same zoom as used by get_drawsize above
 
             world_drawsize = device->rtransform(drawsize);
@@ -579,7 +579,7 @@ static GB_ERROR canvas_to_xfig(AWT_canvas *ntw, const char *xfig_name, bool add_
             device->set_right_clip_border((int)(with_border.width()+1), true);
         }
         else {
-            ntw->init_device(device);
+            scr->init_device(device);
             world_drawsize = device->rtransform(drawsize);
         }
 
@@ -588,7 +588,7 @@ static GB_ERROR canvas_to_xfig(AWT_canvas *ntw, const char *xfig_name, bool add_
         if (!draw_all) filter |= AW_PRINTER_CLIP;
 
         device->set_filter(filter);
-        ntw->tree_disp->show(device);
+        scr->gfx->show(device);
 
         if (add_invisibles) {
             Position ul = world_drawsize.upper_left_corner();
@@ -621,8 +621,8 @@ static GB_ERROR canvas_to_xfig(AWT_canvas *ntw, const char *xfig_name, bool add_
 
 // --------------------------------------------------------------------------------
 
-static void canvas_to_xfig_and_run_xfig(AW_window *aww, AW_CL cl_ntw) {
-    AWT_canvas *ntw  = (AWT_canvas*)cl_ntw;
+static void canvas_to_xfig_and_run_xfig(AW_window *aww, AW_CL cl_canvas) {
+    AWT_canvas *scr  = (AWT_canvas*)cl_canvas;
     AW_root    *awr  = aww->get_root();
     char       *xfig = AW_get_selected_fullname(awr, AWAR_CANIO_FILE_BASE);
     
@@ -631,7 +631,7 @@ static void canvas_to_xfig_and_run_xfig(AW_window *aww, AW_CL cl_ntw) {
         error = "Please enter a file name";
     }
     else {
-        error = canvas_to_xfig(ntw, xfig, true, 0.0);
+        error = canvas_to_xfig(scr, xfig, true, 0.0);
         if (!error) {
             awr->awar(AWAR_CANIO_FILE_DIR)->touch(); // reload dir to show created xfig
             error = GBK_system(GBS_global_string("xfig %s &", xfig));
@@ -641,9 +641,9 @@ static void canvas_to_xfig_and_run_xfig(AW_window *aww, AW_CL cl_ntw) {
     free(xfig);
 }
 
-static void canvas_to_printer(AW_window *aww, AW_CL cl_ntw) {
-    AWT_canvas     *ntw       = (AWT_canvas*)cl_ntw;
-    GB_transaction  ta(ntw->gb_main);
+static void canvas_to_printer(AW_window *aww, AW_CL cl_canvas) {
+    AWT_canvas     *scr       = (AWT_canvas*)cl_canvas;
+    GB_transaction  ta(scr->gb_main);
     AW_root        *awr       = aww->get_root();
     GB_ERROR        error     = 0;
     char           *dest      = 0;
@@ -681,7 +681,7 @@ static void canvas_to_printer(AW_window *aww, AW_CL cl_ntw) {
         if (!xfig) error = GB_await_error();
         if (!error) {
             double border = awr->awar(AWAR_CANIO_BORDERSIZE)->read_float();
-            error         = canvas_to_xfig(ntw, xfig, true, border);
+            error         = canvas_to_xfig(scr, xfig, true, border);
         }
 
         if (!error) {
@@ -863,10 +863,10 @@ static void fit_pages_cb(AW_window *aww, AW_CL cl_pages) {
 
 void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
     AW_root                 *awr = parent_win->get_root();
-    AWT_canvas              *ntw = (AWT_canvas*)cl_canvas;
+    AWT_canvas              *scr = (AWT_canvas*)cl_canvas;
     static AW_window_simple *aws = 0;
 
-    create_print_awars(awr, ntw);
+    create_print_awars(awr, scr);
     resetFiletype(awr, "ps", "print.ps");
 
     if (!aws) {
@@ -907,7 +907,7 @@ void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
         //      page layout
 
         aws->at("getsize");
-        aws->callback((AW_CB1)awt_print_tree_check_size, (AW_CL)ntw);
+        aws->callback((AW_CB1)awt_print_tree_check_size, (AW_CL)scr);
         aws->create_autosize_button(0, "Get Graphic Size");
 
         aws->button_length(6);
@@ -1007,10 +1007,10 @@ void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
 
         aws->at("go");
         aws->highlight();
-        aws->callback(canvas_to_printer, (AW_CL)ntw);
+        aws->callback(canvas_to_printer, (AW_CL)scr);
         aws->create_autosize_button("PRINT", "PRINT", "P");
     }
 
-    awt_print_tree_check_size(0, (AW_CL)ntw);
+    awt_print_tree_check_size(0, (AW_CL)scr);
     aws->activate();
 }

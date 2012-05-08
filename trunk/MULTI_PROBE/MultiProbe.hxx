@@ -137,10 +137,10 @@ extern awar_vars  mp_gl_awars;                      // globale Variable, die man
 
 
 class MP_Main : virtual Noncopyable {
-    MP_Window   *mp_window;
-    AW_root *aw_root;
-    AWT_canvas  *ntw;
-    ST_Container *stc;
+    MP_Window      *mp_window;
+    AW_root        *aw_root;
+    AWT_canvas     *scr;
+    ST_Container   *stc;
     ProbeValuation *p_eval;
 
     void    create_awars();
@@ -148,7 +148,7 @@ class MP_Main : virtual Noncopyable {
 public:
     MP_Window   *get_mp_window()    { return mp_window; };
     AW_root *get_aw_root()      { return aw_root; };
-    AWT_canvas  *get_ntw()      { return ntw; };
+    AWT_canvas  *get_canvas()      { return scr; };
     ProbeValuation *get_p_eval()    { return p_eval; };
     ST_Container *get_stc()         { return stc; };
     void    set_stc(ST_Container *stopfC) { stc = stopfC; }

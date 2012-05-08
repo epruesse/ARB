@@ -43,7 +43,7 @@ static const char *getAwarName(int awarNo) {
     return buf;
 }
 
-AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL cd2) {
+AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr, AW_CL cd2) {
     AW_gc_manager preset_window =
         AW_manage_GC (aww,
                       device,
@@ -51,7 +51,7 @@ AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
                       SAI_GC_MAX,
                       AW_GCM_DATA_AREA,
                       (AW_CB)AWT_resize_cb,
-                      (AW_CL)ntw,
+                      (AW_CL)scr,
                       cd2,
                       false,
                       "#005500",
@@ -143,10 +143,10 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
     awr->awar(AWAR_SPV_DISP_SAI)->touch(); // refreshes the display
 }
 
-static void refreshCanvas(AW_root */*awr*/, AW_CL cl_ntw) {
+static void refreshCanvas(AW_root */*awr*/, AW_CL cl_canvas) {
     // repaints the canvas
-    AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
-    ntw->refresh();
+    AWT_canvas *scr = (AWT_canvas*)cl_canvas;
+    scr->refresh();
 }
 
 static void createSaiProbeAwars(AW_root *aw_root) {
@@ -159,14 +159,14 @@ static void createSaiProbeAwars(AW_root *aw_root) {
     }
 }
 
-static void addCallBacks(AW_root *awr, AWT_canvas *ntw) {
+static void addCallBacks(AW_root *awr, AWT_canvas *scr) {
     // adding callbacks to the awars to refresh the display if received any changes
-    awr->awar(AWAR_SPV_DISP_SAI)      ->add_callback(refreshCanvas, (AW_CL)ntw);
-    awr->awar(AWAR_SPV_SAI_2_PROBE)   ->add_callback(refreshCanvas, (AW_CL)ntw);
-    awr->awar(AWAR_SPV_DB_FIELD_NAME) ->add_callback(refreshCanvas, (AW_CL)ntw);
-    awr->awar(AWAR_SPV_DB_FIELD_WIDTH)->add_callback(refreshCanvas, (AW_CL)ntw);
-    awr->awar(AWAR_SPV_SELECTED_PROBE)->add_callback(refreshCanvas, (AW_CL)ntw);
-    awr->awar(AWAR_SPV_ACI_COMMAND)   ->add_callback(refreshCanvas, (AW_CL)ntw);
+    awr->awar(AWAR_SPV_DISP_SAI)      ->add_callback(refreshCanvas, (AW_CL)scr);
+    awr->awar(AWAR_SPV_SAI_2_PROBE)   ->add_callback(refreshCanvas, (AW_CL)scr);
+    awr->awar(AWAR_SPV_DB_FIELD_NAME) ->add_callback(refreshCanvas, (AW_CL)scr);
+    awr->awar(AWAR_SPV_DB_FIELD_WIDTH)->add_callback(refreshCanvas, (AW_CL)scr);
+    awr->awar(AWAR_SPV_SELECTED_PROBE)->add_callback(refreshCanvas, (AW_CL)scr);
+    awr->awar(AWAR_SPV_ACI_COMMAND)   ->add_callback(refreshCanvas, (AW_CL)scr);
 }
 
 static const char *translateSAItoColors(AW_root *awr, GBDATA *gb_main, int start, int end, int speciesNo) {
@@ -702,8 +702,8 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
     AW_gc_manager aw_gc_manager;
     SAI_graphic *saiProbeGraphic = new SAI_graphic(awr, gb_main);
 
-    AWT_canvas *ntw = new AWT_canvas(gb_main, awm, saiProbeGraphic, aw_gc_manager, AWAR_TARGET_STRING);
-    ntw->recalc_size();
+    AWT_canvas *scr = new AWT_canvas(gb_main, awm, saiProbeGraphic, aw_gc_manager, AWAR_TARGET_STRING);
+    scr->recalc_size();
 
     awm->insert_help_topic("How to Visualize SAI`s ?", "H", "saiProbeHelp.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"saiProbeHelp.hlp", 0);
 
@@ -716,7 +716,7 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
     awm->insert_menu_topic("clrTransTable",   "Define Color Translations", "D", NULL,               AWM_ALL, AW_POPUP,                     AW_CL(create_colorTranslationTable_window), 0);
     awm->insert_menu_topic("SetColors",       "Set Colors and Fonts",      "t", "setColors.hlp",    AWM_ALL, AW_POPUP,                     AW_CL(createSaiColorWindow),                AW_CL(aw_gc_manager));
 
-    addCallBacks(awr, ntw);
+    addCallBacks(awr, scr);
 
     return awm;
 }

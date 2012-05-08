@@ -47,20 +47,20 @@ int get_random(int min, int max) {
 
 void MP_close_main(AW_window *aww)
 {
-    AWT_canvas  *ntw = mp_main->get_ntw();
+    AWT_canvas  *scr = mp_main->get_canvas();
 
     if (mp_main->get_mp_window()->get_result_window())
         mp_main->get_mp_window()->get_result_window()->hide();
 
-    GB_transaction dummy(ntw->gb_main);
+    GB_transaction dummy(scr->gb_main);
 
-    AP_tree *ap_tree = AWT_TREE(ntw)->get_root_node();
+    AP_tree *ap_tree = AWT_TREE(scr)->get_root_node();
     if (ap_tree) ap_tree->calc_color();
 
-    if (ntw->gb_main)
-        ntw->tree_disp->update(ntw->gb_main);
+    if (scr->gb_main)
+        scr->gfx->update(scr->gb_main);
 
-    ntw->refresh();
+    scr->refresh();
 
     AW_POPDOWN(aww);
     delete mp_main->get_p_eval();
@@ -440,7 +440,7 @@ void MP_show_probes_in_tree_move(AW_window *aww, AW_CL cl_backward, AW_CL cl_res
 }
 
 void MP_show_probes_in_tree(AW_window */*aww*/) {
-    AWT_canvas *ntw                = mp_main->get_ntw();
+    AWT_canvas *scr = mp_main->get_canvas();
     char       *mism, *mism_temp;
     char       *a_probe, *another_probe, *the_probe, *mism_temp2;
     int         i, how_many_probes = 0;
@@ -534,13 +534,13 @@ void MP_show_probes_in_tree(AW_window */*aww*/) {
 
     mp_main->get_stc()->sondentopf->gen_color_hash(mp_gl_awars.no_of_probes);
 
-    GB_transaction dummy(ntw->gb_main);
-    AWT_TREE(ntw)->get_root_node()->calc_color_probes(mp_main->get_stc()->sondentopf->get_color_hash());
+    GB_transaction dummy(scr->gb_main);
+    AWT_TREE(scr)->get_root_node()->calc_color_probes(mp_main->get_stc()->sondentopf->get_color_hash());
 
-    if (ntw->gb_main)
-        ntw->tree_disp->update(ntw->gb_main);
+    if (scr->gb_main)
+        scr->gfx->update(scr->gb_main);
 
-    ntw->refresh();
+    scr->refresh();
 
     for (i=0; i<MAXMISMATCHES; i++)
         free(probe_field[i]);
@@ -550,7 +550,7 @@ void MP_show_probes_in_tree(AW_window */*aww*/) {
 }
 
 void MP_mark_probes_in_tree(AW_window *aww) {
-    AWT_canvas  *ntw                = mp_main->get_ntw();
+    AWT_canvas  *scr = mp_main->get_canvas();
     char        *mism, *mism_temp;
     char        *a_probe, *another_probe, *the_probe, *mism_temp2;
     int          i, how_many_probes = 0;
@@ -641,20 +641,20 @@ void MP_mark_probes_in_tree(AW_window *aww) {
     mp_main->get_stc()->sondentopf->gen_color_hash(mp_gl_awars.no_of_probes);
 
     {
-        GB_push_transaction(ntw->gb_main);
+        GB_push_transaction(scr->gb_main);
         GB_HASH *col_hash = mp_main->get_stc()->sondentopf->get_color_hash();
-        for (gb_species = GBT_first_species(ntw->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
+        for (gb_species = GBT_first_species(scr->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
             GB_write_flag(gb_species, GBS_read_hash(col_hash, GBT_read_name(gb_species)) > AWT_GC_BLACK);
         }
     }
-    GB_pop_transaction(ntw->gb_main);
+    GB_pop_transaction(scr->gb_main);
 
-    GB_transaction dummy(ntw->gb_main);
+    GB_transaction dummy(scr->gb_main);
 
-    if (ntw->gb_main)
-        ntw->tree_disp->update(ntw->gb_main);
+    if (scr->gb_main)
+        scr->gfx->update(scr->gb_main);
 
-    ntw->refresh();
+    scr->refresh();
 
     for (i=0; i<MAXMISMATCHES; i++)
         free(probe_field[i]);
@@ -774,20 +774,20 @@ void MP_selected_chosen(AW_window */*aww*/) {
 }
 
 void MP_group_all_except_marked(AW_window * /* aww */) {
-    AWT_canvas  *ntw = mp_main->get_ntw();
-    NT_group_not_marked_cb(0, ntw);
+    AWT_canvas  *scr = mp_main->get_canvas();
+    NT_group_not_marked_cb(0, scr);
 }
 
 void MP_normal_colors_in_tree(AW_window */*aww*/) {
-    AWT_canvas  *ntw = mp_main->get_ntw();
-    GB_transaction dummy(ntw->gb_main);
+    AWT_canvas  *scr = mp_main->get_canvas();
+    GB_transaction dummy(scr->gb_main);
 
-    AWT_TREE(ntw)->get_root_node()->calc_color();
+    AWT_TREE(scr)->get_root_node()->calc_color();
 
-    if (ntw->gb_main)
-        ntw->tree_disp->update(ntw->gb_main);
+    if (scr->gb_main)
+        scr->gfx->update(scr->gb_main);
 
-    ntw->refresh();
+    scr->refresh();
 }
 
 void MP_all_right(AW_window *aww)

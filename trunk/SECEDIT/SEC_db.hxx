@@ -110,7 +110,7 @@ class SEC_db_interface : virtual Noncopyable {
     mutable SEC_structure_toggler *toggler;
 
     SEC_graphic *gfx;
-    AWT_canvas  *ntw;
+    AWT_canvas  *scr;
     GBDATA      *gb_main;
     AW_root     *aw_root;
 
@@ -143,7 +143,7 @@ class SEC_db_interface : virtual Noncopyable {
     void bind_awars(const char **awars, SEC_dbcb *cb);
 
 public:
-    SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Ntw, ED4_plugin_host& host_);
+    SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Scr, ED4_plugin_host& host_);
     ~SEC_db_interface();
 
     void update_shown_positions();
@@ -164,7 +164,7 @@ public:
     GBDATA *gbmain() const { return gb_main; }
     SEC_graphic *graphic() const { return gfx; }
     SEC_root *secroot() const;
-    AWT_canvas *canvas() const { return ntw; }
+    AWT_canvas *canvas() const { return scr; }
     BI_helix *helix() const { return Helix; }
     BI_ecoli_ref *ecoli() const { return Ecoli; }
     SEC_bond_def *bonds() const { return bonddef; }

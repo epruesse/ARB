@@ -44,7 +44,7 @@ void awt_create_dtree_awars(AW_root *aw_root, AW_default def);
 
 #define PH_CLICK_SPREAD   0.10
 
-#define AWT_TREE(ntw) DOWNCAST(AWT_graphic_tree*, (ntw)->tree_disp)
+#define AWT_TREE(ntw) DOWNCAST(AWT_graphic_tree*, (ntw)->gfx)
 
 
 enum AP_tree_sort {

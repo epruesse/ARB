@@ -741,7 +741,7 @@ public:
     SEC_root();
     ~SEC_root();
 
-    void init(SEC_graphic *gfx, AWT_canvas *ntw, ED4_plugin_host& host);
+    void init(SEC_graphic *gfx, AWT_canvas *scr, ED4_plugin_host& host);
 
     bool under_construction() const { return constructing; }
     void set_under_construction(bool construct) { constructing = construct; }

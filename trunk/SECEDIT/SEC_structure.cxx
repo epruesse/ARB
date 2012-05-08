@@ -77,8 +77,8 @@ SEC_root::SEC_root()
 }
 
 
-void SEC_root::init(SEC_graphic *gfx, AWT_canvas *ntw, ED4_plugin_host& Host) {
-    db = new SEC_db_interface(gfx, ntw, Host);
+void SEC_root::init(SEC_graphic *gfx, AWT_canvas *scr, ED4_plugin_host& Host) {
+    db = new SEC_db_interface(gfx, scr, Host);
 }
 
 // --------------------

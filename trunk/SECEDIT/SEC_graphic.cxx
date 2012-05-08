@@ -27,7 +27,7 @@
 
 using namespace std;
 
-AW_gc_manager SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL)
+AW_gc_manager SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr, AW_CL)
 {
     AW_gc_manager preset_window =
         AW_manage_GC(aww,
@@ -35,7 +35,7 @@ AW_gc_manager SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
                      SEC_GC_LOOP,
                      SEC_GC_MAX,
                      AW_GCM_DATA_AREA,
-                     (AW_CB)AWT_expose_cb, (AW_CL)ntw, 0,
+                     (AW_CB)AWT_expose_cb, (AW_CL)scr, 0,
                      false,
                      "#A1A1A1",
                      "LOOP$#247900",
