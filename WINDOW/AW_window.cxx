@@ -1092,41 +1092,35 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
         }
     }
 
-    if (ev->xbutton.type == ButtonPress) {
-        aww->event.type        = AW_Mouse_Press;
+    if (ev->xbutton.type == ButtonPress || ev->xbutton.type == ButtonRelease) {
         aww->event.button      = ev->xbutton.button;
         aww->event.x           = ev->xbutton.x;
         aww->event.y           = ev->xbutton.y;
-        aww->event.keycode     = AW_KEY_NONE;
         aww->event.keymodifier = (AW_key_mod)(ev->xbutton.state & (AW_KEYMODE_SHIFT|AW_KEYMODE_CONTROL|AW_KEYMODE_ALT));
+        aww->event.keycode     = AW_KEY_NONE;
         aww->event.character   = '\0';
 
-        if (area && area->get_double_click_cb()) {
-            if ((ev->xbutton.time - area->get_click_time()) < 200) {
-                run_double_click_callback = true;
+        if (ev->xbutton.type == ButtonPress) {
+            aww->event.type = AW_Mouse_Press;
+            if (area && area->get_double_click_cb()) {
+                if ((ev->xbutton.time - area->get_click_time()) < 200) {
+                    run_double_click_callback = true;
+                }
+                else {
+                    run_callback = true;
+                }
+                area->set_click_time(ev->xbutton.time);
             }
             else {
                 run_callback = true;
             }
-            area->set_click_time(ev->xbutton.time);
+            aww->event.time = ev->xbutton.time;
         }
-        else {
+        else if (ev->xbutton.type == ButtonRelease) {
+            aww->event.type = AW_Mouse_Release;
             run_callback = true;
+            // keep event.time set in ButtonPress-branch
         }
-
-        aww->event.time = ev->xbutton.time;
-    }
-    else if (ev->xbutton.type == ButtonRelease) {
-        aww->event.type        = AW_Mouse_Release;
-        aww->event.button      = ev->xbutton.button;
-        aww->event.x           = ev->xbutton.x;
-        aww->event.y           = ev->xbutton.y;
-        aww->event.keycode     = AW_KEY_NONE;
-        aww->event.keymodifier = (AW_key_mod)(ev->xbutton.state & (AW_KEYMODE_SHIFT|AW_KEYMODE_CONTROL|AW_KEYMODE_ALT));
-        aww->event.character   = '\0';
-        //  aww->event.time     use old time
-
-        run_callback = true;
     }
     else if (ev->xkey.type == KeyPress || ev->xkey.type == KeyRelease) {
         aww->event.time = ev->xbutton.time;
