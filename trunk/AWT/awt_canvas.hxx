@@ -258,7 +258,7 @@ public:
 
     void refresh_by_exports() { gfx->refresh_by_exports(this); }
 
-    void zoom(AW_device *device, bool zoomIn, const AW::Rectangle& wanted_part, const AW::Rectangle& current_part);
+    void zoom(AW_device *device, bool zoomIn, const AW::Rectangle& wanted_part, const AW::Rectangle& current_part, int percent);
 
     void set_mode(AWT_COMMAND_MODE mo) { mode = mo; }
 
