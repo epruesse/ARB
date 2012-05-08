@@ -122,10 +122,10 @@ public:
     }
 };
 
-class AWT_graphic {
+class AWT_graphic { 
     friend class AWT_canvas;
 
-    void refresh_by_exports(AWT_canvas *ntw);
+    void refresh_by_exports(AWT_canvas *scr);
 
 protected:
     int drag_gc;
@@ -148,10 +148,10 @@ public:
     virtual void show(AW_device *device) = 0;
 
     virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) = 0;     // double click
-    virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw, AW_CL cd2) = 0;
+    virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr, AW_CL cd2) = 0;
             /* init gcs, if any gc is changed you may call
-                AWT_expose_cb(aw_window, ntw, cd2);
-                or AWT_resize_cb(aw_window, ntw, cd2);
+                AWT_expose_cb(aw_window, scr, cd2);
+                or AWT_resize_cb(aw_window, scr, cd2);
                 The function may return a pointer to a preset window */
 
     // implemented interface (most are dummies doing nothing):
@@ -163,7 +163,7 @@ public:
 
 };
 
-class AWT_nonDB_graphic : public AWT_graphic {
+class AWT_nonDB_graphic : public AWT_graphic { // @@@ check AWT_nonDB_graphic
     // a partly implementation of AWT_graphic
 public:
     AWT_nonDB_graphic() {}
@@ -232,7 +232,7 @@ public:
     GBDATA      *gb_main;
     AW_window   *aww;
     AW_root     *awr;
-    AWT_graphic *tree_disp;
+    AWT_graphic *gfx;
 
     AW_gc_manager gc_manager;
     int           drag_gc;
@@ -256,7 +256,7 @@ public:
 
     void set_consider_text_for_zoom_reset(bool consider) { consider_text_for_size = consider; }
 
-    void refresh_by_exports() { tree_disp->refresh_by_exports(this); }
+    void refresh_by_exports() { gfx->refresh_by_exports(this); }
 
     void zoom(AW_device *device, bool zoomIn, const AW::Rectangle& wanted_part, const AW::Rectangle& current_part);
 
@@ -268,15 +268,15 @@ public:
     }
 };
 
-inline void AWT_graphic::refresh_by_exports(AWT_canvas *ntw) {
-    if (exports.zoom_reset)   ntw->zoom_reset_and_refresh();
-    else if (exports.resize)  ntw->recalc_size_and_refresh();
-    else if (exports.refresh) ntw->refresh();
+inline void AWT_graphic::refresh_by_exports(AWT_canvas *scr) {
+    if (exports.zoom_reset)   scr->zoom_reset_and_refresh();
+    else if (exports.resize)  scr->recalc_size_and_refresh();
+    else if (exports.refresh) scr->refresh();
 }
 
 
-void AWT_expose_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL cl2);
-void AWT_resize_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL cl2);
+void AWT_expose_cb(AW_window *dummy, AWT_canvas *scr, AW_CL cl2);
+void AWT_resize_cb(AW_window *dummy, AWT_canvas *scr, AW_CL cl2);
 
 void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL);
 void AWT_popup_sec_export_window (AW_window *parent_win, AW_CL cl_canvas, AW_CL);

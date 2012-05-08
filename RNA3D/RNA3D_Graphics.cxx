@@ -10,7 +10,7 @@
 using namespace std;
 
 
-AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL cd2) {
+AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr, AW_CL cd2) {
     AW_gc_manager preset_window =
         AW_manage_GC (aww,
                       device,
@@ -18,7 +18,7 @@ AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AW
                       RNA3D_GC_MAX,
                       AW_GCM_DATA_AREA,
                       (AW_CB)AWT_resize_cb,
-                      (AW_CL)ntw,
+                      (AW_CL)scr,
                       cd2,
                       false,
                       "#000000",

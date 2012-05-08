@@ -619,7 +619,7 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, AW_CL auto_expand_groups) {
                 device->set_filter(AW_SIZE|AW_SIZE_UNSCALED);
                 device->reset();
                 ntw->init_device(device);
-                ntw->tree_disp->show(device);
+                ntw->gfx->show(device);
 
                 const AW_screen_area& screen = device->get_area_size();
 
@@ -700,13 +700,13 @@ inline const char *plural(int val) {
 void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, AW_CL expose) {
     GB_push_transaction(ntw->gb_main);
     char     *tree_name = awr->awar(ntw->user_awar)->read_string();
-    GB_ERROR  error     = ntw->tree_disp->load(ntw->gb_main, tree_name, 0, 0);
+    GB_ERROR  error     = ntw->gfx->load(ntw->gb_main, tree_name, 0, 0);
     if (error) {
         aw_message(error);
     }
     else {
         int zombies, duplicates;
-        ((AWT_graphic_tree*)ntw->tree_disp)->get_zombies_and_duplicates(zombies, duplicates);
+        ((AWT_graphic_tree*)ntw->gfx)->get_zombies_and_duplicates(zombies, duplicates);
 
         if (zombies || duplicates) {
             const char *msg = 0;
@@ -730,7 +730,7 @@ void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, AW_CL expose) {
 }
 
 void NT_recompute_cb(AW_window *, AWT_canvas *ntw, AW_CL cl2) {
-    AWT_graphic_tree *gt = dynamic_cast<AWT_graphic_tree*>(ntw->tree_disp);
+    AWT_graphic_tree *gt = dynamic_cast<AWT_graphic_tree*>(ntw->gfx);
     td_assert(gt);
 
     gt->get_root_node()->compute_tree(ntw->gb_main);
@@ -738,7 +738,7 @@ void NT_recompute_cb(AW_window *, AWT_canvas *ntw, AW_CL cl2) {
 }
 
 void NT_reinit_treetype(AW_window *, AWT_canvas *ntw, AW_CL ) {
-    AWT_graphic_tree *gt = dynamic_cast<AWT_graphic_tree*>(ntw->tree_disp);
+    AWT_graphic_tree *gt = dynamic_cast<AWT_graphic_tree*>(ntw->gfx);
     td_assert(gt);
     gt->set_tree_type(gt->tree_sort, ntw);
     AWT_resize_cb(ntw->aww, ntw, 0);

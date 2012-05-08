@@ -59,7 +59,7 @@ class GEN_graphic : public AWT_nonDB_graphic, virtual Noncopyable {
     GEN_DisplayStyle          style;
     bool                      want_zoom_reset; // true -> do zoom reset on next refresh
 
-    void delete_gen_root(AWT_canvas *ntw);
+    void delete_gen_root(AWT_canvas *scr);
 
 protected:
 
@@ -74,12 +74,12 @@ public:
     GEN_graphic(AW_root *aw_root, GBDATA *gb_main, GEN_graphic_cb_installer callback_installer_, int window_nr_);
     virtual ~GEN_graphic();
 
-    void reinit_gen_root(AWT_canvas *ntw, bool force_reinit);
+    void reinit_gen_root(AWT_canvas *scr, bool force_reinit);
 
     void set_display_style(GEN_DisplayStyle type);
     GEN_DisplayStyle get_display_style() const { return style; }
 
-    virtual     AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw, AW_CL);
+    virtual     AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr, AW_CL);
 
     virtual     void show(AW_device *device);
     virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
