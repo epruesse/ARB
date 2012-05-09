@@ -1093,7 +1093,7 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
     }
 
     if (ev->xbutton.type == ButtonPress || ev->xbutton.type == ButtonRelease) {
-        aww->event.button      = ev->xbutton.button;
+        aww->event.button      = AW_MouseButton(ev->xbutton.button);
         aww->event.x           = ev->xbutton.x;
         aww->event.y           = ev->xbutton.y;
         aww->event.keymodifier = (AW_key_mod)(ev->xbutton.state & (AW_KEYMODE_SHIFT|AW_KEYMODE_CONTROL|AW_KEYMODE_ALT));
@@ -1143,7 +1143,7 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
         else {
             aww->event.type = AW_Keyboard_Release;
         }
-        aww->event.button = 0;
+        aww->event.button = AW_BUTTON_NONE;
         aww->event.x = ev->xbutton.x;
         aww->event.y = ev->xbutton.y;
 

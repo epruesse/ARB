@@ -183,11 +183,6 @@ public:
 #define AWT_CATCH_TEXT    5     // pixel
 #define AWT_ZOOM_OUT_STEP 40    // (pixel) rand um screen
 #define AWT_MIN_WIDTH     100   // Minimum center screen (= screen-offset)
-enum {
-    AWT_M_LEFT   = 1,
-    AWT_M_MIDDLE = 2,
-    AWT_M_RIGHT  = 3
-};
 
 enum {
     AWT_d_screen = 1

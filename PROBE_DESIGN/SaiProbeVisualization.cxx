@@ -81,7 +81,7 @@ SAI_graphic::SAI_graphic(AW_root *aw_rooti, GBDATA *gb_maini) {
 void SAI_graphic::command(AW_device * /* device */, AWT_COMMAND_MODE /* cmd */, int button, AW_key_mod /* key_modifier */, AW_key_code /* key_code */, char /* key_char */,
                           AW_event_type type, AW_pos /* x */, AW_pos /* y */, AW_clicked_line *cl, AW_clicked_text *ct)
 {
-    if (type == AW_Mouse_Press && (cl->exists || ct->exists) && button != AWT_M_MIDDLE) {
+    if (type == AW_Mouse_Press && (cl->exists || ct->exists) && button != AW_BUTTON_MIDDLE) {
         int clicked_idx = 0;
         if (ct->exists) {
             clicked_idx = (int)ct->client_data1;

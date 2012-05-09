@@ -920,7 +920,7 @@ static bool command_on_GBDATA(GBDATA *gbd, AWT_COMMAND_MODE cmd, AW_event_type t
 
     bool refresh = false;
 
-    if (type == AW_Mouse_Press && button != AWT_M_MIDDLE) {
+    if (type == AW_Mouse_Press && button != AW_BUTTON_MIDDLE) {
         bool select = false;
 
         switch (cmd) {
@@ -930,11 +930,11 @@ static bool command_on_GBDATA(GBDATA *gbd, AWT_COMMAND_MODE cmd, AW_event_type t
                 
             case AWT_MODE_MARK: 
                 switch (button) {
-                    case AWT_M_LEFT:
+                    case AW_BUTTON_LEFT:
                         GB_write_flag(gbd, 1);
                         select  = true;
                         break;
-                    case AWT_M_RIGHT:
+                    case AW_BUTTON_RIGHT:
                         GB_write_flag(gbd, 0);
                         break;
                 }
@@ -1076,7 +1076,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                     case AW_Mouse_Press:
                         rot_cl = *cl;
                         rot_cl.x0 = x;
-                        if (button==AWT_M_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
+                        if (button==AW_BUTTON_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
                             sprintf(awar, "ruler/size");
                             tree_awar = show_ruler(device, this->drag_gc);
                             double rulerSize = *GBT_readOrCreate_float(gb_tree, awar, 0.0);
@@ -1087,7 +1087,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                     case AW_Mouse_Drag: {
                         sprintf(awar, "ruler/size");
                         h = *GBT_readOrCreate_float(gb_tree, awar, 0.0);
-                        if (button == AWT_M_RIGHT) {
+                        if (button == AW_BUTTON_RIGHT) {
                             GBT_write_float(gb_tree, awar, discrete_ruler_length(h, 0.1));
                         }
                         tree_awar = show_ruler(device, this->drag_gc);
@@ -1102,7 +1102,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         if (h<0.01) h = 0.01;
 
                         double h_rounded = h;
-                        if (button==AWT_M_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
+                        if (button==AW_BUTTON_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
                             h_rounded = discrete_ruler_length(h, 0.1);
                             GBT_write_float(gb_tree, awar, h_rounded);
                             show_ruler(device, this->drag_gc);
@@ -1119,7 +1119,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                     case AW_Mouse_Release:
                         rot_cl.exists = false;
                         this->exports.refresh = 1;
-                        if (button==AWT_M_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
+                        if (button==AW_BUTTON_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
                             sprintf(awar, "ruler/size");
                             double rulerSize = *GBT_readOrCreate_float(gb_tree, awar, 0.0);
                             GBT_write_float(gb_tree, awar, discrete_ruler_length(rulerSize, 0.1));
@@ -1135,7 +1135,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                     sprintf(awar, "ruler/ruler_width");
                     i = *GBT_readOrCreate_int(gb_tree, awar,  0);
                     switch (button) {
-                        case AWT_M_LEFT:
+                        case AW_BUTTON_LEFT:
                             i --;
                             if (i<0) i = 0;
                             else {
@@ -1143,7 +1143,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                                 this->exports.refresh = 1;
                             }
                             break;
-                        case AWT_M_RIGHT:
+                        case AW_BUTTON_RIGHT:
                             i++;
                             GBT_write_int(gb_tree, awar, i);
                             show_ruler(device, AWT_GC_CURSOR);
@@ -1160,7 +1160,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
     AP_tree *at;
     switch (cmd) {
         case AWT_MODE_MOVE:             // two point commands !!!!!
-            if (button==AWT_M_MIDDLE) {
+            if (button==AW_BUTTON_MIDDLE) {
                 break;
             }
             switch (type) {
@@ -1208,12 +1208,12 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
 
                         GB_ERROR error;
                         switch (button) {
-                            case AWT_M_LEFT:
+                            case AW_BUTTON_LEFT:
                                 error = source->cantMoveTo(dest);
                                 if (!error) source->moveTo(dest, cl->nearest_rel_pos);
                                 break;
 
-                            case AWT_M_RIGHT:
+                            case AW_BUTTON_RIGHT:
                                 error = source->move_group_info(dest);
                                 break;
                             default:
@@ -1239,7 +1239,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
 
 
         case AWT_MODE_LENGTH:
-            if (button == AWT_M_MIDDLE) {
+            if (button == AW_BUTTON_MIDDLE) {
                 break;
             }
             switch (type) {
@@ -1282,7 +1282,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         len = ex * cos(this->rot_orientation) +
                             ey * sin(this->rot_orientation);
 
-                        if (button==AWT_M_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
+                        if (button==AW_BUTTON_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
                             len = discrete_ruler_length(len, 0.0);
                         }
                         else if (len<0.0) {
@@ -1318,7 +1318,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
             break;
 
         case AWT_MODE_ROT:
-            if (button!=AWT_M_LEFT) {
+            if (button!=AW_BUTTON_LEFT) {
                 break;
             }
             switch (type) {
@@ -1372,7 +1372,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
         case AWT_MODE_LZOOM:
             if (type==AW_Mouse_Press) {
                 switch (button) {
-                    case AWT_M_LEFT:
+                    case AW_BUTTON_LEFT:
                         if (cl->exists) {
                             at = (AP_tree *)cl->client_data1;
                             if (at) {
@@ -1381,7 +1381,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             }
                         }
                         break;
-                    case AWT_M_RIGHT:
+                    case AW_BUTTON_RIGHT:
                         if (tree_root_display->father) {
                             tree_root_display  = tree_root_display->get_father();
                             exports.zoom_reset = 1;
@@ -1395,7 +1395,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
         case AWT_MODE_RESET:
             if (type==AW_Mouse_Press) {
                 switch (button) {
-                    case AWT_M_LEFT:
+                    case AW_BUTTON_LEFT:
                         //! reset rotation *
                         if (cl->exists) {
                             at = (AP_tree *)cl->client_data1;
@@ -1406,7 +1406,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             }
                         }
                         break;
-                    case AWT_M_MIDDLE:
+                    case AW_BUTTON_MIDDLE:
                         //! reset spread *
                         if (cl->exists) {
                             at = (AP_tree *)cl->client_data1;
@@ -1417,7 +1417,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             }
                         }
                         break;
-                    case AWT_M_RIGHT:
+                    case AW_BUTTON_RIGHT:
                         //! reset linewidth *
                         if (cl->exists) {
                             at = (AP_tree *)cl->client_data1;
@@ -1446,13 +1446,13 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                                 : at_fath->gr.right_linewidth;
 
                             switch (button) {
-                                case AWT_M_LEFT:
+                                case AW_BUTTON_LEFT:
                                     linewidth       = (linewidth <= 1) ? 0 : linewidth-1;
                                     exports.save    = 1;
                                     exports.refresh = 1;
                                     break;
 
-                                case AWT_M_RIGHT:
+                                case AW_BUTTON_RIGHT:
                                     linewidth += 1;
                                     exports.save    = 1;
                                     exports.refresh = 1;
@@ -1467,7 +1467,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
         case AWT_MODE_SPREAD:
             if (type==AW_Mouse_Press) {
                 switch (button) {
-                    case AWT_M_LEFT:
+                    case AW_BUTTON_LEFT:
                         if (cl->exists) {
                             at = (AP_tree *)cl->client_data1;
                             if (!at) break;
@@ -1477,7 +1477,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             this->exports.save = 1;
                         }
                         break;
-                    case AWT_M_RIGHT:
+                    case AW_BUTTON_RIGHT:
                         if (cl->exists) {
                             at = (AP_tree *)cl->client_data1;
                             if (!at) break;
@@ -1499,7 +1499,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                 } else break;
 
                 switch (button) {
-                    case AWT_M_LEFT:
+                    case AW_BUTTON_LEFT:
                         if ((!at->gr.grouped) && (!at->name)) {
                             break; // not grouped and no name
                         }
@@ -1518,7 +1518,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             get_root_node()->compute_tree(gb_main);
                         }
                         break;
-                    case AWT_M_RIGHT:
+                    case AW_BUTTON_RIGHT:
                         if (gb_tree) {
                             this->toggle_group(at);
                         }
@@ -1537,7 +1537,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
         case AWT_MODE_SETROOT:
             if (type==AW_Mouse_Press) {
                 switch (button) {
-                    case AWT_M_LEFT:
+                    case AW_BUTTON_LEFT:
                         if (cl->exists) {
                             at = (AP_tree *)cl->client_data1;
                             if (!at) break;
@@ -1548,7 +1548,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             get_root_node()->compute_tree(gb_main);
                         }
                         break;
-                    case AWT_M_RIGHT:
+                    case AW_BUTTON_RIGHT:
                         DOWNCAST(AP_tree*, tree_static->find_innermost_edge().son())->set_root();
                         exports.save       = 1;
                         exports.zoom_reset = 1;
@@ -1561,7 +1561,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
         case AWT_MODE_SWAP:
             if (type==AW_Mouse_Press) {
                 switch (button) {
-                    case AWT_M_LEFT:
+                    case AW_BUTTON_LEFT:
                         if (cl->exists) {
                             at = (AP_tree *)cl->client_data1;
                             if (!at) break;
@@ -1571,7 +1571,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             this->exports.save = 1;
                         }
                         break;
-                    case AWT_M_RIGHT:
+                    case AW_BUTTON_RIGHT:
                         break;
                 }
             }
@@ -1585,10 +1585,10 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
 
                     if (type == AW_Mouse_Press) {
                         switch (button) {
-                            case AWT_M_LEFT:
+                            case AW_BUTTON_LEFT:
                                 mark_species_in_tree(at, 1);
                                 break;
-                            case AWT_M_RIGHT:
+                            case AW_BUTTON_RIGHT:
                                 mark_species_in_tree(at, 0);
                                 break;
                         }
@@ -1602,7 +1602,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
 
         case AWT_MODE_NONE:
         case AWT_MODE_SELECT:
-            if (type==AW_Mouse_Press && (cl->exists || ct->exists) && button != AWT_M_MIDDLE) {
+            if (type==AW_Mouse_Press && (cl->exists || ct->exists) && button != AW_BUTTON_MIDDLE) {
                 GB_transaction ta(tree_static->get_gb_main());
                 at = (AP_tree *)(cl->exists ? cl->client_data1 : ct->client_data1);
                 if (!at) break;
@@ -1610,7 +1610,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                 this->exports.refresh = 1;        // No refresh needed !! AD_map_viewer will do the refresh (needed by arb_pars)
                 map_viewer_cb(at->gb_node, ADMVT_SELECT);
 
-                if (button == AWT_M_LEFT) goto act_like_group; // now do the same like in AWT_MODE_GROUP
+                if (button == AW_BUTTON_LEFT) goto act_like_group; // now do the same like in AWT_MODE_GROUP
             }
             break;
 

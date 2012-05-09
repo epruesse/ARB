@@ -296,7 +296,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
 
     switch (cmd) {
         case AWT_MODE_MOVE:                             // two point commands !!!!!
-            if (button==AWT_M_MIDDLE) {
+            if (button==AW_BUTTON_MIDDLE) {
                 break;
             }
             switch (type) {
@@ -344,14 +344,14 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                         const char *error = 0;
 
                         switch (button) {
-                            case AWT_M_LEFT:
+                            case AW_BUTTON_LEFT:
                                 error = source->cantMoveTo(dest);
                                 if (!error) {
                                     source->moveTo(dest, cl->nearest_rel_pos);
                                     recalc_branch_lengths = true;
                                 }
                                 break;
-                            case AWT_M_RIGHT:
+                            case AW_BUTTON_RIGHT:
                                 error = source->move_group_info(dest);
                                 break;
                         }
@@ -374,7 +374,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
             if (type==AW_Mouse_Press) {
                 GB_pop_transaction(gb_main);
                 switch (button) {
-                    case AWT_M_LEFT: {
+                    case AW_BUTTON_LEFT: {
                         if (cl->exists) {
                             arb_progress progress("NNI optimize subtree");
 
@@ -390,7 +390,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                         }
                         break;
                     }
-                    case AWT_M_RIGHT: {
+                    case AW_BUTTON_RIGHT: {
                         arb_progress progress("NNI optimize tree");
                         long         prevCombineCount = AP_sequence::combine_count();
                         
@@ -413,7 +413,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
             if (type==AW_Mouse_Press) {
                 GB_pop_transaction(gb_main);
                 switch (button) {
-                    case AWT_M_LEFT:
+                    case AW_BUTTON_LEFT:
                         if (cl->exists) {
                             arb_progress progress("Kernighan-Lin optimize subtree");
                             at = (AP_tree *)cl->client_data1;
@@ -424,7 +424,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                             recalc_branch_lengths = true;
                         }
                         break;
-                    case AWT_M_RIGHT: {
+                    case AW_BUTTON_RIGHT: {
                         arb_progress progress("Kernighan-Lin optimize tree");
                         PARS_kernighan_cb(get_root_node());
                         this->exports.refresh = 1;
@@ -441,7 +441,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
             if (type==AW_Mouse_Press) {
                 GB_pop_transaction(gb_main);
                 switch (button) {
-                    case AWT_M_LEFT:
+                    case AW_BUTTON_LEFT:
                         if (cl->exists) {
                             arb_progress progress("Optimizing subtree");
 
@@ -454,7 +454,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                             recalc_branch_lengths = true;
                         }
                         break;
-                    case AWT_M_RIGHT: {
+                    case AW_BUTTON_RIGHT: {
                         arb_progress progress("Optimizing tree");
                         
                         PARS_optimizer_cb(get_root_node(), progress);

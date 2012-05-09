@@ -216,7 +216,7 @@ static void motion_cb(AW_window *aww, AW_CL cl_dmatrix, AW_CL) {
     aww->get_event(&event);
 
     DI_dmatrix *dmatrix = reinterpret_cast<DI_dmatrix*>(cl_dmatrix);
-    if (event.button == AWT_M_MIDDLE) {
+    if (event.button == AW_BUTTON_MIDDLE) {
         dmatrix->handle_move(event);
     }
 }
@@ -226,7 +226,7 @@ static void input_cb(AW_window *aww, AW_CL cl_dmatrix, AW_CL) {
     aww->get_event(&event);
 
     DI_dmatrix *dmatrix = reinterpret_cast<DI_dmatrix*>(cl_dmatrix);
-    if (event.button == AWT_M_MIDDLE) {
+    if (event.button == AW_BUTTON_MIDDLE) {
         dmatrix->handle_move(event);
     }
     else {
@@ -271,8 +271,8 @@ static void input_cb(AW_window *aww, AW_CL cl_dmatrix, AW_CL) {
                     AW_awar *awar_bound = 0;
 
                     switch (event.button) {
-                        case AWT_M_LEFT:  awar_bound = aw_root->awar(AWAR_DIST_MIN_DIST); break;
-                        case AWT_M_RIGHT: awar_bound = aw_root->awar(AWAR_DIST_MAX_DIST); break;
+                        case AW_BUTTON_LEFT:  awar_bound = aw_root->awar(AWAR_DIST_MIN_DIST); break;
+                        case AW_BUTTON_RIGHT: awar_bound = aw_root->awar(AWAR_DIST_MAX_DIST); break;
                         default: break;
                     }
 

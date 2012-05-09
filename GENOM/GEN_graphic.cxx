@@ -101,7 +101,7 @@ void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
             }
             case AWT_MODE_SELECT:
             case AWT_MODE_EDIT: {
-                if (button==AWT_M_LEFT) {
+                if (button==AW_BUTTON_LEFT) {
                     GEN_gene *gene = 0;
                     if (ct) gene   = (GEN_gene*)ct->client_data1;
                     if (cl) gene   = (GEN_gene*)cl->client_data1;
