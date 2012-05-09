@@ -643,7 +643,7 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, AW_CL auto_expand_groups) {
                     }
 
                     if (scroll_x || scroll_y) {
-                        ntw->scroll(aww, scroll_x, scroll_y);
+                        ntw->scroll(scroll_x, scroll_y);
                     }
                     
                     if (repeat) {

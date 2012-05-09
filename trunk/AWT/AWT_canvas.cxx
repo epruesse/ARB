@@ -515,9 +515,8 @@ static void motion_event(AW_window *aww, AWT_canvas *scr, AW_CL /*cd2*/) {
         scr->zoom_drag_ex = event.x;
         scr->zoom_drag_ey = event.y;
 
-
         // display
-        scr->scroll(aww, -dx *3, -dy *3);
+        scr->scroll(-dx*3, -dy*3);
     }
     else {
         bool run_command = true;
@@ -568,7 +567,7 @@ static void motion_event(AW_window *aww, AWT_canvas *scr, AW_CL /*cd2*/) {
     scr->pop_transaction();
 }
 
-void AWT_canvas::scroll(AW_window *, int dx, int dy, bool dont_update_scrollbars) {
+void AWT_canvas::scroll(int dx, int dy, bool dont_update_scrollbars) {
     int csx, cdx, cwidth, csy, cdy, cheight;
     AW_device *device;
     if (!dont_update_scrollbars) {
@@ -647,26 +646,18 @@ void AWT_canvas::scroll(AW_window *, int dx, int dy, bool dont_update_scrollbars
 }
 
 static void scroll_vert_cb(AW_window *aww, AWT_canvas* scr, AW_CL /*cl1*/) {
-    int delta_screen_y;
+    int new_vert       = aww->slider_pos_vertical;
+    int delta_screen_y = (new_vert - scr->old_vert_scroll_pos);
 
-    int new_vert = aww->slider_pos_vertical;
-    delta_screen_y = (new_vert - scr->old_vert_scroll_pos);
-
-
-    scr->scroll(aww, 0, delta_screen_y, true);
-
-    scr->old_vert_scroll_pos = (int)new_vert;
-
+    scr->scroll(0, delta_screen_y, true);
+    scr->old_vert_scroll_pos = new_vert;
 }
 
 static void scroll_hor_cb(AW_window *aww, AWT_canvas* scr, AW_CL /*cl1*/) {
-    int delta_screen_x;
+    int new_hor        = aww->slider_pos_horizontal;
+    int delta_screen_x = (new_hor - scr->old_hor_scroll_pos);
 
-    int new_hor = aww->slider_pos_horizontal;
-    delta_screen_x = (new_hor - scr->old_hor_scroll_pos);
-
-    scr->scroll(aww, delta_screen_x, 0, true);
-
+    scr->scroll(delta_screen_x, 0, true);
     scr->old_hor_scroll_pos = new_hor;
 }
 
