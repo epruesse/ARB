@@ -298,7 +298,7 @@ static void GEN_jump_cb(AW_window *aww, AW_CL cl_force_center_if_fits) {
             printf("scroll %i/%i\n", scrollx, scrolly);
 #endif // DEBUG
 
-            canvas->scroll(aww, scrollx, scrolly);
+            canvas->scroll(scrollx, scrolly);
         }
     }
     win->get_canvas()->refresh();
