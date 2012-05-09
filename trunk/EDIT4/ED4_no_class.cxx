@@ -372,11 +372,11 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
             break;
         }
         default: {
-            if (event.type == AW_Mouse_Release && event.button == ED4_B_MIDDLE_BUTTON) {
+            if (event.type == AW_Mouse_Release && event.button == AW_BUTTON_MIDDLE) {
                 ED4_ROOT->scroll_picture.scroll = 0;
                 return;
             }
-            else if (event.type == AW_Mouse_Press && event.button == ED4_B_MIDDLE_BUTTON) {
+            else if (event.type == AW_Mouse_Press && event.button == AW_BUTTON_MIDDLE) {
                 ED4_ROOT->scroll_picture.scroll = 1;
                 ED4_ROOT->scroll_picture.old_y = event.y;
                 ED4_ROOT->scroll_picture.old_x = event.x;
@@ -384,7 +384,7 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
             }
 
 #if defined(DEBUG) && 0
-            if (event.button==ED4_B_LEFT_BUTTON) {
+            if (event.button==AW_BUTTON_LEFT) {
                 printf("[ED4_input_cb]  type=%i x=%i y=%i ", (int)event.type, (int)event.x, (int)event.y);
             }
 #endif
@@ -396,7 +396,7 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
             event.y = (int) win_y;
 
 #if defined(DEBUG) && 0
-            if (event.button==ED4_B_LEFT_BUTTON) {
+            if (event.button==AW_BUTTON_LEFT) {
                 printf("-> x=%i y=%i\n", (int)event.type, (int)event.x, (int)event.y);
             }
 #endif
@@ -539,7 +539,7 @@ void ED4_motion_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
 
     aww->get_event(&event);
 
-    if (event.type == AW_Mouse_Drag && event.button == ED4_B_MIDDLE_BUTTON) {
+    if (event.type == AW_Mouse_Drag && event.button == AW_BUTTON_MIDDLE) {
         if (ED4_ROOT->scroll_picture.scroll) {
             int xdiff    = ED4_ROOT->scroll_picture.old_x - event.x;
             int ydiff    = ED4_ROOT->scroll_picture.old_y - event.y;
@@ -580,7 +580,7 @@ void ED4_motion_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
     else {
 
 #if defined(DEBUG) && 0
-        if (event.button==ED4_B_LEFT_BUTTON) {
+        if (event.button==AW_BUTTON_LEFT) {
             printf("[ED4_motion_cb] type=%i x=%i y=%i ", (int)event.type, (int)event.x, (int)event.y);
         }
 #endif
@@ -592,7 +592,7 @@ void ED4_motion_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
         event.y = (int) win_y;
 
 #if defined(DEBUG) && 0
-        if (event.button==ED4_B_LEFT_BUTTON) {
+        if (event.button==AW_BUTTON_LEFT) {
             printf("-> x=%i y=%i\n", (int)event.type, (int)event.x, (int)event.y);
         }
 #endif

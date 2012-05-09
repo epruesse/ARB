@@ -114,16 +114,26 @@ enum AW_event_type {
     AW_Mouse_Drag       = 5
 };
 
+enum AW_MouseButton {
+    AW_BUTTON_NONE   = 0,
+    AW_BUTTON_LEFT   = 1,
+    AW_BUTTON_MIDDLE = 2,
+    AW_BUTTON_RIGHT  = 3
+};
+
 struct AW_event {
-    AW_event_type       type;       // AW_Keyboard or AW_Mouse
-    unsigned long       time;       // time in msec, when event occurred
-    // ***** button fields
-    unsigned int        button;     // which mouse button was pressed 1,2,3
-    int         x, y;       // pointer x,y coordinates in the event window
-    // ****** key fields
-    AW_key_mod      keymodifier;    // control alt meta ....
-    AW_key_code     keycode;    // which key type was pressed
-    char            character;  // the c character
+    // fields always valid
+    AW_event_type type;             // AW_Keyboard or AW_Mouse
+    unsigned long time;             // time in msec, when event occurred
+    AW_key_mod    keymodifier;      // control, alt/meta (shift only for type == AW_Mouse)
+
+    // fields valid for type == AW_Mouse
+    AW_MouseButton button;
+    int            x, y;            // pointer x,y coordinates in the event window
+
+    // fields valid for type == AW_Keyboard
+    AW_key_code keycode;            // which key type was pressed
+    char        character;          // the c character
 };
 
 void AW_POPDOWN(AW_window *);

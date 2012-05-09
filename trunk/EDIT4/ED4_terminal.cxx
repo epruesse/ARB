@@ -414,7 +414,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
     switch (event->type) {
         case AW_Mouse_Press: {
             switch (event->button) {
-                case ED4_B_LEFT_BUTTON: {
+                case AW_BUTTON_LEFT: {
                     pressed_left_button = 0;
                     if (is_species_name_terminal()) {
                         switch (ED4_ROOT->species_mode) {
@@ -475,7 +475,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                     }
                     break;
                 }
-                case ED4_B_RIGHT_BUTTON: {
+                case AW_BUTTON_RIGHT: {
                     right_button_started_on_sequence_term = 0;
                     if (is_bracket_terminal()) { // right click on bracket terminal
                         ED4_base *group = get_parent(ED4_L_GROUP);
@@ -509,15 +509,13 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                     }
                     break;
                 }
-                case ED4_B_MIDDLE_BUTTON: {
-                    break;
-                }
+                default : break;
             }
             break;
         }
         case AW_Mouse_Drag: {
             switch (event->button) {
-                case ED4_B_LEFT_BUTTON: {
+                case AW_BUTTON_LEFT: {
                     if (dragged_name_terminal) {
                         ED4_selection_entry *sel_info = dragged_name_terminal->selection_info;
 
@@ -556,19 +554,20 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
 
                     break;
                 }
-                case ED4_B_RIGHT_BUTTON: {
+                case AW_BUTTON_RIGHT: {
                     if (is_sequence_terminal() && right_button_started_on_sequence_term) {
                         ED4_no_dangerous_modes();
                         ED4_setColumnblockCorner(event, to_sequence_terminal()); // mark columnblock
                     }
                     break;
                 }
+                default: break; 
             }
             break;
         }
         case AW_Mouse_Release: {
             switch (event->button) {
-                case ED4_B_LEFT_BUTTON: {
+                case AW_BUTTON_LEFT: {
                     if (dragged_name_terminal) {
                         if (dragged_name_terminal->dragged) {
                             {
@@ -613,7 +612,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                     break;
                 }
 
-                case ED4_B_RIGHT_BUTTON: {
+                case AW_BUTTON_RIGHT: {
                     if (right_button_started_on_sequence_term && is_sequence_terminal()) {
                         dumpEvent("Relea", event);
                         ED4_no_dangerous_modes();
@@ -621,6 +620,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                     }
                     break;
                 }
+                default: break; 
             }
             break;
         }

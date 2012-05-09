@@ -358,8 +358,8 @@ static bool handleZoomEvent(AW_window *aww, AWT_canvas *scr, AW_device *device, 
     bool handled = false;
     bool zoomIn  = true;
 
-    if      (event.button == AWT_M_LEFT)  { handled = true; }
-    else if (event.button == AWT_M_RIGHT) { handled = true; zoomIn  = false; }
+    if      (event.button == AW_BUTTON_LEFT)  { handled = true; }
+    else if (event.button == AW_BUTTON_RIGHT) { handled = true; zoomIn  = false; }
 
     if (handled) {
         if (event.type == AW_Mouse_Press) {
@@ -507,7 +507,7 @@ static void motion_event(AW_window *aww, AWT_canvas *scr, AW_CL /*cd2*/) {
     AW_event event;
     aww->get_event(&event);
 
-    if (event.button == AWT_M_MIDDLE) {
+    if (event.button == AW_BUTTON_MIDDLE) {
         // shift display in ALL modes
         int dx = event.x - scr->zoom_drag_ex;
         int dy = event.y - scr->zoom_drag_ey;
@@ -522,7 +522,7 @@ static void motion_event(AW_window *aww, AWT_canvas *scr, AW_CL /*cd2*/) {
     else {
         bool run_command = true;
 
-        if (event.button == AWT_M_LEFT || event.button == AWT_M_RIGHT) {
+        if (event.button == AW_BUTTON_LEFT || event.button == AW_BUTTON_RIGHT) {
             switch (scr->mode) {
                 case AWT_MODE_ZOOM:
                     nt_draw_zoom_box(device, scr);
@@ -532,7 +532,7 @@ static void motion_event(AW_window *aww, AWT_canvas *scr, AW_CL /*cd2*/) {
                     break;
 
                 case AWT_MODE_SWAP2:
-                    if (event.button == AWT_M_RIGHT) break;
+                    if (event.button == AW_BUTTON_RIGHT) break;
                     // fall-through
                 case AWT_MODE_MOVE: {
                     scr->init_device(device);
