@@ -59,6 +59,7 @@ class DI_dmatrix {
     double max_view_dist;         // m[i][j]>max_view_dist -> ascii ; else small slider
 
     void set_scrollbar_steps(long width, long hight, long xinc, long yinc);
+    void scroll_to(int sxpos, int sypos);
 
 public:
     AW_window *awm;
@@ -77,6 +78,7 @@ public:
     void set_slider_max(double d) { max_view_dist = d; };
 
     void handle_move(AW_event& event);
+    void scroll_cells(int cells_x, int cells_y);
 
     DI_dmatrix();
     void init(DI_MATRIX *matrix=0); // set the output matrix

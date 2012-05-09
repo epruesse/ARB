@@ -354,7 +354,10 @@ static void canvas_focus_cb(AW_window *, AWT_canvas *scr) {
     }
 }
 
-static bool handleZoomEvent(AW_window *aww, AWT_canvas *scr, AW_device *device, const AW_event& event) {
+const int ZOOM_SPEED_CLICK = 10;
+const int ZOOM_SPEED_WHEEL = 4;
+
+static bool handleZoomEvent(AWT_canvas *scr, AW_device *device, const AW_event& event, int percent) {
     bool handled = false;
     bool zoomIn  = true;
 
@@ -375,14 +378,48 @@ static bool handleZoomEvent(AW_window *aww, AWT_canvas *scr, AW_device *device, 
             Rectangle screen(scr->rect, INCLUSIVE_OUTLINE);
             Rectangle drag(scr->zoom_drag_sx, scr->zoom_drag_sy, scr->zoom_drag_ex, scr->zoom_drag_ey);
 
-            scr->zoom(device, zoomIn, drag, screen, 10);
-            AWT_expose_cb(aww, scr, 0);
+            scr->zoom(device, zoomIn, drag, screen, percent);
+            AWT_expose_cb(scr->aww, scr, 0);
         }
     }
     return handled;
 }
 
+bool AWT_canvas::handleWheelEvent(AW_device *device, const AW_event& event) {
+    if (event.button != AW_WHEEL_UP && event.button != AW_WHEEL_DOWN)  {
+        return false; // not handled
+    }
+    if (event.type == AW_Mouse_Press) {
+        if (event.keymodifier & AW_KEYMODE_CONTROL) {
+            AW_event faked = event;
+
+            faked.button = (event.button == AW_WHEEL_UP) ? AW_BUTTON_LEFT : AW_BUTTON_RIGHT;
+            handleZoomEvent(this, device, faked, ZOOM_SPEED_WHEEL);
+            faked.type   = AW_Mouse_Release;
+            handleZoomEvent(this, device, faked, ZOOM_SPEED_WHEEL);
+        }
+        else {
+            bool horizontal = event.keymodifier & AW_KEYMODE_ALT;
+
+            int viewport_size = horizontal ? (rect.r-rect.l+1) : (rect.b-rect.t+1);
+            int gfx_size      = horizontal ? (worldsize.r-worldsize.l) : (worldsize.b-worldsize.t);
+            
+            // scroll 10% of screen or 10% of graphic size (whichever is smaller):
+            int dist      = std::min(viewport_size / 20, gfx_size / 30);
+            int direction = event.button == AW_WHEEL_UP ? -dist : dist;
+
+            int dx = horizontal ? direction : 0;
+            int dy = horizontal ? 0 : direction;
+
+            scroll(dx, dy);
+        }
+    }
+    return true;
+}
+
 static void input_event(AW_window *aww, AWT_canvas *scr, AW_CL /*cd2*/) {
+    awt_assert(aww = scr->aww);
+
     AW_event event;
     aww->get_event(&event);
     
@@ -398,7 +435,11 @@ static void input_event(AW_window *aww, AWT_canvas *scr, AW_CL /*cd2*/) {
     bool event_handled = false;
 
     if (scr->mode == AWT_MODE_ZOOM) { // zoom mode is identical for all applications, so handle it here
-        event_handled = handleZoomEvent(aww, scr, device, event);
+        event_handled = handleZoomEvent(scr, device, event, ZOOM_SPEED_CLICK);
+    }
+
+    if (!event_handled) {
+        event_handled = scr->handleWheelEvent(device, event);
     }
 
     if (!event_handled) {

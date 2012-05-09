@@ -261,6 +261,8 @@ public:
     void scroll(const AW::Vector& delta, bool dont_update_scrollbars = false) {
         scroll(int(delta.x()), int(delta.y()), dont_update_scrollbars);
     }
+    
+    bool handleWheelEvent(AW_device *device, const AW_event& event);
 };
 
 inline void AWT_graphic::refresh_by_exports(AWT_canvas *scr) {
