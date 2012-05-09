@@ -488,7 +488,7 @@ void AW_window::calculate_scrollbars() {
 }
 
 void AW_window::set_vertical_scrollbar_position(int position) {
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
     fprintf(stderr, "set_vertical_scrollbar_position to %i\n", position);
 #endif
     // @@@ test and constrain against limits
@@ -497,7 +497,7 @@ void AW_window::set_vertical_scrollbar_position(int position) {
 }
 
 void AW_window::set_horizontal_scrollbar_position(int position) {
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
     fprintf(stderr, "set_horizontal_scrollbar_position to %i\n", position);
 #endif
     // @@@ test and constrain against limits

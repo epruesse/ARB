@@ -311,6 +311,67 @@ void ED4_remote_event(AW_event *faked_event) { // keystrokes forwarded from SECE
     executeKeystroke(faked_event, 1);
 }
 
+static int get_max_slider_xpos() {
+    const AW_screen_area& rect = current_device()->get_area_size();
+
+    AW_pos x, y;
+    ED4_base *horizontal_link = ED4_ROOT->scroll_links.link_for_hor_slider;
+    horizontal_link->calc_world_coords(&x, &y);
+
+    AW_pos max_xpos = horizontal_link->extension.size[WIDTH] // overall width of virtual scrolling area
+        - (rect.r - x); // minus width of visible scroll-area (== relative width of horizontal scrollbar)
+
+    if (max_xpos<0) max_xpos = 0; // happens when window-content is smaller than window (e.g. if (folded) alignment is narrow)
+    return int(max_xpos+0.5);
+}
+
+static int get_max_slider_ypos() {
+    const AW_screen_area& rect = current_device()->get_area_size(); 
+
+    AW_pos x, y;
+    ED4_base *vertical_link = ED4_ROOT->scroll_links.link_for_ver_slider;
+    vertical_link->calc_world_coords(&x, &y);
+
+    AW_pos max_ypos = vertical_link->extension.size[HEIGHT] // overall height of virtual scrolling area
+        - (rect.b - y); // minus height of visible scroll-area (== relative height of vertical scrollbar)
+
+    if (max_ypos<0) max_ypos = 0; // happens when window-content is smaller than window (e.g. if ARB_EDIT4 is not filled)
+    return int(max_ypos+0.5);
+}
+
+static void ed4_scroll(AW_window *aww, int xdiff, int ydiff, AW_CL cd1, AW_CL cd2) {
+    int new_xpos = aww->slider_pos_horizontal + (xdiff*ED4_ROOT->aw_root->awar(ED4_AWAR_SCROLL_SPEED_X)->read_int())/10;
+    int new_ypos = aww->slider_pos_vertical   + (ydiff*ED4_ROOT->aw_root->awar(ED4_AWAR_SCROLL_SPEED_Y)->read_int())/10;
+
+    if (xdiff<0) { // scroll left
+        if (new_xpos<0) new_xpos = 0;
+    }
+    else if (xdiff>0) { // scroll right
+        int max_xpos = get_max_slider_xpos();
+        if (max_xpos<0) max_xpos = 0;
+        if (new_xpos>max_xpos) new_xpos = max_xpos;
+    }
+
+    if (ydiff<0) { // scroll up
+        if (new_ypos<0) new_ypos = 0;
+    }
+    else if (ydiff>0) { // scroll down
+        int max_ypos = get_max_slider_ypos();
+        if (max_ypos<0) max_ypos = 0;
+        if (new_ypos>max_ypos) new_ypos = max_ypos;
+    }
+
+    if (new_xpos!=aww->slider_pos_horizontal) {
+        aww->set_horizontal_scrollbar_position(new_xpos);
+        ED4_horizontal_change_cb(aww, cd1, cd2);
+    }
+
+    if (new_ypos!=aww->slider_pos_vertical) {
+        aww->set_vertical_scrollbar_position(new_ypos);
+        ED4_vertical_change_cb(aww, cd1, cd2);
+    }
+}
+
 void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
 {
     AW_event event;
@@ -320,6 +381,7 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
     ED4_LocalWinContext uses(aww);
 
     aww->get_event(&event);
+
 
 #if defined(DEBUG) && 0
     printf("event.type=%i event.keycode=%i event.character='%c' event.keymodifier=%i\n", event.type, event.keycode, event.character, event.keymodifier);
@@ -372,15 +434,30 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
             break;
         }
         default: {
-            if (event.type == AW_Mouse_Release && event.button == AW_BUTTON_MIDDLE) {
-                ED4_ROOT->scroll_picture.scroll = 0;
+            if (event.button == AW_WHEEL_UP || event.button == AW_WHEEL_DOWN) {
+                if (event.type == AW_Mouse_Press) {
+                    bool horizontal = event.keymodifier & AW_KEYMODE_ALT;
+                    int  direction  = event.button == AW_WHEEL_UP ? -1 : 1;
+
+                    int dx = horizontal ? direction*ED4_ROOT->font_group.get_max_width() : 0;
+                    int dy = horizontal ? 0 : direction*ED4_ROOT->font_group.get_max_height();
+                
+                    ed4_scroll(aww, dx, dy, 0, 0);
+                }
                 return;
             }
-            else if (event.type == AW_Mouse_Press && event.button == AW_BUTTON_MIDDLE) {
-                ED4_ROOT->scroll_picture.scroll = 1;
-                ED4_ROOT->scroll_picture.old_y = event.y;
-                ED4_ROOT->scroll_picture.old_x = event.x;
-                return;
+
+            if (event.button == AW_BUTTON_MIDDLE) {
+                if (event.type == AW_Mouse_Press) {
+                    ED4_ROOT->scroll_picture.scroll = 1;
+                    ED4_ROOT->scroll_picture.old_y = event.y;
+                    ED4_ROOT->scroll_picture.old_x = event.x;
+                    return;
+                }
+                if (event.type == AW_Mouse_Release) {
+                    ED4_ROOT->scroll_picture.scroll = 0;
+                    return;
+                }
             }
 
 #if defined(DEBUG) && 0
@@ -408,34 +485,6 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
     }
 
     ED4_trigger_instant_refresh();
-}
-
-static int get_max_slider_xpos() {
-    const AW_screen_area& rect = current_device()->get_area_size();
-
-    AW_pos x, y;
-    ED4_base *horizontal_link = ED4_ROOT->scroll_links.link_for_hor_slider;
-    horizontal_link->calc_world_coords(&x, &y);
-
-    AW_pos max_xpos = horizontal_link->extension.size[WIDTH] // overall width of virtual scrolling area
-        - (rect.r - x); // minus width of visible scroll-area (== relative width of horizontal scrollbar)
-
-    if (max_xpos<0) max_xpos = 0; // happens when window-content is smaller than window (e.g. if (folded) alignment is narrow)
-    return int(max_xpos+0.5);
-}
-
-static int get_max_slider_ypos() {
-    const AW_screen_area& rect = current_device()->get_area_size(); 
-
-    AW_pos x, y;
-    ED4_base *vertical_link = ED4_ROOT->scroll_links.link_for_ver_slider;
-    vertical_link->calc_world_coords(&x, &y);
-
-    AW_pos max_ypos = vertical_link->extension.size[HEIGHT] // overall height of virtual scrolling area
-        - (rect.b - y); // minus height of visible scroll-area (== relative height of vertical scrollbar)
-
-    if (max_ypos<0) max_ypos = 0; // happens when window-content is smaller than window (e.g. if ARB_EDIT4 is not filled)
-    return int(max_ypos+0.5);
 }
 
 void ED4_vertical_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
@@ -541,40 +590,13 @@ void ED4_motion_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
 
     if (event.type == AW_Mouse_Drag && event.button == AW_BUTTON_MIDDLE) {
         if (ED4_ROOT->scroll_picture.scroll) {
-            int xdiff    = ED4_ROOT->scroll_picture.old_x - event.x;
-            int ydiff    = ED4_ROOT->scroll_picture.old_y - event.y;
-            int new_xpos = aww->slider_pos_horizontal + (xdiff*ED4_ROOT->aw_root->awar(ED4_AWAR_SCROLL_SPEED_X)->read_int())/10;
-            int new_ypos = aww->slider_pos_vertical   + (ydiff*ED4_ROOT->aw_root->awar(ED4_AWAR_SCROLL_SPEED_Y)->read_int())/10;
+            int xdiff = ED4_ROOT->scroll_picture.old_x - event.x;
+            int ydiff = ED4_ROOT->scroll_picture.old_y - event.y;
 
-            if (xdiff<0) { // scroll left
-                if (new_xpos<0) new_xpos = 0;
-            }
-            else if (xdiff>0) { // scroll right
-                int max_xpos = get_max_slider_xpos();
-                if (max_xpos<0) max_xpos = 0;
-                if (new_xpos>max_xpos) new_xpos = max_xpos;
-            }
+            ed4_scroll(aww, xdiff, ydiff, cd1, cd2);
 
-            if (ydiff<0) { // scroll left
-                if (new_ypos<0) new_ypos = 0;
-            }
-            else if (ydiff>0) { // scroll right
-                int max_ypos = get_max_slider_ypos();
-                if (max_ypos<0) max_ypos = 0;
-                if (new_ypos>max_ypos) new_ypos = max_ypos;
-            }
-
-            if (new_xpos!=aww->slider_pos_horizontal) {
-                aww->set_horizontal_scrollbar_position(new_xpos);
-                ED4_horizontal_change_cb(aww, cd1, cd2);
-                ED4_ROOT->scroll_picture.old_x = event.x;
-            }
-
-            if (new_ypos!=aww->slider_pos_vertical) {
-                aww->set_vertical_scrollbar_position(new_ypos);
-                ED4_vertical_change_cb(aww, cd1, cd2);
-                ED4_ROOT->scroll_picture.old_y = event.y;
-            }
+            ED4_ROOT->scroll_picture.old_x = event.x;
+            ED4_ROOT->scroll_picture.old_y = event.y;
         }
     }
     else {

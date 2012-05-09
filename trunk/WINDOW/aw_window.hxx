@@ -118,7 +118,9 @@ enum AW_MouseButton {
     AW_BUTTON_NONE   = 0,
     AW_BUTTON_LEFT   = 1,
     AW_BUTTON_MIDDLE = 2,
-    AW_BUTTON_RIGHT  = 3
+    AW_BUTTON_RIGHT  = 3,
+    AW_WHEEL_UP      = 4,
+    AW_WHEEL_DOWN    = 5,
 };
 
 struct AW_event {
