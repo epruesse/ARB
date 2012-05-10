@@ -1200,7 +1200,7 @@ void AW_window::update_text_field(Widget widget, const char *var_value) {
 //      selection list
 
 
-static void scroll_list(Widget scrolledList, bool upwards) {
+static void scroll_sellist(Widget scrolledList, bool upwards) {
     int oldPos, visible, items;
     XtVaGetValues(scrolledList,
                   XmNtopItemPosition, &oldPos,
@@ -1216,8 +1216,8 @@ static void scroll_list(Widget scrolledList, bool upwards) {
     if (newPos != oldPos) XmListSetPos(scrolledList, newPos);
 }
 
-static void scroll_list_up(Widget scrolledList, XEvent *event, String *params, Cardinal *num_params) { scroll_list(scrolledList, true); }
-static void scroll_list_dn(Widget scrolledList, XEvent *event, String *params, Cardinal *num_params) { scroll_list(scrolledList, false); }
+static void scroll_sellist_up(Widget scrolledList, XEvent*, String*, Cardinal*) { scroll_sellist(scrolledList, true); }
+static void scroll_sellist_dn(Widget scrolledList, XEvent*, String*, Cardinal*) { scroll_sellist(scrolledList, false); }
 
 AW_selection_list* AW_window::create_selection_list(const char *var_name, const char *tmp_label, const char */*mnemonic*/, int columns, int rows) {
     Widget scrolledWindowList;
@@ -1313,16 +1313,16 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, const 
         static bool actionsAdded = false;
         if (!actionsAdded) {
             struct _XtActionsRec actions[2] = {
-                {(char*)"scroll_list_up", scroll_list_up},
-                {(char*)"scroll_list_dn", scroll_list_dn}
+                {(char*)"scroll_sellist_up", scroll_sellist_up},
+                {(char*)"scroll_sellist_dn", scroll_sellist_dn}
             };
 
             XtAppAddActions(p_global->context, actions, 2);
         }
 
         XtTranslations translations = XtParseTranslationTable(
-            "<Btn4Down>:scroll_list_up()\n"
-            "<Btn5Down>:scroll_list_dn()\n"
+            "<Btn4Down>:scroll_sellist_up()\n"
+            "<Btn5Down>:scroll_sellist_dn()\n"
             );
         XtAugmentTranslations(scrolledList, translations);
     }
