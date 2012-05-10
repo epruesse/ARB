@@ -1275,7 +1275,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, const 
 
     {
         int select_type = XmMULTIPLE_SELECT;
-        if (vs) select_type = XmSINGLE_SELECT;
+        if (vs) select_type = XmBROWSE_SELECT;
 
         TuneBackground(scrolledWindowList, TUNE_INPUT);
         scrolledList = XtVaCreateManagedWidget("scrolledList1",
@@ -1346,7 +1346,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, const 
         vui = new VarUpdateInfo(this, scrolledList, AW_WIDGET_SELECTION_LIST, vs, cbs);
         vui->set_id((void*)p_global->last_selection_list);
 
-        XtAddCallback(scrolledList, XmNsingleSelectionCallback,
+        XtAddCallback(scrolledList, XmNbrowseSelectionCallback,
                       (XtCallbackProc) AW_variable_update_callback,
                       (XtPointer) vui);
 
