@@ -24,6 +24,7 @@
 #include <arb_strbuf.h>
 #include <arb_strarray.h>
 #include <arb_sort.h>
+#include <arb_algo.h>
 
 #include <Xm/Frame.h>
 #include <Xm/MenuShell.h>
@@ -1199,6 +1200,25 @@ void AW_window::update_text_field(Widget widget, const char *var_value) {
 //      selection list
 
 
+static void scroll_list(Widget scrolledList, bool upwards) {
+    int oldPos, visible, items;
+    XtVaGetValues(scrolledList,
+                  XmNtopItemPosition, &oldPos,
+                  XmNvisibleItemCount, &visible,
+                  XmNitemCount,  &items, 
+                  NULL);
+
+    int amount = visible/5;
+    if (amount<1) amount = 1;
+    if (upwards) amount = -amount;
+
+    int newPos = force_in_range(1, oldPos + amount, items-visible+2);
+    if (newPos != oldPos) XmListSetPos(scrolledList, newPos);
+}
+
+static void scroll_list_up(Widget scrolledList, XEvent *event, String *params, Cardinal *num_params) { scroll_list(scrolledList, true); }
+static void scroll_list_dn(Widget scrolledList, XEvent *event, String *params, Cardinal *num_params) { scroll_list(scrolledList, false); }
+
 AW_selection_list* AW_window::create_selection_list(const char *var_name, const char *tmp_label, const char */*mnemonic*/, int columns, int rows) {
     Widget scrolledWindowList;
     Widget scrolledList;
@@ -1289,6 +1309,22 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, const 
                                                XmNfontList, p_global->fontlist,
                                                XmNbackground, _at->background_color,
                                                NULL);
+
+        static bool actionsAdded = false;
+        if (!actionsAdded) {
+            struct _XtActionsRec actions[2] = {
+                {(char*)"scroll_list_up", scroll_list_up},
+                {(char*)"scroll_list_dn", scroll_list_dn}
+            };
+
+            XtAppAddActions(p_global->context, actions, 2);
+        }
+
+        XtTranslations translations = XtParseTranslationTable(
+            "<Btn4Down>:scroll_list_up()\n"
+            "<Btn5Down>:scroll_list_dn()\n"
+            );
+        XtAugmentTranslations(scrolledList, translations);
     }
 
     if (!_at->to_position_exists) {

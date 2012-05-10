@@ -105,6 +105,7 @@ AW_button.o: aw_window_Xm.hxx
 AW_button.o: aw_xargs.hxx
 AW_button.o: aw_Xm.hxx
 AW_button.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AW_button.o: $(ARBHOME)/INCLUDE/arb_algo.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_defs.h
