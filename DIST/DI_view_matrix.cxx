@@ -19,7 +19,7 @@
 
 #include <awt_canvas.hxx>
 
-#include <algorithm>
+#include <arb_algo.h>
 
 #define AWAR_MATRIX                "matrix/"
 #define AWAR_MATRIX_PADDING        AWAR_MATRIX "padding"
@@ -177,11 +177,9 @@ enum ClickAction {
 #define MINMAX_GRANULARITY 10000L
 #define ROUNDUP            0.00005 // in order to round to 4 digits
 
-inline int in_range(int low, int val, int high) { return std::max(low, std::min(val, high)); }
-
 void DI_dmatrix::scroll_to(int sxpos, int sypos) {
-    sxpos = in_range(0, sxpos, int(awm->get_scrolled_picture_width())-screen_width);
-    sypos = in_range(0, sypos, int(awm->get_scrolled_picture_height())-screen_height);
+    sxpos = force_in_range(0, sxpos, int(awm->get_scrolled_picture_width())-screen_width);
+    sypos = force_in_range(0, sypos, int(awm->get_scrolled_picture_height())-screen_height);
 
     awm->set_horizontal_scrollbar_position(sxpos);
     awm->set_vertical_scrollbar_position(sypos);

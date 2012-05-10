@@ -144,6 +144,7 @@ symlink_maybe_no_target GENH/aisc.h               PROBE_COM/PT_server.h &&
 
 # TEMPLATES directory
 
+symlink_file ../TEMPLATES/arb_algo.h INCLUDE/arb_algo.h &&
 symlink_file ../TEMPLATES/arb_backtrace.h INCLUDE/arb_backtrace.h &&
 symlink_file ../TEMPLATES/arb_debug.h INCLUDE/arb_debug.h &&
 symlink_file ../TEMPLATES/arb_defs.h INCLUDE/arb_defs.h &&
