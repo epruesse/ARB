@@ -5,6 +5,7 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
+#include <aw_select.hxx>
 #include <AP_filter.hxx>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
@@ -158,7 +159,7 @@ static void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruc
     if (cbs->id) {
         char *use = cbs->awr->awar(cbs->def_alignment)->read_string();
 
-        cbs->aw_filt->clear_selection_list(cbs->id);
+        cbs->id->clear();
         cbs->aw_filt->insert_default_selection(cbs->id, "none", "");
 
         const char *name = GBT_readOrCreate_char_pntr(cbs->gb_main, AWAR_SPECIES_NAME, "");

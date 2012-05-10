@@ -24,6 +24,7 @@
 #include <arb_progress.h>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
+#include <aw_select.hxx>
 
 #include <arbdbt.h>
 #include <adGene.h>
@@ -106,7 +107,7 @@ static void create_primer_design_result_window(AW_window *aww)
 
         pdrw->at("result");
         pdrw_id = pdrw->create_selection_list(AWAR_PRIMER_TARGET_STRING, NULL, "", 40, 5);
-        pdrw->set_selection_list_suffix(pdrw_id, "primer");
+        pdrw_id->set_file_suffix("primer");
 
         pdrw->at("save");
         pdrw->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)pdrw_id);
@@ -193,7 +194,7 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
             prd_assert(pdrw_id);
 
             // create result-list:
-            pdrw->clear_selection_list(pdrw_id);
+            pdrw_id->clear();
             int max_primer_length   = PD->get_max_primer_length();
             int max_position_length = int(std::log10(double (PD->get_max_primer_pos())))+1;
             int max_length_length   = int(std::log10(double(PD->get_max_primer_length())))+1;

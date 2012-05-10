@@ -464,7 +464,7 @@ static void scan_list(GBDATA *, DbScanner *cbs) {
 
     if (last_max_name_width == 0) last_max_name_width = 15;
 
-    cbs->aws->clear_selection_list(cbs->id);
+    cbs->id->clear();
 
     GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector.change_key_path, GB_CREATE_CONTAINER);
 
@@ -549,7 +549,7 @@ static void scanner_changed_cb(GBDATA *, DbScanner *cbs, GB_CB_TYPE gbtype) {
         // recalls this function !!!!
         return;
     }
-    aws->clear_selection_list(cbs->id);
+    cbs->id->clear();
     if (cbs->gb_user) {
         GB_transaction ta(cbs->gb_main);
 

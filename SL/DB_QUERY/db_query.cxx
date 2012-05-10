@@ -358,8 +358,7 @@ static long detectMaxNameLength(const char *key, long val, void *cl_len) {
 void QUERY::DbQuery_update_list(DbQuery *query) {
     GB_push_transaction(query->gb_main);
 
-    // clear
-    query->aws->clear_selection_list(query->result_id);
+    query->result_id->clear();
 
     AW_window     *aww      = query->aws;
     AW_root       *aw_root  = aww->get_root();
@@ -1347,7 +1346,7 @@ void QUERY::copy_selection_list_2_query_box(DbQuery *query, AW_selection_list *i
     GB_ERROR         error     = 0;
     AW_window       *aww       = query->aws;
     AW_root         *aw_root   = aww->get_root();
-    GB_HASH         *list_hash = aww->selection_list_to_hash(id, false);
+    GB_HASH         *list_hash = id->to_hash(false);
     QUERY_MODES  mode      = (QUERY_MODES)aw_root->awar(query->awar_ere)->read_int();
     QUERY_TYPES  type      = (QUERY_TYPES)aw_root->awar(query->awar_by)->read_int();
 
@@ -1853,7 +1852,7 @@ static void update_colorset_selection_list(const color_save_data *csd) {
     GB_transaction  ta(csd->cmd->gb_main);
     AW_window      *aww = csd->aww;
 
-    aww->clear_selection_list(csd->sel_id);
+    csd->sel_id->clear();
     GBDATA *gb_item_root = get_colorset_root(csd);
 
     for (GBDATA *gb_colorset = GB_entry(gb_item_root, "colorset");
@@ -2306,7 +2305,7 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
     }
 
     GB_ERROR error = sellst
-        ? aws->load_selection_list(id, GB_path_in_ARBLIB("sellists", sellst))
+        ? id->load(GB_path_in_ARBLIB("sellists", sellst))
         : "No default selection list for query-type";
 
     if (error) {

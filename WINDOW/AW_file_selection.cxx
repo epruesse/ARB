@@ -13,6 +13,7 @@
 #include <aw_file.hxx>
 #include "aw_msg.hxx"
 #include "aw_root.hxx"
+#include "aw_select.hxx"
 
 #include <arbdbt.h>
 #include <arb_strbuf.h>
@@ -273,7 +274,7 @@ static void show_soft_link(AW_window *aws, AW_selection_list *sel_id, const char
 
 static void fill_fileselection_cb(void */*dummy*/, File_selection *cbs) {
     AW_root *aw_root = cbs->aws->get_root();
-    cbs->aws->clear_selection_list(cbs->id);
+    cbs->id->clear();
 
     char *diru    = aw_root->awar(cbs->def_dir)->read_string();
     char *fulldir = AW_unfold_path(cbs->pwd, diru);
@@ -386,7 +387,7 @@ static void fill_fileselection_cb(void */*dummy*/, File_selection *cbs) {
     }
 
     cbs->aws->insert_default_selection(cbs->id, "", "");
-    cbs->aws->sort_selection_list(cbs->id, 0, 1);
+    cbs->id->sort(false, true);
     cbs->aws->update_selection_list(cbs->id);
 
     free(name);

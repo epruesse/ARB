@@ -816,6 +816,8 @@ NT_validManual.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+NT_validManual.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+NT_validManual.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/cb.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/dupstr.h

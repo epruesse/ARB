@@ -13,6 +13,7 @@
 #include "di_clustertree.hxx"
 
 #include <aw_window.hxx>
+#include <aw_select.hxx>
 
 #include <cmath>
 
@@ -406,7 +407,7 @@ public:
 
 void ClustersData::update_cluster_selection_list(AW_window *aww) {
     cl_assert(clusterList);
-    aww->clear_selection_list(clusterList);
+    clusterList->clear();
 
     if (shown.empty()) {
         aww->insert_default_selection(clusterList, "<No clusters detected>", ID(0));

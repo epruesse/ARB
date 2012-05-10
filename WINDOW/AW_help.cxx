@@ -14,8 +14,8 @@
 #include "aw_root.hxx"
 #include "aw_global_awars.hxx"
 #include "aw_msg.hxx"
+#include "aw_select.hxx"
 
-#include <arbdb.h>
 #include <arb_file.h>
 
 #include <sys/stat.h>
@@ -326,7 +326,7 @@ static void aw_help_helpfile_changed_cb(AW_root *awr) {
             char *h, *h2, *tok;
 
             ptr = strdup(helptext);
-            aw_help_global.aww->clear_selection_list(aw_help_global.upid);
+            aw_help_global.upid->clear();
             h2 = GBS_find_string(ptr, "\nUP", 0);
             while ((h = h2)) {
                 h2 = GBS_find_string(h2+1, "\nUP", 0);
@@ -340,7 +340,7 @@ static void aw_help_helpfile_changed_cb(AW_root *awr) {
             aw_help_global.aww->update_selection_list(aw_help_global.upid);
 
             ptr = strdup(helptext);
-            aw_help_global.aww->clear_selection_list(aw_help_global.downid);
+            aw_help_global.downid->clear();
             h2 = GBS_find_string(ptr, "\nSUB", 0);
             while ((h = h2)) {
                 h2 = GBS_find_string(h2+1, "\nSUB", 0);

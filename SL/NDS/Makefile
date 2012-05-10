@@ -49,6 +49,8 @@ nds.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+nds.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+nds.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 nds.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 nds.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx

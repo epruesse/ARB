@@ -16,6 +16,7 @@
 #include "aw_question.hxx"
 #include "aw_advice.hxx"
 #include "aw_msg.hxx"
+#include "aw_select.hxx"
 
 #include <arbdbt.h>
 #include <arb_strarray.h>
@@ -657,7 +658,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
 
     // update the selection box :
     aw_assert(sel);
-    aw_msg->clear_selection_list(sel);
+    sel->clear();
     if (value_list) {
         char *values = strdup(value_list);
         char *word;

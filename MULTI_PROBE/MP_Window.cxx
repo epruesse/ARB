@@ -55,7 +55,7 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root)
     result_probes_list                      = result_window->create_selection_list(MP_AWAR_RESULTPROBES, "ResultProbes", "R");
     result_probes_list->value_equal_display = true; // plain load/save (no # interpretation)
 
-    result_window->set_selection_list_suffix(result_probes_list, "mpr");
+    result_probes_list->set_file_suffix("mpr");
 
     result_window->insert_default_selection(result_probes_list, "", "");
 
@@ -199,7 +199,7 @@ static GB_ERROR parse_probe_list_entry(const char *one_line, char*& probe_string
 
 static void mp_load_list(AW_window *aww, AW_selection_list *selection_list, char *base_name)
 {
-    aww->clear_selection_list(selection_list);
+    selection_list->clear();
     char *data;
     {
         const char *awar_file = GBS_global_string("%s/file_name", base_name);
@@ -445,11 +445,11 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     aws->at("Selectedprobes");
     aws->callback(MP_selected_chosen);
     selected_list = aws->create_selection_list(MP_AWAR_SELECTEDPROBES,
-                                                "Selected Probes",
-                                                "Selected Probes",
-                                                max_seq_col,
-                                                max_seq_hgt);
-    aws->set_selection_list_suffix(selected_list, "prb");
+                                               "Selected Probes",
+                                               "Selected Probes",
+                                               max_seq_col,
+                                               max_seq_hgt);
+    selected_list->set_file_suffix("prb");
 
     aws->insert_default_selection(selected_list, "", "");
 
@@ -457,7 +457,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     probelist = aws->create_selection_list(MP_AWAR_PROBELIST,
                                             "Probelist",
                                             "P");
-    aws->set_selection_list_suffix(probelist, "prb");
+    probelist->set_file_suffix("prb");
     aws->insert_default_selection(probelist, "", "");
 
     aws->at("LoadProbes");
