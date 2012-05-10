@@ -165,7 +165,7 @@ void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs)      // p
 
 
 
-    aww->clear_selection_list(result_probes_list);
+    result_probes_list->clear();
 
     elem = computation_result_list->get_first();
     while (elem)

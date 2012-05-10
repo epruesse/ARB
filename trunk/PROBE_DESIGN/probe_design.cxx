@@ -204,9 +204,9 @@ static void popup_probe_design_result_window(AW_window *aww, AW_CL cl_gb_main) {
 
         pd_gl.pd_design->at("result");
         pd_gl.pd_design_id = pd_gl.pd_design->create_selection_list(AWAR_TARGET_STRING, NULL, "", 40, 5);
-        pd_gl.pd_design->set_selection_list_suffix(pd_gl.pd_design_id, "prb");
+        pd_gl.pd_design_id->set_file_suffix("prb");
 
-        pd_gl.pd_design->clear_selection_list(pd_gl.pd_design_id);
+        pd_gl.pd_design_id->clear();
         pd_gl.pd_design->insert_default_selection(pd_gl.pd_design_id, "No probes designed yet", "");
 
         pd_gl.pd_design->at("save");
@@ -573,7 +573,7 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
                   NULL);
 
         popup_probe_design_result_window(aww, cl_gb_main);
-        pd_gl.pd_design->clear_selection_list(pd_gl.pd_design_id);
+        pd_gl.pd_design_id->clear();
 
         if (tprobe) {
             aisc_get(pd_gl.link, PT_TPROBE, tprobe,
@@ -686,7 +686,7 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
 
             if (!error) {
                 if (selection_id) {
-                    aww->clear_selection_list(selection_id);
+                    selection_id->clear();
                     pd_assert(!counter);
                     show_status = 1;
                 }
@@ -1050,10 +1050,8 @@ static void probe_match_all_event(AW_window *aww, AW_CL cl_iselection_id, AW_CL 
     arb_progress progress("Matching all resolved strings", iselection_id->size());
 
     bool got_result = false;
-    for (;;) {
+    while (selentry) {
         const char *entry = selentry.get_value();
-        if (!entry) break;
-
         root->awar(AWAR_TARGET_STRING)->write_string(entry); // probe match
         int counter = -1;
         ProbeMatchEventParam match_event((GBDATA*)cl_gb_main, &counter);
@@ -1072,7 +1070,7 @@ static void probe_match_all_event(AW_window *aww, AW_CL cl_iselection_id, AW_CL 
     }
 
     if (got_result) {
-        aww->sort_selection_list(iselection_id, 1, 1);
+        iselection_id->sort(true, true);
         aww->update_selection_list(iselection_id);
         root->awar(AWAR_TARGET_STRING)->write_string(target_string);
     }
@@ -1345,7 +1343,7 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
     AW_window         *aww          = (AW_window*)cl_aww;
     AW_selection_list *selection_id = (AW_selection_list*)cl_selid;
 
-    aww->clear_selection_list(selection_id);
+    selection_id->clear();
 
     if (ali_used_for_resolvement != GB_AT_RNA && ali_used_for_resolvement!=GB_AT_DNA) {
         aww->insert_default_selection(selection_id, "Wrong alignment type!", "");
@@ -1955,7 +1953,7 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws, 
         selList = pg_global.selList = aws->create_selection_list(AWAR_PG_SELECTED_RESULT, 0, "", 2, 2);
     }
     else {
-        aws->clear_selection_list(selList);
+        selList->clear();
     }
 
     GB_ERROR error = 0;

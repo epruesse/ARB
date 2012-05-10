@@ -51,8 +51,8 @@ public:
 };
 
 class AW_selection_list {
-    AW_selection_list_entry *loop_pntr; // @@@ better use some kind of selection-list iterator
-
+    AW_selection_list_entry *get_entry_at(int index);
+    
 public:
     AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti);
 
@@ -73,22 +73,58 @@ public:
 
     size_t size();
 
+    void insert(const char *displayed, const char *value);
+    void insert_default(const char *displayed, const char *value);
+    void insert(const char *displayed, int32_t value);
+    void insert_default(const char *displayed, int32_t value);
+    void insert(const char *displayed, GBDATA *pointer);
+    void insert_default(const char *displayed, GBDATA *pointer);
+
+    void init_from_array(const CharPtrArray& entries, const char *defaultEntry);
+    
+    void update();
+    void update_intern(); 
+
+    void sort(bool backward, bool case_sensitive); // uses displayed value!
+    
     // ---------------------------------------------------
     // the following functions work for string awars only:
-    
-    const char *get_awar_value(AW_root *aw_root) const;
-    void set_awar_value(AW_root *aw_root, const char *new_value);
+
+    const char *get_awar_value() const;
+    void set_awar_value(const char *new_value);
 
     const char *get_default_value() const;
     const char *get_default_display() const;
 
-    const char *get_selected_value() const; // may differ from get_awar_value() if default is selected (returns value passed to insert_default_selection) 
+    void select_default() { set_awar_value(get_default_value()); }
 
-    // the following iterator does NOT iterate over default-element:
-    const char *first_element();
-    const char *next_element();
+    const char *get_selected_value() const; // may differ from get_awar_value() if default is selected (returns value passed to insert_default_selection)
 
+    int get_index_of(const char *searched_value);
+    int get_index_of_displayed(const char *displayed);
+    int get_index_of_selected();
+
+    const char *get_value_at(int index);
+
+    void select_element_at(int wanted_index);
+    void move_selection(int offset);
+    
     bool default_is_selected() const;
+
+    void delete_element_at(int index);
+    void delete_value(const char *value);
+    void clear();
+
+    void move_content_to(AW_selection_list *target_list);
+
+    void to_array(StrArray& array, bool values);
+    GB_HASH *to_hash(bool case_sens);
+    char *get_content_as_string(long number_of_lines); // displayed content (e.g. for printing)
+
+    // save/load:
+    void set_file_suffix(const char *suffix);
+    GB_ERROR load(const char *filename);
+    GB_ERROR save(const char *filename, long number_of_lines);
 };
 
 class AW_selection_list_iterator {
@@ -97,6 +133,13 @@ public:
     AW_selection_list_iterator(AW_selection_list *sellist)
         : entry(sellist->list_table)
     {}
+    AW_selection_list_iterator(AW_selection_list *sellist, int index)
+        : entry(sellist->list_table)
+    {
+        forward(index);
+    }
+
+    operator bool() const { return entry; }
 
     const char *get_displayed() { return entry ? entry->get_displayed() : NULL; }
     const char *get_value() { return entry ? entry->value.get_string() : NULL; }
@@ -104,8 +147,11 @@ public:
     void set_displayed(const char *disp) { aw_assert(entry); entry->set_displayed(disp); }
     void set_value(const char *val) { aw_assert(entry); entry->set_value(val); }
 
+    void forward(size_t offset) {
+        while (offset--) ++(*this);
+    }
     AW_selection_list_iterator& operator++() {
-        entry = entry->next;
+        if (entry) entry = entry->next;
         return *this;
     }
 };
@@ -132,8 +178,8 @@ public:
     void insert_selection(const char *displayed, int32_t value) { win->insert_selection(sellist, displayed, value); }
     void insert_default_selection(const char *displayed, int32_t value) { win->insert_default_selection(sellist, displayed, value); }
 
-    void get_values(StrArray& intoArray) { get_win()->selection_list_to_array(intoArray, get_sellist(), true); }
-    void get_displayed(StrArray& intoArray) { get_win()->selection_list_to_array(intoArray, get_sellist(), false); }
+    void get_values(StrArray& intoArray) { get_sellist()->to_array(intoArray, true); }
+    void get_displayed(StrArray& intoArray) { get_sellist()->to_array(intoArray, false); }
 };
 
 

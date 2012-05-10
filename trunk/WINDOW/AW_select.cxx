@@ -34,26 +34,6 @@ void AW_selection_list::deselectAll() {
     XmListDeselectAllItems(select_list_widget);
 }
 
-
-const char *AW_selection_list::first_element() {
-    AW_selection_list_entry *lt;
-    for (lt = list_table; lt; lt = lt->next) {
-        lt->is_selected = 1;
-    }
-    loop_pntr = list_table;
-    if (!loop_pntr) return 0;
-    return loop_pntr->value.get_string();
-}
-
-const char *AW_selection_list::next_element() {
-    if (!loop_pntr) return 0;
-    loop_pntr = loop_pntr->next;
-    if (!loop_pntr) return 0;
-    while (loop_pntr && !loop_pntr->is_selected) loop_pntr=loop_pntr->next;
-    if (!loop_pntr) return 0;
-    return loop_pntr->value.get_string();
-}
-
 const char *AW_selection_list::get_selected_value() const { // @@@ refactor
     int                      i;
     AW_selection_list_entry *lt;
@@ -71,12 +51,12 @@ const char *AW_selection_list::get_selected_value() const { // @@@ refactor
     return found ? found->value.get_string() : NULL;
 }
 
-const char *AW_selection_list::get_awar_value(AW_root *aw_root) const {
-    return aw_root->awar(variable_name)->read_char_pntr();
+const char *AW_selection_list::get_awar_value() const {
+    return AW_root::SINGLETON->awar(variable_name)->read_char_pntr();
 }
 
-void AW_selection_list::set_awar_value(AW_root *aw_root, const char *new_value) {
-    aw_root->awar(variable_name)->write_string(new_value);
+void AW_selection_list::set_awar_value(const char *new_value) {
+    AW_root::SINGLETON->awar(variable_name)->write_string(new_value);
 }
 
 const char *AW_selection_list::get_default_value() const {
@@ -106,7 +86,7 @@ bool AW_selection_list::default_is_selected() const {
 //      AW_selection
 
 void AW_selection::refresh() {
-    get_win()->clear_selection_list(get_sellist());
+    get_sellist()->clear();
     fill();
     get_win()->update_selection_list(get_sellist());
 }

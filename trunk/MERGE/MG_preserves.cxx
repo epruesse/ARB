@@ -19,6 +19,7 @@
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
 #include <aw_window.hxx>
+#include <aw_select.hxx>
 #include <arb_progress.h>
 #include <arb_global_defs.h>
 #include <arbdbt.h>
@@ -57,7 +58,7 @@ static void init_alignments(preserve_para *para) {
     // initialize the alignment selection list
     ConstStrArray ali_names;
     get_global_alignments(ali_names);
-    para->window->init_selection_list_from_array(para->ali_id, ali_names, "All");
+    para->ali_id->init_from_array(ali_names, "All");
 }
 
 static void clear_candidates(preserve_para *para) {
@@ -65,7 +66,7 @@ static void clear_candidates(preserve_para *para) {
     AW_window         *aww = para->window;
     AW_selection_list *id  = para->cand_id;
 
-    aww->clear_selection_list(id);
+    id->clear();
     aww->insert_default_selection(id, DISPLAY_NONE, NO_ALI_SELECTED);
     aww->update_selection_list(id);
 }
@@ -306,7 +307,7 @@ static void refresh_reference_list_cb(AW_root *aw_root, AW_CL cl_para) {
     preserve_para *para = (preserve_para*)cl_para;
     ConstStrArray  refs;
     read_references(refs, aw_root);
-    para->window->init_selection_list_from_array(para->ref_id, refs, "");
+    para->ref_id->init_from_array(refs, "");
 }
 
 static void add_selected_cb(AW_window *, AW_CL cl_para) {
@@ -331,7 +332,7 @@ static void add_selected_cb(AW_window *, AW_CL cl_para) {
     free(selected);
     free(candidate);
 
-    para->window->move_selection(para->cand_id, 1); 
+    para->cand_id->move_selection(1); 
 }
 
 static void clear_references_cb(AW_window *aww) {

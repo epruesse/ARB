@@ -20,6 +20,7 @@
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
 #include <aw_window.hxx>
+#include <aw_select.hxx>
 #include <adGene.h>
 #include <arbdbt.h>
 #include <arb_str.h>
@@ -452,7 +453,7 @@ static void MG_update_selection_list_on_field_transfers(AW_root *aw_root, AW_CL 
     AW_window         *aww     = (AW_window*)cl_aww;
     AW_selection_list *sel_id  = (AW_selection_list*)cl_sel_id;
 
-    aww->clear_selection_list(sel_id);
+    sel_id->clear();
 
     {
         char *existing_definitions = aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->read_string();

@@ -12,6 +12,7 @@
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
+#include <aw_select.hxx>
 #include <arbdbt.h>
 
 #include <string>
@@ -44,7 +45,7 @@ void NT_createValidNamesAwars(AW_root *aw_root, AW_default aw_def) {
 static void fillSelNamList(selectValidNameStruct* svnp) {
     const char* searchstr = svnp -> initials;
     size_t length = strlen(searchstr);
-    svnp-> aws-> clear_selection_list(svnp->validNamesList);
+    svnp->validNamesList->clear();
 
     GB_begin_transaction(GLOBAL_gb_main);
 
@@ -86,7 +87,7 @@ static void fillSelNamList(selectValidNameStruct* svnp) {
     if (err) aw_message(err);
     else {
         svnp->aws->insert_default_selection(svnp->validNamesList,  "????", "????");
-        svnp->aws->sort_selection_list(svnp->validNamesList, 0, 1);
+        svnp->validNamesList->sort(false, true);
         svnp->aws->update_selection_list(svnp->validNamesList);
     }
 }

@@ -106,7 +106,7 @@ void MP_gen_quality(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
 
     ecol_pos = MP_get_comment(3, selected);
 
-    aww->delete_selection_from_list(selected_list, selected);
+    selected_list->delete_value(selected);
 
     new_qual = new char[5 + 7 + strlen(probe)];     // 5 = Zahl und Separator und Zahl und Separator und Nullzeichen
     sprintf(new_qual, "%1ld#%1ld#%6d#%s", mp_gl_awars.probe_quality, mp_gl_awars.singlemismatches, atoi(ecol_pos), probe);
@@ -114,7 +114,7 @@ void MP_gen_quality(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
 
     aww->insert_selection(selected_list, new_qual, new_qual);
     aww->insert_default_selection(selected_list, "", "");
-    aww->sort_selection_list(selected_list, 0, 1);
+    selected_list->sort(false, true);
     aww->update_selection_list(selected_list);
     awr->awar(MP_AWAR_SELECTEDPROBES)->write_string(new_qual);
     delete new_qual;
@@ -151,7 +151,7 @@ void MP_modify_selected(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
         delete com3;
     }
 
-    aww->clear_selection_list(selected_list);
+    selected_list->clear();
 
     ptr2 = l->get_first();
     while (ptr2)
@@ -163,7 +163,7 @@ void MP_modify_selected(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     }
 
     aww->insert_default_selection(selected_list, "", "");
-    aww->sort_selection_list(selected_list, 0, 1);
+    selected_list->sort(false, true);
     aww->update_selection_list(selected_list);
     awr->awar(MP_AWAR_SELECTEDPROBES)->write_string("");
 
@@ -180,7 +180,7 @@ void MP_gen_singleprobe(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
         return;
 
     probe = MP_get_probes(selected);
-    aww->delete_selection_from_list(selected_list, selected);
+    selected_list->delete_value(selected);
 
     new_sing = new char[5 + 7 + strlen(probe)];     // 5 = Zahl und Separator und Zahl und Separator und Nullzeichen
     sprintf(new_sing, "%1ld#%1ld#%6ld#%s", mp_gl_awars.probe_quality, mp_gl_awars.singlemismatches, mp_gl_awars.ecolipos, probe);
@@ -188,7 +188,7 @@ void MP_gen_singleprobe(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
 
     aww->insert_selection(selected_list, new_sing, new_sing);
     aww->insert_default_selection(selected_list, "", "");
-    aww->sort_selection_list(selected_list, 0, 1);
+    selected_list->sort(false, true);
     aww->update_selection_list(selected_list);
     awr->awar(MP_AWAR_SELECTEDPROBES)->write_string(new_sing);
     delete new_sing;
@@ -333,7 +333,7 @@ void MP_compute(AW_window *, AW_CL cl_gb_main) {
 
     aww2 = mp_main->get_mp_window()->create_result_window(aw_root);
 
-    aww2->clear_selection_list(result_probes_list);
+    result_probes_list->clear();
     aww2->insert_default_selection(result_probes_list, "", "");
     aww2->update_selection_list(result_probes_list);
 
@@ -413,7 +413,7 @@ static void MP_take_manual_sequence(AW_window */*aww*/) {
     aws->insert_selection(selected_list, new_seq, new_seq);
 
     aws->insert_default_selection(selected_list, "", "");
-    aws->sort_selection_list(selected_list, 0, 1);
+    selected_list->sort(false, true);
     aws->update_selection_list(selected_list);
     mp_main->get_aw_root()->awar(MP_AWAR_SEQUENZEINGABE)->write_string("");
     mp_main->get_aw_root()->awar(MP_AWAR_SELECTEDPROBES)->write_string(new_seq);
@@ -436,7 +436,7 @@ void MP_show_probes_in_tree_move(AW_window *aww, AW_CL cl_backward, AW_CL cl_res
     bool               backward           = bool(cl_backward);
     AW_selection_list *resultProbesList = (AW_selection_list*)cl_result_probes_list;
 
-    aww->move_selection(resultProbesList, backward ? -1 : 1);
+    resultProbesList->move_selection(backward ? -1 : 1);
     MP_show_probes_in_tree(aww);
 }
 
@@ -704,9 +704,9 @@ void MP_Comment(AW_window *aww, AW_CL cl_com) {
         {
             bool autoadvance = awr->awar(MP_AWAR_AUTOADVANCE)->read_int();
 
-            if (autoadvance) aww->move_selection(result_probes_list, 1);
+            if (autoadvance) result_probes_list->move_selection(1);
 
-            aww->delete_selection_from_list(result_probes_list, selprobes);
+            result_probes_list->delete_value(selprobes);
             aww->insert_selection(result_probes_list, new_list_string, new_list_string);
             aww->update_selection_list(result_probes_list);
 
@@ -724,10 +724,10 @@ void MP_leftright(AW_window *aww) {
 
     if (sel && sel[0]) {
         aww->insert_selection(selected_list, sel, sel);
-        aww->delete_selection_from_list(probelist, sel);
+        probelist->delete_value(sel);
         aww->insert_default_selection(probelist, "", "");
         mp_main->get_aw_root()->awar(MP_AWAR_PROBELIST)->write_string("");
-        aww->sort_selection_list(selected_list, 0, 1);
+        selected_list->sort(false, true);
         aww->update_selection_list(selected_list);
         aww->update_selection_list(probelist);
     }
@@ -742,11 +742,11 @@ void    MP_rightleft(AW_window *aww)    // von rechts nach links
         return;
 
     aww->insert_selection(probelist, sel, sel);
-    aww->delete_selection_from_list(selected_list, sel);
+    selected_list->delete_value(sel);
     aww->insert_default_selection(selected_list, "", "");
     mp_main->get_aw_root()->awar(MP_AWAR_SELECTEDPROBES)->write_string("");
     aww->update_selection_list(selected_list);
-    aww->sort_selection_list(probelist, 0, 1);
+    probelist->sort(false, true);
     aww->update_selection_list(probelist);
 }
 
@@ -793,9 +793,9 @@ void MP_normal_colors_in_tree(AW_window */*aww*/) {
 
 void MP_all_right(AW_window *aww)
 {
-    aww->conc_list(probelist, selected_list);
+    probelist->move_content_to(selected_list);
     mp_main->get_aw_root()->awar(MP_AWAR_PROBELIST)->write_string("");
-    aww->sort_selection_list(selected_list, 0, 1);
+    selected_list->sort(false, true);
     aww->update_selection_list(selected_list);
     aww->update_selection_list(probelist);
 }
@@ -803,7 +803,7 @@ void MP_all_right(AW_window *aww)
 void MP_del_all_sel_probes(AW_window *aww)
 {
     mp_main->get_aw_root()->awar(MP_AWAR_SELECTEDPROBES)->write_string("");
-    aww->clear_selection_list(selected_list);
+    selected_list->clear();
     aww->insert_default_selection(selected_list, "", "");
     aww->update_selection_list(selected_list);
 }
@@ -811,7 +811,7 @@ void MP_del_all_sel_probes(AW_window *aww)
 void MP_del_all_probes(AW_window *aww)
 {
     mp_main->get_aw_root()->awar(MP_AWAR_PROBELIST)->write_string("");
-    aww->clear_selection_list(probelist);
+    probelist->clear();
     aww->insert_default_selection(probelist, "", "");
     aww->update_selection_list(probelist);
 }
@@ -819,7 +819,7 @@ void MP_del_all_probes(AW_window *aww)
 void MP_del_all_result(AW_window *aww)
 {
     mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES)->write_string("");
-    aww->clear_selection_list(result_probes_list);
+    result_probes_list->clear();
     aww->insert_default_selection(result_probes_list, "", "");
     aww->update_selection_list(result_probes_list);
 }
@@ -827,7 +827,7 @@ void MP_del_all_result(AW_window *aww)
 void MP_del_sel_result(AW_window *aww)
 {
     char *val = mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES)->read_string();
-    aww->delete_selection_from_list(result_probes_list, val);
+    result_probes_list->delete_value(val);
     aww->insert_default_selection(result_probes_list, "", "");
     mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES)->write_string("");
     aww->update_selection_list(result_probes_list);
@@ -836,7 +836,7 @@ void MP_del_sel_result(AW_window *aww)
 void MP_del_sel_probes(AW_window *aww)
 {
     char *val = mp_main->get_aw_root()->awar(MP_AWAR_SELECTEDPROBES)->read_string();
-    aww->delete_selection_from_list(selected_list, val);
+    selected_list->delete_value(val);
     aww->insert_default_selection(selected_list, "", "");
     mp_main->get_aw_root()->awar(MP_AWAR_SELECTEDPROBES)->write_string("");
     aww->update_selection_list(selected_list);
@@ -845,7 +845,7 @@ void MP_del_sel_probes(AW_window *aww)
 void MP_del_probes(AW_window *aww)
 {
     char *val = mp_main->get_aw_root()->awar(MP_AWAR_PROBELIST)->read_string();
-    aww->delete_selection_from_list(probelist, val);
+    probelist->delete_value(val);
     aww->insert_default_selection(probelist, "", "");
     mp_main->get_aw_root()->awar(MP_AWAR_PROBELIST)->write_string("");
     aww->update_selection_list(probelist);

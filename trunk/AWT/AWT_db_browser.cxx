@@ -17,11 +17,9 @@
 #include <aw_window.hxx>
 #include <aw_msg.hxx>
 #include <aw_awar.hxx>
+#include <aw_select.hxx>
 
-#include <arb_msg.h>
 #include <arb_str.h>
-
-#include <arbdb.h>
 
 #include <string>
 #include <vector>
@@ -592,7 +590,7 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
         set_callback_node(node, aw_root);
     }
 
-    aww->clear_selection_list(id);
+    id->clear();
 
     if (node == 0) {
         if (strcmp(path, HISTORY_PSEUDO_PATH) == 0) {

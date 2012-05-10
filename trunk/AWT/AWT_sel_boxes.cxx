@@ -338,7 +338,7 @@ struct awt_sel_list_for_tables {
 };
 
 static void awt_create_selection_list_on_tables_cb(GBDATA *, struct awt_sel_list_for_tables *cbs) {
-    cbs->aws->clear_selection_list(cbs->id);
+    cbs->id->clear();
     GBDATA *gb_table;
     for (gb_table = GBT_first_table(cbs->gb_main);
          gb_table;
@@ -380,7 +380,7 @@ void awt_create_selection_list_on_tables(GBDATA *gb_main, AW_window *aws, const 
 }
 
 static void awt_create_selection_list_on_table_fields_cb(GBDATA *, struct awt_sel_list_for_tables *cbs) {
-    cbs->aws->clear_selection_list(cbs->id);
+    cbs->id->clear();
     GBDATA  *gb_table = GBT_open_table(cbs->gb_main, cbs->table_name, true); // read only
     GBDATA *gb_table_field;
     for (gb_table_field = GBT_first_table_field(gb_table);
@@ -500,7 +500,7 @@ public:
 void AWT_sai_selection::fill() {
     AW_window         *aws = get_win();
     AW_selection_list *sel = get_sellist();
-    aws->clear_selection_list(sel);
+    sel->clear();
 
     GBDATA         *gb_main = get_gb_main();
     GB_transaction  ta(gb_main);
@@ -532,7 +532,7 @@ void AWT_sai_selection::fill() {
             }
         }
     }
-    aws->sort_selection_list(sel, 0, 0);
+    sel->sort(false, false);
 
     aws->insert_default_selection(sel, DISPLAY_NONE, "none");
     aws->update_selection_list(sel);
@@ -636,7 +636,7 @@ static void create_save_box_for_selection_lists_save(AW_window *aws, AW_CL selid
     long     lineanz   = aw_root->awar(bline_anz)->read_int();
     char    *filename  = AW_get_selected_fullname(aw_root, awar_prefix);
 
-    GB_ERROR error = aws->save_selection_list(selid, filename, lineanz);
+    GB_ERROR error = selid->save(filename, lineanz);
 
     if (!error) AW_refresh_fileselection(aw_root, awar_prefix);
     aws->hide_or_notify(error);
@@ -701,7 +701,7 @@ static void AWT_load_list(AW_window *aww, AW_CL sel_id, AW_CL ibase_name)
     GB_ERROR    error;
 
     char *filename = AW_get_selected_fullname(aw_root, basename);
-    error          = aww->load_selection_list(selid, filename);
+    error          = selid->load(filename);
 
     if (error) aw_message(error);
 
@@ -739,8 +739,9 @@ AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
 
 
 void create_print_box_for_selection_lists(AW_window *aw_window, AW_CL selid) {
-    AW_root *aw_root = aw_window->get_root();
-    char *data = aw_window->get_selection_list_contents((AW_selection_list *)selid);
+    AW_root           *aw_root = aw_window->get_root();
+    AW_selection_list *sellist = (AW_selection_list *)selid;
+    char              *data    = sellist->get_content_as_string(-1);
     AWT_create_ascii_print_window(aw_root, data, "no title");
     delete data;
 }
@@ -845,7 +846,7 @@ public:
     const char *default_select_display() const { return parent_sellist.get_default_display(); }
 
     void get_subset(StrArray& subset) {
-        get_win()->selection_list_to_array(subset, get_sellist(), true);
+        get_sellist()->to_array(subset, true);
     }
 
     void fill() { awt_assert(0); } // unused
@@ -856,63 +857,48 @@ public:
         AW_window         *aws         = get_win();
 
         switch(what) {
-            case ACM_FILL:   {
-                // @@@ only add not already added elements (do not remove existing order)
-                const char *listEntry = whole_list->first_element();
-                aws->clear_selection_list(subset_list);
-
-                while (listEntry) {
-                    aws->insert_selection(subset_list, listEntry, listEntry);
-                    listEntry = whole_list->next_element();
+            case ACM_FILL:
+                for (AW_selection_list_iterator listEntry(whole_list); listEntry; ++listEntry) {
+                    if (subset_list->get_index_of(listEntry.get_value()) == -1) { // only add not already existing elements
+                        subset_list->insert(listEntry.get_displayed(), listEntry.get_value());
+                    }
                 }
                 finish_fill_box(aws, whole_list, subset_list);
                 break;
-            }
+
             case ACM_ADD: {
                 if (!whole_list->default_is_selected()) {
-                    AW_root    *aw_root     = aws->get_root();
-                    const char *selected    = whole_list->get_awar_value(aw_root);
-                    int         left_index  = aws->get_index_of_element(whole_list, selected);
-                    bool        entry_found = false;
-
-                    // browse thru the entries and insert the selection if not in the selected list
-                    for (const char *listEntry = subset_list->first_element();
-                         !entry_found && listEntry;
-                         listEntry = subset_list->next_element())
-                    {
-                        if (strcmp(listEntry, selected) == 0) {
-                            entry_found = true; // entry does already exist in right list
-                        }
+                    const char *selected   = whole_list->get_awar_value();
+                    int         src_index = whole_list->get_index_of(selected);
+                    
+                    if (subset_list->get_index_of(selected) == -1) { // not yet in subset_list
+                        AW_selection_list_iterator entry(whole_list, src_index);
+                        subset_list->insert(entry.get_displayed(), entry.get_value());
+                        subset_list->update();
                     }
 
-                    if (!entry_found) { // if not yet in right list
-                        aws->insert_selection(subset_list, selected, selected);
-                        aws->update_selection_list(subset_list);
-                    }
-
-                    aws->select_element_at_index(whole_list, left_index+1);           // go down 1 position on left side
-                    subset_list->set_awar_value(aw_root, selected); // position right side to newly added or already existing alignment
+                    subset_list->set_awar_value(selected); // position right side to newly added or already existing alignment
+                    whole_list->select_element_at(src_index+1);    // go down 1 position on left side
                 }
 
                 break;
             }
             case ACM_REMOVE: {
                 if (!subset_list->default_is_selected()) {
-                    AW_root *aw_root      = aws->get_root();
-                    char    *selected     = strdup(subset_list->get_awar_value(aw_root));
-                    int      old_position = aws->get_index_of_element(subset_list, selected);
+                    char *selected     = strdup(subset_list->get_awar_value());
+                    int   old_position = subset_list->get_index_of(selected);
 
-                    aws->delete_selection_from_list(subset_list, selected);
+                    subset_list->delete_element_at(old_position);
                     finish_fill_box(aws, whole_list, subset_list);
 
-                    aws->select_element_at_index(subset_list, old_position);
-                    whole_list->set_awar_value(aw_root, selected); // set left selection to deleted alignment
+                    subset_list->select_element_at(old_position);
+                    whole_list->set_awar_value(selected); // set left selection to deleted alignment
                     free(selected);
                 }
                 break;
             }
             case ACM_EMPTY:
-                aws->clear_selection_list(subset_list);
+                subset_list->clear();
                 finish_fill_box(aws, whole_list, subset_list);
                 break;
         }
@@ -921,11 +907,10 @@ public:
         AW_selection_list *subset_list = get_sellist();
 
         if (!subset_list->default_is_selected()) {
-            AW_root    *aw_root  = get_root();
-            const char *selected = subset_list->get_awar_value(aw_root);
+            const char *selected = subset_list->get_awar_value();
 
             StrArray listContent;
-            get_win()->selection_list_to_array(listContent, subset_list, true);
+            subset_list->to_array(listContent, true);
 
             int old_pos = GBT_names_index_of(listContent, selected);
             if (old_pos >= 0) {
@@ -938,7 +923,7 @@ public:
                 }
                 if (old_pos != new_pos) {
                     GBT_names_move(listContent, old_pos, new_pos);
-                    get_win()->init_selection_list_from_array(subset_list, listContent, subset_list->get_default_value());
+                    subset_list->init_from_array(listContent, subset_list->get_default_value());
                 }
             }
         }

@@ -183,6 +183,8 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/dupstr.h

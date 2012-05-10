@@ -2,6 +2,8 @@
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <aw_select.hxx>
+
 #include <fast_aligner.hxx>
 
 #include "ed4_awars.hxx"
@@ -1004,7 +1006,7 @@ AW_window *ED4_create_modsai_window(AW_root *root) {
 
     aws->at("box");
     AW_selection_list *sellist = aws->create_selection_list(AWAR_MOD_SAI_SCRIPT);
-    GB_ERROR           error   = aws->load_selection_list(sellist, GB_path_in_ARBLIB("sellists/mod_sequence*.sellst"));
+    GB_ERROR           error   = sellist->load(GB_path_in_ARBLIB("sellists/mod_sequence*.sellst"));
     aw_message_if(error);
     
     return aws;

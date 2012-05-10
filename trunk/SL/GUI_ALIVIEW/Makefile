@@ -61,6 +61,8 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AWT_filter.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+AWT_filter.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/cb.h

@@ -20,6 +20,8 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
+#include <aw_select.hxx>
+
 #include <arbdbt.h>
 #include <arb_strbuf.h>
 
@@ -316,7 +318,7 @@ static void update_ClrTransTabNamesList_cb(AW_root *awr, AW_CL cl_aws, AW_CL cl_
     AW_selection_list *id               = (AW_selection_list*)cl_id;
     char              *clrTransTabNames = awr->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES)->read_string();
 
-    aws->clear_selection_list(id);
+    id->clear();
 
     for (char *tok = strtok(clrTransTabNames, "\n"); tok; tok = strtok(0, "\n")) {
         aws->insert_selection(id, tok, tok);
