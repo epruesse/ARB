@@ -47,6 +47,7 @@ changekey.o: $(ARBHOME)/INCLUDE/arbtools.h
 changekey.o: $(ARBHOME)/INCLUDE/attributes.h
 changekey.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+changekey.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 changekey.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -69,6 +70,7 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/arbtools.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/attributes.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+item_sel_list.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -95,6 +97,7 @@ species.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+species.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 species.o: $(ARBHOME)/INCLUDE/cb.h

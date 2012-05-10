@@ -52,6 +52,7 @@ db_scanner.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+db_scanner.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/cb.h

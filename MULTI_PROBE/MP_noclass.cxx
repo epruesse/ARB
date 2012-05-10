@@ -123,14 +123,15 @@ void MP_gen_quality(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
 
 void MP_modify_selected(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     // setzt den 2.Parameter in selected_list
-    char       *com1, *com2, *com3, *probes, *ptr2, temp[120];
+    char       *com1, *com2, *com3, *probes, temp[120];
     AW_window  *aww = mp_main->get_mp_window()->get_window();
     List<char> *l   = new List<char>;
 
-    aww->init_list_entry_iterator(selected_list); // initialisieren
+    AW_selection_list_iterator selentry(selected_list);
 
-    while ((ptr2 = (char *)aww->get_list_entry_char_value())) {
-        aww->iterate_list_entry(1);
+    const char *ptr2;
+    while ((ptr2 = selentry.get_value())) {
+        ++selentry;
 
         com1 =  MP_get_comment(1, ptr2);
         com2 =  MP_get_comment(2, ptr2);
@@ -302,12 +303,12 @@ bool MP_aborted(int gen_cnt, double avg_fit, double min_fit, double max_fit, arb
 }
 
 
-void MP_compute(AW_window *aww, AW_CL cl_gb_main) {
+void MP_compute(AW_window *, AW_CL cl_gb_main) {
     AW_root         *aw_root = mp_main->get_aw_root();
     AW_window       *aww2;
     int              i       = 0;
     int             *bew_array;
-    char            *ptr, *ptr2, *qual;
+    char            *ptr, *qual;
     char           **probe_field;
     int             *single_mismatch;
     ProbeValuation  *p_eval  = NULL;
@@ -336,16 +337,16 @@ void MP_compute(AW_window *aww, AW_CL cl_gb_main) {
     aww2->insert_default_selection(result_probes_list, "", "");
     aww2->update_selection_list(result_probes_list);
 
-    aww->init_list_entry_iterator(selected_list);   // initialisieren
+    AW_selection_list_iterator selentry(selected_list);
     probe_field     = new char*[selected_probes_count];
     bew_array       = new int[selected_probes_count];
     single_mismatch = new int[selected_probes_count];
 
     arb_progress progress("Computing multiprobes");
 
-    while ((ptr2 = (char *)aww->get_list_entry_char_value()))
-    {
-        aww->iterate_list_entry(1);
+    const char *ptr2;
+    while ((ptr2 = selentry.get_value())) {
+        ++selentry;
         ptr = MP_get_probes(ptr2);      // hier sind es einfachsonden
         if (ptr && ptr[0] != ' ' && ptr[0] != '\t' && ptr[0] != '\0') {
             qual         = MP_get_comment(1, ptr2);

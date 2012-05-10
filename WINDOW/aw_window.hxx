@@ -602,14 +602,6 @@ public:
     void delete_selection_from_list(AW_selection_list * selection_list, const char *displayed_string);
     void conc_list(AW_selection_list * from_list_id,   AW_selection_list * to_list_id);
 
-    // --- selection list iterator:
-    void        init_list_entry_iterator(AW_selection_list *selection_list) const;
-    void        iterate_list_entry(int offset);
-    // --- the following functions work on the currently iterated element:
-    const char *get_list_entry_char_value() const;
-    const char *get_list_entry_displayed() const;
-    void        set_list_entry_char_value(const char *new_char_value);
-    void        set_list_entry_displayed(const char *new_displayed);
     // ---------------------------------------------------------
 
     void clear_selection_list(AW_selection_list *selection_list);

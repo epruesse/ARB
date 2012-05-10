@@ -1045,13 +1045,13 @@ static void probe_match_all_event(AW_window *aww, AW_CL cl_iselection_id, AW_CL 
     AW_root           *root          = aww->get_root();
     char              *target_string = root->awar(AWAR_TARGET_STRING)->read_string();
 
-    aww->init_list_entry_iterator(iselection_id); // init
-
-    arb_progress progress("Matching all resolved strings", iselection_id->size());
+    AW_selection_list_iterator selentry(iselection_id);
     
+    arb_progress progress("Matching all resolved strings", iselection_id->size());
+
     bool got_result = false;
     for (;;) {
-        const char *entry = aww->get_list_entry_char_value();
+        const char *entry = selentry.get_value();
         if (!entry) break;
 
         root->awar(AWAR_TARGET_STRING)->write_string(entry); // probe match
@@ -1062,11 +1062,11 @@ static void probe_match_all_event(AW_window *aww, AW_CL cl_iselection_id, AW_CL 
 
         char *buffer = new char[strlen(entry)+10]; // write # of matched to list entries
         sprintf(buffer, "%5i %s", counter, entry);
-        aww->set_list_entry_displayed(buffer);
+        selentry.set_displayed(buffer);
         got_result   = true;
         delete buffer;
 
-        aww->iterate_list_entry(1); // iterate
+        ++selentry;
         progress.inc();
         
     }

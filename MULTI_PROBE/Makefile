@@ -171,6 +171,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+MP_noclass.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
@@ -208,10 +209,14 @@ MP_probe.o: MP_probe.hxx
 MP_probe.o: mpdefs.h
 MP_probe.o: MultiProbe.hxx
 MP_probe.o: SoTl.hxx
+MP_probe.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_error.h
+MP_probe.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_progress.h
+MP_probe.o: $(ARBHOME)/INCLUDE/arb_string.h
+MP_probe.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_probe.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -219,6 +224,8 @@ MP_probe.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+MP_probe.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+MP_probe.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/cb.h
 MP_probe.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -340,6 +347,7 @@ MP_Window.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+MP_Window.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx

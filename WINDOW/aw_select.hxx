@@ -18,7 +18,37 @@
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif
+#ifndef AW_SCALAR_HXX
+#include "aw_scalar.hxx"
+#endif
 
+// cppcheck-suppress noConstructor
+class AW_selection_list_entry : virtual Noncopyable {
+    char      *displayed;
+
+public:
+    // @@@ make members private
+    AW_scalar  value;
+    bool is_selected;                                // internal use only
+    AW_selection_list_entry *next;
+
+    template<typename T>
+    AW_selection_list_entry(const char *display, T val)
+        : displayed(copy_string_for_display(display)),
+          value(val),
+          is_selected(false),
+          next(NULL)
+    {}
+    ~AW_selection_list_entry() { free(displayed); }
+
+    static char *copy_string_for_display(const char *str);
+
+    template<typename T>
+    void set_value(T val) { value = AW_scalar(val); }
+
+    const char *get_displayed() const { return displayed; }
+    void set_displayed(const char *displayed_) { freeset(displayed, copy_string_for_display(displayed_)); }
+};
 
 class AW_selection_list {
     AW_selection_list_entry *loop_pntr; // @@@ better use some kind of selection-list iterator
@@ -61,6 +91,24 @@ public:
     bool default_is_selected() const;
 };
 
+class AW_selection_list_iterator {
+    AW_selection_list_entry *entry;
+public:
+    AW_selection_list_iterator(AW_selection_list *sellist)
+        : entry(sellist->list_table)
+    {}
+
+    const char *get_displayed() { return entry ? entry->get_displayed() : NULL; }
+    const char *get_value() { return entry ? entry->value.get_string() : NULL; }
+
+    void set_displayed(const char *disp) { aw_assert(entry); entry->set_displayed(disp); }
+    void set_value(const char *val) { aw_assert(entry); entry->set_value(val); }
+
+    AW_selection_list_iterator& operator++() {
+        entry = entry->next;
+        return *this;
+    }
+};
 
 class AW_selection : virtual Noncopyable {
     AW_window         *win;                         // window containing the selection
