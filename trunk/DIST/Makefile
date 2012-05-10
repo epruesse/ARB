@@ -304,6 +304,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_algo.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_error.h
