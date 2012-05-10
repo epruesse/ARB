@@ -112,6 +112,7 @@ ST_window.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ST_window.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_filter.hxx

@@ -14,6 +14,7 @@
 
 #include <aw_window.hxx>
 #include <aw_msg.hxx>
+#include <aw_select.hxx>
 #include <arb_progress.h>
 
 #include <ctime>
@@ -179,10 +180,10 @@ void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs)      // p
 
 void ProbeValuation::init_valuation()
 {
-    int         i, j, k, counter=0;
-    probe       *temp_probe;
-    AW_window       *aww;
-    char        *ptr, *ptr2;
+    int        i, j, k, counter = 0;
+    probe     *temp_probe;
+    AW_window *aww;
+    char      *ptr;
 
     if (new_pt_server)
     {
@@ -202,13 +203,13 @@ void ProbeValuation::init_valuation()
     }
 
     aww = mp_main->get_mp_window()->get_window();
-    aww->init_list_entry_iterator(selected_list); // initialisieren
+    AW_selection_list_iterator selentry(selected_list); 
 
     if (max_init_pop_combis < MAXINITPOPULATION) {
         for (i=0; i<size_sonden_array; i++)         // generierung eines pools, in dem jede Sonde nur einmal pro Mismatch
         {                           // vorkommt, damit alle moeglichen Kombinationen deterministisch
-            ptr2 = (char *)aww->get_list_entry_char_value();
-            aww->iterate_list_entry(1);
+            const char *ptr2    = selentry.get_value();
+            ++selentry;
 
             for (j=0; j<=mismatch_array[i]; j++)        // generiert werden koennen.
             {
@@ -226,8 +227,8 @@ void ProbeValuation::init_valuation()
     else {
         for (i=0; i<size_sonden_array; i++)
         {                               // Generierung eines Pools, in dem die Wahrscheinlichkeiten fuer die Erfassung
-            ptr2 = (char *)aww->get_list_entry_char_value();
-            aww->iterate_list_entry(1);
+            const char *ptr2 = selentry.get_value();
+            ++selentry;
 
             for (j=0; j<=mismatch_array[i]; j++)        // der Sonden schon eingearbeitet sind. DIe WS werden vom Benutzer fuer jedE
             {                           // einzelne Sonde bestimmt

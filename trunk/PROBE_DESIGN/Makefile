@@ -62,6 +62,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx

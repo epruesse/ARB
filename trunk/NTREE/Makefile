@@ -224,6 +224,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_modules.hxx
@@ -438,6 +439,7 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_modules.hxx
@@ -659,6 +661,7 @@ NT_join.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+NT_join.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
@@ -732,6 +735,7 @@ NT_sort.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+NT_sort.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/cb.h

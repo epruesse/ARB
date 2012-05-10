@@ -1429,41 +1429,7 @@ void AW_window::conc_list(AW_selection_list *from_list, AW_selection_list *to_li
     insert_default_selection(from_list, "", "");
 }
 
-// -----------------------------------------
-//      iterator through selection list:
-//
 // @@@ stuff below should be part of class AW_selection_list
-
-static AW_selection_list_entry *current_list_table = 0;
-
-void AW_window::init_list_entry_iterator(AW_selection_list *selection_list) const {
-    current_list_table = selection_list->list_table;
-}
-
-void AW_window::iterate_list_entry(int offset) {
-    while (offset--) {
-        if (!current_list_table) break;
-        current_list_table = current_list_table->next;
-    }
-}
-
-const char *AW_window::get_list_entry_char_value() const {
-    return current_list_table ? current_list_table->value.get_string() : 0;
-}
-
-const char *AW_window::get_list_entry_displayed() const {
-    return current_list_table ? current_list_table->get_displayed() : 0;
-}
-
-void AW_window::set_list_entry_char_value(const char *new_char_value) {
-    aw_assert(current_list_table);
-    current_list_table->set_value(new_char_value);
-}
-
-void AW_window::set_list_entry_displayed(const char *new_displayed) {
-    aw_assert(current_list_table);
-    current_list_table->set_displayed(new_displayed);
-}
 
 void AW_window::set_selection_list_suffix(AW_selection_list *selection_list, const char *suffix) {
     char filter[200];
