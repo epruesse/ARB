@@ -303,8 +303,8 @@ void AWT_create_select_srtaci_window(AW_window *aww, AW_CL awar_acisrt, AW_CL /*
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("box");
-        AW_selection_list* id    = aws->create_selection_list(AWAR_SELECT_ACISRT_PRE);
-        GB_ERROR           error = id->load(GB_path_in_ARBLIB("sellists/srt_aci*.sellst"));
+        AW_selection_list *programs = aws->create_selection_list(AWAR_SELECT_ACISRT_PRE);
+        GB_ERROR           error    = programs->load(GB_path_in_ARBLIB("sellists/srt_aci*.sellst"));
         if (error) aw_message(error);
 
         aws->at("field");

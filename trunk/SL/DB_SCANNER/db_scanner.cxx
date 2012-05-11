@@ -37,10 +37,11 @@
 struct DbScanner {
     ItemSelector& selector;
 
-    AW_window         *aws;
-    AW_root           *awr;
-    GBDATA            *gb_main;
-    AW_selection_list *id;
+    AW_window *aws;
+    AW_root   *awr;
+    GBDATA    *gb_main;
+
+    AW_selection_list *fields;
 
     GBDATA         *gb_user;
     GBDATA         *gb_edit;
@@ -57,7 +58,7 @@ struct DbScanner {
           aws(NULL),
           awr(NULL),
           gb_main(NULL),
-          id(NULL),
+          fields(NULL),
           gb_user(NULL),
           gb_edit(NULL),
           may_be_an_error(false),
@@ -76,7 +77,7 @@ struct DbScanner {
 
 static GBDATA *get_mapped_item_and_begin_trans(AW_CL arbdb_scanid) {
     DbScanner *cbs     = (DbScanner *)arbdb_scanid;
-    AW_root         *aw_root = cbs->aws->get_root();
+    AW_root         *aw_root = cbs->awr;
 
     cbs->may_be_an_error = false;
     GB_push_transaction(cbs->gb_main);
@@ -114,7 +115,6 @@ static void scanner_delete_selected_field(void *, DbScanner *cbs) {
 }
 
 static void selected_field_changed_cb(GBDATA *, DbScanner *cbs, GB_CB_TYPE gbtype) {
-    AW_window *aws = cbs->aws;
     cbs->may_be_an_error = true;
 
     if (gbtype == GB_CB_DELETE) {
@@ -122,24 +122,24 @@ static void selected_field_changed_cb(GBDATA *, DbScanner *cbs, GB_CB_TYPE gbtyp
     }
     if (cbs->gb_edit) {
         if (inside_scanner_keydata(cbs, cbs->gb_edit)) {    // doesn't exist
-            aws->get_root()->awar(cbs->awarname_editfield)->write_string("");
+            cbs->awr->awar(cbs->awarname_editfield)->write_string("");
         }
         else {
             char *data = GB_read_as_string(cbs->gb_edit);
             if (!data) data = strdup("<YOU CANNOT EDIT THIS TYPE>");
-            cbs->aws->get_root()->awar(cbs->awarname_editfield)->write_string(data);
+            cbs->awr->awar(cbs->awarname_editfield)->write_string(data);
             free(data);
         }
     }
     else {
-        aws->get_root()->awar(cbs->awarname_editfield)->write_string("");
+        cbs->awr->awar(cbs->awarname_editfield)->write_string("");
     }
 }
 
 
 static void editfield_value_changed(void *, DbScanner *cbs)
 {
-    char *value = cbs->aws->get_root()->awar(cbs->awarname_editfield)->read_string();
+    char *value = cbs->awr->awar(cbs->awarname_editfield)->read_string();
     int   vlen  = strlen(value);
 
     while (vlen>0 && value[vlen-1] == '\n') vlen--; // remove trailing newlines
@@ -153,8 +153,8 @@ static void editfield_value_changed(void *, DbScanner *cbs)
     if (!gbd) {
         error = "No item or fields selected";
     }
-    else if (!cbs->aws->get_root()->awar(cbs->awarname_edit_enabled)->read_int()) { // edit disabled
-        cbs->aws->get_root()->awar(cbs->awarname_editfield)->write_string("");
+    else if (!cbs->awr->awar(cbs->awarname_edit_enabled)->read_int()) { // edit disabled
+        cbs->awr->awar(cbs->awarname_editfield)->write_string("");
         error = "Edit is disabled";
     }
     else {
@@ -171,7 +171,7 @@ static void editfield_value_changed(void *, DbScanner *cbs)
                 if (!gb_new) error = GB_await_error();
                 else    error      = GB_write_as_string(gb_new, value);
 
-                cbs->aws->get_root()->awar(cbs->awarname_current_item)->write_pointer(gb_new); // remap arbdb
+                cbs->awr->awar(cbs->awarname_current_item)->write_pointer(gb_new); // remap arbdb
             }
         }
         else { // change old element
@@ -231,7 +231,7 @@ static void editfield_value_changed(void *, DbScanner *cbs)
                     else {
                         error = GB_delete(gbd);
                         if (!error) {
-                            cbs->aws->get_root()->awar(cbs->awarname_current_item)->write_pointer(gb_key);
+                            cbs->awr->awar(cbs->awarname_current_item)->write_pointer(gb_key);
                         }
                     }
                 }
@@ -280,16 +280,16 @@ static void remap_edit_box(GBDATA *, DbScanner *cbs) {
     cbs->may_be_an_error = false;
     GB_push_transaction(cbs->gb_main);
     if (cbs->may_be_an_error) {     // sorry
-        cbs->aws->get_root()->awar(cbs->awarname_current_item)->write_pointer(NULL);
+        cbs->awr->awar(cbs->awarname_current_item)->write_pointer(NULL);
     }
-    GBDATA *gbd = cbs->aws->get_root()->awar(cbs->awarname_current_item)->read_pointer();
+    GBDATA *gbd = cbs->awr->awar(cbs->awarname_current_item)->read_pointer();
 
     if (cbs->gb_edit) {
         GB_remove_callback(cbs->gb_edit, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE),
                            (GB_CB)selected_field_changed_cb, (int *)cbs);
     }
 
-    if (cbs->aws->get_root()->awar(cbs->awarname_edit_enabled)->read_int()) {      // edit enabled
+    if (cbs->awr->awar(cbs->awarname_edit_enabled)->read_int()) {      // edit enabled
         cbs->gb_edit = gbd;
     }
     else {
@@ -346,7 +346,7 @@ DbScanner *create_db_scanner(GBDATA         *gb_main,
 
     aws->at(box_pos_fig);
 
-    cbs->id          = aws->create_selection_list(cbs->awarname_current_item, 0, "", 20, 10);
+    cbs->fields      = aws->create_selection_list(cbs->awarname_current_item, 0, "", 20, 10);
     cbs->aws         = aws;
     cbs->awr         = aw_root;
     cbs->gb_main     = gb_main;
@@ -402,7 +402,7 @@ DbScanner *create_db_scanner(GBDATA         *gb_main,
     return cbs;
 }
 
-static void scan_fields_recursive(GBDATA *gbd, DbScanner *cbs, int deep, AW_selection_list *id)
+static void scan_fields_recursive(GBDATA *gbd, DbScanner *cbs, int deep, AW_selection_list *fields)
 {
     GB_TYPES  type = GB_read_type(gbd);
     char     *key  = GB_read_key(gbd);
@@ -414,23 +414,23 @@ static void scan_fields_recursive(GBDATA *gbd, DbScanner *cbs, int deep, AW_sele
     switch (type) {
         case GB_DB: {
             GBS_strcat(out, "<CONTAINER>:");
-            cbs->id->insert(GBS_mempntr(out), gbd);
+            cbs->fields->insert(GBS_mempntr(out), gbd);
             GBS_strforget(out);
 
             for (GBDATA *gb2 = GB_child(gbd); gb2; gb2 = GB_nextChild(gb2)) {
-                scan_fields_recursive(gb2, cbs, deep + 1, id);
+                scan_fields_recursive(gb2, cbs, deep + 1, fields);
             }
             break;
         }
         case GB_LINK: {
             GBS_strnprintf(out, 100, "LINK TO '%s'", GB_read_link_pntr(gbd));
-            cbs->id->insert(GBS_mempntr(out), gbd);
+            cbs->fields->insert(GBS_mempntr(out), gbd);
             GBS_strforget(out);
 
             GBDATA *gb_al = GB_follow_link(gbd);
             if (gb_al) {
                 for (GBDATA *gb2 = GB_child(gb_al); gb2; gb2 = GB_nextChild(gb2)) {
-                    scan_fields_recursive(gb2, cbs, deep + 1, id);
+                    scan_fields_recursive(gb2, cbs, deep + 1, fields);
                 }
             }
             break;
@@ -445,7 +445,7 @@ static void scan_fields_recursive(GBDATA *gbd, DbScanner *cbs, int deep, AW_sele
             else {
                 GBS_strcat(out, "<unprintable>");
             }
-            cbs->id->insert(GBS_mempntr(out), gbd);
+            cbs->fields->insert(GBS_mempntr(out), gbd);
             GBS_strforget(out);
             break;
         }
@@ -464,7 +464,7 @@ static void scan_list(GBDATA *, DbScanner *cbs) {
 
     if (last_max_name_width == 0) last_max_name_width = 15;
 
-    cbs->id->clear();
+    cbs->fields->clear();
 
     GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector.change_key_path, GB_CREATE_CONTAINER);
 
@@ -518,11 +518,11 @@ static void scan_list(GBDATA *, DbScanner *cbs) {
                             free(data);
                         }
                     }
-                    cbs->id->insert(buffer, gbd);
+                    cbs->fields->insert(buffer, gbd);
                 }
                 else { // non-existing entry
                     p[0] = ' '; p[1] = ':'; p[2] = 0;
-                    cbs->id->insert(buffer, gb_key);
+                    cbs->fields->insert(buffer, gb_key);
                 }
             }
         }
@@ -536,8 +536,6 @@ static void scan_list(GBDATA *, DbScanner *cbs) {
 }
 
 static void scanner_changed_cb(GBDATA *, DbScanner *cbs, GB_CB_TYPE gbtype) {
-    AW_window *aws = cbs->aws;
-
     cbs->may_be_an_error = true;
 
     if (gbtype == GB_CB_DELETE) {
@@ -549,32 +547,32 @@ static void scanner_changed_cb(GBDATA *, DbScanner *cbs, GB_CB_TYPE gbtype) {
         // recalls this function !!!!
         return;
     }
-    cbs->id->clear();
+    cbs->fields->clear();
     if (cbs->gb_user) {
         GB_transaction ta(cbs->gb_main);
 
         switch (cbs->scannermode) {
             case DB_SCANNER:
-                scan_fields_recursive(cbs->gb_user, cbs, 0, cbs->id);
+                scan_fields_recursive(cbs->gb_user, cbs, 0, cbs->fields);
                 break;
             case DB_VIEWER:
                 scan_list(cbs->gb_user, cbs);
                 break;
         }
     }
-    cbs->id->insert_default("", (GBDATA*)NULL);
-    cbs->id->update();
+    cbs->fields->insert_default("", (GBDATA*)NULL);
+    cbs->fields->update();
     if (cbs->gb_user) {
         GB_transaction ta(cbs->gb_main);
 
         long flag = GB_read_flag(cbs->gb_user);
-        aws->get_root()->awar(cbs->awarname_mark)->write_int(flag);
+        cbs->awr->awar(cbs->awarname_mark)->write_int(flag);
     }
 }
 /*!********** Unmap edit field if 'key_data' has been changed (maybe entries deleted)
  *********/
 static void scanner_changed_cb2(GBDATA *dummy, DbScanner *cbs, GB_CB_TYPE gbtype) {
-    cbs->aws->get_root()->awar(cbs->awarname_current_item)->write_pointer(NULL);
+    cbs->awr->awar(cbs->awarname_current_item)->write_pointer(NULL);
     // unmap edit field
     scanner_changed_cb(dummy, cbs, gbtype);
 }
@@ -600,7 +598,7 @@ void map_db_scanner(DbScanner *scanner, GBDATA *gb_pntr, const char *key_path) {
         }
     }
 
-    scanner->aws->get_root()->awar(scanner->awarname_current_item)->write_pointer(NULL);
+    scanner->awr->awar(scanner->awarname_current_item)->write_pointer(NULL);
     scanner_changed_cb(gb_pntr, scanner, GB_CB_CHANGED);
 }
 

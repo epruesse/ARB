@@ -77,7 +77,7 @@ namespace QUERY {
         AWAR               awar_count;
         AWAR               awar_sort;
         unsigned long      sort_mask;                     // contains several cascading sort criteria (QUERY_SORT_CRITERIA_BITS each)
-        AW_selection_list *result_id;
+        AW_selection_list *hitlist;
         ItemSelector&      selector;
         int                select_bit;                    // one of 1 2 4 8 .. 128 (one for each query box)
         GB_HASH           *hit_description;               // key = char* (hit item name), value = char* (description of hit - allocated!)

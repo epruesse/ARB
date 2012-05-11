@@ -428,10 +428,10 @@ static void MG_aci_changed_cb(AW_root *aw_root) {
     }
 }
 
-static void MG_update_selection_list_on_field_transfers(AW_root *aw_root, AW_CL cl_sel_id) {
-    AW_selection_list *sel_id = (AW_selection_list*)cl_sel_id;
+static void MG_update_selection_list_on_field_transfers(AW_root *aw_root, AW_CL cl_geneSpecFieldList) {
+    AW_selection_list *geneSpecFieldList = (AW_selection_list*)cl_geneSpecFieldList;
 
-    sel_id->clear();
+    geneSpecFieldList->clear();
 
     {
         char *existing_definitions = aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->read_string();
@@ -447,15 +447,15 @@ static void MG_update_selection_list_on_field_transfers(AW_root *aw_root, AW_CL 
 
             mg_assert(end[0] == ';');
             end[0] = 0;
-            sel_id->insert(start, start);
+            geneSpecFieldList->insert(start, start);
             start = end+1;
         }
 
         free(existing_definitions);
     }
 
-    sel_id->insert_default("", "");
-    sel_id->update();
+    geneSpecFieldList->insert_default("", "");
+    geneSpecFieldList->update();
 }
 
 static void init_gene_species_xfer_fields_subconfig(AWT_config_definition& cdef, char *existing_definitions) {
@@ -513,7 +513,7 @@ static char *store_gene_species_xfer_fields(AW_window *aww, AW_CL,  AW_CL) {
     init_gene_species_xfer_fields_config(sub_cdef);
     return sub_cdef.read();
 }
-static void load_gene_species_xfer_fields(AW_window *aww, const char *stored_string, AW_CL cl_sel_id, AW_CL) {
+static void load_gene_species_xfer_fields(AW_window *aww, const char *stored_string, AW_CL cl_geneSpecFieldList, AW_CL) {
     AW_root *aw_root = aww->get_root();
 
     aw_root->awar(AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD)->write_string(""); // de-select
@@ -538,8 +538,7 @@ static void load_gene_species_xfer_fields(AW_window *aww, const char *stored_str
     }
 
     // refresh mask :
-    AW_selection_list *sel_id = (AW_selection_list*)cl_sel_id;
-    MG_update_selection_list_on_field_transfers(aw_root, (AW_CL)sel_id);
+    MG_update_selection_list_on_field_transfers(aw_root, cl_geneSpecFieldList);
 }
 
 AW_window *MG_gene_species_create_field_transfer_def_window(AW_root *aw_root) {
@@ -585,16 +584,16 @@ AW_window *MG_gene_species_create_field_transfer_def_window(AW_root *aw_root) {
     aws->create_text_field(AWAR_MERGE_GENE_SPECIES_EXAMPLE, 40, 3);
 
     aws->at("fields");
-    AW_selection_list *sel_id = aws->create_selection_list(AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD, 0, "", 10, 30);
+    AW_selection_list *geneSpecFieldList = aws->create_selection_list(AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD, 0, "", 10, 30);
 
-    MG_update_selection_list_on_field_transfers(aw_root, (AW_CL)sel_id);
+    MG_update_selection_list_on_field_transfers(aw_root, (AW_CL)geneSpecFieldList);
 
     aws->at("save");
     AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "gene_species_field_xfer",
-                              store_gene_species_xfer_fields, load_gene_species_xfer_fields, (AW_CL)sel_id, 0);
+                              store_gene_species_xfer_fields, load_gene_species_xfer_fields, (AW_CL)geneSpecFieldList, 0);
 
     // add callbacks for this window :
-    aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->add_callback(MG_update_selection_list_on_field_transfers, (AW_CL)sel_id);
+    aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->add_callback(MG_update_selection_list_on_field_transfers, (AW_CL)geneSpecFieldList);
     aw_root->awar(AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD)->add_callback(MG_current_field_def_changed_cb);
     aw_root->awar(AWAR_MERGE_GENE_SPECIES_SOURCE)->add_callback(MG_source_field_changed_cb);
     aw_root->awar(AWAR_MERGE_GENE_SPECIES_DEST)->add_callback(MG_dest_field_changed_cb);

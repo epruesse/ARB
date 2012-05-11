@@ -112,8 +112,8 @@ struct awar_vars {
 class AW_selection_list;
 
 extern bool                Stop_evaluation;
-extern AW_selection_list  *selected_list;           // globale id's fuer
-extern AW_selection_list  *probelist;               // identifizierung der Listen
+extern AW_selection_list  *selected_list;
+extern AW_selection_list  *probelist;
 extern char                MP_probe_tab[256];
 extern AW_selection_list  *result_probes_list;
 extern int                 remembered_mismatches;

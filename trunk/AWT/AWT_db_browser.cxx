@@ -319,7 +319,7 @@ class DB_browser {
 
     AW_window             *aww;                     // browser window
     AW_option_menu_struct *oms;                     // the DB selector
-    AW_selection_list     *browse_id;               // the browse subwindow
+    AW_selection_list     *browse_list;             // the browse subwindow
 
     static SmartPtr<DB_browser> the_browser;
     friend DB_browser *get_the_browser(bool autocreate);
@@ -345,7 +345,7 @@ public:
     }
 
     AW_window *get_window(AW_root *aw_root);
-    AW_selection_list *get_browser_id() { return browse_id; }
+    AW_selection_list *get_browser_list() { return browse_list; }
 
     size_t get_selected_db() const { return current_db; }
     void set_selected_db(size_t idx) {
@@ -701,7 +701,7 @@ static void update_browser_selection_list(AW_root *aw_root, AW_selection_list *i
 
 static void order_changed_cb(AW_root *aw_root) {
     DB_browser *browser = get_the_browser();
-    update_browser_selection_list(aw_root, browser->get_browser_id());
+    update_browser_selection_list(aw_root, browser->get_browser_list());
 }
 
 inline char *strmove(char *dest, char *source) {
@@ -883,7 +883,7 @@ static void path_changed_cb(AW_root *aw_root) {
             free(path);
         }
 
-        update_browser_selection_list(aw_root, browser->get_browser_id());
+        update_browser_selection_list(aw_root, browser->get_browser_list());
         aw_root->awar(AWAR_DBB_BROWSE)->write_string(goto_child ? goto_child : "");
     }
 }
@@ -961,8 +961,8 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
         aws->callback(toggle_tmp_cb); aws->create_button("toggle_tmp", "/tmp");
 
         aws->at("browse");
-        browse_id = aws->create_selection_list(AWAR_DBB_BROWSE);
-        update_browser_selection_list(aw_root, browse_id);
+        browse_list = aws->create_selection_list(AWAR_DBB_BROWSE);
+        update_browser_selection_list(aw_root, browse_list);
 
         aws->at("infoopt");
         aws->label("ASCII"); aws->create_toggle     (AWAR_DUMP_ASCII);

@@ -41,9 +41,8 @@ using namespace std;
 #endif
 
 struct File_selection {                            // for fileselection
-    AW_window         *aws;
     AW_root           *awr;
-    AW_selection_list *id;
+    AW_selection_list *filelist;
 
     char *def_name;
     char *def_dir;
@@ -170,7 +169,7 @@ static void execute_browser_command(const char *browser_command) {
     }
 }
 
-static void fill_fileselection_recursive(const char *fulldir, int skipleft, const char *mask, bool recurse, bool showdir, bool show_dots, AW_window *aws, AW_selection_list *selid) {
+static void fill_fileselection_recursive(const char *fulldir, int skipleft, const char *mask, bool recurse, bool showdir, bool show_dots, AW_selection_list *filelist) {
     // see fill_fileselection_cb for meaning of 'sort_order'
 
     DIR *dirp = opendir(fulldir);
@@ -180,7 +179,7 @@ static void fill_fileselection_recursive(const char *fulldir, int skipleft, cons
 #endif // TRACE_FILEBOX
 
     if (!dirp) {
-        selid->insert(GBS_global_string("x Your directory path is invalid (%s)", fulldir), "?");
+        filelist->insert(GBS_global_string("x Your directory path is invalid (%s)", fulldir), "?");
         return;
     }
 
@@ -196,10 +195,10 @@ static void fill_fileselection_recursive(const char *fulldir, int skipleft, cons
         if (AW_is_dir(fullname)) {
             if (!(entry[0] == '.' && (!DIR_show_hidden || entry[1] == 0 || (entry[1] == '.' && entry[2] == 0)))) { // skip "." and ".." and dotdirs if requested
                 if (showdir) {
-                    selid->insert(GBS_global_string("D %-18s(%s)", entry, fullname), fullname);
+                    filelist->insert(GBS_global_string("D %-18s(%s)", entry, fullname), fullname);
                 }
                 if (recurse && !AW_is_link(nontruepath)) { // don't follow links
-                    fill_fileselection_recursive(nontruepath, skipleft, mask, recurse, showdir, show_dots, aws, selid);
+                    fill_fileselection_recursive(nontruepath, skipleft, mask, recurse, showdir, show_dots, filelist);
                 }
             }
         }
@@ -230,7 +229,7 @@ static void fill_fileselection_recursive(const char *fulldir, int skipleft, cons
                             break;
                     }
 
-                    selid->insert(sel_entry, nontruepath);
+                    filelist->insert(sel_entry, nontruepath);
                 }
             }
         }
@@ -254,7 +253,7 @@ public:
 };
 
 
-static void show_soft_link(AW_selection_list *sel_id, const char *envar, DuplicateLinkFilter& unDup) {
+static void show_soft_link(AW_selection_list *filelist, const char *envar, DuplicateLinkFilter& unDup) {
     // adds a soft link (e.g. ARBMACROHOME or ARB_WORKDIR) into file selection box
     // if content of 'envar' matches 'cwd' nothing is inserted
 
@@ -267,14 +266,16 @@ static void show_soft_link(AW_selection_list *sel_id, const char *envar, Duplica
         if (unDup.not_seen_yet(edir)) {
             unDup.register_directory(edir);
             const char *entry = GBS_global_string("$ %-18s(%s)", GBS_global_string("'%s'", envar), expanded_dir);
-            sel_id->insert(entry, expanded_dir);
+            filelist->insert(entry, expanded_dir);
         }
     }
 }
 
 static void fill_fileselection_cb(void */*dummy*/, File_selection *cbs) {
-    AW_root *aw_root = cbs->aws->get_root();
-    cbs->id->clear();
+    // @@@ move code into method(s) of File_selection
+
+    AW_root *aw_root = cbs->awr;
+    cbs->filelist->clear();
 
     char *diru    = aw_root->awar(cbs->def_dir)->read_string();
     char *fulldir = AW_unfold_path(cbs->pwd, diru);
@@ -308,24 +309,24 @@ static void fill_fileselection_cb(void */*dummy*/, File_selection *cbs) {
     if (cbs->show_dir) {
         if (is_wildcard) {
             if (cbs->leave_wildcards) {
-                cbs->id->insert((char *)GBS_global_string("  ALL '%s' in '%s'", name_only, fulldir), name);
+                cbs->filelist->insert((char *)GBS_global_string("  ALL '%s' in '%s'", name_only, fulldir), name);
             }
             else {
-                cbs->id->insert((char *)GBS_global_string("  ALL '%s' in+below '%s'", name_only, fulldir), name);
+                cbs->filelist->insert((char *)GBS_global_string("  ALL '%s' in+below '%s'", name_only, fulldir), name);
             }
         }
         else {
-            cbs->id->insert((char *)GBS_global_string("  CONTENTS OF '%s'", fulldir), fulldir);
+            cbs->filelist->insert((char *)GBS_global_string("  CONTENTS OF '%s'", fulldir), fulldir);
         }
 
         if (filter[0] && !is_wildcard) {
-            cbs->id->insert(GBS_global_string("! \' Search for\'     (*%s)", filter), "*");
+            cbs->filelist->insert(GBS_global_string("! \' Search for\'     (*%s)", filter), "*");
         }
         if (strcmp("/", fulldir)) {
-            cbs->id->insert("! \'PARENT DIR       (..)\'", "..");
+            cbs->filelist->insert("! \'PARENT DIR       (..)\'", "..");
         }
         if (DIR_subdirs_hidden == 0) {
-            show_soft_link(cbs->id, cbs->pwd, unDup);
+            show_soft_link(cbs->filelist, cbs->pwd, unDup);
 
             if (cbs->pwdx) {        // additional directories
                 char *start = cbs->pwdx;
@@ -333,61 +334,61 @@ static void fill_fileselection_cb(void */*dummy*/, File_selection *cbs) {
                     char *multiple = strchr(start, '^');
                     if (multiple) {
                         multiple[0] = 0;
-                        show_soft_link(cbs->id, start, unDup);
+                        show_soft_link(cbs->filelist, start, unDup);
                         multiple[0] = '^';
                         start       = multiple+1;
                     }
                     else {
-                        show_soft_link(cbs->id, start, unDup);
+                        show_soft_link(cbs->filelist, start, unDup);
                         start = 0;
                     }
                 }
             }
 
-            show_soft_link(cbs->id, "HOME", unDup);
-            show_soft_link(cbs->id, "PWD", unDup);
-            show_soft_link(cbs->id, "ARB_WORKDIR", unDup);
-            show_soft_link(cbs->id, "PT_SERVER_HOME", unDup);
+            show_soft_link(cbs->filelist, "HOME", unDup);
+            show_soft_link(cbs->filelist, "PWD", unDup);
+            show_soft_link(cbs->filelist, "ARB_WORKDIR", unDup);
+            show_soft_link(cbs->filelist, "PT_SERVER_HOME", unDup);
 
-            cbs->id->insert("! \' Sub-directories (shown)\'", GBS_global_string("%s?hide?", name));
+            cbs->filelist->insert("! \' Sub-directories (shown)\'", GBS_global_string("%s?hide?", name));
         }
         else {
-            cbs->id->insert("! \' Sub-directories (hidden)\'", GBS_global_string("%s?show?", name));
+            cbs->filelist->insert("! \' Sub-directories (hidden)\'", GBS_global_string("%s?show?", name));
         }
     }
 
-    cbs->id->insert(GBS_global_string("! \' Sort order\'     (%s)", DIR_sort_order_name[DIR_sort_order]),
-                    GBS_global_string("%s?sort?", name));
+    cbs->filelist->insert(GBS_global_string("! \' Sort order\'     (%s)", DIR_sort_order_name[DIR_sort_order]),
+                          GBS_global_string("%s?sort?", name));
 
-    cbs->id->insert(GBS_global_string("! \' %s%s\'",
-                                      DIR_show_hidden ? "Hide dot-" : "Show hidden ",
-                                      cbs->show_dir ? "files/dirs" : "files"),
-                    GBS_global_string("%s?dot?", name));
+    cbs->filelist->insert(GBS_global_string("! \' %s%s\'",
+                                            DIR_show_hidden ? "Hide dot-" : "Show hidden ",
+                                            cbs->show_dir ? "files/dirs" : "files"),
+                          GBS_global_string("%s?dot?", name));
 
     if (is_wildcard) {
         if (cbs->leave_wildcards) {
-            fill_fileselection_recursive(fulldir, strlen(fulldir)+1, name_only, false, cbs->show_dir && !DIR_subdirs_hidden, DIR_show_hidden, cbs->aws, cbs->id);
+            fill_fileselection_recursive(fulldir, strlen(fulldir)+1, name_only, false, cbs->show_dir && !DIR_subdirs_hidden, DIR_show_hidden, cbs->filelist);
         }
         else {
             if (cbs->show_dir) { // recursive wildcarded search
-                fill_fileselection_recursive(fulldir, strlen(fulldir)+1, name_only, true, false, DIR_show_hidden, cbs->aws, cbs->id);
+                fill_fileselection_recursive(fulldir, strlen(fulldir)+1, name_only, true, false, DIR_show_hidden, cbs->filelist);
             }
             else {
                 char *mask = GBS_global_string_copy("%s*%s", name_only, filter);
-                fill_fileselection_recursive(fulldir, strlen(fulldir)+1, mask, false, false, DIR_show_hidden, cbs->aws, cbs->id);
+                fill_fileselection_recursive(fulldir, strlen(fulldir)+1, mask, false, false, DIR_show_hidden, cbs->filelist);
                 free(mask);
             }
         }
     }
     else {
         char *mask = GBS_global_string_copy("*%s", filter);
-        fill_fileselection_recursive(fulldir, strlen(fulldir)+1, mask, false, cbs->show_dir && !DIR_subdirs_hidden, DIR_show_hidden, cbs->aws, cbs->id);
+        fill_fileselection_recursive(fulldir, strlen(fulldir)+1, mask, false, cbs->show_dir && !DIR_subdirs_hidden, DIR_show_hidden, cbs->filelist);
         free(mask);
     }
 
-    cbs->id->insert_default("", "");
-    cbs->id->sort(false, true);
-    cbs->id->update();
+    cbs->filelist->insert_default("", "");
+    cbs->filelist->sort(false, true);
+    cbs->filelist->update();
 
     free(name);
     free(fulldir);
@@ -405,7 +406,7 @@ static void fileselection_filter_changed_cb(void *, File_selection *) {
 }
 
 static void fileselection_filename_changed_cb(void *, File_selection *cbs) {
-    AW_root *aw_root = cbs->aws->get_root();
+    AW_root *aw_root = cbs->awr;
     char    *fname   = aw_root->awar(cbs->def_name)->read_string();
 
 #if defined(TRACE_FILEBOX)
@@ -610,7 +611,6 @@ void AW_create_fileselection(AW_window *aws, const char *awar_prefix, const char
     File_selection *acbs    = new File_selection;
     memset(acbs, 0, sizeof(*acbs));
 
-    acbs->aws = (AW_window *)aws;
     acbs->awr = aw_root;
     acbs->pwd = strdup(pwd);
     {
@@ -654,7 +654,7 @@ void AW_create_fileselection(AW_window *aws, const char *awar_prefix, const char
 
     sprintf(buffer, "%sbox", at_prefix);
     aws->at(buffer);
-    acbs->id = aws->create_selection_list(acbs->def_name, 0, "", 2, 2);
+    acbs->filelist = aws->create_selection_list(acbs->def_name, 0, "", 2, 2);
 
     fill_fileselection_cb(0, acbs);
     fileselection_filename_changed_cb(0, acbs);    // this fixes the path name

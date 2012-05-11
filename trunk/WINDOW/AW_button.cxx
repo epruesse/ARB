@@ -124,33 +124,33 @@ void AW_awar::untie_all_widgets() {
 
 
 class VarUpdateInfo : virtual Noncopyable { // used to refresh single items on change
-    AW_window      *aw_parent;
-    Widget          widget;
-    AW_widget_type  widget_type;
-    AW_awar        *awar;
-    AW_scalar       value;
-    AW_cb_struct   *cbs;
-    void           *id;         // selection id etc ...
+    AW_window         *aw_parent;
+    Widget             widget;
+    AW_widget_type     widget_type;
+    AW_awar           *awar;
+    AW_scalar          value;
+    AW_cb_struct      *cbs;
+    AW_selection_list *sellist;
 
 public:
     VarUpdateInfo(AW_window *aw, Widget w, AW_widget_type wtype, AW_awar *a, AW_cb_struct *cbs_)
         : aw_parent(aw), widget(w), widget_type(wtype), awar(a),
           value(a),
-          cbs(cbs_), id(NULL)
+          cbs(cbs_), sellist(NULL)
     {
     }
     template<typename T>
     VarUpdateInfo(AW_window *aw, Widget w, AW_widget_type wtype, AW_awar *a, T t, AW_cb_struct *cbs_)
         : aw_parent(aw), widget(w), widget_type(wtype), awar(a),
           value(t),
-          cbs(cbs_), id(NULL)
+          cbs(cbs_), sellist(NULL)
     {
     }
 
     void change_from_widget(XtPointer call_data);
 
     void set_widget(Widget w) { widget = w; }
-    void set_id(void *ID) { id = ID; }
+    void set_sellist(AW_selection_list *asl) { sellist = asl; }
 };
 
 static void AW_variable_update_callback(Widget /*wgt*/, XtPointer variable_update_struct, XtPointer call_data) {
@@ -214,15 +214,13 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
                 XmStringGetLtoR(xml->item, XmSTRING_DEFAULT_CHARSET, &selected);
             }
 
-            AW_selection_list       *list  = (AW_selection_list*)id;
-            AW_selection_list_entry *entry = list->list_table;
-
+            AW_selection_list_entry *entry = sellist->list_table;
             while (entry && strcmp(entry->get_displayed(), selected) != 0) {
                 entry = entry->next;
             }
 
             if (!entry) {   
-                entry = list->default_select; // use default selection
+                entry = sellist->default_select; // use default selection
                 if (!entry) GBK_terminate("no default specified for selection list"); // or die
             }
             entry->value.write_to(awar);
@@ -1383,7 +1381,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, const 
     // callback for enter
     if (vs) {
         vui = new VarUpdateInfo(this, scrolledList, AW_WIDGET_SELECTION_LIST, vs, cbs);
-        vui->set_id((void*)p_global->last_selection_list);
+        vui->set_sellist(p_global->last_selection_list);
 
         XtAddCallback(scrolledList, XmNbrowseSelectionCallback,
                       (XtCallbackProc) AW_variable_update_callback,

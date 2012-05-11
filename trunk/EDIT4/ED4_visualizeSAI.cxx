@@ -313,17 +313,17 @@ static void saiChanged_callback(AW_root *awr) {
     free(saiName);
 }
 
-static void update_ClrTransTabNamesList_cb(AW_root *awr, AW_CL cl_id) {
-    AW_selection_list *id               = (AW_selection_list*)cl_id;
+static void update_ClrTransTabNamesList_cb(AW_root *awr, AW_CL cl_colorTransList) {
+    AW_selection_list *colorTransList   = (AW_selection_list*)cl_colorTransList;
     char              *clrTransTabNames = awr->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES)->read_string();
 
-    id->clear();
+    colorTransList->clear();
 
     for (char *tok = strtok(clrTransTabNames, "\n"); tok; tok = strtok(0, "\n")) {
-        id->insert(tok, tok);
+        colorTransList->insert(tok, tok);
     }
-    id->insert_default("????", "");
-    id->update();
+    colorTransList->insert_default("????", "");
+    colorTransList->update();
 
     free(clrTransTabNames);
 }
@@ -493,12 +493,12 @@ static void deleteColorTranslationTable(AW_window *aws) {
 }
 
 static AW_selection_list *buildClrTransTabNamesList(AW_window *aws) {
-    AW_root           *awr = aws->get_root();
-    AW_selection_list *id  = aws->create_selection_list(AWAR_SAI_CLR_TRANS_TABLE);
+    AW_root           *awr            = aws->get_root();
+    AW_selection_list *colorTransList = aws->create_selection_list(AWAR_SAI_CLR_TRANS_TABLE);
 
-    update_ClrTransTabNamesList_cb(awr, (AW_CL)id);
+    update_ClrTransTabNamesList_cb(awr, (AW_CL)colorTransList);
 
-    return id;
+    return colorTransList;
 }
 
 const char *ED4_getSaiColorString(AW_root *awr, int start, int end) {

@@ -69,7 +69,7 @@ namespace QUERY {
         bool is_queried(GBDATA *gb_item) const;
     };
 
-    void     copy_selection_list_2_query_box(DbQuery *query, AW_selection_list *id, const char *hit_description);
+    void     copy_selection_list_2_query_box(DbQuery *query, AW_selection_list *srclist, const char *hit_description);
     DbQuery *create_query_box(AW_window *aws, query_spec *awtqs, const char *query_id); // create the query box
     void     search_duplicated_field_content(AW_window *dummy, DbQuery *query, bool tokenize);
     long     count_queried_items(DbQuery *query, QUERY_RANGE range);
