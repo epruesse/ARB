@@ -600,12 +600,12 @@ AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
     COLSTAT_create_selection_list(aws, column_stat);
 
     aws->at("what");
-    AW_selection_list* selid = aws->create_selection_list(AWAR_CS2GP_SUFFIX);
+    AW_selection_list *plotTypeList = aws->create_selection_list(AWAR_CS2GP_SUFFIX);
     for (int pt = 0; pt<PT_PLOT_TYPES; ++pt) {
-        selid->insert(plotTypeDescription[pt], plotTypeName[pt]);
+        plotTypeList->insert(plotTypeDescription[pt], plotTypeName[pt]);
     }
-    selid->insert_default("<select one>", "");
-    selid->update();
+    plotTypeList->insert_default("<select one>", "");
+    plotTypeList->update();
 
     adfiltercbstruct *filter = awt_create_select_filter(root, GLOBAL_gb_main, AWAR_CS2GP_FILTER_NAME);
     aws->at("ap_filter");

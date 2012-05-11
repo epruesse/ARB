@@ -358,7 +358,7 @@ static long detectMaxNameLength(const char *key, long val, void *cl_len) {
 void QUERY::DbQuery_update_list(DbQuery *query) {
     GB_push_transaction(query->gb_main);
 
-    query->result_id->clear();
+    query->hitlist->clear();
 
     AW_window     *aww      = query->aws;
     AW_root       *aw_root  = aww->get_root();
@@ -439,20 +439,20 @@ void QUERY::DbQuery_update_list(DbQuery *query) {
                                                  name_len, name,
                                                  info);
 
-            query->result_id->insert(line, name);
+            query->hitlist->insert(line, name);
             free(toFree);
             free(name);
         }
     }
 
     if (count>MAX_QUERY_LIST_LEN) {
-        query->result_id->insert("*****  List truncated  *****", "");
+        query->hitlist->insert("*****  List truncated  *****", "");
     }
 
     free(sorted);
 
-    query->result_id->insert_default("End of list", "");
-    query->result_id->update();
+    query->hitlist->insert_default("End of list", "");
+    query->hitlist->update();
     aww->get_root()->awar(query->awar_count)->write_int((long)count);
     GB_pop_transaction(query->gb_main);
 }
@@ -1338,7 +1338,7 @@ static void perform_query_cb(AW_window*, AW_CL cl_query, AW_CL cl_ext_query) {
     GB_pop_transaction(query->gb_main);
 }
 
-void QUERY::copy_selection_list_2_query_box(DbQuery *query, AW_selection_list *id, const char *hit_description) {
+void QUERY::copy_selection_list_2_query_box(DbQuery *query, AW_selection_list *srclist, const char *hit_description) {
     GB_transaction ta(query->gb_main);
 
     dbq_assert(strstr(hit_description, "%s")); // hit_description needs '%s' (which is replaced by visible content of 'id')
@@ -1346,7 +1346,7 @@ void QUERY::copy_selection_list_2_query_box(DbQuery *query, AW_selection_list *i
     GB_ERROR         error     = 0;
     AW_window       *aww       = query->aws;
     AW_root         *aw_root   = aww->get_root();
-    GB_HASH         *list_hash = id->to_hash(false);
+    GB_HASH         *list_hash = srclist->to_hash(false);
     QUERY_MODES  mode      = (QUERY_MODES)aw_root->awar(query->awar_ere)->read_int();
     QUERY_TYPES  type      = (QUERY_TYPES)aw_root->awar(query->awar_by)->read_int();
 
@@ -1833,8 +1833,7 @@ static void mark_colored_cb(AW_window *aww, AW_CL cl_cmd, AW_CL cl_mode) {
 struct color_save_data {
     BoundItemSel      *cmd;
     const char        *items_name;
-    AW_window         *aww; // window of selection list
-    AW_selection_list *sel_id;
+    AW_selection_list *colorsets;
 };
 
 #define AWAR_COLOR_LOADSAVE_NAME "tmp/colorset/name"
@@ -1851,7 +1850,7 @@ static GBDATA *get_colorset_root(const color_save_data *csd) {
 static void update_colorset_selection_list(const color_save_data *csd) {
     GB_transaction ta(csd->cmd->gb_main);
 
-    csd->sel_id->clear();
+    csd->colorsets->clear();
     GBDATA *gb_item_root = get_colorset_root(csd);
 
     for (GBDATA *gb_colorset = GB_entry(gb_item_root, "colorset");
@@ -1859,10 +1858,10 @@ static void update_colorset_selection_list(const color_save_data *csd) {
          gb_colorset = GB_nextEntry(gb_colorset))
     {
         const char *name = GBT_read_name(gb_colorset);
-        csd->sel_id->insert(name, name);
+        csd->colorsets->insert(name, name);
     }
-    csd->sel_id->insert_default("<new colorset>", "");
-    csd->sel_id->update();
+    csd->colorsets->insert_default("<new colorset>", "");
+    csd->colorsets->update();
 }
 
 static void colorset_changed_cb(GBDATA*, int *cl_csd, GB_CB_TYPE cbt) {
@@ -1872,11 +1871,10 @@ static void colorset_changed_cb(GBDATA*, int *cl_csd, GB_CB_TYPE cbt) {
     }
 }
 
-static char *create_colorset_representation(const color_save_data *csd, GB_ERROR& error) {
+static char *create_colorset_representation(const color_save_data *csd, AW_root *aw_root, GB_ERROR& error) {
     BoundItemSel  *cmd     = csd->cmd;
     ItemSelector&  sel     = cmd->selector;
     QUERY_RANGE    range   = QUERY_ALL_ITEMS;
-    AW_root       *aw_root = csd->aww->get_root();
     GBDATA        *gb_main = cmd->gb_main;
 
     typedef list<string> ColorList;
@@ -1915,11 +1913,10 @@ static char *create_colorset_representation(const color_save_data *csd, GB_ERROR
     return result;
 }
 
-static GB_ERROR clear_all_colors(const color_save_data *csd) {
+static GB_ERROR clear_all_colors(const color_save_data *csd, AW_root *aw_root) {
     BoundItemSel  *cmd     = csd->cmd;
     ItemSelector&  sel     = cmd->selector;
     QUERY_RANGE    range   = QUERY_ALL_ITEMS;
-    AW_root       *aw_root = csd->aww->get_root();
     GB_ERROR       error   = 0;
 
     for (GBDATA *gb_item_container = sel.get_first_item_container(cmd->gb_main, aw_root, range);
@@ -1937,10 +1934,10 @@ static GB_ERROR clear_all_colors(const color_save_data *csd) {
     return error;
 }
 
-static void clear_all_colors_cb(AW_window *, AW_CL cl_csd) {
+static void clear_all_colors_cb(AW_window *aww, AW_CL cl_csd) {
     const color_save_data *csd   = (const color_save_data*)cl_csd;
     GB_transaction         ta(csd->cmd->gb_main);
-    GB_ERROR               error = clear_all_colors(csd);
+    GB_ERROR               error = clear_all_colors(csd, aww->get_root());
 
     if (error) {
         error = ta.close(error);
@@ -2012,7 +2009,7 @@ static void loadsave_colorset_cb(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
             dbq_assert(gb_colorset || error);
 
             if (!error) {
-                char *colorset = create_colorset_representation(csd, error);
+                char *colorset = create_colorset_representation(csd, aw_root, error);
                 if (colorset) {
                     error = GBT_write_string(gb_colorset, "color_set", colorset);
                     free(colorset);
@@ -2034,7 +2031,7 @@ static void loadsave_colorset_cb(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
                         if (!colorset) error = GB_await_error();
                         else {
                             if (mode == 1) { // load => clear all colors
-                                error = clear_all_colors(csd);
+                                error = clear_all_colors(csd, aw_root);
                             }
                             if (!error) {
                                 error = restore_colorset_representation(csd, colorset);
@@ -2091,10 +2088,9 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, AW_CL cl_csd)
         aws->at("name");
         aws->create_input_field(AWAR_COLOR_LOADSAVE_NAME, 60);
 
-        dbq_assert(csd->sel_id == 0);
+        dbq_assert(csd->colorsets == 0);
         aws->at("list");
-        csd->sel_id = aws->create_selection_list(AWAR_COLOR_LOADSAVE_NAME, 0, 0, 0, 0);
-        csd->aww    = aws;
+        csd->colorsets = aws->create_selection_list(AWAR_COLOR_LOADSAVE_NAME, 0, 0, 0, 0);
 
         update_colorset_selection_list(csd);
 
@@ -2214,8 +2210,7 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
     color_save_data *csd = new color_save_data; // do not free!
     csd->cmd             = cmd;
     csd->items_name      = Sel.items_name;
-    csd->aww             = 0;
-    csd->sel_id          = 0;
+    csd->colorsets       = 0;
 
     aws->at("loadsave");
     aws->callback(AW_POPUP, (AW_CL)create_loadsave_colored_window, (AW_CL)csd);
@@ -2292,7 +2287,7 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
     aws->create_text_field(query->awar_parsvalue);
 
     aws->at("pre");
-    AW_selection_list *id = aws->create_selection_list(query->awar_parspredefined);
+    AW_selection_list *programs = aws->create_selection_list(query->awar_parspredefined);
 
     const char *sellst = NULL;
     switch (query->selector.type) {
@@ -2303,7 +2298,7 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
     }
 
     GB_ERROR error = sellst
-        ? id->load(GB_path_in_ARBLIB("sellists", sellst))
+        ? programs->load(GB_path_in_ARBLIB("sellists", sellst))
         : "No default selection list for query-type";
 
     if (error) {
@@ -2732,11 +2727,11 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
             char    *this_awar_name = GBS_global_string_copy("tmp/dbquery_%s/select", query_id); // do not free this, cause it's passed to new_selection_made_cb
             AW_awar *awar           = aw_root->awar_string(this_awar_name, "", AW_ROOT_DEFAULT);
 
-            query->result_id = aws->create_selection_list(this_awar_name, "", "", 5, 5);
+            query->hitlist = aws->create_selection_list(this_awar_name, "", "", 5, 5);
             awar->add_callback(new_selection_made_cb, (AW_CL)this_awar_name, (AW_CL)query);
         }
-        query->result_id->insert_default("end of list", "");
-        query->result_id->update();
+        query->hitlist->insert_default("end of list", "");
+        query->hitlist->update();
     }
     if (awtqs->count_pos_fig) {
         aws->at(awtqs->count_pos_fig);

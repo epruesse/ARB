@@ -34,8 +34,8 @@
 
 using std::string;
 
-static AW_window_simple  *pdrw    = 0;
-static AW_selection_list *pdrw_id = 0;
+static AW_window_simple  *pdrw       = 0;
+static AW_selection_list *resultList = 0;
 
 static double get_estimated_memory(AW_root *root) {
     int    bases  = root->awar(AWAR_PRIMER_DESIGN_LEFT_LENGTH)->read_int() + root->awar(AWAR_PRIMER_DESIGN_RIGHT_LENGTH)->read_int();
@@ -106,15 +106,15 @@ static void create_primer_design_result_window(AW_window *aww)
         pdrw->create_button("HELP", "HELP", "H");
 
         pdrw->at("result");
-        pdrw_id = pdrw->create_selection_list(AWAR_PRIMER_TARGET_STRING, NULL, "", 40, 5);
-        pdrw_id->set_file_suffix("primer");
+        resultList = pdrw->create_selection_list(AWAR_PRIMER_TARGET_STRING, NULL, "", 40, 5);
+        resultList->set_file_suffix("primer");
 
         pdrw->at("save");
-        pdrw->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)pdrw_id);
+        pdrw->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)resultList);
         pdrw->create_button("SAVE", "SAVE", "S");
 
         pdrw->at("print");
-        pdrw->callback(create_print_box_for_selection_lists, (AW_CL)pdrw_id);
+        pdrw->callback(create_print_box_for_selection_lists, (AW_CL)resultList);
         pdrw->create_button("PRINT", "PRINT", "P");
     }
 
@@ -190,11 +190,11 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
         if (!error) error = PD->get_error();
 
         if (!error) {
-            if (!pdrw_id) create_primer_design_result_window(aww);
-            prd_assert(pdrw_id);
+            if (!resultList) create_primer_design_result_window(aww);
+            prd_assert(resultList);
 
             // create result-list:
-            pdrw_id->clear();
+            resultList->clear();
             int max_primer_length   = PD->get_max_primer_length();
             int max_position_length = int(std::log10(double (PD->get_max_primer_pos())))+1;
             int max_length_length   = int(std::log10(double(PD->get_max_primer_length())))+1;
@@ -202,14 +202,14 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
             if (max_position_length < 3) max_position_length = 3;
             if (max_length_length   < 3) max_length_length   = 3;
 
-            pdrw_id->insert(GBS_global_string(" Rating | %-*s %-*s %-*s G/C Tmp | %-*s %-*s %-*s G/C Tmp",
-                                              max_primer_length,   "Left primer",
-                                              max_position_length, "Pos",
-                                              max_length_length,   "Len",
-                                              max_primer_length,   "Right primer",
-                                              max_position_length, "Pos",
-                                              max_length_length,   "Len"),
-                            "");
+            resultList->insert(GBS_global_string(" Rating | %-*s %-*s %-*s G/C Tmp | %-*s %-*s %-*s G/C Tmp",
+                                                 max_primer_length,   "Left primer",
+                                                 max_position_length, "Pos",
+                                                 max_length_length,   "Len",
+                                                 max_primer_length,   "Right primer",
+                                                 max_position_length, "Pos",
+                                                 max_length_length,   "Len"),
+                               "");
 
             int r;
 
@@ -217,12 +217,12 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
                 const char *primers = 0;
                 const char *result  = PD->get_result(r, primers, max_primer_length, max_position_length, max_length_length);
                 if (!result) break;
-                pdrw_id->insert(result, primers);
+                resultList->insert(result, primers);
             }
 
-            pdrw_id->insert_default(r ? "**** End of list" : "**** There are no results", "");
+            resultList->insert_default(r ? "**** End of list" : "**** There are no results", "");
+            resultList->update();
 
-            pdrw_id->update();
             pdrw->show();
         }
     }

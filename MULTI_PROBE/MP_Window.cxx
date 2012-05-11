@@ -23,8 +23,8 @@
 
 struct mp_gl_struct mp_pd_gl; // global link
 
-AW_selection_list *selected_list;   // globale id's fuer
-AW_selection_list *probelist;       // Identifizierung der Listen
+AW_selection_list *selected_list;
+AW_selection_list *probelist;
 AW_selection_list *result_probes_list;
 
 

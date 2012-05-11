@@ -946,11 +946,10 @@ inline int get_and_fix_range_from_awar(AW_awar *awar) {
 
 class NN_GlobalData {
     DbQuery           *query;
-    AW_selection_list *sel_id;     // result list from create_next_neighbours_selected_window()
-    AW_window         *aww_sel_id; // window containing sel_id
+    AW_selection_list *resultList;     // result list from create_next_neighbours_selected_window()
 
 public:
-    NN_GlobalData() : query(0), sel_id(0) {}
+    NN_GlobalData() : query(0), resultList(0) {}
 
     void set_query(DbQuery *new_query) {
         if (new_query != query) {
@@ -958,20 +957,16 @@ public:
             query = new_query;
         }
     }
-    void set_result_list(AW_window *new_aww, AW_selection_list *new_sel_id) {
-        if (new_sel_id != sel_id) {
-            ui_assert(!sel_id); // need redesign b4 changing query works
-            ui_assert(!aww_sel_id); // need redesign b4 changing query works
-            sel_id     = new_sel_id;
-            aww_sel_id = new_aww;
+    void set_result_list(AW_selection_list *new_resultList) {
+        if (new_resultList != resultList) {
+            ui_assert(!resultList); // need redesign b4 changing query works
+            resultList = new_resultList;
         }
     }
 
     DbQuery *get_query() const { ui_assert(query); return query; }
 
-    AW_selection_list *get_result_list() const { ui_assert(sel_id); return sel_id; }
-    AW_window *get_aww() const { ui_assert(aww_sel_id); return aww_sel_id; }
-
+    AW_selection_list *get_result_list() const { ui_assert(resultList); return resultList; }
     GBDATA *get_gb_main() const { return query_get_gb_main(get_query()); }
 };
 static NN_GlobalData NN_GLOBAL;
@@ -1104,9 +1099,9 @@ static void awtc_nn_search_all_listed(AW_window *aww) {
 }
 
 static void awtc_mark_hits(AW_window *) {
-    AW_selection_list *id        = NN_GLOBAL.get_result_list();
-    GB_HASH           *list_hash = id->to_hash(false);
-    GBDATA            *gb_main   = NN_GLOBAL.get_gb_main();
+    AW_selection_list *resultList = NN_GLOBAL.get_result_list();
+    GB_HASH           *list_hash  = resultList->to_hash(false);
+    GBDATA            *gb_main    = NN_GLOBAL.get_gb_main();
 
     GB_transaction ta(gb_main);
     for (GBDATA *gb_species = GBT_first_species(gb_main);
@@ -1118,13 +1113,12 @@ static void awtc_mark_hits(AW_window *) {
     }
 }
 
-static void awtc_nn_search(AW_window*) {
-    AW_window *aww      = NN_GLOBAL.get_aww();
-    AW_root   *aw_root  = aww->get_root();
-    GBDATA    *gb_main  = NN_GLOBAL.get_gb_main();
-    GB_ERROR   error    = 0;
-    PosRange   range    = get_nn_range_from_awars(aw_root);
-    char      *sequence = 0;
+static void awtc_nn_search(AW_window *aww) {
+    AW_root  *aw_root  = aww->get_root();
+    GBDATA   *gb_main  = NN_GLOBAL.get_gb_main();
+    GB_ERROR  error    = 0;
+    PosRange  range    = get_nn_range_from_awars(aw_root);
+    char     *sequence = 0;
     {
         GB_transaction  ta(gb_main);
 
@@ -1358,10 +1352,10 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL
         aws->create_button(0, AWAR_NN_SELECTED_HIT_COUNT, 0, "+");
 
         aws->at("hits");
-        AW_selection_list *id = aws->create_selection_list(AWAR_SPECIES_NAME);
-        NN_GLOBAL.set_result_list(aws, id);
-        id->insert_default("No hits found", "");
-        id->update();
+        AW_selection_list *resultList = aws->create_selection_list(AWAR_SPECIES_NAME);
+        NN_GLOBAL.set_result_list(resultList);
+        resultList->insert_default("No hits found", "");
+        resultList->update();
 
         aws->at("go");
         aws->callback(awtc_nn_search);

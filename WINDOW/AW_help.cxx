@@ -52,13 +52,11 @@ void AW_openURL(AW_root *aw_root, const char *url) {
 // --------------------
 //      help window
 
-struct aw_help_global_struct {
-    AW_window *aww;
-    AW_selection_list   *upid;
-    AW_selection_list   *downid;
-    char    *history;
-};
-static aw_help_global_struct aw_help_global;
+static struct {
+    AW_selection_list *uplinks;
+    AW_selection_list *links;
+    char              *history;
+} HELP;
 
 static char *get_full_qualified_help_file_name(const char *helpfile, bool path_for_edit = false) {
     GB_CSTR   result             = 0;
@@ -214,7 +212,7 @@ static char *aw_ref_to_title(char *ref) {
 }
 
 static void aw_help_select_newest_in_history(AW_root *aw_root) {
-    char *history = aw_help_global.history;
+    char *history = HELP.history;
     if (history) {
         const char *sep      = strchr(history, '#');
         char       *lastHelp = sep ? GB_strpartdup(history, sep-1) : strdup(history);
@@ -225,13 +223,13 @@ static void aw_help_select_newest_in_history(AW_root *aw_root) {
 }
 
 static void aw_help_back(AW_root *aw_root) {
-    char *history = aw_help_global.history;
+    char *history = HELP.history;
     if (history) {
         const char *sep = strchr(history, '#');
         if (sep) {
             char *first = GB_strpartdup(history, sep-1);
 
-            freeset(aw_help_global.history, GBS_global_string_copy("%s#%s", sep+1, first)); // wrap first to end
+            freeset(HELP.history, GBS_global_string_copy("%s#%s", sep+1, first)); // wrap first to end
             free(first);
             aw_help_select_newest_in_history(aw_root);
         }
@@ -305,19 +303,19 @@ static void aw_help_helpfile_changed_cb(AW_root *awr) {
         aw_help_select_newest_in_history(awr);
     }
     else {
-        if (aw_help_global.history) {
-            if (strncmp(help_file, aw_help_global.history, strlen(help_file)) != 0) {
+        if (HELP.history) {
+            if (strncmp(help_file, HELP.history, strlen(help_file)) != 0) {
                 // remove current help from history (if present) and prefix it to history
                 char *comm = GBS_global_string_copy("*#%s*=*1*2:*=%s#*1", help_file, help_file);
-                char *h    = GBS_string_eval(aw_help_global.history, comm, 0);
+                char *h    = GBS_string_eval(HELP.history, comm, 0);
 
                 aw_assert(h);
-                freeset(aw_help_global.history, h);
+                freeset(HELP.history, h);
                 free(comm);
             }
         }
         else {
-            aw_help_global.history = strdup(help_file);
+            HELP.history = strdup(help_file);
         }
 
         char *helptext = GB_read_file(help_file);
@@ -326,32 +324,32 @@ static void aw_help_helpfile_changed_cb(AW_root *awr) {
             char *h, *h2, *tok;
 
             ptr = strdup(helptext);
-            aw_help_global.upid->clear();
+            HELP.uplinks->clear();
             h2 = GBS_find_string(ptr, "\nUP", 0);
             while ((h = h2)) {
                 h2 = GBS_find_string(h2+1, "\nUP", 0);
                 tok = strtok(h+3, " \n\t");  // now I got UP
                 char *title = aw_ref_to_title(tok);
-                if (tok) aw_help_global.upid->insert(title, tok);
+                if (tok) HELP.uplinks->insert(title, tok);
                 free(title);
             }
             free(ptr);
-            aw_help_global.upid->insert_default("   ", "");
-            aw_help_global.upid->update();
+            HELP.uplinks->insert_default("   ", "");
+            HELP.uplinks->update();
 
             ptr = strdup(helptext);
-            aw_help_global.downid->clear();
+            HELP.links->clear();
             h2 = GBS_find_string(ptr, "\nSUB", 0);
             while ((h = h2)) {
                 h2 = GBS_find_string(h2+1, "\nSUB", 0);
                 tok = strtok(h+4, " \n\t");  // now I got SUB
                 char *title = aw_ref_to_title(tok);
-                if (tok) aw_help_global.downid->insert(title, tok);
+                if (tok) HELP.links->insert(title, tok);
                 free(title);
             }
             free(ptr);
-            aw_help_global.downid->insert_default("   ", "");
-            aw_help_global.downid->update();
+            HELP.links->insert_default("   ", "");
+            HELP.links->update();
 
             ptr = GBS_find_string(helptext, "TITLE", 0);
             if (!ptr) ptr = helptext;
@@ -460,7 +458,7 @@ static void aw_help_search(AW_window *aww) {
                     if (results>0) freedup(last_help, helpfilename);
 
                     fclose(helpfp);
-                    aww->get_root()->awar(AWAR_HELPFILE)->write_string(helpfilename); // display results in helpwindow
+                    aww->get_root()->awar(AWAR_HELPFILE)->write_string(helpfilename); // display results in aws
                 }
                 free(result);
             }
@@ -474,61 +472,60 @@ static void aw_help_search(AW_window *aww) {
 }
 
 void AW_POPUP_HELP(AW_window *aw, AW_CL /* char */ helpcd) {
-    static AW_window_simple *helpwindow = 0;
+    static AW_window_simple *aws = 0;
 
     AW_root *awr       = aw->get_root();
     char    *help_file = (char*)helpcd;
 
-    if (!helpwindow) {
+    if (!aws) {
         awr->awar_string(AWAR_HELPTEXT,   "", AW_ROOT_DEFAULT);
         awr->awar_string(AWAR_HELPSEARCH, "", AW_ROOT_DEFAULT);
         awr->awar_string(AWAR_HELPFILE,   "", AW_ROOT_DEFAULT);
         awr->awar(AWAR_HELPFILE)->add_callback(aw_help_helpfile_changed_cb);
 
-        helpwindow = new AW_window_simple;
-        helpwindow->init(awr, "HELP", "HELP WINDOW");
-        helpwindow->load_xfig("help.fig");
+        aws = new AW_window_simple;
+        aws->init(awr, "HELP", "HELP WINDOW");
+        aws->load_xfig("help.fig");
 
-        helpwindow->button_length(10);
+        aws->button_length(10);
 
-        helpwindow->at("close");
-        helpwindow->callback((AW_CB0)AW_POPDOWN);
-        helpwindow->create_button("CLOSE", "CLOSE", "C");
+        aws->at("close");
+        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
 
-        helpwindow->at("back");
-        helpwindow->callback(aw_help_back);
-        helpwindow->create_button("BACK", "BACK", "B");
+        aws->at("back");
+        aws->callback(aw_help_back);
+        aws->create_button("BACK", "BACK", "B");
 
 
-        helpwindow->at("super");
-        aw_help_global.upid = helpwindow->create_selection_list(AWAR_HELPFILE, 0, 0, 3, 3);
-        aw_help_global.upid->insert_default("   ", "");
-        aw_help_global.upid->update();
+        aws->at("super");
+        HELP.uplinks = aws->create_selection_list(AWAR_HELPFILE, 0, 0, 3, 3);
+        HELP.uplinks->insert_default("   ", "");
+        HELP.uplinks->update();
 
-        helpwindow->at("sub");
-        aw_help_global.downid = helpwindow->create_selection_list(AWAR_HELPFILE, 0, 0, 3, 3);
-        aw_help_global.downid->insert_default("   ", "");
-        aw_help_global.downid->update();
-        aw_help_global.aww = helpwindow;
-        aw_help_global.history = 0;
+        aws->at("sub");
+        HELP.links = aws->create_selection_list(AWAR_HELPFILE, 0, 0, 3, 3);
+        HELP.links->insert_default("   ", "");
+        HELP.links->update();
+        HELP.history = 0;
 
-        helpwindow->at("text");
-        helpwindow->create_text_field(AWAR_HELPTEXT, 3, 3);
+        aws->at("text");
+        aws->create_text_field(AWAR_HELPTEXT, 3, 3);
 
-        helpwindow->at("browse");
-        helpwindow->callback(aw_help_browse);
-        helpwindow->create_button("BROWSE", "BROWSE", "B");
+        aws->at("browse");
+        aws->callback(aw_help_browse);
+        aws->create_button("BROWSE", "BROWSE", "B");
 
-        helpwindow->at("expression");
-        helpwindow->create_input_field(AWAR_HELPSEARCH);
+        aws->at("expression");
+        aws->create_input_field(AWAR_HELPSEARCH);
 
-        helpwindow->at("search");
-        helpwindow->callback(aw_help_search);
-        helpwindow->create_button("SEARCH", "SEARCH", "S");
+        aws->at("search");
+        aws->callback(aw_help_search);
+        aws->create_button("SEARCH", "SEARCH", "S");
 
-        helpwindow->at("edit");
-        helpwindow->callback(aw_help_edit_help);
-        helpwindow->create_button("EDIT", "EDIT", "E");
+        aws->at("edit");
+        aws->callback(aw_help_edit_help);
+        aws->create_button("EDIT", "EDIT", "E");
 
     }
 
@@ -539,7 +536,7 @@ void AW_POPUP_HELP(AW_window *aw, AW_CL /* char */ helpcd) {
     if (!GBS_string_matches(help_file, "*.ps", GB_IGNORE_CASE) &&
         !GBS_string_matches(help_file, "*.pdf", GB_IGNORE_CASE))
     { // don't open help if postscript or pdf file
-        helpwindow->activate();
+        aws->activate();
     }
 }
 

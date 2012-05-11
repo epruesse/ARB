@@ -36,9 +36,9 @@ using namespace std;
 #define AWAR_REMAP_SEL_REFERENCE AWAR_MERGE_TMP "remap_reference"
 
 struct preserve_para {
-    AW_selection_list *ali_id;                      // alignments
-    AW_selection_list *cand_id;                     // reference candidates
-    AW_selection_list *ref_id;                      // used references
+    AW_selection_list *alignmentList;
+    AW_selection_list *refCandidatesList; // reference candidates
+    AW_selection_list *usedRefsList;
 };
 
 static void get_global_alignments(ConstStrArray& ali_names) {
@@ -57,16 +57,16 @@ static void init_alignments(preserve_para *para) {
     // initialize the alignment selection list
     ConstStrArray ali_names;
     get_global_alignments(ali_names);
-    para->ali_id->init_from_array(ali_names, "All");
+    para->alignmentList->init_from_array(ali_names, "All");
 }
 
 static void clear_candidates(preserve_para *para) {
     // clear the candidate list
-    AW_selection_list *id = para->cand_id;
+    AW_selection_list *candList = para->refCandidatesList;
 
-    id->clear();
-    id->insert_default(DISPLAY_NONE, NO_ALI_SELECTED);
-    id->update();
+    candList->clear();
+    candList->insert_default(DISPLAY_NONE, NO_ALI_SELECTED);
+    candList->update();
 }
 
 static long count_bases(const char *data, long len) {
@@ -262,9 +262,9 @@ static void calculate_preserves_cb(AW_window *aww, AW_CL cl_para) {
         find_species_candidates(candidates, ali_names);
     }
 
-    int                   count = 0;
-    Candidates::iterator  e     = candidates.end();
-    AW_selection_list    *id    = para->cand_id;
+    int                   count       = 0;
+    Candidates::iterator  e           = candidates.end();
+    AW_selection_list    *refCandList = para->refCandidatesList;
 
     for (Candidates::iterator i = candidates.begin();
          i != e && count<5000;
@@ -273,10 +273,10 @@ static void calculate_preserves_cb(AW_window *aww, AW_CL cl_para) {
         string name  = (*i)->get_name();
         string shown = (*i)->get_entry();
 
-        id->insert(shown.c_str(), name.c_str());
+        refCandList->insert(shown.c_str(), name.c_str());
     }
 
-    id->update();
+    refCandList->update();
 }
 
 
@@ -302,7 +302,7 @@ static void refresh_reference_list_cb(AW_root *aw_root, AW_CL cl_para) {
     preserve_para *para = (preserve_para*)cl_para;
     ConstStrArray  refs;
     read_references(refs, aw_root);
-    para->ref_id->init_from_array(refs, "");
+    para->usedRefsList->init_from_array(refs, "");
 }
 
 static void add_selected_cb(AW_window *aww, AW_CL cl_para) {
@@ -327,7 +327,7 @@ static void add_selected_cb(AW_window *aww, AW_CL cl_para) {
     free(selected);
     free(candidate);
 
-    para->cand_id->move_selection(1); 
+    para->refCandidatesList->move_selection(1); 
 }
 
 static void clear_references_cb(AW_window *aww) {
@@ -420,7 +420,7 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
     preserve_para *para = new preserve_para; // do not free (is passed to callback)
 
     aws->at("ali");
-    para->ali_id = aws->create_selection_list(AWAR_REMAP_ALIGNMENT, 0, "", 10, 30);
+    para->alignmentList = aws->create_selection_list(AWAR_REMAP_ALIGNMENT, 0, "", 10, 30);
 
     // ----------
 
@@ -430,7 +430,7 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
 
     aws->at("reference");
     // aws->create_text_field(AWAR_REMAP_SPECIES_LIST); // @@@ needs to be a selection list!
-    para->ref_id = aws->create_selection_list(AWAR_REMAP_SEL_REFERENCE, 0, "", 10, 30);
+    para->usedRefsList = aws->create_selection_list(AWAR_REMAP_SEL_REFERENCE, 0, "", 10, 30);
 
     aws->button_length(8);
 
@@ -465,7 +465,7 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
     aws->create_button("ADD", "Add", "A");
 
     aws->at("candidate");
-    para->cand_id = aws->create_selection_list(AWAR_REMAP_CANDIDATE, 0, "", 10, 30);
+    para->refCandidatesList = aws->create_selection_list(AWAR_REMAP_CANDIDATE, 0, "", 10, 30);
 
     {
         GB_transaction ta1(GLOBAL_gb_src);
