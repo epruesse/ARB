@@ -165,11 +165,11 @@ class AW_selection : virtual Noncopyable {
     virtual void fill() = 0;
 
 protected: 
-    void insert_selection(const char *displayed, const char *value) { sellist->insert(displayed, value); }
-    void insert_default_selection(const char *displayed, const char *value) { sellist->insert_default(displayed, value); }
+    void insert(const char *displayed, const char *value) { sellist->insert(displayed, value); }
+    void insert_default(const char *displayed, const char *value) { sellist->insert_default(displayed, value); }
 
-    void insert_selection(const char *displayed, int32_t value) { sellist->insert(displayed, value); }
-    void insert_default_selection(const char *displayed, int32_t value) { sellist->insert_default(displayed, value); }
+    void insert(const char *displayed, int32_t value) { sellist->insert(displayed, value); }
+    void insert_default(const char *displayed, int32_t value) { sellist->insert_default(displayed, value); }
 
 public:
     AW_selection(AW_selection_list *sellist_) : sellist(sellist_) {}

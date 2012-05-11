@@ -57,12 +57,12 @@ public:
             char *alignment_name = GBT_read_string(gb_alignment, "alignment_name");
             char *str            = GBS_string_eval(alignment_type, ali_type_match, 0);
 
-            if (!*str) insert_selection(alignment_name, alignment_name);
+            if (!*str) insert(alignment_name, alignment_name);
             free(str);
             free(alignment_type);
             free(alignment_name);
         }
-        insert_default_selection(DISPLAY_NONE, NO_ALI_SELECTED);
+        insert_default(DISPLAY_NONE, NO_ALI_SELECTED);
     }
 
     void reconfigure(const char *new_ali_type_match) {
@@ -119,15 +119,15 @@ struct AWT_tree_selection: public AW_DB_selection {
                 const char *tree = tree_names[i];
                 const char *info = GBT_tree_info_string(gb_main, tree, maxTreeNameLen);
                 if (info) {
-                    insert_selection(info, tree);
+                    insert(info, tree);
                 }
                 else {
                     aw_message(GB_await_error());
-                    insert_selection(tree, tree);
+                    insert(tree, tree);
                 }
             }
         }
-        insert_default_selection(DISPLAY_NONE, NO_TREE_SELECTED); 
+        insert_default(DISPLAY_NONE, NO_TREE_SELECTED); 
     }
 };
 
@@ -177,11 +177,11 @@ void AWT_ptserver_selection::fill() {
             aw_message(GB_await_error());
             break;
         }
-        insert_selection(choice, (long)i);
+        insert(choice, (long)i);
         free(choice);
     }
 
-    insert_default_selection("-undefined-", (long)-1);
+    insert_default("-undefined-", (long)-1);
 }
 
 void AWT_ptserver_selection::refresh_all() {
@@ -438,9 +438,9 @@ public:
         GBT_get_configuration_names(config, get_gb_main());
 
         if (!config.empty()) {
-            for (int c = 0; config[c]; c++) insert_selection(config[c], config[c]);
+            for (int c = 0; config[c]; c++) insert(config[c], config[c]);
         }
-        insert_default_selection(DISPLAY_NONE, "????");
+        insert_default(DISPLAY_NONE, "????");
     }
 };
 

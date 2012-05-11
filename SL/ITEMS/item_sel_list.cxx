@@ -34,8 +34,8 @@ Itemfield_Selection::Itemfield_Selection(AW_selection_list *sellist_,
 
 void Itemfield_Selection::fill() {
     if (field_filter & SF_PSEUDO) {
-        insert_selection(PSEUDO_FIELD_ANY_FIELD, PSEUDO_FIELD_ANY_FIELD);
-        insert_selection(PSEUDO_FIELD_ALL_FIELDS, PSEUDO_FIELD_ALL_FIELDS);
+        insert(PSEUDO_FIELD_ANY_FIELD, PSEUDO_FIELD_ANY_FIELD);
+        insert(PSEUDO_FIELD_ALL_FIELDS, PSEUDO_FIELD_ALL_FIELDS);
     }
 
     GBDATA         *gb_key_data = get_gbd();
@@ -72,11 +72,11 @@ void Itemfield_Selection::fill() {
                 }
                 else display = name;
 
-                if (display) insert_selection(display, name);
+                if (display) insert(display, name);
             }
         }
     }
-    insert_default_selection("????", "----");
+    insert_default("????", "----");
 }
 
 
