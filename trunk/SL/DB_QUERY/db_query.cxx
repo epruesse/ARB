@@ -1910,7 +1910,7 @@ static char *create_colorset_representation(const color_save_data *csd, GB_ERROR
 
         size_t len = res.length();
         if (len>0) --len;                           // skip trailing ';'
-        result     = GB_strduplen(res.c_str(), len);
+        result     = GB_strndup(res.c_str(), len);
     }
     return result;
 }
