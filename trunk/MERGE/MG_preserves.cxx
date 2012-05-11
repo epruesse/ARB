@@ -36,7 +36,6 @@ using namespace std;
 #define AWAR_REMAP_SEL_REFERENCE AWAR_MERGE_TMP "remap_reference"
 
 struct preserve_para {
-    AW_window         *window;
     AW_selection_list *ali_id;                      // alignments
     AW_selection_list *cand_id;                     // reference candidates
     AW_selection_list *ref_id;                      // used references
@@ -63,12 +62,11 @@ static void init_alignments(preserve_para *para) {
 
 static void clear_candidates(preserve_para *para) {
     // clear the candidate list
-    AW_window         *aww = para->window;
-    AW_selection_list *id  = para->cand_id;
+    AW_selection_list *id = para->cand_id;
 
     id->clear();
-    aww->insert_default_selection(id, DISPLAY_NONE, NO_ALI_SELECTED);
-    aww->update_selection_list(id);
+    id->insert_default(DISPLAY_NONE, NO_ALI_SELECTED);
+    id->update();
 }
 
 static long count_bases(const char *data, long len) {
@@ -238,7 +236,7 @@ static void find_SAI_candidates(Candidates& candidates, const CharPtrArray& ali_
     GBS_free_hash(src_SAIs);
 }
 
-static void calculate_preserves_cb(AW_window *, AW_CL cl_para) {
+static void calculate_preserves_cb(AW_window *aww, AW_CL cl_para) {
     // FIND button (rebuild candidates list)
 
     GB_transaction ta1(GLOBAL_gb_src);
@@ -247,9 +245,7 @@ static void calculate_preserves_cb(AW_window *, AW_CL cl_para) {
     preserve_para *para = (preserve_para*)cl_para;
     clear_candidates(para);
 
-    AW_window  *aww     = para->window;
-    AW_root    *aw_root = aww->get_root();
-    const char *ali     = aw_root->awar(AWAR_REMAP_ALIGNMENT)->read_char_pntr();
+    const char *ali = aww->get_root()->awar(AWAR_REMAP_ALIGNMENT)->read_char_pntr();
     Candidates  candidates;
 
     arb_progress("Searching candidates");
@@ -278,10 +274,10 @@ static void calculate_preserves_cb(AW_window *, AW_CL cl_para) {
         string name  = (*i)->get_name();
         string shown = (*i)->get_entry();
 
-        aww->insert_selection(id, shown.c_str(), name.c_str());
+        id->insert(shown.c_str(), name.c_str());
     }
 
-    aww->update_selection_list(id);
+    id->update();
 }
 
 
@@ -310,11 +306,11 @@ static void refresh_reference_list_cb(AW_root *aw_root, AW_CL cl_para) {
     para->ref_id->init_from_array(refs, "");
 }
 
-static void add_selected_cb(AW_window *, AW_CL cl_para) {
+static void add_selected_cb(AW_window *aww, AW_CL cl_para) {
     // ADD button (add currently selected candidate to references)
 
     preserve_para *para    = (preserve_para*)cl_para;
-    AW_root       *aw_root = para->window->get_root();
+    AW_root       *aw_root = aww->get_root();
     ConstStrArray  refs;
     read_references(refs, aw_root);
 
@@ -423,7 +419,6 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
     // ----------
 
     preserve_para *para = new preserve_para; // do not free (is passed to callback)
-    para->window        = aws;
 
     aws->at("ali");
     para->ali_id = aws->create_selection_list(AWAR_REMAP_ALIGNMENT, 0, "", 10, 30);

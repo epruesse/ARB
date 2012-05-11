@@ -1612,25 +1612,6 @@ void AW_selection_list::insert_default(const char *displayed, GBDATA *pointer) {
     default_select = new AW_selection_list_entry(displayed, pointer);
 }
 
-void AW_window::insert_selection(AW_selection_list *selection_list, const char *displayed, const char *value) {
-    selection_list->insert(displayed, value);
-}
-void AW_window::insert_default_selection(AW_selection_list *selection_list, const char *displayed, const char *value) {
-    selection_list->insert_default(displayed, value);
-}
-void AW_window::insert_selection(AW_selection_list *selection_list, const char *displayed, int32_t value) {
-    selection_list->insert(displayed, value);
-}
-void AW_window::insert_default_selection(AW_selection_list *selection_list, const char *displayed, int32_t value) {
-    selection_list->insert_default(displayed, value);
-}
-void AW_window::insert_selection(AW_selection_list * selection_list, const char *displayed, GBDATA *pointer) {
-    selection_list->insert(displayed, pointer);
-}
-void AW_window::insert_default_selection(AW_selection_list * selection_list, const char *displayed, GBDATA *pointer) {
-    selection_list->insert_default(displayed, pointer);
-}
-
 void AW_selection_list::clear() {
     while (list_table) {
         AW_selection_list_entry *nextEntry = list_table->next;
@@ -1685,9 +1666,6 @@ void AW_selection_list::update() {
 
     for (size_t i=0; i<count; i++) XmStringFree(strtab[i]);
     delete [] strtab;
-}
-void AW_window::update_selection_list(AW_selection_list *selection_list) {
-    selection_list->update();
 }
 
 void AW_selection_list::init_from_array(const CharPtrArray& entries, const char *defaultEntry) {

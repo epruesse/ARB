@@ -88,7 +88,7 @@ bool AW_selection_list::default_is_selected() const {
 void AW_selection::refresh() {
     get_sellist()->clear();
     fill();
-    get_win()->update_selection_list(get_sellist());
+    get_sellist()->update();
 }
 
 
@@ -100,8 +100,8 @@ static void AW_DB_selection_refresh_cb(GBDATA *, int *cl_selection, GB_CB_TYPE) 
     selection->refresh();
 }
 
-AW_DB_selection::AW_DB_selection(AW_window *win_, AW_selection_list *sellist_, GBDATA *gbd_)
-    : AW_selection(win_, sellist_)
+AW_DB_selection::AW_DB_selection(AW_selection_list *sellist_, GBDATA *gbd_)
+    : AW_selection(sellist_)
     , gbd(gbd_)
 {
     GB_transaction ta(gbd);

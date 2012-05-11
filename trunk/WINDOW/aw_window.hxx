@@ -583,22 +583,6 @@ public:
     // ***** selection list is a redefinable scrolled list of items
 
     AW_selection_list *create_selection_list(const char *awar_name, const char *label = 0, const char *mnemonic = 0, int columns = 4, int rows = 4);
-
-    // @@@ deprecate functions below 
-    // for string
-    void insert_selection(AW_selection_list *selection_list, const char *displayed, const char *value);
-    void insert_default_selection(AW_selection_list * selection_list, const char *displayed, const char *value);
-    // for int
-    void insert_selection(AW_selection_list * selection_list, const char *displayed, int32_t value);
-    void insert_default_selection(AW_selection_list * selection_list, const char *displayed, int32_t value);
-    // for float
-    void insert_selection(AW_selection_list * selection_list, const char *displayed, float value);
-    void insert_default_selection(AW_selection_list * selection_list, const char *displayed, float value);
-    // for pointers (only allowed if selection list uses a tmp-awars)
-    void insert_selection(AW_selection_list * selection_list, const char *displayed, GBDATA *pointer);
-    void insert_default_selection(AW_selection_list * selection_list, const char *displayed, GBDATA *pointer);
-
-    void update_selection_list(AW_selection_list *selection_list);
 };
 
 

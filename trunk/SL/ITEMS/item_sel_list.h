@@ -44,8 +44,7 @@ class Itemfield_Selection : public AW_DB_selection { // derived from a Noncopyab
     bool shall_display_type(int key_type) const { return type_filter & (1 << key_type); }
 
 public:
-    Itemfield_Selection(AW_window         *win_,
-                        AW_selection_list *sellist_,
+    Itemfield_Selection(AW_selection_list *sellist_,
                         GBDATA            *gb_key_data,
                         long               type_filter_,
                         SelectedFields     field_filter_,

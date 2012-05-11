@@ -648,8 +648,8 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
 
         aw_msg->at_newline();
         sel = aw_msg->create_selection_list(AW_INPUT_AWAR, 0, 0, INPUT_SIZE, 10);
-        aw_msg->insert_default_selection(sel, "", "");
-        aw_msg->update_selection_list(sel);
+        sel->insert_default("", "");
+        sel->update();
     }
     else {
         aw_msg->set_window_title(title);
@@ -664,12 +664,12 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
         char *word;
 
         for (word = strtok(values, ";"); word; word = strtok(0, ";")) {
-            aw_msg->insert_selection(sel, word, word);
+            sel->insert(word, word);
         }
         free(values);
     }
-    aw_msg->insert_default_selection(sel, "<new>", "");
-    aw_msg->update_selection_list(sel);
+    sel->insert_default("<new>", "");
+    sel->update();
 
     // do modal loop :
     aw_msg->show_modal();

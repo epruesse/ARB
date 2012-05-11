@@ -207,7 +207,7 @@ static void popup_probe_design_result_window(AW_window *aww, AW_CL cl_gb_main) {
         pd_gl.pd_design_id->set_file_suffix("prb");
 
         pd_gl.pd_design_id->clear();
-        pd_gl.pd_design->insert_default_selection(pd_gl.pd_design_id, "No probes designed yet", "");
+        pd_gl.pd_design_id->insert_default("No probes designed yet", "");
 
         pd_gl.pd_design->at("save");
         pd_gl.pd_design->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)pd_gl.pd_design_id);
@@ -581,13 +581,13 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
                       NULL);
             char *s = strtok(match_info, "\n");
             while (s) {
-                pd_gl.pd_design->insert_selection(pd_gl.pd_design_id, s, "");
+                pd_gl.pd_design_id->insert(s, "");
                 s = strtok(0, "\n");
             }
             free(match_info);
         }
         else {
-            pd_gl.pd_design->insert_selection(pd_gl.pd_design_id, "There are no results", "");
+            pd_gl.pd_design_id->insert("There are no results", "");
         }
 
         // #define TEST_PD
@@ -651,12 +651,12 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
             else {
                 probe = strdup("");
             }
-            pd_gl.pd_design->insert_selection(pd_gl.pd_design_id, match_info, probe);
+            pd_gl.pd_design_id->insert(match_info, probe);
             free(probe);
             free(match_info);
         }
-        pd_gl.pd_design->insert_default_selection(pd_gl.pd_design_id, "default", "");
-        pd_gl.pd_design->update_selection_list(pd_gl.pd_design_id);
+        pd_gl.pd_design_id->insert_default("default", "");
+        pd_gl.pd_design_id->update();
     }
 
     aisc_close(pd_gl.link); pd_gl.link = 0;
@@ -805,8 +805,8 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
                 if (parser && !error) width = parser->get_probe_region_offset()+2+10; // 2 cause headline is shorter and 10 for match prefix region
 
                 const char *searched = GBS_global_string("%-*s%s", width, "Searched for ", probe);
-                aww->insert_selection(selection_id, searched, probe);
-                if (hinfo) aww->insert_selection(selection_id, hinfo, "");
+                selection_id->insert(searched, probe);
+                if (hinfo) selection_id->insert(hinfo, "");
             }
 
 
@@ -971,11 +971,11 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
                         sprintf(result, "%s %s", flags, match_info+1); // both flags (skip 1 space from match info to keep alignment)
                         char *gene_match_name = new char[strlen(match_name) + strlen(gene_str)+2];
                         sprintf(gene_match_name, "%s/%s", match_name, gene_str);
-                        if (selection_id) aww->insert_selection(selection_id, result, gene_match_name);   // @@@ wert fuer awar eintragen
+                        if (selection_id) selection_id->insert(result, gene_match_name);   // @@@ wert fuer awar eintragen
                     }
                     else {
                         sprintf(result, "%c %s", flags[0], match_info); // only first flag ( = species related)
-                        if (selection_id)  aww->insert_selection(selection_id, result, match_name);   // @@@ wert fuer awar eintragen
+                        if (selection_id) selection_id->insert(result, match_name);   // @@@ wert fuer awar eintragen
 
                         if (selection_id) {  // storing probe data into linked lists
                             g_spd->probeSeq.push_back(strdup(match_info));
@@ -1024,8 +1024,8 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
             else if (matches_truncated) last_line = "****** List is truncated *******";
             else        last_line                 = "****** End of List *******";
 
-            aww->insert_default_selection(selection_id, last_line, "");
-            aww->update_selection_list(selection_id);
+            selection_id->insert_default(last_line, "");
+            selection_id->update();
         }
 
         free(bs.data);
@@ -1071,7 +1071,7 @@ static void probe_match_all_event(AW_window *aww, AW_CL cl_iselection_id, AW_CL 
 
     if (got_result) {
         iselection_id->sort(true, true);
-        aww->update_selection_list(iselection_id);
+        iselection_id->update();
         root->awar(AWAR_TARGET_STRING)->write_string(target_string);
     }
 
@@ -1346,8 +1346,8 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
     selection_id->clear();
 
     if (ali_used_for_resolvement != GB_AT_RNA && ali_used_for_resolvement!=GB_AT_DNA) {
-        aww->insert_default_selection(selection_id, "Wrong alignment type!", "");
-        aww->update_selection_list(selection_id);
+        selection_id->insert_default("Wrong alignment type!", "");
+        selection_id->update();
         return;
     }
 
@@ -1431,7 +1431,7 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
                         buffer[off] = iupac::nuc_group[idx][index].members[resolution_idx[i]];
                     }
 
-                    aww->insert_selection(selection_id, buffer, buffer);
+                    selection_id->insert(buffer, buffer);
                     not_last--;
 
                     // permute indices:
@@ -1455,8 +1455,8 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
                 delete resolution_max_idx;
                 delete resolution_idx;
 
-                aww->insert_default_selection(selection_id, "", "");
-                aww->update_selection_list(selection_id);
+                selection_id->insert_default("", "");
+                selection_id->update();
             }
 
             delete offsets_to_resolve;
@@ -1516,7 +1516,7 @@ static AW_window *create_IUPAC_resolve_window(AW_root *root, AW_CL cl_gb_main) {
     AW_selection_list *iselection_id;
     aws->at("iresult");
     iselection_id = aws->create_selection_list(AWAR_PD_MATCH_RESOLVE, NULL, "", 32, 15);
-    aws->insert_default_selection(iselection_id, "---empty---", "");
+    iselection_id->insert_default("---empty---", "");
 
     aws->at("istring");
     aws->create_input_field(AWAR_ITARGET_STRING, 32);
@@ -1569,7 +1569,7 @@ AW_window *create_probe_match_window(AW_root *root, AW_CL cl_gb_main) {
         AW_selection_list *selection_id;
         aws->at("result");
         selection_id = aws->create_selection_list(AWAR_PD_SELECTED_MATCH, NULL, "", 110, 15);
-        aws->insert_default_selection(selection_id, "****** No results yet *******", "");  // if list is empty -> crashed if new species was selected in ARB_EDIT4
+        selection_id->insert_default("****** No results yet *******", "");  // if list is empty -> crashed if new species was selected in ARB_EDIT4
 
         aws->callback(create_print_box_for_selection_lists, (AW_CL)selection_id);
         aws->at("print");
@@ -1971,7 +1971,7 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws, 
     if (pg_global.pg_main) {
         const char *reason = 0;
         int32_t i = 0;
-        aws->insert_selection(selList, "members | probes | fitness | quality | mintarget | mishit | probelen | birth", i++);
+        selList->insert("members | probes | fitness | quality | mintarget | mishit | probelen | birth", i++);
 
         GB_transaction dummy(pg_global.pg_main);
         GBDATA *pg_group = GB_search(pg_global.pg_main, "probe_groups/group", GB_FIND);
@@ -2010,7 +2010,7 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws, 
                         probelength,
                         birth);
 
-                aws->insert_selection(selList, entry, i);
+                selList->insert(entry, i);
             }
         }
         else {
@@ -2019,10 +2019,10 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws, 
 
         if (reason) {
             error = GB_export_errorf("Error in database format (reason: %s)", reason);
-            aws->insert_selection(selList, error, (int32_t)0);
+            selList->insert(error, (int32_t)0);
         }
 
-        aws->update_selection_list(selList);
+        selList->update();
     }
     else {
         error = GB_export_errorf("Can't open database '%s'", file_name);

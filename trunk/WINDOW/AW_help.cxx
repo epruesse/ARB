@@ -332,12 +332,12 @@ static void aw_help_helpfile_changed_cb(AW_root *awr) {
                 h2 = GBS_find_string(h2+1, "\nUP", 0);
                 tok = strtok(h+3, " \n\t");  // now I got UP
                 char *title = aw_ref_to_title(tok);
-                if (tok) aw_help_global.aww->insert_selection(aw_help_global.upid, title, tok);
+                if (tok) aw_help_global.upid->insert(title, tok);
                 free(title);
             }
             free(ptr);
-            aw_help_global.aww->insert_default_selection(aw_help_global.upid, "   ", "");
-            aw_help_global.aww->update_selection_list(aw_help_global.upid);
+            aw_help_global.upid->insert_default("   ", "");
+            aw_help_global.upid->update();
 
             ptr = strdup(helptext);
             aw_help_global.downid->clear();
@@ -346,12 +346,12 @@ static void aw_help_helpfile_changed_cb(AW_root *awr) {
                 h2 = GBS_find_string(h2+1, "\nSUB", 0);
                 tok = strtok(h+4, " \n\t");  // now I got SUB
                 char *title = aw_ref_to_title(tok);
-                if (tok) aw_help_global.aww->insert_selection(aw_help_global.downid, title, tok);
+                if (tok) aw_help_global.downid->insert(title, tok);
                 free(title);
             }
             free(ptr);
-            aw_help_global.aww->insert_default_selection(aw_help_global.downid, "   ", "");
-            aw_help_global.aww->update_selection_list(aw_help_global.downid);
+            aw_help_global.downid->insert_default("   ", "");
+            aw_help_global.downid->update();
 
             ptr = GBS_find_string(helptext, "TITLE", 0);
             if (!ptr) ptr = helptext;
@@ -502,13 +502,13 @@ void AW_POPUP_HELP(AW_window *aw, AW_CL /* char */ helpcd) {
 
         helpwindow->at("super");
         aw_help_global.upid = helpwindow->create_selection_list(AWAR_HELPFILE, 0, 0, 3, 3);
-        helpwindow->insert_default_selection(aw_help_global.upid, "   ", "");
-        helpwindow->update_selection_list(aw_help_global.upid);
+        aw_help_global.upid->insert_default("   ", "");
+        aw_help_global.upid->update();
 
         helpwindow->at("sub");
         aw_help_global.downid = helpwindow->create_selection_list(AWAR_HELPFILE, 0, 0, 3, 3);
-        helpwindow->insert_default_selection(aw_help_global.downid, "   ", "");
-        helpwindow->update_selection_list(aw_help_global.downid);
+        aw_help_global.downid->insert_default("   ", "");
+        aw_help_global.downid->update();
         aw_help_global.aww = helpwindow;
         aw_help_global.history = 0;
 

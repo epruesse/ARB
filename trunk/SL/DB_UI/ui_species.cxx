@@ -1179,7 +1179,7 @@ static void awtc_nn_search(AW_window*) {
         int hits = 0;
         if (error) {
             aw_message(error);
-            aww->insert_default_selection(sel, "<Error>", "");
+            sel->insert_default("<Error>", "");
         }
         else {
             int count     = 1;
@@ -1195,11 +1195,11 @@ static void awtc_nn_search(AW_window*) {
                     dis = GBS_global_string("#%0*i %-12s Hits: %4li", numWidth, count, fm->name, fm->matches);
                 }
 
-                aww->insert_selection(sel, dis, fm->name);
+                sel->insert(dis, fm->name);
                 count++;
             }
 
-            aww->insert_default_selection(sel, ff.hits_were_truncated() ? "<List truncated>" : "<No more hits>", "");
+            sel->insert_default(ff.hits_were_truncated() ? "<List truncated>" : "<No more hits>", "");
             hits = ff.getRealHits();
         }
         aw_root->awar(AWAR_NN_SELECTED_HIT_COUNT)->write_int(hits);
@@ -1207,7 +1207,7 @@ static void awtc_nn_search(AW_window*) {
             awtc_mark_hits(NULL);
             aw_root->awar(AWAR_TREE_REFRESH)->touch();
         }
-        aww->update_selection_list(sel);
+        sel->update();
     }
 
     free(sequence);
@@ -1360,8 +1360,8 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL
         aws->at("hits");
         AW_selection_list *id = aws->create_selection_list(AWAR_SPECIES_NAME);
         NN_GLOBAL.set_result_list(aws, id);
-        aws->insert_default_selection(id, "No hits found", "");
-        aws->update_selection_list(id);
+        id->insert_default("No hits found", "");
+        id->update();
 
         aws->at("go");
         aws->callback(awtc_nn_search);

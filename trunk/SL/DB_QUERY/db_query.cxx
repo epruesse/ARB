@@ -439,20 +439,20 @@ void QUERY::DbQuery_update_list(DbQuery *query) {
                                                  name_len, name,
                                                  info);
 
-            aww->insert_selection(query->result_id, line, name);
+            query->result_id->insert(line, name);
             free(toFree);
             free(name);
         }
     }
 
     if (count>MAX_QUERY_LIST_LEN) {
-        aww->insert_selection(query->result_id, "*****  List truncated  *****", "");
+        query->result_id->insert("*****  List truncated  *****", "");
     }
 
     free(sorted);
 
-    aww->insert_default_selection(query->result_id, "End of list", "");
-    aww->update_selection_list(query->result_id);
+    query->result_id->insert_default("End of list", "");
+    query->result_id->update();
     aww->get_root()->awar(query->awar_count)->write_int((long)count);
     GB_pop_transaction(query->gb_main);
 }
@@ -1849,8 +1849,7 @@ static GBDATA *get_colorset_root(const color_save_data *csd) {
 }
 
 static void update_colorset_selection_list(const color_save_data *csd) {
-    GB_transaction  ta(csd->cmd->gb_main);
-    AW_window      *aww = csd->aww;
+    GB_transaction ta(csd->cmd->gb_main);
 
     csd->sel_id->clear();
     GBDATA *gb_item_root = get_colorset_root(csd);
@@ -1860,11 +1859,10 @@ static void update_colorset_selection_list(const color_save_data *csd) {
          gb_colorset = GB_nextEntry(gb_colorset))
     {
         const char *name = GBT_read_name(gb_colorset);
-        aww->insert_selection(csd->sel_id, name, name);
+        csd->sel_id->insert(name, name);
     }
-    aww->insert_default_selection(csd->sel_id, "<new colorset>", "");
-
-    aww->update_selection_list(csd->sel_id);
+    csd->sel_id->insert_default("<new colorset>", "");
+    csd->sel_id->update();
 }
 
 static void colorset_changed_cb(GBDATA*, int *cl_csd, GB_CB_TYPE cbt) {
@@ -2737,8 +2735,8 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
             query->result_id = aws->create_selection_list(this_awar_name, "", "", 5, 5);
             awar->add_callback(new_selection_made_cb, (AW_CL)this_awar_name, (AW_CL)query);
         }
-        aws->insert_default_selection(query->result_id, "end of list", "");
-        aws->update_selection_list(query->result_id);
+        query->result_id->insert_default("end of list", "");
+        query->result_id->update();
     }
     if (awtqs->count_pos_fig) {
         aws->at(awtqs->count_pos_fig);

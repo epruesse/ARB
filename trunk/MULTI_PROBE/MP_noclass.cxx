@@ -95,7 +95,6 @@ void MP_gen_quality(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
 
     char *probe, *new_qual, *ecol_pos;
     char *selected = awr->awar(MP_AWAR_SELECTEDPROBES)->read_string();
-    AW_window *aww = mp_main->get_mp_window()->get_window();
 
     if (!selected || !selected[0])
         return;
@@ -112,10 +111,10 @@ void MP_gen_quality(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     sprintf(new_qual, "%1ld#%1ld#%6d#%s", mp_gl_awars.probe_quality, mp_gl_awars.singlemismatches, atoi(ecol_pos), probe);
     delete probe;
 
-    aww->insert_selection(selected_list, new_qual, new_qual);
-    aww->insert_default_selection(selected_list, "", "");
+    selected_list->insert(new_qual, new_qual);
+    selected_list->insert_default("", "");
     selected_list->sort(false, true);
-    aww->update_selection_list(selected_list);
+    selected_list->update();
     awr->awar(MP_AWAR_SELECTEDPROBES)->write_string(new_qual);
     delete new_qual;
     delete ecol_pos;
@@ -124,7 +123,6 @@ void MP_gen_quality(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
 void MP_modify_selected(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     // setzt den 2.Parameter in selected_list
     char       *com1, *com2, *com3, *probes, temp[120];
-    AW_window  *aww = mp_main->get_mp_window()->get_window();
     List<char> *l   = new List<char>;
 
     AW_selection_list_iterator selentry(selected_list);
@@ -157,14 +155,14 @@ void MP_modify_selected(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     while (ptr2)
     {
         l->remove_first();
-        aww->insert_selection(selected_list, ptr2, ptr2);
+        selected_list->insert(ptr2, ptr2);
         delete ptr2;
         ptr2 = l->get_first();
     }
 
-    aww->insert_default_selection(selected_list, "", "");
+    selected_list->insert_default("", "");
     selected_list->sort(false, true);
-    aww->update_selection_list(selected_list);
+    selected_list->update();
     awr->awar(MP_AWAR_SELECTEDPROBES)->write_string("");
 
     remembered_mismatches = mp_gl_awars.no_of_mismatches;
@@ -174,7 +172,6 @@ void MP_modify_selected(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
 void MP_gen_singleprobe(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     char *probe, *new_sing;
     char *selected = awr->awar(MP_AWAR_SELECTEDPROBES)->read_string();
-    AW_window *aww = mp_main->get_mp_window()->get_window();
 
     if (!selected || !selected[0])
         return;
@@ -186,10 +183,10 @@ void MP_gen_singleprobe(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     sprintf(new_sing, "%1ld#%1ld#%6ld#%s", mp_gl_awars.probe_quality, mp_gl_awars.singlemismatches, mp_gl_awars.ecolipos, probe);
     delete probe;
 
-    aww->insert_selection(selected_list, new_sing, new_sing);
-    aww->insert_default_selection(selected_list, "", "");
+    selected_list->insert(new_sing, new_sing);
+    selected_list->insert_default("", "");
     selected_list->sort(false, true);
-    aww->update_selection_list(selected_list);
+    selected_list->update();
     awr->awar(MP_AWAR_SELECTEDPROBES)->write_string(new_sing);
     delete new_sing;
 }
@@ -334,8 +331,8 @@ void MP_compute(AW_window *, AW_CL cl_gb_main) {
     aww2 = mp_main->get_mp_window()->create_result_window(aw_root);
 
     result_probes_list->clear();
-    aww2->insert_default_selection(result_probes_list, "", "");
-    aww2->update_selection_list(result_probes_list);
+    result_probes_list->insert_default("", "");
+    result_probes_list->update();
 
     AW_selection_list_iterator selentry(selected_list);
     probe_field     = new char*[selected_probes_count];
@@ -398,9 +395,8 @@ static bool MP_is_probe(char *seq) {
 }
 
 static void MP_take_manual_sequence(AW_window */*aww*/) {
-    AW_window_simple *aws = mp_main->get_mp_window()->get_window();
-    char             *seq = mp_gl_awars.manual_sequence;
-    char             *new_seq;
+    char *seq = mp_gl_awars.manual_sequence;
+    char *new_seq;
 
     if (! MP_is_probe(seq)) {
         aw_message("This is not a valid probe !!!");
@@ -410,11 +406,11 @@ static void MP_take_manual_sequence(AW_window */*aww*/) {
     new_seq = new char[strlen(seq)+5+7];
     sprintf(new_seq, "%1ld#%1ld#%6d#%s", mp_gl_awars.probe_quality, mp_gl_awars.singlemismatches, 0, seq);
 
-    aws->insert_selection(selected_list, new_seq, new_seq);
-
-    aws->insert_default_selection(selected_list, "", "");
+    selected_list->insert(new_seq, new_seq);
+    selected_list->insert_default("", "");
     selected_list->sort(false, true);
-    aws->update_selection_list(selected_list);
+    selected_list->update();
+    
     mp_main->get_aw_root()->awar(MP_AWAR_SEQUENZEINGABE)->write_string("");
     mp_main->get_aw_root()->awar(MP_AWAR_SELECTEDPROBES)->write_string(new_seq);
     delete [] new_seq;
@@ -666,7 +662,7 @@ void MP_mark_probes_in_tree(AW_window *aww) {
     MP_normal_colors_in_tree(aww);
 }
 
-void MP_Comment(AW_window *aww, AW_CL cl_com) {
+void MP_Comment(AW_window *, AW_CL cl_com) {
     // Comment fuer Auswahl eintragen
 
     AW_root *awr       = mp_main->get_aw_root();
@@ -707,8 +703,8 @@ void MP_Comment(AW_window *aww, AW_CL cl_com) {
             if (autoadvance) result_probes_list->move_selection(1);
 
             result_probes_list->delete_value(selprobes);
-            aww->insert_selection(result_probes_list, new_list_string, new_list_string);
-            aww->update_selection_list(result_probes_list);
+            result_probes_list->insert(new_list_string, new_list_string);
+            result_probes_list->update();
 
             if (!autoadvance) awr->awar(MP_AWAR_RESULTPROBES)->write_string(new_list_string);
         }
@@ -719,35 +715,34 @@ void MP_Comment(AW_window *aww, AW_CL cl_com) {
     free(selprobes);
 }
 
-void MP_leftright(AW_window *aww) {
+void MP_leftright(AW_window *) {
     char *sel = mp_main->get_aw_root()->awar(MP_AWAR_PROBELIST)->read_string();
 
     if (sel && sel[0]) {
-        aww->insert_selection(selected_list, sel, sel);
+        selected_list->insert(sel, sel);
         probelist->delete_value(sel);
-        aww->insert_default_selection(probelist, "", "");
+        probelist->insert_default("", "");
         mp_main->get_aw_root()->awar(MP_AWAR_PROBELIST)->write_string("");
         selected_list->sort(false, true);
-        aww->update_selection_list(selected_list);
-        aww->update_selection_list(probelist);
+        selected_list->update();
+        probelist->update();
     }
     free(sel);
 }
 
-void    MP_rightleft(AW_window *aww)    // von rechts nach links
-{
+void MP_rightleft(AW_window *) {
     char *sel = mp_main->get_aw_root()->awar(MP_AWAR_SELECTEDPROBES)->read_string();
 
     if (!sel ||  !sel[0])
         return;
 
-    aww->insert_selection(probelist, sel, sel);
+    probelist->insert(sel, sel);
     selected_list->delete_value(sel);
-    aww->insert_default_selection(selected_list, "", "");
+    selected_list->insert_default("", "");
     mp_main->get_aw_root()->awar(MP_AWAR_SELECTEDPROBES)->write_string("");
-    aww->update_selection_list(selected_list);
+    selected_list->update();
     probelist->sort(false, true);
-    aww->update_selection_list(probelist);
+    probelist->update();
 }
 
 void MP_selected_chosen(AW_window */*aww*/) {
@@ -791,64 +786,64 @@ void MP_normal_colors_in_tree(AW_window */*aww*/) {
     scr->refresh();
 }
 
-void MP_all_right(AW_window *aww)
+void MP_all_right(AW_window *)
 {
     probelist->move_content_to(selected_list);
     mp_main->get_aw_root()->awar(MP_AWAR_PROBELIST)->write_string("");
     selected_list->sort(false, true);
-    aww->update_selection_list(selected_list);
-    aww->update_selection_list(probelist);
+    selected_list->update();
+    probelist->update();
 }
 
-void MP_del_all_sel_probes(AW_window *aww)
+void MP_del_all_sel_probes(AW_window *)
 {
     mp_main->get_aw_root()->awar(MP_AWAR_SELECTEDPROBES)->write_string("");
     selected_list->clear();
-    aww->insert_default_selection(selected_list, "", "");
-    aww->update_selection_list(selected_list);
+    selected_list->insert_default("", "");
+    selected_list->update();
 }
 
-void MP_del_all_probes(AW_window *aww)
+void MP_del_all_probes(AW_window *)
 {
     mp_main->get_aw_root()->awar(MP_AWAR_PROBELIST)->write_string("");
     probelist->clear();
-    aww->insert_default_selection(probelist, "", "");
-    aww->update_selection_list(probelist);
+    probelist->insert_default("", "");
+    probelist->update();
 }
 
-void MP_del_all_result(AW_window *aww)
+void MP_del_all_result(AW_window *)
 {
     mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES)->write_string("");
     result_probes_list->clear();
-    aww->insert_default_selection(result_probes_list, "", "");
-    aww->update_selection_list(result_probes_list);
+    result_probes_list->insert_default("", "");
+    result_probes_list->update();
 }
 
-void MP_del_sel_result(AW_window *aww)
+void MP_del_sel_result(AW_window *)
 {
     char *val = mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES)->read_string();
     result_probes_list->delete_value(val);
-    aww->insert_default_selection(result_probes_list, "", "");
+    result_probes_list->insert_default("", "");
     mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES)->write_string("");
-    aww->update_selection_list(result_probes_list);
+    result_probes_list->update();
 }
 
-void MP_del_sel_probes(AW_window *aww)
+void MP_del_sel_probes(AW_window *)
 {
     char *val = mp_main->get_aw_root()->awar(MP_AWAR_SELECTEDPROBES)->read_string();
     selected_list->delete_value(val);
-    aww->insert_default_selection(selected_list, "", "");
+    selected_list->insert_default("", "");
     mp_main->get_aw_root()->awar(MP_AWAR_SELECTEDPROBES)->write_string("");
-    aww->update_selection_list(selected_list);
+    selected_list->update();
 }
 
-void MP_del_probes(AW_window *aww)
+void MP_del_probes(AW_window *)
 {
     char *val = mp_main->get_aw_root()->awar(MP_AWAR_PROBELIST)->read_string();
     probelist->delete_value(val);
-    aww->insert_default_selection(probelist, "", "");
+    probelist->insert_default("", "");
     mp_main->get_aw_root()->awar(MP_AWAR_PROBELIST)->write_string("");
-    aww->update_selection_list(probelist);
+    probelist->update();
 }
 
 char *MP_get_comment(int which, const char *str) {
