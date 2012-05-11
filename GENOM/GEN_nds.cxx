@@ -40,9 +40,6 @@ struct GEN_NodeTextBuilder {
 
 static GEN_NodeTextBuilder *gen_nds_ms = 0;
 
-//  -----------------------------------------------------
-//      void GEN_make_node_text_init(GBDATA *gb_main)
-//  -----------------------------------------------------
 void GEN_make_node_text_init(GBDATA *gb_main) {
     GBDATA     *gbz, *gbe;
     const char *sf, *sl;
@@ -77,9 +74,6 @@ void GEN_make_node_text_init(GBDATA *gb_main) {
     gen_nds_ms->count = count;
 }
 
-//  -----------------------------------------------------------------------------
-//      char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
-//  -----------------------------------------------------------------------------
 char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
 {
     // if mode ==0 compress info else format info
@@ -280,9 +274,7 @@ void GEN_create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main, GB
     error = GB_end_transaction(gb_main, error);
     if (error) aw_message(error);
 }
-//  ---------------------------------------------------------------------------------------
-//      void GEN_create_select_nds_window(AW_window *aww,char *key_text,AW_CL cgb_main)
-//  ---------------------------------------------------------------------------------------
+
 static void GEN_create_select_nds_window(AW_window *aww, char *key_text, AW_CL cgb_main)
 {
 #if defined(WARN_TODO)
@@ -311,9 +303,7 @@ static void GEN_create_select_nds_window(AW_window *aww, char *key_text, AW_CL c
     }
     win->activate();
 }
-//  -----------------------------------------------------------------------
-//      AW_window *GEN_open_nds_window(AW_root *aw_root,AW_CL cgb_main)
-//  -----------------------------------------------------------------------
+
 AW_window *GEN_open_nds_window(AW_root *aw_root, AW_CL cgb_main)
 {
     static AW_window_simple *aws = 0;

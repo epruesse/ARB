@@ -46,7 +46,7 @@ extern XML_Document *the_XML_Document; // there can only be one at a time
 
 //  ----------------------------
 //      class XML_Attribute
-//  ----------------------------
+
 class XML_Attribute : virtual Noncopyable {
 private:
     std::string    name;
@@ -65,7 +65,7 @@ public:
 
 //  -----------------------
 //      class XML_Node
-//  -----------------------
+
 class XML_Node : virtual Noncopyable {
 protected:
     XML_Node *father;
@@ -87,7 +87,6 @@ public:
 
 //  ----------------------------------------
 //      class XML_Tag : public XML_Node
-//  ----------------------------------------
 
 //! xml element
 class XML_Tag : public XML_Node {  // derived from a Noncopyable

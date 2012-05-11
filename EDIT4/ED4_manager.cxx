@@ -19,7 +19,6 @@
 
 // -----------------------------------------------------------------
 //      Manager static properties (used by manager-constructors)
-// -----------------------------------------------------------------
 
 static ED4_objspec main_manager_spec(
     (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_HORIZONTAL), // static props
@@ -112,7 +111,6 @@ static ED4_objspec root_group_manager_spec(
 
 // ----------------------------
 //      ED4_manager methods
-// ----------------------------
 
 ED4_returncode ED4_manager::rebuild_consensi(ED4_base *start_species, ED4_update_flag update_flag) {
     int                        i;
@@ -1310,39 +1308,32 @@ ED4_manager::~ED4_manager() {
     delete children;
 }
 
-
-
-
-// --------------------------------------------------------------------------------
+// --------------------------
 //      ED4_main_manager
-// --------------------------------------------------------------------------------
 
 ED4_main_manager::ED4_main_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
     ED4_manager(main_manager_spec, temp_id, x, y, width, height, temp_parent)
 {
 }
 
-// --------------------------------------------------------------------------------
+// ----------------------------
 //      ED4_device_manager
-// --------------------------------------------------------------------------------
 
 ED4_device_manager::ED4_device_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
     ED4_manager(device_manager_spec, temp_id, x, y, width, height, temp_parent)
 {
 }
 
-// --------------------------------------------------------------------------------
+// --------------------------
 //      ED4_area_manager
-// --------------------------------------------------------------------------------
 
 ED4_area_manager::ED4_area_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
     ED4_manager(area_manager_spec, temp_id, x, y, width, height, temp_parent)
 {
 }
 
-// --------------------------------------------------------------------------------
+// -----------------------------------
 //      ED4_multi_species_manager
-// --------------------------------------------------------------------------------
 
 ED4_multi_species_manager::ED4_multi_species_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
     ED4_manager(multi_species_manager_spec, temp_id, x, y, width, height, temp_parent),
@@ -1684,9 +1675,8 @@ ED4_species_manager *ED4_multi_species_manager::get_consensus_manager() const {
     return consensus_manager;
 }
 
-// --------------------------------------------------------------------------------
+// -----------------------------
 //      ED4_species_manager
-// --------------------------------------------------------------------------------
 
 ED4_species_manager::ED4_species_manager(ED4_species_type type_, const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
     ED4_manager(species_manager_spec, temp_id, x, y, width, height, temp_parent),
@@ -1774,9 +1764,8 @@ ED4_group_manager::ED4_group_manager(const char *temp_id, AW_pos x, AW_pos y, AW
 {
 }
 
-// --------------------------------------------------------------------------------
-//              ED4_remap::
-// --------------------------------------------------------------------------------
+// -------------------
+//      ED4_remap
 
 ED4_remap::ED4_remap() {
     mode               = ED4_RM_NONE;
@@ -1979,9 +1968,8 @@ GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
     return NULL;
 }
 
-// --------------------------------------------------------------------------------
-//              ED4_root_group_manager::
-// --------------------------------------------------------------------------------
+// --------------------------------
+//      ED4_root_group_manager
 
 ED4_root_group_manager::ED4_root_group_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
     : ED4_abstract_group_manager(root_group_manager_spec, temp_id, x, y, width, height, temp_parent),
@@ -2004,9 +1992,8 @@ bool ED4_root_group_manager::update_remap() {
     return remapped;
 }
 
-// --------------------------------------------------------------------------------
-//              ED4_multi_species_manager::
-// --------------------------------------------------------------------------------
+// -----------------------------------
+//      ED4_multi_species_manager
 
 ED4_multi_sequence_manager::ED4_multi_sequence_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
     : ED4_manager(multi_sequence_manager_spec, temp_id, x, y, width, height, temp_parent)

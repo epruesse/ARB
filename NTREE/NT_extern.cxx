@@ -1167,9 +1167,9 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
     bool is_genome_db = GEN_is_genome_db(GLOBAL_gb_main, 0); //  is this a genome database ? (default = 0 = not a genom db)
 
-    // -------------
+    // --------------
     //      File
-    // -------------
+
 #if defined(DEBUG)
     AWT_create_debug_menu(awm);
 #endif // DEBUG
@@ -1240,9 +1240,10 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             }
 
         }
-        // ----------------
+
+        // -----------------
         //      Species
-        // ----------------
+
         awm->create_menu("Species", "c", AWM_ALL);
         {
             awm->insert_menu_topic("species_search", "Search and query",    "q", "sp_search.hlp", AWM_ALL, AW_POPUP,                (AW_CL)DBUI::create_species_query_window, (AW_CL)GLOBAL_gb_main);
@@ -1294,18 +1295,18 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
                 awm->insert_menu_topic("del_names",    "Delete names from DB",   "D", "vn_delete.hlp",  AWM_EXP, NT_deleteValidNames,  0, 0);
                 awm->insert_menu_topic("sug_names",    "Suggest valid names",    "v", "vn_suggest.hlp", AWM_EXP, NT_suggestValidNames, 0, 0);
                 awm->insert_menu_topic("search_names", "Search manually",        "m", "vn_search.hlp",  AWM_EXP, AW_POPUP,             (AW_CL)NT_searchManuallyNames,  0);
-           }
+            }
             awm->close_sub_menu();
         }
-        //  --------------------------
+
+        // ----------------------------
         //      Genes + Experiment
-        //  --------------------------
 
         if (is_genome_db) GEN_create_genes_submenu(awm, GLOBAL_gb_main, true);
 
-        // -----------------
+        // ------------------
         //      Sequence
-        // -----------------
+
         awm->create_menu("Sequence", "S", AWM_ALL);
         {
             awm->insert_menu_topic("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",   AWM_ALL,  AW_POPUP, (AW_CL)NT_create_alignment_window, 0);
@@ -1344,9 +1345,10 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
             GDE_load_menu(awm, AWM_ALL, "Print");
         }
-        // ------------
+
+        // -------------
         //      SAI
-        // ------------
+
         awm->create_menu("SAI", "A", AWM_ALL);
         {
             awm->insert_menu_topic("sai_admin", "Manage SAIs",                "S", "ad_extended.hlp", AWM_ALL,    AW_POPUP, (AW_CL)NT_create_extendeds_window,   0);
@@ -1372,9 +1374,9 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->close_sub_menu();
         }
 
-        // ---------------
+        // ----------------
         //      Probes
-        // ---------------
+
         awm->create_menu("Probes", "P", AWM_ALL);
         {
             awm->insert_menu_topic("probe_design", "Design Probes",          "D", "probedesign.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_probe_design_window, (AW_CL)GLOBAL_gb_main);
@@ -1389,9 +1391,9 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
     }
 
-    // -------------
+    // --------------
     //      Tree
-    // -------------
+
     awm->create_menu("Tree", "T", AWM_ALL);
     {
         if (!clone) {
@@ -1521,9 +1523,9 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     }
 
     if (!clone) {
-        // --------------
+        // ---------------
         //      Tools
-        // --------------
+
         awm->create_menu("Tools", "o", AWM_ALL);
         {
             awm->insert_menu_topic("names_admin",      "Name server admin",    "s", "namesadmin.hlp",  AWM_ALL, AW_POPUP, (AW_CL)AW_create_namesadmin_window, (AW_CL)GLOBAL_gb_main);
@@ -1554,9 +1556,9 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->sep______________();
             awm->insert_menu_topic("xterm",         "Start XTERM",             "X", 0,         AWM_ALL, (AW_CB)GB_xterm, 0, 0);
         }
-        // -------------------
+        // --------------------
         //      Properties
-        // -------------------
+
         awm->create_menu("Properties", "r", AWM_ALL);
         {
             awm->insert_menu_topic("props_menu",    "Frame settings", "F", "props_frame.hlp",     AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0);
@@ -1605,7 +1607,6 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
     // -------------------------
     //      create top area
-    // -------------------------
 
     int first_liney;
     int leftx;
@@ -1613,7 +1614,6 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
     // ---------------------
     //      quit + help
-    // ---------------------
 
     awm->button_length(0);
 
@@ -1637,9 +1637,8 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->help_text("arb_ntree.hlp");
     awm->create_button("?", "#help.xpm");
 
-    // -------------------------
+    // --------------------------
     //      save + undo/redo
-    // -------------------------
 
     awm->callback(NT_save_quick_cb);
     awm->help_text("save.hlp");
@@ -1671,9 +1670,8 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->help_text("saveas.hlp");
     awm->create_button("QUICK_SAVE_AS", AWAR_DB_NAME);
 
-    // ----------------------------
+    // -----------------------------
     //      tree + tree display
-    // ----------------------------
 
 #define TREE_BUTTON_OVERSIZE 6
 
@@ -1708,9 +1706,8 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->help_text("nt_tree_select.hlp");
     awm->create_button("SELECT_A_TREE", awar_tree);
 
-    // --------------------------------------------------------------
+    // ---------------------------------------------------------------
     //      protection, alignment + editor (and maybe Genome Map)
-    // --------------------------------------------------------------
 
     int db_alignx = awm->get_at_xposition();
 
@@ -1761,9 +1758,8 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->help_text("nt_align_select.hlp");
     awm->create_button("SELECT_AN_ALIGNMENT", AWAR_DEFAULT_ALIGNMENT);
 
-    // ------------------------------
+    // -------------------------------
     //      create mode-help line
-    // ------------------------------
 
     awm->at(leftx, third_liney);
     awm->button_length(AWAR_FOOTER_MAX_LEN);
@@ -1772,9 +1768,8 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->at_newline();
     int bottomy = awm->get_at_yposition();
 
-    // --------------------------------------
+    // ---------------------------------------
     //      Info / marked / Search / Jump
-    // --------------------------------------
 
     awm->button_length(7);
 
@@ -1812,9 +1807,8 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->set_bottom_area_height(0);
     awr->set_focus_callback((AW_RCB)NT_focus_cb, (AW_CL)GLOBAL_gb_main, 0);
 
-    //  -----------------------------------
-    //  Autostarts for development
-    //  -----------------------------------
+    // ------------------------------------
+    //      Autostarts for development
 
 #if defined(DEVEL_RALF)
     // if (is_genome_db) GEN_map_first(awr)->show();

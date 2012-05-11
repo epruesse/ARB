@@ -22,7 +22,6 @@
 
 // --------------------
 //      TreeReader
-// --------------------
 
 enum tr_lfmode { LF_UNKNOWN, LF_N, LF_R, LF_NR, LF_RN, };
 

@@ -328,7 +328,6 @@ public:
 
     // ------------------------------
     //      The read only section
-    // ------------------------------
 
     char *window_name;                              // window title
     char *window_defaults_name;
@@ -343,7 +342,6 @@ public:
 
     // --------------------------------
     //      The real public section
-    // --------------------------------
 
     AW_root *get_root() { return root; }
 

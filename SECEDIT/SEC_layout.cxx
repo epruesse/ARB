@@ -54,9 +54,8 @@ const Angle& SEC_oriented::calc_rel_angle() {
     return rel_angle;
 }
 
-// ------------------------------------
+// -------------------------------------
 //      calculate size of structure
-// ------------------------------------
 
 void SEC_segment::calculate_segment_size() {
     alpha = ((get_region()->get_base_count()+1) / loop->get_circumference()) * (2*M_PI);
@@ -118,9 +117,8 @@ void SEC_root::calculate_size() {
     if (rootLoop) rootLoop->calculate_loop_size();
 }
 
-// -------------------------------------------
+// --------------------------------------------
 //      calculate coordinates of structure
-// -------------------------------------------
 
 void SEC_segment::calculate_segment_coordinates(const Position& start, const Position& end) {
     // start is rightAttach of previous strand, end is leftAttach of next strand.
@@ -234,9 +232,8 @@ void SEC_root::calculate_coordinates() {
     }
 }
 
-// ---------------------------
+// ----------------------------
 //      angle invalidation
-// ---------------------------
 
 void SEC_oriented::invalidate() {
     if (abs_angle_valid) { // skip recursion if already invalidated
@@ -263,9 +260,8 @@ void SEC_loop::invalidate_sub_angles() {
     }
 }
 
-// --------------------
+// ---------------------
 //      count bases
-// --------------------
 
 void SEC_region::invalidate_base_count() {
     delete [] abspos_array;

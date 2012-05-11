@@ -101,9 +101,8 @@ enum PH_TRANSFORMATION {
     PH_TRANSFORMATION_BANDELT2_JC
 };
 
-// --------------------------
+// ---------------------------
 //      class definitions
-// --------------------------
 
 class PH_root {
 private:

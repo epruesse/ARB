@@ -25,9 +25,8 @@
 using namespace std;
 using namespace AW;
 
-//  -------------------
+// ---------------------
 //      GEN_graphic
-//  -------------------
 
 GEN_graphic::GEN_graphic(AW_root *aw_root_, GBDATA *gb_main_, GEN_graphic_cb_installer callback_installer_, int window_nr_)
     : aw_root(aw_root_)

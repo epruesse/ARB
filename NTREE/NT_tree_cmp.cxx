@@ -102,9 +102,6 @@ int AWT_species_set_root::search(AWT_species_set *set, FILE *log_file) {
     return net_cost;
 }
 
-// --------------------------------------------------------------------------------
-//     AWT_species_set::AWT_species_set(AP_tree *nodei,AWT_species_set_root *ssr,char *species_name)
-// --------------------------------------------------------------------------------
 AWT_species_set::AWT_species_set(AP_tree *nodei, AWT_species_set_root *ssr, char *species_name) {
     memset((char *)this, 0, sizeof(*this));
     bitstring = (unsigned char *)GB_calloc(sizeof(char), size_t(ssr->nspecies/8)+sizeof(long)+1);
@@ -119,9 +116,6 @@ AWT_species_set::AWT_species_set(AP_tree *nodei, AWT_species_set_root *ssr, char
     best_cost = 0x7fffffff;
 }
 
-// --------------------------------------------------------------------------------
-//     AWT_species_set::AWT_species_set(AP_tree *nodei,AWT_species_set_root *ssr,AWT_species_set *l,AWT_species_set *r)
-// --------------------------------------------------------------------------------
 AWT_species_set::AWT_species_set(AP_tree *nodei, AWT_species_set_root *ssr, AWT_species_set *l, AWT_species_set *r) {
     memset((char *)this, 0, sizeof(*this));
     this->node = node;

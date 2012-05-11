@@ -40,7 +40,6 @@ bool GEN_is_genome_db(GBDATA *gb_main, int default_value) {
 
 //  --------------
 //      genes:
-//  --------------
 
 GBDATA* GEN_findOrCreate_gene_data(GBDATA *gb_species) {
     GBDATA *gb_gene_data = GB_search(gb_species, "gene_data", GB_CREATE_CONTAINER);
@@ -544,7 +543,6 @@ void GEN_sortAndMergeLocationParts(GEN_position *location) {
 
 //  -----------------------------------------
 //      test if species is pseudo-species
-//  -----------------------------------------
 
 const char *GEN_origin_organism(GBDATA *gb_pseudo) {
     GBDATA *gb_origin = GB_entry(gb_pseudo, "ARB_origin_species");
@@ -561,7 +559,6 @@ bool GEN_is_pseudo_gene_species(GBDATA *gb_species) {
 
 //  ------------------------------------------------
 //      find organism or gene for pseudo-species
-//  ------------------------------------------------
 
 GB_ERROR GEN_organism_not_found(GBDATA *gb_pseudo) {
     GB_ERROR error = 0;
@@ -685,7 +682,6 @@ GBDATA *GEN_find_origin_gene(GBDATA *gb_pseudo, GB_HASH *organism_hash) {
 
 //  --------------------------------
 //      find pseudo-species
-//  --------------------------------
 
 GBDATA* GEN_first_pseudo_species(GBDATA *gb_main) {
     GBDATA *gb_species = GBT_first_species(gb_main);

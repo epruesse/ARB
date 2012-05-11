@@ -124,9 +124,8 @@ GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
 }
 
 
-//  -----------------------------------
+// ------------------------------------
 //      class NameServerConnection
-//  -----------------------------------
 
 class NameServerConnection {
 private:
@@ -136,9 +135,6 @@ private:
     int         persistent;     // if true -> connection will not be closed
     time_t      linktime;       // time, when link has been established
 
-    //  ----------------------------------
-    //      int init_local_com_names()
-    //  ----------------------------------
     int init_local_com_names()
     {
         if (!link) return 1;    //!* create and init local com structure **

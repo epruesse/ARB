@@ -103,7 +103,6 @@ static long count_bases(GBDATA *gb_data) {
 
 // -------------------------
 //      class Candidate
-// -------------------------
 
 class Candidate {
     string name;                // species/SAI name

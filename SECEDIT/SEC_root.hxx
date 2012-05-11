@@ -41,7 +41,6 @@ using namespace AW;
 
 // ------------------
 //      Debugging
-// ------------------
 
 #if defined(DEBUG)
 
@@ -61,7 +60,6 @@ enum SEC_CHECK_TYPE {
 
 // -------------------
 //      SEC_region
-// -------------------
 
 class SEC_root;
 
@@ -146,7 +144,6 @@ public:
 
 // -------------------------
 //      SEC_constrainted
-// -------------------------
 
 class SEC_constrainted {
     double sSize;               // standard size
@@ -195,7 +192,6 @@ public:
 
 // ---------------------
 //      SEC_oriented
-// ---------------------
 
 class SEC_base;
 
@@ -250,7 +246,6 @@ public:
 
 // ----------------------
 //      SEC_BASE_TYPE
-// ----------------------
 
 enum SEC_BASE_TYPE {
     SEC_NO_TYPE  = 0,
@@ -261,7 +256,6 @@ enum SEC_BASE_TYPE {
 
 // -----------------
 //      SEC_base
-// -----------------
 
 class SEC_base : public SEC_constrainted, public SEC_oriented, virtual Noncopyable { // loop or helix
     SEC_root *root;
@@ -310,7 +304,6 @@ public:
 
 // ------------------
 //      SEC_helix
-// ------------------
 
 class SEC_helix_strand;
 class SEC_loop;
@@ -370,7 +363,6 @@ public:
 
 // -------------------------
 //      SEC_helix_strand
-// -------------------------
 
 class SEC_segment;
 
@@ -470,7 +462,6 @@ public:
 
 // --------------------
 //      SEC_segment
-// --------------------
 
 class SEC_segment : public SEC_base_part { // derived from a Noncopyable
 private:
@@ -551,7 +542,6 @@ public:
 
 // -----------------
 //      SEC_loop
-// -----------------
 
 class SEC_loop : public SEC_base { // derived from a Noncopyable
     double   Circumference;     // unit is in "segment-base-distances"
@@ -620,7 +610,6 @@ public:
 
 // --------------------------
 //      SEC_displayParams
-// --------------------------
 
 enum ShowBonds {
     SHOW_NO_BONDS     = 0,
@@ -665,7 +654,6 @@ struct SEC_displayParams {
 
 // -----------------
 //      SEC_root
-// -----------------
 
 class AWT_canvas;
 class SEC_drawn_positions;
@@ -691,7 +679,6 @@ class SEC_root : virtual Noncopyable {
 
     // -----------------------------
     //      updated before paint
-    // -----------------------------
 
     AW_font_group font_group;
 
@@ -707,7 +694,6 @@ class SEC_root : virtual Noncopyable {
 
     // --------------------------
     //      valid after paint
-    // --------------------------
 
     SEC_drawn_positions *drawnPositions; // after paint this contains draw positions for every absolute position
     LineVector           cursor_line; // main line of the cursor
@@ -865,7 +851,6 @@ public:
 
 // --------------------------------------------------------------------------------
 // inlines:
-// --------------------------------------------------------------------------------
 
 inline void SEC_helix::flip() {
     strand_to_root = strand_to_root->get_other_strand();

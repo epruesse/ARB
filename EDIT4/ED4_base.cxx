@@ -194,7 +194,6 @@ void ED4_species_pointer::Set(GBDATA *gbd, int *clientdata)
 
 // -----------------
 //      ED4_base
-// -----------------
 
 inline bool ranges_overlap(int p1, int p2, int r1, int r2) {
     // return true if ranges p1..p2 and r1..r2 overlap

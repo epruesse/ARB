@@ -138,8 +138,6 @@ inline bool copy_content(char*& entry, const char *content) {
 
 // --------------------
 
-// --------------------
-
 #define lookup_keyword(keyword,table) ___lookup_keyword(keyword, table, ARRAY_ELEMS(table))
 
 #else

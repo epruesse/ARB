@@ -241,9 +241,8 @@ GB_ERROR SEC_graphic::handleKey(AW_event_type event, AW_key_mod key_modifier, AW
 GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int button, AWT_COMMAND_MODE cmd, const Position& world, SEC_base *elem, int abspos) {
     GB_ERROR error = 0;
 
-    // -----------------------------------------
+    // ------------------------------------------
     //      handle element dependent actions
-    // -----------------------------------------
 
     if (elem) {
         static Position start;      // click position on mouse down
@@ -440,9 +439,8 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
         }
     }
 
-    // --------------------------------------
+    // ---------------------------------------
     //      action independent of element
-    // --------------------------------------
 
     if (!elem) {
         switch (cmd) {
@@ -609,9 +607,8 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
         free(helix_name);
     }
 
-    // -----------------------
+    // ------------------------
     //      read structure
-    // -----------------------
 
     if (!err) {
         gb_struct = GB_search(gb_ali, NAME_OF_STRUCT_SEQ, GB_FIND);

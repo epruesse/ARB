@@ -1015,9 +1015,8 @@ ED4_line_terminal::ED4_line_terminal(const char *temp_id, AW_pos x, AW_pos y, AW
 {
 }
 
-// --------------------------------------------------------------------------------
-//  ED4_columnStat_terminal
-// --------------------------------------------------------------------------------
+// ---------------------------------
+//      ED4_columnStat_terminal
 
 ED4_returncode ED4_columnStat_terminal::Show(int IF_ASSERTION_USED(refresh_all), int is_cleared)
 {
@@ -1280,9 +1279,8 @@ ED4_columnStat_terminal::~ED4_columnStat_terminal()
     for (int i=0; i<4; i++) free(likelihood[i]);
 }
 
-// --------------------------------------------------------------------------------
-//  ED4_reference_terminals
-// --------------------------------------------------------------------------------
+// ---------------------------------
+//      ED4_reference_terminals
 
 void ED4_reference_terminals::clear()
 {

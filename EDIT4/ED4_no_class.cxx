@@ -1484,9 +1484,6 @@ void ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL /* cd2 */
     root->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->write_int(int(mode));
 }
 
-//  -------------------------------------------------------------------
-//      AW_window *ED4_create_level_1_options_window(AW_root *root)
-//  -------------------------------------------------------------------
 AW_window *ED4_create_level_1_options_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
 

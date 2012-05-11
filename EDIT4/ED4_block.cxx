@@ -617,7 +617,6 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
 
 // --------------------------------------------------------------------------------
 //      Replace
-// --------------------------------------------------------------------------------
 
 inline bool matchesUsingWildcard(GB_CSTR s1, GB_CSTR s2, int len) {
     // s2 may contain '?' as wildcard
@@ -725,7 +724,6 @@ AW_window *ED4_create_replace_window(AW_root *root) {
 
 // --------------------------------------------------------------------------------
 //      Other block operations
-// --------------------------------------------------------------------------------
 
 inline char *dont_return_unchanged(char *result, int& new_len, const SeqPart& part) {
     if (result) {

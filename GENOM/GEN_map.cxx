@@ -393,9 +393,8 @@ static void GEN_local_lock_changed_cb(AW_root *awr, AW_CL cl_win, AW_CL cl_what_
     }
 }
 
-// ------------------------------------
+// -------------------------------------
 //      display parameter change cb
-// ------------------------------------
 
 static void GEN_display_param_changed_cb(AW_root * /* awr */, AW_CL cl_display_type_mask) {
     GEN_map_manager::with_all_mapped_windows(GEN_map_window_refresh_if_display_type, cl_display_type_mask);
@@ -404,9 +403,8 @@ inline void set_display_update_callback(AW_root *awr, const char *awar_name, int
     awr->awar(awar_name)->add_callback(GEN_display_param_changed_cb, AW_CL(display_type_mask));
 }
 
-// -------------------------
+// --------------------------
 //      View-local AWARS
-// -------------------------
 
 static void GEN_create_genemap_local_awars(AW_root *aw_root, AW_default /* def */, int window_nr) {
     // awars local to each view
@@ -436,9 +434,8 @@ static void GEN_add_local_awar_callbacks(AW_root *awr, AW_default /* def */, GEN
     awar_lock_gene->touch();
 }
 
-// ---------------------
+// ----------------------
 //      global AWARS
-// ---------------------
 
 static void GEN_create_genemap_global_awars(AW_root *aw_root, AW_default def, GBDATA *gb_main) {
     // layout options:
@@ -1371,9 +1368,8 @@ static AW_window *GEN_create_awar_debug_window(AW_root *aw_root) {
 }
 #endif // DEBUG
 
-// --------------------------
+// ---------------------------
 //      user mask section
-// --------------------------
 
 class GEN_item_type_species_selector : public awt_item_type_selector {
 public:
@@ -1630,9 +1626,8 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     gen_canvas->recalc_size_and_refresh();
     gen_canvas->set_mode(AWT_MODE_SELECT); // Default-Mode
 
-    // --------------
+    // ---------------
     //      menus
-    // --------------
 
     // File Menu
     create_menu("File", "F", AWM_ALL);
@@ -1659,17 +1654,15 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     sep______________();
     insert_menu_topic("gene_save_props",   "Save Defaults (ntree.arb)", "D", "savedef.hlp", AWM_ALL, (AW_CB) AW_save_properties, 0, 0);
 
-    // ---------------------
+    // ----------------------
     //      mode buttons
-    // ---------------------
 
     create_mode("select.bitmap", "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_SELECT);
     create_mode("pzoom.bitmap",  "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_ZOOM);
     create_mode("info.bitmap",   "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_EDIT);
 
-    // ------------------
+    // -------------------
     //      info area
-    // ------------------
 
     set_info_area_height(250);
     at(11, 2);

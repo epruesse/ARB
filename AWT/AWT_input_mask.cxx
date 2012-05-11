@@ -50,7 +50,6 @@ awt_input_mask_id_list awt_input_mask_global::global_ids; // stores global ids
 
 // ---------------------
 //      global awars
-// ---------------------
 
 #define AWAR_INPUT_MASK_BASE   "tmp/inputMask"
 #define AWAR_INPUT_MASK_NAME   AWAR_INPUT_MASK_BASE"/name"
@@ -74,7 +73,6 @@ static void create_global_awars(AW_root *awr) {
 
 // ------------------------------------------
 //      Callbacks from database and awars
-// ------------------------------------------
 
 static bool in_item_changed_callback  = false;
 static bool in_field_changed_callback = false;
@@ -463,7 +461,6 @@ void awt_string_handler::db_changed() {
 
 // ----------------
 //      Widgets
-// ----------------
 
 void awt_input_field::build_widget(AW_window *aws) {
     const string& lab = get_label();
@@ -512,7 +509,6 @@ void awt_radio_button::build_widget(AW_window *aws) {
 
 // -----------------------------------------
 //      Special AWAR <-> DB translations
-// -----------------------------------------
 
 string awt_check_box::awar2db(const string& awar_content) const {
     GB_TYPES typ = type();
@@ -567,7 +563,6 @@ string awt_numeric_input_field::awar2db(const string& awar_content) const {
 
 // -----------------------------------------
 //      Routines to parse user-mask file
-// -----------------------------------------
 
 static GB_ERROR readLine(FILE *in, string& line, size_t& lineNo) {
     const int  BUFSIZE = 8000;
@@ -1011,7 +1006,7 @@ static void AWT_edit_input_mask(AW_window *, AW_CL cl_mask_name, AW_CL cl_local)
 
 //  ---------------------------------
 //      input mask container :
-//  ---------------------------------
+
 typedef SmartPtr<awt_input_mask>        awt_input_mask_ptr;
 typedef map<string, awt_input_mask_ptr> InputMaskList; // contains all active masks
 static InputMaskList                    input_mask_list;
@@ -1090,10 +1085,10 @@ static void AWT_change_input_mask(AW_window *aww, AW_CL cl_internal_mask_name, A
 
 //  ------------------------------
 //      class awt_mask_action
-//  ------------------------------
-// something that is performed i.e. when user pressed a mask button
-// used as callback parameter
+
 class awt_mask_action {
+    // something that is performed i.e. when user pressed a mask button
+    // used as callback parameter
 private:
     virtual GB_ERROR action() = 0;
 protected:
@@ -1111,7 +1106,7 @@ public:
 
 //  ------------------------------------------------------
 //      class awt_assignment : public awt_mask_action
-//  ------------------------------------------------------
+
 class awt_assignment : public awt_mask_action {
 private:
     string id_dest;
@@ -1163,7 +1158,6 @@ static void AWT_input_mask_browse_url(AW_window *aww, AW_CL cl_url_srt, AW_CL cl
 
 // ---------------------------
 //      User Mask Commands
-// ---------------------------
 
 enum MaskCommand {
     CMD_TEXTFIELD,
@@ -1324,7 +1318,6 @@ static string find_internal_name(const string& mask_name, bool search_in_local) 
 
 // ----------------------------------
 //      class awt_marked_checkbox
-// ----------------------------------
 
 class awt_marked_checkbox : public awt_viewport, public awt_linked_to_item {
 private:
@@ -1604,7 +1597,6 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
 
                                 //  --------------------------------------
                                 //      code for different commands :
-                                //  --------------------------------------
 
                                 if (cmd == CMD_TEXTFIELD) {
                                     string label, data_path;
@@ -1845,7 +1837,6 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
 
                                 //  --------------------------
                                 //      insert handler(s)
-                                //  --------------------------
 
                                 if (!handler.isNull() && !error) {
                                     if (!radio_edit_handler.isNull()) { // special radio handler
@@ -2215,7 +2206,6 @@ static void registerType(awt_item_type type, AW_window_menu_modes *awm, AWT_Open
 
 // ----------------------------------------------
 //      Create a new input mask (interactive)
-// ----------------------------------------------
 
 static void create_new_mask_cb(AW_window *aww) {
     AW_root *awr = aww->get_root();
@@ -2349,7 +2339,6 @@ static void create_new_input_mask(AW_window *aww, AW_CL cl_item_type, AW_CL) { /
 
 // -----------------------------------------------------
 //      Create User-Mask-Submenu for any application
-// -----------------------------------------------------
 
 void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_item_type, AWT_OpenMaskWindowCallback open_mask_window_cb, AW_CL cl_user) {
     // add a user mask submenu at current position

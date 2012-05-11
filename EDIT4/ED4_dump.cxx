@@ -21,9 +21,6 @@
 #define NEXT_INDENT      (indent+INDENT_PER_LEVEL)
 #define OUT              stdout
 
-// ----------------------------------------------------------
-//      static void printProperties(ED4_properties prop)
-// ----------------------------------------------------------
 static void printProperties(ED4_properties prop) {
     char sep = ' ';
 #define pprop(tag) do { if (prop&ED4_P_##tag) { fputc(sep, OUT); sep = '|'; fputs(#tag, OUT); } } while(0)
@@ -43,9 +40,6 @@ static void printProperties(ED4_properties prop) {
 #undef pprop
 }
 
-// -------------------------------------------------
-//      static void printLevel(ED4_level level)
-// -------------------------------------------------
 static void printLevel(ED4_level level) {
     char sep = ' ';
 #define plev(tag) do { if (level&ED4_L_##tag) { fputc(sep, OUT); sep = '|'; fputs(#tag, OUT); } } while(0)

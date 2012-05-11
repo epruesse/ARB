@@ -509,7 +509,6 @@ public:
 
 // -----------------------------
 //      INLINE-Functions:
-// -----------------------------
 
 inline CompactedSubSequence::CompactedSubSequence(const char *seq, int len, const char *Name, int start_offset) {
     // normal c-tor

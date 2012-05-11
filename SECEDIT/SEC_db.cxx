@@ -25,9 +25,8 @@
 
 using namespace std;
 
-// ----------------------------------
+// -----------------------------------
 //      member function callbacks
-// ----------------------------------
 
 typedef void (SEC_db_interface::*interface_cb)(const SEC_dbcb *);
 
@@ -49,9 +48,8 @@ static void db_callback(GBDATA *, int *cl_cb, GB_CB_TYPE) {
     cb->call();
 }
 
-// ---------------------
+// ----------------------
 //      SEC_seq_data
-// ---------------------
 
 SEC_seq_data::SEC_seq_data(GBDATA *gb_item, const char *aliname, const SEC_dbcb *cb) {
     gb_name   = GB_search(gb_item, "name", GB_FIND);
@@ -70,9 +68,8 @@ SEC_seq_data::~SEC_seq_data() {
     free(Data);
 }
 
-// ------------------
+// -------------------
 //      pair defs
-// ------------------
 
 #define AWAR_PAIRS(type) AWAR_SECEDIT_##type##_PAIRS
 #define AWAR_PCHAR(type) AWAR_SECEDIT_##type##_PAIR_CHAR
@@ -192,9 +189,8 @@ void SEC_displayParams::reread(AW_root *aw_root, const ED4_plugin_host& host) {
 #endif // DEBUG
 }
 
-// ----------------------------
+// --------------------------
 //      SEC_db_interface
-// ----------------------------
 
 void SEC_db_interface::reload_sequence(const SEC_dbcb *cb) {
     GB_transaction ta(gb_main);

@@ -577,9 +577,8 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick, int t
     pars_saveNrefresh_changed_tree(ntw);
 }
 
-// -----------------------------------------
+// ------------------------------------------
 //      Adding partial sequences to tree
-// -----------------------------------------
 
 class PartialSequence { 
     GBDATA               *gb_species;
@@ -951,9 +950,8 @@ static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
     pars_saveNrefresh_changed_tree(ntw);
 }
 
-// -----------------------------
+// -------------------------------
 //      add marked / selected
-// -----------------------------
 
 // normal versions :
 
@@ -967,9 +965,8 @@ static void TESTMENU_add      (AW_window * aww, AWT_canvas *ntw, AddWhat what) {
 static void TESTMENU_quick_add(AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, true, 1); }
 #endif // TESTMENU
 
-// -----------------------------------------
+// ------------------------------------------
 //      remove and add marked / selected
-// -----------------------------------------
 
 static void NT_radd_internal(AW_window * aww, AWT_canvas *ntw, AddWhat what, bool quick, int test) {
     AW_awar *awar_best_pars = aww->get_root()->awar(AWAR_BEST_PARSIMONY);
@@ -998,9 +995,8 @@ static void TESTMENU_radd           (AW_window * aww, AWT_canvas *ntw, AddWhat w
 static void TESTMENU_rquick_add_test(AW_window * aww, AWT_canvas *ntw, AddWhat what) { NT_radd_internal(aww, ntw, what, true, 1); }
 #endif // TESTMENU
 
-// --------------------------------------------------------------------------------
-// Add Partial sequences
-// --------------------------------------------------------------------------------
+// -------------------------------
+//      Add Partial sequences
 
 
 static void NT_partial_add(AW_window *aww, AW_CL cl_ntw, AW_CL) {

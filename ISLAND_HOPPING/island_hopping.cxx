@@ -54,9 +54,6 @@ IslandHoppingParameter::~IslandHoppingParameter() {
 }
 
 
-//  -------------------------------------------
-//      GB_ERROR IslandHopping::do_align()
-//  -------------------------------------------
 GB_ERROR IslandHopping::do_align() {
 
     if (!para) {

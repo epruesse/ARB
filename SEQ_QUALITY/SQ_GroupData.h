@@ -188,8 +188,6 @@ public:
 
 // -----------------------
 //      implementation
-// -----------------------
-
 
 template <int I> SQ_GroupData_Impl<I>::~SQ_GroupData_Impl() {
     delete [] consensus;

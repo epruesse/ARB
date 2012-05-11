@@ -42,9 +42,8 @@ void SEC_root::invalidate_base_positions() {
     }
 }
 
-// -----------------------------------------------------
+// ------------------------------------------------------
 //      auto-scrolling (triggered by structure self)
-// -----------------------------------------------------
 
 void SEC_root::nail_position(size_t absPos) {
     if (drawnPositions) {

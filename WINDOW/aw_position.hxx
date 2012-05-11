@@ -28,7 +28,6 @@
 
 // ------------------------
 //      validity checks
-// ------------------------
 
 #if defined(DEBUG)
 
@@ -54,7 +53,6 @@ namespace AW {
 
     // -------------------------------------------------------
     //      class Position represents 2-dimensional positions
-    // -------------------------------------------------------
 
     // Note: orientation of drawn canvases is like shown in this figure:
     //
@@ -119,7 +117,6 @@ namespace AW {
     
     // -------------------------------
     //      a 2D vector
-    // -------------------------------
 
     class Vector {
         Position       end;                         // endpoint of vector (vector starts at Position::origin)
@@ -194,14 +191,12 @@ namespace AW {
     
     // -----------------------------------------
     //      inline Position members
-    // -----------------------------------------
 
     inline Position& Position::operator += (const Vector& v) { x += v.x(); y += v.y(); ISVALID(*this); return *this; }
     inline Position& Position::operator -= (const Vector& v) { x -= v.x(); y -= v.y(); ISVALID(*this); return *this; }
 
     // ------------------------------------------
     //      basic Position / Vector functions
-    // ------------------------------------------
 
     // Difference between Positions
     inline Vector operator-(const Position& to, const Position& from) { return Vector(from, to); }
@@ -232,7 +227,6 @@ namespace AW {
 
     // -------------------------------------------------
     //      a positioned vector, representing a line
-    // -------------------------------------------------
 
     enum AW_screen_area_conversion_mode { INCLUSIVE_OUTLINE, UPPER_LEFT_OUTLINE };
 
@@ -297,7 +291,6 @@ namespace AW {
     
     // ---------------------
     //      a rectangle
-    // ---------------------
 
     class Rectangle : public LineVector { // the LineVector describes one corner and the diagonal
     public:
@@ -380,7 +373,6 @@ namespace AW {
 
     // ------------------------------------------------------------------
     //      class angle represents an angle using a normalized vector
-    // ------------------------------------------------------------------
 
     class Angle {
         mutable Vector Normal;  // the normal vector representing the angle (x = cos(angle), y = sin(angle))
@@ -471,7 +463,6 @@ namespace AW {
 
     // ---------------------
     //      some helpers
-    // ---------------------
 
     // pythagoras:
 
