@@ -18,6 +18,7 @@
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <aw_select.hxx>
 #include <arbdbt.h>
 #include <arb_file.h>
 
@@ -601,10 +602,10 @@ AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
     aws->at("what");
     AW_selection_list* selid = aws->create_selection_list(AWAR_CS2GP_SUFFIX);
     for (int pt = 0; pt<PT_PLOT_TYPES; ++pt) {
-        aws->insert_selection(selid, plotTypeDescription[pt], plotTypeName[pt]);
+        selid->insert(plotTypeDescription[pt], plotTypeName[pt]);
     }
-    aws->insert_default_selection(selid, "<select one>", "");
-    aws->update_selection_list(selid);
+    selid->insert_default("<select one>", "");
+    selid->update();
 
     adfiltercbstruct *filter = awt_create_select_filter(root, GLOBAL_gb_main, AWAR_CS2GP_FILTER_NAME);
     aws->at("ap_filter");

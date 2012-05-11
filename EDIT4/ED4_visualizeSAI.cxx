@@ -313,18 +313,17 @@ static void saiChanged_callback(AW_root *awr) {
     free(saiName);
 }
 
-static void update_ClrTransTabNamesList_cb(AW_root *awr, AW_CL cl_aws, AW_CL cl_id) {
-    AW_window         *aws              = (AW_window*)cl_aws;
+static void update_ClrTransTabNamesList_cb(AW_root *awr, AW_CL cl_id) {
     AW_selection_list *id               = (AW_selection_list*)cl_id;
     char              *clrTransTabNames = awr->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES)->read_string();
 
     id->clear();
 
     for (char *tok = strtok(clrTransTabNames, "\n"); tok; tok = strtok(0, "\n")) {
-        aws->insert_selection(id, tok, tok);
+        id->insert(tok, tok);
     }
-    aws->insert_default_selection(id, "????", "");
-    aws->update_selection_list(id);
+    id->insert_default("????", "");
+    id->update();
 
     free(clrTransTabNames);
 }
@@ -497,7 +496,7 @@ static AW_selection_list *buildClrTransTabNamesList(AW_window *aws) {
     AW_root           *awr = aws->get_root();
     AW_selection_list *id  = aws->create_selection_list(AWAR_SAI_CLR_TRANS_TABLE);
 
-    update_ClrTransTabNamesList_cb(awr, (AW_CL)aws, (AW_CL)id);
+    update_ClrTransTabNamesList_cb(awr, (AW_CL)id);
 
     return id;
 }
@@ -750,7 +749,7 @@ AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
         aws->update_toggle_field();
 
         AW_awar *trans_tabs = aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES);
-        trans_tabs->add_callback(update_ClrTransTabNamesList_cb, (AW_CL)aws, (AW_CL)clrTransTableLst);
+        trans_tabs->add_callback(update_ClrTransTabNamesList_cb, (AW_CL)clrTransTableLst);
         trans_tabs->touch();        // force update
     }
     aws->show();

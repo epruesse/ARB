@@ -52,13 +52,11 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root)
     result_window->at("box");
     result_window->callback(MP_result_chosen);
 
-    result_probes_list                      = result_window->create_selection_list(MP_AWAR_RESULTPROBES, "ResultProbes", "R");
+    result_probes_list = result_window->create_selection_list(MP_AWAR_RESULTPROBES, "ResultProbes", "R");
+    
     result_probes_list->value_equal_display = true; // plain load/save (no # interpretation)
-
     result_probes_list->set_file_suffix("mpr");
-
-    result_window->insert_default_selection(result_probes_list, "", "");
-
+    result_probes_list->insert_default("", "");
 
     result_window->at("Load");
     result_window->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)result_probes_list);
@@ -245,7 +243,7 @@ static void mp_load_list(AW_window *aww, AW_selection_list *selection_list, char
                 }
                 else {
                     const char *real_disp = GBS_global_string("%1d#%1d#%6d#%s", QUALITYDEFAULT, 0, ecoli_position, probe_string);
-                    aww->insert_selection(selection_list, real_disp, real_disp);
+                    selection_list->insert(real_disp, real_disp);
                 }
 
                 free(probe_string);
@@ -296,15 +294,15 @@ static void mp_load_list(AW_window *aww, AW_selection_list *selection_list, char
                 }
             }
 
-            aww->insert_selection(selection_list, real_disp, real_disp);
+            selection_list->insert(real_disp, real_disp);
             delete [] real_disp;
         }
     }
 
     free(data);
 
-    aww->insert_default_selection(selection_list, "", "");
-    aww->update_selection_list(selection_list);
+    selection_list->insert_default("", "");
+    selection_list->update();
 }
 
 static AW_window *mp_create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
@@ -451,14 +449,14 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
                                                max_seq_hgt);
     selected_list->set_file_suffix("prb");
 
-    aws->insert_default_selection(selected_list, "", "");
+    selected_list->insert_default("", "");
 
     aws->at("Probelist");
     probelist = aws->create_selection_list(MP_AWAR_PROBELIST,
                                             "Probelist",
                                             "P");
     probelist->set_file_suffix("prb");
-    aws->insert_default_selection(probelist, "", "");
+    probelist->insert_default("", "");
 
     aws->at("LoadProbes");
     aws->callback(AW_POPUP, (AW_CL)mp_create_load_box_for_selection_lists, (AW_CL)probelist);

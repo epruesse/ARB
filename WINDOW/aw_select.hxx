@@ -157,27 +157,27 @@ public:
 };
 
 class AW_selection : virtual Noncopyable {
-    AW_window         *win;                         // window containing the selection
+    //! a AW_selection_list which knows how to fill itself
+    // (clients can't modify)
+
     AW_selection_list *sellist;
 
     virtual void fill() = 0;
-    
+
+protected: 
+    void insert_selection(const char *displayed, const char *value) { sellist->insert(displayed, value); }
+    void insert_default_selection(const char *displayed, const char *value) { sellist->insert_default(displayed, value); }
+
+    void insert_selection(const char *displayed, int32_t value) { sellist->insert(displayed, value); }
+    void insert_default_selection(const char *displayed, int32_t value) { sellist->insert_default(displayed, value); }
+
 public:
-    AW_selection(AW_window *win_, AW_selection_list *sellist_) : win(win_) , sellist(sellist_) {}
+    AW_selection(AW_selection_list *sellist_) : sellist(sellist_) {}
     virtual ~AW_selection() {}
 
     void refresh();
-
-    AW_window *get_win() { return win; }
-    AW_root *get_root() { return win->get_root(); }
     AW_selection_list *get_sellist() { return sellist; }
-
-    void insert_selection(const char *displayed, const char *value) { win->insert_selection(sellist, displayed, value); }
-    void insert_default_selection(const char *displayed, const char *value) { win->insert_default_selection(sellist, displayed, value); }
     
-    void insert_selection(const char *displayed, int32_t value) { win->insert_selection(sellist, displayed, value); }
-    void insert_default_selection(const char *displayed, int32_t value) { win->insert_default_selection(sellist, displayed, value); }
-
     void get_values(StrArray& intoArray) { get_sellist()->to_array(intoArray, true); }
     void get_displayed(StrArray& intoArray) { get_sellist()->to_array(intoArray, false); }
 };
@@ -186,7 +186,7 @@ public:
 class AW_DB_selection : public AW_selection { // derived from a Noncopyable
     GBDATA *gbd;                                    // root container of data displayed in selection list
 public:
-    AW_DB_selection(AW_window *win_, AW_selection_list *sellist_, GBDATA *gbd_);
+    AW_DB_selection(AW_selection_list *sellist_, GBDATA *gbd_);
     virtual ~AW_DB_selection();
     
     GBDATA *get_gbd() { return gbd; }

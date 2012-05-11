@@ -180,7 +180,7 @@ static void fill_fileselection_recursive(const char *fulldir, int skipleft, cons
 #endif // TRACE_FILEBOX
 
     if (!dirp) {
-        aws->insert_selection(selid, GBS_global_string("x Your directory path is invalid (%s)", fulldir), "?");
+        selid->insert(GBS_global_string("x Your directory path is invalid (%s)", fulldir), "?");
         return;
     }
 
@@ -196,7 +196,7 @@ static void fill_fileselection_recursive(const char *fulldir, int skipleft, cons
         if (AW_is_dir(fullname)) {
             if (!(entry[0] == '.' && (!DIR_show_hidden || entry[1] == 0 || (entry[1] == '.' && entry[2] == 0)))) { // skip "." and ".." and dotdirs if requested
                 if (showdir) {
-                    aws->insert_selection(selid, GBS_global_string("D %-18s(%s)", entry, fullname), fullname);
+                    selid->insert(GBS_global_string("D %-18s(%s)", entry, fullname), fullname);
                 }
                 if (recurse && !AW_is_link(nontruepath)) { // don't follow links
                     fill_fileselection_recursive(nontruepath, skipleft, mask, recurse, showdir, show_dots, aws, selid);
@@ -230,7 +230,7 @@ static void fill_fileselection_recursive(const char *fulldir, int skipleft, cons
                             break;
                     }
 
-                    aws->insert_selection(selid, sel_entry, nontruepath);
+                    selid->insert(sel_entry, nontruepath);
                 }
             }
         }
@@ -254,7 +254,7 @@ public:
 };
 
 
-static void show_soft_link(AW_window *aws, AW_selection_list *sel_id, const char *envar, DuplicateLinkFilter& unDup) {
+static void show_soft_link(AW_selection_list *sel_id, const char *envar, DuplicateLinkFilter& unDup) {
     // adds a soft link (e.g. ARBMACROHOME or ARB_WORKDIR) into file selection box
     // if content of 'envar' matches 'cwd' nothing is inserted
 
@@ -267,7 +267,7 @@ static void show_soft_link(AW_window *aws, AW_selection_list *sel_id, const char
         if (unDup.not_seen_yet(edir)) {
             unDup.register_directory(edir);
             const char *entry = GBS_global_string("$ %-18s(%s)", GBS_global_string("'%s'", envar), expanded_dir);
-            aws->insert_selection(sel_id, entry, expanded_dir);
+            sel_id->insert(entry, expanded_dir);
         }
     }
 }
@@ -308,24 +308,24 @@ static void fill_fileselection_cb(void */*dummy*/, File_selection *cbs) {
     if (cbs->show_dir) {
         if (is_wildcard) {
             if (cbs->leave_wildcards) {
-                cbs->aws->insert_selection(cbs->id, (char *)GBS_global_string("  ALL '%s' in '%s'", name_only, fulldir), name);
+                cbs->id->insert((char *)GBS_global_string("  ALL '%s' in '%s'", name_only, fulldir), name);
             }
             else {
-                cbs->aws->insert_selection(cbs->id, (char *)GBS_global_string("  ALL '%s' in+below '%s'", name_only, fulldir), name);
+                cbs->id->insert((char *)GBS_global_string("  ALL '%s' in+below '%s'", name_only, fulldir), name);
             }
         }
         else {
-            cbs->aws->insert_selection(cbs->id, (char *)GBS_global_string("  CONTENTS OF '%s'", fulldir), fulldir);
+            cbs->id->insert((char *)GBS_global_string("  CONTENTS OF '%s'", fulldir), fulldir);
         }
 
         if (filter[0] && !is_wildcard) {
-            cbs->aws->insert_selection(cbs->id, GBS_global_string("! \' Search for\'     (*%s)", filter), "*");
+            cbs->id->insert(GBS_global_string("! \' Search for\'     (*%s)", filter), "*");
         }
         if (strcmp("/", fulldir)) {
-            cbs->aws->insert_selection(cbs->id, "! \'PARENT DIR       (..)\'", "..");
+            cbs->id->insert("! \'PARENT DIR       (..)\'", "..");
         }
         if (DIR_subdirs_hidden == 0) {
-            show_soft_link(cbs->aws, cbs->id, cbs->pwd, unDup);
+            show_soft_link(cbs->id, cbs->pwd, unDup);
 
             if (cbs->pwdx) {        // additional directories
                 char *start = cbs->pwdx;
@@ -333,37 +333,36 @@ static void fill_fileselection_cb(void */*dummy*/, File_selection *cbs) {
                     char *multiple = strchr(start, '^');
                     if (multiple) {
                         multiple[0] = 0;
-                        show_soft_link(cbs->aws, cbs->id, start, unDup);
+                        show_soft_link(cbs->id, start, unDup);
                         multiple[0] = '^';
                         start       = multiple+1;
                     }
                     else {
-                        show_soft_link(cbs->aws, cbs->id, start, unDup);
+                        show_soft_link(cbs->id, start, unDup);
                         start = 0;
                     }
                 }
             }
 
-            show_soft_link(cbs->aws, cbs->id, "HOME", unDup);
-            show_soft_link(cbs->aws, cbs->id, "PWD", unDup);
-            show_soft_link(cbs->aws, cbs->id, "ARB_WORKDIR", unDup);
-            show_soft_link(cbs->aws, cbs->id, "PT_SERVER_HOME", unDup);
+            show_soft_link(cbs->id, "HOME", unDup);
+            show_soft_link(cbs->id, "PWD", unDup);
+            show_soft_link(cbs->id, "ARB_WORKDIR", unDup);
+            show_soft_link(cbs->id, "PT_SERVER_HOME", unDup);
 
-            cbs->aws->insert_selection(cbs->id, "! \' Sub-directories (shown)\'", GBS_global_string("%s?hide?", name));
+            cbs->id->insert("! \' Sub-directories (shown)\'", GBS_global_string("%s?hide?", name));
         }
         else {
-            cbs->aws->insert_selection(cbs->id, "! \' Sub-directories (hidden)\'", GBS_global_string("%s?show?", name));
+            cbs->id->insert("! \' Sub-directories (hidden)\'", GBS_global_string("%s?show?", name));
         }
     }
 
-    cbs->aws->insert_selection(cbs->id, GBS_global_string("! \' Sort order\'     (%s)", DIR_sort_order_name[DIR_sort_order]),
-                                GBS_global_string("%s?sort?", name));
+    cbs->id->insert(GBS_global_string("! \' Sort order\'     (%s)", DIR_sort_order_name[DIR_sort_order]),
+                    GBS_global_string("%s?sort?", name));
 
-    cbs->aws->insert_selection(cbs->id,
-                                GBS_global_string("! \' %s%s\'",
-                                                  DIR_show_hidden ? "Hide dot-" : "Show hidden ",
-                                                  cbs->show_dir ? "files/dirs" : "files"),
-                                GBS_global_string("%s?dot?", name));
+    cbs->id->insert(GBS_global_string("! \' %s%s\'",
+                                      DIR_show_hidden ? "Hide dot-" : "Show hidden ",
+                                      cbs->show_dir ? "files/dirs" : "files"),
+                    GBS_global_string("%s?dot?", name));
 
     if (is_wildcard) {
         if (cbs->leave_wildcards) {
@@ -386,9 +385,9 @@ static void fill_fileselection_cb(void */*dummy*/, File_selection *cbs) {
         free(mask);
     }
 
-    cbs->aws->insert_default_selection(cbs->id, "", "");
+    cbs->id->insert_default("", "");
     cbs->id->sort(false, true);
-    cbs->aws->update_selection_list(cbs->id);
+    cbs->id->update();
 
     free(name);
     free(fulldir);

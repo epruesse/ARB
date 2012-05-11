@@ -414,7 +414,7 @@ static void scan_fields_recursive(GBDATA *gbd, DbScanner *cbs, int deep, AW_sele
     switch (type) {
         case GB_DB: {
             GBS_strcat(out, "<CONTAINER>:");
-            cbs->aws->insert_selection(cbs->id, GBS_mempntr(out), gbd);
+            cbs->id->insert(GBS_mempntr(out), gbd);
             GBS_strforget(out);
 
             for (GBDATA *gb2 = GB_child(gbd); gb2; gb2 = GB_nextChild(gb2)) {
@@ -424,7 +424,7 @@ static void scan_fields_recursive(GBDATA *gbd, DbScanner *cbs, int deep, AW_sele
         }
         case GB_LINK: {
             GBS_strnprintf(out, 100, "LINK TO '%s'", GB_read_link_pntr(gbd));
-            cbs->aws->insert_selection(cbs->id, GBS_mempntr(out), gbd);
+            cbs->id->insert(GBS_mempntr(out), gbd);
             GBS_strforget(out);
 
             GBDATA *gb_al = GB_follow_link(gbd);
@@ -445,7 +445,7 @@ static void scan_fields_recursive(GBDATA *gbd, DbScanner *cbs, int deep, AW_sele
             else {
                 GBS_strcat(out, "<unprintable>");
             }
-            cbs->aws->insert_selection(cbs->id, GBS_mempntr(out), gbd);
+            cbs->id->insert(GBS_mempntr(out), gbd);
             GBS_strforget(out);
             break;
         }
@@ -518,11 +518,11 @@ static void scan_list(GBDATA *, DbScanner *cbs) {
                             free(data);
                         }
                     }
-                    cbs->aws->insert_selection(cbs->id, buffer, gbd);
+                    cbs->id->insert(buffer, gbd);
                 }
                 else { // non-existing entry
                     p[0] = ' '; p[1] = ':'; p[2] = 0;
-                    cbs->aws->insert_selection(cbs->id, buffer, gb_key);
+                    cbs->id->insert(buffer, gb_key);
                 }
             }
         }
@@ -562,8 +562,8 @@ static void scanner_changed_cb(GBDATA *, DbScanner *cbs, GB_CB_TYPE gbtype) {
                 break;
         }
     }
-    aws->insert_default_selection(cbs->id, "", (GBDATA*)NULL);
-    aws->update_selection_list(cbs->id);
+    cbs->id->insert_default("", (GBDATA*)NULL);
+    cbs->id->update();
     if (cbs->gb_user) {
         GB_transaction ta(cbs->gb_main);
 

@@ -75,7 +75,7 @@ static void fillSelNamList(selectValidNameStruct* svnp) {
             // ptr to list, item to display, item value (here: equal)
 
             if (strncmp (validName, searchstr, length) == 0) {
-                svnp->aws->insert_selection(svnp->validNamesList, validName, validName);
+                svnp->validNamesList->insert(validName, validName);
             }
 
             free(validName);
@@ -86,9 +86,9 @@ static void fillSelNamList(selectValidNameStruct* svnp) {
     err = GB_end_transaction(GLOBAL_gb_main, err);
     if (err) aw_message(err);
     else {
-        svnp->aws->insert_default_selection(svnp->validNamesList,  "????", "????");
+        svnp->validNamesList->insert_default("????", "????");
         svnp->validNamesList->sort(false, true);
-        svnp->aws->update_selection_list(svnp->validNamesList);
+        svnp->validNamesList->update();
     }
 }
 

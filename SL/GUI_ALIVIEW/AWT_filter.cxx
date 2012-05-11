@@ -142,7 +142,7 @@ static void awt_add_sequences_to_list(struct adfiltercbstruct *cbs, const char *
 
                     const char *target = GBS_global_string("%c%s%c%s", tpre, GB_read_key_pntr(gb_data), 1, name);
 
-                    cbs->aw_filt->insert_selection(cbs->id, str, target);
+                    cbs->id->insert(str, target);
                     free(str);
                     count++;
                 }
@@ -160,7 +160,7 @@ static void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruc
         char *use = cbs->awr->awar(cbs->def_alignment)->read_string();
 
         cbs->id->clear();
-        cbs->aw_filt->insert_default_selection(cbs->id, "none", "");
+        cbs->id->insert_default("none", "");
 
         const char *name = GBT_readOrCreate_char_pntr(cbs->gb_main, AWAR_SPECIES_NAME, "");
         if (name[0]) {
@@ -177,7 +177,7 @@ static void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruc
             awt_add_sequences_to_list(cbs, use, gb_extended, "", ' ');
         }
 
-        cbs->aw_filt->update_selection_list(cbs->id);
+        cbs->id->update();
         free(use);
     }
     awt_create_select_filter_window_aw_cb(0, cbs);

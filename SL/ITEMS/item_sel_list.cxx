@@ -19,13 +19,12 @@ static AW_window *existing_window_creator(AW_window *, AW_CL cl1, AW_CL) {
     return (AW_window*)cl1;
 }
 
-Itemfield_Selection::Itemfield_Selection(AW_window         *win_,
-                                         AW_selection_list *sellist_,
+Itemfield_Selection::Itemfield_Selection(AW_selection_list *sellist_,
                                          GBDATA            *gb_key_data,
                                          long               type_filter_,
                                          SelectedFields     field_filter_,
                                          ItemSelector&      selector_)
-    : AW_DB_selection(win_, sellist_, gb_key_data)
+    : AW_DB_selection(sellist_, gb_key_data)
     , type_filter(type_filter_)
     , field_filter(field_filter_)
     , selector(selector_)
@@ -160,9 +159,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
         if (popup_button_id) aws->at(x, y); // restore 'at' position if popup_list_in_window
     }
 
-    Itemfield_Selection *selection = 
-        new Itemfield_Selection(win_for_sellist, sellist, gb_key_data,
-                                    type_filter, field_filter, selector);
+    Itemfield_Selection *selection = new Itemfield_Selection(sellist, gb_key_data, type_filter, field_filter, selector);
     selection->refresh();
     return selection;
 }

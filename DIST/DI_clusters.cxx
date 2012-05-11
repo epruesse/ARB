@@ -91,17 +91,17 @@ static ClustersData *global_data = 0;
 
 // ------------------------
 
-static void di_forget_global_data(AW_window *aww) {
+static void di_forget_global_data(AW_window *) {
     di_assert(global_data);
-    global_data->free(aww);
+    global_data->free();
     // do not delete 'global_data' itself, it will be reused when window is opened again
 }
 
 // ------------------------
 //      Update contents
 
-static void update_cluster_sellist(AW_window *aww) {
-    global_data->update_cluster_selection_list(aww);
+static void update_cluster_sellist() {
+    global_data->update_cluster_selection_list();
     // @@@ update result info line
 }
 static void update_restore_label(AW_window *aww) {
@@ -113,7 +113,7 @@ static void update_restore_label(AW_window *aww) {
     awar->write_string(label);
 }
 static void update_all(AW_window *aww) {
-    update_cluster_sellist(aww);
+    update_cluster_sellist();
     update_restore_label(aww);
 }
 
@@ -126,10 +126,10 @@ static void save_results_recursive(ClusterTree *subtree) {
         save_results_recursive(subtree->get_rightson());
     }
 }
-static void save_results(AW_window *aww, ClusterTreeRoot *tree) {
+static void save_results(ClusterTreeRoot *tree) {
     global_data->clear(SHOWN_CLUSTERS);
     save_results_recursive(tree->get_root_node());
-    update_cluster_sellist(aww);
+    update_cluster_sellist();
 }
 
 static void calculate_clusters(AW_window *aww) {
@@ -173,7 +173,7 @@ static void calculate_clusters(AW_window *aww) {
 
     if (!error) {
         error = tree->find_clusters();
-        if (!error) save_results(aww, tree);
+        if (!error) save_results(tree);
     }
 
     delete tree;
@@ -280,10 +280,10 @@ static void select_cluster(ID id) {
 //      Sort order
 
 
-static void sort_order_changed_cb(AW_root *aw_root, AW_CL cl_aww) {
+static void sort_order_changed_cb(AW_root *aw_root) {
     ClusterOrder order = (ClusterOrder)aw_root->awar(AWAR_CLUSTER_ORDER)->read_int();
     global_data->changeSortOrder(order);
-    update_cluster_sellist((AW_window*)cl_aww);
+    update_cluster_sellist();
 }
 
 // --------------
@@ -761,7 +761,7 @@ static void accept_proposed_names(ClusterPtr cluster, AW_CL cl_accept) {
     cluster->accept_proposed(accept);
 }
 
-static void group_clusters(AW_window *, AW_CL cl_Group_Action, AW_CL cl_aw_clusterList) {
+static void group_clusters(AW_window *, AW_CL cl_Group_Action) {
     Group_Action      action   = (Group_Action)cl_Group_Action;
     AW_root          *aw_root  = global_data->get_aw_root();
     Group_What        what     = (Group_What)aw_root->awar(AWAR_CLUSTER_GROUP_WHAT)->read_int();
@@ -791,7 +791,7 @@ static void group_clusters(AW_window *, AW_CL cl_Group_Action, AW_CL cl_aw_clust
     // careful! the following code will invalidate error, so don't use below
 
     with_affected_clusters_do(aw_root, affected, false, (AW_CL)accept, accept_proposed_names); // just affects display
-    global_data->update_cluster_selection_list((AW_window*)cl_aw_clusterList);
+    global_data->update_cluster_selection_list();
 }
 
 static void popup_group_clusters_window(AW_window *aw_clusterList) {
@@ -832,7 +832,7 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
 
         aws->at_newline();
 
-        aws->callback(group_clusters, GROUP_CREATE, (AW_CL)aw_clusterList);
+        aws->callback(group_clusters, GROUP_CREATE);
         aws->create_autosize_button("CREATE_GROUPS", "create groups!");
 
         aws->create_option_menu(AWAR_CLUSTER_GROUP_EXISTING, "If group exists", "x");
@@ -844,7 +844,7 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
 
         aws->at_newline();
 
-        aws->callback(group_clusters, GROUP_DELETE, (AW_CL)aw_clusterList);
+        aws->callback(group_clusters, GROUP_DELETE);
         aws->create_autosize_button("DELETE_GROUPS", "delete groups!");
 
         aws->create_text_toggle(AWAR_CLUSTER_GROUP_PREFIX_MATCH, "(all)", "(where prefix matches)", 30);
@@ -885,7 +885,7 @@ static void delete_clusters(AW_window *aww, AW_CL cl_affected) {
             break;
     }
 
-    update_cluster_sellist(aww);
+    update_cluster_sellist();
 }
 
 // ----------------------
@@ -1032,11 +1032,11 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_weighte
 
         aws->at("cluster_list");
         global_data->clusterList = aws->create_selection_list(AWAR_CLUSTER_SELECTED, "Found clusters");
-        update_cluster_sellist(aws);
+        update_cluster_sellist();
 
         aw_root->awar(AWAR_CLUSTER_SELECTED)->add_callback(select_cluster_cb);
-        aw_root->awar(AWAR_CLUSTER_ORDER)->add_callback(sort_order_changed_cb, (AW_CL)aws);
-        sort_order_changed_cb(aw_root, (AW_CL)aws);
+        aw_root->awar(AWAR_CLUSTER_ORDER)->add_callback(sort_order_changed_cb);
+        sort_order_changed_cb(aw_root);
     }
 
     return aws;

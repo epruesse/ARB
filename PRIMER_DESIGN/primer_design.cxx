@@ -202,15 +202,14 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
             if (max_position_length < 3) max_position_length = 3;
             if (max_length_length   < 3) max_length_length   = 3;
 
-            pdrw->insert_selection(pdrw_id,
-                                   GBS_global_string(" Rating | %-*s %-*s %-*s G/C Tmp | %-*s %-*s %-*s G/C Tmp",
-                                                     max_primer_length,   "Left primer",
-                                                     max_position_length, "Pos",
-                                                     max_length_length,   "Len",
-                                                     max_primer_length,   "Right primer",
-                                                     max_position_length, "Pos",
-                                                     max_length_length,   "Len"),
-                                   "");
+            pdrw_id->insert(GBS_global_string(" Rating | %-*s %-*s %-*s G/C Tmp | %-*s %-*s %-*s G/C Tmp",
+                                              max_primer_length,   "Left primer",
+                                              max_position_length, "Pos",
+                                              max_length_length,   "Len",
+                                              max_primer_length,   "Right primer",
+                                              max_position_length, "Pos",
+                                              max_length_length,   "Len"),
+                            "");
 
             int r;
 
@@ -218,12 +217,12 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
                 const char *primers = 0;
                 const char *result  = PD->get_result(r, primers, max_primer_length, max_position_length, max_length_length);
                 if (!result) break;
-                pdrw->insert_selection(pdrw_id, result, primers);
+                pdrw_id->insert(result, primers);
             }
 
-            pdrw->insert_default_selection(pdrw_id, (r ? "**** End of list" : "**** There are no results"), "");
+            pdrw_id->insert_default(r ? "**** End of list" : "**** There are no results", "");
 
-            pdrw->update_selection_list(pdrw_id);
+            pdrw_id->update();
             pdrw->show();
         }
     }

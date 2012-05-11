@@ -86,9 +86,8 @@ void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs)      // p
     char  ecoli_pos[40], temp_ecol[10];
     int   buf_len, i;
 
-    result_struct *rs  = new result_struct;
+    result_struct *rs = new result_struct;
     result_struct *elem;
-    AW_window     *aww = mp_main->get_mp_window()->get_result_window();
 
     memset(rs, 0, sizeof(result_struct));
     memset(ecoli_pos, 0, 40);
@@ -170,12 +169,12 @@ void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs)      // p
     elem = computation_result_list->get_first();
     while (elem)
     {
-        aww->insert_selection(result_probes_list, elem->view_string, elem->view_string);
+        result_probes_list->insert(elem->view_string, elem->view_string);
         elem = computation_result_list->get_next();
     }
 
-    aww->insert_default_selection(result_probes_list, "", "");
-    aww->update_selection_list(result_probes_list);
+    result_probes_list->insert_default("", "");
+    result_probes_list->update();
 }
 
 void ProbeValuation::init_valuation()

@@ -374,6 +374,8 @@ ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/cb.h

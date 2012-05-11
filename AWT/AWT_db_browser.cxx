@@ -524,10 +524,10 @@ struct counterPair {
     counterPair() : occur(0), count(0) {}
 };
 
-inline void insert_history_selection(AW_window *aww, AW_selection_list *sel, const char *entry, int wanted_db) {
+inline void insert_history_selection(AW_selection_list *sel, const char *entry, int wanted_db) {
     const char *colon = strchr(entry, ':');
     if (colon && (atoi(entry) == wanted_db)) {
-        aww->insert_selection(sel, colon+1, colon+1);
+        sel->insert(colon+1, colon+1);
     }
 }
 
@@ -573,13 +573,11 @@ static char *get_dbentry_content(GBDATA *gbd, GB_TYPES type, bool shorten_repeat
     return content;
 }
 
-static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL cl_id) {
-    AW_window         *aww     = (AW_window*)cl_aww;
-    AW_selection_list *id      = (AW_selection_list*)cl_id;
-    DB_browser        *browser = get_the_browser();
-    char              *path    = aw_root->awar(AWAR_DBB_PATH)->read_string();
-    bool               is_root;
-    GBDATA            *node;
+static void update_browser_selection_list(AW_root *aw_root, AW_selection_list *id) {
+    DB_browser *browser = get_the_browser();
+    char       *path    = aw_root->awar(AWAR_DBB_PATH)->read_string();
+    bool        is_root;
+    GBDATA     *node;
 
     {
         GBDATA         *gb_main = browser->get_db();
@@ -595,20 +593,20 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
     if (node == 0) {
         if (strcmp(path, HISTORY_PSEUDO_PATH) == 0) {
             char *history = aw_root->awar(AWAR_DBB_HISTORY)->read_string();
-            aww->insert_selection(id, "Previously visited nodes:", "");
+            id->insert("Previously visited nodes:", "");
             char *start   = history;
             int   curr_db = aw_root->awar(AWAR_DBB_DB)->read_int();
 
             for (char *lf = strchr(start, '\n'); lf; start = lf+1, lf = strchr(start, '\n')) {
                 lf[0] = 0;
-                insert_history_selection(aww, id, start, curr_db);
+                insert_history_selection(id, start, curr_db);
             }
-            insert_history_selection(aww, id, start, curr_db);
+            insert_history_selection(id, start, curr_db);
             free(history);
         }
         else {
-            aww->insert_selection(id, "No such node!", "");
-            aww->insert_selection(id, "-> goto valid node", BROWSE_CMD_GOTO_VALID_NODE);
+            id->insert("No such node!", "");
+            id->insert("-> goto valid node", BROWSE_CMD_GOTO_VALID_NODE);
         }
     }
     else {
@@ -645,11 +643,11 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
         }
 
         if (!is_root) {
-            aww->insert_selection(id, GBS_global_string("%-*s   parent container", maxkeylen, ".."), BROWSE_CMD_GO_UP);
-            aww->insert_selection(id, GBS_global_string("%-*s   container", maxkeylen, "."), "");
+            id->insert(GBS_global_string("%-*s   parent container", maxkeylen, ".."), BROWSE_CMD_GO_UP);
+            id->insert(GBS_global_string("%-*s   container", maxkeylen, "."), "");
         }
         else {
-            aww->insert_selection(id, GBS_global_string("%-*s   root container", maxkeylen, "/"), "");
+            id->insert(GBS_global_string("%-*s   root container", maxkeylen, "/"), "");
         }
         
         // collect children and sort them
@@ -696,20 +694,20 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
 
             key_name = numbered_keyname ? numbered_keyname : key_name;
             const char *displayed = GBS_global_string("%-*s   %-*s   %s", maxkeylen, key_name, maxtypelen, GB_get_type_name(entry.gbd), entry.content.c_str());
-            aww->insert_selection(id, displayed, key_name);
+            id->insert(displayed, key_name);
 
             free(numbered_keyname);
         }
     }
-    aww->insert_default_selection(id, "", "");
-    aww->update_selection_list(id);
+    id->insert_default("", "");
+    id->update();
 
     free(path);
 }
 
 static void order_changed_cb(AW_root *aw_root) {
     DB_browser *browser = get_the_browser();
-    update_browser_selection_list(aw_root, (AW_CL)browser->get_window(aw_root), (AW_CL)browser->get_browser_id());
+    update_browser_selection_list(aw_root, browser->get_browser_id());
 }
 
 inline char *strmove(char *dest, char *source) {
@@ -891,7 +889,7 @@ static void path_changed_cb(AW_root *aw_root) {
             free(path);
         }
 
-        update_browser_selection_list(aw_root, (AW_CL)browser->get_window(aw_root), (AW_CL)browser->get_browser_id());
+        update_browser_selection_list(aw_root, browser->get_browser_id());
         aw_root->awar(AWAR_DBB_BROWSE)->write_string(goto_child ? goto_child : "");
     }
 }
@@ -970,7 +968,7 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
 
         aws->at("browse");
         browse_id = aws->create_selection_list(AWAR_DBB_BROWSE);
-        update_browser_selection_list(aw_root, (AW_CL)aws, (AW_CL)browse_id);
+        update_browser_selection_list(aw_root, browse_id);
 
         aws->at("infoopt");
         aws->label("ASCII"); aws->create_toggle     (AWAR_DUMP_ASCII);
