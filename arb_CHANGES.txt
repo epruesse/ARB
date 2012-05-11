@@ -2,15 +2,34 @@ ARB change log
 
 Major changes for next release:
 
- - Show brackets on open groups (dendrogram tree only)
  - Detect clusters of species with similar sequences (OTUs) in ARB_DIST
  - Rewrote chimera check. Allows filtering
+ - added RNACMA (computes clusters of correlated positions)
+ - Next relative search
+   - can be restricted to column ranges (needs a PT-Server calculated from aligned sequences)
+   - corrected and improved scaling of relative scores
+ - fast-aligner
+   - searches next-relatives based on selected column-block
+   - align multiple column-blocks based on SAI
  - Rewrote alignment adaption during merge
- - ORF display:
-   - arc does not cross characters
-   - Fixed colors of amino names
- - load/save for window specific settings (e.g. allows to share parts of configuration
-   with other users)
+ - EDIT4
+   - improved support for using multiple edit-windows
+   - smoother refreshes
+   - tweaked ORF display
+ - consense trees
+   - calculate from multiple existing trees
+   - fixed NJ-bootstrapping (no longer drops species)
+ - trees sortable now
+ - tree display
+   - Show brackets on open groups (dendrogram tree only)
+   - rewrote IRS (folded) display
+ - tweaked printing (interface, overlapping)
+ - automation
+   - tweaked macro recording
+   - arb_ntree can execute macro from command line
+   - added "Never ask again" to modal question boxes (for better compatibility with macros)
+ - load/save for window specific settings (e.g. allows to share parts of configuration with other users)
+ - Support for mouse-wheel
  - many internal refactorings
 
 
