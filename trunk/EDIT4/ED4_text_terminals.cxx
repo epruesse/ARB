@@ -590,9 +590,8 @@ ED4_returncode ED4_sequence_info_terminal::draw() {
 
 }
 
-// --------------------------------------------------------------------------------
-//  ED4_text_terminal
-// --------------------------------------------------------------------------------
+// ---------------------------
+//      ED4_text_terminal
 
 ED4_returncode ED4_text_terminal::Show(int IF_ASSERTION_USED(refresh_all), int is_cleared)
 {

@@ -78,9 +78,8 @@ public:
 };
 
 
-// --------------------
+// ---------------------
 //      moving root
-// --------------------
 
 void SEC_loop::toggle_root(SEC_loop *old_root) {
     // make this the new root loop
@@ -133,9 +132,8 @@ void SEC_root::set_root(SEC_loop *loop) {
 }
 
 
-// ---------------------------------
+// ----------------------------------
 //      search segment by abspos
-// ---------------------------------
 
 SEC_base_part *SEC_root::find(int pos) {
     SEC_helix_strand *start_strand = root_loop->get_fixpoint_strand();
@@ -208,9 +206,8 @@ inline SEC_segment *findSegmentContaining(SEC_root *root, int start, int end, GB
     return start_segment;
 }
 
-// -------------------
+// --------------------
 //      split loop
-// -------------------
 
 GB_ERROR SEC_root::split_loop(int start1, int end1, int start2, int end2) {
     // end1/end2 are positions behind the helix-positions!
@@ -367,9 +364,8 @@ GB_ERROR SEC_root::split_loop(int start1, int end1, int start2, int end2) {
     return error;
 }
 
-// ----------------------
+// -----------------------
 //      fold a strand
-// ----------------------
 
 GB_ERROR SEC_root::unsplit_loop(SEC_helix_strand *remove_strand) {
     //

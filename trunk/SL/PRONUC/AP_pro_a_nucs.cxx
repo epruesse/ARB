@@ -110,9 +110,8 @@ void AWT_translator::build_table(unsigned char pbase, const char *tri_pro, const
     nucs->nucbits[2] |= n2;
 }
 
-// ---------------------------
+// ----------------------------
 //      arb_r2a_pro_2_nucs
-// ---------------------------
 
 arb_r2a_pro_2_nucs::arb_r2a_pro_2_nucs()
     : next(0)
@@ -123,9 +122,8 @@ arb_r2a_pro_2_nucs::~arb_r2a_pro_2_nucs() {
     delete next;
 }
 
-// --------------------------
+// ---------------------------
 //      arb_r2a_pro_2_nuc
-// --------------------------
 
 arb_r2a_pro_2_nuc::arb_r2a_pro_2_nuc()
     : single_pro(0)
@@ -138,9 +136,8 @@ arb_r2a_pro_2_nuc::~arb_r2a_pro_2_nuc() {
     delete nucs;
 }
 
-// -----------------------
+// ------------------------
 //      AWT_translator
-// -----------------------
 
 static int codon_defined_in(const char *codon, const char *codons) {
     for (int off=0; codons[off]; off+=3) {
@@ -250,9 +247,8 @@ const AWT_distance_meter *AWT_translator::getDistanceMeter() const {
 }
 
 
-// ---------------------------
+// ----------------------------
 //      Distance functions
-// ---------------------------
 
 static int nuc_dist(const AWT_translator *translator, unsigned char p1, unsigned char p2) {
     // calculate minimum necessary nucleotide-mutations for a given amino-acid-mutation
@@ -306,9 +302,8 @@ static void awt_pro_a_nucs_debug(const AWT_translator *translator, const AWT_dis
 }
 #endif // DEBUG
 
-// ---------------------------
+// ----------------------------
 //      AWT_distance_meter
-// ---------------------------
 
 AWT_distance_meter::AWT_distance_meter(const AWT_translator *translator) {
     memset(dist_, 0, sizeof(dist_));

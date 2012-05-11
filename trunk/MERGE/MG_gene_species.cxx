@@ -52,9 +52,6 @@ enum CreationMethod {
 
 static AW_default MG_props = 0; // pointer current applications properties database
 
-// --------------------------------------------------------------------------------
-//      void MG_create_gene_species_awars(AW_root *aw_root, AW_default aw_def)
-// --------------------------------------------------------------------------------
 void MG_create_gene_species_awars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_int(AWAR_MERGE_GENE_SPECIES_METHOD, 0, aw_def);
     aw_root->awar_string(AWAR_MERGE_GENE_SPECIES_ACI, "", aw_def);
@@ -104,12 +101,8 @@ inline const char *current_field_awar(AW_root *aw_root, const char *subfield) {
     return 0; // no field definition selected
 }
 
-// -------------------------------------------------------------------------------------
-//      static void create_awars_for_field(AW_root *aw_root, const char *cur_field)
-// -------------------------------------------------------------------------------------
-// Note : MG_current_field_def_changed_cb also creates these awars!
-
 static void create_awars_for_field(AW_root *aw_root, const char *cur_field) {
+    // Note : MG_current_field_def_changed_cb also creates these awars!
     aw_root->awar_string(field_awar(cur_field, "source"), cur_field, MG_props);
     aw_root->awar_int(field_awar(cur_field, "method"), 1, MG_props);
     aw_root->awar_string(field_awar(cur_field, "aci"), "", MG_props);
@@ -336,9 +329,6 @@ static void MG_current_field_def_changed_cb(AW_root *aw_root) {
     }
 }
 
-// ------------------------------------------------------------------
-//      static void MG_source_field_changed_cb(AW_root *aw_root)
-// ------------------------------------------------------------------
 static void MG_source_field_changed_cb(AW_root *aw_root) {
     if (allow_callbacks) {
         const char *awar_name = current_field_awar(aw_root, "source");
@@ -358,9 +348,7 @@ static void MG_source_field_changed_cb(AW_root *aw_root) {
         }
     }
 }
-// ----------------------------------------------------------------
-//      static void MG_dest_field_changed_cb(AW_root *aw_root)
-// ----------------------------------------------------------------
+
 static void MG_dest_field_changed_cb(AW_root *aw_root) {
     if (allow_callbacks) {
         // if this is changed -> a new definition will be generated
@@ -385,9 +373,7 @@ static void MG_dest_field_changed_cb(AW_root *aw_root) {
         MG_update_example(aw_root);
     }
 }
-// ------------------------------------------------------------
-//      static void MG_method_changed_cb(AW_root *aw_root)
-// ------------------------------------------------------------
+
 static void MG_method_changed_cb(AW_root *aw_root) {
     if (allow_callbacks) {
         const char *awar_name = current_field_awar(aw_root, "method");
@@ -402,9 +388,7 @@ static void MG_method_changed_cb(AW_root *aw_root) {
         }
     }
 }
-// ------------------------------------------------------------------
-//      static void MG_delete_selected_field_def(AW_window *aww)
-// ------------------------------------------------------------------
+
 static void MG_delete_selected_field_def(AW_window *aww) {
     AW_root *aw_root   = aww->get_root();
     char    *cur_field = aw_root->awar(AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD)->read_string();
@@ -431,9 +415,7 @@ static void MG_delete_selected_field_def(AW_window *aww) {
 
     free(cur_field);
 }
-// ---------------------------------------------------------
-//      static void MG_aci_changed_cb(AW_root *aw_root)
-// ---------------------------------------------------------
+
 static void MG_aci_changed_cb(AW_root *aw_root) {
     if (allow_callbacks) {
         const char *awar_name = current_field_awar(aw_root, "aci");
@@ -560,9 +542,6 @@ static void load_gene_species_xfer_fields(AW_window *aww, const char *stored_str
     MG_update_selection_list_on_field_transfers(aw_root, (AW_CL)sel_id);
 }
 
-// ---------------------------------------------------------------------------------------
-//      AW_window *MG_gene_species_create_field_transfer_def_window(AW_root *aw_root)
-// ---------------------------------------------------------------------------------------
 AW_window *MG_gene_species_create_field_transfer_def_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (aws) return aws;

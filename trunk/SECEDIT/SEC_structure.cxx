@@ -14,9 +14,8 @@
 
 using namespace std;
 
-// ---------------------
+// ----------------------
 //      Constructors
-// ---------------------
 
 SEC_segment::SEC_segment()
     : alpha(0)
@@ -81,9 +80,8 @@ void SEC_root::init(SEC_graphic *gfx, AWT_canvas *scr, ED4_plugin_host& Host) {
     db = new SEC_db_interface(gfx, scr, Host);
 }
 
-// --------------------
+// ---------------------
 //      Destructors
-// --------------------
 
 SEC_region::SEC_region(int start, int end)
     : sequence_start(start)
@@ -175,9 +173,8 @@ SEC_root::~SEC_root() {
     delete_announced_positions();
 }
 
-// -------------------------
+// --------------------------
 //      integrity checks
-// -------------------------
 
 #if defined(CHECK_INTEGRITY)
 
@@ -341,9 +338,8 @@ void SEC_root::check_integrity(SEC_CHECK_TYPE what) const {
 }
 #endif // CHECK_INTEGRITY
 
-// --------------------------------
+// ---------------------------------
 //      unlink strands/segments
-// --------------------------------
 
 void SEC_helix_strand::unlink(bool fromOtherStrandAsWell) {
     // if called with fromOtherStrandAsWell == false,
@@ -359,9 +355,8 @@ void SEC_segment::unlink() {
     next_helix_strand = NULL;
 }
 
-// -----------------------------
+// ------------------------------
 //      split/merge segments
-// -----------------------------
 
 SEC_helix_strand *SEC_segment::split(size_t start, size_t end, SEC_segment **segment2_ptr) {
     // split segment into 'segment1 - strand - segment2'
@@ -398,9 +393,8 @@ void SEC_segment::mergeWith(SEC_segment *other, SEC_loop *target_loop) {
     delete other;
 }
 
-// ---------------------
+// ----------------------
 //      Reset angles
-// ---------------------
 
 void SEC_loop::reset_angles() {
     for (SEC_strand_iterator strand(this); strand; ++strand) {
@@ -421,9 +415,8 @@ void SEC_helix::reset_angles() {
 }
 
 
-// --------------
+// ---------------
 //      other
-// --------------
 
 size_t SEC_base_part::getNextAbspos() const {
     // returns the next valid abspos

@@ -23,9 +23,8 @@
 
 using namespace std;
 
-// ---------------
+// ----------------
 //      column
-// ---------------
 
 struct column {
     const char *title;          // column title (pointer into ProbeMatch_impl::headline)
@@ -35,9 +34,8 @@ struct column {
     column(const char *t, int sc, int ec) : title(t), start_column(sc), end_column(ec) {}
 };
 
-// ------------------------
+// -------------------------
 //      ProbeMatch_impl
-// ------------------------
 
 struct ltstr {
     bool operator()(const char* s1, const char* s2) const {
@@ -92,9 +90,8 @@ public:
     int get_probe_region_offset() const { return probe_region_offset; }
 };
 
-// -------------------------
+// --------------------------
 //      ProbeMatchParser
-// -------------------------
 
 ProbeMatchParser::ProbeMatchParser(const char *probe_target, const char *headline)
     : pimpl(0), init_error(0)
@@ -162,9 +159,8 @@ int ProbeMatchParser::get_probe_region_offset() const {
     return pimpl->get_probe_region_offset();
 }
 
-// -------------------------
+// --------------------------
 //      ParsedProbeMatch
-// -------------------------
 
 ParsedProbeMatch::ParsedProbeMatch(const char *match_, const ProbeMatchParser& parser_)
     : parser(parser_), match(0), error(0)

@@ -132,9 +132,8 @@ char *SEC_foldedHelixList_to_xstring(const char *foldedHelices, size_t xlength, 
     return xstring;
 }
 
-// ------------------------------------------------------------------------
+// -------------------------------------------------------------------------
 //      xstring was made helix-relative, when saved to old version file
-// ------------------------------------------------------------------------
 
 
 char *old_decode_xstring_rel_helix(GB_CSTR rel_helix, size_t xlength, const BI_helix *helix, int *no_of_helices_ptr)

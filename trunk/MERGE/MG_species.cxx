@@ -823,9 +823,8 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
     return error;
 }
 
-//  ---------------------------
+// -----------------------------
 //      MG_species_selector
-//  ---------------------------
 
 static void mg_select_species1(GBDATA*,  AW_root *aw_root, const char *item_name) {
     aw_root->awar(AWAR_SPECIES_SRC)->write_string(item_name);

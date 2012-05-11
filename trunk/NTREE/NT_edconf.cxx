@@ -28,12 +28,11 @@ static void init_config_awars(AW_root *root) {
     root->awar_string(AWAR_CONFIGURATION, "default_configuration", GLOBAL_gb_main);
 }
 
-//  ---------------------------
+// -----------------------------
 //      class Store_species
-//  ---------------------------
-// stores a amount of species:
 
 class Store_species : virtual Noncopyable {
+    // stores an amount of species:
     GBT_TREE *node;
     Store_species *next;
 public:

@@ -90,9 +90,8 @@ STATIC_ATTRIBUTED(__ATTR__FORMAT(1), string strf(const char *format, ...)) {
     return result;
 }
 
-// --------------------------------------
+// ------------------
 //      warnings
-// --------------------------------------
 
 class LineAttachedMessage {
     string message;
@@ -132,7 +131,6 @@ inline void preadd_warning(const string& warning, size_t lineno) {
 
 // ----------------------
 //      class Reader
-// ----------------------
 
 class Reader {
 private:
@@ -231,9 +229,9 @@ void check_TODO(const char *line, const Reader& reader) {
 }
 #endif // WARN_MISSING_HELP
 
-//  ---------------------------
+// ----------------------------
 //      class NamedSection
-//  ---------------------------
+
 class NamedSection {
 private:
     string  name;
@@ -268,9 +266,9 @@ public:
 
 typedef list<Link> Links;
 
-//  -----------------------
+// ------------------------
 //      class Helpfile
-//  -----------------------
+
 class Helpfile {
 private:
     Links         uplinks;
@@ -679,9 +677,9 @@ static size_t scanMinIndentation(const string& text) {
     return min_indent;
 }
 
-//  ----------------------------
+// -----------------------------
 //      class ParagraphTree
-//  ----------------------------
+
 class ParagraphTree : virtual Noncopyable {
 private:
     ParagraphTree *brother;     // has same indentation as this

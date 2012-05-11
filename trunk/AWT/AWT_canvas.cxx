@@ -736,7 +736,6 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_g
 
 // --------------------
 //      AWT_graphic
-// --------------------
 
 void AWT_graphic::command(AW_device *, AWT_COMMAND_MODE, int, AW_key_mod, AW_key_code, char,
                           AW_event_type, AW_pos, AW_pos, AW_clicked_line *, AW_clicked_text *)
@@ -748,7 +747,6 @@ void AWT_graphic::text(AW_device * /* device */, char * /* text */) {
 
 // --------------------------
 //      AWT_nonDB_graphic
-// --------------------------
 
 GB_ERROR AWT_nonDB_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
     return "AWT_nonDB_graphic cannot be loaded";

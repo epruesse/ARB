@@ -59,13 +59,12 @@ static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int heig
 
     return false;
 }
-//  ---------------------------------------------------------------------
-//      static bool findNextProbe(POS_TREE *node, char *probe, int restlen)
-//  ---------------------------------------------------------------------
-// searches next probe after 'probe' ('probe' itself may not exist)
-// returns: true if next probe was found
-// 'probe' is modified to next probe
+
 static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) {
+    // searches next probe after 'probe' ('probe' itself may not exist)
+    // returns: true if next probe was found
+    // 'probe' is modified to next probe
+
     if (restlen==0) return false;  // in this case we found the recent probe
     // returning false upwards takes the next after
 

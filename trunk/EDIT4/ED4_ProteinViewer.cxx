@@ -878,7 +878,7 @@ void PV_CallBackFunction(AW_root *root) {
 
 // --------------------------------------------------------------------------------
 //        Binding callback function to the AWARS
-// --------------------------------------------------------------------------------
+
 static void PV_AddCallBacks(AW_root *awr) {
 
     awr->awar(AWAR_PV_DISPLAY_ALL)->add_callback(PV_CallBackFunction);
@@ -923,7 +923,7 @@ static void PV_AddCallBacks(AW_root *awr) {
 
 // --------------------------------------------------------------------------------
 //        Creating AWARS to be used by the PROTVIEW module
-// --------------------------------------------------------------------------------
+
 void PV_CreateAwars(AW_root *root, AW_default aw_def) {
 
     root->awar_int(AWAR_PV_DISPLAY_ALL, 0, aw_def);

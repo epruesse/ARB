@@ -2586,9 +2586,8 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
     return p_w->number_of_modes;
 }
 
-// ------------------------
+// -------------------------
 //      Hotkey Checking
-// ------------------------
 
 #ifdef DEBUG
 

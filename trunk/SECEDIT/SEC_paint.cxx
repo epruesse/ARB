@@ -27,9 +27,8 @@
 
 using namespace std;
 
-// ------------------
+// -------------------
 //      Debugging
-// ------------------
 
 #if defined(ASSERTION_USED)
 
@@ -59,9 +58,8 @@ static void paintStrandDebugInfo(AW_device *device, int color, SEC_helix_strand 
 
 #endif // DEBUG
 
-// ------------------
+// -------------------
 //      PaintData
-// ------------------
 
 class PaintData {
     int gc_edit4_to_secedit[ED4_G_DRAG+1]; // GC translation table (EDIT4 -> SECEDIT)
@@ -122,9 +120,8 @@ public:
 
 static PaintData paintData;
 
-// --------------------
+// ---------------------
 //      Annotations
-// --------------------
 
 void SEC_root::paintAnnotation(AW_device *device, int gc,
                                const Position& pos, const Position& left, const Position& right,
@@ -330,9 +327,8 @@ void SEC_root::delete_announced_positions() {
 }
 
 
-// ---------------------------
+// ----------------------------
 //      Paints CONSTRAINTS
-// ---------------------------
 
 void SEC_helix_strand::paint_constraints(AW_device *device) {
     double minS = helix_info->minSize();
@@ -370,9 +366,8 @@ void SEC_loop::paint_constraints(AW_device *device) {
     }
 }
 
-// --------------------------
+// ---------------------------
 //      Background colors
-// --------------------------
 
 #if defined(WARN_TODO)
 #warning move to SEC_db_interface
@@ -485,10 +480,8 @@ void SEC_root::paintSearchPatternStrings(AW_device *device, int clickedPos, AW_p
     }
 }
 
-// --------------
+// ---------------
 //      Bonds
-// --------------
-
 
 void SEC_bond_def::paint(AW_device *device, char base1, char base2, const Position& p1, const Position& p2, const Vector& toNextBase, const double& char_radius) const {
     if (base1 && base2) {
@@ -624,9 +617,8 @@ void SEC_bond_def::paint(AW_device *device, int GC, char bondChar, const Positio
     }
 }
 
-// ----------------------
+// -----------------------
 //      Paint helices
-// ----------------------
 
 struct StrandPositionData {
     int      abs[2];            // absolute sequence position
@@ -836,10 +828,8 @@ void SEC_helix_strand::paint(AW_device *device) {
 }
 
 
-// --------------------
+// ---------------------
 //      Paint loops
-// --------------------
-
 
 void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_pointer) {
     int base_count = get_region()->get_base_count(); // bases in segment
@@ -986,9 +976,8 @@ void SEC_loop::paint(AW_device *device) {
     if (sroot->get_show_constraints() & SEC_LOOP) paint_constraints(device);
 }
 
-// ---------------------------------------------------------
+// ------------------------------------------------------------
 //      Paint the whole structure (starting with SEC_root)
-// ---------------------------------------------------------
 
 GB_ERROR SEC_root::paint(AW_device *device) {
     SEC_loop *rootLoop = get_root_loop();

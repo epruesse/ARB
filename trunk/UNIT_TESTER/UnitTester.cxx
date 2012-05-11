@@ -342,8 +342,6 @@ UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec, long 
 
 // --------------------------------------------------------------------------------
 
-// --------------------------------------------------------------------------------
-
 class SimpleTester {
     const UnitTest_simple *tests;
     size_t                 count;

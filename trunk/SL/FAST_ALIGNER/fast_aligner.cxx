@@ -358,9 +358,8 @@ static inline char alignQuality(char slave, char master)
     return result;                          // mutation (non-related bases)
 }
 
-// --------------------------------------------------------------------------------
+// -------------------------
 //      Debugging stuff
-// --------------------------------------------------------------------------------
 
 #ifdef DEBUG
 static char *lstr(const char *s, int len)
@@ -481,9 +480,8 @@ static inline void dumpSeq(const char *seq, long len, long pos)
 #endif //DEBUG
 
 
-// --------------------------------------------------------------------------------
-//  INLINE-functions used in fast_align():
-// --------------------------------------------------------------------------------
+// ------------------------------------------------
+//      INLINE-functions used in fast_align():
 
 static inline double log3(double d)
 {
@@ -790,9 +788,8 @@ static ARB_ERROR cannot_fast_align(const CompactedSubSequence& master, long moff
     return error;
 }
 
-// --------------------------------------------------------------------------------
+// ------------------------------------
 //      #define's for fast_align()
-// --------------------------------------------------------------------------------
 
 #define TEST_BETTER_SCORE()                                             \
     do {                                                                \

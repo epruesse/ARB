@@ -149,7 +149,6 @@ SortOrder list_entry::sort_order = SORT_NONE;
 
 // ---------------------
 //      create AWARs
-// ---------------------
 
 static MemDump make_userdefined_MemDump(AW_root *awr) {
     bool   hex      = awr->awar(AWAR_DUMP_HEX)->read_int();
@@ -363,7 +362,6 @@ public:
 
 // -----------------------------
 //      DB_browser singleton
-// -----------------------------
 
 SmartPtr<DB_browser> DB_browser::the_browser;
 
@@ -376,7 +374,6 @@ static DB_browser *get_the_browser(bool autocreate = true) {
 
 // --------------------------
 //      announce databases
-// --------------------------
 
 void AWT_announce_db_to_browser(GBDATA *gb_main, const char *description) {
     get_the_browser()->add_db(gb_main, description);
@@ -394,7 +391,6 @@ void AWT_browser_forget_db(GBDATA *gb_main) {
 
 // ---------------------------------------
 //      browser window callbacks
-// ---------------------------------------
 
 static void toggle_tmp_cb(AW_window *aww) {
     AW_awar *awar_path = aww->get_root()->awar(AWAR_DBB_PATH);
@@ -440,7 +436,6 @@ static void go_up_cb(AW_window *aww) {
 
 // --------------------------
 //      browser commands:
-// --------------------------
 
 #define BROWSE_CMD_PREFIX          "browse_cmd___"
 #define BROWSE_CMD_GOTO_VALID_NODE BROWSE_CMD_PREFIX "goto_valid_node"
@@ -498,7 +493,6 @@ static void execute_browser_command(AW_window *aww, const char *command) {
 
 // ----------------------------
 //      the browser window
-// ----------------------------
 
 static AW_window *create_db_browser(AW_root *aw_root) {
     return get_the_browser()->get_window(aw_root);

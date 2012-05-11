@@ -18,7 +18,7 @@ typedef int SpeciesID;
 
 // ----------------------------------------------------------------
 // SpeciesID <-> shortname mapping
-// ----------------------------------------------------------------
+
 typedef std::map<std::string, SpeciesID> Name2IDMap;
 typedef Name2IDMap::iterator             Name2IDMapIter;
 typedef Name2IDMap::const_iterator       Name2IDMapCIter;
@@ -28,28 +28,28 @@ typedef ID2NameMap::const_iterator       ID2NameMapCIter;
 
 // ----------------------------------------------------------------
 // SpeciesID list (as vector)
-// ----------------------------------------------------------------
+
 typedef std::vector<SpeciesID>   IDVector;
 typedef IDVector::iterator       IDVectorIter;
 typedef IDVector::const_iterator IDVectorCIter;
 
 // ----------------------------------------------------------------
 // SpeciesID list (as set)
-// ----------------------------------------------------------------
+
 typedef std::set<SpeciesID>   IDSet;
 typedef IDSet::iterator       IDSetIter;
 typedef IDSet::const_iterator IDSetCIter;
 
 // ----------------------------------------------------------------
 // SpeciesID <-> SpeciesID (as map)
-// ----------------------------------------------------------------
+
 typedef std::map<SpeciesID, SpeciesID> ID2IDMap;
 typedef ID2IDMap::iterator            ID2IDMapIter;
 typedef ID2IDMap::const_iterator      ID2IDMapCIter;
 
 // ----------------------------------------------------------------
 // SpeciesID <-> SpeciesID (as set)
-// ----------------------------------------------------------------
+
 typedef std::pair<SpeciesID, SpeciesID> ID2IDPair;
 typedef std::set<ID2IDPair>            ID2IDSet;
 typedef ID2IDSet::iterator             ID2IDSetIter;
@@ -57,7 +57,7 @@ typedef ID2IDSet::const_iterator       ID2IDSetCIter;
 
 // ----------------------------------------------------------------
 // (SpeciesID,SpeciesID) <-> set of SpeciesID (as map)
-// ----------------------------------------------------------------
+
 typedef std::map<ID2IDPair, IDSet>     IDID2IDSetMap;
 typedef IDID2IDSetMap::iterator       IDID2IDSetMapIter;
 typedef IDID2IDSetMap::const_iterator IDID2IDSetMapCIter;

@@ -1970,9 +1970,8 @@ GB_ERROR AW_selection_list::load(const char *filename) {
     return 0;
 }
 
-// --------------------------------------------------------------------------------
-//  Options-Menu
-// --------------------------------------------------------------------------------
+// ----------------------
+//      Options-Menu
 
 AW_option_menu_struct *AW_window::create_option_menu(const char *var_name, AW_label tmp_label, const char *mnemonic) {
     Widget optionMenu_shell;

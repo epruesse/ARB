@@ -44,9 +44,8 @@ enum GEN_DisplayStyle {
 #define GEN_DISPLAY_STYLES (GEN_DISPLAY_STYLE_VERTICAL+1)
 
 
-//  -----------------------------------------------
-//      class GEN_graphic : public AWT_graphic
-//  -----------------------------------------------
+// ---------------------
+//      GEN_graphic
 
 typedef void (*GEN_graphic_cb_installer)(bool install, AWT_canvas*, GEN_graphic*);
 

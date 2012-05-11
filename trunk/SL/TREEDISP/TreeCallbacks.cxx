@@ -95,7 +95,6 @@ void nt_mode_event(AW_window */*aws*/, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
 
 // ---------------------------------------
 //      Basic mark/unmark callbacks :
-// ---------------------------------------
 
 static void count_mark_all_cb(void *, AW_CL cl_ntw) {
     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
@@ -380,9 +379,8 @@ static void save_changed_tree(AWT_canvas *ntw) {
     ntw->zoom_reset_and_refresh();
 }
 
-// ---------------------------------------
+// ----------------------------------------
 //      Automated collapse/expand tree
-// ---------------------------------------
 
 static void group_and_save_tree(AWT_canvas *ntw, int mode, int color_group) {
     GB_transaction gb_dummy(ntw->gb_main);
@@ -404,9 +402,6 @@ static void NT_group_not_color_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_colornum) 
     group_and_save_tree(ntw, 8, colornum);
 }
 
-// ----------------------------------------------------------------------------------------------------
-//      void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_canvas)
-// ----------------------------------------------------------------------------------------------------
 void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_canvas) {
 #define MAXLABEL 30
 #define MAXENTRY (AW_COLOR_GROUP_NAME_LEN+10)
@@ -446,7 +441,6 @@ void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntr
 
 // ------------------------
 //      tree sorting :
-// ------------------------
 
 void NT_resort_tree_cb(void *, AWT_canvas *ntw, int type) {
     GB_transaction gb_dummy(ntw->gb_main);

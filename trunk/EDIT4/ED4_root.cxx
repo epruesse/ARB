@@ -806,9 +806,8 @@ static void reload_ecoli_cb() {
     ED4_request_full_refresh();
 }
 
-// --------------------------------------------------------------------------------
-//  recursion through all species
-// --------------------------------------------------------------------------------
+// ---------------------------------------
+//      recursion through all species
 
 typedef ARB_ERROR (*ED4_Species_Callback)(GBDATA*, AW_CL);
 
@@ -841,10 +840,6 @@ static ARB_ERROR do_sth_with_species(ED4_base *base, AW_CL cl_spec_cb, AW_CL cd)
 static ARB_ERROR ED4_with_all_loaded_species(ED4_Species_Callback cb, AW_CL cd) {
     return ED4_ROOT->root_group_man->route_down_hierarchy(do_sth_with_species, (AW_CL)cb, cd);
 }
-
-// --------------------------------------------------------------------------------
-//  faligner
-// --------------------------------------------------------------------------------
 
 static bool has_species_name(ED4_base *base, AW_CL cl_species_name) {
     ED4_species_name_terminal *name_term = base->to_species_name_terminal();
@@ -1396,9 +1391,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     static AW_gc_manager first_gc_manager = 0;
     if (!first_gc_manager) first_gc_manager = aw_gc_manager;
 
-    // ------------------------------
-    //  File
-    // ------------------------------
+    // --------------
+    //      File
 
 #if defined(DEBUG)
     AWT_create_debug_menu(awmm);
@@ -1419,9 +1413,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     if (clone) awmm->insert_menu_topic("close", "CLOSE", "C", 0, AWM_ALL, ED4_quit_editor, 0, 0);
     else       awmm->insert_menu_topic("quit",   "QUIT",  "Q", 0, AWM_ALL, ED4_quit_editor, 0, 0);
 
-    // ------------------------------
-    //  Create
-    // ------------------------------
+    // ----------------
+    //      Create
 
     awmm->create_menu("Create", "C", AWM_ALL);
     awmm->insert_menu_topic("create_species",                "Create new species",                "n", 0, AWM_ALL, AW_POPUP, (AW_CL)ED4_create_new_seq_window, (int)0);
@@ -1431,9 +1424,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("create_group",           "Create new Group",              "G", 0, AWM_ALL, group_species_cb, 0, 0);
     awmm->insert_menu_topic("create_groups_by_field", "Create new groups using Field", "F", 0, AWM_ALL, group_species_cb, 1, 0);
 
-    // ------------------------------
-    //  Edit
-    // ------------------------------
+    // --------------
+    //      Edit
 
     awmm->create_menu("Edit", "E", AWM_ALL);
     awmm->insert_menu_topic("refresh",      "Refresh [Ctrl-L]",           "f", 0, AWM_ALL, (AW_CB)ED4_request_full_refresh,       0, 0);
@@ -1482,9 +1474,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 #endif // DEBUG
     }
 
-    // ------------------------------
-    //  View
-    // ------------------------------
+    // --------------
+    //      View
 
     awmm->create_menu("View", "V", AWM_ALL);
     awmm->insert_sub_menu("Search", "S");
@@ -1545,9 +1536,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
         awmm->insert_menu_topic("Protein_Viewer", "Protein Viewer", "w", "proteinViewer.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_CreateProteinViewer_window, 0);
     }
 
-    // ------------------------------
-    //  Block
-    // ------------------------------
+    // ---------------
+    //      Block
 
     awmm->create_menu("Block", "B", AWM_ALL);
 
@@ -1581,9 +1571,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("shift_left",        "Shift block left ",           "l", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_SHIFT_LEFT),       0);
     awmm->insert_menu_topic("shift_right",       "Shift block right",           "r", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_SHIFT_RIGHT),      0);
 
-    // ------------------------------
-    //  Properties
-    // ------------------------------
+    // --------------------
+    //      Properties
 
     awmm->create_menu("Properties", "P", AWM_ALL);
 
@@ -1652,9 +1641,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->shadow_width(1);
     awmm->load_xfig("edit4/editmenu.fig", false);
 
-    // -------------------------
+    // --------------------------
     //      help /quit /fold
-    // -------------------------
 
     awmm->button_length(0);
 
@@ -1674,9 +1662,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->help_text("e4.hlp");
     awmm->create_toggle(AWAR_EDIT_TITLE_MODE, "#more.bitmap", "#less.bitmap");
 
-    // ------------------
+    // -------------------
     //      positions
-    // ------------------
 
     awmm->button_length(0);
 
@@ -1712,9 +1699,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->callback((AW_CB)ED4_set_helixnr, (AW_CL) current_ed4w()->awar_path_for_helixNr, AW_CL(0));
     awmm->create_input_field(current_ed4w()->awar_path_for_helixNr, 5);
 
-    // ---------------------------
+    // ----------------------------
     //      jump/get/undo/redo
-    // ---------------------------
 
     awmm->button_length(4);
 
@@ -1740,9 +1726,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->help_text("undo.hlp");
     awmm->create_button("REDO", "#redo.bitmap");
 
-    // -------------------------
+    // --------------------------
     //      aligner / SAIviz
-    // -------------------------
 
     awmm->button_length(7);
 
@@ -1756,9 +1741,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->help_text("visualizeSAI.hlp");
     awmm->create_button("SAIVIZ", "SAIviz");
 
-    // ------------------------------------------
+    // -------------------------------------------
     //      align/insert/protection/direction
-    // ------------------------------------------
 
     awmm->button_length(0);
 
@@ -1787,9 +1771,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->at("direct");
     awmm->create_toggle(AWAR_EDIT_RIGHTWARD, "#edit/3to5.bitmap", "#edit/5to3.bitmap", 7);
 
-    // ------------------------
+    // -------------------------
     //      secedit / rna3d
-    // ------------------------
 
     int xoffset = 0;
 
@@ -1838,9 +1821,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
         aw_set_local_message();
     }
 
-    // --------------------
+    // ---------------------
     //      'more' area
-    // --------------------
 
     awmm->at("cons");
     awmm->create_toggle(ED4_AWAR_CONSENSUS_SHOW, "#edit/nocons.bitmap", "#edit/cons.bitmap");

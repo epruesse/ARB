@@ -145,7 +145,6 @@ public:
 
 // -----------------------
 //      class Counted
-// -----------------------
 
 template <class T, class C> class SmartPtr;
 

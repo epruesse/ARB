@@ -706,7 +706,6 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /* cmd */, AW_key_mod key_mo
 
     // ----------------------------------------
     //      commands independent of tree :
-    // ----------------------------------------
 
     bool global_key = true;
     switch (key_char) {
@@ -754,7 +753,6 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /* cmd */, AW_key_mod key_mo
 
             // ------------------------------------
             //      commands in species list :
-            // ------------------------------------
 
             switch (key_char) {
                 case 'i':
@@ -785,7 +783,6 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /* cmd */, AW_key_mod key_mo
 
             // -------------------------------------
             //      command working with tree :
-            // -------------------------------------
 
             if (at) {
                 switch (key_char) {

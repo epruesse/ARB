@@ -964,9 +964,6 @@ void PrimerDesign::printPrimerPairs ()
     }
 }
 
-//  ------------------------------------------------------------
-//      const char *PrimerDesign::get_result(int num) const
-//  ------------------------------------------------------------
 const char *PrimerDesign::get_result(int num, const char *&primers, int max_primer_length, int max_position_length, int max_length_length)    const
 {
     if ((num < 0) || (num >= max_count_primerpairs)) return 0;                  // check for valid index
