@@ -29,11 +29,14 @@ DESCRIPTION	The 'ZOOM MODE' allows you to magnify selected square sections of
 			and move the cursor to define size and position of the
 			region to magnify. Release the button.
 
-		Reduce the zoom scale:
+		Increase/reduce the zoom scale:
 
-			To gradually reduce the zoom scale click on the right
-			mouse button while the cursor is located within the
+			To gradually increase or reduce the zoom scale click the
+                        left or right mouse button while the cursor is located within the
 			tree display area of the 'ARB_NT' window.
+
+                        Alternatively you may use CTRL+Mouse-Wheel (this works independent
+                        of the currenly select mode).
 
 NOTES		Short descriptions of the 'MODE' and the functions assigned
 		to the mouse buttons are given in the fourth line of the

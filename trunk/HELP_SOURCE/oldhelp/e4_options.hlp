@@ -66,6 +66,8 @@ SECTION Scroll-Speed
         Define the horizontal and vertical scroll speed for mouse scrolling (with middle mouse button).
         The default scroll-speed is 10/10, which scrolls with same speed as the mouse is moved.
 
+        The display may also be scrolled using the mouse-wheel (optionally together with ALT/META).
+
 SECTION Editing
 
         Gap characters: set of characters which are handled as "gaps"

@@ -15,10 +15,7 @@ OCCURRENCE	ARB_SECEDIT/mode buttons
 
 DESCRIPTION	ZOOM MODE       Mode to zoom the displayed secondary structure.
 
-			You can zoom in by dragging a rectangle with the
-			left mouse button.
-
-			You can zoom out by clicking or dragging the right mouse button.
+			See LINK{mode_pzoom.hlp} on how to zoom.
 
 		HELIX MODE	Mode to build and destroy helix regions.
 

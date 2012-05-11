@@ -24,10 +24,17 @@ SECTION How to move around in ARB_EDIT4:
 
         Use the scroll bars:
 
-            click on the triangles to move one position left/right or
-            one line up/down drag the rectangles while keeping the
-            left mouse button pressed position the cursor in the
-            scroll bar area and press the middle mouse button
+            - click on the triangles to move one position left/right or one line up/down.
+            - drag the "bar" while keeping the left mouse button pressed.
+            - click outside the "bar" to scroll page-wise
+
+        Use the middle mouse button:
+
+            - click inside the alignment, hold the button down and move the pointer
+
+        Use the mouse wheel:
+
+            - move pointer inside alignment and rotate the wheel (optionally with ALT/META)
 
     How to position the cursor:
 
