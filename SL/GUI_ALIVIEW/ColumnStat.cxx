@@ -26,7 +26,7 @@
 #define AWAR_COLSTAT_SMOOTH       "/name=/smooth"
 #define AWAR_COLSTAT_ENABLE_HELIX "/name=/enable_helix"
 
-void ColumnStat::refresh_selection_list() {
+void ColumnStat::refresh_sai_selection_list() {
     GB_transaction ta(gb_main);
 
     freeset(alignment_name, awr->awar(awar_alignment)->read_string());
@@ -39,7 +39,7 @@ void ColumnStat::refresh_selection_list() {
 
 static void refresh_columnstat_selection(AW_root *, AW_CL cl_column_stat) {
     ColumnStat *column_stat = (ColumnStat *)cl_column_stat;
-    column_stat->refresh_selection_list();
+    column_stat->refresh_sai_selection_list();
 }
 
 ColumnStat::ColumnStat(GBDATA *gb_maini, AW_root *awri, const char *awar_template, AW_awar *awar_used_alignment) {
@@ -67,7 +67,7 @@ ColumnStat::ColumnStat(GBDATA *gb_maini, AW_root *awri, const char *awar_templat
     awr->awar_int(awar_enable_helix, 1);
 
     awr->awar(awar_alignment)->add_callback(refresh_columnstat_selection, (AW_CL)this);
-    refresh_selection_list();                       // same as refresh_columnstat_selection(this)
+    refresh_sai_selection_list();                       // same as refresh_columnstat_selection(this)
 }
 
 void ColumnStat::forget() {
@@ -331,13 +331,13 @@ static char *filter_columnstat_SAIs(GBDATA *gb_extended, AW_CL cl_column_stat) {
     return result;
 }
 
-void ColumnStat::create_selection_list(AW_window *aww) {
+void ColumnStat::create_sai_selection_list(AW_window *aww) {
     GB_transaction ta(gb_main);
     sai_sel_box_id = awt_create_selection_list_on_sai(gb_main, aww, awar_name, filter_columnstat_SAIs, (AW_CL)this);
 }
 
 void COLSTAT_create_selection_list(AW_window *aws, ColumnStat *column_stat) {
-    column_stat->create_selection_list(aws);
+    column_stat->create_sai_selection_list(aws);
 }
 
 AW_window *COLSTAT_create_selection_window(AW_root *aw_root, ColumnStat *column_stat) {
