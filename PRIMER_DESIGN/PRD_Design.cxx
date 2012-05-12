@@ -28,9 +28,9 @@ using std::pair;
 // Constructor
 //
 void PrimerDesign::init (const char *sequence_, long int seqLength_,
-                          Range pos1_, Range pos2_, Range length_, Range distance_,
-                          Range ratio_, Range temperature_, int min_dist_to_next_, bool expand_IUPAC_Codes_,
-                          int   max_count_primerpairs_, double GC_factor_, double temp_factor_)
+                         Range       pos1_, Range pos2_, Range length_, Range distance_,
+                         Range       ratio_, Range temperature_, int min_dist_to_next_, bool expand_IUPAC_Codes_,
+                         int         max_count_primerpairs_, double GC_factor_, double temp_factor_)
 {
     error     = 0;
     sequence  = sequence_;
@@ -150,9 +150,8 @@ void  PrimerDesign::setConditionalParameters(Range ratio_, Range temperature_, i
 //
 // run the necessary steps .. abort on error
 //
-void PrimerDesign::run (int print_stages_)
-{
-#if defined(DEBUG)
+void PrimerDesign::run() {
+#if defined(DUMP_PRIMER)
     printf("PrimerDesign : parameters are\n");
     primer1.print("left                    : ", "\n");
     primer2.print("right                   : ", "\n");
@@ -172,26 +171,34 @@ void PrimerDesign::run (int print_stages_)
         return;
     }
 
-#if defined(DEBUG)
+#if defined(DUMP_PRIMER)
     printf("sizeof(Node) = %zu\n", sizeof(Node));
 #endif // DEBUG
 
     buildPrimerTrees();
     if (error) return;
-    if (print_stages_ & PRINT_RAW_TREES) printPrimerTrees();
+#if defined(DUMP_PRIMER)
+    printPrimerTrees();
+#endif
 
     matchSequenceAgainstPrimerTrees();
     if (error) return;
-    if (print_stages_ & PRINT_MATCHED_TREES) printPrimerTrees();
+#if defined(DUMP_PRIMER)
+    printPrimerTrees();
+#endif
 
     arb_progress::show_comment("evaluating primer pairs");
     convertTreesToLists();
     if (error) return;
-    if (print_stages_ & PRINT_PRIMER_LISTS) printPrimerLists();
+#if defined(DUMP_PRIMER)
+    printPrimerLists();
+#endif
 
     evaluatePrimerPairs();
     if (error) return;
-    if (print_stages_ & PRINT_PRIMER_PAIRS) printPrimerPairs();
+#if defined(DUMP_PRIMER)
+    printPrimerPairs();
+#endif
 }
 
 //
@@ -274,7 +281,7 @@ void PrimerDesign::buildPrimerTrees ()
     arb_progress progress("searching possible primers",
                           primer1.max()+primer2.max()-2*primer_length.min());
 
-#if defined(DEBUG)
+#if defined(DUMP_PRIMER)
     primer1.print("buildPrimerTrees : pos1\t\t", "\n");
     primer2.print("buildPrimerTrees : pos2\t\t", "\n");
     primer_length.print("buildPrimerTrees : length\t", "\n");
@@ -345,12 +352,12 @@ void PrimerDesign::buildPrimerTrees ()
     //
     // clear left tree
     //
-#if defined(DEBUG)
+#if defined(DUMP_PRIMER)
     printf ("           %li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right);
     printf ("           clearing left tree\n");
 #endif
     clearTree(root1, 1, 0);
-#if defined(DEBUG)
+#if defined(DUMP_PRIMER)
     printf ("           %li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right);
 #endif
 
@@ -410,12 +417,12 @@ void PrimerDesign::buildPrimerTrees ()
     //
     // clear left tree
     //
-#if defined(DEBUG)
+#if defined(DUMP_PRIMER)
     printf ("           %li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right);
     printf ("           clearing right tree\n");
 #endif
     clearTree(root2, 0, 1);
-#if defined(DEBUG)
+#if defined(DUMP_PRIMER)
     printf ("           %li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right);
 #endif
 }
@@ -452,6 +459,7 @@ void PrimerDesign::findNextPrimer(Node *start_at_, int depth_, int *counter_, in
         if (start_at_->child[i] != NULL) findNextPrimer(start_at_->child[i],     depth_, counter_, direction_);
 }
 
+#if defined(DUMP_PRIMER)
 void PrimerDesign::printPrimerTrees ()
 {
     // start at root1 with zero depth
@@ -467,6 +475,7 @@ void PrimerDesign::printPrimerTrees ()
     findNextPrimer(root2, 0, &primer_counter, BACKWARD);
     cout << "printPrimerTrees : " << primer_counter << " primer found" << endl;
 }
+#endif
 
 
 //
@@ -480,7 +489,7 @@ void PrimerDesign::matchSequenceAgainstPrimerTrees()
     char              base;
     PRD_Sequence_Pos  pos               = sequence_iterator->pos;
 
-#if defined(DEBUG)
+#if defined(DUMP_PRIMER)
     printf("root1 : [C %p, G %p, A %p, TU %p]\n", root1->child[0], root1->child[1], root1->child[2], root1->child[3]);
     printf("root2 : [C %p, G %p, A %p, TU %p]\n", root2->child[0], root2->child[1], root2->child[2], root2->child[3]);
 #endif
@@ -595,7 +604,7 @@ void PrimerDesign::calcGCandAT (int &GC_, int &AT_, Node *start_at_)
 
 void PrimerDesign::convertTreesToLists ()
 {
-#ifdef DEBUG
+#if defined(DUMP_PRIMER)
     GC_ratio.print("convertTreesToLists : GC_ratio ", "  ");
     temperature.print("temperature ", "  ");
     primer_distance.print("primer_distance ", "\n");
@@ -680,7 +689,7 @@ void PrimerDesign::convertTreesToLists ()
         return;
     }
 
-#if defined(DEBUG)
+#if defined(DUMP_PRIMER)
     printf("convertTreesToLists : list1 : min_offset %7li  max_offset %7li\n", min_offset_1, max_offset_1);
 #endif
 
@@ -768,7 +777,7 @@ void PrimerDesign::convertTreesToLists ()
 
     delete stack;
 
-#if defined(DEBUG)
+#if defined(DUMP_PRIMER)
     printf("convertTreesToLists : list2 : min_offset %7li  max_offset %7li\n", min_offset_2, max_offset_2);
 #endif
 
@@ -834,6 +843,7 @@ void PrimerDesign::convertTreesToLists ()
 //
 // printPrimerLists
 //
+#if defined(DUMP_PRIMER)
 void PrimerDesign::printPrimerLists ()
 {
     int count = 0;
@@ -855,6 +865,7 @@ void PrimerDesign::printPrimerLists ()
     }
     printf(" : %i valid primers\n", count);
 }
+#endif
 
 
 
@@ -895,7 +906,7 @@ void PrimerDesign::insertPair(double rating_, Item *one_, Item *two_)
     pairs[index].one    = one_;
     pairs[index].two    = two_;
 
-#if defined(DEBUG)
+#if defined(DUMP_PRIMER)
     printf("insertPair : [%3i] %6.2f\n", index, rating_);
 #endif
 }
@@ -907,7 +918,7 @@ void PrimerDesign::evaluatePrimerPairs ()
     double   rating;
     long int counter = 0;
 
-#ifdef DEBUG
+#if defined(DUMP_PRIMER)
     printf ("evaluatePrimerPairs : ...\ninsertPair : [index], rating\n");
 #endif
 
@@ -948,21 +959,20 @@ void PrimerDesign::evaluatePrimerPairs ()
 
     if (counter == 0) error = "no primer pair could be found, sorry :(";
 
-#ifdef DEBUG
+#if defined(DUMP_PRIMER)
     printf ("evaluatePrimerPairs : ratings [ %.3f .. %.3f ]\n\n", pairs[max_count_primerpairs-1].rating, pairs[0].rating);
 #endif
 }
 
-void PrimerDesign::printPrimerPairs ()
-{
-#ifdef DEBUG
+#if defined(DUMP_PRIMER)
+void PrimerDesign::printPrimerPairs () {
     printf ("printPairs [index] [rating ( primer1[(start_pos,offset,length),(GC,temp)] , primer2[(pos,offs,len),(GC,temp)])] \n");
-#endif
     for (int i = 0; i < max_count_primerpairs; i++) {
         printf("printPairs : [%3i]", i);
         pairs[i].print("\t", "\n", sequence);
     }
 }
+#endif
 
 const char *PrimerDesign::get_result(int num, const char *&primers, int max_primer_length, int max_position_length, int max_length_length)    const
 {

@@ -174,11 +174,7 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
                              );
 
         try {
-#ifdef DEBUG
-            PD->run(PrimerDesign::PRINT_PRIMER_PAIRS);
-#else
-            PD->run(0);
-#endif
+            PD->run();
         }
 
         catch (string& s) {
@@ -403,7 +399,7 @@ static void primer_design_event_init(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_
             // update mem-info
             primer_design_event_update_memory(aww);
 
-#ifdef DEBUG
+#if defined(DUMP_PRIMER)
             printf ("primer_design_event_init : left_min   %7li\n", left_min);
             printf ("primer_design_event_init : left_max   %7li\n", left_max);
             printf ("primer_design_event_init : right_min  %7li\n", right_min);
