@@ -22,6 +22,10 @@
 #include <arbdb.h>
 #endif
 
+#if defined(DEBUG)
+// # define DUMP_PRIMER
+#endif
+
 class PrimerDesign : virtual Noncopyable {
     // zu untersuchendes Genom
     // sequence of bases/spaces to be examined
@@ -118,17 +122,17 @@ public:
     void setConditionalParameters(Range ratio_, Range temperature_, int min_dist_to_next_, bool expand_IUPAC_Codes_, int max_count_primerpairs_, double GC_factor_, double temp_factor_);
 
     void buildPrimerTrees ();
-    void printPrimerTrees ();
-
     void matchSequenceAgainstPrimerTrees ();
-
     void convertTreesToLists ();
-    void printPrimerLists    ();
-
     void evaluatePrimerPairs ();
+    
+#if defined(DUMP_PRIMER)
+    void printPrimerTrees ();
+    void printPrimerLists    ();
     void printPrimerPairs    ();
+#endif
 
-    void run (int print_stages_);
+    void run();
 
     GB_ERROR get_error() const { return error; }
 
