@@ -192,6 +192,16 @@ void TEST_StrArray() {
     TEST_ASSERT_NULL(array[0]);
 }
 
+void TEST_StrArray_truncate() {
+    ConstStrArray parts;
+    GBT_split_string(parts, "test;word;bla", ';');
+
+    TEST_ASSERT_EQUAL(parts.size(), 3);
+    parts.resize(2); TEST_ASSERT_EQUAL(parts.size(), 2);
+    parts.resize(1); TEST_ASSERT_EQUAL(parts.size(), 1);
+    parts.resize(0); TEST_ASSERT(parts.empty());
+}
+
 #define TEST_SPLIT_JOIN(str,sep)                        \
     do {                                                \
         ConstStrArray cnames;                           \
