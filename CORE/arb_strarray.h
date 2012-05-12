@@ -110,6 +110,13 @@ public:
         arb_assert(ok());
     }
 
+    void resize(int newsize) {
+        // truncates array to 'newsize'
+        for (int i = size()-1; i >= newsize; i--) {
+            remove(i);
+        }
+    }
+
     void sort(CharPtrArray_compare_fun compare, void *client_data);
 };
 
