@@ -13,7 +13,7 @@ TITLE		Regular Expressions (REG)
 
 OCCURRENCE	Many places
 
-DESCRIPTION	Ways to use regular expressions
+SECTION		Ways to use regular expressions
 
 		There are two ways to use regular expressions:
 
@@ -36,7 +36,7 @@ DESCRIPTION	Ways to use regular expressions
                   work case insensitive, simply append an 'i' to the
                   expression (i.e. '/expr/i'  or '/expr/repl/i')
 
-DESCRIPTION     Syntax of POSIX extended regular expressions as used in ARB
+SECTION         Syntax of POSIX extended regular expressions as used in ARB
 
                 A regular expression specifies a set of character strings,
                 e.g. the expression '/pseu/i' specifies all strings containing
@@ -108,7 +108,7 @@ DESCRIPTION     Syntax of POSIX extended regular expressions as used in ARB
                   string 'bbaaeeeffaegg', not 'ae' at position 10). 
 
 
-DESCRIPTION     Special syntax for search and replace
+SECTION         Special syntax for search and replace
 
                 Syntax: '/regexp/replace/'
 
