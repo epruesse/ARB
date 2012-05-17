@@ -52,6 +52,7 @@ void ProbeValuation::evolution()
         if (!Stop_evaluation) {
             if (avg_fit == 0) {
                 aw_message("Please choose better Probes!");
+                progress.done();
                 return;
             }
             child_generation = act_generation->create_next_generation();
