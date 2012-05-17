@@ -108,12 +108,12 @@ public:
 
     void select_element_at(int wanted_index);
     void move_selection(int offset);
-    
+
     bool default_is_selected() const;
 
     void delete_element_at(int index);
     void delete_value(const char *value);
-    void clear();
+    void clear(bool clear_default = true); 
 
     void move_content_to(AW_selection_list *target_list);
 

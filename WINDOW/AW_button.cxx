@@ -1420,7 +1420,7 @@ void AW_selection_list::move_content_to(AW_selection_list *target_list) {
         entry = entry->next;
     }
 
-    clear();
+    clear(false);
 }
 
 void AW_selection_list::set_file_suffix(const char *suffix) {
@@ -1610,7 +1610,7 @@ void AW_selection_list::insert_default(const char *displayed, GBDATA *pointer) {
     default_select = new AW_selection_list_entry(displayed, pointer);
 }
 
-void AW_selection_list::clear() {
+void AW_selection_list::clear(bool clear_default) {
     while (list_table) {
         AW_selection_list_entry *nextEntry = list_table->next;
         delete list_table;
@@ -1619,7 +1619,7 @@ void AW_selection_list::clear() {
     list_table = NULL;
     last_of_list_table = NULL;
 
-    if (default_select) {
+    if (clear_default && default_select) {
         delete default_select;
         default_select = NULL;
     }
