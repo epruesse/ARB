@@ -93,6 +93,12 @@ MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, in
             return NULL;
         }
 
+        {
+            // @@@ hack - only done to transfer bonds; see ../PROBE_DESIGN/probe_design.cxx@hack
+            T_PT_PDC pdc;
+            aisc_create(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs, LOCS_PROBE_DESIGN_CONFIG, PT_PDC, &pdc,  NULL);
+        }
+
         if (aisc_put(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs,
                      LOCS_MATCH_REVERSED,       match_kompl, // Komplement
                      LOCS_MATCH_SORT_BY,        match_weight, // Weighted
