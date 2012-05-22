@@ -14,7 +14,7 @@ int ALI_PT::init_communication() {
     // Initialize the communication with the pt server
     const char *user = GB_getenvUSER();
     if (aisc_create(link, PT_MAIN, com,
-                    MAIN_LOCS, PT_LOCS, &locs,
+                    MAIN_LOCS, PT_LOCS, locs,
                     LOCS_USER, user,
                     NULL))
     {
@@ -109,7 +109,7 @@ int ALI_PT::open(char *servername)
         return -1;
     }
 
-    link = aisc_open(socketid, &com, AISC_MAGIC_NUMBER);
+    link = aisc_open(socketid, com, AISC_MAGIC_NUMBER);
 
     if (!link) {
         ali_message ("Cannot contact Probe bank server ");
@@ -126,7 +126,7 @@ int ALI_PT::open(char *servername)
 
 void ALI_PT::close()
 {
-    if (link) aisc_close(link);
+    if (link) aisc_close(link, com);
     link = 0;
 }
 
@@ -204,7 +204,7 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
 
         T_PT_FAMILYFINDER ffinder;
         if (aisc_create(link, PT_LOCS, locs,
-                        LOCS_FFINDER, PT_FAMILYFINDER, &ffinder, 
+                        LOCS_FFINDER, PT_FAMILYFINDER, ffinder, 
                         FAMILYFINDER_FIND_TYPE,   find_type,
                         FAMILYFINDER_FIND_FAMILY, &bs,
                         NULL))
@@ -214,23 +214,27 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
         }
 
         // Read family list
-        aisc_get(link, PT_FAMILYFINDER, ffinder, FAMILYFINDER_FAMILY_LIST, &f_list, NULL);
-        if (f_list == 0)
+        aisc_get(link, PT_FAMILYFINDER, ffinder,
+                 FAMILYFINDER_FAMILY_LIST, f_list.as_result_param(),
+                 NULL);
+        if (!f_list.exists())
             ali_error("Family not found in PT Server");
 
         aisc_get(link, PT_FAMILYLIST, f_list,
-                 FAMILYLIST_NAME, &seq_name,
+                 FAMILYLIST_NAME,    &seq_name,
                  FAMILYLIST_MATCHES, &matches,
-                 FAMILYLIST_NEXT, &f_list, NULL);
+                 FAMILYLIST_NEXT,    f_list.as_result_param(),
+                 NULL);
 
         while (strcmp(seq_name, sequence->name()) == 0) {
             free(seq_name);
-            if (f_list == 0)
+            if (!f_list.exists())
                 ali_error("Family too small in PT Server");
             aisc_get(link, PT_FAMILYLIST, f_list,
-                     FAMILYLIST_NAME, &seq_name,
+                     FAMILYLIST_NAME,    &seq_name,
                      FAMILYLIST_MATCHES, &matches,
-                     FAMILYLIST_NEXT, &f_list, NULL);
+                     FAMILYLIST_NEXT,    f_list.as_result_param(),
+                     NULL);
         }
         // found the first element
 
@@ -242,12 +246,13 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
             family_list->append_end(pt_member);
             number++;
             do {
-                if (f_list == 0)
+                if (!f_list.exists())
                     ali_error("Family too small in PT Server");
                 aisc_get(link, PT_FAMILYLIST, f_list,
-                         FAMILYLIST_NAME, &seq_name,
+                         FAMILYLIST_NAME,    &seq_name,
                          FAMILYLIST_MATCHES, &matches,
-                         FAMILYLIST_NEXT, &f_list, NULL);
+                         FAMILYLIST_NEXT,    f_list.as_result_param(),
+                         NULL);
                 if (strcmp(seq_name, sequence->name()) == 0)
                     free(seq_name);
             } while (strcmp(seq_name, sequence->name()) == 0);
@@ -261,12 +266,13 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
             extension_list->append_end(pt_member);
             number++;
             do {
-                if (f_list == 0)
+                if (!f_list.exists())
                     ali_error("Family too small in PT Server");
                 aisc_get(link, PT_FAMILYLIST, f_list,
-                         FAMILYLIST_NAME, &seq_name,
+                         FAMILYLIST_NAME,    &seq_name,
                          FAMILYLIST_MATCHES, &matches,
-                         FAMILYLIST_NEXT, &f_list, NULL);
+                         FAMILYLIST_NEXT,    f_list.as_result_param(),
+                         NULL);
                 if (strcmp(seq_name, sequence->name()) == 0)
                     free(seq_name);
             } while (strcmp(seq_name, sequence->name()) == 0);

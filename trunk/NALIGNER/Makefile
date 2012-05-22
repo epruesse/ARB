@@ -87,6 +87,7 @@ ali_arbdb.o: ali_sequence.hxx
 ali_arbdb.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
+ali_arbdb.o: $(ARBHOME)/INCLUDE/aisc_global.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arb_core.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -97,6 +98,7 @@ ali_arbdb.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arbtools.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/attributes.h
+ali_arbdb.o: $(ARBHOME)/INCLUDE/bytestring.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/dupstr.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/server.h

@@ -893,7 +893,7 @@ int MP_init_local_com_struct()
     const char *user = GB_getenvUSER();
 
     if (aisc_create(mp_pd_gl.link, PT_MAIN, mp_pd_gl.com,
-                    MAIN_LOCS, PT_LOCS, &mp_pd_gl.locs,
+                    MAIN_LOCS, PT_LOCS, mp_pd_gl.locs,
                     LOCS_USER, user,
                     NULL)) {
         return 1;

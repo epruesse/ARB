@@ -139,7 +139,7 @@ private:
     {
         if (!link) return 1;    //!* create and init local com structure **
         if (aisc_create(link, AN_MAIN, com,
-                        MAIN_LOCAL, AN_LOCAL, &locs,
+                        MAIN_LOCAL, AN_LOCAL, locs,
                         LOCAL_WHOAMI, "i bin der arb_tree",
                         NULL)) {
             return 1;
@@ -188,8 +188,8 @@ public:
 
     NameServerConnection() {
         link       = 0;
-        locs       = 0;
-        com        = 0;
+        locs.clear();
+        com.clear();
         persistent = 0;
     }
     virtual ~NameServerConnection() {
@@ -211,7 +211,7 @@ public:
                 const char *ipport = GBS_read_arb_tcp(server_id);
                 if (!ipport) err = GB_await_error();
                 else {
-                    link     = aisc_open(ipport, &com, AISC_MAGIC_NUMBER);
+                    link     = aisc_open(ipport, com, AISC_MAGIC_NUMBER);
                     linktime = time(0);
 
                     if (init_local_com_names()) {
@@ -260,7 +260,7 @@ public:
     void disconnect() {
         if (persistent == 0) {
             if (link) {
-                aisc_close(link);
+                aisc_close(link, com);
             }
             link = 0;
         }
@@ -281,7 +281,7 @@ public:
 
 
     aisc_com *getLink() { return link; }
-    T_AN_LOCAL getLocs() { return locs; }
+    const T_AN_LOCAL& getLocs() const { return locs; } 
 };
 
 static NameServerConnection name_server;

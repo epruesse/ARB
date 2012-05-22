@@ -346,7 +346,7 @@ static const char *aisc_client_open_socket(const char *path, int delay, int do_c
     }
 }
 
-static void *aisc_init_client(aisc_com *link)
+static long aisc_init_client(aisc_com *link) 
 {
     int len, mes_cnt;
     mes_cnt = 2;
@@ -359,7 +359,7 @@ static void *aisc_init_client(aisc_com *link)
         return 0;
     }
     aisc_check_error(link);
-    return (void *)(link->aisc_mes_buffer[0]);
+    return link->aisc_mes_buffer[0];
 }
 
 static void ignore_sigpipe(int) {
@@ -372,9 +372,11 @@ static void aisc_free_link(aisc_com *link) {
     free(link);
 }
 
-aisc_com *aisc_open(const char *path, long *mgr, long magic) {
-    aisc_com *link;
+aisc_com *aisc_open(const char *path, AISC_Object& main_obj, long magic) {
+    aisc_com   *link;
     const char *err;
+
+    aisc_assert(!main_obj.exists()); // already initialized
 
     link = (aisc_com *) calloc(sizeof(aisc_com), 1);
     link->aisc_client_bytes_first = link->aisc_client_bytes_last = NULL;
@@ -399,9 +401,8 @@ aisc_com *aisc_open(const char *path, long *mgr, long magic) {
 
     link->old_sigpipe_handler = INSTALL_SIGHANDLER(SIGPIPE, ignore_sigpipe, "aisc_open");
 
-    *mgr = 0;
-    *mgr = (long)aisc_init_client(link);
-    if (!*mgr || link->error) {
+    main_obj.init(aisc_init_client(link));
+    if (!main_obj.exists() || link->error) {
         aisc_free_link(link);
         return 0;
     }
@@ -409,7 +410,7 @@ aisc_com *aisc_open(const char *path, long *mgr, long magic) {
     return link;
 }
 
-int aisc_close(aisc_com *link) {
+int aisc_close(aisc_com *link, AISC_Object& object) {
     if (link) {
         if (link->socket) {
             link->aisc_mes_buffer[0] = 0;
@@ -422,10 +423,11 @@ int aisc_close(aisc_com *link) {
         }
         aisc_free_link(link);
     }
+    object.clear();
     return 0;
 }
 
-int aisc_get(aisc_com *link, int o_type, long object, ...)
+int aisc_get(aisc_com *link, int o_type, const AISC_Object& object, ...)
 {
     // goes to header: __ATTR__SENTINEL
     long    *arg_pntr[MAX_AISC_SET_GET];
@@ -443,9 +445,12 @@ int aisc_get(aisc_com *link, int o_type, long object, ...)
 
     mes_cnt = 2;
     arg_cnt = 0;
-    count = 4;
+    count   = 4;
+
+    link->aisc_mes_buffer[mes_cnt++] = object.get();
+    aisc_assert(object.type() == o_type);
+
     va_start(parg, object);
-    link->aisc_mes_buffer[mes_cnt++] = object;
     while ((code=va_arg(parg, long))) {
         attribute       = code & AISC_ATTR_MASK;
         type            = code & AISC_VAR_TYPE_MASK;
@@ -541,7 +546,7 @@ int aisc_get(aisc_com *link, int o_type, long object, ...)
     return 0;
 }
 
-long *aisc_debug_info(aisc_com *link, int o_type, long object, int attribute)
+long *aisc_debug_info(aisc_com *link, int o_type, const AISC_Object& object, int attribute)
 {
     int mes_cnt;
     int o_t;
@@ -562,7 +567,8 @@ long *aisc_debug_info(aisc_com *link, int o_type, long object, int attribute)
         CORE();
         return 0;
     };
-    link->aisc_mes_buffer[mes_cnt++] = object;
+    aisc_assert(object.type() == o_type);
+    link->aisc_mes_buffer[mes_cnt++] = object.get();
     link->aisc_mes_buffer[mes_cnt++] = attribute;
     link->aisc_mes_buffer[0] = mes_cnt - 2;
     link->aisc_mes_buffer[1] = AISC_DEBUG_INFO+link->magic;
@@ -697,9 +703,14 @@ static int aisc_collect_sets(aisc_com *link, int mes_cnt, va_list parg, int o_ty
     return mes_cnt;
 }
 
-int aisc_put(aisc_com *link, int o_type, long object, ...) { // goes to header: __ATTR__SENTINEL
+ // @@@ DRY aisc_put vs aisc_nput
+ // @@@ the difference between aisc_put and aisc_nput is: aisc_put may return an error from server
+
+int aisc_put(aisc_com *link, int o_type, const AISC_Object& object, ...) { // goes to header: __ATTR__SENTINEL
+    aisc_assert(object.type() == o_type);
+
     int mes_cnt = 2;
-    link->aisc_mes_buffer[mes_cnt++] = object;
+    link->aisc_mes_buffer[mes_cnt++] = object.get();
     link->aisc_mes_buffer[mes_cnt++] = o_type;
 
     va_list parg;
@@ -721,9 +732,11 @@ int aisc_put(aisc_com *link, int o_type, long object, ...) { // goes to header: 
     return 0;
 }
 
-int aisc_nput(aisc_com *link, int o_type, long object, ...) { // goes to header: __ATTR__SENTINEL
+int aisc_nput(aisc_com *link, int o_type, const AISC_Object& object, ...) { // goes to header: __ATTR__SENTINEL
+    aisc_assert(object.type() == o_type);
+    
     int mes_cnt = 2;
-    link->aisc_mes_buffer[mes_cnt++] = object;
+    link->aisc_mes_buffer[mes_cnt++] = object.get();
     link->aisc_mes_buffer[mes_cnt++] = o_type;
 
     va_list parg;
@@ -748,15 +761,14 @@ int aisc_nput(aisc_com *link, int o_type, long object, ...) { // goes to header:
     return 0;
 }
 
-int aisc_create(aisc_com *link, int father_type, long father,
-                int attribute,  int object_type, long *object, ...)
+int aisc_create(aisc_com *link, int father_type, const AISC_Object& father,
+                int attribute,  int object_type, AISC_Object& object, ...)
 {
     // goes to header: __ATTR__SENTINEL
     // arguments in '...' set elements of CREATED object (not of father)
     int mes_cnt;
     int len;
     va_list parg;
-    *object = 0;
     mes_cnt = 2;
     if ((father_type&0xff00ffff)) {
         link->error = "FATHER_TYPE UNKNOWN";
@@ -770,8 +782,10 @@ int aisc_create(aisc_com *link, int father_type, long father,
         CORE();
         return 1;
     }
+    aisc_assert(father.type() == father_type);
+    aisc_assert(object.type() == object_type);
     link->aisc_mes_buffer[mes_cnt++] = father_type;
-    link->aisc_mes_buffer[mes_cnt++] = father;
+    link->aisc_mes_buffer[mes_cnt++] = father.get();
     link->aisc_mes_buffer[mes_cnt++] = attribute;
     link->aisc_mes_buffer[mes_cnt++] = object_type;
     if (father_type != (attribute & AISC_OBJ_TYPE_MASK)) {
@@ -792,7 +806,7 @@ int aisc_create(aisc_com *link, int father_type, long father,
     }
     if (aisc_c_send_bytes_queue(link)) return 1;
     if (aisc_check_error(link)) return 1;
-    *object = link->aisc_mes_buffer[0];
+    object.init(link->aisc_mes_buffer[0]);
     return 0;
 }
 

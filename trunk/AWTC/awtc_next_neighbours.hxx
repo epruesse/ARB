@@ -24,7 +24,6 @@
 #include <pos_range.h>
 #endif
 
-
 #define ff_assert(bed) arb_assert(bed)
 
 class FamilyList : virtual Noncopyable {
@@ -94,9 +93,7 @@ class PT_FamilyFinder : public FamilyFinder { // derived from a Noncopyable
     int     mismatches;
     bool    fast_flag;
 
-    aisc_com *link;
-    long      com;
-    long      locs;
+    struct PT_FF_comImpl *ci;
 
     GB_ERROR init_communication();
     GB_ERROR open(const char *servername);

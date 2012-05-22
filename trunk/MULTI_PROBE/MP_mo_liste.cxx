@@ -55,7 +55,7 @@ void MO_Liste::get_all_species() {
         return;
     }
 
-    mp_pd_gl.link = aisc_open(servername, &mp_pd_gl.com, AISC_MAGIC_NUMBER);
+    mp_pd_gl.link = aisc_open(servername, mp_pd_gl.com, AISC_MAGIC_NUMBER);
     servername = 0;
 
     if (!mp_pd_gl.link) {
@@ -64,6 +64,7 @@ void MO_Liste::get_all_species() {
     }
     if (MP_init_local_com_struct()) {
         aw_message ("Cannot contact Probe bank server (2)");
+        // @@@ missing aisc_close
         return;
     }
 
@@ -72,6 +73,7 @@ void MO_Liste::get_all_species() {
     {
         free(probe);
         aw_message ("Connection to PT_SERVER lost (4)");
+        // @@@ missing aisc_close
         return;
     }
 
@@ -117,6 +119,7 @@ void MO_Liste::get_all_species() {
             if (!GBT_find_species(gb_main, match_name))
             {                               // Testen, ob Bakterium auch im Baum existiert, um
                 pt_server_different = true;
+                // @@@ missing aisc_close
                 return;
             }
             put_entry(match_name);
@@ -128,7 +131,7 @@ void MO_Liste::get_all_species() {
         aw_message("DB-query produced no species.\n");
 
 
-    aisc_close(mp_pd_gl.link);
+    aisc_close(mp_pd_gl.link, mp_pd_gl.com);
     free(bs.data);
 
     delete match_name;
