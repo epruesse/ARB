@@ -174,30 +174,25 @@ private:
 };
 
 struct probe_statistic_struct {
+    // common
+    int cut_offs;                                   // statistic of chains
+    int single_node;
+    int short_node;
+    int long_node;
+    int longs;
+    int shorts;
+    int shorts2;
+    int chars;
+
 #ifdef ARB_64
-    int  cut_offs;                                  // statistic of chains
-    int  single_node;
-    int  short_node;
+    // 64bit specials
     int  int_node;
-    int  long_node;
-    int  longs;
     int  ints;
     int  ints2;
-    int  shorts;
-    int  shorts2;
-    int  chars;
     long maxdiff;
-#else
-    int  cut_offs;                                  // statistic of chains
-    int  single_node;
-    int  short_node;
-    int  long_node;
-    int  longs;
-    int  shorts;
-    int  shorts2;
-    int  chars;
 #endif
 
+    void setup();
 };
 
 class BI_ecoli_ref;
@@ -285,6 +280,9 @@ extern struct probe_struct_global {
 
     probe_statistic_struct stat;
 
+    void setup();
+    void cleanup();
+    
 } psg;
 
 class gene_struct {
