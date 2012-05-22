@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <aisc.h>
-#include <attributes.h>
 #include <server.h>
 #include "aisc_extern_privat.h"
 

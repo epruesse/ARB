@@ -1202,12 +1202,12 @@ int ARB_main(int argc, const char *argv[]) {
         name = strdup(cname);
     }
 
-    AN_global.cl_link = aisc_open(name, &AN_global.cl_main, AISC_MAGIC_NUMBER);
+    AN_global.cl_link = aisc_open(name, AN_global.cl_main, AISC_MAGIC_NUMBER);
 
     if (AN_global.cl_link) {
         if (!strcmp(argv[1], "-look")) {
             printf("ARB_name_server: No client - terminating.\n");
-            aisc_close(AN_global.cl_link); AN_global.cl_link = 0;
+            aisc_close(AN_global.cl_link, AN_global.cl_main); AN_global.cl_link = 0;
             exit(0);
         }
 
@@ -1215,7 +1215,7 @@ int ARB_main(int argc, const char *argv[]) {
         aisc_nput(AN_global.cl_link, AN_MAIN, AN_global.cl_main,
                   MAIN_SHUTDOWN, "ldfiojkherjkh",
                   NULL);
-        aisc_close(AN_global.cl_link); AN_global.cl_link=0;
+        aisc_close(AN_global.cl_link, AN_global.cl_main); AN_global.cl_link=0;
         sleep(1);
     }
     if (((strcmp(argv[1], "-kill")==0)) ||

@@ -107,7 +107,7 @@ void probe_struct_global::setup() {
     server_name = NULL;
     link        = NULL;
 
-    main = 0;
+    main.clear();
     
     com_so = NULL;
     pt     = NULL;
@@ -502,7 +502,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR run_command(const char *exename, 
             }
         }
         else {
-            psg.link = aisc_open(socket_name, &psg.main, AISC_MAGIC_NUMBER);
+            psg.link = aisc_open(socket_name, psg.main, AISC_MAGIC_NUMBER);
 
             bool running = psg.link;
             bool kill    = false;
@@ -516,14 +516,14 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR run_command(const char *exename, 
             if (!error) {
                 if (kill) {
                     pt_assert(running);
-                    fputs("There is another activ server. Sending shutdown message..\n", stderr);
+                    fputs("There is another active server. Sending shutdown message..\n", stderr);
                     if (aisc_nput(psg.link, PT_MAIN, psg.main, MAIN_SHUTDOWN, "47@#34543df43%&3667gh", NULL)) {
                         fprintf(stderr,
                                 "%s: Warning: Problem connecting to the running %s\n"
                                 "             You might need to kill it manually to ensure proper operation\n",
                                 exename, exename);
                     }
-                    aisc_close(psg.link);
+                    aisc_close(psg.link, psg.main);
                     psg.link = 0;
                 }
 

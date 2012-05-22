@@ -51,21 +51,27 @@ struct Params {
 
 
 struct gl_struct {
-    aisc_com *link;
-    T_PT_LOCS locs;
-    T_PT_MAIN com;
-    int pd_design_id;
+    aisc_com  *link;
+    T_PT_MAIN  com;
+    T_PT_LOCS  locs;
+    int        pd_design_id;
+
+    gl_struct()
+        : link(0),
+          pd_design_id(0)
+    {
+    }
+
 };
 
 static Params    P;
 static gl_struct pd_gl;
 
-static int init_local_com_struct()
-{
+static int init_local_com_struct() {
     const char *user = GB_getenvUSER();
 
     if (aisc_create(pd_gl.link, PT_MAIN, pd_gl.com,
-                    MAIN_LOCS, PT_LOCS, &pd_gl.locs,
+                    MAIN_LOCS, PT_LOCS, pd_gl.locs,
                     LOCS_USER, user,
                     NULL)) {
         return 1;
@@ -96,7 +102,7 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
         const char *servername = AP_probe_pt_look_for_server(error);
         if (!servername) return NULL;
 
-        pd_gl.link = aisc_open(servername, &pd_gl.com, AISC_MAGIC_NUMBER);
+        pd_gl.link = aisc_open(servername, pd_gl.com, AISC_MAGIC_NUMBER);
     }
 
     if (!pd_gl.link) {
@@ -112,7 +118,7 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
     bs.size = strlen(bs.data)+1;
 
     if (aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs,
-                    LOCS_PROBE_DESIGN_CONFIG, PT_PDC, &pdc,
+                    LOCS_PROBE_DESIGN_CONFIG, PT_PDC, pdc,
                     PDC_PROBELENGTH,  (long)P.DESIGNPROBELENGTH,
                     PDC_MINTEMP,      (double)P.MINTEMP,
                     PDC_MAXTEMP,      (double)P.MAXTEMP,
@@ -137,7 +143,7 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
         bs_seq.data = (char*)s->sequence;
         bs_seq.size = strlen(bs_seq.data)+1;
         aisc_create(pd_gl.link, PT_PDC, pdc,
-                    PDC_SEQUENCE, PT_SEQUENCE, &pts,
+                    PDC_SEQUENCE, PT_SEQUENCE, pts,
                     SEQUENCE_SEQUENCE, &bs_seq,
                     NULL);
     }
@@ -162,13 +168,13 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
     }
 
     aisc_get(pd_gl.link, PT_PDC, pdc,
-             PDC_TPROBE, &tprobe,
+             PDC_TPROBE, tprobe.as_result_param(),
              NULL);
 
 
     GBS_strstruct *outstr = GBS_stropen(1000);
 
-    if (tprobe) {
+    if (tprobe.exists()) {
         aisc_get(pd_gl.link, PT_TPROBE, tprobe,
                  TPROBE_INFO_HEADER,   &match_info,
                  NULL);
@@ -178,17 +184,17 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
     }
 
 
-    while (tprobe) {
+    while (tprobe.exists()) {
         if (aisc_get(pd_gl.link, PT_TPROBE, tprobe,
-                     TPROBE_NEXT,      &tprobe,
-                     TPROBE_INFO,      &match_info,
+                     TPROBE_NEXT, tprobe.as_result_param(),
+                     TPROBE_INFO, &match_info,
                      NULL)) break;
         GBS_strcat(outstr, match_info);
         GBS_chrcat(outstr, '\n');
         free(match_info);
     }
 
-    aisc_close(pd_gl.link); pd_gl.link = 0;
+    aisc_close(pd_gl.link, pd_gl.com); pd_gl.link = 0;
 
     return GBS_strclose(outstr);
 }
@@ -201,7 +207,7 @@ static char *AP_probe_match_event(ARB_ERROR& error) {
         const char *servername = AP_probe_pt_look_for_server(error);
         if (!servername) return NULL;
 
-        pd_gl.link = aisc_open(servername, &pd_gl.com, AISC_MAGIC_NUMBER);
+        pd_gl.link = aisc_open(servername, pd_gl.com, AISC_MAGIC_NUMBER);
     }
 
     if (!pd_gl.link) {
@@ -235,15 +241,15 @@ static char *AP_probe_match_event(ARB_ERROR& error) {
     {
         char *locs_error;
         aisc_get(pd_gl.link, PT_LOCS, pd_gl.locs,
-                 LOCS_MATCH_LIST,      &match_list,
-                 LOCS_MATCH_LIST_CNT,  &match_list_cnt,
-                 LOCS_MATCH_STRING,    &bs,
-                 LOCS_ERROR,           &locs_error,
+                 LOCS_MATCH_LIST,     match_list.as_result_param(),
+                 LOCS_MATCH_LIST_CNT, &match_list_cnt,
+                 LOCS_MATCH_STRING,   &bs,
+                 LOCS_ERROR,          &locs_error,
                  NULL);
         if (*locs_error) error = locs_error;
         free(locs_error);
     }
-    aisc_close(pd_gl.link);
+    aisc_close(pd_gl.link, pd_gl.com); pd_gl.link = 0;
 
     return bs.data; // freed by caller
 }
@@ -422,6 +428,7 @@ static char *execute(ARB_ERROR& error) {
     else {
         answer = AP_probe_match_event(error);
     }
+    pd_gl.locs.clear();
     return answer;
 }
 
@@ -887,13 +894,13 @@ void TEST_SLOW_variable_defaults_in_server() {
     const char *servername = GBS_read_arb_tcp(server_tag);;
     TEST_ASSERT_EQUAL(servername, "localhost:3200"); // as defined in ../lib/arb_tcp.dat@ARB_TEST_PT_SERVER
 
-    long com;
-    long locs;
-    aisc_com *link = aisc_open(servername, &com, AISC_MAGIC_NUMBER);
+    T_PT_MAIN com;
+    T_PT_LOCS locs;
+    aisc_com *link = aisc_open(servername, com, AISC_MAGIC_NUMBER);
     TEST_ASSERT(link);
 
     TEST_ASSERT_ZERO(aisc_create(link, PT_MAIN, com,
-                                 MAIN_LOCS, PT_LOCS, &locs,
+                                 MAIN_LOCS, PT_LOCS, locs,
                                  NULL));
 
     {
@@ -933,7 +940,8 @@ void TEST_SLOW_variable_defaults_in_server() {
         TEST_DEFAULT_CHANGE(ccharp, charp, LOCS_LOGINTIME, "notime", "sometime");
     }
 
-    TEST_ASSERT_ZERO(aisc_close(link));
+    TEST_ASSERT_ZERO(aisc_close(link, com));
+    link = 0;
 }
 
 #endif

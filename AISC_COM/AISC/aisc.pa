@@ -186,7 +186,9 @@ P #define AISC_GEN_SERVER_INCLUDED
 P typedef char       *aisc_string;
 P typedef const char *aisc_cstring;
 --
+P #ifndef AISC_GLOBAL_H
 P #include <aisc_global.h>
+P #endif
 P $(INCLUDE_INCLUDES)
 --
 CALL constants

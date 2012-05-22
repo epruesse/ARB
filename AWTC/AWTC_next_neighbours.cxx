@@ -20,6 +20,19 @@
 
 #include <climits>
 
+struct PT_FF_comImpl {
+    aisc_com  *link;
+    T_PT_MAIN  com;
+    T_PT_LOCS  locs;
+
+    PT_FF_comImpl()
+        : link(NULL)
+    {
+        ff_assert(!com.exists());
+        ff_assert(!locs.exists());
+    }
+};
+
 // -------------------
 //      FamilyList
 
@@ -101,29 +114,29 @@ PT_FamilyFinder::PT_FamilyFinder(GBDATA *gb_main_, int server_id_, int oligo_len
       server_id(server_id_),
       oligo_len(oligo_len_),
       mismatches(mismatches_),
-      fast_flag(fast_flag_),
-      link(NULL),
-      com(0),
-      locs(0)
+      fast_flag(fast_flag_)
 {
     // 'mismatches'  = the number of allowed mismatches
     // 'fast_flag'   = 0 -> do complete search, 1 -> search only oligos starting with 'A'
     // 'rel_matches' = 0 -> score is number of oligo-hits, 1 -> score is relative to longer sequence (target or source) * 10
+
+    ci = new PT_FF_comImpl;
 }
 
 PT_FamilyFinder::~PT_FamilyFinder() {
     delete_family_list();
     close();
+    delete ci;
 }
 
 GB_ERROR PT_FamilyFinder::init_communication() {
     const char *user = "PT_FamilyFinder";
 
-    ff_assert(!locs);
+    ff_assert(!ci->locs.exists());
     
     // connect PT server
-    if (aisc_create(link, PT_MAIN, com,
-                    MAIN_LOCS, PT_LOCS, &locs,
+    if (aisc_create(ci->link, PT_MAIN, ci->com,
+                    MAIN_LOCS, PT_LOCS, ci->locs,
                     LOCS_USER, user,
                     NULL)) {
         return GB_export_error("Cannot initialize communication");
@@ -135,7 +148,7 @@ GB_ERROR PT_FamilyFinder::init_communication() {
 GB_ERROR PT_FamilyFinder::open(const char *servername) {
     GB_ERROR error = 0;
     
-    ff_assert(!com && !link);
+    ff_assert(!ci->com.exists() && !ci->link);
 
     if (arb_look_and_start_server(AISC_MAGIC_NUMBER, servername)) {
         error = "Cannot contact PT  server";
@@ -144,22 +157,22 @@ GB_ERROR PT_FamilyFinder::open(const char *servername) {
         const char *socketid = GBS_read_arb_tcp(servername);
         if (!socketid) error = GB_await_error();
         else {
-            link = aisc_open(socketid, &com, AISC_MAGIC_NUMBER);
-            if (!link) error = "Cannot contact PT server [1]";
+            ci->link = aisc_open(socketid, ci->com, AISC_MAGIC_NUMBER);
+            if (!ci->link) error = "Cannot contact PT server [1]";
             else if (init_communication()) error = "Cannot contact PT server [2]";
         }
     }
 
-    ff_assert(error || (com && link));
+    ff_assert(error || (ci->com.exists() && ci->link));
     
     return error;
 }
 
 void PT_FamilyFinder::close() {
-    if (link) aisc_close(link);
-    link = 0;
-    com  = 0;
-    locs = 0;
+    if (ci->link) aisc_close(ci->link, ci->com);
+    ci->link = 0;
+    ff_assert(!ci->com.exists());
+    ci->locs.clear();
 }
 
 GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement compl_mode, int max_results, double min_score) {
@@ -185,8 +198,8 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
          
         // create and init family finder object
         T_PT_FAMILYFINDER ffinder;
-        if (aisc_create(link, PT_LOCS, locs,
-                        LOCS_FFINDER, PT_FAMILYFINDER, &ffinder,
+        if (aisc_create(ci->link, PT_LOCS, ci->locs,
+                        LOCS_FFINDER, PT_FAMILYFINDER, ffinder,
                         FAMILYFINDER_PROBE_LEN,       long(oligo_len),          // oligo length (12 hardcoded till July 2008)
                         FAMILYFINDER_MISMATCH_NUMBER, long(mismatches),         // number of mismatches (0 hardcoded till July 2008)
                         FAMILYFINDER_FIND_TYPE,       long(fast_flag),          // 0: complete search, 1: quick search (only search oligos starting with 'A')
@@ -207,8 +220,8 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
 
             // Read family list
             T_PT_FAMILYLIST f_list;
-            aisc_get(link, PT_FAMILYFINDER, ffinder,
-                     FAMILYFINDER_FAMILY_LIST,      &f_list,
+            aisc_get(ci->link, PT_FAMILYFINDER, ffinder,
+                     FAMILYFINDER_FAMILY_LIST,      f_list.as_result_param(),
                      FAMILYFINDER_FAMILY_LIST_SIZE, &real_hits,
                      FAMILYFINDER_ERROR,            &ff_error,
                      NULL);
@@ -221,7 +234,7 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
                 if (max_results<1) max_results = INT_MAX;
 
                 FamilyList *tail = NULL;
-                while (f_list) {
+                while (f_list.exists()) {
                     if (max_results == 0) {
                         hits_truncated = true;
                         break;
@@ -234,11 +247,11 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
                     tail                              = fl;
                     fl->next                          = NULL;
 
-                    aisc_get(link, PT_FAMILYLIST, f_list,
+                    aisc_get(ci->link, PT_FAMILYLIST, f_list,
                              FAMILYLIST_NAME,        &fl->name,
                              FAMILYLIST_MATCHES,     &fl->matches,
                              FAMILYLIST_REL_MATCHES, &fl->rel_matches,
-                             FAMILYLIST_NEXT,        &f_list,
+                             FAMILYLIST_NEXT,        f_list.as_result_param(),
                              NULL);
                 }
             }
