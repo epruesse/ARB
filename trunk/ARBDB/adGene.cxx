@@ -374,13 +374,13 @@ GB_ERROR GEN_write_position(GBDATA *gb_gene, const GEN_position *pos) {
             }
             else {
                 if (pos->start_pos[p]>pos->stop_pos[p]) {
-                    error = GBS_global_string("Illegal positions (%li>%li)", pos->start_pos[p], pos->stop_pos[p]);
+                    error = GBS_global_string("Illegal positions (%zu>%zu)", pos->start_pos[p], pos->stop_pos[p]);
                 }
                 else if (pos->start_pos[p] == 0) {
-                    error = GBS_global_string("Illegal start position %li", pos->start_pos[p]);
+                    error = GBS_global_string("Illegal start position %zu", pos->start_pos[p]);
                 }
                 else if (pos->stop_pos[p] > length) {
-                    error = GBS_global_string("Illegal stop position %li (>length(=%li))", pos->stop_pos[p], length);
+                    error = GBS_global_string("Illegal stop position %zu (>length(=%zu))", pos->stop_pos[p], length);
                 }
                 else {
                     if (pos->start_uncertain) {
@@ -393,7 +393,7 @@ GB_ERROR GEN_write_position(GBDATA *gb_gene, const GEN_position *pos) {
                             if (c == '+' || c2 == '-') {
                                 if (c == '+' && c2 == '-') {
                                     if (pos->start_pos[p] != pos->stop_pos[p]-1) {
-                                        error = GBS_global_string("Invalid positions %li^%li for uncertainties +-", pos->start_pos[p], pos->stop_pos[p]);
+                                        error = GBS_global_string("Invalid positions %zu^%zu for uncertainties +-", pos->start_pos[p], pos->stop_pos[p]);
                                     }
                                 }
                                 else {
