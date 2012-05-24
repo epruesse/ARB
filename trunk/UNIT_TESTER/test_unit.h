@@ -677,6 +677,8 @@ namespace arb_test {
         template <typename U> inline match_expectation lessThan_expectation(bool invert, const U& other, const char *code) const;
         template <typename U> inline match_expectation moreThan_expectation(bool invert, const U& other, const char *code) const;
         
+        inline match_expectation null_expectation(bool wantNULL) const;
+
         template <typename FUNC> inline match_expectation predicate_expectation(bool wanted, predicate<FUNC> pred, matchable_value<T> arg) const;
         template <typename U, typename FUNC> inline match_expectation predicate_expectation(bool wanted, FUNC pred, const char *pred_code, const U& arg, const char *arg_code) const;
     };
@@ -703,7 +705,11 @@ namespace arb_test {
     inline match_expectation matchable_value<T>::moreThan_expectation(bool wanted, const U& other, const char *code_) const {
         return predicate_expectation(wanted, make_predicate(more<T>, "more than", "less or equal"), make_matchable_value<T,U>(other, code_));
     }
-    
+    template <typename T>
+    inline match_expectation matchable_value<T>::null_expectation(bool wantNULL) const {
+        return equals_expectation(wantNULL, (T)NULL, "NULL");
+    }
+
     template <typename T>
     class value_matcher : public matcher //! matcher for values
     {
@@ -1027,8 +1033,11 @@ namespace arb_test {
 #define MATCHABLE_ARGS_UNTYPED(val) val, #val
 #define MATCHABLE_ARGS_TYPED(val)   make_copy(val), #val
 
-#define is_equal_to(val)  equals_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
+#define is_equal_to(val)      equals_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
 #define does_differ_from(val) equals_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
+
+#define is_equal_to_NULL()      null_expectation(true)
+#define does_differ_from_NULL() null_expectation(false)
 
 #define less_than(val) lessThan_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
 #define more_than(val) moreThan_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
@@ -1103,9 +1112,9 @@ namespace arb_test {
 // --------------------------------------------------------------------------------
 
 namespace arb_test {
-    inline match_expectation reports_error(const char *error) { return that(error).does_differ_from(NULL); }
-    inline match_expectation doesnt_report_error(const char *error) { return that(error).is_equal_to(NULL); }
-    inline match_expectation reported_error_contains(const char *error, const char *part) { return error ? that(error).does_contain(part) : that(error).does_differ_from(NULL); }
+    inline match_expectation reports_error(const char *error) { return that(error).does_differ_from_NULL(); }
+    inline match_expectation doesnt_report_error(const char *error) { return that(error).is_equal_to_NULL(); }
+    inline match_expectation reported_error_contains(const char *error, const char *part) { return error ? that(error).does_contain(part) : that(error).does_differ_from_NULL(); }
 };
 
 #define TEST_ASSERT_ERROR_CONTAINS(call,part)         TEST_EXPECT        (reported_error_contains(call, part))
@@ -1119,7 +1128,7 @@ namespace arb_test {
 
 namespace arb_test {
     inline GB_ERROR get_exported_error() { return GB_have_error() ? GB_await_error() : NULL; }
-    inline match_expectation no_forgotten_error_exported() { return that(get_exported_error()).is_equal_to(NULL); }
+    inline match_expectation no_forgotten_error_exported() { return that(get_exported_error()).is_equal_to_NULL(); }
 
     class calling {
         bool     result;
@@ -1133,8 +1142,8 @@ namespace arb_test {
         // functions below try to make failing expectations more readable
         match_expectation returns_result() const { return that(result).is_equal_to(true); }
         match_expectation doesnt_return_result() const { return that(result).is_equal_to(false); }
-        match_expectation exports_error() const { return that(error).does_differ_from(NULL); }
-        match_expectation doesnt_export_error() const { return that(error).is_equal_to(NULL); }
+        match_expectation exports_error() const { return that(error).does_differ_from_NULL(); }
+        match_expectation doesnt_export_error() const { return that(error).is_equal_to_NULL(); }
         match_expectation exports_error_containing(const char *expected_part) const {
             return error ? that(error).does_contain(expected_part) : exports_error();
         }

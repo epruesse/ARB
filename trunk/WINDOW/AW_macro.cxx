@@ -248,17 +248,18 @@ void RecordingMacro::post_process() {
     } while(0)
 
 void TEST_parse() {
-    TEST_PARSE_QUOTED_STRING("", NULL, "");
+    const char *null = NULL;
+    TEST_PARSE_QUOTED_STRING("", null, "");
     TEST_PARSE_QUOTED_STRING("\"str\"", "str", "");
     TEST_PARSE_QUOTED_STRING("\"part\", rest", "part", ", rest");
     TEST_PARSE_QUOTED_STRING("\"\"", "", "");
     TEST_PARSE_QUOTED_STRING("\"\"rest", "", "rest");
-    TEST_PARSE_QUOTED_STRING("\"unmatched", NULL, "\"unmatched");
+    TEST_PARSE_QUOTED_STRING("\"unmatched", null, "\"unmatched");
 
-    TEST_MODIFIES_AWAR("# BIO::remote_awar($gb_main,\"app\", \"awar_name\", \"value\");", NULL, NULL, NULL);
+    TEST_MODIFIES_AWAR("# BIO::remote_awar($gb_main,\"app\", \"awar_name\", \"value\");", null, null, NULL);
     TEST_MODIFIES_AWAR("BIO::remote_awar($gb_main,\"app\", \"awar_name\", \"value\");", "app", "awar_name", NULL);
     TEST_MODIFIES_AWAR("BIO::remote_awar($gb_main,\"app\", \"awar_name\", \"value\");", "app", "awar_name", strdup("app"));
-    TEST_MODIFIES_AWAR("BIO::remote_awar($gb_main,\"app\", \"awar_name\", \"value\");", "diff", NULL, strdup("diff"));
+    TEST_MODIFIES_AWAR("BIO::remote_awar($gb_main,\"app\", \"awar_name\", \"value\");", "diff", null, strdup("diff"));
 
     TEST_MODIFIES_AWAR("   \t BIO::remote_awar($gb_main,\"app\", \"awar_name\", \"value\");", "app", "awar_name", NULL);
 }

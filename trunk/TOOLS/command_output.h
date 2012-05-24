@@ -86,14 +86,14 @@ public:
 
     arb_test::match_expectation Equals(const char *expected_std, const char *expected_err) {
         using namespace arb_test;
-        expectation_group expected(that(error).is_equal_to(NULL));
+        expectation_group expected(that(error).is_equal_to_NULL());
         if (expected_std) expected.add(that(stdoutput).is_equal_to(expected_std));
         if (expected_err) expected.add(that(stderrput).is_equal_to(expected_err));
         return all().ofgroup(expected);
     }
     arb_test::match_expectation Contains(const char *expected_std, const char *expected_err) {
         using namespace arb_test;
-        expectation_group expected(that(error).is_equal_to(NULL));
+        expectation_group expected(that(error).is_equal_to_NULL());
         if (expected_std) expected.add(that(stdoutput).does_contain(expected_std));
         if (expected_err) expected.add(that(stderrput).does_contain(expected_err));
         return all().ofgroup(expected);
@@ -103,7 +103,7 @@ public:
         uint32_t cse      = GBS_checksum(stderrput, false, "");
         uint32_t checksum = css^cse;
         using namespace arb_test;
-        return all().of(that(error).is_equal_to(NULL),
+        return all().of(that(error).is_equal_to_NULL(),
                         that(checksum).is_equal_to(expected_checksum));
     }
 };
