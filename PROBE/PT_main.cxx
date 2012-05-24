@@ -232,7 +232,7 @@ inline bool copy_to_buf(const char *start, const char *behindEnd, int MAXLEN, ch
     return true;
 }
 
-STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR parse_names_into_gene_struct(const char *map_str, gene_struct_list& listOfGenes)) {
+__ATTR__USERESULT static ARB_ERROR parse_names_into_gene_struct(const char *map_str, gene_struct_list& listOfGenes) {
 #define MAX_INAME_LEN 30
 #define MAX_ONAME_LEN 30
 #define MAX_GNAME_LEN 1024
@@ -330,7 +330,7 @@ static void initGlobals() {
 #endif // DEBUG
 }
 
-STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR start_pt_server(const char *socket_name, const char *arbdb_name, const char *pt_name, const char *exename)) {
+__ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, const char *arbdb_name, const char *pt_name, const char *exename) {
     ARB_ERROR error;
 
     fputs("\n"
@@ -426,7 +426,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR start_pt_server(const char *socke
     return error;
 }
 
-STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR run_command(const char *exename, const char *command, const arb_params *params)) {
+__ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *command, const arb_params *params) {
     ARB_ERROR error;
 
     // check that arb_pt_server knows its socket

@@ -49,7 +49,7 @@
         } }
 
 
-STATIC_ATTRIBUTED(__ATTR__USERESULT, GB_ERROR gb_check_huffmann_tree(gb_compress_tree *t)) {
+__ATTR__USERESULT static GB_ERROR gb_check_huffmann_tree(gb_compress_tree *t) {
     if (t->leave)
         return 0;
     if (!t->son[0])

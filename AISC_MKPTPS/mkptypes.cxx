@@ -1378,19 +1378,35 @@ static void getdecl(FILE *f, const char *header) {
             goto again;
         }
 
+        if (strncmp(buf, "__ATTR__", 8) == 0) { // prefix attribute (should only be used for static and inline)
+            DEBUG_PRINT("seen prefix __ATTR__: '");
+            DEBUG_PRINT(buf);
+            DEBUG_PRINT("'\n");
+
+            bool seen_static_or_inline = false;
+
+            while (!seen_static_or_inline) {
+                if (getsym(buf, f)<0) {
+                    DEBUG_PRINT("EOF in getdecl loop (behind prefix __ATTR__)\n");
+                    return;
+                }
+                if (strcmp(buf, "static") == 0 || strcmp(buf, "inline") == 0) {
+                    seen_static_or_inline = true;
+                }
+                else {
+                    DEBUG_PRINT("read over (behind prefix __ATTR__): '");
+                    DEBUG_PRINT(buf);
+                    DEBUG_PRINT("'\n");
+                }
+            }
+        }
+
         if (oktoprint && !dostatic && strcmp(buf, "static")==0) {
             oktoprint = 0;
         }
         if (oktoprint && !doinline && strcmp(buf, "inline")==0) {
             oktoprint = 0;
         }
-        if (oktoprint && search__ATTR__ &&
-            (strcmp(buf, "STATIC_ATTRIBUTED") == 0 || strcmp(buf, "INLINE_ATTRIBUTED") == 0))
-        {
-            // (compare with ../TEMPLATES/attributes.h@specialHandling_ATTRIBUTED)
-            oktoprint = 0;
-        }
-
 
         if (strcmp(buf, ";") == 0) goto again;
 
@@ -1437,7 +1453,7 @@ static void getdecl(FILE *f, const char *header) {
     }
 }
 
-STATIC_ATTRIBUTED(__ATTR__NORETURN, void Usage()) {
+__ATTR__NORETURN static void Usage() {
     fprintf(stderr, "Usage: %s [flags] [files ...]", ourname);
     fputs("\nSupported flags:"
           "\n   -a               make a function list for aisc_includes (default: generate C prototypes)"
@@ -1465,7 +1481,6 @@ STATIC_ATTRIBUTED(__ATTR__NORETURN, void Usage()) {
           "\n"
           "\n   -g               search for GNU extension __attribute__ in comment behind function header"
           "\n   -G               search for ARB macro     __ATTR__      in comment behind function header"
-          "\n                    and detect and ignore STATIC/INLINE_ATTRIBUTED() declarations"
           "\n"
           "\n   -P               promote /*AISC_MKPT_PROMOTE:forHeader*/ to header"
           "\n"

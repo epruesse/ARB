@@ -25,10 +25,10 @@
 
 using namespace std;
 
+// @@@ gen by mkpts ? 
 extern void ph_view_matrix_cb(AW_window *);
 extern void ph_view_species_cb(AW_window *, AW_CL, AW_CL);
 extern void ph_view_filter_cb(AW_window *, AW_CL, AW_CL);
-// extern void ph_calculate_matrix_cb(AW_window *, AW_CL, AW_CL);
 extern void PH_create_save_matrix_window(AW_root *, char *);
 extern void display_status(AW_window *, AW_CL, AW_CL);
 
@@ -82,7 +82,7 @@ static void startup_sequence_cb(AW_window *aww, AW_CL cd1, AW_CL cl_aww) {
     ph_view_species_cb(0, 0, 0);
 }
 
-STATIC_ATTRIBUTED(__ATTR__NORETURN, void ph_exit(AW_window *aw_window, PH_root *ph_root)) {
+__ATTR__NORETURN static void ph_exit(AW_window *aw_window, PH_root *ph_root) {
     GBDATA *gb_main = ph_root->gb_main;
     if (gb_main) {
         aw_window->get_root()->unlink_awars_from_DB(gb_main);

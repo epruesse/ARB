@@ -68,7 +68,7 @@ static Globals GLOBAL;
 // #define TRACE_PREFIX "UnitTester:0: "
 #define TRACE_PREFIX "UnitTester: "
 
-STATIC_ATTRIBUTED(__ATTR__FORMAT(1), void trace(const char *format, ...)) {
+__ATTR__FORMAT(1) static void trace(const char *format, ...) {
     va_list parg;
 
     fflush(stdout);
@@ -100,7 +100,7 @@ enum TrapCode {
     TRAP_TERM,
 };
 
-STATIC_ATTRIBUTED(__ATTR__NORETURN, void UNITTEST_sigsegv_handler(int sig)) {
+__ATTR__NORETURN static void UNITTEST_sigsegv_handler(int sig) {
     if (GLOBAL.inside_test) {
         int  trap_code;
         const char *backtrace_cause = NULL;
@@ -276,7 +276,7 @@ inline void sleepms(long ms) {
 }
 
 #if (DEADLOCKGUARD == 1)
-STATIC_ATTRIBUTED(__ATTR__NORETURN, void deadlockguard(long max_allowed_duration_ms, bool detect_environment_calls)) {
+__ATTR__NORETURN static void deadlockguard(long max_allowed_duration_ms, bool detect_environment_calls) {
     // this function is completely incompatible with debuggers
     sleepms(max_allowed_duration_ms);
 
