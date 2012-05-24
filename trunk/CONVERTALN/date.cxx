@@ -46,7 +46,7 @@ inline int ismonth(const char *str) {
 }
 
 
-STATIC_ATTRIBUTED(__ATTR__USERESULT, bool find_date(const char *date_string, int *month, int *day, int *year)) {
+__ATTR__USERESULT static bool find_date(const char *date_string, int *month, int *day, int *year) {
     // Find day, month, year from date Str.
     char determ                                 = ' ';
     if      (two_char(date_string, '.')) determ = '.';
@@ -115,7 +115,7 @@ public:
     void replace(int val) { ca_assert(is_set()); num_ = val; }
 };
 
-STATIC_ATTRIBUTED(__ATTR__USERESULT, bool find_date_long_form(const char *date_string, int *monthPtr, int *dayPtr, int *yearPtr)) {
+__ATTR__USERESULT static bool find_date_long_form(const char *date_string, int *monthPtr, int *dayPtr, int *yearPtr) {
     // Find day, month, year in the long term date Str like day-of-week, month, day, time, year.
 
     int     length = str0len(date_string);

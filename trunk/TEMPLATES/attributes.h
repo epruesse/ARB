@@ -127,13 +127,6 @@
 template <typename T> void IGNORE_RESULT(const T&) {}
 #endif
 
-// ------------------------------------------------------------
-// helper macros to declare attributed function prototype and
-// start function definition in one line (static or inline functions only)
-// (change also at ../AISC_MKPTPS/mkptypes.cxx@specialHandling_ATTRIBUTED)
-#define STATIC_ATTRIBUTED(attribute, proto) static proto attribute; static proto
-#define INLINE_ATTRIBUTED(attribute, proto) inline proto attribute; inline proto
-
 #else
 #error attributes.h included twice
 #endif // ATTRIBUTES_H

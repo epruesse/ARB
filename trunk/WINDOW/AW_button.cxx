@@ -1527,13 +1527,13 @@ void AW_selection_list::delete_value(const char *value) {
     delete_element_at(index);
 }
 
-INLINE_ATTRIBUTED(__ATTR__NORETURN, void type_mismatch(const char *triedType, const char *intoWhat)) {
+__ATTR__NORETURN inline void type_mismatch(const char *triedType, const char *intoWhat) {
     GBK_terminatef("Cannot insert %s into %s which uses a non-%s AWAR", triedType, intoWhat, triedType);
 }
 
-INLINE_ATTRIBUTED(__ATTR__NORETURN, void selection_type_mismatch(const char *triedType)) { type_mismatch(triedType, "selection-list"); }
-INLINE_ATTRIBUTED(__ATTR__NORETURN, void option_type_mismatch(const char *triedType)) { type_mismatch(triedType, "option-menu"); }
-INLINE_ATTRIBUTED(__ATTR__NORETURN, void toggle_type_mismatch(const char *triedType)) { type_mismatch(triedType, "toggle"); }
+__ATTR__NORETURN inline void selection_type_mismatch(const char *triedType) { type_mismatch(triedType, "selection-list"); }
+__ATTR__NORETURN inline void option_type_mismatch(const char *triedType) { type_mismatch(triedType, "option-menu"); }
+__ATTR__NORETURN inline void toggle_type_mismatch(const char *triedType) { type_mismatch(triedType, "toggle"); }
 
 void AW_selection_list::insert(const char *displayed, const char *value) {
     if (variable_type != AW_STRING) {

@@ -850,7 +850,7 @@ GB_ERROR DI_MATRIX::calculate_pro(DI_TRANSFORMATION transformation, bool *aborte
     return prodist.makedists(aborted_flag);
 }
 
-STATIC_ATTRIBUTED(__ATTR__USERESULT, GB_ERROR di_calculate_matrix(AW_window *aww, const WeightedFilter *weighted_filter, bool bootstrap_flag, bool show_warnings, bool *aborted_flag)) {
+__ATTR__USERESULT static GB_ERROR di_calculate_matrix(AW_window *aww, const WeightedFilter *weighted_filter, bool bootstrap_flag, bool show_warnings, bool *aborted_flag) {
     // sets 'aborted_flag' to true, if it is non-NULL and the calculation has been aborted
     GB_push_transaction(GLOBAL_gb_main);
     if (GLOBAL_MATRIX.exists()) {
@@ -1346,7 +1346,7 @@ static void di_autodetect_callback(AW_window *aww)
     free(filter_str);
 }
 
-STATIC_ATTRIBUTED(__ATTR__NORETURN, void di_exit(AW_window *aww)) {
+__ATTR__NORETURN static void di_exit(AW_window *aww) {
     if (GLOBAL_gb_main) {
         aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_main);
         GB_close(GLOBAL_gb_main);

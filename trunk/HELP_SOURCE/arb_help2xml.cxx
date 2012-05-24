@@ -58,7 +58,7 @@ enum SectionType {
 };
 
 
-STATIC_ATTRIBUTED(__ATTR__VFORMAT(1), string vstrf(const char *format, va_list argPtr)) {
+__ATTR__VFORMAT(1) static string vstrf(const char *format, va_list argPtr) {
     static size_t  buf_size = 256;
     static char   *buffer   = new char[buf_size];
 
@@ -81,7 +81,7 @@ STATIC_ATTRIBUTED(__ATTR__VFORMAT(1), string vstrf(const char *format, va_list a
     return string(buffer, length);
 }
 
-STATIC_ATTRIBUTED(__ATTR__FORMAT(1), string strf(const char *format, ...)) {
+__ATTR__FORMAT(1) static string strf(const char *format, ...) {
     va_list argPtr;
     va_start(argPtr, format);
     string result = vstrf(format, argPtr);
