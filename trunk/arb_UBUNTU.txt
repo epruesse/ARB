@@ -14,7 +14,7 @@ You may use the provided install script, e.g.
 
      - gnuplot
      - gv
-     - libmotif3
+     - libmotif3 (Ubuntu 12.04: libmotif4)
      - xfig
      - transfig
      - xterm
