@@ -187,7 +187,7 @@ static const char *test_address_valid(void *address, long key)
 
 static SigHandler old_sigsegv_handler;
 
-static void aisc_server_sigsegv(int sig) {
+__ATTR__NORETURN static void aisc_server_sigsegv(int sig) {
     sigsegv_occurred = true;
     if (catch_sigsegv) {
         siglongjmp(return_after_segv, 666); // never returns

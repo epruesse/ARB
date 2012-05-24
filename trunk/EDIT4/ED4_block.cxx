@@ -46,24 +46,24 @@ public:
     void set_range(const PosRange& new_range) { range = new_range; }
 
     PosRange get_range_according_to_type() {
-        PosRange range;
+        PosRange res;
 
         switch (type) {
             case ED4_BT_NOBLOCK:
-                range = PosRange::empty();
+                res = PosRange::empty();
                 break;
 
             case ED4_BT_COLUMNBLOCK:
             case ED4_BT_MODIFIED_COLUMNBLOCK:
-                range = get_colblock_range();
+                res = get_colblock_range();
                 break;
 
             case ED4_BT_LINEBLOCK:
-                range = PosRange::whole();
+                res = PosRange::whole();
                 break;
         }
 
-        return range;
+        return res;
     }
 };
 
