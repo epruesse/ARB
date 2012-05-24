@@ -1102,8 +1102,6 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
             ED4_base *child = children->member(i++);
             if (!child) break;
 
-            int flags_cleared = 0;
-
             if (!child->flag.hidden && (refresh_all || child->update_info.refresh) && i>=first_visible_child) {
                 AW_pos x, y;
                 child->calc_world_coords(&x, &y);
@@ -1121,7 +1119,6 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
                     if (child->adjust_clipping_rectangle()) {
                         child->Show(refresh_all, is_cleared);
                     }
-                    flags_cleared = 1;
                     device->pop_clip_scale();
                 }
             }

@@ -29,7 +29,7 @@ inline int check_equal(int o, int n) {
 }
 #endif
 
-static void messagef(const char *format, ...)
+__ATTR__FORMAT(1) static void messagef(const char *format, ...)
 {
     va_list argp;
     char buffer[MESSAGE_BUFFERSIZE];

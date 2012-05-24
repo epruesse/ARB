@@ -152,12 +152,14 @@ void ED4_manager::dump_base(size_t indent) const {
 }
 
 inline const char *readable_ED4_species_type(ED4_species_type type) {
+    const char *spec_type = "<invalid>";
     switch (type) {
-        case ED4_SP_CONSENSUS: return "Consensus";
-        case ED4_SP_SAI:       return "SAI";
-        case ED4_SP_SPECIES:   return "Species";
-        case ED4_SP_NONE:      return "None (invalid!)";
+        case ED4_SP_CONSENSUS: spec_type = "Consensus"; break;
+        case ED4_SP_SAI:       spec_type = "SAI"; break;
+        case ED4_SP_SPECIES:   spec_type = "Species"; break;
+        case ED4_SP_NONE:      spec_type = "None (invalid!)"; break;
     }
+    return spec_type;
 }
 
 void ED4_species_manager::dump(size_t indent) const {
