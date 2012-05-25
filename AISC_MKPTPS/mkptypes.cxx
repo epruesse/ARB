@@ -55,8 +55,6 @@ static void Version();
 #define NEWBUFSIZ (20480*sizeof(char))              // new buffer size
 
 
-static int dostatic            = 0;                 // include static functions?
-static int doinline            = 0;                 // include inline functions?
 static int donum               = 0;                 // print line numbers?
 static int define_macro        = 1;                 // define macro for prototypes?
 static int use_macro           = 1;                 // use a macro for prototypes?
@@ -1399,12 +1397,12 @@ static void getdecl(FILE *f, const char *header) {
             }
         }
 
-        if (oktoprint && !dostatic && strcmp(buf, "static")==0) {
-            oktoprint = 0;
+        if (oktoprint) {
+            if (strcmp(buf, "static") == 0 || strcmp(buf, "inline") == 0) {
+                oktoprint = 0;
+            }
         }
-        if (oktoprint && !doinline && strcmp(buf, "inline")==0) {
-            oktoprint = 0;
-        }
+
 
         if (strcmp(buf, ";") == 0) goto again;
 
@@ -1460,8 +1458,6 @@ __ATTR__NORETURN static void Usage() {
           "\n"
           "\n   -n               put line numbers of declarations as comments"
           "\n"
-          "\n   -s               promote declarations for static functions"
-          "\n   -i               promote declarations for inline functions"
           "\n   -m               promote declaration of 'main()' (default is to skip it)"
           "\n   -F part[,part]*  only promote declarations for functionnames containing one of the parts"
           "\n                    if 'part' starts with a '^' functionname has to start with rest of part"
@@ -1529,8 +1525,6 @@ int ARB_main(int argc, const char *argv[]) {
             else if (*t == 'g') search__attribute__ = 1;
             else if (*t == 'G') search__ATTR__      = 1;
             else if (*t == 'n') donum               = 1;
-            else if (*t == 's') dostatic            = 1;
-            else if (*t == 'i') doinline            = 1;
             else if (*t == 'x') no_parm_names       = 1; // no parm names, only types (sg)
             else if (*t == 'z') define_macro        = 0;
             else if (*t == 'P') promote_lines       = 1;
