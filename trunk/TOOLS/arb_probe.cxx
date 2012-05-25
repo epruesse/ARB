@@ -76,6 +76,7 @@ static int init_local_com_struct() {
                     NULL)) {
         return 1;
     }
+
     return 0;
 }
 
@@ -217,6 +218,12 @@ static char *AP_probe_match_event(ARB_ERROR& error) {
     if (init_local_com_struct()) {
         error = "Cannot contact PT_SERVER [2]";
         return NULL;
+    }
+
+    {
+        // @@@ hack - only done to transfer bonds; see ../PROBE_DESIGN/probe_design.cxx@hack
+        T_PT_PDC pdc;
+        aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs, LOCS_PROBE_DESIGN_CONFIG, PT_PDC, pdc,  NULL);
     }
 
     if (aisc_nput(pd_gl.link, PT_LOCS, pd_gl.locs,
@@ -629,13 +636,13 @@ void TEST_SLOW_match_probe() {
         CCP expectd1 = "    name---- fullname mis N_mis wmis pos ecoli rev          'CANCUCCUUUC'\1"
             "BcSSSS00\1" "  BcSSSS00            0     1  0.0 176   162 0   CGGCUGGAU-==C========-U\1"
             "PbcAcet2\1" "  PbcAcet2            0     2  0.0 176   162 0   CGGCUGGAU-==C=======N-N\1"
-            "ClfPerfr\1" "  ClfPerfr            1     1  0.0 176   162 0   AGAUUAAUA-=CC========-U\1";
+            "ClfPerfr\1" "  ClfPerfr            1     1  1.1 176   162 0   AGAUUAAUA-=CC========-U\1";
 
         CCP expectd2 = "    name---- fullname mis N_mis wmis pos ecoli rev          'CANCUCCUUUC'\1"
             "BcSSSS00\1" "  BcSSSS00            0     1  0.0 176   162 0   CGGCUGGAU-==C========-U\1"
             "PbcAcet2\1" "  PbcAcet2            0     2  0.0 176   162 0   CGGCUGGAU-==C=======N-N\1"
             "DlcTolu2\1" "  DlcTolu2            0     3  0.0 176   162 0   CGGCUGGAU-==C======NN-N\1"
-            "ClfPerfr\1" "  ClfPerfr            1     1  0.0 176   162 0   AGAUUAAUA-=CC========-U\1";
+            "ClfPerfr\1" "  ClfPerfr            1     1  1.1 176   162 0   AGAUUAAUA-=CC========-U\1";
 
         arguments[2] = "matchmismatches=0";  TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
         arguments[2] = "matchmismatches=1";  TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd1);
@@ -661,7 +668,7 @@ void TEST_SLOW_match_probe() {
             "BcSSSS00\1" "  BcSSSS00            0     0  0.0 175   161 0   GCGGCUGGA-============-U\1"
             "PbcAcet2\1" "  PbcAcet2            0     1  0.0 175   161 0   GCGGCUGGA-===========N-N\1"
             "DlcTolu2\1" "  DlcTolu2            0     2  0.0 175   161 0   GCGGCUGGA-==========NN-N\1"
-            "ClfPerfr\1" "  ClfPerfr            2     0  0.0 175   161 0   AAGAUUAAU-A=C=========-U\1" "";
+            "ClfPerfr\1" "  ClfPerfr            2     0  2.2 175   161 0   AAGAUUAAU-A=C=========-U\1" "";
 
         arguments[2] = "matchmismatches=0"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
         arguments[2] = "matchmismatches=1"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd1);
@@ -687,7 +694,7 @@ void TEST_SLOW_match_probe() {
         CCP expectd2 = "    name---- fullname mis N_mis wmis pos ecoli rev          'CANCUCCUUUC'\1"
             "BcSSSS00\1" "  BcSSSS00            0     1  0.0 176   162 0   CGGCUGGAU-==C========-U\1"
             "PbcAcet2\1" "  PbcAcet2            0     2  0.0 176   162 0   CGGCUGGAU-==C=======N-N\1"
-            "ClfPerfr\1" "  ClfPerfr            1     1  0.0 176   162 0   AGAUUAAUA-=CC========-U\1" "";
+            "ClfPerfr\1" "  ClfPerfr            1     1  1.1 176   162 0   AGAUUAAUA-=CC========-U\1" "";
 
         arguments[2] = "matchmismatches=0"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
         arguments[2] = "matchmismatches=1"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd1);
@@ -712,7 +719,7 @@ void TEST_SLOW_match_probe() {
             "BcSSSS00\1" "  BcSSSS00            0     0  0.0 175   161 0   GCGGCUGGA-============-U\1"
             "PbcAcet2\1" "  PbcAcet2            0     1  0.0 175   161 0   GCGGCUGGA-===========N-N\1"
             "DlcTolu2\1" "  DlcTolu2            0     2  0.0 175   161 0   GCGGCUGGA-==========NN-N\1"
-            "ClfPerfr\1" "  ClfPerfr            2     0  0.0 175   161 0   AAGAUUAAU-A=C=========-U\1" "";
+            "ClfPerfr\1" "  ClfPerfr            2     0  2.2 175   161 0   AAGAUUAAU-A=C=========-U\1" "";
         
         arguments[2] = "matchmismatches=0"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
         arguments[2] = "matchmismatches=1"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd1);
@@ -738,13 +745,13 @@ void TEST_SLOW_match_probe() {
             "BcSSSS00\1" "  BcSSSS00            0     2  0.0 176   162 0   CGGCUGGAU-==C======U=-U\1"
             "DlcTolu2\1" "  DlcTolu2            0     3  0.0 176   162 0   CGGCUGGAU-==C=======N-N\1"
             "PbcAcet2\1" "  PbcAcet2            0     3  0.0 176   162 0   CGGCUGGAU-==C======UN-N\1"
-            "ClfPerfr\1" "  ClfPerfr            1     2  0.0 176   162 0   AGAUUAAUA-=CC======U=-U\1" "";
+            "ClfPerfr\1" "  ClfPerfr            1     2  1.1 176   162 0   AGAUUAAUA-=CC======U=-U\1" "";
         
         CCP expectd2 = "    name---- fullname mis N_mis wmis pos ecoli rev          'CANCUCCUUNC'\1"
             "BcSSSS00\1" "  BcSSSS00            0     2  0.0 176   162 0   CGGCUGGAU-==C======U=-U\1"
             "DlcTolu2\1" "  DlcTolu2            0     3  0.0 176   162 0   CGGCUGGAU-==C=======N-N\1"
             "PbcAcet2\1" "  PbcAcet2            0     3  0.0 176   162 0   CGGCUGGAU-==C======UN-N\1"
-            "ClfPerfr\1" "  ClfPerfr            1     2  0.0 176   162 0   AGAUUAAUA-=CC======U=-U\1" "";
+            "ClfPerfr\1" "  ClfPerfr            1     2  1.1 176   162 0   AGAUUAAUA-=CC======U=-U\1" "";
         
         arguments[2] = "matchmismatches=0"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
         arguments[2] = "matchmismatches=1"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd1);
@@ -768,18 +775,18 @@ void TEST_SLOW_match_probe() {
             "BcSSSS00\1" "  BcSSSS00            0     5  0.0 176   162 0   CGGCUGGAU-==C=U=CU=U=-U\1" "";
 
         CCP expectd1 = "    name---- fullname mis N_mis wmis pos ecoli rev          'CANCNCNNUNC'\1"
-            "BcSSSS00\1" "  BcSSSS00            0     5  0.0 176   162 0   CGGCUGGAU-==C=U=CU=U=-U\1"
-            "DlcTolu2\1" "  DlcTolu2            0     6  0.0 176   162 0   CGGCUGGAU-==C=U=CU==N-N\1"
-            "PbcAcet2\1" "  PbcAcet2            0     6  0.0 176   162 0   CGGCUGGAU-==C=U=CU=UN-N\1"
-            "LgtLytic\1" "  LgtLytic            1     5  0.0  31    26 0   GUCGAACGG-==G=A=AG=CU-AGCUUGCUA\1"
-            "ClfPerfr\1" "  ClfPerfr            1     5  0.0 111    99 0   CGGCUGGAU-==U=AUAA=G=-AGCGAUUGG\1"; // one hit is truncated here
+            "BcSSSS00\1  BcSSSS00            0     5  0.0 176   162 0   CGGCUGGAU-==C=U=CU=U=-U\1"
+            "DlcTolu2\1  DlcTolu2            0     6  0.0 176   162 0   CGGCUGGAU-==C=U=CU==N-N\1"
+            "PbcAcet2\1  PbcAcet2            0     6  0.0 176   162 0   CGGCUGGAU-==C=U=CU=UN-N\1"
+            "LgtLytic\1  LgtLytic            1     5  0.6  31    26 0   GUCGAACGG-==G=A=AG=Cu-AGCUUGCUA\1"
+            "ClfPerfr\1  ClfPerfr            1     5  0.6 111    99 0   CGGCUGGAU-==U=AuAA=G=-AGCGAUUGG\1"; // one hit is truncated here
         
         CCP expectd2 = "    name---- fullname mis N_mis wmis pos ecoli rev          'CANCNCNNUNC'\1"
-            "VbrFurni\1" "  VbrFurni            2     5  0.0  40    35 0   CGGCAGCGA-==A=AUUGAA=-CUUCGGGGG\1"
-            "HllHalod\1" "  HllHalod            2     5  0.0  45    40 0   AAACGAUGG-A=G=UUGC=U=-CAGGCGUCG\1"
-            "VblVulni\1" "  VblVulni            2     5  0.0  49    44 0   AGCACAGAG-A=A=UUGU=U=-UCGGGUGGC\1"
-            "LgtLytic\1" "  LgtLytic            2     5  0.0 101    89 0   GGGGAAACU-==AGCUAA=A=-CGCAUAAUC\1"
-            "ClfPerfr\1" "  ClfPerfr            2     5  0.0 172   158 0   AGGAAGAUU-A=UAC=CC=C=-UUUCU\1"; // many hits are truncated here
+            "HllHalod\1  HllHalod            2     5  1.6  45    40 0   AAACGAUGG-a=G=UuGC=U=-CAGGCGUCG\1"
+            "VblVulni\1  VblVulni            2     5  1.6  49    44 0   AGCACAGAG-a=A=UuGU=U=-UCGGGUGGC\1"
+            "VbrFurni\1  VbrFurni            2     5  1.7  40    35 0   CGGCAGCGA-==A=AuUGAA=-CUUCGGGGG\1"
+            "LgtLytic\1  LgtLytic            2     5  1.7 101    89 0   GGGGAAACU-==AGCuAA=A=-CGCAUAAUC\1"
+            "ClfPerfr\1  ClfPerfr            2     5  2.0 172   158 0   AGGAAGAUU-a=UaC=CC=C=-UUUCU\1"; // many hits are truncated here
 
         arguments[2] = "matchmismatches=0"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
         arguments[2] = "matchmismatches=1"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd1);
