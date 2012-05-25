@@ -83,6 +83,7 @@ MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, in
         int             i        = 0;
 
         mp_pd_gl.link = aisc_open(servername, mp_pd_gl.com, AISC_MAGIC_NUMBER);
+        mp_pd_gl.locs.clear();
 
         if (!mp_pd_gl.link) {
             aw_message("Cannot contact Probe bank server ");
