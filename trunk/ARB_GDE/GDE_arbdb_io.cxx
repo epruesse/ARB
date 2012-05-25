@@ -333,7 +333,6 @@ int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompress
     // Alignment choosen ?
 
     GBDATA  *gb_species_data = GBT_get_species_data(dataset->gb_main);
-    long     maxalignlen     = GBT_get_alignment_len(db_access.gb_main, dataset->alignment_name);
     GBDATA **the_species;
     long     numberspecies   = 0;
     long     missingdata     = 0;
@@ -370,7 +369,7 @@ int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompress
         else gb_species        = GBT_next_species(gb_species);
     }
 
-    maxalignlen = GBT_get_alignment_len(db_access.gb_main, dataset->alignment_name);
+    long maxalignlen = GBT_get_alignment_len(db_access.gb_main, dataset->alignment_name);
 
     char **the_sequences = (char**)calloc((unsigned int)numberspecies+1, sizeof(char*));
 

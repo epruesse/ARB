@@ -1171,7 +1171,6 @@ ED4_returncode ED4_columnStat_terminal::draw() {
         // all columns with one (or sum of two) probability above 'significance' are back-colored in ED4_G_CBACK_0
         // the responsible probabilities (one or two) are back-colored in ED4_G_CBACK_1..ED4_G_CBACK_9
 
-        int color     = ED4_G_STANDARD;
         int old_color = ED4_G_STANDARD;
 
         AW_pos x2     = text_x + font_width*left + 1;
@@ -1184,11 +1183,12 @@ ED4_returncode ED4_columnStat_terminal::draw() {
             int p = rm->screen_to_sequence(i);
             int found = find_significant_positions(significance, likelihood[0][p], likelihood[1][p], likelihood[2][p], likelihood[3][p], 0);
 
-            if (found)  color = ED4_G_CBACK_0;
-            else    color = ED4_G_STANDARD;
-
+            int color;
             if (is_selected && selection.contains(p)) {
                 color = ED4_G_SELECTED;
+            }
+            else {
+                color = found ? ED4_G_CBACK_0 : ED4_G_STANDARD;
             }
 
             if (color!=old_color) {
@@ -1203,7 +1203,6 @@ ED4_returncode ED4_columnStat_terminal::draw() {
             device->box(old_color, true, old_x2, y, x2-old_x2, term_height);
         }
 
-        color = ED4_G_STANDARD;
         x2 = text_x + font_width*left + 1;
 
         for (int i=left; i<=right; i++, x2+=font_width) { // colorize significant columns in SINGLE rows
@@ -1213,22 +1212,19 @@ ED4_returncode ED4_columnStat_terminal::draw() {
 
             if (found && significance<100) {
                 e4_assert(sum>=significance && sum<=100);
-                color = ED4_G_CBACK_1+((sum-significance)*(ED4_G_CBACK_9-ED4_G_CBACK_1))/(100-significance);
+                int color = ED4_G_CBACK_1+((sum-significance)*(ED4_G_CBACK_9-ED4_G_CBACK_1))/(100-significance);
                 e4_assert(color>=ED4_G_CBACK_1 && color<=ED4_G_CBACK_9);
-            }
-            else {
-                color = ED4_G_STANDARD;
-            }
 
-            if (color!=ED4_G_STANDARD) {
-                int bit;
+                if (color!=ED4_G_STANDARD) {
+                    int bit;
 
-                for (r=3, y2=text_y+1, bit=1<<3;
-                     r>=0;
-                     r--, y2-=COLUMN_STAT_ROW_HEIGHT(font_height), bit>>=1)
-                {
-                    if (found&bit) {
-                        device->box(color, true, x2, y2-2*font_height+1, font_width, 2*font_height);
+                    for (r=3, y2=text_y+1, bit=1<<3;
+                         r>=0;
+                         r--, y2-=COLUMN_STAT_ROW_HEIGHT(font_height), bit>>=1)
+                    {
+                        if (found&bit) {
+                            device->box(color, true, x2, y2-2*font_height+1, font_width, 2*font_height);
+                        }
                     }
                 }
             }

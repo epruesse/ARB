@@ -488,7 +488,7 @@ between calls to local main() */
 int readopt( char *sopt)
 {
   char    sparamstore[256], *sparam= sparamstore;
-  short   n, slen= strlen(sopt);
+  short   n;
 
   /* fprintf(stderr,"readopt( %s) == ", sopt); */
 
@@ -721,7 +721,7 @@ short     ifile, nseq, atseq, format, err = 0, seqtype = kDNA,
           nlines, seqout = 0, phylvers = 2;
 long      i, skiplines, seqlen, seqlen0;
 unsigned long  checksum= 0, checkall= 0;
-char      *seq, *cp, *firstseq = NULL, *seqlist, *progname, tempname[256];
+char      *seq, *cp, *firstseq = NULL, *seqlist, tempname[256];
 char      seqid[256], *seqidptr = seqid;
 char      stempstore[256], *stemp = stempstore;
 FILE      *ftmp, *fin, *fout;
@@ -745,7 +745,6 @@ long      outindexmax= 0, noutindex= 0, *outindex = NULL;
 
   resetGlobals();
   foo = stdout;
-  progname = argv[0];
   *oname = 0;
   *tempname = 0;
   /* initialize gPretty ?? -- done in header */

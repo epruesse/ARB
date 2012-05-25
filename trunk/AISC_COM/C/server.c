@@ -214,13 +214,10 @@ static void aisc_server_sigpipe(int)
 // --------------------------
 //      new read command
 
-static int aisc_s_read(int socket, char *ptr, int size)
-{
-    int leftsize, readsize;
-    leftsize = size;
-    readsize = 0;
+static int aisc_s_read(int socket, char *ptr, int size) {
+    int leftsize = size;
     while (leftsize) {
-        readsize = read(socket, ptr, leftsize);
+        int readsize = read(socket, ptr, leftsize);
         if (readsize<=0) return 0;
         ptr += readsize;
         leftsize -= readsize;
@@ -233,14 +230,11 @@ static int aisc_s_read(int socket, char *ptr, int size)
     return size;
 }
 
-static int aisc_s_write(int socket, char *ptr, int size)
-{
-    int leftsize, writesize;
-    leftsize = size;
-    writesize = 0;
+static int aisc_s_write(int socket, char *ptr, int size) {
+    int leftsize = size;
     pipe_broken = 0;
     while (leftsize) {
-        writesize = write(socket, ptr, leftsize);
+        int writesize = write(socket, ptr, leftsize);
         if (pipe_broken) return -1;
         if (writesize<0) return -1;
         ptr += writesize;

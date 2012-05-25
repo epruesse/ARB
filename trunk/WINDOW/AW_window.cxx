@@ -3115,7 +3115,7 @@ void AW_window::show() {
                     if (wx || wy) {
                         if (p_w->knows_WM_offset()) {
                             wx -= p_w->WM_left_offset;
-                            wy -= p_w->WM_top_offset;
+                            wy -= p_w->WM_top_offset; // @@@ values of wx/wy never used
 
                             // add size of window decoration
                             width  += p_w->WM_left_offset;

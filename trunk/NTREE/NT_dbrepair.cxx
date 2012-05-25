@@ -205,7 +205,7 @@ static GB_ERROR NT_fix_gene_data(GBDATA *gb_main, size_t species_count, size_t /
         GBDATA *gb_gene_data = GEN_find_gene_data(gb_species);
 
         if (is_organism && !gb_gene_data) {
-            gb_gene_data = GEN_findOrCreate_gene_data(gb_species);
+            gb_gene_data = GEN_findOrCreate_gene_data(gb_species); // @@@ check result & handle error
             generated_gene_datas++;
         }
         else if (!is_organism && gb_gene_data) {

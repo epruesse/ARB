@@ -85,11 +85,11 @@ static char *MP_get_probes(const char *str) {
 }
 
 void MP_gen_quality(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    bool firsttime = true;
+    bool firsttime = true; // @@@ was this static in the past?
 
     if (firsttime)
     {
-        firsttime = false;
+        firsttime = false; // @@@ unused
         return;
     }
 

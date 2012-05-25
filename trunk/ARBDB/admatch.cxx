@@ -516,56 +516,41 @@ bool GBS_string_matches_regexp(const char *str, const GBS_string_matcher *expr) 
 #define GBS_MWILD ((char)3)
 #define GBS_WILD  ((char)4)
 
-static int GBS_reference_not_found;
-
 __ATTR__USERESULT_TODO static GB_ERROR gbs_build_replace_string(GBS_strstruct *strstruct,
                                                                 char *bar, char *wildcards, long max_wildcard,
                                                                 char **mwildcards, long max_mwildcard, GBDATA *gb_container)
 {
-    char *p, c, d;
-    int   wildcardcnt  = 0;
-    int   mwildcardcnt = 0;
-    int   wildcard_num;
-    char *entry;
+    int wildcardcnt  = 0;
+    int mwildcardcnt = 0;
 
-    p = bar;
-
-    wildcardcnt  = 0;
-    mwildcardcnt = 0;
-
-    p = bar;
+    char *p = bar;
+    char  c;
     while ((c=*(p++))) {
         switch (c) {
-            case GBS_MWILD: case GBS_WILD:
-                d = *(p++);
+            case GBS_MWILD:
+            case GBS_WILD: {
+                char d = *(p++);
                 if (gb_container && (d=='(')) { // if a gbcont then replace till ')'
-                    GBDATA *gb_entry;
-                    char    *klz;
-                    char    *psym;
-                    klz = gbs_search_second_bracket(p);
+                    char *klz = gbs_search_second_bracket(p);
                     if (klz) {          // reference found: $(gbd)
                         int separator = 0;
                         *klz = 0;
-                        psym = strpbrk(p, "#|:");
+                        char *psym = strpbrk(p, "#|:");
                         if (psym) {
                             separator = *psym;
                             *psym = 0;
                         }
-                        if (*p) {
-                            gb_entry = GB_search(gb_container, p, GB_FIND);
-                        }
-                        else {
-                            gb_entry = gb_container;
-                        }
+
+                        GBDATA *gb_entry = *p
+                            ? GB_search(gb_container, p, GB_FIND)
+                            : gb_container;
+
                         if (psym) *psym = separator;
 
-                        if (!gb_entry || gb_entry == gb_container) {
-                            GBS_reference_not_found = 1;
-                            entry = strdup("");
-                        }
-                        else {
-                            entry = GB_read_as_string(gb_entry);
-                        }
+                        char *entry = (gb_entry && gb_entry != gb_container)
+                            ? GB_read_as_string(gb_entry)
+                            : strdup("");
+
                         if (entry) {
                             char *h;
                             switch (separator) {
@@ -606,7 +591,7 @@ __ATTR__USERESULT_TODO static GB_ERROR gbs_build_replace_string(GBS_strstruct *s
                     GBS_chrcat(strstruct, d);
                 }
                 else {
-                    wildcard_num = d - '1';
+                    int wildcard_num = d - '1';
                     if (c == GBS_WILD) {
                         c = '?';
                         if ((wildcard_num<0)||(wildcard_num>9)) {
@@ -635,6 +620,7 @@ __ATTR__USERESULT_TODO static GB_ERROR gbs_build_replace_string(GBS_strstruct *s
                     }
                 }
                 break;
+            }
             default:
                 GBS_chrcat(strstruct, c);
                 break;
@@ -662,11 +648,11 @@ static char *gbs_compress_command(const char *com) {
             case '=':   *(d++) = GBS_SET; break;
             case ':':   *(d++) = GBS_SEP; break;
             case '?':
-                ch = *s;
+                ch = *s; // @@@ unused
                 *(d++) = GBS_WILD;
                 break;
             case '*':
-                ch = *s;
+                ch = *s; // @@@ unused
                 *(d++) = GBS_MWILD;
                 break;
             case '\\':
@@ -806,7 +792,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
                         if (!p) {                   // string not found -> unsuccessful search
                             goto gbs_pars_unsuccessfull;
                         }
-                        c = *p;                     // set wildcard
+                        c = *p;                     // set wildcard // @@@ unused
                         mwildcard[max_mwildcard++] = GB_strpartdup(source, p-1);
                         source = p + strlen(start_of_wildcard);         // we parsed it
                         *search = what_wild_card;

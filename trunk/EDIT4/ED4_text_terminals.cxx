@@ -273,7 +273,6 @@ ED4_returncode ED4_orf_terminal::draw() {
             const int  real_left    = index_range.start();
             const int  real_right   = index_range.end();
             AW_pos     x2           = text_x + width*real_left;
-            AW_pos     x1           = x2;
             AW_pos     y1           = world_y;
             AW_pos     y2           = text_y+1;
             AW_pos     height       = y2-y1+1;
@@ -285,7 +284,7 @@ ED4_returncode ED4_orf_terminal::draw() {
                 char base    = aaSequence_u[new_pos];
 
                 if (isupper(base) || (base=='*')) {
-                    x1  = x2-width; // store current x pos to x1
+                    AW_pos x1  = x2-width; // store current x pos to x1
                     x2 += width*2; // add 2 char width to x2
                     i  += 2; // jump two pos
 

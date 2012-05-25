@@ -1439,11 +1439,11 @@ void ED4_compression_changed_cb(AW_root *awr) {
     }
 }
 
-void ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL /* cd2 */)
-{
-    int            gaps = root->awar(ED4_AWAR_COMPRESS_SEQUENCE_GAPS)->read_int();
-    int            hide = root->awar(ED4_AWAR_COMPRESS_SEQUENCE_HIDE)->read_int();
-    ED4_remap_mode mode = ED4_remap_mode(root->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->read_int());
+void ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL /* cd2 */) {
+    int gaps = root->awar(ED4_AWAR_COMPRESS_SEQUENCE_GAPS)->read_int();
+    int hide = root->awar(ED4_AWAR_COMPRESS_SEQUENCE_HIDE)->read_int();
+
+    ED4_remap_mode mode = ED4_remap_mode(root->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->read_int()); // @@@ mode is overwritten below
 
     switch (int(cd1)) {
         case 0: { // ED4_AWAR_COMPRESS_SEQUENCE_GAPS changed
@@ -2054,7 +2054,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                                                         gb_field = GB_search(sl2->species, fieldName, GB_FIND);
                                                         if (gb_field) {
                                                             new_content = GB_read_as_string(gb_field);
-                                                            new_content_len = strlen(new_content);
+                                                            new_content_len = strlen(new_content); // @@@ new_content_len never used
                                                             break;
                                                         }
                                                         sl2 = sl2->next;

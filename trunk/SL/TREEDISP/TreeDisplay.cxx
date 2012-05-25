@@ -1075,10 +1075,10 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         rot_cl.x0 = x;
                         if (button==AW_BUTTON_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
                             sprintf(awar, "ruler/size");
-                            tree_awar = show_ruler(device, this->drag_gc);
+                            /*tree_awar =*/ show_ruler(device, this->drag_gc);
                             double rulerSize = *GBT_readOrCreate_float(gb_tree, awar, 0.0);
                             GBT_write_float(gb_tree, awar, discrete_ruler_length(rulerSize, 0.1));
-                            tree_awar = show_ruler(device, this->drag_gc);
+                            /*tree_awar =*/ show_ruler(device, this->drag_gc);
                         }
                         break;
                     case AW_Mouse_Drag: {
@@ -1087,7 +1087,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         if (button == AW_BUTTON_RIGHT) {
                             GBT_write_float(gb_tree, awar, discrete_ruler_length(h, 0.1));
                         }
-                        tree_awar = show_ruler(device, this->drag_gc);
+                        /*tree_awar = */ show_ruler(device, this->drag_gc);
 
                         if (tree_sort == AP_TREE_IRS) {
                             double scale = device->get_scale() * irs_tree_ruler_scale_factor;
@@ -1098,9 +1098,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         }
                         if (h<0.01) h = 0.01;
 
-                        double h_rounded = h;
                         if (button==AW_BUTTON_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
-                            h_rounded = discrete_ruler_length(h, 0.1);
+                            double h_rounded = discrete_ruler_length(h, 0.1);
                             GBT_write_float(gb_tree, awar, h_rounded);
                             show_ruler(device, this->drag_gc);
                             GBT_write_float(gb_tree, awar, h);
@@ -1128,21 +1127,17 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                 break;
             case AWT_MODE_LINE:
                 if (type == AW_Mouse_Press) {
-                    long i;
                     sprintf(awar, "ruler/ruler_width");
-                    i = *GBT_readOrCreate_int(gb_tree, awar,  0);
+                    long i = *GBT_readOrCreate_int(gb_tree, awar,  0);
                     switch (button) {
                         case AW_BUTTON_LEFT:
-                            i --;
-                            if (i<0) i = 0;
-                            else {
-                                GBT_write_int(gb_tree, awar, i);
+                            if (i>0) {
+                                GBT_write_int(gb_tree, awar, i-1);
                                 this->exports.refresh = 1;
                             }
                             break;
                         case AW_BUTTON_RIGHT:
-                            i++;
-                            GBT_write_int(gb_tree, awar, i);
+                            GBT_write_int(gb_tree, awar, i+1);
                             show_ruler(device, AWT_GC_CURSOR);
                             break;
                         default: break;
@@ -1267,10 +1262,10 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         rot_show_triangle(device);
 
                         if (rot_at == rot_at->father->leftson) {
-                            len = rot_at->father->leftlen;
+                            len = rot_at->father->leftlen; // @@@ unused
                         }
                         else {
-                            len = rot_at->father->rightlen;
+                            len = rot_at->father->rightlen; // @@@ unused
                         }
 
                         ex = x-rot_cl.x0;
@@ -2104,18 +2099,14 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
 
 void AWT_graphic_tree::scale_text_koordinaten(AW_device *device, int gc, double& x, double& y, double orientation, int flag) {
-    const AW_font_limits& charLimits  = device->get_font_limits(gc, 'A');
-    double                text_height = charLimits.height * disp_device->get_unscale();
-    double                dist        = charLimits.height * disp_device->get_unscale();
+    if (flag!=1) {
+        const AW_font_limits& charLimits  = device->get_font_limits(gc, 'A');
+        double                text_height = charLimits.height * disp_device->get_unscale();
+        double                dist        = charLimits.height * disp_device->get_unscale();
 
-    if (flag==1) {
-        dist += 1;
-    }
-    else {
         x += cos(orientation) * dist;
         y += sin(orientation) * dist + 0.3*text_height;
     }
-    return;
 }
 
 void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,

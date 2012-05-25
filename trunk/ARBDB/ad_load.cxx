@@ -718,7 +718,7 @@ static long gb_read_bin_rek(FILE *in, GBCONTAINER *gbd, long nitems, long versio
             case GB_DB:
                 size = gb_read_in_uint32(in, reversed);
                 // gbc->d.size  is automatically incremented
-                memsize = gb_read_in_uint32(in, reversed);
+                memsize = gb_read_in_uint32(in, reversed); // @@@ memsize is not used
                 if (gb_read_bin_rek(in, gbc, size, version, reversed)) return -1;
                 break;
             case GB_BYTE:
@@ -738,7 +738,6 @@ static long gb_recover_corrupt_file(GBCONTAINER *gbd, FILE *in, GB_ERROR recover
     static FILE *old_in = 0;
     static unsigned char *file = 0;
     static long size = 0;
-    long pos = ftell(in);
     if (!GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery) {
         if (!recovery_reason) { recovery_reason = GB_await_error(); }
         GB_export_errorf("Aborting recovery (because recovery mode is disabled)\n"
@@ -748,7 +747,7 @@ static long gb_recover_corrupt_file(GBCONTAINER *gbd, FILE *in, GB_ERROR recover
                          recovery_reason);
         return -1;
     }
-    pos = ftell(in);
+    long pos = ftell(in);
     if (old_in != in) {
         file = (unsigned char *)GB_map_FILE(in, 0);
         old_in = in;
@@ -1661,6 +1660,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
             }
             error = gb_load_key_data_and_dictionaries((GBDATA *)Main->data);
             if (!error) error = GB_resort_system_folder_to_top((GBDATA *)Main->data);
+            // @@@ handle error 
             GB_commit_transaction((GBDATA *)gbd);
         }
         Main->security_level = 0;

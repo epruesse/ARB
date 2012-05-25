@@ -69,34 +69,30 @@ static void g_b_delete_Consensus(Consensus *gcon) {
 
 
 static void g_b_Consensus_add(Consensus *gcon, unsigned char *seq, long seq_len) {
-    int            i;
-    int            li;
-    int            c;
-    unsigned char *s;
-    int            last;
-    unsigned char *p;
-    int            eq_count;
-    const int      max_priority = 255/MAX_SEQUENCE_PER_MASTER; // No overflow possible
-
+    const int max_priority = 255/MAX_SEQUENCE_PER_MASTER;      // No overflow possible
     gb_assert(max_priority >= 1);
 
     if (seq_len > gcon->len) seq_len = gcon->len;
 
     // Search for runs
-    s = seq;
-    last = 0;
-    eq_count = 0;
+    unsigned char *s = seq;
+    int last = 0;
+    int i;
+    int li;
+    int c;
+
     for (li = i = 0; i < seq_len; i++) {
         c = *(s++);
         if (c == last) {
             continue;
         }
         else {
-        inc_hits :
-            eq_count = i-li;
+          inc_hits :
+            int eq_count = i-li;
             gcon->used[c] = 1;
-            p = gcon->con[last];
+            unsigned char *p = gcon->con[last];
             last = c;
+
             if (eq_count <= GB_RUNLENGTH_SIZE) {
                 c = max_priority;
                 while (li < i) p[li++] += c;

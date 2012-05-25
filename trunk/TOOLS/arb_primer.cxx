@@ -231,7 +231,6 @@ static long arb_reduce_primer_len(const char *key, long val, void *cl_hash) {
 
 static void arb_prm_primer(int /* prmanz */)
 {
-    GB_HASH *hash;
     GB_HASH *mhash;
     int      sp;
     char    *buffer;
@@ -262,8 +261,8 @@ static void arb_prm_primer(int /* prmanz */)
             }
         }
         if (pspecies*100 >= aprm.prmsmin * aprm.sp_count) {     // reduce primer length
-            for (hash = mhash; prmlen >= aprm.prmlen; prmlen-=aprm.reduce) {
-                hash = GBS_create_hash(aprm.prmanz, GB_MIND_CASE);
+            for (; prmlen >= aprm.prmlen; prmlen-=aprm.reduce) {
+                GB_HASH *hash = GBS_create_hash(aprm.prmanz, GB_MIND_CASE);
 
                 aprm.key_cnt = 0;
                 aprm.one_key_cnt = 0;
