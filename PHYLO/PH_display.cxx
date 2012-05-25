@@ -16,21 +16,15 @@
 #include <aw_root.hxx>
 #include <arbdb.h>
 
-extern void display_status(AW_window *, AW_CL, AW_CL);
-GB_ERROR    ph_check_initialized();
-
-static void vertical_change_cb(AW_window *aww, void */*cb1*/, void */*cb2*/)
-{
+static void vertical_change_cb(AW_window *aww, void */*cb1*/, void */*cb2*/) {
     PH_display::ph_display->monitor_vertical_scroll_cb(aww);
 }
 
-static void horizontal_change_cb(AW_window *aww, void */*cb1*/, void */*cb2*/)
-{
+static void horizontal_change_cb(AW_window *aww, void */*cb1*/, void */*cb2*/) {
     PH_display::ph_display->monitor_horizontal_scroll_cb(aww);
 }
 
-void ph_view_species_cb(AW_window */*aww*/, AW_CL /*cb1*/, AW_CL /*cb2*/)
-{
+void ph_view_species_cb(AW_window */*aww*/, AW_CL /*cb1*/, AW_CL /*cb2*/) {
     AW_window *main_win = PH_used_windows::windowList->phylo_main_window;
 
     PH_display::ph_display->initialize(species_dpy);
@@ -39,8 +33,12 @@ void ph_view_species_cb(AW_window */*aww*/, AW_CL /*cb1*/, AW_CL /*cb2*/)
     main_win->set_horizontal_change_callback((AW_CB2)horizontal_change_cb, 0, 0);
 }
 
-void ph_view_filter_cb(AW_window */*aww*/, AW_CL, AW_CL)
-{
+GB_ERROR ph_check_initialized() {
+    if (!PHDATA::ROOT) return "Please select alignment and press DONE";
+    return 0;
+}
+
+void ph_view_filter_cb(AW_window */*aww*/, AW_CL, AW_CL) {
     GB_ERROR err = ph_check_initialized();
     if (err) {
         aw_message(err);

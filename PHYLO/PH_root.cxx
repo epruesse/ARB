@@ -1,9 +1,6 @@
 #include "phylo.hxx"
 #include <arbdb.h>
 
-
-extern AW_window *preset_window(AW_root *root);
-
 GB_ERROR PH_root::open(const char *db_server) {
     GB_ERROR error = 0;
 

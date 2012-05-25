@@ -85,6 +85,7 @@ PH_display.o: $(ARBHOME)/INCLUDE/dupstr.h
 PH_display.o: $(ARBHOME)/INCLUDE/smartptr.h
 PH_display.o: $(ARBHOME)/INCLUDE/test_global.h
 
+PH_filt.o: PH_display.hxx
 PH_filt.o: PH_filter.hxx
 PH_filt.o: phwin.hxx
 PH_filt.o: phylo.hxx
@@ -104,7 +105,9 @@ PH_filt.o: $(ARBHOME)/INCLUDE/arbtools.h
 PH_filt.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+PH_filt.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+PH_filt.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/cb.h

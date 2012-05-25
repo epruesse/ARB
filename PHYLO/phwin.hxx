@@ -1,7 +1,19 @@
+// =========================================================== //
+//                                                             //
+//   File      : phwin.hxx                                     //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
+
+#ifndef PHWIN_HXX
+#define PHWIN_HXX
+
 #ifndef AW_WINDOW_HXX
 #include <aw_window.hxx>
 #endif
-
 
 class PH_used_windows {
 public:
@@ -13,3 +25,7 @@ public:
 
 void display_status(AW_window *dummy, AW_CL awroot, AW_CL cd2);
 void expose_callb(AW_window *aw, AW_CL cd1, AW_CL cd2);
+
+#else
+#error phwin.hxx included twice
+#endif // PHWIN_HXX

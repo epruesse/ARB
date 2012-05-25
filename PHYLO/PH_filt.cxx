@@ -10,6 +10,7 @@
 
 #include "phylo.hxx"
 #include "phwin.hxx"
+#include "PH_display.hxx"
 #include <arbdbt.h>
 #include <aw_awar.hxx>
 #include <arb_progress.h>
@@ -20,8 +21,6 @@ static long PH_timer() {
     static long time = 0;
     return ++time;
 }
-
-extern char **filter_text;
 
 PH_filter::PH_filter()
 {

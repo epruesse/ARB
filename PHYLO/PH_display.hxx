@@ -1,3 +1,16 @@
+// =========================================================== //
+//                                                             //
+//   File      : PH_display.hxx                                //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
+
+#ifndef PH_DISPLAY_HXX
+#define PH_DISPLAY_HXX
+
 #ifndef AW_DEVICE_HXX
 #include <aw_device.hxx>
 #endif
@@ -76,6 +89,10 @@ public:
 };
 
 
+void ph_view_species_cb(AW_window *, AW_CL, AW_CL);
+void ph_view_filter_cb(AW_window *, AW_CL, AW_CL);
+GB_ERROR ph_check_initialized();
 
-
-
+#else
+#error PH_display.hxx included twice
+#endif // PH_DISPLAY_HXX
