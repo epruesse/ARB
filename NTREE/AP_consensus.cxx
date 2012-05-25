@@ -414,7 +414,7 @@ static GB_ERROR CON_export(char *savename, char *align, int **statistic, char *r
 
     GBDATA *gb_extended = GBT_find_or_create_SAI(GLOBAL_gb_main, savename);
     GBDATA *gb_data     = GBT_add_data(gb_extended, align, "data", GB_STRING);
-    err                 = GB_write_string(gb_data, result);
+    err                 = GB_write_string(gb_data, result); // @@@ result is ignored
     GBDATA *gb_options  = GBT_add_data(gb_extended, align, "_TYPE", GB_STRING);
 
     const char *allvsmarked    = "all";

@@ -265,7 +265,6 @@ ED4_returncode  ED4_members::shift_list(ED4_index start_index, int length)      
         if ((no_of_members + length) >= size_of_list) {   // member_list is full => allocate more memory
             new_alloc_size = (unsigned int) ((size_of_list + length) * 1.3); // calculate new size of member_list for realloc()
 
-            tmp_ptr = memberList;
             tmp_ptr = (ED4_base **) realloc((char *) memberList, (new_alloc_size * sizeof(ED4_base *))); // try to realloc memory
 
             if (! tmp_ptr) { // realloc() failed => try malloc() and copy member_list

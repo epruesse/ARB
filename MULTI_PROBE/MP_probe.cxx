@@ -180,10 +180,9 @@ void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs)      // p
 
 void ProbeValuation::init_valuation()
 {
-    int        i, j, k, counter = 0;
-    probe     *temp_probe;
-    AW_window *aww;
-    char      *ptr;
+    int    i, j, k, counter = 0;
+    probe *temp_probe;
+    char  *ptr;
 
     if (new_pt_server)
     {
@@ -202,7 +201,6 @@ void ProbeValuation::init_valuation()
         return;
     }
 
-    aww = mp_main->get_mp_window()->get_window();
     AW_selection_list_iterator selentry(selected_list); 
 
     if (max_init_pop_combis < MAXINITPOPULATION) {
@@ -249,8 +247,7 @@ void ProbeValuation::init_valuation()
     act_generation->init_valuation();
     evolution();
 
-    aww = mp_main->get_mp_window()->get_result_window();
-    aww->activate();
+    mp_main->get_mp_window()->get_result_window()->activate();
 }
 
 

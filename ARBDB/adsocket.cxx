@@ -82,14 +82,10 @@ static long gbcm_read_buffered(int socket, char *ptr, long size) {
     return size;
 }
 
-long gbcm_read(int socket, char *ptr, long size)
-{
-    long    leftsize, readsize;
-    leftsize = size;
-    readsize = 0;
-
+long gbcm_read(int socket, char *ptr, long size) {
+    long leftsize = size;
     while (leftsize) {
-        readsize = gbcm_read_buffered(socket, ptr, leftsize);
+        long readsize = gbcm_read_buffered(socket, ptr, leftsize);
         if (readsize<=0) return 0;
         ptr += readsize;
         leftsize -= readsize;

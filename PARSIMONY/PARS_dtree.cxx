@@ -133,20 +133,16 @@ static void PARS_kernighan_cb(AP_tree *tree) {
     rek_breite[4] = *GBT_read_int(GLOBAL_gb_main, "genetic/kh/static/depth4");
     int rek_breite_anz = 5;
 
-    int anzahl = (int)(*GBT_read_float(GLOBAL_gb_main, "genetic/kh/nodes")*tree->arb_tree_leafsum2());
-    AP_tree **list;
-    list = tree->getRandomNodes(anzahl);
-    int i = 0;
-
-
-    i = 0;
+    int       anzahl = (int)(*GBT_read_float(GLOBAL_gb_main, "genetic/kh/nodes")*tree->arb_tree_leafsum2());
+    AP_tree **list   = tree->getRandomNodes(anzahl);
+    
     arb_progress progress(anzahl);
 
     progress.subtitle(GBS_global_string("Old Parsimony: %.1f", pars_start));
 
     GB_pop_transaction(GLOBAL_gb_main);
 
-    for (i=0; i<anzahl && !progress.aborted(); i++) {
+    for (int i=0; i<anzahl && !progress.aborted(); i++) {
         AP_tree_nlen *tree_elem = (AP_tree_nlen *)list[i];
 
         bool in_folded_group = tree_elem->gr.hidden ||

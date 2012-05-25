@@ -857,8 +857,8 @@ static void CPRO_drawstatistic (AW_device *device, unsigned char which_statistic
     device->reset();
     device->clear(-1);
 
-    topfirst=39.0;
-    leftfirst=20.0;
+    topfirst=39.0; // @@@ unused
+    leftfirst=20.0; // @@@ unused
     widthfirst=(rect.r-rect.l)-leftdistance-1-rightdistance;
     widthsecond=(rect.r-rect.l)-leftdistance-1-rightdistance;
     highboth=(rect.b-rect.t)-topdistance-bottomdistance-betweendistance-4;
@@ -1339,7 +1339,7 @@ static void CPRO_condense_cb(AW_window *aw, AW_CL which_statistic)
                                                (long)(firstreachedstep*100.0));
 
     gb_param=GBT_add_data(gb_extended, align, "_TYPE", GB_STRING);
-    error=GB_write_string(gb_param, typestring);
+    error=GB_write_string(gb_param, typestring); // @@@ unused
 
     GBDATA *gb_data = GBT_add_data(gb_extended, align, "data", GB_STRING);
 

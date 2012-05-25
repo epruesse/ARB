@@ -1069,8 +1069,8 @@ void Structure3D::PrepareSecondaryStructureData() {
         }
 
         char helixNr[4]; helixNr[3] = '\0';
-        int pos, skip, gaps, k;
-        pos = skip = gaps = k = 0;
+        int skip, gaps, k;
+        skip = gaps = k = 0;
 
         for (unsigned int i = 0; i < strlen(ecoliBuf); i++)
             {
@@ -1079,7 +1079,7 @@ void Structure3D::PrepareSecondaryStructureData() {
                     if ((ecoliBuf[i] == '.') || (ecoliBuf[i] == '-'))  gaps++;
                     else
                         {
-                            pos = (i - (skip + gaps)) + 1;
+                            int pos = (i - (skip + gaps)) + 1;
                             out<<pos<<"  "<<ecoliBuf[i]<<"  "<<helixGapBuf[i]<<"  ";
                             switch (helixGapBuf[i])
                                 {

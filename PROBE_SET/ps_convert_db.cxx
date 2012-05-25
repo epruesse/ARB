@@ -220,13 +220,13 @@ int main(int  _argc,
     GBDATA *group_tree = GB_entry(gb_main, "group_tree");
     if (!group_tree) {
         printf("no 'group_tree' in database\n");
-        error = GB_export_error("no 'group_tree' in database");
+        error = GB_export_error("no 'group_tree' in database"); // @@@ error is unused
         exit(1);
     }
     GBDATA *first_level_node = PS_get_first_node(group_tree);
     if (!first_level_node) {
         printf("no 'node' found in group_tree\n");
-        error = GB_export_error("no 'node' found in group_tree");
+        error = GB_export_error("no 'node' found in group_tree"); // @@@ error is unused
         exit(1);
     }
 

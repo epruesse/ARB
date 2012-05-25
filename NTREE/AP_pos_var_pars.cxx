@@ -238,7 +238,7 @@ GB_ERROR AP_pos_var::save_sai(const char *sai_name) {
             if (!error) {
                 GBDATA *gb_transv     = GB_search(gb_ali, "FREQUENCIES/TRANSVERSIONS", GB_INTS);
                 if (!gb_transv) error = GB_await_error();
-                error                 = GB_write_ints(gb_transv, transversions, ali_len);
+                else    error         = GB_write_ints(gb_transv, transversions, ali_len);
             }
 
             if (!error) {

@@ -437,7 +437,7 @@ GB_ERROR GBT_write_string(GBDATA *gb_container, const char *fieldpath, const cha
      *
      * @return GB_ERROR on failure
      */
-    GB_ERROR  error = GB_push_transaction(gb_container);
+    GB_ERROR  error = GB_push_transaction(gb_container); // @@@ result unused
     GBDATA   *gbd   = GB_search(gb_container, fieldpath, GB_STRING);
     if (!gbd) error = GB_await_error();
     else {
@@ -452,7 +452,7 @@ GB_ERROR GBT_write_int(GBDATA *gb_container, const char *fieldpath, long content
      *
      * but for fields of type GB_INT
      */
-    GB_ERROR  error = GB_push_transaction(gb_container);
+    GB_ERROR  error = GB_push_transaction(gb_container); // @@@ result unused
     GBDATA   *gbd   = GB_search(gb_container, fieldpath, GB_INT);
     if (!gbd) error = GB_await_error();
     else {
@@ -467,7 +467,7 @@ GB_ERROR GBT_write_byte(GBDATA *gb_container, const char *fieldpath, unsigned ch
      *
      * but for fields of type GB_BYTE
      */
-    GB_ERROR  error = GB_push_transaction(gb_container);
+    GB_ERROR  error = GB_push_transaction(gb_container); // @@@ result unused
     GBDATA   *gbd   = GB_search(gb_container, fieldpath, GB_BYTE);
     if (!gbd) error = GB_await_error();
     else {
@@ -486,7 +486,7 @@ GB_ERROR GBT_write_float(GBDATA *gb_container, const char *fieldpath, double con
 
     gb_assert(content == content); // !nan
 
-    GB_ERROR  error = GB_push_transaction(gb_container);
+    GB_ERROR  error = GB_push_transaction(gb_container); // @@@ result unused
     GBDATA   *gbd   = GB_search(gb_container, fieldpath, GB_FLOAT);
     if (!gbd) error = GB_await_error();
     else {

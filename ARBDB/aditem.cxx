@@ -452,7 +452,7 @@ GBDATA **GBT_gen_species_array(GBDATA *gb_main, long *pspeccnt)
          gb_species = GBT_next_species(gb_species)) {
         (*pspeccnt) ++;
     }
-    result = (GBDATA **)malloc((size_t)(sizeof(GBDATA *)* (*pspeccnt)));
+    result = (GBDATA **)malloc((size_t)(sizeof(GBDATA *)* (*pspeccnt))); // @@@ fails if no species present
     *pspeccnt = 0;
     for (gb_species = GBT_first_species_rel_species_data(gb_species_data);
          gb_species;

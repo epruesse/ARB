@@ -369,7 +369,7 @@ static GB_ERROR checkAndMergeFields(GBDATA *gb_new_species, GB_ERROR error, Spec
                     nt_assert(nextStat!=1); // this would mean that none of the species contained the field
                     {
                         char *new_content     = 0;
-                        int   new_content_len = 0;
+                        int   new_content_len = 0; // @@@ useless (0 where used; unused otherwise)
 
                         if (nextStat==2) { // all species contain same field content or do not have the field
                             SpeciesConcatenateList *sl2 = sl;

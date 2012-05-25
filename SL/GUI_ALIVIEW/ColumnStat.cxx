@@ -150,7 +150,7 @@ GB_ERROR ColumnStat::calculate(AP_filter *filter) {
 
             long use_helix = awr->awar(awar_enable_helix)->read_int();
 
-            for (j=i=0; i<seq_len; i++) {
+            for (i=0; i<seq_len; i++) {
                 is_helix[i] = false;
                 weights[i]  = 1;
             }

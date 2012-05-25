@@ -155,7 +155,7 @@ static int read_names_and_pos(PT_local *locs, POS_TREE *pt) {
         if (PT_read_type(pt) == PT_NT_CHAIN) {
             psg.probe = 0;
             if (PT_forwhole_chain(pt, PT_store_match_in(locs))) {
-                error = 1;
+                error = 1; // @@@ unused
                 return 1;
             }
         }

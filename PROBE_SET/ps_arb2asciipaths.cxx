@@ -53,59 +53,42 @@ static void PS_print_paths(GBDATA *_pb_node) {
 }
 
 
-//  ====================================================
-//  ====================================================
-int main(int argc,
-          char *argv[]) {
-
-    GBDATA   *pb_main = 0;
-    GB_ERROR  error   = 0;
-
-    // open probe-group-database
+int main(int argc, char *argv[]) {
+    GB_ERROR error = 0;
     if (argc < 2) {
-        printf("Missing arguments\n Usage %s <input database name>\n", argv[0]);
-        exit(1);
-    }
-
-    if (!error) {
-        const char *input_DB_name = argv[1];
-
-        printf("Opening probe-group-database '%s'..", input_DB_name);
-        pb_main = GB_open(input_DB_name, "rwcN");
-        if (!pb_main) error = GB_await_error();
-    }
-    printf("loaded database (enter to continue)\n");
-
-    GB_transaction dummy(pb_main);
-    GBDATA *group_tree = GB_entry(pb_main, "group_tree");
-    if (!group_tree) {
-        printf("no 'group_tree' in database\n");
-        error = GB_export_error("no 'group_tree' in database");
-        exit(1);
-    }
-    GBDATA *first_level_node = PS_get_first_node(group_tree);
-    if (!first_level_node) {
-        printf("no 'node' found in group_tree\n");
-        error = GB_export_error("no 'node' found in group_tree");
-        exit(1);
-    }
-
-    printf("dumping probes...\n");
-    first_level_node = PS_get_first_node(group_tree);
-    if (!first_level_node) {
-        printf("no 'node' found in group_tree\n");
-        error = GB_export_error("no 'node' found in group_tree");
+        error = GBS_global_string("Missing arguments\n Usage %s <input database name>", argv[0]);
     }
     else {
-        printf("starting with first toplevel nodes\n");
-        // print 1st level nodes (and its subtrees)
-        do {
-            PS_print_paths(first_level_node);
-            first_level_node = PS_get_next_node(first_level_node);
-        } while (first_level_node);
+        const char *input_DB_name = argv[1];
+        printf("Loading probe-group-database '%s'..\n", input_DB_name);
+
+        GBDATA *pb_main     = GB_open(input_DB_name, "rwcN"); // open probe-group-database
+        if (!pb_main) error = GB_await_error();
+        else {
+            GB_transaction  dummy(pb_main);
+            GBDATA         *group_tree = GB_entry(pb_main, "group_tree");
+            if (!group_tree) error     = "no 'group_tree' in database";
+            else {
+                GBDATA *first_level_node     = PS_get_first_node(group_tree);
+                if (!first_level_node) error = "no 'node' found in group_tree";
+                else {
+                    printf("dumping probes... (starting with first toplevel nodes)\n");
+                    // print 1st level nodes (and its subtrees)
+                    do {
+                        PS_print_paths(first_level_node);
+                        first_level_node = PS_get_next_node(first_level_node);
+                    }
+                    while (first_level_node);
+                }
+            }
+        }
     }
 
-    return 0;
+    if (error) {
+        fprintf(stderr, "Error in %s: %s\n", argv[0], error);
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
 }
 
 

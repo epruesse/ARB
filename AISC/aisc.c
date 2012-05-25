@@ -19,9 +19,6 @@ using namespace std;
 // AISC_MKPT_PROMOTE:#include "aisc_def.h"
 // AISC_MKPT_PROMOTE:#endif
 
-
-static char string_buf[256];
-
 char *read_aisc_file(const char *path, const Location *loc) {
     char *buffer = 0;
     FILE *input  = fopen(path, "rt");

@@ -481,12 +481,8 @@ public:
 };
 
 static double ap_calc_bootstrap_remark_sub(int seq_len, const char *old, const char *ne) {
-    int i;
-    int sum[3];
-    sum[0] = 0;
-    sum[1] = 0;
-    sum[2] = 0;
-    for (i=0; i<seq_len; i++) {
+    int sum[3] = { 0, 0, 0 };
+    for (int i=0; i<seq_len; i++) {
         int diff = ne[i] - old[i];
         if (diff > 1 || diff < -1) {
 #if defined(DEBUG)
@@ -496,21 +492,15 @@ static double ap_calc_bootstrap_remark_sub(int seq_len, const char *old, const c
         }
         sum[diff+1] ++;
     }
-    {
-        int msum = 0;
-        for (i=0; i<seq_len; i++) {
-            msum += old[i];
-            msum += ne[i];
-        }
-        msum /= 2;
-    }
+
     double prob = 0;
     {
         int asum = 0;
-        for (i=0; i<3; i++) asum += sum[i];
+        for (int i=0; i<3; i++) asum += sum[i];
+
         double freq[3];
         double log_freq[3];
-        for (i=0; i<3; i++) {
+        for (int i=0; i<3; i++) {
             freq[i] = sum[i] / double(asum); // relative frequencies of -1, 0, 1
             if (sum[i] >0) {
                 log_freq[i] = log(freq[i]);

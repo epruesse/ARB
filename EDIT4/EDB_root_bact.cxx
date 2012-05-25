@@ -61,7 +61,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
     ED4_multi_sequence_manager *multi_sequence_manager;
     char                        namebuffer[NAME_BUFFERSIZE];
     int                         count_too   = 0;
-    ED4_index                   name_coords = 0, seq_coords = 0, local_count_position = 0, terminal_height;
+    ED4_index                   seq_coords = 0, local_count_position = 0, terminal_height;
     GBDATA                     *gb_datamode = NULL;
 
     switch (datamode) {
@@ -135,13 +135,13 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
     species_name_terminal->set_species_pointer(GB_entry(gb_datamode, "name"));
     name_manager->children->append_member(species_name_terminal);
 
-    name_coords += terminal_height;
+    ED4_index name_coords = terminal_height;
 
     search_sequence_data_rek(multi_sequence_manager, ref_sequence_info_terminal, ref_sequence_terminal, gb_datamode,
                              count_too, &seq_coords, &max_seq_terminal_length, ED4_A_DEFAULT, datamode == ED4_D_EXTENDED);
 
     local_count_position += max(name_coords, seq_coords);
-    name_coords = seq_coords = 0;
+    seq_coords = 0;
 
     if (!(multi_species_manager->flag.hidden)) {
         *length_of_terminals = local_count_position-curr_local_position;
@@ -448,7 +448,6 @@ ED4_index EDB_root_bact::scan_string(ED4_multi_species_manager  *parent,
     ED4_index                  local_count_position  = 0;
     ED4_index                  length_of_terminals   = 0;
     static int                 group_depth           = 0;
-    bool                       is_folded             = 0;
 
     if (!parent->parent->is_area_manager()) {       // add 25 if group is not child of; not the first time!
         local_count_position = TERMINALHEIGHT + SPACERHEIGHT;   // a folded group
@@ -467,7 +466,7 @@ ED4_index EDB_root_bact::scan_string(ED4_multi_species_manager  *parent,
 
         if (str[(*index)] && (str[(*index)+1] == 'G' || str[(*index)+1] == 'F')) { // Group or folded group
             group_depth++;
-            is_folded = str[(*index)+1]=='F';
+            bool is_folded = str[(*index)+1]=='F';
 
             for (*index += 2, lauf = 0; str[*index] != 1; (*index)++) {  // Jump over 'G' and Blank to get Groupname
                 groupname[lauf++] = str[*index];
@@ -493,10 +492,7 @@ ED4_index EDB_root_bact::scan_string(ED4_multi_species_manager  *parent,
 
             multi_species_manager->children->append_member(group_spacer_terminal);
 
-            if (is_folded) {
-                multi_species_manager->hide_children();
-                is_folded = 0;
-            }
+            if (is_folded) multi_species_manager->hide_children();
         }
     }
 

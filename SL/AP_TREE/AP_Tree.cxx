@@ -1258,35 +1258,30 @@ AP_tree ** AP_tree::getRandomNodes(int anzahl) {
     // function returns a random constructed tree
     // root is tree with species (needed to build a list of species)
 
-    AP_tree **list;
-    AP_tree **retlist;
-    long num;
-    long count = 0, i = 0;
+    AP_tree **retlist = NULL;
+    if (anzahl) {
+        AP_tree **list; 
+        long      sumnodes;
+        buildNodeList(list, sumnodes);
 
-    long sumnodes;
-    if (!anzahl) return 0;
-    buildNodeList(list, sumnodes);
-    if (!sumnodes) {
-        delete list;
-        return 0;
+        if (sumnodes) {
+            retlist = (AP_tree **)calloc(anzahl, sizeof(AP_tree *));
+
+            long count = sumnodes;
+            for (int i=0; i< anzahl; i++) {
+                long num = GB_random(count);
+
+                retlist[i] = list[num]; // export node
+                count--;                // exclude node
+
+                list[num]   = list[count];
+                list[count] = retlist[i];
+
+                if (count == 0) count = sumnodes; // restart it
+            }
+        }
+        delete [] list;
     }
-
-    retlist = (AP_tree **)calloc(anzahl, sizeof(AP_tree *));
-
-    i = 0;
-    count = sumnodes;
-    for  (i=0; i< anzahl; i++) {
-        num = GB_random(count);
-
-        retlist[i] = list[num]; // export node
-        count--;                // exclude node
-
-        list[num]   = list[count];
-        list[count] = retlist[i];
-
-        if (count == 0) count = sumnodes; // restart it
-    }
-    delete list;
     return retlist;
 }
 

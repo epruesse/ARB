@@ -671,7 +671,7 @@ static int fnextch(FILE *f) {
     c = ngetc(f);
     while (c == '\\') {
         DEBUG_PRINT("fnextch: in backslash loop\n");
-        c = ngetc(f);                               // skip a character
+        ngetc(f);                               // skip a character
         c = ngetc(f);
     }
     if (c == '/' && !inquote) {
@@ -998,7 +998,7 @@ static Word *getparamlist(FILE *f) {
         if (*buf == ')' && (--inparen < 0)) {
             if (sawsomething) {                     // if we've seen an arg
                 pname[np] = plist;
-                plist = word_alloc("");
+                plist = word_alloc(""); // @@@ Value stored to 'plist' is never read 
                 np++;
             }
             break;
@@ -1199,8 +1199,6 @@ static void emit(Word *wlist, Word *plist, long startline) {
         else {
             printf("\tterm");
         }
-
-        refs = 0;
 
         if (strcmp(plist->string, "void") != 0) {   // if parameter is not 'void'
             printf(",\t{\n");

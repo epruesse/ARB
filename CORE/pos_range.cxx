@@ -15,7 +15,7 @@
 void PosRange::copy_corresponding_part(char *dest, const char *source, size_t source_len) const {
     // dest and source may overlap
 
-    arb_assert((source == NULL && source_len == 0) || (source_len == strlen(source)));
+    arb_assert((source == NULL && source_len == 0) || (source && source_len == strlen(source)));
 
     ExplicitRange range(*this, source_len);
     int           Size = range.size();

@@ -48,13 +48,10 @@ static char errbuf[300];
 #define PRTERR(msg) if (aisc_print_error_to_stderr) fprintf(stderr, "%s: %s\n", msg, link->error);
 
 
-static int aisc_c_read(int socket, char *ptr, long size)
-{
-    long        leftsize, readsize;
-    leftsize = size;
-    readsize = 0;
+static int aisc_c_read(int socket, char *ptr, long size) {
+    long leftsize = size;
     while (leftsize) {
-        readsize = read(socket, ptr, (size_t)leftsize);
+        long readsize = read(socket, ptr, (size_t)leftsize);
         if (readsize<=0) return 0;
         ptr += readsize;
         leftsize -= readsize;
@@ -63,11 +60,9 @@ static int aisc_c_read(int socket, char *ptr, long size)
 }
 
 static int aisc_c_write(int socket, const char *ptr, int size) {
-    int leftsize, writesize;
-    leftsize = size;
-    writesize = 0;
+    int leftsize = size;
     while (leftsize) {
-        writesize = write(socket, ptr, leftsize);
+        int writesize = write(socket, ptr, leftsize);
         if (writesize<=0) return 0;
         ptr += writesize;
         leftsize -= writesize;
