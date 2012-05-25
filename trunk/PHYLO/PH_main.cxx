@@ -25,23 +25,10 @@
 
 using namespace std;
 
-// @@@ gen by mkpts ? 
-extern void ph_view_matrix_cb(AW_window *);
-extern void ph_view_species_cb(AW_window *, AW_CL, AW_CL);
-extern void ph_view_filter_cb(AW_window *, AW_CL, AW_CL);
-extern void PH_create_save_matrix_window(AW_root *, char *);
-extern void display_status(AW_window *, AW_CL, AW_CL);
-
 AW_HEADER_MAIN
-AW_window *create_tree_window(AW_root *aw_root);
 
 GBDATA *GLOBAL_gb_main; // global gb_main for arb_phylo
 char **filter_text;
-
-GB_ERROR ph_check_initialized() {
-    if (!PHDATA::ROOT) return "Please select alignment and press DONE";
-    return 0;
-}
 
 static void create_filter_text()
 {
