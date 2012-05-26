@@ -220,12 +220,6 @@ static char *AP_probe_match_event(ARB_ERROR& error) {
         return NULL;
     }
 
-    {
-        // @@@ hack - only done to transfer bonds; see ../PROBE_DESIGN/probe_design.cxx@hack
-        T_PT_PDC pdc;
-        aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs, LOCS_PROBE_DESIGN_CONFIG, PT_PDC, pdc,  NULL);
-    }
-
     if (aisc_nput(pd_gl.link, PT_LOCS, pd_gl.locs,
                   LOCS_MATCH_REVERSED,       (long)P.COMPLEMENT,
                   LOCS_MATCH_SORT_BY,        (long)P.WEIGHTED,

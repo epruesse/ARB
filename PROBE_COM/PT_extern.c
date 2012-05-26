@@ -13,13 +13,13 @@
 extern "C" {
 #endif
 
-    int pt_init_bond_matrix(PT_pdc *THIS);
+    int pt_init_bond_matrix(PT_local *THIS);
 
 #ifdef __cplusplus
 }
 #endif
 
-int init_bond_matrix(PT_pdc *THIS) {
+int init_bond_matrix(PT_local *THIS) {
     pt_init_bond_matrix(THIS);
     return 0;
 }

@@ -66,7 +66,7 @@ bytestring *MP_all_species_string(PT_local *);
 int MP_count_all_species(PT_local *);
 
 /* PT_new_design.cxx */
-double ptnd_check_split(PT_pdc *pdc, char *probe, int pos, char ref);
+double ptnd_check_split(PT_local *locs, char *probe, int pos, char ref);
 char *get_design_info(PT_tprobes *tprobe);
 char *get_design_hinfo(PT_tprobes *tprobe);
 int PT_start_design(PT_pdc *pdc, int dummy_1x);
