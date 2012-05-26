@@ -51,22 +51,19 @@ struct PT_store_match_in {
     int operator()(const DataLoc& matchLoc) {
         // if chain is reached copy data in locs structure
 
-        PT_probematch *ml; // @@@ fix locals
-        char          *probe        = psg.probe;
-        int            mismatches   = psg.mismatches;
-        double         wmismatches  = psg.wmismatches;
-        double         h;
-        int            N_mismatches = psg.N_mismatches;
-        PT_local      *locs         = (PT_local *)ilocs;
-        int            height;
-        int            base;
-        int            ref;
-        int            pos;
+        int    mismatches   = psg.mismatches;
+        double wmismatches  = psg.wmismatches;
+        int    N_mismatches = psg.N_mismatches;
 
-        if (psg.probe) {
+        PT_local *locs = (PT_local *)ilocs;
+
+        char *probe = psg.probe;
+        if (probe) {
             // @@@ code here is a duplicate of code in get_info_about_probe (PT_NT_LEAF-branch)
-            pos = matchLoc.rpos+psg.height;
-            height = psg.height;
+            int pos    = matchLoc.rpos+psg.height;
+            int height = psg.height;
+            int base, ref;
+
             while ((base=probe[height]) && (ref = psg.data[matchLoc.name].get_data()[pos])) {
                 if (ref == PT_N || base == PT_N) {
                     // @@@ Warning: dupped code also counts PT_QU as mismatch!
@@ -74,10 +71,11 @@ struct PT_store_match_in {
                 }
                 else if (ref != base) {
                     mismatches++;
-                    h = ptnd_get_wmismatch(locs, probe, height, ref);
+                    double h = ptnd_get_wmismatch(locs, probe, height, ref);
                     wmismatches += psg.pos_to_weight[height]*h;
                 }
-                height ++; pos++;
+                height++;
+                pos++;
             }
             while ((base = probe[height])) {
                 N_mismatches++;
@@ -98,7 +96,7 @@ struct PT_store_match_in {
         }
 
         // @@@ dupped code from read_names_and_pos (PT_NT_LEAF-branch)
-        ml = create_PT_probematch();
+        PT_probematch *ml = create_PT_probematch();
 
         ml->name         = matchLoc.name;
         ml->b_pos        = matchLoc.apos;
@@ -119,69 +117,50 @@ struct PT_store_match_in {
 static int read_names_and_pos(PT_local *locs, POS_TREE *pt) {
     //! go down the tree to chains and leafs; copy names, positions and mismatches in locs structure
 
-    int            base;
-    int            error;
-    PT_probematch *ml;
+    int error = 0;
+    if (pt) {
+        if (max_number_of_hits_collected(locs)) {
+            locs->matches_truncated = 1;
+            error                   = 1;
+        }
+        else if (PT_read_type(pt) == PT_NT_LEAF) {
+            DataLoc loc(pt);
 
-    if (pt == NULL) {
-        return 0;
-    }
-    if (max_number_of_hits_collected(locs)) {
-        locs->matches_truncated = 1;
-        return 1;
-    }
-    if (PT_read_type(pt) == PT_NT_LEAF) {
-        DataLoc loc(pt);
+            // @@@ dupped code from PT_store_match_in::operator()
+            PT_probematch *ml = create_PT_probematch();
 
-        // @@@ dupped code from PT_store_match_in::operator()
-        ml = create_PT_probematch();
+            ml->name         = loc.name;
+            ml->b_pos        = loc.apos;
+            ml->g_pos        = -1;
+            ml->rpos         = loc.rpos;
+            ml->mismatches   = psg.mismatches;
+            ml->wmismatches  = psg.wmismatches;
+            ml->N_mismatches = psg.N_mismatches;
+            ml->sequence     = psg.main_probe;
+            ml->reversed     = psg.reversed ? 1 : 0;
 
-        ml->name         = loc.name;
-        ml->b_pos        = loc.apos;
-        ml->g_pos        = -1;
-        ml->rpos         = loc.rpos;
-        ml->mismatches   = psg.mismatches;
-        ml->wmismatches  = psg.wmismatches;
-        ml->N_mismatches = psg.N_mismatches;
-        ml->sequence     = psg.main_probe;
-        ml->reversed     = psg.reversed ? 1 : 0;
-
-        aisc_link(&locs->ppm, ml);
-        return 0;
-    }
-    else {
-        if (PT_read_type(pt) == PT_NT_CHAIN) {
+            aisc_link(&locs->ppm, ml);
+        }
+        else if (PT_read_type(pt) == PT_NT_CHAIN) {
             psg.probe = 0;
             if (PT_forwhole_chain(pt, PT_store_match_in(locs))) {
-                error = 1; // @@@ unused
-                return 1;
+                error = 1;
             }
         }
         else {
-            for (base = PT_QU; base< PT_B_MAX; base++) {
+            for (int base = PT_QU; base < PT_B_MAX && !error; base++) {
                 error = read_names_and_pos(locs, PT_read_son(pt, (PT_BASES)base));
-                if (error) return error;
             }
-
-            return 0;
         }
     }
-    return 0;
+    return error;
 }
 
 static int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatches, double wmismatches, int N_mismatches, int height) {
     //! search down the tree to find matching species for the given probe
 
-    int       name, pos; // @@@ fix locals
-    int       i;
-    int       base;
-    POS_TREE *pthelp;
-    int       newmis;
-    double    newwmis;
-    double    h;
-    int       new_N_mis;
-    int       error;
     if (!pt) return 0;
+    
     pt_assert(N_mismatches <= PT_POS_TREE_HEIGHT);
     if (locs->sort_by != PT_MATCH_TYPE_INTEGER) {
         if (psg.w_N_mismatches[N_mismatches] + (int)(wmismatches + 0.5) > psg.deep) return 0;
@@ -189,54 +168,56 @@ static int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int m
     else {
         if (psg.w_N_mismatches[N_mismatches]+mismatches>psg.deep) return 0;
     }
+
     if (PT_read_type(pt) == PT_NT_NODE && probe[height]) {
-        for (i=PT_N; i<PT_B_MAX; i++) {
-            if ((pthelp = PT_read_son(pt, (PT_BASES)i))) {
-                new_N_mis = N_mismatches;
-                base = probe[height];
+        for (int i=PT_N; i<PT_B_MAX; i++) {
+            POS_TREE *pthelp = PT_read_son(pt, (PT_BASES)i);
+            if (pthelp) {
+                int    newmis    = mismatches;
+                double newwmis   = wmismatches;
+                int    new_N_mis = N_mismatches;
+
+                int base = probe[height];
                 if (base == PT_N || i == PT_N) {
-                    newmis    = mismatches;
-                    newwmis   = wmismatches;
-                    new_N_mis = N_mismatches + 1;
+                    new_N_mis++;
                 }
                 else if (i != base) {
-                    h       = ptnd_get_wmismatch(locs, probe, height, i);
+                    double h = ptnd_get_wmismatch(locs, probe, height, i);
                     newwmis = wmismatches + psg.pos_to_weight[height] * h;
                     newmis  = mismatches+1;
                 }
-                else {
-                    newmis  = mismatches;
-                    newwmis = wmismatches;
-                }
-                error = get_info_about_probe(locs, probe, pthelp, newmis, newwmis, new_N_mis, height+1);
+                int error = get_info_about_probe(locs, probe, pthelp, newmis, newwmis, new_N_mis, height+1);
                 if (error) return error;
             }
         }
         return 0;
     }
-    psg.mismatches = mismatches;
-    psg.wmismatches = wmismatches;
+
+    psg.mismatches   = mismatches;
+    psg.wmismatches  = wmismatches;
     psg.N_mismatches = N_mismatches;
+
     if (probe[height]) {
         if (PT_read_type(pt) == PT_NT_LEAF) {
             // @@@ code here is duplicate of code in PT_store_match_in::operator()
 
             DataLoc loc(pt);
-            pos  = loc.rpos + height;
-            name = loc.name;
+            int pos  = loc.rpos + height;
+            int name = loc.name;
 
             // @@@ recursive use of strlen with constant result (argh!)
             if (pos + (int)(strlen(probe+height)) >= psg.data[name].get_size())       // end of sequence
                 return 0;
 
+            int base;
             while ((base = probe[height])) {
-                i = psg.data[name].get_data()[pos];
+                int i = psg.data[name].get_data()[pos];
                 if (i == PT_N || base == PT_N || i == PT_QU || base == PT_QU) {
                     psg.N_mismatches = psg.N_mismatches + 1;
                 }
                 else if (i != base) {
                     psg.mismatches++;
-                    h                = ptnd_get_wmismatch(locs, probe, height, i);
+                    double h = ptnd_get_wmismatch(locs, probe, height, i);
                     psg.wmismatches += psg.pos_to_weight[height] * h;
                 }
                 pos++;
@@ -292,27 +273,28 @@ static int pt_sort_compare_match(const void *PT_probematch_ptr1, const void *PT_
     return cmp;
 }
 
-static void pt_sort_match_list(PT_local * locs)
-{
-    PT_probematch **my_list; // @@@ fix locals
-    int             list_len;
-    PT_probematch  *match;
-    int             i;
+static void pt_sort_match_list(PT_local * locs) {
+    if (locs->pm) {
+        psg.sort_by = locs->sort_by;
 
-    if (!locs->pm) return;
-    psg.sort_by = locs->sort_by;
-    list_len = locs->pm->get_count();
-    if (list_len <= 1) return;
-    my_list = (PT_probematch **)calloc(sizeof(void *), list_len);
-    for (i=0, match = locs->pm; match; i++, match=match->next) {
-        my_list[i] = match;
+        int list_len = locs->pm->get_count();
+        if (list_len > 1) {
+            PT_probematch **my_list = (PT_probematch **)calloc(sizeof(void *), list_len);
+            {
+                PT_probematch *match = locs->pm;
+                for (int i=0; match; i++) {
+                    my_list[i] = match;
+                    match      = match->next;
+                }
+            }
+            GB_sort((void **)my_list, 0, list_len, pt_sort_compare_match, 0);
+            for (int i=0; i<list_len; i++) {
+                aisc_unlink((dllheader_ext*)my_list[i]);
+                aisc_link(&locs->ppm, my_list[i]);
+            }
+            free(my_list);
+        }
     }
-    GB_sort((void **)my_list, 0, list_len, pt_sort_compare_match, 0);
-    for (i=0; i<list_len; i++) {
-        aisc_unlink((dllheader_ext*)my_list[i]);
-        aisc_link(&locs->ppm, my_list[i]);
-    }
-    free(my_list);
 }
 char *reverse_probe(char *probe) {
     //! reverse order of bases in a probe

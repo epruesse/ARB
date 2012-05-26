@@ -251,8 +251,7 @@ inline char hitgroup_idx2char(int idx) {
     return c;
 }
 
-char *get_design_info(PT_tprobes  *tprobe) // @@@ unused ? 
-{
+char *get_design_info(PT_tprobes  *tprobe) {
     char   *buffer = (char *)GB_give_buffer(2000);
     char   *probe  = (char *)GB_give_buffer2(tprobe->seq_len + 10);
     PT_pdc *pdc    = (PT_pdc *)tprobe->mh.parent->parent;
@@ -336,7 +335,7 @@ char *get_design_info(PT_tprobes  *tprobe) // @@@ unused ?
 #warning fix usage of strlen in get_design_info and add assertion vs buffer overflow
 #endif
 
-char *get_design_hinfo(PT_tprobes  *tprobe) { // @@@ unused
+char *get_design_hinfo(PT_tprobes  *tprobe) {
     char   *buffer = (char *)GB_give_buffer(2000);
     char   *s      = buffer;
     PT_pdc *pdc;
@@ -495,22 +494,16 @@ static void ptnd_check_bonds(PT_local *locs) {
 
 static void ptnd_cp_tprobe_2_probepart(PT_pdc *pdc) {
     //! split the probes into probeparts
-    PT_tprobes    *tprobe; // @@@ fix locals
-    PT_probeparts *parts;
-    int            pos;
-    int            probelen;
-
     while (pdc->parts) destroy_PT_probeparts(pdc->parts);
-    for (tprobe = pdc->tprobes;
-                tprobe;
-                tprobe = tprobe->next) {
-        probelen = strlen(tprobe->sequence);
-        probelen -= DOMAIN_MIN_LENGTH;
-        for (pos = 0; pos < probelen; pos ++) {
-            parts = create_PT_probeparts();
+    for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) {
+        int probelen = strlen(tprobe->sequence)-DOMAIN_MIN_LENGTH;
+        for (int pos = 0; pos < probelen; pos ++) {
+            PT_probeparts *parts = create_PT_probeparts();
+
             parts->sequence = strdup(tprobe->sequence+pos);
-            parts->source = tprobe;
-            parts->start = pos;
+            parts->source   = tprobe;
+            parts->start    = pos;
+
             aisc_link(&pdc->pparts, parts);
         }
     }
