@@ -71,8 +71,8 @@
 
 // probe design/match (expert window)
 #define AWAR_PD_COMMON_EXP_BONDS "probe_design/bonds/pos"  // prefix for bonds
+#define AWAR_PD_COMMON_EXP_SPLIT "probe_design/SPLIT"
 
-#define AWAR_PD_DESIGN_EXP_SPLIT  "probe_design/SPLIT"
 #define AWAR_PD_DESIGN_EXP_DTEDGE "probe_design/DTEDGE"
 #define AWAR_PD_DESIGN_EXP_DT     "probe_design/DT"
 
@@ -364,13 +364,19 @@ static GB_ERROR pd_get_the_gene_names(GBDATA *gb_main, bytestring &bs, bytestrin
     return error;
 }
 
-static int probe_send_bonds(AW_root *root, const T_PT_PDC& pdc) {
+static int probe_common_send_data(AW_root *root) {
+    // send data common to probe-design AND -match
+    if (aisc_put(PD.link, PT_LOCS, PD.locs,
+                 LOCS_SPLIT,   (double)root->awar(AWAR_PD_COMMON_EXP_SPLIT)->read_float(),
+                 NULL))
+        return 1;
+
     for (int i=0; i<16; i++) {
         char buffer[256];
         sprintf(buffer, AWAR_PD_COMMON_EXP_BONDS "%i", i);
-        if (aisc_put(PD.link, PT_PDC, pdc,
+        if (aisc_put(PD.link, PT_LOCS, PD.locs,
                      PT_INDEX,  i,
-                     PDC_BONDVAL,   (double)root->awar(buffer)->read_float(),
+                     LOCS_BONDVAL, (double)root->awar(buffer)->read_float(),
                      NULL))
             return 1;
     }
@@ -380,14 +386,13 @@ static int probe_design_send_data(AW_root *root, const T_PT_PDC& pdc) {
     if (aisc_put(PD.link, PT_PDC, pdc,
                  PDC_DTEDGE,     (double)root->awar(AWAR_PD_DESIGN_EXP_DTEDGE)->read_float()*100.0,
                  PDC_DT,         (double)root->awar(AWAR_PD_DESIGN_EXP_DT)->read_float()*100.0,
-                 PDC_SPLIT,      (double)root->awar(AWAR_PD_DESIGN_EXP_SPLIT)->read_float(),
                  PDC_CLIPRESULT, root->awar(AWAR_PD_DESIGN_CLIPRESULT)->read_int(),
                  NULL))
         return 1;
 
-    return probe_send_bonds(root, pdc);
+    return probe_common_send_data(root);
 }
-static int probe_match_send_data(AW_root *root, const T_PT_PDC& pdc) {
+static int probe_match_send_data(AW_root *root) {
     if (aisc_put(PD.link, PT_LOCS, PD.locs,
                  LOCS_MATCH_N_ACCEPT, root->awar(AWAR_PD_MATCH_NMATCHES)->read_int(),  
                  LOCS_MATCH_N_LIMIT,  root->awar(AWAR_PD_MATCH_LIM_NMATCH)->read_int(),
@@ -395,7 +400,7 @@ static int probe_match_send_data(AW_root *root, const T_PT_PDC& pdc) {
                  NULL))
         return 1;
 
-    return probe_send_bonds(root, pdc);
+    return probe_common_send_data(root);
 }
 
 static int ecolipos2int(const char *awar_val) {
@@ -675,7 +680,6 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
         int                  *counter      = event_param ? event_param->counter : NULL;
         GBDATA               *gb_main      = event_param ? event_param->gb_main : NULL;
         AW_root              *root         = aww->get_root();
-        T_PT_PDC              pdc;
         int                   show_status  = 0;
         int                   extras       = 1;     // mark species and write to temp fields
         GB_ERROR              error        = 0;
@@ -707,16 +711,8 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
             }
         }
 
-        if (!error) {
-            if (init_local_com_struct()) error = "Cannot contact PT-server (2)";
-
-            if (!error) {
-                aisc_create(PD.link, PT_LOCS, PD.locs, 
-                            LOCS_PROBE_DESIGN_CONFIG, PT_PDC, pdc, // @@@ hack - only done to transfer bonds
-                            NULL);
-                if (probe_match_send_data(root, pdc)) error = "Connection to PT_SERVER lost (2)";
-            }
-        }
+        if (!error && init_local_com_struct())     error = "Cannot contact PT-server (2)";
+        if (!error && probe_match_send_data(root)) error = "Connection to PT_SERVER lost (2)";
 
         char *probe = root->awar(AWAR_TARGET_STRING)->read_string();
 
@@ -1132,7 +1128,7 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
         root->awar_float(buffer, default_bonds[i], props);
         root->awar(buffer)->set_minmax(0, 3.0);
     }
-    root->awar_float(AWAR_PD_DESIGN_EXP_SPLIT,  .5, props);
+    root->awar_float(AWAR_PD_COMMON_EXP_SPLIT,  .5, props);
     root->awar_float(AWAR_PD_DESIGN_EXP_DTEDGE, .5, props);
     root->awar_float(AWAR_PD_DESIGN_EXP_DT,     .5, props);
 
@@ -1212,15 +1208,15 @@ static AW_window *create_probe_expert_window(AW_root *root, AW_CL for_design) {
         aws->create_input_field(buffer, 4);
     }
 
+    aws->sens_mask(AWM_EXP);
+    aws->at("split"); aws->create_input_field(AWAR_PD_COMMON_EXP_SPLIT,  6);
+
     if (for_design) {
-        aws->sens_mask(AWM_EXP);
-        aws->at("split");   aws->create_input_field(AWAR_PD_DESIGN_EXP_SPLIT,  6);
         aws->at("dt_edge"); aws->create_input_field(AWAR_PD_DESIGN_EXP_DTEDGE, 6);
         aws->at("dt");      aws->create_input_field(AWAR_PD_DESIGN_EXP_DT,     6);
         aws->sens_mask(AWM_ALL);
     }
     else {
-        aws->sens_mask(AWM_EXP);
         aws->at("nmatches");   aws->create_input_field(AWAR_PD_MATCH_NMATCHES,   3);
         aws->at("lim_nmatch"); aws->create_input_field(AWAR_PD_MATCH_LIM_NMATCH, 3);
         aws->sens_mask(AWM_ALL);
@@ -1243,7 +1239,7 @@ static AWT_config_mapping_def probe_design_mapping_def[] = {
     { AWAR_PD_DESIGN_MIN_ECOLIPOS, "minecoli" },
     { AWAR_PD_DESIGN_MAX_ECOLIPOS, "maxecoli" },
     { AWAR_PD_DESIGN_GENE,         "gene" },
-    { AWAR_PD_DESIGN_EXP_SPLIT,    "split" },
+    { AWAR_PD_COMMON_EXP_SPLIT,    "split" }, 
     { AWAR_PD_DESIGN_EXP_DTEDGE,   "dtedge" },
     { AWAR_PD_DESIGN_EXP_DT,       "dt" },
     { 0, 0 }

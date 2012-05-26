@@ -22,7 +22,7 @@
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_probematch *match)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(match)); }
 
-static double ptnd_get_wmismatch(PT_pdc *pdc, char *probe, int pos, char ref)
+static double ptnd_get_wmismatch(PT_local *locs, char *probe, int pos, char ref)
 {
     int base       = probe[pos];
     int complement = psg.complement[base];
@@ -33,8 +33,8 @@ static double ptnd_get_wmismatch(PT_pdc *pdc, char *probe, int pos, char ref)
     pt_assert(maxIdx >= 0 && maxIdx < 16);
     pt_assert(newIdx >= 0 && newIdx < 16);
 
-    double max_bind = pdc->bond[maxIdx].val;
-    double new_bind = pdc->bond[newIdx].val;
+    double max_bind = locs->bond[maxIdx].val;
+    double new_bind = locs->bond[newIdx].val;
 
     return (max_bind - new_bind);
 }
@@ -51,7 +51,7 @@ struct PT_store_match_in {
     int operator()(const DataLoc& matchLoc) {
         // if chain is reached copy data in locs structure
 
-        PT_probematch *ml;
+        PT_probematch *ml; // @@@ fix locals
         char          *probe        = psg.probe;
         int            mismatches   = psg.mismatches;
         double         wmismatches  = psg.wmismatches;
@@ -62,6 +62,7 @@ struct PT_store_match_in {
         int            base;
         int            ref;
         int            pos;
+
         if (psg.probe) {
             // @@@ code here is a duplicate of code in get_info_about_probe (PT_NT_LEAF-branch)
             pos = matchLoc.rpos+psg.height;
@@ -71,14 +72,11 @@ struct PT_store_match_in {
                     // @@@ Warning: dupped code also counts PT_QU as mismatch!
                     N_mismatches++;
                 }
-                else
-                    if (ref != base) {
-                        mismatches++;
-                        if (locs->pdc) {
-                            h = ptnd_get_wmismatch(locs->pdc, probe, height, ref);
-                            wmismatches += psg.pos_to_weight[height]*h;
-                        }
-                    }
+                else if (ref != base) {
+                    mismatches++;
+                    h = ptnd_get_wmismatch(locs, probe, height, ref);
+                    wmismatches += psg.pos_to_weight[height]*h;
+                }
                 height ++; pos++;
             }
             while ((base = probe[height])) {
@@ -174,7 +172,7 @@ static int read_names_and_pos(PT_local *locs, POS_TREE *pt) {
 static int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatches, double wmismatches, int N_mismatches, int height) {
     //! search down the tree to find matching species for the given probe
 
-    int       name, pos;
+    int       name, pos; // @@@ fix locals
     int       i;
     int       base;
     POS_TREE *pthelp;
@@ -197,22 +195,17 @@ static int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int m
                 new_N_mis = N_mismatches;
                 base = probe[height];
                 if (base == PT_N || i == PT_N) {
-                    newmis = mismatches;
-                    newwmis = wmismatches;
+                    newmis    = mismatches;
+                    newwmis   = wmismatches;
                     new_N_mis = N_mismatches + 1;
                 }
                 else if (i != base) {
-                    if (locs->pdc) {
-                        h = ptnd_get_wmismatch(locs->pdc, probe, height, i);
-                        newwmis = wmismatches + psg.pos_to_weight[height] * h;
-                    }
-                    else {
-                        newwmis = wmismatches;
-                    }
-                    newmis = mismatches+1;
+                    h       = ptnd_get_wmismatch(locs, probe, height, i);
+                    newwmis = wmismatches + psg.pos_to_weight[height] * h;
+                    newmis  = mismatches+1;
                 }
                 else {
-                    newmis = mismatches;
+                    newmis  = mismatches;
                     newwmis = wmismatches;
                 }
                 error = get_info_about_probe(locs, probe, pthelp, newmis, newwmis, new_N_mis, height+1);
@@ -241,14 +234,10 @@ static int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int m
                 if (i == PT_N || base == PT_N || i == PT_QU || base == PT_QU) {
                     psg.N_mismatches = psg.N_mismatches + 1;
                 }
-                else {
-                    if (i != base) {
-                        psg.mismatches++;
-                        if (locs->pdc) {
-                            h = ptnd_get_wmismatch(locs->pdc, probe, height, i);
-                            psg.wmismatches += psg.pos_to_weight[height] * h;
-                        }
-                    }
+                else if (i != base) {
+                    psg.mismatches++;
+                    h                = ptnd_get_wmismatch(locs, probe, height, i);
+                    psg.wmismatches += psg.pos_to_weight[height] * h;
                 }
                 pos++;
                 height++;
@@ -305,7 +294,7 @@ static int pt_sort_compare_match(const void *PT_probematch_ptr1, const void *PT_
 
 static void pt_sort_match_list(PT_local * locs)
 {
-    PT_probematch **my_list;
+    PT_probematch **my_list; // @@@ fix locals
     int             list_len;
     PT_probematch  *match;
     int             i;
@@ -391,15 +380,12 @@ int probe_match(PT_local * locs, aisc_string probestring) {
     locs->matches_truncated = 0;
 
 #if defined(DEBUG) && 0
-    PT_pdc *pdc = locs->pdc;
-    if (pdc) {
-        printf("Current bond values:\n");
-        for (int y = 0; y<4; y++) {
-            for (int x = 0; x<4; x++) {
-                printf("%5.2f", pdc->bond[y*4+x].val);
-            }
-            printf("\n");
+    printf("Current bond values:\n");
+    for (int y = 0; y<4; y++) {
+        for (int x = 0; x<4; x++) {
+            printf("%5.2f", locs->bond[y*4+x].val);
         }
+        printf("\n");
     }
 #endif // DEBUG
 
@@ -539,17 +525,15 @@ inline void cat_spaced_right(GBS_strstruct *memfile, const char *text, int width
 inline void cat_dashed_left (GBS_strstruct *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, '-', true); }
 inline void cat_dashed_right(GBS_strstruct *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, '-', false); }
 
-char *get_match_overlay(PT_probematch *ml)
-{
-    int    pr_len = strlen(ml->sequence);
+char *get_match_overlay(PT_probematch *ml) {
+    int       pr_len = strlen(ml->sequence);
+    PT_local *locs   = (PT_local *)ml->mh.parent->parent;
 
-    PT_local *locs = (PT_local *)ml->mh.parent->parent;
-    PT_pdc   *pdc  = locs->pdc;
-
-    char *ref    = (char *)calloc(sizeof(char), 21+pr_len);
+    char *ref = (char *)calloc(sizeof(char), 21+pr_len);
     memset(ref, '.', 10);
+
     for (int pr_pos  = 8, al_pos = ml->rpos-1;
-         pr_pos >= 0 && al_pos >= 0;
+         pr_pos     >= 0 && al_pos >= 0;
          pr_pos--, al_pos--)
     {
         if (!psg.data[ml->name].get_data()[al_pos]) break;
@@ -570,8 +554,8 @@ char *get_match_overlay(PT_probematch *ml)
         }
         else {
             ref[pr_pos+10] = b;
-            if (pdc && a >= PT_A && a <= PT_T && b >= PT_A && b<=PT_T) {
-                double h = ptnd_check_split(pdc, ml->sequence, pr_pos, b);
+            if (a >= PT_A && a <= PT_T && b >= PT_A && b<=PT_T) {
+                double h = ptnd_check_split(locs, ml->sequence, pr_pos, b);
                 if (h>=0.0) {
                     ref[pr_pos+10] = " nacgu"[b];
                 }

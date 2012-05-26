@@ -31,7 +31,7 @@ inline void aisc_link(dll_public *dll, PT_probeparts *parts) { aisc_link(reinter
 inline void aisc_link(dll_public *dll, PT_probematch *match) { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(match)); }
 
 extern "C" {
-    int pt_init_bond_matrix(PT_pdc *THIS)
+    int pt_init_bond_matrix(PT_local *THIS)
     {
         THIS->bond[0].val  = 0.0;
         THIS->bond[1].val  = 0.0;
@@ -165,20 +165,21 @@ static void ptnd_calc_quality(PT_pdc *pdc) {
     }
 }
 
-static double ptnd_check_max_bond(PT_pdc *pdc, char base) {
+static double ptnd_check_max_bond(PT_local *locs, char base) {
     //! check the bond val for a probe
 
     int complement = PT_complement(base);
-    return pdc->bond[(complement-(int)PT_A)*4 + base-(int)PT_A].val;
+    return locs->bond[(complement-(int)PT_A)*4 + base-(int)PT_A].val;
 }
 
-double ptnd_check_split(PT_pdc *pdc, char *probe, int pos, char ref) {
+double ptnd_check_split(PT_local *locs, char *probe, int pos, char ref) {
     int    base       = probe[pos];
     int    complement = PT_complement(base);
-    double max_bind   = pdc->bond[(complement-(int)PT_A)*4 + base-(int)PT_A].val;
-    double new_bind   = pdc->bond[(complement-(int)PT_A)*4 + ref-(int)PT_A].val;
+    double max_bind   = locs->bond[(complement-(int)PT_A)*4 + base-(int)PT_A].val;
+    double new_bind   = locs->bond[(complement-(int)PT_A)*4 + ref-(int)PT_A].val;
 
-    if (new_bind < pdc->split)
+    // if (new_bind < locs->pdc->split)
+    if (new_bind < locs->split)
         return new_bind-max_bind; // negative values indicate split
     // this mismatch splits the probe in several domains
     return (max_bind - new_bind);
@@ -250,7 +251,7 @@ inline char hitgroup_idx2char(int idx) {
     return c;
 }
 
-char *get_design_info(PT_tprobes  *tprobe)
+char *get_design_info(PT_tprobes  *tprobe) // @@@ unused ? 
 {
     char   *buffer = (char *)GB_give_buffer(2000);
     char   *probe  = (char *)GB_give_buffer2(tprobe->seq_len + 10);
@@ -335,7 +336,7 @@ char *get_design_info(PT_tprobes  *tprobe)
 #warning fix usage of strlen in get_design_info and add assertion vs buffer overflow
 #endif
 
-char *get_design_hinfo(PT_tprobes  *tprobe) {
+char *get_design_hinfo(PT_tprobes  *tprobe) { // @@@ unused
     char   *buffer = (char *)GB_give_buffer(2000);
     char   *s      = buffer;
     PT_pdc *pdc;
@@ -472,30 +473,29 @@ static void ptnd_check_position(PT_pdc *pdc) {
     }
 }
 
-static void ptnd_check_bonds(PT_pdc *pdc) {
+static void ptnd_check_bonds(PT_local *locs) {
     /*! check the average bond size.
      *
      * @TODO  checks probe hairpin bonds
      */
-    PT_tprobes  *tprobe, *tprobe_next;
-    int i;
-    double      sbond;
-    for (tprobe = pdc->tprobes;
-                tprobe;
-                tprobe = tprobe_next) {
-        tprobe_next = tprobe->next;
+
+    PT_pdc *pdc = locs->pdc;
+    for (PT_tprobes *tprobe = pdc->tprobes; tprobe; ) {
+        PT_tprobes *tprobe_next = tprobe->next;
         tprobe->seq_len = strlen(tprobe->sequence);
-        sbond = 0.0;
-        for (i=0; i<tprobe->seq_len; i++) {
-            sbond += ptnd_check_max_bond(pdc, tprobe->sequence[i]);
+        double sbond = 0.0;
+        for (int i=0; i<tprobe->seq_len; i++) {
+            sbond += ptnd_check_max_bond(locs, tprobe->sequence[i]);
         }
         tprobe->sum_bonds = sbond;
+
+        tprobe = tprobe_next;
     }
 }
 
 static void ptnd_cp_tprobe_2_probepart(PT_pdc *pdc) {
     //! split the probes into probeparts
-    PT_tprobes    *tprobe;
+    PT_tprobes    *tprobe; // @@@ fix locals
     PT_probeparts *parts;
     int            pos;
     int            probelen;
@@ -515,8 +515,8 @@ static void ptnd_cp_tprobe_2_probepart(PT_pdc *pdc) {
         }
     }
 }
-static void ptnd_duplicate_probepart_rek(PT_pdc *pdc, char *insequence, int deep, double dt, double sum_bonds, PT_probeparts *parts)
-{
+
+static void ptnd_duplicate_probepart_rek(PT_local *locs, char *insequence, int deep, double dt, double sum_bonds, PT_probeparts *parts) {
     PT_probeparts *newparts;
     int            base;
     int            i;
@@ -524,6 +524,7 @@ static void ptnd_duplicate_probepart_rek(PT_pdc *pdc, char *insequence, int deep
     double         split;
     double         ndt, nsum_bonds;
     char          *sequence;
+    PT_pdc        *pdc = locs->pdc;
 
     sequence = strdup(insequence);
     if (deep >= PT_PART_DEEP) { // now do it
@@ -537,22 +538,23 @@ static void ptnd_duplicate_probepart_rek(PT_pdc *pdc, char *insequence, int deep
         return;
     }
     base = sequence[deep];
-    max_bind = ptnd_check_max_bond(pdc, base);
+    max_bind = ptnd_check_max_bond(locs, base);
     for (i = PT_A; i <= PT_T; i++) {
         sequence[deep] = i;
-        if ((split = ptnd_check_split(pdc, insequence, deep, i)) < 0.0) continue;
+        if ((split = ptnd_check_split(locs, insequence, deep, i)) < 0.0) continue;
         // this mismatch splits the probe in several domains
         ndt = split + dt;
         nsum_bonds = sum_bonds+max_bind-split;
-        ptnd_duplicate_probepart_rek(pdc, sequence, deep+1, ndt, nsum_bonds, parts);
+        ptnd_duplicate_probepart_rek(locs, sequence, deep+1, ndt, nsum_bonds, parts);
     }
     free(sequence);
 }
-static void ptnd_duplicate_probepart(PT_pdc *pdc)
-{
-    PT_probeparts       *parts;
+
+static void ptnd_duplicate_probepart(PT_local *locs) {
+    PT_probeparts *parts;
+    PT_pdc        *pdc = locs->pdc;
     for (parts = pdc->parts; parts; parts = parts->next)
-        ptnd_duplicate_probepart_rek(pdc, parts->sequence, 0, parts->dt, 0.0, parts);
+        ptnd_duplicate_probepart_rek(locs, parts->sequence, 0, parts->dt, 0.0, parts);
 
     while ((parts = pdc->parts))
         destroy_PT_probeparts(parts);   // delete the source
@@ -635,7 +637,7 @@ static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts, const Data
         split = 0;
         while (start>=0) {
             if (pos<0) break;   // out of sight
-            h = ptnd_check_split(ptnd.pdc, probe, start, psg.data[matchLoc.name].get_data()[pos]);
+            h = ptnd_check_split(ptnd.locs, probe, start, psg.data[matchLoc.name].get_data()[pos]);
             if (h>0.0 && !split)        return; // there is a longer part matching this
             dt -= h;
             start --;
@@ -681,13 +683,13 @@ struct ptnd_chain_check_part {
             if (probe) {
                 pos = partLoc.rpos+psg.height;
                 while (probe[height] && (base = psg.data[partLoc.name].get_data()[pos])) {
-                    if (!split && (h = ptnd_check_split(ptnd.pdc, probe, height, base) < 0.0)) {
+                    if (!split && (h = ptnd_check_split(ptnd.locs, probe, height, base) < 0.0)) {
                         dt -= h;
                         split = 1;
                     }
                     else {
                         dt += h;
-                        sbond += ptnd_check_max_bond(ptnd.pdc, probe[height]) - h;
+                        sbond += ptnd_check_max_bond(ptnd.locs, probe[height]) - h;
                     }
                     height++; pos++;
                 }
@@ -749,17 +751,17 @@ static void ptnd_check_part(char *probe, POS_TREE *pt, int  height, double dt, d
                 }
                 else {
                     if (split) {
-                        h = ptnd_check_split(ptnd.pdc, probe, height, i);
+                        h = ptnd_check_split(ptnd.locs, probe, height, i);
                         if (h>0.0) ndt = dt+h; else ndt = dt-h;
                     }
-                    else if ((h = ptnd_check_split(ptnd.pdc, probe, height, i)) < 0.0) {
+                    else if ((h = ptnd_check_split(ptnd.locs, probe, height, i)) < 0.0) {
                         ndt = dt - h;
                         nsplit = 1;
                     }
                     else {
                         ndt = dt + h;
                         nsum_bonds +=
-                            ptnd_check_max_bond(ptnd.pdc, probe[height]) - h;
+                            ptnd_check_max_bond(ptnd.locs, probe[height]) - h;
                     }
                 }
                 if (nsplit && height <= DOMAIN_MIN_LENGTH) continue;
@@ -778,16 +780,16 @@ static void ptnd_check_part(char *probe, POS_TREE *pt, int  height, double dt, d
                     return;
                 while (probe[height] && (ref = psg.data[loc.name].get_data()[pos])) {
                     if (split) {
-                        h = ptnd_check_split(ptnd.pdc, probe, height, ref);
+                        h = ptnd_check_split(ptnd.locs, probe, height, ref);
                         if (h<0.0) dt -= h; else dt += h;
                     }
-                    else if ((h = ptnd_check_split(ptnd.pdc, probe, height, ref)) < 0.0) {
+                    else if ((h = ptnd_check_split(ptnd.locs, probe, height, ref)) < 0.0) {
                         dt -= h;
                         split = 1;
                     }
                     else {
                         dt += h;
-                        sum_bonds += ptnd_check_max_bond(ptnd.pdc, probe[height]) - h;
+                        sum_bonds += ptnd_check_max_bond(ptnd.locs, probe[height]) - h;
                     }
                     height++; pos++;
                 }
@@ -1055,9 +1057,9 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     ptnd_sort_probes_by(pdc, 1);
     ptnd_first_check(pdc);
     ptnd_check_position(pdc);
-    ptnd_check_bonds(pdc);
+    ptnd_check_bonds(locs);
     ptnd_cp_tprobe_2_probepart(pdc);
-    ptnd_duplicate_probepart(pdc);
+    ptnd_duplicate_probepart(locs);
     ptnd_sort_parts(pdc);
     ptnd_remove_duplicated_probepart(pdc);
     ptnd_check_probepart(pdc);
