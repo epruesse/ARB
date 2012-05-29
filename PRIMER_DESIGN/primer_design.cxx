@@ -90,16 +90,14 @@ void create_primer_design_variables(AW_root *aw_root, AW_default aw_def, AW_defa
     aw_root->awar_string(AWAR_PRIMER_TARGET_STRING,                0, global);
 }
 
-static void create_primer_design_result_window(AW_window *aww)
-{
+static void create_primer_design_result_window(AW_window *aww) {
     if (!pdrw) {
         pdrw = new AW_window_simple;
         pdrw->init(aww->get_root(), "PRD_RESULT", "Primer Design RESULT");
         pdrw->load_xfig("pd_reslt.fig");
 
-        pdrw->at("close");
-        pdrw->callback((AW_CB0)AW_POPDOWN);
-        pdrw->create_button("CLOSE", "CLOSE", "C");
+        pdrw->button_length(6);
+        pdrw->auto_space(10, 10);
 
         pdrw->at("help");
         pdrw->callback(AW_POPUP_HELP, (AW_CL)"primerdesignresult.hlp");
@@ -107,14 +105,24 @@ static void create_primer_design_result_window(AW_window *aww)
 
         pdrw->at("result");
         resultList = pdrw->create_selection_list(AWAR_PRIMER_TARGET_STRING, NULL, "", 40, 5);
-        resultList->set_file_suffix("primer");
 
-        pdrw->at("save");
-        pdrw->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)resultList);
+        const StorableSelectionList *storable_primer_list = new StorableSelectionList(TypedSelectionList("prim", resultList, "primers", "primer")); // never freed
+
+        pdrw->at("buttons");
+
+        pdrw->callback((AW_CB0)AW_POPDOWN);
+        pdrw->create_button("CLOSE", "CLOSE", "C");
+
+        pdrw->callback(awt_clear_selection_list_cb, (AW_CL)resultList);
+        pdrw->create_button("CLEAR", "CLEAR", "R");
+        
+        pdrw->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)storable_primer_list);
+        pdrw->create_button("LOAD", "LOAD", "L");
+
+        pdrw->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)storable_primer_list);
         pdrw->create_button("SAVE", "SAVE", "S");
 
-        pdrw->at("print");
-        pdrw->callback(create_print_box_for_selection_lists, (AW_CL)resultList);
+        pdrw->callback(create_print_box_for_selection_lists, (AW_CL)&storable_primer_list->get_typedsellist());
         pdrw->create_button("PRINT", "PRINT", "P");
     }
 

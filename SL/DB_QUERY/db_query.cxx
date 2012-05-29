@@ -29,6 +29,7 @@
 
 #include <list>
 #include <string>
+#include <awt_sel_boxes.hxx>
 
 using namespace std;
 using namespace QUERY;
@@ -2297,9 +2298,14 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
         default: dbq_assert(0); break;
     }
 
-    GB_ERROR error = sellst
-        ? programs->load(GB_path_in_ARBLIB("sellists", sellst))
-        : "No default selection list for query-type";
+    GB_ERROR error;
+    if (sellst) {
+        StorableSelectionList storable_sellist(TypedSelectionList("sellst", programs, "field modification scripts", "mod_fields"));
+        error = storable_sellist.load(GB_path_in_ARBLIB("sellists", sellst), false);
+    }
+    else {
+        error = "No default selection list for query-type";
+    }
 
     if (error) {
         aw_message(error);

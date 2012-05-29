@@ -662,7 +662,7 @@ void AW_create_fileselection(AW_window *aws, const char *awar_prefix, const char
     selbox_install_autorefresh(acbs);
 }
 
-char *AW_get_selected_fullname(AW_root *awr, const char *awar_prefix) {
+char *AW_get_selected_fullname(AW_root *awr, const char *awar_prefix) { // @@@ add flag to select whether wildcards are allowed
     char *file = awr->awar(GBS_global_string("%s/file_name", awar_prefix))->read_string();
     if (file[0] != '/') {
         // if name w/o directory was entered by hand (or by default) then append the directory :

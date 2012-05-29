@@ -16,6 +16,7 @@
 #include <climits>
 #include <cctype>
 #include <map>
+#include <awt_sel_boxes.hxx>
 
 using namespace std;
 
@@ -1011,7 +1012,11 @@ AW_window *ED4_create_modsai_window(AW_root *root) {
 
     aws->at("box");
     AW_selection_list *sellist = aws->create_selection_list(AWAR_MOD_SAI_SCRIPT);
-    GB_ERROR           error   = sellist->load(GB_path_in_ARBLIB("sellists/mod_sequence*.sellst"));
+    GB_ERROR error;
+    {
+        StorableSelectionList storable_sellist(TypedSelectionList("sellst", sellist, "SRT/ACI scripts", "srt_aci"));
+        error = storable_sellist.load(GB_path_in_ARBLIB("sellists/mod_sequence*.sellst"), false);
+    }
     aw_message_if(error);
     
     return aws;

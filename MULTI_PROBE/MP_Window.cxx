@@ -19,6 +19,12 @@
 #include <aw_root.hxx>
 #include <aw_awar_defs.hxx>
 
+#include <arb_strarray.h>
+#include <arb_defs.h>
+#include <arb_strbuf.h>
+#include <arbdbt.h>
+#include <RegExpr.hxx>
+
 // **************************************************************************
 
 struct mp_gl_struct mp_pd_gl; // global link
@@ -54,16 +60,17 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root)
 
     result_probes_list = result_window->create_selection_list(MP_AWAR_RESULTPROBES, "ResultProbes", "R");
     
-    result_probes_list->value_equal_display = true; // plain load/save (no # interpretation)
     result_probes_list->set_file_suffix("mpr");
     result_probes_list->insert_default("", "");
 
+    const StorableSelectionList *storable_probes_list = new StorableSelectionList(TypedSelectionList("mpr", result_probes_list, "multiprobes", "multi_probes"));
+
     result_window->at("Load");
-    result_window->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)result_probes_list);
+    result_window->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)storable_probes_list);
     result_window->create_button("LOAD_RPL", "LOAD");
 
     result_window->at("Save");
-    result_window->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)result_probes_list);
+    result_window->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)storable_probes_list);
     result_window->create_button("SAVE_RPL", "SAVE");
 
     result_window->button_length(7);
@@ -128,216 +135,157 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root)
     return result_window;
 }
 
-static const char *parse_word(const char *& line, int& wordlen) {
-    mp_assert(line);
+// --------------------------------------------------------------------------------
+// Format of probe-list for multi-probes:
+//
+// The saved format is identical to the internal format (of sellist entries; where value always equals displayed!)
+//     "quality#singlemismatch#ecolipos#target"
+//
+// When loading input probes, several other formats are accepted:
+// 
+//     "quality,singlemismatch#ecolipos#probe"                      (old save format)
+//     "target le pos apos ecol grps GC 4gc2at probe | ..."         (save of probe design; old format)
+//     "target le pos apos ecol grps GC 4gc2at probe | ...,target"  (save of probe design)
+//
+// above
+//   'target' is the target-string of the 'probe'. Internally MP works with target strings,
+//   so when loading the old save-format, 'probe' gets reverse-complemented into 'target'
 
-    while (line[0] == ' ') ++line; // eat whitespace
-    if (line[0] == 0) return 0; // at EOL
 
-    const char *behind_word       = strchr(line, ' ');
-    if (!behind_word) behind_word = strchr(line, 0); // get EOL
-    mp_assert(behind_word);
+#define SPACED(expr) "[[:space:]]*" expr "[[:space:]]*"
 
-    wordlen = behind_word-line;
-    mp_assert(wordlen);
-
-    static char *word_buffer = 0;
-    freeset(word_buffer, GB_strndup(line, wordlen));
-
-    line = behind_word;
-
-    return word_buffer;
+inline char *gen_display(int quality, int singleMis, int ecoliPos, const char *probe) {
+    return GBS_global_string_copy("%i#%i#%5i#%s", quality, singleMis, ecoliPos, probe);
 }
 
-static GB_ERROR parse_probe_list_entry(const char *one_line, char*& probe_string, int& ecoli_position) {
-    const char *start  = one_line;
-    const char *reason = "more tokens expected";
-    int         wordlen;
-    const char *word   = parse_word(one_line, wordlen);
-    probe_string       = 0;
+static GB_ERROR mp_list2file(const CharPtrArray& display, const CharPtrArray& value, StrArray& line) {
+    GB_ERROR error = NULL;
 
-    if (word) {
-        int target_length = wordlen;
-        word              = parse_word(one_line, wordlen);
-        if (word) {
-            int length = atoi(word);
+    if (value.empty()) error = "nothing to save";
 
-            if (length != target_length) {
-                reason = "Length mismatch between 'Target' and 'le'";
+    for (size_t i = 0; i<display.size() && !error; ++i) {
+        line.put(strdup(display[i]));
+    }
+
+    return error;
+}
+
+static char T_or_U_for_load = 0;
+
+static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArray& value) {
+    GB_ERROR error = NULL;
+
+    if (line.empty()) error = "empty file";
+
+    // detect format
+    if (!error) {
+        // 1. try to read probes saved from multiprobes inputlist
+        RegExpr reg_saved("^" SPACED("([0-9]+)") "([,#])" SPACED("([0-9])+") "#" SPACED("([0-9]+)") "#" SPACED("([A-Z]+)") "$", true);
+        bool    isSavedFormat = true;
+
+        for (size_t i = 0; i<line.size() && isSavedFormat; ++i) {
+            const RegMatch *match = reg_saved.match(line[i]);
+            if (!match || reg_saved.subexpr_count() != 5) {
+                isSavedFormat = false;
             }
             else {
-                word = parse_word(one_line, wordlen);
-                if (word && wordlen == 2) { // spaces between 'A=' and number
-                    word = parse_word(one_line, wordlen); // parse number
+                std::string sep = reg_saved.subexpr_match(2)->extract(line[i]);
+
+                int quality   = atoi(reg_saved.subexpr_match(1)->extract(line[i]).c_str());
+                int singlemis = atoi(reg_saved.subexpr_match(3)->extract(line[i]).c_str());
+                int ecoli     = atoi(reg_saved.subexpr_match(4)->extract(line[i]).c_str());
+
+                std::string probe = reg_saved.subexpr_match(5)->extract(line[i]);
+
+                if (sep[0] == ',') { // old format (saved probe instead of probe-target)
+                    size_t  plen   = probe.length();
+                    char   *dprobe = GB_strndup(probe.c_str(), plen);
+
+                    mp_assert(T_or_U_for_load);
+
+                    GBT_reverseComplementNucSequence(dprobe, plen, T_or_U_for_load);
+                    probe = dprobe;
+                    free(dprobe);
                 }
-                if (word) word = parse_word(one_line, wordlen); // parse ecoli
-                if (word) {
-                    ecoli_position = atoi(word);
-                    if (word) word = parse_word(one_line, wordlen); // parse 'grps'
-                    if (word) word = parse_word(one_line, wordlen); // parse 'G+C'
-                    if (word) word = parse_word(one_line, wordlen); // parse '4GC+2AT'
-                    if (word) word = parse_word(one_line, wordlen); // parse 'Probe sequence'
-                    if (word) {
-                        if (wordlen != target_length) {
-                            reason = "Length mismatch between 'Target' and 'Probe sequence'";
-                        }
-                        else {
-                            probe_string = strdup(word);
-                            return 0; // success
+
+                char *entry = gen_display(quality, singlemis, ecoli, probe.c_str());
+                display.put(entry); // transfers ownership - dont free!
+                value.put(strdup(entry));
+            }
+        }
+
+        if (!isSavedFormat) {
+            // delete attempt to read saved format:
+            display.clear();
+            value.clear();
+
+            // try to read designed list 
+            RegExpr reg_designed("^([A-Z]+)[[:space:]]+[0-9]+[[:space:]]+[A-Z][=+-][[:space:]]+[0-9]+[[:space:]]+([0-9]+)[[:space:]]+[0-9]+[[:space:]]+[0-9.]+[[:space:]]+[0-9.]+[[:space:]]+[A-Z]+[[:space:]]+[|]", true);
+
+            for (size_t i = 0; i<line.size() && !error; ++i) {
+                char *probe       = NULL;
+                char *description = NULL;
+                bool  new_format  = false;
+
+                const char *comma = strchr(line[i], ',');
+                if (comma) {
+                    description = GB_strpartdup(line[i], comma-1);
+
+                    const char *cprobe = comma+1;
+                    while (cprobe[0] == ' ') ++cprobe;
+                    probe = strdup(cprobe);
+                    
+                    new_format = true;
+                }
+                else {
+                    description = strdup(line[i]);
+                }
+
+                const RegMatch *match = reg_designed.match(description);
+                if (match) { // line from probe design (old + new format)
+                    mp_assert(match->didMatch());
+
+                    match = reg_designed.subexpr_match(1);
+                    mp_assert(match->didMatch());
+                    std::string parsed_probe = match->extract(description);
+
+                    if (new_format) { // already got probe value -> compare
+                        if (strcmp(probe, parsed_probe.c_str()) != 0) {
+                            error = GBS_global_string("probe string mismatch (in '%s')", line[i]);
                         }
                     }
+                    else {
+                        probe = strdup(parsed_probe.c_str());
+                    }
+
+                    if (!error) {
+                        int quality, ecoli;
+                        
+                        match   = reg_designed.subexpr_match(2);
+                        mp_assert(match->didMatch());
+                        ecoli   = atoi(match->extract(description).c_str());
+                        quality = 3;
+
+                        char *entry = gen_display(quality, 0, ecoli, probe);
+                        display.put(entry); // transfers ownership - dont free!
+                        value.put(strdup(entry));
+                    }
                 }
+                else if (new_format && probe[0]) {
+                    error = GBS_global_string("can't parse line '%s'", line[i]);
+                }
+                // (when loading old format -> silently ignore non-matching lines)
+
+                free(probe);
+                free(description);
             }
         }
     }
 
-    return GBS_global_string("can't parse line '%s' (Reason: %s)", start, reason);
+    return error;
 }
 
-
-static void mp_load_list(AW_window *aww, AW_selection_list *selection_list, char *base_name)
-{
-    selection_list->clear();
-    char *data;
-    {
-        const char *awar_file = GBS_global_string("%s/file_name", base_name);
-        char       *filename  = aww->get_root()->awar(awar_file)->read_string();
-        data                  = GB_read_file(filename);
-
-        free(filename);
-        if (!data) {
-            aw_message(GB_await_error());
-            return;
-        }
-    }
-
-    if (strstr(data, "Probe design Parameters:")) { // designliste nach Sonden filtern
-        char     *next_line   = 0;
-        int       target_seen = 0;
-        GB_ERROR  error       = 0;
-
-        for (char *line = data; line; line = next_line) {
-            {
-                char *nl = strchr(line, '\n');
-                if (nl) {
-                    nl[0]     = 0;
-                    next_line = nl+1;
-                }
-                else {
-                    next_line = 0;
-                }
-            }
-
-            if (!target_seen) {
-                if (strncmp(line, "Target ", 7) == 0) {
-                    target_seen = 1;
-                }
-            }
-            else {
-                char *probe_string   = 0;
-                int   ecoli_position = -1;
-                error                = parse_probe_list_entry(line, probe_string, ecoli_position);
-
-                if (error) {
-                    next_line = 0;
-                }
-                else {
-                    const char *real_disp = GBS_global_string("%1d#%1d#%6d#%s", QUALITYDEFAULT, 0, ecoli_position, probe_string);
-                    selection_list->insert(real_disp, real_disp);
-                }
-
-                free(probe_string);
-            }
-        }
-    }
-    else {
-        char *next_word = 0;
-        for (char *pl = data; pl && pl[0]; pl = next_word)
-        {
-            char *ko = strchr(pl, '\n');
-            if (ko)
-            {
-                *(ko++) = 0;
-                next_word = ko;
-            }
-            else
-                next_word = ko;
-
-            ko = strchr(pl, ',');
-
-            char *real_disp = 0;
-            if (ko)
-            {
-                *(ko++) = 0;
-                if (selection_list == selected_list || selection_list == probelist) // in ausgewaehltenliste laden
-                {
-                    real_disp = new char[3+strlen(ko)];
-                    sprintf(real_disp, "%1d#%s", atoi(pl), ko);
-                }
-                else
-                {
-                    real_disp = new char[21+strlen(SEPARATOR)+strlen(ko)+1];
-                    sprintf(real_disp, "%20s%s%s", pl, SEPARATOR, ko);
-                }
-            }
-            else            // kein Komma
-            {
-                if (selection_list == selected_list || selection_list == probelist)
-                {
-                    real_disp = new char[5+7+strlen(pl)];
-                    sprintf(real_disp, "%1d#%1d#%6d#%s", QUALITYDEFAULT, 0, 0, pl);
-                }
-                else
-                {
-                    real_disp = new char[21+strlen(SEPARATOR)+strlen(pl)+1];
-                    sprintf(real_disp, "%20s%s%s", " ", SEPARATOR, pl);
-                }
-            }
-
-            selection_list->insert(real_disp, real_disp);
-            delete [] real_disp;
-        }
-    }
-
-    free(data);
-
-    selection_list->insert_default("", "");
-    selection_list->update();
-}
-
-static AW_window *mp_create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
-{
-    AW_selection_list *selection_list = (AW_selection_list*)selid;
-
-    char *var_id    = GBS_string_2_key(selection_list->variable_name);
-    char *base_name = GBS_global_string_copy("tmp/load_box_sel_%s", var_id); // do not free (attached to cbs)
-
-    AW_create_fileselection_awars(aw_root, base_name, ".", ".list", "");
-
-    AW_window_simple *aws       = new AW_window_simple;
-    char             *window_id = GBS_global_string_copy("LOAD_%s", var_id);
-    aws->init(aw_root, window_id, "Load");
-    aws->load_xfig("sl_l_box.fig");
-
-    aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
-
-    aws->at("load");
-    aws->highlight();
-    aws->callback((AW_CB)mp_load_list, (AW_CL)selid, (AW_CL)base_name); // transfers ownership of base_name
-    aws->create_button("LOAD", "LOAD", "L");
-
-    AW_create_fileselection(aws, base_name);
-
-    free(window_id);
-    free(var_id);
-
-    return aws;
-}
-
-void MP_Window::build_pt_server_list()
-{
+void MP_Window::build_pt_server_list() {
     int     i;
     char    *choice;
 
@@ -360,10 +308,47 @@ void MP_Window::build_pt_server_list()
     aws->update_option_menu();
 }
 
+static void track_ali_change_cb(GBDATA *gb_ali, int*, GB_CB_TYPE) {
+    GB_transaction     ta(gb_ali);
+    GBDATA            *gb_main = GB_get_root(gb_ali);
+    char              *aliname = GBT_get_default_alignment(gb_main);
+    GB_alignment_type  alitype = GBT_get_alignment_type(gb_main, aliname);
+    GB_ERROR           error   = GBT_determine_T_or_U(alitype, &T_or_U_for_load, "reverse-complement");
+
+    if (error) aw_message(error);
+    free(aliname);
+}
+
+static void install_track_ali_type_callback(GBDATA *gb_main) {
+    GB_transaction ta(gb_main);
+    GB_ERROR       error = NULL;
+
+    GBDATA *gb_ali = GB_search(gb_main, "presets/use", GB_FIND);
+    if (!gb_ali) {
+        error = GB_await_error();
+    }
+    else {
+        error = GB_add_callback(gb_ali, GB_CB_CHANGED, track_ali_change_cb, 0);
+        track_ali_change_cb(gb_ali, 0, GB_CB_CHANGED);
+    }
+
+    if (error) {
+        aw_message(GBS_global_string("Cannot install ali-callback (Reason: %s)", error));
+    }
+}
+
 MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     int max_seq_col = 35;
     int max_seq_hgt = 15;
 
+#if defined(DEBUG)
+    static bool initialized = false;
+    mp_assert(!initialized); // this function may only be called once!
+    initialized             = true;
+#endif
+
+    install_track_ali_type_callback(gb_main);
+    
     result_window = NULL;
 
     aws = new AW_window_simple;
@@ -399,6 +384,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     aws->callback(MP_popup_result_window);
     aws->create_button("OPEN_RESULT_WIN", "Open result window");
 
+    // @@@ use buttons used in consense tree interface
     aws->button_length(5);
     aws->at("RightLeft");
     aws->callback(MP_rightleft);
@@ -442,45 +428,40 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     aws->button_length(7);
     aws->at("Selectedprobes");
     aws->callback(MP_selected_chosen);
-    selected_list = aws->create_selection_list(MP_AWAR_SELECTEDPROBES,
-                                               "Selected Probes",
-                                               "Selected Probes",
-                                               max_seq_col,
-                                               max_seq_hgt);
-    selected_list->set_file_suffix("prb");
+    selected_list = aws->create_selection_list(MP_AWAR_SELECTEDPROBES, "Selected Probes", "Selected Probes", max_seq_col, max_seq_hgt);
+    const StorableSelectionList *storable_selected_list = new StorableSelectionList(TypedSelectionList("prb", selected_list, "probes", "selected_probes"), mp_list2file, mp_file2list);
 
     selected_list->insert_default("", "");
 
     aws->at("Probelist");
-    probelist = aws->create_selection_list(MP_AWAR_PROBELIST,
-                                            "Probelist",
-                                            "P");
-    probelist->set_file_suffix("prb");
+    probelist = aws->create_selection_list(MP_AWAR_PROBELIST, "Probelist", "P");
+    const StorableSelectionList *storable_probelist = new StorableSelectionList(TypedSelectionList("prb", probelist, "probes", "all_probes"), mp_list2file, mp_file2list);
     probelist->insert_default("", "");
 
     aws->at("LoadProbes");
-    aws->callback(AW_POPUP, (AW_CL)mp_create_load_box_for_selection_lists, (AW_CL)probelist);
+    aws->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)storable_probelist);
     aws->create_button("LOAD_PROBES", "LOAD");
 
     aws->at("SaveProbes");
-    aws->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)probelist);
+    aws->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)storable_probelist);
     aws->create_button("SAVE_PROBES", "SAVE");
 
     aws->at("LoadSelProbes");
-    aws->callback(AW_POPUP, (AW_CL)mp_create_load_box_for_selection_lists, (AW_CL)selected_list);
+    aws->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)storable_selected_list);
     aws->create_button("LOAD_SELECTED_PROBES", "LOAD");
 
     aws->at("SaveSelProbes");
-    aws->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)selected_list);
+    aws->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)storable_selected_list);
     aws->create_button("SAVE_SELECTED_PROBES", "SAVE");
 
+    // @@@ DRY below (put next 4 cbs in one function)
     aws->at("DeleteAllPr");
     aws->callback(MP_del_all_probes);
-    aws->create_button("DELETE_ALL_PROBES", "DELETE");
+    aws->create_button("DELETE_ALL_PROBES", "CLEAR");
 
     aws->at("DeleteAllSelPr");
     aws->callback(MP_del_all_sel_probes);
-    aws->create_button("DELETE_ALL_SELECTED_PROBES", "DELETE");
+    aws->create_button("DELETE_ALL_SELECTED_PROBES", "CLEAR");
 
     aws->at("DeleteSel");
     aws->callback(MP_del_sel_probes);
@@ -539,3 +520,133 @@ MP_Window::~MP_Window()
     delete result_window;
     delete aws;
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+inline void array2cpa(const char **content, int count, ConstStrArray& array) {
+    array.erase();
+    for (int i = 0; i<count; ++i) {
+        array.put(content[i]);
+    }
+}
+
+inline char *array2string(const CharPtrArray& array) {
+    GBS_strstruct out(1000);
+
+    for (size_t i = 0; i<array.size(); ++i) {
+        out.cat(array[i]);
+        out.put('\n');
+    }
+
+    return out.release();
+}
+
+#define TEST_ASSERT_ARRAY_EQUALS(array,expected) do {   \
+        char *arrayAsString = array2string(array);      \
+        TEST_ASSERT_EQUAL(arrayAsString, expected);     \
+        free(arrayAsString);                            \
+    } while(0)
+
+void TEST_probe_lists() {
+    ConstStrArray lines;
+
+    const char *expected =
+        "3#0#  521#GCAGCCGCGGUAAUACGG\n"
+        "3#0#  510#ACUCCGUGCCAGCAGCCG\n"
+        "3#0#  511#CUCCGUGCCAGCAGCCGC\n"
+        "3#0#  512#UCCGUGCCAGCAGCCGCG\n"
+        "3#0#  513#CCGUGCCAGCAGCCGCGG\n"
+        "3#0#  509#AACUCCGUGCCAGCAGCC\n";
+
+    const char *old_probeDesignSave[] = {
+        "Probe design Parameters:",
+        "Length of probe      18",
+        "Temperature        [30.0 -100.0]",
+        "GC-Content         [50.0 -100.0]",
+        "E.Coli Position    [any]",
+        "Max Non Group Hits     0",
+        "Min Group Hits        50%",
+        "Target             le     apos ecol grps  G+C 4GC+2AT Probe sequence     | Decrease T by n*.3C -> probe matches n non group species",
+        "GCAGCCGCGGUAAUACGG 18 A=  4398  521   23 66.7 60.0    CCGUAUUACCGCGGCUGC |  0;  0;  0;  0;  0;  0;  0;  0; 35; 35; 35; 38; 74; 74; 74; 77;113;113;113;148;",
+        "ACUCCGUGCCAGCAGCCG 18 B=  3852  510   23 72.2 62.0    CGGCUGCUGGCACGGAGU |  0;  0;  0;  0;  0; 40; 40; 40; 80; 80; 80; 80;120;120;120;200;200;200;200;201;",
+        "CUCCGUGCCAGCAGCCGC 18 B+     4  511   23 77.8 64.0    GCGGCUGCUGGCACGGAG |  0;  0;  0;  0;  0; 40; 40; 40; 40; 80; 80; 80;160;160;160;160;201;201;201;201;",
+        "UCCGUGCCAGCAGCCGCG 18 B+     7  512   23 77.8 64.0    CGCGGCUGCUGGCACGGA |  0;  0;  0;  0;  0; 40; 40; 40;120;120;120;120;160;160;161;201;201;201;202;202;",
+        "CCGUGCCAGCAGCCGCGG 18 B+     9  513   23 83.3 66.0    CCGCGGCUGCUGGCACGG |  0;  0;  0;  0;  0; 80; 80; 80; 80;120;120;121;161;161;161;162;203;203;204;204;",
+        "AACUCCGUGCCAGCAGCC 18 B-     1  509   22 66.7 60.0    GGCUGCUGGCACGGAGUU |  0;  0;  0;  0;  0; 40; 40; 40; 80; 80; 80;120;120;120;120;160;160;160;240;240;",
+    };
+    array2cpa(old_probeDesignSave, ARRAY_ELEMS(old_probeDesignSave), lines);
+    {
+        StrArray display, value;
+        TEST_ASSERT_NO_ERROR(mp_file2list(lines, display, value));
+        TEST_ASSERT_ARRAY_EQUALS(display, expected);
+        TEST_ASSERT_ARRAY_EQUALS(value, expected);
+    }
+
+    const char *old_multiprobeInputSave[] = { // old multi-probe saved probe (i.e. not target) sequences -> load shall correct that
+        "3,0#   521#CCGUAUUACCGCGGCUGC",
+        "3,0#   510#CGGCUGCUGGCACGGAGU",
+        "3,0#   511#GCGGCUGCUGGCACGGAG",
+        "3,0#   512#CGCGGCUGCUGGCACGGA",
+        "3,0#   513#CCGCGGCUGCUGGCACGG",
+        "3,0#   509#GGCUGCUGGCACGGAGUU",
+    };
+    array2cpa(old_multiprobeInputSave, ARRAY_ELEMS(old_multiprobeInputSave), lines);
+    {
+        StrArray display, value;
+        LocallyModify<char> TorU(T_or_U_for_load, 'U');
+        TEST_ASSERT_NO_ERROR(mp_file2list(lines, display, value));
+        TEST_ASSERT_ARRAY_EQUALS(display, expected);
+        TEST_ASSERT_ARRAY_EQUALS(value, expected);
+    }
+
+    const char *new_probeDesignSave[] = {
+        "Probe design Parameters:,",
+        "Length of probe      18,",
+        "Temperature        [30.0 -100.0],",
+        "GC-Content         [50.0 -100.0],",
+        "E.Coli Position    [any],",
+        "Max Non Group Hits     0,",
+        "Min Group Hits        50%,",
+        "Target             le     apos ecol grps  G+C 4GC+2AT Probe sequence     | Decrease T by n*.3C -> probe matches n non group species,",
+        "GCAGCCGCGGUAAUACGG 18 A=  4398  521   23 66.7 60.0    CCGUAUUACCGCGGCUGC |  0;  0;  0;  0;  0;  0;  0;  0; 35; 35; 35; 38; 74; 74; 74; 77;113;113;113;148;,GCAGCCGCGGUAAUACGG",
+        "ACUCCGUGCCAGCAGCCG 18 B=  3852  510   23 72.2 62.0    CGGCUGCUGGCACGGAGU |  0;  0;  0;  0;  0; 40; 40; 40; 80; 80; 80; 80;120;120;120;200;200;200;200;201;,ACUCCGUGCCAGCAGCCG",
+        "CUCCGUGCCAGCAGCCGC 18 B+     4  511   23 77.8 64.0    GCGGCUGCUGGCACGGAG |  0;  0;  0;  0;  0; 40; 40; 40; 40; 80; 80; 80;160;160;160;160;201;201;201;201;,CUCCGUGCCAGCAGCCGC",
+        "UCCGUGCCAGCAGCCGCG 18 B+     7  512   23 77.8 64.0    CGCGGCUGCUGGCACGGA |  0;  0;  0;  0;  0; 40; 40; 40;120;120;120;120;160;160;161;201;201;201;202;202;,UCCGUGCCAGCAGCCGCG",
+        "CCGUGCCAGCAGCCGCGG 18 B+     9  513   23 83.3 66.0    CCGCGGCUGCUGGCACGG |  0;  0;  0;  0;  0; 80; 80; 80; 80;120;120;121;161;161;161;162;203;203;204;204;,CCGUGCCAGCAGCCGCGG",
+        "AACUCCGUGCCAGCAGCC 18 B-     1  509   22 66.7 60.0    GGCUGCUGGCACGGAGUU |  0;  0;  0;  0;  0; 40; 40; 40; 80; 80; 80;120;120;120;120;160;160;160;240;240;,AACUCCGUGCCAGCAGCC",
+    };
+    array2cpa(new_probeDesignSave, ARRAY_ELEMS(new_probeDesignSave), lines);
+    {
+        StrArray display, value;
+        TEST_ASSERT_NO_ERROR(mp_file2list(lines, display, value));
+        TEST_ASSERT_ARRAY_EQUALS(display, expected);
+        TEST_ASSERT_ARRAY_EQUALS(value, expected);
+    }
+
+    const char *new_multiprobeInputSave[] = {
+        "3#0#  521#GCAGCCGCGGUAAUACGG",
+        "3#0#  510#ACUCCGUGCCAGCAGCCG",
+        "3#0#  511#CUCCGUGCCAGCAGCCGC",
+        "3#0#  512#UCCGUGCCAGCAGCCGCG",
+        "3#0#  513#CCGUGCCAGCAGCCGCGG",
+        "3#0#  509#AACUCCGUGCCAGCAGCC",
+    };
+    array2cpa(new_multiprobeInputSave, ARRAY_ELEMS(new_multiprobeInputSave), lines);
+    {
+        StrArray display, value;
+        TEST_ASSERT_NO_ERROR(mp_file2list(lines, display, value));
+        TEST_ASSERT_ARRAY_EQUALS(display, expected);
+        TEST_ASSERT_ARRAY_EQUALS(value, expected);
+    }
+
+
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

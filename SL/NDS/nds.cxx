@@ -304,7 +304,11 @@ void AWT_create_select_srtaci_window(AW_window *aww, AW_CL awar_acisrt, AW_CL /*
 
         aws->at("box");
         AW_selection_list *programs = aws->create_selection_list(AWAR_SELECT_ACISRT_PRE);
-        GB_ERROR           error    = programs->load(GB_path_in_ARBLIB("sellists/srt_aci*.sellst"));
+        GB_ERROR error;
+        {
+            StorableSelectionList storable_sellist(TypedSelectionList("sellst", programs, "SRT/ACI scripts", "srt_aci"));
+            error = storable_sellist.load(GB_path_in_ARBLIB("sellists/srt_aci*.sellst"), false);
+        }
         if (error) aw_message(error);
 
         aws->at("field");

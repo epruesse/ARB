@@ -329,6 +329,7 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/items.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/smartptr.h

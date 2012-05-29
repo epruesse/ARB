@@ -105,6 +105,7 @@ ED4_block.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ED4_block.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_block.o: $(ARBHOME)/INCLUDE/downcast.h
