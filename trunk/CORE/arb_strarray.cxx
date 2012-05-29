@@ -197,6 +197,7 @@ void TEST_StrArray_truncate() {
     GBT_split_string(parts, "test;word;bla", ';');
 
     TEST_ASSERT_EQUAL(parts.size(), 3);
+    parts.resize(1000); TEST_ASSERT_EQUAL(parts.size(), 3);
     parts.resize(2); TEST_ASSERT_EQUAL(parts.size(), 2);
     parts.resize(1); TEST_ASSERT_EQUAL(parts.size(), 1);
     parts.resize(0); TEST_ASSERT(parts.empty());
