@@ -116,6 +116,7 @@ public:
             remove(i);
         }
     }
+    void clear() { resize(0); }
 
     void sort(CharPtrArray_compare_fun compare, void *client_data);
 };
