@@ -28,7 +28,7 @@ RegExpr::RegExpr(const std::string& expression_, bool ignore_case_)
 
 RegExpr::~RegExpr() {
     if (comreg) GBS_free_regexpr(comreg);
-    free(matches);
+    delete [] matches; 
 }
 
 void RegExpr::compile() const {
