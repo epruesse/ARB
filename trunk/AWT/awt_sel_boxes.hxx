@@ -22,9 +22,43 @@
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
+#ifndef _GLIBCXX_STRING
+#include <string>
+#endif
+
 
 class AP_filter;
+class AW_DB_selection;
+class AW_selection;
+class AW_selection_list;
+class StrArray;
+class ConstStrArray;
+class CharPtrArray;
 struct adfiltercbstruct;
+
+class TypedSelectionList {
+    AW_selection_list& selection_list;
+
+    std::string content;     // what is contained in the selection list ? (e.g. "probes")
+    std::string filetype_id; // shared by all selection lists with same content type; used as file-extension for save/load 
+    std::string unique_id;   // a unique id
+
+public:
+    TypedSelectionList(const char *filetype_id_, AW_selection_list *selection_list_, const char *content_, const char *unique_id_)
+        : selection_list(*selection_list_),
+          content(content_),
+          filetype_id(filetype_id_), 
+          unique_id(unique_id_)
+    {}
+
+    AW_selection_list *get_sellist() const { return &selection_list; }
+    const char *whats_contained() const { return content.c_str(); }
+    const char *get_unique_id() const { return unique_id.c_str(); }
+    const char *get_shared_id() const { return filetype_id.c_str(); }
+};
 
 typedef char *(*awt_sai_sellist_filter)(GBDATA *, AW_CL);
 class AWT_sai_selection;
@@ -59,8 +93,6 @@ public:
 // -----------------------------------------
 //      various database selection boxes
 
-class AW_DB_selection;
-
 AW_DB_selection *awt_create_selection_list_on_alignments(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match);
 void awt_reconfigure_selection_list_on_alignments(AW_DB_selection *alisel, const char *ali_type_match);
 
@@ -84,22 +116,48 @@ void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char
 void  awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws, const char *varname);
 char *awt_create_string_on_configurations(GBDATA *gb_main);
 
-AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const char *file_extension, char **set_file_name_awar,
-                               void (*callback)(AW_window*), AW_window* (*create_popup)(AW_root *, AW_default));
-
 // -------------------------------
-
-class AW_selection;
-class AW_selection_list;
-class ConstStrArray;
 
 AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list *select_subset_from, const char *at_box, const char *at_add, const char *at_sort);
 
 // -------------------------------
+//      generic file prompter
 
-AW_window *create_save_box_for_selection_lists(AW_root *aw_root, AW_CL selid);
-AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid);
-void create_print_box_for_selection_lists(AW_window *aw_window, AW_CL selid);
+AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const char *file_extension, char **set_file_name_awar,
+                               void (*callback)(AW_window*), AW_window* (*create_popup)(AW_root *, AW_default));
+
+// ------------------------------------------
+//      save/load selection list content
+
+typedef GB_ERROR (*ssl_to_storage)(const CharPtrArray& display, const CharPtrArray& value, StrArray& line);
+typedef GB_ERROR (*ssl_from_storage)(const CharPtrArray& line, StrArray& display, StrArray& value);
+
+class StorableSelectionList {
+    TypedSelectionList tsl;
+    ssl_to_storage     list2file;
+    ssl_from_storage   file2list;
+
+public:
+    StorableSelectionList(const TypedSelectionList& tsl_);
+    StorableSelectionList(const TypedSelectionList& tsl_, ssl_to_storage list2file_, ssl_from_storage file2list_)
+        : tsl(tsl_),
+          list2file(list2file_),
+          file2list(file2list_)
+    {}
+
+    const TypedSelectionList& get_typedsellist() const { return tsl; }
+    const char *get_filter() const { return tsl.get_shared_id(); }
+
+    GB_ERROR save(const char *filename, long number_of_lines = 0) const;
+    GB_ERROR load(const char *filemask, bool append) const;
+};
+
+AW_window *create_save_box_for_selection_lists(AW_root *aw_root, AW_CL cl_storabsellist);
+AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL cl_storabsellist);
+
+void create_print_box_for_selection_lists(AW_window *aw_window, AW_CL cl_typedsellst);
+
+void awt_clear_selection_list_cb(AW_window *aww, AW_CL cl_sellist);
 
 #else
 #error awt_sel_boxes.hxx included twice

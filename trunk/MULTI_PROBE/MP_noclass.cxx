@@ -746,27 +746,35 @@ void MP_rightleft(AW_window *) {
 }
 
 void MP_selected_chosen(AW_window */*aww*/) {
-    char *selected = mp_main->get_aw_root()->awar(MP_AWAR_SELECTEDPROBES)->read_string();
-    char *probe;
+    AW_root *aw_root  = mp_main->get_aw_root();
+    char    *selected = aw_root->awar(MP_AWAR_SELECTEDPROBES)->read_string();
+    if (selected && selected[0]) {
+        char *probe = MP_get_comment(3, selected);
+        if (probe) {
+            aw_root->awar(MP_AWAR_ECOLIPOS)->write_int(atoi(probe));
+            free(probe);
 
-    if (!selected || !selected[0])
-        return;
+            if (probe) {
+                probe = MP_get_comment(1, selected);
+                aw_root->awar(MP_AWAR_QUALITY)->write_int(atoi(probe));
+                free(probe);
 
-    probe = MP_get_comment(3, selected);
-    mp_main->get_aw_root()->awar(MP_AWAR_ECOLIPOS)->write_int(atoi(probe));
-    free(probe);
+                if (probe) {
+                    probe = MP_get_comment(2, selected);
+                    aw_root->awar(MP_AWAR_SINGLEMISMATCHES)->write_int(atoi(probe));
+                    free(probe);
 
-    probe = MP_get_comment(1, selected);
-    mp_main->get_aw_root()->awar(MP_AWAR_QUALITY)->write_int(atoi(probe));
-    free(probe);
-
-    probe = MP_get_comment(2, selected);
-    mp_main->get_aw_root()->awar(MP_AWAR_SINGLEMISMATCHES)->write_int(atoi(probe));
-    free(probe);
-
-    probe = MP_get_probes(selected);
-    mp_main->get_aw_root()->awar_string(MP_AWAR_SEQUENZEINGABE)->write_string(MP_get_probes(probe));
-    free(probe);
+                    if (probe) {
+                        probe = MP_get_probes(selected);
+                        aw_root->awar_string(MP_AWAR_SEQUENZEINGABE)->write_string(MP_get_probes(probe));
+                        free(probe);
+                        return;
+                    }
+                }
+            }
+        }
+        aw_message("can't parse entry");
+    }
 }
 
 void MP_group_all_except_marked(AW_window * /* aww */) {

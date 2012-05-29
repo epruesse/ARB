@@ -89,7 +89,7 @@ static struct {
     T_PT_LOCS          locs;
     T_PT_MAIN          com;
     AW_window_simple  *win;
-    AW_selection_list *resultList;
+    AW_selection_list *resultList; // @@@ replace by TypedSelectionList?
 } PD;
 
 struct ProbeMatchEventParam {
@@ -171,7 +171,7 @@ static void enable_auto_match_cb(AW_root *root, AW_window *aww, ProbeMatchEventP
     auto_match_changed(root);
 }
 
-static void popup_match_window_cb(AW_window *aww, AW_CL cl_gb_main) {
+static void popup_match_window_cb(AW_window *aww, AW_CL cl_gb_main) { // @@@ shall be called by auto_match_cb (if never opened b4)
     AW_root   *root         = aww->get_root();
     AW_window *match_window = create_probe_match_window(root, cl_gb_main);
     match_window->activate();
@@ -188,38 +188,44 @@ static void popup_probe_design_result_window(AW_window *aww, AW_CL cl_gb_main) {
         PD.win->init(root, "PD_RESULT", "PD RESULT");
         PD.win->load_xfig("pd_reslt.fig");
 
-        PD.win->at("close");
-        PD.win->callback((AW_CB0)AW_POPDOWN);
-        PD.win->create_button("CLOSE", "CLOSE", "C");
+        PD.win->button_length(6);
+        PD.win->auto_space(10, 10);
 
         PD.win->at("help");
         PD.win->callback(AW_POPUP_HELP, (AW_CL)"probedesignresult.hlp");
         PD.win->create_button("HELP", "HELP", "H");
 
-        PD.win->at("auto");
-        PD.win->label("Auto match");
-        PD.win->create_toggle(AWAR_PD_MATCH_AUTOMATCH);
-
-        enable_auto_match_cb(root, PD.win, 0);
-
         PD.win->at("result");
         PD.resultList = PD.win->create_selection_list(AWAR_TARGET_STRING, NULL, "", 40, 5);
-        PD.resultList->set_file_suffix("prb");
+        const StorableSelectionList *storable_result_list = new StorableSelectionList(TypedSelectionList("prb", PD.resultList, "designed probes", "designed")); // @@@ make member of PD ? 
 
         PD.resultList->clear();
         PD.resultList->insert_default("No probes designed yet", "");
 
-        PD.win->at("save");
-        PD.win->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)PD.resultList);
+        PD.win->at("buttons");
+        
+        PD.win->callback((AW_CB0)AW_POPDOWN);
+        PD.win->create_button("CLOSE", "CLOSE", "C");
+
+        PD.win->callback(awt_clear_selection_list_cb, (AW_CL)PD.resultList);
+        PD.win->create_button("CLEAR", "CLEAR", "R");
+        
+        PD.win->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)storable_result_list);
+        PD.win->create_button("LOAD", "LOAD", "L");
+
+        PD.win->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)storable_result_list);
         PD.win->create_button("SAVE", "SAVE", "S");
 
-        PD.win->at("print");
-        PD.win->callback(create_print_box_for_selection_lists, (AW_CL)PD.resultList);
+        PD.win->callback(create_print_box_for_selection_lists, (AW_CL)&storable_result_list->get_typedsellist());
         PD.win->create_button("PRINT", "PRINT", "P");
 
-        PD.win->at("match");
         PD.win->callback(popup_match_window_cb, cl_gb_main);
         PD.win->create_button("MATCH", "MATCH", "M");
+
+        PD.win->label("Auto match");
+        PD.win->create_toggle(AWAR_PD_MATCH_AUTOMATCH);
+
+        enable_auto_match_cb(root, PD.win, 0);
     }
     PD.win->activate();
 }
@@ -685,7 +691,7 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
         int                   extras       = 1;     // mark species and write to temp fields
         GB_ERROR              error        = 0;
 
-        if (!gb_main) { error = "Internal error (gb_main unknown)"; }
+        if (!gb_main) { error = "Please open probe match window once to enable auto-match"; }
 
         SmartPtr<arb_progress> progress;
         
@@ -1572,8 +1578,9 @@ AW_window *create_probe_match_window(AW_root *root, AW_CL cl_gb_main) {
         selection_id = aws->create_selection_list(AWAR_PD_SELECTED_MATCH, NULL, "", 110, 15);
         selection_id->insert_default("****** No results yet *******", "");  // if list is empty -> crashed if new species was selected in ARB_EDIT4
 
-        aws->callback(create_print_box_for_selection_lists, (AW_CL)selection_id);
+        TypedSelectionList *typed_selection = new TypedSelectionList("match", selection_id, "probe match", "probe_match");
         aws->at("print");
+        aws->callback(create_print_box_for_selection_lists, (AW_CL)typed_selection);
         aws->create_button("PRINT", "PRINT", "P");
 
         aws->at("matchSai");

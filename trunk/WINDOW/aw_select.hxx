@@ -59,7 +59,6 @@ public:
     char             *variable_name;
     AW_VARIABLE_TYPE  variable_type;
     Widget            select_list_widget;
-    bool              value_equal_display; // set true to fix load/save of some selection lists
 
     AW_selection_list_entry *list_table;
     AW_selection_list_entry *last_of_list_table;
