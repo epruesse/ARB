@@ -56,6 +56,7 @@ void MO_Liste::get_all_species() {
     }
 
     mp_pd_gl.link = aisc_open(servername, mp_pd_gl.com, AISC_MAGIC_NUMBER);
+    mp_pd_gl.locs.clear();
     servername = 0;
 
     if (!mp_pd_gl.link) {

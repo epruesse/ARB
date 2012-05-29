@@ -426,6 +426,7 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
         if (servername) {
             PD.link = aisc_open(servername, PD.com, AISC_MAGIC_NUMBER);
             if (!PD.link) error = "can't contact PT server";
+            PD.locs.clear();
         }
     }
 
@@ -708,6 +709,7 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
 
                 PD.link = aisc_open(servername, PD.com, AISC_MAGIC_NUMBER);
                 if (!PD.link) error = "Cannot contact PT-server";
+                PD.locs.clear();
             }
         }
 
