@@ -39,14 +39,14 @@ static AW_root *advice_root = 0;
 // --------------------------------------------------------
 
 void init_Advisor(AW_root *awr) {
-    aw_assert(!initialized);   // can't init twice
+    if (!initialized) {
+        advice_root  = awr;
 
-    advice_root  = awr;
+        advice_root->awar_string(AWAR_ADVICE_TEXT, "<no advice>");
+        advice_root->awar_int(AWAR_ADVICE_UNDERSTOOD, 0);
 
-    advice_root->awar_string(AWAR_ADVICE_TEXT, "<no advice>");
-    advice_root->awar_int(AWAR_ADVICE_UNDERSTOOD, 0);
-
-    initialized = true;
+        initialized = true;
+    }
 }
 
 // ----------------------------
