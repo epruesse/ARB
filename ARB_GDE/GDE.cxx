@@ -384,7 +384,6 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 char *defopt=itemarg.textvalue;
                 char *newawar=GDE_makeawarname(gmenuitem, i);
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
-                aws->label(itemarg.label);
                 awt_create_selection_list_on_trees(db_access.gb_main, aws, newawar);
                 free(newawar);
             }
@@ -392,7 +391,6 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 char *defopt=itemarg.textvalue;
                 char *newawar=GDE_makeawarname(gmenuitem, i);
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
-                aws->label(itemarg.label);
                 awt_create_selection_list_on_sai(db_access.gb_main, aws, newawar);
                 free(newawar);
             }
@@ -400,7 +398,6 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 char *defopt=itemarg.textvalue;
                 char *newawar=GDE_makeawarname(gmenuitem, i);
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
-                aws->label(itemarg.label);
                 void *id = awt_create_selection_list_on_sai(db_access.gb_main, aws, newawar, gde_filter_weights);
                 free(newawar);
                 aw_root->awar(AWAR_GDE_ALIGNMENT)->add_callback((AW_RCB1)awt_selection_list_on_sai_update_cb, (AW_CL)id);

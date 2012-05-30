@@ -352,7 +352,7 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL res_of_create_se
         acbs->aw_filt = aws; // store the filter selection window in 'acbs'
 
         aws->at("filter");
-        acbs->filterlist = aws->create_selection_list(acbs->def_subname, 0, "", 20, 3);
+        acbs->filterlist = aws->create_selection_list(acbs->def_subname, 20, 3);
 
         aws->at("2filter");
         aws->callback(AW_POPUP, (AW_CL)awt_create_2_filter_window, (AW_CL)acbs);

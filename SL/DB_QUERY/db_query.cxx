@@ -2091,7 +2091,7 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, AW_CL cl_csd)
 
         dbq_assert(csd->colorsets == 0);
         aws->at("list");
-        csd->colorsets = aws->create_selection_list(AWAR_COLOR_LOADSAVE_NAME, 0, 0, 0, 0);
+        csd->colorsets = aws->create_selection_list(AWAR_COLOR_LOADSAVE_NAME, 0, 0);
 
         update_colorset_selection_list(csd);
 
@@ -2733,7 +2733,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
             char    *this_awar_name = GBS_global_string_copy("tmp/dbquery_%s/select", query_id); // do not free this, cause it's passed to new_selection_made_cb
             AW_awar *awar           = aw_root->awar_string(this_awar_name, "", AW_ROOT_DEFAULT);
 
-            query->hitlist = aws->create_selection_list(this_awar_name, "", "", 5, 5);
+            query->hitlist = aws->create_selection_list(this_awar_name, 5, 5);
             awar->add_callback(new_selection_made_cb, (AW_CL)this_awar_name, (AW_CL)query);
         }
         query->hitlist->insert_default("end of list", "");

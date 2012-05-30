@@ -104,7 +104,7 @@ static void create_primer_design_result_window(AW_window *aww) {
         pdrw->create_button("HELP", "HELP", "H");
 
         pdrw->at("result");
-        resultList = pdrw->create_selection_list(AWAR_PRIMER_TARGET_STRING, NULL, "", 40, 5);
+        resultList = pdrw->create_selection_list(AWAR_PRIMER_TARGET_STRING, 40, 5);
 
         const StorableSelectionList *storable_primer_list = new StorableSelectionList(TypedSelectionList("prim", resultList, "primers", "primer")); // never freed
 
