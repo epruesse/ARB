@@ -262,11 +262,11 @@ static void AW_value_changed_callback(Widget /*wgt*/, XtPointer rooti, XtPointer
     root->value_changed = true;
 }
 
-static void aw_attach_widget(Widget scrolledWindowText, AW_at *_at, int default_width = -1) {
+static void aw_attach_widget(Widget w, AW_at *_at, int default_width = -1) {
     short height = 0;
     short width = 0;
     if (!_at->to_position_exists) {
-        XtVaGetValues(scrolledWindowText, XmNheight, &height, XmNwidth, &width, NULL);
+        XtVaGetValues(w, XmNheight, &height, XmNwidth, &width, NULL);
         if (default_width >0) width = default_width;
 
         switch (_at->correct_for_at_center) {
@@ -290,6 +290,8 @@ static void aw_attach_widget(Widget scrolledWindowText, AW_at *_at, int default_
 #define MIN_RIGHT_OFFSET  10
 #define MIN_BOTTOM_OFFSET 10
 
+    aw_xargs args(4*2);
+
     if (_at->attach_x) {
         int right_offset = _at->max_x_size - _at->to_position_x;
         if (right_offset<MIN_RIGHT_OFFSET) {
@@ -297,28 +299,21 @@ static void aw_attach_widget(Widget scrolledWindowText, AW_at *_at, int default_
             _at->max_x_size = _at->to_position_x+right_offset;
         }
 
-        XtVaSetValues(scrolledWindowText,
-                      XmNrightAttachment,     XmATTACH_FORM,
-                      XmNrightOffset,         right_offset,
-                      NULL);
+        args.add(XmNrightAttachment, XmATTACH_FORM);
+        args.add(XmNrightOffset,     right_offset);
     }
     else {
-        XtVaSetValues(scrolledWindowText,
-                      XmNrightAttachment,     XmATTACH_OPPOSITE_FORM,
-                      XmNrightOffset,         -_at->to_position_x,
-                      NULL);
+        args.add(XmNrightAttachment, XmATTACH_OPPOSITE_FORM);
+        args.add(XmNrightOffset,     -_at->to_position_x);
     }
+
     if (_at->attach_lx) {
-        XtVaSetValues(scrolledWindowText,
-                      XmNwidth,               _at->to_position_x - _at->x_for_next_button,
-                      XmNleftAttachment,      XmATTACH_NONE,
-                      NULL);
+        args.add(XmNleftAttachment, XmATTACH_NONE);
+        args.add(XmNwidth,          _at->to_position_x - _at->x_for_next_button);
     }
     else {
-        XtVaSetValues(scrolledWindowText,
-                      XmNleftAttachment,      XmATTACH_FORM,
-                      XmNleftOffset,          _at->x_for_next_button,
-                      NULL);
+        args.add(XmNleftAttachment, XmATTACH_FORM);
+        args.add(XmNleftOffset,     _at->x_for_next_button);
     }
 
     if (_at->attach_y) {
@@ -328,30 +323,23 @@ static void aw_attach_widget(Widget scrolledWindowText, AW_at *_at, int default_
             _at->max_y_size = _at->to_position_y+bottom_offset;
         }
 
-        XtVaSetValues(scrolledWindowText,
-                      XmNbottomAttachment,    XmATTACH_FORM,
-                      XmNbottomOffset,        bottom_offset,
-                      NULL);
+        args.add(XmNbottomAttachment, XmATTACH_FORM);
+        args.add(XmNbottomOffset,     bottom_offset);
     }
     else {
-        XtVaSetValues(scrolledWindowText,
-                      XmNbottomAttachment,    XmATTACH_OPPOSITE_FORM,
-                      XmNbottomOffset,        - _at->to_position_y,
-                      NULL);
+        args.add(XmNbottomAttachment, XmATTACH_OPPOSITE_FORM);
+        args.add(XmNbottomOffset,     - _at->to_position_y);
     }
     if (_at->attach_ly) {
-        XtVaSetValues(scrolledWindowText,
-                      XmNheight,              _at->to_position_y - _at->y_for_next_button,
-                      XmNtopAttachment,       XmATTACH_NONE,
-                      NULL);
-
+        args.add(XmNtopAttachment, XmATTACH_NONE);
+        args.add(XmNheight,        _at->to_position_y - _at->y_for_next_button);
     }
     else {
-        XtVaSetValues(scrolledWindowText,
-                      XmNtopAttachment,       XmATTACH_FORM,
-                      XmNtopOffset,           _at->y_for_next_button,
-                      NULL);
+        args.add(XmNtopAttachment, XmATTACH_FORM);
+        args.add(XmNtopOffset,     _at->y_for_next_button);
     }
+
+    args.assign_to_widget(w);
 }
 
 static char *pixmapPath(const char *pixmapName) {
