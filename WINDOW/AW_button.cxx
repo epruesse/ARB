@@ -84,13 +84,13 @@ static void aw_cp_awar_2_widget_cb(AW_root *root, AW_CL cl_widget_refresh_cb) {
                 widgetlist->aw->update_label(widgetlist->widget, var_value);
                 break;
             case AW_WIDGET_CHOICE_MENU:
-                widgetlist->aw->update_option_menu((AW_option_menu_struct*)widgetlist->cd);
+                widgetlist->aw->refresh_option_menu((AW_option_menu_struct*)widgetlist->cd);
                 break;
             case AW_WIDGET_TOGGLE_FIELD:
-                widgetlist->aw->update_toggle_field((int)widgetlist->cd);
+                widgetlist->aw->refresh_toggle_field((int)widgetlist->cd);
                 break;
             case AW_WIDGET_SELECTION_LIST:
-                ((AW_selection_list *)widgetlist->cd)->update_intern();
+                ((AW_selection_list *)widgetlist->cd)->refresh();
             default:
                 break;
         }
@@ -1648,7 +1648,7 @@ void AW_selection_list::update() {
 
     XtVaSetValues(select_list_widget, XmNitemCount, count, XmNitems, strtab, NULL);
 
-    update_intern();
+    refresh();
 
     for (size_t i=0; i<count; i++) XmStringFree(strtab[i]);
     delete [] strtab;
@@ -1699,7 +1699,7 @@ void AW_selection_list::to_array(StrArray& array, bool values) {
     aw_assert(array.size() == size());
 }
 
-void AW_selection_list::update_intern() {
+void AW_selection_list::refresh() {
     if (!variable_name) return;     // not connected to awar
 
     AW_root *root  = AW_root::SINGLETON;
@@ -2123,10 +2123,10 @@ void AW_window::insert_default_option(AW_label on, const char *mn, float vv,    
 // (see insert_option_internal for longer parameter names)
 
 void AW_window::update_option_menu() {
-    this->update_option_menu(p_global->current_option_menu);
+    this->refresh_option_menu(p_global->current_option_menu);
 }
 
-void AW_window::update_option_menu(AW_option_menu_struct *oms) {
+void AW_window::refresh_option_menu(AW_option_menu_struct *oms) {
     if (get_root()->changer_of_variable != oms->label_widget) {
         AW_widget_value_pair *active_choice = oms->first_choice;
         {
@@ -2347,11 +2347,11 @@ void AW_window::insert_toggle        (AW_label toggle_label, const char *mnemoni
 void AW_window::insert_default_toggle(AW_label toggle_label, const char *mnemonic, float var_value)         { insert_toggle_internal(toggle_label, mnemonic, var_value, true); }
 
 void AW_window::update_toggle_field() {
-    this->update_toggle_field(get_root()->number_of_toggle_fields);
+    this->refresh_toggle_field(get_root()->number_of_toggle_fields);
 }
 
 
-void AW_window::update_toggle_field(int toggle_field_number) {
+void AW_window::refresh_toggle_field(int toggle_field_number) {
 #if defined(DEBUG)
     static int inside_here = 0;
     aw_assert(!inside_here);
@@ -2387,6 +2387,7 @@ void AW_window::update_toggle_field(int toggle_field_number) {
             else                                                  toggle = 0;
         }
 
+        // @@@ code below should go to update_toggle_field
         {
             short length;
             short height;
