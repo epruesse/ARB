@@ -53,6 +53,7 @@ void awt_create_collect_buttons(AW_window *aws, bool collect_rightwards, awt_col
     auto_at.store(aws->_at);
 
     aws->auto_space(1, 1);
+    aws->button_length(0);
     aws->at_newline();
 
     int x, y; aws->get_at_position(&x, &y);
