@@ -499,12 +499,12 @@ void AW_POPUP_HELP(AW_window *aw, AW_CL /* char */ helpcd) {
 
 
         aws->at("super");
-        HELP.uplinks = aws->create_selection_list(AWAR_HELPFILE, 0, 0, 3, 3);
+        HELP.uplinks = aws->create_selection_list(AWAR_HELPFILE, 3, 3);
         HELP.uplinks->insert_default("   ", "");
         HELP.uplinks->update();
 
         aws->at("sub");
-        HELP.links = aws->create_selection_list(AWAR_HELPFILE, 0, 0, 3, 3);
+        HELP.links = aws->create_selection_list(AWAR_HELPFILE, 3, 3);
         HELP.links->insert_default("   ", "");
         HELP.links->update();
         HELP.history = 0;

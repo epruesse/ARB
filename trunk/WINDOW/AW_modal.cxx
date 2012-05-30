@@ -647,7 +647,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
         aw_msg = new_input_window(root, title, buttons);
 
         aw_msg->at_newline();
-        sel = aw_msg->create_selection_list(AW_INPUT_AWAR, 0, 0, INPUT_SIZE, 10);
+        sel = aw_msg->create_selection_list(AW_INPUT_AWAR, INPUT_SIZE, 10);
         sel->insert_default("", "");
         sel->update();
     }

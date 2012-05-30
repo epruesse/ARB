@@ -196,7 +196,7 @@ static void popup_probe_design_result_window(AW_window *aww, AW_CL cl_gb_main) {
         PD.win->create_button("HELP", "HELP", "H");
 
         PD.win->at("result");
-        PD.resultList = PD.win->create_selection_list(AWAR_TARGET_STRING, NULL, "", 40, 5);
+        PD.resultList = PD.win->create_selection_list(AWAR_TARGET_STRING, 40, 5);
         const StorableSelectionList *storable_result_list = new StorableSelectionList(TypedSelectionList("prb", PD.resultList, "designed probes", "designed")); // @@@ make member of PD ? 
 
         PD.resultList->clear();
@@ -1522,7 +1522,7 @@ static AW_window *create_IUPAC_resolve_window(AW_root *root, AW_CL cl_gb_main) {
 
     AW_selection_list *iselection_id;
     aws->at("iresult");
-    iselection_id = aws->create_selection_list(AWAR_PD_MATCH_RESOLVE, NULL, "", 32, 15);
+    iselection_id = aws->create_selection_list(AWAR_PD_MATCH_RESOLVE, 32, 15);
     iselection_id->insert_default("---empty---", "");
 
     aws->at("istring");
@@ -1575,7 +1575,7 @@ AW_window *create_probe_match_window(AW_root *root, AW_CL cl_gb_main) {
 
         AW_selection_list *selection_id;
         aws->at("result");
-        selection_id = aws->create_selection_list(AWAR_PD_SELECTED_MATCH, NULL, "", 110, 15);
+        selection_id = aws->create_selection_list(AWAR_PD_SELECTED_MATCH, 110, 15);
         selection_id->insert_default("****** No results yet *******", "");  // if list is empty -> crashed if new species was selected in ARB_EDIT4
 
         TypedSelectionList *typed_selection = new TypedSelectionList("match", selection_id, "probe match", "probe_match");
@@ -1958,7 +1958,7 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws, 
     if (selList==0) {
         aws->at("box");
         aws->callback(pg_result_selected, (AW_CL)gb_main);
-        selList = pg_global.selList = aws->create_selection_list(AWAR_PG_SELECTED_RESULT, 0, "", 2, 2);
+        selList = pg_global.selList = aws->create_selection_list(AWAR_PG_SELECTED_RESULT, 2, 2);
     }
     else {
         selList->clear();

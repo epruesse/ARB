@@ -654,7 +654,7 @@ void AW_create_fileselection(AW_window *aws, const char *awar_prefix, const char
 
     sprintf(buffer, "%sbox", at_prefix);
     aws->at(buffer);
-    acbs->filelist = aws->create_selection_list(acbs->def_name, 0, "", 2, 2);
+    acbs->filelist = aws->create_selection_list(acbs->def_name, 2, 2);
 
     fill_fileselection_cb(0, acbs);
     fileselection_filename_changed_cb(0, acbs);    // this fixes the path name

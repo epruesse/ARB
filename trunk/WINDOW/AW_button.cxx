@@ -1205,49 +1205,24 @@ static void scroll_sellist(Widget scrolledList, bool upwards) {
 static void scroll_sellist_up(Widget scrolledList, XEvent*, String*, Cardinal*) { scroll_sellist(scrolledList, true); }
 static void scroll_sellist_dn(Widget scrolledList, XEvent*, String*, Cardinal*) { scroll_sellist(scrolledList, false); }
 
-AW_selection_list* AW_window::create_selection_list(const char *var_name, const char *tmp_label, const char */*mnemonic*/, int columns, int rows) {
-    Widget scrolledWindowList;
-    Widget scrolledList;
-    Widget l = 0;
-
+AW_selection_list* AW_window::create_selection_list(const char *var_name, int columns, int rows) {
+    Widget         scrolledWindowList; // @@@ fix locals
+    Widget         scrolledList;
     VarUpdateInfo *vui;
-    AW_cb_struct              *cbs;
-
-    int width_of_label        = 0;
-    int height_of_label       = 0;
+    AW_cb_struct  *cbs;
+    
     int width_of_list;
     int height_of_list;
     int width_of_last_widget  = 0;
     int height_of_last_widget = 0;
 
-    if (_at->label_for_inputfield) {
-        tmp_label = _at->label_for_inputfield;
-    }
+    aw_assert(!_at->label_for_inputfield); // labels have no effect for selection lists
 
     AW_awar *vs = 0;
 
     aw_assert(var_name); // @@@ case where var_name == NULL is relict from multi-selection-list (not used; removed)
 
     if (var_name) vs = root->awar(var_name);
-
-    if (tmp_label) {
-        calculate_label_size(this, &width_of_label, &height_of_label, true, tmp_label);
-        // @@@ FIXME: use height_of_label for propper Y-adjusting of label
-        // width_of_label = this->calculate_string_width( calculate_label_length() );
-
-        l = XtVaCreateManagedWidget("label",
-                                    xmLabelWidgetClass,
-                                    INFO_WIDGET,
-                                    XmNx, (int)10,
-                                    XmNy, (int)(_at->y_for_next_button) + this->get_root()->y_correction_for_input_labels - 1,
-                                    XmNwidth, (int)(width_of_label + 2),
-                                    RES_CONVERT(XmNlabelString, tmp_label),
-                                    XmNrecomputeSize, false,
-                                    XmNalignment, XmALIGNMENT_BEGINNING,
-                                    NULL);
-        width_of_label += 10;
-    }
-
 
     width_of_list  = this->calculate_string_width(columns) + 9;
     height_of_list = this->calculate_string_height(rows, 4*rows) + 9;
@@ -1260,7 +1235,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, const 
         args.add(XmNfontList,               (XtArgVal)p_global->fontlist);
 
         if (_at->to_position_exists) {
-            width_of_list = _at->to_position_x - _at->x_for_next_button - width_of_label - 18;
+            width_of_list = _at->to_position_x - _at->x_for_next_button - 18;
             if (_at->y_for_next_button  < _at->to_position_y - 18) {
                 height_of_list = _at->to_position_y - _at->y_for_next_button - 18;
             }
@@ -1320,31 +1295,23 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, const 
         short height;
         XtVaGetValues(scrolledList, XmNheight, &height, NULL);
         height_of_last_widget = height + 20;
-        width_of_last_widget = width_of_label + width_of_list + 20;
+        width_of_last_widget  = width_of_list + 20;
 
         switch (_at->correct_for_at_center) {
             case 3: break;
-            case 0: // left centered
-                XtVaSetValues(scrolledWindowList, XmNx, (int)(_at->x_for_next_button + width_of_label), NULL);
-                if (tmp_label) {
-                    XtVaSetValues(l, XmNx, (int)(_at->x_for_next_button), NULL);
-                }
+            case 0: // left aligned
+                XtVaSetValues(scrolledWindowList, XmNx, (int)(_at->x_for_next_button), NULL);
                 break;
 
-            case 1: // middle centered
-                XtVaSetValues(scrolledWindowList, XmNx, (int)(_at->x_for_next_button - (width_of_last_widget/2) + width_of_label), NULL);
-                if (tmp_label) {
-                    XtVaSetValues(l, XmNx, (int)(_at->x_for_next_button - (width_of_last_widget/2)), NULL);
-                }
+            case 1: // center aligned
+                XtVaSetValues(scrolledWindowList, XmNx, (int)(_at->x_for_next_button - (width_of_last_widget/2)), NULL);
                 width_of_last_widget = width_of_last_widget / 2;
                 break;
 
-            case 2: // right centered
+            case 2: // right aligned
                 XtVaSetValues(scrolledWindowList, XmNx, (int)(_at->x_for_next_button - width_of_list - 18), NULL);
-                if (tmp_label) {
-                    XtVaSetValues(l, XmNx, (int)(_at->x_for_next_button - width_of_last_widget - 18), NULL);
-                }
                 width_of_last_widget = 0;
+                break;
         }
 
     }

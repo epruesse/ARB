@@ -420,7 +420,7 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
     preserve_para *para = new preserve_para; // do not free (is passed to callback)
 
     aws->at("ali");
-    para->alignmentList = aws->create_selection_list(AWAR_REMAP_ALIGNMENT, 0, "", 10, 30);
+    para->alignmentList = aws->create_selection_list(AWAR_REMAP_ALIGNMENT, 10, 30);
 
     // ----------
 
@@ -430,7 +430,7 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
 
     aws->at("reference");
     // aws->create_text_field(AWAR_REMAP_SPECIES_LIST); // @@@ needs to be a selection list!
-    para->usedRefsList = aws->create_selection_list(AWAR_REMAP_SEL_REFERENCE, 0, "", 10, 30);
+    para->usedRefsList = aws->create_selection_list(AWAR_REMAP_SEL_REFERENCE, 10, 30);
 
     aws->button_length(8);
 
@@ -465,7 +465,7 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
     aws->create_button("ADD", "Add", "A");
 
     aws->at("candidate");
-    para->refCandidatesList = aws->create_selection_list(AWAR_REMAP_CANDIDATE, 0, "", 10, 30);
+    para->refCandidatesList = aws->create_selection_list(AWAR_REMAP_CANDIDATE, 10, 30);
 
     {
         GB_transaction ta1(GLOBAL_gb_src);
