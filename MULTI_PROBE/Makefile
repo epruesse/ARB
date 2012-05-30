@@ -372,6 +372,7 @@ MP_Window.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+MP_Window.o: $(ARBHOME)/INCLUDE/awt_modules.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_Window.o: $(ARBHOME)/INCLUDE/cb.h

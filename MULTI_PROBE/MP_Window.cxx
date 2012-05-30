@@ -13,6 +13,7 @@
 #include "mp_proto.hxx"
 
 #include <awt_sel_boxes.hxx>
+#include <awt_modules.hxx>
 #include <aw_select.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
@@ -34,104 +35,96 @@ AW_selection_list *probelist;
 AW_selection_list *result_probes_list;
 
 
-AW_window_simple *MP_Window::create_result_window(AW_root *aw_root)
-{
-    if (result_window) return result_window;
+AW_window_simple *MP_Window::create_result_window(AW_root *aw_root) {
+    if (!result_window) {
+        result_window = new AW_window_simple;
+        result_window->init(aw_root, "MULTIPROBE_RESULTS", "MultiProbe combination results");
+        result_window->load_xfig("mp_results.fig");
 
-    result_window = new AW_window_simple;
-    result_window->init(aw_root, "MULTIPROBE_RESULTS", "MultiProbe combination results");
-    result_window->load_xfig("mp_results.fig");
+        result_window->auto_space(5, 5);
+        
+        result_window->button_length(7);
+        result_window->at("close");
+        result_window->callback(AW_POPDOWN);
+        result_window->create_button("CLOSE", "CLOSE");
 
-    result_window->button_length(8);
-    result_window->at("close");
-    result_window->callback(AW_POPDOWN);
-    result_window->create_button("CLOSE", "CLOSE");
+        result_window->at("Help");
+        result_window->callback(AW_POPUP_HELP, (AW_CL)"multiproberesults.hlp");
+        result_window->create_button("HELP", "HELP");
 
-    result_window->at("DeleteAll");
-    result_window->callback(MP_del_all_result);
-    result_window->create_button("DELETE_ALL", "DELETE");
+        result_window->at("Comment");
+        result_window->callback(MP_Comment, (AW_CL)0);
+        result_window->create_input_field(MP_AWAR_RESULTPROBESCOMMENT);
 
-    result_window->at("DeleteSel");
-    result_window->callback(MP_del_sel_result);
-    result_window->create_button("DELETE_SEELECTED", "DELETE");
+        result_window->at("box");
+        result_window->callback(MP_result_chosen);
+        result_probes_list = result_window->create_selection_list(MP_AWAR_RESULTPROBES);
+        result_probes_list->set_file_suffix("mpr");
+        result_probes_list->insert_default("", "");
 
-    result_window->at("box");
-    result_window->callback(MP_result_chosen);
+        const StorableSelectionList *storable_probes_list = new StorableSelectionList(TypedSelectionList("mpr", result_probes_list, "multiprobes", "multi_probes"));
 
-    result_probes_list = result_window->create_selection_list(MP_AWAR_RESULTPROBES, "ResultProbes", "R");
-    
-    result_probes_list->set_file_suffix("mpr");
-    result_probes_list->insert_default("", "");
+        result_window->at("buttons");
+        result_window->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)storable_probes_list);
+        result_window->create_button("LOAD_RPL", "LOAD");
 
-    const StorableSelectionList *storable_probes_list = new StorableSelectionList(TypedSelectionList("mpr", result_probes_list, "multiprobes", "multi_probes"));
+        result_window->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)storable_probes_list);
+        result_window->create_button("SAVE_RPL", "SAVE");
 
-    result_window->at("Load");
-    result_window->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)storable_probes_list);
-    result_window->create_button("LOAD_RPL", "LOAD");
+        result_window->callback(awt_clear_selection_list_cb, (AW_CL)result_probes_list);
+        result_window->create_button("CLEAR", "CLEAR");
 
-    result_window->at("Save");
-    result_window->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)storable_probes_list);
-    result_window->create_button("SAVE_RPL", "SAVE");
+        result_window->callback(MP_delete_selected, AW_CL(result_probes_list));
+        result_window->create_button("DELETE", "DELETE");
 
-    result_window->button_length(7);
-    result_window->at("Help");
-    result_window->callback(AW_POPUP_HELP, (AW_CL)"multiproberesults.hlp");
-    result_window->create_button("HELP", "HELP");
+        // change comment :
 
-    // change comment :
+        result_window->button_length(8);
 
-    result_window->button_length(8);
+        result_window->at("comment");
+        result_window->callback(MP_Comment, (AW_CL) "Bad");
+        result_window->create_button("MARK_AS_BAD", "BAD");
 
-    result_window->at("Trash");
-    result_window->callback(MP_Comment, (AW_CL) "Bad");
-    result_window->create_button("MARK_AS_BAD", "BAD");
+        result_window->callback(MP_Comment, (AW_CL) "???");
+        result_window->create_button("MARK_AS_GOOD", "???");
 
-    result_window->at("Good");
-    result_window->callback(MP_Comment, (AW_CL) "???");
-    result_window->create_button("MARK_AS_GOOD", "???");
+        result_window->callback(MP_Comment, (AW_CL) "Good");
+        result_window->create_button("MARK_AS_BEST", "Good");
 
-    result_window->at("Best");
-    result_window->callback(MP_Comment, (AW_CL) "Good");
-    result_window->create_button("MARK_AS_BEST", "Good");
+        result_window->at("auto");
+        result_window->create_toggle(MP_AWAR_AUTOADVANCE);
 
-    result_window->at("Comment");
-    result_window->callback(MP_Comment, (AW_CL)0);
-    result_window->create_input_field(MP_AWAR_RESULTPROBESCOMMENT);
+        // tree actions :
 
-    result_window->at("auto");
-    result_window->create_toggle(MP_AWAR_AUTOADVANCE);
+        result_window->button_length(3);
 
-    // tree actions :
+        result_window->at("ct_back");
+        result_window->callback(MP_show_probes_in_tree_move, (AW_CL)1, (AW_CL)result_probes_list);
+        result_window->create_button("COLOR_TREE_BACKWARD", "#rightleft_small.bitmap");
 
-    result_window->button_length(3);
+        result_window->at("ct_fwd");
+        result_window->callback(MP_show_probes_in_tree_move, (AW_CL)0, (AW_CL)result_probes_list);
+        result_window->create_button("COLOR_TREE_FORWARD", "#leftright_small.bitmap");
 
-    result_window->at("ct_back");
-    result_window->callback(MP_show_probes_in_tree_move, (AW_CL)1, (AW_CL)result_probes_list);
-    result_window->create_button("COLOR_TREE_BACKWARD", "#rightleft_small.bitmap");
+        result_window->button_length(8);
 
-    result_window->at("ct_fwd");
-    result_window->callback(MP_show_probes_in_tree_move, (AW_CL)0, (AW_CL)result_probes_list);
-    result_window->create_button("COLOR_TREE_FORWARD", "#leftright_small.bitmap");
+        result_window->at("ColorTree");
+        result_window->button_length(4);
+        result_window->callback(MP_show_probes_in_tree);
+        result_window->create_button("COLOR_TREE", "GO");
 
-    result_window->button_length(8);
+        result_window->at("MarkTree");
+        result_window->callback(MP_mark_probes_in_tree);
+        result_window->create_button("MARK_TREE", "GO");
 
-    result_window->at("ColorTree");
-    result_window->button_length(4);
-    result_window->callback(MP_show_probes_in_tree);
-    result_window->create_button("COLOR_TREE", "GO");
+        result_window->at("GroupAll");
+        result_window->callback(MP_group_all_except_marked);
+        result_window->create_button("GROUP_UNMARKED", "GO");
 
-    result_window->at("MarkTree");
-    result_window->callback(MP_mark_probes_in_tree);
-    result_window->create_button("MARK_TREE", "GO");
-
-    result_window->at("GroupAll");
-    result_window->callback(MP_group_all_except_marked);
-    result_window->create_button("GROUP_UNMARKED", "GO");
-
-    result_window->at("StandardColor");
-    result_window->callback(MP_normal_colors_in_tree);
-    result_window->create_button("RESET_COLORS", "GO");
-
+        result_window->at("StandardColor");
+        result_window->callback(MP_normal_colors_in_tree);
+        result_window->create_button("RESET_COLORS", "GO");
+    }
     return result_window;
 }
 
@@ -337,6 +330,41 @@ static void install_track_ali_type_callback(GBDATA *gb_main) {
     }
 }
 
+static void MP_collect_probes(AW_window*, awt_collect_mode mode, AW_CL) {
+    switch (mode) {
+        case ACM_ADD:
+            if (!probelist->default_is_selected()) {
+                int                        idx = probelist->get_index_of_selected();
+                AW_selection_list_iterator sel(probelist, idx);
+                selected_list->insert(sel.get_displayed(), sel.get_value());
+                MP_delete_selected(NULL, AW_CL(probelist));
+            }
+            break;
+
+        case ACM_REMOVE:
+            if (!selected_list->default_is_selected()) {
+                int                        idx = selected_list->get_index_of_selected();
+                AW_selection_list_iterator sel(selected_list, idx);
+                probelist->insert(sel.get_displayed(), sel.get_value());
+                MP_delete_selected(NULL, AW_CL(selected_list));
+            }
+            break;
+            
+        case ACM_FILL:
+            probelist->move_content_to(selected_list);
+            break;
+
+        case ACM_EMPTY:
+            selected_list->move_content_to(probelist);
+            break;
+    }
+
+    selected_list->sort(false, true);
+
+    probelist->update();
+    selected_list->update();
+}
+
 MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     int max_seq_col = 35;
     int max_seq_hgt = 15;
@@ -352,7 +380,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     result_window = NULL;
 
     aws = new AW_window_simple;
-    aws->init(aw_root, "MULTI_PROBE", "MULTI_PROBE");
+    aws->init(aw_root, "MULTIPROBE", "MULTI_PROBE");
     aws->load_xfig("multiprobe.fig");
 
     aws->at("close");
@@ -362,68 +390,6 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     aws->at("help");
     aws->callback(AW_POPUP_HELP, (AW_CL)"multiprobe.hlp");
     aws->create_button("HELP", "HELP");
-
-    aws->at("Border1");
-    aws->callback(MP_cache_sonden);
-    aws->create_input_field(MP_AWAR_QUALITYBORDER1, 4);
-
-    aws->button_length(5);
-    aws->at("New");
-    aws->callback(MP_new_sequence);
-    aws->create_button("CREATE_NEW_SEQUENCE", "ADD");
-
-    aws->button_length(10);
-    aws->at("Compute");
-    aws->callback(MP_compute, (AW_CL)gb_main);
-    aws->highlight();
-    aws->help_text("Compute possible Solutions");
-    aws->create_button("GO", "GO");
-
-    aws->button_length(20);
-    aws->at("Results");
-    aws->callback(MP_popup_result_window);
-    aws->create_button("OPEN_RESULT_WIN", "Open result window");
-
-    // @@@ use buttons used in consense tree interface
-    aws->button_length(5);
-    aws->at("RightLeft");
-    aws->callback(MP_rightleft);
-    aws->create_button("MOVE_RIGHT", "#rightleft.bitmap");      // rightleft.bitmap
-
-    aws->at("LeftRight");
-    aws->callback(MP_leftright);
-    aws->create_button("MOVE_LEFT", "#leftright.bitmap");       // leftright.bitmap
-
-    aws->at("AllRight");
-    aws->callback(MP_all_right);
-    aws->create_button("MOVE_ALL_RIGHT", "#allright.bitmap");
-
-    aws->at("Quality");
-    aws->callback(MP_cache_sonden);
-    aws->create_option_menu(MP_AWAR_QUALITY);
-    aws->insert_option("High Priority", "", 5);
-    aws->insert_option("       4", "", 4);
-    aws->insert_option("Normal 3", "", 3);
-    aws->insert_option("       2", "", 2);
-    aws->insert_option("Low Prio. 1", "", 1);
-    aws->update_option_menu();
-
-    if (1) {
-        aws->at("OutsideMismatches");
-        aws->callback(MP_cache_sonden);
-        aws->create_option_menu(MP_AWAR_OUTSIDEMISMATCHES);
-        aws->insert_option("3.0", "", (float)3.0);
-        aws->insert_option("2.5", "", (float)2.5);
-        aws->insert_option("2.0", "", (float)2.0);
-        aws->insert_option("1.5", "", (float)1.5);
-        aws->insert_option("1.0", "", (float)1.0);
-#ifdef DEBUG
-        aws->insert_option("0", "", (float)1.0);
-#endif
-
-        aws->update_option_menu();
-    }
-
 
     aws->button_length(7);
     aws->at("Selectedprobes");
@@ -438,51 +404,106 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     const StorableSelectionList *storable_probelist = new StorableSelectionList(TypedSelectionList("prb", probelist, "probes", "all_probes"), mp_list2file, mp_file2list);
     probelist->insert_default("", "");
 
-    aws->at("LoadProbes");
-    aws->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)storable_probelist);
-    aws->create_button("LOAD_PROBES", "LOAD");
+    aws->at("collect");
+    awt_create_collect_buttons(aws, true, MP_collect_probes, 0);
+    
+    aws->auto_space(5, 5);
+    aws->button_length(7);
 
-    aws->at("SaveProbes");
-    aws->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)storable_probelist);
-    aws->create_button("SAVE_PROBES", "SAVE");
+    for (int rightSide = 0; rightSide <= 1; ++rightSide) {
+        const StorableSelectionList *storableList = rightSide ? storable_selected_list : storable_probelist;
+        const char                  *id_suffix    = rightSide ? "SELECTED_PROBES" : "PROBES";
 
-    aws->at("LoadSelProbes");
-    aws->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)storable_selected_list);
-    aws->create_button("LOAD_SELECTED_PROBES", "LOAD");
+        AW_selection_list *sellist = storableList->get_typedsellist().get_sellist();
 
-    aws->at("SaveSelProbes");
-    aws->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)storable_selected_list);
-    aws->create_button("SAVE_SELECTED_PROBES", "SAVE");
+        aws->at(rightSide ? "RightButtons" : "LeftButtons");
 
-    // @@@ DRY below (put next 4 cbs in one function)
-    aws->at("DeleteAllPr");
-    aws->callback(MP_del_all_probes);
-    aws->create_button("DELETE_ALL_PROBES", "CLEAR");
+        aws->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)storableList);
+        aws->create_button(GBS_global_string("LOAD_%s", id_suffix), "LOAD");
 
-    aws->at("DeleteAllSelPr");
-    aws->callback(MP_del_all_sel_probes);
-    aws->create_button("DELETE_ALL_SELECTED_PROBES", "CLEAR");
+        aws->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)storableList);
+        aws->create_button(GBS_global_string("SAVE_%s", id_suffix), "SAVE");
 
-    aws->at("DeleteSel");
-    aws->callback(MP_del_sel_probes);
-    aws->create_button("DELETE_SELECTED_PROBE", "DELETE");
+        aws->callback(awt_clear_selection_list_cb, (AW_CL)sellist);
+        aws->create_button(GBS_global_string("CLEAR_%s", id_suffix), "CLEAR");
 
-    aws->at("DeletePr");
-    aws->callback(MP_del_probes);
-    aws->create_button("DELETE_PROBES", "DELETE");
+        aws->callback(MP_delete_selected, (AW_CL)sellist);
+        aws->create_button(GBS_global_string("DELETE_%s", id_suffix), "DELETE");
+    }
 
-    aws->at("WeightedMismatches");
+    aws->at("Quality");
     aws->callback(MP_cache_sonden);
-    aws->create_toggle(MP_AWAR_WEIGHTEDMISMATCHES);
+    aws->create_option_menu(MP_AWAR_QUALITY);
+    aws->insert_option("High Priority", "", 5);
+    aws->insert_option("       4", "", 4);
+    aws->insert_option("Normal 3", "", 3);
+    aws->insert_option("       2", "", 2);
+    aws->insert_option("Low Prio. 1", "", 1);
+    aws->update_option_menu();
+
+    aws->at("add");
+    aws->callback(MP_new_sequence);
+    aws->create_autosize_button("ADD_PROBE", "ADD");
+    aws->at("seqin");
+    aws->create_input_field(MP_AWAR_SEQIN, 25);
+
+    // --------------------------------
+    //      multi probe parameters
+
+    aws->at("PTServer");
+    awt_create_selection_list_on_pt_servers(aws, MP_AWAR_PTSERVER, true);
+    aw_root->awar(MP_AWAR_PTSERVER)->add_callback(MP_cache_sonden2); // remove cached probes when changing pt-server
+
+    aws->at("NoOfProbes");
+    aws->create_option_menu(MP_AWAR_NOOFPROBES);
+    aws->callback(MP_cache_sonden);
+    aws->insert_option("Compute  1 probe ", "", 1);
+    char str[50];
+    for (int i=2; i<=MAXPROBECOMBIS; i++) {
+        sprintf(str, "%2d-probe-combinations", i);
+        aws->insert_option(str, "", i);
+    }
+    aws->update_option_menu();
+
+    aws->button_length(10);
+    aws->at("Compute");
+    aws->callback(MP_compute, (AW_CL)gb_main);
+    aws->highlight();
+    aws->help_text("Compute possible Solutions");
+    aws->create_button("GO", "GO");
+
+    aws->button_length(20);
+    aws->at("Results");
+    aws->callback(MP_popup_result_window);
+    aws->create_button("OPEN_RESULT_WIN", "Open result window");
 
     aws->at("Komplement");
     aws->callback(MP_cache_sonden);
     aws->create_toggle(MP_AWAR_COMPLEMENT);
 
+    aws->at("WeightedMismatches");
+    aws->callback(MP_cache_sonden);
+    aws->create_toggle(MP_AWAR_WEIGHTEDMISMATCHES);
+
+    // max non group hits
+    aws->at("Border1");
+    aws->callback(MP_cache_sonden);
+    aws->create_input_field(MP_AWAR_QUALITYBORDER1, 6);
+
+    aws->at("OutsideMismatches");
+    aws->callback(MP_cache_sonden);
+    aws->create_option_menu(MP_AWAR_OUTSIDEMISMATCHES);
+    aws->insert_option("3.0", "", (float)3.0);
+    aws->insert_option("2.5", "", (float)2.5);
+    aws->insert_option("2.0", "", (float)2.0);
+    aws->insert_option("1.5", "", (float)1.5);
+    aws->insert_option("1.0", "", (float)1.0);
+    aws->update_option_menu();
+
+    // max mismatches for group
     aws->at("Greyzone");
     aws->callback(MP_cache_sonden);
     aws->create_option_menu(MP_AWAR_GREYZONE);
-
     aws->insert_default_option("0.0", "", (float)0.0);
     for (float lauf=0.1; lauf<(float)1.0; lauf+=0.1) {
         char strs[20];
@@ -491,24 +512,6 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     }
     aws->update_option_menu();
 
-
-    aws->at("NoOfProbes");
-    aws->create_option_menu(MP_AWAR_NOOFPROBES);
-    aws->callback(MP_cache_sonden);
-
-    aws->insert_option("Compute  1 probe ", "", 1);
-    char str[50];
-    for (int i=2; i<=MAXPROBECOMBIS; i++) {
-        sprintf(str, "%2d-probe-combinations", i);
-        aws->insert_option(str, "", i);
-    }
-
-    aws->update_option_menu();
-
-    aws->at("PTServer");
-    awt_create_selection_list_on_pt_servers(aws, MP_AWAR_PTSERVER, true);
-
-    aw_root->awar(MP_AWAR_PTSERVER)->add_callback(MP_cache_sonden2); // remove cached probes when changing pt-server
 }
 
 
