@@ -541,7 +541,6 @@ int ARB_main(int argc, const char *argv[]) {
 
     aw_root->awar_int(AWAR_EXPERT, 0);
 
-    init_Advisor(aw_root);
     AWT_install_cb_guards();
 
     NtreeCommandLine cl(argc, argv);
