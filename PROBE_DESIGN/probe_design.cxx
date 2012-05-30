@@ -1604,7 +1604,7 @@ AW_window *create_probe_match_window(AW_root *root, AW_CL cl_gb_main) {
         aws->create_toggle(AWAR_PD_MATCH_SORTBY);
 
         aws->at("mismatches");
-        aws->create_option_menu(AWAR_MAX_MISMATCHES, NULL,  "");
+        aws->create_option_menu(AWAR_MAX_MISMATCHES);
         aws->insert_default_option("Search up to zero mismatches", "", 0);
         for (int mm = 1; mm <= 20; ++mm) {
             aws->insert_option(GBS_global_string("Search up to %i mismatches", mm), "", mm);

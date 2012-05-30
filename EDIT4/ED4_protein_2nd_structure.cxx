@@ -1063,7 +1063,7 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, AW_cb_struct *awcbs) {
 
     // create SAI option menu
     aws->label_length(30);
-    AW_option_menu_struct *oms_sai = aws->create_option_menu(PFOLD_AWAR_SELECTED_SAI, "Selected Protein Structure SAI", "");
+    AW_option_menu_struct *oms_sai = aws->create_option_menu(PFOLD_AWAR_SELECTED_SAI, "Selected Protein Structure SAI");
     ED4_pfold_select_SAI_and_update_option_menu(aws, (AW_CL)oms_sai, 0);
     aws->at_newline();
     aws->label("-> Filter SAI names for");
@@ -1074,7 +1074,7 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, AW_cb_struct *awcbs) {
     // create match method option menu
     PFOLD_MATCH_METHOD match_method = (PFOLD_MATCH_METHOD) ED4_ROOT->aw_root->awar(PFOLD_AWAR_MATCH_METHOD)->read_int();
     aws->label_length(12);
-    aws->create_option_menu(PFOLD_AWAR_MATCH_METHOD, "Match Method", "");
+    aws->create_option_menu(PFOLD_AWAR_MATCH_METHOD, "Match Method");
     for (int i = 0; const char *mm_aw = pfold_match_method_awars[i].name; i++) {
         aws->callback(awcbs);
         if (match_method == pfold_match_method_awars[i].value) {

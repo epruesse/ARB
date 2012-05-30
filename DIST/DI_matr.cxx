@@ -1484,7 +1484,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->create_toggle(AWAR_DIST_MATRIX_DNA_ENABLED);
 
     aws->at("which_correction");
-    aws->create_option_menu(AWAR_DIST_CORR_TRANS, NULL, "");
+    aws->create_option_menu(AWAR_DIST_CORR_TRANS);
     aws->insert_option("none",                    "n", (int)DI_TRANSFORMATION_NONE);
     aws->insert_option("similarity",              "n", (int)DI_TRANSFORMATION_SIMILARITY);
     aws->insert_option("jukes-cantor (dna)",      "c", (int)DI_TRANSFORMATION_JUKES_CANTOR);

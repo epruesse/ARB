@@ -2673,7 +2673,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         for (int key = QUERY_SEARCHES-1;  key >= 0; --key) {
             if (key) {
                 aws->at(xpos, ypos+key*KEY_Y_OFFSET);
-                aws->create_option_menu(query->awar_operator[key], 0, "");
+                aws->create_option_menu(query->awar_operator[key]);
                 aws->insert_option("and", "", "and");
                 aws->insert_option("or", "", "or");
                 aws->insert_option("ign", "", "ign");

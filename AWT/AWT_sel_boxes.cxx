@@ -887,7 +887,7 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root, AW_CL cl_storab
     aws->create_button("SAVE", "SAVE", "S");
 
     aws->at("nlines");
-    aws->create_option_menu(awar_line_anz, 0, "");
+    aws->create_option_menu(awar_line_anz);
     aws->insert_default_option("all",   "a", 0);
     aws->insert_option        ("10",    "",  10);
     aws->insert_option        ("50",    "",  50);

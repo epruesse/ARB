@@ -295,7 +295,7 @@ void MP_Window::build_pt_server_list() {
 
     aws->at("PTServer");
     aws->callback(MP_cache_sonden);
-    aws->create_option_menu(MP_AWAR_PTSERVER, NULL, "");
+    aws->create_option_menu(MP_AWAR_PTSERVER);
 
     for (i=0; ; i++) {
         choice = GBS_ptserver_id_to_choice(i, 1);
@@ -400,7 +400,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
     aws->at("Quality");
     aws->callback(MP_cache_sonden);
-    aws->create_option_menu(MP_AWAR_QUALITY, NULL, "");
+    aws->create_option_menu(MP_AWAR_QUALITY);
     aws->insert_option("High Priority", "", 5);
     aws->insert_option("       4", "", 4);
     aws->insert_option("Normal 3", "", 3);
@@ -411,7 +411,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     if (1) {
         aws->at("OutsideMismatches");
         aws->callback(MP_cache_sonden);
-        aws->create_option_menu(MP_AWAR_OUTSIDEMISMATCHES, NULL, "");
+        aws->create_option_menu(MP_AWAR_OUTSIDEMISMATCHES);
         aws->insert_option("3.0", "", (float)3.0);
         aws->insert_option("2.5", "", (float)2.5);
         aws->insert_option("2.0", "", (float)2.0);
@@ -481,7 +481,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
     aws->at("Greyzone");
     aws->callback(MP_cache_sonden);
-    aws->create_option_menu(MP_AWAR_GREYZONE, NULL, "");
+    aws->create_option_menu(MP_AWAR_GREYZONE);
 
     aws->insert_default_option("0.0", "", (float)0.0);
     for (float lauf=0.1; lauf<(float)1.0; lauf+=0.1) {
@@ -493,7 +493,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
 
     aws->at("NoOfProbes");
-    aws->create_option_menu(MP_AWAR_NOOFPROBES, NULL, "");
+    aws->create_option_menu(MP_AWAR_NOOFPROBES);
     aws->callback(MP_cache_sonden);
 
     aws->insert_option("Compute  1 probe ", "", 1);
