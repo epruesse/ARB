@@ -61,6 +61,7 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "quit",           1);
     GBS_write_hash(dontCallHash, "ARB_EDIT4/QUIT", 1);
     GBS_write_hash(dontCallHash, "ARB_INTRO/CANCEL", 1);
+    GBS_write_hash(dontCallHash, "NEIGHBOUR_JOINING/CLOSE", 1);
     
     GBS_write_hash(dontCallHash, "MERGE_SELECT_DATABASES/QUIT", 1);
     GBS_write_hash(dontCallHash, "quitnstart", 1);
