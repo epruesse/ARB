@@ -1871,28 +1871,14 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *var_name, AW_la
     Widget optionMenu1;
     int x_for_position_of_menu;
 
-    if (_at->label_for_inputfield) {
-        tmp_label = _at->label_for_inputfield;
+    if (_at->label_for_inputfield) tmp_label = _at->label_for_inputfield;
+    if (tmp_label && !tmp_label[0]) {
+        aw_assert(0); // do not specify empty labels (causes misalignment)
+        tmp_label = NULL;
     }
 
-    if (_at->correct_for_at_center) {
-        if (tmp_label) {
-            _at->saved_x = _at->x_for_next_button;
-            x_for_position_of_menu = 10;
-        }
-        else {
-            _at->saved_x = _at->x_for_next_button;
-            x_for_position_of_menu = 10;
-        }
-    }
-    else {
-        if (tmp_label) {
-            x_for_position_of_menu = _at->x_for_next_button - 3;
-        }
-        else {
-            x_for_position_of_menu = _at->x_for_next_button - 3 - 7;
-        }
-    }
+    _at->saved_x           = _at->x_for_next_button - (tmp_label ? 0 : 10);
+    x_for_position_of_menu = 10;
 
     optionMenu_shell = XtVaCreatePopupShell ("optionMenu shell",
                                              xmMenuShellWidgetClass,
@@ -1913,45 +1899,44 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *var_name, AW_la
     {
         aw_xargs args(3);
         args.add(XmNfontList, (XtArgVal)p_global->fontlist);
-        args.add(XmNx, x_for_position_of_menu);
-        args.add(XmNy, _at->y_for_next_button - 5);
+        if (!_at->attach_x && !_at->attach_lx) args.add(XmNx, x_for_position_of_menu);
+        if (!_at->attach_y && !_at->attach_ly) args.add(XmNy, _at->y_for_next_button-5);
 
         if (tmp_label) {
-            char *help_label;
             int   width_help_label, height_help_label;
             calculate_label_size(this, &width_help_label, &height_help_label, false, tmp_label);
             // @@@ FIXME: use height_help_label for Y-alignment
-
 #if defined(DUMP_BUTTON_CREATION)
             printf("width_help_label=%i label='%s'\n", width_help_label, tmp_label);
 #endif // DUMP_BUTTON_CREATION
 
-            help_label = this->align_string(tmp_label, width_help_label);
-            optionMenu1 = XtVaCreateManagedWidget("optionMenu1",
-                                                  xmRowColumnWidgetClass,
-                                                  INFO_WIDGET,
-                                                  XmNrowColumnType, XmMENU_OPTION,
-                                                  XmNsubMenuId, optionMenu,
-                                                  RES_CONVERT(XmNlabelString, help_label),
-                                                  NULL);
+            {
+                char *help_label = this->align_string(tmp_label, width_help_label);
+                optionMenu1 = XtVaCreateManagedWidget("optionMenu1",
+                                                      xmRowColumnWidgetClass,
+                                                      (_at->attach_any) ? INFO_FORM : INFO_WIDGET,
+                                                      XmNrowColumnType, XmMENU_OPTION,
+                                                      XmNsubMenuId, optionMenu,
+                                                      RES_CONVERT(XmNlabelString, help_label),
+                                                      NULL);
+                free(help_label);
+            }
 
             if (mnemonic && mnemonic[0] && strchr(tmp_label, mnemonic[0])) {
                 XtVaSetValues(optionMenu1, RES_CONVERT(XmNmnemonic, mnemonic), NULL);
             }
-            args.assign_to_widget(optionMenu1);
-            free(help_label);
         }
         else {
+            _at->x_for_next_button = _at->saved_x;
+
             optionMenu1 = XtVaCreateManagedWidget("optionMenu1",
                                                   xmRowColumnWidgetClass,
                                                   (_at->attach_any) ? INFO_FORM : INFO_WIDGET,
                                                   XmNrowColumnType, XmMENU_OPTION,
                                                   XmNsubMenuId, optionMenu,
-                                                  RES_CONVERT(XmNlabelString, ""),
                                                   NULL);
-            args.assign_to_widget(optionMenu1);
-            if (_at->attach_any) aw_attach_widget(optionMenu1, _at);
         }
+        args.assign_to_widget(optionMenu1);
     }
 
 #if 0
@@ -2123,7 +2108,35 @@ void AW_window::insert_default_option(AW_label on, const char *mn, float vv,    
 // (see insert_option_internal for longer parameter names)
 
 void AW_window::update_option_menu() {
-    this->refresh_option_menu(p_global->current_option_menu);
+    AW_option_menu_struct *oms = p_global->current_option_menu;
+    refresh_option_menu(oms);
+
+    if (_at->attach_any) aw_attach_widget(oms->label_widget, _at);
+
+    short width;
+    short height;
+    XtVaGetValues(oms->label_widget, XmNwidth, &width, XmNheight, &height, NULL);
+    int   width_of_last_widget  = width;
+    int   height_of_last_widget = height;
+
+    if (!_at->to_position_exists) {
+        if (oms->correct_for_at_center_intern == 0) {   // left aligned
+            XtVaSetValues(oms->label_widget, XmNx, short(_at->saved_x), NULL);
+        }
+        if (oms->correct_for_at_center_intern == 1) {   // middle centered
+            XtVaSetValues(oms->label_widget, XmNx, short(_at->saved_x - width/2), NULL);
+            width_of_last_widget = width_of_last_widget / 2;
+        }
+        if (oms->correct_for_at_center_intern == 2) {   // right aligned
+            XtVaSetValues(oms->label_widget, XmNx, short(_at->saved_x - width), NULL);
+            width_of_last_widget = 0;
+        }
+    }
+            
+    width_of_last_widget += SPACE_BEHIND_BUTTON;
+
+    this->unset_at_commands();
+    this->increment_at_commands(width_of_last_widget, height_of_last_widget);
 }
 
 void AW_window::refresh_option_menu(AW_option_menu_struct *oms) {
@@ -2139,28 +2152,6 @@ void AW_window::refresh_option_menu(AW_option_menu_struct *oms) {
         if (!active_choice) active_choice = oms->default_choice;
         if (active_choice) XtVaSetValues(oms->label_widget, XmNmenuHistory, active_choice->widget, NULL);
 
-        {
-            short length;
-            short height;
-            XtVaGetValues(oms->label_widget, XmNwidth, &length, XmNheight, &height, NULL);
-            int   width_of_last_widget  = length;
-            int   height_of_last_widget = height;
-
-            if (oms->correct_for_at_center_intern) {
-                if (oms->correct_for_at_center_intern == 1) {   // middle centered
-                    XtVaSetValues(oms->label_widget, XmNx, (short)((short)_at->saved_x - (short)(length/2)), NULL);
-                    width_of_last_widget = width_of_last_widget / 2;
-                }
-                if (oms->correct_for_at_center_intern == 2) {   // right centered
-                    XtVaSetValues(oms->label_widget, XmNx, (short)((short)_at->saved_x - length) + 7, NULL);
-                    width_of_last_widget = 0;
-                }
-            }
-            width_of_last_widget -= 4;
-
-            this->unset_at_commands();
-            this->increment_at_commands(width_of_last_widget, height_of_last_widget);
-        }
     }
 }
 
