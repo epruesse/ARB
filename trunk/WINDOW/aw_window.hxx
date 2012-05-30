@@ -313,7 +313,7 @@ public:
 
     void  create_invisible(int columns);
     void *_create_option_entry(AW_VARIABLE_TYPE type, const char *name, const char *mnemonic, const char *name_of_color);
-    void  update_toggle_field(int toggle_field_number);
+    void  refresh_toggle_field(int toggle_field_number); 
     void  _set_activate_callback(void *widget);
     void  unset_at_commands();
     void  increment_at_commands(int width, int height);
@@ -561,7 +561,7 @@ public:
     void insert_default_option (AW_label choice_label, const char *mnemonic, float var_value,        const char *name_of_color = 0);
 
     void update_option_menu();
-    void update_option_menu(AW_option_menu_struct *);  // don't use this
+    void refresh_option_menu(AW_option_menu_struct *);  // don't use this
 
 
     // ***** toggle_field is a static menu (all items are visible and only one is selected)

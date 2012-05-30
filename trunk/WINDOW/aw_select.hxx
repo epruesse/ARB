@@ -82,7 +82,7 @@ public:
     void init_from_array(const CharPtrArray& entries, const char *defaultEntry);
     
     void update();
-    void update_intern(); 
+    void refresh(); 
 
     void sort(bool backward, bool case_sensitive); // uses displayed value!
     
