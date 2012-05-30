@@ -239,7 +239,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 
             if (seqtype != '-') {
                 aws->at("compression");
-                aws->create_option_menu(AWAR_GDE_COMPRESSION, "", "");
+                aws->create_option_menu(AWAR_GDE_COMPRESSION);
                 aws->insert_option("none", "n", COMPRESS_NONE);
                 aws->insert_option("vertical gaps", "v", COMPRESS_VERTICAL_GAPS);
                 aws->insert_default_option("columns w/o info", "i", COMPRESS_NONINFO_COLUMNS);
@@ -346,8 +346,8 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 char    *curr_value       = curr_awar->read_string();
                 bool     curr_value_legal = false;
 
-                aws->label(itemarg.label);
-                aws->create_option_menu(newawar, NULL, "");
+                if (itemarg.label[0]) aws->label(itemarg.label);
+                aws->create_option_menu(newawar);
 
                 for (long j=0; j<itemarg.numchoices; j++) {
                     if (strcmp(itemarg.choice[j].method, curr_value) == 0) curr_value_legal = true;
