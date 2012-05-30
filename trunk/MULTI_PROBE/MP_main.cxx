@@ -63,7 +63,7 @@ ProbeValuation *MP_Main::new_probe_eval(char **field, int size, int *array, int 
 
 void MP_Main::create_awars()
 {
-    aw_root->awar_string(MP_AWAR_SEQUENZEINGABE)->add_target_var(& mp_gl_awars.manual_sequence);
+    aw_root->awar_string(MP_AWAR_SEQIN);
     aw_root->awar_string(MP_AWAR_SELECTEDPROBES)->add_target_var(& mp_gl_awars.selected_probes);
     aw_root->awar_string(MP_AWAR_PROBELIST)->add_target_var(& mp_gl_awars.probelist);
     aw_root->awar_int(MP_AWAR_WEIGHTEDMISMATCHES)->add_target_var(& mp_gl_awars.weightedmismatches)->write_int(2);

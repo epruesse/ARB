@@ -41,7 +41,7 @@ class ST_Container;
 class Bitvector;
 class Sonde;
 
-#define MP_AWAR_SEQUENZEINGABE      "mp/sequenzeingabe"
+#define MP_AWAR_SEQIN               "tmp/mp/seqin"
 #define MP_AWAR_SELECTEDPROBES      "mp/selectedprobes"
 #define MP_AWAR_PROBELIST           "mp/probelist"
 #define MP_AWAR_WEIGHTEDMISMATCHES  "mp/weightedmismatches"
@@ -61,34 +61,30 @@ class Sonde;
 #define MP_AWAR_ECOLIPOS            "mp/ecolipos"
 #define MP_AWAR_AUTOADVANCE         "mp/auto_advance"
 
-#define MINQUALITY  1.0     // schlechteste Qualitaet einer Sonde
-#define MAXQUALITY  5.0     // beste Qualitaet einer Sonde
-#define QUALITYDEFAULT  3
-#define MAXPROBECOMBIS  6       // Maximale Anzahl der Sondenkombinationen
-#define MAXMISMATCHES   6       // von 0 bis 5 !!!!
-#define MAXRESULTSINLIST    40  // groesse der Ergebnisliste, die im Ergebnisfenster angezeigt wird
-#define FITNESSSCALEFACTOR  10  // wird benutzt um intern die hammingtabelle feiner zu granulieren
+#define QUALITYDEFAULT     3
+#define MAXPROBECOMBIS     6    // Maximale Anzahl der Sondenkombinationen
+#define MAXMISMATCHES      6    // von 0 bis 5 !!!!
+#define FITNESSSCALEFACTOR 10   // wird benutzt um intern die hammingtabelle feiner zu granulieren
 // siehe probe_combi_statistic::calc_fitness
 
-#define MULTROULETTEFACTOR  10  // macht aus z.B. 4,231 42
-#define MAXINITPOPULATION 50        // Ausgangsgroesse der Population
-#define MAXPOPULATION   MAXINITPOPULATION
-#define CROSSOVER_WS    60      // Crossoverwahrscheinlichkeit liegt bei CROSSOVER_WS Prozent !!!
-#define MUTATION_WS 33      // Mutationswahrscheinlichkeit liegt bei 1/MUTATION_WS Prozent!!!
+#define MULTROULETTEFACTOR    10    // macht aus z.B. 4,231 42
+#define MAXINITPOPULATION     50    // Ausgangsgroesse der Population
+#define MAXPOPULATION         MAXINITPOPULATION
+#define CROSSOVER_WS          60    // Crossoverwahrscheinlichkeit liegt bei CROSSOVER_WS Prozent !!!
+#define MUTATION_WS           33    // Mutationswahrscheinlichkeit liegt bei 1/MUTATION_WS Prozent!!!
 #define SIGMATRUNCATION_CONST 2     // die Standardwerte liegen zwischen 1 und 3
-#define C_MULT      1.4     // Werte zwischen 1.2 und 2.0
-// #define USE_SIGMATRUNCATION       // diesen Namen definieren, wenn sigma_truncation in der linearen Skal. (=fitness skalierung) verwendet werden soll
-// #define USE_LINEARSCALING     // diesen Namen definieren, wenn lineare_skalierung (=fitness skalierung) verwendet werden soll
-// #define USE_DUP_TREE          //definieren, wenn eine Sondenkombination nur einmal pro generation vorkommen darf !!!
+#define C_MULT                1.4   // Werte zwischen 1.2 und 2.0
 
-#define ABS(x)          (x<0) ? -x : x
-#define LIST(TYP)       ((List<Sonde>*) TYP)
+// #define USE_SIGMATRUNCATION       // definieren, wenn sigma_truncation in der linearen Skal. (=fitness skalierung) verwendet werden soll
+// #define USE_LINEARSCALING         // definieren, wenn lineare_skalierung (=fitness skalierung) verwendet werden soll
+// #define USE_DUP_TREE              // definieren, wenn eine Sondenkombination nur einmal pro generation vorkommen soll
+
+#define LIST(TYP) ((List<Sonde>*) TYP)
 
 #define MAXSONDENHASHSIZE   1000        // max 1000 Sonden koennen gecached werden, bei Bedarf aendern !!!!
 
 
 struct awar_vars {
-    char    *manual_sequence;
     char    *selected_probes;
     char    *probelist;
     char    *result_probes;
@@ -219,7 +215,7 @@ public:
 class probe_tabs;
 
 class Sondentopf : virtual Noncopyable {
-    List<void*>     *Listenliste;
+    List<void*>     *Listenliste; // @@@ change type to List<Sonde> ? 
     GB_HASH     *color_hash;
     MO_Liste        *BaktList;
     MO_Liste        *Auswahllist;
