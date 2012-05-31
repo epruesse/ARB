@@ -19,61 +19,50 @@
 
 #include <ctime>
 
-void ProbeValuation::evolution()
-{
-    long n=0;
-    long moeglichkeiten;
-    double avg_fit = 0;
-
-    for (int i=0; i<size_sonden_array; i++)             // Mismatche (=duplikate) aufsummieren, um Groesse von Pool zu bestimmen.
+void ProbeValuation::evolution() {
+    long n = 0;
+    for (int i=0; i<size_sonden_array; i++) {            // Mismatche (=duplikate) aufsummieren, um Groesse von Pool zu bestimmen.
         n += mismatch_array[i]+1;
-
-    moeglichkeiten = k_aus_n(mp_gl_awars.no_of_probes, n);
-
-    if (moeglichkeiten <= MAXINITPOPULATION)
-    {
-        act_generation->calc_fitness(NO_GENETIC_ALG);
-        act_generation->check_for_results();
-        return;
     }
 
+    long moeglichkeiten = k_aus_n(mp_gl_awars.no_of_probes, n);
+    double avg_fit = 0.0;
+    if (moeglichkeiten <= MAXINITPOPULATION) {
+        act_generation->calcFitness(false, avg_fit);
+    }
+    else {
+        // assumption: genetic algorithm needs about 1/3 of attempts (compared with brute force) 
+        long max_generation = moeglichkeiten/(3*MAXPOPULATION)-1;
+        if (max_generation<1) max_generation = 1;
 
-    long max_generation = moeglichkeiten/(3*MAXPOPULATION)-1;
-    if (max_generation<1) max_generation = 1;
+        arb_progress progress(max_generation);
+        MP_aborted(0, 0.0, 0.0, 0.0, progress);
 
-    arb_progress progress(max_generation);
-    MP_aborted(0, 0.0, 0.0, 0.0, progress);
-    
-    // hier beginnt der genetische Algorithmus
-    do {
-        act_generation->calc_fitness(0, avg_fit);       // hier wird auch init_roulette_wheel gemacht
-        avg_fit = act_generation->get_avg_fit();
+        do { // genetic algorithm loop 
+            bool aborted = act_generation->calcFitness(true, avg_fit);
+            if (aborted) break;
 
-        if (!Stop_evaluation) {
+            avg_fit = act_generation->get_avg_fit();
+#if defined(DEBUG)
+            printf("Generation %i: avg_fit=%f\n", act_generation->get_generation(), avg_fit);
+#endif
+
             if (avg_fit == 0) {
                 aw_message("Please choose better Probes!");
-                progress.done();
-                return;
+                break;
             }
             child_generation = act_generation->create_next_generation();
             delete act_generation; act_generation = NULL;
 
             child_generation->check_for_results();
 
-            act_generation = child_generation;  // zum testen hier nur generierung einer Generation
+            act_generation = child_generation;
             progress.inc();
         }
+        while (act_generation->get_generation() <= max_generation);
+        progress.done();
     }
-    while (act_generation->get_generation() <= max_generation && !Stop_evaluation) ; // hier abbruchbedingung
-
-    Stop_evaluation = false;
-
-    // Abbruchbedingung deshalb, weil der genetische Alg. keinesfalls mehr Versuche
-    // benoetigt als sequentielles probieren. Hier: Annahme, dass er max.
-    // ein drittel der Versuche benoetigt
-
-    if (act_generation)
-        act_generation->check_for_results();
+    if (act_generation) act_generation->check_for_results();
 }
 
 void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs)      // pcs darf nur eingetragen werden, wenn es nicht schon vorhanden ist
