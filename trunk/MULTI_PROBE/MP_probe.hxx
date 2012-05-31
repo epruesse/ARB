@@ -5,10 +5,6 @@
 #include "SoTl.hxx"
 #endif
 
-#define NO_GENETIC_ALG      1
-#define MIN(x, y)   (x>y) ? y : x
-#define MAX(x, y)   (x>y) ? x : y
-
 #define MAXLIFEFORCOMBI 2       // Eine Sondenkombination lebt maximal MAXLIFEFORCOMBI Generationen
 
 class Generation;
@@ -48,12 +44,12 @@ public:
 
 class probe_combi_statistic : virtual Noncopyable {
     // die Sondenkombis werden in dieser Klasse gespeichert
-    probe       **probe_combi;
-    probe_tabs      *probe_tab;
+    probe      **probe_combi;
+    probe_tabs  *probe_tab;
 
-    double      expected_children;
-    double      fitness;
-    int     life_counter;       // Eine Sondenkombination hat nur eine Lebenslaenge von MAXLIFEFORCOMBI
+    double expected_children;
+    double fitness;
+    int    life_counter;        // Eine Sondenkombination hat nur eine Lebenslaenge von MAXLIFEFORCOMBI
 
 private:
     void        quicksort(long left,
@@ -64,8 +60,9 @@ private:
 
 
 public:
-    void        set_probe_combi(int ind, probe *f) { probe_combi[ind] = f; }
-    probe       *get_probe_combi(int j)        { return probe_combi[j]; }
+    void set_probe_combi(int j, probe *f) { probe_combi[j] = f; }
+    probe *get_probe_combi(int j) { return probe_combi[j]; }
+
     double      get_fitness()              { return fitness; }
     double      get_expected_children()        { return expected_children; }
     int         sub_expected_children(double val);
@@ -138,10 +135,10 @@ public:
                                   int &pos_counter,     // zaehler fuer probe_combi_stat_array
                                   probe_combi_statistic *p);    // bisher zusammengestellte probe
 
-    void        calc_fitness(int flag = 0, double old_avg_fit = 0); // fitness-berechnung aller Sondenkombis im Feld; und average_fitness
-    // und deviation
+    bool calcFitness(bool use_genetic_algo, double old_avg_fit);        // fitness-berechnung aller Sondenkombis im Feld; und average_fitness und deviation
+    
     void        init_roulette_wheel();
-    Generation      *create_next_generation();          // die Kindergeneration wird zurueckgegeben
+    Generation *create_next_generation();               // die Kindergeneration wird zurueckgegeben
 
     probe_combi_statistic *single_in_generation(probe_combi_statistic *field);  // Nach der Funktion ist sichergestellt, dass dieses field in der
     // Generation nur einmal vorkommt. Achtung: wenn Population sehr klein
