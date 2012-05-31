@@ -39,8 +39,8 @@ void ProbeValuation::evolution()
 
 
     long max_generation = moeglichkeiten/(3*MAXPOPULATION)-1;
+    if (max_generation<1) max_generation = 1;
 
-    mp_assert(max_generation>1);
     arb_progress progress(max_generation);
     MP_aborted(0, 0.0, 0.0, 0.0, progress);
     
