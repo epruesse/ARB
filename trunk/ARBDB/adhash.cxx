@@ -288,13 +288,13 @@ void GBS_dynaval_free(long val) {
 }
 
 #if defined(DEBUG)
-static void dump_access(const char *title, GB_HASH *hs, double mean_access) {
+inline void dump_access(const char *title, const GB_HASH *hs, double mean_access) {
     fprintf(stderr,
             "%s: size=%zu elements=%zu mean_access=%.2f hash-speed=%.1f%%\n",
             title, hs->size, hs->nelem, mean_access, 100.0/mean_access);
 }
 
-static double GBS_hash_mean_access_costs(GB_HASH *hs) {
+static double hash_mean_access_costs(const GB_HASH *hs) {
     /* returns the mean access costs of the hash [1.0 .. inf[
      * 1.0 is optimal
      * 2.0 means: hash speed is 50% (1/2.0)
@@ -321,12 +321,12 @@ static double GBS_hash_mean_access_costs(GB_HASH *hs) {
 #endif // DEBUG
 
 
-void GBS_optimize_hash(GB_HASH *hs) {
+void GBS_optimize_hash(const GB_HASH *hs) {
     if (hs->nelem > hs->size) {                     // hash is overfilled (Note: even 50% fillrate is slow)
         size_t new_size = gbs_get_a_prime(hs->nelem*3);
 
 #if defined(DEBUG)
-        dump_access("Optimizing filled hash", hs, GBS_hash_mean_access_costs(hs));
+        dump_access("Optimizing filled hash", hs, hash_mean_access_costs(hs));
 #endif // DEBUG
 
         if (new_size>hs->size) { // avoid overflow
@@ -350,17 +350,20 @@ void GBS_optimize_hash(GB_HASH *hs) {
 
             free(hs->entries);
 
-            hs->size    = new_size;
-            hs->entries = new_entries;
+            {
+                GB_HASH *hs_mutable = const_cast<GB_HASH*>(hs);
+                hs_mutable->size    = new_size;
+                hs_mutable->entries = new_entries;
+            }
         }
 #if defined(DEBUG)
-        dump_access("Optimized hash        ", hs, GBS_hash_mean_access_costs(hs));
+        dump_access("Optimized hash        ", hs, hash_mean_access_costs(hs));
 #endif // DEBUG
 
     }
 }
 
-static long gbs_hash_to_strstruct(const char *key, long val, void *cd_out) {
+static void gbs_hash_to_strstruct(const char *key, long val, void *cd_out) {
     const char    *p;
     int            c;
     GBS_strstruct *out = (GBS_strstruct*)cd_out;
@@ -372,13 +375,11 @@ static long gbs_hash_to_strstruct(const char *key, long val, void *cd_out) {
     GBS_chrcat(out, ':');
     GBS_intcat(out, val);
     GBS_chrcat(out, ' ');
-
-    return val;
 }
 
-char *GBS_hashtab_2_string(GB_HASH *hash) {
+char *GBS_hashtab_2_string(const GB_HASH *hash) {
     GBS_strstruct *out = GBS_stropen(1024);
-    GBS_hash_do_loop(hash, gbs_hash_to_strstruct, out);
+    GBS_hash_do_const_loop(hash, gbs_hash_to_strstruct, out);
     return GBS_strclose(out);
 }
 
@@ -561,7 +562,7 @@ static void GBS_erase_hash(GB_HASH *hs) {
     // check hash size
     if (hsize >= 10) { // ignore small hashes
 #if defined(DEBUG)
-        double mean_access = GBS_hash_mean_access_costs(hs);
+        double mean_access = hash_mean_access_costs(hs);
         if (mean_access > 1.5) { // every 2nd access is a collision - increase hash size?
             dump_access("hash-size-warning", hs, mean_access);
 #if defined(DEVEL_RALF) && !defined(UNIT_TESTS)
@@ -684,7 +685,7 @@ void GBS_print_hash_statistic_summary(const char *id) {
     printf("- hash_quality:  min = %5.1f%% ; max = %5.1f%% ; mean = %5.1f%%\n", stat->min_hash_quality*100.0, stat->max_hash_quality*100.0, (double)stat->sum_hash_quality/count*100.0);
 }
 
-void GBS_calc_hash_statistic(GB_HASH *hs, const char *id, int print) {
+void GBS_calc_hash_statistic(const GB_HASH *hs, const char *id, int print) {
     long   queues     = 0;
     long   collisions;
     double fill_ratio = (double)hs->nelem/hs->size;
@@ -721,11 +722,22 @@ void GBS_hash_do_loop(GB_HASH *hs, gb_hash_loop_type func, void *client_data) {
     }
 }
 
+void GBS_hash_do_const_loop(const GB_HASH *hs, gb_hash_const_loop_type func, void *client_data) {
+    size_t hsize = hs->size;
+    for (size_t i=0; i<hsize; i++) {
+        for (gbs_hash_entry *e = hs->entries[i]; e; ) {
+            gbs_hash_entry *next = e->next;
+            if (e->val) func(e->key, e->val, client_data);
+            e = next;
+        }
+    }
+}
+
 #if defined(WARN_TODO)
 #warning rename GBS_hash_count_elems -> GBS_hash_elements
 #endif
 
-size_t GBS_hash_count_elems(GB_HASH *hs) {
+size_t GBS_hash_count_elems(const GB_HASH *hs) {
 #if defined(DEBUG)
     // @@@ old code, just left here to ensure hs->nelem is correct --ralf Mar/2010
     size_t count = 0;
@@ -764,7 +776,7 @@ static size_t GBS_hash_count_value(GB_HASH *hs, long val) {
 }
 #endif
 
-const char *GBS_hash_next_element_that(GB_HASH *hs, const char *last_key, bool (*condition)(const char *key, long val, void *cd), void *cd) {
+const char *GBS_hash_next_element_that(const GB_HASH *hs, const char *last_key, bool (*condition)(const char *key, long val, void *cd), void *cd) {
     /* Returns the key of the next element after 'last_key' matching 'condition' (i.e. where condition returns true).
      * If 'last_key' is NULL, the first matching element is returned.
      * Returns NULL if no (more) elements match the 'condition'.
