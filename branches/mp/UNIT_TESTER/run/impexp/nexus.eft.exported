@@ -1,0 +1,29 @@
+#NEXUS
+[! RDP - the Ribosomal Database Project, (Tue Sep 21 10:55:44 2010).]
+[! To get started, send HELP to rdp@info.mcs.anl.gov ]
+BEGIN DATA;
+   DIMENSIONS
+      NTAX =      1
+      NCHAR =    165
+      ;
+   FORMAT
+      LABELPOS = LEFT
+      MISSING = .
+      EQUATE = "~=.|><"
+      INTERLEAVE
+      DATATYPE = RNA
+      GAP = -
+      ;
+   OPTIONS
+      GAPMODE = MISSING
+      ;
+   MATRIX
+      MetMazei   .......... .......... .AUUCUGGUU -----GA--U -CC-U-G-CC [1 - 50]
+
+      MetMazei   AG-AG-GU-U -AC-U-GC-- U-AU-C--G- GU-GUUC--G C---C-U--A [51 - 100]
+
+      MetMazei   AGCCA-U-GC -G-AGU-CAU -A-UGU---- -----A---- ---------- [101 - 150]
+
+      MetMazei   -......... ..... [151 - 165]
+      ;
+ENDBLOCK;

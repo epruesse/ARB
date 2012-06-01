@@ -1,0 +1,49 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Save Database
+
+OCCURRENCE	ARB_NT/File/Save
+
+DESCRIPTION	To save the entire database, choose 'Save Whole Database'
+		from the 'File' menu of the 'ARB_NT' window.
+
+                You may also save only the changes to the database
+		with the 'Save Changes' or 'Save Changes as'
+		functions.
+
+                        'Save Changes' saves all changes to the database
+                        'data.arb' to a file 'data.aXX' where XX is a numbered from
+                        01 to 99 and 00 (means 100).
+
+                        This is normally much faster than saving the entire database and
+                        results in much less disc consumption.
+
+                        Each time you save your changes, X is increased by one.
+                        The last 10 old data.aXX are not deleted and allow you to
+                        step to an old state.
+
+                        All data.aXX are independent and you may delete old changes
+                        files without losing data (as long as the latest is unchanged)
+
+		When you start arb you can choose among the different files:
+
+                         enter 'arb filename.arb' to search and load the latest changes,
+
+                         enter 'arb filename.aXX' to load a user-defined version.
+
+NOTES		Loading a specific quick save is also possible from the ARB INTRO window.
+
+WARNINGS	None
+
+BUGS		Not all changes to the database can be saved into a small file -
+		especially, changing the order of database entries disables
+		a quick save.
+
+		Hopefully no real bugs.

@@ -1,0 +1,5 @@
+# libraries needed to link against STAT/STAT.a
+
+SL/AP_TREE/AP_TREE.a
+SL/ITEMS/ITEMS.a
+SL/GUI_ALIVIEW/GUI_ALIVIEW.a
