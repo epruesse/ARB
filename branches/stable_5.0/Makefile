@@ -319,7 +319,7 @@ SHARED_LIB_SUFFIX = a# static lib suffix
 LINK_SHARED_LIB := $(LINK_STATIC_LIB)
 else
 SHARED_LIB_SUFFIX = so# shared lib suffix
-INK_SHARED_LIB := $(GPP) $(lflags) $(cdynamic) -shared -o# link shared lib
+LINK_SHARED_LIB := $(GPP) $(lflags) $(cdynamic) -shared -o# link shared lib
 endif
 
 # other used tools
