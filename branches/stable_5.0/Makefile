@@ -68,6 +68,7 @@ ALLOWED_GCC_4xx_VERSIONS=\
 	4.2.0 4.2.1 4.2.3 4.2.4 \
 	4.3 4.3.1 4.3.2 4.3.3 \
 	4.4.1 4.4.3 \
+	4.6 4.6.1
 
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_3xx_VERSIONS) $(ALLOWED_GCC_4xx_VERSIONS)
 
@@ -104,7 +105,7 @@ ifeq ($(DEBUG),0)
 	dflags := -DNDEBUG# defines
 	cflags := -O4# compiler flags (C and C++)
  ifndef DARWIN
-	lflags += -O99 --strip-all# linker flags
+	lflags += -O99# linker flags
  endif
 endif
 
@@ -274,8 +275,8 @@ ifeq ($(TRACESYM),1)
 		cdynamic =
 		ldynamic =
 	else
-		cdynamic = -rdynamic
-		ldynamic = --export-dynamic 
+		cdynamic = -rdynamic -Wl,--export-dynamic
+		ldynamic = --export-dynamic
 	endif
 endif
 
@@ -310,9 +311,7 @@ else
 PP := $(CPPreal)
 endif
 
-lflags += $(ldynamic)
-
-LINK_STATIC_LIB := ld $(lflags) -r -o# link static lib
+LINK_STATIC_LIB := ld $(lflags) $(ldynamic) -r -o# link static lib
 LINK_EXECUTABLE := $(GPP) $(lflags) $(cdynamic) -o# link executable (c++)
 
 ifeq ($(LINK_STATIC),1)
@@ -320,7 +319,7 @@ SHARED_LIB_SUFFIX = a# static lib suffix
 LINK_SHARED_LIB := $(LINK_STATIC_LIB)
 else
 SHARED_LIB_SUFFIX = so# shared lib suffix
-LINK_SHARED_LIB := $(GPP) $(lflags) -shared -o# link shared lib
+INK_SHARED_LIB := $(GPP) $(lflags) $(cdynamic) -shared -o# link shared lib
 endif
 
 # other used tools
@@ -819,6 +818,7 @@ $(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy) shared_libs
 		)
 
 #*********************************** arb_treegen **************************************
+
 TREEGEN = bin/arb_treegen
 ARCHS_TREEGEN =	\
 		TREEGEN/TREEGEN.a \
