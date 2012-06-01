@@ -79,7 +79,7 @@ static GBT_TREE *fixDeletedSon(GBT_TREE *tree) {
 }
 
 
-GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, GB_HASH *species_hash, int *removed, int *groups_removed) {
+GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, const GB_HASH *species_hash, int *removed, int *groups_removed) {
     // Given 'tree' can either
     // - be linked (in this case 'species_hash' shall be NULL)
     // - be unlinked (in this case 'species_hash' has to be provided)
