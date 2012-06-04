@@ -16,8 +16,6 @@
 #include <aw_base.hxx>
 #endif
 
-class AW_window;
-
 AW_window *create_multiprobe_window(AW_root *root, AW_CL cl_canvas);
 
 #else
