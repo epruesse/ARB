@@ -98,21 +98,20 @@ struct awar_vars {
 
 // ********************************************************
 
-class AW_window_simple; // @@@ replace by AW_window (which is declared)
 class AWT_canvas;
 
 class MP_Window : virtual Noncopyable {
-    AW_window_simple *aws;
-    AW_window_simple *result_window;
+    AW_window *aw;
+    AW_window *result_window;
 
     void build_pt_server_list();
     // zeigt auf naechstes Zeichen
 
 public:
-    AW_window_simple    *get_window()       { return aws; };
-    AW_window_simple    *get_result_window()    { return result_window; };
+    AW_window *get_window() { return aw; };
+    AW_window *get_result_window() { return result_window; };
 
-    AW_window_simple *create_result_window(AW_root *aw_root);
+    AW_window *create_result_window(AW_root *aw_root);
 
     MP_Window(AW_root *aw_root, GBDATA *gb_main);
     ~MP_Window();

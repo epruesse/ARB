@@ -34,95 +34,97 @@ AW_selection_list *probelist;
 AW_selection_list *result_probes_list;
 
 
-AW_window_simple *MP_Window::create_result_window(AW_root *aw_root) {
+AW_window *MP_Window::create_result_window(AW_root *aw_root) {
     if (!result_window) {
-        result_window = new AW_window_simple;
-        result_window->init(aw_root, "MULTIPROBE_RESULTS", "MultiProbe combination results");
-        result_window->load_xfig("mp_results.fig");
+        AW_window_simple *aws = new AW_window_simple;
+        aws->init(aw_root, "MULTIPROBE_RESULTS", "MultiProbe combination results");
+        aws->load_xfig("mp_results.fig");
 
-        result_window->auto_space(5, 5);
+        aws->auto_space(5, 5);
 
-        result_window->button_length(7);
-        result_window->at("close");
-        result_window->callback(AW_POPDOWN);
-        result_window->create_button("CLOSE", "CLOSE");
+        aws->button_length(7);
+        aws->at("close");
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE");
 
-        result_window->at("Help");
-        result_window->callback(AW_POPUP_HELP, (AW_CL)"multiproberesults.hlp");
-        result_window->create_button("HELP", "HELP");
+        aws->at("Help");
+        aws->callback(AW_POPUP_HELP, (AW_CL)"multiproberesults.hlp");
+        aws->create_button("HELP", "HELP");
 
-        result_window->at("Comment");
-        result_window->callback(MP_Comment, (AW_CL)0);
-        result_window->create_input_field(MP_AWAR_RESULTPROBESCOMMENT);
+        aws->at("Comment");
+        aws->callback(MP_Comment, (AW_CL)0);
+        aws->create_input_field(MP_AWAR_RESULTPROBESCOMMENT);
 
-        result_window->at("box");
-        result_window->callback(MP_result_chosen);
-        result_probes_list = result_window->create_selection_list(MP_AWAR_RESULTPROBES);
+        aws->at("box");
+        aws->callback(MP_result_chosen);
+        result_probes_list = aws->create_selection_list(MP_AWAR_RESULTPROBES);
         result_probes_list->set_file_suffix("mpr");
         result_probes_list->insert_default("", "");
 
         const StorableSelectionList *storable_probes_list = new StorableSelectionList(TypedSelectionList("mpr", result_probes_list, "multiprobes", "multi_probes"));
 
-        result_window->at("buttons");
-        result_window->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)storable_probes_list);
-        result_window->create_button("LOAD_RPL", "LOAD");
+        aws->at("buttons");
+        aws->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)storable_probes_list);
+        aws->create_button("LOAD_RPL", "LOAD");
 
-        result_window->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)storable_probes_list);
-        result_window->create_button("SAVE_RPL", "SAVE");
+        aws->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)storable_probes_list);
+        aws->create_button("SAVE_RPL", "SAVE");
 
-        result_window->callback(awt_clear_selection_list_cb, (AW_CL)result_probes_list);
-        result_window->create_button("CLEAR", "CLEAR");
+        aws->callback(awt_clear_selection_list_cb, (AW_CL)result_probes_list);
+        aws->create_button("CLEAR", "CLEAR");
 
-        result_window->callback(MP_delete_selected, AW_CL(result_probes_list));
-        result_window->create_button("DELETE", "DELETE");
+        aws->callback(MP_delete_selected, AW_CL(result_probes_list));
+        aws->create_button("DELETE", "DELETE");
 
         // change comment :
 
-        result_window->button_length(8);
+        aws->button_length(8);
 
-        result_window->at("comment");
-        result_window->callback(MP_Comment, (AW_CL) "Bad");
-        result_window->create_button("MARK_AS_BAD", "BAD");
+        aws->at("comment");
+        aws->callback(MP_Comment, (AW_CL) "Bad");
+        aws->create_button("MARK_AS_BAD", "BAD");
 
-        result_window->callback(MP_Comment, (AW_CL) "???");
-        result_window->create_button("MARK_AS_GOOD", "???");
+        aws->callback(MP_Comment, (AW_CL) "???");
+        aws->create_button("MARK_AS_GOOD", "???");
 
-        result_window->callback(MP_Comment, (AW_CL) "Good");
-        result_window->create_button("MARK_AS_BEST", "Good");
+        aws->callback(MP_Comment, (AW_CL) "Good");
+        aws->create_button("MARK_AS_BEST", "Good");
 
-        result_window->at("auto");
-        result_window->create_toggle(MP_AWAR_AUTOADVANCE);
+        aws->at("auto");
+        aws->create_toggle(MP_AWAR_AUTOADVANCE);
 
         // tree actions :
 
-        result_window->button_length(3);
+        aws->button_length(3);
 
-        result_window->at("ct_back");
-        result_window->callback(MP_show_probes_in_tree_move, (AW_CL)1, (AW_CL)result_probes_list);
-        result_window->create_button("COLOR_TREE_BACKWARD", "#rightleft_small.bitmap");
+        aws->at("ct_back");
+        aws->callback(MP_show_probes_in_tree_move, (AW_CL)1, (AW_CL)result_probes_list);
+        aws->create_button("COLOR_TREE_BACKWARD", "#rightleft_small.bitmap");
 
-        result_window->at("ct_fwd");
-        result_window->callback(MP_show_probes_in_tree_move, (AW_CL)0, (AW_CL)result_probes_list);
-        result_window->create_button("COLOR_TREE_FORWARD", "#leftright_small.bitmap");
+        aws->at("ct_fwd");
+        aws->callback(MP_show_probes_in_tree_move, (AW_CL)0, (AW_CL)result_probes_list);
+        aws->create_button("COLOR_TREE_FORWARD", "#leftright_small.bitmap");
 
-        result_window->button_length(8);
+        aws->button_length(8);
 
-        result_window->at("ColorTree");
-        result_window->button_length(4);
-        result_window->callback(MP_show_probes_in_tree);
-        result_window->create_button("COLOR_TREE", "GO");
+        aws->at("ColorTree");
+        aws->button_length(4);
+        aws->callback(MP_show_probes_in_tree);
+        aws->create_button("COLOR_TREE", "GO");
 
-        result_window->at("MarkTree");
-        result_window->callback(MP_mark_probes_in_tree);
-        result_window->create_button("MARK_TREE", "GO");
+        aws->at("MarkTree");
+        aws->callback(MP_mark_probes_in_tree);
+        aws->create_button("MARK_TREE", "GO");
 
-        result_window->at("GroupAll");
-        result_window->callback(MP_group_all_except_marked);
-        result_window->create_button("GROUP_UNMARKED", "GO");
+        aws->at("GroupAll");
+        aws->callback(MP_group_all_except_marked);
+        aws->create_button("GROUP_UNMARKED", "GO");
 
-        result_window->at("StandardColor");
-        result_window->callback(MP_normal_colors_in_tree);
-        result_window->create_button("RESET_COLORS", "GO");
+        aws->at("StandardColor");
+        aws->callback(MP_normal_colors_in_tree);
+        aws->create_button("RESET_COLORS", "GO");
+
+        result_window = aws;
     }
     return result_window;
 }
@@ -285,19 +287,19 @@ void MP_Window::build_pt_server_list() {
 #warning why option_menu ? better use selection list ( awt_create_selection_list_on_pt_servers )
 #endif
 
-    aws->at("PTServer");
-    aws->callback(MP_cache_sonden);
-    aws->create_option_menu(MP_AWAR_PTSERVER);
+    aw->at("PTServer");
+    aw->callback(MP_cache_sonden);
+    aw->create_option_menu(MP_AWAR_PTSERVER);
 
     for (i=0; ; i++) {
         choice = GBS_ptserver_id_to_choice(i, 1);
         if (! choice) break;
 
-        aws->insert_option(choice, "", i);
+        aw->insert_option(choice, "", i);
         delete choice;
     }
 
-    aws->update_option_menu();
+    aw->update_option_menu();
 }
 
 static void track_ali_change_cb(GBDATA *gb_ali, int*, GB_CB_TYPE) {
@@ -378,7 +380,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
     result_window = NULL;
 
-    aws = new AW_window_simple;
+    AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "MULTIPROBE", "MULTI_PROBE");
     aws->load_xfig("multiprobe.fig");
 
@@ -511,15 +513,16 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     }
     aws->update_option_menu();
 
+    aw = aws;
 }
 
 
 MP_Window::~MP_Window() {
     if (result_window)  result_window->hide();
-    if (aws)            aws->hide();
+    if (aw)             aw->hide();
 
     delete result_window;
-    delete aws;
+    delete aw;
 }
 
 // --------------------------------------------------------------------------------
