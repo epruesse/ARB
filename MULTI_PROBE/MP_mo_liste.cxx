@@ -26,10 +26,8 @@ MO_Liste::MO_Liste() {
     // Nach dem new muss die MO_Liste erst mit set_species gefuellt werden
 }
 
-MO_Liste::~MO_Liste()
-{
-    while (laenge)
-    {
+MO_Liste::~MO_Liste() {
+    while (laenge) {
         delete mo_liste[laenge-1];
         laenge--;
     }
@@ -93,20 +91,19 @@ void MO_Liste::get_all_species() { // @@@ rename (gets all species from pt-serve
     servername = 0;
 
     if (!mp_pd_gl.link) {
-        aw_message ("Cannot contact Probe bank server ");
+        aw_message("Cannot contact Probe bank server ");
         return;
     }
     if (MP_init_local_com_struct()) {
-        aw_message ("Cannot contact Probe bank server (2)");
+        aw_message("Cannot contact Probe bank server (2)");
         // @@@ missing aisc_close
         return;
     }
 
 
-    if (aisc_put(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs, NULL))
-    {
+    if (aisc_put(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs, NULL)) {
         free(probe);
-        aw_message ("Connection to PT_SERVER lost (4)");
+        aw_message("Connection to PT_SERVER lost (4)");
         // @@@ missing aisc_close
         return;
     }
@@ -119,8 +116,7 @@ void MO_Liste::get_all_species() { // @@@ rename (gets all species from pt-serve
              LOCS_ERROR,                 &locs_error,
              NULL);
 
-    if (*locs_error)
-    {
+    if (*locs_error) {
         aw_message(locs_error);
     }
 
@@ -128,8 +124,7 @@ void MO_Liste::get_all_species() { // @@@ rename (gets all species from pt-serve
 
     laenge = nr_of_species;
     mo_liste = new Bakt_Info*[laenge+2];
-    while (j<laenge+2)
-    {
+    while (j<laenge+2) {
         mo_liste[j] = NULL;
         j++;
     }
@@ -167,24 +162,20 @@ void MO_Liste::get_all_species() { // @@@ rename (gets all species from pt-serve
     delete match_name;
 }
 
-long MO_Liste::get_laenge() // @@@ inline
-{
+long MO_Liste::get_laenge() { // @@@ inline
     return laenge;
 }
 
-long MO_Liste::debug_get_current() // @@@ inline
-{
+long MO_Liste::debug_get_current() { // @@@ inline
     return current;
 }
 
 long MO_Liste::put_entry(const char* name) {
     // Pruefe: Gibts den Bakter schon in dieser Liste??
-    if (get_index_by_entry(name))               // wanns den Bakter scho gibt
-    {
+    if (get_index_by_entry(name)) {             // wanns den Bakter scho gibt
         // nicht eintragen
     }
-    else
-    {
+    else {
         mo_liste[current] = new Bakt_Info(name);                    // MEL  koennte mit match_name zusammenhaengen
         GBS_write_hash(hashptr, name, current);
         current++;
@@ -192,24 +183,21 @@ long MO_Liste::put_entry(const char* name) {
     return current;
 }
 
-char* MO_Liste::get_entry_by_index(long index)
-{
+char* MO_Liste::get_entry_by_index(long index) {
     if ((0<index) && (index < current))
         return mo_liste[index]->get_name();
     else
         return NULL;
 }
 
-long MO_Liste::get_index_by_entry(const char* key)
-{
+long MO_Liste::get_index_by_entry(const char* key) {
     if (key)
         return (GBS_read_hash(hashptr, key));
     else
         return 0;
 }
 
-Bakt_Info* MO_Liste::get_bakt_info_by_index(long index)
-{
+Bakt_Info* MO_Liste::get_bakt_info_by_index(long index) {
     if ((0<index) && (index < current))
         return mo_liste[index];
     else

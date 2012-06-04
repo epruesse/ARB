@@ -11,8 +11,7 @@
 #include "MP_probe.hxx"
 #include "MultiProbe.hxx"
 
-probe_combi_statistic::probe_combi_statistic(probe **pc, probe_tabs *ps, double exp, double fit, int life_cnt)
-{
+probe_combi_statistic::probe_combi_statistic(probe **pc, probe_tabs *ps, double exp, double fit, int life_cnt) {
     memset(this, 0, sizeof(probe_combi_statistic));
 
     if (ps)
@@ -21,8 +20,7 @@ probe_combi_statistic::probe_combi_statistic(probe **pc, probe_tabs *ps, double 
         probe_tab = NULL; // new probe_tabs
 
     probe_combi = new probe*[mp_gl_awars.no_of_probes];
-    if (pc)
-    {
+    if (pc) {
         for (int i=0; i < mp_gl_awars.no_of_probes; i++)
             probe_combi[i] = pc[i];
     }
@@ -35,44 +33,37 @@ probe_combi_statistic::probe_combi_statistic(probe **pc, probe_tabs *ps, double 
     life_counter = life_cnt;
 }
 
-probe_combi_statistic::~probe_combi_statistic()
-{
+probe_combi_statistic::~probe_combi_statistic() {
     delete [] probe_combi;
     delete probe_tab;
 }
 
-bool probe_combi_statistic::ok_for_next_gen(int &len_roul_wheel)
-{
+bool probe_combi_statistic::ok_for_next_gen(int &len_roul_wheel) {
     double exp_child = get_expected_children();
 
-    if (exp_child >= 1.0 || get_random(1, 100) <= 100 * exp_child)      // Behandlung nach Goldberg S.115 bzw. S.121
-    {
+    if (exp_child >= 1.0 || get_random(1, 100) <= 100 * exp_child) {    // Behandlung nach Goldberg S.115 bzw. S.121
         if (!is_dead())
             return true;
-        else
-        {
-            len_roul_wheel -= (int) (MULTROULETTEFACTOR * get_expected_children());
+        else {
+            len_roul_wheel -= (int)(MULTROULETTEFACTOR * get_expected_children());
             expected_children = 0.0;
         }
     }
     return false;
 }
 
-void probe_combi_statistic::init_life_counter()
-{
+void probe_combi_statistic::init_life_counter() {
     life_counter = MAXLIFEFORCOMBI;
 }
 
-void probe_combi_statistic::sort(long feld_laenge)
-{
+void probe_combi_statistic::sort(long feld_laenge) {
     if (!feld_laenge)
         return;
 
     quicksort(0, feld_laenge-1);
 }
 
-inline void probe_combi_statistic::swap(probe **a, probe **b)
-{
+inline void probe_combi_statistic::swap(probe **a, probe **b) {
     probe *help;
 
     help = *a;
@@ -80,16 +71,12 @@ inline void probe_combi_statistic::swap(probe **a, probe **b)
     *b = help;
 }
 
-void probe_combi_statistic::quicksort(long left, long right)        // Randomized Quicksort !!! wegen effizienz
-{                                   // Fuer den Fall, dass Feld sortiert !!!
-    long   i = left,
-        j = right;
-    int         x,
-        help,
-        help2;
+void probe_combi_statistic::quicksort(long left, long right) {
+    // Randomized Quicksort !!! wegen effizienz. Fuer den Fall, dass Feld sortiert !!!
+    long i = left, j = right;
+    int  x, help, help2;
 
-    if (j>i)
-    {
+    if (j>i) {
         help = (left + right) / 2;
 
         // Randomisierung des Quicksort Anfang
@@ -100,27 +87,25 @@ void probe_combi_statistic::quicksort(long left, long right)        // Randomize
 
         x = probe_combi[help]->probe_index;         // Normale Auswahl des Pivotelements
 
-        do
-        {
+        do {
             while (probe_combi[i]->probe_index < x) i++;
             while (probe_combi[j]->probe_index > x) j--;
 
-            if (i<=j)
-            {
-                swap (& probe_combi[i], & probe_combi[j]);
+            if (i<=j) {
+                swap(& probe_combi[i], & probe_combi[j]);
 
                 i++;
                 j--;
             }
-        } while (i<=j) ;
+        }
+        while (i<=j) ;
 
         quicksort(left, j);
         quicksort(i, right);
     }
 }
 
-probe_combi_statistic *probe_combi_statistic::check_duplicates(GenerationDuplicates *dup_tree)
-{
+probe_combi_statistic *probe_combi_statistic::check_duplicates(GenerationDuplicates *dup_tree) {
     bool result = true;
 
     sort(mp_gl_awars.no_of_probes);
@@ -136,13 +121,11 @@ probe_combi_statistic *probe_combi_statistic::check_duplicates(GenerationDuplica
 }
 
 
-void probe_combi_statistic::print(probe *p)
-{
+void probe_combi_statistic::print(probe *p) {
     printf("Idx:%d alMis:%d  ", p->probe_index, p->allowed_mismatches);
 }
 
-void probe_combi_statistic::print()
-{
+void probe_combi_statistic::print() {
     for (int i=0; i<mp_gl_awars.no_of_probes; i++)
         print(probe_combi[i]);
 
@@ -150,14 +133,12 @@ void probe_combi_statistic::print()
     probe_tab->print();
 }
 
-void probe_combi_statistic::print(probe **arr, int length)
-{
+void probe_combi_statistic::print(probe **arr, int length) {
     for (int i=0; i<length; i++)
         print(arr[i]);
 }
 
-int probe_combi_statistic::sub_expected_children(double val)
-{
+int probe_combi_statistic::sub_expected_children(double val) {
     double result;
 
     if (expected_children - val > 0)
@@ -173,8 +154,7 @@ int probe_combi_statistic::sub_expected_children(double val)
     return (int) result;
 }
 
-probe_combi_statistic *probe_combi_statistic::duplicate()
-{
+probe_combi_statistic *probe_combi_statistic::duplicate() {
     probe_tabs *new_obje = NULL;
 
     if (probe_tab)
@@ -183,16 +163,14 @@ probe_combi_statistic *probe_combi_statistic::duplicate()
     return new probe_combi_statistic(probe_combi, new_obje, expected_children, fitness, life_counter);
 }
 
-void probe_combi_statistic::mutate_Probe(ProbeValuation *p_eval)
-{
+void probe_combi_statistic::mutate_Probe(ProbeValuation *p_eval) {
     int             rand_pool_pos;              // Stelle, an der die Sonde im Pool liegt ( von 0 bis laenge-)
 
 
     for (int i=0; i<mp_gl_awars.no_of_probes; i++)              // Jede Posititon der Sondenkombination wird mit einer Wahrscheinlichkeit
         // von 1/MUTATION_WS mutiert.
     {
-        if (get_random(1, MUTATION_WS) == 1)
-        {
+        if (get_random(1, MUTATION_WS) == 1) {
             init_stats();                               // Statistik hat sich geaendert.
             rand_pool_pos  = get_random(0, p_eval->get_pool_length() - 1);
             probe_combi[i] = (p_eval->get_probe_pool())[rand_pool_pos];
@@ -209,8 +187,7 @@ void probe_combi_statistic::mutate_Probe(ProbeValuation *p_eval)
 
 }
 
-int probe_combi_statistic::get_dupl_pos()
-{
+int probe_combi_statistic::get_dupl_pos() {
     int length = mp_gl_awars.no_of_probes;
 
     for (int i=0; i<length-1; i++)      // auf duplikate in der Sondenkombi. pruefen
@@ -229,9 +206,8 @@ void probe_combi_statistic::sigma_truncation(double average_fit, double deviatio
         fitness = 0;
 }
 
-void probe_combi_statistic::crossover_Probes(probe_combi_statistic *pcombi2)    // An bis zu no_of_probes werden Gene zwischen pcombi1
-    // und pcombi2 ausgetauscht.
-{
+void probe_combi_statistic::crossover_Probes(probe_combi_statistic *pcombi2) {
+    // An bis zu no_of_probes werden Gene zwischen pcombi1 und pcombi2 ausgetauscht.
 
     int rand_cross_pos1,                        // Position an der der Crossover aufgefuehrt wird.
         rand_cross_pos2,
@@ -241,8 +217,7 @@ void probe_combi_statistic::crossover_Probes(probe_combi_statistic *pcombi2)    
 
     rand_no_of_cross = random_interval ? get_random(1, random_interval) : 0;
 
-    for (int i = 0; i < rand_no_of_cross; i++)              // eigentliche Crossover Schleife
-    {
+    for (int i = 0; i < rand_no_of_cross; i++) {            // eigentliche Crossover Schleife
         rand_cross_pos1 = get_random(0, random_interval);
         rand_cross_pos2 = get_random(0, random_interval);
 
@@ -253,8 +228,7 @@ void probe_combi_statistic::crossover_Probes(probe_combi_statistic *pcombi2)    
         random_interval--;
     }
 
-    while (true)        // Crossovernachbehandlung, um duplikate in Kombinationen zu vermeiden
-    {
+    while (true) {      // Crossovernachbehandlung, um duplikate in Kombinationen zu vermeiden
         int change1, change2;
 
         f1 = check_duplicates();
@@ -281,16 +255,14 @@ void probe_combi_statistic::crossover_Probes(probe_combi_statistic *pcombi2)    
     pcombi2->init_stats();
 }
 
-void probe_combi_statistic::init_stats()
-{
+void probe_combi_statistic::init_stats() {
     memset(&probe_tab, 0, sizeof(probe_tabs));                      // bisherige Statistiken fuer diese Sondenkombination zuruecksetzten
     life_counter = MAXLIFEFORCOMBI;
     fitness = 0;
     expected_children = 0;
 }
 
-int probe_combi_statistic::calc_index_system3(int *field)
-{
+int probe_combi_statistic::calc_index_system3(int *field) {
     int i, result = 0;
 
     for (i=0; i<mp_gl_awars.no_of_probes; i++)
@@ -300,8 +272,7 @@ int probe_combi_statistic::calc_index_system3(int *field)
 }
 
 
-inline int probe_combi_statistic::modificated_hamming_dist(int one, int two) // pseudo hamming distanz einer Sondenkombi
-{
+inline int probe_combi_statistic::modificated_hamming_dist(int one, int two) { // pseudo hamming distanz einer Sondenkombi
     return hamming_tab[one][two];
 }
 
@@ -309,7 +280,7 @@ double probe_combi_statistic::calc_fitness(ProbeValuation *p_eval, int len_of_fi
     // fitness-bewertung einer Sondenkombi
 
     mp_assert(!error);
-    
+
     int     i, j, k, mod_ham_dist;
     long   *hammingarray;
     double  tolerated_non_group_hits, ham_dist;
@@ -332,28 +303,23 @@ double probe_combi_statistic::calc_fitness(ProbeValuation *p_eval, int len_of_fi
     if (!error) {
         hammingarray = new long[mp_gl_awars.no_of_probes+1];
 
-        for (i=0; i< probe_tab->get_len_group_tabs()-1; i++)
-        {
-            memset(hammingarray, 0,  sizeof(long) * (mp_gl_awars.no_of_probes + 1));
-            for (j=0; j<probe_tab->get_len_group_tabs(); j++)
-            {
+        for (i=0; i< probe_tab->get_len_group_tabs()-1; i++) {
+            memset(hammingarray, 0,  sizeof(long) *(mp_gl_awars.no_of_probes + 1));
+            for (j=0; j<probe_tab->get_len_group_tabs(); j++) {
                 mod_ham_dist = modificated_hamming_dist(i, j);
                 hammingarray[mod_ham_dist] +=  probe_tab->get_non_group_tab(j);
             }
 
             tolerated_non_group_hits = (double) mp_gl_awars.qualityborder_best;
 
-            for (k=0; k < mp_gl_awars.no_of_probes + 1 && tolerated_non_group_hits >= 0.0; k++)
-            {
-                for (j=0; j<FITNESSSCALEFACTOR && tolerated_non_group_hits >= 0.0; j++)
-                {
-                    tolerated_non_group_hits -= (double) ((double)hammingarray[k] / (double)FITNESSSCALEFACTOR);
+            for (k=0; k < mp_gl_awars.no_of_probes + 1 && tolerated_non_group_hits >= 0.0; k++) {
+                for (j=0; j<FITNESSSCALEFACTOR && tolerated_non_group_hits >= 0.0; j++) {
+                    tolerated_non_group_hits -= (double)((double)hammingarray[k] / (double)FITNESSSCALEFACTOR);
                 }
 
             }
 
-            if (tolerated_non_group_hits<0.0)
-            {
+            if (tolerated_non_group_hits<0.0) {
                 if (j)
                     ham_dist = (double)k - 1.0 + ((double)(((double)j - 1.0)/(double)FITNESSSCALEFACTOR));
                 else
@@ -372,8 +338,7 @@ double probe_combi_statistic::calc_fitness(ProbeValuation *p_eval, int len_of_fi
     return fitness;
 }
 
-double probe_combi_statistic::calc_expected_children(double average_fitness)
-{
+double probe_combi_statistic::calc_expected_children(double average_fitness) {
     expected_children = fitness / average_fitness;
     return expected_children;
 }

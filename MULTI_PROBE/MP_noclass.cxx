@@ -49,7 +49,7 @@ int get_random(int min, int max) {
     return GB_random(max-min+1)+min;
 }
 
-void MP_close_main(AW_window *aww) { // @@@ implement via on_hide 
+void MP_close_main(AW_window *aww) { // @@@ implement via on_hide
     AWT_canvas  *scr = mp_main->get_canvas();
 
     if (mp_main->get_mp_window()->get_result_window())
@@ -87,8 +87,7 @@ static char *MP_get_probes(const char *str) {
 void MP_gen_quality(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     bool firsttime = true; // @@@ was this static in the past?
 
-    if (firsttime)
-    {
+    if (firsttime) {
         firsttime = false; // @@@ unused
         return;
     }
@@ -152,8 +151,7 @@ void MP_modify_selected(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     selected_list->clear();
 
     ptr2 = l->get_first();
-    while (ptr2)
-    {
+    while (ptr2) {
         l->remove_first();
         selected_list->insert(ptr2, ptr2);
         delete ptr2;
@@ -191,94 +189,76 @@ void MP_gen_singleprobe(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     delete new_sing;
 }
 
-static void init_system3_tab()
-{
-    int i, j, k,
-        size_hamming_tab,
-        hamm_dist;
+static void init_system3_tab() {
+    int i, j, k, size_hamming_tab, hamm_dist;
     int **dummy_int;
     int counter, wert;
 
     if (system3_tab) {
-        for (j=0; j< system3_tab_size; j++)
+        for (j=0; j< system3_tab_size; j++) {
             delete [] system3_tab[j];
-
+        }
         delete [] system3_tab;
     }
     system3_tab      = new int*[mp_gl_awars.no_of_probes];
     system3_tab_size = mp_gl_awars.no_of_probes;
-    for (j=0; j<mp_gl_awars.no_of_probes; j++)
-    {
+    for (j=0; j<mp_gl_awars.no_of_probes; j++) {
         system3_tab[j] = new int[3];
         memset(system3_tab[j], 0, sizeof(int) * 3);
     }
 
-    for (j=0; j< mp_gl_awars.no_of_probes; j++)
-    {
-        for (k=0; k<3; k++)
-        {
+    for (j=0; j< mp_gl_awars.no_of_probes; j++) {
+        for (k=0; k<3; k++) {
             if (!j) system3_tab[j][k] = k;
             else    system3_tab[j][k] = system3_tab[j-1][k] * 3;
         }
     }
 
     // ** hamming_tab
-        if (hamming_tab)
-            delete [] hamming_tab;
+    if (hamming_tab) delete [] hamming_tab;
 
-        size_hamming_tab = (int)pow(3.0, (double) mp_gl_awars.no_of_probes);
-        hamming_tab = new unsigned char*[size_hamming_tab];
-        dummy_int = new int*[size_hamming_tab];
+    size_hamming_tab = (int)pow(3.0, (double) mp_gl_awars.no_of_probes);
+    hamming_tab = new unsigned char*[size_hamming_tab];
+    dummy_int = new int*[size_hamming_tab];
 
-        for (i=0; i<size_hamming_tab; i++)
-        {
-            hamming_tab[i] = new unsigned char[size_hamming_tab];
-            memset(hamming_tab[i], 0, sizeof(unsigned char) * size_hamming_tab);
+    for (i=0; i<size_hamming_tab; i++) {
+        hamming_tab[i] = new unsigned char[size_hamming_tab];
+        memset(hamming_tab[i], 0, sizeof(unsigned char) * size_hamming_tab);
 
-            dummy_int[i] = new int[mp_gl_awars.no_of_probes];
-            memset(dummy_int[i], 0, sizeof(int) * mp_gl_awars.no_of_probes);
-        }
+        dummy_int[i] = new int[mp_gl_awars.no_of_probes];
+        memset(dummy_int[i], 0, sizeof(int) * mp_gl_awars.no_of_probes);
+    }
 
-        counter = 1;
-        for (i=0; i< mp_gl_awars.no_of_probes; i++)
-        {
-            for (j=0; j<size_hamming_tab; j++)
-            {
-                for (wert = 0; wert < 3; wert++)
-                {
-                    for (k=0; k<counter; k++)
-                    {
-                        dummy_int[j++][i] = wert;
-                    }
+    counter = 1;
+    for (i=0; i< mp_gl_awars.no_of_probes; i++) {
+        for (j=0; j<size_hamming_tab; j++) {
+            for (wert = 0; wert < 3; wert++) {
+                for (k=0; k<counter; k++) {
+                    dummy_int[j++][i] = wert;
                 }
-                j--;
             }
-            counter *= 3;
+            j--;
         }
+        counter *= 3;
+    }
 
-        for (i=0; i<size_hamming_tab; i++)
-        {
-            for (j=0; j<size_hamming_tab; j++)
-            {
-                hamm_dist = 0;
-                for (k=0; k<mp_gl_awars.no_of_probes; k++)
-                {
-                    if ((dummy_int[i][k] == 2 && dummy_int[j][k] == 0) ||
-                        (dummy_int[i][k] == 0 && dummy_int[j][k] == 2))
-                        hamm_dist++;
+    for (i=0; i<size_hamming_tab; i++) {
+        for (j=0; j<size_hamming_tab; j++) {
+            hamm_dist = 0;
+            for (k=0; k<mp_gl_awars.no_of_probes; k++) {
+                if ((dummy_int[i][k] == 2 && dummy_int[j][k] == 0) ||
+                    (dummy_int[i][k] == 0 && dummy_int[j][k] == 2)) {
+                    hamm_dist++;
                 }
-                hamming_tab[i][j] = hamm_dist;
             }
+            hamming_tab[i][j] = hamm_dist;
         }
+    }
 
-        for (i=0; i<size_hamming_tab; i++)
-        {
-            delete [] dummy_int[i];
-        }
-        delete [] dummy_int;
-
-
-
+    for (i=0; i<size_hamming_tab; i++) {
+        delete [] dummy_int[i];
+    }
+    delete [] dummy_int;
 }
 
 void MP_popup_result_window(AW_window */*aww*/) {
@@ -415,7 +395,7 @@ void MP_init_and_calculate_and_display_multiprobes(AW_window *, AW_CL cl_gb_main
     result_probes_list->update();
 
     mp_main->get_mp_window()->get_result_window()->activate();
-    
+
     if (pt_server_different) {
         pt_server_different = false;
     }
@@ -427,19 +407,15 @@ void MP_init_and_calculate_and_display_multiprobes(AW_window *, AW_CL cl_gb_main
 
 static bool MP_is_probe(char *seq) {
     bool    result=true;
-    char    *s,
-        *seq2;
+    char    *s, *seq2;
 
-    if (! seq)
-        return false;
+    if (! seq) return false;
 
     seq2 = MP_get_probes(seq);
-    if (!seq2 || ! seq2[0])
-        return false;
+    if (!seq2 || ! seq2[0]) return false;
 
     s = seq2;
-    while (*s && result)
-    {
+    while (*s && result) {
         result = result && MP_probe_tab[(unsigned char)*s];
         s++;
     }
@@ -506,15 +482,13 @@ void MP_show_probes_in_tree(AW_window */*aww*/) {
     char **probe_field = new char*[MAXMISMATCHES];
     int   *mismatches  = new int[MAXMISMATCHES];
 
-    for (i=0; i<MAXMISMATCHES; i++)
-    {
+    for (i=0; i<MAXMISMATCHES; i++) {
         probe_field[i] = NULL;
         mismatches[i] = 0;
     }
 
     another_probe = a_probe;
-    for (i=0; i< MAXPROBECOMBIS; i++)       // generiert  probe_field und mismatches array
-    {
+    for (i=0; i< MAXPROBECOMBIS; i++) {     // generiert  probe_field und mismatches array
         mism = strchr(mism_temp, ' ');
         if (mism)
             *(mism++) = 0;
@@ -526,21 +500,18 @@ void MP_show_probes_in_tree(AW_window */*aww*/) {
         probe_field[i] = NULL;
         the_probe = another_probe;
         another_probe = strchr(another_probe, ' ');
-        if (another_probe)
-        {
+        if (another_probe) {
             *(another_probe++) = 0;
             while (*another_probe == ' ' || *another_probe == '\t')
                 another_probe++;
         }
-        else
-        {
+        else {
             probe_field[i] = strdup(the_probe);
             how_many_probes ++;
             break;
         }
 
-        if (the_probe && the_probe[0])
-        {
+        if (the_probe && the_probe[0]) {
             probe_field[i] = strdup(the_probe);
             how_many_probes ++;
         }
@@ -564,7 +535,7 @@ void MP_show_probes_in_tree(AW_window */*aww*/) {
     }
 
     ST_Container *stc = mp_global->get_stc();
-    
+
     delete stc->sondentopf;
     stc->sondentopf = new Sondentopf(stc->Bakterienliste, stc->Auswahlliste);
 
@@ -619,15 +590,13 @@ void MP_mark_probes_in_tree(AW_window *aww) {
     char **probe_field = new char*[MAXMISMATCHES];
     int   *mismatches  = new int[MAXMISMATCHES];
 
-    for (i=0; i<MAXMISMATCHES; i++)
-    {
+    for (i=0; i<MAXMISMATCHES; i++) {
         probe_field[i] = NULL;
         mismatches[i] = 0;
     }
 
     another_probe = a_probe;
-    for (i=0; i< MAXPROBECOMBIS; i++)       // generiert  probe_field und mismatches array
-    {
+    for (i=0; i< MAXPROBECOMBIS; i++) {     // generiert  probe_field und mismatches array
         mism = strchr(mism_temp, ' ');
         if (mism)
             *(mism++) = 0;
@@ -739,7 +708,7 @@ void MP_Comment(AW_window *, AW_CL cl_com) {
             char *ecol  = MP_get_comment(3, selprobes);
 
             new_list_string = GBS_global_string_copy("%-20s" SEPARATOR "%s" SEPARATOR "%s" SEPARATOR "%s",
-                                                     comment, misms, ecol, new_val);
+                              comment, misms, ecol, new_val);
             free(ecol);
             free(misms);
             free(edited_comment);
@@ -864,8 +833,7 @@ void MP_result_chosen(AW_window */*aww*/) {
 // functions concerning the server
 //
 
-int MP_init_local_com_struct()
-{
+int MP_init_local_com_struct() {
     const char *user = GB_getenvUSER();
 
     if (aisc_create(mp_pd_gl.link, PT_MAIN, mp_pd_gl.com,
@@ -879,7 +847,7 @@ int MP_init_local_com_struct()
 
 const char *MP_probe_pt_look_for_server(GB_ERROR& error) {
     mp_assert(!error);
-    
+
     const char *server_tag = GBS_ptserver_tag(mp_gl_awars.ptserver);
     error                  = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag);
 
@@ -902,14 +870,14 @@ const char *MP_probe_pt_look_for_server(GB_ERROR& error) {
         TEST_ASSERT_EQUAL(got, expect);           \
         free(got);                                \
     } while(0)                                    \
-        
+ 
 #define MP_GET_PROBES_EQUAL(str, expect)          \
     do {                                          \
         char *got = MP_get_probes(str);           \
         TEST_ASSERT_EQUAL(got, expect);           \
         free(got);                                \
     } while(0)                                    \
-
+ 
 void TEST_MP_get_comment_and_probes() {
     char *probes_only    = strdup("ACGT TGCA ATCG");
     char *probes_comment = strdup("val1#val2#val3#ACGT TGCA ATCG");
@@ -920,7 +888,7 @@ void TEST_MP_get_comment_and_probes() {
     MP_GET_PROBES_EQUAL(probes_comment, "ACGT TGCA ATCG");
     MP_GET_PROBES_EQUAL(probes_1,       "ACGT TGCA ATCG");
     MP_GET_PROBES_EQUAL(probes_2,       "ACGT TGCA ATCG");
-    
+
     MP_GET_COMMENT_EQUAL(1, probes_comment, "val1");
     MP_GET_COMMENT_EQUAL(2, probes_comment, "val2");
     MP_GET_COMMENT_EQUAL(3, probes_comment, "val3");
@@ -932,7 +900,7 @@ void TEST_MP_get_comment_and_probes() {
     MP_GET_COMMENT_EQUAL(1, probes_1, "one");
     MP_GET_COMMENT_EQUAL(2, probes_1, (const char *)NULL);
     MP_GET_COMMENT_EQUAL(3, probes_1, (const char *)NULL);
-    
+
     MP_GET_COMMENT_EQUAL(1, probes_2, "one");
     MP_GET_COMMENT_EQUAL(2, probes_2, "two");
     MP_GET_COMMENT_EQUAL(3, probes_2, (const char *)NULL);
@@ -976,7 +944,7 @@ void TEST_compute_multiprobes() {
     mp_gl_awars.ptserver = TEST_SERVER_ID;
 
     init_system3_tab();
-    
+
     ConstStrArray input_probes;
     input_probes.put_array_elems(inputProbes, ARRAY_ELEMS(inputProbes));
 

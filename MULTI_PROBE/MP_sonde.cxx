@@ -16,8 +16,7 @@
 
 #include <cmath>
 
-Sonde::Sonde(char* bezeichner, int allowed_mis, double outside_mis)
-{
+Sonde::Sonde(char* bezeichner, int allowed_mis, double outside_mis) {
     kennung = strdup(bezeichner);
     bitkennung = NULL;
     // fuer Basissonden haben die Bitvektoren noch nicht die Volle laenge, da noch nicht bekannt ist, wieviele Sonden eingetragen werden
@@ -29,8 +28,7 @@ Sonde::Sonde(char* bezeichner, int allowed_mis, double outside_mis)
 
     Allowed_Mismatch = new long[anzahl_sonden];
     Outside_Mismatch = new double[anzahl_sonden];
-    for (int i=0; i<anzahl_sonden; i++)
-    {
+    for (int i=0; i<anzahl_sonden; i++) {
         Allowed_Mismatch[i]=0;
         Outside_Mismatch[i]=0;
     }
@@ -41,8 +39,7 @@ Sonde::Sonde(char* bezeichner, int allowed_mis, double outside_mis)
 
 }
 
-Sonde::~Sonde()
-{
+Sonde::~Sonde() {
     int i;
 
     free(kennung);
@@ -57,8 +54,7 @@ Sonde::~Sonde()
     delete bitkennung;
 }
 
-void Sonde::print()
-{
+void Sonde::print() {
     printf("\nSonde %s\n------------------------------------------------\n", kennung);
     bitkennung->print();
     printf("Laenge hitliste %ld mit minelem %ld und maxelem %ld\n", length_hitliste, minelem, maxelem);
@@ -147,7 +143,7 @@ MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, in
                 }
             }
             else {
-                error = "No matching species found"; // @@@ more details ? 
+                error = "No matching species found"; // @@@ more details ?
             }
         }
 
@@ -162,14 +158,12 @@ MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, in
 }
 
 
-double Sonde::check_for_min(long k, MO_Mismatch** probebacts, long laenge)
-{
+double Sonde::check_for_min(long k, MO_Mismatch** probebacts, long laenge) {
     long    i = k+1;
     double  min;
 
     min = probebacts[k]->mismatch;                  // min ist gleich mismatch des ersten MOs
-    while ((i<laenge) && (probebacts[k]->nummer == probebacts[i]->nummer))
-    {
+    while ((i<laenge) && (probebacts[k]->nummer == probebacts[i]->nummer)) {
         if (min > probebacts[i]->mismatch)              // wenn min groesser ist als mismatch des naechsten MOs
             min = probebacts[i]->mismatch;              // setze min uf groesse des naechsten
         i++;                                // checke naechsten MO
@@ -220,14 +214,11 @@ GB_ERROR Sonde::gen_Hitliste(MO_Liste *Bakterienliste) {
         // laenge ist die Anzahl der Eintraege in probebact
         // Korrekturschleife, um Mehrfachtreffer auf das gleiche Bakterium abzufangen
 
-        for (k=0;  k < laenge-1;  k++)
-        {
-            if (probebacts[k]->nummer == probebacts[k+1]->nummer)
-            {
+        for (k=0;  k < laenge-1;  k++) {
+            if (probebacts[k]->nummer == probebacts[k+1]->nummer) {
                 min_mm = check_for_min(k, probebacts, laenge);
                 probebacts[k]->mismatch = min_mm;
-                while ((k<laenge-1) && (probebacts[k]->nummer == probebacts[k+1]->nummer))
-                {
+                while ((k<laenge-1) && (probebacts[k]->nummer == probebacts[k+1]->nummer)) {
                     probebacts[k+1]->mismatch = min_mm;
                     k++;
                 }
@@ -243,8 +234,7 @@ GB_ERROR Sonde::gen_Hitliste(MO_Liste *Bakterienliste) {
         for (i=0; i<laenge+1; i++)
             hitliste[i]=NULL;
 
-        for (i=0; i<laenge; i++)
-        {
+        for (i=0; i<laenge; i++) {
             hitliste[i] = new Hit(probebacts[i]->nummer);
             hitliste[i]->set_mismatch_at_pos(0, probebacts[i]->mismatch);
         }
@@ -254,14 +244,12 @@ GB_ERROR Sonde::gen_Hitliste(MO_Liste *Bakterienliste) {
         long bl_index = 0;
         Bakt_Info** baktliste = Bakterienliste->get_mo_liste();
         Bakt_Info** bl_elem = baktliste+1;
-        while (bl_elem[bl_index])
-        {
+        while (bl_elem[bl_index]) {
             bl_elem[bl_index]->kill_flag();
             bl_index++;
         }
         // Loeschen der Temps
-        for (i=0; i<laenge; i++)
-        {
+        for (i=0; i<laenge; i++) {
             delete probebacts[i];
         }
         delete [] probebacts;
@@ -271,8 +259,7 @@ GB_ERROR Sonde::gen_Hitliste(MO_Liste *Bakterienliste) {
 
 
 
-Hit* Sonde::get_hitdata_by_number(long index)
-{
+Hit* Sonde::get_hitdata_by_number(long index) {
     // Gibt Zeiger auf ein Hit Element zurueck, welches an Stelle index steht, vorerst nur zur Ausgabe gedacht
     if (hitliste && (index < length_hitliste))
         return hitliste[index];
@@ -284,15 +271,14 @@ Hit* Sonde::get_hitdata_by_number(long index)
 
 
 void Sonde::heapsort(long feldlaenge, MO_Mismatch** Nr_Mm_Feld)
-    // Heapsortfunktion, benutzt sink(), sortiert Feld von longs
+// Heapsortfunktion, benutzt sink(), sortiert Feld von longs
 {
     long        m=0, i=0;
     MO_Mismatch*    tmpmm;
 
     for (i=(feldlaenge-1)/2; i>-1; i--)
         sink(i, feldlaenge-1, Nr_Mm_Feld);
-    for (m=feldlaenge-1; m>0; m--)
-    {
+    for (m=feldlaenge-1; m>0; m--) {
         tmpmm =  Nr_Mm_Feld[0];
         Nr_Mm_Feld[0] =  Nr_Mm_Feld[m];
         Nr_Mm_Feld[m] = tmpmm;
@@ -302,30 +288,27 @@ void Sonde::heapsort(long feldlaenge, MO_Mismatch** Nr_Mm_Feld)
 }
 
 void Sonde::sink(long i, long t, MO_Mismatch** A)
-    // Algorithmus fuer den Heapsort
+// Algorithmus fuer den Heapsort
 {
     long        j, k;
     MO_Mismatch*    tmpmm;
 
     j = 2*i;
     k = j+1;
-    if (j <= t)
-    {
+    if (j <= t) {
         if (A[i]->nummer >= A[j]->nummer)
             j = i;
         if (k <= t)
             if (A[k]->nummer > A[j]->nummer)
                 j = k;
-        if (i != j)
-        {
+        if (i != j) {
             tmpmm = A[i]; A[i] = A[j]; A[j] = tmpmm;
             sink(j, t, A);
         }
     }
 }
 
-void Sonde::set_bitkennung(Bitvector* bv)
-{
+void Sonde::set_bitkennung(Bitvector* bv) {
     bitkennung = bv;
 }
 
@@ -336,14 +319,12 @@ void Sonde::set_bitkennung(Bitvector* bv)
  */
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden Bakt_Info~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Bakt_Info::Bakt_Info(const char* n)
-{
+Bakt_Info::Bakt_Info(const char* n) {
     name = strdup(n);                       // MEL  (match_name in mo_liste)
     hit_flag = 0;
 }
 
-Bakt_Info::~Bakt_Info()
-{
+Bakt_Info::~Bakt_Info() {
     free(name);
     hit_flag = 0;
 }
@@ -353,8 +334,7 @@ Bakt_Info::~Bakt_Info()
 // Hit speichert die  Trefferinformation
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden Hit
 
-Hit::Hit(long baktnummer)
-{
+Hit::Hit(long baktnummer) {
     // Mismatch Array mit Laenge = anzahl Sonden in Experiment
     int i=0;
     mismatch = new double[mp_gl_awars.no_of_probes+1];
@@ -364,8 +344,7 @@ Hit::Hit(long baktnummer)
     baktid = baktnummer;
 }
 
-Hit::~Hit()
-{
+Hit::~Hit() {
     delete [] mismatch;
 }
 

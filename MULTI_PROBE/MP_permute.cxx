@@ -12,34 +12,30 @@ enum Bitpos {
     bit8 = 128
 };
 
-Bitvector::Bitvector(int bits)
-{
+Bitvector::Bitvector(int bits) {
     int i;
 
     num_of_bits = bits;
-    len =  (bits%8) ? (bits/8+1) : (bits/8);
+    len = (bits%8) ? (bits/8+1) : (bits/8);
     vector = new char[len];
 
     for (i=0; i<len; i++)
         vector[i] = vector[i] & 0;
 }
 
-Bitvector::~Bitvector()
-{
+Bitvector::~Bitvector() {
     delete [] vector;
 }
 
 
-int Bitvector::gen_id()
-{
+int Bitvector::gen_id() {
     // generiere eine int Nummer fuer die Farbe aus dem Bitvector
     long num=0;
     for (int i=0; i<num_of_bits; i++)
         num += (int)(.5 + pow(2, i)*readbit(i));
     return num;
 }
-Bitvector* Bitvector::merge(Bitvector* x)
-{
+Bitvector* Bitvector::merge(Bitvector* x) {
     int lthis, lx, lback;
     int i;                              // Zaehler
 
@@ -50,17 +46,15 @@ Bitvector* Bitvector::merge(Bitvector* x)
 
     for (i=0; i<lback; i++)
         if (this->readbit(i) || x->readbit(i))
-            back->setbit (i);
+            back->setbit(i);
 
     return back;
 }
 
-int Bitvector::subset(Bitvector* Obermenge)
-{
+int Bitvector::subset(Bitvector* Obermenge) {
     char* vector2 = Obermenge->get_vector();
 
-    for (int i=0; i<len; i++)
-    {
+    for (int i=0; i<len; i++) {
         if ((vector[i] & vector2[i]) != vector[i])
             return 0;
     }
@@ -68,15 +62,13 @@ int Bitvector::subset(Bitvector* Obermenge)
 }
 
 
-void Bitvector::rshift()
-{
+void Bitvector::rshift() {
     long gemerkt=0;
 
     if (readbit(num_of_bits-1))
         gemerkt=1;
 
-    for (int i=len-1; i>-1;  i--)
-    {
+    for (int i=len-1; i>-1;  i--) {
         vector[i] = vector[i] << 1;
         if (readbit(8*i-1))
             setbit(8*i);
@@ -85,8 +77,7 @@ void Bitvector::rshift()
         setbit(0);
 }
 
-void Bitvector::print()
-{
+void Bitvector::print() {
     int i;
     printf("Bitvektor:   (");
     for (i=0; i<num_of_bits; i++)
@@ -94,8 +85,7 @@ void Bitvector::print()
     printf(")\n");
 }
 
-int Bitvector::setbit(int pos)
-{
+int Bitvector::setbit(int pos) {
     int byte, idx, bitcode;
     if (pos > num_of_bits)
         return -1;
@@ -106,8 +96,7 @@ int Bitvector::setbit(int pos)
     return 0;
 }
 
-int Bitvector::delbit(int pos)
-{
+int Bitvector::delbit(int pos) {
     int byte, idx, bitcode;
     if (pos > num_of_bits)
         return -1;
@@ -119,8 +108,7 @@ int Bitvector::delbit(int pos)
     return 0;
 }
 
-int Bitvector::readbit(int pos)
-{
+int Bitvector::readbit(int pos) {
     int byte, idx, bitcode;
     if (pos > num_of_bits)
         return 0;

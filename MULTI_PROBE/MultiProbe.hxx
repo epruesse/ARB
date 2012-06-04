@@ -146,7 +146,7 @@ public:
     MP_Window  *get_mp_window() { return mp_window; };
     AW_root    *get_aw_root()   { return aw_root; };
     AWT_canvas *get_canvas()    { return scr; };
-    
+
     MP_Main(AW_root *awr, AWT_canvas *canvas);
     ~MP_Main();
 };
@@ -210,7 +210,7 @@ public:
 class probe_tabs;
 
 class Sondentopf : virtual Noncopyable {
-    List<void*>     *Listenliste; // @@@ change type to List<Sonde> ? 
+    List<void*>     *Listenliste; // @@@ change type to List<Sonde> ?
     GB_HASH     *color_hash;
     MO_Liste        *BaktList;
     MO_Liste        *Auswahllist;
@@ -294,7 +294,7 @@ struct ST_Container : virtual Noncopyable {
 
 class MP_Global : virtual Noncopyable {
     ST_Container *stc;
-    
+
     GB_HASH *marked_species;
     GB_HASH *unmarked_species;
 
@@ -354,7 +354,7 @@ public:
     void set_species(const GB_HASH *species_hash);
 
     void get_all_species();
-    
+
     long debug_get_current();
 
     long       get_laenge();
@@ -376,7 +376,7 @@ public:
 
 
 class Bitvector : virtual Noncopyable {
-    // Bitpositionen sind 0 bis 7 
+    // Bitpositionen sind 0 bis 7
     char*   vector;
     int     len;
     int     num_of_bits;
