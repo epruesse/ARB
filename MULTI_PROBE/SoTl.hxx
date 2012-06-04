@@ -60,15 +60,15 @@ public:
     // else false(for example if we're the
     // only element
 
-    T            *get_elem() { return elem; };
-    positiontype  get_pos()  { return pos; };
-    list_elem<T> *get_next() { return next; };
-    list_elem<T> *get_prev() { return prev; };
+    T            *get_elem() { return elem; }
+    positiontype  get_pos()  { return pos; }
+    list_elem<T> *get_next() { return next; }
+    list_elem<T> *get_prev() { return prev; }
 
-    void set_elem(T *el)           { elem = el; };
-    void set_pos(positiontype p)   { pos = p; };
-    void set_next(list_elem<T> *n) { next = n; };
-    void set_prev(list_elem<T> *p) { prev = p; };
+    void set_elem(T *el)           { elem = el; }
+    void set_pos(positiontype p)   { pos = p; }
+    void set_next(list_elem<T> *n) { next = n; }
+    void set_prev(list_elem<T> *p) { prev = p; }
 
     list_elem();
     list_elem(T *el);
@@ -95,19 +95,19 @@ public:
 
 
     // only use these functions if you know what you are doing !!!  BEGINNING
-    list_elem<T> *get_first_list_elem()  { return first; };      // do not use !!!
-    list_elem<T> *get_last_list_elem()   { return last; };       // do not use !!!
-    list_elem<T> *get_current_list_elem() { return last_asked_list_elem; }; // do not use !!!
+    list_elem<T> *get_first_list_elem()  { return first; }      // do not use !!!
+    list_elem<T> *get_last_list_elem()   { return last; }       // do not use !!!
+    list_elem<T> *get_current_list_elem() { return last_asked_list_elem; } // do not use !!!
 
-    void remember_current() { remembered_elem = last_asked_list_elem; };
+    void remember_current() { remembered_elem = last_asked_list_elem; }
     
     void set_current_ARC(list_elem<T> *t);                              // ARC    = and remember current
     void set_remembered_as_current_ARC();                               // ARC = and remember current
     // only use these functions if you know what you are doing !!!  END
 
-    void         sotl_list()             { sotl = true; };
-    void         no_sotl_list()          { sotl = false; };
-    positiontype get_no_of_members()     { return no_of_members; };
+    void         sotl_list()             { sotl = true; }
+    void         no_sotl_list()          { sotl = false; }
+    positiontype get_no_of_members()     { return no_of_members; }
 
     positiontype insert_as_first(T *object);
     positiontype insert_as_last(T *object); // returns pos_no
