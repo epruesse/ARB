@@ -41,7 +41,7 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root) {
         result_window->load_xfig("mp_results.fig");
 
         result_window->auto_space(5, 5);
-        
+
         result_window->button_length(7);
         result_window->at("close");
         result_window->callback(AW_POPDOWN);
@@ -134,7 +134,7 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root) {
 //     "quality#singlemismatch#ecolipos#target"
 //
 // When loading input probes, several other formats are accepted:
-// 
+//
 //     "quality,singlemismatch#ecolipos#probe"                      (old save format)
 //     "target le pos apos ecol grps GC 4gc2at probe | ..."         (save of probe design; old format)
 //     "target le pos apos ecol grps GC 4gc2at probe | ...,target"  (save of probe design)
@@ -211,7 +211,7 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
             display.clear();
             value.clear();
 
-            // try to read designed list 
+            // try to read designed list
             RegExpr reg_designed("^([A-Z]+)[[:space:]]+[0-9]+[[:space:]]+[A-Z][=+-][[:space:]]+[0-9]+[[:space:]]+([0-9]+)[[:space:]]+[0-9]+[[:space:]]+[0-9.]+[[:space:]]+[0-9.]+[[:space:]]+[A-Z]+[[:space:]]+[|]", true);
 
             for (size_t i = 0; i<line.size() && !error; ++i) {
@@ -226,7 +226,7 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
                     const char *cprobe = comma+1;
                     while (cprobe[0] == ' ') ++cprobe;
                     probe = strdup(cprobe);
-                    
+
                     new_format = true;
                 }
                 else {
@@ -252,7 +252,7 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
 
                     if (!error) {
                         int quality, ecoli;
-                        
+
                         match   = reg_designed.subexpr_match(2);
                         mp_assert(match->didMatch());
                         ecoli   = atoi(match->extract(description).c_str());
@@ -333,7 +333,7 @@ static void MP_collect_probes(AW_window*, awt_collect_mode mode, AW_CL) {
     switch (mode) {
         case ACM_ADD:
             if (!probelist->default_is_selected()) {
-                int                        idx = probelist->get_index_of_selected();
+                int idx = probelist->get_index_of_selected();
                 AW_selection_list_iterator sel(probelist, idx);
                 selected_list->insert(sel.get_displayed(), sel.get_value());
                 MP_delete_selected(NULL, AW_CL(probelist));
@@ -342,13 +342,13 @@ static void MP_collect_probes(AW_window*, awt_collect_mode mode, AW_CL) {
 
         case ACM_REMOVE:
             if (!selected_list->default_is_selected()) {
-                int                        idx = selected_list->get_index_of_selected();
+                int idx = selected_list->get_index_of_selected();
                 AW_selection_list_iterator sel(selected_list, idx);
                 probelist->insert(sel.get_displayed(), sel.get_value());
                 MP_delete_selected(NULL, AW_CL(selected_list));
             }
             break;
-            
+
         case ACM_FILL:
             probelist->move_content_to(selected_list);
             break;
@@ -375,7 +375,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 #endif
 
     install_track_ali_type_callback(gb_main);
-    
+
     result_window = NULL;
 
     aws = new AW_window_simple;
@@ -405,7 +405,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
     aws->at("collect");
     awt_create_collect_buttons(aws, true, MP_collect_probes, 0);
-    
+
     aws->auto_space(5, 5);
     aws->button_length(7);
 
@@ -514,8 +514,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 }
 
 
-MP_Window::~MP_Window()
-{
+MP_Window::~MP_Window() {
     if (result_window)  result_window->hide();
     if (aws)            aws->hide();
 

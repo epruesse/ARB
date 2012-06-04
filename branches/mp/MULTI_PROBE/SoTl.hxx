@@ -58,14 +58,15 @@ public:
     // else false(for example if we're the
     // only element
 
-    Type                        *get_elem()                     { return elem; };
-    void                        set_elem(Type *el)              { elem = el; };
-    positiontype                get_pos()                       { return pos; };
-    void                        set_pos(positiontype p)         { pos = p; };
-    list_elem<Type>             *get_next()                     { return next; };
-    void                        set_next(list_elem<Type> *n)    { next = n; };
-    list_elem<Type>             *get_prev()                     { return prev; };
-    void                        set_prev(list_elem<Type> *p)    { prev = p; };
+    Type            *get_elem() { return elem; };
+    positiontype    get_pos()   { return pos; };
+    list_elem<Type> *get_next() { return next; };
+    list_elem<Type> *get_prev() { return prev; };
+
+    void set_elem(Type *el)           { elem = el; };
+    void set_pos(positiontype p)      { pos = p; };
+    void set_next(list_elem<Type> *n) { next = n; };
+    void set_prev(list_elem<Type> *p) { prev = p; };
 
     list_elem();
     list_elem(Type *el);
@@ -75,18 +76,18 @@ public:
 
 template <class Type>
 class List : virtual Noncopyable {
-    list_elem<Type>     *first;
-    list_elem<Type>     *last;
-    list_elem<Type>     *last_asked_list_elem;
-    list_elem<Type>     *remembered_elem;
+    list_elem<Type> *first;
+    list_elem<Type> *last;
+    list_elem<Type> *last_asked_list_elem;
+    list_elem<Type> *remembered_elem;
 
-    positiontype        no_of_members;
-    bool                sotl;
+    positiontype no_of_members;
+    bool         sotl;
 
-
-    list_elem<Type>     *get_list_elem_with_member      (Type *object);
-    list_elem<Type>     *get_list_elem_at_pos           (positiontype pos);
-    list_elem<Type>     *get_list_elem_at_pos_simple    (positiontype pos);
+    list_elem<Type> *get_list_elem_with_member(Type *object);
+    list_elem<Type> *get_list_elem_at_pos(positiontype pos);
+    list_elem<Type> *get_list_elem_at_pos_simple(positiontype pos);
+    
 public:
     // general List functions
 
@@ -100,24 +101,26 @@ public:
     void                set_remembered_as_current_ARC();                // ARC = and remember current
     // only use these functions if you know what you are doing !!!  END
 
-    void                sotl_list()             { sotl = true; };
-    void                no_sotl_list()          { sotl = false; };
-    positiontype        get_no_of_members()     { return no_of_members; };
+    void         sotl_list()             { sotl = true; };
+    void         no_sotl_list()          { sotl = false; };
+    positiontype get_no_of_members()     { return no_of_members; };
 
-    positiontype        insert_as_first         (Type *object);
-    positiontype        insert_as_last          (Type *object);         // returns pos_no
-    positiontype        insert_after_current    (Type *object);
-    positiontype        insert_before_current   (Type *object);
-    positiontype        insert                  (Type *object);         // returns pos_no
-    Type                *get_first              ();
-    Type                *get_last               ();
-    Type                *get_prev               ();
-    Type                *get_next               ();
+    positiontype insert_as_first(Type *object);
+    positiontype insert_as_last(Type *object); // returns pos_no
+    positiontype insert_after_current(Type *object);
+    positiontype insert_before_current(Type *object);
+    positiontype insert(Type *object); // returns pos_no
 
-    void                remove_member_from_list (Type *object);         // object won't be deleted
-    void                remove_first();
-    void                remove_last();
-    List<Type>  *duplicate_list         (Type *object);         // the list is duplicated
+    Type *get_first();
+    Type *get_last();
+    Type *get_prev();
+    Type *get_next();
+
+    void remove_member_from_list(Type *object); // object won't be deleted
+    void remove_first();
+    void remove_last();
+
+    List<Type> *duplicate_list(Type *object); // the list is duplicated
     // from the element given til the end.
     // For duplicating the whole list
     // object = get_first(). Only the list is
@@ -127,7 +130,7 @@ public:
     // ask and duplicate the list, and then make a
     // sotl_list() again.
 
-    bool                exchange_members        (Type *ex, Type *change);
+    bool exchange_members(Type *ex, Type *change);
 
     /*  following functions only make sense if our list is sorted by the address of
         our item inserted to the list.
@@ -144,28 +147,25 @@ public:
     // in the list, the flag duplicates has to be set to false.
     // Finally the relation has to be set, by which the list is sorted.
     // The possibilities are : RELATION_GREATER and RELATION_LESS
-    positiontype        insert_sorted_by_address_of_object(Type *object,
-                                                                int relation=RELATION_LESS,
-                                                                bool duplicates=true);
+    positiontype insert_sorted_by_address_of_object(Type *object, int relation=RELATION_LESS, bool duplicates=true);
 
     // Comment to sort_list_join:
     // if an object found in List l is found in this list it won't be inserted
     // a second time.
-    void                sort_list_join          (List<Type> *l,
-                                                        int relation=RELATION_LESS);    // Lists given as parameter
+    void sort_list_join(List<Type> *l, int relation=RELATION_LESS);    // Lists given as parameter
+    
     // won't be affected
     // Comment to sort_list_subtract:
     // this function call only makes sense if the same element can be found
     // in both lists. The flag relation tells the method how this list(not list l)
     // is sorted. Both lists have to be sorted by the same relation.
-    void                sort_list_subtract      (List<Type> *l,
-                                                        int relation=RELATION_LESS);
+    void sort_list_subtract(List<Type> *l, int relation = RELATION_LESS);
 
 
 
-    positiontype        insert_at_pos_simple    (Type *object, positiontype pos);       // returns pos inserted to
+    positiontype insert_at_pos_simple(Type *object, positiontype pos);           // returns pos inserted to
     // doesn't refer to get_pos()
-    Type                *get_member_at_pos_simple(positiontype pos);
+    Type *get_member_at_pos_simple(positiontype pos);
 
     /*
       Following functions only make sense if the user takes care of the list as
@@ -173,14 +173,16 @@ public:
     */
     // Comment to insert_at_pos :
     // user does not have to call update_pos_no after insert_at_pos()
-    positiontype        insert_at_pos           (Type *object, positiontype pos);       // returns pos inserted to
-    positiontype        get_pos_of_member       (Type *object);
-    Type                *get_member_at_pos      (positiontype pos);
-    bool                remove_pos_from_list    (positiontype pos);             // element won't be deleted
-    bool                exchange_positions      (positiontype ex, positiontype change);         // exchange elems in list
-    void                update_pos_no(list_elem<Type> *elem, positiontype nr);  // updates no from
+    positiontype insert_at_pos(Type *object, positiontype pos); // returns pos inserted to
+    positiontype get_pos_of_member(Type *object);
+
+    Type *get_member_at_pos(positiontype pos);
+    bool  remove_pos_from_list(positiontype pos);                   // element won't be deleted
+    bool  exchange_positions(positiontype ex, positiontype change); // exchange elems in list
+    void  update_pos_no(list_elem<Type> *elem, positiontype nr);    // updates no from
+
     // the given elem with nr til last
-    void                update_pos_no();                // updates pos number from first to last
+    void update_pos_no(); // updates pos number from first to last
 
     List(bool so=false);
     ~List();
@@ -189,43 +191,36 @@ public:
 // ------------------
 //      list_elem
 
-template <class Type> inline list_elem<Type>::list_elem()
-{
+template <class Type> inline list_elem<Type>::list_elem() {
     pos = 0;
     next = NULL;
     prev = NULL;
     elem = NULL;
 }
 
-template <class Type> inline list_elem<Type>::list_elem(Type *el)
-{
+template <class Type> inline list_elem<Type>::list_elem(Type *el) {
     pos = 0;
     next = NULL;
     prev = NULL;
     elem = el;
 }
 
-template <class Type> inline list_elem<Type>::~list_elem()
-{
+template <class Type> inline list_elem<Type>::~list_elem() {
     isolate_list_elem();
 }
 
-template <class Type> inline  bool list_elem<Type>::isolate_list_elem()
-{
-    if (prev && next)               // somewhere in the middle
-    {
+template <class Type> inline  bool list_elem<Type>::isolate_list_elem() {
+    if (prev && next) {             // somewhere in the middle
         prev->next      = next;
         next->prev      = prev;
         next            = NULL;
         prev            = NULL;
     }
-    else if (prev)                  // we're the last
-    {
+    else if (prev) {                // we're the last
         prev->next      = NULL;
         prev            = NULL;
     }
-    else if (next)                  // we're the first
-    {
+    else if (next) {                // we're the first
         next->prev      = NULL;
         next            = NULL;
     }
@@ -238,34 +233,29 @@ template <class Type> inline  bool list_elem<Type>::isolate_list_elem()
 // -------------
 //      List
 
-template <class Type> inline List<Type>::List(bool so)
-{
+template <class Type> inline List<Type>::List(bool so) {
     first = last = last_asked_list_elem = remembered_elem = NULL;
     no_of_members = 0;
     sotl = so;
 }
 
-template <class Type> inline List<Type>::~List()
-{
+template <class Type> inline List<Type>::~List() {
     list_elem<Type> *elem, *help;
 
     elem = first;
-    while (elem)                            // delete every object in list
-    {
+    while (elem) {                          // delete every object in list
         help = elem->next;
         delete elem;
         elem = help;
     }
 }
 
-template <class Type> inline void List<Type>::set_current_ARC(list_elem<Type> *t)       // ARC = and remember current
-{
+template <class Type> inline void List<Type>::set_current_ARC(list_elem<Type> *t) {     // ARC = and remember current
     remembered_elem = last_asked_list_elem;
     last_asked_list_elem = t;
 }
 
-template <class Type> inline void List<Type>::set_remembered_as_current_ARC()   // ARC = and remember current
-{
+template <class Type> inline void List<Type>::set_remembered_as_current_ARC() { // ARC = and remember current
     list_elem<Type> *mark;
 
     mark = last_asked_list_elem;
@@ -273,8 +263,7 @@ template <class Type> inline void List<Type>::set_remembered_as_current_ARC()   
     remembered_elem = mark;
 }
 
-template <class Type> inline list_elem<Type> *List<Type>::get_list_elem_with_member(Type *object)
-{
+template <class Type> inline list_elem<Type> *List<Type>::get_list_elem_with_member(Type *object) {
     list_elem<Type> *loc_elem;
 
     loc_elem = first;
@@ -284,39 +273,32 @@ template <class Type> inline list_elem<Type> *List<Type>::get_list_elem_with_mem
     return loc_elem;
 }
 
-template <class Type> inline list_elem<Type> *List<Type>::get_list_elem_at_pos(positiontype pos)
-{
+template <class Type> inline list_elem<Type> *List<Type>::get_list_elem_at_pos(positiontype pos) {
     list_elem<Type> *elem;
 
     if (pos < 1 || pos > no_of_members)
         return NULL;
 
-    if (! last_asked_list_elem)
-    {
-        if (pos > no_of_members/2)
-        {
+    if (! last_asked_list_elem) {
+        if (pos > no_of_members/2) {
             elem = last;
             while (elem && elem->get_pos() != pos)
                 elem = elem->get_prev();
         }
-        else
-        {
+        else {
             elem = first;
             while (elem && elem->get_pos() != pos)
                 elem = elem->next;
         }
     }
-    else
-    {
+    else {
         elem = last_asked_list_elem;
 
-        if (pos >= last_asked_list_elem->get_pos())
-        {
+        if (pos >= last_asked_list_elem->get_pos()) {
             while (elem && elem->get_pos() != pos)
                 elem = elem->next;
         }
-        else    // pos < last_asked_list_elem->pos
-        {
+        else {  // pos < last_asked_list_elem->pos
             while (elem && elem->get_pos() != pos)
                 elem = elem->get_prev();
         }
@@ -325,29 +307,24 @@ template <class Type> inline list_elem<Type> *List<Type>::get_list_elem_at_pos(p
     return elem;
 }
 
-template <class Type> inline list_elem<Type> *List<Type>::get_list_elem_at_pos_simple(positiontype pos)
-{
+template <class Type> inline list_elem<Type> *List<Type>::get_list_elem_at_pos_simple(positiontype pos) {
     list_elem<Type>         *elem;
     positiontype    counter = 1;
 
     if (pos < 1 || pos > no_of_members)
         return NULL;
 
-    if (pos > no_of_members/2)
-    {
+    if (pos > no_of_members/2) {
         elem = last;
         counter = no_of_members;
-        while (elem && counter != pos)
-        {
+        while (elem && counter != pos) {
             elem = elem->get_prev();
             counter --;
         }
     }
-    else
-    {
+    else {
         elem = first;
-        while (elem && counter != pos)
-        {
+        while (elem && counter != pos) {
             elem = elem->next;
             counter ++;
         }
@@ -356,10 +333,8 @@ template <class Type> inline list_elem<Type> *List<Type>::get_list_elem_at_pos_s
     return elem;
 }
 
-template <class Type> inline Type *List<Type>::get_first()
-{
-    if (first)
-    {
+template <class Type> inline Type *List<Type>::get_first() {
+    if (first) {
         last_asked_list_elem = first;
         return first->elem;
     }
@@ -367,15 +342,12 @@ template <class Type> inline Type *List<Type>::get_first()
         return NULL;
 }
 
-template <class Type> inline Type *List<Type>::get_last()
-{
-    if (last && ! sotl)                     // behavior of a normal linked list
-    {
+template <class Type> inline Type *List<Type>::get_last() {
+    if (last && ! sotl) {                   // behavior of a normal linked list
         last_asked_list_elem = last;
         return last->elem;
     }
-    else if (last && sotl)
-    {
+    else if (last && sotl) {
         last_asked_list_elem = last->get_prev();
         insert_as_first(last->elem);
         remove_last();
@@ -385,24 +357,20 @@ template <class Type> inline Type *List<Type>::get_last()
         return NULL;
 }
 
-template <class Type> inline Type *List<Type>::get_prev()
-{
+template <class Type> inline Type *List<Type>::get_prev() {
     Type            *result = NULL;
     list_elem<Type> *mark_prev;
 
     if (last_asked_list_elem) {
 
-        if (!sotl)              // behavior of a normal linked list
-        {
+        if (!sotl) {            // behavior of a normal linked list
             last_asked_list_elem = last_asked_list_elem->get_prev();
 
             if (last_asked_list_elem)
                 result = last_asked_list_elem->elem;
         }
-        else if (sotl)
-        {
-            if (last_asked_list_elem)
-            {
+        else if (sotl) {
+            if (last_asked_list_elem) {
                 result          = last_asked_list_elem->elem;
                 mark_prev       = last_asked_list_elem->get_prev();
 
@@ -415,24 +383,20 @@ template <class Type> inline Type *List<Type>::get_prev()
     return result;
 }
 
-template <class Type> inline Type *List<Type>::get_next()
-{
+template <class Type> inline Type *List<Type>::get_next() {
     Type            *result = NULL;
     list_elem<Type> *mark_next;
 
     if (last_asked_list_elem) {
 
-        if (!sotl)              // behavior of a normal linked list
-        {
+        if (!sotl) {            // behavior of a normal linked list
             last_asked_list_elem = last_asked_list_elem->next;
 
             if (last_asked_list_elem)
                 result = last_asked_list_elem->elem;
         }
-        else if (sotl)
-        {
-            if (last_asked_list_elem)
-            {
+        else if (sotl) {
+            if (last_asked_list_elem) {
                 result          = last_asked_list_elem->elem;
                 mark_next       = last_asked_list_elem->next;
 
@@ -447,8 +411,7 @@ template <class Type> inline Type *List<Type>::get_next()
 }
 
 
-template <class Type> inline positiontype List<Type>::insert_as_first(Type *object)
-{
+template <class Type> inline positiontype List<Type>::insert_as_first(Type *object) {
     list_elem<Type> *help = NULL;
 
     if (! first)                                    // create first element
@@ -457,8 +420,7 @@ template <class Type> inline positiontype List<Type>::insert_as_first(Type *obje
         first->set_pos(1);
         last = first;
     }
-    else
-    {
+    else {
         help = new list_elem<Type>(object);
         help->set_pos(1);                               // update by USER !!!
         help->set_next(first);
@@ -470,8 +432,7 @@ template <class Type> inline positiontype List<Type>::insert_as_first(Type *obje
     return 1;
 }
 
-template <class Type> inline  positiontype List<Type>::insert_as_last(Type *object)
-{
+template <class Type> inline  positiontype List<Type>::insert_as_last(Type *object) {
     list_elem<Type> *help = NULL;
 
     if (! first)                                    // create first element
@@ -480,8 +441,7 @@ template <class Type> inline  positiontype List<Type>::insert_as_last(Type *obje
         first->set_pos(1);
         last = first;
     }
-    else
-    {
+    else {
         help = new list_elem<Type>(object);
         help->set_pos(no_of_members+1);
         help->set_prev(last);
@@ -493,8 +453,7 @@ template <class Type> inline  positiontype List<Type>::insert_as_last(Type *obje
     return no_of_members;
 }
 
-template <class Type> inline positiontype List<Type>::insert_after_current(Type *object)
-{
+template <class Type> inline positiontype List<Type>::insert_after_current(Type *object) {
     list_elem<Type>     *help = NULL;
     positiontype result = 0;
 
@@ -519,8 +478,7 @@ template <class Type> inline positiontype List<Type>::insert_after_current(Type 
     return result;
 }
 
-template <class Type> inline positiontype List<Type>::insert_before_current(Type *object)
-{
+template <class Type> inline positiontype List<Type>::insert_before_current(Type *object) {
     list_elem<Type>     *help = NULL;
     positiontype result = 0;
     if (last_asked_list_elem) {
@@ -544,28 +502,23 @@ template <class Type> inline positiontype List<Type>::insert_before_current(Type
     return result;
 }
 
-template <class Type> inline  positiontype List<Type>::insert(Type *object)
-{
+template <class Type> inline  positiontype List<Type>::insert(Type *object) {
     return insert_as_first(object);
 }
 
-template <class Type> inline positiontype List<Type>::insert_at_pos_simple(Type *object, positiontype temp_pos)         // returns pos inserted to
-{
+template <class Type> inline positiontype List<Type>::insert_at_pos_simple(Type *object, positiontype temp_pos) {       // returns pos inserted to
     list_elem<Type> *elem,
-        *new_elem;
+    *new_elem;
 
-    if (temp_pos<=1)
-    {
+    if (temp_pos<=1) {
         insert_as_first(object);
         return 1;
     }
-    else if (temp_pos>no_of_members)
-    {
+    else if (temp_pos>no_of_members) {
         insert_as_last(object);
         return no_of_members;
     }
-    else
-    {
+    else {
         elem = get_list_elem_at_pos_simple(temp_pos);
 
         new_elem = new list_elem<Type>;
@@ -581,13 +534,11 @@ template <class Type> inline positiontype List<Type>::insert_at_pos_simple(Type 
     }
 }
 
-template <class Type> inline void List<Type>::remove_member_from_list(Type *object)
-{
+template <class Type> inline void List<Type>::remove_member_from_list(Type *object) {
     list_elem<Type> *loc_elem;
 
     if (last_asked_list_elem &&
-        last_asked_list_elem->elem==object)
-    {
+        last_asked_list_elem->elem==object) {
         if (! last_asked_list_elem->next)       // we're the last
             last = last_asked_list_elem->get_prev();
 
@@ -601,8 +552,7 @@ template <class Type> inline void List<Type>::remove_member_from_list(Type *obje
 
         last_asked_list_elem = NULL;
     }
-    else
-    {
+    else {
         if (last_asked_list_elem &&
             last_asked_list_elem->next &&
             last_asked_list_elem->next->elem == object)
@@ -629,18 +579,15 @@ template <class Type> inline void List<Type>::remove_member_from_list(Type *obje
     no_of_members --;
 }
 
-template <class Type> inline void List<Type>::remove_first()
-{
+template <class Type> inline void List<Type>::remove_first() {
     list_elem<Type> *new_first;
 
-    if (no_of_members <= 1)                 // case 0 or 1
-    {
+    if (no_of_members <= 1) {               // case 0 or 1
         delete first;
         first = last = last_asked_list_elem = NULL;
         no_of_members = 0;
     }
-    else
-    {
+    else {
         new_first = first->next;
         delete first;
         first = new_first;
@@ -648,18 +595,15 @@ template <class Type> inline void List<Type>::remove_first()
     }
 }
 
-template <class Type> inline void List<Type>::remove_last()
-{
+template <class Type> inline void List<Type>::remove_last() {
     list_elem<Type> *new_last;
 
-    if (no_of_members <= 1)                 // case 0 or 1
-    {
+    if (no_of_members <= 1) {               // case 0 or 1
         delete last;
         first = last = last_asked_list_elem = NULL;
         no_of_members = 0;
     }
-    else
-    {
+    else {
         new_last = last->get_prev();
         delete last;
         last = new_last;
@@ -667,29 +611,22 @@ template <class Type> inline void List<Type>::remove_last()
     }
 }
 
-template <class Type> inline positiontype List<Type>::insert_sorted_by_address_of_object(Type *object,
-                                                                                          int relation,
-                                                                                          bool duplicates)              // falls object schon vorhanden, dann
-{
-    list_elem<Type> *help = NULL,
-        *l_help;
+template <class Type> inline positiontype List<Type>::insert_sorted_by_address_of_object(Type *object, int relation, bool duplicates) {
+    // falls object schon vorhanden, dann
+    list_elem<Type> *help = NULL, *l_help;
 
-    if (! first)                            // create first element
-    {                                       // in list
+    if (! first) { // create first element in list
         first = new list_elem<Type>(object);
         first->set_pos(1);
         last = first;
     }
-    else
-    {
-        if (relation == RELATION_GREATER)       // search for a place to insert to
-        {                                       // objects which are created later,
+    else {
+        if (relation == RELATION_GREATER) { // search for a place to insert to objects which are created later,
             l_help = first;                 // have a greater address !!!
             while (l_help && object < l_help->elem)
                 l_help = l_help->next;
         }
-        else            // RELATION_LESS
-        {
+        else {          // RELATION_LESS
             l_help = last;
             while (l_help && object < l_help->elem)
                 l_help = l_help->get_prev();
@@ -700,33 +637,27 @@ template <class Type> inline positiontype List<Type>::insert_sorted_by_address_o
 
         help = new list_elem<Type>(object);     // generate new element
 
-        if (! l_help)                           // new element in front/at end
-        {
-            if (relation == RELATION_GREATER)
-            {
+        if (! l_help) {                         // new element in front/at end
+            if (relation == RELATION_GREATER) {
                 last->set_next(help);
                 help->set_prev(last);
                 last = help;
             }
-            else            // RELATION_LESS
-            {
+            else {          // RELATION_LESS
                 first->set_prev(help);
                 help->set_next(first);
                 first = help;
             }
         }
-        else
-        {
-            if (relation == RELATION_GREATER)
-            {
+        else {
+            if (relation == RELATION_GREATER) {
                 if (first == l_help)
                     first = help;
 
                 help->set_next(l_help);
                 help->set_prev(l_help->get_prev());
             }
-            else            // RELATION_LESS
-            {
+            else {          // RELATION_LESS
                 if (last == l_help)
                     last = help;
 
@@ -749,40 +680,38 @@ template <class Type> inline positiontype List<Type>::insert_sorted_by_address_o
 }
 
 template <class Type> inline void List<Type>::sort_list_join(List<Type> *l,
-                                                              int relation)
-{
+        int relation) {
     list_elem<Type> *this_list = first,
-        *join_list,
-        *new_elem;
+                                 *join_list,
+                                 *new_elem;
 
     if (! l || ! l->get_no_of_members())
         return;
 
     join_list = l->get_first_list_elem();
 
-    while (this_list && join_list)
-    {
-        if (this_list->elem == join_list->elem)
-        {
+    while (this_list && join_list) {
+        if (this_list->elem == join_list->elem) {
             this_list = this_list->next;
             join_list = join_list->next;
         }
-        else
-        {
+        else {
             if ((relation == RELATION_GREATER && this_list->elem > join_list->elem) ||
-                    (relation == RELATION_LESS    && this_list->elem < join_list->elem))
+                (relation == RELATION_LESS    && this_list->elem < join_list->elem)) {
                 this_list = this_list->next;
-            else
-            {
+            }
+            else {
                 new_elem = new list_elem<Type>(join_list->elem);
                 new_elem->set_prev(this_list->get_prev());
                 new_elem->set_next(this_list);
                 this_list->set_prev(new_elem);
 
-                if (new_elem->get_prev())
+                if (new_elem->get_prev()) {
                     new_elem->get_prev()->set_next(new_elem);
-                else
+                }
+                else {
                     first = new_elem;
+                }
 
                 join_list = join_list->next;
 
@@ -791,21 +720,22 @@ template <class Type> inline void List<Type>::sort_list_join(List<Type> *l,
         }
     }
 
-    if (! join_list || (!this_list && !join_list))
+    if (! join_list || (!this_list && !join_list)) {
         return;
+    }
 
-    if (!this_list)
-    {
-        while (join_list)
-        {
+    if (!this_list) {
+        while (join_list) {
             new_elem = new list_elem<Type>(join_list->elem);
             new_elem->set_prev(last);
 
-            if (last)
+            if (last) {
                 last->set_next(new_elem);
+            }
 
-            if (!first)
+            if (!first) {
                 first = new_elem;
+            }
 
             last = new_elem;
             no_of_members ++;
@@ -814,27 +744,21 @@ template <class Type> inline void List<Type>::sort_list_join(List<Type> *l,
     }
 }
 
-template <class Type> inline  void List<Type>::sort_list_subtract(List<Type> *l, int relation)
-{
-    list_elem<Type> *this_list = first,
-        *join_list = l->get_first_list_elem(),
-        *mark;
+template <class Type> inline  void List<Type>::sort_list_subtract(List<Type> *l, int relation) {
+    list_elem<Type> *this_list = first, *join_list = l->get_first_list_elem(), *mark;
 
-    while (this_list && join_list)
-    {
+    while (this_list && join_list) {
         if ((relation == RELATION_GREATER && this_list->elem > join_list->elem) ||
-             (relation == RELATION_LESS    && this_list->elem < join_list->elem))
+            (relation == RELATION_LESS    && this_list->elem < join_list->elem)) {
             this_list = this_list->next;
+        }
         else if ((relation == RELATION_GREATER && this_list->elem < join_list->elem) ||
-                  (relation == RELATION_LESS    && this_list->elem > join_list->elem))
+                 (relation == RELATION_LESS    && this_list->elem > join_list->elem)) {
             join_list = join_list->next;
-        else if (this_list->elem == join_list->elem) // same element => delete from this_list
-        {
-            if (this_list == first)
-                first = this_list->next;
-
-            if (this_list == last)
-                last = this_list->get_prev();
+        }
+        else if (this_list->elem == join_list->elem) { // same element => delete from this_list
+            if (this_list == first) first = this_list->next;
+            if (this_list == last) last = this_list->get_prev();
 
             mark = this_list->next;
             delete this_list;
@@ -843,8 +767,7 @@ template <class Type> inline  void List<Type>::sort_list_subtract(List<Type> *l,
             join_list = join_list->next;
             no_of_members --;
 
-            if (! no_of_members)
-            {
+            if (! no_of_members) {
                 last_asked_list_elem = NULL;
                 return;
             }
@@ -852,73 +775,67 @@ template <class Type> inline  void List<Type>::sort_list_subtract(List<Type> *l,
     }
 }
 
-template <class Type> inline List<Type> *List<Type>::duplicate_list(Type *object)
-{
+template <class Type> inline List<Type> *List<Type>::duplicate_list(Type *object) {
     list_elem<Type> *help_l = first;
     List<Type>      *new_list = NULL;
 
-    if (last_asked_list_elem->elem == object)
+    if (last_asked_list_elem->elem == object) {
         help_l = last_asked_list_elem;
-    else
+    }
+    else {
         help_l = get_list_elem_with_member(object);
+    }
 
-    if (help_l)
-        new_list = new List<Type>;
+    if (help_l) new_list = new List<Type>;
 
-    while (help_l)
-    {
+    while (help_l) {
         new_list->insert_as_last(help_l->elem);
-
         help_l = help_l->next;
     }
 
     return new_list;
 }
 
-template <class Type>  inline void List<Type>::update_pos_no(list_elem<Type> *elem, positiontype nr)
-{
+template <class Type>  inline void List<Type>::update_pos_no(list_elem<Type> *elem, positiontype nr) {
     list_elem<Type> *mark;
 
-    if (!elem)
-        return;
+    if (!elem) return;
 
     elem->set_pos(nr++);
     mark = elem->next;
-    while (mark)
-    {
+    while (mark) {
         mark->set_pos(nr++);
         mark = mark->next;
     }
 }
 
-template <class Type> inline void List<Type>::update_pos_no()
-{
+template <class Type> inline void List<Type>::update_pos_no() {
     update_pos_no(first, 1);
 }
 
-template <class Type> inline bool List<Type>::exchange_members(Type *ex, Type *change)
-{
+template <class Type> inline bool List<Type>::exchange_members(Type *ex, Type *change) {
     list_elem<Type> *one, *two;
     bool result = false;
     while (1) {
-        if (!ex || !change)
-            break;
+        if (!ex || !change) break;
 
-        if (last_asked_list_elem && last_asked_list_elem->elem == ex)
+        if (last_asked_list_elem && last_asked_list_elem->elem == ex) {
             one = last_asked_list_elem;
-        else
+        }
+        else {
             one = get_list_elem_with_member(ex);
+        }
 
-        if (! one)
-            break;
+        if (! one) break;
 
-        if (last_asked_list_elem && last_asked_list_elem->elem == change)
+        if (last_asked_list_elem && last_asked_list_elem->elem == change) {
             two = last_asked_list_elem;
-        else
+        }
+        else {
             two = get_list_elem_with_member(change);
+        }
 
-        if (!two)
-            break;
+        if (!two) break;
 
         one->set_elem(change);
         two->set_elem(ex);
@@ -929,23 +846,18 @@ template <class Type> inline bool List<Type>::exchange_members(Type *ex, Type *c
     return result;
 }
 
-template <class Type> inline bool List<Type>::exchange_positions(positiontype ex, positiontype change)
-{
+template <class Type> inline bool List<Type>::exchange_positions(positiontype ex, positiontype change) {
     list_elem<Type> *one, *two;
     Type            *dummy;
     bool    result = false;
     while (1) {
-        if (ex < 1 || ex > no_of_members ||
-                change < 1 || change > no_of_members)
-            break;
+        if (ex < 1 || ex > no_of_members || change < 1 || change > no_of_members) break;
 
         one = get_list_elem_at_pos(ex);
-        if (! one)
-            break;
+        if (! one) break;
 
         two = get_list_elem_at_pos(change);
-        if (!two)
-            break;
+        if (!two) break;
 
         dummy = one->elem;
         one->elem = two->elem;
@@ -956,118 +868,94 @@ template <class Type> inline bool List<Type>::exchange_positions(positiontype ex
     return result;
 }
 
-template <class Type> inline positiontype List<Type>::get_pos_of_member(Type *object)
-{
+template <class Type> inline positiontype List<Type>::get_pos_of_member(Type *object) {
     list_elem<Type> *elem;
 
     if (!object)
         return 0;
 
-    if (last_asked_list_elem && last_asked_list_elem->elem == object)
+    if (last_asked_list_elem && last_asked_list_elem->elem == object) {
         return last_asked_list_elem->get_pos();
-    else
-    {
+    }
+    else {
         elem = first;
-        while (elem && elem->elem != object)
-            elem = elem->next;
+        while (elem && elem->elem != object) elem = elem->next;
 
-        if (elem)
-            return elem->get_pos();
-        else
-            return 0;
+        if (elem) return elem->get_pos();
+        else return 0;
     }
 }
 
 
-template <class Type> inline positiontype List<Type>::insert_at_pos(Type *object, positiontype pos)     // returns pos inserted to
-{
-    list_elem<Type> *elem,
-        *new_elem;
+template <class Type> inline positiontype List<Type>::insert_at_pos(Type *object, positiontype pos) {   // returns pos inserted to
+    list_elem<Type> *elem, *new_elem;
     positiontype result;
 
     elem = get_list_elem_at_pos(pos);
 
-    if (! elem)
-    {
+    if (! elem) {
         insert_as_last(object);
         result = last->get_pos();
     }
-    else
-    {
+    else {
         new_elem = new list_elem<Type>(object);
         new_elem->set_prev(elem->get_prev());
         new_elem->set_next(elem);
 
-        if (elem->get_prev())
-            elem->get_prev()->set_next(new_elem);
+        if (elem->get_prev()) elem->get_prev()->set_next(new_elem);
 
         elem->set_prev(new_elem);
 
-        if (first == elem)
-            first = new_elem;
+        if (first == elem) first = new_elem;
 
-        update_pos_no (new_elem, pos);
+        update_pos_no(new_elem, pos);
 
         result =  pos;
     }
     return result;
 }
 
-template <class Type> inline Type *List<Type>::get_member_at_pos(positiontype pos)
-{
+template <class Type> inline Type *List<Type>::get_member_at_pos(positiontype pos) {
     list_elem<Type> *elem;
 
     elem = get_list_elem_at_pos(pos);
 
-    if (elem)
-    {
+    if (elem) {
         last_asked_list_elem = elem;
         return elem->elem;
     }
-    else
-        return NULL;
+    else return NULL;
 }
 
-template <class Type> inline Type *List<Type>::get_member_at_pos_simple(positiontype pos)
-{
+template <class Type> inline Type *List<Type>::get_member_at_pos_simple(positiontype pos) {
     list_elem<Type> *elem;
 
     elem = get_list_elem_at_pos_simple(pos);
 
-    if (elem)
-    {
+    if (elem) {
         last_asked_list_elem = elem;
         return elem->elem;
     }
-    else
-        return NULL;
+    else return NULL;
 }
 
-template <class Type> inline bool List<Type>::remove_pos_from_list(positiontype pos)
-{
+template <class Type> inline bool List<Type>::remove_pos_from_list(positiontype pos) {
     list_elem<Type> *loc_elem;
     bool result = false;
     while (1) {
-        if (pos < 1 || pos > no_of_members)
-            break;
+        if (pos < 1 || pos > no_of_members) break;
 
         loc_elem = last_asked_list_elem;
 
-        if (loc_elem && loc_elem->get_pos() == pos)
+        if (loc_elem && loc_elem->get_pos() == pos) {
             last_asked_list_elem = NULL;
-        else
-        {
-            if (! (loc_elem = get_list_elem_at_pos(pos)))
-                break;
+        }
+        else {
+            if (!(loc_elem = get_list_elem_at_pos(pos))) break;
         }
 
-        if (last == loc_elem)
-            last = last->get_prev();
-
-        if (first == loc_elem)
-
-
-            first = first->next;
+        if (last == loc_elem) last = last->get_prev();
+        if (first == loc_elem) first = first->next;
 
         delete loc_elem;
         no_of_members --;

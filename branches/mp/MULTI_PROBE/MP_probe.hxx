@@ -147,7 +147,7 @@ public:
                                   probe_combi_statistic *p);    // bisher zusammengestellte probe
 
     bool calcFitness(ProbeValuation *p_eval, bool use_genetic_algo, double old_avg_fit, GB_ERROR& error);        // fitness-berechnung aller Sondenkombis im Feld; und average_fitness und deviation
-    
+
     void        init_roulette_wheel();
     Generation *create_next_generation(ProbeValuation *p_eval);               // die Kindergeneration wird zurueckgegeben
 
@@ -168,7 +168,7 @@ class ProbeValuation : virtual Noncopyable {
     int   *mismatch_array;
     int   *ecolipos_array;
     int    size_sonden_array;
-    
+
     probe **probe_pool; // Generierung eines Pools, in dem die Wahrscheinlichkeiten fuer die Erfassung
     // der Sonden schon eingearbeitet sind. DIe WS werden vom Benutzer fuer jede einzelne Sonde bestimmt.
 

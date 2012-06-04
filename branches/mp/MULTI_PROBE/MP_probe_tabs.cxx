@@ -14,8 +14,7 @@
 #include <cmath>
 
 // **************************************************************
-void probe_tabs::print()
-{
+void probe_tabs::print() {
     int i;
 
 
@@ -32,8 +31,7 @@ void probe_tabs::print()
 
 }
 
-probe_tabs *probe_tabs::duplicate()
-{
+probe_tabs *probe_tabs::duplicate() {
     int  i;
     int *new_group_field     = new int[length_of_group_tabs];
     int *new_non_group_field = new int[length_of_group_tabs];
@@ -49,19 +47,16 @@ probe_tabs *probe_tabs::duplicate()
 }
 
 
-probe_tabs::probe_tabs(int *new_group_field, int *new_non_group_field, int len_group)
-{
+probe_tabs::probe_tabs(int *new_group_field, int *new_non_group_field, int len_group) {
     int length;
     memset(this, 0, sizeof(probe_tabs));
 
-    if (new_group_field)                                // Duplicate !!!
-    {
+    if (new_group_field) {                              // Duplicate !!!
         group_tab = new_group_field;
         non_group_tab = new_non_group_field;
         length_of_group_tabs = len_group;
     }
-    else
-    {
+    else {
         length = (int)(pow(3.0, (double)mp_gl_awars.no_of_probes));
         group_tab = new int[length];
         memset(group_tab, 0, sizeof(int)*length);
@@ -71,8 +66,7 @@ probe_tabs::probe_tabs(int *new_group_field, int *new_non_group_field, int len_g
     }
 }
 
-probe_tabs::~probe_tabs()
-{
+probe_tabs::~probe_tabs() {
     delete [] group_tab;
     delete [] non_group_tab;
 }

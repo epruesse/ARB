@@ -11,26 +11,21 @@
 #include "MP_probe.hxx"
 #include "MultiProbe.hxx"
 
-bool GenerationDuplicates::insert(probe_combi_statistic *sondenkombi, bool &result, int depth)          // initial muss result true sein
-{
+bool GenerationDuplicates::insert(probe_combi_statistic *sondenkombi, bool &result, int depth) {        // initial muss result true sein
     int max_depth = mp_gl_awars.no_of_probes;
 
-    if (depth == max_depth)
-    {
+    if (depth == max_depth) {
         result = false;
         return false;
     }
 
-    if (! next[sondenkombi->get_probe_combi(depth)->probe_index])               // sonde muss auf alle Faelle bis zuletzt eingetragen werden
-    {
-        if (depth == max_depth-1)
-        {
+    if (! next[sondenkombi->get_probe_combi(depth)->probe_index]) {             // sonde muss auf alle Faelle bis zuletzt eingetragen werden
+        if (depth == max_depth-1) {
             next[sondenkombi->get_probe_combi(depth)->probe_index] = new GenerationDuplicates(1);
             next_mism[sondenkombi->get_probe_combi(depth)->allowed_mismatches] = 1;
             return true;
         }
-        else
-        {
+        else {
             next[sondenkombi->get_probe_combi(depth)->probe_index] = new GenerationDuplicates(intern_size);
             next_mism[sondenkombi->get_probe_combi(depth)->allowed_mismatches] = 1;
             return next[sondenkombi->get_probe_combi(depth)->probe_index]->insert(sondenkombi, result, depth+1);
@@ -42,8 +37,7 @@ bool GenerationDuplicates::insert(probe_combi_statistic *sondenkombi, bool &resu
     return result;
 }
 
-GenerationDuplicates::GenerationDuplicates(int size)            // size muss die Groesse des Sondenarrays in ProbeValuation enthalten
-{
+GenerationDuplicates::GenerationDuplicates(int size) {          // size muss die Groesse des Sondenarrays in ProbeValuation enthalten
     intern_size = size;
     next = new GenerationDuplicates*[size];
     next_mism = new int[MAXMISMATCHES];
@@ -51,8 +45,7 @@ GenerationDuplicates::GenerationDuplicates(int size)            // size muss die
     memset(next, 0, size * sizeof(GenerationDuplicates*));
 }
 
-GenerationDuplicates::~GenerationDuplicates()
-{
+GenerationDuplicates::~GenerationDuplicates() {
     for (int i=0; i<intern_size; i++)
         delete next[i];
 

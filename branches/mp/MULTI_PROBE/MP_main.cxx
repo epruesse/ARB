@@ -18,7 +18,7 @@
 #include <aw_awar_defs.hxx>
 #include <awt_canvas.hxx>
 
- // @@@ elim globals
+// @@@ elim globals
 awar_vars mp_gl_awars;
 
 MP_Main   *mp_main   = NULL;
@@ -37,8 +37,7 @@ MP_Main::MP_Main(AW_root *awr, AWT_canvas *canvas) {
     mp_window = new MP_Window(aw_root, canvas->gb_main);
 }
 
-MP_Main::~MP_Main()
-{
+MP_Main::~MP_Main() {
     aw_root->awar_int(MP_AWAR_QUALITY)->remove_callback(MP_gen_quality, (AW_CL)0, (AW_CL)0);
     aw_root->awar_int(MP_AWAR_SINGLEMISMATCHES)->remove_callback(MP_gen_singleprobe, (AW_CL)0, (AW_CL)0);
     aw_root->awar_int(MP_AWAR_MISMATCHES)->remove_callback(MP_modify_selected, (AW_CL)0, (AW_CL)0);
@@ -48,8 +47,7 @@ MP_Main::~MP_Main()
     new_pt_server = true;
 }
 
-void MP_Main::create_awars()
-{
+void MP_Main::create_awars() {
     aw_root->awar_string(MP_AWAR_SEQIN);
     aw_root->awar_string(MP_AWAR_SELECTEDPROBES)->add_target_var(& mp_gl_awars.selected_probes);
     aw_root->awar_string(MP_AWAR_PROBELIST)->add_target_var(& mp_gl_awars.probelist);
@@ -74,8 +72,7 @@ void MP_Main::create_awars()
 }
 
 
-static void create_tables()
-{
+static void create_tables() {
     int i;
 
     // probe_tab
