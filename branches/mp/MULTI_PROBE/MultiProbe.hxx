@@ -108,8 +108,8 @@ class MP_Window : virtual Noncopyable {
     // zeigt auf naechstes Zeichen
 
 public:
-    AW_window *get_window() { return aw; };
-    AW_window *get_result_window() { return result_window; };
+    AW_window *get_window() { return aw; }
+    AW_window *get_result_window() { return result_window; }
 
     AW_window *create_result_window(AW_root *aw_root);
 
@@ -125,9 +125,9 @@ class MP_Main : virtual Noncopyable {
     void    create_awars();
 
 public:
-    MP_Window  *get_mp_window() { return mp_window; };
-    AW_root    *get_aw_root()   { return aw_root; };
-    AWT_canvas *get_canvas()    { return scr; };
+    MP_Window  *get_mp_window() { return mp_window; }
+    AW_root    *get_aw_root()   { return aw_root; }
+    AWT_canvas *get_canvas()    { return scr; }
 
     MP_Main(AW_root *awr, AWT_canvas *canvas);
     ~MP_Main();
@@ -144,10 +144,10 @@ class Bakt_Info : virtual Noncopyable {
     long  hit_flag;
 
 public:
-    char*       get_name() { return name; };
-    long        inc_hit_flag() { return (++hit_flag); };
-    long        get_hit_flag() { return (hit_flag); };
-    void        kill_flag() { hit_flag = 0; };
+    char*       get_name() { return name; }
+    long        inc_hit_flag() { return (++hit_flag); }
+    long        get_hit_flag() { return (hit_flag); }
+    void        kill_flag() { hit_flag = 0; }
 
     Bakt_Info(const char* n);
     ~Bakt_Info();
@@ -158,10 +158,10 @@ class Hit : virtual Noncopyable {
     long    baktid;
 
 public:
-    double*     get_mismatch()  { return mismatch; };
-    long    get_baktid()    { return baktid; };
-    void    set_mismatch_at_pos(int pos, double mm) { mismatch[pos] = mm; };
-    double  get_mismatch_at_pos(int pos) { return mismatch[pos]; };
+    double*     get_mismatch()  { return mismatch; }
+    long    get_baktid()    { return baktid; }
+    void    set_mismatch_at_pos(int pos, double mm) { mismatch[pos] = mm; }
+    double  get_mismatch_at_pos(int pos) { return mismatch[pos]; }
 
     Hit(long baktnummer);
     ~Hit();
@@ -224,7 +224,7 @@ public:
     long get_length_hitliste();
     void gen_color_hash(positiontype anz_sonden);
 
-    GB_HASH *get_color_hash() { return color_hash; };
+    GB_HASH *get_color_hash() { return color_hash; }
 
     Sondentopf(MO_Liste *BL, MO_Liste *AL);
     ~Sondentopf();
@@ -245,11 +245,11 @@ public:
     void    rshift();
     void    print();
 
-    char*   get_vector() { return vector; };
-    int     get_num_of_bits() { return num_of_bits; };
-    int     get_len() { return len; };
+    char*   get_vector() { return vector; }
+    int     get_num_of_bits() { return num_of_bits; }
+    int     get_len() { return len; }
 
-    void    set_vector(char* back) { vector = back; };
+    void    set_vector(char* back) { vector = back; }
 
     Bitvector(int bits);
     ~Bitvector();
@@ -267,28 +267,28 @@ class Sonde : virtual Noncopyable {
     double      *Outside_Mismatch;
 
 public:
-    double              get_Allowed_Mismatch_no(int no) { return ((Allowed_Mismatch) ? Allowed_Mismatch[no] : 100); };
-    double              get_Outside_Mismatch_no(int no) { return ((Outside_Mismatch) ? Outside_Mismatch[no] : 100); };
-    char*       get_name() { return kennung; };
+    double              get_Allowed_Mismatch_no(int no) { return ((Allowed_Mismatch) ? Allowed_Mismatch[no] : 100); }
+    double              get_Outside_Mismatch_no(int no) { return ((Outside_Mismatch) ? Outside_Mismatch[no] : 100); }
+    char*       get_name() { return kennung; }
     Hit*        get_hitdata_by_number(long index);
-    Hit**       get_Hitliste() {    return hitliste; };
-    long        get_length_hitliste() {    return length_hitliste; };
-    long        get_minelem() { return minelem; };
-    long        get_maxelem() { return maxelem; };
-    positiontype    get_far() { return kombi_far; };
-    positiontype    get_mor() { return kombi_mor; };
-    Bitvector*      get_bitkennung() { return bitkennung; };
+    Hit**       get_Hitliste() {    return hitliste; }
+    long        get_length_hitliste() {    return length_hitliste; }
+    long        get_minelem() { return minelem; }
+    long        get_maxelem() { return maxelem; }
+    positiontype    get_far() { return kombi_far; }
+    positiontype    get_mor() { return kombi_mor; }
+    Bitvector*      get_bitkennung() { return bitkennung; }
 
-    void        set_Allowed_Mismatch_no(int pos, int no) { Allowed_Mismatch[pos] = no; };
-    void        set_Outside_Mismatch_no(int pos, int no) { Outside_Mismatch[pos] = no; };
+    void        set_Allowed_Mismatch_no(int pos, int no) { Allowed_Mismatch[pos] = no; }
+    void        set_Outside_Mismatch_no(int pos, int no) { Outside_Mismatch[pos] = no; }
     void        set_bitkennung(Bitvector* bv);  // Setzt eine Leere Bitkennung der laenge bits
-    void        set_name(char* name) {  kennung = strdup(name); };
-    void        set_Hitliste(Hit** hitptr) {     hitliste = hitptr; };
-    void        set_length_hitliste(long lhl) { length_hitliste = lhl; };
-    void        set_minelem(long min) { minelem = min; };
-    void        set_maxelem(long max) { maxelem = max; };
-    void        set_far(positiontype far) {  kombi_far = far; };
-    void        set_mor(positiontype mor) {  kombi_mor = mor; };
+    void        set_name(char* name) {  kennung = strdup(name); }
+    void        set_Hitliste(Hit** hitptr) {     hitliste = hitptr; }
+    void        set_length_hitliste(long lhl) { length_hitliste = lhl; }
+    void        set_minelem(long min) { minelem = min; }
+    void        set_maxelem(long max) { maxelem = max; }
+    void        set_far(positiontype far) {  kombi_far = far; }
+    void        set_mor(positiontype mor) {  kombi_mor = mor; }
 
     void        print();
     void        sink(long i, long t, MO_Mismatch** A);
@@ -338,7 +338,7 @@ public:
         set_unmarked_species(NULL);
     }
 
-    ST_Container *get_stc() { return stc; }; // @@@ make result const
+    ST_Container *get_stc() { return stc; } // @@@ make result const
     void set_stc(ST_Container *stopfC) { // @@@ make private
         delete stc;
         stc = stopfC;

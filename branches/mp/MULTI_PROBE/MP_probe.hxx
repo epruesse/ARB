@@ -26,9 +26,9 @@ class probe_tabs : virtual Noncopyable {
     int             *non_group_tab;
     int             length_of_group_tabs;
 public:
-    int             get_non_group_tab(int j) { return non_group_tab[j]; };
-    int             get_group_tab(int j) { return group_tab[j]; };
-    int             get_len_group_tabs() { return length_of_group_tabs; };
+    int             get_non_group_tab(int j) { return non_group_tab[j]; }
+    int             get_group_tab(int j) { return group_tab[j]; }
+    int             get_len_group_tabs() { return length_of_group_tabs; }
 
     probe_tabs          *duplicate();
     void            print();
@@ -117,10 +117,10 @@ private:
     probe_combi_statistic *choose_combi_for_next_generation();
 
 public:
-    double      get_avg_fit() { return average_fitness; };
-    int     get_generation() { return generation_counter; };
-    GenerationDuplicates *get_dup_tree()    { return dup_tree; };
-    void        set_length() { probe_combi_array_length = last_elem; };     // nur verwenden, wenn man weiss was man tut !!!!
+    double      get_avg_fit() { return average_fitness; }
+    int     get_generation() { return generation_counter; }
+    GenerationDuplicates *get_dup_tree()    { return dup_tree; }
+    void        set_length() { probe_combi_array_length = last_elem; }     // nur verwenden, wenn man weiss was man tut !!!!
     void        check_for_results(ProbeValuation *p_eval, ConstStrArray& results); // @@@ rename
 
     bool        insert(probe_combi_statistic *pcs);     // false wenn Generation schon MAXPOPULATION Eintraege hat
@@ -171,12 +171,12 @@ class ProbeValuation : virtual Noncopyable {
     List<result_struct> *computation_result_list;
 
 public:
-    void        set_act_gen(Generation *g) { act_generation = g; };
-    int         get_max_init_for_gen() { return max_init_pop_combis; };
-    int         get_pool_length()   { return pool_length; };
-    probe       **get_probe_pool()  { return probe_pool; };
-    int         get_size_sondenarray()  { return size_sonden_array; };
-    char        **get_sondenarray() { return sondenarray; };
+    void        set_act_gen(Generation *g) { act_generation = g; }
+    int         get_max_init_for_gen() { return max_init_pop_combis; }
+    int         get_pool_length()   { return pool_length; }
+    probe       **get_probe_pool()  { return probe_pool; }
+    int         get_size_sondenarray()  { return size_sonden_array; }
+    char        **get_sondenarray() { return sondenarray; }
 
     void insert_in_result_list(probe_combi_statistic *pcs, ConstStrArray& results); // @@@ rename
 
