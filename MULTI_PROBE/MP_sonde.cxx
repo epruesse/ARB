@@ -12,7 +12,6 @@
 #include "MultiProbe.hxx"
 
 #include <aw_msg.hxx>
-#include <arbdbt.h>
 #include <client.h>
 
 #include <cmath>
@@ -67,10 +66,11 @@ void Sonde::print()
 }
 
 
-MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, int match_mis, char *match_seq, MO_Liste *convert, long *number_of_species)
-{
+MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, int match_mis, char *match_seq, MO_Liste *convert, long *number_of_species, GB_ERROR& error) {
+    mp_assert(!error);
+
     MO_Mismatch **ret_list   = NULL;
-    const char   *servername = MP_probe_pt_look_for_server();
+    const char   *servername = MP_probe_pt_look_for_server(error);
 
     if (servername) {
         char           *match_name, *match_mismatches, *match_wmismatches;
@@ -86,15 +86,14 @@ MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, in
         mp_pd_gl.locs.clear();
 
         if (!mp_pd_gl.link) {
-            aw_message("Cannot contact Probe bank server ");
-            return NULL;
+            error = "cannot contact PT-Server";
         }
-        if (MP_init_local_com_struct()) {
-            aw_message ("Cannot contact Probe bank server (2)");
-            return NULL;
+        if (!error && MP_init_local_com_struct()) {
+            error = "Connection to PT_SERVER lost (1)";
         }
 
-        if (aisc_put(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs,
+        if (!error &&
+            aisc_put(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs,
                      LOCS_MATCH_REVERSED,       match_kompl, // Komplement
                      LOCS_MATCH_SORT_BY,        match_weight, // Weighted
                      LOCS_MATCH_COMPLEMENT,     0,  // ???
@@ -102,51 +101,55 @@ MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, in
                      LOCS_SEARCHMATCH,          match_seq, // Sequence
                      NULL)) {
             free(probe);
-            aw_message ("Connection to PT_SERVER lost (4)");
-            return NULL;
+            error = "Connection to PT_SERVER lost (2)";
         }
 
-        bs.data = 0;
-        aisc_get(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs,
-                 LOCS_MATCH_LIST,      match_list.as_result_param(),
-                 LOCS_MATCH_LIST_CNT,  &match_list_cnt,
-                 LOCS_MP_MATCH_STRING, &bs,
-                 LOCS_ERROR,           &locs_error,
-                 NULL);
-        if (*locs_error) {
-            aw_message(locs_error);
+        if (!error) {
+            bs.data = 0;
+            aisc_get(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs,
+                     LOCS_MATCH_LIST,      match_list.as_result_param(),
+                     LOCS_MATCH_LIST_CNT,  &match_list_cnt,
+                     LOCS_MP_MATCH_STRING, &bs,
+                     LOCS_ERROR,           &locs_error,
+                     NULL);
+
+            if (*locs_error) {
+                error = GBS_global_string("%s", locs_error);
+            }
+            free(locs_error);
         }
-        free(locs_error);
 
-        toksep[0] = 1;
-        toksep[1] = 0;
-        if (bs.data)
-        {
-            ret_list = new MO_Mismatch*[match_list_cnt];
+        if (!error) {
+            toksep[0] = 1;
+            toksep[1] = 0;
+            if (bs.data) {
+                ret_list = new MO_Mismatch*[match_list_cnt];
 
-            match_name = strtok(bs.data, toksep);
-            match_mismatches = strtok(0, toksep);
-            match_wmismatches = strtok(0, toksep);
-
-            while (match_name && match_mismatches && match_wmismatches)
-            {
-                ret_list[i] = new MO_Mismatch;
-                ret_list[i]->nummer = convert->get_index_by_entry(match_name);
-                if (match_weight == NON_WEIGHTED)
-                    ret_list[i]->mismatch = atof(match_mismatches);
-                else                            // WEIGHTED und WEIGHTED_PLUS_POS
-                    ret_list[i]->mismatch = atof(match_wmismatches);
-
-
-                match_name = strtok(0, toksep);
-                match_mismatches = strtok(0, toksep);
+                match_name        = strtok(bs.data, toksep);
+                match_mismatches  = strtok(0, toksep);
                 match_wmismatches = strtok(0, toksep);
 
-                i++;
+                while (match_name && match_mismatches && match_wmismatches) {
+                    ret_list[i] = new MO_Mismatch;
+                    ret_list[i]->nummer = convert->get_index_by_entry(match_name);
+                    if (match_weight == NON_WEIGHTED) {
+                        ret_list[i]->mismatch = atof(match_mismatches);
+                    }
+                    else { // WEIGHTED und WEIGHTED_PLUS_POS
+                        ret_list[i]->mismatch = atof(match_wmismatches);
+                    }
+
+                    match_name        = strtok(0, toksep);
+                    match_mismatches  = strtok(0, toksep);
+                    match_wmismatches = strtok(0, toksep);
+
+                    i++;
+                }
+            }
+            else {
+                error = "No matching species found"; // @@@ more details ? 
             }
         }
-        else
-            aw_message("No matching species found.");
 
         *number_of_species = match_list_cnt;
 
@@ -154,6 +157,7 @@ MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, in
         free(bs.data);
 
     }
+
     return ret_list;
 }
 
@@ -175,10 +179,9 @@ double Sonde::check_for_min(long k, MO_Mismatch** probebacts, long laenge)
 
 
 
-int Sonde::gen_Hitliste(MO_Liste *Bakterienliste)
+GB_ERROR Sonde::gen_Hitliste(MO_Liste *Bakterienliste) {
     // Angewandt auf eine frische Sonde generiert diese Methode die Hitliste durch eine Anfrage an die Datenbank, wobei
     // der Name der Sonde uebergeben wird
-{
     MO_Mismatch**   probebacts;
     long        i, k;           // Zaehlervariable
     long        laenge = 0;
@@ -188,87 +191,82 @@ int Sonde::gen_Hitliste(MO_Liste *Bakterienliste)
 
     // DATENBANKAUFRUF
     mm_to_search = mp_gl_awars.greyzone + mp_gl_awars.outside_mismatches_difference + get_Allowed_Mismatch_no(0);
-    if (mm_to_search > (int) mm_to_search)
+    if (mm_to_search > (int) mm_to_search) {
         mm_int_to_search = (int) mm_to_search + 1;
-    else
+    }
+    else {
         mm_int_to_search = (int) mm_to_search;
+    }
+
+    GB_ERROR error = NULL;
 
     probebacts = get_matching_species(mp_gl_awars.complement,
                                       mp_gl_awars.weightedmismatches,
                                       mm_int_to_search,
                                       kennung,
                                       Bakterienliste,
-                                      &laenge);
+                                      &laenge,
+                                      error);
 
+    mp_assert(contradicted(error, laenge && probebacts));
 
-    // ACHTUNG probebacts mit laenge enthaelt nur laenge-1 Eintraege von 0 bis laenge -2
-    if (!laenge || !probebacts)
-    {
-        if (!laenge)
-            aw_message("This probe matches no species!");
-        if (!probebacts)
+    if (!error) {
+        // Ptrliste ist Nullterminiert
+        // Sortieren des Baktnummernfeldes:
+
+        heapsort(laenge, probebacts);
+
+        double min_mm;          // Minimaler Mismatch
+        // laenge ist die Anzahl der Eintraege in probebact
+        // Korrekturschleife, um Mehrfachtreffer auf das gleiche Bakterium abzufangen
+
+        for (k=0;  k < laenge-1;  k++)
         {
-            aw_message("This probe matches no species!");
-            return 11;
-        }
-        return 1;
-    }
-
-    // Ptrliste ist Nullterminiert
-    // Sortieren des Baktnummernfeldes:
-
-    heapsort(laenge, probebacts);
-
-    double min_mm;          // Minimaler Mismatch
-    // laenge ist die Anzahl der Eintraege in probebact
-    // Korrekturschleife, um Mehrfachtreffer auf das gleiche Bakterium abzufangen
-
-    for (k=0;  k < laenge-1;  k++)
-    {
-        if (probebacts[k]->nummer == probebacts[k+1]->nummer)
-        {
-            min_mm = check_for_min(k, probebacts, laenge);
-            probebacts[k]->mismatch = min_mm;
-            while ((k<laenge-1) && (probebacts[k]->nummer == probebacts[k+1]->nummer))
+            if (probebacts[k]->nummer == probebacts[k+1]->nummer)
             {
-                probebacts[k+1]->mismatch = min_mm;
-                k++;
+                min_mm = check_for_min(k, probebacts, laenge);
+                probebacts[k]->mismatch = min_mm;
+                while ((k<laenge-1) && (probebacts[k]->nummer == probebacts[k+1]->nummer))
+                {
+                    probebacts[k+1]->mismatch = min_mm;
+                    k++;
+                }
             }
         }
-    }
 
-    // Das hier funktioniert, da Liste sortiert ist
-    minelem = probebacts[0]->nummer;
-    maxelem = probebacts[laenge-1]->nummer;
+        // Das hier funktioniert, da Liste sortiert ist
+        minelem = probebacts[0]->nummer;
+        maxelem = probebacts[laenge-1]->nummer;
 
-    // Probebacts besteht aus eintraegen der Art (Nummer, Mismatch)
-    hitliste = new Hit*[laenge+1];
-    for (i=0; i<laenge+1; i++)
-        hitliste[i]=NULL;
+        // Probebacts besteht aus eintraegen der Art (Nummer, Mismatch)
+        hitliste = new Hit*[laenge+1];
+        for (i=0; i<laenge+1; i++)
+            hitliste[i]=NULL;
 
-    for (i=0; i<laenge; i++)
-    {
-        hitliste[i] = new Hit(probebacts[i]->nummer);
-        hitliste[i]->set_mismatch_at_pos(0, probebacts[i]->mismatch);
-    }
-    length_hitliste = laenge;
+        for (i=0; i<laenge; i++)
+        {
+            hitliste[i] = new Hit(probebacts[i]->nummer);
+            hitliste[i]->set_mismatch_at_pos(0, probebacts[i]->mismatch);
+        }
+        length_hitliste = laenge;
 
-    // Loesche hitflags wieder
-    long bl_index = 0;
-    Bakt_Info** baktliste = Bakterienliste->get_mo_liste();
-    Bakt_Info** bl_elem = baktliste+1;
-    while (bl_elem[bl_index])
-    {
-        bl_elem[bl_index]->kill_flag();
-        bl_index++;
+        // Loesche hitflags wieder
+        long bl_index = 0;
+        Bakt_Info** baktliste = Bakterienliste->get_mo_liste();
+        Bakt_Info** bl_elem = baktliste+1;
+        while (bl_elem[bl_index])
+        {
+            bl_elem[bl_index]->kill_flag();
+            bl_index++;
+        }
+        // Loeschen der Temps
+        for (i=0; i<laenge; i++)
+        {
+            delete probebacts[i];
+        }
+        delete [] probebacts;
     }
-    // Loeschen der Temps
-    for (i=0; i<laenge; i++)
-    {
-        delete probebacts[i];
-    }
-    delete [] probebacts;
-    return 0;
+    return error;
 }
 
 

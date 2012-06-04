@@ -23,7 +23,6 @@
 #include <arb_strarray.h>
 #include <arb_defs.h>
 #include <arb_strbuf.h>
-#include <arbdbt.h>
 #include <RegExpr.hxx>
 
 // **************************************************************************
@@ -467,7 +466,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
     aws->button_length(10);
     aws->at("Compute");
-    aws->callback(MP_compute, (AW_CL)gb_main);
+    aws->callback(MP_init_and_calculate_and_display_multiprobes, (AW_CL)gb_main);
     aws->highlight();
     aws->help_text("Compute possible Solutions");
     aws->create_button("GO", "GO");

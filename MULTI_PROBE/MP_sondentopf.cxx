@@ -17,7 +17,6 @@
 #include <cmath>
 
 ST_Container::ST_Container(int anz_sonden) {
-    long laenge_markierte;
 
     Sondennamen = new List<char>;
 
@@ -27,7 +26,10 @@ ST_Container::ST_Container(int anz_sonden) {
     Bakterienliste->get_all_species();
 
     if (pt_server_different) return;
-    laenge_markierte = Auswahlliste->fill_marked_bakts();
+
+    Auswahlliste->set_species(mp_global->get_marked_species());
+    long laenge_markierte = Auswahlliste->get_laenge();
+    mp_assert(laenge_markierte>0);
 
     anz_elem_unmarked = Bakterienliste->debug_get_current()-1 - laenge_markierte;
     // STATISTIK
@@ -67,13 +69,14 @@ ST_Container::~ST_Container()
 
 
 
-Sonde* ST_Container::cache_Sonde(char *name, int allowed_mis, double outside_mis)
-{
+Sonde* ST_Container::cache_Sonde(char *name, int allowed_mis, double outside_mis, GB_ERROR& error) {
+    mp_assert(!error); 
+    
     char*  name_for_plist = strdup(name);
     Sonde* s              = new Sonde(name, allowed_mis, outside_mis);
 
     Sondennamen->insert_as_first(name_for_plist);
-    s->gen_Hitliste(Bakterienliste);
+    error = s->gen_Hitliste(Bakterienliste);
 
     GBS_write_hash(cachehash, name, (long) s);
     // Reine Sonde plus Hitliste geschrieben, der Zeiger auf die Sonde liegt als long gecastet im Hash
@@ -144,17 +147,18 @@ Sondentopf::~Sondentopf()
 
 
 
-void Sondentopf::put_Sonde(char *name, int allowed_mis, double outside_mis)
-{
-    positiontype    pos;
-    ST_Container    *stc = mp_main->get_stc();
-    List<Sonde>     *Sondenliste = LIST(Listenliste->get_first());
-    Sonde       *s;
-    int i=0;
+void Sondentopf::put_Sonde(char *name, int allowed_mis, double outside_mis, GB_ERROR& error) {
+    mp_assert(!error);
+
+    positiontype  pos;
+    ST_Container *stc         = mp_global->get_stc();
+    List<Sonde>  *Sondenliste = LIST(Listenliste->get_first());
+    Sonde *s;
+    int    i = 0;
 
     if (!name)
     {
-        aw_message("No name specified for species. Abort.");
+        aw_message("No name specified for species. Abort."); // @@@
         exit(111);
     }
     if (!Sondenliste)
@@ -166,7 +170,7 @@ void Sondentopf::put_Sonde(char *name, int allowed_mis, double outside_mis)
     s = stc->get_cached_sonde(name);
     if (!s)
     {
-        s = stc->cache_Sonde(name, allowed_mis, outside_mis);
+        s = stc->cache_Sonde(name, allowed_mis, outside_mis, error);
     }
     pos = Sondenliste->insert_as_last(s);
     if (! s->get_bitkennung())
@@ -223,20 +227,24 @@ double** Sondentopf::gen_Mergefeld()
 probe_tabs* Sondentopf::fill_Stat_Arrays()
 {
     // erstmal generische Felder
-    List<Sonde>*    Sondenliste = LIST(Listenliste->get_first());
-    long        feldlen = (long) pow(3.0, (int)(mp_gl_awars.no_of_probes));
-    int*        markierte = new int[feldlen];                   // MEL
-    int*        unmarkierte = new int[feldlen];                 // MEL
-    int     i=0, j=0;
-    long        alle_bakterien = BaktList->debug_get_current()-1;
-    long        wertigkeit = 0;
-    double**    Mergefeld;
-    int*        AllowedMismatchFeld = new int[mp_gl_awars.no_of_probes];
-    Sonde*      sonde;
+    List<Sonde>* Sondenliste = LIST(Listenliste->get_first());
+
+    mp_assert(Sondenliste);
+
+    long     feldlen             = (long) pow(3.0, (int)(mp_gl_awars.no_of_probes));
+    int*     markierte           = new int[feldlen];            // MEL
+    int*     unmarkierte         = new int[feldlen];            // MEL
+    int      i                   = 0, j=0;
+    long     alle_bakterien      = BaktList->debug_get_current()-1;
+    long     wertigkeit          = 0;
+    double** Mergefeld;
+    int*     AllowedMismatchFeld = new int[mp_gl_awars.no_of_probes];
+    Sonde*   sonde;
 
     sonde = Sondenliste->get_first();
-    for (i=0; i<mp_gl_awars.no_of_probes; i++)
-    {
+
+    for (i=0; i<mp_gl_awars.no_of_probes; i++) {
+        mp_assert(sonde);
         AllowedMismatchFeld[i] = (int) sonde->get_Allowed_Mismatch_no(0);
         sonde = Sondenliste->get_next();
     }

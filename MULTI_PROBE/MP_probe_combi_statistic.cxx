@@ -183,7 +183,7 @@ probe_combi_statistic *probe_combi_statistic::duplicate()
     return new probe_combi_statistic(probe_combi, new_obje, expected_children, fitness, life_counter);
 }
 
-void probe_combi_statistic::mutate_Probe()
+void probe_combi_statistic::mutate_Probe(ProbeValuation *p_eval)
 {
     int             rand_pool_pos;              // Stelle, an der die Sonde im Pool liegt ( von 0 bis laenge-)
 
@@ -194,16 +194,16 @@ void probe_combi_statistic::mutate_Probe()
         if (get_random(1, MUTATION_WS) == 1)
         {
             init_stats();                               // Statistik hat sich geaendert.
-            rand_pool_pos   = get_random(0, mp_main->get_p_eval()->get_pool_length() - 1);
-            probe_combi[i]  = (mp_main->get_p_eval()->get_probe_pool())[rand_pool_pos];
+            rand_pool_pos  = get_random(0, p_eval->get_pool_length() - 1);
+            probe_combi[i] = (p_eval->get_probe_pool())[rand_pool_pos];
         }
     }
 
     while (!check_duplicates())                     // Solange wie in der Sondenkombination noch Duplikate vorhanden sind
         // muessen diese entfernt werden.
     {
-        rand_pool_pos   = get_random(0, mp_main->get_p_eval()->get_pool_length() - 1);
-        probe_combi[get_dupl_pos()] = (mp_main->get_p_eval()->get_probe_pool())[rand_pool_pos];
+        rand_pool_pos = get_random(0, p_eval->get_pool_length() - 1);
+        probe_combi[get_dupl_pos()] = (p_eval->get_probe_pool())[rand_pool_pos];
     }
 
 
@@ -305,63 +305,70 @@ inline int probe_combi_statistic::modificated_hamming_dist(int one, int two) // 
     return hamming_tab[one][two];
 }
 
-double  probe_combi_statistic::calc_fitness(int len_of_field)       // fitness-bewertung einer Sondenkombi
-{
+double probe_combi_statistic::calc_fitness(ProbeValuation *p_eval, int len_of_field, GB_ERROR& error) {
+    // fitness-bewertung einer Sondenkombi
+
+    mp_assert(!error);
+    
     int     i, j, k, mod_ham_dist;
-    long        *hammingarray;
+    long   *hammingarray;
     double  tolerated_non_group_hits, ham_dist;
 
+    ST_Container *stc = mp_global->get_stc();
 
-    Sondentopf  *sondentopf = new Sondentopf(mp_main->get_stc()->Bakterienliste,
-                                             mp_main->get_stc()->Auswahlliste);
+    Sondentopf *sondentopf = new Sondentopf(stc->Bakterienliste, stc->Auswahlliste);
 
-    for (i=0; i<len_of_field; i++)
-        sondentopf->put_Sonde((mp_main->get_p_eval()->get_sondenarray())[probe_combi[i]->probe_index],
+    for (i=0; i<len_of_field && !error; i++) {
+        sondentopf->put_Sonde((p_eval->get_sondenarray())[probe_combi[i]->probe_index],
                               probe_combi[i]->allowed_mismatches,
-                              probe_combi[i]->allowed_mismatches + mp_gl_awars.outside_mismatches_difference);
+                              probe_combi[i]->allowed_mismatches + mp_gl_awars.outside_mismatches_difference, error);
+    }
 
-    probe_tab = sondentopf->fill_Stat_Arrays();
+    if (!error) probe_tab = sondentopf->fill_Stat_Arrays();
     delete sondentopf;
 
     fitness = 0.0;
-    hammingarray = new long[mp_gl_awars.no_of_probes+1];
 
-    for (i=0; i< probe_tab->get_len_group_tabs()-1; i++)
-    {
-        memset(hammingarray, 0,  sizeof(long) * (mp_gl_awars.no_of_probes + 1));
-        for (j=0; j<probe_tab->get_len_group_tabs(); j++)
+    if (!error) {
+        hammingarray = new long[mp_gl_awars.no_of_probes+1];
+
+        for (i=0; i< probe_tab->get_len_group_tabs()-1; i++)
         {
-            mod_ham_dist = modificated_hamming_dist(i, j);
-            hammingarray[mod_ham_dist] +=  probe_tab->get_non_group_tab(j);
-        }
-
-        tolerated_non_group_hits = (double) mp_gl_awars.qualityborder_best;
-
-        for (k=0; k < mp_gl_awars.no_of_probes + 1 && tolerated_non_group_hits >= 0.0; k++)
-        {
-            for (j=0; j<FITNESSSCALEFACTOR && tolerated_non_group_hits >= 0.0; j++)
+            memset(hammingarray, 0,  sizeof(long) * (mp_gl_awars.no_of_probes + 1));
+            for (j=0; j<probe_tab->get_len_group_tabs(); j++)
             {
-                tolerated_non_group_hits -= (double) ((double)hammingarray[k] / (double)FITNESSSCALEFACTOR);
+                mod_ham_dist = modificated_hamming_dist(i, j);
+                hammingarray[mod_ham_dist] +=  probe_tab->get_non_group_tab(j);
             }
 
-        }
+            tolerated_non_group_hits = (double) mp_gl_awars.qualityborder_best;
 
-        if (tolerated_non_group_hits<0.0)
-        {
-            if (j)
-                ham_dist = (double)k - 1.0 + ((double)(((double)j - 1.0)/(double)FITNESSSCALEFACTOR));
+            for (k=0; k < mp_gl_awars.no_of_probes + 1 && tolerated_non_group_hits >= 0.0; k++)
+            {
+                for (j=0; j<FITNESSSCALEFACTOR && tolerated_non_group_hits >= 0.0; j++)
+                {
+                    tolerated_non_group_hits -= (double) ((double)hammingarray[k] / (double)FITNESSSCALEFACTOR);
+                }
+
+            }
+
+            if (tolerated_non_group_hits<0.0)
+            {
+                if (j)
+                    ham_dist = (double)k - 1.0 + ((double)(((double)j - 1.0)/(double)FITNESSSCALEFACTOR));
+                else
+                    ham_dist = (double)k - 1.0;
+            }
+            else if (tolerated_non_group_hits > 0.0)
+                ham_dist = (double) mp_gl_awars.no_of_probes;
             else
-                ham_dist = (double)k - 1.0;
+                ham_dist = 0.0;
+
+            fitness += ham_dist * ((double) probe_tab->get_group_tab(i));
         }
-        else if (tolerated_non_group_hits > 0.0)
-            ham_dist = (double) mp_gl_awars.no_of_probes;
-        else
-            ham_dist = 0.0;
 
-        fitness += ham_dist * ((double) probe_tab->get_group_tab(i));
+        delete [] hammingarray;
     }
-
-    delete [] hammingarray;
     return fitness;
 }
 

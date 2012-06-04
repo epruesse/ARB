@@ -18,21 +18,23 @@
 #include <aw_awar_defs.hxx>
 #include <awt_canvas.hxx>
 
-awar_vars  mp_gl_awars;
-MP_Main   *mp_main             = NULL;
-char       MP_probe_tab[256];                       // zum checken, ob ein eingegebener Sondenstring ok ist
-int        remembered_mismatches;
-int        anz_elem_marked     = 0;
-int        anz_elem_unmarked   = 0;
-bool       pt_server_different = false;
+ // @@@ elim globals
+awar_vars mp_gl_awars;
+
+MP_Main   *mp_main   = NULL;
+MP_Global *mp_global = NULL;
+
+char MP_probe_tab[256];                             // zum checken, ob ein eingegebener Sondenstring ok ist
+int  remembered_mismatches;
+int  anz_elem_marked     = 0;
+int  anz_elem_unmarked   = 0;
+bool pt_server_different = false;
 
 MP_Main::MP_Main(AW_root *awr, AWT_canvas *canvas) {
     aw_root   = awr;
     scr       = canvas;
-    stc       = NULL;
     create_awars();
     mp_window = new MP_Window(aw_root, canvas->gb_main);
-    p_eval    = NULL;
 }
 
 MP_Main::~MP_Main()
@@ -41,24 +43,9 @@ MP_Main::~MP_Main()
     aw_root->awar_int(MP_AWAR_SINGLEMISMATCHES)->remove_callback(MP_gen_singleprobe, (AW_CL)0, (AW_CL)0);
     aw_root->awar_int(MP_AWAR_MISMATCHES)->remove_callback(MP_modify_selected, (AW_CL)0, (AW_CL)0);
 
-    delete p_eval;
-    delete stc;
     delete mp_window;
 
     new_pt_server = true;
-}
-
-void MP_Main::destroy_probe_eval()
-{
-    delete p_eval;
-    p_eval = NULL;
-}
-
-ProbeValuation *MP_Main::new_probe_eval(char **field, int size, int *array, int *single_mismatch)
-{
-    p_eval = new ProbeValuation(field, size, array, single_mismatch);
-    p_eval->set_act_gen(new Generation(p_eval->get_max_init_for_gen(), 1)); // erste Generation = Ausgangspopulation
-    return p_eval;
 }
 
 void MP_Main::create_awars()
