@@ -62,7 +62,7 @@ void Sonde::print() {
 }
 
 
-MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, int match_mis, char *match_seq, MO_Liste *convert, long *number_of_species, GB_ERROR& error) {
+MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, int match_mis, char *match_seq, Group *convert, long *number_of_species, GB_ERROR& error) {
     mp_assert(!error);
 
     MO_Mismatch **ret_list   = NULL;
@@ -173,7 +173,7 @@ double Sonde::check_for_min(long k, MO_Mismatch** probebacts, long laenge) {
 
 
 
-GB_ERROR Sonde::gen_Hitliste(MO_Liste *Bakterienliste) {
+GB_ERROR Sonde::gen_Hitliste(Group *Bakterienliste) {
     // Angewandt auf eine frische Sonde generiert diese Methode die Hitliste durch eine Anfrage an die Datenbank, wobei
     // der Name der Sonde uebergeben wird
     MO_Mismatch**   probebacts;
@@ -240,18 +240,10 @@ GB_ERROR Sonde::gen_Hitliste(MO_Liste *Bakterienliste) {
         }
         length_hitliste = laenge;
 
-        // Loesche hitflags wieder
-        long bl_index = 0;
-        Bakt_Info** baktliste = Bakterienliste->get_mo_liste();
-        Bakt_Info** bl_elem = baktliste+1;
-        while (bl_elem[bl_index]) {
-            bl_elem[bl_index]->kill_flag();
-            bl_index++;
-        }
+        Bakterienliste->clear_hitflags();
+
         // Loeschen der Temps
-        for (i=0; i<laenge; i++) {
-            delete probebacts[i];
-        }
+        for (i=0; i<laenge; i++) delete probebacts[i];
         delete [] probebacts;
     }
     return error;
@@ -315,16 +307,16 @@ void Sonde::set_bitkennung(Bitvector* bv) {
 
 
 // ########################################################################################################
-/* Bakt_Info haengt in der MO_Liste drinnen. Hier werden u.a. die Hitflags gespeichert
+/* SpeciesInfo haengt in der Group drinnen. Hier werden u.a. die Hitflags gespeichert
  */
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden Bakt_Info~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden SpeciesInfo~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Bakt_Info::Bakt_Info(const char* n) {
-    name = strdup(n);                       // MEL  (match_name in mo_liste)
+SpeciesInfo::SpeciesInfo(const char* n) {
+    name = strdup(n);                       // MEL  (match_name in member)
     hit_flag = 0;
 }
 
-Bakt_Info::~Bakt_Info() {
+SpeciesInfo::~SpeciesInfo() {
     free(name);
     hit_flag = 0;
 }

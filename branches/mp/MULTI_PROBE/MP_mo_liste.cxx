@@ -14,26 +14,8 @@
 #include <aw_msg.hxx>
 #include <client.h>
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden MO_Liste
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden Group
 
-GBDATA *MO_Liste::gb_main = NULL;
-
-MO_Liste::MO_Liste() {
-    laenge   = 0;
-    mo_liste = NULL;
-    current  = 0;
-    hashptr  = NULL;
-    // Nach dem new muss die MO_Liste erst mit set_species gefuellt werden
-}
-
-MO_Liste::~MO_Liste() {
-    while (laenge) {
-        delete mo_liste[laenge-1];
-        laenge--;
-    }
-    delete [] mo_liste;
-    if (hashptr) GBS_free_hash(hashptr);
-}
 
 #if defined(DEBUG)
 #define DUMP_SET_SPECIES
@@ -41,29 +23,25 @@ MO_Liste::~MO_Liste() {
 
 
 static void add_to_MO_Liste(const char *species_name, long, void *cl_MO_Liste) {
-    MO_Liste *mo = (MO_Liste*)cl_MO_Liste;
+    Group *mo = (Group*)cl_MO_Liste;
     mo->put_entry(species_name);
 #if defined(DUMP_SET_SPECIES)
     printf("%s,", species_name);
 #endif
 }
 
-void MO_Liste::set_species(const GB_HASH *species_hash) {
+void Group::insert_species(const GB_HASH *species_hash) {
     mp_assert(species_hash);
-    mp_assert(!hashptr); // set_species called twice!
+    mp_assert(!hashptr); // insert_species called twice!
 
-    laenge = GBS_hash_count_elems(species_hash);
+    long count = GBS_hash_count_elems(species_hash);
 
 #if defined(DUMP_SET_SPECIES)
-    printf("set_species:\"");
+    printf("insert_species:\"");
 #endif
 
-    if (laenge) {
-        mo_liste = new Bakt_Info*[laenge+2];
-        memset(mo_liste, 0, (laenge+2)*sizeof(*mo_liste));
-        current  = 1;
-
-        hashptr = GBS_create_hash(laenge, GB_IGNORE_CASE);
+    if (count) {
+        allocate(count);
         GBS_hash_do_const_loop(species_hash, add_to_MO_Liste, this);
     }
 #if defined(DUMP_SET_SPECIES)
@@ -71,7 +49,7 @@ void MO_Liste::set_species(const GB_HASH *species_hash) {
 #endif
 }
 
-void MO_Liste::get_all_species() { // @@@ rename (gets all species from pt-server)
+void Group::insert_species_knownBy_PTserver() {
     const char *servername = NULL;
     char       *match_name = NULL;
     char        toksep[2];
@@ -79,7 +57,7 @@ void MO_Liste::get_all_species() { // @@@ rename (gets all species from pt-serve
     char       *locs_error;
     bytestring  bs;
     int         i          = 0;
-    long        j          = 0, nr_of_species;
+    long        nr_of_species;
 
     GB_ERROR error = NULL; // @@@ collect all aw_messages here and return as result -> use that result everywhere
     if (!(servername=MP_probe_pt_look_for_server(error))) {
@@ -122,17 +100,7 @@ void MO_Liste::get_all_species() { // @@@ rename (gets all species from pt-serve
 
     free(locs_error);
 
-    laenge = nr_of_species;
-    mo_liste = new Bakt_Info*[laenge+2];
-    while (j<laenge+2) {
-        mo_liste[j] = NULL;
-        j++;
-    }
-    current = 1;    // ACHTUNG, CURRENT beginnt bei 1, da Hash bei 1 beginnt, d.h. Array[0] ist NULL
-
-    // Initialisieren der Hashtabelle
-
-    hashptr = GBS_create_hash(laenge + 1, GB_IGNORE_CASE);
+    allocate(nr_of_species);
 
     toksep[0] = 1;
     toksep[1] = 0;
@@ -160,47 +128,5 @@ void MO_Liste::get_all_species() { // @@@ rename (gets all species from pt-serve
     free(bs.data);
 
     delete match_name;
-}
-
-long MO_Liste::get_laenge() { // @@@ inline
-    return laenge;
-}
-
-long MO_Liste::debug_get_current() { // @@@ inline
-    return current;
-}
-
-long MO_Liste::put_entry(const char* name) {
-    // Pruefe: Gibts den Bakter schon in dieser Liste??
-    if (get_index_by_entry(name)) {             // wanns den Bakter scho gibt
-        // nicht eintragen
-    }
-    else {
-        mo_liste[current] = new Bakt_Info(name);                    // MEL  koennte mit match_name zusammenhaengen
-        GBS_write_hash(hashptr, name, current);
-        current++;
-    }
-    return current;
-}
-
-char* MO_Liste::get_entry_by_index(long index) {
-    if ((0<index) && (index < current))
-        return mo_liste[index]->get_name();
-    else
-        return NULL;
-}
-
-long MO_Liste::get_index_by_entry(const char* key) {
-    if (key)
-        return (GBS_read_hash(hashptr, key));
-    else
-        return 0;
-}
-
-Bakt_Info* MO_Liste::get_bakt_info_by_index(long index) {
-    if ((0<index) && (index < current))
-        return mo_liste[index];
-    else
-        return NULL;
 }
 
