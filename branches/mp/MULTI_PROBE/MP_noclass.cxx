@@ -15,11 +15,15 @@
 
 #include <aw_select.hxx>
 #include <aw_msg.hxx>
-#include <arb_progress.h>
 #include <aw_root.hxx>
 #include <TreeCallbacks.hxx>
+
 #include <client.h>
 #include <servercntrl.h>
+
+#include <arb_progress.h>
+#include <arb_defs.h>
+#include <arb_strarray.h>
 
 #include <ctime>
 
@@ -45,8 +49,7 @@ int get_random(int min, int max) {
     return GB_random(max-min+1)+min;
 }
 
-void MP_close_main(AW_window *aww)
-{
+void MP_close_main(AW_window *aww) { // @@@ implement via on_hide 
     AWT_canvas  *scr = mp_main->get_canvas();
 
     if (mp_main->get_mp_window()->get_result_window())
@@ -63,10 +66,7 @@ void MP_close_main(AW_window *aww)
     scr->refresh();
 
     AW_POPDOWN(aww);
-    delete mp_main->get_p_eval();
-    mp_main->set_p_eval(NULL);
-    delete mp_main->get_stc();
-    mp_main->set_stc(NULL);
+    mp_global->clear_stc();
 
     new_pt_server = true;
 }
@@ -222,7 +222,6 @@ static void init_system3_tab()
         }
     }
 
-
     // ** hamming_tab
         if (hamming_tab)
             delete [] hamming_tab;
@@ -299,75 +298,129 @@ bool MP_aborted(int gen_cnt, double avg_fit, double min_fit, double max_fit, arb
     return progress.aborted();
 }
 
+static ProbeValuation *new_probe_eval(char **field, int size, int *array, int *single_mismatch, int *ecolipos) {
+    ProbeValuation *p_eval = new ProbeValuation(field, size, array, single_mismatch, ecolipos);
+    p_eval->set_act_gen(new Generation(p_eval->get_max_init_for_gen(), 1)); // erste Generation = Ausgangspopulation
+    return p_eval;
+}
 
-void MP_compute(AW_window *, AW_CL cl_gb_main) {
-    AW_root         *aw_root = mp_main->get_aw_root();
-    AW_window       *aww2;
-    int              i       = 0;
-    int             *bew_array;
-    char            *ptr, *qual;
-    char           **probe_field;
-    int             *single_mismatch;
-    ProbeValuation  *p_eval  = NULL;
-    GBDATA          *gb_main = (GBDATA*)cl_gb_main;
+
+__ATTR__USERESULT static GB_ERROR calc_multiprobes(const CharPtrArray& input_probes, ConstStrArray& results) {
+    mp_assert(mp_global);
+    size_t count = input_probes.size();
+
+#if defined(DEBUG)
+    for (size_t i = 0; i<count; ++i) {
+        fprintf(stderr, "\"%s\",\n", input_probes[i]);
+    }
+#endif
+
+
+    char **probe_field     = new char*[count];
+    int   *bew_array       = new int[count];
+    int   *single_mismatch = new int[count];
+    int   *ecolipos        = new int[count];
+
+    int added = 0;
+    for (size_t i = 0; i<count; ++i) {
+        char *probe = MP_get_probes(input_probes[i]);
+        if (probe && strchr(" \t", probe[0]) == 0) {
+            char *qual   = MP_get_comment(1, input_probes[i]);
+            bew_array[added] = atoi(qual);
+            free(qual);
+
+            char *smis         = MP_get_comment(2, input_probes[i]);
+            single_mismatch[added] = atoi(smis); // single mismatch kann zwar eingestellt werden, aber wird noch nicht uebergeben
+            free(smis);
+
+            char *ecoli         = MP_get_comment(3, input_probes[i]);
+            ecolipos[added] = atoi(ecoli);
+            free(ecoli);
+
+            probe_field[added] = probe;
+
+            added++;
+        }
+        else {
+            free(probe);
+        }
+    }
+
+    ProbeValuation *p_eval = new_probe_eval(probe_field, added, bew_array, single_mismatch, ecolipos);
+    return p_eval->initValuation(results);
+}
+
+
+static long remove_from_hash(const char *species_name, long val, void *cl_hash) {
+    GB_HASH *hash = (GB_HASH*)cl_hash;
+    GBS_write_hash(hash, species_name, 0);
+    return val;
+}
+
+void MP_init_and_calculate_and_display_multiprobes(AW_window *, AW_CL cl_gb_main) {
+    GBDATA  *gb_main = (GBDATA*)cl_gb_main;
+    AW_root *aw_root = mp_main->get_aw_root();
+
+    if (mp_global) {
+        delete mp_global;
+        mp_global = NULL;
+    }
+    mp_global = new MP_Global;
+
+    {
+        GB_transaction ta(gb_main);
+        GB_HASH *marked_species   = GBT_create_marked_species_hash(gb_main);
+        GB_HASH *unmarked_species = GBT_create_species_hash(gb_main);
+
+        GBS_hash_do_loop(marked_species, remove_from_hash, unmarked_species); // remove marked from unmarked
+
+        mp_global->set_marked_species(marked_species);
+        mp_global->set_unmarked_species(unmarked_species);
+    }
 
     MO_Liste::set_gb_main(gb_main);
 
-    size_t selected_probes_count = selected_list->size();
+    size_t selected_probes_count = selected_list->size(); // @@@ move check into calc_multiprobes
     if ((int)selected_probes_count < mp_gl_awars.no_of_probes) {
         aw_message("Not enough probes selected for computation !!!");
         return;
     }
 
-    if (mp_main->get_stc())
-    {
-        delete mp_main->get_stc();
-        mp_main->set_stc(NULL);
+    if (mp_global->get_stc()) {
+        mp_global->clear_stc();
         new_pt_server = true;
     }
 
     init_system3_tab();
 
-    aww2 = mp_main->get_mp_window()->create_result_window(aw_root);
+    AW_window *aww2 = mp_main->get_mp_window()->create_result_window(aw_root);
 
     result_probes_list->clear();
     result_probes_list->insert_default("", "");
     result_probes_list->update();
 
-    AW_selection_list_iterator selentry(selected_list);
-    probe_field     = new char*[selected_probes_count];
-    bew_array       = new int[selected_probes_count];
-    single_mismatch = new int[selected_probes_count];
-
     arb_progress progress("Computing multiprobes");
 
-    const char *ptr2;
-    while ((ptr2 = selentry.get_value())) {
-        ++selentry;
-        ptr = MP_get_probes(ptr2);      // hier sind es einfachsonden
-        if (ptr && ptr[0] != ' ' && ptr[0] != '\t' && ptr[0] != '\0') {
-            qual         = MP_get_comment(1, ptr2);
-            bew_array[i] = atoi(qual);
-            free(qual);
+    StrArray input_probes;
+    selected_list->to_array(input_probes, true);
 
-            qual               = MP_get_comment(2, ptr2);
-            single_mismatch[i] = atoi(qual); // single mismatch kann zwar eingestellt werden, aber wird noch nicht uebergeben
-            free(qual);
+    ConstStrArray results;
+    GB_ERROR      error = calc_multiprobes(input_probes, results);
 
-            probe_field[i++] = ptr;
-        }
+    result_probes_list->clear();
+    for (size_t i = 0; i<results.size(); ++i) {
+        result_probes_list->insert(results[i], results[i]);
     }
+    result_probes_list->insert_default("", "");
+    result_probes_list->update();
 
-    p_eval = mp_main->new_probe_eval(probe_field, i, bew_array, single_mismatch);
-    p_eval->init_valuation();
-
-    if (pt_server_different)
-    {
+    mp_main->get_mp_window()->get_result_window()->activate();
+    
+    if (pt_server_different) {
         pt_server_different = false;
-        aw_message("There are species in the tree which are\nnot included in the PT-Server");
     }
 
-    mp_main->destroy_probe_eval();
+    if (error) aw_message(error);
 
     aww2->activate();
 }
@@ -426,7 +479,12 @@ void MP_show_probes_in_tree_move(AW_window *aww, AW_CL cl_backward, AW_CL cl_res
 }
 
 void MP_show_probes_in_tree(AW_window */*aww*/) {
-    AWT_canvas *scr = mp_main->get_canvas();
+    if (!mp_global) {
+        aw_message("No multiprobes calculated yet");
+        return;
+    }
+
+    AWT_canvas *scr                = mp_main->get_canvas();
     char       *mism, *mism_temp;
     char       *a_probe, *another_probe, *the_probe, *mism_temp2;
     int         i, how_many_probes = 0;
@@ -491,17 +549,13 @@ void MP_show_probes_in_tree(AW_window */*aww*/) {
     free(a_probe);
     free(mism_temp2);
 
-    if (new_pt_server)
-    {
+    if (new_pt_server) {
         new_pt_server = false;
 
-        if (mp_main->get_stc())
-            delete mp_main->get_stc();
+        mp_global->reinit_stc(MAXSONDENHASHSIZE);
 
-        mp_main->set_stc(new ST_Container(MAXSONDENHASHSIZE));
-        if (pt_server_different)
-        {
-            mp_main->set_stc(NULL);
+        if (pt_server_different) {
+            mp_global->clear_stc();
             new_pt_server = true;
             aw_message("There are species in the tree which are\nnot included in the PT-Server");
             pt_server_different = false;
@@ -509,19 +563,24 @@ void MP_show_probes_in_tree(AW_window */*aww*/) {
         }
     }
 
-    delete mp_main->get_stc()->sondentopf;
-    mp_main->get_stc()->sondentopf = new Sondentopf(mp_main->get_stc()->Bakterienliste, mp_main->get_stc()->Auswahlliste);
+    ST_Container *stc = mp_global->get_stc();
+    
+    delete stc->sondentopf;
+    stc->sondentopf = new Sondentopf(stc->Bakterienliste, stc->Auswahlliste);
 
-    for (i=0; i<MAXMISMATCHES; i++) {
+    GB_ERROR error = NULL;
+    for (i=0; i<MAXMISMATCHES && !error; i++) {
         if (probe_field[i]) {
-            mp_main->get_stc()->sondentopf->put_Sonde(probe_field[i], mismatches[i], mismatches[i] + mp_gl_awars.outside_mismatches_difference);
+            stc->sondentopf->put_Sonde(probe_field[i], mismatches[i], mismatches[i] + mp_gl_awars.outside_mismatches_difference, error);
         }
     }
 
-    mp_main->get_stc()->sondentopf->gen_color_hash(mp_gl_awars.no_of_probes);
+    if (error) aw_message(error);
+
+    stc->sondentopf->gen_color_hash(mp_gl_awars.no_of_probes);
 
     GB_transaction dummy(scr->gb_main);
-    AWT_TREE(scr)->get_root_node()->calc_color_probes(mp_main->get_stc()->sondentopf->get_color_hash());
+    AWT_TREE(scr)->get_root_node()->calc_color_probes(stc->sondentopf->get_color_hash());
 
     if (scr->gb_main)
         scr->gfx->update(scr->gb_main);
@@ -602,33 +661,33 @@ void MP_mark_probes_in_tree(AW_window *aww) {
     if (new_pt_server) {
         new_pt_server = false;
 
-        if (mp_main->get_stc())
-            delete mp_main->get_stc();
+        mp_global->reinit_stc(MAXSONDENHASHSIZE);
 
-        mp_main->set_stc(new ST_Container(MAXSONDENHASHSIZE));
-        if (pt_server_different)
-        {
-            mp_main->set_stc(NULL);
-            new_pt_server = true;
+        if (pt_server_different) {
+            mp_global->clear_stc();
+            new_pt_server       = true;
             aw_message("There are species in the tree which are\nnot included in the PT-Server");
             pt_server_different = false;
             return;
         }
     }
 
-    delete mp_main->get_stc()->sondentopf;
-    mp_main->get_stc()->sondentopf = new Sondentopf(mp_main->get_stc()->Bakterienliste, mp_main->get_stc()->Auswahlliste);
+    ST_Container *stc = mp_global->get_stc();
+    delete stc->sondentopf;
+    stc->sondentopf = new Sondentopf(stc->Bakterienliste, stc->Auswahlliste);
 
-    for (i=0; i<MAXMISMATCHES; i++) {
+    GB_ERROR error = NULL;
+    for (i=0; i<MAXMISMATCHES && !error; i++) {
         if (probe_field[i]) {
-            mp_main->get_stc()->sondentopf->put_Sonde(probe_field[i], mismatches[i], mismatches[i] + mp_gl_awars.outside_mismatches_difference);
+            stc->sondentopf->put_Sonde(probe_field[i], mismatches[i], mismatches[i] + mp_gl_awars.outside_mismatches_difference, error);
         }
     }
-    mp_main->get_stc()->sondentopf->gen_color_hash(mp_gl_awars.no_of_probes);
+    if (error) aw_message(error);
+    stc->sondentopf->gen_color_hash(mp_gl_awars.no_of_probes);
 
     {
         GB_push_transaction(scr->gb_main);
-        GB_HASH *col_hash = mp_main->get_stc()->sondentopf->get_color_hash();
+        GB_HASH *col_hash = stc->sondentopf->get_color_hash();
         for (gb_species = GBT_first_species(scr->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
             GB_write_flag(gb_species, GBS_read_hash(col_hash, GBT_read_name(gb_species)) > AWT_GC_BLACK);
         }
@@ -818,22 +877,24 @@ int MP_init_local_com_struct()
     return 0;
 }
 
-const char *MP_probe_pt_look_for_server() {
+const char *MP_probe_pt_look_for_server(GB_ERROR& error) {
+    mp_assert(!error);
+    
     const char *server_tag = GBS_ptserver_tag(mp_gl_awars.ptserver);
-    GB_ERROR    error      = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag);
+    error                  = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag);
 
-    if (error) {
-        aw_message(error);
-        return 0;
-    }
-    return GBS_read_arb_tcp(server_tag);
+    const char *result = NULL;
+    if (!error) result = GBS_read_arb_tcp(server_tag);
+    return result;
 }
 
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS
 
+#ifndef TEST_UNIT_H
 #include <test_unit.h>
+#endif
 
 #define MP_GET_COMMENT_EQUAL(which, str, expect)  \
     do {                                          \
@@ -880,6 +941,114 @@ void TEST_MP_get_comment_and_probes() {
     free(probes_1);
     free(probes_comment);
     free(probes_only);
+}
+
+void TEST_compute_multiprobes() {
+    // test data is based on ../UNIT_TESTER/run/TEST_pt_src.arb
+
+    TEST_SETUP_GLOBAL_ENVIRONMENT("ptserver");
+
+    const char *marked_species_list   = "DcdNodos,PsAAAA00,AclPleur,ClfPerfr,VblVulni,CltBotul,VbrFurni,ClnCorin,VbhChole,CPPParap,PtVVVulg,FrhhPhil";
+    const char *unmarked_species_list = "HllHalod,PslFlave,Bl0LLL00,DlcTolu2,PbcAcet2,LgtLytic,DsssDesu,PbrPropi,BcSSSS00,Stsssola";
+
+    const char *inputProbes[] = {
+        "3#0#   11#GUUUGAUCAAGUCGAGCG",
+        "3#0#  113#CUGGGGUGAAGUCGUAAC",
+        "3#0#  111#GACUGGGGUGAAGUCGUA",
+        "3#0#  108#CAUGACUGGGGUGAAGUC",
+        "3#0#  109#AUGACUGGGGUGAAGUCG",
+        "3#0#  110#UGACUGGGGUGAAGUCGU",
+        "3#0#  112#ACUGGGGUGAAGUCGUAA",
+    };
+
+    // memset(&mp_gl_awars, 0, sizeof(mp_gl_awars));
+    // see MP_main.cxx@MP_AWAR_SEQIN
+    mp_gl_awars.weightedmismatches            = 2;
+    mp_gl_awars.complement                    = 0; // 1;
+    mp_gl_awars.no_of_mismatches              = 0;
+    mp_gl_awars.no_of_probes                  = 3;
+    mp_gl_awars.outside_mismatches_difference = 1.0;
+    mp_gl_awars.qualityborder_best            = 5;
+    mp_gl_awars.emphasis                      = 0;
+    mp_gl_awars.greyzone                      = 0.0;
+    mp_gl_awars.ecolipos                      = 0;
+
+    mp_gl_awars.ptserver = TEST_SERVER_ID;
+
+    init_system3_tab();
+    
+    ConstStrArray input_probes;
+    input_probes.put_array_elems(inputProbes, ARRAY_ELEMS(inputProbes));
+
+    mp_global = new MP_Global;
+
+    {
+        ConstStrArray marked_species;
+        GBT_split_string(marked_species, marked_species_list, ",", false);
+
+        GB_HASH *marked_species_hash = GBS_create_hash(marked_species.size(), GB_IGNORE_CASE);
+        for (size_t i = 0; i<marked_species.size(); ++i) GBS_write_hash(marked_species_hash, marked_species[i], 1);
+        mp_global->set_marked_species(marked_species_hash);
+    }
+    {
+        ConstStrArray unmarked_species;
+        GBT_split_string(unmarked_species, unmarked_species_list, ",", false);
+
+        GB_HASH *unmarked_species_hash = GBS_create_hash(unmarked_species.size(), GB_IGNORE_CASE);
+        for (size_t i = 0; i<unmarked_species.size(); ++i) GBS_write_hash(unmarked_species_hash, unmarked_species[i], 1);
+        mp_global->set_unmarked_species(unmarked_species_hash);
+    }
+
+    arb_progress progress("test multiprobes");
+
+    ConstStrArray results;
+    TEST_ASSERT_NO_ERROR(calc_multiprobes(input_probes, results));
+
+    {
+        char       *result_string = GBT_join_names(results, ',');
+        const char *expected      =
+            "20.200000           #0 0 0#    11    111    108#GUUUGAUCAAGUCGAGCG GACUGGGGUGAAGUCGUA CAUGACUGGGGUGAAGUC,"
+            "19.800000           #0 0 0#    11    108    110#GUUUGAUCAAGUCGAGCG CAUGACUGGGGUGAAGUC UGACUGGGGUGAAGUCGU,"
+            "19.500000           #0 0 0#    11    113    108#GUUUGAUCAAGUCGAGCG CUGGGGUGAAGUCGUAAC CAUGACUGGGGUGAAGUC,"
+            "19.500000           #0 0 0#    11    108    112#GUUUGAUCAAGUCGAGCG CAUGACUGGGGUGAAGUC ACUGGGGUGAAGUCGUAA,"
+            "19.000000           #0 0 0#    11    108    109#GUUUGAUCAAGUCGAGCG CAUGACUGGGGUGAAGUC AUGACUGGGGUGAAGUCG,"
+            "17.100000           #0 0 0#    11    111    110#GUUUGAUCAAGUCGAGCG GACUGGGGUGAAGUCGUA UGACUGGGGUGAAGUCGU,"
+            "16.900000           #0 0 0#    11    111    109#GUUUGAUCAAGUCGAGCG GACUGGGGUGAAGUCGUA AUGACUGGGGUGAAGUCG,"
+            "16.800000           #0 0 0#    11    113    110#GUUUGAUCAAGUCGAGCG CUGGGGUGAAGUCGUAAC UGACUGGGGUGAAGUCGU,"
+            "16.800000           #0 0 0#    11    110    112#GUUUGAUCAAGUCGAGCG UGACUGGGGUGAAGUCGU ACUGGGGUGAAGUCGUAA,"
+            "16.600000           #0 0 0#    11    113    109#GUUUGAUCAAGUCGAGCG CUGGGGUGAAGUCGUAAC AUGACUGGGGUGAAGUCG,"
+            "16.600000           #0 0 0#    11    109    112#GUUUGAUCAAGUCGAGCG AUGACUGGGGUGAAGUCG ACUGGGGUGAAGUCGUAA,"
+            "16.500000           #0 0 0#    11    109    110#GUUUGAUCAAGUCGAGCG AUGACUGGGGUGAAGUCG UGACUGGGGUGAAGUCGU,"
+            "15.800000           #0 0 0#    11    113    111#GUUUGAUCAAGUCGAGCG CUGGGGUGAAGUCGUAAC GACUGGGGUGAAGUCGUA,"
+            "15.800000           #0 0 0#    11    111    112#GUUUGAUCAAGUCGAGCG GACUGGGGUGAAGUCGUA ACUGGGGUGAAGUCGUAA,"
+            "14.000000           #0 0 0#    11    113    112#GUUUGAUCAAGUCGAGCG CUGGGGUGAAGUCGUAAC ACUGGGGUGAAGUCGUAA,"
+            "12.700000           #0 0 0#   111    108    110#GACUGGGGUGAAGUCGUA CAUGACUGGGGUGAAGUC UGACUGGGGUGAAGUCGU,"
+            "12.500000           #0 0 0#   113    108    110#CUGGGGUGAAGUCGUAAC CAUGACUGGGGUGAAGUC UGACUGGGGUGAAGUCGU,"
+            "12.500000           #0 0 0#   108    110    112#CAUGACUGGGGUGAAGUC UGACUGGGGUGAAGUCGU ACUGGGGUGAAGUCGUAA,"
+            "12.400000           #0 0 0#   111    108    109#GACUGGGGUGAAGUCGUA CAUGACUGGGGUGAAGUC AUGACUGGGGUGAAGUCG,"
+            "12.200000           #0 0 0#   113    111    108#CUGGGGUGAAGUCGUAAC GACUGGGGUGAAGUCGUA CAUGACUGGGGUGAAGUC,"
+            "12.200000           #0 0 0#   113    108    109#CUGGGGUGAAGUCGUAAC CAUGACUGGGGUGAAGUC AUGACUGGGGUGAAGUCG,"
+            "12.200000           #0 0 0#   111    108    112#GACUGGGGUGAAGUCGUA CAUGACUGGGGUGAAGUC ACUGGGGUGAAGUCGUAA,"
+            "12.200000           #0 0 0#   108    109    112#CAUGACUGGGGUGAAGUC AUGACUGGGGUGAAGUCG ACUGGGGUGAAGUCGUAA,"
+            "10.600000           #0 0 0#   113    108    112#CUGGGGUGAAGUCGUAAC CAUGACUGGGGUGAAGUC ACUGGGGUGAAGUCGUAA,"
+            "10.300000           #0 0 0#   108    109    110#CAUGACUGGGGUGAAGUC AUGACUGGGGUGAAGUCG UGACUGGGGUGAAGUCGU,"
+            "7.300000            #0 0 0#   113    111    110#CUGGGGUGAAGUCGUAAC GACUGGGGUGAAGUCGUA UGACUGGGGUGAAGUCGU,"
+            "7.300000            #0 0 0#   113    109    110#CUGGGGUGAAGUCGUAAC AUGACUGGGGUGAAGUCG UGACUGGGGUGAAGUCGU,"
+            "7.300000            #0 0 0#   113    110    112#CUGGGGUGAAGUCGUAAC UGACUGGGGUGAAGUCGU ACUGGGGUGAAGUCGUAA,"
+            "7.300000            #0 0 0#   111    109    110#GACUGGGGUGAAGUCGUA AUGACUGGGGUGAAGUCG UGACUGGGGUGAAGUCGU,"
+            "7.300000            #0 0 0#   111    110    112#GACUGGGGUGAAGUCGUA UGACUGGGGUGAAGUCGU ACUGGGGUGAAGUCGUAA,"
+            "7.300000            #0 0 0#   109    110    112#AUGACUGGGGUGAAGUCG UGACUGGGGUGAAGUCGU ACUGGGGUGAAGUCGUAA,"
+            "7.000000            #0 0 0#   113    111    109#CUGGGGUGAAGUCGUAAC GACUGGGGUGAAGUCGUA AUGACUGGGGUGAAGUCG,"
+            "7.000000            #0 0 0#   113    109    112#CUGGGGUGAAGUCGUAAC AUGACUGGGGUGAAGUCG ACUGGGGUGAAGUCGUAA,"
+            "7.000000            #0 0 0#   111    109    112#GACUGGGGUGAAGUCGUA AUGACUGGGGUGAAGUCG ACUGGGGUGAAGUCGUAA,"
+            "6.400000            #0 0 0#   113    111    112#CUGGGGUGAAGUCGUAAC GACUGGGGUGAAGUCGUA ACUGGGGUGAAGUCGUAA";
+
+        TEST_ASSERT_EQUAL(result_string, expected);
+
+        free(result_string);
+    }
+
+    delete mp_global; mp_global = NULL;
 }
 
 #endif

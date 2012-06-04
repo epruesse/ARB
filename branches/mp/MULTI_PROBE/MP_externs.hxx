@@ -11,11 +11,14 @@
 #ifndef MP_EXTERNS_HXX
 #define MP_EXTERNS_HXX
 
-class AW_window;
-class AW_root;
-class arb_progress;
+#ifndef ARB_CORE_H
+#include <arb_core.h>
+#endif
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
+#endif
 
-typedef long AW_CL;             // generic client data type (void *)
+class arb_progress;
 
 void MP_show_probes_in_tree(AW_window *aww);
 void MP_show_probes_in_tree_move(AW_window *aww, AW_CL cl_backward, AW_CL cl_result_probes_list);
@@ -32,7 +35,7 @@ bool MP_aborted(int gen_cnt, double avg_fit, double min_fit, double max_fit, arb
 char *MP_get_comment(int which, const char *str);
 int MP_init_local_com_struct();
 
-const char *MP_probe_pt_look_for_server();
+const char *MP_probe_pt_look_for_server(GB_ERROR& error);
 
 #else
 #error MP_externs.hxx included twice

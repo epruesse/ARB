@@ -4,8 +4,16 @@
 #ifndef SOTL_HXX
 #include "SoTl.hxx"
 #endif
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
+#ifndef ARB_CORE_H
+#include <arb_core.h>
+#endif
 
 #define MAXLIFEFORCOMBI 2       // Eine Sondenkombination lebt maximal MAXLIFEFORCOMBI Generationen
+
+class ConstStrArray;
 
 class Generation;
 class GenerationDuplicates;
@@ -40,7 +48,7 @@ public:
     ~probe_tabs();
 };
 
-
+class ProbeValuation; // @@@ reorder classes
 
 class probe_combi_statistic : virtual Noncopyable {
     // die Sondenkombis werden in dieser Klasse gespeichert
@@ -76,10 +84,10 @@ public:
     bool        is_dead()              { return life_counter <= 0; }
 
     void        sigma_truncation(double average_fit, double dev);       // dient zur Skalierung der Fitness; um zu dominante Kombis zu vermeiden
-    double      calc_fitness(int len_of_field);                 // fitness-berechnung einer Sondenkombi
+    double      calc_fitness(ProbeValuation *p_eval, int len_of_field, GB_ERROR& error);                 // fitness-berechnung einer Sondenkombi
     double      calc_expected_children(double average_fitness);
 
-    void        mutate_Probe();                     // mutiert zufaellig die Sondenkombination nr_of_probe.
+    void        mutate_Probe(ProbeValuation *p_eval);                     // mutiert zufaellig die Sondenkombination nr_of_probe.
     void        crossover_Probes(probe_combi_statistic *pcombi2);   // realisiert den Crossover zwischen Probe1 und Probe2
     void        swap(probe **a, probe **b);
 
@@ -100,21 +108,23 @@ public:
 };
 
 class Generation : virtual Noncopyable {
-    probe_combi_statistic   **probe_combi_stat_array;       // Liste von Sondenkombinationen, auf denen der genetische Algorithmus aus-
-    // gefuehrt wird.
-    int             probe_combi_array_length;
-    GenerationDuplicates    *dup_tree;
-    double          average_fitness;
-    double          min_fit;
-    double          max_fit;
-    double          deviation;              // Abweichung
+    probe_combi_statistic **probe_combi_stat_array;         // Liste von Sondenkombinationen, auf denen der genetische Algorithmus ausgefuehrt wird.
 
-    int             len_roulette_wheel;         // wichtig zur Erstellung der naechsten Generation
-    int             generation_counter;
+    int allocated;
 
+    int probe_combi_array_length; // @@@ fix these 2 variables (one should contains allocated size, the other the number of elements added. currently it is weird)
+    int last_elem;
 
-    // ***intern variables
-    int         last_elem;
+    GenerationDuplicates *dup_tree;
+    double                average_fitness;
+    double                min_fit;
+    double                max_fit;
+    double                deviation;        // Abweichung
+
+    int len_roulette_wheel;                     // wichtig zur Erstellung der naechsten Generation
+    int generation_counter;
+
+    bool valid_probe_combi_index(int i) const { return i >= 0 && i<allocated; }
 
 private:
     void        prescale(double *a, double *b);         // berechnet Koeffizienten fuer lineare Skalierung
@@ -125,20 +135,21 @@ public:
     int     get_generation() { return generation_counter; };
     GenerationDuplicates *get_dup_tree()    { return dup_tree; };
     void        set_length() { probe_combi_array_length = last_elem; };     // nur verwenden, wenn man weiss was man tut !!!!
-    void        check_for_results();                // traegt eventuelle. resultate in Ergebnisfenster ein
+    void        check_for_results(ProbeValuation *p_eval, ConstStrArray& results); // @@@ rename
 
     bool        insert(probe_combi_statistic *pcs);     // false wenn Generation schon MAXPOPULATION Eintraege hat
 
-    void        init_valuation();
-    void        gen_determ_combis(int beg,          // wo faengt der Alg. an
+    void        init_valuation(ProbeValuation *p_eval);
+    void        gen_determ_combis(ProbeValuation *p_eval,
+                                  int beg,          // wo faengt der Alg. an
                                   int len,          // wieviele probes muessen noch drangehaengt werden
                                   int &pos_counter,     // zaehler fuer probe_combi_stat_array
                                   probe_combi_statistic *p);    // bisher zusammengestellte probe
 
-    bool calcFitness(bool use_genetic_algo, double old_avg_fit);        // fitness-berechnung aller Sondenkombis im Feld; und average_fitness und deviation
+    bool calcFitness(ProbeValuation *p_eval, bool use_genetic_algo, double old_avg_fit, GB_ERROR& error);        // fitness-berechnung aller Sondenkombis im Feld; und average_fitness und deviation
     
     void        init_roulette_wheel();
-    Generation *create_next_generation();               // die Kindergeneration wird zurueckgegeben
+    Generation *create_next_generation(ProbeValuation *p_eval);               // die Kindergeneration wird zurueckgegeben
 
     probe_combi_statistic *single_in_generation(probe_combi_statistic *field);  // Nach der Funktion ist sichergestellt, dass dieses field in der
     // Generation nur einmal vorkommt. Achtung: wenn Population sehr klein
@@ -155,6 +166,7 @@ class ProbeValuation : virtual Noncopyable {
     char **sondenarray;
     int   *bewertungarray;
     int   *mismatch_array;
+    int   *ecolipos_array;
     int    size_sonden_array;
     
     probe **probe_pool; // Generierung eines Pools, in dem die Wahrscheinlichkeiten fuer die Erfassung
@@ -175,12 +187,12 @@ public:
     int         get_size_sondenarray()  { return size_sonden_array; };
     char        **get_sondenarray() { return sondenarray; };
 
-    void        insert_in_result_list(probe_combi_statistic *pcs);
+    void insert_in_result_list(probe_combi_statistic *pcs, ConstStrArray& results); // @@@ rename
 
-    void        init_valuation();               // Zufaellige Auswahl einer Grundmenge von  Sondenkombinationen
-    void        evolution();                    // Evolution
+    GB_ERROR initValuation(ConstStrArray& results) __ATTR__USERESULT; // Zufaellige Auswahl einer Grundmenge von  Sondenkombinationen
+    GB_ERROR evolution(ConstStrArray& results) __ATTR__USERESULT;      // Evolution
 
-    ProbeValuation(char **sonden_array, int no_of_sonden, int *bewertung, int *single_mismatch);
+    ProbeValuation(char **sonden_array, int no_of_sonden, int *bewertung, int *mismatch, int *ecoli_pos);
     ~ProbeValuation();
 };
 

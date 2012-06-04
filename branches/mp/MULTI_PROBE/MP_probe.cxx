@@ -16,19 +16,21 @@
 #include <aw_msg.hxx>
 #include <aw_select.hxx>
 #include <arb_progress.h>
+#include <arb_strarray.h>
 
 #include <ctime>
 
-void ProbeValuation::evolution() {
+GB_ERROR ProbeValuation::evolution(ConstStrArray& results) {
     long n = 0;
     for (int i=0; i<size_sonden_array; i++) {            // Mismatche (=duplikate) aufsummieren, um Groesse von Pool zu bestimmen.
         n += mismatch_array[i]+1;
     }
 
-    long moeglichkeiten = k_aus_n(mp_gl_awars.no_of_probes, n);
-    double avg_fit = 0.0;
+    long     moeglichkeiten = k_aus_n(mp_gl_awars.no_of_probes, n);
+    double   avg_fit        = 0.0;
+    GB_ERROR error          = NULL;
     if (moeglichkeiten <= MAXINITPOPULATION) {
-        act_generation->calcFitness(false, avg_fit);
+        act_generation->calcFitness(this, false, avg_fit, error);
     }
     else {
         // assumption: genetic algorithm needs about 1/3 of attempts (compared with brute force) 
@@ -39,7 +41,7 @@ void ProbeValuation::evolution() {
         MP_aborted(0, 0.0, 0.0, 0.0, progress);
 
         do { // genetic algorithm loop 
-            bool aborted = act_generation->calcFitness(true, avg_fit);
+            bool aborted = act_generation->calcFitness(this, true, avg_fit, error);
             if (aborted) break;
 
             avg_fit = act_generation->get_avg_fit();
@@ -48,13 +50,13 @@ void ProbeValuation::evolution() {
 #endif
 
             if (avg_fit == 0) {
-                aw_message("Please choose better Probes!");
+                error = "Please choose better probes";
                 break;
             }
-            child_generation = act_generation->create_next_generation();
+            child_generation = act_generation->create_next_generation(this);
             delete act_generation; act_generation = NULL;
 
-            child_generation->check_for_results();
+            // child_generation->check_for_results(this);  
 
             act_generation = child_generation;
             progress.inc();
@@ -62,11 +64,13 @@ void ProbeValuation::evolution() {
         while (act_generation->get_generation() <= max_generation);
         progress.done();
     }
-    if (act_generation) act_generation->check_for_results();
+    if (act_generation) act_generation->check_for_results(this, results);
+    return error;
 }
 
-void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs)      // pcs darf nur eingetragen werden, wenn es nicht schon vorhanden ist
-{
+void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs, ConstStrArray& results) {
+    // pcs darf nur eingetragen werden, wenn es nicht schon vorhanden ist
+
     char *new_list_string;
     char *misms;
     char *probe_string;
@@ -153,58 +157,44 @@ void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs)      // p
     }
 
 
+    // @@@ done for each added element
+    // instead just add elements and let caller sort 'results' 
 
-    result_probes_list->clear();
-
+    results.erase();
     elem = computation_result_list->get_first();
-    while (elem)
-    {
-        result_probes_list->insert(elem->view_string, elem->view_string);
+    while (elem) {
+        results.put(elem->view_string);
         elem = computation_result_list->get_next();
     }
-
-    result_probes_list->insert_default("", "");
-    result_probes_list->update();
 }
 
-void ProbeValuation::init_valuation()
-{
+GB_ERROR ProbeValuation::initValuation(ConstStrArray& results) {
     int    i, j, k, counter = 0;
     probe *temp_probe;
-    char  *ptr;
 
     if (new_pt_server)
     {
         new_pt_server = false;
 
-        if (mp_main->get_stc())
-            delete mp_main->get_stc();
-
-        mp_main->set_stc(new ST_Container(MAXSONDENHASHSIZE));
+        mp_global->reinit_stc(MAXSONDENHASHSIZE);
     }
 
     if (pt_server_different)
     {
-        mp_main->set_stc(NULL);
+        mp_global->clear_stc();
         new_pt_server = true;
-        return;
+        return "PT_server does not match dataset (species differ)";
     }
-
-    AW_selection_list_iterator selentry(selected_list); 
 
     if (max_init_pop_combis < MAXINITPOPULATION) {
         for (i=0; i<size_sonden_array; i++)         // generierung eines pools, in dem jede Sonde nur einmal pro Mismatch
         {                           // vorkommt, damit alle moeglichen Kombinationen deterministisch
-            const char *ptr2    = selentry.get_value();
-            ++selentry;
-
             for (j=0; j<=mismatch_array[i]; j++)        // generiert werden koennen.
             {
                 temp_probe = new probe;
                 temp_probe->probe_index = i;
                 temp_probe->allowed_mismatches = j;
-                temp_probe->e_coli_pos = atoi(ptr = MP_get_comment(3, ptr2));
-                free(ptr);
+                temp_probe->e_coli_pos = ecolipos_array[i];
 
                 probe_pool[counter++] = temp_probe;
             }
@@ -214,9 +204,6 @@ void ProbeValuation::init_valuation()
     else {
         for (i=0; i<size_sonden_array; i++)
         {                               // Generierung eines Pools, in dem die Wahrscheinlichkeiten fuer die Erfassung
-            const char *ptr2 = selentry.get_value();
-            ++selentry;
-
             for (j=0; j<=mismatch_array[i]; j++)        // der Sonden schon eingearbeitet sind. DIe WS werden vom Benutzer fuer jedE
             {                           // einzelne Sonde bestimmt
                 for (k=0; k < bewertungarray[i]; k++)
@@ -224,8 +211,7 @@ void ProbeValuation::init_valuation()
                     temp_probe = new probe;
                     temp_probe->probe_index = i;
                     temp_probe->allowed_mismatches = j;
-                    temp_probe->e_coli_pos = atoi(ptr = MP_get_comment(3, ptr2));
-                    free(ptr);
+                    temp_probe->e_coli_pos = ecolipos_array[i];
 
                     probe_pool[counter++] = temp_probe;
                 }
@@ -233,23 +219,23 @@ void ProbeValuation::init_valuation()
         }
     }
 
-    act_generation->init_valuation();
-    evolution();
+    act_generation->init_valuation(this);
+    GB_ERROR error = evolution(results);
 
-    mp_main->get_mp_window()->get_result_window()->activate();
+    return error;
 }
 
 
 
-ProbeValuation::ProbeValuation(char **sonden_array, int no_of_sonden, int *bewertung, int *mismatch)
-{
-
+ProbeValuation::ProbeValuation(char **sonden_array, int no_of_sonden, int *bewertung, int *mismatch, int *ecoli_pos) {
     memset(this, 0, sizeof(ProbeValuation));
 
-    sondenarray     = sonden_array;
-    bewertungarray  = bewertung;
-    size_sonden_array   = no_of_sonden;
-    mismatch_array  = mismatch;
+    size_sonden_array = no_of_sonden;
+
+    sondenarray    = sonden_array;
+    bewertungarray = bewertung;
+    mismatch_array = mismatch;
+    ecolipos_array = ecoli_pos;
 
     computation_result_list = new List<result_struct>;
 

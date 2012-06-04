@@ -39,7 +39,7 @@
 #include <arbtools.h>
 #endif
 
-typedef unsigned long positiontype;
+typedef unsigned long positiontype; // @@@ -> size_t
 
 #define RELATION_GREATER 1
 #define RELATION_LESS    2
