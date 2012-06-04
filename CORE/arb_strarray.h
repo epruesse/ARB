@@ -172,6 +172,8 @@ public:
         elems++;
         arb_assert(ok());
     }
+
+    void put_array_elems(const char **array, size_t count) { for (size_t i = 0; i<count; ++i) put(array[i]); }
 };
 
 
