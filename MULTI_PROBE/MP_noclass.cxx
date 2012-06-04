@@ -358,8 +358,6 @@ void MP_init_and_calculate_and_display_multiprobes(AW_window *, AW_CL cl_gb_main
         mp_global->set_unmarked_species(unmarked_species);
     }
 
-    MO_Liste::set_gb_main(gb_main);
-
     size_t selected_probes_count = selected_list->size(); // @@@ move check into calc_multiprobes
     if ((int)selected_probes_count < mp_gl_awars.no_of_probes) {
         aw_message("Not enough probes selected for computation !!!");

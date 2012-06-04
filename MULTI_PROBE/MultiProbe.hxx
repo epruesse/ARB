@@ -139,18 +139,19 @@ public:
 void MP_init_and_calculate_and_display_multiprobes(AW_window *, AW_CL cl_gb_main);
 
 
-class Bakt_Info : virtual Noncopyable {
+class SpeciesInfo : virtual Noncopyable {
     char* name;
     long  hit_flag;
 
 public:
-    char*       get_name() { return name; }
-    long        inc_hit_flag() { return (++hit_flag); }
-    long        get_hit_flag() { return (hit_flag); }
-    void        kill_flag() { hit_flag = 0; }
+    char *get_name() { return name; }
+    
+    long inc_hit_flag() { return ++hit_flag; }
+    long get_hit_flag() { return (hit_flag); }
+    void clr_hit_flag() { hit_flag = 0; }
 
-    Bakt_Info(const char* n);
-    ~Bakt_Info();
+    SpeciesInfo(const char* n);
+    ~SpeciesInfo();
 };
 
 class Hit : virtual Noncopyable {
@@ -158,8 +159,9 @@ class Hit : virtual Noncopyable {
     long    baktid;
 
 public:
-    double*     get_mismatch()  { return mismatch; }
-    long    get_baktid()    { return baktid; }
+    double *get_mismatch() { return mismatch; }
+    
+    long    get_baktid() { return baktid; }
     void    set_mismatch_at_pos(int pos, double mm) { mismatch[pos] = mm; }
     double  get_mismatch_at_pos(int pos) { return mismatch[pos]; }
 
@@ -168,53 +170,70 @@ public:
 };
 
 
-class MO_Liste : virtual Noncopyable {
-    // ##################################### MO_Liste #####################################
-    /* Die Namen werden in die Hashtabelle mit fortlaufender Nummer abgespeichert
-     * Die Nummer bezeichnet das Feld in einem Array, indem momentan der B.-Name steht,
-     * spaeter
-     * aber auch z.B. ein Pointer auf eine Klasse mit mehr Informationen stehen kann
-     ACHTUNG:: Es kann passieren, dass eine Sonde mehrmals an einen Bakter bindet. Dann wird der Bakter nur einmal in die
-     Liste eingetragen, und damit ist die laenge nicht mehr aussagekraeftig. current-1 enthaelt das letzte element der liste, die
-     Liste beginnt bei 1
-    */
+class Group : virtual Noncopyable {
+    long          size;     // size of array-2 (+1 for unused index [0]; +1 for sentinel)
+    SpeciesInfo **member;   // used indices [1..SIZE]; has sentinel at end of array
+    long          elems;    // number of elements in member
+    GB_HASH*      hashptr;  // hash (name->index)
 
-    Bakt_Info** mo_liste;
-    long        laenge;
-    long        current;                            // zeigt auf den ersten freien eintrag
-    GB_HASH*    hashptr;
+    bool is_valid_index(long index) const { return index > 0 && index <= elems; }
 
-    static GBDATA *gb_main; // @@@ elim
+    void allocate(long wantedElements) {
+        mp_assert(!member);
+        mp_assert(!elems);
 
-public:
-    void set_species(const GB_HASH *species_hash);
+        size     = wantedElements;
+        member = new SpeciesInfo*[size+2]; //
+        memset(member, 0, (size+2)*sizeof(*member));
 
-    void get_all_species();
-
-    long debug_get_current();
-
-    long       get_laenge();
-    long       put_entry(const char* name);
-    char*      get_entry_by_index(long index);
-    long       get_index_by_entry(const char* key);
-    Bakt_Info* get_bakt_info_by_index(long index);
-
-    Bakt_Info** get_mo_liste() { return mo_liste; }
-
-    static void set_gb_main(GBDATA *gb_main_) {
-        mp_assert(implicated(gb_main, gb_main == gb_main_));
-        gb_main = gb_main_;
+        hashptr = GBS_create_hash(size+1, GB_IGNORE_CASE);
     }
 
-    MO_Liste();
-    ~MO_Liste();
+public:
+    void insert_species(const GB_HASH *species_hash);
+    void insert_species_knownBy_PTserver();
+
+    long elements() const { return elems; }
+
+    void put_entry(const char* name) {
+        if (!get_index_by_entry(name)) { 
+            member[++elems] = new SpeciesInfo(name);
+            GBS_write_hash(hashptr, name, elems);
+        }
+    }
+
+    bool hasEntryAt(long index) const { return is_valid_index(index); }
+
+    const char *get_entry_by_index(long index) { return is_valid_index(index) ? member[index]->get_name() : NULL; }
+    const SpeciesInfo *get_bakt_info_by_index(long index) { return is_valid_index(index) ? member[index] : NULL; }
+
+    long get_index_by_entry(const char* key) { return key ? GBS_read_hash(hashptr, key) : NULL; }
+
+    void clear_hitflags() { for (long i = 1; i <= elems; ++i) member[i]->clr_hit_flag(); }
+
+    Group()
+        : size(0),
+          member(NULL),
+          elems(0),
+          hashptr(NULL)
+    {
+        // partial ctor - needs to be filled using insert_species() or insert_species_knownBy_PTserver()
+    }
+
+    ~Group() {
+        if (size) {
+            for (int i = 0; i<size; ++i) delete member[i]; 
+            delete [] member;
+        }
+        if (hashptr) GBS_free_hash(hashptr);
+    }
 };
 
 class Sondentopf : virtual Noncopyable {
     List<void*>     *Listenliste; // @@@ change type to List<Sonde> ?
     GB_HASH     *color_hash;
-    MO_Liste        *BaktList;
-    MO_Liste        *Auswahllist;
+    Group        *BaktList;
+    Group        *Auswahllist;
 
 public:
     class probe_tabs* fill_Stat_Arrays();
@@ -226,7 +245,7 @@ public:
 
     GB_HASH *get_color_hash() { return color_hash; }
 
-    Sondentopf(MO_Liste *BL, MO_Liste *AL);
+    Sondentopf(Group *BL, Group *AL);
     ~Sondentopf();
 };
 
@@ -295,8 +314,8 @@ public:
     void        heapsort(long feldlaenge, MO_Mismatch** Nr_Mm_Feld);
     double      check_for_min(long k, MO_Mismatch** probebacts, long laenge);
 
-    MO_Mismatch** get_matching_species(bool match_kompl, int match_weight, int match_mis, char *match_seq, MO_Liste *convert, long *number_of_species, GB_ERROR& error);
-    GB_ERROR      gen_Hitliste(MO_Liste *Bakterienliste) __ATTR__USERESULT;
+    MO_Mismatch** get_matching_species(bool match_kompl, int match_weight, int match_mis, char *match_seq, Group *convert, long *number_of_species, GB_ERROR& error);
+    GB_ERROR      gen_Hitliste(Group *Bakterienliste) __ATTR__USERESULT;
 
     Sonde(char* bezeichner, int allowed_mis, double outside_mis);
     ~Sonde();
@@ -305,8 +324,8 @@ public:
 struct ST_Container : virtual Noncopyable {
     // Sondentopf Container
     // @@@ make members private
-    MO_Liste        *Bakterienliste;
-    MO_Liste        *Auswahlliste;
+    Group        *Bakterienliste;
+    Group        *Auswahlliste;
     Sondentopf      *sondentopf; // Wird einmal eine Sondentopfliste
     List<Sondentopf>    *ST_Liste;
     int         anzahl_basissonden;
