@@ -15,23 +15,11 @@
 
 class ConstStrArray;
 
-class Generation;
-class GenerationDuplicates;
-class probe_statistic;
-class probe_combi_statistic;
-
 struct probe {
     int probe_index;
     int allowed_mismatches;
     int e_coli_pos;
 };
-
-struct result_struct {
-    probe_combi_statistic *ps;
-    char                  *view_string;
-};
-
-
 
 class probe_tabs : virtual Noncopyable {
     int             *group_tab;
@@ -47,8 +35,6 @@ public:
     probe_tabs(int *new_group_field = NULL, int *new_non_group_field = NULL, int len_group = 0);
     ~probe_tabs();
 };
-
-class ProbeValuation; // @@@ reorder classes
 
 class probe_combi_statistic : virtual Noncopyable {
     // die Sondenkombis werden in dieser Klasse gespeichert
@@ -84,7 +70,7 @@ public:
     bool        is_dead()              { return life_counter <= 0; }
 
     void        sigma_truncation(double average_fit, double dev);       // dient zur Skalierung der Fitness; um zu dominante Kombis zu vermeiden
-    double      calc_fitness(ProbeValuation *p_eval, int len_of_field, GB_ERROR& error);                 // fitness-berechnung einer Sondenkombi
+    double      calc_fitness(class ProbeValuation *p_eval, int len_of_field, GB_ERROR& error);                 // fitness-berechnung einer Sondenkombi
     double      calc_expected_children(double average_fitness);
 
     void        mutate_Probe(ProbeValuation *p_eval);                     // mutiert zufaellig die Sondenkombination nr_of_probe.
@@ -93,7 +79,7 @@ public:
 
     void        sort(long feld_laenge);     // es wird ein randomized quicksort verwendet
     probe_combi_statistic   *duplicate();       // dupliziert dieses Objekt (z.B. fuer naechste Generation)
-    probe_combi_statistic   *check_duplicates(GenerationDuplicates *dup_tree = NULL);
+    probe_combi_statistic   *check_duplicates(class GenerationDuplicates *dup_tree = NULL);
     // rueckgabewert ist NULL, wenn das Feld duplikate enthaelt bzw.
     // es wird sortiertes field zurueckgegeben. Wenn NULL zurueckkommt, dann
     // wurde field jedoch noch nicht deleted
@@ -162,6 +148,11 @@ public:
     ~Generation();
 };
 
+struct result_struct {
+    probe_combi_statistic *ps;
+    char                  *view_string;
+};
+
 class ProbeValuation : virtual Noncopyable {
     char **sondenarray;
     int   *bewertungarray;
@@ -210,6 +201,7 @@ public:
     GenerationDuplicates(int size);
     ~GenerationDuplicates();        // loescht rekursiv nach unten alles.
 };
+
 
 #else
 #error MP_probe.hxx included twice

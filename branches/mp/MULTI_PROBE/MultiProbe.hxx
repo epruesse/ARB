@@ -33,19 +33,6 @@
 
 #define mp_assert(x) arb_assert(x)
 
-class MP_Main;
-class MP_Global;
-class MP_Window;
-class AW_window;
-class AW_root;
-class AW_window_simple;
-class AWT_canvas;
-class ProbeValuation;
-
-class ST_Container;
-class Bitvector;
-class Sonde;
-
 #define MP_AWAR_SEQIN               "tmp/mp/seqin"
 #define MP_AWAR_SELECTEDPROBES      "mp/selectedprobes"
 #define MP_AWAR_PROBELIST           "mp/probelist"
@@ -88,7 +75,6 @@ class Sonde;
 
 #define MAXSONDENHASHSIZE   1000        // max 1000 Sonden koennen gecached werden, bei Bedarf aendern !!!!
 
-
 struct awar_vars {
     char    *selected_probes;
     char    *probelist;
@@ -110,48 +96,10 @@ struct awar_vars {
     float   greyzone;
 };
 
-class AW_selection_list;
-
-extern AW_selection_list  *selected_list;
-extern AW_selection_list  *probelist;
-extern char                MP_probe_tab[256];
-extern AW_selection_list  *result_probes_list;
-extern int                 remembered_mismatches;
-extern int                 anz_elem_marked;
-extern int                 anz_elem_unmarked;
-extern unsigned char     **hamming_tab;
-extern int               **system3_tab;
-extern bool                pt_server_different;
-extern bool                new_pt_server;
-
-long            k_aus_n(int k, int n);                      // Berechnung k aus n
-extern int      get_random(int min, int max);       // gibt eine Zufallszahl x mit der Eigenschaft : min <= x <= max
-
 // ********************************************************
 
-extern MP_Main   *mp_main;
-extern MP_Global *mp_global;
-extern awar_vars  mp_gl_awars;                      // globale Variable, die manuell eingegebene Sequenz enthaelt
-
-// ********************************************************
-
-class MP_Main : virtual Noncopyable {
-    MP_Window  *mp_window;
-    AW_root    *aw_root;
-    AWT_canvas *scr;
-
-    void    create_awars();
-
-public:
-    MP_Window  *get_mp_window() { return mp_window; };
-    AW_root    *get_aw_root()   { return aw_root; };
-    AWT_canvas *get_canvas()    { return scr; };
-
-    MP_Main(AW_root *awr, AWT_canvas *canvas);
-    ~MP_Main();
-};
-
-
+class AW_window_simple; // @@@ replace by AW_window (which is declared)
+class AWT_canvas;
 
 class MP_Window : virtual Noncopyable {
     AW_window_simple *aws;
@@ -170,7 +118,21 @@ public:
     ~MP_Window();
 };
 
+class MP_Main : virtual Noncopyable {
+    MP_Window  *mp_window;
+    AW_root    *aw_root;
+    AWT_canvas *scr;
 
+    void    create_awars();
+
+public:
+    MP_Window  *get_mp_window() { return mp_window; };
+    AW_root    *get_aw_root()   { return aw_root; };
+    AWT_canvas *get_canvas()    { return scr; };
+
+    MP_Main(AW_root *awr, AWT_canvas *canvas);
+    ~MP_Main();
+};
 
 // *****************************************************
 // Globale Klassenlose Funktionen
@@ -207,7 +169,47 @@ public:
 };
 
 
-class probe_tabs;
+class MO_Liste : virtual Noncopyable {
+    // ##################################### MO_Liste #####################################
+    /* Die Namen werden in die Hashtabelle mit fortlaufender Nummer abgespeichert
+     * Die Nummer bezeichnet das Feld in einem Array, indem momentan der B.-Name steht,
+     * spaeter
+     * aber auch z.B. ein Pointer auf eine Klasse mit mehr Informationen stehen kann
+     ACHTUNG:: Es kann passieren, dass eine Sonde mehrmals an einen Bakter bindet. Dann wird der Bakter nur einmal in die
+     Liste eingetragen, und damit ist die laenge nicht mehr aussagekraeftig. current-1 enthaelt das letzte element der liste, die
+     Liste beginnt bei 1
+    */
+
+    Bakt_Info** mo_liste;
+    long        laenge;
+    long        current;                            // zeigt auf den ersten freien eintrag
+    GB_HASH*    hashptr;
+
+    static GBDATA *gb_main; // @@@ elim
+
+public:
+    void set_species(const GB_HASH *species_hash);
+
+    void get_all_species();
+
+    long debug_get_current();
+
+    long       get_laenge();
+    long       put_entry(const char* name);
+    char*      get_entry_by_index(long index);
+    long       get_index_by_entry(const char* key);
+    Bakt_Info* get_bakt_info_by_index(long index);
+
+    Bakt_Info** get_mo_liste() { return mo_liste; }
+
+    static void set_gb_main(GBDATA *gb_main_) {
+        mp_assert(implicated(gb_main, gb_main == gb_main_));
+        gb_main = gb_main_;
+    }
+
+    MO_Liste();
+    ~MO_Liste();
+};
 
 class Sondentopf : virtual Noncopyable {
     List<void*>     *Listenliste; // @@@ change type to List<Sonde> ?
@@ -216,15 +218,42 @@ class Sondentopf : virtual Noncopyable {
     MO_Liste        *Auswahllist;
 
 public:
-    probe_tabs*     fill_Stat_Arrays();
-    double**        gen_Mergefeld();
-    void        put_Sonde(char *name, int allowed_mis, double outside_mis, GB_ERROR& error);
-    long        get_length_hitliste();
-    void        gen_color_hash(positiontype anz_sonden);
-    GB_HASH         *get_color_hash() { return color_hash; };
+    class probe_tabs* fill_Stat_Arrays();
+    double**          gen_Mergefeld();
+
+    void put_Sonde(char *name, int allowed_mis, double outside_mis, GB_ERROR& error);
+    long get_length_hitliste();
+    void gen_color_hash(positiontype anz_sonden);
+
+    GB_HASH *get_color_hash() { return color_hash; };
 
     Sondentopf(MO_Liste *BL, MO_Liste *AL);
     ~Sondentopf();
+};
+
+class Bitvector : virtual Noncopyable {
+    // Bitpositionen sind 0 bis 7
+    char*   vector;
+    int     len;
+    int     num_of_bits;
+public:
+    int     gen_id();
+    Bitvector*  merge(Bitvector* x);
+    int     subset(Bitvector* Obermenge);
+    int     readbit(int pos);
+    int     setbit(int pos);
+    int     delbit(int pos);
+    void    rshift();
+    void    print();
+
+    char*   get_vector() { return vector; };
+    int     get_num_of_bits() { return num_of_bits; };
+    int     get_len() { return len; };
+
+    void    set_vector(char* back) { vector = back; };
+
+    Bitvector(int bits);
+    ~Bitvector();
 };
 
 class Sonde : virtual Noncopyable {
@@ -332,73 +361,29 @@ public:
     const GB_HASH *get_unmarked_species() const { return unmarked_species; }
 };
 
-class MO_Liste : virtual Noncopyable {
-    // ##################################### MO_Liste #####################################
-    /* Die Namen werden in die Hashtabelle mit fortlaufender Nummer abgespeichert
-     * Die Nummer bezeichnet das Feld in einem Array, indem momentan der B.-Name steht,
-     * spaeter
-     * aber auch z.B. ein Pointer auf eine Klasse mit mehr Informationen stehen kann
-     ACHTUNG:: Es kann passieren, dass eine Sonde mehrmals an einen Bakter bindet. Dann wird der Bakter nur einmal in die
-     Liste eingetragen, und damit ist die laenge nicht mehr aussagekraeftig. current-1 enthaelt das letzte element der liste, die
-     Liste beginnt bei 1
-    */
+class AW_selection_list;
 
-    Bakt_Info** mo_liste;
-    long        laenge;
-    long        current;                            // zeigt auf den ersten freien eintrag
-    GB_HASH*    hashptr;
+extern AW_selection_list  *selected_list;
+extern AW_selection_list  *probelist;
+extern char                MP_probe_tab[256];
+extern AW_selection_list  *result_probes_list;
+extern int                 remembered_mismatches;
+extern int                 anz_elem_marked;
+extern int                 anz_elem_unmarked;
+extern unsigned char     **hamming_tab;
+extern int               **system3_tab;
+extern bool                pt_server_different;
+extern bool                new_pt_server;
 
-    static GBDATA *gb_main; // @@@ elim
+long            k_aus_n(int k, int n);                      // Berechnung k aus n
+extern int      get_random(int min, int max);       // gibt eine Zufallszahl x mit der Eigenschaft : min <= x <= max
 
-public:
-    void set_species(const GB_HASH *species_hash);
+// ********************************************************
 
-    void get_all_species();
+extern MP_Main   *mp_main;
+extern MP_Global *mp_global;
+extern awar_vars  mp_gl_awars;                      // globale Variable, die manuell eingegebene Sequenz enthaelt
 
-    long debug_get_current();
-
-    long       get_laenge();
-    long       put_entry(const char* name);
-    char*      get_entry_by_index(long index);
-    long       get_index_by_entry(const char* key);
-    Bakt_Info* get_bakt_info_by_index(long index);
-
-    Bakt_Info** get_mo_liste() { return mo_liste; }
-
-    static void set_gb_main(GBDATA *gb_main_) {
-        mp_assert(implicated(gb_main, gb_main == gb_main_));
-        gb_main = gb_main_;
-    }
-
-    MO_Liste();
-    ~MO_Liste();
-};
-
-
-class Bitvector : virtual Noncopyable {
-    // Bitpositionen sind 0 bis 7
-    char*   vector;
-    int     len;
-    int     num_of_bits;
-public:
-    int     gen_id();
-    Bitvector*  merge(Bitvector* x);
-    int     subset(Bitvector* Obermenge);
-    int     readbit(int pos);
-    int     setbit(int pos);
-    int     delbit(int pos);
-    void    rshift();
-    void    print();
-
-    char*   get_vector() { return vector; };
-    int     get_num_of_bits() { return num_of_bits; };
-    int     get_len() { return len; };
-
-    void    set_vector(char* back) { vector = back; };
-
-    Bitvector(int bits);
-    ~Bitvector();
-};
 
 #else
 #error MultiProbe.hxx included twice

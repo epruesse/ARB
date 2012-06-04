@@ -29,12 +29,6 @@ enum {
     MP_PROBE8   = 128
 };
 
-class Bakt_Info;
-class Hit;
-class Sonde;
-class MO_Liste;
-class Sondentopf;
-
 struct MO_Mismatch {
     long   nummer;
     double mismatch;
