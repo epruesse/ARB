@@ -2,21 +2,9 @@
 
 .SUFFIXES: .o .cxx .depend
 
+SOURCES=$(wildcard *.cxx)
 
-CPP_OBJECTS =  \
-	MP_Generation.o \
-	MP_GenerationDuplicates.o \
-	MP_Window.o \
-	MP_main.o \
-	MP_mo_liste.o \
-	MP_noclass.o \
-	MP_permute.o \
-	MP_probe.o \
-	MP_probe_combi_statistic.o \
-	MP_probe_tabs.o \
-	MP_sonde.o \
-	MP_sondentopf.o \
-
+CPP_OBJECTS = $(subst .cxx,.o,$(SOURCES))
 
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
@@ -101,6 +89,35 @@ MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/test_global.h
 
+MP_group.o: MP_externs.hxx
+MP_group.o: mpdefs.h
+MP_group.o: MultiProbe.hxx
+MP_group.o: SoTl.hxx
+MP_group.o: $(ARBHOME)/INCLUDE/ad_prot.h
+MP_group.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+MP_group.o: $(ARBHOME)/INCLUDE/aisc_global.h
+MP_group.o: $(ARBHOME)/INCLUDE/arb_assert.h
+MP_group.o: $(ARBHOME)/INCLUDE/arb_core.h
+MP_group.o: $(ARBHOME)/INCLUDE/arb_error.h
+MP_group.o: $(ARBHOME)/INCLUDE/arb_msg.h
+MP_group.o: $(ARBHOME)/INCLUDE/arb_string.h
+MP_group.o: $(ARBHOME)/INCLUDE/arbdb.h
+MP_group.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+MP_group.o: $(ARBHOME)/INCLUDE/arbdbt.h
+MP_group.o: $(ARBHOME)/INCLUDE/arbtools.h
+MP_group.o: $(ARBHOME)/INCLUDE/attributes.h
+MP_group.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+MP_group.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+MP_group.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+MP_group.o: $(ARBHOME)/INCLUDE/bytestring.h
+MP_group.o: $(ARBHOME)/INCLUDE/cb.h
+MP_group.o: $(ARBHOME)/INCLUDE/client.h
+MP_group.o: $(ARBHOME)/INCLUDE/client_types.h
+MP_group.o: $(ARBHOME)/INCLUDE/dupstr.h
+MP_group.o: $(ARBHOME)/INCLUDE/PT_com.h
+MP_group.o: $(ARBHOME)/INCLUDE/smartptr.h
+MP_group.o: $(ARBHOME)/INCLUDE/test_global.h
+
 MP_main.o: MP_probe.hxx
 MP_main.o: mp_proto.hxx
 MP_main.o: mpdefs.h
@@ -135,35 +152,6 @@ MP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_main.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_main.o: $(ARBHOME)/INCLUDE/test_global.h
-
-MP_mo_liste.o: MP_externs.hxx
-MP_mo_liste.o: mpdefs.h
-MP_mo_liste.o: MultiProbe.hxx
-MP_mo_liste.o: SoTl.hxx
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/ad_prot.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/aisc_global.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_assert.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_core.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_error.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_msg.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_string.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/arbdb.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/arbdbt.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/arbtools.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/attributes.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/bytestring.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/cb.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/client.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/client_types.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/dupstr.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/PT_com.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/smartptr.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/test_global.h
 
 MP_noclass.o: MP_externs.hxx
 MP_noclass.o: MP_probe.hxx
