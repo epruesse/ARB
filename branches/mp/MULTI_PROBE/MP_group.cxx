@@ -1,12 +1,12 @@
-// ============================================================= //
-//                                                               //
-//   File      : MP_mo_liste.cxx                                 //
-//   Purpose   :                                                 //
-//                                                               //
-//   Institute of Microbiology (Technical University Munich)     //
-//   http://www.arb-home.de/                                     //
-//                                                               //
-// ============================================================= //
+// ============================================================ //
+//                                                              //
+//   File      : MP_group.cxx                                   //
+//   Purpose   :                                                //
+//                                                              //
+//   Institute of Microbiology (Technical University Munich)    //
+//   http://www.arb-home.de/                                    //
+//                                                              //
+// ============================================================ //
 
 #include "MP_externs.hxx"
 #include "MultiProbe.hxx"
@@ -21,16 +21,17 @@
 #define DUMP_SET_SPECIES
 #endif
 
-
+template <typename ID>
 static void add_to_MO_Liste(const char *species_name, long, void *cl_MO_Liste) {
-    Group *mo = (Group*)cl_MO_Liste;
+    Group<ID> *mo = (Group<ID>*)cl_MO_Liste;
     mo->put_entry(species_name);
 #if defined(DUMP_SET_SPECIES)
     printf("%s,", species_name);
 #endif
 }
 
-void Group::insert_species(const GB_HASH *species_hash) {
+template <typename ID>
+void Group<ID>::insert_species(const GB_HASH *species_hash) {
     mp_assert(species_hash);
     mp_assert(!hashptr); // insert_species called twice!
 
@@ -42,14 +43,15 @@ void Group::insert_species(const GB_HASH *species_hash) {
 
     if (count) {
         allocate(count);
-        GBS_hash_do_const_loop(species_hash, add_to_MO_Liste, this);
+        GBS_hash_do_const_loop(species_hash, add_to_MO_Liste<ID>, this);
     }
 #if defined(DUMP_SET_SPECIES)
     printf("\"\n");
 #endif
 }
 
-void Group::insert_species_knownBy_PTserver() {
+template <typename ID>
+void Group<ID>::insert_species_knownBy_PTserver() {
     const char *servername = NULL;
     char       *match_name = NULL;
     char        toksep[2];
@@ -130,3 +132,7 @@ void Group::insert_species_knownBy_PTserver() {
     delete match_name;
 }
 
+TargetGroup::TargetGroup(const GB_HASH *targeted_species) {
+    known.insert_species_knownBy_PTserver();
+    targeted.insert_species(targeted_species);
+}

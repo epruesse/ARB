@@ -29,6 +29,9 @@
 #ifndef ARBDBT_H
 #include <arbdbt.h>
 #endif
+#ifndef NUMERICTYPE_H
+#include <NumericType.h>
+#endif
 
 
 #define mp_assert(x) arb_assert(x)
@@ -146,13 +149,17 @@ public:
     ~SpeciesName() { free(name); }
 };
 
+typedef NumericType<int, 1> SpeciesID;
+typedef NumericType<int, 2> TargetID; // also references species, but in different Group
+
+template <typename ID>
 class Group : virtual Noncopyable {
     long         size;      // size of array-2 (+1 for unused index [0]; +1 for sentinel)
     SpeciesName *member;    // used indices [1..SIZE]; has sentinel at end of array
     long         elems;     // number of elements in member
     GB_HASH*     hashptr;   // hash (name->index)
 
-    bool is_valid_index(long index) const { return index > 0 && index <= elems; }
+    bool is_valid_index(ID id) const { return id > 0 && id <= elems; }
 
     void allocate(long wantedElements) {
         mp_assert(!member);
@@ -171,18 +178,18 @@ public:
 
     long elements() const { return elems; }
 
-    bool hasEntryAt(long index) const { return is_valid_index(index); }
+    bool hasEntryAt(SpeciesID id) const { return is_valid_index(id); }
     bool hasEntry(const char *name) const { return get_index_by_name(name); }
     
     void put_entry(const char* name) {
-        if (!get_index_by_name(name)) {
+        if (!hasEntry(name)) {
             member[++elems] = SpeciesName(name);
             GBS_write_hash(hashptr, name, elems);
         }
     }
 
-    const char *get_name_by_index(long index) const { return is_valid_index(index) ? member[index].get_name() : NULL; }
-    long get_index_by_name(const char* key) const { return key ? GBS_read_hash(hashptr, key) : 0; }
+    const char *get_name_by_index(ID id) const { return is_valid_index(id) ? member[id].get_name() : NULL; }
+    ID get_index_by_name(const char* key) const { return ID(key ? GBS_read_hash(hashptr, key) : 0); }
 
     Group()
         : size(0),
@@ -200,32 +207,29 @@ public:
 };
 
 enum GroupMembership {
-    GM_IN_GROUP, 
-    GM_OUT_GROUP, 
-    GM_UNKNOWN, 
+    GM_IN_GROUP,
+    GM_OUT_GROUP,
+    GM_UNKNOWN,
 };
 
 class TargetGroup {
-    Group known;    // all known species
-    Group targeted; // species for which multiprobes get calculated
+    Group<SpeciesID> known;    // all known species
+    Group<TargetID>  targeted; // species for which multiprobes get calculated
 
 public:
 
-    TargetGroup(const GB_HASH *targeted_species) {
-        known.insert_species_knownBy_PTserver();
-        targeted.insert_species(targeted_species);
-    }
+    TargetGroup(const GB_HASH *targeted_species);
 
     size_t known_species_count() const { return known.elements(); }
     size_t targeted_species_count() const { return targeted.elements(); }
     size_t outgroup_species_count() const { return known_species_count()-targeted_species_count(); }
 
-    int name2idx(const char *name) const { return known.get_index_by_name(name); }
-    const char *idx2name(int idx) const { return known.get_name_by_index(idx); }
+    SpeciesID name2id(const char *name) const { return known.get_index_by_name(name); }
+    const char *id2name(SpeciesID id) const { return known.get_name_by_index(id); }
 
-    GroupMembership getMembership(int known_idx) const {
-        return known.hasEntryAt(known_idx)
-            ? (targeted.hasEntry(known.get_name_by_index(known_idx))
+    GroupMembership getMembership(SpeciesID id) const {
+        return known.hasEntryAt(id)
+            ? (targeted.hasEntry(known.get_name_by_index(id))
                ? GM_IN_GROUP
                : GM_OUT_GROUP)
             : GM_UNKNOWN;
@@ -277,62 +281,72 @@ public:
 };
 
 class Hit : virtual Noncopyable {
-    double  *mismatch;
-    long    baktid;
+    double    *mismatch;
+    SpeciesID  id;
 
 public:
     double *get_mismatch() { return mismatch; }
     
-    long    get_baktid() { return baktid; }
+    SpeciesID target() { return id; }
     void    set_mismatch_at_pos(int pos, double mm) { mismatch[pos] = mm; }
     double  get_mismatch_at_pos(int pos) { return mismatch[pos]; }
 
-    Hit(long baktnummer);
+    Hit(SpeciesID id_);
     ~Hit();
 };
 
+struct MO_Mismatch {
+    SpeciesID nummer;
+    double    mismatch;
+
+    MO_Mismatch() : nummer(0), mismatch(0.0) {}
+};
+
 class Sonde : virtual Noncopyable {
-    char*       kennung;        // Nukleinsaeuren, z.B. "atgatgatg"
-    Bitvector*      bitkennung;     // Sonde 1 Platz eins, ...zwei..., ... Analog zum Aufbau der Listenliste
-    Hit         **hitliste;     // start bei index 0, letztes element enthaelt NULL
-    long        length_hitliste;
-    long        minelem;
-    long        maxelem;
-    positiontype    kombi_far, kombi_mor;
-    long        *Allowed_Mismatch;
-    double      *Outside_Mismatch;
+    char*          kennung;         // Nukleinsaeuren, z.B. "atgatgatg"
+    Bitvector*     bitkennung;      // Sonde 1 Platz eins, ...zwei..., ... Analog zum Aufbau der Listenliste
+    Hit          **hitliste;        // start bei index 0, letztes element enthaelt NULL
+    long           length_hitliste;
+    SpeciesID      minelem, maxelem;
+    positiontype   kombi_far, kombi_mor;
+    long          *Allowed_Mismatch;
+    double        *Outside_Mismatch;
 
 public:
-    double              get_Allowed_Mismatch_no(int no) { return ((Allowed_Mismatch) ? Allowed_Mismatch[no] : 100); }
-    double              get_Outside_Mismatch_no(int no) { return ((Outside_Mismatch) ? Outside_Mismatch[no] : 100); }
-    char*       get_name() { return kennung; }
-    Hit*        get_hitdata_by_number(long index);
-    Hit**       get_Hitliste() {    return hitliste; }
-    long        get_length_hitliste() {    return length_hitliste; }
-    long        get_minelem() { return minelem; }
-    long        get_maxelem() { return maxelem; }
-    positiontype    get_far() { return kombi_far; }
-    positiontype    get_mor() { return kombi_mor; }
-    Bitvector*      get_bitkennung() { return bitkennung; }
+    double get_Allowed_Mismatch_no(int no) { return ((Allowed_Mismatch) ? Allowed_Mismatch[no] : 100); }
+    double get_Outside_Mismatch_no(int no) { return ((Outside_Mismatch) ? Outside_Mismatch[no] : 100); }
+    char* get_name() { return kennung; }
+    Hit *hit(long index);
+    Hit** get_Hitliste() { return hitliste; }
+    long get_length_hitliste() { return length_hitliste; }
 
-    void        set_Allowed_Mismatch_no(int pos, int no) { Allowed_Mismatch[pos] = no; }
-    void        set_Outside_Mismatch_no(int pos, int no) { Outside_Mismatch[pos] = no; }
-    void        set_bitkennung(Bitvector* bv);  // Setzt eine Leere Bitkennung der laenge bits
-    void        set_name(char* name) {  kennung = strdup(name); }
-    void        set_Hitliste(Hit** hitptr) {     hitliste = hitptr; }
-    void        set_length_hitliste(long lhl) { length_hitliste = lhl; }
-    void        set_minelem(long min) { minelem = min; }
-    void        set_maxelem(long max) { maxelem = max; }
-    void        set_far(positiontype far) {  kombi_far = far; }
-    void        set_mor(positiontype mor) {  kombi_mor = mor; }
+    SpeciesID get_minelem() { return minelem; }
+    SpeciesID get_maxelem() { return maxelem; }
 
-    void        print();
-    void        sink(long i, long t, MO_Mismatch** A);
-    void        heapsort(long feldlaenge, MO_Mismatch** Nr_Mm_Feld);
-    double      check_for_min(long k, MO_Mismatch** probebacts, long laenge);
+    positiontype get_far() { return kombi_far; }
+    positiontype get_mor() { return kombi_mor; }
+    Bitvector* get_bitkennung() { return bitkennung; }
 
-    MO_Mismatch** get_matching_species(bool match_kompl, int match_weight, int match_mis, char *match_seq, const TargetGroup& targetGroup, long *number_of_species, GB_ERROR& error);
-    GB_ERROR      gen_Hitliste(const TargetGroup& targetGroup) __ATTR__USERESULT;
+    void set_Allowed_Mismatch_no(int pos, int no) { Allowed_Mismatch[pos] = no; }
+    void set_Outside_Mismatch_no(int pos, int no) { Outside_Mismatch[pos] = no; }
+    void set_bitkennung(Bitvector* bv); // Setzt eine Leere Bitkennung der laenge bits
+    void set_name(char* name) { kennung = strdup(name); }
+    void set_Hitliste(Hit** hitptr) { hitliste = hitptr; }
+    void set_length_hitliste(long lhl) { length_hitliste = lhl; }
+
+    void set_minelem(SpeciesID min) { minelem = min; }
+    void set_maxelem(SpeciesID max) { maxelem = max; }
+
+    void set_far(positiontype far) {  kombi_far = far; }
+    void set_mor(positiontype mor) {  kombi_mor = mor; }
+
+    void print();
+    void sink(long i, long t, MO_Mismatch** A);
+    void heapsort(long feldlaenge, MO_Mismatch** Nr_Mm_Feld);
+    double check_for_min(long k, MO_Mismatch** probebacts, long laenge);
+
+    MO_Mismatch** get_matching_species(bool match_kompl, int match_weight, int match_mis, char *match_seq, const TargetGroup& targetGroup, int *number_of_species, GB_ERROR& error);
+    GB_ERROR gen_Hitliste(const TargetGroup& targetGroup) __ATTR__USERESULT;
 
     Sonde(char* bezeichner, int allowed_mis, double outside_mis);
     ~Sonde();
@@ -345,11 +359,11 @@ class ST_Container : virtual Noncopyable {
 public: 
     
     // @@@ make members private
-    Sondentopf       *sondentopf; // Wird einmal eine Sondentopfliste
+    Sondentopf *sondentopf; // Wird einmal eine Sondentopfliste
     List<Sondentopf> *ST_Liste;
-    int               anzahl_basissonden;
-    GB_HASH*          cachehash;
-    List<char>       *Sondennamen;
+    int anzahl_basissonden;
+    GB_HASH* cachehash;
+    List<char> *Sondennamen;
 
     Sonde* cache_Sonde(char *name, int allowed_mis, double outside_mis, GB_ERROR& error);
     Sonde* get_cached_sonde(char* name);

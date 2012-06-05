@@ -15,15 +15,17 @@
 #include <client.h>
 
 #include <cmath>
+#include <algorithm>
 
-Sonde::Sonde(char* bezeichner, int allowed_mis, double outside_mis) {
+Sonde::Sonde(char* bezeichner, int allowed_mis, double outside_mis)
+    : minelem(0), 
+      maxelem(0)
+{
     kennung = strdup(bezeichner);
     bitkennung = NULL;
     // fuer Basissonden haben die Bitvektoren noch nicht die Volle laenge, da noch nicht bekannt ist, wieviele Sonden eingetragen werden
     hitliste = NULL;
     length_hitliste = 0;
-    minelem = 0;
-    maxelem = 0;
     int anzahl_sonden = mp_gl_awars.no_of_probes;
 
     Allowed_Mismatch = new long[anzahl_sonden];
@@ -57,12 +59,12 @@ Sonde::~Sonde() {
 void Sonde::print() {
     printf("\nSonde %s\n------------------------------------------------\n", kennung);
     bitkennung->print();
-    printf("Laenge hitliste %ld mit minelem %ld und maxelem %ld\n", length_hitliste, minelem, maxelem);
+    printf("Laenge hitliste %ld mit minelem %d und maxelem %d\n", length_hitliste, minelem.base(), maxelem.base());
     printf("Far %ld, Mor %ld, AllMM %ld, OutMM %f\n\n", kombi_far, kombi_mor, *Allowed_Mismatch, *Outside_Mismatch);
 }
 
 
-MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, int match_mis, char *match_seq, const TargetGroup& targetGroup, long *number_of_species, GB_ERROR& error) {
+MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, int match_mis, char *match_seq, const TargetGroup& targetGroup, int *number_of_species, GB_ERROR& error) {
     mp_assert(!error);
 
     MO_Mismatch **ret_list   = NULL;
@@ -127,7 +129,7 @@ MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, in
 
                 while (match_name && match_mismatches && match_wmismatches) {
                     ret_list[i] = new MO_Mismatch;
-                    ret_list[i]->nummer = targetGroup.name2idx(match_name);
+                    ret_list[i]->nummer = targetGroup.name2id(match_name);
                     if (match_weight == NON_WEIGHTED) {
                         ret_list[i]->mismatch = atof(match_mismatches);
                     }
@@ -174,31 +176,25 @@ double Sonde::check_for_min(long k, MO_Mismatch** probebacts, long laenge) {
 GB_ERROR Sonde::gen_Hitliste(const TargetGroup& targetGroup) {
     // Angewandt auf eine frische Sonde generiert diese Methode die Hitliste durch eine Anfrage an die Datenbank, wobei
     // der Name der Sonde uebergeben wird
-    MO_Mismatch**   probebacts;
-    long        i, k;           // Zaehlervariable
-    long        laenge = 0;
-    double      mm_to_search = 0;
-    int         mm_int_to_search = 0;
 
-
-    // DATENBANKAUFRUF
-    mm_to_search = mp_gl_awars.greyzone + mp_gl_awars.outside_mismatches_difference + get_Allowed_Mismatch_no(0);
-    if (mm_to_search > (int) mm_to_search) {
-        mm_int_to_search = (int) mm_to_search + 1;
-    }
-    else {
-        mm_int_to_search = (int) mm_to_search;
+    int mm_int_to_search;
+    {
+        double mm_to_search = mp_gl_awars.greyzone + mp_gl_awars.outside_mismatches_difference + get_Allowed_Mismatch_no(0);
+        mm_int_to_search    = int(mm_to_search);
+        if (mm_to_search>mm_int_to_search) mm_int_to_search++;
     }
 
-    GB_ERROR error = NULL;
+    GB_ERROR error  = NULL;
+    int      laenge = 0;
 
-    probebacts = get_matching_species(mp_gl_awars.complement,
-                                      mp_gl_awars.weightedmismatches,
-                                      mm_int_to_search,
-                                      kennung,
-                                      targetGroup,
-                                      &laenge,
-                                      error);
+    MO_Mismatch** probebacts =
+        get_matching_species(mp_gl_awars.complement,
+                             mp_gl_awars.weightedmismatches,
+                             mm_int_to_search,
+                             kennung,
+                             targetGroup,
+                             &laenge,
+                             error);
 
     mp_assert(contradicted(error, laenge && probebacts));
 
@@ -212,7 +208,7 @@ GB_ERROR Sonde::gen_Hitliste(const TargetGroup& targetGroup) {
         // laenge ist die Anzahl der Eintraege in probebact
         // Korrekturschleife, um Mehrfachtreffer auf das gleiche Bakterium abzufangen
 
-        for (k=0;  k < laenge-1;  k++) {
+        for (int k=0; k<laenge-1; k++) {
             if (probebacts[k]->nummer == probebacts[k+1]->nummer) {
                 min_mm = check_for_min(k, probebacts, laenge);
                 probebacts[k]->mismatch = min_mm;
@@ -229,68 +225,51 @@ GB_ERROR Sonde::gen_Hitliste(const TargetGroup& targetGroup) {
 
         // Probebacts besteht aus eintraegen der Art (Nummer, Mismatch)
         hitliste = new Hit*[laenge+1];
-        for (i=0; i<laenge+1; i++)
-            hitliste[i]=NULL;
 
-        for (i=0; i<laenge; i++) {
+        for (int i=0; i<laenge; i++) {
             hitliste[i] = new Hit(probebacts[i]->nummer);
             hitliste[i]->set_mismatch_at_pos(0, probebacts[i]->mismatch);
         }
-        length_hitliste = laenge;
+        hitliste[laenge] = NULL;
+        length_hitliste  = laenge;
 
         // Loeschen der Temps
-        for (i=0; i<laenge; i++) delete probebacts[i];
+        for (int i=0; i<laenge; i++) delete probebacts[i];
         delete [] probebacts;
     }
     return error;
 }
 
-
-
-Hit* Sonde::get_hitdata_by_number(long index) {
-    // Gibt Zeiger auf ein Hit Element zurueck, welches an Stelle index steht, vorerst nur zur Ausgabe gedacht
-    if (hitliste && (index < length_hitliste))
-        return hitliste[index];
-    else
-        return NULL;
+Hit *Sonde::hit(long index) {
+    mp_assert(hitliste);
+    mp_assert(index < length_hitliste);
+    return hitliste[index];
 }
 
+void Sonde::heapsort(long feldlaenge, MO_Mismatch** Nr_Mm_Feld) {
+    // Heapsortfunktion, benutzt sink(), sortiert Feld von longs
 
+    long max_index = feldlaenge-1;
 
-
-void Sonde::heapsort(long feldlaenge, MO_Mismatch** Nr_Mm_Feld)
-// Heapsortfunktion, benutzt sink(), sortiert Feld von longs
-{
-    long        m=0, i=0;
-    MO_Mismatch*    tmpmm;
-
-    for (i=(feldlaenge-1)/2; i>-1; i--)
-        sink(i, feldlaenge-1, Nr_Mm_Feld);
-    for (m=feldlaenge-1; m>0; m--) {
-        tmpmm =  Nr_Mm_Feld[0];
-        Nr_Mm_Feld[0] =  Nr_Mm_Feld[m];
-        Nr_Mm_Feld[m] = tmpmm;
-
+    for (long i=max_index/2; i>-1; i--) {
+        sink(i, max_index, Nr_Mm_Feld);
+    }
+    for (long m=max_index; m>0; m--) {
+        std::swap(Nr_Mm_Feld[0], Nr_Mm_Feld[m]);
         sink(0, m-1, Nr_Mm_Feld);
     }
 }
 
-void Sonde::sink(long i, long t, MO_Mismatch** A)
-// Algorithmus fuer den Heapsort
-{
-    long        j, k;
-    MO_Mismatch*    tmpmm;
+void Sonde::sink(long i, long t, MO_Mismatch** A) {
+    // Algorithmus fuer den Heapsort
 
-    j = 2*i;
-    k = j+1;
+    long j = 2*i;
+    long k = j+1;
     if (j <= t) {
-        if (A[i]->nummer >= A[j]->nummer)
-            j = i;
-        if (k <= t)
-            if (A[k]->nummer > A[j]->nummer)
-                j = k;
+        if (A[i]->nummer >= A[j]->nummer) j = i;
+        if (k <= t && A[k]->nummer > A[j]->nummer) j = k;
         if (i != j) {
-            tmpmm = A[i]; A[i] = A[j]; A[j] = tmpmm;
+            std::swap(A[i], A[j]);
             sink(j, t, A);
         }
     }
@@ -300,22 +279,15 @@ void Sonde::set_bitkennung(Bitvector* bv) {
     bitkennung = bv;
 }
 
-// ##########################################################################################################
-// Hit speichert die  Trefferinformation
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden Hit
-
-Hit::Hit(long baktnummer) {
+Hit::Hit(SpeciesID id_)
+    : id(id_)
+{
     // Mismatch Array mit Laenge = anzahl Sonden in Experiment
-    int i=0;
     mismatch = new double[mp_gl_awars.no_of_probes+1];
-    for (i=0; i<mp_gl_awars.no_of_probes+1; i++)
-        mismatch[i]=101;
-
-    baktid = baktnummer;
+    for (int i=0; i<mp_gl_awars.no_of_probes+1; i++) mismatch[i]=101;
 }
 
 Hit::~Hit() {
     delete [] mismatch;
 }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

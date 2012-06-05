@@ -29,14 +29,7 @@ enum {
     MP_PROBE8   = 128
 };
 
-struct MO_Mismatch {
-    long   nummer;
-    double mismatch;
-};
-
-
-struct MP_list_elem
-{
+struct MP_list_elem {
     void         *elem;
     MP_list_elem *next;
 };

@@ -135,16 +135,21 @@ void Sondentopf::put_Sonde(char *name, int allowed_mis, double outside_mis, GB_E
         s = stc->cache_Sonde(name, allowed_mis, outside_mis, error);
     }
     pos = Sondenliste->insert_as_last(s);
-    if (! s->get_bitkennung())
+    if (! s->get_bitkennung()) {
         s->set_bitkennung(new Bitvector(((int) pos)));
+    }
     s->set_far(0);
     s->set_mor(pos);
     s->get_bitkennung()->setbit(pos-1);
     // im cache steht die Mismatch info noch an Stelle 0. Hier muss sie an Stelle pos  verschoben werden
-    if (pos!=0)
-        for (i=0; i<s->get_length_hitliste(); i++)
-            if (s->get_hitdata_by_number(i))
-                s->get_hitdata_by_number(i)->set_mismatch_at_pos(pos, s->get_hitdata_by_number(i)->get_mismatch_at_pos(0));
+    if (pos!=0) {
+        for (i=0; i<s->get_length_hitliste(); i++) {
+            Hit *hit = s->hit(i);
+            if (hit) {
+                hit->set_mismatch_at_pos(pos, hit->get_mismatch_at_pos(0));
+            }
+        }
+    }
 }
 
 
@@ -170,7 +175,10 @@ double** Sondentopf::gen_Mergefeld() {
     while (sonde) {
         H_laenge = sonde->get_length_hitliste();
         for (i=0; i<H_laenge; i++) {
-            Mergefeld[sonde->get_hitdata_by_number(i)->get_baktid()][sondennummer] = sonde->get_hitdata_by_number(i)->get_mismatch_at_pos(0);
+            Hit       *hit     = sonde->hit(i);
+            SpeciesID  species = hit->target();
+
+            Mergefeld[species][sondennummer] = hit->get_mismatch_at_pos(0);
         }
 
         sondennummer++;
@@ -186,10 +194,10 @@ probe_tabs* Sondentopf::fill_Stat_Arrays() {
 
     mp_assert(Sondenliste);
 
-    long feldlen        = (long) pow(3.0, (int)(mp_gl_awars.no_of_probes));
-    int* markierte      = new int[feldlen];                     // MEL
-    int* unmarkierte    = new int[feldlen];                     // MEL
-    int  i              = 0, j=0;
+    long feldlen     = (long) pow(3.0, (int)(mp_gl_awars.no_of_probes));
+    int* markierte   = new int[feldlen];                        // MEL
+    int* unmarkierte = new int[feldlen];                        // MEL
+
     long alle_bakterien = targetGroup.known_species_count();
     long wertigkeit     = 0;
 
@@ -199,14 +207,13 @@ probe_tabs* Sondentopf::fill_Stat_Arrays() {
 
     sonde = Sondenliste->get_first();
 
-    for (i=0; i<mp_gl_awars.no_of_probes; i++) {
+    for (int i=0; i<mp_gl_awars.no_of_probes; i++) {
         mp_assert(sonde);
         AllowedMismatchFeld[i] = (int) sonde->get_Allowed_Mismatch_no(0);
         sonde = Sondenliste->get_next();
     }
 
-
-    for (i=0; i<feldlen; i++) {
+    for (int i=0; i<feldlen; i++) {
         markierte[i] = 0;
         unmarkierte[i] = 0;
     }
@@ -215,15 +222,15 @@ probe_tabs* Sondentopf::fill_Stat_Arrays() {
     Mergefeld = gen_Mergefeld();
 
 
-    for (i=0; i < alle_bakterien+1; i++) {
+    for (SpeciesID id(0); id < alle_bakterien+1; ++id) {
         wertigkeit=0;
-        for (j=0; j<mp_gl_awars.no_of_probes; j++) {
-            if (Mergefeld[i][j] <= ((double) AllowedMismatchFeld[j] + (double) mp_gl_awars.greyzone)) {
+        for (int j=0; j<mp_gl_awars.no_of_probes; j++) {
+            if (Mergefeld[id][j] <= ((double) AllowedMismatchFeld[j] + (double) mp_gl_awars.greyzone)) {
                 faktor = 0;
             }
-            else if (Mergefeld[i][j] <= ((double) AllowedMismatchFeld[j] +
-                                         (double) mp_gl_awars.greyzone +
-                                         mp_gl_awars.outside_mismatches_difference)) {
+            else if (Mergefeld[id][j] <= ((double) AllowedMismatchFeld[j] +
+                                          (double) mp_gl_awars.greyzone +
+                                          mp_gl_awars.outside_mismatches_difference)) {
                 faktor = 1;
             }
             else {
@@ -233,14 +240,14 @@ probe_tabs* Sondentopf::fill_Stat_Arrays() {
             wertigkeit += faktor * (long) pow(3, j);
         }
 
-        switch (targetGroup.getMembership(i)) {
+        switch (targetGroup.getMembership(id)) {
             case GM_IN_GROUP:  markierte[wertigkeit]++;   break;
             case GM_OUT_GROUP: unmarkierte[wertigkeit]++; break;
             case GM_UNKNOWN: break;
         }
     }
 
-    for (i=0; i<alle_bakterien+1; i++) {
+    for (int i=0; i<alle_bakterien+1; i++) {
         delete [] Mergefeld[i];
     }
     delete [] Mergefeld;
@@ -266,7 +273,7 @@ void Sondentopf::gen_color_hash(positiontype anz_sonden) {
 
         double** Mergefeld = gen_Mergefeld();
 
-        for (int i=1; i < alle_bakterien+1; i++) {
+        for (SpeciesID i(1); i < alle_bakterien+1; ++i) {
             int rgb[3] = {0, 0, 0};
 
             for (int j=0; j<mp_gl_awars.no_of_probes; j++) {
@@ -289,7 +296,7 @@ void Sondentopf::gen_color_hash(positiontype anz_sonden) {
                 AWT_GC_WHITE,   // 7
             };
 
-            GBS_write_hash(color_hash, targetGroup.idx2name(i), idx2color[coloridx]);
+            GBS_write_hash(color_hash, targetGroup.id2name(i), idx2color[coloridx]);
         }
 
         for (int i=0; i<alle_bakterien+1; i++) delete [] Mergefeld[i];
