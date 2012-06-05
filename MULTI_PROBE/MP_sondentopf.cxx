@@ -16,22 +16,17 @@
 
 #include <cmath>
 
-ST_Container::ST_Container(int anz_sonden) {
+ST_Container::ST_Container(int anz_sonden)
+    : targetGroup(mp_global->get_marked_species())
+{
     Sondennamen = new List<char>;
-
-    Auswahlliste = new Group();
-    Bakterienliste = new Group();
-
-    Bakterienliste->insert_species_knownBy_PTserver();
 
     if (pt_server_different) return;
 
-    Auswahlliste->insert_species(mp_global->get_marked_species());
-
-    anz_elem_unmarked  = Bakterienliste->elements() - Auswahlliste->elements();
+    anz_elem_unmarked  = targetGroup.outgroup_species_count();
     anzahl_basissonden = anz_sonden;
     cachehash          = GBS_create_hash(anzahl_basissonden + 1, GB_IGNORE_CASE);
-    sondentopf         = new Sondentopf(Bakterienliste, Auswahlliste);
+    sondentopf         = new Sondentopf(get_TargetGroup());
 }
 
 
@@ -39,8 +34,6 @@ ST_Container::~ST_Container() {
     char* Sname;
     Sonde* csonde;
 
-    delete Bakterienliste;
-    delete Auswahlliste;
     delete sondentopf;
 
     Sname = Sondennamen->get_first();
@@ -65,7 +58,7 @@ Sonde* ST_Container::cache_Sonde(char *name, int allowed_mis, double outside_mis
     Sonde* s              = new Sonde(name, allowed_mis, outside_mis);
 
     Sondennamen->insert_as_first(name_for_plist);
-    error = s->gen_Hitliste(Bakterienliste);
+    error = s->gen_Hitliste(targetGroup);
 
     GBS_write_hash(cachehash, name, (long) s);
     // Reine Sonde plus Hitliste geschrieben, der Zeiger auf die Sonde liegt als long gecastet im Hash
@@ -87,24 +80,13 @@ Sonde* ST_Container::get_cached_sonde(char* name) {
 */
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden SONDENTOPF ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sondentopf::Sondentopf(Group *BL, Group *AL) {
+Sondentopf::Sondentopf(const TargetGroup& targetGroup_)
+    : targetGroup(targetGroup_)
+{
     Listenliste = new List<void*>;
-    if (!BL) {
-        aw_message("List of species is empty. Terminating program");
-        exit(333);
-    }
-    color_hash  = GBS_create_hash(BL->elements()*1.25+1, GB_IGNORE_CASE);
-    if (!AL) {
-        aw_message("List of marked species is empty. Terminating program");
-        exit(334);
-    }
-    BaktList = BL;
-    Auswahllist = AL;
+    color_hash  = GBS_create_hash(targetGroup.known_species_count()*1.25+1, GB_IGNORE_CASE);
     Listenliste->insert_as_last((void**) new List<Sonde>);
-
 }
-
-
 
 Sondentopf::~Sondentopf() {
     // darf nur delete auf die listenliste machen, nicht auf die MO_Lists, da die zu dem ST_Container gehoeren
@@ -174,7 +156,7 @@ double** Sondentopf::gen_Mergefeld() {
     Sonde*      sonde;
 
     List<Sonde>* Sondenliste    = LIST(Listenliste->get_first());
-    long         alle_bakterien = BaktList->elements();
+    long         alle_bakterien = targetGroup.known_species_count();
     long         H_laenge, sondennummer;
     double**     Mergefeld      = new double*[alle_bakterien+1];
 
@@ -208,7 +190,7 @@ probe_tabs* Sondentopf::fill_Stat_Arrays() {
     int* markierte      = new int[feldlen];                     // MEL
     int* unmarkierte    = new int[feldlen];                     // MEL
     int  i              = 0, j=0;
-    long alle_bakterien = BaktList->elements();
+    long alle_bakterien = targetGroup.known_species_count();
     long wertigkeit     = 0;
 
     double** Mergefeld;
@@ -236,26 +218,25 @@ probe_tabs* Sondentopf::fill_Stat_Arrays() {
     for (i=0; i < alle_bakterien+1; i++) {
         wertigkeit=0;
         for (j=0; j<mp_gl_awars.no_of_probes; j++) {
-            if (Mergefeld[i][j] <= ((double) AllowedMismatchFeld[j] + (double) mp_gl_awars.greyzone))
+            if (Mergefeld[i][j] <= ((double) AllowedMismatchFeld[j] + (double) mp_gl_awars.greyzone)) {
                 faktor = 0;
+            }
             else if (Mergefeld[i][j] <= ((double) AllowedMismatchFeld[j] +
                                          (double) mp_gl_awars.greyzone +
-                                         mp_gl_awars.outside_mismatches_difference))
+                                         mp_gl_awars.outside_mismatches_difference)) {
                 faktor = 1;
-            else
+            }
+            else {
                 faktor = 2;
+            }
 
             wertigkeit += faktor * (long) pow(3, j);
         }
 
-
-        if (BaktList->hasEntryAt(i)) {
-            if (Auswahllist->get_index_by_entry(BaktList->get_entry_by_index(i))) {
-                markierte[wertigkeit]++;
-            }
-            else {
-                unmarkierte[wertigkeit]++;
-            }
+        switch (targetGroup.getMembership(i)) {
+            case GM_IN_GROUP:  markierte[wertigkeit]++;   break;
+            case GM_OUT_GROUP: unmarkierte[wertigkeit]++; break;
+            case GM_UNKNOWN: break;
         }
     }
 
@@ -272,7 +253,7 @@ probe_tabs* Sondentopf::fill_Stat_Arrays() {
 void Sondentopf::gen_color_hash(positiontype anz_sonden) {
     if (anz_sonden) {
         List<Sonde>* Sondenliste = LIST(Listenliste->get_first());
-        long alle_bakterien      = BaktList->elements();
+        long alle_bakterien      = targetGroup.known_species_count();
         int* AllowedMismatchFeld = new int[mp_gl_awars.no_of_probes];
 
         {
@@ -308,8 +289,7 @@ void Sondentopf::gen_color_hash(positiontype anz_sonden) {
                 AWT_GC_WHITE,   // 7
             };
 
-            GBS_write_hash(color_hash, BaktList->get_entry_by_index(i), idx2color[coloridx]);
-
+            GBS_write_hash(color_hash, targetGroup.idx2name(i), idx2color[coloridx]);
         }
 
         for (int i=0; i<alle_bakterien+1; i++) delete [] Mergefeld[i];

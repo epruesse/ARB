@@ -62,7 +62,7 @@ void Sonde::print() {
 }
 
 
-MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, int match_mis, char *match_seq, Group *convert, long *number_of_species, GB_ERROR& error) {
+MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, int match_mis, char *match_seq, const TargetGroup& targetGroup, long *number_of_species, GB_ERROR& error) {
     mp_assert(!error);
 
     MO_Mismatch **ret_list   = NULL;
@@ -127,7 +127,7 @@ MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, in
 
                 while (match_name && match_mismatches && match_wmismatches) {
                     ret_list[i] = new MO_Mismatch;
-                    ret_list[i]->nummer = convert->get_index_by_entry(match_name);
+                    ret_list[i]->nummer = targetGroup.name2idx(match_name);
                     if (match_weight == NON_WEIGHTED) {
                         ret_list[i]->mismatch = atof(match_mismatches);
                     }
@@ -171,9 +171,7 @@ double Sonde::check_for_min(long k, MO_Mismatch** probebacts, long laenge) {
     return min;
 }
 
-
-
-GB_ERROR Sonde::gen_Hitliste(Group *Bakterienliste) {
+GB_ERROR Sonde::gen_Hitliste(const TargetGroup& targetGroup) {
     // Angewandt auf eine frische Sonde generiert diese Methode die Hitliste durch eine Anfrage an die Datenbank, wobei
     // der Name der Sonde uebergeben wird
     MO_Mismatch**   probebacts;
@@ -198,7 +196,7 @@ GB_ERROR Sonde::gen_Hitliste(Group *Bakterienliste) {
                                       mp_gl_awars.weightedmismatches,
                                       mm_int_to_search,
                                       kennung,
-                                      Bakterienliste,
+                                      targetGroup,
                                       &laenge,
                                       error);
 
@@ -239,8 +237,6 @@ GB_ERROR Sonde::gen_Hitliste(Group *Bakterienliste) {
             hitliste[i]->set_mismatch_at_pos(0, probebacts[i]->mismatch);
         }
         length_hitliste = laenge;
-
-        Bakterienliste->clear_hitflags();
 
         // Loeschen der Temps
         for (i=0; i<laenge; i++) delete probebacts[i];
@@ -303,24 +299,6 @@ void Sonde::sink(long i, long t, MO_Mismatch** A)
 void Sonde::set_bitkennung(Bitvector* bv) {
     bitkennung = bv;
 }
-
-
-
-// ########################################################################################################
-/* SpeciesInfo haengt in der Group drinnen. Hier werden u.a. die Hitflags gespeichert
- */
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden SpeciesInfo~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-SpeciesInfo::SpeciesInfo(const char* n) {
-    name = strdup(n);                       // MEL  (match_name in member)
-    hit_flag = 0;
-}
-
-SpeciesInfo::~SpeciesInfo() {
-    free(name);
-    hit_flag = 0;
-}
-
 
 // ##########################################################################################################
 // Hit speichert die  Trefferinformation

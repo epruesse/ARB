@@ -133,48 +133,24 @@ public:
     ~MP_Main();
 };
 
-// *****************************************************
-// Globale Klassenlose Funktionen
-// *****************************************************
-void MP_init_and_calculate_and_display_multiprobes(AW_window *, AW_CL cl_gb_main);
-
-
-class SpeciesInfo : virtual Noncopyable {
+class SpeciesName {
     char* name;
-    long  hit_flag;
 
 public:
-    char *get_name() { return name; }
-    
-    long inc_hit_flag() { return ++hit_flag; }
-    long get_hit_flag() { return (hit_flag); }
-    void clr_hit_flag() { hit_flag = 0; }
+    const char *get_name() const { return name; }
 
-    SpeciesInfo(const char* n);
-    ~SpeciesInfo();
+    SpeciesName() : name(NULL) {}
+    SpeciesName(const char* n) : name(strdup(n)) {}
+    SpeciesName(const SpeciesName& other) : name(strdup(other.get_name())) {}
+    DECLARE_ASSIGNMENT_OPERATOR(SpeciesName);
+    ~SpeciesName() { free(name); }
 };
-
-class Hit : virtual Noncopyable {
-    double  *mismatch;
-    long    baktid;
-
-public:
-    double *get_mismatch() { return mismatch; }
-    
-    long    get_baktid() { return baktid; }
-    void    set_mismatch_at_pos(int pos, double mm) { mismatch[pos] = mm; }
-    double  get_mismatch_at_pos(int pos) { return mismatch[pos]; }
-
-    Hit(long baktnummer);
-    ~Hit();
-};
-
 
 class Group : virtual Noncopyable {
-    long          size;     // size of array-2 (+1 for unused index [0]; +1 for sentinel)
-    SpeciesInfo **member;   // used indices [1..SIZE]; has sentinel at end of array
-    long          elems;    // number of elements in member
-    GB_HASH*      hashptr;  // hash (name->index)
+    long         size;      // size of array-2 (+1 for unused index [0]; +1 for sentinel)
+    SpeciesName *member;    // used indices [1..SIZE]; has sentinel at end of array
+    long         elems;     // number of elements in member
+    GB_HASH*     hashptr;   // hash (name->index)
 
     bool is_valid_index(long index) const { return index > 0 && index <= elems; }
 
@@ -183,7 +159,7 @@ class Group : virtual Noncopyable {
         mp_assert(!elems);
 
         size     = wantedElements;
-        member = new SpeciesInfo*[size+2]; //
+        member = new SpeciesName[size+2];
         memset(member, 0, (size+2)*sizeof(*member));
 
         hashptr = GBS_create_hash(size+1, GB_IGNORE_CASE);
@@ -195,21 +171,18 @@ public:
 
     long elements() const { return elems; }
 
+    bool hasEntryAt(long index) const { return is_valid_index(index); }
+    bool hasEntry(const char *name) const { return get_index_by_name(name); }
+    
     void put_entry(const char* name) {
-        if (!get_index_by_entry(name)) { 
-            member[++elems] = new SpeciesInfo(name);
+        if (!get_index_by_name(name)) {
+            member[++elems] = SpeciesName(name);
             GBS_write_hash(hashptr, name, elems);
         }
     }
 
-    bool hasEntryAt(long index) const { return is_valid_index(index); }
-
-    const char *get_entry_by_index(long index) { return is_valid_index(index) ? member[index]->get_name() : NULL; }
-    const SpeciesInfo *get_bakt_info_by_index(long index) { return is_valid_index(index) ? member[index] : NULL; }
-
-    long get_index_by_entry(const char* key) { return key ? GBS_read_hash(hashptr, key) : NULL; }
-
-    void clear_hitflags() { for (long i = 1; i <= elems; ++i) member[i]->clr_hit_flag(); }
+    const char *get_name_by_index(long index) const { return is_valid_index(index) ? member[index].get_name() : NULL; }
+    long get_index_by_name(const char* key) const { return key ? GBS_read_hash(hashptr, key) : 0; }
 
     Group()
         : size(0),
@@ -221,19 +194,48 @@ public:
     }
 
     ~Group() {
-        if (size) {
-            for (int i = 0; i<size; ++i) delete member[i]; 
-            delete [] member;
-        }
+        delete [] member;
         if (hashptr) GBS_free_hash(hashptr);
     }
 };
 
+enum GroupMembership {
+    GM_IN_GROUP, 
+    GM_OUT_GROUP, 
+    GM_UNKNOWN, 
+};
+
+class TargetGroup {
+    Group known;    // all known species
+    Group targeted; // species for which multiprobes get calculated
+
+public:
+
+    TargetGroup(const GB_HASH *targeted_species) {
+        known.insert_species_knownBy_PTserver();
+        targeted.insert_species(targeted_species);
+    }
+
+    size_t known_species_count() const { return known.elements(); }
+    size_t targeted_species_count() const { return targeted.elements(); }
+    size_t outgroup_species_count() const { return known_species_count()-targeted_species_count(); }
+
+    int name2idx(const char *name) const { return known.get_index_by_name(name); }
+    const char *idx2name(int idx) const { return known.get_name_by_index(idx); }
+
+    GroupMembership getMembership(int known_idx) const {
+        return known.hasEntryAt(known_idx)
+            ? (targeted.hasEntry(known.get_name_by_index(known_idx))
+               ? GM_IN_GROUP
+               : GM_OUT_GROUP)
+            : GM_UNKNOWN;
+    }
+};
+
 class Sondentopf : virtual Noncopyable {
-    List<void*>     *Listenliste; // @@@ change type to List<Sonde> ?
-    GB_HASH     *color_hash;
-    Group        *BaktList;
-    Group        *Auswahllist;
+    List<void*>        *Listenliste; // @@@ change type to List<Sonde> ?
+    GB_HASH            *color_hash;
+    const TargetGroup&  targetGroup;
 
 public:
     class probe_tabs* fill_Stat_Arrays();
@@ -245,7 +247,7 @@ public:
 
     GB_HASH *get_color_hash() { return color_hash; }
 
-    Sondentopf(Group *BL, Group *AL);
+    Sondentopf(const TargetGroup& targetGroup_);
     ~Sondentopf();
 };
 
@@ -272,6 +274,21 @@ public:
 
     Bitvector(int bits);
     ~Bitvector();
+};
+
+class Hit : virtual Noncopyable {
+    double  *mismatch;
+    long    baktid;
+
+public:
+    double *get_mismatch() { return mismatch; }
+    
+    long    get_baktid() { return baktid; }
+    void    set_mismatch_at_pos(int pos, double mm) { mismatch[pos] = mm; }
+    double  get_mismatch_at_pos(int pos) { return mismatch[pos]; }
+
+    Hit(long baktnummer);
+    ~Hit();
 };
 
 class Sonde : virtual Noncopyable {
@@ -314,26 +331,30 @@ public:
     void        heapsort(long feldlaenge, MO_Mismatch** Nr_Mm_Feld);
     double      check_for_min(long k, MO_Mismatch** probebacts, long laenge);
 
-    MO_Mismatch** get_matching_species(bool match_kompl, int match_weight, int match_mis, char *match_seq, Group *convert, long *number_of_species, GB_ERROR& error);
-    GB_ERROR      gen_Hitliste(Group *Bakterienliste) __ATTR__USERESULT;
+    MO_Mismatch** get_matching_species(bool match_kompl, int match_weight, int match_mis, char *match_seq, const TargetGroup& targetGroup, long *number_of_species, GB_ERROR& error);
+    GB_ERROR      gen_Hitliste(const TargetGroup& targetGroup) __ATTR__USERESULT;
 
     Sonde(char* bezeichner, int allowed_mis, double outside_mis);
     ~Sonde();
 };
 
-struct ST_Container : virtual Noncopyable {
+class ST_Container : virtual Noncopyable {
     // Sondentopf Container
+
+    TargetGroup targetGroup;
+public: 
+    
     // @@@ make members private
-    Group        *Bakterienliste;
-    Group        *Auswahlliste;
-    Sondentopf      *sondentopf; // Wird einmal eine Sondentopfliste
-    List<Sondentopf>    *ST_Liste;
-    int         anzahl_basissonden;
-    GB_HASH*        cachehash;
-    List<char>      *Sondennamen;
+    Sondentopf       *sondentopf; // Wird einmal eine Sondentopfliste
+    List<Sondentopf> *ST_Liste;
+    int               anzahl_basissonden;
+    GB_HASH*          cachehash;
+    List<char>       *Sondennamen;
 
     Sonde* cache_Sonde(char *name, int allowed_mis, double outside_mis, GB_ERROR& error);
     Sonde* get_cached_sonde(char* name);
+
+    const TargetGroup& get_TargetGroup() { return targetGroup; }
 
     ST_Container(int anz_sonden);
     ~ST_Container();
@@ -396,12 +417,11 @@ extern bool                new_pt_server;
 long            k_aus_n(int k, int n);                      // Berechnung k aus n
 extern int      get_random(int min, int max);       // gibt eine Zufallszahl x mit der Eigenschaft : min <= x <= max
 
-// ********************************************************
-
 extern MP_Main   *mp_main;
 extern MP_Global *mp_global;
 extern awar_vars  mp_gl_awars;                      // globale Variable, die manuell eingegebene Sequenz enthaelt
 
+void MP_init_and_calculate_and_display_multiprobes(AW_window *, AW_CL cl_gb_main);
 
 #else
 #error MultiProbe.hxx included twice
