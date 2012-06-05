@@ -287,7 +287,7 @@ double probe_combi_statistic::calc_fitness(ProbeValuation *p_eval, int len_of_fi
 
     ST_Container *stc = mp_global->get_stc();
 
-    Sondentopf *sondentopf = new Sondentopf(stc->Bakterienliste, stc->Auswahlliste);
+    Sondentopf *sondentopf = new Sondentopf(stc->get_TargetGroup());
 
     for (i=0; i<len_of_field && !error; i++) {
         sondentopf->put_Sonde((p_eval->get_sondenarray())[probe_combi[i]->probe_index],

@@ -535,7 +535,7 @@ void MP_show_probes_in_tree(AW_window */*aww*/) {
     ST_Container *stc = mp_global->get_stc();
 
     delete stc->sondentopf;
-    stc->sondentopf = new Sondentopf(stc->Bakterienliste, stc->Auswahlliste);
+    stc->sondentopf = new Sondentopf(stc->get_TargetGroup());
 
     GB_ERROR error = NULL;
     for (i=0; i<MAXMISMATCHES && !error; i++) {
@@ -641,7 +641,7 @@ void MP_mark_probes_in_tree(AW_window *aww) {
 
     ST_Container *stc = mp_global->get_stc();
     delete stc->sondentopf;
-    stc->sondentopf = new Sondentopf(stc->Bakterienliste, stc->Auswahlliste);
+    stc->sondentopf = new Sondentopf(stc->get_TargetGroup());
 
     GB_ERROR error = NULL;
     for (i=0; i<MAXMISMATCHES && !error; i++) {
