@@ -237,19 +237,24 @@ public:
 };
 
 class Sondentopf : virtual Noncopyable {
-    List<void*>        *Listenliste; // @@@ change type to List<Sonde> ?
-    GB_HASH            *color_hash;
     const TargetGroup&  targetGroup;
+    GB_HASH            *color_hash;
+    List<void*>        *Listenliste; // @@@ change type to List<Sonde> ?
 
+    void gen_color_hash();
+    
 public:
     class probe_tabs* fill_Stat_Arrays();
     double**          gen_Mergefeld();
 
     void put_Sonde(char *name, int allowed_mis, double outside_mis, GB_ERROR& error);
     long get_length_hitliste();
-    void gen_color_hash(positiontype anz_sonden);
 
-    GB_HASH *get_color_hash() { return color_hash; }
+    const GB_HASH *get_color_hash() {
+        if (!color_hash) gen_color_hash();
+        mp_assert(color_hash);
+        return color_hash;
+    }
 
     Sondentopf(const TargetGroup& targetGroup_);
     ~Sondentopf();
@@ -359,7 +364,6 @@ class ST_Container : virtual Noncopyable {
 public: 
     
     // @@@ make members private
-    Sondentopf *sondentopf; // Wird einmal eine Sondentopfliste
     List<Sondentopf> *ST_Liste;
     int anzahl_basissonden;
     GB_HASH* cachehash;
@@ -370,7 +374,7 @@ public:
 
     const TargetGroup& get_TargetGroup() { return targetGroup; }
 
-    ST_Container(int anz_sonden);
+    ST_Container(size_t anz_sonden);
     ~ST_Container();
 };
 
