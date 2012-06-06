@@ -17,7 +17,7 @@
 #include <cmath>
 #include <algorithm>
 
-Sonde::Sonde(char* bezeichner, int allowed_mis, double outside_mis)
+Probe::Probe(char* bezeichner, int allowed_mis, double outside_mis)
     : minelem(0), 
       maxelem(0)
 {
@@ -41,7 +41,7 @@ Sonde::Sonde(char* bezeichner, int allowed_mis, double outside_mis)
 
 }
 
-Sonde::~Sonde() {
+Probe::~Probe() {
     int i;
 
     free(kennung);
@@ -56,7 +56,7 @@ Sonde::~Sonde() {
     delete bitkennung;
 }
 
-void Sonde::print() {
+void Probe::print() {
     printf("\nSonde %s\n------------------------------------------------\n", kennung);
     bitkennung->print();
     printf("Laenge hitliste %ld mit minelem %d und maxelem %d\n", length_hitliste, minelem.base(), maxelem.base());
@@ -64,7 +64,7 @@ void Sonde::print() {
 }
 
 
-MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, int match_mis, char *match_seq, const TargetGroup& targetGroup, int *number_of_species, GB_ERROR& error) {
+MO_Mismatch** Probe::get_matching_species(bool match_kompl, int match_weight, int match_mis, char *match_seq, const TargetGroup& targetGroup, int *number_of_species, GB_ERROR& error) {
     mp_assert(!error);
 
     MO_Mismatch **ret_list   = NULL;
@@ -160,7 +160,7 @@ MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, in
 }
 
 
-double Sonde::check_for_min(long k, MO_Mismatch** probebacts, long laenge) {
+double Probe::check_for_min(long k, MO_Mismatch** probebacts, long laenge) {
     long    i = k+1;
     double  min;
 
@@ -173,9 +173,9 @@ double Sonde::check_for_min(long k, MO_Mismatch** probebacts, long laenge) {
     return min;
 }
 
-GB_ERROR Sonde::gen_Hitliste(const TargetGroup& targetGroup) {
-    // Angewandt auf eine frische Sonde generiert diese Methode die Hitliste durch eine Anfrage an die Datenbank, wobei
-    // der Name der Sonde uebergeben wird
+GB_ERROR Probe::gen_Hitliste(const TargetGroup& targetGroup) {
+    // Angewandt auf eine frische Probe generiert diese Methode die Hitliste durch eine Anfrage an die Datenbank, wobei
+    // der Name der Probe uebergeben wird
 
     int mm_int_to_search;
     {
@@ -240,13 +240,13 @@ GB_ERROR Sonde::gen_Hitliste(const TargetGroup& targetGroup) {
     return error;
 }
 
-Hit *Sonde::hit(long index) {
+Hit *Probe::hit(long index) {
     mp_assert(hitliste);
     mp_assert(index < length_hitliste);
     return hitliste[index];
 }
 
-void Sonde::heapsort(long feldlaenge, MO_Mismatch** Nr_Mm_Feld) {
+void Probe::heapsort(long feldlaenge, MO_Mismatch** Nr_Mm_Feld) {
     // Heapsortfunktion, benutzt sink(), sortiert Feld von longs
 
     long max_index = feldlaenge-1;
@@ -260,7 +260,7 @@ void Sonde::heapsort(long feldlaenge, MO_Mismatch** Nr_Mm_Feld) {
     }
 }
 
-void Sonde::sink(long i, long t, MO_Mismatch** A) {
+void Probe::sink(long i, long t, MO_Mismatch** A) {
     // Algorithmus fuer den Heapsort
 
     long j = 2*i;
@@ -275,7 +275,7 @@ void Sonde::sink(long i, long t, MO_Mismatch** A) {
     }
 }
 
-void Sonde::set_bitkennung(Bitvector* bv) {
+void Probe::set_bitkennung(Bitvector* bv) {
     bitkennung = bv;
 }
 

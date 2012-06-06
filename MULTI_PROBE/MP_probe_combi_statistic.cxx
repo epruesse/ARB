@@ -164,7 +164,7 @@ probe_combi_statistic *probe_combi_statistic::duplicate() const {
 }
 
 void probe_combi_statistic::mutate_Probe(ProbeValuation *p_eval) {
-    int             rand_pool_pos;              // Stelle, an der die Sonde im Pool liegt ( von 0 bis laenge-)
+    int             rand_pool_pos;              // Stelle, an der die Probe im Pool liegt ( von 0 bis laenge-)
 
 
     for (int i=0; i<mp_gl_awars.no_of_probes; i++)              // Jede Posititon der Sondenkombination wird mit einer Wahrscheinlichkeit
@@ -285,7 +285,7 @@ double probe_combi_statistic::calc_fitness(ProbeValuation *p_eval, int len_of_fi
     long   *hammingarray;
     double  tolerated_non_group_hits, ham_dist;
 
-    ST_Container *stc = mp_global->get_stc();
+    const ProbeCache *stc = mp_global->get_probe_cache();
 
     Sondentopf *sondentopf = new Sondentopf(stc->get_TargetGroup());
 

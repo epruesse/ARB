@@ -197,7 +197,7 @@ class ProbeValuation : virtual Noncopyable {
     int    size_sonden_array;
 
     probe **probe_pool; // Generierung eines Pools, in dem die Wahrscheinlichkeiten fuer die Erfassung
-    // der Sonden schon eingearbeitet sind. DIe WS werden vom Benutzer fuer jede einzelne Sonde bestimmt.
+    // der Sonden schon eingearbeitet sind. DIe WS werden vom Benutzer fuer jede einzelne Probe bestimmt.
 
     int pool_length;
     int max_init_pop_combis;
