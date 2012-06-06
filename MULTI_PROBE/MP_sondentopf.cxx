@@ -16,49 +16,33 @@
 
 #include <cmath>
 
-ST_Container::ST_Container(size_t anz_sonden)
-    : targetGroup(mp_global->get_marked_species())
-{
-    Sondennamen = new List<char>;
+static void delete_cached_Sonde(long hashval) {
+    Sonde *s = (Sonde*)hashval;
+    delete s;
+}
 
+ST_Container::ST_Container(size_t anz_sonden)
+    : targeted(mp_global->get_marked_species())
+{
     if (pt_server_different) return;
 
-    anz_elem_unmarked  = targetGroup.outgroup_species_count();
-    anzahl_basissonden = anz_sonden;
-    cachehash          = GBS_create_hash(anzahl_basissonden + 1, GB_IGNORE_CASE);
+    anz_elem_unmarked = targeted.outgroup_species_count();
+    cachehash         = GBS_create_dynaval_hash(anz_sonden + 1, GB_IGNORE_CASE, delete_cached_Sonde);
 }
 
 
 ST_Container::~ST_Container() {
-    char* Sname;
-    Sonde* csonde;
-
-    Sname = Sondennamen->get_first();
-    while (Sname) {
-        csonde = get_cached_sonde(Sname);
-        delete csonde;
-        free(Sname);
-        Sondennamen->remove_first();
-        Sname = Sondennamen->get_first();
-    }
-
-    delete Sondennamen;
     GBS_free_hash(cachehash);
 }
-
-
 
 Sonde* ST_Container::cache_Sonde(char *name, int allowed_mis, double outside_mis, GB_ERROR& error) {
     mp_assert(!error);
 
-    char*  name_for_plist = strdup(name);
-    Sonde* s              = new Sonde(name, allowed_mis, outside_mis);
-
-    Sondennamen->insert_as_first(name_for_plist);
-    error = s->gen_Hitliste(targetGroup);
-
+    Sonde* s = new Sonde(name, allowed_mis, outside_mis);
+    error    = s->gen_Hitliste(targeted);
+    
     GBS_write_hash(cachehash, name, (long) s);
-    // Reine Sonde plus Hitliste geschrieben, der Zeiger auf die Sonde liegt als long gecastet im Hash
+
     return s;
 }
 
@@ -127,10 +111,9 @@ void Sondentopf::put_Sonde(char *name, int allowed_mis, double outside_mis, GB_E
         Listenliste->insert_as_last((void**) Sondenliste);
     }
 
-    s = stc->get_cached_sonde(name);
-    if (!s) {
-        s = stc->cache_Sonde(name, allowed_mis, outside_mis, error);
-    }
+    s         = stc->get_cached_sonde(name);
+    if (!s) s = stc->cache_Sonde(name, allowed_mis, outside_mis, error);
+
     pos = Sondenliste->insert_as_last(s);
     if (! s->get_bitkennung()) {
         s->set_bitkennung(new Bitvector(((int) pos)));
