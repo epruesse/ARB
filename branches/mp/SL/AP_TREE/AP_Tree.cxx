@@ -874,13 +874,13 @@ int AP_tree::calc_color() {
     return res;
 }
 
-// Diese Funktion nimmt eine Hashtabelle mit Bakteriennamen und
-// faerbt Bakterien die darin vorkommen mit den entsprechenden Farben
-// in der Hashtabelle ist eine Struktur aus Bak.namen und Farben(GC's)
-int AP_tree::calc_color_probes(GB_HASH *hashptr) {
+int AP_tree::calc_color_probes(const GB_HASH *hashptr) {
+    // Diese Funktion nimmt eine Hashtabelle mit Bakteriennamen und
+    // faerbt Bakterien die darin vorkommen mit den entsprechenden Farben
+    // in der Hashtabelle ist eine Struktur aus Bak.namen und Farben(GC's)
+
     int l, r;
     int res;
-
     if (is_leaf) {
         if (gb_node) {
             res = GBS_read_hash(hashptr, name);

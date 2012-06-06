@@ -444,15 +444,15 @@ void MP_new_sequence(AW_window *aww) {
 void MP_cache_sonden(AW_window *) { new_pt_server = true; }
 void MP_cache_sonden2(AW_root *) { new_pt_server = true; }
 
-void MP_show_probes_in_tree_move(AW_window *aww, AW_CL cl_backward, AW_CL cl_result_probes_list) {
+void MP_color_next_probes_in_tree(AW_window *aww, AW_CL cl_backward, AW_CL cl_result_probes_list) {
     bool               backward           = bool(cl_backward);
     AW_selection_list *resultProbesList = (AW_selection_list*)cl_result_probes_list;
 
     resultProbesList->move_selection(backward ? -1 : 1);
-    MP_show_probes_in_tree(aww);
+    MP_color_probes_in_tree(aww);
 }
 
-void MP_show_probes_in_tree(AW_window */*aww*/) {
+void MP_color_probes_in_tree(AW_window */*aww*/) {
     if (!mp_global) {
         aw_message("No multiprobes calculated yet");
         return;
@@ -534,30 +534,24 @@ void MP_show_probes_in_tree(AW_window */*aww*/) {
 
     ST_Container *stc = mp_global->get_stc();
 
-    delete stc->sondentopf;
-    stc->sondentopf = new Sondentopf(stc->get_TargetGroup());
+    Sondentopf sondentopf(stc->get_TargetGroup());
 
     GB_ERROR error = NULL;
     for (i=0; i<MAXMISMATCHES && !error; i++) {
         if (probe_field[i]) {
-            stc->sondentopf->put_Sonde(probe_field[i], mismatches[i], mismatches[i] + mp_gl_awars.outside_mismatches_difference, error);
+            sondentopf.put_Sonde(probe_field[i], mismatches[i], mismatches[i] + mp_gl_awars.outside_mismatches_difference, error);
         }
     }
 
     if (error) aw_message(error);
 
-    stc->sondentopf->gen_color_hash(mp_gl_awars.no_of_probes);
-
     GB_transaction dummy(scr->gb_main);
-    AWT_TREE(scr)->get_root_node()->calc_color_probes(stc->sondentopf->get_color_hash());
+    AWT_TREE(scr)->get_root_node()->calc_color_probes(sondentopf.get_color_hash());
 
-    if (scr->gb_main)
-        scr->gfx->update(scr->gb_main);
-
+    if (scr->gb_main) scr->gfx->update(scr->gb_main);
     scr->refresh();
 
-    for (i=0; i<MAXMISMATCHES; i++)
-        free(probe_field[i]);
+    for (i=0; i<MAXMISMATCHES; i++) free(probe_field[i]);
 
     delete [] probe_field;
     delete [] mismatches;
@@ -640,21 +634,19 @@ void MP_mark_probes_in_tree(AW_window *aww) {
     }
 
     ST_Container *stc = mp_global->get_stc();
-    delete stc->sondentopf;
-    stc->sondentopf = new Sondentopf(stc->get_TargetGroup());
+    Sondentopf sondentopf(stc->get_TargetGroup());
 
     GB_ERROR error = NULL;
     for (i=0; i<MAXMISMATCHES && !error; i++) {
         if (probe_field[i]) {
-            stc->sondentopf->put_Sonde(probe_field[i], mismatches[i], mismatches[i] + mp_gl_awars.outside_mismatches_difference, error);
+            sondentopf.put_Sonde(probe_field[i], mismatches[i], mismatches[i] + mp_gl_awars.outside_mismatches_difference, error);
         }
     }
     if (error) aw_message(error);
-    stc->sondentopf->gen_color_hash(mp_gl_awars.no_of_probes);
 
     {
         GB_push_transaction(scr->gb_main);
-        GB_HASH *col_hash = stc->sondentopf->get_color_hash();
+        const GB_HASH *col_hash = sondentopf.get_color_hash();
         for (gb_species = GBT_first_species(scr->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
             GB_write_flag(gb_species, GBS_read_hash(col_hash, GBT_read_name(gb_species)) > AWT_GC_BLACK);
         }
@@ -663,13 +655,10 @@ void MP_mark_probes_in_tree(AW_window *aww) {
 
     GB_transaction dummy(scr->gb_main);
 
-    if (scr->gb_main)
-        scr->gfx->update(scr->gb_main);
-
+    if (scr->gb_main) scr->gfx->update(scr->gb_main);
     scr->refresh();
 
-    for (i=0; i<MAXMISMATCHES; i++)
-        free(probe_field[i]);
+    for (i=0; i<MAXMISMATCHES; i++) free(probe_field[i]);
 
     delete [] probe_field;
     delete [] mismatches;

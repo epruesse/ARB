@@ -98,18 +98,18 @@ AW_window *MP_Window::create_result_window(AW_root *aw_root) {
         aws->button_length(3);
 
         aws->at("ct_back");
-        aws->callback(MP_show_probes_in_tree_move, (AW_CL)1, (AW_CL)result_probes_list);
+        aws->callback(MP_color_next_probes_in_tree, (AW_CL)1, (AW_CL)result_probes_list);
         aws->create_button("COLOR_TREE_BACKWARD", "#rightleft_small.bitmap");
 
         aws->at("ct_fwd");
-        aws->callback(MP_show_probes_in_tree_move, (AW_CL)0, (AW_CL)result_probes_list);
+        aws->callback(MP_color_next_probes_in_tree, (AW_CL)0, (AW_CL)result_probes_list);
         aws->create_button("COLOR_TREE_FORWARD", "#leftright_small.bitmap");
 
         aws->button_length(8);
 
         aws->at("ColorTree");
         aws->button_length(4);
-        aws->callback(MP_show_probes_in_tree);
+        aws->callback(MP_color_probes_in_tree);
         aws->create_button("COLOR_TREE", "GO");
 
         aws->at("MarkTree");

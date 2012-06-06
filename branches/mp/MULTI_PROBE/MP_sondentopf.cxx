@@ -16,7 +16,7 @@
 
 #include <cmath>
 
-ST_Container::ST_Container(int anz_sonden)
+ST_Container::ST_Container(size_t anz_sonden)
     : targetGroup(mp_global->get_marked_species())
 {
     Sondennamen = new List<char>;
@@ -26,15 +26,12 @@ ST_Container::ST_Container(int anz_sonden)
     anz_elem_unmarked  = targetGroup.outgroup_species_count();
     anzahl_basissonden = anz_sonden;
     cachehash          = GBS_create_hash(anzahl_basissonden + 1, GB_IGNORE_CASE);
-    sondentopf         = new Sondentopf(get_TargetGroup());
 }
 
 
 ST_Container::~ST_Container() {
     char* Sname;
     Sonde* csonde;
-
-    delete sondentopf;
 
     Sname = Sondennamen->get_first();
     while (Sname) {
@@ -81,10 +78,10 @@ Sonde* ST_Container::get_cached_sonde(char* name) {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden SONDENTOPF ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sondentopf::Sondentopf(const TargetGroup& targetGroup_)
-    : targetGroup(targetGroup_)
+    : targetGroup(targetGroup_),
+      color_hash(NULL)
 {
     Listenliste = new List<void*>;
-    color_hash  = GBS_create_hash(targetGroup.known_species_count()*1.25+1, GB_IGNORE_CASE);
     Listenliste->insert_as_last((void**) new List<Sonde>);
 }
 
@@ -107,7 +104,7 @@ Sondentopf::~Sondentopf() {
     }
 
     delete Listenliste;
-    GBS_free_hash(color_hash);
+    if (color_hash) GBS_free_hash(color_hash);
 }
 
 
@@ -257,11 +254,13 @@ probe_tabs* Sondentopf::fill_Stat_Arrays() {
 }
 
 
-void Sondentopf::gen_color_hash(positiontype anz_sonden) {
-    if (anz_sonden) {
-        List<Sonde>* Sondenliste = LIST(Listenliste->get_first());
-        long alle_bakterien      = targetGroup.known_species_count();
-        int* AllowedMismatchFeld = new int[mp_gl_awars.no_of_probes];
+void Sondentopf::gen_color_hash() {
+    if (mp_gl_awars.no_of_probes) {
+        color_hash = GBS_create_hash(targetGroup.known_species_count()*1.25+1, GB_IGNORE_CASE);
+
+        List<Sonde>* Sondenliste         = LIST(Listenliste->get_first());
+        long         alle_bakterien      = targetGroup.known_species_count();
+        int*         AllowedMismatchFeld = new int[mp_gl_awars.no_of_probes];
 
         {
             Sonde* sonde = Sondenliste->get_first();

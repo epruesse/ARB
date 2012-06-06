@@ -157,11 +157,12 @@ public:
     // elements from struct a_tree_node
 
     // struct arb_flags
-    unsigned int grouped : 1;   // indicates a folded group
-    unsigned int hidden : 1;    // not shown because a father is a folded group
+    unsigned int grouped : 1;             // indicates a folded group
+    unsigned int hidden : 1;              // not shown because a father is a folded group
     unsigned int has_marked_children : 1; // at least one child is marked
     unsigned int callback_exists : 1;
-    unsigned int gc : 6;        // color
+
+    unsigned int gc; // color
 
     char    left_linewidth;
     char    right_linewidth;
@@ -231,9 +232,9 @@ public:
     int arb_tree_leafsum2();                        // count all leafs
 
     void calc_hidden_flag(int father_is_hidden);
-    virtual int calc_color();                       // start a transaction first
 
-    virtual int calc_color_probes(GB_HASH *hashptr); // new function for coloring the tree; ak
+    int calc_color();                              // start a transaction first
+    int calc_color_probes(const GB_HASH *hashptr); // new function for coloring the tree; ak
 
     GBT_LEN arb_tree_min_deep();
     GBT_LEN arb_tree_deep();
