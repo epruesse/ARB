@@ -358,21 +358,15 @@ public:
 };
 
 class ST_Container : virtual Noncopyable {
-    // Sondentopf Container
+    TargetGroup targeted;
+    GB_HASH*    cachehash;
 
-    TargetGroup targetGroup;
-public: 
-    
-    // @@@ make members private
-    List<Sondentopf> *ST_Liste;
-    int anzahl_basissonden;
-    GB_HASH* cachehash;
-    List<char> *Sondennamen;
+public:
 
     Sonde* cache_Sonde(char *name, int allowed_mis, double outside_mis, GB_ERROR& error);
     Sonde* get_cached_sonde(char* name);
 
-    const TargetGroup& get_TargetGroup() { return targetGroup; }
+    const TargetGroup& get_TargetGroup() { return targeted; }
 
     ST_Container(size_t anz_sonden);
     ~ST_Container();
