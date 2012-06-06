@@ -167,7 +167,7 @@ GB_ERROR ProbeValuation::evaluate(StrArray& results) {
     }
 
     if (max_init_pop_combis < MAXINITPOPULATION) {
-        for (i=0; i<size_sonden_array; i++)         // generierung eines pools, in dem jede Sonde nur einmal pro Mismatch
+        for (i=0; i<size_sonden_array; i++)         // generierung eines pools, in dem jede Probe nur einmal pro Mismatch
         {                           // vorkommt, damit alle moeglichen Kombinationen deterministisch
             for (j=0; j<=mismatch_array[i]; j++) {      // generiert werden koennen.
                 temp_probe = new probe;
@@ -183,7 +183,7 @@ GB_ERROR ProbeValuation::evaluate(StrArray& results) {
     else {
         for (i=0; i<size_sonden_array; i++) {                              // Generierung eines Pools, in dem die Wahrscheinlichkeiten fuer die Erfassung
             for (j=0; j<=mismatch_array[i]; j++)        // der Sonden schon eingearbeitet sind. DIe WS werden vom Benutzer fuer jedE
-            {                           // einzelne Sonde bestimmt
+            {                           // einzelne Probe bestimmt
                 for (k=0; k < bewertungarray[i]; k++) {
                     temp_probe = new probe;
                     temp_probe->probe_index = i;

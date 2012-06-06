@@ -357,7 +357,7 @@ void MP_init_and_calculate_and_display_multiprobes(AW_window *, AW_CL cl_gb_main
         return;
     }
 
-    if (mp_global->get_stc()) {
+    if (mp_global->get_probe_cache()) {
         mp_global->clear_stc();
         new_pt_server = true;
     }
@@ -525,7 +525,7 @@ void MP_color_probes_in_tree(AW_window */*aww*/) {
         }
     }
 
-    ST_Container *stc = mp_global->get_stc();
+    ProbeCache *stc = mp_global->get_probe_cache();
 
     Sondentopf sondentopf(stc->get_TargetGroup());
 
@@ -626,7 +626,7 @@ void MP_mark_probes_in_tree(AW_window *aww) {
         }
     }
 
-    ST_Container *stc = mp_global->get_stc();
+    ProbeCache *stc = mp_global->get_probe_cache();
     Sondentopf sondentopf(stc->get_TargetGroup());
 
     GB_ERROR error = NULL;

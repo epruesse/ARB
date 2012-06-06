@@ -74,8 +74,6 @@
 // #define USE_LINEARSCALING         // definieren, wenn lineare_skalierung (=fitness skalierung) verwendet werden soll
 // #define USE_DUP_TREE              // definieren, wenn eine Sondenkombination nur einmal pro generation vorkommen soll
 
-#define LIST(TYP) ((List<Sonde>*) TYP)
-
 #define MAXSONDENHASHSIZE   1000        // max 1000 Sonden koennen gecached werden, bei Bedarf aendern !!!!
 
 struct awar_vars {
@@ -236,30 +234,6 @@ public:
     }
 };
 
-class Sondentopf : virtual Noncopyable {
-    const TargetGroup&  targetGroup;
-    GB_HASH            *color_hash;
-    List<void*>        *Listenliste; // @@@ change type to List<Sonde> ?
-
-    void gen_color_hash();
-    
-public:
-    class probe_tabs* fill_Stat_Arrays();
-    double**          gen_Mergefeld();
-
-    void put_Sonde(char *name, int allowed_mis, double outside_mis, GB_ERROR& error);
-    long get_length_hitliste();
-
-    const GB_HASH *get_color_hash() {
-        if (!color_hash) gen_color_hash();
-        mp_assert(color_hash);
-        return color_hash;
-    }
-
-    Sondentopf(const TargetGroup& targetGroup_);
-    ~Sondentopf();
-};
-
 class Bitvector : virtual Noncopyable {
     // Bitpositionen sind 0 bis 7
     char*   vector;
@@ -307,9 +281,9 @@ struct MO_Mismatch {
     MO_Mismatch() : nummer(0), mismatch(0.0) {}
 };
 
-class Sonde : virtual Noncopyable {
+class Probe : virtual Noncopyable {
     char*          kennung;         // Nukleinsaeuren, z.B. "atgatgatg"
-    Bitvector*     bitkennung;      // Sonde 1 Platz eins, ...zwei..., ... Analog zum Aufbau der Listenliste
+    Bitvector*     bitkennung;      // Probe 1 Platz eins, ...zwei..., ... Analog zum Aufbau von 'probeLists'
     Hit          **hitliste;        // start bei index 0, letztes element enthaelt NULL
     long           length_hitliste;
     SpeciesID      minelem, maxelem;
@@ -353,51 +327,80 @@ public:
     MO_Mismatch** get_matching_species(bool match_kompl, int match_weight, int match_mis, char *match_seq, const TargetGroup& targetGroup, int *number_of_species, GB_ERROR& error);
     GB_ERROR gen_Hitliste(const TargetGroup& targetGroup) __ATTR__USERESULT;
 
-    Sonde(char* bezeichner, int allowed_mis, double outside_mis);
-    ~Sonde();
+    Probe(char* bezeichner, int allowed_mis, double outside_mis);
+    ~Probe();
 };
 
-class ST_Container : virtual Noncopyable {
+typedef List<Probe> ProbeList;
+
+class Sondentopf : virtual Noncopyable {
+    const TargetGroup&  targetGroup;
+    GB_HASH            *color_hash;
+    List<ProbeList>    *probeLists;
+
+    void gen_color_hash();
+
+public:
+    class probe_tabs* fill_Stat_Arrays();
+    double**          gen_Mergefeld();
+
+    void put_Sonde(char *name, int allowed_mis, double outside_mis, GB_ERROR& error);
+    long get_length_hitliste();
+
+    const GB_HASH *get_color_hash() {
+        if (!color_hash) gen_color_hash();
+        mp_assert(color_hash);
+        return color_hash;
+    }
+
+    Sondentopf(const TargetGroup& targetGroup_);
+    ~Sondentopf();
+};
+
+class ProbeCache : virtual Noncopyable {
     TargetGroup targeted;
     GB_HASH*    cachehash;
 
 public:
 
-    Sonde* cache_Sonde(char *name, int allowed_mis, double outside_mis, GB_ERROR& error);
-    Sonde* get_cached_sonde(char* name);
+    Probe* add(char *name, int allowed_mis, double outside_mis, GB_ERROR& error);
+    Probe* get(const char *name) {
+        return name ? (Probe*)GBS_read_hash(cachehash, name) : NULL;
+    }
 
-    const TargetGroup& get_TargetGroup() { return targeted; }
+    const TargetGroup& get_TargetGroup() const { return targeted; }
 
-    ST_Container(size_t anz_sonden);
-    ~ST_Container();
+    ProbeCache(size_t anz_sonden);
+    ~ProbeCache() { if (cachehash) GBS_free_hash(cachehash); }
 };
 
 class MP_Global : virtual Noncopyable {
-    ST_Container *stc;
+    ProbeCache *cachedProbes; 
 
     GB_HASH *marked_species;
     GB_HASH *unmarked_species;
 
+    void set_probe_cache(ProbeCache *pc) {
+        delete cachedProbes;
+        cachedProbes = pc;
+    }
+
 public:
     MP_Global()
-        : stc(NULL),
+        : cachedProbes(NULL),
           marked_species(NULL),
           unmarked_species(NULL)
     {}
     ~MP_Global() {
-        delete stc;
+        delete cachedProbes;
         set_marked_species(NULL);
         set_unmarked_species(NULL);
     }
 
-    ST_Container *get_stc() { return stc; } // @@@ make result const
-    void set_stc(ST_Container *stopfC) { // @@@ make private
-        delete stc;
-        stc = stopfC;
-    }
+    ProbeCache *get_probe_cache() { return cachedProbes; }
 
-    void reinit_stc(int probe_count) { set_stc(new ST_Container(probe_count)); }
-    void clear_stc() { set_stc(NULL); }
+    void reinit_stc(int probe_count) { set_probe_cache(new ProbeCache(probe_count)); }
+    void clear_stc() { set_probe_cache(NULL); }
 
     void set_marked_species(GB_HASH *new_marked_species) {
         if (marked_species) GBS_free_hash(marked_species);
