@@ -278,14 +278,7 @@ bool MP_aborted(int gen_cnt, double avg_fit, double min_fit, double max_fit, arb
     return progress.aborted();
 }
 
-static ProbeValuation *new_probe_eval(char **field, int size, int *array, int *single_mismatch, int *ecolipos) {
-    ProbeValuation *p_eval = new ProbeValuation(field, size, array, single_mismatch, ecolipos);
-    p_eval->set_act_gen(new Generation(p_eval->get_max_init_for_gen(), 1)); // erste Generation = Ausgangspopulation
-    return p_eval;
-}
-
-
-__ATTR__USERESULT static GB_ERROR calc_multiprobes(const CharPtrArray& input_probes, ConstStrArray& results) {
+__ATTR__USERESULT static GB_ERROR calc_multiprobes(const CharPtrArray& input_probes, StrArray& results) {
     mp_assert(mp_global);
     size_t count = input_probes.size();
 
@@ -326,8 +319,8 @@ __ATTR__USERESULT static GB_ERROR calc_multiprobes(const CharPtrArray& input_pro
         }
     }
 
-    ProbeValuation *p_eval = new_probe_eval(probe_field, added, bew_array, single_mismatch, ecolipos);
-    return p_eval->initValuation(results);
+    ProbeValuation multiprobes(probe_field, added, bew_array, single_mismatch, ecolipos); // takes ownership of params
+    return multiprobes.evaluate(results);
 }
 
 
@@ -382,8 +375,8 @@ void MP_init_and_calculate_and_display_multiprobes(AW_window *, AW_CL cl_gb_main
     StrArray input_probes;
     selected_list->to_array(input_probes, true);
 
-    ConstStrArray results;
-    GB_ERROR      error = calc_multiprobes(input_probes, results);
+    StrArray results;
+    GB_ERROR error = calc_multiprobes(input_probes, results);
 
     result_probes_list->clear();
     for (size_t i = 0; i<results.size(); ++i) {
@@ -674,7 +667,7 @@ void MP_Comment(AW_window *, AW_CL cl_com) {
     char    *new_val   = MP_get_probes(selprobes);
 
     if (new_val && new_val[0]) {
-        char *new_list_string;
+        char *new_list_entry;
         {
             char       *edited_comment = NULL;
             const char *comment        = NULL;
@@ -694,7 +687,7 @@ void MP_Comment(AW_window *, AW_CL cl_com) {
             char *misms = MP_get_comment(2, selprobes);
             char *ecol  = MP_get_comment(3, selprobes);
 
-            new_list_string = GBS_global_string_copy("%-20s" SEPARATOR "%s" SEPARATOR "%s" SEPARATOR "%s",
+            new_list_entry = GBS_global_string_copy("%-20s" SEPARATOR "%s" SEPARATOR "%s" SEPARATOR "%s",
                               comment, misms, ecol, new_val);
             free(ecol);
             free(misms);
@@ -707,12 +700,12 @@ void MP_Comment(AW_window *, AW_CL cl_com) {
             if (autoadvance) result_probes_list->move_selection(1);
 
             result_probes_list->delete_value(selprobes);
-            result_probes_list->insert(new_list_string, new_list_string);
+            result_probes_list->insert(new_list_entry, new_list_entry);
             result_probes_list->update();
 
-            if (!autoadvance) awr->awar(MP_AWAR_RESULTPROBES)->write_string(new_list_string);
+            if (!autoadvance) awr->awar(MP_AWAR_RESULTPROBES)->write_string(new_list_entry);
         }
-        free(new_list_string);
+        free(new_list_entry);
     }
 
     free(new_val);
@@ -956,7 +949,7 @@ void TEST_compute_multiprobes() {
 
     arb_progress progress("test multiprobes");
 
-    ConstStrArray results;
+    StrArray results;
     TEST_ASSERT_NO_ERROR(calc_multiprobes(input_probes, results));
 
     {

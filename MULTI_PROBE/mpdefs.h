@@ -13,7 +13,8 @@
 
 #include <PT_com.h>
 
-#define SEPARATOR "#"
+#define SEPARATOR     "#"
+#define SEPARATOR_LEN 1
 
 #define NON_WEIGHTED 0
 

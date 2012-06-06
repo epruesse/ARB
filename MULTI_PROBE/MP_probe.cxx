@@ -16,11 +16,10 @@
 #include <aw_msg.hxx>
 #include <aw_select.hxx>
 #include <arb_progress.h>
-#include <arb_strarray.h>
 
 #include <ctime>
 
-GB_ERROR ProbeValuation::evolution(ConstStrArray& results) {
+GB_ERROR ProbeValuation::evolution(StrArray& results) {
     long n = 0;
     for (int i=0; i<size_sonden_array; i++) {            // Mismatche (=duplikate) aufsummieren, um Groesse von Pool zu bestimmen.
         n += mismatch_array[i]+1;
@@ -56,113 +55,102 @@ GB_ERROR ProbeValuation::evolution(ConstStrArray& results) {
             child_generation = act_generation->create_next_generation(this);
             delete act_generation; act_generation = NULL;
 
-            // child_generation->check_for_results(this);
-
             act_generation = child_generation;
             progress.inc();
         }
         while (act_generation->get_generation() <= max_generation);
         progress.done();
     }
-    if (act_generation) act_generation->check_for_results(this, results);
+    if (act_generation) act_generation->retrieve_results(this, results);
     return error;
 }
 
-void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs, ConstStrArray& results) {
+void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs, ProbeValuationResults& pvr) {
     // pcs darf nur eingetragen werden, wenn es nicht schon vorhanden ist
 
-    char *new_list_string;
-    char *misms;
-    char *probe_string;
-    char  temp_misms[3];
-    int   probe_len = 0;
-    char  buf[25];
-    char  ecoli_pos[40], temp_ecol[10];
-    int   buf_len, i;
-
-    result_struct *rs = new result_struct;
-    result_struct *elem;
-
-    memset(rs, 0, sizeof(result_struct));
-    memset(ecoli_pos, 0, 40);
-
-    for (i=0; i<mp_gl_awars.no_of_probes; i++)
+    int probe_len = 0;
+    for (int i=0; i<mp_gl_awars.no_of_probes; i++) {
         probe_len += strlen(sondenarray[pcs->get_probe_combi(i)->probe_index]) + 1; // 1 fuer space bzw. 0-Zeichen
+    }
 
-    misms = new char[2*mp_gl_awars.no_of_probes+1];
-    probe_string = new char[probe_len+1];
+    char misms[2*mp_gl_awars.no_of_probes+1];
+    char probe_string[probe_len+1];
 
     probe_string[0] = misms[0] = 0;
-    for (i=0; i<mp_gl_awars.no_of_probes; i++) {
+
+    char ecoli_pos[40] = { 0 };
+
+    for (int i=0; i<mp_gl_awars.no_of_probes; i++) {
         if (i>0) {
             strcat(misms, " ");
             strcat(probe_string, " ");
         }
 
+        {
+            char temp_misms[3];
+            sprintf(temp_misms, "%1d", pcs->get_probe_combi(i)->allowed_mismatches);
+            strcat(misms, temp_misms);
+        }
+        {
+            char temp_ecol[10];
+            sprintf(temp_ecol, "%6d ", pcs->get_probe_combi(i)->e_coli_pos);
+            strcat(ecoli_pos, temp_ecol);
+        }
 
-        sprintf(temp_misms, "%1d", pcs->get_probe_combi(i)->allowed_mismatches);
-        strcat(misms, temp_misms);
-        sprintf(temp_ecol, "%6d ", pcs->get_probe_combi(i)->e_coli_pos);
-        strcat(ecoli_pos, temp_ecol);
         strcat(probe_string, sondenarray[pcs->get_probe_combi(i)->probe_index]);
     }
 
-    ecoli_pos[strlen(ecoli_pos)-1] = 0;
+    size_t ecoli_len = strlen(ecoli_pos);
+    ecoli_pos[--ecoli_len] = 0; // erase last char
 
-    new_list_string = new char[21+
-                               probe_len+
-                               2*mp_gl_awars.no_of_probes+2+
-                               2*strlen(SEPARATOR) + strlen(ecoli_pos)+
-                               1];  // 1 fuer 0-Zeichen
+    ProbeCombi *rs;
+    {
+        char new_list_string[21 + probe_len + 2*mp_gl_awars.no_of_probes+2 + 2*SEPARATOR_LEN + ecoli_len + 1];
 
-    sprintf(buf, "%f", pcs->get_fitness());
-    buf_len = strlen(buf);
-    for (i=0; i<20-buf_len; i++)
-        strcat(buf, " ");
+        char buf[25];
+        sprintf(buf, "%f", pcs->get_fitness());
+        {
+            int buf_len = strlen(buf);
+            while (buf_len<20) {
+                buf[buf_len++] = ' ';
+            }
+            buf[buf_len] = 0;
+        }
 
-    sprintf(new_list_string, "%20s%s%s%s%s%s%s", buf, SEPARATOR, misms, SEPARATOR, ecoli_pos, SEPARATOR, probe_string);
-    delete [] misms;
-    delete [] probe_string;
+        sprintf(new_list_string, "%20s%s%s%s%s%s%s", buf, SEPARATOR, misms, SEPARATOR, ecoli_pos, SEPARATOR, probe_string);
 
-    rs->ps = pcs->duplicate();
-    rs->view_string = new_list_string;
-    elem = computation_result_list->get_first();
-    if (! elem)
-        computation_result_list->insert_as_first(rs);
+        rs = new ProbeCombi(pcs, new_list_string);
+    }
+
+    List<ProbeCombi>& computation_result_list = pvr.get_list();
+
+    ProbeCombi *elem = computation_result_list.get_first();
+    if (!elem) {
+        computation_result_list.insert_as_first(rs);
+    }
     else {
         while (elem) {                  // Liste ist sortiert von groesster Fitness bis kleinster Fitness
-            if (strcmp(elem->view_string, new_list_string) == 0) {
-                delete [] new_list_string;
-                delete rs->ps;
+            if (elem->has_same_view_string_as(*rs)) { // do not insert duplicate
                 delete rs;
-                return;
-            }
-
-            if (pcs->get_fitness() > elem->ps->get_fitness()) {
-                computation_result_list->insert_before_current(rs);
+                elem = NULL;
                 break;
             }
 
-            elem = computation_result_list->get_next();
+            if (pcs->get_fitness() > elem->get_fitness()) {
+                computation_result_list.insert_before_current(rs);
+                break;
+            }
+
+            elem = computation_result_list.get_next();
         }
 
-        if (!elem)
-            computation_result_list->insert_as_last(rs);
-    }
-
-
-    // @@@ done for each added element
-    // instead just add elements and let caller sort 'results'
-
-    results.erase();
-    elem = computation_result_list->get_first();
-    while (elem) {
-        results.put(elem->view_string);
-        elem = computation_result_list->get_next();
+        if (!elem) {
+            computation_result_list.insert_as_last(rs);
+        }
     }
 }
 
-GB_ERROR ProbeValuation::initValuation(ConstStrArray& results) {
+GB_ERROR ProbeValuation::evaluate(StrArray& results) {
     int    i, j, k, counter = 0;
     probe *temp_probe;
 
@@ -216,20 +204,18 @@ GB_ERROR ProbeValuation::initValuation(ConstStrArray& results) {
 
 
 
-ProbeValuation::ProbeValuation(char **sonden_array, int no_of_sonden, int *bewertung, int *mismatch, int *ecoli_pos) {
-    memset(this, 0, sizeof(ProbeValuation));
+ProbeValuation::ProbeValuation(char**& sonden_array, int no_of_sonden, int*& bewertung, int*& mismatch, int*& ecoli_pos) {
+    memset(this, 0, sizeof(ProbeValuation)); 
 
     size_sonden_array = no_of_sonden;
 
-    sondenarray    = sonden_array;
-    bewertungarray = bewertung;
-    mismatch_array = mismatch;
-    ecolipos_array = ecoli_pos;
-
-    computation_result_list = new List<result_struct>;
+    sondenarray    = sonden_array; sonden_array = NULL;
+    bewertungarray = bewertung;    bewertung    = NULL;
+    mismatch_array = mismatch;     mismatch     = NULL;
+    ecolipos_array = ecoli_pos;    ecoli_pos    = NULL;
 
     for (int i=0; i<size_sonden_array; i++) {           // Mismatche (=duplikate) aufsummieren, um Groesse von Pool zu bestimmen.
-        max_init_pop_combis += mismatch[i]+1;
+        max_init_pop_combis += mismatch_array[i]+1;
         pool_length += (mismatch_array[i]+1) * bewertungarray[i];
     }
 
@@ -241,25 +227,15 @@ ProbeValuation::ProbeValuation(char **sonden_array, int no_of_sonden, int *bewer
     probe_pool = new probe*[pool_length];
     memset(probe_pool, 0, pool_length * sizeof(probe*));    // Struktur mit 0 initialisieren.
 
+    set_act_gen(new Generation(get_max_init_for_gen(), 1)); // erste Generation = Ausgangspopulation
 }
 
 
 ProbeValuation::~ProbeValuation() {
     int i;
-    result_struct *elem;
 
     for (i=0; i<size_sonden_array; i++) free(sondenarray[i]);
     for (i=0; i<pool_length; i++) delete probe_pool[i];
-
-    elem = computation_result_list->get_first();
-    while (elem) {
-        computation_result_list->remove_first();
-        delete [] elem->view_string;
-        delete elem;
-        elem = computation_result_list->get_first();
-    }
-
-    delete computation_result_list;
 
     if (act_generation == child_generation) delete act_generation;
     else {
@@ -267,9 +243,11 @@ ProbeValuation::~ProbeValuation() {
         delete child_generation;
     }
 
-    delete [] sondenarray;
-    delete [] bewertungarray;
-    delete [] mismatch_array;
     delete [] probe_pool;
+    
+    delete [] ecolipos_array;
+    delete [] mismatch_array;
+    delete [] bewertungarray;
+    delete [] sondenarray;
 }
 

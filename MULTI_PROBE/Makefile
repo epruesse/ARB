@@ -48,6 +48,7 @@ MP_Generation.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arb_error.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arb_progress.h
+MP_Generation.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -249,7 +250,6 @@ MP_probe.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_error.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_progress.h
-MP_probe.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arbdb_base.h
