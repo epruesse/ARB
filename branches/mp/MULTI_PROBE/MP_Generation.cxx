@@ -12,6 +12,7 @@
 #include "MP_externs.hxx"
 #include "MultiProbe.hxx"
 #include <arb_progress.h>
+#include <arb_strarray.h>
 
 probe_combi_statistic *Generation::single_in_generation(probe_combi_statistic *field) {
     bool result = true;
@@ -35,13 +36,25 @@ void Generation::print() {
     }
 }
 
-void Generation::check_for_results(ProbeValuation *p_eval, ConstStrArray& results) {
+void Generation::retrieve_results(ProbeValuation *p_eval, StrArray& results) {
+    ProbeValuationResults pvr;
     for (int i=0; i<probe_combi_array_length; i++) {
         mp_assert(valid_probe_combi_index(i));
         if (probe_combi_stat_array[i]) {
-            p_eval->insert_in_result_list(probe_combi_stat_array[i], results);
+            p_eval->insert_in_result_list(probe_combi_stat_array[i], pvr);
         }
     }
+
+    results.erase();
+
+    List<ProbeCombi>& computation_result_list = pvr.get_list();
+    
+    ProbeCombi *elem = computation_result_list.get_first();
+    while (elem) {
+        results.put(strdup(elem->get_viewString()));
+        elem = computation_result_list.get_next();
+    }
+    
 }
 
 bool Generation::calcFitness(ProbeValuation *p_eval, bool use_genetic_algo, double old_avg_fit, GB_ERROR& error) {

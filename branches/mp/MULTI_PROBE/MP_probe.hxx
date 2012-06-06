@@ -13,6 +13,7 @@
 
 #define MAXLIFEFORCOMBI 2       // Eine Sondenkombination lebt maximal MAXLIFEFORCOMBI Generationen
 
+class StrArray;
 class ConstStrArray;
 
 struct probe {
@@ -78,7 +79,7 @@ public:
     void        swap(probe **a, probe **b);
 
     void        sort(long feld_laenge);     // es wird ein randomized quicksort verwendet
-    probe_combi_statistic   *duplicate();       // dupliziert dieses Objekt (z.B. fuer naechste Generation)
+    probe_combi_statistic   *duplicate() const;       // dupliziert dieses Objekt (z.B. fuer naechste Generation)
     probe_combi_statistic   *check_duplicates(class GenerationDuplicates *dup_tree = NULL);
     // rueckgabewert ist NULL, wenn das Feld duplikate enthaelt bzw.
     // es wird sortiertes field zurueckgegeben. Wenn NULL zurueckkommt, dann
@@ -102,55 +103,90 @@ class Generation : virtual Noncopyable {
     int last_elem;
 
     GenerationDuplicates *dup_tree;
-    double                average_fitness;
-    double                min_fit;
-    double                max_fit;
-    double                deviation;        // Abweichung
 
-    int len_roulette_wheel;                     // wichtig zur Erstellung der naechsten Generation
+    double average_fitness;
+    double min_fit;
+    double max_fit;
+    double deviation; // Abweichung
+
+    int len_roulette_wheel; // wichtig zur Erstellung der naechsten Generation
     int generation_counter;
 
     bool valid_probe_combi_index(int i) const { return i >= 0 && i<allocated; }
 
 private:
-    void        prescale(double *a, double *b);         // berechnet Koeffizienten fuer lineare Skalierung
+    void prescale(double *a, double *b); // berechnet Koeffizienten fuer lineare Skalierung
     probe_combi_statistic *choose_combi_for_next_generation();
 
 public:
-    double      get_avg_fit() { return average_fitness; }
-    int     get_generation() { return generation_counter; }
-    GenerationDuplicates *get_dup_tree()    { return dup_tree; }
-    void        set_length() { probe_combi_array_length = last_elem; }     // nur verwenden, wenn man weiss was man tut !!!!
-    void        check_for_results(ProbeValuation *p_eval, ConstStrArray& results); // @@@ rename
+    double get_avg_fit() { return average_fitness; }
+    int get_generation() { return generation_counter; }
+    
+    GenerationDuplicates *get_dup_tree() { return dup_tree; }
+    void set_length() { probe_combi_array_length = last_elem; } // nur verwenden, wenn man weiss was man tut !!!!
+    void retrieve_results(ProbeValuation *p_eval, StrArray& results);
 
-    bool        insert(probe_combi_statistic *pcs);     // false wenn Generation schon MAXPOPULATION Eintraege hat
+    bool insert(probe_combi_statistic *pcs); // false wenn Generation schon MAXPOPULATION Eintraege hat
 
-    void        init_valuation(ProbeValuation *p_eval);
-    void        gen_determ_combis(ProbeValuation *p_eval,
-                                  int beg,          // wo faengt der Alg. an
-                                  int len,          // wieviele probes muessen noch drangehaengt werden
-                                  int &pos_counter,     // zaehler fuer probe_combi_stat_array
-                                  probe_combi_statistic *p);    // bisher zusammengestellte probe
+    void init_valuation(ProbeValuation *p_eval);
 
-    bool calcFitness(ProbeValuation *p_eval, bool use_genetic_algo, double old_avg_fit, GB_ERROR& error);        // fitness-berechnung aller Sondenkombis im Feld; und average_fitness und deviation
+    void gen_determ_combis(ProbeValuation        *p_eval,
+                           int                    beg,         // wo faengt der Alg. an
+                           int                    len,         // wieviele probes muessen noch drangehaengt werden
+                           int                   &pos_counter, // zaehler fuer probe_combi_stat_array
+                           probe_combi_statistic *p);          // bisher zusammengestellte probe
 
-    void        init_roulette_wheel();
-    Generation *create_next_generation(ProbeValuation *p_eval);               // die Kindergeneration wird zurueckgegeben
+    bool calcFitness(ProbeValuation *p_eval, bool use_genetic_algo, double old_avg_fit, GB_ERROR& error); // fitness-berechnung aller Sondenkombis im Feld; und average_fitness und deviation
 
-    probe_combi_statistic *single_in_generation(probe_combi_statistic *field);  // Nach der Funktion ist sichergestellt, dass dieses field in der
+    void init_roulette_wheel();
+    Generation *create_next_generation(ProbeValuation *p_eval); // die Kindergeneration wird zurueckgegeben
+
+    probe_combi_statistic *single_in_generation(probe_combi_statistic *field); // Nach der Funktion ist sichergestellt, dass dieses field in der
     // Generation nur einmal vorkommt. Achtung: wenn Population sehr klein
     // => Endlosschleifengefahr ( nicht in dieser Funktion, sondern u.U. in der
     // aufrufenden
 
-    void        print();
+    void print();
 
     Generation(int len, int gen_nr);
     ~Generation();
 };
 
-struct result_struct {
+class ProbeCombi : virtual Noncopyable {
     probe_combi_statistic *ps;
     char                  *view_string;
+
+public:
+    ProbeCombi(const probe_combi_statistic *pcs, const char *vs)
+        : ps(pcs->duplicate()),
+          view_string(strdup(vs))
+    {}
+
+    ~ProbeCombi() {
+        delete ps;
+        free(view_string);
+    }
+
+    bool has_same_view_string_as(const ProbeCombi& other) const { return strcmp(view_string, other.view_string) == 0; }
+    double get_fitness() const { return ps->get_fitness(); }
+    const char *get_viewString() const { return view_string; }
+};
+
+class ProbeValuationResults : virtual Noncopyable {
+    List<ProbeCombi> computation_result_list; // @@@ replace by std container
+
+public:
+
+    ~ProbeValuationResults() {
+        ProbeCombi *elem = computation_result_list.get_first();
+        while (elem) {
+            computation_result_list.remove_first();
+            delete elem;
+            elem = computation_result_list.get_first();
+        }
+    }
+
+    List<ProbeCombi>& get_list() { return computation_result_list; }
 };
 
 class ProbeValuation : virtual Noncopyable {
@@ -166,40 +202,40 @@ class ProbeValuation : virtual Noncopyable {
     int pool_length;
     int max_init_pop_combis;
 
-    Generation          *act_generation;
-    Generation          *child_generation;      // @@@ can be removed
-    List<result_struct> *computation_result_list;
+    Generation *act_generation;
+    Generation *child_generation;               // @@@ can be removed
+
+    GB_ERROR evolution(StrArray& results) __ATTR__USERESULT;
 
 public:
-    void        set_act_gen(Generation *g) { act_generation = g; }
-    int         get_max_init_for_gen() { return max_init_pop_combis; }
-    int         get_pool_length()   { return pool_length; }
-    probe       **get_probe_pool()  { return probe_pool; }
-    int         get_size_sondenarray()  { return size_sonden_array; }
-    char        **get_sondenarray() { return sondenarray; }
+    void set_act_gen(Generation *g) { act_generation = g; }
+    int get_max_init_for_gen() { return max_init_pop_combis; }
+    int get_pool_length()   { return pool_length; }
+    probe **get_probe_pool() { return probe_pool; }
+    int get_size_sondenarray() { return size_sonden_array; }
+    char **get_sondenarray() { return sondenarray; }
 
-    void insert_in_result_list(probe_combi_statistic *pcs, ConstStrArray& results); // @@@ rename
+    void insert_in_result_list(probe_combi_statistic *pcs, ProbeValuationResults& pvr);
 
-    GB_ERROR initValuation(ConstStrArray& results) __ATTR__USERESULT; // Zufaellige Auswahl einer Grundmenge von  Sondenkombinationen
-    GB_ERROR evolution(ConstStrArray& results) __ATTR__USERESULT;      // Evolution
+    GB_ERROR evaluate(StrArray& results) __ATTR__USERESULT; // Zufaellige Auswahl einer Grundmenge von Sondenkombinationen
 
-    ProbeValuation(char **sonden_array, int no_of_sonden, int *bewertung, int *mismatch, int *ecoli_pos);
+    ProbeValuation(char**& sonden_array, int no_of_sonden, int*& bewertung, int*& mismatch, int*& ecoli_pos);
     ~ProbeValuation();
 };
 
 class GenerationDuplicates : virtual Noncopyable {
-    // Fuer eine Generation muss ueberprueft werden, ob es doppelte Sondenkombinationen  gibt. (aha)
-    int             intern_size;    // enthaelt size aus dem Konstruktor (size entspricht muss der groesse von sondenarray entsprechen
-    GenerationDuplicates    **next;     // die laenge dieses arrays entspricht der laenge des sondenarrays in ProbeValuation
-    int             *next_mism; // zu jedem next eintrag merkt man sich wieviele Mismatche schon aufgetreten sind
+    // Fuer eine Generation muss ueberprueft werden, ob es doppelte Sondenkombinationen gibt. (aha)
+    int intern_size; // enthaelt size aus dem Konstruktor (size entspricht muss der groesse von sondenarray entsprechen
+    GenerationDuplicates **next; // die laenge dieses arrays entspricht der laenge des sondenarrays in ProbeValuation
+    int *next_mism; // zu jedem next eintrag merkt man sich wieviele Mismatche schon aufgetreten sind
     // laenge von next_mism ist die maximale anzahl der Mismatche
 
 public:
-    bool insert(probe_combi_statistic *sondenkombi, bool &result, int depth = 0);   // fuegt sondenkombination ein, wenn es Sie in dieser Struktur noch nicht gibt(=> true).
+    bool insert(probe_combi_statistic *sondenkombi, bool &result, int depth = 0); // fuegt sondenkombination ein, wenn es Sie in dieser Struktur noch nicht gibt(=> true).
     // Wenn es Sie schon gibt, dann false. depth ist nur fuer interne Zwecke.
 
     GenerationDuplicates(int size);
-    ~GenerationDuplicates();        // loescht rekursiv nach unten alles.
+    ~GenerationDuplicates(); // loescht rekursiv nach unten alles.
 };
 
 

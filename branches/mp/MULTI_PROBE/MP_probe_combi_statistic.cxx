@@ -154,7 +154,7 @@ int probe_combi_statistic::sub_expected_children(double val) {
     return (int) result;
 }
 
-probe_combi_statistic *probe_combi_statistic::duplicate() {
+probe_combi_statistic *probe_combi_statistic::duplicate() const {
     probe_tabs *new_obje = NULL;
 
     if (probe_tab)
