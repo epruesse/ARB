@@ -399,8 +399,8 @@ public:
 
     ProbeCache *get_probe_cache() { return cachedProbes; }
 
-    void reinit_stc(int probe_count) { set_probe_cache(new ProbeCache(probe_count)); }
-    void clear_stc() { set_probe_cache(NULL); }
+    void reinit_probe_cache(int probe_count) { set_probe_cache(new ProbeCache(probe_count)); }
+    void clear_probe_cache() { set_probe_cache(NULL); }
 
     void set_marked_species(GB_HASH *new_marked_species) {
         if (marked_species) GBS_free_hash(marked_species);

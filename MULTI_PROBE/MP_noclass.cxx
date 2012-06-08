@@ -66,7 +66,7 @@ void MP_close_main(AW_window *aww) { // @@@ implement via on_hide
     scr->refresh();
 
     AW_POPDOWN(aww);
-    mp_global->clear_stc();
+    mp_global->clear_probe_cache();
 
     new_pt_server = true;
 }
@@ -358,7 +358,7 @@ void MP_init_and_calculate_and_display_multiprobes(AW_window *, AW_CL cl_gb_main
     }
 
     if (mp_global->get_probe_cache()) {
-        mp_global->clear_stc();
+        mp_global->clear_probe_cache();
         new_pt_server = true;
     }
 
@@ -518,10 +518,10 @@ static Sondentopf *sondentopf4selectedMultiprobe(GB_ERROR& error) {
             if (new_pt_server) {
                 new_pt_server = false;
 
-                mp_global->reinit_stc(MAXSONDENHASHSIZE);
+                mp_global->reinit_probe_cache(MAXSONDENHASHSIZE);
 
                 if (pt_server_different) {
-                    mp_global->clear_stc();
+                    mp_global->clear_probe_cache();
                     new_pt_server       = true;
                     error               = "There are species in your database which are unknown to PT-Server";
                     pt_server_different = false;
