@@ -157,11 +157,11 @@ GB_ERROR ProbeValuation::evaluate(StrArray& results) {
     if (new_pt_server) {
         new_pt_server = false;
 
-        mp_global->reinit_stc(MAXSONDENHASHSIZE);
+        mp_global->reinit_probe_cache(MAXSONDENHASHSIZE);
     }
 
     if (pt_server_different) {
-        mp_global->clear_stc();
+        mp_global->clear_probe_cache();
         new_pt_server = true;
         return "PT_server does not match dataset (species differ)";
     }
