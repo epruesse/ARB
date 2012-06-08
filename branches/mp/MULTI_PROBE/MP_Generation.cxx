@@ -10,7 +10,6 @@
 
 #include "MP_probe.hxx"
 #include "MP_externs.hxx"
-#include "MultiProbe.hxx"
 #include <arb_progress.h>
 #include <arb_strarray.h>
 

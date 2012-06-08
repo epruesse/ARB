@@ -11,7 +11,6 @@
 #include <multi_probe.hxx>
 
 #include "MP_probe.hxx"
-#include "MultiProbe.hxx"
 #include "mp_proto.hxx"
 
 #include <aw_root.hxx>

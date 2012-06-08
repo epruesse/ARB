@@ -9,7 +9,6 @@
 // ============================================================= //
 
 #include "MP_probe.hxx"
-#include "MultiProbe.hxx"
 
 #include <cmath>
 

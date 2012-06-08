@@ -9,7 +9,6 @@
 // ============================================================= //
 
 #include "MP_probe.hxx"
-#include "MultiProbe.hxx"
 
 bool GenerationDuplicates::insert(probe_combi_statistic *sondenkombi, bool &result, int depth) {        // initial muss result true sein
     int max_depth = mp_gl_awars.no_of_probes;
@@ -40,15 +39,11 @@ bool GenerationDuplicates::insert(probe_combi_statistic *sondenkombi, bool &resu
 GenerationDuplicates::GenerationDuplicates(int size) {          // size muss die Groesse des Sondenarrays in ProbeValuation enthalten
     intern_size = size;
     next = new GenerationDuplicates*[size];
-    next_mism = new int[MAXMISMATCHES];
-    memset(next_mism, 0, MAXMISMATCHES * sizeof(int));
-    memset(next, 0, size * sizeof(GenerationDuplicates*));
+    memset(next_mism, 0, MAXMISMATCHES * sizeof(*next_mism));
+    memset(next, 0, size * sizeof(*next));
 }
 
 GenerationDuplicates::~GenerationDuplicates() {
-    for (int i=0; i<intern_size; i++)
-        delete next[i];
-
-    delete [] next_mism;
+    for (int i=0; i<intern_size; i++) delete next[i];
     delete next;
 }

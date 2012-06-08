@@ -10,7 +10,6 @@
 
 #include "MP_probe.hxx"
 #include "MP_externs.hxx"
-#include "MultiProbe.hxx"
 
 #include <aw_window.hxx>
 #include <aw_msg.hxx>
@@ -21,7 +20,7 @@
 
 GB_ERROR ProbeValuation::evolution(StrArray& results) {
     long n = 0;
-    for (int i=0; i<size_sonden_array; i++) {            // Mismatche (=duplikate) aufsummieren, um Groesse von Pool zu bestimmen.
+    for (int i=0; i<size_sonden_array; i++) {            // Mismatches (=duplikate) aufsummieren, um Groesse von Pool zu bestimmen.
         n += mismatch_array[i]+1;
     }
 
@@ -214,7 +213,7 @@ ProbeValuation::ProbeValuation(char**& sonden_array, int no_of_sonden, int*& bew
     mismatch_array = mismatch;     mismatch     = NULL;
     ecolipos_array = ecoli_pos;    ecoli_pos    = NULL;
 
-    for (int i=0; i<size_sonden_array; i++) {           // Mismatche (=duplikate) aufsummieren, um Groesse von Pool zu bestimmen.
+    for (int i=0; i<size_sonden_array; i++) {           // Mismatches (=duplikate) aufsummieren, um Groesse von Pool zu bestimmen.
         max_init_pop_combis += mismatch_array[i]+1;
         pool_length += (mismatch_array[i]+1) * bewertungarray[i];
     }

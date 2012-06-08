@@ -10,6 +10,9 @@
 #ifndef ARB_CORE_H
 #include <arb_core.h>
 #endif
+#ifndef MULTIPROBE_HXX
+#include "MultiProbe.hxx"
+#endif
 
 #define MAXLIFEFORCOMBI 2       // Eine Sondenkombination lebt maximal MAXLIFEFORCOMBI Generationen
 
@@ -227,8 +230,7 @@ class GenerationDuplicates : virtual Noncopyable {
     // Fuer eine Generation muss ueberprueft werden, ob es doppelte Sondenkombinationen gibt. (aha)
     int intern_size; // enthaelt size aus dem Konstruktor (size entspricht muss der groesse von sondenarray entsprechen
     GenerationDuplicates **next; // die laenge dieses arrays entspricht der laenge des sondenarrays in ProbeValuation
-    int *next_mism; // zu jedem next eintrag merkt man sich wieviele Mismatche schon aufgetreten sind
-    // laenge von next_mism ist die maximale anzahl der Mismatche
+    int next_mism[MAXMISMATCHES]; // zu jedem next eintrag merkt man sich wieviele Mismatches schon aufgetreten sind
 
 public:
     bool insert(probe_combi_statistic *sondenkombi, bool &result, int depth = 0); // fuegt sondenkombination ein, wenn es Sie in dieser Struktur noch nicht gibt(=> true).
