@@ -470,10 +470,10 @@ static Sondentopf *sondentopf4selectedMultiprobe(GB_ERROR& error) {
         }
 
         if (!error) {
-            char **probe_field = new char*[MAXMISMATCHES];
-            int   *mismatches  = new int[MAXMISMATCHES];
+            char **probe_field = new char*[MAXPROBECOMBIS];
+            int   *mismatches  = new int[MAXPROBECOMBIS];
 
-            for (int i=0; i<MAXMISMATCHES; i++) {
+            for (int i=0; i<MAXPROBECOMBIS; i++) {
                 probe_field[i] = NULL;
                 mismatches[i]  = 0;
             }
@@ -534,7 +534,7 @@ static Sondentopf *sondentopf4selectedMultiprobe(GB_ERROR& error) {
                 topf = new Sondentopf(probeCache->get_TargetGroup());
 
                 mp_assert(!error);
-                for (int i=0; i<MAXMISMATCHES && !error; i++) {
+                for (int i=0; i<MAXPROBECOMBIS && !error; i++) {
                     if (probe_field[i]) {
                         topf->put_Sonde(probe_field[i], mismatches[i], mismatches[i] + mp_gl_awars.outside_mismatches_difference, error);
                     }
