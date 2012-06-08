@@ -445,217 +445,167 @@ void MP_color_next_probes_in_tree(AW_window *aww, AW_CL cl_backward, AW_CL cl_re
     MP_color_probes_in_tree(aww);
 }
 
-void MP_color_probes_in_tree(AW_window */*aww*/) {
+static Sondentopf *sondentopf4selectedMultiprobe(GB_ERROR& error) {
+    mp_assert(!error);
+
+    Sondentopf *topf = NULL;
     if (!mp_global) {
-        aw_message("No multiprobes calculated yet");
-        return;
+        error = "No multiprobes calculated yet";
     }
-
-    AWT_canvas *scr                = mp_main->get_canvas();
-    char       *mism, *mism_temp;
-    char       *a_probe, *another_probe, *the_probe, *mism_temp2;
-    int         i, how_many_probes = 0;
-
-    {
-        char *sel = mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES)->read_string();
-        a_probe   = MP_get_probes(sel); // haelt jetzt Sondenstring
-        if (! a_probe || ! a_probe[0]) {
-            free(a_probe);
+    else {
+        char *probeSpec;
+        char *mismatchSpec = NULL;
+        {
+            char *sel = mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES)->read_string();
+            probeSpec = MP_get_probes(sel);   // haelt jetzt Sondenstring
+            if (!probeSpec || !probeSpec[0]) {
+                free(probeSpec);
+                probeSpec = NULL;
+                error     = "No probe combination selected";
+            }
+            else {
+                mismatchSpec = MP_get_comment(2, sel);
+            }
             free(sel);
-            return;
         }
 
-        mism_temp2 = MP_get_comment(2, sel);
-        mism_temp  = mism_temp2;
-        free(sel);
+        if (!error) {
+            char **probe_field = new char*[MAXMISMATCHES];
+            int   *mismatches  = new int[MAXMISMATCHES];
+
+            for (int i=0; i<MAXMISMATCHES; i++) {
+                probe_field[i] = NULL;
+                mismatches[i]  = 0;
+            }
+
+            {
+                char *currMismatch = mismatchSpec;
+                char *currProbe    = probeSpec;
+                int   probe_count  = 0;
+
+                for (int i=0; i< MAXPROBECOMBIS; i++) {     // generiert  probe_field und mismatches array
+                    {
+                        char *behind            = strchr(currMismatch, ' ');
+                        if (behind) *(behind++) = 0;
+                        mismatches[i]           = atoi(currMismatch);
+                        currMismatch            = behind;
+                    }
+
+                    probe_field[i] = NULL;
+
+                    char *the_probe = currProbe;
+                    currProbe       = strchr(currProbe, ' ');
+
+                    if (currProbe) {
+                        *(currProbe++) = 0;
+                        while (*currProbe == ' ' || *currProbe == '\t') currProbe++;
+                    }
+                    else {
+                        probe_field[i] = strdup(the_probe);
+                        probe_count++;
+                        break;
+                    }
+
+                    if (the_probe && the_probe[0]) {
+                        probe_field[i] = strdup(the_probe);
+                        probe_count++;
+                    }
+                }
+
+                // @@@ what todo if 'probe_count' mismatches ? 
+            }
+
+            if (new_pt_server) {
+                new_pt_server = false;
+
+                mp_global->reinit_stc(MAXSONDENHASHSIZE);
+
+                if (pt_server_different) {
+                    mp_global->clear_stc();
+                    new_pt_server       = true;
+                    error               = "There are species in your database which are unknown to PT-Server";
+                    pt_server_different = false;
+                }
+            }
+
+            if (!error) {
+                ProbeCache *probeCache = mp_global->get_probe_cache();
+
+                topf = new Sondentopf(probeCache->get_TargetGroup());
+
+                mp_assert(!error);
+                for (int i=0; i<MAXMISMATCHES && !error; i++) {
+                    if (probe_field[i]) {
+                        topf->put_Sonde(probe_field[i], mismatches[i], mismatches[i] + mp_gl_awars.outside_mismatches_difference, error);
+                    }
+                }
+
+                if (error) {
+                    delete topf;
+                    topf = NULL;
+                }
+            }
+
+            for (int i = 0; i<MAXPROBECOMBIS; ++i) {
+                free(probe_field[i]);
+            }
+
+            delete [] mismatches;
+            delete [] probe_field;
+        }
+
+        free(probeSpec);
+        free(mismatchSpec);
     }
 
-    char **probe_field = new char*[MAXMISMATCHES];
-    int   *mismatches  = new int[MAXMISMATCHES];
+    mp_assert(contradicted(topf, error));
+    
+    return topf;
+}
 
-    for (i=0; i<MAXMISMATCHES; i++) {
-        probe_field[i] = NULL;
-        mismatches[i] = 0;
+void MP_color_probes_in_tree(AW_window */*aww*/) {
+    GB_ERROR    error      = NULL;
+    Sondentopf *sondentopf = sondentopf4selectedMultiprobe(error);
+
+    if (error) {
+        aw_message(error);
+    }
+    else {
+        AWT_canvas     *scr = mp_main->get_canvas();
+        GB_transaction  ta(scr->gb_main);
+
+        AWT_TREE(scr)->get_root_node()->calc_color_probes(sondentopf->get_color_hash());
+        if (scr->gb_main) scr->gfx->update(scr->gb_main);
+        scr->refresh();
     }
 
-    another_probe = a_probe;
-    for (i=0; i< MAXPROBECOMBIS; i++) {     // generiert  probe_field und mismatches array
-        mism = strchr(mism_temp, ' ');
-        if (mism)
-            *(mism++) = 0;
-
-        mismatches[i] = atoi(mism_temp);
-        mism_temp = mism;
-
-
-        probe_field[i] = NULL;
-        the_probe = another_probe;
-        another_probe = strchr(another_probe, ' ');
-        if (another_probe) {
-            *(another_probe++) = 0;
-            while (*another_probe == ' ' || *another_probe == '\t')
-                another_probe++;
-        }
-        else {
-            probe_field[i] = strdup(the_probe);
-            how_many_probes ++;
-            break;
-        }
-
-        if (the_probe && the_probe[0]) {
-            probe_field[i] = strdup(the_probe);
-            how_many_probes ++;
-        }
-    }
-
-    free(a_probe);
-    free(mism_temp2);
-
-    if (new_pt_server) {
-        new_pt_server = false;
-
-        mp_global->reinit_stc(MAXSONDENHASHSIZE);
-
-        if (pt_server_different) {
-            mp_global->clear_stc();
-            new_pt_server = true;
-            aw_message("There are species in the tree which are\nnot included in the PT-Server");
-            pt_server_different = false;
-            return;
-        }
-    }
-
-    ProbeCache *stc = mp_global->get_probe_cache();
-
-    Sondentopf sondentopf(stc->get_TargetGroup());
-
-    GB_ERROR error = NULL;
-    for (i=0; i<MAXMISMATCHES && !error; i++) {
-        if (probe_field[i]) {
-            sondentopf.put_Sonde(probe_field[i], mismatches[i], mismatches[i] + mp_gl_awars.outside_mismatches_difference, error);
-        }
-    }
-
-    if (error) aw_message(error);
-
-    GB_transaction dummy(scr->gb_main);
-    AWT_TREE(scr)->get_root_node()->calc_color_probes(sondentopf.get_color_hash());
-
-    if (scr->gb_main) scr->gfx->update(scr->gb_main);
-    scr->refresh();
-
-    for (i=0; i<MAXMISMATCHES; i++) free(probe_field[i]);
-
-    delete [] probe_field;
-    delete [] mismatches;
+    delete sondentopf;
 }
 
 void MP_mark_probes_in_tree(AW_window *aww) {
-    AWT_canvas  *scr = mp_main->get_canvas();
-    char        *mism, *mism_temp;
-    char        *a_probe, *another_probe, *the_probe, *mism_temp2;
-    int          i, how_many_probes = 0;
-    GBDATA      *gb_species;
+    GB_ERROR    error      = NULL;
+    Sondentopf *sondentopf = sondentopf4selectedMultiprobe(error);
 
-    {
-        char *sel = mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES)->read_string();
-        a_probe   = MP_get_probes(sel);             // haelt jetzt Sondenstring
-
-        if (! a_probe || ! a_probe[0]) {
-            free(a_probe);
-            free(sel);
-            return;
-        }
-
-        mism_temp2 = MP_get_comment(2, sel);
-        mism_temp  = mism_temp2;
-        free(sel);
+    if (error) {
+        aw_message(error);
     }
-
-    char **probe_field = new char*[MAXMISMATCHES];
-    int   *mismatches  = new int[MAXMISMATCHES];
-
-    for (i=0; i<MAXMISMATCHES; i++) {
-        probe_field[i] = NULL;
-        mismatches[i] = 0;
-    }
-
-    another_probe = a_probe;
-    for (i=0; i< MAXPROBECOMBIS; i++) {     // generiert  probe_field und mismatches array
-        mism = strchr(mism_temp, ' ');
-        if (mism)
-            *(mism++) = 0;
-
-        mismatches[i] = atoi(mism_temp);
-        mism_temp = mism;
-
-        probe_field[i] = NULL;
-        the_probe = another_probe;
-        another_probe = strchr(another_probe, ' ');
-        if (another_probe) {
-            *(another_probe++) = 0;
-            while (*another_probe == ' ' || *another_probe == '\t')
-                another_probe++;
-        }
-        else {
-            probe_field[i] = strdup(the_probe);
-            how_many_probes ++;
-            break;
+    else {
+        AWT_canvas *scr = mp_main->get_canvas();
+        {
+            GB_transaction ta(scr->gb_main);
+            const GB_HASH *col_hash = sondentopf->get_color_hash();
+            for (GBDATA *gb_species = GBT_first_species(scr->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
+                GB_write_flag(gb_species, GBS_read_hash(col_hash, GBT_read_name(gb_species)) > AWT_GC_BLACK);
+            }
         }
 
-        if (the_probe && the_probe[0]) {
-            probe_field[i] = strdup(the_probe);
-            how_many_probes ++;
+        {
+            GB_transaction ta(scr->gb_main);
+            if (scr->gb_main) scr->gfx->update(scr->gb_main);
+            scr->refresh();
         }
     }
-
-    free(a_probe);
-    free(mism_temp2);
-
-    if (new_pt_server) {
-        new_pt_server = false;
-
-        mp_global->reinit_stc(MAXSONDENHASHSIZE);
-
-        if (pt_server_different) {
-            mp_global->clear_stc();
-            new_pt_server       = true;
-            aw_message("There are species in the tree which are\nnot included in the PT-Server");
-            pt_server_different = false;
-            return;
-        }
-    }
-
-    ProbeCache *stc = mp_global->get_probe_cache();
-    Sondentopf sondentopf(stc->get_TargetGroup());
-
-    GB_ERROR error = NULL;
-    for (i=0; i<MAXMISMATCHES && !error; i++) {
-        if (probe_field[i]) {
-            sondentopf.put_Sonde(probe_field[i], mismatches[i], mismatches[i] + mp_gl_awars.outside_mismatches_difference, error);
-        }
-    }
-    if (error) aw_message(error);
-
-    {
-        GB_push_transaction(scr->gb_main);
-        const GB_HASH *col_hash = sondentopf.get_color_hash();
-        for (gb_species = GBT_first_species(scr->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
-            GB_write_flag(gb_species, GBS_read_hash(col_hash, GBT_read_name(gb_species)) > AWT_GC_BLACK);
-        }
-    }
-    GB_pop_transaction(scr->gb_main);
-
-    GB_transaction dummy(scr->gb_main);
-
-    if (scr->gb_main) scr->gfx->update(scr->gb_main);
-    scr->refresh();
-
-    for (i=0; i<MAXMISMATCHES; i++) free(probe_field[i]);
-
-    delete [] probe_field;
-    delete [] mismatches;
-
+    
     MP_normal_colors_in_tree(aww);
 }
 
