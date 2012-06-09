@@ -84,14 +84,11 @@ public:
         a = b;
         b = help;
     }
-    
+
     void sort(long feld_laenge) { if (feld_laenge>1) randomized_quicksort(0, feld_laenge-1); }
 
     probe_combi_statistic   *duplicate() const;       // dupliziert dieses Objekt (z.B. fuer naechste Generation)
-    probe_combi_statistic *check_duplicates(class GenerationDuplicates *dup_tree = NULL);
-    // rueckgabewert ist NULL, wenn das Feld duplikate enthaelt bzw.
-    // es wird sortiertes field zurueckgegeben. Wenn NULL zurueckkommt, dann
-    // wurde field jedoch noch nicht deleted
+    probe_combi_statistic *check_duplicates();
 
     void print();
     void print(const ProbeRef *p);
@@ -109,8 +106,6 @@ class Generation : virtual Noncopyable {
 
     int probe_combi_array_length; // @@@ fix these 2 variables (one should contains allocated size, the other the number of elements added. currently it is weird)
     int last_elem;
-
-    GenerationDuplicates *dup_tree;
 
     double average_fitness;
     double min_fit;
@@ -130,7 +125,6 @@ public:
     double get_avg_fit() { return average_fitness; }
     int get_generation() { return generation_counter; }
     
-    GenerationDuplicates *get_dup_tree() { return dup_tree; }
     void set_length() { probe_combi_array_length = last_elem; } // nur verwenden, wenn man weiss was man tut !!!!
     void retrieve_results(ProbeValuation *p_eval, StrArray& results);
 
@@ -148,11 +142,6 @@ public:
 
     void init_roulette_wheel();
     Generation *create_next_generation(ProbeValuation *p_eval); // die Kindergeneration wird zurueckgegeben
-
-    probe_combi_statistic *single_in_generation(probe_combi_statistic *field); // Nach der Funktion ist sichergestellt, dass dieses field in der
-    // Generation nur einmal vorkommt. Achtung: wenn Population sehr klein
-    // => Endlosschleifengefahr ( nicht in dieser Funktion, sondern u.U. in der
-    // aufrufenden
 
     void print();
 
@@ -248,21 +237,6 @@ public:
     ProbeValuation(char**& sonden_array, int no_of_sonden, int*& bewertung, int*& mismatch, int*& ecoli_pos);
     ~ProbeValuation();
 };
-
-class GenerationDuplicates : virtual Noncopyable {
-    // Fuer eine Generation muss ueberprueft werden, ob es doppelte Sondenkombinationen gibt. (aha)
-    int intern_size; // enthaelt size aus dem Konstruktor (size entspricht muss der groesse von sondenarray entsprechen
-    GenerationDuplicates **next; // die laenge dieses arrays entspricht der laenge des sondenarrays in ProbeValuation
-    int next_mism[MAXMISMATCHES]; // zu jedem next eintrag merkt man sich wieviele Mismatches schon aufgetreten sind
-
-public:
-    bool insert(probe_combi_statistic *sondenkombi, bool &result, int depth = 0); // fuegt sondenkombination ein, wenn es Sie in dieser Struktur noch nicht gibt(=> true).
-    // Wenn es Sie schon gibt, dann false. depth ist nur fuer interne Zwecke.
-
-    GenerationDuplicates(int size);
-    ~GenerationDuplicates(); // loescht rekursiv nach unten alles.
-};
-
 
 #else
 #error MP_probe.hxx included twice
