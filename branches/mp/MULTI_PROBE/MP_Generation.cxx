@@ -221,11 +221,11 @@ Generation *Generation::create_next_generation(ProbeValuation *p_eval) {
             len_roulette_wheel -= orig2->sub_expected_children(0.5);
         }
         else {
-            first_child_pcs->sub_life_counter();                // Gene gleich geblieben => Lebensdauer verkuerzen
+            first_child_pcs->dec_life_counter();                // Gene gleich geblieben => Lebensdauer verkuerzen
             len_roulette_wheel -= orig1->sub_expected_children(1.0);    // nur tatsaechlich subtrahierte Zahl abziehen !!!
 
             if (orig2) {
-                second_child_pcs->sub_life_counter();
+                second_child_pcs->dec_life_counter();
                 len_roulette_wheel -= orig2->sub_expected_children(1.0);
             }
         }
@@ -310,42 +310,34 @@ bool Generation::insert(probe_combi_statistic *pcs) {
 }
 
 void Generation::init_valuation(ProbeValuation *p_eval) {
-    int         i, counter=0;
-    probe           *random_probe;
-    int         zw_erg;
-    probe_combi_statistic *pcs;
-    int         pos = 0;
-
-
     if (probe_combi_array_length < MAXINITPOPULATION) {
+        int pos = 0;
         gen_determ_combis(p_eval, 0, mp_gl_awars.no_of_probes, pos, NULL);  // probe_combi_stat_array ist danach gefuellt !!!
-
         probe_combi_array_length = pos;
-
-        return;         // aufruf der funktion fuer die letzte Generation
     }
+    else {
+        int counter = 0;
+        probe_combi_statistic *pcs = new probe_combi_statistic();
 
-    counter = 0;
-    pcs = new probe_combi_statistic();
+        while (counter < probe_combi_array_length) {    // Hier erfolgt die Generierung des probe_combi_stat_array
+            for (int i=0; i<mp_gl_awars.no_of_probes; i++) {
+                int             zw_erg       = get_random(0, p_eval->get_pool_length()-1);
+                const ProbeRef *random_probe = (p_eval->get_probe_pool())[zw_erg];
+                pcs->set_probe_combi(i, random_probe);
+            }
 
-    while (counter < probe_combi_array_length) {    // Hier erfolgt die Generierung des probe_combi_stat_array
-        for (i=0; i<mp_gl_awars.no_of_probes; i++) {
-            zw_erg = get_random(0, p_eval->get_pool_length()-1);
-            random_probe = (p_eval->get_probe_pool())[zw_erg];
-            pcs->set_probe_combi(i, random_probe);
-        }
-
-        if (pcs->check_duplicates(dup_tree)) {          // 2 gleiche Sonden in der Kombination => nicht verwendbar
-            mp_assert(valid_probe_combi_index(counter));
-            probe_combi_stat_array[counter++] = pcs;
-            if (counter < probe_combi_array_length)
-                pcs = new probe_combi_statistic();
+            if (pcs->check_duplicates(dup_tree)) {          // 2 gleiche Sonden in der Kombination => nicht verwendbar
+                mp_assert(valid_probe_combi_index(counter));
+                probe_combi_stat_array[counter++] = pcs;
+                if (counter < probe_combi_array_length)
+                    pcs = new probe_combi_statistic();
+            }
         }
     }
 }
 
 Generation::Generation(int len, int gen_nr) {
-    memset((char *)this, 0, sizeof(Generation));
+    memset((char *)this, 0, sizeof(Generation)); // @@@ elim
 
     probe_combi_array_length = len;
     probe_combi_stat_array   = new probe_combi_statistic*[probe_combi_array_length]; // probe_combi_array_length entspricht der Groesse der Ausgangspopulation

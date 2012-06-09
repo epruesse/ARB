@@ -11,7 +11,7 @@
 #include "MP_probe.hxx"
 #include <cmath>
 
-probe_combi_statistic::probe_combi_statistic(probe **pc, probe_tabs *ps, double exp, double fit, int life_cnt) {
+probe_combi_statistic::probe_combi_statistic(const ProbeRef **pc, probe_tabs *ps, double exp, double fit, int life_cnt) {
     memset(this, 0, sizeof(probe_combi_statistic));
 
     if (ps)
@@ -19,13 +19,13 @@ probe_combi_statistic::probe_combi_statistic(probe **pc, probe_tabs *ps, double 
     else
         probe_tab = NULL; // new probe_tabs
 
-    probe_combi = new probe*[mp_gl_awars.no_of_probes];
+    probe_combi = new const ProbeRef*[mp_gl_awars.no_of_probes];
     if (pc) {
         for (int i=0; i < mp_gl_awars.no_of_probes; i++)
             probe_combi[i] = pc[i];
     }
     else
-        memset(probe_combi, 0, mp_gl_awars.no_of_probes * sizeof(probe*));
+        memset(probe_combi, 0, mp_gl_awars.no_of_probes * sizeof(ProbeRef*));
 
 
     expected_children = exp;
@@ -52,27 +52,7 @@ bool probe_combi_statistic::ok_for_next_gen(int &len_roul_wheel) {
     return false;
 }
 
-void probe_combi_statistic::init_life_counter() {
-    life_counter = MAXLIFEFORCOMBI;
-}
-
-void probe_combi_statistic::sort(long feld_laenge) {
-    if (!feld_laenge)
-        return;
-
-    quicksort(0, feld_laenge-1);
-}
-
-inline void probe_combi_statistic::swap(probe **a, probe **b) {
-    probe *help;
-
-    help = *a;
-    *a = *b;
-    *b = help;
-}
-
-void probe_combi_statistic::quicksort(long left, long right) {
-    // Randomized Quicksort !!! wegen effizienz. Fuer den Fall, dass Feld sortiert !!!
+void probe_combi_statistic::randomized_quicksort(long left, long right) {
     long i = left, j = right;
     int  x, help, help2;
 
@@ -82,7 +62,7 @@ void probe_combi_statistic::quicksort(long left, long right) {
         // Randomisierung des Quicksort Anfang
         // Falls keine Randomisierung erwuenscht, einfach diesen Teil auskommentieren !!!
         help2 = get_random(left, right);
-        swap(& probe_combi[help2], & probe_combi[help]);
+        swap(probe_combi[help2], probe_combi[help]);
         // Randomisierung des Quicksort Ende
 
         x = probe_combi[help]->probe_index;         // Normale Auswahl des Pivotelements
@@ -92,7 +72,7 @@ void probe_combi_statistic::quicksort(long left, long right) {
             while (probe_combi[j]->probe_index > x) j--;
 
             if (i<=j) {
-                swap(& probe_combi[i], & probe_combi[j]);
+                swap(probe_combi[i], probe_combi[j]);
 
                 i++;
                 j--;
@@ -100,8 +80,8 @@ void probe_combi_statistic::quicksort(long left, long right) {
         }
         while (i<=j) ;
 
-        quicksort(left, j);
-        quicksort(i, right);
+        randomized_quicksort(left, j);
+        randomized_quicksort(i, right);
     }
 }
 
@@ -121,7 +101,7 @@ probe_combi_statistic *probe_combi_statistic::check_duplicates(GenerationDuplica
 }
 
 
-void probe_combi_statistic::print(probe *p) {
+void probe_combi_statistic::print(const ProbeRef *p) {
     printf("Idx:%d alMis:%d  ", p->probe_index, p->allowed_mismatches);
 }
 
@@ -133,7 +113,7 @@ void probe_combi_statistic::print() {
     probe_tab->print();
 }
 
-void probe_combi_statistic::print(probe **arr, int length) {
+void probe_combi_statistic::print(const ProbeRef **arr, int length) {
     for (int i=0; i<length; i++)
         print(arr[i]);
 }
@@ -156,10 +136,9 @@ int probe_combi_statistic::sub_expected_children(double val) {
 
 probe_combi_statistic *probe_combi_statistic::duplicate() const {
     probe_tabs *new_obje = NULL;
-
-    if (probe_tab)
+    if (probe_tab) {
         new_obje = probe_tab->duplicate();
-
+    }
     return new probe_combi_statistic(probe_combi, new_obje, expected_children, fitness, life_counter);
 }
 
@@ -221,9 +200,9 @@ void probe_combi_statistic::crossover_Probes(probe_combi_statistic *pcombi2) {
         rand_cross_pos1 = get_random(0, random_interval);
         rand_cross_pos2 = get_random(0, random_interval);
 
-        swap(& probe_combi[rand_cross_pos1],          & pcombi2->probe_combi[rand_cross_pos2]);
-        swap(& probe_combi[rand_cross_pos1],          & probe_combi[random_interval]);       // um keine Listen zu verwenden
-        swap(& pcombi2->probe_combi[rand_cross_pos2], & pcombi2->probe_combi[random_interval]);         // wird im Array getauscht
+        swap(probe_combi[rand_cross_pos1],          pcombi2->probe_combi[rand_cross_pos2]);
+        swap(probe_combi[rand_cross_pos1],          probe_combi[random_interval]);       // um keine Listen zu verwenden
+        swap(pcombi2->probe_combi[rand_cross_pos2], pcombi2->probe_combi[random_interval]);         // wird im Array getauscht
 
         random_interval--;
     }
@@ -247,7 +226,7 @@ void probe_combi_statistic::crossover_Probes(probe_combi_statistic *pcombi2) {
         else
             change2 = pcombi2->get_dupl_pos();
 
-        swap(& probe_combi[change1],   & pcombi2->probe_combi[change2]);        // worst case = die Felder sehen genauso aus, wie vor
+        swap(probe_combi[change1], pcombi2->probe_combi[change2]);        // worst case = die Felder sehen genauso aus, wie vor
         // dem Crossover
     }
 

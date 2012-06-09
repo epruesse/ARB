@@ -19,7 +19,7 @@
 class StrArray;
 class ConstStrArray;
 
-struct probe {
+struct ProbeRef {
     int probe_index;
     int allowed_mismatches;
     int e_coli_pos;
@@ -45,20 +45,20 @@ public:
 
 class probe_combi_statistic : virtual Noncopyable {
     // die Sondenkombis werden in dieser Klasse gespeichert
-    probe      **probe_combi;
-    probe_tabs  *probe_tab;
+    const ProbeRef **probe_combi;
+    probe_tabs      *probe_tab;
 
     double expected_children;
     double fitness;
     int    life_counter;        // Eine Sondenkombination hat nur eine Lebenslaenge von MAXLIFEFORCOMBI
 
-    void quicksort(long left, long right); // Randomized Quicksort
+    void randomized_quicksort(long left, long right);
 
     int get_dupl_pos(); // gibt Index einer Stelle zurueck, die doppelt vorkommt; field muss sortiert sein !!!
 
 public:
-    void set_probe_combi(int j, probe *f) { probe_combi[j] = f; }
-    probe *get_probe_combi(int j) { return probe_combi[j]; }
+    void set_probe_combi(int j, const ProbeRef *f) { probe_combi[j] = f; }
+    const ProbeRef *get_probe_combi(int j) { return probe_combi[j]; }
 
     double      get_fitness()              { return fitness; }
     double      get_expected_children()        { return expected_children; }
@@ -68,31 +68,37 @@ public:
 
     bool        ok_for_next_gen(int &len_roul_wheel);
 
-    void        sub_life_counter()         { life_counter --; }
-    void        init_life_counter();
-    bool        is_dead()              { return life_counter <= 0; }
+    void        init_life_counter() { life_counter = MAXLIFEFORCOMBI; }
+    void        dec_life_counter() { life_counter--; }
+    bool        is_dead() { return life_counter <= 0; }
 
     void        sigma_truncation(double average_fit, double dev);       // dient zur Skalierung der Fitness; um zu dominante Kombis zu vermeiden
     double      calc_fitness(class ProbeValuation *p_eval, int len_of_field, GB_ERROR& error);                 // fitness-berechnung einer Sondenkombi
     double      calc_expected_children(double average_fitness);
 
-    void        mutate_Probe(ProbeValuation *p_eval);                     // mutiert zufaellig die Sondenkombination nr_of_probe.
-    void        crossover_Probes(probe_combi_statistic *pcombi2);   // realisiert den Crossover zwischen Probe1 und Probe2
-    void        swap(probe **a, probe **b);
+    void mutate_Probe(ProbeValuation *p_eval);                            // mutiert zufaellig die Sondenkombination nr_of_probe.
+    void crossover_Probes(probe_combi_statistic *pcombi2);                // realisiert den Crossover zwischen Probe1 und Probe2
+    
+    void swap(const ProbeRef*& a, const ProbeRef*& b) {
+        const ProbeRef *help = a;
+        a = b;
+        b = help;
+    }
+    
+    void sort(long feld_laenge) { if (feld_laenge>1) randomized_quicksort(0, feld_laenge-1); }
 
-    void        sort(long feld_laenge);     // es wird ein randomized quicksort verwendet
     probe_combi_statistic   *duplicate() const;       // dupliziert dieses Objekt (z.B. fuer naechste Generation)
-    probe_combi_statistic   *check_duplicates(class GenerationDuplicates *dup_tree = NULL);
+    probe_combi_statistic *check_duplicates(class GenerationDuplicates *dup_tree = NULL);
     // rueckgabewert ist NULL, wenn das Feld duplikate enthaelt bzw.
     // es wird sortiertes field zurueckgegeben. Wenn NULL zurueckkommt, dann
     // wurde field jedoch noch nicht deleted
 
     void print();
-    void print(probe *p);
-    void print(probe **arr, int length);
+    void print(const ProbeRef *p);
+    void print(const ProbeRef **arr, int length);
 
 
-    probe_combi_statistic(probe **pc = NULL, probe_tabs *ps = NULL, double exp = 0, double fit = 0,  int lifec = MAXLIFEFORCOMBI);
+    probe_combi_statistic(const ProbeRef **pc = NULL, probe_tabs *ps = NULL, double exp = 0, double fit = 0,  int lifec = MAXLIFEFORCOMBI);
     ~probe_combi_statistic();
 };
 
@@ -211,7 +217,7 @@ class ProbeValuation : virtual Noncopyable {
     int   *ecolipos_array;
     int    size_sonden_array;
 
-    probe **probe_pool; // Generierung eines Pools, in dem die Wahrscheinlichkeiten fuer die Erfassung
+    ProbeRef **probe_pool; // Generierung eines Pools, in dem die Wahrscheinlichkeiten fuer die Erfassung
     // der Sonden schon eingearbeitet sind. DIe WS werden vom Benutzer fuer jede einzelne Probe bestimmt.
 
     int pool_length;
@@ -228,7 +234,7 @@ public:
     int get_max_init_for_gen() { return max_init_pop_combis; }
 
     int get_pool_length()   { return pool_length; }
-    probe **get_probe_pool() { return probe_pool; }
+    const ProbeRef *const *get_probe_pool() { return probe_pool; }
     
     int get_size_sondenarray() { return size_sonden_array; }
     char **get_sondenarray() { return sondenarray; } // @@@ rename
