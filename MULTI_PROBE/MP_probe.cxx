@@ -164,7 +164,7 @@ GB_ERROR ProbeValuation::evaluate(StrArray& results) {
         for (int i=0; i<size_sonden_array; i++)         // generierung eines pools, in dem jede Probe nur einmal pro Mismatch
         {                           // vorkommt, damit alle moeglichen Kombinationen deterministisch
             for (int j=0; j<=mismatch_array[i]; j++) {      // generiert werden koennen.
-                probe *temp_probe = new probe;
+                ProbeRef *temp_probe = new ProbeRef;
                 temp_probe->probe_index = i;
                 temp_probe->allowed_mismatches = j;
                 temp_probe->e_coli_pos = ecolipos_array[i];
@@ -179,7 +179,7 @@ GB_ERROR ProbeValuation::evaluate(StrArray& results) {
             for (int j=0; j<=mismatch_array[i]; j++)        // der Sonden schon eingearbeitet sind. DIe WS werden vom Benutzer fuer jedE
             {                           // einzelne Probe bestimmt
                 for (int k=0; k < bewertungarray[i]; k++) {
-                    probe *temp_probe = new probe;
+                    ProbeRef *temp_probe = new ProbeRef;
                     temp_probe->probe_index = i;
                     temp_probe->allowed_mismatches = j;
                     temp_probe->e_coli_pos = ecolipos_array[i];
@@ -221,8 +221,8 @@ ProbeValuation::ProbeValuation(char**& sonden_array, int no_of_sonden, int*& bew
     // limit initial population size
     if (max_init_pop_combis > MAXINITPOPULATION) max_init_pop_combis = MAXINITPOPULATION;
 
-    probe_pool = new probe*[pool_length];
-    memset(probe_pool, 0, pool_length * sizeof(probe*));    // Struktur mit 0 initialisieren.
+    probe_pool = new ProbeRef*[pool_length];
+    memset(probe_pool, 0, pool_length * sizeof(ProbeRef*));    // Struktur mit 0 initialisieren.
 
     set_act_gen(new Generation(get_max_init_for_gen(), 1)); // erste Generation = Ausgangspopulation
 }
