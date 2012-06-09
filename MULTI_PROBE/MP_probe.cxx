@@ -18,6 +18,15 @@
 
 #include <ctime>
 
+inline long k_aus_n(int k, int n) {
+    int a = n, b = 1, i;
+
+    if (k > (n / 2)) k = n - k;
+    if (k <= 0) return (k == 0);
+    for (i = 2; i <= k; n--, a *= n, b *= i, i++) ;
+    return a / b;
+}
+
 GB_ERROR ProbeValuation::evolution(StrArray& results) {
     long n = 0;
     for (int i=0; i<size_sonden_array; i++) {            // Mismatches (=duplikate) aufsummieren, um Groesse von Pool zu bestimmen.
@@ -203,9 +212,13 @@ GB_ERROR ProbeValuation::evaluate(StrArray& results) {
 
 
 
-ProbeValuation::ProbeValuation(char**& sonden_array, int no_of_sonden, int*& bewertung, int*& mismatch, int*& ecoli_pos) {
-    memset(this, 0, sizeof(ProbeValuation)); 
-
+ProbeValuation::ProbeValuation(char**& sonden_array, int no_of_sonden, int*& bewertung, int*& mismatch, int*& ecoli_pos)
+    : hamdist(mp_gl_awars.no_of_probes), 
+      pool_length(0),
+      max_init_pop_combis(0),
+      act_generation(NULL), 
+      child_generation(NULL) 
+{
     size_sonden_array = no_of_sonden;
 
     sondenarray    = sonden_array; sonden_array = NULL;
@@ -220,8 +233,8 @@ ProbeValuation::ProbeValuation(char**& sonden_array, int no_of_sonden, int*& bew
 
     max_init_pop_combis = k_aus_n(mp_gl_awars.no_of_probes, max_init_pop_combis);
 
-    if (max_init_pop_combis > MAXINITPOPULATION)        // Ausgangspopulationsgroesse ist limitiert
-        max_init_pop_combis = MAXINITPOPULATION;
+    // limit initial population size
+    if (max_init_pop_combis > MAXINITPOPULATION) max_init_pop_combis = MAXINITPOPULATION;
 
     probe_pool = new probe*[pool_length];
     memset(probe_pool, 0, pool_length * sizeof(probe*));    // Struktur mit 0 initialisieren.
@@ -231,10 +244,8 @@ ProbeValuation::ProbeValuation(char**& sonden_array, int no_of_sonden, int*& bew
 
 
 ProbeValuation::~ProbeValuation() {
-    int i;
-
-    for (i=0; i<size_sonden_array; i++) free(sondenarray[i]);
-    for (i=0; i<pool_length; i++) delete probe_pool[i];
+    for (int i=0; i<size_sonden_array; i++) free(sondenarray[i]);
+    for (int i=0; i<pool_length; i++) delete probe_pool[i];
 
     if (act_generation == child_generation) delete act_generation;
     else {
@@ -243,10 +254,11 @@ ProbeValuation::~ProbeValuation() {
     }
 
     delete [] probe_pool;
-    
+
     delete [] ecolipos_array;
     delete [] mismatch_array;
     delete [] bewertungarray;
     delete [] sondenarray;
 }
+
 

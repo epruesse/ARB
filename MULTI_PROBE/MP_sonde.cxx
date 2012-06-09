@@ -14,7 +14,6 @@
 #include <aw_msg.hxx>
 #include <client.h>
 
-#include <cmath>
 #include <algorithm>
 
 Probe::Probe(char* bezeichner, int allowed_mis, double outside_mis)
@@ -74,7 +73,6 @@ MO_Mismatch** Probe::get_matching_species(bool match_kompl, int match_weight, in
         char           *match_name, *match_mismatches, *match_wmismatches;
         char            toksep[2];
         T_PT_MATCHLIST  match_list;
-        char           *probe    = NULL;
         char           *locs_error;
         long            match_list_cnt;
         bytestring      bs;
@@ -98,7 +96,6 @@ MO_Mismatch** Probe::get_matching_species(bool match_kompl, int match_weight, in
                      LOCS_MATCH_MAX_MISMATCHES, match_mis, // Mismatches
                      LOCS_SEARCHMATCH,          match_seq, // Sequence
                      NULL)) {
-            free(probe);
             error = "Connection to PT_SERVER lost (2)";
         }
 

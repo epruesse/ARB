@@ -23,10 +23,6 @@ awar_vars mp_gl_awars;
 MP_Main   *mp_main   = NULL;
 MP_Global *mp_global = NULL;
 
-char MP_probe_tab[256];                             // zum checken, ob ein eingegebener Sondenstring ok ist
-int  remembered_mismatches;
-int  anz_elem_marked     = 0;
-int  anz_elem_unmarked   = 0;
 bool pt_server_different = false;
 
 MP_Main::MP_Main(AW_root *awr, AWT_canvas *canvas) {
@@ -53,7 +49,6 @@ void MP_Main::create_awars() {
     aw_root->awar_int(MP_AWAR_WEIGHTEDMISMATCHES)->add_target_var(& mp_gl_awars.weightedmismatches)->write_int(2);
     aw_root->awar_int(MP_AWAR_COMPLEMENT, 1)->add_target_var(& mp_gl_awars.complement);
     aw_root->awar_int(MP_AWAR_MISMATCHES)->add_target_var(& mp_gl_awars.no_of_mismatches)->add_callback(MP_modify_selected, (AW_CL)0, (AW_CL)0);
-    remembered_mismatches = 0;      // derselbe initiale Wert wie mp_gl_awars.no_of_mismatches
     aw_root->awar_int(MP_AWAR_PTSERVER)->add_target_var(& mp_gl_awars.ptserver);
     aw_root->awar_string(MP_AWAR_RESULTPROBES)->add_target_var(& mp_gl_awars.result_probes);
     aw_root->awar_string(MP_AWAR_RESULTPROBESCOMMENT)->add_target_var(& mp_gl_awars.result_probes_comment);
@@ -71,22 +66,8 @@ void MP_Main::create_awars() {
 }
 
 
-static void create_tables() {
-    int i;
-
-    // probe_tab
-    for (i=0; i<256; i++)
-        MP_probe_tab[i] = false;
-
-    const unsigned char *true_chars = (const unsigned char *)"atgucnATGUCN";
-    for (i = 0; true_chars[i]; ++i) {
-        MP_probe_tab[true_chars[i]] = true;
-    }
-}
-
 AW_window *create_multiprobe_window(AW_root *root, AW_CL cl_canvas) {
     if (!mp_main) {
-        create_tables();
         mp_main = new MP_Main(root, (AWT_canvas *)cl_canvas);
     }
 
