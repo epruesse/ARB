@@ -333,7 +333,9 @@ public:
 
 typedef List<Probe> ProbeList;
 
-class Sondentopf : virtual Noncopyable {
+class MultiProbeCombinations : virtual Noncopyable {
+    // for a set of probes, this class holds all subsets of probes.
+    
     const TargetGroup&  targetGroup;
     GB_HASH            *color_hash;
     List<ProbeList>    *probeLists;
@@ -344,7 +346,7 @@ public:
     class probe_tabs* fill_Stat_Arrays();
     double**          gen_Mergefeld();
 
-    void put_Sonde(char *name, int allowed_mis, double outside_mis, GB_ERROR& error);
+    void add_probe(char *name, int allowed_mis, double outside_mis, GB_ERROR& error);
     long get_length_hitliste();
 
     const GB_HASH *get_color_hash() {
@@ -353,8 +355,8 @@ public:
         return color_hash;
     }
 
-    Sondentopf(const TargetGroup& targetGroup_);
-    ~Sondentopf();
+    MultiProbeCombinations(const TargetGroup& targetGroup_);
+    ~MultiProbeCombinations();
 };
 
 class ProbeCache : virtual Noncopyable {
@@ -370,7 +372,7 @@ public:
 
     const TargetGroup& get_TargetGroup() const { return targeted; }
 
-    ProbeCache(size_t anz_sonden);
+    ProbeCache(size_t probeCount);
     ~ProbeCache() { if (cachehash) GBS_free_hash(cachehash); }
 };
 

@@ -193,6 +193,7 @@ public:
 };
 
 class ProbeValuation : virtual Noncopyable {
+    // @@@ merge elements of these 4 arrays into one class and replace by one array of instances of that class
     char **sondenarray;
     int   *bewertungarray;
     int   *mismatch_array;
@@ -213,10 +214,12 @@ class ProbeValuation : virtual Noncopyable {
 public:
     void set_act_gen(Generation *g) { act_generation = g; }
     int get_max_init_for_gen() { return max_init_pop_combis; }
+
     int get_pool_length()   { return pool_length; }
     probe **get_probe_pool() { return probe_pool; }
+    
     int get_size_sondenarray() { return size_sonden_array; }
-    char **get_sondenarray() { return sondenarray; }
+    char **get_sondenarray() { return sondenarray; } // @@@ rename
 
     void insert_in_result_list(probe_combi_statistic *pcs, ProbeValuationResults& pvr);
 
