@@ -159,26 +159,12 @@ void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs, ProbeValu
 }
 
 GB_ERROR ProbeValuation::evaluate(StrArray& results) {
-    int    i, j, k, counter = 0;
-    probe *temp_probe;
-
-    if (new_pt_server) {
-        new_pt_server = false;
-
-        mp_global->reinit_probe_cache(MAXSONDENHASHSIZE);
-    }
-
-    if (pt_server_different) {
-        mp_global->clear_probe_cache();
-        new_pt_server = true;
-        return "PT_server does not match dataset (species differ)";
-    }
-
+    int counter = 0;
     if (max_init_pop_combis < MAXINITPOPULATION) {
-        for (i=0; i<size_sonden_array; i++)         // generierung eines pools, in dem jede Probe nur einmal pro Mismatch
+        for (int i=0; i<size_sonden_array; i++)         // generierung eines pools, in dem jede Probe nur einmal pro Mismatch
         {                           // vorkommt, damit alle moeglichen Kombinationen deterministisch
-            for (j=0; j<=mismatch_array[i]; j++) {      // generiert werden koennen.
-                temp_probe = new probe;
+            for (int j=0; j<=mismatch_array[i]; j++) {      // generiert werden koennen.
+                probe *temp_probe = new probe;
                 temp_probe->probe_index = i;
                 temp_probe->allowed_mismatches = j;
                 temp_probe->e_coli_pos = ecolipos_array[i];
@@ -186,14 +172,14 @@ GB_ERROR ProbeValuation::evaluate(StrArray& results) {
                 probe_pool[counter++] = temp_probe;
             }
         }
-        pool_length = counter;
+        pool_length = counter; // @@@ modifies pool_length (really harmless?)
     }
     else {
-        for (i=0; i<size_sonden_array; i++) {                              // Generierung eines Pools, in dem die Wahrscheinlichkeiten fuer die Erfassung
-            for (j=0; j<=mismatch_array[i]; j++)        // der Sonden schon eingearbeitet sind. DIe WS werden vom Benutzer fuer jedE
+        for (int i=0; i<size_sonden_array; i++) {                              // Generierung eines Pools, in dem die Wahrscheinlichkeiten fuer die Erfassung
+            for (int j=0; j<=mismatch_array[i]; j++)        // der Sonden schon eingearbeitet sind. DIe WS werden vom Benutzer fuer jedE
             {                           // einzelne Probe bestimmt
-                for (k=0; k < bewertungarray[i]; k++) {
-                    temp_probe = new probe;
+                for (int k=0; k < bewertungarray[i]; k++) {
+                    probe *temp_probe = new probe;
                     temp_probe->probe_index = i;
                     temp_probe->allowed_mismatches = j;
                     temp_probe->e_coli_pos = ecolipos_array[i];
@@ -206,7 +192,6 @@ GB_ERROR ProbeValuation::evaluate(StrArray& results) {
 
     act_generation->init_valuation(this);
     GB_ERROR error = evolution(results);
-
     return error;
 }
 

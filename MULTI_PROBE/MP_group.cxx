@@ -51,88 +51,77 @@ void Group<ID>::insert_species(const GB_HASH *species_hash) {
 }
 
 template <typename ID>
-void Group<ID>::insert_species_knownBy_PTserver() {
-    const char *servername = NULL;
-    char       *match_name = NULL;
-    char        toksep[2];
-    char       *probe      = NULL;
-    char       *locs_error;
-    bytestring  bs;
-    int         i          = 0;
-    long        nr_of_species;
+GB_ERROR Group<ID>::insert_species_knownBy_PTserver() {
+    GB_ERROR error = NULL;
 
-    GB_ERROR error = NULL; // @@@ collect all aw_messages here and return as result -> use that result everywhere
-    if (!(servername=MP_probe_pt_look_for_server(error))) {
-        return;
-    }
+    const char *servername = MP_probe_pt_look_for_server(error);
+    if (servername) {
+        mp_pd_gl.link = aisc_open(servername, mp_pd_gl.com, AISC_MAGIC_NUMBER);
+        mp_pd_gl.locs.clear();
 
-    mp_pd_gl.link = aisc_open(servername, mp_pd_gl.com, AISC_MAGIC_NUMBER);
-    mp_pd_gl.locs.clear();
-    servername = 0;
-
-    if (!mp_pd_gl.link) {
-        aw_message("Cannot contact Probe bank server ");
-        return;
-    }
-    if (MP_init_local_com_struct()) {
-        aw_message("Cannot contact Probe bank server (2)");
-        // @@@ missing aisc_close
-        return;
-    }
-
-
-    if (aisc_put(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs, NULL)) {
-        free(probe);
-        aw_message("Connection to PT_SERVER lost (4)");
-        // @@@ missing aisc_close
-        return;
-    }
-
-
-    bs.data = 0;
-    aisc_get(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs,
-             LOCS_MP_ALL_SPECIES_STRING, &bs,
-             LOCS_MP_COUNT_ALL_SPECIES,  &nr_of_species,
-             LOCS_ERROR,                 &locs_error,
-             NULL);
-
-    if (*locs_error) {
-        aw_message(locs_error);
-    }
-
-    free(locs_error);
-
-    allocate(nr_of_species);
-
-    toksep[0] = 1;
-    toksep[1] = 0;
-
-    if (bs.data) {
-        const GB_HASH *unmarked_species = mp_global->get_unmarked_species();
-        const GB_HASH *marked_species   = mp_global->get_marked_species();
-
-        match_name = strtok(bs.data, toksep);
-        while (match_name) {
-            i++;
-            bool species_in_DB = GBS_read_hash(marked_species, match_name) || GBS_read_hash(unmarked_species, match_name);
-            if (!species_in_DB) {
-                pt_server_different = true;
-                // @@@ missing aisc_close
-                return;
+        if (!mp_pd_gl.link) {
+            error = "Cannot contact PT-server [1]";
+        }
+        else {
+            if (MP_init_local_com_struct()) {
+                error = "Cannot contact PT-server [2]";
             }
-            put_entry(match_name);
-            match_name = strtok(0, toksep);
+            else if (aisc_put(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs, NULL)) {
+                error = "Connection to PT_SERVER lost [1]";
+            }
+            else {
+                bytestring  bs; bs.data = NULL;
+                long        nr_of_species;
+                char       *locs_error;
+
+                aisc_get(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs,
+                         LOCS_MP_ALL_SPECIES_STRING, &bs,
+                         LOCS_MP_COUNT_ALL_SPECIES,  &nr_of_species,
+                         LOCS_ERROR,                 &locs_error,
+                         NULL);
+
+                if (*locs_error) {
+                    aw_message(locs_error);
+                }
+
+                free(locs_error);
+
+                allocate(nr_of_species);
+
+                if (bs.data) {
+                    const GB_HASH *unmarked_species = mp_global->get_unmarked_species();
+                    const GB_HASH *marked_species   = mp_global->get_marked_species();
+
+                    char toksep[2] = {1,0};
+                    const char *match_name = strtok(bs.data, toksep);
+                    while (match_name) {
+                        bool species_in_DB = GBS_read_hash(marked_species, match_name) || GBS_read_hash(unmarked_species, match_name);
+                        if (!species_in_DB) {
+                            error = "PT-server contains species which are not in database";
+                            break;
+                        }
+                        put_entry(match_name);
+                        match_name = strtok(0, toksep);
+                    }
+
+                    long species_in_DB_count = GBS_hash_count_elems(unmarked_species)+GBS_hash_count_elems(marked_species);
+                    if (species_in_DB_count>nr_of_species) {
+                        error = "database contains species which are not in PT-server";
+                    }
+                }
+                else {
+                    error = "PT-server query reported no species";
+                }
+
+                free(bs.data);
+            }
+            aisc_close(mp_pd_gl.link, mp_pd_gl.com);
         }
     }
-    else aw_message("DB-query produced no species.\n");
-
-    aisc_close(mp_pd_gl.link, mp_pd_gl.com);
-    free(bs.data);
-
-    delete match_name;
+    return error;
 }
 
-TargetGroup::TargetGroup(const GB_HASH *targeted_species) {
-    known.insert_species_knownBy_PTserver();
+TargetGroup::TargetGroup(const GB_HASH *targeted_species, GB_ERROR& error) {
+    error = known.insert_species_knownBy_PTserver();
     targeted.insert_species(targeted_species);
 }
