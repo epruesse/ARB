@@ -286,16 +286,18 @@ double probe_combi_statistic::calc_fitness(ProbeValuation *p_eval, int len_of_fi
 
     const ProbeCache *stc = mp_global->get_probe_cache();
 
-    Sondentopf *sondentopf = new Sondentopf(stc->get_TargetGroup());
+    {
+        MultiProbeCombinations *combis = new MultiProbeCombinations(stc->get_TargetGroup());
 
-    for (i=0; i<len_of_field && !error; i++) {
-        sondentopf->put_Sonde((p_eval->get_sondenarray())[probe_combi[i]->probe_index],
+        for (i=0; i<len_of_field && !error; i++) {
+            combis->add_probe((p_eval->get_sondenarray())[probe_combi[i]->probe_index],
                               probe_combi[i]->allowed_mismatches,
                               probe_combi[i]->allowed_mismatches + mp_gl_awars.outside_mismatches_difference, error);
-    }
+        }
 
-    if (!error) probe_tab = sondentopf->fill_Stat_Arrays();
-    delete sondentopf;
+        if (!error) probe_tab = combis->fill_Stat_Arrays();
+        delete combis;
+    }
 
     fitness = 0.0;
 

@@ -16,18 +16,18 @@
 
 #include <cmath>
 
-static void delete_cached_Sonde(long hashval) {
+static void delete_cached_probe(long hashval) {
     Probe *s = (Probe*)hashval;
     delete s;
 }
 
-ProbeCache::ProbeCache(size_t anz_sonden)
+ProbeCache::ProbeCache(size_t probeCount)
     : targeted(mp_global->get_marked_species())
 {
     if (pt_server_different) return;
 
     anz_elem_unmarked = targeted.outgroup_species_count();
-    cachehash         = GBS_create_dynaval_hash(anz_sonden + 1, GB_IGNORE_CASE, delete_cached_Sonde);
+    cachehash         = GBS_create_dynaval_hash(probeCount + 1, GB_IGNORE_CASE, delete_cached_probe);
 }
 
 Probe* ProbeCache::add(char *name, int allowed_mis, double outside_mis, GB_ERROR& error) {
@@ -41,15 +41,7 @@ Probe* ProbeCache::add(char *name, int allowed_mis, double outside_mis, GB_ERROR
     return s;
 }
 
-// ############################################################################################
-/*
-  Zu jeder Kombination von Mehrfachsonden gehoert ein Sondentopf. Dieser enthaelt eine Liste mit
-  Sonden und eine Liste mit Kombinationen aus diesen Sonden. Die Kombinationen entstehen aus den
-  Sonden und/oder aus Kombinationen durch Verknuepfung mit der Methode Probe_AND.
-*/
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden SONDENTOPF ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Sondentopf::Sondentopf(const TargetGroup& targetGroup_)
+MultiProbeCombinations::MultiProbeCombinations(const TargetGroup& targetGroup_)
     : targetGroup(targetGroup_),
       color_hash(NULL)
 {
@@ -57,7 +49,7 @@ Sondentopf::Sondentopf(const TargetGroup& targetGroup_)
     probeLists->insert_as_last(new List<Probe>);
 }
 
-Sondentopf::~Sondentopf() {
+MultiProbeCombinations::~MultiProbeCombinations() {
     // darf nur delete auf die listenliste machen, nicht auf die MO_Lists, da die zu dem ProbeCache gehoeren
     Probe *stmp = NULL;
 
@@ -81,7 +73,7 @@ Sondentopf::~Sondentopf() {
 
 
 
-void Sondentopf::put_Sonde(char *name, int allowed_mis, double outside_mis, GB_ERROR& error) {
+void MultiProbeCombinations::add_probe(char *name, int allowed_mis, double outside_mis, GB_ERROR& error) {
     mp_assert(!error);
     mp_assert(name);
 
@@ -114,57 +106,54 @@ void Sondentopf::put_Sonde(char *name, int allowed_mis, double outside_mis, GB_E
 }
 
 
-double** Sondentopf::gen_Mergefeld() {
-    List<Probe>* Sondenliste    = probeLists->get_first();
-    long         alle_bakterien = targetGroup.known_species_count();
-    double**     Mergefeld      = new double*[alle_bakterien+1];
+double** MultiProbeCombinations::gen_Mergefeld() {
+    List<Probe>* probes       = probeLists->get_first();   // @@@ rename
+    long         speciesCount = targetGroup.known_species_count();
+    double**     Mergefeld    = new double*[speciesCount+1];
 
-    for (int i=0; i<alle_bakterien+1; i++) {
+    for (int i=0; i <= speciesCount; i++) {
         Mergefeld[i] = new double[mp_gl_awars.no_of_probes];
         for (int j=0; j<mp_gl_awars.no_of_probes; j++) Mergefeld[i][j] = 100;
     }
 
-    long   sondennummer = 0;
-    Probe* sonde        = Sondenliste->get_first();
-    while (sonde) {
-        long H_laenge = sonde->get_length_hitliste();
+    long   probeIdx = 0;
+    Probe *probe    = probes->get_first();
+    while (probe) {
+        long H_laenge = probe->get_length_hitliste();
         for (int i=0; i<H_laenge; i++) {
-            Hit       *hit     = sonde->hit(i);
+            Hit       *hit     = probe->hit(i);
             SpeciesID  species = hit->target();
 
-            Mergefeld[species][sondennummer] = hit->get_mismatch_at_pos(0);
+            Mergefeld[species][probeIdx] = hit->get_mismatch_at_pos(0);
         }
 
-        sondennummer++;
-        sonde = Sondenliste->get_next();
+        probeIdx++;
+        probe = probes->get_next();
     }
 
     return Mergefeld;
 }
 
-probe_tabs* Sondentopf::fill_Stat_Arrays() {
+probe_tabs* MultiProbeCombinations::fill_Stat_Arrays() {
     // erstmal generische Felder
-    List<Probe>* Sondenliste = probeLists->get_first();
-
-    mp_assert(Sondenliste);
+    List<Probe> *probes = probeLists->get_first();
+    mp_assert(probes);
 
     long feldlen     = (long) pow(3.0, (int)(mp_gl_awars.no_of_probes));
     int* markierte   = new int[feldlen];                        // MEL
     int* unmarkierte = new int[feldlen];                        // MEL
 
-    long alle_bakterien = targetGroup.known_species_count();
-    long wertigkeit     = 0;
+    long speciesCount = targetGroup.known_species_count();
+    long wertigkeit   = 0;
 
-    double** Mergefeld;
-    int*     AllowedMismatchFeld = new int[mp_gl_awars.no_of_probes];
-    Probe*   sonde;
+    int* AllowedMismatchFeld = new int[mp_gl_awars.no_of_probes];
 
-    sonde = Sondenliste->get_first();
+    Probe *sonde = probes->get_first();
 
     for (int i=0; i<mp_gl_awars.no_of_probes; i++) {
         mp_assert(sonde);
         AllowedMismatchFeld[i] = (int) sonde->get_Allowed_Mismatch_no(0);
-        sonde = Sondenliste->get_next();
+        sonde = probes->get_next();
     }
 
     for (int i=0; i<feldlen; i++) {
@@ -172,11 +161,10 @@ probe_tabs* Sondentopf::fill_Stat_Arrays() {
         unmarkierte[i] = 0;
     }
 
-    int faktor=0;
-    Mergefeld = gen_Mergefeld();
+    int      faktor    = 0;
+    double** Mergefeld = gen_Mergefeld();
 
-
-    for (SpeciesID id(0); id < alle_bakterien+1; ++id) {
+    for (SpeciesID id(0); id < speciesCount+1; ++id) {
         wertigkeit=0;
         for (int j=0; j<mp_gl_awars.no_of_probes; j++) {
             if (Mergefeld[id][j] <= ((double) AllowedMismatchFeld[j] + (double) mp_gl_awars.greyzone)) {
@@ -201,7 +189,7 @@ probe_tabs* Sondentopf::fill_Stat_Arrays() {
         }
     }
 
-    for (int i=0; i<alle_bakterien+1; i++) {
+    for (int i=0; i<speciesCount+1; i++) {
         delete [] Mergefeld[i];
     }
     delete [] Mergefeld;
@@ -211,13 +199,14 @@ probe_tabs* Sondentopf::fill_Stat_Arrays() {
 }
 
 
-void Sondentopf::gen_color_hash() {
+void MultiProbeCombinations::gen_color_hash() {
     if (mp_gl_awars.no_of_probes) {
         color_hash = GBS_create_hash(targetGroup.known_species_count()*1.25+1, GB_IGNORE_CASE);
 
-        List<Probe>* Sondenliste         = probeLists->get_first();
-        long         alle_bakterien      = targetGroup.known_species_count();
-        int*         AllowedMismatchFeld = new int[mp_gl_awars.no_of_probes];
+        List<Probe>* Sondenliste  = probeLists->get_first();
+        long         speciesCount = targetGroup.known_species_count();
+
+        int* AllowedMismatchFeld = new int[mp_gl_awars.no_of_probes];
 
         {
             Probe* sonde = Sondenliste->get_first();
@@ -229,7 +218,7 @@ void Sondentopf::gen_color_hash() {
 
         double** Mergefeld = gen_Mergefeld();
 
-        for (SpeciesID i(1); i < alle_bakterien+1; ++i) {
+        for (SpeciesID i(1); i < speciesCount+1; ++i) {
             int rgb[3] = {0, 0, 0};
 
             for (int j=0; j<mp_gl_awars.no_of_probes; j++) {
@@ -255,7 +244,7 @@ void Sondentopf::gen_color_hash() {
             GBS_write_hash(color_hash, targetGroup.id2name(i), idx2color[coloridx]);
         }
 
-        for (int i=0; i<alle_bakterien+1; i++) delete [] Mergefeld[i];
+        for (int i=0; i<speciesCount+1; i++) delete [] Mergefeld[i];
         delete [] Mergefeld;
 
 

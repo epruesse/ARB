@@ -445,10 +445,10 @@ void MP_color_next_probes_in_tree(AW_window *aww, AW_CL cl_backward, AW_CL cl_re
     MP_color_probes_in_tree(aww);
 }
 
-static Sondentopf *sondentopf4selectedMultiprobe(GB_ERROR& error) {
+static MultiProbeCombinations *combinationsOfSelectedMultiprobe(GB_ERROR& error) {
     mp_assert(!error);
 
-    Sondentopf *topf = NULL;
+    MultiProbeCombinations *topf = NULL;
     if (!mp_global) {
         error = "No multiprobes calculated yet";
     }
@@ -531,12 +531,12 @@ static Sondentopf *sondentopf4selectedMultiprobe(GB_ERROR& error) {
             if (!error) {
                 ProbeCache *probeCache = mp_global->get_probe_cache();
 
-                topf = new Sondentopf(probeCache->get_TargetGroup());
+                topf = new MultiProbeCombinations(probeCache->get_TargetGroup());
 
                 mp_assert(!error);
                 for (int i=0; i<MAXPROBECOMBIS && !error; i++) {
                     if (probe_field[i]) {
-                        topf->put_Sonde(probe_field[i], mismatches[i], mismatches[i] + mp_gl_awars.outside_mismatches_difference, error);
+                        topf->add_probe(probe_field[i], mismatches[i], mismatches[i] + mp_gl_awars.outside_mismatches_difference, error);
                     }
                 }
 
@@ -564,8 +564,8 @@ static Sondentopf *sondentopf4selectedMultiprobe(GB_ERROR& error) {
 }
 
 void MP_color_probes_in_tree(AW_window */*aww*/) {
-    GB_ERROR    error      = NULL;
-    Sondentopf *sondentopf = sondentopf4selectedMultiprobe(error);
+    GB_ERROR                error  = NULL;
+    MultiProbeCombinations *combis = combinationsOfSelectedMultiprobe(error);
 
     if (error) {
         aw_message(error);
@@ -574,17 +574,17 @@ void MP_color_probes_in_tree(AW_window */*aww*/) {
         AWT_canvas     *scr = mp_main->get_canvas();
         GB_transaction  ta(scr->gb_main);
 
-        AWT_TREE(scr)->get_root_node()->calc_color_probes(sondentopf->get_color_hash());
+        AWT_TREE(scr)->get_root_node()->calc_color_probes(combis->get_color_hash());
         if (scr->gb_main) scr->gfx->update(scr->gb_main);
         scr->refresh();
     }
 
-    delete sondentopf;
+    delete combis;
 }
 
 void MP_mark_probes_in_tree(AW_window *aww) {
-    GB_ERROR    error      = NULL;
-    Sondentopf *sondentopf = sondentopf4selectedMultiprobe(error);
+    GB_ERROR                error  = NULL;
+    MultiProbeCombinations *combis = combinationsOfSelectedMultiprobe(error);
 
     if (error) {
         aw_message(error);
@@ -593,7 +593,7 @@ void MP_mark_probes_in_tree(AW_window *aww) {
         AWT_canvas *scr = mp_main->get_canvas();
         {
             GB_transaction ta(scr->gb_main);
-            const GB_HASH *col_hash = sondentopf->get_color_hash();
+            const GB_HASH *col_hash = combis->get_color_hash();
             for (GBDATA *gb_species = GBT_first_species(scr->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
                 GB_write_flag(gb_species, GBS_read_hash(col_hash, GBT_read_name(gb_species)) > AWT_GC_BLACK);
             }
@@ -605,8 +605,10 @@ void MP_mark_probes_in_tree(AW_window *aww) {
             scr->refresh();
         }
     }
-    
+
     MP_normal_colors_in_tree(aww);
+
+    delete combis;
 }
 
 void MP_Comment(AW_window *, AW_CL cl_com) {
