@@ -220,7 +220,6 @@ public:
 
     size_t known_species_count() const { return known.elements(); }
     size_t targeted_species_count() const { return targeted.elements(); }
-    size_t outgroup_species_count() const { return known_species_count()-targeted_species_count(); }
 
     SpeciesID name2id(const char *name) const { return known.get_index_by_name(name); }
     const char *id2name(SpeciesID id) const { return known.get_name_by_index(id); }
@@ -419,24 +418,23 @@ public:
 
 class AW_selection_list;
 
-extern AW_selection_list  *selected_list;
-extern AW_selection_list  *probelist;
-extern char                MP_probe_tab[256];
-extern AW_selection_list  *result_probes_list;
-extern int                 remembered_mismatches;
-extern int                 anz_elem_marked;
-extern int                 anz_elem_unmarked;
-extern unsigned char     **hamming_tab;
-extern int               **system3_tab;
-extern bool                pt_server_different;
-extern bool                new_pt_server;
+extern AW_selection_list *selected_list;
+extern AW_selection_list *probelist;
+extern AW_selection_list *result_probes_list;
 
-long            k_aus_n(int k, int n);                      // Berechnung k aus n
-extern int      get_random(int min, int max);       // gibt eine Zufallszahl x mit der Eigenschaft : min <= x <= max
+// @@@ elim globals
+extern bool pt_server_different;
+extern bool new_pt_server;
 
 extern MP_Main   *mp_main;
 extern MP_Global *mp_global;
 extern awar_vars  mp_gl_awars;                      // globale Variable, die manuell eingegebene Sequenz enthaelt
+
+inline int get_random(int min, int max) {
+    // gibt eine Zufallszahl x mit der Eigenschaft : min <= x <= max
+    mp_assert(min <= max);
+    return GB_random(max-min+1)+min;
+}
 
 void MP_init_and_calculate_and_display_multiprobes(AW_window *, AW_CL cl_gb_main);
 

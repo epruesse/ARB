@@ -26,8 +26,7 @@ ProbeCache::ProbeCache(size_t probeCount)
 {
     if (pt_server_different) return;
 
-    anz_elem_unmarked = targeted.outgroup_species_count();
-    cachehash         = GBS_create_dynaval_hash(probeCount + 1, GB_IGNORE_CASE, delete_cached_probe);
+    cachehash = GBS_create_dynaval_hash(probeCount + 1, GB_IGNORE_CASE, delete_cached_probe);
 }
 
 Probe* ProbeCache::add(char *name, int allowed_mis, double outside_mis, GB_ERROR& error) {

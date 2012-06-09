@@ -26,16 +26,19 @@ struct probe {
 };
 
 class probe_tabs : virtual Noncopyable {
-    int             *group_tab;
-    int             *non_group_tab;
-    int             length_of_group_tabs;
-public:
-    int             get_non_group_tab(int j) { return non_group_tab[j]; }
-    int             get_group_tab(int j) { return group_tab[j]; }
-    int             get_len_group_tabs() { return length_of_group_tabs; }
+    int *group_tab;
+    int *non_group_tab;
+    int  length_of_group_tabs;
 
-    probe_tabs          *duplicate();
-    void            print();
+public:
+    
+    int get_non_group_tab(int j) { return non_group_tab[j]; }
+    int get_group_tab(int j) { return group_tab[j]; }
+    int get_len_group_tabs() { return length_of_group_tabs; }
+
+    probe_tabs *duplicate();
+    void        print();
+
     probe_tabs(int *new_group_field = NULL, int *new_non_group_field = NULL, int len_group = 0);
     ~probe_tabs();
 };
@@ -49,13 +52,9 @@ class probe_combi_statistic : virtual Noncopyable {
     double fitness;
     int    life_counter;        // Eine Sondenkombination hat nur eine Lebenslaenge von MAXLIFEFORCOMBI
 
-private:
-    void        quicksort(long left,
-                          long right);  // Randomized Quicksort
+    void quicksort(long left, long right); // Randomized Quicksort
 
-    int         get_dupl_pos();     // gibt Index einer Stelle zurueck, die doppelt vorkommt; field muss sortiert sein !!!
-    int         modificated_hamming_dist(int one, int two); // pseudo hamming distanz einer Sondenkombi
-
+    int get_dupl_pos(); // gibt Index einer Stelle zurueck, die doppelt vorkommt; field muss sortiert sein !!!
 
 public:
     void set_probe_combi(int j, probe *f) { probe_combi[j] = f; }
@@ -87,10 +86,10 @@ public:
     // rueckgabewert ist NULL, wenn das Feld duplikate enthaelt bzw.
     // es wird sortiertes field zurueckgegeben. Wenn NULL zurueckkommt, dann
     // wurde field jedoch noch nicht deleted
-    int         calc_index_system3(int *field);
-    void        print();
-    void        print(probe *p);
-    void        print(probe **arr, int length);
+
+    void print();
+    void print(probe *p);
+    void print(probe **arr, int length);
 
 
     probe_combi_statistic(probe **pc = NULL, probe_tabs *ps = NULL, double exp = 0, double fit = 0,  int lifec = MAXLIFEFORCOMBI);
@@ -192,7 +191,19 @@ public:
     List<ProbeCombi>& get_list() { return computation_result_list; }
 };
 
+class HammingDistance : virtual Noncopyable {
+    unsigned char **dist;
+    int             size;
+
+public:
+    HammingDistance(int noOfProbes_);
+    ~HammingDistance();
+    int get(int i, int j) const { return dist[i][j]; }
+};
+
 class ProbeValuation : virtual Noncopyable {
+    HammingDistance hamdist;
+    
     // @@@ merge elements of these 4 arrays into one class and replace by one array of instances of that class
     char **sondenarray;
     int   *bewertungarray;
@@ -222,6 +233,8 @@ public:
     char **get_sondenarray() { return sondenarray; } // @@@ rename
 
     void insert_in_result_list(probe_combi_statistic *pcs, ProbeValuationResults& pvr);
+
+    const HammingDistance& get_hamming_distance() const { return hamdist; }
 
     GB_ERROR evaluate(StrArray& results) __ATTR__USERESULT; // Zufaellige Auswahl einer Grundmenge von Sondenkombinationen
 

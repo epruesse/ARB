@@ -9,6 +9,7 @@
 // ============================================================= //
 
 #include "MP_probe.hxx"
+#include <cmath>
 
 probe_combi_statistic::probe_combi_statistic(probe **pc, probe_tabs *ps, double exp, double fit, int life_cnt) {
     memset(this, 0, sizeof(probe_combi_statistic));
@@ -261,18 +262,57 @@ void probe_combi_statistic::init_stats() {
     expected_children = 0;
 }
 
-int probe_combi_statistic::calc_index_system3(int *field) {
-    int i, result = 0;
+// ----------------------------------------
 
-    for (i=0; i<mp_gl_awars.no_of_probes; i++)
-        result += system3_tab[field[i]][i];     // Ergebnis von : (3^i) * field[i];
+HammingDistance::HammingDistance(int noOfProbes) {
+    size = (int)pow(3.0, (double)noOfProbes);
+    dist = new unsigned char*[size];
 
-    return result;
+    int **help = new int*[size];
+    for (int i=0; i<size; i++) {
+        dist[i] = new unsigned char[size];
+        memset(dist[i], 0, sizeof(unsigned char) * size);
+
+        help[i] = new int[noOfProbes];
+        memset(help[i], 0, sizeof(int) * noOfProbes);
+    }
+
+    {
+        int counter = 1;
+        for (int i=0; i< noOfProbes; i++) {
+            for (int j=0; j<size; j++) {
+                for (int wert = 0; wert < 3; wert++) {
+                    for (int k=0; k<counter; k++) {
+                        help[j++][i] = wert;
+                    }
+                }
+                j--;
+            }
+            counter *= 3;
+        }
+    }
+
+    for (int i=0; i<size; i++) {
+        for (int j=0; j<size; j++) {
+            for (int k=0; k<noOfProbes; k++) {
+                if ((help[i][k] == 2 && help[j][k] == 0) ||
+                    (help[i][k] == 0 && help[j][k] == 2))
+                {
+                    dist[i][j]++;
+                }
+            }
+        }
+    }
+
+    for (int i=0; i<size; i++) delete [] help[i];
+    delete [] help;
 }
 
-
-inline int probe_combi_statistic::modificated_hamming_dist(int one, int two) { // pseudo hamming distanz einer Sondenkombi
-    return hamming_tab[one][two];
+HammingDistance::~HammingDistance() {
+    for (int i = 0; i<size; i++) {
+        delete [] dist[i];
+    }
+    delete [] dist;
 }
 
 double probe_combi_statistic::calc_fitness(ProbeValuation *p_eval, int len_of_field, GB_ERROR& error) {
@@ -303,11 +343,13 @@ double probe_combi_statistic::calc_fitness(ProbeValuation *p_eval, int len_of_fi
 
     if (!error) {
         hammingarray = new long[mp_gl_awars.no_of_probes+1];
+        
+        const HammingDistance& hamming_distance = p_eval->get_hamming_distance();
 
         for (i=0; i< probe_tab->get_len_group_tabs()-1; i++) {
             memset(hammingarray, 0,  sizeof(long) *(mp_gl_awars.no_of_probes + 1));
             for (j=0; j<probe_tab->get_len_group_tabs(); j++) {
-                mod_ham_dist = modificated_hamming_dist(i, j);
+                mod_ham_dist = hamming_distance.get(i, j);
                 hammingarray[mod_ham_dist] +=  probe_tab->get_non_group_tab(j);
             }
 
@@ -343,5 +385,4 @@ double probe_combi_statistic::calc_expected_children(double average_fitness) {
     expected_children = fitness / average_fitness;
     return expected_children;
 }
-
 
