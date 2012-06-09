@@ -215,6 +215,7 @@ class ProbeValuation : virtual Noncopyable {
     // der Sonden schon eingearbeitet sind. DIe WS werden vom Benutzer fuer jede einzelne Probe bestimmt.
 
     int pool_length;
+    
     int max_init_pop_combis;
 
     Generation *act_generation;

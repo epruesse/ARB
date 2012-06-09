@@ -38,8 +38,6 @@ MP_Main::~MP_Main() {
     aw_root->awar_int(MP_AWAR_MISMATCHES)->remove_callback(MP_modify_selected, (AW_CL)0, (AW_CL)0);
 
     delete mp_window;
-
-    new_pt_server = true;
 }
 
 void MP_Main::create_awars() {

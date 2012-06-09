@@ -21,11 +21,9 @@ static void delete_cached_probe(long hashval) {
     delete s;
 }
 
-ProbeCache::ProbeCache(size_t probeCount)
-    : targeted(mp_global->get_marked_species())
+ProbeCache::ProbeCache(size_t probeCount, GB_ERROR& error)
+    : targeted(mp_global->get_marked_species(), error)
 {
-    if (pt_server_different) return;
-
     cachehash = GBS_create_dynaval_hash(probeCount + 1, GB_IGNORE_CASE, delete_cached_probe);
 }
 
@@ -82,23 +80,25 @@ void MultiProbeCombinations::add_probe(char *name, int allowed_mis, double outsi
         probeLists->insert_as_last(probe_list);
     }
 
-    ProbeCache *cachedProbes = mp_global->get_probe_cache();
-    Probe      *probe        = cachedProbes->get(name);
-    if (!probe) probe        = cachedProbes->add(name, allowed_mis, outside_mis, error);
+    ProbeCache *cachedProbes = mp_global->get_probe_cache(error);
+    if (!error) {
+        Probe *probe      = cachedProbes->get(name);
+        if (!probe) probe = cachedProbes->add(name, allowed_mis, outside_mis, error);
 
-    positiontype pos = probe_list->insert_as_last(probe);
-    if (!probe->get_bitkennung()) {
-        probe->set_bitkennung(new Bitvector(((int) pos)));
-    }
-    probe->set_far(0);
-    probe->set_mor(pos);
-    probe->get_bitkennung()->setbit(pos-1);
-    // im cache steht die Mismatch info noch an Stelle 0. Hier muss sie an Stelle pos  verschoben werden
-    if (pos!=0) {
-        for (int i=0; i<probe->get_length_hitliste(); i++) {
-            Hit *hit = probe->hit(i);
-            if (hit) {
-                hit->set_mismatch_at_pos(pos, hit->get_mismatch_at_pos(0));
+        positiontype pos = probe_list->insert_as_last(probe);
+        if (!probe->get_bitkennung()) {
+            probe->set_bitkennung(new Bitvector(((int) pos)));
+        }
+        probe->set_far(0);
+        probe->set_mor(pos);
+        probe->get_bitkennung()->setbit(pos-1);
+        // im cache steht die Mismatch info noch an Stelle 0. Hier muss sie an Stelle pos  verschoben werden
+        if (pos!=0) {
+            for (int i=0; i<probe->get_length_hitliste(); i++) {
+                Hit *hit = probe->hit(i);
+                if (hit) {
+                    hit->set_mismatch_at_pos(pos, hit->get_mismatch_at_pos(0));
+                }
             }
         }
     }

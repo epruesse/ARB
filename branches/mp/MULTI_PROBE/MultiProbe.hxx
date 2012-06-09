@@ -172,7 +172,7 @@ class Group : virtual Noncopyable {
 
 public:
     void insert_species(const GB_HASH *species_hash);
-    void insert_species_knownBy_PTserver();
+    GB_ERROR insert_species_knownBy_PTserver();
 
     long elements() const { return elems; }
 
@@ -216,7 +216,7 @@ class TargetGroup {
 
 public:
 
-    TargetGroup(const GB_HASH *targeted_species);
+    TargetGroup(const GB_HASH *targeted_species, GB_ERROR& error);
 
     size_t known_species_count() const { return known.elements(); }
     size_t targeted_species_count() const { return targeted.elements(); }
@@ -371,7 +371,7 @@ public:
 
     const TargetGroup& get_TargetGroup() const { return targeted; }
 
-    ProbeCache(size_t probeCount);
+    ProbeCache(size_t probeCount, GB_ERROR& error);
     ~ProbeCache() { if (cachehash) GBS_free_hash(cachehash); }
 };
 
@@ -386,6 +386,14 @@ class MP_Global : virtual Noncopyable {
         cachedProbes = pc;
     }
 
+    __ATTR__USERESULT GB_ERROR reinit_probe_cache() {
+        int      probe_count = MAXSONDENHASHSIZE;
+        GB_ERROR error       = NULL;
+        set_probe_cache(new ProbeCache(probe_count, error));
+        if (error) invalidate_probe_cache();
+        return error;
+    }
+
 public:
     MP_Global()
         : cachedProbes(NULL),
@@ -398,10 +406,13 @@ public:
         set_unmarked_species(NULL);
     }
 
-    ProbeCache *get_probe_cache() { return cachedProbes; }
+    ProbeCache *get_probe_cache(GB_ERROR& error) {
+        mp_assert(!error);
+        if (!cachedProbes) error = reinit_probe_cache();
+        return cachedProbes;
+    }
 
-    void reinit_probe_cache(int probe_count) { set_probe_cache(new ProbeCache(probe_count)); }
-    void clear_probe_cache() { set_probe_cache(NULL); }
+    void invalidate_probe_cache() { set_probe_cache(NULL); }
 
     void set_marked_species(GB_HASH *new_marked_species) {
         if (marked_species) GBS_free_hash(marked_species);
@@ -422,13 +433,9 @@ extern AW_selection_list *selected_list;
 extern AW_selection_list *probelist;
 extern AW_selection_list *result_probes_list;
 
-// @@@ elim globals
-extern bool pt_server_different;
-extern bool new_pt_server;
-
 extern MP_Main   *mp_main;
 extern MP_Global *mp_global;
-extern awar_vars  mp_gl_awars;                      // globale Variable, die manuell eingegebene Sequenz enthaelt
+extern awar_vars  mp_gl_awars;
 
 inline int get_random(int min, int max) {
     // gibt eine Zufallszahl x mit der Eigenschaft : min <= x <= max

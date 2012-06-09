@@ -324,9 +324,9 @@ double probe_combi_statistic::calc_fitness(ProbeValuation *p_eval, int len_of_fi
     long   *hammingarray;
     double  tolerated_non_group_hits, ham_dist;
 
-    const ProbeCache *stc = mp_global->get_probe_cache();
+    const ProbeCache *stc = mp_global->get_probe_cache(error);
 
-    {
+    if (!error) {
         MultiProbeCombinations *combis = new MultiProbeCombinations(stc->get_TargetGroup());
 
         for (i=0; i<len_of_field && !error; i++) {

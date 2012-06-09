@@ -279,6 +279,9 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
     return error;
 }
 
+static void invalidate_probe_cache_cb(AW_window *) { mp_global->invalidate_probe_cache(); }
+static void invalidate_probe_cache_cb(AW_root *) { mp_global->invalidate_probe_cache(); }
+
 void MP_Window::build_pt_server_list() {
     int     i;
     char    *choice;
@@ -288,7 +291,7 @@ void MP_Window::build_pt_server_list() {
 #endif
 
     aw->at("PTServer");
-    aw->callback(MP_cache_sonden);
+    aw->callback(invalidate_probe_cache_cb);
     aw->create_option_menu(MP_AWAR_PTSERVER);
 
     for (i=0; ; i++) {
@@ -433,7 +436,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     }
 
     aws->at("Quality");
-    aws->callback(MP_cache_sonden);
+    aws->callback(invalidate_probe_cache_cb);
     aws->create_option_menu(MP_AWAR_QUALITY);
     aws->insert_option("High Priority", "", 5);
     aws->insert_option("       4", "", 4);
@@ -453,11 +456,11 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
     aws->at("PTServer");
     awt_create_selection_list_on_pt_servers(aws, MP_AWAR_PTSERVER, true);
-    aw_root->awar(MP_AWAR_PTSERVER)->add_callback(MP_cache_sonden2); // remove cached probes when changing pt-server
+    aw_root->awar(MP_AWAR_PTSERVER)->add_callback(invalidate_probe_cache_cb); // remove cached probes when changing pt-server
 
     aws->at("NoOfProbes");
     aws->create_option_menu(MP_AWAR_NOOFPROBES);
-    aws->callback(MP_cache_sonden);
+    aws->callback(invalidate_probe_cache_cb);
     aws->insert_option("Compute  1 probe ", "", 1);
     char str[50];
     for (int i=2; i<=MAXPROBECOMBIS; i++) {
@@ -479,20 +482,20 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     aws->create_button("OPEN_RESULT_WIN", "Open result window");
 
     aws->at("Komplement");
-    aws->callback(MP_cache_sonden);
+    aws->callback(invalidate_probe_cache_cb);
     aws->create_toggle(MP_AWAR_COMPLEMENT);
 
     aws->at("WeightedMismatches");
-    aws->callback(MP_cache_sonden);
+    aws->callback(invalidate_probe_cache_cb);
     aws->create_toggle(MP_AWAR_WEIGHTEDMISMATCHES);
 
     // max non group hits
     aws->at("Border1");
-    aws->callback(MP_cache_sonden);
+    aws->callback(invalidate_probe_cache_cb);
     aws->create_input_field(MP_AWAR_QUALITYBORDER1, 6);
 
     aws->at("OutsideMismatches");
-    aws->callback(MP_cache_sonden);
+    aws->callback(invalidate_probe_cache_cb);
     aws->create_option_menu(MP_AWAR_OUTSIDEMISMATCHES);
     aws->insert_option("3.0", "", (float)3.0);
     aws->insert_option("2.5", "", (float)2.5);
@@ -503,7 +506,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
     // max mismatches for group
     aws->at("Greyzone");
-    aws->callback(MP_cache_sonden);
+    aws->callback(invalidate_probe_cache_cb);
     aws->create_option_menu(MP_AWAR_GREYZONE);
     aws->insert_default_option("0.0", "", (float)0.0);
     for (float lauf=0.1; lauf<(float)1.0; lauf+=0.1) {

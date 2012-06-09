@@ -27,8 +27,6 @@
 
 #include <ctime>
 
-bool new_pt_server = true;
-
 void MP_close_main(AW_window *aww) { // @@@ implement via on_hide
     AWT_canvas  *scr = mp_main->get_canvas();
 
@@ -46,9 +44,7 @@ void MP_close_main(AW_window *aww) { // @@@ implement via on_hide
     scr->refresh();
 
     AW_POPDOWN(aww);
-    mp_global->clear_probe_cache();
-
-    new_pt_server = true;
+    mp_global->invalidate_probe_cache();
 }
 
 static char *MP_get_probes(const char *str) {
@@ -263,10 +259,7 @@ void MP_init_and_calculate_and_display_multiprobes(AW_window *, AW_CL cl_gb_main
         return;
     }
 
-    if (mp_global->get_probe_cache()) {
-        mp_global->clear_probe_cache();
-        new_pt_server = true;
-    }
+    mp_global->invalidate_probe_cache();
 
     AW_window *aww2 = mp_main->get_mp_window()->create_result_window(aw_root);
 
@@ -290,10 +283,6 @@ void MP_init_and_calculate_and_display_multiprobes(AW_window *, AW_CL cl_gb_main
     result_probes_list->update();
 
     mp_main->get_mp_window()->get_result_window()->activate();
-
-    if (pt_server_different) {
-        pt_server_different = false;
-    }
 
     if (error) aw_message(error);
 
@@ -352,9 +341,6 @@ void MP_new_sequence(AW_window *aww) {
     }
     free(seq);
 }
-
-void MP_cache_sonden(AW_window *) { new_pt_server = true; }
-void MP_cache_sonden2(AW_root *) { new_pt_server = true; }
 
 void MP_color_next_probes_in_tree(AW_window *aww, AW_CL cl_backward, AW_CL cl_result_probes_list) {
     bool               backward           = bool(cl_backward);
@@ -434,34 +420,23 @@ static MultiProbeCombinations *combinationsOfSelectedMultiprobe(GB_ERROR& error)
                 // @@@ what todo if 'probe_count' mismatches ? 
             }
 
-            if (new_pt_server) {
-                new_pt_server = false;
-
-                mp_global->reinit_probe_cache(MAXSONDENHASHSIZE);
-
-                if (pt_server_different) {
-                    mp_global->clear_probe_cache();
-                    new_pt_server       = true;
-                    error               = "There are species in your database which are unknown to PT-Server";
-                    pt_server_different = false;
-                }
-            }
-
             if (!error) {
-                ProbeCache *probeCache = mp_global->get_probe_cache();
+                ProbeCache *probeCache = mp_global->get_probe_cache(error);
 
-                topf = new MultiProbeCombinations(probeCache->get_TargetGroup());
+                if (!error) {
+                    topf = new MultiProbeCombinations(probeCache->get_TargetGroup());
 
-                mp_assert(!error);
-                for (int i=0; i<MAXPROBECOMBIS && !error; i++) {
-                    if (probe_field[i]) {
-                        topf->add_probe(probe_field[i], mismatches[i], mismatches[i] + mp_gl_awars.outside_mismatches_difference, error);
+                    mp_assert(!error);
+                    for (int i=0; i<MAXPROBECOMBIS && !error; i++) {
+                        if (probe_field[i]) {
+                            topf->add_probe(probe_field[i], mismatches[i], mismatches[i] + mp_gl_awars.outside_mismatches_difference, error);
+                        }
                     }
-                }
 
-                if (error) {
-                    delete topf;
-                    topf = NULL;
+                    if (error) {
+                        delete topf;
+                        topf = NULL;
+                    }
                 }
             }
 
