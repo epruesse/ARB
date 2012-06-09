@@ -73,9 +73,6 @@
 // #define USE_SIGMATRUNCATION       // definieren, wenn sigma_truncation in der linearen Skal. (=fitness skalierung) verwendet werden soll
 // #define USE_LINEARSCALING         // definieren, wenn lineare_skalierung (=fitness skalierung) verwendet werden soll
 
- // @@@ remove dup tree code
-// #define USE_DUP_TREE              // definieren, wenn eine Sondenkombination nur einmal pro generation vorkommen soll
-
 #define MAXSONDENHASHSIZE   1000        // max 1000 Sonden koennen gecached werden, bei Bedarf aendern !!!!
 
 struct awar_vars {

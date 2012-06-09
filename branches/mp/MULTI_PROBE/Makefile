@@ -65,33 +65,6 @@ MP_Generation.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/test_global.h
 
-MP_GenerationDuplicates.o: MP_probe.hxx
-MP_GenerationDuplicates.o: mpdefs.h
-MP_GenerationDuplicates.o: MultiProbe.hxx
-MP_GenerationDuplicates.o: SoTl.hxx
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/ad_prot.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/aisc_global.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arb_assert.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arb_core.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arb_error.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arb_msg.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arb_string.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arbdb.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arbdbt.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arbtools.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/attributes.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/bytestring.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/cb.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/dupstr.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/NumericType.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/PT_com.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/smartptr.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/test_global.h
-
 MP_group.o: MP_externs.hxx
 MP_group.o: mpdefs.h
 MP_group.o: MultiProbe.hxx

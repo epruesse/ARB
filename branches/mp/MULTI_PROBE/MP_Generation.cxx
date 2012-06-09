@@ -13,21 +13,6 @@
 #include <arb_progress.h>
 #include <arb_strarray.h>
 
-probe_combi_statistic *Generation::single_in_generation(probe_combi_statistic *field) {
-    bool result = true;
-
-    if (!dup_tree)
-        return NULL;
-
-    dup_tree->insert(field, result);        // dup_tree muss fuer jede Generation neu erstellt werden !!!!
-    // dieser Aufruf wird nur zur Vermeidung von doppelten
-    // Sondenkombis benoetigt
-    if (result)                 // wenn result, dann in generation einmalig
-        return field;
-
-    return NULL;                // field ist ein Duplikat
-}
-
 void Generation::print() {
     for (int i=0; i<probe_combi_array_length; i++) {
         mp_assert(valid_probe_combi_index(i));
@@ -185,21 +170,14 @@ Generation *Generation::create_next_generation(ProbeValuation *p_eval) {
     probe_combi_statistic *first_child_pcs  = NULL;
     probe_combi_statistic *second_child_pcs = NULL;
 
-    probe_combi_statistic *orig1 = NULL;
-    probe_combi_statistic *orig2 = NULL;
-
-    int  cnt = 0;
-#ifdef USE_DUP_TREE
-    bool res;
-#endif
+    int cnt = 0;
 
     while (len_roulette_wheel > 1) {                // kann kleiner sein, wenn Population kleiner als MAXPOPULATION
         cnt++;
-        orig1 = choose_combi_for_next_generation();
-        orig2 = choose_combi_for_next_generation();
+        probe_combi_statistic *orig1 = choose_combi_for_next_generation();
+        probe_combi_statistic *orig2 = choose_combi_for_next_generation();
 
-        if (! orig1 && ! orig2)
-            break;
+        if (! orig1 && ! orig2) break;
         else if (!orig1 && orig2) {
             orig1 = orig2;
             orig2 = NULL;
@@ -210,8 +188,7 @@ Generation *Generation::create_next_generation(ProbeValuation *p_eval) {
         first_child_pcs = second_child_pcs = NULL;
 
         first_child_pcs = orig1->duplicate();
-        if (orig2)
-            second_child_pcs = orig2->duplicate();
+        if (orig2) second_child_pcs = orig2->duplicate();
 
         if (orig2 && get_random(1, 100) <= CROSSOVER_WS) {  // Crossover durchfueheren
             first_child_pcs->crossover_Probes(second_child_pcs);
@@ -231,40 +208,16 @@ Generation *Generation::create_next_generation(ProbeValuation *p_eval) {
         }
 
         first_child_pcs->mutate_Probe(p_eval);    // fuer jede Position wird mit 1/MUTATION_WS eine Mutation durchgefuehrt.
-        if (orig2)                  // Mutationen durchfuehren
-            second_child_pcs->mutate_Probe(p_eval);
+        if (orig2) second_child_pcs->mutate_Probe(p_eval); // Mutationen durchfuehren
 
-#ifdef USE_DUP_TREE
-
-        res = true;
-        if (child_generation->get_dup_tree()->insert(first_child_pcs, res, 0)) {
-            if (!child_generation->insert(first_child_pcs))     // Population schon auf MAXPOPULATION
-                break;
-        }
-
-        res = true;
-        if (child_generation->get_dup_tree()->insert(second_child_pcs, res, 0)) {
-            if (orig2)
-                if (!child_generation->insert(second_child_pcs))
-                    break;
-        }
-
-#else
-        if (!child_generation->insert(first_child_pcs))     // Population schon auf MAXPOPULATION
-            break;
-
-        if (orig2)
-            if (!child_generation->insert(second_child_pcs))
-                break;
-
-#endif
+        if (!child_generation->insert(first_child_pcs)) break; // Population schon auf MAXPOPULATION
+        if (orig2 && !child_generation->insert(second_child_pcs)) break;
     }
 
     delete first_child_pcs;
     delete second_child_pcs;
 
-    if (len_roulette_wheel <= 1)
-        child_generation->set_length();             // probe_combi_array_length muss andere laenge bekommen
+    if (len_roulette_wheel <= 1) child_generation->set_length(); // probe_combi_array_length muss andere laenge bekommen
 
     return child_generation;
 }
@@ -326,7 +279,7 @@ void Generation::init_valuation(ProbeValuation *p_eval) {
                 pcs->set_probe_combi(i, random_probe);
             }
 
-            if (pcs->check_duplicates(dup_tree)) {          // 2 gleiche Sonden in der Kombination => nicht verwendbar
+            if (pcs->check_duplicates()) {          // 2 gleiche Sonden in der Kombination => nicht verwendbar
                 mp_assert(valid_probe_combi_index(counter));
                 probe_combi_stat_array[counter++] = pcs;
                 if (counter < probe_combi_array_length)
@@ -345,12 +298,6 @@ Generation::Generation(int len, int gen_nr) {
 
     memset(probe_combi_stat_array, 0, probe_combi_array_length * sizeof(probe_combi_statistic*));   // Struktur mit 0 initialisieren.
     generation_counter = gen_nr;
-
-#ifdef USE_DUP_TREE
-    dup_tree = new GenerationDuplicates(mp_main->get_p_eval()->get_size_sondenarray());     // nur wenn sondenkombis nur einmal
-    // in der Generation vorkommen duerfen
-#endif
-
 }
 
 Generation::~Generation() {
@@ -362,5 +309,4 @@ Generation::~Generation() {
     }
 
     delete [] probe_combi_stat_array;
-    delete dup_tree;
 }

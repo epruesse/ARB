@@ -85,19 +85,9 @@ void probe_combi_statistic::randomized_quicksort(long left, long right) {
     }
 }
 
-probe_combi_statistic *probe_combi_statistic::check_duplicates(GenerationDuplicates *dup_tree) {
-    bool result = true;
-
+probe_combi_statistic *probe_combi_statistic::check_duplicates() {
     sort(mp_gl_awars.no_of_probes);
-
-    if (get_dupl_pos() == -1)
-        return this;
-
-    if (dup_tree)           // d.h. dass feld this nur einmal in der Generation vorkommen darf
-        if (dup_tree->insert(this, result, mp_gl_awars.no_of_probes))
-            return this;
-
-    return NULL;
+    return (get_dupl_pos() == -1) ? this : NULL;
 }
 
 
