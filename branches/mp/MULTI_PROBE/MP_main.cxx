@@ -17,13 +17,9 @@
 #include <aw_awar_defs.hxx>
 #include <awt_canvas.hxx>
 
-// @@@ elim globals
-awar_vars mp_gl_awars;
-
+awar_vars  mp_gl_awars;
 MP_Main   *mp_main   = NULL;
 MP_Global *mp_global = NULL;
-
-bool pt_server_different = false;
 
 MP_Main::MP_Main(AW_root *awr, AWT_canvas *canvas) {
     aw_root   = awr;
