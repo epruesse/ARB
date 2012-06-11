@@ -45,7 +45,7 @@ GB_ERROR ProbeValuation::evolution(StrArray& results) {
         if (max_generation<1) max_generation = 1;
 
         arb_progress progress(max_generation);
-        MP_aborted(0, 0.0, 0.0, 0.0, progress);
+        MP_set_progress_subtitle(0, 0.0, 0.0, 0.0, progress);
 
         do { // genetic algorithm loop
             bool aborted = act_generation->calcFitness(this, true, avg_fit, error);
@@ -60,10 +60,12 @@ GB_ERROR ProbeValuation::evolution(StrArray& results) {
                 error = "Please choose better probes";
                 break;
             }
-            child_generation = act_generation->create_next_generation(this);
-            delete act_generation; act_generation = NULL;
 
-            act_generation = child_generation;
+            {
+                Generation *child_generation = act_generation->create_next_generation(this);
+                delete act_generation;
+                act_generation = child_generation;
+            }
             progress.inc();
         }
         while (act_generation->get_generation() <= max_generation);
@@ -201,8 +203,7 @@ ProbeValuation::ProbeValuation(char**& sonden_array, int no_of_sonden, int*& bew
     : hamdist(mp_gl_awars.no_of_probes), 
       pool_length(0),
       max_init_pop_combis(0),
-      act_generation(NULL), 
-      child_generation(NULL) 
+      act_generation(NULL) 
 {
     size_sonden_array = no_of_sonden;
 
@@ -232,11 +233,7 @@ ProbeValuation::~ProbeValuation() {
     for (int i=0; i<size_sonden_array; i++) free(sondenarray[i]);
     for (int i=0; i<pool_length; i++) delete probe_pool[i];
 
-    if (act_generation == child_generation) delete act_generation;
-    else {
-        delete act_generation;
-        delete child_generation;
-    }
+    delete act_generation;
 
     delete [] probe_pool;
 

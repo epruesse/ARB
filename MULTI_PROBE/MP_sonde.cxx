@@ -41,12 +41,10 @@ Probe::Probe(char* bezeichner, int allowed_mis, double outside_mis)
 }
 
 Probe::~Probe() {
-    int i;
-
     free(kennung);
 
-    for (i=0; i<length_hitliste;  i++) {
-        delete hitliste[i];             // Hits loeschen
+    for (int i=0; i<length_hitliste; i++) {
+        delete hitliste[i];
     }
     delete [] hitliste;
 

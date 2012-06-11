@@ -168,7 +168,7 @@ void MP_popup_result_window(AW_window */*aww*/) {
     mp_main->get_mp_window()->create_result_window(mp_main->get_aw_root())->activate();
 }
 
-bool MP_aborted(int gen_cnt, double avg_fit, double min_fit, double max_fit, arb_progress& progress) {
+void MP_set_progress_subtitle(int gen_cnt, double avg_fit, double min_fit, double max_fit, arb_progress& progress) {
     char view_text[150];
 
     if (gen_cnt == 0)
@@ -177,7 +177,6 @@ bool MP_aborted(int gen_cnt, double avg_fit, double min_fit, double max_fit, arb
         sprintf(view_text, "Gen:%d Avg:%5i Min:%5i Max:%5i", gen_cnt, int(avg_fit), int(min_fit), int(max_fit));
 
     progress.subtitle(view_text);
-    return progress.aborted();
 }
 
 __ATTR__USERESULT static GB_ERROR calc_multiprobes(const CharPtrArray& input_probes, StrArray& results) {

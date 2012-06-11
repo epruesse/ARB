@@ -103,9 +103,7 @@ class Generation : virtual Noncopyable {
     probe_combi_statistic **probe_combi_stat_array;         // Liste von Sondenkombinationen, auf denen der genetische Algorithmus ausgefuehrt wird.
 
     int allocated;
-
-    int probe_combi_array_length; // @@@ fix these 2 variables (one should contains allocated size, the other the number of elements added. currently it is weird)
-    int last_elem;
+    int inserted;
 
     double average_fitness;
     double min_fit;
@@ -125,7 +123,6 @@ public:
     double get_avg_fit() { return average_fitness; }
     int get_generation() { return generation_counter; }
     
-    void set_length() { probe_combi_array_length = last_elem; } // nur verwenden, wenn man weiss was man tut !!!!
     void retrieve_results(ProbeValuation *p_eval, StrArray& results);
 
     bool insert(probe_combi_statistic *pcs); // false wenn Generation schon MAXPOPULATION Eintraege hat
@@ -214,7 +211,6 @@ class ProbeValuation : virtual Noncopyable {
     int max_init_pop_combis;
 
     Generation *act_generation;
-    Generation *child_generation;               // @@@ can be removed
 
     GB_ERROR evolution(StrArray& results) __ATTR__USERESULT;
 

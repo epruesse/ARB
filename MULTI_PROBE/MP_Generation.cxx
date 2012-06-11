@@ -14,7 +14,7 @@
 #include <arb_strarray.h>
 
 void Generation::print() {
-    for (int i=0; i<probe_combi_array_length; i++) {
+    for (int i=0; i<inserted; i++) {
         mp_assert(valid_probe_combi_index(i));
         probe_combi_stat_array[i]->print();
     }
@@ -22,7 +22,7 @@ void Generation::print() {
 
 void Generation::retrieve_results(ProbeValuation *p_eval, StrArray& results) {
     ProbeValuationResults pvr;
-    for (int i=0; i<probe_combi_array_length; i++) {
+    for (int i=0; i<inserted; i++) {
         mp_assert(valid_probe_combi_index(i));
         if (probe_combi_stat_array[i]) {
             p_eval->insert_in_result_list(probe_combi_stat_array[i], pvr);
@@ -48,10 +48,12 @@ bool Generation::calcFitness(ProbeValuation *p_eval, bool use_genetic_algo, doub
 
     mp_assert(!error);
 
-    arb_progress progress(probe_combi_array_length);
+    arb_progress progress(inserted);
     double       fitness = 0;
 
-    for (int i=0; i<probe_combi_array_length && !error; i++) {
+    bool aborted = false;
+
+    for (int i=0; i<inserted && !error && !aborted; i++) {
         mp_assert(valid_probe_combi_index(i));
         double dummy = probe_combi_stat_array[i]->calc_fitness(p_eval, mp_gl_awars.no_of_probes, error);
         fitness += dummy;
@@ -64,18 +66,15 @@ bool Generation::calcFitness(ProbeValuation *p_eval, bool use_genetic_algo, doub
         else if (dummy > max_fit)
             max_fit = dummy;
 
-        if (MP_aborted(generation_counter, old_avg_fit, min_fit, max_fit, progress)) {
-            probe_combi_array_length = i-1;
-            progress.done();
-            return true;
-        }
+        MP_set_progress_subtitle(generation_counter, old_avg_fit, min_fit, max_fit, progress);
+        aborted = progress.aborted();
         progress.inc();
     }
 
     progress.done();
 
-    if (use_genetic_algo && !error) {
-        average_fitness = fitness / (double)probe_combi_array_length;
+    if (use_genetic_algo && !error && !aborted) {
+        average_fitness = fitness / (double)inserted;
 
         deviation = 0;
 
@@ -105,7 +104,7 @@ bool Generation::calcFitness(ProbeValuation *p_eval, bool use_genetic_algo, doub
         prescale(&a, &b);       // Koeffizienten a und b berechnen
 #endif
 
-        for (int i=0; i<probe_combi_array_length; i++) {
+        for (int i=0; i<inserted; i++) {
             mp_assert(valid_probe_combi_index(i));
 #ifdef USE_LINEARSCALING
             probe_combi_stat_array[i]->scale(a, b);
@@ -115,7 +114,7 @@ bool Generation::calcFitness(ProbeValuation *p_eval, bool use_genetic_algo, doub
 
         init_roulette_wheel();
     }
-    return false;
+    return aborted;
 }
 
 void Generation::prescale(double *a, double *b) { // berechnet Koeffizienten fuer lineare Skalierung
@@ -137,7 +136,7 @@ void Generation::init_roulette_wheel() {
     int     i=0;
 
     len_roulette_wheel = 0;
-    while (i<probe_combi_array_length) {
+    while (i<inserted) {
         mp_assert(valid_probe_combi_index(i));
         len_roulette_wheel += (int)(MULTROULETTEFACTOR * (probe_combi_stat_array[i++]->get_expected_children()));   // um aus z.B. 4,2 42 zu machen
     }
@@ -147,7 +146,7 @@ probe_combi_statistic *Generation::choose_combi_for_next_generation() {
     int random_help = get_random(0, len_roulette_wheel-1),
                       i;
 
-    for (i=0; i<probe_combi_array_length; i++) {            // in einer Schleife bis zu den betreffenden Elementen vordringen (Rouletterad !!!)
+    for (i=0; i<inserted; i++) {            // in einer Schleife bis zu den betreffenden Elementen vordringen (Rouletterad !!!)
         mp_assert(valid_probe_combi_index(i));
         random_help -= (int)(MULTROULETTEFACTOR * probe_combi_stat_array[i]->get_expected_children());
 
@@ -217,8 +216,6 @@ Generation *Generation::create_next_generation(ProbeValuation *p_eval) {
     delete first_child_pcs;
     delete second_child_pcs;
 
-    if (len_roulette_wheel <= 1) child_generation->set_length(); // probe_combi_array_length muss andere laenge bekommen
-
     return child_generation;
 }
 
@@ -252,27 +249,26 @@ void Generation::gen_determ_combis(ProbeValuation *p_eval, int beg, int len, int
 }
 
 bool Generation::insert(probe_combi_statistic *pcs) {
-    if (last_elem == MAXPOPULATION)
+    if (inserted == MAXPOPULATION)
         return false;
 
-    mp_assert(valid_probe_combi_index(last_elem));
-    probe_combi_stat_array[last_elem++] = pcs->duplicate();
-    probe_combi_array_length = last_elem;
+    mp_assert(valid_probe_combi_index(inserted));
+    probe_combi_stat_array[inserted++] = pcs->duplicate();
 
     return true;
 }
 
 void Generation::init_valuation(ProbeValuation *p_eval) {
-    if (probe_combi_array_length < MAXINITPOPULATION) {
+    if (allocated < MAXINITPOPULATION) {
         int pos = 0;
         gen_determ_combis(p_eval, 0, mp_gl_awars.no_of_probes, pos, NULL);  // probe_combi_stat_array ist danach gefuellt !!!
-        probe_combi_array_length = pos;
+        inserted = pos;
     }
     else {
         int counter = 0;
         probe_combi_statistic *pcs = new probe_combi_statistic();
 
-        while (counter < probe_combi_array_length) {    // Hier erfolgt die Generierung des probe_combi_stat_array
+        while (counter < allocated) {    // Hier erfolgt die Generierung des probe_combi_stat_array
             for (int i=0; i<mp_gl_awars.no_of_probes; i++) {
                 int             zw_erg       = get_random(0, p_eval->get_pool_length()-1);
                 const ProbeRef *random_probe = (p_eval->get_probe_pool())[zw_erg];
@@ -282,28 +278,30 @@ void Generation::init_valuation(ProbeValuation *p_eval) {
             if (pcs->check_duplicates()) {          // 2 gleiche Sonden in der Kombination => nicht verwendbar
                 mp_assert(valid_probe_combi_index(counter));
                 probe_combi_stat_array[counter++] = pcs;
-                if (counter < probe_combi_array_length)
-                    pcs = new probe_combi_statistic();
+                if (counter < allocated) pcs = new probe_combi_statistic();
             }
         }
+
+        inserted = counter;
     }
 }
 
-Generation::Generation(int len, int gen_nr) {
-    memset((char *)this, 0, sizeof(Generation)); // @@@ elim
-
-    probe_combi_array_length = len;
-    probe_combi_stat_array   = new probe_combi_statistic*[probe_combi_array_length]; // probe_combi_array_length entspricht der Groesse der Ausgangspopulation
-    allocated                = probe_combi_array_length;
-
-    memset(probe_combi_stat_array, 0, probe_combi_array_length * sizeof(probe_combi_statistic*));   // Struktur mit 0 initialisieren.
-    generation_counter = gen_nr;
+Generation::Generation(int len, int gen_nr)
+    : probe_combi_stat_array(new probe_combi_statistic*[len]),
+      allocated(len),
+      inserted(0),
+      average_fitness(0.0), 
+      min_fit(0.0), 
+      max_fit(0.0), 
+      deviation(0.0), 
+      len_roulette_wheel(0), 
+      generation_counter(gen_nr) 
+{
+    memset(probe_combi_stat_array, 0, allocated*sizeof(*probe_combi_stat_array));
 }
 
 Generation::~Generation() {
-    int i;
-
-    for (i=0; i<probe_combi_array_length; i++) {
+    for (int i=0; i<allocated; i++) {
         mp_assert(valid_probe_combi_index(i));
         delete probe_combi_stat_array[i];
     }

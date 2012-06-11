@@ -30,7 +30,7 @@ void MP_group_all_except_marked(AW_window *aww);
 void MP_normal_colors_in_tree(AW_window *aww);
 void MP_selected_chosen(AW_window *aww);
 
-bool MP_aborted(int gen_cnt, double avg_fit, double min_fit, double max_fit, arb_progress& progress);
+void MP_set_progress_subtitle(int gen_cnt, double avg_fit, double min_fit, double max_fit, arb_progress& progress);
 
 char *MP_get_comment(int which, const char *str);
 int MP_init_local_com_struct();

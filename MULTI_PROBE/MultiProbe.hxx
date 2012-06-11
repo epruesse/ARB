@@ -280,9 +280,9 @@ struct MO_Mismatch {
 };
 
 class Probe : virtual Noncopyable {
-    char*          kennung;         // Nukleinsaeuren, z.B. "atgatgatg"
-    Bitvector*     bitkennung;      // Probe 1 Platz eins, ...zwei..., ... Analog zum Aufbau von 'probeLists'
-    Hit          **hitliste;        // start bei index 0, letztes element enthaelt NULL
+    char          *kennung;     // Nukleinsaeuren, z.B. "atgatgatg"
+    Bitvector     *bitkennung;  // Probe 1 Platz eins, ...zwei..., ... Analog zum Aufbau von 'probeLists'
+    Hit          **hitliste;    // start bei index 0, letztes element enthaelt NULL
     long           length_hitliste;
     SpeciesID      minelem, maxelem;
     positiontype   kombi_far, kombi_mor;
