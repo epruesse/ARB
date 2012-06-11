@@ -11,9 +11,7 @@
 #include "MP_probe.hxx"
 #include "MP_externs.hxx"
 
-#include <aw_window.hxx>
 #include <aw_msg.hxx>
-#include <aw_select.hxx>
 #include <arb_progress.h>
 
 #include <ctime>

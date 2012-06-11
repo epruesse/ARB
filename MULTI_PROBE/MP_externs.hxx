@@ -27,7 +27,7 @@ void MP_delete_selected(AW_window*, AW_CL cl_sellist);
 void MP_result_chosen(AW_window *aww);
 void MP_close_main(AW_window *aww);
 void MP_group_all_except_marked(AW_window *aww);
-void MP_normal_colors_in_tree(AW_window *aww);
+void MP_normal_colors_in_tree(AW_window *);
 void MP_selected_chosen(AW_window *aww);
 
 void MP_set_progress_subtitle(int gen_cnt, double avg_fit, double min_fit, double max_fit, arb_progress& progress);

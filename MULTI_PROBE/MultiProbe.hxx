@@ -34,8 +34,6 @@
 #endif
 
 
-#define mp_assert(x) arb_assert(x)
-
 #define MP_AWAR_SEQIN               "tmp/mp/seqin"
 #define MP_AWAR_SELECTEDPROBES      "mp/selectedprobes"
 #define MP_AWAR_PROBELIST           "mp/probelist"
