@@ -106,7 +106,7 @@ void MultiProbeCombinations::add_probe(char *name, int allowed_mis, double outsi
 
 
 double** MultiProbeCombinations::gen_Mergefeld() {
-    List<Probe>* probes       = probeLists->get_first();   // @@@ rename
+    List<Probe>* probes       = probeLists->get_first();
     long         speciesCount = targetGroup.known_species_count();
     double**     Mergefeld    = new double*[speciesCount+1];
 
