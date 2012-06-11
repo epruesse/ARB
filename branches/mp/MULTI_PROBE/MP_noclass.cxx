@@ -10,10 +10,10 @@
 
 #include "MultiProbe.hxx"
 #include "mp_proto.hxx"
+#include "mp_sel.hxx"
 #include "MP_externs.hxx"
 #include "MP_probe.hxx"
 
-#include <aw_select.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <TreeCallbacks.hxx>
@@ -28,20 +28,10 @@
 #include <ctime>
 
 void MP_close_main(AW_window *aww) { // @@@ implement via on_hide
-    AWT_canvas  *scr = mp_main->get_canvas();
-
     if (mp_main->get_mp_window()->get_result_window())
         mp_main->get_mp_window()->get_result_window()->hide();
 
-    GB_transaction dummy(scr->gb_main);
-
-    AP_tree *ap_tree = AWT_TREE(scr)->get_root_node();
-    if (ap_tree) ap_tree->calc_color();
-
-    if (scr->gb_main)
-        scr->gfx->update(scr->gb_main);
-
-    scr->refresh();
+    MP_normal_colors_in_tree(NULL);
 
     AW_POPDOWN(aww);
     mp_global->invalidate_probe_cache();
@@ -60,68 +50,52 @@ static char *MP_get_probes(const char *str) {
     return strdup(result);
 }
 
-void MP_gen_quality(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    bool firsttime = true; // @@@ was this static in the past?
-
-    if (firsttime) {
-        firsttime = false; // @@@ unused
-        return;
-    }
-
-    char *probe, *new_qual, *ecol_pos;
+void MP_gen_quality(AW_root *awr) {
     char *selected = awr->awar(MP_AWAR_SELECTEDPROBES)->read_string();
+    if (selected && selected[0]) {
+        char *probe = MP_get_probes(selected);
+        if (probe && probe[0]) {
+            char *ecol_pos = MP_get_comment(3, selected);
 
-    if (!selected || !selected[0])
-        return;
+            selected_list->delete_value(selected);
+            const char *entry = formatInputProbeListEntry(mp_gl_awars.probe_quality, mp_gl_awars.singlemismatches, atoi(ecol_pos), probe);
+            addTo_selected_list(entry);
 
-    probe = MP_get_probes(selected);
-    if (!probe || !probe[0])
-        return;
-
-    ecol_pos = MP_get_comment(3, selected);
-
-    selected_list->delete_value(selected);
-
-    new_qual = new char[5 + 7 + strlen(probe)];     // 5 = Zahl und Separator und Zahl und Separator und Nullzeichen
-    sprintf(new_qual, "%1ld#%1ld#%6d#%s", mp_gl_awars.probe_quality, mp_gl_awars.singlemismatches, atoi(ecol_pos), probe);
-    delete probe;
-
-    selected_list->insert(new_qual, new_qual);
-    selected_list->insert_default("", "");
-    selected_list->sort(false, true);
-    selected_list->update();
-    awr->awar(MP_AWAR_SELECTEDPROBES)->write_string(new_qual);
-    delete new_qual;
-    delete ecol_pos;
+            free(ecol_pos);
+        }
+        free(probe);
+    }
+    free(selected);
 }
 
-void MP_modify_selected(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+void MP_modify_selected(AW_root *) {
     // setzt den 2.Parameter in selected_list
-    char       *com1, *com2, *com3, *probes, temp[120];
-    List<char> *l   = new List<char>;
 
+    List<char> *l = new List<char>;
     AW_selection_list_iterator selentry(selected_list);
 
     const char *ptr2;
     while ((ptr2 = selentry.get_value())) {
         ++selentry;
 
-        com1 =  MP_get_comment(1, ptr2);
-        com2 =  MP_get_comment(2, ptr2);
-        com3 =  MP_get_comment(3, ptr2);
-        probes = MP_get_probes(ptr2);
+        char *com1   = MP_get_comment(1, ptr2);
+        char *com2   = MP_get_comment(2, ptr2);
+        char *com3   = MP_get_comment(3, ptr2);
+        char *probes = MP_get_probes(ptr2);
 
-        if (!probes || !probes[0])
-            break;
+        if (probes && probes[0]) {
+            if (!probes || !probes[0])
+                break;
 
-        sprintf(temp, "%1d#%1ld#%6d#%s", atoi(com1), mp_gl_awars.no_of_mismatches, atoi(com3), probes);
+            const char *entry = formatInputProbeListEntry(atoi(com1), mp_gl_awars.no_of_mismatches, atoi(com3), probes);
 
-        l->insert_as_last(strdup(temp));
+            l->insert_as_last(strdup(entry));
+        }
 
-        delete probes;
-        delete com1;
-        delete com2;
-        delete com3;
+        free(com3);
+        free(com2);
+        free(com1);
+        free(probes);
     }
 
     selected_list->clear();
@@ -134,16 +108,14 @@ void MP_modify_selected(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
         ptr2 = l->get_first();
     }
 
-    selected_list->insert_default("", "");
-    selected_list->sort(false, true);
-    selected_list->update();
-    awr->awar(MP_AWAR_SELECTEDPROBES)->write_string("");
+    sortNrefresh_selected_list();
+    selected_list->set_awar_value("");
 
     delete l;
 }
 
 void MP_gen_singleprobe(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    char *probe, *new_sing;
+    char *probe;
     char *selected = awr->awar(MP_AWAR_SELECTEDPROBES)->read_string();
 
     if (!selected || !selected[0])
@@ -152,16 +124,9 @@ void MP_gen_singleprobe(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     probe = MP_get_probes(selected);
     selected_list->delete_value(selected);
 
-    new_sing = new char[5 + 7 + strlen(probe)];     // 5 = Zahl und Separator und Zahl und Separator und Nullzeichen
-    sprintf(new_sing, "%1ld#%1ld#%6ld#%s", mp_gl_awars.probe_quality, mp_gl_awars.singlemismatches, mp_gl_awars.ecolipos, probe);
+    const char *entry = formatInputProbeListEntry(mp_gl_awars.probe_quality, mp_gl_awars.singlemismatches, mp_gl_awars.ecolipos, probe);
+    addTo_selected_list(entry);
     delete probe;
-
-    selected_list->insert(new_sing, new_sing);
-    selected_list->insert_default("", "");
-    selected_list->sort(false, true);
-    selected_list->update();
-    awr->awar(MP_AWAR_SELECTEDPROBES)->write_string(new_sing);
-    delete new_sing;
 }
 
 void MP_popup_result_window(AW_window */*aww*/) {
@@ -326,14 +291,8 @@ void MP_new_sequence(AW_window *aww) {
     char    *seq     = aw_root->awar(MP_AWAR_SEQIN)->read_string();
 
     if (is_probe(seq)) {
-        char *new_seq = GBS_global_string_copy("%1ld#%1ld#%6d#%s", mp_gl_awars.probe_quality, mp_gl_awars.singlemismatches, 0, seq);
-
-        selected_list->insert(new_seq, new_seq);
-        selected_list->sort(false, true);
-        selected_list->update();
-
-        aw_root->awar(MP_AWAR_SELECTEDPROBES)->write_string(new_seq);
-        free(new_seq);
+        const char *entry = formatInputProbeListEntry(mp_gl_awars.probe_quality, mp_gl_awars.singlemismatches, 0, seq);
+        addTo_selected_list(entry);
     }
     else {
         aw_message(GBS_global_string("'%s' is no valid probe", seq));
@@ -456,6 +415,20 @@ static MultiProbeCombinations *combinationsOfSelectedMultiprobe(GB_ERROR& error)
     return topf;
 }
 
+void MP_normal_colors_in_tree(AW_window *) {
+    AWT_canvas *scr     = mp_main->get_canvas();
+    GBDATA     *gb_main = scr->gb_main;
+    if (gb_main) {
+        GB_transaction ta(gb_main);
+
+        AP_tree *ap_tree = AWT_TREE(scr)->get_root_node();
+        if (ap_tree) ap_tree->calc_color();
+
+        scr->gfx->update(gb_main);
+        scr->refresh();
+    }
+}
+
 void MP_color_probes_in_tree(AW_window */*aww*/) {
     GB_ERROR                error  = NULL;
     MultiProbeCombinations *combis = combinationsOfSelectedMultiprobe(error);
@@ -464,18 +437,23 @@ void MP_color_probes_in_tree(AW_window */*aww*/) {
         aw_message(error);
     }
     else {
-        AWT_canvas     *scr = mp_main->get_canvas();
-        GB_transaction  ta(scr->gb_main);
+        AWT_canvas *scr     = mp_main->get_canvas();
+        GBDATA     *gb_main = scr->gb_main;
+        if (gb_main) {
+            GB_transaction ta(gb_main);
 
-        AWT_TREE(scr)->get_root_node()->calc_color_probes(combis->get_color_hash());
-        if (scr->gb_main) scr->gfx->update(scr->gb_main);
-        scr->refresh();
+            AP_tree *ap_tree = AWT_TREE(scr)->get_root_node();
+            if (ap_tree) ap_tree->calc_color_probes(combis->get_color_hash());
+
+            scr->gfx->update(gb_main);
+            scr->refresh();
+        }
     }
 
     delete combis;
 }
 
-void MP_mark_probes_in_tree(AW_window *aww) {
+void MP_mark_probes_in_tree(AW_window *) {
     GB_ERROR                error  = NULL;
     MultiProbeCombinations *combis = combinationsOfSelectedMultiprobe(error);
 
@@ -483,23 +461,15 @@ void MP_mark_probes_in_tree(AW_window *aww) {
         aw_message(error);
     }
     else {
-        AWT_canvas *scr = mp_main->get_canvas();
-        {
-            GB_transaction ta(scr->gb_main);
-            const GB_HASH *col_hash = combis->get_color_hash();
-            for (GBDATA *gb_species = GBT_first_species(scr->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
-                GB_write_flag(gb_species, GBS_read_hash(col_hash, GBT_read_name(gb_species)) > AWT_GC_BLACK);
-            }
-        }
-
-        {
-            GB_transaction ta(scr->gb_main);
-            if (scr->gb_main) scr->gfx->update(scr->gb_main);
-            scr->refresh();
+        GBDATA         *gb_main  = mp_main->get_canvas()->gb_main;
+        GB_transaction  ta(gb_main);
+        const GB_HASH  *col_hash = combis->get_color_hash();
+        for (GBDATA *gb_species = GBT_first_species(gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
+            GB_write_flag(gb_species, GBS_read_hash(col_hash, GBT_read_name(gb_species)) > AWT_GC_BLACK);
         }
     }
 
-    MP_normal_colors_in_tree(aww);
+    MP_normal_colors_in_tree(NULL);
 
     delete combis;
 }
@@ -592,18 +562,6 @@ void MP_selected_chosen(AW_window */*aww*/) {
 void MP_group_all_except_marked(AW_window * /* aww */) {
     AWT_canvas  *scr = mp_main->get_canvas();
     NT_group_not_marked_cb(0, scr);
-}
-
-void MP_normal_colors_in_tree(AW_window */*aww*/) {
-    AWT_canvas  *scr = mp_main->get_canvas();
-    GB_transaction dummy(scr->gb_main);
-
-    AWT_TREE(scr)->get_root_node()->calc_color();
-
-    if (scr->gb_main)
-        scr->gfx->update(scr->gb_main);
-
-    scr->refresh();
 }
 
 void MP_delete_selected(AW_window*, AW_CL cl_sellist) {

@@ -11,7 +11,9 @@
 #ifndef MPDEFS_H
 #define MPDEFS_H
 
+#ifndef PT_COM_H
 #include <PT_com.h>
+#endif
 
 #define SEPARATOR     "#"
 #define SEPARATOR_LEN 1
@@ -41,6 +43,9 @@ extern struct mp_gl_struct {
     T_PT_MAIN  com;
     int        pd_design_id;
 } mp_pd_gl;
+
+#define mp_assert(x) arb_assert(x)
+
 
 #else
 #error mpdefs.h included twice

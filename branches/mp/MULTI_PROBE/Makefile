@@ -134,6 +134,7 @@ MP_main.o: $(ARBHOME)/INCLUDE/test_global.h
 MP_noclass.o: MP_externs.hxx
 MP_noclass.o: MP_probe.hxx
 MP_noclass.o: mp_proto.hxx
+MP_noclass.o: mp_sel.hxx
 MP_noclass.o: mpdefs.h
 MP_noclass.o: MultiProbe.hxx
 MP_noclass.o: SoTl.hxx
@@ -231,11 +232,7 @@ MP_probe.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_probe.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-MP_probe.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-MP_probe.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-MP_probe.o: $(ARBHOME)/INCLUDE/aw_select.hxx
-MP_probe.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_probe.o: $(ARBHOME)/INCLUDE/cb.h
 MP_probe.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -364,6 +361,7 @@ MP_sondentopf.o: $(ARBHOME)/INCLUDE/test_global.h
 
 MP_Window.o: MP_externs.hxx
 MP_Window.o: mp_proto.hxx
+MP_Window.o: mp_sel.hxx
 MP_Window.o: mpdefs.h
 MP_Window.o: MultiProbe.hxx
 MP_Window.o: SoTl.hxx

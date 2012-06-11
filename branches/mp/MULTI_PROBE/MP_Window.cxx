@@ -11,10 +11,10 @@
 #include "MP_externs.hxx"
 #include "MultiProbe.hxx"
 #include "mp_proto.hxx"
+#include "mp_sel.hxx"
 
 #include <awt_sel_boxes.hxx>
 #include <awt_modules.hxx>
-#include <aw_select.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
@@ -148,10 +148,6 @@ AW_window *MP_Window::create_result_window(AW_root *aw_root) {
 
 #define SPACED(expr) "[[:space:]]*" expr "[[:space:]]*"
 
-inline char *gen_display(int quality, int singleMis, int ecoliPos, const char *probe) {
-    return GBS_global_string_copy("%i#%i#%5i#%s", quality, singleMis, ecoliPos, probe);
-}
-
 static GB_ERROR mp_list2file(const CharPtrArray& display, const CharPtrArray& value, StrArray& line) {
     GB_ERROR error = NULL;
 
@@ -202,8 +198,8 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
                     free(dprobe);
                 }
 
-                char *entry = gen_display(quality, singlemis, ecoli, probe.c_str());
-                display.put(entry); // transfers ownership - dont free!
+                const char *entry = formatInputProbeListEntry(quality, singlemis, ecoli, probe.c_str());
+                display.put(strdup(entry));
                 value.put(strdup(entry));
             }
         }
@@ -260,8 +256,8 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
                         ecoli   = atoi(match->extract(description).c_str());
                         quality = 3;
 
-                        char *entry = gen_display(quality, 0, ecoli, probe);
-                        display.put(entry); // transfers ownership - dont free!
+                        const char *entry = formatInputProbeListEntry(quality, 0, ecoli, probe);
+                        display.put(strdup(entry));
                         value.put(strdup(entry));
                     }
                 }
@@ -363,10 +359,9 @@ static void MP_collect_probes(AW_window*, awt_collect_mode mode, AW_CL) {
             break;
     }
 
-    selected_list->sort(false, true);
+    sortNrefresh_selected_list();
 
     probelist->update();
-    selected_list->update();
 }
 
 MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
@@ -563,12 +558,12 @@ void TEST_probe_lists() {
     ConstStrArray lines;
 
     const char *expected =
-        "3#0#  521#GCAGCCGCGGUAAUACGG\n"
-        "3#0#  510#ACUCCGUGCCAGCAGCCG\n"
-        "3#0#  511#CUCCGUGCCAGCAGCCGC\n"
-        "3#0#  512#UCCGUGCCAGCAGCCGCG\n"
-        "3#0#  513#CCGUGCCAGCAGCCGCGG\n"
-        "3#0#  509#AACUCCGUGCCAGCAGCC\n";
+        "3#0#   521#GCAGCCGCGGUAAUACGG\n"
+        "3#0#   510#ACUCCGUGCCAGCAGCCG\n"
+        "3#0#   511#CUCCGUGCCAGCAGCCGC\n"
+        "3#0#   512#UCCGUGCCAGCAGCCGCG\n"
+        "3#0#   513#CCGUGCCAGCAGCCGCGG\n"
+        "3#0#   509#AACUCCGUGCCAGCAGCC\n";
 
     const char *old_probeDesignSave[] = {
         "Probe design Parameters:",
