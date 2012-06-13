@@ -10,6 +10,7 @@ SUBMENUS=$(wildcard MENUS/*.menu)
 GENMENUS=$(SUBMENUS:.menu=.genmenu)
 
 PPP:=./pp.pl
+CLEAN:=./cleanmenu.pl
 
 all: $(MENUS) help
 
@@ -18,9 +19,9 @@ MENUS/%.genmenu : genmenu.header
 MENUS/%.genmenu : MENUS/%.menu
 		( cat genmenu.header; sed -e "s/^[ ]*//" ) < $< > $@
 
-$(MENUS) : $(MENUS_SRC) $(GENMENUS) Makefile
+$(MENUS) : $(MENUS_SRC) $(GENMENUS) Makefile $(PPP) $(CLEAN)
 	-chmod a+w $@
-	$(PPP) -IMENUS $(MENUS_SRC) >$@
+	$(PPP) -IMENUS $(MENUS_SRC) | $(CLEAN) >$@
 	chmod a-w $@
 
 # ------------------------------------------------------------
