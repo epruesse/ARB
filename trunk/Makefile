@@ -47,11 +47,10 @@ NODIR=--no-print-directory
 # ---------------------- [basic compiler setting]
 
 ifdef DARWIN
-#       GCC,GPP and CPPreal now set in the Portfile
+#       GCC and GPP now set in the Portfile
 else
 	GCC:=$(CC)
 	GPP:=$(CXX)
-	CPPreal:=cpp
 
 #       to use clang-static-analyzer , call make like this:
 #       setenv CLANG_STATIC_CHECKER 1 ; scan-build make -j5 build
@@ -420,13 +419,6 @@ CPP := $(GPP) $(cppflags)# compile C++
 ACCLIB := $(ACC) $(shared_cflags)# compile C (shared libs)
 CPPLIB := $(CPP) $(shared_cflags)# compile C++ (shared libs)
 
-# preprocessor
-ifdef DARWIN
-PP := $(GCC) -E -x c-header
-else
-PP := $(CPPreal)
-endif
-
 LINK_STATIC_LIB := ld $(lflags) $(ldynamic) -r -o# link static lib
 LINK_EXECUTABLE := $(GPP) $(lflags) $(cdynamic) -o# link executable (c++)
 
@@ -632,7 +624,6 @@ check_TOOLS:
 		"$(ACC)" \
 		"$(CPP)" \
 		"$(GPP)" \
-		"$(PP)" \
 		"$(ACCLIB)" \
 		"$(CPPLIB)" \
 		"$(XMKMF)" \
@@ -1552,7 +1543,7 @@ readseq:	READSEQ/READSEQ.dummy
 menus: binlink links
 	@(( \
 		echo "$(SEP) Make GDEHELP"; \
-		$(MAKE) -C GDEHELP -r "PP=$(PP)" all && \
+		$(MAKE) -C GDEHELP -r all && \
 		echo "$(SEP) Make GDEHELP [done]"; \
 	) > GDEHELP.log 2>&1 && (cat GDEHELP.log;rm GDEHELP.log)) || (cat GDEHELP.log;rm GDEHELP.log;false)
 
