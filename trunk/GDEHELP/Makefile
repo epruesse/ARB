@@ -1,24 +1,41 @@
 
-TARGET = ARB_GDEmenus
-SOURCE = ARB_GDEmenus.source
+MENUS = ARB_GDEmenus
+MENUS_NEW = ARB_GDEmenus.new
+MENUS_SRC = ARB_GDEmenus.source
+
 HELPFILELIST=helpfiles.lst
 GENHELPDEST=./HELP_GEN
 GENDOCDEST=./HELP_DOC_GEN
 
-MENUS=$(wildcard MENUS/*.menu)
-GENMENUS=$(MENUS:.menu=.genmenu)
+SUBMENUS=$(wildcard MENUS/*.menu)
+GENMENUS=$(SUBMENUS:.menu=.genmenu)
 
-all: $(TARGET) help
+#PP:=cpp
+PPP:=./pp.pl
+CLEAN:=./cleanmenu.pl
+
+all: compare_menus $(MENUS) help
 
 MENUS/%.genmenu : genmenu.header
 
 MENUS/%.genmenu : MENUS/%.menu
 		( cat genmenu.header; sed -e "s/^[ ]*//" ) < $< > $@
 
-$(TARGET) : $(SOURCE) $(GENMENUS)
-	-chmod a+w $(TARGET)
-	$(PP)  -IMENUS $(SOURCE) >$(TARGET)
-	chmod a-w $(TARGET)
+$(MENUS) : $(MENUS_SRC) $(GENMENUS) Makefile $(CLEAN)
+	-chmod a+w $@
+	$(PP)  -IMENUS $(MENUS_SRC) | $(CLEAN) >$@
+	chmod a-w $@
+
+$(MENUS_NEW) : $(MENUS_SRC) $(GENMENUS) $(PPP) Makefile $(CLEAN)
+	-chmod a+w $@
+	$(PPP) -IMENUS $(MENUS_SRC) | $(CLEAN) >$@
+	chmod a-w $@
+
+compare_menus: $(MENUS) $(MENUS_NEW)
+	diff -w -b -B -E $(MENUS) $(MENUS_NEW)
+	@echo "No difference between generated menus"
+#	diff -w -b -B -E $(MENUS) $(MENUS_NEW) | head -80
+	-rm -f $(MENUS_NEW)
 
 # ------------------------------------------------------------
 
@@ -27,7 +44,7 @@ help: $(HELPFILELIST)
 	@test -d $(GENDOCDEST) || mkdir $(GENDOCDEST)
 	@$(MAKE) -f Makefile.helpfiles "GENHELPDEST=$(GENHELPDEST)" "GENDOCDEST=$(GENDOCDEST)" "HELPFILELIST=$(HELPFILELIST)"
 
-$(HELPFILELIST): $(TARGET)
+$(HELPFILELIST): $(SUBMENUS)
 	grep -i '^itemhelp:' < $< | sed -e 's/^itemhelp://' | sort | uniq > $@
 
 # ------------------------------------------------------------
@@ -42,5 +59,5 @@ clean: $(HELPFILELIST)
 		"GENDOCDEST=$(GENDOCDEST)" \
 		"HELPFILELIST=$(HELPFILELIST)" \
 		clean
-	rm -f $(GENMENUS) $(TARGET) $(HELPFILELIST)
+	rm -f $(GENMENUS) $(MENUS) $(MENUS_NEW) $(HELPFILELIST)
 
