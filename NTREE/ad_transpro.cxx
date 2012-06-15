@@ -281,7 +281,7 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root) {
     aws->at("pos");
     aws->create_option_menu(AWAR_TRANSPRO_POS);
     for (int p = 1; p <= 3; ++p) {
-        char label[2] = { p+'0', 0 };
+        char label[2] = { char(p+'0'), 0 };
         aws->insert_option(label, label, bio2info(p));
     }
     aws->update_option_menu();

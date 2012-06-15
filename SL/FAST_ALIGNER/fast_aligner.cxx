@@ -2381,7 +2381,7 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
 
             struct AlignParams ali_params = {
                 static_cast<FA_report>(root->awar(FA_AWAR_REPORT)->read_int()),
-                root->awar(FA_AWAR_SHOW_GAPS_MESSAGES)->read_int(),
+                bool(root->awar(FA_AWAR_SHOW_GAPS_MESSAGES)->read_int()),
                 range
             };
 

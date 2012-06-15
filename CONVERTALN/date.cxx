@@ -23,7 +23,7 @@ static const char *Month[12] = {
 };
 
 static unsigned char days_in_month[12+1] = {
-    -1, 
+    0xFF, 
     31, 29, 31, 30, 31, 30,
     31, 31, 30, 31, 30, 31
 };
