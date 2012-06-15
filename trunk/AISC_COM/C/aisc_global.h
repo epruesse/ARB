@@ -56,7 +56,7 @@ class AISC_Object : public Noncopyable {
 
 protected:
 
-    void set(int remoteType, long remotePtr) { aisc_assert(remoteType == type_id); remote_ptr = remotePtr; }
+    void set(int IF_ASSERTION_USED(remoteType), long remotePtr) { aisc_assert(remoteType == type_id); remote_ptr = remotePtr; }
 
 public:
     AISC_Object(int type_) : type_id(type_), remote_ptr(0) {}
@@ -66,7 +66,7 @@ public:
     int type() const { return type_id; }
 
     void clear() { remote_ptr = 0; }
-    void init(long remotePtr) { aisc_assert(!exists()); set(type_id, remotePtr); } 
+    void init(long remotePtr) { aisc_assert(!exists()); set(type_id, remotePtr); }
 
     long *as_result_param() { return &remote_ptr; }
 

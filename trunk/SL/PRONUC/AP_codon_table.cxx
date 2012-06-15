@@ -525,7 +525,9 @@ bool AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_
             fail_reason = GBS_global_string("'%c%c%c' does never translate to '%c' (2)", dna[0], dna[1], dna[2], protein);
         }
         else {
+#if defined(ASSERTION_USED)
             bool correct_disallowed_translation = false;
+#endif
 
             // search for allowed correct translation possibility:
             for (int code_nr=0; code_nr<AWT_CODON_TABLES; code_nr++) {
@@ -536,7 +538,9 @@ bool AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_
                     }
                     else {
                         allowed_code_left.forbid(code_nr); // otherwise forbid code in future
+#if defined(ASSERTION_USED)
                         correct_disallowed_translation = true;
+#endif
                     }
                 }
                 else {

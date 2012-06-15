@@ -886,9 +886,11 @@ static long ptnd_collect_hash(const char *key, long val, void *gb_hash) {
     return val;
 }
 
+#if defined(DEBUG)
 #if defined(DEVEL_RALF)
 static long avoid_hash_warning(const char *, long,  void*) { return 0; }
 #endif // DEVEL_RALF
+#endif
 
 static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
     // search for possible probes
