@@ -21,6 +21,7 @@
 #include <arb_defs.h>
 #include <arb_strarray.h>
 
+#include <unistd.h>
 #include <iostream>
 #include <arb_global_defs.h>
 

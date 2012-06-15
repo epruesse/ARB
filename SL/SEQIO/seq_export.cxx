@@ -16,6 +16,7 @@
 #include <arb_file.h>
 #include <xml.hxx>
 #include <arb_progress.h>
+#include <unistd.h>
 
 #define sio_assert(cond) arb_assert(cond)
 

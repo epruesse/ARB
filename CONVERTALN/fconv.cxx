@@ -4,6 +4,7 @@
 #include "fun.h"
 #include "global.h"
 #include <static_assert.h>
+#include <unistd.h>
 
 static const char *format2name(Format type) {
     switch (type) {

@@ -30,6 +30,7 @@
 
 #include <SigHandler.h>
 #include <setjmp.h>
+#include <unistd.h>
 #include <string>
 
 using namespace std;

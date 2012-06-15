@@ -21,6 +21,9 @@
 #ifndef UT_VALGRINDED_H
 #include <ut_valgrinded.h>
 #endif
+#ifndef _UNISTD_H
+#include <unistd.h>
+#endif
 
 // --------------------------------------------------------------------------------
 
