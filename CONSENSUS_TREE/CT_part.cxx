@@ -112,14 +112,18 @@ bool PART::is_son_of(const PART *father) const {
     arb_assert(is_valid());
     arb_assert(father->is_valid());
     
+#if defined(ASSERTION_USED)
     bool is_equal = true;
+#endif
     int longs = get_longs();
     for (int i=0; i<longs; i++) {
         PELEM s = p[i];
         PELEM f = father->p[i];
 
         if ((s&f) != s) return false; // father has not all son bits set
+#if defined(ASSERTION_USED)
         if (s != f) is_equal = false;
+#endif
     }
 
     arb_assert(!is_equal); // if is_equal, father and son are identical (which is wrong);

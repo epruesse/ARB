@@ -151,9 +151,11 @@ static void PT_init_psg() {
 }
 
 static void PT_exit_psg() {
+#if defined(ASSERTION_USED)
     static bool executed = false;
     pt_assert(!executed);
     executed             = true;
+#endif
 
     pt_assert(psg_initialized);
     if (psg_initialized) {
