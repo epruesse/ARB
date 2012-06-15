@@ -14,6 +14,8 @@
 #include <set>
 #include <string>
 
+#include <unistd.h>
+
 using namespace std;
 
 #define DEFAULT_COLOR 8
