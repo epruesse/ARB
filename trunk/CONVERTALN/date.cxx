@@ -121,8 +121,8 @@ __ATTR__USERESULT static bool find_date_long_form(const char *date_string, int *
     int     length = str0len(date_string);
     SetOnce day, month, year;
 
+    char token[SIZE];
     for (int indi = 0, index = 0; index <= length; index++) {
-        char token[SIZE];
         if ((index == length) || isspace(date_string[index]) || strchr("(),", date_string[index]) != 0) {
             if (indi == 0) continue; // empty token
             token[indi] = '\0';
@@ -284,8 +284,7 @@ const char *gcg_date(const char *input) {
     do {                                                        \
         char *dup_ = strdup(input);                             \
         int   day_, month_, year_;                              \
-        ASSERT_RESULT(bool, true,                               \
-                      finder(dup_, &month_, &day_, &year_));    \
+        TEST_ASSERT(finder(dup_, &month_, &day_, &year_));      \
         TEST_ASSERT_EQUAL(day_, d);                             \
         TEST_ASSERT_EQUAL(month_, m);                           \
         TEST_ASSERT_EQUAL(year_, y);                            \
