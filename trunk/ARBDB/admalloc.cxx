@@ -407,7 +407,10 @@ static void gbm_put_memblk(char *memblk, size_t size) {
     block->allocFromSystem = 0;
 
     idx = getClusterIndex(block->size)-1;
-    gb_assert(idx>=0);
+    if (idx<0) { // (silences warning in NDEBUG mode)
+        gb_assert(0); // should be impossible
+        return;
+    }
 
     block->content.next     = gbb_cluster[idx].first;
     block->content.magic    = GBB_MAGIC;

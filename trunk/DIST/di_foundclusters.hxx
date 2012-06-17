@@ -118,12 +118,12 @@ public:
         delete next_desc;
         next_desc = NULL;
     }
-    
+
 private:
     bool lessByOrder_forward(const Cluster& other, ClusterOrder sortBy) const {
-        bool less;
+        bool less = false;
         switch (sortBy) {
-            case UNSORTED:              less = false; break;
+            case UNSORTED:              break;
             case SORT_BY_MEANDIST:      less = mean_dist < other.mean_dist; break;
             case SORT_BY_MIN_BASES:     less = min_bases < other.min_bases; break;
             case SORT_BY_CLUSTERSIZE:   less = members.size() < other.members.size(); break;
