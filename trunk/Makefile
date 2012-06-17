@@ -1464,6 +1464,7 @@ proto: proto_tools
 	@echo $(SEP) Updating prototypes
 	$(MAKE) \
 		ARBDB/ARBDB.proto \
+		AISC_COM/AISC_COM.proto \
 		ARB_GDE/ARB_GDE.proto \
 		CORE/CORE.proto \
 		CONVERTALN/CONVERTALN.proto \
