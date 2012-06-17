@@ -1,4 +1,4 @@
-#include "GDE_extglob.h"
+#include "GDE_proto.h"
 #include <cctype>
 
 static int getline(FILE *file, char *string)
@@ -432,10 +432,10 @@ void ParseMenu() {
 /*
   Find(): Search the target string for the given key
 */
-int Find(const char *target, const char *key)
-{
+
+int Find(const char *target, const char *key) {
     int i, j, len1, dif, flag = FALSE;
-    dif = (strlen(target)) - (len1 = strlen(key)) + 1;
+    dif                       = (strlen(target)) - (len1 = strlen(key)) + 1;
 
     if (len1>0)
         for (j=0; j<dif && flag == FALSE; j++)
