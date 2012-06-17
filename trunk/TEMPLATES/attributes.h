@@ -21,8 +21,6 @@
 // __ATTR__SENTINEL    used for function that expect a parameter list terminated by NULL
 // __ATTR__NORETURN    used for functions which do NEVER return
 // __ATTR__DEPRECATED  used for deprecated functions (useful for redesign)
-// __ATTR__PURE        used for functions w/o side-effects, where result only depends on parameters + global data
-// __ATTR__CONST       same as __ATTR__PURE, but w/o global-data-access
 // __ATTR__USERESULT   warn if result of function is unused
 //
 // __ATTR__FORMAT_MEMBER(p)     same as __ATTR__FORMAT for member functions
@@ -74,8 +72,6 @@
 #endif
 #define __ATTR__DEPRECATED_FUNCTION __attribute__((deprecated)) // function attributes sometimes cant handle reason (e.g. ctors)
 
-#define __ATTR__PURE      __attribute__((pure))
-#define __ATTR__CONST     __attribute__((const))
 #define __ATTR__NORETURN  __attribute__((noreturn))
 #define __ATTR__SENTINEL  __attribute__((sentinel))
 #define __ATTR__USERESULT __attribute__((warn_unused_result))
