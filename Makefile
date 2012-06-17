@@ -86,6 +86,9 @@ USE_GCC_MINOR:=$(word 2,$(SPLITTED_VERSION))
 USE_GCC_PATCHLEVEL:=$(word 3,$(SPLITTED_VERSION))
 
 USE_GCC_452_OR_HIGHER:=
+USE_GCC_46_OR_HIGHER:=
+USE_GCC_47_OR_HIGHER:=
+
 ifeq ($(USE_GCC_MAJOR),4)
  ifeq ($(USE_GCC_MINOR),5)
   ifneq ('$(findstring $(USE_GCC_PATCHLEVEL),23456789)','')
@@ -94,10 +97,16 @@ ifeq ($(USE_GCC_MAJOR),4)
  else
   ifneq ('$(findstring $(USE_GCC_MINOR),6789)','')
    USE_GCC_452_OR_HIGHER:=yes
+   USE_GCC_46_OR_HIGHER:=yes
+   ifneq ($(USE_GCC_MINOR),6)
+    USE_GCC_47_OR_HIGHER:=yes
+   endif
   endif
  endif
 else
  USE_GCC_452_OR_HIGHER:=yes
+ USE_GCC_46_OR_HIGHER:=yes
+ USE_GCC_47_OR_HIGHER:=yes
 endif
 
 #---------------------- define special directories for non standard builds
@@ -142,9 +151,9 @@ ifeq ($(DEBUG),1)
 #	cflags := -O0  $(gdb_common) -gstabs+  # using stabs+ (enable this for bigger debug session: debugs inlines, quick var inspect, BUT valgrind stops working :/)
 #	cflags := -O0  $(gdb_common) -gstabs  # using stabs (same here IIRC)
 #	cflags := -O2 $(gdb_common) # use this for callgrind (force inlining)
-ifndef DARWIN
+ ifndef DARWIN
 	lflags += -g
-endif
+ endif
 
 # control how much you get spammed
 	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
@@ -177,6 +186,9 @@ endif
 	extended_cpp_warnings += -Wextra# gcc 3.4.0
  ifeq ('$(USE_GCC_452_OR_HIGHER)','yes')
 	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
+  ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
+	extended_cpp_warnings += -Wc++11-compat# gcc 4.7 
+  endif
  endif
 
  ifeq ($(DEBUG_GRAPHICS),1)
@@ -406,11 +418,14 @@ cflags += -W -Wall $(dflags) $(extended_warnings) $(cdynamic)
 cppflags := $(extended_cpp_warnings)
 
 ifeq ($(DEVELOPER),RALF)
+ ifeq ('$(USE_GCC_47_OR_HIGHER)','')
+# only use for gcc versions between 4.3 and <4.7 (4.7++ adds -Wc++11-compat above)
 HAVE_GNUPP0X=`SOURCE_TOOLS/requireVersion.pl 4.3 $(GCC_VERSION_FOUND)`
-ifeq ($(HAVE_GNUPP0X),1)
+  ifeq ($(HAVE_GNUPP0X),1)
 # ensure compatibility with upcoming C++ standard
 cppflags += -std=gnu++0x
-endif
+  endif
+ endif
 endif
 
 # compiler settings:
