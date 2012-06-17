@@ -1135,7 +1135,7 @@ public:
 
             int old_pos = GBT_names_index_of(listContent, selected);
             if (old_pos >= 0) {
-                int new_pos;
+                int new_pos = 0;
                 switch (dest) {
                     case ARM_TOP:    new_pos= 0;         break;
                     case ARM_UP:     new_pos= old_pos-1; break;
