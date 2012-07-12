@@ -1,0 +1,22 @@
+#!/bin/bash
+
+args="$*"
+
+echo "Running ARB in debugger (gdb)"
+
+arb_echo "set args $args" "source $ARBHOME/SOURCE_TOOLS/trace.gdb" > ARB_debug.commands
+
+gdb -n -batch -command=ARB_debug.commands arb_ntree >& ARB_debug.log
+# gdb -n -command=ARB_debug.commands arb_ntree | tee ARB_debug.log
+
+echo "----------------------------------------" >> ARB_debug.log
+echo "arb_ntree was called with: '$args'" >> ARB_debug.log
+cat $ARBHOME/TEMPLATES/svn_revision.h >>ARB_debug.log
+svn info >>ARB_debug.log
+echo "----------------------------------------" >> ARB_debug.log
+
+gzip ARB_debug.log
+stamp=`date '+%Y%m%d_%H%M%S'`
+mv ARB_debug.log.gz ARB_debug_$stamp.log.gz
+echo "----------------------------------------"
+echo "Generated ARB_debug_$stamp.log.gz"

@@ -1,0 +1,201 @@
+# written by Renzo Kottmann rkottman@mpi-bremen.de 2008-08
+# modified by Joerg Peplies, Frank Oliver Gloeckner
+# start field is instantly set to 1
+# Version 1.03 last modified 2008-11-01
+# work out solution for PCR_primers
+# fasta identifier (">*") goes now to field "fasta_id" (new!)
+# content of contextual data field "organism" goes to ARB field "full_name"
+
+#AUTODETECT "*[*"
+KEYWIDTH 1
+
+BEGIN   ">??*"
+
+MATCH   ">*"
+        SRT "* *=*1:*\t*=*1"
+        WRITE "name"
+        SRT "*=1"
+        WRITE_INT "start"
+
+MATCH   ">*"
+        SRT "* *=*1"
+        WRITE "fasta_id"
+
+MATCH   "*altitude=*"
+        SRT "*altitude\=*] *=*2"
+        WRITE "altitude_slv"
+
+MATCH   "*bio-material=*"
+        SRT "*bio-material\=*] *=*2"
+        WRITE "bio_material"
+
+MATCH   "*clone-lib=*"
+        SRT "*clone-lib\=*] *=*2"
+        WRITE "clone_lib"
+
+MATCH   "*strain=*"
+        SRT "*strain\=*] *=*2"
+        WRITE "strain"
+
+MATCH   "*fingerprint_lib=*"
+        SRT "*fingerprint_lib\=*] *=*2"
+        WRITE "fingerprint_lib"
+
+MATCH   "*chlorophyll=*"
+        SRT "*chlorophyll\=*] *=*2"
+        WRITE "chlorophyll_slv"
+
+MATCH   "*collected-by=*"
+        SRT "*collected-by\=*] *=*2"
+        WRITE "collected_by"
+
+MATCH   "*collection-date=*"
+        SRT "*collection-date\=*] *=*2"
+        WRITE "collection_date"
+
+MATCH   "*collection_time=*"
+        SRT "*collection_time\=*] *=*2"
+        WRITE "collection_time_slv"
+
+MATCH   "*country=*"
+        SRT "*country\=*] *=*2"
+        WRITE "country"
+
+MATCH   "*culture-collection=*"
+        SRT "*culture-collection\=*] *=*2"
+        WRITE "culture_collection"
+
+MATCH   "*depth=*"
+        SRT "*depth\=*] *=*2"
+        WRITE "depth_slv"
+
+MATCH   "*dissolved_oxygen=*"
+        SRT "*dissolved_oxygen\=*] *=*2"
+        WRITE "dissolved_oxygen_slv"
+
+MATCH   "*DOC=*"
+        SRT "*DOC\=*] *=*2"
+        WRITE "DOC_slv"
+
+MATCH   "*environmental-sample=*"
+        SRT "*environmental-sample\=*] *=*2"
+        WRITE "environmental_sample"
+
+MATCH   "*fwd-pcr-primer-seq=*"
+        SRT "*fwd-pcr-primer-seq\=*] *=*2"
+        WRITE "fwd_pcr_primer_seq"
+
+MATCH   "*geodetic_datum=*"
+        SRT "*geodetic_datum\=*] *=*2"
+        WRITE "geodetic_datum_slv"
+
+MATCH   "*habitat=*"
+        SRT "*habitat\=*] *=*2"
+        WRITE "habitat_slv"
+
+MATCH   "*haplotype=*"
+        SRT "*haplotype\=*] *=*2"
+        WRITE "haplotype"
+
+MATCH   "*identified-by=*"
+        SRT "*identified-by\=*] *=*2"
+        WRITE "identified_by"
+
+MATCH   "*isolation-source=*"
+        SRT "*isolation-source\=*] *=*2"
+        WRITE "isolation_source"
+
+MATCH   "*lab-host=*"
+        SRT "*lab-host\=*] *=*2"
+        WRITE "lab_host"
+
+MATCH   "*lat_lon_details=*"
+        SRT "*lat_lon_details\=*] *=*2"
+        WRITE "lat_lon_details_slv"
+
+MATCH   "*lat-lon=*"
+        SRT "*lat-lon\=*] *=*2"
+        WRITE "lat_lon"
+
+MATCH   "*metagenomic=*"
+        SRT "*metagenomic\=*] *=*2"
+        WRITE "metagenomic"
+
+MATCH   "*nitrate=*"
+        SRT "*nitrate\=*] *=*2"
+        WRITE "nitrate_slv"
+
+MATCH   "*pH=*"
+        SRT "*pH\=*] *=*2"
+        WRITE "pH_slv"
+
+MATCH   "*phosphate=*"
+        SRT "*phosphate\=*] *=*2"
+        WRITE "phosphate_slv"
+
+MATCH   "*plasmid-name=*"
+        SRT "*plasmid-name\=*] *=*2"
+        WRITE "plasmid_name"
+
+MATCH   "*project_name=*"
+        SRT "*project_name\=*] *=*2"
+        WRITE "project_name_slv"
+
+MATCH   "*POC=*"
+        SRT "*POC\=*] *=*2"
+        WRITE "POC_slv"
+
+MATCH   "*rev-pcr-primer-seq=*"
+        SRT "*rev-pcr-primer-seq\=*] *=*2"
+        WRITE "rev_pcr_primer_seq"
+
+MATCH   "*salinity=*"
+        SRT "*salinity\=*] *=*2"
+        WRITE "salinity_slv"
+
+MATCH   "*sample_identifier=*"
+        SRT "*sample_identifier\=*] *=*2"
+        WRITE "sample_identifier_slv"
+
+MATCH   "*sample_material=*"
+        SRT "*sample_material\=*] *=*2"
+        WRITE "sample_material_slv"
+
+MATCH   "*sample_volume=*"
+        SRT "*sample_volume\=*] *=*2"
+        WRITE "sample_volume_slv"
+
+MATCH   "*silicate=*"
+        SRT "*silicate\=*] *=*2"
+        WRITE "silicate_slv"
+
+MATCH   "*specific-host=*"
+        SRT "*specific-host\=*] *=*2"
+        WRITE "specific_host"
+
+MATCH   "*specimen-voucher=*"
+        SRT "*specimen-voucher\=*] *=*2"
+        WRITE "specimen_voucher"
+
+MATCH   "*sub-species=*"
+        SRT "*sub-species\=*] *=*2"
+        WRITE "sub_species"
+
+MATCH   "*temperature=*"
+        SRT "*temperature\=*] *=*2"
+        WRITE "temperature_slv"
+
+MATCH   "*organism=*"
+        SRT "*organism\=*] *=*2"
+        WRITE "full_name"
+
+SEQUENCEAFTER   "*"
+SEQUENCESRT     ""
+SEQUENCEACI     "remove(".-0123456789 /")"
+SEQUENCECOLUMN   0
+SEQUENCEEND     ">*"
+
+# DONT_GEN_NAMES
+CREATE_ACC_FROM_SEQUENCE
+
+END     "//"
