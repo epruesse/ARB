@@ -35,16 +35,17 @@ void FileContent::init() {
 GB_ERROR FileContent::save() {
     arb_assert(!has_error());
 
-    FILE *out        = fopen(path, "wt");
-    bool  failed     = false;
-    if (!out) failed = true;
-    else {
+    FILE *out    = fopen(path, "wt");
+    bool  failed = !out;
+    
+    if (out) {
         for (size_t i = 0; i<Lines.size(); ++i) {
             fputs(Lines[i], out);
             fputc('\n', out);
         }
-        failed = (fclose(out) != 0) || failed;
+        failed = fclose(out) != 0;
     }
+    
     if (failed) error = GB_IO_error("saving", path);
     return error;
 }

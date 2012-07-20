@@ -508,8 +508,9 @@ GB_ERROR GB_textprint(const char *path) {
     char       *fpath   = GBS_eval_env(path);
     const char *command = GBS_global_string("arb_textprint '%s' &", fpath);
     GB_ERROR    error   = GBK_system(command);
+    error               = GB_failedTo_error("print textfile", fpath, error);
     free(fpath);
-    return GB_failedTo_error("print textfile", fpath, error);
+    return error;
 }
 
 // --------------------------------------------------------------------------------

@@ -234,21 +234,21 @@ static void GDE_freeali(NA_Alignment *dataset) {
     }
 }
 
-static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) {
+static void GDE_export(NA_Alignment *dataset, const char *align, long oldnumelements) {
     GBDATA   *gb_main = db_access.gb_main;
     GB_ERROR  error   = GB_begin_transaction(gb_main);
 
-    long maxalignlen    = GBT_get_alignment_len(gb_main, align);
-    long isdefaultalign = 0;
+    long  maxalignlen  = GBT_get_alignment_len(gb_main, align);
+    char *defaultAlign = NULL;
 
     if (maxalignlen <= 0 && !error) {
         GB_clear_error(); // clear "alignment not found" error
-    
-        align             = GBT_get_default_alignment(gb_main);
-        if (!align) error = GB_await_error();
+
+        defaultAlign             = GBT_get_default_alignment(gb_main);
+        if (!defaultAlign) error = GB_await_error();
         else {
-            isdefaultalign = 1;
-            maxalignlen    = GBT_get_alignment_len(gb_main, align);
+            align       = defaultAlign;
+            maxalignlen = GBT_get_alignment_len(gb_main, align);
         }
     }
 
@@ -442,7 +442,7 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
     progress.done();
 
     GB_end_transaction_show_error(db_access.gb_main, error, aw_message);
-    if (isdefaultalign) free(align);
+    free(defaultAlign);
 }
 
 static char *preCreateTempfile(const char *name) {
