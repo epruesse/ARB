@@ -1356,9 +1356,10 @@ static arb_handlers aw_handlers = {
 
 void AW_root::init_root(const char *programname, bool no_exit) {
     // initialize ARB X application
-    int          a = 0;
+    int          a             = 0;
     XFontStruct *fontstruct;
-    char        *fallback_resources[100];
+    const int    MAX_FALLBACKS = 30;
+    char        *fallback_resources[MAX_FALLBACKS];
 
     prvt->action_hash = GBS_create_hash(1000, GB_MIND_CASE);
 
@@ -1366,14 +1367,15 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     program_name  = strdup(programname);
 
     int i;
-    for (i=0; i<1000 && aw_fb[i].fb; i++) {
+    for (i=0; aw_fb[i].fb; i++) {
         GBDATA *gb_awar       = GB_search((GBDATA*)application_database, aw_fb[i].awar, GB_FIND);
         fallback_resources[i] = GBS_global_string_copy("*%s: %s", aw_fb[i].fb, GB_read_char_pntr(gb_awar));
     }
     fallback_resources[i] = 0;
+    aw_assert(i<MAX_FALLBACKS);
 
     ARB_install_handlers(aw_handlers);
-    
+
     // @@@ FIXME: the next line hangs if program runs inside debugger
     p_r->toplevel_widget = XtOpenApplication(&(p_r->context), programname,
             NULL, 0, // XrmOptionDescRec+numOpts
@@ -1383,9 +1385,7 @@ void AW_root::init_root(const char *programname, bool no_exit) {
             applicationShellWidgetClass, // widget class
             NULL, 0);
 
-    for (i=0; i<1000 && fallback_resources[i]; i++) {
-        free(fallback_resources[i]);
-    }
+    for (i=0; fallback_resources[i]; i++) free(fallback_resources[i]);
 
     p_r->display = XtDisplay(p_r->toplevel_widget);
 
@@ -1540,10 +1540,11 @@ AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
     }
     else {
         if (colnum>=color_table_size) {
-            long new_size = colnum+8;
-            color_table   = (AW_rgb*)realloc(color_table, new_size*sizeof(AW_rgb)); // valgrinders : never freed because AW_window never is freed
+            long new_size  = colnum+8;
+            realloc_unleaked(color_table, new_size*sizeof(AW_rgb)); // valgrinders : never freed because AW_window never is freed
+            if (!color_table) GBK_terminate("out of memory");
             for (int i = color_table_size; i<new_size; ++i) color_table[i] = AW_NO_COLOR;
-            color_table_size = new_size;
+            color_table_size                                               = new_size;
         }
     }
     XColor xcolor_returned, xcolor_exakt;

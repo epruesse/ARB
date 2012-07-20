@@ -2161,7 +2161,11 @@ bool imageDialog::createDescriptions()
     // CREATE BUFFERS
     char *descriptor= (char *)malloc(1024 * sizeof(char));
     char *buf= (char *)malloc(1024 * sizeof(char));
-    if(!descriptor || !buf) return false;
+    if (!descriptor || !buf) {
+        free(descriptor);
+        free(buf);
+        return false;
+    }
 
 //     // FREE OLD DESCRIPTOR LIST
     map<char*, char*, ltstr>::iterator descr_it;

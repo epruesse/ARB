@@ -770,6 +770,7 @@ void ReadCMask(const char *filename)
                     char *read = fgets(in_line, GBUFSIZ, file);
                     if (!read) {
                         Warning("Unexepected end of file");
+                        fclose(file);
                         return;
                     }
                 }
@@ -780,6 +781,7 @@ void ReadCMask(const char *filename)
                     if (fgets(in_line, GBUFSIZ, file)==NULL)
                     {
                         Warning("illegal format in colormask");
+                        fclose(file);
                         return;
                     }
                     sscanf(in_line, "%d", &(colors[j]));

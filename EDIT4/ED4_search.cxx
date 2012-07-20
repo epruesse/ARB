@@ -1060,7 +1060,7 @@ void ED4_SearchResults::search(const ED4_sequence_terminal *seq_terminal)
 
 ED4_SearchPosition *ED4_SearchResults::get_first_at(ED4_SearchPositionType type, int start, int end) const {
     if (is_list()) {
-        to_array();
+        const_cast<ED4_SearchResults*>(this)->to_array();
     }
 
     int l = 0;
@@ -1285,8 +1285,8 @@ ED4_SearchPosition *ED4_SearchResults::get_shown_at(int pos) const
     return best;
 }
 
-void ED4_SearchResults::to_array() const {
-    e4_assert(arraySize==0); // assert list-format
+void ED4_SearchResults::to_array() {
+    e4_assert(is_list());
 
     ED4_SearchPosition *pos = first;
 
@@ -1297,27 +1297,26 @@ void ED4_SearchResults::to_array() const {
             a_arraySize++;
             pos = pos->get_next();
         }
-        *((int*)&arraySize) = a_arraySize;
+        arraySize = a_arraySize;
     }
 
     ED4_SearchPosition **a_array = (ED4_SearchPosition**)malloc(sizeof(ED4_SearchPosition*)*arraySize);
 
-    int e;
     pos = first;
-    for (e=0; e<arraySize; e++) {
+    for (int e=0; e<arraySize; e++) {
         e4_assert(pos);
         a_array[e] = pos;
         pos = pos->get_next();
     }
 
-    *((ED4_SearchPosition***)&array) = a_array;
+    array = a_array;
 }
-void ED4_SearchResults::to_list() const {
-    e4_assert(arraySize>0); // assert array-format
-    free(array);
 
-    *((int*)&arraySize) = 0;
-    *((ED4_SearchPosition***)&array) = 0;
+void ED4_SearchResults::to_list() {
+    e4_assert(is_array());
+
+    freenull(array);
+    arraySize = 0;
 }
 
 

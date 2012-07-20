@@ -368,7 +368,17 @@ int main(int argc, char ** argv) {
         fprintf(stderr, "Error: missing file name\n");
     }
     else {
-        exitcode = Interpreter().launch(argc, argv);
+        try {
+            exitcode = Interpreter().launch(argc, argv);
+        }
+        catch (const char *err) {
+            fprintf(stderr, "\nAISC: exception: %s [terminating]\n", err);
+            exitcode = EXIT_FAILURE;
+        }
+        catch (...) {
+            fprintf(stderr, "\nAISC: unknown exception [terminating]\n");
+            exitcode = EXIT_FAILURE;
+        }
     }
     return exitcode;
 }
