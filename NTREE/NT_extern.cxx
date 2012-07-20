@@ -576,6 +576,7 @@ static char *stream2str(streamSource source, const char *commandOrFile) {
         while (EOF != (c = fgetc(in))) GBS_chrcat(out, c);
 
         switch (source) {
+            // cppcheck-suppress mismatchAllocDealloc
             case FROM_PIPE: pclose(in); break;
             case FROM_FILE: fclose(in); break;
         }

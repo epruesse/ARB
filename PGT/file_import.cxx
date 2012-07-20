@@ -59,11 +59,11 @@ static importTable *createImportTable(int rows, int columns)
         table->columnType= columnType;
     }
     else {
-        free(table);
+        free(table); table = NULL;
         free(cells);
         free(header);
     }
-    
+
     // RETURN POINTER TO TABLE
     return table;
 }

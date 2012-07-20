@@ -1324,7 +1324,7 @@ static void print_file(char *name, char *header) {
  */
 static void print_prologue() {
     int             c;
-    FILE           *f;
+    FILE           *f = NULL;
     char           *datestring;
 #if defined(SYSV) || defined(BSD)
     char           *logname, *host;
@@ -1435,6 +1435,7 @@ static void print_prologue() {
 
     // Go on
     printf("/docsave save def\n");
+    fclose(f);
 }
 
 /*

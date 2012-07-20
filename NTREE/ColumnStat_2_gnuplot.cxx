@@ -505,8 +505,11 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
 
                 if (stat_type == STAT_SORT) delete data.sorted;
                 free(type);
+            }
+
+            if (out) {
                 fclose(out);
-                out = 0;
+                out = NULL;
             }
 
             if (!error) {

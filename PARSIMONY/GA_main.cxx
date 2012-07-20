@@ -70,7 +70,7 @@ AP_tree * buildRandomTree(AP_tree *root) {
         list[num] = (AP_tree *)ntree;
     }
     tree0 = list[0];
-    delete list;
+    free(list);
     return tree0;
 }
 

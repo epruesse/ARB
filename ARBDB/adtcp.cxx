@@ -200,9 +200,11 @@ GB_ERROR ArbTcpDat::read(int *versionFound) {
         }
 
         content = (char**)realloc(entry, (entries+1)*sizeof(*entry));
+
         if (!content) {
-            error   = "Out of memory";
+            error       = "Out of memory";
             serverCount = 0;
+            free(entry);
         }
         else {
             content[entries] = 0;

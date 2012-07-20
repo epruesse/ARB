@@ -769,7 +769,7 @@ static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
     int      partial_marked_sequences = 0;
     int      no_data                  = 0; // no data in alignment
 
-    arb_progress("Adding partial sequences");
+    arb_progress part_add_progress("Adding partial sequences");
 
     {
         list<PartialSequence> partial;
