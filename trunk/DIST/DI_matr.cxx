@@ -275,7 +275,7 @@ void MatrixOrder::applyTo(TreeOrderedSpecies **species_array, size_t array_size)
     GB_sort((void**)species_array, 0, array_size, TreeOrderedSpecies_cmp, NULL);
 }
 
-char *DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warnings, GBDATA **species_list) {
+GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warnings, GBDATA **species_list) {
     GBDATA     *gb_main = get_gb_main();
     const char *use     = get_aliname();
 
@@ -353,7 +353,8 @@ char *DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warning
 
     if (no_of_species>entries_mem_size) {
         entries_mem_size = no_of_species;
-        entries = (DI_ENTRY **)realloc(entries, (size_t)(sizeof(DI_ENTRY*)*entries_mem_size));
+        realloc_unleaked(entries, (size_t)(sizeof(DI_ENTRY*)*entries_mem_size));
+        if (!entries) return "out of memory";
     }
 
     for (int i = 0; i<no_of_species; ++i) {
@@ -370,7 +371,7 @@ char *DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warning
     }
 
     GB_pop_transaction(gb_main);
-    return 0;
+    return NULL;
 }
 
 void DI_MATRIX::clear(DI_MUT_MATR &hits)
@@ -890,21 +891,24 @@ __ATTR__USERESULT static GB_ERROR di_calculate_matrix(AW_window *aww, const Weig
             last_order = new MatrixOrder(GLOBAL_gb_main, sort_tree_name);
         }
         di_assert(last_order);
-        phm->load(all_flag, *last_order, show_warnings, NULL);
+        error = phm->load(all_flag, *last_order, show_warnings, NULL);
 
         free(sort_tree_name);
         GB_pop_transaction(GLOBAL_gb_main);
-        bool aborted = false;
-        if (progress.aborted()) {
-            phm->unload();
-            error   = "Aborted by user";
-            aborted = true;
-        }
-        else {
-            DI_TRANSFORMATION trans = (DI_TRANSFORMATION)aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
 
-            if (phm->is_AA) error = phm->calculate_pro(trans, &aborted);
-            else error            = phm->calculate(aw_root, cancel, 0.0, trans, &aborted);
+        bool aborted = false;
+        if (!error) {
+            if (progress.aborted()) {
+                phm->unload();
+                error   = "Aborted by user";
+                aborted = true;
+            }
+            else {
+                DI_TRANSFORMATION trans = (DI_TRANSFORMATION)aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
+
+                if (phm->is_AA) error = phm->calculate_pro(trans, &aborted);
+                else error            = phm->calculate(aw_root, cancel, 0.0, trans, &aborted);
+            }
         }
 
         if (aborted) {
@@ -981,33 +985,39 @@ static void di_mark_by_distance(AW_window *aww, AW_CL cl_weightedFilter) {
                         phm->matrix_type       = DI_MATRIX_FULL;
                         GBDATA *species_pair[] = { gb_selected, gb_species, NULL };
 
-                        phm->load(DI_LOAD_LIST, order, false, species_pair);
+                        error = phm->load(DI_LOAD_LIST, order, false, species_pair);
 
-                        if (phm->is_AA) {
-                            error = phm->calculate_pro(trans, NULL);
+                        if (!error) {
+                            if (phm->is_AA) {
+                                error = phm->calculate_pro(trans, NULL);
+                            }
+                            else {
+                                error = phm->calculate(aw_root, cancel, 0.0, trans, NULL);
+                            }
                         }
-                        else {
-                            error = phm->calculate(aw_root, cancel, 0.0, trans, NULL);
-                        }
 
-                        double dist_value = phm->matrix->get(0, 1);                         // distance or conformance
-                        bool   mark       = (lowerBound <= dist_value && dist_value <= upperBound);
-                        GB_write_flag(gb_species, mark);
+                        if (!error) {
+                            double dist_value = phm->matrix->get(0, 1);                         // distance or conformance
+                            bool   mark       = (lowerBound <= dist_value && dist_value <= upperBound);
+                            GB_write_flag(gb_species, mark);
 
-                        if (!markedSelected) {
-                            dist_value = phm->matrix->get(0, 0);                                     // distance or conformance to self
-                            mark       = (lowerBound <= dist_value && dist_value <= upperBound);
-                            GB_write_flag(gb_selected, mark);
+                            if (!markedSelected) {
+                                dist_value = phm->matrix->get(0, 0);                                     // distance or conformance to self
+                                mark       = (lowerBound <= dist_value && dist_value <= upperBound);
+                                GB_write_flag(gb_selected, mark);
 
-                            markedSelected = true;
+                                markedSelected = true;
+                            }
                         }
 
                         delete phm;
-                        progress.inc_and_check_user_abort(error);
+                        if (!error) progress.inc_and_check_user_abort(error);
                     }
 
                     di_assert(!GLOBAL_MATRIX.exists());
                     ASSERT_RESULT(DI_MATRIX*, NULL, GLOBAL_MATRIX.swap(prev_global));
+
+                    if (error) progress.done();
                 }
 
                 delete aliview;
@@ -1316,6 +1326,7 @@ static void di_autodetect_callback(AW_window *aww)
 
     {
         DI_MATRIX phm(*aliview, aw_root);
+        GB_ERROR  error = NULL;
 
         {
             char *load_what      = aw_root->awar(AWAR_DIST_WHICH_SPECIES)->read_string();
@@ -1326,7 +1337,7 @@ static void di_autodetect_callback(AW_window *aww)
             GLOBAL_MATRIX.forget();
 
             MatrixOrder order(GLOBAL_gb_main, sort_tree_name);
-            phm.load(all_flag, order, true, NULL);
+            error = phm.load(all_flag, order, true, NULL);
 
             free(sort_tree_name);
             free(load_what);
@@ -1334,9 +1345,10 @@ static void di_autodetect_callback(AW_window *aww)
 
         GB_pop_transaction(GLOBAL_gb_main);
 
-        progress.subtitle("Search Correction");
-
-        phm.analyse();
+        if (!error) {
+            progress.subtitle("Search Correction");
+            phm.analyse();
+        }
     }
 
     free(cancel);
