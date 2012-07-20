@@ -1695,6 +1695,8 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                                         long                  part_chksum;
                                         CompactedSubSequence *toAlignPart = readCompactedSequence(gb_toAlign, alignment, &error, 0, &part_chksum, partRange);
 
+                                        fa_assert(contradicted(error, toAlignPart));
+
                                         if (!error) {
                                             AlignParams loose_ali_params = { ali_params.report, ali_params.showGapsMessages, partRange };
 
@@ -1709,8 +1711,8 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                                                 }
                                                 delete alignedPart;
                                             }
-                                            delete toAlignPart;
                                         }
+                                        delete toAlignPart;
                                     }
                                     delete alignToPart;
                                 }

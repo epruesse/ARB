@@ -184,7 +184,9 @@ class PersistantFlag {
             GB_ERROR error = GB_IO_error("creating flag", flagfile);
             HERE.errorf(true, "%s\n", error);
         }
-        fclose(fp);
+        else {
+            fclose(fp);
+        }
         env_assert(flagFileExists());
     }
     void removeFlagFile() const {

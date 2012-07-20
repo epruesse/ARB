@@ -655,8 +655,6 @@ GB_ERROR gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
             freeGbdByKey(Main, gb_gbk);
             gb_gbk = NULL;
 
-            if (fclose(out) != 0) writeError = true;
-
             {
                 GB_MAIN_IDX org_main_idx     = Main->dummy_father->main_idx;
                 Main->dummy_father->main_idx = main_idx_4_save;
@@ -665,6 +663,8 @@ GB_ERROR gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
             }
         }
 
+        if (out && fclose(out) != 0) writeError = true;
+        
         if (writeError) {
             error = GB_IO_error("saving fastloadfile", path);
             GB_unlink_or_warn(path, &error);

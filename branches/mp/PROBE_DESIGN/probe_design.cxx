@@ -1065,11 +1065,13 @@ static void probe_match_all_event(AW_window *aww, AW_CL cl_iselection_id, AW_CL 
         probe_match_event(aww, (AW_CL)&match_event);
         if (counter==-1) break;
 
-        char *buffer = new char[strlen(entry)+10]; // write # of matched to list entries
-        sprintf(buffer, "%5i %s", counter, entry);
-        selentry.set_displayed(buffer);
-        got_result   = true;
-        delete buffer;
+        {
+            char *buffer = new char[strlen(entry)+10]; // write # of matched to list entries
+            sprintf(buffer, "%5i %s", counter, entry);
+            selentry.set_displayed(buffer);
+            got_result   = true;
+            delete [] buffer;
+        }
 
         ++selentry;
         progress.inc();
@@ -1458,15 +1460,15 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
                     while (nidx<bases_to_resolve) resolution_idx[nidx++] = 0; // zero all other indices
                 }
 
-                delete buffer;
-                delete resolution_max_idx;
-                delete resolution_idx;
+                delete [] buffer;
+                delete [] resolution_max_idx;
+                delete [] resolution_idx;
 
                 selection_id->insert_default("", "");
                 selection_id->update();
             }
 
-            delete offsets_to_resolve;
+            delete [] offsets_to_resolve;
         }
     }
 

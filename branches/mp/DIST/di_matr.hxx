@@ -148,7 +148,7 @@ public:
     const char *get_aliname() const { return aliview->get_aliname(); }
     const AliView *get_aliview() const { return aliview; }
 
-    char *load(LoadWhat what, const MatrixOrder& order, bool show_warnings, GBDATA **species_list);
+    GB_ERROR load(LoadWhat what, const MatrixOrder& order, bool show_warnings, GBDATA **species_list) __ATTR__USERESULT;
     char *unload();
     const char *save(char *filename, enum DI_SAVE_TYPE type);
 
