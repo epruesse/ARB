@@ -11,9 +11,9 @@
 # The ARB Makefile is aware of the following defines:
 #
 # BUILDHOST_64=0/1      1=>compile on 64 bit platform (defaults to ARB_64)
-# DEVELOPER=name	special compilation (values: ANY,RELEASE,your name)
+# DEVELOPER=name	    special compilation (values: ANY,RELEASE,your name)
 # OPENGL=0/1            whether OPENGL is available
-#
+# GTK=0/1               Use the new gtk gui
 # -----------------------------------------------------
 # ARB Makefile and ARB source code are aware of the following defines:
 #
@@ -310,6 +310,15 @@ cflags += -fPIC
 cflags += -fno-common# link all global data into one namespace
 cflags += -fstrict-aliasing# gcc 3.4
 #cflags += -save-temps# uncomment to see preprocessor output
+
+
+
+#---------------------- GTK 
+
+	GTKCFLAGS:= $(shell pkg-config --cflags gtk+-2.0)
+	GTKLIBS:= $(shell pkg-config --libs gtk+-2.0 | sed 's/-pthread//')
+
+	cflags += $(GTKCFLAGS)
 
 #---------------------- X11 location
 
@@ -678,7 +687,14 @@ ifdef DARWIN
         GUI_LIBS_PREFIX:=-framework GLUT -framework OpenGL
 endif
 
-GUI_LIBS = $(GUI_LIBS_PREFIX) $(LIBS) -lWINDOW -lAWT $(XLIBS)
+GUI_LIBS = $(GUI_LIBS_PREFIX) $(LIBS) -lAWT  
+ifeq ($(GTK),1)
+		GUI_LIBS += -lWINDOW_GTK $(GTKLIBS)
+else
+		GUI_LIBS += -lWINDOW $(XLIBS)		
+endif	
+
+
 LIBPATH = -L$(ARBHOME)/lib
 
 DEST_LIB = lib
@@ -788,6 +804,7 @@ ARCHS = \
 			UNIT_TESTER/UNIT_TESTER.a \
 			WETC/WETC.a \
 			WINDOW/libWINDOW.a \
+			WINDOW_GTK/libWINDOW_GTK.a \
 			XML/XML.a \
 
 # ----------------------- 
@@ -1168,10 +1185,11 @@ target_is_missing_lib_prefix:
 	@echo "Error: Denied to build shared library target with missing 'lib'-prefix"
 	false
 
-ARBDB/ARBDB.dummy:   target_is_missing_lib_prefix
-CORE/CORE.dummy:     target_is_missing_lib_prefix
-AWT/AWT.dummy:       target_is_missing_lib_prefix
-WINDOW/WINDOW.dummy: target_is_missing_lib_prefix
+ARBDB/ARBDB.dummy:           target_is_missing_lib_prefix
+CORE/CORE.dummy:             target_is_missing_lib_prefix
+AWT/AWT.dummy:               target_is_missing_lib_prefix
+WINDOW/WINDOW.dummy:         target_is_missing_lib_prefix
+WINDOW_GTK/WINDOW_GTK.dummy: target_is_missing_lib_prefix
 
 # rule to generate main target (normally a library):
 %.dummy:
@@ -1270,6 +1288,7 @@ STAT/STAT.dummy:			links_non_perl
 TREEGEN/TREEGEN.dummy:			links_non_perl
 WETC/WETC.dummy:			links_non_perl
 WINDOW/libWINDOW.dummy:			links_non_perl
+WINDOW_GTK/libWINDOW_GTK.dummy:			links_non_perl
 XML/XML.dummy:				links_non_perl
 
 ifeq ($(OPENGL),1)
@@ -1327,6 +1346,7 @@ show:
 		@echo '  com    communication libraries'
 		@echo '  db     ARB database'
 		@echo '  aw     GUI lib'
+		@echo '  aw_gtk New GTK gui lib'		
 		@echo '  awt    GUI toolkit'
 		@echo '  awtc   general purpose library'
 		@echo '  awti   import/export library'
@@ -1367,6 +1387,7 @@ HELP_SOURCE/HELP_SOURCE.dummy: link_db xml menus
 db:	ARBDB/libARBDB.dummy
 core:	CORE/libCORE.dummy
 aw:	WINDOW/libWINDOW.dummy
+aw_gtk:	WINDOW_GTK/libWINDOW_GTK.dummy
 awt:	AWT/libAWT.dummy
 awtc:	AWTC/AWTC.dummy
 awti:	AWTI/AWTI.dummy
@@ -1933,6 +1954,7 @@ UNITS_TESTED = \
 	SL/FAST_ALIGNER/FAST_ALIGNER.test \
 	SL/PRONUC/PRONUC.test \
 	WINDOW/libWINDOW.test \
+	WINDOW_GTK/libWINDOW_GTK.test \
 	HELP_SOURCE/arb_help2xml.test \
 	CONVERTALN/CONVERTALN.test \
 	SL/SEQIO/SEQIO.test \
