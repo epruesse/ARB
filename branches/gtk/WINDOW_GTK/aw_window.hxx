@@ -238,19 +238,20 @@ enum AW_PosRecalc {
 typedef void (*aw_hide_cb)(AW_window *aww);
 
 class AW_window : virtual Noncopyable {
-    enum AW_SizeRecalc recalc_size_at_show;
-    enum AW_PosRecalc  recalc_pos_at_show;
-    aw_hide_cb         hide_cb;
 
-    bool expose_callback_added;
+//    enum AW_SizeRecalc recalc_size_at_show;
+//    enum AW_PosRecalc  recalc_pos_at_show;
+//    aw_hide_cb         hide_cb;
+//
+//    bool expose_callback_added;
+//
+//    AW_cb_struct *focus_cb;
+//
+//    int left_indent_of_horizontal_scrollbar;
+//    int top_indent_of_vertical_scrollbar;
 
-    AW_cb_struct *focus_cb;
-    
-    int left_indent_of_horizontal_scrollbar;
-    int top_indent_of_vertical_scrollbar;
-
-    void all_menus_created() const;
-    void create_toggle(const char *var_name, aw_toggle_data *tdata);
+//    void all_menus_created() const;
+//    void create_toggle(const char *var_name, aw_toggle_data *tdata);
 
 protected:
     AW_root *root;
@@ -284,20 +285,17 @@ public:
 
     void create_window_variables();
 
-    void recalc_pos_atShow(AW_PosRecalc pr) { recalc_pos_at_show = pr; }
-    AW_PosRecalc get_recalc_pos_atShow() const { return recalc_pos_at_show; }
+    void recalc_pos_atShow(AW_PosRecalc pr);
 
-    void recalc_size_atShow(enum AW_SizeRecalc sr) {
-        if (sr == AW_RESIZE_ANY) {
-            sr = (recalc_size_at_show == AW_RESIZE_USER) ? AW_RESIZE_USER : AW_RESIZE_DEFAULT;
-        }
-        recalc_size_at_show = sr;
-    }
+    AW_PosRecalc get_recalc_pos_atShow() const;
+
+    void recalc_size_atShow(enum AW_SizeRecalc sr);
 
     void run_focus_callback();
     
     void allow_delete_window(bool allow_close);
-    void on_hide(aw_hide_cb call_on_hide) { hide_cb = call_on_hide; }
+    void on_hide(aw_hide_cb call_on_hide);
+
 
     void show_modal();
     void set_window_title_intern(char *title);
