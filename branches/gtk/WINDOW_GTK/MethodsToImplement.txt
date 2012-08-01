@@ -11,20 +11,7 @@ AW_POPUP_HELP(AW_window*, long)
 AW_advice(char const*, int, char const*, char const*)
 AW_at_auto::restore(AW_at*) const'
 AW_at_auto::store(AW_at const*)
-AW_awar::read_as_string()
-AW_awar::read_char_pntr()
-AW_awar::read_float()
-AW_awar::read_int()
-AW_awar::read_pointer()
-AW_awar::read_string()
-AW_awar::touch()
-AW_awar::untie_all_widgets()
-AW_awar::write_as_string(char const*)
-AW_awar::write_float(double)
-AW_awar::write_int(long)
-AW_awar::write_pointer(GBDATA*)
-AW_awar::write_string(char const*)
-AW_awar::write_string(char const*)
+
 AW_cb_struct::guard_after'
 AW_cb_struct::guard_before'
 AW_cb_struct::postcb'
@@ -134,16 +121,9 @@ AW_stylable::set_line_attributes(int, short, AW_linestyle)
 AW_system(AW_window*, char const*, char const*)
 AW_unfold_path(char const*, char const*)
 AW_var_target::AW_var_target(void*, AW_var_target*)
-AW_window_menu::AW_window_menu()
-AW_window_menu::init(AW_root*, char const*, char const*, int, int)
-AW_window_menu_modes::AW_window_menu_modes()
-AW_window_menu_modes::init(AW_root*, char const*, char const*, int, int)
-AW_window_menu_modes::~AW_window_menu_modes()
-AW_window_menu_modes::~AW_window_menu_modes()
-AW_window_simple::AW_window_simple()
-AW_window_simple::init(AW_root*, char const*, char const*)
-AW_window_simple_menu::AW_window_simple_menu()
-AW_window_simple_menu::init(AW_root*, char const*, char const*)
+
+
+
 AW_zoomable::zoom(double)
 Awar_Callback_Info::init(AW_root*, char const*, void (*)(AW_root*, long, long), long, long)
 Awar_Callback_Info::remap(char const*)

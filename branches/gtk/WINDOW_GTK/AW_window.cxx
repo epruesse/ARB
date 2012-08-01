@@ -422,3 +422,44 @@ void AW_window::wm_activate() {
 AW_window::~AW_window() {
     GTK_NOT_IMPLEMENTED
 }
+
+
+//aw_window_menu
+//FIXME move to own file
+AW_window_menu::AW_window_menu(){
+    GTK_NOT_IMPLEMENTED
+}
+
+void AW_window_menu::init(AW_root *root, const char *wid, const char *windowname, int width, int height) {
+    GTK_NOT_IMPLEMENTED
+}
+
+AW_window_menu_modes::AW_window_menu_modes() {
+    GTK_NOT_IMPLEMENTED
+}
+
+void AW_window_menu_modes::init(AW_root *root, const char *wid, const char *windowname, int width, int height) {
+    GTK_NOT_IMPLEMENTED
+}
+
+
+AW_window_menu_modes::~AW_window_menu_modes() {
+    GTK_NOT_IMPLEMENTED
+}
+
+AW_window_simple_menu::AW_window_simple_menu() {
+    GTK_NOT_IMPLEMENTED
+}
+
+void AW_window_simple_menu::init(AW_root *root, const char *wid, const char *windowname) {
+    GTK_NOT_IMPLEMENTED
+}
+
+AW_window_simple::AW_window_simple() {
+    GTK_NOT_IMPLEMENTED
+}
+void AW_window_simple::init(AW_root *root, const char *wid, const char *windowname) {
+
+}
+
+
