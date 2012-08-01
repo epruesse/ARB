@@ -15,11 +15,7 @@ AW_at_auto::store(AW_at const*)
 AW_cb_struct::guard_after'
 AW_cb_struct::guard_before'
 AW_cb_struct::postcb'
-AW_clipable::clip(AW::LineVector const&, AW::LineVector&)
-AW_clipable::set_bottom_clip_border(int, bool)
-AW_clipable::set_left_clip_border(int, bool)
-AW_clipable::set_right_clip_border(int, bool)
-AW_clipable::set_top_clip_border(int, bool)
+
 AW_create_fileselection(AW_window*, char const*, char const*, char const*, bool, bool)
 AW_create_fileselection_awars(AW_root*, char const*, char const*, char const*, char const*, GBDATA*, bool)
 AW_create_gc_window(AW_root*, void*)
@@ -42,36 +38,8 @@ AW_repeated_question::add_help(char const*)
 AW_repeated_question::get_answer(char const*, char const*, char const*, char const*, bool)
 
 AW_save_properties(AW_window*)
-AW_selection::refresh()
-AW_selection_list::clear(bool)
-AW_selection_list::default_is_selected() const'
-AW_selection_list::delete_element_at(int)
-AW_selection_list::delete_value(char const*)
-AW_selection_list::get_awar_value() const'
-AW_selection_list::get_content_as_string(long)
-AW_selection_list::get_default_display() const'
-AW_selection_list::get_default_value() const'
-AW_selection_list::get_index_of(char const*)
-AW_selection_list::get_index_of_selected()
-AW_selection_list::init_from_array(CharPtrArray const&, char const*)
-AW_selection_list::insert(char const*, GBDATA*)
-AW_selection_list::insert(char const*, char const*)
-AW_selection_list::insert(char const*, char const*) 
-AW_selection_list::insert(char const*, int)
-AW_selection_list::insert_default(char const*, GBDATA*)
-AW_selection_list::insert_default(char const*, char const*)
-AW_selection_list::insert_default(char const*, int)
-AW_selection_list::move_content_to(AW_selection_list*)
-AW_selection_list::move_selection(int)
-AW_selection_list::select_element_at(int)
-AW_selection_list::set_awar_value(char const*)
-AW_selection_list::set_file_suffix(char const*)
-AW_selection_list::size()
-AW_selection_list::sort(bool, bool)
-AW_selection_list::to_array(StrArray&, bool)
-AW_selection_list::to_hash(bool)
-AW_selection_list::update()
-AW_selection_list_entry::copy_string_for_display(char const*)
+
+
 AW_set_color_group(GBDATA*, long)
 AW_set_selected_fullname(AW_root*, char const*, char const*)
 AW_system(AW_window*, char const*, char const*)
@@ -80,9 +48,8 @@ AW_var_target::AW_var_target(void*, AW_var_target*)
 
 
 
-AW_zoomable::zoom(double)
-Awar_Callback_Info::init(AW_root*, char const*, void (*)(AW_root*, long, long), long, long)
-Awar_Callback_Info::remap(char const*)
+
+
 W_root::awar_int(char const*, long, GBDATA*)
 XtAppInitialize'
 aw_ask_sure(char const*, char const*)

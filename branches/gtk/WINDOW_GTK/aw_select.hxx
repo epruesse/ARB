@@ -51,7 +51,7 @@ public:
 };
 
 class AW_selection_list {
-    AW_selection_list_entry *get_entry_at(int index);
+   // AW_selection_list_entry *get_entry_at(int index);
     
 public:
     AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti);
