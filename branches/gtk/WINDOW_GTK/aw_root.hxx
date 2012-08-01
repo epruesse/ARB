@@ -64,15 +64,15 @@ enum AW_ProcessEventType {
 void aw_initstatus(); 
 
 class AW_root : virtual Noncopyable {
-    AW_default         application_database;
-    AW_buttons_struct *button_sens_list;
-
-    void init_variables(AW_default database);
-    void exit_variables();
-
-    void init_root(const char *programname, bool no_exit);
-    void exit_root();
-    AW_default load_properties(const char *default_name);
+//    AW_default         application_database;
+//    AW_buttons_struct *button_sens_list;
+//
+//    void init_variables(AW_default database);
+//    void exit_variables();
+//
+//    void init_root(const char *programname, bool no_exit);
+//    void exit_root();
+//    AW_default load_properties(const char *default_name);
 
 public:
     static AW_root *SINGLETON;
@@ -144,9 +144,7 @@ public:
 
     void unlink_awars_from_DB(GBDATA *gb_main);     // use before calling GB_close for 'gb_main', if you have AWARs in DB
 
-    AW_default check_properties(AW_default aw_props) {
-        return aw_props ? aw_props : application_database;
-    }
+    AW_default check_properties(AW_default aw_props);
 
     GB_ERROR save_properties(const char *filename = NULL) __ATTR__USERESULT;
 

@@ -353,12 +353,12 @@ enum AW_function {
 class AW_common;
 
 class AW_stylable : virtual Noncopyable {
-    AW_common *common;
+   // AW_common *common;
 public:
-    AW_stylable(AW_common *common_) : common(common_) {}
+    AW_stylable(AW_common *common_) /*: common(common_)*/ {}
     virtual ~AW_stylable() {};
     
-    AW_common *get_common() const { return common; }
+    AW_common *get_common() const;
 
     void new_gc(int gc);
     void set_grey_level(int gc, AW_grey_level grey_level); 
@@ -596,30 +596,30 @@ inline void AW_click_cd::disable() { my_device->click_cd = NULL; }
 inline void AW_click_cd::enable() { my_device->click_cd = this; }
 
 class AW_device_print : public AW_device { // derived from a Noncopyable
-    FILE *out;
-    bool  color_mode;
-
-    bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri);
-    bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
-    bool box_impl(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri);
-    bool circle_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri);
-    bool arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri);
-    bool filled_area_impl(int gc, int npos, const AW::Position *pos, AW_bitset filteri);
-    bool invisible_impl(const AW::Position& pos, AW_bitset filteri);
-
-    void specific_reset() {}
+//    FILE *out;
+//    bool  color_mode;
+//
+//    bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri);
+//    bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
+//    bool box_impl(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri);
+//    bool circle_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri);
+//    bool arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri);
+//    bool filled_area_impl(int gc, int npos, const AW::Position *pos, AW_bitset filteri);
+//    bool invisible_impl(const AW::Position& pos, AW_bitset filteri);
+//
+//    void specific_reset() {}
 
 public:
     AW_device_print(AW_common *common_)
-        : AW_device(common_),
+       : AW_device(common_)/* ,
           out(0),
-          color_mode(false)
+          color_mode(false)*/
     {}
 
     GB_ERROR open(const char *path) __ATTR__USERESULT;
     void close();
 
-    FILE *get_FILE() { return out; }
+    FILE *get_FILE();
 
     // AW_device interface:
     AW_DEVICE_TYPE type();
