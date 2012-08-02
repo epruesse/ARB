@@ -185,6 +185,10 @@ void AW_window::create_toggle_field(const char *awar_name, int orientation /*= 0
     GTK_NOT_IMPLEMENTED
 }
 
+void AW_window::create_toggle_field(const char *awar_name, AW_label label, const char *mnemonic) {
+    GTK_NOT_IMPLEMENTED
+}
+
 
 void AW_window::d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
     GTK_NOT_IMPLEMENTED
@@ -434,6 +438,10 @@ void AW_window::window_fit() {
 
 void AW_window::wm_activate() {
     GTK_NOT_IMPLEMENTED
+}
+
+AW_window::AW_window() {
+
 }
 
 AW_window::~AW_window() {

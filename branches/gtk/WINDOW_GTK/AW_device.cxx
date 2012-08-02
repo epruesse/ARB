@@ -107,24 +107,30 @@ bool AW_clipable::clip(const AW::LineVector& line, AW::LineVector& clippedLine) 
 
     return false;
 }
-void set_bottom_clip_border(int bottom, bool allow_oversize /*= false*/) {
+void AW_clipable::set_bottom_clip_border(int bottom, bool allow_oversize /*= false*/) {
     GTK_NOT_IMPLEMENTED
 }
 
-void set_left_clip_border(int left, bool allow_oversize/* = false*/) {
+void AW_clipable::set_left_clip_border(int left, bool allow_oversize/* = false*/) {
     GTK_NOT_IMPLEMENTED
 }
 
-void set_right_clip_border(int right, bool allow_oversize/* = false*/) {
+void AW_clipable::set_right_clip_border(int right, bool allow_oversize/* = false*/) {
     GTK_NOT_IMPLEMENTED
 }
 
-void set_top_clip_border(int top, bool allow_oversize/* = false*/) {
+void AW_clipable::set_top_clip_border(int top, bool allow_oversize/* = false*/) {
     GTK_NOT_IMPLEMENTED
 }
+
+
+
+
+
 
 void AW_zoomable::zoom(AW_pos scale) {
     GTK_NOT_IMPLEMENTED
 }
+
 
 

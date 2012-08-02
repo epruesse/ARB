@@ -31,7 +31,7 @@ struct GB_HASH;
 // AW_POPDOWN is defined later in this section
 
 #define AW_MESSAGE_TIME 2000
-#define AW_HEADER_MAIN  extern "C" { int XtAppInitialize(); } void aw_never_called_main() { XtAppInitialize(); }
+#define AW_HEADER_MAIN
 
 // ======= Used in Tune background function =================================
 #define TUNE_BUTTON    8

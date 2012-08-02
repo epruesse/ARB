@@ -11,6 +11,11 @@
 #include <attributes.h>
 #endif
 
+#ifndef AW_POSITION_HXX
+#include <aw_position.hxx>
+#endif
+
+
 class AWT_canvas;
 class AW_device;
 class AW_clicked_line;

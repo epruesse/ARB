@@ -1,0 +1,13 @@
+(.text._ZNK29nt_item_type_species_selector18add_awar_callbacksEP7AW_rootPFvS1_lEl[nt_item_type_species_selector::add_awar_callbacks(AW_root*, void (*)(AW_root*, long), long) const]+0x49): undefined reference to `AW_awar::add_callback(void (*)(AW_root*, long), long)aw_message(char const*)aw_message(char const*)aw_message(char const*)AW_root::awar_string(char const*, char const*, GBDATA*)AW_root::awar_string(char const*, char const*, GBDATA*)AW_root::awar_string(char const*, char const*, GBDATA*)AW_root::awar_string(char const*, char const*, GBDATA*)AW_root::awar_string(char const*, char const*, GBDATA*)AW_awar::map(char const*)AW_awar::map(char const*)AW_awar::set_minmax(float, float)
+(.text._ZNK29nt_item_type_species_selector21remove_awar_callbacksEP7AW_rootPFvS1_lEl[nt_item_type_species_selector::remove_awar_callbacks(AW_root*, void (*)(AW_root*, long), long) const]+0x49): undefined reference to `AW_awar::remove_callback(void (*)(AW_root*, long), long)
+(.text._ZNK30EXP_item_type_species_selector18add_awar_callbacksEP7AW_rootPFvS1_lEl[EXP_item_type_species_selector::add_awar_callbacks(AW_root*, void (*)(AW_root*, long), long) const]+0x49): undefined reference to `AW_awar::add_callback(void (*)(AW_root*, long), long)
+(.text._ZNK30EXP_item_type_species_selector21remove_awar_callbacksEP7AW_rootPFvS1_lEl[EXP_item_type_species_selector::remove_awar_callbacks(AW_root*, void (*)(AW_root*, long), long) const]+0x49): undefined reference to `AW_awar::remove_callback(void (*)(AW_root*, long), long)
+(.text._ZNK30GEN_item_type_species_selector18add_awar_callbacksEP7AW_rootPFvS1_lEl[GEN_item_type_species_selector::add_awar_callbacks(AW_root*, void (*)(AW_root*, long), long) const]+0x49): undefined reference to `AW_awar::add_callback(void (*)(AW_root*, long), long)
+(.text._ZNK30GEN_item_type_species_selector21remove_awar_callbacksEP7AW_rootPFvS1_lEl[GEN_item_type_species_selector::remove_awar_callbacks(AW_root*, void (*)(AW_root*, long), long) const]+0x49): undefined reference to `AW_awar::remove_callback(void (*)(AW_root*, long), long)
+
+
+AW_cb_struct::guard_after
+AW_cb_struct::guard_before
+AW_cb_struct::postcb
+
+
