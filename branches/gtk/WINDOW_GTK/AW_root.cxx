@@ -13,7 +13,60 @@
 #include "aw_root.hxx"
 
 
+//globals
+//FIXME use static class or namespace for globals
 AW_root *AW_root::SINGLETON = 0;
+
+
+GB_ERROR ARB_bind_global_awars(GBDATA *gb_main) {
+    GTK_NOT_IMPLEMENTED
+    return 0;
+}
+
+void AW_system(AW_window *aww, const char *command, const char *auto_help_file) {
+    GTK_NOT_IMPLEMENTED
+}
+
+
+char *aw_string_selection(const char *title, const char *prompt, const char *default_value, const char *value_list, const char *buttons, char *(*check_fun)(const char*)) {
+    GTK_NOT_IMPLEMENTED
+    return 0;
+}
+char *aw_string_selection2awar(const char *title, const char *prompt, const char *awar_name,     const char *value_list, const char *buttons, char *(*check_fun)(const char*)) {
+    GTK_NOT_IMPLEMENTED
+    return 0;
+}
+
+int aw_string_selection_button() {
+    GTK_NOT_IMPLEMENTED
+    return 0;
+}
+
+char *aw_input(const char *title, const char *prompt, const char *default_input) {
+    GTK_NOT_IMPLEMENTED
+    return 0;
+}
+
+char *aw_input(const char *prompt, const char *default_input) {
+    GTK_NOT_IMPLEMENTED
+    return 0;
+}
+
+void aw_initstatus() {
+    GTK_NOT_IMPLEMENTED
+}
+
+
+void ARB_declare_global_awars(AW_root *aw_root, AW_default aw_def) {
+    GTK_NOT_IMPLEMENTED
+}
+
+
+
+char *aw_file_selection(const char *title, const char *dir, const char *def_name, const char *suffix) {
+    GTK_NOT_IMPLEMENTED
+    return 0;
+}
 
 
 AW_root::AW_root(const char *properties, const char *program, bool no_exit) {
@@ -93,4 +146,6 @@ AW_root::~AW_root() {
 AW_default AW_root::check_properties(AW_default aw_props) {
     GTK_NOT_IMPLEMENTED
 }
+
+
 

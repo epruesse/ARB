@@ -13,6 +13,7 @@
 #include "aw_select.hxx"
 #include "aw_gtk_migration_helpers.hxx"
 
+
 void AW_selection::refresh() {
     GTK_NOT_IMPLEMENTED
 }
@@ -139,5 +140,19 @@ void AW_selection_list::update() {
 char *AW_selection_list_entry::copy_string_for_display(char const *str) {
     GTK_NOT_IMPLEMENTED
     return 0;
+}
+
+
+//AW_DB_selection
+//FIXME move to own file
+AW_DB_selection::AW_DB_selection(AW_selection_list *sellist_, GBDATA *gbd_)
+    : AW_selection(sellist_)
+    , gbd(gbd_)
+{
+    GTK_NOT_IMPLEMENTED
+}
+
+AW_DB_selection::~AW_DB_selection() {
+    GTK_NOT_IMPLEMENTED
 }
 

@@ -14,6 +14,23 @@
 
 
 
+void AW_help_entry_pressed(AW_window *) {
+    GTK_NOT_IMPLEMENTED
+}
+
+void AW_POPDOWN(AW_window *){
+    GTK_NOT_IMPLEMENTED
+}
+
+void AW_POPUP_HELP(AW_window *, AW_CL /* char */ helpfile){
+    GTK_NOT_IMPLEMENTED
+}
+
+void AW_openURL(AW_root *aw_root, const char *url) {
+    GTK_NOT_IMPLEMENTED
+}
+
+
 void AW_window::recalc_pos_atShow(AW_PosRecalc pr){
     GTK_NOT_IMPLEMENTED
 }
@@ -461,5 +478,15 @@ AW_window_simple::AW_window_simple() {
 void AW_window_simple::init(AW_root *root, const char *wid, const char *windowname) {
 
 }
+
+
+void AW_at_auto::restore(AW_at *at) const {
+    GTK_NOT_IMPLEMENTED
+}
+
+void AW_at_auto::store(AW_at const *at) {
+    GTK_NOT_IMPLEMENTED
+}
+
 
 
