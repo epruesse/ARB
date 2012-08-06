@@ -14,6 +14,9 @@
 #include <attributes.h>
 #endif
 
+#include "aw_root_gtk.hxx"
+#include <string>
+
 #ifndef aw_assert
 #define aw_assert(bed) arb_assert(bed)
 #endif
@@ -64,20 +67,44 @@ enum AW_ProcessEventType {
 void aw_initstatus(); 
 
 class AW_root : virtual Noncopyable {
-//    AW_default         application_database;
+
+    // gtk dependent attributes are defined in a different header to keep this header portable
+    AW_root_gtk prvt; /*< Contains all gtk dependent attributes. */
+    GB_HASH     *action_hash; /*< Is used to buffer and replay remote actions. */
+    AW_default  application_database; /*< FIXME */
+    bool        no_exit; /*< FIXME no idea what this is used for*/
+    char        *program_name;
+
+
 //    AW_buttons_struct *button_sens_list;
-//
-//    void init_variables(AW_default database);
+
+    /**
+     * FIXME
+     */
+    void init_root(const char *programname, bool no_exit);
+
+    /**
+     * Initializes the database and loads some default awars.
+     * @param database FIXME
+     */
+    void init_variables(AW_default database);
+
+    /**
+     * FIXME
+     */
+    AW_default load_properties(const char *default_name);
+
 //    void exit_variables();
-//
-//    void init_root(const char *programname, bool no_exit);
+
+
+
 //    void exit_root();
-//    AW_default load_properties(const char *default_name);
+
 
 public:
     static AW_root *SINGLETON;
 
-    AW_root_Motif *prvt;                            // Do not use !!!
+
     bool           value_changed;
     Widget         changer_of_variable;
     int            y_correction_for_input_labels;
@@ -87,7 +114,7 @@ public:
     bool           variable_set_by_toggle_field;
     int            number_of_toggle_fields;
     int            number_of_option_menus;
-    char          *program_name;
+
 
     bool            disable_callbacks;
     AW_window      *current_modal_window;
@@ -104,6 +131,11 @@ public:
     GB_HASH    *hash_for_windows;
 
     // the real public section:
+
+
+    /**
+     * FIXME
+     */
     AW_root(const char *properties, const char *program, bool no_exit);
 #if defined(UNIT_TESTS)
     AW_root(const char *properties); // fake-root for unit-tests (allows access to awar-subsystem)

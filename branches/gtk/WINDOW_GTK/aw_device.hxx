@@ -353,9 +353,9 @@ enum AW_function {
 class AW_common;
 
 class AW_stylable : virtual Noncopyable {
-   // AW_common *common;
+    AW_common *common;
 public:
-    AW_stylable(AW_common *common_) /*: common(common_)*/ {}
+    AW_stylable(AW_common *common_) : common(common_) {}
     virtual ~AW_stylable() {};
     
     AW_common *get_common() const;

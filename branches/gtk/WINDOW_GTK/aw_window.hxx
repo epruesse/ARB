@@ -17,6 +17,8 @@
 #include <arbtools.h>
 #endif
 
+#include "aw_window_gtk.hxx"
+
 class AW_window;
 class AW_device;
 class AW_device_click;
@@ -255,6 +257,8 @@ class AW_window : virtual Noncopyable {
 
 protected:
     AW_root *root;
+    AW_window_gtk prvt; /*< Contains all gtk dependent attributes */
+
 
     void create_devices();
     void set_background(const char *colorname, Widget w);
@@ -265,7 +269,6 @@ public:
 
     // ************ This is not the public section *************
 
-    AW_window_Motif *p_w;       // Do not use !!!
     AW_at           *_at;
     AW_cb_struct    *_callback;
     AW_cb_struct    *_d_callback;

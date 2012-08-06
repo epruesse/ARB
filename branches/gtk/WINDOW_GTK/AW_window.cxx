@@ -461,7 +461,9 @@ void AW_window::shadow_width (int shadow_thickness) {
 }
 
 void AW_window::show() {
-    GTK_NOT_IMPLEMENTED
+    arb_assert(NULL != prvt.window);
+    gtk_widget_show(prvt.window);
+
 }
 
 void AW_window::store_at_size_and_attach(AW_at_size *at_size) {
@@ -509,11 +511,12 @@ void AW_window::d_callback(void (*f)(AW_window*)) {
 }
 
 AW_window::AW_window() {
-    GTK_NOT_IMPLEMENTED
+
+    prvt.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 }
 
 AW_window::~AW_window() {
-    GTK_NOT_IMPLEMENTED
+
 }
 
 
@@ -556,8 +559,8 @@ void AW_window_simple_menu::init(AW_root *root, const char *wid, const char *win
     GTK_NOT_IMPLEMENTED
 }
 
-AW_window_simple::AW_window_simple() {
-    GTK_NOT_IMPLEMENTED
+AW_window_simple::AW_window_simple() : AW_window() {
+
 }
 void AW_window_simple::init(AW_root *root, const char *wid, const char *windowname) {
 
