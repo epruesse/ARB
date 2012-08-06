@@ -28,6 +28,10 @@ void aw_popup_ok (const char *msg) {
     GTK_NOT_IMPLEMENTED
 }
 
+void aw_popup_exit(const char *msg) {
+    GTK_NOT_IMPLEMENTED
+}
+
 
 void AW_repeated_question::add_help(const char *help_file) {
     GTK_NOT_IMPLEMENTED

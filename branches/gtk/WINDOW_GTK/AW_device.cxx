@@ -14,9 +14,36 @@
 #include "aw_device.hxx"
 
 
+
+bool AW_getBestClick(AW_clicked_line *cl, AW_clicked_text *ct, AW_CL *cd1, AW_CL *cd2) {
+    GTK_NOT_IMPLEMENTED
+    return false;
+}
+
+
 const AW_screen_area& AW_device::get_area_size() const {
     GTK_NOT_IMPLEMENTED
 }
+
+
+void AW_device::pop_clip_scale() {
+    GTK_NOT_IMPLEMENTED
+}
+
+void AW_device::push_clip_scale() {
+    GTK_NOT_IMPLEMENTED
+}
+
+bool AW_device::text_overlay(int gc, const char *opt_string, long opt_strlen,   // either string or strlen != 0
+                      const AW::Position& pos, AW_pos alignment, AW_bitset filteri, AW_CL cduser,
+                      AW_pos opt_ascent, AW_pos opt_descent,  // optional height (if == 0 take font height)
+                      TextOverlayCallback toc) {
+    GTK_NOT_IMPLEMENTED
+    return false;
+}
+
+
+
 
 void AW_device::reset() {
     GTK_NOT_IMPLEMENTED
@@ -39,6 +66,9 @@ FILE *AW_device_print::get_FILE() {
     GTK_NOT_IMPLEMENTED
     return 0;
 }
+
+
+
 
 void AW_device_print::close() {
     GTK_NOT_IMPLEMENTED
@@ -121,6 +151,12 @@ void AW_clipable::set_right_clip_border(int right, bool allow_oversize/* = false
 
 void AW_clipable::set_top_clip_border(int top, bool allow_oversize/* = false*/) {
     GTK_NOT_IMPLEMENTED
+}
+
+
+int AW_clipable::reduceClipBorders(int top, int bottom, int left, int right) {
+    GTK_NOT_IMPLEMENTED
+    return 0;
 }
 
 

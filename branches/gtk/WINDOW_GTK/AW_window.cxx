@@ -14,6 +14,15 @@
 
 
 
+
+void AW_clock_cursor(AW_root *) {
+    GTK_NOT_IMPLEMENTED
+}
+
+void AW_normal_cursor(AW_root *) {
+    GTK_NOT_IMPLEMENTED
+}
+
 void AW_help_entry_pressed(AW_window *) {
     GTK_NOT_IMPLEMENTED
 }
@@ -73,6 +82,7 @@ void AW_window::at(const char *id){
 }
 
 
+
 bool AW_window::at_ifdef(const  char *id){
     GTK_NOT_IMPLEMENTED
 }
@@ -123,10 +133,25 @@ void AW_window::callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
     GTK_NOT_IMPLEMENTED
 }
 
+void AW_window::callback(AW_cb_struct * /* owner */ awcbs) {
+    GTK_NOT_IMPLEMENTED
+}
+
+
 void AW_window::close_sub_menu(){
     GTK_NOT_IMPLEMENTED
 }
 
+
+
+void AW_window::_get_area_size(AW_area area, AW_screen_area *square) {
+    GTK_NOT_IMPLEMENTED
+}
+
+
+void AW_window::clear_option_menu(AW_option_menu_struct *oms) {
+    GTK_NOT_IMPLEMENTED
+}
 
 void AW_window::create_button(const char *macro_name, AW_label label, const char *mnemonic /* = 0 */, const char *color /* = 0 */){
     GTK_NOT_IMPLEMENTED
@@ -145,6 +170,10 @@ void AW_window::create_toggle(const char *awar_name){
 }
 
 void AW_window::create_toggle(const char *awar_name, const char *nobitmap, const char *yesbitmap, int buttonWidth /* = 0 */){
+    GTK_NOT_IMPLEMENTED
+}
+
+void AW_window::create_text_toggle(const char *var_name, const char *noText, const char *yesText, int buttonWidth /*= 0*/) {
     GTK_NOT_IMPLEMENTED
 }
 
@@ -195,6 +224,29 @@ void AW_window::d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
 }
 
 void AW_window::d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
+    GTK_NOT_IMPLEMENTED
+}
+
+
+AW_pos AW_window::get_scrolled_picture_width() const {
+    GTK_NOT_IMPLEMENTED
+    return 0;
+}
+AW_pos AW_window::get_scrolled_picture_height() const {
+    GTK_NOT_IMPLEMENTED
+    return 0;
+}
+
+void AW_window::set_horizontal_scrollbar_left_indent(int indent) {
+    GTK_NOT_IMPLEMENTED
+}
+
+void AW_window::set_vertical_scrollbar_top_indent(int indent) {
+    GTK_NOT_IMPLEMENTED
+}
+
+
+void AW_window::select_mode(int mode) {
     GTK_NOT_IMPLEMENTED
 }
 
@@ -440,8 +492,24 @@ void AW_window::wm_activate() {
     GTK_NOT_IMPLEMENTED
 }
 
-AW_window::AW_window() {
+void AW_window::create_inverse_toggle(const char *awar_name) {
+    GTK_NOT_IMPLEMENTED
+}
 
+void AW_window::auto_increment(int dx, int dy) {
+    GTK_NOT_IMPLEMENTED
+}
+
+void AW_window::tell_scrolled_picture_size(AW_screen_area rectangle) {
+    GTK_NOT_IMPLEMENTED
+}
+
+void AW_window::d_callback(void (*f)(AW_window*)) {
+    GTK_NOT_IMPLEMENTED
+}
+
+AW_window::AW_window() {
+    GTK_NOT_IMPLEMENTED
 }
 
 AW_window::~AW_window() {
@@ -452,6 +520,10 @@ AW_window::~AW_window() {
 //aw_window_menu
 //FIXME move to own file
 AW_window_menu::AW_window_menu(){
+    GTK_NOT_IMPLEMENTED
+}
+
+AW_window_menu::~AW_window_menu(){
     GTK_NOT_IMPLEMENTED
 }
 
@@ -476,6 +548,10 @@ AW_window_simple_menu::AW_window_simple_menu() {
     GTK_NOT_IMPLEMENTED
 }
 
+AW_window_simple_menu::~AW_window_simple_menu() {
+    GTK_NOT_IMPLEMENTED
+}
+
 void AW_window_simple_menu::init(AW_root *root, const char *wid, const char *windowname) {
     GTK_NOT_IMPLEMENTED
 }
@@ -485,6 +561,9 @@ AW_window_simple::AW_window_simple() {
 }
 void AW_window_simple::init(AW_root *root, const char *wid, const char *windowname) {
 
+}
+AW_window_simple::~AW_window_simple() {
+    GTK_NOT_IMPLEMENTED
 }
 
 
@@ -496,5 +575,33 @@ void AW_at_auto::store(AW_at const *at) {
     GTK_NOT_IMPLEMENTED
 }
 
+
+void AW_at_maxsize::store(const AW_at *at) {
+    GTK_NOT_IMPLEMENTED
+}
+
+void AW_at_maxsize::restore(AW_at *at) const {
+    GTK_NOT_IMPLEMENTED
+}
+
+
+//FIXME comment
+AW_cb_struct_guard AW_cb_struct::guard_before = NULL;
+AW_cb_struct_guard AW_cb_struct::guard_after  = NULL;
+AW_postcb_cb       AW_cb_struct::postcb       = NULL;
+
+
+AW_cb_struct::AW_cb_struct(AW_window    *awi,
+                           AW_CB         g,
+                           AW_CL         cd1i      /* = 0*/,
+                           AW_CL         cd2i       /*= 0*/,
+                           const char   *help_texti /*= 0*/,
+                           AW_cb_struct *next       /*= 0*/) {
+    GTK_NOT_IMPLEMENTED
+}
+
+void AW_cb_struct::run_callback() {
+    GTK_NOT_IMPLEMENTED
+}
 
 

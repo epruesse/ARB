@@ -23,6 +23,11 @@ GB_ERROR ARB_bind_global_awars(GBDATA *gb_main) {
     return 0;
 }
 
+void aw_set_local_message() {
+    GTK_NOT_IMPLEMENTED
+}
+
+
 void AW_system(AW_window *aww, const char *command, const char *auto_help_file) {
     GTK_NOT_IMPLEMENTED
 }
@@ -69,7 +74,16 @@ char *aw_file_selection(const char *title, const char *dir, const char *def_name
 }
 
 
+AW_ProcessEventType AW_root::peek_key_event(AW_window *) {
+    GTK_NOT_IMPLEMENTED
+    return (AW_ProcessEventType)0;
+}
+
 AW_root::AW_root(const char *properties, const char *program, bool no_exit) {
+    GTK_NOT_IMPLEMENTED
+}
+
+void AW_root::window_hide(AW_window *aww) {
     GTK_NOT_IMPLEMENTED
 }
 

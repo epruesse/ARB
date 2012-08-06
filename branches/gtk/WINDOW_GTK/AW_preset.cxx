@@ -18,6 +18,14 @@ void AW_save_properties(AW_window *aw) {
     GTK_NOT_IMPLEMENTED
 }
 
+void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, bool has_font_info, const char *id0, ...) {
+    GTK_NOT_IMPLEMENTED
+}
+
+
+void AW_save_specific_properties(AW_window *aw, const char *filename) {
+    GTK_NOT_IMPLEMENTED
+}
 
 void AW_insert_common_property_menu_entries(AW_window_menu_modes *awmm) {
     GTK_NOT_IMPLEMENTED
