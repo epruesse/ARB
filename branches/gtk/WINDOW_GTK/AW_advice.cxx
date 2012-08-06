@@ -16,9 +16,9 @@
 #include "aw_advice.hxx"
 #include "aw_gtk_migration_helpers.hxx"
 
-void AW_advice(const char *message,
+void AW_advice(const char */*message*/,
                int type /*= AW_ADVICE_SIMPLE*/,
-               const char *title /*= 0*/,
-               const char *corresponding_help /*= 0*/) {
-    GTK_NOT_IMPLEMENTED
+               const char */*title*/ /*= 0*/,
+               const char */*corresponding_help*/ /*= 0*/) {
+    GTK_NOT_IMPLEMENTED;
 }

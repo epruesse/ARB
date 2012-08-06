@@ -15,15 +15,15 @@
 
 
 AW_font_group::AW_font_group() {
-    GTK_NOT_IMPLEMENTED
+    GTK_NOT_IMPLEMENTED;
 }
 
-void AW_font_group::registerFont(AW_device *device_, int gc, const char *chars /*= 0*/) {
-    GTK_NOT_IMPLEMENTED
+void AW_font_group::registerFont(AW_device */*device_*/, int /*gc*/, const char */*chars*/ /*= 0*/) {
+    GTK_NOT_IMPLEMENTED;
 }
 
 void AW_font_group::unregisterAll() {
-    GTK_NOT_IMPLEMENTED
+    GTK_NOT_IMPLEMENTED;
 }
 
 

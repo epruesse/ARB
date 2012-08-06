@@ -13,7 +13,7 @@
 #include "aw_msg.hxx"
 #include "aw_gtk_migration_helpers.hxx"
 
-void aw_message(const char *msg) {
-    GTK_NOT_IMPLEMENTED
+void aw_message(const char */*msg*/) {
+    GTK_NOT_IMPLEMENTED;
 }
 

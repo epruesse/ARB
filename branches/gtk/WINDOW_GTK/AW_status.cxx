@@ -14,6 +14,6 @@
 #include "aw_status.hxx"
 
 void aw_clear_message_cb(AW_window *aww) {
-    GTK_NOT_IMPLEMENTED
+    GTK_NOT_IMPLEMENTED;
 }
 

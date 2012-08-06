@@ -16,7 +16,7 @@
 
 
 void AW_edit(const char *path, aw_fileChanged_cb callback /*= 0*/, AW_window *aww /*= 0*/, GBDATA *gb_main /*= 0*/) {
-    GTK_NOT_IMPLEMENTED
+    GTK_NOT_IMPLEMENTED;
 }
 
 
