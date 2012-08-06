@@ -28,11 +28,11 @@ bool AW_selection_list::default_is_selected() const {
     return false;
 }
 
-void AW_selection_list::delete_element_at(int index) {
+void AW_selection_list::delete_element_at(int /*index*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_selection_list::delete_value(char const *value) {
+void AW_selection_list::delete_value(char const */*value*/) {
     GTK_NOT_IMPLEMENTED;
 }
 const char *AW_selection_list::get_awar_value() const {
@@ -40,7 +40,7 @@ const char *AW_selection_list::get_awar_value() const {
     return 0;
 }
 
-char *AW_selection_list::get_content_as_string(long number_of_lines) {
+char *AW_selection_list::get_content_as_string(long /*number_of_lines*/) {
     GTK_NOT_IMPLEMENTED;
     return 0;
 }
@@ -55,7 +55,7 @@ const char * AW_selection_list::get_default_value() const {
     return 0;
 }
 
-int AW_selection_list::get_index_of(char const *searched_value) {
+int AW_selection_list::get_index_of(char const */*searched_value*/) {
     GTK_NOT_IMPLEMENTED;
         return 0;
 }
@@ -65,53 +65,53 @@ int AW_selection_list::get_index_of_selected() {
         return 0;
 }
 
-void AW_selection_list::init_from_array(const CharPtrArray& entries, const char *defaultEntry) {
+void AW_selection_list::init_from_array(const CharPtrArray& /*entries*/, const char */*defaultEntry*/) {
     GTK_NOT_IMPLEMENTED;
 
 }
 
-void AW_selection_list::insert(const char *displayed, const char *value) {
+void AW_selection_list::insert(const char */*displayed*/, const char */*value*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_selection_list::insert_default(const char *displayed, const char *value) {
+void AW_selection_list::insert_default(const char */*displayed*/, const char */*value*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_selection_list::insert(const char *displayed, int32_t value) {
+void AW_selection_list::insert(const char */*displayed*/, int32_t /*value*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_selection_list::insert_default(const char *displayed, int32_t value) {
+void AW_selection_list::insert_default(const char */*displayed*/, int32_t /*value*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_selection_list::insert(const char *displayed, GBDATA *pointer) {
+void AW_selection_list::insert(const char */*displayed*/, GBDATA */*pointer*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_selection_list::insert_default(const char *displayed, GBDATA *pointer) {
+void AW_selection_list::insert_default(const char */*displayed*/, GBDATA */*pointer*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
 
-void AW_selection_list::move_content_to(AW_selection_list *target_list) {
+void AW_selection_list::move_content_to(AW_selection_list */*target_list*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_selection_list::move_selection(int offset) {
+void AW_selection_list::move_selection(int /*offset*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_selection_list::select_element_at(int wanted_index) {
+void AW_selection_list::select_element_at(int /*wanted_index*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_selection_list::set_awar_value(char const *new_value) {
+void AW_selection_list::set_awar_value(char const */*new_value*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_selection_list::set_file_suffix(char const *suffix) {
+void AW_selection_list::set_file_suffix(char const */*suffix*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
@@ -120,15 +120,15 @@ size_t AW_selection_list::size() {
     return 0;
 }
 
-void AW_selection_list::sort(bool backward, bool case_sensitive) {
+void AW_selection_list::sort(bool /*backward*/, bool /*case_sensitive*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_selection_list::to_array(StrArray& array, bool values) {
+void AW_selection_list::to_array(StrArray& /*array*/, bool /*values*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-GB_HASH *AW_selection_list::to_hash(bool case_sens) {
+GB_HASH *AW_selection_list::to_hash(bool /*case_sens*/) {
     GTK_NOT_IMPLEMENTED;
     return 0;
 }
@@ -137,7 +137,7 @@ void AW_selection_list::update() {
     GTK_NOT_IMPLEMENTED;
 }
 
-char *AW_selection_list_entry::copy_string_for_display(char const *str) {
+char *AW_selection_list_entry::copy_string_for_display(char const */*str*/) {
     GTK_NOT_IMPLEMENTED;
     return 0;
 }
