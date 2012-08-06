@@ -83,6 +83,10 @@ GB_ERROR AW_awar::write_string(char const*) {
 
 }
 
+GB_ERROR AW_awar::rewrite_string(char const*) {
+  GTK_NOT_IMPLEMENTED;
+  return 0;
+}
 
 AW_awar *AW_awar::add_callback(Awar_CB2 /*f*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     GTK_NOT_IMPLEMENTED;
