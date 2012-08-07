@@ -44,10 +44,47 @@ bool AW_device::text_overlay(int /*gc*/, const char */*opt_string*/, long /*opt_
 
 
 
+bool AW_device::generic_filled_area(int gc, int npos, const AW::Position *pos, AW_bitset filteri) {
+    GTK_NOT_IMPLEMENTED;
+}
+
+void AW_device::move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y) {
+    GTK_NOT_IMPLEMENTED;
+}
+
+void AW_device::fast() {
+    GTK_NOT_IMPLEMENTED;
+}
+
+void AW_device::slow() {
+    GTK_NOT_IMPLEMENTED;
+}
+
+void AW_device::flush() {
+    GTK_NOT_IMPLEMENTED;
+}
 
 void AW_device::reset() {
     GTK_NOT_IMPLEMENTED;
 }
+
+void AW_device::clear(AW_bitset filteri) {
+    GTK_NOT_IMPLEMENTED;
+}
+
+bool AW_device::generic_box(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri) {
+    GTK_NOT_IMPLEMENTED;
+    return false;
+}
+
+void AW_device::clear_part(const AW::Rectangle& rect, AW_bitset filteri) {
+    GTK_NOT_IMPLEMENTED;
+}
+
+void AW_device::clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri) {
+    GTK_NOT_IMPLEMENTED;
+}
+
 
 void AW_device::set_filter(AW_bitset /*filteri*/) {
     GTK_NOT_IMPLEMENTED;
@@ -87,6 +124,37 @@ AW_borders AW_device_size::get_unscaleable_overlap() const {
     GTK_NOT_IMPLEMENTED;
     return AW_borders();
 }
+
+void AW_device_size::specific_reset() {
+    GTK_NOT_IMPLEMENTED;
+}
+
+AW_DEVICE_TYPE AW_device_size::type() {
+    GTK_NOT_IMPLEMENTED;
+    return (AW_DEVICE_TYPE)0;
+}
+
+bool AW_device_size::line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri) {
+    GTK_NOT_IMPLEMENTED;
+    return false;
+}
+
+bool AW_device_size::text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
+    GTK_NOT_IMPLEMENTED;
+    return false;
+}
+
+bool AW_device_size::invisible_impl(const AW::Position& pos, AW_bitset filteri) {
+    GTK_NOT_IMPLEMENTED;
+    return false;
+}
+
+
+void specific_reset() {
+    GTK_NOT_IMPLEMENTED;
+}
+
+
 
 
 

@@ -18,6 +18,7 @@ void aw_clear_message_cb(AW_window *aww) {
 }
 
 void aw_initstatus() {
+    GTK_NOT_IMPLEMENTED;
   // original motif implementation forks here to spawn a child that will show 
   // the status messages without blocking the common main loop
 }

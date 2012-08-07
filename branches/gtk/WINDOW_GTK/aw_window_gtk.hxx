@@ -14,7 +14,7 @@
 #ifndef AW_WINDOW_GTK_HXX_
 #define AW_WINDOW_GTK_HXX_
 
-#include <gtk/gtk.h>
+
 #include <gtk/gtkwidget.h>
 #include <gtk/gtkwindow.h>
 /*
