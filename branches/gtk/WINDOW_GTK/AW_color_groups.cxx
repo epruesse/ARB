@@ -35,5 +35,6 @@ void AW_init_color_group_defaults(const char */*for_program*/) {
 
 #if defined(UNIT_TESTS) 
 void fake_AW_init_color_groups() {
+    GTK_NOT_IMPLEMENTED;
 }
 #endif
