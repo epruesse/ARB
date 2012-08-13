@@ -11,8 +11,10 @@
 
 #include "aw_gtk_migration_helpers.hxx"
 #include "aw_window.hxx"
-
-
+#include "aw_xfig.hxx"
+#include "aw_root.hxx"
+#include "aw_device.hxx"
+#include "aw_at.hxx"
 
 
 void AW_clock_cursor(AW_root *) {
@@ -380,8 +382,41 @@ void AW_window::label(const char */*label*/){
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::load_xfig(const char */*file*/, bool /*resize*/ /*= true*/){
-    GTK_NOT_IMPLEMENTED;
+static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
+
+    AW_device *device = aww->get_device(AW_INFO_AREA);
+    device->reset();
+    if (aww->get_root()->color_mode == 0) { // mono colr
+        device->clear(-1);
+    }
+    device->set_offset(AW::Vector(-xfig->minx, -xfig->miny));
+    xfig->print(device);
+}
+
+
+void AW_window::load_xfig(const char *file, bool resize /*= true*/){
+
+    AW_xfig *xfig;
+
+    if (file)   xfig = new AW_xfig(file, get_root()->font_width, get_root()->font_height);
+    else        xfig = new AW_xfig(get_root()->font_width, get_root()->font_height); // create an empty xfig
+
+    xfig_data = (void*)xfig;
+
+    set_expose_callback(AW_INFO_AREA, (AW_CB)AW_xfigCB_info_area, (AW_CL)xfig_data, 0);
+    xfig->create_gcs(get_device(AW_INFO_AREA), get_root()->color_mode ? 8 : 1);
+
+    int xsize = xfig->maxx - xfig->minx;
+    int ysize = xfig->maxy - xfig->miny;
+
+    if (xsize>_at->max_x_size) _at->max_x_size = xsize;
+    if (ysize>_at->max_y_size) _at->max_y_size = ysize;
+
+    if (resize) {
+        recalc_size_atShow(AW_RESIZE_ANY);
+        set_window_size(_at->max_x_size+1000, _at->max_y_size+1000);
+    }
+
 }
 
 const char *AW_window::local_id(const char */*id*/) const{
@@ -407,8 +442,9 @@ void AW_window::set_bottom_area_height(int /*height*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::set_expose_callback(AW_area /*area*/, void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/ /*= 0*/, AW_CL /*cd2*/ /*= 0*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1 /*= 0*/, AW_CL cd2 /*= 0*/) {
+    AW_area_management *aram = prvt.areas[area];
+    if (aram) aram->set_expose_callback(this, f, cd1, cd2);
 }
 
 void AW_window::set_focus_callback(void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/) {
@@ -563,10 +599,41 @@ void AW_window_simple_menu::init(AW_root */*root*/, const char */*wid*/, const c
 }
 
 AW_window_simple::AW_window_simple() : AW_window() {
-
+    GTK_NOT_IMPLEMENTED;
 }
-void AW_window_simple::init(AW_root */*root*/, const char */*wid*/, const char */*windowname*/) {
+void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windowname) {
+    root = root_in; // for macro
 
+    int width  = 100;                               // this is only the minimum size!
+    int height = 100;
+    int posx   = 50;
+    int posy   = 50;
+
+    window_name = strdup(windowname);
+    window_defaults_name = GBS_string_2_key(wid);
+
+    p_w->shell = aw_create_shell(this, true, true, width, height, posx, posy);
+
+    // add this to disable resize or maximize in simple dialogs (avoids broken layouts)
+    // XtVaSetValues(p_w->shell, XmNmwmFunctions, MWM_FUNC_MOVE | MWM_FUNC_CLOSE, NULL);
+
+    Widget form1 = XtVaCreateManagedWidget("forms", xmFormWidgetClass,
+            p_w->shell,
+            NULL);
+
+    p_w->areas[AW_INFO_AREA] = new AW_area_management(root, form1, XtVaCreateManagedWidget("info_area",
+                    xmDrawingAreaWidgetClass,
+                    form1,
+                    XmNbottomAttachment, XmATTACH_FORM,
+                    XmNtopAttachment, XmATTACH_FORM,
+                    XmNleftAttachment, XmATTACH_FORM,
+                    XmNrightAttachment, XmATTACH_FORM,
+                    XmNmarginHeight, 2,
+                    XmNmarginWidth, 2,
+                    NULL));
+
+    aw_realize_widget(this);
+    create_devices();
 }
 AW_window_simple::~AW_window_simple() {
     GTK_NOT_IMPLEMENTED;
@@ -606,8 +673,106 @@ AW_cb_struct::AW_cb_struct(AW_window    * /*awi*/,
     GTK_NOT_IMPLEMENTED;
 }
 
+bool AW_cb_struct::contains(void (*g)(AW_window*, AW_CL, AW_CL)) {
+    return (f == g) || (next && next->contains(g));
+}
+
+
 void AW_cb_struct::run_callback() {
-    GTK_NOT_IMPLEMENTED;
+    if (next) next->run_callback();                 // callback the whole list
+    if (!f) return;                                 // run no callback
+
+    AW_root *root = aw->get_root();
+    if (root->disable_callbacks) {
+        // some functions (namely aw_message, aw_input, aw_string_selection and aw_file_selection)
+        // have to disable most callbacks, because they are often called from inside these callbacks
+        // (e.g. because some exceptional condition occurred which needs user interaction) and if
+        // callbacks weren't disabled, a recursive deadlock occurs.
+
+        // the following callbacks are allowed even if disable_callbacks is true
+
+        bool isModalCallback = (f == AW_CB(message_cb) ||
+                                f == AW_CB(input_history_cb) ||
+                                f == AW_CB(input_cb) ||
+                                f == AW_CB(file_selection_cb));
+
+        bool isPopdown = (f == AW_CB(AW_POPDOWN));
+        bool isHelp    = (f == AW_CB(AW_POPUP_HELP));
+        bool allow     = isModalCallback || isHelp || isPopdown;
+
+        bool isInfoResizeExpose = false;
+
+        if (!allow) {
+            isInfoResizeExpose = aw->is_expose_callback(AW_INFO_AREA, f) || aw->is_resize_callback(AW_INFO_AREA, f);
+            allow              = isInfoResizeExpose;
+        }
+
+        if (!allow) {
+            // do not change position of modal dialog, when one of the following callbacks happens - just raise it
+            // (other callbacks like pressing a button, will position the modal dialog under mouse)
+            bool onlyRaise =
+                aw->is_expose_callback(AW_MIDDLE_AREA, f) ||
+                aw->is_focus_callback(f) ||
+                root->is_focus_callback((AW_RCB)f) ||
+                aw->is_resize_callback(AW_MIDDLE_AREA, f);
+
+            if (root->current_modal_window) {
+                AW_window *awmodal = root->current_modal_window;
+
+                AW_PosRecalc prev = awmodal->get_recalc_pos_atShow();
+                if (onlyRaise) awmodal->recalc_pos_atShow(AW_KEEP_POS);
+                awmodal->activate();
+                awmodal->recalc_pos_atShow(prev);
+            }
+            else {
+                aw_message("Internal error (callback suppressed when no modal dialog active)");
+                aw_assert(0);
+            }
+#if defined(TRACE_CALLBACKS)
+            printf("suppressing callback %p\n", f);
+#endif // TRACE_CALLBACKS
+            return; // suppress the callback!
+        }
+#if defined(TRACE_CALLBACKS)
+        else {
+            if (isModalCallback) printf("allowed modal callback %p\n", f);
+            else if (isPopdown) printf("allowed AW_POPDOWN\n");
+            else if (isHelp) printf("allowed AW_POPUP_HELP\n");
+            else if (isInfoResizeExpose) printf("allowed expose/resize infoarea\n");
+            else printf("allowed other (unknown) callback %p\n", f);
+        }
+#endif // TRACE_CALLBACKS
+    }
+    else {
+#if defined(TRACE_CALLBACKS)
+        printf("Callbacks are allowed (executing %p)\n", f);
+#endif // TRACE_CALLBACKS
+    }
+
+    useraction_init();
+
+    if (f == AW_POPUP) {
+        if (pop_up_window) { // already exists
+            pop_up_window->activate();
+        }
+        else {
+            AW_PPP g = (AW_PPP)cd1;
+            if (g) {
+                pop_up_window = g(aw->get_root(), cd2, 0);
+                pop_up_window->activate();
+            }
+            else {
+                aw_message("not implemented -- please report to devel@arb-home.de");
+            }
+        }
+        if (pop_up_window && p_aww(pop_up_window)->popup_cb)
+            p_aww(pop_up_window)->popup_cb->run_callback();
+    }
+    else {
+        f(aw, cd1, cd2);
+    }
+
+    useraction_done(aw);
 }
 
 

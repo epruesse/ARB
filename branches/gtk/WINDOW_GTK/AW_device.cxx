@@ -173,6 +173,10 @@ int AW_stylable::get_string_size(int /*gc*/, const  char */*string*/, long /*tex
 void AW_stylable::new_gc(int /*gc*/) {
     GTK_NOT_IMPLEMENTED;
 }
+void AW_stylable::set_function(int gc, AW_function function) {
+    GTK_NOT_IMPLEMENTED;
+}
+
 
 void AW_stylable::reset_style() {
     GTK_NOT_IMPLEMENTED;
@@ -198,7 +202,7 @@ void AW_stylable::set_line_attributes(int /*gc*/, short /*width*/, AW_linestyle 
 //FIXME move to own file
 
 bool AW_clipable::clip(const AW::LineVector& /*line*/, AW::LineVector& /*clippedLine*/) {
-
+    GTK_NOT_IMPLEMENTED;
     return false;
 }
 void AW_clipable::set_bottom_clip_border(int /*bottom*/, bool /*allow_oversize*/ /*= false*/) {

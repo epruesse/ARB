@@ -150,9 +150,12 @@ void AW_openURL(AW_root *aw_root, const char *url);
 
 typedef void (*AW_cb_struct_guard)();
 
+/**
+ * A list of callback functions.
+ */
 class AW_cb_struct {
-    AW_CL         cd1;
-    AW_CL         cd2;
+    AW_CL         cd1; //callback parameter 2
+    AW_CL         cd2; //callback parameter 3
     AW_cb_struct *next;
 
     static AW_cb_struct_guard guard_before;
@@ -161,8 +164,8 @@ class AW_cb_struct {
 
 public:
     // private (read-only):
-    AW_window  *pop_up_window;
-    AW_CB       f;
+    AW_window  *pop_up_window; //callback parameter 1
+    AW_CB       f; //the callback function
     AW_window  *aw;
     const char *help_text;
     char       *id;
@@ -284,7 +287,7 @@ public:
 
     int number_of_timed_title_changes;
 
-    void /* AW_xfig */   *xfig_data;
+    AW_xfig  *xfig_data;
 
     void create_window_variables();
 

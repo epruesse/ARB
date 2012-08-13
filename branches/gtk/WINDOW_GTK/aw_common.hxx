@@ -67,6 +67,15 @@ public:
     }
 };
 
+
+/**
+ * Most attributes of graphics operations are stored in Graphic Contexts
+ *  (GCs). These include line width, line style, plane mask,
+ *  foreground, background, tile, stipple, clipping region,
+ *  end style, join style, and so on. Graphics operations
+ *  (for example, drawing lines) use these values to determine
+ *  the actual drawing operation.
+ */
 class AW_GC : public AW_GC_config, virtual Noncopyable {
     AW_common    *common;
     AW_GC_config *default_config; // NULL means "no special default"
