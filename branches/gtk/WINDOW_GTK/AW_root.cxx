@@ -76,7 +76,7 @@ AW_ProcessEventType AW_root::peek_key_event(AW_window *) {
 }
 
 AW_default AW_root::load_properties(const char *default_name) {
-    printf("bla2.5\n");
+
     GBDATA   *gb_default = GB_open(default_name, "rwcD");
     GB_ERROR  error      = NULL;
 
@@ -89,14 +89,14 @@ AW_default AW_root::load_properties(const char *default_name) {
     else {
         error = GB_await_error();
     }
-    printf("bla2.6\n");
+
     if (error) {
         const char *shown_name      = strrchr(default_name, '/');
         if (!shown_name) shown_name = default_name;
 
         GBK_terminatef("Error loading properties '%s': %s", shown_name, error);
     }
-    printf("bla2.7\n");
+
     return (AW_default) gb_default;
 }
 
@@ -108,13 +108,13 @@ AW_root::AW_root(const char *properties, const char *program, bool no_exit) {
     aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
     AW_root::SINGLETON = this;
     printf("props: %s", properties);
-    printf("bla\n");
+
     memset((char *)this, 0, sizeof(AW_root));//initialize all attributes with 0
-    printf("bla2\n");
+
     init_variables(load_properties(properties));
-    printf("bla3\n");
+
     init_root(program, no_exit);
-    printf("bla4\n");
+
     atexit(destroy_AW_root); // do not call this before opening properties DB!
 }
 
