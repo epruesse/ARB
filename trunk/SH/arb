@@ -79,9 +79,12 @@ append  LD_LIBRARY_PATH		/usr/openwin/lib
 append  LD_LIBRARY_PATH		$ARBHOME/lib/addlibs
 prepend SHLIB_PATH		$ARBHOME/lib
 append  SHLIB_PATH		$ARBHOME/lib/addlibs
+append  PYTHONPATH      $ARBHOME/lib/python2.6
+append  PERl5LIB        $ARBHOME/lib/perl5  
 
 # environment variables that this shell script sets/changes:
-export LD_LIBRARY_PATH MANPATH PATH ARBHOME SHLIB_PATH
+export LD_LIBRARY_PATH MANPATH PATH ARBHOME SHLIB_PATH 
+export PYTHONPATH PERL5LIB
 
 # global envs:
 
