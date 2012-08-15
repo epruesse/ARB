@@ -1625,6 +1625,13 @@ perl_clean:
 PERL2ARB/PERL2ARB.clean:
 	$(MAKE) perl_clean
 
+# ---------------------------------------- bindings to script languages
+
+bindings: lib/libCORE.so lib/libARBDB.so
+	$(MAKE) -C BINDINGS all ARBDEPENDS="$(^:%=../%)" DFLAGS="$(dflags)"
+
+bindings_clean:
+	$(MAKE) -C BINDINGS clean
 
 # ----------------------------------------
 
