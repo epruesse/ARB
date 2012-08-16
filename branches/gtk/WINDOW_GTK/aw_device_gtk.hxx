@@ -11,11 +11,9 @@
 
 #pragma once
 
-#ifndef AW_COMMON_XM_HXX
-#include "aw_common_xm.hxx"
-#endif
+#include "aw_common_gtk.hxx"
+#include "gdk/gdkpixmap.h"
 
-class GdkPixmap;
 /**
  * A device to draw/print on a GtkWidget.
  */

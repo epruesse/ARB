@@ -15,21 +15,29 @@
 #include <gtk/gtkwidget.h>
 #include <gtk/gtkwindow.h>
 #include "aw_base.hxx"
+#include "aw_common_gtk.hxx"
+
+class AW_area_management;
+class AW_device_gtk;
+class AW_cb_struct;
 
 /*
  * Contains all gtk dependent attributs from aw_window.
  */
-class AW_window_gtk : public Noncopyable {
+class AW_window_gtk : public virtual Noncopyable {
     friend class AW_window;
+    friend class AW_window_simple; //Friendship is not inherited therefore we have to declare all children of AW_window as friends.
 
-    GtkWidget *window; /*< The gtk window instance managed by this aw_window */
+
+
+    GtkWindow *window; /*< The gtk window instance managed by this aw_window */
     AW_area_management *areas[AW_MAX_AREA]; /*< Managers for the areas that make up this window */
 
     AW_window_gtk() :
         window(NULL) {}
 
     ~AW_window_gtk() {
-        destroy(window);
+        destroy(GTK_WIDGET(window));
     }
 
     /*
@@ -47,8 +55,8 @@ class AW_window_gtk : public Noncopyable {
  * FIXME
  */
 class AW_area_management {
-    GtkWidget *form; //FIXME what is this?
-    GtkWidget *area;
+    GtkWidget *form; /**< The main form of this window. Everything is inside this form */ //FIXME is this correct?
+    GtkWidget *area; /**< The drawing area of this form. The background of this area may be filled with a xfig drawing. */
 
     AW_common_gtk *common;
 
@@ -64,11 +72,10 @@ class AW_area_management {
     long click_time;
 
 public:
-    AW_area_management(AW_root *awr, GtkWidget *form, GtkWidget *widget);
+    AW_area_management(AW_root *awr, GtkWidget *form, GtkWidget *area);
 
-    Widget get_form() const { return form; }
-    Widget get_area() const { return area; }
-
+    GtkWidget *get_form() const;
+    GtkWidget *get_area() const;
     AW_common_gtk *get_common() const { return common; }
 
     AW_device_gtk *get_screen_device();

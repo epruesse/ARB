@@ -9,7 +9,6 @@
 //                                                               //
 // ============================================================= //
 
-#pragma once
 
 #include "aw_common_gtk.hxx"
 #include "aw_gtk_migration_helpers.hxx"

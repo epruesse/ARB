@@ -746,6 +746,4 @@ public:
 };
 
 
-#else
-#error aw_device.hxx included twice
 #endif

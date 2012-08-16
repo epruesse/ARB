@@ -99,6 +99,6 @@ enum AW_color_idx {
 AW_default get_AW_ROOT_DEFAULT();
 #define AW_ROOT_DEFAULT get_AW_ROOT_DEFAULT()
 
-#else
-#error aw_base.hxx included twice
+
+
 #endif // AW_BASE_HXX

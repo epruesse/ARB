@@ -10,6 +10,7 @@
 // ============================================================= //
 
 #include "aw_window_gtk.hxx"
+#include "aw_window.hxx"
 #include "aw_gtk_migration_helpers.hxx"
 
 void AW_area_management::set_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
@@ -22,6 +23,14 @@ void AW_area_management::set_expose_callback(AW_window *aww, void (*f)(AW_window
 //                (XtPointer) this);
 //    }
 //    expose_cb = new AW_cb_struct(aww, f, cd1, cd2, 0, expose_cb);
+}
+
+
+GtkWidget *AW_area_management::get_form() const {
+    return GTK_WIDGET(form);
+}
+GtkWidget *AW_area_management::get_area() const {
+    return GTK_WIDGET(area);
 }
 
 bool AW_area_management::is_expose_callback(AW_window * /* aww */, void (*f)(AW_window*, AW_CL, AW_CL)) {

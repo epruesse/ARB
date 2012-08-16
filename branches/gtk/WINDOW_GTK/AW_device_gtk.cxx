@@ -12,6 +12,10 @@
 
 #include "aw_gtk_migration_helpers.hxx"
 #include <gdk/gdk.h>
+#include "aw_position.hxx"
+#include "aw_device.hxx"
+#include "aw_device_gtk.hxx"
+
 #if defined(WARN_TODO)
 #warning change implementation of draw functions (read more)
 // * filter has to be checked early (in AW_device)

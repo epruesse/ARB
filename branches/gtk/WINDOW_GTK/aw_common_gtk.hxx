@@ -11,6 +11,8 @@
 
 #pragma once
 #include <gdk/gdk.h>
+#include <gtk/gtkwidget.h>
+#include "aw_common.hxx"
 
 class AW_common_gtk;
 /**
@@ -71,10 +73,10 @@ public:
     virtual AW_GC *create_gc();
 
     const AW_GC_gtk *map_gc(int gc) const { return DOWNCAST(const AW_GC_gtk*, AW_common::map_gc(gc)); }
-    AW_GC_Xm *map_mod_gc(int gc) { return DOWNCAST(AW_GC_Xm*, AW_common::map_mod_gc(gc)); }
+    AW_GC_gtk *map_mod_gc(int gc) { return DOWNCAST(AW_GC_gtk*, AW_common::map_mod_gc(gc)); }
 
-    Display *get_display() const { return display; }
-    XID get_window_id() const { return window_id; }
+    GdkDisplay *get_display() const { return display; }
+    GtkWidget *get_window_id() const { return window; } //FIXME rename to get_window
 
     GdkGC *get_GC(int gc) const { return map_gc(gc)->get_gc(); }
     //FIXME font stuff
@@ -82,5 +84,5 @@ public:
 };
 
 inline AW_common_gtk *AW_GC_gtk::get_common() const {
-    return DOWNCAST(AW_GC_gtk*, AW_GC::get_common());
+    return DOWNCAST(AW_common_gtk*, AW_GC::get_common());
 }

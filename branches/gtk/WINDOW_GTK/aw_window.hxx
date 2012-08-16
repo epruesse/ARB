@@ -20,6 +20,7 @@
 #include "aw_window_gtk.hxx"
 
 class AW_window;
+class AW_xfig;
 class AW_device;
 class AW_device_click;
 class AW_device_print;
