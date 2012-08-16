@@ -552,7 +552,7 @@ void AW_window::d_callback(void (*/*f*/)(AW_window*)) {
 
 AW_window::AW_window() {
 
-    prvt.window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+
 }
 
 AW_window::~AW_window() {
@@ -604,6 +604,7 @@ AW_window_simple::AW_window_simple() : AW_window() {
 }
 void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windowname) {
     root = root_in; // for macro
+    prvt.window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
 
     int width  = 100;                               // this is only the minimum size!
     int height = 100;

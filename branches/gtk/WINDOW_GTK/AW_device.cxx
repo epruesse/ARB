@@ -12,7 +12,7 @@
 
 #include "aw_gtk_migration_helpers.hxx"
 #include "aw_device.hxx"
-
+#include "aw_base.hxx"
 
 
 bool AW_getBestClick(AW_clicked_line */*cl*/, AW_clicked_text */*ct*/, AW_CL */*cd1*/, AW_CL */*cd2*/) {
@@ -71,6 +71,15 @@ void AW_device::reset() {
 void AW_device::clear(AW_bitset filteri) {
     GTK_NOT_IMPLEMENTED;
 }
+
+bool AW_device::generic_invisible(const AW::Position& pos, AW_bitset filteri) {
+    GTK_NOT_IMPLEMENTED;
+    return false;
+}
+const AW_screen_area&  AW_device::get_common_screen(const AW_common *common_) {
+    GTK_NOT_IMPLEMENTED;
+}
+
 
 bool AW_device::generic_box(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri) {
     GTK_NOT_IMPLEMENTED;
@@ -228,8 +237,9 @@ int AW_clipable::reduceClipBorders(int /*top*/, int /*bottom*/, int /*left*/, in
 }
 
 
-
-
+void AW_zoomable::reset() {
+    GTK_NOT_IMPLEMENTED;
+}
 
 
 void AW_zoomable::zoom(AW_pos /*scale*/) {

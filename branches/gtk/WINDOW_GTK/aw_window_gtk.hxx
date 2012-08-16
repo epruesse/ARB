@@ -16,6 +16,7 @@
 #include <gtk/gtkwindow.h>
 #include "aw_base.hxx"
 #include "aw_common_gtk.hxx"
+#include <vector>
 
 class AW_area_management;
 class AW_device_gtk;
@@ -31,10 +32,12 @@ class AW_window_gtk : public virtual Noncopyable {
 
 
     GtkWindow *window; /*< The gtk window instance managed by this aw_window */
-    AW_area_management *areas[AW_MAX_AREA]; /*< Managers for the areas that make up this window */
+    std::vector<AW_area_management *> areas;
 
     AW_window_gtk() :
-        window(NULL) {}
+        window(NULL),
+        areas(AW_MAX_AREA, NULL){
+    }
 
     ~AW_window_gtk() {
         destroy(GTK_WIDGET(window));

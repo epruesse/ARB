@@ -25,6 +25,7 @@ class AW_common_gtk;
  */
 class AW_GC_gtk : public AW_GC { // derived from Noncopyable
     GdkGC*      gc;
+    //FIXME font stuff
     //XFontStruct curfont;
 
     virtual void wm_set_foreground_color(AW_rgb col);
