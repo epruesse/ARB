@@ -14,7 +14,10 @@
 #include <gdk/gdk.h>
 #include "aw_position.hxx"
 #include "aw_device.hxx"
+#include "gtk/gtkwidget.h"
+#include "gtk/gtkstyle.h"
 #include "aw_device_gtk.hxx"
+
 
 #if defined(WARN_TODO)
 #warning change implementation of draw functions (read more)
@@ -33,10 +36,16 @@ AW_DEVICE_TYPE AW_device_gtk::type() { return AW_DEVICE_SCREEN; }
 #define XDRAW_PARAM3(common,gc) XDRAW_PARAM2(common), (common)->get_GC(gc)
 
 
-AW_device_gtk::AW_device_gtk(AW_common *commoni) :
+AW_device_gtk::AW_device_gtk(AW_common *commoni, GtkWidget *drawingArea) :
         AW_device(commoni),
-        pixmap(gdk_pixmap_new(0, 3000, 3000, 8)) //FIXME get width and height from somewhere
-{}
+        pixmap(gdk_pixmap_new(0, 3000, 3000, 8)),
+        drawingArea(drawingArea) //FIXME get width and height from somewhere
+{
+
+    //set the background of the widget to the pixmap.
+    GtkStyle* style = gtk_style_new();
+    style->bg_pixmap[0] = pixmap;
+}
 
 bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri) {
     bool drawflag = false;
@@ -46,7 +55,7 @@ bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri)
         drawflag = clip(transLine, clippedLine);
         if (drawflag) {
 
-            gdk_draw_line(pixmap,
+            gdk_draw_line(GDK_DRAWABLE(pixmap),
                          get_common()->get_GC(gc), //FIXME cast?
                          int(clippedLine.start().xpos()),
                          int(clippedLine.start().ypos()),

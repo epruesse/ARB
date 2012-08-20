@@ -159,6 +159,9 @@ public:
     void set_offset(const AW::Vector& off) { offset = off*scale; }
     void shift(const AW::Vector& doff) { offset += doff*scale; }
 
+    /**
+     * resets scale to 1 and offset to 0
+     */
     void reset();
 
     double transform_size(const double& size) const { return size*scale; }
@@ -174,15 +177,22 @@ public:
     AW::Vector rtransform(const AW::Vector& vec) const { return vec*unscale; }
 
     // transform a Position
-    AW::Position transform (const AW::Position& pos) const { return transform(AW::Vector(pos+offset)).endpoint(); }
-    AW::Position rtransform(const AW::Position& pos) const { return rtransform(AW::Vector(pos)).endpoint()-offset; }
+    AW::Position transform (const AW::Position& pos) const {
+        AW::Vector vec = transform(AW::Vector(pos+offset));
+        return vec.endpoint();
+    }
+    AW::Position rtransform(const AW::Position& pos) const {
+        return rtransform(AW::Vector(pos)).endpoint()-offset;
+    }
 #if defined(WARN_TODO) && 0
 #warning fix transformations
     // @@@ I think this calculation is wrong, cause offset is already scaled
     //     (same applies to old-style transform/rtransform below)
 #endif
 
-    AW::LineVector transform (const AW::LineVector& lvec) const { return AW::LineVector(transform(lvec.start()), transform(lvec.line_vector())); }
+    AW::LineVector transform (const AW::LineVector& lvec) const {
+        return AW::LineVector(transform(lvec.start()), transform(lvec.line_vector()));
+    }
     AW::LineVector rtransform(const AW::LineVector& lvec) const { return AW::LineVector(rtransform(lvec.start()), rtransform(lvec.line_vector())); }
 
     AW::Rectangle transform (const AW::Rectangle& rect) const { return AW::Rectangle(transform(static_cast<const AW::LineVector&>(rect))); }
@@ -363,6 +373,11 @@ public:
     void new_gc(int gc);
     void set_grey_level(int gc, AW_grey_level grey_level); 
     void set_font(int gc, AW_font fontnr, int size, int *found_size);
+    /**
+     *
+     * Set width and linestyle of the selected graphic context.
+     * @param gc index of the gc to modify. Aw_common holds a list of all available graphic contexts.
+     */
     void set_line_attributes(int gc, short width, AW_linestyle style);
     void set_function(int gc, AW_function function);
     void establish_default(int gc);

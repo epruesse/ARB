@@ -15,19 +15,7 @@
 #include "gdk/gdkscreen.h"
 #include "gtk/gtkwidget.h"
 #include "aw_common_gtk.hxx"
-
-void AW_area_management::set_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-
-    GTK_NOT_IMPLEMENTED;
-
-//    // insert expose callback for draw_area
-//    if (!expose_cb) {
-//        XtAddCallback(area, XmNexposeCallback, (XtCallbackProc) AW_exposeCB,
-//                (XtPointer) this);
-//    }
-//    expose_cb = new AW_cb_struct(aww, f, cd1, cd2, 0, expose_cb);
-}
-
+#include "aw_device_gtk.hxx"
 
 GtkWidget *AW_area_management::get_form() const {
     return GTK_WIDGET(form);
@@ -36,13 +24,7 @@ GtkWidget *AW_area_management::get_area() const {
     return GTK_WIDGET(area);
 }
 
-bool AW_area_management::is_expose_callback(AW_window * /* aww */, void (*f)(AW_window*, AW_CL, AW_CL)) {
-    return expose_cb && expose_cb->contains(f);
-}
 
-void AW_area_management::run_expose_callback() {
-    if (expose_cb) expose_cb->run_callback();
-}
 
 AW_area_management::AW_area_management(AW_root* awr, GtkWidget* form,
         GtkWidget* area) : form(form), area(area) {
@@ -71,6 +53,13 @@ void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
     //FIXME font stuff
     //FIXME parameter global colortable is wrong.
     common = new AW_common_gtk(pDisplay, area, aww->color_table, aww->color_table, aww->color_table_size, aww, ar);
+    screen_device = new AW_device_gtk(common, area);
 
 }
+
+AW_device_gtk *AW_area_management::get_screen_device() {
+
+    return screen_device;
+}
+
 

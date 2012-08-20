@@ -63,12 +63,11 @@ class AW_area_management {
 
     AW_common_gtk *common;
 
-    AW_device_gtk   *device;
+    AW_device_gtk   *screen_device;
     AW_device_size  *size_device;
     AW_device_print *print_device;
     AW_device_click *click_device;
 
-    AW_cb_struct *expose_cb;
     AW_cb_struct *resize_cb;
     AW_cb_struct *double_click_cb;
 
@@ -88,19 +87,18 @@ public:
 
     void create_devices(AW_window *aww, AW_area ar);
 
-    void set_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_input_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_motion_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
 
-    bool is_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
+
     bool is_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
     bool is_input_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
     bool is_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
     bool is_motion_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
 
-    void run_expose_callback();
+
     void run_resize_callback();
 
     AW_cb_struct *get_double_click_cb() { return double_click_cb; }

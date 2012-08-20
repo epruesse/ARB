@@ -277,9 +277,10 @@ AW_device_click *AW_window::get_click_device(AW_area /*area*/, int /*mousex*/, i
     GTK_NOT_IMPLEMENTED;
     return 0;
 }
-AW_device *AW_window::get_device(AW_area /*area*/){
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+AW_device *AW_window::get_device(AW_area area){
+    AW_area_management *aram   = prvt.areas[area];
+    arb_assert(NULL != aram);
+    return (AW_device *)aram->get_screen_device();
 }
 
 void AW_window::get_event(AW_event */*eventi*/) const{
@@ -404,8 +405,11 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
 
     xfig_data = xfig;
 
-    set_expose_callback(AW_INFO_AREA, (AW_CB)AW_xfigCB_info_area, (AW_CL)xfig_data, 0);
-    xfig->create_gcs(get_device(AW_INFO_AREA), get_root()->color_mode ? 8 : 1);
+
+    //expose callback is no longer needed. gtk takes care of that.
+   // set_expose_callback(AW_INFO_AREA, (AW_CB)AW_xfigCB_info_area, (AW_CL)xfig_data, 0);
+
+    xfig->create_gcs(get_device(AW_INFO_AREA), get_root()->color_mode ? 8 : 1); //FIXME remove color mode.
 
     int xsize = xfig->maxx - xfig->minx;
     int ysize = xfig->maxy - xfig->miny;
@@ -417,6 +421,11 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
         recalc_size_atShow(AW_RESIZE_ANY);
         set_window_size(_at->max_x_size+1000, _at->max_y_size+1000);
     }
+
+    //print the whole xfig to the area once.
+    //gtk takes care of refreshing etc.
+    xfig_data->print(get_device(AW_INFO_AREA));
+
 
 }
 
@@ -444,8 +453,10 @@ void AW_window::set_bottom_area_height(int /*height*/) {
 }
 
 void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1 /*= 0*/, AW_CL cd2 /*= 0*/) {
-    AW_area_management *aram = prvt.areas[area];
-    if (aram) aram->set_expose_callback(this, f, cd1, cd2);
+//    AW_area_management *aram = prvt.areas[area];
+//    if (aram) aram->set_expose_callback(this, f, cd1, cd2);
+    GTK_NOT_IMPLEMENTED;
+    //FIXME area management does no longer have an expose callback. Remove this if absolutely sure that it is not needed.
 }
 
 void AW_window::set_focus_callback(void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/) {

@@ -13,7 +13,8 @@
 #include "aw_gtk_migration_helpers.hxx"
 #include "aw_device.hxx"
 #include "aw_base.hxx"
-
+#include "aw_common.hxx"
+#include "aw_position.hxx"
 
 bool AW_getBestClick(AW_clicked_line */*cl*/, AW_clicked_text */*ct*/, AW_CL */*cd1*/, AW_CL */*cd2*/) {
     GTK_NOT_IMPLEMENTED;
@@ -22,7 +23,7 @@ bool AW_getBestClick(AW_clicked_line */*cl*/, AW_clicked_text */*ct*/, AW_CL */*
 
 
 const AW_screen_area& AW_device::get_area_size() const {
-    GTK_NOT_IMPLEMENTED;
+    return get_common()->get_screen();
 }
 
 
@@ -179,8 +180,8 @@ int AW_stylable::get_string_size(int /*gc*/, const  char */*string*/, long /*tex
     GTK_NOT_IMPLEMENTED;
     return 0;
 }
-void AW_stylable::new_gc(int /*gc*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_stylable::new_gc(int gc) {
+    get_common()->new_gc(gc);
 }
 void AW_stylable::set_function(int gc, AW_function function) {
     GTK_NOT_IMPLEMENTED;
@@ -202,8 +203,8 @@ void AW_stylable::set_foreground_color(int /*gc*/, AW_color_idx /*color*/) {
 void AW_stylable::set_grey_level(int /*gc*/, AW_grey_level /*grey_level*/) {
     GTK_NOT_IMPLEMENTED;
 }
-void AW_stylable::set_line_attributes(int /*gc*/, short /*width*/, AW_linestyle /*style*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_stylable::set_line_attributes(int gc, short width, AW_linestyle style) {
+    get_common()->map_mod_gc(gc)->set_line_attributes(width, style);
 }
 
 
@@ -237,10 +238,11 @@ int AW_clipable::reduceClipBorders(int /*top*/, int /*bottom*/, int /*left*/, in
 }
 
 
-void AW_zoomable::reset() {
-    GTK_NOT_IMPLEMENTED;
-}
 
+void AW_zoomable::reset() {
+    unscale = scale   = 1.0;
+    offset  = AW::Vector(0, 0);
+}
 
 void AW_zoomable::zoom(AW_pos /*scale*/) {
     GTK_NOT_IMPLEMENTED;

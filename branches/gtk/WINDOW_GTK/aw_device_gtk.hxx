@@ -12,7 +12,7 @@
 #pragma once
 
 #include "aw_common_gtk.hxx"
-#include "gdk/gdkpixmap.h"
+
 
 /**
  * A device to draw/print on a GtkWidget.
@@ -25,6 +25,7 @@ class AW_device_gtk : public AW_device {
      * The pixmap is used as a background image in widgets.
      */
     GdkPixmap* pixmap;
+    GtkWidget* drawingArea;
 
     bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri);
     bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
@@ -39,7 +40,10 @@ class AW_device_gtk : public AW_device {
     void specific_reset() {}
 
 public:
-    AW_device_gtk(AW_common *commoni);
+    /**
+     * @param drawingArea the device draws onto the background of this widget.
+     */
+    AW_device_gtk(AW_common *commoni, GtkWidget* drawingArea);
 
 
     AW_common_gtk *get_common() const { return DOWNCAST(AW_common_gtk*, AW_device::get_common()); }

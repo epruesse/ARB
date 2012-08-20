@@ -9,8 +9,9 @@
 //                                                                 //
 // =============================================================== //
 
-#ifndef AW_POSITION_HXX
-#define AW_POSITION_HXX
+
+#pragma once
+
 
 #ifndef AW_BASE_HXX
 #include "aw_base.hxx"
@@ -80,9 +81,16 @@ namespace AW {
 
     public:
 
-        bool valid() const { return (x == x) && (y == y); } // fails if one is NAN
+        //FIXME only works correctly if the doubles are really ints.
+        //Otherwise comparing floats with == is unsafe!
+        bool valid() const {
+            return (x == x) && (y == y);
+        } // fails if one is NAN
 
-        Position(double X, double Y) : x(X), y(Y) { ISVALID(*this); }
+        Position(double X, double Y) : x(X), y(Y) {
+            ISVALID(*this);
+        }
+
         // Position(const Position& other) : x(other.x), y(other.y) { ISVALID(*this); }
         Position() : x(NAN), y(NAN) {} // default is no position
         ~Position() {}
@@ -238,11 +246,16 @@ namespace AW {
         void standardize();
 
     public:
-        bool valid() const { return Start.valid() && ToEnd.valid(); }
+        bool valid() const {
+            return Start.valid() && ToEnd.valid();
+        }
 
         LineVector(const Position& startpos, const Position& end) : Start(startpos), ToEnd(startpos, end) { ISVALID(*this); }
         LineVector(const Position& startpos, const Vector& to_end) : Start(startpos), ToEnd(to_end) { ISVALID(*this); }
-        LineVector(double X1, double Y1, double X2, double Y2) : Start(X1, Y1), ToEnd(X2-X1, Y2-Y1) { ISVALID(*this); }
+        LineVector(double X1, double Y1, double X2, double Y2) : Start(X1, Y1), ToEnd(X2-X1, Y2-Y1)
+        {
+            ISVALID(*this);
+        }
         explicit LineVector(const AW_screen_area& r, AW_screen_area_conversion_mode mode) {
             switch (mode) {
                 case INCLUSIVE_OUTLINE:
@@ -519,10 +532,7 @@ namespace AW {
 
 #define AW_DUMP(x) do { aw_dump(x, #x); fputc('\n', stderr); } while(0)
     
-#endif
+#endif //DEBUG
 
 };
 
-#else
-#error aw_position.hxx included twice
-#endif // AW_POSITION_HXX
