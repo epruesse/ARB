@@ -499,8 +499,8 @@ void AW_window::set_vertical_scrollbar_position(int /*position*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::set_window_size(int /*width*/, int /*height*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_window::set_window_size(int width, int height) {
+    gtk_window_set_default_size(prvt.window, width, height);
 }
 
 void AW_window::set_window_title(const char */*title*/){
@@ -616,6 +616,10 @@ AW_window_simple::AW_window_simple() : AW_window() {
 void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windowname) {
     root = root_in; // for macro
     prvt.window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+
+    //Creates the GDK (windowing system) resources associated with a widget.
+    //This is doen as early as possible because xfig drawing relies on the gdk stuff.
+    gtk_widget_realize(GTK_WIDGET(prvt.window));
 
     int width  = 100;                               // this is only the minimum size!
     int height = 100;

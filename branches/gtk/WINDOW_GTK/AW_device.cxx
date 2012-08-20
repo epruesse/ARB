@@ -210,10 +210,71 @@ void AW_stylable::set_line_attributes(int gc, short width, AW_linestyle style) {
 
 //aw_clipable
 //FIXME move to own file
+bool AW_clipable::clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out) {
+    // clip coordinates of a line
 
-bool AW_clipable::clip(const AW::LineVector& /*line*/, AW::LineVector& /*clippedLine*/) {
-    GTK_NOT_IMPLEMENTED;
-    return false;
+    int    outcodeout;
+    AW_pos x = 0;
+    AW_pos y = 0;
+
+    bool is_visible = false;    // indicates whether part of line is visible
+    bool done       = false;    // true soon as line is completely inside or outside rectangle
+
+    while (!done) {
+        int outcode0 = compoutcode(x0, y0);
+        int outcode1 = compoutcode(x1, y1);
+
+        if ((outcode0 | outcode1) == 0) { // line is inside the rectangle
+            x0out = x0; y0out = y0; // clipped coordinates of line
+            x1out = x1; y1out = y1;
+
+            done    = true;
+            is_visible = true;
+        }
+        else if ((outcode0 & outcode1) != 0) { // line is outside the rectangle
+            done = true;
+        }
+        else { // line overlaps with at least one rectangle border
+            outcodeout = outcode0>0 ? outcode0 : outcode1;
+
+            if ((outcodeout & 8) != 0) { // overlap at top
+                x = x0+(x1-x0)*(clip_rect.t-y0)/(y1-y0);
+                y = clip_rect.t;
+            }
+            else if ((outcodeout & 4) != 0) { // overlap at bottom
+                x = x0+(x1-x0)*(clip_rect.b-y0)/(y1-y0);
+                y = clip_rect.b;
+            }
+            else if ((outcodeout & 2) != 0) { // overlap at right side
+                y = y0+(y1-y0)*(clip_rect.r-x0)/(x1-x0);
+                x = clip_rect.r;
+            }
+            else if ((outcodeout & 1) != 0) {
+                y = y0+(y1-y0)*(clip_rect.l-x0)/(x1-x0); // overlap at left side
+                x = clip_rect.l;
+            }
+
+            // set corrected point and iterate :
+            if (outcode0 > 0) {
+                x0 = x;
+                y0 = y;
+            }
+            else {
+                x1 = x;
+                y1 = y;
+            }
+        }
+    }
+
+    return is_visible;
+}
+
+bool AW_clipable::clip(const AW::LineVector& line, AW::LineVector& clippedLine) {
+    AW_pos x0, y0, x1, y1;
+    bool   drawflag = clip(line.start().xpos(), line.start().ypos(), line.head().xpos(), line.head().ypos(),
+                           x0, y0, x1, y1);
+    if (drawflag) clippedLine = AW::LineVector(x0, y0, x1, y1);
+    return drawflag;
 }
 void AW_clipable::set_bottom_clip_border(int /*bottom*/, bool /*allow_oversize*/ /*= false*/) {
     GTK_NOT_IMPLEMENTED;

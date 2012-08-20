@@ -38,17 +38,26 @@ AW_DEVICE_TYPE AW_device_gtk::type() { return AW_DEVICE_SCREEN; }
 
 AW_device_gtk::AW_device_gtk(AW_common *commoni, GtkWidget *drawingArea) :
         AW_device(commoni),
-        pixmap(gdk_pixmap_new(0, 3000, 3000, 8)),
+        pixmap(gdk_pixmap_new(drawingArea->window, 3000, 3000, -1)),
         drawingArea(drawingArea) //FIXME get width and height from somewhere
 {
-
     //set the background of the widget to the pixmap.
+    //later we will draw on this pixmap instead of the window.
+    //this way we can get around implementing our own expose handler :)
     GtkStyle* style = gtk_style_new();
     style->bg_pixmap[0] = pixmap;
+    gtk_widget_set_style(drawingArea, style);
+
 }
 
 bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri) {
+
+    printf("line: %f %f %f %f", Line.xpos(), Line.ypos(), Line.line_vector().x(), Line.line_vector().y());
+
     bool drawflag = false;
+
+    arb_assert(get_common()->get_GC(gc) != NULL);
+
     if (filteri & filter) {
         LineVector transLine = transform(Line);
         LineVector clippedLine;
@@ -56,7 +65,8 @@ bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri)
         if (drawflag) {
 
             gdk_draw_line(GDK_DRAWABLE(pixmap),
-                         get_common()->get_GC(gc), //FIXME cast?
+                         //get_common()->get_GC(gc), // FIXME get real gc instead
+                         drawingArea->style->white_gc,
                          int(clippedLine.start().xpos()),
                          int(clippedLine.start().ypos()),
                          int(clippedLine.head().xpos()),
@@ -67,7 +77,7 @@ bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri)
         }
     }
 
-    return drawflag;
+    return true;
 }
 
 static bool AW_draw_string_on_screen(AW_device *device, int gc, const  char *str, size_t /* opt_str_len */, size_t start, size_t size,
@@ -88,7 +98,7 @@ bool AW_device_gtk::text_impl(int gc, const char *str, const AW::Position& pos, 
     GTK_NOT_IMPLEMENTED;
     return true;
 
-    //return text_overlay(gc, str, opt_strlen, pos, alignment, filteri, (AW_CL)this, 0.0, 0.0, AW_draw_string_on_screen);
+    return text_overlay(gc, str, opt_strlen, pos, alignment, filteri, (AW_CL)this, 0.0, 0.0, AW_draw_string_on_screen);
 }
 
 bool AW_device_gtk::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitset filteri) {
