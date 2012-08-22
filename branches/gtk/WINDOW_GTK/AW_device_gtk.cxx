@@ -17,6 +17,7 @@
 #include "gtk/gtkwidget.h"
 #include "gtk/gtkstyle.h"
 #include "aw_device_gtk.hxx"
+#include <gdk/gdkgc.h>
 
 
 #if defined(WARN_TODO)
@@ -38,12 +39,28 @@ AW_device_gtk::AW_device_gtk(AW_common *commoni, GtkWidget *drawingArea) :
         pixmap(gdk_pixmap_new(drawingArea->window, 3000, 3000, -1)),
         drawingArea(drawingArea) //FIXME get width and height from somewhere
 {
+
+    arb_assert(drawingArea != NULL);
+    arb_assert(commoni != NULL);
+
+    //subsequent calls only work on a realized widget
+    if(!gtk_widget_get_realized(drawingArea)) {
+        gtk_widget_realize(drawingArea);
+    }
+
     //set the background of the widget to the pixmap.
     //later we will draw on this pixmap instead of the window.
     //this way we can get around implementing our own expose handler :)
-    GtkStyle* style = gtk_style_new();
+    GtkStyle* style = gtk_widget_get_style (drawingArea); //this call fails if the widget has not been realized
     style->bg_pixmap[0] = pixmap;
     gtk_widget_set_style(drawingArea, style);
+
+    //initialy the pixmap is black.
+    //set background color to the window background color
+    GdkGC* tempGc = gdk_gc_new(pixmap);
+    gdk_gc_set_foreground(tempGc, &style->bg[GTK_STATE_NORMAL]);
+    gdk_draw_rectangle(GDK_DRAWABLE(pixmap),tempGc, true, 0, 0, 3000, 3000);//fixme use real width and height
+
     //FIXME the pixmap should be transparent in the beginning.
 
 }
