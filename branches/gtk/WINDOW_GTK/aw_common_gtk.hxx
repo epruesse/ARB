@@ -14,9 +14,10 @@
 #include "aw_common.hxx"
 
 
-class GTKWidget;
 
+class GtkWidget;
 class AW_common_gtk;
+
 /**
  * All drawing operations in GDK take a graphics context (GC) argument.
  * A graphics context encapsulates information about

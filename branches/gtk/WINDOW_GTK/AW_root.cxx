@@ -13,6 +13,7 @@
 #include "aw_root.hxx"
 #include <gtk/gtk.h>
 #include <arbdb.h>
+#include "aw_awar.hxx"
 
 //globals
 //FIXME use static class or namespace for globals
@@ -70,6 +71,7 @@ char *aw_file_selection(const char *title, const char *dir, const char *def_name
 }
 
 
+
 AW_ProcessEventType AW_root::peek_key_event(AW_window *) {
     GTK_NOT_IMPLEMENTED;
     return (AW_ProcessEventType)0;
@@ -118,15 +120,33 @@ AW_root::AW_root(const char *properties, const char *program, bool no_exit) {
     atexit(destroy_AW_root); // do not call this before opening properties DB!
 }
 
+
+struct fallbacks {
+    const char *fb;
+    const char *awar;
+    const char *init;
+};
+
+static struct fallbacks aw_fb[] = {
+    // Name         fallback awarname    default value
+    { "FontList",   "window/font",       "8x13bold" }, //FIXME font stuff not sure if this is needed anymore
+    { "background", "window/background", "grey" },
+    { "foreground", "window/foreground", "Black", },
+    { 0,            "window/color_1",    "red", },
+    { 0,            "window/color_2",    "green", },
+    { 0,            "window/color_3",    "blue", },
+    { 0,            0,                   0 }
+};
+
+
 void AW_root::init_variables(AW_default database) {
     application_database     = database;
     hash_table_for_variables = GBS_create_hash(1000, GB_MIND_CASE);
     hash_for_windows         = GBS_create_hash(100, GB_MIND_CASE);
 
-    //FIXME font stuff
-//    for (int i=0; aw_fb[i].awar; ++i) {
-//        awar_string(aw_fb[i].awar, aw_fb[i].init, application_database);
-//    }
+    for (int i=0; aw_fb[i].awar; ++i) {
+        awar_string(aw_fb[i].awar, aw_fb[i].init, application_database);
+    }
 }
 
 void AW_root::init_root(const char *programname, bool no_exit) {
@@ -135,6 +155,8 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     //FIXME font stuff
 //    XFontStruct *fontstruct;
 //    char        *fallback_resources[100];
+
+    GTK_PARTLY_IMPLEMENTED;
 
     action_hash = GBS_create_hash(1000, GB_MIND_CASE);
     this->no_exit = no_exit;
@@ -149,7 +171,7 @@ void AW_root::init_root(const char *programname, bool no_exit) {
 
 
     color_mode = AW_RGB_COLOR; //mono color mode is not supported
-
+    create_colormap();//load the colortable from database
 
     //FIXME font stuff
 //    int i;
@@ -218,6 +240,52 @@ void AW_root::init_root(const char *programname, bool no_exit) {
 }
 
 
+/**
+ * A list of awar names that contain color names
+ */
+static const char *aw_awar_2_color[] = {
+    "window/background",
+    "window/foreground",
+    "window/color_1",
+    "window/color_2",
+    "window/color_3",
+    0
+};
+
+void AW_root::create_colormap() {
+
+
+    //prvt.colormap = gdk_colormap_new(gdk_colormap_get_visual(gdk_colormap_get_system()), false);
+
+
+
+    GBDATA *gbd = check_properties(NULL);
+    prvt.colormap = gdk_colormap_get_system();
+
+ // Color monitor
+    const char **awar_2_color;
+    int color;
+    for (color = 0, awar_2_color = aw_awar_2_color;
+         *awar_2_color;
+         awar_2_color++, color++)
+    {
+        const char *name_of_color = GB_read_char_pntr(GB_search(gbd, *awar_2_color, GB_FIND));
+        printf("colorname: %s\n", name_of_color);
+
+
+//        if (XAllocNamedColor(p_global->display, p_global->colormap, name_of_color, &xcolor_returned, &xcolor_exakt) == 0) {
+//            fprintf(stderr, "XAllocColor failed: %s\n", name_of_color);
+//        }
+//        else {
+//            p_global->color_table[color] = xcolor_returned.pixel;
+//        }
+    }
+//    p_global->foreground = BlackPixelOfScreen(XtScreen(p_global->toplevel_widget));
+//    XtVaGetValues(p_global->toplevel_widget, XmNbackground,
+//    &p_global->background, NULL);
+
+    // AW_WINDOW_DRAG see init_devices
+}
 
 
 void AW_root::window_hide(AW_window *aww) {
@@ -238,9 +306,10 @@ size_t AW_root::callallcallbacks(int mode) {
 }
 #endif
 
-AW_awar *AW_root::awar(const char *awar) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+AW_awar *AW_root::awar(const char *var_name) {
+    AW_awar *vs = awar_no_error(var_name);
+    if (!vs) GBK_terminatef("AWAR %s not defined", var_name);
+    return vs;
 }
 
 AW_awar *AW_root::awar_float(const char *var_name, float default_value/* = 0.0*/, AW_default default_file/* = AW_ROOT_DEFAULT*/) {
@@ -250,8 +319,13 @@ AW_awar *AW_root::awar_float(const char *var_name, float default_value/* = 0.0*/
 
 
 AW_awar *AW_root::awar_string (const char *var_name, const char *default_value /*= ""*/, AW_default default_file /*= AW_ROOT_DEFAULT*/) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+    AW_awar *vs = awar_no_error(var_name);
+    if (!vs) {
+        default_file = check_properties(default_file);
+        vs           = new AW_awar(AW_STRING, var_name, default_value, 0, default_file, this);
+        GBS_write_hash(hash_table_for_variables, var_name, (long)vs);
+    }
+    return vs;
 }
 
 AW_awar *AW_root::awar_int(const char *var_name, long default_value /*= 0*/, AW_default default_file /*= AW_ROOT_DEFAULT*/) {
@@ -259,10 +333,10 @@ AW_awar *AW_root::awar_int(const char *var_name, long default_value /*= 0*/, AW_
     return 0;
 }
 
-AW_awar *AW_root::awar_no_error(const char *awar) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+AW_awar *AW_root::awar_no_error(const char *var_name) {
+    return (AW_awar *)GBS_read_hash(hash_table_for_variables, var_name);
 }
+
 
 AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value/* = NULL*/,     AW_default default_file/* = AW_ROOT_DEFAULT*/) {
     GTK_NOT_IMPLEMENTED;
@@ -314,6 +388,5 @@ AW_root::~AW_root() {
 }
 
 AW_default AW_root::check_properties(AW_default aw_props) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+    return aw_props ? aw_props : application_database;
 }

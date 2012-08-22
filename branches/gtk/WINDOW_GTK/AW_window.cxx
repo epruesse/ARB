@@ -419,7 +419,7 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
 
     if (resize) {
         recalc_size_atShow(AW_RESIZE_ANY);
-        set_window_size(_at->max_x_size+1000, _at->max_y_size+1000);
+        set_window_size(_at->max_x_size, _at->max_y_size);
     }
 
     //print the whole xfig to the area once.

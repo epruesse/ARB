@@ -67,8 +67,6 @@ AW_device_gtk::AW_device_gtk(AW_common *commoni, GtkWidget *drawingArea) :
 
 bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri) {
 
-    printf("line: %f %f %f %f\n", Line.xpos(), Line.ypos(), Line.line_vector().x(), Line.line_vector().y());
-
     bool drawflag = false;
 
     arb_assert(get_common()->get_GC(gc) != NULL);

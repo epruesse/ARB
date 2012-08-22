@@ -9,10 +9,11 @@
 //                                                               //
 // ============================================================= //
 
-#ifndef AW_ROOT_GTK_HXX_
-#define AW_ROOT_GTK_HXX_
+#pragma once
 
+#include <gdk/gdk.h>
 class AW_root;
+
 
 /**
  * This class contains all gtk dependent attributes of aw_root.
@@ -21,7 +22,7 @@ class AW_root_gtk {
 private:
     friend class AW_root;
 
+    GdkColormap* colormap; /**< Contains a color for each value in AW_base::AW_color_idx */
 
 };
 
-#endif /* AW_ROOT_GTK_HXX_ */

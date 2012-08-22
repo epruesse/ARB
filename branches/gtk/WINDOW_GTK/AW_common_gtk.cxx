@@ -36,7 +36,12 @@ AW_GC_gtk::AW_GC_gtk(AW_common *common) : AW_GC(common) {
 AW_GC_gtk::~AW_GC_gtk(){};
 
 void AW_GC_gtk::wm_set_foreground_color(AW_rgb col){
-    //GdkColor gdkcol;
+    GdkColor gdkcol;
+    // black? 14C9660
+
+
+    //gdk_gc_set_foreground(gc, &gdkcol);
+
     //FIXME determine how the color is encoded.
     //Right now just assume every color is black :D
     GTK_NOT_IMPLEMENTED;

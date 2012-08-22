@@ -52,7 +52,7 @@ int aw_string_selection_button();   // returns index of last selected button (de
 
 char *aw_file_selection(const char *title, const char *dir, const char *def_name, const char *suffix);
 
-class  AW_root_Motif;
+
 class  AW_awar;
 struct AW_buttons_struct;
 class  AW_root_cblist;
@@ -82,6 +82,11 @@ class AW_root : virtual Noncopyable {
      * FIXME
      */
     void init_root(const char *programname, bool no_exit);
+
+    /**
+     * Initializes prvt.colormap
+     */
+    void create_colormap();
 
     /**
      * Initializes the database and loads some default awars.
