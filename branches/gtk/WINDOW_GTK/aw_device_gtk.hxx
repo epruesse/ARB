@@ -13,7 +13,6 @@
 
 #include "aw_common_gtk.hxx"
 
-
 /**
  * A device to draw/print on a GtkWidget.
  */

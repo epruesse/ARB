@@ -1,5 +1,5 @@
-#ifndef AW_AT_HXX
-#define AW_AT_HXX
+
+#pragma once
 
 #ifndef AW_BASE_HXX
 #include "aw_base.hxx"
@@ -54,7 +54,3 @@ public:
     AW_at();
 };
 
-
-#else
-#error aw_at.hxx included twice
-#endif

@@ -27,9 +27,6 @@
 
 using namespace AW;
 
-// ---------------------
-//      AW_device_Xm
-
 AW_DEVICE_TYPE AW_device_gtk::type() { return AW_DEVICE_SCREEN; }
 
 #define XDRAW_PARAM2(common)    (common)->get_display(), (common)->get_window_id()
@@ -52,7 +49,7 @@ AW_device_gtk::AW_device_gtk(AW_common *commoni, GtkWidget *drawingArea) :
 
 bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri) {
 
-    printf("line: %f %f %f %f", Line.xpos(), Line.ypos(), Line.line_vector().x(), Line.line_vector().y());
+    printf("line: %f %f %f %f\n", Line.xpos(), Line.ypos(), Line.line_vector().x(), Line.line_vector().y());
 
     bool drawflag = false;
 
@@ -61,17 +58,24 @@ bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri)
     if (filteri & filter) {
         LineVector transLine = transform(Line);
         LineVector clippedLine;
-        drawflag = clip(transLine, clippedLine);
+        drawflag = true; //clip(transLine, clippedLine); //FIXME I think the whole clipping stuff can be removed. gtk should take care of that.
         if (drawflag) {
 
+              //this is the version that should beu sed if clipping is active
+//            gdk_draw_line(GDK_DRAWABLE(pixmap),
+//                         //get_common()->get_GC(gc), // FIXME get real gc instead
+//                         drawingArea->style->white_gc,
+//                         int(clippedLine.start().xpos()),
+//                         int(clippedLine.start().ypos()),
+//                         int(clippedLine.head().xpos()),
+//                         int(clippedLine.head().ypos()));
             gdk_draw_line(GDK_DRAWABLE(pixmap),
                          //get_common()->get_GC(gc), // FIXME get real gc instead
                          drawingArea->style->white_gc,
-                         int(clippedLine.start().xpos()),
-                         int(clippedLine.start().ypos()),
-                         int(clippedLine.head().xpos()),
-                         int(clippedLine.head().ypos()));
-
+                         int(transLine.start().xpos()),
+                         int(transLine.start().ypos()),
+                         int(transLine.head().xpos()),
+                         int(transLine.head().ypos()));
 
             //AUTO_FLUSH(this);
         }

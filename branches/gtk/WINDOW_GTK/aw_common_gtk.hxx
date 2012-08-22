@@ -11,8 +11,10 @@
 
 #pragma once
 #include <gdk/gdk.h>
-#include <gtk/gtkwidget.h>
 #include "aw_common.hxx"
+
+
+class GTKWidget;
 
 class AW_common_gtk;
 /**

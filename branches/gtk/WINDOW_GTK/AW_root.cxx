@@ -148,6 +148,9 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     gtk_init(&argc, NULL);
 
 
+    color_mode = AW_RGB_COLOR; //mono color mode is not supported
+
+
     //FIXME font stuff
 //    int i;
 //    for (i=0; i<1000 && aw_fb[i].fb; i++) {
@@ -155,8 +158,15 @@ void AW_root::init_root(const char *programname, bool no_exit) {
 //        fallback_resources[i] = GBS_global_string_copy("*%s: %s", aw_fb[i].fb, GB_read_char_pntr(gb_awar));
 //    }
 //    fallback_resources[i] = 0;
+//
+//    ARB_install_handlers(aw_handlers);
 
-   // ARB_install_handlers(aw_handlers);
+
+    //FIXME font stuff (load real font_width and height)
+    //These numbers are used inside the xfig parser.
+    //If they are uninitialized the xfig parser breaks
+    font_width = 8; // XFIG_DEFAULT_FONT_WIDTH
+    font_height = 13; //XFIG_DEFAULT_FONT_HEIGHT
 
 
     //FIXME font stuff
@@ -170,8 +180,8 @@ void AW_root::init_root(const char *programname, bool no_exit) {
 //            }
 //        }
 //    }
-
-
+//
+//
 //    if (fontstruct->max_bounds.width == fontstruct->min_bounds.width) {
 //        font_width = fontstruct->max_bounds.width;
 //    }
@@ -185,22 +195,22 @@ void AW_root::init_root(const char *programname, bool no_exit) {
 //    font_ascent = fontstruct->max_bounds.ascent;
 //
 //    p_r->fontlist = XmFontListCreate(fontstruct, XmSTRING_DEFAULT_CHARSET);
-
-    //button_sens_list = 0;
-
+//
+//    button_sens_list = 0;
+//
 //    p_r->last_option_menu = p_r->current_option_menu = p_r->option_menu_list = NULL;
 //    p_r->last_toggle_field = p_r->toggle_field_list = NULL;
 //    p_r->last_selection_list = p_r->selection_list = NULL;
-
+//
 //    value_changed = false;
 //    y_correction_for_input_labels = 5;
 //    global_mask = AWM_ALL;
-
-
+//
+//
 //    p_r->colormap = DefaultColormapOfScreen(XtScreen(p_r->toplevel_widget));
 //    p_r->clock_cursor = XCreateFontCursor(XtDisplay(p_r->toplevel_widget), XC_watch);
 //    p_r->question_cursor = XCreateFontCursor(XtDisplay(p_r->toplevel_widget), XC_question_arrow);
-
+//
 //    aw_root_create_color_map(this);
 //    aw_root_init_font(XtDisplay(p_r->toplevel_widget));
 //    aw_install_xkeys(XtDisplay(p_r->toplevel_widget));

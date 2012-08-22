@@ -564,10 +564,17 @@ void AW_window::d_callback(void (*/*f*/)(AW_window*)) {
 AW_window::AW_window() {
 
 
+    _at = new AW_at;
+
+    GTK_PARTLY_IMPLEMENTED;
+
 }
 
 AW_window::~AW_window() {
-
+    if (NULL != _at) {
+        delete _at;
+        _at = NULL;
+    }
 }
 
 

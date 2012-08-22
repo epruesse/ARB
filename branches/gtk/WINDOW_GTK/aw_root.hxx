@@ -142,7 +142,9 @@ public:
 #endif
     ~AW_root();
 
-    enum { AW_MONO_COLOR, AW_RGB_COLOR }    color_mode;
+    enum { AW_MONO_COLOR, //DO NOT USE!!!
+           AW_RGB_COLOR
+    } color_mode;
 
     void main_loop();
     

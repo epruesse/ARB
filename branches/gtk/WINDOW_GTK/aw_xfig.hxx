@@ -81,7 +81,10 @@ public:
 
     ~AW_xfig();
     void print(AW_device *device); // you can scale it
-    void create_gcs(AW_device *device, int screen_depth); // create the gcs
+    /**
+     * initializes the graphics contexts
+     */
+    void create_gcs(AW_device *device, int screen_depth);
 
     void add_line(int x1, int y1, int x2, int y2, int width); // add a line to xfig
 };
