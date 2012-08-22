@@ -44,6 +44,7 @@ AW_device_gtk::AW_device_gtk(AW_common *commoni, GtkWidget *drawingArea) :
     GtkStyle* style = gtk_style_new();
     style->bg_pixmap[0] = pixmap;
     gtk_widget_set_style(drawingArea, style);
+    //FIXME the pixmap should be transparent in the beginning.
 
 }
 
@@ -99,10 +100,21 @@ static bool AW_draw_string_on_screen(AW_device *device, int gc, const  char *str
 
 
 bool AW_device_gtk::text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
-    GTK_NOT_IMPLEMENTED;
+
+
+    //FIXME do not ignore the alignment.
+    //FIXME use real gc once the color problem is solved
+    gdk_draw_string(GDK_DRAWABLE(pixmap),
+                    gdk_font_load("-bitstream-courier 10 pitch-bold-i-normal--0-0-0-0-m-0-ascii-0"),
+                    drawingArea->style->white_gc, //FIXME use real gc
+                    pos.xpos(),
+                    pos.ypos(),
+                    str);
     return true;
 
-    return text_overlay(gc, str, opt_strlen, pos, alignment, filteri, (AW_CL)this, 0.0, 0.0, AW_draw_string_on_screen);
+
+    //This is the old way with clipping and everything. I am not sure I want that :)
+    //return text_overlay(gc, str, opt_strlen, pos, alignment, filteri, (AW_CL)this, 0.0, 0.0, AW_draw_string_on_screen);
 }
 
 bool AW_device_gtk::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitset filteri) {
