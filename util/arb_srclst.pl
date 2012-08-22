@@ -78,10 +78,12 @@ my %used_extensions = map { $_ => 1; } (
                                         'f',
                                         'footer',
                                         'head', 'header',
+                                        'i',  # swig input
                                         'inc',
                                         'java', 'manifest',
                                         'makefile',
                                         'pl', 'pm', 'PL', 'cgi',
+                                        'py',
                                         'script',
                                         'sh',
                                         'source', 'menu',
