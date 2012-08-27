@@ -61,6 +61,9 @@ AW_device_gtk::AW_device_gtk(AW_common *commoni, GtkWidget *drawingArea) :
     gdk_gc_set_foreground(tempGc, &style->bg[GTK_STATE_NORMAL]);
     gdk_draw_rectangle(GDK_DRAWABLE(pixmap),tempGc, true, 0, 0, 3000, 3000);//fixme use real width and height
 
+    printf("depth: %i\n", gdk_drawable_get_depth(GDK_DRAWABLE(pixmap)));
+
+
     //FIXME the pixmap should be transparent in the beginning.
 
 }
@@ -74,8 +77,10 @@ bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri)
     if (filteri & filter) {
         LineVector transLine = transform(Line);
         LineVector clippedLine;
-        drawflag = true; //clip(transLine, clippedLine); //FIXME I think the whole clipping stuff can be removed. gtk should take care of that.
+        drawflag = true;
+        //clip(transLine, clippedLine); //FIXME clipping
         if (drawflag) {
+
 
               //this is the version that should beu sed if clipping is active
 //            gdk_draw_line(GDK_DRAWABLE(pixmap),
@@ -85,9 +90,13 @@ bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri)
 //                         int(clippedLine.start().ypos()),
 //                         int(clippedLine.head().xpos()),
 //                         int(clippedLine.head().ypos()));
+
+            GdkGC* pGc = gdk_gc_new(GDK_DRAWABLE(pixmap));
+
             gdk_draw_line(GDK_DRAWABLE(pixmap),
-                         //get_common()->get_GC(gc), // FIXME get real gc instead
-                         drawingArea->style->white_gc,
+                         get_common()->get_GC(gc),
+                    //drawingArea->style->white_gc,
+                   // pGc,
                          int(transLine.start().xpos()),
                          int(transLine.start().ypos()),
                          int(transLine.head().xpos()),
@@ -120,15 +129,15 @@ bool AW_device_gtk::text_impl(int gc, const char *str, const AW::Position& pos, 
     //FIXME do not ignore the alignment.
     //FIXME use real gc once the color problem is solved
     gdk_draw_string(GDK_DRAWABLE(pixmap),
-                    gdk_font_load("-bitstream-courier 10 pitch-bold-i-normal--0-0-0-0-m-0-ascii-0"),
-                    drawingArea->style->white_gc, //FIXME use real gc
+                    gdk_font_load("-bitstream-courier 10 pitch-bold-i-normal--0-0-0-0-m-0-ascii-0"), //FIXME use real font
+                    get_common()->get_GC(gc),
                     pos.xpos(),
                     pos.ypos(),
                     str);
     return true;
 
 
-    //This is the old way with clipping and everything. I am not sure I want that :)
+    //This is the old way with clipping
     //return text_overlay(gc, str, opt_strlen, pos, alignment, filteri, (AW_CL)this, 0.0, 0.0, AW_draw_string_on_screen);
 }
 

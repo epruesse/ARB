@@ -16,6 +16,7 @@
 #include "gtk/gtkwidget.h"
 #include "aw_common_gtk.hxx"
 #include "aw_device_gtk.hxx"
+#include "aw_root.hxx"
 
 GtkWidget *AW_area_management::get_form() const {
     return GTK_WIDGET(form);
@@ -52,7 +53,7 @@ void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
     GdkDisplay* pDisplay = gdk_screen_get_display(screen);
     //FIXME font stuff
     //FIXME parameter global colortable is wrong.
-    common = new AW_common_gtk(pDisplay, area, aww->color_table, aww->color_table, aww->color_table_size, aww, ar);
+    common = new AW_common_gtk(pDisplay, area, root->getColorTable(), aww->color_table, aww->color_table_size, aww, ar);
     screen_device = new AW_device_gtk(common, area);
 
 }

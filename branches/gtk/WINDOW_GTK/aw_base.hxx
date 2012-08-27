@@ -11,6 +11,7 @@
 
 #ifndef AW_BASE_HXX
 #define AW_BASE_HXX
+#include <gdk/gdktypes.h>
 
 class AW_root;
 class AW_window;
@@ -52,7 +53,7 @@ typedef struct _WidgetRec *Widget;
 typedef const char *AWAR;
 
 #define AW_NO_COLOR (-1UL)
-typedef unsigned long AW_rgb;
+typedef guint32 AW_rgb;
 
 enum AW_VARIABLE_TYPE {
     AW_NONE    = 0,

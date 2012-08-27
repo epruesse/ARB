@@ -29,23 +29,17 @@ AW_GC_gtk::AW_GC_gtk(AW_common *common) : AW_GC(common) {
     //FIXME hack
     //It is not possible to create a gc without a drawable.
     //The gc can only be used to draw on drawables which use the same colormap and depth
-    GdkPixmap *temp = gdk_pixmap_new(0,3000,3000,8); //FIXME memory leak
+    GdkPixmap *temp = gdk_pixmap_new(0, 3000, 3000, 24); //FIXME memory leak
     gc = gdk_gc_new(temp);
 
 }
 AW_GC_gtk::~AW_GC_gtk(){};
 
 void AW_GC_gtk::wm_set_foreground_color(AW_rgb col){
-    GdkColor gdkcol;
-    // black? 14C9660
 
-
-    //gdk_gc_set_foreground(gc, &gdkcol);
-
-    //FIXME determine how the color is encoded.
-    //Right now just assume every color is black :D
-    GTK_NOT_IMPLEMENTED;
-
+    GdkColor color;
+    color.pixel = col;
+    gdk_gc_set_foreground(gc, &color);
 }
 void AW_GC_gtk::wm_set_function(AW_function mode){
     GTK_NOT_IMPLEMENTED;

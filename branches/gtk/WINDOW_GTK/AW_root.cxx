@@ -254,15 +254,11 @@ static const char *aw_awar_2_color[] = {
 
 void AW_root::create_colormap() {
 
-
-    //prvt.colormap = gdk_colormap_new(gdk_colormap_get_visual(gdk_colormap_get_system()), false);
-
-
-
+    prvt.color_table = (AW_rgb*)GB_calloc(sizeof(AW_rgb), AW_STD_COLOR_IDX_MAX);
     GBDATA *gbd = check_properties(NULL);
     prvt.colormap = gdk_colormap_get_system();
 
- // Color monitor
+ // Color monitor, B&W monitor is no longer supported
     const char **awar_2_color;
     int color;
     for (color = 0, awar_2_color = aw_awar_2_color;
@@ -270,21 +266,25 @@ void AW_root::create_colormap() {
          awar_2_color++, color++)
     {
         const char *name_of_color = GB_read_char_pntr(GB_search(gbd, *awar_2_color, GB_FIND));
-        printf("colorname: %s\n", name_of_color);
+        GdkColor gdkColor;
 
+        if(!gdk_color_parse (name_of_color, &gdkColor)) {
+            fprintf(stderr, "gdk_color_parse(%s) failed\n", name_of_color);
+        }
+        else {
+            gdk_colormap_alloc_color(prvt.colormap, &gdkColor, false, true);
+            prvt.color_table[color] = gdkColor.pixel;
 
-//        if (XAllocNamedColor(p_global->display, p_global->colormap, name_of_color, &xcolor_returned, &xcolor_exakt) == 0) {
-//            fprintf(stderr, "XAllocColor failed: %s\n", name_of_color);
-//        }
-//        else {
-//            p_global->color_table[color] = xcolor_returned.pixel;
-//        }
+        }
     }
-//    p_global->foreground = BlackPixelOfScreen(XtScreen(p_global->toplevel_widget));
-//    XtVaGetValues(p_global->toplevel_widget, XmNbackground,
-//    &p_global->background, NULL);
 
-    // AW_WINDOW_DRAG see init_devices
+    GdkColor black;
+    if(gdk_color_black(prvt.colormap, &black)) {
+        prvt.foreground = black.pixel;
+    }
+    else {
+        fprintf(stderr, "gdk_color_black() failed\n");
+    }
 }
 
 

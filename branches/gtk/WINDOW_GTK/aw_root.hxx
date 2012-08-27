@@ -138,6 +138,10 @@ public:
     // the real public section:
 
 
+    AW_rgb*& getColorTable() {
+        return prvt.color_table;
+    }
+
     /**
      * FIXME
      */
