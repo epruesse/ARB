@@ -53,6 +53,11 @@ AW_device_gtk::AW_device_gtk(AW_common *commoni, GtkWidget *drawingArea) :
     //this way we can get around implementing our own expose handler :)
     GtkStyle* style = gtk_widget_get_style (drawingArea); //this call fails if the widget has not been realized
     style->bg_pixmap[0] = pixmap;
+    style->bg_pixmap[1] = pixmap;
+    style->bg_pixmap[2] = pixmap;
+    style->bg_pixmap[3] = pixmap;
+    style->bg_pixmap[4] = pixmap;
+
     gtk_widget_set_style(drawingArea, style);
 
     //initialy the pixmap is black.
@@ -60,9 +65,6 @@ AW_device_gtk::AW_device_gtk(AW_common *commoni, GtkWidget *drawingArea) :
     GdkGC* tempGc = gdk_gc_new(pixmap);
     gdk_gc_set_foreground(tempGc, &style->bg[GTK_STATE_NORMAL]);
     gdk_draw_rectangle(GDK_DRAWABLE(pixmap),tempGc, true, 0, 0, 3000, 3000);//fixme use real width and height
-
-    printf("depth: %i\n", gdk_drawable_get_depth(GDK_DRAWABLE(pixmap)));
-
 
     //FIXME the pixmap should be transparent in the beginning.
 

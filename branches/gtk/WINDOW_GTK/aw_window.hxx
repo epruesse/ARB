@@ -18,6 +18,7 @@
 #endif
 
 #include "aw_window_gtk.hxx"
+#include "aw_at.hxx"
 
 class AW_window;
 class AW_xfig;
@@ -264,6 +265,7 @@ protected:
     AW_window_gtk prvt; /*< Contains all gtk dependent attributes */
 
 
+
     void create_devices();
     void set_background(const char *colorname, Widget w);
 
@@ -272,9 +274,10 @@ protected:
 public:
 
     // ************ This is not the public section *************
-
-    AW_at           *_at;
-    AW_cb_struct    *_callback;
+    //FIXME move aw_at into pimpl
+    //FIXME make _at private. Right now some global functions want to access it. Remove those global functions.
+    AW_at _at; /*< Some kind of cursor? FIXME */
+    AW_cb_struct    *_callback; /**< Contains the last callback struct created by AW_window::callback().  */
     AW_cb_struct    *_d_callback;
 
     AW_window();

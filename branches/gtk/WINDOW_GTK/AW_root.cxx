@@ -120,6 +120,21 @@ AW_root::AW_root(const char *properties, const char *program, bool no_exit) {
     atexit(destroy_AW_root); // do not call this before opening properties DB!
 }
 
+AW_awar *AW_root::label_is_awar(const char *label) {
+    AW_awar *awar_exists = NULL;
+    size_t   off         = strcspn(label, "/ ");
+
+    if (label[off] == '/') {                        // contains '/' and no space before first '/'
+        awar_exists = awar_no_error(label);
+    }
+    return awar_exists;
+}
+
+
+void AW_root::define_remote_command(AW_cb_struct *cbs) {
+    GTK_NOT_IMPLEMENTED;
+}
+
 
 struct fallbacks {
     const char *fb;

@@ -22,6 +22,9 @@ AW_GC *AW_common_gtk::create_gc() {
     return new AW_GC_gtk(this);
 }
 
+void AW_GC::set_font(const AW_font font_nr, const int size, int *found_size) {
+    GTK_NOT_IMPLEMENTED;
+}
 
 //FIXME initialize gc
 AW_GC_gtk::AW_GC_gtk(AW_common *common) : AW_GC(common) {

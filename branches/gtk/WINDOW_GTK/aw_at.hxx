@@ -16,7 +16,7 @@ public:
     char      *helptext_for_next_button;
     AW_active  widget_mask; // sensitivity (expert/novice mode)
 
-    unsigned long int background_color; // X11 Pixel
+    unsigned long int background_color; // gdk Pixel
 
     char *label_for_inputfield;
 

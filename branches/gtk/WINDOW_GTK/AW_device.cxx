@@ -192,8 +192,8 @@ void AW_stylable::reset_style() {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_stylable::set_font(int /*gc*/, AW_font /*fontnr*/, int /*size*/, int */*found_size*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_stylable::set_font(int gc, AW_font font_nr, int size, int *found_size) {
+    get_common()->map_mod_gc(gc)->set_font(font_nr, size, found_size);
 }
 
 void AW_stylable::set_foreground_color(int gc, AW_color_idx color) {

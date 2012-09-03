@@ -14,6 +14,7 @@
 
 #include <gtk/gtkwidget.h>
 #include <gtk/gtkwindow.h>
+#include <gtk/gtkfixed.h>
 #include "aw_base.hxx"
 #include "aw_common_gtk.hxx"
 #include <vector>
@@ -31,7 +32,8 @@ class AW_window_gtk : public virtual Noncopyable {
 
 
 
-    GtkWindow *window; /*< The gtk window instance managed by this aw_window */
+    GtkWindow *window; /**< The gtk window instance managed by this aw_window */
+    GtkFixed *fixed_size_area; /**< A fixed size widget spanning the whole window. Everything is positioned on this widget.*/
     std::vector<AW_area_management *> areas;
 
     AW_window_gtk() :
