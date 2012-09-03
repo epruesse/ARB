@@ -418,8 +418,45 @@ __ATTR__USERESULT static GB_ERROR detect_bitmap_size(const char *pixmapname, int
 
 //FIXME I think this should be a private member
 const char *aw_str_2_label(const char *str, AW_window *aww) {
-    GTK_NOT_IMPLEMENTED;
-    return "not impl";
+    aw_assert(str);
+
+    static const char *last_label = 0;
+    static const char *last_str   = 0;
+    static AW_window  *last_aww   = 0;
+
+    const char *label;
+    if (str == last_str && aww == last_aww) { // reuse result ?
+        label = last_label;
+    }
+    else {
+        if (str[0] == '#') {
+            label = GB_path_in_ARBLIB("pixmaps", str+1);
+        }
+        else {
+            AW_awar *is_awar = aww->get_root()->label_is_awar(str);
+
+            if (is_awar) { // for labels displaying awar values, insert dummy text here
+                int wanted_len = aww->_at.length_of_buttons - 2;
+                if (wanted_len < 1) wanted_len = 1;
+
+                char *labelbuf       = GB_give_buffer(wanted_len+1);
+                memset(labelbuf, 'y', wanted_len);
+                labelbuf[wanted_len] = 0;
+
+                label = labelbuf;
+            }
+            else {
+                label = str;
+            }
+        }
+
+        // store results locally, cause aw_str_2_label is nearly always called twice with same arguments
+        // (see RES_LABEL_CONVERT)
+        last_label = label;
+        last_str   = str;
+        last_aww   = aww;
+    }
+    return label;
 }
 
 static void aw_attach_widget(GtkWidget* w, AW_at& _at, int default_width = -1) {
@@ -718,24 +755,21 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
         }
     }
 
-    GtkWidget* button  = 0;
+    GtkWidget* buttonOrLabel  = 0;
 
     {
+        if (_callback) {//button
 
-        button = gtk_button_new();
-        gtk_fixed_put(GTK_FIXED(fatherwidget), button, x_button, y_button);
-
-
-        if (_callback) {
+            buttonOrLabel = gtk_button_new();
 
             if(buttonlabel[0]=='#') {
                 //pixmap button
                 //FIXME pixmap button not implemented
-                gtk_button_set_label(GTK_BUTTON(button), "pixmap button not impl");
+                gtk_button_set_label(GTK_BUTTON(buttonOrLabel), "pixmap button not impl");
             }
             else {
                 //label button
-                gtk_button_set_label(GTK_BUTTON(button), aw_str_2_label(buttonlabel, this));
+                gtk_button_set_label(GTK_BUTTON(buttonOrLabel), aw_str_2_label(buttonlabel, this));
             }
 
 
@@ -745,9 +779,21 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
             //args.add(XmNalignment,       XmALIGNMENT_CENTER);
 
         }
-        else { // button w/o callback (flat, not clickable)
-            //FIXME flat button not implemented
-            gtk_button_set_label(GTK_BUTTON(button), "flat button not impl.");
+        else { // button w/o callback (a label)
+
+
+
+            if(buttonlabel[0]=='#') {
+                //in motif this was a label with pixmap (XmNlabelPixmap)
+                //In gtk it is replaced by a pixmap.
+                buttonOrLabel = gtk_image_new_from_file(aw_str_2_label(buttonlabel, this));//note: aw_str_2_label only returns a path if buttonlabel[0]=='#'
+            }
+            else {
+                //just a lable
+                buttonOrLabel = gtk_label_new(NULL);
+                gtk_button_set_label(GTK_BUTTON(buttonOrLabel), aw_str_2_label(buttonlabel, this));
+            }
+
 //            button = XtVaCreateManagedWidget("label", xmLabelWidgetClass, parent_widget, RES_LABEL_CONVERT(buttonlabel), NULL);
 //            args.add(XmNalignment, (org_correct_for_at_center == 1) ? XmALIGNMENT_CENTER : XmALIGNMENT_BEGINNING);
         }
@@ -764,13 +810,14 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
 //            args.add(XmNheight, height_of_button);
 //        }
 
-        gtk_widget_show(button);
+        gtk_fixed_put(GTK_FIXED(fatherwidget), buttonOrLabel, x_button, y_button);
+        gtk_widget_show(buttonOrLabel);
 
 
         //if (!_at.attach_any || !_callback) args.add(XmNrecomputeSize, false);
 
 
-        if (_at.attach_any) aw_attach_widget(button, _at);
+        if (_at.attach_any) aw_attach_widget(buttonOrLabel, _at);
 
         if (_callback) {
             //FIXME sensitive button not implemented
@@ -782,7 +829,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
            // AW_JUSTIFY_LABEL(button, _at.correct_for_at_center); // @@@ strange, again sets XmNalignment (already done above). maybe some relict. does nothing if (_at.correct_for_at_center == 0)
         }
 
-        AW_label_in_awar_list(this, button, buttonlabel);
+        AW_label_in_awar_list(this, buttonOrLabel, buttonlabel);
     }
 
     short height = 0;
@@ -829,7 +876,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     _at.y_for_next_button     = org_y_for_next_button;
     //FIXME prvt.toggle_field not set to button. What is its purpose anyway?
    // p_w->toggle_field = button;
-    this->_set_activate_callback((void *)button);
+    this->_set_activate_callback((void *)buttonOrLabel);
     this->unset_at_commands();
     this->increment_at_commands(width+SPACE_BEHIND_BUTTON, height);
 }
