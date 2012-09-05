@@ -23,7 +23,12 @@ DESCRIPTION     Branch analysis functions
 
 SECTION         Analyse distances in tree
 
-                @@@ not implemented yet
+                For all leafs in the tree the following values are calculated:
+                - mean distance to all other leafs
+                - minimum distance to any other leaf
+                - maximum distance to any other leaf
+                
+                It reports the mean and the range of each of these 3 values.
 
 SECTION         Mark long branches
 

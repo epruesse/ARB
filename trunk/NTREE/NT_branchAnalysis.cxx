@@ -109,12 +109,17 @@ public:
     }
     void markLongBranches() {
         GB_transaction ta(get_gbmain());
-        float          min_rel_diff = awar(AWAR_BA_MIN_REL_DIFF)->read_float()/100.0;
-        float          min_abs_diff = awar(AWAR_BA_MIN_ABS_DIFF)->read_float();
+
+        float min_rel_diff = awar(AWAR_BA_MIN_REL_DIFF)->read_float()/100.0;
+        float min_abs_diff = awar(AWAR_BA_MIN_ABS_DIFF)->read_float();
 
         unmark_all();
         set_info(get_tree()->mark_long_branches(min_rel_diff, min_abs_diff));
         postmark_action();
+    }
+
+    void analyseDistances() {
+        set_info(get_tree()->analyse_distances());
     }
 };
 
@@ -126,11 +131,8 @@ static void mark_long_branches_cb       (AW_window *, AW_CL cl_bw) {((BranchWind
 static void mark_deep_leafs_cb          (AW_window *, AW_CL cl_bw) {((BranchWindow*)cl_bw)->markDeepLeafs(); }
 static void mark_degenerated_branches_cb(AW_window *, AW_CL cl_bw) {((BranchWindow*)cl_bw)->markDegeneratedBranches(); }
 static void unmark_branches_cb          (AW_window *, AW_CL cl_bw) {((BranchWindow*)cl_bw)->unmark_all(); }
+static void distance_analysis_cb        (AW_window *, AW_CL cl_bw) {((BranchWindow*)cl_bw)->analyseDistances(); }
 
-static void distance_analysis_cb(AW_window *, AW_CL cl_bw) {
-    BranchWindow *bw = (BranchWindow*)cl_bw;
-    // @@@ impl missing
-}
 static void tree_changed_cb(AW_root*, AW_CL cl_bw) {
     BranchWindow *bw = (BranchWindow*)cl_bw;
     bw->set_info("<tree has changed>");
@@ -173,11 +175,9 @@ void BranchWindow::create_window(AW_root *aw_root) {
 
     aws->button_length(28);
     
-    aws->sens_mask(AWM_DISABLED);
     aws->at("dist_analyse");
     aws->callback(distance_analysis_cb, (AW_CL)this);
     aws->create_button("ANALYSE", "Analyse distances in tree");
-    aws->sens_mask(AWM_ALL);
 
     aws->at("unmark");
     aws->callback(unmark_branches_cb, (AW_CL)this);
