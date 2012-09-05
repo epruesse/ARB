@@ -300,10 +300,10 @@ public:
 
     GB_ERROR move_group_info(AP_tree *new_group) __ATTR__USERESULT;
 
-    void mark_duplicates(GBDATA *gb_main);
-    void mark_long_branches(GBDATA *gb_main, double min_rel_diff, double min_abs_diff);
-    void mark_deep_branches(GBDATA *gb_main, int rel_depth);
-    void mark_degenerated_branches(GBDATA *gb_main, double degeneration_factor);
+    void mark_duplicates();
+    const char *mark_long_branches(double min_rel_diff, double min_abs_diff);
+    const char *mark_deep_leafs(int min_depth, double min_rootdist);
+    const char *mark_degenerated_branches(double degeneration_factor);
 
     void justify_branch_lenghs(GBDATA *gb_main);
     void relink_tree(GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node, char *&ref_name, GB_HASH *organism_hash), GB_HASH *organism_hash);

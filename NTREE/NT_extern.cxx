@@ -799,67 +799,12 @@ static void NT_primer_cb() {
     if (error) aw_message(error);
 }
 
-static void NT_mark_degenerated_branches(AW_window *aww, AW_CL ntwcl) {
-    char *val = aw_input("Enter degeneration factor [ 1 .. ]");
-    if (val) {
-        AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
-        GB_transaction  dummy(ntw->gb_main);
-
-        NT_mark_all_cb(aww, (AW_CL)ntw, (AW_CL)0);
-        AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
-        tree_root->mark_degenerated_branches(ntw->gb_main, atof(val));
-        tree_root->compute_tree(ntw->gb_main);
-        free(val);
-        ntw->refresh();
-    }
-}
-
-static void NT_mark_deep_branches(AW_window *aww, AW_CL ntwcl) {
-    char *val = aw_input("Enter depth [ 1 .. ]");
-    if (val) {
-        AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
-        GB_transaction  dummy(ntw->gb_main);
-
-        NT_mark_all_cb(aww, (AW_CL)ntw, (AW_CL)0);
-        AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
-        tree_root->mark_deep_branches(ntw->gb_main, atoi(val));
-        tree_root->compute_tree(ntw->gb_main);
-        free(val);
-        ntw->refresh();
-    }
-}
-
-static void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl) {
-    char *val = aw_input("Enter min.rel.diff.(%),min.abs.diff");
-    if (val) {
-        GB_ERROR  error = 0;
-        char     *comma = strchr(val, ',');
-
-        if (!comma) error = "Expected ','";
-        else {
-            float min_rel_diff = atof(val)/100.0;
-            float min_abs_diff = atof(comma+1);
-
-            AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
-            GB_transaction  dummy(ntw->gb_main);
-
-            NT_mark_all_cb(aww, (AW_CL)ntw, (AW_CL)0);
-            AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
-            tree_root->mark_long_branches(ntw->gb_main, min_rel_diff, min_abs_diff);
-            tree_root->compute_tree(ntw->gb_main);
-            ntw->refresh();
-        }
-        if (error) aw_message(error);
-        free(val);
-    }
-}
-
 static void NT_mark_duplicates(AW_window *aww, AW_CL ntwcl) {
     AWT_canvas *ntw = (AWT_canvas *)ntwcl;
     GB_transaction dummy(ntw->gb_main);
     NT_mark_all_cb(aww, (AW_CL)ntw, (AW_CL)0);
     AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
-    tree_root->mark_duplicates(ntw->gb_main);
+    tree_root->mark_duplicates();
     tree_root->compute_tree(ntw->gb_main);
     ntw->refresh();
 }
@@ -1486,10 +1431,9 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
         }
         awm->close_sub_menu();
-        awm->insert_menu_topic(awm->local_id("mark_long_branches"),  "Mark long branches",        "k", "mark_long_branches.hlp",  AWM_ALL, (AW_CB)NT_mark_long_branches,        (AW_CL)ntw, 0);
-        awm->insert_menu_topic(awm->local_id("mark_deep_branches"),  "Mark deep branches",        "d", "mark_deep_branches.hlp",  AWM_EXP, (AW_CB)NT_mark_deep_branches,        (AW_CL)ntw, 0);
-        awm->insert_menu_topic(awm->local_id("mark_degen_branches"), "Mark degenerated branches", "g", "mark_degen_branches.hlp", AWM_EXP, (AW_CB)NT_mark_degenerated_branches, (AW_CL)ntw, 0);
-        awm->insert_menu_topic(awm->local_id("mark_duplicates"),     "Mark duplicates",           "u", "mark_duplicates.hlp",     AWM_ALL, (AW_CB)NT_mark_duplicates,           (AW_CL)ntw, 0);
+
+        awm->insert_menu_topic(awm->local_id("branch_analysis"), "Branch analysis", "B", "branch_analysis.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_open_branch_analysis_window, (AW_CL)ntw);
+        awm->insert_menu_topic(awm->local_id("mark_duplicates"), "Mark duplicates", "u", "mark_duplicates.hlp", AWM_ALL, (AW_CB)NT_mark_duplicates, (AW_CL)ntw, 0);
 
         awm->sep______________();
 

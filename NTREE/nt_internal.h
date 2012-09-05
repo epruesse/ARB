@@ -30,6 +30,9 @@ AW_window *AP_open_pos_var_pars_window(AW_root *root);
 /* ColumnStat_2_gnuplot.cxx */
 AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root);
 
+/* NT_branchAnalysis.cxx */
+AW_window *NT_open_branch_analysis_window(AW_root *aw_root, AW_CL cl_ntw);
+
 /* NT_cb.cxx */
 
 #ifndef ARBDB_BASE_H

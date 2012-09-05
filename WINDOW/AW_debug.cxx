@@ -104,7 +104,6 @@ static void build_dontCallHash() {
 #if defined(WARN_TODO)
 #warning crashing - fix later
 #endif
-    GBS_write_hash(dontCallHash, "ARB_NT/mark_duplicates",         4);
     GBS_write_hash(dontCallHash, "ARB_NT/view_probe_group_result", 4);
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/CHECK_SERVER",   4);
     GBS_write_hash(dontCallHash, "ARB_EDIT4/SECEDIT",              4);
@@ -119,9 +118,6 @@ static void build_dontCallHash() {
 #if defined(WARN_TODO)
 #warning test callbacks asking questions again later
 #endif
-    GBS_write_hash(dontCallHash, "ARB_NT/mark_deep_branches",                            5);
-    GBS_write_hash(dontCallHash, "ARB_NT/mark_degen_branches",                           5);
-    GBS_write_hash(dontCallHash, "ARB_NT/mark_long_branches",                            5);
     GBS_write_hash(dontCallHash, "ARB_NT/tree_scale_lengths",                            5);
     GBS_write_hash(dontCallHash, "CREATE_USER_MASK/CREATE",                              5);
     GBS_write_hash(dontCallHash, "GDE__Import__Import_sequences_using_Readseq_slow_/GO", 5);
