@@ -782,7 +782,6 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
         else { // button w/o callback (a label)
 
 
-
             if(buttonlabel[0]=='#') {
                 //in motif this was a label with pixmap (XmNlabelPixmap)
                 //In gtk it is replaced by a pixmap.
@@ -791,7 +790,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
             else {
                 //just a lable
                 buttonOrLabel = gtk_label_new(NULL);
-                gtk_button_set_label(GTK_BUTTON(buttonOrLabel), aw_str_2_label(buttonlabel, this));
+                gtk_label_set_label(GTK_LABEL(buttonOrLabel), aw_str_2_label(buttonlabel, this));
             }
 
 //            button = XtVaCreateManagedWidget("label", xmLabelWidgetClass, parent_widget, RES_LABEL_CONVERT(buttonlabel), NULL);
@@ -1418,20 +1417,20 @@ AW_window_simple::~AW_window_simple() {
 }
 
 
-void AW_at_auto::restore(AW_at */*at*/) const {
+void AW_at_auto::restore(AW_at &/*at*/) const {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_at_auto::store(AW_at const */*at*/) {
+void AW_at_auto::store(AW_at const &/*at*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
 
-void AW_at_maxsize::store(const AW_at */*at*/) {
+void AW_at_maxsize::store(const AW_at &/*at*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_at_maxsize::restore(AW_at */*at*/) const {
+void AW_at_maxsize::restore(AW_at& /*at*/) const {
     GTK_NOT_IMPLEMENTED;
 }
 

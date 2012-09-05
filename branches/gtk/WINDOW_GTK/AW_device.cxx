@@ -35,12 +35,152 @@ void AW_device::push_clip_scale() {
     GTK_NOT_IMPLEMENTED;
 }
 
-bool AW_device::text_overlay(int /*gc*/, const char */*opt_string*/, long /*opt_strlen*/,   // either string or strlen != 0
-                      const AW::Position& /*pos*/, AW_pos /*alignment*/, AW_bitset /*filteri*/, AW_CL /*cduser*/,
-                      AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/,  // optional height (if == 0 take font height)
-                      TextOverlayCallback /*toc*/) {
-    GTK_NOT_IMPLEMENTED;
-    return false;
+
+bool AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // either string or strlen != 0
+                             const AW::Position& pos, AW_pos alignment, AW_bitset filteri, AW_CL cduser,
+                             AW_pos opt_ascent, AW_pos opt_descent,             // optional height (if == 0 take font height)
+                             TextOverlayCallback toc)
+{
+    const AW_GC           *gcm         = get_common()->map_gc(gc);
+    const AW_font_limits&  font_limits = gcm->get_font_limits();
+
+    long   textlen;
+    int    xi;
+    int    h;
+    int    start;
+    int    l;
+    AW_pos X0, Y0;              // Transformed pos
+
+    bool inside_clipping_left  = true; // clipping at the left edge of the screen is different from clipping right of the left edge.
+    bool inside_clipping_right = true;
+
+    // es gibt 4 clipping Moeglichkeiten:
+    // 1. man will fuer den Fall clippen, dass man vom linken display-Rand aus druckt   => clipping rechts vom 1. Buchstaben
+    // 2. man will fuer den Fall clippen, dass man mitten im Bildschirm ist             => clipping links vom 1. Buchstaben
+    // 3. man will fuer den Fall clippen, dass man mitten im Bildschirm ist             => clipping links vom letzten Buchstaben
+    // 4. man will fuer den Fall clippen, dass man bis zum rechten display-Rand druckt  => clipping rechts vom letzten Buchstaben
+
+    if (!(filter & filteri)) return 0;
+
+    const AW_screen_area& screen   = get_common()->get_screen();
+    const AW_screen_area& clipRect = get_cliprect();
+
+    if (allow_left_font_overlap() || screen.l == clipRect.l) inside_clipping_left = false;
+    if (allow_right_font_overlap() || clipRect.r == screen.r) inside_clipping_right = false;
+
+    transform(pos.xpos(), pos.ypos(), X0, Y0);
+
+    if (allow_top_font_overlap() || clipRect.t == 0) {             // check clip border inside screen
+        if (Y0+font_limits.descent < clipRect.t) return 0; // draw outside screen
+    }
+    else {
+        if (Y0-font_limits.ascent < clipRect.t) return 0;  // don't cross the clip border
+    }
+
+    if (allow_bottom_font_overlap() || clipRect.b == screen.b) {   // check clip border inside screen drucken
+        if (Y0-font_limits.ascent > clipRect.b) return 0;  // draw outside screen
+    }
+    else {
+        if (Y0+font_limits.descent> clipRect.b) return 0;  // don't cross the clip border
+    }
+
+    if (!opt_len) {
+        opt_len = textlen = strlen(opt_str);
+    }
+    else {
+        textlen = opt_len;
+    }
+
+    aw_assert(opt_len == textlen);
+
+
+#if defined(DEBUG)
+    int opt_str_len = int(strlen(opt_str));
+    aw_assert(opt_str_len >= textlen);
+#endif
+
+    if (alignment) {
+        AW_pos width = get_string_size(gc, opt_str, textlen);
+        X0 = X0-alignment*width;
+    }
+    xi = AW_INT(X0);
+    if (X0 > clipRect.r) return 0; // right of screen
+
+    l = (int)clipRect.l;
+    if (xi + textlen*font_limits.width < l) return 0; // left of screen
+
+    start = 0;
+
+    // now clip left side
+    if (xi < l) {
+        if (font_limits.is_monospaced()) {
+            h = (l - xi)/font_limits.width;
+            if (inside_clipping_left) {
+                if ((l-xi)%font_limits.width  >0) h += 1;
+            }
+            if (h >= textlen) return 0;
+            start    = h;
+            xi      += h*font_limits.width;
+            textlen -= h;
+
+            if (textlen < 0) return 0;
+            aw_assert(int(strlen(opt_str)) >= textlen);
+        }
+        else { // proportional font
+            int c = 0;
+            for (h=0; xi < l; h++) {
+                if (!(c = opt_str[h])) return 0;
+                xi += gcm->get_width_of_char(c);
+            }
+            if (!inside_clipping_left) {
+                h-=1;
+                xi -= gcm->get_width_of_char(c);
+            }
+            start    = h;
+            textlen -= h;
+
+            if (textlen < 0) return 0;
+            aw_assert(int(strlen(opt_str)) >= textlen);
+        }
+    }
+
+    // now clip right side
+    if (font_limits.is_monospaced()) {
+        h = ((int)clipRect.r - xi) / font_limits.width;
+        if (h < textlen) {
+            if (inside_clipping_right) {
+                textlen = h;
+            }
+            else {
+                textlen = h+1;
+            }
+        }
+
+        if (textlen < 0) return 0;
+        aw_assert(int(strlen(opt_str)) >= textlen);
+    }
+    else { // proportional font
+        l = (int)clipRect.r - xi;
+        for (h = start; l >= 0 && textlen > 0;  h++, textlen--) { // was textlen >= 0
+            l -= gcm->get_width_of_char(opt_str[h]);
+        }
+        textlen = h - start;
+        if (l <= 0 && inside_clipping_right && textlen  > 0) {
+            textlen -= 1;
+        }
+
+        if (textlen < 0) return 0;
+        aw_assert(int(strlen(opt_str)) >= textlen);
+    }
+    X0 = (AW_pos)xi;
+
+    AW_pos corrx, corry;
+    rtransform(X0, Y0, corrx, corry);
+
+    aw_assert(opt_len >= textlen);
+    aw_assert(textlen >= 0 && int(strlen(opt_str)) >= textlen);
+
+    return toc(this, gc, opt_str, opt_len, start, (size_t)textlen, corrx, corry, opt_ascent, opt_descent, cduser);
 }
 
 

@@ -14,6 +14,10 @@
 #include <gtk/gtk.h>
 #include <arbdb.h>
 #include "aw_awar.hxx"
+#include <gdk/gdkx.h>
+#include <Xm/Xm.h>
+#include "aw_xfont.hxx"
+
 
 //globals
 //FIXME use static class or namespace for globals
@@ -168,8 +172,8 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     // initialize ARB gtk application
     int          a = 0;
     //FIXME font stuff
-//    XFontStruct *fontstruct;
-//    char        *fallback_resources[100];
+    XFontStruct *fontstruct;
+    char        *fallback_resources[100];
 
     GTK_PARTLY_IMPLEMENTED;
 
@@ -189,49 +193,51 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     create_colormap();//load the colortable from database
 
     //FIXME font stuff
-//    int i;
-//    for (i=0; i<1000 && aw_fb[i].fb; i++) {
-//        GBDATA *gb_awar       = GB_search((GBDATA*)application_database, aw_fb[i].awar, GB_FIND);
-//        fallback_resources[i] = GBS_global_string_copy("*%s: %s", aw_fb[i].fb, GB_read_char_pntr(gb_awar));
-//    }
-//    fallback_resources[i] = 0;
-//
-//    ARB_install_handlers(aw_handlers);
+    int i;
+    for (i=0; i<1000 && aw_fb[i].fb; i++) {
+        GBDATA *gb_awar       = GB_search((GBDATA*)application_database, aw_fb[i].awar, GB_FIND);
+        fallback_resources[i] = GBS_global_string_copy("*%s: %s", aw_fb[i].fb, GB_read_char_pntr(gb_awar));
+    }
+    fallback_resources[i] = 0;
 
+    //ARB_install_handlers(aw_handlers);
 
-    //FIXME font stuff (load real font_width and height)
-    //These numbers are used inside the xfig parser.
-    //If they are uninitialized the xfig parser breaks
-    font_width = 8; // XFIG_DEFAULT_FONT_WIDTH
-    font_height = 13; //XFIG_DEFAULT_FONT_HEIGHT
+    /**
+     * FIXME Font Hack!
+     * The whole font system is still using X.
+     * right before drawing the fonts are converted to GdkFont and drawn.
+     * This is a quick hack to be able to get the correct fonts.
+     */
 
+    Display* display = GDK_DISPLAY_XDISPLAY(gdk_display_get_default());
 
     //FIXME font stuff
-//    {
-//        GBDATA *gbd = (GBDATA*)application_database;
-//        const char *font = GB_read_char_pntr(GB_search(gbd, "window/font", GB_FIND));
-//        if (!(fontstruct = XLoadQueryFont(p_r->display, font))) {
-//            if (!(fontstruct = XLoadQueryFont(p_r->display, "fixed"))) {
-//                printf("can not load font\n");
-//                exit(-1);
-//            }
-//        }
-//    }
+    {
+        GBDATA *gbd = (GBDATA*)application_database;
+        const char *font = GB_read_char_pntr(GB_search(gbd, "window/font", GB_FIND));
+        if (!(fontstruct = XLoadQueryFont(display, font))) {
+            if (!(fontstruct = XLoadQueryFont(display, "fixed"))) {
+                printf("can not load font\n");
+                exit(-1);
+            }
+        }
+    }
 //
 //
-//    if (fontstruct->max_bounds.width == fontstruct->min_bounds.width) {
-//        font_width = fontstruct->max_bounds.width;
-//    }
-//    else {
-//        font_width = (fontstruct->min_bounds.width
-//                + fontstruct->max_bounds.width) / 2;
-//    }
+    if (fontstruct->max_bounds.width == fontstruct->min_bounds.width) {
+        font_width = fontstruct->max_bounds.width;
+    }
+    else {
+        font_width = (fontstruct->min_bounds.width
+                + fontstruct->max_bounds.width) / 2;
+    }
+
+    font_height = fontstruct->max_bounds.ascent
+            + fontstruct->max_bounds.descent;
+    font_ascent = fontstruct->max_bounds.ascent;
 //
-//    font_height = fontstruct->max_bounds.ascent
-//            + fontstruct->max_bounds.descent;
-//    font_ascent = fontstruct->max_bounds.ascent;
-//
-//    p_r->fontlist = XmFontListCreate(fontstruct, XmSTRING_DEFAULT_CHARSET);
+
+    //prvt.fontlist = XmFontListCreate(fontstruct, XmSTRING_DEFAULT_CHARSET);
 //
 //    button_sens_list = 0;
 //
@@ -249,7 +255,7 @@ void AW_root::init_root(const char *programname, bool no_exit) {
 //    p_r->question_cursor = XCreateFontCursor(XtDisplay(p_r->toplevel_widget), XC_question_arrow);
 //
 //    aw_root_create_color_map(this);
-//    aw_root_init_font(XtDisplay(p_r->toplevel_widget));
+    aw_root_init_font(display);
 //    aw_install_xkeys(XtDisplay(p_r->toplevel_widget));
 
 }

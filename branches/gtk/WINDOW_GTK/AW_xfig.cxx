@@ -381,6 +381,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
                                 struct AW_xfig_text *xtext = new AW_xfig_text;
                                 xtext->x = x;
                                 xtext->y = y;
+                                printf("xfig x y: %i, %i\n", x, y);
 
                                 if (x>maxx) maxx = x;
                                 if (y>maxy) maxy = y;

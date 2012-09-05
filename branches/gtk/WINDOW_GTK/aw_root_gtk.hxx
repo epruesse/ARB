@@ -13,6 +13,7 @@
 
 #include <gdk/gdk.h>
 #include "aw_base.hxx"
+
 class AW_root;
 
 
@@ -26,6 +27,7 @@ private:
     GdkColormap* colormap; /**< Contains a color for each value in AW_base::AW_color_idx */
     AW_rgb  *color_table; /**< Contains pixel values that can be used to retrieve a color from the colormap  */
     AW_rgb foreground; /**<Pixel value of the foreground color */
+  //  XmFontList *fontlist; //FIXME this is still motif. Convert to gtk.
     //FIXME background is currently determined on the fly in device_gtk
     //Pixel background; /**<Pixel value of the background color */
 

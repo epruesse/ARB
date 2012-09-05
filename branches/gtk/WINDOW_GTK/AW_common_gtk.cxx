@@ -14,6 +14,12 @@
 #include "aw_gtk_migration_helpers.hxx"
 #include <gdk/gdkgc.h>
 #include <gdk/gdkpixmap.h>
+#include "aw_xfont.hxx"
+//FIXME remove of xfont is gone
+#include <gdk/gdkx.h>
+#include <Xm/Xm.h>
+
+
 void AW_common_gtk::install_common_extends_cb(AW_window *aww, AW_area area) {
     GTK_NOT_IMPLEMENTED;
 }
@@ -66,8 +72,40 @@ void AW_GC_gtk::wm_set_lineattributes(short lwidth, AW_linestyle lstyle){
 
     gdk_gc_set_line_attributes(gc, lwidth, lineStyle, GDK_CAP_BUTT, GDK_JOIN_BEVEL);
 }
-void AW_GC_gtk::wm_set_font(AW_font font_nr, int size, int *found_size){
-    GTK_NOT_IMPLEMENTED;
+
+void AW_GC_gtk::wm_set_font(const AW_font font_nr, const int size, int *found_size) {
+    // if found_size != 0 -> return value for used font size
+
+    //FIXME font stuff
+
+    XFontStruct *xfs;
+    {
+        int  found_font_size;
+        ASSERT_TRUE(lookfont(GDK_DISPLAY_XDISPLAY(get_common()->get_display()), font_nr, size, found_font_size, true, false, &xfs)); // lookfont should do fallback
+        if (found_size) *found_size = found_font_size;
+    }
+
+
+    //FIXME Font Hack
+    //extract XLFD name from XFontStruct
+    int i;
+    XFontProp *xfp;
+    char *name;
+
+    for (i = 0, xfp = xfs->properties; i < xfs->n_properties; i++, xfp++) {
+        if (xfp->name == XA_FONT) {
+            /*
+             * Set the font name but don't add it to the list in the font.
+             */
+            name = XGetAtomName(GDK_DISPLAY_XDISPLAY(get_common()->get_display()), (Atom) xfp->card32);
+            break;
+        }
+    }
+
+    //load a gdk font corrosponding to the XLDF name
+    GdkFont *font = gdk_font_load(name);
+
+    gdk_gc_set_font(gc, font);
 }
 
 int AW_GC_gtk::get_available_fontsizes(AW_font font_nr, int *available_sizes) const {

@@ -1,10 +1,11 @@
-#ifndef AW_XFONT_HXX
-#define AW_XFONT_HXX
+#pragma once
 
 #ifndef AW_DEF_HXX
 #include "aw_def.hxx"
 #endif
+#include <Xm/Xm.h>
 
+typedef XFontStruct *PIX_FONT;
 
 struct xfont {
     int          size;          // size in points
@@ -24,8 +25,9 @@ struct _xfstruct {
     xfont      *xfontlist;      // linked list of X fonts for different point sizes
 };
 
+void aw_root_init_font(Display *display);
+
+bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboose, bool only_query, PIX_FONT *fontstPtr);
+
 #define DEFAULT      (-1)
 
-#else
-#error aw_xfont.hxx included twice
-#endif

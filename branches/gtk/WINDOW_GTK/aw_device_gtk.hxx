@@ -55,4 +55,13 @@ public:
 
     void flush();
     void move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y);
+
+    /**
+     * This is a helper callback which is used inside text_imlp().
+     * In the old C code it was just a global function.
+     * It is now static because it needs access to private members of aw_device_gtk
+     */
+    static bool draw_string_on_screen(AW_device *device, int gc, const  char *str, size_t /* opt_str_len */, size_t start, size_t size,
+                                        AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/, AW_CL /*cduser*/);
+
 };

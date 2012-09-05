@@ -34,6 +34,9 @@ AW_DEVICE_TYPE AW_device_gtk::type() { return AW_DEVICE_SCREEN; }
 #define XDRAW_PARAM3(common,gc) XDRAW_PARAM2(common), (common)->get_GC(gc)
 
 
+//FIXME device flushing is not implemented right now.
+
+
 AW_device_gtk::AW_device_gtk(AW_common *commoni, GtkWidget *drawingArea) :
         AW_device(commoni),
         pixmap(gdk_pixmap_new(drawingArea->window, 3000, 3000, -1)),
@@ -84,7 +87,7 @@ bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri)
         if (drawflag) {
 
 
-              //this is the version that should beu sed if clipping is active
+              //this is the version that should be used if clipping is active
 //            gdk_draw_line(GDK_DRAWABLE(pixmap),
 //                         //get_common()->get_GC(gc), // FIXME get real gc instead
 //                         drawingArea->style->white_gc,
@@ -111,27 +114,38 @@ bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri)
     return true;
 }
 
-static bool AW_draw_string_on_screen(AW_device *device, int gc, const  char *str, size_t /* opt_str_len */, size_t start, size_t size,
+//FIXME I do not fully understand why this has to be done in a out of class callback. Check later if this can be transformed into a member
+bool AW_device_gtk::draw_string_on_screen(AW_device *device, int gc, const  char *str, size_t /* opt_str_len */, size_t /*start*/, size_t size,
                                     AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/, AW_CL /*cduser*/)
 {
-//    AW_pos X, Y;
-//    device->transform(x, y, X, Y);
-//    aw_assert(size <= strlen(str));
-//    AW_device_Xm *device_xm = DOWNCAST(AW_device_Xm*, device);
-//    XDrawString(XDRAW_PARAM3(device_xm->get_common(), gc), AW_INT(X), AW_INT(Y), str + start,  (int)size);
-//    AUTO_FLUSH(device);
-    GTK_NOT_IMPLEMENTED;
+    AW_pos X, Y;
+    device->transform(x, y, X, Y);
+    aw_assert(size <= strlen(str));
+    AW_device_gtk *device_gtk = DOWNCAST(AW_device_gtk*, device);
+
+    gdk_draw_string(GDK_DRAWABLE(device_gtk->pixmap),
+                    gdk_font_load("-bitstream-courier 10 pitch-bold-i-normal--0-0-0-0-m-0-ascii-0"), //FIXME use real font
+                    device_gtk->get_common()->get_GC(gc),
+                    AW_INT(X),
+                    AW_INT(Y),
+                    str);
+
     return true;
 }
 
 
 bool AW_device_gtk::text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
 
+    printf("impl xy: %f, %f\n", pos.xpos(), pos.ypos());
 
+    GdkGCValues *values;
+    gdk_gc_get_values(get_common()->get_GC(gc), values);
+
+    //FIXME what does y coordinate -1 mean?
     //FIXME do not ignore the alignment.
     //FIXME use real gc once the color problem is solved
     gdk_draw_string(GDK_DRAWABLE(pixmap),
-                    gdk_font_load("-bitstream-courier 10 pitch-bold-i-normal--0-0-0-0-m-0-ascii-0"), //FIXME use real font
+                    values->font, //FIXME use real font
                     get_common()->get_GC(gc),
                     pos.xpos(),
                     pos.ypos(),
@@ -139,8 +153,8 @@ bool AW_device_gtk::text_impl(int gc, const char *str, const AW::Position& pos, 
     return true;
 
 
-    //This is the old way with clipping
-    //return text_overlay(gc, str, opt_strlen, pos, alignment, filteri, (AW_CL)this, 0.0, 0.0, AW_draw_string_on_screen);
+    //This is the old & soon the new way with clipping
+//    return text_overlay(gc, str, opt_strlen, pos, alignment, filteri, (AW_CL)this, 0.0, 0.0, draw_string_on_screen);
 }
 
 bool AW_device_gtk::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitset filteri) {
