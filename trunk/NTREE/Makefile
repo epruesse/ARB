@@ -10,6 +10,7 @@ CPP_OBJECTS = \
 	AP_cprofile.o \
 	ColumnStat_2_gnuplot.o \
 	AP_pos_var_pars.o \
+	NT_branchAnalysis.o \
 	NT_concatenate.o \
 	NT_dbrepair.o \
 	NT_edconf.o \
@@ -383,6 +384,40 @@ ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/dupstr.h
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/smartptr.h
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/test_global.h
+
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/ad_prot.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/AliView.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/arb_assert.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/arb_core.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/arb_error.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/arb_msg.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/arb_string.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/arbdbt.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/arbtools.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/attributes.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/cb.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/downcast.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/dupstr.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/smartptr.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/test_global.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
 NT_cb.o: ad_trees.hxx
 NT_cb.o: nt_cb.hxx
