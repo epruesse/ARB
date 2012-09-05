@@ -304,6 +304,7 @@ public:
     const char *mark_long_branches(double min_rel_diff, double min_abs_diff);
     const char *mark_deep_leafs(int min_depth, double min_rootdist);
     const char *mark_degenerated_branches(double degeneration_factor);
+    const char *analyse_distances();
 
     void justify_branch_lenghs(GBDATA *gb_main);
     void relink_tree(GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node, char *&ref_name, GB_HASH *organism_hash), GB_HASH *organism_hash);

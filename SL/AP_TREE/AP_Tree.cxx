@@ -17,6 +17,7 @@
 #include <math.h>
 #include <map>
 #include <climits>
+#include <arb_progress.h>
 
 using namespace std;
 
@@ -1289,7 +1290,7 @@ AP_tree ** AP_tree::getRandomNodes(int anzahl) {
 // --------------------------------------------------------------------------------
 
 template <typename T>
-class ValueCounter : virtual Noncopyable {
+class ValueCounter {
     T   min, max, sum;
     int count;
 
@@ -1307,7 +1308,16 @@ public:
           count(0),
           buf(NULL)
     {}
+    ValueCounter(const ValueCounter<T>& other)
+        : min(other.min),
+          max(other.max),
+          sum(other.sum),
+          count(other.count),
+          buf(NULL)
+    {}
     ~ValueCounter() { free(buf); }
+
+    DECLARE_ASSIGNMENT_OPERATOR(ValueCounter<T>);
 
     void count_value(T val) {
         count++;
@@ -1323,7 +1333,30 @@ public:
 
     const char *mean_min_max()         const { return count ? set_buf(mean_min_max_impl())         : "<not available>"; }
     const char *mean_min_max_percent() const { return count ? set_buf(mean_min_max_percent_impl()) : "<not available>"; }
+
+    ValueCounter<T>& operator += (const T& inc) {
+        min += inc;
+        max += inc;
+        sum += inc*count;
+        return *this;
+    }
+    ValueCounter<T>& operator += (const ValueCounter<T>& other) {
+        min    = std::min(min, other.min);
+        max    = std::max(max, other.max);
+        sum   += other.sum;
+        count += other.count;
+        return *this;
+    }
 };
+
+template<typename T>
+inline ValueCounter<T> operator+(const ValueCounter<T>& c1, const ValueCounter<T>& c2) {
+    return ValueCounter<T>(c1) += c2;
+}
+template<typename T>
+inline ValueCounter<T> operator+(const ValueCounter<T>& c, const T& inc) {
+    return ValueCounter<T>(c) += inc;
+}
 
 template<> char *ValueCounter<int>::mean_min_max_impl() const {
     return GBS_global_string_copy("%.2f (range: %i .. %i)", get_mean(), get_min(), get_max());
@@ -1526,6 +1559,115 @@ const char *AP_tree::mark_deep_leafs(int min_depth, double min_rootdist) {
     // mark all leafs with min_depth and min_rootdist
     return DepthMarker(this, min_depth, min_rootdist).get_report();
 }
+
+// --------------------------------------------------------------------------------
+
+class EdgeDistances {
+    typedef ValueCounter<double> Distance;
+    typedef map<AP_tree*, Distance> DistanceMap;
+
+    DistanceMap downdist; // inclusive length of branch itself
+    DistanceMap updist;   // inclusive length of branch itself
+
+    arb_progress progress;
+
+    const Distance& calc_downdist(AP_tree *at, AP_FLOAT len) {
+        if (at->is_leaf) {
+            Distance d;
+            d.count_value(len);
+            downdist[at] = d;
+
+            progress.inc();
+        }
+        else {
+            downdist[at] =
+                calc_downdist(at->get_leftson(), at->leftlen) +
+                calc_downdist(at->get_rightson(), at->rightlen) +
+                len;
+        }
+        return downdist[at];
+    }
+
+    const Distance& calc_updist(AP_tree *at, AP_FLOAT len) {
+        ap_assert(at->father); // impossible - root has no updist!
+
+        AP_tree *father  = at->get_father();
+        AP_tree *brother = at->get_brother();
+
+        if (father->father) {
+            ap_assert(updist.find(father) != updist.end());
+            ap_assert(downdist.find(brother) != downdist.end());
+
+            updist[at] = updist[father] + downdist[brother] + len;
+        }
+        else {
+            ap_assert(downdist.find(brother) != downdist.end());
+
+            updist[at] = downdist[brother]+len;
+        }
+
+        if (!at->is_leaf) {
+            calc_updist(at->get_leftson(), at->leftlen);
+            calc_updist(at->get_rightson(), at->rightlen);
+        }
+        else {
+            progress.inc();
+        }
+        
+        return updist[at];
+    }
+
+    ValueCounter<double> max_dist, min_dist, mean_dist;
+
+    void calc_distance_stats(AP_tree *at) {
+        if (at->is_leaf) {
+            ap_assert(updist.find(at) != updist.end());
+
+            const Distance& up = updist[at];
+
+            mean_dist.count_value(up.get_mean());
+            min_dist.count_value(up.get_min());
+            max_dist.count_value(up.get_max());
+
+            progress.inc();
+        }
+        else {
+            calc_distance_stats(at->get_leftson());
+            calc_distance_stats(at->get_rightson());
+        }
+    }
+
+public:
+
+    EdgeDistances(AP_tree *root)
+        : progress("Analysing distances", root->arb_tree_leafsum2()*3)
+    {
+        calc_downdist(root->get_leftson(),  root->leftlen);
+        calc_downdist(root->get_rightson(), root->rightlen);
+
+        calc_updist(root->get_leftson(),  root->leftlen);
+        calc_updist(root->get_rightson(), root->rightlen);
+
+        calc_distance_stats(root);
+    }
+
+    const char *get_report() const {
+        return GBS_global_string(
+            "Distance statistic for %i leafs\n"
+            "(each leaf to all other leafs)\n"
+            "\n"
+            "Mean mean distance: %s\n"
+            "Mean min. distance: %s\n"
+            "Mean max. distance: %s\n",
+            mean_dist.get_count(), 
+            mean_dist.mean_min_max(), 
+            min_dist.mean_min_max(), 
+            max_dist.mean_min_max() 
+            );
+    }
+};
+
+const char *AP_tree::analyse_distances() { return EdgeDistances(this).get_report(); }
 
 // --------------------------------------------------------------------------------
 
