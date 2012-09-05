@@ -315,7 +315,7 @@ cflags += -fstrict-aliasing# gcc 3.4
 
 #---------------------- GTK 
 
-	GTKCFLAGS:= $(shell pkg-config --cflags gtk+-2.0)
+	GTKCFLAGS:= $(shell pkg-config --cflags gtk+-2.0) -fPIC
 	GTKLIBS:= $(shell pkg-config --libs gtk+-2.0 | sed 's/-pthread//')
 
 	cflags += $(GTKCFLAGS)
