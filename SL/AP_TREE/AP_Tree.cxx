@@ -1562,8 +1562,33 @@ const char *AP_tree::mark_deep_leafs(int min_depth, double min_rootdist) {
 
 // --------------------------------------------------------------------------------
 
+typedef ValueCounter<double> Distance;
+
+class DistanceCounter {
+    ValueCounter<double> min, max, mean;
+public:
+
+    void count_distance(const Distance& d) {
+        mean.count_value(d.get_mean());
+        min.count_value(d.get_min());
+        max.count_value(d.get_max());
+    }
+
+    int get_count() const { return mean.get_count(); }
+
+    char *get_report() const {
+        return GBS_global_string_copy(
+            "Mean mean distance: %s\n"
+            "Mean min. distance: %s\n"
+            "Mean max. distance: %s",
+            mean.mean_min_max(), 
+            min.mean_min_max(), 
+            max.mean_min_max()
+            );
+    }
+};
+
 class EdgeDistances {
-    typedef ValueCounter<double> Distance;
     typedef map<AP_tree*, Distance> DistanceMap;
 
     DistanceMap downdist; // inclusive length of branch itself
@@ -1617,17 +1642,18 @@ class EdgeDistances {
         return updist[at];
     }
 
-    ValueCounter<double> max_dist, min_dist, mean_dist;
+    DistanceCounter alldists, markeddists;
 
     void calc_distance_stats(AP_tree *at) {
         if (at->is_leaf) {
             ap_assert(updist.find(at) != updist.end());
 
-            const Distance& up = updist[at];
+            const Distance& upwards = updist[at];
 
-            mean_dist.count_value(up.get_mean());
-            min_dist.count_value(up.get_min());
-            max_dist.count_value(up.get_max());
+            alldists.count_distance(upwards);
+            if (at->gb_node && GB_read_flag(at->gb_node)) {
+                markeddists.count_distance(upwards);
+            }
 
             progress.inc();
         }
@@ -1652,18 +1678,23 @@ public:
     }
 
     const char *get_report() const {
-        return GBS_global_string(
-            "Distance statistic for %i leafs\n"
+        char *alldists_report    = alldists.get_report();
+        char *markeddists_report = markeddists.get_report();
+
+        const char *msg = GBS_global_string(
+            "Distance statistic for %i leafs:\n"
             "(each leaf to all other leafs)\n"
             "\n"
-            "Mean mean distance: %s\n"
-            "Mean min. distance: %s\n"
-            "Mean max. distance: %s\n",
-            mean_dist.get_count(), 
-            mean_dist.mean_min_max(), 
-            min_dist.mean_min_max(), 
-            max_dist.mean_min_max() 
-            );
+            "%s\n"
+            "\n"
+            "Distance statistic for %i marked leafs:\n"
+            "\n"
+            "%s\n", 
+            alldists.get_count(), alldists_report,
+            markeddists.get_count(), markeddists_report);
+        free(markeddists_report);
+        free(alldists_report);
+        return msg;
     }
 };
 
