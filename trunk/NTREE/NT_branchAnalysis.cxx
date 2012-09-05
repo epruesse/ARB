@@ -119,6 +119,7 @@ public:
     }
 
     void analyseDistances() {
+        GB_transaction ta(get_gbmain());
         set_info(get_tree()->analyse_distances());
     }
 };
