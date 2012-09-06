@@ -22,13 +22,12 @@ class AWT_graphic_tree;
 
 struct NT_global {
     AW_root           *awr;
-    AWT_graphic_tree  *tree;
     AW_Window_Creator  window_creator;
     bool               extern_quit_button;
 };
 
 extern NT_global  GLOBAL_NT;
-extern GBDATA    *GLOBAL_gb_main;
+extern GBDATA    *GLOBAL_gb_main; // @@@ move into NT_global ?
 
 
 class NT_install_window_creator {

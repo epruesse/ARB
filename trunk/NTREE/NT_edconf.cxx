@@ -540,8 +540,8 @@ static GB_ERROR nt_create_configuration(AW_window *, GBT_TREE *tree, const char 
     return error;
 }
 
-static void nt_store_configuration(AW_window *) {
-    GB_ERROR err = nt_create_configuration(0, nt_get_current_tree_root(), 0, 0);
+static void nt_store_configuration(AW_window *, AW_CL cl_ntw) {
+    GB_ERROR err = nt_create_configuration(0, nt_get_current_tree_root((AWT_canvas*)cl_ntw), 0, 0);
     aw_message_if(err);
 }
 
@@ -575,7 +575,11 @@ static void nt_rename_configuration(AW_window *aww) {
     free(old_name);
 }
 
-static AW_window *create_configuration_admin_window(AW_root *root) {
+static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *ntw) {
+    // @@@ still depends on tree of main-window from which this window has been opened
+    // (also applies to all other callbacks using AWT_canvas and creating a window!)
+    // see patch [8867]
+
     static AW_window_simple *aws = 0;
     if (!aws) {
         init_config_awars(root);
@@ -596,7 +600,7 @@ static AW_window *create_configuration_admin_window(AW_root *root) {
         awt_create_selection_list_on_configurations(GLOBAL_gb_main, aws, AWAR_CONFIGURATION);
 
         aws->at("store");
-        aws->callback(nt_store_configuration);
+        aws->callback(nt_store_configuration, (AW_CL)ntw);
         aws->create_button("STORE", "STORE", "S");
 
         aws->at("extract");
@@ -630,8 +634,8 @@ static AW_window *create_configuration_admin_window(AW_root *root) {
     return aws;
 }
 
-void NT_popup_configuration_admin(AW_window *aw_main, AW_CL, AW_CL) {
-    AW_window *aww = create_configuration_admin_window(aw_main->get_root());
+void NT_popup_configuration_admin(AW_window *aw_main, AW_CL cl_ntw, AW_CL) {
+    AW_window *aww = create_configuration_admin_window(aw_main->get_root(), (AWT_canvas*)cl_ntw);
     aww->activate();
 }
 
@@ -670,8 +674,8 @@ AW_window *NT_start_editor_on_old_configuration(AW_root *awr) {
     return (AW_window *)aws;
 }
 
-void NT_start_editor_on_tree(AW_window *, AW_CL cl_use_species_aside, AW_CL) {
-    GB_ERROR error = nt_create_configuration(0, nt_get_current_tree_root(), CONFNAME, (int)cl_use_species_aside);
+void NT_start_editor_on_tree(AW_window *, AW_CL cl_use_species_aside, AW_CL cl_ntw) {
+    GB_ERROR error = nt_create_configuration(0, nt_get_current_tree_root((AWT_canvas*)cl_ntw), CONFNAME, (int)cl_use_species_aside);
     if (!error) error = GBK_system("arb_edit4 -c " CONFNAME " &");
     aw_message_if(error);
 }
