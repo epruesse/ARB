@@ -40,12 +40,12 @@ SECTION         Mark long branches
                 the least distant leaf of the left resp. right subtree.
 
                 Relative difference     Meaning
-                                        The nearer subtrees distance is 
+                                        The nearer subtree has at least 
                 10%                     90%
                 50%                     50%
                 75%                     25%
                 90%                     10%
-                                        of more the distant subtrees distance.
+                                        of the farther subtrees distance.
 
                 Starting from the tree-tips, this function marks the more distant subtree of any furcation
                 where the relative and absolute difference are above the specified minimas.
