@@ -43,7 +43,7 @@ AW_HEADER_MAIN
 #define NT_CHECK_DB_TIMER 200
 
 GBDATA *GLOBAL_gb_main;                             // global gb_main for arb_ntree
-NT_global GLOBAL_NT = { 0, 0, 0, false };
+NT_global GLOBAL_NT = { 0, 0, false };
 
 // NT_format_all_alignments may be called after any operation which causes
 // unformatted alignments (e.g importing sequences)
