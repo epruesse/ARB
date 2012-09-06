@@ -111,9 +111,9 @@ static GB_ERROR NT_resort_data_base(GBT_TREE *tree, const char *key1, const char
     sortBy.key2 = key2;
     sortBy.key3 = key3;
 
-    GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
+    GB_ERROR error = GB_begin_transaction(GLOBAL.gb_main);
     if (!error) {
-        GBDATA *gb_sd     = GBT_get_species_data(GLOBAL_gb_main);
+        GBDATA *gb_sd     = GBT_get_species_data(GLOBAL.gb_main);
         if (!gb_sd) error = GB_await_error();
         else {
             if (tree) {
@@ -122,15 +122,15 @@ static GB_ERROR NT_resort_data_base(GBT_TREE *tree, const char *key1, const char
                 NT_resort_data_base_by_tree(tree, gb_sd);
             }
             else {
-                gb_resort_data_list = GBT_gen_species_array(GLOBAL_gb_main, &gb_resort_data_count);
+                gb_resort_data_list = GBT_gen_species_array(GLOBAL.gb_main, &gb_resort_data_count);
                 GB_sort((void **)gb_resort_data_list, 0, gb_resort_data_count, resort_data_by_customsub, &sortBy);
 
             }
-            error = GB_resort_data_base(GLOBAL_gb_main, gb_resort_data_list, gb_resort_data_count);
+            error = GB_resort_data_base(GLOBAL.gb_main, gb_resort_data_list, gb_resort_data_count);
             free(gb_resort_data_list);
         }
     }
-    return GB_end_transaction(GLOBAL_gb_main, error);
+    return GB_end_transaction(GLOBAL.gb_main, error);
 }
 
 void NT_resort_data_by_phylogeny(AW_window *, AW_CL cl_ntw, AW_CL) {
@@ -181,17 +181,17 @@ AW_window *NT_build_resort_window(AW_root *awr) {
     aws->callback((AW_CB0)NT_resort_data_by_user_criteria);
     aws->create_button("GO", "GO", "G");
 
-    create_selection_list_on_itemfields(GLOBAL_gb_main,
+    create_selection_list_on_itemfields(GLOBAL.gb_main,
                                             aws, "ad_tree/sort_1",
                                             NT_RESORT_FILTER,
                                             "key1", 0, SPECIES_get_selector(), 20, 10);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_main,
+    create_selection_list_on_itemfields(GLOBAL.gb_main,
                                             aws, "ad_tree/sort_2",
                                             NT_RESORT_FILTER,
                                             "key2", 0, SPECIES_get_selector(), 20, 10);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_main,
+    create_selection_list_on_itemfields(GLOBAL.gb_main,
                                             aws, "ad_tree/sort_3",
                                             NT_RESORT_FILTER,
                                             "key3", 0, SPECIES_get_selector(), 20, 10);

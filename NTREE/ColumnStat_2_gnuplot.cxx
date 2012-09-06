@@ -8,12 +8,12 @@
 //                                                                 //
 // =============================================================== //
 
+#include "ntree.hxx"
 #include "nt_internal.h"
 
 #include <ColumnStat.hxx>
 #include <AP_filter.hxx>
 #include <awt_filter.hxx>
-#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
@@ -41,8 +41,6 @@
 #define AWAR_CS2GP_FILTER_ALIGNMENT        AWAR_CS2GP "/ap_filter/alignment"
 #define AWAR_CS2GP_FILTER_FILTER           AWAR_CS2GP "/ap_filter/filter"
 
-
-extern GBDATA *GLOBAL_gb_main;
 
 static GB_ERROR split_stat_filename(const char *fname, char **dirPtr, char **name_prefixPtr, char **name_postfixPtr) {
     // 'fname' is sth like 'directory/prefix.sth_gnu'
@@ -344,7 +342,7 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
     // cl_mode = 1 -> write file and run gnuplot
     // cl_mode = 2 -> delete all files with same prefix
 
-    GB_transaction  dummy(GLOBAL_gb_main);
+    GB_transaction  dummy(GLOBAL.gb_main);
     ColumnStat     *column_stat = (ColumnStat *)cl_column_stat;
     GB_ERROR        error       = 0;
     int             mode        = int(cl_mode);
@@ -352,7 +350,7 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
     if (mode != 2) {
         char *filterstring     = aww->get_root()->awar(AWAR_CS2GP_FILTER_FILTER)->read_string();
         char *alignment_name   = aww->get_root()->awar(AWAR_CS2GP_FILTER_ALIGNMENT)->read_string();
-        long  alignment_length = GBT_get_alignment_len(GLOBAL_gb_main, alignment_name);
+        long  alignment_length = GBT_get_alignment_len(GLOBAL.gb_main, alignment_name);
 
         AP_filter filter(filterstring, "0", alignment_length);
 
@@ -569,17 +567,17 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
 
 AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
 
-    GB_transaction ta(GLOBAL_gb_main);
+    GB_transaction ta(GLOBAL.gb_main);
 
-    AW_awar          *awar_default_alignment = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", GLOBAL_gb_main);
-    ColumnStat       *column_stat            = new ColumnStat(GLOBAL_gb_main, root, AWAR_CS2GP_NAME, awar_default_alignment);
+    AW_awar          *awar_default_alignment = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", GLOBAL.gb_main);
+    ColumnStat       *column_stat            = new ColumnStat(GLOBAL.gb_main, root, AWAR_CS2GP_NAME, awar_default_alignment);
     AW_window_simple *aws                    = new AW_window_simple;
 
     aws->init(root, "EXPORT_CSP_TO_GNUPLOT", "Export Column statistic to GnuPlot");
     aws->load_xfig("cpro/csp_2_gnuplot.fig");
 
     root->awar_int(AWAR_CS2GP_SMOOTH_VALUES, 1)
-        ->set_minmax(1, GBT_get_alignment_len(GLOBAL_gb_main, awar_default_alignment->read_char_pntr()));
+        ->set_minmax(1, GBT_get_alignment_len(GLOBAL.gb_main, awar_default_alignment->read_char_pntr()));
     root->awar_int(AWAR_CS2GP_GNUPLOT_OVERLAY_POSTFIX);
     root->awar_int(AWAR_CS2GP_GNUPLOT_OVERLAY_PREFIX);
     root->awar_string(AWAR_CS2GP_SMOOTH_GNUPLOT);
@@ -610,7 +608,7 @@ AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
     plotTypeList->insert_default("<select one>", "");
     plotTypeList->update();
 
-    adfiltercbstruct *filter = awt_create_select_filter(root, GLOBAL_gb_main, AWAR_CS2GP_FILTER_NAME);
+    adfiltercbstruct *filter = awt_create_select_filter(root, GLOBAL.gb_main, AWAR_CS2GP_FILTER_NAME);
     aws->at("ap_filter");
     aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)filter);
     aws->create_button("SELECT_FILTER", AWAR_CS2GP_FILTER_NAME);

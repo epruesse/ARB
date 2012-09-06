@@ -8,9 +8,9 @@
 //                                                                 //
 // =============================================================== //
 
+#include "ntree.hxx"
 #include "map_viewer.hxx"
 #include "nt_internal.h"
-#include "ntree.hxx"
 
 #include <dbui.h>
 
@@ -28,8 +28,6 @@
 
 
 #define nt_assert(bed) arb_assert(bed)
-
-extern GBDATA *GLOBAL_gb_main;
 
 static const char * const SAI_COUNTED_CHARS = "COUNTED_CHARS";
 
@@ -145,7 +143,7 @@ void NT_create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
      */
 
     GB_ERROR  error      = 0;
-    GB_begin_transaction(GLOBAL_gb_main);
+    GB_begin_transaction(GLOBAL.gb_main);
     char     *sai_name   = 0;
     char     *sec_struct = 0;
     bool      canceled   = false;
@@ -153,7 +151,7 @@ void NT_create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
     // get the selected species
     char *species_name = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
     GBDATA *gb_species = 0;
-    if (!strcmp(species_name, "") || !(gb_species = GBT_find_species(GLOBAL_gb_main, species_name))) {
+    if (!strcmp(species_name, "") || !(gb_species = GBT_find_species(GLOBAL.gb_main, species_name))) {
         error = "Please select a species first.";
     }
     else {
@@ -180,9 +178,9 @@ void NT_create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
                 error = "Name of SAI is empty. Please enter a valid name.";
             }
             else {
-                GBDATA *gb_sai_data = GBT_get_SAI_data(GLOBAL_gb_main);
+                GBDATA *gb_sai_data = GBT_get_SAI_data(GLOBAL.gb_main);
                 GBDATA *gb_sai      = GBT_find_SAI_rel_SAI_data(gb_sai_data, sai_name);
-                char   *ali_name    = GBT_get_default_alignment(GLOBAL_gb_main);
+                char   *ali_name    = GBT_get_default_alignment(GLOBAL.gb_main);
 
                 if (gb_sai) {
                     error = "SAI with the same name already exists. Please enter another name.";
@@ -230,7 +228,7 @@ void NT_create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
 
     if (canceled) error = "Aborted by user";
 
-    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+    GB_end_transaction_show_error(GLOBAL.gb_main, error, aw_message);
 
     if (!error) {
         AW_window *sai_info = NT_create_extendeds_window(aww->get_root());
@@ -245,11 +243,11 @@ void NT_create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
 }
 
 void launch_MapViewer_cb(GBDATA *gbd, AD_MAP_VIEWER_TYPE type) {
-    GB_ERROR error = GB_push_transaction(GLOBAL_gb_main);
+    GB_ERROR error = GB_push_transaction(GLOBAL.gb_main);
 
     if (!error) {
         const char *species_name    = "";
-        GBDATA     *gb_species_data = GBT_get_species_data(GLOBAL_gb_main);
+        GBDATA     *gb_species_data = GBT_get_species_data(GLOBAL.gb_main);
 
         if (gbd && GB_get_father(gbd) == gb_species_data) {
             species_name = GBT_read_name(gbd);
@@ -263,10 +261,10 @@ void launch_MapViewer_cb(GBDATA *gbd, AD_MAP_VIEWER_TYPE type) {
         if (!gb_name) gb_name = GB_entry(gbd, "group_name"); // bad hack, should work
 
         const char *name = gb_name ? GB_read_char_pntr(gb_name) : "noname";
-        error = awt_openURL_by_gbd(GLOBAL_NT.awr, GLOBAL_gb_main, gbd, name);
+        error = awt_openURL_by_gbd(GLOBAL.aw_root, GLOBAL.gb_main, gbd, name);
     }
 
-    error = GB_end_transaction(GLOBAL_gb_main, error);
+    error = GB_end_transaction(GLOBAL.gb_main, error);
     if (error) aw_message(error);
 }
 

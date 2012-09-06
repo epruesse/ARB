@@ -8,7 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include <aw_window.hxx>
+#include "ntree.hxx"
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
@@ -25,8 +25,6 @@
 
 #define AWAR_SELECTED_VALNAME "tmp/validNames/selectedName"
 #define AWAR_INPUT_INITIALS   "tmp/validNames/inputInitials"
-
-extern GBDATA *GLOBAL_gb_main;
 
 struct selectValidNameStruct {
     GBDATA            *gb_main;
@@ -47,9 +45,9 @@ static void fillSelNamList(selectValidNameStruct* svnp) {
     size_t length = strlen(searchstr);
     svnp->validNamesList->clear();
 
-    GB_begin_transaction(GLOBAL_gb_main);
+    GB_begin_transaction(GLOBAL.gb_main);
 
-    GBDATA* GB_validNamesCont = GB_entry(GLOBAL_gb_main, "VALID_NAMES");
+    GBDATA* GB_validNamesCont = GB_entry(GLOBAL.gb_main, "VALID_NAMES");
     if (!GB_validNamesCont) { std::cout << "validNames Container not found\n"; }
 
     GB_ERROR err = 0;
@@ -83,7 +81,7 @@ static void fillSelNamList(selectValidNameStruct* svnp) {
         free(typeString);
     }
 
-    err = GB_end_transaction(GLOBAL_gb_main, err);
+    err = GB_end_transaction(GLOBAL.gb_main, err);
     if (err) aw_message(err);
     else {
         svnp->validNamesList->insert_default("????", "????");
@@ -132,9 +130,9 @@ static void selectValidNameFromList(AW_window* selManWindowRoot, AW_CL, AW_CL)
     GB_ERROR err = 0;
     if (selectedSpeciesName[0] == 0) err = "No species selected";
     else {
-        err = GB_begin_transaction(GLOBAL_gb_main);
+        err = GB_begin_transaction(GLOBAL.gb_main);
         if (!err) {
-            GBDATA *gb_selected_species = GBT_find_species(GLOBAL_gb_main, selectedSpeciesName);
+            GBDATA *gb_selected_species = GBT_find_species(GLOBAL.gb_main, selectedSpeciesName);
             if (!gb_selected_species) {
                 err = GBS_global_string("species '%s' not found in database", selectedSpeciesName);
             }
@@ -148,7 +146,7 @@ static void selectValidNameFromList(AW_window* selManWindowRoot, AW_CL, AW_CL)
                 }
             }
         }
-        err = GB_end_transaction(GLOBAL_gb_main, err);
+        err = GB_end_transaction(GLOBAL.gb_main, err);
     }
 
     if (err) aw_message(err);
@@ -176,7 +174,7 @@ AW_window *NT_searchManuallyNames(AW_root *aw_root /* , AW_CL */)
     aws->at("nameList");
     // creates the selection list and asign AWAR_SELECTED_VALNAME
 
-    selectValidNameStruct *vns = createValNameList(GLOBAL_gb_main, aws, AWAR_SELECTED_VALNAME);
+    selectValidNameStruct *vns = createValNameList(GLOBAL.gb_main, aws, AWAR_SELECTED_VALNAME);
 
     aws->at("select");
     aws->callback(selectValidNameFromList, 0, 0); // (... 0,0)

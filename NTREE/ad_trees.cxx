@@ -8,6 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
+#include "ntree.hxx"
 #include "ad_trees.hxx"
 #include "nt_tree_cmp.hxx"
 
@@ -18,7 +19,6 @@
 #include <awt_sel_boxes.hxx>
 #include <awt_modules.hxx>
 
-#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_edit.hxx>
 #include <aw_file.hxx>
@@ -36,8 +36,6 @@
 #include <CT_ctree.hxx>
 
 #define nt_assert(bed) arb_assert(bed)
-
-extern GBDATA *GLOBAL_gb_main;
 
 #define AWAR_TREE_SAV "ad_tree/"
 #define AWAR_TREE_TMP "tmp/ad_tree/"
@@ -71,10 +69,10 @@ extern GBDATA *GLOBAL_gb_main;
 
 static void tree_vars_callback(AW_root *aw_root) // Map tree vars to display objects
 {
-    if (GLOBAL_gb_main) {
-        GB_push_transaction(GLOBAL_gb_main);
+    if (GLOBAL.gb_main) {
+        GB_push_transaction(GLOBAL.gb_main);
         char *treename = aw_root->awar(AWAR_TREE_NAME)->read_string();
-        GBDATA *ali_cont = GBT_find_tree(GLOBAL_gb_main, treename);
+        GBDATA *ali_cont = GBT_find_tree(GLOBAL.gb_main, treename);
         if (!ali_cont) {
             aw_root->awar(AWAR_TREE_SECURITY)->unmap();
             aw_root->awar(AWAR_TREE_REM)->unmap();
@@ -93,13 +91,13 @@ static void tree_vars_callback(AW_root *aw_root) // Map tree vars to display obj
         aw_root->awar(AWAR_TREE_EXPORT_NAME)->write_string(fname); // create default file name
         free(fname);
         free(suffix);
-        GB_pop_transaction(GLOBAL_gb_main);
+        GB_pop_transaction(GLOBAL.gb_main);
         free(treename);
     }
 }
 //  update import tree name depending on file name
 static void tree_import_callback(AW_root *aw_root) {
-    GB_transaction  dummy(GLOBAL_gb_main);
+    GB_transaction  dummy(GLOBAL.gb_main);
     char           *treename        = aw_root->awar(AWAR_TREE_IMPORT "/file_name")->read_string();
     char           *treename_nopath = strrchr(treename, '/');
 
@@ -120,10 +118,10 @@ static void tree_import_callback(AW_root *aw_root) {
 
 static void ad_tree_set_security(AW_root *aw_root)
 {
-    if (GLOBAL_gb_main) {
-        GB_transaction dummy(GLOBAL_gb_main);
+    if (GLOBAL.gb_main) {
+        GB_transaction dummy(GLOBAL.gb_main);
         char *treename = aw_root->awar(AWAR_TREE_NAME)->read_string();
-        GBDATA *ali_cont = GBT_find_tree(GLOBAL_gb_main, treename);
+        GBDATA *ali_cont = GBT_find_tree(GLOBAL.gb_main, treename);
         if (ali_cont) {
             long prot = aw_root->awar(AWAR_TREE_SECURITY)->read_int();
             long old;
@@ -227,7 +225,7 @@ static void tree_save_cb(AW_window *aww) {
 
         switch (exportType) {
             case AD_TREE_EXPORT_FORMAT_XML:
-                error = TREE_write_XML(GLOBAL_gb_main, db_name, tree_name, node_gen,
+                error = TREE_write_XML(GLOBAL.gb_main, db_name, tree_name, node_gen,
                                        aw_root->awar(AWAR_TREE_EXPORT_HIDE_FOLDED_GROUPS)->read_int(),
                                        fname);
                 break;
@@ -239,7 +237,7 @@ static void tree_save_cb(AW_window *aww) {
                     quoteMode = TREE_node_quoting(quoteMode|TREE_FORCE_REPLACE);
                 }
 
-                error = TREE_write_Newick(GLOBAL_gb_main, tree_name, node_gen,
+                error = TREE_write_Newick(GLOBAL.gb_main, tree_name, node_gen,
                                           aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS)->read_int(),
                                           aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS)->read_int(),
                                           aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES)->read_int(),
@@ -391,13 +389,13 @@ static void tree_load_cb(AW_window *aww) {
 
         if (!tree) error = GB_await_error();
         else {
-            if (scaleWarning) GBT_message(GLOBAL_gb_main, scaleWarning);
+            if (scaleWarning) GBT_message(GLOBAL.gb_main, scaleWarning);
 
-            GB_transaction ta(GLOBAL_gb_main);
-            error = GBT_write_tree(GLOBAL_gb_main, 0, tree_name, tree);
+            GB_transaction ta(GLOBAL.gb_main);
+            error = GBT_write_tree(GLOBAL.gb_main, 0, tree_name, tree);
 
             if (!error && tree_comment) {
-                error = GBT_write_tree_rem(GLOBAL_gb_main, tree_name, tree_comment);
+                error = GBT_write_tree_rem(GLOBAL.gb_main, tree_name, tree_comment);
             }
 
             if (error) error = ta.close(error);
@@ -479,7 +477,7 @@ static void ad_move_tree_info(AW_window *aww, AW_CL mode) {
         char    *t1  = awr->awar(AWAR_TREE_NAME)->read_string();
         char    *t2  = TreeAdmin::dest_tree_awar(awr)->read_string();
 
-        AWT_move_info(GLOBAL_gb_main, t1, t2, log_file, compare_node_info, delete_old_nodes, nodes_with_marked_only);
+        AWT_move_info(GLOBAL.gb_main, t1, t2, log_file, compare_node_info, delete_old_nodes, nodes_with_marked_only);
         if (log_file) {
             AW_edit(log_file);
             GB_remove_on_exit(log_file);
@@ -498,7 +496,7 @@ static void ad_move_tree_info(AW_window *aww, AW_CL mode) {
 static AW_window *create_tree_diff_window(AW_root *root) {
     static AW_window_simple *aws = 0;
     if (aws) return aws;
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction dummy(GLOBAL.gb_main);
     aws = new AW_window_simple;
     aws->init(root, "CMP_TOPOLOGY", "COMPARE TREE TOPOLOGIES");
     aws->load_xfig("ad_tree_cmp.fig");
@@ -512,9 +510,9 @@ static AW_window *create_tree_diff_window(AW_root *root) {
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("tree1");
-    awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, AWAR_TREE_NAME);
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, AWAR_TREE_NAME);
     aws->at("tree2");
-    awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, TreeAdmin::dest_tree_awar(root)->awar_name);
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, TreeAdmin::dest_tree_awar(root)->awar_name);
 
     aws->button_length(20);
 
@@ -527,7 +525,7 @@ static AW_window *create_tree_diff_window(AW_root *root) {
 static AW_window *create_tree_cmp_window(AW_root *root) {
     static AW_window_simple *aws = 0;
     if (aws) return aws;
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction dummy(GLOBAL.gb_main);
     aws = new AW_window_simple;
     aws->init(root, "COPY_NODE_INFO_OF_TREE", "TREE COPY INFO");
     aws->load_xfig("ad_tree_cmp.fig");
@@ -541,9 +539,9 @@ static AW_window *create_tree_cmp_window(AW_root *root) {
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("tree1");
-    awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, AWAR_TREE_NAME);
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, AWAR_TREE_NAME);
     aws->at("tree2");
-    awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, TreeAdmin::dest_tree_awar(root)->awar_name);
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, TreeAdmin::dest_tree_awar(root)->awar_name);
 
     aws->at("move");
     aws->callback(ad_move_tree_info, 0); // move
@@ -566,8 +564,8 @@ static void reorder_trees_cb(AW_window *aww, awt_reorder_mode dest, AW_CL) {
     char     *tree_name = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
     GB_ERROR  error     = NULL;
 
-    GB_transaction ta(GLOBAL_gb_main);
-    GBDATA *gb_treedata   = GBT_get_tree_data(GLOBAL_gb_main);
+    GB_transaction ta(GLOBAL.gb_main);
+    GBDATA *gb_treedata   = GBT_get_tree_data(GLOBAL.gb_main);
     GBDATA *gb_moved_tree = GB_entry(gb_treedata, tree_name);
 
     if (!gb_moved_tree) {
@@ -585,7 +583,7 @@ static void reorder_trees_cb(AW_window *aww, awt_reorder_mode dest, AW_CL) {
                 // fall-through (move top-tree up = move to bottom)
             case ARM_BOTTOM:
                 move_mode      = GBT_BEHIND;
-                gb_target_tree = GBT_find_bottom_tree(GLOBAL_gb_main);
+                gb_target_tree = GBT_find_bottom_tree(GLOBAL.gb_main);
                 break;
 
             case ARM_DOWN:
@@ -595,7 +593,7 @@ static void reorder_trees_cb(AW_window *aww, awt_reorder_mode dest, AW_CL) {
                 // fall-through (move bottom-tree down = move to top)
             case ARM_TOP:
                 move_mode      = GBT_INFRONTOF;
-                gb_target_tree = GBT_find_top_tree(GLOBAL_gb_main);
+                gb_target_tree = GBT_find_top_tree(GLOBAL.gb_main);
                 break;
         }
 
@@ -650,7 +648,7 @@ void popup_tree_admin_window(AW_root *aw_root, AW_CL cl_popmedown) {
         
         aws->button_length(20);
 
-        static TreeAdmin::Spec spec(GLOBAL_gb_main, AWAR_TREE_NAME);
+        static TreeAdmin::Spec spec(GLOBAL.gb_main, AWAR_TREE_NAME);
         
         aws->at("delete");
         aws->callback(TreeAdmin::delete_tree_cb, (AW_CL)&spec);
@@ -685,7 +683,7 @@ void popup_tree_admin_window(AW_root *aw_root, AW_CL cl_popmedown) {
         aws->button_length(0);
 
         aws->at("list");
-        awt_create_selection_list_on_trees(GLOBAL_gb_main, aws, AWAR_TREE_NAME);
+        awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, AWAR_TREE_NAME);
         
         aws->at("sort");
         awt_create_order_buttons(aws, reorder_trees_cb, 0);
@@ -717,7 +715,7 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
             error = "Not enough trees selected (at least 2 needed)";
         }
         else {
-            GBDATA *gb_main = GLOBAL_gb_main;
+            GBDATA *gb_main = GLOBAL.gb_main;
             GB_transaction ta(gb_main);
 
             {
@@ -768,7 +766,7 @@ AW_window *NT_create_consense_window(AW_root *aw_root) {
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("list");
-        AW_DB_selection *all_trees      = awt_create_selection_list_on_trees(GLOBAL_gb_main, aws, AWAR_TREE_CONSENSE_SELECTED);
+        AW_DB_selection *all_trees      = awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, AWAR_TREE_CONSENSE_SELECTED);
         AW_selection    *selected_trees = awt_create_subset_selection_list(aws, all_trees->get_sellist(), "selected", "add", "sort");
 
         aws->at("name");
