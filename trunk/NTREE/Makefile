@@ -2,46 +2,17 @@
 
 .SUFFIXES: .o .cxx .depend
 
-#                         Note: NT_cb.o should be first object (needed by 'proto')
-CPP_OBJECTS = \
-	NT_cb.o \
-	AP_consensus.o \
-	AP_conservProfile2Gnuplot.o \
-	AP_cprofile.o \
-	ColumnStat_2_gnuplot.o \
-	AP_pos_var_pars.o \
-	NT_branchAnalysis.o \
-	NT_concatenate.o \
-	NT_dbrepair.o \
-	NT_edconf.o \
-	NT_extern.o \
-	NT_import.o \
-	NT_ins_col.o \
-	NT_join.o \
-	NT_main.o \
-	NT_sort.o \
-	NT_trackAliChanges.o \
-	NT_validManual.o \
-	NT_validNameParser.o \
-	NT_validNames.o \
-	NT_tree_cmp.o \
-	ad_ali.o \
-	ad_ext.o \
-	ad_spec.o \
-	ad_transpro.o \
-	ad_trees.o \
+SOURCES=$(wildcard *.cxx)
+OBJECTS=$(subst .cxx,.o,$(SOURCES))
 
-
-CPP_SOURCES = $(CPP_OBJECTS:.o=.cxx)
-
-$(MAIN): $(CPP_OBJECTS)
-	@$(ARBHOME)/SOURCE_TOOLS/binuptodate.pl $(MAIN) $(CPP_OBJECTS) || ( \
-		echo "$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)"; \
-		$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS) ; \
+$(MAIN): $(OBJECTS)
+	@$(ARBHOME)/SOURCE_TOOLS/binuptodate.pl $(MAIN) $(OBJECTS) || ( \
+		echo "$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)"; \
+		$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS) ; \
 	)
 
 proto:
-	../AISC_MKPTPS/aisc_mkpt -P -A -E -G -F ^NT_,^AP_ -w nt_internal.h $(CPP_SOURCES) >nt_internal.h.tmp
+	../AISC_MKPTPS/aisc_mkpt -P -A -E -G -F ^NT_,^AP_ -w nt_internal.h $(SOURCES) >nt_internal.h.tmp
 	../SOURCE_TOOLS/mv_if_diff nt_internal.h.tmp nt_internal.h
 	../AISC_MKPTPS/aisc_mkpt -P -A -E -G -w nt_cb.hxx NT_cb.cxx NT_extern.cxx >nt_cb.hxx.tmp
 	../SOURCE_TOOLS/mv_if_diff nt_cb.hxx.tmp nt_cb.hxx
@@ -50,9 +21,9 @@ proto:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
-	rm -f $(CPP_OBJECTS) *.a
+	rm -f $(OBJECTS) *.a
 
-DEPENDS = $(CPP_OBJECTS:.o=.depend)
+DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile
 	@rm $(DEPENDS)
