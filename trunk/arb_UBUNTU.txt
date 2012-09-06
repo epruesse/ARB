@@ -40,6 +40,7 @@ You may use the provided install script, e.g.
      - libxpm-dev
      - libxt-dev
      - lynx
+     - time
      - x11proto-print-dev
      - xsltproc
      - xutils-dev
