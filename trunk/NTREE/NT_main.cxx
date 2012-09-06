@@ -8,8 +8,8 @@
 //                                                                 //
 // =============================================================== //
 
-#include "nt_internal.h"
 #include "ntree.hxx"
+#include "nt_internal.h"
 #include "nt_cb.hxx"
 
 #include <mg_merge.hxx>
@@ -42,8 +42,7 @@ AW_HEADER_MAIN
 #define NT_SERVE_DB_TIMER 50
 #define NT_CHECK_DB_TIMER 200
 
-GBDATA *GLOBAL_gb_main;                             // global gb_main for arb_ntree
-NT_global GLOBAL_NT = { 0, 0, false };
+NT_global GLOBAL; 
 
 // NT_format_all_alignments may be called after any operation which causes
 // unformatted alignments (e.g importing sequences)
@@ -149,25 +148,25 @@ static GB_ERROR nt_check_database_consistency() {
     // called once on ARB_NTREE startup
     arb_progress("Checking consistency");
 
-    GB_ERROR err  = NT_format_all_alignments(GLOBAL_gb_main);
-    if (!err) err = NT_repair_DB(GLOBAL_gb_main);
+    GB_ERROR err  = NT_format_all_alignments(GLOBAL.gb_main);
+    if (!err) err = NT_repair_DB(GLOBAL.gb_main);
 
     return err;
 }
 
 
 static void serve_db_interrupt(AW_root *awr) {
-    bool success = GBCMS_accept_calls(GLOBAL_gb_main, false);
+    bool success = GBCMS_accept_calls(GLOBAL.gb_main, false);
     while (success) {
-        awr->check_for_remote_command((AW_default)GLOBAL_gb_main, AWAR_NT_REMOTE_BASE);
-        success = GBCMS_accept_calls(GLOBAL_gb_main, true);
+        awr->check_for_remote_command((AW_default)GLOBAL.gb_main, AWAR_NT_REMOTE_BASE);
+        success = GBCMS_accept_calls(GLOBAL.gb_main, true);
     }
 
     awr->add_timed_callback(NT_SERVE_DB_TIMER, (AW_RCB)serve_db_interrupt, 0, 0);
 }
 
 static void check_db_interrupt(AW_root *awr) {
-    awr->check_for_remote_command((AW_default)GLOBAL_gb_main, AWAR_NT_REMOTE_BASE);
+    awr->check_for_remote_command((AW_default)GLOBAL.gb_main, AWAR_NT_REMOTE_BASE);
     awr->add_timed_callback(NT_CHECK_DB_TIMER, (AW_RCB)check_db_interrupt, 0, 0);
 }
 
@@ -175,8 +174,8 @@ static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_root, bool install_c
     GB_ERROR error = NULL;
     nt_create_main_window(aw_root);
 
-    if (GB_read_clients(GLOBAL_gb_main) == 0) { // server
-        error = GBCMS_open(":", 0, GLOBAL_gb_main);
+    if (GB_read_clients(GLOBAL.gb_main) == 0) { // server
+        error = GBCMS_open(":", 0, GLOBAL.gb_main);
         if (error) {
             error = GBS_global_string("THIS PROGRAM HAS PROBLEMS TO OPEN INTERCLIENT COMMUNICATION:\n"
                                       "Reason: %s\n"
@@ -197,16 +196,16 @@ static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_root, bool install_c
         }
     }
 
-    if (!error && autorun_macro) awt_execute_macro(GLOBAL_gb_main, aw_root, autorun_macro);
+    if (!error && autorun_macro) awt_execute_macro(GLOBAL.gb_main, aw_root, autorun_macro);
     return error;
 }
 
 static ARB_ERROR load_and_startup_main_window(AW_root *aw_root, const char *autorun_macro) {
     char *db_server = aw_root->awar(AWAR_DB_PATH)->read_string();
-    GLOBAL_gb_main  = GBT_open(db_server, "rw");
+    GLOBAL.gb_main  = GBT_open(db_server, "rw");
 
     ARB_ERROR error;
-    if (!GLOBAL_gb_main) {
+    if (!GLOBAL.gb_main) {
         error = GB_await_error();
     }
     else {
@@ -226,7 +225,7 @@ static ARB_ERROR load_and_startup_main_window(AW_root *aw_root, const char *auto
             }
         }
 #if defined(DEBUG)
-        AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB database (%s)", db_server));
+        AWT_announce_db_to_browser(GLOBAL.gb_main, GBS_global_string("ARB database (%s)", db_server));
 #endif // DEBUG
 
         GB_ERROR problem = startup_mainwindow_and_dbserver(aw_root, true, autorun_macro);
@@ -260,7 +259,7 @@ static void nt_delete_database(AW_window *aww) {
 }
 
 static void start_main_window_after_import(AW_root *aw_root) {
-    GLOBAL_NT.awr  = aw_root;
+    GLOBAL.aw_root  = aw_root;
     aw_message_if(startup_mainwindow_and_dbserver(aw_root, false, NULL));
 }
 
@@ -289,7 +288,7 @@ static void nt_intro_start_import(AW_window *aw_intro) {
     AW_root *aw_root = aw_intro->get_root();
     aw_root->awar_string(AWAR_DB_PATH)->write_string("noname.arb");
     aw_root->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE); // Default toggle  in window  "Create&import" is Non-Genom
-    GLOBAL_gb_main   = open_AWTC_import_window(aw_root, "", true, 0, (AW_RCB)start_main_window_after_import, 0, 0);
+    GLOBAL.gb_main   = open_AWTC_import_window(aw_root, "", true, 0, (AW_RCB)start_main_window_after_import, 0, 0);
 }
 
 static AW_window *nt_create_intro_window(AW_root *awr) {
@@ -518,7 +517,7 @@ int ARB_main(int argc, const char *argv[]) {
     GB_shell shell;
     AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_NT");
 
-    GLOBAL_NT.awr = aw_root;
+    GLOBAL.aw_root = aw_root;
 
     {
         char *message = strdup(GB_path_in_ARBLIB("message"));
@@ -595,7 +594,7 @@ int ARB_main(int argc, const char *argv[]) {
                 if (!error) {
                     if (mode == IMPORT) {
                         aw_root->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE);
-                        GLOBAL_gb_main = open_AWTC_import_window(aw_root, database, true, 0, (AW_RCB)start_main_window_after_import, 0, 0);
+                        GLOBAL.gb_main = open_AWTC_import_window(aw_root, database, true, 0, (AW_RCB)start_main_window_after_import, 0, 0);
                         aw_root->main_loop();
                     }
                     else if (mode == NORMAL) {
@@ -613,8 +612,8 @@ int ARB_main(int argc, const char *argv[]) {
                             free(latest);
                         }
                         AW_window *iws;
-                        if (GLOBAL_NT.window_creator) {
-                            iws = GLOBAL_NT.window_creator(aw_root, 0);
+                        if (GLOBAL.window_creator) {
+                            iws = GLOBAL.window_creator(aw_root, 0);
                         }
                         else {
                             iws = nt_create_intro_window(aw_root);

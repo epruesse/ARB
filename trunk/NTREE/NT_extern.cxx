@@ -8,9 +8,9 @@
 //                                                                 //
 // =============================================================== //
 
+#include "ntree.hxx"
 #include "map_viewer.hxx"
 #include "nt_internal.h"
-#include "ntree.hxx"
 #include "ad_trees.hxx"
 #include "seq_quality.h"
 #include "nt_join.hxx"
@@ -68,13 +68,13 @@ AW_window *create_tree_window(AW_root *aw_root, AWT_graphic *awd);
 
 static void nt_changesecurity(AW_root *aw_root) {
     int level = aw_root->awar(AWAR_SECURITY_LEVEL)->read_int();
-    GB_push_transaction(GLOBAL_gb_main);
-    GB_change_my_security(GLOBAL_gb_main, level);
-    GB_pop_transaction(GLOBAL_gb_main);
+    GB_push_transaction(GLOBAL.gb_main);
+    GB_change_my_security(GLOBAL.gb_main, level);
+    GB_pop_transaction(GLOBAL.gb_main);
 }
 
 static void export_nds_cb(AW_window *aww, AW_CL print_flag) {
-    GB_transaction  dummy(GLOBAL_gb_main);
+    GB_transaction  dummy(GLOBAL.gb_main);
     GBDATA         *gb_species;
     const char     *buf;
     AW_root        *aw_root = aww->get_root();
@@ -86,15 +86,15 @@ static void export_nds_cb(AW_window *aww, AW_CL print_flag) {
         aw_message("Error: Cannot open and write to file");
         return;
     }
-    make_node_text_init(GLOBAL_gb_main);
+    make_node_text_init(GLOBAL.gb_main);
     NDS_Type  nds_type  = (NDS_Type)aw_root->awar(AWAR_EXPORT_NDS_SEPARATOR)->read_int();
     char     *tree_name = aw_root->awar(AWAR_TREE)->read_string();
 
-    for (gb_species = GBT_first_marked_species(GLOBAL_gb_main);
+    for (gb_species = GBT_first_marked_species(GLOBAL.gb_main);
          gb_species;
          gb_species = GBT_next_marked_species(gb_species))
     {
-        buf = make_node_text_nds(GLOBAL_gb_main, gb_species, nds_type, 0, tree_name);
+        buf = make_node_text_nds(GLOBAL.gb_main, gb_species, nds_type, 0, tree_name);
         fprintf(out, "%s\n", buf);
     }
     AW_refresh_fileselection(aw_root, AWAR_EXPORT_NDS);
@@ -168,30 +168,30 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     // creates awars for all modules reachable from ARB_NT main window
 
     awr->awar_string(AWAR_FOOTER, "", def);
-    if (GB_read_clients(GLOBAL_gb_main)>=0) {
-        awr->awar_string(AWAR_TREE, "", GLOBAL_gb_main);
+    if (GB_read_clients(GLOBAL.gb_main)>=0) {
+        awr->awar_string(AWAR_TREE, "", GLOBAL.gb_main);
     }
     else {
         awr->awar_string(AWAR_TREE, "", def);
     }
 
-    awr->awar_string(AWAR_SPECIES_NAME, "",     GLOBAL_gb_main);
-    awr->awar_string(AWAR_SAI_NAME, "",     GLOBAL_gb_main);
-    awr->awar_string(AWAR_SAI_GLOBAL, "",     GLOBAL_gb_main);
-    awr->awar_string(AWAR_MARKED_SPECIES_COUNTER, "unknown",    GLOBAL_gb_main);
-    awr->awar_string(AWAR_INFO_BUTTON_TEXT, "Species Info",    GLOBAL_gb_main);
+    awr->awar_string(AWAR_SPECIES_NAME, "",     GLOBAL.gb_main);
+    awr->awar_string(AWAR_SAI_NAME, "",     GLOBAL.gb_main);
+    awr->awar_string(AWAR_SAI_GLOBAL, "",     GLOBAL.gb_main);
+    awr->awar_string(AWAR_MARKED_SPECIES_COUNTER, "unknown",    GLOBAL.gb_main);
+    awr->awar_string(AWAR_INFO_BUTTON_TEXT, "Species Info",    GLOBAL.gb_main);
     awr->awar(AWAR_SPECIES_NAME)->add_callback(AWAR_INFO_BUTTON_TEXT_change_cb);
     awr->awar_int(AWAR_NTREE_TITLE_MODE, 1);
 
-    awr->awar_string(AWAR_SAI_COLOR_STR, "", GLOBAL_gb_main); // sai visualization in probe match
+    awr->awar_string(AWAR_SAI_COLOR_STR, "", GLOBAL.gb_main); // sai visualization in probe match
 
-    GEN_create_awars(awr, def, GLOBAL_gb_main);
-    EXP_create_awars(awr, def, GLOBAL_gb_main);
+    GEN_create_awars(awr, def, GLOBAL.gb_main);
+    EXP_create_awars(awr, def, GLOBAL.gb_main);
 #if defined(DEBUG)
     AWT_create_db_browser_awars(awr, def);
 #endif // DEBUG
 
-    AW_create_namesadmin_awars(awr, GLOBAL_gb_main);
+    AW_create_namesadmin_awars(awr, GLOBAL.gb_main);
 
     awr->awar_int(AWAR_SECURITY_LEVEL, 0, def);
     awr->awar(AWAR_SECURITY_LEVEL)->add_callback(nt_changesecurity);
@@ -200,32 +200,32 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
 #endif // DEBUG
 
     create_insertchar_variables(awr, def);
-    create_probe_design_variables(awr, def, GLOBAL_gb_main);
-    create_primer_design_variables(awr, def, GLOBAL_gb_main);
+    create_probe_design_variables(awr, def, GLOBAL.gb_main);
+    create_primer_design_variables(awr, def, GLOBAL.gb_main);
     create_trees_var(awr, def);
     DBUI::create_dbui_awars(awr, def);
     AP_create_consensus_var(awr, def);
-    GDE_create_var(awr, def, GLOBAL_gb_main);
+    GDE_create_var(awr, def, GLOBAL.gb_main);
     create_cprofile_var(awr, def);
     NT_create_transpro_variables(awr, def);
     NT_build_resort_awars(awr, def);
-    NT_create_trackAliChanges_Awars(awr, GLOBAL_gb_main);
+    NT_create_trackAliChanges_Awars(awr, GLOBAL.gb_main);
 
     NT_create_alignment_vars(awr, def);
-    create_nds_vars(awr, def, GLOBAL_gb_main);
+    create_nds_vars(awr, def, GLOBAL.gb_main);
     create_export_nds_awars(awr, def);
-    awt_create_dtree_awars(awr, GLOBAL_gb_main);
+    awt_create_dtree_awars(awr, GLOBAL.gb_main);
 
-    awr->awar_string(AWAR_ERROR_MESSAGES, "", GLOBAL_gb_main);
-    awr->awar_string(AWAR_DB_COMMENT, "<no description>", GLOBAL_gb_main);
+    awr->awar_string(AWAR_ERROR_MESSAGES, "", GLOBAL.gb_main);
+    awr->awar_string(AWAR_DB_COMMENT, "<no description>", GLOBAL.gb_main);
 
-    AWTC_create_submission_variables(awr, GLOBAL_gb_main);
+    AWTC_create_submission_variables(awr, GLOBAL.gb_main);
     NT_createConcatenationAwars(awr, def);
     NT_createValidNamesAwars(awr, def); // lothar
     SQ_create_awars(awr, def);
     RefEntries::create_refentries_awars(awr, def);
 
-    GB_ERROR error = ARB_bind_global_awars(GLOBAL_gb_main);
+    GB_ERROR error = ARB_bind_global_awars(GLOBAL.gb_main);
     if (!error) {
         AW_awar *awar_expert = awr->awar(AWAR_EXPERT);
         awar_expert->add_callback(expert_mode_changed_cb);
@@ -239,11 +239,11 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
 
 
 static void nt_exit(AW_window *aws) {
-    if (GLOBAL_gb_main) {
-        if (GB_read_clients(GLOBAL_gb_main)>=0) {
-            if (GB_read_clock(GLOBAL_gb_main) > GB_last_saved_clock(GLOBAL_gb_main)) {
+    if (GLOBAL.gb_main) {
+        if (GB_read_clients(GLOBAL.gb_main)>=0) {
+            if (GB_read_clock(GLOBAL.gb_main) > GB_last_saved_clock(GLOBAL.gb_main)) {
                 long secs;
-                secs = GB_last_saved_time(GLOBAL_gb_main);
+                secs = GB_last_saved_time(GLOBAL.gb_main);
 
 #if defined(DEBUG)
                 secs =  GB_time_of_day(); // simulate "just saved"
@@ -264,10 +264,10 @@ static void nt_exit(AW_window *aws) {
                 }
             }
         }
-        GBCMS_shutdown(GLOBAL_gb_main);
+        GBCMS_shutdown(GLOBAL.gb_main);
 
-        GBDATA *gb_main = GLOBAL_gb_main;
-        GLOBAL_gb_main  = NULL;                     // avoid further usage
+        GBDATA *gb_main = GLOBAL.gb_main;
+        GLOBAL.gb_main  = NULL;                     // avoid further usage
 
         AW_root *aw_root = aws->get_root();
 #if defined(WARN_TODO)
@@ -288,9 +288,9 @@ static void NT_save_quick_cb(AW_window *aww) {
     AW_root *awr      = aww->get_root();
     char    *filename = awr->awar(AWAR_DB_PATH)->read_string();
 
-    awr->dont_save_awars_with_default_value(GLOBAL_gb_main);
+    awr->dont_save_awars_with_default_value(GLOBAL.gb_main);
 
-    GB_ERROR error = GB_save_quick(GLOBAL_gb_main, filename);
+    GB_ERROR error = GB_save_quick(GLOBAL.gb_main, filename);
     free( filename);
     if (error) aw_message(error);
     else       AW_refresh_fileselection(awr, "tmp/nt/arbdb");
@@ -300,7 +300,7 @@ static void NT_save_quick_cb(AW_window *aww) {
 static void NT_save_quick_as_cb(AW_window *aww) {
     AW_root  *awr      = aww->get_root();
     char     *filename = awr->awar(AWAR_DB_PATH)->read_string();
-    GB_ERROR  error    = GB_save_quick_as(GLOBAL_gb_main, filename);
+    GB_ERROR  error    = GB_save_quick_as(GLOBAL.gb_main, filename);
     if (!error) AW_refresh_fileselection(awr, "tmp/nt/arbdb");
     aww->hide_or_notify(error);
 
@@ -311,8 +311,8 @@ static void NT_save_as_cb(AW_window *aww) {
     char    *filename = awr->awar(AWAR_DB_PATH)->read_string();
     char    *filetype = awr->awar(AWAR_DB_TYPE)->read_string();
 
-    awr->dont_save_awars_with_default_value(GLOBAL_gb_main);
-    GB_ERROR error = GB_save(GLOBAL_gb_main, filename, filetype);
+    awr->dont_save_awars_with_default_value(GLOBAL.gb_main);
+    GB_ERROR error = GB_save(GLOBAL.gb_main, filename, filetype);
     if (!error) AW_refresh_fileselection(awr, "tmp/nt/arbdb");
     aww->hide_or_notify(error);
 
@@ -350,22 +350,22 @@ static AW_window *NT_create_save_quick_as(AW_root *aw_root, char *base_name)
 static void NT_database_optimization(AW_window *aww) {
     arb_progress progress("Optimizing database", 2);
 
-    GB_push_my_security(GLOBAL_gb_main);
-    GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
+    GB_push_my_security(GLOBAL.gb_main);
+    GB_ERROR error = GB_begin_transaction(GLOBAL.gb_main);
     if (!error) {
         ConstStrArray ali_names;
-        GBT_get_alignment_names(ali_names, GLOBAL_gb_main);
+        GBT_get_alignment_names(ali_names, GLOBAL.gb_main);
 
         arb_progress ali_progress("Optimizing sequence data", ali_names.size());
         ali_progress.allow_title_reuse();
 
-        error = GBT_check_data(GLOBAL_gb_main, 0);
-        error = GB_end_transaction(GLOBAL_gb_main, error);
+        error = GBT_check_data(GLOBAL.gb_main, 0);
+        error = GB_end_transaction(GLOBAL.gb_main, error);
 
         if (!error) {
             char *tree_name = aww->get_root()->awar("tmp/nt/arbdb/optimize_tree_name")->read_string();
             for (int i = 0; ali_names[i]; ++i) {
-                error = GBT_compress_sequence_tree2(GLOBAL_gb_main, tree_name, ali_names[i]);
+                error = GBT_compress_sequence_tree2(GLOBAL.gb_main, tree_name, ali_names[i]);
                 ali_progress.inc_and_check_user_abort(error);
             }
             free(tree_name);
@@ -374,20 +374,20 @@ static void NT_database_optimization(AW_window *aww) {
     progress.inc_and_check_user_abort(error);
 
     if (!error) {
-        error = GB_optimize(GLOBAL_gb_main);
+        error = GB_optimize(GLOBAL.gb_main);
         progress.inc_and_check_user_abort(error);
     }
 
-    GB_pop_my_security(GLOBAL_gb_main);
+    GB_pop_my_security(GLOBAL.gb_main);
     aww->hide_or_notify(error);
 }
 
 static AW_window *NT_create_database_optimization_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction dummy(GLOBAL.gb_main);
 
-    const char *largest_tree = GBT_name_of_largest_tree(GLOBAL_gb_main);
+    const char *largest_tree = GBT_name_of_largest_tree(GLOBAL.gb_main);
     aw_root->awar_string("tmp/nt/arbdb/optimize_tree_name", largest_tree);
 
     aws = new AW_window_simple;
@@ -395,7 +395,7 @@ static AW_window *NT_create_database_optimization_window(AW_root *aw_root) {
     aws->load_xfig("optimize.fig");
 
     aws->at("trees");
-    awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, "tmp/nt/arbdb/optimize_tree_name");
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, "tmp/nt/arbdb/optimize_tree_name");
 
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
@@ -451,10 +451,10 @@ static AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name)
 }
 
 static void NT_undo_cb(AW_window *, AW_CL undo_type, AW_CL ntw) {
-    GB_ERROR error = GB_undo(GLOBAL_gb_main, (GB_UNDO_TYPE)undo_type);
+    GB_ERROR error = GB_undo(GLOBAL.gb_main, (GB_UNDO_TYPE)undo_type);
     if (error) aw_message(error);
     else {
-        GB_transaction dummy(GLOBAL_gb_main);
+        GB_transaction dummy(GLOBAL.gb_main);
         ((AWT_canvas *)ntw)->refresh();
     }
 }
@@ -782,7 +782,7 @@ static AW_window *NT_submit_bug(AW_root *aw_root, int bug_report) {
 }
 
 static void NT_focus_cb(AW_window */*aww*/) {
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction dummy(GLOBAL.gb_main);
 }
 
 
@@ -826,7 +826,7 @@ static void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL) {
 #if defined(DEBUG)
 static void NT_fix_database(AW_window *) {
     GB_ERROR err = 0;
-    err = GB_fix_database(GLOBAL_gb_main);
+    err = GB_fix_database(GLOBAL.gb_main);
     if (err) aw_message(err);
 }
 #endif
@@ -913,14 +913,14 @@ static void NT_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
     int                              id         = int(cl_id);
     const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
     nt_assert(descriptor);
-    if (descriptor) AWT_initialize_input_mask(aww->get_root(), GLOBAL_gb_main, &item_type_species, descriptor->get_internal_maskname(), descriptor->is_local_mask());
+    if (descriptor) AWT_initialize_input_mask(aww->get_root(), GLOBAL.gb_main, &item_type_species, descriptor->get_internal_maskname(), descriptor->is_local_mask());
 }
 
 static void NT_create_mask_submenu(AW_window_menu_modes *awm) {
     AWT_create_mask_submenu(awm, AWT_IT_SPECIES, NT_open_mask_window, 0);
 }
 static AW_window *create_colorize_species_window(AW_root *aw_root) {
-    return QUERY::create_colorize_items_window(aw_root, GLOBAL_gb_main, SPECIES_get_selector());
+    return QUERY::create_colorize_items_window(aw_root, GLOBAL.gb_main, SPECIES_get_selector());
 }
 
 static void NT_update_marked_counter(AW_window *aww, long count) {
@@ -929,7 +929,7 @@ static void NT_update_marked_counter(AW_window *aww, long count) {
 }
 
 static void nt_count_marked(AW_window *aww) {
-    long count = GBT_count_marked_species(GLOBAL_gb_main);
+    long count = GBT_count_marked_species(GLOBAL.gb_main);
     NT_update_marked_counter(aww, count);
 }
 
@@ -1040,7 +1040,7 @@ static AW_window *create_mark_by_refentries_window(AW_root *awr, AW_CL cl_gbmain
 // ##########################################
 
 static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
-    GB_push_transaction(GLOBAL_gb_main);
+    GB_push_transaction(GLOBAL.gb_main);
     AW_gc_manager aw_gc_manager;
     
     char  window_title[256];
@@ -1061,14 +1061,14 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
     if (!clone) AW_init_color_group_defaults("arb_ntree");
 
-    AWT_graphic_tree *tree = NT_generate_tree(awr, GLOBAL_gb_main, launch_MapViewer_cb);
+    AWT_graphic_tree *tree = NT_generate_tree(awr, GLOBAL.gb_main, launch_MapViewer_cb);
 
     AWT_canvas *ntw;
     {
         AP_tree_sort old_sort_type = tree->tree_sort;
         tree->set_tree_type(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
 
-        ntw = new AWT_canvas(GLOBAL_gb_main, awm, tree, aw_gc_manager, awar_tree);
+        ntw = new AWT_canvas(GLOBAL.gb_main, awm, tree, aw_gc_manager, awar_tree);
         tree->set_tree_type(old_sort_type, ntw);
         ntw->set_mode(AWT_MODE_SELECT);
     }
@@ -1076,7 +1076,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     {
         AW_awar    *tree_awar          = awr->awar_string(awar_tree);
         const char *tree_name          = tree_awar->read_char_pntr();
-        const char *existing_tree_name = GBT_existing_tree(GLOBAL_gb_main, tree_name);
+        const char *existing_tree_name = GBT_existing_tree(GLOBAL.gb_main, tree_name);
 
         if (existing_tree_name) {
             tree_awar->write_string(existing_tree_name);
@@ -1107,10 +1107,10 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awr->awar(AWAR_TREE_REFRESH)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
     awr->awar(AWAR_COLOR_GROUPS_USE)->add_callback((AW_RCB)NT_recompute_cb, (AW_CL)ntw, 0);
 
-    GBDATA *gb_arb_presets =    GB_search(GLOBAL_gb_main, "arb_presets", GB_CREATE_CONTAINER);
+    GBDATA *gb_arb_presets =    GB_search(GLOBAL.gb_main, "arb_presets", GB_CREATE_CONTAINER);
     GB_add_callback(gb_arb_presets, GB_CB_CHANGED, (GB_CB)AWT_expose_cb, (int *)ntw);
 
-    bool is_genome_db = GEN_is_genome_db(GLOBAL_gb_main, 0); //  is this a genome database ? (default = 0 = not a genom db)
+    bool is_genome_db = GEN_is_genome_db(GLOBAL.gb_main, 0); //  is this a genome database ? (default = 0 = not a genom db)
 
     // --------------
     //      File
@@ -1129,10 +1129,10 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         // add more to debug-menu
         awm->sep______________();
         awm->insert_menu_topic("fix_db",      "Fix database",            "F", 0, AWM_ALL, (AW_CB)NT_fix_database,            0,                                       0);
-        awm->insert_menu_topic("debug_arbdb", "Print debug information", "d", 0, AWM_ALL, (AW_CB)GB_print_debug_information, (AW_CL)                  GLOBAL_gb_main, 0);
-        awm->insert_menu_topic("test_compr",  "Test compression",        "T", 0, AWM_ALL, (AW_CB)GBT_compression_test,       (AW_CL)                  GLOBAL_gb_main, 0);
+        awm->insert_menu_topic("debug_arbdb", "Print debug information", "d", 0, AWM_ALL, (AW_CB)GB_print_debug_information, (AW_CL)                  GLOBAL.gb_main, 0);
+        awm->insert_menu_topic("test_compr",  "Test compression",        "T", 0, AWM_ALL, (AW_CB)GBT_compression_test,       (AW_CL)                  GLOBAL.gb_main, 0);
         awm->sep______________();
-        awm->insert_menu_topic("table_admin",       "Table Admin (unfinished/unknown purpose)",  "A", "tableadm.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AWT_create_tables_admin_window, (AW_CL)GLOBAL_gb_main);
+        awm->insert_menu_topic("table_admin",       "Table Admin (unfinished/unknown purpose)",  "A", "tableadm.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AWT_create_tables_admin_window, (AW_CL)GLOBAL.gb_main);
 #endif // DEBUG
 
         awm->create_menu("File", "F", AWM_ALL);
@@ -1155,14 +1155,14 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->insert_sub_menu("Export",      "E");
             {
                 awm->insert_menu_topic("export_to_ARB", "Export seq/tree/SAI's to new ARB database", "A", "arb_ntree.hlp",      AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree -export &", 0);
-                awm->insert_menu_topic("export_seqs",   "Export sequences to foreign format",        "f", "arb_export.hlp",     AWM_ALL, AW_POPUP,            (AW_CL)open_AWTC_export_window, (AW_CL)GLOBAL_gb_main);
+                awm->insert_menu_topic("export_seqs",   "Export sequences to foreign format",        "f", "arb_export.hlp",     AWM_ALL, AW_POPUP,            (AW_CL)open_AWTC_export_window, (AW_CL)GLOBAL.gb_main);
                 GDE_load_menu(awm, AWM_ALL, "Export");
                 awm->insert_menu_topic("export_nds",    "Export fields (to calc-sheet using NDS)",   "N", "arb_export_nds.hlp", AWM_ALL, AW_POPUP,            (AW_CL)create_nds_export_window, 0);
             }
             awm->close_sub_menu();
             awm->sep______________();
 
-            awm->insert_menu_topic("macros",    "Macros ",              "M", "macro.hlp",   AWM_ALL, (AW_CB)awt_popup_macro_window, (AW_CL)"ARB_NT", (AW_CL)GLOBAL_gb_main);
+            awm->insert_menu_topic("macros",    "Macros ",              "M", "macro.hlp",   AWM_ALL, (AW_CB)awt_popup_macro_window, (AW_CL)"ARB_NT", (AW_CL)GLOBAL.gb_main);
 
             awm->insert_sub_menu("Registration/Bug report/Version info",       "R");
             {
@@ -1180,7 +1180,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
             awm->sep______________();
 #endif
-            if (!GLOBAL_NT.extern_quit_button) {
+            if (!GLOBAL.extern_quit_button) {
                 awm->insert_menu_topic("quit",      "Quit",             "Q", "quit.hlp",    AWM_ALL, (AW_CB)nt_exit,    0, 0);
             }
 
@@ -1191,20 +1191,20 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
         awm->create_menu("Species", "c", AWM_ALL);
         {
-            awm->insert_menu_topic("species_search", "Search and query",    "q", "sp_search.hlp", AWM_ALL, AW_POPUP,                (AW_CL)DBUI::create_species_query_window, (AW_CL)GLOBAL_gb_main);
-            awm->insert_menu_topic("species_info",   "Species information", "i", "sp_info.hlp",   AWM_ALL, NT_popup_species_window, (AW_CL)GLOBAL_gb_main,         0);
+            awm->insert_menu_topic("species_search", "Search and query",    "q", "sp_search.hlp", AWM_ALL, AW_POPUP,                (AW_CL)DBUI::create_species_query_window, (AW_CL)GLOBAL.gb_main);
+            awm->insert_menu_topic("species_info",   "Species information", "i", "sp_info.hlp",   AWM_ALL, NT_popup_species_window, (AW_CL)GLOBAL.gb_main,         0);
 
             awm->sep______________();
 
             NT_insert_mark_submenus(awm, ntw, 1);
-            awm->insert_menu_topic("mark_by_ref",     "Mark by reference..", "r", "markbyref.hlp",     AWM_EXP, AW_POPUP,                     (AW_CL)create_mark_by_refentries_window, (AW_CL)GLOBAL_gb_main);
+            awm->insert_menu_topic("mark_by_ref",     "Mark by reference..", "r", "markbyref.hlp",     AWM_EXP, AW_POPUP,                     (AW_CL)create_mark_by_refentries_window, (AW_CL)GLOBAL.gb_main);
             awm->insert_menu_topic("species_colors",  "Set Colors",          "l", "mark_colors.hlp",   AWM_ALL, AW_POPUP,                     (AW_CL)create_colorize_species_window,   0);
             awm->insert_menu_topic("selection_admin", "Configurations",      "o", "configuration.hlp", AWM_ALL, NT_popup_configuration_admin, (AW_CL)ntw,                              0);
 
             awm->sep______________();
 
             awm->insert_sub_menu("Database fields admin", "f");
-            DBUI::insert_field_admin_menuitems(awm, GLOBAL_gb_main);
+            DBUI::insert_field_admin_menuitems(awm, GLOBAL.gb_main);
             awm->close_sub_menu();
             NT_create_mask_submenu(awm);
 
@@ -1228,11 +1228,11 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
             awm->sep______________();
 
-            awm->insert_menu_topic("species_submission", "Submit Species", "b", "submission.hlp", AWM_EXP, AW_POPUP, (AW_CL)AWTC_create_submission_window, (AW_CL)GLOBAL_gb_main);
+            awm->insert_menu_topic("species_submission", "Submit Species", "b", "submission.hlp", AWM_EXP, AW_POPUP, (AW_CL)AWTC_create_submission_window, (AW_CL)GLOBAL.gb_main);
 
             awm->sep______________();
 
-            awm->insert_menu_topic("new_names", "Generate New Names", "e", "sp_rename.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWTC_create_rename_window, (AW_CL)GLOBAL_gb_main);
+            awm->insert_menu_topic("new_names", "Generate New Names", "e", "sp_rename.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWTC_create_rename_window, (AW_CL)GLOBAL.gb_main);
 
             awm->insert_sub_menu("Valid Names ...", "V", AWM_EXP);
             {
@@ -1247,7 +1247,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         // ----------------------------
         //      Genes + Experiment
 
-        if (is_genome_db) GEN_create_genes_submenu(awm, GLOBAL_gb_main, true);
+        if (is_genome_db) GEN_create_genes_submenu(awm, GLOBAL.gb_main, true);
 
         // ------------------
         //      Sequence
@@ -1283,8 +1283,8 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->insert_menu_topic("arb_dist",  "Distance matrix",     "D", "dist.hlp",                AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_dist &",               0);
             awm->sep______________();
 
-            awm->insert_menu_topic("seq_quality",   "Check Sequence Quality", "Q", "seq_quality.hlp",   AWM_EXP, AW_POPUP, (AW_CL)SQ_create_seq_quality_window,   (AW_CL)GLOBAL_gb_main);
-            awm->insert_menu_topic("chimera_check", "Chimera Check",          "m", "check_quality.hlp", AWM_EXP, AW_POPUP, (AW_CL)STAT_create_quality_check_window, (AW_CL)GLOBAL_gb_main);
+            awm->insert_menu_topic("seq_quality",   "Check Sequence Quality", "Q", "seq_quality.hlp",   AWM_EXP, AW_POPUP, (AW_CL)SQ_create_seq_quality_window,   (AW_CL)GLOBAL.gb_main);
+            awm->insert_menu_topic("chimera_check", "Chimera Check",          "m", "check_quality.hlp", AWM_EXP, AW_POPUP, (AW_CL)STAT_create_quality_check_window, (AW_CL)GLOBAL.gb_main);
 
             awm->sep______________();
 
@@ -1312,7 +1312,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->insert_sub_menu("Other functions", "O");
             {
                 awm->insert_menu_topic("pos_var_dist",          "Positional variability (distance method)", "P", "pos_variability.ps", AWM_EXP, AW_POPUP,                 (AW_CL)AP_open_cprofile_window,            0);
-                awm->insert_menu_topic("count_different_chars", "Count different chars/column",             "C", "count_chars.hlp",    AWM_EXP, NT_count_different_chars, (AW_CL)GLOBAL_gb_main,                     0);
+                awm->insert_menu_topic("count_different_chars", "Count different chars/column",             "C", "count_chars.hlp",    AWM_EXP, NT_count_different_chars, (AW_CL)GLOBAL.gb_main,                     0);
                 awm->insert_menu_topic("corr_mutat_analysis",   "Compute clusters of correlated positions", "m", "",                   AWM_ALL, NT_system_in_xterm_cb,    (AW_CL)"arb_rnacma",                       0);
                 awm->insert_menu_topic("export_pos_var",        "Export Column Statistic (GNUPLOT format)", "E", "csp_2_gnuplot.hlp",  AWM_ALL, AW_POPUP,                 (AW_CL)NT_create_colstat_2_gnuplot_window, 0);
             }
@@ -1324,14 +1324,14 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
         awm->create_menu("Probes", "P", AWM_ALL);
         {
-            awm->insert_menu_topic("probe_design", "Design Probes",          "D", "probedesign.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_probe_design_window, (AW_CL)GLOBAL_gb_main);
+            awm->insert_menu_topic("probe_design", "Design Probes",          "D", "probedesign.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_probe_design_window, (AW_CL)GLOBAL.gb_main);
             awm->insert_menu_topic("probe_multi",  "Calculate Multi-Probes", "u", "multiprobe.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_multiprobe_window,   (AW_CL)ntw);
-            awm->insert_menu_topic("probe_match",  "Match Probes",           "M", "probematch.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_match_window,  (AW_CL)GLOBAL_gb_main);
+            awm->insert_menu_topic("probe_match",  "Match Probes",           "M", "probematch.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_match_window,  (AW_CL)GLOBAL.gb_main);
             awm->sep______________();
-            awm->insert_menu_topic("primer_design_new", "Design Primers",            "P", "primer_new.hlp", AWM_EXP, AW_POPUP,(AW_CL)create_primer_design_window, (AW_CL)GLOBAL_gb_main);
+            awm->insert_menu_topic("primer_design_new", "Design Primers",            "P", "primer_new.hlp", AWM_EXP, AW_POPUP,(AW_CL)create_primer_design_window, (AW_CL)GLOBAL.gb_main);
             awm->insert_menu_topic("primer_design",     "Design Sequencing Primers", "S", "primer.hlp",     AWM_EXP, (AW_CB)NT_primer_cb, 0, 0);
             awm->sep______________();
-            awm->insert_menu_topic("pt_server_admin",   "PT_SERVER Admin",           "A", "probeadmin.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_admin_window, (AW_CL)GLOBAL_gb_main);
+            awm->insert_menu_topic("pt_server_admin",   "PT_SERVER Admin",           "A", "probeadmin.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_admin_window, (AW_CL)GLOBAL.gb_main);
         }
 
     }
@@ -1361,8 +1361,8 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 #warning add "remove duplicates from tree"
 #endif
             awm->sep______________();
-            awm->insert_menu_topic("all_tree_remove_deleted", "Remove zombies from all trees", "a", "trm_del.hlp", AWM_ALL, (AW_CB)NT_alltree_remove_leafs, AWT_REMOVE_DELETED, (AW_CL)GLOBAL_gb_main);
-            awm->insert_menu_topic("all_tree_remove_marked",  "Remove marked from all trees",  "l", "trm_del.hlp", AWM_ALL, (AW_CB)NT_alltree_remove_leafs, AWT_REMOVE_MARKED, (AW_CL)GLOBAL_gb_main);
+            awm->insert_menu_topic("all_tree_remove_deleted", "Remove zombies from all trees", "a", "trm_del.hlp", AWM_ALL, (AW_CB)NT_alltree_remove_leafs, AWT_REMOVE_DELETED, (AW_CL)GLOBAL.gb_main);
+            awm->insert_menu_topic("all_tree_remove_marked",  "Remove marked from all trees",  "l", "trm_del.hlp", AWM_ALL, (AW_CB)NT_alltree_remove_leafs, AWT_REMOVE_MARKED, (AW_CL)GLOBAL.gb_main);
 #endif // DEVEL_RALF
         }
         awm->close_sub_menu();
@@ -1443,7 +1443,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
         if (!clone) {
             awm->insert_menu_topic("tree_admin", "Tree admin",               "i", "treeadm.hlp",   AWM_ALL, popup_tree_admin_window, 0);
-            awm->insert_menu_topic("nds",        "NDS (Node display setup)", "N", "props_nds.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_nds_window, (AW_CL)GLOBAL_gb_main);
+            awm->insert_menu_topic("nds",        "NDS (Node display setup)", "N", "props_nds.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_nds_window, (AW_CL)GLOBAL.gb_main);
         }
         awm->sep______________();
 
@@ -1472,10 +1472,10 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
         awm->create_menu("Tools", "o", AWM_ALL);
         {
-            awm->insert_menu_topic("names_admin",      "Name server admin",    "s", "namesadmin.hlp",  AWM_ALL, AW_POPUP, (AW_CL)AW_create_namesadmin_window, (AW_CL)GLOBAL_gb_main);
+            awm->insert_menu_topic("names_admin",      "Name server admin",    "s", "namesadmin.hlp",  AWM_ALL, AW_POPUP, (AW_CL)AW_create_namesadmin_window, (AW_CL)GLOBAL.gb_main);
             awm->insert_sub_menu("DB admin", "D", AWM_EXP);
             {
-                awm->insert_menu_topic("db_admin", "Re-repair DB", "R", "rerepair.hlp", AWM_EXP, NT_rerepair_DB, (AW_CL)GLOBAL_gb_main, 0);
+                awm->insert_menu_topic("db_admin", "Re-repair DB", "R", "rerepair.hlp", AWM_EXP, NT_rerepair_DB, (AW_CL)GLOBAL.gb_main, 0);
             }
             awm->close_sub_menu();
             awm->insert_sub_menu("Network", "N", AWM_EXP);
@@ -1512,7 +1512,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
                 awm->insert_menu_topic("props_tree",                 "Tree colors & fonts", "c", "nt_props_data.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window,    (AW_CL)aw_gc_manager);
             }
             awm->close_sub_menu();
-            awm->insert_menu_topic("props_www", "Search world wide web (WWW)", "W", "props_www.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window, (AW_CL)GLOBAL_gb_main);
+            awm->insert_menu_topic("props_www", "Search world wide web (WWW)", "W", "props_www.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window, (AW_CL)GLOBAL.gb_main);
             awm->sep______________();
             awm->insert_menu_topic("!toggle_expert", "Toggle expert mode",         "x", 0,            AWM_ALL, NT_toggle_expert_mode,              0, 0);
             awm->insert_menu_topic("!toggle_focus",  "Toggle focus follows mouse", "f", 0,            AWM_ALL, NT_toggle_focus_policy,             0, 0);
@@ -1689,7 +1689,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
     if (is_genome_db) {
         awm->at_set_to(false, false, EDIT_XSIZE, EDIT_YSIZE);
-        awm->callback((AW_CB)AW_POPUP, (AW_CL)GEN_create_first_map, (AW_CL)GLOBAL_gb_main); // initial gene map
+        awm->callback((AW_CB)AW_POPUP, (AW_CL)GEN_create_first_map, (AW_CL)GLOBAL.gb_main); // initial gene map
         awm->help_text("gene_map.hlp");
         awm->create_button("OPEN_GENE_MAP", "#gen_map.xpm");
     }
@@ -1718,7 +1718,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->button_length(7);
 
     awm->at(db_searchx, first_liney);
-    awm->callback(AW_POPUP, (AW_CL)DBUI::create_species_query_window, (AW_CL)GLOBAL_gb_main);
+    awm->callback(AW_POPUP, (AW_CL)DBUI::create_species_query_window, (AW_CL)GLOBAL.gb_main);
     awm->help_text("sp_search.hlp");
     awm->create_button("SEARCH",  "Search");
 
@@ -1731,7 +1731,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
     awm->at(db_infox, first_liney);
     awm->button_length(13);
-    awm->callback(NT_popup_species_window, (AW_CL)GLOBAL_gb_main, 0);
+    awm->callback(NT_popup_species_window, (AW_CL)GLOBAL.gb_main, 0);
     awm->help_text("sp_search.hlp");
     awm->create_button("INFO",  AWAR_INFO_BUTTON_TEXT);
 
@@ -1741,7 +1741,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->callback(NT_popup_configuration_admin, (AW_CL)ntw, 0);
     awm->create_button("selection_admin", AWAR_MARKED_SPECIES_COUNTER);
     {
-        GBDATA *gb_species_data = GBT_get_species_data(GLOBAL_gb_main);
+        GBDATA *gb_species_data = GBT_get_species_data(GLOBAL.gb_main);
         GB_add_callback(gb_species_data, GB_CB_CHANGED, nt_auto_count_marked_species, (int*)awm);
         nt_count_marked(awm);
     }
@@ -1749,7 +1749,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     // set height of top area:
     awm->set_info_area_height(bottomy+2);
     awm->set_bottom_area_height(0);
-    awr->set_focus_callback((AW_RCB)NT_focus_cb, (AW_CL)GLOBAL_gb_main, 0);
+    awr->set_focus_callback((AW_RCB)NT_focus_cb, (AW_CL)GLOBAL.gb_main, 0);
 
     // ------------------------------------
     //      Autostarts for development
@@ -1758,13 +1758,13 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     // if (is_genome_db) GEN_map_first(awr)->show();
 #endif // DEVEL_RALF
 
-    GB_pop_transaction(GLOBAL_gb_main);
+    GB_pop_transaction(GLOBAL.gb_main);
 
     return awm;
 }
 
 void nt_create_main_window(AW_root *aw_root) {
-    GB_ERROR error = GB_request_undo_type(GLOBAL_gb_main, GB_UNDO_NONE);
+    GB_ERROR error = GB_request_undo_type(GLOBAL.gb_main, GB_UNDO_NONE);
     if (error) aw_message(error);
 
     nt_create_all_awars(aw_root, AW_ROOT_DEFAULT);
@@ -1772,6 +1772,6 @@ void nt_create_main_window(AW_root *aw_root) {
     AW_window *aww = popup_new_main_window(aw_root, 0);
     aww->show();
 
-    error = GB_request_undo_type(GLOBAL_gb_main, GB_UNDO_UNDO);
+    error = GB_request_undo_type(GLOBAL.gb_main, GB_UNDO_UNDO);
     if (error) aw_message(error);
 }

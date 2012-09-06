@@ -8,8 +8,8 @@
 //                                                                 //
 // =============================================================== //
 
+#include "ntree.hxx"
 #include <arbdbt.h>
-#include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
@@ -17,10 +17,8 @@
 
 #define nt_assert(bed) arb_assert(bed)
 
-extern GBDATA *GLOBAL_gb_main;     // muss existieren
-
 void create_insertchar_variables(AW_root *root, AW_default db1) {
-    root->awar_int   (AWAR_CURSOR_POSITION,    info2bio(0),  GLOBAL_gb_main);
+    root->awar_int   (AWAR_CURSOR_POSITION,    info2bio(0),  GLOBAL.gb_main);
     root->awar_int   ("insertchar/nchar",      0,  db1)->set_minmax(0, 999000);
     root->awar_string("insertchar/characters", "", db1);
 }
@@ -34,13 +32,13 @@ static void awt_inserchar_event(AW_window *aws, AW_CL awcl_mode) {
     long     nchar   = root->awar("insertchar/nchar")->read_int() * mode;
     char    *deletes = root->awar("insertchar/characters")->read_string();
 
-    GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
+    GB_ERROR error = GB_begin_transaction(GLOBAL.gb_main);
     if (!error) {
-        char *alignment = GBT_get_default_alignment(GLOBAL_gb_main);
+        char *alignment = GBT_get_default_alignment(GLOBAL.gb_main);
 
         if (alignment) {
-            error             = GBT_insert_character(GLOBAL_gb_main, alignment, pos, nchar, deletes);
-            if (!error) error = GBT_check_data(GLOBAL_gb_main, 0);
+            error             = GBT_insert_character(GLOBAL.gb_main, alignment, pos, nchar, deletes);
+            if (!error) error = GBT_check_data(GLOBAL.gb_main, 0);
         }
         else {
             error = "no alignment found";
@@ -48,7 +46,7 @@ static void awt_inserchar_event(AW_window *aws, AW_CL awcl_mode) {
         free(alignment);
     }
 
-    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+    GB_end_transaction_show_error(GLOBAL.gb_main, error, aw_message);
     free(deletes);
 }
 

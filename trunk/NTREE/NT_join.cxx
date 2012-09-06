@@ -8,6 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
+#include "ntree.hxx"
 #include <item_sel_list.h>
 #include <awt_sel_boxes.hxx>
 #include <aw_awar.hxx>
@@ -17,8 +18,6 @@
 #include <arbdbt.h>
 
 #define nt_assert(bed) arb_assert(bed)
-
-extern GBDATA *GLOBAL_gb_main;
 
 #define AWAR_SPECIES_JOIN_FIELD "/tmp/NT/species_join/field"
 #define AWAR_SPECIES_JOIN_SEP   "/tmp/NT/species_join/separator"
@@ -108,16 +107,16 @@ static void species_rename_join(AW_window *aww) {
     char     *field = aww->get_root()->awar(AWAR_SPECIES_JOIN_FIELD)->read_string();
     char     *sep   = aww->get_root()->awar(AWAR_SPECIES_JOIN_SEP)->read_string();
     char     *sep2  = aww->get_root()->awar(AWAR_SPECIES_JOIN_SEP2)->read_string();
-    GB_ERROR  error = GB_begin_transaction(GLOBAL_gb_main);
+    GB_ERROR  error = GB_begin_transaction(GLOBAL.gb_main);
 
     if (!error) {
         GB_HASH *hash = GBS_create_hash(1000, GB_MIND_CASE);
-        long     maxs = GBT_count_marked_species(GLOBAL_gb_main);
+        long     maxs = GBT_count_marked_species(GLOBAL.gb_main);
         
         arb_progress progress("Joining species", maxs);
 
         GBDATA *gb_next = 0;
-        for (GBDATA *gb_species = GBT_first_marked_species(GLOBAL_gb_main);
+        for (GBDATA *gb_species = GBT_first_marked_species(GLOBAL.gb_main);
              gb_species && !error;
              gb_species = gb_next)
         {
@@ -141,7 +140,7 @@ static void species_rename_join(AW_window *aww) {
 
         GBS_free_hash(hash);
     }
-    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+    GB_end_transaction_show_error(GLOBAL.gb_main, error, aw_message);
 
     free(sep2);
     free(sep);
@@ -180,7 +179,7 @@ AW_window *create_species_join_window(AW_root *root)
     aws->help_text("species_join.hlp");
     aws->create_button("GO", "GO", "G");
 
-    create_selection_list_on_itemfields(GLOBAL_gb_main,
+    create_selection_list_on_itemfields(GLOBAL.gb_main,
                                             aws, AWAR_SPECIES_JOIN_FIELD,
                                             FIELD_FILTER_NDS,
                                             "field", 0, SPECIES_get_selector(), 20, 10);

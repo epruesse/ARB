@@ -8,9 +8,9 @@
 //                                                                 //
 // =============================================================== //
 
+#include "ntree.hxx"
 #include "nt_internal.h"
 #include "nt_cb.hxx"
-#include "ntree.hxx"
 #include "ad_trees.hxx"
 
 #include <awt_canvas.hxx>
@@ -66,7 +66,7 @@ AW_window * NT_open_select_tree_window(AW_root *awr, char *awar_tree) {
     aws->load_xfig("select_simple.fig");
 
     aws->at("selection");
-    awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, awar_tree);
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, awar_tree);
 
     aws->auto_space(5, 5);
     aws->button_length(6);
@@ -83,8 +83,8 @@ AW_window * NT_open_select_tree_window(AW_root *awr, char *awar_tree) {
 }
 
 void NT_select_bottom_tree(AW_window *aww, char *awar_tree) {
-    GB_transaction dummy(GLOBAL_gb_main);
-    const char *ltree = GBT_name_of_bottom_tree(GLOBAL_gb_main);
+    GB_transaction dummy(GLOBAL.gb_main);
+    const char *ltree = GBT_name_of_bottom_tree(GLOBAL.gb_main);
     if (ltree) aww->get_root()->awar(awar_tree)->write_string(ltree);
 }
 
@@ -99,7 +99,7 @@ AW_window *NT_open_select_alignment_window(AW_root *awr)
 
         aws->at("selection");
         aws->callback((AW_CB0)AW_POPDOWN);
-        awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, AWAR_DEFAULT_ALIGNMENT, "*=");
+        awt_create_selection_list_on_alignments(GLOBAL.gb_main, (AW_window *)aws, AWAR_DEFAULT_ALIGNMENT, "*=");
 
         aws->auto_space(5, 5);
         aws->button_length(6);

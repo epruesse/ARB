@@ -18,8 +18,6 @@
 #include <aw_root.hxx>
 #include <arbdbt.h>
 
-extern GBDATA *GLOBAL_gb_main;
-
 static void AP_conservProfile2Gnuplot_callback(AW_window *aww) {
     GB_ERROR  error   = 0;
     char     *command_file;
