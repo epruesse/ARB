@@ -364,6 +364,8 @@ ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/dupstr.h
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/smartptr.h
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/test_global.h
 
+NT_branchAnalysis.o: nt_internal.h
+NT_branchAnalysis.o: ntree.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/AliView.hxx

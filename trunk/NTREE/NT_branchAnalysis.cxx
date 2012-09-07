@@ -9,6 +9,8 @@
 //                                                                //
 // ============================================================== //
 
+#include "ntree.hxx"
+#include "nt_internal.h"
 #include <TreeCallbacks.hxx>
 #include <aw_awar.hxx>
 #include <awt_canvas.hxx>
@@ -27,22 +29,14 @@
 #define AWAR_BA_DEGENERATION AWAR_BRANCH_ANALYSIS "/degeneration"
 
 class BranchWindow : virtual Noncopyable {
-    BranchWindow     *next;
     AWT_canvas       *ntw;
     char             *suffix;
     AW_awar          *awar_info;
     AW_window_simple *aws;
 
-    static BranchWindow *head;
-
-    static char *get_suffix(const char *tree_awar_name) { // suffix depends on parent window
-        const unsigned  LEN    = 15;
-        const char     *EXPECT = "focus/tree_name";
-
-        nt_assert(strlen(EXPECT)                      == LEN);
-        nt_assert(memcmp(tree_awar_name, EXPECT, LEN) == 0);
-
-        return strdup(tree_awar_name+LEN);
+    static char *get_suffix(AWT_canvas *ntw) {
+        // suffix depends on canvas
+        return GBS_global_string_copy("_%i", NT_get_canvas_id(ntw));
     }
 
     const char *local_awar_name (const char *prefix, const char *name) { return GBS_global_string("%s%s/%s", prefix, suffix, name); }
@@ -51,20 +45,12 @@ class BranchWindow : virtual Noncopyable {
     void create_window(AW_root *aw_root);
 
 public:
-    static BranchWindow *find_existing(AWT_canvas *ntw) {
-        BranchWindow *bw = head;
-        while (bw && bw->ntw != ntw) bw = bw->next;
-        return bw;
-    }
-
     BranchWindow(AW_root *aw_root, AWT_canvas *ntw_)
-        : next(head),
-          ntw(ntw_),
-          suffix(get_suffix(ntw->user_awar))
+        : ntw(ntw_),
+          suffix(get_suffix(ntw))
     {
         create_awars(aw_root);
         create_window(aw_root);
-        head = this;
     }
 
     ~BranchWindow() {
@@ -124,8 +110,6 @@ public:
     }
 };
 
-BranchWindow *BranchWindow::head = NULL;
-
 // --------------------------------------------------------------------------------
 
 static void mark_long_branches_cb       (AW_window *, AW_CL cl_bw) {((BranchWindow*)cl_bw)->markLongBranches(); }
@@ -143,15 +127,13 @@ void BranchWindow::create_awars(AW_root *aw_root) {
     awar_info = aw_root->awar_string(local_awar_name(AWAR_BRANCH_ANALYSIS_TMP, "info"), "<No analysis performed yet>");
     aw_root->awar(ntw->user_awar)->add_callback(tree_changed_cb, (AW_CL)this);
 
-    if (!head || head == this) {
-        aw_root->awar_float(AWAR_BA_MIN_REL_DIFF, 75);
-        aw_root->awar_float(AWAR_BA_MIN_ABS_DIFF, 0.01);
+    aw_root->awar_float(AWAR_BA_MIN_REL_DIFF, 75);
+    aw_root->awar_float(AWAR_BA_MIN_ABS_DIFF, 0.01);
 
-        aw_root->awar_int(AWAR_BA_MIN_DEPTH, 0);
-        aw_root->awar_float(AWAR_BA_MIN_ROOTDIST, 0.9);
+    aw_root->awar_int(AWAR_BA_MIN_DEPTH, 0);
+    aw_root->awar_float(AWAR_BA_MIN_ROOTDIST, 0.9);
 
-        aw_root->awar_float(AWAR_BA_DEGENERATION, 30);
-    }
+    aw_root->awar_float(AWAR_BA_DEGENERATION, 30);
 }
 
 void BranchWindow::create_window(AW_root *aw_root) {
@@ -209,10 +191,15 @@ void BranchWindow::create_window(AW_root *aw_root) {
 }
 
 AW_window *NT_open_branch_analysis_window(AW_root *aw_root, AW_CL cl_ntw) {
-    AWT_canvas   *ntw = (AWT_canvas *)cl_ntw;
-    BranchWindow *bw  = BranchWindow::find_existing(ntw);
-    if (!bw) bw       = new BranchWindow(aw_root, ntw);
-    nt_assert(bw);
-    return bw->get_window();
+    AWT_canvas *ntw = (AWT_canvas *)cl_ntw;
+
+    static BranchWindow *bw[MAX_NT_WINDOWS] = { MAX_NT_WINDOWS_NULLINIT };
+
+    int ntw_id = NT_get_canvas_id(ntw);
+    if (!bw[ntw_id]) {
+        bw[ntw_id] = new BranchWindow(aw_root, ntw);
+    }
+    nt_assert(bw[ntw_id]);
+    return bw[ntw_id]->get_window();
 }
 

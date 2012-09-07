@@ -539,7 +539,7 @@ static GB_ERROR nt_create_configuration(AW_window *, GBT_TREE *tree, const char 
 }
 
 static void nt_store_configuration(AW_window *, AW_CL cl_ntw) {
-    GB_ERROR err = nt_create_configuration(0, nt_get_current_tree_root((AWT_canvas*)cl_ntw), 0, 0);
+    GB_ERROR err = nt_create_configuration(0, nt_get_tree_root_of_canvas((AWT_canvas*)cl_ntw), 0, 0);
     aw_message_if(err);
 }
 
@@ -574,15 +574,13 @@ static void nt_rename_configuration(AW_window *aww) {
 }
 
 static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *ntw) {
-    // @@@ still depends on tree of main-window from which this window has been opened
-    // (also applies to all other callbacks using AWT_canvas and creating a window!)
-    // see patch [8867]
+    static AW_window_simple *existing_aws[MAX_NT_WINDOWS] = { MAX_NT_WINDOWS_NULLINIT };
 
-    static AW_window_simple *aws = 0;
-    if (!aws) {
+    int ntw_id = NT_get_canvas_id(ntw);
+    if (!existing_aws[ntw_id]) {
         init_config_awars(root);
 
-        aws = new AW_window_simple;
+        AW_window_simple *aws = new AW_window_simple;
         aws->init(root, "SPECIES_SELECTIONS", "Species Selections");
         aws->load_xfig("nt_selection.fig");
 
@@ -628,8 +626,10 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
         aws->at("rename");
         aws->callback(nt_rename_configuration);
         aws->create_button("RENAME", "RENAME", "R");
+
+        existing_aws[ntw_id] = aws;
     }
-    return aws;
+    return existing_aws[ntw_id];
 }
 
 void NT_popup_configuration_admin(AW_window *aw_main, AW_CL cl_ntw, AW_CL) {
@@ -673,7 +673,7 @@ AW_window *NT_start_editor_on_old_configuration(AW_root *awr) {
 }
 
 void NT_start_editor_on_tree(AW_window *, AW_CL cl_use_species_aside, AW_CL cl_ntw) {
-    GB_ERROR error = nt_create_configuration(0, nt_get_current_tree_root((AWT_canvas*)cl_ntw), CONFNAME, (int)cl_use_species_aside);
+    GB_ERROR error = nt_create_configuration(0, nt_get_tree_root_of_canvas((AWT_canvas*)cl_ntw), CONFNAME, (int)cl_use_species_aside);
     if (!error) error = GBK_system("arb_edit4 -c " CONFNAME " &");
     aw_message_if(error);
 }

@@ -998,7 +998,7 @@ static void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main
     aw_message_if(ta.close(error));
 }
 
-GBT_TREE *nt_get_current_tree_root(AWT_canvas *ntw) {
+GBT_TREE *nt_get_tree_root_of_canvas(AWT_canvas *ntw) {
     AWT_graphic_tree *tree = AWT_TREE(ntw);
     if (tree) {
         AP_tree *root = tree->get_root_node();
@@ -1030,6 +1030,34 @@ static AW_window *create_mark_by_refentries_window(AW_root *awr, AW_CL cl_gbmain
 }
 
 // --------------------------------------------------------------------------------------------------
+
+int NT_get_canvas_id(AWT_canvas *ntw) {
+    // return number of canvas [0..MAX_NT_WINDOWS-1]
+
+    const char *tree_awar_name = ntw->user_awar;
+
+    const unsigned  LEN    = 15;
+    const char     *EXPECT = "focus/tree_name";
+
+    nt_assert(strlen(EXPECT)                      == LEN);
+    nt_assert(memcmp(tree_awar_name, EXPECT, LEN) == 0);
+
+    int id;
+    switch (tree_awar_name[LEN]) {
+        default :
+            nt_assert(0);
+            // NDEBUG: fallback to 0
+        case 0:
+            id = 0;
+            break;
+
+        case '_':
+            id = atoi(tree_awar_name+LEN+1);
+            nt_assert(id >= 1);
+            break;
+    }
+    return id;
+}
 
 // ##########################################
 // ##########################################
@@ -1119,9 +1147,13 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     AWT_create_debug_menu(awm);
 #endif // DEBUG
 
+    bool allow_new_window = (NT_get_canvas_id(ntw)+1) < MAX_NT_WINDOWS;
+
     if (clone) {
         awm->create_menu("File", "F", AWM_ALL);
-        awm->insert_menu_topic("new_window",   "New window", "N", "newwindow.hlp", AWM_ALL, AW_POPUP, (AW_CL)popup_new_main_window, clone+1);
+        if (allow_new_window) {
+            awm->insert_menu_topic("new_window",   "New window", "N", "newwindow.hlp", AWM_ALL, AW_POPUP, (AW_CL)popup_new_main_window, clone+1);
+        }
         awm->insert_menu_topic("close", "Close", "C", 0, AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
     }
     else {
@@ -1139,8 +1171,10 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         {
             awm->insert_menu_topic("save_changes", "Quicksave changes",          "s", "save.hlp",      AWM_ALL, (AW_CB)NT_save_quick_cb, 0, 0);
             awm->insert_menu_topic("save_all_as",  "Save whole database as ...", "w", "save.hlp",      AWM_ALL, AW_POPUP, (AW_CL)NT_create_save_as, (AW_CL)"tmp/nt/arbdb");
-            awm->sep______________();
-            awm->insert_menu_topic("new_window",   "New window",                 "N", "newwindow.hlp", AWM_ALL, AW_POPUP, (AW_CL)popup_new_main_window, clone+1);
+            if (allow_new_window) {
+                awm->sep______________();
+                awm->insert_menu_topic("new_window",   "New window",                 "N", "newwindow.hlp", AWM_ALL, AW_POPUP, (AW_CL)popup_new_main_window, clone+1);
+            }
             awm->sep______________();
             awm->insert_menu_topic("optimize_db",  "Optimize database",          "O", "optimize.hlp",  AWM_ALL, AW_POPUP, (AW_CL)NT_create_database_optimization_window, 0);
             awm->sep______________();

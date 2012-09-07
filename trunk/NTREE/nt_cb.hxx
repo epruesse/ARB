@@ -29,7 +29,8 @@ void NT_system_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
 void NT_system_in_xterm_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
 
 /* NT_extern.cxx */
-GBT_TREE *nt_get_current_tree_root(AWT_canvas *ntw);
+GBT_TREE *nt_get_tree_root_of_canvas(AWT_canvas *ntw);
+int NT_get_canvas_id(AWT_canvas *ntw);
 void nt_create_main_window(AW_root *aw_root);
 
 #else

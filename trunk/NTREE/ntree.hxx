@@ -18,6 +18,9 @@
 #define NT_AW_TRUE  1
 #define NT_AW_FALSE 0
 
+#define MAX_NT_WINDOWS          5
+#define MAX_NT_WINDOWS_NULLINIT NULL,NULL,NULL,NULL,NULL
+
 class AWT_graphic_tree;
 
 struct NT_global {
@@ -34,7 +37,7 @@ struct NT_global {
     {}
 };
 
-extern NT_global  GLOBAL;
+extern NT_global GLOBAL;
 
 class NT_install_window_creator {
     int dummy;
