@@ -64,6 +64,9 @@ void NT_popup_configuration_admin(AW_window *aw_main, AW_CL cl_ntw, AW_CL dummy_
 AW_window *NT_start_editor_on_old_configuration(AW_root *awr);
 void NT_start_editor_on_tree(AW_window *, AW_CL cl_use_species_aside, AW_CL cl_ntw);
 
+/* NT_extern.cxx */
+int NT_get_canvas_id(AWT_canvas *ntw);
+
 /* NT_import.cxx */
 void NT_import_sequences(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_2x);
 
