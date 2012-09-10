@@ -17,12 +17,25 @@
 #include <gdk/gdkx.h>
 #include <Xm/Xm.h>
 #include "aw_xfont.hxx"
+#include "aw_awar_defs.hxx"
+#include "aw_window.hxx"
+#include "aw_global_awars.hxx"
+
 
 
 //globals
 //FIXME use static class or namespace for globals
-AW_root *AW_root::SINGLETON = 0;
 
+#if defined(DARWIN)
+#define OPENURL "open"
+#else
+#define OPENURL "xdg-open"
+#endif // DARWIN
+
+#define MAX_GLOBAL_AWARS 5
+AW_root *AW_root::SINGLETON = 0;
+static int      declared_awar_count = 0;
+static AW_awar *declared_awar[MAX_GLOBAL_AWARS];
 
 GB_ERROR ARB_bind_global_awars(GBDATA *gb_main) {
     GTK_NOT_IMPLEMENTED;
@@ -63,8 +76,38 @@ char *aw_input(const char *prompt, const char *default_input) {
     return 0;
 }
 
+inline void declare_awar_global(AW_awar *awar) {
+    aw_assert(declared_awar_count<MAX_GLOBAL_AWARS);
+    declared_awar[declared_awar_count++] = awar;
+}
+
+static void AWAR_AW_FOCUS_FOLLOWS_MOUSE_changed_cb(AW_root *awr) {
+    int focus = awr->awar(AWAR_AW_FOCUS_FOLLOWS_MOUSE)->read_int();
+#if defined(DEBUG)
+    printf("AWAR_AW_FOCUS_FOLLOWS_MOUSE changed, calling apply_focus_policy(%i)\n", focus);
+#endif
+    awr->apply_focus_policy(focus);
+}
+
+static void AWAR_AWM_MASK_changed_cb(AW_root *awr) {
+    int mask = awr->awar(AWAR_AWM_MASK)->read_int();
+#if defined(DEBUG)
+    printf("AWAR_AWM_MASK changed, calling apply_sensitivity(%i)\n", mask);
+#endif
+    awr->apply_sensitivity(mask);
+}
+
+
 void ARB_declare_global_awars(AW_root *aw_root, AW_default aw_def) {
-    GTK_NOT_IMPLEMENTED;
+    aw_assert(!declared_awar_count);
+
+    declare_awar_global(aw_root->awar_string(AWAR_WWW_BROWSER, OPENURL " \"$(URL)\"", aw_def));
+    declare_awar_global(aw_root->awar_int(AWAR_AWM_MASK, AWM_MASK_UNKNOWN, aw_def)->add_callback(AWAR_AWM_MASK_changed_cb));
+
+    AW_awar *awar_focus          = aw_root->awar_int(AWAR_AW_FOCUS_FOLLOWS_MOUSE, 0, aw_def);
+    aw_root->focus_follows_mouse = awar_focus->read_int();
+    awar_focus->add_callback(AWAR_AW_FOCUS_FOLLOWS_MOUSE_changed_cb);
+    declare_awar_global(awar_focus);
 }
 
 
@@ -110,6 +153,8 @@ static void destroy_AW_root() {
     delete AW_root::SINGLETON; AW_root::SINGLETON = NULL;
 }
 
+
+
 AW_root::AW_root(const char *properties, const char *program, bool no_exit) {
     aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
     AW_root::SINGLETON = this;
@@ -137,6 +182,27 @@ AW_awar *AW_root::label_is_awar(const char *label) {
 
 void AW_root::define_remote_command(AW_cb_struct *cbs) {
     GTK_NOT_IMPLEMENTED;
+}
+
+
+void AW_root::apply_focus_policy(bool /*follow_mouse*/) {
+
+    GTK_NOT_IMPLEMENTED;
+//    focus_follows_mouse = follow_mouse;
+//    GBS_hash_do_loop(hash_for_windows, set_focus_policy, 0);
+}
+
+void AW_root::apply_sensitivity(AW_active /*mask*/) {
+
+    GTK_NOT_IMPLEMENTED;
+
+//    aw_assert(legal_mask(mask));
+//    AW_buttons_struct *list;
+//
+//    global_mask = mask;
+//    for (list = button_sens_list; list; list = list->next) {
+//        XtSetSensitive(list->button, (list->mask & mask) ? True : False);
+//    }
 }
 
 
@@ -349,9 +415,14 @@ AW_awar *AW_root::awar_string (const char *var_name, const char *default_value /
     return vs;
 }
 
-AW_awar *AW_root::awar_int(const char *var_name, long default_value /*= 0*/, AW_default default_file /*= AW_ROOT_DEFAULT*/) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default default_file) {
+    AW_awar *vs = awar_no_error(var_name);
+    if (!vs) {
+        default_file = check_properties(default_file);
+        vs           = new AW_awar(AW_INT, var_name, (const char *)default_value, 0, default_file, this);
+        GBS_write_hash(hash_table_for_variables, var_name, (long)vs);
+    }
+    return vs;
 }
 
 AW_awar *AW_root::awar_no_error(const char *var_name) {
@@ -359,9 +430,14 @@ AW_awar *AW_root::awar_no_error(const char *var_name) {
 }
 
 
-AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value/* = NULL*/,     AW_default default_file/* = AW_ROOT_DEFAULT*/) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value, AW_default default_file) {
+    AW_awar *vs = awar_no_error(var_name);
+    if (!vs) {
+        default_file = check_properties(default_file);
+        vs           = new AW_awar(AW_POINTER, var_name, (const char *)default_value, 0.0, default_file, this);
+        GBS_write_hash(hash_table_for_variables, var_name, (long)vs);
+    }
+    return vs;
 }
 
 GB_ERROR AW_root::check_for_remote_command(AW_default gb_main, const char *rm_base) {
