@@ -18,7 +18,8 @@
 //FIXME remove of xfont is gone
 #include <gdk/gdkx.h>
 #include <Xm/Xm.h>
-
+#include <string>
+#include <algorithm>
 
 void AW_common_gtk::install_common_extends_cb(AW_window *aww, AW_area area) {
     GTK_NOT_IMPLEMENTED;
@@ -29,7 +30,11 @@ AW_GC *AW_common_gtk::create_gc() {
 }
 
 void AW_GC::set_font(const AW_font font_nr, const int size, int *found_size) {
-    GTK_NOT_IMPLEMENTED;
+    font_limits.reset();
+    wm_set_font(font_nr, size, found_size);
+    font_limits.calc_height();
+    fontnr   = font_nr;
+    fontsize = size;
 }
 
 //FIXME initialize gc
@@ -102,9 +107,19 @@ void AW_GC_gtk::wm_set_font(const AW_font font_nr, const int size, int *found_si
         }
     }
 
-    //load a gdk font corrosponding to the XLDF name
-    GdkFont *font = gdk_font_load(name);
+    //FIXME Remove this workaround
+    //for some reason gtk cannot load fonts that contain ISO10646. ISO10646 is unicode.
+    //However it works fine if the "ISO10646" is replaced with a wildcard.
+    //This is most likely due to the very old gtk version on this system :)
+    std::string fontname(name);
+    std::string iso = "ISO10646";
+    size_t start = fontname.find(iso);
+    fontname.replace(start, iso.length(), "*");
 
+
+    //load a gdk font corresponding to the XLDF name
+    GdkFont *font = gdk_font_load(fontname.c_str());
+    ASSERT_FALSE(font == NULL);
     gdk_gc_set_font(gc, font);
 }
 

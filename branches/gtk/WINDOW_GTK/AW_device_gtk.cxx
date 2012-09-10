@@ -136,16 +136,19 @@ bool AW_device_gtk::draw_string_on_screen(AW_device *device, int gc, const  char
 
 bool AW_device_gtk::text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
 
-    printf("impl xy: %f, %f\n", pos.xpos(), pos.ypos());
 
-    GdkGCValues *values;
-    gdk_gc_get_values(get_common()->get_GC(gc), values);
+    GdkGCValues values;
+    GdkGC *gdkGc = get_common()->get_GC(gc);
+
+    gdk_gc_get_values(gdkGc, &values);
+    ASSERT_FALSE(values.font == NULL);
 
     //FIXME what does y coordinate -1 mean?
     //FIXME do not ignore the alignment.
-    //FIXME use real gc once the color problem is solved
+    //FIXME according to the gtk documentation it should be possible to use NULL as font.
+    //      NULL means: use the gc font. However that does not work. Maybe it will in a newer gtk version.
     gdk_draw_string(GDK_DRAWABLE(pixmap),
-                    values->font, //FIXME use real font
+                    values.font,
                     get_common()->get_GC(gc),
                     pos.xpos(),
                     pos.ypos(),

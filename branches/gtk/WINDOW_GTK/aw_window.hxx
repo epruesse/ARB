@@ -89,8 +89,8 @@ public:
           maxy(0)
     {}
     
-    void store(const AW_at *at);
-    void restore(AW_at *at) const;
+    void store(const AW_at &at);
+    void restore(AW_at &at) const;
 };
 
 class AW_at_auto {
@@ -100,8 +100,8 @@ class AW_at_auto {
 public:
     AW_at_auto() : type(OFF) {}
 
-    void store(const AW_at *at);
-    void restore(AW_at *at) const;
+    void store(const AW_at &at);
+    void restore(AW_at &at) const;
 };
 
 typedef const char *AW_label;       // label for buttons menus etc
