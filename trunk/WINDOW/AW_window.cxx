@@ -3410,7 +3410,7 @@ public:
 
     static void add(AW_RCB1 execution_done_cb, AW_CL client_data) { new ExecutingMacro(execution_done_cb, client_data); }
     static void done() {
-        aw_assert(head);
+        // aw_assert(head); // fails when a macro is called from command line
         if (head) {
             head->call();
             head->destroy();
