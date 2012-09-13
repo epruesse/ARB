@@ -797,6 +797,7 @@ adseqcompr.o: $(ARBHOME)/INCLUDE/arbtools.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/attributes.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/dupstr.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/smartptr.h
+adseqcompr.o: $(ARBHOME)/INCLUDE/static_assert.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/test_global.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/test_unit.h
 
