@@ -10,8 +10,10 @@
 
 #include <arbdbt.h>
 #include <arb_progress.h>
+#include <arb_file.h>
 
 #include "gb_key.h"
+#include <climits>
 
 // --------------------------------------------------------------------------------
 
@@ -301,35 +303,46 @@ inline long g_b_read_number2(const unsigned char **s) {
             if (c0 & 0x20) {
                 c3 = (*((*s)++));
                 if (c0 &0x10) {
+                    // UNCOVERED();
                     c4 = (*((*s)++));
                     return c4 | (c3<<8) | (c2<<16) | (c1<<8);
                 }
                 else {
+                    // UNCOVERED();
                     return (c3) | (c2<<8) | (c1<<16) | ((c0 & 0x0f)<<24);
                 }
             }
             else {
+                // UNCOVERED();
                 return (c2) | (c1<<8) | ((c0 & 0x1f)<<16);
             }
         }
         else {
+            // UNCOVERED();
             return (c1) | ((c0 & 0x3f)<<8);
         }
     }
     else {
+        // UNCOVERED();
         return c0;
     }
 }
 
 inline void g_b_put_number2(int i, unsigned char **s) {
     int j;
-    if (i< 0x80) { *((*s)++)=i; return; }
+    if (i< 0x80) {
+        // UNCOVERED();
+        *((*s)++) = i;
+        return;
+    }
     if (i<0x4000) {
+        // UNCOVERED();
         j = (i>>8) | 0x80;
         *((*s)++)=j;
         *((*s)++)=i;
     }
     else if (i<0x200000) {
+        // UNCOVERED();
         j = (i>>16) | 0xC0;
         *((*s)++)=j;
         j = (i>>8);
@@ -337,6 +350,7 @@ inline void g_b_put_number2(int i, unsigned char **s) {
         *((*s)++)=i;
     }
     else if (i<0x10000000) {
+        // UNCOVERED();
         j = (i>>24) | 0xE0;
         *((*s)++)=j;
         j = (i>>16);
@@ -345,7 +359,78 @@ inline void g_b_put_number2(int i, unsigned char **s) {
         *((*s)++)=j;
         *((*s)++)=i;
     }
+    else {
+        // UNCOVERED();
+        // gb_assert(0); // unhandled case 
+    }
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+arb_test::match_expectation put_read_num_into_bytes(int num_written, int bytes_expected) {
+    const int     BUFSIZE = 6;
+    unsigned char buffer[BUFSIZE];
+
+    using namespace arb_test;
+
+    unsigned char INIT = 0xff;
+    memset(buffer, INIT, BUFSIZE);
+
+    expectation_group expected;
+
+    {
+        unsigned char *bp = buffer;
+        g_b_put_number2(num_written, &bp);
+
+        size_t bytes_written = bp-buffer;
+        expected.add(that(bytes_written).is_equal_to(bytes_expected));
+    }
+    {
+        const unsigned char *bp = buffer;
+
+        long num_read = g_b_read_number2(&bp);
+        expected.add(that(num_read).is_equal_to(num_written));
+
+        size_t bytes_read = bp-buffer;
+        expected.add(that(bytes_read).is_equal_to(bytes_expected));
+    }
+
+    expected.add(that(buffer[bytes_expected]).is_equal_to(INIT));
+
+    return all().ofgroup(expected);
+}
+
+#define TEST_PUT_READ_NUMBER(num,expect_bytes)         TEST_EXPECT(put_read_num_into_bytes(num, expect_bytes))
+#define TEST_PUT_READ_NUMBER__BROKEN(num,expect_bytes) TEST_EXPECT__BROKEN(put_read_num_into_bytes(num, expect_bytes))
+
+void TEST_put_read_number() {
+    TEST_PUT_READ_NUMBER(0x0, 1);
+
+    TEST_PUT_READ_NUMBER(0x7f, 1);
+    TEST_PUT_READ_NUMBER(0x80, 2);
+
+    TEST_PUT_READ_NUMBER(0x3fff, 2);
+    TEST_PUT_READ_NUMBER(0x4000, 3);
+
+    TEST_PUT_READ_NUMBER(0x1fffff, 3);
+    TEST_PUT_READ_NUMBER(0x200000, 4);
+
+    TEST_PUT_READ_NUMBER(0xfffffff, 4);
+
+    TEST_PUT_READ_NUMBER__BROKEN(0x10000000, 5);
+    TEST_PUT_READ_NUMBER__BROKEN(INT_MAX, 5);
+    TEST_PUT_READ_NUMBER__BROKEN(INT_MIN, 5);
+    TEST_PUT_READ_NUMBER__BROKEN(-1, 5);
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
 
 
 static char *gb_compress_seq_by_master(const char *master, int master_len, int master_index,
@@ -708,7 +793,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
     return error;
 }
 
-GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, const char *ali_name) { // goes to header: __ATTR__USERESULT
+GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, const char *ali_name) { // goes to header: __ATTR__USERESULT // @@@ rename function
     // Compress sequences, call only outside a transaction
     GB_ERROR      error = NULL;
     GB_MAIN_TYPE *Main  = GB_MAIN(gb_main);
@@ -884,3 +969,80 @@ char *gb_uncompress_by_sequence(GBDATA *gbd, const char *ss, long size, GB_ERROR
 
     return dest;
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+// #define TEST_AUTO_UPDATE // uncomment to auto-update expected result DB
+
+void TEST_SLOW_sequence_compression() {
+    const char *source     = "TEST_nuc.arb";
+    const char *compressed = "TEST_nuc_seqcompr.arb";
+    const char *expected   = "TEST_nuc_seqcompr_exp.arb";
+    const char *aliname    = "ali_16s";
+
+    GB_shell shell;
+
+    const int  SEQ2COMPARE = 7;
+    char      *seq_exp[SEQ2COMPARE];
+
+    {
+        GBDATA *gb_main;
+        TEST_ASSERT_RESULT__NOERROREXPORTED(gb_main = GB_open(source, "rw"));
+
+        {
+            GB_transaction ta(gb_main);
+            int            count = 0;
+
+            for (GBDATA *gb_species = GBT_first_species(gb_main);
+                 gb_species && count<SEQ2COMPARE;
+                 gb_species = GBT_next_species(gb_species), ++count)
+            {
+                GBDATA *gb_seq = GBT_read_sequence(gb_species, aliname);
+                seq_exp[count] = GB_read_string(gb_seq);
+            }
+        }
+
+        TEST_ASSERT_NO_ERROR(GBT_compress_sequence_tree2(gb_main, "tree_nuc", aliname));
+        TEST_ASSERT_NO_ERROR(GB_save_as(gb_main, compressed, "b"));
+        GB_close(gb_main);
+    }
+#if defined(TEST_AUTO_UPDATE)
+    TEST_COPY_FILE(compressed, expected);
+#endif
+    TEST_ASSERT_FILES_EQUAL(compressed, expected);
+
+    {
+        GBDATA *gb_main;
+        TEST_ASSERT_RESULT__NOERROREXPORTED(gb_main = GB_open(compressed, "rw"));
+        {
+            GB_transaction ta(gb_main);
+            int            count = 0;
+
+            for (GBDATA *gb_species = GBT_first_species(gb_main);
+                 gb_species && count<SEQ2COMPARE;
+                 gb_species = GBT_next_species(gb_species), ++count)
+            {
+                GBDATA *gb_seq = GBT_read_sequence(gb_species, aliname);
+                char   *seq    = GB_read_string(gb_seq);
+
+                TEST_ASSERT_EQUAL(seq, seq_exp[count]);
+
+                freenull(seq_exp[count]);
+                free(seq);
+            }
+        }
+        GB_close(gb_main);
+    }
+
+    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(compressed));
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
+

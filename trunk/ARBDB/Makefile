@@ -789,6 +789,7 @@ adseqcompr.o: gb_prot.h
 adseqcompr.o: gb_tune.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_core.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_error.h
+adseqcompr.o: $(ARBHOME)/INCLUDE/arb_file.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_progress.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -797,6 +798,7 @@ adseqcompr.o: $(ARBHOME)/INCLUDE/attributes.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/dupstr.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/smartptr.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/test_global.h
+adseqcompr.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adsocket.o: ad_prot.h
 adsocket.o: arb_assert.h
