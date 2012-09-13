@@ -1302,9 +1302,6 @@ namespace arb_test {
 #define TEST_ASSERT_FILES_EQUAL(f1,f2)         TEST_ASSERT(arb_test::test_files_equal(f1,f2))
 #define TEST_ASSERT_FILES_EQUAL__BROKEN(f1,f2) TEST_ASSERT__BROKEN(arb_test::test_files_equal(f1,f2))
 
-#define TEST_ASSERT_MEM_EQUAL(m1,m2,size)         TEST_ASSERT(arb_test::test_mem_equal(m1,m2,size))
-#define TEST_ASSERT_MEM_EQUAL__BROKEN(m1,m2,size) TEST_ASSERT__BROKEN(arb_test::test_mem_equal(m1,m2,size))
-
 #define TEST_ASSERT_TEXTFILES_EQUAL(f1,f2)         TEST_ASSERT_TEXTFILE_DIFFLINES(f1,f2,0)
 #define TEST_ASSERT_TEXTFILES_EQUAL__BROKEN(f1,f2) TEST_ASSERT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,0)
 

@@ -294,17 +294,16 @@ static void distribute_masters(CompressionTree *tree, int *mcount, int *max_mast
 // --------------------------------------------------------------------------------
 
 inline long g_b_read_number2(const unsigned char **s) {
-    unsigned int c0, c1, c2, c3, c4;
-    c0 = (*((*s)++));
+    unsigned c0 = *(*s)++;
     if (c0 & 0x80) {
-        c1 = (*((*s)++));
+        unsigned c1 = *(*s)++;
         if (c0 & 0x40) {
-            c2 = (*((*s)++));
+            unsigned c2 = *(*s)++;
             if (c0 & 0x20) {
-                c3 = (*((*s)++));
-                if (c0 &0x10) {
+                unsigned c3 = *(*s)++;
+                if (c0 & 0x10) {
                     // UNCOVERED();
-                    c4 = (*((*s)++));
+                    unsigned c4 = *(*s)++;
                     return c4 | (c3<<8) | (c2<<16) | (c1<<8);
                 }
                 else {
@@ -372,7 +371,7 @@ inline void g_b_put_number2(int i, unsigned char **s) {
 #include <test_unit.h>
 #endif
 
-arb_test::match_expectation put_read_num_into_bytes(int num_written, int bytes_expected) {
+arb_test::match_expectation put_read_num_using_bytes(int num_written, int bytes_expected, unsigned char *buffer_expected = NULL) {
     const int     BUFSIZE = 6;
     unsigned char buffer[BUFSIZE];
 
@@ -389,6 +388,10 @@ arb_test::match_expectation put_read_num_into_bytes(int num_written, int bytes_e
 
         size_t bytes_written = bp-buffer;
         expected.add(that(bytes_written).is_equal_to(bytes_expected));
+
+        if (buffer_expected) {
+            expected.add(that(arb_test::test_mem_equal(buffer, buffer_expected, bytes_expected)).is_equal_to(true));
+        }
     }
     {
         const unsigned char *bp = buffer;
@@ -405,10 +408,41 @@ arb_test::match_expectation put_read_num_into_bytes(int num_written, int bytes_e
     return all().ofgroup(expected);
 }
 
-#define TEST_PUT_READ_NUMBER(num,expect_bytes)         TEST_EXPECT(put_read_num_into_bytes(num, expect_bytes))
-#define TEST_PUT_READ_NUMBER__BROKEN(num,expect_bytes) TEST_EXPECT__BROKEN(put_read_num_into_bytes(num, expect_bytes))
+#define TEST_PUT_READ_NUMBER(num,expect_bytes)         TEST_EXPECT(put_read_num_using_bytes(num, expect_bytes))
+#define TEST_PUT_READ_NUMBER__BROKEN(num,expect_bytes) TEST_EXPECT__BROKEN(put_read_num_using_bytes(num, expect_bytes))
+
+#define TEST_PUT_NUMBER_BINARY1(num, byte1) do {                \
+        unsigned char buf[1];                                   \
+        buf[0] = byte1;                                         \
+        TEST_EXPECT(put_read_num_using_bytes(num, 1, buf));     \
+    } while(0)
+
+#define TEST_PUT_NUMBER_BINARY2(num, byte1, byte2) do {         \
+        unsigned char buf[2];                                   \
+        buf[0] = byte1;                                         \
+        buf[1] = byte2;                                         \
+        TEST_EXPECT(put_read_num_using_bytes(num, 2, buf));     \
+    } while(0)
+
+#define TEST_PUT_NUMBER_BINARY3(num, byte1, byte2, byte3) do {  \
+        unsigned char buf[3];                                   \
+        buf[0] = byte1;                                         \
+        buf[1] = byte2;                                         \
+        buf[2] = byte3;                                         \
+        TEST_EXPECT(put_read_num_using_bytes(num, 3, buf));     \
+    } while(0)
+
+#define TEST_PUT_NUMBER_BINARY4(num, byte1, byte2, byte3, byte4) do {   \
+        unsigned char buf[4];                                           \
+        buf[0] = byte1;                                                 \
+        buf[1] = byte2;                                                 \
+        buf[2] = byte3;                                                 \
+        buf[3] = byte4;                                                 \
+        TEST_EXPECT(put_read_num_using_bytes(num, 4, buf));             \
+    } while(0)
 
 void TEST_put_read_number() {
+    // test that put and read are compatible:
     TEST_PUT_READ_NUMBER(0x0, 1);
 
     TEST_PUT_READ_NUMBER(0x7f, 1);
@@ -426,6 +460,22 @@ void TEST_put_read_number() {
     TEST_PUT_READ_NUMBER__BROKEN(INT_MAX, 5);
     TEST_PUT_READ_NUMBER__BROKEN(INT_MIN, 5);
     TEST_PUT_READ_NUMBER__BROKEN(-1, 5);
+
+    // test binary compatibility:
+    // (code affects DB content, cannot be changed)
+    
+    TEST_PUT_NUMBER_BINARY1(0x0,  0x00);
+    TEST_PUT_NUMBER_BINARY1(0x7f, 0x7f);
+
+    TEST_PUT_NUMBER_BINARY2(0x80,   0x80, 0x80);
+    TEST_PUT_NUMBER_BINARY2(0x81,   0x80, 0x81);
+    TEST_PUT_NUMBER_BINARY2(0x3fff, 0xbf, 0xff);
+
+    TEST_PUT_NUMBER_BINARY3(0x4000,   0xc0, 0x40, 0x00);
+    TEST_PUT_NUMBER_BINARY3(0x1fffff, 0xdf, 0xff, 0xff);
+    
+    TEST_PUT_NUMBER_BINARY4(0x200000,  0xe0, 0x20, 0x00, 0x00);
+    TEST_PUT_NUMBER_BINARY4(0xfffffff, 0xef, 0xff, 0xff, 0xff);
 }
 
 #endif // UNIT_TESTS
