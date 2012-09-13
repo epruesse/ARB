@@ -388,11 +388,7 @@ arb_test::match_expectation put_read_num_using_bytes(int num_written, int bytes_
         expected.add(that(bytes_written).is_equal_to(bytes_expected));
 
         if (buffer_expected) {
-#if defined(ARB_64)
             expected.add(that(arb_test::test_mem_equal(buffer, buffer_expected, bytes_expected)).is_equal_to(true));
-#else // !defined(ARB_64)
-#warning memtest crashes in 32bit version
-#endif
         }
     }
     {

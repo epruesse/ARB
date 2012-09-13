@@ -788,7 +788,7 @@ namespace arb_test {
     // ------------------------------------------------
     //      matchable + matcher (for expectations)
 
-    const int MAX_GROUP_SIZE = 4;
+    const int MAX_GROUP_SIZE = 5;
     class expectation_group : public matchable //! group of expectation. matchable with group_matcher
     {
         int          count;
@@ -818,7 +818,7 @@ namespace arb_test {
         }
         MAKE_CLONABLE(expectation_group);
 
-        expectation_group& add(const expectation& e) { depend_on[count++] = e.clone(); return *this; }
+        expectation_group& add(const expectation& e) { depend_on[count++] = e.clone(); arb_assert(count <= MAX_GROUP_SIZE); return *this; }
 
         const char *name() const {
             return "<expectation_group>";
