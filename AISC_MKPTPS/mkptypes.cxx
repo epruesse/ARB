@@ -735,10 +735,7 @@ static int nextch(FILE *f) {
     // Get the next "interesting" character. Comments are skipped, and strings
     // are converted to "0". Also, if a line starts with "#" it is skipped.
 
-    int c, n;
-    char *p, numbuf[10];
-
-    c = fnextch(f);
+    int c = fnextch(f);
 
     // skip preprocessor directives
     // EXCEPTION: #line nnn or #nnn lines are interpreted
@@ -761,8 +758,9 @@ static int nextch(FILE *f) {
 
         // if we have a digit it's a line number, from the preprocessor
         if (c >= 0 && isdigit(c)) {
-            p = numbuf;
-            for (n = 8; n >= 0; --n) {
+            char numbuf[10];
+            char *p = numbuf;
+            for (int n = 8; n >= 0; --n) {
                 *p++ = c;
                 c = fnextch(f);
                 if (c <= 0 || !isdigit(c))
@@ -1493,28 +1491,21 @@ static int string_comparator(const void *v0, const void *v1) {
 }
 
 int ARB_main(int argc, const char *argv[]) {
-    FILE *f;
-    const char *t;
-    char *iobuf;
-    int exit_if_noargs = 0;
+    bool exit_if_noargs = false;
 
     if (argv[0] && argv[0][0]) {
-
         ourname = strrchr(argv[0], '/');
-        if (!ourname)
-            ourname = argv[0];
+        if (!ourname) ourname = argv[0];
     }
-    else {
-        ourname = "mkptypes";
-    }
+    else ourname = "mkptypes";
 
     argv++; argc--;
 
     addExcludedSymParts("^TEST_,^NOTEST_"); // exclude unit tests
 
-    iobuf = (char *)malloc(NEWBUFSIZ);
+    char *iobuf = (char *)malloc(NEWBUFSIZ);
     while (*argv && **argv == '-') {
-        t = *argv++; --argc; t++;
+        const char *t = *argv++; --argc; t++;
         while (*t) {
             if (*t == 'e')      print_extern        = 1;
             else if (*t == 'A') use_macro           = 0;
@@ -1562,7 +1553,7 @@ int ARB_main(int argc, const char *argv[]) {
                 break;
             }
             else if (*t == 'V') {
-                exit_if_noargs = 1;
+                exit_if_noargs = true;
                 Version();
             }
             else Usage();
@@ -1677,7 +1668,8 @@ int ARB_main(int argc, const char *argv[]) {
             DEBUG_PRINT(filename[i]);
             DEBUG_PRINT("'\n");
 
-            if (!(f = fopen(filename[i], "r"))) {
+            FILE *f = fopen(filename[i], "r");
+            if (!f) {
                 perror(filename[i]);
                 exit(EXIT_FAILURE);
             }
