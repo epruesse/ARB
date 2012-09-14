@@ -493,6 +493,10 @@ gb_local_data::gb_local_data()
     open_gb_alloc = 0;
 
     atgbexit = NULL;
+
+    iamclient                  = false;
+    search_system_folder       = false;
+    running_client_transaction = ARB_NO_TRANS;
 }
 
 void gb_local_data::announce_db_open(GB_MAIN_TYPE *Main) {
@@ -545,7 +549,6 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos) {
      */
 
     GB_ERROR        error;
-    GBDATA         *gb2;
     gb_header_list *header = GB_DATA_LIST_HEADER(gbd->d);
 
     if (!gbd->flags2.folded_container) return 0;
@@ -578,7 +581,8 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos) {
         gbd->flags2.folded_container = 0;
     }
     else {
-        if ((gb2 = GBCONTAINER_ELEM(gbd, index_pos))) {
+        GBDATA *gb2 = GBCONTAINER_ELEM(gbd, index_pos);
+        if (gb2) {
             if (GB_TYPE(gb2) == GB_DB) gb_untouch_children((GBCONTAINER *)gb2);
             gb_untouch_me(gb2);
         }
@@ -935,14 +939,14 @@ GB_CFLOAT *GB_read_floats_pntr(GBDATA *gbd)
 
         xdrmem_create(&xdrs, res, (int)(full_size), XDR_DECODE);
         buf2 = GB_give_other_buffer(res, full_size);
-        d = (float *)buf2;
+        d = (float *)(void*)buf2;
         for (i=size; i; i--) {
             xdr_float(&xdrs, d);
             d++;
         }
         xdr_destroy(&xdrs);
     }
-    return (float *)buf2;
+    return (float *)(void*)buf2;
 }
 
 static long GB_read_floats_count(GBDATA *gbd)
@@ -1295,7 +1299,7 @@ GB_ERROR GB_write_floats(GBDATA *gbd, const float *f, long size)
             s++;
         }
         xdr_destroy (&xdrs);
-        f = (float *)buf2;
+        f = (float*)(void*)buf2;
     }
     return GB_write_pntr(gbd, (char *)f, size*sizeof(float), size);
 }
@@ -1998,10 +2002,9 @@ GB_ERROR GB_push_transaction(GBDATA *gbd) {
 GB_ERROR GB_pop_transaction(GBDATA *gbd) {
     //! commit a transaction started with GB_push_transaction()
 
-    GB_ERROR      error;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (Main->transaction==0) {
-        error = GB_export_error("Pop without push");
+        GB_ERROR error = GB_export_error("Pop without push");
         GB_internal_error(error);
         return  error;
     }
@@ -2051,34 +2054,29 @@ GB_ERROR GB_begin_transaction(GBDATA *gbd) {
     return 0;
 }
 
-GB_ERROR gb_init_transaction(GBCONTAINER *gbd)      // the first transaction ever
-{
+GB_ERROR gb_init_transaction(GBCONTAINER *gbd) { // the first transaction ever
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    GB_ERROR      error;
+    Main->transaction  = 1;
 
-    Main->transaction = 1;
-
-    error = gbcmc_init_transaction(Main->data);
+    GB_ERROR error = gbcmc_init_transaction(Main->data);
     if (!error) Main->clock ++;
 
     return error;
 }
 
-GB_ERROR GB_no_transaction(GBDATA *gbd)
-{
-    GB_ERROR error;
+GB_ERROR GB_no_transaction(GBDATA *gbd) { // @@@ return error; add __ATTR__USERESULT
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (!Main->local_mode) {
-        error = GB_export_error("Tried to disable transactions in a client");
+        GB_ERROR error = GB_export_error("Tried to disable transactions in a client");
         GB_internal_error(error);
-        return 0;
     }
-    Main->transaction = -1;
+    else {
+        Main->transaction = -1;
+    }
     return 0;
 }
 
-GB_ERROR GB_abort_transaction(GBDATA *gbd)
-{
+GB_ERROR GB_abort_transaction(GBDATA *gbd) {
     /*! abort a running transaction,
      * i.e. forget all changes made to DB inside the current transaction.
      *
@@ -2088,7 +2086,6 @@ GB_ERROR GB_abort_transaction(GBDATA *gbd)
      * committing a surrounding transaction will silently abort it as well.
      */
 
-    GB_ERROR error;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     gbd = (GBDATA *)Main->data;
     if (Main->transaction<=0) {
@@ -2102,7 +2099,7 @@ GB_ERROR GB_abort_transaction(GBDATA *gbd)
 
     gb_abort_transaction_local_rek(gbd, 0);
     if (!Main->local_mode) {
-        error = gbcmc_abort_transaction(gbd);
+        GB_ERROR error = gbcmc_abort_transaction(gbd);
         if (error) return error;
     }
     Main->clock--;

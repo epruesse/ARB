@@ -160,7 +160,6 @@ void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q) {
 
         {
             char buffer[256];
-            memset(buffer, 0, 256);
             sprintf(buffer, "%s/@master_data/@%s", GB_SYSTEM_FOLDER, key);
             ks->gb_master_ali = GB_search(gb_main, buffer, GB_FIND);
             if (ks->gb_master_ali) {

@@ -225,31 +225,35 @@ static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, GBT_TREE *node, long *star
 }
 
 static char *gbt_write_tree_rek_new(const GBT_TREE *node, char *dest, long mode) {
-    char buffer[40];        // just real numbers
-    char    *c1;
-
-    if ((c1 = node->remark_branch)) {
-        int c;
-        if (mode == GBT_PUT_DATA) {
-            *(dest++) = 'R';
-            while ((c = *(c1++))) {
-                if (c == 1) continue;
-                *(dest++) = c;
+    {
+        char *c1 = node->remark_branch;
+        if (c1) {
+            if (mode == GBT_PUT_DATA) {
+                int c;
+                *(dest++) = 'R';
+                while ((c = *(c1++))) {
+                    if (c == 1) continue;
+                    *(dest++) = c;
+                }
+                *(dest++) = 1;
             }
-            *(dest++) = 1;
-        }
-        else {
-            dest += strlen(c1) + 2;
+            else {
+                dest += strlen(c1) + 2;
+            }
         }
     }
-
     if (node->is_leaf) {
         if (mode == GBT_PUT_DATA) {
             *(dest++) = 'L';
             if (node->name) strcpy(dest, node->name);
-            while ((c1 = (char *)strchr(dest, 1))) *c1 = 2;
-            dest += strlen(dest);
-            *(dest++) = 1;
+
+            char *c1;
+            while ((c1 = (char *)strchr(dest, 1))) {
+                *c1 = 2;
+            }
+            dest      += strlen(dest);
+            *(dest++)  = 1;
+            
             return dest;
         }
         else {
@@ -258,6 +262,7 @@ static char *gbt_write_tree_rek_new(const GBT_TREE *node, char *dest, long mode)
         }
     }
     else {
+        char buffer[40];
         sprintf(buffer, "%g,%g;", node->leftlen, node->rightlen);
         if (mode == GBT_PUT_DATA) {
             *(dest++) = 'N';
@@ -370,19 +375,15 @@ GB_ERROR GBT_write_tree_rem(GBDATA *gb_main, const char *tree_name, const char *
 //      tree read functions
 
 static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, long structure_size, int size_of_tree, GB_ERROR *error) {
-    GBT_TREE    *node;
-    GBDATA      *gb_group_name;
-    char         c;
-    char        *p1;
-    static char *membase;
-
     gb_assert(error);
     if (*error) return NULL;
 
+    GBT_TREE *node;
     if (structure_size>0) {
         node = (GBT_TREE *)GB_calloc(1, (size_t)structure_size);
     }
     else {
+        static char *membase;
         if (!startid[0]) {
             membase = (char *)GB_calloc(size_of_tree+1, (size_t)(-2*structure_size)); // because of inner nodes
         }
@@ -391,7 +392,8 @@ static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_
         membase -= structure_size;
     }
 
-    c = *((*data)++);
+    char  c = *((*data)++);
+    char *p1;
 
     if (c=='R') {
         p1 = strchr(*data, 1);
@@ -412,7 +414,7 @@ static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_
         node->rightlen = GB_atof(*data);
         *data = p1;
         if ((*startid < size_of_tree) && (node->gb_node = gb_tree_nodes[*startid])) {
-            gb_group_name = GB_entry(node->gb_node, "group_name");
+            GBDATA *gb_group_name = GB_entry(node->gb_node, "group_name");
             if (gb_group_name) {
                 node->name = GB_read_string(gb_group_name);
             }

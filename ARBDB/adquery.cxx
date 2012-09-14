@@ -23,19 +23,17 @@
 
 static void build_GBDATA_path(GBDATA *gbd, char **buffer) {
     GBCONTAINER *gbc = GB_FATHER(gbd);
-    const char  *key;
-
     if (gbc) {
         build_GBDATA_path((GBDATA*)gbc, buffer);
-        key = GB_KEY(gbd);
-        {
-            char *bp = *buffer;
-            *bp++ = '/';
-            while (*key) *bp++ = *key++;
-            *bp      = 0;
 
-            *buffer = bp;
-        }
+        const char *key = GB_KEY(gbd);
+        char       *bp  = *buffer;
+
+        *bp++ = '/';
+        while (*key) *bp++ = *key++;
+        *bp = 0;
+
+        *buffer = bp;
     }
 }
 
@@ -84,8 +82,8 @@ static bool gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, GB_C
         }
         case GB_FLOAT: { 
             GBK_terminate("cant search float by value"); // @@@ search by comparing floats is nonsense - should be removed/replaced/rewritten 
-            double d                      = GB_read_float(gb);
-            if (d == *(double*)val) equal = true; // (no aliasing problem here; char* -> double* ok)
+            double d = GB_read_float(gb);
+            if (d == *(double*)(void*)val) equal = true; // (no aliasing problem here; char* -> double* ok)
             break;
         }
         default: {
@@ -1092,16 +1090,17 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
             if (error) break;
 
             if (separator == '|') {         // swap in and out in pipes
-                GBL *h;
                 for (i=0; i<argcinput; i++) {
                     if (orig[i].str)    free(orig[i].str);
                 }
                 memset((char*)orig, 0, sizeof(GBL)*GBL_MAX_ARGUMENTS);
-                argcinput = 0;
 
-                h = out;            // swap orig and out
-                out = orig;
-                orig = h;
+                {
+                    GBL *h;
+                    h = out;            // swap orig and out
+                    out = orig;
+                    orig = h;
+                }
 
                 argcinput = argcout;
                 argcout = 0;

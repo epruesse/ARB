@@ -226,11 +226,9 @@ NOT4PERL void GB_dump_no_limit(GBDATA *gbd) {
 //      Fix database
 
 static GB_ERROR gb_fix_recursive(GBDATA *gbd) {
-    GBDATA *gbp;
-    int     type = GB_TYPE(gbd);
-
+    int type = GB_TYPE(gbd);
     if (type == GB_DB) {
-        for (gbp = GB_child(gbd); gbp; gbp = GB_nextChild(gbp)) {
+        for (GBDATA *gbp = GB_child(gbd); gbp; gbp = GB_nextChild(gbp)) {
             gb_fix_recursive(gbp);
         }
     }

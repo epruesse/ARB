@@ -405,9 +405,7 @@ const char * const *GBS_get_arb_tcp_entries(const char *matching) {
     static const char **matchingEntries     = 0;
     static int          matchingEntriesSize = 0;
 
-    GB_ERROR error = 0;
-
-    error = arb_tcp_dat.update();
+    GB_ERROR error = arb_tcp_dat.update();
     if (!error) {
         int count = arb_tcp_dat.get_server_count();
 
