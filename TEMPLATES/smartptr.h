@@ -187,6 +187,7 @@ public:
  */
 
 template <class T, class C = Counted<T, auto_delete_ptr<T> > >
+// cppcheck-suppress noCopyConstructor (does not detect templated cctor)
 class SmartPtr {
 private:
     C *object;

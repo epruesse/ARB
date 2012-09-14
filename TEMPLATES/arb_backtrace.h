@@ -72,9 +72,8 @@ public:
 };
 
 inline void demangle_backtrace(const class BackTraceInfo& trace, FILE *out, const char *message) {
-    static bool filtfailed = false;
-
     if (!BackTraceInfo::suppress()) {
+        static bool filtfailed = false;
         if (!filtfailed) {
             // @@@ Warning: this branch ignores parameter 'out'
             FILE *filt = popen("/usr/bin/c++filt", "w");
