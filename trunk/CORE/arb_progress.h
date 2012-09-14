@@ -262,7 +262,9 @@ public:
 class arb_suppress_progress {
     SmartPtr<arb_parent_progress> suppressor;
 public:
-    arb_suppress_progress() { suppressor = arb_parent_progress::create_suppressor(); }
+    arb_suppress_progress()
+        : suppressor(arb_parent_progress::create_suppressor())
+    {}
 };
 
 #else

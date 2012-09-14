@@ -54,13 +54,11 @@ static int aisc_hash(const char *key, int size) {
 }
 
 static void aisc_free_key(aisc_hash_node **table, char *key) {
-    long            i, size;
-    aisc_hash_node *hn, *hhn;
-
     if (table && table[0]) {
-        size = table[0]->data;
-        i = aisc_hash(key, (int)size);
+        long size = table[0]->data;
+        long i    = aisc_hash(key, (int)size);
 
+        aisc_hash_node *hn, *hhn;
         for (hn = hhn = table[i]; hn; hn = hn->next) {
             if (strcmp(key, hn->key)) {
                 hhn = hn;
@@ -78,13 +76,10 @@ static void aisc_free_key(aisc_hash_node **table, char *key) {
     }
 }
 
-static void aisc_free_hash(aisc_hash_node **table)
-{
-    long            i, end;
-    aisc_hash_node *hn, *hnn;
-
-    end = table[0]->data;
-    for (i=0; i<end; i++) {
+static void aisc_free_hash(aisc_hash_node **table) {
+    long end = table[0]->data;
+    for (long i=0; i<end; i++) {
+        aisc_hash_node *hn, *hnn;
         for (hn = table[i]; hn; hn=hnn) {
             hnn = hn->next;
             free(hn->key);
@@ -95,21 +90,19 @@ static void aisc_free_hash(aisc_hash_node **table)
 }
 
 
-static void aisc_insert_hash(aisc_hash_node **table, char *key, long data)
-{
-    long            i, size;
-    aisc_hash_node *hn, *hnl;
+static void aisc_insert_hash(aisc_hash_node **table, char *key, long data) {
+    long            size = table[0]->data;
+    long            i    = aisc_hash(key, (int)size);
 
-    size = table[0]->data;
-    i = aisc_hash(key, (int)size);
-    hnl = 0;
+    aisc_hash_node *hnl  = 0;
+    aisc_hash_node *hn;
     for (hn=table[i]; hn; hn=hn->next) {
         hnl = hn;
         if (strcmp(key, hn->key) == 0) {
             hn->data = data;
             return;
-        };
-    };
+        }
+    }
     hn = (aisc_hash_node *)calloc(sizeof(aisc_hash_node), 1);
     hn->key = (char *)strdup(key);
     hn->data = data;
@@ -122,13 +115,10 @@ static void aisc_insert_hash(aisc_hash_node **table, char *key, long data)
 }
 
 long aisc_read_hash(aisc_hash_node **table, const char *key) {
-    long            i, size;
-    aisc_hash_node *hn;
-
     if (table && table[0]) {
-        size = table[0]->data;
-        i = aisc_hash(key, (int)size);
-        for (hn=table[i]; hn; hn=hn->next) {
+        long size = table[0]->data;
+        long i = aisc_hash(key, (int)size);
+        for (aisc_hash_node *hn=table[i]; hn; hn=hn->next) {
             if (strcmp(key, hn->key) == 0) return hn->data;
         }
     }
@@ -327,12 +317,11 @@ void trf_begin() {
 
 void trf_commit(int errors) {
     // if errors == 1 then print errors and CORE
-    int i;
     struct trf_dest_struct *tds, *ntds;
     struct trf_struct *ts, *nts;
-    trf_level --;
+    trf_level--;
     if (!trf_level) {
-        for (i = 0; i < TRF_HASH_SIZE; i++) {
+        for (int i = 0; i < TRF_HASH_SIZE; i++) {
             for (ts = trf_sp[i]; ts; ts = nts) {
                 if (errors) {
                     if (ts->dests) {
