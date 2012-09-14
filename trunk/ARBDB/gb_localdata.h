@@ -31,7 +31,8 @@ struct gb_buffer {
 enum ARB_TRANS_TYPE {
     ARB_COMMIT,
     ARB_ABORT,
-    ARB_TRANS
+    ARB_TRANS,
+    ARB_NO_TRANS
 };
 
 struct gb_exitfun;
@@ -52,20 +53,18 @@ public:
     char      *write_ptr;
     long       write_bufsize;
     long       write_free;
-    int        iamclient;
-    int        search_system_folder;
+    bool       iamclient;
+    bool       search_system_folder;
 
     gb_compress_tree *bituncompress;
     gb_compress_list *bitcompress;
 
     long bc_size;
-    long gb_compress_keys_count;
-    long gb_compress_keys_level;
 
-    GB_MAIN_TYPE   *gb_compress_keys_main;
     ARB_TRANS_TYPE  running_client_transaction;
-    struct {
+    struct gbl_ {
         GBDATA *gb_main;
+        gbl_() : gb_main(0) {}
     } gbl;
 
     gb_exitfun *atgbexit;

@@ -376,25 +376,22 @@ GBCONTAINER *gb_make_pre_defined_container(GBCONTAINER *father, GBCONTAINER *gbd
 }
 
 
-GBCONTAINER *gb_make_container(GBCONTAINER * father, const char *key, long index_pos, GBQUARK keyq)
-{
-    GBCONTAINER    *gbd;
-    long            gbm_index;
+GBCONTAINER *gb_make_container(GBCONTAINER * father, const char *key, long index_pos, GBQUARK keyq) {
+    GBCONTAINER *gbd;
 
-    if (father)
-    {
+    if (father) {
         GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(father);
 
-        if (!keyq) keyq = gb_find_or_create_NULL_quark(Main, key);
-        gbm_index = GB_QUARK_2_GBMINDEX(Main, keyq);
-        gbd = (GBCONTAINER *) gbm_get_mem(sizeof(GBCONTAINER), gbm_index);
+        if (!keyq) keyq   = gb_find_or_create_NULL_quark(Main, key);
+        long gbm_index    = GB_QUARK_2_GBMINDEX(Main, keyq);
+        gbd               = (GBCONTAINER *) gbm_get_mem(sizeof(GBCONTAINER), gbm_index);
         GB_GBM_INDEX(gbd) = gbm_index;
+
         SET_GB_FATHER(gbd, father);
         gbd->flags.type = GB_DB;
         gbd->main_idx = father->main_idx;
         if (Main->local_mode) gbd->server_id = GBTUM_MAGIC_NUMBER;
-        if (Main->clock)
-        {
+        if (Main->clock) {
             GB_CREATE_EXT((GBDATA *) gbd);
             gbd->ext->creation_date = Main->clock;
         }
@@ -404,8 +401,7 @@ GBCONTAINER *gb_make_container(GBCONTAINER * father, const char *key, long index
 
         return gbd;
     }
-    else    // main entry
-    {
+    else { // main entry
         gbd = (GBCONTAINER *) gbm_get_mem(sizeof(GBCONTAINER), 0);
         gbd->flags.type = GB_DB;
     }
@@ -657,7 +653,6 @@ void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index) {
     gb_header_list *hls       = GB_DATA_LIST_HEADER(father->d);
     GBQUARK         old_index = hls[index].flags.key_quark;
 
-    GBCONTAINER *gfather;
     Main->keys[old_index].nref--;
     Main->keys[new_index].nref++;
 
@@ -669,10 +664,10 @@ void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index) {
 
             GB_INDEX_CHECK_OUT(gbd);
             gbd->flags2.tisa_index = 0;
-            if ((gfather = GB_FATHER(father))) {
-                for (ifs = GBCONTAINER_IFS(gfather); ifs;
-                        ifs = GB_INDEX_FILES_NEXT(ifs))
-                {
+            
+            GBCONTAINER *gfather = GB_FATHER(father);
+            if (gfather) {
+                for (ifs = GBCONTAINER_IFS(gfather); ifs; ifs = GB_INDEX_FILES_NEXT(ifs)) {
                     if (ifs->key == new_index) break;
                 }
             }

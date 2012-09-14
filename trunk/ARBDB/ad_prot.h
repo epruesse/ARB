@@ -390,7 +390,7 @@ bool GB_in_temporary_branch(GBDATA *gbd);
 GB_ERROR GB_push_transaction(GBDATA *gbd);
 GB_ERROR GB_pop_transaction(GBDATA *gbd);
 GB_ERROR GB_begin_transaction(GBDATA *gbd);
-GB_ERROR GB_no_transaction(GBDATA *gbd);
+GB_ERROR GB_no_transaction(GBDATA *gbd) __ATTR__USERESULT;
 GB_ERROR GB_abort_transaction(GBDATA *gbd);
 GB_ERROR GB_commit_transaction(GBDATA *gbd);
 GB_ERROR GB_end_transaction(GBDATA *gbd, GB_ERROR error);

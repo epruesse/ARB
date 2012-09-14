@@ -271,7 +271,7 @@ GB_ERROR gb_convert_V2_to_V3(GBDATA *gb_main) {
     GBDATA   *gb_system = GB_search(gb_main, GB_SYSTEM_FOLDER, GB_FIND);
 
     if (!gb_system) {
-        gb_system = GB_create_container(gb_main, GB_SYSTEM_FOLDER);
+        GB_create_container(gb_main, GB_SYSTEM_FOLDER);
         if (GB_entry(gb_main, "extended_data")) {
             GB_warning("Converting data from old V2.0 to V2.1 Format:\n"
                        " Please Wait (may take some time)");
@@ -2241,9 +2241,11 @@ static GB_DICTIONARY *gb_create_dictionary(O_gbdByKey *gbk, long maxmem) {
         int   overlap     = 0;          // # of bytes overlapping with last word
         u_str buffer;
         long  dummy;
+#if defined(DEBUG)
         long  word_sum    = 0;
         long  overlap_sum = 0;
         long  max_overlap = 0;
+#endif
 
         // reduce tree as long as it has to many leafs (>MAX_LONG_INDEX)
         while (words >= MAX_LONG_INDEX) {
@@ -2279,9 +2281,11 @@ static GB_DICTIONARY *gb_create_dictionary(O_gbdByKey *gbk, long maxmem) {
             printf("word='%s' (occur=%li overlap=%i)\n", lstr(buffer, wordLen), wordFrequency, overlap);
 #endif
 
+#if defined(DEBUG)
             overlap_sum += overlap;
             if (overlap>max_overlap) max_overlap = overlap;
             word_sum += wordLen;
+#endif
 
             if (offset-overlap+wordLen > dict->textlen) { // if not enough space allocated -> realloc dictionary string
                 u_str ntext = (u_str)gbm_get_mem(dict->textlen+DICT_STRING_INCR, GBM_DICT_INDEX);
@@ -2382,7 +2386,7 @@ static GB_ERROR readAndWrite(O_gbdByKey *gbkp) {
                     break;
                 case GB_FLOATS:
                     error             = GB_write_floats(gbd, (float*)0, 0);
-                    if (!error) error = GB_write_floats(gbd, (float*)data, size);
+                    if (!error) error = GB_write_floats(gbd, (float*)(void*)data, size);
                     break;
                 default:
                     gb_assert(0);

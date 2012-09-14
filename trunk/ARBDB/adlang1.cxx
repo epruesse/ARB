@@ -1594,10 +1594,8 @@ static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE /*cbt*/) {
      */
 
     cached_taxonomy *ct    = (cached_taxonomy *)cd_ct;
-    const char      *found = 0;
     GB_ERROR         error = 0;
-
-    found = tree_of_cached_taxonomy(ct);
+    const char      *found = tree_of_cached_taxonomy(ct);
 
     if (found) {
 #if defined(DEBUG) && 0
@@ -2051,7 +2049,6 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
             else {
                 char   *dst       = result;
                 size_t  rest_data = data_size;
-                int     i;
 
                 if (simple_format) {
                     /* format string w/o gaps or numleft
@@ -2061,8 +2058,8 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
                     // build wrap table
                     unsigned char isWrapChar[256];
                     memset(isWrapChar, 0, sizeof(isWrapChar));
-                    for (i = 0; nl[i]; ++i) isWrapChar[(unsigned char)nl[i]] = 1;
-                    for (i = 0; forcenl[i]; ++i) isWrapChar[(unsigned char)forcenl[i]] = 2;
+                    for (int i = 0; nl[i]; ++i) isWrapChar[(unsigned char)nl[i]] = 1;
+                    for (int i = 0; forcenl[i]; ++i) isWrapChar[(unsigned char)forcenl[i]] = 2;
 
                     if (firsttab>0) {
                         memset(dst, ' ', firsttab);

@@ -583,14 +583,13 @@ static GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbd) {
     }
 
     if (!error) {
-        Reader   *r        = openReader(in);
-        GB_ERROR  cl_error = 0;
+        Reader *r = openReader(in);
 
         GB_search((GBDATA *)gbd, GB_SYSTEM_FOLDER, GB_CREATE_CONTAINER); // Switch to Version 3
 
         error = gb_parse_ascii(r, gbd);
 
-        cl_error = closeReader(r);
+        GB_ERROR cl_error = closeReader(r);
         if (!error) error = cl_error;
     }
 
@@ -762,7 +761,7 @@ static long gb_recover_corrupt_file(GBCONTAINER *gbd, FILE *in, GB_ERROR recover
                 if (! (isalnum(c) || isspace(c) || strchr("._;:,", c))) break;
             }
             if (s< size && s > pos+11 && !file[s]) {    // we found something
-                gb_local->search_system_folder = 1;
+                gb_local->search_system_folder = true;
                 return fseek(in, pos, 0);
             }
         }
@@ -1377,8 +1376,6 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
      * @see GB_open() and GBT_open()
      */
     GBCONTAINER   *gbd;
-    FILE          *input;
-    long           i;
     GB_MAIN_TYPE  *Main;
     gb_open_types  opentype;
     GB_CSTR        quickFile           = NULL;
@@ -1390,10 +1387,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
 
     gb_assert(strchr(opent, 'd') == NULL); // mode 'd' is deprecated. You have to use 'D' and store your defaults inside ARBHOME/lib/arb_default
 
-    if (!opent) opentype = gb_open_all;
-    else if (strchr(opent, 'w')) opentype = gb_open_all;
-    else if (strchr(opent, 's')) opentype = gb_open_read_only_all;
-    else opentype = gb_open_read_only_all;
+    opentype = (!opent || strchr(opent, 'w')) ? gb_open_all : gb_open_read_only_all;
 
     if (strchr(path, ':')) {
         ; // remote access
@@ -1493,15 +1487,14 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
         else {
             int read_from_stdin = strcmp(path, "-") == 0;
 
-            GB_ULONG time_of_main_file  = 0;
-            GB_ULONG time_of_quick_file = 0;
-            Main->local_mode            = true;
+            // cppcheck-suppress variableScope (cannot change due to goto-bypass)
+            GB_ULONG time_of_main_file = 0; long i;
+
+            Main->local_mode = true;
             GB_begin_transaction((GBDATA *)gbd);
-            Main->clock                 = 0;        // start clock
+            Main->clock      = 0;                   // start clock
 
-            if (read_from_stdin) input = stdin;
-            else input                 = fopen(path, "rb");
-
+            FILE *input = read_from_stdin ? stdin : fopen(path, "rb");
             if (!input && ignoreMissingMaster) {
                 goto load_quick_save_file_only;
             }
@@ -1542,8 +1535,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                 }
                 time_of_main_file = GB_time_of_file(path);
 
-                if (input != stdin) i = gb_read_in_uint32(input, 0);
-                else i                = 0;
+                i = (input != stdin) ? gb_read_in_uint32(input, 0) : 0;
 
                 if (is_binary_db_id(i)) {
                     i = gb_read_bin(input, gbd, false);     // read or map whole db
@@ -1571,7 +1563,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                         input = fopen(quickFile, "rb");
 
                         if (input) {
-                            time_of_quick_file = GB_time_of_file(quickFile);
+                            GB_ULONG time_of_quick_file = GB_time_of_file(quickFile);
                             if (time_of_main_file && time_of_quick_file < time_of_main_file) {
                                 const char *warning = GBS_global_string("Your main database file '%s' is newer than\n"
                                                                         "   the changes file '%s'\n"

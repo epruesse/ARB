@@ -561,18 +561,14 @@ bool GEN_is_pseudo_gene_species(GBDATA *gb_species) {
 //      find organism or gene for pseudo-species
 
 GB_ERROR GEN_organism_not_found(GBDATA *gb_pseudo) {
-    GB_ERROR error = 0;
-
     gb_assert(GEN_is_pseudo_gene_species(gb_pseudo));
     gb_assert(GEN_find_origin_organism(gb_pseudo, 0) == 0);
 
-    error = GB_export_errorf("The gene-species '%s' refers to an unknown organism (%s)\n"
-                             "This occurs if you rename or delete the organism or change the entry\n"
-                             "'ARB_origin_species' and will most likely cause serious problems.",
-                             GBT_read_name(gb_pseudo),
-                             GEN_origin_organism(gb_pseudo));
-
-    return error;
+    return GB_export_errorf("The gene-species '%s' refers to an unknown organism (%s)\n"
+                            "This occurs if you rename or delete the organism or change the entry\n"
+                            "'ARB_origin_species' and will most likely cause serious problems.",
+                            GBT_read_name(gb_pseudo),
+                            GEN_origin_organism(gb_pseudo));
 }
 
 // @@@ FIXME: missing: GEN_gene_not_found (like GEN_organism_not_found)

@@ -431,12 +431,8 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbd, long *buffe
     }
 
     if (type == GB_DB) {
-        long nitems;
-        long nheader;
-        long item, irror;
-
-        nheader = buffer[i++];
-        nitems  = buffer[i++];
+        long nheader = buffer[i++];
+        long nitems  = buffer[i++];
 
         if (nheader > 0) {
             long             realsize = nheader* sizeof(gb_header_flags);
@@ -458,7 +454,7 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbd, long *buffe
                 }
                 gbc->d.nheader = (int)nheader;
                 hdl = GB_DATA_LIST_HEADER(gbc->d);
-                for (item = 0; item < nheader; item++) {
+                for (long item = 0; item < nheader; item++) {
                     GBQUARK old_index = hdl->flags.key_quark;
                     GBQUARK new_index = buffer2->key_quark;
                     if (new_index && !old_index) {  // a rename ...
@@ -497,10 +493,9 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbd, long *buffe
                 newmod = -2;
             }
             debug_printf("Client %i \n", nheader);
-            for (item = 0; item < nitems; item++) {
+            for (long item = 0; item < nitems; item++) {
                 debug_printf("  Client reading %i\n", item);
-                irror = gbcm_read_bin(socket, (GBCONTAINER *)gb2, buffer,
-                                      newmod, 0, cs_main);
+                long irror = gbcm_read_bin(socket, (GBCONTAINER *)gb2, buffer, newmod, 0, cs_main);
                 if (irror) {
                     return GBCM_SERVER_FAULT;
                 }
@@ -573,7 +568,7 @@ static void gbcms_shift_delete_list(void *hsi, void *soi) {
     }
 }
 
-static GBCM_ServerResult gbcms_write_deleted(int socket, GBDATA *gbd, long hsin, long client_clock, long *buffer) {
+static GBCM_ServerResult gbcms_write_deleted(int socket, long hsin, long client_clock, long *buffer) {
     Socinf            *socinf;
     gb_server_data    *hs;
     gbcms_delete_list *dl;
@@ -603,13 +598,10 @@ static GBCM_ServerResult gbcms_write_deleted(int socket, GBDATA *gbd, long hsin,
         hs->del_first = dl->next;
         gbm_free_mem(dl, sizeof(gbcms_delete_list), GBM_CB_INDEX);
     }
-    gbd = gbd;
     return GBCM_SERVER_OK;
 }
 
 static GBCM_ServerResult gbcms_write_updated(int socket, GBDATA *gbd, long hsin, long client_clock, long *buffer) {
-    int send_header = 0;
-
     if (GB_GET_EXT_UPDATE_DATE(gbd)<=client_clock) return GBCM_SERVER_OK;
     if (GB_GET_EXT_CREATION_DATE(gbd) > client_clock) {
         buffer[0] = GBCM_COMMAND_PUT_UPDATE_CREATE;
@@ -625,6 +617,7 @@ static GBCM_ServerResult gbcms_write_updated(int socket, GBDATA *gbd, long hsin,
             int          index, end;
 
             end = (int)gbc->d.nheader;
+            int send_header = 0;
             if (gbc->header_update_date > client_clock) send_header = 1;
 
             buffer[0] = GBCM_COMMAND_PUT_UPDATE_UPDATE;
@@ -643,6 +636,7 @@ static GBCM_ServerResult gbcms_write_updated(int socket, GBDATA *gbd, long hsin,
             buffer[0] = GBCM_COMMAND_PUT_UPDATE_UPDATE;
             buffer[1] = (long)gbd;
             if (gbcm_write(socket, (const char *)buffer, sizeof(long)*2)) return GBCM_SERVER_FAULT;
+            const int send_header = 0;
             gbcm_write_bin(socket, gbd, buffer, 1, 0, send_header);
         }
     }
@@ -792,27 +786,21 @@ static GBCM_ServerResult gbcms_talking_updated(int /*socket*/, long */*hsin*/, v
     return GBCM_SERVER_OK;
 }
 
-static GBCM_ServerResult gbcms_talking_init_transaction(int socket, long *hsin, void *sin, GBDATA *gb_dummy) {
+static GBCM_ServerResult gbcms_talking_init_transaction(int socket, long *hsin, void *sin, GBDATA */*gbd*/) {
     /* begin client transaction
      * sends clock
      *
      * command: GBCM_COMMAND_INIT_TRANSACTION
      */
-    GBDATA         *gb_main;
-    GBDATA         *gbd;
+
     gb_server_data *hs = (gb_server_data *)hsin;
     Socinf         *si = (Socinf *)sin;
-    long            anz;
-    char           *user;
-    fd_set          set;
-    struct timeval  timeout;
-    GB_MAIN_TYPE   *Main;
 
-    gb_dummy = gb_dummy;
-    gb_main = hs->gb_main;
-    Main = GB_MAIN(gb_main);
-    gbd = gb_main;
-    user = gbcm_read_string(socket);
+    GBDATA       *gb_main = hs->gb_main;
+    GB_MAIN_TYPE *Main    = GB_MAIN(gb_main);
+    GBDATA       *gbd     = gb_main;
+    char         *user    = gbcm_read_string(socket);
+
     gbcm_read_flush();
     if (gbcm_login((GBCONTAINER *)gbd, user)) {
         return GBCM_SERVER_FAULT;
@@ -837,14 +825,15 @@ static GBCM_ServerResult gbcms_talking_init_transaction(int socket, long *hsin, 
 
     GB_begin_transaction(gbd);
     while (gb_local->running_client_transaction == ARB_TRANS) {
-
+        fd_set set;
         FD_ZERO(&set);
         FD_SET(socket, &set);
 
+        struct timeval timeout;
         timeout.tv_sec  = GBCMS_TRANSACTION_TIMEOUT;
         timeout.tv_usec = 100000;
 
-        anz = select(FD_SETSIZE, FD_SET_TYPE &set, NULL, NULL, &timeout);
+        long anz = select(FD_SETSIZE, FD_SET_TYPE &set, NULL, NULL, &timeout);
 
         if (anz<0) continue;
         if (anz==0) {
@@ -900,7 +889,7 @@ static GBCM_ServerResult gbcms_talking_begin_transaction(int socket, long *hsin,
     if (GB_MAIN(gb_main)->key_clock > client_clock) {
         if (gbcms_write_keys(socket, gbd)) return GBCM_SERVER_FAULT;
     }
-    if (gbcms_write_deleted(socket, gbd, (long)hs, client_clock, buffer)) return GBCM_SERVER_FAULT;
+    if (gbcms_write_deleted(socket,      (long)hs, client_clock, buffer)) return GBCM_SERVER_FAULT;
     if (gbcms_write_updated(socket, gbd, (long)hs, client_clock, buffer)) return GBCM_SERVER_FAULT;
     buffer[0] = GBCM_COMMAND_PUT_UPDATE_END;
     buffer[1] = 0;
@@ -1138,35 +1127,26 @@ static TalkingFunction aisc_talking_functions[] = {
 };
 
 static GBCM_ServerResult gbcms_talking(int con, long *hs, void *sin) {
-    long              buf[3];
-    long              len;
-    GBCM_ServerResult error;
-    long              magic_number;
-
     gbcm_read_flush();
- next_command :
-    len = gbcm_read(con, (char *)buf, sizeof(long) * 3);
+
+  next_command :
+
+    long buf[3];
+    long len = gbcm_read(con, (char *)buf, sizeof(long) * 3);
     if (len == sizeof(long) * 3) {
-        magic_number = buf[0];
+        long magic_number = buf[0];
         if ((magic_number & GBTUM_MAGIC_NUMBER_FILTER) != GBTUM_MAGIC_NUMBER) {
             gbcm_read_flush();
             fprintf(stderr, "Illegal Access\n");
             return GBCM_SERVER_FAULT;
         }
         magic_number &= ~GBTUM_MAGIC_NUMBER_FILTER;
-        error = (aisc_talking_functions[magic_number])(con, hs, sin, (GBDATA *)buf[2]);
+        GBCM_ServerResult error = (aisc_talking_functions[magic_number])(con, hs, sin, (GBDATA *)buf[2]);
         if (error == GBCM_SERVER_OK_WAIT) {
             goto next_command;
         }
         gbcm_read_flush();
-        if (!error) {
-            buf[0] = GBCM_SERVER_OK;
-            return GBCM_SERVER_OK;
-        }
-        else {
-            buf[0] = GBCM_SERVER_FAULT;
-            return error;
-        }
+        return error ? error : GBCM_SERVER_OK;
     }
     else {
         return GBCM_SERVER_FAULT;
@@ -1176,21 +1156,14 @@ static GBCM_ServerResult gbcms_talking(int con, long *hs, void *sin) {
 bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time) {
     // returns true if served
 
-    gb_server_data    *hs;
-    int                con;
-    long               anz, i;
-    GBCM_ServerResult  error    = GBCM_SERVER_OK;
-    Socinf            *si, *si_last, *sinext, *sptr;
-    fd_set             set, setex;
-    timeval            timeout;
-    GB_MAIN_TYPE      *Main     = GB_MAIN(gbd);
-    long               in_trans = GB_read_transaction(gbd);
-
+    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (!Main->server_data) return false;
-    if (in_trans)           return false;
 
-    hs = Main->server_data;
+    long in_trans = GB_read_transaction(gbd);
+    if (in_trans) return false;
 
+    gb_server_data *hs = Main->server_data;
+    timeval         timeout;
 
     if (wait_extra_time) {
         timeout.tv_sec = 0;
@@ -1206,38 +1179,40 @@ bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time) {
     else {
         hs->wait_for_new_request = 0;
     }
+
     {
+        fd_set set;
+        fd_set setex;
+
         FD_ZERO(&set);
         FD_ZERO(&setex);
         FD_SET(hs->hso, &set);
         FD_SET(hs->hso, &setex);
 
-        for (si=hs->soci, i=1; si; si=si->next, i++)
-        {
+        for (Socinf *si=hs->soci; si; si=si->next) {
             FD_SET(si->socket, &set);
             FD_SET(si->socket, &setex);
         }
 
-        if (hs->timeout>=0) {
-            anz = select(FD_SETSIZE, FD_SET_TYPE &set, NULL, FD_SET_TYPE &setex, &timeout);
-        }
-        else {
-            anz = select(FD_SETSIZE, FD_SET_TYPE &set, NULL, FD_SET_TYPE &setex, 0);
-        }
+        {
+            long anz;
+            if (hs->timeout>=0) {
+                anz = select(FD_SETSIZE, FD_SET_TYPE &set, NULL, FD_SET_TYPE &setex, &timeout);
+            }
+            else {
+                anz = select(FD_SETSIZE, FD_SET_TYPE &set, NULL, FD_SET_TYPE &setex, 0);
+            }
 
-        if (anz==-1) {
-            return false;
-        }
-        if (!anz) { // timed out
-            return false;
+            if (anz==-1) return false;
+            if (!anz) return false; // timed out
         }
 
 
         if (FD_ISSET(hs->hso, &set)) {
-            con = accept(hs->hso, NULL, 0);
+            int con = accept(hs->hso, NULL, 0);
             if (con>0) {
                 long optval[1];
-                sptr = (Socinf *)GB_calloc(sizeof(Socinf), 1);
+                Socinf *sptr = (Socinf *)GB_calloc(sizeof(Socinf), 1);
                 if (!sptr) return 0;
                 sptr->next = hs->soci;
                 sptr->socket = con;
@@ -1248,11 +1223,13 @@ bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time) {
             }
         }
         else {
-            si_last = 0;
+            Socinf *si_last = 0;
+            Socinf *si_next;
 
-            for (si=hs->soci; si; si_last=si, si=sinext) {
-                sinext = si->next;
+            for (Socinf *si=hs->soci; si; si_last=si, si=si_next) {
+                si_next = si->next;
 
+                GBCM_ServerResult error = GBCM_SERVER_OK;
                 if (FD_ISSET(si->socket, &set)) {
                     error = gbcms_talking(si->socket, (long *)hs, (void *)si);
                     if (GBCM_SERVER_OK == error) {
@@ -1308,15 +1285,8 @@ GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long deep, long index_pos) {
      * index_pos == -2 read all clients + header array
      */
 
-    int  socket;
-    long buffer[256];
-    long nitems[1];
-    long item;
-    long irror = 0;
-
-    GB_ERROR error = NULL;
-
-    socket = GBCONTAINER_MAIN(gbd)->c_link->socket;
+    GB_ERROR error  = NULL;
+    int      socket = GBCONTAINER_MAIN(gbd)->c_link->socket;
     gbcm_read_flush();
 
     if      (gbcm_write_two  (socket, GBCM_COMMAND_UNFOLD, gbd->server_id)) error = SEND_ERROR();
@@ -1324,13 +1294,16 @@ GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long deep, long index_pos) {
     else if (gbcm_write_two  (socket, GBCM_COMMAND_SETINDEX, index_pos)) error = SEND_ERROR();
     else if (gbcm_write_flush(socket)) error = SEND_ERROR();
     else {
+        long buffer[256];
+        long irror = 0;
         if (index_pos == -2) {
             irror = gbcm_read_bin(socket, 0, buffer, 0, (GBDATA*)gbd, 0);
         }
         else {
-            if (gbcm_read_two(socket, GBCM_COMMAND_SEND_COUNT, 0, nitems)) irror = 1;
+            long nitems;
+            if (gbcm_read_two(socket, GBCM_COMMAND_SEND_COUNT, 0, &nitems)) irror = 1;
             else {
-                for (item=0; !irror && item<nitems[0]; item++) {
+                for (long item = 0; !irror && item<nitems; item++) {
                     irror = gbcm_read_bin(socket, gbd, buffer, 0, 0, 0);
                 }
             }
@@ -1654,24 +1627,26 @@ bool GB_is_server(GBDATA *gbd) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     return Main->local_mode;
 }
-static GB_ERROR gbcmc_unfold_list(int socket, GBDATA * gbd)
-{
-    long      readvar[2];
-    GBCONTAINER         *gb_client;
-    GB_ERROR error;
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+
+static GB_ERROR gbcmc_unfold_list(int socket, GBDATA * gbd) {
+    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
+    GB_ERROR      error = NULL;
+
+    long readvar[2];
     if (!gbcm_read(socket, (char *) readvar, sizeof(long) * 2)) {
-        return GB_export_error("receive failed");
+        error = GB_export_error("receive failed");
     }
-    gb_client = (GBCONTAINER *) readvar[1];
-    if (gb_client) {
-        error = gbcmc_unfold_list(socket, gbd);
-        if (error)
-            return error;
-        gb_client = (GBCONTAINER *) GBS_read_numhash(Main->remote_hash, (long) gb_client);
-        gb_unfold(gb_client, 0, (int)readvar[0]);
+    else {
+        GBCONTAINER *gb_client = (GBCONTAINER *) readvar[1];
+        if (gb_client) {
+            error = gbcmc_unfold_list(socket, gbd);
+            if (!error) {
+                gb_client = (GBCONTAINER *) GBS_read_numhash(Main->remote_hash, (long) gb_client);
+                gb_unfold(gb_client, 0, (int)readvar[0]);
+            }
+        }
     }
-    return 0;
+    return error;
 }
 
 GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str, GB_CASE case_sens, GB_SEARCH_TYPE gbs) {

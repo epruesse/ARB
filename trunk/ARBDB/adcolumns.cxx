@@ -242,7 +242,7 @@ static GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, enum insDelTarget targ
                                     case GB_BITS:   error = GB_write_bits  (gb_data, modified, modified_len, "-");       break;
                                     case GB_BYTES:  error = GB_write_bytes (gb_data, modified, modified_len);            break;
                                     case GB_INTS:   error = GB_write_ints  (gb_data, (GB_UINT4*)modified, modified_len); break;
-                                    case GB_FLOATS: error = GB_write_floats(gb_data, (float*)modified, modified_len);    break;
+                                    case GB_FLOATS: error = GB_write_floats(gb_data, (float*)(void*)modified, modified_len);    break;
 
                                     default: gb_assert(0); break;
                                 }

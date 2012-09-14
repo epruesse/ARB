@@ -291,24 +291,22 @@ char *gb_compress_bits(const char *source, long size, const unsigned char *c_0, 
 }
 
 
-GB_BUFFER gb_uncompress_bits(const char *source, long size, char c_0, char c_1)
-{
-    const char       *s;
-    char             *p, *buffer, ch = 0, outc;
-    long              bitp, lastpos, pos;
-    gb_compress_tree *Main, *t;
-    long              command;
+GB_BUFFER gb_uncompress_bits(const char *source, long size, char c_0, char c_1) {
+    gb_compress_tree *Main = gb_local->bituncompress;
 
-    Main = gb_local->bituncompress;
-    bitp = 0;
-    s = source;
-    buffer = p = GB_give_other_buffer(source, size+1);
-    outc = c_0;
+    char ch   = 0;
+    long bitp = 0;
+    char outc = c_0;
 
-    for (pos = 0; pos<size;) {
-        lastpos = pos;
-        for (command = GB_CS_SUB; command != GB_CS_OK;) {
-            for (t=Main; !t->leave;) {
+    const char *s      = source;
+    char       *p      = GB_give_other_buffer(source, size+1);
+    char       *buffer = p;
+
+    for (long pos = 0; pos<size;) {
+        long lastpos = pos;
+        for (long command = GB_CS_SUB; command != GB_CS_OK;) {
+            gb_compress_tree *t;
+            for (t = Main; !t->leave;) {
                 int bit;
                 GB_READ_BIT(s, ch, bitp, bit);
                 t = t->son[bit];
@@ -524,20 +522,16 @@ static char *gb_compress_huffmann_rek(gb_compress_list *bc, int bits, int bitcnt
 }
 
 static GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize, int last_flag) {
-    char          *buffer;
-    unsigned char *s;
-    char          *dest;
-    int            val, h_i, command;
-    long           id = 0, end, len;
+    const int        COMPRESS_LIST_SIZE = 257;
+    gb_compress_list bitcompress[COMPRESS_LIST_SIZE];
 
-    gb_compress_list  bitcompress[257], *pbc;
-    gb_compress_list *pbid;
+    memset((char *)(&bitcompress[0]), 0, sizeof(gb_compress_list)*COMPRESS_LIST_SIZE);
 
-    memset((char *)(&bitcompress[0]), 0, sizeof(gb_compress_list)*257);
-    end = 256;
+    char *buffer = GB_give_other_buffer(source, size*2+3*GBTUM_COMPRESS_TREE_SIZE+1);
+    char *dest   = buffer;
+    *(dest++)    = GB_COMPRESSION_HUFFMANN | last_flag;
 
-    dest = buffer = GB_give_other_buffer(source, size*2+3*GBTUM_COMPRESS_TREE_SIZE+1);
-    *(dest++) = GB_COMPRESSION_HUFFMANN | last_flag;
+    long id = 0;
 
     {
         long level;
@@ -550,8 +544,8 @@ static GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize,
         gb_compress_list *element2 = 0;
         gb_compress_list *bc       = 0;
 
-        s = (unsigned char *)source;
-        for (len = size; len; len--) {
+        unsigned char *s = (unsigned char *)source;
+        for (long len = size; len; len--) {
             bitcompress[*(s++)].count++;
         }
         level = size/GBTUM_COMPRESS_TREE_SIZE;
@@ -569,10 +563,10 @@ static GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize,
                 bitcompress[i].command = GB_CS_ID;
             }
         }
-        bitcompress[end].command = GB_CS_END;
+        bitcompress[COMPRESS_LIST_SIZE-1].command = GB_CS_END;
 
         gb_compress_huffmann_add_to_list(restcount, &bitcompress[id]);
-        gb_compress_huffmann_add_to_list(1, &bitcompress[end]);
+        gb_compress_huffmann_add_to_list(1, &bitcompress[COMPRESS_LIST_SIZE-1]);
         while (huffmann_listhead->next) {
             gb_compress_huffmann_pop(&(vali[0]), &element1);
             gb_compress_huffmann_pop(&(vali[1]), &element2);
@@ -608,17 +602,19 @@ static GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize,
         dest      = gb_compress_huffmann_rek(bc, 1, 0, dest);
         *(dest++) = 0;
     }
-    pbid =  &bitcompress[id];
-    s = (unsigned char *)source;
+
+    gb_compress_list *pbid = &bitcompress[id];
+    unsigned char    *s    = (unsigned char *)source;
     {
         int bitptr, bits, bitc;
 
         GB_INIT_WRITE_BITS(dest, bitptr);
-        for (len = size; len; len--) {
-            val = *(s++);
-            command = bitcompress[val].command;
+        int h_i;
+        for (long len = size; len; len--) {
+            int val     = *(s++);
+            int command = bitcompress[val].command;
             if (command == GB_CS_OK) {
-                pbc = &bitcompress[val];
+                gb_compress_list *pbc = &bitcompress[val];
                 bits = pbc->bits;
                 bitc = pbc->bitcnt;
                 GB_WRITE_BITS(dest, bitptr, bitc, bits, h_i);
@@ -633,8 +629,8 @@ static GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize,
                 GB_WRITE_BITS(dest, bitptr, bitc, bits, h_i);
             }
         }
-        bits = bitcompress[end].bits;
-        bitc = bitcompress[end].bitcnt;
+        bits = bitcompress[COMPRESS_LIST_SIZE-1].bits;
+        bitc = bitcompress[COMPRESS_LIST_SIZE-1].bitcnt;
         GB_WRITE_BITS(dest, bitptr, bitc, bits, h_i);
     }
     *msize = dest - buffer + 1;
