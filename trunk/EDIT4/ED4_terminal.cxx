@@ -333,29 +333,30 @@ ED4_base *ED4_terminal::get_competent_child(AW_pos /* x */, AW_pos /* y */, ED4_
     return NULL;
 }
 
-ED4_returncode ED4_terminal::draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text, int cursor_y)      // draws drag box of object at location abs_x, abs_y
-{
-    ED4_index      i;
-    AW_pos         drag_x, drag_y;
-    AW_pos         drag_line_x0[3], drag_line_y0[3];
-    AW_pos         drag_line_x1[3], drag_line_y1[3];
-    ED4_base      *drag_target = NULL;
-    AW_pos         target_x, target_y;
-    ED4_extension  location;
+ED4_returncode ED4_terminal::draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text, int cursor_y) {
+    // draws drag box of object at location abs_x, abs_y
 
     if (cursor_y!=-1) {
-        ED4_device_manager *device_manager = ED4_ROOT->get_device_manager();
-        drag_x = 0;
-        drag_y = (AW_pos)cursor_y; // cursor_y is already in world coordinates!
-        location.position[X_POS] = drag_x;
-        location.position[Y_POS] = drag_y;
-        device_manager->children->search_target_species(&location, ED4_P_HORIZONTAL, &drag_target, ED4_L_NO_LEVEL);
+        ED4_base *drag_target = NULL;
+        {
+            ED4_extension location;
+            location.position[X_POS] = 0;
+            location.position[Y_POS] = (AW_pos)cursor_y;           // cursor_y is already in world coordinates
+
+            ED4_ROOT->get_device_manager()->children->search_target_species(&location, ED4_P_HORIZONTAL, &drag_target, ED4_L_NO_LEVEL);
+        }
 
         if (drag_target) {
+            AW_pos target_x, target_y;
+
             drag_target->calc_world_coords (&target_x, &target_y);
             current_ed4w()->world_to_win_coords(&target_x, &target_y);
+
 #define ARROW_LENGTH 3
-            drag_line_x0[0] = target_x + 5;                                     // horizontal
+            AW_pos drag_line_x0[3], drag_line_y0[3];
+            AW_pos drag_line_x1[3], drag_line_y1[3];
+
+            drag_line_x0[0] = target_x + 5;                                                 // horizontal
             drag_line_y0[0] = target_y + drag_target->extension.size[HEIGHT];
             drag_line_x1[0] = drag_line_x0[0] + 50;
             drag_line_y1[0] = target_y + drag_target->extension.size[HEIGHT];
@@ -370,7 +371,8 @@ ED4_returncode ED4_terminal::draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text, int
             drag_line_x1[2] = drag_line_x0[0];
             drag_line_y1[2] = drag_line_y0[0];
 #undef ARROW_LENGTH
-            for (i = 0; i <= 2; i++) {
+
+            for (ED4_index i = 0; i <= 2; i++) {
                 current_device()->line(ED4_G_DRAG, drag_line_x0[i], drag_line_y0[i], drag_line_x1[i], drag_line_y1[i], AW_SCREEN);
             }
         }
@@ -380,7 +382,7 @@ ED4_returncode ED4_terminal::draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text, int
         current_device()->text(ED4_G_DRAG, text, (x + 20), (y + INFO_TERM_TEXT_YOFFSET), 0, AW_SCREEN);
     }
 
-    return (ED4_R_OK);
+    return ED4_R_OK;
 }
 
 ED4_returncode  ED4_terminal::move_requested_by_parent(ED4_move_info *) { // handles a move request coming from parent
@@ -819,7 +821,8 @@ ED4_returncode ED4_bracket_terminal::draw() {
 
 ED4_species_name_terminal::ED4_species_name_terminal(GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
     ED4_text_terminal(species_name_terminal_spec, temp_id, x, y, width, height, temp_parent),
-    selection_info(NULL)
+    selection_info(NULL),
+    dragged(false)
 {
 }
 

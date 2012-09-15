@@ -173,7 +173,7 @@ struct EDB_root_bact {
     char *make_string();
     char *make_top_bot_string();
 
-    void calc_no_of_all(char *string_to_scan,       // group gets the number of groups in string_to_scan,
+    void calc_no_of_all(const char *string_to_scan,       // group gets the number of groups in string_to_scan,
                         long *group,                // species gets the number of species in string_to_scan
                         long *species);
 

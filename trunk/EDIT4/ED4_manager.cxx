@@ -490,33 +490,24 @@ ED4_base* ED4_manager::get_competent_clicked_child(AW_pos x, AW_pos y, ED4_prope
 ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
     // handles a move request with target world
     // coordinates within current object's borders
-    AW_pos               rel_x, rel_y, x_off, y_off;
-    ED4_base            *object;
-    ED4_manager         *old_parent;
-    ED4_manager         *manager;
-    ED4_level            mlevel;
-    ED4_terminal        *sel_object;
-    ED4_selection_entry *sel_info;
-    ED4_selected_elem   *list_elem;
-    bool                 i_am_consensus = 0;
-    ED4_base            *found_member   = NULL;
-    ED4_extension        loc;
 
     if ((mi == NULL) || (mi->object->spec.level <= spec.level)) {
         return (ED4_R_IMPOSSIBLE);
     }
 
-    rel_x = mi->end_x; // calculate target position relative to current object
-    rel_y = mi->end_y;
-
+    AW_pos rel_x = mi->end_x; // calculate target position relative to current object
+    AW_pos rel_y = mi->end_y;
     calc_rel_coords(&rel_x, &rel_y);
 
     if ((mi->preferred_parent & spec.level) ||             // desired parent or levels match = > can handle moving
         (mi->object->spec.level & spec.allowed_children)) // object(s) myself, take info from list of selected objects
     {
+        ED4_base *object;
+        bool      i_am_consensus = false;
 
         if (mi->object->dynamic_prop & ED4_P_IS_HANDLE) { // object is a handle for an object up in the hierarchy = > search it
-            mlevel = mi->object->spec.handled_level;
+            ED4_level mlevel = mi->object->spec.handled_level;
+
             object = mi->object;
 
             while ((object != NULL) && !(object->spec.level & mlevel)) object = object->parent;
@@ -527,8 +518,7 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
 
             if (object->is_consensus_manager()) {
                 if (this->is_child_of(object->parent)) return ED4_R_IMPOSSIBLE; // has to pass multi_species_manager
-                i_am_consensus = 1;
-
+                i_am_consensus = true;
                 if (object->parent != this) {
                     object = object->parent->parent;
                     mi->object = object;
@@ -537,43 +527,47 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
         }
 
 
-        old_parent = object->parent;
+        ED4_manager *old_parent = object->parent;
 
-        x_off = 0;
-        y_off = 0;
+        AW_pos x_off = 0;
 
         // now do move action => determine insertion offsets and insert object
 
         if (ED4_ROOT->selected_objects->size()>1) {
-            list_elem = ED4_ROOT->selected_objects->head();
+            ED4_selected_elem *list_elem = ED4_ROOT->selected_objects->head();
             while (list_elem != NULL) {
-                sel_info   = list_elem->elem();
-                sel_object = sel_info->object;
+                ED4_selection_entry *sel_info   = list_elem->elem();
+                ED4_terminal        *sel_object = sel_info->object;
 
                 if ((sel_object==mi->object)) break;
-                if (spec.static_prop & ED4_P_HORIZONTAL) y_off += sel_info->actual_height;
                 if (spec.static_prop & ED4_P_VERTICAL) x_off += sel_info->actual_width;
 
                 list_elem = list_elem->next();
             }
         }
 
-        loc.position[Y_POS] = mi->end_y;
-        loc.position[X_POS] = mi->end_x;
-        ED4_base::touch_world_cache();
+        {
+            ED4_extension loc;
+            loc.position[Y_POS] = mi->end_y;
+            loc.position[X_POS] = mi->end_x;
+            ED4_base::touch_world_cache();
+
+            ED4_base *found_member = NULL;
+            {
+                ED4_manager *dummy_mark = ED4_ROOT->main_manager->search_spec_child_rek(ED4_L_DEVICE)->to_manager();
+                dummy_mark->children->search_target_species(&loc, ED4_P_HORIZONTAL, &found_member, ED4_L_NO_LEVEL);
+            }
+
+            if (found_member==object) { // if we are dropped on ourself => don't move
+                return ED4_R_BREAK;
+            }
+        }
 
         {
-            ED4_manager *dummy_mark = ED4_ROOT->main_manager->search_spec_child_rek(ED4_L_DEVICE)->to_manager();
-            dummy_mark->children->search_target_species(&loc, ED4_P_HORIZONTAL, &found_member, ED4_L_NO_LEVEL);
+            ED4_base *parent_man = object->get_parent(ED4_L_MULTI_SPECIES);
+            object->parent->children->remove_member(object);
+            parent_man->to_multi_species_manager()->invalidate_species_counters();
         }
-
-        if (found_member==object) { // if we are dropped on ourself => don't move
-            return ED4_R_BREAK;
-        }
-
-        ED4_base *parent_man = object->get_parent(ED4_L_MULTI_SPECIES);
-        object->parent->children->remove_member(object);
-        parent_man->to_multi_species_manager()->invalidate_species_counters();
 
         object->extension.position[X_POS] = rel_x + x_off;
         object->extension.position[Y_POS] = rel_y;
@@ -611,11 +605,9 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
     }
     else {
         // levels do not match = > ask competent manager child to handle move request
-        if ((manager = (ED4_manager *) get_competent_child(rel_x, rel_y, ED4_P_IS_MANAGER)) == NULL) { // no manager child covering target
-            return (ED4_R_IMPOSSIBLE); // location = > move not possible
-        }
-
-        return (manager->move_requested_by_parent(mi)); // there is a manager child covering target location = > pass on move request
+        ED4_manager *manager = (ED4_manager *) get_competent_child(rel_x, rel_y, ED4_P_IS_MANAGER);
+        if (!manager) return ED4_R_IMPOSSIBLE; // no manager child covering target location = > move not possible
+        return manager->move_requested_by_parent(mi); // there is a manager child covering target location = > pass on move request
     }
 }
 
@@ -1264,20 +1256,14 @@ void ED4_manager::request_refresh(int clear) {
 
 
 ED4_base* ED4_manager::search_ID(const char *temp_id) {
-    ED4_base  *current_child, *object;
-    ED4_index  current_index;
+    if (strcmp(temp_id, id) == 0) return this; // this object is the sought one
 
-    if (strcmp(temp_id, id) == 0) { // this object is the sought one
-        return this;
-    }
-    else {
-        current_index = 0;
-        while ((current_child = children->member(current_index))) { // search whole memberlist recursively for object with the given id
-            if ((object = current_child->search_ID(temp_id)) != NULL) {
-                return (object);
-            }
-            current_index++;
-        }
+    ED4_index  current_index = 0;
+    ED4_base  *current_child;
+    while ((current_child = children->member(current_index))) { // search whole memberlist recursively for object with the given id
+        ED4_base *object = current_child->search_ID(temp_id);
+        if (object) return object;
+        current_index++;
     }
 
     return NULL; // no object found
@@ -1309,7 +1295,9 @@ ED4_manager::~ED4_manager() {
 //      ED4_main_manager
 
 ED4_main_manager::ED4_main_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_manager(main_manager_spec, temp_id, x, y, width, height, temp_parent)
+    ED4_manager(main_manager_spec, temp_id, x, y, width, height, temp_parent),
+    top_middle_line(NULL), 
+    top_middle_spacer(NULL)
 {
 }
 

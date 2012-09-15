@@ -331,6 +331,7 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
     e4_assert(affected >= 1 && affected <= MAX_AFFECTED);
     for (int a = 0; a<affected; ++a) {
         ED4_terminal *term       = affected_terminal[a];
+        // cppcheck-suppress unreadVariable
         refresh_was_requested[a] = term->update_info.refresh;
         term->request_refresh();
     }
@@ -696,7 +697,7 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
                     int buffree = BUFFERSIZE-int(bp-buffer);
 
                     if ((namelen+2)>buffree) {
-                        *bp++ = 0;
+                        *bp = 0;
                         ED4_ROOT->database->fill_species(insert_into_manager,
                                                          ED4_ROOT->ref_terminals.get_ref_sequence_info(), ED4_ROOT->ref_terminals.get_ref_sequence(),
                                                          buffer, &index, &y, 0, &lot, group_depth, NULL);
