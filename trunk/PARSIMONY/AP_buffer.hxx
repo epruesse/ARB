@@ -68,10 +68,18 @@ class AP_LIST : virtual Noncopyable {
     unsigned int  list_len;
     unsigned int  akt;
     AP_list_elem *first, *last, *pointer;
+
     AP_list_elem *element(void * elem);
 public:
-    AP_LIST();
-    virtual ~AP_LIST();
+    AP_LIST()
+        : list_len(0),
+          akt(0),
+          first(NULL), 
+          last(NULL), 
+          pointer(NULL) 
+    {}
+
+    virtual ~AP_LIST() {}
 
     int   len();
     int   is_element(void * node);

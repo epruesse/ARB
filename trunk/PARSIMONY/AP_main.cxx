@@ -75,14 +75,6 @@ void AP_ERR::set_mode(int i) {
 // ----------------
 //      AP_main
 
-AP_main::AP_main() {
-    memset((char *)this, 0, sizeof(AP_main));
-}
-
-AP_main::~AP_main() {
-    if (stack) delete stack;
-}
-
 GB_ERROR AP_main::open(char *db_server) {
     GB_ERROR error             = 0;
     GLOBAL_gb_main             = GB_open(db_server, "rwt");
