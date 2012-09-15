@@ -698,7 +698,6 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
     //! Merge the sequences of two databases
 
     static char *m_name         = 0;
-    GB_ERROR     error          = 0;
     GBDATA      *M_species_data = 0;
     GBDATA      *D_species_data = 0;
     int          overwriteall   = 0;
@@ -710,104 +709,105 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
     GB_begin_transaction(GLOBAL_gb_src);
     GB_begin_transaction(GLOBAL_gb_dst);
 
-    error = MG_equal_alignments(true);
-    if (error) goto end;
+    GB_ERROR error = MG_equal_alignments(true);
+    if (!error) {
+        M_species_data = GBT_get_species_data(GLOBAL_gb_src);
+        D_species_data = GBT_get_species_data(GLOBAL_gb_dst);
 
-    M_species_data = GBT_get_species_data(GLOBAL_gb_src);
-    D_species_data = GBT_get_species_data(GLOBAL_gb_dst);
+        GBDATA *M_species;
+        GBDATA *D_species;
+        freenull(m_name);
 
-    GBDATA *M_species;
-    GBDATA *D_species;
-    freenull(m_name);
+        {
+            long M_species_count = GB_number_of_subentries(M_species_data);
+            long D_species_count = GB_number_of_subentries(D_species_data);
 
-    {
-        long M_species_count = GB_number_of_subentries(M_species_data);
-        long D_species_count = GB_number_of_subentries(D_species_data);
+            // create hash containing all species from gb_dest,
+            // but sized to hold all species from both DBs:
+            D_species_hash = GBT_create_species_hash_sized(GLOBAL_gb_dst, M_species_count+D_species_count);
+        }
 
-        // create hash containing all species from gb_dest,
-        // but sized to hold all species from both DBs:
-        D_species_hash = GBT_create_species_hash_sized(GLOBAL_gb_dst, M_species_count+D_species_count);
-    }
+        for (M_species = GB_entry(M_species_data, "species"); M_species; M_species = GB_nextEntry(M_species)) {
+            GBDATA *M_name       = GB_search(M_species, "name", GB_STRING);
+            free(m_name); m_name = GB_read_string(M_name);
 
-    for (M_species = GB_entry(M_species_data, "species"); M_species; M_species = GB_nextEntry(M_species)) {
-        GBDATA *M_name       = GB_search(M_species, "name", GB_STRING);
-        free(m_name); m_name = GB_read_string(M_name);
+            int  count = 1;
+            bool retry;
+            do {
+                retry = false;
+                count++;
 
-        int count = 1;
-
-    new_try :
-
-        count++;
-
-        D_species = (GBDATA*)GBS_read_hash(D_species_hash, m_name);
-        if (D_species) {
-            if (overwriteall) {
-                error = GB_delete(D_species);
-            }
-            else if (autorenameall) {
-                GB_ERROR  dummy;
-                char     *newname = AWTC_create_numbered_suffix(D_species_hash, m_name, dummy);
-
-                mg_assert(newname);
-                freeset(m_name, newname);
-            }
-            else {
-                switch (aw_question("merge_existing_species",
-                                    GBS_global_string("Warning:  There is a name conflict for species '%s'\n"
-                                                      "  You may:\n"
-                                                      "  - Overwrite existing species\n"
-                                                      "  - Overwrite all species with name conflicts\n"
-                                                      "  - Not import species\n"
-                                                      "  - Rename imported species\n"
-                                                      "  - Automatically rename species (append .NUM)\n"
-                                                      "  - Abort everything", m_name),
-                                    "overwrite, overwrite all, don't import, rename, auto-rename, abort")) {
-                    case 1:
-                        overwriteall = 1;
-                    case 0:
-                        GB_delete(D_species);
-                        break;
-
-                    case 2:
-                        continue;
-
-                    case 3: {
-                        GB_ERROR  warning;          // duplicated species warning (does not apply here)
-                        char     *autoname = AWTC_create_numbered_suffix(D_species_hash, m_name, warning);
-
-                        if (!autoname) autoname = strdup(m_name);
-                        freeset(m_name, aw_input("Rename species", "Enter new name of species", autoname));
-                        free(autoname);
-                        goto new_try;
+                D_species = (GBDATA*)GBS_read_hash(D_species_hash, m_name);
+                if (D_species) {
+                    if (overwriteall) {
+                        error = GB_delete(D_species);
                     }
-                    case 4:
-                        autorenameall = 1;
-                        goto new_try;
+                    else if (autorenameall) {
+                        GB_ERROR  dummy;
+                        char     *newname = AWTC_create_numbered_suffix(D_species_hash, m_name, dummy);
 
-                    case 5:
-                        error = "Operation aborted";
-                        goto end;
+                        mg_assert(newname);
+                        freeset(m_name, newname);
+                    }
+                    else {
+                        switch (aw_question("merge_existing_species",
+                                            GBS_global_string("Warning:  There is a name conflict for species '%s'\n"
+                                                              "  You may:\n"
+                                                              "  - Overwrite existing species\n"
+                                                              "  - Overwrite all species with name conflicts\n"
+                                                              "  - Not import species\n"
+                                                              "  - Rename imported species\n"
+                                                              "  - Automatically rename species (append .NUM)\n"
+                                                              "  - Abort everything", m_name),
+                                            "overwrite, overwrite all, don't import, rename, auto-rename, abort")) {
+                            case 1:
+                                overwriteall = 1;
+                            case 0:
+                                GB_delete(D_species);
+                                break;
+
+                            case 2:
+                                continue;
+
+                            case 3: {
+                                GB_ERROR  warning;          // duplicated species warning (does not apply here)
+                                char     *autoname = AWTC_create_numbered_suffix(D_species_hash, m_name, warning);
+
+                                if (!autoname) autoname = strdup(m_name);
+                                freeset(m_name, aw_input("Rename species", "Enter new name of species", autoname));
+                                free(autoname);
+                                retry = true;
+                                break;
+                            }
+                            case 4:
+                                autorenameall = 1;
+                                retry = true;
+                                break;
+
+                            case 5:
+                                error = "Operation aborted";
+                                break;
+                        }
+                    }
                 }
+            } while (retry);
+
+            if (!error) {
+                D_species             = GB_create_container(D_species_data, "species");
+                if (!D_species) error = GB_await_error();
+                else {
+                    error             = GB_copy_with_protection(D_species, M_species, true);
+                    if (!error) GB_write_flag(D_species, 1); // mark species
+                    if (!error) error = GB_write_usr_private(D_species, 255); // put in hitlist
+                    if (!error) error = GBT_write_string(D_species, "name", m_name);
+                }
+
+                GBS_write_hash(D_species_hash, m_name, (long)D_species);
             }
+
+            if (error) break;
         }
-
-        if (!error) {
-            D_species             = GB_create_container(D_species_data, "species");
-            if (!D_species) error = GB_await_error();
-            else {
-                error             = GB_copy_with_protection(D_species, M_species, true);
-                if (!error) GB_write_flag(D_species, 1); // mark species
-                if (!error) error = GB_write_usr_private(D_species, 255); // put in hitlist
-                if (!error) error = GBT_write_string(D_species, "name", m_name);
-            }
-
-            GBS_write_hash(D_species_hash, m_name, (long)D_species);
-        }
-
-        if (error) break;
     }
-
- end :
 
     if (D_species_hash) GBS_free_hash(D_species_hash);
 
