@@ -357,11 +357,10 @@ void DBwriter::hideUnwantedGenes() {
     typedef vector<PosGene> Genes;
     typedef Genes::iterator GeneIter;
 
-    GBDATA *gb_gene;
-    Genes   gps;
+    Genes gps;
 
     // read all gene positions
-    for (gb_gene = GB_entry(gb_gene_data, "gene"); gb_gene; gb_gene = GB_nextEntry(gb_gene)) {
+    for (GBDATA *gb_gene = GB_entry(gb_gene_data, "gene"); gb_gene; gb_gene = GB_nextEntry(gb_gene)) {
         gps.push_back(PosGene(gb_gene));
     }
 
