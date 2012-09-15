@@ -52,7 +52,6 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
                            bool cutoff_stop_codon)
 {
     GBDATA      *gb_species;
-    GBDATA      *gbd;
     NA_Sequence *this_elem;
     AP_filter   *allocatedFilter = 0;
 
@@ -226,6 +225,7 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
                 else buffer[0] = 0;                                     \
             } while(0)
 
+            GBDATA *gbd;
             GET_FIELD_CONTENT("name",      this_elem->short_name, SIZE_SHORT_NAME);
             GET_FIELD_CONTENT("author",    this_elem->authority,  SIZE_AUTHORITY);
             GET_FIELD_CONTENT("full_name", this_elem->seq_name,   SIZE_SEQ_NAME);
@@ -411,9 +411,6 @@ int getelem(NA_Sequence *a, int b) {
 }
 
 void putelem(NA_Sequence *a, int b, NA_Base c) {
-    int      j;
-    NA_Base *temp;
-
     if (b>=(a->offset+a->seqmaxlen)) {
         Warning("Putelem:insert beyond end of sequence space ignored");
     }
@@ -421,26 +418,29 @@ void putelem(NA_Sequence *a, int b, NA_Base c) {
         a->sequence[b-(a->offset)] = c;
     }
     else {
-        temp = (NA_Base*)Calloc(a->seqmaxlen+a->offset-b, sizeof(NA_Base));
+        NA_Base *temp = (NA_Base*)Calloc(a->seqmaxlen+a->offset-b, sizeof(NA_Base));
         switch (a->elementtype) {
             // Pad out with gap characters fron the point of insertion to the offset
             case MASK:
-                for (j=b; j<a->offset; j++) temp[j-b]='0';
+                for (int j=b; j<a->offset; j++) temp[j-b] = '0';
                 break;
+
             case DNA:
             case RNA:
-                for (j=b; j<a->offset; j++) temp[j-b]='\0';
+                for (int j=b; j<a->offset; j++) temp[j-b] = '\0';
                 break;
+
             case PROTEIN:
-                for (j=b; j<a->offset; j++) temp[j-b]='-';
+                for (int j=b; j<a->offset; j++) temp[j-b] = '-';
                 break;
+                
             case TEXT:
             default:
-                for (j=b; j<a->offset; j++) temp[j-b]=' ';
+                for (int j=b; j<a->offset; j++) temp[j-b] = ' ';
                 break;
         }
 
-        for (j=0; j<a->seqmaxlen; j++) temp[j+a->offset-b] = a->sequence[j];
+        for (int j=0; j<a->seqmaxlen; j++) temp[j+a->offset-b] = a->sequence[j];
         Cfree((char*)a->sequence);
 
         a->sequence     = temp;
