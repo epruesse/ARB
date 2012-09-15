@@ -55,8 +55,8 @@ public:
 class InputFileError : public Error {
     string located_error;
 public:
-    InputFileError(FileBuffer& fileBuffer, string message) { located_error = fileBuffer.lineError(message); }
-    InputFileError(FileBuffer& fileBuffer, const char *message) { located_error = fileBuffer.lineError(message); }
+    InputFileError(FileBuffer& fileBuffer, string message)      : located_error(fileBuffer.lineError(message)) {}
+    InputFileError(FileBuffer& fileBuffer, const char *message) : located_error(fileBuffer.lineError(message)) {}
     virtual ~InputFileError() {}
 
     void print() const {
@@ -842,7 +842,7 @@ void xsubGenerator::generate_all_xsubs(FileBuffer& prototype_reader) {
                 }
 #endif // TRACE
             }
-            catch(string err) {
+            catch(string& err) {
                 print_prototype_parse_error(prototype_reader, err.c_str(), prototype);
                 error_occurred = true;
             }
