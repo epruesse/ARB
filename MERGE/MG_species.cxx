@@ -309,15 +309,14 @@ static void MG_transfer_fields_cb(AW_window *aww) {
                 }
 
                 if (!error) {
-                    GBDATA   *gb_field1 = GB_search(gb_species1, field, GB_FIND);
-                    GBDATA   *gb_field2 = GB_search(gb_species2, field, GB_FIND);
-                    GB_TYPES  type1;
-                    GB_TYPES  type2;
-                    bool      use_copy  = true;
+                    GBDATA *gb_field1 = GB_search(gb_species1, field, GB_FIND);
+                    GBDATA *gb_field2 = GB_search(gb_species2, field, GB_FIND);
+                    bool    use_copy  = true;
 
                     if (gb_field2 && gb_field1) {
-                        type1 = GB_read_type(gb_field1);
-                        type2 = GB_read_type(gb_field2);
+                        GB_TYPES type1 = GB_read_type(gb_field1);
+                        GB_TYPES type2 = GB_read_type(gb_field2);
+
                         if ((type1==type2) && (GB_DB != type1)) {
                             if (append && type1 == GB_STRING) {
                                 char *s1 = GB_read_string(gb_field1);
@@ -350,10 +349,10 @@ static void MG_transfer_fields_cb(AW_window *aww) {
                             if (gb_field1 && !append) error = GB_delete(gb_field2);
                         }
                         if (gb_field1 && !error) {
-                            type1                 = GB_read_type(gb_field1);
+                            GB_TYPES type1        = GB_read_type(gb_field1);
                             gb_field2             = GB_search(gb_species2, field, type1);
                             if (!gb_field2) error = GB_await_error();
-                            else error            = GB_copy(gb_field2, gb_field1);
+                            else     error        = GB_copy(gb_field2, gb_field1);
                         }
                     }
                 }
@@ -614,24 +613,19 @@ static GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
     GBT_get_alignment_names(M_alignment_names, GLOBAL_gb_src);
     GBT_get_alignment_names(D_alignment_names, GLOBAL_gb_dst);
 
-    GB_ERROR    error = 0;
-    const char *dest  = 0;
-
+    GB_ERROR error = 0;
     if (M_alignment_names[0] == 0) {
         error =  GB_export_error("No source sequences found");
     }
     else {
-        char *type = GBT_get_alignment_type_string(GLOBAL_gb_src, M_alignment_names[0]);
+        char       *type = GBT_get_alignment_type_string(GLOBAL_gb_src, M_alignment_names[0]);
+        const char *dest = 0;
 
         for (int d = D_alignment_names.size()-1; d>0; --d) {
             char *type2 = GBT_get_alignment_type_string(GLOBAL_gb_dst, D_alignment_names[d]);
             if (strcmp(type, type2) != 0) D_alignment_names.remove(d--);
             free(type2);
         }
-
-        GBS_strstruct *str;
-        char          *b;
-        int            aliid;
 
         int d = D_alignment_names.size();
         switch (d) {
@@ -645,10 +639,8 @@ static GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
                 break;
 
             default:
-                int i;
-
                 if (autoselect_equal_alignment_name) {
-                    for (i = 0; i<d; ++i) {
+                    for (int i = 0; i<d; ++i) {
                         if (ARB_stricmp(M_alignment_names[0], D_alignment_names[i]) == 0) {
                             dest = D_alignment_names[i];
                             break;
@@ -657,19 +649,20 @@ static GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
                 }
 
                 if (!dest) {
-                    str = GBS_stropen(100);
+                    GBS_strstruct *str = GBS_stropen(100);
 
-                    for (i=0; i<d; i++) {
+                    for (int i=0; i<d; i++) {
                         GBS_strcat(str, D_alignment_names[i]);
                         GBS_chrcat(str, ',');
                     }
                     GBS_strcat(str, "ABORT");
 
-                    b = GBS_strclose(str);
-                    aliid = aw_question(NULL,
-                                        "There are more than one possible alignment targets\n"
-                                        "Choose one destination alignment or ABORT", b);
+                    char *b = GBS_strclose(str);
+                    int aliid = aw_question(NULL,
+                                            "There are more than one possible alignment targets\n"
+                                            "Choose one destination alignment or ABORT", b);
                     free(b);
+
                     if (aliid >= d) {
                         error = "Operation Aborted";
                         break;
@@ -697,12 +690,9 @@ static GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
 GB_ERROR MG_simple_merge(AW_root *awr) {
     //! Merge the sequences of two databases
 
-    static char *m_name         = 0;
-    GBDATA      *M_species_data = 0;
-    GBDATA      *D_species_data = 0;
-    int          overwriteall   = 0;
-    int          autorenameall  = 0;
-    GB_HASH     *D_species_hash = 0;
+    static char *m_name = 0;
+
+    GB_HASH *D_species_hash = 0;
 
     GB_push_my_security(GLOBAL_gb_src);
     GB_push_my_security(GLOBAL_gb_dst);
@@ -711,11 +701,9 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
 
     GB_ERROR error = MG_equal_alignments(true);
     if (!error) {
-        M_species_data = GBT_get_species_data(GLOBAL_gb_src);
-        D_species_data = GBT_get_species_data(GLOBAL_gb_dst);
+        GBDATA *M_species_data = GBT_get_species_data(GLOBAL_gb_src);
+        GBDATA *D_species_data = GBT_get_species_data(GLOBAL_gb_dst);
 
-        GBDATA *M_species;
-        GBDATA *D_species;
         freenull(m_name);
 
         {
@@ -727,9 +715,13 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
             D_species_hash = GBT_create_species_hash_sized(GLOBAL_gb_dst, M_species_count+D_species_count);
         }
 
-        for (M_species = GB_entry(M_species_data, "species"); M_species; M_species = GB_nextEntry(M_species)) {
-            GBDATA *M_name       = GB_search(M_species, "name", GB_STRING);
-            free(m_name); m_name = GB_read_string(M_name);
+        bool overwriteall  = false;
+        bool autorenameall = false;
+        
+        for (GBDATA *M_species = GB_entry(M_species_data, "species"); M_species; M_species = GB_nextEntry(M_species)) {
+            GBDATA *M_name = GB_search(M_species, "name", GB_STRING);
+
+            freeset(m_name, GB_read_string(M_name));
 
             int  count = 1;
             bool retry;
@@ -737,7 +729,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
                 retry = false;
                 count++;
 
-                D_species = (GBDATA*)GBS_read_hash(D_species_hash, m_name);
+                GBDATA *D_species = (GBDATA*)GBS_read_hash(D_species_hash, m_name);
                 if (D_species) {
                     if (overwriteall) {
                         error = GB_delete(D_species);
@@ -761,7 +753,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
                                                               "  - Abort everything", m_name),
                                             "overwrite, overwrite all, don't import, rename, auto-rename, abort")) {
                             case 1:
-                                overwriteall = 1;
+                                overwriteall = true;
                             case 0:
                                 GB_delete(D_species);
                                 break;
@@ -780,7 +772,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
                                 break;
                             }
                             case 4:
-                                autorenameall = 1;
+                                autorenameall = true;
                                 retry = true;
                                 break;
 
@@ -793,7 +785,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
             } while (retry);
 
             if (!error) {
-                D_species             = GB_create_container(D_species_data, "species");
+                GBDATA *D_species     = GB_create_container(D_species_data, "species");
                 if (!D_species) error = GB_await_error();
                 else {
                     error             = GB_copy_with_protection(D_species, M_species, true);

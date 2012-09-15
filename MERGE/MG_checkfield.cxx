@@ -293,8 +293,6 @@ static void mg_check_field_cb(AW_window *aww) {
 
 
 AW_window *create_mg_check_fields(AW_root *aw_root) {
-    AW_window_simple *aws = 0;
-
     aw_root->awar_string(AWAR_SOURCE_FIELD);
     aw_root->awar_string(AWAR_DEST_FIELD, "tmp", AW_ROOT_DEFAULT);
     aw_root->awar_string(AWAR_EXCLUDE, ".-", AW_ROOT_DEFAULT);
@@ -302,7 +300,7 @@ AW_window *create_mg_check_fields(AW_root *aw_root) {
     aw_root->awar_int(AWAR_TOUPPER);
     aw_root->awar_int(AWAR_CORRECT);
 
-    aws = new AW_window_simple;
+    AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "MERGE_COMPARE_FIELDS", "COMPARE DATABASE FIELDS");
     aws->load_xfig("merge/seqcheck.fig");
 
@@ -342,5 +340,5 @@ AW_window *create_mg_check_fields(AW_root *aw_root) {
     aws->callback(mg_check_field_cb);
     aws->create_button("GO", "GO");
 
-    return (AW_window *)aws;
+    return aws;
 }

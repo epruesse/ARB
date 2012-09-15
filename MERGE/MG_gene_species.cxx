@@ -176,8 +176,7 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, 
     // Export fields from pseudo-species' source-organism to exported destination-species
     // error_suppressor and source_organism_hash may be NULL
 
-    GB_ERROR error         = 0;
-    int      export_fields = aw_root->awar(AWAR_MERGE_GENE_SPECIES_CREATE_FIELDS)->read_int();
+    int export_fields = aw_root->awar(AWAR_MERGE_GENE_SPECIES_CREATE_FIELDS)->read_int();
 
     if (export_fields) { // should fields be exported ?
         mg_assert(GEN_is_pseudo_gene_species(gb_source));
@@ -187,6 +186,7 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, 
 
         mg_assert(existing_definitions[0] == ';');
 
+        GB_ERROR error = 0;
         while (!error && start[0]) {      // parse existing definitions and add them to selection list
             char *end     = strchr(start, ';');
             if (!end) end = strchr(start, 0);
@@ -235,6 +235,7 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, 
             start = end+1;
         }
 
+        aw_message_if(error);
         free(existing_definitions);
     }
 

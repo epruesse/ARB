@@ -681,12 +681,11 @@ static size_t scanMinIndentation(const string& text) {
 //      class ParagraphTree
 
 class ParagraphTree : virtual Noncopyable {
-private:
     ParagraphTree *brother;     // has same indentation as this
     ParagraphTree *son;         // indentation + 1
 
-    bool is_enumerated;         // 1., 2.,  usw.
-    long long enumeration;           // the value of the enumeration (undefined if !is_enumerated)
+    bool      is_enumerated;    // 1., 2.,  usw.
+    long long enumeration;      // the value of the enumeration (undefined if !is_enumerated)
 
     bool reflow;                // should the paragraph be reflown ? (true if indentation is equal for all lines of text)
     int  indentation;           // the real indentation of the black (after enumeration was removed)
@@ -694,17 +693,16 @@ private:
     string text;                // text of the Section (containing linefeeds)
     size_t lineNo;              // line number where Paragraph starts
 
-    ParagraphTree(Strings::const_iterator begin, const Strings::const_iterator end, size_t beginLineNo) {
+    ParagraphTree(Strings::const_iterator begin, const Strings::const_iterator end, size_t beginLineNo)
+        : son(NULL),
+          enumeration(0),
+          indentation(0),
+          text(*begin),
+          lineNo(beginLineNo)
+    {
         h2x_assert(begin != end);
 
-        text = *begin;
-        son  = 0;
-
-        enumeration   = 0;
         is_enumerated = startsWithNumber(text, enumeration);
-
-        lineNo = beginLineNo;
-
         if (is_enumerated) {
             size_t text_start     = text.find_first_not_of(" \n");
             size_t next_linestart = text.find('\n', text_start);
@@ -717,9 +715,7 @@ private:
             }
         }
 
-        indentation = 0;
-        reflow      = shouldReflow(text, indentation);
-
+        reflow = shouldReflow(text, indentation);
         if (!reflow) {
             size_t reststart = text.find('\n', 1);
             if (reststart != string::npos) {
