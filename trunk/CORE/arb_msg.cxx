@@ -240,8 +240,6 @@ GB_ERROR GB_export_errorf(const char *templat, ...) {
     char    *p = buffer;
     va_list  parg;
 
-    memset(buffer, 0, 1000);
-
 #if defined(WARN_TODO)
 #warning dont prepend ARB ERROR here
 #endif
