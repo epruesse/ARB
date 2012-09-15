@@ -16,8 +16,8 @@
 #endif
 
 enum aas {
-    ala, arg, asn, asp, cys, gln, glu, gly, his, ileu, leu, lys, met, phe, pro,
-    ser, thr, trp, tyr, val, stop, del, asx, glx, unk, quest
+    ALA, ARG, ASN, ASP, CYS, GLN, GLU, GLY, HIS, ILEU, LEU, LYS, MET, PHE, PRO,
+    SER, THR, TRP, TYR, VAL, STOP, DEL, ASX, GLX, UNK, QUEST
 };
 
 typedef unsigned char ap_pro;   // aas but only one character used
