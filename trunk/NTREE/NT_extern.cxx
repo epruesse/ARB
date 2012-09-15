@@ -576,7 +576,6 @@ static char *stream2str(streamSource source, const char *commandOrFile) {
         while (EOF != (c = fgetc(in))) GBS_chrcat(out, c);
 
         switch (source) {
-            // cppcheck-suppress mismatchAllocDealloc
             case FROM_PIPE: pclose(in); break;
             case FROM_FILE: fclose(in); break;
         }
@@ -1036,8 +1035,10 @@ int NT_get_canvas_id(AWT_canvas *ntw) {
 
     const char *tree_awar_name = ntw->user_awar;
 
-    const unsigned  LEN    = 15;
-    const char     *EXPECT = "focus/tree_name";
+    const unsigned LEN = 15;
+#if defined(ASSERTION_USED)
+    const char *EXPECT = "focus/tree_name";
+#endif
 
     nt_assert(strlen(EXPECT)                      == LEN);
     nt_assert(memcmp(tree_awar_name, EXPECT, LEN) == 0);

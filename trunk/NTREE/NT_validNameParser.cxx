@@ -81,8 +81,7 @@ namespace validNames {
 
 
 
-        for (TokL::iterator it = tokenLP->begin(); it != tokenLP->end(); it ++, ssp++)
-        {
+        for (TokL::iterator it = tokenLP->begin(); it != tokenLP->end(); ++it, ++ssp) {
             if (isUpperCase(*it)) {
                 isGenus = true;
 #if defined(DUMP)

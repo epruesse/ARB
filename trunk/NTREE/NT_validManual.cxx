@@ -63,20 +63,21 @@ static void fillSelNamList(selectValidNameStruct* svnp) {
         char* typeString = GB_read_string(actDesc);
         if (strcmp(typeString, "NOTYPE") != 0) {
             GBDATA* newName = GB_entry(GB_validNamePair, "NEWNAME");
-            char* validName = newName ? GB_read_string(newName) : 0;
+            char* validName = newName ? GB_read_string(newName) : NULL;
 
             if (!validName) {
                 err = GBS_global_string("Invalid names entry");
             }
+            else {
+                // comparison with searchstr goes here
+                // ptr to list, item to display, item value (here: equal)
 
-            // comparison with searchstr goes here
-            // ptr to list, item to display, item value (here: equal)
+                if (strncmp (validName, searchstr, length) == 0) {
+                    svnp->validNamesList->insert(validName, validName);
+                }
 
-            if (strncmp (validName, searchstr, length) == 0) {
-                svnp->validNamesList->insert(validName, validName);
+                free(validName);
             }
-
-            free(validName);
         }
         free(typeString);
     }
