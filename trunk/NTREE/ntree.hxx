@@ -39,14 +39,6 @@ struct NT_global {
 
 extern NT_global GLOBAL;
 
-class NT_install_window_creator {
-    int dummy;
-public:
-    NT_install_window_creator(AW_Window_Creator wc) {
-        GLOBAL.window_creator = wc;
-    };
-};
-
 #define AWAR_EXPORT_NDS                "tmp/export_nds"
 #define AWAR_EXPORT_NDS_SEPARATOR      "tmp/export_nds/separator"
 #define AWAR_NT_REMOTE_BASE            "tmp/remote/ARB_NT"

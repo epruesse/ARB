@@ -74,19 +74,15 @@ void GEN_make_node_text_init(GBDATA *gb_main) {
     gen_nds_ms->count = count;
 }
 
-char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
-{
-    // if mode ==0 compress info else format info
-    char   *bp;
-    GBDATA *gbe;
-    long    i, j;
-    long    first;
+char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode) {
+    // if mode == 0 compress info else format info
 
-    bp = gen_nds_ms->buf;
+    char *bp = gen_nds_ms->buf;
     gen_assert(gbd);
 
-    first = 0;
-    for (i = 0; i < gen_nds_ms->count; i++) {
+    long first = 0;
+    for (long i = 0; i < gen_nds_ms->count; i++) {
+        GBDATA *gbe;
         if (gen_nds_ms->rek[i]) { // hierarchical key
             gbe = GB_search(gbd, gen_nds_ms->dkeys[i], GB_FIND);
         }
@@ -125,8 +121,6 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
                     bp += strlen(bp);
                     break;
                 case GB_STRING: {
-                    long        post;
-                    long        dlen;
                     char       *pars = 0;
                     const char *p    = 0;
 
@@ -147,22 +141,22 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
                         p = GB_read_char_pntr(gbe);
                     }
 
-                    dlen = gen_nds_ms->lengths[i];
+                    long dlen = gen_nds_ms->lengths[i];
                     if (dlen + (bp - gen_nds_ms->buf) + 256 > GEN_NDS_STRING_SIZE) {
                         dlen = GEN_NDS_STRING_SIZE - 256 - (bp - gen_nds_ms->buf);
                     }
 
                     if (dlen> 0) {
                         int len = strlen(p);
-                        j = len;
+                        long j = len;
                         if (j > dlen)   j = dlen;
                         for (; j; j--) *bp++ = *p++;
                         if (mode) {
-                            post = dlen - len;
+                            long post = dlen - len;
                             while (post-- > 0) *(bp++) = ' ';
                         }
                     }
-                    if (pars) free(pars);
+                    free(pars);
                     break;
                 }
                 case GB_FLOAT:
@@ -174,7 +168,7 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
             }
         }
         else if (mode) {
-            j = gen_nds_ms->lengths[i];
+            long j = gen_nds_ms->lengths[i];
             if (j + (bp - gen_nds_ms->buf) + 256 > GEN_NDS_STRING_SIZE) {
                 j = GEN_NDS_STRING_SIZE - 256 - (bp - gen_nds_ms->buf);
             }

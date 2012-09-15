@@ -29,12 +29,13 @@ using namespace AW;
 //      GEN_graphic
 
 GEN_graphic::GEN_graphic(AW_root *aw_root_, GBDATA *gb_main_, GEN_graphic_cb_installer callback_installer_, int window_nr_)
-    : aw_root(aw_root_)
-    , gb_main(gb_main_)
-    , callback_installer(callback_installer_)
-    , window_nr(window_nr_)
-    , gen_root(0)
-    , want_zoom_reset(false)
+    : aw_root(aw_root_),
+      gb_main(gb_main_),
+      callback_installer(callback_installer_),
+      window_nr(window_nr_),
+      gen_root(0),
+      want_zoom_reset(false),
+      disp_device(NULL)
 {
     exports.set_standard_default_padding();
 
@@ -44,8 +45,7 @@ GEN_graphic::GEN_graphic(AW_root *aw_root_, GBDATA *gb_main_, GEN_graphic_cb_ins
     set_display_style(GEN_DisplayStyle(aw_root->awar(AWAR_GENMAP_DISPLAY_TYPE(window_nr))->read_int()));
 }
 
-GEN_graphic::~GEN_graphic() {
-}
+GEN_graphic::~GEN_graphic() {}
 
 AW_gc_manager GEN_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr, AW_CL cd2) {
     disp_device                 = device;

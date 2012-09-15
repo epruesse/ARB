@@ -65,7 +65,6 @@ protected:
     // variables - tree compatibility
     AW_clicked_line rot_cl;
     AW_clicked_text rot_ct;
-    AW_clicked_line old_rot_cl;
 
     AW_device *disp_device;     // device for recursive functions
 
