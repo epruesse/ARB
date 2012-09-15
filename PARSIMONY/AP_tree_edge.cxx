@@ -606,33 +606,23 @@ static void ap_calc_leaf_branch_length(AP_tree_nlen *leaf) {
 
 
 static void ap_calc_branch_lengths(AP_tree_nlen * /* root */, AP_tree_nlen *son, double /* parsbest */, double blen) {
-    static double s_new = 0.0;
-    static double s_old = 0.0;
-
     AP_FLOAT seq_len = son->get_seq()->weighted_base_count();
     if (seq_len <= 1.0) seq_len = 1.0;
     blen *= 0.5 / seq_len * 2.0;        // doubled counted sum * corr
 
     AP_tree_nlen *fathr = son->get_father();
-    double old_len = 0.0;
     if (!fathr->father) {   // at root
-        old_len = fathr->leftlen + fathr->rightlen;
         fathr->leftlen = blen *.5;
         fathr->rightlen = blen *.5;
     }
     else {
         if (fathr->leftson == son) {
-            old_len = fathr->leftlen;
             fathr->leftlen = blen;
         }
         else {
-            old_len = fathr->rightlen;
             fathr->rightlen = blen;
         }
     }
-    if (old_len< 1e-5) old_len = 1e-5;
-    s_new += blen;
-    s_old += old_len;
 
     if (son->leftson->is_leaf) {
         ap_calc_leaf_branch_length((AP_tree_nlen*)son->leftson);
@@ -893,6 +883,7 @@ ostream& operator<<(ostream& out, const AP_tree_edge& e)
             << ", node[0]=" << *(e.node[0])
             << ", node[1]=" << *(e.node[1])
             << ")";
+        // cppcheck-suppress redundantAssignment (does not detect recursion)
         notTooDeep = 0;
     }
 
