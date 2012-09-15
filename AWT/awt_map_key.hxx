@@ -17,7 +17,7 @@ class AW_root;
 class AW_window;
 
 class ed_key {
-    char map[256];
+    char mapping[256];
 
 public:
     ed_key();
