@@ -403,26 +403,20 @@ static void CON_maketables(int *convtable, int **statistic, long maxalignlen, in
 }
 
 // export results into database
-static GB_ERROR CON_export(char *savename, char *align, int **statistic, char *result, int *convtable, char *groupnames, int onlymarked, long nrofspecies, long maxalignlen, int countgaps, int gapbound, int groupallowed, double fconsidbound, double fupper, int lower, int resultiscomplex)
-{
-    GB_ERROR    err;
-    const char *off    = "off";
-    const char *on     = "on";
-    char       *buffer = (char *)GB_calloc(2000, sizeof(char));
+static GB_ERROR CON_export(char *savename, char *align, int **statistic, char *result, int *convtable, char *groupnames, int onlymarked, long nrofspecies, long maxalignlen, int countgaps, int gapbound, int groupallowed, double fconsidbound, double fupper, int lower, int resultiscomplex) {
+    const char *off = "off";
+    const char *on  = "on";
 
-    GBDATA *gb_extended = GBT_find_or_create_SAI(GLOBAL.gb_main, savename);
-    GBDATA *gb_data     = GBT_add_data(gb_extended, align, "data", GB_STRING);
-    err                 = GB_write_string(gb_data, result); // @@@ result is ignored
-    GBDATA *gb_options  = GBT_add_data(gb_extended, align, "_TYPE", GB_STRING);
+    char *buffer = (char *)GB_calloc(2000, sizeof(char));
 
-    const char *allvsmarked    = "all";
-    if (onlymarked) allvsmarked = "marked";
+    GBDATA   *gb_extended = GBT_find_or_create_SAI(GLOBAL.gb_main, savename);
+    GBDATA   *gb_data     = GBT_add_data(gb_extended, align, "data", GB_STRING);
+    GB_ERROR  err         = GB_write_string(gb_data, result);           // @@@ result is ignored
+    GBDATA   *gb_options  = GBT_add_data(gb_extended, align, "_TYPE", GB_STRING);
 
-    const char *countgapsstring   = off;
-    if (countgaps) countgapsstring = on;
-
-    const char *simplifystring      = off;
-    if (groupallowed) simplifystring = on;
+    const char *allvsmarked     = onlymarked ? "marked" : "all";
+    const char *countgapsstring = countgaps ? on : off;
+    const char *simplifystring  = groupallowed ? on : off;
 
     sprintf(buffer, "CON: [species: %s]  [number: %ld]  [count gaps: %s] "
             "[threshold for gaps: %d]  [simplify: %s] "
@@ -431,7 +425,7 @@ static GB_ERROR CON_export(char *savename, char *align, int **statistic, char *r
             gapbound, simplifystring,
             fconsidbound, fupper, lower);
 
-    err=GB_write_string(gb_options, buffer);
+    err = GB_write_string(gb_options, buffer);
 
     GBDATA *gb_names = GB_search(GB_get_father(gb_options), "_SPECIES", GB_FIND);
     if (gb_names) GB_delete(gb_names); // delete old entry
@@ -467,63 +461,54 @@ static GB_ERROR CON_export(char *savename, char *align, int **statistic, char *r
         if (gb_graph) GB_delete(gb_graph);  // delete old entry
     }
     // export additional information
-    if (resultiscomplex)
-    {
+    if (resultiscomplex) {
         GBDATA *gb_graph = GBT_add_data(gb_extended, align, "FREQUENCIES", GB_DB);
-        char *charname=(char *)GB_calloc(5, sizeof(char));
+        char   *charname = (char *)GB_calloc(5, sizeof(char));
 
-        float **additional=0;
         // problem : aminos, especially '*' -> new order
 
-        int *allreadycounted=(int*)GB_calloc((unsigned int)256, sizeof(char));
-        int *neworder=(int*)GB_calloc((unsigned int)256, sizeof(int));
-        int k;
-        int numdiffchars=1;  // first additional row (nr. 0) is max-row
-        for (int c=0; c<256; c++)
-        {
-            if ((k=convtable[c]))
-            {
-                if (!(allreadycounted[k]))
-                {
-                    allreadycounted[k]=1;
-                    neworder[numdiffchars++]=k;
+        int *allreadycounted = (int*)GB_calloc((unsigned int)256, sizeof(char));
+        int *neworder        = (int*)GB_calloc((unsigned int)256, sizeof(int));
+        int  numdiffchars    = 1; // first additional row (nr. 0) is max-row
+
+        for (int c=0; c<256; c++) {
+            int k = convtable[c];
+            if (k) {
+                if (!(allreadycounted[k])) {
+                    allreadycounted[k]       = 1;
+                    neworder[numdiffchars++] = k;
                 }
             }
         }
 
-        additional=(float**)GB_calloc((unsigned int)numdiffchars, sizeof(float*));
-        int group;
-        for (group=0; group<numdiffchars; group++)
-        {
-            additional[group]=(float*)GB_calloc((unsigned int)maxalignlen,
-                                                sizeof(float));
+        float **additional = (float**)GB_calloc((unsigned int)numdiffchars, sizeof(float*));
+
+        for (int group=0; group<numdiffchars; group++) {
+            additional[group]=(float*)GB_calloc((unsigned int)maxalignlen, sizeof(float));
         }
 
-        int *absolutrow=(int*)GB_calloc((unsigned int)maxalignlen, sizeof(int));
-        long col;
-        for (col=0; col<maxalignlen; col++)
-        {
-            int group2=1;
-            int colsum=0;
-            while (neworder[group2])
-            {
-                colsum+=statistic[neworder[group2++]][col];
+        int *absolutrow = (int*)GB_calloc((unsigned int)maxalignlen, sizeof(int));
+
+        for (long col=0; col<maxalignlen; col++) {
+            int group2 = 1;
+            int colsum = 0;
+            while (neworder[group2]) {
+                colsum += statistic[neworder[group2++]][col];
             }
-            if (countgaps) colsum+=statistic[0][col];
-            absolutrow[col]=colsum;
+            if (countgaps) colsum += statistic[0][col];
+            absolutrow[col] = colsum;
         }
 
-        for (col=0; col<maxalignlen; col++)
-        {
-            int group2=1;
-            float highest=0, relative;
-            int diffchar;
+        for (long col=0; col<maxalignlen; col++) {
             if (absolutrow[col]) {
+                int   group2  = 1;
+                float highest = 0;
+                int   diffchar;
+
                 while ((diffchar=neworder[group2++])) {
-                    relative=(float)statistic[diffchar][col]
-                        /(float)absolutrow[col];
-                    if (relative>highest) highest=relative;
-                    additional[diffchar][col]=relative;
+                    float relative = (float)statistic[diffchar][col] / (float)absolutrow[col];
+                    if (relative>highest) highest = relative;
+                    additional[diffchar][col]     = relative;
                 }
                 additional[0][col]=highest;
             }
@@ -532,22 +517,23 @@ static GB_ERROR CON_export(char *savename, char *align, int **statistic, char *r
             }
         }
 
-        GBDATA *gb_relative=GB_search(gb_graph, "MAX", GB_FLOATS);
-        err=GB_write_floats(gb_relative, additional[0], maxalignlen);
+        GBDATA *gb_relative = GB_search(gb_graph, "MAX", GB_FLOATS);
+        err = GB_write_floats(gb_relative, additional[0], maxalignlen);
 
-        for (group=1; group<numdiffchars; group++)
-        {
+        for (int group=1; group<numdiffchars; group++) {
             char ch = groupnames[neworder[group]];
             if (ch <'A' || ch>'Z') continue;
+            
             sprintf(charname, "N%c", ch);
-            gb_relative=GB_search(gb_graph, charname, GB_FLOATS);
-            err=GB_write_floats(gb_relative, additional[group], maxalignlen);
+            gb_relative = GB_search(gb_graph, charname, GB_FLOATS);
+            err = GB_write_floats(gb_relative, additional[group], maxalignlen);
         }
 
         free(charname);
         free(neworder);
         free(allreadycounted);
-        for (group=0; group<numdiffchars; group++) free(additional[group]);
+
+        for (int group=0; group<numdiffchars; group++) free(additional[group]);
         free(additional);
     }
     free(buffer);

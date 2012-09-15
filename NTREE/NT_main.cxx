@@ -242,8 +242,7 @@ static void nt_delete_database(AW_window *aww) {
 
     if (strlen(db_server)) {
         if (aw_ask_sure(NULL, GBS_global_string("Are you sure to delete database %s\nNote: there is no way to undelete it afterwards", db_server))) {
-            GB_ERROR error = 0;
-            error = GB_delete_database(db_server);
+            GB_ERROR error = GB_delete_database(db_server);
             if (error) {
                 aw_message(error);
             }

@@ -1274,63 +1274,61 @@ static float CPRO_getmaximum(long column, char transversion,
 static void CPRO_condense_cb(AW_window *aw, AW_CL which_statistic)
 {
     AW_root *aw_root = aw->get_root();
-    char mode=CPRO.result[which_statistic].drawmode;
-    if (!(CPRO.result[which_statistic].statisticexists))
-    {
+    
+    char mode = CPRO.result[which_statistic].drawmode;
+    if (!(CPRO.result[which_statistic].statisticexists)) {
         aw_message("statistic doesn't exist !");
         return;
     }
-    float leastmax=(float)(aw_root->awar("cpro/leastmax")->read_int())/100.0;
-    CPRO.leastaccu = aw_root->awar("cpro/leastaccu")->read_int();
-    float firsttoreach=(float)(aw_root->awar("cpro/firsttoreach")->read_int())/100.0;
-    float firstreachedstep=(float)
-        (aw_root->awar("cpro/firstreachedstep")->read_int())/100.0;
-    char *transversionstring=aw_root->awar("cpro/which_result")->read_string();
-    char transversion=1;
-    if (strcmp(transversionstring, "transversions")) transversion=0;
-    free(transversionstring);
-    long maxcol=CPRO.result[which_statistic].maxalignlen;
 
-    char *savename=aw_root->awar("cpro/condensename")->read_string();
-    if (savename[0]==0)
+    float leastmax         = (float)(aw_root->awar("cpro/leastmax")->read_int())/100.0;
+    CPRO.leastaccu         = aw_root->awar("cpro/leastaccu")->read_int();
+    float firsttoreach     = (float)(aw_root->awar("cpro/firsttoreach")->read_int())/100.0;
+    float firstreachedstep = (float) (aw_root->awar("cpro/firstreachedstep")->read_int())/100.0;
+
+    char transversion = 1;
     {
+        char *transversionstring = aw_root->awar("cpro/which_result")->read_string();
+        if (strcmp(transversionstring, "transversions")) transversion = 0;
+        free(transversionstring);
+    }
+
+
+    char *savename = aw_root->awar("cpro/condensename")->read_string();
+    if (savename[0]==0) {
         free(savename);
+        aw_message("no savename specified");
         return;
     }
 
+    long maxcol = CPRO.result[which_statistic].maxalignlen;
     arb_progress progress("condense statistic", maxcol);
 
-    char *result=(char *)calloc((unsigned int)maxcol+1, 1);
+    char *result = (char *)calloc((unsigned int)maxcol+1, 1);
+    for (long column=0; column<maxcol; column++) {
+        float maximum = CPRO_getmaximum(column, transversion, (char)which_statistic, mode);
 
-    float maximum;
-    float reachedhalf;
-    char steps;
-    for (long column=0; column<maxcol; column++)
-    {
-        maximum=CPRO_getmaximum(column, transversion, (char)which_statistic, mode);
-        if (maximum<-100.0) result[column]='.';
-        else if (maximum<=0.0) result[column]='-';
-        else
-        {
-            if (maximum>=leastmax) result[column]='A';
-            else result[column]='a';
-            reachedhalf=CPRO_gethalfmaximum(column, maximum, firsttoreach,
-                                            transversion, (char)which_statistic, mode);
-            for (steps=0; (reachedhalf>firstreachedstep)&&(steps<'Y'-'A'); steps++)
-                reachedhalf-=firstreachedstep;
-            result[column]+=steps;
+        if (maximum<-100.0) result[column]    = '.';
+        else if (maximum<=0.0) result[column] = '-';
+        else {
+            result[column]    = (maximum>=leastmax) ? 'A' : 'a';
+            float reachedhalf = CPRO_gethalfmaximum(column, maximum, firsttoreach, transversion, (char)which_statistic, mode);
+
+            char steps;
+            for (steps=0; (reachedhalf>firstreachedstep) && (steps<'Y'-'A'); steps++) {
+                reachedhalf -= firstreachedstep;
+            }
+            result[column] += steps;
         }
         ++progress;
     }
 
-    GB_ERROR error = 0;
-    char *align=CPRO.result[which_statistic].alignname;
+    char *align = CPRO.result[which_statistic].alignname;
 
     GB_begin_transaction(GLOBAL.gb_main);
 
     GBDATA *gb_extended = GBT_find_or_create_SAI(GLOBAL.gb_main, savename);
 
-    GBDATA *gb_param;
     const char *typestring = GBS_global_string("RATES BY DISTANCE:  [%s] [UPPER_CASE%% %li]"
                                                " [ INTERREST%% %li] [STEP/CHAR %li]",
                                                (transversion) ? "transversion" : "all differences",
@@ -1338,12 +1336,14 @@ static void CPRO_condense_cb(AW_window *aw, AW_CL which_statistic)
                                                (long)(firsttoreach*100.0),
                                                (long)(firstreachedstep*100.0));
 
-    gb_param=GBT_add_data(gb_extended, align, "_TYPE", GB_STRING);
-    error=GB_write_string(gb_param, typestring); // @@@ unused
+    GBDATA   *gb_param = GBT_add_data(gb_extended, align, "_TYPE", GB_STRING);
+    GB_ERROR  error    = GB_write_string(gb_param, typestring);
 
-    GBDATA *gb_data = GBT_add_data(gb_extended, align, "data", GB_STRING);
+    if (!error) {
+        GBDATA *gb_data = GBT_add_data(gb_extended, align, "data", GB_STRING);
+        error           = GB_write_string(gb_data, result);
+    }
 
-    error = GB_write_string(gb_data, result);
     GB_end_transaction_show_error(GLOBAL.gb_main, error, aw_message);
 
     free(result);

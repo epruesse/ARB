@@ -90,7 +90,7 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
 
         StrL::iterator it;
         bool isHeader = true;
-        for (it = fileContent.begin(); it != fileContent.end(); it++) {
+        for (it = fileContent.begin(); it != fileContent.end(); ++it) {
             if (isHeader) {
                 string nameStart ("ABIOTROPHIA");
                 if (it->find(nameStart.c_str(), 0, 11) != string::npos) {
@@ -125,7 +125,7 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
             if (!gb_namesCont) error = GB_await_error();
             else {
                 DescList::iterator di;
-                for (di = myDescs.begin(); di != myDescs.end() && !error; di++) {
+                for (di = myDescs.begin(); di != myDescs.end() && !error; ++di) {
                     if (di->getType() < 10) {
                         GBDATA* gb_pair     = GB_create_container(gb_namesCont, "pair");
                         if (!gb_pair) error = GB_await_error();
@@ -163,7 +163,6 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
 
 
 void NT_suggestValidNames(AW_window*, AW_CL, AW_CL) {
-    vector<string> speciesNames;
     GB_begin_transaction(GLOBAL.gb_main);
 
     GBDATA*  gb_validNamesCont = GB_entry(GLOBAL.gb_main, "VALID_NAMES");
