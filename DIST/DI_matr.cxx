@@ -818,30 +818,16 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI
 
 GB_ERROR DI_MATRIX::calculate_pro(DI_TRANSFORMATION transformation, bool *aborted_flag) {
     di_cattype whichcat;
-    di_codetype whichcode = universal;
+    di_codetype whichcode = UNIVERSAL;
 
     switch (transformation) {
-        case DI_TRANSFORMATION_NONE:
-            whichcat = none;
-            break;
-        case DI_TRANSFORMATION_SIMILARITY:
-            whichcat = similarity;
-            break;
-        case DI_TRANSFORMATION_KIMURA:
-            whichcat = kimura;
-            break;
-        case DI_TRANSFORMATION_PAM:
-            whichcat = pam;
-            break;
-        case DI_TRANSFORMATION_CATEGORIES_HALL:
-            whichcat = hall;
-            break;
-        case DI_TRANSFORMATION_CATEGORIES_BARKER:
-            whichcat = george;
-            break;
-        case DI_TRANSFORMATION_CATEGORIES_CHEMICAL:
-            whichcat = chemical;
-            break;
+        case DI_TRANSFORMATION_NONE:                whichcat = NONE;       break;
+        case DI_TRANSFORMATION_SIMILARITY:          whichcat = SIMILARITY; break;
+        case DI_TRANSFORMATION_KIMURA:              whichcat = KIMURA;     break;
+        case DI_TRANSFORMATION_PAM:                 whichcat = PAM;        break;
+        case DI_TRANSFORMATION_CATEGORIES_HALL:     whichcat = HALL;       break;
+        case DI_TRANSFORMATION_CATEGORIES_BARKER:   whichcat = GEORGE;     break;
+        case DI_TRANSFORMATION_CATEGORIES_CHEMICAL: whichcat = CHEMICAL;   break;
         default:
             return "This correction is not available for protein data";
     }
