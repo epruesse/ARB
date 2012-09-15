@@ -271,6 +271,7 @@ AWT_map_key.o: awt_map_key.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/attributes.h

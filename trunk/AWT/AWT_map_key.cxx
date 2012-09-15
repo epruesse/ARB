@@ -12,36 +12,34 @@
 #include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
+#include <arb_msg.h>
 
-ed_key::ed_key()
-{
+ed_key::ed_key() {
     int i;
-    for (i=0; i<256; i++) map[i] = i;
+    for (i=0; i<256; i++) mapping[i] = i;
 }
 
 char ed_key::map_key(char k) const {
     int i = k & 0xff;
-    return map[i];
+    return mapping[i];
+}
+
+inline char read_mapping_awar(AW_root *awr, int idx, const char *subkey) {
+    const char *awar_name    = GBS_global_string("key_mapping/key_%i/%s", idx, subkey);
+    const char *awar_content = awr->awar(awar_name)->read_char_pntr();
+    return awar_content[0];
 }
 
 void ed_key::rehash_mapping(AW_root *awr) {
-    int i;
-    for (i=0; i<256; i++) map[i] = i;
-    char source[256];
-    char dest[256];
-    char *ps, *pd;
+    for (int i=0; i<256; i++) mapping[i] = i;
+
     long enable = awr->awar("key_mapping/enable")->read_int();
     if (enable) {
-        for (i=0; i<MAX_MAPPED_KEYS; i++) {
-            sprintf(source, "key_mapping/key_%i/source", i);
-            sprintf(dest, "key_mapping/key_%i/dest", i);
-            ps = awr->awar(source)->read_string();
-            pd = awr->awar(dest)->read_string();
-            if (strlen(ps) && strlen(pd)) {
-                map[(unsigned char)ps[0]] = pd[0];
-            }
-            free(ps);
-            free(pd);
+        for (int i=0; i<MAX_MAPPED_KEYS; i++) {
+            char source = read_mapping_awar(awr, i, "source");
+            char dest   = read_mapping_awar(awr, i, "dest");
+
+            if (source && dest) mapping[safeCharIndex(source)] = dest;
         }
     }
 }
