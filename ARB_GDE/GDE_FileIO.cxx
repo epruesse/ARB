@@ -247,20 +247,18 @@ static void LoadFile(char *filename, NA_Alignment *dataset, int type, int format
     return;
 }
 
-static int FindType(char *name, int *dtype, int *ftype)
-{
-    FILE *file;
-    char in_line[GBUFSIZ];
+static int FindType(char *name, int *dtype, int *ftype) {
+    FILE *file = fopen(name, "r");
 
-    file = fopen(name, "r");
-    *dtype=0;
-    *ftype=0;
+    *dtype = 0;
+    *ftype = 0;
 
     int result = 1;
     if (file) {
         /*   Is this a flat file?
          *   Get the first non blank line, see if a type marker shows up.
          */
+        char in_line[GBUFSIZ];
         if (fgets(in_line, GBUFSIZ, file)) {
             for (; strlen(in_line)<2 && fgets(in_line, GBUFSIZ, file) != NULL;) ;
 
@@ -401,16 +399,13 @@ void AppendNA(NA_Base *buffer, int len, NA_Sequence *seq)
     return;
 }
 
-void Ascii2NA(char *buffer, int len, int matrix[16])
-{
+void Ascii2NA(char *buffer, int len, int matrix[16]) {
     // if the translation matrix exists, use it to encode the buffer.
-    int i;
     if (matrix != NULL) {
-        for (i=0; i<len; i++) {
+        for (int i=0; i<len; i++) {
             buffer[i] = matrix[(unsigned char)buffer[i]];
         }
     }
-    return;
 }
 
 int WriteNA_Flat(NA_Alignment *aln, char *filename, int method, int maskable)
