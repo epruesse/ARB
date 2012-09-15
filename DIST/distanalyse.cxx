@@ -14,15 +14,12 @@
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <algorithm>
 
+using std::min;
+using std::max;
 
 void DI_MATRIX::analyse() {
-    long  row;
-
-    long    act_gci, mean_gci=0;
-    float   act_gc, min_gc=9999.9, max_gc=0.0;
-    long    act_len, mean_len=0, min_len=9999999, max_len=0;
-
     if (is_AA) {
         if (nentries> 100) {
             aw_message("A lot of sequences!\n   ==> fast Kimura selected! (instead of PAM)");
@@ -35,26 +32,35 @@ void DI_MATRIX::analyse() {
         }
     }
     else {
+        long  mean_len = 0;
+        float min_gc   = 9999.9;
+        float max_gc   = 0.0;
+        long  min_len  = 9999999;
+        long  max_len  = 0;
+
         // calculate meanvalue of sequencelength:
-        for (row=0; row<nentries; row++) {
-            act_gci = 0;
-            act_len = 0;
-
+        for (long row=0; row<nentries; row++) {
             const char *sequ = entries[row]->sequence_parsimony->get_sequence();
+            size_t      flen = aliview->get_length();
 
-            size_t flen = aliview->get_length();
+            long act_gci = 0;
+            long act_len = 0;
+
             for (size_t pos=0; pos<flen; pos++) {
                 char ch = sequ[pos];
                 if (ch == AP_C || ch == AP_G) act_gci++;
                 if (ch == AP_A || ch == AP_C || ch == AP_G || ch == AP_T) act_len++;
             }
-            mean_gci += act_gci;
-            act_gc = ((float) act_gci) / act_len;
-            if (act_gc < min_gc) min_gc = act_gc;
-            if (act_gc > max_gc) max_gc = act_gc;
+
             mean_len += act_len;
-            if (act_len < min_len) min_len = act_len;
-            if (act_len > max_len) max_len = act_len;
+
+            float act_gc = ((float) act_gci) / act_len;
+
+            min_gc = min(min_gc, act_gc);
+            max_gc = max(max_gc, act_gc);
+
+            min_len = min(min_len, act_len);
+            max_len = max(max_len, act_len);
         }
 
         if (min_len * 1.3 < max_len) {

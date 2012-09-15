@@ -137,13 +137,13 @@ void DI_dmatrix::resized() {
     screen_width  = squ.r-squ.l;
     screen_height = squ.b-squ.t;
 
-    long horiz_paint_size, vert_paint_size;
     AW_screen_area rect; // @@@ used uninitialized if !m
     if (m) {
-        horiz_paint_size = (squ.r-lim.width-off_dx)/cell_width;
-        vert_paint_size  = (squ.b-off_dy)/cell_height;
-        horiz_page_size  = (n > horiz_paint_size) ?  horiz_paint_size : n;
-        vert_page_size   = (n > vert_paint_size) ? vert_paint_size : n;
+        long horiz_paint_size = (squ.r-lim.width-off_dx)/cell_width;
+        long vert_paint_size  = (squ.b-off_dy)/cell_height;
+
+        horiz_page_size = (n > horiz_paint_size) ?  horiz_paint_size : n;
+        vert_page_size  = (n > vert_paint_size) ? vert_paint_size : n;
 
         rect.l = 0;
         rect.t = 0;
@@ -782,7 +782,6 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
     awm->at_x(x);
     awm->callback(di_change_dist, 3);
     awm->create_button("MINUS_MAX", "-");
-    x += BUTTON_XSIZE;
 
     awm->set_info_area_height(40);
 
