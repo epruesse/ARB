@@ -90,8 +90,7 @@ static GB_ERROR transfer_tree(const char *tree_name, bool overwrite, const char 
                         gb_at_tree = gb_tree_behind;
                     }
 
-                    error        = GB_delete(gb_dest_tree);
-                    gb_dest_tree = NULL;
+                    error = GB_delete(gb_dest_tree);
                 }
             }
         }
