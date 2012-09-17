@@ -86,17 +86,17 @@ void AW_GC_gtk::wm_set_font(const AW_font font_nr, const int size, int *found_si
     XFontStruct *xfs;
     {
         int  found_font_size;
-        ASSERT_TRUE(lookfont(GDK_DISPLAY_XDISPLAY(get_common()->get_display()), font_nr, size, found_font_size, true, false, &xfs)); // lookfont should do fallback
+        arb_assert(lookfont(GDK_DISPLAY_XDISPLAY(get_common()->get_display()), font_nr, size, found_font_size, true, false, &xfs)); // lookfont should do fallback
         if (found_size) *found_size = found_font_size;
     }
 
 
     //FIXME Font Hack
     //extract XLFD name from XFontStruct
-    int i;
+
     XFontProp *xfp;
     char *name;
-
+    int i;
     for (i = 0, xfp = xfs->properties; i < xfs->n_properties; i++, xfp++) {
         if (xfp->name == XA_FONT) {
             /*
@@ -121,6 +121,21 @@ void AW_GC_gtk::wm_set_font(const AW_font font_nr, const int size, int *found_si
     GdkFont *font = gdk_font_load(fontname.c_str());
     ASSERT_FALSE(font == NULL);
     gdk_gc_set_font(gc, font);
+
+    //set char size for each ascii char
+    for (unsigned int j = AW_FONTINFO_CHAR_ASCII_MIN; j <= AW_FONTINFO_CHAR_ASCII_MAX; j++) {
+        gchar c = (gchar)j;
+        gint lbearing = 0;
+        gint rbearing = 0;
+        gint width = 0;
+        gint ascent = 0;
+        gint descent = 0;
+        gdk_text_extents(font, &c, 1, &lbearing, &rbearing, &width, &ascent, &descent);
+
+        set_char_size(j, ascent, descent, width);
+        //else    set_no_char_size(i);
+    }
+
 }
 
 int AW_GC_gtk::get_available_fontsizes(AW_font font_nr, int *available_sizes) const {

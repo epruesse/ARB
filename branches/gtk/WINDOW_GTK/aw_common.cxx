@@ -14,7 +14,6 @@
 
 
 
-
 void AW_common::new_gc(int gc) {
 
     //remove old gc
