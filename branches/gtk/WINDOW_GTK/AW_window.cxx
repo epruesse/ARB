@@ -1160,6 +1160,11 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
         set_window_size(_at.max_x_size, _at.max_y_size);
     }
 
+
+    AW_device *device = get_device(AW_INFO_AREA);
+    device->reset();
+    device->set_offset(AW::Vector(-xfig->minx, -xfig->miny));
+
     //print the whole xfig to the area once.
     //gtk takes care of refreshing etc.
     xfig_data->print(get_device(AW_INFO_AREA));

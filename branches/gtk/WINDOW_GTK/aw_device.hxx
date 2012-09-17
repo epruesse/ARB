@@ -253,6 +253,7 @@ public:
             is_below_clip(pos.ypos()) || is_above_clip(pos.ypos()) ||
             is_leftof_clip(pos.xpos()) || is_rightof_clip(pos.xpos());
     }
+
     bool is_outside_clip(AW::Rectangle rect) const {
         return !rect.overlaps_with(AW::Rectangle(get_cliprect(), AW::INCLUSIVE_OUTLINE));
     }

@@ -77,3 +77,21 @@ void AW_common::reset_style()
 }
 
 
+int AW_GC::get_string_size(const char *str, long textlen) const {
+    // calculate display size of 'str'
+    // 'str' and/or 'textlen' may be 0
+    // 'str'     == 0 -> calculate max width of any text with length 'textlen'
+    // 'textlen' == 0 -> calls strlen when needed
+    // both 0 -> return 0
+
+    int width = 0;
+    if (font_limits.is_monospaced() || !str) {
+        if (!textlen && str) textlen = strlen(str);
+        width = textlen * font_limits.width;
+    }
+    else {
+        for (int c = *(str++); c; c = *(str++)) width += width_of_chars[c];
+    }
+    return width;
+}
+

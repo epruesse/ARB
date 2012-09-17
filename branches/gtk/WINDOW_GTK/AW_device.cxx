@@ -16,6 +16,22 @@
 #include "aw_common.hxx"
 #include "aw_position.hxx"
 
+
+
+class AW_clip_scale_stack {
+    // completely private, but accessible by AW_device
+    friend class AW_device;
+
+    AW_screen_area  clip_rect;
+    AW_font_overlap font_overlap;
+
+    AW::Vector offset;
+    AW_pos scale;
+
+    class AW_clip_scale_stack *next;
+};
+
+
 bool AW_getBestClick(AW_clicked_line */*cl*/, AW_clicked_text */*ct*/, AW_CL */*cd1*/, AW_CL */*cd2*/) {
     GTK_NOT_IMPLEMENTED;
     return false;
@@ -28,11 +44,48 @@ const AW_screen_area& AW_device::get_area_size() const {
 
 
 void AW_device::pop_clip_scale() {
-    GTK_NOT_IMPLEMENTED;
+    if (!clip_scale_stack) {
+        aw_assert(0); // Too many pop_clip_scale on that device
+        return;
+    }
+
+#if defined(SHOW_CLIP_STACK_CHANGES)
+    char *state_before_pop = strdup(clipstatestr(this));
+#endif // SHOW_CLIP_STACK_CHANGES
+
+    AW_zoomable::reset();
+    set_offset(clip_scale_stack->offset); // needs to be called before zoom()
+    zoom(clip_scale_stack->scale);
+    set_cliprect(clip_scale_stack->clip_rect);
+    set_font_overlap(clip_scale_stack->font_overlap);
+
+    aw_assert(get_scale() == clip_scale_stack->scale);
+
+    AW_clip_scale_stack *oldstack = clip_scale_stack;
+    clip_scale_stack              = clip_scale_stack->next;
+    delete oldstack;
+
+#if defined(SHOW_CLIP_STACK_CHANGES)
+    printf(" pop_clip_scale: %s\n", state_before_pop);
+    printf("    [after pop]: %s\n\n", clipstatestr(this));
+    free(state_before_pop);
+#endif // SHOW_CLIP_STACK_CHANGES
 }
 
 void AW_device::push_clip_scale() {
-    GTK_NOT_IMPLEMENTED;
+    AW_clip_scale_stack *stack = new AW_clip_scale_stack;
+
+    stack->next      = clip_scale_stack;
+    clip_scale_stack = stack;
+
+    stack->scale        = get_scale();
+    stack->offset       = get_offset();
+    stack->font_overlap = get_font_overlap();
+    stack->clip_rect    = get_cliprect();
+
+#if defined(SHOW_CLIP_STACK_CHANGES)
+    printf("push_clip_scale: %s\n", clipstatestr(this));
+#endif // SHOW_CLIP_STACK_CHANGES
 }
 
 
@@ -64,6 +117,7 @@ bool AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eith
 
     const AW_screen_area& screen   = get_common()->get_screen();
     const AW_screen_area& clipRect = get_cliprect();
+    //quick hack
 
     if (allow_left_font_overlap() || screen.l == clipRect.l) inside_clipping_left = false;
     if (allow_right_font_overlap() || clipRect.r == screen.r) inside_clipping_right = false;
@@ -77,7 +131,7 @@ bool AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eith
         if (Y0-font_limits.ascent < clipRect.t) return 0;  // don't cross the clip border
     }
 
-    if (allow_bottom_font_overlap() || clipRect.b == screen.b) {   // check clip border inside screen drucken
+    if (allow_bottom_font_overlap() || clipRect.b == screen.b) {   // check clip border inside screen
         if (Y0-font_limits.ascent > clipRect.b) return 0;  // draw outside screen
     }
     else {
@@ -186,9 +240,16 @@ bool AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eith
 
 
 bool AW_device::generic_filled_area(int gc, int npos, const AW::Position *pos, AW_bitset filteri) {
-    GTK_NOT_IMPLEMENTED;
+    bool drawflag = false;
+    if (filteri & filter) {
+        int p = npos-1;
+        for (int n = 0; n<npos; ++n) {
+            drawflag |= line(gc, pos[p], pos[n], filteri);
+            p = n;
+        }
+    }
+    return drawflag;
 }
-
 void AW_device::move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y) {
     GTK_NOT_IMPLEMENTED;
 }
@@ -205,8 +266,26 @@ void AW_device::flush() {
     GTK_NOT_IMPLEMENTED;
 }
 
+static const AW_screen_area& get_universe() {
+    // "unrestricted" area
+    const int UMIN = INT_MIN/10;
+    const int UMAX = INT_MAX/10;
+    static AW_screen_area universe = { UMIN, UMAX, UMIN, UMAX };
+    return universe;
+}
+
 void AW_device::reset() {
-    GTK_NOT_IMPLEMENTED;
+    while (clip_scale_stack) {
+        pop_clip_scale();
+    }
+    if (type() == AW_DEVICE_SIZE) {
+        set_cliprect(get_universe());
+    }
+    else {
+        set_cliprect(get_area_size());
+    }
+    AW_zoomable::reset();
+    specific_reset();
 }
 
 void AW_device::clear(AW_bitset filteri) {
@@ -214,17 +293,25 @@ void AW_device::clear(AW_bitset filteri) {
 }
 
 bool AW_device::generic_invisible(const AW::Position& pos, AW_bitset filteri) {
-    GTK_NOT_IMPLEMENTED;
-    return false;
+    return (filter & filteri) ? !is_outside_clip(transform(pos)) : false;
 }
+
+
 const AW_screen_area&  AW_device::get_common_screen(const AW_common *common_) {
-    GTK_NOT_IMPLEMENTED;
+    return common_->get_screen();
 }
 
 
-bool AW_device::generic_box(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri) {
-    GTK_NOT_IMPLEMENTED;
-    return false;
+bool AW_device::generic_box(int gc, bool /*filled*/, const AW::Rectangle& rect, AW_bitset filteri) {
+    // Note: 'filled' is not supported on this device
+    int drawflag = 0;
+    if (filteri & filter) {
+        drawflag |= line_impl(gc, rect.upper_edge(), filteri);
+        drawflag |= line_impl(gc, rect.lower_edge(), filteri);
+        drawflag |= line_impl(gc, rect.left_edge(),  filteri);
+        drawflag |= line_impl(gc, rect.right_edge(), filteri);
+    }
+    return drawflag;
 }
 
 void AW_device::clear_part(const AW::Rectangle& rect, AW_bitset filteri) {
@@ -236,8 +323,8 @@ void AW_device::clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_po
 }
 
 
-void AW_device::set_filter(AW_bitset /*filteri*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_device::set_filter(AW_bitset filteri) {
+    filter = filteri;
 }
 
 void AW_device_click::get_clicked_line(class AW_clicked_line */*ptr*/) const {
@@ -312,24 +399,24 @@ void specific_reset() {
 //aw_styleable
 //FIXME move to own class
 
-const AW_font_limits& AW_stylable::get_font_limits(int /*gc*/, char /*c*/) const {
-    GTK_NOT_IMPLEMENTED;
+const AW_font_limits& AW_stylable::get_font_limits(int gc, char c) const {
+    return get_common()->get_font_limits(gc, c);
 }
 
-int AW_stylable::get_string_size(int /*gc*/, const  char */*string*/, long /*textlen*/) const {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+int AW_stylable::get_string_size(int gc, const char *str, long textlen) const {
+    return get_common()->map_gc(gc)->get_string_size(str, textlen);
 }
+
 void AW_stylable::new_gc(int gc) {
     get_common()->new_gc(gc);
 }
+
 void AW_stylable::set_function(int gc, AW_function function) {
-    GTK_NOT_IMPLEMENTED;
+    get_common()->map_mod_gc(gc)->set_function(function);
 }
 
-
 void AW_stylable::reset_style() {
-    GTK_NOT_IMPLEMENTED;
+    get_common()->reset_style();
 }
 
 void AW_stylable::set_font(int gc, AW_font font_nr, int size, int *found_size) {
@@ -416,26 +503,55 @@ bool AW_clipable::clip(const AW::LineVector& line, AW::LineVector& clippedLine) 
     if (drawflag) clippedLine = AW::LineVector(x0, y0, x1, y1);
     return drawflag;
 }
-void AW_clipable::set_bottom_clip_border(int /*bottom*/, bool /*allow_oversize*/ /*= false*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_clipable::set_bottom_clip_border(int bottom, bool allow_oversize) {
+    clip_rect.b = bottom;
+    if (!allow_oversize) {
+        if (clip_rect.b > get_screen().b) clip_rect.b = get_screen().b;
+    }
+    else {
+        set_bottom_font_overlap(true); // added 21.6.02 --ralf
+    }
 }
 
-void AW_clipable::set_left_clip_border(int /*left*/, bool /*allow_oversize*/ /* = false*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_clipable::set_left_clip_border(int left, bool allow_oversize) {
+    clip_rect.l = left;
+    if (!allow_oversize) {
+        if (clip_rect.l < get_screen().l) clip_rect.l = get_screen().l;
+    }
+    else {
+        set_left_font_overlap(true); // added 21.6.02 --ralf
+    }
 }
 
-void AW_clipable::set_right_clip_border(int /*right*/, bool /*allow_oversize*/ /* = false*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_clipable::set_right_clip_border(int right, bool allow_oversize) {
+    clip_rect.r = right;
+    if (!allow_oversize) {
+        if (clip_rect.r > get_screen().r) clip_rect.r = get_screen().r;
+    }
+    else {
+        set_right_font_overlap(true); // added to correct problem with last char skipped (added 21.6.02 --ralf)
+    }
 }
 
-void AW_clipable::set_top_clip_border(int /*top*/, bool /*allow_oversize*/ /* = false*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_clipable::set_top_clip_border(int top, bool allow_oversize) {
+    clip_rect.t = top;
+    if (!allow_oversize) {
+        if (clip_rect.t < get_screen().t) clip_rect.t = get_screen().t;
+    }
+    else {
+        set_top_font_overlap(true); // added 21.6.02 --ralf
+    }
 }
 
 
-int AW_clipable::reduceClipBorders(int /*top*/, int /*bottom*/, int /*left*/, int /*right*/) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+int AW_clipable::reduceClipBorders(int top, int bottom, int left, int right) {
+    // return 0 if no clipping area left
+    if (top    > clip_rect.t) clip_rect.t = top;
+    if (bottom < clip_rect.b) clip_rect.b = bottom;
+    if (left   > clip_rect.l) clip_rect.l = left;
+    if (right  < clip_rect.r) clip_rect.r = right;
+
+    return !(clip_rect.b<clip_rect.t || clip_rect.r<clip_rect.l);
 }
 
 
