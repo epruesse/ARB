@@ -123,41 +123,29 @@ bool AW_device_gtk::draw_string_on_screen(AW_device *device, int gc, const  char
     aw_assert(size <= strlen(str));
     AW_device_gtk *device_gtk = DOWNCAST(AW_device_gtk*, device);
 
+
+    GdkGCValues values;
+    GdkGC *gdkGc = device_gtk->get_common()->get_GC(gc);
+
+    gdk_gc_get_values(gdkGc, &values);
+    ASSERT_FALSE(values.font == NULL);
+    //FIXME according to the gtk documentation it should be possible to use NULL as font.
+    //      NULL means: use the gc font. However that does not work. Maybe it will in a newer gtk version.
     gdk_draw_string(GDK_DRAWABLE(device_gtk->pixmap),
-                    gdk_font_load("-bitstream-courier 10 pitch-bold-i-normal--0-0-0-0-m-0-ascii-0"), //FIXME use real font
-                    device_gtk->get_common()->get_GC(gc),
+                    values.font,
+                    gdkGc,
                     AW_INT(X),
                     AW_INT(Y),
                     str);
 
+    //FIXME what does y coordinate -1 mean?
     return true;
 }
 
 
 bool AW_device_gtk::text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
 
-
-    GdkGCValues values;
-    GdkGC *gdkGc = get_common()->get_GC(gc);
-
-    gdk_gc_get_values(gdkGc, &values);
-    ASSERT_FALSE(values.font == NULL);
-
-    //FIXME what does y coordinate -1 mean?
-    //FIXME do not ignore the alignment.
-    //FIXME according to the gtk documentation it should be possible to use NULL as font.
-    //      NULL means: use the gc font. However that does not work. Maybe it will in a newer gtk version.
-    gdk_draw_string(GDK_DRAWABLE(pixmap),
-                    values.font,
-                    get_common()->get_GC(gc),
-                    pos.xpos(),
-                    pos.ypos(),
-                    str);
-    return true;
-
-
-    //This is the old & soon the new way with clipping
-//    return text_overlay(gc, str, opt_strlen, pos, alignment, filteri, (AW_CL)this, 0.0, 0.0, draw_string_on_screen);
+    return text_overlay(gc, str, opt_strlen, pos, alignment, filteri, (AW_CL)this, 0.0, 0.0, draw_string_on_screen);
 }
 
 bool AW_device_gtk::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitset filteri) {

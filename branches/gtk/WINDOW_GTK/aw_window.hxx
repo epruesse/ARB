@@ -246,7 +246,7 @@ typedef void (*aw_hide_cb)(AW_window *aww);
 
 class AW_window : virtual Noncopyable {
 
-//    enum AW_SizeRecalc recalc_size_at_show;
+    enum AW_SizeRecalc recalc_size_at_show;
 //    enum AW_PosRecalc  recalc_pos_at_show;
 //    aw_hide_cb         hide_cb;
 //

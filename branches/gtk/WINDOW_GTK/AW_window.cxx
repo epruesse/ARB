@@ -56,8 +56,11 @@ AW_PosRecalc AW_window::get_recalc_pos_atShow() const {
     return AW_KEEP_POS; // 0
 }
 
-void AW_window::recalc_size_atShow(enum AW_SizeRecalc /*sr*/){
-    GTK_NOT_IMPLEMENTED;
+void AW_window::recalc_size_atShow(enum AW_SizeRecalc sr) {
+    if (sr == AW_RESIZE_ANY) {
+        sr = (recalc_size_at_show == AW_RESIZE_USER) ? AW_RESIZE_USER : AW_RESIZE_DEFAULT;
+    }
+    recalc_size_at_show = sr;
 }
 
 void AW_window::on_hide(aw_hide_cb /*call_on_hide*/){
@@ -1357,7 +1360,7 @@ void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windo
     //Creates the GDK (windowing system) resources associated with a widget.
     //This is done as early as possible because xfig drawing relies on the gdk stuff.
     gtk_widget_realize(GTK_WIDGET(prvt.window));
-    gtk_widget_realize(GTK_WIDGET(prvt.window));
+    gtk_widget_realize(GTK_WIDGET(prvt.fixed_size_area));
     gtk_widget_show(GTK_WIDGET(prvt.fixed_size_area));
 
 

@@ -173,6 +173,11 @@ public:
     void set_focus_callback(AW_RCB fcb, AW_CL cd1, AW_CL cd2); // any focus callback in any window
     bool is_focus_callback(AW_RCB fcb) const;
 
+    /**
+     * Returns the awar specified by <code>awar</code>
+     * @param awar Name of the awar that should be returned.
+     * @note Terminates the program if the awar does not exist.
+     */
     AW_awar *awar(const char *awar);
     AW_awar *awar_no_error(const char *awar);
 

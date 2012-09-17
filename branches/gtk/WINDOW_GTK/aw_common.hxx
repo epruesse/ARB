@@ -22,6 +22,8 @@
 #include <arb_defs.h>
 #endif
 
+#include <map>
+
 
 #define AW_FONTINFO_CHAR_ASCII_MIN 32
 #define AW_FONTINFO_CHAR_ASCII_MAX 127
@@ -196,27 +198,6 @@ public:
     void reset() { apply_config(default_config ? *default_config : AW_GC_config()); }
 };
 
-class AW_GC_set : virtual Noncopyable {
-    int     count;
-    AW_GC **gcs;
-
-public:
-    AW_GC_set() : count(0), gcs(NULL) {}
-    ~AW_GC_set() {
-        for (int i = 0; i<count; ++i) delete gcs[i];
-        free(gcs);
-    }
-    void reset_style() {
-        for (int i = 0; i<count; ++i) {
-            if (gcs[i]) gcs[i]->reset();
-        }
-    }
-    bool gc_mapable(int gc) const { return gc<count && gcs[gc]; }
-    const AW_GC *map_gc(int gc) const { aw_assert(gc_mapable(gc)); return gcs[gc]; }
-    AW_GC *map_mod_gc(int gc) { aw_assert(gc_mapable(gc)); return gcs[gc]; }
-
-    void add_gc(int gi, AW_GC *agc);
-};
 
 
 class AW_common {
@@ -224,7 +205,7 @@ class AW_common {
     AW_rgb*& data_colors;
     long&    data_colors_size;
 
-    AW_GC_set gcset;
+    std::map<int, AW_GC*> gcmap;
 
     AW_screen_area screen;
 
@@ -245,43 +226,37 @@ public:
     }
     virtual ~AW_common() {}
 
-    void reset_style() { gcset.reset_style(); }
+    //FIXME no idea why this method exists
+    void reset_style();
 
     const AW_screen_area& get_screen() const { return screen; }
-    void set_screen_size(unsigned int width, unsigned int height) {
-        screen.t = 0;               // set clipping coordinates
-        screen.b = height;
-        screen.l = 0;
-        screen.r = width;
-    }
-    void set_screen(const AW_screen_area& screen_) {
-        // set clipping coordinates
-        screen = screen_;
-        aw_assert(screen.t == 0 && screen.l == 0);
-    }
+    void set_screen_size(unsigned int width, unsigned int height);
+    void set_screen(const AW_screen_area& screen_);
 
     AW_rgb get_color(AW_color_idx color) const {
         return color>=AW_DATA_BG ? data_colors[color] : frame_colors[color];
     }
-    AW_rgb get_data_color(int i) const { return data_colors[i]; }
+    AW_rgb get_data_color(int i) const;
     int find_data_color_idx(AW_rgb color) const;
-    int get_data_color_size() const { return data_colors_size; }
+    int get_data_color_size() const;
 
-    AW_rgb get_XOR_color() const {
-        return data_colors ? data_colors[AW_DATA_BG] : frame_colors[AW_WINDOW_BG];
-    }
-    
-    void new_gc(int gc) { gcset.add_gc(gc, create_gc()); }
-    bool gc_mapable(int gc) const { return gcset.gc_mapable(gc); }
-    const AW_GC *map_gc(int gc) const { return gcset.map_gc(gc); }
-    AW_GC *map_mod_gc(int gc) { return gcset.map_mod_gc(gc); }
+    AW_rgb get_XOR_color() const;
 
-    const AW_font_limits& get_font_limits(int gc, char c) const {
-        // for one characters (c == 0 -> for all characters)
-        return c
-            ? map_gc(gc)->get_font_limits(c)
-            : map_gc(gc)->get_font_limits();
-    }
+    /**
+     * Create a new gc with the specified number.
+     */
+    void new_gc(int gc);
+
+    /**
+     * Determine whether a gc with that number exists.
+     */
+    bool gc_mapable(int gc) const;
+
+    const AW_GC *map_gc(int gc) const;
+
+    AW_GC *map_mod_gc(int gc);
+
+    const AW_font_limits& get_font_limits(int gc, char c) const;
 };
 
 inline AW_pos x_alignment(AW_pos x_pos, AW_pos x_size, AW_pos alignment) { return x_pos - x_size*alignment; }
