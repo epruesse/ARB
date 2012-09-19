@@ -132,13 +132,14 @@ GB_ERROR SEC_graphic::handleKey(AW_event_type event, AW_key_mod key_modifier, AW
     GB_ERROR error = 0;
 
     if (event == AW_Keyboard_Press) {
-        bool wrapped   = false; // avoid deadlock
         int  curpos    = sec_root->get_cursor();
         int  maxIndex  = sec_root->max_index();
         bool setCurpos = false;
         bool handled   = false;
 
         if (key_modifier == AW_KEYMODE_NONE) {
+            bool wrapped = false;   // avoid deadlock
+
             switch (key_code) {
                 case AW_KEY_LEFT: {
                     while (1) {
@@ -513,20 +514,21 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd,
 
 
 SEC_graphic::SEC_graphic(AW_root *aw_rooti, GBDATA *gb_maini)
-    : update_requested(SEC_UPDATE_RELOAD)
-    , load_error(0)
-    , disp_device(0)
-    , gb_main(gb_maini)
-    , aw_root(aw_rooti)
-    , sec_root(new SEC_root)
-    , gb_struct(0)
-    , gb_struct_ref(0)
-    , last_saved(0)
+    : update_requested(SEC_UPDATE_RELOAD),
+      load_error(0),
+      disp_device(0),
+      gb_main(gb_maini),
+      aw_root(aw_rooti),
+      sec_root(new SEC_root),
+      gb_struct(0),
+      gb_struct_ref(0),
+      last_saved(0)
 {
     exports.set_standard_default_padding();
 
-    rot_ct.exists = false;
-    rot_cl.exists = false;
+    rot_ct.exists     = false;
+    rot_cl.exists     = false;
+    old_rot_cl.exists = false;
 }
 
 SEC_graphic::~SEC_graphic() {
@@ -573,11 +575,10 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
     }
 
 
-    GB_ERROR err = 0;
 
     // Setup new structure:
-    long    ali_len = -1;
-    GBDATA *gb_ali  = 0;
+    GB_ERROR  err    = 0;
+    GBDATA   *gb_ali = 0;
     {
         char *helix_name = GBT_get_default_helix(gb_main);
         char *name       = GBT_readOrCreate_string(gb_main, AWAR_HELIX_NAME, helix_name);
@@ -589,8 +590,8 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
         }
         else {
             char *ali_name = GBT_get_default_alignment(gb_main);
+            long  ali_len  = GBT_get_alignment_len(gb_main, ali_name);
 
-            ali_len = GBT_get_alignment_len(gb_main, ali_name);
             if (ali_len < 10) {
                 err = GB_export_errorf("alignment '%s' to short to generate helix", ali_name);
             }

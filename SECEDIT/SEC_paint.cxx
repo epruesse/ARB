@@ -410,8 +410,8 @@ void SEC_root::paintBackgroundColor(AW_device *device, SEC_bgpaint_mode mode, co
     color2 = paintData.convert_BackgroundGC(color2);
 
     if (color1 >= 0 || color2 >= 0 || displayParams.show_strSkeleton) {
-        const double& radius1 = char_radius[gc1];
-        const double& radius2 = char_radius[gc2];
+        const double& radius1 = get_char_radius(gc1);
+        const double& radius2 = get_char_radius(gc2);
 
         Position s1    = p1;
         Position s2    = p2;
@@ -1005,7 +1005,7 @@ GB_ERROR SEC_root::paint(AW_device *device) {
             maxSize += 2; // add 2 extra pixels
 
             bg_linewidth[gc] = maxSize;
-            char_radius[gc]    = device->rtransform_size(maxSize) * 0.5; // was 0.75
+            charRadius[gc]   = device->rtransform_size(maxSize) * 0.5;  // was 0.75
         }
 
         cacheBackgroundColor();

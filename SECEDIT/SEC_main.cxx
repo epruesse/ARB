@@ -708,9 +708,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
 
 static void SEC_exit(GBDATA *, void *cl_sec_root) {
     SEC_root *sec_root = static_cast<SEC_root*>(cl_sec_root);
-
     delete sec_root;
-    sec_root = NULL;
 }
 
 AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {

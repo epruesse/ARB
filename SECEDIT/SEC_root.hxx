@@ -648,6 +648,8 @@ struct SEC_displayParams {
     bool show_debug;            // show debug info in structure display
 #endif // DEBUG
 
+    SEC_displayParams() { memset(this, 0, sizeof(*this)); }
+
     void reread(AW_root *aw_root, const ED4_plugin_host& host);
 };
 
@@ -682,7 +684,7 @@ class SEC_root : virtual Noncopyable {
 
     AW_font_group font_group;
 
-    double char_radius[SEC_GC_DATA_COUNT]; // radius and..
+    double charRadius[SEC_GC_DATA_COUNT];  // radius and..
     short  bg_linewidth[SEC_GC_DATA_COUNT]; // ..linewidth for drawing background (index = gc)
     Vector center_char[SEC_GC_FONT_COUNT]; // correction vector to center the base character at its position (world coordinates)
 
@@ -740,7 +742,7 @@ public:
     const char *helixNrAt(int abspos) const { return get_helixDef()->helixNr(abspos); }
 
     const size_t *getHelixPositions(const char *helixNr) const;
-    const double& get_char_radius(int gc) const { return char_radius[gc]; }
+    const double& get_char_radius(int gc) const { return charRadius[gc]; }
 
     void reread_display_params(AW_root *aw_root, const ED4_plugin_host& Host) { displayParams.reread(aw_root, Host); }
     const SEC_displayParams& display_params() const { return displayParams; }
