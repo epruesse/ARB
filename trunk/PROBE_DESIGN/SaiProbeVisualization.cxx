@@ -82,10 +82,10 @@ void SAI_graphic::command(AW_device * /* device */, AWT_COMMAND_MODE /* cmd */, 
                           AW_event_type type, AW_pos /* x */, AW_pos /* y */, AW_clicked_line *cl, AW_clicked_text *ct)
 {
     if (type == AW_Mouse_Press && (cl->exists || ct->exists) && button != AW_BUTTON_MIDDLE) {
-        int clicked_idx = 0;
         if (ct->exists) {
-            clicked_idx = (int)ct->client_data1;
+            int         clicked_idx  = (int)ct->client_data1;
             const char *species_name = g_pbdata->probeSpecies[clicked_idx];
+
             aw_root->awar(AWAR_SPECIES_NAME)->write_string(species_name);
             aw_root->awar(AWAR_SPV_SELECTED_PROBE)->write_string(species_name);
         }
@@ -411,7 +411,7 @@ void SAI_graphic::paint(AW_device *device) {
 
     double xStep_info   = 0;
     double xStep_border = 0;
-    double xStep_target  = 0;
+    double xStep_target = 0;
     double yStep        = 0;
     double maxDescent   = 0;
     // detect x/y step to use
@@ -431,23 +431,19 @@ void SAI_graphic::paint(AW_device *device) {
         maxDescent = all_font_limits.descent;
     }
 
-    AW_pos fgX, fgY, pbRgX1, pbRgX2, pbY, pbX, lineXpos;
-    fgX = 0; fgY = yStep + 10;
-    pbX = 0; pbY = yStep + 10;
-    pbRgX1 = pbRgX2 = lineXpos = 0;
+    AW_pos fgY = yStep + 10;
+    AW_pos pbY = yStep + 10;
+    
+    char *saiSelected  = aw_root->awar(AWAR_SPV_SAI_2_PROBE)->read_string();
+    int   dispSai      = aw_root->awar(AWAR_SPV_DISP_SAI)->read_int();       // to display SAI below probe targets
+    int   displayWidth = aw_root->awar(AWAR_SPV_DB_FIELD_WIDTH)->read_int(); // display column width of the selected database field
 
-    char *saiSelected = aw_root->awar(AWAR_SPV_SAI_2_PROBE)->read_string();
-    int dispSai       = aw_root->awar(AWAR_SPV_DISP_SAI)->read_int(); // to display SAI below probe targets
-
-    int displayWidth  = aw_root->awar(AWAR_SPV_DB_FIELD_WIDTH)->read_int();  // display column width of the selected database field
-
-    int endPos, startPos = 0;
-    const char *saiCols = 0;
-
-    char buf[1024];
-    if (strcmp(saiSelected, "")==0) sprintf(buf, "Selected SAI = Not Selected!");
-    else sprintf(buf, "Selected SAI = %s", saiSelected);
-    device->text(SAI_GC_PROBE, buf, 100, -30, 0.0, AW_SCREEN);
+    {
+        char buf[1024];
+        if (strcmp(saiSelected, "")==0) sprintf(buf, "Selected SAI = Not Selected!");
+        else sprintf(buf, "Selected SAI = %s", saiSelected);
+        device->text(SAI_GC_PROBE, buf, 100, -30, 0.0, AW_SCREEN);
+    }
 
     double yLineStep = dispSai ? yStep*2 : yStep;
 
@@ -461,6 +457,8 @@ void SAI_graphic::paint(AW_device *device) {
                 const char *name        = g_pbdata->probeSpecies[j];
                 char       *displayInfo = GetDisplayInfo(aw_root, gb_main, name, displayWidth, default_tree);
 
+                AW_pos fgX = 0;
+                
                 AW_click_cd cd(device, j);
                 if (strcmp(selectedProbe, name) == 0) {
                     device->box(SAI_GC_FOREGROUND, true, fgX, (fgY - (yStep * 0.9)), (displayWidth * xStep_info), yStep);
@@ -478,11 +476,12 @@ void SAI_graphic::paint(AW_device *device) {
             free(default_tree);
         }
 
-        double spacer = 4.0;
+        double spacer   = 4.0;
+        AW_pos lineXpos = 0;
 
-        pbRgX1 = ((displayWidth+1) * xStep_info);
-        pbX    = pbRgX1 + (9 * xStep_border) + spacer;
-        pbRgX2 = pbX + (g_pbdata->getProbeTargetLen() * xStep_target) + spacer;
+        AW_pos pbRgX1 = ((displayWidth+1) * xStep_info);
+        AW_pos pbX    = pbRgX1 + (9 * xStep_border) + spacer;
+        AW_pos pbRgX2 = pbX + (g_pbdata->getProbeTargetLen() * xStep_target) + spacer;
 
         int  probeLen = g_pbdata->getProbeTargetLen();
 
@@ -523,13 +522,13 @@ void SAI_graphic::paint(AW_device *device) {
                     if (tok_suffix) {
                         // --------------------
                         // pre-probe region - 9 bases
-                        startPos = parsed.get_position();
+                        int startPos = parsed.get_position();
                         if (parsed.get_error()) {
                             err = GBS_global_string("Could not parse match position (Reason: %s).", parsed.get_error());
                         }
                         else {
                             const char *endErr;
-                            endPos = calculateEndPosition(gb_main, startPos-1, i, PROBE_PREFIX, probeLen, &endErr);
+                            int         endPos = calculateEndPosition(gb_main, startPos-1, i, PROBE_PREFIX, probeLen, &endErr);
                             if (endPos == -2) {
                                 err = GBS_global_string("Can't handle '%s' (%s)", g_pbdata->probeSpecies[i], endErr);
                             }
@@ -537,7 +536,7 @@ void SAI_graphic::paint(AW_device *device) {
                                 sai_assert(!endErr);
                                 sai_assert(endPos >= -1); // note: -1 gets fixed in the next line
                                 endPos++; // calculateEndPosition returns 'one position in front of start'
-                                saiCols = translateSAItoColors(aw_root, gb_main, endPos, startPos-1, i);
+                                const char *saiCols = translateSAItoColors(aw_root, gb_main, endPos, startPos-1, i);
                                 if (saiCols) {
                                     int positions = strlen(saiCols);
                                     int skipLeft  = PROBE_PREFIX_LENGTH-positions;
