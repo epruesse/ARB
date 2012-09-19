@@ -174,6 +174,7 @@ PH_matr.o: $(ARBHOME)/INCLUDE/test_global.h
 PH_root.o: PH_filter.hxx
 PH_root.o: phylo.hxx
 PH_root.o: $(ARBHOME)/INCLUDE/ad_prot.h
+PH_root.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PH_root.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 PH_root.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_root.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -182,6 +183,7 @@ PH_root.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PH_root.o: $(ARBHOME)/INCLUDE/arb_string.h
 PH_root.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_root.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+PH_root.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PH_root.o: $(ARBHOME)/INCLUDE/arbtools.h
 PH_root.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_root.o: $(ARBHOME)/INCLUDE/aw_base.hxx
