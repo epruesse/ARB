@@ -70,23 +70,22 @@ void PTM_finally_free_all_mem() {
 static char *PTM_get_mem(int size) {
     //! allocate 'size' bytes
 
-    int   nsize, pos;
-    long  i;
-    char *erg;
-
-    nsize = (size + (PTM_ALIGNED - 1)) & (-PTM_ALIGNED);
+    int nsize = (size + (PTM_ALIGNED - 1)) & (-PTM_ALIGNED);
     if (nsize > PTM_MAX_SIZE) {
         void * ptr = calloc(1, size);
         PTM_add_alloc(ptr);
         return (char *) ptr;
     }
-    pos = nsize >> PTM_LD_ALIGNED;
+
+    int pos = nsize >> PTM_LD_ALIGNED;
 
 #ifdef PTM_DEBUG
     PTM.debug[pos]++;
 #endif
 
-    if ((erg = PTM.tables[pos])) {
+    char *erg = PTM.tables[pos];
+    if (erg) {
+        long i;
         PT_READ_PNTR(((char *)PTM.tables[pos]), i);
         PTM.tables[pos] = (char *)i;
     }
@@ -116,20 +115,19 @@ static void PTM_free_mem(char *data, int size) {
     //! free memory allocated by PTM_get_mem()
 
     pt_assert(size > 0);
-    int  nsize, pos;
-    long i;
-    nsize = (size + (PTM_ALIGNED - 1)) & (-PTM_ALIGNED);
+
+    int nsize = (size + (PTM_ALIGNED - 1)) & (-PTM_ALIGNED);
     if (nsize > PTM_MAX_SIZE) {
         free(data);
     }
     else {
         // if (data[4] == PTM_magic) PT_CORE
-        pos = nsize >> PTM_LD_ALIGNED;
+        int pos = nsize >> PTM_LD_ALIGNED;
 
 #ifdef PTM_DEBUG
         PTM.debug[pos]--;
 #endif
-        i = (long)PTM.tables[pos];
+        long i = (long)PTM.tables[pos];
         PT_WRITE_PNTR(data, i);
         data[sizeof(PT_PNTR)] = PTM_magic;
         PTM.tables[pos] = data;
@@ -723,12 +721,7 @@ long PTD_write_leafs_to_disk(FILE * out, POS_TREE * node, long pos, long *pnodep
     // returns new pos when son is written 0 otherwise
     // pnodepos is set to last object
 
-    POS_TREE     *sons;
-    long          r_pos, r_poss[PT_B_MAX], o_pos;
-    int           block[10];            // TODO: check why we allocate 10 ints when only block[0] is used
-    int           i;
-    PT_NODE_TYPE  type = PT_read_type(node);
-
+    PT_NODE_TYPE type = PT_read_type(node);
 
     if (type == PT_NT_SAVED) {          // already saved
         long father;
@@ -745,13 +738,16 @@ long PTD_write_leafs_to_disk(FILE * out, POS_TREE * node, long pos, long *pnodep
         pos = PTD_write_chain_to_disk(out, node, pos, error);
     }
     else if (type == PT_NT_NODE) {
+        int block[10]; // TODO: check why we allocate 10 ints when only block[0] is used
         block[0] = 0;
-        o_pos = pos;
-        for (i = PT_QU; i < PT_B_MAX && !error; i++) {    // save all sons
-            sons = PT_read_son(node, (PT_BASES)i);
+        
+        long o_pos = pos;
+        long r_poss[PT_B_MAX];
+        for (int i = PT_QU; i < PT_B_MAX && !error; i++) {    // save all sons
+            POS_TREE *sons = PT_read_son(node, (PT_BASES)i);
             r_poss[i] = 0;
             if (sons) {
-                r_pos = PTD_write_leafs_to_disk(out, sons, pos, &(r_poss[i]), &(block[0]), error);
+                long r_pos = PTD_write_leafs_to_disk(out, sons, pos, &(r_poss[i]), &(block[0]), error);
                 if (r_pos>pos) {        // really saved ????
                     pos = r_pos;
                 }

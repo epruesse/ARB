@@ -414,7 +414,6 @@ inline POS_TREE *PT_read_son(POS_TREE *node, PT_BASES base)
 {
     long  i;
     UINT  sec;
-    UINT  offset;
     PTM2 *ptmain = psg.ptmain;
     if (ptmain->stage3) {       // stage 3  no father
         if (node->flags & IS_SINGLE_BRANCH_NODE) {
@@ -440,7 +439,7 @@ inline POS_TREE *PT_read_son(POS_TREE *node, PT_BASES base)
                 printf("Warning: A search tree of this size is not tested.\n");
                 printf("         (sec & LONG_SON) == true\n");
 #endif
-                offset = 4 * i;
+                UINT offset = 4 * i;
                 if ((1<<base) & sec) {              // long
                     COMPILE_ASSERT(sizeof(PT_PNTR) == 8); // 64-bit necessary
                     PT_READ_PNTR((&node->data+1)+offset, i);
@@ -453,7 +452,7 @@ inline POS_TREE *PT_read_son(POS_TREE *node, PT_BASES base)
         }
         else {
             if (sec & INT_SONS) {                                   // int/short
-                offset = i+i;
+                UINT offset = i+i;
                 if ((1<<base) & sec) {                              // int
                     PT_READ_INT((&node->data+1)+offset, i);
                 }
@@ -462,7 +461,7 @@ inline POS_TREE *PT_read_son(POS_TREE *node, PT_BASES base)
                 }
             }
             else {                                                  // short/char
-                offset = i;
+                UINT offset = i;
                 if ((1<<base) & sec) {                              // short
                     PT_READ_SHORT((&node->data+1)+offset, i);
                 }
@@ -529,7 +528,7 @@ struct DataLoc {
         char *data = (&node->data)+psg.ptmain->mode;
         if (node->flags&1) { PT_READ_INT(data, name); data += 4; } else { PT_READ_SHORT(data, name); data += 2; }
         if (node->flags&2) { PT_READ_INT(data, rpos); data += 4; } else { PT_READ_SHORT(data, rpos); data += 2; }
-        if (node->flags&4) { PT_READ_INT(data, apos); data += 4; } else { PT_READ_SHORT(data, apos); data += 2; }
+        if (node->flags&4) { PT_READ_INT(data, apos); data += 4; } else { PT_READ_SHORT(data, apos); /*data += 2;*/ }
 
         pt_assert(name >= 0);
         pt_assert(apos >= 0);
