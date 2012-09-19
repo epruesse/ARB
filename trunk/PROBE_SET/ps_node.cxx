@@ -29,7 +29,7 @@ bool PS_Node::saveASCII(PS_FileBuffer* _fb, char *buffer) {   // buffer MUST be 
     //
     size = (probes == 0) ? 0 : probes->size();
     if (size) {
-        count = sprintf(buffer, " P{%i", size);
+        count = sprintf(buffer, " P{%u", size);
         _fb->put(buffer, count);
         for (PS_ProbeSetCIter i=probes->begin(); i!=probes->end(); ++i) {
             count = sprintf(buffer, " (%i_%i_%i)", (*i)->quality, (*i)->length, (*i)->GC_content);
@@ -42,7 +42,7 @@ bool PS_Node::saveASCII(PS_FileBuffer* _fb, char *buffer) {   // buffer MUST be 
     //
     size  = children.size();
     if (size) {
-        count = sprintf(buffer, " C<%i", size);
+        count = sprintf(buffer, " C<%u", size);
         _fb->put(buffer, count);
         for (PS_NodeMapIterator i=children.begin(); i!=children.end(); ++i) {
             _fb->put_char('\n');

@@ -54,9 +54,9 @@ void PS_debug_print_inverse_path() {
 }
 #endif
 
-static void PS_detect_weak_differences_stepdown(const PS_NodePtr _ps_node,
-                                          const SpeciesID  _parent_ID,
-                                          const long       _depth) {
+static void PS_detect_weak_differences_stepdown(const PS_NodePtr& _ps_node,
+                                                const SpeciesID  _parent_ID,
+                                                const long       _depth) {
     //  Recursively walk through tree and make a bool-matrix of SpeciesID's
     //  where true means that the 2 species can be distinguished by a probe.
     //
@@ -190,7 +190,7 @@ static void PS_detect_weak_differences_stepdown(const PS_NodePtr _ps_node,
     }
 }
 
-static void PS_detect_weak_differences(const PS_NodePtr _root_node) {
+static void PS_detect_weak_differences(const PS_NodePtr& _root_node) {
     //
     // make bitmap
     //
@@ -228,7 +228,7 @@ typedef map<ID2IDPair, PS_NodePtr>    IDID2NodeMap;
 typedef IDID2NodeMap::iterator       IDID2NodeMapIter;
 typedef IDID2NodeMap::const_iterator IDID2NodeMapCIter;
 
-void PS_find_probes_for_pairs(const PS_NodePtr _ps_node, ID2IDSet &_pairs) {
+void PS_find_probes_for_pairs(const PS_NodePtr& _ps_node, ID2IDSet &_pairs) {
     SpeciesID id         = _ps_node->getNum();
     bool      has_probes = _ps_node->hasProbes();
 
@@ -286,7 +286,7 @@ void PS_find_probes_for_pairs(const PS_NodePtr _ps_node, ID2IDSet &_pairs) {
     __PATHSET->erase(id);
 }
 
-static void PS_print_and_evaluate_map(const PS_NodePtr _root_node, const char *_result_filename) {
+static void PS_print_and_evaluate_map(const PS_NodePtr& _root_node, const char *_result_filename) {
     //
     // print and evaluate bitmap
     //

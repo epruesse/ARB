@@ -4,6 +4,9 @@
 #ifndef PS_DEFS_HXX
 #include "ps_defs.hxx"
 #endif
+#ifndef PS_ASSERT_HXX
+#include "ps_assert.hxx"
+#endif
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif

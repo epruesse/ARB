@@ -16,7 +16,7 @@
 typedef pair<bool, SpeciesID> Step;
 static vector<Step> *__PATH = new vector<Step>;
 
-static void PS_print_paths(const PS_NodePtr _ps_node) {
+static void PS_print_paths(const PS_NodePtr& _ps_node) {
     //  recursively print the paths to the leaves
 
     // path

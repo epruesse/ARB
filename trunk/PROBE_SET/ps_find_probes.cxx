@@ -23,7 +23,7 @@ template<class T>
 void PS_print_set_ranges(const char *_set_name, const set<T> &_set, const bool _cr_at_end = true) {
     fflush(stdout);
     printf("%s size (%3zu) : ", _set_name, _set.size());
-    if (_set.size() == 0) {
+    if (_set.empty()) {
         printf("(empty)");
     }
     else {
@@ -58,7 +58,7 @@ void PS_print_set_ranges(const char *_set_name, const set<T> &_set, const bool _
 template<class T1, class T2>
 void PS_print_map_ranges(const char *_map_name, const map<T1, T2> &_map, const bool _compare_keys = true, const bool _cr_at_end = true) {
     fflush(stdout);
-    if (_map.size() == 0) {
+    if (_map.empty()) {
         printf("%s size (  0) : (empty)", _map_name);
     }
     else {
@@ -314,7 +314,7 @@ static bool PS_test_sets_on_path(float &_distance) {
     return false;
 }
 
-static void PS_find_probe_for_sets(const PS_NodePtr _ps_node, PS_CandidatePtr _candidate_parent) {
+static void PS_find_probe_for_sets(const PS_NodePtr& _ps_node, PS_CandidatePtr _candidate_parent) {
     //  scan subtree starting with _ps_node for candidates
 
     SpeciesID id         = _ps_node->getNum();
@@ -367,7 +367,7 @@ static void PS_find_probe_for_sets(const PS_NodePtr _ps_node, PS_CandidatePtr _c
     __PATH.erase(id);
 }
 
-static void PS_find_probes(const PS_NodePtr _root_node, const int _round, PS_CandidatePtr _candidate_parent, const float _filling_level) {
+static void PS_find_probes(const PS_NodePtr& _root_node, const int _round, PS_CandidatePtr _candidate_parent, const float _filling_level) {
     //  scan PS_Node-tree for candidates to raise filling level of __MAP
 
     __PROBES_COUNTER             = 0;
@@ -621,7 +621,7 @@ static PS_CandidatePtr PS_ascend(PS_CandidatePtr _last_candidate) {
     // apply paths of parent-candidates to __MAP
     //
     PS_CandidatePtr parent = _last_candidate->parent;
-    while ((parent != 0) && (parent->path.size() > 0)) {
+    while (parent && !parent->path.empty()) {
         PS_apply_path_to_bitmap(parent->path, true);
         parent = parent->parent;
     }
@@ -634,7 +634,7 @@ static PS_CandidatePtr PS_ascend(PS_CandidatePtr _last_candidate) {
 }
 
 
-static void PS_descend(PS_CandidatePtr _candidate_parent, const PS_NodePtr _root_node, unsigned long _depth, const float _filling_level) {
+static void PS_descend(PS_CandidatePtr _candidate_parent, const PS_NodePtr& _root_node, unsigned long _depth, const float _filling_level) {
     struct tms before;
     times(&before);
 
@@ -657,7 +657,7 @@ static void PS_descend(PS_CandidatePtr _candidate_parent, const PS_NodePtr _root
     // max. 3 rounds
     //
     int round = 0;
-    for (; (round < 3) && (_candidate_parent->children.size() == 0); ++round) {
+    for (; round<3 && _candidate_parent->children.empty(); ++round) {
         PS_find_probes(_root_node, round, _candidate_parent, _filling_level);
     }
     printf("\nDESCEND ---------- searched probe for speciesid-sets [rounds : %i] candidates (%lu / %lu -> %lu left) ----------\n\n",
@@ -716,7 +716,7 @@ static void PS_make_map_for_candidate(PS_CandidatePtr _candidate) {
     _candidate->map->copy(__PRESET_MAP);
     PS_apply_path_to_bitmap(_candidate->path, true, _candidate->map);   // apply _candidate's path
     PS_CandidatePtr parent = _candidate->parent;
-    while ((parent != 0) && (parent->path.size() > 0)) {        // apply parent's paths
+    while (parent && !parent->path.empty()) {        // apply parent's paths
         PS_apply_path_to_bitmap(parent->path, true, _candidate->map);
         parent = parent->parent;
     }
@@ -834,8 +834,7 @@ void PS_get_next_candidates_descend(PS_NodePtr _ps_node, PS_CandidateSet &_leaf_
 }
 
 
-void PS_get_next_candidates(const PS_NodePtr  _root_node,
-                             PS_CandidateSet  &_leaf_candidates) {
+void PS_get_next_candidates(const PS_NodePtr&  _root_node, PS_CandidateSet& _leaf_candidates) {
     struct tms before;
     times(&before);
     // first calc source/target/false_IDs sets
@@ -954,7 +953,7 @@ int main(int   argc,
     long          path_length;
     SpeciesID     path_id;
     IDSet         path;
-    IDID2IDSetMap oneMatchesMap;
+    // IDID2IDSetMap oneMatchesMap;
     for (long i=0;
           i < size;
           ++i) {
@@ -969,7 +968,7 @@ int main(int   argc,
             path.insert(path_id);
         }
         printf("\n");
-        oneMatchesMap[ID2IDPair(id1, id2)] = path;
+        // oneMatchesMap[ID2IDPair(id1, id2)] = path;
     }
     printf("loading preset bitmap..\n"); fflush(stdout);
     __BITS_IN_MAP = ((__MAX_ID+1)*__MAX_ID)/2 + __MAX_ID+1;
@@ -1050,8 +1049,7 @@ int main(int   argc,
     //
     times(&before);
     long round = 0;
-    while ((leaf_candidates.size() > 0) &&
-           (round < 200)) {
+    while (!leaf_candidates.empty() && round<200) {
         printf("\nsearching next candidates [round #%li]..\n", ++round);
         PS_get_next_candidates(db->getConstRootNode(), leaf_candidates);
 

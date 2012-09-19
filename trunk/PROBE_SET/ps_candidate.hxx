@@ -58,7 +58,7 @@ typedef ID2IndexSetSet::const_reverse_iterator  ID2IndexSetSetCRIter;
 class PS_Candidate : virtual Noncopyable {
     PS_Candidate();
     PS_Candidate(const PS_Candidate&);
-    explicit PS_Candidate(float _distance, unsigned long _gain, const PS_NodePtr _ps_node, IDSet &_path, PS_CandidatePtr _parent) {
+    explicit PS_Candidate(float _distance, unsigned long _gain, const PS_NodePtr& _ps_node, IDSet &_path, PS_CandidatePtr _parent) {
         filling_level = 0.0;
         depth         = ULONG_MAX;
         distance      = _distance;
@@ -160,7 +160,7 @@ public:
         return (found != children.end());
     }
 
-    bool alreadyUsedNode(const PS_NodePtr _ps_node) const {
+    bool alreadyUsedNode(const PS_NodePtr& _ps_node) const {
         if (node.isNull()) return false;
         if (_ps_node == node) {
             return true;
@@ -171,9 +171,10 @@ public:
     }
 
     int addChild(unsigned long     _distance,
-                  unsigned long     _gain,
-                  const PS_NodePtr  _node,
-                  IDSet            &_path) {
+                 unsigned long     _gain,
+                 const PS_NodePtr& _node,
+                 IDSet&            _path)
+    {
         PS_CandidateByGainMapIter found = children.find(_gain);
         if (found == children.end()) {
             PS_CandidateSPtr new_child(new PS_Candidate(_distance, _gain, _node, _path, this));
@@ -189,12 +190,13 @@ public:
         return 0;
     }
 
-    bool updateBestChild(const unsigned long  _gain,
-                          const unsigned long  _one_false_IDs_matches,
-                          const float          _filling_level,
-                          const PS_NodePtr     _node,
-                          IDSet               &_path) {
-        if (children.size() == 0) {
+    bool updateBestChild(const unsigned long _gain,
+                         const unsigned long _one_false_IDs_matches,
+                         const float         _filling_level,
+                         const PS_NodePtr&   _node,
+                         IDSet&              _path)
+    {
+        if (children.empty()) {
             // no child yet
             PS_CandidateSPtr new_child(new PS_Candidate(0, _gain, _node, _path, this));
             new_child->depth = depth+1;
@@ -221,7 +223,7 @@ public:
     }
 
     void reduceChildren(const float _filling_level) {
-        if (children.size() == 0) return;
+        if (children.empty()) return;
         // prepare
         unsigned long best_gain   = children.rbegin()->first;
         unsigned long worst_gain  = children.begin()->first;
@@ -423,8 +425,9 @@ public:
     }
 
     void load(PS_FileBuffer       *_file,
-               const unsigned long  _bits_in_map,
-               const PS_NodePtr     _root_node) {
+              const unsigned long  _bits_in_map,
+              const PS_NodePtr&    _root_node)
+    {
         unsigned long count;
         // gain
         _file->get_ulong(gain);
@@ -480,8 +483,9 @@ public:
     ~PS_Candidate() {
         if (map)           delete map;
         if (one_false_IDs) delete one_false_IDs;
-        if (path.size() > 0) path.clear();
-        if (children.size() > 0) children.clear();
+
+        path.clear();
+        children.clear();
     }
 };
 
