@@ -178,6 +178,7 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/attributes.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
