@@ -12,16 +12,19 @@
 #ifndef PS_FILEBUFFER_HXX
 #define PS_FILEBUFFER_HXX
 
+#ifndef PS_ASSERT_HXX
+#include "ps_assert.hxx"
+#endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
-#ifndef ARBTOOLS_H
-#include <arbtools.h>
-#endif
 
 using namespace std;
 
@@ -63,7 +66,7 @@ public:
     void put_char(unsigned char  _c) {
         if (is_readonly) {
             fprintf(stderr, "sorry, i can't write to files opened readonly\n");
-            *(int *)0 = 0;
+            CRASH();
         }
         if (size+1 < BUFFER_SIZE) {
             buffer[size] = _c;

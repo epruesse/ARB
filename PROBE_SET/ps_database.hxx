@@ -156,9 +156,10 @@ public:
     //
     void reinit(const char *_name, bool _readonly);   // reinit. with new file
 
-    PS_Database(const char *_name, bool _readonly) {
-        FILE_ID = "PROBE_SET_DATABASE V1.0\n";
-        db_file = 0;
+    PS_Database(const char *_name, bool _readonly)
+        : FILE_ID("PROBE_SET_DATABASE V1.0\n"),
+          db_file(NULL) 
+    {
         db_rootnode.SetNull();
         reinit(_name, _readonly);
     }

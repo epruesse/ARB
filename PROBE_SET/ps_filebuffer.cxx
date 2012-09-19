@@ -6,11 +6,11 @@ using namespace std;
 void PS_FileBuffer::put(const void *_data, int _length) {
     if (is_readonly) {
         fprintf(stderr, "sorry, i can't write to files opened readonly\n");
-        *(int *)0 = 0;
+        CRASH();
     }
     if (_length > BUFFER_SIZE) {
         fprintf(stderr, "sorry, i can't write %i bytes at once, only %i\n", _length, BUFFER_SIZE);
-        *(int *)0 = 0;
+        CRASH();
     }
     if (_length == 0) return;
     if (size + _length < BUFFER_SIZE) {
@@ -28,7 +28,7 @@ void PS_FileBuffer::put(const void *_data, int _length) {
 void PS_FileBuffer::get(void *_data, int _length) {
     if (_length > BUFFER_SIZE) {
         fprintf(stderr, "sorry, i can't read %i bytes at once, only %i\n", _length, BUFFER_SIZE);
-        *(int *)0 = 0;
+        CRASH();
     }
     if (_length == 0) return;
     if (position + _length <= size) {
@@ -111,7 +111,7 @@ void PS_FileBuffer::get_ulong(unsigned long int &_ul) {
 void PS_FileBuffer::peek(void *_data, int _length) {
     if (_length > BUFFER_SIZE) {
         fprintf(stderr, "sorry, i can't read %i bytes at once, only %i\n", _length, BUFFER_SIZE);
-        *(int *)0 = 0;
+        CRASH();
     }
     if (position + _length <= size) {
         memcpy(_data, &buffer[position], _length);
@@ -127,7 +127,7 @@ void PS_FileBuffer::flush() {
     ssize_t written = write(file_handle, buffer, size);
     if (written != size) {
         fprintf(stderr, "failed to write %i bytes to file %s (total_write = %lu)\n", size, file_name, total_write);
-        *(int *)0 = 0;
+        CRASH();
     }
     total_write += written;
     size         = 0;
@@ -143,7 +143,7 @@ void PS_FileBuffer::refill() {
     ssize_t readen = read(file_handle, &buffer[size-position], BUFFER_SIZE-unread);
     if (readen < 1) {
         fprintf(stderr, "failed to refill buffer from file %s (total_read = %lu)\n", file_name, total_read);
-        *(int *)0 = 0;
+        CRASH();
     }
     total_read += readen;
     size        = unread+readen;
@@ -175,7 +175,7 @@ void PS_FileBuffer::reinit(const char *_name, bool _readonly) {
         else {
             fprintf(stderr, "failed to create file '%s' for writing\nmaybe it already exists ?\n", file_name);
         }
-        *(int *)0 = 0;
+        CRASH();
     }
 
     // init. buffer
@@ -186,10 +186,14 @@ void PS_FileBuffer::reinit(const char *_name, bool _readonly) {
     total_write = 0;
 }
 
-PS_FileBuffer::PS_FileBuffer(const char *_name, bool _readonly) {
+PS_FileBuffer::PS_FileBuffer(const char *_name, bool _readonly)
+    :
+    file_name(strdup(_name)),
+    is_readonly(_readonly), 
+    file_pos(-1)
+{
     // init. file
-    file_name   = strdup(_name);
-    is_readonly = _readonly;
+
     if (is_readonly) {
         file_flags = O_RDONLY;
         file_mode  = 0;
@@ -206,7 +210,7 @@ PS_FileBuffer::PS_FileBuffer(const char *_name, bool _readonly) {
         else {
             fprintf(stderr, "failed to create file '%s' for writing\nmaybe it already exists ?\n", file_name);
         }
-        *(int *)0 = 0;
+        CRASH();
     }
 
     // init. buffer
@@ -215,7 +219,7 @@ PS_FileBuffer::PS_FileBuffer(const char *_name, bool _readonly) {
     buffer   = (unsigned char *)malloc(BUFFER_SIZE);
     if (!buffer) {
         fprintf(stderr, "failed to allocate memory for buffer for file %s\n", file_name);
-        *(int *)0 = 0;
+        CRASH();
     }
 
     // debug

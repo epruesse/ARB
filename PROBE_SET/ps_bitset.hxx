@@ -8,41 +8,30 @@
 #include "ps_filebuffer.hxx"
 #endif
 
-#ifndef NDEBUG
-# define bs_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
-# ifndef DEBUG
-#  error DEBUG is NOT defined - but it has to!
-# endif
-#else
-# ifdef DEBUG
-#  error DEBUG is defined - but it should not!
-# endif
-# define bs_assert(bed)
-#endif // NDEBUG
-
 class PS_BitSet : virtual Noncopyable {
 protected:
-
     unsigned char *data;
-    bool bias;                                                   // preset value for newly allocated memory
-    long max_index;                                              // max. used index
 
-    PS_BitSet(const PS_BitSet&);
-    PS_BitSet();
-    PS_BitSet(const bool _bias, const long _max_index, const long _capacity) {
-        bias      = _bias;
-        max_index = _max_index;
-        capacity  = _capacity;
-    }
+    bool bias;      // preset value for newly allocated memory
+    long max_index; // max. used index
+    long capacity;  // number of allocated bits
+
+    PS_BitSet(const bool _bias, const long _max_index, const long _capacity)
+        : data(NULL),
+          bias(_bias),
+          max_index(_max_index),
+          capacity(_capacity)
+    {}
 
 public:
-    long capacity;                                               // number of allocated bits
     typedef set<long> IndexSet;
 
     virtual long getTrueIndices(IndexSet &_index_set, const long _fill_index);
     virtual long getFalseIndices(IndexSet &_index_set, const long _fill_index);
     virtual long getCountOfTrues(const long _fill_index = -1);
-    long         getMaxUsedIndex() { return max_index; }
+    
+    long getMaxUsedIndex() const { return max_index; }
+    long getCapacity() const { return capacity; }
 
     virtual bool Get(const long _index);
     virtual bool Set(const long _index, const bool _value);
@@ -182,7 +171,7 @@ long PS_BitSet::getCountOfTrues(const long _fill_index) {
 
 
 bool PS_BitSet::Set(const long _index, const bool _value) {
-    bs_assert(_index >= 0);
+    ps_assert(_index >= 0);
     reserve(_index);
     bool previous_value = (((data[_index/8] >> (_index % 8)) & 1) == 1);
     if (_value) {
@@ -197,7 +186,7 @@ bool PS_BitSet::Set(const long _index, const bool _value) {
 
 
 void PS_BitSet::setTrue(const long _index) {
-    bs_assert(_index >= 0);
+    ps_assert(_index >= 0);
     reserve(_index);
     data[_index/8] &= 1 << (_index % 8);
     if (_index > max_index) max_index = _index;
@@ -205,7 +194,7 @@ void PS_BitSet::setTrue(const long _index) {
 
 
 void PS_BitSet::setFalse(const long _index) {
-    bs_assert(_index >= 0);
+    ps_assert(_index >= 0);
     reserve(_index);
     data[_index/8] &= ~(1 << (_index % 8));
     if (_index > max_index) max_index = _index;
@@ -213,7 +202,7 @@ void PS_BitSet::setFalse(const long _index) {
 
 
 bool PS_BitSet::Get(const long _index) {
-    bs_assert(_index >= 0);
+    ps_assert(_index >= 0);
     reserve(_index);
     return (((data[_index/8] >> (_index % 8)) & 1) == 1);
 }

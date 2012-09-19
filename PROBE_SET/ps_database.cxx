@@ -180,7 +180,7 @@ bool PS_Database::merge(const char *_other_db_name) {
     db_MAX_ID = next_usable_ID-1;
 
     // append tree if mappings are equal
-    if (db_file2db_id_map.size() == 0) {
+    if (db_file2db_id_map.empty()) {
         return db_rootnode->append(other_db_file);
     }
     // merge in tree if mappings differ

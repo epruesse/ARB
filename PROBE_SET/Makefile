@@ -112,6 +112,7 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
+fb_test.o: ps_assert.hxx
 fb_test.o: ps_bitmap.hxx
 fb_test.o: ps_bitset.hxx
 fb_test.o: ps_defs.hxx
@@ -124,6 +125,7 @@ fb_test.o: $(ARBHOME)/INCLUDE/dupstr.h
 fb_test.o: $(ARBHOME)/INCLUDE/smartptr.h
 fb_test.o: $(ARBHOME)/INCLUDE/test_global.h
 
+ps_arb2asciipaths.o: ps_assert.hxx
 ps_arb2asciipaths.o: ps_defs.hxx
 ps_arb2asciipaths.o: ps_filebuffer.hxx
 ps_arb2asciipaths.o: ps_pg_tree_functions.hxx
@@ -141,6 +143,7 @@ ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/test_global.h
 
+ps_convert_db.o: ps_assert.hxx
 ps_convert_db.o: ps_database.hxx
 ps_convert_db.o: ps_defs.hxx
 ps_convert_db.o: ps_filebuffer.hxx
@@ -162,6 +165,7 @@ ps_convert_db.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/test_global.h
 
+ps_database.o: ps_assert.hxx
 ps_database.o: ps_database.hxx
 ps_database.o: ps_defs.hxx
 ps_database.o: ps_filebuffer.hxx
@@ -173,6 +177,7 @@ ps_database.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_database.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_database.o: $(ARBHOME)/INCLUDE/test_global.h
 
+ps_detect_weak_differences.o: ps_assert.hxx
 ps_detect_weak_differences.o: ps_bitmap.hxx
 ps_detect_weak_differences.o: ps_bitset.hxx
 ps_detect_weak_differences.o: ps_database.hxx
@@ -187,6 +192,7 @@ ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/test_global.h
 
+ps_eval_candidates.o: ps_assert.hxx
 ps_eval_candidates.o: ps_bitmap.hxx
 ps_eval_candidates.o: ps_bitset.hxx
 ps_eval_candidates.o: ps_candidate.hxx
@@ -202,9 +208,11 @@ ps_eval_candidates.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_eval_candidates.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_eval_candidates.o: $(ARBHOME)/INCLUDE/test_global.h
 
+ps_filebuffer.o: ps_assert.hxx
 ps_filebuffer.o: ps_filebuffer.hxx
 ps_filebuffer.o: $(ARBHOME)/INCLUDE/arbtools.h
 
+ps_find_probes.o: ps_assert.hxx
 ps_find_probes.o: ps_bitmap.hxx
 ps_find_probes.o: ps_bitset.hxx
 ps_find_probes.o: ps_candidate.hxx
@@ -220,6 +228,7 @@ ps_find_probes.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_find_probes.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_find_probes.o: $(ARBHOME)/INCLUDE/test_global.h
 
+ps_get_probes.o: ps_assert.hxx
 ps_get_probes.o: ps_defs.hxx
 ps_get_probes.o: ps_filebuffer.hxx
 ps_get_probes.o: ps_pg_tree_functions.hxx
@@ -237,6 +246,7 @@ ps_get_probes.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/test_global.h
 
+ps_merge_my_dbs.o: ps_assert.hxx
 ps_merge_my_dbs.o: ps_database.hxx
 ps_merge_my_dbs.o: ps_defs.hxx
 ps_merge_my_dbs.o: ps_filebuffer.hxx
@@ -249,6 +259,7 @@ ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/test_global.h
 
+ps_my2ascii.o: ps_assert.hxx
 ps_my2ascii.o: ps_defs.hxx
 ps_my2ascii.o: ps_filebuffer.hxx
 ps_my2ascii.o: ps_node.hxx
@@ -259,6 +270,7 @@ ps_my2ascii.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_my2ascii.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_my2ascii.o: $(ARBHOME)/INCLUDE/test_global.h
 
+ps_my2asciipaths.o: ps_assert.hxx
 ps_my2asciipaths.o: ps_defs.hxx
 ps_my2asciipaths.o: ps_filebuffer.hxx
 ps_my2asciipaths.o: ps_node.hxx
@@ -269,6 +281,7 @@ ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/test_global.h
 
+ps_node.o: ps_assert.hxx
 ps_node.o: ps_defs.hxx
 ps_node.o: ps_filebuffer.hxx
 ps_node.o: ps_node.hxx
@@ -279,6 +292,7 @@ ps_node.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_node.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_node.o: $(ARBHOME)/INCLUDE/test_global.h
 
+ps_show_result.o: ps_assert.hxx
 ps_show_result.o: ps_bitmap.hxx
 ps_show_result.o: ps_bitset.hxx
 ps_show_result.o: ps_defs.hxx

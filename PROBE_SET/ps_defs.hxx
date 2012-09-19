@@ -67,18 +67,6 @@ struct PS_Callback {
     virtual void callback(void *_caller) = 0;
 };
 
-#ifndef NDEBUG
-# define ps_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
-# ifndef DEBUG
-#  error DEBUG is NOT defined - but it has to!
-# endif
-#else
-# ifdef DEBUG
-#  error DEBUG is defined - but it should not!
-# endif
-# define ps_assert(bed)
-#endif // NDEBUG
-
 #else
 #error ps_defs.hxx included twice
 #endif
