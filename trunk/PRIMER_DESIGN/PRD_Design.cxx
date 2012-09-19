@@ -41,6 +41,8 @@ void PrimerDesign::init (const char *sequence_, long int seqLength_,
     list2     = 0;
     pairs     = 0;
 
+    reset_node_counters();
+
     setPositionalParameters (pos1_, pos2_, length_, distance_);
     setConditionalParameters(ratio_, temperature_, min_dist_to_next_, expand_IUPAC_Codes_, max_count_primerpairs_, GC_factor_, temp_factor_);
 }
@@ -295,14 +297,10 @@ void PrimerDesign::buildPrimerTrees ()
     if (root2) delete root2;
     root1 = new Node();
     root2 = new Node();
-    total_node_counter_left   = 0;
-    total_node_counter_right  = 0;
-    primer_node_counter_left  = 0;
-    primer_node_counter_right = 0;
 
-    //
+    reset_node_counters();
+
     // init iterator with sequence
-    //
     SequenceIterator *sequence_iterator = new SequenceIterator(sequence);
     char  base;
     int   child_index;
