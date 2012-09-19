@@ -18,34 +18,34 @@ using namespace std;
 //      Constructors
 
 SEC_segment::SEC_segment()
-    : alpha(0)
-    , center1(Origin)
-    , center2(Origin)
-    , next_helix_strand(0)
-    , loop(0)
+    : alpha(0),
+      center1(Origin),
+      center2(Origin),
+      next_helix_strand(0),
+      loop(0)
 {}
 
 SEC_helix_strand::SEC_helix_strand()
-    : origin_loop(0)
-    , other_strand(0)
-    , helix_info(0)
-    , next_segment(0)
-    , fixpoint(Origin)
-    , rightAttach(Origin)
-    , leftAttach(Origin)
+    : origin_loop(0),
+      other_strand(0),
+      helix_info(0),
+      next_segment(0),
+      fixpoint(Origin),
+      rightAttach(Origin),
+      leftAttach(Origin)
 {}
 
 SEC_loop::SEC_loop(SEC_root *root_)
-    : SEC_base(root_)
-    , Circumference(0)
-    , center(0, 0)
-    , primary_strand(0)
+    : SEC_base(root_),
+      Circumference(0),
+      center(0, 0),
+      primary_strand(0)
 {}
 
 SEC_helix::SEC_helix(SEC_root *root_, SEC_helix_strand *to_root, SEC_helix_strand *from_root)
-    : SEC_base(root_)
-    , strand_to_root(to_root)
-    , base_length(0)
+    : SEC_base(root_),
+      strand_to_root(to_root),
+      base_length(0)
 {
     sec_assert(to_root->get_helix()     == 0);
     sec_assert(from_root->get_helix()   == 0);
@@ -61,20 +61,23 @@ SEC_helix::SEC_helix(SEC_root *root_, SEC_helix_strand *to_root, SEC_helix_stran
 
 
 SEC_root::SEC_root()
-    : root_loop(0)
-    , cursorAbsPos(-1)
-    , xString(0)
-    , constructing(false)
-    , db(0)
-    , bg_color(0)
-    , autoscroll(0)
-    , nailedAbsPos(-1)
-    , drawnPositions(0)
-    , cursor_line(LineVector(Origin, ZeroVector))
-    , show_constraints(SEC_NO_TYPE)
+    : root_loop(0),
+      cursorAbsPos(-1),
+      xString(0),
+      constructing(false),
+      db(0),
+      bg_color(0),
+      autoscroll(0),
+      nailedAbsPos(-1),
+      drawnPositions(0),
+      cursor_line(LineVector(Origin, ZeroVector)),
+      show_constraints(SEC_NO_TYPE)
 {
+    for (int i = 0; i<SEC_GC_DATA_COUNT; ++i) {
+        charRadius[i]   = -1.0;
+        bg_linewidth[i] = -1.0;
+    }
 }
-
 
 void SEC_root::init(SEC_graphic *gfx, AWT_canvas *scr, ED4_plugin_host& Host) {
     db = new SEC_db_interface(gfx, scr, Host);
@@ -467,10 +470,7 @@ static void findLongestHelix(const BI_helix *helix, size_t& start1, size_t& end1
         }
     }
 
-    if (lastHelixLen>longestLength) {
-        longestLength  = lastHelixLen;
-        longestHelixNr = lastHelixNr;
-    }
+    if (lastHelixLen>longestLength) longestHelixNr = lastHelixNr;
 
     sec_assert(longestHelixNr);
     start1 = helix->first_position(longestHelixNr);
