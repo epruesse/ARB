@@ -104,38 +104,35 @@ void importDialog::createWindow()
     updateARBText();
 }
 
-
-
-
-
-
-
 /****************************************************************************
-*  MAIN DIALOG - SET SPECIES NAME
-****************************************************************************/
+ *  MAIN DIALOG - SET SPECIES NAME
+ ****************************************************************************/
 void importDialog::setSpecies(char *species)
 {
-    m_species= (char *)malloc((strlen(species) +1)*sizeof(char));
+    free(m_species);
+    m_species = (char *)malloc((strlen(species) +1)*sizeof(char));
     strcpy(m_species, species);
 }
 
 
 /****************************************************************************
-*  MAIN DIALOG - SET EXPERIMENT NAME
-****************************************************************************/
+ *  MAIN DIALOG - SET EXPERIMENT NAME
+ ****************************************************************************/
 void importDialog::setExperiment(char *experiment)
 {
-    m_experiment= (char *)malloc((strlen(experiment) +1)*sizeof(char));
+    free(m_experiment);
+    m_experiment = (char *)malloc((strlen(experiment) +1)*sizeof(char));
     strcpy(m_experiment, experiment);
 }
 
 
 /****************************************************************************
-*  MAIN DIALOG - SET PROTEOME NAME
-****************************************************************************/
+ *  MAIN DIALOG - SET PROTEOME NAME
+ ****************************************************************************/
 void importDialog::setProteome(char *proteome)
 {
-    m_proteome= (char *)malloc((strlen(proteome) +1)*sizeof(char));
+    free(m_proteome);
+    m_proteome = (char *)malloc((strlen(proteome) +1)*sizeof(char));
     strcpy(m_proteome, proteome);
 }
 

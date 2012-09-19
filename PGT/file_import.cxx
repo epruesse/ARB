@@ -132,13 +132,8 @@ static void identifyColumns(importTable *table)
 importTable *fileopenCSV(char *filename, int delimiter)
 {
     // DEFINE VARIABLES
-    int inconsistencies= 0;
-    int rows=            0;
-    int total_columns=   0;
-    int local_columns=   0;
-    int cell_index;
-    int cell_size;
-    char **cells;
+    int   rows          = 0;
+    int   total_columns = 0;
     char *cell;
     char *start_ptr;
     char *end_ptr;
@@ -158,11 +153,12 @@ importTable *fileopenCSV(char *filename, int delimiter)
     {
         // PASS 1: GET CSV TABLE SIZE AND FIND INCONSISTENCIES
 
+        int inconsistencies = 0;
         while(iS.getline(buffer, 10240))
         {
             rows++;
-            local_columns= 0;
-            start_ptr= buffer;
+            int local_columns = 0;
+            start_ptr         = buffer;
 
             if(*start_ptr)
             {
@@ -211,8 +207,8 @@ importTable *fileopenCSV(char *filename, int delimiter)
         table= createImportTable(rows, total_columns);
         if(!table) return NULL;
 
-        cells      = table->cell;
-        cell_index = 0;
+        char **cells      = table->cell;
+        int    cell_index = 0;
 
         while(iS.getline(buffer, 10240))
         {
@@ -227,8 +223,8 @@ importTable *fileopenCSV(char *filename, int delimiter)
                     *(end_ptr-1)= 0;
                 }
 
-                cell_size= (int)(end_ptr - start_ptr) + 1;
-                cell= (char *)malloc(cell_size * sizeof(char));
+                int cell_size = (int)(end_ptr - start_ptr) + 1;
+                cell          = (char *)malloc(cell_size * sizeof(char));
 
                 *end_ptr= 0;
                 strncpy(cell, start_ptr, cell_size);
@@ -238,11 +234,12 @@ importTable *fileopenCSV(char *filename, int delimiter)
 
                 start_ptr= end_ptr + 1;
             }
-            end_ptr= start_ptr;
+
+            end_ptr = start_ptr;
             while((*end_ptr) && (*end_ptr != 0x0D) && (*end_ptr != 0x0A)) end_ptr++;
 
-            cell_size= (int)(end_ptr - start_ptr) + 1;
-            cell= (char *)malloc(cell_size * sizeof(char));
+            int cell_size = (int)(end_ptr - start_ptr) + 1;
+            cell          = (char *)malloc(cell_size * sizeof(char));
 
             *end_ptr= 0;
             strncpy(cell, start_ptr, cell_size);

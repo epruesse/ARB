@@ -156,15 +156,15 @@ imageDialog::~imageDialog()
     del_imageDialog_callback(AWAR_CONFIG_CHANGED, static_PGT_config_callback,  this);
     
     // FREE CLASS MEMBER STRINGS
-    if(m_species) free(m_species);
-    if(m_experiment) free(m_experiment);
-    if(m_proteome) free(m_proteome);
+    free(m_species);
+    free(m_experiment);
+    free(m_proteome);
 
     // FREE m_descriptorList
     map<char*, char*, ltstr>::iterator descr_it;
 
     for(descr_it= m_descriptorList.begin();
-        descr_it != m_descriptorList.end(); descr_it++)
+        descr_it != m_descriptorList.end(); ++descr_it)
     {
         free(((*descr_it).first));
         free(((*descr_it).second));
@@ -175,7 +175,7 @@ imageDialog::~imageDialog()
     map<char *, GBDATA*, ltstr>::iterator gb_it;
 
     for(gb_it= m_gene_GBDATA_map.begin();
-        gb_it != m_gene_GBDATA_map.end(); gb_it++)
+        gb_it != m_gene_GBDATA_map.end(); ++gb_it)
     {
         free(((*gb_it).first));
     }
@@ -184,7 +184,7 @@ imageDialog::~imageDialog()
     // FREE m_spotList
     vector<SPOT>::iterator spot_it;
 
-    for(spot_it= m_spotList.begin(); spot_it != m_spotList.end(); spot_it++)
+    for(spot_it= m_spotList.begin(); spot_it != m_spotList.end(); ++spot_it)
     {
         if((*spot_it).id) free((*spot_it).id);
     }
@@ -1178,9 +1178,7 @@ void imageDialog::set_ARB_image_path(const char *path)
 {
     if(!m_hasARBdata) return;
 
-    GBDATA *gb_proteom;
-
-    gb_proteom= find_proteome(m_species, m_experiment, m_proteome);
+    GBDATA *gb_proteom= find_proteome(m_species, m_experiment, m_proteome);
 
     if(gb_proteom)
     {
@@ -1320,8 +1318,7 @@ int imageDialog::fillBlankImage()
     getSpotMaxDimensions();
 
     // EXIT, IF SIZE IS TOO SMALL
-    if((m_width < MIN_IMAGE_SIZE) && (m_width < MIN_IMAGE_SIZE))
-        return -1;
+    if (m_width<MIN_IMAGE_SIZE || m_height<MIN_IMAGE_SIZE) return -1; 
 
     // CREATE A PIXMAP, IF NOT ALREADY DONE...
     if(!m_hasImagedata) m_pixmap = XCreatePixmap(display, window, m_width, m_height, XDefaultDepth(display, 0));
@@ -1575,7 +1572,7 @@ bool imageDialog::getSettings()
 
     if(textColor)
     {
-        if(strlen(selectedColor) != 7) textColor= strdup(DEFAULT_COLOR_SELECTED);
+        if(selectedColor && strlen(selectedColor) != 7) textColor= strdup(DEFAULT_COLOR_SELECTED);
 
         hex2rgb(&m_textColor.r,
                 &m_textColor.g,
@@ -1612,7 +1609,7 @@ void imageDialog::drawSpots()
     vector<SPOT>::iterator spot_it;
 
     // DO WE HAVE SPOT ENTRIES?
-    if(m_spotList.size() == 0) return;
+    if (m_spotList.empty()) return;
 
 
     // RESET SPOT COUNTER VALUES
@@ -1708,8 +1705,6 @@ static void staticImageEventCallback(Widget widget, XtPointer clientData, XtPoin
 ****************************************************************************/
 void imageDialog::imageEventCallback(Widget, XtPointer callData)
 {
-    int x= 0, y= 0, button= 0;
-
     // FETCH CALLBACKSTRUCT + EVENT
     XmDrawingAreaCallbackStruct *cbs= (XmDrawingAreaCallbackStruct *)callData;
     XEvent *event= (XEvent *)cbs->event;
@@ -1717,11 +1712,11 @@ void imageDialog::imageEventCallback(Widget, XtPointer callData)
     if(event->xany.type == ButtonPress)
     {
         // GET COORDINATES
-        x= event->xbutton.x;
-        y= event->xbutton.y;
+        int x = event->xbutton.x;
+        int y = event->xbutton.y;
 
         // GET PRESSED BUTTON
-        button= event->xbutton.button;
+        int button = event->xbutton.button;
 
         // SELECT OR MARK BUTTON NEXT TO POS (X,Y)
         markSpotAtPos(button, x, y);
@@ -1729,7 +1724,7 @@ void imageDialog::imageEventCallback(Widget, XtPointer callData)
         // CREATE A NEW SPOT LIST
         createSpotList();
 
-       // REDRAW IMAGE
+        // REDRAW IMAGE
         imageRedraw();
     }
 }
@@ -1740,58 +1735,51 @@ void imageDialog::imageEventCallback(Widget, XtPointer callData)
 ****************************************************************************/
 void imageDialog::markSpotAtPos(int button, int x, int y)
 {
-    // LOCAL VARIABLES
-    GBDATA *gb_data= NULL;
-    GBDATA *gb_proteine_data= NULL;
-    GBDATA *gb_protein= NULL;
-    GBDATA *gb_nearest_protein= NULL;
-    GBDATA *gb_protein_x= NULL;
-    GBDATA *gb_protein_y= NULL;
-    GBDATA *gb_protein_name= NULL;
-    char *protein_name= NULL;
-    float protein_x, protein_y;
-    float delta, nearest_delta= 99999;
-    float sqx, sqy;
-    float fx= (float)x;
-    float fy= (float)y;
-
     // GET MAIN ARB GBDATA
-    gb_data= get_gbData();
+    GBDATA *gb_data = get_gbData();
     if(!gb_data) return;
 
     // FIND SELECTED PROTEOME/PROTEINE_DATA
-    gb_proteine_data= find_proteine_data(m_species, m_experiment, m_proteome);
+    GBDATA *gb_proteine_data= find_proteine_data(m_species, m_experiment, m_proteome);
     if(!gb_proteine_data) return;
 
     // INIT AN ARB TRANSACTION
     ARB_begin_transaction();
 
+    float fx = (float)x;
+    float fy = (float)y;
+
     // BROWSE ALL PROTEIN ENTRIES...
-    gb_protein= GB_entry(gb_proteine_data, "protein");
+    GBDATA *gb_protein         = GB_entry(gb_proteine_data, "protein");
+    GBDATA *gb_nearest_protein = NULL;
+    char   *protein_name       = NULL;
+    float   nearest_delta      = 99999;
+
     while(gb_protein)
     {
         // FETCH COORDINATE CONTAINER
-        gb_protein_x= GB_entry(gb_protein, m_x_container);
-        gb_protein_y= GB_entry(gb_protein, m_y_container);
+        GBDATA *gb_protein_x = GB_entry(gb_protein, m_x_container);
+        GBDATA *gb_protein_y = GB_entry(gb_protein, m_y_container);
 
         if(gb_protein_x && gb_protein_y)
         {
             // READ COORDINATES FROM THE CONTAINER
-            protein_x= GB_read_float(gb_protein_x);
-            protein_y= GB_read_float(gb_protein_y);
+            float protein_x = GB_read_float(gb_protein_x);
+            float protein_y = GB_read_float(gb_protein_y);
 
             // CALCULATE DIAGONAL LENGTH
-            sqx= (fx - protein_x) * (fx - protein_x);
-            sqy= (fy - protein_y) * (fy - protein_y);
-            delta= sqrt(sqx + sqy);
+            float sqx = (fx - protein_x) * (fx - protein_x);
+            float sqy = (fy - protein_y) * (fy - protein_y);
+
+            float delta = sqrt(sqx + sqy);
 
             if(delta < nearest_delta)
             {
                 gb_nearest_protein= gb_protein;
                 nearest_delta= delta;
 
-                gb_protein_name= GB_entry(gb_protein, m_id_container);
-                protein_name= GB_read_string(gb_protein_name);
+                GBDATA *gb_protein_name = GB_entry(gb_protein, m_id_container);
+                protein_name            = GB_read_string(gb_protein_name);
             }
         }
 
@@ -1876,41 +1864,35 @@ static void static_ARB_gene_callback(GBDATA *, imageDialog *iD, GB_CB_TYPE)
 ****************************************************************************/
 void imageDialog::ARB_gene_callback()
 {
-    char *awar_selected_gene=NULL;
-    char *config_gene_id=NULL;
-    char *name= NULL;
-    char *id= NULL;
-    GBDATA *gb_genome, *gb_gene, *gb_gene_name, *gb_gene_id;
-
     if(!m_lockVisualization && !m_changeInProgress)
     {
         // FETCH GENE AWAR CONTENT & CONFIG
-        awar_selected_gene= get_gene_AWAR();
-        config_gene_id= get_CONFIG(CONFIG_PGT_ID_GENE);
+        char *awar_selected_gene = get_gene_AWAR();
+        char *config_gene_id     = get_CONFIG(CONFIG_PGT_ID_GENE);
 
-        gb_genome= find_genome(m_species);
+        GBDATA *gb_genome= find_genome(m_species);
         if(!gb_genome) return;
 
         // INIT AN ARB TRANSACTION
         ARB_begin_transaction();
 
-        gb_gene= GB_entry(gb_genome, "gene");
+        GBDATA *gb_gene= GB_entry(gb_genome, "gene");
 
         while(gb_gene)
         {
-            gb_gene_name= GB_entry(gb_gene, "name");
+            GBDATA *gb_gene_name= GB_entry(gb_gene, "name");
 
             if(gb_gene_name)
             {
-                name= GB_read_as_string(gb_gene_name);
+                char *name = GB_read_as_string(gb_gene_name);
 
                 if(name && (!strcmp(name, awar_selected_gene)))
                 {
-                    gb_gene_id= GB_entry(gb_gene, config_gene_id);
+                    GBDATA *gb_gene_id= GB_entry(gb_gene, config_gene_id);
 
                     if(gb_gene_id)
                     {
-                        id= GB_read_as_string(gb_gene_id);
+                        char *id = GB_read_as_string(gb_gene_id);
                         set_protein_AWAR(id);
                         break;
                     }
@@ -2008,11 +1990,11 @@ void imageDialog::genGeneKey(char *buf, char *spot_id, float x, float y)
 
     if((spot_id != NULL) && (strlen(spot_id) > 0))
     {
-        sprintf(buf, "%s_%d_%d", spot_id, i_x, i_y);
+        sprintf(buf, "%s_%u_%u", spot_id, i_x, i_y);
     }
     else
     {
-        sprintf(buf, "0_%d_%d", i_x, i_y);
+        sprintf(buf, "0_%u_%u", i_x, i_y);
     }
 }
 
@@ -2171,7 +2153,7 @@ bool imageDialog::createDescriptions()
     map<char*, char*, ltstr>::iterator descr_it;
 
     for(descr_it= m_descriptorList.begin();
-        descr_it != m_descriptorList.end(); descr_it++)
+        descr_it != m_descriptorList.end(); ++descr_it)
     {
         free(((*descr_it).first));
         free(((*descr_it).second));
@@ -2185,7 +2167,7 @@ bool imageDialog::createDescriptions()
     map<char *, GBDATA*, ltstr>::iterator gb_it;
 
     for(gb_it= m_gene_GBDATA_map.begin();
-        gb_it != m_gene_GBDATA_map.end(); gb_it++)
+        gb_it != m_gene_GBDATA_map.end(); ++gb_it)
     {
         free(((*gb_it).first));
     }
@@ -2327,24 +2309,21 @@ bool imageDialog::createDescriptions()
 ****************************************************************************/
 bool imageDialog::updateSelectedGene()
 {
-    char *awar_selected_protein, *name= NULL;
-    GBDATA *gb_genome, *gb_gene, *gb_name;
-
     // FETCH GENOME
-    gb_genome= find_genome(m_species);
+    GBDATA *gb_genome = find_genome(m_species);
     if(!gb_genome) return false;
 
     // FETCH PROTEIN AWAR CONTENT
-    awar_selected_protein= get_protein_AWAR();
+    char *awar_selected_protein = get_protein_AWAR();
 
     // FETCH GENE
-    gb_gene= m_gene_GBDATA_map[awar_selected_protein];
-
+    GBDATA *gb_gene = m_gene_GBDATA_map[awar_selected_protein];
+    char   *name    = NULL;
     if(gb_gene)
     {
         ARB_begin_transaction();
 
-        gb_name= GB_entry(gb_gene, "name");
+        GBDATA *gb_name= GB_entry(gb_gene, "name");
         name= GB_read_string(gb_name);
 
         ARB_commit_transaction();
