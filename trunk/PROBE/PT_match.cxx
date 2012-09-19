@@ -351,14 +351,11 @@ static void pt_build_pos_to_weight(PT_MATCH_TYPE type, const char *sequence) {
 int probe_match(PT_local * locs, aisc_string probestring) {
     //! find out where a given probe matches
 
-    PT_probematch *ml;
-    char          *rev_pro;
-
     freedup(locs->pm_sequence, probestring);
     psg.main_probe = locs->pm_sequence;
 
     compress_data(probestring);
-    while ((ml = locs->pm)) destroy_PT_probematch(ml);
+    while (PT_probematch *ml = locs->pm) destroy_PT_probematch(ml);
     locs->matches_truncated = 0;
 
 #if defined(DEBUG) && 0
@@ -411,11 +408,11 @@ int probe_match(PT_local * locs, aisc_string probestring) {
     get_info_about_probe(locs, probestring, psg.pt, 0, 0.0, 0, 0);
 
     if (locs->pm_reversed) {
-        psg.reversed = 1;
-        rev_pro      = reverse_probe(probestring);
+        psg.reversed  = 1;
+        char *rev_pro = reverse_probe(probestring);
         complement_probe(rev_pro);
         freeset(locs->pm_csequence, psg.main_probe = strdup(rev_pro));
-        
+
         get_info_about_probe(locs, rev_pro, psg.pt, 0, 0.0, 0, 0);
         free(rev_pro);
     }
