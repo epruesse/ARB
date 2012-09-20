@@ -472,7 +472,7 @@ inline POS_TREE *PT_read_son(POS_TREE *node, PT_BASES base)
         }
 #else
         if (sec & LONG_SONS) {
-            offset = i+i;
+            UINT offset = i+i;
             if ((1<<base) & sec) {
                 PT_READ_INT((&node->data+1)+offset, i);
             }
@@ -481,7 +481,7 @@ inline POS_TREE *PT_read_son(POS_TREE *node, PT_BASES base)
             }
         }
         else {
-            offset = i;
+            UINT offset = i;
             if ((1<<base) & sec) {
                 PT_READ_SHORT((&node->data+1)+offset, i);
             }
