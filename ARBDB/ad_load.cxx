@@ -1620,7 +1620,6 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                 else {
                     if (input != stdin) fclose(input);
                     error = gb_read_ascii(path, gbd);
-                    if (error) GB_warning(error);
                     GB_disable_quicksave((GBDATA *)gbd, "Sorry, I cannot save differences to ascii files\n"
                                          "  Save whole database in binary mode first");
                 }
@@ -1681,7 +1680,7 @@ GB_ERROR GBT_check_arb_file(const char *name) { // goes to header: __ATTR__USERE
      */
 
     GB_ERROR error = NULL;
-    if (strchr(name, ':') != 0)  { // don't check remote DB
+    if (!strchr(name, ':'))  { // don't check remote DB
         FILE *in = fopen(name, "rb");
         if (!in) {
             error = GBS_global_string("Cannot find file '%s'", name);
