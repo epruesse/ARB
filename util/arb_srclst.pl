@@ -342,44 +342,58 @@ sub useFile($$) {
 
 # ------------------------------------------------------------
 
+my $svn_entries_read = 0;
+my %all_svn_entries = ();
+
 sub getSVNEntries($\%) {
   my ($dir,$SVN_r) = @_;
 
-  my $svnentries = $dir.'/.svn/entries';
-  if (-f $svnentries) {
-    open(SVN,'<'.$svnentries) || die "can't read '$svnentries' (Reason: $!)";
-    # print "reading $svnentries\n";
+  if ($svn_entries_read==0) { # first call
+    my $svnentries = $dir.'/.svn/entries';
+    if (not -f $svnentries) {
+      return 0;
+    }
+
+    my $cmd = "svn list -R $dir";
+    open(SVNLIST, "$cmd|") || die "failed to execute '$cmd' (Reason: $!)";
 
     my $line;
-  LINE: while (defined($line=<SVN>)) {
-      if (length($line)==2 and ord($line)==12) { # entrymarker (^L)
-        my $name=<SVN>;
-        my $type=<SVN>;
-
-        defined $name or last LINE;
-        defined $type or die "Expected two or no lines after ^L";
-
-        chomp($name);
-        chomp($type);
-
-        if ($type eq 'file') {
-          $$SVN_r{$name} = 1;
-        }
-        elsif ($type eq 'dir') {
-          $$SVN_r{$name} = 2;
-        }
-        else {
-          die "Unknown type '$type' for '$name' in $svnentries";
-        }
-        # print "name='$name' type='$type'\n";
+    while (defined($line=<SVNLIST>)) {
+      chomp($line);
+      if ($line =~ /\/$/) {
+        $all_svn_entries{$`} = 2; # dir
+      }
+      else {
+        $all_svn_entries{$line} = 1; # file
       }
     }
 
-    close(SVN);
-    return 1;
+    close(SVNLIST);
+    $svn_entries_read = 1;
   }
-  print "No such file: '$svnentries'\n";
-  return 0;
+
+  if ($dir eq '.') {
+    foreach (keys %all_svn_entries) {
+      if (not /\//) { # root entry
+        $$SVN_r{$_} = $all_svn_entries{$_};
+      }
+    }
+  }
+  else {
+    if (not $dir =~ /^\.\//) { die "expected '$dir' to start with './'"; }
+    my $sdir = $';
+    my $reg_matchdir = qr/^$sdir\//;
+    foreach (keys %all_svn_entries) {
+      if ($_ =~ $reg_matchdir) {
+        my $rest = $';
+        if (not $rest =~ /\//) { # in $dir (not below)
+          $$SVN_r{$rest} = $all_svn_entries{$_};
+        }
+      }
+    }
+  }
+
+  return 1;
 }
 
 sub getCVSEntries($\%) {
