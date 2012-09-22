@@ -354,21 +354,42 @@ sub getSVNEntries($\%) {
       return 0;
     }
 
-    my $cmd = "svn list -R $dir";
-    open(SVNLIST, "$cmd|") || die "failed to execute '$cmd' (Reason: $!)";
+    my $cmd = "svn status -v $dir";
+    open(SVNSTATUS, "$cmd|") || die "failed to execute '$cmd' (Reason: $!)";
 
-    my $line;
-    while (defined($line=<SVNLIST>)) {
-      chomp($line);
-      if ($line =~ /\/$/) {
-        $all_svn_entries{$`} = 2; # dir
+    eval {
+      my $reg_status_line = qr/^(.*)\s+[0-9]+\s+[0-9]+\s+[^\s]+\s+([^\s]+)$/;
+
+      my $line;
+      while (defined($line=<SVNSTATUS>)) {
+        chomp($line);
+        if ($line =~ $reg_status_line) {
+          my ($flags,$name) = ($1,$2);
+          if (-f $name) {
+            $all_svn_entries{$name} = 1; # file
+          }
+          elsif (-d $name) {
+            $all_svn_entries{$name} = 2; # dir
+          }
+          else {
+            die "Neighter file nor dir: $name";
+          }
+        }
+        else {
+          if ($line =~ /^?/) {
+            ; # silently ignore unknown files
+          }
+          else {
+            die "Cant parse line '$line'";
+          }
+        }
       }
-      else {
-        $all_svn_entries{$line} = 1; # file
-      }
+    };
+    if ($@) {
+      die "Failed to read svn status: $@";
     }
 
-    close(SVNLIST);
+    close(SVNSTATUS);
     $svn_entries_read = 1;
   }
 
