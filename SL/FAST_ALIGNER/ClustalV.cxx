@@ -153,10 +153,10 @@ static inline int master_gapAtWithOpenPenalty(int atPosition, int length, int pe
 
     while (length--)
     {
-        int p1, p2;
+        int p1 = master_gap_extend(beforePosition);
+        int p2 = master_gap_extend(afterPosition+1);
 
-        if ((p1=master_gap_extend(beforePosition)) < (p2=master_gap_extend(afterPosition+1)) &&
-            beforePosition>1)
+        if (p1<p2 && beforePosition>1)
         {
             penalty += p1;
             beforePosition--;
@@ -249,12 +249,10 @@ static int baseCmp(unsigned char c1, unsigned char c2)    // c1,c2 == 1=A,2=C (=
         }
     }
 
-    int i;
     int bestMatch = 3;
-
     if (c1<=COMPARABLE_BASES)
     {
-        for (i=1; i<=COMPARABLE_BASES; i++)
+        for (int i=1; i<=COMPARABLE_BASES; i++)
         {
             if (isalpha(nucleic_maybe[i][c2]))          // 'c2' maybe a 'i'
             {
@@ -265,7 +263,7 @@ static int baseCmp(unsigned char c1, unsigned char c2)    // c1,c2 == 1=A,2=C (=
     }
     else
     {
-        for (i=1; i<=COMPARABLE_BASES; i++)
+        for (int i=1; i<=COMPARABLE_BASES; i++)
         {
             if (isalpha(nucleic_maybe[i][c1]))          // 'c1' maybe a 'i'
             {
@@ -387,15 +385,13 @@ static ARB_ERROR init_myers(long max_seq_length) {
 
 static void make_pamo(int nv)
 {
-    int i, c;
-
     little_pam=big_pam=matptr[0];
-    for (i=0; i<210; ++i) {
-        c=matptr[i];
+    for (int i=0; i<210; ++i) {
+        int c=matptr[i];
         little_pam=(little_pam<c) ? little_pam : c;
         big_pam=(big_pam>c) ? big_pam : c;
     }
-    for (i=0; i<210; ++i)
+    for (int i=0; i<210; ++i)
         pamo[i] = matptr[i]-little_pam;
     nv -= little_pam;
     big_pam -= little_pam;
@@ -408,33 +404,31 @@ static void make_pamo(int nv)
 
 static void fill_pam()
 {
-    int i, j, pos;
+    int pos = 0;
 
-    pos=0;
-
-    for (i=0; i<20; ++i)
-        for (j=0; j<=i; ++j)
+    for (int i=0; i<20; ++i)
+        for (int j=0; j<=i; ++j)
             pam[i][j]=pamo[pos++];
 
-    for (i=0; i<20; ++i)
-        for (j=0; j<=i; ++j)
+    for (int i=0; i<20; ++i)
+        for (int j=0; j<=i; ++j)
             pam[j][i]=pam[i][j];
 
     if (dnaflag)
     {
         xover=4;
         big_pam=8;
-        for (i=0; i<=NUCLEIDS; ++i)
-            for (j=0; j<=NUCLEIDS; ++j)
+        for (int i=0; i<=NUCLEIDS; ++i)
+            for (int j=0; j<=NUCLEIDS; ++j)
                 weights[i][j] = getPenalty(i, j);
     }
     else {
-        for (i=1; i<MAX_BASETYPES; ++i) {
-            for (j=1; j<MAX_BASETYPES; ++j) {
+        for (int i=1; i<MAX_BASETYPES; ++i) {
+            for (int j=1; j<MAX_BASETYPES; ++j) {
                 weights[i][j] = big_pam - pam[i-1][j-1];
             }
         }
-        for (i=0; i<MAX_BASETYPES; ++i) {
+        for (int i=0; i<MAX_BASETYPES; ++i) {
             weights[0][i] = xover;
             weights[i][0] = xover;
         }
@@ -515,7 +509,7 @@ static MAXN_2(inline) int calc_weight(int iat, int jat, int v1, int v2)
 #else
     int sum, i, lookn, ret;
     int ipos, jpos;
-
+    
     ipos = v1 + iat -1;
     jpos = v2 + jat -1;
 
@@ -613,10 +607,6 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
  * returns  costs for inserted gaps
  */
 {
-    int ctrc, ctri, ctrj=0,
-        i, j, k, l, m, n, p,
-        flag;
-
 #ifdef DEBUG
 # ifdef MATRIX_DUMP
     int display_matrix = 0;
@@ -670,6 +660,7 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
         return master_gapAt(v1, v3);
     }
 
+    int ctrj = 0;
     if (v3<=1) {
         if (v3<=0) {                                            // if master sequence is empty
             add(v4);                                            // ??? insert gap length 'v4' into master ???
@@ -687,12 +678,12 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
 
             //!*************if(!v4)*********BUG*******************************
 
-            ctrc = slave_gapAtWithOpenPenalty(v2, v4, st);
+            int ctrc = slave_gapAtWithOpenPenalty(v2, v4, st);
             ctrj = 0;
 
-            for (j=1; j<=v4; ++j)
+            for (int j=1; j<=v4; ++j)
             {
-                k = slave_gapAt(v2, j-1) + calc_weight(1, j, v1, v2) + slave_gapAt(v2+j, v4-j);
+                int k = slave_gapAt(v2, j-1) + calc_weight(1, j, v1, v2) + slave_gapAt(v2+j, v4-j);
                 if (k<ctrc) { ctrc = k; ctrj = j; }
             }
 
@@ -726,8 +717,8 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
     // first column of matrix (slave side):
     IF_MATRIX_DUMP(vertical[0][0]=)
         zza[0] = 0;
-    p = master_gap_open(v1);
-    for (j=1; j<=v4; j++)
+    int p = master_gap_open(v1);
+    for (int j=1; j<=v4; j++)
     {
         p += master_gap_extend(v1);
         IF_MATRIX_DUMP(vertical[0][j]=)
@@ -738,25 +729,26 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
 
     // left half of the matrix
     p = st;
-    ctri = v3 / 2;
-    for (i=1; i<=ctri; i++)
+    int ctri = v3 / 2;
+    for (int i=1; i<=ctri; i++)
     {
-        n = zza[0];
+        int n = zza[0];
         p += master_gap_extend(v1+i+AF);
-        k = p;
+        int k = p;
         IF_MATRIX_DUMP(vertical[i][0]=)
             zza[0] = k;
-        l = p + master_gap_open(v1+i+AF);
+        int l = p + master_gap_open(v1+i+AF);
 
-        for (j=1; j<=v4; j++)
+        for (int j=1; j<=v4; j++)
         {
             // from above (gap in master (behind position i))
             IF_MATRIX_DUMP(verticalOpen[i][j]=)         k += master_gap_open(v1+i+AF)+master_gap_extend(v1+i+AF);       // (1)
             IF_MATRIX_DUMP(vertical[i][j]=)             l += master_gap_extend(v1+i+AF);                                // (2)
-            if (k<l) l = k;     // l=min((1),(2))
+            if (k<l) l                                     = k;                                                         // l=min((1),(2))
 
             // from left (gap in slave (behind position j))
             IF_MATRIX_DUMP(horizontalOpen[i][j]=)       k = zza[j] + slave_gap_open(v2+j+AF)+slave_gap_extend(v2+j+AF);         // (3)
+            int m;
             IF_MATRIX_DUMP(horizontal[i][j]=)           m = zzb[j] + slave_gap_extend(v2+j+AF);                                 // (4)
             if (k<m) m = k;     // m=min((3),(4))
 
@@ -765,7 +757,8 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
             if (l<k) k = l;
             if (m<k) k = m;     // k = minimum of all paths
 
-            n = zza[j];         // minimum of same row; one column to the left
+            // cppcheck-suppress unreadVariable
+            n      = zza[j];    // minimum of same row; one column to the left
             zza[j] = k;         // minimum of all paths to this matrix position
             zzb[j] = m;         // minimum of those two paths, where gap was inserted into slave
         }
@@ -780,7 +773,7 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
     IF_MATRIX_DUMP(vertical[v3+1+MHO][v4+1]=)
         zzc[v4]=0;
     p = master_gap_open(v1+v3);
-    for (j=v4-1; j>-1; j--)
+    for (int j=v4-1; j>-1; j--)
     {
         p += master_gap_extend(v1+v3);
         IF_MATRIX_DUMP(vertical[v3+1+MHO][j+BO]=)
@@ -791,24 +784,25 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
 
     // right half of matrix (backwards):
     p = en;
-    for (i=v3-1; i>=ctri; i--)
+    for (int i=v3-1; i>=ctri; i--)
     {
-        n = zzc[v4];
+        int n = zzc[v4];
         p += master_gap_extend(v1+i);
-        k = p;
+        int k = p;
         IF_MATRIX_DUMP(vertical[i+BO+MHO][v4+1]=)
             zzc[v4] = k;
-        l = p+master_gap_open(v1+i);
+        int l = p+master_gap_open(v1+i);
 
-        for (j=v4-1; j>=0; j--)
+        for (int j=v4-1; j>=0; j--)
         {
             // from below (gap in master (in front of position (i+BO)))
             IF_MATRIX_DUMP(verticalOpen[i+BO+MHO][j+BO]=)       k += master_gap_open(v1+i)+master_gap_extend(v1+i);     // (1)
             IF_MATRIX_DUMP(vertical[i+BO+MHO][j+BO]=)           l += master_gap_extend(v1+i);                           // (2)
-            if (k<l) l = k;     // l=min((1),(2))
+            if (k<l) l                                             = k;                                                 // l=min((1),(2))
 
             // from right (gap in slave (in front of position (j+BO)))
             IF_MATRIX_DUMP(horizontalOpen[i+BO+MHO][j+BO]=)     k = zzc[j] + slave_gap_open(v2+j) + slave_gap_extend(v2+j);     // (3)
+            int m;
             IF_MATRIX_DUMP(horizontal[i+BO+MHO][j+BO]=)         m = zzd[j] + slave_gap_extend(v2+j);                            // (4)
             if (k<m) m = k;     // m=min((3),(4))
 
@@ -817,6 +811,7 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
             if (l<k) k = l;
             if (m<k) k = m;     // k = minimum of all paths
 
+            // cppcheck-suppress unreadVariable
             n = zzc[j];         // minimum of same row; one column to the right
             zzc[j] = k;         // minimum of all paths to this matrix position
             zzd[j] = m;         // minimum of those two paths, where gap was inserted into slave
@@ -830,11 +825,12 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
 
     zzd[v4] = zzc[v4];
 
-    ctrc = INT_MAX;
-    flag = 0;
+    int ctrc = INT_MAX;
+    int flag = 0;
 
-    for (j=(ctri ? 0 : 1); j<=v4; j++)
+    for (int j=(ctri ? 0 : 1); j<=v4; j++)
     {
+        int k;
         IF_MATRIX_DUMP(vertical[ctri+MHO][j]=)
             k = zza[j] + zzc[j];                // sum up both calculations (=diagonal=no gaps)
 
@@ -846,8 +842,9 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
         }
     }
 
-    for (j=v4; j>=(ctri ? 0 : 1); j--)
+    for (int j=v4; j>=(ctri ? 0 : 1); j--)
     {
+        int k;
         IF_MATRIX_DUMP(verticalOpen[ctri+MHO][j]=)
             k = zzb[j] + zzd[j]                 // paths where gaps were inserted into slave (left and right side!)
             - slave_gap_open(j);                // subtract gap_open-penalty which was added twice (at left and right end of gap)
@@ -1137,10 +1134,13 @@ ARB_ERROR ClustalV_align(int          is_dna,
 #endif
 
         {
-            void (*encode)(const unsigned char*, unsigned char*, int) = dnaflag ? n_encode : p_encode;
+            typedef void (*encoder)(const unsigned char*, unsigned char*, int);
+            encoder encode = dnaflag ? n_encode : p_encode;
 
+            // cppcheck-suppress uninitvar
             encode((const unsigned char*)(seq1-1), seq_array[1], length1);
             seqlen_array[1] = length1;
+            // cppcheck-suppress uninitvar
             encode((const unsigned char*)(seq2-1), seq_array[2], length2);
             seqlen_array[2] = length2;
 
