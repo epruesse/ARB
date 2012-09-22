@@ -1169,3 +1169,95 @@ void ClustalV_exit()
         exit_myers();
     }
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+static arb_test::match_expectation clustal_aligns(const char *i1, const char *i2, const char *expected1, const char *expected2, int expected_score) {
+    size_t l1 = strlen(i1);
+    size_t l2 = strlen(i2);
+
+    char *result1 = NULL;
+    char *result2 = NULL;
+    int   result_len;
+    int   score;
+
+    int no_gaps_before1[l1];
+    memset(no_gaps_before1, 0, l1*sizeof(*no_gaps_before1));
+
+    ARB_ERROR error = ClustalV_align(0, 0,
+                                     i1, l1,
+                                     i2, l2,
+                                     no_gaps_before1,
+                                     max(l1, l2),
+                                     &result1,
+                                     &result2,
+                                     &result_len,
+                                     &score);
+
+    using namespace   arb_test;
+    expectation_group expected;
+
+    expected.add(doesnt_report_error(error.deliver()));
+    expected.add(that(result1).is_equal_to(expected1));
+    expected.add(that(result2).is_equal_to(expected2));
+    expected.add(that(score).is_equal_to(expected_score));
+
+    return all().ofgroup(expected);
+}
+
+#define TEST_CLUSTAL_ALIGNS(i1,i2,o1,o2,score) TEST_EXPECT(clustal_aligns(i1,i2,o1,o2,score))
+
+void TEST_clustalV() {
+    TEST_CLUSTAL_ALIGNS("ACGTTGCAACGT",
+                        "ACGTTGCAACGT",
+                        "************",
+                        "************",
+                        138);
+
+    TEST_CLUSTAL_ALIGNS("ACGTTAACGT",
+                        "ACGTTGCAACGT",
+                        "*****--*****",
+                        "************",
+                        207);
+    
+    TEST_CLUSTAL_ALIGNS("ACGTTGCAACGT",
+                        "ACCAACGT",
+                        "************",
+                        "*----*******",
+                        156);
+
+    TEST_CLUSTAL_ALIGNS("ACGTTGCAACGT",
+                        "AGCTGTCACAGT",
+                        "************",
+                        "************",
+                        187);
+
+    TEST_CLUSTAL_ALIGNS("ACGTTGCAACGT",
+                        "ACGTACGTACGT",
+                        "************",
+                        "************",
+                        164);
+
+    TEST_CLUSTAL_ALIGNS("ACGTTGCAACGT",
+                        "ACGTACGT",
+                        "************",
+                        "****----****",
+                        162);
+
+    TEST_CLUSTAL_ALIGNS("ACGTTGCAACGT",
+                        "AACGGTTC",
+                        "************",
+                     // "ACGTTGCAACGT",
+                     // "A----ACGGTTC",
+                        "*----*******",
+                        193);
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
