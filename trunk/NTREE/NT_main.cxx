@@ -509,7 +509,7 @@ static ARB_ERROR check_argument_for_mode(const char *database, char *&browser_st
     return error;
 }
 
-int ARB_main(int argc, const char *argv[]) {
+static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
     aw_initstatus();
     GB_set_verbose();
 
@@ -541,97 +541,110 @@ int ARB_main(int argc, const char *argv[]) {
 
     AWT_install_cb_guards();
 
+    ARB_declare_global_awars(aw_root, AW_ROOT_DEFAULT);
+
+    if (!error) {
+        nt_assert(!cl.wants_help());
+                
+        RunMode mode = NORMAL;
+
+        if (cl.wants_export())      mode = EXPORT;
+        else if (cl.wants_import()) mode = IMPORT;
+        else if (cl.wants_merge())  mode = MERGE;
+
+        if (mode == EXPORT) {
+            MG_create_all_awars(aw_root, AW_ROOT_DEFAULT, ":", "noname.arb");
+            GLOBAL_gb_src = GBT_open(":", "rw");
+            if (!GLOBAL_gb_src) {
+                error = GB_await_error();
+            }
+            else {
+#if defined(DEBUG)
+                AWT_announce_db_to_browser(GLOBAL_gb_src, "Current database (:)");
+#endif // DEBUG
+
+                GLOBAL_gb_dst = GBT_open("noname.arb", "cw");
+#if defined(DEBUG)
+                AWT_announce_db_to_browser(GLOBAL_gb_dst, "New database (noname.arb)");
+#endif // DEBUG
+
+                MG_start_cb2(NULL, aw_root, true, true);
+                aw_root->main_loop();
+            }
+        }
+        else if (mode == MERGE) {
+            MG_create_all_awars(aw_root, AW_ROOT_DEFAULT, cl.get_arg(0), cl.get_arg(1));
+            nt_intro_start_merge(0, aw_root);
+            aw_root->main_loop();
+            nt_assert(0);
+        }
+        else {
+            const char *database         = NULL;
+            char       *browser_startdir = strdup(".");
+
+            if (cl.free_args() > 0) database = cl.get_arg(0);
+
+            error = check_argument_for_mode(database, browser_startdir, mode); 
+            if (!error) {
+                if (mode == IMPORT) {
+                    aw_root->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE);
+                    GLOBAL.gb_main = open_AWTC_import_window(aw_root, database, true, 0, (AW_RCB)start_main_window_after_import, 0, 0);
+                    aw_root->main_loop();
+                }
+                else if (mode == NORMAL) {
+                    aw_root->awar(AWAR_DB_PATH)->write_string(database);
+                    error = load_and_startup_main_window(aw_root, cl.autorun_macro());
+                    if (!error) aw_root->main_loop();
+                }
+                else if (mode == BROWSE) {
+                    aw_root->awar(AWAR_DB"directory")->write_string(browser_startdir);
+                    char *latest = GB_find_latest_file(browser_startdir, "/\\.(arb|a[0-9]{2})$/");
+                    if (latest) {
+                        int l = strlen(latest);
+                        strcpy(latest+l-3, "arb");
+                        aw_root->awar(AWAR_DB_PATH)->write_string(latest);
+                        free(latest);
+                    }
+                    AW_window *iws;
+                    if (GLOBAL.window_creator) {
+                        iws = GLOBAL.window_creator(aw_root, 0);
+                    }
+                    else {
+                        iws = nt_create_intro_window(aw_root);
+                    }
+                    iws->show();
+                    aw_root->main_loop();
+                }
+            }
+            free(browser_startdir);
+        }
+    }
+
+    if (error) aw_popup_ok(error.preserve());
+    delete aw_root;
+}
+
+int ARB_main(int argc, const char *argv[]) {
     NtreeCommandLine cl(argc, argv);
     ARB_ERROR        error = cl.parse();
-
-    ARB_declare_global_awars(aw_root, AW_ROOT_DEFAULT);
 
     if (!error) {
         if (cl.wants_help()) {
             cl.print_help(stderr);
         }
         else {
-            RunMode mode = NORMAL;
-
-            if (cl.wants_export())      mode = EXPORT;
-            else if (cl.wants_import()) mode = IMPORT;
-            else if (cl.wants_merge())  mode = MERGE;
-
-            if (mode == EXPORT) {
-                MG_create_all_awars(aw_root, AW_ROOT_DEFAULT, ":", "noname.arb");
-                GLOBAL_gb_src = GBT_open(":", "rw");
-                if (!GLOBAL_gb_src) {
-                    error = GB_await_error();
-                }
-                else {
-#if defined(DEBUG)
-                    AWT_announce_db_to_browser(GLOBAL_gb_src, "Current database (:)");
-#endif // DEBUG
-
-                    GLOBAL_gb_dst = GBT_open("noname.arb", "cw");
-#if defined(DEBUG)
-                    AWT_announce_db_to_browser(GLOBAL_gb_dst, "New database (noname.arb)");
-#endif // DEBUG
-
-                    MG_start_cb2(NULL, aw_root, true, true);
-                    aw_root->main_loop();
-                }
-            }
-            else if (mode == MERGE) {
-                MG_create_all_awars(aw_root, AW_ROOT_DEFAULT, cl.get_arg(0), cl.get_arg(1));
-                nt_intro_start_merge(0, aw_root);
-                aw_root->main_loop();
-                nt_assert(0);
-            }
-            else {
-                const char *database         = NULL;
-                char       *browser_startdir = strdup(".");
-
-                if (cl.free_args() > 0) database = cl.get_arg(0);
-
-                error = check_argument_for_mode(database, browser_startdir, mode); 
-                if (!error) {
-                    if (mode == IMPORT) {
-                        aw_root->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE);
-                        GLOBAL.gb_main = open_AWTC_import_window(aw_root, database, true, 0, (AW_RCB)start_main_window_after_import, 0, 0);
-                        aw_root->main_loop();
-                    }
-                    else if (mode == NORMAL) {
-                        aw_root->awar(AWAR_DB_PATH)->write_string(database);
-                        error = load_and_startup_main_window(aw_root, cl.autorun_macro());
-                        if (!error) aw_root->main_loop();
-                    }
-                    else if (mode == BROWSE) {
-                        aw_root->awar(AWAR_DB"directory")->write_string(browser_startdir);
-                        char *latest = GB_find_latest_file(browser_startdir, "/\\.(arb|a[0-9]{2})$/");
-                        if (latest) {
-                            int l = strlen(latest);
-                            strcpy(latest+l-3, "arb");
-                            aw_root->awar(AWAR_DB_PATH)->write_string(latest);
-                            free(latest);
-                        }
-                        AW_window *iws;
-                        if (GLOBAL.window_creator) {
-                            iws = GLOBAL.window_creator(aw_root, 0);
-                        }
-                        else {
-                            iws = nt_create_intro_window(aw_root);
-                        }
-                        iws->show();
-                        aw_root->main_loop();
-                    }
-                }
-                free(browser_startdir);
-            }
+            startup_gui(cl, error);
         }
     }
 
-    int exitcode = error ? EXIT_FAILURE : EXIT_SUCCESS;
-
-    if (error) aw_popup_ok(error.deliver());
-    else error.expect_no_error();
-
-    delete aw_root;
+    int exitcode = EXIT_SUCCESS;
+    if (error) {
+        exitcode = EXIT_FAILURE;
+        fprintf(stderr, "arb_ntree: Error: %s\n", error.deliver());
+    }
+    else {
+        error.expect_no_error();
+    }
 
     return exitcode;
 }
