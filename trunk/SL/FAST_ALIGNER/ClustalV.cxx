@@ -494,8 +494,6 @@ inline const unsigned char *nstr(unsigned char *cp, int length) {
 }
 
 inline void dumpMatrix(int x0, int y0, int breite, int hoehe, int mitte_vert) {
-    int b;
-    int h;
     char *sl = (char*)malloc(hoehe+3);
     char *ma = (char*)malloc(breite+3);
 
@@ -504,25 +502,28 @@ inline void dumpMatrix(int x0, int y0, int breite, int hoehe, int mitte_vert) {
 
     printf("                 ");
 
-    for (b=0; b<=mitte_vert; b++) {
-        printf("%5c", ma[b]);
-    }
-    printf("  MID");
-    for (b++; b<=breite+1+1; b++) {
-        printf("%5c", ma[b-1]);
+    {
+        int b;
+        for (b=0; b<=mitte_vert; b++) {
+            printf("%5c", ma[b]);
+        }
+        printf("  MID");
+        for (b++; b<=breite+1+1; b++) {
+            printf("%5c", ma[b-1]);
+        }
     }
 
-    for (h=0; h<=hoehe+1; h++) {
+    for (int h=0; h<=hoehe+1; h++) {
         printf("\n%c vertical:      ", sl[h]);
-        for (b=0; b<=breite+1+1; b++) printf("%5i", vertical[b][h]);
+        for (int b=0; b<=breite+1+1; b++) printf("%5i", vertical[b][h]);
         printf("\n  verticalOpen:  ");
-        for (b=0; b<=breite+1+1; b++) printf("%5i", verticalOpen[b][h]);
+        for (int b=0; b<=breite+1+1; b++) printf("%5i", verticalOpen[b][h]);
         printf("\n  diagonal:      ");
-        for (b=0; b<=breite+1+1; b++) printf("%5i", diagonal[b][h]);
+        for (int b=0; b<=breite+1+1; b++) printf("%5i", diagonal[b][h]);
         printf("\n  horizontal:    ");
-        for (b=0; b<=breite+1+1; b++) printf("%5i", horizontal[b][h]);
+        for (int b=0; b<=breite+1+1; b++) printf("%5i", horizontal[b][h]);
         printf("\n  horizontalOpen:");
-        for (b=0; b<=breite+1+1; b++) printf("%5i", horizontalOpen[b][h]);
+        for (int b=0; b<=breite+1+1; b++) printf("%5i", horizontalOpen[b][h]);
         printf("\n");
     }
 
@@ -562,9 +563,7 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en) {
 
 #if (defined (DEBUG) && 0)
     {
-        char *d;
-
-        d = lstr(seq_array[1]+v1, v3);
+        char *d = lstr(seq_array[1]+v1, v3);
 
         (dnaflag ? n_decode : p_decode)(d-1, d-1, v3);
 
@@ -811,15 +810,12 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en) {
 }
 
 static void do_align( /* int v1, */ int *score, long act_seq_length) {
-    int i, j, k, l1, l2, n;
-    int t_arr[MAX_BASETYPES];
-
-    l1=l2=pos1=pos2=0;
+    pos1 = pos2 = 0;
 
     // clear statistics
 
-    for (i=1; i<=act_seq_length; ++i) {
-        for (j=0; j<MAX_BASETYPES; ++j) {
+    for (int i=1; i<=act_seq_length; ++i) {
+        for (int j=0; j<MAX_BASETYPES; ++j) {
             naa1[j][i] = naa2[j][i]=0;
             naas[j][i]=0;
         }
@@ -828,10 +824,12 @@ static void do_align( /* int v1, */ int *score, long act_seq_length) {
     // create position statistics for each group
     // [here every group contains only one seq]
 
-    for (i=1; i<=nseqs; ++i) {
+    int l1 = 0;
+    int l2 = 0;
+    for (int i=1; i<=nseqs; ++i) {
         if (group[i]==1) {
             fst_list[++pos1]=i;
-            for (j=1; j<=seqlen_array[i]; ++j) {
+            for (int j=1; j<=seqlen_array[i]; ++j) {
                 unsigned char b = seq_array[i][j];
                 if (b<128) {
                     ++naa1[b][j];
@@ -842,7 +840,7 @@ static void do_align( /* int v1, */ int *score, long act_seq_length) {
         }
         else if (group[i]==2) {
             snd_list[++pos2]=i;
-            for (j=1; j<=seqlen_array[i]; ++j) {
+            for (int j=1; j<=seqlen_array[i]; ++j) {
                 unsigned char b = seq_array[i][j];
                 if (b<128) {
                     ++naa2[b][j];
@@ -854,19 +852,21 @@ static void do_align( /* int v1, */ int *score, long act_seq_length) {
     }
 
     if (pos1>=pos2) {
-        for (i=1; i<=pos2; ++i) alist[i]=snd_list[i];
-        for (n=1; n<=l1; ++n) {
-            for (i=1; i<MAX_BASETYPES; ++i) t_arr[i]=0;
-            for (i=1; i<MAX_BASETYPES; ++i) {
+        int t_arr[MAX_BASETYPES];
+
+        for (int i=1; i<=pos2; ++i) alist[i]=snd_list[i];
+        for (int n=1; n<=l1; ++n) {
+            for (int i=1; i<MAX_BASETYPES; ++i) t_arr[i]=0;
+            for (int i=1; i<MAX_BASETYPES; ++i) {
                 if (naa1[i][n]>0) {
-                    for (j=1; j<MAX_BASETYPES; ++j) {
+                    for (int j=1; j<MAX_BASETYPES; ++j) {
                         t_arr[j] += (weights[i][j]*naa1[i][n]);
                     }
                 }
             }
-            k = naa1[0][n];
+            int k = naa1[0][n];
             if (k>0) {
-                for (i=1; i<MAX_BASETYPES; ++i) {
+                for (int i=1; i<MAX_BASETYPES; ++i) {
                     naas[i][n]=t_arr[i]/k;
                 }
             }
@@ -880,19 +880,18 @@ static void do_align( /* int v1, */ int *score, long act_seq_length) {
 }
 
 static int add_ggaps(long /* max_seq_length */) {
-    int i, j, k, pos, to_do;
+    int pos   = 1;
+    int to_do = print_ptr;
 
-    pos=1;
-    to_do=print_ptr;
-
-    for (i=0; i<to_do; ++i) { // was: 1 .. <=to_do
+    for (int i=0; i<to_do; ++i) { // was: 1 .. <=to_do
         if (displ[i]==0) {
             result[1][pos]=result[2][pos]='*';
             ++pos;
         }
         else {
-            if ((k=displ[i])>0) {
-                for (j=0; j<=k-1; ++j) {
+            int k = displ[i];
+            if (k>0) {
+                for (int j=0; j<=k-1; ++j) {
                     result[2][pos+j]='*';
                     result[1][pos+j]='-';
                 }
@@ -900,7 +899,7 @@ static int add_ggaps(long /* max_seq_length */) {
             }
             else {
                 k = (displ[i]<0) ? displ[i] * -1 : displ[i];
-                for (j=0; j<=k-1; ++j) {
+                for (int j=0; j<=k-1; ++j) {
                     result[1][pos+j]='*';
                     result[2][pos+j]='-';
                 }
@@ -926,7 +925,8 @@ static int res_index(const char *t, char c) {
     return 0;
 }
 
-static void p_encode(const unsigned char *seq, unsigned char *naseq, int l) /* code seq as ints .. use -2 for gap */ {
+static void p_encode(const unsigned char *seq, unsigned char *naseq, int l) {
+    // code seq as ints .. use -2 for gap
     bool warned = false;
 
     for (int i=1; i<=l; i++) {
@@ -952,12 +952,10 @@ static void p_encode(const unsigned char *seq, unsigned char *naseq, int l) /* c
     }
 }
 
-static void n_encode(const unsigned char *seq, unsigned char *naseq, int l)
-{                                       // code seq as ints .. use -2 for gap
-    int i;
-    int warned = 0;
-
-    for (i=1; i<=l; i++) {
+static void n_encode(const unsigned char *seq, unsigned char *naseq, int l) {
+    // code seq as ints .. use -2 for gap
+    bool warned = false;
+    for (int i=1; i<=l; i++) {
         int c = res_index(nucleic_acid_order, seq[i]);
 
         if (!c) {
@@ -965,7 +963,7 @@ static void n_encode(const unsigned char *seq, unsigned char *naseq, int l)
                 char buf[100];
                 sprintf(buf, "Illegal character '%c' in sequence data", seq[i]);
                 aw_message(buf);
-                warned = 1;
+                warned = true;
             }
             c = res_index(nucleic_acid_order, 'N');
         }
