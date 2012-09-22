@@ -823,7 +823,6 @@ void AP_tree::calc_hidden_flag(int father_is_hidden) {
 }
 
 int AP_tree::calc_color() {
-    int l, r;
     int res;
     if (is_leaf) {
         if (gb_node) {
@@ -846,8 +845,8 @@ int AP_tree::calc_color() {
         }
     }
     else {
-        l = get_leftson()->calc_color();
-        r = get_rightson()->calc_color();
+        int l = get_leftson()->calc_color();
+        int r = get_rightson()->calc_color();
 
         if (l == r) res = l;
 
@@ -880,7 +879,6 @@ int AP_tree::calc_color() {
 // faerbt Bakterien die darin vorkommen mit den entsprechenden Farben
 // in der Hashtabelle ist eine Struktur aus Bak.namen und Farben(GC's)
 int AP_tree::calc_color_probes(GB_HASH *hashptr) {
-    int l, r;
     int res;
 
     if (is_leaf) {
@@ -895,8 +893,8 @@ int AP_tree::calc_color_probes(GB_HASH *hashptr) {
         }
     }
     else {
-        l = get_leftson()->calc_color_probes(hashptr);
-        r = get_rightson()->calc_color_probes(hashptr);
+        int l = get_leftson()->calc_color_probes(hashptr);
+        int r = get_rightson()->calc_color_probes(hashptr);
 
         if      (l == r)                      res = l;
         else if (l == AWT_GC_SOME_MISMATCHES) res = r;
