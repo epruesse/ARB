@@ -341,11 +341,11 @@ static const char *read_name(GBDATA *gbd) {
     return gbd ? GBT_read_name(gbd) : "GROUP-CONSENSUS";
 }
 
-static inline int relatedBases(char base1, char base2) {
+inline int relatedBases(char base1, char base2) {
     return baseMatch(base1, base2)==1;
 }
 
-static inline char alignQuality(char slave, char master) {
+inline char alignQuality(char slave, char master) {
     fa_assert(slave);
     fa_assert(master);
     char result = '#';
@@ -377,7 +377,7 @@ static char *lstr(const char *s, int len) {
 
 #define BUFLEN 120
 
-static inline char compareChar(char base1, char base2) {
+inline char compareChar(char base1, char base2) {
     return base1==base2 ? '=' : (relatedBases(base1, base2) ? 'x' : 'X');
 }
 
@@ -397,7 +397,7 @@ static void dump_n_compare_one(const char *seq1, const char *seq2, long len, lon
     printf(" %li '%s'\n", offset, compare);
 }
 
-static inline void dump_rest(const char *seq, long len, int idx, long offset) {
+inline void dump_rest(const char *seq, long len, int idx, long offset) {
     printf(" Rest von Sequenz %i:\n", idx);
     while (len>BUFLEN) {
         printf(" %li '%s'\n", offset, lstr(seq, BUFLEN));
@@ -445,7 +445,7 @@ static void dump_n_compare(const char *text, const CompactedSubSequence& seq1, c
 
 #undef BUFLEN
 
-static inline void dumpSeq(const char *seq, long len, long pos) {
+inline void dumpSeq(const char *seq, long len, long pos) {
     printf("'%s' ", lstr(seq, len));
     printf("(Pos=%li,Len=%li)", pos, len);
 }
@@ -469,10 +469,10 @@ static inline void dumpSeq(const char *seq, long len, long pos) {
 // ------------------------------------------------
 //      INLINE-functions used in fast_align():
 
-static inline double log3(double d) {
+inline double log3(double d) {
     return log(d)/log(3.0);
 }
-static inline double partSignificance(long seq1len, long seq2len, long partlen) {
+inline double partSignificance(long seq1len, long seq2len, long partlen) {
     // returns log3 of significance of the part
     // usage: partSignificance(...) < log3(maxAllowedSignificance)
     return log3((seq1len-partlen)*(seq2len-partlen)) - partlen;
@@ -482,7 +482,7 @@ inline ARB_ERROR bufferTooSmall() {
     return "Cannot align - reserved buffer is to small";
 }
 
-static inline long insertsToNextBase(AlignBuffer *alignBuffer, const SequencePosition& master) {
+inline long insertsToNextBase(AlignBuffer *alignBuffer, const SequencePosition& master) {
     int inserts;
     int nextBase;
 
@@ -497,7 +497,7 @@ static inline long insertsToNextBase(AlignBuffer *alignBuffer, const SequencePos
     return inserts;
 }
 
-static inline void insertBase(AlignBuffer *alignBuffer,
+inline void insertBase(AlignBuffer *alignBuffer,
                               SequencePosition& master, SequencePosition& slave,
                               FastAlignReport *report)
 {
@@ -510,7 +510,7 @@ static inline void insertBase(AlignBuffer *alignBuffer,
     ++master;
 }
 
-static inline void insertSlaveBases(AlignBuffer *alignBuffer,
+inline void insertSlaveBases(AlignBuffer *alignBuffer,
                                     SequencePosition& slave,
                                     int length,
                                     FastAlignReport *report)
@@ -520,7 +520,7 @@ static inline void insertSlaveBases(AlignBuffer *alignBuffer,
     slave += length;
 }
 
-static inline void insertGap(AlignBuffer *alignBuffer,
+inline void insertGap(AlignBuffer *alignBuffer,
                              SequencePosition& master,
                              FastAlignReport *report)
 {

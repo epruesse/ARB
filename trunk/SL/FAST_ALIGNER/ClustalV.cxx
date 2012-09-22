@@ -106,7 +106,7 @@ static int horizontalOpen       [DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
 # define IF_MATRIX_DUMP(xxx)
 #endif
 
-static inline int master_gap_open(int beforePosition) {
+inline int master_gap_open(int beforePosition) {
 #ifdef DYNAMIC_PENALTIES
     long gaps = gaps_before_position[beforePosition-1];
     return (gaps) ? MASTER_GAP_OPEN - MAX_GAP_OPEN_DISCOUNT : MASTER_GAP_OPEN;
@@ -119,7 +119,7 @@ static inline int master_gap_open(int beforePosition) {
     return DEFAULT_GAP_OPEN;
 #endif
 }
-static inline int master_gap_extend(int beforePosition) {
+inline int master_gap_extend(int beforePosition) {
 #ifdef DYNAMIC_PENALTIES
     long gaps = gaps_before_position[beforePosition-1];
 
@@ -133,7 +133,7 @@ static inline int master_gap_extend(int beforePosition) {
 #endif
 }
 
-static inline int master_gapAtWithOpenPenalty(int atPosition, int length, int penalty) {
+inline int master_gapAtWithOpenPenalty(int atPosition, int length, int penalty) {
     if (length<=0) return 0;
 
     int beforePosition = atPosition;
@@ -156,23 +156,23 @@ static inline int master_gapAtWithOpenPenalty(int atPosition, int length, int pe
     return penalty;
 }
 
-static inline int master_gapAt(int atPosition, int length) {
+inline int master_gapAt(int atPosition, int length) {
     return master_gapAtWithOpenPenalty(atPosition, length, master_gap_open(atPosition));
 }
 
-static inline int slave_gap_open(int /* beforePosition */) {
+inline int slave_gap_open(int /* beforePosition */) {
     return DEFAULT_GAP_OPEN;
 }
 
-static inline int slave_gap_extend(int /* beforePosition */) {
+inline int slave_gap_extend(int /* beforePosition */) {
     return DEFAULT_GAP_EXTEND;
 }
 
-static inline int slave_gapAtWithOpenPenalty(int atPosition, int length, int penalty) {
+inline int slave_gapAtWithOpenPenalty(int atPosition, int length, int penalty) {
     return length<=0 ? 0 : penalty + length*slave_gap_extend(atPosition);
 }
 
-static inline int slave_gapAt(int atPosition, int length) {
+inline int slave_gapAt(int atPosition, int length) {
     return slave_gapAtWithOpenPenalty(atPosition, length, slave_gap_open(atPosition));
 }
 
@@ -324,11 +324,11 @@ static void n_decode(const unsigned char *naseq, unsigned char *seq, int l) {
 }
 #endif
 
-static inline ARB_ERROR MAXLENtooSmall() {
+inline ARB_ERROR MAXLENtooSmall() {
     return "ClustalV-aligner: MAXLEN is dimensioned to small for this sequence";
 }
 
-static inline void *ckalloc(size_t bytes, ARB_ERROR& error) {
+inline void *ckalloc(size_t bytes, ARB_ERROR& error) {
     if (error) return NULL;
 
     void *ret = malloc(bytes);
@@ -454,7 +454,7 @@ inline int decr_displ(int offset, int value) {
 }
 
 
-static inline void add(int v) {
+inline void add(int v) {
     // insert 'v' gaps into master ???
     if (last_print<0 && print_ptr>0) {
         set_displ(print_ptr-1, v);
@@ -465,7 +465,7 @@ static inline void add(int v) {
     }
 }
 
-static inline int calc_weight(int iat, int jat, int v1, int v2) {
+inline int calc_weight(int iat, int jat, int v1, int v2) {
     fa_assert(pos1==1 && pos2==1);
     unsigned char j = seq_array[alist[1]][v2+jat-1];
     return j<128 ? naas[j][v1+iat-1] : 0;
@@ -473,20 +473,20 @@ static inline int calc_weight(int iat, int jat, int v1, int v2) {
 
 #ifdef MATRIX_DUMP
 
-static inline const unsigned char *lstr(const unsigned char *s, int len) {
+inline const unsigned char *lstr(const unsigned char *s, int len) {
     static unsigned char *lstr_ss = 0;
 
     freeset(lstr_ss, (unsigned char*)strndup((const char*)s, len));
     return lstr_ss;
 }
 
-static inline const unsigned char *nstr(unsigned char *cp, int length) {
+inline const unsigned char *nstr(unsigned char *cp, int length) {
     const unsigned char *s = lstr(cp, length);
     (dnaflag ? n_decode : p_decode)(s-1, const_cast<unsigned char *>(s-1), length);
     return s;
 }
 
-static inline void dumpMatrix(int x0, int y0, int breite, int hoehe, int mitte_vert) {
+inline void dumpMatrix(int x0, int y0, int breite, int hoehe, int mitte_vert) {
     int b;
     int h;
     char *sl = (char*)malloc(hoehe+3);
