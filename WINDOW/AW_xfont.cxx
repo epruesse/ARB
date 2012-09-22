@@ -27,8 +27,8 @@
 #define KNOWN_ISO_VERSIONS 3
 
 #if !defined(DEVEL_RELEASE)
-#define DUMP_FONT_LOOKUP
-#define DUMP_FONT_DETAILS
+// #define DUMP_FONT_LOOKUP
+// #define DUMP_FONT_DETAILS
 #endif
 
 // --------------------------------------------------------------------------------
