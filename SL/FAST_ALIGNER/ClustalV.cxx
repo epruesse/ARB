@@ -40,14 +40,6 @@
 
 #define MAXN    2       // Maximum number of sequences (both groups)
 
-#if (MAXN==2)
-#define MAXN_2(xxx)             xxx
-#define MAXN_2_assert(xxx)      fa_assert(xxx)
-#else
-#define MAXN_2(xxx)
-#define MAXN_2_assert(xxx)
-#endif
-
 #define TRUE    1
 #define FALSE   0
 
@@ -500,47 +492,11 @@ static inline void add(int v)           // insert 'v' gaps into master ???
     }
 }
 
-static MAXN_2(inline) int calc_weight(int iat, int jat, int v1, int v2)
+static inline int calc_weight(int iat, int jat, int v1, int v2)
 {
-#if (MAXN==2)
     fa_assert(pos1==1 && pos2==1);
     unsigned char j = seq_array[alist[1]][v2+jat-1];
     return j<128 ? naas[j][v1+iat-1] : 0;
-#else
-    int sum, i, lookn, ret;
-    int ipos, jpos;
-    
-    ipos = v1 + iat -1;
-    jpos = v2 + jat -1;
-
-    ret = 0;
-    sum = lookn = 0;
-
-    if (pos1>=pos2)
-    {
-        for (i=1; i<=pos2; ++i)
-        {
-            unsigned char j=seq_array[alist[i]][jpos];
-            if (j<128) {
-                sum += naas[j][ipos];
-                ++lookn;
-            }
-        }
-    }
-    else
-    {
-        for (i=1; i<=pos1; ++i)
-        {
-            unsigned char j = seq_array[alist[i]][ipos];
-            if (j<128) {
-                sum += naas[j][jpos];
-                ++lookn;
-            }
-        }
-    }
-    if (sum>0) ret = sum/lookn;
-    return ret;
-#endif
 }
 
 #ifdef MATRIX_DUMP
@@ -955,21 +911,7 @@ static void do_align( /* int v1, */ int *score, long act_seq_length)
         }
     }
     else {
-        MAXN_2_assert(0);       // should never occur if MAXN==2
-#if (MAXN!=2)
-        for (i=1; i<=pos1; ++i) alist[i]=fst_list[i];
-        for (n=1; n<=l2; ++n) {
-            for (i=1; i<MAX_BASETYPES; ++i) t_arr[i]=0;
-            for (i=1; i<MAX_BASETYPES; ++i)
-                if (naa2[i][n]>0)
-                    for (j=1; j<MAX_BASETYPES; ++j)
-                        t_arr[j] += (weights[i][j]*naa2[i][n]);
-            k = naa2[0][n];
-            if (k>0)
-                for (i=1; i<MAX_BASETYPES; ++i)
-                    naas[i][n]=t_arr[i]/k;
-        }
-#endif
+        fa_assert(0);       // should never occur if MAXN==2
     }
 
     *score=diff(1, 1, l1, l2, master_gap_open(1), master_gap_open(l1+1)); // Myers and Miller alignment now
