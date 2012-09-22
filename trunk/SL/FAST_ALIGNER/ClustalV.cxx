@@ -359,8 +359,9 @@ static void make_pamo(int nv) {
         little_pam=(little_pam<c) ? little_pam : c;
         big_pam=(big_pam>c) ? big_pam : c;
     }
-    for (int i=0; i<210; ++i)
+    for (int i=0; i<210; ++i) {
         pamo[i] = matptr[i]-little_pam;
+    }
     nv -= little_pam;
     big_pam -= little_pam;
     xover = big_pam - nv;
@@ -373,20 +374,26 @@ static void make_pamo(int nv) {
 static void fill_pam() {
     int pos = 0;
 
-    for (int i=0; i<20; ++i)
-        for (int j=0; j<=i; ++j)
+    for (int i=0; i<20; ++i) {
+        for (int j=0; j<=i; ++j) {
             pam[i][j]=pamo[pos++];
+        }
+    }
 
-    for (int i=0; i<20; ++i)
-        for (int j=0; j<=i; ++j)
+    for (int i=0; i<20; ++i) {
+        for (int j=0; j<=i; ++j) {
             pam[j][i]=pam[i][j];
+        }
+    }
 
     if (dnaflag) {
         xover=4;
         big_pam=8;
-        for (int i=0; i<=NUCLEIDS; ++i)
-            for (int j=0; j<=NUCLEIDS; ++j)
+        for (int i=0; i<=NUCLEIDS; ++i) {
+            for (int j=0; j<=NUCLEIDS; ++j) {
                 weights[i][j] = getPenalty(i, j);
+            }
+        }
     }
     else {
         for (int i=1; i<MAX_BASETYPES; ++i) {
@@ -497,11 +504,13 @@ inline void dumpMatrix(int x0, int y0, int breite, int hoehe, int mitte_vert) {
 
     printf("                 ");
 
-    for (b=0; b<=mitte_vert; b++)
+    for (b=0; b<=mitte_vert; b++) {
         printf("%5c", ma[b]);
+    }
     printf("  MID");
-    for (b++; b<=breite+1+1; b++)
+    for (b++; b<=breite+1+1; b++) {
         printf("%5c", ma[b-1]);
+    }
 
     for (h=0; h<=hoehe+1; h++) {
         printf("\n%c vertical:      ", sl[h]);

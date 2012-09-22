@@ -387,8 +387,9 @@ static void dump_n_compare_one(const char *seq1, const char *seq2, long len, lon
     fa_assert(len<=BUFLEN);
     char compare[BUFLEN+1];
 
-    for (long l=0; l<len; l++)
+    for (long l=0; l<len; l++) {
         compare[l] = (is_ali_gap(seq1[l]) && is_ali_gap(seq2[l])) ? ' ' : compareChar(seq1[l], seq2[l]);
+    }
 
     compare[len] = 0;
 
