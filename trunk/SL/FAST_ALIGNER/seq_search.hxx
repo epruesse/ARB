@@ -540,16 +540,13 @@ inline CompactedSubSequence::CompactedSubSequence(const CompactedSubSequence& ot
 }
 
 inline CompactedSubSequence::~CompactedSubSequence() {
-    if (mySequence->referred-- == 1) // last reference
-        delete mySequence;
+    if (mySequence->referred-- == 1) delete mySequence; // last reference
 }
 
-inline CompactedSubSequence& CompactedSubSequence::operator=(const CompactedSubSequence& other) // =-c-tor
-{
+inline CompactedSubSequence& CompactedSubSequence::operator=(const CompactedSubSequence& other) { // =-c-tor
     // d-tor part
 
-    if (mySequence->referred-- == 1)
-        delete mySequence;
+    if (mySequence->referred-- == 1) delete mySequence;
 
     // c-tor part
 

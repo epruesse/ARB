@@ -341,13 +341,11 @@ static const char *read_name(GBDATA *gbd) {
     return gbd ? GBT_read_name(gbd) : "GROUP-CONSENSUS";
 }
 
-static inline int relatedBases(char base1, char base2)
-{
+static inline int relatedBases(char base1, char base2) {
     return baseMatch(base1, base2)==1;
 }
 
-static inline char alignQuality(char slave, char master)
-{
+static inline char alignQuality(char slave, char master) {
     fa_assert(slave);
     fa_assert(master);
     char result = '#';
@@ -362,8 +360,7 @@ static inline char alignQuality(char slave, char master)
 //      Debugging stuff
 
 #ifdef DEBUG
-static char *lstr(const char *s, int len)
-{
+static char *lstr(const char *s, int len) {
     static int alloc;
     static char *buffer;
 
@@ -380,15 +377,13 @@ static char *lstr(const char *s, int len)
 
 #define BUFLEN 120
 
-static inline char compareChar(char base1, char base2)
-{
+static inline char compareChar(char base1, char base2) {
     return base1==base2 ? '=' : (relatedBases(base1, base2) ? 'x' : 'X');
 }
 
 #if defined(TRACE_COMPRESSED_ALIGNMENT)
     
-static void dump_n_compare_one(const char *seq1, const char *seq2, long len, long offset)
-{
+static void dump_n_compare_one(const char *seq1, const char *seq2, long len, long offset) {
     fa_assert(len<=BUFLEN);
     char compare[BUFLEN+1];
 
@@ -402,11 +397,9 @@ static void dump_n_compare_one(const char *seq1, const char *seq2, long len, lon
     printf(" %li '%s'\n", offset, compare);
 }
 
-static inline void dump_rest(const char *seq, long len, int idx, long offset)
-{
+static inline void dump_rest(const char *seq, long len, int idx, long offset) {
     printf(" Rest von Sequenz %i:\n", idx);
-    while (len>BUFLEN)
-    {
+    while (len>BUFLEN) {
         printf(" %li '%s'\n", offset, lstr(seq, BUFLEN));
         seq += BUFLEN;
         len -= BUFLEN;
@@ -417,22 +410,18 @@ static inline void dump_rest(const char *seq, long len, int idx, long offset)
     printf(" '%s'\n", lstr(seq, len));
 }
 
-static void dump_n_compare(const char *text, const char *seq1, long len1, const char *seq2, long len2)
-{
+static void dump_n_compare(const char *text, const char *seq1, long len1, const char *seq2, long len2) {
     long offset = 0;
 
     printf(" Comparing %s:\n", text);
 
-    while (len1>0 && len2>0)
-    {
+    while (len1>0 && len2>0) {
         long done = 0;
 
-        if (len1>=BUFLEN && len2>=BUFLEN)
-        {
+        if (len1>=BUFLEN && len2>=BUFLEN) {
             dump_n_compare_one(seq1, seq2, done=BUFLEN, offset);
         }
-        else
-        {
+        else {
             long min = len1<len2 ? len1 : len2;
             dump_n_compare_one(seq1, seq2, done=min, offset);
         }
@@ -449,16 +438,14 @@ static void dump_n_compare(const char *text, const char *seq1, long len1, const 
     printf(" -------------------\n");
 }
 
-static void dump_n_compare(const char *text, const CompactedSubSequence& seq1, const CompactedSubSequence& seq2)
-{
+static void dump_n_compare(const char *text, const CompactedSubSequence& seq1, const CompactedSubSequence& seq2) {
     dump_n_compare(text, seq1.text(), seq1.length(), seq2.text(), seq2.length());
 }
 #endif // TRACE_COMPRESSED_ALIGNMENT
 
 #undef BUFLEN
 
-static inline void dumpSeq(const char *seq, long len, long pos)
-{
+static inline void dumpSeq(const char *seq, long len, long pos) {
     printf("'%s' ", lstr(seq, len));
     printf("(Pos=%li,Len=%li)", pos, len);
 }
@@ -474,8 +461,7 @@ static inline void dumpSeq(const char *seq, long len, long pos)
                " Slave  = ");                                           \
         dumpSeq(bestSlaveLeft.text(), bestLength, bestSlaveLeft.leftOf()); \
         printf("\n");                                                   \
-    }                                                                   \
-    while (0)
+    } while (0)
 
 #endif //DEBUG
 
@@ -483,14 +469,12 @@ static inline void dumpSeq(const char *seq, long len, long pos)
 // ------------------------------------------------
 //      INLINE-functions used in fast_align():
 
-static inline double log3(double d)
-{
+static inline double log3(double d) {
     return log(d)/log(3.0);
 }
-static inline double partSignificance(long seq1len, long seq2len, long partlen)
+static inline double partSignificance(long seq1len, long seq2len, long partlen) {
     // returns log3 of significance of the part
     // usage: partSignificance(...) < log3(maxAllowedSignificance)
-{
     return log3((seq1len-partlen)*(seq2len-partlen)) - partlen;
 }
 
@@ -498,8 +482,7 @@ inline ARB_ERROR bufferTooSmall() {
     return "Cannot align - reserved buffer is to small";
 }
 
-static inline long insertsToNextBase(AlignBuffer *alignBuffer, const SequencePosition& master)
-{
+static inline long insertsToNextBase(AlignBuffer *alignBuffer, const SequencePosition& master) {
     int inserts;
     int nextBase;
 
@@ -553,8 +536,8 @@ static ARB_ERROR insertClustalValigned(AlignBuffer *alignBuffer,
                                        SequencePosition& slave,
                                        const char *masterAlignment, const char *slaveAlignment, long alignmentLength,
                                        FastAlignReport *report)
-    // inserts bases of 'slave' to 'alignBuffer' according to alignment in 'masterAlignment' and 'slaveAlignment'
 {
+    // inserts bases of 'slave' to 'alignBuffer' according to alignment in 'masterAlignment' and 'slaveAlignment'
 #define ACID '*'    // contents of 'masterAlignment' and 'slaveAlignment'
 #define GAP  '-'
 
@@ -623,8 +606,8 @@ static ARB_ERROR insertClustalValigned(AlignBuffer *alignBuffer,
 static ARB_ERROR insertAligned(AlignBuffer *alignBuffer,
                                SequencePosition& master, SequencePosition& slave, long partLength,
                                FastAlignReport *report)
-    // insert bases of 'slave' to 'alignBuffer' according to 'master'
 {
+    // insert bases of 'slave' to 'alignBuffer' according to 'master'
     if (partLength) {
         long insert = insertsToNextBase(alignBuffer, master);
 
@@ -799,8 +782,7 @@ static ARB_ERROR cannot_fast_align(const CompactedSubSequence& master, long moff
             bestMasterLeft = masterLeft;                                \
             bestSlaveLeft = slaveLeft;                                  \
         }                                                               \
-    }                                                                   \
-    while (0)
+    } while (0)
 
 #define CAN_SCORE_LEFT()    (masterLeft.leftOf() && slaveLeft.leftOf())
 #define CAN_SCORE_RIGHT()   (masterRight.rightOf() && slaveRight.rightOf())
@@ -809,15 +791,13 @@ static ARB_ERROR cannot_fast_align(const CompactedSubSequence& master, long moff
     do {                                                                \
         score += *(--masterLeft).text()==*(--slaveLeft).text() ? match : mismatch; \
         TEST_BETTER_SCORE();                                            \
-    }                                                                   \
-    while (0)
+    } while (0)
 
 #define SCORE_RIGHT()                                                   \
     do {                                                                \
         score += *(++masterRight).text()==*(++slaveRight).text() ? match : mismatch; \
         TEST_BETTER_SCORE();                                            \
-    }                                                                   \
-    while (0)
+    } while (0)
 
 
 ARB_ERROR FastSearchSequence::fast_align(const CompactedSubSequence& slaveSequence,
@@ -1004,8 +984,7 @@ static CompactedSubSequence *readCompactedSequence(GBDATA      *gb_species,
     
     gbd = GBT_read_sequence(gb_species, ali);       // get sequence
 
-    if (gbd)
-    {
+    if (gbd) {
         long length = GB_read_string_count(gbd);
         char *data = GB_read_string(gbd);
         long partLength;
@@ -1100,9 +1079,9 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
                                   GBDATA                   *gb_toAlign,
                                   GBDATA                   *gb_alignTo, // may be NULL
                                   const AlignParams&        ali_params)
-// if only part of the sequence should be aligned, then this functions already gets only the part
-// (i.o.w.: toAlignSequence, alignTo and toAlignChksum refer to the partial sequence)
 {
+    // if only part of the sequence should be aligned, then this functions already gets only the part
+    // (i.o.w.: toAlignSequence, alignTo and toAlignChksum refer to the partial sequence)
     AlignBuffer alignBuffer(max_seq_length);
     if (ali_params.range.start()>0) {
         alignBuffer.set(GAP_CHAR, alignQuality(GAP_CHAR, GAP_CHAR), ali_params.range.start());
@@ -1241,8 +1220,7 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
                         buffer[buflen] = 0;
 
                         const FastAlignInsertion *inserts = report.insertion();
-                        while (inserts)
-                        {
+                        while (inserts) {
                             memset(buffer+inserts->offset(), '>', inserts->gaps());
                             afterLast = buffer+inserts->offset()+inserts->gaps();
                             inserts = inserts->next();
@@ -1267,8 +1245,7 @@ ARB_ERROR FastAligner_delete_temp_entries(GBDATA *gb_species, const char *alignm
     GBDATA    *gb_ali = GB_search(gb_species, alignment, GB_FIND);
     ARB_ERROR  error  = NULL;
 
-    if (gb_ali)
-    {
+    if (gb_ali) {
         GBDATA *gb_name = GB_search(gb_ali, QUALITY_NAME, GB_FIND);
         if (gb_name) {
             error = GB_delete(gb_name);
@@ -1329,8 +1306,7 @@ static ARB_ERROR alignTo(GBDATA                   *gb_toAlign,
 
 
 
-    if (!error)
-    {
+    if (!error) {
         error = alignCompactedTo(toAlignSequence, alignTo, max_seq_length, alignment, chksum, gb_toAlign, gb_alignTo, ali_params);
         if (error) error = align_error(error, gb_toAlign, gb_alignTo);
         delete toAlignSequence;
