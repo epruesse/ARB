@@ -808,7 +808,7 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en) {
     return ctrc;       // Return the score of the best alignment
 }
 
-static void do_align( /* int v1, */ int *score, long act_seq_length) {
+static void do_align(int& score, long act_seq_length) {
     pos1 = pos2 = 0;
 
     // clear statistics
@@ -875,7 +875,7 @@ static void do_align( /* int v1, */ int *score, long act_seq_length) {
         fa_assert(0);       // should never occur if MAXN==2
     }
 
-    *score=diff(1, 1, l1, l2, master_gap_open(1), master_gap_open(l1+1)); // Myers and Miller alignment now
+    score = diff(1, 1, l1, l2, master_gap_open(1), master_gap_open(l1+1)); // Myers and Miller alignment now
 }
 
 static int add_ggaps(long /* max_seq_length */) {
@@ -972,18 +972,19 @@ static void n_encode(const unsigned char *seq, unsigned char *naseq, int l) {
     }
 }
 
-ARB_ERROR ClustalV_align(int          is_dna,
-                         int          weighted,
-                         const char  *seq1,
-                         int          length1,
-                         const char  *seq2,
-                         int          length2,
-                         const int   *gapsBefore1, // size of array = length1+1
-                         int          max_seq_length,
-                         char       **resultPtr1,
-                         char       **resultPtr2,
-                         int         *resLengthPtr,
-                         int         *score)
+ARB_ERROR ClustalV_align(int           is_dna,
+                         int           weighted,
+                         const char   *seq1,
+                         int           length1,
+                         const char   *seq2,
+                         int           length2,
+                         const int    *gapsBefore1, // size of array = length1+1
+                         int           max_seq_length,
+                         // result params:
+                         const char*&  res1,
+                         const char*&  res2,
+                         int&          reslen,
+                         int&          score)
 {
     ARB_ERROR error;
     gaps_before_position = gapsBefore1;
@@ -1039,12 +1040,12 @@ ARB_ERROR ClustalV_align(int          is_dna,
             do_align(score, max(length1, length2));
             int alignedLength = add_ggaps(max_seq_length);
 
-            *resultPtr1   = result[1]+1;
-            *resultPtr2   = result[2]+1;
-            *resLengthPtr = alignedLength;
+            result[1][alignedLength+1] = 0;
+            result[2][alignedLength+1] = 0;
 
-            (*resultPtr1)[alignedLength] = 0;
-            (*resultPtr2)[alignedLength] = 0;
+            res1   = result[1]+1;
+            res2   = result[2]+1;
+            reslen = alignedLength;
         }
     }
 
@@ -1075,10 +1076,10 @@ static arb_test::match_expectation clustal_aligns(const char *i1, const char *i2
     size_t l1 = strlen(i1);
     size_t l2 = strlen(i2);
 
-    char *result1 = NULL;
-    char *result2 = NULL;
-    int   result_len; // test result value?
-    int   score;
+    const char *result1 = NULL;
+    const char *result2 = NULL;
+    int         result_len; // test result value?
+    int         score;
 
     int gaps_size = l1+1;
     int no_gaps_before1[gaps_size];
@@ -1089,10 +1090,10 @@ static arb_test::match_expectation clustal_aligns(const char *i1, const char *i2
                                      i2, l2,
                                      no_gaps_before1,
                                      max(l1, l2),
-                                     &result1,
-                                     &result2,
-                                     &result_len,
-                                     &score);
+                                     result1,
+                                     result2,
+                                     result_len,
+                                     score);
 
     using namespace   arb_test;
     expectation_group expected;
