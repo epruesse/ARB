@@ -132,11 +132,11 @@ public:
 };
 
 class CompactedSubSequence { // smart pointer and substring class for CompactedSequence
-    CompactedSequence    *mySequence;
-    int                   myPos;                    // offset into mySequence->myText
-    int                   myLength;                 // number of base positions
-    const char           *myText;                   // only for speed-up
-    mutable const Dots *dots;                   // just a reference
+    CompactedSequence  *mySeq;
+    int                 myPos;    // offset into mySequence->myText
+    int                 myLength; // number of base positions
+    const char         *myText;   // only for speed-up
+    mutable const Dots *dots;     // just a reference
 
     int currentDotPosition() const {
         int pos = dots->beforeBase()-myPos;
@@ -162,26 +162,26 @@ public:
     const char *text() const      { return myText; }
     const char *text(int i) const { return text()+i; }
 
-    const char *name() const { return mySequence->myName; }
+    const char *name() const { return mySeq->myName; }
 
     char operator[](int i) const                { return i<0 || i>=length() ? 0 : text()[i]; }
 
-    int no_of_gaps_before(int cPos) const       { return mySequence->no_of_gaps_before(myPos+cPos); }
-    int no_of_gaps_after(int cPos) const        { return mySequence->no_of_gaps_after(myPos+cPos); }
+    int no_of_gaps_before(int cPos) const       { return mySeq->no_of_gaps_before(myPos+cPos); }
+    int no_of_gaps_after(int cPos) const        { return mySeq->no_of_gaps_after(myPos+cPos); }
 
-    int expdStartPosition() const               { return mySequence->expdPosition(myPos); }
+    int expdStartPosition() const               { return mySeq->expdPosition(myPos); }
     int expdPosition(int cPos) const {
         fa_assert(cPos>=0 && cPos<=myLength);                 // allowed for all positions plus follower
-        return mySequence->expdPosition(myPos+cPos);
+        return mySeq->expdPosition(myPos+cPos);
     }
 
-    int compPosition(int xPos) const            { return mySequence->compPosition(xPos)-myPos; }
+    int compPosition(int xPos) const            { return mySeq->compPosition(xPos)-myPos; }
 
     int expdLength() const                      { return expdPosition(length()); }
-    const int *gapsBefore(int offset=0) const   { return mySequence->gapsBeforePosition + myPos + offset; }
+    const int *gapsBefore(int offset=0) const   { return mySeq->gapsBeforePosition + myPos + offset; }
 
     int firstDotPosition() const {
-        dots = mySequence->getDotlist();
+        dots = mySeq->getDotlist();
         int res = -1;
 
         while (dots && dots->beforeBase()<myPos) {
@@ -512,15 +512,15 @@ public:
 
 inline CompactedSubSequence::CompactedSubSequence(const char *seq, int len, const char *Name, int start_offset) {
     // normal c-tor
-    mySequence = new CompactedSequence(seq, len, Name, start_offset);
-    myPos      = 0;
-    myLength   = mySequence->length();
-    myText     = mySequence->text()+myPos;
+    mySeq    = new CompactedSequence(seq, len, Name, start_offset);
+    myPos    = 0;
+    myLength = mySeq->length();
+    myText   = mySeq->text()+myPos;
 }
 
 inline CompactedSubSequence::CompactedSubSequence(const CompactedSubSequence& other) {
-    mySequence = other.mySequence;
-    mySequence->referred++;
+    mySeq = other.mySeq;
+    mySeq->referred++;
 
     myPos    = other.myPos;
     myLength = other.myLength;
@@ -528,34 +528,34 @@ inline CompactedSubSequence::CompactedSubSequence(const CompactedSubSequence& ot
 }
 
 inline CompactedSubSequence::CompactedSubSequence(const CompactedSubSequence& other, int rel_pos, int Length) {
-    mySequence = other.mySequence;
-    mySequence->referred++;
+    mySeq = other.mySeq;
+    mySeq->referred++;
 
     myPos    = other.myPos+rel_pos;
     myLength = Length;
-    myText   = mySequence->text()+myPos;
+    myText   = mySeq->text()+myPos;
 
-    fa_assert((rel_pos+Length)<=mySequence->length());
+    fa_assert((rel_pos+Length)<=mySeq->length());
     fa_assert(rel_pos>=0);
 }
 
 inline CompactedSubSequence::~CompactedSubSequence() {
-    if (mySequence->referred-- == 1) delete mySequence; // last reference
+    if (mySeq->referred-- == 1) delete mySeq; // last reference
 }
 
 inline CompactedSubSequence& CompactedSubSequence::operator=(const CompactedSubSequence& other) { // =-c-tor
     // d-tor part
 
-    if (mySequence->referred-- == 1) delete mySequence;
+    if (mySeq->referred-- == 1) delete mySeq;
 
     // c-tor part
 
-    mySequence = other.mySequence;
-    mySequence->referred++;
+    mySeq = other.mySeq;
+    mySeq->referred++;
 
     myPos    = other.myPos;
     myLength = other.myLength;
-    myText   = mySequence->text()+myPos;
+    myText   = mySeq->text()+myPos;
 
     return *this;
 }
