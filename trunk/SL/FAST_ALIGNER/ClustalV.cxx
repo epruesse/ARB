@@ -1042,6 +1042,9 @@ ARB_ERROR ClustalV_align(int          is_dna,
             *resultPtr1   = result[1]+1;
             *resultPtr2   = result[2]+1;
             *resLengthPtr = alignedLength;
+
+            (*resultPtr1)[alignedLength] = 0;
+            (*resultPtr2)[alignedLength] = 0;
         }
     }
 
