@@ -674,7 +674,7 @@ static ARB_ERROR cannot_fast_align(const CompactedSubSequence& master, long moff
 {
     const char *mtext = master.text(moffset);
     const char *stext = slaveSequence.text(soffset);
-    char       *maligned, *saligned;
+    const char *maligned, *saligned;
     int         len;
     ARB_ERROR   error = 0;
 
@@ -703,7 +703,7 @@ static ARB_ERROR cannot_fast_align(const CompactedSubSequence& master, long moff
                                        mtext, mlength, stext, slength,
                                        master.gapsBefore(moffset), 
                                        max_seq_length,
-                                       &maligned, &saligned, &len, &score);
+                                       maligned, saligned, len, score);
             }
 
             if (!error) {
