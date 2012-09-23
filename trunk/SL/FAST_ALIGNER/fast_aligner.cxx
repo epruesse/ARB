@@ -674,14 +674,10 @@ static ARB_ERROR cannot_fast_align(const CompactedSubSequence& master, long moff
 {
     const char *mtext = master.text(moffset);
     const char *stext = slaveSequence.text(soffset);
-    const char *maligned, *saligned;
-    int         len;
     ARB_ERROR   error = 0;
 
     if (slength) {
         if (mlength) { // if slave- and master-sequences contain bases, we call the slow aligner
-            int score;
-
 #ifdef TRACE_CLUSTAL_DATA
             printf("ClustalV-Align:\n");
             printf(" mseq = '%s'\n", lstr(mtext, mlength));
@@ -697,7 +693,10 @@ static ARB_ERROR cannot_fast_align(const CompactedSubSequence& master, long moff
                 default: error = "Unknown alignment type - aligner aborted"; break;
             }
 
+            const char *maligned, *saligned;
+            int         len;
             if (!error) {
+                int score; // unused
                 error = ClustalV_align(is_dna,
                                        1,
                                        mtext, mlength, stext, slength,
@@ -1482,9 +1481,10 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
 
                 char T_or_U;
                 error = GBT_determine_T_or_U(global_alignmentType, &T_or_U, "reverse-complement");
-                GBT_reverseComplementNucSequence(mirroredSequence, length, T_or_U);
-
-                error = familyFinder->searchFamily(mirroredSequence, FF_FORWARD, relativesToTest+1, 0); // @@@ make min_score configurable
+                if (!error) {
+                    GBT_reverseComplementNucSequence(mirroredSequence, length, T_or_U);
+                    error = familyFinder->searchFamily(mirroredSequence, FF_FORWARD, relativesToTest+1, 0); // @@@ make min_score configurable
+                }
                 if (!error) {
 #if defined(DEBUG)
                     double lastScore = -1;
