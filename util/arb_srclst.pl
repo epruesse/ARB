@@ -342,6 +342,10 @@ sub useFile($$) {
 
 # ------------------------------------------------------------
 
+my $VC_FILE    = 1;
+my $VC_DIR     = 2;
+my $VC_UNKNOWN = 3; # in SVN, but unknown whether dir or file
+
 my $svn_entries_read = 0;
 my %all_svn_entries = ();
 
@@ -366,13 +370,13 @@ sub getSVNEntries($\%) {
         if ($line =~ $reg_status_line) {
           my ($flags,$name) = ($1,$2);
           if (-f $name) {
-            $all_svn_entries{$name} = 1; # file
+            $all_svn_entries{$name} = $VC_FILE;
           }
           elsif (-d $name) {
-            $all_svn_entries{$name} = 2; # dir
+            $all_svn_entries{$name} = $VC_DIR;
           }
           else {
-            die "Neighter file nor dir: $name";
+            $all_svn_entries{$name} = $VC_UNKNOWN;
           }
         }
         else {
@@ -427,10 +431,10 @@ sub getCVSEntries($\%) {
       foreach (<CVS>) {
         chomp;
         if (/^D\/([^\/]+)\//o) { # directory
-          $$CVS_r{$1} = 2;
+          $$CVS_r{$1} = $VC_DIR;
         }
         elsif (/^\/([^\/]+)\//o) { # file
-          $$CVS_r{$1} = 1;
+          $$CVS_r{$1} = $VC_FILE;
         }
         elsif (/^D$/o) {
           ;
