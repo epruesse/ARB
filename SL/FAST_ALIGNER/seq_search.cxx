@@ -53,8 +53,8 @@ CompactedSequence::CompactedSequence(const char *Text, int Length, const char *n
     : basepos(Text, Length, pred_is_ali_gap),
       myName(strdup(name)),
       myStartOffset(0),  // corrected at end of ctor (otherwise calculations below go wrong)
-      dots(NULL),
-      referred(1)
+      dots(NULL)
+      // referred(1)
 {
     fa_assert(Length>0);
 
@@ -90,7 +90,6 @@ CompactedSequence::CompactedSequence(const char *Text, int Length, const char *n
 }
 
 CompactedSequence::~CompactedSequence() {
-    fa_assert(referred==0);
     delete [] myText;
     delete[] gapsBeforePosition;
     free(myName);
