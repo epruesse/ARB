@@ -109,7 +109,7 @@ static int horizontalOpen       [DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
 inline int master_gap_open(int beforePosition) {
 #ifdef DYNAMIC_PENALTIES
     long gaps = gaps_before_position[beforePosition-1];
-    return (gaps) ? MASTER_GAP_OPEN - MAX_GAP_OPEN_DISCOUNT : MASTER_GAP_OPEN;
+    return gaps ? MASTER_GAP_OPEN - MAX_GAP_OPEN_DISCOUNT : MASTER_GAP_OPEN;
 
     /*    return
           gaps >= MAX_GAP_OPEN_DISCOUNT
@@ -122,8 +122,7 @@ inline int master_gap_open(int beforePosition) {
 inline int master_gap_extend(int beforePosition) {
 #ifdef DYNAMIC_PENALTIES
     long gaps = gaps_before_position[beforePosition-1];
-
-    return (gaps) ? MASTER_GAP_EXTEND - MAX_GAP_EXTEND_DISCOUNT : MASTER_GAP_EXTEND;
+    return gaps ? MASTER_GAP_EXTEND - MAX_GAP_EXTEND_DISCOUNT : MASTER_GAP_EXTEND;
     /*    return
           gaps >= MAX_GAP_EXTEND_DISCOUNT
           ? DEFAULT_GAP_EXTEND-MAX_GAP_EXTEND_DISCOUNT
@@ -979,7 +978,7 @@ ARB_ERROR ClustalV_align(int          is_dna,
                          int          length1,
                          const char  *seq2,
                          int          length2,
-                         const int   *gapsBefore1,
+                         const int   *gapsBefore1, // size of array = length1+1
                          int          max_seq_length,
                          char       **resultPtr1,
                          char       **resultPtr2,
@@ -1075,11 +1074,12 @@ static arb_test::match_expectation clustal_aligns(const char *i1, const char *i2
 
     char *result1 = NULL;
     char *result2 = NULL;
-    int   result_len;
+    int   result_len; // test result value?
     int   score;
 
-    int no_gaps_before1[l1];
-    memset(no_gaps_before1, 0, l1*sizeof(*no_gaps_before1));
+    int gaps_size = l1+1;
+    int no_gaps_before1[gaps_size];
+    memset(no_gaps_before1, 0, gaps_size*sizeof(*no_gaps_before1));
 
     ARB_ERROR error = ClustalV_align(0, 0,
                                      i1, l1,
