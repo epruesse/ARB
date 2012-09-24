@@ -120,20 +120,19 @@ static void getnums(FILE *INFILE) {
     }
 }
 
-
-static bool digit(int ch) { return (ch >= '0' && ch <= '9'); }
-
-
-static bool white(int ch) { return (ch == ' ' || ch == '\n' || ch == '\t'); }
-
+inline int min(int i, int j) { return i<j ? i : j; }
+inline bool digit(int ch) { return (ch >= '0' && ch <= '9'); }
+inline bool white(int ch) { return (ch == ' ' || ch == '\n' || ch == '\t'); }
 
 static void uppercase(int *chptr) {
     // convert character to upper case -- either ASCII or EBCDIC
-    int  ch;
-    ch = *chptr;
-    if ((ch >= 'a' && ch <= 'i') || (ch >= 'j' && ch <= 'r')
-        || (ch >= 's' && ch <= 'z'))
+    int ch = *chptr;
+    if ((ch >= 'a' && ch <= 'i') ||
+        (ch >= 'j' && ch <= 'r') ||
+        (ch >= 's' && ch <= 'z'))
+    {
         *chptr = ch + 'A' - 'a';
+    }
 }
 
 
@@ -150,18 +149,17 @@ static int base36(int ch) {
 
 
 static int itobase36(int i) {
-    if      (i <  0) return '?';
-    else if (i < 10) return (i      + '0');
-    else if (i < 19) return (i - 10 + 'A');
-    else if (i < 28) return (i - 19 + 'J');
-    else if (i < 36) return (i - 28 + 'S');
-    else return '?';
+    if (i <  0) return '?';
+    if (i < 10) return (i      + '0');
+    if (i < 19) return (i - 10 + 'A');
+    if (i < 28) return (i - 19 + 'J');
+    if (i < 36) return (i - 28 + 'S');
+    return '?';
 }
 
 
 static int findch(int c, FILE *INFILE) {
     int ch;
-
     while ((ch = getc(INFILE)) != EOF && ch != c) ;
     return  ch;
 }
@@ -169,16 +167,17 @@ static int findch(int c, FILE *INFILE) {
 
 static void inputweights(FILE *INFILE) {
     // input the character weights 0, 1, 2 ... 9, A, B, ... Y, Z
-    int i, ch, wi;
 
-    for (i = 2; i <= nmlngth; i++)  (void) getc(INFILE);
+    for (int i = 2; i <= nmlngth; i++)  (void) getc(INFILE);
+
     weightsum = 0;
-    i = 1;
+    int i = 1;
     while (i <= sites) {
-        ch = getc(INFILE);
-        wi = base36(ch);
-        if (wi >= 0)
+        int ch = getc(INFILE);
+        int wi = base36(ch);
+        if (wi >= 0) {
             weightsum += weight[i++] = wi;
+        }
         else if (! white(ch)) {
             printf("ERROR: Bad weight character: '%c'", ch);
             printf("       Weights must be a digit or a letter.\n");
@@ -195,18 +194,17 @@ static void inputweights(FILE *INFILE) {
 
 
 static void getoptions(FILE *INFILE) {
-    int  ch, i, extranum;
-
-    categs      =     0;  //  Number of rate categories
-    freqsfrom   = false;  //  Use empirical base frequencies
-    interleaved =  true;  //  By default, data format is interleaved
+    categs      = 0;        //  Number of rate categories
+    freqsfrom   = false;    //  Use empirical base frequencies
+    interleaved = true;     //  By default, data format is interleaved
     mininfo     = MIN_INFO; //  Default minimum number of informative seqs
-    printdata   = false;  //  Don't echo data to output stream
-    ttratio     =   2.0;  //  Transition/transversion rate ratio
-    userweights = false;  //  User-defined position weights
-    writefile   = false;  //  Do not write to file
-    extranum    =     0;
+    printdata   = false;    //  Don't echo data to output stream
+    ttratio     = 2.0;      //  Transition/transversion rate ratio
+    userweights = false;    //  User-defined position weights
+    writefile   = false;    //  Do not write to file
 
+    int extranum = 0;
+    int ch;
     while ((ch = getc(INFILE)) != '\n' && ch != EOF) {
         uppercase (& ch);
         switch (ch) {
@@ -325,7 +323,7 @@ static void getoptions(FILE *INFILE) {
     }
 
     if (! userweights) {
-        for (i = 1; i <= sites; i++)  weight[i] = 1;
+        for (int i = 1; i <= sites; i++)  weight[i] = 1;
         weightsum = sites;
     }
     else if (weightsum < 1) {
@@ -338,8 +336,6 @@ static void getoptions(FILE *INFILE) {
 
 
 static void getbasefreqs(FILE *INFILE) {
-    double  suma, sumb;
-
     if (freqsfrom)  printf("Empirical ");
     printf("Base Frequencies:\n\n");
 
@@ -364,8 +360,8 @@ static void getbasefreqs(FILE *INFILE) {
     freqcy = freqc * invfreqy;
     freqty = freqt * invfreqy;
     printf("Transition/transversion ratio = %10.6f\n\n", ttratio);
-    suma = ttratio*freqr*freqy - (freqa*freqg + freqc*freqt);
-    sumb = freqa*freqgr + freqc*freqty;
+    double suma = ttratio*freqr*freqy - (freqa*freqg + freqc*freqt);
+    double sumb = freqa*freqgr + freqc*freqty;
     xi = suma/(suma+sumb);
     xv = 1.0 - xi;
     ttratio = xi / xv;
@@ -384,17 +380,15 @@ static void getbasefreqs(FILE *INFILE) {
 
 
 static void getyspace() {
-    long size;
-    int  i;
-    char *y0;
-
-    size = 4 * (sites/4 + 1);
-    if (! (y0 = (char*)malloc((unsigned) (sizeof(char) * size * (numsp+1))))) {
+    long  size = 4 * (sites/4 + 1);
+    char *y0   = (char*)malloc((unsigned) (sizeof(char) * size * (numsp+1)));
+    
+    if (!y0) {
         printf("ERROR: Unable to obtain space for data array\n");
         anerror = true;
     }
     else {
-        for (i = 0; i <= numsp; i++) {
+        for (int i = 0; i <= numsp; i++) {
             y[i] = y0;
             y0 += size;
         }
@@ -403,33 +397,37 @@ static void getyspace() {
 
 
 static void setuptree(tree *tr, int numSp) {
-    int     i, j;
-    nodeptr p = 0, q;
+    nodeptr p = NULL;
 
-    for (i = 1; i <= numSp; i++) {   //  Set-up tips
-        if ((anerror = !(p = (nodeptr) malloc((unsigned) sizeof(node))))) break;
-        p->x      = (xarray *) NULL;
-        p->tip    = (char *) NULL;
-        p->number = i;
-        p->next   = (nodeptr) NULL;
-        p->back   = (nodeptr) NULL;
+    for (int i = 1; i <= numSp; i++) {   //  Set-up tips
+        p = (nodeptr)malloc(sizeof(node));
+        if (!p) { anerror = true; break; }
+        
+        p->x         = NULL;
+        p->tip       = NULL;
+        p->number    = i;
+        p->next      = NULL;
+        p->back      = NULL;
         tr->nodep[i] = p;
     }
 
-    for (i = numSp+1; i <= 2*numSp-1 && ! anerror; i++) { // Internal nodes    **  was : 2*numSp-2 (ralf)
-        q = (nodeptr) NULL;
-        for (j = 1; j <= 3; j++) {
-            if ((anerror = !(p = (nodeptr) malloc((unsigned) sizeof(node))))) break;
-            p->x      = (xarray *) NULL;
-            p->tip    = (char *) NULL;
+    for (int i = numSp+1; i <= 2*numSp-1 && !anerror; i++) { // Internal nodes    **  was : 2*numSp-2 (ralf)
+        nodeptr q = NULL;
+        for (int j = 1; j <= 3; j++) {
+            p = (nodeptr)malloc(sizeof(node));
+            if (!p) { anerror = true; break; }
+            
+            p->x      = NULL;
+            p->tip    = NULL;
             p->number = i;
             p->next   = q;
-            p->back   = (nodeptr) NULL;
-            q = p;
+            p->back   = NULL;
+            q         = p;
         }
-        if (anerror) break;
-        p->next->next->next = p;
-        tr->nodep[i] = p;
+        if (!anerror) {
+            p->next->next->next = p;
+            tr->nodep[i] = p;
+        }
     }
 
     tr->likelihood = unlikely;
@@ -439,6 +437,7 @@ static void setuptree(tree *tr, int numSp) {
     tr->nextnode   = 0;
     tr->opt_level  = 0;
     tr->smoothed   = false;
+
     if (anerror) printf("ERROR: Unable to obtain sufficient memory");
 }
 
@@ -455,14 +454,13 @@ static void freeTreeNode(nodeptr p) {
 }
 
 static void freeTree(tree *tr) {
-    int  i;
-    nodeptr  p, q;
+    for (int i = 1; i <= tr->mxtips; i++) freeTreeNode(tr->nodep[i]);
 
-    for (i = 1; i <= tr->mxtips; i++) freeTreeNode(tr->nodep[i]);
-
-    for (i = tr->mxtips+1; i <= 2*(tr->mxtips)-2; i++) {
-        if ((p = tr->nodep[i])) {
-            if ((q = p->next)) {
+    for (int i = tr->mxtips+1; i <= 2*(tr->mxtips)-2; i++) {
+        nodeptr p = tr->nodep[i];
+        if (p) {
+            nodeptr q = p->next;
+            if (q) {
                 freeTreeNode(q->next);
                 freeTreeNode(q);
             }
@@ -473,44 +471,46 @@ static void freeTree(tree *tr) {
 
 
 static void getdata(tree *tr, FILE *INFILE) {
-     // read sequences
-    int  i, j, k, l, basesread, basesnew, ch;
-    int  meaning[256];          //  meaning of input characters
-    char *nameptr;
-    bool  allread, firstpass;
+    // read sequences
 
-    for (i = 0; i <= 255; i++) meaning[i] = 0;
-    meaning['A'] =  1;
-    meaning['B'] = 14;
-    meaning['C'] =  2;
-    meaning['D'] = 13;
-    meaning['G'] =  4;
-    meaning['H'] = 11;
-    meaning['K'] = 12;
-    meaning['M'] =  3;
-    meaning['N'] = 15;
-    meaning['O'] = 15;
-    meaning['R'] =  5;
-    meaning['S'] =  6;
-    meaning['T'] =  8;
-    meaning['U'] =  8;
-    meaning['V'] =  7;
-    meaning['W'] =  9;
-    meaning['X'] = 15;
-    meaning['Y'] = 10;
-    meaning['?'] = 15;
-    meaning['-'] = 15;
+    int meaning[256];           //  meaning of input characters
+    {
+        for (int i = 0; i <= 255; i++) meaning[i] = 0;
 
-    basesread = basesnew = 0;
+        meaning['A'] = 1;
+        meaning['B'] = 14;
+        meaning['C'] = 2;
+        meaning['D'] = 13;
+        meaning['G'] = 4;
+        meaning['H'] = 11;
+        meaning['K'] = 12;
+        meaning['M'] = 3;
+        meaning['N'] = 15;
+        meaning['O'] = 15;
+        meaning['R'] = 5;
+        meaning['S'] = 6;
+        meaning['T'] = 8;
+        meaning['U'] = 8;
+        meaning['V'] = 7;
+        meaning['W'] = 9;
+        meaning['X'] = 15;
+        meaning['Y'] = 10;
+        meaning['?'] = 15;
+        meaning['-'] = 15;
+    }
 
-    allread = false;
-    firstpass = true;
-    ch = ' ';
+    int basesread = 0;
+    int basesnew  = 0;
+
+    bool allread   = false;
+    bool firstpass = true;
+
+    int ch = ' ';
 
     while (! allread) {
-        for (i = 1; i <= numsp; i++) {          //  Read data line
+        for (int i = 1; i <= numsp; i++) {          //  Read data line
             if (firstpass) {                      //  Read species names
-                j = 1;
+                int j = 1;
                 while (white(ch = getc(INFILE))) {  //  Skip blank lines
                     if (ch == '\n')  j = 1;  else  j++;
                 }
@@ -523,8 +523,8 @@ static void getdata(tree *tr, FILE *INFILE) {
                     return;
                 }
 
-                nameptr = tr->nodep[i]->name;
-                for (k = 1; k < j; k++)  *nameptr++ = ' ';
+                char *nameptr = tr->nodep[i]->name;
+                for (int k = 1; k < j; k++)  *nameptr++ = ' ';
 
                 while (ch != '\n' && ch != EOF) {
                     if (ch == '_' || white(ch))  ch = ' ';
@@ -543,7 +543,7 @@ static void getdata(tree *tr, FILE *INFILE) {
                 }
             }
 
-            j = basesread;
+            int j = basesread;
             while ((j < sites) && ((ch = getc(INFILE)) != EOF)
                    && ((! interleaved) || (ch != '\n'))) {
                 uppercase (& ch);
@@ -594,21 +594,21 @@ static void getdata(tree *tr, FILE *INFILE) {
     //  Print listing of sequence alignment
 
     if (printdata) {
-        j = nmlngth - 5 + ((sites + ((sites-1)/10))/2);
+        int j = nmlngth - 5 + ((sites + ((sites-1)/10))/2);
         if (j < nmlngth - 1) j = nmlngth - 1;
         if (j > 37) j = 37;
-        printf("Name"); for (i=1; i<=j; i++) putchar(' '); printf("Sequences\n");
-        printf("----"); for (i=1; i<=j; i++) putchar(' '); printf("---------\n");
+        printf("Name"); for (int i=1; i<=j; i++) putchar(' '); printf("Sequences\n");
+        printf("----"); for (int i=1; i<=j; i++) putchar(' '); printf("---------\n");
         putchar('\n');
 
-        for (i = 1; i <= sites; i += 60) {
-            l = i + 59;
+        for (int i = 1; i <= sites; i += 60) {
+            int l = i + 59;
             if (l > sites) l = sites;
 
             if (userweights) {
                 printf("Weights   ");
                 for (j = 11; j <= nmlngth+3; j++) putchar(' ');
-                for (k = i; k <= l; k++) {
+                for (int k = i; k <= l; k++) {
                     putchar(itobase36(weight[k]));
                     if (((k % 10) == 0) && ((k % 60) != 0)) putchar(' ');
                 }
@@ -617,7 +617,7 @@ static void getdata(tree *tr, FILE *INFILE) {
 
             for (j = 1; j <= numsp; j++) {
                 printf("%s   ", tr->nodep[j]->name);
-                for (k = i; k <= l; k++) {
+                for (int k = i; k <= l; k++) {
                     ch = y[j][k];
                     if ((j > 1) && (ch == y[1][k])) ch = '.';
                     putchar(ch);
@@ -631,34 +631,34 @@ static void getdata(tree *tr, FILE *INFILE) {
 
     //  Convert characters to meanings
 
-    for (i = 1; i <= sites; i++)  info[i] = 0;
+    for (int i = 1; i <= sites; i++)  info[i] = 0;
 
-    for (j = 1; j <= numsp; j++) {
-        for (i = 1; i <= sites; i++) {
+    for (int j = 1; j <= numsp; j++) {
+        for (int i = 1; i <= sites; i++) {
             if ((y[j][i] = meaning[(int)y[j][i]]) != 15) info[i]++;
         }
     }
 
-    for (i = 1; i <= sites; i++)  if (info[i] < MIN_INFO)  weight[i] = 0;
+    for (int i = 1; i <= sites; i++)  if (info[i] < MIN_INFO)  weight[i] = 0;
 
 }
 
 
 static void sitesort() {
     // Shell sort keeping sites, weights in same order
-    int  gap, i, j, jj, jg, k;
-    bool  flip, tied;
-
-    for (gap = sites/2; gap > 0; gap /= 2) {
-        for (i = gap + 1; i <= sites; i++) {
-            j = i - gap;
-
+    for (int gap = sites/2; gap > 0; gap /= 2) {
+        for (int i = gap + 1; i <= sites; i++) {
+            int  j = i - gap;
+            bool flip;
             do {
-                jj = patsite[j];
-                jg = patsite[j+gap];
                 flip = false;
-                tied = true;
-                for (k = 1; tied && (k <= numsp); k++) {
+
+                int jj = patsite[j];
+                int jg = patsite[j+gap];
+
+                bool tied = true;
+
+                for (int k = 1; tied && (k <= numsp); k++) {
                     flip = (y[k][jj] >  y[k][jg]);
                     tied = (y[k][jj] == y[k][jg]);
                 }
@@ -667,8 +667,8 @@ static void sitesort() {
                     patsite[j+gap] = jj;
                     j -= gap;
                 }
-            } while (flip && (j > 0));
-
+            }
+            while (flip && (j > 0));
         }
     }
 }
@@ -676,20 +676,18 @@ static void sitesort() {
 
 static void sitecombcrunch() {
     // combine sites that have identical patterns (and nonzero weight)
-    int  i, sitei, j, sitej, k;
-    bool  tied;
-
-    i = 0;
+    int i = 0;
     patsite[0] = patsite[1];
     patweight[0] = 0;
 
-    for (j = 1; j <= sites; j++) {
-        tied = true;
-        sitei = patsite[i];
-        sitej = patsite[j];
+    for (int j = 1; j <= sites; j++) {
+        bool tied = true;
+        int sitei = patsite[i];
+        int sitej = patsite[j];
 
-        for (k = 1; tied && (k <= numsp); k++)
+        for (int k = 1; tied && (k <= numsp); k++) {
             tied = (y[k][sitei] == y[k][sitej]);
+        }
 
         if (tied) {
             patweight[i] += weight[sitej];
@@ -710,9 +708,7 @@ static void sitecombcrunch() {
 
 static void makeweights() {
     // make up weights vector to avoid duplicate computations
-    int  i;
-
-    for (i = 1; i <= sites; i++)  patsite[i] = i;
+    for (int i = 1; i <= sites; i++) patsite[i] = i;
     sitesort();
     sitecombcrunch();
     if (endsite > maxpatterns) {
@@ -728,50 +724,52 @@ static void makeweights() {
 
 static void makevalues(tree *tr) {
     // set up fractional likelihoods at tips
-    nodeptr  p;
-    int  i, j;
-
-    for (i = 1; i <= numsp; i++) {    // Pack and move tip data
-        for (j = 0; j < endsite; j++)
+    for (int i = 1; i <= numsp; i++) {    // Pack and move tip data
+        for (int j = 0; j < endsite; j++) {
             y[i-1][j] = y[i][patsite[j]];
-
-        p = tr->nodep[i];
-        p->tip = &(y[i-1][0]);
+        }
+        nodeptr p = tr->nodep[i];
+        p->tip    = &(y[i-1][0]);
     }
 }
 
 
 static void empiricalfreqs(tree *tr) {
-     // Get empirical base frequencies from the data
-    double  sum, suma, sumc, sumg, sumt, wj, fa, fc, fg, ft;
-    int  i, j, k, code;
-    char *yptr;
+    // Get empirical base frequencies from the data
 
     freqa = 0.25;
     freqc = 0.25;
     freqg = 0.25;
     freqt = 0.25;
-    for (k = 1; k <= 8; k++) {
-        suma = 0.0;
-        sumc = 0.0;
-        sumg = 0.0;
-        sumt = 0.0;
-        for (i = 1; i <= numsp; i++) {
-            yptr = tr->nodep[i]->tip;
-            for (j = 0; j < endsite; j++) {
-                code = *yptr++;
-                fa = freqa * (code       & 1);
-                fc = freqc * ((code >> 1) & 1);
-                fg = freqg * ((code >> 2) & 1);
-                ft = freqt * ((code >> 3) & 1);
-                wj = patweight[j] / (fa + fc + fg + ft);
+
+    for (int k = 1; k <= 8; k++) {
+        double suma = 0.0;
+        double sumc = 0.0;
+        double sumg = 0.0;
+        double sumt = 0.0;
+        
+
+        for (int i = 1; i <= numsp; i++) {
+            char *yptr = tr->nodep[i]->tip;
+            for (int j = 0; j < endsite; j++) {
+                int code = *yptr++;
+
+                double fa = freqa * (code       & 1);
+                double fc = freqc * ((code >> 1) & 1);
+                double fg = freqg * ((code >> 2) & 1);
+                double ft = freqt * ((code >> 3) & 1);
+
+                double wj = patweight[j] / (fa + fc + fg + ft);
+
                 suma += wj * fa;
                 sumc += wj * fc;
                 sumg += wj * fg;
                 sumt += wj * ft;
             }
         }
-        sum = suma + sumc + sumg + sumt;
+
+        double sum = suma + sumc + sumg + sumt;
+
         freqa = suma / sum;
         freqc = sumc / sum;
         freqg = sumg / sum;
@@ -797,12 +795,9 @@ static void getinput(tree *tr, FILE *INFILE) {
 
 
 static xarray *setupxarray() {
-    xarray  *x;
-    xtype  *data;
-
-    x = (xarray *) malloc((unsigned) sizeof(xarray));
+    xarray *x = (xarray *) malloc((unsigned) sizeof(xarray));
     if (x) {
-        data = (xtype *) malloc((unsigned) (4 * endsite * sizeof(xtype)));
+        xtype *data = (xtype *) malloc((unsigned) (4 * endsite * sizeof(xtype)));
         if (data) {
             x->a = data;
             x->c = data += endsite;
@@ -822,28 +817,30 @@ static xarray *setupxarray() {
 
 static void linkxarray(int req, int min, xarray **freexptr, xarray **usedxptr) {
     //  Link a set of xarrays
-    xarray  *first, *prev, *x;
-    int  i;
 
-    first = prev = (xarray *) NULL;
-    i = 0;
+    xarray *first = NULL;
+    xarray *prev  = NULL;
 
-    do {
-        x = setupxarray();
-        if (x) {
-            if (! first) first = x;
-            else {
-                prev->next = x;
-                x->prev = prev;
+    {
+        int i = 0;
+        xarray *x;
+        do {
+            x = setupxarray();
+            if (x) {
+                if (! first) first = x;
+                else {
+                    prev->next = x;
+                    x->prev = prev;
+                }
+                prev = x;
+                i++;
             }
-            prev = x;
-            i++;
-        }
-        else {
-            printf("ERROR: Failure to get xarray memory.\n");
-            if (i < min) anerror = true;
-        }
-    } while ((i < req) && x);
+            else {
+                printf("ERROR: Failure to get xarray memory.\n");
+                if (i < min) anerror = true;
+            }
+        } while ((i < req) && x);
+    }
 
     if (first) {
         first->prev = prev;
@@ -851,196 +848,199 @@ static void linkxarray(int req, int min, xarray **freexptr, xarray **usedxptr) {
     }
 
     *freexptr = first;
-    *usedxptr = (xarray *) NULL;
+    *usedxptr = NULL;
 }
 
 
 static void setupnodex(tree *tr) {
-    nodeptr  p;
-    int  i;
-
-    for (i = tr->mxtips + 1; (i <= 2*(tr->mxtips) - 2) && ! anerror; i++) {
-        p = tr->nodep[i];
-        if ((anerror = !(p->x = setupxarray()))) break;
+    for (int i = tr->mxtips + 1; (i <= 2*(tr->mxtips) - 2) && ! anerror; i++) {
+        nodeptr p = tr->nodep[i];
+        p->x      = setupxarray();
+        if (!p->x) { anerror = true; break; }
     }
 }
 
 static xarray *getxtip(nodeptr p) {
-    xarray *new_xarray;
-    bool  splice;
+    xarray *new_xarray = NULL;
+    if (p) {
+        bool splice = false;
 
-    if (! p) return (xarray *) NULL;
+        if (p->x) {
+            new_xarray = p->x;
+            if (new_xarray == new_xarray->prev) ;             // linked to self; leave it
+            else if (new_xarray == usedxtip) usedxtip = usedxtip->next; // at head
+            else if (new_xarray == usedxtip->prev) ;   // already at tail
+            else {                              // move to tail of list
+                new_xarray->prev->next = new_xarray->next;
+                new_xarray->next->prev = new_xarray->prev;
+                splice                 = true;
+            }
+        }
 
-    splice = false;
+        else if (freextip) {
+            new_xarray = freextip;
+            p->x       = freextip;
 
-    if (p->x) {
-        new_xarray = p->x;
-        if (new_xarray == new_xarray->prev) ;             // linked to self; leave it
-        else if (new_xarray == usedxtip) usedxtip = usedxtip->next; // at head
-        else if (new_xarray == usedxtip->prev) ;   // already at tail
-        else {                              // move to tail of list
-            new_xarray->prev->next = new_xarray->next;
-            new_xarray->next->prev = new_xarray->prev;
-            splice                 = true;
+            new_xarray->owner = p;
+            if (new_xarray->prev != new_xarray) {            // not only member of freelist
+                new_xarray->prev->next = new_xarray->next;
+                new_xarray->next->prev = new_xarray->prev;
+                freextip               = new_xarray->next;
+            }
+            else {
+                freextip = NULL;
+            }
+
+            splice = true;
+        }
+
+        else if (usedxtip) {
+            usedxtip->owner->x = NULL;
+            new_xarray         = usedxtip;
+            p->x               = usedxtip;
+            new_xarray->owner  = p;
+            usedxtip           = usedxtip->next;
+        }
+
+        else {
+            printf ("ERROR: Unable to locate memory for a tip.\n");
+            anerror = true;
+            exit(0);
+        }
+
+        if (splice) {
+            if (usedxtip) {                  // list is not empty
+                usedxtip->prev->next = new_xarray;
+                new_xarray->prev     = usedxtip->prev;
+                usedxtip->prev       = new_xarray;
+                new_xarray->next     = usedxtip;
+            }
+            else {
+                usedxtip = new_xarray->prev = new_xarray->next = new_xarray;
+            }
         }
     }
-
-    else if (freextip) {
-        p->x = new_xarray = freextip;
-        new_xarray->owner = p;
-        if (new_xarray->prev != new_xarray) {            // not only member of freelist
-            new_xarray->prev->next = new_xarray->next;
-            new_xarray->next->prev = new_xarray->prev;
-            freextip               = new_xarray->next;
-        }
-        else
-            freextip = (xarray *) NULL;
-
-        splice = true;
-    }
-
-    else if (usedxtip) {
-        usedxtip->owner->x = (xarray *) NULL;
-        p->x               = new_xarray = usedxtip;
-        new_xarray->owner  = p;
-        usedxtip           = usedxtip->next;
-    }
-
-    else {
-        printf ("ERROR: Unable to locate memory for a tip.\n");
-        anerror = true;
-        exit(0);
-    }
-
-    if (splice) {
-        if (usedxtip) {                  // list is not empty
-            usedxtip->prev->next = new_xarray;
-            new_xarray->prev     = usedxtip->prev;
-            usedxtip->prev       = new_xarray;
-            new_xarray->next     = usedxtip;
-        }
-        else
-            usedxtip = new_xarray->prev = new_xarray->next = new_xarray;
-    }
-
-    return  new_xarray;
+    return new_xarray;
 }
 
 
 static xarray *getxnode(nodeptr p) {
     // Ensure that internal node p has memory
-    nodeptr  s;
-
     if (! (p->x)) {  //  Move likelihood array on this node to sector p
+        nodeptr s;
         if ((s = p->next)->x || (s = s->next)->x) {
             p->x = s->x;
-            s->x = (xarray *) NULL;
+            s->x = NULL;
         }
         else {
             printf("ERROR in getxnode: Unable to locate memory at internal node.");
             exit(0);
         }
     }
-    return  p->x;
+    return p->x;
 }
 
 
 static void newview(nodeptr p) {
     //  Update likelihoods at node
-    double   z1, lz1, xvlz1, z2, lz2, xvlz2,
-        zz1, zv1, fx1r, fx1y, fx1n, suma1, sumg1, sumc1, sumt1,
-        zz2, zv2, fx2r, fx2y, fx2n, ki, tempi, tempj;
-    nodeptr  q, r;
-    xtype   *x1a, *x1c, *x1g, *x1t, *x2a, *x2c, *x2g, *x2t,
-        *x3a, *x3c, *x3g, *x3t;
-    int      i;
 
     if (p->tip) {             //  Make sure that data are at tip
-        int code;
-        char *yptr;
+        if (!p->x) {                //  they are not already there
+            (void) getxtip(p);      //  they are not, so get memory
 
-        if (p->x) return;       //  They are already there
-        (void) getxtip(p);      //  They are not, so get memory
-        x3a = &(p->x->a[0]);    //  Move tip data to xarray
-        x3c = &(p->x->c[0]);
-        x3g = &(p->x->g[0]);
-        x3t = &(p->x->t[0]);
-        yptr = p->tip;
-        for (i = 0; i < endsite; i++) {
-            code = *yptr++;
-            *x3a++ =  code       & 1;
-            *x3c++ = (code >> 1) & 1;
-            *x3g++ = (code >> 2) & 1;
-            *x3t++ = (code >> 3) & 1;
+            xtype *x3a = &(p->x->a[0]);    //  Move tip data to xarray
+            xtype *x3c = &(p->x->c[0]);
+            xtype *x3g = &(p->x->g[0]);
+            xtype *x3t = &(p->x->t[0]);
+
+            char *yptr = p->tip;
+            for (int i = 0; i < endsite; i++) {
+                int code = *yptr++;
+                *x3a++ =  code       & 1;
+                *x3c++ = (code >> 1) & 1;
+                *x3g++ = (code >> 2) & 1;
+                *x3t++ = (code >> 3) & 1;
+            }
         }
-        return;
     }
+    else {
+        //  Internal node needs update
 
-    //  Internal node needs update
+        nodeptr q = p->next->back;
+        nodeptr r = p->next->next->back;
 
-    q = p->next->back;
-    r = p->next->next->back;
+        while ((! p->x) || (! q->x) || (! r->x)) {
+            if (! q->x) newview(q);
+            if (! r->x) newview(r);
+            if (! p->x)  (void) getxnode(p);
+        }
 
-    while ((! p->x) || (! q->x) || (! r->x)) {
-        if (! q->x) newview(q);
-        if (! r->x) newview(r);
-        if (! p->x)  (void) getxnode(p);
-    }
+        xtype *x1a = &(q->x->a[0]);
+        xtype *x1c = &(q->x->c[0]);
+        xtype *x1g = &(q->x->g[0]);
+        xtype *x1t = &(q->x->t[0]);
 
-    x1a = &(q->x->a[0]);
-    x1c = &(q->x->c[0]);
-    x1g = &(q->x->g[0]);
-    x1t = &(q->x->t[0]);
-    z1 = q->z;
-    lz1 = (z1 > zmin) ? log(z1) : log(zmin);
-    xvlz1 = xv * lz1;
+        double z1    = q->z;
+        double lz1   = (z1 > zmin) ? log(z1) : log(zmin);
+        double xvlz1 = xv * lz1;
 
-    x2a = &(r->x->a[0]);
-    x2c = &(r->x->c[0]);
-    x2g = &(r->x->g[0]);
-    x2t = &(r->x->t[0]);
-    z2 = r->z;
-    lz2 = (z2 > zmin) ? log(z2) : log(zmin);
-    xvlz2 = xv * lz2;
+        xtype *x2a = &(r->x->a[0]);
+        xtype *x2c = &(r->x->c[0]);
+        xtype *x2g = &(r->x->g[0]);
+        xtype *x2t = &(r->x->t[0]);
+        
+        double z2    = r->z;
+        double lz2   = (z2 > zmin) ? log(z2) : log(zmin);
+        double xvlz2 = xv * lz2;
 
-    x3a = &(p->x->a[0]);
-    x3c = &(p->x->c[0]);
-    x3g = &(p->x->g[0]);
-    x3t = &(p->x->t[0]);
+        xtype *x3a = &(p->x->a[0]);
+        xtype *x3c = &(p->x->c[0]);
+        xtype *x3g = &(p->x->g[0]);
+        xtype *x3t = &(p->x->t[0]);
 
-    { double  *rptr;
+        {
+            double *rptr = &(patrate[0]);
+            for (int i = 0; i < endsite; i++) {
+                double ki = *rptr++;
 
-        rptr = &(patrate[0]);
-        for (i = 0; i < endsite; i++) {
-            ki = *rptr++;
+                double zz1 = exp(ki *   lz1);
+                double zv1 = exp(ki * xvlz1);
 
-            zz1 = exp(ki *   lz1);
-            zv1 = exp(ki * xvlz1);
-            fx1r = freqa * *x1a + freqg * *x1g;
-            fx1y = freqc * *x1c + freqt * *x1t;
-            fx1n = fx1r + fx1y;
-            tempi = fx1r * invfreqr;
-            tempj = zv1 * (tempi-fx1n) + fx1n;
-            suma1 = zz1 * (*x1a++ - tempi) + tempj;
-            sumg1 = zz1 * (*x1g++ - tempi) + tempj;
-            tempi = fx1y * invfreqy;
-            tempj = zv1 * (tempi-fx1n) + fx1n;
-            sumc1 = zz1 * (*x1c++ - tempi) + tempj;
-            sumt1 = zz1 * (*x1t++ - tempi) + tempj;
+                double fx1r = freqa * *x1a + freqg * *x1g;
+                double fx1y = freqc * *x1c + freqt * *x1t;
+                double fx1n = fx1r + fx1y;
 
-            zz2 = exp(ki *   lz2);
-            zv2 = exp(ki * xvlz2);
-            fx2r = freqa * *x2a + freqg * *x2g;
-            fx2y = freqc * *x2c + freqt * *x2t;
-            fx2n = fx2r + fx2y;
-            tempi = fx2r * invfreqr;
-            tempj = zv2 * (tempi-fx2n) + fx2n;
-            *x3a++ = suma1 * (zz2 * (*x2a++ - tempi) + tempj);
-            *x3g++ = sumg1 * (zz2 * (*x2g++ - tempi) + tempj);
-            tempi = fx2y * invfreqy;
-            tempj = zv2 * (tempi-fx2n) + fx2n;
-            *x3c++ = sumc1 * (zz2 * (*x2c++ - tempi) + tempj);
-            *x3t++ = sumt1 * (zz2 * (*x2t++ - tempi) + tempj);
+                double tempi = fx1r * invfreqr;
+                double tempj = zv1 * (tempi-fx1n) + fx1n;
+
+                double suma1 = zz1 * (*x1a++ - tempi) + tempj;
+                double sumg1 = zz1 * (*x1g++ - tempi) + tempj;
+
+                tempi = fx1y * invfreqy;
+                tempj = zv1 * (tempi-fx1n) + fx1n;
+            
+                double sumc1 = zz1 * (*x1c++ - tempi) + tempj;
+                double sumt1 = zz1 * (*x1t++ - tempi) + tempj;
+
+                double zz2 = exp(ki *   lz2);
+                double zv2 = exp(ki * xvlz2);
+
+                double fx2r = freqa * *x2a + freqg * *x2g;
+                double fx2y = freqc * *x2c + freqt * *x2t;
+                double fx2n = fx2r + fx2y;
+
+                tempi = fx2r * invfreqr;
+                tempj = zv2 * (tempi-fx2n) + fx2n;
+
+                *x3a++ = suma1 * (zz2 * (*x2a++ - tempi) + tempj);
+                *x3g++ = sumg1 * (zz2 * (*x2g++ - tempi) + tempj);
+
+                tempi = fx2y * invfreqy;
+                tempj = zv2 * (tempi-fx2n) + fx2n;
+                
+                *x3c++ = sumc1 * (zz2 * (*x2c++ - tempi) + tempj);
+                *x3t++ = sumt1 * (zz2 * (*x2t++ - tempi) + tempj);
+            }
         }
     }
 }
@@ -1066,10 +1066,8 @@ static void initrav(nodeptr p) {
 // =======================================================================
 
 static int treeFinishCom(FILE *INFILE) {
+    bool inquote = false;
     int  ch;
-    bool inquote;
-
-    inquote = false;
     while ((ch = getc(INFILE)) != EOF && (inquote || ch != ']')) {
         if (ch == '[' && ! inquote) {             // comment; find its end
             if ((ch = treeFinishCom(INFILE)) == EOF)  break;
@@ -1097,12 +1095,10 @@ static int treeGetCh(FILE *INFILE) {
 }
 
 static void treeFlushLabel(FILE *INFILE) {
-    int  ch;
-    bool done;
+    int ch = treeGetCh(INFILE);
+    if (ch == EOF) return;
 
-    if ((ch = treeGetCh(INFILE)) == EOF)  return;
-    done = (ch == ':' || ch == ',' || ch == ')'  || ch == '[' || ch == ';');
-
+    bool done = (ch == ':' || ch == ',' || ch == ')'  || ch == '[' || ch == ';');
     if (!done) {
         bool quoted = (ch == '\'');
         if (quoted) ch = getc(INFILE);
@@ -1126,31 +1122,32 @@ static void treeFlushLabel(FILE *INFILE) {
 
 
 static int findTipName(tree *tr, int ch, FILE *INFILE) {
-    nodeptr  q;
-    char    *nameptr, str[nmlngth+1];
-    int      i, n;
-    bool     found, quoted, done;
+    bool quoted     = (ch == '\'');
+    if (quoted)  ch = getc(INFILE);
 
-    if ((quoted = (ch == '\'')))  ch = getc(INFILE);
-    done = false;
-    i = 0;
+    bool done = false;
+    int  i    = 0;
 
+    char str[nmlngth+1];
     do {
         if (quoted) {
             if (ch == '\'') {
                 ch = getc(INFILE);
                 if (ch != '\'') done = true;
             }
-            else if (ch == EOF)
+            else if (ch == EOF) {
                 done = true;
-            else if (ch == '\n' || ch == '\t')
+            }
+            else if (ch == '\n' || ch == '\t') {
                 ch = ' ';
+            }
         }
-        else if (ch == ':' || ch == ','  || ch == ')'  || ch == '['
-                 || ch == '\n' || ch == EOF)
+        else if (ch == ':' || ch == ','  || ch == ')'  || ch == '[' || ch == '\n' || ch == EOF) {
             done = true;
-        else if (ch == '_' || ch == '\t')
+        }
+        else if (ch == '_' || ch == '\t') {
             ch = ' ';
+        }
 
         if (! done) {
             if (i < nmlngth)  str[i++] = ch;
@@ -1166,16 +1163,18 @@ static int findTipName(tree *tr, int ch, FILE *INFILE) {
     (void) ungetc(ch, INFILE);
     while (i < nmlngth)  str[i++] = ' ';     //  Pad name
 
-    n = 1;
+    int  n = 1;
+    bool found;
     do {
-        q = tr->nodep[n];
+        nodeptr q = tr->nodep[n];
         if (! (q->back)) {          //  Only consider unused tips
             i = 0;
-            nameptr = q->name;
+            char *nameptr = q->name;
             do { found = str[i] == *nameptr++; } while (found && (++i < nmlngth));
         }
-        else
+        else {
             found = false;
+        }
     } while ((! found) && (++n <= tr->mxtips));
 
     if (! found) {
@@ -1189,18 +1188,18 @@ static int findTipName(tree *tr, int ch, FILE *INFILE) {
 
 
 static double processLength(FILE *INFILE) {
-    double  branch;
-    int     ch;
-    char    string[41];
-
-    ch = treeGetCh(INFILE);                            //  Skip comments
+    int ch = treeGetCh(INFILE);                                //  Skip comments
     if (ch != EOF)  (void) ungetc(ch, INFILE);
 
+    double branch;
     if (fscanf(INFILE, "%lf", &branch) != 1) {
         printf("ERROR: Problem reading branch length in processLength:\n");
-        if (fscanf(INFILE, "%40s", string) == 1)  printf("%s\n", string);
+
+        char str[41];
+        if (fscanf(INFILE, "%40s", str) == 1)  printf("%s\n", str);
+
         anerror = true;
-        branch = 0.0;
+        branch  = 0.0;
     }
 
     return  branch;
@@ -1208,39 +1207,35 @@ static double processLength(FILE *INFILE) {
 
 
 static void treeFlushLen(FILE *INFILE) {
-    int  ch;
-
-    if ((ch = treeGetCh(INFILE)) == ':')
-        (void) processLength(INFILE);
-    else if (ch != EOF)
-        (void) ungetc(ch, INFILE);
+    int ch = treeGetCh(INFILE);
+    
+    if      (ch == ':') (void) processLength(INFILE);
+    else if (ch != EOF) (void) ungetc(ch, INFILE);
 }
 
 
 static void treeNeedCh(int c1, const char *where, FILE *INFILE) {
-    int c2, i;
-
-    if ((c2 = treeGetCh(INFILE)) == c1)  return;
-
-    printf("ERROR: Missing '%c' %s tree; ", c1, where);
-    if (c2 == EOF)
-        printf("End-of-File");
-    else {
-        putchar('\'');
-        for (i = 24; i-- && (c2 != EOF); c2 = getc(INFILE))  putchar(c2);
-        putchar('\'');
+    int c2 = treeGetCh(INFILE);
+    if (c2 != c1) {
+        printf("ERROR: Missing '%c' %s tree; ", c1, where);
+        if (c2 == EOF) {
+            printf("End-of-File");
+        }
+        else {
+            putchar('\'');
+            for (int i = 24; i-- && (c2 != EOF); c2 = getc(INFILE))  putchar(c2);
+            putchar('\'');
+        }
+        printf(" found instead\n");
+        anerror = true;
     }
-    printf(" found instead\n");
-    anerror = true;
 }
 
 static void addElementLen(tree *tr, nodeptr p, FILE *INFILE) {
-    double   z, branch;
-    nodeptr  q;
-    int      n, ch;
-
-    if ((ch = treeGetCh(INFILE)) == '(') {     //  A new internal node
-        n = (tr->nextnode)++;
+    nodeptr q;    
+    int ch = treeGetCh(INFILE);
+    if (ch == '(') {     //  A new internal node
+        int n = (tr->nextnode)++;
         if (n > 2*(tr->mxtips) - 2) {
             if (tr->rooted || n > 2*(tr->mxtips) - 1) {
                 printf("ERROR: Too many internal nodes.  Is tree rooted?\n");
@@ -1263,7 +1258,7 @@ static void addElementLen(tree *tr, nodeptr p, FILE *INFILE) {
     }
 
     else {                               //  A new tip
-        n = findTipName(tr, ch, INFILE);
+        int n = findTipName(tr, ch, INFILE);
         if (n <= 0) { anerror = true; return; }
         q = tr->nodep[n];
         if (tr->start->number > n)  tr->start = q;
@@ -1271,69 +1266,69 @@ static void addElementLen(tree *tr, nodeptr p, FILE *INFILE) {
     }
 
     treeNeedCh(':', "in", INFILE);     if (anerror)  return;
-    branch = processLength(INFILE);    if (anerror)  return;
-    z = exp(-branch / fracchange);
+    double branch = processLength(INFILE);    if (anerror)  return;
+    double z = exp(-branch / fracchange);
     if (z > zmax)  z = zmax;
     hookup(p, q, z);
 }
 
 
 static void uprootTree(tree *tr, nodeptr p) {
-    nodeptr  q, r, s;
-    int  n;
-
     if (p->tip || p->back) {
         printf("ERROR: Unable to uproot tree.\n");
         printf("       Inappropriate node marked for removal.\n");
         anerror = true;
-        return;
     }
+    else {
+        int n = --(tr->nextnode);               // last internal node added
+        if (n != tr->mxtips + tr->ntips - 1) {
+            printf("ERROR: Unable to uproot tree.  Inconsistent\n");
+            printf("       number of tips and nodes for rooted tree.\n");
+            anerror = true;
+        }
+        else {
+            nodeptr q = p->next->back;                  // remove p from tree
+            nodeptr r = p->next->next->back;
 
-    n = --(tr->nextnode);               // last internal node added
-    if (n != tr->mxtips + tr->ntips - 1) {
-        printf("ERROR: Unable to uproot tree.  Inconsistent\n");
-        printf("       number of tips and nodes for rooted tree.\n");
-        anerror = true;
-        return;
+            hookup(q, r, q->z * r->z);
+
+            q         = tr->nodep[n];
+            r         = q->next;
+            nodeptr s = q->next->next;
+
+            if (tr->ntips > 2 && p != q && p != r && p != s) {
+                hookup(p,             q->back, q->z);   // move connections to p
+                hookup(p->next,       r->back, r->z);
+                hookup(p->next->next, s->back, s->z);
+            }
+
+            q->back = r->back = s->back = (nodeptr) NULL;
+            tr->rooted = false;
+        }
     }
-
-    q = p->next->back;                  // remove p from tree
-    r = p->next->next->back;
-    hookup(q, r, q->z * r->z);
-
-    q = tr->nodep[n];
-    r = q->next;
-    s = q->next->next;
-    if (tr->ntips > 2 && p != q && p != r && p != s) {
-        hookup(p,             q->back, q->z);   // move connections to p
-        hookup(p->next,       r->back, r->z);
-        hookup(p->next->next, s->back, s->z);
-    }
-
-    q->back = r->back = s->back = (nodeptr) NULL;
-    tr->rooted = false;
 }
 
 
 static void treeReadLen(tree *tr, FILE *INFILE) {
-    nodeptr  p;
-    int  i, ch;
+    for (int i = 1; i <= tr->mxtips; i++) tr->nodep[i]->back = (nodeptr) NULL;
 
-    for (i = 1; i <= tr->mxtips; i++) tr->nodep[i]->back = (nodeptr) NULL;
-    tr->start       = tr->nodep[tr->mxtips];
-    tr->ntips       = 0;
-    tr->nextnode    = tr->mxtips + 1;
-    tr->opt_level   = 0;
-    tr->smoothed    = false;
-    tr->rooted      = false;
+    tr->start     = tr->nodep[tr->mxtips];
+    tr->ntips     = 0;
+    tr->nextnode  = tr->mxtips + 1;
+    tr->opt_level = 0;
+    tr->smoothed  = false;
+    tr->rooted    = false;
 
-    p = tr->nodep[(tr->nextnode)++];
+    nodeptr p = tr->nodep[(tr->nextnode)++];
+
     treeNeedCh('(', "at start of", INFILE);          if (anerror)  return;
     addElementLen(tr, p, INFILE);                    if (anerror)  return;
     treeNeedCh(',', "in", INFILE);                   if (anerror)  return;
     addElementLen(tr, p->next, INFILE);              if (anerror)  return;
-    if (! tr->rooted) {
-        if ((ch = treeGetCh(INFILE)) == ',') {        //  An unrooted format
+
+    if (!tr->rooted) {
+        int ch = treeGetCh(INFILE);
+        if (ch == ',') {        //  An unrooted format
             addElementLen(tr, p->next->next, INFILE); if (anerror) return;
         }
         else {                                  //  A rooted format
@@ -1366,122 +1361,119 @@ static void treeReadLen(tree *tr, FILE *INFILE) {
 
 
 static double evaluate(tree *tr, nodeptr p) {
-    double   sum, z, lz, xvlz,
-        ki, zz, zv, fx1a, fx1c, fx1g, fx1t, fx1r, fx1y, fx2r, fx2y,
-        suma, sumb, sumc, term;
-    double  *log_f, *rptr;
-    xtype   *x1a, *x1c, *x1g, *x1t, *x2a, *x2c, *x2g, *x2t;
-    nodeptr  q;
-    int  i, *wptr;
-
-    q = p->back;
+    nodeptr q = p->back;
     while ((! p->x) || (! q->x)) {
         if (! (p->x)) newview(p);
         if (! (q->x)) newview(q);
     }
 
-    x1a = &(p->x->a[0]);
-    x1c = &(p->x->c[0]);
-    x1g = &(p->x->g[0]);
-    x1t = &(p->x->t[0]);
+    xtype *x1a = &(p->x->a[0]);
+    xtype *x1c = &(p->x->c[0]);
+    xtype *x1g = &(p->x->g[0]);
+    xtype *x1t = &(p->x->t[0]);
 
-    x2a = &(q->x->a[0]);
-    x2c = &(q->x->c[0]);
-    x2g = &(q->x->g[0]);
-    x2t = &(q->x->t[0]);
+    xtype *x2a = &(q->x->a[0]);
+    xtype *x2c = &(q->x->c[0]);
+    xtype *x2g = &(q->x->g[0]);
+    xtype *x2t = &(q->x->t[0]);
 
-    z = p->z;
+    double z        = p->z;
     if (z < zmin) z = zmin;
-    lz = log(z);
-    xvlz = xv * lz;
 
-    wptr = &(patweight[0]);
-    rptr = &(patrate[0]);
-    log_f = tr->log_f;
-    sum = 0.0;
+    double lz   = log(z);
+    double xvlz = xv * lz;
 
-    for (i = 0; i < endsite; i++) {
-        fx1a  = freqa * *x1a++;
-        fx1g  = freqg * *x1g++;
-        fx1c  = freqc * *x1c++;
-        fx1t  = freqt * *x1t++;
-        suma  = fx1a * *x2a + fx1c * *x2c + fx1g * *x2g + fx1t * *x2t;
-        fx2r  = freqa * *x2a++ + freqg * *x2g++;
-        fx2y  = freqc * *x2c++ + freqt * *x2t++;
-        fx1r  = fx1a + fx1g;
-        fx1y  = fx1c + fx1t;
-        sumc  = (fx1r + fx1y) * (fx2r + fx2y);
-        sumb  = fx1r * fx2r * invfreqr + fx1y * fx2y * invfreqy;
+    int    *wptr  = &(patweight[0]);
+    double *rptr  = &(patrate[0]);
+    double *log_f = tr->log_f;
+
+    double sum = 0.0;
+
+    for (int i = 0; i < endsite; i++) {
+        double fx1a = freqa * *x1a++;
+        double fx1g = freqg * *x1g++;
+        double fx1c = freqc * *x1c++;
+        double fx1t = freqt * *x1t++;
+
+        double suma = fx1a * *x2a + fx1c * *x2c + fx1g * *x2g + fx1t * *x2t;
+
+        double fx2r = freqa * *x2a++ + freqg * *x2g++;
+        double fx2y = freqc * *x2c++ + freqt * *x2t++;
+        double fx1r = fx1a + fx1g;
+        double fx1y = fx1c + fx1t;
+
+        double sumc = (fx1r + fx1y) * (fx2r + fx2y);
+        double sumb = fx1r * fx2r * invfreqr + fx1y * fx2y * invfreqy;
+
         suma -= sumb;
         sumb -= sumc;
 
-        ki = *rptr++;
-        zz = exp(ki *   lz);
-        zv = exp(ki * xvlz);
+        double ki = *rptr++;
+        double zz = exp(ki *   lz);
+        double zv = exp(ki * xvlz);
 
-        term = log(zz * suma + zv * sumb + sumc);
+        double term = log(zz * suma + zv * sumb + sumc);
         sum += *wptr++ * term;
         *log_f++ = term;
     }
 
     tr->likelihood = sum;
-    return  sum;
+    return sum;
 }
 
 
 static void dli_dki(nodeptr p) {
     //  d(Li)/d(ki)
-    double   z, lz, xvlz;
-    double   ki, fx1a, fx1c, fx1g, fx1t, fx1r, fx1y, fx2r, fx2y,
-        suma, sumb, sumc;
-    double  *rptr;
-    xtype   *x1a, *x1c, *x1g, *x1t, *x2a, *x2c, *x2g, *x2t;
-    nodeptr  q;
-    int      i, *wptr;
 
-
-    q = p->back;
+    nodeptr q = p->back;
     while ((! p->x) || (! q->x)) {
         if (! p->x) newview(p);
         if (! q->x) newview(q);
     }
 
-    x1a = &(p->x->a[0]);
-    x1c = &(p->x->c[0]);
-    x1g = &(p->x->g[0]);
-    x1t = &(p->x->t[0]);
+    xtype *x1a = &(p->x->a[0]);
+    xtype *x1c = &(p->x->c[0]);
+    xtype *x1g = &(p->x->g[0]);
+    xtype *x1t = &(p->x->t[0]);
 
-    x2a = &(q->x->a[0]);
-    x2c = &(q->x->c[0]);
-    x2g = &(q->x->g[0]);
-    x2t = &(q->x->t[0]);
+    xtype *x2a = &(q->x->a[0]);
+    xtype *x2c = &(q->x->c[0]);
+    xtype *x2g = &(q->x->g[0]);
+    xtype *x2t = &(q->x->t[0]);
 
-    z = p->z;
+    double z        = p->z;
     if (z < zmin) z = zmin;
-    lz = log(z);
-    xvlz = xv * lz;
 
-    rptr = &(patrate[0]);
-    wptr = &(patweight[0]);
+    double lz   = log(z);
+    double xvlz = xv * lz;
 
-    for (i = 0; i < endsite; i++) {
-        fx1a  = freqa * *x1a++;
-        fx1g  = freqg * *x1g++;
-        fx1c  = freqc * *x1c++;
-        fx1t  = freqt * *x1t++;
-        suma  = fx1a * *x2a + fx1c * *x2c + fx1g * *x2g + fx1t * *x2t;
-        fx2r  = freqa * *x2a++ + freqg * *x2g++;
-        fx2y  = freqc * *x2c++ + freqt * *x2t++;
-        fx1r  = fx1a + fx1g;
-        fx1y  = fx1c + fx1t;
-        sumc  = (fx1r + fx1y) * (fx2r + fx2y);
-        sumb  = fx1r * fx2r * invfreqr + fx1y * fx2y * invfreqy;
+    double *rptr = &(patrate[0]);
+    int    *wptr = &(patweight[0]);
+
+    for (int i = 0; i < endsite; i++) {
+        double fx1a = freqa * *x1a++;
+        double fx1g = freqg * *x1g++;
+        double fx1c = freqc * *x1c++;
+        double fx1t = freqt * *x1t++;
+
+        double suma = fx1a * *x2a + fx1c * *x2c + fx1g * *x2g + fx1t * *x2t;
+
+        double fx2r = freqa * *x2a++ + freqg * *x2g++;
+        double fx2y = freqc * *x2c++ + freqt * *x2t++;
+        double fx1r = fx1a + fx1g;
+        double fx1y = fx1c + fx1t;
+
+        double sumc = (fx1r + fx1y) * (fx2r + fx2y);
+        double sumb = fx1r * fx2r * invfreqr + fx1y * fx2y * invfreqy;
+        
         suma -= sumb;
         sumb -= sumc;
 
-        ki    = *rptr++;
+        double ki = *rptr++;
+
         suma *= exp(ki *   lz);
         sumb *= exp(ki * xvlz);
+
         dLidki[i] += *wptr++ * lz * (suma + sumb*xv);
     }
 }
@@ -1497,9 +1489,6 @@ static void spanSubtree(nodeptr p) {
 
 
 static void findSiteRates(tree *tr, double ki_min, double ki_max, double d_ki, double max_error) {
-    double  inv_d_ki, ki;
-    int     i;
-
     if (ki_min <= 0.0 || ki_max <= ki_min) {
         printf("ERROR: Bad rate value limits to findSiteRates\n");
         anerror = true;
@@ -1511,17 +1500,17 @@ static void findSiteRates(tree *tr, double ki_min, double ki_max, double d_ki, d
         return;
     }
 
-    for (i = 0; i < endsite; i++) {
+    for (int i = 0; i < endsite; i++) {
         bestki[i] = 1.0;                       //  dummy initial rates
         bestLi[i] = unlikely;
     }
 
-    for (ki = ki_min; ki <= ki_max; ki *= d_ki) {
-        for (i = 0; i < endsite; i++)  patrate[i] = ki;
+    for (double ki = ki_min; ki <= ki_max; ki *= d_ki) {
+        for (int i = 0; i < endsite; i++)  patrate[i] = ki;
         initrav(tr->start);
         initrav(tr->start->back);
         (void) evaluate(tr, tr->start->back);
-        for (i = 0; i < endsite; i++) {
+        for (int i = 0; i < endsite; i++) {
             if (tr->log_f[i] > bestLi[i]) {
                 bestki[i] = ki;
                 bestLi[i] = tr->log_f[i];
@@ -1529,12 +1518,12 @@ static void findSiteRates(tree *tr, double ki_min, double ki_max, double d_ki, d
         }
     }
 
-    for (i = 0; i < endsite; i++)  patrate[i] = bestki[i];
+    for (int i = 0; i < endsite; i++)  patrate[i] = bestki[i];
     initrav(tr->start);
     initrav(tr->start->back);
 
     while (d_ki > 1.0 + max_error) {
-        for (i = 0; i < endsite; i++)  dLidki[i] = 0.0;
+        for (int i = 0; i < endsite; i++)  dLidki[i] = 0.0;
         spanSubtree(tr->start->back);
         if (! tr->start->tip) {
             spanSubtree(tr->start->next->back);
@@ -1542,8 +1531,8 @@ static void findSiteRates(tree *tr, double ki_min, double ki_max, double d_ki, d
         }
 
         d_ki = sqrt(d_ki);
-        inv_d_ki = 1.0/d_ki;
-        for (i = 0; i < endsite; i++) {
+        double inv_d_ki = 1.0/d_ki;
+        for (int i = 0; i < endsite; i++) {
             if (dLidki[i] > 0.0) {
                 patrate[i] *= d_ki;
                 if (patrate[i] > ki_max) patrate[i] = ki_max;
@@ -1561,9 +1550,7 @@ static void findSiteRates(tree *tr, double ki_min, double ki_max, double d_ki, d
 
 
 static double subtreeLength(nodeptr p) {
-    double sum;
-
-    sum = -fracchange * log(p->z);
+    double sum = -fracchange * log(p->z);
     if (! p->tip) {
         sum += subtreeLength(p->next->back);
         sum += subtreeLength(p->next->next->back);
@@ -1574,9 +1561,7 @@ static double subtreeLength(nodeptr p) {
 
 
 static double treeLength(tree *tr) {
-    double sum;
-
-    sum = subtreeLength(tr->start->back);
+    double sum = subtreeLength(tr->start->back);
     if (! tr->start->tip) {
         sum += subtreeLength(tr->start->next->back);
         sum += subtreeLength(tr->start->next->next->back);
@@ -1587,23 +1572,21 @@ static double treeLength(tree *tr) {
 
 
 static void categorize(int    Sites,
-                int    Categs,
-                int    Weight[],                    // one based
-                int    Pattern[],                   // one based
-                double Patrate[],                   // zero based
-                double categrate[],                 // zero based
-                int    sitecateg[])                 // one based
+                       int    Categs,
+                       int    Weight[],                    // one based
+                       int    Pattern[],                   // one based
+                       double Patrate[],                   // zero based
+                       double categrate[],                 // zero based
+                       int    sitecateg[])                 // one based
 {
-    double  ki, min_1, min_2, max_1, max_2, a, b;
-    int  i, k;
-
-    min_1 = 1.0E37;
-    min_2 = 1.0E37;
-    max_1 = 0.0;
-    max_2 = 0.0;
-    for (i = 1; i <= Sites; i++) {
+    double min_1 = 1.0E37;
+    double min_2 = 1.0E37;
+    double max_1 = 0.0;
+    double max_2 = 0.0;
+    
+    for (int i = 1; i <= Sites; i++) {
         if (Weight[i] > 0) {
-            ki = Patrate[Pattern[i]];
+            double ki = Patrate[Pattern[i]];
             if (ki < min_2) {
                 if (ki < min_1) {
                     if (ki < 0.995 * min_1)  min_2 = min_1;
@@ -1625,22 +1608,23 @@ static void categorize(int    Sites,
         }
     }
 
-    a = (Categs - 3.0)/log(max_2/min_2);
-    b = - a * log(min_2) + 2.0;
+    double a = (Categs - 3.0)/log(max_2/min_2);
+    double b = - a * log(min_2) + 2.0;
 
     categrate[0] = min_1;
-    for (k = 1; k <= Categs-2; k++)  categrate[k] = min_2 * exp((k-1)/a);
+    for (int k = 1; k <= Categs-2; k++)  categrate[k] = min_2 * exp((k-1)/a);
     categrate[Categs-1] = max_1;
 
-    for (i = 1; i <= Sites; i++) {
+    for (int i = 1; i <= Sites; i++) {
         if (Weight[i] > 0) {
-            ki = Patrate[Pattern[i]];
+            double ki = Patrate[Pattern[i]];
             if      (ki < 0.99 * min_2) sitecateg[i] = 1;
             else if (ki > 1.00 * max_2) sitecateg[i] = Categs;
             else sitecateg[i] = nint(a * log(Patrate[Pattern[i]]) + b);
         }
-        else
+        else {
             sitecateg[i] = Categs;
+        }
     }
 }
 
@@ -1685,22 +1669,12 @@ static GBDATA *create_next_SAI() {
 }
 
 static void writeToArb() {
-    char    type_info[1024];
-    char    category_string[1024];
-    char   *p;
-    long    ali_len;
-    int     i, k;
-    int     ali_pos;
-    float  *rates;              // rates to export
-    char   *cats;               // categories
-    GBDATA *gb_data;
-
-
     GB_begin_transaction(gb_main);
 
-    ali_len = GBT_get_alignment_len(gb_main, alignment_name);
-    cats    = (char *)GB_calloc(ali_len, sizeof(char));
-    rates   = (float *)GB_calloc(ali_len, sizeof(float));
+    long   ali_len = GBT_get_alignment_len(gb_main, alignment_name);
+    char  *cats    = (char *)GB_calloc(ali_len, sizeof(char));   // categories
+    float *rates   = (float *)GB_calloc(ali_len, sizeof(float)); // rates to export
+    char   category_string[1024];
 
     // fill in rates and categories
     {
@@ -1709,8 +1683,8 @@ static void writeToArb() {
 
         categorize(sites, categs, weight, pattern, patrate, categrate, sitecateg);
 
-        i = 1;                  // thanks to pascal
-        for (ali_pos = 0; ali_pos < ali_len; ali_pos++) {
+        int i = 1;                      // thanks to pascal
+        for (int ali_pos = 0; ali_pos < ali_len; ali_pos++) {
             if (arb_filter[ali_pos] == '0') {
                 cats[ali_pos] = '.';
                 rates[ali_pos] = KI_MAX;
@@ -1728,16 +1702,15 @@ static void writeToArb() {
         }
 
         // write categories
-        p    = category_string;
-        p[0] = 0; // if no categs
-        for (k = 1; k <= categs; k ++) {
+        char *p = category_string;
+        p[0] = 0;    // if no categs
+
+        for (int k = 1; k <= categs; k ++) {
             sprintf(p, " %G", categrate[categs-k]);
             p += strlen(p);
         }
     }
 
-
-    sprintf(type_info, "PVML: Positional Variability by ML (Olsen)");
 
     {
         GBDATA *gb_sai = create_next_SAI();
@@ -1745,19 +1718,22 @@ static void writeToArb() {
             fprintf(stderr, "Error: %s\n", GB_await_error());
         }
         else {
-            gb_data = GBT_add_data(gb_sai, alignment_name, "rates", GB_FLOATS);
+            GBDATA *gb_data = GBT_add_data(gb_sai, alignment_name, "rates", GB_FLOATS);
             GB_write_floats(gb_data, rates, ali_len);
+
             gb_data = GBT_add_data(gb_sai, alignment_name, "data", GB_STRING);
             GB_write_string(gb_data, cats);
+
             gb_data = GBT_add_data(gb_sai, alignment_name, "_CATEGORIES", GB_STRING);
             GB_write_string(gb_data, category_string);
+
             gb_data = GBT_add_data(gb_sai, alignment_name, "_TYPE", GB_STRING);
-            GB_write_string(gb_data, type_info);
+            GB_write_string(gb_data, "PVML: Positional Variability by ML (Olsen)");
         }
     }
 
     GB_commit_transaction(gb_main);
-    }
+}
 
 static void openArb(const char *dbname) {
     gb_main = GB_open(dbname, "rw");
@@ -1785,46 +1761,41 @@ static void closeArb() {
 }
 
 static void wrfile(FILE   *outfile,
-            int     Sites,
-            int     Categs,
-            int     Weight[],   // one based
-            double  categrate[], // zero based
-            int     sitecateg[]) // one based
+                   int     Sites,
+                   int     Categs,
+                   int     Weight[],   // one based
+                   double  categrate[], // zero based
+                   int     sitecateg[]) // one based
 {
+    for (int k = 1; k <= Sites; k += 60) {
+        int j = min(k + 59, Sites);
 
-
-    int  i, k, l;
-
-
-    for (k = 1; k <= Sites; k += 60) {
-        l = k + 59;
-        if (l > Sites)  l = Sites;
         fprintf(outfile, "%s  ", k == 1 ? "Weights   " : "          ");
 
-        for (i = k; i <= l; i++) {
+        for (int i = k; i <= j; i++) {
             putc(itobase36(Weight[i]), outfile);
             if (((i % 10) == 0) && ((i % 60) != 0)) putc(' ', outfile);
         }
 
         putc('\n', outfile);
     }
-    for (k = 1; k <= Categs; k += 7) {
-        l = k + 6;
-        if (l > Categs)  l = Categs;
+    for (int k = 1; k <= Categs; k += 7) {
+        int j = min(k + 6, Categs);
+        
         if (k == 1)  fprintf(outfile, "C %2d", Categs);
-        else         fprintf(outfile, "    ");
+        else fprintf(outfile, "    ");
 
-        for (i = k-1; i < l; i++)  fprintf(outfile, " %9.5f", categrate[i]);
+        for (int i = k-1; i < j; i++)  fprintf(outfile, " %9.5f", categrate[i]);
 
         putc('\n', outfile);
     }
 
-    for (k = 1; k <= Sites; k += 60) {
-        l = k + 59;
-        if (l > Sites)  l = Sites;
+    for (int k = 1; k <= Sites; k += 60) {
+        int j = min(k + 59, Sites);
+        
         fprintf(outfile, "%s  ", k == 1 ? "Categories" : "          ");
 
-        for (i = k; i <= l; i++) {
+        for (int i = k; i <= j; i++) {
             putc(itobase36(sitecateg[i]), outfile);
             if (((i % 10) == 0) && ((i % 60) != 0)) putc(' ', outfile);
         }
@@ -1836,17 +1807,16 @@ static void wrfile(FILE   *outfile,
 
 
 static void summarize(int treenum) {
-    int  i;
-
     printf("  Site      Rate\n");
     printf("  ----   ---------\n");
 
-    for (i = 1; i <= sites; i++) {
+    for (int  i = 1; i <= sites; i++) {
         if (weight[i] > 0) {
             printf("%6d %11.4f\n", i, patrate[pattern[i]]);
         }
-        else
+        else {
             printf("%6d   Undefined\n", i);
+        }
     }
 
     putchar('\n');
@@ -1861,16 +1831,15 @@ static void summarize(int treenum) {
         putchar('\n');
 
         if (writefile) {
-            char  filename[512];
-            FILE *outfile;
-
-            if (treenum <= 0)
+            char filename[512];
+            if (treenum <= 0) {
                 (void) sprintf(filename, "%s.%d", "weight_rate", getpid());
-            else
-                (void) sprintf(filename, "%s_%2d.%d", "weight_rate",
-                               treenum, getpid());
+            }
+            else {
+                (void) sprintf(filename, "%s_%2d.%d", "weight_rate", treenum, getpid());
+            }
 
-            outfile = fopen(filename, "w");
+            FILE *outfile = fopen(filename, "w");
             if (outfile) {
                 wrfile(outfile, sites, categs, weight, categrate, sitecateg);
                 (void) fclose(outfile);
@@ -1882,9 +1851,7 @@ static void summarize(int treenum) {
 
 
 static void makeUserRates(tree *tr, FILE *INFILE) {
-    double  tree_length;
-    int     numtrees, which, i;
-
+    int numtrees;
     if (fscanf(INFILE, "%d", &numtrees) != 1 || findch('\n', INFILE) == EOF) {
         printf("ERROR: Problem reading number of user trees\n");
         anerror = true;
@@ -1893,13 +1860,13 @@ static void makeUserRates(tree *tr, FILE *INFILE) {
 
     printf("User-defined %s:\n\n", (numtrees == 1) ? "tree" : "trees");
 
-    for (which = 1; which <= numtrees; which++) {
-        for (i = 0; i < endsite; i++)  patrate[i] = 1.0;
+    for (int which = 1; which <= numtrees; which++) {
+        for (int i = 0; i < endsite; i++)  patrate[i] = 1.0;
         
         treeReadLen(tr, INFILE);
         if (anerror) break;
 
-        tree_length = treeLength(tr);
+        double tree_length = treeLength(tr);
 
         printf("%d taxon user-supplied tree read\n\n", tr->ntips);
         printf("Total length of tree branches = %8.6f\n\n", tree_length);
