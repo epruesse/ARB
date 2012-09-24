@@ -533,10 +533,10 @@ public:
     void   create_autosize_button(const char *macro_name, AW_label label, const char *mnemonic = 0, unsigned xtraSpace = 1); // as above, but ignores button_length
     Widget get_last_widget() const;
 
-    void create_toggle(const char *awar_name);  // int 0/1  string yes/no   float undef
-    void create_inverse_toggle(const char *awar_name);  // like create_toggle, but displays inverted toggle value
+    void create_toggle(const char *var_name);  // int 0/1  string yes/no   float undef
+    void create_inverse_toggle(const char *var_name);  // like create_toggle, but displays inverted toggle value
 
-    void create_toggle(const char *awar_name, const char *nobitmap, const char *yesbitmap, int buttonWidth = 0);
+    void create_toggle(const char *var_name, const char *nobitmap, const char *yesbitmap, int buttonWidth = 0);
     void create_text_toggle(const char *var_name, const char *noText, const char *yesText, int buttonWidth = 0);
 
     void create_input_field(const char *awar_name, int columns = 0);   // One line textfield

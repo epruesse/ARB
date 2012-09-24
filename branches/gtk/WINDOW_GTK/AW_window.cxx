@@ -20,6 +20,7 @@
 #include <gtk/gtklabel.h>
 #include <gtk/gtkfixed.h>
 #include <gtk/gtkbutton.h>
+#include <gtk/gtkcheckbutton.h>
 #include "aw_msg.hxx"
 
 void AW_clock_cursor(AW_root *) {
@@ -89,12 +90,23 @@ void AW_window::at_y(int y){
     _at.y_for_next_button = y;
 }
 
-void AW_window::at_shift(int /*x*/, int /*y*/){
-    GTK_NOT_IMPLEMENTED;
+void AW_window::at_shift(int x, int y){
+    at(x + _at.x_for_next_button, y + _at.y_for_next_button);
 }
 
 void AW_window::at_newline(){
-    GTK_NOT_IMPLEMENTED;
+    if (_at.do_auto_increment) {
+        at_y(_at.auto_increment_y + _at.y_for_next_button);
+    }
+    else {
+        if (_at.do_auto_space) {
+            at_y(_at.y_for_next_button + _at.auto_space_y + _at.biggest_height_of_buttons);
+        }
+        else {
+            GBK_terminate("neither auto_space nor auto_increment activated while using at_newline");
+        }
+    }
+    at_x(_at.x_for_newline);
 }
 
 
@@ -546,6 +558,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
 //                        _callback ? TUNE_BUTTON : 0);
 
 
+
 #if defined(DUMP_BUTTON_CREATION)
     printf("------------------------------ Button '%s'\n", buttonlabel);
     printf("x_for_next_button=%i y_for_next_button=%i\n", _at.x_for_next_button, _at.y_for_next_button);
@@ -699,29 +712,6 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
         gtk_widget_show(tmp_label);
 
 
-        //old motif code for reference
-        //        tmp_label = XtVaCreateManagedWidget("label",
-        //                                            xmLabelWidgetClass,
-        //                                            parent_widget,
-        //                                            XmNwidth, (int)(width_of_label + 2),
-        //                                            RES_LABEL_CONVERT(_at.label_for_inputfield),
-        //                                            XmNrecomputeSize, false,
-        //                                            XmNalignment, XmALIGNMENT_BEGINNING,
-        //                                            XmNfontList, p_global->fontlist,
-        //                                            XmNx, (int)(x_label),
-        //                                            XmNy, (int)(y_label),
-        //                                            NULL);
-        //these macros are used to determine wether a pixmap or text should be used on the label
-        //#define RES_LABEL_CONVERT_AWW(str,aww)                             \
-        //    XmNlabelType, (str[0]=='#') ? XmPIXMAP : XmSTRING,             \
-        //    XtVaTypedArg, (str[0]=='#') ? XmNlabelPixmap : XmNlabelString, \
-        //    XmRString,                                                     \
-        //    aw_str_2_label(str, aww),                                      \
-        //    strlen(aw_str_2_label(str, aww))+1
-        //
-        //#define RES_LABEL_CONVERT(str) RES_LABEL_CONVERT_AWW(str, this)
-
-
         if (_at.attach_any) {
             aw_attach_widget(tmp_label, _at);
         }
@@ -733,30 +723,6 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     _at.y_for_next_button = y_button;
 
     GtkWidget* fatherwidget = parent_widget; // used as father for button below
-    if (_at.highlight) {
-        if (_at.attach_any) {
-            #if defined(DEBUG)
-                        printf("Attaching highlighted buttons does not work - "
-                               "highlight ignored for button '%s'!\n", buttonlabel);
-            #endif // DEBUG
-                        _at.highlight = false;
-        }
-        else {
-            //FIXME not implemented
-//            int shadow_offset = _at.shadow_thickness;
-//            int x_shadow      = x_button - shadow_offset;
-//            int y_shadow      = y_button - shadow_offset;
-//
-//            fatherwidget = XtVaCreateManagedWidget("draw_area",
-//                                                   xmFrameWidgetClass,
-//                                                   INFO_WIDGET,
-//                                                   XmNx, (int)(x_shadow),
-//                                                   XmNy, (int)(y_shadow),
-//                                                   XmNshadowType, XmSHADOW_IN,
-//                                                   XmNshadowThickness, _at.shadow_thickness,
-//                                                   NULL);
-        }
-    }
 
     GtkWidget* buttonOrLabel  = 0;
 
@@ -764,6 +730,22 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
         if (_callback) {//button
 
             buttonOrLabel = gtk_button_new();
+
+
+            //highlight selected button
+            if (_at.highlight) {
+                if (_at.attach_any) {
+                    #if defined(DEBUG)
+                                printf("Attaching highlighted buttons does not work - "
+                                       "highlight ignored for button '%s'!\n", buttonlabel);
+                    #endif // DEBUG
+                                _at.highlight = false;
+                }
+                else {
+                   //FIXME highlight button here
+                }
+            }
+
 
             if(buttonlabel[0]=='#') {
                 //pixmap button
@@ -909,8 +891,19 @@ Widget AW_window::get_last_widget() const{
     return 0;
 }
 
-void AW_window::create_toggle(const char */*awar_name*/){
-    GTK_NOT_IMPLEMENTED;
+void AW_window::create_toggle(const char *var_name){
+
+    GtkWidget* checkButton = gtk_check_button_new();
+
+    GtkWidget* parent_widget = GTK_WIDGET(prvt.fixed_size_area);
+    gtk_fixed_put(GTK_FIXED(parent_widget), checkButton, _at.x_for_next_button, _at.y_for_next_button); //FIXME evil hack depends on areas being GtkFixed
+    gtk_widget_show(checkButton);
+
+    //FIXME increment at
+   // this->increment_at_commands(width+SPACE_BEHIND_BUTTON, height);
+
+    //old code:
+    //create_toggle(var_name, "#no.bitmap", "#yes.bitmap");
 }
 
 void AW_window::create_toggle(const char */*awar_name*/, const char */*nobitmap*/, const char */*yesbitmap*/, int /*buttonWidth*/ /* = 0 */){
@@ -1165,8 +1158,6 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
         device->get_common()->set_screen_size(_at.max_x_size, _at.max_y_size);
 
     }
-
-
 
     device->reset();
     device->set_offset(AW::Vector(-xfig->minx, -xfig->miny));
