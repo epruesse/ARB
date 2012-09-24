@@ -167,6 +167,7 @@ int ARB_main(int argc, const char *argv[]) {
                 GBT_delete_tree(cons_tree);
             }
         }
+        free(savename);
     }
 
     if (error) {

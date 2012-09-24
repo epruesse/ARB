@@ -115,7 +115,7 @@ AP_tree *STAT_find_node_by_name(ST_ML *st_ml, const char *species_name) {
     return st_ml->find_node_by_name(species_name);
 }
 
-struct st_check_cb_data {
+struct st_check_cb_data : public Noncopyable {
     GBDATA         *gb_main;
     ColumnStat     *colstat;
     WeightedFilter *filter;
