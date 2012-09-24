@@ -608,50 +608,55 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, AW_CL auto_expand_groups) {
                 // fall-through
             }
             case AP_LIST_NDS: {
-                repeat_jump: 
-                AW_device_size *device = aww->get_size_device(AW_MIDDLE_AREA);
-                device->set_filter(AW_SIZE|AW_SIZE_UNSCALED);
-                device->reset();
-                ntw->init_device(device);
-                ntw->gfx->show(device);
+                bool do_jump = true;
+                
+                while (do_jump) {
+                    do_jump = false;
 
-                const AW_screen_area& screen = device->get_area_size();
+                    AW_device_size *device = aww->get_size_device(AW_MIDDLE_AREA);
+                    device->set_filter(AW_SIZE|AW_SIZE_UNSCALED);
+                    device->reset();
+                    ntw->init_device(device);
+                    ntw->gfx->show(device);
 
-                const Position& cursor = gtree->get_cursor();
-                if (are_distinct(Origin, cursor)) {
-                    Position S = device->transform(cursor);
+                    const AW_screen_area& screen = device->get_area_size();
 
-                    int scroll_x = 0;
-                    int scroll_y = 0;
+                    const Position& cursor = gtree->get_cursor();
+                    if (are_distinct(Origin, cursor)) {
+                        Position S = device->transform(cursor);
 
-                    if (S.xpos()<0.0) scroll_x      = (int)(S.xpos() - screen.r * .1);
-                    if (S.xpos()>screen.r) scroll_x = (int)(S.xpos() - screen.r * .5);
+                        int scroll_x = 0;
+                        int scroll_y = 0;
 
-                    if (gtree->tree_sort == AP_TREE_IRS) {
-                        // always scroll IRS tree
-                        // position a bit below vertical center
-                        scroll_y = (int) (S.ypos() - screen.b * .6);
+                        if (S.xpos()<0.0) scroll_x      = (int)(S.xpos() - screen.r * .1);
+                        if (S.xpos()>screen.r) scroll_x = (int)(S.xpos() - screen.r * .5);
+
+                        if (gtree->tree_sort == AP_TREE_IRS) {
+                            // always scroll IRS tree
+                            // position a bit below vertical center
+                            scroll_y = (int) (S.ypos() - screen.b * .6);
+                        }
+                        else if (S.ypos()<0.0 || S.ypos()>screen.b) {
+                            scroll_y = (int) (S.ypos() - screen.b * .5);
+                        }
+
+                        if (scroll_x || scroll_y) {
+                            ntw->scroll(scroll_x, scroll_y);
+                        }
+
+                        if (repeat) {
+                            // reposition jump in IRS tree (reduces jump failure rate)
+                            repeat  = false;
+                            do_jump = true;
+                        }
                     }
-                    else if (S.ypos()<0.0 || S.ypos()>screen.b) {
-                        scroll_y = (int) (S.ypos() - screen.b * .5);
-                    }
-
-                    if (scroll_x || scroll_y) {
-                        ntw->scroll(scroll_x, scroll_y);
-                    }
-                    
-                    if (repeat) {
-                        // reposition jump in IRS tree (reduces jump failure rate)
-                        repeat = false;
-                        goto repeat_jump;
-                    }
-                }
-                else {
-                    if (auto_expand_groups) {
-                        aw_message(GBS_global_string(gtree->tree_sort == AP_LIST_NDS
-                                                     ? "Species '%s' is not in this list"
-                                                     : "Species '%s' is not member of this tree",
-                                                     name));
+                    else {
+                        if (auto_expand_groups) {
+                            aw_message(GBS_global_string(gtree->tree_sort == AP_LIST_NDS
+                                                         ? "Species '%s' is not in this list"
+                                                         : "Species '%s' is not member of this tree",
+                                                         name));
+                        }
                     }
                 }
                 ntw->refresh();
