@@ -12,6 +12,7 @@
 
 #include "aw_common_gtk.hxx"
 #include "aw_gtk_migration_helpers.hxx"
+#include "aw_window.hxx"
 #include <gdk/gdkgc.h>
 #include <gdk/gdkpixmap.h>
 #include "aw_xfont.hxx"
@@ -21,8 +22,52 @@
 #include <string>
 #include <algorithm>
 
-void AW_common_gtk::install_common_extends_cb(AW_window *aww, AW_area area) {
-    GTK_NOT_IMPLEMENTED;
+
+
+
+/*
+ * Is called upon window resize
+ * @param cl_common_gtk Pointer to the common_gtk instance that registered this callback.
+ */
+static void AW_window_resize_cb(AW_window *, AW_CL cl_common_gtk, AW_CL) {
+   AW_common_gtk *common = (AW_common_gtk*)cl_common_gtk;
+//    Window        root;
+//    unsigned int  width, height;
+//    unsigned int  depth, borderwidth; // unused
+//    int           x_offset, y_offset; // unused
+//
+//    XGetGeometry(common->get_display(), common->get_window_id(),
+//                 &root,
+//                 &x_offset,
+//                 &y_offset,
+//                 &width,
+//                 &height,
+//                 &borderwidth,  // border width
+//                 &depth);       // depth of display
+//
+//    common->set_screen_size(width, height);
+
+
+    gint width = common->get_window_id()->allocation.width;
+    gint height = common->get_window_id()->allocation.height;
+    common->set_screen_size(width, height);
+
+}
+
+AW_common_gtk::AW_common_gtk(GdkDisplay *display_in,
+             GtkWidget    *window_in,
+             AW_rgb*&   fcolors,
+             AW_rgb*&   dcolors,
+             long&      dcolors_count,
+             AW_window *window,
+             AW_area    area)
+    : AW_common(fcolors, dcolors, dcolors_count),
+      display(display_in),
+      window(window_in)
+{
+
+    window->set_resize_callback(area, AW_window_resize_cb, (AW_CL)this);
+    AW_window_resize_cb(window, (AW_CL)this, 0);//call the resize cb once in the beginning to get the size
 }
 
 AW_GC *AW_common_gtk::create_gc() {

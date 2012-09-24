@@ -25,11 +25,39 @@ GtkWidget *AW_area_management::get_area() const {
     return GTK_WIDGET(area);
 }
 
+/**
+ * Handles the drawing areas expose callback.
+ */
+static gboolean draw_area_expose_cb(GtkWidget *widget, GdkEventExpose *event, gpointer area_management)
+{
+    AW_area_management *aram = (AW_area_management *) area_management;
+    aram->run_resize_callback();
+}
 
+
+void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    // insert resize callback for draw_area
+
+    //FIXME do this when handling the expose_cb.
+    if (!resize_cb) {//connect the gtk signal upon first call
+
+        //note: we use the expose callback because there is no resize callback in gtk.
+        g_signal_connect (area, "expose_event",
+                          G_CALLBACK (draw_area_expose_cb), (gpointer) this);
+
+    }
+    resize_cb = new AW_cb_struct(aww, f, cd1, cd2, 0, resize_cb);
+}
+
+
+inline void AW_area_management::run_resize_callback() {
+    if (resize_cb) resize_cb->run_callback();
+}
 
 AW_area_management::AW_area_management(AW_root* awr, GtkWidget* form,
-        GtkWidget* area) : form(form), area(area) {
-    GTK_NOT_IMPLEMENTED;
+        GtkWidget* area) : form(form), area(area), screen_device(NULL), size_device(NULL),
+                           print_device(NULL), click_device(NULL), resize_cb(NULL), double_click_cb(NULL)   {
+    GTK_PARTLY_IMPLEMENTED;
 }
 
 bool AW_area_management::is_input_callback(AW_window* aww,

@@ -592,6 +592,7 @@ public:
 };
 
 
+
 class AW_window_menu_modes : public AW_window { // derived from a Noncopyable
     void *AW_window_menu_modes_private;       // Do not use !!!
     
@@ -601,6 +602,9 @@ public:
     void init(AW_root *root, const char *wid, const char *windowname, int width, int height);
 };
 
+/**
+ * A window that contains a canvas in its MIDDLE_AREA.
+ */
 class AW_window_menu : public AW_window {
 private:
 public:
@@ -617,7 +621,9 @@ public:
     void init(AW_root *root, const char *wid, const char *windowname);
 };
 
-
+/**
+ * Am simple window that only uses the INFO_AREA.
+ */
 class AW_window_simple : public AW_window {
 private:
 public:

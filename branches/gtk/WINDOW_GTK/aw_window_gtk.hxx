@@ -33,7 +33,18 @@ class AW_window_gtk : public virtual Noncopyable {
 
 
     GtkWindow *window; /**< The gtk window instance managed by this aw_window */
-    GtkFixed *fixed_size_area; /**< A fixed size widget spanning the whole window. Everything is positioned on this widget.*/
+    GtkFixed *fixed_size_area; /**< A fixed size widget spanning the whole window. Everything is positioned on this widget using absolut coordinates.*/
+
+
+    /**
+     * A window consists of several areas.
+     * Some of those areas are named, some are unnamed.
+     * The unnamed areas are instantiated once and never changed, therefore no references to unnamed areas exist.
+     * Named areas are instantiated depending on the window type.
+     *
+     * This vector contains references to the named areas.
+     * The AW_Area enum is used to index this vector.
+     */
     std::vector<AW_area_management *> areas;
 
     AW_window_gtk() :
@@ -57,11 +68,11 @@ class AW_window_gtk : public virtual Noncopyable {
 };
 
 /**
- * FIXME
+ * Contains information about one area inside a window.
  */
 class AW_area_management {
-    GtkWidget *form; /**< The main form of this window. Everything is inside this form */ //FIXME is this correct?
-    GtkWidget *area; /**< The drawing area of this form. The background of this area may be filled with a xfig drawing. */
+    GtkWidget *form; /**< the managing widget */
+    GtkWidget *area; /**< the drawing area */
 
     AW_common_gtk *common;
 
@@ -70,7 +81,7 @@ class AW_area_management {
     AW_device_print *print_device;
     AW_device_click *click_device;
 
-    AW_cb_struct *resize_cb;
+    AW_cb_struct *resize_cb; /**<A list of callback functions that are called whenever this area is resized. */
     AW_cb_struct *double_click_cb;
 
     long click_time;
@@ -89,6 +100,13 @@ public:
 
     void create_devices(AW_window *aww, AW_area ar);
 
+    /**
+     * Adds a new callback.
+     * @param f The callback.
+     * @param aww FIXME
+     * @param cd1 callback parameter 1
+     * @param cd2 callback parameter 2
+     */
     void set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_input_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);

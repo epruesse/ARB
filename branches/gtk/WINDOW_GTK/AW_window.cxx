@@ -1230,8 +1230,11 @@ void AW_window::set_popup_callback(void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_C
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::set_resize_callback(AW_area /*area*/, void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/ /*= 0*/, AW_CL /*cd2*/ /*= 0*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1 /*= 0*/, AW_CL cd2 /*= 0*/) {
+    AW_area_management *aram = prvt.areas[area];
+    if (!aram)
+        return;
+    aram->set_resize_callback(this, f, cd1, cd2);
 }
 
 void AW_window::set_vertical_change_callback(void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/) {

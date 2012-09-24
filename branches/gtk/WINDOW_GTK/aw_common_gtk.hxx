@@ -55,7 +55,7 @@ class AW_common_gtk: public AW_common { // derived from Noncopyable
     GdkDisplay *display;
     GtkWidget  *window;
 
-    void install_common_extends_cb(AW_window *aww, AW_area area);
+
 
 public:
     AW_common_gtk(GdkDisplay *display_in,
@@ -64,13 +64,7 @@ public:
                  AW_rgb*&   dcolors,
                  long&      dcolors_count,
                  AW_window *aww,
-                 AW_area    area)
-        : AW_common(fcolors, dcolors, dcolors_count),
-          display(display_in),
-          window(window_in)
-    {
-        install_common_extends_cb(aww, area);
-    }
+                 AW_area    area);
 
     virtual AW_GC *create_gc();
 
