@@ -14,7 +14,6 @@
 static void awt_create_select_filter_window_aw_cb(void *, struct adfiltercbstruct *cbs)
 {       // update the variables
     AW_root *aw_root = cbs->awr;
-    char    buffer[256];
     GB_push_transaction(cbs->gb_main);
     char *target = aw_root->awar(cbs->def_subname)->read_string();
     char *to_free_target = target;
@@ -72,6 +71,7 @@ static void awt_create_select_filter_window_aw_cb(void *, struct adfiltercbstruc
 
         for (i=0; i<len-10; i++) {  // place markers
             if (i%10 == 0) {
+                char buffer[256];
                 sprintf(buffer, "%li", i+1);
                 strncpy(data+i+1, buffer, strlen(buffer));
             }
@@ -154,7 +154,6 @@ static void awt_add_sequences_to_list(struct adfiltercbstruct *cbs, const char *
 static void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruct *cbs) {
     // update list widget and variables
     GB_push_transaction(cbs->gb_main);
-    GBDATA *gb_extended;
 
     if (cbs->filterlist) {
         char *use = cbs->awr->awar(cbs->def_alignment)->read_string();
@@ -170,7 +169,7 @@ static void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruc
             }
         }
 
-        for (gb_extended = GBT_first_SAI(cbs->gb_main);
+        for (GBDATA *gb_extended = GBT_first_SAI(cbs->gb_main);
              gb_extended;
              gb_extended = GBT_next_SAI(gb_extended))
         {

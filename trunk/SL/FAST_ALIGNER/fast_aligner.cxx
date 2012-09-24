@@ -1912,6 +1912,8 @@ public:
           turnAllowed(turnAllowed_),
           ali_params(ali_params_),
           maxProtection(maxProtection_),
+          wasNotAllowedToAlign(0),
+          err_count(0),
           continue_on_error(continue_on_error_),
           error_action(continue_on_error ? error_action_ : FA_NO_ACTION)
     {}

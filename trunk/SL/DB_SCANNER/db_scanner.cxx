@@ -158,11 +158,10 @@ static void editfield_value_changed(void *, DbScanner *cbs)
         error = "Edit is disabled";
     }
     else {
-        GBDATA *gb_key_name;
-        char   *key_name = 0;
+        char *key_name = 0;
 
         if (inside_scanner_keydata(cbs, gbd)) { // not exist, create new element
-            gb_key_name         = GB_entry(gbd, CHANGEKEY_NAME);
+            GBDATA *gb_key_name = GB_entry(gbd, CHANGEKEY_NAME);
             key_name            = GB_read_string(gb_key_name);
             GBDATA *gb_key_type = GB_entry(gbd, CHANGEKEY_TYPE);
 
@@ -498,11 +497,9 @@ static void scan_list(GBDATA *, DbScanner *cbs) {
 
                     {
                         char *data = GB_read_as_string(gbd);
-                        int   ssize;
-
                         if (data) {
-                            int rest = INFO_WIDTH-(p-buffer);
-                            ssize    = strlen(data);
+                            int rest  = INFO_WIDTH-(p-buffer);
+                            int ssize = strlen(data);
 
                             if (ssize > rest) {
                                 ssize = GBS_shorten_repeated_data(data);

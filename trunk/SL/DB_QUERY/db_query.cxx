@@ -1089,8 +1089,7 @@ static void perform_query_cb(AW_window*, AW_CL cl_query, AW_CL cl_ext_query) {
                         GBDATA *gb_key = qinfo.get_first_key(gb_item);
 
                         if (gb_key) {
-                            char   *data        = GB_read_as_string(gb_key);
-                            GBDATA *gb_ref_pntr = 0;
+                            char *data = GB_read_as_string(gb_key);
 
                             if (data && data[0]) {
                                 string hit_reason;
@@ -1098,7 +1097,7 @@ static void perform_query_cb(AW_window*, AW_CL cl_query, AW_CL cl_ext_query) {
 
                                 if (ext_query == EXT_QUERY_COMPARE_WORDS) {
                                     for (char *t = strtok(data, " "); t; t = strtok(0, " ")) {
-                                        gb_ref_pntr = (GBDATA *)GBS_read_hash(ref_hash, t);
+                                        GBDATA *gb_ref_pntr = (GBDATA *)GBS_read_hash(ref_hash, t);
                                         if (gb_ref_pntr) { // found item in other DB, with 'first_key' containing word from 'gb_key'
                                             this_hit   = true;
                                             hit_reason = GBS_global_string("%s%s has word '%s' in %s",
@@ -1109,7 +1108,7 @@ static void perform_query_cb(AW_window*, AW_CL cl_query, AW_CL cl_ext_query) {
                                     }
                                 }
                                 else {
-                                    gb_ref_pntr = (GBDATA *)GBS_read_hash(ref_hash, data);
+                                    GBDATA *gb_ref_pntr = (GBDATA *)GBS_read_hash(ref_hash, data);
                                     if (gb_ref_pntr) { // found item in other DB, with identical 'first_key'
                                         this_hit   = true;
                                         hit_reason = GBS_global_string("%s%s matches %s",
@@ -2151,17 +2150,20 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
 
     AW_window_simple *aws = new AW_window_simple;
 
+    dbq_assert(contradicted(query, sel));
+
+    // cppcheck-suppress nullPointer
     if (query) {
         dbq_assert(mode == COLORIZE_INVALID);
         mode = COLORIZE_LISTED;
     }
+    // cppcheck-suppress nullPointer
     if (sel) {
         dbq_assert(mode == COLORIZE_INVALID);
         mode = COLORIZE_MARKED;
     }
     dbq_assert(!(mode == COLORIZE_INVALID));
 
-    // cppcheck-suppress nullPointer
     ItemSelector& Sel  = mode == COLORIZE_LISTED ? query->selector : *sel;
     const char   *what = mode == COLORIZE_LISTED ? "listed" : "marked";
 
@@ -2402,10 +2404,8 @@ static void set_field_of_queried_cb(AW_window*, AW_CL cl_query, AW_CL append) {
     free(value);
 }
 
-AW_window *create_awt_do_set_list(AW_root *aw_root, DbQuery *query)
-{
-    AW_window_simple *aws = 0;
-    aws = new AW_window_simple;
+AW_window *create_awt_do_set_list(AW_root *aw_root, DbQuery *query) {
+    AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "SET_DATABASE_FIELD_OF_LISTED", "SET MANY FIELDS");
     aws->load_xfig("ad_mset.fig");
 
@@ -2427,7 +2427,7 @@ AW_window *create_awt_do_set_list(AW_root *aw_root, DbQuery *query)
 
     aws->at("val");
     aws->create_text_field(query->awar_setvalue, 2, 2);
-    return (AW_window *)aws;
+    return aws;
 
 }
 
@@ -2473,8 +2473,7 @@ static void set_protection_of_queried_cb(AW_window*, AW_CL cl_query) {
 }
 
 static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query) {
-    AW_window_simple *aws = 0;
-    aws = new AW_window_simple;
+    AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "SET_PROTECTION_OF_FIELD_OF_LISTED", "SET PROTECTIONS OF FIELDS");
     aws->load_xfig("awt/set_protection.fig");
 
@@ -2503,7 +2502,7 @@ static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query)
     aws->callback(set_protection_of_queried_cb, (AW_CL)query);
     aws->create_button("SET_PROTECTION_OF_FIELD_OF_LISTED", "SET PROTECTION");
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 static void toggle_flag_cb(AW_window *aww, AW_CL cl_query) {
