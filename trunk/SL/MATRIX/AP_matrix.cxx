@@ -39,25 +39,9 @@ AP_smatrix::~AP_smatrix() {
 // ------------------
 //      AP_matrix
 
-
-void AP_matrix::set_description(const char *xstring, const char *ystring) {
-    char *x = strdup(xstring);
-    char *y = strdup(ystring);
-    char *t;
-    int xpos = 0;
-    x_description = (char **)GB_calloc(sizeof(char *), size);
-    y_description = (char **)GB_calloc(sizeof(char *), size);
-    for (t=strtok(x, " ,;\n"); t; t = strtok(0, " ,;\n")) {
-        ap_assert(xpos<size);
-        x_description[xpos++] = strdup(t);
-    }
-    int ypos = 0;
-    for (t=strtok(y, " ,;\n"); t; t = strtok(0, " ,;\n")) {
-        ap_assert(ypos<size);
-        x_description[ypos++] = strdup(t);
-    }
-    free(x);
-    free(y);
+void AP_matrix::set_desc(char**& which_desc, int idx, const char *desc) {
+    if (!which_desc) which_desc = (char**)GB_calloc(sizeof(char*), size);
+    which_desc[idx] = strdup(desc);
 }
 
 void AP_matrix::create_awars(AW_root *awr, const char *awar_prefix) {
@@ -143,10 +127,11 @@ void AP_matrix::normize() { // set values so that average of non diag elems == 1
 }
 
 AP_matrix::AP_matrix(long si)
+    : x_description(NULL),
+      y_description(NULL)
 {
     m = (AP_FLOAT **)calloc(sizeof(AP_FLOAT *), (size_t)si);
-    long i;
-    for (i=0; i<si; i++) {
+    for (long i=0; i<si; i++) {
         m[i] = (AP_FLOAT *)calloc(sizeof(AP_FLOAT), (size_t)(si));
     }
     size = si;

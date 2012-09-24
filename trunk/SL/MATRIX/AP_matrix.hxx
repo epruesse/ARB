@@ -29,24 +29,32 @@ public:
     AP_smatrix(long si);
     ~AP_smatrix();
 
-    void    set(long i, long j, AP_FLOAT val) { if (i>j) m[i][j] = val; else m[j][i] = val; };
+    void     set(long i, long j, AP_FLOAT val) { if (i>j) m[i][j] = val; else m[j][i] = val; };
     AP_FLOAT get(long i, long j) { if (i>j) return m[i][j]; else return m[j][i]; };
 };
 
 class AP_matrix : virtual Noncopyable {
-public:
     AP_FLOAT **m;
-    char    **x_description; // optional description, strdupped
-    char    **y_description;
-    long    size;
+    long       size;
+    char     **x_description;                                                     // optional description, strdupped
+    char     **y_description;
+
+    void set_desc(char**& which_desc, int idx, const char *desc);
+
+public:
     AP_matrix(long si);
     ~AP_matrix();
+
     void create_awars(AW_root *awr, const char *awar_prefix);
     void read_awars(AW_root *awr, const char *awar_prefix);
-    void normize();     // set average non diag element to 1.0 (only for described elements)
+    void normize();                                                                     // set average non diag element to 1.0 (only for described elements)
     void create_input_fields(AW_window *aww, const char *awar_prefix);
-    void set_description(const char *xstring, const char *ystring);
-    void    set(int i, int j, AP_FLOAT val) { m[i][j] = val; };
+
+    void set_x_description(int idx, const char *desc) { set_desc(x_description, idx, desc); }
+    void set_y_description(int idx, const char *desc) { set_desc(y_description, idx, desc); }
+    void set_descriptions(int idx, const char *desc) { set_x_description(idx, desc); set_y_description(idx, desc); }
+
+    void     set(int i, int j, AP_FLOAT val) { m[i][j] = val; };
     AP_FLOAT get(int i, int j) { return m[i][j]; };
 };
 
