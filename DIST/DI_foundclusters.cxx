@@ -355,6 +355,7 @@ void ClustersData::clear(ClusterSubset subset) {
 
 void ClustersData::store(ID id) {
     ClusterPtr toStore = clusterWithID(id);
+    // cppcheck-suppress uselessCallsRemove
     remove(toStore, SHOWN_CLUSTERS);
     add(toStore, STORED_CLUSTERS);
 }

@@ -836,14 +836,13 @@ AW_window *DBUI::create_field_create_window(AW_root *root, AW_CL cl_bound_item_s
 static void field_convert_commit_cb(AW_window *aws, AW_CL cl_bound_item_selector) {
     BoundItemSel *bound_selector = (BoundItemSel*)cl_bound_item_selector;
 
-    AW_root  *root    = aws->get_root();
-    GBDATA   *gb_main = bound_selector->gb_main;
-    GB_ERROR  error   = NULL;
+    AW_root *root    = aws->get_root();
+    GBDATA  *gb_main = bound_selector->gb_main;
 
     GB_push_transaction(gb_main);
-    error = GBT_convert_changekey(gb_main,
-                                  root->awar(AWAR_FIELD_CONVERT_SOURCE)->read_char_pntr(),
-                                  (GB_TYPES)root->awar(AWAR_FIELD_CONVERT_TYPE)->read_int());
+    GB_ERROR error = GBT_convert_changekey(gb_main,
+                                           root->awar(AWAR_FIELD_CONVERT_SOURCE)->read_char_pntr(),
+                                           (GB_TYPES)root->awar(AWAR_FIELD_CONVERT_TYPE)->read_int());
 
     GB_end_transaction_show_error(gb_main, error, aw_message);
 }

@@ -32,7 +32,7 @@ void BasePosition::initialize(const char *seq, int size, const CharPredicate& is
     abs2rel = new int[absLen+1];
 
     int i;
-    for (i = 0; seq[i] && i<size; ++i) {
+    for (i = 0; i<size && seq[i]; ++i) {
         abs2rel[i] = baseCount;
         if (!is_gap.applies(seq[i])) ++baseCount;
     }

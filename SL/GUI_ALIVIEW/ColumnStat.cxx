@@ -280,32 +280,31 @@ void ColumnStat::weight_by_inverseRates() const {
 
 
 
-void ColumnStat::print() {
-    unsigned int j;
-    int wf;
-    double sum_rates[2], sum_tt[2];
-    long count[2];
-    sum_rates[0] = sum_rates[1] = sum_tt[0] = sum_tt[1] = 0;
-    count[0] = count[1] = 0;
-    if (!seq_len) return;
-    for (j=0; j<seq_len; j++) {
-        if (!weights[j]) continue;
-        fputc(".#"[is_helix[j]], stdout);
-        printf("%i:    minmut %5i  freqs %5i   rates  %5f  tt %5f  ",
-                j, mut_sum[j], freq_sum[j], rates[j], ttratio[j]);
-        for (wf = 0; wf<256; wf++) {
-            if (!frequency[wf]) continue;
-            printf("%c:%5f ", wf, frequency[wf][j]);
+void ColumnStat::print() { 
+    if (seq_len) {
+        double sum_rates[2] = { 0.0, 0.0 };
+        double sum_tt[2] = { 0.0, 0.0 };
+        long   count[2] = { 0, 0 };
+
+        for (unsigned j=0; j<seq_len; j++) {
+            if (weights[j]) {
+                fputc(".#"[is_helix[j]], stdout);
+                printf("%u:    minmut %5i  freqs %5i   rates  %5f  tt %5f  ",
+                       j, mut_sum[j], freq_sum[j], rates[j], ttratio[j]);
+                for (int wf = 0; wf<256; wf++) {
+                    if (frequency[wf]) printf("%c:%5f ", wf, frequency[wf][j]);
+                }
+                sum_rates[is_helix[j]] += rates[j];
+                sum_tt[is_helix[j]] += ttratio[j];
+                count[is_helix[j]]++;
+                printf("w: %i\n", weights[j]);
+            }
         }
-        sum_rates[is_helix[j]] += rates[j];
-        sum_tt[is_helix[j]] += ttratio[j];
-        count[is_helix[j]]++;
-        printf("w: %i\n", weights[j]);
+        printf("Helical Rates %5f   Non Hel. Rates  %5f\n",
+               sum_rates[1]/count[1], sum_rates[0]/count[0]);
+        printf("Helical TT %5f  Non Hel. TT %5f\n",
+               sum_tt[1]/count[1], sum_tt[0]/count[0]);
     }
-    printf("Helical Rates %5f   Non Hel. Rates  %5f\n",
-           sum_rates[1]/count[1], sum_rates[0]/count[0]);
-    printf("Helical TT %5f  Non Hel. TT %5f\n",
-           sum_tt[1]/count[1], sum_tt[0]/count[0]);
 }
 
 static char *filter_columnstat_SAIs(GBDATA *gb_extended, AW_CL cl_column_stat) {
