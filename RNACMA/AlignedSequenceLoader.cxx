@@ -3,6 +3,9 @@
  *
  *  Created on: Feb 15, 2010
  *      Author: Breno Faria
+ *
+ *  Institute of Microbiology (Technical University Munich)
+ *  http://www.arb-home.de/ 
  */
 
 

@@ -12,19 +12,25 @@
  *
  *  Created on: Feb 15, 2010
  *      Author: Breno Faria
+ *
+ *  Institute of Microbiology (Technical University Munich)
+ *  http://www.arb-home.de/ 
  */
 
-#ifndef ANALYSER_H_
-#define ANALYSER_H_
+#ifndef ANALYSER_H
+#define ANALYSER_H
 
-#include <arbdb.h>
+#ifndef ARBDBT_H
 #include <arbdbt.h>
-
-#include "Analyser.h"
+#endif
+#ifndef ALIGNEDSEQUENCELOADER_H
 #include "AlignedSequenceLoader.h"
+#endif
+#ifndef CMA_H
 #include "Cma.h"
+#endif
 
-class Analyser {
+class Analyser : virtual Noncopyable {
 
 private:
     /**
@@ -71,4 +77,6 @@ public:
 
 };
 
-#endif /* ANALYSER_H_ */
+#else
+#error Analyser.h included twice
+#endif // ANALYSER_H

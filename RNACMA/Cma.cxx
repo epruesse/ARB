@@ -3,6 +3,9 @@
  *
  *  Created on: Dec 16, 2009
  *      Author: Breno Faria
+ *
+ *  Institute of Microbiology (Technical University Munich)
+ *  http://www.arb-home.de/ 
  */
 
 #include <iostream>
@@ -360,12 +363,12 @@ MatrixXd Cma::computeJointEntropy(MapMatrixType & hist) {
         }
 
         for (unsigned int j = i; j < hist[i].size(); ++j) {
-            double result_i_j = 0.;
             int total_i_j = hist[i][j][alphabet_map.at("total")];
             int total_i_i = hist[i][i][alphabet_map.at("total")];
             int total_j_j = hist[j][j][alphabet_map.at("total")];
             int mismatches = total_i_i + total_j_j - 2 * total_i_j;
             if (total_i_j != 0) {
+                double result_i_j = 0.;
                 for (map<int, int>::iterator it = hist[i][j].begin(); it
                          != hist[i][j].end(); ++it) {
                     double pair = double(it->second) + Cma::epsilon;
