@@ -1155,13 +1155,19 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
     if (xsize > _at.max_x_size) _at.max_x_size = xsize;
     if (ysize > _at.max_y_size) _at.max_y_size = ysize;
 
+    AW_device *device = get_device(AW_INFO_AREA);
+
     if (resize) {
         recalc_size_atShow(AW_RESIZE_ANY);
         set_window_size(_at.max_x_size, _at.max_y_size);
+
+        //FIXME this call should not be necessary. The sceen size should have been set by the resize_callback...
+        device->get_common()->set_screen_size(_at.max_x_size, _at.max_y_size);
+
     }
 
 
-    AW_device *device = get_device(AW_INFO_AREA);
+
     device->reset();
     device->set_offset(AW::Vector(-xfig->minx, -xfig->miny));
 
@@ -1396,7 +1402,6 @@ void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windo
 //            p_w->shell,
 //            NULL);
 
-    //FIXME what exactly is the difference between area and form?
     prvt.areas[AW_INFO_AREA] = new AW_area_management(root, GTK_WIDGET(prvt.window), GTK_WIDGET(prvt.window));
 
 
