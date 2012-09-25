@@ -135,7 +135,7 @@ int PT_find_exProb(PT_exProb *pep, int) {
 
         // append the probe to the probe list
 
-        if (!first) GBS_strcat(gbs_str, ";");
+        if (!first) GBS_chrcat(gbs_str, (char)pep->separator);
         first = false;
         if (pep->readable) {
             char *readable = readable_probe(pep->next_probe.data, pep->next_probe.size);

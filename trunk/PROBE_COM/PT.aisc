@@ -139,9 +139,10 @@ PT_exProb, PEP, 6, (~iterate all existing probes~), {
     int,            plength,        t,      ,       PLENGTH,    8,      20,    (~Length of searched probes~);
     int,            numget,         t,      ,       NUMGET,     9,      200,   (~Number of searched probes~);
     int,            readable,       t,      ,       READABLE,   14,     0,     (~Return readable probes~);
+    int,            separator,      t,      ,       SEPARATOR,  15,     59,    (~Separator for result (';') ~);
     int,            restart,        t,      ,       RESTART,    10,     1,     (~1 => start from beginning~);
     bytestring,     next_probe,     t,      ,       NEXT_PROBE, 11,     ,      (~next probe to look for (internal)~);
-    int,            PT_find_exProb, %,      w,      FIND_PROBES,12,     ,      (~search probes (result=separated by ','s )~);
+    int,            PT_find_exProb, %,      w,      FIND_PROBES,12,     ,      (~search probes (result=separated by SEPARATOR )~);
     aisc_string,    result,         t,      r,      RESULT,     13,     ,      (~The result~);
 };
 
