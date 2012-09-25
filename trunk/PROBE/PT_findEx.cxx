@@ -137,7 +137,14 @@ int PT_find_exProb(PT_exProb *pep, int) {
 
         if (!first) GBS_strcat(gbs_str, ";");
         first = false;
-        GBS_strcat(gbs_str, pep->next_probe.data);
+        if (pep->readable) {
+            char *readable = readable_probe(pep->next_probe.data, pep->next_probe.size);
+            GBS_strcat(gbs_str, readable);
+            free(readable);
+        }
+        else {
+            GBS_strcat(gbs_str, pep->next_probe.data);
+        }
     }
 
     pep->result = GBS_strclose(gbs_str);
