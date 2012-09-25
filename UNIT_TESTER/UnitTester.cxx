@@ -47,7 +47,8 @@ struct Globals : virtual Noncopyable {
     Globals()
         : inside_test(false),
           runDir(NULL),
-          pid(getpid())
+          pid(getpid()),
+          libname(NULL)
     {
         running_on_valgrind = (RUNNING_ON_VALGRIND>0);
     }
@@ -237,7 +238,7 @@ public:
 
 inline Flag getLocalFlag(const char *flagname) {
     string localname  = string(GLOBAL.runDir)+"/../flags/"+flagname+'.'+GLOBAL.libname;
-    return Flag(localname.c_str());
+    return Flag(localname);
 }
 
 static bool flag_callback(arb_test::FlagAction action, const char *name) {
@@ -333,6 +334,7 @@ UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec, long 
         deadlockguard(max_allowed_duration_ms, detect_environment_calls);
 #else
 #warning DEADLOCKGUARD has been disabled (not default!)
+        // cppcheck-suppress selfAssignment
         detect_environment_calls = detect_environment_calls; // dont warn
 #endif
         exit(EXIT_FAILURE);
