@@ -47,6 +47,10 @@ struct Params {
     int         WEIGHTED;
 
     apd_sequence *sequence;
+
+    int ITERATE;
+    int ITERATE_AMOUNT;
+    int ITERATE_RESET;
 };
 
 
@@ -127,6 +131,43 @@ public:
 };
 int PTserverConnection::count = 0;
 
+static char *AP_probe_iterate_event(ARB_ERROR& error) {
+    PTserverConnection contact(error);
+
+    char *result = NULL;
+    if (!error) {
+        T_PT_PEP pep;
+        if (aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs,
+                        LOCS_PROBE_FIND_CONFIG, PT_PEP, pep,
+                        PEP_PLENGTH,  (long)P.ITERATE,
+                        PEP_NUMGET,   (long)P.ITERATE_AMOUNT,
+                        PEP_RESTART,  (long)P.ITERATE_RESET,
+                        PEP_READABLE, (long)1,
+                        NULL))
+        {
+            error = "Connection to PT_SERVER lost (1)";
+        }
+
+        if (!error) {
+            aisc_put(pd_gl.link, PT_PEP, pep,
+                     PEP_FIND_PROBES, 0,
+                     NULL);
+
+            char *pep_result;
+            if (aisc_get(pd_gl.link, PT_PEP, pep,
+                         PEP_RESULT, &pep_result,
+                         NULL)) {
+                error = "Connection to PT_SERVER lost (2)";
+            }
+
+            if (!error) result = pep_result;
+        }
+    }
+
+    if (error) freenull(result);
+    return result;
+}
+
 static char *AP_probe_design_event(ARB_ERROR& error) {
     PTserverConnection contact(error);
 
@@ -176,7 +217,7 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
                 if (aisc_get(pd_gl.link, PT_LOCS, pd_gl.locs,
                              LOCS_ERROR, &locs_error,
                              NULL)) {
-                    error = "Connection to PT_SERVER lost (1)";
+                    error = "Connection to PT_SERVER lost (2)";
                 }
                 else {
                     if (*locs_error) {
@@ -378,6 +419,10 @@ static bool parseCommandLine(int argc, const char * const * const argv) {
     P.LIMITN     = getInt("matchlimitN",     4,       0, 20,      "Limit for N-matches. If reached N-matches are mismatches");
     P.MAXRESULT  = getInt("matchmaxresults", 1000000, 0, INT_MAX, "Max. number of matches reported (0=unlimited)");
 
+    P.ITERATE=        getInt("iterate",        0,   1,  20,      "Iterate over probes of given length");
+    P.ITERATE_AMOUNT= getInt("iterate_amount", 100, 1,  INT_MAX, "Number of results per answer");
+    P.ITERATE_RESET=  getInt("iterate_reset",  0,   0,  1,       "First call should reset the iterator, consecutive calls shouldn't");
+
     if (pargc>1) {
         printf("Unknown (or duplicate) parameter %s\n", pargv[1]);
         return false;
@@ -435,6 +480,9 @@ static char *execute(ARB_ERROR& error) {
     char *answer;
     if (*P.DESIGNNAMES || P.sequence) {
         answer = AP_probe_design_event(error);
+    }
+    else if (P.ITERATE>0) {
+        answer = AP_probe_iterate_event(error);
     }
     else {
         answer = AP_probe_match_event(error);
@@ -894,6 +942,81 @@ void TEST_SLOW_match_designed_probe() {
         "ClfPerfr\1" "  ClfPerfr            0     0  0.0  18    17 0   AGAGUUUGA-==================-UUUCCUUCG\1";
 
     TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+}
+
+void TEST_SLOW_get_existing_probes() {
+    bool use_gene_ptserver = false;
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "iterate=20",
+            "iterate_amount=10",
+            "iterate_reset=1", 
+        };
+        CCP expected =
+            "AAACCGGGGCTAATACCGGA.;AAACGACTGTTAATACCGCA.;AAACGATGGAAGCTTGCTTC.;AAACGATGGCTAATACCGCA.;AAACGGATTAGCGGCGGGAC.;"
+            "AAACGGGCGCTAATACCGCA.;AAACGGTCGCTAATACCGGA.;AAACGGTGGCTAATACCGCA.;AAACGTACGCTAATACCGCA.;AAACTCAAGCTAATACCGCA.";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+    }
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "iterate=15",
+            "iterate_amount=20",
+            "iterate_reset=1", 
+        };
+        CCP expected =
+            "AAACCGGGGCTAATA.;AAACGACTGTTAATA.;AAACGATGGAAGCTT.;AAACGATGGCTAATA.;AAACGGATTAGCGGC.;AAACGGGCGCTAATA.;AAACGGTCGCTAATA.;"
+            "AAACGGTGGCTAATA.;AAACGTACGCTAATA.;AAACTCAAGCTAATA.;AAACTCAGGCTAATA.;AAACTGGAGAGTTTG.;AAACTGTAGCTAATA.;AAACTTGTTTCTCGG.;"
+            "AAAGAGGTGCTAATA.;AAAGCTTGCTTTCTT.;AAAGGAACGCTAATA.;AAAGGAAGATTAATA.;AAAGGACAGCTAATA.;AAAGGGACTTCGGTC.";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+    }
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "iterate=10",
+            "iterate_amount=30",
+            "iterate_reset=1", 
+        };
+        CCP expected =
+            "AAACCGGGGC.;AAACGACTGT.;AAACGATGGA.;AAACGATGGC.;AAACGGATTA.;AAACGGGCGC.;AAACGGTCGC.;AAACGGTGGC.;AAACGTACGC.;AAACTCAAGC.;"
+            "AAACTCAGGC.;AAACTGGAGA.;AAACTGTAGC.;AAACTTGTTT.;AAAGAGGTGC.;AAAGCTTGCT.;AAAGGAACGC.;AAAGGAAGAT.;AAAGGACAGC.;AAAGGGACTT.;"
+            "AAAGGGATTG.;AAAGGGGCTT.;AAAGGGGTGC.;AAAGTCTTCG.;AAAGTGGAGC.;AAAGTGGCGC.;AAATTGAGAG.;AACAAGGAAC.;AACAAGGTAA.;AACAAGGTAG.";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+    }
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "iterate=3",
+            "iterate_amount=70",
+            "iterate_reset=1", 
+        };
+        CCP expected =
+            "AAA.;AAC.;AAG.;AAT.;ACA.;ACC.;ACG.;ACT.;AGA.;AGC.;AGG.;AGT.;ATA.;ATC.;ATG.;ATT.;"
+            "CAA.;CAC.;CAG.;CAT.;CCA.;CCC.;CCG.;CCT.;CGA.;CGC.;CGG.;CGT.;CTA.;CTC.;CTG.;CTT.;"
+            "GAA.;GAC.;GAG.;GAT.;GCA.;GCC.;GCG.;GCT.;GGA.;GGC.;GGG.;GGT.;GTA.;GTC.;GTG.;GTT.;"
+            "TAA.;TAC.;TAG.;TAT.;TCA.;TCC.;TCG.;TCT.;TGA.;TGC.;TGG.;TGT.;TTA.;TTC.;TTG.;TTT.";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+    }
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "iterate=2",
+            "iterate_amount=20",
+            "iterate_reset=1", 
+        };
+        CCP expected =
+            "AA.;AC.;AG.;AT.;"
+            "CA.;CC.;CG.;CT.;"
+            "GA.;GC.;GG.;GT.;"
+            "TA.;TC.;TG.;TT.";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+    }
 }
 
 void TEST_SLOW_unmatched_probes() {

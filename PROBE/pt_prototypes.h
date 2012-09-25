@@ -44,6 +44,7 @@ int PT_find_exProb(PT_exProb *pep, int dummy_1x);
 int compress_data(char *probestring);
 ARB_ERROR probe_read_data_base(const char *name, bool readOnly) __ATTR__USERESULT;
 int probe_compress_sequence(char *seq, int seqsize);
+char *readable_probe(char *compressed_probe, size_t len);
 char *probe_read_alignment(int j, int *psize);
 void probe_read_alignments(void);
 void PT_build_species_hash(void);

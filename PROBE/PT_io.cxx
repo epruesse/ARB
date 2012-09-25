@@ -144,6 +144,35 @@ int probe_compress_sequence(char *seq, int seqsize) {
     return dest - seq;
 }
 
+char *readable_probe(char *compressed_probe, size_t len) {
+    static SmartMallocPtr(uchar) smart_tab;
+    uchar *tab = NULL;
+
+    if (smart_tab.isNull()) {
+        tab = (uchar *) malloc(256);
+        memset(tab, '?', 256);
+
+        tab[PT_A] = 'A';
+        tab[PT_C] = 'C';
+        tab[PT_G] = 'G';
+        tab[PT_T] = 'T';
+
+        tab[PT_QU]      = '.';
+        tab[PT_B_UNDEF] = '!';
+
+        smart_tab = tab;
+    }
+
+    tab = &*smart_tab;
+
+    char *result = (char*)malloc(len+1);
+    for (size_t i = 0; i<len; ++i) {
+        result[i] = tab[safeCharIndex(compressed_probe[i])];
+    }
+    result[len] = 0;
+    return result;
+}
+
 static char *probe_read_string_append_point(GBDATA *gb_data, int *psize) {
     long  len  = GB_read_string_count(gb_data);
     char *data = GB_read_string(gb_data);
