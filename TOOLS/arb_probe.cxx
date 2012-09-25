@@ -16,6 +16,7 @@
 
 #include <arb_defs.h>
 #include <arb_strbuf.h>
+#include <algorithm>
 
 struct apd_sequence {
     apd_sequence *next;
@@ -48,9 +49,9 @@ struct Params {
 
     apd_sequence *sequence;
 
-    int ITERATE;
-    int ITERATE_AMOUNT;
-    int ITERATE_RESET;
+    int         ITERATE;
+    int         ITERATE_AMOUNT;
+    const char *ITERATE_SEPARATOR;
 };
 
 
@@ -137,30 +138,55 @@ static char *AP_probe_iterate_event(ARB_ERROR& error) {
     char *result = NULL;
     if (!error) {
         T_PT_PEP pep;
+        int      length = P.ITERATE;
+
         if (aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs,
                         LOCS_PROBE_FIND_CONFIG, PT_PEP, pep,
-                        PEP_PLENGTH,  (long)P.ITERATE,
-                        PEP_NUMGET,   (long)P.ITERATE_AMOUNT,
-                        PEP_RESTART,  (long)P.ITERATE_RESET,
-                        PEP_READABLE, (long)1,
+                        PEP_PLENGTH,   (long)length,
+                        PEP_RESTART,   (long)1,
+                        PEP_READABLE,  (long)1,
+                        PEP_SEPARATOR, (long)P.ITERATE_SEPARATOR[0],
                         NULL))
         {
             error = "Connection to PT_SERVER lost (1)";
         }
 
         if (!error) {
-            aisc_put(pd_gl.link, PT_PEP, pep,
-                     PEP_FIND_PROBES, 0,
-                     NULL);
+            int amount          = P.ITERATE_AMOUNT;
+            int amount_per_call = AISC_MAX_STRING_LEN/(length+2);
 
-            char *pep_result;
-            if (aisc_get(pd_gl.link, PT_PEP, pep,
-                         PEP_RESULT, &pep_result,
-                         NULL)) {
-                error = "Connection to PT_SERVER lost (2)";
+            GBS_strstruct out(50000);
+            bool          first = true;
+
+            while (amount && !error) {
+                int this_amount = std::min(amount, amount_per_call);
+
+                aisc_put(pd_gl.link, PT_PEP, pep,
+                         PEP_NUMGET,      (long)this_amount,
+                         PEP_FIND_PROBES, 0,
+                         NULL);
+
+                char *pep_result;
+                if (aisc_get(pd_gl.link, PT_PEP, pep,
+                             PEP_RESULT, &pep_result,
+                             NULL)) {
+                    error = "Connection to PT_SERVER lost (2)";
+                }
+
+                if (!error) {
+                    if (!pep_result[0]) break;
+
+                    if (first) first = false;
+                    else out.put(P.ITERATE_SEPARATOR[0]);
+
+                    out.cat(pep_result);
+                    amount -= this_amount;
+                }
             }
 
-            if (!error) result = pep_result;
+            if (!error) {
+                result = out.release();
+            }
         }
     }
 
@@ -419,9 +445,10 @@ static bool parseCommandLine(int argc, const char * const * const argv) {
     P.LIMITN     = getInt("matchlimitN",     4,       0, 20,      "Limit for N-matches. If reached N-matches are mismatches");
     P.MAXRESULT  = getInt("matchmaxresults", 1000000, 0, INT_MAX, "Max. number of matches reported (0=unlimited)");
 
-    P.ITERATE=        getInt("iterate",        0,   1,  20,      "Iterate over probes of given length");
-    P.ITERATE_AMOUNT= getInt("iterate_amount", 100, 1,  INT_MAX, "Number of results per answer");
-    P.ITERATE_RESET=  getInt("iterate_reset",  0,   0,  1,       "First call should reset the iterator, consecutive calls shouldn't");
+    P.ITERATE        = getInt("iterate",        0,   1,  20,      "Iterate over probes of given length");
+    P.ITERATE_AMOUNT = getInt("iterate_amount", 100, 1,  INT_MAX, "Number of results per answer");
+
+    P.ITERATE_SEPARATOR = getString("iterate_separator", ";", "Number of results per answer");
 
     if (pargc>1) {
         printf("Unknown (or duplicate) parameter %s\n", pargv[1]);
@@ -951,7 +978,6 @@ void TEST_SLOW_get_existing_probes() {
             "prgnamefake",
             "iterate=20",
             "iterate_amount=10",
-            "iterate_reset=1", 
         };
         CCP expected =
             "AAACCGGGGCTAATACCGGA.;AAACGACTGTTAATACCGCA.;AAACGATGGAAGCTTGCTTC.;AAACGATGGCTAATACCGCA.;AAACGGATTAGCGGCGGGAC.;"
@@ -964,12 +990,12 @@ void TEST_SLOW_get_existing_probes() {
             "prgnamefake",
             "iterate=15",
             "iterate_amount=20",
-            "iterate_reset=1", 
+            "iterate_separator=:",
         };
         CCP expected =
-            "AAACCGGGGCTAATA.;AAACGACTGTTAATA.;AAACGATGGAAGCTT.;AAACGATGGCTAATA.;AAACGGATTAGCGGC.;AAACGGGCGCTAATA.;AAACGGTCGCTAATA.;"
-            "AAACGGTGGCTAATA.;AAACGTACGCTAATA.;AAACTCAAGCTAATA.;AAACTCAGGCTAATA.;AAACTGGAGAGTTTG.;AAACTGTAGCTAATA.;AAACTTGTTTCTCGG.;"
-            "AAAGAGGTGCTAATA.;AAAGCTTGCTTTCTT.;AAAGGAACGCTAATA.;AAAGGAAGATTAATA.;AAAGGACAGCTAATA.;AAAGGGACTTCGGTC.";
+            "AAACCGGGGCTAATA.:AAACGACTGTTAATA.:AAACGATGGAAGCTT.:AAACGATGGCTAATA.:AAACGGATTAGCGGC.:AAACGGGCGCTAATA.:AAACGGTCGCTAATA.:"
+            "AAACGGTGGCTAATA.:AAACGTACGCTAATA.:AAACTCAAGCTAATA.:AAACTCAGGCTAATA.:AAACTGGAGAGTTTG.:AAACTGTAGCTAATA.:AAACTTGTTTCTCGG.:"
+            "AAAGAGGTGCTAATA.:AAAGCTTGCTTTCTT.:AAAGGAACGCTAATA.:AAAGGAAGATTAATA.:AAAGGACAGCTAATA.:AAAGGGACTTCGGTC.";
 
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }
@@ -978,7 +1004,6 @@ void TEST_SLOW_get_existing_probes() {
             "prgnamefake",
             "iterate=10",
             "iterate_amount=30",
-            "iterate_reset=1", 
         };
         CCP expected =
             "AAACCGGGGC.;AAACGACTGT.;AAACGATGGA.;AAACGATGGC.;AAACGGATTA.;AAACGGGCGC.;AAACGGTCGC.;AAACGGTGGC.;AAACGTACGC.;AAACTCAAGC.;"
@@ -992,7 +1017,6 @@ void TEST_SLOW_get_existing_probes() {
             "prgnamefake",
             "iterate=3",
             "iterate_amount=70",
-            "iterate_reset=1", 
         };
         CCP expected =
             "AAA.;AAC.;AAG.;AAT.;ACA.;ACC.;ACG.;ACT.;AGA.;AGC.;AGG.;AGT.;ATA.;ATC.;ATG.;ATT.;"
@@ -1007,7 +1031,6 @@ void TEST_SLOW_get_existing_probes() {
             "prgnamefake",
             "iterate=2",
             "iterate_amount=20",
-            "iterate_reset=1", 
         };
         CCP expected =
             "AA.;AC.;AG.;AT.;"
