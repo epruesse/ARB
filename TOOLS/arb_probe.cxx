@@ -80,10 +80,6 @@ static int init_local_com_struct() {
     return 0;
 }
 
-static void aw_message(const char *error) {
-    printf("%s\n", error);
-}
-
 static const char *AP_probe_pt_look_for_server(ARB_ERROR& error) {
     const char *server_tag = GBS_ptserver_tag(P.SERVERID);
 
@@ -93,134 +89,146 @@ static const char *AP_probe_pt_look_for_server(ARB_ERROR& error) {
     return GBS_read_arb_tcp(server_tag);
 }
 
+class PTserverConnection {
+    static int count;
+    bool       need_close;
+public:
+    PTserverConnection(ARB_ERROR& error)
+        : need_close(false)
+    {
+        if (count) {
+            error = "Only 1 PTserverConnection allowed";
+        }
+        else {
+            ++count;
+            const char *servername = AP_probe_pt_look_for_server(error);
+            if (servername) {
+                pd_gl.link = aisc_open(servername, pd_gl.com, AISC_MAGIC_NUMBER);
+
+                if (!pd_gl.link) {
+                    error = "Cannot contact PT_SERVER [1]";
+                }
+                else if (init_local_com_struct()) {
+                    error = "Cannot contact PT_SERVER [2]";
+                }
+                else {
+                    need_close = true;
+                }
+            }
+        }
+    }
+    ~PTserverConnection() {
+        if (need_close) {
+            aisc_close(pd_gl.link, pd_gl.com);
+            pd_gl.link = 0;
+        }
+        --count;
+    }
+};
+int PTserverConnection::count = 0;
+
 static char *AP_probe_design_event(ARB_ERROR& error) {
-    T_PT_PDC     pdc;
-    T_PT_TPROBE  tprobe;
-    bytestring   bs;
-    char        *match_info;
+    PTserverConnection contact(error);
 
-    {
-        const char *servername = AP_probe_pt_look_for_server(error);
-        if (!servername) return NULL;
+    if (!error) {
+        bytestring bs;
+        bs.data = (char*)(P.DESIGNNAMES);
+        bs.size = strlen(bs.data)+1;
 
-        pd_gl.link = aisc_open(servername, pd_gl.com, AISC_MAGIC_NUMBER);
-    }
-
-    if (!pd_gl.link) {
-        error = "Cannot contact PT_SERVER [1]";
-        return NULL;
-    }
-    if (init_local_com_struct()) {
-        error = "Cannot contact PT_SERVER [2]";
-        return NULL;
-    }
-
-    bs.data = (char*)(P.DESIGNNAMES);
-    bs.size = strlen(bs.data)+1;
-
-    if (aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs,
-                    LOCS_PROBE_DESIGN_CONFIG, PT_PDC, pdc,
-                    PDC_PROBELENGTH,  (long)P.DESIGNPROBELENGTH,
-                    PDC_MINTEMP,      (double)P.MINTEMP,
-                    PDC_MAXTEMP,      (double)P.MAXTEMP,
-                    PDC_MINGC,        P.MINGC/100.0,
-                    PDC_MAXGC,        P.MAXGC/100.0,
-                    PDC_MAXBOND,      (double)P.MAXBOND,
-                    PDC_MIN_ECOLIPOS, (long)P.MINPOS,
-                    PDC_MAX_ECOLIPOS, (long)P.MAXPOS,
-                    PDC_MISHIT,       (long)P.MISHIT,
-                    PDC_MINTARGETS,   P.MINTARGETS/100.0,
-                    PDC_CLIPRESULT,   (long)P.DESIGNCLIPOUTPUT,
-                    NULL))
-    {
-        error = "Connection to PT_SERVER lost (1)";
-        return NULL;
-    }
-
-    apd_sequence *s;
-    for (s = P.sequence; s; s = s->next) {
-        bytestring bs_seq;
-        T_PT_SEQUENCE pts;
-        bs_seq.data = (char*)s->sequence;
-        bs_seq.size = strlen(bs_seq.data)+1;
-        aisc_create(pd_gl.link, PT_PDC, pdc,
-                    PDC_SEQUENCE, PT_SEQUENCE, pts,
-                    SEQUENCE_SEQUENCE, &bs_seq,
-                    NULL);
-    }
-
-    aisc_put(pd_gl.link, PT_PDC, pdc,
-             PDC_NAMES, &bs,
-             PDC_GO, 0,
-             NULL);
-
-    {
-        char *locs_error = 0;
-        if (aisc_get(pd_gl.link, PT_LOCS, pd_gl.locs,
-                     LOCS_ERROR, &locs_error,
-                     NULL)) {
-            aw_message ("Connection to PT_SERVER lost (1)");
-            return NULL;
+        T_PT_PDC pdc;
+        if (aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs,
+                        LOCS_PROBE_DESIGN_CONFIG, PT_PDC, pdc,
+                        PDC_PROBELENGTH,  (long)P.DESIGNPROBELENGTH,
+                        PDC_MINTEMP,      (double)P.MINTEMP,
+                        PDC_MAXTEMP,      (double)P.MAXTEMP,
+                        PDC_MINGC,        P.MINGC/100.0,
+                        PDC_MAXGC,        P.MAXGC/100.0,
+                        PDC_MAXBOND,      (double)P.MAXBOND,
+                        PDC_MIN_ECOLIPOS, (long)P.MINPOS,
+                        PDC_MAX_ECOLIPOS, (long)P.MAXPOS,
+                        PDC_MISHIT,       (long)P.MISHIT,
+                        PDC_MINTARGETS,   P.MINTARGETS/100.0,
+                        PDC_CLIPRESULT,   (long)P.DESIGNCLIPOUTPUT,
+                        NULL))
+        {
+            error = "Connection to PT_SERVER lost (1)";
         }
-        if (*locs_error) {
-            aw_message(locs_error);
+
+        if (!error) {
+            for (apd_sequence *s = P.sequence; s; s = s->next) {
+                bytestring bs_seq;
+                T_PT_SEQUENCE pts;
+                bs_seq.data = (char*)s->sequence;
+                bs_seq.size = strlen(bs_seq.data)+1;
+                aisc_create(pd_gl.link, PT_PDC, pdc,
+                            PDC_SEQUENCE, PT_SEQUENCE, pts,
+                            SEQUENCE_SEQUENCE, &bs_seq,
+                            NULL);
+            }
+
+            aisc_put(pd_gl.link, PT_PDC, pdc,
+                     PDC_NAMES, &bs,
+                     PDC_GO, 0,
+                     NULL);
+
+            {
+                char *locs_error = 0;
+                if (aisc_get(pd_gl.link, PT_LOCS, pd_gl.locs,
+                             LOCS_ERROR, &locs_error,
+                             NULL)) {
+                    error = "Connection to PT_SERVER lost (1)";
+                }
+                else {
+                    if (*locs_error) {
+                        error = locs_error;
+                    }
+                    free(locs_error);
+                }
+            }
+
+            if (!error) {
+                T_PT_TPROBE tprobe;
+                aisc_get(pd_gl.link, PT_PDC, pdc,
+                         PDC_TPROBE, tprobe.as_result_param(),
+                         NULL);
+
+
+                GBS_strstruct *outstr = GBS_stropen(1000);
+
+                if (tprobe.exists()) {
+                    char *match_info;
+                    aisc_get(pd_gl.link, PT_TPROBE, tprobe,
+                             TPROBE_INFO_HEADER,   &match_info,
+                             NULL);
+                    GBS_strcat(outstr, match_info);
+                    GBS_chrcat(outstr, '\n');
+                    free(match_info);
+                }
+
+
+                while (tprobe.exists()) {
+                    char *match_info;
+                    if (aisc_get(pd_gl.link, PT_TPROBE, tprobe,
+                                 TPROBE_NEXT, tprobe.as_result_param(),
+                                 TPROBE_INFO, &match_info,
+                                 NULL)) break;
+                    GBS_strcat(outstr, match_info);
+                    GBS_chrcat(outstr, '\n');
+                    free(match_info);
+                }
+
+                return GBS_strclose(outstr);
+            }
         }
-        free(locs_error);
     }
-
-    aisc_get(pd_gl.link, PT_PDC, pdc,
-             PDC_TPROBE, tprobe.as_result_param(),
-             NULL);
-
-
-    GBS_strstruct *outstr = GBS_stropen(1000);
-
-    if (tprobe.exists()) {
-        aisc_get(pd_gl.link, PT_TPROBE, tprobe,
-                 TPROBE_INFO_HEADER,   &match_info,
-                 NULL);
-        GBS_strcat(outstr, match_info);
-        GBS_chrcat(outstr, '\n');
-        free(match_info);
-    }
-
-
-    while (tprobe.exists()) {
-        if (aisc_get(pd_gl.link, PT_TPROBE, tprobe,
-                     TPROBE_NEXT, tprobe.as_result_param(),
-                     TPROBE_INFO, &match_info,
-                     NULL)) break;
-        GBS_strcat(outstr, match_info);
-        GBS_chrcat(outstr, '\n');
-        free(match_info);
-    }
-
-    aisc_close(pd_gl.link, pd_gl.com); pd_gl.link = 0;
-
-    return GBS_strclose(outstr);
+    return NULL;
 }
 
 static char *AP_probe_match_event(ARB_ERROR& error) {
-    T_PT_MATCHLIST  match_list;
-    char           *probe = 0;
+    PTserverConnection contact(error);
 
-    {
-        const char *servername = AP_probe_pt_look_for_server(error);
-        if (!servername) return NULL;
-
-        pd_gl.link = aisc_open(servername, pd_gl.com, AISC_MAGIC_NUMBER);
-    }
-
-    if (!pd_gl.link) {
-        error = "Cannot contact PT_SERVER [1]";
-        return NULL;
-    }
-    if (init_local_com_struct()) {
-        error = "Cannot contact PT_SERVER [2]";
-        return NULL;
-    }
-
-    if (aisc_nput(pd_gl.link, PT_LOCS, pd_gl.locs,
+    if (!error &&
+        aisc_nput(pd_gl.link, PT_LOCS, pd_gl.locs,
                   LOCS_MATCH_REVERSED,       (long)P.COMPLEMENT,
                   LOCS_MATCH_SORT_BY,        (long)P.WEIGHTED,
                   LOCS_MATCH_COMPLEMENT,     0L,
@@ -230,29 +238,31 @@ static char *AP_probe_match_event(ARB_ERROR& error) {
                   LOCS_MATCH_MAX_HITS,       (long)P.MAXRESULT,
                   LOCS_SEARCHMATCH,          P.SEQUENCE,
                   NULL)) {
-        free(probe);
         error = "Connection to PT_SERVER lost (1)";
-        return NULL;
     }
 
-    long match_list_cnt;
-    
-    bytestring bs;
-    bs.data = 0;
-    {
-        char *locs_error;
-        aisc_get(pd_gl.link, PT_LOCS, pd_gl.locs,
-                 LOCS_MATCH_LIST,     match_list.as_result_param(),
-                 LOCS_MATCH_LIST_CNT, &match_list_cnt,
-                 LOCS_MATCH_STRING,   &bs,
-                 LOCS_ERROR,          &locs_error,
-                 NULL);
-        if (*locs_error) error = locs_error;
-        free(locs_error);
-    }
-    aisc_close(pd_gl.link, pd_gl.com); pd_gl.link = 0;
+    if (!error) {
+        bytestring bs;
+        bs.data = 0;
+        {
+            char           *locs_error;
+            T_PT_MATCHLIST  match_list;
+            long            match_list_cnt;
 
-    return bs.data; // freed by caller
+            aisc_get(pd_gl.link, PT_LOCS, pd_gl.locs,
+                     LOCS_MATCH_LIST,     match_list.as_result_param(),
+                     LOCS_MATCH_LIST_CNT, &match_list_cnt,
+                     LOCS_MATCH_STRING,   &bs,
+                     LOCS_ERROR,          &locs_error,
+                     NULL);
+            if (*locs_error) error = locs_error;
+            free(locs_error);
+        }
+
+        if (!error) return bs.data; // freed by caller
+        free(bs.data);
+    }
+    return NULL;
 }
 
 static int          pargc;
