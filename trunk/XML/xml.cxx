@@ -241,14 +241,14 @@ void XML_Comment::close(FILE *out) {
 //      XML_Document
 
 XML_Document::XML_Document(const string& name_, const string& dtd_, FILE *out_)
-    : dtd(dtd_)
-    , root(0)
-    , out(out_)
-    , skip_empty_tags(false)
-    , indentation_per_level(1)
+    : dtd(dtd_),
+      root(0),
+      out(out_),
+      skip_empty_tags(false),
+      indentation_per_level(1)
 {
     xml_assert(out);
-    if (the_XML_Document) string Error("You can only have one XML_Document at a time.");
+    if (the_XML_Document) GBK_terminate("You can only have one XML_Document at a time.");
     the_XML_Document = this;
     latest_son       = 0;
     root             = new XML_Tag(name_);

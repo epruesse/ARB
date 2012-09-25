@@ -299,7 +299,11 @@ namespace arb_test {
     }
 
 
-    template <typename T> inline void print(const T& t) { fputs(val2readable(make_copy(t)), stderr); }
+    template <typename T> inline void print(const T& t) {
+        char *r = val2readable(make_copy(t));
+        fputs(r, stderr);
+        free(r);
+    }
     template <typename T> inline void print_hex(const T& t) { fputs(val2hex(make_copy(t)), stderr); }
 
     template <typename T1, typename T2> inline void print_pair(T1 t1, T2 t2) {
@@ -619,6 +623,7 @@ namespace arb_test {
     public:
         predicate_description(const char *primary_) : primary(primary_), inverse(NULL) {}
         predicate_description(const char *primary_, const char *inverse_) : primary(primary_), inverse(inverse_) {}
+        // cppcheck-suppress uninitMemberVar (fails to detect default ctor of 'str')
         predicate_description(const predicate_description& other) : primary(other.primary), inverse(other.inverse) {}
         DECLARE_ASSIGNMENT_OPERATOR(predicate_description);
 
@@ -760,6 +765,7 @@ namespace arb_test {
 
 
     template <typename T, typename FUNC>
+    // cppcheck-suppress noConstructor (fails to detect template ctor)
     class predicate_matcher : public value_matcher<T> {
         predicate<FUNC> pred;
         bool            expected_result;
@@ -798,7 +804,7 @@ namespace arb_test {
     protected:
 
     public:
-        expectation_group() : count(0) {}
+        expectation_group() : count(0) { depend_on[0] = NULL; }
         expectation_group(const expectation& e) : count(1) {
             depend_on[0] = e.clone();
         }
