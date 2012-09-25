@@ -804,7 +804,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long ver
     gb_create_header_array(gbd, (int)nitems);
     header = GB_DATA_LIST_HEADER(gbd->d);
     if (deep == 0 && GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery) {
-        GB_warning("Read to end of file in recovery mode");
+        GB_warning("Now reading to end of file (trying to recover data from broken database)");
         nitems = 10000000; // read forever at highest level
     }
 
@@ -813,7 +813,12 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long ver
         type = getc(in);
         DEBUG_DUMP_INDENTED(deep, GBS_global_string("Item #%li/%li type=%02lx (filepos=%08lx)", item+1, nitems, type, ftell(in)-1));
         if (type == EOF) {
-            GB_export_error("Unexpected end of file seen");
+            if (GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery) {
+                GB_export_error("End of file reached (no error)");
+            }
+            else {
+                GB_export_error("Unexpected end of file seen");
+            }
             return -1;
         }
         if (!type) {
