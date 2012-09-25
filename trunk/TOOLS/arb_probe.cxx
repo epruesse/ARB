@@ -886,6 +886,86 @@ void TEST_SLOW_match_designed_probe() {
     TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
 }
 
+void TEST_SLOW_unmatched_probes() {
+    bool use_gene_ptserver = false;
+
+    // match (parts of) an oligo which occurs in 3 species at 3'-end of alignment: GGCGCUGGAUCACCUCCUUU
+
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "matchsequence=GGCGCUGGAUCACCUCCUUU",
+        };
+        CCP expected = "    name---- fullname mis N_mis wmis pos ecoli rev          'GGCGCUGGAUCACCUCCUUU'\1"
+            "VbrFurni\1" "  VbrFurni            0     0  0.0 166   152 0   GGGGAACCU-====================-\1"
+            "VblVulni\1" "  VblVulni            0     0  0.0 166   152 0   GGGGAACCU-====================-\1"
+            "VbhChole\1" "  VbhChole            0     0  0.0 166   152 0   GGGGAACCU-====================-\1";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+    }
+
+    // now search part of the above 20-mer (not starting at pos == 0)
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "matchsequence=GCGCUGGAUC",
+        };
+
+        // ptserver only reports one match ( = first match)
+        // Reason: postree only contains ONE occurrance (when oligo is inside last 20 positions of a seq)
+
+        CCP received = "    name---- fullname mis N_mis wmis pos ecoli rev          'GCGCUGGAUC'\1"
+            "VbrFurni\1" "  VbrFurni            0     0  0.0 167   153 0   GGGAACCUG-==========-ACCUCCUUU\1";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, received);
+
+        // would expect to get 3 matches 
+        CCP expected = "    name---- fullname mis N_mis wmis pos ecoli rev          'GCGCUGGAUC'\1"
+            "VbrFurni\1" "  VbrFurni            0     0  0.0 167   153 0   GGGAACCUG-==========-ACCUCCUUU\1"
+            "VblVulni\1" "  VblVulni            0     0  0.0 167   153 0   GGGGAACCU-==========-ACCUCCUUU\1"
+            "VbhChole\1" "  VbhChole            0     0  0.0 167   153 0   GGGGAACCU-==========-ACCUCCUUU\1";
+
+        TEST_ARB_PROBE__BROKEN(ARRAY_ELEMS(arguments), arguments, expected);
+    }
+
+    // now search part of the above 20-mer (starting at pos == 0) -> works
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "matchsequence=GGCGCUGGAU",
+        };
+
+        CCP expected = "    name---- fullname mis N_mis wmis pos ecoli rev          'GGCGCUGGAU'\1"
+            "VbrFurni\1" "  VbrFurni            0     0  0.0 166   152 0   GGGGAACCU-==========-CACCUCCUU\1"
+            "VblVulni\1" "  VblVulni            0     0  0.0 166   152 0   GGGGAACCU-==========-CACCUCCUU\1"
+            "VbhChole\1" "  VbhChole            0     0  0.0 166   152 0   GGGGAACCU-==========-CACCUCCUU\1";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+
+    }
+    // if the oligo also occurs somewhere else, it is found in all 3 species (VbrFurni, VblVulni + VbhChole)
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "matchsequence=CACCUCCUUU",
+            "matchmismatches=0", 
+            "matchacceptN=0",
+        };
+
+        CCP expected = "    name---- fullname mis N_mis wmis pos ecoli rev          'CACCUCCUUU'\1"
+            "BcSSSS00\1" "  BcSSSS00            0     0  0.0 176   162 0   CGGCUGGAU-==========-CU\1"
+            "PbcAcet2\1" "  PbcAcet2            0     0  0.0 176   162 0   CGGCUGGAU-==========-NN\1"
+            "Stsssola\1" "  Stsssola            0     0  0.0 176   162 0   CGGCUGGAU-==========-\1"
+            "DcdNodos\1" "  DcdNodos            0     0  0.0 176   162 0   CGGUUGGAU-==========-\1"
+            "VbrFurni\1" "  VbrFurni            0     0  0.0 176   162 0   GCGCUGGAU-==========-\1"
+            "VblVulni\1" "  VblVulni            0     0  0.0 176   162 0   GCGCUGGAU-==========-\1"
+            "VbhChole\1" "  VbhChole            0     0  0.0 176   162 0   GCGCUGGAU-==========-\1";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+
+    }
+}
+
 void TEST_SLOW_variable_defaults_in_server() {
     test_setup(false);
 
