@@ -53,6 +53,7 @@ struct Params {
     int         ITERATE_AMOUNT;
     int         ITERATE_READABLE;
     const char *ITERATE_SEPARATOR;
+    const char *ITERATE_TU;
 };
 
 
@@ -146,6 +147,7 @@ static char *AP_probe_iterate_event(ARB_ERROR& error) {
                         PEP_PLENGTH,   (long)length,
                         PEP_RESTART,   (long)1,
                         PEP_READABLE,  (long)P.ITERATE_READABLE,
+                        PEP_TU,        (long)P.ITERATE_TU[0],
                         PEP_SEPARATOR, (long)P.ITERATE_SEPARATOR[0],
                         NULL))
         {
@@ -450,10 +452,11 @@ static bool parseCommandLine(int argc, const char * const * const argv) {
     P.LIMITN     = getInt("matchlimitN",     4,       0, 20,      "Limit for N-matches. If reached N-matches are mismatches");
     P.MAXRESULT  = getInt("matchmaxresults", 1000000, 0, INT_MAX, "Max. number of matches reported (0=unlimited)");
 
-    P.ITERATE=          getInt("iterate",          0,   1, 20,      "Iterate over probes of given length");
-    P.ITERATE_AMOUNT=   getInt("iterate_amount",   100, 1, INT_MAX, "Number of results per answer");
-    P.ITERATE_READABLE= getInt("iterate_readable", 1,   0, 1,       "readable results");
+    P.ITERATE          = getInt("iterate",          0,   1, 20,      "Iterate over probes of given length");
+    P.ITERATE_AMOUNT   = getInt("iterate_amount",   100, 1, INT_MAX, "Number of results per answer");
+    P.ITERATE_READABLE = getInt("iterate_readable", 1,   0, 1,       "readable results");
 
+    P.ITERATE_TU        = getString("iterate_tu",        "T", "use T or U in readable result");
     P.ITERATE_SEPARATOR = getString("iterate_separator", ";", "Number of results per answer");
 
     if (pargc>1) {
@@ -1022,12 +1025,13 @@ void TEST_SLOW_get_existing_probes() {
             "prgnamefake",
             "iterate=3",
             "iterate_amount=70",
+            "iterate_tu=U",
         };
         CCP expected =
-            "AAA;AAC;AAG;AAT;ACA;ACC;ACG;ACT;AGA;AGC;AGG;AGT;ATA;ATC;ATG;ATT;"
-            "CAA;CAC;CAG;CAT;CCA;CCC;CCG;CCT;CGA;CGC;CGG;CGT;CTA;CTC;CTG;CTT;"
-            "GAA;GAC;GAG;GAT;GCA;GCC;GCG;GCT;GGA;GGC;GGG;GGT;GTA;GTC;GTG;GTT;"
-            "TAA;TAC;TAG;TAT;TCA;TCC;TCG;TCT;TGA;TGC;TGG;TGT;TTA;TTC;TTG;TTT";
+            "AAA;AAC;AAG;AAU;ACA;ACC;ACG;ACU;AGA;AGC;AGG;AGU;AUA;AUC;AUG;AUU;"
+            "CAA;CAC;CAG;CAU;CCA;CCC;CCG;CCU;CGA;CGC;CGG;CGU;CUA;CUC;CUG;CUU;"
+            "GAA;GAC;GAG;GAU;GCA;GCC;GCG;GCU;GGA;GGC;GGG;GGU;GUA;GUC;GUG;GUU;"
+            "UAA;UAC;UAG;UAU;UCA;UCC;UCG;UCU;UGA;UGC;UGG;UGU;UUA;UUC;UUG;UUU";
 
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }

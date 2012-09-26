@@ -135,7 +135,7 @@ int PT_find_exProb(PT_exProb *pep, int) {
         if (!first) GBS_chrcat(gbs_str, (char)pep->separator);
         first = false;
         if (pep->readable) {
-            char *readable = readable_probe(pep->next_probe.data, pep->next_probe.size);
+            char *readable = readable_probe(pep->next_probe.data, pep->next_probe.size, pep->tu);
             GBS_strcat(gbs_str, readable);
             free(readable);
         }
