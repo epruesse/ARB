@@ -120,17 +120,14 @@ int PT_find_exProb(PT_exProb *pep, int) {
             pep->next_probe.size = pep->plength+1;
 
             found = findLeftmostProbe(pt, pep->next_probe.data, pep->plength, 0);
-
-            pt_assert(pep->next_probe.data[pep->plength] == 0);
-            pt_assert(strlen(pep->next_probe.data) == (size_t)pep->plength);
         }
-
-        if (!found) {
+        else {
             found = findNextProbe(pt, pep->next_probe.data, pep->plength, 0);
-
-            pt_assert(pep->next_probe.data[pep->plength] == 0);
-            pt_assert(strlen(pep->next_probe.data) == (size_t)pep->plength);
         }
+        
+        pt_assert(pep->next_probe.data[pep->plength] == 0);
+        pt_assert(strlen(pep->next_probe.data) == (size_t)pep->plength);
+
         if (!found) break;
 
         // append the probe to the probe list
