@@ -526,9 +526,75 @@ int AW_window::calculate_string_height(int rows, int offset) const {
     }
 }
 
+//FIXME why is this called server_callback??
+void AW_server_callback(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
+    GTK_PARTLY_IMPLEMENTED;
 
-void AW_window::_set_activate_callback(void *widget) {
-    GTK_NOT_IMPLEMENTED;
+    AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
+
+    AW_root *root = cbs->aw->get_root();
+    //FIXME AW_server_callback help not implemented
+//    if (p_global->help_active) {
+//        p_global->help_active = 0;
+//        p_global->normal_cursor();
+//
+//        if (cbs->help_text && ((GBS_string_matches(cbs->help_text, "*.ps", GB_IGNORE_CASE)) ||
+//                               (GBS_string_matches(cbs->help_text, "*.hlp", GB_IGNORE_CASE)) ||
+//                               (GBS_string_matches(cbs->help_text, "*.help", GB_IGNORE_CASE))))
+//        {
+//            AW_POPUP_HELP(cbs->aw, (AW_CL)cbs->help_text);
+//        }
+//        else {
+//            aw_message("Sorry no help available");
+//        }
+//        return;
+//    }
+    //FIXME AW_server_callback recording not implemented
+   // if (root->prvt->recording) root->prvt->recording->record_action(cbs->id);
+
+    if (cbs->f == AW_POPUP) {
+        cbs->run_callback();
+    }
+    else {
+        //FIXME AW_server_callback wait cursor not implemented
+//        p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
+//                XtWindow(p_aww(cbs->aw)->shell),
+//                p_global->clock_cursor);
+        cbs->run_callback();
+        //FIXME AW_server_callback destruction of old events not implemented
+//        XEvent event; // destroy all old events !!!
+//        while (XCheckMaskEvent(XtDisplay(p_global->toplevel_widget),
+//        ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|
+//        KeyPressMask|KeyReleaseMask|PointerMotionMask, &event)) {
+//        }
+        //FIXME AW_server_callback help not implemented
+//        if (p_global->help_active) {
+//            p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
+//                    XtWindow(p_aww(cbs->aw)->shell),
+//                    p_global->question_cursor);
+//        }
+//        else {
+//            p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
+//                    XtWindow(p_aww(cbs->aw)->shell),
+//                    0);
+//        }
+    }
+
+}
+
+void AW_window::_set_activate_callback(GtkWidget *widget) {
+    if (_callback && (long)_callback != 1) {
+        if (!_callback->help_text && _at.helptext_for_next_button) {
+            _callback->help_text = _at.helptext_for_next_button;
+            _at.helptext_for_next_button = 0;
+        }
+
+        //FIXME this assumes that widget is a button
+        //FIXME investigate why this code works but the commented one does not
+        g_signal_connect((gpointer)widget, "clicked", G_CALLBACK(AW_server_callback), (gpointer)_callback);
+        //g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(AW_server_callback), G_OBJECT(_callback));
+    }
+    _callback = NULL;
 }
 
 int AW_window::calculate_string_width(int columns) const {
@@ -556,9 +622,9 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     // Note 2: "color" may be specified for the button background (see TuneOrSetBackground for details)
 
     GTK_PARTLY_IMPLEMENTED;
-//    TuneOrSetBackground(_at.attach_any ? prvt.areas[AW_INFO_AREA]->get_form() : prvt.areas[AW_INFO_AREA]->get_area(), // set background for buttons / text displays
-//                        color,
-//                        _callback ? TUNE_BUTTON : 0);
+    TuneOrSetBackground(_at.attach_any ? prvt.areas[AW_INFO_AREA]->get_form() : prvt.areas[AW_INFO_AREA]->get_area(), // set background for buttons / text displays
+                        color,
+                        _callback ? TUNE_BUTTON : 0);
 
 
 
@@ -733,7 +799,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
         if (_callback) {//button
 
             buttonOrLabel = gtk_button_new();
-
+            this->_set_activate_callback(buttonOrLabel);
 
             //highlight selected button
             if (_at.highlight) {
@@ -828,16 +894,17 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
         width  = _at.to_position_x - _at.x_for_next_button;
     }
 
-    //FIXME button block not implemented. what is it"s prpose?
-//    {
-//        Widget  toRecenter   = 0;
-//        int     recenterSize = 0;
-//
-//        if (!height || !width) {
-//            // ask motif for real button size
-//            Widget ButOrHigh = _at.highlight ? fatherwidget : button;
-//            XtVaGetValues(ButOrHigh, XmNheight, &height, XmNwidth, &width, NULL);
-//
+
+    {
+        //Widget  toRecenter   = 0;
+        int     recenterSize = 0;
+
+        if (!height || !width) {
+            // ask motif for real button size
+            height = buttonOrLabel->allocation.height;
+            width = buttonOrLabel->allocation.width;
+
+            //FIXME let motif choose size not implemented
 //            if (let_motif_choose_size) {
 //                if (_at.correct_for_at_center) {
 //                    toRecenter   = ButOrHigh;
@@ -845,8 +912,8 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
 //                }
 //                width = 0;          // ignore the used size (because it may use more than the window size)
 //            }
-//        }
-//
+        }
+        //FIXME shiftback not implemented
 //        if (toRecenter) {
 //            int shiftback = 0;
 //            switch (_at.correct_for_at_center) {
@@ -857,13 +924,13 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
 //                XtVaSetValues(toRecenter, XmNx, x_button-shiftback, NULL);
 //            }
 //        }
-//    }
+    }
 
     _at.correct_for_at_center = org_correct_for_at_center; // restore original justification
     _at.y_for_next_button     = org_y_for_next_button;
     //FIXME prvt.toggle_field not set to button. What is its purpose anyway?
    // p_w->toggle_field = button;
-    this->_set_activate_callback((void *)buttonOrLabel);
+
     this->unset_at_commands();
     this->increment_at_commands(width+SPACE_BEHIND_BUTTON, height);
 }
