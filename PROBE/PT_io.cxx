@@ -144,7 +144,7 @@ int probe_compress_sequence(char *seq, int seqsize) {
     return dest - seq;
 }
 
-char *readable_probe(char *compressed_probe, size_t len) {
+char *readable_probe(char *compressed_probe, size_t len, char T_or_U) {
     static SmartMallocPtr(uchar) smart_tab;
     uchar *tab = NULL;
 
@@ -155,8 +155,6 @@ char *readable_probe(char *compressed_probe, size_t len) {
         tab[PT_A] = 'A';
         tab[PT_C] = 'C';
         tab[PT_G] = 'G';
-        tab[PT_T] = 'T';
-
         tab[PT_QU]      = 0;
         tab[PT_B_UNDEF] = '!';
 
@@ -164,7 +162,8 @@ char *readable_probe(char *compressed_probe, size_t len) {
     }
 
     tab = &*smart_tab;
-
+    tab[PT_T] = T_or_U;
+    
     char *result = (char*)malloc(len+1);
     for (size_t i = 0; i<len; ++i) {
         result[i] = tab[safeCharIndex(compressed_probe[i])];
