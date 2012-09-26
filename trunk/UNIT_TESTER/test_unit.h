@@ -1051,10 +1051,10 @@ namespace arb_test {
 #define less_or_equal(val) moreThan_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
 #define more_or_equal(val) lessThan_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
 
-#define is(pred,arg)     predicate_expectation(true, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
-#define is_not(pred,arg) predicate_expectation(false, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
+#define fulfills(pred,arg)    predicate_expectation(true, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
+#define contradicts(pred,arg) predicate_expectation(false, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
 
-#define does_contain(val) is(containing(),val)
+#define does_contain(val) fulfills(containing(),val)
 
 #define that(thing) CREATE_matchable(MATCHABLE_ARGS_TYPED(thing))
 
@@ -1250,7 +1250,7 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 #define TEST_ASSERT_EQUAL(e1,t2)         TEST_EXPECT(that(e1).is_equal_to(t2))
 #define TEST_ASSERT_EQUAL__BROKEN(e1,t2) TEST_EXPECT__BROKEN(that(e1).is_equal_to(t2))
 
-#define TEST_ASSERT_SIMILAR(e1,t2,epsilon)         TEST_EXPECT(that(e1).is(epsilon_similar(epsilon), t2))
+#define TEST_ASSERT_SIMILAR(e1,t2,epsilon)         TEST_EXPECT(that(e1).fulfills(epsilon_similar(epsilon), t2))
 #define TEST_ASSERT_SIMILAR__BROKEN(e1,t2,epsilon) TEST_EXPECT__BROKEN(that(e1).is(epsilon_similar(epsilon), t2))
 
 #define TEST_ASSERT_DIFFERENT(e1,t2)         TEST_EXPECT(that(e1).does_differ_from(t2));
