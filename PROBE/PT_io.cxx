@@ -157,7 +157,7 @@ char *readable_probe(char *compressed_probe, size_t len) {
         tab[PT_G] = 'G';
         tab[PT_T] = 'T';
 
-        tab[PT_QU]      = '.';
+        tab[PT_QU]      = 0;
         tab[PT_B_UNDEF] = '!';
 
         smart_tab = tab;
