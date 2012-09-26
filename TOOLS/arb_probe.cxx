@@ -174,14 +174,18 @@ static char *AP_probe_iterate_event(ARB_ERROR& error) {
                 }
 
                 if (!error) {
-                    if (!pep_result[0]) break;
+                    if (pep_result[0]) {
+                        if (first) first = false;
+                        else out.put(P.ITERATE_SEPARATOR[0]);
 
-                    if (first) first = false;
-                    else out.put(P.ITERATE_SEPARATOR[0]);
-
-                    out.cat(pep_result);
-                    amount -= this_amount;
+                        out.cat(pep_result);
+                        amount -= this_amount;
+                    }
+                    else {
+                        amount = 0; // terminate loop
+                    }
                 }
+                free(pep_result);
             }
 
             if (!error) {
