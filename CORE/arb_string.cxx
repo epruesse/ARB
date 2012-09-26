@@ -346,10 +346,10 @@ void TEST_user_type_with_expectations() {
     TEST_EXPECT(that(ut12).is_equal_to(ut12.flipped()));
     TEST_EXPECT(that(ut1).does_differ_from(ut1.flipped()));
 
-    TEST_EXPECT(that(ut1).is(in_same_quadrant, ut12));
-    TEST_EXPECT(none().of(that(ut1).is(in_same_quadrant, ut2),
-                          that(ut2).is(in_same_quadrant, ut3),
-                          that(ut3).is(in_same_quadrant, ut4)));
+    TEST_EXPECT(that(ut1).fulfills(in_same_quadrant, ut12));
+    TEST_EXPECT(none().of(that(ut1).fulfills(in_same_quadrant, ut2),
+                          that(ut2).fulfills(in_same_quadrant, ut3),
+                          that(ut3).fulfills(in_same_quadrant, ut4)));
 }
 
 void TEST_similarity() {
@@ -358,9 +358,9 @@ void TEST_similarity() {
     double d2      = d1-epsilon*0.6;
     double d3      = d1+epsilon*0.6;
 
-    TEST_EXPECT(that(d1).is(epsilon_similar(epsilon), d2));
-    TEST_EXPECT(that(d1).is(epsilon_similar(epsilon), d3));
-    TEST_EXPECT(that(d2).is_not(epsilon_similar(epsilon), d3));
+    TEST_EXPECT(that(d1).fulfills(epsilon_similar(epsilon), d2));
+    TEST_EXPECT(that(d1).fulfills(epsilon_similar(epsilon), d3));
+    TEST_EXPECT(that(d2).contradicts(epsilon_similar(epsilon), d3));
 
     TEST_ASSERT_SIMILAR(d1, d2, epsilon);
     TEST_ASSERT_SIMILAR(d1, d3, epsilon);
