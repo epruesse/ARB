@@ -884,10 +884,47 @@ void AW_window::unset_at_commands() {
 
 
 
+void aw_detect_text_size(const char *text, size_t& width, size_t& height) {
+    size_t text_width = strcspn(text, "\n");
 
+    if (text[text_width]) {
+        aw_assert(text[text_width] == '\n');
 
-void AW_window::create_autosize_button(const char */*macro_name*/, AW_label /*label*/, const char */*mnemonic*/ /* = 0*/, unsigned /*xtraSpace*/ /* = 1 */){
+        aw_detect_text_size(text+text_width+1, width, height);
+        if (text_width>width) width = text_width;
+        height++;
+    }
+    else { // EOS
+        width  = text_width;
+        height = 1;
+    }
+}
 
+void AW_window::create_autosize_button(const char *macro_name, AW_label buttonlabel, const char *mnemonic /* = 0*/, unsigned xtraSpace /* = 1 */){
+    aw_assert(buttonlabel[0] != '#');    // use create_button() for graphical buttons!
+    aw_assert(!_at.to_position_exists); // wont work if to-position exists
+
+    AW_awar *is_awar = get_root()->label_is_awar(buttonlabel);
+    size_t   width, height;
+    if (is_awar) {
+        char *content = is_awar->read_as_string();
+        aw_assert(content[0]); /* you need to fill the awar before calling create_autosize_button,
+                                * otherwise size cannot be detected */
+        aw_detect_text_size(content, width, height);
+    }
+    else {
+        aw_detect_text_size(buttonlabel, width, height);
+    }
+
+    int   len               = width+(xtraSpace*2);
+    short length_of_buttons = _at.length_of_buttons;
+    short height_of_buttons = _at.height_of_buttons;
+
+    _at.length_of_buttons = len+1;
+    _at.height_of_buttons = height;
+    create_button(macro_name, buttonlabel, mnemonic);
+    _at.length_of_buttons = length_of_buttons;
+    _at.height_of_buttons = height_of_buttons;
 }
 GtkWidget* AW_window::get_last_widget() const{
     GTK_NOT_IMPLEMENTED;
