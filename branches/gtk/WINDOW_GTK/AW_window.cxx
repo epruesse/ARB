@@ -16,12 +16,15 @@
 #include "aw_root.hxx"
 #include "aw_device.hxx"
 #include "aw_at.hxx"
+#include "aw_msg.hxx"
+#include "aw_awar.hxx"
 #include <arbdb.h>
+
 #include <gtk/gtklabel.h>
 #include <gtk/gtkfixed.h>
 #include <gtk/gtkbutton.h>
 #include <gtk/gtkcheckbutton.h>
-#include "aw_msg.hxx"
+
 
 void AW_clock_cursor(AW_root *) {
     GTK_NOT_IMPLEMENTED;
@@ -896,11 +899,27 @@ void AW_window::create_toggle(const char *var_name){
     GtkWidget* checkButton = gtk_check_button_new();
 
     GtkWidget* parent_widget = GTK_WIDGET(prvt.fixed_size_area);
-    gtk_fixed_put(GTK_FIXED(parent_widget), checkButton, _at.x_for_next_button, _at.y_for_next_button); //FIXME evil hack depends on areas being GtkFixed
+    gtk_fixed_put(GTK_FIXED(parent_widget), checkButton, _at.x_for_next_button, _at.y_for_next_button);
     gtk_widget_show(checkButton);
 
-    //FIXME increment at
-   // this->increment_at_commands(width+SPACE_BEHIND_BUTTON, height);
+
+    short height = 0;
+     short width  = 0;
+
+     if (_at.to_position_exists) {
+         // size has explicitly been specified in xfig -> calculate
+         height = _at.to_position_y - _at.y_for_next_button;
+         width  = _at.to_position_x - _at.x_for_next_button;
+     }
+
+
+     if (!height || !width) {
+         // ask gtk for real button size
+         width = checkButton->allocation.width;
+         height = checkButton->allocation.height;
+
+     }
+    this->increment_at_commands(width + SPACE_BEHIND_BUTTON, height);
 
     //old code:
     //create_toggle(var_name, "#no.bitmap", "#yes.bitmap");
