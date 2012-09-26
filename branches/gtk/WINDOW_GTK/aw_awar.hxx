@@ -30,7 +30,6 @@
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
-#include <gtk/gtkwidget.h>
 
 
 // --------------

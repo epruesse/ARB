@@ -16,7 +16,7 @@
 
 #include "aw_root_gtk.hxx"
 #include <string>
-#include <gtk/gtkwidget.h>
+
 #ifndef aw_assert
 #define aw_assert(bed) arb_assert(bed)
 #endif

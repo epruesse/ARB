@@ -10,8 +10,8 @@
 // ============================================================= //
 
 #include "aw_gtk_migration_helpers.hxx"
-#include "aw_root.hxx"
 #include <gtk/gtk.h>
+#include "aw_root.hxx"
 #include <arbdb.h>
 #include "aw_awar.hxx"
 #include <gdk/gdkx.h>
