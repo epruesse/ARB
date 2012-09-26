@@ -567,7 +567,7 @@ static int test_setup(bool use_gene_ptserver) {
 // ----------------------------------
 //      test probe design / match
 
-#define TEST_PART1(fake_argc,fake_argv)                                                 \
+#define TEST_RUN_ARB_PROBE(fake_argc,fake_argv)                                         \
     int       serverid = test_setup(use_gene_ptserver);                                 \
     TEST_ASSERT_EQUAL(true, parseCommandLine(fake_argc, fake_argv));                    \
     TEST_ASSERT((serverid == TEST_SERVER_ID)||(serverid == TEST_GENESERVER_ID));        \
@@ -577,20 +577,20 @@ static int test_setup(bool use_gene_ptserver) {
     TEST_ASSERT_NO_ERROR(error.deliver())
 
 
-#define TEST_ARB_PROBE(fake_argc,fake_argv,expected) do {               \
-        TEST_PART1(fake_argc,fake_argv);                                \
-        TEST_ASSERT_EQUAL(answer, expected);                            \
-        free(answer);                                                   \
+#define TEST_ARB_PROBE(fake_argc,fake_argv,expected) do {       \
+        TEST_RUN_ARB_PROBE(fake_argc,fake_argv);                \
+        TEST_ASSERT_EQUAL(answer, expected);                    \
+        free(answer);                                           \
     } while(0)
 
 #define TEST_ARB_PROBE__BROKEN(fake_argc,fake_argv,expected) do {       \
-        TEST_PART1(fake_argc,fake_argv);                                \
+        TEST_RUN_ARB_PROBE(fake_argc,fake_argv);                        \
         TEST_ASSERT_EQUAL__BROKEN(answer, expected);                    \
         free(answer);                                                   \
     } while(0)
 
 #define TEST_ARB_PROBE_FILT(fake_argc,fake_argv,filter,expected) do {   \
-        TEST_PART1(fake_argc,fake_argv);                                \
+        TEST_RUN_ARB_PROBE(fake_argc,fake_argv);                        \
         char  *filtered   = filter(answer);                             \
         TEST_ASSERT_EQUAL(filtered, expected);                          \
         free(filtered);                                                 \
