@@ -30,6 +30,8 @@
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
+#include <gtk/gtkwidget.h>
+
 
 // --------------
 //      AWARS
@@ -110,7 +112,7 @@ public:
     AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *var_value, double var_double_value, AW_default default_file, AW_root *root);
     ~AW_awar();
 
-    void tie_widget(AW_CL cd1, Widget widget, AW_widget_type type, AW_window *aww);
+    void tie_widget(AW_CL cd1, GtkWidget* widget, AW_widget_type type, AW_window *aww);
     void untie_all_widgets();
 
     AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2);

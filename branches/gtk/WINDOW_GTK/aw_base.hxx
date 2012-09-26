@@ -12,7 +12,6 @@
 #ifndef AW_BASE_HXX
 #define AW_BASE_HXX
 #include <gdk/gdktypes.h>
-
 class AW_root;
 class AW_window;
 
@@ -47,8 +46,6 @@ typedef int AW_font;
 typedef long      AW_bitset;
 typedef AW_bitset AW_active;     // bits to activate/inactivate buttons
 typedef float     AW_grey_level; // <0 don't fill  0.0 white 1.0 black
-
-typedef struct _WidgetRec *Widget;
 
 typedef const char *AWAR;
 

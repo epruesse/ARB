@@ -253,7 +253,7 @@ void AW_window::clear_option_menu(AW_option_menu_struct */*oms*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::TuneOrSetBackground(Widget w, const char *color, int modStrength) {
+void AW_window::TuneOrSetBackground(GtkWidget* w, const char *color, int modStrength) {
     // Sets the background for the next created widget.
     //
     // If 'color' is specified, it may contain one of the following values:
@@ -285,7 +285,7 @@ void AW_window::TuneOrSetBackground(Widget w, const char *color, int modStrength
     }
 }
 
-void AW_window::TuneBackground(Widget w, int modStrength) {
+void AW_window::TuneBackground(GtkWidget* w, int modStrength) {
     // Gets the Background Color, modifies the rgb values slightly and sets new background color
     // Intended to give buttons a nicer 3D-look.
     //
@@ -512,7 +512,7 @@ void AW_window::increment_at_commands(int width, int height) {
     }
 }
 
-void AW_window::set_background(const char *colorname, Widget parentWidget) {
+void AW_window::set_background(const char *colorname, GtkWidget* parentWidget) {
     GTK_NOT_IMPLEMENTED;
 }
 
@@ -889,7 +889,7 @@ void AW_window::unset_at_commands() {
 void AW_window::create_autosize_button(const char */*macro_name*/, AW_label /*label*/, const char */*mnemonic*/ /* = 0*/, unsigned /*xtraSpace*/ /* = 1 */){
 
 }
-Widget AW_window::get_last_widget() const{
+GtkWidget* AW_window::get_last_widget() const{
     GTK_NOT_IMPLEMENTED;
     return 0;
 }
@@ -1287,7 +1287,7 @@ void AW_window::tell_scrolled_picture_size(AW_world /*rectangle*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::update_label(Widget /*widget*/, const char */*var_value*/) {
+void AW_window::update_label(GtkWidget* /*widget*/, const char */*var_value*/) {
     GTK_NOT_IMPLEMENTED;
 }
 

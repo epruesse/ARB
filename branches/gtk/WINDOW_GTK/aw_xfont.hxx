@@ -4,7 +4,6 @@
 #include "aw_def.hxx"
 #endif
 #include <Xm/Xm.h>
-
 typedef XFontStruct *PIX_FONT;
 
 struct xfont {

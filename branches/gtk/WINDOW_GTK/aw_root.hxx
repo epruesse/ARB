@@ -16,7 +16,7 @@
 
 #include "aw_root_gtk.hxx"
 #include <string>
-
+#include <gtk/gtkwidget.h>
 #ifndef aw_assert
 #define aw_assert(bed) arb_assert(bed)
 #endif
@@ -111,7 +111,7 @@ public:
 
 
     bool           value_changed;
-    Widget         changer_of_variable;
+    GtkWidget*         changer_of_variable;
     int            y_correction_for_input_labels;
     AW_active      global_mask;
     bool           focus_follows_mouse;
@@ -199,8 +199,8 @@ public:
     // Control sensitivity of buttons etc.:
     void apply_sensitivity(AW_active mask);
     void apply_focus_policy(bool follow_mouse);
-    void make_sensitive(Widget w, AW_active mask);
-    bool remove_button_from_sens_list(Widget button);
+    void make_sensitive(GtkWidget* w, AW_active mask);
+    bool remove_button_from_sens_list(GtkWidget* button);
 
     GB_ERROR start_macro_recording(const char *file, const char *application_id, const char *stop_action_name, bool expand_existing);
     GB_ERROR stop_macro_recording();

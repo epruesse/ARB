@@ -267,7 +267,7 @@ protected:
 
 
     void create_devices();
-    void set_background(const char *colorname, Widget w);
+    void set_background(const char *colorname, GtkWidget* w);
 
     void wm_activate();                                // un-minimize window and give it the focus (use show_and_activate())
 
@@ -314,10 +314,10 @@ public:
     int calculate_string_height(int columns, int offset) const;
     char *align_string(const char *string, int columns);
 
-    void update_label(Widget widget, const char *var_value);
-    void update_toggle(Widget widget, const char *var_value, AW_CL cd);
-    void update_input_field(Widget widget, const char *var_value);
-    void update_text_field(Widget widget, const char *var_value);
+    void update_label(GtkWidget* widget, const char *var_value);
+    void update_toggle(GtkWidget* widget, const char *var_value, AW_CL cd);
+    void update_input_field(GtkWidget* widget, const char *var_value);
+    void update_text_field(GtkWidget* widget, const char *var_value);
 
     void  create_invisible(int columns);
     void *_create_option_entry(AW_VARIABLE_TYPE type, const char *name, const char *mnemonic, const char *name_of_color);
@@ -486,8 +486,8 @@ public:
     void auto_off();            // disable auto_xxxxx
     void shadow_width (int shadow_thickness); // set the shadow_thickness of buttons
 
-    void TuneBackground(Widget w, int modStrength);
-    void TuneOrSetBackground(Widget w, const char *color, int modStrength);
+    void TuneBackground(GtkWidget* w, int modStrength);
+    void TuneOrSetBackground(GtkWidget* w, const char *color, int modStrength);
 
     // *** local modifiers: ********
     void at(int x, int y);      // abs pos of a button (>10,10)
@@ -531,7 +531,7 @@ public:
 
     void   create_button(const char *macro_name, AW_label label, const char *mnemonic = 0, const char *color = 0); // simple button; shadow only when callback
     void   create_autosize_button(const char *macro_name, AW_label label, const char *mnemonic = 0, unsigned xtraSpace = 1); // as above, but ignores button_length
-    Widget get_last_widget() const;
+    GtkWidget* get_last_widget() const;
 
     void create_toggle(const char *var_name);  // int 0/1  string yes/no   float undef
     void create_inverse_toggle(const char *var_name);  // like create_toggle, but displays inverted toggle value

@@ -18,7 +18,6 @@
 #include "aw_xfont.hxx"
 //FIXME remove of xfont is gone
 #include <gdk/gdkx.h>
-#include <Xm/Xm.h>
 #include <string>
 #include <algorithm>
 

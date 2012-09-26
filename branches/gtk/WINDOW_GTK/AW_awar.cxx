@@ -27,6 +27,38 @@
 #endif // DEBUG
 
 
+struct AW_widget_refresh_cb : virtual Noncopyable {
+    AW_widget_refresh_cb(AW_widget_refresh_cb *previous, AW_awar *vs, AW_CL cd1, GtkWidget* w, AW_widget_type type, AW_window *awi);
+    ~AW_widget_refresh_cb();
+
+    AW_CL           cd;
+    AW_awar        *awar;
+    GtkWidget*          widget;
+    AW_widget_type  widget_type;
+    AW_window      *aw;
+
+    AW_widget_refresh_cb *next;
+};
+
+
+AW_widget_refresh_cb::AW_widget_refresh_cb(AW_widget_refresh_cb */*previous*/, AW_awar */*vs*/, AW_CL /*cd1*/, GtkWidget* /*w*/, AW_widget_type /*type*/, AW_window */*awi*/) {
+//    cd          = cd1;
+//    GtkWidget*      = w;
+//    widget_type = type;
+//    awar        = vs;
+//    aw          = awi;
+//    next        = previous;
+//
+//    awar->add_callback(aw_cp_awar_2_widget_cb, (AW_CL)this);
+    GTK_NOT_IMPLEMENTED;
+}
+
+AW_widget_refresh_cb::~AW_widget_refresh_cb() {
+//    if (next) delete next;
+//    awar->remove_callback(aw_cp_awar_2_widget_cb, (AW_CL)this);
+    GTK_NOT_IMPLEMENTED;
+}
+
 
 bool AW_awar::allowed_to_run_callbacks = true;
 

@@ -15,7 +15,6 @@
 #include <arbdb.h>
 #include "aw_awar.hxx"
 #include <gdk/gdkx.h>
-#include <Xm/Xm.h>
 #include "aw_xfont.hxx"
 #include "aw_awar_defs.hxx"
 #include "aw_window.hxx"
