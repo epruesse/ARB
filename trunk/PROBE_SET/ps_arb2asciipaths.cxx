@@ -15,7 +15,7 @@
 static IDVector *__PATH = new IDVector;
 
 static void PS_print_paths(GBDATA *_pb_node) {
-    //  recursively print the paths to the leaves
+    //  recursively print the paths to the leafs
 
     // number and species name
     GBDATA     *data   = GB_entry(_pb_node, "num");

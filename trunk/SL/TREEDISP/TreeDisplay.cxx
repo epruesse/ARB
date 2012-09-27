@@ -274,7 +274,7 @@ void AWT_graphic_tree::detect_group_state(AP_tree *at, AWT_graphic_tree_group_st
     if (!at) return;
     if (at->is_leaf) {
         if (at->gb_node && GB_read_flag(at->gb_node)) state->marked_outside_groups++; // count marks
-        return;                 // leave are never grouped
+        return;                 // leafs never get grouped
     }
 
     if (at->gb_node) {          // i am a group
@@ -409,8 +409,8 @@ int AWT_graphic_tree::resort_tree(int mode, AP_tree *at)   // run on father !!!
         leafname = at->name;
         return 1;
     }
-    int leftsize = at->get_leftson()->gr.leave_sum;
-    int rightsize = at->get_rightson()->gr.leave_sum;
+    int leftsize  = at->get_leftson() ->gr.leaf_sum;
+    int rightsize = at->get_rightson()->gr.leaf_sum;
 
     if ((mode &1) == 0) {   // to top
         if (rightsize >leftsize) {
@@ -1759,7 +1759,7 @@ GB_ERROR AWT_graphic_tree::save(GBDATA * /* dummy */, const char * /* name */, A
             error = ta.close(error);
 
             if (!error) {
-                aw_message(GBS_global_string("Tree '%s' lost all leaves and has been deleted", tree_static->get_tree_name()));
+                aw_message(GBS_global_string("Tree '%s' lost all leafs and has been deleted", tree_static->get_tree_name()));
 #if defined(WARN_TODO)
 #warning somehow update selected tree
 
@@ -1987,7 +1987,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         }
 
         Position    countPos = s0+text_offset;
-        const char *count    = GBS_global_string(" %i", at->gr.leave_sum);
+        const char *count    = GBS_global_string(" %i", at->gr.leaf_sum);
         disp_device->text(at->gr.gc, count, countPos, 0.0, text_filter);
 
         limits.y_top    = s0.ypos();

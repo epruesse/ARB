@@ -118,7 +118,7 @@ class AP_tree_root : public ARB_tree_root { // derived from a Noncopyable
     GBDATA *gb_species_data;                        // @@@ needed ?
 
 public:
-    GBDATA   *gb_tree_gone;                         // if all leaves have been removed by tree operations, remember 'ARB_tree_root::gb_tree' here (see change_root)
+    GBDATA   *gb_tree_gone;                         // if all leafs have been removed by tree operations, remember 'ARB_tree_root::gb_tree' here (see change_root)
     GBDATA   *gb_table_data;
     long      tree_timer;
     long      species_timer;
@@ -163,11 +163,11 @@ public:
     unsigned int callback_exists : 1;
     unsigned int gc : 6;        // color
 
-    char    left_linewidth;
-    char    right_linewidth;
+    char left_linewidth;
+    char right_linewidth;
     // struct arb_data
-    int leave_sum;  // number of leaf children of this node
-    int view_sum;   // virtual size of node for display ( isgrouped?sqrt(leave_sum):leave_sum
+    int  leaf_sum;  // number of leaf children of this node
+    int  view_sum;  // virtual size of node for display ( isgrouped?sqrt(leaf_sum):leaf_sum )
 
     float   tree_depth; // max length of path; for drawing triangles */
     float   min_tree_depth; // min length of path; for drawing triangle
@@ -177,20 +177,20 @@ public:
     float   right_angle;
 
     void clear() {
-        grouped = 0;
-        hidden = 0;
+        grouped             = 0;
+        hidden              = 0;
         has_marked_children = 0;
-        callback_exists = 0;
-        gc = 0;
-        left_linewidth = 0;
-        right_linewidth = 0;
-        leave_sum = 0;
-        view_sum = 0;
-        tree_depth = 0;
-        min_tree_depth = 0;
-        spread = 0;
-        left_angle = 0;
-        right_angle = 0;
+        callback_exists     = 0;
+        gc                  = 0;
+        left_linewidth      = 0;
+        right_linewidth     = 0;
+        leaf_sum            = 0;
+        view_sum            = 0;
+        tree_depth          = 0;
+        min_tree_depth      = 0;
+        spread              = 0;
+        left_angle          = 0;
+        right_angle         = 0;
     }
 };
 

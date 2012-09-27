@@ -50,7 +50,7 @@
 
 
 __ATTR__USERESULT static GB_ERROR gb_check_huffmann_tree(gb_compress_tree *t) {
-    if (t->leave)
+    if (t->leaf)
         return 0;
     if (!t->son[0])
         return GB_export_error("Database entry corrupt (zero left son)");
@@ -66,7 +66,7 @@ __ATTR__USERESULT static GB_ERROR gb_check_huffmann_tree(gb_compress_tree *t) {
 
 #if defined(TEST_HUFFMAN_CODE)
 static void gb_dump_huffmann_tree(gb_compress_tree *t, const char *prefix) {
-    if (t->leave) {
+    if (t->leaf) {
         long command = (long)t->son[1];
         printf("%s", prefix);
 
@@ -133,7 +133,7 @@ gb_compress_tree *gb_build_uncompress_tree(const unsigned char *data, long short
         }
         t = Main;
         for (; i; i--) {
-            if (t->leave) {
+            if (t->leaf) {
                 GB_export_error("Corrupt data !!!");
                 return 0;
             }
@@ -151,11 +151,11 @@ gb_compress_tree *gb_build_uncompress_tree(const unsigned char *data, long short
                 t=t->son[0];
             }
         }
-        if (t->leave) {
+        if (t->leaf) {
             GB_export_error("Corrupt data !!!");
             return 0;
         }
-        t->leave = 1;
+        t->leaf = 1;
         if (short_flag) {
             t->son[0] = (gb_compress_tree *)(long)((p[2]<<8)+p[3]);
         }
@@ -181,7 +181,7 @@ gb_compress_tree *gb_build_uncompress_tree(const unsigned char *data, long short
 
 void gb_free_compress_tree(gb_compress_tree *tree) {
     if (tree) {
-        if (!tree->leave) {
+        if (!tree->leaf) {
             if (tree->son[0]) gb_free_compress_tree(tree->son[0]);
             if (tree->son[1])gb_free_compress_tree(tree->son[1]);
         }
@@ -306,7 +306,7 @@ GB_BUFFER gb_uncompress_bits(const char *source, long size, char c_0, char c_1) 
         long lastpos = pos;
         for (long command = GB_CS_SUB; command != GB_CS_OK;) {
             gb_compress_tree *t;
-            for (t = Main; !t->leave;) {
+            for (t = Main; !t->leaf;) {
                 int bit;
                 GB_READ_BIT(s, ch, bitp, bit);
                 t = t->son[bit];
@@ -732,7 +732,7 @@ static GB_BUFFER gb_uncompress_huffmann(GB_CBUFFER source, long maxsize, long *n
     buffer = p = GB_give_other_buffer(source, maxsize);
     s = data[0];
     while (1) {
-        for (t = un_tree; !t->leave;) {
+        for (t = un_tree; !t->leaf;) {
             int bit;
             GB_READ_BIT(s, ch, bitp, bit);
             t = t->son[bit];
