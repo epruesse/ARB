@@ -1103,16 +1103,6 @@ inline void extract_first_but_not_second(const Matches& first, const Matches& se
                    inserter(result, result.begin()));
 }
 
-inline string hitByFirst_but_notBySecond(const char *first, const char *second) {
-    Matches matchFirst, matchSecond;
-    getMatches(first,  matchFirst);
-    getMatches(second, matchSecond);
-
-    Matches onlyFirst;
-    extract_first_but_not_second(matchFirst, matchSecond, onlyFirst);
-    return matches2hitlist(onlyFirst);
-}
-
 // --------------------------------------------------------------------------------
 
 // #define TEST_INDEX_COMPLETENESS // only uncomment temporarily (slow as hell)
@@ -1180,8 +1170,20 @@ arb_test::match_expectation partial_covers_full_probe(const char *part, const ch
     expected.add(that(strstr(full, part)).does_differ_from_NULL());
     expected.add(that(strlen(part)).less_than(strlen(full)));
 
-    string only_hit_by_full = hitByFirst_but_notBySecond(full, part);
-    expected.add(that(only_hit_by_full).is_equal_to(""));
+    {
+        Matches matchFull, matchPart;
+        getMatches(full,  matchFull);
+        getMatches(part, matchPart);
+
+        expected.add(that(matchFull.empty()).is_equal_to(false));
+
+        Matches onlyFirst;
+        extract_first_but_not_second(matchFull, matchPart, onlyFirst);
+
+        string only_hit_by_full = matches2hitlist(onlyFirst);
+        expected.add(that(only_hit_by_full).is_equal_to(""));
+    }
+
 
     return all().ofgroup(expected);
 }
