@@ -931,10 +931,10 @@ void TEST_SLOW_design_probe() {
         "Max Non Group Hits     0\n"
         "Min Group Hits       100%\n"
         "Target             le     apos ecol grps  G+C 4GC+2AT Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
-        "CGAAAGGAAGAUUAAUAC 18 A=    94   82    4 33.3 48.0    GUAUUAAUCUUCCUUUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-        "GAAAGGAAGAUUAAUACC 18 A+     1   83    4 33.3 48.0    GGUAUUAAUCUUCCUUUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-        "UCAAGUCGAGCGAUGAAG 18 B=    18   17    4 50.0 54.0    CUUCAUCGCUCGACUUGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-        "AUCAAGUCGAGCGAUGAA 18 B-     1   16    4 44.4 52.0    UUCAUCGCUCGACUUGAU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  2,  3,\n";
+        "AUCAAGUCGAGCGAUGAA 18 A=    17   16    4 44.4 52.0    UUCAUCGCUCGACUUGAU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+        "CGAAAGGAAGAUUAAUAC 18 B=    94   82    4 33.3 48.0    GUAUUAAUCUUCCUUUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+        "GAAAGGAAGAUUAAUACC 18 B+     1   83    4 33.3 48.0    GGUAUUAAUCUUCCUUUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+        "UCAAGUCGAGCGAUGAAG 18 A+     1   17    4 50.0 54.0    CUUCAUCGCUCGACUUGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n";
 
     TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
 
@@ -943,7 +943,7 @@ void TEST_SLOW_design_probe() {
 
     {
         char *positions = extract_locations(expected);
-        TEST_ASSERT_EQUAL(positions, "A=94A+1B=18B-1");
+        TEST_ASSERT_EQUAL(positions, "A=17B=94B+1A+1");
         free(positions);
     }
 
@@ -1124,7 +1124,7 @@ void TEST_SLOW_find_unmatched_probes() {
         TEST_RUN_ARB_PROBE(ARRAY_ELEMS(arguments), arguments);
 
         GBT_splitNdestroy_string(fullProbes, answer, ";", false);
-        TEST_ASSERT_EQUAL(fullProbes.size(), 2088);
+        TEST_ASSERT_EQUAL(fullProbes.size(), 2045);
     }
 
     for (size_t lp = 0; lp<fullProbes.size(); ++lp) { // with all 20mers existing in ptserver

@@ -311,13 +311,19 @@ static Error ptserver(Mode mode) {
     // every unit-test using the test-ptserver should simply call
     // TEST_SETUP_GLOBAL_ENVIRONMENT("ptserver");
 
+// #define TEST_AUTO_UPDATE
+
     Error error;
     switch (mode) {
         case SETUP: {
             test_ptserver_activate(false, TEST_SERVER_ID);                     // first kill pt-server (otherwise we may test an outdated pt-server)
             TEST_ASSERT_NO_ERROR(GBK_system("cp TEST_pt_src.arb TEST_pt.arb")); // force rebuild
             test_ptserver_activate(true, TEST_SERVER_ID);
+#if defined(TEST_AUTO_UPDATE)
+            TEST_COPY_FILE("TEST_pt.arb.pt", "TEST_pt.arb.pt.expected");
+#else // !defined(TEST_AUTO_UPDATE)
             TEST_ASSERT_FILES_EQUAL("TEST_pt.arb.pt.expected", "TEST_pt.arb.pt");
+#endif
             TEST_ASSERT(GB_time_of_file("TEST_pt.arb.pt") >= GB_time_of_file("TEST_pt.arb"));
             break;
         }
@@ -332,6 +338,8 @@ static Error ptserver(Mode mode) {
     }
 
     return error;
+    
+#undef TEST_AUTO_UPDATE
 }
 
 static Error ptserver_gene(Mode mode) {
