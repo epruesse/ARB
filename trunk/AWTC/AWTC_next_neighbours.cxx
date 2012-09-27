@@ -417,9 +417,9 @@ void TEST_SLOW_PT_FamilyFinder() {
     
     ff_tester test(gb_main);
 
-    ff_tester ______RESET = test; TEST_ASSERT_RELATIVES(test, "LgtLytic/142/97.93103,HllHalod/62/43.05556,AclPleur/59/38.06452,PtVVVulg/52/34.21053");
+    ff_tester ______RESET = test; TEST_ASSERT_RELATIVES(test, "LgtLytic/142/97.93103,HllHalod/62/43.05556,AclPleur/59/38.06452,PtVVVulg/51/34.00000");
     test.partial          = true; TEST_ASSERT_RELATIVES(test, "LgtLytic/18/11.76471,VblVulni/5/3.24675,VbhChole/4/2.59740,DcdNodos/4/2.59740");
-    test.shortOligo       = true; TEST_ASSERT_RELATIVES(test, "PtVVVulg/38/22.75449,AclPleur/38/22.35294,VbhChole/38/23.60248,VblVulni/38/23.60248");
+    test.shortOligo       = true; TEST_ASSERT_RELATIVES(test, "PtVVVulg/38/23.03030,AclPleur/38/22.35294,VbhChole/38/23.60248,VblVulni/38/23.60248");
     test.relativeMatches  = true; TEST_ASSERT_RELATIVES(test, "DsssDesu/38/38.77551,CltBotul/38/34.23423,PsAAAA00/38/32.75862,Bl0LLL00/38/25.67568");
     test.min_score        = 32.6; TEST_ASSERT_RELATIVES(test, "DsssDesu/38/38.77551,CltBotul/38/34.23423,PsAAAA00/38/32.75862");
     test                  = ______RESET;
@@ -429,7 +429,7 @@ void TEST_SLOW_PT_FamilyFinder() {
     test.min_score        = 26.7; TEST_ASSERT_RELATIVES(test, "LgtLytic/42/26.75159");
     test.min_score        = 26.8; TEST_ASSERT_RELATIVES(test, "");
     test                  = ______RESET;
-    test.fastMode         = true; TEST_ASSERT_RELATIVES(test, "LgtLytic/40/27.58621,HllHalod/18/12.50000,AclPleur/17/10.96774,PtVVVulg/15/9.86842");
+    test.fastMode         = true; TEST_ASSERT_RELATIVES(test, "LgtLytic/40/27.58621,HllHalod/18/12.50000,AclPleur/17/10.96774,PtVVVulg/15/10.00000");
     test.min_score        = 17.0; TEST_ASSERT_RELATIVES(test, "LgtLytic/40/27.58621,HllHalod/18/12.50000,AclPleur/17/10.96774");
     test.min_score        = 17.5; TEST_ASSERT_RELATIVES(test, "LgtLytic/40/27.58621,HllHalod/18/12.50000");
     test                  = ______RESET;
