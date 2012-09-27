@@ -54,7 +54,7 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const DataLoc& loc) {
         return root;
     }
 
-    // change leave to node and create two sons
+    // change leaf to node and create two sons
 
     const DataLoc loc_ref(at);
 

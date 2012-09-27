@@ -837,7 +837,7 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
         }
         AP_tree_nlen *node0 = this->node[0];
         AP_tree_nlen *node1 = this->node[1];
-        if (node0->gr.leave_sum > node1->gr.leave_sum) { // node0 is final son
+        if (node0->gr.leaf_sum > node1->gr.leaf_sum) { // node0 is final son
             node0 = node1;
         }
         static int num = 0;

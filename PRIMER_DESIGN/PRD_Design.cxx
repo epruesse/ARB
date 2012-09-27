@@ -257,7 +257,7 @@ bool PrimerDesign::treeContainsPrimer (Node *start)
     return false;
 }
 
-// remove non-primer-leaves and branches from the tree
+// remove non-primer-leafs and branches from the tree
 void PrimerDesign::clearTree (Node *start, int left_, int right_)
 {
     // check children

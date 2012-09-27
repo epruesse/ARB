@@ -794,17 +794,17 @@ int AP_tree::arb_tree_set_leafsum_viewsum() // count all visible leafs
     int l, r;
     if (is_leaf) {
         gr.view_sum = 1;
-        gr.leave_sum = 1;
+        gr.leaf_sum = 1;
         return 1;
     }
     l =  get_leftson()->arb_tree_set_leafsum_viewsum();
     r =  get_rightson()->arb_tree_set_leafsum_viewsum();
-    gr.leave_sum = r+l;
+    gr.leaf_sum = r+l;
     gr.view_sum = get_leftson()->gr.view_sum + get_rightson()->gr.view_sum;
     if (gr.grouped) {
-        gr.view_sum = (int)pow((double)(gr.leave_sum - GROUPED_SUM + 9), .33);
+        gr.view_sum = (int)pow((double)(gr.leaf_sum - GROUPED_SUM + 9), .33);
     }
-    return gr.leave_sum;
+    return gr.leaf_sum;
 }
 
 int AP_tree::arb_tree_leafsum2()    // count all leafs
@@ -1766,7 +1766,7 @@ static int ap_mark_duplicates_rek(AP_tree *at, GB_HASH *seen_species) {
 }
 
 void AP_tree::mark_duplicates() {
-    GB_HASH *seen_species = GBS_create_hash(gr.leave_sum, GB_IGNORE_CASE);
+    GB_HASH *seen_species = GBS_create_hash(gr.leaf_sum, GB_IGNORE_CASE);
 
     int dup_zombies = ap_mark_duplicates_rek(this, seen_species);
     if (dup_zombies) {

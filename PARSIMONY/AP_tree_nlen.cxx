@@ -1202,7 +1202,7 @@ AP_CO_LIST * AP_tree_nlen::createList(int *size) {
 
 const char* AP_tree_nlen::sortByName()
 {
-    if (name) return name;  // leaves
+    if (name) return name;  // leafs
 
     const char *n1 = get_leftson()->sortByName();
     const char *n2 = get_rightson()->sortByName();
