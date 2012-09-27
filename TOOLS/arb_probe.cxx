@@ -17,6 +17,7 @@
 #include <arb_defs.h>
 #include <arb_strbuf.h>
 #include <algorithm>
+#include <string> // need to include before test_unit.h
 
 struct apd_sequence {
     apd_sequence *next;
@@ -1051,84 +1052,176 @@ void TEST_SLOW_get_existing_probes() {
     }
 }
 
-void TEST_SLOW_unmatched_probes() {
+// --------------------------------------------------------------------------------
+
+#include <arb_strarray.h>
+#include <set>
+#include <iterator>
+
+using namespace std;
+
+typedef set<string> Matches;
+
+inline void parseMatches(char*& answer, Matches& matches) {
+    ConstStrArray match_results;
+
+    GBT_splitNdestroy_string(match_results, answer, "\1", false);
+
+    for (size_t i = 1; i<match_results.size(); i += 2) {
+        if (match_results[i][0]) {
+            matches.insert(match_results[i]);
+        }
+    }
+}
+
+inline void getMatches(const char *probe, Matches& matches) {
+    bool  use_gene_ptserver = false;
+    char *matchseq          = GBS_global_string_copy("matchsequence=%s", probe);
+    const char *arguments[] = {
+        "prgnamefake",
+        matchseq,
+    };
+    TEST_RUN_ARB_PROBE(ARRAY_ELEMS(arguments), arguments);
+    parseMatches(answer, matches);
+    free(matchseq);
+}
+
+inline string matches2hitlist(const Matches& matches) {
+    string hitlist;
+    if (!matches.empty()) {
+        for (Matches::const_iterator m = matches.begin(); m != matches.end(); ++m) {
+            hitlist = hitlist + ',' + *m;
+        }
+        hitlist = hitlist.substr(1);
+    }
+    return hitlist;
+}
+
+inline void extract_first_but_not_second(const Matches& first, const Matches& second, Matches& result) {
+    set_difference(first.begin(), first.end(),
+                   second.begin(), second.end(),
+                   inserter(result, result.begin()));
+}
+
+inline string hitByFirst_but_notBySecond(const char *first, const char *second) {
+    Matches matchFirst, matchSecond;
+    getMatches(first,  matchFirst);
+    getMatches(second, matchSecond);
+
+    Matches onlyFirst;
+    extract_first_but_not_second(matchFirst, matchSecond, onlyFirst);
+    return matches2hitlist(onlyFirst);
+}
+
+// --------------------------------------------------------------------------------
+
+// #define TEST_INDEX_COMPLETENESS // only uncomment temporarily (slow as hell)
+
+#if defined(TEST_INDEX_COMPLETENESS)
+
+void TEST_SLOW_find_unmatched_probes() {
     bool use_gene_ptserver = false;
 
-    // match (parts of) an oligo which occurs in 3 species at 3'-end of alignment: GGCGCUGGAUCACCUCCUUU
-
+    // get all 20mers indexed in ptserver:
+    ConstStrArray fullProbes;
     {
         const char *arguments[] = {
             "prgnamefake",
-            "matchsequence=GGCGCUGGAUCACCUCCUUU",
+            "iterate=20",
+            "iterate_amount=1000000",
+            "iterate_tu=U",
         };
-        CCP expected = "    name---- fullname mis N_mis wmis pos ecoli rev          'GGCGCUGGAUCACCUCCUUU'\1"
-            "VbrFurni\1" "  VbrFurni            0     0  0.0 166   152 0   GGGGAACCU-====================-\1"
-            "VblVulni\1" "  VblVulni            0     0  0.0 166   152 0   GGGGAACCU-====================-\1"
-            "VbhChole\1" "  VbhChole            0     0  0.0 166   152 0   GGGGAACCU-====================-\1";
+        TEST_RUN_ARB_PROBE(ARRAY_ELEMS(arguments), arguments);
 
-        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+        GBT_splitNdestroy_string(fullProbes, answer, ";", false);
+        TEST_ASSERT_EQUAL(fullProbes.size(), 2088);
     }
 
-    // now search part of the above 20-mer (not starting at pos == 0)
-    {
-        const char *arguments[] = {
-            "prgnamefake",
-            "matchsequence=GCGCUGGAUC",
-        };
+    for (size_t lp = 0; lp<fullProbes.size(); ++lp) { // with all 20mers existing in ptserver
+        const char *fullProbe = fullProbes[lp];
 
-        // ptserver only reports one match ( = first match)
-        // Reason: postree only contains ONE occurrance (when oligo is inside last 20 positions of a seq)
+        size_t fullLen = strlen(fullProbe);
+        TEST_ASSERT_EQUAL(fullLen, 20);
 
-        CCP received = "    name---- fullname mis N_mis wmis pos ecoli rev          'GCGCUGGAUC'\1"
-            "VbrFurni\1" "  VbrFurni            0     0  0.0 167   153 0   GGGAACCUG-==========-ACCUCCUUU\1";
+        Matches fullHits;
+        getMatches(fullProbe, fullHits);
+        TEST_ASSERT(fullHits.size()>0);
 
-        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, received);
+        bool fewerHitsSeen = false;
 
-        // would expect to get 3 matches 
-        CCP expected = "    name---- fullname mis N_mis wmis pos ecoli rev          'GCGCUGGAUC'\1"
-            "VbrFurni\1" "  VbrFurni            0     0  0.0 167   153 0   GGGAACCUG-==========-ACCUCCUUU\1"
-            "VblVulni\1" "  VblVulni            0     0  0.0 167   153 0   GGGGAACCU-==========-ACCUCCUUU\1"
-            "VbhChole\1" "  VbhChole            0     0  0.0 167   153 0   GGGGAACCU-==========-ACCUCCUUU\1";
+        for (size_t subLen = fullLen-1; !fewerHitsSeen && subLen >= 10; --subLen) { // for each partial sub-probe of 20mer
+            char subProbe[20];
+            subProbe[subLen] = 0;
 
-        TEST_ARB_PROBE__BROKEN(ARRAY_ELEMS(arguments), arguments, expected);
+            for (size_t pos = 0; pos+subLen <= fullLen; ++pos) {
+                Matches subHits, onlyFull;
+
+                memcpy(subProbe, fullProbe+pos, subLen);
+                getMatches(subProbe, subHits);
+                extract_first_but_not_second(fullHits, subHits, onlyFull);
+
+                if (!onlyFull.empty()) {
+                    fprintf(stderr, "TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN(\"%s\", \"%s\");\n", subProbe, fullProbe);
+                    fewerHitsSeen = true; // only list first wrong hit for each fullProbe
+                }
+            }
+        }
     }
+}
 
-    // now search part of the above 20-mer (starting at pos == 0) -> works
-    {
-        const char *arguments[] = {
-            "prgnamefake",
-            "matchsequence=GGCGCUGGAU",
-        };
+#endif
+// --------------------------------------------------------------------------------
 
-        CCP expected = "    name---- fullname mis N_mis wmis pos ecoli rev          'GGCGCUGGAU'\1"
-            "VbrFurni\1" "  VbrFurni            0     0  0.0 166   152 0   GGGGAACCU-==========-CACCUCCUU\1"
-            "VblVulni\1" "  VblVulni            0     0  0.0 166   152 0   GGGGAACCU-==========-CACCUCCUU\1"
-            "VbhChole\1" "  VbhChole            0     0  0.0 166   152 0   GGGGAACCU-==========-CACCUCCUU\1";
+arb_test::match_expectation partial_covers_full_probe(const char *part, const char *full) {
+    using namespace arb_test;
+    using namespace std;
+    
+    expectation_group expected;
 
-        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+    expected.add(that(strstr(full, part)).does_differ_from_NULL());
 
-    }
-    // if the oligo also occurs somewhere else, it is found in all 3 species (VbrFurni, VblVulni + VbhChole)
-    {
-        const char *arguments[] = {
-            "prgnamefake",
-            "matchsequence=CACCUCCUUU",
-            "matchmismatches=0", 
-            "matchacceptN=0",
-        };
+    string only_hit_by_full = hitByFirst_but_notBySecond(full, part);
+    expected.add(that(only_hit_by_full).is_equal_to(""));
 
-        CCP expected = "    name---- fullname mis N_mis wmis pos ecoli rev          'CACCUCCUUU'\1"
-            "BcSSSS00\1" "  BcSSSS00            0     0  0.0 176   162 0   CGGCUGGAU-==========-CU\1"
-            "PbcAcet2\1" "  PbcAcet2            0     0  0.0 176   162 0   CGGCUGGAU-==========-NN\1"
-            "Stsssola\1" "  Stsssola            0     0  0.0 176   162 0   CGGCUGGAU-==========-\1"
-            "DcdNodos\1" "  DcdNodos            0     0  0.0 176   162 0   CGGUUGGAU-==========-\1"
-            "VbrFurni\1" "  VbrFurni            0     0  0.0 176   162 0   GCGCUGGAU-==========-\1"
-            "VblVulni\1" "  VblVulni            0     0  0.0 176   162 0   GCGCUGGAU-==========-\1"
-            "VbhChole\1" "  VbhChole            0     0  0.0 176   162 0   GCGCUGGAU-==========-\1";
+    return all().ofgroup(expected);
+}
 
-        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+#define TEST_PARTIAL_COVERS_FULL_PROBE(part,full)         TEST_EXPECT(partial_covers_full_probe(part, full))
+#define TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN(part,full) TEST_EXPECT__BROKEN(partial_covers_full_probe(part, full))
 
-    }
+void TEST_SLOW_unmatched_probes() {
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCGCUGGAUC", "GGCGCUGGAUCACCUCCUUU");
+
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCUGGAUCACCU",        "AACCUGCGGCUGGAUCACCU");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("CGGUUGGAUCACCU",      "AACCUGCGGUUGGAUCACCU");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCGCUGGAUCACCU",      "AACCUGGCGCUGGAUCACCU");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCUGGAUCACCUC",       "ACCUGCGGCUGGAUCACCUC");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("CGGUUGGAUCACCUC",     "ACCUGCGGUUGGAUCACCUC");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCGCUGGAUCACCUC",     "ACCUGGCGCUGGAUCACCUC");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCUGGAUCACCUCC",      "CCUGCGGCUGGAUCACCUCC");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("CGGUUGGAUCACCUCC",    "CCUGCGGUUGGAUCACCUCC");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCGCUGGAUCACCUCC",    "CCUGGCGCUGGAUCACCUCC");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCUGGAUCACCUCCUUUC",  "CGGCUGGAUCACCUCCUUUC");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCUGGAUCACCUCCU",     "CUGCGGCUGGAUCACCUCCU");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("CGGUUGGAUCACCUCCU",   "CUGCGGUUGGAUCACCUCCU");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCGCUGGAUCACCUCCU",   "CUGGCGCUGGAUCACCUCCU");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCUGGAUCACC",         "GAACCUGCGGCUGGAUCACC");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("CGGUUGGAUCACC",       "GAACCUGCGGUUGGAUCACC");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCGCUGGAUCACC",       "GAACCUGGCGCUGGAUCACC");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("CCUCCUUUCU",          "GAUUAAUACCCCUCCUUUCU");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCUGGAUCACCUCCUUU",   "GCGGCUGGAUCACCUCCUUU");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("CGGUUGGAUCACCUCCUUA", "GCGGUUGGAUCACCUCCUUA");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCUGGAUCAC",          "GGAACCUGCGGCUGGAUCAC");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("CGGUUGGAUCAC",        "GGAACCUGCGGUUGGAUCAC");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCGCUGGAUCAC",        "GGAACCUGGCGCUGGAUCAC");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCGCUGGAUCACCUCCUUU", "GGCGCUGGAUCACCUCCUUU");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("CGGUUGGAUCA",         "GGGAACCUGCGGUUGGAUCA");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCGCUGGAUCA",         "GGGAACCUGGCGCUGGAUCA");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("CGGUUGGAUC",          "GGGGAACCUGCGGUUGGAUC");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCGCUGGAUC",          "GGGGAACCUGGCGCUGGAUC");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCUGGAUCACCUCCUU",    "UGCGGCUGGAUCACCUCCUU");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("CGGUUGGAUCACCUCCUU",  "UGCGGUUGGAUCACCUCCUU");
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCGCUGGAUCACCUCCUU",  "UGGCGCUGGAUCACCUCCUU");
 }
 
 void TEST_SLOW_variable_defaults_in_server() {
