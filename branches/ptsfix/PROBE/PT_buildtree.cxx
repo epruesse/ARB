@@ -59,8 +59,9 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const DataLoc& loc) {
     const DataLoc loc_ref(at);
 
     while (loc[height] == loc_ref[height]) {  // creates nodes until sequences are different
-        // type != nt_node
-        if (PT_read_type(at) == PT_NT_CHAIN) { 
+        pt_assert(PT_read_type(at) != PT_NT_NODE);
+
+        if (PT_read_type(at) == PT_NT_CHAIN) {
             PT_add_to_chain(at, loc);
             return root;
         }
@@ -79,25 +80,21 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const DataLoc& loc) {
         pt_assert(implicated(loc_done, loc[height] == PT_QU));
         pt_assert(implicated(ref_done, loc_ref[height] == PT_QU));
 
-        if (ref_done && loc_done) return root; // end of both sequences
+        if (ref_done && loc_done) { // end of both sequences
+            // @@@ loc needs to be added to chain
+            return root;
+        }
 
-        at = PT_change_leaf_to_node(at); // change tip to node and append two new leafs
-        if (loc_done) { // end of source sequence reached
-            pt_assert(0); // @@@ cant happen ? 
-            PT_create_leaf(&at, loc_ref[height], loc_ref);
-            return root;
-        }
-        if (ref_done) { // end of reference sequence
-            pt_assert(0); // @@@ cant happen ? 
-            PT_create_leaf(&at, loc[height], loc);
-            return root;
-        }
+        at = PT_change_leaf_to_node(at);                // change tip to node and append two new leafs
         at = PT_create_leaf(&at, loc[height], loc_ref); // dummy leaf just to create a new node; may become a chain
+
+        // @@@ need special handling for dot here!
+
         height++;
     }
 
-    
-    
+
+
     if (height >= PT_POS_TREE_HEIGHT) {
         if (PT_read_type(at) == PT_NT_LEAF) at = PT_leaf_to_chain(at);
         PT_add_to_chain(at, loc);
