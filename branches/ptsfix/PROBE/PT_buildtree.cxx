@@ -75,14 +75,20 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const DataLoc& loc) {
         bool loc_done = loc.is_shorther_than(height+1);
         bool ref_done = loc_ref.is_shorther_than(height+1);
 
+        pt_assert(correlated(loc_done, ref_done));
+        pt_assert(implicated(loc_done, loc[height] == PT_QU));
+        pt_assert(implicated(ref_done, loc_ref[height] == PT_QU));
+
         if (ref_done && loc_done) return root; // end of both sequences
 
         at = PT_change_leaf_to_node(at); // change tip to node and append two new leafs
         if (loc_done) { // end of source sequence reached
+            pt_assert(0); // @@@ cant happen ? 
             PT_create_leaf(&at, loc_ref[height], loc_ref);
             return root;
         }
         if (ref_done) { // end of reference sequence
+            pt_assert(0); // @@@ cant happen ? 
             PT_create_leaf(&at, loc[height], loc);
             return root;
         }
