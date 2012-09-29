@@ -304,14 +304,14 @@ static void test_ptserver_activate(bool start, int serverid) {
     }
 }
 
+// #define TEST_AUTO_UPDATE
+
 static Error ptserver(Mode mode) {
     // test-ptserver is restarted and rebuild.
     // This is done only once in the complete test suite.
     // 
     // every unit-test using the test-ptserver should simply call
     // TEST_SETUP_GLOBAL_ENVIRONMENT("ptserver");
-
-// #define TEST_AUTO_UPDATE
 
     Error error;
     switch (mode) {
@@ -338,8 +338,6 @@ static Error ptserver(Mode mode) {
     }
 
     return error;
-    
-#undef TEST_AUTO_UPDATE
 }
 
 static Error ptserver_gene(Mode mode) {
@@ -348,8 +346,6 @@ static Error ptserver_gene(Mode mode) {
     // 
     // every unit-test using the test-gene-ptserver should simply call
     // TEST_SETUP_GLOBAL_ENVIRONMENT("ptserver_gene");
-
-// #define TEST_AUTO_UPDATE
 
     Error error;
     switch (mode) {
@@ -386,11 +382,11 @@ static Error ptserver_gene(Mode mode) {
             break;
     }
 
-#undef TEST_AUTO_UPDATE
-    
     return error;
 }
 
+#undef TEST_AUTO_UPDATE
+    
 // --------------------------------------------------------------------------------
 
 typedef Error (*Environment_cb)(Mode mode);
