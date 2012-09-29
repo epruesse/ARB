@@ -248,9 +248,19 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                     ULONG estimated_kb = (total_size/1024)*55;  // value by try and error (for gene server)
                     // TODO: estimated_kb depends on 32/64 bit...
 #else
-                    ULONG estimated_kb = (total_size/1024)*35; // value by try and error; 35 bytes per base
+                    ULONG estimated_kb = (total_size/1024)*35;  // value by try and error; 35 bytes per base
 #endif
-                    printf("Estimated memory usage for %i passes: %lu k\n", passes, estimated_kb);
+                    printf("Estimated memory usage for %i passes: ", passes);
+                    if (estimated_kb<1024) printf("%lu k\n", estimated_kb);
+                    else {
+                        double estimated_mb = estimated_kb / 1024.0;
+                        if (estimated_mb<1024) printf("%.1f M\n", estimated_mb);
+                        else {
+                            double estimated_gb = estimated_mb / 1024.0;
+                            printf("%.1f G\n", estimated_gb);
+                        }
+                    }
+
 
                     if (estimated_kb <= physical_memory) break;
 
