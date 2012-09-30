@@ -82,14 +82,21 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const DataLoc& loc) {
         pt_assert(implicated(ref_done, loc_ref[height] == PT_QU));
 
         if (ref_done && loc_done) { // end of both sequences
-            // @@@ loc needs to be added to chain
+            pt_assert(loc[height] == PT_QU);
+            pt_assert(loc_ref[height] == PT_QU);
+
+            at = PT_leaf_to_chain(at); // change leaf to chain
+            PT_add_to_chain(at, loc);  // and add node
             return root;
         }
 
         at = PT_change_leaf_to_node(at);                // change tip to node and append two new leafs
         at = PT_create_leaf(&at, loc[height], loc_ref); // dummy leaf just to create a new node; may become a chain
 
-        // @@@ need special handling for dot here!
+        if (loc[height] == PT_QU) {
+            pt_assert(PT_read_type(at) == PT_NT_CHAIN);
+            return root;
+        }
 
         height++;
     }
