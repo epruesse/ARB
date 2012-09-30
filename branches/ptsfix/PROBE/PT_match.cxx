@@ -543,11 +543,19 @@ char *get_match_overlay(PT_probematch *ml) {
             ref[pr_pos+10] = '=';
         }
         else {
-            ref[pr_pos+10] = b;
-            if (a >= PT_A && a <= PT_T && b >= PT_A && b<=PT_T) {
-                double h = ptnd_check_split(locs, ml->sequence, pr_pos, b);
-                if (h>=0.0) {
-                    ref[pr_pos+10] = " nacgu"[b];
+            if (b) {
+                ref[pr_pos+10] = b;
+                if (a >= PT_A && a <= PT_T && b >= PT_A && b<=PT_T) {
+                    double h = ptnd_check_split(locs, ml->sequence, pr_pos, b);
+                    if (h>=0.0) {
+                        ref[pr_pos+10] = " nacgu"[b];
+                    }
+                }
+            }
+            else {
+                // end of sequence reached (rest of probe was accepted by N-matches)
+                for (; pr_pos < pr_len; pr_pos++) {
+                    ref[pr_pos+10]  = '.';
                 }
             }
         }
