@@ -65,6 +65,8 @@ struct PT_store_match_in {
             int base, ref;
 
             while ((base=probe[height]) && (ref = psg.data[matchLoc.name].get_data()[pos])) {
+                pt_assert(base != PT_QU && ref != PT_QU); // both impl by loop-condition
+                
                 if (ref == PT_N || base == PT_N) {
                     // @@@ Warning: dupped code also counts PT_QU as mismatch!
                     N_mismatches++;
@@ -77,6 +79,9 @@ struct PT_store_match_in {
                 height++;
                 pos++;
             }
+
+            pt_assert(base == PT_QU || ref == PT_QU);
+
             while ((base = probe[height])) {
                 N_mismatches++;
                 height++;
@@ -160,7 +165,7 @@ static int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int m
     //! search down the tree to find matching species for the given probe
 
     if (!pt) return 0;
-    
+
     pt_assert(N_mismatches <= PT_POS_TREE_HEIGHT);
     if (locs->sort_by != PT_MATCH_TYPE_INTEGER) {
         if (psg.w_N_mismatches[N_mismatches] + (int)(wmismatches + 0.5) > psg.deep) return 0;
@@ -178,6 +183,9 @@ static int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int m
                 int    new_N_mis = N_mismatches;
 
                 int base = probe[height];
+
+                pt_assert(base != PT_QU && i != PT_QU); // impl by if-clause/loop 
+
                 if (base == PT_N || i == PT_N) {
                     new_N_mis++;
                 }
@@ -212,7 +220,10 @@ static int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int m
             int base;
             while ((base = probe[height])) {
                 int i = psg.data[name].get_data()[pos];
-                if (i == PT_N || base == PT_N || i == PT_QU || base == PT_QU) {
+
+                pt_assert(base != PT_QU); // impl by loop
+
+                if (i == PT_N || base == PT_N || i == PT_QU) {
                     psg.N_mismatches = psg.N_mismatches + 1;
                 }
                 else if (i != base) {
@@ -225,7 +236,7 @@ static int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int m
             }
         }
         else {                // chain
-            psg.probe = probe;
+            psg.probe  = probe;
             psg.height = height;
             PT_forwhole_chain(pt, PT_store_match_in(locs)); // @@@ why ignore result
             return 0;

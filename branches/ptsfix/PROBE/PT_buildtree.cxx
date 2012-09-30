@@ -27,7 +27,7 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const DataLoc& loc) {
 
     while (PT_read_type(at) == PT_NT_NODE) {    // now we got an inner node
         POS_TREE *pt_next = PT_read_son_stage_1(at, loc[height]);
-        if (!pt_next) { // there is no son of that type -> simply add the new son to that path //
+        if (!pt_next) { // there is no son of that type -> simply add the new son to that path
             bool atRoot = (at == root);
             PT_create_leaf(&at, loc[height], loc);
             return atRoot ? at : root; // inside tree return old root, otherwise new root has been created
@@ -66,12 +66,13 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const DataLoc& loc) {
             return root;
         }
         if (height >= PT_POS_TREE_HEIGHT) {
-            if (PT_read_type(at) == PT_NT_LEAF) {
-                at = PT_leaf_to_chain(at);
-            }
+            if (PT_read_type(at) == PT_NT_LEAF) at = PT_leaf_to_chain(at);
+            pt_assert(PT_read_type(at) == PT_NT_CHAIN);
             PT_add_to_chain(at, loc);
             return root;
         }
+
+        pt_assert(PT_read_type(at) == PT_NT_LEAF);
 
         bool loc_done = loc.is_shorther_than(height+1);
         bool ref_done = loc_ref.is_shorther_than(height+1);
@@ -93,7 +94,7 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const DataLoc& loc) {
         height++;
     }
 
-
+    pt_assert(loc[height] != loc_ref[height]);
 
     if (height >= PT_POS_TREE_HEIGHT) {
         if (PT_read_type(at) == PT_NT_LEAF) at = PT_leaf_to_chain(at);
