@@ -183,9 +183,8 @@ void PT_dump_POS_TREE(POS_TREE * IF_DEBUG(node), FILE *IF_DEBUG(out)) {
     if (!node) fputs("<zero node>\n", out);
 
     {
-        long i;
-        PT_READ_PNTR(&node->data, i);
-        fprintf(out, "node father 0x%lx\n", i);
+        POS_TREE *father = PT_read_father(node);
+        fprintf(out, "node father %p\n", father);
     }
 
     switch (PT_read_type(node)) {

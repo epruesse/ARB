@@ -510,10 +510,25 @@ inline POS_TREE *PT_read_son_stage_1(POS_TREE *node, PT_BASES base) {
     return (POS_TREE *)(i+psg.ptmain->data_start); // psg.ptmain->data_start == 0x00 in stage 1
 }
 
-inline PT_NODE_TYPE PT_read_type(POS_TREE *node)
-{
+inline PT_NODE_TYPE PT_read_type(POS_TREE *node) {
     return (PT_NODE_TYPE)PT_GET_TYPE(node);
 }
+
+inline POS_TREE *PT_read_father(POS_TREE *node) {
+    long p;
+    PT_READ_PNTR(&node->data, p);
+
+    POS_TREE *father = (POS_TREE*)p;
+
+#if defined(DEBUG)
+    if (father) {
+        pt_assert(PT_read_type(father) == PT_NT_NODE);
+    }
+#endif
+
+    return father;
+}
+
 
 struct DataLoc {
     int name; // index into psg.data[], aka as species id
