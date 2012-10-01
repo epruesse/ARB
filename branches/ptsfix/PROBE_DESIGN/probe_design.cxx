@@ -420,7 +420,6 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
     T_PT_TPROBE  tprobe;
     bytestring   bs;
     bytestring   check;
-    char        *match_info;
     GB_ERROR     error   = 0;
     GBDATA      *gb_main = (GBDATA*)cl_gb_main;
 
@@ -588,9 +587,11 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
         PD.resultList->clear();
 
         if (tprobe.exists()) {
+            char *match_info = 0;
             aisc_get(PD.link, PT_TPROBE, tprobe,
-                      TPROBE_INFO_HEADER,   &match_info,
-                      NULL);
+                     TPROBE_INFO_HEADER,   &match_info,
+                     NULL);
+
             char *s = strtok(match_info, "\n");
             while (s) {
                 PD.resultList->insert(s, "");
@@ -623,7 +624,9 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
 #endif // TEST_PD
 
         while (tprobe.exists()) {
-            T_PT_TPROBE tprobe_next;
+            T_PT_TPROBE  tprobe_next;
+            char        *match_info = 0;
+
             if (aisc_get(PD.link, PT_TPROBE, tprobe,
                          TPROBE_NEXT,      tprobe_next.as_result_param(),
                          TPROBE_INFO,      &match_info,

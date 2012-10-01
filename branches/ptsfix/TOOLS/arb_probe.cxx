@@ -170,7 +170,7 @@ static char *AP_probe_iterate_event(ARB_ERROR& error) {
                          PEP_FIND_PROBES, 0,
                          NULL);
 
-                char *pep_result;
+                char *pep_result = 0;
                 if (aisc_get(pd_gl.link, PT_PEP, pep,
                              PEP_RESULT, &pep_result,
                              NULL)) {
@@ -271,9 +271,9 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
                 GBS_strstruct *outstr = GBS_stropen(1000);
 
                 if (tprobe.exists()) {
-                    char *match_info;
+                    char *match_info = 0;
                     aisc_get(pd_gl.link, PT_TPROBE, tprobe,
-                             TPROBE_INFO_HEADER,   &match_info,
+                             TPROBE_INFO_HEADER, &match_info,
                              NULL);
                     GBS_strcat(outstr, match_info);
                     GBS_chrcat(outstr, '\n');
@@ -282,7 +282,7 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
 
 
                 while (tprobe.exists()) {
-                    char *match_info;
+                    char *match_info = 0;
                     if (aisc_get(pd_gl.link, PT_TPROBE, tprobe,
                                  TPROBE_NEXT, tprobe.as_result_param(),
                                  TPROBE_INFO, &match_info,
@@ -320,7 +320,7 @@ static char *AP_probe_match_event(ARB_ERROR& error) {
         bytestring bs;
         bs.data = 0;
         {
-            char           *locs_error;
+            char           *locs_error = 0;
             T_PT_MATCHLIST  match_list;
             long            match_list_cnt;
 

@@ -216,7 +216,7 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
             error = "Communication error with PT server ('retrieve_family')";
         }
         else {
-            char *ff_error;
+            char *ff_error = 0;
 
             // Read family list
             T_PT_FAMILYLIST f_list;

@@ -46,7 +46,7 @@ void MO_Liste::get_all_species() {
     char       *match_name = NULL;
     char        toksep[2];
     char       *probe      = NULL;
-    char       *locs_error;
+    char       *locs_error = 0;
     bytestring  bs;
     int         i          = 0;
     long        j          = 0, nr_of_species;
@@ -81,10 +81,10 @@ void MO_Liste::get_all_species() {
 
     bs.data = 0;
     aisc_get(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs,
-              LOCS_MP_ALL_SPECIES_STRING,       &bs,
-              LOCS_MP_COUNT_ALL_SPECIES,    &nr_of_species,
-              LOCS_ERROR,               &locs_error,
-              NULL);
+             LOCS_MP_ALL_SPECIES_STRING, &bs,
+             LOCS_MP_COUNT_ALL_SPECIES,  &nr_of_species,
+             LOCS_ERROR,                 &locs_error,
+             NULL);
 
     if (*locs_error)
     {
