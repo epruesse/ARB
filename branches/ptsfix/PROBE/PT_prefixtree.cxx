@@ -251,37 +251,40 @@ POS_TREE *PT_leaf_to_chain(POS_TREE *node) { // stage 1
 }
 
 POS_TREE *PT_create_leaf(POS_TREE ** pfather, PT_BASES base, const DataLoc& loc) { // stage 1
-    POS_TREE *father, *node, *new_elemfather;
-    int       base2;
-    int       leafsize;
-    char     *dest;
-    leafsize = PT_EMPTY_LEAF_SIZE;
+    if (base >= PT_B_MAX) PT_CORE;
+
+    int leafsize = PT_EMPTY_LEAF_SIZE;
 
     if (loc.rpos>PT_SHORT_SIZE) leafsize += 2;
     if (loc.apos>PT_SHORT_SIZE) leafsize += 2;
     if (loc.name>PT_SHORT_SIZE) leafsize += 2;
-    node                              = (POS_TREE *) PTM_get_mem(leafsize);
-    if (base >= PT_B_MAX)
-        *(int *) 0                    = 0;
+
+    POS_TREE *node = (POS_TREE *) PTM_get_mem(leafsize);
+
     if (pfather) {
-        int             oldfathersize;
-        POS_TREE       *gfather, *son;
-        long             i, j, sbase, dbase;
-        father = *pfather;
+        POS_TREE *father = *pfather;
+
+        int       oldfathersize;
         PT_NODE_SIZE(father, oldfathersize);
-        new_elemfather = (POS_TREE *)PTM_get_mem(oldfathersize + sizeof(PT_PNTR));
+        POS_TREE *new_elemfather = (POS_TREE *)PTM_get_mem(oldfathersize + sizeof(PT_PNTR));
+
+        long j;
         PT_READ_PNTR(&father->data, j);
-        gfather = (POS_TREE *)j;
+        POS_TREE *gfather = (POS_TREE *)j;
+
         if (gfather) {
             PT_change_father(gfather, father, new_elemfather);
             PT_WRITE_PNTR(&new_elemfather->data, gfather);
         }
-        sbase = dbase = sizeof(PT_PNTR);
-        base2 = 1 << base;
-        for (i = 1; i < 0x40; i = i << 1) {
+
+        long sbase = sizeof(PT_PNTR);
+        long dbase = sizeof(PT_PNTR);
+        int  base2 = 1 << base;
+
+        for (long i = 1; i < 0x40; i = i << 1) {
             if (i & father->flags) {
                 PT_READ_PNTR(((char *) &father->data) + sbase, j);
-                son = (POS_TREE *)j;
+                POS_TREE *son = (POS_TREE *)j;
                 int sontype = PT_GET_TYPE(son);
                 if (sontype != PT_NT_SAVED) {
                     PT_WRITE_PNTR((char *) &son->data, new_elemfather);
@@ -303,7 +306,8 @@ POS_TREE *PT_create_leaf(POS_TREE ** pfather, PT_BASES base, const DataLoc& loc)
         *pfather = new_elemfather;
     }
     PT_SET_TYPE(node, PT_NT_LEAF, 0);
-    dest = (&node->data) + sizeof(PT_PNTR);
+
+    char *dest = (&node->data) + sizeof(PT_PNTR);
     if (loc.name>PT_SHORT_SIZE) {
         PT_WRITE_INT(dest, loc.name);
         node->flags |= 1;
@@ -331,8 +335,8 @@ POS_TREE *PT_create_leaf(POS_TREE ** pfather, PT_BASES base, const DataLoc& loc)
         PT_WRITE_SHORT(dest, loc.apos);
         dest += 2;
     }
-    if (base == PT_QU)
-        return PT_leaf_to_chain(node);
+
+    if (base == PT_QU) return PT_leaf_to_chain(node);
     return node;
 }
 
