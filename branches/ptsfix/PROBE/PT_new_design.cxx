@@ -670,7 +670,7 @@ struct ptnd_chain_check_part {
                 int    base;
 
                 while (probe[height] && (base = psg.data[partLoc.name].get_data()[pos])) {
-                    if (!split && (h = ptnd_check_split(ptnd.locs, probe, height, base) < 0.0)) {
+                    if (!split && ((h = ptnd_check_split(ptnd.locs, probe, height, base)) < 0.0)) {
                         dt -= h;
                         split = 1;
                     }

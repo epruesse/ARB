@@ -348,44 +348,34 @@ void PTD_clear_fathers(POS_TREE * node) { // stage 1
 }
 
 #ifdef ARB_64
-void PTD_put_longlong(FILE * out, ULONG i)
-{
+void PTD_put_longlong(FILE * out, ULONG i) {
     pt_assert(i == (unsigned long) i);
-    COMPILE_ASSERT(sizeof(PT_PNTR) == 8);       // this function only work and only get called at 64-bit
-    int io;
-    static unsigned char buf[8];
-    PT_WRITE_PNTR(buf, i);
+    const size_t SIZE = 8;
+    COMPILE_ASSERT(sizeof(PT_PNTR) == SIZE); // this function only works and only gets called at 64-bit
 
-    io = buf[0]; putc(io, out);             // TODO: replace with fwrite
-    io = buf[1]; putc(io, out);
-    io = buf[2]; putc(io, out);
-    io = buf[3]; putc(io, out);
-    io = buf[4]; putc(io, out);
-    io = buf[5]; putc(io, out);
-    io = buf[6]; putc(io, out);
-    io = buf[7]; putc(io, out);
+    unsigned char buf[SIZE];
+    PT_WRITE_PNTR(buf, i);
+    ASSERT_RESULT(size_t, SIZE, fwrite(buf, 1, SIZE, out));
 }
 #endif
-void PTD_put_int(FILE * out, ULONG i)
-{
+
+void PTD_put_int(FILE * out, ULONG i) {
     pt_assert(i == (unsigned int) i);
-    int io;
-    static unsigned char buf[4];
+    const size_t SIZE = 4;
+#ifndef ARB_64
+    COMPILE_ASSERT(sizeof(PT_PNTR) == SIZE); // in 32bit mode ints are used to store pointers
+#endif
+    unsigned char buf[SIZE];
     PT_WRITE_INT(buf, i);
-    io = buf[0]; putc(io, out);             // TODO: replace with fwrite
-    io = buf[1]; putc(io, out);
-    io = buf[2]; putc(io, out);
-    io = buf[3]; putc(io, out);
+    ASSERT_RESULT(size_t, SIZE, fwrite(buf, 1, SIZE, out));
 }
 
-void PTD_put_short(FILE * out, ULONG i)
-{
+void PTD_put_short(FILE * out, ULONG i) {
     pt_assert(i == (unsigned short) i);
-    int io;
-    static unsigned char buf[2];
+    const size_t SIZE = 2;
+    unsigned char buf[SIZE];
     PT_WRITE_SHORT(buf, i);
-    io = buf[0]; putc(io, out);             // TODO: replace with fwrite
-    io = buf[1]; putc(io, out);
+    ASSERT_RESULT(size_t, SIZE, fwrite(buf, 1, SIZE, out));
 }
 
 static void PTD_set_object_to_saved_status(POS_TREE * node, long pos, int size) {
@@ -404,15 +394,8 @@ static long PTD_write_tip_to_disk(FILE * out, POS_TREE * node, long pos) {
     int size = PT_LEAF_SIZE(node);
     // write 4 bytes when not in stage 2 save mode
 
-    int cnt = size-sizeof(PT_PNTR)-1;               // no father; type already saved
-#ifdef ARB_64
-    fwrite(&node->data + sizeof(PT_PNTR), 0x01, cnt, out);   // write name rpos apos
-#else
-    for (char *data = (&node->data)+sizeof(PT_PNTR); cnt; cnt--) { // write apos rpos name
-        int i = (int)(*(data++));
-        putc(i, out);
-    }
-#endif
+    size_t cnt = size-sizeof(PT_PNTR)-1;               // no father; type already saved
+    ASSERT_RESULT(size_t, cnt, fwrite(&node->data + sizeof(PT_PNTR), 1, cnt, out));   // write name rpos apos
     PTD_set_object_to_saved_status(node, pos, size);
     pos += size-sizeof(PT_PNTR);                // no father
     pt_assert(pos >= 0);
@@ -520,28 +503,28 @@ static long PTD_write_chain_to_disk(FILE * out, POS_TREE * node, long pos, ARB_E
 }
 
 void PTD_debug_nodes() {
-#ifdef ARB_64
     printf ("Inner Node Statistic:\n");
     printf ("   Single Nodes:   %6i\n", psg.stat.single_node);
     printf ("   Short  Nodes:   %6i\n", psg.stat.short_node);
     printf ("       Chars:      %6i\n", psg.stat.chars);
     printf ("       Shorts:     %6i\n", psg.stat.shorts2);
+    
+#ifdef ARB_64
     printf ("   Int    Nodes:   %6i\n", psg.stat.int_node);
     printf ("       Shorts:     %6i\n", psg.stat.shorts);
     printf ("       Ints:       %6i\n", psg.stat.ints2);
+#endif
+
     printf ("   Long   Nodes:   %6i\n", psg.stat.long_node);
+#ifdef ARB_64
     printf ("       Ints:       %6i\n", psg.stat.ints);
-    printf ("       Longs:      %6i\n", psg.stat.longs);
-    printf ("   maxdiff:        %6li\n", psg.stat.maxdiff);
-#else
-    printf ("Inner Node Statistic:\n");
-    printf ("   Single Nodes:   %6i\n", psg.stat.single_node);
-    printf ("   Short  Nodes:   %6i\n", psg.stat.short_node);
-    printf ("       Chars:      %6i\n", psg.stat.chars);
-    printf ("       Shorts:     %6i\n", psg.stat.shorts2);
-    printf ("   Long   Nodes:   %6i\n", psg.stat.long_node);
+#else    
     printf ("       Shorts:     %6i\n", psg.stat.shorts);
-    printf ("       Longs:      %6i\n", psg.stat.longs);        // "longs" are actually 32 bit ints
+#endif
+    printf ("       Longs:      %6i\n", psg.stat.longs);
+
+#ifdef ARB_64
+    printf ("   maxdiff:        %6li\n", psg.stat.maxdiff);
 #endif
 }
 
