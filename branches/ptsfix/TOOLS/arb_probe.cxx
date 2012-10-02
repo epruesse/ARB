@@ -1194,7 +1194,7 @@ void TEST_SLOW_find_unmatched_probes() {
         TEST_RUN_ARB_PROBE(ARRAY_ELEMS(arguments), arguments);
 
         GBT_splitNdestroy_string(fullProbes, answer, ";", false);
-        TEST_ASSERT_EQUAL(fullProbes.size(), 2045);
+        TEST_ASSERT_EQUAL(fullProbes.size(), 2040);
     }
 
     for (size_t lp = 0; lp<fullProbes.size(); ++lp) { // with all 20mers existing in ptserver
