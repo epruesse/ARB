@@ -92,11 +92,6 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const DataLoc& loc) {
         at = PT_change_leaf_to_node(at);                // change tip to node and append two new leafs
         at = PT_create_leaf(&at, loc[height], loc_ref); // dummy leaf just to create a new node; may become a chain
 
-        if (loc[height] == PT_QU) {
-            pt_assert(PT_read_type(at) == PT_NT_CHAIN);
-            return root;
-        }
-
         height++;
     }
 
