@@ -18,8 +18,8 @@ static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int heig
     if (restlen==0) return true;
 
     switch (PT_read_type(node)) {
-        case PT_NT_NODE: {
-            for (int i=PT_A; i<PT_B_MAX; ++i) {
+        case PT_NT_NODE:
+            for (int i=PT_A; i<PT_B_MAX; ++i) { // Note: does not iterate probes containing N
                 POS_TREE *son = PT_read_son(node, PT_BASES(i));
                 if (son) {
                     probe[0] = PT_BASES(i); // write leftmost probe into result
@@ -29,11 +29,11 @@ static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int heig
                 }
             }
             break;
-        }
-        case PT_NT_CHAIN: {
-            pt_assert(0);  // unhandled yet
+
+        case PT_NT_CHAIN:
+            // probe cut-off in index -> do not iterate
             break;
-        }
+
         case PT_NT_LEAF: {
             // here the probe-tree is cut off, because only one species matches
             DataLoc loc(node);
@@ -70,6 +70,8 @@ static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) 
 
     switch (PT_read_type(node)) {
         case PT_NT_NODE: {
+            if (!PT_is_std_base(PT_BASES(probe[0]))) return false;
+
             POS_TREE *son   = PT_read_son(node, PT_BASES(probe[0]));
             bool      found = (son != 0) && findNextProbe(son, probe+1, restlen-1, height+1);
 
@@ -77,11 +79,13 @@ static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) 
 
             if (!found) {
                 for (int i=probe[0]+1; !found && i<PT_B_MAX; ++i) {
-                    son = PT_read_son(node, PT_BASES(i));
-                    if (son) {
-                        probe[0] = PT_BASES(i); // change probe
-                        found = findLeftmostProbe(son, probe+1, restlen-1, height+1);
-                        pt_assert(implicated(found, strlen(probe) == (size_t)restlen));
+                    if (PT_is_std_base(PT_BASES(i))) {
+                        son = PT_read_son(node, PT_BASES(i));
+                        if (son) {
+                            probe[0] = PT_BASES(i); // change probe
+                            found = findLeftmostProbe(son, probe+1, restlen-1, height+1);
+                            pt_assert(implicated(found, strlen(probe) == (size_t)restlen));
+                        }
                     }
                 }
             }
