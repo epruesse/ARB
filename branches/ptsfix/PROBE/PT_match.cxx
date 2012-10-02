@@ -231,7 +231,10 @@ static int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int m
                     double h = ptnd_get_wmismatch(locs, probe, height, i);
                     psg.wmismatches += psg.pos_to_weight[height] * h;
                 }
-                pos++;
+#if defined(DEVEL_RALF)
+                pt_assert(i != PT_QU); // case not covered
+#endif
+                if (i != PT_QU) pos++; // dot reached -> act like sequence ends here
                 height++;
             }
         }
