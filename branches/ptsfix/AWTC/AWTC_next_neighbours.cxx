@@ -423,8 +423,8 @@ void TEST_SLOW_PT_FamilyFinder() {
     test.relativeMatches  = true; TEST_ASSERT_RELATIVES(test, "DsssDesu/38/38.77551,CltBotul/38/34.23423,PsAAAA00/38/32.75862,Bl0LLL00/38/25.67568");
     test.min_score        = 32.6; TEST_ASSERT_RELATIVES(test, "DsssDesu/38/38.77551,CltBotul/38/34.23423,PsAAAA00/38/32.75862");
     test                  = ______RESET;
-    test.shortOligo       = true; TEST_ASSERT_RELATIVES(test, "LgtLytic/153/97.45223,AclPleur/138/82.63473,VbhChole/133/84.17722,VblVulni/133/84.17722");
-    test.relativeMatches  = true; TEST_ASSERT_RELATIVES(test, "LgtLytic/153/97.45223,HllHalod/133/85.25641,VbhChole/133/84.17722,VblVulni/133/84.17722");
+    test.shortOligo       = true; TEST_ASSERT_RELATIVES(test, "LgtLytic/154/98.08917,AclPleur/139/83.23353,VbhChole/133/84.17722,VblVulni/133/84.17722");
+    test.relativeMatches  = true; TEST_ASSERT_RELATIVES(test, "LgtLytic/154/98.08917,HllHalod/133/85.25641,VbhChole/133/84.17722,VblVulni/133/84.17722");
     test.fastMode         = true; TEST_ASSERT_RELATIVES(test, "LgtLytic/42/26.75159,VblVulni/37/23.41772,HllHalod/36/23.07692,Stsssola/36/23.07692");
     test.min_score        = 26.7; TEST_ASSERT_RELATIVES(test, "LgtLytic/42/26.75159");
     test.min_score        = 26.8; TEST_ASSERT_RELATIVES(test, "");
@@ -436,10 +436,10 @@ void TEST_SLOW_PT_FamilyFinder() {
 
     test.shortOligo      = true;
     test.relativeMatches = true;
-    test.scaling         = RSS_BOTH_MAX; TEST_ASSERT_RELATIVES(test, "LgtLytic/153/97.45223,HllHalod/133/85.25641,VbhChole/133/84.17722,VblVulni/133/84.17722");
-    test.scaling         = RSS_BOTH_MIN; TEST_ASSERT_RELATIVES(test, "LgtLytic/153/98.07692,AclPleur/138/88.46154,DsssDesu/84/88.42105,CltBotul/95/87.96296");
-    test.scaling         = RSS_TARGET;   TEST_ASSERT_RELATIVES(test, "LgtLytic/153/97.45223,DsssDesu/84/88.42105,CltBotul/95/87.96296,PsAAAA00/97/85.84071");
-    test.scaling         = RSS_SOURCE;   TEST_ASSERT_RELATIVES(test, "LgtLytic/153/98.07692,AclPleur/138/88.46154,VbhChole/133/85.25641,VblVulni/133/85.25641");
+    test.scaling         = RSS_BOTH_MAX; TEST_ASSERT_RELATIVES(test, "LgtLytic/154/98.08917,HllHalod/133/85.25641,VbhChole/133/84.17722,VblVulni/133/84.17722");
+    test.scaling         = RSS_BOTH_MIN; TEST_ASSERT_RELATIVES(test, "LgtLytic/154/98.71795,AclPleur/139/89.10256,DsssDesu/84/88.42105,CltBotul/95/87.96296");
+    test.scaling         = RSS_TARGET;   TEST_ASSERT_RELATIVES(test, "LgtLytic/154/98.08917,DsssDesu/84/88.42105,CltBotul/95/87.96296,PsAAAA00/97/85.84071");
+    test.scaling         = RSS_SOURCE;   TEST_ASSERT_RELATIVES(test, "LgtLytic/154/98.71795,AclPleur/139/89.10256,VbhChole/133/85.25641,VblVulni/133/85.25641");
     test.partial         = true;
     test.shortOligo      = false;
     test.scaling         = RSS_BOTH_MAX; TEST_ASSERT_RELATIVES(test, "LgtLytic/18/11.76471,VblVulni/5/3.24675,VbhChole/4/2.59740,DcdNodos/4/2.59740");

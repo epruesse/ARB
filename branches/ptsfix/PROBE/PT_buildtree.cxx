@@ -182,16 +182,6 @@ static long PTD_save_partial_tree(FILE *out, POS_TREE * node, char *partstring, 
     return pos;
 }
 
-inline int ptd_string_shorter_than(const char *s, int len) {
-    int i;
-    for (i=0; i<len; i++) {
-        if (!s[i]) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
 ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESULT
     // initialize tree and call the build pos tree procedure
 
@@ -292,7 +282,6 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                         if (abs_align_pos < 0) break; // -> in this case abort
 
                         if (partsize && (*partstring != psg.data[i].get_data()[j] || strncmp(partstring, psg.data[i].get_data()+j, partsize))) continue;
-                        if (ptd_string_shorter_than(psg.data[i].get_data()+j, 9)) continue;
 
                         pt = build_pos_tree(pt, DataLoc(i, abs_align_pos, j));
                     }

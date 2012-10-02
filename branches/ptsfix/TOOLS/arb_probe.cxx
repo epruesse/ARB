@@ -615,7 +615,10 @@ void TEST_SLOW_match_geneprobe() {
         CCP expectd = "    organism genename------- mis N_mis wmis pos gpos rev          'NNUCNN'\1"
             "genome2\1" "  genome2  gene3             0     4  0.0   2    1 0   .........-UU==GG-UUGAUC\1"
             "genome2\1" "  genome2  joined1           0     4  0.0   2    1 0   .........-UU==GG-UUGAUCCUG\1"
+            "genome1\1" "  genome1  gene2             0     4  0.0  10    2 0   ........U-GA==CU-GC\1"
+            "genome2\1" "  genome2  gene1             0     4  0.0   2    2 0   ........A-UU==GG-U\1"
             "genome2\1" "  genome2  gene2             0     4  0.0  10    4 0   ......GUU-GA==CU-GCCA\1"
+            "genome1\1" "  genome1  joined1           0     4  0.0  10    7 0   ...CUGGUU-GA==CU-GC\1"
             "genome2\1" "  genome2  joined1           0     4  0.0  10    9 0   .UUUCGGUU-GA==CU-GCCA\1"
             "genome2\1" "  genome2  intergene_19_65   0     4  0.0  31   12 0   GGUUACUGC-AU==GG-UGUUCGCCU\1"
             "genome1\1" "  genome1  intergene_17_65   0     4  0.0  31   14 0   GGUUACUGC-UA==GG-UGUUCGCCU\1"
@@ -634,11 +637,12 @@ void TEST_SLOW_match_geneprobe() {
             "matchlimitN=3", 
         };
         CCP expectd = "    organism genename------- mis N_mis wmis pos gpos rev          'NGGUUN'\1"
+            "genome1\1" "  genome1  gene3             0     2  0.0   5    2 0   ........C-U====G-A\1"
             "genome1\1" "  genome1  joined1           0     2  0.0   5    2 0   ........C-U====G-AUCCUGC\1"
             "genome2\1" "  genome2  intergene_19_65   0     2  0.0  21    2 0   ........G-A====A-CUGCAUUCG\1"
             "genome1\1" "  genome1  intergene_17_65   0     2  0.0  21    4 0   ......CAG-A====A-CUGCUAUCG\1"
             "genome2\1" "  genome2  gene3             0     2  0.0   5    4 0   ......UUU-C====G-AUC\1"
-            "genome2\1" "  genome2  joined1           0     2  0.0   5    4 0   ......UUU-C====G-AUCCUGCCA\1" "";
+            "genome2\1" "  genome2  joined1           0     2  0.0   5    4 0   ......UUU-C====G-AUCCUGCCA\1";
 
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd);
     }
@@ -662,10 +666,12 @@ void TEST_SLOW_match_geneprobe() {
             "matchsequence=GAUCCU",
         };
         CCP expectd = "    organism genename mis N_mis wmis pos gpos rev          'GAUCCU'\1"
+            "genome1\1" "  genome1  gene2      0     0  0.0  10    2 0   ........U-======-GC\1"
             "genome2\1" "  genome2  gene2      0     0  0.0  10    4 0   ......GUU-======-GCCA\1"
+            "genome1\1" "  genome1  joined1    0     0  0.0  10    7 0   ...CUGGUU-======-GC\1"
             "genome2\1" "  genome2  joined1    0     0  0.0  10    9 0   .UUUCGGUU-======-GCCA\1";
 
-        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: probe is part of above probe, but reports less hits
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // [fixed: now reports as much hits as previous test; expected cause probe is part of above probe]
     }
     {
         const char *arguments[] = {
@@ -674,9 +680,10 @@ void TEST_SLOW_match_geneprobe() {
         };
         CCP expectd = "    organism genename mis N_mis wmis pos gpos rev          'UUUCGG'\1"
             "genome2\1" "  genome2  gene3      0     0  0.0   2    1 0   .........-======-UUGAUC\1"
-            "genome2\1" "  genome2  joined1    0     0  0.0   2    1 0   .........-======-UUGAUCCUG\1" "";
+            "genome2\1" "  genome2  joined1    0     0  0.0   2    1 0   .........-======-UUGAUCCUG\1"
+            "genome2\1" "  genome2  gene1      0     0  0.0   2    2 0   ........A-======-U\1";
 
-        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: also exists in genome2/gene1
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // [fixed: now reports hit in genome2/gene1]
     }
     {
         const char *arguments[] = {
@@ -684,10 +691,12 @@ void TEST_SLOW_match_geneprobe() {
             "matchsequence=AUCCUG", 
         };
         CCP expectd = "    organism genename mis N_mis wmis pos gpos rev          'AUCCUG'\1"
+            "genome1\1" "  genome1  gene2      0     0  0.0  11    3 0   .......UG-======-C\1"
             "genome2\1" "  genome2  gene2      0     0  0.0  11    5 0   .....GUUG-======-CCA\1"
+            "genome1\1" "  genome1  joined1    0     0  0.0  11    8 0   ..CUGGUUG-======-C\1"
             "genome2\1" "  genome2  joined1    0     0  0.0  11   10 0   UUUCGGUUG-======-CCA\1";
 
-        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // @@@ defect: exists in 'gene2' and 'joined1' of both genomes
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd); // [fixed: now reports hits in 'gene2' and 'joined1' of both genomes]
     }
     {
         const char *arguments[] = {
@@ -922,20 +931,21 @@ void TEST_SLOW_match_probe() {
         CCP expectd0 = "    name---- fullname mis N_mis wmis pos ecoli rev          'CANCNCNNUNC'\1"
             "BcSSSS00\1" "  BcSSSS00            0     5  0.0 176   162 0   CGGCUGGAU-==C=U=CU=U=-U\1" "";
 
+        // one hit is truncated here: // @@@ check if still true
         CCP expectd1 = "    name---- fullname mis N_mis wmis pos ecoli rev          'CANCNCNNUNC'\1"
             "DlcTolu2\1" "  DlcTolu2            0     6  0.0 176   162 0   CGGCUGGAU-==C=U=CU==N-N\1"
             "PbcAcet2\1" "  PbcAcet2            0     6  0.0 176   162 0   CGGCUGGAU-==C=U=CU=UN-N\1"
             "PbrPropi\1" "  PbrPropi            0     6  0.0 176   162 0   CGGCUGGAU-==C=U=CU=UN-N\1"
             "AclPleur\1" "  AclPleur            0     6  0.0 176   162 0   CGGUUGGAU-==C=U=CU=A.-\1"
             "PtVVVulg\1" "  PtVVVulg            0     6  0.0 176   162 0   CGGUUGGAU-==C=U=CU=A.-\1";
-            // one hit is truncated here // @@@ check if true
         
+        // many hits are truncated here: // @@@ still true ? 
         CCP expectd2 = "    name---- fullname mis N_mis wmis pos ecoli rev          'CANCNCNNUNC'\1"
             "HllHalod\1" "  HllHalod            2     5  1.6  45    40 0   AAACGAUGG-a=G=UuGC=U=-CAGGCGUCG\1"
             "VblVulni\1" "  VblVulni            2     5  1.6  49    44 0   AGCACAGAG-a=A=UuGU=U=-UCGGGUGGC\1"
             "VbrFurni\1" "  VbrFurni            2     5  1.7  40    35 0   CGGCAGCGA-==A=AuUGAA=-CUUCGGGGG\1"
             "LgtLytic\1" "  LgtLytic            2     5  1.7 101    89 0   GGGGAAACU-==AGCuAA=A=-CGCAUAAUC\1"
-            "ClfPerfr\1" "  ClfPerfr            2     5  2.0 172   158 0   AGGAAGAUU-a=UaC=CC=C=-UUUCU\1"; // many hits are truncated here
+            "ClfPerfr\1" "  ClfPerfr            2     5  2.0 172   158 0   AGGAAGAUU-a=UaC=CC=C=-UUUCU\1";
 
         arguments[2] = "matchmismatches=0"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
         arguments[2] = "matchmismatches=1"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd1);
@@ -1019,9 +1029,9 @@ void TEST_SLOW_design_probe() {
     };
 
     const char *expected_loc = 
-        "A=96B=141C=20D=107B+1E=110F=84G=9H=150I=145C+1D+1J=17K=122L=72C-1M=33N=114E+1O=163"
-        "P=24E+2F+1Q=138R=179O+1S=49A-1T=87G+1J-1N-1U=79F+2U-1V=129I+2H-2C+2W=12D-1D+2C-2X=55"
-        "P-1J-2O+2V-2Y=92W+2W+1Z=125a=176D-2H+1b=104H-1L+1";
+        "A=96B=141C=20D=107B+1E=110F=84G=9H=150I=145C+1D+1J=17K=122L=72C-1M=33N=114E+1O=178"
+        "P=24E+2F+1Q=138O+1R=170S=182A-1T=87G+1J-1N-1U=79F+2U-1V=129I+2H-2C+2W=12D-1D+2C-2O+2"
+        "P-1J-2X=165R+1Y=92W+2W+1Z=125O-2D-2H+1a=104H-1L+1";
 
     TEST_ARB_PROBE_FILT(ARRAY_ELEMS(arguments_loc), arguments_loc, extract_locations, expected_loc);
 }
