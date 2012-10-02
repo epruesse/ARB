@@ -38,11 +38,10 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const DataLoc& loc) {
 
             if (loc.is_shorther_than(height)) {
                 // end of sequence reached -> change node to chain and add
-                // should never be reached, because of the terminal symbol of each sequence (@@@ this IS reached - even with unittestdb)
-                if (PT_read_type(at) == PT_NT_CHAIN) {
-                    PT_add_to_chain(at, loc);
-                }
-                // if type == node then forget it
+                pt_assert(loc[height-1] == PT_QU);
+                pt_assert(PT_read_type(at) == PT_NT_CHAIN);
+
+                PT_add_to_chain(at, loc);
                 return root;
             }
         }
