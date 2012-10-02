@@ -115,8 +115,7 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const DataLoc& loc) {
 }
 
 
-inline void get_abs_align_pos(char *seq, int &pos)
-{
+inline void get_abs_align_pos(char *seq, int &pos) {
     // get the absolute alignment position
     int q_exists = 0;
     if (pos > 3) {
@@ -161,16 +160,14 @@ static long PTD_save_partial_tree(FILE *out, POS_TREE * node, char *partstring, 
     }
     else {
         PTD_clear_fathers(node);
-        long r_pos;
-        int blocked;
-        blocked = 1;
+        int blocked = 1;
         while (blocked && !error) {
             blocked = 0;
 #if defined(PTM_DEBUG)
             printf("flushing to disk [%li]\n", pos);
             fflush(stdout);
 #endif
-            r_pos = PTD_write_leafs_to_disk(out, node, pos, ppos, &blocked, error);
+            long r_pos = PTD_write_leafs_to_disk(out, node, pos, ppos, &blocked, error);
             if (r_pos > pos) pos = r_pos;
         }
     }

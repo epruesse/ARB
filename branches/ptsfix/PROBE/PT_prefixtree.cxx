@@ -22,15 +22,12 @@ struct PTM_struct PTM;
 char PT_count_bits[PT_B_MAX+1][256]; // returns how many bits are set
 
 static void PT_init_count_bits() {
-    unsigned int base;
-    unsigned int count;
-    unsigned int i, h, j;
-    for (base = PT_QU; base <= PT_B_MAX; base++) {
-        for (i=0; i<256; i++) {
-            h = 0xff >> (8-base);
+    for (unsigned base = PT_QU; base <= PT_B_MAX; base++) {
+        for (unsigned i=0; i<256; i++) {
+            unsigned h = 0xff >> (8-base);
             h &= i;
-            count = 0;
-            for (j=0; j<8; j++) {
+            unsigned count = 0;
+            for (unsigned j=0; j<8; j++) {
                 if (h&1) count++;
                 h = h>>1;
             }
@@ -402,14 +399,12 @@ static void PTD_set_object_to_saved_status(POS_TREE * node, long pos, int size) 
     }
 }
 
-static long PTD_write_tip_to_disk(FILE * out, POS_TREE * node, long pos)
-{
-    int size, cnt;
+static long PTD_write_tip_to_disk(FILE * out, POS_TREE * node, long pos) {
     putc(node->flags, out);         // save type
-    size = PT_LEAF_SIZE(node);
+    int size = PT_LEAF_SIZE(node);
     // write 4 bytes when not in stage 2 save mode
 
-    cnt = size-sizeof(PT_PNTR)-1;               // no father; type already saved
+    int cnt = size-sizeof(PT_PNTR)-1;               // no father; type already saved
 #ifdef ARB_64
     fwrite(&node->data + sizeof(PT_PNTR), 0x01, cnt, out);   // write name rpos apos
 #else
@@ -425,10 +420,10 @@ static long PTD_write_tip_to_disk(FILE * out, POS_TREE * node, long pos)
 }
 
 static int ptd_count_chain_entries(char * entry) {
-    int counter   = 0;
-    long next;
+    int counter = 0;
     while (entry) {
         counter ++;
+        long next;
         PT_READ_PNTR(entry, next);
         entry = (char *)next;
     }
@@ -437,11 +432,11 @@ static int ptd_count_chain_entries(char * entry) {
 }
 
 static void ptd_set_chain_references(char *entry, char **entry_tab) {
-    int counter   = 0;
-    long next;
+    int counter = 0;
     while (entry) {
         entry_tab[counter] = entry;
         counter ++;
+        long next;
         PT_READ_PNTR(entry, next);
         entry = (char *)next;
     }
@@ -467,11 +462,12 @@ static ARB_ERROR ptd_write_chain_entries(FILE * out, long *ppos, char ** entry_t
             error = GBS_global_string("Chain Error: name order error %i < %i\n", name, lastname);
         }
         else {
-            static char  buffer[100];
-            char        *wp   = buffer;
-            wp                = PT_WRITE_CHAIN_ENTRY(wp, mainapos, name-lastname, apos, rpos);
-            int          size = wp -buffer;
+            static char buffer[100];
 
+            char *wp = buffer;
+            wp       = PT_WRITE_CHAIN_ENTRY(wp, mainapos, name-lastname, apos, rpos);
+
+            int size = wp -buffer;
             if (1 != fwrite(buffer, size, 1, out)) {
                 error = GB_IO_error("writing chains to", "ptserver-index");
             }
@@ -488,12 +484,12 @@ static ARB_ERROR ptd_write_chain_entries(FILE * out, long *ppos, char ** entry_t
 
 
 static long PTD_write_chain_to_disk(FILE * out, POS_TREE * node, long pos, ARB_ERROR& error) {
-    char *data;
     long oldpos = pos;
     putc(node->flags, out);         // save type
     pos++;
-    int mainapos;
-    data = (&node->data) + psg.ptmain->mode;
+
+    char *data = (&node->data) + psg.ptmain->mode;
+    int   mainapos;
 
     if (node->flags&1) {
         PT_READ_INT(data, mainapos);
@@ -550,19 +546,16 @@ void PTD_debug_nodes() {
 }
 
 static long PTD_write_node_to_disk(FILE * out, POS_TREE * node, long *r_poss, long pos) {
-    int i, size;   // Save node after all descendends are already saved
-    POS_TREE *sons;
+    // Save node after all descendends are already saved
 
     long max_diff = 0;
-    int  lasti = 0;
-    int  count = 0;
-    int  mysize;
+    int  lasti    = 0;
+    int  count    = 0;
+    int  size     = PT_EMPTY_NODE_SIZE;
+    int  mysize   = PT_EMPTY_NODE_SIZE;
 
-    size = PT_EMPTY_NODE_SIZE;
-    mysize = PT_EMPTY_NODE_SIZE;
-
-    for (i = PT_QU; i < PT_B_MAX; i++) {    // free all sons
-        sons = PT_read_son(node, (PT_BASES)i);
+    for (int i = PT_QU; i < PT_B_MAX; i++) {    // free all sons
+        POS_TREE *sons = PT_read_son(node, (PT_BASES)i);
         if (sons) {
             int memsize;
             long   diff = pos - r_poss[i];
@@ -628,7 +621,7 @@ static long PTD_write_node_to_disk(FILE * out, POS_TREE * node, long *r_poss, lo
             psg.stat.short_node++;
         }
 #endif
-        for (i = PT_QU; i < PT_B_MAX; i++) {    // set the flag2
+        for (int i = PT_QU; i < PT_B_MAX; i++) {    // set the flag2
             if (r_poss[i]) {
                 /* u */ long  diff = pos - r_poss[i];
                 pt_assert(diff >= 0);
@@ -637,7 +630,7 @@ static long PTD_write_node_to_disk(FILE * out, POS_TREE * node, long *r_poss, lo
         }
         putc(flags2, out);
         size++;
-        for (i = PT_QU; i < PT_B_MAX; i++) {    // write the data
+        for (int i = PT_QU; i < PT_B_MAX; i++) {    // write the data
             if (r_poss[i]) {
                 /* u */ long  diff = pos - r_poss[i];
                 pt_assert(diff >= 0);
