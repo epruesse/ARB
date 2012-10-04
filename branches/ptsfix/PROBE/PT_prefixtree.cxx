@@ -692,8 +692,8 @@ static long PTD_write_node_to_disk(FILE * out, POS_TREE * node, long *r_poss, lo
 }
 
 long PTD_write_leafs_to_disk(FILE * out, POS_TREE * node, long pos, long *pnodepos, int *pblock, ARB_ERROR& error) {
-    // returns new pos when son is written 0 otherwise
-    // pnodepos is set to last object
+    // returns new pos when data gets written (previous pos otherwise)
+    // *pnodepos is set to most recent object
 
     PT_NODE_TYPE type = PT_read_type(node);
 
@@ -701,7 +701,6 @@ long PTD_write_leafs_to_disk(FILE * out, POS_TREE * node, long pos, long *pnodep
         long father;
         PT_READ_PNTR((&node->data), father);
         *pnodepos = father;
-        return 0;
     }
     else if (type == PT_NT_LEAF) {
         *pnodepos = pos;
@@ -721,10 +720,7 @@ long PTD_write_leafs_to_disk(FILE * out, POS_TREE * node, long pos, long *pnodep
             POS_TREE *sons = PT_read_son(node, (PT_BASES)i);
             r_poss[i] = 0;
             if (sons) {
-                long r_pos = PTD_write_leafs_to_disk(out, sons, pos, &(r_poss[i]), &(block[0]), error);
-                if (r_pos>pos) {        // really saved ????
-                    pos = r_pos;
-                }
+                pos = PTD_write_leafs_to_disk(out, sons, pos, &(r_poss[i]), &(block[0]), error);
             }
         }
         if (block[0]) {     // son wrote a block
@@ -739,7 +735,6 @@ long PTD_write_leafs_to_disk(FILE * out, POS_TREE * node, long pos, long *pnodep
             if (!error) pos = PTD_write_node_to_disk(out, node, r_poss, pos);
         }
     }
-    pt_assert(pos >= 0 || error);
     return pos;
 }
 

@@ -167,8 +167,7 @@ static long PTD_save_partial_tree(FILE *out, POS_TREE * node, char *partstring, 
             printf("flushing to disk [%li]\n", pos);
             fflush(stdout);
 #endif
-            long r_pos = PTD_write_leafs_to_disk(out, node, pos, ppos, &blocked, error);
-            if (r_pos > pos) pos = r_pos;
+            pos = PTD_write_leafs_to_disk(out, node, pos, ppos, &blocked, error);
         }
     }
     return pos;
