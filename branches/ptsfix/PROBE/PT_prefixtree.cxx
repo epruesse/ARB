@@ -379,7 +379,7 @@ void PTD_put_short(FILE * out, ULONG i) {
 }
 
 static void PTD_set_object_to_saved_status(POS_TREE * node, long pos, int size) {
-    node->flags = 0x20;
+    node->flags = 0x20; // sets node type to PT_NT_SAVED; see PT_prefixtree.cxx@PT_NT_SAVED 
     PT_WRITE_PNTR((&node->data), pos);
     if (size < 20) {
         node->flags |= size-sizeof(PT_PNTR);
@@ -691,48 +691,54 @@ static long PTD_write_node_to_disk(FILE * out, POS_TREE * node, long *r_poss, lo
     return pos;
 }
 
-long PTD_write_leafs_to_disk(FILE * out, POS_TREE * node, long pos, long *pnodepos, int *pblock, ARB_ERROR& error) {
-    // returns new pos when data gets written (previous pos otherwise)
-    // *pnodepos is set to most recent object
+long PTD_write_leafs_to_disk(FILE * out, POS_TREE * node, long pos, long *node_pos, int *pblock, ARB_ERROR& error) {
+    // returns new position in index-file (unchanged for type PT_NT_SAVED)
+    // *node_pos is set to the start-position of the most recent object written
 
     PT_NODE_TYPE type = PT_read_type(node);
 
     if (type == PT_NT_SAVED) {          // already saved
-        long father;
-        PT_READ_PNTR((&node->data), father);
-        *pnodepos = father;
+        long mypos;
+        PT_READ_PNTR((&node->data), mypos); // as set by PTD_set_object_to_saved_status
+        *node_pos = mypos;
+        pt_assert(PT_read_type(node) == PT_NT_SAVED);
     }
     else if (type == PT_NT_LEAF) {
-        *pnodepos = pos;
+        *node_pos = pos;
         pos = PTD_write_tip_to_disk(out, node, pos);
+        pt_assert(PT_read_type(node) == PT_NT_SAVED);
     }
     else if (type == PT_NT_CHAIN) {
-        *pnodepos = pos;
+        *node_pos = pos;
         pos = PTD_write_chain_to_disk(out, node, pos, error);
+        pt_assert(PT_read_type(node) == PT_NT_SAVED);
     }
     else if (type == PT_NT_NODE) {
-        int block[10]; // TODO: check why we allocate 10 ints when only block[0] is used
-        block[0] = 0;
-        
-        long o_pos = pos;
-        long r_poss[PT_B_MAX];
+        int  block = 0;
+        long subtree_start_pos = pos; // position of first anchestor of 'node'
+        long son_pos[PT_B_MAX];
+
         for (int i = PT_QU; i < PT_B_MAX && !error; i++) {    // save all sons
-            POS_TREE *sons = PT_read_son(node, (PT_BASES)i);
-            r_poss[i] = 0;
-            if (sons) {
-                pos = PTD_write_leafs_to_disk(out, sons, pos, &(r_poss[i]), &(block[0]), error);
+            POS_TREE *son = PT_read_son(node, (PT_BASES)i);
+            son_pos[i] = 0;
+            if (son) {
+                pos = PTD_write_leafs_to_disk(out, son, pos, &(son_pos[i]), &block, error);
+                // pt_assert(PT_read_type(son) == PT_NT_SAVED);
             }
         }
-        if (block[0]) {     // son wrote a block
+        if (block) {     // son wrote a block
             *pblock = 1;
         }
-        else if (pos-o_pos > PT_BLOCK_SIZE) {
+        else if (pos-subtree_start_pos > PT_BLOCK_SIZE) {
             // a block is written
             *pblock = 1;
         }
         else {          // now i can write my data
-            *pnodepos = pos;
-            if (!error) pos = PTD_write_node_to_disk(out, node, r_poss, pos);
+            *node_pos = pos;
+            if (!error) {
+                pos = PTD_write_node_to_disk(out, node, son_pos, pos);
+                pt_assert(PT_read_type(node) == PT_NT_SAVED);
+            }
         }
     }
     return pos;
