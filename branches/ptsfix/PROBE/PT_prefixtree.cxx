@@ -691,7 +691,7 @@ static long PTD_write_node_to_disk(FILE * out, POS_TREE * node, long *r_poss, lo
     return pos;
 }
 
-long PTD_write_leafs_to_disk(FILE * out, POS_TREE * node, long pos, long *node_pos, int *pblock, ARB_ERROR& error) {
+long PTD_write_leafs_to_disk(FILE *out, POS_TREE *node, long pos, long *node_pos, ARB_ERROR& error) {
     // returns new position in index-file (unchanged for type PT_NT_SAVED)
     // *node_pos is set to the start-position of the most recent object written
 
@@ -714,33 +714,25 @@ long PTD_write_leafs_to_disk(FILE * out, POS_TREE * node, long pos, long *node_p
         pt_assert(PT_read_type(node) == PT_NT_SAVED);
     }
     else if (type == PT_NT_NODE) {
-        int  block = 0;
-        long subtree_start_pos = pos; // position of first anchestor of 'node'
         long son_pos[PT_B_MAX];
-
         for (int i = PT_QU; i < PT_B_MAX && !error; i++) {    // save all sons
             POS_TREE *son = PT_read_son(node, (PT_BASES)i);
             son_pos[i] = 0;
             if (son) {
-                pos = PTD_write_leafs_to_disk(out, son, pos, &(son_pos[i]), &block, error);
-                // pt_assert(PT_read_type(son) == PT_NT_SAVED);
+                pos = PTD_write_leafs_to_disk(out, son, pos, &(son_pos[i]), error);
+                pt_assert(PT_read_type(son) == PT_NT_SAVED);
             }
         }
-        if (block) {     // son wrote a block
-            *pblock = 1;
-        }
-        else if (pos-subtree_start_pos > PT_BLOCK_SIZE) {
-            // a block is written
-            *pblock = 1;
-        }
-        else {          // now i can write my data
+
+        if (!error) {
             *node_pos = pos;
-            if (!error) {
-                pos = PTD_write_node_to_disk(out, node, son_pos, pos);
-                pt_assert(PT_read_type(node) == PT_NT_SAVED);
-            }
+            pos = PTD_write_node_to_disk(out, node, son_pos, pos);
+            pt_assert(PT_read_type(node) == PT_NT_SAVED);
         }
     }
+#if defined(ASSERTION_USED)
+    else pt_assert(0);
+#endif
     return pos;
 }
 

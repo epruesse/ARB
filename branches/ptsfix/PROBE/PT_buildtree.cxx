@@ -160,15 +160,13 @@ static long PTD_save_partial_tree(FILE *out, POS_TREE * node, char *partstring, 
     }
     else {
         PTD_clear_fathers(node);
-        int blocked = 1;
-        while (blocked && !error) {
-            blocked = 0;
 #if defined(PTM_DEBUG)
-            printf("flushing to disk [%li]\n", pos);
-            fflush(stdout);
+        fputs("flushing to disk [start]\n", stdout); fflush(stdout);
 #endif
-            pos = PTD_write_leafs_to_disk(out, node, pos, ppos, &blocked, error);
-        }
+        pos = PTD_write_leafs_to_disk(out, node, pos, ppos, error);
+#if defined(PTM_DEBUG)
+        fputs("flushing to disk [end]\n", stdout); fflush(stdout);
+#endif
     }
     return pos;
 }
