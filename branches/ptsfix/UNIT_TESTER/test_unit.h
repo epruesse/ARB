@@ -1298,6 +1298,7 @@ namespace arb_test {
 };
 
 #define TEST_COPY_FILE(src, dst) TEST_ASSERT(system(GBS_global_string("cp '%s' '%s'", src, dst)) == 0)
+#define TEST_DUMP_FILE(src, dst) TEST_ASSERT(system(GBS_global_string("hexdump -C '%s' > '%s'", src, dst)) == 0)
 
 #define TEST_ASSERT_TEXTFILE_DIFFLINES(f1,f2,diff)         TEST_ASSERT(arb_test::test_textfile_difflines(f1,f2, diff))
 #define TEST_ASSERT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,diff) TEST_ASSERT__BROKEN(arb_test::test_textfile_difflines(f1,f2, diff))
