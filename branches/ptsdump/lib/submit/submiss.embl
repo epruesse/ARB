@@ -1,0 +1,310 @@
+                       SEQUENCE DATA SUBMISSION FORM
+
+
+This form solicits the information needed for a  nucleotide  or  amino  acid
+sequence  database  entry.   It  can  be  filled in using any text editor or
+printed and filled in by  hand.   By  completing  and  returning  it  to  us
+promptly  you  help  us  to  enter  your data in the database accurately and
+rapidly.  These data will be shared among  the  following  databases:   EMBL
+Data Library (Heidelberg, W.  Germany); GenBank (Los Alamos, NM, U.S.A.  and
+Mountain View, CA, U.S.A), DNA Data Bank  of  Japan  (DDBJ;  Tokyo,  Japan);
+National  Biomedical  Research  Foundation  Protein  Identification Resource
+(NBRF-PIR; Washington, D.C.,  U.S.A.);  Martinsried  Institute  for  Protein
+Sequence  Data  (MIPS;  Martinsried,  W.  Germany) and International Protein
+Information Database in Japan (JIPID; Tokyo).
+
+Please answer all questions which apply to your data.  If you  submit  2  or
+more  non-contiguous  sequences,  copy  and  fill  out  this  form  for each
+additional sequence.  When  submitting  nucleic  acid  sequences  containing
+protein  coding  regions,  please include a translation (SEPARATELY from the
+nucleic acid sequence).  Then send us (1) this form, (2) a pre-  or  reprint
+of  any manuscript which pertains to these data, and (3) your sequence data.
+You can send these materials (a) electronically via computer network, (b) on
+magnetic tape, or (c) on a floppy diskette.  More detailed information about
+formats for submitted data is included at the end of this form.
+
+  our mailing address:     EMBL Data Library Submissions, Postfach 10.2209
+                           D-6900 Heidelberg,  West Germany
+  telephone:               (06221) 387 258
+  computer network:        datasubs@embl.earn (for data submissions)
+                           datalib@embl.earn  (for general inquiries)
+
+Please include in your submission any additional sequence data which is  not
+reported  in  your  manuscript  but  which has been reliably determined (for
+example, introns or flanking sequences).
+
+When we receive this material we will assign the data an  accession  number,
+which  serves  as  a  reference  that  permanently  identifies  them  in the
+database.  We will inform you what accession  number  your  data  have  been
+given  and  we  recommend  that you cite this number when referring to these
+data in publications.
+
+If new data become available  which  would  make  the  database  entry  more
+informative  (e.g.,  function  of  the gene product or location of important
+sites within the sequence), or if you discover errors in  the  sequence,  we
+urge you to contact us so that we can update your entry.
+
+Thank you.
+
+
+I.  GENERAL INFORMATION
+==============================================================================
+Your name    $(YOUR NAME)
+------------------------------------------------------------------------------
+Institution  $(INSTITUTION)
+------------------------------------------------------------------------------
+Address      $(ADDRESS)
+------------------------------------------------------------------------------
+Computer mail address $(MAIL)  Telex number
+------------------------------------------------------------------------------
+Telephone $(PHONE)       Telefax number  $(TELEFAX)
+==============================================================================
+On what medium and in what format are you sending us your sequence data?
+(see instructions at the end of this form)
+  [X] electronic mail
+  [ ] diskette
+        computer:Commodore        operating system:MS DOS           editor:
+  [ ] magnetic tape
+        record length:             blocksize:              label type:
+        density         [ ] 800    [ ] 1600     [ ] 6250
+        character code  [ ] ASCII  [ ] EBCDIC
+==============================================================================
+
+
+II.  CITATION INFORMATION
+==============================================================================
+These data are  [ ] published  [X] in press  [ ] submitted  [ ] in preparation
+                [ ] no plans to publish
+------------------------------------------------------------------------------
+authors $(author)
+------------------------------------------------------------------------------
+title of paper $(title)  ------------------------------------------------------------------------------
+journal       volume, first-last pages, $(journal) ------------------------------------------------------------------------------
+Do you agree that these  data can be made  available in the  database before
+they appear in print?
+  [x] yes    [ ] no, they should be made available only after publication.
+                 estimated date: $(DATE)
+==============================================================================
+Does the sequence  which you are  sending with this form  include  data that
+do NOT appear in the above citation?
+  [X] no    [ ] yes, from position ______ to ______  [ ] base pairs OR
+                                                     [ ] amino acid residues
+             (If your sequence contains 2 or more such spans, use the feature
+              table in section IV to indicate their positions)
+If so, how should these data be cited in the database?
+  [ ] published  [ ] in press  [ ] submitted  [ ] in preparation
+  [ ] no plans to publish
+------------------------------------------------------------------------------
+authors
+------------------------------------------------------------------------------
+address (if different from that given in section I)
+
+
+------------------------------------------------------------------------------
+title of paper
+
+------------------------------------------------------------------------------
+journal                     volume, first-last pages, year
+==============================================================================
+List references to papers  and/or  database  entries which report sequences
+overlapping with that submitted here.
+
+1st author     journal, vol., pages, year and/or database, accession number
+------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
+
+==============================================================================
+
+
+III.  DESCRIPTION OF SEQUENCED SEGMENT
+
+Wherever possible, please use standard  nomenclature or conventions.  If  a
+question  is not applicable to your sequence, answer by writing N.A. in the
+appropriate space; if the information is relevant but not available,  write
+a question mark (?).
+==============================================================================
+What kind of molecule did you sequence?   (check all boxes which apply)
+
+ [X] genomic DNA     [ ] genomic RNA      [ ] virus  or  [ ] provirus
+ [ ] cDNA to mRNA    [ ] cDNA to genomic RNA
+ [ ] organelle DNA   [ ] organelle RNA    please specify organelle:
+ [ ] tRNA            [ ] rRNA             [ ] snRNA      [ ] scRNA
+ [ ] other nucleic acid.  please specify:
+ [ ] peptide  [ ] sequence assembled by  [ ] overlap of sequenced fragments
+                                         [ ] homology with related sequence
+                                         [ ] other.  please specify:
+
+              [ ] partial:               [ ] N-terminal
+                                         [ ] C-terminal
+                                         [ ] internal fragment
+==============================================================================
+length of sequence   $(SEQ_LEN)     [X] base pairs  or  [ ] amino acid residues
+------------------------------------------------------------------------------
+gene name(s) (e.g., lacZ) $(gene)
+------------------------------------------------------------------------------
+gene product name(s) (e.g., beta-D-galactosidase)  $(gene)
+------------------------------------------------------------------------------
+Enzyme Commission number (e.g., EC 3.2.1.23)
+------------------------------------------------------------------------------
+gene product subunit structure (e.g., hemoglobin alpha-2 beta-2)
+==============================================================================
+The following items refer to the  original source of the  molecule you have
+sequenced.
+  organism ---- name  $(full_name)
+------------------------------------------------------------------------------
+  sub-species                         strain  $(strain)
+------------------------------------------------------------------------------
+  name/number of individual or isolate  (e.g., patient 123; influenza virus
+  A/PR/8/34)
+------------------------------------------------------------------------------
+  developmental stage                        [ ] germ line   [ ] rearranged
+------------------------------------------------------------------------------
+  haplotype                    tissue type                cell type
+==============================================================================
+The  following  items  refer  to the  immediate experimental  source of the
+submitted sequence.
+  name of cell line (e.g., Hela; 3T3-L1)
+------------------------------------------------------------------------------
+  library (type; name)                          clone(s)
+==============================================================================
+The following items refer to the  position of the submitted sequence in the
+genome.
+  chromosome (or segment) name/number
+------------------------------------------------------------------------------
+  map position                   units:  [ ] genome %  [ ] nucleotide number
+                                         [ ] other:
+==============================================================================
+Using single words or short phrases, describe the properties of the sequence
+in terms of:
+
+  -  its associated phenotype(s);
+  -  the biological/enzymatic activity of its product;
+  -  the general functional  classification of the gene  and/or gene product
+  -  macromolecules to which the gene product can bind  (e.g., DNA, calcium,
+     other proteins);
+  -  subcellular localization of the gene product;
+  -  any other relevant information.
+
+Example (for the viral erbB nucleotide sequence): transforming capacity; EGF
+receptor-related; tyrosine kinase; oncogene; transmembrane protein.
+
+ 
+==============================================================================
+
+
+IV.  FEATURES OF THE SEQUENCE
+
+Please  list  below  the  types  and  locations of all significant  features
+experimentally  identified within the sequence.   Be sure that your sequence
+is numbered beginning with "1."
+
+In the column marked                   fill in
+
+      feature          type of feature (see information below)
+      from             number of first base/amino acid in the feature
+      to               number of last base/amino acid in the feature
+      bp               x, if numbering  refers to position of a base pair in
+                       a nucleotide sequence
+      aa               x, if numbering  refers to  position of an amino acid
+                       residue in a peptide sequence
+      id               indicate  method by which the feature was identified.
+                       E  =  experimentally;  S  =  by similarity  to  known
+                       sequence or to an established consensus sequence; P =
+                       by similarity  to  some  other  pattern,  such  as an
+                       open reading frame
+      comp             x, if feature is  located on the  nucleic acid strand
+                       complementary to that reported here
+
+Significant features include:
+
+  -  regulatory signals (e.g., promoters, attenuators, enhancers)
+  -  transcribed  regions  (e.g., mRNA, rRNA, tRNA).  (indicate reading frame
+     if start and stop codons are not present)
+  -  regions  subject to  post-transcriptional  modificaton  (e.g.,  introns,
+     modified bases)
+  -  translated regions
+  -  extent of  signal  peptide,  prepropeptide,  propeptide,  mature peptide
+  -  regions subject to post-translational modification  (e.g.,  glycosylated
+     or phosphorylated sites)
+  -  other  domains/sites  of  interest  (e.g.,  extracellular  domain,  DNA-
+     binding domain, active site, inhibitory site)
+  -  sites involved in bonding (disulfide, thiolester, intrachain, interchain)
+  -  regions of protein secondary structure  (e.g., alpha helix or beta sheet)
+  -  conflicts with sequence data reported by other authors
+  -  variations and polymorphisms
+
+The first 2 lines of the table are filled in with examples.
+
+==============================================================================
+Numbering for features on submitted sequence  [X] matches manuscript
+                                              [ ] does not match manuscript
+==============================================================================
+             feature             from        to         bp  aa   id    comp
+------------------------------------------------------------------------------
+EXAMPLE     TATA box              1           8          x        S
+------------------------------------------------------------------------------
+EXAMPLE      exon 1               9          264         x
+==============================================================================
+          $(gene)		  1	$(SEQ_LEN)	x
+
+------------------------------------------------------------------------------
+$(tax)
+------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
+
+==============================================================================
+
+
+
+FORMATS FOR SUBMITTED DATA
+
+We are happy to accept data submitted in any of the following formats:
+
+(1) Electronic file transfer:  files can be sent via  computer  network  to:
+DATASUBS@EMBL.EARN.   This  BITNET/EARN  address  can be reached via various
+gateways from Arpanet, Usenet, JANET, etc.  Ask your  local  network  expert
+for help or phone us.
+
+(2) Magnetic tapes:  9-track only  (fixed-length  records  preferred);  800,
+1600 or 6250 bpi (any blocksize); ASCII or EBCDIC character codes; any label
+type or unlabelled.
+
+(3) Floppy disks:  we can read Macintosh diskettes and 5-1/4" diskettes from
+MS-DOS systems.
+
+Whatever format you choose, we would appreciate receiving the sequence  data
+in a form which  conforms as closely as possible to the  following standards.
+
+  -  Each sequence should include the names of the authors.
+
+  -  Each distinct sequence should be listed separately using the same number 
+     of  bases/residues  per  line.   The  length of each  sequence in bases/
+     residues should be clearly indicated. 
+
+  -  Enumeration should begin with a "1" and continue in the  direction 5' to
+     3' (or amino- to carboxy-terminus). 
+
+  -  Amino acid sequences should be listed using the one-letter code.
+
+  -  Translations of protein  coding  regions in  nucleotide sequences should
+     be submitted in a  separate computer file from the  nucleotide sequences
+     themselves. 
+
+  -  The code for representing the sequence  characters should conform to the
+     IUPAC-IUB standards, which are described in:  Nucl. Acids Res. 13: 3021-
+     3030  (1985)  (for  nucleic  acids)  and  J. Biol. Chem. 243:  3557-3559 
+     (1968) and Eur. J. Biochem 5: 151-153 (1968) (for amino acids). 
+
+$(SEQUENCE)
+
+

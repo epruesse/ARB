@@ -1,0 +1,68 @@
+<title>RG</title>
+<h2>SUBROUTINE RG(NM,N,A,WR,WI,MATZ,Z,IV1,FV1,IERR)</h2>
+ 
+RG calls the recommended sequence of EISPACK subroutines to
+find the eigenvalues and, if desired, the eigenvectors of a
+real, general matrix.
+<p>
+<dl>
+<p><dt><b>NM</b>     
+<dd>Input, INTEGER NM, the row dimension (first dimension) of the two
+       dimensional arrays as declared in the calling program.
+ 
+<p><dt><b>N</b>      
+<dd>Input, INTEGER N, the order (=size=number of rows=number of columns)
+       of the matrix whose eigenvalues are sought.
+ 
+<p><dt><b>A</b>      
+<dd>Input/output, REAL A(NM,N), on input, the matrix, which is overwritten
+       on output.
+ 
+<p><dt><b>WR</b>     
+<dd>Output, REAL WR(N), the real parts of the eigenvalues.
+ 
+<p><dt><b>WI</b>     
+<dd>Output, REAL WI(N), the imaginary parts of the eigenvalues.
+ 
+<p><dt><b>MATZ</b>   
+<dd>Input, INTEGER MATZ, set to 0 if only eigenvalues are desired.
+       Otherwise all eigenvectors will also be calculated.
+ 
+<p><dt><b>Z</b>      
+<dd>Output, REAL Z(NM,N), if MATZ is not zero, Z contains the
+       eigenvectors of A.  If the J-th eigenvalue is real, the
+       J-th column of Z is its eigenvector.  If the J-th
+       eigenvalue is complex with positive real part (then the
+       J+1-th eigenvalue is its complex conjugate), its eigenvector
+       has real part in the J-th column of Z and imaginary part
+       in the J+1-th column of Z.
+ 
+<p><dt><b>IV1</b>    
+<dd>Work vector, INTEGER IV1(N).
+ 
+<p><dt><b>FV1</b>    
+<dd>Work vector, REAL FV1(N).
+ 
+<p><dt><b>IERR</b>   
+<dd>Output, INTEGER IERR, an error flag.  0 if no errors, or
+       J if eigenvalues 1 through J were not found.
+</dl>
+<p>
+<!-- STANDARD PSC FOOTER OPENING -->
+<hr>
+<a href="http://www.psc.edu/general/software/software.html"><img alt="[Software]" src="http://www.psc.edu/general/images/icons/software_button.gif"></a>
+<a href="http://www.psc.edu/"><img alt="[PSC Home Page]" src="http://www.psc.edu/general/images/icons/psc_home.gif"></a>
+<a href="http://www.psc.edu/search/search.html"><img src="http://www.psc.edu/general/images/icons/search.gif"  alt="[Search]"></a> 
+<a href="http://www.psc.edu/general/help/assistance.html"><img src="http://www.psc.edu/general/images/icons/help.gif"  alt="[Help]"></a> 
+<a href="http://www.psc.edu/general/feedback.html"><img src="http://www.psc.edu/general/images/icons/feedback.gif" alt="[Feedback]"></a>
+<hr>
+<font size=-1>
+<i><a href=/copyright.html>&#169;</a> Pittsburgh Supercomputing Center (PSC)<br>
+Revised: October 1996 <br>
+</i></font>
+<font size=-2>
+<i>URL: http://www.psc.edu/general/software/packages/eispack/subroutines/rg.html</i>
+</font>
+<!-- STANDARD PSC FOOTER CLOSING -->
+
+
