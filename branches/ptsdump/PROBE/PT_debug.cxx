@@ -213,16 +213,20 @@ void PT_dump_POS_TREE(POS_TREE * IF_DEBUG(node), FILE *IF_DEBUG(out)) {
 #endif
 }
 
-
-void PT_dump_POS_TREE_to_file(const char *IF_DEBUG(dumpfile)) {
-#if defined(DEBUG)
+static void PT_dump_POS_TREE_to_file(const char *IF_DEBUG(dumpfile)) {
     FILE *dump = fopen(dumpfile, "wt");
     if (!dump) {
         GBK_terminate(GB_IO_error("writing", dumpfile));
     }
     PT_dump_POS_TREE_recursive(psg.pt, "", dump);
     fclose(dump);
-#endif
+
+    fprintf(stderr, "Note: index has been dumped to '%s'\n", dumpfile);
 }
 
 
+int PT_index_dump(PT_main *main) {
+    const char *outfile = main->dumpname;
+    PT_dump_POS_TREE_to_file(outfile);
+    return 0;
+}

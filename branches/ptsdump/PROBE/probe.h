@@ -25,7 +25,6 @@
 
 #if defined(DEBUG)
 // # define PTM_DEBUG
-// # define PTM_DUMP_PTREE
 #endif // DEBUG
 
 typedef unsigned long ULONG;

@@ -257,6 +257,8 @@ PT_main, MAIN, 1, (~global data~), {
     aisc_string,    m_text,         t,      ,       ,       MESSAGE,            6,          "NO_MSG",       (~the message text~);
     int,            broadcast,      %,      w,      ,       BROADCAST,          7,          ,               (~broadcast func~);
     PT_species_list,sl,             d,      r,      ,       SPECIESLIST,        8,          ,               (~list of species~);
+    aisc_string,    dumpname,       t,      rw,     ,       DUMP_NAME,          10,         "",             (~filename used for DUMP_INDEX~);
+    int,            PT_index_dump,  %,      r,      ,       DUMP_INDEX,         11,         ,               (~dump index (=postree) to file~);
 };
 
 };

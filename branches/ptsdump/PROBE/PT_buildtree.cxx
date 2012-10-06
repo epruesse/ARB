@@ -364,27 +364,23 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USE
     psg.ptmain         = PT_init();
     psg.ptmain->stage3 = 1;                         // enter stage 3
 
-    long size = GB_size_of_file(tname);
-    if (size<0) {
-        error = GB_IO_error("stat", tname);
-    }
-    else {
-        printf("- reading Tree %s of size %li from disk\n", tname, size);
-        FILE *in = fopen(tname, "r");
-        if (!in) {
-            error = GB_IO_error("read", tname);
+    {
+        long size = GB_size_of_file(tname);
+        if (size<0) {
+            error = GB_IO_error("stat", tname);
         }
         else {
-            error = PTD_read_leafs_from_disk(tname, &psg.pt);
-            fclose(in);
+            printf("- reading Tree %s of size %li from disk\n", tname, size);
+            FILE *in = fopen(tname, "r");
+            if (!in) {
+                error = GB_IO_error("read", tname);
+            }
+            else {
+                error = PTD_read_leafs_from_disk(tname, &psg.pt);
+                fclose(in);
+            }
         }
     }
-
-#if defined(PTM_DUMP_PTREE)
-    char *dumpfile = GBS_global_string_copy("%s.dump", tname);
-    PT_dump_POS_TREE_to_file(dumpfile);
-    free(dumpfile);
-#endif
 
     return error;
 }

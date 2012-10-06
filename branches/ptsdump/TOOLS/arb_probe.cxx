@@ -55,6 +55,8 @@ struct Params {
     int         ITERATE_READABLE;
     const char *ITERATE_SEPARATOR;
     const char *ITERATE_TU;
+
+    const char *DUMP;
 };
 
 
@@ -134,6 +136,27 @@ public:
     }
 };
 int PTserverConnection::count = 0;
+
+static char *AP_dump_index_event(ARB_ERROR& error) {
+    PTserverConnection contact(error);
+
+    char *result = NULL;
+    if (!error) {
+        aisc_put(pd_gl.link, PT_MAIN, pd_gl.com,
+                 MAIN_DUMP_NAME, P.DUMP,
+                 NULL);
+
+        if (aisc_get(pd_gl.link, PT_MAIN, pd_gl.com,
+                     MAIN_DUMP_INDEX, &result,
+                     NULL)) {
+            error = "Connection to PT_SERVER lost (1)";
+        }
+        else {
+            result = strdup("ok");
+        }
+    }
+    return result;
+}
 
 static char *AP_probe_iterate_event(ARB_ERROR& error) {
     PTserverConnection contact(error);
@@ -460,6 +483,8 @@ static bool parseCommandLine(int argc, const char * const * const argv) {
     P.ITERATE_TU        = getString("iterate_tu",        "T", "use T or U in readable result");
     P.ITERATE_SEPARATOR = getString("iterate_separator", ";", "Number of results per answer");
 
+    P.DUMP = getString("dump", "", "dump ptserver index to file (may be huge!)");
+
     if (pargc>1) {
         printf("Unknown (or duplicate) parameter %s\n", pargv[1]);
         return false;
@@ -520,6 +545,9 @@ static char *execute(ARB_ERROR& error) {
     }
     else if (P.ITERATE>0) {
         answer = AP_probe_iterate_event(error);
+    }
+    else if (P.DUMP[0]) {
+        answer = AP_dump_index_event(error);
     }
     else {
         answer = AP_probe_match_event(error);
@@ -1051,6 +1079,33 @@ void TEST_SLOW_get_existing_probes() {
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }
 }
+
+// #define TEST_AUTO_UPDATE // uncomment to auto-update expected index dumps
+
+void TEST_index_dump() {
+    for (int use_gene_ptserver = 0; use_gene_ptserver <= 1; use_gene_ptserver++) {
+        const char *dumpfile     = use_gene_ptserver ? "index_gpt.dump" : "index_pt.dump";
+        char       *dumpfile_exp = GBS_global_string_copy("%s.expected", dumpfile);
+
+        const char *arguments[] = {
+            "prgnamefake",
+            GBS_global_string_copy("dump=%s", dumpfile),
+        };
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, "ok");
+
+#if defined(TEST_AUTO_UPDATE)
+        TEST_COPY_FILE(dumpfile, dumpfile_exp);
+#else // !defined(TEST_AUTO_UPDATE)
+        TEST_ASSERT_TEXTFILES_EQUAL(dumpfile_exp, dumpfile);
+#endif
+        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(dumpfile));
+
+        free((char*)arguments[1]);
+        free(dumpfile_exp);
+    }
+}
+
+#undef TEST_AUTO_UPDATE
 
 // --------------------------------------------------------------------------------
 
