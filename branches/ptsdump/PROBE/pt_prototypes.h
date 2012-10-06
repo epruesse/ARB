@@ -20,7 +20,7 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) __ATTR__USERESUL
 
 /* PT_debug.cxx */
 void PT_dump_tree_statistics(void);
-void PT_dump_POS_TREE_recursive(POS_TREE *IF_DEBUG (pt), const char *IF_DEBUG (prefix), FILE *IF_DEBUG (out));
+void PT_dump_POS_TREE_recursive(POS_TREE *pt, const char *prefix, FILE *out);
 void PT_dump_POS_TREE(POS_TREE *IF_DEBUG (node), FILE *IF_DEBUG (out));
 int PT_index_dump(PT_main *main);
 
