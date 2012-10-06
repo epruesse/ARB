@@ -121,8 +121,6 @@ void PT_dump_tree_statistics() {
 
 // --------------------------------------------------------------------------------
 
-#if defined(DEBUG)
-
 class PT_dump_leaf {
     const char *prefix;
     FILE       *out;
@@ -138,10 +136,8 @@ public:
         return 0;
     }
 };
-#endif // DEBUG
 
-void PT_dump_POS_TREE_recursive(POS_TREE *IF_DEBUG(pt), const char *IF_DEBUG(prefix), FILE *IF_DEBUG(out)) {
-#if defined(DEBUG)
+void PT_dump_POS_TREE_recursive(POS_TREE *pt, const char *prefix, FILE *out) {
     switch (PT_read_type(pt)) {
         case PT_NT_NODE:
             for (int i = PT_QU; i<PT_B_MAX; i++) {
@@ -172,7 +168,6 @@ void PT_dump_POS_TREE_recursive(POS_TREE *IF_DEBUG(pt), const char *IF_DEBUG(pre
             pt_assert(0);
             break;
     }
-#endif
 }
 
 // --------------------------------------------------------------------------------
@@ -212,16 +207,20 @@ void PT_dump_POS_TREE(POS_TREE * IF_DEBUG(node), FILE *IF_DEBUG(out)) {
 #endif
 }
 
-
-void PT_dump_POS_TREE_to_file(const char *IF_DEBUG(dumpfile)) {
-#if defined(DEBUG)
+static void PT_dump_POS_TREE_to_file(const char *dumpfile) {
     FILE *dump = fopen(dumpfile, "wt");
     if (!dump) {
         GBK_terminate(GB_IO_error("writing", dumpfile));
     }
     PT_dump_POS_TREE_recursive(psg.pt, "", dump);
     fclose(dump);
-#endif
+
+    fprintf(stderr, "Note: index has been dumped to '%s'\n", dumpfile);
 }
 
 
+int PT_index_dump(PT_main *main) {
+    const char *outfile = main->dumpname;
+    PT_dump_POS_TREE_to_file(outfile);
+    return 0;
+}
