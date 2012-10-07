@@ -37,9 +37,9 @@
 #include <png.h>
 
 #if 0
-#define PNG_CHECK_SIG(header,size) png_check_sig(header,size) // old libpng
+#define GLPNG_CHECK_SIG(header,size) png_check_sig(header,size) // old libpng
 #else
-#define PNG_CHECK_SIG(header,size) (png_sig_cmp(header,0,size)==0)
+#define GLPNG_CHECK_SIG(header,size) (png_sig_cmp(header,0,size)==0)
 #endif
 
 // Used to decide if GL/gl.h supports the paletted extension
@@ -254,7 +254,7 @@ static int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
     unsigned char header[8];
     
     if (fread(header, 1, 8, fp) != 8) return 0;
-    if (!PNG_CHECK_SIG(header, 8)) return 0;
+    if (!GLPNG_CHECK_SIG(header, 8)) return 0;
 
     GLint        pack, unpack;
     png_structp  png;
@@ -316,12 +316,12 @@ static int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
     if (color == PNG_COLOR_TYPE_GRAY || color == PNG_COLOR_TYPE_GRAY_ALPHA)
         png_set_gray_to_rgb(png);
 
-    if (color&PNG_COLOR_MASK_ALPHA && trans != PNG_ALPHA) {
+    if (color&PNG_COLOR_MASK_ALPHA && trans != GLPNG_ALPHA) {
         png_set_strip_alpha(png);
         color &= ~PNG_COLOR_MASK_ALPHA;
     }
 
-    if (!(PalettedTextures && mipmap >= 0 && trans == PNG_SOLID))
+    if (!(PalettedTextures && mipmap >= 0 && trans == GLPNG_SOLID))
         if (color == PNG_COLOR_TYPE_PALETTE)
             png_set_expand(png);
 
@@ -372,7 +372,7 @@ static int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 #ifdef SUPPORTS_PALETTE_EXT
-        if (PalettedTextures && mipmap >= 0 && trans == PNG_SOLID && color == PNG_COLOR_TYPE_PALETTE) {
+        if (PalettedTextures && mipmap >= 0 && trans == GLPNG_SOLID && color == PNG_COLOR_TYPE_PALETTE) {
             png_colorp pal;
             int cols;
             GLint internalFormat;
@@ -395,7 +395,7 @@ static int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
         }
         else
 #endif
-            if (trans == PNG_SOLID || trans == PNG_ALPHA || color == PNG_COLOR_TYPE_RGB_ALPHA || color == PNG_COLOR_TYPE_GRAY_ALPHA) {
+            if (trans == GLPNG_SOLID || trans == GLPNG_ALPHA || color == PNG_COLOR_TYPE_RGB_ALPHA || color == PNG_COLOR_TYPE_GRAY_ALPHA) {
                 GLenum glformat;
                 GLint glcomponent;
 
@@ -419,9 +419,9 @@ static int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
                         return 0;
                 }
 
-                if (mipmap == PNG_BUILDMIPMAPS)
+                if (mipmap == GLPNG_BUILDMIPMAPS)
                     Build2DMipmaps(glcomponent, width, height, glformat, data, 1);
-                else if (mipmap == PNG_SIMPLEMIPMAPS)
+                else if (mipmap == GLPNG_SIMPLEMIPMAPS)
                     Build2DMipmaps(glcomponent, width, height, glformat, data, 0);
                 else
                     glTexImage2D(GL_TEXTURE_2D, mipmap, glcomponent, width, height, 0, glformat, GL_UNSIGNED_BYTE, data);
@@ -451,13 +451,13 @@ static int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
 #define ALPHA *q
 
                 switch (trans) {
-                    case PNG_CALLBACK:
+                    case GLPNG_CALLBACK:
                         FORSTART
                             ALPHA = AlphaCallback((unsigned char) r, (unsigned char) g, (unsigned char) b);
                         FOREND
                             break;
 
-                    case PNG_STENCIL:
+                    case GLPNG_STENCIL:
                         FORSTART
                             if (r == StencilRed && g == StencilGreen && b == StencilBlue)
                                 ALPHA = 0;
@@ -466,48 +466,48 @@ static int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
                         FOREND
                             break;
 
-                    case PNG_BLEND1:
+                    case GLPNG_BLEND1:
                         FORSTART
                             a = r+g+b;
                         if (a > 255) ALPHA = 255; else ALPHA = a;
                         FOREND
                             break;
 
-                    case PNG_BLEND2:
+                    case GLPNG_BLEND2:
                         FORSTART
                             a = r+g+b;
                         if (a > 255*2) ALPHA = 255; else ALPHA = a/2;
                         FOREND
                             break;
 
-                    case PNG_BLEND3:
+                    case GLPNG_BLEND3:
                         FORSTART
                             ALPHA = (r+g+b)/3;
                         FOREND
                             break;
 
-                    case PNG_BLEND4:
+                    case GLPNG_BLEND4:
                         FORSTART
                             a = r*r+g*g+b*b;
                         if (a > 255) ALPHA = 255; else ALPHA = a;
                         FOREND
                             break;
 
-                    case PNG_BLEND5:
+                    case GLPNG_BLEND5:
                         FORSTART
                             a = r*r+g*g+b*b;
                         if (a > 255*2) ALPHA = 255; else ALPHA = a/2;
                         FOREND
                             break;
 
-                    case PNG_BLEND6:
+                    case GLPNG_BLEND6:
                         FORSTART
                             a = r*r+g*g+b*b;
                         if (a > 255*3) ALPHA = 255; else ALPHA = a/3;
                         FOREND
                             break;
 
-                    case PNG_BLEND7:
+                    case GLPNG_BLEND7:
                         FORSTART
                             a = r*r+g*g+b*b;
                         if (a > 255*255) ALPHA = 255; else ALPHA = (int) sqrt(a);
@@ -519,9 +519,9 @@ static int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
 #undef FOREND
 #undef ALPHA
 
-                if (mipmap == PNG_BUILDMIPMAPS)
+                if (mipmap == GLPNG_BUILDMIPMAPS)
                     Build2DMipmaps(4, width, height, GL_RGBA, data2, 1);
-                else if (mipmap == PNG_SIMPLEMIPMAPS)
+                else if (mipmap == GLPNG_SIMPLEMIPMAPS)
                     Build2DMipmaps(4, width, height, GL_RGBA, data2, 0);
                 else
                     glTexImage2D(GL_TEXTURE_2D, mipmap, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data2);
