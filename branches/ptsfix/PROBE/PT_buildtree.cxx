@@ -151,19 +151,23 @@ inline void get_abs_align_pos(char *seq, int &pos) {
     pos+=q_exists;
 }
 
-static long PTD_save_partial_tree(FILE *out, POS_TREE * node, char *partstring, int partsize, long pos, long *ppos, ARB_ERROR& error) {
+static long PTD_save_partial_tree(FILE *out, POS_TREE * node, char *partstring, int partsize, long pos, long *node_pos, ARB_ERROR& error) {
+    // 'node_pos' is set to the root-node of the last written subtree (only if partsize == 0)
+    
     if (partsize) {
         POS_TREE *son = PT_read_son(node, (PT_BASES)partstring[0]);
         if (son) {
-            pos = PTD_save_partial_tree(out, son, partstring+1, partsize-1, pos, ppos, error);
+            long dummy;
+            pos = PTD_save_partial_tree(out, son, partstring+1, partsize-1, pos, &dummy, error);
         }
+        *node_pos = 0;
     }
     else {
         PTD_clear_fathers(node);
 #if defined(PTM_DEBUG)
         fputs("flushing to disk [start]\n", stdout); fflush(stdout);
 #endif
-        pos = PTD_write_leafs_to_disk(out, node, pos, ppos, error);
+        pos = PTD_write_leafs_to_disk(out, node, pos, node_pos, error);
 #if defined(PTM_DEBUG)
         fputs("flushing to disk [end]\n", stdout); fflush(stdout);
 #endif
@@ -247,7 +251,8 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
 
                     if (estimated_kb <= physical_memory) break;
 
-                    total_size /= 4;
+                    total_size /= 4; // ignore PT_N- and PT_QU-branches (they are very small compared with other branches)
+
                     partsize ++;
                     passes     *= 5;
                 }
@@ -262,15 +267,16 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                 arb_progress data_progress(GBS_global_string("pass %i/%i", pass0, passes), psg.data_count);
 
                 for (int i = 0; i < psg.data_count; i++) {
-                    int   psize;
-                    char *align_abs = probe_read_alignment(i, &psize);
+                    int         psize;
+                    char       *align_abs = probe_read_alignment(i, &psize);
+                    const char *probe     = psg.data[i].get_data();
 
                     int abs_align_pos = psize-1;
                     for (int j = psg.data[i].get_size() - 1; j >= 0; j--, abs_align_pos--) {
                         get_abs_align_pos(align_abs, abs_align_pos); // may result in neg. abs_align_pos (seems to happen if sequences are short < 214bp )
                         if (abs_align_pos < 0) break; // -> in this case abort
 
-                        if (partsize && (*partstring != psg.data[i].get_data()[j] || strncmp(partstring, psg.data[i].get_data()+j, partsize))) continue;
+                        if (partsize && (*partstring != probe[j] || strncmp(partstring, probe+j, partsize))) continue;
 
                         pt = build_pos_tree(pt, DataLoc(i, abs_align_pos, j));
                     }
@@ -296,7 +302,9 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                 }
             }
             if (!error) {
-                bool need64bit                        = false;  // does created db need a 64bit ptserver ?
+                bool need64bit = false; // does created db need a 64bit ptserver ?
+
+                pt_assert(last_obj);
 #ifdef ARB_64
                 if (last_obj >= 0xffffffff) need64bit = true;   // last_obj is bigger than int
 #else

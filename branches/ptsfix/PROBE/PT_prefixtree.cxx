@@ -340,8 +340,8 @@ void PTD_clear_fathers(POS_TREE * node) { // stage 1
         PT_WRITE_PNTR((&node->data), NULL);
         if (type == PT_NT_NODE) {
             for (int i = PT_QU; i < PT_B_MAX; i++) {
-                POS_TREE *sons = PT_read_son(node, (PT_BASES)i);
-                if (sons) PTD_clear_fathers(sons);
+                POS_TREE *son = PT_read_son(node, (PT_BASES)i);
+                if (son) PTD_clear_fathers(son);
             }
         }
     }
