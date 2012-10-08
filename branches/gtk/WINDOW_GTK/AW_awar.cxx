@@ -96,6 +96,10 @@ WRITE_SKELETON(write_string, const char*, "%s", GB_write_string) // defines rewr
 #undef AWAR_CHANGE_DUMP
 
 
+
+
+
+
 char *AW_awar::read_as_string() {
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);

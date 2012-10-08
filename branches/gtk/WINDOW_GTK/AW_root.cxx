@@ -36,10 +36,9 @@ AW_root *AW_root::SINGLETON = 0;
 static int      declared_awar_count = 0;
 static AW_awar *declared_awar[MAX_GLOBAL_AWARS];
 
-GB_ERROR ARB_bind_global_awars(GBDATA *gb_main) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
-}
+
+
+
 
 void aw_set_local_message() {
     GTK_NOT_IMPLEMENTED;
@@ -95,20 +94,6 @@ static void AWAR_AWM_MASK_changed_cb(AW_root *awr) {
 #endif
     awr->apply_sensitivity(mask);
 }
-
-
-void ARB_declare_global_awars(AW_root *aw_root, AW_default aw_def) {
-    aw_assert(!declared_awar_count);
-
-    declare_awar_global(aw_root->awar_string(AWAR_WWW_BROWSER, OPENURL " \"$(URL)\"", aw_def));
-    declare_awar_global(aw_root->awar_int(AWAR_AWM_MASK, AWM_MASK_UNKNOWN, aw_def)->add_callback(AWAR_AWM_MASK_changed_cb));
-
-    AW_awar *awar_focus          = aw_root->awar_int(AWAR_AW_FOCUS_FOLLOWS_MOUSE, 0, aw_def);
-    aw_root->focus_follows_mouse = awar_focus->read_int();
-    awar_focus->add_callback(AWAR_AW_FOCUS_FOLLOWS_MOUSE_changed_cb);
-    declare_awar_global(awar_focus);
-}
-
 
 
 char *aw_file_selection(const char *title, const char *dir, const char *def_name, const char *suffix) {
@@ -399,8 +384,13 @@ AW_awar *AW_root::awar(const char *var_name) {
 }
 
 AW_awar *AW_root::awar_float(const char *var_name, float default_value/* = 0.0*/, AW_default default_file/* = AW_ROOT_DEFAULT*/) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+    AW_awar *vs = awar_no_error(var_name);
+    if (!vs) {
+        default_file = check_properties(default_file);
+        vs           = new AW_awar(AW_FLOAT, var_name, "", (double)default_value, default_file, this);
+        GBS_write_hash(hash_table_for_variables, var_name, (long)vs);
+    }
+    return vs;
 }
 
 
