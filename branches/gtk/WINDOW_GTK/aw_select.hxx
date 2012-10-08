@@ -54,11 +54,11 @@ class AW_selection_list {
    // AW_selection_list_entry *get_entry_at(int index);
     
 public:
-    AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti);
+    AW_selection_list(const char *variable_namei, int variable_typei, GtkWidget *select_list_widgeti);
 
     char             *variable_name;
     AW_VARIABLE_TYPE  variable_type;
-    Widget            select_list_widget;
+    GtkWidget        *select_list_widget;
 
     AW_selection_list_entry *list_table;
     AW_selection_list_entry *last_of_list_table;

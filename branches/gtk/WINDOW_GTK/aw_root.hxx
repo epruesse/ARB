@@ -21,6 +21,8 @@
 #define aw_assert(bed) arb_assert(bed)
 #endif
 
+#include <gtk/gtkwidget.h>
+
 typedef void (*AW_RCB0)(AW_root*);
 typedef void (*AW_RCB1)(AW_root*, AW_CL);
 typedef AW_RCB AW_RCB2;
@@ -111,7 +113,7 @@ public:
 
 
     bool           value_changed;
-    GtkWidget*         changer_of_variable;
+    GtkWidget     *changer_of_variable;
     int            y_correction_for_input_labels;
     AW_active      global_mask;
     bool           focus_follows_mouse;

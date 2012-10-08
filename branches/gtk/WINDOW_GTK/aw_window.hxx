@@ -1,5 +1,4 @@
-#ifndef AW_WINDOW_HXX
-#define AW_WINDOW_HXX
+#pragma once
 
 #ifndef AW_BASE_HXX
 #include "aw_base.hxx"
@@ -644,6 +643,3 @@ public:
 
 typedef void* AW_gc_manager;
 
-#else
-#error aw_window.hxx included twice
-#endif

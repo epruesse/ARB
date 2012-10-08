@@ -1,17 +1,17 @@
 #include "GDE_proto.h"
 #include <limits.h>
 #include <aw_msg.hxx>
+//
+//int MAX(int a, int b)
+//{
+//    if (a>b) return a;
+//    return b;
+//}
 
-int MAX(int a, int b)
-{
-    if (a>b) return a;
-    return b;
-}
-
-static int MIN(int a, int b) {
-    if (a<b) return a;
-    return b;
-}
+//static int MIN(int a, int b) {
+//    if (a<b) return a;
+//    return b;
+//}
 
 void Regroup(NA_Alignment *alignment)
 {

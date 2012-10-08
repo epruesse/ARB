@@ -307,7 +307,7 @@ ED4_returncode ED4_window::scroll_rectangle(int dx, int dy)
 
     scrolled_rect.scroll(dx, dy);
 
-    skip_move = (ABS(int(dy)) > (bottom_y - top_y - 20)) || (ABS(int(dx)) > (right_x - left_x - 20));
+    skip_move = (abs(int(dy)) > (bottom_y - top_y - 20)) || (abs(int(dx)) > (right_x - left_x - 20));
 
     AW_pos leftmost_x = coords.middle_area_x;
     AW_pos toptop_y = coords.top_area_y;
