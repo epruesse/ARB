@@ -16,6 +16,8 @@
 #include "aw_nawar.hxx" //FIXME difference between awar and nawar?
 #include "aw_msg.hxx"
 #include "aw_root.hxx"
+#include "aw_window.hxx"
+#include "aw_select.hxx"
 
 
 #define AWAR_EPS 0.00000001
@@ -33,7 +35,7 @@ struct AW_widget_refresh_cb : virtual Noncopyable {
 
     AW_CL           cd;
     AW_awar        *awar;
-    GtkWidget*          widget;
+    GtkWidget      *widget;
     AW_widget_type  widget_type;
     AW_window      *aw;
 
@@ -41,22 +43,64 @@ struct AW_widget_refresh_cb : virtual Noncopyable {
 };
 
 
-AW_widget_refresh_cb::AW_widget_refresh_cb(AW_widget_refresh_cb */*previous*/, AW_awar */*vs*/, AW_CL /*cd1*/, GtkWidget* /*w*/, AW_widget_type /*type*/, AW_window */*awi*/) {
-//    cd          = cd1;
-//    GtkWidget*      = w;
-//    widget_type = type;
-//    awar        = vs;
-//    aw          = awi;
-//    next        = previous;
-//
-//    awar->add_callback(aw_cp_awar_2_widget_cb, (AW_CL)this);
-    GTK_NOT_IMPLEMENTED;
+static void aw_cp_awar_2_widget_cb(AW_root *root, AW_CL cl_widget_refresh_cb) {
+    AW_widget_refresh_cb *widgetlist = (AW_widget_refresh_cb*)cl_widget_refresh_cb;
+    if (widgetlist->widget == root->changer_of_variable) {
+        root->changer_of_variable = 0;
+        root->value_changed = false;
+        return;
+    }
+
+    {
+        char *var_value;
+        var_value = widgetlist->awar->read_as_string();
+
+        // und benachrichtigen der anderen
+        switch (widgetlist->widget_type) {
+
+            case AW_WIDGET_INPUT_FIELD:
+                widgetlist->aw->update_input_field(widgetlist->widget, var_value);
+                break;
+            case AW_WIDGET_TEXT_FIELD:
+                widgetlist->aw->update_text_field(widgetlist->widget, var_value);
+                break;
+            case AW_WIDGET_TOGGLE:
+                widgetlist->aw->update_toggle(widgetlist->widget, var_value, widgetlist->cd);
+                break;
+            case AW_WIDGET_LABEL_FIELD:
+                widgetlist->aw->update_label(widgetlist->widget, var_value);
+                break;
+            case AW_WIDGET_CHOICE_MENU:
+                widgetlist->aw->refresh_option_menu((AW_option_menu_struct*)widgetlist->cd);
+                break;
+            case AW_WIDGET_TOGGLE_FIELD:
+                widgetlist->aw->refresh_toggle_field((int)widgetlist->cd);
+                break;
+            case AW_WIDGET_SELECTION_LIST:
+                ((AW_selection_list *)widgetlist->cd)->refresh();
+            default:
+                break;
+        }
+        free(var_value);
+    }
+    root->value_changed = false;     // Maybe value changed is set because Motif calls me
+}
+
+
+AW_widget_refresh_cb::AW_widget_refresh_cb(AW_widget_refresh_cb *previous, AW_awar *vs, AW_CL cd1, GtkWidget *w, AW_widget_type type, AW_window *awi) {
+    cd          = cd1;
+    widget      = w;
+    widget_type = type;
+    awar        = vs;
+    aw          = awi;
+    next        = previous;
+
+    awar->add_callback(aw_cp_awar_2_widget_cb, (AW_CL)this);
 }
 
 AW_widget_refresh_cb::~AW_widget_refresh_cb() {
-//    if (next) delete next;
-//    awar->remove_callback(aw_cp_awar_2_widget_cb, (AW_CL)this);
-    GTK_NOT_IMPLEMENTED;
+    if (next) delete next;
+    awar->remove_callback(aw_cp_awar_2_widget_cb, (AW_CL)this);
 }
 
 
@@ -188,6 +232,10 @@ AW_awar *AW_awar::add_target_var(long *pint) {
     target_list = new AW_var_target((void *)pint, target_list);
     update_target(target_list);
     return this;
+}
+
+void AW_awar::tie_widget(AW_CL cd1, GtkWidget *widget, AW_widget_type type, AW_window *aww) {
+    refresh_list = new AW_widget_refresh_cb(refresh_list, this, cd1, widget, type, aww);
 }
 
 

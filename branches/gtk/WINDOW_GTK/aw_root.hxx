@@ -74,6 +74,7 @@ class AW_root : virtual Noncopyable {
     AW_root_gtk prvt; /*< Contains all gtk dependent attributes. */
     GB_HASH     *action_hash; /*< Is used to buffer and replay remote actions. */
     AW_default  application_database; /*< FIXME */
+    AW_buttons_struct *button_sens_list; /* < FIXME */
     bool        no_exit; /*< FIXME no idea what this is used for*/
     char        *program_name;
 
@@ -199,6 +200,12 @@ public:
     GB_ERROR save_properties(const char *filename = NULL) __ATTR__USERESULT;
 
     // Control sensitivity of buttons etc.:
+    /**
+     * Enable or disable the sensitivity of buttons defined in button_sense_list.  
+     * If a button is sensitive it will receive keyboard and mouse events.
+     * @param mask Every button that matches this mask will be enabled.
+     *             A mask matches if (button->mask & mask != 0).
+     */
     void apply_sensitivity(AW_active mask);
     void apply_focus_policy(bool follow_mouse);
     void make_sensitive(GtkWidget* w, AW_active mask);

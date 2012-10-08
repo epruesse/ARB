@@ -23,17 +23,25 @@ class AW_area_management;
 class AW_device_gtk;
 class AW_cb_struct;
 
+//FIXME the whole concept of the prvt class is broken. It does not work well with inheritance...
+
+
 /*
  * Contains all gtk dependent attributs from aw_window.
  */
 class AW_window_gtk : public virtual Noncopyable {
     friend class AW_window;
     friend class AW_window_simple; //Friendship is not inherited therefore we have to declare all children of AW_window as friends.
-
+    friend class AW_window_menu_modes;
 
 
     GtkWindow *window; /**< The gtk window instance managed by this aw_window */
-    GtkFixed *fixed_size_area; /**< A fixed size widget spanning the whole window. Everything is positioned on this widget using absolut coordinates.*/
+    
+    /**
+     *  A fixed size widget spanning the whole window. Everything is positioned on this widget using absolut coordinates.
+     * @note This area is only present in aw_window_simple
+     */
+    GtkFixed *fixed_size_area; 
 
 
     /**

@@ -24,6 +24,10 @@
 #include <gtk/gtkfixed.h>
 #include <gtk/gtkbutton.h>
 #include <gtk/gtkcheckbutton.h>
+#include <gtk-2.0/gtk/gtkdrawingarea.h>
+#include <gtk-2.0/gtk/gtkvbox.h>
+#include <gtk-2.0/gtk/gtkmenubar.h>
+#include <gtk-2.0/gtk/gtkhbox.h>
 
 
 void AW_clock_cursor(AW_root *) {
@@ -483,7 +487,19 @@ static void aw_attach_widget(GtkWidget* w, AW_at& _at, int default_width = -1) {
 
 
 void AW_label_in_awar_list(AW_window *aww, GtkWidget* widget, const char *str) {
-    GTK_NOT_IMPLEMENTED;
+    AW_awar *is_awar = aww->get_root()->label_is_awar(str);
+    if (is_awar) {
+        char *var_value = is_awar->read_as_string();
+        if (var_value) {
+            aww->update_label(widget, var_value);
+        }
+        else {
+            aw_assert(0); // awar not found
+            aww->update_label(widget, str); //FIXME unreachable code
+        }
+        free(var_value);
+        is_awar->tie_widget(0, widget, AW_WIDGET_LABEL_FIELD, aww);
+    }
 }
 
 
@@ -1120,10 +1136,12 @@ void AW_window::get_at_position(int */*x*/, int */*y*/) const{
 
 int AW_window::get_at_xposition() const{
     GTK_NOT_IMPLEMENTED;
+    return 0;
 }
 
 int AW_window::get_at_yposition() const {
     GTK_NOT_IMPLEMENTED;
+    return 0;
 }
 
 AW_device_click *AW_window::get_click_device(AW_area /*area*/, int /*mousex*/, int /*mousey*/, AW_pos /*max_distance_linei*/,
@@ -1236,7 +1254,127 @@ bool AW_window::is_shown() const{
 
 void AW_window::label(const char */*label*/){
     GTK_NOT_IMPLEMENTED;
+
 }
+
+void AW_window::update_text_field(GtkWidget *widget, const char *var_value) {
+   // XtVaSetValues(widget, XmNvalue, var_value, NULL);
+    GTK_NOT_IMPLEMENTED;
+}
+
+void AW_window::update_toggle(GtkWidget *widget, const char *var, AW_CL cd_toggle_data) {
+//    aw_toggle_data *tdata = (aw_toggle_data*)cd_toggle_data;
+//    const char     *text  = tdata->bitmapOrText[(var[0] == '0' || var[0] == 'n') ? 0 : 1];
+//
+//    if (tdata->isTextToggle) {
+//        XtVaSetValues(widget, RES_CONVERT(XmNlabelString, text), NULL);
+//    }
+//    else {
+//        char *path = pixmapPath(text+1);
+//        XtVaSetValues(widget, RES_CONVERT(XmNlabelPixmap, path), NULL);
+//        free(path);
+//    }
+    GTK_NOT_IMPLEMENTED;
+}
+
+void AW_window::update_input_field(GtkWidget *widget, const char *var_value) {
+    //XtVaSetValues(widget, XmNvalue, var_value, NULL);
+    GTK_NOT_IMPLEMENTED;
+}
+
+void AW_window::refresh_option_menu(AW_option_menu_struct *oms) {
+//    if (get_root()->changer_of_variable != oms->label_widget) {
+//        AW_widget_value_pair *active_choice = oms->first_choice;
+//        {
+//            AW_scalar global_var_value(root->awar(oms->variable_name));
+//            while (active_choice && global_var_value != active_choice->value) {
+//                active_choice = active_choice->next;
+//            }
+//        }
+//
+//        if (!active_choice) active_choice = oms->default_choice;
+//        if (active_choice) XtVaSetValues(oms->label_widget, XmNmenuHistory, active_choice->widget, NULL);
+//    }
+    GTK_NOT_IMPLEMENTED;
+}
+
+void AW_window::refresh_toggle_field(int toggle_field_number) {
+    GTK_NOT_IMPLEMENTED;
+//#if defined(DEBUG)
+//    static int inside_here = 0;
+//    aw_assert(!inside_here);
+//    inside_here++;
+//#endif // DEBUG
+//
+//    AW_toggle_field_struct *toggle_field_list = p_global->toggle_field_list;
+//    {
+//        while (toggle_field_list) {
+//            if (toggle_field_number == toggle_field_list->toggle_field_number) {
+//                break;
+//            }
+//            toggle_field_list = toggle_field_list->next;
+//        }
+//    }
+//
+//    if (toggle_field_list) {
+//        AW_widget_value_pair *active_toggle = toggle_field_list->first_toggle;
+//        {
+//            AW_scalar global_value(root->awar(toggle_field_list->variable_name));
+//            while (active_toggle && active_toggle->value != global_value) {
+//                active_toggle = active_toggle->next;
+//            }
+//            if (!active_toggle) active_toggle = toggle_field_list->default_toggle;
+//        }
+//
+//        // iterate over all toggles including default_toggle and set their state
+//        for (AW_widget_value_pair *toggle = toggle_field_list->first_toggle; toggle;) {
+//            XmToggleButtonSetState(toggle->widget, toggle == active_toggle, False);
+//
+//            if (toggle->next)                                     toggle = toggle->next;
+//            else if (toggle != toggle_field_list->default_toggle) toggle = toggle_field_list->default_toggle;
+//            else                                                  toggle = 0;
+//        }
+//
+//        // @@@ code below should go to update_toggle_field
+//        {
+//            short length;
+//            short height;
+//            XtVaGetValues(p_w->toggle_field, XmNwidth, &length, XmNheight, &height, NULL);
+//            length                += (short)_at->saved_xoff_for_label;
+//
+//            int width_of_last_widget  = length;
+//            int height_of_last_widget = height;
+//
+//            if (toggle_field_list->correct_for_at_center_intern) {
+//                if (toggle_field_list->correct_for_at_center_intern == 1) {   // middle centered
+//                    XtVaSetValues(p_w->toggle_field, XmNx, (short)((short)_at->saved_x - (short)(length/2) + (short)_at->saved_xoff_for_label), NULL);
+//                    if (p_w->toggle_label) {
+//                        XtVaSetValues(p_w->toggle_label, XmNx, (short)((short)_at->saved_x - (short)(length/2)), NULL);
+//                    }
+//                    width_of_last_widget = width_of_last_widget / 2;
+//                }
+//                if (toggle_field_list->correct_for_at_center_intern == 2) {   // right centered
+//                    XtVaSetValues(p_w->toggle_field, XmNx, (short)((short)_at->saved_x - length + (short)_at->saved_xoff_for_label), NULL);
+//                    if (p_w->toggle_label) {
+//                        XtVaSetValues(p_w->toggle_label, XmNx, (short)((short)_at->saved_x - length),    NULL);
+//                    }
+//                    width_of_last_widget = 0;
+//                }
+//            }
+//
+//            this->unset_at_commands();
+//            this->increment_at_commands(width_of_last_widget, height_of_last_widget);
+//        }
+//    }
+//    else {
+//        GBK_terminatef("update_toggle_field: toggle field %i does not exist", toggle_field_number);
+//    }
+//
+//#if defined(DEBUG)
+//    inside_here--;
+//#endif // DEBUG
+}
+
 
 static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
 
@@ -1248,6 +1386,8 @@ static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
     device->set_offset(AW::Vector(-xfig->minx, -xfig->miny));
     xfig->print(device);
 }
+
+
 
 
 void AW_window::load_xfig(const char *file, bool resize /*= true*/){
@@ -1455,7 +1595,267 @@ AW_window_menu_modes::AW_window_menu_modes() {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window_menu_modes::init(AW_root */*root*/, const char */*wid*/, const char */*windowname*/, int /*width*/, int /*height*/) {
+
+void aw_create_help_entry(AW_window *aww) {
+//    aww->insert_help_topic("Click here and then on the questionable button/menu/...", "P", 0,
+//                           AWM_ALL, (AW_CB)AW_help_entry_pressed, 0, 0);
+    GTK_NOT_IMPLEMENTED;
+}
+
+void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *windowname, int width, int height) {
+    GtkWidget *main_window;
+    GtkWidget *vbox;
+    GtkWidget *hbox;
+    GtkWidget *help_popup;
+    GtkWidget *help_label;
+    GtkWidget *separator;
+    GtkWidget *form1;
+    GtkWidget *form2;
+    const char *help_button   = "HELP";
+    const char *help_mnemonic = "H";
+
+#if defined(DUMP_MENU_LIST)
+    initMenuListing(windowname);
+#endif // DUMP_MENU_LIST
+    root = root_in; // for macro
+    window_name = strdup(windowname);
+    window_defaults_name = GBS_string_2_key(wid);
+
+    int posx = 50;
+    int posy = 50;
+
+    //p_w->shell = aw_create_shell(this, true, true, width, height, posx, posy);
+
+    main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    vbox = gtk_vbox_new(false, 1);//FIXME remove constant
+    gtk_container_add(GTK_CONTAINER(main_window), vbox);
+    
+    
+
+    
+    
+    
+//    XtVaCreateManagedWidget("mainWindow1",
+//                                          xmMainWindowWidgetClass, p_w->shell,
+//                                          NULL);
+
+    GTK_PARTLY_IMPLEMENTED;
+    
+    menu_bar = (GtkMenuBar*) gtk_menu_bar_new();
+    gtk_container_add(GTK_CONTAINER(vbox), GTK_WIDGET(menu_bar));
+//    p_w->menu_bar[0] = XtVaCreateManagedWidget("menu1", xmRowColumnWidgetClass,
+//                                               main_window,
+//                                               XmNrowColumnType, XmMENU_BAR,
+//                                               NULL);
+
+    
+    hbox = gtk_hbox_new(false, 1); //FIXME constant
+    gtk_container_add(GTK_CONTAINER(vbox), hbox);
+    
+//
+//    // create shell for help-cascade
+//    help_popup = XtVaCreatePopupShell("menu_shell", xmMenuShellWidgetClass,
+//                                      p_w->menu_bar[0],
+//                                      XmNwidth, 1,
+//                                      XmNheight, 1,
+//                                      XmNallowShellResize, true,
+//                                      XmNoverrideRedirect, true,
+//                                      NULL);
+//
+//    // create row column in Pull-Down shell
+//    p_w->help_pull_down = XtVaCreateWidget("menu_row_column",
+//                                           xmRowColumnWidgetClass, help_popup,
+//                                           XmNrowColumnType, XmMENU_PULLDOWN,
+//                                           NULL);
+//
+//    // create HELP-label in menu bar
+//    help_label = XtVaCreateManagedWidget("menu1_top_b1",
+//                                         xmCascadeButtonWidgetClass, p_w->menu_bar[0],
+//                                         RES_CONVERT(XmNlabelString, help_button),
+//                                         RES_CONVERT(XmNmnemonic, help_mnemonic),
+//                                         XmNsubMenuId, p_w->help_pull_down, NULL);
+//    XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
+//    root->make_sensitive(help_label, AWM_ALL);
+//
+//    form1 = XtVaCreateManagedWidget("form1",
+//                                    xmFormWidgetClass,
+//                                    main_window,
+//                                    // XmNwidth, width,
+//                                    // XmNheight, height,
+//                                    XmNresizePolicy, XmRESIZE_NONE,
+//                                    // XmNx, 0,
+//                                    // XmNy, 0,
+//                                    NULL);
+//
+//    p_w->mode_area = XtVaCreateManagedWidget("mode area",
+//                                             xmDrawingAreaWidgetClass,
+//                                             form1,
+//                                             XmNresizePolicy, XmRESIZE_NONE,
+//                                             XmNwidth, 38,
+//                                             XmNheight, height,
+//                                             XmNx, 0,
+//                                             XmNy, 0,
+//                                             XmNleftOffset, 0,
+//                                             XmNtopOffset, 0,
+//                                             XmNbottomAttachment, XmATTACH_FORM,
+//                                             XmNleftAttachment, XmATTACH_POSITION,
+//                                             XmNtopAttachment, XmATTACH_POSITION,
+//                                             XmNmarginHeight, 2,
+//                                             XmNmarginWidth, 1,
+//                                             NULL);
+//
+//    separator = XtVaCreateManagedWidget("separator",
+//                                        xmSeparatorWidgetClass,
+//                                        form1,
+//                                        XmNx, 37,
+//                                        XmNshadowThickness, 4,
+//                                        XmNorientation, XmVERTICAL,
+//                                        XmNbottomAttachment, XmATTACH_FORM,
+//                                        XmNtopAttachment, XmATTACH_FORM,
+//                                        XmNleftAttachment, XmATTACH_NONE,
+//                                        XmNleftWidget, NULL,
+//                                        XmNrightAttachment, XmATTACH_NONE,
+//                                        XmNleftOffset, 70,
+//                                        XmNleftPosition, 0,
+//                                        NULL);
+//
+//    form2 = XtVaCreateManagedWidget("form2",
+//                                    xmFormWidgetClass,
+//                                    form1,
+//                                    XmNwidth, width,
+//                                    XmNheight, height,
+//                                    XmNtopOffset, 0,
+//                                    XmNbottomOffset, 0,
+//                                    XmNleftOffset, 0,
+//                                    XmNrightOffset, 0,
+//                                    XmNrightAttachment, XmATTACH_FORM,
+//                                    XmNbottomAttachment, XmATTACH_FORM,
+//                                    XmNleftAttachment, XmATTACH_WIDGET,
+//                                    XmNleftWidget, separator,
+//                                    XmNtopAttachment, XmATTACH_POSITION,
+//                                    XmNresizePolicy, XmRESIZE_NONE,
+//                                    XmNx, 0,
+//                                    XmNy, 0,
+//                                    NULL);
+//    p_w->areas[AW_INFO_AREA] =
+//        new AW_area_management(root, form2, XtVaCreateManagedWidget("info_area",
+//                                                                    xmDrawingAreaWidgetClass,
+//                                                                    form2,
+//                                                                    XmNheight, 0,
+//                                                                    XmNbottomAttachment, XmATTACH_NONE,
+//                                                                    XmNtopAttachment, XmATTACH_FORM,
+//                                                                    XmNleftAttachment, XmATTACH_FORM,
+//                                                                    XmNrightAttachment, XmATTACH_FORM,
+//                                                                    XmNmarginHeight, 2,
+//                                                                    XmNmarginWidth, 2,
+//                                                                    NULL));
+//
+//    p_w->areas[AW_BOTTOM_AREA] =
+//        new AW_area_management(root, form2, XtVaCreateManagedWidget("bottom_area",
+//                                                                    xmDrawingAreaWidgetClass,
+//                                                                    form2,
+//                                                                    XmNheight, 0,
+//                                                                    XmNbottomAttachment, XmATTACH_FORM,
+//                                                                    XmNtopAttachment, XmATTACH_NONE,
+//                                                                    XmNleftAttachment, XmATTACH_FORM,
+//                                                                    XmNrightAttachment, XmATTACH_FORM,
+//                                                                    NULL));
+//
+//    p_w->scroll_bar_horizontal = XtVaCreateManagedWidget("scroll_bar_horizontal",
+//                                                         xmScrollBarWidgetClass,
+//                                                         form2,
+//                                                         XmNheight, 15,
+//                                                         XmNminimum, 0,
+//                                                         XmNmaximum, AW_SCROLL_MAX,
+//                                                         XmNincrement, 10,
+//                                                         XmNsliderSize, AW_SCROLL_MAX,
+//                                                         XmNrightAttachment, XmATTACH_FORM,
+//                                                         XmNbottomAttachment, XmATTACH_FORM,
+//                                                         XmNbottomOffset, 0,
+//                                                         XmNleftAttachment, XmATTACH_FORM,
+//                                                         XmNtopAttachment, XmATTACH_NONE,
+//                                                         XmNorientation, XmHORIZONTAL,
+//                                                         XmNrightOffset, 18,
+//                                                         NULL);
+//
+//    p_w->scroll_bar_vertical = XtVaCreateManagedWidget("scroll_bar_vertical",
+//                                                       xmScrollBarWidgetClass,
+//                                                       form2,
+//                                                       XmNwidth, 15,
+//                                                       XmNminimum, 0,
+//                                                       XmNmaximum, AW_SCROLL_MAX,
+//                                                       XmNincrement, 10,
+//                                                       XmNsliderSize, AW_SCROLL_MAX,
+//                                                       XmNrightAttachment, XmATTACH_FORM,
+//                                                       XmNbottomAttachment, XmATTACH_WIDGET,
+//                                                       XmNbottomWidget, p_w->scroll_bar_horizontal,
+//                                                       XmNbottomOffset, 3,
+//                                                       XmNleftOffset, 3,
+//                                                       XmNrightOffset, 3,
+//                                                       XmNleftAttachment, XmATTACH_NONE,
+//                                                       XmNtopAttachment, XmATTACH_WIDGET,
+//                                                       XmNtopWidget, INFO_WIDGET,
+//                                                       NULL);
+//
+//    p_w->frame = XtVaCreateManagedWidget("draw_area",
+//                                         xmFrameWidgetClass,
+//                                         form2,
+//                                         XmNshadowType, XmSHADOW_IN,
+//                                         XmNshadowThickness, 2,
+//                                         XmNleftOffset, 3,
+//                                         XmNtopOffset, 3,
+//                                         XmNbottomOffset, 3,
+//                                         XmNrightOffset, 3,
+//                                         XmNbottomAttachment, XmATTACH_WIDGET,
+//                                         XmNbottomWidget, p_w->scroll_bar_horizontal,
+//                                         XmNtopAttachment, XmATTACH_FORM,
+//                                         XmNtopOffset, 0,
+//                                         XmNleftAttachment, XmATTACH_FORM,
+//                                         XmNrightAttachment, XmATTACH_WIDGET,
+//                                         XmNrightWidget, p_w->scroll_bar_vertical,
+//                                         NULL);
+//
+    
+    GtkWidget* drawing_area = gtk_drawing_area_new();
+    prvt.areas[AW_MIDDLE_AREA] = new AW_area_management(root, drawing_area, drawing_area); //FIXME form should be a frame around the area.
+//
+//    XmMainWindowSetAreas(main_window, p_w->menu_bar[0], (Widget) NULL, (Widget) NULL, (Widget) NULL, form1);
+
+//    aw_realize_widget(this);
+
+    create_devices();
+    aw_create_help_entry(this);
+    create_window_variables();
+}
+
+
+
+void AW_window::create_window_variables() {
+//    char buffer[200];
+//
+//    sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);
+//    get_root()->awar_int(buffer, 50);
+//    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
+//
+//    sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);
+//    get_root()->awar_int(buffer, 50);
+//    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
+//
+//    sprintf(buffer, "window/%s/scroll_delay_horizontal", window_defaults_name);
+//    get_root()->awar_int(buffer, 20);
+//    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
+//
+//    sprintf(buffer, "window/%s/scroll_delay_vertical", window_defaults_name);
+//    get_root()->awar_int(buffer, 20);
+//    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
+//
+//    sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
+//    get_root()->awar_int(buffer, 9);
+//    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
+//
+//    sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
+//    get_root()->awar_int(buffer, 20);
+//    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
     GTK_NOT_IMPLEMENTED;
 }
 

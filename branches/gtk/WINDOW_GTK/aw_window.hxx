@@ -19,6 +19,8 @@
 #include "aw_window_gtk.hxx"
 #include "aw_at.hxx"
 
+#include <gtk/gtkmenubar.h>
+
 class AW_window;
 class AW_xfig;
 class AW_device;
@@ -591,10 +593,12 @@ public:
 };
 
 
-
+/**
+ * A window with a menu bar on top and a mode selection bar on the left side.
+ */
 class AW_window_menu_modes : public AW_window { // derived from a Noncopyable
     void *AW_window_menu_modes_private;       // Do not use !!!
-    
+    GtkMenuBar *menu_bar;
 public:
     AW_window_menu_modes();
     ~AW_window_menu_modes();

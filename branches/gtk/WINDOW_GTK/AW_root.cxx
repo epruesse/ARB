@@ -176,9 +176,7 @@ void AW_root::apply_focus_policy(bool /*follow_mouse*/) {
 //    GBS_hash_do_loop(hash_for_windows, set_focus_policy, 0);
 }
 
-void AW_root::apply_sensitivity(AW_active /*mask*/) {
-
-    GTK_NOT_IMPLEMENTED;
+void AW_root::apply_sensitivity(AW_active mask) {
 
 //    aw_assert(legal_mask(mask));
 //    AW_buttons_struct *list;
@@ -187,6 +185,9 @@ void AW_root::apply_sensitivity(AW_active /*mask*/) {
 //    for (list = button_sens_list; list; list = list->next) {
 //        XtSetSensitive(list->button, (list->mask & mask) ? True : False);
 //    }
+    
+    //FIXME not sure how to implement this in gtk...
+    GTK_NOT_IMPLEMENTED;
 }
 
 
