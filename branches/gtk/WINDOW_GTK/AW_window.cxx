@@ -1160,7 +1160,7 @@ void AW_window::help_text(const char */*id*/){
 }
 
 void AW_window::hide(){
-    GTK_NOT_IMPLEMENTED;
+    gtk_widget_hide(GTK_WIDGET(prvt.window));
 }
 
 void AW_window::hide_or_notify(const char */*error*/){
