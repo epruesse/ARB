@@ -215,14 +215,14 @@ GB_ERROR probe_input_data::init(GBDATA *gb_species) {
     GBDATA   *gb_data = gb_ali ? GB_entry(gb_ali, "data") : NULL;
 
     if (!gb_data) {
-        error = GBS_global_string("Species '%s' has no data in '%s'\n", GBT_read_name(gb_species), psg.alignment_name);
+        error = GBS_global_string("Species '%s' has no data in '%s'", GBT_read_name(gb_species), psg.alignment_name);
     }
     else {
         int   hsize;
         char *sdata = probe_read_string_append_point(gb_data, &hsize);
 
         if (!sdata) {
-            error = GBS_global_string("Could not read data in '%s' for species '%s'\n(Reason: %s)\n",
+            error = GBS_global_string("Could not read data in '%s' for species '%s'\n(Reason: %s)",
                                       psg.alignment_name, GBT_read_name(gb_species), GB_await_error());
         }
         else {

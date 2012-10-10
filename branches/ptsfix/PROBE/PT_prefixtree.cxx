@@ -472,7 +472,7 @@ static ARB_ERROR ptd_write_chain_entries(FILE *out, long *ppos, char **entry_tab
         PT_READ_NAT(rp, rpos);
         PT_READ_NAT(rp, apos);
         if (name < lastname) {
-            error = GBS_global_string("Chain Error: name order error %i < %i\n", name, lastname);
+            error = GBS_global_string("Chain Error: name order error %i < %i", name, lastname);
         }
         else {
             static char buffer[100];

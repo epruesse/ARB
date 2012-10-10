@@ -272,7 +272,7 @@ __ATTR__USERESULT static ARB_ERROR parse_names_into_gene_struct(const char *map_
         map_str = sep3+1;
     }
 
-    if (err) err = GBS_global_string("while parsing name-mapping: %s\n", err.deliver());
+    if (err) err = GBS_global_string("while parsing name-mapping: %s", err.deliver());
 
     return err;
 }

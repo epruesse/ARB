@@ -432,7 +432,7 @@ inline POS_TREE *PT_read_son(POS_TREE *node, PT_BASES base)
             if (sec & INT_SONS) {                                   // undefined -> error
                 GBK_terminate("Your pt-server search tree is corrupt! You can not use it anymore.\n"
                               "Error: ((sec & LONG_SON) && (sec & INT_SONS)) == true\n"
-                              "       this combination of both flags is not implemented\n");
+                              "       this combination of both flags is not implemented");
             }
             else {                                                // long/int
 #ifdef DEBUG

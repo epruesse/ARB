@@ -182,7 +182,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
 
     if (unlink(tname)) {
         if (GB_size_of_file(tname) >= 0) {
-            error = GBS_global_string("Cannot remove %s\n", tname);
+            error = GBS_global_string("Cannot remove %s", tname);
         }
     }
 
@@ -192,7 +192,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
         
         FILE *out = fopen(t2name, "w");
         if (!out) {
-            error = GBS_global_string("Cannot open %s\n", t2name);
+            error = GBS_global_string("Cannot open %s", t2name);
         }
         else {
             POS_TREE *pt = NULL;
@@ -268,7 +268,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
             }
 
             PT_init_base_string_counter(partstring, PT_N, partsize);
-            arb_progress pass_progress(GBS_global_string ("Tree Build: %s in %i passes\n", GBS_readable_size(psg.char_count, "bp"), passes),
+            arb_progress pass_progress(GBS_global_string ("Tree Build: %s in %i passes", GBS_readable_size(psg.char_count, "bp"), passes),
                                        passes);
 
             while (!PT_base_string_counter_eof(partstring)) {
