@@ -1045,11 +1045,11 @@ namespace arb_test {
 #define is_equal_to_NULL()      null_expectation(true)
 #define does_differ_from_NULL() null_expectation(false)
 
-#define less_than(val) lessThan_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
-#define more_than(val) moreThan_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
+#define is_less_than(val) lessThan_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
+#define is_more_than(val) moreThan_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
 
-#define less_or_equal(val) moreThan_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
-#define more_or_equal(val) lessThan_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
+#define is_less_or_equal(val) moreThan_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
+#define is_more_or_equal(val) lessThan_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
 
 #define fulfills(pred,arg)    predicate_expectation(true, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
 #define contradicts(pred,arg) predicate_expectation(false, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
@@ -1256,9 +1256,9 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 #define TEST_ASSERT_DIFFERENT(e1,t2)         TEST_EXPECT(that(e1).does_differ_from(t2));
 #define TEST_ASSERT_DIFFERENT__BROKEN(e1,t2) TEST_EXPECT__BROKEN(that(e1).does_differ_from(t2));
 
-#define TEST_ASSERT_LOWER_EQUAL(lower,upper)  TEST_EXPECT(that(lower).less_or_equal(upper))
-#define TEST_ASSERT_LOWER(lower,upper)        TEST_EXPECT(that(lower).less_than(upper))
-#define TEST_ASSERT_IN_RANGE(val,lower,upper) TEST_EXPECT(all().of(that(val).more_or_equal(lower), that(val).less_or_equal(upper)))
+#define TEST_ASSERT_LOWER_EQUAL(lower,upper)  TEST_EXPECT(that(lower).is_less_or_equal(upper))
+#define TEST_ASSERT_LOWER(lower,upper)        TEST_EXPECT(that(lower).is_less_than(upper))
+#define TEST_ASSERT_IN_RANGE(val,lower,upper) TEST_EXPECT(all().of(that(val).is_more_or_equal(lower), that(val).is_less_or_equal(upper)))
 
 #define TEST_ASSERT_CONTAINS(str, part) TEST_EXPECT(that(str).does_contain(part))
 

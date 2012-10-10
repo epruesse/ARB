@@ -373,13 +373,13 @@ void TEST_less_equal() {
 
     // less/more etc
 
-    TEST_EXPECT(that(x).less_than(y));
-    TEST_EXPECT(that(x).less_or_equal(y));
-    TEST_EXPECT(that(x).less_or_equal(x));
+    TEST_EXPECT(that(x).is_less_than(y));
+    TEST_EXPECT(that(x).is_less_or_equal(y));
+    TEST_EXPECT(that(x).is_less_or_equal(x));
     
-    TEST_EXPECT(that(y).more_than(x));
-    TEST_EXPECT(that(y).more_or_equal(x));
-    TEST_EXPECT(that(y).more_or_equal(y));
+    TEST_EXPECT(that(y).is_more_than(x));
+    TEST_EXPECT(that(y).is_more_or_equal(x));
+    TEST_EXPECT(that(y).is_more_or_equal(y));
 
     TEST_ASSERT_LOWER_EQUAL(x, y);
     TEST_ASSERT_LOWER_EQUAL(x, x);
