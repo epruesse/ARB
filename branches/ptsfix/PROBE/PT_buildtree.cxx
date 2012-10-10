@@ -219,11 +219,12 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
             psg.stat.cut_offs = 0;                  // statistic information
             GB_begin_transaction(psg.gb_main);
 
-            long last_obj = 0;
+            long last_obj   = 0;
             char partstring[256];
-            int  partsize = 0;
-            int  pass0    = 0;
-            int  passes   = 1;
+            int  partsize   = 0;
+            int  pass0      = 0;
+            int  passes     = 1;
+            int  pass_parts = 5;
 
             {
                 ULONG total_size = psg.char_count;
@@ -254,8 +255,16 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                     total_size /= 4; // ignore PT_N- and PT_QU-branches (they are very small compared with other branches)
 
                     partsize ++;
-                    passes     *= 5;
+                    passes     *= pass_parts;
                 }
+#if defined(DEBUG) && 0
+                // when active, uncomment ../UNIT_TESTER/TestEnvironment.cxx@TEST_AUTO_UPDATE
+                
+                // passes = pass_parts; partsize = 1;  // @@@ skips save of PT_QU nodes on level 1
+                // passes = pass_parts*pass_parts; partsize = 2; // @@@ skips save of PT_QU nodes on level 1 and 2
+
+                printf("OVERRIDE: Forcing %i passes\n", passes);
+#endif
             }
 
             PT_init_base_string_counter(partstring, PT_N, partsize);
