@@ -224,7 +224,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
             int  partsize   = 0;
             int  pass0      = 0;
             int  passes     = 1;
-            int  pass_parts = 5;
+            int  pass_parts = 6;
 
             {
                 ULONG total_size = psg.char_count;
@@ -257,17 +257,19 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                     partsize ++;
                     passes     *= pass_parts;
                 }
-#if defined(DEBUG) && 0
+#if defined(DEBUG) && 1
+                // @@@ deactivate when fixed
+
                 // when active, uncomment ../UNIT_TESTER/TestEnvironment.cxx@TEST_AUTO_UPDATE
-                
-                // passes = pass_parts; partsize = 1;  // @@@ skips save of PT_QU nodes on level 1
-                // passes = pass_parts*pass_parts; partsize = 2; // @@@ skips save of PT_QU nodes on level 1 and 2
+
+                passes = pass_parts; partsize = 1;  // works now
+                // passes = pass_parts*pass_parts; partsize = 2; // @@@ fails with 'Error: Failed to build index (Reason: Chain Error: name order error 1 < 21)'
 
                 printf("OVERRIDE: Forcing %i passes\n", passes);
 #endif
             }
 
-            PT_init_base_string_counter(partstring, PT_N, partsize);
+            PT_init_base_string_counter(partstring, PT_QU, partsize);
             arb_progress pass_progress(GBS_global_string ("Tree Build: %s in %i passes", GBS_readable_size(psg.char_count, "bp"), passes),
                                        passes);
 
@@ -285,7 +287,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                         get_abs_align_pos(align_abs, abs_align_pos); // may result in neg. abs_align_pos (seems to happen if sequences are short < 214bp )
                         if (abs_align_pos < 0) break; // -> in this case abort
 
-                        if (partsize && (*partstring != probe[j] || strncmp(partstring, probe+j, partsize))) continue;
+                        if (partsize && memcmp(partstring, probe+j, partsize) != 0) continue;
 
                         pt = build_pos_tree(pt, DataLoc(i, abs_align_pos, j));
                     }
@@ -299,7 +301,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
 #ifdef PTM_DEBUG
                 PTD_debug_nodes();
 #endif
-                PT_inc_base_string_count(partstring, PT_N, PT_B_MAX, partsize);
+                PT_inc_base_string_count(partstring, PT_QU, PT_B_MAX, partsize);
             }
 
             if (!error) {
