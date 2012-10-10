@@ -1287,7 +1287,7 @@ void TEST_SLOW_find_unmatched_probes() {
 #endif
 // --------------------------------------------------------------------------------
 
-arb_test::match_expectation partial_covers_full_probe(const char *part, const char *full) {
+static arb_test::match_expectation partial_covers_full_probe(const char *part, const char *full) {
     using namespace arb_test;
     using namespace std;
     

@@ -307,6 +307,7 @@ PT_prefixtree.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/smartptr.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/test_global.h
+PT_prefixtree.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 PT_rangeCheck.o: probe.h
 PT_rangeCheck.o: probe_tree.h

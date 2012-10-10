@@ -378,15 +378,44 @@ void PTD_put_short(FILE *out, ULONG i) {
     ASSERT_RESULT(size_t, SIZE, fwrite(buf, 1, SIZE, out));
 }
 
+const int    BITS_FOR_SIZE = 4;        // size is stored inside POS_TREE->flags, if it fits into lower 4 bits
+const int    SIZE_MASK     = (1<<BITS_FOR_SIZE)-1;
+const size_t MIN_NODE_SIZE = PT_EMPTY_NODE_SIZE;
+
+COMPILE_ASSERT(MIN_NODE_SIZE <= PT_EMPTY_LEAF_SIZE);
+COMPILE_ASSERT(MIN_NODE_SIZE <= PT_EMPTY_CHAIN_SIZE);
+COMPILE_ASSERT(MIN_NODE_SIZE <= PT_EMPTY_NODE_SIZE);
+
+const int MIN_SIZE_IN_FLAGS = MIN_NODE_SIZE;
+const int MAX_SIZE_IN_FLAGS = MIN_NODE_SIZE+SIZE_MASK-1;
+
+const int FLAG_SIZE_REDUCTION = MIN_SIZE_IN_FLAGS-1;
+
 static void PTD_set_object_to_saved_status(POS_TREE *node, long pos_start, int former_size) {
-    node->flags = 0x20; // sets node type to PT_NT_SAVED; see PT_prefixtree.cxx@PT_NT_SAVED 
+    node->flags = 0x20; // sets node type to PT_NT_SAVED; see PT_prefixtree.cxx@PT_NT_SAVED
     PT_WRITE_PNTR((&node->data), pos_start);
-    if (former_size < 20) {
-        node->flags |= former_size-sizeof(PT_PNTR);
+
+    pt_assert(former_size >= int(MIN_NODE_SIZE));
+
+    COMPILE_ASSERT((MAX_SIZE_IN_FLAGS-MIN_SIZE_IN_FLAGS+1) == SIZE_MASK); // ????0000 means "size not stored in flags"
+
+    if (former_size >= MIN_SIZE_IN_FLAGS && former_size <= MAX_SIZE_IN_FLAGS) {
+        node->flags |= former_size-FLAG_SIZE_REDUCTION;
     }
     else {
         PT_WRITE_INT((&node->data)+sizeof(PT_PNTR), former_size);
     }
+}
+
+inline int get_memsize_of_saved(const POS_TREE *node) {
+    int memsize = node->flags & SIZE_MASK;
+    if (memsize) {
+        memsize += FLAG_SIZE_REDUCTION;
+    }
+    else {
+        PT_READ_INT((&node->data)+sizeof(PT_PNTR), memsize);
+    }
+    return memsize;
 }
 
 static long PTD_write_tip_to_disk(FILE *out, POS_TREE *node, const long oldpos) {
@@ -542,8 +571,7 @@ static long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, cons
     for (int i = PT_QU; i < PT_B_MAX; i++) {    // free all sons
         POS_TREE *son = PT_read_son(node, (PT_BASES)i);
         if (son) {
-            int memsize;
-            long   diff = oldpos - r_poss[i];
+            long diff = oldpos - r_poss[i];
             pt_assert(diff >= 0);
             if (diff>max_diff) {
                 max_diff = diff;
@@ -555,16 +583,8 @@ static long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, cons
 #endif
             }
             mysize += sizeof(PT_PNTR);
-            if (PT_GET_TYPE(son) != PT_NT_SAVED) {
-                GBK_terminate("Internal Error: Son not saved");
-            }
-            if ((son->flags & 0xf) == 0) {
-                PT_READ_INT((&son->data)+sizeof(PT_PNTR), memsize);
-            }
-            else {
-                memsize = (son->flags&0xf) + sizeof(PT_PNTR);
-            }
-            PTM_free_mem((char*)son, memsize);
+            if (PT_GET_TYPE(son) != PT_NT_SAVED) GBK_terminate("Internal Error: Son not saved");
+            PTM_free_mem((char*)son, get_memsize_of_saved(son));
             count ++;
         }
     }
@@ -610,6 +630,7 @@ static long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, cons
             if (r_poss[i]) {
                 long diff = oldpos - r_poss[i];
                 pt_assert(diff >= 0);
+
                 if (diff>level) flags2 |= 1<<i;
             }
         }
@@ -711,6 +732,7 @@ long PTD_write_leafs_to_disk(FILE *out, POS_TREE * const node, long pos, long *n
     else if (type == PT_NT_CHAIN) {
         *node_pos = pos;
         pos = PTD_write_chain_to_disk(out, node, pos, error);
+        pt_assert(PT_read_type(node) == PT_NT_SAVED);
     }
     else if (type == PT_NT_NODE) {
         long son_pos[PT_B_MAX];
@@ -821,3 +843,84 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE **pnode) { // __A
     return error;
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+static arb_test::match_expectation has_proper_saved_state(POS_TREE *node, int size, bool expect_in_flags) {
+    using namespace arb_test;
+
+    int unmodified = 0xffffffff;
+    PT_WRITE_INT((&node->data)+sizeof(PT_PNTR), unmodified);
+
+    PTD_set_object_to_saved_status(node, 0, size);
+
+    expectation_group expected;
+    expected.add(that(PT_read_type(node)).is_equal_to(PT_NT_SAVED));
+    expected.add(that(get_memsize_of_saved(node)).is_equal_to(size));
+
+    int data_after;
+    PT_READ_INT((&node->data)+sizeof(PT_PNTR), data_after);
+
+    if (expect_in_flags) {
+        expected.add(that(data_after).is_equal_to(unmodified));
+    }
+    else {
+        expected.add(that(data_after).does_differ_from(unmodified));
+    }
+
+    return all().ofgroup(expected);
+}
+
+#define TEST_SIZE_SAVED_IN_FLAGS(pt,size)         TEST_EXPECT(has_proper_saved_state(pt,size,true))
+#define TEST_SIZE_SAVED_EXTERNAL(pt,size)         TEST_EXPECT(has_proper_saved_state(pt,size,false))
+#define TEST_SIZE_SAVED_IN_FLAGS__BROKEN(pt,size) TEST_EXPECT__BROKEN(has_proper_saved_state(pt,size,true))
+#define TEST_SIZE_SAVED_EXTERNAL__BROKEN(pt,size) TEST_EXPECT__BROKEN(has_proper_saved_state(pt,size,false))
+
+void TEST_saved_state() {
+    psg.ptmain = PT_init();
+    psg.ptmain->stage1 = 1;             // enter stage 1
+
+    POS_TREE *node = (POS_TREE*)malloc(sizeof(POS_TREE)+sizeof(PT_PNTR)+5);
+
+    TEST_SIZE_SAVED_IN_FLAGS(node, MIN_NODE_SIZE);
+
+    TEST_SIZE_SAVED_IN_FLAGS(node, MIN_SIZE_IN_FLAGS);
+    TEST_SIZE_SAVED_IN_FLAGS(node, MAX_SIZE_IN_FLAGS);
+
+    TEST_SIZE_SAVED_EXTERNAL(node, 5000);
+    TEST_SIZE_SAVED_EXTERNAL(node, 40);
+
+#ifdef ARB_64
+    TEST_SIZE_SAVED_EXTERNAL(node, 24);
+    TEST_SIZE_SAVED_IN_FLAGS(node, 23);
+#else
+    TEST_SIZE_SAVED_EXTERNAL(node, 20);
+    TEST_SIZE_SAVED_IN_FLAGS(node, 19);
+#endif
+
+    TEST_SIZE_SAVED_IN_FLAGS(node, 10);
+    TEST_SIZE_SAVED_IN_FLAGS(node, 9);
+
+#ifdef ARB_64
+    COMPILE_ASSERT(MIN_NODE_SIZE == 9);
+#else
+    TEST_SIZE_SAVED_IN_FLAGS(node, 8);
+    TEST_SIZE_SAVED_IN_FLAGS(node, 7);
+    TEST_SIZE_SAVED_IN_FLAGS(node, 6);
+    TEST_SIZE_SAVED_IN_FLAGS(node, 5);
+
+    COMPILE_ASSERT(MIN_NODE_SIZE == 5);
+#endif
+
+    free(node);
+
+    psg.cleanup();
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
