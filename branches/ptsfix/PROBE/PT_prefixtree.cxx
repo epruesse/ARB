@@ -378,27 +378,28 @@ void PTD_put_short(FILE *out, ULONG i) {
     ASSERT_RESULT(size_t, SIZE, fwrite(buf, 1, SIZE, out));
 }
 
-static void PTD_set_object_to_saved_status(POS_TREE *node, long pos, int size) {
+static void PTD_set_object_to_saved_status(POS_TREE *node, long pos_start, int former_size) {
     node->flags = 0x20; // sets node type to PT_NT_SAVED; see PT_prefixtree.cxx@PT_NT_SAVED 
-    PT_WRITE_PNTR((&node->data), pos);
-    if (size < 20) {
-        node->flags |= size-sizeof(PT_PNTR);
+    PT_WRITE_PNTR((&node->data), pos_start);
+    if (former_size < 20) {
+        node->flags |= former_size-sizeof(PT_PNTR);
     }
     else {
-        PT_WRITE_INT((&node->data)+sizeof(PT_PNTR), size);
+        PT_WRITE_INT((&node->data)+sizeof(PT_PNTR), former_size);
     }
 }
 
-static long PTD_write_tip_to_disk(FILE *out, POS_TREE *node, long pos) {
+static long PTD_write_tip_to_disk(FILE *out, POS_TREE *node, const long oldpos) {
     putc(node->flags, out);         // save type
     int size = PT_LEAF_SIZE(node);
     // write 4 bytes when not in stage 2 save mode
 
     size_t cnt = size-sizeof(PT_PNTR)-1;               // no father; type already saved
-    ASSERT_RESULT(size_t, cnt, fwrite(&node->data + sizeof(PT_PNTR), 1, cnt, out));   // write name rpos apos
-    PTD_set_object_to_saved_status(node, pos, size);
-    pos += size-sizeof(PT_PNTR);                // no father
+    ASSERT_RESULT(size_t, cnt, fwrite(&node->data + sizeof(PT_PNTR), 1, cnt, out)); // write name rpos apos
+
+    long pos = oldpos+size-sizeof(PT_PNTR);                // no father
     pt_assert(pos >= 0);
+    PTD_set_object_to_saved_status(node, oldpos, size);
     return pos;
 }
 
@@ -466,8 +467,8 @@ static ARB_ERROR ptd_write_chain_entries(FILE *out, long *ppos, char **entry_tab
 }
 
 
-static long PTD_write_chain_to_disk(FILE *out, POS_TREE *node, long pos, ARB_ERROR& error) {
-    long oldpos = pos;
+static long PTD_write_chain_to_disk(FILE *out, POS_TREE * const node, const long oldpos, ARB_ERROR& error) {
+    long pos = oldpos;
     putc(node->flags, out);         // save type
     pos++;
 
@@ -497,8 +498,9 @@ static long PTD_write_chain_to_disk(FILE *out, POS_TREE *node, long pos, ARB_ERR
     }
     putc(PT_CHAIN_END, out);
     pos++;
-    PTD_set_object_to_saved_status(node, oldpos, data+sizeof(PT_PNTR)-(char*)node);
     pt_assert(pos >= 0);
+    PTD_set_object_to_saved_status(node, oldpos, data+sizeof(PT_PNTR)-(char*)node);
+    pt_assert(PT_read_type(node) == PT_NT_SAVED);
     return pos;
 }
 
@@ -528,7 +530,7 @@ void PTD_debug_nodes() {
 #endif
 }
 
-static long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, long pos) {
+static long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, const long oldpos) {
     // Save node after all descendends are already saved
 
     long max_diff = 0;
@@ -541,7 +543,7 @@ static long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, long
         POS_TREE *son = PT_read_son(node, (PT_BASES)i);
         if (son) {
             int memsize;
-            long   diff = pos - r_poss[i];
+            long   diff = oldpos - r_poss[i];
             pt_assert(diff >= 0);
             if (diff>max_diff) {
                 max_diff = diff;
@@ -606,7 +608,7 @@ static long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, long
 #endif
         for (int i = PT_QU; i < PT_B_MAX; i++) {    // set the flag2
             if (r_poss[i]) {
-                /* u */ long  diff = pos - r_poss[i];
+                long diff = oldpos - r_poss[i];
                 pt_assert(diff >= 0);
                 if (diff>level) flags2 |= 1<<i;
             }
@@ -615,7 +617,7 @@ static long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, long
         size++;
         for (int i = PT_QU; i < PT_B_MAX; i++) {    // write the data
             if (r_poss[i]) {
-                /* u */ long  diff = pos - r_poss[i];
+                long diff = oldpos - r_poss[i];
                 pt_assert(diff >= 0);
 #ifdef ARB_64
                 if (max_diff > 0xffffffff) {        // long long / int  (bit[6] in flags2 is set; bit[7] is unset)
@@ -685,13 +687,13 @@ static long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, long
         }
     }
 
-    PTD_set_object_to_saved_status(node, pos, mysize);
-    pos += size-sizeof(PT_PNTR);                // no father
+    long pos = oldpos+size-sizeof(PT_PNTR);                // no father
     pt_assert(pos >= 0);
+    PTD_set_object_to_saved_status(node, oldpos, mysize);
     return pos;
 }
 
-long PTD_write_leafs_to_disk(FILE *out, POS_TREE *node, long pos, long *node_pos, ARB_ERROR& error) { 
+long PTD_write_leafs_to_disk(FILE *out, POS_TREE * const node, long pos, long *node_pos, ARB_ERROR& error) { 
     // returns new position in index-file (unchanged for type PT_NT_SAVED)
     // *node_pos is set to the start-position of the most recent object written
 
