@@ -33,6 +33,7 @@
 #include <adGene.h>
 #include <arb_strbuf.h>
 #include <arb_file.h>
+#include <aw_edit.hxx>
 
 // general awars
 
@@ -1817,6 +1818,10 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
     if (error) aw_message(error);
 }
 
+static void pd_view_pt_log(AW_window *aww) {
+    AW_edit(GBS_ptserver_logname());
+}
+
 AW_window *create_probe_admin_window(AW_root *root, AW_CL cl_gb_main) {
     GBDATA           *gb_main = (GBDATA*)cl_gb_main;
     AW_window_simple *aws     = new AW_window_simple;
@@ -1869,6 +1874,10 @@ AW_window *create_probe_admin_window(AW_root *root, AW_CL cl_gb_main) {
     aws->callback(pd_export_pt_server, (AW_CL)gb_main);
     aws->create_button("UPDATE_SERVER", "Build server");
 
+    aws->at("log");
+    aws->callback(pd_view_pt_log);
+    aws->create_button("EDIT_LOG", "View logfile");
+    
     if (is_genom_db) {
         aws->at("gene_server");
         aws->label("Gene server?");
