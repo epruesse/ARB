@@ -157,12 +157,12 @@ static const char *test_address_valid(void *address, long key)
     volatile long i       = 0;
     volatile int  trapped = sigsetjmp(return_after_segv, 1);
 
-    if (trapped == 0) { // normal execution
+    if (trapped == 0) {       // normal execution
         i = *(long *)address; // here a SIGSEGV may happen. Execution will continue in else-branch
     }
-    else {                      // return after SEGV
-        arb_assert(trapped == 666); // oops - SEGV did not occur in mem access above!
-        arb_assert(sigsegv_occurred); // oops - wrong handler installed ?
+    else {                             // return after SEGV
+        aisc_assert(trapped == 666);   // oops - SEGV did not occur in mem access above!
+        aisc_assert(sigsegv_occurred); // oops - wrong handler installed ?
     }
     // end of critical section
     // ----------------------------------------
@@ -195,8 +195,8 @@ __ATTR__NORETURN static void aisc_server_sigsegv(int sig) {
     // unexpected SEGV
 
     UNINSTALL_SIGHANDLER(SIGSEGV, aisc_server_sigsegv, old_sigsegv_handler, "aisc_server_sigsegv");
-    old_sigsegv_handler(sig); //
-    arb_assert(0);            // oops - old handler returned
+    old_sigsegv_handler(sig);
+    aisc_assert(0); // oops - old handler returned
     abort();
 }
 
@@ -1133,13 +1133,13 @@ int aisc_broadcast(Hs_struct *hs, int message_type, const char *message)
         char *strStart = (char*)(out_buf+3);
         int   pad      = sizeL*sizeof(long)-(size+1);
 
-        arb_assert(pad >= 0);
+        aisc_assert(pad >= 0);
 
         memcpy(strStart, message, size+1);
         if (pad) memset(strStart+size+1, 0, pad); // avoid to send uninitialized bytes
     }
 
-    arb_assert(sizeL >= 1);
+    aisc_assert(sizeL >= 1);
 
     out_buf[0] = sizeL+1;
     out_buf[1] = AISC_CCOM_MESSAGE;
