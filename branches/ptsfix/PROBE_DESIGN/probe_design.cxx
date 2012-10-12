@@ -1870,14 +1870,14 @@ AW_window *create_probe_admin_window(AW_root *root, AW_CL cl_gb_main) {
     aws->callback(awt_edit_arbtcpdat_cb, (AW_CL)gb_main);
     aws->create_button("CREATE_TEMPLATE", "Configure");
 
-    aws->at("export");
-    aws->callback(pd_export_pt_server, (AW_CL)gb_main);
-    aws->create_button("UPDATE_SERVER", "Build server");
-
     aws->at("log");
     aws->callback(pd_view_pt_log);
     aws->create_button("EDIT_LOG", "View logfile");
     
+    aws->at("export");
+    aws->callback(pd_export_pt_server, (AW_CL)gb_main);
+    aws->create_button("UPDATE_SERVER", "Build server");
+
     if (is_genom_db) {
         aws->at("gene_server");
         aws->label("Gene server?");
