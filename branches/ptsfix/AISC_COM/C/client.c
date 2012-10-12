@@ -184,10 +184,9 @@ static int aisc_check_error(aisc_com * link)
             case AISC_CCOM_OK:
                 return 0;
             case AISC_CCOM_ERROR:
-                sprintf(errbuf, "SERVER_ERROR %s", (char *)(link->aisc_mes_buffer));
+                sprintf(errbuf, "SERVER_ERROR: %s", (char *)(link->aisc_mes_buffer));
                 link->error = errbuf;
                 PRTERR("AISC_ERROR");
-                CORE();
                 return 1;
             default:
                 return 0;
@@ -367,10 +366,11 @@ static void aisc_free_link(aisc_com *link) {
     free(link);
 }
 
-aisc_com *aisc_open(const char *path, AISC_Object& main_obj, long magic) {
+aisc_com *aisc_open(const char *path, AISC_Object& main_obj, long magic, GB_ERROR *error) {
     aisc_com   *link;
     const char *err;
 
+    aisc_assert(error && !*error);
     aisc_assert(!main_obj.exists()); // already initialized
 
     link = (aisc_com *) calloc(sizeof(aisc_com), 1);
@@ -390,7 +390,9 @@ aisc_com *aisc_open(const char *path, AISC_Object& main_obj, long magic) {
             shutdown(link->socket, SHUT_RDWR);
             close(link->socket);
         }
+        *error = link->error;
         free(link);
+        aisc_assert(!(*error && main_obj.exists()));
         return 0;
     }
 
@@ -398,10 +400,14 @@ aisc_com *aisc_open(const char *path, AISC_Object& main_obj, long magic) {
 
     main_obj.init(aisc_init_client(link));
     if (!main_obj.exists() || link->error) {
+        *error = link->error;
+        main_obj.clear();
         aisc_free_link(link);
+        aisc_assert(!(*error && main_obj.exists()));
         return 0;
     }
     aisc_client_link = link;
+    aisc_assert(!*error);
     return link;
 }
 

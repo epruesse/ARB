@@ -497,33 +497,39 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
             }
         }
         else {
-            psg.link = aisc_open(socket_name, psg.main, AISC_MAGIC_NUMBER);
+            GB_ERROR openerr = NULL;
+            psg.link         = aisc_open(socket_name, psg.main, AISC_MAGIC_NUMBER, &openerr);
 
-            bool running = psg.link;
-            bool kill    = false;
-            bool start   = false;
+            if (openerr) {
+                error = openerr;
+            }
+            else {
+                bool running = psg.link;
+                bool kill    = false;
+                bool start   = false;
 
-            if      (strcmp(command, "-look") == 0) { start = !running; }
-            else if (strcmp(command, "-boot") == 0) { kill  = running; start = true; }
-            else if (strcmp(command, "-kill") == 0) { kill  = running; }
-            else { error = GBS_global_string("Unknown command '%s'", command); }
+                if      (strcmp(command, "-look") == 0) { start = !running; }
+                else if (strcmp(command, "-boot") == 0) { kill  = running; start = true; }
+                else if (strcmp(command, "-kill") == 0) { kill  = running; }
+                else { error = GBS_global_string("Unknown command '%s'", command); }
 
-            if (!error) {
-                if (kill) {
-                    pt_assert(running);
-                    fputs("There is another active server. Sending shutdown message..\n", stderr);
-                    if (aisc_nput(psg.link, PT_MAIN, psg.main, MAIN_SHUTDOWN, "47@#34543df43%&3667gh", NULL)) {
-                        fprintf(stderr,
-                                "%s: Warning: Problem connecting to the running %s\n"
-                                "             You might need to kill it manually to ensure proper operation\n",
-                                exename, exename);
+                if (!error) {
+                    if (kill) {
+                        pt_assert(running);
+                        fputs("There is another active server. Sending shutdown message..\n", stderr);
+                        if (aisc_nput(psg.link, PT_MAIN, psg.main, MAIN_SHUTDOWN, "47@#34543df43%&3667gh", NULL)) {
+                            fprintf(stderr,
+                                    "%s: Warning: Problem connecting to the running %s\n"
+                                    "             You might need to kill it manually to ensure proper operation\n",
+                                    exename, exename);
+                        }
+                        aisc_close(psg.link, psg.main);
+                        psg.link = 0;
                     }
-                    aisc_close(psg.link, psg.main);
-                    psg.link = 0;
-                }
 
-                if (start) {
-                    error = start_pt_server(socket_name, params->db_server, pt_name, exename); // @@@ does not always return - fix! (see also server_shutdown())
+                    if (start) {
+                        error = start_pt_server(socket_name, params->db_server, pt_name, exename); // @@@ does not always return - fix! (see also server_shutdown())
+                    }
                 }
             }
         }

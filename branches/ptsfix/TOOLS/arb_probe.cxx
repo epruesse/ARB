@@ -113,16 +113,21 @@ public:
             ++count;
             const char *servername = AP_probe_pt_look_for_server(error);
             if (servername) {
-                pd_gl.link = aisc_open(servername, pd_gl.com, AISC_MAGIC_NUMBER);
-
-                if (!pd_gl.link) {
-                    error = "Cannot contact PT_SERVER [1]";
-                }
-                else if (init_local_com_struct()) {
-                    error = "Cannot contact PT_SERVER [2]";
+                GB_ERROR openerr = NULL;
+                pd_gl.link       = aisc_open(servername, pd_gl.com, AISC_MAGIC_NUMBER, &openerr);
+                if (openerr) {
+                    error = openerr;
                 }
                 else {
-                    need_close = true;
+                    if (!pd_gl.link) {
+                        error = "Cannot contact PT_SERVER [1]";
+                    }
+                    else if (init_local_com_struct()) {
+                        error = "Cannot contact PT_SERVER [2]";
+                    }
+                    else {
+                        need_close = true;
+                    }
                 }
             }
         }
@@ -1373,9 +1378,11 @@ void TEST_SLOW_variable_defaults_in_server() {
     const char *servername = GBS_read_arb_tcp(server_tag);;
     TEST_ASSERT(strstr(servername, "/UNIT_TESTER/sockets/ptserver.socket") != 0); // as defined in ../lib/arb_tcp.dat@ARB_TEST_PT_SERVER
 
-    T_PT_MAIN com;
-    T_PT_LOCS locs;
-    aisc_com *link = aisc_open(servername, com, AISC_MAGIC_NUMBER);
+    T_PT_MAIN  com;
+    T_PT_LOCS  locs;
+    GB_ERROR   error = NULL;
+    aisc_com  *link  = aisc_open(servername, com, AISC_MAGIC_NUMBER, &error);
+    TEST_ASSERT_NO_ERROR(error);
     TEST_ASSERT(link);
 
     TEST_ASSERT_ZERO(aisc_create(link, PT_MAIN, com,

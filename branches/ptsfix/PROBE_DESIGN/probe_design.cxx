@@ -430,7 +430,7 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
     {
         const char *servername = PD_probe_pt_look_for_server(root, error);
         if (servername) {
-            PD.link = aisc_open(servername, PD.com, AISC_MAGIC_NUMBER);
+            PD.link = aisc_open(servername, PD.com, AISC_MAGIC_NUMBER, &error);
             if (!PD.link) error = "can't contact PT server";
             PD.locs.clear();
         }
@@ -717,8 +717,8 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
                     progress->subtitle("Connecting PT-server");
                 }
 
-                PD.link = aisc_open(servername, PD.com, AISC_MAGIC_NUMBER);
-                if (!PD.link) error = "Cannot contact PT-server";
+                PD.link = aisc_open(servername, PD.com, AISC_MAGIC_NUMBER, &error);
+                if (!error && !PD.link) error = "Cannot contact PT-server";
                 PD.locs.clear();
             }
         }

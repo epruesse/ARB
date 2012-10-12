@@ -55,9 +55,15 @@ void MO_Liste::get_all_species() {
         return;
     }
 
-    mp_pd_gl.link = aisc_open(servername, mp_pd_gl.com, AISC_MAGIC_NUMBER);
+    GB_ERROR openerr = NULL;
+    mp_pd_gl.link    = aisc_open(servername, mp_pd_gl.com, AISC_MAGIC_NUMBER, &openerr);
     mp_pd_gl.locs.clear();
-    servername = 0;
+    servername       = 0;
+
+    if (openerr) {
+        aw_message(openerr);
+        return;
+    }
 
     if (!mp_pd_gl.link) {
         aw_message ("Cannot contact Probe bank server ");

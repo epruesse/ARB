@@ -1202,7 +1202,8 @@ int ARB_main(int argc, const char *argv[]) {
         name = strdup(cname);
     }
 
-    AN_global.cl_link = aisc_open(name, AN_global.cl_main, AISC_MAGIC_NUMBER);
+    GB_ERROR error    = NULL;
+    AN_global.cl_link = aisc_open(name, AN_global.cl_main, AISC_MAGIC_NUMBER, &error);
 
     if (AN_global.cl_link) {
         if (!strcmp(argv[1], "-look")) {
@@ -1218,7 +1219,13 @@ int ARB_main(int argc, const char *argv[]) {
         aisc_close(AN_global.cl_link, AN_global.cl_main); AN_global.cl_link=0;
         sleep(1);
     }
-    if (((strcmp(argv[1], "-kill")==0)) ||
+
+    if (error) {
+        printf("ARB_name_server: %s\n", error);
+        exit(0);
+    }
+
+    if (((strcmp(argv[1], "-kill") == 0)) ||
         ((argc==3) && (strcmp(argv[2], "-kill")==0))) {
         printf("ARB_name_server: Now I kill myself!\n");
         exit(0);
@@ -1236,7 +1243,7 @@ int ARB_main(int argc, const char *argv[]) {
     aisc_main->server_file     = strdup(params->default_file);
     aisc_main->server_filedate = GB_time_of_file(aisc_main->server_file);
 
-    GB_ERROR error = server_load(aisc_main);
+    error = server_load(aisc_main);
 
     if (!error) {
         const char *field         = params->field;
