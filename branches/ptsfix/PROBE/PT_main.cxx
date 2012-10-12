@@ -429,7 +429,8 @@ __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, cons
 }
 
 __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *command, const arb_params *params) {
-    ARB_ERROR error;
+    ARB_ERROR  error;
+    char      *msg = NULL;
 
     // check that arb_pt_server knows its socket
     const char *socket_name = params->tcp;
@@ -469,7 +470,7 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
             }
         }
         else if (strcmp(command, "-build") == 0) {  // build command
-            error = pt_init_main_struct(aisc_main, params->db_server);
+            error            = pt_init_main_struct(aisc_main, params->db_server);
             if (error) error = GBS_global_string("Gave up (Reason: %s)", error.deliver());
             else {
                 error = enter_stage_1_build_tree(aisc_main, pt_name);
@@ -477,15 +478,7 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
                     error = GBS_global_string("Failed to build index (Reason: %s)", error.deliver());
                 }
                 else {
-                    char *msg = GBS_global_string_copy("PT_SERVER database \"%s\" has been created.", params->db_server);
-                    puts(msg);
-                    GBS_add_ptserver_logentry(msg);
-
-                    char *msg_command        = GBS_global_string_copy("arb_message '%s'", msg);
-                    if (system(msg_command) != 0) fprintf(stderr, "Failed to run '%s'\n", msg_command);
-                    free(msg_command);
-
-                    free(msg);
+                    msg = GBS_global_string_copy("PT_SERVER database \"%s\" has been created.", params->db_server);
                 }
             }
         }
@@ -536,6 +529,23 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
         }
 
         free(pt_name);
+    }
+
+    if (error) msg = strdup(error.preserve());
+    if (msg) {
+        puts(msg);
+        GBS_add_ptserver_logentry(msg);
+
+        char *quoted_msg = GBS_string_eval(msg, ":'=\"", 0);
+        pt_assert(quoted_msg);
+        char *msg_command = GBS_global_string_copy("arb_message '%s' &", quoted_msg);
+
+        if (system(msg_command) != 0) fprintf(stderr, "Failed to run '%s'\n", msg_command);
+
+        free(msg_command);
+        free(quoted_msg);
+
+        free(msg);
     }
 
     return error;
