@@ -73,6 +73,8 @@ char *get_design_hinfo(PT_tprobes *tprobe);
 int PT_start_design(PT_pdc *pdc, int dummy_1x);
 
 /* PT_prefixtree.cxx */
+bool PT_chain_has_valid_entries(char **entry_tab, int n_entries);
+bool PT_chain_has_valid_entries(POS_TREE *const node);
 void PTM_finally_free_all_mem(void);
 PTM2 *PT_init(void);
 POS_TREE *PT_add_to_chain(POS_TREE *node, const DataLoc &loc);

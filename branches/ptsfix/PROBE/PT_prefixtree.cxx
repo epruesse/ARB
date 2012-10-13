@@ -18,6 +18,74 @@
 #include <sys/mman.h>
 #include <climits>
 
+static int ptd_count_chain_entries(char *entry) {
+    int counter = 0;
+    while (entry) {
+        counter ++;
+        long next;
+        PT_READ_PNTR(entry, next);
+        entry = (char *)next;
+    }
+    pt_assert(counter >= 0);
+    return counter;
+}
+
+static void ptd_set_chain_references(char *entry, char **entry_tab) {
+    int counter = 0;
+    while (entry) {
+        entry_tab[counter] = entry;
+        counter ++;
+        long next;
+        PT_READ_PNTR(entry, next);
+        entry = (char *)next;
+    }
+}
+
+bool PT_chain_has_valid_entries(char **entry_tab, int n_entries) {
+    int lastname = 0;
+    
+    while (n_entries>0) {
+        char *entry = entry_tab[n_entries-1];
+        n_entries--;
+        char *rp = entry + sizeof(PT_PNTR);
+
+        int name;
+        PT_READ_NAT(rp, name);
+        if (name < lastname) return false;
+        lastname = name;
+    }
+    return true;
+}
+
+bool PT_chain_has_valid_entries(POS_TREE * const node) {
+    pt_assert(PT_read_type(node) == PT_NT_CHAIN);
+
+    char *data = (&node->data) + psg.ptmain->mode;
+    int   mainapos;
+
+    if (node->flags&1) {
+        PT_READ_INT(data, mainapos);
+        data += 4;
+    }
+    else {
+        PT_READ_SHORT(data, mainapos);
+        data += 2;
+    }
+
+    long first_entry;
+    PT_READ_PNTR(data, first_entry);
+    int  n_entries = ptd_count_chain_entries((char *)first_entry);
+
+    char **entry_tab = (char **)GB_calloc(sizeof(char *), n_entries);
+    ptd_set_chain_references((char *)first_entry, entry_tab);
+
+    bool ok = PT_chain_has_valid_entries(entry_tab, n_entries);
+
+    free(entry_tab);
+    
+    return ok;
+}
+
 struct PTM_struct PTM;
 char PT_count_bits[PT_B_MAX+1][256]; // returns how many bits are set
 
@@ -171,6 +239,9 @@ static void PT_change_link_in_father(POS_TREE *father, POS_TREE *old_link, POS_T
 
 POS_TREE *PT_add_to_chain(POS_TREE *node, const DataLoc& loc) { // @@@ result is useless
     // stage1
+
+    pt_assert(PT_chain_has_valid_entries(node));
+
     // insert at the beginning of list
 
     char *data  = (&node->data) + psg.ptmain->mode;
@@ -194,6 +265,9 @@ POS_TREE *PT_add_to_chain(POS_TREE *node, const DataLoc& loc) { // @@@ result is
     memcpy(p, buffer, size);
     PT_WRITE_PNTR(data, p);
     psg.stat.cut_offs ++;
+
+    pt_assert(PT_chain_has_valid_entries(node));
+    
     return NULL;
 }
 
@@ -432,33 +506,12 @@ static long PTD_write_tip_to_disk(FILE *out, POS_TREE *node, const long oldpos) 
     return pos;
 }
 
-static int ptd_count_chain_entries(char *entry) {
-    int counter = 0;
-    while (entry) {
-        counter ++;
-        long next;
-        PT_READ_PNTR(entry, next);
-        entry = (char *)next;
-    }
-    pt_assert(counter >= 0);
-    return counter;
-}
-
-static void ptd_set_chain_references(char *entry, char **entry_tab) {
-    int counter = 0;
-    while (entry) {
-        entry_tab[counter] = entry;
-        counter ++;
-        long next;
-        PT_READ_PNTR(entry, next);
-        entry = (char *)next;
-    }
-}
-
 static ARB_ERROR ptd_write_and_free_chain_entries(FILE *out, long *ppos, char **entry_tab, int n_entries, int mainapos) { // __ATTR__USERESULT
-    ARB_ERROR   error;
-    int         lastname = 0;
-    
+    ARB_ERROR error;
+    int       lastname = 0;
+
+    pt_assert(PT_chain_has_valid_entries(entry_tab, n_entries));
+
     while (n_entries>0 && !error) {
         char *entry = entry_tab[n_entries-1];
         n_entries --;
@@ -496,6 +549,8 @@ static ARB_ERROR ptd_write_and_free_chain_entries(FILE *out, long *ppos, char **
 }
 
 static long PTD_write_chain_to_disk(FILE *out, POS_TREE * const node, const long oldpos, ARB_ERROR& error) {
+    pt_assert(PT_chain_has_valid_entries(node));
+    
     long pos = oldpos;
     putc(node->flags, out);         // save type
     pos++;
@@ -879,9 +934,19 @@ static arb_test::match_expectation has_proper_saved_state(POS_TREE *node, int si
 #define TEST_SIZE_SAVED_IN_FLAGS__BROKEN(pt,size) TEST_EXPECT__BROKEN(has_proper_saved_state(pt,size,true))
 #define TEST_SIZE_SAVED_EXTERNAL__BROKEN(pt,size) TEST_EXPECT__BROKEN(has_proper_saved_state(pt,size,false))
 
+struct EnterStage1 {
+    EnterStage1() {
+        psg.ptmain = PT_init();
+        psg.ptmain->stage1 = 1;
+    }
+    ~EnterStage1() {
+        psg.cleanup();
+        PTM_finally_free_all_mem();
+    }
+};
+
 void TEST_saved_state() {
-    psg.ptmain = PT_init();
-    psg.ptmain->stage1 = 1;             // enter stage 1
+    EnterStage1 env;
 
     POS_TREE *node = (POS_TREE*)malloc(sizeof(POS_TREE)+sizeof(PT_PNTR)+5);
 
@@ -916,8 +981,45 @@ void TEST_saved_state() {
 #endif
 
     free(node);
+}
 
-    psg.cleanup();
+static POS_TREE *theChain = NULL;
+static DataLoc  *theLoc   = NULL;
+static void bad_add_to_chain() {
+    PT_add_to_chain(theChain, *theLoc);
+}
+
+void TEST_chains() {
+    EnterStage1 env;
+
+    POS_TREE *root = PT_create_leaf(NULL, PT_N, DataLoc(0, 0, 0));
+    TEST_ASSERT_EQUAL(PT_read_type(root), PT_NT_LEAF);
+
+    root = PT_change_leaf_to_node(root);
+    TEST_ASSERT_EQUAL(PT_read_type(root), PT_NT_NODE);
+
+    DataLoc loc1(1, 200, 200);
+    DataLoc loc1b(1, 500, 500);
+    DataLoc loc2(2, 300, 300);
+
+    {
+        POS_TREE *leaf = PT_create_leaf(&root, PT_A, loc1);
+        TEST_ASSERT_EQUAL(PT_read_type(leaf), PT_NT_LEAF);
+
+        POS_TREE *chain = PT_leaf_to_chain(leaf);
+        TEST_ASSERT_EQUAL(PT_read_type(chain), PT_NT_CHAIN);
+        TEST_ASSERT(PT_chain_has_valid_entries(chain));
+
+        PT_add_to_chain(chain, loc2);
+        TEST_ASSERT(PT_chain_has_valid_entries(chain));
+
+        theChain = chain; theLoc = &loc2;  TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(bad_add_to_chain); // should fail (dup entry)
+        theChain = chain; theLoc = &loc1b; TEST_ASSERT_CODE_ASSERTION_FAILS(bad_add_to_chain);
+    }
+    {
+        POS_TREE *leaf = PT_create_leaf(&root, PT_QU, loc1); // PT_QU always produces chain
+        TEST_ASSERT_EQUAL(PT_read_type(leaf), PT_NT_CHAIN);
+    }
 }
 
 #endif // UNIT_TESTS
