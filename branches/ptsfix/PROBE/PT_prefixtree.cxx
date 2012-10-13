@@ -41,18 +41,29 @@ static void ptd_set_chain_references(char *entry, char **entry_tab) {
     }
 }
 
-bool PT_chain_has_valid_entries(char **entry_tab, int n_entries) {
+static bool PT_chain_entryTab_valid(char **entry_tab, int n_entries) {
     int lastname = 0;
+    int lastrpos = 0;
+    int lastapos = 0;
     
     while (n_entries>0) {
         char *entry = entry_tab[n_entries-1];
         n_entries--;
         char *rp = entry + sizeof(PT_PNTR);
 
-        int name;
-        PT_READ_NAT(rp, name);
+        int name; PT_READ_NAT(rp, name);
+        int rpos; PT_READ_NAT(rp, rpos);
+        int apos; PT_READ_NAT(rp, apos);
+
         if (name < lastname) return false;
+        if (name == lastname) {
+            if (rpos <= lastrpos) return false;
+            if (apos <= lastapos) return false;
+        }
+
         lastname = name;
+        lastrpos = rpos;
+        lastapos = apos;
     }
     return true;
 }
@@ -79,7 +90,7 @@ bool PT_chain_has_valid_entries(POS_TREE * const node) {
     char **entry_tab = (char **)GB_calloc(sizeof(char *), n_entries);
     ptd_set_chain_references((char *)first_entry, entry_tab);
 
-    bool ok = PT_chain_has_valid_entries(entry_tab, n_entries);
+    bool ok = PT_chain_entryTab_valid(entry_tab, n_entries);
 
     free(entry_tab);
     
@@ -508,7 +519,7 @@ static ARB_ERROR ptd_write_and_free_chain_entries(FILE *out, long *ppos, char **
     ARB_ERROR error;
     int       lastname = 0;
 
-    pt_assert(PT_chain_has_valid_entries(entry_tab, n_entries));
+    pt_assert(PT_chain_entryTab_valid(entry_tab, n_entries));
 
     while (n_entries>0 && !error) {
         char *entry = entry_tab[n_entries-1];
@@ -516,12 +527,10 @@ static ARB_ERROR ptd_write_and_free_chain_entries(FILE *out, long *ppos, char **
         char *rp = entry;
         rp += sizeof(PT_PNTR);
 
-        int name;
-        int rpos;
-        int apos;
-        PT_READ_NAT(rp, name);
-        PT_READ_NAT(rp, rpos);
-        PT_READ_NAT(rp, apos);
+        int name; PT_READ_NAT(rp, name);
+        int rpos; PT_READ_NAT(rp, rpos);
+        int apos; PT_READ_NAT(rp, apos);
+
         if (name < lastname) {
             error = GBS_global_string("Chain Error: name order error %i < %i", name, lastname);
         }
@@ -1011,7 +1020,7 @@ void TEST_chains() {
         PT_add_to_chain(chain, loc2);
         TEST_ASSERT(PT_chain_has_valid_entries(chain));
 
-        theChain = chain; theLoc = &loc2;  TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(bad_add_to_chain); // should fail (dup entry)
+        theChain = chain; theLoc = &loc2;  TEST_ASSERT_CODE_ASSERTION_FAILS(bad_add_to_chain);
         theChain = chain; theLoc = &loc1b; TEST_ASSERT_CODE_ASSERTION_FAILS(bad_add_to_chain);
     }
     {
