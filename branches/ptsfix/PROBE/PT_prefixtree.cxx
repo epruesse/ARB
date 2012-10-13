@@ -237,7 +237,7 @@ static void PT_change_link_in_father(POS_TREE *father, POS_TREE *old_link, POS_T
     PT_CORE;
 }
 
-POS_TREE *PT_add_to_chain(POS_TREE *node, const DataLoc& loc) { // @@@ result is useless
+void PT_add_to_chain(POS_TREE *node, const DataLoc& loc) {
     // stage1
 
     pt_assert(PT_chain_has_valid_entries(node));
@@ -267,8 +267,6 @@ POS_TREE *PT_add_to_chain(POS_TREE *node, const DataLoc& loc) { // @@@ result is
     psg.stat.cut_offs ++;
 
     pt_assert(PT_chain_has_valid_entries(node));
-    
-    return NULL;
 }
 
 POS_TREE *PT_change_leaf_to_node(POS_TREE *node) { // stage 1

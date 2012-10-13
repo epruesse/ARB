@@ -77,7 +77,7 @@ bool PT_chain_has_valid_entries(char **entry_tab, int n_entries);
 bool PT_chain_has_valid_entries(POS_TREE *const node);
 void PTM_finally_free_all_mem(void);
 PTM2 *PT_init(void);
-POS_TREE *PT_add_to_chain(POS_TREE *node, const DataLoc &loc);
+void PT_add_to_chain(POS_TREE *node, const DataLoc &loc);
 POS_TREE *PT_change_leaf_to_node(POS_TREE *node);
 POS_TREE *PT_leaf_to_chain(POS_TREE *node);
 POS_TREE *PT_create_leaf(POS_TREE **pfather, PT_BASES base, const DataLoc &loc);
