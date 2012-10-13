@@ -42,10 +42,12 @@ static void ptd_set_chain_references(char *entry, char **entry_tab) {
 }
 
 static bool PT_chain_entryTab_valid(char **entry_tab, int n_entries) {
-    int lastname = 0;
-    int lastrpos = 0;
-    int lastapos = 0;
-    
+    int lastname = INT_MIN;
+    int lastrpos = INT_MAX;
+    int lastapos = INT_MAX;
+
+    int org_entries = n_entries;
+
     while (n_entries>0) {
         char *entry = entry_tab[n_entries-1];
         n_entries--;
@@ -57,8 +59,8 @@ static bool PT_chain_entryTab_valid(char **entry_tab, int n_entries) {
 
         if (name < lastname) return false;
         if (name == lastname) {
-            if (rpos <= lastrpos) return false;
-            if (apos <= lastapos) return false;
+            if (rpos >= lastrpos) return false;
+            if (apos >= lastapos) return false;
         }
 
         lastname = name;
@@ -1027,9 +1029,9 @@ void TEST_chains() {
         // now chain is 'loc1a,loc2a'
 
         switch (base) {
-            case PT_A: theChain = chain; theLoc = &loc2a;  TEST_ASSERT_CODE_ASSERTION_FAILS(bad_add_to_chain); break; // add same location twice -> fail
-            case PT_C: theChain = chain; theLoc = &loc1b; TEST_ASSERT_CODE_ASSERTION_FAILS(bad_add_to_chain); break;  // add species in wrong order -> fail
-            case PT_G: theChain = chain; theLoc = &loc2b; TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(bad_add_to_chain); break; // add positions in wrong order (should fail)
+            case PT_A: theChain = chain; theLoc = &loc2a; TEST_ASSERT_CODE_ASSERTION_FAILS(bad_add_to_chain); break; // add same location twice -> fail
+            case PT_C: theChain = chain; theLoc = &loc1b; TEST_ASSERT_CODE_ASSERTION_FAILS(bad_add_to_chain); break; // add species in wrong order -> fail
+            case PT_G: theChain = chain; theLoc = &loc2b; TEST_ASSERT_CODE_ASSERTION_FAILS(bad_add_to_chain); break; // add positions in wrong order (should fail)
             default: TEST_ASSERT(0); break;
         }
     }
