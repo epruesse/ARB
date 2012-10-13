@@ -38,15 +38,13 @@ static void PT_init_count_bits() {
 
 static void PTM_add_alloc(void *ptr) {
     if (PTM.alloc_counter == PTM.alloc_array_size) {
-        if (PTM.alloc_array_size == 0)
+        if (PTM.alloc_array_size == 0) {
             PTM.alloc_array_size = 1;
-
+        }
         PTM.alloc_array_size = PTM.alloc_array_size * 2;
-        void **new_array = (void **) malloc(PTM.alloc_array_size
-                * sizeof(void*));
+        void **new_array = (void **)malloc(PTM.alloc_array_size * sizeof(void*));
 
-        if (!new_array)
-            abort();
+        if (!new_array) abort();
 
         void *old_array = PTM.alloc_ptr;
         memcpy(new_array, old_array, PTM.alloc_counter * sizeof(void*));
@@ -57,8 +55,9 @@ static void PTM_add_alloc(void *ptr) {
 }
 
 void PTM_finally_free_all_mem() {
-    for (unsigned long i = 0; i < PTM.alloc_counter; ++i)
+    for (unsigned long i = 0; i < PTM.alloc_counter; ++i) {
         free(PTM.alloc_ptr[i]);
+    }
     PTM.alloc_counter = 0;
     PTM.alloc_array_size = 0;
     free(PTM.alloc_ptr);
@@ -170,7 +169,8 @@ static void PT_change_link_in_father(POS_TREE *father, POS_TREE *old_link, POS_T
     PT_CORE;
 }
 
-POS_TREE *PT_add_to_chain(POS_TREE *node, const DataLoc& loc) { // stage1
+POS_TREE *PT_add_to_chain(POS_TREE *node, const DataLoc& loc) { // @@@ result is useless
+    // stage1
     // insert at the beginning of list
 
     char *data  = (&node->data) + psg.ptmain->mode;
@@ -188,7 +188,7 @@ POS_TREE *PT_add_to_chain(POS_TREE *node, const DataLoc& loc) { // stage1
     PT_WRITE_NAT(p, loc.name);
     PT_WRITE_NAT(p, loc.rpos);
     PT_WRITE_NAT(p, loc.apos);
-    
+
     int size = p - buffer;
     p        = (char *)PTM_get_mem(size);
     memcpy(p, buffer, size);
@@ -455,7 +455,7 @@ static void ptd_set_chain_references(char *entry, char **entry_tab) {
     }
 }
 
-static ARB_ERROR ptd_write_chain_entries(FILE *out, long *ppos, char **entry_tab, int n_entries, int mainapos) { // __ATTR__USERESULT
+static ARB_ERROR ptd_write_and_free_chain_entries(FILE *out, long *ppos, char **entry_tab, int n_entries, int mainapos) { // __ATTR__USERESULT
     ARB_ERROR   error;
     int         lastname = 0;
     
@@ -495,7 +495,6 @@ static ARB_ERROR ptd_write_chain_entries(FILE *out, long *ppos, char **entry_tab
     return error;
 }
 
-
 static long PTD_write_chain_to_disk(FILE *out, POS_TREE * const node, const long oldpos, ARB_ERROR& error) {
     long pos = oldpos;
     putc(node->flags, out);         // save type
@@ -522,7 +521,7 @@ static long PTD_write_chain_to_disk(FILE *out, POS_TREE * const node, const long
     {
         char **entry_tab = (char **)GB_calloc(sizeof(char *), n_entries);
         ptd_set_chain_references((char *)first_entry, entry_tab);
-        error = ptd_write_chain_entries(out, &pos, entry_tab, n_entries, mainapos);
+        error = ptd_write_and_free_chain_entries(out, &pos, entry_tab, n_entries, mainapos);
         free(entry_tab);
     }
     putc(PT_CHAIN_END, out);
