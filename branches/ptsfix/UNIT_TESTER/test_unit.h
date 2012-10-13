@@ -1196,42 +1196,52 @@ const bool FAILS_ASSERTION     = true;
 const bool FULFILLS_ASSERTIONS = false;
 
 #  ifdef ASSERTION_USED
-inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV, bool expect_assert_fail) {
+inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV, bool expect_assert_fail, bool expectation_untestable_under_valgrind) {
     using namespace arb_test;
 
     bool& assertion_failed = test_data().assertion_failed;
     bool  old_state        = assertion_failed;
 
-    expect_assert_fail = expect_assert_fail && !GBK_running_on_valgrind(); // under valgrind assertions never fail
-
-    match_expectation SEGV       = that(GBK_raises_SIGSEGV(cb,true)).is_equal_to(expect_SEGV);
-    match_expectation assertfail = that(assertion_failed).is_equal_to(expect_assert_fail);
-
-    match_expectation expected = all().of(SEGV, assertfail);
+    expectation_group expected;
+    if (GBK_running_on_valgrind()) {
+        GBK_raises_SIGSEGV(cb); // just call
+        expected.add(that(expectation_untestable_under_valgrind).is_equal_to(true));
+    }
+    else {
+        expected.add(that(GBK_raises_SIGSEGV(cb)).is_equal_to(expect_SEGV));
+        expected.add(that(assertion_failed).is_equal_to(expect_assert_fail));
+    }
 
     assertion_failed = old_state;
-    return expected;
+    return all().ofgroup(expected);
 }
 #  else
-inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV) {
+inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV, bool expectation_untestable_under_valgrind) {
     using namespace arb_test;
-    return that(GBK_raises_SIGSEGV(cb,true)).is_equal_to(expect_SEGV);
+    if (GBK_running_on_valgrind()) {
+        return that(expectation_untestable_under_valgrind).is_equal_to(true);
+    }
+    return that(GBK_raises_SIGSEGV(cb)).is_equal_to(expect_SEGV);
 }
 #  endif
 # endif
 
 # ifdef ASSERTION_USED
 
-#  define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)           TEST_EXPECT(expect_callback(cb, DOES_SEGFAULT, FAILS_ASSERTION))
-#  define TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(cb) TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS))
-#  define TEST_ASSERT_SEGFAULT(cb)                       TEST_EXPECT(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS)) 
-#  define TEST_ASSERT_SEGFAULT__UNWANTED(cb)             TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS))
+#  define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)           TEST_EXPECT(expect_callback(cb, DOES_SEGFAULT, FAILS_ASSERTION, true))
+#  define TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(cb)   TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FAILS_ASSERTION, false))
+#  define TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(cb) TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, false))
+#  define TEST_ASSERT_SEGFAULT(cb)                       TEST_EXPECT(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, true)) 
+#  define TEST_ASSERT_SEGFAULT__WANTED(cb)               TEST_EXPECT__WANTED(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, false)) 
+#  define TEST_ASSERT_SEGFAULT__UNWANTED(cb)             TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, false))
 
 # else // ENABLE_CRASH_TESTS but no ASSERTION_USED (test segfaults in NDEBUG mode)
 
 #  define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)
+#  define TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(cb)
 #  define TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(cb)
 #  define TEST_ASSERT_SEGFAULT(cb)                       TEST_EXPECT(expect_callback(cb, DOES_SEGFAULT)) 
+#  define TEST_ASSERT_SEGFAULT__WANTED(cb)               TEST_EXPECT__WANTED(expect_callback(cb, DOES_SEGFAULT)) 
 #  define TEST_ASSERT_SEGFAULT__UNWANTED(cb)             TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT))
 
 # endif
@@ -1239,8 +1249,10 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 #else // not ENABLE_CRASH_TESTS (i.e. skip these tests completely)
 
 # define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)
+# define TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(cb)
 # define TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(cb)
 # define TEST_ASSERT_SEGFAULT(cb)
+# define TEST_ASSERT_SEGFAULT__WANTED(cb)
 # define TEST_ASSERT_SEGFAULT__UNWANTED(cb)
 
 #endif
