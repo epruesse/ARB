@@ -994,6 +994,8 @@ static POS_TREE *theChain = NULL;
 static DataLoc  *theLoc   = NULL;
 static void bad_add_to_chain() {
     PT_add_to_chain(theChain, *theLoc);
+    theChain = NULL;
+    theLoc   = NULL;
 }
 
 void TEST_chains() {
@@ -1005,26 +1007,34 @@ void TEST_chains() {
     root = PT_change_leaf_to_node(root);
     TEST_ASSERT_EQUAL(PT_read_type(root), PT_NT_NODE);
 
-    DataLoc loc1(1, 200, 200);
+    DataLoc loc1a(1, 200, 200);
     DataLoc loc1b(1, 500, 500);
-    DataLoc loc2(2, 300, 300);
 
-    {
-        POS_TREE *leaf = PT_create_leaf(&root, PT_A, loc1);
+    DataLoc loc2a(2, 300, 300);
+    DataLoc loc2b(2, 700, 700);
+
+    for (int base = PT_A; base <= PT_G; ++base) {
+        POS_TREE *leaf = PT_create_leaf(&root, PT_BASES(base), loc1a);
         TEST_ASSERT_EQUAL(PT_read_type(leaf), PT_NT_LEAF);
 
         POS_TREE *chain = PT_leaf_to_chain(leaf);
         TEST_ASSERT_EQUAL(PT_read_type(chain), PT_NT_CHAIN);
         TEST_ASSERT(PT_chain_has_valid_entries(chain));
 
-        PT_add_to_chain(chain, loc2);
+        PT_add_to_chain(chain, loc2a);
         TEST_ASSERT(PT_chain_has_valid_entries(chain));
 
-        theChain = chain; theLoc = &loc2;  TEST_ASSERT_CODE_ASSERTION_FAILS(bad_add_to_chain);
-        theChain = chain; theLoc = &loc1b; TEST_ASSERT_CODE_ASSERTION_FAILS(bad_add_to_chain);
+        // now chain is 'loc1a,loc2a'
+
+        switch (base) {
+            case PT_A: theChain = chain; theLoc = &loc2a;  TEST_ASSERT_CODE_ASSERTION_FAILS(bad_add_to_chain); break; // add same location twice -> fail
+            case PT_C: theChain = chain; theLoc = &loc1b; TEST_ASSERT_CODE_ASSERTION_FAILS(bad_add_to_chain); break;  // add species in wrong order -> fail
+            case PT_G: theChain = chain; theLoc = &loc2b; TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(bad_add_to_chain); break; // add positions in wrong order (should fail)
+            default: TEST_ASSERT(0); break;
+        }
     }
     {
-        POS_TREE *leaf = PT_create_leaf(&root, PT_QU, loc1); // PT_QU always produces chain
+        POS_TREE *leaf = PT_create_leaf(&root, PT_QU, loc1a); // PT_QU always produces chain
         TEST_ASSERT_EQUAL(PT_read_type(leaf), PT_NT_CHAIN);
     }
 }
