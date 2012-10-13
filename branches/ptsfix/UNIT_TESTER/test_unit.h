@@ -1229,7 +1229,7 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 # ifdef ASSERTION_USED
 
 #  define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)           TEST_EXPECT(expect_callback(cb, DOES_SEGFAULT, FAILS_ASSERTION, true))
-#  define TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(cb)   TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FAILS_ASSERTION, false))
+#  define TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(cb)   TEST_EXPECT__WANTED(expect_callback(cb, DOES_SEGFAULT, FAILS_ASSERTION, false))
 #  define TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(cb) TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, false))
 #  define TEST_ASSERT_SEGFAULT(cb)                       TEST_EXPECT(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, true)) 
 #  define TEST_ASSERT_SEGFAULT__WANTED(cb)               TEST_EXPECT__WANTED(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, false)) 
