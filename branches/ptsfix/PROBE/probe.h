@@ -102,15 +102,22 @@ struct POS_TREE {
     char  data;
 };
 
-struct PTM2 {
-    char *data_start;                               // points to start of data
-    int   stage1;
-    int   stage2;
-    int   stage3;
-    int   mode;
+enum Stage { STAGE1, STAGE3 }; // STAGE2 does not exist
+
+class PTM2 {
+    Stage  stage;
+    int    data_offset;
+    char  *data_start;
+
+public:
+    PTM2(Stage stage_);
+
+    Stage get_stage() const { return stage; }
+    int get_offset() const { return data_offset; }
+
+    void use_rel_pointers(char *relStartAddress) { data_start = relStartAddress; }
+    POS_TREE *rel2abs(int relPtr) const { return (POS_TREE*)(data_start+relPtr); }
 };
-
-
 
 // ---------------------
 //      Probe search
@@ -283,8 +290,10 @@ extern struct probe_struct_global {
 
     void setup();
     void cleanup();
-    
+
 } psg;
+
+#define pt_assert_stage(s) pt_assert(psg.ptmain->get_stage() == (s))
 
 class gene_struct {
     char       *gene_name;
@@ -357,5 +366,4 @@ extern gene_struct_index_internal gene_struct_internal2arb; // sorted by interna
 #else
 #error probe.h included twice
 #endif
-
 

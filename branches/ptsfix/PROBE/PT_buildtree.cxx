@@ -153,9 +153,9 @@ inline void get_abs_align_pos(char *seq, int &pos) {
 
 static long PTD_save_partial_tree(FILE *out, POS_TREE * node, char *partstring, int partsize, long pos, long *node_pos, ARB_ERROR& error) {
     // 'node_pos' is set to the root-node of the last written subtree (only if partsize == 0)
-    
+    pt_assert_stage(STAGE1);
     if (partsize) {
-        POS_TREE *son = PT_read_son(node, (PT_BASES)partstring[0]);
+        POS_TREE *son = PT_read_son_stage_1(node, (PT_BASES)partstring[0]);
         if (son) {
             long dummy;
             pos = PTD_save_partial_tree(out, son, partstring+1, partsize-1, pos, &dummy, error);
@@ -211,8 +211,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
             // ARB applications by writing to log
             GBS_add_ptserver_logentry(GBS_global_string("Calculating probe tree (%s)", tname));
 
-            psg.ptmain = PT_init();
-            psg.ptmain->stage1 = 1;             // enter stage 1
+            psg.ptmain = PT_init(STAGE1);
 
             pt = PT_create_leaf(NULL, PT_N, DataLoc(0, 0, 0));  // create main node
             pt = PT_change_leaf_to_node(pt);
@@ -377,9 +376,8 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
 ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USERESULT
     // load tree from disk
     ARB_ERROR error;
-    
-    psg.ptmain         = PT_init();
-    psg.ptmain->stage3 = 1;                         // enter stage 3
+
+    psg.ptmain = PT_init(STAGE3);
 
     {
         long size = GB_size_of_file(tname);

@@ -366,8 +366,9 @@ inline const char *PT_READ_CHAIN_ENTRY(const char* ptr, int mainapos, int *name,
 
 
 inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr, const int mainapos, int name, const int apos, const int rpos) { // stage 1
+    pt_assert_stage(STAGE1);
     unsigned char *wcep = (unsigned char *)ptr;
-    int  isapos;
+    int            isapos;
     if (name < 0x7f) {      // write the name
         *(wcep++) = name;
     }
@@ -408,106 +409,110 @@ inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr, const int mainapos, in
     }
     return (char *)wcep;
 }
-// calculate the index of the pointer in a node
 
-inline POS_TREE *PT_read_son(POS_TREE *node, PT_BASES base)
-{
-    long  i;
-    UINT  sec;
-    PTM2 *ptmain = psg.ptmain;
-    if (ptmain->stage3) {       // stage 3  no father
-        if (node->flags & IS_SINGLE_BRANCH_NODE) {
-            if (base != (node->flags & 0x7)) return NULL;  // no son
-            i = (node->flags >> 3)&0x7;         // this son
-            if (!i) i = 1; else i+=2;           // offset mapping
-            pt_assert(i >= 0);
-            return (POS_TREE *)(((char *)node)-i);
-        }
-        if (!((1<<base) & node->flags)) return NULL;   // bit not set
-        sec = (uchar)node->data;    // read second byte for charshort/shortlong info
-        i = PT_count_bits[base][node->flags];
-        i += PT_count_bits[base][sec];
+inline const char *node_data_start(POS_TREE *node) { return &node->data + psg.ptmain->get_offset(); }
+
+inline POS_TREE *PT_read_son_stage_3(POS_TREE *node, PT_BASES base) { // stage 3 (no father)
+    pt_assert_stage(STAGE3);
+    
+    if (node->flags & IS_SINGLE_BRANCH_NODE) {
+        if (base != (node->flags & 0x7)) return NULL;  // no son
+        long i = (node->flags >> 3)&0x7;         // this son
+        if (!i) i = 1; else i+=2;           // offset mapping
+        pt_assert(i >= 0);
+        return (POS_TREE *)(((char *)node)-i);
+    }
+    if (!((1<<base) & node->flags)) { // bit not set
+        return NULL;
+    }
+    
+    UINT sec  = (uchar)node->data;   // read second byte for charshort/shortlong info
+    long i    = PT_count_bits[base][node->flags];
+    i        += PT_count_bits[base][sec];
 #ifdef ARB_64
-        if (sec & LONG_SONS) {
-            if (sec & INT_SONS) {                                   // undefined -> error
-                GBK_terminate("Your pt-server search tree is corrupt! You can not use it anymore.\n"
-                              "Error: ((sec & LONG_SON) && (sec & INT_SONS)) == true\n"
-                              "       this combination of both flags is not implemented");
-            }
-            else {                                                // long/int
+    if (sec & LONG_SONS) {
+        if (sec & INT_SONS) {                                   // undefined -> error
+            GBK_terminate("Your pt-server search tree is corrupt! You can not use it anymore.\n"
+                          "Error: ((sec & LONG_SON) && (sec & INT_SONS)) == true\n"
+                          "       this combination of both flags is not implemented");
+        }
+        else {                                                // long/int
 #ifdef DEBUG
-                printf("Warning: A search tree of this size is not tested.\n");
-                printf("         (sec & LONG_SON) == true\n");
+            printf("Warning: A search tree of this size is not tested.\n");
+            printf("         (sec & LONG_SON) == true\n");
 #endif
-                UINT offset = 4 * i;
-                if ((1<<base) & sec) {              // long
-                    COMPILE_ASSERT(sizeof(PT_PNTR) == 8); // 64-bit necessary
-                    PT_READ_PNTR((&node->data+1)+offset, i);
-                }
-                else {                                              // int
-                    PT_READ_INT((&node->data+1)+offset, i);
-                }
+            UINT offset = 4 * i;
+            if ((1<<base) & sec) {              // long
+                COMPILE_ASSERT(sizeof(PT_PNTR) == 8); // 64-bit necessary
+                PT_READ_PNTR((&node->data+1)+offset, i);
             }
-
-        }
-        else {
-            if (sec & INT_SONS) {                                   // int/short
-                UINT offset = i+i;
-                if ((1<<base) & sec) {                              // int
-                    PT_READ_INT((&node->data+1)+offset, i);
-                }
-                else {                                              // short
-                    PT_READ_SHORT((&node->data+1)+offset, i);
-                }
-            }
-            else {                                                  // short/char
-                UINT offset = i;
-                if ((1<<base) & sec) {                              // short
-                    PT_READ_SHORT((&node->data+1)+offset, i);
-                }
-                else {                                              // char
-                    PT_READ_CHAR((&node->data+1)+offset, i);
-                }
-            }
-        }
-#else
-        if (sec & LONG_SONS) {
-            UINT offset = i+i;
-            if ((1<<base) & sec) {
+            else {                                              // int
                 PT_READ_INT((&node->data+1)+offset, i);
             }
-            else {
+        }
+
+    }
+    else {
+        if (sec & INT_SONS) {                                   // int/short
+            UINT offset = i+i;
+            if ((1<<base) & sec) {                              // int
+                PT_READ_INT((&node->data+1)+offset, i);
+            }
+            else {                                              // short
                 PT_READ_SHORT((&node->data+1)+offset, i);
             }
         }
-        else {
+        else {                                                  // short/char
             UINT offset = i;
-            if ((1<<base) & sec) {
+            if ((1<<base) & sec) {                              // short
                 PT_READ_SHORT((&node->data+1)+offset, i);
             }
-            else {
+            else {                                              // char
                 PT_READ_CHAR((&node->data+1)+offset, i);
             }
         }
+    }
+#else
+    if (sec & LONG_SONS) {
+        UINT offset = i+i;
+        if ((1<<base) & sec) {
+            PT_READ_INT((&node->data+1)+offset, i);
+        }
+        else {
+            PT_READ_SHORT((&node->data+1)+offset, i);
+        }
+    }
+    else {
+        UINT offset = i;
+        if ((1<<base) & sec) {
+            PT_READ_SHORT((&node->data+1)+offset, i);
+        }
+        else {
+            PT_READ_CHAR((&node->data+1)+offset, i);
+        }
+    }
 #endif
-        pt_assert(i >= 0);
-        return (POS_TREE *)(((char*)node)-i);
-
-    }
-    else {          // stage 1 or 2 ->father
-        if (!((1<<base) & node->flags)) return NULL;   // bit not set
-        base = (PT_BASES)PT_count_bits[base][node->flags];
-        PT_READ_PNTR((&node->data)+sizeof(PT_PNTR)*base+ptmain->mode, i);
-        return (POS_TREE *)(i+ptmain->data_start); // ptmain->data_start == 0x00 in stage 1
-    }
+    pt_assert(i >= 0);
+    return (POS_TREE *)(((char*)node)-i);
 }
 
 inline POS_TREE *PT_read_son_stage_1(POS_TREE *node, PT_BASES base) {
+    pt_assert_stage(STAGE1);
     if (!((1<<base) & node->flags)) return NULL;   // bit not set
     base = (PT_BASES)PT_count_bits[base][node->flags];
     long i;
-    PT_READ_PNTR((&node->data)+sizeof(PT_PNTR)*base+psg.ptmain->mode, i);
-    return (POS_TREE *)(i+psg.ptmain->data_start); // psg.ptmain->data_start == 0x00 in stage 1
+    PT_READ_PNTR(node_data_start(node) + sizeof(PT_PNTR)*base, i);
+    return psg.ptmain->rel2abs(i);
+}
+
+inline POS_TREE *PT_read_son(POS_TREE *node, PT_BASES base) {
+    PTM2 *ptmain = psg.ptmain;
+    if (ptmain->get_stage() == STAGE3) {
+        return PT_read_son_stage_3(node, base);
+    }
+    else {
+        return PT_read_son_stage_1(node, base);
+    }
 }
 
 inline PT_NODE_TYPE PT_read_type(POS_TREE *node) {
@@ -540,7 +545,7 @@ struct DataLoc {
     }
     void init(POS_TREE *node) {
         pt_assert(PT_read_type(node) == PT_NT_LEAF);
-        char *data = (&node->data)+psg.ptmain->mode;
+        const char *data = node_data_start(node);
         if (node->flags&1) { PT_READ_INT(data, name); data += 4; } else { PT_READ_SHORT(data, name); data += 2; }
         if (node->flags&2) { PT_READ_INT(data, rpos); data += 4; } else { PT_READ_SHORT(data, rpos); data += 2; }
         if (node->flags&4) { PT_READ_INT(data, apos); data += 4; } else { PT_READ_SHORT(data, apos); /*data += 2;*/ }
@@ -573,7 +578,7 @@ template<typename T>
 int PT_forwhole_chain(POS_TREE *node, T func) {
     pt_assert(PT_read_type(node) == PT_NT_CHAIN);
 
-    const char *data = (&node->data) + psg.ptmain->mode;
+    const char *data = node_data_start(node);
     int         pos;
 
     if (node->flags&1) {
