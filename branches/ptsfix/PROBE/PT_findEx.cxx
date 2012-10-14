@@ -121,7 +121,7 @@ int PT_find_exProb(PT_exProb *pep, int) {
             compress_data(probe);
 
             pep->next_probe.data = probe;
-            pep->next_probe.size = pep->plength+1;
+            pep->next_probe.size = pep->plength;
 
             found = findLeftmostProbe(pt, pep->next_probe.data, pep->plength, 0);
         }
