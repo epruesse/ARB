@@ -310,10 +310,12 @@ COMPILE_ASSERT(sizeof(void*) == sizeof(unsigned int));
 
 inline const char *PT_READ_CHAIN_ENTRY(const char* ptr, int mainapos, int *name, int *apos, int *rpos) {
     // Caution: 'name' has to be initialized before first call and shall not be modified between calls
- 
+
+    pt_assert_stage(STAGE3);
+
     *apos = 0;
     *rpos = 0;
-    
+
     unsigned char *rcep = (unsigned char*)ptr;
     unsigned int   rcei = (*rcep);
 
@@ -368,7 +370,6 @@ inline const char *PT_READ_CHAIN_ENTRY(const char* ptr, int mainapos, int *name,
 inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr, const int mainapos, int name, const int apos, const int rpos) { // stage 1
     pt_assert_stage(STAGE1);
     unsigned char *wcep = (unsigned char *)ptr;
-    int            isapos;
     if (name < 0x7f) {      // write the name
         *(wcep++) = name;
     }
@@ -383,10 +384,9 @@ inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr, const int mainapos, in
         wcep += 4;
     }
 
-    if (apos == mainapos) isapos = 0; else isapos = 0x80;
-
+    int isapos = (apos == mainapos) ? 0 : 0x80;
     if (rpos < 0x3fff) {        // write the rpos
-           // 0x7fff, mit der rpos vorher verglichen wurde war zu gross
+        // 0x7fff, mit der rpos vorher verglichen wurde war zu gross
         PT_WRITE_SHORT(wcep, rpos);
         *wcep |= isapos;
         wcep += 2;
@@ -396,6 +396,7 @@ inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr, const int mainapos, in
         *wcep |= 0x40+isapos;
         wcep += 4;
     }
+
     if (isapos) {           // write the apos
         if (apos < 0x7fff) {
             PT_WRITE_SHORT(wcep, apos);
@@ -540,8 +541,13 @@ struct DataLoc {
     int apos;
     int rpos; // position in data
 
+#if defined(ASSERTION_USED)
+    bool has_valid_name() const { return name >= 0 && name < psg.data_count; }
+#endif
+
     void init(const char ** data, int pos) {
         *data = PT_READ_CHAIN_ENTRY(*data, pos, &name, &apos, &rpos);
+        pt_assert(name == -1 || has_valid_name());
     }
     void init(POS_TREE *node) {
         pt_assert(PT_read_type(node) == PT_NT_LEAF);
@@ -550,7 +556,7 @@ struct DataLoc {
         if (node->flags&2) { PT_READ_INT(data, rpos); data += 4; } else { PT_READ_SHORT(data, rpos); data += 2; }
         if (node->flags&4) { PT_READ_INT(data, apos); data += 4; } else { PT_READ_SHORT(data, apos); /*data += 2;*/ }
 
-        pt_assert(name >= 0);
+        pt_assert(has_valid_name());
         pt_assert(apos >= 0);
         pt_assert(rpos >= 0);
     }
@@ -559,7 +565,7 @@ struct DataLoc {
     DataLoc(POS_TREE *pt) { init(pt); }
     DataLoc(const char ** data, int pos) { name = 0; init(data, pos); }
 
-    const probe_input_data& get_pid() const { pt_assert(name >= 0 && name<psg.data_count); return psg.data[name]; }
+    const probe_input_data& get_pid() const { pt_assert(has_valid_name()); return psg.data[name]; }
     const char *get_data() const { return get_pid().get_data(); }
     PT_BASES operator[](int offset) const { return PT_BASES(get_data()[rpos+offset]); }
 

@@ -72,16 +72,7 @@ bool PT_chain_has_valid_entries(POS_TREE * const node) {
     pt_assert(PT_read_type(node) == PT_NT_CHAIN);
 
     const char *data = node_data_start(node);
-    int         mainapos;
-
-    if (node->flags&1) {
-        PT_READ_INT(data, mainapos);
-        data += 4;
-    }
-    else {
-        PT_READ_SHORT(data, mainapos);
-        data += 2;
-    }
+    data += (node->flags&1) ? 4 : 2;
 
     long first_entry;
     PT_READ_PNTR(data, first_entry);
@@ -93,7 +84,7 @@ bool PT_chain_has_valid_entries(POS_TREE * const node) {
     bool ok = PT_chain_entryTab_valid(entry_tab, n_entries);
 
     free(entry_tab);
-    
+
     return ok;
 }
 
@@ -1017,6 +1008,7 @@ static void bad_add_to_chain() {
 
 void TEST_chains() {
     EnterStage1 env;
+    psg.data_count = 3;
 
     POS_TREE *root = PT_create_leaf(NULL, PT_N, DataLoc(0, 0, 0));
     TEST_ASSERT_EQUAL(PT_read_type(root), PT_NT_LEAF);
