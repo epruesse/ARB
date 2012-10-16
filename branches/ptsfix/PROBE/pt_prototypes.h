@@ -51,6 +51,8 @@ void PT_build_species_hash(void);
 long PT_abs_2_rel(long pos);
 
 /* PT_main.cxx */
+void PT_init_psg(void);
+void PT_exit_psg(void);
 int server_shutdown(PT_main *pm, aisc_string passwd);
 int broadcast(PT_main *main, int dummy_1x);
 int ARB_main(int argc, const char *argv[]);

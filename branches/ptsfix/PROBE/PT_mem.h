@@ -22,17 +22,21 @@
 #include "PT_tools.h"
 #endif
 
-#define PTM_TABLE_SIZE (1024*256)
-#define PTM_MAX_TABLES 256
-#define PTM_MAX_SIZE   PTM_MAX_TABLES
-#define PTM_magic      0xf4
+#define PTM_TABLE_SIZE  (1024*256)
+
+#define PTM_TABLE_COUNT 256
+
+#define PTM_MIN_SIZE 1
+#define PTM_MAX_SIZE (PTM_TABLE_COUNT-PTM_MIN_SIZE-1)
+
+#define PTM_magic 0xf4
 
 class Memory : public Noncopyable {
     char *data;
     int   data_size;
     long  allsize;
 
-    char *tables[PTM_MAX_TABLES+1];
+    char *tables[PTM_TABLE_COUNT];
 
     void          **alloc_ptr;
     unsigned long   alloc_counter;
@@ -80,6 +84,12 @@ class Memory : public Noncopyable {
         return result;
     }
 
+    void clear_tables() {
+        for (int t = 0; t < PTM_TABLE_COUNT; ++t) {
+            tables[t] = NULL;
+        }
+    }
+    
 public:
 
     Memory()
@@ -90,23 +100,23 @@ public:
           alloc_counter(0),
           alloc_array_size(0)
     {
-        for (int t = 0; t <= PTM_MAX_TABLES; ++t) {
-            tables[t] = NULL;
-        }
+        clear_tables();
     }
 
     char *get(int size) {
+        pt_assert(size >= PTM_MIN_SIZE);
+
         if (size > PTM_MAX_SIZE) {
             void *ptr = calloc(1, size);
-            add_alloc(ptr);
             return (char *) ptr;
         }
 
-        char *erg = tables[size];
+        int   tab = size-PTM_MIN_SIZE;
+        char *erg = tables[tab];
         if (erg) {
             long i;
-            PT_READ_PNTR(((char *)tables[size]), i);
-            tables[size] = (char *)i;
+            PT_READ_PNTR(((char *)tables[tab]), i);
+            tables[tab] = (char *)i;
         }
         else {
             erg = get_new_mem(size);
@@ -116,18 +126,19 @@ public:
     }
 
     void put(char *block, int size) {
-        pt_assert(size > 0);
+        pt_assert(size >= PTM_MIN_SIZE);
 
         if (size > PTM_MAX_SIZE) {
             free(block);
         }
         else {
-            long i = (long)tables[size];
+            int  tab = size-PTM_MIN_SIZE;
+            long i   = (long)tables[tab];
 
             PT_WRITE_PNTR(block, i);
             block[sizeof(PT_PNTR)] = PTM_magic;
 
-            tables[size] = block;
+            tables[tab] = block;
         }
     }
 
@@ -137,14 +148,23 @@ public:
         }
         alloc_counter    = 0;
         alloc_array_size = 0;
-        free(alloc_ptr);
+        freenull(alloc_ptr);
+
+        data      = NULL;
+        data_size = 0;
+        allsize   = 0;
+
+        clear_tables();
     }
 
     bool is_clear() const {
         return
             alloc_ptr        == NULL &&
             alloc_counter    == 0    &&
-            alloc_array_size == 0;
+            alloc_array_size == 0    &&
+            data             == NULL &&
+            data_size        == 0    &&
+            allsize          == 0;
     }
 };
 

@@ -96,6 +96,7 @@ struct Memory MEM;
 
 void PTM_finally_free_all_mem() {
     MEM.clear();
+    pt_assert(MEM.is_clear());
 }
 
 static char *PTM_get_mem(int size) {
@@ -868,11 +869,11 @@ static arb_test::match_expectation has_proper_saved_state(POS_TREE *node, int si
 
 struct EnterStage1 {
     EnterStage1() {
+        PT_init_psg();
         psg.ptdata = PT_init(STAGE1);
     }
     ~EnterStage1() {
-        psg.cleanup();
-        PTM_finally_free_all_mem();
+        PT_exit_psg();
     }
 };
 
@@ -963,6 +964,20 @@ void TEST_chains() {
     {
         POS_TREE *leaf = PT_create_leaf(&root, PT_QU, loc1a); // PT_QU always produces chain
         TEST_ASSERT_EQUAL(PT_read_type(leaf), PT_NT_CHAIN);
+    }
+}
+
+void TEST_mem() {
+    EnterStage1 env;
+    
+    const int  MAXSIZE = 1024;
+    char      *ptr[MAXSIZE];
+
+    for (int size = 1; size <= MAXSIZE; ++size) {
+        ptr[size-1] = PTM_get_mem(size);
+    }
+    for (int size = 1; size <= MAXSIZE; ++size) {
+        PTM_free_mem(ptr[size-1], size);
     }
 }
 

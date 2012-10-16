@@ -108,7 +108,7 @@ void probe_struct_global::setup() {
     link        = NULL;
 
     main.clear();
-    
+
     com_so = NULL;
     pt     = NULL;
     ptdata = NULL;
@@ -144,31 +144,25 @@ void probe_struct_global::cleanup() {
 }
 
 static bool psg_initialized = false;
-static void PT_init_psg() {
+void PT_init_psg() {
     pt_assert(!psg_initialized);
     psg.setup();
     psg_initialized = true;
 }
 
-static void PT_exit_psg() {
-#if defined(ASSERTION_USED)
-    static bool executed = false;
-    pt_assert(!executed);
-    executed             = true;
-#endif
-
+void PT_exit_psg() {
     pt_assert(psg_initialized);
     if (psg_initialized) {
         psg.cleanup();
         psg_initialized = false;
     }
+    PTM_finally_free_all_mem();
 }
 
 static void PT_exit() { 
     // unique exit point to ensure cleanup
     if (aisc_main) destroy_PT_main(aisc_main);
     if (psg_initialized) PT_exit_psg();
-    PTM_finally_free_all_mem();
 }
 
 // ----------------------
