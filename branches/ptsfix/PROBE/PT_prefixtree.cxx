@@ -954,10 +954,10 @@ void TEST_mem() {
     const int  MAXSIZE = 1024;
     char      *ptr[MAXSIZE];
 
-    for (int size = 1; size <= MAXSIZE; ++size) {
+    for (int size = PTM_MIN_SIZE; size <= MAXSIZE; ++size) {
         ptr[size-1] = (char*)MEM.get(size);
     }
-    for (int size = 1; size <= MAXSIZE; ++size) {
+    for (int size = PTM_MIN_SIZE; size <= MAXSIZE; ++size) {
         MEM.put(ptr[size-1], size);
     }
 }

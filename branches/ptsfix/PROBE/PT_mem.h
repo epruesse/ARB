@@ -26,7 +26,7 @@
 
 #define PTM_TABLE_COUNT 256
 
-#define PTM_MIN_SIZE 1
+#define PTM_MIN_SIZE (int(sizeof(PT_PNTR))+1) // see .@PTM_MIN_SIZE_RESTRICTED
 #define PTM_MAX_SIZE (PTM_TABLE_COUNT-PTM_MIN_SIZE-1)
 
 #define PTM_magic 0xf4
@@ -136,6 +136,7 @@ public:
             int  tab = size-PTM_MIN_SIZE;
             long i   = (long)tables[tab];
 
+            // PTM_MIN_SIZE_RESTRICTED by amount written here
             PT_WRITE_PNTR(block, i);
             block[sizeof(PT_PNTR)] = PTM_magic;
 
