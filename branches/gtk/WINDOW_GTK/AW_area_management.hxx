@@ -7,9 +7,8 @@
 
 #pragma once
 
-#include <gtk/gtk.h> //FIXME gtk include
 #include "aw_base.hxx"
-
+#include "AW_gtk_forward_declarations.hxx"
 class AW_window;
 class AW_root;
 class AW_common_gtk;

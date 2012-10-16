@@ -15,6 +15,7 @@
 #include "aw_window.hxx"
 #include <gdk/gdkgc.h>
 #include <gdk/gdkpixmap.h>
+#include <gtk/gtkwidget.h>
 #include "aw_xfont.hxx"
 //FIXME remove of xfont is gone
 #include <gdk/gdkx.h>

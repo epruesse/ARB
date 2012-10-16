@@ -13,7 +13,7 @@
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
-
+#include "AW_gtk_forward_declarations.hxx"
 #include "aw_root_gtk.hxx"
 #include <string>
 
@@ -21,7 +21,6 @@
 #define aw_assert(bed) arb_assert(bed)
 #endif
 
-#include <gtk/gtkwidget.h>
 
 typedef void (*AW_RCB0)(AW_root*);
 typedef void (*AW_RCB1)(AW_root*, AW_CL);

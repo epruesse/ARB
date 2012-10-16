@@ -10,10 +10,8 @@
 // ============================================================= //
 
 #pragma once
-#include <gdk/gdk.h>
 #include "aw_common.hxx"
-#include <gtk/gtkwidget.h>
-
+#include "AW_gtk_forward_declarations.hxx"
 class AW_common_gtk;
 
 /**

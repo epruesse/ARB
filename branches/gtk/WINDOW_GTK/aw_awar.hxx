@@ -31,7 +31,9 @@
 #include <arbtools.h>
 #endif
 
-#include <gtk/gtkwidget.h>
+#include "AW_gtk_forward_declarations.hxx"
+
+
 
 // --------------
 //      AWARS

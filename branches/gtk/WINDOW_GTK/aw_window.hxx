@@ -17,8 +17,7 @@
 #endif
 
 #include "aw_at.hxx"
-
-#include <gtk/gtkmenubar.h>
+#include "AW_gtk_forward_declarations.hxx"
 
 class AW_window;
 class AW_xfig;
