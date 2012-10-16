@@ -23,10 +23,8 @@
 #endif
 
 #define PTM_TABLE_SIZE (1024*256)
-#define PTM_ALIGNED    1
-#define PTM_LD_ALIGNED 0
 #define PTM_MAX_TABLES 256
-#define PTM_MAX_SIZE   (PTM_MAX_TABLES*PTM_ALIGNED)
+#define PTM_MAX_SIZE   PTM_MAX_TABLES
 #define PTM_magic      0xf4
 
 class Memory : public Noncopyable {
@@ -82,7 +80,7 @@ class Memory : public Noncopyable {
         return result;
     }
 
-public: 
+public:
 
     Memory()
         : data(NULL),
@@ -98,43 +96,38 @@ public:
     }
 
     char *get(int size) {
-        int nsize = (size + (PTM_ALIGNED - 1)) & (-PTM_ALIGNED);
-        if (nsize > PTM_MAX_SIZE) {
+        if (size > PTM_MAX_SIZE) {
             void *ptr = calloc(1, size);
             add_alloc(ptr);
             return (char *) ptr;
         }
 
-        int pos = nsize >> PTM_LD_ALIGNED;
-
-        char *erg = tables[pos];
+        char *erg = tables[size];
         if (erg) {
             long i;
-            PT_READ_PNTR(((char *)tables[pos]), i);
-            tables[pos] = (char *)i;
+            PT_READ_PNTR(((char *)tables[size]), i);
+            tables[size] = (char *)i;
         }
         else {
-            erg = get_new_mem(nsize);
+            erg = get_new_mem(size);
         }
-        memset(erg, 0, nsize);
+        memset(erg, 0, size);
         return erg;
     }
 
     void put(char *block, int size) {
         pt_assert(size > 0);
 
-        int nsize = (size + (PTM_ALIGNED - 1)) & (-PTM_ALIGNED);
-        if (nsize > PTM_MAX_SIZE) {
+        if (size > PTM_MAX_SIZE) {
             free(block);
         }
         else {
-            // if (block[4] == PTM_magic) PT_CORE
-            int pos = nsize >> PTM_LD_ALIGNED;
+            long i = (long)tables[size];
 
-            long i = (long)tables[pos];
             PT_WRITE_PNTR(block, i);
             block[sizeof(PT_PNTR)] = PTM_magic;
-            tables[pos] = block;
+
+            tables[size] = block;
         }
     }
 
