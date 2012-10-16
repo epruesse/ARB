@@ -19,6 +19,7 @@
 #include "aw_window.hxx"
 #include "aw_select.hxx"
 
+#include <gtk/gtkwidget.h>
 
 #define AWAR_EPS 0.00000001
 

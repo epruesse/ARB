@@ -8,5 +8,7 @@
 
 
 #pragma once
+struct _GtkWidget; 
+struct _GtkMenuBar;
 typedef struct _GtkWidget      GtkWidget;
 typedef struct _GtkMenuBar       GtkMenuBar;
