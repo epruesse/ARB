@@ -24,7 +24,8 @@
 #define pt_assert(bed) arb_assert(bed)
 
 #if defined(DEBUG)
-// # define PTM_DEBUG
+// # define PTM_DEBUG_NODES
+// # define PTM_DEBUG_MEM
 #endif // DEBUG
 
 typedef unsigned long ULONG;
@@ -104,13 +105,13 @@ struct POS_TREE {
 
 enum Stage { STAGE1, STAGE3 }; // STAGE2 does not exist
 
-class PTM2 {
+class PT_data {
     Stage  stage;
     int    data_offset;
     char  *data_start;
 
 public:
-    PTM2(Stage stage_);
+    PT_data(Stage stage_);
 
     Stage get_stage() const { return stage; }
     int get_offset() const { return data_offset; }
@@ -284,7 +285,7 @@ extern struct probe_struct_global {
     T_PT_MAIN  main;
     Hs_struct *com_so;                              // the communication socket
     POS_TREE  *pt;
-    PTM2      *ptmain;
+    PT_data   *ptdata;
 
     probe_statistic_struct stat;
 
@@ -293,7 +294,7 @@ extern struct probe_struct_global {
 
 } psg;
 
-#define pt_assert_stage(s) pt_assert(psg.ptmain->get_stage() == (s))
+#define pt_assert_stage(s) pt_assert(psg.ptdata->get_stage() == (s))
 
 class gene_struct {
     char       *gene_name;

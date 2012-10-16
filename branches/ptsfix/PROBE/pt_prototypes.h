@@ -75,7 +75,7 @@ int PT_start_design(PT_pdc *pdc, int dummy_1x);
 /* PT_prefixtree.cxx */
 bool PT_chain_has_valid_entries(POS_TREE *const node);
 void PTM_finally_free_all_mem(void);
-PTM2 *PT_init(Stage stage);
+PT_data *PT_init(Stage stage);
 void PT_add_to_chain(POS_TREE *node, const DataLoc &loc);
 POS_TREE *PT_change_leaf_to_node(POS_TREE *node);
 POS_TREE *PT_leaf_to_chain(POS_TREE *node);

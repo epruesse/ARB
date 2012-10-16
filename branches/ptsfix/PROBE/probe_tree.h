@@ -38,23 +38,12 @@
 
 typedef void * PT_PNTR;
 
-extern struct PTM_struct {
-    char         *data;
-    int           size;
-    long          allsize;
-    char         *tables[PTM_MAX_TABLES+1];
-#ifdef PTM_DEBUG
-    long          debug[PTM_MAX_TABLES+1];
-#endif
-    PT_NODE_TYPE  flag_2_type[256];
-    //
-    void **alloc_ptr;
-    unsigned long alloc_counter;
-    unsigned long alloc_array_size;
-} PTM;
+struct pt_global {
+    PT_NODE_TYPE flag_2_type[256];
+    char         count_bits[PT_B_MAX+1][256]; // returns how many bits are set (e.g. PT_count_bits[3][n] is the number of the 3 lsb bits)
+};
 
-extern char PT_count_bits[PT_B_MAX+1][256]; // returns how many bits are set
-        // e.g. PT_count_bits[3][n] is the number of the 3 lsb bits
+extern pt_global PT_GLOBAL;
 
 #if 0
 /*
@@ -178,17 +167,17 @@ only few functions can be used, when the tree is reloaded (stage 3):
 //      Get the size of entries (stage 1) only
 
 #define PT_EMPTY_LEAF_SIZE       (1+sizeof(PT_PNTR)+6) // tag father name rel apos
-#define PT_LEAF_SIZE(leaf)       (1+sizeof(PT_PNTR)+6+2*PT_count_bits[3][leaf->flags])
+#define PT_LEAF_SIZE(leaf)       (1+sizeof(PT_PNTR)+6+2*PT_GLOBAL.count_bits[3][leaf->flags])
 #define PT_EMPTY_CHAIN_SIZE      (1+sizeof(PT_PNTR)+2+sizeof(PT_PNTR)) // tag father apos first_elem
 #define PT_EMPTY_NODE_SIZE       (1+sizeof(PT_PNTR)) // tag father
-#define PT_NODE_COUNT_SONS(leaf) PT_count_bits[3][leaf->flags];
-#define PT_NODE_SIZE(node, size) size = PT_EMPTY_NODE_SIZE + sizeof(PT_PNTR)*PT_count_bits[PT_B_MAX][node->flags]
+#define PT_NODE_COUNT_SONS(leaf) PT_GLOBAL.count_bits[3][leaf->flags];
+#define PT_NODE_SIZE(node, size) size = PT_EMPTY_NODE_SIZE + sizeof(PT_PNTR)*PT_GLOBAL.count_bits[PT_B_MAX][node->flags]
 
 // ----------------------------
 //      Read and write type
 
-#define PT_GET_TYPE(pt)     (PTM.flag_2_type[pt->flags])
-#define PT_SET_TYPE(pt, i, j) (pt->flags = (i<<6)+j)
+#define PT_GET_TYPE(pt)     (PT_GLOBAL.flag_2_type[pt->flags])
+#define PT_SET_TYPE(pt,i,j) (pt->flags = (i<<6)+j)
 
 // ----------------------
 //      bswap for OSX
@@ -411,7 +400,7 @@ inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr, const int mainapos, in
     return (char *)wcep;
 }
 
-inline const char *node_data_start(POS_TREE *node) { return &node->data + psg.ptmain->get_offset(); }
+inline const char *node_data_start(POS_TREE *node) { return &node->data + psg.ptdata->get_offset(); }
 
 inline POS_TREE *PT_read_son_stage_3(POS_TREE *node, PT_BASES base) { // stage 3 (no father)
     pt_assert_stage(STAGE3);
@@ -428,8 +417,8 @@ inline POS_TREE *PT_read_son_stage_3(POS_TREE *node, PT_BASES base) { // stage 3
     }
     
     UINT sec  = (uchar)node->data;   // read second byte for charshort/shortlong info
-    long i    = PT_count_bits[base][node->flags];
-    i        += PT_count_bits[base][sec];
+    long i    = PT_GLOBAL.count_bits[base][node->flags];
+    i        += PT_GLOBAL.count_bits[base][sec];
 #ifdef ARB_64
     if (sec & LONG_SONS) {
         if (sec & INT_SONS) {                                   // undefined -> error
@@ -500,15 +489,15 @@ inline POS_TREE *PT_read_son_stage_3(POS_TREE *node, PT_BASES base) { // stage 3
 inline POS_TREE *PT_read_son_stage_1(POS_TREE *node, PT_BASES base) {
     pt_assert_stage(STAGE1);
     if (!((1<<base) & node->flags)) return NULL;   // bit not set
-    base = (PT_BASES)PT_count_bits[base][node->flags];
+    base = (PT_BASES)PT_GLOBAL.count_bits[base][node->flags];
     long i;
     PT_READ_PNTR(node_data_start(node) + sizeof(PT_PNTR)*base, i);
-    return psg.ptmain->rel2abs(i);
+    return psg.ptdata->rel2abs(i);
 }
 
 inline POS_TREE *PT_read_son(POS_TREE *node, PT_BASES base) {
-    PTM2 *ptmain = psg.ptmain;
-    if (ptmain->get_stage() == STAGE3) {
+    PT_data *ptdata = psg.ptdata;
+    if (ptdata->get_stage() == STAGE3) {
         return PT_read_son_stage_3(node, base);
     }
     else {

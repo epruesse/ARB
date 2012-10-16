@@ -164,13 +164,7 @@ static long PTD_save_partial_tree(FILE *out, POS_TREE * node, char *partstring, 
     }
     else {
         PTD_clear_fathers(node);
-#if defined(PTM_DEBUG)
-        fputs("flushing to disk [start]\n", stdout); fflush(stdout);
-#endif
         pos = PTD_write_leafs_to_disk(out, node, pos, node_pos, error);
-#if defined(PTM_DEBUG)
-        fputs("flushing to disk [end]\n", stdout); fflush(stdout);
-#endif
     }
     return pos;
 }
@@ -211,7 +205,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
             // ARB applications by writing to log
             GBS_add_ptserver_logentry(GBS_global_string("Calculating probe tree (%s)", tname));
 
-            psg.ptmain = PT_init(STAGE1);
+            psg.ptdata = PT_init(STAGE1);
 
             pt = PT_create_leaf(NULL, PT_N, DataLoc(0, 0, 0));  // create main node
             pt = PT_change_leaf_to_node(pt);
@@ -297,7 +291,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                 pos = PTD_save_partial_tree(out, pt, partstring, partsize, pos, &last_obj, error);
                 if (error) break;
 
-#ifdef PTM_DEBUG
+#ifdef PTM_DEBUG_NODES
                 PTD_debug_nodes();
 #endif
                 PT_inc_base_string_count(partstring, PT_QU, PT_B_MAX, partsize);
@@ -306,7 +300,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
             if (!error) {
                 if (partsize) {
                     pos = PTD_save_partial_tree(out, pt, NULL, 0, pos, &last_obj, error);
-#ifdef PTM_DEBUG
+#ifdef PTM_DEBUG_NODES
                     PTD_debug_nodes();
 #endif
                 }
@@ -377,7 +371,7 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USE
     // load tree from disk
     ARB_ERROR error;
 
-    psg.ptmain = PT_init(STAGE3);
+    psg.ptdata = PT_init(STAGE3);
 
     {
         long size = GB_size_of_file(tname);
