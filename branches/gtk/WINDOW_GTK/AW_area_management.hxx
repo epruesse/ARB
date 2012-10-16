@@ -7,8 +7,17 @@
 
 #pragma once
 
+#include <gtk/gtk.h> //FIXME gtk include
+#include "aw_base.hxx"
+
 class AW_window;
-class GtkWidget;
+class AW_root;
+class AW_common_gtk;
+class AW_device_gtk;
+class AW_device_size;
+class AW_device_print;
+class AW_device_click;
+class AW_cb_struct;
 /**
  * Contains information about one area inside a window.
  */
@@ -54,7 +63,7 @@ public:
 
     AW_cb_struct *get_double_click_cb();
     long get_click_time() const;
-    void set_click_time(long click_time_);
+    void set_click_time(long click_time);
 };
 
 

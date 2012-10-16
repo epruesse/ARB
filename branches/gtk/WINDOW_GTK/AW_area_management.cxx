@@ -35,7 +35,7 @@ public:
 
     long click_time;
     
-    AW_area_management::Pimpl() : 
+    Pimpl() : 
         form(NULL),
         area(NULL),
         common(NULL),
@@ -76,7 +76,7 @@ void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window
     if (!prvt->resize_cb) {//connect the gtk signal upon first call
 
         //note: we use the expose callback because there is no resize callback in gtk.
-        g_signal_connect (area, "expose_event",
+        g_signal_connect (prvt->area, "expose_event",
                           G_CALLBACK (draw_area_expose_cb), (gpointer) this);
 
     }
@@ -132,4 +132,4 @@ AW_device_gtk *AW_area_management::get_screen_device() {
 
 AW_cb_struct *AW_area_management::get_double_click_cb() { return prvt->double_click_cb; }
 long AW_area_management::get_click_time() const { return prvt->click_time; }
-void AW_area_management::set_click_time(long click_time_) { prvt->click_time = prvt->click_time_; }
+void AW_area_management::set_click_time(long click_time) { prvt->click_time = click_time; }

@@ -11,23 +11,56 @@
 
 #include "aw_gtk_migration_helpers.hxx"
 #include "aw_window.hxx"
-#include "aw_window_gtk.hxx"
+#include "AW_area_management.hxx"
 #include "aw_xfig.hxx"
 #include "aw_root.hxx"
 #include "aw_device.hxx"
 #include "aw_at.hxx"
 #include "aw_msg.hxx"
 #include "aw_awar.hxx"
+#include "aw_common.hxx"
 #include <arbdb.h>
 
 #include <gtk/gtklabel.h>
 #include <gtk/gtkfixed.h>
 #include <gtk/gtkbutton.h>
 #include <gtk/gtkcheckbutton.h>
-#include <gtk-2.0/gtk/gtkdrawingarea.h>
-#include <gtk-2.0/gtk/gtkvbox.h>
-#include <gtk-2.0/gtk/gtkmenubar.h>
-#include <gtk-2.0/gtk/gtkhbox.h>
+#include <gtk/gtkdrawingarea.h>
+#include <gtk/gtkvbox.h>
+#include <gtk/gtkmenubar.h>
+#include <gtk/gtkhbox.h>
+
+#include <vector>
+
+
+/**
+ * This class hides all gtk dependent attributes. 
+ * This is done to avoid gtk includes in the header file.
+ */
+class AW_window::AW_window_gtk {
+public:
+    
+    GtkWindow *window; /**< The gtk window instance managed by this aw_window */
+    
+    /**
+     *  A fixed size widget spanning the whole window. Everything is positioned on this widget using absolut coordinates.
+     * @note This area is only present in aw_window_simple
+     */
+    GtkFixed *fixed_size_area; 
+
+
+    /**
+     * A window consists of several areas.
+     * Some of those areas are named, some are unnamed.
+     * The unnamed areas are instantiated once and never changed, therefore no references to unnamed areas exist.
+     * Named areas are instantiated depending on the window type.
+     *
+     * This vector contains references to the named areas.
+     * The AW_Area enum is used to index this vector.
+     */
+    std::vector<AW_area_management *> areas;
+};
+
 
 
 void AW_clock_cursor(AW_root *) {
@@ -638,7 +671,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     // Note 2: "color" may be specified for the button background (see TuneOrSetBackground for details)
 
     GTK_PARTLY_IMPLEMENTED;
-    TuneOrSetBackground(_at.attach_any ? prvt.areas[AW_INFO_AREA]->get_form() : prvt.areas[AW_INFO_AREA]->get_area(), // set background for buttons / text displays
+    TuneOrSetBackground(_at.attach_any ? prvt->areas[AW_INFO_AREA]->get_form() : prvt->areas[AW_INFO_AREA]->get_area(), // set background for buttons / text displays
                         color,
                         _callback ? TUNE_BUTTON : 0);
 
@@ -769,9 +802,9 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
         y_label += (height_of_button-height_of_label)/2;
     }
 
-    //GtkWidget* parent_widget = (_at.attach_any) ? prvt.areas[AW_INFO_AREA]->get_form() : prvt.areas[AW_INFO_AREA]->get_area();
+    //GtkWidget* parent_widget = (_at.attach_any) ? prvt->areas[AW_INFO_AREA]->get_form() : prvt->areas[AW_INFO_AREA]->get_area();
     //FIXME quick hack
-    GtkWidget* parent_widget = GTK_WIDGET(prvt.fixed_size_area);
+    GtkWidget* parent_widget = GTK_WIDGET(prvt->fixed_size_area);
 
     GtkWidget* tmp_label = 0;
 
@@ -944,7 +977,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
 
     _at.correct_for_at_center = org_correct_for_at_center; // restore original justification
     _at.y_for_next_button     = org_y_for_next_button;
-    //FIXME prvt.toggle_field not set to button. What is its purpose anyway?
+    //FIXME prvt->toggle_field not set to button. What is its purpose anyway?
    // p_w->toggle_field = button;
 
     this->unset_at_commands();
@@ -1018,7 +1051,7 @@ void AW_window::create_toggle(const char *var_name){
 
     GtkWidget* checkButton = gtk_check_button_new();
 
-    GtkWidget* parent_widget = GTK_WIDGET(prvt.fixed_size_area);
+    GtkWidget* parent_widget = GTK_WIDGET(prvt->fixed_size_area);
     gtk_fixed_put(GTK_FIXED(parent_widget), checkButton, _at.x_for_next_button, _at.y_for_next_button);
     gtk_widget_show(checkButton);
 
@@ -1150,7 +1183,7 @@ AW_device_click *AW_window::get_click_device(AW_area /*area*/, int /*mousex*/, i
     return 0;
 }
 AW_device *AW_window::get_device(AW_area area){
-    AW_area_management *aram   = prvt.areas[area];
+    AW_area_management *aram   = prvt->areas[area];
     arb_assert(NULL != aram);
     return (AW_device *)aram->get_screen_device();
 }
@@ -1178,7 +1211,7 @@ void AW_window::help_text(const char */*id*/){
 }
 
 void AW_window::hide(){
-    gtk_widget_hide(GTK_WIDGET(prvt.window));
+    gtk_widget_hide(GTK_WIDGET(prvt->window));
 }
 
 void AW_window::hide_or_notify(const char */*error*/){
@@ -1456,7 +1489,7 @@ void AW_window::set_bottom_area_height(int /*height*/) {
 }
 
 void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1 /*= 0*/, AW_CL cd2 /*= 0*/) {
-//    AW_area_management *aram = prvt.areas[area];
+//    AW_area_management *aram = prvt->areas[area];
 //    if (aram) aram->set_expose_callback(this, f, cd1, cd2);
     GTK_NOT_IMPLEMENTED;
     //FIXME area management does no longer have an expose callback. Remove this if absolutely sure that it is not needed.
@@ -1491,7 +1524,7 @@ void AW_window::set_popup_callback(void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_C
 }
 
 void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1 /*= 0*/, AW_CL cd2 /*= 0*/) {
-    AW_area_management *aram = prvt.areas[area];
+    AW_area_management *aram = prvt->areas[area];
     if (!aram)
         return;
     aram->set_resize_callback(this, f, cd1, cd2);
@@ -1506,7 +1539,7 @@ void AW_window::set_vertical_scrollbar_position(int /*position*/) {
 }
 
 void AW_window::set_window_size(int width, int height) {
-    gtk_window_set_default_size(prvt.window, width, height);
+    gtk_window_set_default_size(prvt->window, width, height);
 }
 
 void AW_window::set_window_title(const char */*title*/){
@@ -1518,8 +1551,8 @@ void AW_window::shadow_width (int /*shadow_thickness*/) {
 }
 
 void AW_window::show() {
-    arb_assert(NULL != prvt.window);
-    gtk_widget_show(GTK_WIDGET(prvt.window));
+    arb_assert(NULL != prvt->window);
+    gtk_widget_show(GTK_WIDGET(prvt->window));
 
 }
 
@@ -1569,11 +1602,14 @@ void AW_window::d_callback(void (*/*f*/)(AW_window*)) {
 
 AW_window::AW_window() {
 
-    GTK_NOT_IMPLEMENTED;
-
+    prvt = new AW_window::AW_window_gtk();
+    for(int i = 0; i < AW_MAX_AREA; i++ ) {
+        prvt->areas.push_back(NULL);
+    }
 }
 
 AW_window::~AW_window() {
+    //FIXME delete prvt
 }
 
 
@@ -1602,7 +1638,7 @@ void aw_create_help_entry(AW_window *aww) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *windowname, int width, int height) {
+void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *windowname, int width, int /*height*/) {
     GtkWidget *main_window;
     GtkWidget *vbox;
     GtkWidget *hbox;
@@ -1817,7 +1853,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
 //
     
     GtkWidget* drawing_area = gtk_drawing_area_new();
-    prvt.areas[AW_MIDDLE_AREA] = new AW_area_management(root, drawing_area, drawing_area); //FIXME form should be a frame around the area.
+    prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(root, drawing_area, drawing_area); //FIXME form should be a frame around the area.
 //
 //    XmMainWindowSetAreas(main_window, p_w->menu_bar[0], (Widget) NULL, (Widget) NULL, (Widget) NULL, form1);
 
@@ -1881,27 +1917,27 @@ AW_window_simple::AW_window_simple() : AW_window() {
 }
 void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windowname) {
     root = root_in; // for macro
-    prvt.window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
-    prvt.fixed_size_area = GTK_FIXED(gtk_fixed_new());
-    gtk_container_add(GTK_CONTAINER(prvt.window), GTK_WIDGET(prvt.fixed_size_area));
+    prvt->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+    prvt->fixed_size_area = GTK_FIXED(gtk_fixed_new());
+    gtk_container_add(GTK_CONTAINER(prvt->window), GTK_WIDGET(prvt->fixed_size_area));
 
     //Creates the GDK (windowing system) resources associated with a widget.
     //This is done as early as possible because xfig drawing relies on the gdk stuff.
-    gtk_widget_realize(GTK_WIDGET(prvt.window));
-    gtk_widget_realize(GTK_WIDGET(prvt.fixed_size_area));
-    gtk_widget_show(GTK_WIDGET(prvt.fixed_size_area));
+    gtk_widget_realize(GTK_WIDGET(prvt->window));
+    gtk_widget_realize(GTK_WIDGET(prvt->fixed_size_area));
+    gtk_widget_show(GTK_WIDGET(prvt->fixed_size_area));
 
 
-    int width  = 100;                               // this is only the minimum size!
-    int height = 100;
-    int posx   = 50;
-    int posy   = 50;
+//    int width  = 100;                               // this is only the minimum size!
+//    int height = 100;
+//    int posx   = 50;
+//    int posy   = 50;
 
     window_name = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
 
-    gtk_window_set_resizable(prvt.window, true);
-    gtk_window_set_title(prvt.window, window_name);
+    gtk_window_set_resizable(prvt->window, true);
+    gtk_window_set_title(prvt->window, window_name);
 
     GTK_PARTLY_IMPLEMENTED;
 
@@ -1915,8 +1951,8 @@ void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windo
 //    Widget form1 = XtVaCreateManagedWidget("forms", xmFormWidgetClass,
 //            p_w->shell,
 //            NULL);
-
-    prvt.areas[AW_INFO_AREA] = new AW_area_management(root, GTK_WIDGET(prvt.window), GTK_WIDGET(prvt.window));
+    prvt->areas.reserve(AW_MAX_AREA);
+    prvt->areas[AW_INFO_AREA] = new AW_area_management(root, GTK_WIDGET(prvt->window), GTK_WIDGET(prvt->window));
 
 
   //  aw_realize_widget(this);
@@ -1927,17 +1963,17 @@ void AW_window::create_devices() {
 
     GTK_PARTLY_IMPLEMENTED;
 
-    unsigned long background_color;
-    if (prvt.areas[AW_INFO_AREA]) {
-        prvt.areas[AW_INFO_AREA]->create_devices(this, AW_INFO_AREA);
+ //   unsigned long background_color;
+    if (prvt->areas[AW_INFO_AREA]) {
+        prvt->areas[AW_INFO_AREA]->create_devices(this, AW_INFO_AREA);
 //        XtVaGetValues(p_w->areas[AW_INFO_AREA]->get_area(), XmNbackground, &background_color, NULL);
 //        p_global->color_table[AW_WINDOW_DRAG] = background_color ^ p_global->color_table[AW_WINDOW_FG];
     }
-    if (prvt.areas[AW_MIDDLE_AREA]) {
-        prvt.areas[AW_MIDDLE_AREA]->create_devices(this, AW_MIDDLE_AREA);
+    if (prvt->areas[AW_MIDDLE_AREA]) {
+        prvt->areas[AW_MIDDLE_AREA]->create_devices(this, AW_MIDDLE_AREA);
     }
-    if (prvt.areas[AW_BOTTOM_AREA]) {
-        prvt.areas[AW_BOTTOM_AREA]->create_devices(this, AW_BOTTOM_AREA);
+    if (prvt->areas[AW_BOTTOM_AREA]) {
+        prvt->areas[AW_BOTTOM_AREA]->create_devices(this, AW_BOTTOM_AREA);
     }
 }
 

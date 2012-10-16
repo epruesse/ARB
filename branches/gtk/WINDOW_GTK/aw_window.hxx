@@ -16,7 +16,6 @@
 #include <arbtools.h>
 #endif
 
-#include "aw_window_gtk.hxx"
 #include "aw_at.hxx"
 
 #include <gtk/gtkmenubar.h>
@@ -263,7 +262,8 @@ class AW_window : virtual Noncopyable {
 
 protected:
     AW_root *root;
-    AW_window_gtk prvt; /*< Contains all gtk dependent attributes */
+    class AW_window_gtk;
+    AW_window_gtk* prvt; /*< Contains all gtk dependent attributes */
 
 
 
