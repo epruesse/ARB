@@ -11,6 +11,7 @@
 #include "probe.h"
 #include "probe_tree.h"
 #include "pt_prototypes.h"
+#include "PT_mem.h"
 
 #include <arb_file.h>
 
@@ -18,18 +19,6 @@
 #include <sys/mman.h>
 #include <climits>
 
-struct Memory {
-    char         *data;
-    int           size;
-    long          allsize;
-    char         *tables[PTM_MAX_TABLES+1];
-
-    void          **alloc_ptr;
-    unsigned long   alloc_counter;
-    unsigned long   alloc_array_size;
-};
-
-struct Memory    MEM;
 struct pt_global PT_GLOBAL;
 
 static int ptd_count_chain_entries(char *entry) {
@@ -102,7 +91,40 @@ bool PT_chain_has_valid_entries(POS_TREE * const node) {
     return ok;
 }
 
-static void PT_init_count_bits() {
+struct Memory MEM;
+
+
+void PTM_finally_free_all_mem() {
+    MEM.clear();
+}
+
+static char *PTM_get_mem(int size) {
+    //! allocate 'size' bytes
+    return MEM.get(size);
+}
+
+static void PTM_free_mem(char *data, int size) {
+    //! free memory allocated by PTM_get_mem()
+    MEM.put(data, size);
+}
+
+
+
+PT_data::PT_data(Stage stage_)
+    : stage(stage_),
+      data_offset(stage == STAGE1 ? sizeof(PT_PNTR) : 0),
+      data_start(0)
+{}
+
+static void init_PT_GLOBAL() {
+    for (int i=0; i<256; i++) {
+        if      ((i&0xe0) == 0x20) PT_GLOBAL.flag_2_type[i] = PT_NT_SAVED;
+        else if ((i&0xe0) == 0x00) PT_GLOBAL.flag_2_type[i] = PT_NT_LEAF;
+        else if ((i&0x80) == 0x80) PT_GLOBAL.flag_2_type[i] = PT_NT_NODE;
+        else if ((i&0xe0) == 0x40) PT_GLOBAL.flag_2_type[i] = PT_NT_CHAIN;
+        else                       PT_GLOBAL.flag_2_type[i] = PT_NT_UNDEF;
+    }
+
     for (unsigned base = PT_QU; base <= PT_B_MAX; base++) {
         for (unsigned i=0; i<256; i++) {
             unsigned h = 0xff >> (8-base);
@@ -117,120 +139,10 @@ static void PT_init_count_bits() {
     }
 }
 
-static void PTM_add_alloc(void *ptr) {
-    if (MEM.alloc_counter == MEM.alloc_array_size) {
-        if (MEM.alloc_array_size == 0) {
-            MEM.alloc_array_size = 1;
-        }
-        MEM.alloc_array_size = MEM.alloc_array_size * 2;
-        void **new_array = (void **)malloc(MEM.alloc_array_size * sizeof(void*));
-
-        if (!new_array) abort();
-
-        void *old_array = MEM.alloc_ptr;
-        memcpy(new_array, old_array, MEM.alloc_counter * sizeof(void*));
-        MEM.alloc_ptr = new_array;
-        free(old_array);
-    }
-    MEM.alloc_ptr[MEM.alloc_counter++] = ptr;
-}
-
-void PTM_finally_free_all_mem() {
-    for (unsigned long i = 0; i < MEM.alloc_counter; ++i) {
-        free(MEM.alloc_ptr[i]);
-    }
-    MEM.alloc_counter = 0;
-    MEM.alloc_array_size = 0;
-    free(MEM.alloc_ptr);
-}
-
-static char *PTM_get_mem(int size) {
-    //! allocate 'size' bytes
-
-    int nsize = (size + (PTM_ALIGNED - 1)) & (-PTM_ALIGNED);
-    if (nsize > PTM_MAX_SIZE) {
-        void *ptr = calloc(1, size);
-        PTM_add_alloc(ptr);
-        return (char *) ptr;
-    }
-
-    int pos = nsize >> PTM_LD_ALIGNED;
-
-    char *erg = MEM.tables[pos];
-    if (erg) {
-        long i;
-        PT_READ_PNTR(((char *)MEM.tables[pos]), i);
-        MEM.tables[pos] = (char *)i;
-    }
-    else {
-        if (MEM.size < nsize) {
-            MEM.data         = (char *) calloc(1, PTM_TABLE_SIZE);
-            MEM.size         = PTM_TABLE_SIZE;
-            MEM.allsize     += PTM_TABLE_SIZE;
-#ifdef PTM_DEBUG_MEM
-            static int less  = 0;
-            if ((less%10) == 0) {
-                printf("Memory usage: %li byte\n", MEM.allsize);
-            }
-            ++less;
-#endif
-            PTM_add_alloc(MEM.data);
-        }
-        erg = MEM.data;
-        MEM.data += nsize;
-        MEM.size -= nsize;
-    }
-    memset(erg, 0, nsize);
-    return erg;
-}
-
-static void PTM_free_mem(char *data, int size) {
-    //! free memory allocated by PTM_get_mem()
-
-    pt_assert(size > 0);
-
-    int nsize = (size + (PTM_ALIGNED - 1)) & (-PTM_ALIGNED);
-    if (nsize > PTM_MAX_SIZE) {
-        free(data);
-    }
-    else {
-        // if (data[4] == PTM_magic) PT_CORE
-        int pos = nsize >> PTM_LD_ALIGNED;
-
-        long i = (long)MEM.tables[pos];
-        PT_WRITE_PNTR(data, i);
-        data[sizeof(PT_PNTR)] = PTM_magic;
-        MEM.tables[pos] = data;
-    }
-}
-
-
-
-PT_data::PT_data(Stage stage_)
-    : stage(stage_),
-      data_offset(stage == STAGE1 ? sizeof(PT_PNTR) : 0),
-      data_start(0)
-{}
-
 PT_data *PT_init(Stage stage) {
-    PT_data *ptdata;
-    memset(&MEM, 0, sizeof(struct Memory));
-
-    ptdata = new PT_data(stage);
-
-    for (int i=0; i<256; i++) {
-        if      ((i&0xe0) == 0x20) PT_GLOBAL.flag_2_type[i] = PT_NT_SAVED;
-        else if ((i&0xe0) == 0x00) PT_GLOBAL.flag_2_type[i] = PT_NT_LEAF;
-        else if ((i&0x80) == 0x80) PT_GLOBAL.flag_2_type[i] = PT_NT_NODE;
-        else if ((i&0xe0) == 0x40) PT_GLOBAL.flag_2_type[i] = PT_NT_CHAIN;
-        else                       PT_GLOBAL.flag_2_type[i] = PT_NT_UNDEF;
-    }
-    PT_init_count_bits();
-
-    MEM.alloc_ptr = NULL;
-    MEM.alloc_counter = 0;
-    MEM.alloc_array_size = 0;
-
+    PT_data *ptdata = new PT_data(stage);
+    init_PT_GLOBAL();
+    pt_assert(MEM.is_clear());
     return ptdata;
 }
 
@@ -1004,11 +916,13 @@ void TEST_saved_state() {
 
 static POS_TREE *theChain = NULL;
 static DataLoc  *theLoc   = NULL;
+#if defined(ENABLE_CRASH_TESTS)
 static void bad_add_to_chain() {
     PT_add_to_chain(theChain, *theLoc);
     theChain = NULL;
     theLoc   = NULL;
 }
+#endif
 
 void TEST_chains() {
     EnterStage1 env;

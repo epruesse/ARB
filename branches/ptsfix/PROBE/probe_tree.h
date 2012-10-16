@@ -24,19 +24,11 @@
 #include "probe.h"
 #endif
 
-#define PTM_magic             0xf4
-#define PTM_TABLE_SIZE        (1024*256)
-#define PTM_ALIGNED           1
-#define PTM_LD_ALIGNED        0
-#define PTM_MAX_TABLES        256 // -- ralf testing
-#define PTM_MAX_SIZE          (PTM_MAX_TABLES*PTM_ALIGNED)
 #define PT_CHAIN_END          0xff
 #define PT_CHAIN_NTERM        250
 #define PT_SHORT_SIZE         0xffff
 #define PT_BLOCK_SIZE         0x800
 #define PT_INIT_CHAIN_SIZE    20
-
-typedef void * PT_PNTR;
 
 struct pt_global {
     PT_NODE_TYPE flag_2_type[256];
@@ -179,35 +171,6 @@ only few functions can be used, when the tree is reloaded (stage 3):
 #define PT_GET_TYPE(pt)     (PT_GLOBAL.flag_2_type[pt->flags])
 #define PT_SET_TYPE(pt,i,j) (pt->flags = (i<<6)+j)
 
-// ----------------------
-//      bswap for OSX
-
-#if defined(DARWIN)
-
-static inline unsigned short bswap_16(unsigned short x) {
-    return (x>>8) | (x<<8);
-}
-
-static inline unsigned int bswap_32(unsigned int x) {
-    return (bswap_16(x&0xffff)<<16) | (bswap_16(x>>16));
-}
-
-static inline unsigned long long bswap_64(unsigned long long x) {
-    return (((unsigned long long)bswap_32(x&0xffffffffull))<<32) | (bswap_32(x>>32));
-}
-
-#else
-#include <byteswap.h>
-#endif // DARWIN
-
-// ------------------------------------------------------------
-// Note about bswap as used here:
-//
-// * MSB has to be at start of written byte-chain, cause the most significant bit is used to separate
-//   between INT and SHORT
-//
-// * To use PT-server on a big-endian system it has to be skipped
-
 // ---------------------------------
 //      Read and write to memory
 
@@ -237,37 +200,6 @@ static inline unsigned long long bswap_64(unsigned long long x) {
 #define PT_WRITE_CHAR(ptr, my_int_i) do { *(unsigned char *)(ptr) = my_int_i; } while (0)
 
 #define PT_READ_CHAR(ptr, my_int_i) do { my_int_i = *(unsigned char *)(ptr); } while (0)
-
-
-
-#ifdef ARB_64
-
-COMPILE_ASSERT(sizeof(void*) == sizeof(unsigned long));
-
-# define PT_READ_PNTR(ptr, my_int_i)                            \
-    do {                                                        \
-        pt_assert(sizeof(my_int_i) == 8);                       \
-        unsigned long *ulptr = (unsigned long*)(ptr);           \
-        (my_int_i)           = (unsigned long)bswap_64(*ulptr); \
-    } while (0)
-
-
-# define PT_WRITE_PNTR(ptr, my_int_i)                                   \
-    do {                                                                \
-        unsigned long *ulptr = (unsigned long*)(ptr);                   \
-        *ulptr               = bswap_64((unsigned long)(my_int_i));     \
-    } while (0)
-
-
-#else
-// not ARB_64
-
-COMPILE_ASSERT(sizeof(void*) == sizeof(unsigned int));
-
-# define PT_READ_PNTR(ptr, my_int_i) PT_READ_INT(ptr, my_int_i)
-# define PT_WRITE_PNTR(ptr, my_int_i) PT_WRITE_INT(ptr, my_int_i)
-
-#endif
 
 
 

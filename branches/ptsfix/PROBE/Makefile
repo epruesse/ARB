@@ -1,26 +1,9 @@
 .SUFFIXES: .o .cxx .depend
 
-CPP_OBJECTS = \
-	PT_buildtree.o \
-	PT_etc.o \
-	PT_family.o \
-	PT_findEx.o \
-	PT_io.o \
-	PT_main.o \
-	PT_match.o \
-	PT_new_design.o \
-	PT_prefixtree.o \
-	PT_debug.o \
-	PT_rangeCheck.o \
-
-C_OBJECTS = # BI_helix.o
-OBJECTS = $(CPP_OBJECTS) $(C_OBJECTS)
+OBJECTS = $(subst .cxx,.o,$(wildcard *.cxx))
 
 $(MAIN): $(OBJECTS) 
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
-
-.c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 .cxx.o:
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES) $(POST_COMPILE)
@@ -52,6 +35,7 @@ depend.init:
 PT_buildtree.o: probe.h
 PT_buildtree.o: probe_tree.h
 PT_buildtree.o: pt_prototypes.h
+PT_buildtree.o: PT_tools.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -79,6 +63,7 @@ PT_buildtree.o: $(ARBHOME)/INCLUDE/test_unit.h
 PT_debug.o: probe.h
 PT_debug.o: probe_tree.h
 PT_debug.o: pt_prototypes.h
+PT_debug.o: PT_tools.h
 PT_debug.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_debug.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_debug.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -100,6 +85,7 @@ PT_debug.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_etc.o: probe.h
 PT_etc.o: pt_prototypes.h
+PT_etc.o: PT_tools.h
 PT_etc.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_etc.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_etc.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -118,6 +104,7 @@ PT_etc.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_etc.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_etc.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PT_etc.o: $(ARBHOME)/INCLUDE/smartptr.h
+PT_etc.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_etc.o: $(ARBHOME)/INCLUDE/struct_man.h
 PT_etc.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -126,6 +113,7 @@ PT_family.o: probe_tree.h
 PT_family.o: PT_global_defs.h
 PT_family.o: pt_prototypes.h
 PT_family.o: PT_rangeCheck.h
+PT_family.o: PT_tools.h
 PT_family.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_family.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PT_family.o: $(ARBHOME)/INCLUDE/aisc_global.h
@@ -152,6 +140,7 @@ PT_family.o: $(ARBHOME)/INCLUDE/test_global.h
 PT_findEx.o: probe.h
 PT_findEx.o: probe_tree.h
 PT_findEx.o: pt_prototypes.h
+PT_findEx.o: PT_tools.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -175,6 +164,7 @@ PT_findEx.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_io.o: probe.h
 PT_io.o: pt_prototypes.h
+PT_io.o: PT_tools.h
 PT_io.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_io.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PT_io.o: $(ARBHOME)/INCLUDE/aisc_global.h
@@ -195,10 +185,12 @@ PT_io.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_io.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_io.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_io.o: $(ARBHOME)/INCLUDE/smartptr.h
+PT_io.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_io.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_main.o: probe.h
 PT_main.o: pt_prototypes.h
+PT_main.o: PT_tools.h
 PT_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PT_main.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
@@ -227,6 +219,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/ptclean.h
 PT_main.o: $(ARBHOME)/INCLUDE/server.h
 PT_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
 PT_main.o: $(ARBHOME)/INCLUDE/smartptr.h
+PT_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_main.o: $(ARBHOME)/INCLUDE/struct_man.h
 PT_main.o: $(ARBHOME)/INCLUDE/test_global.h
 PT_main.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h
@@ -234,6 +227,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h
 PT_match.o: probe.h
 PT_match.o: probe_tree.h
 PT_match.o: pt_prototypes.h
+PT_match.o: PT_tools.h
 PT_match.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_match.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -261,6 +255,7 @@ PT_match.o: $(ARBHOME)/INCLUDE/test_global.h
 PT_new_design.o: probe.h
 PT_new_design.o: probe_tree.h
 PT_new_design.o: pt_prototypes.h
+PT_new_design.o: PT_tools.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -287,7 +282,9 @@ PT_new_design.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_prefixtree.o: probe.h
 PT_prefixtree.o: probe_tree.h
+PT_prefixtree.o: PT_mem.h
 PT_prefixtree.o: pt_prototypes.h
+PT_prefixtree.o: PT_tools.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -313,6 +310,7 @@ PT_rangeCheck.o: probe.h
 PT_rangeCheck.o: probe_tree.h
 PT_rangeCheck.o: pt_prototypes.h
 PT_rangeCheck.o: PT_rangeCheck.h
+PT_rangeCheck.o: PT_tools.h
 PT_rangeCheck.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_rangeCheck.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_rangeCheck.o: $(ARBHOME)/INCLUDE/arb_assert.h
