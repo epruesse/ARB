@@ -189,6 +189,7 @@ PT_io.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_io.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_main.o: probe.h
+PT_main.o: PT_mem.h
 PT_main.o: pt_prototypes.h
 PT_main.o: PT_tools.h
 PT_main.o: $(ARBHOME)/INCLUDE/ad_prot.h

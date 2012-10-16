@@ -26,6 +26,7 @@
 
 #include <unistd.h>
 #include <sys/stat.h>
+#include "PT_mem.h"
 
 #define MAX_TRY 10
 #define TIME_OUT 1000*60*60*24
@@ -143,6 +144,8 @@ void probe_struct_global::cleanup() {
     setup();
 }
 
+struct Memory MEM;
+
 static bool psg_initialized = false;
 void PT_init_psg() {
     pt_assert(!psg_initialized);
@@ -156,7 +159,7 @@ void PT_exit_psg() {
         psg.cleanup();
         psg_initialized = false;
     }
-    PTM_finally_free_all_mem();
+    MEM.clear();
 }
 
 static void PT_exit() { 

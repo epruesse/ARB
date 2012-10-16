@@ -142,6 +142,16 @@ public:
         }
     }
 
+    bool is_clear() const {
+        return
+            alloc_ptr        == NULL &&
+            alloc_counter    == 0    &&
+            alloc_array_size == 0    &&
+            data             == NULL &&
+            data_size        == 0    &&
+            allsize          == 0;
+    }
+
     void clear() {
         for (unsigned long i = 0; i < alloc_counter; ++i) {
             free(alloc_ptr[i]);
@@ -155,18 +165,12 @@ public:
         allsize   = 0;
 
         clear_tables();
-    }
 
-    bool is_clear() const {
-        return
-            alloc_ptr        == NULL &&
-            alloc_counter    == 0    &&
-            alloc_array_size == 0    &&
-            data             == NULL &&
-            data_size        == 0    &&
-            allsize          == 0;
+        pt_assert(is_clear());
     }
 };
+
+extern struct Memory MEM;
 
 #else
 #error PT_mem.h included twice

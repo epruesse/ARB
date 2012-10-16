@@ -91,26 +91,6 @@ bool PT_chain_has_valid_entries(POS_TREE * const node) {
     return ok;
 }
 
-struct Memory MEM;
-
-
-void PTM_finally_free_all_mem() {
-    MEM.clear();
-    pt_assert(MEM.is_clear());
-}
-
-static char *PTM_get_mem(int size) {
-    //! allocate 'size' bytes
-    return MEM.get(size);
-}
-
-static void PTM_free_mem(char *data, int size) {
-    //! free memory allocated by PTM_get_mem()
-    MEM.put(data, size);
-}
-
-
-
 PT_data::PT_data(Stage stage_)
     : stage(stage_),
       data_offset(stage == STAGE1 ? sizeof(PT_PNTR) : 0),
@@ -187,7 +167,8 @@ void PT_add_to_chain(POS_TREE *node, const DataLoc& loc) {
     PT_WRITE_NAT(p, loc.apos);
 
     int size = p - buffer;
-    p        = (char *)PTM_get_mem(size);
+
+    p = MEM.get(size);
     memcpy(p, buffer, size);
     PT_WRITE_PNTR(data, p);
     psg.stat.cut_offs ++;
@@ -201,9 +182,9 @@ POS_TREE *PT_change_leaf_to_node(POS_TREE *node) {
 
     POS_TREE *father = PT_read_father(node);
 
-    POS_TREE *new_elem = (POS_TREE *)PTM_get_mem(PT_EMPTY_NODE_SIZE);
+    POS_TREE *new_elem = (POS_TREE *)MEM.get(PT_EMPTY_NODE_SIZE);
     if (father) PT_change_link_in_father(father, node, new_elem);
-    PTM_free_mem((char *)node, PT_LEAF_SIZE(node));
+    MEM.put((char *)node, PT_LEAF_SIZE(node));
     PT_SET_TYPE(new_elem, PT_NT_NODE, 0);
     PT_WRITE_PNTR((&(new_elem->data)), (long)father);
 
@@ -221,9 +202,9 @@ POS_TREE *PT_leaf_to_chain(POS_TREE *node) {
     int chain_size                          = PT_EMPTY_CHAIN_SIZE;
     if (loc.apos>PT_SHORT_SIZE) chain_size += 2;
 
-    POS_TREE *new_elem = (POS_TREE *)PTM_get_mem(chain_size);
+    POS_TREE *new_elem = (POS_TREE *)MEM.get(chain_size);
     PT_change_link_in_father(father, node, new_elem);
-    PTM_free_mem((char *)node, PT_LEAF_SIZE(node));
+    MEM.put((char *)node, PT_LEAF_SIZE(node));
     PT_SET_TYPE(new_elem, PT_NT_CHAIN, 0);
     PT_WRITE_PNTR((&new_elem->data), (long)father);
     
@@ -253,14 +234,14 @@ POS_TREE *PT_create_leaf(POS_TREE **pfather, PT_BASES base, const DataLoc& loc) 
     if (loc.apos>PT_SHORT_SIZE) leafsize += 2;
     if (loc.name>PT_SHORT_SIZE) leafsize += 2;
 
-    POS_TREE *node = (POS_TREE *) PTM_get_mem(leafsize);
+    POS_TREE *node = (POS_TREE *)MEM.get(leafsize);
 
     if (pfather) {
         POS_TREE *father = *pfather;
 
         int       oldfathersize;
         PT_NODE_SIZE(father, oldfathersize);
-        POS_TREE *new_elemfather = (POS_TREE *)PTM_get_mem(oldfathersize + sizeof(PT_PNTR));
+        POS_TREE *new_elemfather = (POS_TREE *)MEM.get(oldfathersize + sizeof(PT_PNTR));
         
         POS_TREE *gfather = PT_read_father(father);
         if (gfather) {
@@ -293,7 +274,7 @@ POS_TREE *PT_create_leaf(POS_TREE **pfather, PT_BASES base, const DataLoc& loc) 
             }
         }
         new_elemfather->flags = father->flags | base2;
-        PTM_free_mem((char *)father, oldfathersize);
+        MEM.put((char *)father, oldfathersize);
         PT_SET_TYPE(node, PT_NT_LEAF, 0);
         *pfather = new_elemfather;
     }
@@ -466,7 +447,7 @@ static ARB_ERROR ptd_write_and_free_chain_entries(FILE *out, long *ppos, char **
             }
             else {
                 *ppos    += size;
-                PTM_free_mem(entry, rp-entry);
+                MEM.put(entry, rp-entry);
                 lastname  = name;
             }
         }
@@ -567,7 +548,7 @@ static long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, cons
             }
             mysize += sizeof(PT_PNTR);
             if (PT_GET_TYPE(son) != PT_NT_SAVED) GBK_terminate("Internal Error: Son not saved");
-            PTM_free_mem((char*)son, get_memsize_of_saved(son));
+            MEM.put((char*)son, get_memsize_of_saved(son));
             count ++;
         }
     }
@@ -974,10 +955,10 @@ void TEST_mem() {
     char      *ptr[MAXSIZE];
 
     for (int size = 1; size <= MAXSIZE; ++size) {
-        ptr[size-1] = PTM_get_mem(size);
+        ptr[size-1] = MEM.get(size);
     }
     for (int size = 1; size <= MAXSIZE; ++size) {
-        PTM_free_mem(ptr[size-1], size);
+        MEM.put(ptr[size-1], size);
     }
 }
 
