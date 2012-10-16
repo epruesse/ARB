@@ -103,7 +103,7 @@ public:
         clear_tables();
     }
 
-    char *get(int size) {
+    void *get(int size) {
         pt_assert(size >= PTM_MIN_SIZE);
 
         if (size > PTM_MAX_SIZE) {
@@ -125,9 +125,10 @@ public:
         return erg;
     }
 
-    void put(char *block, int size) {
+    void put(void *vblock, int size) {
         pt_assert(size >= PTM_MIN_SIZE);
 
+        char *block = (char*)vblock;
         if (size > PTM_MAX_SIZE) {
             free(block);
         }

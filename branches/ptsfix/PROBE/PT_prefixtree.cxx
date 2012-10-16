@@ -168,7 +168,7 @@ void PT_add_to_chain(POS_TREE *node, const DataLoc& loc) {
 
     int size = p - buffer;
 
-    p = MEM.get(size);
+    p = (char*)MEM.get(size);
     memcpy(p, buffer, size);
     PT_WRITE_PNTR(data, p);
     psg.stat.cut_offs ++;
@@ -184,7 +184,7 @@ POS_TREE *PT_change_leaf_to_node(POS_TREE *node) {
 
     POS_TREE *new_elem = (POS_TREE *)MEM.get(PT_EMPTY_NODE_SIZE);
     if (father) PT_change_link_in_father(father, node, new_elem);
-    MEM.put((char *)node, PT_LEAF_SIZE(node));
+    MEM.put(node, PT_LEAF_SIZE(node));
     PT_SET_TYPE(new_elem, PT_NT_NODE, 0);
     PT_WRITE_PNTR((&(new_elem->data)), (long)father);
 
@@ -204,7 +204,7 @@ POS_TREE *PT_leaf_to_chain(POS_TREE *node) {
 
     POS_TREE *new_elem = (POS_TREE *)MEM.get(chain_size);
     PT_change_link_in_father(father, node, new_elem);
-    MEM.put((char *)node, PT_LEAF_SIZE(node));
+    MEM.put(node, PT_LEAF_SIZE(node));
     PT_SET_TYPE(new_elem, PT_NT_CHAIN, 0);
     PT_WRITE_PNTR((&new_elem->data), (long)father);
     
@@ -274,7 +274,7 @@ POS_TREE *PT_create_leaf(POS_TREE **pfather, PT_BASES base, const DataLoc& loc) 
             }
         }
         new_elemfather->flags = father->flags | base2;
-        MEM.put((char *)father, oldfathersize);
+        MEM.put(father, oldfathersize);
         PT_SET_TYPE(node, PT_NT_LEAF, 0);
         *pfather = new_elemfather;
     }
@@ -548,7 +548,7 @@ static long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, cons
             }
             mysize += sizeof(PT_PNTR);
             if (PT_GET_TYPE(son) != PT_NT_SAVED) GBK_terminate("Internal Error: Son not saved");
-            MEM.put((char*)son, get_memsize_of_saved(son));
+            MEM.put(son, get_memsize_of_saved(son));
             count ++;
         }
     }
@@ -955,7 +955,7 @@ void TEST_mem() {
     char      *ptr[MAXSIZE];
 
     for (int size = 1; size <= MAXSIZE; ++size) {
-        ptr[size-1] = MEM.get(size);
+        ptr[size-1] = (char*)MEM.get(size);
     }
     for (int size = 1; size <= MAXSIZE; ++size) {
         MEM.put(ptr[size-1], size);
