@@ -171,64 +171,6 @@ only few functions can be used, when the tree is reloaded (stage 3):
 #define PT_GET_TYPE(pt)     (PT_GLOBAL.flag_2_type[pt->flags])
 #define PT_SET_TYPE(pt,i,j) (pt->flags = (i<<6)+j)
 
-// ---------------------------------
-//      Read and write to memory
-
-#define PT_READ_INT(ptr, my_int_i)                                      \
-    do {                                                                \
-        unsigned int *uiptr = (unsigned int*)(ptr);                     \
-        (my_int_i)=(unsigned int)bswap_32(*uiptr);                      \
-    } while (0)
-
-#define PT_WRITE_INT(ptr, my_int_i)                                     \
-    do {                                                                \
-        unsigned int *uiptr = (unsigned int*)(ptr);                     \
-        *uiptr              = bswap_32((unsigned int)(my_int_i));       \
-    } while (0)
-
-#define PT_READ_SHORT(ptr, my_int_i)                    \
-    do {                                                \
-        (my_int_i) = bswap_16(*(unsigned short*)(ptr)); \
-    } while (0)
-
-#define PT_WRITE_SHORT(ptr, my_int_i)                                   \
-    do {                                                                \
-        unsigned short *usptr = (unsigned short*)(ptr);                 \
-        *usptr                = bswap_16((unsigned short)(my_int_i));   \
-    } while (0)
-
-#define PT_WRITE_CHAR(ptr, my_int_i) do { *(unsigned char *)(ptr) = my_int_i; } while (0)
-
-#define PT_READ_CHAR(ptr, my_int_i) do { my_int_i = *(unsigned char *)(ptr); } while (0)
-
-
-
-#define PT_WRITE_NAT(ptr, i)                    \
-    do {                                        \
-        pt_assert(i >= 0);                      \
-        if (i >= 0x7FFE)                        \
-        {                                       \
-            PT_WRITE_INT(ptr, i|0x80000000);    \
-            ptr += sizeof(int);                 \
-        }                                       \
-        else                                    \
-        {                                       \
-            PT_WRITE_SHORT(ptr, i);             \
-            ptr += sizeof(short);               \
-        }                                       \
-    } while (0)
-
-#define PT_READ_NAT(ptr, i)                                             \
-    do {                                                                \
-        if (*ptr & 0x80) {                                              \
-            PT_READ_INT(ptr, i); ptr += sizeof(int); i &= 0x7fffffff;   \
-        }                                                               \
-        else {                                                          \
-            PT_READ_SHORT(ptr, i); ptr += sizeof(short);                \
-        }                                                               \
-    } while (0)
-
-
 inline const char *PT_READ_CHAIN_ENTRY(const char* ptr, int mainapos, int *name, int *apos, int *rpos) {
     // Caution: 'name' has to be initialized before first call and shall not be modified between calls
 
