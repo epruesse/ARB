@@ -146,7 +146,7 @@ static void PT_change_link_in_father(POS_TREE *father, POS_TREE *old_link, POS_T
 
 void PT_add_to_chain(POS_TREE *node, const DataLoc& loc) {
     pt_assert_stage(STAGE1);
-    pt_assert(PT_chain_has_valid_entries(node));
+    pt_assert_valid_chain(node);
 
     // insert at the beginning of list
 
@@ -173,7 +173,7 @@ void PT_add_to_chain(POS_TREE *node, const DataLoc& loc) {
     PT_WRITE_PNTR(data, p);
     psg.stat.cut_offs ++;
 
-    pt_assert(PT_chain_has_valid_entries(node));
+    pt_assert_valid_chain(node);
 }
 
 POS_TREE *PT_change_leaf_to_node(POS_TREE *node) {
@@ -457,7 +457,7 @@ static ARB_ERROR ptd_write_and_free_chain_entries(FILE *out, long *ppos, char **
 }
 
 static long PTD_write_chain_to_disk(FILE *out, POS_TREE * const node, const long oldpos, ARB_ERROR& error) {
-    pt_assert(PT_chain_has_valid_entries(node));
+    pt_assert_valid_chain(node);
     
     long pos = oldpos;
     putc(node->flags, out);         // save type
@@ -898,13 +898,15 @@ void TEST_saved_state() {
 
 static POS_TREE *theChain = NULL;
 static DataLoc  *theLoc   = NULL;
-#if defined(ENABLE_CRASH_TESTS)
+
 static void bad_add_to_chain() {
     PT_add_to_chain(theChain, *theLoc);
+#if !defined(PTM_DEBUG_VALIDATE_CHAINS)
+    pt_assert(PT_chain_has_valid_entries(theChain));
+#endif
     theChain = NULL;
     theLoc   = NULL;
 }
-#endif
 
 void TEST_chains() {
     EnterStage1 env;

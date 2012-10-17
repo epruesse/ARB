@@ -27,7 +27,21 @@
 #if defined(DEBUG)
 // # define PTM_DEBUG_NODES
 // # define PTM_DEBUG_MEM
+# define PTM_DEBUG_STAGE_ASSERTIONS
+// # define PTM_DEBUG_VALIDATE_CHAINS
 #endif // DEBUG
+
+#if defined(PTM_DEBUG_STAGE_ASSERTIONS)
+#define pt_assert_stage(s) pt_assert(psg.ptdata->get_stage() == (s))
+#else // !defined(PTM_DEBUG_STAGE_ASSERTIONS)
+#define pt_assert_stage(s) 
+#endif
+
+#if defined(PTM_DEBUG_VALIDATE_CHAINS)
+#define pt_assert_valid_chain(node) pt_assert(PT_chain_has_valid_entries(node))
+#else // !defined(PTM_DEBUG_VALIDATE_CHAINS)
+#define pt_assert_valid_chain(node) 
+#endif
 
 typedef unsigned long ULONG;
 typedef unsigned int  UINT;
@@ -294,8 +308,6 @@ extern struct probe_struct_global {
     void cleanup();
 
 } psg;
-
-#define pt_assert_stage(s) pt_assert(psg.ptdata->get_stage() == (s))
 
 class gene_struct {
     char       *gene_name;
