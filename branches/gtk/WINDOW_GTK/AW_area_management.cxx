@@ -129,6 +129,11 @@ AW_device_gtk *AW_area_management::get_screen_device() {
     return prvt->screen_device;
 }
 
+AW_device_size *AW_area_management::get_size_device() {
+    if (!prvt->size_device) prvt->size_device = new AW_device_size(prvt->common);
+    return prvt->size_device;
+}
+
 
 AW_cb_struct *AW_area_management::get_double_click_cb() { return prvt->double_click_cb; }
 long AW_area_management::get_click_time() const { return prvt->click_time; }

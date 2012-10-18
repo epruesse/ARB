@@ -29,9 +29,7 @@ char *AW_get_color_group_name(AW_root */*awr*/, int /*color_group*/){
     return 0;
 }
 
-void AW_init_color_group_defaults(const char */*for_program*/) {
-    GTK_NOT_IMPLEMENTED;
-}
+
 
 #if defined(UNIT_TESTS) 
 void fake_AW_init_color_groups() {

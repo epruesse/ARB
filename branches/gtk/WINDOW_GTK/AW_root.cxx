@@ -164,6 +164,21 @@ AW_awar *AW_root::label_is_awar(const char *label) {
 }
 
 
+unsigned int AW_root::alloc_named_data_color(char *colorname){
+  
+    GdkColor allocatedColor;
+    gdk_color_parse(colorname, &allocatedColor);
+    gdk_colormap_alloc_color(prvt.colormap, &allocatedColor, true, true);
+    return allocatedColor.pixel;
+}
+
+GdkColor AW_root::getColor(unsigned int pixel) {
+    GdkColor color;
+    gdk_colormap_query_color(prvt.colormap, pixel, &color);
+    return color;
+    //note: a copy is returned to avoid memory leaks. GdkColor is small and this should not be a problem.
+}
+
 void AW_root::define_remote_command(AW_cb_struct *cbs) {
     GTK_NOT_IMPLEMENTED;
 }

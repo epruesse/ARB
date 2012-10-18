@@ -359,6 +359,15 @@ void AW_device_print::set_color_mode(bool /*mode*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
+
+
+void AW_device_size::clear() {
+    GTK_NOT_IMPLEMENTED;
+//    scaled.clear();
+//    unscaled.clear();
+}
+
+
 AW_borders AW_device_size::get_unscaleable_overlap() const {
     GTK_NOT_IMPLEMENTED;
     return AW_borders();
@@ -369,8 +378,7 @@ void AW_device_size::specific_reset() {
 }
 
 AW_DEVICE_TYPE AW_device_size::type() {
-    GTK_NOT_IMPLEMENTED;
-    return (AW_DEVICE_TYPE)0;
+    return AW_DEVICE_SIZE;
 }
 
 bool AW_device_size::line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri) {
@@ -407,6 +415,14 @@ const AW_font_limits& AW_stylable::get_font_limits(int gc, char c) const {
 
 int AW_stylable::get_string_size(int gc, const char *str, long textlen) const {
     return get_common()->map_gc(gc)->get_string_size(str, textlen);
+}
+
+int AW_stylable::get_available_fontsizes(int gc, AW_font font_nr, int *available_sizes) {
+    return get_common()->map_gc(gc)->get_available_fontsizes(font_nr, available_sizes);
+}
+
+void AW_stylable::establish_default(int) {
+    GTK_NOT_IMPLEMENTED;
 }
 
 void AW_stylable::new_gc(int gc) {

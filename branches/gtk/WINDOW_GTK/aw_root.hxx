@@ -176,6 +176,21 @@ public:
     bool is_focus_callback(AW_RCB fcb) const;
 
     /**
+     * Allocates a named color in the global colormap.
+     * @param colorname
+     * @return The pixel value of the color. This value can be used to retrieve the color from the
+     *         global colormap (@see getColor()).
+     */
+    unsigned int alloc_named_data_color(char *colorname);
+    
+    /**
+     * Retrieves a color from the global colormap.
+     * @param pixel The pixel value is used as index of the colormap. This should be a value returned by alloc_named_data_color()
+     * @return The color or NULL in case of error.
+     */
+    GdkColor getColor(unsigned int pixel);
+    
+    /**
      * Returns the awar specified by <code>awar</code>
      * @param awar Name of the awar that should be returned.
      * @note Terminates the program if the awar does not exist.

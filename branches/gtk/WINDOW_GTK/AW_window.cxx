@@ -1197,9 +1197,16 @@ AW_device_print *AW_window::get_print_device(AW_area /*area*/){
     return 0;
 }
 
-AW_device_size *AW_window::get_size_device(AW_area /*area*/){
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+AW_device_size *AW_window::get_size_device(AW_area area){
+    AW_area_management *aram        = prvt->areas[area];
+    AW_device_size     *size_device = NULL;
+
+    if (aram) {
+        size_device = aram->get_size_device();
+        size_device->clear();
+        size_device->reset(); // @@@ hm
+    }
+    return size_device;
 }
 
 void AW_window::get_window_size(int& /*width*/, int& /*height*/){
@@ -1601,7 +1608,9 @@ void AW_window::d_callback(void (*/*f*/)(AW_window*)) {
 }
 
 AW_window::AW_window() {
-
+    color_table_size = 0;
+    color_table = NULL;
+    
     prvt = new AW_window::AW_window_gtk();
     for(int i = 0; i < AW_MAX_AREA; i++ ) {
         prvt->areas.push_back(NULL);
@@ -1773,29 +1782,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
 //                                    XmNx, 0,
 //                                    XmNy, 0,
 //                                    NULL);
-//    p_w->areas[AW_INFO_AREA] =
-//        new AW_area_management(root, form2, XtVaCreateManagedWidget("info_area",
-//                                                                    xmDrawingAreaWidgetClass,
-//                                                                    form2,
-//                                                                    XmNheight, 0,
-//                                                                    XmNbottomAttachment, XmATTACH_NONE,
-//                                                                    XmNtopAttachment, XmATTACH_FORM,
-//                                                                    XmNleftAttachment, XmATTACH_FORM,
-//                                                                    XmNrightAttachment, XmATTACH_FORM,
-//                                                                    XmNmarginHeight, 2,
-//                                                                    XmNmarginWidth, 2,
-//                                                                    NULL));
-//
-//    p_w->areas[AW_BOTTOM_AREA] =
-//        new AW_area_management(root, form2, XtVaCreateManagedWidget("bottom_area",
-//                                                                    xmDrawingAreaWidgetClass,
-//                                                                    form2,
-//                                                                    XmNheight, 0,
-//                                                                    XmNbottomAttachment, XmATTACH_FORM,
-//                                                                    XmNtopAttachment, XmATTACH_NONE,
-//                                                                    XmNleftAttachment, XmATTACH_FORM,
-//                                                                    XmNrightAttachment, XmATTACH_FORM,
-//                                                                    NULL));
+
 //
 //    p_w->scroll_bar_horizontal = XtVaCreateManagedWidget("scroll_bar_horizontal",
 //                                                         xmScrollBarWidgetClass,
@@ -1853,7 +1840,24 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
 //
     
     GtkWidget* drawing_area = gtk_drawing_area_new();
+    gtk_container_add(GTK_CONTAINER(vbox), drawing_area);
+    gtk_widget_realize(GTK_WIDGET(drawing_area));
+    gtk_widget_show(GTK_WIDGET(drawing_area));
     prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(root, drawing_area, drawing_area); //FIXME form should be a frame around the area.
+    
+    
+    GtkWidget* drawing_area_bottom = gtk_drawing_area_new();
+    gtk_container_add(GTK_CONTAINER(hbox), drawing_area);
+    gtk_widget_realize(GTK_WIDGET(drawing_area));
+    gtk_widget_show(GTK_WIDGET(drawing_area));   
+    prvt->areas[AW_BOTTOM_AREA] = new AW_area_management(root, drawing_area_bottom, drawing_area_bottom); //FIXME form should be a frame around the area.
+    
+    GtkWidget* drawing_area_info = gtk_drawing_area_new();
+    gtk_container_add(GTK_CONTAINER(hbox), drawing_area_info);
+    gtk_widget_realize(GTK_WIDGET(drawing_area_info));
+    gtk_widget_show(GTK_WIDGET(drawing_area_info));   
+    prvt->areas[AW_INFO_AREA] = new AW_area_management(root, drawing_area_info, drawing_area_info); //FIXME form should be a frame around the area.
+
 //
 //    XmMainWindowSetAreas(main_window, p_w->menu_bar[0], (Widget) NULL, (Widget) NULL, (Widget) NULL, form1);
 
@@ -1864,6 +1868,33 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     create_window_variables();
 }
 
+
+AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
+    if (!color_table_size) {
+        color_table_size = AW_STD_COLOR_IDX_MAX + colnum;
+        color_table      = (AW_rgb*)malloc(sizeof(AW_rgb) *color_table_size);
+        for (int i = 0; i<color_table_size; ++i) color_table[i] = AW_NO_COLOR;
+    }
+    else {
+        if (colnum>=color_table_size) {
+            long new_size = colnum+8;
+            color_table   = (AW_rgb*)realloc(color_table, new_size*sizeof(AW_rgb)); // valgrinders : never freed because AW_window never is freed
+            for (int i = color_table_size; i<new_size; ++i) color_table[i] = AW_NO_COLOR;
+            color_table_size = new_size;
+        }
+    }
+
+    color_table[colnum] = root->alloc_named_data_color(colorname);
+    
+    if (colnum == AW_DATA_BG) {
+        AW_area_management* pMiddleArea = prvt->areas[AW_MIDDLE_AREA];
+        if(pMiddleArea) {
+            gtk_widget_modify_bg(pMiddleArea->get_area(),GTK_STATE_NORMAL, &root->getColor(color_table[colnum]));
+            //FIXME no idea if this works :D
+        }
+    }
+    return (AW_color_idx)colnum;
+}
 
 
 void AW_window::create_window_variables() {
