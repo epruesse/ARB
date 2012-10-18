@@ -236,8 +236,15 @@ void AW_window::at_set_min_size(int /*xmin*/, int /*ymin*/){
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::auto_space(int /*xspace*/, int /*yspace*/){
-    GTK_NOT_IMPLEMENTED;
+void AW_window::auto_space(int x, int y){
+    _at.do_auto_space = true;
+    _at.auto_space_x  = x;
+    _at.auto_space_y  = y;
+    
+    _at.do_auto_increment = false;
+
+    _at.x_for_newline = _at.x_for_next_button;
+    _at.biggest_height_of_buttons = 0;
 }
 
 
@@ -1648,7 +1655,7 @@ void aw_create_help_entry(AW_window *aww) {
 }
 
 void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *windowname, int width, int /*height*/) {
-    GtkWidget *main_window;
+
     GtkWidget *vbox;
     GtkWidget *hbox;
     GtkWidget *help_popup;
@@ -1671,13 +1678,9 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
 
     //p_w->shell = aw_create_shell(this, true, true, width, height, posx, posy);
 
-    main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    prvt->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
     vbox = gtk_vbox_new(false, 1);//FIXME remove constant
-    gtk_container_add(GTK_CONTAINER(main_window), vbox);
-    
-    
-
-    
+    gtk_container_add(GTK_CONTAINER(prvt->window), vbox);
     
     
 //    XtVaCreateManagedWidget("mainWindow1",
@@ -1858,14 +1861,20 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     gtk_widget_show(GTK_WIDGET(drawing_area_info));   
     prvt->areas[AW_INFO_AREA] = new AW_area_management(root, drawing_area_info, drawing_area_info); //FIXME form should be a frame around the area.
 
+    
+    
+    
 //
 //    XmMainWindowSetAreas(main_window, p_w->menu_bar[0], (Widget) NULL, (Widget) NULL, (Widget) NULL, form1);
 
 //    aw_realize_widget(this);
 
+    gtk_widget_realize(GTK_WIDGET(prvt->window));
+    
     create_devices();
     aw_create_help_entry(this);
     create_window_variables();
+    
 }
 
 

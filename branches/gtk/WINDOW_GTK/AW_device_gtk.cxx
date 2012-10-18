@@ -53,8 +53,10 @@ AW_device_gtk::AW_device_gtk(AW_common *commoni, GtkWidget *drawingArea) :
 
     //set the background of the widget to the pixmap.
     //later we will draw on this pixmap instead of the window.
-    //this way we can get around implementing our own expose handler :)
-    GtkStyle* style = gtk_widget_get_style (drawingArea); //this call fails if the widget has not been realized
+    //this way we can get around implementing our own expose handler.
+    //the copy is important because otherwise we would modify the global default style.
+    GtkStyle* style = gtk_widget_get_style(drawingArea);//this call fails if the widget has not been realized
+    style = gtk_style_copy(style); 
     style->bg_pixmap[0] = pixmap;
     style->bg_pixmap[1] = pixmap;
     style->bg_pixmap[2] = pixmap;
