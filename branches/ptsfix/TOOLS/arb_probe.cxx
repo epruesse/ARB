@@ -18,6 +18,7 @@
 #include <arb_strbuf.h>
 #include <algorithm>
 #include <string> // need to include before test_unit.h
+#include <unistd.h>
 
 struct apd_sequence {
     apd_sequence *next;
