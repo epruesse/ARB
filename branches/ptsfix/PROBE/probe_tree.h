@@ -160,10 +160,17 @@ only few functions can be used, when the tree is reloaded (stage 3):
 
 #define PT_EMPTY_LEAF_SIZE       (1+sizeof(PT_PNTR)+6) // tag father name rel apos
 #define PT_LEAF_SIZE(leaf)       (1+sizeof(PT_PNTR)+6+2*PT_GLOBAL.count_bits[3][leaf->flags])
-#define PT_EMPTY_CHAIN_SIZE      (1+sizeof(PT_PNTR)+2+sizeof(PT_PNTR)) // tag father apos first_elem
-#define PT_EMPTY_NODE_SIZE       (1+sizeof(PT_PNTR)) // tag father
-#define PT_NODE_COUNT_SONS(leaf) PT_GLOBAL.count_bits[3][leaf->flags];
-#define PT_NODE_SIZE(node, size) size = PT_EMPTY_NODE_SIZE + sizeof(PT_PNTR)*PT_GLOBAL.count_bits[PT_B_MAX][node->flags]
+#define PT_SHORT_CHAIN_HEAD_SIZE (1+sizeof(PT_PNTR)+2+sizeof(PT_PNTR)) // tag father apos first_elem
+#define PT_LONG_CHAIN_HEAD_SIZE  (PT_SHORT_CHAIN_HEAD_SIZE+2) // apos uses 4 byte here
+#define PT_EMPTY_NODE_SIZE       (1+sizeof(PT_PNTR))   // tag father
+
+#define PT_MIN_CHAIN_ENTRY_SIZE  (sizeof(PT_PNTR)+3*sizeof(short)) // depends on PT_WRITE_NAT
+#define PT_MAX_CHAIN_ENTRY_SIZE  (sizeof(PT_PNTR)+3*sizeof(int))
+
+#define PT_NODE_WITHSONS_SIZE(sons) (PT_EMPTY_NODE_SIZE+sizeof(PT_PNTR)*(sons))
+
+#define PT_NODE_SON_COUNT(node) (PT_GLOBAL.count_bits[PT_B_MAX][node->flags])
+#define PT_NODE_SIZE(node)      PT_NODE_WITHSONS_SIZE(PT_NODE_SON_COUNT(node))
 
 // ----------------------------
 //      Read and write type

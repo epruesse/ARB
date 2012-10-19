@@ -204,22 +204,20 @@ POS_TREE *PT_leaf_to_chain(POS_TREE *node) {
     pt_assert_stage(STAGE1);
     if (PT_GET_TYPE(node) != PT_NT_LEAF) PT_CORE;
 
-    POS_TREE *father = PT_read_father(node);
+    POS_TREE      *father = PT_read_father(node);
+    const DataLoc  loc(node);
 
-    const DataLoc loc(node);
+    int       chain_size = (loc.apos>PT_SHORT_SIZE) ? PT_LONG_CHAIN_HEAD_SIZE : PT_SHORT_CHAIN_HEAD_SIZE;
+    POS_TREE *new_elem   = (POS_TREE *)MEM.get(chain_size);
 
-    int chain_size                          = PT_EMPTY_CHAIN_SIZE;
-    if (loc.apos>PT_SHORT_SIZE) chain_size += 2;
-
-    POS_TREE *new_elem = (POS_TREE *)MEM.get(chain_size);
     PT_change_link_in_father(father, node, new_elem);
     MEM.put(node, PT_LEAF_SIZE(node));
     PT_SET_TYPE(new_elem, PT_NT_CHAIN, 0);
     PT_set_father(new_elem, father);
-    
+
     char *data = (&new_elem->data)+sizeof(PT_PNTR);
-    if (loc.apos>PT_SHORT_SIZE) {                                   
-        PT_WRITE_INT(data, loc.apos);                               
+    if (loc.apos>PT_SHORT_SIZE) {
+        PT_WRITE_INT(data, loc.apos);
         data+=4;
         new_elem->flags|=1;
     }
@@ -250,9 +248,7 @@ POS_TREE *PT_create_leaf(POS_TREE **pfather, PT_BASES base, const DataLoc& loc) 
     if (pfather) {
         POS_TREE *father = *pfather;
 
-        int oldfathersize;
-        PT_NODE_SIZE(father, oldfathersize);
-
+        int       oldfathersize  = PT_NODE_SIZE(father);
         POS_TREE *new_elemfather = (POS_TREE *)MEM.get(oldfathersize + sizeof(PT_PNTR));
         PT_SET_TYPE(new_elemfather, PT_NT_NODE, 0);
 
@@ -385,7 +381,7 @@ const int    SIZE_MASK     = (1<<BITS_FOR_SIZE)-1;
 const size_t MIN_NODE_SIZE = PT_EMPTY_NODE_SIZE;
 
 COMPILE_ASSERT(MIN_NODE_SIZE <= PT_EMPTY_LEAF_SIZE);
-COMPILE_ASSERT(MIN_NODE_SIZE <= PT_EMPTY_CHAIN_SIZE);
+COMPILE_ASSERT(MIN_NODE_SIZE <= PT_SHORT_CHAIN_HEAD_SIZE);
 COMPILE_ASSERT(MIN_NODE_SIZE <= PT_EMPTY_NODE_SIZE);
 
 const int MIN_SIZE_IN_FLAGS = MIN_NODE_SIZE;
@@ -403,9 +399,11 @@ static void PTD_set_object_to_saved_status(POS_TREE *node, long pos_start, int f
     COMPILE_ASSERT((MAX_SIZE_IN_FLAGS-MIN_SIZE_IN_FLAGS+1) == SIZE_MASK); // ????0000 means "size not stored in flags"
 
     if (former_size >= MIN_SIZE_IN_FLAGS && former_size <= MAX_SIZE_IN_FLAGS) {
+        pt_assert(former_size >= int(sizeof(PT_PNTR)));
         node->flags |= former_size-FLAG_SIZE_REDUCTION;
     }
     else {
+        pt_assert(former_size >= int(sizeof(PT_PNTR)+sizeof(int)));
         PT_WRITE_INT((&node->data)+sizeof(PT_PNTR), former_size);
     }
 }
