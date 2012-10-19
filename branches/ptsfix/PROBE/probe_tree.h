@@ -73,10 +73,10 @@ extern pt_global PT_GLOBAL;
 
 / ********************* inner node (1 + 4*[1-6] +4) (stage 1 + 2) *********************** /
     byte    >128        bit[7] = 1  bit[6] = 0
-    [PT_PNTR father]        if main->mode
-    [PT_PNTR son0]          if bit[0]
-...
-    [PT_PNTR son5]          if bit[5]
+    [PT_PNTR father]        if main->mode (STAGE1)
+    [PT_PNTR son0]          if bit[0] 
+    ...                     ...
+    [PT_PNTR son5]          if bit[5] 
 
 / ********************* inner node (3-22    +4) (stage 3 only) *********************** /
     byte                bit[7] = 1  bit[6] = 0
@@ -168,8 +168,16 @@ only few functions can be used, when the tree is reloaded (stage 3):
 // ----------------------------
 //      Read and write type
 
-#define PT_GET_TYPE(pt)     (PT_GLOBAL.flag_2_type[pt->flags])
-#define PT_SET_TYPE(pt,i,j) (pt->flags = (i<<6)+j)
+#define FLAG_TYPE_BITS 2
+#define FLAG_FREE_BITS (8-FLAG_TYPE_BITS)
+
+inline int checked_lower_bits(int bits) {
+    pt_assert(bits >= 0 && bits<(1<<FLAG_FREE_BITS));
+    return bits;
+}
+
+#define PT_GET_TYPE(pt)            (PT_GLOBAL.flag_2_type[(pt)->flags])
+#define PT_SET_TYPE(pt,type,lbits) ((pt)->flags = ((type)<<FLAG_FREE_BITS)+checked_lower_bits(lbits))
 
 inline const char *PT_READ_CHAIN_ENTRY(const char* ptr, int mainapos, int *name, int *apos, int *rpos) {
     // Caution: 'name' has to be initialized before first call and shall not be modified between calls
@@ -379,22 +387,20 @@ inline POS_TREE *PT_read_son(POS_TREE *node, PT_BASES base) {
     }
 }
 
-inline PT_NODE_TYPE PT_read_type(POS_TREE *node) {
+inline PT_NODE_TYPE PT_read_type(const POS_TREE *node) {
     return (PT_NODE_TYPE)PT_GET_TYPE(node);
 }
 
 inline POS_TREE *PT_read_father(POS_TREE *node) {
+    pt_assert_stage(STAGE1); // in STAGE3 POS_TREE has no father
+    pt_assert(PT_read_type(node) != PT_NT_SAVED); // saved nodes do not know their father
     long p;
     PT_READ_PNTR(&node->data, p);
 
     POS_TREE *father = (POS_TREE*)p;
-
-#if defined(DEBUG)
-    if (father) {
-        pt_assert(PT_read_type(father) == PT_NT_NODE);
-    }
+#if defined(ASSERTION_USED)
+    if (father) pt_assert(PT_read_type(father) == PT_NT_NODE);
 #endif
-
     return father;
 }
 

@@ -176,6 +176,15 @@ void PT_add_to_chain(POS_TREE *node, const DataLoc& loc) {
     pt_assert_valid_chain(node);
 }
 
+inline void PT_set_father(POS_TREE *son, const POS_TREE *father) {
+    pt_assert_stage(STAGE1); // otherwise there are no fathers
+    pt_assert(!father || PT_read_type(father) == PT_NT_NODE);
+
+    PT_WRITE_PNTR(&son->data, long(father));
+
+    pt_assert(PT_read_father(son) == father);
+}
+
 POS_TREE *PT_change_leaf_to_node(POS_TREE *node) {
     pt_assert_stage(STAGE1);
     if (PT_GET_TYPE(node) != PT_NT_LEAF) PT_CORE;
@@ -186,7 +195,7 @@ POS_TREE *PT_change_leaf_to_node(POS_TREE *node) {
     if (father) PT_change_link_in_father(father, node, new_elem);
     MEM.put(node, PT_LEAF_SIZE(node));
     PT_SET_TYPE(new_elem, PT_NT_NODE, 0);
-    PT_WRITE_PNTR((&(new_elem->data)), (long)father);
+    PT_set_father(new_elem, father);
 
     return new_elem;
 }
@@ -206,7 +215,7 @@ POS_TREE *PT_leaf_to_chain(POS_TREE *node) {
     PT_change_link_in_father(father, node, new_elem);
     MEM.put(node, PT_LEAF_SIZE(node));
     PT_SET_TYPE(new_elem, PT_NT_CHAIN, 0);
-    PT_WRITE_PNTR((&new_elem->data), (long)father);
+    PT_set_father(new_elem, father);
     
     char *data = (&new_elem->data)+sizeof(PT_PNTR);
     if (loc.apos>PT_SHORT_SIZE) {                                   
@@ -236,46 +245,57 @@ POS_TREE *PT_create_leaf(POS_TREE **pfather, PT_BASES base, const DataLoc& loc) 
 
     POS_TREE *node = (POS_TREE *)MEM.get(leafsize);
 
+    pt_assert(PT_read_father(node) == NULL); // cause memory is cleared
+
     if (pfather) {
         POS_TREE *father = *pfather;
 
-        int       oldfathersize;
+        int oldfathersize;
         PT_NODE_SIZE(father, oldfathersize);
+
         POS_TREE *new_elemfather = (POS_TREE *)MEM.get(oldfathersize + sizeof(PT_PNTR));
-        
+        PT_SET_TYPE(new_elemfather, PT_NT_NODE, 0);
+
         POS_TREE *gfather = PT_read_father(father);
         if (gfather) {
             PT_change_link_in_father(gfather, father, new_elemfather);
-            PT_WRITE_PNTR(&new_elemfather->data, gfather);
+            PT_set_father(new_elemfather, gfather);
+        }
+        else {
+            pt_assert(PT_read_father(father) == NULL);
         }
 
-        long sbase = sizeof(PT_PNTR);
-        long dbase = sizeof(PT_PNTR);
-        int  base2 = 1 << base;
+        long sbase   = sizeof(PT_PNTR);
+        long dbase   = sizeof(PT_PNTR);
+        int  basebit = 1 << base;
 
-        for (long i = 1; i < 0x40; i = i << 1) {
-            if (i & father->flags) {
+        pt_assert((father->flags&basebit) == 0); // son already exists!
+
+        for (int i = 1; i < (1<<FLAG_FREE_BITS); i = i << 1) {
+            if (i & father->flags) { // existing son
                 long      j;
                 PT_READ_PNTR(((char *) &father->data) + sbase, j);
                 POS_TREE *son     = (POS_TREE *)j;
                 int       sontype = PT_GET_TYPE(son);
                 if (sontype != PT_NT_SAVED) {
-                    PT_WRITE_PNTR((char *) &son->data, new_elemfather);
+                    PT_set_father(son, new_elemfather);
                 }
+
                 PT_WRITE_PNTR(((char *) &new_elemfather->data) + dbase, son);
+
                 sbase += sizeof(PT_PNTR);
                 dbase += sizeof(PT_PNTR);
-                continue;
             }
-            if (i & base2) {
+            else if (i & basebit) { // newly created leaf
                 PT_WRITE_PNTR(((char *) &new_elemfather->data) + dbase, node);
-                PT_WRITE_PNTR((&node->data), (PT_PNTR)new_elemfather);
+                PT_set_father(node, new_elemfather);
                 dbase += sizeof(PT_PNTR);
             }
         }
-        new_elemfather->flags = father->flags | base2;
+
+        new_elemfather->flags = father->flags | basebit;
         MEM.put(father, oldfathersize);
-        PT_SET_TYPE(node, PT_NT_LEAF, 0);
+        PT_SET_TYPE(node, PT_NT_LEAF, 0); // @@@ dupped below
         *pfather = new_elemfather;
     }
     PT_SET_TYPE(node, PT_NT_LEAF, 0);
@@ -309,8 +329,7 @@ POS_TREE *PT_create_leaf(POS_TREE **pfather, PT_BASES base, const DataLoc& loc) 
         dest += 2;
     }
 
-    if (base == PT_QU) return PT_leaf_to_chain(node);
-    return node;
+    return base == PT_QU ? PT_leaf_to_chain(node) : node;
 }
 
 // ------------------------------------
@@ -320,7 +339,7 @@ void PTD_clear_fathers(POS_TREE *node) {
     pt_assert_stage(STAGE1);
     PT_NODE_TYPE type = PT_read_type(node);
     if (type != PT_NT_SAVED) {
-        PT_WRITE_PNTR((&node->data), NULL);
+        PT_set_father(node, NULL);
         if (type == PT_NT_NODE) {
             for (int i = PT_QU; i < PT_B_MAX; i++) {
                 POS_TREE *son = PT_read_son_stage_1(node, (PT_BASES)i);

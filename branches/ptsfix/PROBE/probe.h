@@ -82,7 +82,7 @@ enum PT_BASES {
     PT_C,
     PT_G,
     PT_T,
-    PT_B_MAX,
+    PT_B_MAX, // @@@ name is wrong
     PT_B_UNDEF,
 };
 
