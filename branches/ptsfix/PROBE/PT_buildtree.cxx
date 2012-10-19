@@ -19,6 +19,9 @@
 #include <arb_progress.h>
 
 #include <unistd.h>
+#include <malloc.h>
+
+#define PTM_TRACE_MAX_MEM_USAGE // @@@ comment out later
 
 // AISC_MKPT_PROMOTE: class DataLoc;
 
@@ -170,6 +173,13 @@ static long PTD_save_partial_tree(FILE *out, POS_TREE * node, char *partstring, 
     return pos;
 }
 
+#if defined(PTM_TRACE_MAX_MEM_USAGE)
+
+static void dump_memusage() {
+    malloc_stats();
+}
+#endif
+
 ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESULT
     // initialize tree and call the build pos tree procedure
 
@@ -232,17 +242,8 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
 #else
                     ULONG estimated_kb = (total_size/1024)*35;  // value by try and error; 35 bytes per base
 #endif
-                    printf("Estimated memory usage for %i passes: ", passes);
-                    if (estimated_kb<1024) printf("%lu k\n", estimated_kb);
-                    else {
-                        double estimated_mb = estimated_kb / 1024.0;
-                        if (estimated_mb<1024) printf("%.1f M\n", estimated_mb);
-                        else {
-                            double estimated_gb = estimated_mb / 1024.0;
-                            printf("%.1f G\n", estimated_gb);
-                        }
-                    }
-
+                    
+                    printf("Estimated memory usage for %i passes: %s\n", passes, GBS_readable_size(estimated_kb*1024, "b"));
 
                     if (estimated_kb <= physical_memory) break;
 
@@ -289,6 +290,11 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
 
                     ++data_progress;
                 }
+
+#if defined(PTM_TRACE_MAX_MEM_USAGE)
+                dump_memusage();
+#endif
+                
                 pos = PTD_save_partial_tree(out, pt, partstring, partsize, pos, &last_obj, error);
                 if (error) break;
 
@@ -300,6 +306,10 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
 
             if (!error) {
                 if (partsize) {
+#if defined(PTM_TRACE_MAX_MEM_USAGE)
+                    dump_memusage();
+#endif
+                    
                     pos = PTD_save_partial_tree(out, pt, NULL, 0, pos, &last_obj, error);
 #ifdef PTM_DEBUG_NODES
                     PTD_debug_nodes();

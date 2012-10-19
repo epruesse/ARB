@@ -17,6 +17,7 @@
 #include <arbdbt.h>
 #include <arb_file.h>
 #include <arb_defs.h>
+#include <arb_misc.h>
 #include <servercntrl.h>
 #include <server.h>
 #include <client.h>
@@ -324,9 +325,7 @@ static void initGlobals() {
     aisc_core_on_error = 0;
 
     physical_memory = GB_get_physical_memory();
-#if defined(DEBUG)
-    printf("physical_memory=%lu k (%lu Mb)\n", physical_memory, physical_memory/1024UL);
-#endif // DEBUG
+    printf("Available memory: %s\n", GBS_readable_size(physical_memory*1024, "b"));
 }
 
 __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, const char *arbdb_name, const char *pt_name, const char *exename) {
