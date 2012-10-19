@@ -123,16 +123,16 @@ enum Stage { STAGE1, STAGE3 }; // STAGE2 does not exist
 class PT_data {
     Stage  stage;
     int    data_offset;
-    char  *data_start;
+    char  *data_start; // @@@ change to unsigned long (i.e. use offset)
 
 public:
     PT_data(Stage stage_);
 
     Stage get_stage() const { return stage; }
-    int get_offset() const { return data_offset; }
+    int get_offset() const { return data_offset; } // @@@ rename
 
     void use_rel_pointers(char *relStartAddress) { data_start = relStartAddress; }
-    POS_TREE *rel2abs(int relPtr) const { return (POS_TREE*)(data_start+relPtr); }
+    POS_TREE *rel2abs(unsigned long relPtr) const { return (POS_TREE*)(data_start+relPtr); } // @@@ arg->POS_TREE
 };
 
 // ---------------------
