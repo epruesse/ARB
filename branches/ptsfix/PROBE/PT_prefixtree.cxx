@@ -916,6 +916,11 @@ void TEST_saved_state() {
 static POS_TREE *theChain = NULL;
 static DataLoc  *theLoc   = NULL;
 
+#if defined(ENABLE_CRASH_TESTS)
+// # define TEST_BAD_CHAINS // TEST_chains fails in PTD_save_partial_tree if uncommented (as expected)
+#endif
+
+#if defined(TEST_BAD_CHAINS)
 static void bad_add_to_chain() {
     PT_add_to_chain(theChain, *theLoc);
 #if !defined(PTM_DEBUG_VALIDATE_CHAINS)
@@ -924,6 +929,7 @@ static void bad_add_to_chain() {
     theChain = NULL;
     theLoc   = NULL;
 }
+#endif
 
 void TEST_chains() {
     EnterStage1 env;
@@ -954,16 +960,34 @@ void TEST_chains() {
 
         // now chain is 'loc1a,loc2a'
 
+#if defined(TEST_BAD_CHAINS)
         switch (base) {
             case PT_A: theChain = chain; theLoc = &loc2a; TEST_ASSERT_CODE_ASSERTION_FAILS(bad_add_to_chain); break; // add same location twice -> fail
             case PT_C: theChain = chain; theLoc = &loc1b; TEST_ASSERT_CODE_ASSERTION_FAILS(bad_add_to_chain); break; // add species in wrong order -> fail
             case PT_G: theChain = chain; theLoc = &loc2b; TEST_ASSERT_CODE_ASSERTION_FAILS(bad_add_to_chain); break; // add positions in wrong order (should fail)
             default: TEST_ASSERT(0); break;
         }
+#endif
     }
     {
         POS_TREE *leaf = PT_create_leaf(&root, PT_QU, loc1a); // PT_QU always produces chain
         TEST_ASSERT_EQUAL(PT_read_type(leaf), PT_NT_CHAIN);
+    }
+
+    // since there is no explicit code to free POS_TREE-memory, spool it into /dev/null
+    {
+        FILE      *out = fopen("/dev/null", "wb");
+        ARB_ERROR  error;
+        long       root_pos;
+        PTD_save_partial_tree(out, root, NULL, 0, 0, &root_pos, error);
+
+        TEST_ASSERT_NO_ERROR(error.deliver());
+        TEST_ASSERT_EQUAL(root_pos, 43);
+
+        TEST_ASSERT_EQUAL(PT_read_type(root), PT_NT_SAVED);
+        MEM.put(root, get_memsize_of_saved(root));
+        
+        fclose(out);
     }
 }
 

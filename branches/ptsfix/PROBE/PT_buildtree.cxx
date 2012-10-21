@@ -155,7 +155,7 @@ inline void get_abs_align_pos(char *seq, int &pos) {
     pos+=q_exists;
 }
 
-static long PTD_save_partial_tree(FILE *out, POS_TREE * node, char *partstring, int partsize, long pos, long *node_pos, ARB_ERROR& error) {
+long PTD_save_partial_tree(FILE *out, POS_TREE * node, char *partstring, int partsize, long pos, long *node_pos, ARB_ERROR& error) {
     // 'node_pos' is set to the root-node of the last written subtree (only if partsize == 0)
     pt_assert_stage(STAGE1);
     if (partsize) {
