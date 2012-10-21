@@ -294,6 +294,7 @@ PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_file.h
+PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_misc.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_string.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arbdb.h

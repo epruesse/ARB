@@ -145,7 +145,7 @@ void probe_struct_global::cleanup() {
     setup();
 }
 
-struct Memory MEM;
+Memory MEM;
 
 static bool psg_initialized = false;
 void PT_init_psg() {

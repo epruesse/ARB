@@ -830,6 +830,41 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE **pnode) { // __A
 
 // --------------------------------------------------------------------------------
 
+#if defined(PTM_MEM_DUMP_STATS)
+const char *get_blocksize_description(int blocksize) {
+#if defined(ARB_64)
+#else // 32bit:
+    COMPILE_ASSERT(PT_SHORT_CHAIN_HEAD_SIZE == PT_EMPTY_LEAF_SIZE);
+    COMPILE_ASSERT(PT_LONG_CHAIN_HEAD_SIZE == PT_NODE_WITHSONS_SIZE(2));
+#endif
+    const char *known = NULL;
+    switch (blocksize) {
+        case PT_EMPTY_NODE_SIZE:       known = "PT_EMPTY_NODE_SIZE"; break;
+#if defined(ARB_64)
+        case PT_EMPTY_LEAF_SIZE:       known = "PT_EMPTY_LEAF_SIZE"; break;
+        case PT_SHORT_CHAIN_HEAD_SIZE: known = "PT_SHORT_CHAIN_HEAD_SIZE"; break;
+        case PT_LONG_CHAIN_HEAD_SIZE:  known = "PT_LONG_CHAIN_HEAD_SIZE"; break;
+        case PT_MIN_CHAIN_ENTRY_SIZE:  known = "PT_MIN_CHAIN_ENTRY_SIZE"; break;
+        case PT_MAX_CHAIN_ENTRY_SIZE:  known = "PT_MAX_CHAIN_ENTRY_SIZE"; break;
+        case PT_NODE_WITHSONS_SIZE(2): known = "PT_NODE_WITHSONS_SIZE(2)"; break;
+#else // 32bit:
+        case PT_EMPTY_LEAF_SIZE:       known = "PT_EMPTY_LEAF_SIZE       and PT_SHORT_CHAIN_HEAD_SIZE"; break;
+        case PT_MIN_CHAIN_ENTRY_SIZE:  known = "PT_MIN_CHAIN_ENTRY_SIZE"; break;
+        case PT_MAX_CHAIN_ENTRY_SIZE:  known = "PT_MAX_CHAIN_ENTRY_SIZE"; break;
+        case PT_NODE_WITHSONS_SIZE(2): known = "PT_NODE_WITHSONS_SIZE(2) and PT_LONG_CHAIN_HEAD_SIZE"; break;
+#endif
+        case PT_NODE_WITHSONS_SIZE(1): known = "PT_NODE_WITHSONS_SIZE(1)"; break;
+        case PT_NODE_WITHSONS_SIZE(3): known = "PT_NODE_WITHSONS_SIZE(3)"; break;
+        case PT_NODE_WITHSONS_SIZE(4): known = "PT_NODE_WITHSONS_SIZE(4)"; break;
+        case PT_NODE_WITHSONS_SIZE(5): known = "PT_NODE_WITHSONS_SIZE(5)"; break;
+        case PT_NODE_WITHSONS_SIZE(6): known = "PT_NODE_WITHSONS_SIZE(6)"; break;
+    }
+    return known;
+}
+#endif
+
+// --------------------------------------------------------------------------------
+
 #ifdef UNIT_TESTS
 #ifndef TEST_UNIT_H
 #include <test_unit.h>
@@ -993,16 +1028,31 @@ void TEST_chains() {
 
 void TEST_mem() {
     EnterStage1 env;
-    
+
+#if defined(PTM_MEM_DUMP_STATS)
+    MEM.dump_stats(false);
+#endif
+
     const int  MAXSIZE = 1024;
-    char      *ptr[MAXSIZE];
+    char      *ptr[MAXSIZE+1];
 
     for (int size = PTM_MIN_SIZE; size <= MAXSIZE; ++size) {
-        ptr[size-1] = (char*)MEM.get(size);
+        ptr[size] = (char*)MEM.get(size);
     }
     for (int size = PTM_MIN_SIZE; size <= MAXSIZE; ++size) {
-        MEM.put(ptr[size-1], size);
+#if defined(PTM_MEM_CHECKED_FREE)
+        if (size <= PTM_MAX_SIZE) {
+            TEST_ASSERT_EQUAL(MEM.block_has_size(ptr[size], size), true);
+        }
+#endif
+        MEM.put(ptr[size], size);
     }
+
+    MEM.clear();
+#if defined(PTM_MEM_DUMP_STATS)
+    MEM.dump_stats(true);
+#endif
+
 }
 
 #endif // UNIT_TESTS

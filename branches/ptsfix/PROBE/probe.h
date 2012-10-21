@@ -26,7 +26,6 @@
 
 #if defined(DEBUG)
 // # define PTM_DEBUG_NODES
-// # define PTM_DEBUG_MEM
 # define PTM_DEBUG_STAGE_ASSERTIONS
 // # define PTM_DEBUG_VALIDATE_CHAINS
 #endif // DEBUG
