@@ -372,6 +372,8 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                     psg.pt = pt;
                 }
             }
+
+            if (error) pass_progress.done();
         }
         free(t2name);
     }

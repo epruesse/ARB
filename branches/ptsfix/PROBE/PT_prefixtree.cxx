@@ -21,72 +21,38 @@
 
 struct pt_global PT_GLOBAL;
 
-static int ptd_count_chain_entries(char *entry) {
-    int counter = 0;
-    while (entry) {
-        counter ++;
-        long next;
-        PT_READ_PNTR(entry, next);
-        entry = (char *)next;
-    }
-    pt_assert(counter >= 0);
-    return counter;
-}
+inline bool locs_in_chain_order(const DataLoc& loc1, const DataLoc& loc2) {
+    pt_assert_stage(STAGE1); // this order is only valid in STAGE1 (STAGE3 has reverse order)
 
-static void ptd_set_chain_references(char *entry, char **entry_tab) {
-    int counter = 0;
-    while (entry) {
-        entry_tab[counter] = entry;
-        counter ++;
-        long next;
-        PT_READ_PNTR(entry, next);
-        entry = (char *)next;
-    }
-}
-
-static bool PT_chain_entryTab_valid(char **entry_tab, int n_entries) {
-    int lastname = INT_MIN;
-    int lastrpos = INT_MAX;
-    int lastapos = INT_MAX;
-
-    while (n_entries>0) {
-        char *entry = entry_tab[n_entries-1];
-        n_entries--;
-        char *rp = entry + sizeof(PT_PNTR);
-
-        int name; PT_READ_NAT(rp, name);
-        int rpos; PT_READ_NAT(rp, rpos);
-        int apos; PT_READ_NAT(rp, apos);
-
-        if (name < lastname) return false;
-        if (name == lastname) {
-            if (rpos >= lastrpos) return false;
-            if (apos >= lastapos) return false;
-        }
-
-        lastname = name;
-        lastrpos = rpos;
-        lastapos = apos;
+    if (loc1.name < loc2.name) return false;
+    if (loc1.name == loc2.name) {
+        if (loc1.rpos >= loc2.rpos) return false;
+        if (loc1.apos >= loc2.apos) return false;
     }
     return true;
 }
 
-bool PT_chain_has_valid_entries(POS_TREE * const node) {
+inline bool PT_is_empty_chain(const POS_TREE * const node) {
+    pt_assert(PT_read_type(node) == PT_NT_CHAIN);
+    return !ChainIterator(node);
+}
+
+bool PT_chain_has_valid_entries(const POS_TREE * const node) {
     pt_assert(PT_read_type(node) == PT_NT_CHAIN);
 
-    const char *data = node_data_start(node);
-    data += (node->flags&1) ? 4 : 2;
+    bool ok = true;
 
-    long first_entry;
-    PT_READ_PNTR(data, first_entry);
-    int  n_entries = ptd_count_chain_entries((char *)first_entry);
+    ChainIterator entry(node);
+    if (!entry) return false;
 
-    char **entry_tab = (char **)GB_calloc(sizeof(char *), n_entries);
-    ptd_set_chain_references((char *)first_entry, entry_tab);
+    DataLoc last(entry.at());
 
-    bool ok = PT_chain_entryTab_valid(entry_tab, n_entries);
-
-    free(entry_tab);
+    ++entry;
+    while (entry && ok) {
+        ok   = locs_in_chain_order(last, entry.at());
+        last = entry.at();
+        ++entry;
+    }
 
     return ok;
 }
@@ -146,12 +112,11 @@ static void PT_change_link_in_father(POS_TREE *father, POS_TREE *old_link, POS_T
 
 void PT_add_to_chain(POS_TREE *node, const DataLoc& loc) {
     pt_assert_stage(STAGE1);
-    pt_assert_valid_chain(node);
+    pt_assert(PT_is_empty_chain(node) || PT_chain_has_valid_entries(node));
 
     // insert at the beginning of list
 
-    const char *data  = node_data_start(node);
-    data             += (node->flags&1) ? 4 : 2;
+    const char *data = node_data_start(node) + ((node->flags&1) ? 4 : 2);
 
     unsigned long old_first;
     PT_READ_PNTR(data, old_first);  // create a new list element
@@ -433,50 +398,45 @@ static long PTD_write_tip_to_disk(FILE *out, POS_TREE *node, const long oldpos) 
     return pos;
 }
 
-static ARB_ERROR ptd_write_and_free_chain_entries(FILE *out, long *ppos, char **entry_tab, int n_entries, int mainapos) { // __ATTR__USERESULT
-    ARB_ERROR error;
-    int       lastname = 0;
-
-    pt_assert(PT_chain_entryTab_valid(entry_tab, n_entries));
-
-    while (n_entries>0 && !error) {
-        char *entry = entry_tab[n_entries-1];
-        n_entries --;
-        char *rp = entry;
-        rp += sizeof(PT_PNTR);
-
-        int name; PT_READ_NAT(rp, name);
-        int rpos; PT_READ_NAT(rp, rpos);
-        int apos; PT_READ_NAT(rp, apos);
-
-        if (name < lastname) {
-            error = GBS_global_string("Chain Error: name order error %i < %i", name, lastname);
+static char *reverse_chain(char *entry, char *successor) {
+    while (1) {
+        char *nextEntry;
+        {
+            long next;
+            PT_READ_PNTR(entry, next);
+            nextEntry = (char*)next;
         }
-        else {
-            static char buffer[100];
+        PT_WRITE_PNTR(entry, successor);
 
-            char *wp = buffer;
-            wp       = PT_WRITE_CHAIN_ENTRY(wp, mainapos, name-lastname, apos, rpos);
+        if (!nextEntry) break;
 
-            int size = wp -buffer;
-            if (1 != fwrite(buffer, size, 1, out)) {
-                error = GB_IO_error("writing chains to", "ptserver-index");
-            }
-            else {
-                *ppos    += size;
-                MEM.put(entry, rp-entry);
-                lastname  = name;
-            }
-        }
+        successor = entry;
+        entry     = nextEntry;
+    }
+    return entry;
+}
+
+static void reverse_chain(POS_TREE * const node) {
+    pt_assert_stage(STAGE1);
+    pt_assert(PT_read_type(node) == PT_NT_CHAIN);
+
+    char *data = node_data_start(node) + ((node->flags&1) ? 4 : 2);
+    char *entry;
+    {
+        long e;
+        PT_READ_PNTR(data, e);
+        entry = (char*)e;
     }
 
-    return error;
+    char *last_entry = reverse_chain(entry, NULL);
+    PT_WRITE_PNTR(data, last_entry);
 }
 
 static long PTD_write_chain_to_disk(FILE *out, POS_TREE * const node, const long oldpos, ARB_ERROR& error) {
     pt_assert_valid_chain(node);
-    
+
     long pos = oldpos;
+
     putc(node->flags, out);         // save type
     pos++;
 
@@ -495,15 +455,37 @@ static long PTD_write_chain_to_disk(FILE *out, POS_TREE * const node, const long
         data += 2;
         pos += 2;
     }
-    long first_entry;
-    PT_READ_PNTR(data, first_entry);
-    int n_entries = ptd_count_chain_entries((char *)first_entry);
-    {
-        char **entry_tab = (char **)GB_calloc(sizeof(char *), n_entries);
-        ptd_set_chain_references((char *)first_entry, entry_tab);
-        error = ptd_write_and_free_chain_entries(out, &pos, entry_tab, n_entries, mainapos);
-        free(entry_tab);
+
+    reverse_chain(node);
+
+    ChainIterator entry(node);
+    int           lastname = 0;
+    while (entry && !error) {
+        const DataLoc& loc = entry.at();
+        if (loc.name<lastname) {
+            error = GBS_global_string("Chain Error: name order error (%i < %i)", loc.name, lastname);
+        }
+        else {
+            static char buffer[100];
+
+            char *wp = buffer;
+            wp       = PT_WRITE_CHAIN_ENTRY(wp, mainapos, loc.name-lastname, loc.apos, loc.rpos);
+
+            int size = wp -buffer;
+            if (1 != fwrite(buffer, size, 1, out)) {
+                error = GB_IO_error("writing chains to", "ptserver-index");
+            }
+
+            pos      += size;
+            lastname  = loc.name;
+
+            char *mem = (char*)entry.memory();
+            ++entry;
+
+            MEM.put(mem, entry.memsize());
+        }
     }
+
     putc(PT_CHAIN_END, out);
     pos++;
     pt_assert(pos >= 0);
@@ -948,14 +930,15 @@ void TEST_saved_state() {
     free(node);
 }
 
-static POS_TREE *theChain = NULL;
-static DataLoc  *theLoc   = NULL;
-
 #if defined(ENABLE_CRASH_TESTS)
 // # define TEST_BAD_CHAINS // TEST_chains fails in PTD_save_partial_tree if uncommented (as expected)
 #endif
 
 #if defined(TEST_BAD_CHAINS)
+
+static POS_TREE *theChain = NULL;
+static DataLoc  *theLoc   = NULL;
+
 static void bad_add_to_chain() {
     PT_add_to_chain(theChain, *theLoc);
 #if !defined(PTM_DEBUG_VALIDATE_CHAINS)
@@ -992,6 +975,16 @@ void TEST_chains() {
 
         PT_add_to_chain(chain, loc2a);
         TEST_ASSERT(PT_chain_has_valid_entries(chain));
+
+        if (base == PT_A) { // test only once
+            ChainIterator entry(chain);
+
+            TEST_ASSERT_EQUAL(bool(entry), true);
+            TEST_ASSERT(entry.at() == loc2a);
+            ++entry;
+            TEST_ASSERT_EQUAL(bool(entry), true);
+            TEST_ASSERT(entry.at() == loc1a);
+        }
 
         // now chain is 'loc1a,loc2a'
 

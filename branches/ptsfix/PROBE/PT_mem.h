@@ -290,7 +290,14 @@ public:
         }
         else {
 #if defined(PTM_MEM_CHECKED_FREE)
-            pt_assert(block_has_size(vblock, size));
+            if (!block_has_size(vblock, size)) {
+                for (int idx = 0; idx<PTM_TABLE_COUNT; ++idx) {
+                    int isize = manager.idx2size(idx);
+                    if (isize != size && block_has_size(vblock, isize)) {
+                        pt_assert(size == isize);
+                    }
+                }
+            }
 #endif
 
             int  tab = MemBlockManager::size2idx(size);
