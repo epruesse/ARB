@@ -130,9 +130,7 @@ public:
     int operator()(const DataLoc& leaf) {
         struct probe_input_data& data = psg.data[leaf.name];
 
-        PT_BASES b = (PT_BASES)data.get_data()[leaf.rpos];
-
-        fprintf(out, "%s[%c] %s@%i>%i\n", prefix, PT_base_2_char(b), data.get_name(), leaf.apos, leaf.rpos);
+        fprintf(out, "%s %i=%s@%i>%i\n", prefix, leaf.name, data.get_name(), leaf.apos, leaf.rpos);
         return 0;
     }
 };
