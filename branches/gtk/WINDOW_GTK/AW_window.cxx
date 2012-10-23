@@ -8,7 +8,7 @@
 //   http://www.arb-home.de/                                     //
 //                                                               //
 // ============================================================= //
-
+ 
 #include "aw_gtk_migration_helpers.hxx"
 #include "aw_window.hxx"
 #include "AW_area_management.hxx"
@@ -35,10 +35,11 @@
 #include <stack>
 #include <gtk-2.0/gtk/gtkmenuitem.h>
 #include <gtk-2.0/gtk/gtkseparatormenuitem.h>
+#include <gtk-2.0/gtk/gtktoolbar.h>
 
 
 /**
- * This class hides all gtk dependent attributes.
+ * This class hides all private or gtk dependent attributes.
  * This is done to avoid gtk includes in the header file.
  */
 class AW_window::AW_window_gtk {
@@ -69,7 +70,11 @@ public:
      */
     GtkMenuShell *help_menu;
     
-    
+    /**
+     * The mode menu. Might not exist in some windows. Check for NULL before use.
+     */
+    GtkToolbar *mode_menu;
+  
 
     /**
      * A window consists of several areas.
@@ -82,7 +87,14 @@ public:
      */
     std::vector<AW_area_management *> areas;
     
-    AW_window_gtk() : window(NULL), fixed_size_area(NULL), menu_bar(NULL), help_menu(NULL) {}
+    /**
+     * This is a counter for the number of items in the mode_menu.
+     * It only exists to satisfy the old interface of create_mode()
+     */
+    int number_of_modes;
+    
+    AW_window_gtk() : window(NULL), fixed_size_area(NULL), menu_bar(NULL), help_menu(NULL),
+                      mode_menu(NULL), number_of_modes(0) {}
     
     
     
@@ -1362,9 +1374,45 @@ void AW_window::create_menu(AW_label name, const char *mnemonic, AW_active mask 
         insert_sub_menu(name, mnemonic, mask);
 }
 
-int AW_window::create_mode(const char */*pixmap*/, const char */*help_text*/, AW_active /*mask*/, void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/){
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+int AW_window::create_mode(const char *pixmap, const char *help_text, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
+    
+    aw_assert(legal_mask(mask));
+    aw_assert(NULL != prvt->mode_menu);
+    
+    //FIXME help text not implemented
+    
+    TuneBackground(GTK_WIDGET(prvt->mode_menu), TUNE_BUTTON); // set background color for mode-buttons
+
+    const char *path = GB_path_in_ARBLIB("pixmaps", pixmap);
+    GtkWidget *icon = gtk_image_new_from_file(path);
+    GtkToolItem *item = GTK_TOOL_ITEM(gtk_tool_button_new(icon, NULL)); //use icon, not label
+
+    gtk_toolbar_insert(prvt->mode_menu, item, -1); //-1 = append
+    
+    
+    //FIXME callback not implemented
+    
+//    AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, 0);
+//    AW_cb_struct *cb2 = new AW_cb_struct(this, (AW_CB)aw_mode_callback, (AW_CL)p_w->number_of_modes, (AW_CL)cbs, helpText, cbs);
+//    XtAddCallback(button, XmNactivateCallback,
+//    (XtCallbackProc) AW_server_callback,
+//    (XtPointer) cb2);
+//
+//    if (!p_w->modes_f_callbacks) {
+//        p_w->modes_f_callbacks = (AW_cb_struct **)GB_calloc(sizeof(AW_cb_struct*), AW_NUMBER_OF_F_KEYS); // valgrinders : never freed because AW_window never is freed
+//    }
+//    if (!p_w->modes_widgets) {
+//        p_w->modes_widgets = (Widget *)GB_calloc(sizeof(Widget), AW_NUMBER_OF_F_KEYS);
+//    }
+//    if (p_w->number_of_modes<AW_NUMBER_OF_F_KEYS) {
+//        p_w->modes_f_callbacks[p_w->number_of_modes] = cb2;
+//        p_w->modes_widgets[p_w->number_of_modes] = button;
+//    }
+
+    root->make_sensitive(GTK_WIDGET(item), mask);
+    prvt->number_of_modes++;
+    //return number of modes? no idea why though
+    return prvt->number_of_modes;
 }
 
 
@@ -2038,7 +2086,12 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     
     
     hbox = gtk_hbox_new(false, 1); //FIXME constant
-    gtk_container_add(GTK_CONTAINER(vbox), hbox);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), true, true, 0);
+    
+    prvt->mode_menu = GTK_TOOLBAR(gtk_toolbar_new());
+    gtk_toolbar_set_orientation(prvt->mode_menu, GTK_ORIENTATION_VERTICAL);
+    
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prvt->mode_menu), false, false, 0);
     
     
     
@@ -2185,8 +2238,11 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
 //                                         NULL);
 //
     
+    GtkWidget *vbox2 = gtk_vbox_new(false,0);
+    gtk_box_pack_start(GTK_BOX(hbox), vbox2, true, true, 0);
+    
     GtkWidget* drawing_area = gtk_drawing_area_new();
-    gtk_container_add(GTK_CONTAINER(vbox), drawing_area);
+    gtk_box_pack_start(GTK_BOX(vbox2), drawing_area, true, true,0);
     gtk_widget_realize(GTK_WIDGET(drawing_area));
 
     prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(root, drawing_area, drawing_area); //FIXME form should be a frame around the area.
