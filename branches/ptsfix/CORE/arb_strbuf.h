@@ -54,7 +54,10 @@ public:
 
     size_t get_buffer_size() const { return buffer_size; }
     size_t get_position() const { return pos; }
-    
+
+    bool filled() const { return get_position()>0; }
+    bool empty() const { return !filled(); }
+
     const char *get_data() const { return data; }
 
     char *release_mem(size_t& size) {
@@ -66,7 +69,7 @@ public:
     }
     char *release() { size_t s; return release_mem(s); }
 
-    void reset_pos() { set_pos(0); }
+    void erase() { set_pos(0); }
 
     void assign_mem(char *block, size_t blocksize) {
         free(data);
@@ -76,7 +79,7 @@ public:
         data      = block;
         buffer_size = blocksize;
 
-        reset_pos();
+        erase();
     }
     void reassign_mem(GBS_strstruct& from) {
         size_t  size;
@@ -116,7 +119,7 @@ public:
     void cut_tail(size_t byte_count) {
         set_pos(pos<byte_count ? 0 : pos-byte_count);
     }
-    
+
     void put(char c) {
         ensure_mem(1);
         data[pos] = c;
