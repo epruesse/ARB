@@ -270,7 +270,8 @@ protected:
     void set_background(const char *colorname, GtkWidget* w);
 
     void wm_activate();                                // un-minimize window and give it the focus (use show_and_activate())
-
+    
+    
 public:
 
     // ************ This is not the public section *************

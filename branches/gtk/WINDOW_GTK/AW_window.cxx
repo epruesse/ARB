@@ -19,6 +19,7 @@
 #include "aw_msg.hxx"
 #include "aw_awar.hxx"
 #include "aw_common.hxx"
+#include "AW_motif_gtk_conversion.hxx"
 #include <arbdb.h>
 
 #include <gtk/gtklabel.h>
@@ -37,7 +38,7 @@
 
 
 /**
- * This class hides all gtk dependent attributes. 
+ * This class hides all gtk dependent attributes.
  * This is done to avoid gtk includes in the header file.
  */
 class AW_window::AW_window_gtk {
@@ -82,6 +83,11 @@ public:
     std::vector<AW_area_management *> areas;
     
     AW_window_gtk() : window(NULL), fixed_size_area(NULL), menu_bar(NULL), help_menu(NULL) {}
+    
+    
+    
+    
+    
     
 };
 
@@ -1523,11 +1529,12 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const cha
    aw_assert(legal_mask(mask));
   
    GTK_PARTLY_IMPLEMENTED;
-   //FIXME mnemonics missing
+
+   std::string topicName = AW_motif_gtk_conversion::convert_mnemonic(name, mnemonic);
    
    if (!topic_id) topic_id = name; // hmm, due to this we cannot insert_menu_topic w/o id. Change? @@@
-
-   GtkWidget *item = gtk_menu_item_new_with_label(name);
+   
+   GtkWidget *item = gtk_menu_item_new_with_mnemonic(topicName.c_str());
    aw_assert(prvt->menus.size() > 0); //closed too many menus
    gtk_menu_shell_append(prvt->menus.top(), item);  
    
@@ -1565,15 +1572,21 @@ void AW_window::insert_option(AW_label /*choice_label*/, const char */*mnemonic*
     GTK_NOT_IMPLEMENTED;
 }
 
+
+
+
 void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active mask /*= AWM_ALL*/){
 
     
     aw_assert(legal_mask(mask));
     
+    //construct mnemonic string
+    std::string menuName = AW_motif_gtk_conversion::convert_mnemonic(name, mnemonic);
+    
     //create new menu item with attached submenu
     GtkMenu *submenu  = GTK_MENU(gtk_menu_new());
-    GtkMenuItem *item = GTK_MENU_ITEM(gtk_menu_item_new_with_label(name));
-    //FIXME mnemonics missing
+    GtkMenuItem *item = GTK_MENU_ITEM(gtk_menu_item_new_with_mnemonic(menuName.c_str()));
+    
     gtk_menu_item_set_submenu(item, GTK_WIDGET(submenu));
     
     //append the new submenu to the current menu shell
