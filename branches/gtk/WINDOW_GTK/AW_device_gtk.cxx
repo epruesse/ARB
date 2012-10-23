@@ -39,39 +39,12 @@ AW_DEVICE_TYPE AW_device_gtk::type() { return AW_DEVICE_SCREEN; }
 
 AW_device_gtk::AW_device_gtk(AW_common *commoni, GtkWidget *drawingArea) :
         AW_device(commoni),
-        pixmap(gdk_pixmap_new(drawingArea->window, 3000, 3000, -1)),
-        drawingArea(drawingArea) //FIXME get width and height from somewhere
+        drawingArea(drawingArea)
 {
 
     arb_assert(drawingArea != NULL);
     arb_assert(commoni != NULL);
-
-    //subsequent calls only work on a realized widget
-    if(!gtk_widget_get_realized(drawingArea)) {
-        gtk_widget_realize(drawingArea);
-    }
-
-    //set the background of the widget to the pixmap.
-    //later we will draw on this pixmap instead of the window.
-    //this way we can get around implementing our own expose handler.
-    //the copy is important because otherwise we would modify the global default style.
-    GtkStyle* style = gtk_widget_get_style(drawingArea);//this call fails if the widget has not been realized
-    style = gtk_style_copy(style); 
-    style->bg_pixmap[0] = pixmap;
-    style->bg_pixmap[1] = pixmap;
-    style->bg_pixmap[2] = pixmap;
-    style->bg_pixmap[3] = pixmap;
-    style->bg_pixmap[4] = pixmap;
-
-    gtk_widget_set_style(drawingArea, style);
-
-    //initialy the pixmap is black.
-    //set background color to the window background color
-    GdkGC* tempGc = gdk_gc_new(pixmap);
-    gdk_gc_set_foreground(tempGc, &style->bg[GTK_STATE_NORMAL]);
-    gdk_draw_rectangle(GDK_DRAWABLE(pixmap),tempGc, true, 0, 0, 3000, 3000);//fixme use real width and height
-
-    //FIXME the pixmap should be transparent in the beginning.
+    gtk_widget_set_app_paintable(drawingArea, true);
 
 }
 
@@ -98,9 +71,9 @@ bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri)
 //                         int(clippedLine.head().xpos()),
 //                         int(clippedLine.head().ypos()));
 
-            GdkGC* pGc = gdk_gc_new(GDK_DRAWABLE(pixmap));
+            
 
-            gdk_draw_line(GDK_DRAWABLE(pixmap),
+            gdk_draw_line(GDK_DRAWABLE(drawingArea->window),
                          get_common()->get_GC(gc),
                     //drawingArea->style->white_gc,
                    // pGc,
@@ -133,7 +106,7 @@ bool AW_device_gtk::draw_string_on_screen(AW_device *device, int gc, const  char
     ASSERT_FALSE(values.font == NULL);
     //FIXME according to the gtk documentation it should be possible to use NULL as font.
     //      NULL means: use the gc font. However that does not work. Maybe it will in a newer gtk version.
-    gdk_draw_string(GDK_DRAWABLE(device_gtk->pixmap),
+    gdk_draw_string(GDK_DRAWABLE(device_gtk->drawingArea->window),
                     values.font,
                     gdkGc,
                     AW_INT(X),
@@ -225,11 +198,9 @@ bool AW_device_gtk::arc_impl(int gc, bool filled, const AW::Position& center, co
 }
 
 void AW_device_gtk::clear(AW_bitset filteri) {
-//    if (filteri & filter) {
-//        XClearWindow(XDRAW_PARAM2(get_common()));
-//        AUTO_FLUSH(this);
-//    }
-    GTK_NOT_IMPLEMENTED;
+    if (filteri & filter) {
+        gdk_window_clear(drawingArea->window);
+    }
 }
 
 void AW_device_gtk::clear_part(const Rectangle& rect, AW_bitset filteri) {

@@ -32,7 +32,7 @@ public:
 
     AW_cb_struct *resize_cb; /**<A list of callback functions that are called whenever this area is resized. */
     AW_cb_struct *double_click_cb;
-
+    AW_cb_struct *expose_cb;
     long click_time;
     
     Pimpl() : 
@@ -44,7 +44,8 @@ public:
         print_device(NULL),
         click_device(NULL),
         resize_cb(NULL),
-        double_click_cb(NULL){}   
+        double_click_cb(NULL),
+        expose_cb(NULL){}   
 };
 
 
@@ -66,8 +67,28 @@ static gboolean draw_area_expose_cb(GtkWidget *widget, GdkEventExpose *event, gp
 {
     AW_area_management *aram = (AW_area_management *) area_management;
     aram->run_resize_callback();
+    aram->run_expose_callback();
 }
 
+
+
+void AW_area_management::run_expose_callback() {
+    if (prvt->expose_cb) prvt->expose_cb->run_callback();
+}
+
+void AW_area_management::set_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+
+    //copy and paste code from set_resize callback. resize and expose use the same callback.
+    
+    if (!prvt->resize_cb) {//connect the gtk signal upon first call
+
+        //note: we use the expose callback because there is no resize callback in gtk.
+        g_signal_connect (prvt->area, "expose_event",
+                          G_CALLBACK (draw_area_expose_cb), (gpointer) this);
+
+    }
+    prvt->expose_cb = new AW_cb_struct(aww, f, cd1, cd2, 0, prvt->expose_cb);
+}
 
 void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     // insert resize callback for draw_area
@@ -138,3 +159,4 @@ AW_device_size *AW_area_management::get_size_device() {
 AW_cb_struct *AW_area_management::get_double_click_cb() { return prvt->double_click_cb; }
 long AW_area_management::get_click_time() const { return prvt->click_time; }
 void AW_area_management::set_click_time(long click_time) { prvt->click_time = click_time; }
+

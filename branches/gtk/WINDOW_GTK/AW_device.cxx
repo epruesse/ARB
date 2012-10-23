@@ -119,7 +119,6 @@ bool AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eith
     const AW_screen_area& clipRect = get_cliprect();
     //quick hack
 
-    printf("screen w:%i, h:%i, clipRect w>%i, h:%i", screen.r, screen.b, clipRect.r, clipRect.b);
 
     if (allow_left_font_overlap() || screen.l == clipRect.l) inside_clipping_left = false;
     if (allow_right_font_overlap() || clipRect.r == screen.r) inside_clipping_right = false;

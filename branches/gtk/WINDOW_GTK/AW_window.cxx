@@ -1380,7 +1380,7 @@ int AW_window::create_mode(const char *pixmap, const char *help_text, AW_active 
     aw_assert(NULL != prvt->mode_menu);
     
     //FIXME help text not implemented
-    
+    GTK_PARTLY_IMPLEMENTED;
     TuneBackground(GTK_WIDGET(prvt->mode_menu), TUNE_BUTTON); // set background color for mode-buttons
 
     const char *path = GB_path_in_ARBLIB("pixmaps", pixmap);
@@ -1806,9 +1806,7 @@ static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
 
     AW_device *device = aww->get_device(AW_INFO_AREA);
     device->reset();
-    if (aww->get_root()->color_mode == 0) { // mono colr
-        device->clear(-1);
-    }
+
     device->set_offset(AW::Vector(-xfig->minx, -xfig->miny));
     xfig->print(device);
 }
@@ -1826,9 +1824,7 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
     xfig_data = xfig;
 
 
-    //expose callback is no longer needed. gtk takes care of that.
-   // set_expose_callback(AW_INFO_AREA, (AW_CB)AW_xfigCB_info_area, (AW_CL)xfig_data, 0);
-
+    set_expose_callback(AW_INFO_AREA, (AW_CB)AW_xfigCB_info_area, (AW_CL)xfig_data, 0);
     xfig->create_gcs(get_device(AW_INFO_AREA), get_root()->color_mode ? 8 : 1); //FIXME remove color mode.
 
     int xsize = xfig->maxx - xfig->minx;
@@ -1847,15 +1843,6 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
         device->get_common()->set_screen_size(_at.max_x_size, _at.max_y_size);
 
     }
-
-    device->reset();
-    device->set_offset(AW::Vector(-xfig->minx, -xfig->miny));
-
-    //print the whole xfig to the area once.
-    //gtk takes care of refreshing etc.
-    xfig_data->print(get_device(AW_INFO_AREA));
-
-
 }
 
 const char *AW_window::local_id(const char */*id*/) const{
@@ -1888,10 +1875,8 @@ void AW_window::set_bottom_area_height(int /*height*/) {
 }
 
 void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1 /*= 0*/, AW_CL cd2 /*= 0*/) {
-//    AW_area_management *aram = prvt->areas[area];
-//    if (aram) aram->set_expose_callback(this, f, cd1, cd2);
-    GTK_NOT_IMPLEMENTED;
-    //FIXME area management does no longer have an expose callback. Remove this if absolutely sure that it is not needed.
+    AW_area_management *aram = prvt->areas[area];
+    if (aram) aram->set_expose_callback(this, f, cd1, cd2);
 }
 
 void AW_window::set_focus_callback(void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/) {
@@ -2242,20 +2227,25 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     gtk_box_pack_start(GTK_BOX(hbox), vbox2, true, true, 0);
     
     GtkWidget* drawing_area = gtk_drawing_area_new();
-    gtk_box_pack_start(GTK_BOX(vbox2), drawing_area, true, true,0);
+    gtk_drawing_area_size(GTK_DRAWING_AREA(drawing_area), 3000, 3000); //FIXME hardcoded size.
+    GtkWidget *scrollArea = gtk_scrolled_window_new(NULL, NULL); //NULL causes the scrolledWindow to create its own scroll adjustments
+
+    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrollArea), drawing_area);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrollArea), GTK_POLICY_ALWAYS, GTK_POLICY_ALWAYS);
+    gtk_box_pack_start(GTK_BOX(vbox2), scrollArea, true, true, 0);
     gtk_widget_realize(GTK_WIDGET(drawing_area));
 
     prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(root, drawing_area, drawing_area); //FIXME form should be a frame around the area.
     
     
     GtkWidget* drawing_area_bottom = gtk_drawing_area_new();
-    gtk_container_add(GTK_CONTAINER(hbox), drawing_area_bottom);
+    //gtk_container_add(GTK_CONTAINER(hbox), drawing_area_bottom);
     gtk_widget_realize(GTK_WIDGET(drawing_area_bottom));
   
     prvt->areas[AW_BOTTOM_AREA] = new AW_area_management(root, drawing_area_bottom, drawing_area_bottom); //FIXME form should be a frame around the area.
     
     GtkWidget* drawing_area_info = gtk_drawing_area_new();
-    gtk_container_add(GTK_CONTAINER(hbox), drawing_area_info);
+    //gtk_container_add(GTK_CONTAINER(hbox), drawing_area_info);
     gtk_widget_realize(GTK_WIDGET(drawing_area_info));
   
     prvt->areas[AW_INFO_AREA] = new AW_area_management(root, drawing_area_info, drawing_area_info); //FIXME form should be a frame around the area.

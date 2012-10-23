@@ -18,12 +18,6 @@
  */
 class AW_device_gtk : public AW_device {
 
-    /**
-     * The drawing surface.
-     * Everything is drawn onto this pixmap.
-     * The pixmap is used as a background image in widgets.
-     */
-    GdkPixmap* pixmap;
     GtkWidget* drawingArea;
 
     bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri);

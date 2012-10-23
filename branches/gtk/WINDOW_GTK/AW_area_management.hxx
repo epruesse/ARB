@@ -46,6 +46,7 @@ public:
      * @param cd1 callback parameter 1
      * @param cd2 callback parameter 2
      */
+    void set_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_input_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
@@ -59,6 +60,7 @@ public:
 
 
     void run_resize_callback();
+    void run_expose_callback();
 
     AW_cb_struct *get_double_click_cb();
     long get_click_time() const;
