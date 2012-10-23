@@ -85,6 +85,7 @@ PT_debug.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_debug.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_etc.o: probe.h
+PT_etc.o: PT_partition.h
 PT_etc.o: pt_prototypes.h
 PT_etc.o: PT_tools.h
 PT_etc.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -108,6 +109,7 @@ PT_etc.o: $(ARBHOME)/INCLUDE/smartptr.h
 PT_etc.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_etc.o: $(ARBHOME)/INCLUDE/struct_man.h
 PT_etc.o: $(ARBHOME)/INCLUDE/test_global.h
+PT_etc.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 PT_family.o: probe.h
 PT_family.o: probe_tree.h
