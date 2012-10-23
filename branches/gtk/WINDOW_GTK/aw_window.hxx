@@ -405,12 +405,40 @@ public:
     AW_device_print *get_print_device(AW_area area);
 
     // ************** Create the menu buttons *********
+    
+    /**
+     * Creates a new top level menu.
+     * @param name Name of the menu.
+     * @param mnemonic FIXME
+     * @param mask FIXME
+     */
     void create_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
+    /**
+     * Insert a sub menu into the last created menu.
+     * @param name Name of the sub menu.
+     * @param mnemonic FIXME
+     * @param mask FIXME
+     */
     void insert_sub_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
+    /**
+     * Insert a menu item into the last created menu or sub menu.
+     * @param id FIXME
+     * @param name Name of the item.
+     * @param mnemonic FIXME
+     * @param help_text_ FIXME
+     * @param mask FIXME
+     * @param cb Callback that should be called when the item is activated.
+     * @param cd1 Callback parameter 1.
+     * @param cd2 Callback parameter 2.
+     */
     void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB cb, AW_CL cd1, AW_CL cd2);
     void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB1 cb, AW_CL cd1) { insert_menu_topic(id, name, mnemonic, help_text_, mask, (AW_CB)cb, cd1, 0); }
     void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB0 cb) { insert_menu_topic(id, name, mnemonic, help_text_, mask, (AW_CB)cb, 0, 0); }
     void sep______________(); // insert a separator
+    /**
+     * Closes the currently open sub menu.
+     * If no menu is open this method will crash.
+     */
     void close_sub_menu();
 
     void insert_help_topic(AW_label name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);

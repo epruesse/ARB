@@ -31,6 +31,8 @@
 #include <gtk/gtkhbox.h>
 
 #include <vector>
+#include <stack>
+#include <gtk-2.0/gtk/gtkmenuitem.h>
 
 
 /**
@@ -47,7 +49,20 @@ public:
      * @note This area is only present in aw_window_simple
      */
     GtkFixed *fixed_size_area; 
-
+    
+    /**
+     * A menu bar at the top of the window.
+     * This may not be present in all windows. Check for NULL before use
+     */
+    GtkMenuBar *menu_bar;
+    
+    /**
+     * Used to keep track of the menu structure while creating menus.
+     * Empty if menu_bar is NULL.
+     */
+    std::stack<GtkMenuShell*> menus;
+    
+    
 
     /**
      * A window consists of several areas.
@@ -59,6 +74,9 @@ public:
      * The AW_Area enum is used to index this vector.
      */
     std::vector<AW_area_management *> areas;
+    
+    AW_window_gtk() : window(NULL), fixed_size_area(NULL), menu_bar(NULL) {}
+    
 };
 
 
@@ -283,7 +301,11 @@ void AW_window::callback(AW_cb_struct * /* owner */ awcbs) {
 
 
 void AW_window::close_sub_menu(){
-    GTK_NOT_IMPLEMENTED;
+    arb_assert(NULL != prvt);
+    arb_assert(prvt->menus.size() > 1);
+    
+    prvt->menus.pop();
+    
 }
 
 
@@ -329,7 +351,7 @@ void AW_window::TuneOrSetBackground(GtkWidget* w, const char *color, int modStre
     }
 }
 
-void AW_window::TuneBackground(GtkWidget* w, int modStrength) {
+void AW_window::TuneBackground(GtkWidget* /*w*/, int /*modStrength*/) {
     // Gets the Background Color, modifies the rgb values slightly and sets new background color
     // Intended to give buttons a nicer 3D-look.
     //
@@ -521,7 +543,7 @@ const char *aw_str_2_label(const char *str, AW_window *aww) {
     return label;
 }
 
-static void aw_attach_widget(GtkWidget* w, AW_at& _at, int default_width = -1) {
+static void aw_attach_widget(GtkWidget* /*w*/, AW_at& /*_at*/, int default_width = -1) {
     GTK_NOT_IMPLEMENTED;
 }
 
@@ -1103,9 +1125,229 @@ void AW_window::create_text_field(const char */*awar_name*/, int /*columns*/ /* 
 }
 
 
+// -------------------------
+//      Hotkey Checking
 
-void AW_window::create_menu(AW_label /*name*/, const char */*mnemonic*/, AW_active /*mask*/ /*= AWM_ALL*/){
-    GTK_NOT_IMPLEMENTED;
+#ifdef DEBUG
+
+#define MAX_DEEP_TO_TEST       10
+#define MAX_MENU_ITEMS_TO_TEST 50
+
+static char *TD_menu_name = 0;
+static char  TD_mnemonics[MAX_DEEP_TO_TEST][MAX_MENU_ITEMS_TO_TEST];
+static int   TD_topics[MAX_DEEP_TO_TEST];
+
+struct SearchPossibilities : virtual Noncopyable {
+    char *menu_topic;
+    SearchPossibilities *next;
+
+    SearchPossibilities(const char* menu_topic_, SearchPossibilities *next_) {
+        menu_topic = strdup(menu_topic_);
+        next = next_;
+    }
+
+    ~SearchPossibilities() {
+        free(menu_topic);
+        delete next;
+    }
+};
+
+typedef SearchPossibilities *SearchPossibilitiesPtr;
+static SearchPossibilitiesPtr TD_poss[MAX_DEEP_TO_TEST] = { 0 };
+
+inline void addToPoss(int menu_deep, const char *topic_name) {
+    TD_poss[menu_deep] = new SearchPossibilities(topic_name, TD_poss[menu_deep]);
+}
+
+inline char oppositeCase(char c) {
+    return isupper(c) ? tolower(c) : toupper(c);
+}
+
+static void strcpy_overlapping(char *dest, char *src) {
+    int src_len = strlen(src);
+    memmove(dest, src, src_len+1);
+}
+
+static const char *possible_mnemonics(int menu_deep, const char *topic_name) {
+    int t;
+    static char *unused;
+
+    freedup(unused, topic_name);
+
+    for (t = 0; unused[t]; ++t) {
+        bool remove = false;
+        if (!isalnum(unused[t])) { // remove useless chars
+            remove = true;
+        }
+        else {
+            char *dup = strchr(unused, unused[t]);
+            if (dup && (dup-unused)<t) { // remove duplicated chars
+                remove = true;
+            }
+            else {
+                dup = strchr(unused, oppositeCase(unused[t]));
+                if (dup && (dup-unused)<t) { // char is duplicated with opposite case
+                    dup[0] = toupper(dup[0]); // prefer upper case
+                    remove = true;
+                }
+            }
+        }
+        if (remove) {
+            strcpy_overlapping(unused+t, unused+t+1);
+            --t;
+        }
+    }
+
+    int topics = TD_topics[menu_deep];
+    for (t = 0; t<topics; ++t) {
+        char c = TD_mnemonics[menu_deep][t]; // upper case!
+        char *u = strchr(unused, c);
+        if (u)
+            strcpy_overlapping(u, u+1); // remove char
+        u = strchr(unused, tolower(c));
+        if (u)
+            strcpy_overlapping(u, u+1); // remove char
+    }
+
+    return unused;
+}
+
+static void printPossibilities(int menu_deep) {
+    SearchPossibilities *sp = TD_poss[menu_deep];
+    while (sp) {
+        const char *poss = possible_mnemonics(menu_deep, sp->menu_topic);
+        fprintf(stderr, "          - Possibilities for '%s': '%s'\n", sp->menu_topic, poss);
+
+        sp = sp->next;
+    }
+
+    delete TD_poss[menu_deep];
+    TD_poss[menu_deep] = 0;
+}
+
+static int menu_deep_check = 0;
+
+static void test_duplicate_mnemonics(int menu_deep, const char *topic_name, const char *mnemonic) {
+    if (mnemonic && mnemonic[0] != 0) {
+        if (mnemonic[1]) { // longer than 1 char -> wrong
+            fprintf(stderr, "Warning: Hotkey '%s' is too long; only 1 character allowed (%s|%s)\n", mnemonic, TD_menu_name, topic_name);
+        }
+        if (topic_name[0] == '#') { // graphical menu
+            if (mnemonic[0]) {
+                fprintf(stderr, "Warning: Hotkey '%s' is useless for graphical menu entry (%s|%s)\n", mnemonic, TD_menu_name, topic_name);
+            }
+        }
+        else {
+            if (strchr(topic_name, mnemonic[0])) {  // occurs in menu text
+                int topics = TD_topics[menu_deep];
+                int t;
+                char hotkey = toupper(mnemonic[0]); // store hotkeys case-less (case does not matter when pressing the hotkey)
+
+                TD_mnemonics[menu_deep][topics] = hotkey;
+
+                for (t=0; t<topics; t++) {
+                    if (TD_mnemonics[menu_deep][t]==hotkey) {
+                        fprintf(stderr, "Warning: Hotkey '%c' used twice (%s|%s)\n", hotkey, TD_menu_name, topic_name);
+                        addToPoss(menu_deep, topic_name);
+                        break;
+                    }
+                }
+
+                TD_topics[menu_deep] = topics+1;
+            }
+            else {
+                fprintf(stderr, "Warning: Hotkey '%c' is useless; does not occur in text (%s|%s)\n", mnemonic[0], TD_menu_name, topic_name);
+                addToPoss(menu_deep, topic_name);
+            }
+        }
+    }
+#if defined(DEVEL_RALF)
+    else {
+        if (topic_name[0] != '#') { // not a graphical menu
+            fprintf(stderr, "Warning: Missing hotkey for (%s|%s)\n", TD_menu_name, topic_name);
+            addToPoss(menu_deep, topic_name);
+        }
+    }
+#endif // DEVEL_RALF
+}
+
+static void open_test_duplicate_mnemonics(int menu_deep, const char *sub_menu_name, const char *mnemonic) {
+    aw_assert(menu_deep == menu_deep_check+1);
+    menu_deep_check = menu_deep;
+
+    int len = strlen(TD_menu_name)+1+strlen(sub_menu_name)+1;
+    char *buf = (char*)malloc(len);
+
+    memset(buf, 0, len);
+    sprintf(buf, "%s|%s", TD_menu_name, sub_menu_name);
+
+    test_duplicate_mnemonics(menu_deep-1, sub_menu_name, mnemonic);
+
+    freeset(TD_menu_name, buf);
+    TD_poss[menu_deep] = 0;
+}
+
+static void close_test_duplicate_mnemonics(int menu_deep) {
+    aw_assert(menu_deep == menu_deep_check);
+    menu_deep_check = menu_deep-1;
+
+    printPossibilities(menu_deep);
+    TD_topics[menu_deep] = 0;
+
+    aw_assert(TD_menu_name);
+    // otherwise no menu was opened
+
+    char *slash = strrchr(TD_menu_name, '|');
+    if (slash) {
+        slash[0] = 0;
+    }
+    else {
+        TD_menu_name[0] = 0;
+    }
+}
+
+static void init_duplicate_mnemonic() {
+    int i;
+
+    if (TD_menu_name) close_test_duplicate_mnemonics(1); // close last menu
+    freedup(TD_menu_name, "");
+
+    for (i=0; i<MAX_DEEP_TO_TEST; i++) {
+        TD_topics[i] = 0;
+    }
+    aw_assert(menu_deep_check == 0);
+}
+static void exit_duplicate_mnemonic() {
+    close_test_duplicate_mnemonics(1); // close last menu
+    aw_assert(TD_menu_name);
+    freenull(TD_menu_name);
+    aw_assert(menu_deep_check == 0);
+}
+#endif
+
+// --------------------------------------------------------------------------------
+
+
+
+void AW_window::create_menu(AW_label name, const char *mnemonic, AW_active mask /*= AWM_ALL*/){
+        aw_assert(legal_mask(mask));
+        
+        GTK_PARTLY_IMPLEMENTED;
+        //FIXME debug code for duplicate mnemonics missing
+
+//    #ifdef DEBUG
+//        init_duplicate_mnemonic();
+//    #endif
+//    #if defined(DUMP_MENU_LIST)
+//        dumpCloseAllSubMenus();
+//    #endif // DUMP_MENU_LIST
+        
+        //The user might leave sub menus open. Close them before creating a new top level menu.
+        while(prvt->menus.size() > 1) {
+            close_sub_menu();
+        }
+        
+        insert_sub_menu(name, mnemonic, mask);
 }
 
 int AW_window::create_mode(const char */*pixmap*/, const char */*help_text*/, AW_active /*mask*/, void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/){
@@ -1261,8 +1503,39 @@ void AW_window::insert_help_topic(AW_label /*name*/, const char */*mnemonic*/, c
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::insert_menu_topic(const char *id, AW_label /*name*/, const char */*mnemonic*/, const char */*help_text_*/, AW_active /*mask*/, AW_CB /*cb*/, AW_CL /*cd1*/, AW_CL /*cd2*/){
-    GTK_NOT_IMPLEMENTED;
+
+void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB cb, AW_CL cd1, AW_CL cd2){
+   aw_assert(legal_mask(mask));
+  
+   GTK_PARTLY_IMPLEMENTED;
+   //FIXME mnemonics missing
+   
+   if (!topic_id) topic_id = name; // hmm, due to this we cannot insert_menu_topic w/o id. Change? @@@
+
+   GtkWidget *item = gtk_menu_item_new_with_label(name);
+   aw_assert(prvt->menus.size() > 0); //closed too many menus
+   gtk_menu_shell_append(prvt->menus.top(), item);  
+   
+   // TuneBackground(p_w->menu_bar[p_w->menu_deep], TUNE_MENUTOPIC); // set background color for normal menu topics
+   
+   //FIXME duplicate mnemonic test not implemented
+#if defined(DUMP_MENU_LIST)
+ //   dumpMenuEntry(name);
+#endif // DUMP_MENU_LIST
+#ifdef DEBUG
+//    test_duplicate_mnemonics(prvt.menu_deep, name, mnemonic);
+#endif
+
+//FIXME menu button callbacks not implemented
+//    AW_label_in_awar_list(this, button, name);
+//    AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, helpText);
+//    XtAddCallback(button, XmNactivateCallback,
+//                  (XtCallbackProc) AW_server_callback,
+//                  (XtPointer) cbs);
+//
+//    cbs->id = strdup(topic_id);
+//    root->define_remote_command(cbs);
+//    root->make_sensitive(button, mask);
 }
 
 void AW_window::insert_option(AW_label /*choice_label*/, const char */*mnemonic*/, const char */*var_value*/, const char */*name_of_color*/ /*= 0*/){
@@ -1277,8 +1550,76 @@ void AW_window::insert_option(AW_label /*choice_label*/, const char */*mnemonic*
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::insert_sub_menu(AW_label /*name*/, const char */*mnemonic*/, AW_active mask /*= AWM_ALL*/){
-    GTK_NOT_IMPLEMENTED;
+void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active mask /*= AWM_ALL*/){
+
+    
+    aw_assert(legal_mask(mask));
+    
+    //create new menu item with attached submenu
+    GtkMenu *submenu  = GTK_MENU(gtk_menu_new());
+    GtkMenuItem *item = GTK_MENU_ITEM(gtk_menu_item_new_with_label(name));
+    //FIXME mnemonics missing
+    gtk_menu_item_set_submenu(item, GTK_WIDGET(submenu));
+    
+    //append the new submenu to the current menu shell
+    gtk_menu_shell_append(prvt->menus.top(), GTK_WIDGET(item));
+    
+    //use the new submenu as current menu shell.
+    prvt->menus.push(GTK_MENU_SHELL(submenu));
+    
+    
+    GTK_PARTLY_IMPLEMENTED;
+    //TuneBackground(p_w->menu_bar[p_w->menu_deep], TUNE_SUBMENU); // set background color for submenus
+    // (Note: This must even be called if TUNE_SUBMENU is 0!
+    //        Otherwise several submenus get the TUNE_MENUTOPIC color)
+
+//    #if defined(DUMP_MENU_LIST)
+//        dumpOpenSubMenu(name);
+//    #endif // DUMP_MENU_LIST
+//    #ifdef DEBUG
+//        open_test_duplicate_mnemonics(prvt->menu_deep+1, name, mnemonic);
+//    #endif
+//
+//    // create shell for Pull-Down
+//    shell = XtVaCreatePopupShell("menu_shell", xmMenuShellWidgetClass,
+//            p_w->menu_bar[p_w->menu_deep],
+//            XmNwidth, 1,
+//            XmNheight, 1,
+//            XmNallowShellResize, true,
+//            XmNoverrideRedirect, true,
+//            NULL);
+//
+//    // create row column in Pull-Down shell
+//
+//    p_w->menu_bar[p_w->menu_deep+1] = XtVaCreateWidget("menu_row_column",
+//            xmRowColumnWidgetClass, shell,
+//            XmNrowColumnType, XmMENU_PULLDOWN,
+//            XmNtearOffModel, XmTEAR_OFF_ENABLED,
+//            NULL);
+//
+//    // create label in menu bar
+//    if (mnemonic && *mnemonic && strchr(name, mnemonic[0])) {
+//        // if mnemonic is "" -> Cannot convert string "" to type KeySym
+//        Label = XtVaCreateManagedWidget("menu1_top_b1",
+//                xmCascadeButtonWidgetClass, p_w->menu_bar[p_w->menu_deep],
+//                RES_CONVERT(XmNlabelString, name),
+//                                         RES_CONVERT(XmNmnemonic, mnemonic),
+//                                         XmNsubMenuId, p_w->menu_bar[p_w->menu_deep+1],
+//                                         XmNbackground, _at->background_color, NULL);
+//    }
+//    else {
+//        Label = XtVaCreateManagedWidget("menu1_top_b1",
+//        xmCascadeButtonWidgetClass,
+//        p_w->menu_bar[p_w->menu_deep],
+//        RES_CONVERT(XmNlabelString, name),
+//        XmNsubMenuId, p_w->menu_bar[p_w->menu_deep+1],
+//        XmNbackground, _at->background_color,
+//        NULL);
+//    }
+//
+//    if (p_w->menu_deep < AW_MAX_MENU_DEEP-1) p_w->menu_deep++;
+//
+//    root->make_sensitive(Label, mask);
 }
 
 
@@ -1566,7 +1907,7 @@ void AW_window::shadow_width (int /*shadow_thickness*/) {
 
 void AW_window::show() {
     arb_assert(NULL != prvt->window);
-    gtk_widget_show(GTK_WIDGET(prvt->window));
+    gtk_widget_show_all(GTK_WIDGET(prvt->window));
 
 }
 
@@ -1654,17 +1995,13 @@ void aw_create_help_entry(AW_window *aww) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *windowname, int width, int /*height*/) {
+void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *windowname, int width, int height) {
 
     GtkWidget *vbox;
     GtkWidget *hbox;
-    GtkWidget *help_popup;
-    GtkWidget *help_label;
-    GtkWidget *separator;
-    GtkWidget *form1;
-    GtkWidget *form2;
-    const char *help_button   = "HELP";
-    const char *help_mnemonic = "H";
+
+    //const char *help_button   = "HELP";
+    //const char *help_mnemonic = "H";
 
 #if defined(DUMP_MENU_LIST)
     initMenuListing(windowname);
@@ -1673,12 +2010,11 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     window_name = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
 
-    int posx = 50;
-    int posy = 50;
-
     //p_w->shell = aw_create_shell(this, true, true, width, height, posx, posy);
 
     prvt->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+    gtk_window_set_title(prvt->window, window_name);
+    gtk_window_set_default_size(prvt->window, width, height);
     vbox = gtk_vbox_new(false, 1);//FIXME remove constant
     gtk_container_add(GTK_CONTAINER(prvt->window), vbox);
     
@@ -1690,15 +2026,20 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     GTK_PARTLY_IMPLEMENTED;
     
     menu_bar = (GtkMenuBar*) gtk_menu_bar_new();
-    gtk_container_add(GTK_CONTAINER(vbox), GTK_WIDGET(menu_bar));
+    prvt->menus.push(GTK_MENU_SHELL(menu_bar));//The menu bar is the top level menu shell.
+
 //    p_w->menu_bar[0] = XtVaCreateManagedWidget("menu1", xmRowColumnWidgetClass,
 //                                               main_window,
 //                                               XmNrowColumnType, XmMENU_BAR,
 //                                               NULL);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(menu_bar), false,
+                       false, //has no effect if the third parameter is false
+                       2); //FIXME constant value
 
-    
     hbox = gtk_hbox_new(false, 1); //FIXME constant
     gtk_container_add(GTK_CONTAINER(vbox), hbox);
+    
+    
     
 //
 //    // create shell for help-cascade
@@ -1845,23 +2186,23 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     GtkWidget* drawing_area = gtk_drawing_area_new();
     gtk_container_add(GTK_CONTAINER(vbox), drawing_area);
     gtk_widget_realize(GTK_WIDGET(drawing_area));
-    gtk_widget_show(GTK_WIDGET(drawing_area));
+
     prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(root, drawing_area, drawing_area); //FIXME form should be a frame around the area.
     
     
     GtkWidget* drawing_area_bottom = gtk_drawing_area_new();
-    gtk_container_add(GTK_CONTAINER(hbox), drawing_area);
-    gtk_widget_realize(GTK_WIDGET(drawing_area));
-    gtk_widget_show(GTK_WIDGET(drawing_area));   
+    gtk_container_add(GTK_CONTAINER(hbox), drawing_area_bottom);
+    gtk_widget_realize(GTK_WIDGET(drawing_area_bottom));
+  
     prvt->areas[AW_BOTTOM_AREA] = new AW_area_management(root, drawing_area_bottom, drawing_area_bottom); //FIXME form should be a frame around the area.
     
     GtkWidget* drawing_area_info = gtk_drawing_area_new();
     gtk_container_add(GTK_CONTAINER(hbox), drawing_area_info);
     gtk_widget_realize(GTK_WIDGET(drawing_area_info));
-    gtk_widget_show(GTK_WIDGET(drawing_area_info));   
+  
     prvt->areas[AW_INFO_AREA] = new AW_area_management(root, drawing_area_info, drawing_area_info); //FIXME form should be a frame around the area.
 
-    
+
     
     
 //
@@ -1870,7 +2211,6 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
 //    aw_realize_widget(this);
 
     gtk_widget_realize(GTK_WIDGET(prvt->window));
-    
     create_devices();
     aw_create_help_entry(this);
     create_window_variables();
@@ -1905,34 +2245,42 @@ AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
     return (AW_color_idx)colnum;
 }
 
+static void horizontal_scrollbar_redefinition_cb(AW_root*, AW_CL cd) {
+    AW_window *aw = (AW_window *)cd;
+    aw->update_scrollbar_settings_from_awars(AW_HORIZONTAL);
+}
+
+static void vertical_scrollbar_redefinition_cb(AW_root*, AW_CL cd) {
+    AW_window *aw = (AW_window *)cd;
+    aw->update_scrollbar_settings_from_awars(AW_VERTICAL);
+}
 
 void AW_window::create_window_variables() {
-//    char buffer[200];
-//
-//    sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);
-//    get_root()->awar_int(buffer, 50);
-//    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
-//
-//    sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);
-//    get_root()->awar_int(buffer, 50);
-//    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
-//
-//    sprintf(buffer, "window/%s/scroll_delay_horizontal", window_defaults_name);
-//    get_root()->awar_int(buffer, 20);
-//    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
-//
-//    sprintf(buffer, "window/%s/scroll_delay_vertical", window_defaults_name);
-//    get_root()->awar_int(buffer, 20);
-//    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
-//
-//    sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
-//    get_root()->awar_int(buffer, 9);
-//    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
-//
-//    sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
-//    get_root()->awar_int(buffer, 20);
-//    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
-    GTK_NOT_IMPLEMENTED;
+    char buffer[200];
+
+    sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);
+    get_root()->awar_int(buffer, 50);
+    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
+
+    sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);
+    get_root()->awar_int(buffer, 50);
+    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
+
+    sprintf(buffer, "window/%s/scroll_delay_horizontal", window_defaults_name);
+    get_root()->awar_int(buffer, 20);
+    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
+
+    sprintf(buffer, "window/%s/scroll_delay_vertical", window_defaults_name);
+    get_root()->awar_int(buffer, 20);
+    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
+
+    sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
+    get_root()->awar_int(buffer, 9);
+    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
+
+    sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
+    get_root()->awar_int(buffer, 20);
+    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
 }
 
 
@@ -2017,6 +2365,36 @@ void AW_window::create_devices() {
     }
 }
 
+void AW_window::update_scrollbar_settings_from_awars(AW_orientation orientation) {
+//    AW_screen_area scrolled;
+//    get_scrollarea_size(&scrolled);
+//
+//    // @@@ DRY awar code
+//
+//    char buffer[200];
+//    if (orientation == AW_HORIZONTAL) {
+//        sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name); 
+//        XtVaSetValues(p_w->scroll_bar_horizontal, XmNpageIncrement, (int)(scrolled.r*(get_root()->awar(buffer)->read_int()*0.01)), NULL);
+//
+//        sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
+//        XtVaSetValues(p_w->scroll_bar_horizontal, XmNincrement, (int)(get_root()->awar(buffer)->read_int()), NULL);
+//
+//        sprintf(buffer, "window/%s/scroll_delay_horizontal", window_defaults_name);
+//        XtVaSetValues(p_w->scroll_bar_horizontal, XmNrepeatDelay, (int)(get_root()->awar(buffer)->read_int()), NULL);
+//    }
+//    else {
+//        sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);
+//        XtVaSetValues(p_w->scroll_bar_vertical, XmNpageIncrement, (int)(scrolled.b*(get_root()->awar(buffer)->read_int()*0.01)), NULL);
+//
+//        sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
+//        XtVaSetValues(p_w->scroll_bar_vertical, XmNincrement, (int)(get_root()->awar(buffer)->read_int()), NULL);
+//
+//        sprintf(buffer, "window/%s/scroll_delay_vertical", window_defaults_name);
+//        XtVaSetValues(p_w->scroll_bar_vertical, XmNrepeatDelay, (int)(get_root()->awar(buffer)->read_int()), NULL);
+//    }
+    GTK_NOT_IMPLEMENTED;
+}
+
 
 AW_window_simple::~AW_window_simple() {
     GTK_NOT_IMPLEMENTED;
@@ -2063,6 +2441,7 @@ AW_cb_struct::AW_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), 
 bool AW_cb_struct::contains(void (*g)(AW_window*, AW_CL, AW_CL)) {
     return (f == g) || (next && next->contains(g));
 }
+
 
 
 void AW_cb_struct::run_callback() {
