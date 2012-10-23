@@ -234,6 +234,10 @@ void AW_root::init_variables(AW_default database) {
     }
 }
 
+void AW_root::make_sensitive(GtkWidget* w, AW_active mask) {
+    GTK_NOT_IMPLEMENTED;
+}
+
 void AW_root::init_root(const char *programname, bool no_exit) {
     // initialize ARB gtk application
     int          a = 0;

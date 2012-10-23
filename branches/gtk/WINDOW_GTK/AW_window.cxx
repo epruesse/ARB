@@ -1579,6 +1579,7 @@ void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active m
 
     
     aw_assert(legal_mask(mask));
+    aw_assert(NULL != prvt->menus.top());
     
     //construct mnemonic string
     std::string menuName = AW_motif_gtk_conversion::convert_mnemonic(name, mnemonic);
@@ -1595,59 +1596,20 @@ void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active m
     //use the new submenu as current menu shell.
     prvt->menus.push(GTK_MENU_SHELL(submenu));
     
-    
-    GTK_PARTLY_IMPLEMENTED;
-    //TuneBackground(p_w->menu_bar[p_w->menu_deep], TUNE_SUBMENU); // set background color for submenus
-    // (Note: This must even be called if TUNE_SUBMENU is 0!
-    //        Otherwise several submenus get the TUNE_MENUTOPIC color)
+    TuneBackground(GTK_WIDGET(prvt->menus.top()), TUNE_SUBMENU); // set background color for submenus
+    //FIXME no idea if this comment is still valid because TuneBackground is not implemented atm.
+//     (Note: This must even be called if TUNE_SUBMENU is 0!
+//            Otherwise several submenus get the TUNE_MENUTOPIC color)
 
-//    #if defined(DUMP_MENU_LIST)
-//        dumpOpenSubMenu(name);
-//    #endif // DUMP_MENU_LIST
-//    #ifdef DEBUG
-//        open_test_duplicate_mnemonics(prvt->menu_deep+1, name, mnemonic);
-//    #endif
-//
-//    // create shell for Pull-Down
-//    shell = XtVaCreatePopupShell("menu_shell", xmMenuShellWidgetClass,
-//            p_w->menu_bar[p_w->menu_deep],
-//            XmNwidth, 1,
-//            XmNheight, 1,
-//            XmNallowShellResize, true,
-//            XmNoverrideRedirect, true,
-//            NULL);
-//
-//    // create row column in Pull-Down shell
-//
-//    p_w->menu_bar[p_w->menu_deep+1] = XtVaCreateWidget("menu_row_column",
-//            xmRowColumnWidgetClass, shell,
-//            XmNrowColumnType, XmMENU_PULLDOWN,
-//            XmNtearOffModel, XmTEAR_OFF_ENABLED,
-//            NULL);
-//
-//    // create label in menu bar
-//    if (mnemonic && *mnemonic && strchr(name, mnemonic[0])) {
-//        // if mnemonic is "" -> Cannot convert string "" to type KeySym
-//        Label = XtVaCreateManagedWidget("menu1_top_b1",
-//                xmCascadeButtonWidgetClass, p_w->menu_bar[p_w->menu_deep],
-//                RES_CONVERT(XmNlabelString, name),
-//                                         RES_CONVERT(XmNmnemonic, mnemonic),
-//                                         XmNsubMenuId, p_w->menu_bar[p_w->menu_deep+1],
-//                                         XmNbackground, _at->background_color, NULL);
-//    }
-//    else {
-//        Label = XtVaCreateManagedWidget("menu1_top_b1",
-//        xmCascadeButtonWidgetClass,
-//        p_w->menu_bar[p_w->menu_deep],
-//        RES_CONVERT(XmNlabelString, name),
-//        XmNsubMenuId, p_w->menu_bar[p_w->menu_deep+1],
-//        XmNbackground, _at->background_color,
-//        NULL);
-//    }
-//
-//    if (p_w->menu_deep < AW_MAX_MENU_DEEP-1) p_w->menu_deep++;
-//
-//    root->make_sensitive(Label, mask);
+    //FIXME duplicate mnemonic test not implemented
+    #if defined(DUMP_MENU_LIST)
+        dumpOpenSubMenu(name);
+    #endif // DUMP_MENU_LIST
+    #ifdef DEBUG
+       // open_test_duplicate_mnemonics(prvt->menu_deep+1, name, mnemonic);
+    #endif
+
+    root->make_sensitive(GTK_WIDGET(item), mask);
 }
 
 
