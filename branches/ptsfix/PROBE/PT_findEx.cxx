@@ -70,7 +70,7 @@ static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) 
 
     switch (PT_read_type(node)) {
         case PT_NT_NODE: {
-            if (!PT_is_std_base(PT_BASES(probe[0]))) return false;
+            if (!is_std_base(probe[0])) return false;
 
             POS_TREE *son   = PT_read_son(node, PT_BASES(probe[0]));
             bool      found = (son != 0) && findNextProbe(son, probe+1, restlen-1, height+1);
@@ -79,7 +79,7 @@ static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) 
 
             if (!found) {
                 for (int i=probe[0]+1; !found && i<PT_B_MAX; ++i) {
-                    if (PT_is_std_base(PT_BASES(i))) {
+                    if (is_std_base(i)) {
                         son = PT_read_son(node, PT_BASES(i));
                         if (son) {
                             probe[0] = PT_BASES(i); // change probe
