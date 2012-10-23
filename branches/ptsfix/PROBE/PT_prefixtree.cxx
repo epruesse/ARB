@@ -24,10 +24,25 @@ struct pt_global PT_GLOBAL;
 inline bool locs_in_chain_order(const DataLoc& loc1, const DataLoc& loc2) {
     pt_assert_stage(STAGE1); // this order is only valid in STAGE1 (STAGE3 has reverse order)
 
-    if (loc1.name < loc2.name) return false;
+    if (loc1.name < loc2.name) {
+#if defined(DEBUG)
+        fprintf(stderr, "invalid chain: loc1.name<loc2.name (%i<%i)\n", loc1.name, loc2.name);
+#endif
+        return false;
+    }
     if (loc1.name == loc2.name) {
-        if (loc1.rpos >= loc2.rpos) return false;
-        if (loc1.apos >= loc2.apos) return false;
+        if (loc1.rpos >= loc2.rpos) {
+#if defined(DEBUG)
+            fprintf(stderr, "invalid chain: loc1.rpos>=loc2.rpos (%i>=%i)\n", loc1.rpos, loc2.rpos);
+#endif
+            return false;
+        }
+        if (loc1.apos >= loc2.apos) {
+#if defined(DEBUG)
+            fprintf(stderr, "invalid chain: loc1.apos>=loc2.apos (%i>=%i)\n", loc1.apos, loc2.apos);
+#endif
+            return false;
+        }
     }
     return true;
 }
@@ -121,7 +136,9 @@ void PT_add_to_chain(POS_TREE *node, const DataLoc& loc) {
     unsigned long old_first;
     PT_READ_PNTR(data, old_first);  // create a new list element
 
-    static char  buffer[100];
+    const int MAX_CHAIN_ENTRY_SIZE = sizeof(PT_PNTR)+3*sizeof(int);
+
+    static char  buffer[MAX_CHAIN_ENTRY_SIZE];
     char        *p = buffer;
 
     PT_WRITE_PNTR(p, old_first);
@@ -132,6 +149,8 @@ void PT_add_to_chain(POS_TREE *node, const DataLoc& loc) {
     PT_WRITE_NAT(p, loc.apos);
 
     int size = p - buffer;
+
+    pt_assert(size <= MAX_CHAIN_ENTRY_SIZE);
 
     p = (char*)MEM.get(size);
     memcpy(p, buffer, size);
