@@ -71,7 +71,7 @@ static const char *arb2internal_name(const char *name) {
     return found ? found->get_internal_gene_name() : 0;
 }
 
-const char *virt_name(PT_probematch *ml) 
+const char *virt_name(const PT_probematch *ml) 
 {
     // get the name with a virtual function
     if (gene_flag) {
@@ -84,7 +84,7 @@ const char *virt_name(PT_probematch *ml)
     }
 }
 
-const char *virt_fullname(PT_probematch * ml) 
+const char *virt_fullname(const PT_probematch * ml) 
 {
     if (gene_flag) {
         const gene_struct *gs = get_gene_struct_by_internal_gene_name(psg.data[ml->name].get_name());
@@ -216,7 +216,7 @@ char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checks
     return result;
 }
 
-bytestring *PT_unknown_names(PT_pdc *pdc) {
+bytestring *PT_unknown_names(const PT_pdc *pdc) {
     static bytestring un = { 0, 0 };
     PT_local *locs = (PT_local*)pdc->mh.parent->parent;
     delete un.data;

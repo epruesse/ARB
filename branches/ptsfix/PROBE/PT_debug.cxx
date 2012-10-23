@@ -216,7 +216,7 @@ static void PT_dump_POS_TREE_to_file(const char *dumpfile) {
 }
 
 
-int PT_index_dump(PT_main *main) {
+int PT_index_dump(const PT_main *main) {
     const char *outfile = main->dumpname;
     PT_dump_POS_TREE_to_file(outfile);
     return 0;

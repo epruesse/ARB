@@ -251,9 +251,7 @@ inline char hitgroup_idx2char(int idx) {
     return c;
 }
 
-char *get_design_info(PT_tprobes *const_tprobe) {
-    const PT_tprobes *tprobe = const_tprobe; // is const in fact (but AISC interface does not provide; @@@ true?)
-
+char *get_design_info(const PT_tprobes *tprobe) {
     char   *buffer = (char *)GB_give_buffer(2000);
     PT_pdc *pdc    = (PT_pdc *)tprobe->mh.parent->parent;
     char   *p      = buffer;
@@ -338,7 +336,7 @@ char *get_design_info(PT_tprobes *const_tprobe) {
 #warning fix usage of strlen in get_design_info and add assertion vs buffer overflow
 #endif
 
-char *get_design_hinfo(PT_tprobes  *tprobe) {
+char *get_design_hinfo(const PT_tprobes *tprobe) {
     char   *buffer = (char *)GB_give_buffer(2000);
     char   *s      = buffer;
     PT_pdc *pdc;

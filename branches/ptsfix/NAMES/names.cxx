@@ -164,7 +164,7 @@ static AN_shorts *an_find_shrt_prefix(const char *search) {
 
 // ----------------------------------------
 
-static void an_add_short(AN_local *locs, const char *new_name,
+static void an_add_short(const AN_local *locs, const char *new_name,
                          const char *parsed_name, const char *parsed_sym,
                          const char *shrt, const char *acc, const char *add_id)
 {
@@ -504,7 +504,7 @@ class NameInformation : virtual Noncopyable {
     char *id;
 
 public:
-    NameInformation(AN_local *locs);
+    NameInformation(const AN_local *locs);
     ~NameInformation();
 
     const char *get_id() const { return id; }
@@ -512,7 +512,7 @@ public:
     const char *get_first_name() const { return first_name; }
     const char *get_rest_of_name() const { return rest_of_name; }
 
-    void add_short(AN_local *locs, const char *shrt) const {
+    void add_short(const AN_local *locs, const char *shrt) const {
         an_add_short(locs, id, parsed_name, parsed_sym, shrt, parsed_acc, parsed_add_id);
     }
 };
@@ -559,7 +559,7 @@ static char *make_alpha(const char *str) {
 #define assert_alnum(s)
 #endif // DEBUG
 
-NameInformation::NameInformation(AN_local *locs) {
+NameInformation::NameInformation(const AN_local *locs) {
     full_name = locs->full_name;
     if (!full_name || !full_name[0]) full_name = default_full_name;
 
@@ -626,7 +626,7 @@ NameInformation::~NameInformation() {
 // --------------------------------------------------------------------------------
 // AISC functions
 
-int del_short(AN_local *locs) {
+int del_short(const AN_local *locs) {
     // forget about a short name
     NameInformation  info(locs);
     int              removed   = 0;
@@ -642,7 +642,7 @@ int del_short(AN_local *locs) {
 
 static GB_HASH *nameModHash = 0; // key = default name; value = max. counter tested
 
-aisc_string get_short(AN_local *locs) {
+aisc_string get_short(const AN_local *locs) {
     // get the short name from the previously set names
     static char *shrt = 0;
 
