@@ -260,7 +260,7 @@ char *get_design_info(const PT_tprobes *tprobe) {
     {
         char *probe  = (char *)GB_give_buffer2(tprobe->seq_len + 10);
         strcpy(probe, tprobe->sequence);
-        probe_2_readable(probe); // convert probe to real ASCII
+        probe_2_readable(probe, pdc->probelen); // convert probe to real ASCII
         sprintf(p, "%-*s", pdc->probelen+1, probe);
         p           += strlen(p);
     }
@@ -317,7 +317,7 @@ char *get_design_info(const PT_tprobes *tprobe) {
     {
         char *probe  = create_reversed_probe(tprobe->sequence, tprobe->seq_len);
         psg.complement_probe(probe, tprobe->seq_len);
-        probe_2_readable(probe); // convert probe to real ASCII
+        probe_2_readable(probe, tprobe->seq_len); // convert probe to real ASCII
         p     += sprintf(p, "%-*s |", pdc->probelen, probe);
         free(probe);
     }

@@ -18,6 +18,8 @@
 #include <arb_strbuf.h>
 #include <arb_defs.h>
 #include <arb_sort.h>
+#include <cctype>
+
 
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_probematch *match)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(match)); }
@@ -503,7 +505,7 @@ char *get_match_overlay(const PT_probematch *ml) {
          pr_pos--, al_pos--)
     {
         if (!psg.data[ml->name].get_data()[al_pos]) break;
-        ref[pr_pos] = psg.data[ml->name].get_data()[al_pos];
+        ref[pr_pos] = base_2_readable(psg.data[ml->name].get_data()[al_pos]);
     }
     ref[9] = '-';
 
@@ -520,13 +522,12 @@ char *get_match_overlay(const PT_probematch *ml) {
         }
         else {
             if (b) {
-                ref[pr_pos+10] = b;
+                int r = base_2_readable(b);
                 if (is_std_base(a) && is_std_base(b)) {
                     double h = ptnd_check_split(locs, ml->sequence, pr_pos, b);
-                    if (h>=0.0) {
-                        ref[pr_pos+10] = " nacgu"[b];
-                    }
+                    if (h>=0.0) r = tolower(r);
                 }
+                ref[pr_pos+10] = r;
             }
             else {
                 // end of sequence reached (rest of probe was accepted by N-matches)
@@ -542,11 +543,9 @@ char *get_match_overlay(const PT_probematch *ml) {
          pr_pos < 9 && al_pos < psg.data[ml->name].get_size();
          pr_pos++, al_pos++)
     {
-        ref[pr_pos+11+pr_len] = psg.data[ml->name].get_data()[al_pos];
+        ref[pr_pos+11+pr_len] = base_2_readable(psg.data[ml->name].get_data()[al_pos]);
     }
     ref[10+pr_len] = '-';
-    probe_2_readable(ref);
-
     return ref;
 }
 
@@ -604,7 +603,7 @@ static const char *get_match_hinfo_formatted(PT_probematch *ml, const format_pro
 
         if (ml->N_mismatches >= 0) { //
             char *seq = strdup(ml->sequence);
-            probe_2_readable(seq);
+            probe_2_readable(seq, strlen(ml->sequence)); // @@@ maybe wrong if match contains PT_QU (see [9070])
 
             GBS_strcat(memfile, "         '");
             GBS_strcat(memfile, seq);

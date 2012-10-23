@@ -92,10 +92,10 @@ inline char base_2_readable(char base) {
     return base<PT_B_MAX ? table[safeCharIndex(base)] : base;
 }
 
-inline void probe_2_readable(char *id_string) {
+inline void probe_2_readable(char *id_string, int len) {
     //! get a string with readable bases from a string with PT_?
     // caution if 'id_string' contains PT_QU ( == zero == EOS)
-    for (int i = 0; id_string[i]; ++i) {
+    for (int i = 0; i<len; ++i) {
         id_string[i] = base_2_readable(id_string[i]);
     }
 }
