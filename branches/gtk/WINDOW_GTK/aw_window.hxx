@@ -434,7 +434,10 @@ public:
     void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB cb, AW_CL cd1, AW_CL cd2);
     void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB1 cb, AW_CL cd1) { insert_menu_topic(id, name, mnemonic, help_text_, mask, (AW_CB)cb, cd1, 0); }
     void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB0 cb) { insert_menu_topic(id, name, mnemonic, help_text_, mask, (AW_CB)cb, 0, 0); }
-    void sep______________(); // insert a separator
+    /**
+     * insert a separator into the currently open menu
+     */
+    void sep______________(); 
     /**
      * Closes the currently open sub menu.
      * If no menu is open this method will crash.
@@ -625,7 +628,7 @@ public:
  */
 class AW_window_menu_modes : public AW_window { // derived from a Noncopyable
     void *AW_window_menu_modes_private;       // Do not use !!!
-    GtkMenuBar *menu_bar;
+
 public:
     AW_window_menu_modes();
     ~AW_window_menu_modes();

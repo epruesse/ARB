@@ -33,6 +33,7 @@
 #include <vector>
 #include <stack>
 #include <gtk-2.0/gtk/gtkmenuitem.h>
+#include <gtk-2.0/gtk/gtkseparatormenuitem.h>
 
 
 /**
@@ -62,6 +63,11 @@ public:
      */
     std::stack<GtkMenuShell*> menus;
     
+    /**
+     * The help menu. Might not exist in some windows. Check for NULL before use.
+     */
+    GtkMenuShell *help_menu;
+    
     
 
     /**
@@ -75,7 +81,7 @@ public:
      */
     std::vector<AW_area_management *> areas;
     
-    AW_window_gtk() : window(NULL), fixed_size_area(NULL), menu_bar(NULL) {}
+    AW_window_gtk() : window(NULL), fixed_size_area(NULL), menu_bar(NULL), help_menu(NULL) {}
     
 };
 
@@ -1499,8 +1505,17 @@ void AW_window::insert_default_toggle(AW_label /*toggle_label*/, const char */*m
 }
 
 
-void AW_window::insert_help_topic(AW_label /*name*/, const char */*mnemonic*/, const char */*help_text*/, AW_active /*mask*/, void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/){
-    GTK_NOT_IMPLEMENTED;
+void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const char *help_text, AW_active /*mask*/, void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/){
+    aw_assert(NULL != prvt->help_menu);
+    
+    GTK_PARTLY_IMPLEMENTED;
+    //FIXME mnemonic not working
+    //FIXME help entry callback not working.
+    //FIXME help text not working.
+    GtkWidget *item = gtk_menu_item_new_with_label(name);
+    gtk_menu_shell_append(prvt->help_menu, item);
+    
+        
 }
 
 
@@ -1836,7 +1851,13 @@ void AW_window::sens_mask(AW_active /*mask*/){
 }
 
 void AW_window::sep______________() {
-    GTK_NOT_IMPLEMENTED;
+    
+    aw_assert(NULL != prvt);
+    aw_assert(prvt->menus.size() > 0);
+    
+    GtkWidget *item = gtk_separator_menu_item_new();
+    gtk_menu_shell_append(prvt->menus.top(), item);
+    
 }
 
 void AW_window::set_bottom_area_height(int /*height*/) {
@@ -1990,9 +2011,8 @@ AW_window_menu_modes::AW_window_menu_modes() {
 
 
 void aw_create_help_entry(AW_window *aww) {
-//    aww->insert_help_topic("Click here and then on the questionable button/menu/...", "P", 0,
-//                           AWM_ALL, (AW_CB)AW_help_entry_pressed, 0, 0);
-    GTK_NOT_IMPLEMENTED;
+    aww->insert_help_topic("Click here and then on the questionable button/menu/...", "P", 0,
+                           AWM_ALL, (AW_CB)AW_help_entry_pressed, 0, 0);
 }
 
 void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *windowname, int width, int height) {
@@ -2000,8 +2020,8 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     GtkWidget *vbox;
     GtkWidget *hbox;
 
-    //const char *help_button   = "HELP";
-    //const char *help_mnemonic = "H";
+    const char *help_button   = "_HELP"; //underscore + mnemonic 
+
 
 #if defined(DUMP_MENU_LIST)
     initMenuListing(windowname);
@@ -2025,23 +2045,30 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
 
     GTK_PARTLY_IMPLEMENTED;
     
-    menu_bar = (GtkMenuBar*) gtk_menu_bar_new();
-    prvt->menus.push(GTK_MENU_SHELL(menu_bar));//The menu bar is the top level menu shell.
+    prvt->menu_bar = (GtkMenuBar*) gtk_menu_bar_new();
+    prvt->menus.push(GTK_MENU_SHELL(prvt->menu_bar));//The menu bar is the top level menu shell.
 
-//    p_w->menu_bar[0] = XtVaCreateManagedWidget("menu1", xmRowColumnWidgetClass,
-//                                               main_window,
-//                                               XmNrowColumnType, XmMENU_BAR,
-//                                               NULL);
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(menu_bar), false,
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(prvt->menu_bar), false,
                        false, //has no effect if the third parameter is false
                        2); //FIXME constant value
 
+    //create help menu
+    //FIXME help button is not on the right most button.
+    GtkMenuItem *help_item = GTK_MENU_ITEM(gtk_menu_item_new_with_mnemonic(help_button));
+    prvt->help_menu = GTK_MENU_SHELL(gtk_menu_new());
+    gtk_menu_item_set_submenu(help_item, GTK_WIDGET(prvt->help_menu));
+    gtk_menu_item_set_right_justified(help_item, true);
+    
+    gtk_menu_shell_append(GTK_MENU_SHELL(prvt->menu_bar), GTK_WIDGET(help_item));
+    
+    
     hbox = gtk_hbox_new(false, 1); //FIXME constant
     gtk_container_add(GTK_CONTAINER(vbox), hbox);
     
     
     
 //
+    
 //    // create shell for help-cascade
 //    help_popup = XtVaCreatePopupShell("menu_shell", xmMenuShellWidgetClass,
 //                                      p_w->menu_bar[0],
