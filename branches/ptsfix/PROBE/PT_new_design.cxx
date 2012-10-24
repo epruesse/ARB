@@ -858,9 +858,9 @@ inline void PT_incr_hash(GB_HASH *hash, const char *sequence, int len) {
     const_cast<char*>(sequence)[len] = c;
 }
 
-inline void ptnd_add_sequence_to_hash(PT_pdc *pdc, GB_HASH *hash, const char *sequence, int seq_len, int probe_len, const Partition& partition) {
+inline void ptnd_add_sequence_to_hash(PT_pdc *pdc, GB_HASH *hash, const char *sequence, int seq_len, int probe_len, const PrefixIterator& prefix) {
     for (int pos = seq_len-probe_len; pos >= 0; pos--, sequence++) {
-        if (partition.contains(sequence)) {
+        if (prefix.matches_at(sequence)) {
             if (!ptnd_check_tprobe(pdc, sequence, probe_len)) {
                 PT_incr_hash(hash, sequence, probe_len);
             }
@@ -941,20 +941,15 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
     fprintf(stderr, "OVERRIDE: forcing partsize=%i\n", partsize);
 #endif
 
-    Partition design_partition(PT_A, PT_T, partsize);
-    while (design_partition.follows()) {
+    PrefixIterator design4prefix(PT_A, PT_T, partsize);
+    while (!design4prefix.done()) {
 #if defined(DEBUG)
         {
-            fputs("partition='", stderr);
-            const char *partstr = design_partition.partstring();
-            size_t      partlen = design_partition.partlen();
-            for (size_t i = 0; i<partlen; ++i) {
-                fputc("ACGT"[partstr[i]-PT_A], stderr);
-            }
-            fputs("'\n", stderr);
+            char *prefix = probe_2_readable(design4prefix.copy(), design4prefix.length());
+            fprintf(stderr, "partition='%s'\n", prefix);
+            free(prefix);
         }
 #endif // DEBUG
-
         GB_HASH *hash_outer = GBS_create_hash(estimated_no_of_tprobes, GB_MIND_CASE); // count in how many groups/sequences the tprobe occurs (key = tprobe, value = counter)
 
 #if defined(DEBUG)
@@ -968,7 +963,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
             if (possible_tprobes<1) possible_tprobes = 1; // avoid wrong hash-size if no/not enough data
 
             GB_HASH *hash_one         = GBS_create_hash(possible_tprobes*hash_multiply, GB_MIND_CASE); // count tprobe occurrences for one group/sequence
-            ptnd_add_sequence_to_hash(pdc, hash_one, psg.data[name].get_data(), psg.data[name].get_size(), pdc->probelen, design_partition);
+            ptnd_add_sequence_to_hash(pdc, hash_one, psg.data[name].get_data(), psg.data[name].get_size(), pdc->probelen, design4prefix);
             GBS_hash_do_loop(hash_one, ptnd_collect_hash, hash_outer); // merge hash_one into hash
 #if defined(DEBUG)
             GBS_calc_hash_statistic(hash_one, "inner", 0);
@@ -979,7 +974,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
         for (seq = pdc->sequences; seq; seq = seq->next) {
             long     possible_tprobes = seq->seq.size-pdc->probelen+1;
             GB_HASH *hash_one         = GBS_create_hash(possible_tprobes*hash_multiply, GB_MIND_CASE); // count tprobe occurrences for one group/sequence
-            ptnd_add_sequence_to_hash(pdc, hash_one, seq->seq.data, seq->seq.size, pdc->probelen, design_partition);
+            ptnd_add_sequence_to_hash(pdc, hash_one, seq->seq.data, seq->seq.size, pdc->probelen, design4prefix);
             GBS_hash_do_loop(hash_one, ptnd_collect_hash, hash_outer); // merge hash_one into hash
 #if defined(DEBUG)
             GBS_calc_hash_statistic(hash_one, "inner", 0);
@@ -1001,7 +996,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
 #endif // DEBUG
 
         GBS_free_hash(hash_outer);
-        ++design_partition;
+        ++design4prefix;
     }
     delete [] group_idx;
 #if defined(DEBUG)

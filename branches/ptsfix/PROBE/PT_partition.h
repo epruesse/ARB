@@ -12,7 +12,12 @@
 #ifndef PT_PARTITION_H
 #define PT_PARTITION_H
 
-class Partition : virtual Noncopyable {
+class PrefixIterator : virtual Noncopyable {
+    // iterates over prefixes of length given to ctor.
+    //
+    // PT_QU will only occur at end of prefix,
+    // i.e. prefixes will be shorter than given length if PT_QU occurs
+
     PT_BASES low, high;
     int      len;
 
@@ -46,7 +51,7 @@ class Partition : virtual Noncopyable {
     }
 
 public:
-    Partition(PT_BASES low_, PT_BASES high_, int len_)
+    PrefixIterator(PT_BASES low_, PT_BASES high_, int len_)
         : low(low_),
           high(high_),
           len(len_),
@@ -61,21 +66,30 @@ public:
 
         plen = (low == PT_QU && len) ? 1 : len;
     }
-    ~Partition() {
+    ~PrefixIterator() {
         free(part);
     }
 
-    const char *partstring() const { return part; }
-    size_t partlen() const { return plen; }
-    bool follows() const { return part[0] != END(); }
+    const char *prefix() const { return part; }
+    size_t length() const { return plen; }
 
-    const Partition& operator++() { // ++Partition
-        pt_assert(follows());
+    char *copy() const {
+        pt_assert(!done());
+        char *result = (char*)malloc(plen+1);
+        memcpy(result, part, plen);
+        result[plen] = 0;
+        return result;
+    }
+
+    bool done() const { return part[0] == END(); }
+
+    const PrefixIterator& operator++() { // ++PrefixIterator
+        pt_assert(!done());
         inc();
         return *this;
     }
 
-    size_t size() const {
+    size_t steps() const {
         size_t count = 1;
         size_t bases = base_span();
         for (int l = 0; l<len; ++l) {
@@ -90,7 +104,7 @@ public:
         return count;
     }
 
-    bool contains(const char *probe) const {
+    bool matches_at(const char *probe) const {
         for (int p = 0; p<plen; ++p) {
             if (probe[p] != part[p]) {
                 return false;

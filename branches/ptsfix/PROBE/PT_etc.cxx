@@ -243,21 +243,19 @@ bytestring *PT_unknown_names(const PT_pdc *pdc) {
 #include <test_unit.h>
 #endif
 
-inline const char *concat_iteration(Partition& p) {
+inline const char *concat_iteration(PrefixIterator& prefix) {
     static GBS_strstruct out(50);
 
     out.erase();
 
-    while (p.follows()) {
+    while (!prefix.done()) {
         if (out.filled()) out.put(',');
-        size_t  len      = p.partlen();
-        char   *readable = (char*)malloc(len+1);
-        readable[len]    = 0;
-        memcpy(readable, p.partstring(), len);
-        probe_2_readable(readable, len);
+
+        char *readable = probe_2_readable(prefix.copy(), prefix.length());
         out.cat(readable);
         free(readable);
-        ++p;
+
+        ++prefix;
     }
 
     return out.get_data();
@@ -265,24 +263,24 @@ inline const char *concat_iteration(Partition& p) {
 
 void TEST_Partition() {
     // straight-forward permutation
-    Partition p0(PT_A, PT_T, 0); TEST_ASSERT_EQUAL(p0.size(), 1);
-    Partition p1(PT_A, PT_T, 1); TEST_ASSERT_EQUAL(p1.size(), 4);
-    Partition p2(PT_A, PT_T, 2); TEST_ASSERT_EQUAL(p2.size(), 16);
-    Partition p3(PT_A, PT_T, 3); TEST_ASSERT_EQUAL(p3.size(), 64);
+    PrefixIterator p0(PT_A, PT_T, 0); TEST_ASSERT_EQUAL(p0.steps(), 1);
+    PrefixIterator p1(PT_A, PT_T, 1); TEST_ASSERT_EQUAL(p1.steps(), 4);
+    PrefixIterator p2(PT_A, PT_T, 2); TEST_ASSERT_EQUAL(p2.steps(), 16);
+    PrefixIterator p3(PT_A, PT_T, 3); TEST_ASSERT_EQUAL(p3.steps(), 64);
 
-    TEST_ASSERT_EQUAL(p1.follows(), true);
-    TEST_ASSERT_EQUAL(p0.follows(), true);
+    TEST_ASSERT_EQUAL(p1.done(), false);
+    TEST_ASSERT_EQUAL(p0.done(), false);
 
     TEST_ASSERT_EQUAL(concat_iteration(p0), "");
     TEST_ASSERT_EQUAL(concat_iteration(p1), "A,C,G,U");
     TEST_ASSERT_EQUAL(concat_iteration(p2), "AA,AC,AG,AU,CA,CC,CG,CU,GA,GC,GG,GU,UA,UC,UG,UU");
 
     // permutation truncated at PT_QU
-    Partition q0(PT_QU, PT_T, 0); TEST_ASSERT_EQUAL(q0.size(), 1);
-    Partition q1(PT_QU, PT_T, 1); TEST_ASSERT_EQUAL(q1.size(), 6);
-    Partition q2(PT_QU, PT_T, 2); TEST_ASSERT_EQUAL(q2.size(), 31);
-    Partition q3(PT_QU, PT_T, 3); TEST_ASSERT_EQUAL(q3.size(), 156);
-    Partition q4(PT_QU, PT_T, 4); TEST_ASSERT_EQUAL(q4.size(), 781);
+    PrefixIterator q0(PT_QU, PT_T, 0); TEST_ASSERT_EQUAL(q0.steps(), 1);
+    PrefixIterator q1(PT_QU, PT_T, 1); TEST_ASSERT_EQUAL(q1.steps(), 6);
+    PrefixIterator q2(PT_QU, PT_T, 2); TEST_ASSERT_EQUAL(q2.steps(), 31);
+    PrefixIterator q3(PT_QU, PT_T, 3); TEST_ASSERT_EQUAL(q3.steps(), 156);
+    PrefixIterator q4(PT_QU, PT_T, 4); TEST_ASSERT_EQUAL(q4.steps(), 781);
 
     TEST_ASSERT_EQUAL(concat_iteration(q0), "");
     TEST_ASSERT_EQUAL(concat_iteration(q1), ".,N,A,C,G,U");

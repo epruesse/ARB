@@ -240,7 +240,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
 #endif
 
                     ULONG estimated_kb = (STAGE1_INDEX_BYTES_PER_BASE*overallBases)/1024;
-                    int   passes       = Partition(PT_QU, PT_T, partsize).size();
+                    int   passes       = PrefixIterator(PT_QU, PT_T, partsize).steps();
 
                     printf("Estimated memory usage for %i passes: %s\n", passes, GBS_readable_size(estimated_kb*1024, "b"));
 
@@ -260,15 +260,17 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
 #endif
             }
 
-            Partition pass_partition(PT_QU, PT_T, partsize);
-            int       passes = pass_partition.size();
+            PrefixIterator partitionPrefix(PT_QU, PT_T, partsize);
+            int            passes = partitionPrefix.steps();
 
-            arb_progress pass_progress(GBS_global_string("Tree Build: %s in %i passes", GBS_readable_size(psg.char_count, "bp"), passes),
+            arb_progress pass_progress(GBS_global_string("Tree Build: %s in %i passes",
+                                                         GBS_readable_size(psg.char_count, "bp"),
+                                                         passes),
                                        passes);
 
             int  currPass = 0;
             long last_obj = 0;
-            while (pass_partition.follows()) {
+            while (!partitionPrefix.done()) {
                 ++currPass;
                 arb_progress data_progress(GBS_global_string("pass %i/%i", currPass, passes), psg.data_count);
 
@@ -282,7 +284,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                         get_abs_align_pos(align_abs, abs_align_pos); // may result in neg. abs_align_pos (seems to happen if sequences are short < 214bp )
                         if (abs_align_pos < 0) break; // -> in this case abort
 
-                        if (pass_partition.contains(probe+j)) {
+                        if (partitionPrefix.matches_at(probe+j)) {
                             pt = build_pos_tree(pt, DataLoc(i, abs_align_pos, j));
                         }
                     }
@@ -295,14 +297,13 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                 dump_memusage();
 #endif
                 
-                // pos = PTD_save_partial_tree(out, pt, pass_partition.partstring(), partsize, pos, &last_obj, error);
-                pos = PTD_save_partial_tree(out, pt, pass_partition.partstring(), pass_partition.partlen(), pos, &last_obj, error);
+                pos = PTD_save_partial_tree(out, pt, partitionPrefix.prefix(), partitionPrefix.length(), pos, &last_obj, error);
                 if (error) break;
 
 #ifdef PTM_DEBUG_NODES
                 PTD_debug_nodes();
 #endif
-                ++pass_partition;
+                ++partitionPrefix;
             }
 
             if (!error) {
