@@ -89,6 +89,15 @@ public:
         }
         return count;
     }
+
+    bool contains(const char *probe) const {
+        for (int p = 0; p<plen; ++p) {
+            if (probe[p] != part[p]) {
+                return false;
+            }
+        }
+        return true;
+    }
 };
 
 #else

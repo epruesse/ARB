@@ -24,6 +24,7 @@
 #include "pt_prototypes.h"
 
 #include <climits>
+#include "PT_partition.h"
 
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_tprobes *tprobe)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(tprobe)); }
@@ -857,18 +858,9 @@ inline void PT_incr_hash(GB_HASH *hash, const char *sequence, int len) {
     const_cast<char*>(sequence)[len] = c;
 }
 
-static void ptnd_add_sequence_to_hash(PT_pdc *pdc, GB_HASH *hash, const char *sequence, int seq_len, int probe_len, char *prefix, int prefix_len) {
-    int pos;
-    if (*prefix) { // partition search, else very large hash tables (>60 mbytes)
-        for (pos = seq_len-probe_len; pos >= 0; pos--, sequence++) {
-            if ((*prefix != *sequence || strncmp(sequence, prefix, prefix_len))) continue;
-            if (!ptnd_check_tprobe(pdc, sequence, probe_len)) {
-                PT_incr_hash(hash, sequence, probe_len);
-            }
-        }
-    }
-    else {
-        for (pos = seq_len-probe_len; pos >= 0; pos--, sequence++) {
+inline void ptnd_add_sequence_to_hash(PT_pdc *pdc, GB_HASH *hash, const char *sequence, int seq_len, int probe_len, const Partition& partition) {
+    for (int pos = seq_len-probe_len; pos >= 0; pos--, sequence++) {
+        if (partition.contains(sequence)) {
             if (!ptnd_check_tprobe(pdc, sequence, probe_len)) {
                 PT_incr_hash(hash, sequence, probe_len);
             }
@@ -944,16 +936,23 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
 
     const int hash_multiply = 2; // resulting hash fill ratio is 1/(2*hash_multiply)
 
-    char partstring[256];
-    PT_init_base_string_counter(partstring, PT_A, partsize);
+#if defined(DEBUG) && 0
+    partsize = 2;
+    fprintf(stderr, "OVERRIDE: forcing partsize=%i\n", partsize);
+#endif
 
-    while (!PT_base_string_counter_eof(partstring)) {
+    Partition design_partition(PT_A, PT_T, partsize);
+    while (design_partition.follows()) {
 #if defined(DEBUG)
-        fputs("partition='", stdout);
-        for (int i = 0; i<partsize; ++i) {
-            putchar("ACGT"[partstring[i]-PT_A]);
+        {
+            fputs("partition='", stderr);
+            const char *partstr = design_partition.partstring();
+            size_t      partlen = design_partition.partlen();
+            for (size_t i = 0; i<partlen; ++i) {
+                fputc("ACGT"[partstr[i]-PT_A], stderr);
+            }
+            fputs("'\n", stderr);
         }
-        fputs("'\n", stdout);
 #endif // DEBUG
 
         GB_HASH *hash_outer = GBS_create_hash(estimated_no_of_tprobes, GB_MIND_CASE); // count in how many groups/sequences the tprobe occurs (key = tprobe, value = counter)
@@ -969,7 +968,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
             if (possible_tprobes<1) possible_tprobes = 1; // avoid wrong hash-size if no/not enough data
 
             GB_HASH *hash_one         = GBS_create_hash(possible_tprobes*hash_multiply, GB_MIND_CASE); // count tprobe occurrences for one group/sequence
-            ptnd_add_sequence_to_hash(pdc, hash_one, psg.data[name].get_data(), psg.data[name].get_size(), pdc->probelen, partstring, partsize);
+            ptnd_add_sequence_to_hash(pdc, hash_one, psg.data[name].get_data(), psg.data[name].get_size(), pdc->probelen, design_partition);
             GBS_hash_do_loop(hash_one, ptnd_collect_hash, hash_outer); // merge hash_one into hash
 #if defined(DEBUG)
             GBS_calc_hash_statistic(hash_one, "inner", 0);
@@ -980,7 +979,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
         for (seq = pdc->sequences; seq; seq = seq->next) {
             long     possible_tprobes = seq->seq.size-pdc->probelen+1;
             GB_HASH *hash_one         = GBS_create_hash(possible_tprobes*hash_multiply, GB_MIND_CASE); // count tprobe occurrences for one group/sequence
-            ptnd_add_sequence_to_hash(pdc, hash_one, seq->seq.data, seq->seq.size, pdc->probelen, partstring, partsize);
+            ptnd_add_sequence_to_hash(pdc, hash_one, seq->seq.data, seq->seq.size, pdc->probelen, design_partition);
             GBS_hash_do_loop(hash_one, ptnd_collect_hash, hash_outer); // merge hash_one into hash
 #if defined(DEBUG)
             GBS_calc_hash_statistic(hash_one, "inner", 0);
@@ -1002,7 +1001,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
 #endif // DEBUG
 
         GBS_free_hash(hash_outer);
-        PT_inc_base_string_count(partstring, PT_A, PT_B_MAX, partsize);
+        ++design_partition;
     }
     delete [] group_idx;
 #if defined(DEBUG)

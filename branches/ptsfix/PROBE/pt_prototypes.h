@@ -15,7 +15,7 @@
 
  class DataLoc;
 
-long PTD_save_partial_tree(FILE *out, POS_TREE *node, char *partstring, int partsize, long pos, long *node_pos, ARB_ERROR &error);
+long PTD_save_partial_tree(FILE *out, POS_TREE *node, const char *partstring, int partsize, long pos, long *node_pos, ARB_ERROR &error);
 ARB_ERROR enter_stage_1_build_tree(PT_main *, char *tname) __ATTR__USERESULT;
 ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) __ATTR__USERESULT;
 
@@ -32,8 +32,6 @@ const char *virt_name(const PT_probematch *ml);
 const char *virt_fullname(const PT_probematch *ml);
 char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checksums, const char *&error);
 bytestring *PT_unknown_names(const PT_pdc *pdc);
-void PT_init_base_string_counter(char *str, char initval, int size);
-void PT_inc_base_string_count(char *str, char initval, char maxval, int size);
 
 /* PT_family.cxx */
 int find_family(PT_family *ffinder, bytestring *species);

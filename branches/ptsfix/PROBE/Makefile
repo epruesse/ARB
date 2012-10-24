@@ -34,6 +34,7 @@ depend.init:
 
 PT_buildtree.o: probe.h
 PT_buildtree.o: probe_tree.h
+PT_buildtree.o: PT_partition.h
 PT_buildtree.o: pt_prototypes.h
 PT_buildtree.o: PT_tools.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -259,6 +260,7 @@ PT_match.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_new_design.o: probe.h
 PT_new_design.o: probe_tree.h
+PT_new_design.o: PT_partition.h
 PT_new_design.o: pt_prototypes.h
 PT_new_design.o: PT_tools.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/ad_prot.h

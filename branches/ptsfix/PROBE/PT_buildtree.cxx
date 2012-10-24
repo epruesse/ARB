@@ -20,6 +20,7 @@
 
 #include <unistd.h>
 #include <malloc.h>
+#include "PT_partition.h"
 
 #define PTM_TRACE_MAX_MEM_USAGE // @@@ comment out later
 
@@ -155,7 +156,7 @@ inline void get_abs_align_pos(char *seq, int &pos) {
     pos+=q_exists;
 }
 
-long PTD_save_partial_tree(FILE *out, POS_TREE * node, char *partstring, int partsize, long pos, long *node_pos, ARB_ERROR& error) {
+long PTD_save_partial_tree(FILE *out, POS_TREE * node, const char *partstring, int partsize, long pos, long *node_pos, ARB_ERROR& error) {
     // 'node_pos' is set to the root-node of the last written subtree (only if partsize == 0)
     pt_assert_stage(STAGE1);
     if (partsize) {
@@ -223,54 +224,53 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
             psg.stat.cut_offs = 0;                  // statistic information
             GB_begin_transaction(psg.gb_main);
 
-            long last_obj   = 0;
-            char partstring[256];
-            int  partsize   = 0;
-            int  pass0      = 0;
-            int  passes     = 1;
-            int  pass_parts = 6;
+            int  partsize = 0;
 
             {
-                ULONG total_size = psg.char_count;
+                ULONG overallBases = psg.char_count;
 
-                printf("Overall bases: %li\n", total_size);
+                printf("Overall bases: %li\n", overallBases);
 
                 while (1) {
+                    // @@@ update STAGE1_INDEX_BYTES_PER_BASE
 #ifdef ARB_64
-                    ULONG estimated_kb = (total_size/1024)*55;  // value by try and error (for gene server)
-                    // TODO: estimated_kb depends on 32/64 bit...
+# define STAGE1_INDEX_BYTES_PER_BASE 55
 #else
-                    ULONG estimated_kb = (total_size/1024)*35;  // value by try and error; 35 bytes per base
+# define STAGE1_INDEX_BYTES_PER_BASE 35
 #endif
-                    
+
+                    ULONG estimated_kb = (STAGE1_INDEX_BYTES_PER_BASE*overallBases)/1024;
+                    int   passes       = Partition(PT_QU, PT_T, partsize).size();
+
                     printf("Estimated memory usage for %i passes: %s\n", passes, GBS_readable_size(estimated_kb*1024, "b"));
 
                     if (estimated_kb <= physical_memory) break;
 
-                    total_size /= 4; // ignore PT_N- and PT_QU-branches (they are very small compared with other branches)
-
+                    overallBases /= 4; // ignore PT_N- and PT_QU-branches (they are very small compared with other branches)
                     partsize ++;
-                    passes     *= pass_parts;
                 }
 #if defined(DEBUG) && 1
                 // @@@ deactivate when fixed
-
                 // when active, uncomment ../UNIT_TESTER/TestEnvironment.cxx@TEST_AUTO_UPDATE
 
-                passes = pass_parts; partsize = 1;  // works now
-                // passes = pass_parts*pass_parts; partsize = 2; // @@@ fails with 'Error: Failed to build index (Reason: Chain Error: name order error 1 < 21)'
+                partsize = 1;  // works now
+                // partsize = 2; // @@@ fails with 'invalid chain: loc1.name<loc2.name (5<10)'
 
-                printf("OVERRIDE: Forcing %i passes\n", passes);
+                printf("OVERRIDE: Forcing partsize=%i\n", partsize);
 #endif
             }
 
-            PT_init_base_string_counter(partstring, PT_QU, partsize);
-            arb_progress pass_progress(GBS_global_string ("Tree Build: %s in %i passes", GBS_readable_size(psg.char_count, "bp"), passes),
+            Partition pass_partition(PT_QU, PT_T, partsize);
+            int       passes = pass_partition.size();
+
+            arb_progress pass_progress(GBS_global_string("Tree Build: %s in %i passes", GBS_readable_size(psg.char_count, "bp"), passes),
                                        passes);
 
-            while (!PT_base_string_counter_eof(partstring)) {
-                ++pass0;
-                arb_progress data_progress(GBS_global_string("pass %i/%i", pass0, passes), psg.data_count);
+            int  currPass = 0;
+            long last_obj = 0;
+            while (pass_partition.follows()) {
+                ++currPass;
+                arb_progress data_progress(GBS_global_string("pass %i/%i", currPass, passes), psg.data_count);
 
                 for (int i = 0; i < psg.data_count; i++) {
                     int         psize;
@@ -282,9 +282,9 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                         get_abs_align_pos(align_abs, abs_align_pos); // may result in neg. abs_align_pos (seems to happen if sequences are short < 214bp )
                         if (abs_align_pos < 0) break; // -> in this case abort
 
-                        if (partsize && memcmp(partstring, probe+j, partsize) != 0) continue;
-
-                        pt = build_pos_tree(pt, DataLoc(i, abs_align_pos, j));
+                        if (pass_partition.contains(probe+j)) {
+                            pt = build_pos_tree(pt, DataLoc(i, abs_align_pos, j));
+                        }
                     }
                     free(align_abs);
 
@@ -295,13 +295,14 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                 dump_memusage();
 #endif
                 
-                pos = PTD_save_partial_tree(out, pt, partstring, partsize, pos, &last_obj, error);
+                // pos = PTD_save_partial_tree(out, pt, pass_partition.partstring(), partsize, pos, &last_obj, error);
+                pos = PTD_save_partial_tree(out, pt, pass_partition.partstring(), pass_partition.partlen(), pos, &last_obj, error);
                 if (error) break;
 
 #ifdef PTM_DEBUG_NODES
                 PTD_debug_nodes();
 #endif
-                PT_inc_base_string_count(partstring, PT_QU, PT_B_MAX, partsize);
+                ++pass_partition;
             }
 
             if (!error) {

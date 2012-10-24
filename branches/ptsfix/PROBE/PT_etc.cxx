@@ -236,32 +236,6 @@ bytestring *PT_unknown_names(const PT_pdc *pdc) {
     return &un;
 }
 
-void PT_init_base_string_counter(char *str, char initval, int size) // @@@ elim
-{
-    memset(str, initval, size+1);
-    str[size] = 0;
-}
-
-void PT_inc_base_string_count(char *str, char initval, char maxval, int size) // @@@ elim
-{
-    int i;
-    if (!size) {
-        str[0]=255;
-        return;
-    }
-    for (i=size-1; i>=0; i--) {
-        str[i]++;
-        if (str[i] >= maxval) {
-            str[i] = initval;
-            if (!i) str[i]=255; // end flag
-        }
-        else {
-            break;
-        }
-    }
-}
-
-
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS

@@ -396,8 +396,6 @@ typedef std::set<const gene_struct *, ltByArbName>      gene_struct_index_arb;
 extern gene_struct_index_arb      gene_struct_arb2internal; // sorted by arb species+gene name
 extern gene_struct_index_internal gene_struct_internal2arb; // sorted by internal name
 
-#define PT_base_string_counter_eof(str) (*(unsigned char *)(str) == 255)
-
 #else
 #error probe.h included twice
 #endif
