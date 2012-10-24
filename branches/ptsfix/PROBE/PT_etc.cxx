@@ -276,12 +276,13 @@ inline const char *concat_iteration(Partition& p) {
 
     while (p.follows()) {
         if (out.filled()) out.put(',');
-        size_t  len       = p.partlen();
-        char   *readable  = (char*)malloc(len+1);
-        readable[len]     = 0;
+        size_t  len      = p.partlen();
+        char   *readable = (char*)malloc(len+1);
+        readable[len]    = 0;
         memcpy(readable, p.partstring(), len);
         probe_2_readable(readable, len);
         out.cat(readable);
+        free(readable);
         ++p;
     }
 
@@ -294,6 +295,9 @@ void TEST_Partition() {
     Partition p1(PT_A, PT_T, 1); TEST_ASSERT_EQUAL(p1.size(), 4);
     Partition p2(PT_A, PT_T, 2); TEST_ASSERT_EQUAL(p2.size(), 16);
     Partition p3(PT_A, PT_T, 3); TEST_ASSERT_EQUAL(p3.size(), 64);
+
+    TEST_ASSERT_EQUAL(p1.follows(), true);
+    TEST_ASSERT_EQUAL(p0.follows(), true);
 
     TEST_ASSERT_EQUAL(concat_iteration(p0), "");
     TEST_ASSERT_EQUAL(concat_iteration(p1), "A,C,G,U");

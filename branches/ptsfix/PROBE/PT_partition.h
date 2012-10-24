@@ -19,23 +19,29 @@ class Partition : virtual Noncopyable {
     char *part;
     int   plen;
 
-    char end() const { return high+1; }
+    char END() const { return high+1; }
     size_t base_span() const { return high-low+1; }
 
     void inc() {
-        while (plen) {
-            part[plen-1]++;
-            if (part[plen-1] == end()) {
-                --plen;
-            }
-            else {
-                for (int l = plen; l<len; ++l) {
-                    part[l] = low;
-                    plen    = l+1;
-                    if (low == PT_QU) break;
+        if (plen) {
+            do {
+                part[plen-1]++;
+                if (part[plen-1] == END()) {
+                    --plen;
                 }
-                break;
+                else {
+                    for (int l = plen; l<len; ++l) {
+                        part[l] = low;
+                        plen    = l+1;
+                        if (low == PT_QU) break;
+                    }
+                    break;
+                }
             }
+            while (plen);
+        }
+        else {
+            part[0] = END();
         }
     }
 
@@ -61,7 +67,7 @@ public:
 
     const char *partstring() const { return part; }
     size_t partlen() const { return plen; }
-    bool follows() const { return len ? part[0] != end() : false; }
+    bool follows() const { return part[0] != END(); }
 
     const Partition& operator++() { // ++Partition
         pt_assert(follows());
