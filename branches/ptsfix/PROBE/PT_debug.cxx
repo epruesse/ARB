@@ -147,6 +147,7 @@ void PT_dump_POS_TREE_recursive(POS_TREE *pt, const char *prefix, FILE *out) {
                 }
             }
             break;
+
         case PT_NT_LEAF: {
             char         *subPrefix = GBS_global_string_copy("{l} %s", prefix);
             PT_dump_leaf  dump_leaf(subPrefix, out);
@@ -160,8 +161,12 @@ void PT_dump_POS_TREE_recursive(POS_TREE *pt, const char *prefix, FILE *out) {
             free(subPrefix);
             break;
         }
+        case PT_NT_SAVED:
+            fprintf(out, "{x} %s [saved]\n", prefix);
+            break;
+
         default:
-            fprintf(out, "%s [unhandled]\n", prefix);
+            fprintf(out, "{?} %s [unhandled]\n", prefix);
             pt_assert(0);
             break;
     }

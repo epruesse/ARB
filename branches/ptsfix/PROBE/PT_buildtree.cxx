@@ -156,20 +156,56 @@ inline void get_abs_align_pos(char *seq, int &pos) {
     pos+=q_exists;
 }
 
-long PTD_save_partial_tree(FILE *out, POS_TREE * node, const char *partstring, int partsize, long pos, long *node_pos, ARB_ERROR& error) {
-    // 'node_pos' is set to the root-node of the last written subtree (only if partsize == 0)
+static bool all_sons_saved(POS_TREE *node);
+inline bool is_saved(POS_TREE *node) {
+    PT_NODE_TYPE type = PT_read_type(node);
+    return (type == PT_NT_NODE) ? all_sons_saved(node) : (type == PT_NT_SAVED);
+}
+
+static bool all_sons_saved(POS_TREE *node) {
+    pt_assert(PT_read_type(node) == PT_NT_NODE);
+
+    for (int i = PT_QU; i < PT_B_MAX; i++) {
+        POS_TREE *son = PT_read_son_stage_1(node, (PT_BASES)i);
+        if (son) {
+            if (!is_saved(son)) return false;
+        }
+    }
+    return true;
+}
+
+long PTD_write_subtree(FILE *out, POS_TREE *node, long pos, long *node_pos, ARB_ERROR& error) {
+    pt_assert_stage(STAGE1);
+    PTD_clear_fathers(node);
+    return PTD_write_leafs_to_disk(out, node, pos, node_pos, error);
+}
+
+static long save_partial_subtree(FILE *out, POS_TREE *node, const char *partstring, int partsize, long pos, long *node_pos, ARB_ERROR& error) {
     pt_assert_stage(STAGE1);
     if (partsize) {
+        pt_assert(PT_read_type(node) == PT_NT_NODE);
         POS_TREE *son = PT_read_son_stage_1(node, (PT_BASES)partstring[0]);
         if (son) {
             long dummy;
-            pos = PTD_save_partial_tree(out, son, partstring+1, partsize-1, pos, &dummy, error);
+            pos = save_partial_subtree(out, son, partstring+1, partsize-1, pos, &dummy, error);
         }
         *node_pos = 0;
     }
     else {
-        PTD_clear_fathers(node);
-        pos = PTD_write_leafs_to_disk(out, node, pos, node_pos, error);
+        pos = PTD_write_subtree(out, node, pos, node_pos, error);
+    }
+    return pos;
+}
+
+long PTD_save_partial_tree(FILE *out, POS_TREE *node, const char *partstring, int partsize, long pos, long *node_pos, ARB_ERROR& error) {
+    // 'node_pos' is set to the root-node of the last written subtree (only if partsize == 0)
+    pos = save_partial_subtree(out, node, partstring, partsize, pos, node_pos, error);
+    if (!error && !is_saved(node)) {
+#if defined(DEBUG)
+        fputs("tree was not completely saved:\n", stderr);
+        PT_dump_POS_TREE_recursive(node, " ", stderr);
+#endif
+        error = "(sub)tree was not saved completely";
     }
     return pos;
 }
@@ -253,8 +289,8 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                 // @@@ deactivate when fixed
                 // when active, uncomment ../UNIT_TESTER/TestEnvironment.cxx@TEST_AUTO_UPDATE
 
-                partsize = 1;  // works now
-                // partsize = 2; // @@@ fails with 'invalid chain: loc1.name<loc2.name (5<10)'
+                partsize = 1;  // again works 
+                // partsize = 2; // @@@ fails assertion in save_partial_subtree
 
                 printf("OVERRIDE: Forcing partsize=%i\n", partsize);
 #endif
