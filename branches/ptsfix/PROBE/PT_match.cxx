@@ -360,25 +360,21 @@ int probe_match(PT_local * locs, aisc_string probestring) {
 #endif // DEBUG
 
     int probe_len = strlen(probestring);
-    if ((probe_len - 2*locs->pm_max) < MIN_PROBE_LENGTH) {
-        if (probe_len >= MIN_PROBE_LENGTH) {
-            int max_pos_mismatches = (probe_len-MIN_PROBE_LENGTH)/2;
-            if (max_pos_mismatches>0) {
-                if (max_pos_mismatches>1) {
-                    pt_export_error(locs, GBS_global_string("Max. %i mismatches are allowed for probes of length %i", max_pos_mismatches, probe_len));
-                }
-                else {
-                    pt_export_error(locs, GBS_global_string("Max. 1 mismatch is allowed for probes of length %i", probe_len));
-                }
-            }
-            else {
-                pt_export_error(locs, "No mismatches allowed for that short probes.");
-            }
-        }
-        else {
-            pt_export_error(locs, GBS_global_string("Min. probe length is %i", MIN_PROBE_LENGTH));
-        }
+    if (probe_len<MIN_PROBE_LENGTH) {
+        pt_export_error(locs, GBS_global_string("Min. probe length is %i", MIN_PROBE_LENGTH));
         return 0;
+    }
+
+    {
+        int max_poss_mismatches = probe_len/2;
+        pt_assert(max_poss_mismatches>0);
+        if (locs->pm_max > max_poss_mismatches) {
+            pt_export_error(locs, GBS_global_string("Max. %i mismatch%s are allowed for probes of length %i",
+                                                    max_poss_mismatches,
+                                                    max_poss_mismatches == 1 ? "" : "es",
+                                                    probe_len));
+            return 0;
+        }
     }
 
     set_table_for_PT_N_mis(locs->pm_nmatches_ignored, locs->pm_nmatches_limit);

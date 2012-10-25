@@ -359,7 +359,7 @@ static char *AP_probe_match_event(ARB_ERROR& error) {
                      LOCS_MATCH_STRING,   &bs,
                      LOCS_ERROR,          &locs_error,
                      NULL);
-            if (*locs_error) error = locs_error;
+            if (*locs_error) error = GBS_static_string(locs_error);
             free(locs_error);
         }
 
@@ -787,9 +787,20 @@ void TEST_SLOW_match_probe() {
             "AclPleur\1" "  AclPleur            1     2  1.1 176   162 0   CGGUUGGAU-==C======A.-\1"
             "PtVVVulg\1" "  PtVVVulg            1     2  1.1 176   162 0   CGGUUGGAU-==C======A.-\1";
 
+        CCP expectd3 = "    name---- fullname mis N_mis wmis pos ecoli rev          'CANCUCCUUUC'\1"
+            "BcSSSS00\1" "  BcSSSS00            0     1  0.0 176   162 0   CGGCUGGAU-==C========-U.\1"
+            "PbcAcet2\1" "  PbcAcet2            0     2  0.0 176   162 0   CGGCUGGAU-==C=======N-N.\1"
+            "PbrPropi\1" "  PbrPropi            0     2  0.0 176   162 0   CGGCUGGAU-==C=======N-N.\1"
+            "DlcTolu2\1" "  DlcTolu2            0     3  0.0 176   162 0   CGGCUGGAU-==C======NN-N.\1"
+            "ClfPerfr\1" "  ClfPerfr            1     1  1.1 176   162 0   AGAUUAAUA-=CC========-U.\1"
+            "AclPleur\1" "  AclPleur            1     2  1.1 176   162 0   CGGUUGGAU-==C======A.-\1"
+            "PtVVVulg\1" "  PtVVVulg            1     2  1.1 176   162 0   CGGUUGGAU-==C======A.-\1"
+            "VblVulni\1" "  VblVulni            3     1  2.7  49    44 0   AGCACAGAG-a=A==uG====-UCGGGUGGC\1";
+
         arguments[2] = "matchmismatches=0";  TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
         arguments[2] = "matchmismatches=1";  TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd1);
         arguments[2] = "matchmismatches=2";  TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd2);
+        arguments[2] = "matchmismatches=3";  TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd3);
     }
     {
         const char *arguments[] = {

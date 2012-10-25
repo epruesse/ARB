@@ -50,7 +50,7 @@ typedef unsigned char uchar;
 
 #define PT_POS_TREE_HEIGHT 20
 #define PT_POS_SECURITY    10
-#define MIN_PROBE_LENGTH   6
+#define MIN_PROBE_LENGTH   2
 
 enum PT_MATCH_TYPE {
     PT_MATCH_TYPE_INTEGER           = 0,
