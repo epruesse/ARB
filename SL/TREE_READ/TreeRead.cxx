@@ -241,8 +241,7 @@ static void setBranchName(TreeReader *reader, GBT_TREE *node, char *name) {
         node->name = name;
     }
     else {
-        bootstrap = bootstrap*100.0 + 0.5; // needed if bootstrap values are between 0.0 and 1.0 */
-        // downscaling in done later!
+        bootstrap = bootstrap*100.0 + 0.5; // needed if bootstrap values are between 0.0 and 1.0 (downscaling is done later)
 
         if (bootstrap>reader->max_found_bootstrap) {
             reader->max_found_bootstrap = bootstrap;
@@ -251,7 +250,7 @@ static void setBranchName(TreeReader *reader, GBT_TREE *node, char *name) {
         tree_assert(node->remark_branch == 0);
         node->remark_branch  = GBS_global_string_copy("%i%%", (int)bootstrap);
 
-        if (end[0] != 0) {      // sth behind bootstrap value
+        if (end[0] != 0) {            // sth behind bootstrap value
             if (end[0] == ':') ++end; // ARB format for nodes with bootstraps AND node name is 'bootstrap:nodename'
             node->name = strdup(end);
         }
@@ -438,7 +437,7 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
                                                          bootstrap_scale, reader->max_found_bootstrap);
                 }
             }
-            if (reader->max_found_branchlen >= 1.01) { // assume branchlengths have range [0;100]
+            if (reader->max_found_branchlen > 3.0) { // assume branchlengths have range [0;100]
                 if (allow_length_scaling) {
                     branchlen_scale = 0.01;
                     if (warningPtr) {
