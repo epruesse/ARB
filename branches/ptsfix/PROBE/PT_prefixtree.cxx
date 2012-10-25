@@ -498,10 +498,8 @@ static long PTD_write_chain_to_disk(FILE *out, POS_TREE * const node, const long
             pos      += size;
             lastname  = loc.name;
 
-            char *mem = (char*)entry.memory();
+            MEM.put((char*)entry.memory(), entry.memsize());
             ++entry;
-
-            MEM.put(mem, entry.memsize());
         }
     }
 
