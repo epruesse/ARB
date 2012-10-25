@@ -186,7 +186,7 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
         }
 
         catch (string& s) {
-            error = GBS_global_string("%s", s.c_str());
+            error = GBS_static_string(s.c_str());
         }
         catch (...) {
             error = "Unknown error (maybe out of memory ? )";

@@ -181,6 +181,9 @@ const char *GBS_global_string(const char *templat, ...) {
     return result;
 }
 
+const char *GBS_static_string(const char *str) {
+    return GBS_global_string("%s", str);
+}
 
 GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr) {
 #define BUFSIZE 1000

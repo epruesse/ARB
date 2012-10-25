@@ -775,7 +775,7 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
             }
             else {
                 if (locs_error) {
-                    if (*locs_error) error = GBS_global_string("%s", locs_error);
+                    if (*locs_error) error = GBS_static_string(locs_error);
                     free(locs_error);
                 }
                 else {
@@ -999,7 +999,7 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
                 free(gene_str);
             }
 
-            if (error) error = GBS_global_string("%s", error); // make static copy (error may be freed by delete parser)
+            if (error) error = GBS_static_string(error); // make static copy (error may be freed by delete parser)
             delete parser;
             free(result);
 
