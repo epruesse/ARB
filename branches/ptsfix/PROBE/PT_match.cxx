@@ -45,6 +45,24 @@ inline bool max_number_of_hits_collected(PT_local* locs) {
     return locs->pm_max_hits>0 && locs->ppm.cnt >= locs->pm_max_hits;
 }
 
+static void add_match(PT_local *locs, const DataLoc& matchLoc, int mismatches, double wmismatches, int N_mismatches) {
+    PT_probematch *ml = create_PT_probematch();
+
+    ml->name  = matchLoc.name;
+    ml->b_pos = matchLoc.apos;
+    ml->g_pos = -1;
+    ml->rpos  = matchLoc.rpos;
+
+    ml->mismatches   = mismatches  + psg.w_N_mismatches[N_mismatches];
+    ml->wmismatches  = wmismatches;
+    ml->N_mismatches = N_mismatches;
+
+    ml->sequence = psg.main_probe;
+    ml->reversed = psg.reversed ? 1 : 0;
+
+    aisc_link(&locs->ppm, ml);
+}
+
 struct PT_store_match_in {
     PT_local* ilocs;
 
@@ -68,7 +86,7 @@ struct PT_store_match_in {
 
             while ((base=probe[height]) && (ref = psg.data[matchLoc.name].get_data()[pos])) {
                 pt_assert(base != PT_QU && ref != PT_QU); // both impl by loop-condition
-                
+
                 if (ref == PT_N || base == PT_N) {
                     // @@@ Warning: dupped code also counts PT_QU as mismatch!
                     N_mismatches++;
@@ -102,21 +120,7 @@ struct PT_store_match_in {
             return 1;
         }
 
-        // @@@ dupped code from read_names_and_pos (PT_NT_LEAF-branch)
-        PT_probematch *ml = create_PT_probematch();
-
-        ml->name         = matchLoc.name;
-        ml->b_pos        = matchLoc.apos;
-        ml->g_pos        = -1;
-        ml->rpos         = matchLoc.rpos;
-        ml->wmismatches  = wmismatches;
-        ml->mismatches   = mismatches;
-        ml->N_mismatches = N_mismatches;
-        ml->sequence     = psg.main_probe;
-        ml->reversed     = psg.reversed ? 1 : 0;
-            
-        aisc_link(&locs->ppm, ml);
-
+        add_match(locs, matchLoc, mismatches, wmismatches, N_mismatches);
         return 0;
     }
 };
@@ -132,21 +136,7 @@ static int read_names_and_pos(PT_local *locs, POS_TREE *pt) {
         }
         else if (PT_read_type(pt) == PT_NT_LEAF) {
             DataLoc loc(pt);
-
-            // @@@ dupped code from PT_store_match_in::operator()
-            PT_probematch *ml = create_PT_probematch();
-
-            ml->name         = loc.name;
-            ml->b_pos        = loc.apos;
-            ml->g_pos        = -1;
-            ml->rpos         = loc.rpos;
-            ml->mismatches   = psg.mismatches;
-            ml->wmismatches  = psg.wmismatches;
-            ml->N_mismatches = psg.N_mismatches;
-            ml->sequence     = psg.main_probe;
-            ml->reversed     = psg.reversed ? 1 : 0;
-
-            aisc_link(&locs->ppm, ml);
+            add_match(locs, loc, psg.mismatches, psg.wmismatches, psg.N_mismatches);
         }
         else if (PT_read_type(pt) == PT_NT_CHAIN) {
             psg.probe = 0;
