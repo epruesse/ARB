@@ -916,10 +916,34 @@ void TEST_SLOW_match_probe() {
             "AclPleur\1" "  AclPleur            1     2  1.1 175   161 0   GCGGUUGGA-==========A..-\1"
             "PtVVVulg\1" "  PtVVVulg            1     2  1.1 175   161 0   GCGGUUGGA-==========A..-\1"
             "ClfPerfr\1" "  ClfPerfr            2     0  2.2 175   161 0   AAGAUUAAU-A=C==========-.\1";
-        
+
+        CCP expectd4 = "    name---- fullname mis N_mis wmis pos ecoli rev          'UCACCUCCUUUCU'\1"
+            "BcSSSS00\1" "  BcSSSS00            0     0  0.0 175   161 0   GCGGCUGGA-=============-.\1"
+            "PbcAcet2\1" "  PbcAcet2            0     2  0.0 175   161 0   GCGGCUGGA-===========NN-.\1"
+            "PbrPropi\1" "  PbrPropi            0     2  0.0 175   161 0   GCGGCUGGA-===========NN-.\1"
+            "DlcTolu2\1" "  DlcTolu2            0     3  0.0 175   161 0   GCGGCUGGA-==========NNN-.\1"
+            "AclPleur\1" "  AclPleur            1     2  1.1 175   161 0   GCGGUUGGA-==========A..-\1"
+            "PtVVVulg\1" "  PtVVVulg            1     2  1.1 175   161 0   GCGGUUGGA-==========A..-\1"
+            "ClfPerfr\1" "  ClfPerfr            2     0  2.2 175   161 0   AAGAUUAAU-A=C==========-.\1";
+
+        CCP expectd5 = "    name---- fullname mis N_mis wmis pos ecoli rev          'UCACCUCCUUUCU'\1"
+            "BcSSSS00\1" "  BcSSSS00            0     0  0.0 175   161 0   GCGGCUGGA-=============-.\1"
+            "PbcAcet2\1" "  PbcAcet2            0     2  0.0 175   161 0   GCGGCUGGA-===========NN-.\1"
+            "PbrPropi\1" "  PbrPropi            0     2  0.0 175   161 0   GCGGCUGGA-===========NN-.\1"
+            "DlcTolu2\1" "  DlcTolu2            0     3  0.0 175   161 0   GCGGCUGGA-==========NNN-.\1"
+            "AclPleur\1" "  AclPleur            1     2  1.1 175   161 0   GCGGUUGGA-==========A..-\1"
+            "PtVVVulg\1" "  PtVVVulg            1     2  1.1 175   161 0   GCGGUUGGA-==========A..-\1"
+            "ClfPerfr\1" "  ClfPerfr            2     0  2.2 175   161 0   AAGAUUAAU-A=C==========-.\1"
+            "PtVVVulg\1" "  PtVVVulg            5     0  2.6  50    45 0   GGAGAAAGC-=ug=u=u===g==-GACGAGCGG\1"
+            "AclPleur\1" "  AclPleur            5     0  3.5  46    41 0   ACGGGAAGG-gag=u=G======-UUGCCGACG\1"
+            "PtVVVulg\1" "  PtVVVulg            5     0  4.0  45    40 0   ...AGGAGA-Aag=u=G======-UGCUGACGA\1"
+            "VblVulni\1" "  VblVulni            5     0  4.3  48    43 0   CAGCACAGA-ga=a==uG=====-CGGGUGGCG\1";
+
         arguments[2] = "matchmismatches=1"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd1);
         arguments[2] = "matchmismatches=2"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd2);
         arguments[2] = "matchmismatches=3"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd3);
+        arguments[2] = "matchmismatches=4"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd4);
+        arguments[2] = "matchmismatches=5"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd5);
     }
 
     // ----------------------------------
