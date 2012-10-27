@@ -92,14 +92,6 @@ void probe_struct_global::setup() {
     max_size   = 0;
     char_count = 0;
     
-    mismatches = 0;
-    wmismatches = 0.0;
-    N_mismatches = 0;
-
-    for (size_t i = 0; i<ARRAY_ELEMS(w_N_mismatches); ++i) {
-        w_N_mismatches[i] = 0;
-    }
-
     reversed = 0;
 
     pos_to_weight = NULL;
@@ -107,9 +99,7 @@ void probe_struct_global::setup() {
         complement[i] = calc_complement(i);
     }
 
-    deep   = 0;
     height = 0;
-    length = 0;
 
     sort_by = 0;
 

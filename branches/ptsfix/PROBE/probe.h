@@ -284,25 +284,18 @@ public:
     int  max_size;                                  // maximum sequence len
     long char_count;                                // number of all 'acgtuACGTU'
 
-    int    mismatches;                              // chain handle in match
-    double wmismatches;
-    int    N_mismatches;
-    int    w_N_mismatches[PT_POS_TREE_HEIGHT+PT_POS_SECURITY+1];
-
     int reversed;                                   // tell the matcher whether probe is reversed
 
     double *pos_to_weight;                          // position to weight
 
-    int deep;                                       // for probe matching
-    int height;
-    int length;
-    
+    int height;                                     // helper variable; used in design and PT_store_match_in
+
     MostUsedPos abs_pos;
 
     int sort_by;
 
-    char *probe;                                    // probe design + chains
-    char *main_probe;
+    const char *probe;                                    // probe design + chains
+    char       *main_probe;
 
     char      *server_name;                         // name of this server
     aisc_com  *link;

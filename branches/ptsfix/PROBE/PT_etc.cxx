@@ -16,28 +16,6 @@
 #include <struct_man.h>
 #include <arb_strbuf.h>
 
-void set_table_for_PT_N_mis(int ignored_Nmismatches, int when_less_than_Nmismatches) {
-    // calculate table for PT_N mismatches
-    // 
-    // 'ignored_Nmismatches' specifies, how many N-mismatches will be accepted as
-    // matches, when overall number of N-mismatches is below 'when_less_than_Nmismatches'.
-    //
-    // above that limit, every N-mismatch counts as mismatch
-
-    if ((when_less_than_Nmismatches-1)>PT_POS_TREE_HEIGHT) when_less_than_Nmismatches = PT_POS_TREE_HEIGHT+1;
-    if (ignored_Nmismatches >= when_less_than_Nmismatches) ignored_Nmismatches = when_less_than_Nmismatches-1;
-
-    psg.w_N_mismatches[0] = 0;
-    int mm;
-    for (mm = 1; mm<when_less_than_Nmismatches; ++mm) {
-        psg.w_N_mismatches[mm] = mm>ignored_Nmismatches ? mm-ignored_Nmismatches : 0;
-    }
-    pt_assert(mm <= (PT_POS_TREE_HEIGHT+1));
-    for (; mm <= PT_POS_TREE_HEIGHT; ++mm) {
-        psg.w_N_mismatches[mm] = mm;
-    }
-}
-
 void pt_export_error(PT_local *locs, const char *error) {
     freedup(locs->ls_error, error);
 }

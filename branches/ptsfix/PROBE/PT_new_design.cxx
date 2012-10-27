@@ -173,7 +173,7 @@ static double ptnd_check_max_bond(PT_local *locs, char base) {
     return locs->bond[(complement-(int)PT_A)*4 + base-(int)PT_A].val;
 }
 
-double ptnd_check_split(PT_local *locs, char *probe, int pos, char ref) {
+double ptnd_check_split(PT_local *locs, const char *probe, int pos, char ref) {
     int    base       = probe[pos];
     int    complement = psg.get_complement(base);
     double max_bind   = locs->bond[(complement-(int)PT_A)*4 + base-(int)PT_A].val;
@@ -194,7 +194,7 @@ struct ptnd_chain_count_mishits {
     int operator()(const DataLoc& probeLoc) {
         // count all mishits for a probe
 
-        char *probe = psg.probe;
+        const char *probe = psg.probe;
         psg.abs_pos.announce(probeLoc.apos);
 
         const probe_input_data& pid = psg.data[probeLoc.name];
@@ -661,9 +661,9 @@ struct ptnd_chain_check_part {
 
     int operator() (const DataLoc& partLoc) {
         if (psg.data[partLoc.name].outside_group()) {
-            char   *probe = psg.probe;
-            double  sbond = ptnd.sum_bonds;
-            double  dt    = ptnd.dt;
+            const char *probe = psg.probe;
+            double      sbond = ptnd.sum_bonds;
+            double      dt    = ptnd.dt;
 
             if (probe) {
                 int    pos    = partLoc.rpos+psg.height;
