@@ -257,6 +257,7 @@ PT_match.o: $(ARBHOME)/INCLUDE/smartptr.h
 PT_match.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_match.o: $(ARBHOME)/INCLUDE/struct_man.h
 PT_match.o: $(ARBHOME)/INCLUDE/test_global.h
+PT_match.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 PT_new_design.o: probe.h
 PT_new_design.o: probe_tree.h
