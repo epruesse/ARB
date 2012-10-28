@@ -23,8 +23,59 @@
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_probematch *match)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(match)); }
 
-class MatchRequest;
+class MismatchWeights {
+    const PT_bond *bonds;
+    double weight[PT_B_MAX][PT_B_MAX];
 
+    double get_simple_wmismatch(char probe, char seq) {
+        pt_assert(is_std_base(probe));
+        pt_assert(is_std_base(seq));
+
+        int complement = psg.get_complement(probe);
+
+        int rowIdx = (complement-int(PT_A))*4;
+        int maxIdx = rowIdx + probe-(int)PT_A;
+        int newIdx = rowIdx + seq-(int)PT_A;
+
+        pt_assert(maxIdx >= 0 && maxIdx < 16);
+        pt_assert(newIdx >= 0 && newIdx < 16);
+
+        double max_bind = bonds[maxIdx].val;
+        double new_bind = bonds[newIdx].val;
+
+        return (max_bind - new_bind);
+    }
+
+    void init() {
+        for (int probe = PT_A; probe < PT_B_MAX; ++probe) {
+            double sum = 0.0;
+            for (int seq = PT_A; seq < PT_B_MAX; ++seq) {
+                sum += weight[probe][seq] = get_simple_wmismatch(probe, seq);
+            }
+            weight[probe][PT_N] = sum/4.0;
+        }
+        for (int seq = PT_N; seq < PT_B_MAX; ++seq) {
+            double sum = 0.0;
+            for (int probe = PT_A; probe < PT_B_MAX; ++probe) {
+                sum += weight[probe][seq];
+            }
+            weight[PT_N][seq] = sum/4.0;
+        }
+
+        for (int i = PT_N; i<PT_B_MAX; ++i) {
+            weight[PT_QU][i] = weight[PT_N][i];
+            weight[i][PT_QU] = weight[i][PT_N];
+        }
+        weight[PT_QU][PT_QU] = weight[PT_N][PT_N];
+    }
+
+public:
+    MismatchWeights(const PT_bond *bonds_) : bonds(bonds_) { init(); }
+    double get(int probe, int seq) const { return weight[probe][seq]; }
+};
+
+
+class MatchRequest;
 class Mismatches {
     MatchRequest& req;
 
@@ -51,9 +102,11 @@ public:
     inline PT_local& get_PT_local() const;
 };
 
+
 class MatchRequest {
-    PT_local& pt_local;
-    int       accepted_N_mismatches[PT_POS_TREE_HEIGHT+PT_POS_SECURITY+1];
+    PT_local&       pt_local;
+    int             accepted_N_mismatches[PT_POS_TREE_HEIGHT+PT_POS_SECURITY+1];
+    MismatchWeights weights;
 
     void init_accepted_N_mismatches(int ignored_Nmismatches, int when_less_than_Nmismatches);
 
@@ -62,6 +115,7 @@ public:
 
     explicit MatchRequest(PT_local& locs)
         : pt_local(locs),
+          weights(locs.bond),
           global_mismatch(*this)
     {
         init_accepted_N_mismatches(pt_local.pm_nmatches_ignored, pt_local.pm_nmatches_limit);
@@ -83,7 +137,10 @@ public:
     int collect_matches_for(const char *probe, POS_TREE *pt, const Mismatches& mismatch, int height);
 
     int allowed_mismatches() const { return pt_local.pm_max; }
+    double get_mismatch_weight(char probe, char seq) const { return weights.get(probe, seq); }
 };
+
+
 
 void MatchRequest::init_accepted_N_mismatches(int ignored_Nmismatches, int when_less_than_Nmismatches) {
     // calculate table for PT_N mismatches
@@ -107,59 +164,17 @@ void MatchRequest::init_accepted_N_mismatches(int ignored_Nmismatches, int when_
     }
 }
 
-static double get_simple_wmismatch(const PT_bond *bond, char probe, char seq) {
-    pt_assert(is_std_base(probe));
-    pt_assert(is_std_base(seq));
-
-    int complement = psg.get_complement(probe);
-
-    int rowIdx = (complement-int(PT_A))*4;
-    int maxIdx = rowIdx + probe-(int)PT_A;
-    int newIdx = rowIdx + seq-(int)PT_A;
-
-    pt_assert(maxIdx >= 0 && maxIdx < 16);
-    pt_assert(newIdx >= 0 && newIdx < 16);
-
-    double max_bind = bond[maxIdx].val;
-    double new_bind = bond[newIdx].val;
-
-    return (max_bind - new_bind);
-}
-
-static double get_weighted_N_mismatch_2nd(const PT_bond *bonds, char probe, char seq) {
-    pt_assert(is_std_base(probe));
-    if (is_std_base(seq)) {
-        return get_simple_wmismatch(bonds, probe, seq);
-    }
-    double sum = 0.0;
-    for (char s = PT_A; s <= PT_T; ++s) {
-        sum += get_weighted_N_mismatch_2nd(bonds, probe, s);
-    }
-    return sum/4.0;
-}
-
-static double get_weighted_N_mismatch(const PT_bond *bonds, char probe, char seq) {
-    if (is_std_base(probe)) {
-        return get_weighted_N_mismatch_2nd(bonds, probe, seq);
-    }
-    double sum = 0.0;
-    for (char p = PT_A; p <= PT_T; ++p) {
-        sum += get_weighted_N_mismatch_2nd(bonds, p, seq);
-    }
-    return sum/4.0;
-}
-
 inline void Mismatches::add_plain(char probe, char seq, int height) {
     pt_assert(is_std_base(probe) && is_std_base(seq));
     pt_assert(probe != seq);
     plain++;
-    weighted += get_simple_wmismatch(get_PT_local().bond, probe, seq) * psg.pos_to_weight[height];
+    weighted += req.get_mismatch_weight(probe, seq) * psg.pos_to_weight[height];
 }
 
 inline void Mismatches::add_ambig(char probe, char seq, int height) {
     pt_assert(!is_std_base(probe) || !is_std_base(seq));
     ambig++;
-    weighted += get_weighted_N_mismatch(get_PT_local().bond, probe, seq) * psg.pos_to_weight[height];
+    weighted += req.get_mismatch_weight(probe, seq) * psg.pos_to_weight[height];
 }
 
 inline bool Mismatches::too_many() const {
@@ -847,8 +862,7 @@ struct EnterStage3 {
     }
 };
 
-#define TEST_SIMPLE_WEIGHTED_MISMATCH(probe,seq,expected) TEST_ASSERT_SIMILAR(get_simple_wmismatch(bonds,probe,seq), expected, EPS)
-#define TEST_AMBIG__WEIGHTED_MISMATCH(probe,seq,expected) TEST_ASSERT_SIMILAR(get_weighted_N_mismatch(bonds,probe,seq), expected, EPS)
+#define TEST_WEIGHTED_MISMATCH(probe,seq,expected) TEST_ASSERT_SIMILAR(weights.get(probe,seq), expected, EPS)
 
 void TEST_weighted_mismatches() {
     EnterStage3 stage3;
@@ -859,44 +873,49 @@ void TEST_weighted_mismatches() {
         { 1.1 }, { 0.0 }, { 0.9 }, { 0.0 },
     };
 
+    MismatchWeights weights(bonds);
+
     double EPS = 0.0001;
 
-    TEST_SIMPLE_WEIGHTED_MISMATCH(PT_A, PT_A, 0.0);
-    TEST_SIMPLE_WEIGHTED_MISMATCH(PT_A, PT_C, 1.1); // (T~A = 1.1) - (T~C = 0)
-    TEST_SIMPLE_WEIGHTED_MISMATCH(PT_A, PT_G, 0.2); // (T~A = 1.1) - (T~G = 0.9)
-    TEST_SIMPLE_WEIGHTED_MISMATCH(PT_A, PT_T, 1.1);
+    TEST_WEIGHTED_MISMATCH(PT_A, PT_A, 0.0);
+    TEST_WEIGHTED_MISMATCH(PT_A, PT_C, 1.1); // (T~A = 1.1) - (T~C = 0)
+    TEST_WEIGHTED_MISMATCH(PT_A, PT_G, 0.2); // (T~A = 1.1) - (T~G = 0.9)
+    TEST_WEIGHTED_MISMATCH(PT_A, PT_T, 1.1);
 
-    TEST_SIMPLE_WEIGHTED_MISMATCH(PT_C, PT_A, 1.0);
-    TEST_SIMPLE_WEIGHTED_MISMATCH(PT_C, PT_C, 0.0);
-    TEST_SIMPLE_WEIGHTED_MISMATCH(PT_C, PT_G, 1.1);
-    TEST_SIMPLE_WEIGHTED_MISMATCH(PT_C, PT_T, 0.6); // (G~C = 1.5) - (G~T = 0.9)
+    TEST_WEIGHTED_MISMATCH(PT_C, PT_A, 1.0);
+    TEST_WEIGHTED_MISMATCH(PT_C, PT_C, 0.0);
+    TEST_WEIGHTED_MISMATCH(PT_C, PT_G, 1.1);
+    TEST_WEIGHTED_MISMATCH(PT_C, PT_T, 0.6); // (G~C = 1.5) - (G~T = 0.9)
 
-    TEST_SIMPLE_WEIGHTED_MISMATCH(PT_G, PT_A, 1.5);
-    TEST_SIMPLE_WEIGHTED_MISMATCH(PT_G, PT_C, 1.5);
-    TEST_SIMPLE_WEIGHTED_MISMATCH(PT_G, PT_G, 0.0);
-    TEST_SIMPLE_WEIGHTED_MISMATCH(PT_G, PT_T, 1.5);
+    TEST_WEIGHTED_MISMATCH(PT_G, PT_A, 1.5);
+    TEST_WEIGHTED_MISMATCH(PT_G, PT_C, 1.5);
+    TEST_WEIGHTED_MISMATCH(PT_G, PT_G, 0.0);
+    TEST_WEIGHTED_MISMATCH(PT_G, PT_T, 1.5);
 
-    TEST_SIMPLE_WEIGHTED_MISMATCH(PT_T, PT_A, 1.1);
-    TEST_SIMPLE_WEIGHTED_MISMATCH(PT_T, PT_C, 1.1);
-    TEST_SIMPLE_WEIGHTED_MISMATCH(PT_T, PT_G, 0.6);
-    TEST_SIMPLE_WEIGHTED_MISMATCH(PT_T, PT_T, 0.0);
+    TEST_WEIGHTED_MISMATCH(PT_T, PT_A, 1.1);
+    TEST_WEIGHTED_MISMATCH(PT_T, PT_C, 1.1);
+    TEST_WEIGHTED_MISMATCH(PT_T, PT_G, 0.6);
+    TEST_WEIGHTED_MISMATCH(PT_T, PT_T, 0.0);
 
 
-    TEST_AMBIG__WEIGHTED_MISMATCH(PT_N, PT_A, 0.9);
-    TEST_AMBIG__WEIGHTED_MISMATCH(PT_N, PT_C, 0.925);
-    TEST_AMBIG__WEIGHTED_MISMATCH(PT_N, PT_G, 0.475);
-    TEST_AMBIG__WEIGHTED_MISMATCH(PT_N, PT_T, 0.8);
+    TEST_WEIGHTED_MISMATCH(PT_N, PT_A, 0.9);
+    TEST_WEIGHTED_MISMATCH(PT_N, PT_C, 0.925);
+    TEST_WEIGHTED_MISMATCH(PT_N, PT_G, 0.475);
+    TEST_WEIGHTED_MISMATCH(PT_N, PT_T, 0.8);
 
-    TEST_AMBIG__WEIGHTED_MISMATCH(PT_A, PT_N, 0.6);
-    TEST_AMBIG__WEIGHTED_MISMATCH(PT_C, PT_N, 0.675);
-    TEST_AMBIG__WEIGHTED_MISMATCH(PT_G, PT_N, 1.125);
-    TEST_AMBIG__WEIGHTED_MISMATCH(PT_T, PT_N, 0.7);
+    TEST_WEIGHTED_MISMATCH(PT_A, PT_N, 0.6);
+    TEST_WEIGHTED_MISMATCH(PT_C, PT_N, 0.675);
+    TEST_WEIGHTED_MISMATCH(PT_G, PT_N, 1.125);
+    TEST_WEIGHTED_MISMATCH(PT_T, PT_N, 0.7);
 
-    TEST_AMBIG__WEIGHTED_MISMATCH(PT_N, PT_N, 0.775);
+    TEST_WEIGHTED_MISMATCH(PT_N,  PT_N,  0.775);
+    TEST_WEIGHTED_MISMATCH(PT_QU, PT_QU, 0.775);
+    TEST_WEIGHTED_MISMATCH(PT_QU, PT_N,  0.775);
 }
 
 #endif // UNIT_TESTS
 
 // --------------------------------------------------------------------------------
+
 
 
