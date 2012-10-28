@@ -111,12 +111,9 @@ class MatchRequest {
     void init_accepted_N_mismatches(int ignored_Nmismatches, int when_less_than_Nmismatches);
 
 public:
-    Mismatches global_mismatch; // @@@ make private (or better elim when PT_store_match_in is eliminated)
-
     explicit MatchRequest(PT_local& locs)
         : pt_local(locs),
-          weights(locs.bond),
-          global_mismatch(*this)
+          weights(locs.bond)
     {
         init_accepted_N_mismatches(pt_local.pm_nmatches_ignored, pt_local.pm_nmatches_limit);
     }
@@ -132,9 +129,9 @@ public:
     int accept_N_mismatches(int ambig) const { return accepted_N_mismatches[ambig]; }
 
     void add_match(const DataLoc& at, const Mismatches& mismatch);
-    int  add_children_as_matches(POS_TREE *pt);
+    int  add_children_as_matches(POS_TREE *pt, const Mismatches& mismatch);
 
-    int collect_matches_for(const char *probe, POS_TREE *pt, const Mismatches& mismatch, int height);
+    int collect_matches_for(const char *probe, POS_TREE *pt, Mismatches mismatch, int height);
 
     int allowed_mismatches() const { return pt_local.pm_max; }
     double get_mismatch_weight(char probe, char seq) const { return weights.get(probe, seq); }
@@ -207,53 +204,7 @@ void MatchRequest::add_match(const DataLoc& at, const Mismatches& mismatch) {
     aisc_link(&get_PT_local().ppm, ml);
 }
 
-struct PT_store_match_in { // @@@ inline; use ChainIterator instead
-    MatchRequest& req;
-
-    PT_store_match_in(MatchRequest& req_) : req(req_) {}
-
-    int operator()(const DataLoc& matchLoc) {
-        // if chain is reached copy data in locs structure
-
-        Mismatches mismatch = req.global_mismatch;
-
-        const char *probe = psg.probe;
-        if (probe) {
-            // @@@ code here is a duplicate of code in collect_matches_for (PT_NT_LEAF-branch)
-            int pos    = matchLoc.rpos+psg.height;
-            int height = psg.height;
-            int base, ref;
-
-            while ((base=probe[height]) && (ref = psg.data[matchLoc.name].get_data()[pos])) {
-                pt_assert(base != PT_QU && ref != PT_QU); // both impl by loop-condition
-
-                if (ref == PT_N || base == PT_N) {
-                    mismatch.add_ambig(base, ref, height);
-                }
-                else if (ref != base) {
-                    mismatch.add_plain(base, ref, height);
-                }
-                height++;
-                pos++;
-            }
-
-            pt_assert(base == PT_QU || ref == PT_QU);
-
-            while ((base = probe[height])) {
-                mismatch.add_ambig(base, ref, height);
-                height++;
-            }
-            if (mismatch.too_many()) return 0;
-        }
-
-        if (req.hit_limit_reached()) return 1;
-
-        req.add_match(matchLoc, mismatch);
-        return 0;
-    }
-};
-
-int MatchRequest::add_children_as_matches(POS_TREE *pt) {
+int MatchRequest::add_children_as_matches(POS_TREE *pt, const Mismatches& mismatch) {
     //! go down the tree to chains and leafs; copy names, positions and mismatches in locs structure
 
     int error = 0;
@@ -264,17 +215,21 @@ int MatchRequest::add_children_as_matches(POS_TREE *pt) {
         else {
             switch (PT_read_type(pt)) {
                 case PT_NT_LEAF:
-                    add_match(DataLoc(pt), global_mismatch);
+                    add_match(DataLoc(pt), mismatch);
                     break;
 
-                case PT_NT_CHAIN:
-                    psg.probe = 0;
-                    if (PT_forwhole_chain(pt, PT_store_match_in(*this))) error = 1;
+                case PT_NT_CHAIN: {
+                    ChainIterator entry(pt);
+                    while (entry && !error) {
+                        add_match(entry.at(), mismatch);
+                        error = hit_limit_reached();
+                        ++entry;
+                    }
                     break;
-
+                }
                 case PT_NT_NODE:
                     for (int base = PT_QU; base < PT_B_MAX && !error; base++) {
-                        error = add_children_as_matches(PT_read_son(pt, (PT_BASES)base));
+                        error = add_children_as_matches(PT_read_son(pt, (PT_BASES)base), mismatch);
                     }
                     break;
 
@@ -287,8 +242,10 @@ int MatchRequest::add_children_as_matches(POS_TREE *pt) {
     return error;
 }
 
-int MatchRequest::collect_matches_for(const char *probe, POS_TREE *pt, const Mismatches& mismatch, int height) {
+int MatchRequest::collect_matches_for(const char *probe, POS_TREE *pt, Mismatches mismatch, int height) {
     //! search down the tree to find matching species for the given probe
+
+    // @@@ DRY code below
 
     if (!pt) return 0;
     if (mismatch.too_many()) return 0;
@@ -315,12 +272,8 @@ int MatchRequest::collect_matches_for(const char *probe, POS_TREE *pt, const Mis
         return 0;
     }
 
-    global_mismatch = mismatch;
-
     if (probe[height]) {
         if (PT_read_type(pt) == PT_NT_LEAF) {
-            // @@@ code here is duplicate of code in PT_store_match_in::operator()
-
             DataLoc loc(pt);
             int pos  = loc.rpos + height;
             int name = loc.name;
@@ -336,10 +289,10 @@ int MatchRequest::collect_matches_for(const char *probe, POS_TREE *pt, const Mis
                 pt_assert(base != PT_QU); // impl by loop
 
                 if (i == PT_N || base == PT_N || i == PT_QU) {
-                    global_mismatch.add_ambig(base, i, height);
+                    mismatch.add_ambig(base, i, height);
                 }
                 else if (i != base) {
-                    global_mismatch.add_plain(base, i, height);
+                    mismatch.add_plain(base, i, height);
                 }
 #if defined(DEVEL_RALF)
                 pt_assert(i != PT_QU); // case not covered
@@ -347,16 +300,57 @@ int MatchRequest::collect_matches_for(const char *probe, POS_TREE *pt, const Mis
                 if (i != PT_QU) pos++; // dot reached -> act like sequence ends here
                 height++;
             }
+            if (mismatch.too_many()) return 0;
         }
-        else {                // chain
-            psg.probe  = probe;
-            psg.height = height;
-            PT_forwhole_chain(pt, PT_store_match_in(*this)); // @@@ why ignore result
-            return 0;
+        else {
+            pt_assert(PT_read_type(pt) == PT_NT_CHAIN);
+
+            ChainIterator entry(pt);
+            int           error = 0;
+            while (entry && !error) {
+                Mismatches     entry_mismatch(mismatch);
+                const char    *entry_probe  = probe;
+                const DataLoc  entry_loc    = entry.at();
+                int            entry_height = height;
+
+                pt_assert(entry_probe);
+                int pos = entry_loc.rpos + entry_height;
+                int base, ref;
+
+                while ((base = entry_probe[entry_height]) && (ref = psg.data[entry_loc.name].get_data()[pos])) {
+                    pt_assert(base != PT_QU && ref != PT_QU); // both impl by loop-condition
+
+                    if (ref == PT_N || base == PT_N) {
+                        entry_mismatch.add_ambig(base, ref, entry_height);
+                    }
+                    else if (ref != base) {
+                        entry_mismatch.add_plain(base, ref, entry_height);
+                    }
+                    entry_height++;
+                    pos++;
+                }
+
+                pt_assert(base == PT_QU || ref == PT_QU);
+                while ((base = entry_probe[entry_height])) {
+                    entry_mismatch.add_ambig(base, ref, entry_height);
+                    entry_height++;
+                }
+
+                if (!entry_mismatch.too_many()) {
+                    if (hit_limit_reached()) {
+                        error = 1;
+                    }
+                    else {
+                        add_match(entry_loc, entry_mismatch);
+                    }
+                }
+
+                ++entry;
+            }
+            return error;
         }
-        if (global_mismatch.too_many()) return 0;
     }
-    return add_children_as_matches(pt);
+    return add_children_as_matches(pt, mismatch);
 }
 
 static int pt_sort_compare_match(const void *PT_probematch_ptr1, const void *PT_probematch_ptr2, void *) {

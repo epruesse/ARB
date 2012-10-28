@@ -288,13 +288,13 @@ public:
 
     double *pos_to_weight;                          // position to weight
 
-    int height;                                     // helper variable; used in design and PT_store_match_in
+    int height;                                     // used in PT_forwhole_chain callbacks (design+debug)
 
     MostUsedPos abs_pos;
 
     int sort_by;
 
-    const char *probe;                                    // probe design + chains
+    const char *probe;                              // used in PT_forwhole_chain callbacks (design)
     char       *main_probe;
 
     char      *server_name;                         // name of this server
