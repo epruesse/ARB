@@ -1033,6 +1033,45 @@ void TEST_SLOW_match_probe() {
         arguments[2] = "matchmismatches=2"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd2);
     }
 
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "matchsequence=GAGCGGUCAG", // similar to a region where dots occur in seqdata (@@@ they do report hits)
+            NULL, // matchmismatches
+            "matchacceptN=0",
+            "matchlimitN=4",
+        };
+
+        CCP expectd0 = "";
+
+        CCP expectd1 = "    name---- fullname mis N_mis wmis pos ecoli rev          'GAGCGGUCAG'\1"
+            "BcSSSS00\1" "  BcSSSS00            1     0  1.1  25    21 0   GAUCAAGUC-======A===-AUGGGAGCU\1";
+
+        CCP expectd2 = "    name---- fullname mis N_mis wmis pos ecoli rev          'GAGCGGUCAG'\1"
+            "BcSSSS00\1" "  BcSSSS00            1     0  1.1  25    21 0   GAUCAAGUC-======A===-AUGGGAGCU\1"
+            "Bl0LLL00\1" "  Bl0LLL00            2     0  2.2  25    21 0   GAUCAAGUC-======A=C=-ACGGGAGCU\1";
+
+        CCP expectd3 = "    name---- fullname mis N_mis wmis pos ecoli rev          'GAGCGGUCAG'\1"
+            "BcSSSS00\1" "  BcSSSS00            1     0  1.1  25    21 0   GAUCAAGUC-======A===-AUGGGAGCU\1"
+            "Bl0LLL00\1" "  Bl0LLL00            2     0  2.2  25    21 0   GAUCAAGUC-======A=C=-ACGGGAGCU\1"
+            "VbrFurni\1" "  VbrFurni            3     0  2.4  68    60 0   GGAUUUGUU-=g====CG==-CGGCGGACG\1"
+            "FrhhPhil\1" "  FrhhPhil            3     0  2.8  82    70 0   ACGAGUGGC-=gA===C===-UUGGAAACG\1"
+            "ClfPerfr\1" "  ClfPerfr            3     0  3.2  86    74 0   CGGCGGGAC-=g==CU====-AACCUGCGG\1"
+            "HllHalod\1" "  HllHalod            3     0  3.6  25    21 0   GAUCAAGUC-======Aa=C-GAUGGAAGC\1"
+            "DlcTolu2\1" "  DlcTolu2            3     0  3.6  95    83 0   GGACUGCCC-==Aa==A===-CUAAUACCG\1"
+            "FrhhPhil\1" "  FrhhPhil            3     0  4.0  25    21 0   GAUCAAGUC-==A====a=C-AGGUCUUCG\1"
+            "AclPleur\1" "  AclPleur            3     0  4.0  29    24 0   GAUCAAGUC-==A====a=C-GGGAAGGGA\1"
+            "ClnCorin\1" "  ClnCorin            3     0  4.1  25    21 0   GAUCAAGUC-=====A=G=A-GUUCCUUCG\1"
+            "CltBotul\1" "  CltBotul            3     0  4.1  25    21 0   .AUCAAGUC-=====A=G=A-GCUUCUUCG\1"
+            "CPPParap\1" "  CPPParap            3     0  4.1  25    21 0   GAUCAAGUC-=====A=G=A-GUUCCUUCG\1"
+            "ClfPerfr\1" "  ClfPerfr            3     0  4.1  25    21 0   GAUCAAGUC-=====A=G=A-GUUUCCUUC\1"
+            "DlcTolu2\1" "  DlcTolu2            3     0  4.1 157   143 0   GUAGCCGUU-===GAA====-CGGCUGGAU\1";
+
+        arguments[2] = "matchmismatches=0"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
+        arguments[2] = "matchmismatches=1"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd1);
+        arguments[2] = "matchmismatches=2"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd2);
+        arguments[2] = "matchmismatches=3"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd3);
+    }
     // --------------------------
     //      truncate results
 
