@@ -251,18 +251,10 @@ bool MatchRequest::collect_matches_for(const char *probe, POS_TREE *pt, Mismatch
                 int pos  = loc.rpos + height;
                 int name = loc.name;
 
-                // @@@ recursive use of strlen with constant result (argh!)
-                if (pos + (int)(strlen(probe+height)) >= psg.data[name].get_size())       // end of sequence
-                    return 0;
-
                 int base;
                 while ((base = probe[height])) {
-                    int i = psg.data[name].get_data()[pos]; // @@@ may run beyond end of data
+                    int i = psg.data[name].get_data()[pos];
                     mismatch.count(base, i, height);
-
-#if defined(DEVEL_RALF)
-                    pt_assert(i != PT_QU); // case not covered
-#endif
                     if (i != PT_QU) pos++; // dot reached -> act like sequence ends here
                     height++;
                 }

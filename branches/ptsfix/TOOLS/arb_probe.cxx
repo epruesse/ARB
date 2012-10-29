@@ -638,6 +638,8 @@ static int test_setup(bool use_gene_ptserver) {
 typedef const char *CCP;
 
 void TEST_SLOW_match_geneprobe() {
+    // test here runs versus database ../UNIT_TESTER/run/TEST_gpt_src.arb
+
     bool use_gene_ptserver = true;
     {
         const char *arguments[] = {
@@ -748,6 +750,8 @@ void TEST_SLOW_match_geneprobe() {
 }
 
 void TEST_SLOW_match_probe() {
+    // test here runs versus database ../UNIT_TESTER/run/TEST_pt_src.arb
+
     bool use_gene_ptserver = false;
     {
         const char *arguments[] = {
@@ -831,7 +835,8 @@ void TEST_SLOW_match_probe() {
             "AclPleur\1" "  AclPleur            1     1  1.8 175   161 0   GCGGUUGGA-==========A.-\1"
             "PtVVVulg\1" "  PtVVVulg            1     1  1.8 175   161 0   GCGGUUGGA-==========A.-\1"
             "DlcTolu2\1" "  DlcTolu2            1     2  1.4 175   161 0   GCGGCUGGA-==========NN-N.\1"
-            "ClfPerfr\1" "  ClfPerfr            2     0  2.2 175   161 0   AAGAUUAAU-A=C=========-U.\1";
+            "ClfPerfr\1" "  ClfPerfr            2     0  2.2 175   161 0   AAGAUUAAU-A=C=========-U.\1"
+            "LgtLytic\1" "  LgtLytic            2     3  2.1 175   161 0   GCGGCUGGA-=========N..-\1";
 
         arguments[2] = "matchmismatches=0"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
         arguments[2] = "matchmismatches=1"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd1);
@@ -858,6 +863,7 @@ void TEST_SLOW_match_probe() {
             "DlcTolu2\1" "  DlcTolu2            1     2  0.6 175   161 0   GCGGCUGGA-==========NN-N.\1"
             "AclPleur\1" "  AclPleur            1     1  0.9 175   161 0   GCGGUUGGA-==========A.-\1"
             "PtVVVulg\1" "  PtVVVulg            1     1  0.9 175   161 0   GCGGUUGGA-==========A.-\1"
+            "LgtLytic\1" "  LgtLytic            2     3  1.3 175   161 0   GCGGCUGGA-=========N..-\1"
             "ClfPerfr\1" "  ClfPerfr            2     0  1.3 175   161 0   AAGAUUAAU-A=C=========-U.\1";
 
         CCP expectd2 = "    name---- fullname mis N_mis wmis pos ecoli rev          'UCACCUCCUUUC'\1"
@@ -867,6 +873,7 @@ void TEST_SLOW_match_probe() {
             "DlcTolu2\1" "  DlcTolu2            1     2  0.6 175   161 0   GCGGCUGGA-==========NN-N.\1"
             "AclPleur\1" "  AclPleur            1     1  0.9 175   161 0   GCGGUUGGA-==========A.-\1"
             "PtVVVulg\1" "  PtVVVulg            1     1  0.9 175   161 0   GCGGUUGGA-==========A.-\1"
+            "LgtLytic\1" "  LgtLytic            2     3  1.3 175   161 0   GCGGCUGGA-=========N..-\1"
             "ClfPerfr\1" "  ClfPerfr            2     0  1.3 175   161 0   AAGAUUAAU-A=C=========-U.\1"
             "AclPleur\1" "  AclPleur            5     0  2.4  50    45 0   GAAGGGAGC-=ug=u=u====G-CCGACGAGU\1"
             "PtVVVulg\1" "  PtVVVulg            5     0  2.4  50    45 0   GGAGAAAGC-=ug=u=u===g=-UGACGAGCG\1";
@@ -964,7 +971,8 @@ void TEST_SLOW_match_probe() {
             "PbrPropi\1" "  PbrPropi            2     2  1.4 175   161 0   GCGGCUGGA-===========NN-.\1"
             "AclPleur\1" "  AclPleur            3     2  2.5 175   161 0   GCGGUUGGA-==========A..-\1"
             "PtVVVulg\1" "  PtVVVulg            3     2  2.5 175   161 0   GCGGUUGGA-==========A..-\1"
-            "DlcTolu2\1" "  DlcTolu2            3     3  2.1 175   161 0   GCGGCUGGA-==========NNN-.\1";
+            "DlcTolu2\1" "  DlcTolu2            3     3  2.1 175   161 0   GCGGCUGGA-==========NNN-.\1"
+            "LgtLytic\1" "  LgtLytic            4     4  2.8 175   161 0   GCGGCUGGA-=========N...-\1";
 
         CCP expectd5 = "    name---- fullname mis N_mis wmis pos ecoli rev          'UCACCUCCUUUCU'\1"
             "BcSSSS00\1" "  BcSSSS00            0     0  0.0 175   161 0   GCGGCUGGA-=============-.\1"
@@ -974,6 +982,7 @@ void TEST_SLOW_match_probe() {
             "AclPleur\1" "  AclPleur            3     2  2.5 175   161 0   GCGGUUGGA-==========A..-\1"
             "PtVVVulg\1" "  PtVVVulg            3     2  2.5 175   161 0   GCGGUUGGA-==========A..-\1"
             "DlcTolu2\1" "  DlcTolu2            3     3  2.1 175   161 0   GCGGCUGGA-==========NNN-.\1"
+            "LgtLytic\1" "  LgtLytic            4     4  2.8 175   161 0   GCGGCUGGA-=========N...-\1"
             "PtVVVulg\1" "  PtVVVulg            5     0  2.6  50    45 0   GGAGAAAGC-=ug=u=u===g==-GACGAGCGG\1"
             "AclPleur\1" "  AclPleur            5     0  3.5  46    41 0   ACGGGAAGG-gag=u=G======-UUGCCGACG\1"
             "PtVVVulg\1" "  PtVVVulg            5     0  4.0  45    40 0   ...AGGAGA-Aag=u=G======-UGCUGACGA\1"
@@ -1095,6 +1104,8 @@ static char *extract_locations(const char *probe_design_result) {
 }
 
 void TEST_SLOW_design_probe() {
+    // test here runs versus database ../UNIT_TESTER/run/TEST_pt_src.arb
+
     bool use_gene_ptserver = false;
     const char *arguments[] = {
         "prgnamefake",
@@ -1146,10 +1157,12 @@ void TEST_SLOW_design_probe() {
 }
 
 void TEST_SLOW_match_designed_probe() {
+    // test here runs versus database ../UNIT_TESTER/run/TEST_pt_src.arb
+
     bool use_gene_ptserver = false;
     const char *arguments[] = {
-        "prgnamefake", 
-        "matchsequence=UCAAGUCGAGCGAUGAAG", 
+        "prgnamefake",
+        "matchsequence=UCAAGUCGAGCGAUGAAG",
     };
     CCP expected = "    name---- fullname mis N_mis wmis pos ecoli rev          'UCAAGUCGAGCGAUGAAG'\1"
         "ClnCorin\1" "  ClnCorin            0     0  0.0  18    17 0   .GAGUUUGA-==================-UUCCUUCGG\1"
@@ -1161,6 +1174,8 @@ void TEST_SLOW_match_designed_probe() {
 }
 
 void TEST_SLOW_get_existing_probes() {
+    // test here runs versus database ../UNIT_TESTER/run/TEST_pt_src.arb
+
     bool use_gene_ptserver = false;
     {
         const char *arguments[] = {
