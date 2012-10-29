@@ -92,7 +92,7 @@ public:
 
     inline void count(char probe, char seq, int height);
 
-    inline bool too_many() const;
+    inline bool accepted() const;
 
     int get_plain() const { return plain; }
     int get_ambig() const { return ambig; }
@@ -128,9 +128,9 @@ public:
 
     int accept_N_mismatches(int ambig) const { return accepted_N_mismatches[ambig]; }
 
-    bool add_match(const DataLoc& at, const Mismatches& mismatch);
-    bool add_children_as_matches(POS_TREE *pt, const Mismatches& mismatch);
-    bool collect_matches_for(const char *probe, POS_TREE *pt, Mismatches& mismatch, int height);
+    bool add_hit(const DataLoc& at, const Mismatches& mismatch);
+    bool add_hits_for_children(POS_TREE *pt, const Mismatches& mismatch);
+    bool collect_hits_for(const char *probe, POS_TREE *pt, Mismatches& mismatch, int height);
 
     int allowed_mismatches() const { return pt_local.pm_max; }
     double get_mismatch_weight(char probe, char seq) const { return weights.get(probe, seq); }
@@ -168,19 +168,19 @@ inline void Mismatches::count(char probe, char seq, int height) {
     }
 }
 
-inline bool Mismatches::too_many() const {
+inline bool Mismatches::accepted() const {
     pt_assert(ambig <= PT_POS_TREE_HEIGHT);
     if (get_PT_local().sort_by == PT_MATCH_TYPE_INTEGER) {
-        return (req.accept_N_mismatches(ambig)+plain) > req.allowed_mismatches();
+        return (req.accept_N_mismatches(ambig)+plain) <= req.allowed_mismatches();
     }
-    return weighted > (req.allowed_mismatches()+0.5);
+    return weighted <= (req.allowed_mismatches()+0.5);
 }
 
 inline PT_local& Mismatches::get_PT_local() const {
     return req.get_PT_local();
 }
 
-bool MatchRequest::add_match(const DataLoc& at, const Mismatches& mismatch) {
+bool MatchRequest::add_hit(const DataLoc& at, const Mismatches& mismatch) {
     PT_probematch *ml = create_PT_probematch();
 
     ml->name  = at.name;
@@ -200,21 +200,22 @@ bool MatchRequest::add_match(const DataLoc& at, const Mismatches& mismatch) {
     return hit_limit_reached();
 }
 
-bool MatchRequest::add_children_as_matches(POS_TREE *pt, const Mismatches& mismatch) {
+bool MatchRequest::add_hits_for_children(POS_TREE *pt, const Mismatches& mismatch) {
     //! go down the tree to chains and leafs; copy names, positions and mismatches in locs structure
-    pt_assert(pt && !mismatch.too_many()); // invalid call
+
+    pt_assert(pt && mismatch.accepted()); // invalid or superfluous call
     pt_assert(!hit_limit_reached());
 
     bool enough = false;
     switch (PT_read_type(pt)) {
         case PT_NT_LEAF:
-            enough = add_match(DataLoc(pt), mismatch);
+            enough = add_hit(DataLoc(pt), mismatch);
             break;
 
         case PT_NT_CHAIN: {
             ChainIterator entry(pt);
             while (entry && !enough) {
-                enough = add_match(entry.at(), mismatch);
+                enough = add_hit(entry.at(), mismatch);
                 ++entry;
             }
             break;
@@ -222,7 +223,7 @@ bool MatchRequest::add_children_as_matches(POS_TREE *pt, const Mismatches& misma
         case PT_NT_NODE:
             for (int base = PT_QU; base < PT_B_MAX && !enough; base++) {
                 POS_TREE *son  = PT_read_son(pt, (PT_BASES)base);
-                if (son) enough = add_children_as_matches(son, mismatch);
+                if (son) enough = add_hits_for_children(son, mismatch);
             }
             break;
 
@@ -231,16 +232,17 @@ bool MatchRequest::add_children_as_matches(POS_TREE *pt, const Mismatches& misma
     return enough;
 }
 
-bool MatchRequest::collect_matches_for(const char *probe, POS_TREE *pt, Mismatches& mismatch, int height) {
+bool MatchRequest::collect_hits_for(const char *probe, POS_TREE *pt, Mismatches& mismatches, int height) {
     //! search down the tree to find matching species for the given probe
-    pt_assert(pt && !mismatch.too_many()); // superfluous recursive call
+
+    pt_assert(pt && mismatches.accepted()); // invalid or superfluous call
     pt_assert(!hit_limit_reached());
 
     // @@@ DRY code below!
 
     bool enough = false;
     if (probe[height] == PT_QU) {
-        enough = add_children_as_matches(pt, mismatch);
+        enough = add_hits_for_children(pt, mismatches);
     }
     else {
         switch (PT_read_type(pt)) {
@@ -254,12 +256,12 @@ bool MatchRequest::collect_matches_for(const char *probe, POS_TREE *pt, Mismatch
                 int base;
                 while ((base = probe[height])) {
                     int i = psg.data[name].get_data()[pos];
-                    mismatch.count(base, i, height);
+                    mismatches.count(base, i, height);
                     if (i != PT_QU) pos++; // dot reached -> act like sequence ends here
                     height++;
                 }
-                if (!mismatch.too_many()) {
-                    enough = add_children_as_matches(pt, mismatch);
+                if (mismatches.accepted()) {
+                    enough = add_hits_for_children(pt, mismatches);
                 }
                 break;
             }
@@ -267,7 +269,7 @@ bool MatchRequest::collect_matches_for(const char *probe, POS_TREE *pt, Mismatch
                 ChainIterator entry(pt);
 
                 while (entry && !enough) {
-                    Mismatches    entry_mismatch(mismatch);
+                    Mismatches    entry_mismatches(mismatches);
                     const DataLoc entry_loc    = entry.at();
                     int           entry_height = height;
 
@@ -278,7 +280,7 @@ bool MatchRequest::collect_matches_for(const char *probe, POS_TREE *pt, Mismatch
                     int base, ref;
 
                     while ((base = probe[entry_height]) && (ref = psg.data[entry_loc.name].get_data()[pos])) {
-                        entry_mismatch.count(base, ref, entry_height);
+                        entry_mismatches.count(base, ref, entry_height);
                         entry_height++;
                         pos++;
                     }
@@ -288,13 +290,13 @@ bool MatchRequest::collect_matches_for(const char *probe, POS_TREE *pt, Mismatch
                     if (base != PT_QU) { // not end of probe
                         pt_assert(ref == PT_QU);
                         while ((base = probe[entry_height])) {
-                            entry_mismatch.count(base, ref, entry_height); // @@@ this is always ambig
+                            entry_mismatches.count(base, ref, entry_height); // @@@ this is always ambig
                             entry_height++;
                         }
                     }
 
-                    if (!entry_mismatch.too_many()) {
-                        enough = add_match(entry_loc, entry_mismatch);
+                    if (entry_mismatches.accepted()) {
+                        enough = add_hit(entry_loc, entry_mismatches);
                     }
 
                     ++entry;
@@ -305,10 +307,10 @@ bool MatchRequest::collect_matches_for(const char *probe, POS_TREE *pt, Mismatch
                 for (int i=PT_N; i<PT_B_MAX && !enough; i++) {
                     POS_TREE *son = PT_read_son(pt, (PT_BASES)i);
                     if (son) {
-                        Mismatches son_mismatch(mismatch);
-                        son_mismatch.count(probe[height], i, height);
-                        if (!son_mismatch.too_many()) {
-                            enough = collect_matches_for(probe, son, son_mismatch, height+1);
+                        Mismatches son_mismatches(mismatches);
+                        son_mismatches.count(probe[height], i, height);
+                        if (son_mismatches.accepted()) {
+                            enough = collect_hits_for(probe, son, son_mismatches, height+1);
                         }
                     }
                 }
@@ -450,7 +452,7 @@ int probe_match(PT_local * locs, aisc_string probestring) {
 
     pt_assert(req.allowed_mismatches() >= 0); // till [8011] value<0 was used to trigger "new match" (feature unused)
     Mismatches mismatch(req);
-    req.collect_matches_for(probestring, psg.pt, mismatch, 0);
+    req.collect_hits_for(probestring, psg.pt, mismatch, 0);
 
     if (locs->pm_reversed) {
         psg.reversed  = 1;
@@ -459,7 +461,7 @@ int probe_match(PT_local * locs, aisc_string probestring) {
         freeset(locs->pm_csequence, psg.main_probe = strdup(rev_pro));
 
         Mismatches rev_mismatch(req);
-        req.collect_matches_for(rev_pro, psg.pt, rev_mismatch, 0);
+        req.collect_hits_for(rev_pro, psg.pt, rev_mismatch, 0);
         free(rev_pro);
     }
     pt_sort_match_list(locs);
