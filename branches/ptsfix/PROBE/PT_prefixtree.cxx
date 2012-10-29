@@ -21,7 +21,7 @@
 
 struct pt_global PT_GLOBAL;
 
-inline bool locs_in_chain_order(const DataLoc& loc1, const DataLoc& loc2) {
+inline bool locs_in_chain_order(const DataLoc& loc1, const DataLoc& loc2) { 
     pt_assert_stage(STAGE1); // this order is only valid in STAGE1 (STAGE3 has reverse order)
 
     if (loc1.name < loc2.name) {
@@ -47,10 +47,12 @@ inline bool locs_in_chain_order(const DataLoc& loc1, const DataLoc& loc2) {
     return true;
 }
 
-inline bool PT_is_empty_chain(const POS_TREE * const node) {
+#if defined(PTM_DEBUG_VALIDATE_CHAINS)
+inline bool PT_is_empty_chain(const POS_TREE * const node) { 
     pt_assert(PT_read_type(node) == PT_NT_CHAIN);
     return !ChainIterator(node);
 }
+#endif
 
 bool PT_chain_has_valid_entries(const POS_TREE * const node) {
     pt_assert(PT_read_type(node) == PT_NT_CHAIN);
@@ -127,7 +129,9 @@ static void PT_change_link_in_father(POS_TREE *father, POS_TREE *old_link, POS_T
 
 void PT_add_to_chain(POS_TREE *node, const DataLoc& loc) {
     pt_assert_stage(STAGE1);
+#if defined(PTM_DEBUG_VALIDATE_CHAINS)
     pt_assert(PT_is_empty_chain(node) || PT_chain_has_valid_entries(node));
+#endif
 
     // insert at the beginning of list
 
