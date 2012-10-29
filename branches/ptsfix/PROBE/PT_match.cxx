@@ -91,6 +91,7 @@ public:
     DECLARE_ASSIGNMENT_OPERATOR(Mismatches);
 
     inline void count(char probe, char seq, int height);
+    void        count_versus(const DataLoc& loc, const char *probe, int height);
 
     inline bool accepted() const;
 
@@ -232,13 +233,31 @@ bool MatchRequest::add_hits_for_children(POS_TREE *pt, const Mismatches& mismatc
     return enough;
 }
 
+void Mismatches::count_versus(const DataLoc& loc, const char *probe, int height) {
+    int base;
+    while ((base = probe[height])) {
+        int ref = psg.data[loc.name].get_data()[loc.rpos + height];
+        if (ref == PT_QU) break;
+
+        count(base, ref, height);
+        height++;
+    }
+
+    if (base != PT_QU) { // not end of probe
+        pt_assert(psg.data[loc.name].get_data()[loc.rpos + height] == PT_QU); // at EOS
+        do {
+            count(base, PT_QU, height);
+            height++;
+        }
+        while ((base = probe[height]));
+    }
+}
+
 bool MatchRequest::collect_hits_for(const char *probe, POS_TREE *pt, Mismatches& mismatches, int height) {
     //! search down the tree to find matching species for the given probe
 
     pt_assert(pt && mismatches.accepted()); // invalid or superfluous call
     pt_assert(!hit_limit_reached());
-
-    // @@@ DRY code below!
 
     bool enough = false;
     if (probe[height] == PT_QU) {
@@ -247,58 +266,23 @@ bool MatchRequest::collect_hits_for(const char *probe, POS_TREE *pt, Mismatches&
     else {
         switch (PT_read_type(pt)) {
             case PT_NT_LEAF: {
-                // @@@ matches a probe string versus a location (DRY)
-
                 DataLoc loc(pt);
-                int pos  = loc.rpos + height;
-                int name = loc.name;
-
-                int base;
-                while ((base = probe[height])) {
-                    int i = psg.data[name].get_data()[pos];
-                    mismatches.count(base, i, height);
-                    if (i != PT_QU) pos++; // dot reached -> act like sequence ends here
-                    height++;
-                }
+                mismatches.count_versus(loc, probe, height);
                 if (mismatches.accepted()) {
-                    enough = add_hits_for_children(pt, mismatches);
+                    enough = add_hit(loc, mismatches);
                 }
                 break;
             }
             case PT_NT_CHAIN: {
+                pt_assert(probe);
+
                 ChainIterator entry(pt);
-
                 while (entry && !enough) {
-                    Mismatches    entry_mismatches(mismatches);
-                    const DataLoc entry_loc    = entry.at();
-                    int           entry_height = height;
-
-                    // @@@ matches a probe string versus a location (DRY)
-
-                    pt_assert(probe);
-                    int pos = entry_loc.rpos + entry_height;
-                    int base, ref;
-
-                    while ((base = probe[entry_height]) && (ref = psg.data[entry_loc.name].get_data()[pos])) {
-                        entry_mismatches.count(base, ref, entry_height);
-                        entry_height++;
-                        pos++;
-                    }
-
-                    pt_assert(base == PT_QU || ref == PT_QU);
-
-                    if (base != PT_QU) { // not end of probe
-                        pt_assert(ref == PT_QU);
-                        while ((base = probe[entry_height])) {
-                            entry_mismatches.count(base, ref, entry_height); // @@@ this is always ambig
-                            entry_height++;
-                        }
-                    }
-
+                    Mismatches entry_mismatches(mismatches);
+                    entry_mismatches.count_versus(entry.at(), probe, height);
                     if (entry_mismatches.accepted()) {
-                        enough = add_hit(entry_loc, entry_mismatches);
+                        enough = add_hit(entry.at(), entry_mismatches);
                     }
-
                     ++entry;
                 }
                 break;
