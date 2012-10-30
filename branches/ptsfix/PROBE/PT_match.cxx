@@ -90,7 +90,7 @@ public:
     Mismatches(const Mismatches& other) : req(other.req), plain(other.plain), ambig(other.ambig), weighted(other.weighted) {}
     DECLARE_ASSIGNMENT_OPERATOR(Mismatches);
 
-    inline void count(char probe, char seq, int height);
+    inline void count_weighted(char probe, char seq, int height);
     void        count_versus(const DataLoc& loc, const char *probe, int height);
 
     inline bool accepted() const;
@@ -161,7 +161,7 @@ void MatchRequest::init_accepted_N_mismatches(int ignored_Nmismatches, int when_
     }
 }
 
-inline void Mismatches::count(char probe, char seq, int height) {
+inline void Mismatches::count_weighted(char probe, char seq, int height) {
     bool is_ambig = is_ambig_base(probe) || is_ambig_base(seq);
     if (is_ambig || probe != seq) {
         if (is_ambig) ambig++; else plain++;
@@ -236,17 +236,17 @@ bool MatchRequest::add_hits_for_children(POS_TREE *pt, const Mismatches& mismatc
 void Mismatches::count_versus(const DataLoc& loc, const char *probe, int height) {
     int base;
     while ((base = probe[height])) {
-        int ref = psg.data[loc.name].get_data()[loc.rpos + height];
+        int ref = loc[height];
         if (ref == PT_QU) break;
 
-        count(base, ref, height);
+        count_weighted(base, ref, height);
         height++;
     }
 
     if (base != PT_QU) { // not end of probe
-        pt_assert(psg.data[loc.name].get_data()[loc.rpos + height] == PT_QU); // at EOS
+        pt_assert(loc[height] == PT_QU); // at EOS
         do {
-            count(base, PT_QU, height);
+            count_weighted(base, PT_QU, height);
             height++;
         }
         while ((base = probe[height]));
@@ -292,7 +292,7 @@ bool MatchRequest::collect_hits_for(const char *probe, POS_TREE *pt, Mismatches&
                     POS_TREE *son = PT_read_son(pt, (PT_BASES)i);
                     if (son) {
                         Mismatches son_mismatches(mismatches);
-                        son_mismatches.count(probe[height], i, height);
+                        son_mismatches.count_weighted(probe[height], i, height);
                         if (son_mismatches.accepted()) {
                             enough = collect_hits_for(probe, son, son_mismatches, height+1);
                         }
@@ -544,12 +544,14 @@ char *get_match_overlay(const PT_probematch *ml) {
     char *ref = (char *)calloc(sizeof(char), 21+pr_len);
     memset(ref, '.', 10);
 
+    const char *seq = psg.data[ml->name].get_data();
+
     for (int pr_pos  = 8, al_pos = ml->rpos-1;
          pr_pos     >= 0 && al_pos >= 0;
          pr_pos--, al_pos--)
     {
-        if (!psg.data[ml->name].get_data()[al_pos]) break;
-        ref[pr_pos] = base_2_readable(psg.data[ml->name].get_data()[al_pos]);
+        if (!seq[al_pos]) break;
+        ref[pr_pos] = base_2_readable(seq[al_pos]);
     }
     ref[9] = '-';
 
@@ -560,7 +562,7 @@ char *get_match_overlay(const PT_probematch *ml) {
          pr_pos++, al_pos++)
     {
         int a = ml->sequence[pr_pos];
-        int b = psg.data[ml->name].get_data()[al_pos];
+        int b = seq[al_pos];
         if (a == b) {
             ref[pr_pos+10] = '=';
         }
@@ -587,7 +589,7 @@ char *get_match_overlay(const PT_probematch *ml) {
          pr_pos < 9 && al_pos < psg.data[ml->name].get_size();
          pr_pos++, al_pos++)
     {
-        ref[pr_pos+11+pr_len] = base_2_readable(psg.data[ml->name].get_data()[al_pos]);
+        ref[pr_pos+11+pr_len] = base_2_readable(seq[al_pos]);
     }
     ref[10+pr_len] = '-';
     return ref;

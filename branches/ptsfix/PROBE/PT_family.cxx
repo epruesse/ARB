@@ -145,7 +145,7 @@ class PT_Traversal {
     }
 
     void match_rest_and_mark(const DataLoc& loc) {
-        do match_one_char(psg.data[loc.name].get_data()[loc.rpos+height]); while (match_possible());
+        do match_one_char(loc[height]); while (match_possible());
         if (did_match()) count_match(loc);
     }
 

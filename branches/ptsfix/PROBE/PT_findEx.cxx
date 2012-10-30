@@ -40,13 +40,14 @@ static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int heig
             int     pos  = loc.rpos + height;
             int     name = loc.name;
 
-            if (pos + restlen >= psg.data[name].get_size())
+            if (pos + restlen >= psg.data[name].get_size()) // @@@ superfluous ? 
                 break;          // at end-of-sequence -> no probe with wanted length here
 
             pt_assert(probe[restlen] == 0);
-            const char *seq_data = psg.data[name].get_data();
+
+            const probe_input_data& pid = psg.data[name];
             for (int r = 0; r<restlen; ++r) {
-                int data = seq_data[pos+r];
+                int data = pid.base_at(pos+r);
                 if (data == PT_QU || data == PT_N) return false; // ignore probes that contain 'N' or '.'
                 probe[r] = data;
             }

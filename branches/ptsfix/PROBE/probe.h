@@ -190,6 +190,10 @@ public:
     long get_checksum() const { return checksum; }
     int get_size() const { return size; }
 
+    PT_BASES base_at(int rpos) const {
+        return rpos >= 0 && rpos<get_size() ? PT_BASES(get_data()[rpos]) : PT_QU;
+    }
+
     bool inside_group() const { return group; }
     bool outside_group() const { return !group; }
 

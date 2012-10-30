@@ -198,14 +198,10 @@ struct ptnd_chain_count_mishits {
         psg.abs_pos.announce(probeLoc.apos);
 
         const probe_input_data& pid = psg.data[probeLoc.name];
-
         if (pid.outside_group()) {
             if (probe) {
-                int rpos = probeLoc.rpos + psg.height;
-                while (*probe && pid.get_data()[rpos]) {
-                    if (pid.get_data()[rpos] != *(probe)) return 0;
-                    probe++;
-                    rpos++;
+                for (int i = 0; probe[i] && probeLoc[psg.height+i]; ++i) {
+                    if (probe[i] != probeLoc[psg.height+i]) return 0;
                 }
             }
             ptnd.mishits++;
@@ -417,14 +413,16 @@ static int ptnd_count_mishits(char *probe, POS_TREE *pt, int height) {
     if (*probe) {
         if (PT_read_type(pt) == PT_NT_LEAF) {
             const DataLoc loc(pt);
-            int           pos = loc.rpos+height;
 
-            if (pos + (int)(strlen(probe)) >= psg.data[loc.name].get_size())              // after end
+            int pos = loc.rpos+height;
+            
+            if (pos + (int)(strlen(probe)) >= psg.data[loc.name].get_size()) // after end // @@@ wrong check ? better return from loop below when ref is PT_QU
                 return 0;
 
-            while (*probe) {
-                if (psg.data[loc.name].get_data()[pos++] != *(probe++))
+            for (int i = 0; probe[i] && loc[height+i]; ++i) {
+                if (probe[i] != loc[height+i]) {
                     return 0;
+                }
             }
         }
         else {                // chain
@@ -620,11 +618,13 @@ static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts, const Data
         int   pos   = matchLoc.rpos-1;
         start--;                        // test the base left of start
 
+        const char *seq = psg.data[matchLoc.name].get_data();
+
         bool split = false;
         while (start>=0) {
             if (pos<0) break;   // out of sight
 
-            double h = ptnd_check_split(ptnd.locs, probe, start, psg.data[matchLoc.name].get_data()[pos]);
+            double h = ptnd_check_split(ptnd.locs, probe, start, seq[pos]);
             if (h>0.0 && !split) return; // there is a longer part matching this
 
             dt -= h;
@@ -671,7 +671,9 @@ struct ptnd_chain_check_part {
                 int    height = psg.height;
                 int    base;
 
-                while (probe[height] && (base = psg.data[partLoc.name].get_data()[pos])) {
+                const char *seq = psg.data[partLoc.name].get_data();
+
+                while (probe[height] && (base = seq[pos])) {
                     if (!split && ((h = ptnd_check_split(ptnd.locs, probe, height, base)) < 0.0)) {
                         dt -= h;
                         split = 1;
@@ -765,8 +767,10 @@ static void ptnd_check_part(char *probe, POS_TREE *pt, int  height, double dt, d
                 if (pos + (int)(strlen(probe+height)) >= psg.data[loc.name].get_size())               // after end
                     return;
 
-                int ref;
-                while (probe[height] && (ref = psg.data[loc.name].get_data()[pos])) {
+                int         ref;
+                const char *seq = psg.data[loc.name].get_data();
+
+                while (probe[height] && (ref = seq[pos])) {
                     if (split) {
                         double h = ptnd_check_split(ptnd.locs, probe, height, ref);
                         if (h<0.0) dt -= h; else dt += h;

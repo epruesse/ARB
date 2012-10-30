@@ -88,7 +88,7 @@ public:
         free(data);
     }
 
-    char *get_data() { return data; }
+    char *get_memory() { return data; }
 
     bool contains(char *somemem, int blocksize) const {
         pt_assert(somemem);
@@ -150,7 +150,7 @@ public:
 
         pt_assert(block[tab]->count()>0); // checks validity of block-chain 
         
-        return block[tab]->get_data();
+        return block[tab]->get_memory();
     }
 
 #if defined(PTM_MEM_CHECKED_FREE)

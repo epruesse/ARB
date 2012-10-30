@@ -311,12 +311,13 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                 arb_progress data_progress(GBS_global_string("pass %i/%i", currPass, passes), psg.data_count);
 
                 for (int i = 0; i < psg.data_count; i++) {
-                    int         psize;
-                    char       *align_abs = probe_read_alignment(i, &psize);
-                    const char *probe     = psg.data[i].get_data();
+                    int                      psize;
+                    char                    *align_abs = probe_read_alignment(i, &psize);
+                    const probe_input_data&  pid       = psg.data[i];
+                    const char              *probe     = pid.get_data();
 
                     int abs_align_pos = psize-1;
-                    for (int j = psg.data[i].get_size() - 1; j >= 0; j--, abs_align_pos--) {
+                    for (int j = pid.get_size() - 1; j >= 0; j--, abs_align_pos--) {
                         get_abs_align_pos(align_abs, abs_align_pos); // may result in neg. abs_align_pos (seems to happen if sequences are short < 214bp )
                         if (abs_align_pos < 0) break; // -> in this case abort
 

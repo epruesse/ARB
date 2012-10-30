@@ -459,8 +459,7 @@ struct DataLoc {
     DataLoc(POS_TREE *pt) { init_from_leaf(pt); }
 
     const probe_input_data& get_pid() const { pt_assert(has_valid_name()); return psg.data[name]; }
-    const char *get_data() const { return get_pid().get_data(); }
-    PT_BASES operator[](int offset) const { return PT_BASES(get_data()[rpos+offset]); }
+    PT_BASES operator[](int offset) const { return PT_BASES(get_pid().base_at(rpos+offset)); }
 
     int restlength() const { return get_pid().get_size()-rpos; }
     bool is_shorther_than(int offset) const { return offset >= restlength(); }
