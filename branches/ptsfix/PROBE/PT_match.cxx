@@ -253,7 +253,7 @@ void Mismatches::count_versus(const DataLoc& loc, const char *probe, int height)
     }
 }
 
-bool MatchRequest::collect_hits_for(const char *probe, POS_TREE *pt, Mismatches& mismatches, int height) {
+bool MatchRequest::collect_hits_for(const char *probe, POS_TREE *pt, Mismatches& mismatches, const int height) {
     //! search down the tree to find matching species for the given probe
 
     pt_assert(pt && mismatches.accepted()); // invalid or superfluous call
@@ -288,13 +288,35 @@ bool MatchRequest::collect_hits_for(const char *probe, POS_TREE *pt, Mismatches&
                 break;
             }
             case PT_NT_NODE:
-                for (int i=PT_N; i<PT_B_MAX && !enough; i++) {
+                for (int i=PT_QU; i<PT_B_MAX && !enough; i++) {
                     POS_TREE *son = PT_read_son(pt, (PT_BASES)i);
                     if (son) {
                         Mismatches son_mismatches(mismatches);
                         son_mismatches.count_weighted(probe[height], i, height);
                         if (son_mismatches.accepted()) {
-                            enough = collect_hits_for(probe, son, son_mismatches, height+1);
+                            if (i == PT_QU) {
+                                // @@@ calculation here is constant for a fixed probe (cache results)
+                                pt_assert(probe[height] != PT_QU);
+
+                                int son_height = height+1;
+                                while (1) {
+                                    int base = probe[son_height];
+                                    if (base == PT_QU) {
+                                        if (son_mismatches.accepted()) {
+                                            enough = add_hits_for_children(son, son_mismatches);
+                                        }
+                                        break;
+                                    }
+
+                                    son_mismatches.count_weighted(base, PT_QU, son_height);
+                                    if (!son_mismatches.accepted()) break;
+
+                                    ++son_height;
+                                }
+                            }
+                            else {
+                                enough = collect_hits_for(probe, son, son_mismatches, height+1);
+                            }
                         }
                     }
                 }
