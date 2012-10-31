@@ -1072,6 +1072,53 @@ void TEST_SLOW_match_probe() {
         arguments[2] = "matchmismatches=2"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd2);
         arguments[2] = "matchmismatches=3"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd3);
     }
+
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "matchsequence=GAGCGGUCAGGAG", // as above, but continues behind '...'
+            NULL, // matchmismatches
+            "matchweighted=1",            // use weighted mismatches
+        };
+
+        CCP expectd2 = "";
+        CCP expectd3 = "    name---- fullname mis N_mis wmis pos ecoli rev          'GAGCGGUCAGGAG'\1"
+            "ClnCorin\1" "  ClnCorin            6     0  3.4  77    66 0   AUGGAUUAG-Cg====A=g==CC-UUUCGAAAG\1"
+            "CltBotul\1" "  CltBotul            6     0  3.4  77    66 0   GUGGAUUAG-Cg====A=g==CC-UUUCGAAAG\1"
+            "CPPParap\1" "  CPPParap            6     0  3.4  77    66 0   ACGGAUUAG-Cg====A=g==CC-UUCCGAAAG\1"
+            "BcSSSS00\1" "  BcSSSS00            3     0  3.4  25    21 0   GAUCAAGUC-======A===AU=-GGAGCUUGC\1";
+
+        CCP expectd4 = "    name---- fullname mis N_mis wmis pos ecoli rev          'GAGCGGUCAGGAG'\1"
+            "ClnCorin\1" "  ClnCorin            6     0  3.4  77    66 0   AUGGAUUAG-Cg====A=g==CC-UUUCGAAAG\1"
+            "CltBotul\1" "  CltBotul            6     0  3.4  77    66 0   GUGGAUUAG-Cg====A=g==CC-UUUCGAAAG\1"
+            "CPPParap\1" "  CPPParap            6     0  3.4  77    66 0   ACGGAUUAG-Cg====A=g==CC-UUCCGAAAG\1"
+            "BcSSSS00\1" "  BcSSSS00            3     0  3.4  25    21 0   GAUCAAGUC-======A===AU=-GGAGCUUGC\1"
+            "ClfPerfr\1" "  ClfPerfr            6     0  3.9 121   108 0   AUCAUAAUG-C====A=ug==gU-GAAGUCGUA\1"
+            "ClnCorin\1" "  ClnCorin            6     0  3.9 122   109 0   CGCAUAAGA-C====A=ug==gU-GAAGUCGUA\1"
+            "CltBotul\1" "  CltBotul            6     0  3.9 122   109 0   CUCAUAAGA-C====A=ug==gU-GAAGUCGUA\1"
+            "CPPParap\1" "  CPPParap            6     0  3.9 122   109 0   GCAUAAGAU-C====A=ug==gU-AAGUCGUAA\1"
+            "DcdNodos\1" "  DcdNodos            6     0  4.2  77    66 0   GUAACCUAG-Ug====A=g=AC=-UAUGGAAAC\1"
+            "PsAAAA00\1" "  PsAAAA00            6     0  4.2  77    66 0   UGGAUUCAG-Cg====A=g=AC=-UCCGGAAAC\1"
+            "PslFlave\1" "  PslFlave            6     0  4.2  77    66 0   CUGAUUCAG-Cg====A=g=AC=-UUUCGAAAG\1"
+            "FrhhPhil\1" "  FrhhPhil            5     0  4.2 149   135 0   UAACAAUGG-U===C==ag===A-CCUGCGGCU\1"
+            "AclPleur\1" "  AclPleur            4     0  4.3  29    24 0   GAUCAAGUC-==A====a=C=g=-AAGGGAGCU\1"
+            "PbcAcet2\1" "  PbcAcet2            6     0  4.3 149   135 0   GUAACAAGG-U===C==ag==gA-ACCUGCGGC\1"
+            "PbrPropi\1" "  PbrPropi            6     0  4.3 149   135 0   GUAACAAGG-U===C==ag==gA-ACCUGCGGC\1"
+            "Stsssola\1" "  Stsssola            6     0  4.3 149   135 0   GUAACAAGG-U===C==ag==gA-ACCUGCGGC\1"
+            "LgtLytic\1" "  LgtLytic            6     0  4.3 149   135 0   GUAACAAGG-U===C==ag==gA-ACCUGCGGC\1"
+            "PslFlave\1" "  PslFlave            6     0  4.3 149   135 0   GUAACAAGG-U===C==ag==gA-ACCUGCGGC\1"
+            "HllHalod\1" "  HllHalod            6     0  4.3 149   135 0   GUAACAAGG-U===C==ag==gA-ACCUGCGGC\1"
+            "VbrFurni\1" "  VbrFurni            5     0  4.4  68    60 0   GGAUUUGUU-=g====CG==Cg=-CGGACGGAC\1"
+            "AclPleur\1" "  AclPleur            6     0  4.4  35    30 0   GUCGAACGG-U=A===ga===gA-GCUUGCUUU\1"
+            "VbrFurni\1" "  VbrFurni            6     0  4.4 149   135 0   GUAACAAGG-U====C=ag==gA-ACCUGGCGC\1"
+            "VblVulni\1" "  VblVulni            6     0  4.4 149   135 0   GUAACAAGG-U====C=ag==gA-ACCUGGCGC\1"
+            "VbhChole\1" "  VbhChole            6     0  4.4 149   135 0   GUAACAAGG-U====C=ag==gA-ACCUGGCGC\1";
+
+        arguments[2] = "matchmismatches=2"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd2);
+        arguments[2] = "matchmismatches=3"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd3);
+        arguments[2] = "matchmismatches=4"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd4);
+    }
+
     // --------------------------
     //      truncate results
 
