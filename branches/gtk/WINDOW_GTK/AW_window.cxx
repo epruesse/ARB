@@ -714,7 +714,7 @@ void AW_window::_set_activate_callback(GtkWidget *widget) {
             _callback->help_text = _at.helptext_for_next_button;
             _at.helptext_for_next_button = 0;
         }
-
+        
         //FIXME this assumes that widget is a button
         //FIXME investigate why this code works but the commented one does not
         g_signal_connect((gpointer)widget, "clicked", G_CALLBACK(AW_server_callback), (gpointer)_callback);
@@ -999,7 +999,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
         if (_at.attach_any) aw_attach_widget(buttonOrLabel, _at);
 
         if (_callback) {
-            root->make_sensitive(button, _at.widget_mask);
+            root->make_sensitive(buttonOrLabel, _at.widget_mask);
         }
         else {
             aw_assert(_at.correct_for_at_center == 0);
@@ -1905,8 +1905,26 @@ void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, A
     if (aram) aram->set_expose_callback(this, f, cd1, cd2);
 }
 
-void AW_window::set_focus_callback(void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    GTK_NOT_IMPLEMENTED;
+
+static void AW_focusCB(GtkWidget* /*wgt*/, gpointer cl_aww) {
+    AW_window *aww = (AW_window*)cl_aww;
+    aww->run_focus_callback();
+}
+
+void AW_window::run_focus_callback() {
+
+    //FIXME i have never actually seen this. But set_focus_callback is called several times.
+    if (prvt->focus_cb) prvt->focus_cb->run_callback();
+}
+
+void AW_window::set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    if (!prvt->focus_cb) {
+        g_signal_connect(G_OBJECT(prvt->areas[AW_MIDDLE_AREA]->get_area()),
+                "focus", G_CALLBACK(AW_focusCB), (gpointer) this);
+    }
+    if (!prvt->focus_cb || !prvt->focus_cb->contains(f)) {
+        prvt->focus_cb = new AW_cb_struct(this, f, cd1, cd2, 0, prvt->focus_cb);
+    }
 }
 
 void AW_window::set_horizontal_change_callback(void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/) {
@@ -1921,12 +1939,18 @@ void AW_window::set_info_area_height(int /*height*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::set_input_callback(AW_area /*area*/, void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/ /*= 0*/, AW_CL /*cd2*/ /*= 0*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_window::set_input_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    AW_area_management *aram = prvt->areas[area];
+    if (!aram)
+        return;
+    aram->set_input_callback(this, f, cd1, cd2);
 }
 
-void AW_window::set_motion_callback(AW_area /*area*/, void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/ /*= 0*/, AW_CL /*cd2*/ /*= 0*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_window::set_motion_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    AW_area_management *aram = prvt->areas[area];
+    if (!aram)
+        return;
+    aram->set_motion_callback(this, f, cd1, cd2);
 }
 
 void AW_window::set_popup_callback(void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/) {
