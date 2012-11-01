@@ -453,7 +453,44 @@ void AW_stylable::set_line_attributes(int gc, short width, AW_linestyle style) {
 
 
 //aw_clipable
-//FIXME move to own file
+
+inline AW_pos clip_in_range(AW_pos low, AW_pos val, AW_pos high) {
+    if (val <= low) return low;
+    if (val >= high) return high;
+    return val;
+}
+
+bool AW_clipable::box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out) {
+    // clip coordinates of a box
+
+    aw_assert(x0 <= x1);
+    aw_assert(y0 <= y1);
+
+    if (x1<clip_rect.l || x0>clip_rect.r) return false;
+    if (y1<clip_rect.t || y0>clip_rect.b) return false;
+
+    if (completely_clipped()) return false;
+
+    x0out = clip_in_range(clip_rect.l, x0, clip_rect.r);
+    x1out = clip_in_range(clip_rect.l, x1, clip_rect.r);
+    y0out = clip_in_range(clip_rect.t, y0, clip_rect.b);
+    y1out = clip_in_range(clip_rect.t, y1, clip_rect.b);
+
+    return true;
+}
+
+bool AW_clipable::box_clip(const AW::Rectangle& rect, AW::Rectangle& clippedRect) { // @@@ maybe return clippedRect as AW_screen_area
+    if (completely_clipped()) return false;
+
+    AW::Rectangle clipRect(clip_rect, AW::UPPER_LEFT_OUTLINE);
+    if (rect.distinct_from(clipRect))
+        return false;
+
+    clippedRect = rect.intersect_with(clipRect);
+    return true;
+}
+
+
 bool AW_clipable::clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out) {
     // clip coordinates of a line
 

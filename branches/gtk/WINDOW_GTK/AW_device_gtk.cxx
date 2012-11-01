@@ -82,7 +82,7 @@ bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri)
                          int(transLine.head().xpos()),
                          int(transLine.head().ypos()));
 
-            //AUTO_FLUSH(this);
+            AUTO_FLUSH(this);
         }
     }
 
@@ -124,77 +124,73 @@ bool AW_device_gtk::text_impl(int gc, const char *str, const AW::Position& pos, 
 }
 
 bool AW_device_gtk::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitset filteri) {
-//    bool drawflag = false;
-//    if (filteri & filter) {
-//        if (filled) {
-//            Rectangle transRect = transform(rect);
-//            Rectangle clippedRect;
-//            drawflag = box_clip(transRect, clippedRect);
-//            if (drawflag) {
+    bool drawflag = false;
+    if (filteri & filter) {
+        if (filled) {
+            Rectangle transRect = transform(rect);
+            Rectangle clippedRect;
+            drawflag = box_clip(transRect, clippedRect);
+            if (drawflag) {
+                
+                gdk_draw_rectangle(drawingArea->window,
+                                   get_common()->get_GC(gc),
+                                   filled, 
+                                   clippedRect.left(),
+                                   clippedRect.top(),
+                                   clippedRect.width() + 1,
+                                   clippedRect.height() +1); // see aw_device.hxx@WORLD_vs_PIXEL
+                AUTO_FLUSH(this);
 //                XFillRectangle(XDRAW_PARAM3(get_common(), gc),
 //                               AW_INT(clippedRect.left()),
 //                               AW_INT(clippedRect.top()),
-//                               AW_INT(clippedRect.width())+1, // see aw_device.hxx@WORLD_vs_PIXEL
+//                               AW_INT(clippedRect.width())+1, 
 //                               AW_INT(clippedRect.height())+1);
-//                AUTO_FLUSH(this);
-//            }
-//        }
-//        else {
-//            drawflag = generic_box(gc, false, rect, filteri);
-//        }
-//    }
-//    return drawflag;
-    GTK_NOT_IMPLEMENTED;
-    return true;
+               
+            }
+        }
+        else {
+            drawflag = generic_box(gc, false, rect, filteri);
+        }
+    }
+    return drawflag;
 }
 
 bool AW_device_gtk::circle_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri) {
-//    aw_assert(radius.x()>0 && radius.y()>0);
-//    return arc_impl(gc, filled, center, radius, 0, 360, filteri);
-
-    GTK_NOT_IMPLEMENTED;
-    return true;
-
+    aw_assert(radius.x()>0 && radius.y()>0);
+    return arc_impl(gc, filled, center, radius, 0, 360, filteri);
 }
 
 bool AW_device_gtk::arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri) {
     // degrees start at east side of unit circle,
     // but orientation is clockwise (because ARBs y-coordinate grows downwards)
 
-//    bool drawflag = false;
-//    if (filteri & filter) {
-//        Rectangle Box(center-radius, center+radius);
-//        Rectangle screen_box = transform(Box);
-//
-//        drawflag = !is_outside_clip(screen_box);
-//        if (drawflag) {
-//            int             width  = AW_INT(screen_box.width());
-//            int             height = AW_INT(screen_box.height());
-//            const Position& ulc    = screen_box.upper_left_corner();
-//            int             xl     = AW_INT(ulc.xpos());
-//            int             yl     = AW_INT(ulc.ypos());
-//
-//            aw_assert(arc_degrees >= -360 && arc_degrees <= 360);
-//
-//            // ARB -> X
-//            start_degrees = -start_degrees;
-//            arc_degrees   = -arc_degrees;
-//
-//            while (start_degrees<0) start_degrees += 360;
-//
-//            if (!filled) {
-//                XDrawArc(XDRAW_PARAM3(get_common(), gc), xl, yl, width, height, 64*start_degrees, 64*arc_degrees);
-//            }
-//            else {
-//                XFillArc(XDRAW_PARAM3(get_common(), gc), xl, yl, width, height, 64*start_degrees, 64*arc_degrees);
-//            }
-//            AUTO_FLUSH(this);
-//        }
-//    }
-//    return drawflag;
+    bool drawflag = false;
+    if (filteri & filter) {
+        Rectangle Box(center-radius, center+radius);
+        Rectangle screen_box = transform(Box);
 
-    GTK_NOT_IMPLEMENTED;
-    return true;
+        drawflag = !is_outside_clip(screen_box);
+        if (drawflag) {
+            int             width  = AW_INT(screen_box.width());
+            int             height = AW_INT(screen_box.height());
+            const Position& ulc    = screen_box.upper_left_corner();
+            int             xl     = AW_INT(ulc.xpos());
+            int             yl     = AW_INT(ulc.ypos());
+
+            aw_assert(arc_degrees >= -360 && arc_degrees <= 360);
+
+            // ARB -> X
+            start_degrees = -start_degrees;
+            arc_degrees   = -arc_degrees;
+
+            while (start_degrees<0) start_degrees += 360;
+            
+            gdk_draw_arc(GDK_DRAWABLE(drawingArea->window), get_common()->get_GC(gc), filled, xl, yl, width, height, 64*start_degrees, 64*arc_degrees );
+            AUTO_FLUSH(this);
+        }
+    }
+    return drawflag;
+
 }
 
 void AW_device_gtk::clear(AW_bitset filteri) {
@@ -257,8 +253,8 @@ void AW_device_gtk::clear_text(int gc, const char *string, AW_pos x, AW_pos y, A
 }
 
 void AW_device_gtk::flush() {
+    gdk_flush();
 //    XFlush(get_common()->get_display());
-    GTK_NOT_IMPLEMENTED;
 }
 
 void AW_device_gtk::move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y) {
