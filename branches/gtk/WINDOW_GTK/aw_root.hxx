@@ -33,7 +33,7 @@ typedef AW_window *(*AW_PPP)(AW_root*, AW_CL, AW_CL);
 #endif // ASSERTION_USED
 
 typedef char *AW_error;
-
+typedef void (*AW_RCB)(AW_root*, AW_CL, AW_CL);
 // asynchronous messages:
 extern char AW_ERROR_BUFFER[1024];
 
@@ -75,7 +75,7 @@ class AW_root : virtual Noncopyable {
     AW_default  application_database; /*< FIXME */
     AW_buttons_struct *button_sens_list; /* < FIXME */
     bool        no_exit; /*< FIXME no idea what this is used for*/
-    char        *program_name;
+    
 
 
 //    AW_buttons_struct *button_sens_list;
@@ -111,7 +111,7 @@ class AW_root : virtual Noncopyable {
 public:
     static AW_root *SINGLETON;
 
-
+    char        *program_name;
     bool           value_changed;
     GtkWidget     *changer_of_variable;
     int            y_correction_for_input_labels;

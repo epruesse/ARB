@@ -19,6 +19,7 @@
 #include "aw_awar_defs.hxx"
 #include "aw_window.hxx"
 #include "aw_global_awars.hxx"
+#include "aw_nawar.hxx"
 
 
 
@@ -50,30 +51,6 @@ void AW_system(AW_window *aww, const char *command, const char *auto_help_file) 
 }
 
 
-char *aw_string_selection(const char *title, const char *prompt, const char *default_value, const char *value_list, const char *buttons, char *(*check_fun)(const char*)) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
-}
-char *aw_string_selection2awar(const char *title, const char *prompt, const char *awar_name,     const char *value_list, const char *buttons, char *(*check_fun)(const char*)) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
-}
-
-int aw_string_selection_button() {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
-}
-
-char *aw_input(const char *title, const char *prompt, const char *default_input) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
-}
-
-char *aw_input(const char *prompt, const char *default_input) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
-}
-
 inline void declare_awar_global(AW_awar *awar) {
     aw_assert(declared_awar_count<MAX_GLOBAL_AWARS);
     declared_awar[declared_awar_count++] = awar;
@@ -96,11 +73,9 @@ static void AWAR_AWM_MASK_changed_cb(AW_root *awr) {
 }
 
 
-char *aw_file_selection(const char *title, const char *dir, const char *def_name, const char *suffix) {
+void AW_root::process_events() {
     GTK_NOT_IMPLEMENTED;
-    return 0;
 }
-
 
 
 AW_ProcessEventType AW_root::peek_key_event(AW_window *) {
@@ -138,6 +113,9 @@ static void destroy_AW_root() {
 }
 
 
+bool AW_root::is_focus_callback(AW_RCB fcb) const {
+    return focus_callback_list && focus_callback_list->contains(AW_root_callback(fcb, 0, 0));
+}
 
 AW_root::AW_root(const char *properties, const char *program, bool no_exit) {
     aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
@@ -180,7 +158,22 @@ GdkColor AW_root::getColor(unsigned int pixel) {
 }
 
 void AW_root::define_remote_command(AW_cb_struct *cbs) {
-    GTK_NOT_IMPLEMENTED;
+    if (cbs->f == (AW_CB)AW_POPDOWN) {
+        aw_assert(!cbs->get_cd1() && !cbs->get_cd2()); // popdown takes no parameters (please pass ", 0, 0"!)
+    }
+
+    AW_cb_struct *old_cbs = (AW_cb_struct*)GBS_write_hash(action_hash, cbs->id, (long)cbs);
+    if (old_cbs) {
+        if (!old_cbs->is_equal(*cbs)) {                  // existing remote command replaced by different callback
+#if defined(DEBUG)
+            fputs(GBS_global_string("Warning: reused callback id '%s' for different callback\n", old_cbs->id), stderr);
+#if defined(DEVEL_RALF) && 0
+            aw_assert(0);
+#endif // DEVEL_RALF
+#endif // DEBUG
+        }
+        // do not free old_cbs, cause it's still reachable from first widget that defined this remote command
+    }
 }
 
 

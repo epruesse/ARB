@@ -20,6 +20,7 @@
 #include "aw_awar.hxx"
 #include "aw_common.hxx"
 #include "AW_motif_gtk_conversion.hxx"
+#include "AW_modal.hxx"
 #include <arbdb.h>
 
 #include <gtk/gtklabel.h>
@@ -93,8 +94,18 @@ public:
      */
     int number_of_modes;
     
+    /**
+     * Callback struct for the currently open popup
+     */
+    AW_cb_struct  *popup_cb;
+    
+    /**
+     FIXME
+     */
+    AW_cb_struct *focus_cb;
+    
     AW_window_gtk() : window(NULL), fixed_size_area(NULL), menu_bar(NULL), help_menu(NULL),
-                      mode_menu(NULL), number_of_modes(0) {}
+                      mode_menu(NULL), number_of_modes(0), popup_cb(NULL), focus_cb(NULL) {}
     
     
     
@@ -567,7 +578,7 @@ const char *aw_str_2_label(const char *str, AW_window *aww) {
     return label;
 }
 
-static void aw_attach_widget(GtkWidget* /*w*/, AW_at& /*_at*/, int default_width = -1) {
+static void aw_attach_widget(GtkWidget* /*w*/, AW_at& /*_at*/, int /*default_width*/ = -1) {
     GTK_NOT_IMPLEMENTED;
 }
 
@@ -614,7 +625,7 @@ void AW_window::increment_at_commands(int width, int height) {
     }
 }
 
-void AW_window::set_background(const char *colorname, GtkWidget* parentWidget) {
+void AW_window::set_background(const char */*colorname*/, GtkWidget* /*parentWidget*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
@@ -634,7 +645,7 @@ void AW_server_callback(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
 
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
 
-    AW_root *root = cbs->aw->get_root();
+//    AW_root *root = cbs->aw->get_root();
     //FIXME AW_server_callback help not implemented
 //    if (p_global->help_active) {
 //        p_global->help_active = 0;
@@ -999,7 +1010,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
 
     {
         //Widget  toRecenter   = 0;
-        int     recenterSize = 0;
+//        int     recenterSize = 0;
 
         if (!height || !width) {
             // ask motif for real button size
@@ -1100,7 +1111,7 @@ GtkWidget* AW_window::get_last_widget() const{
     return 0;
 }
 
-void AW_window::create_toggle(const char *var_name){
+void AW_window::create_toggle(const char */*var_name*/){
 
     GtkWidget* checkButton = gtk_check_button_new();
 
@@ -1138,7 +1149,10 @@ void AW_window::create_toggle(const char */*awar_name*/, const char */*nobitmap*
 void AW_window::create_text_toggle(const char */*var_name*/, const char */*noText*/, const char */*yesText*/, int /*buttonWidth*/ /*= 0*/) {
     GTK_NOT_IMPLEMENTED;
 }
-
+void AW_window::allow_delete_window(bool allow_close) {
+    GTK_NOT_IMPLEMENTED;
+    //aw_set_delete_window_cb(this, p_w->shell, allow_close);
+}
 
 void AW_window::create_input_field(const char */*awar_name*/, int /*columns*/ /* = 0 */){
     GTK_NOT_IMPLEMENTED;
@@ -1374,7 +1388,7 @@ void AW_window::create_menu(AW_label name, const char *mnemonic, AW_active mask 
         insert_sub_menu(name, mnemonic, mask);
 }
 
-int AW_window::create_mode(const char *pixmap, const char *help_text, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
+int AW_window::create_mode(const char *pixmap, const char */*help_text_*/, AW_active mask, void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL/*cd1*/, AW_CL /*cd2*/){
     
     aw_assert(legal_mask(mask));
     aw_assert(NULL != prvt->mode_menu);
@@ -1559,7 +1573,7 @@ void AW_window::insert_default_toggle(AW_label /*toggle_label*/, const char */*m
 }
 
 
-void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const char *help_text, AW_active /*mask*/, void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/){
+void AW_window::insert_help_topic(AW_label name, const char */*mnemonic*/, const char */*help_text_*/, AW_active /*mask*/, void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/){
     aw_assert(NULL != prvt->help_menu);
     
     GTK_PARTLY_IMPLEMENTED;
@@ -1573,7 +1587,7 @@ void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const cha
 }
 
 
-void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB cb, AW_CL cd1, AW_CL cd2){
+void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active mask, AW_CB f, AW_CL cd1, AW_CL cd2){
    aw_assert(legal_mask(mask));
   
    GTK_PARTLY_IMPLEMENTED;
@@ -1596,16 +1610,16 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const cha
 //    test_duplicate_mnemonics(prvt.menu_deep, name, mnemonic);
 #endif
 
-//FIXME menu button callbacks not implemented
-//    AW_label_in_awar_list(this, button, name);
-//    AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, helpText);
-//    XtAddCallback(button, XmNactivateCallback,
-//                  (XtCallbackProc) AW_server_callback,
-//                  (XtPointer) cbs);
-//
-//    cbs->id = strdup(topic_id);
-//    root->define_remote_command(cbs);
-//    root->make_sensitive(button, mask);
+
+    AW_label_in_awar_list(this, item, name);
+    AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, helpText);
+    
+    
+    g_signal_connect((gpointer)item, "activate", G_CALLBACK(AW_server_callback), (gpointer)cbs);
+
+    cbs->id = strdup(topic_id);
+    root->define_remote_command(cbs);
+    root->make_sensitive(item, mask);
 }
 
 void AW_window::insert_option(AW_label /*choice_label*/, const char */*mnemonic*/, const char */*var_value*/, const char */*name_of_color*/ /*= 0*/){
@@ -1683,12 +1697,12 @@ void AW_window::label(const char */*label*/){
 
 }
 
-void AW_window::update_text_field(GtkWidget *widget, const char *var_value) {
+void AW_window::update_text_field(GtkWidget */*widget*/, const char */*var_value*/) {
    // XtVaSetValues(widget, XmNvalue, var_value, NULL);
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::update_toggle(GtkWidget *widget, const char *var, AW_CL cd_toggle_data) {
+void AW_window::update_toggle(GtkWidget */*widget*/, const char */*var*/, AW_CL /*cd_toggle_data*/) {
 //    aw_toggle_data *tdata = (aw_toggle_data*)cd_toggle_data;
 //    const char     *text  = tdata->bitmapOrText[(var[0] == '0' || var[0] == 'n') ? 0 : 1];
 //
@@ -1703,7 +1717,7 @@ void AW_window::update_toggle(GtkWidget *widget, const char *var, AW_CL cd_toggl
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::update_input_field(GtkWidget *widget, const char *var_value) {
+void AW_window::update_input_field(GtkWidget */*widget*/, const char */*var_value*/) {
     //XtVaSetValues(widget, XmNvalue, var_value, NULL);
     GTK_NOT_IMPLEMENTED;
 }
@@ -1724,7 +1738,7 @@ void AW_window::refresh_option_menu(AW_option_menu_struct *oms) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::refresh_toggle_field(int toggle_field_number) {
+void AW_window::refresh_toggle_field(int /*toggle_field_number*/) {
     GTK_NOT_IMPLEMENTED;
 //#if defined(DEBUG)
 //    static int inside_here = 0;
@@ -1940,12 +1954,77 @@ void AW_window::show() {
 
 }
 
+void AW_window::button_height(int height) {
+    _at.height_of_buttons = height>1 ? height : 0; 
+}
+
 void AW_window::store_at_size_and_attach(AW_at_size */*at_size*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
+void AW_window::show_modal() {
+    recalc_pos_atShow(AW_REPOS_TO_MOUSE);
+    get_root()->current_modal_window = this;
+    activate();
+}
+bool AW_window::is_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL)) {
+    AW_area_management *aram = prvt->areas[area];
+    return aram && aram->is_expose_callback(this, f);
+}
+
+bool AW_window::is_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL)) {
+    return prvt->focus_cb && prvt->focus_cb->contains(f);
+}
+
 void AW_window::tell_scrolled_picture_size(AW_world /*rectangle*/) {
     GTK_NOT_IMPLEMENTED;
+}
+
+
+void AW_window_message::init(AW_root */*root_in*/, const char */*windowname*/, bool /*allow_close*/) {
+    GTK_NOT_IMPLEMENTED;
+//    root = root_in; // for macro
+//
+//    int width  = 100;
+//    int height = 100;
+//    int posx   = 50;
+//    int posy   = 50;
+//
+//    window_name = strdup(windowname);
+//    window_defaults_name = GBS_string_2_key(window_name);
+//
+//    // create shell for message box
+//    p_w->shell = aw_create_shell(this, true, allow_close, width, height, posx, posy);
+//
+//    // disable resize or maximize in simple dialogs (avoids broken layouts)
+//    XtVaSetValues(p_w->shell, XmNmwmFunctions, MWM_FUNC_MOVE | MWM_FUNC_CLOSE,
+//            NULL);
+//
+//    p_w->areas[AW_INFO_AREA] = new AW_area_management(root, p_w->shell, XtVaCreateManagedWidget("info_area",
+//                    xmDrawingAreaWidgetClass,
+//                    p_w->shell,
+//                    XmNheight, 0,
+//                    XmNbottomAttachment, XmATTACH_NONE,
+//                    XmNtopAttachment, XmATTACH_FORM,
+//                    XmNleftAttachment, XmATTACH_FORM,
+//                    XmNrightAttachment, XmATTACH_FORM,
+//                    NULL));
+//
+//    aw_realize_widget(this);
+}
+
+
+AW_window_message::AW_window_message() {
+    GTK_NOT_IMPLEMENTED;
+}
+
+AW_window_message::~AW_window_message() {
+    GTK_NOT_IMPLEMENTED;
+}
+
+bool AW_window::is_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL)) {
+    AW_area_management *aram = prvt->areas[area];
+    return aram && aram->is_resize_callback(this, f);
 }
 
 void AW_window::update_label(GtkWidget* /*widget*/, const char */*var_value*/) {
@@ -2413,7 +2492,7 @@ void AW_window::create_devices() {
     }
 }
 
-void AW_window::update_scrollbar_settings_from_awars(AW_orientation orientation) {
+void AW_window::update_scrollbar_settings_from_awars(AW_orientation /*orientation*/) {
 //    AW_screen_area scrolled;
 //    get_scrollarea_size(&scrolled);
 //
@@ -2490,111 +2569,130 @@ bool AW_cb_struct::contains(void (*g)(AW_window*, AW_CL, AW_CL)) {
     return (f == g) || (next && next->contains(g));
 }
 
+bool AW_cb_struct::is_equal(const AW_cb_struct& other) const {
+    bool equal = false;
+    if (f == other.f) {                             // same callback function
+        equal = (cd1 == other.cd1) && (cd2 == other.cd2);
+        if (equal) {
+            if (f == AW_POPUP) {
+                equal = aw->get_root() == other.aw->get_root();
+            }
+            else {
+                equal = aw == other.aw;
+                if (!equal) {
+                    equal = aw->get_root() == other.aw->get_root();
+#if defined(DEBUG) && 0
+                    if (equal) {
+                        fprintf(stderr,
+                                "callback '%s' instantiated twice with different windows (w1='%s' w2='%s') -- assuming the callbacks are equal\n",
+                                id, aw->get_window_id(), other.aw->get_window_id());
+                    }
+#endif // DEBUG
+                }
+            }
+        }
+    }
+    return equal;
+}
+
+
 
 
 void AW_cb_struct::run_callback() {
-
-    GTK_PARTLY_IMPLEMENTED;
-
     if (next) next->run_callback();                 // callback the whole list
     if (!f) return;                                 // run no callback
 
-    //FIXME this is a very simplified version of the original run_callback. See original code below and fix it.
-    useraction_init();
-    f(aw, cd1, cd2);
-    useraction_done(aw);
+    AW_root *root = aw->get_root();
+    if (root->disable_callbacks) {
+        // some functions (namely aw_message, aw_input, aw_string_selection and aw_file_selection)
+        // have to disable most callbacks, because they are often called from inside these callbacks
+        // (e.g. because some exceptional condition occurred which needs user interaction) and if
+        // callbacks weren't disabled, a recursive deadlock occurs.
 
-//    AW_root *root = aw->get_root();
-//    if (root->disable_callbacks) {
-//        // some functions (namely aw_message, aw_input, aw_string_selection and aw_file_selection)
-//        // have to disable most callbacks, because they are often called from inside these callbacks
-//        // (e.g. because some exceptional condition occurred which needs user interaction) and if
-//        // callbacks weren't disabled, a recursive deadlock occurs.
-//
-//        // the following callbacks are allowed even if disable_callbacks is true
-//
-//        bool isModalCallback = (f == AW_CB(message_cb) ||
-//                                f == AW_CB(input_history_cb) ||
-//                                f == AW_CB(input_cb) ||
-//                                f == AW_CB(file_selection_cb));
-//
-//        bool isPopdown = (f == AW_CB(AW_POPDOWN));
-//        bool isHelp    = (f == AW_CB(AW_POPUP_HELP));
-//        bool allow     = isModalCallback || isHelp || isPopdown;
-//
-//        bool isInfoResizeExpose = false;
-//
-//        if (!allow) {
-//            isInfoResizeExpose = aw->is_expose_callback(AW_INFO_AREA, f) || aw->is_resize_callback(AW_INFO_AREA, f);
-//            allow              = isInfoResizeExpose;
-//        }
-//
-//        if (!allow) {
-//            // do not change position of modal dialog, when one of the following callbacks happens - just raise it
-//            // (other callbacks like pressing a button, will position the modal dialog under mouse)
-//            bool onlyRaise =
-//                aw->is_expose_callback(AW_MIDDLE_AREA, f) ||
-//                aw->is_focus_callback(f) ||
-//                root->is_focus_callback((AW_RCB)f) ||
-//                aw->is_resize_callback(AW_MIDDLE_AREA, f);
-//
-//            if (root->current_modal_window) {
-//                AW_window *awmodal = root->current_modal_window;
-//
-//                AW_PosRecalc prev = awmodal->get_recalc_pos_atShow();
-//                if (onlyRaise) awmodal->recalc_pos_atShow(AW_KEEP_POS);
-//                awmodal->activate();
-//                awmodal->recalc_pos_atShow(prev);
-//            }
-//            else {
-//                aw_message("Internal error (callback suppressed when no modal dialog active)");
-//                aw_assert(0);
-//            }
-//#if defined(TRACE_CALLBACKS)
-//            printf("suppressing callback %p\n", f);
-//#endif // TRACE_CALLBACKS
-//            return; // suppress the callback!
-//        }
-//#if defined(TRACE_CALLBACKS)
-//        else {
-//            if (isModalCallback) printf("allowed modal callback %p\n", f);
-//            else if (isPopdown) printf("allowed AW_POPDOWN\n");
-//            else if (isHelp) printf("allowed AW_POPUP_HELP\n");
-//            else if (isInfoResizeExpose) printf("allowed expose/resize infoarea\n");
-//            else printf("allowed other (unknown) callback %p\n", f);
-//        }
-//#endif // TRACE_CALLBACKS
-//    }
-//    else {
-//#if defined(TRACE_CALLBACKS)
-//        printf("Callbacks are allowed (executing %p)\n", f);
-//#endif // TRACE_CALLBACKS
-//    }
-//
-//    useraction_init();
-//
-//    if (f == AW_POPUP) {
-//        if (pop_up_window) { // already exists
-//            pop_up_window->activate();
-//        }
-//        else {
-//            AW_PPP g = (AW_PPP)cd1;
-//            if (g) {
-//                pop_up_window = g(aw->get_root(), cd2, 0);
-//                pop_up_window->activate();
-//            }
-//            else {
-//                aw_message("not implemented -- please report to devel@arb-home.de");
-//            }
-//        }
-//        if (pop_up_window && p_aww(pop_up_window)->popup_cb)
-//            p_aww(pop_up_window)->popup_cb->run_callback();
-//    }
-//    else {
-//        f(aw, cd1, cd2);
-//    }
-//
-//    useraction_done(aw);
+        // the following callbacks are allowed even if disable_callbacks is true
+
+        bool isModalCallback = (f == AW_CB(message_cb) ||
+                                f == AW_CB(input_history_cb) ||
+                                f == AW_CB(input_cb) ||
+                                f == AW_CB(file_selection_cb));
+
+        bool isPopdown = (f == AW_CB(AW_POPDOWN));
+        bool isHelp    = (f == AW_CB(AW_POPUP_HELP));
+        bool allow     = isModalCallback || isHelp || isPopdown;
+
+        bool isInfoResizeExpose = false;
+
+        if (!allow) {
+            isInfoResizeExpose = aw->is_expose_callback(AW_INFO_AREA, f) || aw->is_resize_callback(AW_INFO_AREA, f);
+            allow              = isInfoResizeExpose;
+        }
+
+        if (!allow) {
+            // do not change position of modal dialog, when one of the following callbacks happens - just raise it
+            // (other callbacks like pressing a button, will position the modal dialog under mouse)
+            bool onlyRaise =
+                aw->is_expose_callback(AW_MIDDLE_AREA, f) ||
+                aw->is_focus_callback(f) ||
+                root->is_focus_callback((AW_RCB)f) ||
+                aw->is_resize_callback(AW_MIDDLE_AREA, f);
+
+            if (root->current_modal_window) { 
+                AW_window *awmodal = root->current_modal_window;
+
+                AW_PosRecalc prev = awmodal->get_recalc_pos_atShow();
+                if (onlyRaise) awmodal->recalc_pos_atShow(AW_KEEP_POS);
+                awmodal->activate();
+                awmodal->recalc_pos_atShow(prev);
+            }
+            else {
+                aw_message("Internal error (callback suppressed when no modal dialog active)");
+                aw_assert(0);
+            }
+#if defined(TRACE_CALLBACKS)
+            printf("suppressing callback %p\n", f);
+#endif // TRACE_CALLBACKS
+            return; // suppress the callback!
+        }
+#if defined(TRACE_CALLBACKS)
+        else {
+            if (isModalCallback) printf("allowed modal callback %p\n", f);
+            else if (isPopdown) printf("allowed AW_POPDOWN\n");
+            else if (isHelp) printf("allowed AW_POPUP_HELP\n");
+            else if (isInfoResizeExpose) printf("allowed expose/resize infoarea\n");
+            else printf("allowed other (unknown) callback %p\n", f);
+        }
+#endif // TRACE_CALLBACKS
+    }
+    else {
+#if defined(TRACE_CALLBACKS)
+        printf("Callbacks are allowed (executing %p)\n", f);
+#endif // TRACE_CALLBACKS
+    }
+
+    useraction_init();
+    
+    if (f == AW_POPUP) {
+        if (pop_up_window) { // already exists
+            pop_up_window->activate();
+        }
+        else {
+            AW_PPP g = (AW_PPP)cd1;
+            if (g) {
+                pop_up_window = g(aw->get_root(), cd2, 0);
+                pop_up_window->activate();
+            }
+            else {
+                aw_message("not implemented -- please report to devel@arb-home.de");
+            }
+        }
+        if (pop_up_window && pop_up_window->prvt->popup_cb)
+            pop_up_window->prvt->popup_cb->run_callback();
+    }
+    else {
+        f(aw, cd1, cd2);
+    }
+
+    useraction_done(aw);
 }
 
 

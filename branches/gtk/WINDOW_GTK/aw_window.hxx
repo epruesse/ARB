@@ -244,7 +244,7 @@ enum AW_PosRecalc {
 typedef void (*aw_hide_cb)(AW_window *aww);
 
 class AW_window : virtual Noncopyable {
-
+    friend class AW_cb_struct;//the cb struct needs access to prvt for strange reasons
     enum AW_SizeRecalc recalc_size_at_show;
 //    enum AW_PosRecalc  recalc_pos_at_show;
 //    aw_hide_cb         hide_cb;

@@ -126,12 +126,21 @@ bool AW_area_management::is_input_callback(AW_window* aww,
 
 bool AW_area_management::is_double_click_callback(AW_window* aww,
         void (*f)(AW_window*, AW_CL, AW_CL)) {
-    GTK_NOT_IMPLEMENTED;
+    return prvt->double_click_cb && prvt->double_click_cb->contains(f);
 }
 
 bool AW_area_management::is_motion_callback(AW_window* aww,
         void (*f)(AW_window*, AW_CL, AW_CL)) {
     GTK_NOT_IMPLEMENTED;
+}
+
+bool AW_area_management::is_expose_callback(AW_window *aww,
+        void (*f)(AW_window*, AW_CL, AW_CL)) {
+     return prvt->expose_cb && prvt->expose_cb->contains(f);
+}
+
+bool AW_area_management::is_resize_callback(AW_window * /* aww */, void (*f)(AW_window*, AW_CL, AW_CL)) {
+    return prvt->resize_cb && prvt->resize_cb->contains(f);
 }
 
 void AW_area_management::create_devices(AW_window *aww, AW_area ar) {

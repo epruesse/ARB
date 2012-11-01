@@ -57,7 +57,7 @@ public:
     bool is_input_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
     bool is_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
     bool is_motion_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
-
+    bool is_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
 
     void run_resize_callback();
     void run_expose_callback();
