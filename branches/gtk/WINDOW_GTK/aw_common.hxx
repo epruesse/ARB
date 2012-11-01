@@ -51,10 +51,7 @@ public:
 
     // fill style
     AW_grey_level get_grey_level() const { return grey_level; }
-    void set_grey_level(AW_grey_level grey_level_) {
-        // <0 = don't fill, 0.0 = white, 1.0 = black
-        grey_level = grey_level_;
-    }
+    void set_grey_level(AW_grey_level grey_level_);
 
     // lines
     short get_line_width() const { return line_width; }

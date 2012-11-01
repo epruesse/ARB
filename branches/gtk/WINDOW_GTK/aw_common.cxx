@@ -76,6 +76,11 @@ void AW_common::reset_style()
     }
 }
 
+void AW_GC_config::set_grey_level(AW_grey_level grey_level_) {
+    // <0 = don't fill, 0.0 = white, 1.0 = black
+    grey_level = grey_level_;
+}
+
 
 int AW_GC::get_string_size(const char *str, long textlen) const {
     // calculate display size of 'str'
