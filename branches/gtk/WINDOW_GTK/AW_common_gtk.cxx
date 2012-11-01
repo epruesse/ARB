@@ -100,9 +100,20 @@ void AW_GC_gtk::wm_set_foreground_color(AW_rgb col){
     color.pixel = col;
     gdk_gc_set_foreground(gc, &color);
 }
+
 void AW_GC_gtk::wm_set_function(AW_function mode){
-    GTK_NOT_IMPLEMENTED;
+    switch (mode) {
+        case AW_XOR:
+            gdk_gc_set_function(gc, GDK_XOR);
+            //XSetFunction(get_common()->get_display(), gc, GXxor);
+            break;
+        case AW_COPY:
+            gdk_gc_set_function(gc, GDK_COPY);
+            //XSetFunction(get_common()->get_display(), gc, GXcopy);
+            break;
+    }
 }
+
 void AW_GC_gtk::wm_set_lineattributes(short lwidth, AW_linestyle lstyle){
     GdkLineStyle lineStyle;
 
