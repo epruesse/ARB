@@ -228,8 +228,23 @@ void AW_root::init_variables(AW_default database) {
 }
 
 void AW_root::make_sensitive(GtkWidget* w, AW_active mask) {
-    GTK_NOT_IMPLEMENTED;
+    // Don't call make_sensitive directly!
+    //
+    // Simply set sens_mask(AWM_EXP) and after creating the expert-mode-only widgets,
+    // set it back using sens_mask(AWM_ALL)
+
+    aw_assert(w);
+    aw_assert(legal_mask(mask));
+    
+    prvt.set_last_widget(w);
+
+    if (mask != AWM_ALL) { // no need to make widget sensitive, if its shown unconditionally
+        button_sens_list = new AW_buttons_struct(mask, w, button_sens_list);
+        if (!(mask & global_mask)) gtk_widget_set_sensitive(w, false); // disable widget if mask doesn't match
+    }
 }
+
+
 
 void AW_root::init_root(const char *programname, bool no_exit) {
     // initialize ARB gtk application

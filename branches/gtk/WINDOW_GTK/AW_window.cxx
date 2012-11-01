@@ -107,7 +107,7 @@ public:
     AW_window_gtk() : window(NULL), fixed_size_area(NULL), menu_bar(NULL), help_menu(NULL),
                       mode_menu(NULL), number_of_modes(0), popup_cb(NULL), focus_cb(NULL) {}
     
-    
+      
     
     
     
@@ -115,6 +115,19 @@ public:
 };
 
 
+
+AW_buttons_struct::AW_buttons_struct(AW_active maski, GtkWidget* w, AW_buttons_struct *prev_button) {
+    aw_assert(w);
+    aw_assert(legal_mask(maski));
+
+    mask     = maski;
+    button   = w;
+    next     = prev_button;
+}
+
+AW_buttons_struct::~AW_buttons_struct() {
+    delete next;
+}
 
 void AW_clock_cursor(AW_root *) {
     GTK_NOT_IMPLEMENTED;
@@ -986,8 +999,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
         if (_at.attach_any) aw_attach_widget(buttonOrLabel, _at);
 
         if (_callback) {
-            //FIXME sensitive button not implemented
-            //root->make_sensitive(button, _at.widget_mask);
+            root->make_sensitive(button, _at.widget_mask);
         }
         else {
             aw_assert(_at.correct_for_at_center == 0);

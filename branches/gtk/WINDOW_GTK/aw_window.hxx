@@ -151,6 +151,17 @@ void AW_openURL(AW_root *aw_root, const char *url);
 
 typedef void (*AW_cb_struct_guard)();
 
+
+struct AW_buttons_struct : virtual Noncopyable {
+    AW_buttons_struct(AW_active maski, GtkWidget* w, AW_buttons_struct *next);
+    ~AW_buttons_struct();
+
+    AW_active          mask;
+    GtkWidget*         button;
+    AW_buttons_struct *next;
+};
+
+
 /**
  * A list of callback functions.
  */
