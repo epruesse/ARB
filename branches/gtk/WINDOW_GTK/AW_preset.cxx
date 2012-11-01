@@ -17,12 +17,9 @@
 #include "aw_awar.hxx"
 #include "aw_device.hxx"
 #include "aw_advice.hxx"
+#include "aw_assert.hxx"
 #include <arbdbt.h>
 
-
-#ifndef aw_assert
-# define aw_assert(cond) arb_assert(cond)
-#endif
 
 // values optimized for ARB_NTREE :
 static const char *ARB_NTREE_color_group[AW_COLOR_GROUPS+1] = {
@@ -145,6 +142,7 @@ static bool color_groups_initialized = false;
 static bool use_color_groups = false;
 static const char **color_group_gc_defaults = 0;
 
+
 static void aw_gc_changed_cb(AW_root *awr, AW_MGC_awar_cb_struct *cbs, long mode)
 {
     static int dont_recurse = 0;
@@ -265,6 +263,20 @@ static const char *AW_get_color_group_name_awarname(int color_group) {
     return 0;
 }
 
+
+
+long AW_find_color_group(GBDATA *gbd, bool ignore_usage_flag) {
+    /* species/genes etc. may have a color group entry ('ARB_color')
+     * call with ignore_usage_flag == true to read color group regardless of global usage flag (AWAR_COLOR_GROUPS_USE)
+     */
+    aw_assert(color_groups_initialized);
+    if (!use_color_groups && !ignore_usage_flag) return 0;
+
+    GBDATA *gb_group = GB_entry(gbd, AW_COLOR_GROUP_ENTRY);
+    if (gb_group) return GB_read_int(gb_group);
+    return 0;                   // no color group
+}
+
 static void AW_color_group_usage_changed_cb(AW_root *awr, AW_CL /* cl_ntw */) {
     use_color_groups       = awr->awar(AWAR_COLOR_GROUPS_USE)->read_int();
     //     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
@@ -277,6 +289,7 @@ static void AW_color_group_name_changed_cb(AW_root *) {
               "save properties and restart the program.",
               AW_ADVICE_TOGGLE, "Color group name has been changed", 0);
 }
+
 
 static void AW_init_color_groups(AW_root *awr, AW_default def) {
     if (!color_groups_initialized) {
@@ -292,7 +305,6 @@ static void AW_init_color_groups(AW_root *awr, AW_default def) {
         color_groups_initialized = true;
     }
 }
-
 
 struct gc_props {
     bool hidden; 

@@ -464,8 +464,8 @@ int AW_stylable::get_available_fontsizes(int gc, AW_font font_nr, int *available
     return get_common()->map_gc(gc)->get_available_fontsizes(font_nr, available_sizes);
 }
 
-void AW_stylable::establish_default(int) {
-    GTK_NOT_IMPLEMENTED;
+void AW_stylable::establish_default(int gc) {
+    get_common()->map_mod_gc(gc)->establish_default();
 }
 
 void AW_stylable::new_gc(int gc) {
@@ -661,8 +661,9 @@ void AW_zoomable::reset() {
     offset  = AW::Vector(0, 0);
 }
 
-void AW_zoomable::zoom(AW_pos /*scale*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_zoomable::zoom(AW_pos val) {
+    scale   *= val;
+    unscale  = 1.0/scale;
 }
 
 

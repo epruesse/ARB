@@ -25,10 +25,8 @@
 #include <arbdb_base.h>
 #endif
 
+#include "aw_assert.hxx"
 
-#ifndef aw_assert
-# define aw_assert(cond) arb_assert(cond)
-#endif
 
 class AW_scalar {
     union {
