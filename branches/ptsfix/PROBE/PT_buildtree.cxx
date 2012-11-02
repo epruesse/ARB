@@ -177,7 +177,7 @@ inline bool is_saved(POS_TREE *node) {
     PT_NODE_TYPE type = PT_read_type(node);
     return (type == PT_NT_NODE) ? all_sons_saved(node) : (type == PT_NT_SAVED);
 }
-
+inline bool is_completely_saved(POS_TREE *node) { return PT_read_type(node) == PT_NT_SAVED; }
 static bool all_sons_saved(POS_TREE *node) {
     pt_assert(PT_read_type(node) == PT_NT_NODE);
 
@@ -190,44 +190,71 @@ static bool all_sons_saved(POS_TREE *node) {
     return true;
 }
 
-long PTD_write_subtree(FILE *out, POS_TREE *node, long pos, long *node_pos, ARB_ERROR& error) {
+static long write_subtree(FILE *out, POS_TREE *node, long pos, long *node_pos, ARB_ERROR& error) {
     pt_assert_stage(STAGE1);
     PTD_clear_fathers(node);
     return PTD_write_leafs_to_disk(out, node, pos, node_pos, error);
 }
 
-static long save_partial_subtree(FILE *out, POS_TREE *node, const char *partstring, int partsize, long pos, long *node_pos, ARB_ERROR& error) {
-    pt_assert_stage(STAGE1);
-    if (partsize) {
-        pt_assert(PT_read_type(node) == PT_NT_NODE);
-        POS_TREE *son = PT_read_son_stage_1(node, (PT_BASES)partstring[0]);
-        if (son) {
-            long dummy;
-            pos = save_partial_subtree(out, son, partstring+1, partsize-1, pos, &dummy, error);
-        }
-        *node_pos = 0;
+static long save_lower_subtree(FILE *out, POS_TREE *node, long pos, int height, ARB_ERROR& error) {
+    if (height >= PT_MIN_TREE_HEIGHT) { // in lower part of tree
+        long dummy;
+        pos = write_subtree(out, node, pos, &dummy, error);
     }
     else {
-        pos = PTD_write_subtree(out, node, pos, node_pos, error);
+        switch (PT_read_type(node)) {
+            case PT_NT_NODE:
+                for (int i = PT_QU; i<PT_B_MAX; ++i) {
+                    POS_TREE *son = PT_read_son_stage_1(node, PT_BASES(i));
+                    if (son) pos = save_lower_subtree(out, son, pos, height+1, error);
+                }
+                break;
+
+            case PT_NT_CHAIN: {
+                long dummy;
+                pos = write_subtree(out, node, pos, &dummy, error);
+                break;
+            }
+            case PT_NT_LEAF: pt_assert(0); break; // leafs shall not occur above PT_MIN_TREE_HEIGHT
+            case PT_NT_SAVED: break; // ok - saved by previous call
+            default: pt_assert(0); break;
+        }
     }
     return pos;
 }
 
-long PTD_save_partial_tree(FILE *out, POS_TREE *node, const char *partstring, int partsize, long pos, long *node_pos, ARB_ERROR& error) {
-    // 'node_pos' is set to the root-node of the last written subtree (only if partsize == 0)
-    pos = save_partial_subtree(out, node, partstring, partsize, pos, node_pos, error);
-    if (!error && !is_saved(node)) {
+static long save_upper_tree(FILE *out, POS_TREE *node, long pos, long& node_pos, ARB_ERROR& error) {
+    pos = write_subtree(out, node, pos, &node_pos, error);
+    return pos;
+}
+
+inline void check_tree_was_saved(POS_TREE *node, const char *whatTree, bool completely, ARB_ERROR& error) {
+    if (!error) {
+        bool saved = completely ? is_completely_saved(node) : is_saved(node);
+        if (!saved) {
 #if defined(DEBUG)
-        fputs("tree was not completely saved:\n", stderr);
-        PT_dump_POS_TREE_recursive(node, " ", stderr);
+            fprintf(stderr, "%s was not completely saved:\n", whatTree);
+            PT_dump_POS_TREE_recursive(node, " ", stderr);
 #endif
-        error = "(sub)tree was not saved completely";
+            error = GBS_global_string("%s was not saved completely", whatTree);
+        }
     }
+}
+
+long PTD_save_lower_tree(FILE *out, POS_TREE *node, long pos, ARB_ERROR& error) {
+    pos = save_lower_subtree(out, node, pos, 0, error);
+    check_tree_was_saved(node, "lower tree", false, error);
+    return pos;
+}
+
+long PTD_save_upper_tree(FILE *out, POS_TREE *node, long pos, long& node_pos, ARB_ERROR& error) {
+    pt_assert(is_saved(node)); // forgot to call PTD_save_lower_tree?
+    pos = save_upper_tree(out, node, pos, node_pos, error);
+    check_tree_was_saved(node, "tree", true, error);
     return pos;
 }
 
 #if defined(PTM_TRACE_MAX_MEM_USAGE)
-
 static void dump_memusage() {
     malloc_stats();
 }
@@ -305,12 +332,39 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                 // @@@ deactivate when fixed
                 // when active, uncomment ../UNIT_TESTER/TestEnvironment.cxx@TEST_AUTO_UPDATE
 
-                partsize = 1;  // again works 
-                // partsize = 2; // @@@ fails assertion in save_partial_subtree
+                // partsize = 0; // works
+                // partsize = 1; // works
+                partsize = 2; // works
+                // partsize = 3; // works
+                // partsize = 4; // works
+                // partsize = 5; // to test warning below
 
                 printf("OVERRIDE: Forcing partsize=%i\n", partsize);
 #endif
             }
+
+            if (partsize>PT_MAX_PARTITION_DEPTH) {
+                int req_passes     = PrefixIterator(PT_QU, PT_T, partsize).steps();
+                int allowed_passes = PrefixIterator(PT_QU, PT_T, PT_MAX_PARTITION_DEPTH).steps();
+
+                fprintf(stderr,
+                        "Warning: \n"
+                        "  You try to build a ptserver from a very big database!\n"
+                        "\n"
+                        "  The memory installed on your machine would require to build the ptserver\n"
+                        "  in %i passes, but the maximum allowed number of passes is %i.\n"
+                        "\n"
+                        "  As a result the build of this server may cause your machine to swap huge\n"
+                        "  amounts of memory and will possibly run for days, weeks or even months.\n"
+                        ,
+                        req_passes,
+                        allowed_passes);
+
+                partsize = PT_MAX_PARTITION_DEPTH;
+            }
+
+
+            pt_assert(partsize <= PT_MAX_PARTITION_DEPTH);
 
             PrefixIterator partitionPrefix(PT_QU, PT_T, partsize);
             int            passes = partitionPrefix.steps();
@@ -321,7 +375,6 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                                        passes);
 
             int  currPass = 0;
-            long last_obj = 0;
             while (!partitionPrefix.done()) {
                 ++currPass;
                 arb_progress data_progress(GBS_global_string("pass %i/%i", currPass, passes), psg.data_count);
@@ -350,7 +403,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                 dump_memusage();
 #endif
                 
-                pos = PTD_save_partial_tree(out, pt, partitionPrefix.prefix(), partitionPrefix.length(), pos, &last_obj, error);
+                pos = PTD_save_lower_tree(out, pt, pos, error);
                 if (error) break;
 
 #ifdef PTM_DEBUG_NODES
@@ -359,17 +412,9 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                 ++partitionPrefix;
             }
 
+            long last_obj = 0;
             if (!error) {
-                if (partsize) {
-#if defined(PTM_TRACE_MAX_MEM_USAGE)
-                    dump_memusage();
-#endif
-                    
-                    pos = PTD_save_partial_tree(out, pt, NULL, 0, pos, &last_obj, error);
-#ifdef PTM_DEBUG_NODES
-                    PTD_debug_nodes();
-#endif
-                }
+                pos = PTD_save_upper_tree(out, pt, pos, last_obj, error);
             }
             if (!error) {
                 bool need64bit = false; // does created db need a 64bit ptserver ?

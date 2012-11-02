@@ -1028,10 +1028,12 @@ void TEST_chains() {
         FILE      *out = fopen("/dev/null", "wb");
         ARB_ERROR  error;
         long       root_pos;
-        PTD_save_partial_tree(out, root, NULL, 0, 0, &root_pos, error);
+
+        long pos = PTD_save_lower_tree(out, root, 0, error);
+        pos      = PTD_save_upper_tree(out, root, pos, root_pos, error);
 
         TEST_ASSERT_NO_ERROR(error.deliver());
-        TEST_ASSERT_EQUAL(root_pos, 43);
+        TEST_EXPECT(all().of(that(root_pos).is_equal_to(43), that(pos).is_equal_to(48)));
 
         TEST_ASSERT_EQUAL(PT_read_type(root), PT_NT_SAVED);
         MEM.put(root, get_memsize_of_saved(root));
