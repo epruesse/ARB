@@ -256,11 +256,23 @@ long PTD_save_upper_tree(FILE *out, POS_TREE *node, long pos, long& node_pos, AR
 
 #if defined(PTM_TRACE_MAX_MEM_USAGE)
 static void dump_memusage() {
+    fflush(stdout);
+    printf("\n------------------------------ dump_memusage:\n");
+
     malloc_stats();
+    pid_t     pid   = getpid();
+    char     *cmd   = GBS_global_string_copy("pmap -d %i | grep -v lib", pid);
+    GB_ERROR  error = GBK_system(cmd);
+    if (error) {
+        printf("Warning: %s\n", error);
+    }
+    free(cmd);
+    printf("------------------------------ dump_memusage [end]\n");
+    fflush(stdout);
 }
 #endif
 
-ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESULT
+ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__USERESULT
     // initialize tree and call the build pos tree procedure
 
     ARB_ERROR error;
@@ -328,19 +340,19 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
                     overallBases /= 4; // ignore PT_N- and PT_QU-branches (they are very small compared with other branches)
                     partsize ++;
                 }
-#if defined(DEBUG) && 1
+// #if defined(DEBUG) && 1
                 // @@@ deactivate when fixed
                 // when active, uncomment ../UNIT_TESTER/TestEnvironment.cxx@TEST_AUTO_UPDATE
 
                 // partsize = 0; // works
-                // partsize = 1; // works
-                partsize = 2; // works
+                partsize = 1; // works
+                // partsize = 2; // works
                 // partsize = 3; // works
                 // partsize = 4; // works
                 // partsize = 5; // to test warning below
 
                 printf("OVERRIDE: Forcing partsize=%i\n", partsize);
-#endif
+// #endif
             }
 
             if (partsize>PT_MAX_PARTITION_DEPTH) {
@@ -477,6 +489,23 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , char *tname) { // __ATTR__USERESU
         }
         free(t2name);
     }
+
+    // @@@ disable later:
+    {
+        char *related = strdup(tname);
+        char *starpos = strstr(related, ".arb.pt");
+
+        pt_assert(starpos);
+        strcpy(starpos, ".*");
+
+        char     *listRelated = GBS_global_string_copy("ls -al %s", related);
+        GB_ERROR  error       = GBK_system(listRelated);
+
+        if (error) fprintf(stderr, "Warning: %s\n", error);
+        free(listRelated);
+        free(related);
+    }
+
     return error;
 }
 

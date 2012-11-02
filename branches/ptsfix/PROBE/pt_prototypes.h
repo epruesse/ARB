@@ -17,7 +17,7 @@
 
 long PTD_save_lower_tree(FILE *out, POS_TREE *node, long pos, ARB_ERROR &error);
 long PTD_save_upper_tree(FILE *out, POS_TREE *node, long pos, long &node_pos, ARB_ERROR &error);
-ARB_ERROR enter_stage_1_build_tree(PT_main *, char *tname) __ATTR__USERESULT;
+ARB_ERROR enter_stage_1_build_tree(PT_main *, const char *tname) __ATTR__USERESULT;
 ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) __ATTR__USERESULT;
 
 /* PT_debug.cxx */

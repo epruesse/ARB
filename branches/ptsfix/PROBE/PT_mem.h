@@ -27,11 +27,9 @@
 
 #define PTM_MANAGED_MEMORY // comment-out to use malloc/free => can use valgrind
 
-#if defined(DEBUG)
-# if defined(PTM_MANAGED_MEMORY)
+#if defined(PTM_MANAGED_MEMORY)
 # define PTM_MEM_DUMP_STATS
 // #  define PTM_MEM_CHECKED_FREE // careful: slow as hell!
-# endif
 #endif
 
 #define PTM_MIN_SIZE (int(sizeof(PT_PNTR))+1) // see .@PTM_MIN_SIZE_RESTRICTED
