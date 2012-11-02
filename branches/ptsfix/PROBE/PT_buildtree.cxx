@@ -33,9 +33,25 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const DataLoc& loc) {
     while (PT_read_type(at) == PT_NT_NODE) {    // now we got an inner node
         POS_TREE *pt_next = PT_read_son_stage_1(at, loc[height]);
         if (!pt_next) { // there is no son of that type -> simply add the new son to that path
-            bool atRoot = (at == root);
-            PT_create_leaf(&at, loc[height], loc);
-            return atRoot ? at : root; // inside tree return old root, otherwise new root has been created
+            POS_TREE *new_root = root;
+            POS_TREE *leaf;
+            {
+                bool atRoot = (at == root);
+
+                leaf = PT_create_leaf(&at, loc[height], loc);
+                ++height;
+
+                if (atRoot) new_root = at;
+            }
+
+            while (height<PT_MIN_TREE_HEIGHT && loc[height-1] != PT_QU) {
+                at   = PT_change_leaf_to_node(leaf);
+                leaf = PT_create_leaf(&at, loc[height], loc);
+                ++height;
+            }
+
+            pt_assert(height >= PT_MIN_TREE_HEIGHT || loc[height-1] == PT_QU);
+            return new_root;
         }
         else {            // go down the tree
             at = pt_next;

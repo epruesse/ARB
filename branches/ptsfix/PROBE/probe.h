@@ -48,9 +48,13 @@ typedef unsigned char uchar;
 
 #define PT_CORE *(int *)0 = 0;
 
+#define PT_MAX_PARTITION_DEPTH 4
+
 #define PT_POS_TREE_HEIGHT 20
-#define PT_POS_SECURITY    10
-#define MIN_PROBE_LENGTH   2
+#define PT_MIN_TREE_HEIGHT PT_MAX_PARTITION_DEPTH
+
+#define PT_POS_SECURITY  10
+#define MIN_PROBE_LENGTH 2
 
 enum PT_MATCH_TYPE {
     PT_MATCH_TYPE_INTEGER           = 0,
