@@ -202,12 +202,12 @@ POS_TREE *PT_leaf_to_chain(POS_TREE *node) {
 
     char *data = (&new_elem->data)+sizeof(PT_PNTR);
     if (loc.apos>PT_SHORT_SIZE) {
-        PT_WRITE_INT(data, loc.apos);
+        PT_write_int(data, loc.apos);
         data+=4;
         new_elem->flags|=1;
     }
     else {                                                      
-        PT_WRITE_SHORT(data, loc.apos);
+        PT_write_short(data, loc.apos);
         data+=2;
     }
     PT_write_pointer(data, NULL);
@@ -282,30 +282,30 @@ POS_TREE *PT_create_leaf(POS_TREE **pfather, PT_BASES base, const DataLoc& loc) 
 
     char *dest = (&node->data) + sizeof(PT_PNTR);
     if (loc.name>PT_SHORT_SIZE) {
-        PT_WRITE_INT(dest, loc.name);
+        PT_write_int(dest, loc.name);
         node->flags |= 1;
         dest += 4;
     }
     else {
-        PT_WRITE_SHORT(dest, loc.name);
+        PT_write_short(dest, loc.name);
         dest += 2;
     }
     if (loc.rpos>PT_SHORT_SIZE) {
-        PT_WRITE_INT(dest, loc.rpos);
+        PT_write_int(dest, loc.rpos);
         node->flags |= 2;
         dest += 4;
     }
     else {
-        PT_WRITE_SHORT(dest, loc.rpos);
+        PT_write_short(dest, loc.rpos);
         dest += 2;
     }
     if (loc.apos>PT_SHORT_SIZE) {
-        PT_WRITE_INT(dest, loc.apos);
+        PT_write_int(dest, loc.apos);
         node->flags |= 4;
         dest += 4;
     }
     else {
-        PT_WRITE_SHORT(dest, loc.apos);
+        PT_write_short(dest, loc.apos);
         dest += 2;
     }
 
@@ -333,10 +333,10 @@ void PTD_clear_fathers(POS_TREE *node) {
 void PTD_put_longlong(FILE *out, ULONG i) {
     pt_assert(i == (unsigned long) i);
     const size_t SIZE = 8;
-    COMPILE_ASSERT(sizeof(PT_PNTR) == SIZE); // this function only works and only gets called at 64-bit
+    COMPILE_ASSERT(sizeof(uint_big) == SIZE); // this function only works and only gets called at 64-bit
 
     unsigned char buf[SIZE];
-    PT_WRITE_LONG(buf, i);
+    PT_write_long(buf, i);
     ASSERT_RESULT(size_t, SIZE, fwrite(buf, 1, SIZE, out));
 }
 #endif
@@ -348,7 +348,7 @@ void PTD_put_int(FILE *out, ULONG i) {
     COMPILE_ASSERT(sizeof(PT_PNTR) == SIZE); // in 32bit mode ints are used to store pointers
 #endif
     unsigned char buf[SIZE];
-    PT_WRITE_INT(buf, i);
+    PT_write_int(buf, i);
     ASSERT_RESULT(size_t, SIZE, fwrite(buf, 1, SIZE, out));
 }
 
@@ -356,14 +356,14 @@ void PTD_put_short(FILE *out, ULONG i) {
     pt_assert(i == (unsigned short) i);
     const size_t SIZE = 2;
     unsigned char buf[SIZE];
-    PT_WRITE_SHORT(buf, i);
+    PT_write_short(buf, i);
     ASSERT_RESULT(size_t, SIZE, fwrite(buf, 1, SIZE, out));
 }
 
 void PTD_put_byte(FILE *out, ULONG i) {
     pt_assert(i == (unsigned char) i);
     unsigned char ch;
-    PT_WRITE_CHAR(&ch, i);
+    PT_write_char(&ch, i);
     fputc(ch, out);
 }
 
@@ -384,19 +384,19 @@ static void PTD_set_object_to_saved_status(POS_TREE *node, long pos_start, int f
     pt_assert_stage(STAGE1);
     node->flags = 0x20; // sets node type to PT_NT_SAVED; see PT_prefixtree.cxx@PT_NT_SAVED
 
-    PT_WRITE_BIG(&node->data, pos_start);
+    PT_write_big(&node->data, pos_start);
 
     pt_assert(former_size >= int(MIN_NODE_SIZE));
 
     COMPILE_ASSERT((MAX_SIZE_IN_FLAGS-MIN_SIZE_IN_FLAGS+1) == SIZE_MASK); // ????0000 means "size not stored in flags"
 
     if (former_size >= MIN_SIZE_IN_FLAGS && former_size <= MAX_SIZE_IN_FLAGS) {
-        pt_assert(former_size >= int(sizeof(big_uint)));
+        pt_assert(former_size >= int(sizeof(uint_big)));
         node->flags |= former_size-FLAG_SIZE_REDUCTION;
     }
     else {
-        pt_assert(former_size >= int(sizeof(big_uint)+sizeof(int)));
-        PT_WRITE_INT((&node->data)+sizeof(big_uint), former_size);
+        pt_assert(former_size >= int(sizeof(uint_big)+sizeof(int)));
+        PT_write_int((&node->data)+sizeof(uint_big), former_size);
     }
 }
 
@@ -406,7 +406,7 @@ inline int get_memsize_of_saved(const POS_TREE *node) {
         memsize += FLAG_SIZE_REDUCTION;
     }
     else {
-        PT_READ_INT((&node->data)+sizeof(PT_PNTR), memsize);
+        memsize = PT_read_int(&node->data+sizeof(PT_PNTR));
     }
     return memsize;
 }
@@ -461,16 +461,18 @@ static long PTD_write_chain_to_disk(FILE *out, POS_TREE * const node, const long
     int         mainapos;
 
     if (node->flags&1) {
-        PT_READ_INT(data, mainapos);
+        mainapos = PT_read_int(data);
         PTD_put_int(out, mainapos);
+
         data += 4;
-        pos += 4;
+        pos  += 4;
     }
     else {
-        PT_READ_SHORT(data, mainapos);
+        mainapos = PT_read_short(data);
         PTD_put_short(out, mainapos);
+
         data += 2;
-        pos += 2;
+        pos  += 2;
     }
 
     reverse_chain(node);
@@ -701,9 +703,7 @@ long PTD_write_leafs_to_disk(FILE *out, POS_TREE * const node, long pos, long *n
     PT_NODE_TYPE type = PT_read_type(node);
 
     if (type == PT_NT_SAVED) { // already saved
-        big_uint written_at;
-        PT_READ_BIG(&node->data, written_at);
-        *node_pos = written_at;
+        *node_pos = PT_read_big(&node->data);
     }
     else if (type == PT_NT_LEAF) {
         *node_pos = pos;
@@ -754,14 +754,14 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE **pnode) { // __A
         long  size = GB_size_of_file(fname);
         char *main = &(buffer[size-4]);
 
-        long i;
         bool big_db = false;
-        PT_READ_INT(main, i);
+
+        long i = PT_read_int(main);
 #ifdef ARB_64
         if (i == 0xffffffff) {                    // 0xffffffff signalizes that "last_obj" is stored
             main -= 8;                            // in the previous 8 byte (in a long long)
             COMPILE_ASSERT(sizeof(PT_PNTR) == 8); // 0xffffffff is used to signalize to be compatible with older pt-servers
-            PT_READ_BIG(main, i);                 // this search tree can only be loaded at 64 Bit
+            i      = PT_read_big(main);           // this search tree can only be loaded at 64 Bit
             big_db = true;
         }
 #else
@@ -774,18 +774,15 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE **pnode) { // __A
 
         // try to find info_area
         main -= 2;
-        short info_size;
-        PT_READ_SHORT(main, info_size);
 
-        bool info_detected = false;
+        short info_size     = PT_read_short(main);
+        bool  info_detected = false;
+
         if (info_size>0 && info_size<(main-buffer)) {   // otherwise impossible size
             main -= info_size;
 
-            long magic;
-            int  version;
-
-            PT_READ_INT(main, magic); main += 4;
-            PT_READ_CHAR(main, version); main++;
+            long magic   = PT_read_int(main); main += 4;
+            int  version = PT_read_char(main); main++;
 
             pt_assert(PT_SERVER_MAGIC>0 && PT_SERVER_MAGIC<INT_MAX);
 
@@ -870,7 +867,7 @@ static arb_test::match_expectation has_proper_saved_state(POS_TREE *node, int si
     using namespace arb_test;
 
     int unmodified = 0xffffffff;
-    PT_WRITE_INT((&node->data)+sizeof(PT_PNTR), unmodified);
+    PT_write_int((&node->data)+sizeof(PT_PNTR), unmodified);
 
     PTD_set_object_to_saved_status(node, 0, size);
 
@@ -878,8 +875,7 @@ static arb_test::match_expectation has_proper_saved_state(POS_TREE *node, int si
     expected.add(that(PT_read_type(node)).is_equal_to(PT_NT_SAVED));
     expected.add(that(get_memsize_of_saved(node)).is_equal_to(size));
 
-    int data_after;
-    PT_READ_INT((&node->data)+sizeof(PT_PNTR), data_after);
+    int data_after = PT_read_int(&node->data+sizeof(PT_PNTR));
 
     if (expect_in_flags) {
         expected.add(that(data_after).is_equal_to(unmodified));

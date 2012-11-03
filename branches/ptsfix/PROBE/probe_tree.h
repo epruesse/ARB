@@ -223,10 +223,10 @@ inline const char *PT_READ_CHAIN_ENTRY_stage_3(const char *ptr, int mainapos, in
     else {
         if (rcei&0x80) {
             if (rcei&0x40) {
-                PT_READ_INT(rcep, rcei); rcep+=4; rcei &= 0x3fffffff;
+                rcei = PT_read_int(rcep); rcep+=4; rcei &= 0x3fffffff;
             }
             else {
-                PT_READ_SHORT(rcep, rcei); rcep+=2; rcei &= 0x3fff;
+                rcei = PT_read_short(rcep); rcep+=2; rcei &= 0x3fff;
             }
         }
         else {
@@ -238,19 +238,19 @@ inline const char *PT_READ_CHAIN_ENTRY_stage_3(const char *ptr, int mainapos, in
         bool isapos = rcei&0x80;
 
         if (rcei&0x40) {
-            PT_READ_INT(rcep, rcei); rcep+=4; rcei &= 0x3fffffff;
+            rcei = PT_read_int(rcep); rcep+=4; rcei &= 0x3fffffff;
         }
         else {
-            PT_READ_SHORT(rcep, rcei); rcep+=2; rcei &= 0x3fff;
+            rcei = PT_read_short(rcep); rcep+=2; rcei &= 0x3fff;
         }
         *rpos = (int)rcei;
         if (isapos) {
             rcei = (*rcep);
             if (rcei&0x80) {
-                PT_READ_INT(rcep, rcei); rcep+=4; rcei &= 0x7fffffff;
+                rcei = PT_read_int(rcep); rcep+=4; rcei &= 0x7fffffff;
             }
             else {
-                PT_READ_SHORT(rcep, rcei); rcep+=2; rcei &= 0x7fff;
+                rcei = PT_read_short(rcep); rcep+=2; rcei &= 0x7fff;
             }
             *apos = (int)rcei;
         }
@@ -271,35 +271,35 @@ inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr, const int mainapos, in
     }
     else if (name <0x3fff) {
         name |= 0x8000;
-        PT_WRITE_SHORT(wcep, name);
+        PT_write_short(wcep, name);
         wcep += 2;
     }
     else {
         name |= 0xc0000000;
-        PT_WRITE_INT(wcep, name);
+        PT_write_int(wcep, name);
         wcep += 4;
     }
 
     int isapos = (apos == mainapos) ? 0 : 0x80;
     if (rpos < 0x3fff) {        // write the rpos
         // 0x7fff, mit der rpos vorher verglichen wurde war zu gross
-        PT_WRITE_SHORT(wcep, rpos);
+        PT_write_short(wcep, rpos);
         *wcep |= isapos;
         wcep += 2;
     }
     else {
-        PT_WRITE_INT(wcep, rpos);
+        PT_write_int(wcep, rpos);
         *wcep |= 0x40+isapos;
         wcep += 4;
     }
 
     if (isapos) {           // write the apos
         if (apos < 0x7fff) {
-            PT_WRITE_SHORT(wcep, apos);
+            PT_write_short(wcep, apos);
             wcep += 2;
         }
         else {
-            PT_WRITE_INT(wcep, apos);
+            PT_write_int(wcep, apos);
             *wcep |= 0x80;
             wcep += 4;
         }
@@ -323,10 +323,11 @@ inline POS_TREE *PT_read_son_stage_3(POS_TREE *node, PT_BASES base) { // stage 3
     if (!((1<<base) & node->flags)) { // bit not set
         return NULL;
     }
-    
+
     UINT sec  = (uchar)node->data;   // read second byte for charshort/shortlong info
     long i    = PT_GLOBAL.count_bits[base][node->flags];
     i        += PT_GLOBAL.count_bits[base][sec];
+
 #ifdef ARB_64
     if (sec & LONG_SONS) {
         if (sec & INT_SONS) {                                   // undefined -> error
@@ -341,11 +342,10 @@ inline POS_TREE *PT_read_son_stage_3(POS_TREE *node, PT_BASES base) { // stage 3
 #endif
             UINT offset = 4 * i;
             if ((1<<base) & sec) {              // long
-                COMPILE_ASSERT(sizeof(PT_PNTR) == 8); // 64-bit necessary
-                PT_READ_LONG((&node->data+1)+offset, i);
+                i = PT_read_long(&node->data+1+offset);
             }
             else {                                              // int
-                PT_READ_INT((&node->data+1)+offset, i);
+                i = PT_read_int(&node->data+1+offset);
             }
         }
 
@@ -354,19 +354,19 @@ inline POS_TREE *PT_read_son_stage_3(POS_TREE *node, PT_BASES base) { // stage 3
         if (sec & INT_SONS) {                                   // int/short
             UINT offset = i+i;
             if ((1<<base) & sec) {                              // int
-                PT_READ_INT((&node->data+1)+offset, i);
+                i = PT_read_int(&node->data+1+offset);
             }
             else {                                              // short
-                PT_READ_SHORT((&node->data+1)+offset, i);
+                i = PT_read_short(&node->data+1+offset);
             }
         }
         else {                                                  // short/char
             UINT offset = i;
             if ((1<<base) & sec) {                              // short
-                PT_READ_SHORT((&node->data+1)+offset, i);
+                i = PT_read_short(&node->data+1+offset);
             }
             else {                                              // char
-                PT_READ_CHAR((&node->data+1)+offset, i);
+                i = PT_read_char(&node->data+1+offset);
             }
         }
     }
@@ -374,19 +374,19 @@ inline POS_TREE *PT_read_son_stage_3(POS_TREE *node, PT_BASES base) { // stage 3
     if (sec & LONG_SONS) {
         UINT offset = i+i;
         if ((1<<base) & sec) {
-            PT_READ_INT((&node->data+1)+offset, i);
+            i = PT_read_int(&node->data+1+offset);
         }
         else {
-            PT_READ_SHORT((&node->data+1)+offset, i);
+            i = PT_read_short(&node->data+1+offset);
         }
     }
     else {
         UINT offset = i;
         if ((1<<base) & sec) {
-            PT_READ_SHORT((&node->data+1)+offset, i);
+            i = PT_read_short(&node->data+1+offset);
         }
         else {
-            PT_READ_CHAR((&node->data+1)+offset, i);
+            i = PT_read_char(&node->data+1+offset);
         }
     }
 #endif
@@ -439,9 +439,9 @@ struct DataLoc {
     void init_from_leaf(POS_TREE *node) {
         pt_assert(PT_read_type(node) == PT_NT_LEAF);
         const char *data = node_data_start(node);
-        if (node->flags&1) { PT_READ_INT(data, name); data += 4; } else { PT_READ_SHORT(data, name); data += 2; }
-        if (node->flags&2) { PT_READ_INT(data, rpos); data += 4; } else { PT_READ_SHORT(data, rpos); data += 2; }
-        if (node->flags&4) { PT_READ_INT(data, apos); data += 4; } else { PT_READ_SHORT(data, apos); /*data += 2;*/ }
+        if (node->flags&1) { name = PT_read_int(data); data += 4; } else { name = PT_read_short(data); data += 2; }
+        if (node->flags&2) { rpos = PT_read_int(data); data += 4; } else { rpos = PT_read_short(data); data += 2; }
+        if (node->flags&4) { apos = PT_read_int(data); data += 4; } else { apos = PT_read_short(data); /*data += 2;*/ }
 
         pt_assert(has_valid_name());
         pt_assert(apos >= 0);
@@ -503,12 +503,12 @@ public:
         pt_assert(PT_read_type(node) == PT_NT_CHAIN);
 
         if (node->flags&1) {
-            PT_READ_INT(data, mainapos);
-            data += 4;
+            mainapos  = PT_read_int(data);
+            data     += 4;
         }
         else {
-            PT_READ_SHORT(data, mainapos);
-            data += 2;
+            mainapos  = PT_read_short(data);
+            data     += 2;
         }
 
         if (psg.ptdata->get_stage() == STAGE1) {

@@ -23,6 +23,17 @@
 
 typedef void * PT_PNTR;
 
+typedef unsigned char  uint_8;
+typedef unsigned short uint_16;
+typedef unsigned int   uint_32;
+typedef unsigned long  uint_64;
+
+#if defined(ARB_64)
+typedef uint_64 uint_big;
+#else
+typedef uint_32 uint_big;
+#endif
+
 // ----------------------
 //      bswap for OSX
 
@@ -57,94 +68,53 @@ static inline unsigned long long bswap_64(unsigned long long x) {
 // ----------------------------
 //      read/write numbers
 
-#define PT_READ_CHAR(ptr, my_int_i)             \
-    do {                                        \
-        (my_int_i) = *(unsigned char *)(ptr);   \
-    } while (0)
-
-#define PT_WRITE_CHAR(ptr, my_int_i)            \
-    do {                                        \
-        *(unsigned char *)(ptr) = (my_int_i);   \
-    } while (0)
-
-#define PT_READ_SHORT(ptr, my_int_i)                    \
-    do {                                                \
-        COMPILE_ASSERT(sizeof(my_int_i) >= 2);          \
-        (my_int_i) = bswap_16(*(unsigned short*)(ptr)); \
-    } while (0)
-
-#define PT_WRITE_SHORT(ptr, my_int_i)                                   \
-    do {                                                                \
-        unsigned short *usptr = (unsigned short*)(ptr);                 \
-        *usptr                = bswap_16((unsigned short)(my_int_i));   \
-    } while (0)
-
-#define PT_READ_INT(ptr, my_int_i)                      \
-    do {                                                \
-        COMPILE_ASSERT(sizeof(my_int_i) >= 4);          \
-        unsigned int *uiptr = (unsigned int*)(ptr);     \
-        (my_int_i)=(unsigned int)bswap_32(*uiptr);      \
-    } while (0)
-
-#define PT_WRITE_INT(ptr, my_int_i)                                     \
-    do {                                                                \
-        unsigned int *uiptr = (unsigned int*)(ptr);                     \
-        *uiptr              = bswap_32((unsigned int)(my_int_i));       \
-    } while (0)
-
-
-#if defined(ARB_64)
-# define PT_READ_LONG(ptr, my_int_i)                            \
-    do {                                                        \
-        COMPILE_ASSERT(sizeof(my_int_i) == 8);                  \
-        unsigned long *ulptr = (unsigned long*)(ptr);           \
-        (my_int_i)           = (unsigned long)bswap_64(*ulptr); \
-    } while (0)
-
-# define PT_WRITE_LONG(ptr, my_int_i)                                   \
-    do {                                                                \
-        unsigned long *ulptr = (unsigned long*)(ptr);                   \
-        *ulptr               = bswap_64((unsigned long)(my_int_i));     \
-    } while (0)
-#endif
-
-#if defined(ARB_64)
-typedef unsigned long big_uint;
-# define PT_READ_BIG(ptr,my_int_i)  PT_READ_LONG(ptr, my_int_i)
-# define PT_WRITE_BIG(ptr,my_int_i) PT_WRITE_LONG(ptr, my_int_i)
+inline uint_8   PT_read_char (const void *fromMem)  { return *(uint_8*)fromMem; }
+inline uint_16  PT_read_short(const void *fromMem)  { return bswap_16(*(uint_16*)fromMem); }
+inline uint_32  PT_read_int  (const void *fromMem)  { return bswap_32(*(uint_32*)fromMem); }
+#if defined(ARB_64)                                
+inline uint_64  PT_read_long (const void *fromMem)  { return bswap_64(*(uint_64*)fromMem); }
+inline uint_big PT_read_big  (const void *fromMem)  { return PT_read_long(fromMem); }
 #else
-typedef unsigned int big_uint;
-# define PT_READ_BIG(ptr,my_int_i)  PT_READ_INT(ptr, my_int_i)
-# define PT_WRITE_BIG(ptr,my_int_i) PT_WRITE_INT(ptr, my_int_i)
+inline uint_big PT_read_big  (const void *fromMem)  { return PT_read_int(fromMem); }
 #endif
 
+inline void PT_write_char (void *toMem, uint_8  i)  { *(uint_8*) toMem = i; }
+inline void PT_write_short(void *toMem, uint_16 i)  { *(uint_16*)toMem = bswap_16(i); }
+inline void PT_write_int  (void *toMem, uint_32 i)  { *(uint_32*)toMem = bswap_32(i); }
+#if defined(ARB_64)
+inline void PT_write_long (void *toMem, uint_64 i)  { *(uint_64*)toMem = bswap_64(i); }
+inline void PT_write_big  (void *toMem, uint_big i) { PT_write_long(toMem, i); }
+#else
+inline void PT_write_big  (void *toMem, uint_big i) { PT_write_int(toMem, i); }
+#endif
 
 // ------------------------------------------------
 //      compressed read/write positive numbers
 
-#define PT_WRITE_NAT(ptr, i)                    \
-    do {                                        \
-        pt_assert(i >= 0);                      \
-        if (i >= 0x7FFE)                        \
-        {                                       \
-            PT_WRITE_INT(ptr, i|0x80000000);    \
-            ptr += sizeof(int);                 \
-        }                                       \
-        else                                    \
-        {                                       \
-            PT_WRITE_SHORT(ptr, i);             \
-            ptr += sizeof(short);               \
-        }                                       \
+#define PT_WRITE_NAT(ptr, i)                            \
+    do {                                                \
+        pt_assert((i) >= 0);                            \
+        if ((i) >= 0x7FFE) {                            \
+            PT_write_int((ptr), (i)|0x80000000);        \
+            (ptr) += sizeof(int);                       \
+        }                                               \
+        else {                                          \
+            PT_write_short((ptr), (i));                 \
+            (ptr) += sizeof(short);                     \
+        }                                               \
     } while (0)
 
-#define PT_READ_NAT(ptr, i)                                             \
-    do {                                                                \
-        if (*ptr & 0x80) {                                              \
-            PT_READ_INT(ptr, i); ptr += sizeof(int); i &= 0x7fffffff;   \
-        }                                                               \
-        else {                                                          \
-            PT_READ_SHORT(ptr, i); ptr += sizeof(short);                \
-        }                                                               \
+#define PT_READ_NAT(ptr, i)                     \
+    do {                                        \
+        if (*(ptr) & 0x80) {                    \
+            (i)    = PT_read_int(ptr);          \
+            (ptr) += sizeof(int);               \
+            (i)   &= 0x7fffffff;                \
+        }                                       \
+        else {                                  \
+            (i)    = PT_read_short(ptr);        \
+            (ptr) += sizeof(short);             \
+        }                                       \
     } while (0)
 
 
@@ -152,16 +122,10 @@ typedef unsigned int big_uint;
 //      read/write pointers
 
 
-COMPILE_ASSERT(sizeof(void*) == sizeof(big_uint));
+COMPILE_ASSERT(sizeof(void*) == sizeof(uint_big));
 
-inline void *PT_read_void_pointer(const void *fromMem) {
-    big_uint i;
-    PT_READ_BIG(fromMem, i);
-    return (void*)i;
-}
-inline void PT_write_pointer(void *toMem, const void *thePtr) {
-    PT_WRITE_BIG(toMem, (big_uint)thePtr);
-}
+inline void *PT_read_void_pointer(const void *fromMem) { return (void*)PT_read_big(fromMem); }
+inline void PT_write_pointer(void *toMem, const void *thePtr) { PT_write_big(toMem, (uint_big)thePtr); }
 
 template<typename POINTED>
 inline POINTED* PT_read_pointer(const void *fromMem) { return (POINTED*)PT_read_void_pointer(fromMem); }
