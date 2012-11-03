@@ -408,7 +408,7 @@ inline int get_memsize_of_saved(const POS_TREE *node) {
 }
 
 static long PTD_write_tip_to_disk(FILE *out, POS_TREE *node, const long oldpos) {
-    putc(node->flags, out);         // save type
+    fputc(node->flags, out);         // save type
     int size = PT_LEAF_SIZE(node);
     // write 4 bytes when not in stage 2 save mode
 
@@ -460,7 +460,7 @@ static long PTD_write_chain_to_disk(FILE *out, POS_TREE * const node, const long
 
     long pos = oldpos;
 
-    putc(node->flags, out);         // save type
+    fputc(node->flags, out);         // save type
     pos++;
 
     const char *data = node_data_start(node);
@@ -507,7 +507,7 @@ static long PTD_write_chain_to_disk(FILE *out, POS_TREE * const node, const long
         }
     }
 
-    putc(PT_CHAIN_END, out);
+    fputc(PT_CHAIN_END, out);
     pos++;
     pt_assert(pos >= 0);
     PTD_set_object_to_saved_status(node, oldpos, data+sizeof(PT_PNTR)-(char*)node);
@@ -575,11 +575,11 @@ static long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, cons
     if ((count == 1) && (max_diff<=9) && (max_diff != 2)) { // nodesingle
         if (max_diff>2) max_diff -= 2; else max_diff -= 1;
         long flags = 0xc0 | lasti | (max_diff << 3);
-        putc((int)flags, out);
+        fputc((int)flags, out);
         psg.stat.single_node++;
     }
     else {                          // multinode
-        putc(node->flags, out);
+        fputc(node->flags, out);
         int flags2 = 0;
         int level;
 #ifdef ARB_64
@@ -618,7 +618,7 @@ static long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, cons
                 if (diff>level) flags2 |= 1<<i;
             }
         }
-        putc(flags2, out);
+        fputc(flags2, out);
         size++;
         for (int i = PT_QU; i < PT_B_MAX; i++) {    // write the data
             if (r_poss[i]) {
@@ -657,7 +657,7 @@ static long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, cons
                         psg.stat.shorts2++;
                     }
                     else {                          // char             (bit[i] in flags2 is unset)
-                        putc((int)diff, out);
+                        fputc((int)diff, out);
                         size += 1;
                         psg.stat.chars++;
                     }
@@ -682,7 +682,7 @@ static long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, cons
                         psg.stat.shorts2++;
                     }
                     else {                          // char
-                        putc((int)diff, out);
+                        fputc((int)diff, out);
                         size += 1;
                         psg.stat.chars++;
                     }

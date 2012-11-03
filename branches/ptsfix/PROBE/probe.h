@@ -117,12 +117,11 @@ inline void reverse_probe(char *seq, int len) {
 //      POS TREE
 
 enum PT_NODE_TYPE {
-    PT_NT_LEAF        = 0,
-    PT_NT_CHAIN       = 1,
-    PT_NT_NODE        = 2,
-    PT_NT_SINGLE_NODE = 3,                          // stage 3
-    PT_NT_SAVED       = 3,                          // stage 1+2
-    PT_NT_UNDEF       = 4
+    PT_NT_LEAF  = 0,
+    PT_NT_CHAIN = 1,
+    PT_NT_NODE  = 2,
+    PT_NT_SAVED = 3, // stage 1 only
+    PT_NT_UNDEF = 4
 };
 
 struct POS_TREE {
@@ -144,7 +143,7 @@ public:
     int get_offset() const { return data_offset; } // @@@ rename
 
     void use_rel_pointers(char *relStartAddress) { data_start = relStartAddress; }
-    POS_TREE *rel2abs(unsigned long relPtr) const { return (POS_TREE*)(data_start+relPtr); } // @@@ arg->POS_TREE
+    POS_TREE *rel2abs(unsigned long relPtr) const { return (POS_TREE*)(data_start+relPtr); } // @@@ elim (only used in stage1 where it makes no sense)
 };
 
 // ---------------------

@@ -301,7 +301,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
                 }
             }
 
-            putc(0, out);       // disable zero father
+            fputc(0, out);       // disable zero father
             long pos = 1;
 
             // now temp file exists -> trigger ptserver-selectionlist-update in all
@@ -499,9 +499,9 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
         strcpy(starpos, ".*");
 
         char     *listRelated = GBS_global_string_copy("ls -al %s", related);
-        GB_ERROR  error       = GBK_system(listRelated);
+        GB_ERROR  lserror       = GBK_system(listRelated);
 
-        if (error) fprintf(stderr, "Warning: %s\n", error);
+        if (lserror) fprintf(stderr, "Warning: %s\n", lserror);
         free(listRelated);
         free(related);
     }
