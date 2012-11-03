@@ -53,38 +53,18 @@ static inline unsigned long long bswap_64(unsigned long long x) {
 // * To use PT-server on a big-endian system it has to be skipped
 // ------------------------------------------------------------
 
-#if defined(ARB_64)
 
-# define PT_READ_LONG(ptr, my_int_i)                            \
-    do {                                                        \
-        COMPILE_ASSERT(sizeof(my_int_i) == 8);                  \
-        unsigned long *ulptr = (unsigned long*)(ptr);           \
-        (my_int_i)           = (unsigned long)bswap_64(*ulptr); \
+// ----------------------------
+//      read/write numbers
+
+#define PT_READ_CHAR(ptr, my_int_i)             \
+    do {                                        \
+        (my_int_i) = *(unsigned char *)(ptr);   \
     } while (0)
 
-
-# define PT_WRITE_LONG(ptr, my_int_i)                                   \
-    do {                                                                \
-        unsigned long *ulptr = (unsigned long*)(ptr);                   \
-        *ulptr               = bswap_64((unsigned long)(my_int_i));     \
-    } while (0)
-
-#endif
-
-// ---------------------------------
-//      Read and write to memory
-
-#define PT_READ_INT(ptr, my_int_i)                                      \
-    do {                                                                \
-        COMPILE_ASSERT(sizeof(my_int_i) >= 4);          \
-        unsigned int *uiptr = (unsigned int*)(ptr);                     \
-        (my_int_i)=(unsigned int)bswap_32(*uiptr);                      \
-    } while (0)
-
-#define PT_WRITE_INT(ptr, my_int_i)                                     \
-    do {                                                                \
-        unsigned int *uiptr = (unsigned int*)(ptr);                     \
-        *uiptr              = bswap_32((unsigned int)(my_int_i));       \
+#define PT_WRITE_CHAR(ptr, my_int_i)            \
+    do {                                        \
+        *(unsigned char *)(ptr) = (my_int_i);   \
     } while (0)
 
 #define PT_READ_SHORT(ptr, my_int_i)                    \
@@ -99,15 +79,44 @@ static inline unsigned long long bswap_64(unsigned long long x) {
         *usptr                = bswap_16((unsigned short)(my_int_i));   \
     } while (0)
 
-#define PT_READ_CHAR(ptr, my_int_i)             \
-    do {                                        \
-        (my_int_i) = *(unsigned char *)(ptr);   \
+#define PT_READ_INT(ptr, my_int_i)                      \
+    do {                                                \
+        COMPILE_ASSERT(sizeof(my_int_i) >= 4);          \
+        unsigned int *uiptr = (unsigned int*)(ptr);     \
+        (my_int_i)=(unsigned int)bswap_32(*uiptr);      \
     } while (0)
 
-#define PT_WRITE_CHAR(ptr, my_int_i)            \
-    do {                                        \
-        *(unsigned char *)(ptr) = (my_int_i);   \
+#define PT_WRITE_INT(ptr, my_int_i)                                     \
+    do {                                                                \
+        unsigned int *uiptr = (unsigned int*)(ptr);                     \
+        *uiptr              = bswap_32((unsigned int)(my_int_i));       \
     } while (0)
+
+
+#if defined(ARB_64)
+# define PT_READ_LONG(ptr, my_int_i)                            \
+    do {                                                        \
+        COMPILE_ASSERT(sizeof(my_int_i) == 8);                  \
+        unsigned long *ulptr = (unsigned long*)(ptr);           \
+        (my_int_i)           = (unsigned long)bswap_64(*ulptr); \
+    } while (0)
+
+# define PT_WRITE_LONG(ptr, my_int_i)                                   \
+    do {                                                                \
+        unsigned long *ulptr = (unsigned long*)(ptr);                   \
+        *ulptr               = bswap_64((unsigned long)(my_int_i));     \
+    } while (0)
+#endif
+
+#if defined(ARB_64)
+typedef unsigned long big_uint;
+# define PT_READ_BIG(ptr,my_int_i)  PT_READ_LONG(ptr, my_int_i)
+# define PT_WRITE_BIG(ptr,my_int_i) PT_WRITE_LONG(ptr, my_int_i)
+#else
+typedef unsigned int big_uint;
+# define PT_READ_BIG(ptr,my_int_i)  PT_READ_INT(ptr, my_int_i)
+# define PT_WRITE_BIG(ptr,my_int_i) PT_WRITE_INT(ptr, my_int_i)
+#endif
 
 
 // ------------------------------------------------
@@ -143,15 +152,20 @@ static inline unsigned long long bswap_64(unsigned long long x) {
 //      read/write pointers
 
 
-#if defined(ARB_64)
-COMPILE_ASSERT(sizeof(void*) == sizeof(unsigned long));
-# define PT_READ_PNTR(ptr,my_int_i)  PT_READ_LONG(ptr, my_int_i)
-# define PT_WRITE_PNTR(ptr,my_int_i) PT_WRITE_LONG(ptr, my_int_i)
-#else // !defined(ARB_64)
-COMPILE_ASSERT(sizeof(void*) == sizeof(unsigned int));
-# define PT_READ_PNTR(ptr,my_int_i)  PT_READ_INT(ptr, my_int_i)
-# define PT_WRITE_PNTR(ptr,my_int_i) PT_WRITE_INT(ptr, my_int_i)
-#endif
+COMPILE_ASSERT(sizeof(void*) == sizeof(big_uint));
+
+inline void *PT_read_void_pointer(const void *fromMem) {
+    big_uint i;
+    PT_READ_BIG(fromMem, i);
+    return (void*)i;
+}
+inline void PT_write_pointer(void *toMem, const void *thePtr) {
+    PT_WRITE_BIG(toMem, (big_uint)thePtr);
+}
+
+template<typename POINTED>
+inline POINTED* PT_read_pointer(const void *fromMem) { return (POINTED*)PT_read_void_pointer(fromMem); }
+
 
 #else
 #error PT_tools.h included twice

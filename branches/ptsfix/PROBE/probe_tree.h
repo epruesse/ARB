@@ -198,9 +198,7 @@ inline const char *PT_READ_CHAIN_ENTRY_stage_1(const char *entry, int *name, int
 
         *entry_size = rp-entry;
 
-        long next;
-        PT_READ_PNTR(entry, next);
-        return (char*)next;
+        return PT_read_pointer<char>(entry);
     }
 
     *name = -1;
@@ -400,9 +398,7 @@ inline POS_TREE *PT_read_son_stage_1(POS_TREE *node, PT_BASES base) {
     pt_assert_stage(STAGE1);
     if (!((1<<base) & node->flags)) return NULL;   // bit not set
     base = (PT_BASES)PT_GLOBAL.count_bits[base][node->flags];
-    long i;
-    PT_READ_PNTR(node_data_start(node) + sizeof(PT_PNTR)*base, i);
-    return psg.ptdata->rel2abs(i);
+    return PT_read_pointer<POS_TREE>(node_data_start(node) + sizeof(PT_PNTR)*base);
 }
 
 inline POS_TREE *PT_read_son(POS_TREE *node, PT_BASES base) {
@@ -422,10 +418,8 @@ inline PT_NODE_TYPE PT_read_type(const POS_TREE *node) {
 inline POS_TREE *PT_read_father(POS_TREE *node) {
     pt_assert_stage(STAGE1); // in STAGE3 POS_TREE has no father
     pt_assert(PT_read_type(node) != PT_NT_SAVED); // saved nodes do not know their father
-    long p;
-    PT_READ_PNTR(&node->data, p);
 
-    POS_TREE *father = (POS_TREE*)p;
+    POS_TREE *father = PT_read_pointer<POS_TREE>(&node->data);
 #if defined(ASSERTION_USED)
     if (father) pt_assert(PT_read_type(father) == PT_NT_NODE);
 #endif
@@ -518,9 +512,7 @@ public:
         }
 
         if (psg.ptdata->get_stage() == STAGE1) {
-            long first_entry;
-            PT_READ_PNTR(data, first_entry);
-            data = (char*)first_entry;
+            data = PT_read_pointer<char>(data);
         }
         set_loc_from_chain();
     }

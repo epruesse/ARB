@@ -225,7 +225,7 @@ class Memory : virtual Noncopyable {
             char *wp    = block;
 
             for (int b = 0; b<PTM_ELEMS_PER_BLOCK; ++b) {
-                PT_WRITE_PNTR(wp, prevPos);
+                PT_write_pointer(wp, prevPos);
                 wp[sizeof(PT_PNTR)] = PTM_magic;
 
                 prevPos  = wp;
@@ -266,11 +266,7 @@ public:
         }
 
         pt_assert(erg);
-        {
-            long i;
-            PT_READ_PNTR(((char *)free_data[tab]), i);
-            free_data[tab] = (char *)i;
-        }
+        free_data[tab] = PT_read_pointer<char>(free_data[tab]);
         memset(erg, 0, size);
         return erg;
     }
@@ -297,14 +293,9 @@ public:
                 }
             }
 #endif
-
-            int  tab = MemBlockManager::size2idx(size);
-            long i   = (long)free_data[tab];
-
-            // PTM_MIN_SIZE_RESTRICTED by amount written here
-            PT_WRITE_PNTR(block, i);
+            int tab = MemBlockManager::size2idx(size);
+            PT_write_pointer(block, free_data[tab]); // Note: PTM_MIN_SIZE_RESTRICTED by amount written here
             block[sizeof(PT_PNTR)] = PTM_magic;
-
             free_data[tab] = block;
         }
     }
