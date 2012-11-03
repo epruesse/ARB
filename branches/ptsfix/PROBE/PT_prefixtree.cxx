@@ -340,7 +340,7 @@ void PTD_put_longlong(FILE *out, ULONG i) {
     COMPILE_ASSERT(sizeof(PT_PNTR) == SIZE); // this function only works and only gets called at 64-bit
 
     unsigned char buf[SIZE];
-    PT_WRITE_PNTR(buf, i);
+    PT_WRITE_LONG(buf, i);
     ASSERT_RESULT(size_t, SIZE, fwrite(buf, 1, SIZE, out));
 }
 #endif
@@ -362,6 +362,13 @@ void PTD_put_short(FILE *out, ULONG i) {
     unsigned char buf[SIZE];
     PT_WRITE_SHORT(buf, i);
     ASSERT_RESULT(size_t, SIZE, fwrite(buf, 1, SIZE, out));
+}
+
+void PTD_put_byte(FILE *out, ULONG i) {
+    pt_assert(i == (unsigned char) i);
+    unsigned char ch;
+    PT_WRITE_CHAR(&ch, i);
+    fputc(ch, out);
 }
 
 const int    BITS_FOR_SIZE = 4;        // size is stored inside POS_TREE->flags, if it fits into lower 4 bits
@@ -460,7 +467,7 @@ static long PTD_write_chain_to_disk(FILE *out, POS_TREE * const node, const long
 
     long pos = oldpos;
 
-    fputc(node->flags, out);         // save type
+    PTD_put_byte(out, node->flags);         // save type
     pos++;
 
     const char *data = node_data_start(node);
@@ -657,7 +664,7 @@ static long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, cons
                         psg.stat.shorts2++;
                     }
                     else {                          // char             (bit[i] in flags2 is unset)
-                        fputc((int)diff, out);
+                        PTD_put_byte(out, diff);
                         size += 1;
                         psg.stat.chars++;
                     }
@@ -682,7 +689,7 @@ static long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, cons
                         psg.stat.shorts2++;
                     }
                     else {                          // char
-                        fputc((int)diff, out);
+                        PTD_put_byte(out, diff);
                         size += 1;
                         psg.stat.chars++;
                     }

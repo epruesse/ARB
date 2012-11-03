@@ -442,8 +442,9 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
 
                 // write information about database
                 long info_pos = pos;
+
                 PTD_put_int(out, PT_SERVER_MAGIC);              // marker to identify PT-Server file
-                fputc(PT_SERVER_VERSION, out);                  // version of PT-Server file
+                PTD_put_byte(out, PT_SERVER_VERSION);           // version of PT-Server file
                 pos += 4+1;
 
                 // as last element of info block, write it's size (2byte)

@@ -344,7 +344,7 @@ inline POS_TREE *PT_read_son_stage_3(POS_TREE *node, PT_BASES base) { // stage 3
             UINT offset = 4 * i;
             if ((1<<base) & sec) {              // long
                 COMPILE_ASSERT(sizeof(PT_PNTR) == 8); // 64-bit necessary
-                PT_READ_PNTR((&node->data+1)+offset, i);
+                PT_READ_LONG((&node->data+1)+offset, i);
             }
             else {                                              // int
                 PT_READ_INT((&node->data+1)+offset, i);
