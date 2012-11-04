@@ -71,6 +71,10 @@ sub add_percentages(\@) {
 
   while (not defined $totals && $nr<$maxnr) {
     my $line = $$lines_r[$nr++];
+    if (not defined($line)) {
+      print "Empty callgrind output?\n";
+      return;
+    }
     push @out, $line;
     if ($line =~ /PROGRAM TOTALS$/o) {
       ($totals,$dummy) = scanLine($line);
