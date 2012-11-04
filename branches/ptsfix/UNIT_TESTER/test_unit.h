@@ -320,9 +320,9 @@ namespace arb_test {
     class epsilon_similar {
         double epsilon;
     public:
-        epsilon_similar(double epsilon_) : epsilon(epsilon_) {}
+        epsilon_similar(double epsilon_) : epsilon(epsilon_) { arb_assert(epsilon>0.0); }
         bool operator()(const double& d1, const double& d2) const {
-            double diff = d1-d2;
+            double diff        = d1-d2;
             if (diff<0.0) diff = -diff; // do not use fabs() here
             return diff <= epsilon;
         }
