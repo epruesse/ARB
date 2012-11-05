@@ -375,6 +375,9 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
             psg.stat.cut_offs = 0;                  // statistic information
             GB_begin_transaction(psg.gb_main);
 
+            ULONG physical_memory = GB_get_physical_memory();
+            printf("Available memory: %s\n", GBS_readable_size(physical_memory*1024, "b"));
+
             Partitioner partition = decide_passes_to_use(psg.char_count, physical_memory);
             int         passes    = partition.selected_passes();
 

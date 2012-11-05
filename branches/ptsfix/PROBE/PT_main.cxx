@@ -32,8 +32,7 @@
 #define MAX_TRY 10
 #define TIME_OUT 1000*60*60*24
 
-struct probe_struct_global  psg;
-ULONG                       physical_memory = 0; // @@@ elim
+struct probe_struct_global psg;
 
 // globals of gene-pt-server
 int gene_flag = 0;
@@ -319,15 +318,6 @@ static GB_ERROR PT_init_map() { // goes to header: __ATTR__USERESULT
     return GB_end_transaction(psg.gb_main, error);
 }
 
-extern int aisc_core_on_error;
-
-static void initGlobals() {
-    aisc_core_on_error = 0;
-
-    physical_memory = GB_get_physical_memory();
-    printf("Available memory: %s\n", GBS_readable_size(physical_memory*1024, "b"));
-}
-
 __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, const char *arbdb_name, const char *pt_name, const char *exename) {
     ARB_ERROR error;
 
@@ -560,7 +550,9 @@ int ARB_main(int argc, const char *argv[]) {
 
     PT_init_psg();
     GB_install_pid(0);          // not arb_clean able
-    initGlobals();
+
+    extern int aisc_core_on_error;
+    aisc_core_on_error = 0;
 
     // parse arguments
     char *command = NULL;

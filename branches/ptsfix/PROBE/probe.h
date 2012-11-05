@@ -69,7 +69,6 @@ enum PT_MATCH_TYPE {
 #define FINDANSWER   52                             // private msg type: find result answer
 
 extern int gene_flag;           // if 'gene_flag' == 1 -> we are a gene pt server
-extern ULONG physical_memory;
 struct Hs_struct;
 
 enum type_types {
