@@ -272,6 +272,66 @@ static void dump_memusage() {
 }
 #endif
 
+static Partitioner decide_passes_to_use(ULONG overallBases, ULONG max_kb_usable) {
+    int  partsize = 0;
+
+    {
+        printf("Overall bases: %li\n", overallBases);
+
+        while (1) {
+            ULONG estimated_kb = estimate_memusage_kb(overallBases);
+            int   passes       = PrefixIterator(PT_QU, PT_T, partsize).steps();
+
+            printf("Estimated memory usage for %i passes: %s\n", passes, GBS_readable_size(estimated_kb*1024, "b"));
+
+            if (estimated_kb <= max_kb_usable) break;
+
+            overallBases /= 4; // ignore PT_N- and PT_QU-branches (they are very small compared with other branches)
+            partsize ++;
+        }
+#if defined(DEBUG) && 0
+        // @@@ deactivate when fixed
+        // when active, uncomment ../UNIT_TESTER/TestEnvironment.cxx@TEST_AUTO_UPDATE
+
+        // partsize = 0; // works
+        // partsize = 1; // works
+        // partsize = 2; // works
+        // partsize = 3; // works
+        // partsize = 4; // works
+        // partsize = 5; // to test warning below
+
+        printf("OVERRIDE: Forcing partsize=%i\n", partsize);
+#endif
+    }
+
+    if (partsize>PT_MAX_PARTITION_DEPTH) {
+        int req_passes     = PrefixIterator(PT_QU, PT_T, partsize).steps();
+        int allowed_passes = PrefixIterator(PT_QU, PT_T, PT_MAX_PARTITION_DEPTH).steps();
+
+        fprintf(stderr,
+                "Warning: \n"
+                "  You try to build a ptserver from a very big database!\n"
+                "\n"
+                "  The memory installed on your machine would require to build the ptserver\n"
+                "  in %i passes, but the maximum allowed number of passes is %i.\n"
+                "\n"
+                "  As a result the build of this server may cause your machine to swap huge\n"
+                "  amounts of memory and will possibly run for days, weeks or even months.\n"
+                ,
+                req_passes,
+                allowed_passes);
+
+        partsize = PT_MAX_PARTITION_DEPTH;
+    }
+
+
+    pt_assert(partsize <= PT_MAX_PARTITION_DEPTH);
+
+    Partitioner partition(partsize);
+    partition.select_passes(partition.steps());
+    return partition;
+}
+
 ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__USERESULT
     // initialize tree and call the build pos tree procedure
 
@@ -315,71 +375,8 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
             psg.stat.cut_offs = 0;                  // statistic information
             GB_begin_transaction(psg.gb_main);
 
-            int  partsize = 0;
-
-            {
-                ULONG overallBases = psg.char_count;
-
-                printf("Overall bases: %li\n", overallBases);
-
-                while (1) {
-                    // @@@ update STAGE1_INDEX_BYTES_PER_BASE
-#ifdef ARB_64
-# define STAGE1_INDEX_BYTES_PER_BASE 55
-#else
-# define STAGE1_INDEX_BYTES_PER_BASE 35
-#endif
-
-                    ULONG estimated_kb = (STAGE1_INDEX_BYTES_PER_BASE*overallBases)/1024;
-                    int   passes       = PrefixIterator(PT_QU, PT_T, partsize).steps();
-
-                    printf("Estimated memory usage for %i passes: %s\n", passes, GBS_readable_size(estimated_kb*1024, "b"));
-
-                    if (estimated_kb <= physical_memory) break;
-
-                    overallBases /= 4; // ignore PT_N- and PT_QU-branches (they are very small compared with other branches)
-                    partsize ++;
-                }
-// #if defined(DEBUG) && 1
-                // @@@ deactivate when fixed
-                // when active, uncomment ../UNIT_TESTER/TestEnvironment.cxx@TEST_AUTO_UPDATE
-
-                // partsize = 0; // works
-                partsize = 1; // works
-                // partsize = 2; // works
-                // partsize = 3; // works
-                // partsize = 4; // works
-                // partsize = 5; // to test warning below
-
-                printf("OVERRIDE: Forcing partsize=%i\n", partsize);
-// #endif
-            }
-
-            if (partsize>PT_MAX_PARTITION_DEPTH) {
-                int req_passes     = PrefixIterator(PT_QU, PT_T, partsize).steps();
-                int allowed_passes = PrefixIterator(PT_QU, PT_T, PT_MAX_PARTITION_DEPTH).steps();
-
-                fprintf(stderr,
-                        "Warning: \n"
-                        "  You try to build a ptserver from a very big database!\n"
-                        "\n"
-                        "  The memory installed on your machine would require to build the ptserver\n"
-                        "  in %i passes, but the maximum allowed number of passes is %i.\n"
-                        "\n"
-                        "  As a result the build of this server may cause your machine to swap huge\n"
-                        "  amounts of memory and will possibly run for days, weeks or even months.\n"
-                        ,
-                        req_passes,
-                        allowed_passes);
-
-                partsize = PT_MAX_PARTITION_DEPTH;
-            }
-
-
-            pt_assert(partsize <= PT_MAX_PARTITION_DEPTH);
-
-            PrefixIterator partitionPrefix(PT_QU, PT_T, partsize);
-            int            passes = partitionPrefix.steps();
+            Partitioner partition = decide_passes_to_use(psg.char_count, physical_memory);
+            int         passes    = partition.selected_passes();
 
             arb_progress pass_progress(GBS_global_string("Tree Build: %s in %i passes",
                                                          GBS_readable_size(psg.char_count, "bp"),
@@ -387,7 +384,9 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
                                        passes);
 
             int  currPass = 0;
-            while (!partitionPrefix.done()) {
+            do {
+                pt_assert(!partition.done());
+
                 ++currPass;
                 arb_progress data_progress(GBS_global_string("pass %i/%i", currPass, passes), psg.data_count);
 
@@ -402,7 +401,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
                         get_abs_align_pos(align_abs, abs_align_pos); // may result in neg. abs_align_pos (seems to happen if sequences are short < 214bp )
                         if (abs_align_pos < 0) break; // -> in this case abort
 
-                        if (partitionPrefix.matches_at(probe+j)) {
+                        if (partition.contains(probe+j)) {
                             pt = build_pos_tree(pt, DataLoc(i, abs_align_pos, j));
                         }
                     }
@@ -421,8 +420,8 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
 #ifdef PTM_DEBUG_NODES
                 PTD_debug_nodes();
 #endif
-                ++partitionPrefix;
             }
+            while (partition.next());
 
             long last_obj = 0;
             if (!error) {
@@ -543,6 +542,69 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USE
 #ifndef TEST_UNIT_H
 #include <test_unit.h>
 #endif
+
+static arb_test::match_expectation decides_on_passes(ULONG bp, size_t avail_mem_kb, int expected_passes, size_t expected_memuse, bool expect_to_swap) {
+    Partitioner partition       = decide_passes_to_use(bp, avail_mem_kb);
+    int         decided_passes  = partition.selected_passes();
+    size_t      decided_memuse  = partition.max_kb_for_passes(decided_passes, bp);
+    bool        decided_to_swap = decided_memuse>avail_mem_kb;
+
+    using namespace arb_test;
+    return all().of(that(decided_passes).is_equal_to(expected_passes),
+                    that(decided_memuse).is_equal_to(expected_memuse),
+                    that(decided_to_swap).is_equal_to(expect_to_swap));
+}
+
+#define TEST_DECIDES_PASSES(bp,memkb,expected_passes,expected_memuse,expect_to_swap)            \
+    TEST_EXPECT(decides_on_passes(bp, memkb, expected_passes, expected_memuse, expect_to_swap))
+
+void TEST_decide_passes_to_use() {
+    const ULONG GB = 1024*1024; // kb
+
+    const ULONG BP_SILVA_108_REF  = 891481251ul;
+    const ULONG BP_SILVA_108_PARC = BP_SILVA_108_REF * (2492653/618442.0); // rough estimation by number of species
+    const ULONG BP_SILVA_108_40K  = 56223289ul;
+    const ULONG BP_SILVA_108_12K  = 17622233ul;
+
+    const ULONG MINI_PC       =   2 *GB;
+    const ULONG SMALL_PC      =   4 *GB;
+    const ULONG SMALL_SERVER  =  12 *GB; // "bilbo"
+    const ULONG MEDIUM_SERVER =  20 *GB; // "boarisch"
+    const ULONG BIG_SERVER    =  64 *GB;
+    const ULONG HUGE_SERVER   = 128 *GB;
+
+    // ---------------- database --------- machine -- passes -- memuse - swap?
+
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MINI_PC,      781,  3859826,  1); // will swap (max. number of passes reached)
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MINI_PC,      156,   957645,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  MINI_PC,        6,   724753,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  MINI_PC,        1,   946506,  0);
+
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, SMALL_PC,     156,  3859826,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  SMALL_PC,      31,  2758020,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  SMALL_PC,       1,  3019805,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  SMALL_PC,       1,   946506,  0);
+
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, SMALL_SERVER,  31, 11116300,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  SMALL_SERVER,   6, 11491750,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  SMALL_SERVER,   1,  3019805,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  SMALL_SERVER,   1,   946506,  0);
+
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MEDIUM_SERVER, 31, 11116300,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEDIUM_SERVER,  6, 11491750,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  MEDIUM_SERVER,  1,  3019805,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  MEDIUM_SERVER,  1,   946506,  0);
+
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, BIG_SERVER,     6, 46317918,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  BIG_SERVER,     1, 47882293,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  BIG_SERVER,     1,  3019805,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  BIG_SERVER,     1,   946506,  0);
+
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, HUGE_SERVER,    6, 46317918,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  HUGE_SERVER,    1, 47882293,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  HUGE_SERVER,    1,  3019805,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  HUGE_SERVER,    1,   946506,  0);
+}
 
 void NOTEST_SLOW_maybe_build_tree() {
     // does only test sth if DB is present.

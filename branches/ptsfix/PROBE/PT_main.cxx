@@ -33,7 +33,7 @@
 #define TIME_OUT 1000*60*60*24
 
 struct probe_struct_global  psg;
-ULONG                       physical_memory = 0;
+ULONG                       physical_memory = 0; // @@@ elim
 
 // globals of gene-pt-server
 int gene_flag = 0;
