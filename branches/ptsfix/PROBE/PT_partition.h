@@ -91,6 +91,7 @@ public:
 
     const char *prefix() const { return part; }
     size_t length() const { return plen; }
+    size_t max_length() const { return len; }
 
     char *copy() const {
         pt_assert(!done());
@@ -236,10 +237,23 @@ public:
 };
 
 class Partitioner {
-    PrefixIterator       iter;
-    int                  passes;
-    PrefixProbabilities  prob;
-    int                 *start_of_pass; // contains prefix index
+    mutable PrefixIterator iter;       // @@@ eliminate
+
+    int passes;
+    int current_pass;
+
+    PrefixProbabilities prob;
+
+    int *start_of_pass;                 // contains prefix index
+
+    int first_index_of_pass(int pass) const {
+        pt_assert(legal_pass(pass));
+        return start_of_pass[pass-1];
+    }
+    int last_index_of_pass(int pass) const {
+        pt_assert(legal_pass(pass));
+        return start_of_pass[pass]-1;
+    }
 
     bool have_zero_prob_passes() {
         for (int p = 1; p <= passes; ++p) {
@@ -249,7 +263,7 @@ class Partitioner {
     }
 
     void calculate_pass_starts() {
-        pt_assert(passes <= steps());
+        pt_assert(passes <= max_allowed_passes());
         delete [] start_of_pass;
         start_of_pass = new int[passes+1];
 
@@ -260,13 +274,13 @@ class Partitioner {
             double pass_prob = p*prob_per_pass;
             start_of_pass[p] = prob.find_index_near_leftsum(pass_prob);
         }
-        start_of_pass[passes] = steps();
+        start_of_pass[passes] = max_allowed_passes();
 
         // ensure there are no empty passes:
         for (int p = 0; p<passes; ++p) {
             if (start_of_pass[p] >= start_of_pass[p+1]) {
                 int nidx = start_of_pass[p]+1;
-                if (nidx<steps()) {
+                if (nidx<max_allowed_passes()) {
                     start_of_pass[p+1] = nidx;
                 }
             }
@@ -281,16 +295,25 @@ class Partitioner {
         pt_assert(!have_zero_prob_passes());
     }
 
+    void increment_depth() { *this = Partitioner(iter.max_length()+1); }
+
+    bool idx_in_current_pass(int idx) const {
+        // idx represents all possible probe-prefixes (as contained in start_of_pass)
+        return idx >= first_index_of_pass(current_pass) && idx <= last_index_of_pass(current_pass);
+    }
+
 public:
     Partitioner(int partsize) // @@@ store bps in Partitioner?
         : iter(PT_QU, PT_T, partsize),
           passes(-1),
+          current_pass(1),
           prob(iter),
           start_of_pass(NULL)
     {}
     Partitioner(const Partitioner& other)
         : iter(other.iter),
           passes(other.passes),
+          current_pass(other.current_pass),
           prob(other.prob)
     {
         if (other.start_of_pass) {
@@ -306,12 +329,14 @@ public:
         deselect_passes();
     }
 
-    int steps() const { return iter.steps(); }
-    bool done() const { return iter.done(); }
-    bool contains(const char *probe) const { return iter.matches_at(probe); }
-    bool next() { ++iter; return !done(); }
+    int max_allowed_passes() const { return iter.steps(); }
+    void force_passes(int wanted_passes) { while (!select_passes(wanted_passes)) increment_depth(); }
 
-    int max_allowed_passes() const { return steps(); }
+    bool passes_were_selected() const { return passes >= 1; }
+    bool legal_pass(int pass) const {
+        pt_assert(passes_were_selected());
+        return pass >= 1 && pass <= passes;
+    }
 
     bool select_passes(int passes_wanted) {
         if (passes_wanted < 1 || passes_wanted > max_allowed_passes()) return false;
@@ -324,11 +349,6 @@ public:
         delete [] start_of_pass; start_of_pass = NULL;
     }
 
-    bool passes_were_selected() const { return passes >= 1; }
-    bool legal_pass(int pass) const {
-        pt_assert(passes_were_selected());
-        return pass >= 1 && pass <= passes;
-    }
     int selected_passes() const {
         pt_assert(passes_were_selected());
         return passes;
@@ -360,6 +380,23 @@ public:
             if (kb>max_kb) max_kb = kb;
         }
         return max_kb;
+    }
+
+    bool done() const { return !legal_pass(current_pass); }
+    bool next() { ++current_pass; return !done(); }
+    void reset() { current_pass = 1; }
+
+    bool contains(const char *probe) const {
+        // @@@ stupid brute-force impl
+        iter.reset();
+        int idx = 0;
+        while (!iter.matches_at(probe)) {
+            pt_assert(!iter.done());
+            ++iter;
+            ++idx;
+        }
+
+        return idx_in_current_pass(idx);
     }
 };
 

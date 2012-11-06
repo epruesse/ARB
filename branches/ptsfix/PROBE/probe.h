@@ -99,6 +99,7 @@ inline char base_2_readable(char base) {
 inline char *probe_2_readable(char *id_string, int len) {
     //! translate a string containing PT_BASES into readable characters.
     // caution if 'id_string' contains PT_QU ( == zero == EOS).
+    // (see also: probe_compress_sequence)
     for (int i = 0; i<len; ++i) {
         id_string[i] = base_2_readable(id_string[i]);
     }

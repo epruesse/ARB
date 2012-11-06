@@ -328,7 +328,7 @@ static Partitioner decide_passes_to_use(ULONG overallBases, ULONG max_kb_usable)
     pt_assert(partsize <= PT_MAX_PARTITION_DEPTH);
 
     Partitioner partition(partsize);
-    partition.select_passes(partition.steps());
+    partition.select_passes(partition.max_allowed_passes());
     return partition;
 }
 
@@ -379,7 +379,16 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
             printf("Available memory: %s\n", GBS_readable_size(physical_memory*1024, "b"));
 
             Partitioner partition = decide_passes_to_use(psg.char_count, physical_memory);
-            int         passes    = partition.selected_passes();
+
+            // @@@ comment out later:
+#define FORCE_PASSES 13
+#if defined(FORCE_PASSES)
+            partition.force_passes(FORCE_PASSES);
+            printf("Warning: Forcing %i passes (for DEBUG reasons)\n", FORCE_PASSES);
+#endif
+
+            int passes = partition.selected_passes();
+            pt_assert(passes != 1); // @@@ testing
 
             arb_progress pass_progress(GBS_global_string("Tree Build: %s in %i passes",
                                                          GBS_readable_size(psg.char_count, "bp"),

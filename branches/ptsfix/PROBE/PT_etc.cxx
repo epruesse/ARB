@@ -344,12 +344,41 @@ void TEST_PrefixProbabilities() {
     TEST_ASSERT_SIMILAR(prob2.sum_left_of(19), 0.5200, EPS);
 }
 
+
+
+static int count_passes(Partitioner& p) {
+    p.reset();
+    int count = 0;
+    while (!p.done()) {
+        p.next();
+        ++count;
+    }
+    p.reset();
+    return count;
+}
+
+class Compressed : virtual Noncopyable {
+    size_t  len;
+    char   *data;
+public:
+    Compressed(const char *readable)
+        : len(strlen(readable)+1),
+          data(new char[len])
+    {
+        memcpy(data, readable, len);
+        probe_compress_sequence(data, len);
+    }
+    ~Compressed() { delete [] data; }
+
+    const char *seq() const { return data; }
+};
+
 void TEST_Partitioner() {
-    Partitioner p0(0); TEST_ASSERT_EQUAL(p0.steps(), 1);
-    Partitioner p1(1); TEST_ASSERT_EQUAL(p1.steps(), 6);
-    Partitioner p2(2); TEST_ASSERT_EQUAL(p2.steps(), 31);
-    Partitioner p3(3); TEST_ASSERT_EQUAL(p3.steps(), 156);
-    Partitioner p4(4); TEST_ASSERT_EQUAL(p4.steps(), 781);
+    Partitioner p0(0); TEST_ASSERT_EQUAL(p0.max_allowed_passes(), 1);
+    Partitioner p1(1); TEST_ASSERT_EQUAL(p1.max_allowed_passes(), 6);
+    Partitioner p2(2); TEST_ASSERT_EQUAL(p2.max_allowed_passes(), 31);
+    Partitioner p3(3); TEST_ASSERT_EQUAL(p3.max_allowed_passes(), 156);
+    Partitioner p4(4); TEST_ASSERT_EQUAL(p4.max_allowed_passes(), 781);
 
     TEST_ASSERT_EQUAL(p0.select_passes(0), false);
     TEST_ASSERT_EQUAL(p0.select_passes(2), false);
@@ -373,12 +402,67 @@ void TEST_Partitioner() {
     TEST_ASSERT_EQUAL(p1.estimate_kb_for_pass(5, BASES_100k), 1289);
     TEST_ASSERT_EQUAL(p1.estimate_kb_for_pass(6, BASES_100k), 1289);
 
+
+    // 3 passes
     TEST_ASSERT_EQUAL(p1.select_passes(3), true);
+    TEST_ASSERT_EQUAL(p1.selected_passes(), 3);
+    TEST_ASSERT_EQUAL(count_passes(p1), 3);
+
+    TEST_ASSERT_EQUAL(p1.contains(Compressed(".").seq()), true);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("N").seq()), true);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("A").seq()), true);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("C").seq()), false);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("G").seq()), false);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("T").seq()), false);
+
+    TEST_ASSERT_EQUAL(p1.next(), true);
+
+    TEST_ASSERT_EQUAL(p1.contains(Compressed(".").seq()), false);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("N").seq()), false);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("A").seq()), false);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("C").seq()), true);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("G").seq()), true);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("T").seq()), false);
+
+    TEST_ASSERT_EQUAL(p1.next(), true);
+
+    TEST_ASSERT_EQUAL(p1.contains(Compressed(".").seq()), false);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("N").seq()), false);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("A").seq()), false);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("C").seq()), false);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("G").seq()), false);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("T").seq()), true);
+
+    TEST_ASSERT_EQUAL(p1.next(), false);
+
     TEST_ASSERT_EQUAL(p1.estimate_kb_for_pass(1, BASES_100k), 1503);
     TEST_ASSERT_EQUAL(p1.estimate_kb_for_pass(2, BASES_100k), 2578);
     TEST_ASSERT_EQUAL(p1.estimate_kb_for_pass(3, BASES_100k), 1289);
 
+    // 2 passes
     TEST_ASSERT_EQUAL(p1.select_passes(2), true);
+    TEST_ASSERT_EQUAL(p1.selected_passes(), 2);
+    TEST_ASSERT_EQUAL(count_passes(p1), 2);
+
+    TEST_ASSERT_EQUAL(p1.contains(Compressed(".").seq()), true);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("N").seq()), true);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("A").seq()), true);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("C").seq()), true);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("G").seq()), false);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("T").seq()), false);
+
+    TEST_ASSERT_EQUAL(p1.next(), true);
+
+    TEST_ASSERT_EQUAL(p1.contains(Compressed(".").seq()), false);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("N").seq()), false);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("A").seq()), false);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("C").seq()), false);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("G").seq()), true);
+    TEST_ASSERT_EQUAL(p1.contains(Compressed("T").seq()), true);
+
+    TEST_ASSERT_EQUAL(p1.next(), false);
+
+    // check kb estimations
     TEST_ASSERT_EQUAL(p1.estimate_kb_for_pass(1, BASES_100k), 2792);
     TEST_ASSERT_EQUAL(p1.estimate_kb_for_pass(2, BASES_100k), 2578);
 

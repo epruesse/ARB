@@ -100,6 +100,8 @@ inline size_t count_gaps_and_dots(const char *seq, int seqsize) {
 }
 
 int probe_compress_sequence(char *seq, int seqsize) {
+    // translates a readable sequence into PT_BASES
+    // (see also: probe_2_readable)
     static SmartMallocPtr(uchar) smart_tab;
     uchar *tab = NULL;
     if (smart_tab.isNull()) {
