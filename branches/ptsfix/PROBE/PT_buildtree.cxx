@@ -181,8 +181,8 @@ inline bool is_completely_saved(POS_TREE *node) { return PT_read_type(node) == P
 static bool all_sons_saved(POS_TREE *node) {
     pt_assert(PT_read_type(node) == PT_NT_NODE);
 
-    for (int i = PT_QU; i < PT_B_MAX; i++) {
-        POS_TREE *son = PT_read_son_stage_1(node, (PT_BASES)i);
+    for (int i = PT_QU; i < PT_BASES; i++) {
+        POS_TREE *son = PT_read_son_stage_1(node, (PT_base)i);
         if (son) {
             if (!is_saved(son)) return false;
         }
@@ -204,8 +204,8 @@ static long save_lower_subtree(FILE *out, POS_TREE *node, long pos, int height, 
     else {
         switch (PT_read_type(node)) {
             case PT_NT_NODE:
-                for (int i = PT_QU; i<PT_B_MAX; ++i) {
-                    POS_TREE *son = PT_read_son_stage_1(node, PT_BASES(i));
+                for (int i = PT_QU; i<PT_BASES; ++i) {
+                    POS_TREE *son = PT_read_son_stage_1(node, PT_base(i));
                     if (son) pos = save_lower_subtree(out, son, pos, height+1, error);
                 }
                 break;

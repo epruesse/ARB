@@ -77,7 +77,7 @@ PT_data *PT_init(Stage stage);
 void PT_add_to_chain(POS_TREE *node, const DataLoc &loc);
 POS_TREE *PT_change_leaf_to_node(POS_TREE *node);
 POS_TREE *PT_leaf_to_chain(POS_TREE *node);
-POS_TREE *PT_create_leaf(POS_TREE **pfather, PT_BASES base, const DataLoc &loc);
+POS_TREE *PT_create_leaf(POS_TREE **pfather, PT_base base, const DataLoc &loc);
 void PTD_clear_fathers(POS_TREE *node);
 void PTD_put_longlong(FILE *out, ULONG i);
 void PTD_put_int(FILE *out, ULONG i);

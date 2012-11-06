@@ -25,7 +25,7 @@ inline void aisc_link(dll_public *dll, PT_probematch *match)   { aisc_link(reint
 
 class MismatchWeights {
     const PT_bond *bonds;
-    double weight[PT_B_MAX][PT_B_MAX];
+    double weight[PT_BASES][PT_BASES];
 
     double get_simple_wmismatch(char probe, char seq) {
         pt_assert(is_std_base(probe));
@@ -47,22 +47,22 @@ class MismatchWeights {
     }
 
     void init() {
-        for (int probe = PT_A; probe < PT_B_MAX; ++probe) {
+        for (int probe = PT_A; probe < PT_BASES; ++probe) {
             double sum = 0.0;
-            for (int seq = PT_A; seq < PT_B_MAX; ++seq) {
+            for (int seq = PT_A; seq < PT_BASES; ++seq) {
                 sum += weight[probe][seq] = get_simple_wmismatch(probe, seq);
             }
             weight[probe][PT_N] = sum/4.0;
         }
-        for (int seq = PT_N; seq < PT_B_MAX; ++seq) {
+        for (int seq = PT_N; seq < PT_BASES; ++seq) {
             double sum = 0.0;
-            for (int probe = PT_A; probe < PT_B_MAX; ++probe) {
+            for (int probe = PT_A; probe < PT_BASES; ++probe) {
                 sum += weight[probe][seq];
             }
             weight[PT_N][seq] = sum/4.0;
         }
 
-        for (int i = PT_N; i<PT_B_MAX; ++i) {
+        for (int i = PT_N; i<PT_BASES; ++i) {
             weight[PT_QU][i] = weight[PT_N][i];
             weight[i][PT_QU] = weight[i][PT_N];
         }
@@ -222,8 +222,8 @@ bool MatchRequest::add_hits_for_children(POS_TREE *pt, const Mismatches& mismatc
             break;
         }
         case PT_NT_NODE:
-            for (int base = PT_QU; base < PT_B_MAX && !enough; base++) {
-                POS_TREE *son  = PT_read_son(pt, (PT_BASES)base);
+            for (int base = PT_QU; base < PT_BASES && !enough; base++) {
+                POS_TREE *son  = PT_read_son(pt, (PT_base)base);
                 if (son) enough = add_hits_for_children(son, mismatch);
             }
             break;
@@ -288,8 +288,8 @@ bool MatchRequest::collect_hits_for(const char *probe, POS_TREE *pt, Mismatches&
                 break;
             }
             case PT_NT_NODE:
-                for (int i=PT_QU; i<PT_B_MAX && !enough; i++) {
-                    POS_TREE *son = PT_read_son(pt, (PT_BASES)i);
+                for (int i=PT_QU; i<PT_BASES && !enough; i++) {
+                    POS_TREE *son = PT_read_son(pt, (PT_base)i);
                     if (son) {
                         Mismatches son_mismatches(mismatches);
                         son_mismatches.count_weighted(probe[height], i, height);

@@ -22,7 +22,7 @@ class PrefixIterator {
     // PT_QU will only occur at end of prefix,
     // i.e. prefixes will be shorter than given length if PT_QU occurs
 
-    PT_BASES low, high;
+    PT_base low, high;
     int      len;
 
     char *part;
@@ -67,7 +67,7 @@ public:
         plen = (low == PT_QU && len) ? 1 : len;
     }
 
-    PrefixIterator(PT_BASES low_, PT_BASES high_, int len_)
+    PrefixIterator(PT_base low_, PT_base high_, int len_)
         : low(low_),
           high(high_),
           len(len_),
@@ -146,8 +146,8 @@ inline ULONG estimate_memusage_kb(ULONG base_positions) {
 }
 
 static double base_probability(char base) {
-    pt_assert(base >= PT_QU && base < PT_B_MAX);
-    static double bprob[PT_B_MAX] = {
+    pt_assert(base >= PT_QU && base < PT_BASES);
+    static double bprob[PT_BASES] = {
         // @@@ these are fakes; use real base probabilities here
         0.02, // PT_QU
         0.02, // PT_N

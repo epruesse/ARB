@@ -77,14 +77,14 @@ enum type_types {
     t_float  = 2
 };
 
-enum PT_BASES {
+enum PT_base {
     PT_QU = 0,
     PT_N  = 1,
     PT_A,
     PT_C,
     PT_G,
     PT_T,
-    PT_B_MAX, // @@@ name is wrong
+    PT_BASES,
     PT_B_UNDEF,
 };
 
@@ -93,11 +93,11 @@ inline bool is_ambig_base(char b) { return b == PT_QU || b == PT_N; }
 
 inline char base_2_readable(char base) {
     static char table[] = ".NACGU";
-    return base<PT_B_MAX ? table[safeCharIndex(base)] : base;
+    return base<PT_BASES ? table[safeCharIndex(base)] : base;
 }
 
 inline char *probe_2_readable(char *id_string, int len) {
-    //! translate a string containing PT_BASES into readable characters.
+    //! translate a string containing PT_base into readable characters.
     // caution if 'id_string' contains PT_QU ( == zero == EOS).
     // (see also: probe_compress_sequence)
     for (int i = 0; i<len; ++i) {
@@ -193,8 +193,8 @@ public:
     long get_checksum() const { return checksum; }
     int get_size() const { return size; }
 
-    PT_BASES base_at(int rpos) const {
-        return rpos >= 0 && rpos<get_size() ? PT_BASES(get_data()[rpos]) : PT_QU;
+    PT_base base_at(int rpos) const {
+        return rpos >= 0 && rpos<get_size() ? PT_base(get_data()[rpos]) : PT_QU;
     }
 
     bool inside_group() const { return group; }

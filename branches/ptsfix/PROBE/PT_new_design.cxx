@@ -229,8 +229,8 @@ static int ptnd_count_mishits2(POS_TREE *pt) {
     }
     
     int mishits = 0;
-    for (int base = PT_QU; base< PT_B_MAX; base++) {
-        mishits += ptnd_count_mishits2(PT_read_son(pt, (PT_BASES)base));
+    for (int base = PT_QU; base< PT_BASES; base++) {
+        mishits += ptnd_count_mishits2(PT_read_son(pt, (PT_base)base));
     }
     return mishits;
 }
@@ -403,9 +403,9 @@ static int ptnd_count_mishits(char *probe, POS_TREE *pt, int height) {
     if (!pt) return 0;
     if (PT_read_type(pt) == PT_NT_NODE && *probe) {
         int mishits = 0;
-        for (int i=PT_A; i<PT_B_MAX; i++) {
+        for (int i=PT_A; i<PT_BASES; i++) {
             if (i != *probe) continue;
-            POS_TREE *pthelp = PT_read_son(pt, (PT_BASES)i);
+            POS_TREE *pthelp = PT_read_son(pt, (PT_base)i);
             if (pthelp) mishits += ptnd_count_mishits(probe+1, pthelp, height+1);
         }
         return mishits;
@@ -711,8 +711,8 @@ static void ptnd_check_part_all(POS_TREE *pt, double dt, double sum_bonds) {
             PT_forwhole_chain(pt, ptnd_chain_check_part(0));
         }
         else {
-            for (int base = PT_QU; base< PT_B_MAX; base++) {
-                ptnd_check_part_all(PT_read_son(pt, (PT_BASES)base), dt, sum_bonds);
+            for (int base = PT_QU; base< PT_BASES; base++) {
+                ptnd_check_part_all(PT_read_son(pt, (PT_base)base), dt, sum_bonds);
             }
         }
     }
@@ -724,8 +724,8 @@ static void ptnd_check_part(char *probe, POS_TREE *pt, int  height, double dt, d
     if (dt/ptnd.parts->source->seq_len > PERC_SIZE) return;     // out of scope
     if (PT_read_type(pt) == PT_NT_NODE && probe[height]) {
         if (split && ptnd_check_inc_mode(ptnd.pdc, ptnd.parts, dt, sum_bonds)) return;
-        for (int i=PT_A; i<PT_B_MAX; i++) {
-            POS_TREE *pthelp = PT_read_son(pt, (PT_BASES)i);
+        for (int i=PT_A; i<PT_BASES; i++) {
+            POS_TREE *pthelp = PT_read_son(pt, (PT_base)i);
             if (pthelp) {
                 int    nsplit     = split;
                 double nsum_bonds = sum_bonds;
@@ -816,7 +816,7 @@ static void ptnd_check_probepart(PT_pdc *pdc)
 }
 inline int ptnd_check_tprobe(PT_pdc *pdc, const char *probe, int len)
 {
-    int occ[PT_B_MAX] = { 0, 0, 0, 0, 0, 0 };
+    int occ[PT_BASES] = { 0, 0, 0, 0, 0, 0 };
 
     int count = 0;
     while (count<len) {

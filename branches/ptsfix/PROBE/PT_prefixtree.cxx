@@ -89,7 +89,7 @@ static void init_PT_GLOBAL() {
         else                       PT_GLOBAL.flag_2_type[i] = PT_NT_UNDEF;
     }
 
-    for (unsigned base = PT_QU; base <= PT_B_MAX; base++) {
+    for (unsigned base = PT_QU; base <= PT_BASES; base++) {
         for (unsigned i=0; i<256; i++) {
             unsigned h = 0xff >> (8-base);
             h &= i;
@@ -115,7 +115,7 @@ PT_data *PT_init(Stage stage) {
 
 static void PT_change_link_in_father(POS_TREE *father, POS_TREE *old_link, POS_TREE *new_link) {
     pt_assert_stage(STAGE1);
-    long i = PT_GLOBAL.count_bits[PT_B_MAX][father->flags];
+    long i = PT_GLOBAL.count_bits[PT_BASES][father->flags];
     for (; i>0; i--) {
         POS_TREE *link = PT_read_pointer<POS_TREE>(&father->data+sizeof(PT_PNTR)*i);
         if (link==old_link) {
@@ -216,9 +216,9 @@ POS_TREE *PT_leaf_to_chain(POS_TREE *node) {
     return new_elem;
 }
 
-POS_TREE *PT_create_leaf(POS_TREE **pfather, PT_BASES base, const DataLoc& loc) {
+POS_TREE *PT_create_leaf(POS_TREE **pfather, PT_base base, const DataLoc& loc) {
     pt_assert_stage(STAGE1);
-    if (base >= PT_B_MAX) PT_CORE;
+    if (base >= PT_BASES) PT_CORE;
 
     int leafsize = PT_EMPTY_LEAF_SIZE;
 
@@ -321,8 +321,8 @@ void PTD_clear_fathers(POS_TREE *node) {
     if (type != PT_NT_SAVED) {
         PT_set_father(node, NULL);
         if (type == PT_NT_NODE) {
-            for (int i = PT_QU; i < PT_B_MAX; i++) {
-                POS_TREE *son = PT_read_son_stage_1(node, (PT_BASES)i);
+            for (int i = PT_QU; i < PT_BASES; i++) {
+                POS_TREE *son = PT_read_son_stage_1(node, (PT_base)i);
                 if (son) PTD_clear_fathers(son);
             }
         }
@@ -548,8 +548,8 @@ static long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, cons
     int  size     = PT_EMPTY_NODE_SIZE;
     int  mysize   = PT_EMPTY_NODE_SIZE;
 
-    for (int i = PT_QU; i < PT_B_MAX; i++) {    // free all sons
-        POS_TREE *son = PT_read_son_stage_1(node, (PT_BASES)i);
+    for (int i = PT_QU; i < PT_BASES; i++) {    // free all sons
+        POS_TREE *son = PT_read_son_stage_1(node, (PT_base)i);
         if (son) {
             long diff = oldpos - r_poss[i];
             pt_assert(diff >= 0);
@@ -606,7 +606,7 @@ static long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, cons
             psg.stat.short_node++;
         }
 #endif
-        for (int i = PT_QU; i < PT_B_MAX; i++) {    // set the flag2
+        for (int i = PT_QU; i < PT_BASES; i++) {    // set the flag2
             if (r_poss[i]) {
                 long diff = oldpos - r_poss[i];
                 pt_assert(diff >= 0);
@@ -616,7 +616,7 @@ static long PTD_write_node_to_disk(FILE *out, POS_TREE *node, long *r_poss, cons
         }
         fputc(flags2, out);
         size++;
-        for (int i = PT_QU; i < PT_B_MAX; i++) {    // write the data
+        for (int i = PT_QU; i < PT_BASES; i++) {    // write the data
             if (r_poss[i]) {
                 long diff = oldpos - r_poss[i];
                 pt_assert(diff >= 0);
@@ -715,9 +715,9 @@ long PTD_write_leafs_to_disk(FILE *out, POS_TREE * const node, long pos, long *n
         pt_assert(PT_read_type(node) == PT_NT_SAVED);
     }
     else if (type == PT_NT_NODE) {
-        long son_pos[PT_B_MAX];
-        for (int i = PT_QU; i < PT_B_MAX && !error; i++) { // save all sons
-            POS_TREE *son = PT_read_son_stage_1(node, (PT_BASES)i);
+        long son_pos[PT_BASES];
+        for (int i = PT_QU; i < PT_BASES && !error; i++) { // save all sons
+            POS_TREE *son = PT_read_son_stage_1(node, (PT_base)i);
             son_pos[i] = 0;
             if (son) {
                 pos = PTD_write_leafs_to_disk(out, son, pos, &(son_pos[i]), error);
@@ -976,7 +976,7 @@ void TEST_chains() {
     DataLoc loc2b(2, 700, 700);
 
     for (int base = PT_A; base <= PT_G; ++base) {
-        POS_TREE *leaf = PT_create_leaf(&root, PT_BASES(base), loc1a);
+        POS_TREE *leaf = PT_create_leaf(&root, PT_base(base), loc1a);
         TEST_ASSERT_EQUAL(PT_read_type(leaf), PT_NT_LEAF);
 
         POS_TREE *chain = PT_leaf_to_chain(leaf);

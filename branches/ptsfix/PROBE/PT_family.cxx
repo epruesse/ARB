@@ -190,8 +190,8 @@ void PT_Traversal::mark_matching(POS_TREE *pt) const {
     pt_assert(!did_match()); 
 
     if (PT_read_type(pt) == PT_NT_NODE) {
-        for (int base = PT_N; base < PT_B_MAX; base++) {
-            POS_TREE *pt_son = PT_read_son(pt, (PT_BASES)base);
+        for (int base = PT_N; base < PT_BASES; base++) {
+            POS_TREE *pt_son = PT_read_son(pt, (PT_base)base);
             if (pt_son && !at_end()) {
                 PT_Traversal sub(*this);
                 sub.match_one_char(base);
@@ -213,8 +213,8 @@ void PT_Traversal::mark_all(POS_TREE *pt) const {
     pt_assert(did_match());
 
     if (PT_read_type(pt) == PT_NT_NODE) {
-        for (int base = PT_N; base < PT_B_MAX; base++) {
-            POS_TREE *pt_son = PT_read_son(pt, (PT_BASES)base);
+        for (int base = PT_N; base < PT_BASES; base++) {
+            POS_TREE *pt_son = PT_read_son(pt, (PT_base)base);
             if (pt_son) mark_all(pt_son);
         }
     }

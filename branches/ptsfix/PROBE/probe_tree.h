@@ -32,7 +32,7 @@
 
 struct pt_global {
     PT_NODE_TYPE flag_2_type[256];
-    char         count_bits[PT_B_MAX+1][256]; // returns how many bits are set (e.g. PT_count_bits[3][n] is the number of the 3 lsb bits)
+    char         count_bits[PT_BASES+1][256]; // returns how many bits are set (e.g. PT_count_bits[3][n] is the number of the 3 lsb bits)
 };
 
 extern pt_global PT_GLOBAL;
@@ -169,7 +169,7 @@ only few functions can be used, when the tree is reloaded (stage 3):
 
 #define PT_NODE_WITHSONS_SIZE(sons) (PT_EMPTY_NODE_SIZE+sizeof(PT_PNTR)*(sons))
 
-#define PT_NODE_SON_COUNT(node) (PT_GLOBAL.count_bits[PT_B_MAX][node->flags])
+#define PT_NODE_SON_COUNT(node) (PT_GLOBAL.count_bits[PT_BASES][node->flags])
 #define PT_NODE_SIZE(node)      PT_NODE_WITHSONS_SIZE(PT_NODE_SON_COUNT(node))
 
 // ----------------------------
@@ -310,7 +310,7 @@ inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr, const int mainapos, in
 inline const char *node_data_start(const POS_TREE *node) { return &node->data + psg.ptdata->get_offset(); }
 inline char *node_data_start(POS_TREE *node) { return const_cast<char*>(node_data_start(const_cast<const POS_TREE*>(node))); }
 
-inline POS_TREE *PT_read_son_stage_3(POS_TREE *node, PT_BASES base) { // stage 3 (no father)
+inline POS_TREE *PT_read_son_stage_3(POS_TREE *node, PT_base base) { // stage 3 (no father)
     pt_assert_stage(STAGE3);
     
     if (node->flags & IS_SINGLE_BRANCH_NODE) {
@@ -394,14 +394,14 @@ inline POS_TREE *PT_read_son_stage_3(POS_TREE *node, PT_BASES base) { // stage 3
     return (POS_TREE *)(((char*)node)-i);
 }
 
-inline POS_TREE *PT_read_son_stage_1(POS_TREE *node, PT_BASES base) {
+inline POS_TREE *PT_read_son_stage_1(POS_TREE *node, PT_base base) {
     pt_assert_stage(STAGE1);
     if (!((1<<base) & node->flags)) return NULL;   // bit not set
-    base = (PT_BASES)PT_GLOBAL.count_bits[base][node->flags];
+    base = (PT_base)PT_GLOBAL.count_bits[base][node->flags];
     return PT_read_pointer<POS_TREE>(node_data_start(node) + sizeof(PT_PNTR)*base);
 }
 
-inline POS_TREE *PT_read_son(POS_TREE *node, PT_BASES base) {
+inline POS_TREE *PT_read_son(POS_TREE *node, PT_base base) {
     PT_data *ptdata = psg.ptdata;
     if (ptdata->get_stage() == STAGE3) {
         return PT_read_son_stage_3(node, base);
@@ -453,7 +453,7 @@ struct DataLoc {
     DataLoc(POS_TREE *pt) { init_from_leaf(pt); }
 
     const probe_input_data& get_pid() const { pt_assert(has_valid_name()); return psg.data[name]; }
-    PT_BASES operator[](int offset) const { return PT_BASES(get_pid().base_at(rpos+offset)); }
+    PT_base operator[](int offset) const { return PT_base(get_pid().base_at(rpos+offset)); }
 
     int restlength() const { return get_pid().get_size()-rpos; }
     bool is_shorther_than(int offset) const { return offset >= restlength(); }

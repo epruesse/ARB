@@ -19,10 +19,10 @@ static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int heig
 
     switch (PT_read_type(node)) {
         case PT_NT_NODE:
-            for (int i=PT_A; i<PT_B_MAX; ++i) { // Note: does not iterate probes containing N
-                POS_TREE *son = PT_read_son(node, PT_BASES(i));
+            for (int i=PT_A; i<PT_BASES; ++i) { // Note: does not iterate probes containing N
+                POS_TREE *son = PT_read_son(node, PT_base(i));
                 if (son) {
-                    probe[0] = PT_BASES(i); // write leftmost probe into result
+                    probe[0] = PT_base(i); // write leftmost probe into result
                     bool found = findLeftmostProbe(son, probe+1, restlen-1, height+1);
                     pt_assert(implicated(found, strlen(probe) == (size_t)restlen));
                     if (found) return true;
@@ -73,17 +73,17 @@ static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) 
         case PT_NT_NODE: {
             if (!is_std_base(probe[0])) return false;
 
-            POS_TREE *son   = PT_read_son(node, PT_BASES(probe[0]));
+            POS_TREE *son   = PT_read_son(node, PT_base(probe[0]));
             bool      found = (son != 0) && findNextProbe(son, probe+1, restlen-1, height+1);
 
             pt_assert(implicated(found, strlen(probe) == (size_t)restlen));
 
             if (!found) {
-                for (int i=probe[0]+1; !found && i<PT_B_MAX; ++i) {
+                for (int i=probe[0]+1; !found && i<PT_BASES; ++i) {
                     if (is_std_base(i)) {
-                        son = PT_read_son(node, PT_BASES(i));
+                        son = PT_read_son(node, PT_base(i));
                         if (son) {
-                            probe[0] = PT_BASES(i); // change probe
+                            probe[0] = PT_base(i); // change probe
                             found = findLeftmostProbe(son, probe+1, restlen-1, height+1);
                             pt_assert(implicated(found, strlen(probe) == (size_t)restlen));
                         }

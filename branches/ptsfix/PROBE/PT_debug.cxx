@@ -21,7 +21,7 @@
 struct PT_debug {
     int chainsizes[DEBUG_MAX_CHAIN_SIZE][DEBUG_TREE_DEEP];
     int chainsizes2[DEBUG_MAX_CHAIN_SIZE];
-    int splits[DEBUG_TREE_DEEP][PT_B_MAX];
+    int splits[DEBUG_TREE_DEEP][PT_BASES];
     int nodes[DEBUG_TREE_DEEP];
     int tips[DEBUG_TREE_DEEP];
     int chains[DEBUG_TREE_DEEP];
@@ -46,8 +46,8 @@ static void analyse_tree(POS_TREE *pt, int height) {
         case PT_NT_NODE:
             ptds->nodes[height]++;
             basecnt = 0;
-            for (i=PT_QU; i<PT_B_MAX; i++) {
-                if ((pt_help = PT_read_son(pt, (PT_BASES)i)))
+            for (i=PT_QU; i<PT_BASES; i++) {
+                if ((pt_help = PT_read_son(pt, (PT_base)i)))
                 {
                     basecnt++;
                     analyse_tree(pt_help, height+1);
@@ -87,7 +87,7 @@ void PT_dump_tree_statistics() {
         if (k) {
             sum += k;
             printf("nodes at deep %i: %i        sum %i\t\t", i, k, sum);
-            for (j=0; j<PT_B_MAX; j++) {
+            for (j=0; j<PT_BASES; j++) {
                 k =     ptds->splits[i][j];
                 printf("%i:%i\t", j, k);
             }
@@ -138,8 +138,8 @@ public:
 void PT_dump_POS_TREE_recursive(POS_TREE *pt, const char *prefix, FILE *out) {
     switch (PT_read_type(pt)) {
         case PT_NT_NODE:
-            for (int b = PT_QU; b<PT_B_MAX; b++) {
-                POS_TREE *son = PT_read_son(pt, PT_BASES(b));
+            for (int b = PT_QU; b<PT_BASES; b++) {
+                POS_TREE *son = PT_read_son(pt, PT_base(b));
                 if (son) {
                     char *subPrefix = GBS_global_string_copy("%s%c", prefix, base_2_readable(b));
                     PT_dump_POS_TREE_recursive(son, subPrefix, out);
@@ -191,8 +191,8 @@ void PT_dump_POS_TREE(POS_TREE * IF_DEBUG(node), FILE *IF_DEBUG(out)) {
             break;
         }
         case PT_NT_NODE:
-            for (long i = 0; i < PT_B_MAX; i++) {
-                fprintf(out, "%6li:0x%p\n", i, PT_read_son(node, (PT_BASES)i));
+            for (long i = 0; i < PT_BASES; i++) {
+                fprintf(out, "%6li:0x%p\n", i, PT_read_son(node, (PT_base)i));
             }
             break;
         case PT_NT_CHAIN:
