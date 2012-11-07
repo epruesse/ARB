@@ -272,7 +272,7 @@ static void dump_memusage() {
 }
 #endif
 
-static Partitioner decide_passes_to_use(ULONG overallBases, ULONG max_kb_usable) {
+static Partition decide_passes_to_use(ULONG overallBases, ULONG max_kb_usable) {
     int  partsize = 0;
 
     {
@@ -327,9 +327,8 @@ static Partitioner decide_passes_to_use(ULONG overallBases, ULONG max_kb_usable)
 
     pt_assert(partsize <= PT_MAX_PARTITION_DEPTH);
 
-    Partitioner partition(partsize);
-    partition.select_passes(partition.max_allowed_passes());
-    return partition;
+    PrefixProbabilities prob(partsize);
+    return Partition(prob, prob.get_prefix_count()); // force max. possible number of passes
 }
 
 ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__USERESULT
@@ -378,16 +377,21 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
             ULONG physical_memory = GB_get_physical_memory();
             printf("Available memory: %s\n", GBS_readable_size(physical_memory*1024, "b"));
 
-            Partitioner partition = decide_passes_to_use(psg.char_count, physical_memory);
+            Partition pass = decide_passes_to_use(psg.char_count, physical_memory);
 
             // @@@ comment out later:
 #define FORCE_PASSES 13
 #if defined(FORCE_PASSES)
-            partition.force_passes(FORCE_PASSES);
+            for (int depth = 0; depth <= PT_MAX_PARTITION_DEPTH; ++depth) {
+                PrefixProbabilities prob(depth);
+                if (prob.get_prefix_count() >= FORCE_PASSES) {
+                    pass = Partition(prob, FORCE_PASSES);
+                }
+            }
             printf("Warning: Forcing %i passes (for DEBUG reasons)\n", FORCE_PASSES);
 #endif
 
-            int passes = partition.selected_passes();
+            int passes = pass.number_of_passes();
             pt_assert(passes != 1); // @@@ testing
 
             arb_progress pass_progress(GBS_global_string("Tree Build: %s in %i passes",
@@ -397,7 +401,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
 
             int  currPass = 0;
             do {
-                pt_assert(!partition.done());
+                pt_assert(!pass.done());
 
                 ++currPass;
                 arb_progress data_progress(GBS_global_string("pass %i/%i", currPass, passes), psg.data_count);
@@ -413,7 +417,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
                         get_abs_align_pos(align_abs, abs_align_pos); // may result in neg. abs_align_pos (seems to happen if sequences are short < 214bp )
                         if (abs_align_pos < 0) break; // -> in this case abort
 
-                        if (partition.contains(probe+j)) {
+                        if (pass.contains(probe+j)) {
                             pt = build_pos_tree(pt, DataLoc(i, abs_align_pos, j));
                         }
                     }
@@ -433,7 +437,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
                 PTD_debug_nodes();
 #endif
             }
-            while (partition.next());
+            while (pass.next());
 
             long last_obj = 0;
             if (!error) {
@@ -556,10 +560,10 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USE
 #endif
 
 static arb_test::match_expectation decides_on_passes(ULONG bp, size_t avail_mem_kb, int expected_passes, size_t expected_memuse, bool expect_to_swap) {
-    Partitioner partition       = decide_passes_to_use(bp, avail_mem_kb);
-    int         decided_passes  = partition.selected_passes();
-    size_t      decided_memuse  = partition.max_kb_for_passes(decided_passes, bp);
-    bool        decided_to_swap = decided_memuse>avail_mem_kb;
+    Partition   pass            = decide_passes_to_use(bp, avail_mem_kb);
+    int    decided_passes  = pass.number_of_passes();
+    size_t decided_memuse  = pass.max_kb_for_any_pass(bp);
+    bool   decided_to_swap = decided_memuse>avail_mem_kb;
 
     using namespace arb_test;
     return all().of(that(decided_passes).is_equal_to(expected_passes),

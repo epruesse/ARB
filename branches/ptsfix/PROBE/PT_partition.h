@@ -168,20 +168,21 @@ inline double calc_probability(const char *prefix, size_t length) {
 }
 
 class PrefixProbabilities {
+    int     depth;
     int     prefixes;
-    double *prob;
     double *left_prob;
 
 public:
-    PrefixProbabilities(const PrefixIterator& iter) {
-        prefixes  = iter.steps();
-        prob      = new double[prefixes];
+    PrefixProbabilities(int depth_)
+        : depth(depth_)
+    {
+        PrefixIterator prefix(PT_QU, PT_T, depth);
+        prefixes  = prefix.steps();
+
         left_prob = new double[prefixes+1];
-
-        PrefixIterator prefix(iter);
-        prefix.reset();
-
         left_prob[0] = 0.0;
+
+        double prob[prefixes];
 
         int i = 0;
         while (!prefix.done()) {
@@ -193,38 +194,41 @@ public:
         }
     }
     PrefixProbabilities(const PrefixProbabilities& other)
-        : prefixes(other.prefixes)
+        : depth(other.depth),
+          prefixes(other.prefixes)
     {
-        prob      = new double[prefixes];
         left_prob = new double[prefixes+1];
-
-        memcpy(prob, other.prob, sizeof(*prob)*prefixes);
-        memcpy(left_prob, other.left_prob, sizeof(*prob)*(prefixes+1));
+        memcpy(left_prob, other.left_prob, sizeof(*left_prob)*(prefixes+1));
     }
     DECLARE_ASSIGNMENT_OPERATOR(PrefixProbabilities);
-    ~PrefixProbabilities() {
-        delete [] prob;
-        delete [] left_prob;
-    }
+    ~PrefixProbabilities() { delete [] left_prob; }
 
-    double get(int prefix_idx) {
-        pt_assert(prefix_idx >= 0 && prefix_idx<prefixes); // index must be in range [0 ... prefixes-1]
-        return prob[prefix_idx];
-    }
+    int get_prefix_count() const { return prefixes; }
+    int get_depth() const { return depth; }
 
-    double sum_left_of(int prefix_idx) const {
+    double left_of(int prefix_idx) const {
         pt_assert(prefix_idx >= 0 && prefix_idx <= prefixes); // index must be in range [0 ... prefixes]
         return left_prob[prefix_idx];
     }
+    double of_range(int first_idx, int last_idx) const {
+        pt_assert(first_idx <= last_idx);
+        pt_assert(first_idx >= 0 && last_idx<prefixes); // index must be in range [0 ... prefixes-1]
 
-    int find_index_near_leftsum(double wanted_leftsum) {
+        return left_of(last_idx+1) - left_of(first_idx);
+    }
+    double of(int prefix_idx) {
+        pt_assert(prefix_idx >= 0 && prefix_idx<prefixes); // index must be in range [0 ... prefixes-1]
+        return of_range(prefix_idx, prefix_idx);
+    }
+
+    int find_index_near_leftsum(double wanted_leftsum) const {
         // returned index is in range [0 ... prefixes]
 
         int    best_idx  = -1;
         double best_diff = 2.0;
 
         for (int i = 0; i <= prefixes; ++i) {
-            double diff = fabs(sum_left_of(i)-wanted_leftsum);
+            double diff = fabs(left_of(i)-wanted_leftsum);
             if (diff<best_diff) {
                 best_diff = diff;
                 best_idx  = i;
@@ -236,13 +240,69 @@ public:
     }
 };
 
-class Partitioner {
-    mutable PrefixIterator iter;       // @@@ eliminate
+class MarkedPrefixes {
+    int   depth;
+    int   max_partitions;
+    bool *marked;
+
+    int get_index_for(const char *probe) const {
+        // @@@ brute force impl
+        PrefixIterator iter(PT_QU, PT_T, depth);
+        int            idx = 0;
+
+        while (!iter.done() && !iter.matches_at(probe)) {
+            ++iter;
+            ++idx;
+        }
+        return idx;
+    }
+
+public:
+    MarkedPrefixes(int depth_)
+        : depth(depth_),
+          max_partitions(PrefixIterator(PT_QU, PT_T, depth).steps()),
+          marked(new bool[max_partitions])
+    {
+        reset();
+    }
+    MarkedPrefixes(const MarkedPrefixes& other)
+        : depth(other.depth),
+          max_partitions(other.max_partitions),
+          marked(new bool[max_partitions])
+    {
+        memcpy(marked, other.marked, max_partitions*sizeof(*marked));
+    }
+    DECLARE_ASSIGNMENT_OPERATOR(MarkedPrefixes);
+    ~MarkedPrefixes() { delete [] marked; }
+
+    void reset() {
+        for (int p = 0; p<max_partitions; ++p) {
+            marked[p] = false;
+        }
+    }
+
+    void mark(int idx1, int idx2) {
+        pt_assert(idx1 <= idx2);
+        pt_assert(idx1 >= 0);
+        pt_assert(idx2 < max_partitions);
+
+        for (int p = idx1; p <= idx2; ++p) {
+            marked[p] = true;
+        }
+    }
+
+    bool isMarked(const char *probe) const {
+        return marked[get_index_for(probe)];
+    }
+};
+
+class Partition {
+    PrefixProbabilities prob;
 
     int passes;
     int current_pass;
 
-    PrefixProbabilities prob;
+    MarkedPrefixes prefix;
 
     int *start_of_pass;                 // contains prefix index
 
@@ -295,74 +355,58 @@ class Partitioner {
         pt_assert(!have_zero_prob_passes());
     }
 
-    void increment_depth() { *this = Partitioner(iter.max_length()+1); }
+    void markPrefixes() {
+        pt_assert(!done());
 
-    bool idx_in_current_pass(int idx) const {
-        // idx represents all possible probe-prefixes (as contained in start_of_pass)
-        return idx >= first_index_of_pass(current_pass) && idx <= last_index_of_pass(current_pass);
+        prefix.reset();
+        prefix.mark(first_index_of_pass(current_pass), last_index_of_pass(current_pass));
     }
+
+    bool legal_pass(int pass) const { return pass >= 1 && pass <= passes; }
 
 public:
-    Partitioner(int partsize) // @@@ store bps in Partitioner?
-        : iter(PT_QU, PT_T, partsize),
-          passes(-1),
-          current_pass(1),
-          prob(iter),
-          start_of_pass(NULL)
-    {}
-    Partitioner(const Partitioner& other)
-        : iter(other.iter),
+    Partition(const PrefixProbabilities& prob_, int passes_)
+        : prob(prob_),
+          passes(passes_),
+          prefix(prob.get_depth()),
+          start_of_pass(new int[passes+1])
+    {
+        pt_assert(passes >= 1 && passes <= max_allowed_passes());
+        calculate_pass_starts();
+        reset();
+    }
+    Partition(const Partition& other)
+        : prob(other.prob),
           passes(other.passes),
           current_pass(other.current_pass),
-          prob(other.prob)
+          prefix(other.prefix),
+          start_of_pass(new int[passes+1])
     {
-        if (other.start_of_pass) {
-            start_of_pass = new int[passes+1];
-            memcpy(start_of_pass, other.start_of_pass, sizeof(*start_of_pass)*(passes+1));
-        }
-        else {
-            start_of_pass = NULL;
-        }
+        memcpy(start_of_pass, other.start_of_pass, sizeof(*start_of_pass)*(passes+1));
     }
-    DECLARE_ASSIGNMENT_OPERATOR(Partitioner);
-    ~Partitioner() {
-        deselect_passes();
-    }
-
-    int max_allowed_passes() const { return iter.steps(); }
-    void force_passes(int wanted_passes) { while (!select_passes(wanted_passes)) increment_depth(); }
-
-    bool passes_were_selected() const { return passes >= 1; }
-    bool legal_pass(int pass) const {
-        pt_assert(passes_were_selected());
-        return pass >= 1 && pass <= passes;
-    }
-
-    bool select_passes(int passes_wanted) {
-        if (passes_wanted < 1 || passes_wanted > max_allowed_passes()) return false;
-        passes = passes_wanted;
-        calculate_pass_starts();
-        return true;
-    }
-    void deselect_passes() {
-        passes        = -1;
-        delete [] start_of_pass; start_of_pass = NULL;
-    }
-
-    int selected_passes() const {
-        pt_assert(passes_were_selected());
-        return passes;
+    DECLARE_ASSIGNMENT_OPERATOR(Partition);
+    ~Partition() {
+        delete [] start_of_pass;
     }
 
     double pass_probability(int pass) const {
-        pt_assert(legal_pass(pass));
+        return prob.of_range(first_index_of_pass(pass), last_index_of_pass(pass));
+    }
 
-        int pass_idx = pass-1;
+    int max_allowed_passes() const { return prob.get_prefix_count(); }
+    int number_of_passes() const { return passes; }
 
-        double prev_prob = prob.sum_left_of(start_of_pass[pass_idx]);
-        double this_prob = prob.sum_left_of(start_of_pass[pass_idx+1]);
+    bool done() const { return !legal_pass(current_pass); }
+    bool next() {
+        ++current_pass;
+        if (done()) return false;
+        markPrefixes();
+        return true;
+    }
 
-        return this_prob-prev_prob;
+    void reset() {
+        current_pass = 1;
+        markPrefixes();
     }
 
     size_t estimate_kb_for_pass(int pass, size_t overall_base_count) const {
@@ -372,8 +416,7 @@ public:
         return estimate_memusage_kb(this_pass_base_count);
     }
 
-    size_t max_kb_for_passes(int passes_wanted, size_t overall_base_count) {
-        ASSERT_RESULT(bool, true, select_passes(passes_wanted));
+    size_t max_kb_for_any_pass(size_t overall_base_count) const {
         size_t max_kb = 0;
         for (int p = 1; p <= passes; ++p) {
             size_t kb = estimate_kb_for_pass(p, overall_base_count);
@@ -382,23 +425,11 @@ public:
         return max_kb;
     }
 
-    bool done() const { return !legal_pass(current_pass); }
-    bool next() { ++current_pass; return !done(); }
-    void reset() { current_pass = 1; }
-
     bool contains(const char *probe) const {
-        // @@@ stupid brute-force impl
-        iter.reset();
-        int idx = 0;
-        while (!iter.matches_at(probe)) {
-            pt_assert(!iter.done());
-            ++iter;
-            ++idx;
-        }
-
-        return idx_in_current_pass(idx);
+        return prefix.isMarked(probe);
     }
 };
+
 
 #else
 #error PT_partition.h included twice
