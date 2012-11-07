@@ -240,45 +240,111 @@ public:
     }
 };
 
+class DecisionTree : virtual Noncopyable {
+    // associate bool-values with probe-prefixes
+
+    bool          decision;
+    bool          decided;
+    DecisionTree *child[PT_BASES]; // all NULL if decided
+
+    void forgetChilds() {
+        for (int i = PT_QU; i<PT_BASES; ++i) {
+            delete child[i];
+            child[i] = NULL;
+        }
+    }
+
+public:
+    DecisionTree()
+        : decided(false)
+    {
+        for (int i = PT_QU; i<PT_BASES; ++i) {
+            child[i] = NULL;
+        }
+    }
+    ~DecisionTree() {
+        forgetChilds();
+    }
+
+    void setValue(const char *probe, size_t len, bool wanted) {
+        if (len>0) {
+            DecisionTree*& probe_child  = child[safeCharIndex(*probe)];
+            if (!probe_child) probe_child = new DecisionTree;
+            probe_child->setValue(probe+1, len-1, wanted);
+        }
+        else {
+            decision = wanted;
+            decided  = true;
+        }
+    }
+
+    bool getValue(const char *probe) const {
+        if (decided) return decision;
+        return child[safeCharIndex(*probe)]->getValue(probe+1);
+    }
+
+    void optimize() {
+        if (!decided) {
+            child[PT_QU]->optimize();
+            bool concordant      = child[PT_QU]->decided;
+            bool common_decision = concordant ? child[PT_QU]->decision : false;
+
+            for (int i = PT_QU+1; i<PT_BASES; ++i) {
+                child[i]->optimize();
+                if (concordant) {
+                    if (child[i]->decided) {
+                        if (child[i]->decision != common_decision) {
+                            concordant = false;
+                        }
+                    }
+                    else {
+                        concordant = false;
+                    }
+                }
+            }
+
+            if (concordant) {
+                forgetChilds();
+                decided  = true;
+                decision = common_decision;
+            }
+        }
+    }
+};
+
 class MarkedPrefixes {
     int   depth;
     int   max_partitions;
     bool *marked;
 
-    int get_index_for(const char *probe) const {
-        // @@@ brute force impl
-        PrefixIterator iter(PT_QU, PT_T, depth);
-        int            idx = 0;
+    DecisionTree *decision;
 
-        while (!iter.done() && !iter.matches_at(probe)) {
-            ++iter;
-            ++idx;
-        }
-        return idx;
+    void forget_decision_tree() {
+        delete decision;
+        decision = NULL;
     }
 
 public:
     MarkedPrefixes(int depth_)
         : depth(depth_),
           max_partitions(PrefixIterator(PT_QU, PT_T, depth).steps()),
-          marked(new bool[max_partitions])
+          marked(new bool[max_partitions]),
+          decision(NULL)
     {
-        reset();
+        clearMarks();
     }
     MarkedPrefixes(const MarkedPrefixes& other)
         : depth(other.depth),
           max_partitions(other.max_partitions),
-          marked(new bool[max_partitions])
+          marked(new bool[max_partitions]),
+          decision(NULL)
     {
         memcpy(marked, other.marked, max_partitions*sizeof(*marked));
     }
     DECLARE_ASSIGNMENT_OPERATOR(MarkedPrefixes);
-    ~MarkedPrefixes() { delete [] marked; }
-
-    void reset() {
-        for (int p = 0; p<max_partitions; ++p) {
-            marked[p] = false;
-        }
+    ~MarkedPrefixes() {
+        delete [] marked;
+        delete decision;
     }
 
     void mark(int idx1, int idx2) {
@@ -290,9 +356,32 @@ public:
             marked[p] = true;
         }
     }
+    void clearMarks() {
+        for (int p = 0; p<max_partitions; ++p) {
+            marked[p] = false;
+        }
+    }
+
+    void predecide() {
+        forget_decision_tree();
+        decision = new DecisionTree;
+
+        PrefixIterator iter(PT_QU, PT_T, depth);
+        int            idx = 0;
+
+        while (!iter.done()) {
+            pt_assert(idx<max_partitions);
+            decision->setValue(iter.prefix(), iter.length(), marked[idx]);
+            ++iter;
+            ++idx;
+        }
+        decision->optimize();
+    }
+
 
     bool isMarked(const char *probe) const {
-        return marked[get_index_for(probe)];
+        pt_assert(decision); // predecide() not called
+        return decision->getValue(probe);
     }
 };
 
@@ -358,8 +447,9 @@ class Partition {
     void markPrefixes() {
         pt_assert(!done());
 
-        prefix.reset();
+        prefix.clearMarks();
         prefix.mark(first_index_of_pass(current_pass), last_index_of_pass(current_pass));
+        prefix.predecide();
     }
 
     bool legal_pass(int pass) const { return pass >= 1 && pass <= passes; }
@@ -383,6 +473,7 @@ public:
           start_of_pass(new int[passes+1])
     {
         memcpy(start_of_pass, other.start_of_pass, sizeof(*start_of_pass)*(passes+1));
+        prefix.predecide();
     }
     DECLARE_ASSIGNMENT_OPERATOR(Partition);
     ~Partition() {

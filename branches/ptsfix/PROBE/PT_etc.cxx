@@ -376,13 +376,17 @@ void TEST_MarkedPrefixes() {
     MarkedPrefixes mp1(1);
     MarkedPrefixes mp2(2);
 
+    mp0.predecide();
     TEST_ASSERT_EQUAL(mp0.isMarked(Compressed(".").seq()), false);
     TEST_ASSERT_EQUAL(mp0.isMarked(Compressed("T").seq()), false);
+
     mp0.mark(0, 0);
+    mp0.predecide();
     TEST_ASSERT_EQUAL(mp0.isMarked(Compressed(".").seq()), true);
     TEST_ASSERT_EQUAL(mp0.isMarked(Compressed("T").seq()), true);
 
     mp1.mark(3, 5);
+    mp1.predecide();
     TEST_ASSERT_EQUAL(mp1.isMarked(Compressed(".").seq()), false);
     TEST_ASSERT_EQUAL(mp1.isMarked(Compressed("N").seq()), false);
     TEST_ASSERT_EQUAL(mp1.isMarked(Compressed("A").seq()), false);
@@ -391,6 +395,7 @@ void TEST_MarkedPrefixes() {
     TEST_ASSERT_EQUAL(mp1.isMarked(Compressed("T").seq()), true);
 
     mp2.mark(1, 7);
+    mp2.predecide();
     TEST_ASSERT_EQUAL(mp2.isMarked(Compressed(".").seq()),  false);
     TEST_ASSERT_EQUAL(mp2.isMarked(Compressed("N.").seq()), true);
     TEST_ASSERT_EQUAL(mp2.isMarked(Compressed("NN").seq()), true);
