@@ -412,10 +412,6 @@ void TEST_MarkedPrefixes() {
     TEST_ASSERT_EQUAL(mp2.isMarked(Compressed("TA").seq()), false);
 }
 
-inline size_t max_kb_for_passes(const PrefixProbabilities& prob, int passes_wanted, size_t overall_base_count) {
-    return Partition(prob, passes_wanted).max_kb_for_any_pass(overall_base_count);
-}
-
 void TEST_Partition() {
     PrefixProbabilities p0(0);
     PrefixProbabilities p1(1);

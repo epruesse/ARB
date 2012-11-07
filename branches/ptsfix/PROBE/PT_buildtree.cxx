@@ -272,63 +272,103 @@ static void dump_memusage() {
 }
 #endif
 
-static Partition decide_passes_to_use(ULONG overallBases, ULONG max_kb_usable) {
-    int  partsize = 0;
+class PartitionSpec {
+    int    passes;
+    size_t memuse;
+    int    depth;
 
-    {
-        printf("Overall bases: %li\n", overallBases);
-
-        while (1) {
-            ULONG estimated_kb = estimate_memusage_kb(overallBases);
-            int   passes       = PrefixIterator(PT_QU, PT_T, partsize).steps();
-
-            printf("Estimated memory usage for %i passes: %s\n", passes, GBS_readable_size(estimated_kb*1024, "b"));
-
-            if (estimated_kb <= max_kb_usable) break;
-
-            overallBases /= 4; // ignore PT_N- and PT_QU-branches (they are very small compared with other branches)
-            partsize ++;
+    const char *passname() const {
+        switch (depth) {
+            case 0: return "pass";
+            case 1: return "Level-I-passes";
+            case 2: return "Level-II-passes";
+            case 3: return "Level-III-passes";
+            case 4: return "Level-IV-passes";
+            default : pt_assert(0); break;
         }
-#if defined(DEBUG) && 0
-        // @@@ deactivate when fixed
-        // when active, uncomment ../UNIT_TESTER/TestEnvironment.cxx@TEST_AUTO_UPDATE
-
-        // partsize = 0; // works
-        // partsize = 1; // works
-        // partsize = 2; // works
-        // partsize = 3; // works
-        // partsize = 4; // works
-        // partsize = 5; // to test warning below
-
-        printf("OVERRIDE: Forcing partsize=%i\n", partsize);
-#endif
     }
 
-    if (partsize>PT_MAX_PARTITION_DEPTH) {
-        int req_passes     = PrefixIterator(PT_QU, PT_T, partsize).steps();
-        int allowed_passes = PrefixIterator(PT_QU, PT_T, PT_MAX_PARTITION_DEPTH).steps();
+public:
+    PartitionSpec() : passes(0), memuse(0), depth(0) {}
+    PartitionSpec(int passes_, size_t memuse_, int depth_) : passes(passes_), memuse(memuse_), depth(depth_) {}
+
+    bool willUseMoreThan(size_t max_kb_usable) const { return memuse > max_kb_usable; }
+    bool isBetterThan(const PartitionSpec& other, size_t max_kb_usable) const {
+        if (!passes) return false;
+        if (!other.passes) return true;
+
+        bool swaps       = willUseMoreThan(max_kb_usable);
+        bool other_swaps = other.willUseMoreThan(max_kb_usable);
+
+        int cmp = int(other_swaps)-int(swaps); // not to swap is better
+        if (cmp == 0) {
+            if (swaps) { // optimize for memory
+                cmp = other.memuse-memuse; // less memuse is better (@@@ true only if probe->pass-calculation is cheap)
+                if (cmp == 0) {
+                    cmp = other.passes-passes; // less passes are better
+                    if (cmp == 0) {
+                        cmp = other.depth-depth;
+                    }
+                }
+            }
+            else { // optimize for number of passes
+                cmp = other.passes-passes; // less passes are better
+                if (cmp == 0) {
+                    cmp = other.depth-depth; // less depth is better
+                    if (cmp == 0) {
+                        cmp = other.memuse-memuse; // less memuse is better (@@@ true only if probe->pass-calculation is cheap)
+                    }
+                }
+            }
+        }
+        return cmp>0;
+    }
+
+    void dump(FILE *out, size_t max_kb_usable) const {
+        fprintf(out,
+                "Estimated memory usage for %i %s: %s%s\n",
+                passes,
+                passname(),
+                GBS_readable_size(memuse*1024, "b"),
+                memuse>max_kb_usable ? " (would swap)" : "");
+    }
+
+    Partition partition() const { return Partition(depth, passes); }
+};
+
+static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable) {
+    PartitionSpec best;
+
+    for (int depth = 0; depth <= PT_MAX_PARTITION_DEPTH; ++depth) {
+        PrefixProbabilities prob(depth);
+
+        int maxPasses = prob.get_prefix_count();
+        for (int passes = 1; passes <= maxPasses; ++passes) {
+            PartitionSpec curr(passes, max_kb_for_passes(prob, passes, overallBases), depth);
+            if (curr.isBetterThan(best, max_kb_usable)) {
+                best = curr;
+                best.dump(stdout, max_kb_usable);
+            }
+            if (!curr.willUseMoreThan(max_kb_usable)) break;
+        }
+    }
+
+    if (best.willUseMoreThan(max_kb_usable)) {
+        const int allowed_passes = PrefixIterator(PT_QU, PT_T, PT_MAX_PARTITION_DEPTH).steps();
 
         fprintf(stderr,
                 "Warning: \n"
                 "  You try to build a ptserver from a very big database!\n"
                 "\n"
                 "  The memory installed on your machine would require to build the ptserver\n"
-                "  in %i passes, but the maximum allowed number of passes is %i.\n"
+                "  in more than %i passes (the maximum allowed number of passes).\n"
                 "\n"
                 "  As a result the build of this server may cause your machine to swap huge\n"
                 "  amounts of memory and will possibly run for days, weeks or even months.\n"
-                ,
-                req_passes,
-                allowed_passes);
-
-        partsize = PT_MAX_PARTITION_DEPTH;
+                "\n", allowed_passes);
     }
 
-
-    pt_assert(partsize <= PT_MAX_PARTITION_DEPTH);
-
-    PrefixProbabilities prob(partsize);
-    return Partition(prob, prob.get_prefix_count()); // force max. possible number of passes
+    return best.partition();
 }
 
 ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__USERESULT
@@ -375,7 +415,15 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
             GB_begin_transaction(psg.gb_main);
 
             ULONG physical_memory = GB_get_physical_memory();
+
+// #define FORCE_MEM (2560*1024)
+#if defined(FORCE_MEM)
+            physical_memory = FORCE_MEM;
+            printf("Warning: Faking available memory\n");
+#endif
+
             printf("Available memory: %s\n", GBS_readable_size(physical_memory*1024, "b"));
+            printf("Overall bases:    %li bp\n", psg.char_count);
 
             Partition partition = decide_passes_to_use(psg.char_count, physical_memory);
 
@@ -392,7 +440,6 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
 #endif
 
             int passes = partition.number_of_passes();
-            pt_assert(passes != 1); // @@@ testing
 
             arb_progress pass_progress(GBS_global_string("Tree Build: %s in %i passes",
                                                          GBS_readable_size(psg.char_count, "bp"),
@@ -574,7 +621,7 @@ static arb_test::match_expectation decides_on_passes(ULONG bp, size_t avail_mem_
 #define TEST_DECIDES_PASSES(bp,memkb,expected_passes,expected_memuse,expect_to_swap)            \
     TEST_EXPECT(decides_on_passes(bp, memkb, expected_passes, expected_memuse, expect_to_swap))
 
-void TEST_decide_passes_to_use() {
+void TEST_SLOW_decide_passes_to_use() {
     const ULONG GB = 1024*1024; // kb
 
     const ULONG BP_SILVA_108_REF  = 891481251ul;
@@ -591,35 +638,35 @@ void TEST_decide_passes_to_use() {
 
     // ---------------- database --------- machine -- passes -- memuse - swap?
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MINI_PC,      781,  3859826,  1); // will swap (max. number of passes reached)
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MINI_PC,      156,   957645,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  MINI_PC,        6,   724753,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  MINI_PC,        1,   946506,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MINI_PC,       59,   3859826,  1); // will swap (max. number of passes reached)
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MINI_PC,       24,   2096095,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  MINI_PC,        2,   1570298,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  MINI_PC,        1,    946506,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, SMALL_PC,     156,  3859826,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  SMALL_PC,      31,  2758020,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  SMALL_PC,       1,  3019805,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  SMALL_PC,       1,   946506,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, SMALL_PC,      50,   4055226,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  SMALL_PC,      12,   4192190,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  SMALL_PC,       1,   3019805,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  SMALL_PC,       1,    946506,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, SMALL_SERVER,  31, 11116300,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  SMALL_SERVER,   6, 11491750,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  SMALL_SERVER,   1,  3019805,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  SMALL_SERVER,   1,   946506,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, SMALL_SERVER,  16,  12503614,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  SMALL_SERVER,   4,  12153675,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  SMALL_SERVER,   1,   3019805,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  SMALL_SERVER,   1,    946506,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MEDIUM_SERVER, 31, 11116300,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEDIUM_SERVER,  6, 11491750,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  MEDIUM_SERVER,  1,  3019805,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  MEDIUM_SERVER,  1,   946506,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MEDIUM_SERVER, 10,  19760335,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEDIUM_SERVER,  3,  17007790,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  MEDIUM_SERVER,  1,   3019805,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  MEDIUM_SERVER,  1,    946506,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, BIG_SERVER,     6, 46317918,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  BIG_SERVER,     1, 47882293,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  BIG_SERVER,     1,  3019805,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  BIG_SERVER,     1,   946506,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, BIG_SERVER,     3,  65437955,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  BIG_SERVER,     1,  47882293,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  BIG_SERVER,     1,   3019805,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  BIG_SERVER,     1,    946506,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, HUGE_SERVER,    6, 46317918,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  HUGE_SERVER,    1, 47882293,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  HUGE_SERVER,    1,  3019805,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  HUGE_SERVER,    1,   946506,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, HUGE_SERVER,    2, 100355490,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  HUGE_SERVER,    1,  47882293,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  HUGE_SERVER,    1,   3019805,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  HUGE_SERVER,    1,    946506,  0);
 }
 
 void NOTEST_SLOW_maybe_build_tree() {

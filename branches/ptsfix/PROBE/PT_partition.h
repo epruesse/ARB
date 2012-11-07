@@ -521,6 +521,9 @@ public:
     }
 };
 
+inline size_t max_kb_for_passes(const PrefixProbabilities& prob, int passes_wanted, size_t overall_base_count) {
+    return Partition(prob, passes_wanted).max_kb_for_any_pass(overall_base_count);
+}
 
 #else
 #error PT_partition.h included twice
