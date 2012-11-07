@@ -379,8 +379,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
 
             Partition partition = decide_passes_to_use(psg.char_count, physical_memory);
 
-            // @@@ comment out later:
-#define FORCE_PASSES 13
+// #define FORCE_PASSES 13
 #if defined(FORCE_PASSES)
             for (int depth = 0; depth <= PT_MAX_PARTITION_DEPTH; ++depth) {
                 PrefixProbabilities prob(depth);
@@ -389,6 +388,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
                 }
             }
             printf("Warning: Forcing %i passes (for DEBUG reasons)\n", FORCE_PASSES);
+            printf("Estimated memusage: %s\n", GBS_readable_size(partition.max_kb_for_any_pass(psg.char_count)*1024, "b"));
 #endif
 
             int passes = partition.number_of_passes();
