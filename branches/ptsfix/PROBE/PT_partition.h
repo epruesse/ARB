@@ -500,20 +500,20 @@ public:
         markPrefixes();
     }
 
-    size_t estimate_kb_for_pass(int pass, size_t overall_base_count) const {
+    size_t estimate_probes_for_pass(int pass, size_t overall_base_count) const {
         pt_assert(legal_pass(pass));
-
-        size_t this_pass_base_count = size_t(pass_probability(pass)*overall_base_count+0.5);
-        return estimate_memusage_kb(this_pass_base_count);
+        return size_t(pass_probability(pass)*overall_base_count+0.5);
     }
-
-    size_t max_kb_for_any_pass(size_t overall_base_count) const {
-        size_t max_kb = 0;
+    size_t estimate_max_probes_for_any_pass(size_t overall_base_count) const {
+        size_t max_probes = 0;
         for (int p = 1; p <= passes; ++p) {
-            size_t kb = estimate_kb_for_pass(p, overall_base_count);
-            if (kb>max_kb) max_kb = kb;
+            size_t probes = estimate_probes_for_pass(p, overall_base_count);
+            if (probes>max_probes) max_probes = probes;
         }
-        return max_kb;
+        return max_probes;
+    }
+    size_t estimate_max_kb_for_any_pass(size_t overall_base_count) const {
+        return estimate_memusage_kb(estimate_max_probes_for_any_pass(overall_base_count));
     }
 
     bool contains(const char *probe) const {
@@ -521,8 +521,11 @@ public:
     }
 };
 
+inline size_t max_probes_for_passes(const PrefixProbabilities& prob, int passes_wanted, size_t overall_base_count) {
+    return Partition(prob, passes_wanted).estimate_max_probes_for_any_pass(overall_base_count);
+}
 inline size_t max_kb_for_passes(const PrefixProbabilities& prob, int passes_wanted, size_t overall_base_count) {
-    return Partition(prob, passes_wanted).max_kb_for_any_pass(overall_base_count);
+    return estimate_memusage_kb(max_probes_for_passes(prob, passes_wanted, overall_base_count));
 }
 
 #else

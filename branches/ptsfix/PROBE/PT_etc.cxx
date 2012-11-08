@@ -423,19 +423,22 @@ void TEST_Partition() {
 
     {
         Partition P01(p0, 1);
-        TEST_ASSERT_EQUAL(P01.estimate_kb_for_pass(1, BASES_100k), 5371);
+        TEST_ASSERT_EQUAL(P01.estimate_probes_for_pass(1, BASES_100k), 100000);
+        TEST_ASSERT_EQUAL(P01.estimate_max_probes_for_any_pass(BASES_100k), 100000);
     }
 
     {
         // distributing memory to 6 passes on a level.1 Partitioner doesn't allow much choice:
         Partition P16(p1, 6);
         TEST_ASSERT_EQUAL(P16.number_of_passes(), 6);
-        TEST_ASSERT_EQUAL(P16.estimate_kb_for_pass(1, BASES_100k), 107);
-        TEST_ASSERT_EQUAL(P16.estimate_kb_for_pass(2, BASES_100k), 107);
-        TEST_ASSERT_EQUAL(P16.estimate_kb_for_pass(3, BASES_100k), 1289);
-        TEST_ASSERT_EQUAL(P16.estimate_kb_for_pass(4, BASES_100k), 1289);
-        TEST_ASSERT_EQUAL(P16.estimate_kb_for_pass(5, BASES_100k), 1289);
-        TEST_ASSERT_EQUAL(P16.estimate_kb_for_pass(6, BASES_100k), 1289);
+        TEST_ASSERT_EQUAL(P16.estimate_probes_for_pass(1, BASES_100k), 2000);
+        TEST_ASSERT_EQUAL(P16.estimate_probes_for_pass(2, BASES_100k), 2000);
+        TEST_ASSERT_EQUAL(P16.estimate_probes_for_pass(3, BASES_100k), 24000);
+        TEST_ASSERT_EQUAL(P16.estimate_probes_for_pass(4, BASES_100k), 24000);
+        TEST_ASSERT_EQUAL(P16.estimate_probes_for_pass(5, BASES_100k), 24000);
+        TEST_ASSERT_EQUAL(P16.estimate_probes_for_pass(6, BASES_100k), 24000);
+        TEST_ASSERT_EQUAL(P16.estimate_max_probes_for_any_pass(BASES_100k), 24000);
+        TEST_ASSERT_EQUAL(P16.estimate_max_kb_for_any_pass(BASES_100k), 1289);
     }
 
     {
@@ -471,9 +474,11 @@ void TEST_Partition() {
 
         TEST_ASSERT_EQUAL(P13.next(), false);
 
-        TEST_ASSERT_EQUAL(P13.estimate_kb_for_pass(1, BASES_100k), 1503);
-        TEST_ASSERT_EQUAL(P13.estimate_kb_for_pass(2, BASES_100k), 2578);
-        TEST_ASSERT_EQUAL(P13.estimate_kb_for_pass(3, BASES_100k), 1289);
+        TEST_ASSERT_EQUAL(P13.estimate_probes_for_pass(1, BASES_100k), 28000);
+        TEST_ASSERT_EQUAL(P13.estimate_probes_for_pass(2, BASES_100k), 48000);
+        TEST_ASSERT_EQUAL(P13.estimate_probes_for_pass(3, BASES_100k), 24000);
+        TEST_ASSERT_EQUAL(P13.estimate_max_probes_for_any_pass(BASES_100k), 48000);
+        TEST_ASSERT_EQUAL(P13.estimate_max_kb_for_any_pass(BASES_100k), 2578);
     }
 
     {
@@ -500,69 +505,71 @@ void TEST_Partition() {
 
         TEST_ASSERT_EQUAL(P12.next(), false);
 
-        TEST_ASSERT_EQUAL(P12.estimate_kb_for_pass(1, BASES_100k), 2792);
-        TEST_ASSERT_EQUAL(P12.estimate_kb_for_pass(2, BASES_100k), 2578);
+        TEST_ASSERT_EQUAL(P12.estimate_probes_for_pass(1, BASES_100k), 52000);
+        TEST_ASSERT_EQUAL(P12.estimate_probes_for_pass(2, BASES_100k), 48000);
+        TEST_ASSERT_EQUAL(P12.estimate_max_probes_for_any_pass(BASES_100k), 52000);
+        TEST_ASSERT_EQUAL(P12.estimate_max_kb_for_any_pass(BASES_100k), 2792);
     }
 
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p1, 1, BASES_100k), 5371);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p1, 2, BASES_100k), 2792);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p1, 3, BASES_100k), 2578);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p1, 4, BASES_100k), 1503);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p1, 5, BASES_100k), 1289);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p1, 6, BASES_100k), 1289);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p1,   1, BASES_100k), 100000);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p1,   2, BASES_100k), 52000);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p1,   3, BASES_100k), 48000);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p1,   4, BASES_100k), 28000);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p1,   5, BASES_100k), 24000);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p1,   6, BASES_100k), 24000);
 
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p2, 1, BASES_100k), 5371);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p2, 2, BASES_100k), 2792);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p2, 3, BASES_100k), 1907);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p2, 4, BASES_100k), 1598);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p2, 5, BASES_100k), 1289);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p2, 6, BASES_100k), 979);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p2, 7, BASES_100k), 979);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p2, 8, BASES_100k), 928);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p2, 9, BASES_100k), 670);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p2, 10, BASES_100k), 670);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p2, 15, BASES_100k), 618);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p2, 20, BASES_100k), 309);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p2, 30, BASES_100k), 309);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,   1, BASES_100k), 100000);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,   2, BASES_100k), 52000);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,   3, BASES_100k), 35520);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,   4, BASES_100k), 29760);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,   5, BASES_100k), 24000);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,   6, BASES_100k), 18240);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,   7, BASES_100k), 18240);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,   8, BASES_100k), 17280);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,   9, BASES_100k), 12480);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,  10, BASES_100k), 12480);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,  15, BASES_100k), 11520);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,  20, BASES_100k), 5760);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,  30, BASES_100k), 5760);
 
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p3, 1, BASES_100k), 5371);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p3, 2, BASES_100k), 2718);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p3, 3, BASES_100k), 1821);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p3, 4, BASES_100k), 1363);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p3, 5, BASES_100k), 1128);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p3, 6, BASES_100k), 928);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p3, 7, BASES_100k), 800);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p3, 8, BASES_100k), 692);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p3, 9, BASES_100k), 618);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p3, 10, BASES_100k), 596);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p3, 15, BASES_100k), 383);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p3, 20, BASES_100k), 309);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p3, 30, BASES_100k), 235);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p3, 40, BASES_100k), 160);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p3, 50, BASES_100k), 160);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p3, 100, BASES_100k), 107);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p3, 150, BASES_100k), 107);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,   1, BASES_100k), 100000);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,   2, BASES_100k), 50618);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,   3, BASES_100k), 33907);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,   4, BASES_100k), 25382);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,   5, BASES_100k), 21005);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,   6, BASES_100k), 17280);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,   7, BASES_100k), 14899);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,   8, BASES_100k), 12902);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,   9, BASES_100k), 11520);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,  10, BASES_100k), 11098);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,  15, BASES_100k), 7142);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,  20, BASES_100k), 5760);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,  30, BASES_100k), 4378);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,  40, BASES_100k), 2995);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,  50, BASES_100k), 2995);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p3, 100, BASES_100k), 2000);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p3, 150, BASES_100k), 2000);
 
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p4, 1, BASES_100k), 5371);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p4, 2, BASES_100k), 2688);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p4, 3, BASES_100k), 1797);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p4, 4, BASES_100k), 1345);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p4, 5, BASES_100k), 1089);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p4, 6, BASES_100k), 905);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p4, 7, BASES_100k), 779);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p4, 8, BASES_100k), 675);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p4, 9, BASES_100k), 603);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p4, 10, BASES_100k), 549);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p4, 15, BASES_100k), 365);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p4, 20, BASES_100k), 276);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p4, 30, BASES_100k), 187);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p4, 40, BASES_100k), 148);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p4, 50, BASES_100k), 112);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p4, 100, BASES_100k), 107);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p4, 150, BASES_100k), 107);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p4, 200, BASES_100k), 107);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p4, 300, BASES_100k), 107);
-    TEST_ASSERT_EQUAL(max_kb_for_passes(p4, 600, BASES_100k), 107);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,   1, BASES_100k), 100000);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,   2, BASES_100k), 50046);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,   3, BASES_100k), 33474);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,   4, BASES_100k), 25051);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,   5, BASES_100k), 20286);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,   6, BASES_100k), 16858);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,   7, BASES_100k), 14515);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,   8, BASES_100k), 12571);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,   9, BASES_100k), 11234);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,  10, BASES_100k), 10239);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,  15, BASES_100k), 6811);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,  20, BASES_100k), 5143);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,  30, BASES_100k), 3484);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,  40, BASES_100k), 2765);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,  50, BASES_100k), 2101);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p4, 100, BASES_100k), 2000);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p4, 150, BASES_100k), 2000);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p4, 200, BASES_100k), 2000);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p4, 300, BASES_100k), 2000);
+    TEST_ASSERT_EQUAL(max_probes_for_passes(p4, 600, BASES_100k), 2000);
 }
 
 #endif // UNIT_TESTS

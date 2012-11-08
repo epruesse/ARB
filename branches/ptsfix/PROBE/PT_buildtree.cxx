@@ -436,7 +436,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
                 }
             }
             printf("Warning: Forcing %i passes (for DEBUG reasons)\n", FORCE_PASSES);
-            printf("Estimated memusage: %s\n", GBS_readable_size(partition.max_kb_for_any_pass(psg.char_count)*1024, "b"));
+            printf("Estimated memusage: %s\n", GBS_readable_size(partition.estimate_max_kb_for_any_pass(psg.char_count)*1024, "b"));
 #endif
 
             int passes = partition.number_of_passes();
@@ -609,7 +609,7 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USE
 static arb_test::match_expectation decides_on_passes(ULONG bp, size_t avail_mem_kb, int expected_passes, size_t expected_memuse, bool expect_to_swap) {
     Partition   pass            = decide_passes_to_use(bp, avail_mem_kb);
     int    decided_passes  = pass.number_of_passes();
-    size_t decided_memuse  = pass.max_kb_for_any_pass(bp);
+    size_t decided_memuse  = pass.estimate_max_kb_for_any_pass(bp);
     bool   decided_to_swap = decided_memuse>avail_mem_kb;
 
     using namespace arb_test;
