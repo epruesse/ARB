@@ -378,53 +378,9 @@ void AW_window::clear_option_menu(AW_option_menu_struct */*oms*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::TuneOrSetBackground(GtkWidget* w, const char *color, int modStrength) {
-    // Sets the background for the next created widget.
-    //
-    // If 'color' is specified, it may contain one of the following values:
-    //      "+"    means: slightly increase color of parent widget 'w'
-    //      "-"    means: slightly decrease color of parent widget 'w'
-    //      otherwise it contains a specific color ('name' or '#RGB')
-    //
-    // If color is not specified, the color of the parent widget 'w' is modified
-    // by 'modStrength' (increased if positive,  decreased if negative)
-    //
-    // If it's not possible to modify the color (e.g. we cannot increase 'white'),
-    // the color will be modified in the opposite direction. For details see TuneBackground()
 
-    if (color) {
-        switch (color[0]) {
-        case '+':
-            TuneBackground(w, TUNE_BRIGHT);
-            break;
-        case '-':
-            TuneBackground(w, TUNE_DARK);
-            break;
-        default:
-            set_background(color, w); // use explicit color
-            break;
-        }
-    }
-    else {
-        TuneBackground(w, modStrength);
-    }
-}
 
-void AW_window::TuneBackground(GtkWidget* /*w*/, int /*modStrength*/) {
-    // Gets the Background Color, modifies the rgb values slightly and sets new background color
-    // Intended to give buttons a nicer 3D-look.
-    //
-    // possible values for modStrength:
-    //
-    //    0        = do not modify (i.e. set to background color of parent widget)
-    //    1 .. 127 = increase if background is bright, decrease if background is dark
-    //   -1 ..-127 = opposite behavior than above
-    //  256 .. 383 = always increase
-    // -256 ..-383 = always decrease
-    //
-    // if it's impossible to decrease or increase -> opposite direction is used.
-    GTK_NOT_IMPLEMENTED;
-}
+
 
 
 inline void calculate_textsize(const char *str, int *width, int *height) {
@@ -743,7 +699,7 @@ int AW_window::calculate_string_width(int columns) const {
     }
 }
 
-void AW_window::create_button(const char *macro_name, AW_label buttonlabel, const char */*mnemonic*/, const char *color) {
+void AW_window::create_button(const char *macro_name, AW_label buttonlabel, const char */*mnemonic*/, const char */*color*/) {
     // Create a button or text display.
     //
     // If a callback is bound via at->callback(), a button is created.
@@ -755,13 +711,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     //
     // Note 1: Button width 0 does not work together with labels!
 
-    // Note 2: "color" may be specified for the button background (see TuneOrSetBackground for details)
-
     GTK_PARTLY_IMPLEMENTED;
-    TuneOrSetBackground(_at.attach_any ? prvt->areas[AW_INFO_AREA]->get_form() : prvt->areas[AW_INFO_AREA]->get_area(), // set background for buttons / text displays
-                        color,
-                        _callback ? TUNE_BUTTON : 0);
-
 
 
 #if defined(DUMP_BUTTON_CREATION)
@@ -1418,7 +1368,7 @@ int AW_window::create_mode(const char *pixmap, const char */*help_text_*/, AW_ac
     
     //FIXME help text not implemented
     GTK_PARTLY_IMPLEMENTED;
-    TuneBackground(GTK_WIDGET(prvt->mode_menu), TUNE_BUTTON); // set background color for mode-buttons
+    
 
     const char *path = GB_path_in_ARBLIB("pixmaps", pixmap);
     GtkWidget *icon = gtk_image_new_from_file(path);
@@ -1621,7 +1571,7 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const cha
    aw_assert(prvt->menus.size() > 0); //closed too many menus
    gtk_menu_shell_append(prvt->menus.top(), item);  
    
-   // TuneBackground(p_w->menu_bar[p_w->menu_deep], TUNE_MENUTOPIC); // set background color for normal menu topics
+   
    
    //FIXME duplicate mnemonic test not implemented
 #if defined(DUMP_MENU_LIST)
@@ -1679,11 +1629,7 @@ void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active m
     //use the new submenu as current menu shell.
     prvt->menus.push(GTK_MENU_SHELL(submenu));
     
-    TuneBackground(GTK_WIDGET(prvt->menus.top()), TUNE_SUBMENU); // set background color for submenus
-    //FIXME no idea if this comment is still valid because TuneBackground is not implemented atm.
-//     (Note: This must even be called if TUNE_SUBMENU is 0!
-//            Otherwise several submenus get the TUNE_MENUTOPIC color)
-
+    
     //FIXME duplicate mnemonic test not implemented
     #if defined(DUMP_MENU_LIST)
         dumpOpenSubMenu(name);

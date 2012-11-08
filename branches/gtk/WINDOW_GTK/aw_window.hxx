@@ -529,8 +529,6 @@ public:
     void auto_off();            // disable auto_xxxxx
     void shadow_width (int shadow_thickness); // set the shadow_thickness of buttons
 
-    void TuneBackground(GtkWidget* w, int modStrength);
-    void TuneOrSetBackground(GtkWidget* w, const char *color, int modStrength);
 
     // *** local modifiers: ********
     void at(int x, int y);      // abs pos of a button (>10,10)
