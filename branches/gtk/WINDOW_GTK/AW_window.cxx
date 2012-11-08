@@ -616,13 +616,12 @@ void AW_label_in_awar_list(AW_window *aww, GtkWidget* widget, const char *str) {
         }
         else {
             aw_assert(0); // awar not found
-            aww->update_label(widget, str); //FIXME unreachable code
+            aww->update_label(widget, str); //FIXME unreachable code (only if asserts are disabled)
         }
         free(var_value);
         is_awar->tie_widget(0, widget, AW_WIDGET_LABEL_FIELD, aww);
     }
 }
-
 
 void AW_window::increment_at_commands(int width, int height) {
 
@@ -2073,8 +2072,29 @@ bool AW_window::is_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW
     return aram && aram->is_resize_callback(this, f);
 }
 
-void AW_window::update_label(GtkWidget* /*widget*/, const char */*var_value*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_window::update_label(GtkWidget* widget, const char *var_value) {
+    
+    if (get_root()->changer_of_variable != widget) {
+        //FIXME this will break if the labels content should switch from text to image or vice versa
+        //FIXME only works for labels and buttons right now
+        
+        if(GTK_IS_BUTTON(widget)) {
+            gtk_button_set_label(GTK_BUTTON(widget), var_value);   
+        }
+        else if(GTK_IS_LABEL(widget)) {
+            gtk_label_set_text(GTK_LABEL(widget), var_value);
+        }
+        else {
+            aw_assert(false); //unable to set label of unknown type
+        }
+        
+        //old implementation
+        //XtVaSetValues(widget, RES_CONVERT(XmNlabelString, var_value), NULL);
+        
+    }
+    else {
+        get_root()->changer_of_variable = 0;
+    }
 }
 
 void AW_window::update_option_menu() {
