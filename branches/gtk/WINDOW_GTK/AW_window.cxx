@@ -2182,18 +2182,11 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     window_name = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
 
-    //p_w->shell = aw_create_shell(this, true, true, width, height, posx, posy);
-
     prvt->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
     gtk_window_set_title(prvt->window, window_name);
     gtk_window_set_default_size(prvt->window, width, height);
     vbox = gtk_vbox_new(false, 1);//FIXME remove constant
     gtk_container_add(GTK_CONTAINER(prvt->window), vbox);
-    
-    
-//    XtVaCreateManagedWidget("mainWindow1",
-//                                          xmMainWindowWidgetClass, p_w->shell,
-//                                          NULL);
 
     GTK_PARTLY_IMPLEMENTED;
     
@@ -2221,183 +2214,44 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     gtk_toolbar_set_orientation(prvt->mode_menu, GTK_ORIENTATION_VERTICAL);
     
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prvt->mode_menu), false, false, 0);
-    
-    
-    
-//
-    
-//    // create shell for help-cascade
-//    help_popup = XtVaCreatePopupShell("menu_shell", xmMenuShellWidgetClass,
-//                                      p_w->menu_bar[0],
-//                                      XmNwidth, 1,
-//                                      XmNheight, 1,
-//                                      XmNallowShellResize, true,
-//                                      XmNoverrideRedirect, true,
-//                                      NULL);
-//
-//    // create row column in Pull-Down shell
-//    p_w->help_pull_down = XtVaCreateWidget("menu_row_column",
-//                                           xmRowColumnWidgetClass, help_popup,
-//                                           XmNrowColumnType, XmMENU_PULLDOWN,
-//                                           NULL);
-//
-//    // create HELP-label in menu bar
-//    help_label = XtVaCreateManagedWidget("menu1_top_b1",
-//                                         xmCascadeButtonWidgetClass, p_w->menu_bar[0],
-//                                         RES_CONVERT(XmNlabelString, help_button),
-//                                         RES_CONVERT(XmNmnemonic, help_mnemonic),
-//                                         XmNsubMenuId, p_w->help_pull_down, NULL);
-//    XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
-//    root->make_sensitive(help_label, AWM_ALL);
-//
-//    form1 = XtVaCreateManagedWidget("form1",
-//                                    xmFormWidgetClass,
-//                                    main_window,
-//                                    // XmNwidth, width,
-//                                    // XmNheight, height,
-//                                    XmNresizePolicy, XmRESIZE_NONE,
-//                                    // XmNx, 0,
-//                                    // XmNy, 0,
-//                                    NULL);
-//
-//    p_w->mode_area = XtVaCreateManagedWidget("mode area",
-//                                             xmDrawingAreaWidgetClass,
-//                                             form1,
-//                                             XmNresizePolicy, XmRESIZE_NONE,
-//                                             XmNwidth, 38,
-//                                             XmNheight, height,
-//                                             XmNx, 0,
-//                                             XmNy, 0,
-//                                             XmNleftOffset, 0,
-//                                             XmNtopOffset, 0,
-//                                             XmNbottomAttachment, XmATTACH_FORM,
-//                                             XmNleftAttachment, XmATTACH_POSITION,
-//                                             XmNtopAttachment, XmATTACH_POSITION,
-//                                             XmNmarginHeight, 2,
-//                                             XmNmarginWidth, 1,
-//                                             NULL);
-//
-//    separator = XtVaCreateManagedWidget("separator",
-//                                        xmSeparatorWidgetClass,
-//                                        form1,
-//                                        XmNx, 37,
-//                                        XmNshadowThickness, 4,
-//                                        XmNorientation, XmVERTICAL,
-//                                        XmNbottomAttachment, XmATTACH_FORM,
-//                                        XmNtopAttachment, XmATTACH_FORM,
-//                                        XmNleftAttachment, XmATTACH_NONE,
-//                                        XmNleftWidget, NULL,
-//                                        XmNrightAttachment, XmATTACH_NONE,
-//                                        XmNleftOffset, 70,
-//                                        XmNleftPosition, 0,
-//                                        NULL);
-//
-//    form2 = XtVaCreateManagedWidget("form2",
-//                                    xmFormWidgetClass,
-//                                    form1,
-//                                    XmNwidth, width,
-//                                    XmNheight, height,
-//                                    XmNtopOffset, 0,
-//                                    XmNbottomOffset, 0,
-//                                    XmNleftOffset, 0,
-//                                    XmNrightOffset, 0,
-//                                    XmNrightAttachment, XmATTACH_FORM,
-//                                    XmNbottomAttachment, XmATTACH_FORM,
-//                                    XmNleftAttachment, XmATTACH_WIDGET,
-//                                    XmNleftWidget, separator,
-//                                    XmNtopAttachment, XmATTACH_POSITION,
-//                                    XmNresizePolicy, XmRESIZE_NONE,
-//                                    XmNx, 0,
-//                                    XmNy, 0,
-//                                    NULL);
 
-//
-//    p_w->scroll_bar_horizontal = XtVaCreateManagedWidget("scroll_bar_horizontal",
-//                                                         xmScrollBarWidgetClass,
-//                                                         form2,
-//                                                         XmNheight, 15,
-//                                                         XmNminimum, 0,
-//                                                         XmNmaximum, AW_SCROLL_MAX,
-//                                                         XmNincrement, 10,
-//                                                         XmNsliderSize, AW_SCROLL_MAX,
-//                                                         XmNrightAttachment, XmATTACH_FORM,
-//                                                         XmNbottomAttachment, XmATTACH_FORM,
-//                                                         XmNbottomOffset, 0,
-//                                                         XmNleftAttachment, XmATTACH_FORM,
-//                                                         XmNtopAttachment, XmATTACH_NONE,
-//                                                         XmNorientation, XmHORIZONTAL,
-//                                                         XmNrightOffset, 18,
-//                                                         NULL);
-//
-//    p_w->scroll_bar_vertical = XtVaCreateManagedWidget("scroll_bar_vertical",
-//                                                       xmScrollBarWidgetClass,
-//                                                       form2,
-//                                                       XmNwidth, 15,
-//                                                       XmNminimum, 0,
-//                                                       XmNmaximum, AW_SCROLL_MAX,
-//                                                       XmNincrement, 10,
-//                                                       XmNsliderSize, AW_SCROLL_MAX,
-//                                                       XmNrightAttachment, XmATTACH_FORM,
-//                                                       XmNbottomAttachment, XmATTACH_WIDGET,
-//                                                       XmNbottomWidget, p_w->scroll_bar_horizontal,
-//                                                       XmNbottomOffset, 3,
-//                                                       XmNleftOffset, 3,
-//                                                       XmNrightOffset, 3,
-//                                                       XmNleftAttachment, XmATTACH_NONE,
-//                                                       XmNtopAttachment, XmATTACH_WIDGET,
-//                                                       XmNtopWidget, INFO_WIDGET,
-//                                                       NULL);
-//
-//    p_w->frame = XtVaCreateManagedWidget("draw_area",
-//                                         xmFrameWidgetClass,
-//                                         form2,
-//                                         XmNshadowType, XmSHADOW_IN,
-//                                         XmNshadowThickness, 2,
-//                                         XmNleftOffset, 3,
-//                                         XmNtopOffset, 3,
-//                                         XmNbottomOffset, 3,
-//                                         XmNrightOffset, 3,
-//                                         XmNbottomAttachment, XmATTACH_WIDGET,
-//                                         XmNbottomWidget, p_w->scroll_bar_horizontal,
-//                                         XmNtopAttachment, XmATTACH_FORM,
-//                                         XmNtopOffset, 0,
-//                                         XmNleftAttachment, XmATTACH_FORM,
-//                                         XmNrightAttachment, XmATTACH_WIDGET,
-//                                         XmNrightWidget, p_w->scroll_bar_vertical,
-//                                         NULL);
-//
-    
-    GtkWidget *vbox2 = gtk_vbox_new(false,0);
+    GtkWidget *vbox2 = gtk_vbox_new(false, 0);
     gtk_box_pack_start(GTK_BOX(hbox), vbox2, true, true, 0);
+    
+//    GtkWidget *hbox2 = gtk_hbox_new(false, 0);
+//    gtk_box_pack_start(GTK_BOX(vbox2), hbox2, true, true, 0);
+    
     
     //The buttons are above the drawing are
     prvt->fixed_size_area = GTK_FIXED(gtk_fixed_new());
-    //prvt->areas[AW_INFO_AREA] = new AW_area_management(root, GTK_WIDGET(prvt->fixed_size_area), GTK_WIDGET(prvt->fixed_size_area)); //FIXME form should be a frame around the area
-    gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(prvt->fixed_size_area), true, true, 0);
+    prvt->areas[AW_INFO_AREA] = new AW_area_management(root, GTK_WIDGET(prvt->fixed_size_area), GTK_WIDGET(prvt->fixed_size_area)); //FIXME form should be a frame around the area
+    gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(prvt->fixed_size_area), false, false, 0);
+    
     
     GtkWidget* drawing_area = gtk_drawing_area_new();
     gtk_drawing_area_size(GTK_DRAWING_AREA(drawing_area), 3000, 3000); //FIXME hardcoded size.
     GtkWidget *scrollArea = gtk_scrolled_window_new(NULL, NULL); //NULL causes the scrolledWindow to create its own scroll adjustments
-
+    gtk_box_pack_start(GTK_BOX(vbox2), scrollArea, true, true, 0);   
     gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrollArea), drawing_area);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrollArea), GTK_POLICY_ALWAYS, GTK_POLICY_ALWAYS);
-    gtk_box_pack_start(GTK_BOX(vbox2), scrollArea, true, true, 0);
+    
+    //gtk_box_pack_end(GTK_BOX(vbox2), scrollArea, true, true, 0);
     gtk_widget_realize(GTK_WIDGET(drawing_area));
 
     prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(root, drawing_area, drawing_area); //FIXME form should be a frame around the area.
     
-    
-    GtkWidget* drawing_area_bottom = gtk_drawing_area_new();
-    //gtk_container_add(GTK_CONTAINER(hbox), drawing_area_bottom);
-    gtk_widget_realize(GTK_WIDGET(drawing_area_bottom));
-  
-    prvt->areas[AW_BOTTOM_AREA] = new AW_area_management(root, drawing_area_bottom, drawing_area_bottom); //FIXME form should be a frame around the area.
-    
-    GtkWidget* drawing_area_info = gtk_drawing_area_new();
+//    
+//    GtkWidget* drawing_area_bottom = gtk_drawing_area_new();
+//    gtk_container_add(GTK_CONTAINER(hbox), drawing_area_bottom);
+//    gtk_widget_realize(GTK_WIDGET(drawing_area_bottom));
+//  
+//    prvt->areas[AW_BOTTOM_AREA] = new AW_area_management(root, drawing_area_bottom, drawing_area_bottom); //FIXME form should be a frame around the area.
+//    
+//    GtkWidget* drawing_area_info = gtk_drawing_area_new();
     //gtk_container_add(GTK_CONTAINER(hbox), drawing_area_info);
-    gtk_widget_realize(GTK_WIDGET(drawing_area_info));
+//    gtk_widget_realize(GTK_WIDGET(drawing_area_info));
   
-    prvt->areas[AW_INFO_AREA] = new AW_area_management(root, drawing_area_info, drawing_area_info); //FIXME form should be a frame around the area.
+ //   prvt->areas[AW_INFO_AREA] = new AW_area_management(root, drawing_area_info, drawing_area_info); //FIXME form should be a frame around the area.
 
 
     
