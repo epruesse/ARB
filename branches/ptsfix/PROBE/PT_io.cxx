@@ -99,6 +99,33 @@ inline size_t count_gaps_and_dots(const char *seq, int seqsize) {
     return count;
 }
 
+// uncomment next line to count all bases compressed by ptserver and dump them when program terminates
+// #define COUNT_COMPRESSES_BASES
+#if defined(COUNT_COMPRESSES_BASES)
+class BaseCounter {
+    long count[PT_BASES];
+public:
+    BaseCounter() {
+        for (int i = 0; i<PT_BASES; ++i) {
+            count[i] = 0;
+        }
+    }
+    ~BaseCounter() {
+        fputs("\nBaseCounter:\n", stderr);
+        for (int i = 0; i<PT_BASES; ++i) {
+            fprintf(stderr, "count[%i]=%li\n", i, count[i]);
+        }
+    }
+
+    void inc(uchar base) {
+        pt_assert(base >= 0 && base<PT_BASES);
+        ++count[base];
+    }
+};
+
+static BaseCounter base_counter;
+#endif
+
 int probe_compress_sequence(char *seq, int seqsize) {
     // translates a readable sequence into PT_base
     // (see also: probe_2_readable)
@@ -128,6 +155,9 @@ int probe_compress_sequence(char *seq, int seqsize) {
         if (c == PT_B_UNDEF)
             break; // already seen terminal zerobyte
 
+#if defined(COUNT_COMPRESSES_BASES)
+        base_counter.inc(c);
+#endif
         *dest++ = c;
         if (c == PT_QU) { // TODO: *seq = '.' ???
             offset += count_gaps_and_dots(seq + offset, seqsize - offset); // skip over gaps and dots
@@ -136,6 +166,9 @@ int probe_compress_sequence(char *seq, int seqsize) {
     }
 
     if (dest[-1] != PT_QU) {
+#if defined(COUNT_COMPRESSES_BASES)
+        base_counter.inc(PT_QU);
+#endif
         *dest++ = PT_QU;
     }
 
