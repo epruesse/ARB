@@ -49,8 +49,9 @@ public:
     GtkWindow *window; /**< The gtk window instance managed by this aw_window */
     
     /**
-     *  A fixed size widget spanning the whole window. Everything is positioned on this widget using absolut coordinates.
-     * @note This area is only present in aw_window_simple
+     *  A fixed size widget spanning the whole window or a part of the window. Everything is positioned on this widget using absolut coordinates.
+     * @note This area might not be present in every window.
+     * @note This area is the same as the INFO_AREA
      */
     GtkFixed *fixed_size_area; 
     
@@ -290,8 +291,19 @@ bool AW_window::at_ifdef(const  char * /*id*/){
 }
 
 
-void AW_window::at_set_to(bool /*attach_x*/, bool /*attach_y*/, int /*xoff*/, int /*yoff*/){
-    GTK_NOT_IMPLEMENTED;
+void AW_window::at_set_to(bool attach_x, bool attach_y, int xoff, int yoff) {
+    _at.attach_any = attach_x || attach_y;
+    _at.attach_x   = attach_x;
+    _at.attach_y   = attach_y;
+
+    _at.to_position_exists = true;
+    _at.to_position_x      = xoff >= 0 ? _at.x_for_next_button + xoff : _at.max_x_size+xoff;
+    _at.to_position_y      = yoff >= 0 ? _at.y_for_next_button + yoff : _at.max_y_size+yoff;
+
+    if (_at.to_position_x > _at.max_x_size) _at.max_x_size = _at.to_position_x;
+    if (_at.to_position_y > _at.max_y_size) _at.max_y_size = _at.to_position_y;
+
+    _at.correct_for_at_center = 0;
 }
 
 void AW_window::at_unset_to(){
@@ -317,13 +329,12 @@ void AW_window::auto_space(int x, int y){
 void AW_window::label_length(int /*length*/){
     GTK_NOT_IMPLEMENTED;
 }
-void AW_window::button_length(int /*length*/){
-    GTK_NOT_IMPLEMENTED;
+void AW_window::button_length(int length) {
+    _at.length_of_buttons = length; 
 }
 
-int  AW_window::get_button_length() const{
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+int  AW_window::get_button_length() const {
+    return _at.length_of_buttons; 
 }
 
 void AW_window::calculate_scrollbars(){
@@ -781,10 +792,6 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
 
     bool is_graphical_button = buttonlabel[0] == '#';
 
-    #if defined(ASSERTION_USED)
-        AW_awar *is_awar = is_graphical_button ? NULL : get_root()->label_is_awar(buttonlabel);
-    #endif // ASSERTION_USED
-
     int width_of_button = -1, height_of_button = -1;
 
     int width_of_label, height_of_label;
@@ -815,7 +822,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
         }
     }
     else { // no button_length() specified
-        aw_assert(!is_awar); // please specify button_length() for AWAR button!
+   
 
         if (is_graphical_button) {
             int      width, height;
@@ -941,11 +948,11 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
                 }
             }
 
-
             if(buttonlabel[0]=='#') {
                 //pixmap button
-                //FIXME pixmap button not implemented
-                gtk_button_set_label(GTK_BUTTON(buttonOrLabel), "pixmap button not impl");
+                
+                GtkWidget* image = gtk_image_new_from_file(aw_str_2_label(buttonlabel, this));//note: aw_str_2_label only returns a path if buttonlabel[0]=='#'
+                gtk_button_set_image(GTK_BUTTON(buttonOrLabel), image);
             }
             else {
                 //label button
@@ -990,6 +997,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
 //        }
 
         gtk_fixed_put(GTK_FIXED(fatherwidget), buttonOrLabel, x_button, y_button);
+        gtk_widget_realize(buttonOrLabel);
         gtk_widget_show(buttonOrLabel);
 
 
@@ -1025,9 +1033,13 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
 //        int     recenterSize = 0;
 
         if (!height || !width) {
-            // ask motif for real button size
-            height = buttonOrLabel->allocation.height;
-            width = buttonOrLabel->allocation.width;
+            // ask gtk for real button size. (note that we use the requested size not the real one.
+            //because the real one might be smaller depending on the current window size)
+            GtkRequisition requisition;
+            gtk_widget_size_request(GTK_WIDGET(buttonOrLabel), &requisition);
+            
+            height = requisition.height;
+            width = requisition.width;
 
             //FIXME let motif choose size not implemented
 //            if (let_motif_choose_size) {
@@ -1495,21 +1507,19 @@ void AW_window::select_mode(int /*mode*/) {
 }
 
 void AW_window::draw_line(int /*x1*/, int /*y1*/, int /*x2*/, int /*y2*/, int /*width*/, bool /*resize*/){
-
+   GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::get_at_position(int */*x*/, int */*y*/) const{
-
+void AW_window::get_at_position(int *x, int *y) const {
+    *x = _at.x_for_next_button; *y = _at.y_for_next_button; 
 }
 
-int AW_window::get_at_xposition() const{
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+int AW_window::get_at_xposition() const {
+    return _at.x_for_next_button; 
 }
 
 int AW_window::get_at_yposition() const {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+    return _at.y_for_next_button; 
 }
 
 AW_device_click *AW_window::get_click_device(AW_area /*area*/, int /*mousex*/, int /*mousey*/, AW_pos /*max_distance_linei*/,
@@ -1792,23 +1802,23 @@ void AW_window::refresh_toggle_field(int /*toggle_field_number*/) {
 //            short length;
 //            short height;
 //            XtVaGetValues(p_w->toggle_field, XmNwidth, &length, XmNheight, &height, NULL);
-//            length                += (short)_at->saved_xoff_for_label;
+//            length                += (short)_at.saved_xoff_for_label;
 //
 //            int width_of_last_widget  = length;
 //            int height_of_last_widget = height;
 //
 //            if (toggle_field_list->correct_for_at_center_intern) {
 //                if (toggle_field_list->correct_for_at_center_intern == 1) {   // middle centered
-//                    XtVaSetValues(p_w->toggle_field, XmNx, (short)((short)_at->saved_x - (short)(length/2) + (short)_at->saved_xoff_for_label), NULL);
+//                    XtVaSetValues(p_w->toggle_field, XmNx, (short)((short)_at.saved_x - (short)(length/2) + (short)_at.saved_xoff_for_label), NULL);
 //                    if (p_w->toggle_label) {
-//                        XtVaSetValues(p_w->toggle_label, XmNx, (short)((short)_at->saved_x - (short)(length/2)), NULL);
+//                        XtVaSetValues(p_w->toggle_label, XmNx, (short)((short)_at.saved_x - (short)(length/2)), NULL);
 //                    }
 //                    width_of_last_widget = width_of_last_widget / 2;
 //                }
 //                if (toggle_field_list->correct_for_at_center_intern == 2) {   // right centered
-//                    XtVaSetValues(p_w->toggle_field, XmNx, (short)((short)_at->saved_x - length + (short)_at->saved_xoff_for_label), NULL);
+//                    XtVaSetValues(p_w->toggle_field, XmNx, (short)((short)_at.saved_x - length + (short)_at.saved_xoff_for_label), NULL);
 //                    if (p_w->toggle_label) {
-//                        XtVaSetValues(p_w->toggle_label, XmNx, (short)((short)_at->saved_x - length),    NULL);
+//                        XtVaSetValues(p_w->toggle_label, XmNx, (short)((short)_at.saved_x - length),    NULL);
 //                    }
 //                    width_of_last_widget = 0;
 //                }
@@ -2132,7 +2142,6 @@ AW_window_menu_modes::AW_window_menu_modes() {
     GTK_NOT_IMPLEMENTED;
 }
 
-
 void aw_create_help_entry(AW_window *aww) {
     aww->insert_help_topic("Click here and then on the questionable button/menu/...", "P", 0,
                            AWM_ALL, (AW_CB)AW_help_entry_pressed, 0, 0);
@@ -2340,6 +2349,11 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     
     GtkWidget *vbox2 = gtk_vbox_new(false,0);
     gtk_box_pack_start(GTK_BOX(hbox), vbox2, true, true, 0);
+    
+    //The buttons are above the drawing are
+    prvt->fixed_size_area = GTK_FIXED(gtk_fixed_new());
+    //prvt->areas[AW_INFO_AREA] = new AW_area_management(root, GTK_WIDGET(prvt->fixed_size_area), GTK_WIDGET(prvt->fixed_size_area)); //FIXME form should be a frame around the area
+    gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(prvt->fixed_size_area), true, true, 0);
     
     GtkWidget* drawing_area = gtk_drawing_area_new();
     gtk_drawing_area_size(GTK_DRAWING_AREA(drawing_area), 3000, 3000); //FIXME hardcoded size.
