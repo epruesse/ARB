@@ -618,8 +618,8 @@ static arb_test::match_expectation decides_on_passes(ULONG bp, size_t avail_mem_
     using namespace arb_test;
     expectation_group expected;
     expected.add(that(decided_passes).is_equal_to(expected_passes));
-    expected.add(that(decided_passsize).is_equal_to(expected_passsize));
     expected.add(that(decided_depth).is_equal_to(expected_depth));
+    expected.add(that(decided_passsize).is_equal_to(expected_passsize));
     expected.add(that(decided_memuse).is_equal_to(expected_memuse));
     expected.add(that(decided_to_swap).is_equal_to(expect_to_swap));
     return all().ofgroup(expected);
@@ -628,8 +628,12 @@ static arb_test::match_expectation decides_on_passes(ULONG bp, size_t avail_mem_
 #define TEST_DECIDES_PASSES(bp,memkb,expected_passes,expected_depth,expected_passsize,expected_memuse,expect_to_swap)   \
     TEST_EXPECT(decides_on_passes(bp, memkb, expected_passes, expected_depth, expected_passsize, expected_memuse, expect_to_swap))
 
+#define TEST_DECIDES_PASSES__BROKEN(bp,memkb,expected_passes,expected_depth,expected_passsize,expected_memuse,expect_to_swap)   \
+    TEST_EXPECT__BROKEN(decides_on_passes(bp, memkb, expected_passes, expected_depth, expected_passsize, expected_memuse, expect_to_swap))
+
 void TEST_SLOW_decide_passes_to_use() {
-    const ULONG GB = 1024*1024; // kb
+    const ULONG MB = 1024;    // kb
+    const ULONG GB = 1024*MB; // kb
 
     const ULONG BP_SILVA_108_REF  = 891481251ul;
     const ULONG BP_SILVA_108_PARC = BP_SILVA_108_REF * (2492653/618442.0); // rough estimation by number of species
@@ -643,7 +647,35 @@ void TEST_SLOW_decide_passes_to_use() {
     const ULONG BIG_SERVER    =  64 *GB;
     const ULONG HUGE_SERVER   = 128 *GB;
 
+    const ULONG MEM1 = ULONG(45.7*GB+0.5);
+    const ULONG MEM2 = ULONG(18.7*GB+0.5);
+    const ULONG MEM3 = ULONG(11.23*GB+0.5);
+
+    const ULONG LMEM1 = 3072*MB;
+    const ULONG LMEM2 = 2560*MB;
+    const ULONG LMEM3 = 2048*MB;
+    const ULONG LMEM4 = 1536*MB;
+    const ULONG LMEM5 = 1024*MB;
+    const ULONG LMEM6 =  768*MB;
+    const ULONG LMEM7 =  512*MB;
+    const ULONG LMEM8 =  256*MB;
+    const ULONG LMEM9 =  128*MB;
+
     // ---------------- database --------- machine -- passes depth ---- probes --- memuse - swap?
+
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEM1,           1,    0,  891481251,  47882293,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEM2,           3,    2,  316654140,  17007790,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEM3,           5,    1,  213955500,  11491750,  0);
+
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM1,          1,    0,   56223289,   3019805,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM2,          2,    1,   29236110,   1570298,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM3,          2,    1,   29236110,   1570298,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM4,          2,    1,   29236110,   1570298,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM5,          3,    3,   19063743,   1023931,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM6,          4,    3,   14270820,    766499,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM7,          6,    3,    9715384,    521822,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM8,         12,    4,    4761834,    255762,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM9,         25,    4,    2331692,    125237,  0);
 
     TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MINI_PC,       59,    4,   71862953,   3859826,  1); // will swap (max. number of passes reached)
     TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MINI_PC,       24,    3,   39025483,   2096095,  0);
