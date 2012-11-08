@@ -97,10 +97,10 @@ public:
             (next && next->contains(somemem, blocksize));
     }
 
-    int count() const {
+    size_t count() const {
         const MemBlock *b = this;
         
-        int cnt = 1;
+        size_t cnt = 1;
         while (b->next) {
             b = b->next;
             ++cnt;
@@ -168,12 +168,12 @@ public:
         long sum = 0;
         for (int b = 0; b<PTM_TABLE_COUNT; ++b) {
             if (block[b]) {
-                int  size           = idx2size(b);
-                int  blocks         = block[b]->count();
-                long allocated4size = blocks * blocksize4size(size);
-                int  elemsPerBlock  = blocksize4size(size)/size;
-                long maxElements    = blocks*elemsPerBlock;
-                int  percent        = double(allocated4size)/double(allsize)*100+0.5;
+                int    size           = idx2size(b);
+                size_t blocks         = block[b]->count();
+                size_t allocated4size = blocks * blocksize4size(size);
+                int    elemsPerBlock  = blocksize4size(size)/size;
+                size_t maxElements    = blocks*elemsPerBlock;
+                int    percent        = double(allocated4size)/double(allsize)*100+0.5;
 
                 fprintf(out, "blocksize: %2i  allocated: %7s [~%2i%%]  ", size, GBS_readable_size(allocated4size, "b"), percent);
                 fprintf(out, "<~%12s", GBS_readable_size(maxElements, "Blocks"));
