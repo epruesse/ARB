@@ -286,6 +286,7 @@ class PartitionSpec {
             case 4: return "Level-IV-passes";
             default : pt_assert(0); break;
         }
+        return NULL; // unreached
     }
 
 public:
@@ -606,20 +607,26 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USE
 #include <test_unit.h>
 #endif
 
-static arb_test::match_expectation decides_on_passes(ULONG bp, size_t avail_mem_kb, int expected_passes, size_t expected_memuse, bool expect_to_swap) {
-    Partition   pass            = decide_passes_to_use(bp, avail_mem_kb);
-    int    decided_passes  = pass.number_of_passes();
-    size_t decided_memuse  = pass.estimate_max_kb_for_any_pass(bp);
-    bool   decided_to_swap = decided_memuse>avail_mem_kb;
+static arb_test::match_expectation decides_on_passes(ULONG bp, size_t avail_mem_kb, int expected_passes, int expected_depth, size_t expected_passsize, size_t expected_memuse, bool expect_to_swap) {
+    Partition part             = decide_passes_to_use(bp, avail_mem_kb);
+    int       decided_passes   = part.number_of_passes();
+    int       decided_depth    = part.split_depth();
+    size_t    decided_passsize = part.estimate_max_probes_for_any_pass(bp);
+    size_t    decided_memuse   = part.estimate_max_kb_for_any_pass(bp);
+    bool      decided_to_swap  = decided_memuse>avail_mem_kb;
 
     using namespace arb_test;
-    return all().of(that(decided_passes).is_equal_to(expected_passes),
-                    that(decided_memuse).is_equal_to(expected_memuse),
-                    that(decided_to_swap).is_equal_to(expect_to_swap));
+    expectation_group expected;
+    expected.add(that(decided_passes).is_equal_to(expected_passes));
+    expected.add(that(decided_passsize).is_equal_to(expected_passsize));
+    expected.add(that(decided_depth).is_equal_to(expected_depth));
+    expected.add(that(decided_memuse).is_equal_to(expected_memuse));
+    expected.add(that(decided_to_swap).is_equal_to(expect_to_swap));
+    return all().ofgroup(expected);
 }
 
-#define TEST_DECIDES_PASSES(bp,memkb,expected_passes,expected_memuse,expect_to_swap)            \
-    TEST_EXPECT(decides_on_passes(bp, memkb, expected_passes, expected_memuse, expect_to_swap))
+#define TEST_DECIDES_PASSES(bp,memkb,expected_passes,expected_depth,expected_passsize,expected_memuse,expect_to_swap)   \
+    TEST_EXPECT(decides_on_passes(bp, memkb, expected_passes, expected_depth, expected_passsize, expected_memuse, expect_to_swap))
 
 void TEST_SLOW_decide_passes_to_use() {
     const ULONG GB = 1024*1024; // kb
@@ -636,37 +643,37 @@ void TEST_SLOW_decide_passes_to_use() {
     const ULONG BIG_SERVER    =  64 *GB;
     const ULONG HUGE_SERVER   = 128 *GB;
 
-    // ---------------- database --------- machine -- passes -- memuse - swap?
+    // ---------------- database --------- machine -- passes depth ---- probes --- memuse - swap?
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MINI_PC,       59,   3859826,  1); // will swap (max. number of passes reached)
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MINI_PC,       24,   2096095,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  MINI_PC,        2,   1570298,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  MINI_PC,        1,    946506,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MINI_PC,       59,    4,   71862953,   3859826,  1); // will swap (max. number of passes reached)
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MINI_PC,       24,    3,   39025483,   2096095,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  MINI_PC,        2,    1,   29236110,   1570298,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  MINI_PC,        1,    0,   17622233,    946506,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, SMALL_PC,      50,   4055226,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  SMALL_PC,      12,   4192190,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  SMALL_PC,       1,   3019805,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  SMALL_PC,       1,    946506,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, SMALL_PC,      50,    4,   75500943,   4055226,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  SMALL_PC,      12,    3,   78050966,   4192190,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  SMALL_PC,       1,    0,   56223289,   3019805,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  SMALL_PC,       1,    0,   17622233,    946506,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, SMALL_SERVER,  16,  12503614,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  SMALL_SERVER,   4,  12153675,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  SMALL_SERVER,   1,   3019805,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  SMALL_SERVER,   1,    946506,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, SMALL_SERVER,  16,    4,  232794574,  12503614,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  SMALL_SERVER,   4,    3,  226279337,  12153675,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  SMALL_SERVER,   1,    0,   56223289,   3019805,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  SMALL_SERVER,   1,    0,   17622233,    946506,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MEDIUM_SERVER, 10,  19760335,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEDIUM_SERVER,  3,  17007790,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  MEDIUM_SERVER,  1,   3019805,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  MEDIUM_SERVER,  1,    946506,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MEDIUM_SERVER, 10,    4,  367901525,  19760335,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEDIUM_SERVER,  3,    2,  316654140,  17007790,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  MEDIUM_SERVER,  1,    0,   56223289,   3019805,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  MEDIUM_SERVER,  1,    0,   17622233,    946506,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, BIG_SERVER,     3,  65437955,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  BIG_SERVER,     1,  47882293,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  BIG_SERVER,     1,   3019805,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  BIG_SERVER,     1,    946506,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, BIG_SERVER,     3,    3, 1218335758,  65437955,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  BIG_SERVER,     1,    0,  891481251,  47882293,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  BIG_SERVER,     1,    0,   56223289,   3019805,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  BIG_SERVER,     1,    0,   17622233,    946506,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, HUGE_SERVER,    2, 100355490,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  HUGE_SERVER,    1,  47882293,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  HUGE_SERVER,    1,   3019805,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  HUGE_SERVER,    1,    946506,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, HUGE_SERVER,    2,    1, 1868436774, 100355490,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  HUGE_SERVER,    1,    0,  891481251,  47882293,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  HUGE_SERVER,    1,    0,   56223289,   3019805,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  HUGE_SERVER,    1,    0,   17622233,    946506,  0);
 }
 
 void NOTEST_SLOW_maybe_build_tree() {

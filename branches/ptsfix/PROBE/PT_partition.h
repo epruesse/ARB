@@ -395,6 +395,8 @@ class Partition {
 
     int *start_of_pass;                 // contains prefix index
 
+    mutable size_t max_probes_in_any_pass;
+
     int first_index_of_pass(int pass) const {
         pt_assert(legal_pass(pass));
         return start_of_pass[pass-1];
@@ -459,7 +461,8 @@ public:
         : prob(prob_),
           passes(passes_),
           prefix(prob.get_depth()),
-          start_of_pass(new int[passes+1])
+          start_of_pass(new int[passes+1]),
+          max_probes_in_any_pass(0)
     {
         pt_assert(passes >= 1 && passes <= max_allowed_passes());
         calculate_pass_starts();
@@ -470,7 +473,8 @@ public:
           passes(other.passes),
           current_pass(other.current_pass),
           prefix(other.prefix),
-          start_of_pass(new int[passes+1])
+          start_of_pass(new int[passes+1]),
+          max_probes_in_any_pass(other.max_probes_in_any_pass)
     {
         memcpy(start_of_pass, other.start_of_pass, sizeof(*start_of_pass)*(passes+1));
         prefix.predecide();
@@ -486,6 +490,7 @@ public:
 
     int max_allowed_passes() const { return prob.get_prefix_count(); }
     int number_of_passes() const { return passes; }
+    int split_depth() const { return prob.get_depth(); }
 
     bool done() const { return !legal_pass(current_pass); }
     bool next() {
@@ -505,12 +510,14 @@ public:
         return size_t(pass_probability(pass)*overall_base_count+0.5);
     }
     size_t estimate_max_probes_for_any_pass(size_t overall_base_count) const {
-        size_t max_probes = 0;
-        for (int p = 1; p <= passes; ++p) {
-            size_t probes = estimate_probes_for_pass(p, overall_base_count);
-            if (probes>max_probes) max_probes = probes;
+        if (max_probes_in_any_pass == 0) { // lazy eval
+            for (int p = 1; p <= passes; ++p) {
+                size_t probes = estimate_probes_for_pass(p, overall_base_count);
+                if (probes>max_probes_in_any_pass) max_probes_in_any_pass = probes;
+            }
+            pt_assert(max_probes_in_any_pass);
         }
-        return max_probes;
+        return max_probes_in_any_pass;
     }
     size_t estimate_max_kb_for_any_pass(size_t overall_base_count) const {
         return estimate_memusage_kb(estimate_max_probes_for_any_pass(overall_base_count));
