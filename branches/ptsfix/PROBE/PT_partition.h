@@ -148,13 +148,13 @@ inline ULONG estimate_memusage_kb(ULONG base_positions) {
 static double base_probability(char base) {
     pt_assert(base >= PT_QU && base < PT_BASES);
     static double bprob[PT_BASES] = {
-        // @@@ these are fakes; use real base probabilities here
-        0.02, // PT_QU
-        0.02, // PT_N
-        0.24, // PT_A
-        0.24, // PT_C
-        0.24, // PT_G
-        0.24, // PT_T
+        // probabilities are taken from silva-108-SSU-ref
+        0.0014, // PT_QU
+        0.0003, // PT_N
+        0.2543, // PT_A
+        0.2268, // PT_C
+        0.3074, // PT_G
+        0.2098, // PT_T
     };
     return bprob[safeCharIndex(base)];
 }
