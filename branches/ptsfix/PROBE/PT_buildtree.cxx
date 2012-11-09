@@ -487,6 +487,11 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
             printf("Estimated memusage: %s\n", GBS_readable_size(partition.estimate_max_kb_for_any_pass(psg.char_count)*1024, "b"));
 #endif
 
+            {
+                size_t max_part = partition.estimate_max_probes_for_any_pass(psg.char_count);
+                printf("Max. partition size: %lu bp (=%.1f%%)\n", max_part, max_part*100.0/psg.char_count);
+            }
+
             int passes = partition.number_of_passes();
 
             arb_progress pass_progress(GBS_global_string("Tree Build: %s in %i passes",
