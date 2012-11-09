@@ -71,7 +71,6 @@ public:
     RegExpr(const std::string& expression_, bool ignore_case);
     ~RegExpr();
 
-    void test() const;
     size_t subexpr_count() const;
 
     // Note: calling 'match()' invalidates results from previous 'match()' and 'subexpr_match()'-calls
