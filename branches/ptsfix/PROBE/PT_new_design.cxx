@@ -13,18 +13,15 @@
 #include <PT_server_prototypes.h>
 #include <struct_man.h>
 #include "probe_tree.h"
+#include "pt_prototypes.h"
+#include "PT_prefixIter.h"
+
 #include <arb_str.h>
 #include <arb_defs.h>
 #include <arb_sort.h>
-
-#ifdef P_
-#error P_ already defined
-#endif
-
-#include "pt_prototypes.h"
+#include <arb_strbuf.h>
 
 #include <climits>
-#include "PT_partition.h"
 
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_tprobes *tprobe)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(tprobe)); }
@@ -1060,3 +1057,95 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     return 0;
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+inline const char *concat_iteration(PrefixIterator& prefix) {
+    static GBS_strstruct out(50);
+
+    out.erase();
+
+    while (!prefix.done()) {
+        if (out.filled()) out.put(',');
+
+        char *readable = probe_2_readable(prefix.copy(), prefix.length());
+        out.cat(readable);
+        free(readable);
+
+        ++prefix;
+    }
+
+    return out.get_data();
+}
+
+void TEST_PrefixIterator() {
+    // straight-forward permutation
+    PrefixIterator p0(PT_A, PT_T, 0); TEST_ASSERT_EQUAL(p0.steps(), 1);
+    PrefixIterator p1(PT_A, PT_T, 1); TEST_ASSERT_EQUAL(p1.steps(), 4);
+    PrefixIterator p2(PT_A, PT_T, 2); TEST_ASSERT_EQUAL(p2.steps(), 16);
+    PrefixIterator p3(PT_A, PT_T, 3); TEST_ASSERT_EQUAL(p3.steps(), 64);
+
+    TEST_ASSERT_EQUAL(p1.done(), false);
+    TEST_ASSERT_EQUAL(p0.done(), false);
+
+    TEST_ASSERT_EQUAL(concat_iteration(p0), "");
+    TEST_ASSERT_EQUAL(concat_iteration(p1), "A,C,G,U");
+    TEST_ASSERT_EQUAL(concat_iteration(p2), "AA,AC,AG,AU,CA,CC,CG,CU,GA,GC,GG,GU,UA,UC,UG,UU");
+
+    // permutation truncated at PT_QU
+    PrefixIterator q0(PT_QU, PT_T, 0); TEST_ASSERT_EQUAL(q0.steps(), 1);
+    PrefixIterator q1(PT_QU, PT_T, 1); TEST_ASSERT_EQUAL(q1.steps(), 6);
+    PrefixIterator q2(PT_QU, PT_T, 2); TEST_ASSERT_EQUAL(q2.steps(), 31);
+    PrefixIterator q3(PT_QU, PT_T, 3); TEST_ASSERT_EQUAL(q3.steps(), 156);
+    PrefixIterator q4(PT_QU, PT_T, 4); TEST_ASSERT_EQUAL(q4.steps(), 781);
+
+    TEST_ASSERT_EQUAL(concat_iteration(q0), "");
+    TEST_ASSERT_EQUAL(concat_iteration(q1), ".,N,A,C,G,U");
+    TEST_ASSERT_EQUAL(concat_iteration(q2),
+                      ".,"
+                      "N.,NN,NA,NC,NG,NU,"
+                      "A.,AN,AA,AC,AG,AU,"
+                      "C.,CN,CA,CC,CG,CU,"
+                      "G.,GN,GA,GC,GG,GU,"
+                      "U.,UN,UA,UC,UG,UU");
+    TEST_ASSERT_EQUAL(concat_iteration(q3),
+                      ".,"
+                      "N.,"
+                      "NN.,NNN,NNA,NNC,NNG,NNU,"
+                      "NA.,NAN,NAA,NAC,NAG,NAU,"
+                      "NC.,NCN,NCA,NCC,NCG,NCU,"
+                      "NG.,NGN,NGA,NGC,NGG,NGU,"
+                      "NU.,NUN,NUA,NUC,NUG,NUU,"
+                      "A.,"
+                      "AN.,ANN,ANA,ANC,ANG,ANU,"
+                      "AA.,AAN,AAA,AAC,AAG,AAU,"
+                      "AC.,ACN,ACA,ACC,ACG,ACU,"
+                      "AG.,AGN,AGA,AGC,AGG,AGU,"
+                      "AU.,AUN,AUA,AUC,AUG,AUU,"
+                      "C.,"
+                      "CN.,CNN,CNA,CNC,CNG,CNU,"
+                      "CA.,CAN,CAA,CAC,CAG,CAU,"
+                      "CC.,CCN,CCA,CCC,CCG,CCU,"
+                      "CG.,CGN,CGA,CGC,CGG,CGU,"
+                      "CU.,CUN,CUA,CUC,CUG,CUU,"
+                      "G.,"
+                      "GN.,GNN,GNA,GNC,GNG,GNU,"
+                      "GA.,GAN,GAA,GAC,GAG,GAU,"
+                      "GC.,GCN,GCA,GCC,GCG,GCU,"
+                      "GG.,GGN,GGA,GGC,GGG,GGU,"
+                      "GU.,GUN,GUA,GUC,GUG,GUU,"
+                      "U.,"
+                      "UN.,UNN,UNA,UNC,UNG,UNU,"
+                      "UA.,UAN,UAA,UAC,UAG,UAU,"
+                      "UC.,UCN,UCA,UCC,UCG,UCU,"
+                      "UG.,UGN,UGA,UGC,UGG,UGU,"
+                      "UU.,UUN,UUA,UUC,UUG,UUU");
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

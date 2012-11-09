@@ -35,6 +35,7 @@ depend.init:
 PT_buildtree.o: probe.h
 PT_buildtree.o: probe_tree.h
 PT_buildtree.o: PT_partition.h
+PT_buildtree.o: PT_prefixIter.h
 PT_buildtree.o: pt_prototypes.h
 PT_buildtree.o: PT_tools.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -86,7 +87,6 @@ PT_debug.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_debug.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_etc.o: probe.h
-PT_etc.o: PT_partition.h
 PT_etc.o: pt_prototypes.h
 PT_etc.o: PT_tools.h
 PT_etc.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -110,7 +110,6 @@ PT_etc.o: $(ARBHOME)/INCLUDE/smartptr.h
 PT_etc.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_etc.o: $(ARBHOME)/INCLUDE/struct_man.h
 PT_etc.o: $(ARBHOME)/INCLUDE/test_global.h
-PT_etc.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 PT_family.o: probe.h
 PT_family.o: probe_tree.h
@@ -261,7 +260,7 @@ PT_match.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 PT_new_design.o: probe.h
 PT_new_design.o: probe_tree.h
-PT_new_design.o: PT_partition.h
+PT_new_design.o: PT_prefixIter.h
 PT_new_design.o: pt_prototypes.h
 PT_new_design.o: PT_tools.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -273,6 +272,7 @@ PT_new_design.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_sort.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_str.h
+PT_new_design.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_string.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -287,6 +287,7 @@ PT_new_design.o: $(ARBHOME)/INCLUDE/smartptr.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/struct_man.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/test_global.h
+PT_new_design.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 PT_prefixtree.o: probe.h
 PT_prefixtree.o: probe_tree.h
