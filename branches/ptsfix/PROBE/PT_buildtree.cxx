@@ -12,6 +12,8 @@
 #include <PT_server_prototypes.h>
 #include "probe_tree.h"
 #include "pt_prototypes.h"
+#include "PT_partition.h"
+
 #include <arb_defs.h>
 #include <arb_file.h>
 #include <arb_misc.h>
@@ -20,7 +22,7 @@
 
 #include <unistd.h>
 #include <malloc.h>
-#include "PT_partition.h"
+#include <ctype.h>
 
 #define PTM_TRACE_MAX_MEM_USAGE // @@@ comment out later
 
@@ -372,6 +374,36 @@ static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable)
     return best.partition();
 }
 
+static ULONG parse_env_mem_definition(const char *env_override, GB_ERROR& error) {
+    const char *end;
+    ULONG       num = strtoul(env_override, const_cast<char**>(&end), 10);
+
+    error = NULL;
+
+    bool valid = num>0 || env_override[0] == '0';
+    if (valid) {
+        const char *formatSpec = end;
+        ULONG       factor     = 1;
+
+        switch (tolower(formatSpec[0])) {
+            case 0:
+                num = ULONG(num/1024.0+0.5); // byte->kb
+                break; // no format given
+
+            case 'g': factor *= 1024;
+            case 'm': factor *= 1024;
+            case 'k': break;
+
+            default: valid = false; break;
+        }
+
+        if (valid) return num*factor;
+    }
+
+    error = "expected digits (optionally followed by k, M or G)";
+    return 0;
+}
+
 ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__USERESULT
     // initialize tree and call the build pos tree procedure
 
@@ -417,10 +449,25 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
 
             ULONG physical_memory = GB_get_physical_memory();
 
+            {
+                const char *env_override = GB_getenv("ARB_PTS_MEMORY");
+                if (env_override) {
+                    GB_ERROR env_error;
+                    ULONG    env_memory = parse_env_mem_definition(env_override, env_error);
+                    if (env_error) {
+                        printf("Warning: Ignoring invalid setting '%s' in ARB_PTS_MEMORY (%s)", env_override, env_error);
+                    }
+                    else {
+                        printf("Warning: Overriding available memory by envar ARB_PTS_MEMORY: %s\n", env_override);
+                        physical_memory = env_memory;
+                    }
+                }
+            }
+
 // #define FORCE_MEM (2560*1024)
 #if defined(FORCE_MEM)
             physical_memory = FORCE_MEM;
-            printf("Warning: Faking available memory\n");
+            printf("Warning: Faking available memory (hardcoded)\n");
 #endif
 
             printf("Available memory: %s\n", GBS_readable_size(physical_memory*1024, "b"));
