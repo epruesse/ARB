@@ -165,6 +165,7 @@ public:
 
 #if defined(PTM_MEM_DUMP_STATS)
     void dump_max_memory_usage(FILE *out) const {
+        fflush_all();
         long sum = 0;
         for (int b = 0; b<PTM_TABLE_COUNT; ++b) {
             if (block[b]) {
@@ -188,6 +189,7 @@ public:
         }
         fprintf(out, "sum of above:  %s\n", GBS_readable_size(sum, "b"));
         fprintf(out, "overall alloc: %s\n", GBS_readable_size(allsize, "b"));
+        fflush_all();
     }
 #endif
 

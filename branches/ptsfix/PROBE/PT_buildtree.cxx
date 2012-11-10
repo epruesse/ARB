@@ -258,7 +258,7 @@ long PTD_save_upper_tree(FILE *out, POS_TREE *node, long pos, long& node_pos, AR
 
 #if defined(PTM_TRACE_MAX_MEM_USAGE)
 static void dump_memusage() {
-    fflush(stdout);
+    fflush_all();
     printf("\n------------------------------ dump_memusage:\n");
 
     malloc_stats();
@@ -270,7 +270,7 @@ static void dump_memusage() {
     }
     free(cmd);
     printf("------------------------------ dump_memusage [end]\n");
-    fflush(stdout);
+    fflush_all();
 }
 #endif
 

@@ -188,6 +188,8 @@ int server_shutdown(PT_main *pm, aisc_string passwd) {
     // password check
     pm = pm;
     if (strcmp(passwd, "47@#34543df43%&3667gh")) return 1;
+
+    fflush_all();
     fprintf(stderr, "\nARB_PT_SERVER: received shutdown message\n");
 
     // shutdown clients
@@ -196,6 +198,7 @@ int server_shutdown(PT_main *pm, aisc_string passwd) {
     // shutdown server
     aisc_server_shutdown(psg.com_so);
     PT_exit();
+    fflush_all();
     exit(EXIT_SUCCESS);
 }
 
@@ -405,7 +408,7 @@ __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, cons
             if (!error) {
                 // all ok -> main "loop"
                 printf("ok, server is running.\n");             // do NOT change or remove! others depend on it
-                fflush(stdout);
+                fflush_all();
                 aisc_accept_calls(so);
             }
         }
@@ -586,5 +589,6 @@ int ARB_main(int argc, const char *argv[]) {
 
     free_arb_params(params);
     PT_exit();
+    fflush_all();
     return exitcode;
 }

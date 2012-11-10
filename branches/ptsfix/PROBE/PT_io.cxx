@@ -111,6 +111,7 @@ public:
         }
     }
     ~BaseCounter() {
+        fflush_all();
         fputs("\nBaseCounter:\n", stderr);
         for (int i = 0; i<PT_BASES; ++i) {
             fprintf(stderr, "count[%i]=%li\n", i, count[i]);
@@ -345,7 +346,7 @@ void probe_read_alignments() {
     else {
         printf("\nAll species contain data in alignment '%s'.\n", psg.alignment_name);
     }
-    fflush(stdout);
+    fflush_all();
 }
 
 void PT_build_species_hash() {

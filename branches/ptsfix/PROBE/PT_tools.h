@@ -130,6 +130,11 @@ inline void PT_write_pointer(void *toMem, const void *thePtr) { PT_write_big(toM
 template<typename POINTED>
 inline POINTED* PT_read_pointer(const void *fromMem) { return (POINTED*)PT_read_void_pointer(fromMem); }
 
+inline void fflush_all() {
+    fflush(stderr);
+    fflush(stdout);
+}
+
 
 #else
 #error PT_tools.h included twice
