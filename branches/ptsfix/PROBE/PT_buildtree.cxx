@@ -258,10 +258,11 @@ long PTD_save_upper_tree(FILE *out, POS_TREE *node, long pos, long& node_pos, AR
 
 #if defined(PTM_TRACE_MAX_MEM_USAGE)
 static void dump_memusage() {
-    fflush_all();
-    printf("\n------------------------------ dump_memusage:\n");
+    fflush(stderr);
+    printf("\n------------------------------ dump_memusage:\n"); fflush(stdout);
 
     malloc_stats();
+
     pid_t     pid   = getpid();
     char     *cmd   = GBS_global_string_copy("pmap -d %i | grep -v lib", pid);
     GB_ERROR  error = GBK_system(cmd);
@@ -614,8 +615,12 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
         pt_assert(starpos);
         strcpy(starpos, ".*");
 
+        fflush_all();
+
         char     *listRelated = GBS_global_string_copy("ls -al %s", related);
         GB_ERROR  lserror       = GBK_system(listRelated);
+
+        fflush_all();
 
         if (lserror) fprintf(stderr, "Warning: %s\n", lserror);
         free(listRelated);
