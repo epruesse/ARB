@@ -341,6 +341,8 @@ public:
 };
 
 static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable) {
+    fflush_all();
+
     PartitionSpec best;
 
     for (int depth = 0; depth <= PT_MAX_PARTITION_DEPTH; ++depth) {
@@ -357,6 +359,8 @@ static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable)
         }
     }
 
+    fflush(stdout);
+
     if (best.willUseMoreThan(max_kb_usable)) {
         const int allowed_passes = PrefixIterator(PT_QU, PT_T, PT_MAX_PARTITION_DEPTH).steps();
 
@@ -370,6 +374,8 @@ static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable)
                 "  As a result the build of this server may cause your machine to swap huge\n"
                 "  amounts of memory and will possibly run for days, weeks or even months.\n"
                 "\n", allowed_passes);
+
+                fflush(stderr);
     }
 
     return best.partition();
