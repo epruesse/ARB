@@ -241,6 +241,7 @@ NOT4PERL gb_getenv_hook GB_install_getenv_hook(gb_getenv_hook hook);
 GB_CSTR GB_getenv(const char *env);
 bool GB_host_is_local(const char *hostname);
 GB_ULONG GB_get_physical_memory(void);
+GB_ULONG GB_get_usable_memory(void);
 GB_ERROR GB_xterm(void) __ATTR__USERESULT;
 GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) __ATTR__USERESULT_TODO;
 GB_CSTR GB_append_suffix(const char *name, const char *suffix);

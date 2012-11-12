@@ -375,36 +375,6 @@ static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable)
     return best.partition();
 }
 
-static ULONG parse_env_mem_definition(const char *env_override, GB_ERROR& error) {
-    const char *end;
-    ULONG       num = strtoul(env_override, const_cast<char**>(&end), 10);
-
-    error = NULL;
-
-    bool valid = num>0 || env_override[0] == '0';
-    if (valid) {
-        const char *formatSpec = end;
-        ULONG       factor     = 1;
-
-        switch (tolower(formatSpec[0])) {
-            case 0:
-                num = ULONG(num/1024.0+0.5); // byte->kb
-                break; // no format given
-
-            case 'g': factor *= 1024;
-            case 'm': factor *= 1024;
-            case 'k': break;
-
-            default: valid = false; break;
-        }
-
-        if (valid) return num*factor;
-    }
-
-    error = "expected digits (optionally followed by k, M or G)";
-    return 0;
-}
-
 ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__USERESULT
     // initialize tree and call the build pos tree procedure
 
@@ -448,31 +418,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
             psg.stat.cut_offs = 0;                  // statistic information
             GB_begin_transaction(psg.gb_main);
 
-            ULONG physical_memory = GB_get_physical_memory();
-
-            {
-                const char *env_override = GB_getenv("ARB_PTS_MEMORY");
-                if (env_override) {
-                    GB_ERROR env_error;
-                    ULONG    env_memory = parse_env_mem_definition(env_override, env_error);
-                    if (env_error) {
-                        printf("Warning: Ignoring invalid setting '%s' in ARB_PTS_MEMORY (%s)", env_override, env_error);
-                    }
-                    else {
-                        printf("Warning: Overriding available memory by envar ARB_PTS_MEMORY: %s\n", env_override);
-                        physical_memory = env_memory;
-                    }
-                }
-            }
-
-// #define FORCE_MEM (2560*1024)
-#if defined(FORCE_MEM)
-            physical_memory = FORCE_MEM;
-            printf("Warning: Faking available memory (hardcoded)\n");
-#endif
-
-            printf("Available memory: %s\n", GBS_readable_size(physical_memory*1024, "b"));
-            printf("Overall bases:    %li bp\n", psg.char_count);
+            ULONG physical_memory = GB_get_usable_memory();
 
             Partition partition = decide_passes_to_use(psg.char_count, physical_memory);
 
@@ -490,17 +436,13 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
 
             {
                 size_t max_part = partition.estimate_max_probes_for_any_pass(psg.char_count);
-                printf("Max. partition size: %lu bp (=%.1f%%)\n", max_part, max_part*100.0/psg.char_count);
+                printf("Overall bases:       %s\n", GBS_readable_size(psg.char_count, "bp"));
+                printf("Max. partition size: %s (=%.1f%%)\n", GBS_readable_size(max_part, "bp"), max_part*100.0/psg.char_count);
             }
 
-            int passes = partition.number_of_passes();
-
-            arb_progress pass_progress(GBS_global_string("Tree Build: %s in %i passes",
-                                                         GBS_readable_size(psg.char_count, "bp"),
-                                                         passes),
-                                       passes);
-
-            int  currPass = 0;
+            int          passes   = partition.number_of_passes();
+            arb_progress pass_progress(GBS_global_string("Build index in %i passes", passes), passes);
+            int          currPass = 0;
             do {
                 pt_assert(!partition.done());
 
