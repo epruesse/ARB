@@ -12,7 +12,13 @@
 
 
 /* arb_misc.cxx */
+
+#ifndef _GLIBCXX_CSTDLIB
+#include <cstdlib>
+#endif
+
 const char *GBS_readable_size(unsigned long long size, const char *unit_suffix);
+const char *GBS_readable_timediff(size_t seconds);
 
 #else
 #error arb_misc.h included twice

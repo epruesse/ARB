@@ -12,6 +12,7 @@
 #include <arb_handlers.h>
 #include <arb_msg.h>
 #include <arb_assert.h>
+#include "arb_misc.h"
 #include <smartptr.h>
 #include <unistd.h>
 #include <time.h>
@@ -102,17 +103,11 @@ public:
                     double seconds = difftime(now, start);
 
                     const char *whatshown = done ? "used" : "left";
-                    long        show_sec  = done ? seconds : long(seconds*(1.0-gauge)/gauge+0.5);
-
-                    long show_min  = show_sec / 60; show_sec -= show_min*60;
-                    long show_hour = show_min / 60; show_min -= show_hour*60;
-
                     fprintf(arbout, " %s: ", whatshown);
 
-                    if      (show_hour>0) fprintf(arbout, "%lih%lim", show_hour, show_min);
-                    else if (show_min>0)  fprintf(arbout,     "%lim",            show_min);
-
-                    fprintf(arbout, "%lis\n", show_sec);
+                    long show_sec = done ? seconds : long(seconds*(1.0-gauge)/gauge+0.5);
+                    fputs(GBS_readable_timediff(show_sec), arbout);
+                    fputc('\n', arbout);
 
                     nextLF = next_LF();
                 }

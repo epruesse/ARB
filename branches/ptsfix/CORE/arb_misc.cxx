@@ -11,6 +11,11 @@
 
 #include "arb_misc.h"
 #include "arb_msg.h"
+#include <arb_assert.h>
+
+// AISC_MKPT_PROMOTE:#ifndef _GLIBCXX_CSTDLIB
+// AISC_MKPT_PROMOTE:#include <cstdlib>
+// AISC_MKPT_PROMOTE:#endif
 
 const char *GBS_readable_size(unsigned long long size, const char *unit_suffix) {
     // return human readable size information
@@ -34,4 +39,25 @@ const char *GBS_readable_size(unsigned long long size, const char *unit_suffix) 
     }
     return GBS_global_string("MUCH %s", unit_suffix);
 }
+
+const char *GBS_readable_timediff(size_t seconds) {
+    size_t mins  = seconds/60; seconds -= mins  * 60;
+    size_t hours = mins/60;    mins    -= hours * 60;
+    size_t days  = hours/24;   hours   -= days  * 24;
+
+    const int   MAXPRINT = 40;
+    int         printed  = 0;
+    static char buffer[MAXPRINT+1];
+
+    if (days>0)               printed += sprintf(buffer+printed, "%zud", days);
+    if (printed || hours>0)   printed += sprintf(buffer+printed, "%zuh", hours);
+    if (printed || mins>0)    printed += sprintf(buffer+printed, "%zum", mins);
+
+    printed += sprintf(buffer+printed, "%zus", seconds);
+
+    arb_assert(printed>0 && printed<MAXPRINT);
+
+    return buffer;
+}
+
 
