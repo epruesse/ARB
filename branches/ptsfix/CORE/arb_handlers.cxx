@@ -58,6 +58,8 @@ public:
         printed  = 0;
         cursor   = NULL;
         subtitle = NULL;
+
+        time(&start);
     }
     void close() {
         freenull(subtitle);
@@ -70,13 +72,7 @@ public:
 
     void set_subtitle(const char *stitle) {
         arb_assert(openCount == 1);
-        if (cursor) {
-            int offset = cursor - subtitle;
-            subtitle[strlen(subtitle)-1] = 0;
-            freeset(subtitle, GBS_global_string_copy("%s/%s}", subtitle, stitle));
-            cursor = subtitle+offset;
-        }
-        else {
+        if (!cursor) {
             freeset(subtitle, GBS_global_string_copy("{%s}", stitle));
             cursor = subtitle;
         }
