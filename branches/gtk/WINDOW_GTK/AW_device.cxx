@@ -32,11 +32,6 @@ class AW_clip_scale_stack {
 };
 
 
-bool AW_getBestClick(AW_clicked_line */*cl*/, AW_clicked_text */*ct*/, AW_CL */*cd1*/, AW_CL */*cd2*/) {
-    GTK_NOT_IMPLEMENTED;
-    return false;
-}
-
 
 const AW_screen_area& AW_device::get_area_size() const {
     return get_common()->get_screen();
@@ -251,7 +246,8 @@ bool AW_device::generic_filled_area(int gc, int npos, const AW::Position *pos, A
     }
     return drawflag;
 }
-void AW_device::move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y) {
+void AW_device::move_region(AW_pos /*src_x*/, AW_pos /*src_y*/, AW_pos /*width*/, AW_pos /*height*/
+                          , AW_pos /*dest_x*/, AW_pos /*dest_y*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
@@ -328,13 +324,8 @@ void AW_device::set_filter(AW_bitset filteri) {
     filter = filteri;
 }
 
-void AW_device_click::get_clicked_line(class AW_clicked_line */*ptr*/) const {
-    GTK_NOT_IMPLEMENTED;
-}
 
-void AW_device_click::get_clicked_text(AW_clicked_text */*ptr*/) const {
-    GTK_NOT_IMPLEMENTED;
-}
+
 
 
 FILE *AW_device_print::get_FILE() {

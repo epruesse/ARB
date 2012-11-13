@@ -18,6 +18,7 @@
 
 #include "aw_at.hxx"
 #include "AW_gtk_forward_declarations.hxx"
+#include "AW_area_management.hxx"
 
 class AW_window;
 class AW_xfig;
@@ -364,7 +365,12 @@ public:
     //      The real public section
 
     AW_root *get_root() { return root; }
-
+    /**
+     * 
+     * @param index
+     * @return The area at index i or NULL of that area does not exist 
+     */
+    AW_area_management* get_area(int index);
     // ******************* Global layout functions **********************
 
     void show(); // show newly created window or unhide hidden window (aka closed window)

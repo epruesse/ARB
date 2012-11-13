@@ -699,6 +699,15 @@ int AW_window::calculate_string_width(int columns) const {
     }
 }
 
+AW_area_management* AW_window::get_area(int index) {
+    
+    if(index < AW_MAX_AREA) {
+        return prvt->areas[index];
+    }
+    
+    return NULL;
+}
+
 void AW_window::create_button(const char *macro_name, AW_label buttonlabel, const char */*mnemonic*/, const char */*color*/) {
     // Create a button or text display.
     //
@@ -1471,10 +1480,17 @@ int AW_window::get_at_yposition() const {
     return _at.y_for_next_button; 
 }
 
-AW_device_click *AW_window::get_click_device(AW_area /*area*/, int /*mousex*/, int /*mousey*/, AW_pos /*max_distance_linei*/,
-                                  AW_pos /*max_distance_texti*/, AW_pos /*radi*/){
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+AW_device_click *AW_window::get_click_device(AW_area area, int mousex, int mousey,
+                                             AW_pos max_distance_linei, AW_pos max_distance_texti, AW_pos radi) {
+    AW_area_management *aram         = prvt->areas[area];
+    AW_device_click    *click_device = NULL;
+
+    if (aram) {
+        click_device = aram->get_click_device();
+        click_device->init(mousex, mousey, max_distance_linei,
+                           max_distance_texti, radi, AW_ALL_DEVICES);
+    }
+    return click_device;
 }
 AW_device *AW_window::get_device(AW_area area){
     AW_area_management *aram   = prvt->areas[area];
@@ -1482,8 +1498,8 @@ AW_device *AW_window::get_device(AW_area area){
     return (AW_device *)aram->get_screen_device();
 }
 
-void AW_window::get_event(AW_event */*eventi*/) const{
-
+void AW_window::get_event(AW_event *eventi) const {
+    *eventi = event;
 }
 
 AW_device_print *AW_window::get_print_device(AW_area /*area*/){

@@ -10,5 +10,8 @@
 #pragma once
 struct _GtkWidget; 
 struct _GtkMenuBar;
+struct _GdkEventKey;
+
 typedef struct _GtkWidget      GtkWidget;
-typedef struct _GtkMenuBar       GtkMenuBar;
+typedef struct _GtkMenuBar     GtkMenuBar;
+typedef struct _GdkEventKey    GdkEventKey;
