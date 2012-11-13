@@ -93,6 +93,11 @@ GB_CSTR gb_mapfile_name(GB_CSTR path) {
     return mapname;
 }
 
+GB_CSTR GB_mapfile(GBDATA *gb_main) {
+    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
+    return gb_mapfile_name(Main->path);
+}
+
 static GB_CSTR gb_overwriteName(GB_CSTR path) {
     static SmartCharPtr Oname;
 

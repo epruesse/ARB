@@ -21,13 +21,27 @@
 
 // @@@ update STAGE1_INDEX_BYTES_PER_BASE (values are too high)
 #ifdef ARB_64
-# define STAGE1_INDEX_BYTES_PER_BASE 55
+
+# define STAGE1_INDEX_BYTES_PER_BASE 19.5 // size of index (for each oligo inserted in one pass)
+# define STAGE1_OTHER_BYTES_PER_BASE 1.2  // non-index data (for each bp in database)
+
+# define STAGE1_INDEX_EXTRA_MB 200 // additional constant memory used by index (+ a bit safety)
+# define STAGE1_OTHER_EXTRA_MB 40  // additional constant memory used elsewhere (+ a bit safety)
+
+# define PTSERVER_BIN_MB 20       // binary mem footprint of ptserver (incl. libs, w/o DB) detected using pmap
+
 #else
+
+# error usage not determined yet
 # define STAGE1_INDEX_BYTES_PER_BASE 35
+
 #endif
 
-inline ULONG estimate_memusage_kb(ULONG base_positions) {
-    return (STAGE1_INDEX_BYTES_PER_BASE*base_positions)/1024;
+inline ULONG estimate_stage1_memusage_kb(ULONG all_bp, ULONG partition_bp) {
+    return ULONG(STAGE1_INDEX_BYTES_PER_BASE * partition_bp / 1024.0 +
+                 STAGE1_OTHER_BYTES_PER_BASE * all_bp / 1024.0 +
+                 (STAGE1_INDEX_EXTRA_MB + STAGE1_OTHER_EXTRA_MB) * 1024 +
+                 0.5);
 }
 
 static double base_probability(char base) {
@@ -405,7 +419,7 @@ public:
         return max_probes_in_any_pass;
     }
     size_t estimate_max_kb_for_any_pass(size_t overall_base_count) const {
-        return estimate_memusage_kb(estimate_max_probes_for_any_pass(overall_base_count));
+        return estimate_stage1_memusage_kb(overall_base_count, estimate_max_probes_for_any_pass(overall_base_count));
     }
 
     bool contains(const char *probe) const {
@@ -417,7 +431,7 @@ inline size_t max_probes_for_passes(const PrefixProbabilities& prob, int passes_
     return Partition(prob, passes_wanted).estimate_max_probes_for_any_pass(overall_base_count);
 }
 inline size_t max_kb_for_passes(const PrefixProbabilities& prob, int passes_wanted, size_t overall_base_count) {
-    return estimate_memusage_kb(max_probes_for_passes(prob, passes_wanted, overall_base_count));
+    return estimate_stage1_memusage_kb(overall_base_count, max_probes_for_passes(prob, passes_wanted, overall_base_count));
 }
 
 #else

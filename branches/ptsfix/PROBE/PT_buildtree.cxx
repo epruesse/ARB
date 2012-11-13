@@ -381,7 +381,7 @@ static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable)
     return best.partition();
 }
 
-ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__USERESULT
+ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size_kb) { // __ATTR__USERESULT
     // initialize tree and call the build pos tree procedure
 
     ARB_ERROR error;
@@ -424,9 +424,9 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname) { // __ATTR__U
             psg.stat.cut_offs = 0;                  // statistic information
             GB_begin_transaction(psg.gb_main);
 
-            ULONG physical_memory = GB_get_usable_memory();
+            ULONG available_memory = GB_get_usable_memory() - ARM_size_kb - PTSERVER_BIN_MB*1024;
 
-            Partition partition = decide_passes_to_use(psg.char_count, physical_memory);
+            Partition partition = decide_passes_to_use(psg.char_count, available_memory);
 
 // #define FORCE_PASSES 13
 #if defined(FORCE_PASSES)
@@ -747,7 +747,7 @@ void TEST_Partition() {
         TEST_ASSERT_EQUAL(P16.estimate_probes_for_pass(5, BASES_100k), 30740);
         TEST_ASSERT_EQUAL(P16.estimate_probes_for_pass(6, BASES_100k), 20980);
         TEST_ASSERT_EQUAL(P16.estimate_max_probes_for_any_pass(BASES_100k), 30740);
-        TEST_ASSERT_EQUAL(P16.estimate_max_kb_for_any_pass(BASES_100k), 1651);
+        TEST_ASSERT_EQUAL(P16.estimate_max_kb_for_any_pass(BASES_100k), 246463);
     }
 
     {
@@ -787,7 +787,7 @@ void TEST_Partition() {
         TEST_ASSERT_EQUAL(P13.estimate_probes_for_pass(2, BASES_100k), 53420);
         TEST_ASSERT_EQUAL(P13.estimate_probes_for_pass(3, BASES_100k), 20980);
         TEST_ASSERT_EQUAL(P13.estimate_max_probes_for_any_pass(BASES_100k), 53420);
-        TEST_ASSERT_EQUAL(P13.estimate_max_kb_for_any_pass(BASES_100k), 2869);
+        TEST_ASSERT_EQUAL(P13.estimate_max_kb_for_any_pass(BASES_100k), 246894);
     }
 
     {
@@ -817,7 +817,7 @@ void TEST_Partition() {
         TEST_ASSERT_EQUAL(P12.estimate_probes_for_pass(1, BASES_100k), 48280);
         TEST_ASSERT_EQUAL(P12.estimate_probes_for_pass(2, BASES_100k), 51720);
         TEST_ASSERT_EQUAL(P12.estimate_max_probes_for_any_pass(BASES_100k), 51720);
-        TEST_ASSERT_EQUAL(P12.estimate_max_kb_for_any_pass(BASES_100k), 2777);
+        TEST_ASSERT_EQUAL(P12.estimate_max_kb_for_any_pass(BASES_100k), 246862);
     }
 
     TEST_ASSERT_EQUAL(max_probes_for_passes(p1,   1, BASES_100k), 100000);
@@ -882,6 +882,10 @@ void TEST_Partition() {
 }
 
 static arb_test::match_expectation decides_on_passes(ULONG bp, size_t avail_mem_kb, int expected_passes, int expected_depth, size_t expected_passsize, size_t expected_memuse, bool expect_to_swap) {
+    size_t ARM_size_kb = bp/1800;         // just guess .ARM size
+
+    avail_mem_kb -= ARM_size_kb + PTSERVER_BIN_MB*1024;
+
     Partition part             = decide_passes_to_use(bp, avail_mem_kb);
     int       decided_passes   = part.number_of_passes();
     int       decided_depth    = part.split_depth();
@@ -935,51 +939,53 @@ void TEST_SLOW_decide_passes_to_use() {
     const ULONG LMEM8 =  256*MB;
     const ULONG LMEM9 =  128*MB;
 
+    const int SWAPS = 1;
+
     // ---------------- database --------- machine -- passes depth ---- probes --- memuse - swap?
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEM1,           1,    0,  891481251,  47882293,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEM2,           3,    2,  328766946,  17658380,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEM3,           5,    3,  186373430,  10010291,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEM1,           1,    0,  891481251,  18266914,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEM2,           1,    0,  891481251,  18266914,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEM3,           2,    1,  461074103,  10070684,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM1,          1,    0,   56223289,   3019805,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM2,          2,    1,   29078685,   1561843,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM3,          2,    1,   29078685,   1561843,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM4,          2,    1,   29078685,   1561843,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM5,          3,    3,   19053802,   1023397,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM6,          4,    3,   14535286,    780703,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM7,          6,    4,    9466263,    508441,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM8,         12,    4,    4775415,    256492,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM9,         26,    4,    2311777,    124167,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM1,          1,    0,   56223289,   1382305,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM2,          1,    0,   56223289,   1382305,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM3,          1,    0,   56223289,   1382305,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM4,          1,    0,   56223289,   1382305,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM5,          2,    1,   29078685,    865391,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM6,          3,    2,   20734434,    706492,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM7,          7,    4,    8168194,    467193,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM8,        194,    4,     502032,    321207,  SWAPS);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM9,        194,    4,     502032,    321207,  SWAPS);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MINI_PC,      137,    4,   38522130,   2069059,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MINI_PC,       26,    4,   36655733,   1968813,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  MINI_PC,        2,    1,   29078685,   1561843,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  MINI_PC,        1,    0,   17622233,    946506,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MINI_PC,      194,    4,   32084148,   5067457,  SWAPS);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MINI_PC,       77,    4,   15064846,   1577344,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  MINI_PC,        1,    0,   56223289,   1382305,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  MINI_PC,        1,    0,   17622233,    601991,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, SMALL_PC,      58,    4,   74634427,   4008685,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  SMALL_PC,      12,    4,   75719392,   4066959,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  SMALL_PC,       1,    0,   56223289,   3019805,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  SMALL_PC,       1,    0,   17622233,    946506,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, SMALL_PC,     194,    4,   32084148,   5067457,  SWAPS);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  SMALL_PC,       8,    3,  123505999,   3642385,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  SMALL_PC,       1,    0,   56223289,   1382305,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  SMALL_PC,       1,    0,   17622233,    601991,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, SMALL_SERVER,  16,    4,  233584907,  12546064,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  SMALL_SERVER,   4,    3,  230472727,  12378906,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  SMALL_SERVER,   1,    0,   56223289,   3019805,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  SMALL_SERVER,   1,    0,   17622233,    946506,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, SMALL_SERVER,  12,    4,  305189765,  10268199,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  SMALL_SERVER,   2,    1,  461074103,  10070684,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  SMALL_SERVER,   1,    0,   56223289,   1382305,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  SMALL_SERVER,   1,    0,   17622233,    601991,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MEDIUM_SERVER, 10,    4,  364992235,  19604075,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEDIUM_SERVER,  3,    2,  328766946,  17658380,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  MEDIUM_SERVER,  1,    0,   56223289,   3019805,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  MEDIUM_SERVER,  1,    0,   17622233,    946506,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MEDIUM_SERVER,  5,    3,  751184894,  18761270,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEDIUM_SERVER,  1,    0,  891481251,  18266914,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  MEDIUM_SERVER,  1,    0,   56223289,   1382305,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  MEDIUM_SERVER,  1,    0,   17622233,    601991,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, BIG_SERVER,     3,    3, 1217700425,  65403831,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  BIG_SERVER,     1,    0,  891481251,  47882293,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  BIG_SERVER,     1,    0,   56223289,   3019805,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  BIG_SERVER,     1,    0,   17622233,    946506,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, BIG_SERVER,     2,    1, 1858375961,  39845475,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  BIG_SERVER,     1,    0,  891481251,  18266914,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  BIG_SERVER,     1,    0,   56223289,   1382305,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  BIG_SERVER,     1,    0,   17622233,    601991,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, HUGE_SERVER,    2,    1, 1858375961,  99815115,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  HUGE_SERVER,    1,    0,  891481251,  47882293,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  HUGE_SERVER,    1,    0,   56223289,   3019805,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  HUGE_SERVER,    1,    0,   17622233,    946506,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, HUGE_SERVER,    1,    0, 3593147643,  72880678,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  HUGE_SERVER,    1,    0,  891481251,  18266914,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  HUGE_SERVER,    1,    0,   56223289,   1382305,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  HUGE_SERVER,    1,    0,   17622233,    601991,  0);
 }
 
 void NOTEST_SLOW_maybe_build_tree() {

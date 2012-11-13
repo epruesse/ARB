@@ -77,6 +77,7 @@ GBDATA *GB_open(const char *path, const char *opent);
 GB_ERROR GBT_check_arb_file(const char *name) __ATTR__USERESULT;
 
 /* ad_save_load.cxx */
+GB_CSTR GB_mapfile(GBDATA *gb_main);
 GB_ERROR GB_save(GBDATA *gb, const char *path, const char *savetype);
 GB_ERROR GB_create_directory(const char *path);
 GB_ERROR GB_save_in_arbprop(GBDATA *gb, const char *path, const char *savetype);

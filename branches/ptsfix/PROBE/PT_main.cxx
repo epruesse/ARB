@@ -462,7 +462,20 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
             error            = pt_init_main_struct(aisc_main, params->db_server);
             if (error) error = GBS_global_string("Gave up (Reason: %s)", error.deliver());
             else {
-                error = enter_stage_1_build_tree(aisc_main, pt_name);
+                ULONG ARM_size_kb = 0;
+                {
+                    const char *mapfile = GB_mapfile(psg.gb_main);
+                    if (GB_is_regularfile(mapfile)) {
+                        ARM_size_kb = GB_size_of_file(mapfile)/1024.0+0.5;
+                    }
+                    else {
+                        fputs("Warning: cannot detect size of mapfile (have none).\n"
+                              "         Ptserver will probably use too much memory.\n",
+                              stderr);
+                    }
+                }
+
+                error = enter_stage_1_build_tree(aisc_main, pt_name, ARM_size_kb);
                 if (error) {
                     error = GBS_global_string("Failed to build index (Reason: %s)", error.deliver());
                 }
