@@ -425,6 +425,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
             GB_begin_transaction(psg.gb_main);
 
             ULONG available_memory = GB_get_usable_memory() - ARM_size_kb - PTSERVER_BIN_MB*1024;
+            printf("Memory available for build: %s\n", GBS_readable_size(available_memory*1024, "b"));
 
             Partition partition = decide_passes_to_use(psg.char_count, available_memory);
 
