@@ -15,7 +15,7 @@
 #include "aw_def.hxx"
 #include "aw_root.hxx"
 #include "aw_awar.hxx"
-#include "devices/aw_device.hxx"
+#include "aw_device.hxx"
 #include "aw_advice.hxx"
 #include "aw_assert.hxx"
 #include <arbdbt.h>
