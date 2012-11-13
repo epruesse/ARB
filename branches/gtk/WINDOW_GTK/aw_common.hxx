@@ -9,12 +9,11 @@
 //                                                             //
 // =========================================================== //
 
-#ifndef AW_COMMON_HXX
-#define AW_COMMON_HXX
+#pragma once
 
-#ifndef AW_DEVICE_HXX
-#include "aw_device.hxx"
-#endif
+
+
+
 #ifndef DOWNCAST_H
 #include <downcast.h>
 #endif
@@ -22,6 +21,7 @@
 #include <arb_defs.h>
 #endif
 
+#include "aw_device.hxx"
 #include <map>
 
 
@@ -265,8 +265,3 @@ inline void AW_GC::set_effective_color() {
         wm_set_foreground_color(col);
     }
 }
-
-#else
-#error aw_common.hxx included twice
-#endif // AW_COMMON_HXX
-
