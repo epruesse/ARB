@@ -583,7 +583,7 @@ GB_CUINT4 *GB_read_ints_pntr(GBDATA *gbd)
     }
     if (!res) return NULL;
 
-    if ( 0x01020304 == htonl((u_long)0x01020304) ) {
+    if ( 0x01020304U == htonl(0x01020304U) ) {
         return res;
     }else{
         long      i;

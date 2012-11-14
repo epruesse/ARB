@@ -452,7 +452,8 @@ static char *gbs_vglobal_string_copy(const char *templat, va_list parg) {
 
 void GBS_reuse_buffer(GB_CSTR global_buffer) {
     /* If you've just shortely used a buffer, you can put it back here */
-    gbs_vglobal_string(global_buffer, 0, -1);
+    va_list empty; 
+    gbs_vglobal_string(global_buffer, empty, -1);
 }
 
 GB_CSTR GBS_global_string(const char *templat, ...) {
