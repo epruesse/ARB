@@ -1,0 +1,35 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	genes.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	gene_search.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		What are Marked Genes ?
+
+DESCRIPTION	All genes have a flag which can be set to FALSE or TRUE.
+		All genes with the flag set to TRUE are called marked
+		species. Normally this flag is used to specify a subgroup of
+		genes and then perform some actions on these genes.
+
+NOTES		None
+
+EXAMPLES	Mark one known gene:
+
+			1. Search for the Gene: <ARB_NT/Genes/Search>
+			2. Select the gene
+			3. Mark it
+
+		Mark a list of genes:
+
+			1. Search for the gene: <ARB_NT/Genes/search>
+			2. Press <Mark Listed/Unmark Rest>
+
+WARNINGS	Be careful: The marked genes can be spread over several
+		organisms w/o showing this in the ARB_GENEMAP window.
+
+BUGS		No bugs known

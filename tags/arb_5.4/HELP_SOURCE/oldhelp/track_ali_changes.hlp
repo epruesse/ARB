@@ -1,0 +1,31 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Track alignment changes
+
+OCCURRENCE	ARB_NT/Sequences/Track alignment changes
+
+DESCRIPTION     When called first, a checksum entry is generated for all species with
+                data in the selected alignment.
+                For alignment 'ali_16s' this entry is named 'checksum_ali_16s'.
+
+                When called again later, the stored checksums are compared with the
+                current checksums. If a checksum change is detected, an entry describing the change
+                is stored in the field 'seq_history'.
+
+NOTES		The first checksum in the 'checksum_xxx'-entries is calculated with gaps ignored (i.e.
+                it reflects changes to the sequence data), the second checksum is calculate using gaps (i.e.
+                it reflects changes to the alignment of the sequence).
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
