@@ -183,7 +183,7 @@ public:
         free(fullname);
     }
 
-    GB_ERROR init(GBDATA *gbd_);
+    GB_ERROR init(GBDATA *gbd_, bool& no_data);
 
     const char *get_data() const { return data; }
     char *read_alignment(int *psize) const;

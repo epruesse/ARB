@@ -45,7 +45,9 @@ ARB_ERROR probe_read_data_base(const char *name, bool readOnly) __ATTR__USERESUL
 int probe_compress_sequence(char *seq, int seqsize);
 char *readable_probe(const char *compressed_probe, size_t len, char T_or_U);
 char *probe_read_alignment(int j, int *psize);
-void probe_read_alignments(void);
+GB_ERROR PT_prepare_species_sequence(GBDATA *gb_species, const char *alignment_name, bool &data_missing);
+GB_ERROR PT_prepare_data(GBDATA *gb_main);
+void probe_read_prebuild_alignments(void);
 void PT_build_species_hash(void);
 long PT_abs_2_rel(long pos);
 

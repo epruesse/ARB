@@ -180,7 +180,7 @@ static ARB_ERROR pt_init_main_struct(PT_main *, const char *filename) { // __ATT
         psg.alignment_name = GBT_get_default_alignment(psg.gb_main);
         GB_commit_transaction(psg.gb_main);
         printf("Building PT-Server for alignment '%s'...\n", psg.alignment_name);
-        probe_read_alignments();
+        probe_read_prebuild_alignments();
         PT_build_species_hash();
     }
     return error;
@@ -447,7 +447,8 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
             error = probe_read_data_base(params->db_server, false);
             if (!error) {
                 pt_assert(psg.gb_main);
-                error = prepare_ptserver_database(psg.gb_main, PTSERVER);
+                error             = prepare_ptserver_database(psg.gb_main, PTSERVER);
+                if (!error) error = PT_prepare_data(psg.gb_main);
                 if (!error) {
                     const char *mode = "bf"; // save PT-server database withOUT! Fastload file
                     error            = GB_save_as(psg.gb_main, params->db_server, mode);
