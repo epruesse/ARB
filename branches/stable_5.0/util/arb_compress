@@ -7,7 +7,6 @@
             find SH ! -type d; \
             find GDEHELP -name "ARB_GDEmenus"; \
             find GDEHELP/DATA_FILES ! -type d; \
-            find Xlib ! -type d; \
             find lib ! -type d | grep -v "/pts/") \
         | grep -v "^.svn/" \
         | grep -v "^CVS/" \
