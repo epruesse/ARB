@@ -1,0 +1,4 @@
+# libraries needed to link against WETC/WETC.a
+
+lib/libAWT.so
+

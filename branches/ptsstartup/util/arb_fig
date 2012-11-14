@@ -1,0 +1,38 @@
+#!/bin/bash
+
+editlines() {
+    IFS=" "
+    read FIG
+    while [ ! -z "$FIG" ]; do
+        # echo "FIG='$FIG'"
+        xfig $FIG &
+        read FIG
+    done
+}
+
+expandfig() {
+    local FNAME=${1%.fig}.fig
+    find $ARBHOME/lib/pictures -name "$FNAME"
+}
+
+expandfigs() {
+    expandfig $1
+    shift
+    if [ ! -z "$1" ]; then
+        expandfigs $*
+    fi
+}
+
+
+if [ -z "$ARBHOME" ]; then
+    echo '$ARBHOME not set'
+else
+    if [ -z "$1" ]; then
+        echo "Usage: arb_fig [xxx[.fig]]+"
+        echo "Edit all given figs using xfig"
+        echo "If a fig occurs multiple times, all get edited"
+    else
+        expandfigs $* | editlines
+        FIG=`find $ARBHOME/lib/pictures -name "$FNAME"`
+    fi
+fi
