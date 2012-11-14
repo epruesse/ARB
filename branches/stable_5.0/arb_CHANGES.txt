@@ -1,5 +1,10 @@
 ARB change log
 
+Fixes for arb_5.4:
+
+ * make it obvious when probe matches are truncated. Truncate all hits beyond 1 million (was 100000)
+ * fixed realigner (better interaction with fields 'transl_table' and 'codon_start'; improved error handling)
+ * fixed sevaral compilation issues (OSX; recent distro releases)
 
 Fixes for arb_5.3:
 
