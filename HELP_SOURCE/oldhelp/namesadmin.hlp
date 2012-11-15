@@ -12,6 +12,14 @@ TITLE		NAME_SERVER ADMIN
 
 OCCURRENCE	ARB_NT/Tools/Name server admin
 
+SECTION         General warning
+
+			Most of the functions here will destroy or at least affect the consistency
+			of the short names for all users of the affected names.dat. 
+
+			Please only use these functions if you really know what you are doing.
+			Otherwise ask your local ARB guru.
+
 DESCRIPTION     Delete old names file
 
                        After using the nameserver for a while, the names database
@@ -38,6 +46,11 @@ DESCRIPTION     Delete old names file
 
                        Use this to get rid of all nameserver entries using ARB_xxx accession
                        numbers.
+
+		After using any of the above functions 
+
+			you should consider to regenerate names (see LINK{sp_rename.hlp}) in 
+			all your arb-databases.
 
                 Additional species ID field
 
