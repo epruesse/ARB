@@ -12,6 +12,7 @@
 #include <GEN.hxx>
 
 #include <climits>
+#include <unistd.h>
 
 using namespace std;
 

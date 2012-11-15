@@ -63,15 +63,16 @@ endif
 ALLOWED_GCC_3xx_VERSIONS=3.2 3.3.1 3.3.3 3.3.4 3.3.5 3.3.6 3.4.0 3.4.2 3.4.3
 ALLOWED_GCC_4xx_VERSIONS=\
 	4.0.0 4.0.1 4.0.2 4.0.3 \
-	4.1.1 4.1.2 4.1.3 \
-	4.2.0 4.2.1 4.2.3 4.2.4 \
-	4.3 4.3.1 4.3.2 4.3.3 \
-	4.4.1 4.4.3 \
-	4.6 4.6.1
+	      4.1.1 4.1.2 4.1.3 \
+	4.2.0 4.2.1       4.2.3 4.2.4 \
+	      4.3.1 4.3.2 4.3.3 \
+	      4.4.1       4.4.3 \
+	      4.6.1 \
+	      4.7.1
 
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_3xx_VERSIONS) $(ALLOWED_GCC_4xx_VERSIONS)
 
-GCC_VERSION_FOUND=$(shell $(GCC) -dumpversion)
+GCC_VERSION_FOUND=$(shell $(ARBHOME)/SOURCE_TOOLS/arb_gcc_version.pl)
 GCC_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_GCC_VERSIONS),$(findstring ___$(version)___,___$(GCC_VERSION_FOUND)___))))
 
 USING_GCC_3XX=$(strip $(foreach version,$(ALLOWED_GCC_3xx_VERSIONS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
