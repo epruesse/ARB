@@ -58,6 +58,7 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx

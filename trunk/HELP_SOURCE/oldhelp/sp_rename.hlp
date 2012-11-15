@@ -8,9 +8,9 @@ SUB	rename.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Create Names
+TITLE		Generate new names
 
-OCCURRENCE	ARB_NT/Species/Create names
+OCCURRENCE	ARB_NT/Species/Generate new names
 
 DESCRIPTION	Creates automatically unique names (=identifiers) for the
 		species entries in the database. The entries are identified by
@@ -24,8 +24,8 @@ DESCRIPTION	Creates automatically unique names (=identifiers) for the
 		the different versions are indicated by appending running
 		numbers separated from the 'name' by a dot.
 
-		Press the 'Rename' button of the 'Species' menu to display the
-			'AUTORENAME SPECIES' window.
+		Press the 'Rename' button of the 'Species' menu to display 
+		the 'AUTORENAME SPECIES' window.
 		
 		
 NOTES		The names are stored with the database. The names can be changed
