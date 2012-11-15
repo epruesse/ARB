@@ -1,5 +1,9 @@
 ARB change log
 
+Fixes for arb_5.5:
+
+ * arb_5.4 was broken (several external tools missing)
+
 
 Fixes for arb_5.4:
 
