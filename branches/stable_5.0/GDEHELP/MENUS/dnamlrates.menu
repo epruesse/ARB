@@ -6,7 +6,7 @@ itemmethod:(GOTO_LOCAL_DIR ; \
                 arb_convert_aln -GenBank in1 -phylip2 in1.ph; \
             echo 1 >>in1.ph; \
             arb_export_tree $TREE >>in1.ph; \
-            RUN_IN_WINDOW ((cat in1.ph |arb_dnarates)); \
+            RUN_IN_WINDOW((cat in1.ph |arb_dnarates)); \
             RM_LOCAL_FILES(in1) )&
 
 itemhelp:DNAml_rates.help
