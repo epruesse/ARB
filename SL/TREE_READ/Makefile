@@ -10,10 +10,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(ACC) $(cflags) -c $< $(AINCLUDES)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -36,36 +36,21 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 TreeRead.o: TreeRead.h
+TreeRead.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 TreeRead.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeRead.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_assert.h
-TreeRead.o: $(ARBHOME)/INCLUDE/arb_core.h
-TreeRead.o: $(ARBHOME)/INCLUDE/arb_error.h
-TreeRead.o: $(ARBHOME)/INCLUDE/arb_msg.h
-TreeRead.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
-TreeRead.o: $(ARBHOME)/INCLUDE/arb_string.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arbdb.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arbdbt.h
-TreeRead.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeRead.o: $(ARBHOME)/INCLUDE/attributes.h
-TreeRead.o: $(ARBHOME)/INCLUDE/dupstr.h
-TreeRead.o: $(ARBHOME)/INCLUDE/smartptr.h
-TreeRead.o: $(ARBHOME)/INCLUDE/test_global.h
 
 TreeTools.o: TreeRead.h
+TreeTools.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 TreeTools.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeTools.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arb_assert.h
-TreeTools.o: $(ARBHOME)/INCLUDE/arb_core.h
-TreeTools.o: $(ARBHOME)/INCLUDE/arb_error.h
-TreeTools.o: $(ARBHOME)/INCLUDE/arb_msg.h
-TreeTools.o: $(ARBHOME)/INCLUDE/arb_string.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arbdb.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arbdbt.h
-TreeTools.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeTools.o: $(ARBHOME)/INCLUDE/attributes.h
-TreeTools.o: $(ARBHOME)/INCLUDE/dupstr.h
-TreeTools.o: $(ARBHOME)/INCLUDE/smartptr.h
-TreeTools.o: $(ARBHOME)/INCLUDE/test_global.h

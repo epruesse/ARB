@@ -39,7 +39,7 @@ else
             echo \
                 gnuplot \
                 gv \
-                libmotif4 \
+                libmotif3 \
                 xfig \
                 transfig \
                 xterm \
@@ -126,8 +126,8 @@ else
                 echo "$SOURCE" ;\
                 echo "to /etc/apt/sources.list, e.g. using" ;\
                 echo "" ;\
-                echo "sudo apt-add-repository '$SOURCE'" ;\
-                echo "sudo apt-get update" ;\
+                echo "sudo bash -c 'echo $SOURCE >> /etc/apt/sources.list'" ;\
+                echo "sudo aptitude update" ;\
                 echo "???" ;\
                 )
             echo '-------------------- [apt end]'

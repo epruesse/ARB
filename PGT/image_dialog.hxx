@@ -55,7 +55,8 @@ typedef struct _RGB
 } RGB;
 
 
-class imageDialog : public MDialog { // derived from a Noncopyable
+class imageDialog : public MDialog
+{
     public:
         imageDialog(MDialog*);
         ~imageDialog();
@@ -122,6 +123,7 @@ class imageDialog : public MDialog { // derived from a Noncopyable
         Widget m_UpdateGeneButton;
         //
         vector<SPOT> m_spotList;
+        // list<SPOT> m_spotList;
         map<char *, char *, ltstr> m_descriptorList;
         map<char *, GBDATA*, ltstr> m_gene_GBDATA_map;
         //

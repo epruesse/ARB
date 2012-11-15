@@ -1,31 +1,19 @@
-// ============================================================= //
-//                                                               //
-//   File      : MP_mo_liste.cxx                                 //
-//   Purpose   :                                                 //
-//                                                               //
-//   Institute of Microbiology (Technical University Munich)     //
-//   http://www.arb-home.de/                                     //
-//                                                               //
-// ============================================================= //
-
-#include "MP_externs.hxx"
-#include "MultiProbe.hxx"
-
-#include <aw_msg.hxx>
+#include <MultiProbe.hxx>
+#include <stdlib.h>
+#include <string.h>
 #include <arbdbt.h>
-#include <client.h>
+#include <aw_root.hxx>
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden MO_Liste
 
-GBDATA *MO_Liste::gb_main = NULL;
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden MO_Liste
 
-MO_Liste::MO_Liste() {
-    mp_assert(gb_main);
-    
-    laenge   = 0;
+
+MO_Liste::MO_Liste()
+{
+    laenge = 0;;
     mo_liste = NULL;
-    current  = 0;
-    hashptr  = NULL;
+    current = 0;
+    hashptr = NULL;
     // Nach dem new muss die MO_Liste erst mit fill_all_bakts bzw fill_marked_bakts gefuellt werden
 }
 
@@ -37,11 +25,12 @@ MO_Liste::~MO_Liste()
         laenge--;
     }
     delete [] mo_liste;
-    if (hashptr) GBS_free_hash(hashptr);
+    GBS_free_hash(hashptr);
 }
 
 
-void MO_Liste::get_all_species() {
+void MO_Liste::get_all_species()
+{
     const char *servername = NULL;
     char       *match_name = NULL;
     char        toksep[2];
@@ -51,36 +40,33 @@ void MO_Liste::get_all_species() {
     int         i          = 0;
     long        j          = 0, nr_of_species;
 
-    if (!(servername=MP_probe_pt_look_for_server())) {
+    if( !(servername=MP_probe_pt_look_for_server()) ){
         return;
     }
 
-    mp_pd_gl.link = aisc_open(servername, mp_pd_gl.com, AISC_MAGIC_NUMBER);
-    mp_pd_gl.locs.clear();
+    mp_pd_gl.link = (aisc_com *)aisc_open(servername, &mp_pd_gl.com,AISC_MAGIC_NUMBER);
     servername = 0;
 
     if (!mp_pd_gl.link) {
         aw_message ("Cannot contact Probe bank server ");
         return;
     }
-    if (MP_init_local_com_struct()) {
+    if (MP_init_local_com_struct() ) {
         aw_message ("Cannot contact Probe bank server (2)");
-        // @@@ missing aisc_close
         return;
     }
 
 
-    if (aisc_put(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs, NULL))
+    if (aisc_put(mp_pd_gl.link,PT_LOCS, mp_pd_gl.locs, NULL))
     {
         free(probe);
         aw_message ("Connection to PT_SERVER lost (4)");
-        // @@@ missing aisc_close
         return;
     }
 
 
     bs.data = 0;
-    aisc_get(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs,
+    aisc_get( mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs,
               LOCS_MP_ALL_SPECIES_STRING,       &bs,
               LOCS_MP_COUNT_ALL_SPECIES,    &nr_of_species,
               LOCS_ERROR,               &locs_error,
@@ -113,26 +99,26 @@ void MO_Liste::get_all_species() {
     {
 
         match_name = strtok(bs.data, toksep);
-        GB_push_transaction(gb_main);
+        GB_push_transaction(GLOBAL_gb_main);
         while (match_name)
         {
             i++;
-            if (!GBT_find_species(gb_main, match_name))
+            if (!GBT_find_species(GLOBAL_gb_main, match_name))
             {                               // Testen, ob Bakterium auch im Baum existiert, um
-                pt_server_different = true;
-                // @@@ missing aisc_close
+                //             aw_message("Species differ in tree and chosen PT_Server");
+                pt_server_different = TRUE;
                 return;
             }
             put_entry(match_name);
             match_name = strtok(0, toksep);
         }
-        GB_pop_transaction(gb_main);
+        GB_pop_transaction(GLOBAL_gb_main);
     }
     else
         aw_message("DB-query produced no species.\n");
 
 
-    aisc_close(mp_pd_gl.link, mp_pd_gl.com);
+    aisc_close(mp_pd_gl.link);
     free(bs.data);
 
     delete match_name;
@@ -142,12 +128,13 @@ void MO_Liste::get_all_species() {
 
 positiontype MO_Liste::fill_marked_bakts()
 {
-    long    j = 0;
-    GBDATA *gb_species;
+    long        j=0;
+    GBDATA      *gb_species;
+    //    GBDATA        *gb_species_data;
 
 
-    GB_push_transaction(gb_main);
-    laenge = GBT_count_marked_species(gb_main);     // laenge ist immer zuviel oder gleich der Anzahl wirklick markierter. weil pT-Server nur
+    GB_push_transaction(GLOBAL_gb_main);
+    laenge = GBT_count_marked_species(GLOBAL_gb_main);     // laenge ist immer zuviel oder gleich der Anzahl wirklick markierter. weil pT-Server nur
     // die Bakterien mit Sequenz zurueckliefert.
 
     if (!laenge) {
@@ -166,14 +153,14 @@ positiontype MO_Liste::fill_marked_bakts()
     hashptr = GBS_create_hash(laenge, GB_IGNORE_CASE);
 
 
-    for (gb_species = GBT_first_marked_species(gb_main);
+    for ( gb_species = GBT_first_marked_species(GLOBAL_gb_main);
           gb_species;
           gb_species = GBT_next_marked_species(gb_species))
     {
         put_entry(GBT_read_name(gb_species));
     }
 
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 
     anz_elem_marked = laenge;
 
@@ -192,7 +179,10 @@ long MO_Liste::debug_get_current()
     return current;
 }
 
-long MO_Liste::put_entry(const char* name) {
+long MO_Liste::put_entry(const char* name)
+{
+    long    hashreturnval;
+
     // Pruefe: Gibts den Bakter schon in dieser Liste??
     if (get_index_by_entry(name))               // wanns den Bakter scho gibt
     {
@@ -200,8 +190,8 @@ long MO_Liste::put_entry(const char* name) {
     }
     else
     {
-        mo_liste[current] = new Bakt_Info(name);                    // MEL  koennte mit match_name zusammenhaengen
-        GBS_write_hash(hashptr, name, current);
+        mo_liste[current] = new Bakt_Info(name);                    //MEL  koennte mit match_name zusammenhaengen
+        hashreturnval = GBS_write_hash(hashptr, name, current);
         current++;
     }
     return current;
@@ -209,7 +199,7 @@ long MO_Liste::put_entry(const char* name) {
 
 char* MO_Liste::get_entry_by_index(long index)
 {
-    if ((0<index) && (index < current))
+    if ( ( 0<index ) && (index < current) )
         return mo_liste[index]->get_name();
     else
         return NULL;
@@ -225,7 +215,7 @@ long MO_Liste::get_index_by_entry(const char* key)
 
 Bakt_Info* MO_Liste::get_bakt_info_by_index(long index)
 {
-    if ((0<index) && (index < current))
+    if ( ( 0<index ) && (index < current) )
         return mo_liste[index];
     else
         return NULL;

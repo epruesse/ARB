@@ -80,7 +80,7 @@ void free_ulivector(ulivector v);
 void free_ulimatrix(ulimatrix m);
 void free_ulicube(ulicube c);
 
-double randomunitinterval(void);
+double randomunitintervall(void);
 int initrandom(int seed);
 int randominteger(int n);
 void chooser(int t, int s, ivector slist);

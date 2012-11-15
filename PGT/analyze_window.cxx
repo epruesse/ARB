@@ -14,6 +14,53 @@
 
 
 /****************************************************************************
+*  ANALYZE WINDOW - CONSTRUCTOR
+****************************************************************************/
+analyzeWindow::analyzeWindow(MDialog *d)
+    : MDialog(d)
+{
+    // CREATE WINDOW SHELL
+    createShell("");
+
+    // SET A NEW WIDTH AND HEIGHT OF THE SHELL
+    XtVaSetValues(m_shell,
+        XmNwidth, 800,
+        XmNheight, 600,
+        NULL);
+
+    // CREATE MAIN WINDOW WIDGETS
+    createWindow();
+
+    // REALIZE SHELL & WIDGETS
+    realizeShell();
+
+    // SET WINDOW LABEL
+    setDialogTitle("PGT - Data Analyzer");
+
+    // DEBUG...
+
+    m_myplot= new Plot(XtDisplay(m_plotArea), XtWindow(m_plotArea));
+
+    // m_myplot->demo();
+
+    XtAddCallback(m_plotArea, XmNresizeCallback, staticResizeGnuplot, this);
+
+    resizeGnuplot();
+
+    // ...DEBUG
+}
+
+
+/****************************************************************************
+*  ANALYZE WINDOW - DESTRUCTOR
+****************************************************************************/
+analyzeWindow::~analyzeWindow()
+{
+
+}
+
+
+/****************************************************************************
 *  ANALYZE WINDOW - CREATE WINDOW
 ****************************************************************************/
 void analyzeWindow::createWindow()
@@ -67,6 +114,14 @@ void analyzeWindow::createWindow()
         XmNrightAttachment, XmATTACH_FORM,
         NULL);
 
+//     m_plotArea= XtVaCreateManagedWidget("area",
+//         xmFormWidgetClass, m_plotManager,
+//         XmNtopAttachment, XmATTACH_FORM,
+//         XmNleftAttachment, XmATTACH_FORM,
+//         XmNbottomAttachment, XmATTACH_FORM,
+//         XmNrightAttachment, XmATTACH_FORM,
+//         NULL);
+
     // FILL TOOLBARS WITH WIDGETS
     createTopToolbar();
     createLeftToolbar();
@@ -106,6 +161,7 @@ void analyzeWindow::createLeftToolbar()
 void analyzeWindow::resizeGnuplot()
 {
     Dimension w, h;
+    // unsigned int w, h;
 
     // GET DIMENSIONS
     XtVaGetValues(m_plotArea,
@@ -122,7 +178,7 @@ void analyzeWindow::resizeGnuplot()
 *  ANALYZE WINDOW - RESIZE THE GNUPLOT WINDOW
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-static void staticResizeGnuplot(Widget, XtPointer clientData, XtPointer)
+void staticResizeGnuplot(Widget, XtPointer clientData, XtPointer)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     analyzeWindow *aW= (analyzeWindow *)clientData;
@@ -130,49 +186,4 @@ static void staticResizeGnuplot(Widget, XtPointer clientData, XtPointer)
     // CALL CLASS MEMBER FUNCTION
     aW->resizeGnuplot();
 }
-
-/****************************************************************************
-*  ANALYZE WINDOW - CONSTRUCTOR
-****************************************************************************/
-analyzeWindow::analyzeWindow(MDialog *d)
-    : MDialog(d)
-{
-    // CREATE WINDOW SHELL
-    createShell("");
-
-    // SET A NEW WIDTH AND HEIGHT OF THE SHELL
-    XtVaSetValues(m_shell,
-        XmNwidth, 800,
-        XmNheight, 600,
-        NULL);
-
-    // CREATE MAIN WINDOW WIDGETS
-    createWindow();
-
-    // REALIZE SHELL & WIDGETS
-    realizeShell();
-
-    // SET WINDOW LABEL
-    setDialogTitle("PGT - Data Analyzer");
-
-    // DEBUG...
-
-    m_myplot= new Plot(XtDisplay(m_plotArea), XtWindow(m_plotArea));
-
-    XtAddCallback(m_plotArea, XmNresizeCallback, staticResizeGnuplot, this);
-
-    resizeGnuplot();
-
-    // ...DEBUG
-}
-
-
-/****************************************************************************
-*  ANALYZE WINDOW - DESTRUCTOR
-****************************************************************************/
-analyzeWindow::~analyzeWindow()
-{
-
-}
-
 

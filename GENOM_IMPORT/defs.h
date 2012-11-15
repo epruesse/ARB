@@ -11,9 +11,11 @@
 #ifndef DEFS_H
 #define DEFS_H
 
-#ifndef _GLIBCXX_STRING
+#ifndef _CPP_STRING
 #include <string>
 #endif
+
+using std::string;
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -26,8 +28,10 @@
 #define gi_assert(cond) arb_assert(cond)
 
 // simple helper functions from ARBDB
-const char *GBS_global_string(const char *templat, ...) __attribute__((format(printf, 1, 2)));
-
+extern "C" {
+    const char *GBS_global_string(const char *templat, ...) __attribute__((format(printf, 1, 2)));
+}
+    
 #else
 #error defs.h included twice
 #endif // DEFS_H

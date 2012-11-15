@@ -12,6 +12,7 @@ UP	changes.hlp
 SUB	arb_ntree.hlp
 SUB	arb_pars.hlp
 SUB	e4.hlp
+SUB	gde.hlp
 SUB	pt_server.hlp
 SUB	save.hlp
 SUB	no_tree.hlp
@@ -77,16 +78,16 @@ SECTION         ARB MODULES
 		displayed tree topology and printing or exporting the tree to
 		foreign software (TREETOOL [], XFIG []).
 
-	ARB_EDIT4
+	ARB_EDIT
 
 		An editor for the display of sequences and sequence-associated
 		data (masks and filters, consensus sequences, higher-order structure) and
 		basic editing functions is available. This tool allows manual entering of
                 new sequences (with a customized keyboard, if desired); manual modification
                 of alignments; search and replacement of sequence stretches; and printout of data.
-
-                Predicted higher-order structure is automatically checked according
-                to a user-provided mask and may be displayed with the sequences by
+                Predicted higher-order
+		structure is automatically checked according to a user-provided
+		mask, and may be displayed with the sequences by
 		user-definable symbols.
 
 	ARB_ALIGN

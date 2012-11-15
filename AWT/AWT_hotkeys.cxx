@@ -13,14 +13,17 @@
 //  ==================================================================== //
 
 #include "awt_hotkeys.hxx"
-#include <cctype>
+#include <ctype.h>
 
 
 using namespace std;
 
-const char* awt_hotkeys::artificial_hotkey() {
-    if (artificial <= '9') {
-        current[0] = artificial++;
+//  -----------------------------------------------------
+//      const char* awt_hotkeys::artifical_hotkey()
+//  -----------------------------------------------------
+const char* awt_hotkeys::artifical_hotkey()  {
+    if (artifical <= '9') {
+        current[0] = artifical++;
     }
     else {
         int i;
@@ -43,7 +46,10 @@ const char* awt_hotkeys::artificial_hotkey() {
     return current;
 }
 
-const char* awt_hotkeys::hotkey(const string& label) {
+//  -----------------------------------------------------------------------
+//      const char* awt_hotkeys::hotkey_internal(const string& label)
+//  -----------------------------------------------------------------------
+const char* awt_hotkeys::hotkey(const string& label)  {
     if (label.length()) {
         for (string::const_iterator ch = label.begin(); ch != label.end(); ++ch) {
             if (islower(*ch)) {
@@ -62,7 +68,7 @@ const char* awt_hotkeys::hotkey(const string& label) {
             }
         }
     }
-    return artificial_hotkey();
+    return artifical_hotkey();
 }
 
 

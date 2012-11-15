@@ -11,13 +11,10 @@
 
 #include "ed4_dots.hxx"
 #include "ed4_class.hxx"
+#include "ed4_visualizeSAI.hxx" // for SAI selection box
 
-#include <awt_sel_boxes.hxx>
-#include <aw_awar.hxx>
-#include <aw_msg.hxx>
-#include <aw_root.hxx>
 #include <arbdbt.h>
-#include <cctype>
+#include <ctype.h>
 
 using namespace std;
 
@@ -38,8 +35,8 @@ struct dot_insert_stat {
     size_t sequences_checked;
 };
 
-static ARB_ERROR dot_sequence_by_consensus(ED4_base *base, AW_CL cl_insert_stat) {
-    ARB_ERROR error = 0;
+static ED4_returncode dot_sequence_by_consensus(void **cl_insert_stat, void **, ED4_base *base) {
+    GB_ERROR error = 0;
 
     if (base->is_sequence_info_terminal()) {
         ED4_sequence_info_terminal *seq_term = base->to_sequence_info_terminal();
@@ -75,7 +72,7 @@ static ARB_ERROR dot_sequence_by_consensus(ED4_base *base, AW_CL cl_insert_stat)
                                     case '.':
                                         stat.already_there++;
                                         break;
-
+                                    
                                     default:
                                         break;
                                 }
@@ -94,16 +91,27 @@ static ARB_ERROR dot_sequence_by_consensus(ED4_base *base, AW_CL cl_insert_stat)
         }
     }
 
-    return error;
+    if (error) {
+        GB_export_error(error);
+        return ED4_R_ERROR;
+    }
+    return ED4_R_OK;
 }
 
 static void dot_missing_bases(AW_window *aww) {
-    ED4_MostRecentWinContext context;
+    ED4_window *ed4w     = ED4_ROOT->get_ed4w();
+    ED4_cursor *cursor   = &ed4w->cursor;
+    ED4_base   *selected = cursor->owner_of_cursor;
 
-    ED4_cursor *cursor = &current_cursor();
-    ARB_ERROR   error  = 0;
+    GB_ERROR             error       = 0;
+    ED4_species_manager *species_man = 0;
+    
+    if (selected) {
+        species_man = selected->get_parent(ED4_L_SPECIES)->to_species_manager();
+        if (species_man && !species_man->flag.is_consensus) species_man = 0;
+    }
 
-    if (!cursor->in_consensus_terminal()) {
+    if (!species_man) {
         error = "No consensus selected";
     }
     else {
@@ -116,7 +124,7 @@ static void dot_missing_bases(AW_window *aww) {
         stat.sequences_checked = 0;
         stat.marked_only       = aw_root->awar(AWAR_DOT_MARKED)->read_int();
 
-        ED4_group_manager *group_manager = cursor->owner_of_cursor->get_parent(ED4_L_GROUP)->to_group_manager();
+        ED4_group_manager *group_manager = selected->get_parent(ED4_L_GROUP)->to_group_manager();
         {
             // build list of positions where consensus contains upper case characters:
             char *consensus = group_manager->table().build_consensus_string();
@@ -139,8 +147,8 @@ static void dot_missing_bases(AW_window *aww) {
         }
         else {
             // if SAI is selected, reduce list of affected positions
-            char   *sai     = 0;
-            size_t  sai_len = -1;
+            char   *sai = 0;
+            size_t  sai_len;
             {
                 GB_transaction  ta(GLOBAL_gb_main);
                 char           *sai_name = aw_root->awar(AWAR_DOT_SAI)->read_string();
@@ -189,7 +197,8 @@ static void dot_missing_bases(AW_window *aww) {
         if (!error) {
             e4_assert(stat.pos_count);
             GB_transaction ta(GLOBAL_gb_main);
-            error = group_manager->route_down_hierarchy(dot_sequence_by_consensus, (AW_CL)&stat);
+            ED4_returncode result = group_manager->route_down_hierarchy((void**)&stat, NULL, &dot_sequence_by_consensus);
+            if (result == ED4_R_ERROR) error = GB_await_error();
 
             if (stat.sequences_checked == 0 && !error) {
                 error = GBS_global_string("Group contains no %ssequences", stat.marked_only ? "marked " : "");
@@ -212,7 +221,7 @@ static void dot_missing_bases(AW_window *aww) {
         }
     }
 
-    aw_message_if(error);
+    if (error) aw_message(error);
 }
 
 void ED4_create_dot_missing_bases_awars(AW_root *aw_root, AW_default aw_def) {
@@ -225,7 +234,7 @@ void ED4_popup_dot_missing_bases_window(AW_window *editor_window, AW_CL, AW_CL) 
     AW_root                 *aw_root = editor_window->get_root();
     static AW_window_simple *aws     = 0;
 
-    ED4_LocalWinContext uses(editor_window);
+    ED4_ROOT->use_window(editor_window);
 
     if (!aws) {
         aws = new AW_window_simple;
@@ -233,29 +242,24 @@ void ED4_popup_dot_missing_bases_window(AW_window *editor_window, AW_CL, AW_CL) 
         aws->init(aw_root, "DOT_MISS_BASES", "Dot potentially missing bases");
         aws->load_xfig("edit4/missbase.fig");
 
-        aws->button_length(10);
-        
         aws->at("close");
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
-
+        
         aws->at("help");
         aws->callback(AW_POPUP_HELP, (AW_CL)"missbase.hlp");
-        aws->create_button("HELP", "HELP", "H");
+        aws->create_button("HELP", "HELP","H");
 
         aws->at("marked");
         aws->label("Marked species only");
         aws->create_toggle(AWAR_DOT_MARKED);
 
         aws->at("SAI");
-        aws->button_length(30);
-        awt_create_SAI_selection_button(GLOBAL_gb_main, aws, AWAR_DOT_SAI);
+        ED4_create_SAI_selection_button(aws, AWAR_DOT_SAI);
 
         aws->at("SAI_chars");
         aws->label("contains one of");
         aws->create_input_field(AWAR_DOT_SAI_CHARS, 20);
-
-        aws->button_length(10);
 
         aws->at("cons_def");
         aws->label("Change definition of");
@@ -268,7 +272,7 @@ void ED4_popup_dot_missing_bases_window(AW_window *editor_window, AW_CL, AW_CL) 
     }
 
     e4_assert(aws);
-
+    
     aws->activate();
 }
 

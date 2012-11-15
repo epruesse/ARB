@@ -21,44 +21,44 @@ class Reference { // holds information of one reference section
 public:
     Reference() {}
 
-    void add(const std::string& field, const std::string& content);
-    const std::string *get(const std::string& field) const;
-
+    void          add(const string& field, const string& content);
+    const string *get(const string& field) const;
+    
     void getKeys(stringSet& keys) const; // get reference keys
 };
 
 
-class References : virtual Noncopyable { // holds information of all reference sections
-    std::vector<Reference>  refs;
-    Reference              *latest;
-    int                     ref_count;
+class References : public Noncopyable { // holds information of all reference sections
+    vector<Reference>  refs;
+    Reference         *latest;
+    int                ref_count;
 
 public:
     References() : latest(0), ref_count(0) {}
 
     void start();               // start a new reference
-    void add(const std::string& field, const std::string& content) {
-        gi_assert(latest);
+    void add(const string& field, const string& content) {
+        gi_assert(latest); 
         latest->add(field, content);
     }
 
-    void add_dbid(const std::string& content); // special handling for 'RX' field
+    void add_dbid(const string& content); // special handling for 'RX' field
 
     void   getKeys(stringSet& keys) const; // get reference keys
-    std::string tagged_content(const std::string& refkey) const;
-
+    string tagged_content(const string& refkey) const;
+    
 #if defined(DEBUG)
     void dump() const;
 #endif // DEBUG
 };
 
-class MetaInfo : virtual Noncopyable {
+class MetaInfo : public Noncopyable {
     stringMap  entries;         // key = arb_field, value = content
 
 public:
     MetaInfo() {}
 
-    void add(const MetaTag *meta, const std::string& content, bool allow_multiple_entries);
+    void add(const MetaTag *meta, const string& content, bool allow_multiple_entries);
 
 #if defined(DEBUG)
     void dump() const;
@@ -66,7 +66,7 @@ public:
 
     const stringMap& getEntries() const { return entries; }
 
-    const std::string& getAccessionNumber() const;
+    const string& getAccessionNumber() const;
 };
 
 #else

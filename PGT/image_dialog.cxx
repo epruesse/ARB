@@ -14,7 +14,7 @@
 #include "selection_dialog.hxx"
 #include "config_dialog.hxx"
 #include "help_dialog.hxx"
-#include <math.h>
+#include "math.h"
 #include <X11/cursorfont.h>
 
 #define ai_assert(cond) arb_assert(cond)
@@ -139,9 +139,14 @@ imageDialog::imageDialog(MDialog *d) : MDialog(d)
     getSettings();
 
     // ADD ARB AWAR CALLBACKS
+
     add_imageDialog_callback(AWAR_PROTEIN_NAME,   static_ARB_protein_callback, this);
     add_imageDialog_callback(AWAR_GENE_NAME,      static_ARB_gene_callback,    this);
     add_imageDialog_callback(AWAR_CONFIG_CHANGED, static_PGT_config_callback,  this);
+
+    // add_protein_callback(static_ARB_protein_callback, this);
+    // add_gene_callback(static_ARB_gene_callback, this);
+    // add_config_callback(static_PGT_config_callback, this);
 }
 
 
@@ -150,21 +155,16 @@ imageDialog::imageDialog(MDialog *d) : MDialog(d)
  ****************************************************************************/
 imageDialog::~imageDialog()
 {
-    // DEL ARB AWAR CALLBACKS
-    del_imageDialog_callback(AWAR_PROTEIN_NAME,   static_ARB_protein_callback, this);
-    del_imageDialog_callback(AWAR_GENE_NAME,      static_ARB_gene_callback,    this);
-    del_imageDialog_callback(AWAR_CONFIG_CHANGED, static_PGT_config_callback,  this);
-    
     // FREE CLASS MEMBER STRINGS
-    free(m_species);
-    free(m_experiment);
-    free(m_proteome);
+    if(m_species) free(m_species);
+    if(m_experiment) free(m_experiment);
+    if(m_proteome) free(m_proteome);
 
     // FREE m_descriptorList
     map<char*, char*, ltstr>::iterator descr_it;
 
     for(descr_it= m_descriptorList.begin();
-        descr_it != m_descriptorList.end(); ++descr_it)
+        descr_it != m_descriptorList.end(); descr_it++)
     {
         free(((*descr_it).first));
         free(((*descr_it).second));
@@ -175,7 +175,7 @@ imageDialog::~imageDialog()
     map<char *, GBDATA*, ltstr>::iterator gb_it;
 
     for(gb_it= m_gene_GBDATA_map.begin();
-        gb_it != m_gene_GBDATA_map.end(); ++gb_it)
+        gb_it != m_gene_GBDATA_map.end(); gb_it++)
     {
         free(((*gb_it).first));
     }
@@ -184,8 +184,9 @@ imageDialog::~imageDialog()
     // FREE m_spotList
     vector<SPOT>::iterator spot_it;
 
-    for(spot_it= m_spotList.begin(); spot_it != m_spotList.end(); ++spot_it)
+    for(spot_it= m_spotList.begin(); spot_it != m_spotList.end(); spot_it++)
     {
+//         if((*spot_it).text) free((*spot_it).text); // DONT! POINTER TO DESCR.LIST!!!
         if((*spot_it).id) free((*spot_it).id);
     }
     m_spotList.clear();
@@ -276,7 +277,7 @@ void imageDialog::createWindow()
     // CALLBACK FOR DRAWING AREA: IF XIMAGE NEEDS REDRAW
     XtAddCallback(m_drawingArea, XmNexposeCallback, staticImageRedrawCallback, this);
 
-    // CALLBACK FOR DRAWING AREA: IF A MOUSE (KEYBOARD) EVENT OCCURRED
+    // CALLBACK FOR DRAWING AREA: IF A MOUSE (KEYBOARD) EVENT OCCURED
     XtAddCallback(m_drawingArea, XmNinputCallback, staticImageEventCallback, this);
 
     // FILL TOOLBARS WITH WIDGETS
@@ -1178,12 +1179,15 @@ void imageDialog::set_ARB_image_path(const char *path)
 {
     if(!m_hasARBdata) return;
 
-    GBDATA *gb_proteom= find_proteome(m_species, m_experiment, m_proteome);
+    GBDATA *gb_proteom;
+
+    gb_proteom= find_proteome(m_species, m_experiment, m_proteome);
 
     if(gb_proteom)
     {
         ARB_begin_transaction();
-        ASSERT_NO_ERROR(GBT_write_string(gb_proteom, "image_path", path));
+        GB_ERROR error = GBT_write_string(gb_proteom, "image_path", path);
+        pgt_assert(!error);
         ARB_commit_transaction();
     }
 
@@ -1196,6 +1200,8 @@ void imageDialog::set_ARB_image_path(const char *path)
 ****************************************************************************/
 int imageDialog::updateImage()
 {
+    // CREATE BUFFER
+    char *buf= (char *)malloc(1024 * sizeof(char));
     char *filename;
     char *file;
 
@@ -1241,12 +1247,11 @@ int imageDialog::updateImage()
     else if(*(file+1)) file++; // REMOVE '/' CHAR FROM BEGINNING
 
     // SET WINDOW TITLE
-    {
-        char *buf= (char *)malloc(1024 * sizeof(char));
-        sprintf(buf, "PGT - Image View (%s)", file);
-        setDialogTitle(buf);
-        free(buf);
-    }
+    sprintf(buf, "PGT - Image View (%s)", file);
+    setDialogTitle(buf);
+
+    // FREE BUFFER
+    free(buf);
 
     return 0;
 }
@@ -1318,7 +1323,8 @@ int imageDialog::fillBlankImage()
     getSpotMaxDimensions();
 
     // EXIT, IF SIZE IS TOO SMALL
-    if (m_width<MIN_IMAGE_SIZE || m_height<MIN_IMAGE_SIZE) return -1; 
+    if((m_width < MIN_IMAGE_SIZE) && (m_width < MIN_IMAGE_SIZE))
+        return -1;
 
     // CREATE A PIXMAP, IF NOT ALREADY DONE...
     if(!m_hasImagedata) m_pixmap = XCreatePixmap(display, window, m_width, m_height, XDefaultDepth(display, 0));
@@ -1334,13 +1340,13 @@ int imageDialog::fillBlankImage()
     setColor(display, gc, 0xBB, 0xBB, 0xBB);
 
     Pixmap Pattern;
-    static unsigned char Pat[] =
+    static char Pat[] =
         {0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
          0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
          0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00,
          0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00}; // 16x16 PIXMAP
 
-    Pattern= XCreateBitmapFromData(display, window, (char*)(Pat), 16, 16);
+    Pattern= XCreateBitmapFromData(display, window, Pat, 16, 16);
 
     XSetStipple(display, gc, Pattern);
 
@@ -1353,7 +1359,7 @@ int imageDialog::fillBlankImage()
     // TIFF DATA AVAILABLE
     m_hasImagedata= true;
 
-    // FREE OUR GC AS WE DON'T NEED IT ANYMORE
+    // FREE OUR GC AS WE DONT NEED IT ANYMORE
     XFreeGC(display, gc);
 
     return 0;
@@ -1390,7 +1396,7 @@ void imageDialog::imageRedrawCallback()
     // COPY PIXMAP TO DRAWING AREA
     XCopyArea(display, m_pixmap, window, gc, 0, 0, m_width, m_height, 0, 0);
 
-    // FREE OUR GC AS WE DON'T NEED IT ANYMORE
+    // FREE OUR GC AS WE DONT NEED IT ANYMORE
     XFreeGC(display, gc);
 }
 
@@ -1423,6 +1429,7 @@ void imageDialog::imageRedraw()
     else drawSpots();
 
     // COPY PIXMAP TO DRAWING AREA
+//     XPutImage(display, window, gc, m_ximage, 0, 0, 0, 0, m_width, m_height);
     XCopyArea(display, m_pixmap, window, gc, 0, 0, m_width, m_height, 0, 0);
 
     // UPDATE THE STATUS LABEL WHENEVER THE IMAGE IS REDRAWN
@@ -1441,6 +1448,7 @@ void imageDialog::setText(const char *text, int x, int y)
     // SET ENVIRONMENT VARIABLES
     Display *display= XtDisplay(m_drawingArea);
     Window window= XtWindow(m_drawingArea);
+    // GC gc= XCreateGC(display, m_pixmap, 0, 0);
     GC gc= XCreateGC(display, window, 0, 0);
 
     // SET TEXT COLOR
@@ -1480,6 +1488,7 @@ void imageDialog::drawCrosshair(int x, int y)
 {
     // SET ENVIRONMENT VARIABLES
     Display *display= XtDisplay(m_drawingArea);
+//     Window window= XtWindow(m_drawingArea);
     GC gc= XCreateGC(display, m_pixmap, 0, 0);
 
     // RED COLOR
@@ -1572,7 +1581,7 @@ bool imageDialog::getSettings()
 
     if(textColor)
     {
-        if(selectedColor && strlen(selectedColor) != 7) textColor= strdup(DEFAULT_COLOR_SELECTED);
+        if(strlen(selectedColor) != 7) textColor= strdup(DEFAULT_COLOR_SELECTED);
 
         hex2rgb(&m_textColor.r,
                 &m_textColor.g,
@@ -1609,14 +1618,14 @@ void imageDialog::drawSpots()
     vector<SPOT>::iterator spot_it;
 
     // DO WE HAVE SPOT ENTRIES?
-    if (m_spotList.empty()) return;
+    if(m_spotList.size() == 0) return;
 
 
     // RESET SPOT COUNTER VALUES
     m_numSpots         = 0;
     m_numMarkedSpots   = 0;
     m_numSelectedSpots = 0;
-    freenull(m_selectedSpotName);
+    freeset(m_selectedSpotName, NULL);
 
     // ITERATE THROUGH THE SPOTS
     for(spot_it= m_spotList.begin(); spot_it != m_spotList.end(); ++spot_it)
@@ -1705,6 +1714,8 @@ static void staticImageEventCallback(Widget widget, XtPointer clientData, XtPoin
 ****************************************************************************/
 void imageDialog::imageEventCallback(Widget, XtPointer callData)
 {
+    int x= 0, y= 0, button= 0;
+
     // FETCH CALLBACKSTRUCT + EVENT
     XmDrawingAreaCallbackStruct *cbs= (XmDrawingAreaCallbackStruct *)callData;
     XEvent *event= (XEvent *)cbs->event;
@@ -1712,11 +1723,11 @@ void imageDialog::imageEventCallback(Widget, XtPointer callData)
     if(event->xany.type == ButtonPress)
     {
         // GET COORDINATES
-        int x = event->xbutton.x;
-        int y = event->xbutton.y;
+        x= event->xbutton.x;
+        y= event->xbutton.y;
 
         // GET PRESSED BUTTON
-        int button = event->xbutton.button;
+        button= event->xbutton.button;
 
         // SELECT OR MARK BUTTON NEXT TO POS (X,Y)
         markSpotAtPos(button, x, y);
@@ -1724,7 +1735,7 @@ void imageDialog::imageEventCallback(Widget, XtPointer callData)
         // CREATE A NEW SPOT LIST
         createSpotList();
 
-        // REDRAW IMAGE
+       // REDRAW IMAGE
         imageRedraw();
     }
 }
@@ -1735,51 +1746,59 @@ void imageDialog::imageEventCallback(Widget, XtPointer callData)
 ****************************************************************************/
 void imageDialog::markSpotAtPos(int button, int x, int y)
 {
+    // LOCAL VARIABLES
+    GBDATA *gb_data= NULL;
+//     GBDATA *gb_proteome= NULL;
+    GBDATA *gb_proteine_data= NULL;
+    GBDATA *gb_protein= NULL;
+    GBDATA *gb_nearest_protein= NULL;
+    GBDATA *gb_protein_x= NULL;
+    GBDATA *gb_protein_y= NULL;
+    GBDATA *gb_protein_name= NULL;
+    char *protein_name= NULL;
+    float protein_x, protein_y;
+    float delta, nearest_delta= 99999;
+    float sqx, sqy;
+    float fx= (float)x;
+    float fy= (float)y;
+
     // GET MAIN ARB GBDATA
-    GBDATA *gb_data = get_gbData();
+    gb_data= get_gbData();
     if(!gb_data) return;
 
     // FIND SELECTED PROTEOME/PROTEINE_DATA
-    GBDATA *gb_proteine_data= find_proteine_data(m_species, m_experiment, m_proteome);
+    gb_proteine_data= find_proteine_data(m_species, m_experiment, m_proteome);
     if(!gb_proteine_data) return;
 
     // INIT AN ARB TRANSACTION
     ARB_begin_transaction();
 
-    float fx = (float)x;
-    float fy = (float)y;
-
     // BROWSE ALL PROTEIN ENTRIES...
-    GBDATA *gb_protein         = GB_entry(gb_proteine_data, "protein");
-    GBDATA *gb_nearest_protein = NULL;
-    char   *protein_name       = NULL;
-    float   nearest_delta      = 99999;
-
+    gb_protein= GB_entry(gb_proteine_data, "protein");
     while(gb_protein)
     {
         // FETCH COORDINATE CONTAINER
-        GBDATA *gb_protein_x = GB_entry(gb_protein, m_x_container);
-        GBDATA *gb_protein_y = GB_entry(gb_protein, m_y_container);
+        gb_protein_x= GB_entry(gb_protein, m_x_container);
+        gb_protein_y= GB_entry(gb_protein, m_y_container);
 
         if(gb_protein_x && gb_protein_y)
         {
             // READ COORDINATES FROM THE CONTAINER
-            float protein_x = GB_read_float(gb_protein_x);
-            float protein_y = GB_read_float(gb_protein_y);
+            protein_x= GB_read_float(gb_protein_x);
+            protein_y= GB_read_float(gb_protein_y);
 
             // CALCULATE DIAGONAL LENGTH
-            float sqx = (fx - protein_x) * (fx - protein_x);
-            float sqy = (fy - protein_y) * (fy - protein_y);
-
-            float delta = sqrt(sqx + sqy);
+            sqx= (fx - protein_x) * (fx - protein_x);
+            sqy= (fy - protein_y) * (fy - protein_y);
+            delta= sqrt(sqx + sqy);
 
             if(delta < nearest_delta)
             {
                 gb_nearest_protein= gb_protein;
                 nearest_delta= delta;
 
-                GBDATA *gb_protein_name = GB_entry(gb_protein, m_id_container);
-                protein_name            = GB_read_string(gb_protein_name);
+                gb_protein_name= GB_entry(gb_protein, m_id_container);
+                protein_name= GB_read_string(gb_protein_name);
             }
         }
 
@@ -1827,6 +1846,9 @@ void imageDialog::markSpotAtPos(int button, int x, int y)
 ****************************************************************************/
 static void static_ARB_protein_callback(GBDATA *, imageDialog *iD, GB_CB_TYPE)
 {
+     // // GET POINTER OF THE ORIGINAL CALLER
+    // imageDialog *iD= (imageDialog *)clientData;
+
     // CALL CLASS MEMBER FUNCTION
     iD->ARB_protein_callback();
 }
@@ -1854,6 +1876,9 @@ void imageDialog::ARB_protein_callback()
 ****************************************************************************/
 static void static_ARB_gene_callback(GBDATA *, imageDialog *iD, GB_CB_TYPE)
 {
+     // // GET POINTER OF THE ORIGINAL CALLER
+    // imageDialog *iD= (imageDialog *)clientData;
+
     // CALL CLASS MEMBER FUNCTION
     iD->ARB_gene_callback();
 }
@@ -1864,35 +1889,41 @@ static void static_ARB_gene_callback(GBDATA *, imageDialog *iD, GB_CB_TYPE)
 ****************************************************************************/
 void imageDialog::ARB_gene_callback()
 {
+    char *awar_selected_gene=NULL;
+    char *config_gene_id=NULL;
+    char *name= NULL;
+    char *id= NULL;
+    GBDATA *gb_genome, *gb_gene, *gb_gene_name, *gb_gene_id;
+
     if(!m_lockVisualization && !m_changeInProgress)
     {
         // FETCH GENE AWAR CONTENT & CONFIG
-        char *awar_selected_gene = get_gene_AWAR();
-        char *config_gene_id     = get_CONFIG(CONFIG_PGT_ID_GENE);
+        awar_selected_gene= get_gene_AWAR();
+        config_gene_id= get_CONFIG(CONFIG_PGT_ID_GENE);
 
-        GBDATA *gb_genome= find_genome(m_species);
+        gb_genome= find_genome(m_species);
         if(!gb_genome) return;
 
         // INIT AN ARB TRANSACTION
         ARB_begin_transaction();
 
-        GBDATA *gb_gene= GB_entry(gb_genome, "gene");
+        gb_gene= GB_entry(gb_genome, "gene");
 
         while(gb_gene)
         {
-            GBDATA *gb_gene_name= GB_entry(gb_gene, "name");
+            gb_gene_name= GB_entry(gb_gene, "name");
 
             if(gb_gene_name)
             {
-                char *name = GB_read_as_string(gb_gene_name);
+                name= GB_read_as_string(gb_gene_name);
 
                 if(name && (!strcmp(name, awar_selected_gene)))
                 {
-                    GBDATA *gb_gene_id= GB_entry(gb_gene, config_gene_id);
+                    gb_gene_id= GB_entry(gb_gene, config_gene_id);
 
                     if(gb_gene_id)
                     {
-                        char *id = GB_read_as_string(gb_gene_id);
+                        id= GB_read_as_string(gb_gene_id);
                         set_protein_AWAR(id);
                         break;
                     }
@@ -1926,6 +1957,9 @@ void imageDialog::ARB_gene_callback()
 ****************************************************************************/
 static void static_PGT_config_callback(GBDATA *, imageDialog *iD, GB_CB_TYPE)
 {
+     // // GET POINTER OF THE ORIGINAL CALLER
+    // imageDialog *iD= (imageDialog *)clientData;
+
     // CALL CLASS MEMBER FUNCTION
     iD->PGT_config_callback();
 }
@@ -1939,7 +1973,7 @@ void imageDialog::PGT_config_callback()
     // SETTINGS HAVE CHANGED - SO FETCH NEW SETTINGS...
     getSettings();
 
-    // SPOT LIST MAY HAVE CHANGED AS WELL - CREATE A NEW ONE...
+    // SPOT LIST MAY HAVE CHANGED ASWELL - CREATE A NEW ONE...
     createDescriptions();
     createSpotList();
 
@@ -1990,11 +2024,11 @@ void imageDialog::genGeneKey(char *buf, char *spot_id, float x, float y)
 
     if((spot_id != NULL) && (strlen(spot_id) > 0))
     {
-        sprintf(buf, "%s_%u_%u", spot_id, i_x, i_y);
+        sprintf(buf, "%s_%d_%d", spot_id, i_x, i_y);
     }
     else
     {
-        sprintf(buf, "0_%u_%u", i_x, i_y);
+        sprintf(buf, "0_%d_%d", i_x, i_y);
     }
 }
 
@@ -2038,6 +2072,7 @@ bool imageDialog::createSpotList()
     vector<SPOT>::iterator spot_it;
     for(spot_it= m_spotList.begin(); spot_it != m_spotList.end(); ++spot_it)
     {
+//         if((*spot_it).text) free((*spot_it).text); // DONT! ALSO POINTER TO DESCR.LIST!!!
         if((*spot_it).id) free((*spot_it).id);
     }
     m_spotList.clear();
@@ -2084,13 +2119,16 @@ bool imageDialog::createSpotList()
             spot.diameter= (int)sqrt((4 * spot.area)/(4 * 3.141592));
         }
 
-        // CREATE KEY BUFFER
-        genGeneKey(keyBuf, spot.id, spot.x, spot.y);
+//         if(spot.id && (strlen(spot.id) > 0))
+//         {
+            // CREATE KEY BUFFER
+            genGeneKey(keyBuf, spot.id, spot.x, spot.y);
 
-        // FETCH DESCRIPTOR FROM DESCRIPTOR LIST (HASH-ARRAY)
-        char *descr= m_descriptorList[keyBuf];
+            // FETCH DESCRIPTOR FROM DESCRIPTOR LIST (HASH-ARRAY)
+            char *descr= m_descriptorList[keyBuf];
 
-        if(descr) spot.text= descr;
+            if(descr) spot.text= descr;
+//         }
 
         // ADD SPOT TO LIST
         m_spotList.push_back(spot);
@@ -2131,29 +2169,25 @@ bool imageDialog::createDescriptions()
     if(!gb_genome) return false;
 
     // FETCH NECESSARY AWARS
-    char *awar_protein_information= get_CONFIG(CONFIG_PGT_INFO_PROTEIN);
-    char *awar_gene_information=    get_CONFIG(CONFIG_PGT_INFO_GENE);
+    char *awar_protein_infos= get_CONFIG(CONFIG_PGT_INFO_PROTEIN);
+    char *awar_gene_infos=    get_CONFIG(CONFIG_PGT_INFO_GENE);
     char *awar_protein_id=    get_CONFIG(CONFIG_PGT_ID_PROTEIN);
     char *awar_gene_id=       get_CONFIG(CONFIG_PGT_ID_GENE);
     char *awar_protein_x=     const_cast<char*>("x_coordinate"); // DEBUG - HARDCODED
     char *awar_protein_y=     const_cast<char*>("y_coordinate"); // DEBUG - HARDCODED
-    if(!awar_protein_information || !awar_gene_information ||
+    if(!awar_protein_infos || !awar_gene_infos ||
        !awar_protein_id || !awar_gene_id) return false;
 
     // CREATE BUFFERS
     char *descriptor= (char *)malloc(1024 * sizeof(char));
     char *buf= (char *)malloc(1024 * sizeof(char));
-    if (!descriptor || !buf) {
-        free(descriptor);
-        free(buf);
-        return false;
-    }
+    if(!descriptor || !buf) return false;
 
 //     // FREE OLD DESCRIPTOR LIST
     map<char*, char*, ltstr>::iterator descr_it;
 
     for(descr_it= m_descriptorList.begin();
-        descr_it != m_descriptorList.end(); ++descr_it)
+        descr_it != m_descriptorList.end(); descr_it++)
     {
         free(((*descr_it).first));
         free(((*descr_it).second));
@@ -2167,7 +2201,7 @@ bool imageDialog::createDescriptions()
     map<char *, GBDATA*, ltstr>::iterator gb_it;
 
     for(gb_it= m_gene_GBDATA_map.begin();
-        gb_it != m_gene_GBDATA_map.end(); ++gb_it)
+        gb_it != m_gene_GBDATA_map.end(); gb_it++)
     {
         free(((*gb_it).first));
     }
@@ -2211,49 +2245,14 @@ bool imageDialog::createDescriptions()
         if(gb_protein_x) x= GB_read_float(gb_protein_x);
         if(gb_protein_y) y= GB_read_float(gb_protein_y);
 
-        strncpy(buf, awar_protein_information, 1023);
-        token= strtok(buf, ",; ");
-        while(token)
-        {
-            gb_entry= GB_entry(gb_protein, token);
-
-            // DO WE HAVE THE SELECTED CONTAINER?
-            if(gb_entry)
-            {
-                // FETCH WHATEVER IS IN THERE
-                entry= GB_read_as_string(gb_entry);
-
-                // APPEND THIS TO OUR STRING
-                if(entry && (strlen(entry) > 0))
-                {
-                    // DO WE NEED A SEPARATOR?
-                    if(first_token) first_token= false;
-                    else strncat(descriptor, ";", 2);
-
-                    // APPEND ENTRY TO DESCRIPTOR
-                    strncat(descriptor, entry, 1023 - strlen(descriptor));
-                }
-
-                // FREE OBSOLETE STRING MEM
-                if(entry) free(entry);
-            }
-            // FETCH NEXT TOKEN
-            token= strtok(NULL, ",; ");
-        }
-
-        // FETCH GENE
-        if(id && (strlen(id) > 0))
-            gb_gene= m_gene_GBDATA_map[id];
-        else
-            gb_gene= NULL;
-
-        if(gb_gene)
-        {
-            strncpy(buf, awar_gene_information, 1023);
+//         // IF WE HAVE AN IDENTIFIER...
+//         if((id && (strlen(id) > 0)) || ((x + y) != 0))
+//         {
+            strncpy(buf, awar_protein_infos, 1023);
             token= strtok(buf, ",; ");
             while(token)
             {
-                gb_entry= GB_entry(gb_gene, token);
+                gb_entry= GB_entry(gb_protein, token);
 
                 // DO WE HAVE THE SELECTED CONTAINER?
                 if(gb_entry)
@@ -2272,13 +2271,52 @@ bool imageDialog::createDescriptions()
                         strncat(descriptor, entry, 1023 - strlen(descriptor));
                     }
 
-                    // WE DO NOT NEED THE ENTRY ANYMORE...
-                    free(entry);
+                    // FREE OBSOLETE STRING MEM
+                    if(entry) free(entry);
                 }
                 // FETCH NEXT TOKEN
                 token= strtok(NULL, ",; ");
             }
-        }
+
+            // FETCH GENE
+            if(id && (strlen(id) > 0))
+                gb_gene= m_gene_GBDATA_map[id];
+            else
+                gb_gene= NULL;
+
+            if(gb_gene)
+            {
+                strncpy(buf, awar_gene_infos, 1023);
+                token= strtok(buf, ",; ");
+                while(token)
+                {
+                    gb_entry= GB_entry(gb_gene, token);
+
+                    // DO WE HAVE THE SELECTED CONTAINER?
+                    if(gb_entry)
+                    {
+                        // FETCH WHATEVER IS IN THERE
+                        entry= GB_read_as_string(gb_entry);
+
+                        // APPEND THIS TO OUR STRING
+                        if(entry && (strlen(entry) > 0))
+                        {
+                            // DO WE NEED A SEPARATOR?
+                            if(first_token) first_token= false;
+                            else strncat(descriptor, ";", 2);
+
+                            // APPEND ENTRY TO DESCRIPTOR
+                            strncat(descriptor, entry, 1023 - strlen(descriptor));
+                        }
+
+                        // WE DO NOT NEED THE ENTRY ANYMORE...
+                        free(entry);
+                    }
+                    // FETCH NEXT TOKEN
+                    token= strtok(NULL, ",; ");
+                }
+            }
+//         }
 
         // CREATE KEY BUFFER
         genGeneKey(buf, id, x, y);
@@ -2287,7 +2325,20 @@ bool imageDialog::createDescriptions()
         char *d_append= strdup(descriptor);
         char *d_id= strdup(buf);
 
+//         // SUBOPTIMAL !?!? -- DEBUG -- WURDE VORHER BEREITS GELOESCHT!
+//         descr_it= m_descriptorList.find(d_id);
+//         if(descr_it != m_descriptorList.end())
+//         {
+//             free(((*descr_it).first));
+//             free(((*descr_it).second));
+//             m_descriptorList.erase(descr_it);
+//         }
+
         m_descriptorList[d_id] = d_append;
+
+        // FREE OBSOLETE STRINGS
+        // free(d_id);
+        // free(id);
 
         // FETCH NEXT PROTEIN FROM LIST
         ai_assert(GB_has_key(gb_protein, "protein"));
@@ -2309,21 +2360,27 @@ bool imageDialog::createDescriptions()
 ****************************************************************************/
 bool imageDialog::updateSelectedGene()
 {
+    char *awar_selected_protein, *awar_gene_id, *name= NULL;
+    GBDATA *gb_genome, *gb_gene, *gb_name;
+
     // FETCH GENOME
-    GBDATA *gb_genome = find_genome(m_species);
+    gb_genome= find_genome(m_species);
     if(!gb_genome) return false;
 
     // FETCH PROTEIN AWAR CONTENT
-    char *awar_selected_protein = get_protein_AWAR();
+    awar_selected_protein= get_protein_AWAR();
+
+    // FETCH GENE IDENTIFIER
+    awar_gene_id= get_CONFIG(CONFIG_PGT_ID_GENE);
 
     // FETCH GENE
-    GBDATA *gb_gene = m_gene_GBDATA_map[awar_selected_protein];
-    char   *name    = NULL;
+    gb_gene= m_gene_GBDATA_map[awar_selected_protein];
+
     if(gb_gene)
     {
         ARB_begin_transaction();
 
-        GBDATA *gb_name= GB_entry(gb_gene, "name");
+        gb_name= GB_entry(gb_gene, "name");
         name= GB_read_string(gb_name);
 
         ARB_commit_transaction();

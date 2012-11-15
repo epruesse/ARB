@@ -1,12 +1,12 @@
 
 enum {
-    CIRCLE,
+    CIRCLE,  
     DIAMOND,
     POLYGON,
     STAR,
-    RECTANGLE,
-    RECTANGLE_ROUND,
-    STAR_SMOOTH,
+    RECTANGLE, 
+    RECTANGLE_ROUND, 
+    STAR_SMOOTH, 
     CONE_UP,
     CONE_DOWN,
     CROSS,
@@ -22,11 +22,12 @@ enum {
 
 class Texture2D {
 public:
-    GLuint texture[SHAPE_MAX];
+    GLuint texture[SHAPE_MAX];  
 
-    Texture2D();
-    virtual ~Texture2D();
+    Texture2D(void);
+    virtual ~Texture2D(void);
 
-    void LoadGLTextures();
+    // char *GetImageFile(int ImageId);
+    void LoadGLTextures(void);
 };
 

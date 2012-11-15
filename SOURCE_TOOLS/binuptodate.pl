@@ -44,8 +44,8 @@ sub uptodate() {
     if ($source =~ /^\-l/) { # handle libs specified with -l
       my $libbase = $';
       my $fulllib = first_existing((
-                                    $arbhome.'/lib/lib'.$libbase.'.a',
-                                    $arbhome.'/lib/lib'.$libbase.'.so',
+                                    $arbhome.'/LIBLINK/lib'.$libbase.'.a',
+                                    $arbhome.'/LIBLINK/lib'.$libbase.'.so',
                                    ));
 
       if (not defined $fulllib) {

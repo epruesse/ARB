@@ -1,310 +1,228 @@
-// ============================================================= //
-//                                                               //
-//   File      : CT_ntree.cxx                                    //
-//   Purpose   :                                                 //
-//                                                               //
-//   Institute of Microbiology (Technical University Munich)     //
-//   http://www.arb-home.de/                                     //
-//                                                               //
-// ============================================================= //
+/* Einen Binaerbaum erzeugen ueber einen Multitree */
 
-#include "CT_ntree.hxx"
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <arbdb.h>
 #include <arbdbt.h>
 
-// Einen Binaerbaum erzeugen ueber einen Multitree
+#include "CT_mem.hxx"
+#include "CT_part.hxx"
+#include "CT_ntree.hxx"
 
-static NT_NODE *ntree = NULL;
+NT_NODE *ntree = NULL;
+int ntree_count=0;
 
 
-const NT_NODE *ntree_get() {
-    // returns the current ntree
+/* returns the referenz of the actual NTree */
+NT_NODE *ntree_get(void)
+{
     return ntree;
 }
 
 
-static NT_NODE *new_ntnode(PART*& p) {
-    // build a new node and store the partition p in it
-    NT_NODE *n  = (NT_NODE *) getmem(sizeof(NT_NODE));
-    n->part     = p;
-    n->son_list = NULL;
+/* testfunction to print a NTree */
+void print_ntree(NT_NODE *tree)
+{
+    NSONS *nsonp;
+    if(tree == NULL) {
+        printf("tree is empty\n");
+        return;
+    }
 
-    p = NULL;
+    /* print father */
+    printf("(");
+    part_print(tree->part);
+
+    /* and sons */
+    for(nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
+        print_ntree(nsonp->node);
+    }
+
+    printf(")");
+}
+
+/* Testfunction to print the indexnumbers of the tree */
+void print_ntindex(NT_NODE *tree)
+{
+    NSONS *nsonp;
+    PART *p;
+
+    p = part_new();
+
+    /* print father */
+    printf("(");
+    for(nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
+        part_or(nsonp->node->part, p);
+    }
+    printf("%d",tree->part->p[0]);   /*calc_index(p, tree->part));*/
+
+    /* and sons */
+    for(nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
+        print_ntindex(nsonp->node);
+    }
+
+    printf(")");
+}
+
+
+/* build a new node and store the parttion p in it */
+NT_NODE *new_ntnode(PART *p)
+{
+    NT_NODE *n;
+
+    n = (NT_NODE *) getmem(sizeof(NT_NODE));
+    n->part = p;
+    n->son_list = NULL;
     return n;
 }
 
 
-static void del_tree(NT_NODE *tree) {
-    // delete the tree
-    if (tree) {
-        for (NSONS *nsonp = tree->son_list; nsonp;) {
-            NSONS *nson_next = nsonp->next;
-            del_tree(nsonp->node);
-            free(nsonp);
-            nsonp = nson_next;
-        }
-        tree->son_list = NULL;
-
-        // now is leaf
-        delete tree->part;
-        tree->part = NULL;
-        freenull(tree);
-    }
-}
-
-
-void ntree_init(const PartitionSize *registry) {
-    // Initialization of the tree
-    arb_assert(!ntree);              // forgot to call ntree_cleanup ?
-    PART *root = registry->create_root();
-    ntree      = new_ntnode(root); // Set root to completely filled partition
-}
-
-void ntree_cleanup() {
-    // Destruct old tree
-    del_tree(ntree);
-    ntree = NULL;
-}
-
-#if 0
-// test if the tree is already complete (all necessary partitions are inserted)
-static int ntree_cont(int len)
+/* delete the tree */
+void del_tree(NT_NODE *tree)
 {
-    return (ntree_count<len);
-}
-#endif
+    NSONS *nsonp, *nson_help;
 
-int ntree_count_sons(const NT_NODE *tree) {
-    int sons = 0;
-    if (tree->son_list) {
-        for (NSONS *node = tree->son_list; node; node = node->next) {
-            sons++;
-        }
+    if(!tree) return;
+
+    for(nsonp=tree->son_list; nsonp;) {
+        nson_help = nsonp->next;
+        del_tree(nsonp->node);
+        free((char *)nsonp);
+        nsonp = nson_help;
     }
-    return sons;
+    tree->son_list = NULL;
+
+    /* now is leaf  */
+    part_free((tree->part));
+    tree->part = NULL;
+    freeset(tree, NULL);
 }
 
-static void move_son(NT_NODE *f_node, NT_NODE *s_node, NSONS *nson) {
-    // Move son from parent-sonlist to new sonlist
-    // nson is pointer on element in parent-sonlist
-    // sonlist is new sonlist where to move in
 
-    // Move out of parent-sonlist
-    
-    if (nson == f_node->son_list) f_node->son_list = f_node->son_list->next;
-    if (nson->prev) nson->prev->next = nson->next;
-    if (nson->next) nson->next->prev = nson->prev;
+/* Initialisation of the tree */
+void ntree_init(void)
+{
+    PART *r;
 
-    // Move in node-sonlist
+    /* Destruct old Tree */
+    del_tree(ntree);
+    /* Set Root = max. Patition */
+    ntree = NULL;
+    r=part_root();
+    ntree=new_ntnode(r);
+
+    ntree_count = 0;
+}
+
+
+/* test if the tree is already complete (all necessary partitions are inserted) */
+int ntree_cont(int len)
+{
+    return(ntree_count<len);
+}
+
+
+/* Move son from parent-sonlist to new sonlist */
+/* nson is pointer on element in parent-sonlist */
+/* sonlist is new sonlist where to move in */
+void insert_son(NT_NODE *f_node, NT_NODE *s_node, NSONS *nson)
+{
+
+    /* Move out of parent-sonlist */
+    if(nson == f_node->son_list)
+        f_node->son_list = f_node->son_list->next;
+    if(nson->prev)
+        nson->prev->next = nson->next;
+    if(nson->next)
+        nson->next->prev = nson->prev;
+
+    /* Move in node-sonlist */
     nson->next = s_node->son_list;
     nson->prev = NULL;
-    
-    if (s_node->son_list) s_node->son_list->prev = nson;
-    s_node->son_list                             = nson;
+    if(s_node->son_list)
+        s_node->son_list->prev = nson;
+    s_node->son_list = nson;
 }
 
 
+/* Construct a multitree under that constrain that it is posssible for the tree
+   be a binaerytree in the end. To enable this it is important to follow two
+   ideas:
+   1. a son fits only under a father if the father has every bit set that the son
+   has plus it should be possible to insert as many sons as necessary to result
+   in a binaerytree
+   2. for any two brothers A,B: brotherA and brotherB == 0                       */
+int ins_ntree(NT_NODE *tree, PART *newpart)
+{
+    NSONS *nsonp;
+    NSONS *nsonp_h;
+    NT_NODE *newntnode;
 
-static int ins_ntree(NT_NODE *tree, PART*& newpart) {
-    /* Construct a multitree under the constraint,
-     * that the final tree may result in a binary tree.
-     *
-     * To ensure this, it is important to follow two ideas:
-     *
-     * 1. a son only fits below a father
-     *    - if the father has all son-bits set AND
-     *    - the father is different from the son (so it is possible to add a brother) 
-     *
-     * 2. brothers are distinct (i.e. they do not share any bits)
-     */
-
-    // Tree is leaf
-    if (!tree->son_list) {
-#if defined(DUMP_PART_INSERTION) 
-        fputs("ins_ntree part=", stdout); newpart->print();
-#endif
-
-        tree->son_list       = (NSONS *) getmem(sizeof(NSONS));
+    /* Tree is leaf */
+    if(!tree->son_list) {
+        tree->son_list = (NSONS *) getmem(sizeof(NSONS));
         tree->son_list->node = new_ntnode(newpart);
-
         return 1;
     }
 
-    // test if part fit under one son of tree -> recursion
-    for (NSONS *nsonp = tree->son_list; nsonp; nsonp=nsonp->next) {
-        if (newpart->is_son_of(nsonp->node->part)) {
-            int res = ins_ntree(nsonp->node, newpart);
-            arb_assert(contradicted(newpart, res));
-            return res;
+    /* test if part fit under one son of tree -> recursion */
+    for(nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
+        if(son(newpart, nsonp->node->part)) {
+            return ins_ntree(nsonp->node, newpart);
         }
     }
 
-    // If partition is not a son maybe it is a brother
-    // If it is neither brother nor son -> don't fit here
-    for (NSONS *nsonp = tree->son_list; nsonp; nsonp=nsonp->next) {
-        if (nsonp->node->part->overlaps_with(newpart)) {
-            if (!nsonp->node->part->is_son_of(newpart)) {
-                arb_assert(newpart);
+    /* If partition is not a son maybe it is a brother */
+    /* If it is neither brother nor son -> don't fit here */
+    for(nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
+        if(!brothers(nsonp->node->part, newpart)) {
+            if(!son(nsonp->node->part, newpart)) {
                 return 0;
             }
-            // accept if nsonp is son of newpart (will be pulled down below) 
         }
     }
 
-#if defined(DUMP_PART_INSERTION)
-        fputs("ins_ntree part=", stdout); newpart->print();
-#endif
+    /* Okay, insert part here ... */
+    newntnode = new_ntnode(newpart);
 
-    // Okay, insert part here ...
-    NT_NODE *newntnode = new_ntnode(newpart);
+    /* Move sons from parent-sonlist in nt_node-sonlist */
+    nsonp = tree->son_list;
+    while(nsonp) {
 
-    // Move sons from parent-sonlist into the new sons sonlist
-    {
-        NSONS *nsonp = tree->son_list;
-        while (nsonp) {
-            NSONS *nsonp_next = nsonp->next;
-            if (nsonp->node->part->is_son_of(newntnode->part)) {
-                move_son(tree, newntnode, nsonp);
-            }
-            nsonp = nsonp_next;
+        nsonp_h = nsonp->next;
+        if(son(nsonp->node->part, newpart)) {
+            insert_son(tree, newntnode, nsonp);
         }
+        nsonp = nsonp_h;
     }
 
-    // insert nsons-elem in son-list of father
-    {
-        NSONS *new_son = (NSONS *) getmem(sizeof(NSONS));
-    
-        new_son->node = newntnode;
-        new_son->prev = NULL;
-        new_son->next = tree->son_list;
-
-        if (tree->son_list) tree->son_list->prev = new_son;
-        tree->son_list                           = new_son;
-    }
-
-    arb_assert(!newpart);
-
+    /* insert nsons-elem in son-list of father */
+    nsonp = (NSONS *) getmem(sizeof(NSONS));
+    nsonp->node = newntnode;
+    nsonp->prev = NULL;
+    nsonp->next = tree->son_list;
+    if(tree->son_list)
+        tree->son_list->prev = nsonp;
+    tree->son_list = nsonp;
     return 1;
 }
 
 
 
-void insert_ntree(PART*& part) {
-    /* Insert a partition in the NTree.
-     * 
-     * Tries both representations, normal and inverse partition,  which
-     * represent the two subtrees at both sides of one edge.
-     *
-     * If neither can be inserted, the partition gets dropped.
-     */
-
-    arb_assert(part->is_valid());
-
-    bool firstCall = ntree->son_list == NULL;
-    if (firstCall) {
-        part->set_len(part->get_len()/2); // insert as root-edge -> distribute length
-
-        PART *inverse = part->clone();
-        inverse->invert();
-
-        ASSERT_RESULT(bool, true, ins_ntree(ntree, part));
-        ASSERT_RESULT(bool, true, ins_ntree(ntree, inverse));
-
-        arb_assert(!inverse);
-    }
-    else {
-        if (!ins_ntree(ntree, part)) {
-            part->invert();
-            if (!ins_ntree(ntree, part)) {
-                delete part; // drop non-fitting partition
-                part = NULL;
-            }
+/* Insert a partition in the NTree. To do this I try two insert it in both
+   possible representations. ins_ntree do the hole work. If it fit in none
+   of them I delete the partition.
+   attention: The parttion is detruced afterwards.
+   The tree is never empty, because it is initalised with a root */
+void insert_ntree(PART *part)
+{
+    ntree_count++;
+    if(!ins_ntree(ntree, part)) {
+        part_invert(part);
+        if(!ins_ntree(ntree, part)) {
+            ntree_count--;
+            part_free(part);
         }
     }
-    arb_assert(!part);
 }
-
-// --------------------------------------------------------------------------------
-
-#if defined(NTREE_DEBUG_FUNCTIONS)
-
-inline void do_indent(int indent) {
-    for (int i = 0; i<indent; ++i) fputc(' ', stdout);
-}
-
-void print_ntree(NT_NODE *tree, int indent) {
-    // testfunction to print a NTree
-
-    NSONS *nsonp;
-    if (tree == NULL) {
-        do_indent(indent); 
-        fputs("tree is empty\n", stdout);
-        return;
-    }
-
-    // print father
-    do_indent(indent);
-    fputs("(\n", stdout);
-
-    indent++;
-
-    do_indent(indent);
-    tree->part->print();
-
-    // and sons
-    for (nsonp=tree->son_list; nsonp; nsonp = nsonp->next) {
-        print_ntree(nsonp->node, indent);
-    }
-
-    indent--;
-    
-    do_indent(indent);
-    fputs(")\n", stdout);
-}
-
-bool is_well_formed(const NT_NODE *tree) {
-    // checks whether
-    // - tree has sons
-    // - all sons are part of father 
-    // - all sons are distinct
-    // - father is sum of sons
-
-    int sons = ntree_count_sons(tree);
-
-    if (!sons) return tree->part->get_members() == 1; // leafs should contain single species
-
-    bool well_formed = true;
-
-    arb_assert(tree->son_list);
-    
-    PART *pmerge = 0;
-    for (NSONS *nson = tree->son_list; nson; nson = nson->next) {
-        PART *pson = nson->node->part;
-
-        if (!pson->is_son_of(tree->part)) {
-            well_formed = false;
-        }
-        if (pmerge) {
-            if (pson->overlaps_with(pmerge)) {
-                well_formed  = false;
-            }
-            pmerge->add_from(pson);
-        }
-        else {
-            pmerge = pson->clone();
-        }
-        if (!is_well_formed(nson->node)) {
-            well_formed = false;
-            is_well_formed(nson->node);
-        }
-    }
-    arb_assert(pmerge);
-    if (tree->part->differs(pmerge)) {
-        well_formed = false;
-    }
-    delete pmerge;
-
-    return well_formed;
-}
-
-#endif
-

@@ -1,8 +1,24 @@
+#ifndef __RNS_H
 #include "rns.h"
+#endif
+#ifndef __SIMCFG_H
+#include "simcfg.h"
+#endif
+#ifndef __TIME_H
 #include <time.h>
+#endif
+#ifndef __STDLIB_H
 #include <stdlib.h>
+#endif
+#ifndef __BASE_H
+#include "base.h"
+#endif
 
-int ARB_main(int argc, const char *argv[]) {
+/* --------------------------------------------------------------------------- */
+/*      int main(int argc, str argv[]) */
+/* ------------------------------------------------------ 14.05.95 11.14 ----- */
+int main(int argc, str argv[])
+{
     RNS origin;
 
     if (argc!=4) error("Usage: arb_treegen <cfg> <tree> <seq>\n"

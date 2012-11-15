@@ -21,7 +21,7 @@ $(BINARY):  $(OBJECT)
 	$(ACC) $(subcflags) -o $@ $(OBJECT)
 
 .c.o:
-	$(ACC) $(subcflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(ACC) $(subcflags) -c $< $(AINCLUDES)
 
 clean:
 	rm -f $(OBJECT) $(BINARY) 

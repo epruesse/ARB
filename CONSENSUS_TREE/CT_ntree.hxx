@@ -1,48 +1,23 @@
-// ============================================================= //
-//                                                               //
-//   File      : CT_ntree.hxx                                    //
-//   Purpose   :                                                 //
-//                                                               //
-//   Institute of Microbiology (Technical University Munich)     //
-//   http://www.arb-home.de/                                     //
-//                                                               //
-// ============================================================= //
+struct nsons;
 
-#ifndef CT_NTREE_HXX
-#define CT_NTREE_HXX
-
-#ifndef CT_PART_HXX
-#include "CT_part.hxx"
-#endif
-
-struct NSONS;
-
-struct NT_NODE {
-    PART  *part;
-    NSONS *son_list;
-};
+typedef struct nt_node {
+    PART         *part;
+    struct nsons *son_list;
+} NT_NODE;
 
 
-struct NSONS {
+typedef struct nsons {
     NT_NODE *node;
-    NSONS   *prev, *next;
-};
+    nsons   *prev, *next;
+} NSONS;
 
 
-void ntree_init(const PartitionSize *size);
-void ntree_cleanup();
 
-int ntree_count_sons(const NT_NODE *tree);
-
-void insert_ntree(PART*& part);
-const NT_NODE *ntree_get();
-
-#if defined(NTREE_DEBUG_FUNCTIONS)
-void print_ntree(NT_NODE *tree, int indent);
-bool is_well_formed(const NT_NODE *tree);
-#endif
-
-
-#else
-#error CT_ntree.hxx included twice
-#endif // CT_NTREE_HXX
+NT_NODE *new_ntnode(PART *p);
+void     del_tree(NT_NODE *tree);
+void     ntree_init(void);
+int      ntree_cont(int len);
+void     insert_ntree(PART *part);
+NT_NODE *ntree_get(void);
+void     print_ntindex(NT_NODE *tree);
+void     print_ntree(NT_NODE *tree);

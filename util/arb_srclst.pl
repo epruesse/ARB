@@ -10,104 +10,83 @@ my $ignore_unknown = 0;
 # skipped_directories and files inside are never examined:
 
 my @skipped_directories = (
-                           qr/\/.+\/bin$/o,
-                           qr/\/HELP_SOURCE\/Xml$/o,
-                           qr/\/ignore\./o,
-                           qr/\/PERL2ARB\/blib$/o,
-                           qr/\/HEADERLIBS\/[^\/]+/o,
-                           qr/\/UNIT_TESTER\/logs$/o,
-                           qr/\/UNIT_TESTER\/tests$/o,
-                           qr/^\.\/ARB_SOURCE_DOC/o,
-                           qr/^\.\/dep_graphs/o,
-                           qr/^\.\/INCLUDE$/o,
-                           qr/^\.\/lib\/help$/o,
-                           qr/^\.\/lib\/help_html$/o,
-                           qr/^\.\/lib\/pts$/o,
-                           qr/^\.\/patches.arb$/o,
-                           qr/^\.\/PERL5$/o,
-                           qr/_COM\/DUMP$/o,
+                           qr/_GEN$/o,
                            qr/_COM\/GEN[CH]$/o,
                            qr/_COM\/O$/o,
-                           qr/_GEN$/o,
-                           # needed by ralf:
-                           qr/^\.\/test_arb_make_targets_logs/o,
+                           qr/\/.+\/bin$/o,
+                           qr/\/HELP_SOURCE\/Xml$/o,
+                           qr/\/PERL2ARB\/blib$/o,
+                           qr/^\.\/ARB_SOURCE_DOC/o,
+                           qr/^\.\/INCLUDE$/o,
+                           qr/^\.\/PERL5$/o,
+                           qr/^\.\/lib\/pts$/o,
+                           qr/^\.\/lib\/help$/o,
+                           qr/^\.\/lib\/help_html$/o,
+                           qr/^\.\/ARB_SOURCE_DOC/o,
+                           qr/^\.\/MAKEBIN$/o,
+                           qr/^\.\/LIBLINK$/o,
+                           qr/\/ignore\./o,
                           );
 
 # first used/skipped match wins (exception see @3 below)
 
 my %used_files = map { $_ => 1; } (
                                    '!BRANCH_STATE',
-                                   'AUTHORS',
-                                   'COPYING',
                                    'demo.arb',
-                                   'Doxyfile',
                                    'export2sub',
+                                   'Doxyfile',
                                    'Makefile',
                                    'Makefile.org',
-                                   'Makefile.setup.include',
-                                   'Makefile.setup.template',
-                                   'Makefile.suite',
-                                   'Makefile.test',
-                                   'needs_libs',
+                                   'AUTHORS',
+                                   'COPYING',
                                   );
 
 my %skipped_files = map { $_ => 1; } (
-                                      '.build.lst',
                                       '.cvsignore',
+                                      '.build.lst',
                                       '.depends',
-                                      'ARB_GDEmenus',
-                                      'ChangeLog',
                                       'config.makefile',
+                                      'ChangeLog',
+                                      'ARB_GDEmenus',
                                       'helpfiles.lst',
-                                      'last.success',
-                                      'Makefile.setup.local',
-                                      'makeloc.here',
-                                      'makeloc.here',
                                       'nt_date.h',
-                                      'postcompile.sav',
                                       'TAGS',
                                      );
 
 my %used_extensions = map { $_ => 1; } (
                                         'c', 'cpp', 'cxx',
                                         'h', 'hpp', 'hxx',
-
-                                        'aisc', 'pa',
-                                        'bitmap',
-                                        'dtd', 'xsl',
                                         'f',
-                                        'footer',
-                                        'head', 'header',
-                                        'i',  # swig input
-                                        'inc',
-                                        'java', 'manifest',
-                                        'makefile',
                                         'pl', 'pm', 'PL', 'cgi',
-                                        'py',
-                                        'script',
+                                        'java', 'manifest',
+                                        'inc',
                                         'sh',
-                                        'source', 'menu',
+                                        'aisc', 'pa',
                                         'template', 'default',
+                                        'script',
                                         'txt', 'doc', 'ps', 'pdf',
+                                        'bitmap',
+                                        'source', 'menu',
+                                        'head', 'header',
+                                        'footer',
+                                        'dtd', 'xsl',
+                                        'makefile',
                                        );
 
 my %skipped_extensions = map { $_ => 1; } (
+                                           'o',
+                                           'so',
                                            'a',
-                                           'bak',
-                                           'class',
-                                           'gcno',
                                            'genmenu',
+                                           'class',
                                            'jar',
-                                           'last_gcc',
+                                           'stamp',
                                            'list',
                                            'log',
-                                           'o',
-                                           'old',
-                                           'patch',
-                                           'rej',
-                                           'so',
-                                           'stamp',
                                            'swp',
+                                           'bak',
+                                           'old',
+                                           'last_gcc',
                                            'yml', 'json', # perl2arb
                                           );
 
@@ -117,66 +96,52 @@ my %skipped_extensions = map { $_ => 1; } (
 
 my @used_when_matches = (
                          qr/^arb_.*\.txt$/o,
-                         qr/disclaimer/io,
                          qr/license/io,
-                         qr/needs_libs\..*/io,
+                         qr/disclaimer/io,
                          qr/readme$/io,
                          qr/unused.*source.*\.tgz$/io,
                         );
 
 my @skipped_when_matches = (
-                            qr/.*~$/o, # backups
-                            qr/\#.*\#$/o,
-                            qr/\.\#.*$/o,
-                            qr/^arbsrc.*\.tgz$/o,
                             qr/^arbsrc\.lst$/o,
                             qr/^arbsrc\.lst\.tmp$/o,
+                            qr/^arbsrc.*\.tgz$/o,
+                            qr/\#.*\#$/o,
+                            qr/\.\#.*$/o,
+                            qr/.*~$/o, # backups
                            );
 
 my @used_when_matchesFull = (
-                             qr/\/AISC_COM\/AISC\/magic.lst$/o,
-                             qr/\/CLUSTALW\/.*$/o,
                              qr/\/EISPACK\/rg\.html$/o,
+                             qr/\/CLUSTALW\/.*$/o,
+                             qr/\/HGL_SRC\/plot\.icon$/o,
+                             qr/\/PHYLIP\/doc\//o,
                              qr/\/GDE\/.*\.html$/o,
+                             qr/GDE\/.*\/Makefile\.[^\/]+$/io,
+                             qr/\/GDEHELP\/GDE.*/o,
+                             qr/\/GDEHELP\/Makefile\.helpfiles/o,
                              qr/\/GDEHELP\/DATA_FILES/o,
                              qr/\/GDEHELP\/FASTA/o,
-                             qr/\/GDEHELP\/GDE.*/o,
                              qr/\/GDEHELP\/HELP_PLAIN/o,
                              qr/\/GDEHELP\/HELP_WRITTEN/o,
-                             qr/\/GDEHELP\/Makefile\.helpfiles/o,
                              qr/\/HEADERLIBS\/.*COPYING$/o,
                              qr/\/HEADERLIBS\/.*\.tgz$/o,
                              qr/\/HELP_SOURCE\/.*\.gif$/o,
-                             qr/\/HELP_SOURCE\/oldhelp\/.*\.(ps|pdf)\.gz$/o,
                              qr/\/HELP_SOURCE\/oldhelp\/.*\.hlp$/o,
-                             qr/\/HGL_SRC\/plot\.icon$/o,
+                             qr/\/HELP_SOURCE\/oldhelp\/.*\.(ps|pdf)\.gz$/o,
+                             qr/\/TREEPUZZLE\/.*\.gif$/o,
                              qr/\/PERL2ARB\/.*\.html$/o,
-                             qr/\/PERL2ARB\/ARB\.default\.xs$/o,
-                             qr/\/PERL2ARB\/Makefile.main$/o,
                              qr/\/PERL2ARB\/typemap$/o,
-                             qr/\/PHYLIP\/doc\//o,
+                             qr/\/PERL2ARB\/Makefile.main$/o,
                              qr/\/PROBE_SERVER\/.*\.conf$/o,
-                             qr/\/READSEQ\/.*\.help$/o,
                              qr/\/READSEQ\/Formats$/o,
+                             qr/\/READSEQ\/.*\.help$/o,
                              qr/\/SH\/[^\/\.]*$/o,
                              qr/\/SOURCE_TOOLS\//o,
-                             qr/\/TREEPUZZLE\/.*\.gif$/o,
-                             qr/\/UNIT_TESTER\/run\/.*\.a00$/o,
-                             qr/\/UNIT_TESTER\/run\/.*\.arb$/o,
-                             qr/\/UNIT_TESTER\/run\/.*\.amc$/o,
-                             qr/\/UNIT_TESTER\/run\/.*\.expected$/o,
-                             qr/\/UNIT_TESTER\/run\/.*\.fig$/o,
-                             qr/\/UNIT_TESTER\/run\/.*\.in$/o,
-                             qr/\/UNIT_TESTER\/run\/.*\.inp$/o,
-                             qr/\/UNIT_TESTER\/run\/.*\.input$/o,
-                             qr/\/UNIT_TESTER\/run\/.*\.out$/o,
-                             qr/\/UNIT_TESTER\/run\/.*\.tree$/o,
-                             qr/\/UNIT_TESTER\/run\/impexp\/.*\.exported$/o,
-                             qr/\/UNIT_TESTER\/valgrind\/arb_valgrind_logged$/o,
                              qr/^\.\/etc\//o,
-                             qr/^\.\/lib\/arb_default\/.*\.arb$/o,
                              qr/^\.\/lib\/arb_tcp_org\.dat$/o,
                              qr/^\.\/lib\/config\.[^\.]+$/io,
+                             qr/^\.\/lib\/arb_default\/.*\.arb$/o,
                              qr/^\.\/lib\/export\/.*\.eft$/o,
                              qr/^\.\/lib\/import\/.*\.ift2?$/o,
                              qr/^\.\/lib\/inputMasks\/.*\.mask$/o,
@@ -184,42 +149,36 @@ my @used_when_matchesFull = (
                              qr/^\.\/lib\/nas\/names\.dat\.template$/o,
                              qr/^\.\/lib\/pictures\/.*\.(fig|vfont)$/o,
                              qr/^\.\/lib\/pixmaps\/.*\.xpm$/o,
-                             qr/^\.\/lib\/protein_2nd_structure\/.*\.dat$/o,
                              qr/^\.\/lib\/rna3d\/.*\.(pdb|data)$/o,
                              qr/^\.\/lib\/rna3d\/images\/.*\.png$/o,
                              qr/^\.\/lib\/sellists\/.*\.sellst$/o,
+                             qr/^\.\/lib\/protein_2nd_structure\/.*\.dat$/o,
                              qr/^\.\/lib\/submit\//o,
                              qr/^\.\/util\/arb_.*$/o,
                              qr/^\.\/util\/config\..*$/o,
-                             qr/GDE\/.*\/Makefile\.[^\/]+$/io,
                             );
 
 # skipped_when_matchesFull and forced_when_matchesFull are always tested! (@3)
 
 my @skipped_when_matchesFull = (
+                                qr/date\.xsl$/o,
                                 qr/\/genhelp\/.*\.hlp$/o,
-                                qr/\/lib\/addlibs\/(lib.*\.so\..*)$/o,
-                                qr/^\.\/arb.*\.tgz$/o,
                                 qr/^\.\/GDE\/CORE\/functions.h$/o,
-                                qr/^\.\/lib\/ARB\.pm$/o,
-                                qr/^\.\/lib\/arb_tcp\.dat$/o,
-                                qr/^\.\/lib\/nas\/names.*\.dat$/o,
                                 qr/^\.\/PERL2ARB\/.*\.h$/o,
-                                qr/^\.\/PERL2ARB\/ARB\.bs$/o,
-                                qr/^\.\/PERL2ARB\/ARB\.c$/o,
                                 qr/^\.\/PERL2ARB\/ARB\.xs$/o,
+                                qr/^\.\/PERL2ARB\/ARB\.c$/o,
+                                qr/^\.\/PERL2ARB\/ARB\.bs$/o,
+                                qr/^\.\/PERL2ARB\/pm_to_blib$/o,
                                 qr/^\.\/PERL2ARB\/Makefile$/o,
                                 qr/^\.\/PERL2ARB\/Makefile.PL$/o,
                                 qr/^\.\/PERL2ARB\/perlmain.c$/o,
-                                qr/^\.\/PERL2ARB\/pm_to_blib$/o,
-                                qr/^\.\/SOURCE_TOOLS\/valgrind2grep\.lst$/o,
-                                qr/^\.\/SOURCE_TOOLS\/stamp\./o,
                                 qr/^\.\/TEMPLATES\/arb_build\.h$/o,
-                                qr/^\.\/UNIT_TESTER\/run\/TEST_g?pt\.arb$/o,
-                                qr/^\.\/UNIT_TESTER\/run\/.*\.ARM$/o,
-                                qr/^\.\/UNIT_TESTER\/run\/.*\.ARF$/o,
-                                qr/^\.\/UNIT_TESTER\/Makefile\.setup\.local\.last$/o,
-                                qr/date\.xsl$/o,
+                                qr/^\.\/lib\/ARB\.pm$/o,
+                                qr/^\.\/lib\/nas\/names.*\.dat$/o,
+                                qr/^\.\/lib\/arb_tcp\.dat$/o,
+                                qr/^\.\/arb.*\.tgz$/o,
+                                qr/^\.\/SOURCE_TOOLS\/valgrind2grep\.lst$/o,
+                                qr/\/lib\/addlibs\/(lib.*\.so\..*)$/o,
                                );
 
 my @forced_when_matchesFull = (
@@ -342,83 +301,44 @@ sub useFile($$) {
 
 # ------------------------------------------------------------
 
-my $VC_FILE    = 1;
-my $VC_DIR     = 2;
-my $VC_UNKNOWN = 3; # in SVN, but unknown whether dir or file
-
-my $svn_entries_read = 0;
-my %all_svn_entries = ();
-
 sub getSVNEntries($\%) {
   my ($dir,$SVN_r) = @_;
 
-  if ($svn_entries_read==0) { # first call
-    my $svnentries = $dir.'/.svn/entries';
-    if (not -f $svnentries) {
-      return 0;
-    }
+  my $svnentries = $dir.'/.svn/entries';
+  if (-f $svnentries) {
+    open(SVN,'<'.$svnentries) || die "can't read '$svnentries' (Reason: $!)";
+    # print "reading $svnentries\n";
 
-    my $cmd = "svn status -v $dir";
-    open(SVNSTATUS, "$cmd|") || die "failed to execute '$cmd' (Reason: $!)";
+    my $line;
+  LINE: while (defined($line=<SVN>)) {
+      if (length($line)==2 and ord($line)==12) { # entrymarker (^L)
+        my $name=<SVN>;
+        my $type=<SVN>;
 
-    eval {
-      my $reg_status_line = qr/^(.*)\s+[0-9]+\s+[0-9]+\s+[^\s]+\s+([^\s]+)$/;
+        defined $name or last LINE;
+        defined $type or die "Expected two or no lines after ^L";
 
-      my $line;
-      while (defined($line=<SVNSTATUS>)) {
-        chomp($line);
-        if ($line =~ $reg_status_line) {
-          my ($flags,$name) = ($1,$2);
-          if (-f $name) {
-            $all_svn_entries{$name} = $VC_FILE;
-          }
-          elsif (-d $name) {
-            $all_svn_entries{$name} = $VC_DIR;
-          }
-          else {
-            $all_svn_entries{$name} = $VC_UNKNOWN;
-          }
+        chomp($name);
+        chomp($type);
+
+        if ($type eq 'file') {
+          $$SVN_r{$name} = 1;
+        }
+        elsif ($type eq 'dir') {
+          $$SVN_r{$name} = 2;
         }
         else {
-          if ($line =~ /^?/) {
-            ; # silently ignore unknown files
-          }
-          else {
-            die "Cant parse line '$line'";
-          }
+          die "Unknown type '$type' for '$name' in $svnentries";
         }
-      }
-    };
-    if ($@) {
-      die "Failed to read svn status: $@";
-    }
-
-    close(SVNSTATUS);
-    $svn_entries_read = 1;
-  }
-
-  if ($dir eq '.') {
-    foreach (keys %all_svn_entries) {
-      if (not /\//) { # root entry
-        $$SVN_r{$_} = $all_svn_entries{$_};
+        # print "name='$name' type='$type'\n";
       }
     }
-  }
-  else {
-    if (not $dir =~ /^\.\//) { die "expected '$dir' to start with './'"; }
-    my $sdir = $';
-    my $reg_matchdir = qr/^$sdir\//;
-    foreach (keys %all_svn_entries) {
-      if ($_ =~ $reg_matchdir) {
-        my $rest = $';
-        if (not $rest =~ /\//) { # in $dir (not below)
-          $$SVN_r{$rest} = $all_svn_entries{$_};
-        }
-      }
-    }
-  }
 
-  return 1;
+    close(SVN);
+    return 1;
+  }
+  print "No such file: '$svnentries'\n";
+  return 0;
 }
 
 sub getCVSEntries($\%) {
@@ -431,10 +351,10 @@ sub getCVSEntries($\%) {
       foreach (<CVS>) {
         chomp;
         if (/^D\/([^\/]+)\//o) { # directory
-          $$CVS_r{$1} = $VC_DIR;
+          $$CVS_r{$1} = 2;
         }
         elsif (/^\/([^\/]+)\//o) { # file
-          $$CVS_r{$1} = $VC_FILE;
+          $$CVS_r{$1} = 1;
         }
         elsif (/^D$/o) {
           ;
@@ -509,49 +429,39 @@ sub dumpFiles($);
 sub dumpFiles($) {
   my ($dir) = @_;
 
-  eval {
-    my @subdirs;
-    my @files;
+  my @subdirs;
+  my @files;
 
-    my %CVS;
-    getVCEntries($dir,%CVS);
+  my %CVS;
+  getVCEntries($dir,%CVS);
 
-    opendir(DIR,$dir) || die "can't read directory '$dir' (Reason: $!)";
-    foreach (readdir(DIR)) {
-      if ($_ ne '.' and $_ ne '..') {
-        my $full = $dir.'/'.$_;
-        if (not -l $full) {
-          if (-d $full) {
-            if (useDir($full)==1) {
-              expectVCmember($full,$_,%CVS);
-              push @subdirs, $full;
-            }
-            else { unexpectVCmember($full,$_,%CVS); }
+  opendir(DIR,$dir) || die "can't read directory '$dir' (Reason: $!)";
+  foreach (readdir(DIR)) {
+    if ($_ ne '.' and $_ ne '..') {
+      my $full = $dir.'/'.$_;
+      if (not -l $full) {
+        if (-d $full) {
+          if (useDir($full)==1) {
+            expectVCmember($full,$_,%CVS);
+            push @subdirs, $full;
           }
-          elsif (-f $full) {
-            if (useFile($dir,$_)==1) {
-              expectVCmember($full,$_,%CVS);
-              push @files, $full;
-            }
-            else { unexpectVCmember($full,$_,%CVS); }
-          }
-          else { die "Unknown: '$full'"; }
+          else { unexpectVCmember($full,$_,%CVS); }
         }
+        elsif (-f $full) {
+          if (useFile($dir,$_)==1) {
+            expectVCmember($full,$_,%CVS);
+            push @files, $full;
+          }
+          else { unexpectVCmember($full,$_,%CVS); }
+        }
+        else { die "Unknown: '$full'"; }
       }
     }
-    closedir(DIR);
-
-    foreach (@files) { print $_."\n"; }
-    foreach (@subdirs) { dumpFiles($_); }
-  };
-  if ($@) {
-    my $err = $@;
-    if ($err =~ /at\s(.*\.pl)\sline\s([0-9]+)/) {
-      $err = "$1:$2: Error: $`";
-    }
-    $err =~ s/\n//g;
-    die "$err\n";
   }
+  closedir(DIR);
+
+  foreach (@files) { print $_."\n"; }
+  foreach (@subdirs) { dumpFiles($_); }
 }
 
 my $args = scalar(@ARGV);

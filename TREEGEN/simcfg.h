@@ -1,18 +1,18 @@
-#ifndef SIMCFG_H
-#define SIMCFG_H
+#ifndef __SIMCFG_H
+#define __SIMCFG_H
 
-#ifndef DEFINES_H
+#ifndef __DEFINES_H
 #include "defines.h"
 #endif
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif    
 
     void readSimCfg (cstr fname);
 
 #ifdef __cplusplus
 }
-#endif
+#endif    
 
 #endif

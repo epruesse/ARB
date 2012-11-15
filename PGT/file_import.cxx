@@ -32,114 +32,28 @@ using namespace std;
 
 
 /****************************************************************************
-*  CREATE AN IMPORT TABLE
+*  IMPORT FUNCTION FOR A CSV DATA FILE (OPENS THE FILE AND RETURNS THE DATA)
 ****************************************************************************/
-static importTable *createImportTable(int rows, int columns)
-{
-    importTable  *table  = (importTable *)malloc(sizeof(importTable));
-    char        **cells  = (char **)malloc(rows * columns * sizeof(char *));
-    char        **header = (char **)malloc(columns * sizeof(char *));
-
-    if (table && cells && header) {
-        // INIT ALL CELL VALUES WITH NULL
-        int i;
-        for(i= 0; i < (rows * columns); i++) cells[i]= NULL;
-        for(i= 0; i < columns; i++) header[i]= NULL;
-
-        // ALLOCATE MEMORY FOR THE COLUMN TYPE DATA
-        int *columnType= (int *)malloc(columns * sizeof(int));
-        if(!columnType) return NULL;
-
-        // ENTER VALID PREDEFINED VALUES (SHOULD BE CHANGED LATER)
-        table->rows= rows;
-        table->columns= columns;
-        table->cell= cells;
-        table->header= header;
-        table->hasHeader= false;
-        table->columnType= columnType;
-    }
-    else {
-        free(table); table = NULL;
-        free(cells);
-        free(header);
-    }
-
-    // RETURN POINTER TO TABLE
-    return table;
-}
-
-/****************************************************************************
-*  IDENTIFY ENTRY TYPE
-*  THIS FUNCTION TRIES TO IDENTIFY THE TYPE OF AN ENTRY (STRING, NUMBER)
-****************************************************************************/
-static int identifyType(char *entry)
-{
-    bool has_dot= false;
-    bool has_numeric= true;
-    char *ptr= entry;
-
-    if(!ptr || (*ptr == 0)) return DATATYPE_UNKNOWN;
-
-    while(*ptr)
-    {
-        if((*ptr == '.') || (*ptr == ',')) has_dot= true;
-        else if((*ptr < '0') || (*ptr > '9')) has_numeric= false;
-
-        ptr++;
-    }
-
-    if(has_dot && has_numeric) return DATATYPE_FLOAT;
-    else if(has_numeric) return DATATYPE_INT;
-
-    return DATATYPE_STRING;
-}
-
-
-/****************************************************************************
-*  TRY TO IDENTIFY THE COLUMN TYPE USING THEIR ENTRIES
-****************************************************************************/
-static void identifyColumns(importTable *table)
-{
-    // FUNCTION VARIABLES
-    int rows= table->rows;
-    int columns= table->columns;
-    char **cell= table->cell;
-    int *columnType= table->columnType;
-    int c, r, colType, cellType;
-
-    // TRAVERSE EVERY COLUMN
-    for(c= 0; c < columns; c++)
-    {
-        colType= DATATYPE_UNKNOWN;
-
-        // VIEW ALL ENTRIES AND IDENTIFY THE BEST FITTING TYPE
-        for(r= 1; r < rows; r++)
-        {
-            // GET THE CELLS DATATYPE
-            cellType= identifyType(cell[(r * columns) + c]);
-
-            // CHANGE COLUMN TYPE IF A HIGHER DATATYPE IS FOUND
-            if(cellType > colType) colType= cellType;
-        }
-
-        columnType[c]= colType;
-    }
-}
-
-/****************************************************************************
- *  IMPORT FUNCTION FOR A CSV DATA FILE (OPENS THE FILE AND RETURNS THE DATA)
- ****************************************************************************/
 importTable *fileopenCSV(char *filename, int delimiter)
 {
     // DEFINE VARIABLES
-    int   rows          = 0;
-    int   total_columns = 0;
+    int inconsistencies= 0;
+    int rows=            0;
+    int total_columns=   0;
+    int local_columns=   0;
+    int cell_index;
+    int cell_size;
+    char **cells;
     char *cell;
     char *start_ptr;
     char *end_ptr;
 
     // ALLOCATE MEM FOR IMPORTTABLE STRUCTURE
     importTable *table= NULL;
+
+//     // ALLOCATE MEM FOR IMPORTTABLE STRUCTURE
+//     importTable *table= (importTable *)malloc(sizeof(importTable));
+//     if(!table) return NULL;
 
     // ALLOCATE MEMORY FOR READ BUFFER
     char *buffer= (char *)malloc(sizeof(char) * 10241);
@@ -153,12 +67,11 @@ importTable *fileopenCSV(char *filename, int delimiter)
     {
         // PASS 1: GET CSV TABLE SIZE AND FIND INCONSISTENCIES
 
-        int inconsistencies = 0;
         while(iS.getline(buffer, 10240))
         {
             rows++;
-            int local_columns = 0;
-            start_ptr         = buffer;
+            local_columns= 0;
+            start_ptr= buffer;
 
             if(*start_ptr)
             {
@@ -185,7 +98,7 @@ importTable *fileopenCSV(char *filename, int delimiter)
 
         }
 
-        // CHECK IF INCONSISTENCIES HAVE OCCURRED AND ABORT IF NECESSARY
+        // CHECK IF INCONSISTENCIES HAVE OCCURED AND ABORT IF NECESSARY
         if(inconsistencies)
         {
             iS.close();
@@ -207,8 +120,21 @@ importTable *fileopenCSV(char *filename, int delimiter)
         table= createImportTable(rows, total_columns);
         if(!table) return NULL;
 
-        char **cells      = table->cell;
-        int    cell_index = 0;
+//         cells= (char **)malloc(rows * total_columns * sizeof(char *));
+//         if(!cells)
+//         {
+//             iS.close();
+//             free(table);
+//             free(buffer);
+//             printf("CSV-IMPORTER: unable to allocate memory for the table data.\n");
+//             return NULL;
+//         }
+
+        cells= table->cell;
+//         table->rows= rows;
+//         table->columns= total_columns;
+
+        cell_index= 0;
 
         while(iS.getline(buffer, 10240))
         {
@@ -223,8 +149,8 @@ importTable *fileopenCSV(char *filename, int delimiter)
                     *(end_ptr-1)= 0;
                 }
 
-                int cell_size = (int)(end_ptr - start_ptr) + 1;
-                cell          = (char *)malloc(cell_size * sizeof(char));
+                cell_size= (int)(end_ptr - start_ptr) + 1;
+                cell= (char *)malloc(cell_size * sizeof(char));
 
                 *end_ptr= 0;
                 strncpy(cell, start_ptr, cell_size);
@@ -234,18 +160,20 @@ importTable *fileopenCSV(char *filename, int delimiter)
 
                 start_ptr= end_ptr + 1;
             }
+            // if(*start_ptr)
+            //{
+                end_ptr= start_ptr;
+                while((*end_ptr) && (*end_ptr != 0x0D) && (*end_ptr != 0x0A)) end_ptr++;
 
-            end_ptr = start_ptr;
-            while((*end_ptr) && (*end_ptr != 0x0D) && (*end_ptr != 0x0A)) end_ptr++;
+                cell_size= (int)(end_ptr - start_ptr) + 1;
+                cell= (char *)malloc(cell_size * sizeof(char));
 
-            int cell_size = (int)(end_ptr - start_ptr) + 1;
-            cell          = (char *)malloc(cell_size * sizeof(char));
+                *end_ptr= 0;
+                strncpy(cell, start_ptr, cell_size);
 
-            *end_ptr= 0;
-            strncpy(cell, start_ptr, cell_size);
-
-            cells[cell_index]= cell;
-            cell_index++;
+                cells[cell_index]= cell;
+                cell_index++;
+            //}
         }
     }
     else
@@ -282,6 +210,12 @@ int importCSV(importTable *table, importData *data)
     int rows= table->rows;
     int columns= table->columns;
 
+//     GBDATA *gb_main= get_gbData();
+//     GBDATA *gb_prot, *gb_exp, *gb_prot_data, *gb_prot_name;
+//     GBDATA *gb_protein, *gb_protein_entry;
+//     char *head, *content;
+//     int rows= table->rows;
+//     int columns= table->columns;
     // CHECK IF AN ARB CONNECTION IS GIVEN
     if(!gb_main)
     {
@@ -313,7 +247,7 @@ int importCSV(importTable *table, importData *data)
     ARB_begin_transaction();
 
     // ENTER EXPERIMENT DATA ENTRY
-    // IF THERE IS NO PROTEOME_DATA ENTRY, CREATE A NEW ONE
+    // IF THERE IS NO PROETOME_DATA ENTRY, CREATE A NEW ONE
     gb_proteom_data = GB_search(gb_experiment, "proteome_data", GB_CREATE_CONTAINER);
     pgt_assert(gb_proteom_data); // @@@ error handling is missing
 
@@ -375,6 +309,45 @@ int importCSV(importTable *table, importData *data)
 
 
 /****************************************************************************
+*  CREATE AN IMPORT TABLE
+****************************************************************************/
+importTable *createImportTable(int rows, int columns)
+{
+    // ALLOCATE MEMORY FOR THE TABLE DATA
+    importTable *table= (importTable *)malloc(sizeof(importTable));
+    if(!table) return NULL;
+
+    // ALLOCATE MEMORY FOR THE CELL DATA
+    char **cells= (char **)malloc(rows * columns * sizeof(char *));
+    if(!cells) return NULL;
+
+    // ALLOCATE MEMORY FOR THE HEADER DATA
+    char **header= (char **)malloc(columns * sizeof(char *));
+    if(!header) return NULL;
+
+    // INIT ALL CELL VALUES WITH NULL
+    int i;
+    for(i= 0; i < (rows * columns); i++) cells[i]= NULL;
+    for(i= 0; i < columns; i++) header[i]= NULL;
+
+    // ALLOCATE MEMORY FOR THE COLUMN TYPE DATA
+    int *columnType= (int *)malloc(columns * sizeof(int));
+    if(!columnType) return NULL;
+
+    // ENTER VALID PREDEFINED VALUES (SHOULD BE CHANGED LATER)
+    table->rows= rows;
+    table->columns= columns;
+    table->cell= cells;
+    table->header= header;
+    table->hasHeader= false;
+    table->columnType= columnType;
+
+    // RETURN POINTER TO TABLE
+    return table;
+}
+
+
+/****************************************************************************
 *  FIND XSLT FILES (*.XSL) AS IMPORT FILTERS
 ****************************************************************************/
 XSLTimporter *findXSLTFiles(char *path)
@@ -432,11 +405,80 @@ XSLTimporter *findXSLTFiles(char *path)
             count++;
         }
     }
-    closedir(dir);
 
     xslt->number= count;
 
     return xslt;
 }
+
+
+/****************************************************************************
+*  IDENTIFY ENTRY TYPE
+*  THIS FUNCTION TRIES TO IDENTIFY THE TYPE OF AN ENTRY (STRING, NUMBER)
+****************************************************************************/
+int identifyType(char *entry)
+{
+    bool has_dot= false;
+    bool has_numeric= true;
+    char *ptr= entry;
+
+    if(!ptr || (*ptr == 0)) return DATATYPE_UNKNOWN;
+
+    while(*ptr)
+    {
+        if((*ptr == '.') || (*ptr == ',')) has_dot= true;
+        else if((*ptr < '0') || (*ptr > '9')) has_numeric= false;
+
+        ptr++;
+    }
+
+    if(has_dot && has_numeric) return DATATYPE_FLOAT;
+    else if(has_numeric) return DATATYPE_INT;
+
+    return DATATYPE_STRING;
+}
+
+
+/****************************************************************************
+*  TRY TO IDENTIFY THE COLUMN TYPE USING THEIR ENTRIES
+****************************************************************************/
+void identifyColumns(importTable *table)
+{
+    // FUNCTION VARIABLES
+    int rows= table->rows;
+    int columns= table->columns;
+    char **cell= table->cell;
+    int *columnType= table->columnType;
+    int c, r, colType, cellType;
+
+    // TRAVERSE EVERY COLUMN
+    for(c= 0; c < columns; c++)
+    {
+        colType= DATATYPE_UNKNOWN;
+
+        // VIEW ALL ENTRIES AND IDENTIFY THE BEST FITTING TYPE
+        for(r= 1; r < rows; r++)
+        {
+            // GET THE CELLS DATATYPE
+            cellType= identifyType(cell[(r * columns) + c]);
+
+            // CHANGE COLUMN TYPE IF A HIGHER DATATYPE IS FOUND
+            if(cellType > colType) colType= cellType;
+
+//            // DEBUG DEBUG DEBUG
+//             if(cellType > colType)
+//             {
+//                 printf("COLUMN %d: ENTRY \'%s\' SWITCHED FROM %d TO %d\n",
+//                        c, cell[(r * columns) + c], colType, cellType);
+//                 colType= cellType;
+//             }
+//            // DEBUG DEBUG DEBUG
+}
+
+        columnType[c]= colType;
+    }
+}
+
+
 
 

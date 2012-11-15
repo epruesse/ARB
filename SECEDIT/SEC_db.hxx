@@ -12,17 +12,23 @@
 #ifndef SEC_DB_HXX
 #define SEC_DB_HXX
 
-#ifndef BI_BASEPOS_HXX
-#include <BI_basepos.hxx>
+#ifndef _CPP_CSTDIO
+#include <cstdio>
+#endif
+
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
+#ifndef BI_HELIX_HXX
+#include <BI_helix.hxx>
 #endif
 
 #ifndef SEC_DEFS_HXX
 #include "SEC_defs.hxx"
 #endif
-#ifndef SECEDIT_EXTERN_HXX
-#include "secedit_extern.hxx"
-#endif
-
 
 // --------------------------------------------------------------------------------
 
@@ -61,7 +67,7 @@
 struct SEC_dbcb;
 class  SEC_db_interface;
 
-class SEC_seq_data : virtual Noncopyable { // represents a sequence (or SAI)
+class SEC_seq_data { // represents a sequence (or SAI)
     GBDATA         *gb_name;
     GBDATA         *gb_data;
     const SEC_dbcb *change_cb;
@@ -92,9 +98,9 @@ class SEC_bond_def;
 class SEC_root;
 class SEC_structure_toggler;
 
-class SEC_db_interface : virtual Noncopyable {
-    SEC_seq_data          *sequence;       // 0 = no sequence selected
-    ED4_plugin_host&  Host;
+class SEC_db_interface : Noncopyable {
+    SEC_seq_data                *sequence; // 0 = no sequence selected
+    const ED4_sequence_terminal *seqTerminal;
 
     bool          displayEcoliPositions; // whether to display ecoli positions
     SEC_seq_data *ecoli_seq;        // 0 = no ecoli found or not used
@@ -110,7 +116,7 @@ class SEC_db_interface : virtual Noncopyable {
     mutable SEC_structure_toggler *toggler;
 
     SEC_graphic *gfx;
-    AWT_canvas  *scr;
+    AWT_canvas  *ntw;
     GBDATA      *gb_main;
     AW_root     *aw_root;
 
@@ -141,9 +147,9 @@ class SEC_db_interface : virtual Noncopyable {
     void alilen_changed(const SEC_dbcb *cb);
 
     void bind_awars(const char **awars, SEC_dbcb *cb);
-
+    
 public:
-    SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Scr, ED4_plugin_host& host_);
+    SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Ntw);
     ~SEC_db_interface();
 
     void update_shown_positions();
@@ -164,12 +170,12 @@ public:
     GBDATA *gbmain() const { return gb_main; }
     SEC_graphic *graphic() const { return gfx; }
     SEC_root *secroot() const;
-    AWT_canvas *canvas() const { return scr; }
+    AWT_canvas *canvas() const { return ntw; }
     BI_helix *helix() const { return Helix; }
     BI_ecoli_ref *ecoli() const { return Ecoli; }
+    const ED4_sequence_terminal *get_seqTerminal() const { return seqTerminal; }
     SEC_bond_def *bonds() const { return bonddef; }
     SEC_structure_toggler *structure() const { return toggler; }
-    const ED4_plugin_host& host() const { return Host; }
 
     void init_toggler() const;
 };

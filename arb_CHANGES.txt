@@ -1,36 +1,15 @@
 ARB change log
 
-Major changes for next release:
+Fixes for arb_5.5:
 
- - Detect clusters of species with similar sequences (OTUs) in ARB_DIST
- - Rewrote chimera check. Allows filtering
- - added RNACMA (computes clusters of correlated positions)
- - Next relative search
-   - can be restricted to column ranges (needs a PT-Server calculated from aligned sequences)
-   - corrected and improved scaling of relative scores
- - fast-aligner
-   - searches next-relatives based on selected column-block
-   - align multiple column-blocks based on SAI
- - Rewrote alignment adaption during merge
- - EDIT4
-   - improved support for using multiple edit-windows
-   - smoother refreshes
-   - tweaked ORF display
- - consense trees
-   - calculate from multiple existing trees
-   - fixed NJ-bootstrapping (no longer drops species)
- - trees sortable now
- - tree display
-   - Show brackets on open groups (dendrogram tree only)
-   - rewrote IRS (folded) display
- - tweaked printing (interface, overlapping)
- - automation
-   - tweaked macro recording
-   - arb_ntree can execute macro from command line
-   - added "Never ask again" to modal question boxes (for better compatibility with macros)
- - load/save for window specific settings (e.g. allows to share parts of configuration with other users)
- - Support for mouse-wheel
- - many internal refactorings
+ * arb_5.4 was broken (several external tools missing)
+
+
+Fixes for arb_5.4:
+
+ * make it obvious when probe matches are truncated. Truncate all hits beyond 1 million (was 100000)
+ * fixed realigner (better interaction with fields 'transl_table' and 'codon_start'; improved error handling)
+ * fixed several compilation issues (OSX; recent distro releases)
 
 
 Fixes for arb_5.3:

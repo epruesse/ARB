@@ -85,7 +85,7 @@ To build ARB from source
 
       export ARBHOME=`pwd`
       export PATH=$ARBHOME/bin:$PATH
-      export LD_LIBRARY_PATH=$ARBHOME/lib:$LD_LIBRARY_PATH
+      export LD_LIBRARY_PATH=$ARBHOME/LIBLINK:$LD_LIBRARY_PATH
 
 5. Now either
 
@@ -103,20 +103,18 @@ To build ARB from source
 
       to install arb for all users
 
-   and follow the instructions there.
+   and follow the instructions there (if any).
 
-   On the first call 'make' will generate a file name
-   config.makefile. Edit the file to change the
-   build-options available for ARB (e.g. 32/64 bit, openGL)
 
 
 Additional software that is needed to compile ARB:
 --------------------------------------------------
 
-- expat, xmllint, xsltproc [needed for target 'help' only]
+- expat, xmllint, sablotron 0.82-1.0 [needed for target 'help' only]
 - openmotif, openmotif-devel
 - xaw???
 - libtiff-devel
+- java 1.3.1 or above [needed for arb_probe_library only]
 - lynx
 
 Additional software that is needed to compile open gl parts:
@@ -126,8 +124,7 @@ Additional software that is needed to compile open gl parts:
 - mesaglw (opensuse)
 - mesaglw-devel (opensuse)
 - libpng
-- libglew
-- glew-devel (opensuse)
+- libglew                 
 - freeglut
 - freeglut-devel
 ----------------------------------------------------------------------

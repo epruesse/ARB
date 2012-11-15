@@ -1,23 +1,26 @@
-// =============================================================== //
-//                                                                 //
-//   File      : ad_ext.cxx                                        //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#include <stdio.h>
+#include <stdlib.h>
+#include <memory.h>
+// #include <malloc.h>
+#include <string.h>
 
-#include "ntree.hxx"
-#include <db_scanner.hxx>
+#include <arbdb.h>
+#include <arbdbt.h>
+#include <aw_root.hxx>
+#include <aw_device.hxx>
+#include <aw_window.hxx>
+#include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
-#include <aw_msg.hxx>
-#include <aw_root.hxx>
-#include <arbdbt.h>
-#include <arb_strbuf.h>
+#include <db_scanner.hxx>
 
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
 #define nt_assert(bed) arb_assert(bed)
+
+
+extern GBDATA *GLOBAL_gb_main;
 
 static void rename_SAI_cb(AW_window *aww) {
     AW_awar  *awar_sai = aww->get_root()->awar(AWAR_SAI_NAME);
@@ -28,12 +31,12 @@ static void rename_SAI_cb(AW_window *aww) {
     else {
         char *new_name = aw_input("Rename SAI", "Enter new name of SAI", sai_name);
         if (new_name && new_name[0]) {
-            error = GB_begin_transaction(GLOBAL.gb_main);
+            error = GB_begin_transaction(GLOBAL_gb_main);
             if (!error) {
-                GBDATA *gb_sai     = GBT_find_SAI(GLOBAL.gb_main, sai_name);
+                GBDATA *gb_sai     = GBT_find_SAI(GLOBAL_gb_main, sai_name);
                 if (!gb_sai) error = GBS_global_string("can't find SAI '%s'", sai_name);
                 else {
-                    GBDATA *gb_dest_exists    = GBT_find_SAI(GLOBAL.gb_main, new_name);
+                    GBDATA *gb_dest_exists    = GBT_find_SAI(GLOBAL_gb_main, new_name);
                     if (gb_dest_exists) error = GBS_global_string("There is already a SAI named '%s'", new_name);
                     else {
                         error = GBT_write_string(gb_sai, "name", new_name);
@@ -41,7 +44,7 @@ static void rename_SAI_cb(AW_window *aww) {
                     }
                 }
             }
-            error = GB_end_transaction(GLOBAL.gb_main, error);
+            error = GB_end_transaction(GLOBAL_gb_main, error);
         }
         free(new_name);
     }
@@ -59,9 +62,9 @@ static void copy_SAI_cb(AW_window *aww) {
     else {
         char *dest_name = aw_input("Copy SAI", "Enter name of new SAI", source_name);
         if (dest_name && dest_name[0]) {
-            error = GB_begin_transaction(GLOBAL.gb_main);
+            error = GB_begin_transaction(GLOBAL_gb_main);
             if (!error) {
-                GBDATA *gb_sai_data   = GBT_get_SAI_data(GLOBAL.gb_main);
+                GBDATA *gb_sai_data   = GBT_get_SAI_data(GLOBAL_gb_main);
                 GBDATA *gb_source     = GBT_find_SAI_rel_SAI_data(gb_sai_data, source_name);
                 if (!gb_source) error = GBS_global_string("can't find SAI '%s'", source_name);
                 else {
@@ -80,7 +83,7 @@ static void copy_SAI_cb(AW_window *aww) {
                     }
                 }
             }
-            error = GB_end_transaction(GLOBAL.gb_main, error);
+            error = GB_end_transaction(GLOBAL_gb_main, error);
         }
         free(dest_name);
     }
@@ -99,15 +102,15 @@ static void copy_SAI_to_species_cb(AW_window *aww) {
         char *species_name = aw_input("Copy SAI to species", "Enter target species name:", sai_name);
 
         if (species_name && species_name[0]) {
-            error = GB_begin_transaction(GLOBAL.gb_main);
+            error = GB_begin_transaction(GLOBAL_gb_main);
 
             if (!error) {
-                GBDATA *gb_species_data = GBT_get_species_data(GLOBAL.gb_main);
+                GBDATA *gb_species_data = GBT_get_species_data(GLOBAL_gb_main);
                 GBDATA *gb_dest         = GBT_find_species_rel_species_data(gb_species_data, species_name);
 
                 if (gb_dest) error = GBS_global_string("Species '%s' already exists", species_name);
                 else {
-                    GBDATA *gb_sai = GBT_find_SAI(GLOBAL.gb_main, sai_name);
+                    GBDATA *gb_sai = GBT_find_SAI(GLOBAL_gb_main, sai_name);
 
                     if (!gb_sai) error = GBS_global_string("SAI '%s' not found", sai_name);
                     else {
@@ -123,7 +126,7 @@ static void copy_SAI_to_species_cb(AW_window *aww) {
                     }
                 }
             }
-            error = GB_end_transaction(GLOBAL.gb_main, error);
+            error = GB_end_transaction(GLOBAL_gb_main, error);
         }
         free(species_name);
     }
@@ -133,22 +136,22 @@ static void copy_SAI_to_species_cb(AW_window *aww) {
 
 static void delete_SAI_cb(AW_window *aww) {
     char     *sai_name      = aww->get_root()->awar(AWAR_SAI_NAME)->read_string();
-    GB_ERROR  error       = GB_begin_transaction(GLOBAL.gb_main);
+    GB_ERROR  error       = GB_begin_transaction(GLOBAL_gb_main);
 
     if (!error) {
-        GBDATA *gb_sai = GBT_find_SAI(GLOBAL.gb_main, sai_name);
+        GBDATA *gb_sai = GBT_find_SAI(GLOBAL_gb_main,sai_name);
         error          = gb_sai ? GB_delete(gb_sai) : "Please select a SAI";
     }
-    GB_end_transaction_show_error(GLOBAL.gb_main, error, aw_message);
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
     free(sai_name);
 }
 
-static void map_SAI_to_scanner(AW_root *aw_root, AW_CL cl_scanner) {
-    GB_transaction  ta(GLOBAL.gb_main);
+static void map_SAI_to_scanner(AW_root *aw_root, AW_CL scannerid) {
+    GB_transaction  ta(GLOBAL_gb_main);
     char           *sai_name = aw_root->awar(AWAR_SAI_NAME)->read_string();
-    GBDATA         *gb_sai   = GBT_find_SAI(GLOBAL.gb_main, sai_name);
+    GBDATA         *gb_sai   = GBT_find_SAI(GLOBAL_gb_main, sai_name);
 
-    map_db_scanner((DbScanner*)cl_scanner, gb_sai, CHANGE_KEY_PATH);
+    awt_map_arbdb_scanner(scannerid, gb_sai, 0, CHANGE_KEY_PATH);
     free(sai_name);
 }
 
@@ -162,26 +165,19 @@ static void edit_SAI_description(AW_window *aww) {
         GBDATA *gb_ali = 0;
         char   *type    = 0;
         {
-            GB_transaction  ta(GLOBAL.gb_main);
-            GBDATA         *gb_sai = GBT_find_SAI(GLOBAL.gb_main, sai_name);
+            GB_transaction  ta(GLOBAL_gb_main);
+            GBDATA         *gb_sai = GBT_find_SAI(GLOBAL_gb_main, sai_name);
 
             if (!gb_sai) error = GBS_global_string("SAI '%s' not found", sai_name);
             else {
-                char *ali_name = GBT_get_default_alignment(GLOBAL.gb_main);
+                char *ali_name = GBT_get_default_alignment(GLOBAL_gb_main);
 
                 gb_ali = GB_entry(gb_sai, ali_name);
                 if (!gb_ali) error = GBS_global_string("SAI '%s' has no data in alignment '%s'", sai_name, ali_name);
                 else {
                     GB_clear_error();
-                    type = GBT_read_string(gb_ali, "_TYPE");
-                    if (!type) {
-                        if (GB_have_error()) {
-                            error = GB_await_error();
-                        }
-                        else {
-                            type = strdup("");
-                        }
-                    }
+                    type             = GBT_read_string(gb_ali, "_TYPE");
+                    if (!type) error = GB_await_error();
                 }
             }
             error = ta.close(error);
@@ -191,7 +187,7 @@ static void edit_SAI_description(AW_window *aww) {
             nt_assert(gb_ali);
             char *new_type = aw_input("Change SAI description", type);
             if (new_type) {
-                GB_transaction t2(GLOBAL.gb_main);
+                GB_transaction t2(GLOBAL_gb_main);
 
                 if (new_type[0]) {
                     error = GBT_write_string(gb_ali, "_TYPE", new_type);
@@ -215,12 +211,12 @@ static char *getExistingSAIgroups() {
     // scan SAIs for existing groups.
     // return a string of ';'-separated group names (or NULL)
 
-    GB_HASH       *groups = GBS_create_hash(GBT_get_SAI_count(GLOBAL.gb_main), GB_MIND_CASE);
+    GB_HASH       *groups = GBS_create_hash(30, GB_MIND_CASE);
     GBS_strstruct *out    = GBS_stropen(1000);
     int            count  = 0;
-    GB_transaction ta(GLOBAL.gb_main);
+    GB_transaction ta(GLOBAL_gb_main);
 
-    for (GBDATA *gb_sai = GBT_first_SAI(GLOBAL.gb_main); gb_sai; gb_sai = GBT_next_SAI(gb_sai)) {
+    for (GBDATA *gb_sai = GBT_first_SAI(GLOBAL_gb_main); gb_sai; gb_sai = GBT_next_SAI(gb_sai)) {
         const char *group = GBT_read_char_pntr(gb_sai, "sai_group");
         if (group && !GBS_read_hash(groups, group)) {
             GBS_strcat(out, group);
@@ -252,8 +248,8 @@ static void assign_SAI_to_group(AW_window *aww) {
     else {
         GBDATA *gb_sai;
         {
-            GB_transaction ta(GLOBAL.gb_main);
-            gb_sai = GBT_find_SAI(GLOBAL.gb_main, sai_name);
+            GB_transaction ta(GLOBAL_gb_main);
+            gb_sai = GBT_find_SAI(GLOBAL_gb_main, sai_name);
         }
 
         if (!gb_sai) error = GBS_global_string("SAI '%s' not found", sai_name);
@@ -278,7 +274,7 @@ static void assign_SAI_to_group(AW_window *aww) {
             }
 
             if (new_group) {
-                GB_transaction t2(GLOBAL.gb_main);
+                GB_transaction t2(GLOBAL_gb_main);
                 if (new_group[0]) error = GBT_write_string(gb_sai, "sai_group", new_group);
                 else if (has_group) {
                     GBDATA *gb_group = GB_entry(gb_sai, "sai_group");
@@ -298,48 +294,48 @@ AW_window *NT_create_extendeds_window(AW_root *aw_root)
 
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init(aw_root, "INFO_OF_SAI", "SAI INFORMATION");
+        aws->init( aw_root, "INFO_OF_SAI", "SAI INFORMATION");
         aws->load_xfig("ad_ext.fig");
 
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback( (AW_CB0)AW_POPDOWN);
         aws->at("close");
-        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->create_button("CLOSE","CLOSE","C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"ad_extended.hlp");
+        aws->callback( AW_POPUP_HELP,(AW_CL)"ad_extended.hlp");
         aws->at("help");
-        aws->create_button("HELP", "HELP", "H");
+        aws->create_button("HELP","HELP","H");
 
         aws->button_length(13);
 
         aws->at("delete");
         aws->callback(delete_SAI_cb);
-        aws->create_button("DELETE", "DELETE", "D");
+        aws->create_button("DELETE","DELETE","D");
 
         aws->at("rename");
         aws->callback(rename_SAI_cb);
-        aws->create_button("RENAME", "RENAME", "R");
+        aws->create_button("RENAME","RENAME","R");
 
         aws->at("copy");
         aws->callback(copy_SAI_cb);
-        aws->create_button("COPY", "COPY", "C");
+        aws->create_button("COPY","COPY","C");
 
         aws->at("remark");
         aws->callback(edit_SAI_description);
-        aws->create_button("EDIT_COMMENT", "EDIT COMMENT", "R");
+        aws->create_button("EDIT_COMMENT","EDIT COMMENT","R");
 
         aws->at("group");
         aws->callback(assign_SAI_to_group);
-        aws->create_button("ASSIGN_GROUP", "ASSIGN GROUP", "R");
+        aws->create_button("ASSIGN_GROUP","ASSIGN GROUP","R");
 
         aws->at("makespec");
         aws->callback(copy_SAI_to_species_cb);
-        aws->create_button("COPY_TO_SPECIES", "COPY TO\nSPECIES", "C");
+        aws->create_button("COPY_TO_SPECIES","COPY TO\nSPECIES","C");
 
         aws->at("list");
-        awt_create_selection_list_on_sai(GLOBAL.gb_main, aws, AWAR_SAI_NAME);
+        awt_create_selection_list_on_extendeds(GLOBAL_gb_main,(AW_window *)aws,AWAR_SAI_NAME);
 
-        DbScanner *scanner = create_db_scanner(GLOBAL.gb_main, aws, "info", 0, 0, 0, DB_SCANNER, 0, 0, 0, SPECIES_get_selector());
-        aws->get_root()->awar(AWAR_SAI_NAME)->add_callback(map_SAI_to_scanner, (AW_CL)scanner);
+        AW_CL scannerid = awt_create_arbdb_scanner(GLOBAL_gb_main, aws, "info",0,0,0,AWT_SCANNER,0,0,0, &AWT_species_selector);
+        aws->get_root()->awar(AWAR_SAI_NAME)->add_callback(map_SAI_to_scanner, scannerid);
     }
     aws->show();
     return aws;

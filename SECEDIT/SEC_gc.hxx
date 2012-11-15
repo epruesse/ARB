@@ -33,7 +33,7 @@ enum {
     SEC_GC_CBACK_9,
 
     SEC_GC_CURSOR,
-    SEC_GC_MBACK,               // mismatches
+    SEC_GC_MBACK,               //mismatches
 
     SEC_GC_SBACK_0,             // User 1
     SEC_GC_SBACK_1,             // User 2
@@ -45,12 +45,12 @@ enum {
     SEC_GC_SBACK_7,             // Signature (region)
     SEC_GC_SBACK_8,             // Signature (global)
 
-    SEC_SKELE_HELIX,  // skeleton helix color
-    SEC_SKELE_LOOP,  // skeleton loop color
-    SEC_SKELE_NHELIX,  // skeleton non-pairing helix color
+    SEC_SKELE_HELIX,  //skeleton helix color
+    SEC_SKELE_LOOP,  //skeleton loop color
+    SEC_SKELE_NHELIX,  //skeleton non-pairing helix color
 
     SEC_GC_MAX
-};
+}; // AW_gc
 
 #define SEC_GC_DATA_COUNT (SEC_GC_LAST_DATA-SEC_GC_FIRST_DATA+1)
 #define SEC_GC_FONT_COUNT (SEC_GC_LAST_FONT-SEC_GC_FIRST_FONT+1)

@@ -1,18 +1,12 @@
-// =============================================================== //
-//                                                                 //
-//   File      : arb_notify.cxx                                    //
-//   Purpose   : report termination of external jobs to ARB        //
-//                                                                 //
-//   Coded by Ralf Westram (coder@reallysoft.de) in May 2007       //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <arbdb.h>
 #include <arbdbt.h>
 
-int ARB_main(int argc, const char *argv[]) {
-    if (argc == 1) {
+int main(int argc,char **argv)
+{
+    if (argc == 1)  {
         fprintf(stderr, "Usage: arb_notify ID \"message\"\n");
         fprintf(stderr, "Used by ARB itself to report termination of external jobs - see GB_notify()\n");
         return -1;
@@ -21,9 +15,8 @@ int ARB_main(int argc, const char *argv[]) {
     const char *progname = argv[0];
     if (!progname || progname[0] == 0) progname = "arb_notify";
 
-    GB_shell shell;
-    GBDATA *gb_main = GB_open(":", "r");
-    if (!gb_main) {
+    GBDATA *gb_main = GB_open(":","r");
+    if (!gb_main){
         fprintf(stderr, "%s: Can't notify (connect to ARB failed)\n", progname);
     }
     else {

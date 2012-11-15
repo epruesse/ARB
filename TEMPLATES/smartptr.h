@@ -1,4 +1,5 @@
-// --------------------------------------------------------------------------------
+/////////////////////////////////////////////////////////////////////////////
+//
 // Copyright (C) 2000-2003
 // Ralf Westram
 // (Coded@ReallySoft.de)
@@ -13,7 +14,8 @@
 //
 // This code is part of my library.
 // You may find a more recent version at http://www.reallysoft.de/
-// --------------------------------------------------------------------------------
+//
+/////////////////////////////////////////////////////////////////////////////
 
 #ifndef SMARTPTR_H
 #define SMARTPTR_H
@@ -21,10 +23,6 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
-#ifndef ARBTOOLS_H
-#include "arbtools.h"
-#endif
-
 #define tpl_assert(bed) arb_assert(bed)
 
 // --------------------------------------------------------------------------------
@@ -39,7 +37,7 @@
 //  SmartPtr<type, Counted<type, custom_dealloc_ptr<type, deallocator> > >      uses custom deallocator
 //
 // --------------------------------------------------------------------------------
-// macros for convenience:
+// macros for convinience:
 
 #define SmartArrayPtr(type)               SmartPtr<type, Counted<type, auto_delete_array_ptr<type> > >
 #define SmartMallocPtr(type)              SmartPtr<type, Counted<type, auto_free_ptr<type> > >
@@ -50,16 +48,18 @@
 //
 // typedef SmartPtr<std::string> StringPtr;
 // StringPtr s = new std::string("hello world");        // will be deallocated using delete
-//
+// 
 // typedef SmartArrayPtr(std::string) StringArrayPtr;
 // StringArrayPtr strings = new std::string[100];       // will be deallocated using delete []
-//
-// SmartCharPtr cp = strdup("hello world");             // will be deallocated using free()
-//
+// 
+// typedef SmartMallocPtr(char) CharPtr;
+// CharPtr cp = strdup("hello world");                  // will be deallocated using free()
+// 
 // typedef SmartCustomPtr(GEN_position, GEN_free_position) GEN_position_Ptr;
-// GEN_position_Ptr gp = GEN_new_position(5, false); // will be deallocated using GEN_free_position()
-//
+// GEN_position_Ptr gp = GEN_new_position(5, GB_FALSE); // will be deallocated using GEN_free_position()
+// 
 // --------------------------------------------------------------------------------
+
 
 #ifdef NDEBUG
 #ifdef DUMP_SMART_PTRS
@@ -68,7 +68,7 @@
 #endif
 
 #ifdef DUMP_SMART_PTRS
-#define DUMP_SMART_PTRS_DO(cmd) do { (cmd); } while (0)
+#define DUMP_SMART_PTRS_DO(cmd) do { (cmd); } while(0)
 #else
 #define DUMP_SMART_PTRS_DO(cmd)
 #endif
@@ -80,7 +80,7 @@
 // -----------------------------------------------------------------
 
 template<class T, void (*DEALLOC)(T*)>
-class custom_dealloc_ptr : virtual Noncopyable {
+class custom_dealloc_ptr {
     T *const thePointer;
 public:
     custom_dealloc_ptr(T *p) : thePointer(p) {
@@ -96,7 +96,7 @@ public:
 };
 
 template <class T>
-class auto_free_ptr : virtual Noncopyable {
+class auto_free_ptr {
     T *const thePointer;
 public:
     auto_free_ptr(T *p) : thePointer(p) {
@@ -112,7 +112,7 @@ public:
 };
 
 template <class T>
-class auto_delete_ptr : virtual Noncopyable {
+class auto_delete_ptr {
     T *const thePointer;
 public:
     auto_delete_ptr(T *p) : thePointer(p) {
@@ -145,6 +145,7 @@ public:
 
 // -----------------------
 //      class Counted
+// -----------------------
 
 template <class T, class C> class SmartPtr;
 
@@ -157,7 +158,7 @@ public:
 
     Counted(T *p) : counter(0), pointer(p) {
         DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p now controlled by Counted\n", getPointer()));
-        tpl_assert(p); // if you like to assign NULL, consider using SmartPtr::assign
+        tpl_assert(p);
     }
 #ifdef DEBUG
     ~Counted() {
@@ -183,11 +184,13 @@ public:
 };
 
 
-/*! @memo Smart pointer class
- */
+// --------------------------------------------------------------------------------
+//     class SmartPtr
+// --------------------------------------------------------------------------------
+/** @memo Smart pointer class
+     */
 
 template <class T, class C = Counted<T, auto_delete_ptr<T> > >
-// cppcheck-suppress noCopyConstructor (does not detect templated cctor)
 class SmartPtr {
 private:
     C *object;
@@ -200,10 +203,10 @@ private:
         object = 0;
     }
 public:
-    //! build Smart-NULL-Ptr
+    /** build Smart-NULL-Ptr */
     SmartPtr() : object(0) {}
 
-    /*! build normal SmartPtr
+    /** build normal SmartPtr
 
         by passing an object to a SmartPtr you loose the responsibility over the object
         to the SmartPtr.
@@ -216,7 +219,7 @@ public:
         object->new_reference();
     }
 
-    /*! destroy SmartPtr
+    /** destroy SmartPtr
 
         object will not be destroyed as long as any other SmartPtr points to it
     */
@@ -232,56 +235,36 @@ public:
         object = other.object;
         return *this;
     }
-    
+
     const T *operator->() const { tpl_assert(object); return object->getPointer(); }
     T *operator->() { tpl_assert(object); return object->getPointer(); }
 
     const T& operator*() const { tpl_assert(object); return *(object->getPointer()); }
-    T& operator*() { tpl_assert(object); return *(object->getPointer()); } // Note: to deref a NULL-SmartPtr, use SmartPtr::content()
+    T& operator*() { tpl_assert(object); return *(object->getPointer()); }
 
-    //! test if SmartPtr is NULL
-    bool isNull() const { return object == 0; }
+    /** test if SmartPtr is 0 */
+    bool Null() const { return object==0; }
 
-    //! test if SmartPtr is not NULL
-    bool isSet() const { return !isNull(); }
-
-    //! set SmartPtr to NULL
+    /** set SmartPtr to 0 */
     void SetNull() { Unbind(); }
 
-    //! set SmartPtr to new content or NULL
-    void assign(T *p) {
-        Unbind();
-        if (p) {
-            object = new C(p);
-            object->new_reference();
-        }
-    }
+    /** create a deep copy of the object pointed to by the smart pointer.
 
-    //! convert SmartPtr to plain old pointer (also works if isNull())
-    const T* content() const {
-        return object ? object->getPointer() : NULL;
-    }
+        Afterwards there exist two equal copies of the object.
 
-    SmartPtr<T, C> deep_copy() const {
-        /*! create a deep copy of the object pointed to by the smart pointer.
-         *
-         * Afterwards there exist two equal copies of the object.
-         *
-         * @return SmartPtr to the new copy.
-         */
-        return SmartPtr<T, C>(new T(**this));
-    }
+        @return SmartPtr to the new copy.
+    */
+    SmartPtr<T, C> deep_copy() const { return SmartPtr<T, C>(new T(**this)); }
 
+    /** test if two SmartPtrs point to the same object
+        (this is used for operators == and !=).
+
+        if you like to compare the objects themselves use
+        (*smart_ptr1 == *smart_ptr2)
+
+        @return true if the SmartPtrs point to the same object
+    */
     bool sameObject(const SmartPtr<T, C>& other) const {
-        /*! test if two SmartPtrs point to the same object
-         *
-         * (this is used for operators == and !=).
-         *
-         * if you like to compare the objects themselves use
-         * (*smart_ptr1 == *smart_ptr2)
-         *
-         * @return true if the SmartPtrs point to the same object
-         */
         tpl_assert(object);
         tpl_assert(other.object);
         return object==other.object;
@@ -295,21 +278,6 @@ template <class T, class C> bool operator==(const SmartPtr<T, C>& s1, const Smar
 template <class T, class C> bool operator!=(const SmartPtr<T, C>& s1, const SmartPtr<T, C>& s2) {
     return !s1.sameObject(s2);
 }
-
-// --------------------------
-//      convenience decls
-
-typedef SmartMallocPtr(char) SmartCharPtr;
-
-#define RETURN_LOCAL_ALLOC(mallocation)                         \
-    static SmartMallocPtr(typeof(*mallocation)) static_ptr;     \
-    static_ptr.assign(mallocation);                             \
-    return static_ptr.content();
-
-#define RETURN_ONETIME_ALLOC(allocated)                         \
-    static SmartMallocPtr(typeof(*allocated)) static_ptr;       \
-    if (static_ptr.isNull()) { static_ptr = allocated; }        \
-    return static_ptr.content();
 
 #else
 #error smartptr.h included twice

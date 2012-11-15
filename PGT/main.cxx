@@ -23,16 +23,15 @@
 /****************************************************************************
 *  MAIN EVENT HANDLER CLASS
 ****************************************************************************/
-class CMain : virtual Noncopyable {
-    GB_shell shell;
-    
+class CMain
+{
     public:
         CMain();
         ~CMain();
         //
         bool DB_Connect();
         void DB_Disconnect();
-        int Run(int, const char **);
+        int Run(int, char **);
     protected:
         void MainLoop();
         //
@@ -61,11 +60,11 @@ CMain::CMain()
 ****************************************************************************/
 CMain::~CMain()
 {
-    // DESTRUCT MAIN DIALOG CLASS (IF NOT ALREADY HAPPENED!?)
-    if(m_maindialog) delete m_maindialog;
-
     // CLOSE CONNECTIONS IF THEY ARE STILL OPEN
     DB_Disconnect();
+
+    // DESTRUCT MAIN DIALOG CLASS (IF NOT ALREADY HAPPENED!?)
+    if(m_maindialog) delete m_maindialog;
 
     // DESTROY TOP WIDGET
     if(m_topwidget) XtDestroyWidget(m_topwidget);
@@ -87,7 +86,7 @@ bool CMain::DB_Connect()
         // TRY TO CONNECT TO THE DEFAULT ARB DATABASE; EXIT IF AN ERROR OCCURS
         if(ARB_connect(NULL))
         {
-            // IF A CONNECTION IS ESTABLISHED: ALSO CONNECT TO THE CONFIG DB
+            // IF A CONNECTON IS ESTABLISHED: ALSO CONNECT TO THE CONFIG DB
             // (NO 'ACCESS-FAILED' CHECK HERE AT THE MOMENT)
             CONFIG_connect();
 
@@ -142,9 +141,9 @@ void CMain::MainLoop()
 *
 *  RETURNVALUE:
 *        0 = EVERYTHING IS FINE
-        -1 = AN ERROR OCCURRED (UNABLE TO ESTABLISH DB CONNECTION)
+        -1 = AN ERROR OCCURED (UNABLE TO ESTABLISH DB CONNECTION)
 ****************************************************************************/
-int CMain::Run(int argc, const char **argv)
+int CMain::Run(int argc, char **argv)
 {
     // TRY TO ESTABLISH THE DATABASE CONNECTIONS
     if(!m_connected)
@@ -159,9 +158,9 @@ int CMain::Run(int argc, const char **argv)
 
     // CREATE THE TOP LEVEL WIDGET (APPLICATION WIDGET)
     m_topwidget= XtVaOpenApplication(&m_xapp, "PGTApp", NULL, 0,
-                                     &argc, (char**)argv, NULL,
-                                     sessionShellWidgetClass,
-                                     NULL);
+        &argc, argv, NULL,
+        sessionShellWidgetClass,
+        NULL);
 
     // CREATE THE PGT MAIN DIALOG WINDOW
     m_maindialog= new mainDialog(m_topwidget);
@@ -172,8 +171,8 @@ int CMain::Run(int argc, const char **argv)
     // ENTER THE MAIN APPLICATION LOOP (WAIT FOR EVENTS)
     MainLoop();
 
-    // // DISCONNECT THE ARB CONNECTION
-    // DB_Disconnect(); // @@@ done by dtor only (pending callbacks!)
+    // DISCONNECT THE ARB CONNECTION
+    DB_Disconnect();
 
     return 0;
 }
@@ -182,13 +181,15 @@ int CMain::Run(int argc, const char **argv)
 /****************************************************************************
 *  MAIN FUNCTION - NO FURTHER COMMENT NECESSARY... ;-)
 ****************************************************************************/
-int ARB_main(int argc, const char *argv[]) {
+int main(int argc, char **argv)
+{
     // CREATE THE PGT MAIN EVENT HANDLER
-    CMain cmain;
+    CMain *cmain= new CMain();
 
     // RUN PGT MAIN EVENT HANDLER
-    int retVal= cmain.Run(argc, argv);
+    int retVal= cmain->Run(argc, argv);
 
-    // EXIT WITH RETURN VALUE 'retVal'
+    // DELETE MAIN HANDLER CLASS AND EXIT WITH RETURN VALUE 'retVal'
+    delete cmain;
     return retVal;
 }

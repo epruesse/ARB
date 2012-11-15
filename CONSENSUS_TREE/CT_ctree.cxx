@@ -1,81 +1,82 @@
-// ============================================================= //
-//                                                               //
-//   File      : CT_ctree.cxx                                    //
-//   Purpose   : consensus tree                                  //
-//                                                               //
-//   Institute of Microbiology (Technical University Munich)     //
-//   http://www.arb-home.de/                                     //
-//                                                               //
-// ============================================================= //
+/* CTREE -> consensus tree */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "CT_ctree.hxx"
+#include <arbdb.h>
+#include <arbdbt.h>
+
+#include "CT_part.hxx"
 #include "CT_hash.hxx"
 #include "CT_ntree.hxx"
+#include "CT_rbtree.hxx"
+#include "CT_dtree.hxx"
 
-ConsensusTree::ConsensusTree(const class CharPtrArray& names_)
-    : overall_weight(0),
-      Name_hash(NULL),
-      size(NULL),
-      names(names_)
+int Tree_count;
+GB_HASH *Name_hash;
+
+/*  node_count  number of different leafs
+    names       name of each leaf   */
+void ctree_init(int node_count, char **names)
 {
-    // names = leafnames (=species names)
+    int i;
 
-    int leaf_count = names.size();
-    Name_hash = GBS_create_hash(leaf_count, GB_MIND_CASE);
-    for (int i=0; i< leaf_count; i++) {
-        GBS_write_hash(Name_hash, names[i], i+1);
+    Name_hash = GBS_create_hash((long) node_count, GB_MIND_CASE);
+
+    for(i=0; i< node_count; i++) {
+        GBS_write_hash(Name_hash, names[i], (long) i);
     }
 
-    size     = new PartitionSize(leaf_count);
-    registry = new PartRegistry();
+    part_init(node_count);  /* Amount of Bits used */
+    hash_init();
+    destree_init(Name_hash);
+    rb_init(names);
+    Tree_count = 0;
+
 }
 
-ConsensusTree::~ConsensusTree() {
-    if (Name_hash) {
-        GBS_free_hash(Name_hash);
-        Name_hash  = 0;
+
+/* Insert a GBT-tree in the Hash-Table */
+/* The GBT-tree is destructed afterwards! */
+void insert_ctree(GBT_TREE *tree, int weight)
+{
+    Tree_count += weight;
+    des_tree(tree, weight);
+}
+
+
+/* Get new consensus-tree -> GBT-tree */
+/* This function is little bit tricky:
+   the root-partition consist of 111....111 so it must have two sons
+   that represent the same partition son1 == ~son2 to do this we must split
+   the fist son-partition in two parts through logical calculation there
+   could only be one son! */
+GBT_TREE *get_ctree(void)
+{
+    PART *p;
+    NT_NODE *n;
+
+    hash_settreecount(Tree_count);
+    ntree_init();
+    build_sorted_list();
+    p = hash_getpart();
+    while(p != NULL) {
+        insert_ntree(p);
+        p = hash_getpart();
     }
-    delete registry;
-    delete size;
-}
-
-void ConsensusTree::insert(GBT_TREE *tree, double weight) {
-    // Insert a GBT-tree in the Hash-Table
-    // The GBT-tree is destructed afterwards!
-    overall_weight += weight;
-    remember_subtrees(tree, weight);
-}
-
-GBT_TREE *ConsensusTree::get_consensus_tree() {
-    // Get new consensus-tree -> GBT-tree
-    /* This function is little bit tricky:
-       the root-partition consist of 111....111 so it must have two sons
-       that represent the same partition son1 == ~son2 to do this we must split
-       the fist son-partition in two parts through logical calculation there
-       could only be one son! */
-
-    ntree_init(size);
-    registry->build_sorted_list(overall_weight);
-
-    {
-        PART *p = registry->get_part();
-        while (p != NULL) {
-            insert_ntree(p);
-            p = registry->get_part();
-        }
+    n = ntree_get();
+    if(n->son_list->next == NULL) { /* if father has only one son */
+        p  = part_new();
+        n->son_list->node->part->len /= 2;
+        part_copy(n->son_list->node->part, p);
+        part_invert(p);
+        insert_ntree(p);
+        n = ntree_get();
+    }
+    else {  /* if father has tree sons */
+            /* this case should happen nerver! */
+        printf("Es gibt noch was zu tun !!!!!! \n");
     }
 
-    const NT_NODE *n = ntree_get();
-
-    arb_assert(ntree_count_sons(n) == 2);
-
-#if defined(NTREE_DEBUG_FUNCTIONS)
-    arb_assert(is_well_formed(n));
-#endif
-
-    GBT_TREE *result_tree = rb_gettree(n);
-    ntree_cleanup();
-
-    return result_tree;
+    return rb_gettree(n);
 }
-

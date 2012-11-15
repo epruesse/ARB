@@ -9,6 +9,9 @@
 //                                                                 //
 // =============================================================== //
 
+#include <arb_assert.h>
+#define aw_assert(cond) arb_assert(cond)
+
 #include "aw_position.hxx"
 
 using namespace std;
@@ -63,21 +66,21 @@ void Angle::recalcNormal() const {
 
 namespace AW {
     Position crosspoint(const LineVector& l1, const LineVector& l2, double& factor_l1, double& factor_l2) {
-        // calculates the crossing point of the two straight lines defined by l1 and l2.
+        // calculates the crossing point of the two staight lines defined by l1 and l2.
         // sets two factors, so that
         // crosspoint == l1.start()+factor_l1*l1.line_vector();
         // crosspoint == l2.start()+factor_l2*l2.line_vector();
 
-        // Herleitung:
+        // Herleitung: 
         // x1+g*sx = x2+h*tx
         // y1+g*sy = y2+h*ty
         //
-        // h = -(x2-sx*g-x1)/tx
+        // h = -(x2-sx*g-x1)/tx                                       
         // h = (y1-y2+sy*g)/ty                                        (h is factor_l2)
-        //
+        // 
         // -(x2-sx*g-x1)/tx = (y1-y2+sy*g)/ty
-        //
-        // g = (tx*y1+ty*x2-tx*y2-ty*x1)/(sx*ty-sy*tx)
+        // 
+        // g = (tx*y1+ty*x2-tx*y2-ty*x1)/(sx*ty-sy*tx)                
         //
         // g = (tx*(y1-y2)+ty*(x2-x1))/(sx*ty-sy*tx)                  (g is factor_l1)
 
@@ -87,40 +90,36 @@ namespace AW {
         const Vector& s = l1.line_vector();
         const Vector& t = l2.line_vector();
 
-        aw_assert(s.has_length() && t.has_length());
-
-        factor_l1 = (t.x()*(p1.ypos()-p2.ypos()) + t.y()*(p2.xpos()-p1.xpos()))
+        factor_l1 = ( t.x()*(p1.ypos()-p2.ypos()) + t.y()*(p2.xpos()-p1.xpos()) )
             / (s.x()*t.y() - s.y()*t.x());
 
         factor_l2 = (p1.ypos()-p2.ypos()+s.y()*factor_l1) / t.y();
 
-        return p1 + factor_l1*s; 
+        return p1 + factor_l1*s;
     }
 
-    Position nearest_linepoint(const Position& pos, const LineVector& line, double& factor) {
-        // returns the Position on 'line' with minimum distance to 'pos'
-        // factor is set to [0.0 .. 1.0],
-        //    where 0.0 means "at line.start()"
-        //    and   1.0 means "at line.head()"
-
-        if (!line.has_length()) return line.start();
-
+    double Distance(const AW::Position pos, const AW::LineVector line) {
         Vector upright(line.line_vector());
         upright.rotate90deg();
 
         LineVector pos2line(pos, upright);
 
-        double   unused;
-        Position nearest = crosspoint(line, pos2line, factor, unused);
+        double f1, f2;
+        Position cross = crosspoint(line, pos2line, f1, f2);
 
-        if (factor<0) {
-            nearest = line.start();
-            factor  = 0;
+        double dist;
+        if (f1 >= 0 && f1 <= 1) { // 'cross' is at 'line'
+            dist = Distance(pos, cross);
         }
-        else if (factor>1) {
-            nearest = line.head();
-            factor  = 1;
+        else if (f1<0) {
+            dist = Distance(pos, line.start());
         }
-        return nearest;
+        else {
+            aw_assert(f1>1);
+            dist = Distance(pos, line.head());
+        }
+    
+        return dist;
     }
+
 };

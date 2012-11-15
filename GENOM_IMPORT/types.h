@@ -15,21 +15,31 @@
 #include "defs.h"
 #endif
 
-#ifndef _GLIBCXX_MAP
+#ifndef _CPP_MAP
 #include <map>
 #endif
-#ifndef _GLIBCXX_SET
+#ifndef _CPP_SET
 #include <set>
 #endif
-#ifndef _GLIBCXX_VECTOR
+#ifndef _CPP_VECTOR
 #include <vector>
 #endif
 
-typedef std::set<std::string>              stringSet;
-typedef std::map<std::string, std::string> stringMap;
-typedef std::vector<std::string>           stringVector;
+using std::vector;
+using std::map;
+using std::set;
 
-DEFINE_NAMED_ITERATORS(std::string, string);
+typedef set<string>         stringSet;
+typedef map<string, string> stringMap;
+typedef vector<string>      stringVector;
+
+#define DEFINE_ITERATORS(type)                  \
+typedef type::iterator type##Iter;              \
+typedef type::const_iterator type##CIter;       \
+typedef type::reverse_iterator type##RIter;     \
+typedef type::const_reverse_iterator type##CRIter
+
+DEFINE_ITERATORS(string);
 DEFINE_ITERATORS(stringSet);
 DEFINE_ITERATORS(stringMap);
 DEFINE_ITERATORS(stringVector);

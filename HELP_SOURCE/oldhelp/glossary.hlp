@@ -10,6 +10,10 @@ SUB	pt_server.hlp
 SUB	extended.hlp
 SUB	species.hlp
 SUB	selected.hlp
+#SUB	mark.hlp
+#SUB	alignment.hlp
+#SUB	commands.hlp
+SUB	parser.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
@@ -28,7 +32,7 @@ SECTION         What do we mean if we talk about ...
 
                         ARB Command Interpreter. ACI is a simple programing language
         		for calculating special species information (eg. G+C Content..)
-                        See LINK{aci.hlp}.
+                        See LINK{commands.hlp}.
 
         EDGE
 
@@ -86,7 +90,7 @@ SECTION         What do we mean if we talk about ...
         SRT
 
                         Search and Replace Tool allows to search substrings in a string
-        		and replace them by another substring (see LINK{srt.hlp}).
+        		and replace them by another substring.
 
 
 

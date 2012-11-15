@@ -10,10 +10,10 @@ $(MAIN): $(CPP_OBJECTS) $(C_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS) $(C_OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(ACC) $(cflags) -c $< $(CPPINCLUDES)
 
 clean:
 	rm -f $(OBJECTS) *.a

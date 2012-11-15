@@ -14,38 +14,39 @@
 
 using namespace std;
 
-// ----------------------
+// ---------------------
 //      Constructors
+// ---------------------
 
 SEC_segment::SEC_segment()
-    : alpha(0),
-      center1(Origin),
-      center2(Origin),
-      next_helix_strand(0),
-      loop(0)
+    : alpha(0)
+    , center1(Origin)
+    , center2(Origin)
+    , next_helix_strand(0)
+    , loop(0)
 {}
 
 SEC_helix_strand::SEC_helix_strand()
-    : origin_loop(0),
-      other_strand(0),
-      helix_info(0),
-      next_segment(0),
-      fixpoint(Origin),
-      rightAttach(Origin),
-      leftAttach(Origin)
+    : origin_loop(0)
+    , other_strand(0)
+    , helix_info(0)
+    , next_segment(0)
+    , fixpoint(Origin)
+    , rightAttach(Origin)
+    , leftAttach(Origin)
 {}
 
 SEC_loop::SEC_loop(SEC_root *root_)
-    : SEC_base(root_),
-      Circumference(0),
-      center(0, 0),
-      primary_strand(0)
+    : SEC_base(root_)
+    , Circumferance(0)
+    , center(0, 0)
+    , primary_strand(0)
 {}
 
 SEC_helix::SEC_helix(SEC_root *root_, SEC_helix_strand *to_root, SEC_helix_strand *from_root)
-    : SEC_base(root_),
-      strand_to_root(to_root),
-      base_length(0)
+    : SEC_base(root_)
+    , strand_to_root(to_root)
+    , base_length(0)
 {
     sec_assert(to_root->get_helix()     == 0);
     sec_assert(from_root->get_helix()   == 0);
@@ -61,30 +62,29 @@ SEC_helix::SEC_helix(SEC_root *root_, SEC_helix_strand *to_root, SEC_helix_stran
 
 
 SEC_root::SEC_root()
-    : root_loop(0),
-      cursorAbsPos(-1),
-      xString(0),
-      constructing(false),
-      db(0),
-      bg_color(0),
-      autoscroll(0),
-      nailedAbsPos(-1),
-      drawnPositions(0),
-      cursor_line(LineVector(Origin, ZeroVector)),
-      show_constraints(SEC_NO_TYPE)
+    : root_loop(0)
+    , cursorAbsPos(-1)
+    , xString(0)
+    , constructing(false)
+    , db(0)
+    , bg_color(0)
+    , autoscroll(0)
+    , nailedAbsPos(-1)
+    , drawnPositions(0)
+    , cursor_line(LineVector(Origin, ZeroVector))
+    , show_constraints(SEC_NO_TYPE)
 {
-    for (int i = 0; i<SEC_GC_DATA_COUNT; ++i) {
-        charRadius[i]   = -1.0;
-        bg_linewidth[i] = -1.0;
-    }
 }
 
-void SEC_root::init(SEC_graphic *gfx, AWT_canvas *scr, ED4_plugin_host& Host) {
-    db = new SEC_db_interface(gfx, scr, Host);
+
+void SEC_root::init(SEC_graphic *gfx, AWT_canvas *ntw) {
+    // canvas   = ntw;
+    db = new SEC_db_interface(gfx, ntw);
 }
 
-// ---------------------
+// --------------------
 //      Destructors
+// --------------------
 
 SEC_region::SEC_region(int start, int end)
     : sequence_start(start)
@@ -108,7 +108,7 @@ SEC_segment::~SEC_segment() {
 
 
 SEC_helix_strand::~SEC_helix_strand() {
-    if (next_segment != NULL) {
+    if(next_segment != NULL) {
         next_segment->delete_pointer_2(this);
     }
 
@@ -161,7 +161,7 @@ SEC_loop::~SEC_loop() {
             }
         }
         // delete all segments connected to loop
-        for (j=0; j<i; j++) delete segment[j];
+        for (j=0; j<i; j++) delete segment[j];        
     }
 }
 
@@ -176,8 +176,9 @@ SEC_root::~SEC_root() {
     delete_announced_positions();
 }
 
-// --------------------------
+// -------------------------
 //      integrity checks
+// -------------------------
 
 #if defined(CHECK_INTEGRITY)
 
@@ -227,7 +228,7 @@ void SEC_helix_strand::check_integrity(SEC_CHECK_TYPE what) const {
 
 void SEC_helix::check_integrity(SEC_CHECK_TYPE what) const {
     sec_assert(strand_to_root);
-
+    
     SEC_helix_strand *other_strand = strand_to_root->get_other_strand();
     sec_assert(other_strand);
 
@@ -242,7 +243,7 @@ void SEC_helix::check_integrity(SEC_CHECK_TYPE what) const {
         sec_assert(base_length >= 1);
         sec_assert(drawnSize() >= 0);
     }
-
+    
     strand_to_root->check_integrity(what);
     other_strand->check_integrity(what);
 }
@@ -261,7 +262,7 @@ void SEC_loop::check_integrity(SEC_CHECK_TYPE what) const {
         if (what&CHECK_STRUCTURE) {
             sec_assert(this == strand->get_origin_loop());
         }
-
+        
         const SEC_helix *helix = strand->get_helix();
         if (this == helix->rootsideLoop()) { // test outgoing helixes
             helix->check_integrity(what);
@@ -269,7 +270,7 @@ void SEC_loop::check_integrity(SEC_CHECK_TYPE what) const {
         else {
             rootStrands++;
         }
-
+        
         const SEC_segment *seg = strand->get_next_segment();
 
         if (what&CHECK_STRUCTURE) {
@@ -294,7 +295,7 @@ void SEC_loop::check_integrity(SEC_CHECK_TYPE what) const {
     }
 
     if (what&CHECK_SIZE) {
-        sec_assert(Circumference>0);
+        sec_assert(Circumferance>0);
         sec_assert(drawnSize()>0);
     }
     if (what&CHECK_POSITIONS) {
@@ -314,7 +315,7 @@ void SEC_loop::check_integrity(SEC_CHECK_TYPE what) const {
 void SEC_root::check_integrity(SEC_CHECK_TYPE what) const {
     if (root_loop) {
         sec_assert(!under_construction()); // cannot check integrity, when structure is under construction
-
+    
         root_loop->check_integrity(what);
 
         // check whether structure is a ring and whether regions are correct
@@ -341,25 +342,27 @@ void SEC_root::check_integrity(SEC_CHECK_TYPE what) const {
 }
 #endif // CHECK_INTEGRITY
 
-// ---------------------------------
+// --------------------------------
 //      unlink strands/segments
+// --------------------------------
 
 void SEC_helix_strand::unlink(bool fromOtherStrandAsWell) {
     // if called with fromOtherStrandAsWell == false,
-    // the strand-pair remains deletable
-
+    // the strand-pair remains deletable 
+    
     next_segment = NULL;
     origin_loop  = NULL;
 
     if (fromOtherStrandAsWell) other_strand = NULL;
 }
 
-void SEC_segment::unlink() {
+void SEC_segment::unlink(void) {
     next_helix_strand = NULL;
 }
 
-// ------------------------------
+// -----------------------------
 //      split/merge segments
+// -----------------------------
 
 SEC_helix_strand *SEC_segment::split(size_t start, size_t end, SEC_segment **segment2_ptr) {
     // split segment into 'segment1 - strand - segment2'
@@ -396,8 +399,9 @@ void SEC_segment::mergeWith(SEC_segment *other, SEC_loop *target_loop) {
     delete other;
 }
 
-// ----------------------
+// ---------------------
 //      Reset angles
+// ---------------------
 
 void SEC_loop::reset_angles() {
     for (SEC_strand_iterator strand(this); strand; ++strand) {
@@ -406,7 +410,7 @@ void SEC_loop::reset_angles() {
             strand->get_helix()->set_abs_angle(abs);
         }
     }
-    set_rel_angle(0);
+    set_rel_angle(0); 
 }
 
 void SEC_helix::reset_angles() {
@@ -418,8 +422,9 @@ void SEC_helix::reset_angles() {
 }
 
 
-// ---------------
+// --------------
 //      other
+// --------------
 
 size_t SEC_base_part::getNextAbspos() const {
     // returns the next valid abspos
@@ -433,12 +438,12 @@ size_t SEC_base_part::getNextAbspos() const {
 }
 
 
-SEC_segment *SEC_helix_strand::get_previous_segment() {
+SEC_segment *SEC_helix_strand::get_previous_segment(void) {
     SEC_segment *segment_before;
     SEC_helix_strand *strand_pointer = next_segment->get_next_strand();
 
     if (strand_pointer == this) {
-        segment_before = next_segment;   // we are in a loop with only one segment
+        segment_before = next_segment;   //we are in a loop with only one segment
     }
     else {
         while (strand_pointer != this) {
@@ -469,8 +474,11 @@ static void findLongestHelix(const BI_helix *helix, size_t& start1, size_t& end1
             lastHelixLen++;
         }
     }
-
-    if (lastHelixLen>longestLength) longestHelixNr = lastHelixNr;
+    
+    if (lastHelixLen>longestLength) {
+        longestLength  = lastHelixLen;
+        longestHelixNr = lastHelixNr;
+    }
 
     sec_assert(longestHelixNr);
     start1 = helix->first_position(longestHelixNr);
@@ -483,7 +491,7 @@ void SEC_root::create_default_bone() {
     // create default structure
 
     set_under_construction(true);
-
+    
     SEC_loop *loop1 = new SEC_loop(this);
     SEC_loop *loop2 = new SEC_loop(this);
 
@@ -517,9 +525,9 @@ void SEC_root::create_default_bone() {
 
     strand1->set_sequence_portion(start1, end1+1); segment2->set_sequence_portion(end1+1, start2);
     strand2->set_sequence_portion(start2, end2+1); segment1->set_sequence_portion(end2+1, start1);
-
+    
     root_loop = helix->rootsideLoop();
-
+    
     loop1->set_rel_angle(0);
     loop2->set_rel_angle(0);
     helix->set_rel_angle(0);

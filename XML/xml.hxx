@@ -1,4 +1,5 @@
-// --------------------------------------------------------------------------------
+/////////////////////////////////////////////////////////////////////////////
+//
 // Copyright (C) 2001
 // Ralf Westram
 //
@@ -12,7 +13,8 @@
 //
 // This code is part of my library.
 // You may find a more recent version at http://www.reallysoft.de/
-// --------------------------------------------------------------------------------
+//
+/////////////////////////////////////////////////////////////////////////////
 
 #ifndef XML_HXX
 #define XML_HXX
@@ -27,17 +29,15 @@
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
+
+
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
-#ifndef ARBTOOLS_H
-#include <arbtools.h>
-#endif
-
 #define xml_assert(bed) arb_assert(bed)
 
 
-/*! @memo Classes used to write xml
+/** @memo Classes used to write xml
     @doc  In order to write xml to a stream just open an XML_Document and create and destroy the needed tags.
 */
 
@@ -46,11 +46,11 @@ extern XML_Document *the_XML_Document; // there can only be one at a time
 
 //  ----------------------------
 //      class XML_Attribute
-
-class XML_Attribute : virtual Noncopyable {
+//  ----------------------------
+class XML_Attribute {
 private:
-    std::string    name;
-    std::string    content;
+    std::string         name;
+    std::string         content;
     XML_Attribute *next;
 
 public:
@@ -65,8 +65,8 @@ public:
 
 //  -----------------------
 //      class XML_Node
-
-class XML_Node : virtual Noncopyable {
+//  -----------------------
+class XML_Node {
 protected:
     XML_Node *father;
     bool      opened;
@@ -87,9 +87,10 @@ public:
 
 //  ----------------------------------------
 //      class XML_Tag : public XML_Node
+//  ----------------------------------------
 
-//! xml element
-class XML_Tag : public XML_Node {  // derived from a Noncopyable
+/// xml element
+class XML_Tag : public XML_Node {
 private:
     std::string    name;
     XML_Node      *son;
@@ -98,13 +99,13 @@ private:
     bool           onExtraLine; // default = true; if false -> does not print linefeed before tag
 
 public:
-    /*! Create a new xml element
+    /** Create a new xml element
         @param name_ element name
     */
     XML_Tag(const std::string &name_);
     virtual ~XML_Tag();
 
-    /*! add an attribute to the XML_Tag
+    /** add an attribute to the XML_Tag
         @param name_ attribute name
         @param content_ attribute value
     */
@@ -118,13 +119,16 @@ public:
     void set_on_extra_line(bool oel) { onExtraLine = oel; }
 };
 
-//! a xml text node
+//  -----------------------------------------
+//      class XML_Text : public XML_Node
+//  -----------------------------------------
+/// a xml text node
 class XML_Text : public XML_Node {
 private:
     std::string content;
 
 public:
-    /*! Create text (content) in xml
+    /** Create text (content) in xml
         @param content_ the content
     */
     XML_Text(const std::string& content_) : XML_Node(false), content(content_) {}
@@ -136,6 +140,10 @@ public:
     virtual void close(FILE *out);
 };
 
+//  --------------------------------------------
+//      class XML_Comment : public XML_Text
+//  --------------------------------------------
+
 class XML_Comment : public XML_Node {
     std::string content;
 public:
@@ -144,12 +152,15 @@ public:
 
     virtual void add_son(XML_Node *son_, bool son_is_tag) __ATTR__NORETURN;
     virtual void remove_son(XML_Node *son_) __ATTR__NORETURN;
-    virtual void open(FILE *);
+    virtual void open(FILE *) ;
     virtual void close(FILE *out);
 };
 
-//! an entire xml document
-class XML_Document : virtual Noncopyable {
+//  ---------------------------
+//      class XML_Document
+//  ---------------------------
+/// an entire xml document
+class XML_Document {
 private:
     std::string  dtd;
     XML_Tag     *root;
@@ -157,7 +168,7 @@ private:
     FILE        *out;
 
 public:
-    /*! Create and stream (at destruction) a xml document
+    /** Create and stream (at destruction) a xml document
         @param name_ name of the root node
         @param dtd_ filename of dtd
         @param out_ FILE where xml document will be written to
@@ -165,10 +176,10 @@ public:
     XML_Document(const std::string& name_, const std::string& dtd_, FILE *out_);
     virtual ~XML_Document();
 
-    //! true -> tags w/o content or attributes are skipped (default = false)
+    /// true -> tags w/o content or attributes are skipped (default = false)
     bool skip_empty_tags;
 
-    //! how many columns are used per indentation level (defaults to 1)
+    /// how many columns are used per indentation level (defaults to 1)
     size_t indentation_per_level;
 
     XML_Node* LatestSon() { return latest_son; }

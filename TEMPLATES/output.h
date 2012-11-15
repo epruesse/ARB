@@ -15,15 +15,17 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
-#ifndef _GLIBCXX_CSTDARG
-#include <cstdarg>
+#ifndef _STDARG_H
+#include <stdarg.h>
 #endif
+
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
 
 //  ---------------------
 //      class output
+//  ---------------------
 
 class output {
 private:
@@ -75,7 +77,7 @@ public:
     void vput(const char *s, va_list argPtr) __ATTR__VFORMAT_MEMBER(1);
     void put(const char *s, ...) __ATTR__FORMAT_MEMBER(1);
 
-    void put() {
+    void put()  {
         goto_indentation();
         cr();
     }
@@ -84,7 +86,7 @@ public:
         max_points = maxP;
     }
 
-    void point() { // for use as simple progress indicator
+    void point() {
         if (!printing_points) {
             goto_indentation();
             printing_points = true;
@@ -115,7 +117,7 @@ inline void output::put(const char *s, ...) {
 
 //  ---------------------
 //      class indent
-
+//  ---------------------
 // create an instance of indent to increase indentation
 // indentation automatically resets when that instance leaves the scope
 

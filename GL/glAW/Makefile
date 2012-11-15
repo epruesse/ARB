@@ -7,13 +7,11 @@ CPP_OBJECTS = $(subst .cxx,.o,$(wildcard *.cxx))
 
 OBJECTS = $(C_OBJECTS) $(CPP_OBJECTS)
 
-EXTENDED_CPPINCLUDES = $(CPPINCLUDES) -I$(ARBHOME)/WINDOW
-
 $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(EXTENDED_CPPINCLUDES) $(POST_COMPILE)
+	$(CPP) $(cflags) -c $< $(CPPINCLUDES) -I$(ARBHOME)/WINDOW $(POST_COMPILE)
 
 .c.o:
 	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
@@ -31,7 +29,7 @@ depend.init:
 .c.depend:
 	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 .cxx.depend:
-	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $(EXTENDED_CPPINCLUDES) $< 2>/dev/null >$@
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
 # DO NOT DELETE
 
@@ -41,28 +39,17 @@ depend.init:
 AW_window_ogl.o: aw_window_ogl.hxx
 AW_window_ogl.o: GLwDrawA.h
 AW_window_ogl.o: GLwMDrawA.h
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AW_window_ogl.o: $(ARBHOME)/INCLUDE/arb_core.h
-AW_window_ogl.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_window_ogl.o: $(ARBHOME)/INCLUDE/arb_msg.h
-AW_window_ogl.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AW_window_ogl.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/attributes.h
-AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AW_window_ogl.o: $(ARBHOME)/INCLUDE/cb.h
-AW_window_ogl.o: $(ARBHOME)/INCLUDE/dupstr.h
-AW_window_ogl.o: $(ARBHOME)/INCLUDE/smartptr.h
-AW_window_ogl.o: $(ARBHOME)/INCLUDE/test_global.h
-AW_window_ogl.o: $(ARBHOME)/WINDOW/aw_scalar.hxx
-AW_window_ogl.o: $(ARBHOME)/WINDOW/aw_window_Xm.hxx
 
 GLwMDrawA.o: GLwDrawA.c
 GLwMDrawA.o: GLwDrawA.h

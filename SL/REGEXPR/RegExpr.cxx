@@ -28,13 +28,13 @@ RegExpr::RegExpr(const std::string& expression_, bool ignore_case_)
 
 RegExpr::~RegExpr() {
     if (comreg) GBS_free_regexpr(comreg);
-    delete [] matches; 
+    free(matches);
 }
 
 void RegExpr::compile() const {
     if (!comreg) {
         delete [] matches; matches = NULL;
-
+        
         GB_ERROR error = 0;
         comreg = GBS_compile_regexpr(expression.c_str(), ignore_case ? GB_IGNORE_CASE : GB_MIND_CASE, &error);
         if (error) throw string(error);
@@ -43,11 +43,11 @@ void RegExpr::compile() const {
 }
 
 void RegExpr::perform_match(const char *str, size_t offset) const {
-    /* Searches for first match (and submatches) in 'str'
+    /* Searches for first match (and submatches) in 'str' 
      *
      * sets member 'matches' to array of match + subexpression matches (heap-copy)
      * or to NULL if nothing matched
-     *
+     * 
      * If 'offset' > 0, then str is searched from position 'offset'.
      * In this case it is assumed, that we are not at line start!
      */
@@ -78,7 +78,7 @@ void RegExpr::test() const {
 const RegMatch *RegExpr::match(const std::string& versus, size_t offset) const {
     if (!comreg) compile();                         // lazy compilation
     perform_match(versus.c_str(), offset);
-    return (matches && matches[0].didMatch()) ? &matches[0] : NULL;
+    return matches ? &matches[0] : NULL;
 }
 
 size_t RegExpr::subexpr_count() const {
@@ -89,7 +89,7 @@ size_t RegExpr::subexpr_count() const {
 const RegMatch *RegExpr::subexpr_match(size_t subnr) const {
     // get subexpression match from last 'match()'
     // (or NULL if subexpression 'subnr' did not match)
-    //
+    // 
     // 'subnr' is in range [1..subexpr_count()]
 
     const RegMatch *result = 0;
@@ -103,44 +103,5 @@ const RegMatch *RegExpr::subexpr_match(size_t subnr) const {
     return result;
 }
 
-// --------------------------------------------------------------------------------
 
-#ifdef UNIT_TESTS
-#ifndef TEST_UNIT_H
-#include <test_unit.h>
-#endif
 
-#define TEST_REGEX_MATCHES(str,regexpr,igCase,exp_match) do {           \
-        RegExpr exp(regexpr, igCase);                                   \
-        const RegMatch *match = exp.match(str);                         \
-        TEST_ASSERT(match);                                             \
-        TEST_ASSERT_EQUAL(match->extract(str).c_str(), exp_match);      \
-    } while(0)
-
-#define TEST_REGEX_DOESNT_MATCH(str,regexpr,igCase) do {                \
-        RegExpr exp(regexpr, igCase);                                   \
-        const RegMatch *match = exp.match(str);                         \
-        TEST_ASSERT(!match);                                            \
-    } while(0)
-
-#define TEST_REGEX_MATCHES_SUB1(str,regexpr,igCase,exp_match,exp_sub1match) do {        \
-        RegExpr exp(regexpr, igCase);                                                   \
-        const RegMatch *match = exp.match(str);                                         \
-        TEST_ASSERT(match);                                                             \
-        TEST_ASSERT_EQUAL(match->extract(str).c_str(), exp_match);                      \
-        match = exp.subexpr_match(1);                                                   \
-        TEST_ASSERT(match);                                                             \
-        TEST_ASSERT_EQUAL(match->extract(str).c_str(), exp_sub1match);                  \
-    } while(0)
-    
-void TEST_regexpr() {
-    TEST_REGEX_MATCHES("bla", "^bla$", false, "bla");
-
-    TEST_REGEX_DOESNT_MATCH("3;1406", "^bla$", true);
-    TEST_REGEX_MATCHES("3;1406", "^bla|", true, "");
-    TEST_REGEX_MATCHES_SUB1("3;1406", "^[0-9]+;([0-9]+)$", true, "3;1406", "1406");
-}
-
-#endif // UNIT_TESTS
-
-// --------------------------------------------------------------------------------

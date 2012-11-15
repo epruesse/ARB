@@ -9,11 +9,10 @@
 use strict;
 use warnings;
 
-my $forceAll  = 0; # 1 -> force scan of all files if no stamp, 0 -> assume all ok, scan only new files
-my $defsStart = 15; # lineno of start of definition
+my $forceAll = 0; # 1 -> force scan of all files if no stamp, 0 -> assume all ok, scan only new files
 
 my %scan_extension = map { $_ => 1; } (
-                                       'c', 'h',
+                                       'c', 'h', 
                                        'cxx', 'hxx',
                                        'cpp', 'hpp',
                                        'f', 'inc',
@@ -68,17 +67,8 @@ my %ignored_subdirs = map { $_ => 1; } (
                                         'GDE/RAxML',
                                         'GDE/SUPPORT',
                                         'GDE/PHYLIP',
-                                        'HEADERLIBS',
                                         'patches',
-                                        'UNIT_TESTER/run',
                                         'bin',
-                                       );
-
-my %ignored_relpath = map { $_ => 1; } (
-                                        'NAMES_COM/names_client.h',
-                                        'NAMES_COM/names_server.h',
-                                        'PROBE_COM/PT_com.h',
-                                        'PROBE_COM/PT_server.h',
                                        );
 
 my $tab_count        = 0;
@@ -114,9 +104,8 @@ sub recurse_dirs($$) {
   my ($dir,$basedir) = @_;
 
   my @subdirs = ();
-  my $subdir  = '';
   if ($dir ne $basedir) {
-    $subdir = substr($dir,length($basedir)+1);
+    my $subdir = substr($dir,length($basedir)+1);
     if (defined $ignored_subdirs{$subdir}) {
       # print "Ignoring '$subdir' (dir='$dir')\n";
       return;
@@ -127,7 +116,6 @@ sub recurse_dirs($$) {
   foreach (readdir(DIR)) {
     if ($_ ne '.' and $_ ne '..') {
       my $full = $dir.'/'.$_;
-      my $rel  = $subdir.'/'.$_;
       if (-l $full) {
         # print "$full:0: link -- skipped\n";
       }
@@ -155,10 +143,6 @@ sub recurse_dirs($$) {
             print "Old log file: $full -- removing\n";
             unlink($full) || print "$full:0: can't unlink (Reason: $!)\n";
           }
-        }
-        elsif (defined $ignored_relpath{$rel}) {
-          # print "$full:0: excluded by relpath '$rel'\n";
-          $scan = 0;
         }
         else {
           if (/\.([^.]+)$/) {   # file with extension
@@ -263,7 +247,7 @@ if (not defined $ARBHOME) {
   die "'ARBHOME' not defined";
 }
 
-my $time_stamp = $ARBHOME.'/SOURCE_TOOLS/stamp.tabBrake';
+my $time_stamp = $ARBHOME.'/SOURCE_TOOLS/tabBrake.stamp';
 my $exitcode   = 0;
 if (-f $time_stamp) {
   $files_newer_than = getModtime($time_stamp);
@@ -285,9 +269,6 @@ if ($exitcode==0) {
   # i.e. user inserts TAB to file -> fail once
 }
 recurse_dirs($ARBHOME,$ARBHOME);
-if ($tab_count>0) {
-  $exitcode = 1;
-  print $ARBHOME.'/SOURCE_TOOLS/tabBrake.pl:'.$defsStart.': Warning: what may contain TABs is defined here'."\n";
-}
+if ($tab_count>0) { $exitcode = 1; }
 
 exit($exitcode);

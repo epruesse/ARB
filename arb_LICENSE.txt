@@ -74,7 +74,7 @@ ARB copyright and license information
         applications and all external programs used by ARB.
 
 
-Copyright notices for programs distributed together with ARB:
+Copyright notices for programs distributes together with ARB
 
     GDE
 
@@ -129,8 +129,8 @@ Copyright notices for programs distributed together with ARB:
             ------
 
         1) THE PROGRAM USES SUBROUTINES FROM THE PORT LIBRARY FOR
-           ERROR HANDLING, DYNAMIC STORAGE ALLOCATION AND
-           SPECIFICATION OF MACHINE-DEPENDENT CONSTANTS.
+           ERROR HANDLING, DYNAMIC STORAGE ALLOCATION AND SPECIFICA-
+           TION OF MACHINE-DEPENDENT CONSTANTS.
            CF. FOX, P.A., HALL, A.D., & SCHRYER, N.L.
 
             THE PORT MATHEMATICAL SUBROUTINE LIBRAY. ACM TRANS. ON MATH.
@@ -256,12 +256,6 @@ Copyright notices for programs distributed together with ARB:
          Please advise me of any bugs, additions or corrections.
 
 
-Copyright notices for headerlibs distributed together with ARB:
-
-     eigen (2.0.16)
-
-        eigen is copyrighted by LGPL3
-        (copies are provided in HEADERLIBS/eigen.tgz)
 
 
 

@@ -24,6 +24,7 @@ entrySelectionDialog::entrySelectionDialog(MDialog *d) : MDialog(d)
 {
     if(m_opened)
     {
+//         this->~entrySelectionDialog();
         return;
     }
     else m_opened= true;
@@ -61,77 +62,6 @@ entrySelectionDialog::~entrySelectionDialog()
 {
 }
 
-
-/****************************************************************************
-*  CALLBACK - EXIT BUTTON CALLBACK
-*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
-****************************************************************************/
-static void staticEntrySelExitButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
-{
-    // GET POINTER OF THE ORIGINAL CALLER
-    entrySelectionDialog *esD= (entrySelectionDialog *)clientData;
-
-    // CALL CLASS MEMBER FUNCTION
-    esD->exitButtonCallback(widget, callData);
-}
-
-
-/****************************************************************************
-*  CALLBACK - EXIT BUTTON CALLBACK
-****************************************************************************/
-void entrySelectionDialog::exitButtonCallback(Widget, XtPointer)
-{
-    m_opened= false;
-    this->closeDialog();
-}
-
-
-/****************************************************************************
-*  CALLBACK - SPECIES CALLBACK
-*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
-****************************************************************************/
-static void staticListCallback(Widget widget, XtPointer clientData, XtPointer callData)
-{
-    // GET POINTER OF THE ORIGINAL CALLER
-    entrySelectionDialog *esD= (entrySelectionDialog *)clientData;
-
-    // CALL CLASS MEMBER FUNCTION
-    esD->listCallback(widget, callData);
-}
-
-
-/****************************************************************************
-*  CALLBACK - SPECIES CALLBACK
-****************************************************************************/
-void entrySelectionDialog::listCallback(Widget, XtPointer callData)
-{
-    // GET CALLBACK DATA
-    XmListCallbackStruct *cbs= (XmListCallbackStruct *)callData;
-    XmStringGetLtoR(cbs->item, XmFONTLIST_DEFAULT_TAG, &m_entry);
-
-    // TRIGGER ENTRY CHANGED CALLBACK
-    triggerListChange();
-}
-
-
-/****************************************************************************
-*  SET SPECIES DATA CHANGED CALLBACK
-****************************************************************************/
-void entrySelectionDialog::setListCallback(XtCallbackProc callback)
-{
-    m_listCallback= callback;
-    m_hasListCallback= true;
-}
-
-
-/****************************************************************************
-*  TRIGGER SPECIES DATA CHANGED CALLBACK
-****************************************************************************/
-void entrySelectionDialog::triggerListChange()
-{
-    if(m_hasListCallback)
-        m_listCallback(m_parent_widget, (XtPointer)m_parent_dialog, (XtPointer)&m_entry);
-}
 
 /****************************************************************************
 *  MAIN DIALOG - CREATE WINDOW
@@ -186,4 +116,75 @@ void entrySelectionDialog::createWindow()
     XtAddCallback(exitButton, XmNactivateCallback, staticEntrySelExitButtonCallback, this);
 }
 
+
+/****************************************************************************
+*  CALLBACK - EXIT BUTTON CALLBACK
+*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
+****************************************************************************/
+void staticEntrySelExitButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
+{
+    // GET POINTER OF THE ORIGINAL CALLER
+    entrySelectionDialog *esD= (entrySelectionDialog *)clientData;
+
+    // CALL CLASS MEMBER FUNCTION
+    esD->exitButtonCallback(widget, callData);
+}
+
+
+/****************************************************************************
+*  CALLBACK - EXIT BUTTON CALLBACK
+****************************************************************************/
+void entrySelectionDialog::exitButtonCallback(Widget, XtPointer)
+{
+    m_opened= false;
+    this->closeDialog();
+}
+
+
+/****************************************************************************
+*  CALLBACK - SPECIES CALLBACK
+*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
+****************************************************************************/
+void staticListCallback(Widget widget, XtPointer clientData, XtPointer callData)
+{
+    // GET POINTER OF THE ORIGINAL CALLER
+    entrySelectionDialog *esD= (entrySelectionDialog *)clientData;
+
+    // CALL CLASS MEMBER FUNCTION
+    esD->listCallback(widget, callData);
+}
+
+
+/****************************************************************************
+*  CALLBACK - SPECIES CALLBACK
+****************************************************************************/
+void entrySelectionDialog::listCallback(Widget, XtPointer callData)
+{
+    // GET CALLBACK DATA
+    XmListCallbackStruct *cbs= (XmListCallbackStruct *)callData;
+    XmStringGetLtoR(cbs->item, XmFONTLIST_DEFAULT_TAG, &m_entry);
+
+    // TRIGGER ENTRY CHANGED CALLBACK
+    triggerListChange();
+}
+
+
+/****************************************************************************
+*  SET SPECIES DATA CHANGED CALLBACK
+****************************************************************************/
+void entrySelectionDialog::setListCallback(XtCallbackProc callback)
+{
+    m_listCallback= callback;
+    m_hasListCallback= true;
+}
+
+
+/****************************************************************************
+*  TRIGGER SPECIES DATA CHANGED CALLBACK
+****************************************************************************/
+void entrySelectionDialog::triggerListChange()
+{
+    if(m_hasListCallback)
+        m_listCallback(m_parent_widget, (XtPointer)m_parent_dialog, (XtPointer)&m_entry);
+}
 

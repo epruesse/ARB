@@ -16,32 +16,25 @@
 #ifndef AWT_CONFIG_MANAGER_HXX
 #define AWT_CONFIG_MANAGER_HXX
 
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
-#endif
-#ifndef AW_BASE_HXX
-#include <aw_base.hxx>
-#endif
-
 struct AWT_config_mapping;
 
-struct AWT_config_mapping_def {
+struct AWT_config_mapping_def { 
     const char *awar_name;
     const char *config_name;
 };
 
-// -------------------
-//      AWT_config
-
+// ----------------------------------------
+//      class AWT_config
+// ----------------------------------------
 class AWT_config {
     // stores one specific configuration (key->value pairs)
-    //
+    // 
     // this class allows to modify the config_string before calling AWT_config_definition::write().
-    // This is e.g. necessary if some config-entries change and you want to support
+    // This is e.g. neccessary if some config-entries change and you want to support
     // automatic conversion from old format to new format.
 
     AWT_config_mapping *mapping;
-    GB_ERROR           parse_error; // set by AWT_config(const char *)
+    GB_ERROR           parse_error; // set by AWT_config(const char *) 
 
     AWT_config(const AWT_config&);
     AWT_config& operator = (const AWT_config&);
@@ -63,9 +56,9 @@ public:
     GB_ERROR write_to_awars(const AWT_config_mapping *cfgname_2_awar, AW_root *root) const; // internal use (write config into awars)
 };
 
-// ------------------------------
-//      AWT_config_definition
-
+//  ------------------------------------
+//      class AWT_config_definition
+//  ------------------------------------
 class AWT_config_definition {
 private:
     AW_root            *root;
@@ -88,16 +81,11 @@ public:
     AW_root *get_root() const { return root; }
 };
 
-// ----------------------------------------
-//      callbacks from config manager :
-
+// callbacks from config manager :
 typedef char *(*AWT_store_config_to_string)(AW_window *aww, AW_CL cl1, AW_CL cl2);
 typedef void (*AWT_load_config_from_string)(AW_window *aww, const char *stored_string, AW_CL cl1, AW_CL cl2);
 
-// ----------------------------------
-// the config manager itself
-// adds button at cursor position when called (from a window generator function)
-
+// the config manager itself -> adds button at cursor position when called (from a window generator function)
 void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, AWT_store_config_to_string store, AWT_load_config_from_string load, AW_CL cl1, AW_CL cl2, const char *macro_id = NULL);
 
 #else

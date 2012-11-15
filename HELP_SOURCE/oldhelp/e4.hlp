@@ -59,17 +59,8 @@ DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
 			These 3 positions and the IUPAC-display refer to the position
 			RIGHT of the cursor.
 
-			'Position' counts from 1 to "alignment length".
-
-                        The 'Ecoli'- and 'Base'-position count from zero to "number of bases".
-
-                        - Zero means your cursor is left of the first base (and not AT the first base).
-                        - X means your cursor is AT or BEHIND base number X (but in front of base number X+1)
-
-                        By changing the value of one of these fields, the cursor will
-                        be repositioned. Negative values are possible - in that case
-                        the position will be calculated from the right end (e.g. -1 in
-                        'Base' field means 'position onto base')
+			Position counting now starts with 1 (too many people were
+			confused about position counting starting at position 0).
 
 	Moving entries:
 
@@ -165,8 +156,8 @@ DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
 		Key mapping:
 
 			Nucleotide (amino acid) and gap symbols can be assigned
-			to any of the letter and symbol keys
-                        using 'Properties/Key mappings'.
+			to any of the letter and symbol keys by using the 'Key
+			Mapping' facility ('Properties' menu).
 
 		Moving nucleotide (amino acid) symbols:
 
@@ -188,20 +179,6 @@ DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
 				(amino acid) symbol, it will jump aside the next
 				nucleotide (amino acid) symbol.
 
-                Change gap type
-
-                       Consecutive runs of gaps can be set to 
-
-                       CTRL-'-'         minus sign (normal gaps)
-                       CTRL-'.'         dots (recommended at both sequence ends)
-                       CTRL-SPACE       toggles between both gap types
-
-                       These gap types have different meanings:
-
-                       '-'        is only used for aligning
-                       '.'        marks potentially missing bases
-
-
 		Other keys:
 
 			CTRL+LEFT/RIGHT
@@ -220,18 +197,6 @@ DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
 			CTRL+HOME/END
 
 				Jumps to the first/last sequence.
-
-                        ENTER
-
-                                Fold/unfold group
-
-                        ALT+UP/DOWN
-
-                                Jump to previous/next group consensus
-
-                        Ctrl-M
-
-                                Toggle mark of species/group.
 
 	Messages:
 

@@ -1,38 +1,36 @@
 #ifndef AW_XM_HXX
 #define AW_XM_HXX
 
-#ifndef AW_COMMON_XM_HXX
-#include "aw_common_xm.hxx"
+#ifndef AW_DEVICE_HXX
+#include <aw_device.hxx>
 #endif
 
-class AW_device_Xm : public AW_device {
-    bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri);
-    bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
-    bool box_impl(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri);
-    bool circle_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri);
-    bool arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filter);
-    bool filled_area_impl(int gc, int npos, const AW::Position *pos, AW_bitset filteri) {
-        return generic_filled_area(gc, npos, pos, filteri);
-    }
-    bool invisible_impl(const AW::Position& pos, AW_bitset filteri) { return generic_invisible(pos, filteri); }
-
-    void specific_reset() {}
-    
+class AW_device_Xm: public AW_device {
+    int fastflag;
 public:
-    AW_device_Xm(AW_common *commoni)
-        : AW_device(commoni)
-    {}
+    AW_device_Xm(AW_common *commoni);
+    
+    void           init(void);
+    AW_DEVICE_TYPE type(void);
 
-    AW_common_Xm *get_common() const { return DOWNCAST(AW_common_Xm*, AW_device::get_common()); }
+    int line(int gc, AW_pos x0,AW_pos y0, AW_pos x1,AW_pos y1, AW_bitset filter, AW_CL cd1, AW_CL cd2);
+    int text(int gc, const char *string,AW_pos x,AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2,long opt_strlen);
+    int box(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filter, AW_CL cd1, AW_CL cd2);
+    int circle(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filter, AW_CL cd1, AW_CL cd2);
+    int arc(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filter, AW_CL cd1, AW_CL cd2);
 
-    AW_DEVICE_TYPE type();
+    int filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+        return generic_filled_area(gc, npoints, points, filteri, cd1, cd2);
+    }
 
     void clear(AW_bitset filteri);
-    void clear_part(const AW::Rectangle& rect, AW_bitset filteri);
+    void clear_part(AW_pos x, AW_pos y,AW_pos width, AW_pos height, AW_bitset filteri);
     void clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
-
-    void flush();
-    void move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y);
+    
+    void fast(void);            // e.g. zoom linewidth off
+    void slow(void);
+    void flush(void);
+    void move_region( AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y );
 };
 
 #else

@@ -10,10 +10,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(ACC) $(cflags) -c $< $(AINCLUDES)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -36,22 +36,13 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 TreeWrite.o: TreeWrite.h
+TreeWrite.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arb_assert.h
-TreeWrite.o: $(ARBHOME)/INCLUDE/arb_core.h
-TreeWrite.o: $(ARBHOME)/INCLUDE/arb_error.h
-TreeWrite.o: $(ARBHOME)/INCLUDE/arb_msg.h
-TreeWrite.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
-TreeWrite.o: $(ARBHOME)/INCLUDE/arb_string.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arbdb.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arbdbt.h
-TreeWrite.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/attributes.h
-TreeWrite.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-TreeWrite.o: $(ARBHOME)/INCLUDE/dupstr.h
-TreeWrite.o: $(ARBHOME)/INCLUDE/nds.h
-TreeWrite.o: $(ARBHOME)/INCLUDE/smartptr.h
-TreeWrite.o: $(ARBHOME)/INCLUDE/test_global.h
+TreeWrite.o: $(ARBHOME)/INCLUDE/TreeRead.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/xml.hxx

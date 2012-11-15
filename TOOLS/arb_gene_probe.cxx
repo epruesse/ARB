@@ -1,20 +1,14 @@
-// =============================================================== //
-//                                                                 //
-//   File      : arb_gene_probe.cxx                                //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
-
+#include <arbdb.h>
 #include <arbdbt.h>
 #include <adGene.h>
 
 #include <map>
 #include <list>
 #include <set>
-#include <string>
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -34,21 +28,7 @@ static int gene_counter          = 0; // pre-incremented counters
 static int splitted_gene_counter = 0;
 static int intergene_counter     = 0;
 
-struct nameOrder {
-    bool operator()(const char *name1, const char *name2) {
-        // Normally it is sufficient to have any order, as long as it is strict.
-        // But for UNIT_TESTS we need a reproducable order, which does not
-        // depend on memory layout of DB elements.
-#if defined(UNIT_TESTS)
-        return strcmp(name1, name2)<0; // slow, determined by species names
-#else
-        return (name1-name2)<0;        // fast, but depends on memory layout (e.g. on MEMORY_TEST in gb_memory.h)
-#endif
-    }
-};
-
-typedef map<const char *, string, nameOrder> FullNameMap;
-static FullNameMap names;
+static map<const char *,char *> names;
 
 // --------------------------------------------------------------------------------
 
@@ -145,7 +125,6 @@ void GenePositionMap::announceGene(PositionPair gene)
 
             usedRanges.erase(found);
 
-            // cppcheck-suppress unreadVariable
             gene_length = combined_length;
             found       = usedRanges.find(gene); // search for further overlaps
         } while (found != usedRanges.end());
@@ -206,20 +185,20 @@ void GenePositionMap::dump() const
 static GB_ERROR create_data_entry(GBDATA *gb_species2, const char *sequence, int seqlen) {
     GB_ERROR  error         = 0;
     char     *gene_sequence = new char[seqlen+1];
-
+    
     memcpy(gene_sequence, sequence, seqlen);        // @@@ FIXME: avoid this copy!
     gene_sequence[seqlen] = 0;
 
     GBDATA *gb_ali     = GB_create_container(gb_species2, "ali_ptgene");
     if (!gb_ali) error = GB_await_error();
     else    error      = GBT_write_string(gb_ali, "data", gene_sequence);
-
+    
     delete [] gene_sequence;
     return error;
 }
 
 #if defined(DEBUG)
-static void CHECK_SEMI_ESCAPED(const char *name) {
+void CHECK_SEMI_ESCAPED(const char *name) {
     // checks whether all ";\\" are escaped
     while (*name) {
         gp_assert(*name != ';'); // oops, unescaped ';'
@@ -251,7 +230,7 @@ static GBDATA *create_gene_species(GBDATA *gb_species_data2, const char *interna
 
     if (!error) {
         GBDATA *gb_name = GB_create(gb_species2, "name", GB_STRING);
-
+        
         if (!gb_name) error = GB_await_error();
         else {
             error = GB_write_string(gb_name, internal_name);
@@ -259,8 +238,12 @@ static GBDATA *create_gene_species(GBDATA *gb_species_data2, const char *interna
                 const char *static_internal_name = GB_read_char_pntr(gb_name); // use static copy from db as map-index (internal_name is temporary)
                 error                            = create_data_entry(gb_species2, sequence, length);
                 if (!error) {
-                    names[static_internal_name] = long_name;
+                    names[static_internal_name] = strdup(long_name);
                     error = GBT_write_int(gb_species2, "abspos", abspos);
+#if defined(DEBUG)
+                    // store realname for debugging purposes
+                    if (!error) error = GBT_write_string(gb_species2, "realname_debug", long_name);
+#endif // DEBUG
                 }
             }
         }
@@ -316,7 +299,7 @@ static GB_ERROR create_splitted_gene(GBDATA *gb_species_data2, PositionPairList&
 
     char *split_pos_list = 0;   // contains split information: 'gene pos of part2,abs pos of part2;gene pos of part3,abs pos of part3;...'
 
-    for (PositionPairList::iterator part = part_list.begin(); part != list_end;) {
+    for (PositionPairList::iterator part = part_list.begin(); part != list_end; ) {
         int part_size   = part->end-part->begin+1;
         int genome_pos  = part->begin;
         memcpy(gene_sequence+gene_off, ali_genome+part->begin, part_size);
@@ -391,8 +374,8 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
     int intergene_counter_old     = intergene_counter;
 
     GBDATA *gb_ali_genom = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
-    gp_assert(gb_ali_genom);                                                       // existence has to be checked by caller!
-
+    gp_assert(gb_ali_genom);                                                       // existance has to be checked by caller!
+    
     const char *ali_genom       = GB_read_char_pntr(gb_ali_genom);
     if (!ali_genom) error       = GB_await_error();
     PositionPair::genome_length = GB_read_count(gb_ali_genom);     // this affects checks in PositionPair
@@ -402,7 +385,7 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
          gb_gene = GEN_next_gene(gb_gene))
     {
         const char *gene_name = GBT_read_name(gb_gene);
-
+        
         PositionPairList part_list;
         error = scan_gene_positions(gb_gene, part_list);
 
@@ -459,11 +442,11 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
 
         if (new_splitted_genes) {
 
-            printf("  - %s: %i genes (%i splitted), %i intergenes",
+            printf("  - %s: %u genes (%u splitted), %u intergenes",
                    organism_name, new_genes+new_splitted_genes, new_splitted_genes, new_intergenes);
         }
         else {
-            printf("  - %s: %i genes, %i intergenes",
+            printf("  - %s: %u genes, %u intergenes",
                    organism_name, new_genes, new_intergenes);
         }
         printf(" (data grow: %5.2f%%, gene overlap: %5.2f%%=%lu bp)\n", data_grow, gene_overlap, overlaps);
@@ -476,7 +459,7 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
     return error;
 }
 
-int ARB_main(int argc, const char *argv[]) {
+int main(int argc, char* argv[]) {
 
     printf("\n"
            "arb_gene_probe 1.2 -- (C) 2003/2004 Lehrstuhl fuer Mikrobiologie - TU Muenchen\n"
@@ -491,12 +474,9 @@ int ARB_main(int argc, const char *argv[]) {
     const char *inputname  = argv[1];
     const char *outputname = argv[2];
 
-    // GBK_terminate("test-crash of arb_gene_probe");
-    
     printf("Converting '%s' -> '%s' ..\n", inputname, outputname);
 
     GB_ERROR  error   = 0;
-    GB_shell  shell;
     GBDATA   *gb_main = GB_open(inputname, "rw"); // rootzeiger wird gesetzt
     if (!gb_main) {
         error = GBS_global_string("Database '%s' not found", inputname);
@@ -505,10 +485,12 @@ int ARB_main(int argc, const char *argv[]) {
         GB_request_undo_type(gb_main, GB_UNDO_NONE); // disable arbdb builtin undo
         GB_begin_transaction(gb_main);
 
-        GBDATA *gb_species_data     = GBT_get_species_data(gb_main);
-        GBDATA *gb_species_data_new = GBT_create(gb_main, "species_data", 7); // create a second 'species_data' container
+        GBDATA *gb_species_data     = GB_entry(gb_main,"species_data");
+        GBDATA *gb_species_data_new = GB_create_container(gb_main,"species_data"); // introducing a second 'species_data' container
 
-        if (!gb_species_data_new) error = GB_await_error();
+        if (!gb_species_data || ! gb_species_data_new) {
+            error = GB_await_error();
+        }
 
         int non_ali_genom_species = 0;
         int ali_genom_species     = 0;
@@ -531,7 +513,7 @@ int ARB_main(int argc, const char *argv[]) {
         if (non_ali_genom_species) {
             printf("%i species had no alignment in '" GENOM_ALIGNMENT "' and have been skipped.\n", non_ali_genom_species);
         }
-        if (!error && ali_genom_species == 0) {
+        if (ali_genom_species == 0) {
             error = "no species with data in alignment '" GENOM_ALIGNMENT "' were found";
         }
 
@@ -549,12 +531,12 @@ int ARB_main(int argc, const char *argv[]) {
             // create map-string
             char* map_string;
             {
-                FullNameMap::iterator NameEnd = names.end();
-                FullNameMap::iterator NameIter;
+                map<const char*,char*>::iterator NameEnd = names.end();
+                map<const char*,char*>::iterator NameIter;
 
                 size_t mapsize = 0;
                 for (NameIter = names.begin(); NameIter != NameEnd; ++NameIter) {
-                    mapsize += strlen(NameIter->first)+NameIter->second.length()+2;
+                    mapsize += strlen(NameIter->first)+strlen(NameIter->second)+2;
                 }
 
                 map_string  = new char[mapsize+1];
@@ -562,13 +544,13 @@ int ARB_main(int argc, const char *argv[]) {
 
                 for (NameIter = names.begin(); NameIter != NameEnd; ++NameIter) {
                     int len1 = strlen(NameIter->first);
-                    int len2 = NameIter->second.length();
+                    int len2 = strlen(NameIter->second);
 
                     memcpy(map_string+moff, NameIter->first, len1);
                     map_string[moff+len1]  = ';';
                     moff                  += len1+1;
 
-                    memcpy(map_string+moff, NameIter->second.c_str(), len2);
+                    memcpy(map_string+moff, NameIter->second, len2);
                     map_string[moff+len2]  = ';';
                     moff                  += len2+1;
                 }
@@ -577,11 +559,9 @@ int ARB_main(int argc, const char *argv[]) {
                 gp_assert(moff <= mapsize);
             }
 
-            GBDATA *gb_gene_map     = GB_create_container(gb_main, "gene_map");
+            GBDATA *gb_gene_map     = GB_create_container(gb_main,"gene_map");
             if (!gb_gene_map) error = GB_await_error();
             else    error           = GBT_write_string(gb_gene_map, "map_string", map_string);
-
-            delete [] map_string;
         }
 
         if (!error) {
@@ -589,11 +569,11 @@ int ARB_main(int argc, const char *argv[]) {
             error = GBT_set_default_alignment(gb_main, "ali_ptgene");
 
             if (!error) {
-                GBDATA *gb_use     = GB_search(gb_main, "presets/alignment/alignment_name", GB_STRING);
+                GBDATA *gb_use     = GB_search(gb_main,"presets/alignment/alignment_name",GB_STRING);
                 if (!gb_use) error = GB_await_error();
                 else {
                     GB_push_my_security(gb_main);
-                    error = GB_write_string(gb_use, "ali_ptgene");
+                    error = GB_write_string(gb_use,"ali_ptgene");
                     GB_pop_my_security(gb_main);
                 }
             }

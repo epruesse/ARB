@@ -14,28 +14,43 @@
 #ifndef TYPES_H
 #include "types.h"
 #endif
-#ifndef _GLIBCXX_CCTYPE
+#ifndef _CPP_CCTYPE
 #include <cctype>
 #endif
-#ifndef _GLIBCXX_ALGORITHM
+#ifndef _CPP_ALGORITHM
 #include <algorithm>
 #endif
 
-inline void appendSpaced(std::string& str, const std::string& toAppend) {
+
+inline bool beginsWith(const string& str, const string& start) {
+    return str.find(start) == 0;
+}
+
+inline bool endsWith(const string& str, const string& postfix) {
+    size_t slen = str.length();
+    size_t plen = postfix.length();
+
+    if (plen>slen) { return false; }
+    return str.substr(slen-plen) == postfix;
+}
+
+inline void appendSpaced(string& str, const string& toAppend) {
     if (!toAppend.empty()) {
         if (!str.empty()) str.append(1, ' ');
         str.append(toAppend);
     }
 }
 
+bool parseInfix(const string &str, const string& prefix, const string& postfix, string& foundInfix);
+
 // --------------------------------------------------------------------------------
 
-#define CURRENT_REST std::string(pos, end).c_str()
+#define CURRENT_REST string(pos, end).c_str() 
 
 struct StringParser {
     stringCIter pos, end;
 
-    StringParser(const std::string& str) : pos(str.begin()), end(str.end()) {}
+    StringParser(const string& str) : pos(str.begin()), end(str.end()) {}
 
     bool atEnd() const { return pos == end; }
 
@@ -45,7 +60,7 @@ struct StringParser {
     void setPosition(const stringCIter& position) { pos = position; }
     void advance(size_t offset) { std::advance(pos, offset); }
 
-    std::string rest() const { return std::string(pos, end); }
+    string rest() const { return string(pos, end); }
 
     stringCIter find(char c) {
         while (pos != end && *pos != c) {
@@ -96,7 +111,7 @@ struct StringParser {
         std::advance(pos, len); // eat the found content
     }
 
-    std::string extractWord(const char *delimiter = " ") {
+    string extractWord(const char *delimiter = " ") {
         if (atEnd() || strchr(delimiter, *pos) != 0) {
             throw GBS_global_string("Expected non-delimiter at '%s'", CURRENT_REST);
         }
@@ -104,13 +119,13 @@ struct StringParser {
         stringCIter start = pos++;
 
         while (!atEnd() && strchr(delimiter, *pos) == 0) ++pos;
-        return std::string(start, pos);
+        return string(start, pos);
     }
 
     long eatNumber(bool &eaten) {
         long lnum = 0;
         char c;
-
+        
         eaten = false;
         for (; isdigit(c = *pos); ++pos) {
             lnum  = lnum*10+(c-'0');
@@ -123,7 +138,7 @@ struct StringParser {
     long extractNumber() {
         bool seen_digits;
         long lnum = eatNumber(seen_digits);
-
+        
         if (!seen_digits) throw GBS_global_string("Expected number, found '%s'", CURRENT_REST);
         return lnum;
     }

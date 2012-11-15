@@ -11,103 +11,66 @@
 #ifndef AWTC_NEXT_NEIGHBOURS_HXX
 #define AWTC_NEXT_NEIGHBOURS_HXX
 
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
-#endif
-#ifndef ARBTOOLS_H
-#include <arbtools.h>
-#endif
-#ifndef PT_GLOBAL_DEFS_H
-#include <PT_global_defs.h>
-#endif
-#ifndef POS_RANGE_H
-#include <pos_range.h>
+#ifndef ARBDB_H
+#include <arbdb.h>
 #endif
 
-#define ff_assert(bed) arb_assert(bed)
 
-class FamilyList : virtual Noncopyable {
+class AWTC_FIND_FAMILY_MEMBER {
     // list is sorted either by 'matches' or 'rel_matches' (descending)
-    // depending on 'rel_matches' parameter to PT_FamilyFinder::searchFamily()
+    // depending on 'rel_matches' paramater to findFamily() 
 public:
-    FamilyList *next;
+    AWTC_FIND_FAMILY_MEMBER *next;
 
     char   *name;
     long    matches;
     double  rel_matches;
 
-    FamilyList *insertSortedBy_matches(FamilyList *other);
-    FamilyList *insertSortedBy_rel_matches(FamilyList *other);
-
-    FamilyList();
-    ~FamilyList();
+    AWTC_FIND_FAMILY_MEMBER();
+    ~AWTC_FIND_FAMILY_MEMBER();
 };
 
-struct aisc_com;
+struct struct_aisc_com;
 
-class FamilyFinder : virtual Noncopyable {
-    bool                 rel_matches;
-    RelativeScoreScaling scaling;
-
-protected:
-    FamilyList *family_list;
-
-    bool hits_truncated;
-
-#if defined(WARN_TODO)
-#warning change real_hits back to int when aisc_get() has been made failsafe
-#endif 
-    long real_hits;
-
-    PosRange range;
-
-public:
-    FamilyFinder(bool rel_matches_, RelativeScoreScaling scaling_);
-    virtual ~FamilyFinder();
-
-    void restrict_2_region(const PosRange& range_) {
-        // Restrict oligo search to 'range_'
-        // Only oligos which are completely inside that region are used for calculating relationship.
-        // Has to be called before calling searchFamily.
-        range = range_;
-    }
-
-    void unrestrict() { range = PosRange(-1, -1); }
-    const PosRange& get_TargetRange() const { return range; }
-
-    virtual GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results, double min_score) = 0;
-
-    const FamilyList *getFamilyList() const { return family_list; }
-    void delete_family_list();
-
-    bool hits_were_truncated() const { return hits_truncated; }
-    bool uses_rel_matches() const { return rel_matches; }
-    RelativeScoreScaling get_scaling() const { return scaling; }
-    int getRealHits() const { return real_hits; }
+enum FF_complement {
+    FF_FORWARD            = 1,
+    FF_REVERSE            = 2,
+    FF_REVERSE_COMPLEMENT = 4,
+    FF_COMPLEMENT         = 8,
+    
+    // do NOT change the order here w/o fixing ../PROBE/PT_family.cxx@FF_complement_dep
 };
 
-class PT_FamilyFinder : public FamilyFinder { // derived from a Noncopyable
-    GBDATA *gb_main;
-    int     server_id;
-    int     oligo_len;
-    int     mismatches;
-    bool    fast_flag;
-
-    struct PT_FF_comImpl *ci;
-
-    GB_ERROR init_communication();
-    GB_ERROR open(const char *servername);
-    GB_ERROR retrieve_family(const char *sequence, FF_complement compl_mode, int max_results, double min_score) __ATTR__USERESULT;
+class AWTC_FIND_FAMILY {
+    struct_aisc_com *link;
+    GBDATA          *gb_main;
+    long             com;
+    long             locs;
+    
+    void     delete_family_list();
+    GB_ERROR init_communication(void);
+    GB_ERROR open(char *servername);
+    GB_ERROR retrieve_family(char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, FF_complement compl_mode, int max_results);
     void     close();
 
+    // valid after calling retrieve_family():
+    AWTC_FIND_FAMILY_MEMBER *family_list;
+
+    bool hits_truncated;
+    int  real_hits;
+
 public:
 
-    PT_FamilyFinder(GBDATA *gb_main_, int server_id_, int oligo_len_, int mismatches_, bool fast_flag_, bool rel_matches_, RelativeScoreScaling scaling_);
-    ~PT_FamilyFinder();
+    AWTC_FIND_FAMILY(GBDATA *gb_maini);
+    ~AWTC_FIND_FAMILY();
 
-    GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results, double min_score) __ATTR__USERESULT;
+    GB_ERROR findFamily(int server_id,char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, FF_complement compl_mode, int max_results);
 
-    const char *results2string();
+    const AWTC_FIND_FAMILY_MEMBER *getFamilyList() const { return family_list; }
+    bool hits_were_truncated() const { return hits_truncated; }
+    int getRealHits() const { return real_hits; }
+
+    void print();
 };
 
 // --------------------------------------------------------------------------------
@@ -118,7 +81,6 @@ public:
 #define AWAR_NN_MISMATCHES  AWAR_NN_BASE "mismatches"
 #define AWAR_NN_FAST_MODE   AWAR_NN_BASE "fast_mode"
 #define AWAR_NN_REL_MATCHES AWAR_NN_BASE "rel_matches"
-#define AWAR_NN_REL_SCALING AWAR_NN_BASE "scaling"
 
 class AW_root;
 class AW_window;

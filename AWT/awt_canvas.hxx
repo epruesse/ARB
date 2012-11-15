@@ -1,14 +1,14 @@
 #ifndef AWT_CANVAS_HXX
 #define AWT_CANVAS_HXX
 
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
+#ifndef AW_POSITION_HXX
+#include <aw_position.hxx>
+#endif
 #ifndef AW_WINDOW_HXX
 #include <aw_window.hxx>
-#endif
-#ifndef AW_DEVICE_HXX
-#include <aw_device.hxx>
-#endif
-#ifndef ATTRIBUTES_H
-#include <attributes.h>
 #endif
 
 class AWT_canvas;
@@ -16,14 +16,14 @@ class AW_device;
 class AW_clicked_line;
 class AW_clicked_text;
 
-enum AWT_COMMAND_MODE {
+typedef enum {
     AWT_MODE_NONE,
     AWT_MODE_SELECT,
     AWT_MODE_MARK,
     AWT_MODE_GROUP,
     AWT_MODE_ZOOM,          // no command
     AWT_MODE_LZOOM,
-    AWT_MODE_EDIT, // species info
+    AWT_MODE_MOD, // species info
     AWT_MODE_WWW,
     AWT_MODE_LINE,
     AWT_MODE_ROT,
@@ -40,101 +40,39 @@ enum AWT_COMMAND_MODE {
     AWT_MODE_OPTIMIZE,
     AWT_MODE_PROINFO,
     AWT_MODE_STRETCH
-};
-
-#define STANDARD_PADDING 10
-
-// --------------------------------------------------------------------------------
-// AWT_zoom_mode + AWT_fit_mode are correlated, but not strictly coupled
-
-enum AWT_zoom_mode { // bit values!
-    AWT_ZOOM_NEVER = 0,
-    AWT_ZOOM_X     = 1,
-    AWT_ZOOM_Y     = 2,
-    AWT_ZOOM_BOTH  = 3,
-};
-
-enum AWT_fit_mode {
-    AWT_FIT_NEVER,
-    AWT_FIT_LARGER, 
-    AWT_FIT_SMALLER, 
-    AWT_FIT_X, 
-    AWT_FIT_Y, 
-};
-
-// used combinations are:
-// AWT_ZOOM_NEVER + AWT_FIT_NEVER (NDS list, others)
-// AWT_ZOOM_X + AWT_FIT_X (dendrogram tree)
-// AWT_ZOOM_Y + AWT_FIT_Y
-// AWT_ZOOM_BOTH + AWT_FIT_LARGER (radial tree/gene-map; secedit)
-// AWT_ZOOM_BOTH + AWT_FIT_SMALLER (book-style gene-map)
-//
-// other combinations may work as well. some combinations make no sense.
-// --------------------------------------------------------------------------------
-
+} AWT_COMMAND_MODE;
 
 class AWT_graphic_exports {
-    AW_borders default_padding;
-    AW_borders padding;
-
 public:
-    unsigned int zoom_reset : 1;
-    unsigned int resize : 1;
-    unsigned int refresh : 1;
-    unsigned int save : 1;
-    unsigned int structure_change : 1; // maybe useless
+    unsigned int zoom_reset:1;
+    unsigned int resize:1;
+    unsigned int refresh:1;
+    unsigned int save:1;
+    unsigned int structure_change:1; // maybe useless
+    unsigned int dont_fit_x:1;
+    unsigned int dont_fit_y:1;
+    unsigned int dont_fit_larger:1; // if xsize>ysize -> dont_fit_x (otherwise dont_fit_y)
+    unsigned int dont_scroll:1;
 
-    AWT_zoom_mode zoom_mode;
-    AWT_fit_mode  fit_mode;
+    void init(void); // like clear, but resets fit/scroll state
+    void clear(void);
 
-    unsigned int dont_scroll : 1; // normally 0 (1 for IRS tree)
-
-    void init();     // like clear, but resets fit, scroll state and padding
-    void clear();
-
-    void set_default_padding(int t, int b, int l, int r) {
-        default_padding.t = t;
-        default_padding.b = b;
-        default_padding.l = l;
-        default_padding.r = r;
-
-        padding = default_padding;
-    }
-
-    void set_equilateral_default_padding(int pad) { set_default_padding(pad, pad, pad, pad); }
-    void set_standard_default_padding() { set_equilateral_default_padding(STANDARD_PADDING); }
-
-    void set_extra_text_padding(const AW_borders& text_padding) {
-        padding.t = default_padding.t + text_padding.t;
-        padding.b = default_padding.b + text_padding.b;
-        padding.l = default_padding.l + text_padding.l;
-        padding.r = default_padding.r + text_padding.r;
-    }
-
-    int get_x_padding() const { return padding.l+padding.r; }
-    int get_y_padding() const { return padding.t+padding.b; }
-    int get_top_padding() const { return padding.t; }
-    int get_left_padding() const { return padding.l; }
-
-    AW::Vector zoomVector(double transToFit) const {
-        return AW::Vector(zoom_mode&AWT_ZOOM_X ? transToFit : 1.0,
-                          zoom_mode&AWT_ZOOM_Y ? transToFit : 1.0);
-    }
+    short left_offset;
+    short right_offset;
+    short top_offset;
+    short bottom_offset;
 };
 
-class AWT_graphic { 
+class AWT_graphic {
     friend class AWT_canvas;
-
-    void refresh_by_exports(AWT_canvas *scr);
-
 protected:
+    AW_rectangle extends;
     int drag_gc;
-
 public:
     AWT_graphic_exports exports;
 
-    AWT_graphic() { exports.init(); }
-    virtual ~AWT_graphic() {}
+    AWT_graphic();
+    virtual ~AWT_graphic();
     
     // pure virtual interface (methods implemented by AWT_nonDB_graphic)
 
@@ -144,67 +82,72 @@ public:
     virtual void update(GBDATA *gb_main)                                           = 0; // mark the database
 
     // pure virtual interface (rest)
-
+    
     virtual void show(AW_device *device) = 0;
 
-    virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) = 0;     // double click
-    virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr, AW_CL cd2) = 0;
+    virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) = 0;     /* double click */
+    virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw, AW_CL cd2) = 0;
             /* init gcs, if any gc is changed you may call
-                AWT_expose_cb(aw_window, scr, cd2);
-                or AWT_resize_cb(aw_window, scr, cd2);
+                AWT_expose_cb(aw_window, ntw, cd2);
+                or AWT_resize_cb(aw_window, ntw, cd2);
                 The function may return a pointer to a preset window */
 
-    // implemented interface (most are dummies doing nothing):
+    // implemented interface (most are dummies doing nothing): 
+
+    virtual void push_transaction(GBDATA *gb_main);
+    virtual void pop_transaction(GBDATA *gb_main);
+
     virtual void command(AW_device *device, AWT_COMMAND_MODE cmd,
                          int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,
                          AW_event_type type, AW_pos x, AW_pos y,
                          AW_clicked_line *cl, AW_clicked_text *ct);
     virtual void text(AW_device *device, char *text);
-
 };
 
-class AWT_nonDB_graphic : public AWT_graphic { // @@@ check AWT_nonDB_graphic
-    // a partly implementation of AWT_graphic
+// a partly implementation of AWT_graphic 
+class AWT_nonDB_graphic : public AWT_graphic {
 public:
     AWT_nonDB_graphic() {}
-    virtual ~AWT_nonDB_graphic() {}
+    virtual ~AWT_nonDB_graphic();
 
-    // dummy functions, only spittings out warnings:
+    // dummy functions, only spittings out warnings: 
     GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
     GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
     int  check_update(GBDATA *gb_main);
-    void update(GBDATA *gb_main);
+    void update(GBDATA *gb_main); 
 };
 
 
-#define EPS               0.0001 // div zero check
+#define EPS               0.0001 /*div zero check*/
+#define AWT_F_ALL         ((AW_active)-1)
 #define CLIP_OVERLAP      15
-#define AWT_CATCH_LINE    50    // pixel
-#define AWT_CATCH_TEXT    5     // pixel
-#define AWT_ZOOM_OUT_STEP 40    // (pixel) rand um screen
-#define AWT_MIN_WIDTH     100   // Minimum center screen (= screen-offset)
+#define AWT_CATCH_LINE    50    /*pixel*/
+#define AWT_CATCH_TEXT    5     /*pixel*/
+#define AWT_ZOOM_OUT_STEP 40    /* (pixel) rand um screen */
+#define AWT_MIN_WIDTH     100   /* Minimum center screen (= screen-offset) */
+enum {
+    AWT_M_LEFT   = 1,
+    AWT_M_MIDDLE = 2,
+    AWT_M_RIGHT  = 3
+};
 
 enum {
     AWT_d_screen = 1
 };
 
-class AWT_canvas : virtual Noncopyable {
-    bool consider_text_for_size;
-
+class AWT_canvas {
 public:
-    // too many callbacks -> public
-    // in fact: private
-    // (in real fact: needs rewrite)
-
-    char   *user_awar;
-    void    init_device(AW_device *device);
-    AW_pos  trans_to_fit;
-    AW_pos  shift_x_to_fit;
-    AW_pos  shift_y_to_fit;
+    /** too many callbacks -> public **/
+    /** in fact: private         **/
+    char *user_awar;
+    void init_device(AW_device *device);
+    AW_pos trans_to_fit;
+    AW_pos shift_x_to_fit;
+    AW_pos shift_y_to_fit;
 
     int old_hor_scroll_pos;
     int old_vert_scroll_pos;
-    AW_screen_area rect;  // screen coordinates
+    AW_rectangle rect;  // screen coordinates
     AW_world worldinfo; // real coordinates without transform.
     AW_world worldsize;
     int zoom_drag_sx;
@@ -222,58 +165,64 @@ public:
     void set_vertical_scrollbar_position(AW_window *aww, int pos);
 
 
-    // public (read only)
-
+    /*************  Read only public section : ************/
     GBDATA      *gb_main;
     AW_window   *aww;
     AW_root     *awr;
-    AWT_graphic *gfx;
+    AWT_graphic *tree_disp;
 
     AW_gc_manager gc_manager;
     int           drag_gc;
-
+    
     AWT_COMMAND_MODE mode;
 
-    // real public
+    /** the real public section **/
 
     AWT_canvas(GBDATA *gb_main, AW_window *aww, AWT_graphic *awd, AW_gc_manager &gc_manager, const char *user_awar);
-
-    inline void push_transaction() const;
-    inline void pop_transaction() const;
+    // gc_manager is the preset window
 
     void refresh();
-
-    void recalc_size(bool adjust_scrollbars = true);
-    void recalc_size_and_refresh() { recalc_size(true); refresh(); }
-
-    void zoom_reset();
-    void zoom_reset_and_refresh() { zoom_reset(); refresh(); }
-
-    void set_consider_text_for_zoom_reset(bool consider) { consider_text_for_size = consider; }
-
-    void refresh_by_exports() { gfx->refresh_by_exports(this); }
-
-    void zoom(AW_device *device, bool zoomIn, const AW::Rectangle& wanted_part, const AW::Rectangle& current_part, int percent);
+    void recalc_size();         // Calculate the size of the sb
+    void zoom_reset();          // Calculate all
+    void zoom(AW_device *device, bool zoomIn, const AW::Rectangle& wanted_part, const AW::Rectangle& current_part);
 
     void set_mode(AWT_COMMAND_MODE mo) { mode = mo; }
 
-    void scroll(int delta_x, int delta_y, bool dont_update_scrollbars = false);
-    void scroll(const AW::Vector& delta, bool dont_update_scrollbars = false) {
-        scroll(int(delta.x()), int(delta.y()), dont_update_scrollbars);
+    void scroll(AW_window *aww, int delta_x, int delta_y, bool dont_update_scrollbars = false);
+    void scroll(AW_window *aw, const AW::Vector& delta, bool dont_update_scrollbars = false) {
+        scroll(aw, int(delta.x()), int(delta.y()), dont_update_scrollbars);
     }
-    
-    bool handleWheelEvent(AW_device *device, const AW_event& event);
 };
 
-inline void AWT_graphic::refresh_by_exports(AWT_canvas *scr) {
-    if (exports.zoom_reset)   scr->zoom_reset_and_refresh();
-    else if (exports.resize)  scr->recalc_size_and_refresh();
-    else if (exports.refresh) scr->refresh();
-}
+void AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2);
+void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2);
+void AWT_expose_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL cl2);
+void AWT_resize_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL cl2);
 
+#define AWAR_PRINT_TREE                "NT/print/"
+#define AWAR_PRINT_TREE_LANDSCAPE      AWAR_PRINT_TREE "landscape"
+#define AWAR_PRINT_TREE_MAGNIFICATION  AWAR_PRINT_TREE "magnification"
+#define AWAR_PRINT_TREE_CLIP           AWAR_PRINT_TREE "clip"
+#define AWAR_PRINT_TREE_HANDLES        AWAR_PRINT_TREE "handles"
+#define AWAR_PRINT_TREE_COLOR          AWAR_PRINT_TREE "color"
+#define AWAR_PRINT_TREE_DEST           AWAR_PRINT_TREE "dest"
+#define AWAR_PRINT_TREE_PRINTER        AWAR_PRINT_TREE "printer"
+#define AWAR_PRINT_TREE_OVERLAP        AWAR_PRINT_TREE "overlap"
+#define AWAR_PRINT_TREE_OVERLAP_AMOUNT AWAR_PRINT_TREE "amount"
 
-void AWT_expose_cb(AW_window *dummy, AWT_canvas *scr, AW_CL cl2);
-void AWT_resize_cb(AW_window *dummy, AWT_canvas *scr, AW_CL cl2);
+#define AWAR_PRINT_TREE_TMP    "tmp/" AWAR_PRINT_TREE
+#define AWAR_PRINT_TREE_GSIZEX AWAR_PRINT_TREE_TMP "gsizex" // graphic size
+#define AWAR_PRINT_TREE_GSIZEY AWAR_PRINT_TREE_TMP "gsizey"
+#define AWAR_PRINT_TREE_PSIZEX AWAR_PRINT_TREE_TMP "psizex" // print size
+#define AWAR_PRINT_TREE_PSIZEY AWAR_PRINT_TREE_TMP "psizey"
+#define AWAR_PRINT_TREE_SIZEX  AWAR_PRINT_TREE_TMP "sizex" // size in pages
+#define AWAR_PRINT_TREE_SIZEY  AWAR_PRINT_TREE_TMP "sizey"
+#define AWAR_PRINT_TREE_PAGES  AWAR_PRINT_TREE_TMP "pages"
+
+#define AWAR_PRINT_TREE_FILE_BASE   AWAR_PRINT_TREE_TMP "file"
+#define AWAR_PRINT_TREE_FILE_NAME   AWAR_PRINT_TREE_FILE_BASE "/file_name"
+#define AWAR_PRINT_TREE_FILE_DIR    AWAR_PRINT_TREE_FILE_BASE "/directory"
+#define AWAR_PRINT_TREE_FILE_FILTER AWAR_PRINT_TREE_FILE_BASE "/filter"
 
 void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL);
 void AWT_popup_sec_export_window (AW_window *parent_win, AW_CL cl_canvas, AW_CL);

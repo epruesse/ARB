@@ -1,31 +1,23 @@
-// =============================================================== //
-//                                                                 //
-//   File      : MG_names.cxx                                      //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
-#include "merge.hxx"
-
-#include <AW_rename.hxx>
+#include <arbdb.h>
 #include <aw_root.hxx>
-#include <aw_awar.hxx>
-#include <aw_msg.hxx>
+#include <aw_device.hxx>
 #include <aw_window.hxx>
-#include <arb_progress.h>
+#include <AW_rename.hxx>
+#include "merge.hxx"
 
 // --------------------------------------------------------------------------------
 
-#define AWAR_ADDID_SRC  AWAR_MERGE_TMP_SRC "addid"
-#define AWAR_ADDID_DST  AWAR_MERGE_TMP_DST "addid"
+#define AWAR_MERGE_ADDID "tmp/merge1/addid"
+#define AWAR_DEST_ADDID  "tmp/merge2/addid"
 
-#define AWAR_ADDID_MATCH   AWAR_MERGE_TMP "addidmatch"
-#define AWAR_RENAME_STATUS AWAR_MERGE_TMP "renamestat"
-#define AWAR_ALLOW_DUPS    AWAR_MERGE_TMP "allowdups"
-#define AWAR_OVERRIDE      AWAR_MERGE_TMP "override"
+#define AWAR_ADDID_MATCH   "tmp/merge/addidmatch"
+#define AWAR_RENAME_STATUS "tmp/merge/renamestat"
+#define AWAR_ALLOW_DUPS    "tmp/merge/allowdups"
+#define AWAR_OVERRIDE      "tmp/merge/override"
 
 // --------------------------------------------------------------------------------
 
@@ -39,19 +31,19 @@ void MG_create_rename_awars(AW_root *aw_root, AW_default aw_def) {
 // --------------------------------------------------------------------------------
 
 static const char *addids_match_info(AW_root *aw_root) {
-    char       *addid1 = aw_root->awar(AWAR_ADDID_SRC)->read_string();
-    char       *addid2 = aw_root->awar(AWAR_ADDID_DST)->read_string();
+    char       *addid1 = aw_root->awar(AWAR_MERGE_ADDID)->read_string();
+    char       *addid2 = aw_root->awar(AWAR_DEST_ADDID)->read_string();
     const char *result = (strcmp(addid1, addid2) == 0) ? "Ok" : "MISMATCH!";
 
     free(addid2);
     free(addid1);
-
+    
     return result;
 }
 
 static void addids_match_info_refresh_cb(AW_root *aw_root) {
     aw_root->awar(AWAR_ADDID_MATCH)->write_string(addids_match_info(aw_root));
-    MG_set_renamed(false, aw_root, "Needed (add.field changed)");
+    MG_set_renamed(false, aw_root, "Needed (add.field changed)"); 
 }
 
 void MG_create_db_dependent_rename_awars(AW_root *aw_root, GBDATA *gb_merge, GBDATA *gb_dest) {
@@ -82,8 +74,8 @@ void MG_create_db_dependent_rename_awars(AW_root *aw_root, GBDATA *gb_merge, GBD
         }
 
         if (!error) {
-            AW_awar *awar_addid1 = aw_root->awar_string(AWAR_ADDID_SRC, "xxx", gb_merge);
-            AW_awar *awar_addid2 = aw_root->awar_string(AWAR_ADDID_DST, "xxx", gb_dest);
+            AW_awar *awar_addid1 = aw_root->awar_string(AWAR_MERGE_ADDID, "xxx", gb_merge);
+            AW_awar *awar_addid2 = aw_root->awar_string(AWAR_DEST_ADDID, "xxx", gb_dest);
 
             awar_addid1->unmap(); awar_addid1->map(gb_addid1);
             awar_addid2->unmap(); awar_addid2->map(gb_addid2);
@@ -93,7 +85,7 @@ void MG_create_db_dependent_rename_awars(AW_root *aw_root, GBDATA *gb_merge, GBD
 
             addids_match_info_refresh_cb(aw_root);
         }
-
+        
         if (error) {
             error = t1.close(error);
             error = t2.close(error);
@@ -123,9 +115,11 @@ GB_ERROR MG_expect_renamed() {
 // --------------------------------------------------------------------------------
 
 static GB_ERROR renameDB(const char *which, GBDATA *gb_db, bool allowDups) {
-    arb_progress progress(GBS_global_string("Generating new names in %s database", which));
-    bool         isDuplicatesWarning;
-    GB_ERROR     error = AWTC_pars_names(gb_db, &isDuplicatesWarning);
+    aw_openstatus(GBS_global_string("Generating new names in %s database", which));
+    aw_status("Contacting name server");
+
+    bool     isDuplicatesWarning;
+    GB_ERROR error = AWTC_pars_names(gb_db, 1, &isDuplicatesWarning);
 
     if (error) {
         error = GBS_global_string("While renaming %s DB:\n%s", which, error);
@@ -136,6 +130,7 @@ static GB_ERROR renameDB(const char *which, GBDATA *gb_db, bool allowDups) {
         }
     }
 
+    aw_closestatus();
     return error;
 }
 
@@ -146,8 +141,8 @@ static void rename_both_databases(AW_window *aww) {
     bool      allowDups = aw_root->awar(AWAR_ALLOW_DUPS)->read_int();
 
     if (strcmp(match, "Ok") == 0) {
-        error = renameDB("source", GLOBAL_gb_src, allowDups);
-        if (!error) error = renameDB("destination", GLOBAL_gb_dst, allowDups);
+        error = renameDB("source", GLOBAL_gb_merge, allowDups);
+        if (!error) error = renameDB("destination", GLOBAL_gb_dest, allowDups);
     }
     else {
         error = "Denying rename - additional fields have to match!";
@@ -174,25 +169,25 @@ static void override_toggle_cb(AW_window *aww) {
     }
 }
 
-AW_window *MG_merge_names_cb(AW_root *awr) {
+AW_window *MG_merge_names_cb(AW_root *awr){
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init(awr, "MERGE_AUTORENAME_SPECIES", "SYNCHRONIZE NAMES");
+        aws->init( awr, "MERGE_AUTORENAME_SPECIES", "SYNCHRONIZE NAMES");
         aws->load_xfig("merge/names.fig");
 
-        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE","CLOSE","C");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"mg_names.hlp");
-        aws->create_button("HELP", "HELP", "H");
+        aws->callback(AW_POPUP_HELP,(AW_CL)"mg_names.hlp");
+        aws->create_button("HELP","HELP","H");
 
         aws->at("addid1");
-        aws->create_input_field(AWAR_ADDID_SRC, 10);
+        aws->create_input_field(AWAR_MERGE_ADDID, 10);
 
         aws->at("addid2");
-        aws->create_input_field(AWAR_ADDID_DST, 10);
+        aws->create_input_field(AWAR_DEST_ADDID, 10);
 
         aws->at("dups");
         aws->label("Allow merging duplicates (dangerous! see HELP)");
@@ -214,12 +209,12 @@ AW_window *MG_merge_names_cb(AW_root *awr) {
 
         aws->at("rename");
         aws->callback(rename_both_databases);
-        aws->create_autosize_button("RENAME_DATABASES", "Rename species");
-
+        aws->create_autosize_button("RENAME_DATABASES","Rename species");
+        
         aws->button_length(0);
         aws->shadow_width(1);
         aws->at("icon");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"mg_names.hlp");
+        aws->callback(AW_POPUP_HELP,(AW_CL)"mg_names.hlp");
         aws->create_button("HELP_MERGE", "#merge/icon.bitmap");
     }
     return aws;

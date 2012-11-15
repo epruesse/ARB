@@ -20,13 +20,15 @@
 #include "file_import.hxx"
 
 
-class importDialog : public MDialog { // derived from a Noncopyable
+class importDialog : public MDialog
+{
     public:
         importDialog(MDialog*);
         ~importDialog();
         void getFilenameCallback(Widget, XtPointer);
         void fileDialogCallback(Widget, XtPointer);
         void ARBdestinationCallback(Widget, XtPointer);
+//         void dataChangedCallback(Widget, XtPointer);
         void setSpecies(char *);
         void setExperiment(char *);
         void setProteome(char *);
@@ -73,6 +75,7 @@ class importDialog : public MDialog { // derived from a Noncopyable
         importTable *m_table;
         bool m_hasTableData;
         int m_activeHeader;
+        //char **m_ARBheader;
         //
         XSLTimporter *m_xslt;
         //

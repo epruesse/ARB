@@ -27,13 +27,13 @@
 //
 
 
-#ifndef _GLIBCXX_MAP
+#ifndef _CPP_MAP
 #include <map>
 #endif
-#ifndef _GLIBCXX_CSTDIO
+#ifndef _CPP_CSTDIO
 #include <cstdio>
 #endif
-#ifndef _GLIBCXX_STRING
+#ifndef _CPP_STRING
 #include <string>
 #endif
 
@@ -89,6 +89,7 @@ namespace {
                         if (!error) {
                             ConfigMap::const_iterator found = entries.find(key);
                             if (found == entries.end()) {
+                                // fprintf(stderr, "adding value '%s' at key '%s'\n", value, key);
                                 entries[key] = value;
                             }
                             else {
@@ -199,7 +200,7 @@ namespace {
                 char *lhs, *rhs;
 
                 error             = ConfigParser::splitText(range, ',', lhs, rhs);
-                if (!error) {
+                if (!error)  {
                     low  = atoi(lhs);
                     high = atoi(rhs);
                     if (low>high) {

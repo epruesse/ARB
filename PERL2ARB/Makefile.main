@@ -9,8 +9,6 @@ MAKETHIS=$(MAKE) -f $(THIS)
 
 LIB=$(ARBHOME)/lib
 ARBDB=$(ARBHOME)/ARBDB
-
-# code in -> ../PERLTOOLS/arb_proto_2_xsub.cxx
 ARB_PROTO_2_XSUB=$(ARBHOME)/bin/arb_proto_2_xsub
 
 HEADERS = \
@@ -30,7 +28,7 @@ TARGET_SO=$(LIB)/ARB.$(SO)
 
 TARGETS=$(TARGET_PM) $(TARGET_SO)
 
-XS_DEPENDS = Makefile Makefile.main ARB.xs debug.h Makefile.PL
+XS_DEPENDS = Makefile ARB.xs debug.h Makefile.PL
 
 # ------------------------------------------------------------
 # variables for Makefile
@@ -43,15 +41,7 @@ export MYEXTLIB PASTHRU_INC PASTHRU_DEFINE dflags
 
 # ------------------------------------------------------------
 
-ifeq ($(AUTODEPENDS),1)
-all:
-	+test -f .depends || $(MAKETHIS) "AUTODEPENDS=0" .depends
-	+$(MAKETHIS) "AUTODEPENDS=2" all
-else
-all: realall
-endif
-
-realall: perlmain.c $(TARGETS)
+all: perlmain.c $(TARGETS)
 
 perlmain.c: perlmain_source.c
 	cp $< $@
@@ -65,35 +55,32 @@ $(TARGET_SO) : $(ARB_SO)
 $(ARB_SO) : $(XS_DEPENDS) depends.stamp
 	-rm $(ARB_SO)
 	@echo "-------- calling MakeMaker-Makefile"
-	( $(MAKE) "dflags=${dflags} " $@ || \
+	( $(MAKE) "dflags=${dflags}" $@ || \
 		(echo "------ failed.. retry once"; \
 		 $(MAKE) "dflags=${dflags}" $@))
 	@echo "-------- post-recreating .depends"
-	+$(MAKETHIS) "DEPENDS=0" .depends
-	+$(MAKETHIS) $@ # recurse
+	$(MAKETHIS) "DEPENDS=0" .depends
+	$(MAKETHIS) $@ # recurse
 
 ARB.c : $(XS_DEPENDS) 
 	@echo "-------- calling MakeMaker-Makefile (to get depends)"
 	( $(MAKE) "dflags=${dflags}" $@ || \
 		(echo "------ failed.. retry once"; \
 		 $(MAKE) "dflags=${dflags}" $@ ))
-	@echo "-------- end of MakeMaker-Makefile"
+	@echo "-------- end of MakeMaker-Makefile" 
 
-# buildMakefile
-Makefile : $(MACH).PL typemap Makefile.main arb_common.pm
+Makefile : $(MACH).PL typemap  
 	( PATH=/usr/arb/bin:${PATH}; \
 	  export PATH; \
-	  echo calling perl ${MACH}.PL "$(cross_cflags)" "$(cross_lflags)"; \
-	  perl ${MACH}.PL "$(cross_cflags)" "$(cross_lflags)" )
+	  echo calling perl ${MACH}.PL; \
+	  perl ${MACH}.PL )
 
 Makefile.PL : $(MACH).PL
-	( \
-		echo "system('perl $< \"$(cross_cflags)\" \"$(cross_lflags)\"');" \
-	) > $@
+	cp -p $< $@
 
-ARB.xs : $(ARB_PROTO_2_XSUB) proto.h ARB.default.xs perlmain_source.c typemap
+ARB.xs : $(ARB_PROTO_2_XSUB) proto.h ARB.xs.default
 	-@test -f $@ && chmod a+w $@
-	$(ARB_PROTO_2_XSUB) proto.h ARB.default.xs typemap >$@
+	LD_LIBRARY_PATH=$(LIB):$(LD_LIBRARY_PATH) $(ARB_PROTO_2_XSUB) proto.h ARB.xs.default > $@
 	@test -f $@ && chmod a-w $@
 
 proto.h : $(HEADERS) $(THIS) depends.stamp
@@ -111,10 +98,9 @@ endif
 clean:
 	-test -f Makefile && $(MAKE) clean
 	rm -f Makefile.old proto.h debug.h ARB.c ARB.xs .depends depends.stamp Makefile.PL $(TARGETS)
-	rm -f Makefile
 
 .depends: depends.stamp Makefile.main
-	+test -f ARB.c || $(MAKETHIS) "AUTODEPENDS=0" ARB.c 
+	test -f ARB.c || $(MAKETHIS) "AUTODEPENDS=0" ARB.c 
 	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) ARB.c 2>/dev/null | \
 		perl -ne 's/ARB.o:/depends.stamp:/g; print $$_;' | \
 		../SOURCE_TOOLS/fix_depends.pl > $@
@@ -123,7 +109,7 @@ clean:
 depends.stamp:
 	touch $@
 
-ifeq ($(AUTODEPENDS),2) 
+ifeq ($(AUTODEPENDS),1) 
 include .depends
 endif
 

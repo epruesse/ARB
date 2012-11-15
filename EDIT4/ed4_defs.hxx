@@ -7,37 +7,31 @@
 #ifndef AW_WINDOW_HXX
 #include <aw_window.hxx>
 #endif
-#ifndef AW_POSITION_HXX
-#include <aw_position.hxx>
-#endif
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
-#endif
-
-#if defined(DEBUG)
-// #define TRACE_REFRESH
-// #define TRACE_JUMPS
+#ifndef ARBDB_H
+#include <arbdb.h>
 #endif
 
 
-class  ED4_root;
-class  ED4_database;
-struct GBS_strstruct;
+//needed prototype classes
+class ED4_root;
+class ED4_database;
 
-typedef int ED4_COORDINATE;
+typedef const char  ED4_ERROR;
+typedef int     ED4_COORDINATE;
 
-enum ED4_EDITMODI {
+typedef enum ad_edit_modus {
     AD_ALIGN,   // add & remove of . possible (default)
     AD_NOWRITE, // no edits allowed
     AD_NOWRITE_IF_COMPRESSED,
     AD_REPLACE, // all edits (overwrite)
     AD_INSERT   // all edits (insert)
-};
+} ED4_EDITMODI;
 
 
-// global variables
-extern GBDATA   *GLOBAL_gb_main;
-extern ED4_root *ED4_ROOT;
+//global variables
+extern GBDATA       *GLOBAL_gb_main;
+extern ED4_root     *ED4_ROOT;
+extern ED4_database *main_db;
 
 extern int TERMINALHEIGHT;      // this variable replaces the define
 extern int INFO_TERM_TEXT_YOFFSET;
@@ -55,10 +49,16 @@ extern size_t         not_found_counter;            // nr of species which haven
 extern GBS_strstruct *not_found_message;            // error message containing (some) missing/unloadable species
 
 extern long         max_seq_terminal_length;        // global maximum of sequence terminal length
-extern ED4_EDITMODI awar_edit_mode;
-extern long         awar_edit_rightward;            // 0 = leftward, 1 = rightward
-extern bool         move_cursor;                    // only needed for editing in consensus
+extern ED4_EDITMODI awar_edit_modus;
+extern long         awar_edit_direction;
+extern bool         move_cursor;                    //only needed for editing in consensus
 extern bool         DRAW;
+extern bool         last_window_reached;            //only needed for refreshing all windows
+
+extern size_t status_count_total; // used for consensus progress bar
+extern size_t status_count_curr;
+
+extern bool loading;
 
 // globally used defines and flags
 
@@ -72,7 +72,7 @@ extern bool         DRAW;
 #define HEIGHT      1
 
 // size of some display elements:
-#define BRACKETWIDTH    11
+#define BRACKETWIDTH    10
 #define SPACERHEIGHT    5
 #define SPACERNOCONSENSUSHEIGHT 15 // height of spacer at top of group (used if consensus is hidden and group is folded)
 #define SEQUENCEINFOSIZE 50
@@ -83,8 +83,9 @@ extern bool         DRAW;
 
 #define MAX_POSSIBLE_SEQ_LENGTH     100000000
 
-#define MAXCHARTABLE 256                            // Maximum of Consensustable
-#define MAXWINDOWS   5
+#define MAXCHARTABLE    256                     // Maximum of Consensustable
+#define MAXWINDOWS  5
+#define MINSPECFORSTATWIN   200
 
 #define AWAR_EDIT_MODE                  "tmp/edit4/edit_mode"
 #define AWAR_INSERT_MODE                "tmp/edit4/insert_mode"
@@ -108,7 +109,7 @@ extern bool         DRAW;
 #define CHARACTEROFFSET 5       // spacer-width left of text-terminal
 #define CONSENSUS       "Consensusfunktion"
 
-typedef long ED4_index;
+#define ED4_index   long
 
 inline int max(int x, int y)    { return x>y ? x : y; }
 inline int min(int x, int y)    { return x<y ? x : y; }
@@ -117,112 +118,131 @@ inline int ABS(int x)       { return x<0 ? -x : x; }
 #define ED4_SCROLL_OVERLAP 20   // 15 Pixels overlap
 
 
-enum ED4_level { // has to contain bit values
-    ED4_L_INVALID         = -1U,
-    ED4_L_NO_LEVEL        = 0,
-    ED4_L_ROOT            = 0x1,
-    ED4_L_DEVICE          = 0x2,
-    ED4_L_AREA            = 0x4,
-    ED4_L_MULTI_SPECIES   = 0x8,
-    ED4_L_SPECIES         = 0x10,
-    ED4_L_MULTI_SEQUENCE  = 0x20,
-    ED4_L_SEQUENCE        = 0x40,
-    ED4_L_TREE            = 0x80,
-    ED4_L_SPECIES_NAME    = 0x100,
-    ED4_L_SEQUENCE_INFO   = 0x200,
-    ED4_L_SEQUENCE_STRING = 0x400,
-    ED4_L_ORF             = 0x800,
-    ED4_L_SPACER          = 0x1000,
-    ED4_L_LINE            = 0x2000,
-    ED4_L_MULTI_NAME      = 0x4000,
-    ED4_L_NAME_MANAGER    = 0x8000,
-    ED4_L_GROUP           = 0x10000,
-    ED4_L_ROOTGROUP       = 0x20000,
-    ED4_L_BRACKET         = 0x40000,
-    ED4_L_PURE_TEXT       = 0x80000,
-    ED4_L_COL_STAT        = 0x100000,
-};
+typedef enum
+{
+    ED4_L_NO_LEVEL      = 0x0,
+    ED4_L_ROOT          = 0x1,
+    ED4_L_DEVICE        = 0x2,
+    ED4_L_AREA          = 0x4,
+    ED4_L_MULTI_SPECIES     = 0x8,
+    ED4_L_SPECIES       = 0x10,
+    ED4_L_MULTI_SEQUENCE    = 0x20,
+    ED4_L_SEQUENCE      = 0x40,
+    ED4_L_TREE          = 0x80,
+    ED4_L_SPECIES_NAME      = 0x100,
+    ED4_L_SEQUENCE_INFO     = 0x200,                //evtl. aendern fuer Name-Manager und group-manager
+    ED4_L_SEQUENCE_STRING   = 0x400,
+    ED4_L_AA_SEQUENCE_STRING   = 0x600, //ykadi
+    ED4_L_SPACER        = 0x800,
+    ED4_L_LINE          = 0x1000,
+    ED4_L_MULTI_NAME        = 0x2000,
+    ED4_L_NAME_MANAGER      = 0x4000,
+    ED4_L_GROUP         = 0x8000,
+    ED4_L_BRACKET       = 0x10000,
+    ED4_L_PURE_TEXT     = 0x20000,
+    ED4_L_COL_STAT      = 0x40000
+}   ED4_level;
 
-enum ED4_datamode {
+
+
+typedef enum
+{
     ED4_D_SPECIES,
     ED4_D_EXTENDED
-};
+}   ED4_datamode;
 
 
-enum ED4_movemode {
-    ED4_M_NO_MOVE    = 0,
-    ED4_M_HORIZONTAL = 1,
-    ED4_M_VERTICAL   = 2,
-    ED4_M_FREE       = 4
-};
+typedef enum
+{
+    ED4_M_NO_MOVE   = 0,
+    ED4_M_HORIZONTAL    = 1,
+    ED4_M_VERTICAL  = 2,
+    ED4_M_FREE      = 4
+}   ED4_movemode;
 
-enum ED4_returncode {
-    ED4_R_OK         = 0,
-    ED4_R_WARNING    = 1,
-    ED4_R_IMPOSSIBLE = 2,
-    ED4_R_ERROR      = 4,
-    ED4_R_BREAK      = 8,
-    ED4_R_DESASTER   = 16,
-    ED4_R_ALL        = 0x7fffffff
-};
+typedef enum
+{
+    ED4_R_OK        = 0,
+    ED4_R_WARNING   = 1,
+    ED4_R_IMPOSSIBLE    = 2,
+    ED4_R_ERROR     = 4,
+    ED4_R_BREAK     = 8,
+    ED4_R_DESASTER  = 16,
+    ED4_R_ALL       = 0x7fffffff
+}   ED4_returncode;
 
-enum ED4_AREA_LEVEL {
+typedef enum
+{
     ED4_A_TOP_AREA,
     ED4_A_MIDDLE_AREA,
     ED4_A_BOTTOM_AREA,
     ED4_A_ERROR
-};
+}   ED4_AREA_LEVEL;
 
-enum ED4_properties {
-    ED4_P_NO_PROP            = 0,
-    ED4_P_IS_MANAGER         = 1,
-    ED4_P_IS_TERMINAL        = 2,
-    ED4_P_HORIZONTAL         = 4,
-    ED4_P_VERTICAL           = 8,
-    ED4_P_TMP                = 16,
-    ED4_P_SELECTABLE         = 32,
-    ED4_P_DRAGABLE           = 64,
-    ED4_P_MOVABLE            = 128,
-    ED4_P_IS_HANDLE          = 256,
-    ED4_P_CURSOR_ALLOWED     = 512,
-    //  ED4_P_               = 1024,
-    //  ED4_P_               = 2048,
-    ED4_P_IS_FOLDED          = 4096,            // Flag whether group is folded or not
-    ED4_P_CONSENSUS_RELEVANT = 8192,            // contains information relevant for consensus
-    ED4_P_ALIGNMENT_DATA     = 16384,           // contains aligned data (also SAIs)
-    ED4_P_ALL                = 0x7fffffff
-};
+typedef enum
+{
+        ED4_B_LEFT_BUTTON   = 1,
+        ED4_B_MIDDLE_BUTTON     = 2,
+        ED4_B_RIGHT_BUTTON  = 3
+}          ED4_mouse_buttons;
 
-enum ED4_cursor_move {
+typedef enum
+{
+    ED4_P_NO_PROP       = 0,
+    ED4_P_IS_MANAGER    = 1,
+    ED4_P_IS_TERMINAL   = 2,
+    ED4_P_HORIZONTAL    = 4,
+    ED4_P_VERTICAL      = 8,
+    ED4_P_TMP       = 16,
+    ED4_P_SELECTABLE    = 32,
+    ED4_P_DRAGABLE      = 64,
+    ED4_P_MOVABLE       = 128,
+    ED4_P_IS_HANDLE     = 256,
+    ED4_P_CURSOR_ALLOWED    = 512,
+//  ED4_P_ = 1024,
+//  ED4_P_   = 2048,
+    ED4_P_IS_FOLDED     = 4096,                 // Flag whether group is folded or not
+    ED4_P_CONSENSUS_RELEVANT= 8192, // contains information relevant for consensus
+    ED4_P_ALIGNMENT_DATA= 16384, // contains aligned data (also SAIs)
+    ED4_P_ALL       = 0x7fffffff
+}   ED4_properties;
+
+typedef enum
+{
     ED4_C_UP,
     ED4_C_DOWN,
     ED4_C_LEFT,
     ED4_C_RIGHT,
     ED4_C_NONE
-};
+}   ED4_cursor_move;
 
-enum ED4_update_flag {
-    ED4_U_UP = 0,
+typedef enum
+{
+    ED4_U_UP    = 0,
     ED4_U_UP_DOWN
-};
+}   ED4_update_flag;
 
-enum ED4_border_flag {
+typedef enum
+{
     ED4_B_BORDER,
     ED4_B_INDENT,
     ED4_B_BOTTOM_AREA
-};
+}   ED4_border_flag;
 
-enum ED4_consensus {
+typedef enum
+{
     ED4_K_ADD,
     ED4_K_SUB
-};
+}   ED4_consensus;
 
-enum ED4_alignment {
+typedef enum
+{
     ED4_A_DEFAULT,
     ED4_A_CONTAINER
-};
+}   ED4_alignment;
 
-enum ED4_aa_seq_flag {
+typedef enum
+{
     ED4_AA_FRWD_1,
     ED4_AA_FRWD_2,
     ED4_AA_FRWD_3,
@@ -230,34 +250,35 @@ enum ED4_aa_seq_flag {
     ED4_AA_RVRS_2,
     ED4_AA_RVRS_3,
     ED4_AA_DB_FIELD
-};
+}  ED4_aa_seq_flag;
 
-enum ED4_direction {
+typedef enum
+{
     ED4_D_VERTICAL,
     ED4_D_HORIZONTAL,
     ED4_D_ALL_DIRECTION,
-};
+    ED4_D_VERTICAL_ALL
+}   ED4_direction;
 
 
 class ED4_base;
 class ED4_terminal;
-class ED4_species_name_terminal;
 
 struct ED4_move_info
 {
-    ED4_base     *object;                // object to be moved
-    AW_pos        end_x, end_y;          // position to move to
-    ED4_movemode  mode;                  // move mode
-    ED4_level     preferred_parent;      // level to move to
+    ED4_base         *object;            // object to be moved
+    AW_pos      end_x, end_y;      // position to move to
+    ED4_movemode    mode;              // move mode
+    ED4_level           preferred_parent;  // level to move to
 };
 
-struct ED4_selection_entry {
-    AW_pos drag_off_x, drag_off_y;
-    AW_pos drag_old_x, drag_old_y;
-    AW_pos actual_width, actual_height;
-    int    old_event_y;
-
-    ED4_species_name_terminal *object;
+struct ED4_selection_entry
+{
+    AW_pos               drag_off_x, drag_off_y;
+    AW_pos               drag_old_x, drag_old_y;
+    AW_pos               actual_width, actual_height;
+    int          old_event_y;
+    ED4_terminal     *object;
 };
 
 
@@ -270,20 +291,16 @@ struct ED4_extension // contains info about graphical properties
     AW_pos    size[2];          // width and height
     ED4_index y_folded;         // remember old position of consensus when folding group
 
-    AW::Vector get_size() const { return AW::Vector(size[WIDTH], size[HEIGHT]); }
-    AW::Vector get_parent_offset() const { return AW::Vector(position[X_POS], position[Y_POS]); }
-
 #if defined(IMPLEMENT_DUMP)
     void dump(size_t indent) const;
 #endif // IMPLEMENT_DUMP
 };
 
-struct ED4_scroll_picture {
-    bool scroll;
-    long old_x;
-    long old_y;
-
-    ED4_scroll_picture() : scroll(false), old_x(0), old_y(0) {}
+struct ED4_scroll_picture
+{
+    bool    scroll;
+    long    old_x;
+    long    old_y;
 };
 
 enum ED4_CursorJumpType {
@@ -299,37 +316,36 @@ struct ED4_work_info
     char     *string;           // pointer to consensus; only if editing the consensus
     long      char_position;    // screen position after cursor
 
-    bool rightward; // contains direction of editing (0 = leftward, 1 = rightward)
-
+    int     direction;      // contains direction of editing (-1 left, +1 right )
     ED4_EDITMODI mode;
 
     bool    is_sequence;        // ==1 -> special handling for sequences
-    bool    cannot_handle;      // if TRUE then cannot edit
+    bool    cannot_handle;      // if TRUE than cannot edit
 
     ED4_CursorJumpType cursor_jump;
     bool    refresh_needed;
 
     long    out_seq_position;   // sequence position (after editing)
 
-    char     *out_string;                           // nur falls new malloc
+    char    *out_string;        // nur falls new malloc
+    char    *error;
 
     int     repeat_count;       // only for keystrokes: contains # of times key should be repeated
 
-    ED4_terminal *working_terminal; // this contains the terminal
+    ED4_terminal *working_terminal; // this contains the terminal 
 };
 
 
 struct ED4_update_info // if you add new elements, please ensure to initialize them in ED4_base::ED4_base()
 {
-    unsigned int resize : 1;
-    unsigned int refresh : 1;
-    unsigned int clear_at_refresh : 1;
-    unsigned int linked_to_folding_line : 1;
-    unsigned int linked_to_scrolled_rectangle : 1;
-    unsigned int refresh_horizontal_scrolling : 1;
-    unsigned int refresh_vertical_scrolling : 1;
-    unsigned int delete_requested : 1;
-    unsigned int update_requested : 1;
+    unsigned int        resize:1;
+    unsigned int        refresh:1;
+    unsigned int    clear_at_refresh:1;
+    unsigned int        linked_to_folding_line:1;
+    unsigned int        linked_to_scrolled_rectangle:1;
+    unsigned int        refresh_horizontal_scrolling:1;
+    unsigned int        refresh_vertical_scrolling:1;
+    unsigned int    delete_requested:1;
 
     void set_clear_at_refresh(int value) {
         clear_at_refresh = value;
@@ -349,35 +365,35 @@ struct ED4_update_info // if you add new elements, please ensure to initialize t
 struct ED4_coords
 {
     long top_area_x,
-        top_area_y,
-        top_area_height,
+    top_area_y,
+    top_area_height,
 
-        middle_area_x,
-        middle_area_y,
+    middle_area_x,
+    middle_area_y,
 
-        window_width,               // of whole window (top and middle area and ... )
-        window_height,              // of whole window (top and middle area and ... )
+    window_width,               //of whole window (top and middle area and ... )
+    window_height,              //of whole window (top and middle area and ... )
 
-        window_upper_clip_point,        // absolute coordinate of upper visible clipping point in middle area
-        window_lower_clip_point,        // absolute coordinate of lower visible clipping point in middle area
-        window_left_clip_point,         // absolute coordinate of left  visible clipping point in top and middle area
-        window_right_clip_point;        // absolute coordinate of right visible clipping point in top and middle area
+    window_upper_clip_point,        //absolute coordinate of upper visible clipping point in middle area
+    window_lower_clip_point,        //absolute coordinate of lower visible clipping point in middle area
+    window_left_clip_point,         //absolute coordinate of left  visible clipping point in top and middle area
+    window_right_clip_point;        //absolute coordinate of right visible clipping point in top and middle area
 
     void clear() {
-        top_area_x = 0;
-        top_area_y = 0;
-        top_area_height = 0;
+    top_area_x = 0;
+    top_area_y = 0;
+    top_area_height = 0;
 
-        middle_area_x = 0;
-        middle_area_y = 0;
+    middle_area_x = 0;
+    middle_area_y = 0;
 
-        window_width = 0;
-        window_height = 0;
+    window_width = 0;
+    window_height = 0;
 
-        window_upper_clip_point = 0;
-        window_lower_clip_point = 0;
-        window_left_clip_point = 0;
-        window_right_clip_point = 0;
+    window_upper_clip_point = 0;
+    window_lower_clip_point = 0;
+    window_left_clip_point = 0;
+    window_right_clip_point = 0;
     }
 };
 

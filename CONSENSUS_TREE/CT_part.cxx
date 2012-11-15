@@ -1,85 +1,55 @@
-// ============================================================= //
-//                                                               //
-//   File      : CT_part.cxx                                     //
-//   Purpose   :                                                 //
-//                                                               //
-//   Institute of Microbiology (Technical University Munich)     //
-//   http://www.arb-home.de/                                     //
-//                                                               //
-// ============================================================= //
-
-/* This module is designed to organize the data structure partitions
+/* This module is desined to organize the data structure partitions
    partitions represent the edges of a tree */
-// the partitions are implemented as an array of longs
-// Each leaf in a GBT-Tree is represented as one Bit in the Partition
+/* the partitions are implemented as an array of longs */
+/* Each leaf in a GBT-Tree is represented as one Bit in the Partition */
 
-#include "CT_part.hxx"
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <arbdb.h>
 #include <arbdbt.h>
 
-#if defined(DEBUG)
-#endif
+#include "CT_mem.hxx"
+#include "CT_part.hxx"
 
-#define BITS_PER_PELEM (sizeof(PELEM)*8)
+PELEM   cutmask;        /* this mask is nessary to cut the not
+                           needed bits from the last long       */
+int     longs = 0,      /* number of longs per part             */
+    plen = 0;       /* number of bits per part              */
 
-#if defined(DUMP_PART_INIT) || defined(UNIT_TESTS)
-static const char *readable_cutmask(PELEM mask) {
-    static char readable[BITS_PER_PELEM+1];
-    memset(readable, '0', BITS_PER_PELEM);
-    readable[BITS_PER_PELEM]        = 0;
 
-    for (int b = BITS_PER_PELEM-1; b >= 0; --b) {
-        if (mask&1) readable[b] = '1';
-        mask = mask>>1;
-    }
-    return readable;
-}
-#endif
-
-PartitionSize::PartitionSize(const int len)
-    : cutmask(0),
-      longs((((len + 7) / 8)+sizeof(PELEM)-1) / sizeof(PELEM)),
-      bits(len),
-      id(0)
+/** Function to initialize the variables above
+    @PARAMETER  len     number of bits the part should content
+    result:         calculate cutmask, longs, plen */
+void part_init(int len)
 {
-    /*! Function to initialize the global variables above
-     * @param len number of bits the part should content
-     *
-     * result: calculate cutmask, longs, plen
-     */
+    int i, j;
 
-    int j      = len % BITS_PER_PELEM;
-    if (!j) j += BITS_PER_PELEM;
-
-    for (int i=0; i<j; i++) {
+    /* cutmask is nessary to cut unused bits */
+    j = 8 * sizeof(PELEM);
+    j = len %j;
+    if(!j) j += 8 * sizeof(PELEM);
+    cutmask = 0;
+    for(i=0; i<j; i++) {
         cutmask <<= 1;
         cutmask |= 1;
     }
-
-#if defined(DEBUG)
-    size_t possible = longs*BITS_PER_PELEM;
-    arb_assert((possible-bits)<BITS_PER_PELEM); // longs is too big (wasted space)
-
-#if defined(DUMP_PART_INIT)
-    printf("leafs=%i\n", len);
-    printf("cutmask='%s'\n", readable_cutmask(cutmask));
-    printf("longs=%i (can hold %zu bits)\n", longs, possible);
-    printf("bits=%i\n", bits);
-#endif
-#endif
+    longs = (((len +7) / 8)+sizeof(PELEM)-1) / sizeof(PELEM);
+    plen = len;
 }
 
-#if defined(NTREE_DEBUG_FUNCTIONS)
-void PART::print() const {
-    // ! Testfunction to print a part
+
+/** Testfunction to print a part
+    @PARAMETER  p   pointer to the part */
+void part_print(PART *p)
+{
     int i, j, k=0;
     PELEM l;
 
-    int longs = get_longs();
-    int plen = info->get_bits();
-    for (i=0; i<longs; i++) {
+    for(i=0; i<longs; i++) {
         l = 1;
-        for (j=0; k<plen && size_t(j)<sizeof(PELEM)*8; j++, k++) {
-            if (p[i] & l)
+        for(j=0; k<plen && size_t(j)<sizeof(PELEM)*8; j++, k++) {
+            if(p->p[i] & l)
                 printf("1");
             else
                 printf("0");
@@ -87,184 +57,205 @@ void PART::print() const {
         }
     }
 
-    printf("  len=%.5f  prob=%5.1f%%  leaf=%i  dist2center=%i\n", len, weight*100.0, is_leaf_edge(), distance_to_tree_center());
+    printf(":%.2f,%d%%: ", p->len, p->percent);
 }
-#endif
 
-PART *PartitionSize::create_root() const {
-    /*! build a partition that totally consists of 111111...1111 that is needed to
-     * build the root of a specific ntree
-     */
 
-    PART *p = new PART(this, 1.0);
-    p->invert();
-    arb_assert(p->is_valid());
+/** construct new part */
+PART *part_new(void)
+{
+    PART *p;
+
+    p = (PART *) getmem(sizeof(PART));
+    p->p = (PELEM *) getmem(longs * sizeof(PELEM));
+
     return p;
 }
 
 
-bool PART::is_son_of(const PART *father) const {
-    /*! test if the part 'son' is possibly a son of the part 'father'.
-     *
-     * A father defined in this context as a part covers every bit of his son. needed in CT_ntree
-     */
-
-    arb_assert(is_valid());
-    arb_assert(father->is_valid());
-    
-#if defined(ASSERTION_USED)
-    bool is_equal = true;
-#endif
-    int longs = get_longs();
-    for (int i=0; i<longs; i++) {
-        PELEM s = p[i];
-        PELEM f = father->p[i];
-
-        if ((s&f) != s) return false; // father has not all son bits set
-#if defined(ASSERTION_USED)
-        if (s != f) is_equal = false;
-#endif
-    }
-
-    arb_assert(!is_equal); // if is_equal, father and son are identical (which is wrong);
-                           // e.g. happens when PartRegistry stores multiple instances of the same part
-    return true;
+/** destruct part
+    @PARAMETER  p   partition */
+void part_free(PART *p)
+{
+    free(p->p);
+    free(p);
 }
 
 
-bool PART::overlaps_with(const PART *other) const {
-    /*! test if two parts overlap (i.e. share common bits)
-     */
-
-    arb_assert(is_valid());
-    arb_assert(other->is_valid());
-
-    int longs = get_longs();
-    for (int i=0; i<longs; i++) {
-        if (p[i] & other->p[i]) return true;
+/** build a partion that totaly constited of 111111...1111 that is needed to
+    build the root of a specific ntree */
+PART *part_root(void)
+{
+    int i;
+    PART *p;
+    p = part_new();
+    for(i=0; i<longs; i++) {
+        p->p[i] = ~p->p[i];
     }
-    return false;
-}
-
-void PART::invert() {
-    //! invert a part
-    //
-    // Each edge in a tree connects two subtrees.
-    // These subtrees are represented by inverse partitions
-
-    arb_assert(is_valid());
-    
-    int longs = get_longs();
-    for (int i=0; i<longs; i++) {
-        p[i] = ~p[i];
-    }
-    p[longs-1] &= get_cutmask();
-
-    members = get_maxsize()-members;
-
-    arb_assert(is_valid());
-}
-
-void PART::add_from(const PART *source) {
-    //! destination = source or destination
-    arb_assert(source->is_valid());
-    arb_assert(is_valid());
-
-    bool distinct = disjunct_from(source);
-
-    int longs = get_longs();
-    for (int i=0; i<longs; i++) {
-        p[i] |= source->p[i];
-    }
-
-    if (distinct) {
-        members += source->members;
-    }
-    else {
-        members = count_members();
-    }
-
-    arb_assert(is_valid());
+    p->p[longs-1] &= cutmask;
+    return p;
 }
 
 
-bool PART::equals(const PART *other) const {
-    /*! return true if p1 and p2 are equal
-     */
-    arb_assert(is_valid());
-    arb_assert(other->is_valid());
+/** set the bit of the part p at the position pos
+    @PARAMETER  p   partion
+    pos position */
+void part_setbit(PART *p, int pos)
+{
+    p->p[(pos / sizeof(PELEM) / 8)] |= (1 << (pos % (sizeof(PELEM)*8)));
+}
 
-    int longs = get_longs();
-    for (int i=0; i<longs; i++) {
-        if (p[i] != other->p[i]) return false;
+
+
+/* test if the part son is possibly a son of the part father, a father defined
+   in this context as a part covers every bit of his son. needed in CT_ntree
+   @PARAMETER  son part
+   father  part */
+int son(PART *son, PART *father)
+{
+    int i;
+
+    for(i=0; i<longs; i++) {
+        if((son->p[i] & father->p[i]) != son->p[i]) return 0;
     }
-    return true;
+    return 1;
 }
 
 
-unsigned PART::key() const {
-    //! calculate a hashkey from part
-    arb_assert(is_valid());
+/** test if two parts are brothers, brothers mean that ervery bit in p1 is
+    different from p2 and vice versa. needed in CT_ntree
+    @PARAMETER  p1  part
+    p2  part */
+int brothers(PART *p1, PART *p2)
+{
+    int i;
 
-    PELEM ph = 0;
-    int longs = get_longs();
-    for (int i=0; i<longs; i++) {
-        ph ^= p[i];
+    for(i=0; i<longs; i++) {
+        if(p1->p[i] & p2->p[i]) return 0;
     }
- 
-    return ph;
+    return 1;
 }
 
-int PART::count_members() const { 
-    //! count the number of leafs in partition
-    int leafs = 0;
-    int longs = get_longs();
-    for (int i = 0; i<longs; ++i) {
-        PELEM e = p[i];
 
-        if (i == (longs-1)) e = e&get_cutmask();
+/** invert a part
+    @PARAMETER  p   part */
+void part_invert(PART *p)
+{
+    int i;
 
-        for (size_t b = 0; b<(sizeof(e)*8); ++b) {
-            if (e&1) leafs++;
-            e = e>>1;
-        }
+    for(i=0; i<longs; i++)
+        p->p[i] = ~p->p[i];
+    p->p[longs-1] &= cutmask;
+}
+
+
+/** d  = s or d
+    @PARMETER   s   source
+    d   destionation*/
+void part_or(PART *s, PART *d)
+{
+    int i;
+
+    for(i=0; i<longs; i++) {
+        d->p[i] |= s->p[i];
     }
-    return leafs;
 }
 
-bool PART::is_standardized() const { // @@@ inline
-    return p[0] & 1;
+
+/** compare two parts p1 and p2
+    result:     1, if p1 equal p2
+    0, else */
+int part_cmp(PART *p1, PART *p2)
+{
+    int i;
+
+    for(i=0; i<longs; i++) {
+        if(p1->p[i] != p2->p[i]) return 0;
+    }
+
+    return 1;
 }
 
-void PART::standardize() { // @@@ inline or elim
-    /*! standardize the partition
-     *
-     * two parts are equal if one is just the inverted version of the other.
-     * so the standard is defined that the version is the representant, whose first bit is equal 1
-     */
-    arb_assert(is_valid());
-    if (!is_standardized()) invert();
-    arb_assert(is_valid());
+
+/** calculate a hashkey from p, needed in hash */
+int part_key(PART *p)
+{
+    int i;
+    PELEM ph=0;
+
+    for(i=0; i<longs; i++) {
+        ph ^= p->p[i];
+    }
+    i = (int) ph;
+    if(i<0) i *=-1;
+
+    return i;
 }
 
-int PART::index() const {
-    /*! calculate the first bit set in p,
-     *
-     * this is only useful if only one bit is set,
-     * this is used to identify leafs in a ntree
-     *
-     * ATTENTION: p must be != NULL
-     */
-    arb_assert(is_valid());
-    arb_assert(is_leaf_edge());
 
-    int pos   = 0;
-    int longs = get_longs();
-    for (int i=0; i<longs; i++) {
-        PELEM p_temp = p[i];
+/** set the len of this edge (this part) */
+void part_setlen(PART *p, GBT_LEN len)
+{
+    p->len = len;
+}
+
+
+/** set the percentile appearence of this part in "entrytrees" */
+void part_setperc(PART *p, int perc)
+{
+    p->percent = perc;
+}
+
+
+/** add perc on percent from p */
+void part_addperc(PART *p, int perc)
+{
+    p->percent += perc;
+}
+
+
+/** copy part s in part d
+    @PARAMETER  s   source
+    d   destination */
+void part_copy(PART *s, PART *d)
+{
+    int i;
+
+    for(i=0; i<longs; i++)
+        d->p[i] = s->p[i];
+    d->len = s->len;
+    d->percent = s->percent;
+}
+
+
+/** standartize the partitions, two parts are equal if one is just the inverted
+    version of the other so the standart is defined that the version is the
+    representant, whos first bit is equal 1 */
+void part_standart(PART *p)
+{
+    int i;
+
+    if(p->p[0] & 1) return;
+
+    for(i=0; i<longs; i++)
+        p->p[i] = ~ p->p[i];
+    p->p[longs-1] &= cutmask;
+}
+
+
+/** calculate the first bit set in p, this is only useful if only one bit is set,
+    this is used toidentify leafs in a ntree
+    attention:  p must be != NULL !!! */
+int calc_index(PART *p)
+{
+    int i, pos=0;
+    PELEM p_temp;
+
+    for(i=0; i<longs; i++) {
+        p_temp = p->p[i];
         pos = i * sizeof(PELEM) * 8;
-        if (p_temp) {
-            for (; p_temp; p_temp >>= 1, pos++) {
+        if(p_temp) {
+            for(; p_temp; p_temp >>= 1, pos++) {
                 ;
             }
             break;
@@ -273,112 +264,24 @@ int PART::index() const {
     return pos-1;
 }
 
-int PART::insertionOrder_cmp(const PART *other) const {
-    // defines order in which edges will be inserted into the consensus tree
-
-    if (this == other) return 0;
-
-    int cmp = is_leaf_edge() - other->is_leaf_edge();
-
-    if (!cmp) {
-        cmp = double_cmp(weight, other->weight); // insert bigger weight first
-        if (!cmp) {
-            int centerdist1 = distance_to_tree_center();
-            int centerdist2 = other->distance_to_tree_center();
-
-            cmp = centerdist1-centerdist2; // insert central edges first
-
-            if (!cmp) {
-                cmp = double_cmp(other->get_len(), get_len()); // insert bigger len first
-                if (!cmp) {
-                    cmp = id - other->id; // strict by definition
-                    arb_assert(cmp);
-                }
-            }
-        }
-    }
-
-    return cmp;
-}
-inline int PELEM_cmp(const PELEM& p1, const PELEM& p2) {
-    return p1<p2 ? -1 : (p1>p2 ? 1 : 0);
-}
-
-int PART::topological_cmp(const PART *other) const {
-    // define a strict order on topologies defined by edges
-    
-    if (this == other) return 0;
-
-    arb_assert(is_standardized());
-    arb_assert(other->is_standardized());
-
-    int cmp = members - other->members;
-    if (!cmp) {
-        int longs = get_longs();
-        for (int i = 0; !cmp && i<longs; ++i) {
-            cmp = PELEM_cmp(p[i], other->p[i]);
-        }
-    }
-
-    arb_assert(contradicted(cmp, equals(other)));
-
-    return cmp;
-}
 
 
-// --------------------------------------------------------------------------------
 
-#ifdef UNIT_TESTS
-#ifndef TEST_UNIT_H
-#include <test_unit.h>
-#endif
 
-void TEST_PartRegistry() {
-    {
-        PartitionSize reg(0);
-        TEST_ASSERT_EQUAL(reg.get_bits(), 0);
-        TEST_ASSERT_EQUAL(reg.get_longs(), 0);
-        // cutmask doesnt matter
-    }
 
-    {
-        PartitionSize reg(1);
-        TEST_ASSERT_EQUAL(reg.get_bits(), 1);
-        TEST_ASSERT_EQUAL(reg.get_longs(), 1);
-        TEST_ASSERT_EQUAL(readable_cutmask(reg.get_cutmask()), "00000000000000000000000000000001");
-    }
 
-    {
-        PartitionSize reg(31);
-        TEST_ASSERT_EQUAL(reg.get_bits(), 31);
-        TEST_ASSERT_EQUAL(reg.get_longs(), 1);
-        TEST_ASSERT_EQUAL(readable_cutmask(reg.get_cutmask()), "01111111111111111111111111111111");
-    }
 
-    {
-        PartitionSize reg(32);
-        TEST_ASSERT_EQUAL(reg.get_bits(), 32);
-        TEST_ASSERT_EQUAL(reg.get_longs(), 1);
-        TEST_ASSERT_EQUAL(readable_cutmask(reg.get_cutmask()), "11111111111111111111111111111111");
-    }
 
-    {
-        PartitionSize reg(33);
-        TEST_ASSERT_EQUAL(reg.get_bits(), 33);
-        TEST_ASSERT_EQUAL(reg.get_longs(), 2);
-        TEST_ASSERT_EQUAL(readable_cutmask(reg.get_cutmask()), "00000000000000000000000000000001");
-    }
 
-    {
-        PartitionSize reg(95);
-        TEST_ASSERT_EQUAL(reg.get_bits(), 95);
-        TEST_ASSERT_EQUAL(reg.get_longs(), 3);
-        TEST_ASSERT_EQUAL(readable_cutmask(reg.get_cutmask()), "01111111111111111111111111111111");
-    }
-}
 
-#endif // UNIT_TESTS
 
-// --------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
 
 

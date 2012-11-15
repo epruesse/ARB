@@ -1,25 +1,29 @@
-// --------------------------------------------------------------------------------
-// start ../../AISC_COM/C/aisc_server.h
-//
-// [Note: This header isn't included directly, it's merged into generated code by AISC]
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-
-#include <dupstr.h>
 #include <aisc.h>
 #include <aisc_com.h>
 
-#ifndef ATTRIBUTES_H
-#include <attributes.h>
+#ifdef __cplusplus
+extern "C" {
 #endif
-#include <server.h>
+#include <string.h>
+    // #include <malloc.h>
+#include <memory.h>
+    int aisc_make_sets(long *obj);  /* sets in a create request */
+    int aisc_talking_get_index (int u, int o);
+
 #include <aisc_server_proto.h>
 #include <aisc_server_extern.h>
 #include <import_proto.h>
 
 #include <struct_man.h>
 
-// end ../../AISC_COM/C/aisc_server.h
-// --------------------------------------------------------------------------------
+#ifdef __cplusplus
+}
+#endif
+
+/************** SAVE and LOAD **************/
+
+#ifdef AISC_SAVE_YES
+#include <math.h>
+#endif                  /* for atof */

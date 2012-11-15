@@ -9,12 +9,13 @@
 //                                                             //
 // =========================================================== //
 
+
+#include <Xm/Xm.h>
+
+#include "aw_root.hxx"
 #include "aw_window.hxx"
 #include "aw_Xm.hxx"
 #include "aw_window_Xm.hxx"
-#include "aw_root.hxx"
-#include "aw_msg.hxx"
-
 #include <arbdbt.h>
 
 #include <vector>
@@ -36,7 +37,7 @@ static GB_HASH *alreadyCalledHash = 0;
 
 static void forgetCalledCallbacks() {
     if (alreadyCalledHash) GBS_free_hash(alreadyCalledHash);
-    alreadyCalledHash = GBS_create_hash(2500, GB_MIND_CASE);
+    alreadyCalledHash = GBS_create_hash(5000, GB_MIND_CASE);
 }
 
 static long auto_dontcall1(const char *key, long value, void *cl_hash) {
@@ -44,7 +45,6 @@ static long auto_dontcall1(const char *key, long value, void *cl_hash) {
         GB_HASH *autodontCallHash = (GB_HASH*)cl_hash;
         GBS_write_hash(autodontCallHash, GBS_global_string("ARB_NT_1/%s", key+7), value);
     }
-
     return value;
 }
 static long auto_dontcall2(const char *key, long value, void *) {
@@ -54,20 +54,16 @@ static long auto_dontcall2(const char *key, long value, void *) {
 
 static void build_dontCallHash() {
     aw_assert(!dontCallHash);
-    dontCallHash = GBS_create_hash(100, GB_MIND_CASE);
+    dontCallHash = GBS_create_hash(30, GB_MIND_CASE);
     forgetCalledCallbacks();
 
     GBS_write_hash(dontCallHash, "ARB_NT/QUIT",    1);
     GBS_write_hash(dontCallHash, "quit",           1);
     GBS_write_hash(dontCallHash, "ARB_EDIT4/QUIT", 1);
     GBS_write_hash(dontCallHash, "ARB_INTRO/CANCEL", 1);
-    GBS_write_hash(dontCallHash, "NEIGHBOUR_JOINING/CLOSE", 1);
-    
-    GBS_write_hash(dontCallHash, "MERGE_SELECT_DATABASES/QUIT", 1);
-    GBS_write_hash(dontCallHash, "quitnstart", 1);
 
     // avoid start of some external programs:
-#if 1
+#if 1    
     GBS_write_hash(dontCallHash, "ARB_NT/EDIT_SEQUENCES",                              2);
     GBS_write_hash(dontCallHash, "CPR_MAIN/HELP",                                      2);
     GBS_write_hash(dontCallHash, "GDE__user__Start_a_slave_ARB_on_a_foreign_host_/GO", 2);
@@ -77,6 +73,7 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "MACROS/EXECUTE",                                     2);
     GBS_write_hash(dontCallHash, "NAME_SERVER_ADMIN/EDIT_NAMES_FILE",                  2);
     GBS_write_hash(dontCallHash, "arb_dist",                                           2);
+    GBS_write_hash(dontCallHash, "arb_edit",                                           2);
     GBS_write_hash(dontCallHash, "arb_pars",                                           2);
     GBS_write_hash(dontCallHash, "arb_pars_quick",                                     2);
     GBS_write_hash(dontCallHash, "arb_phyl",                                           2);
@@ -91,79 +88,62 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "NAME_SERVER_ADMIN/REMOVE_SUPERFLUOUS_ENTRIES_IN_NAMES_FILE", 2);
     GBS_write_hash(dontCallHash, "PRINT_CANVAS/PRINT", 2);
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/CREATE_TEMPLATE", 2);
-    GBS_write_hash(dontCallHash, "SELECT_CONFIGURATION/START", 2);
+    GBS_write_hash(dontCallHash, "SELECT_CONFIFURATION/START", 2);
 #endif
-
+    
     // avoid saving
     GBS_write_hash(dontCallHash, "save_changes", 3);
     GBS_write_hash(dontCallHash, "save_props",   3);
 
-    GBS_write_hash(dontCallHash, "save_DB1", 3);
-
 #if 1
-#if defined(WARN_TODO)
 #warning crashing - fix later
-#endif
+    GBS_write_hash(dontCallHash, "ARB_NT/mark_duplicates",         4);
     GBS_write_hash(dontCallHash, "ARB_NT/view_probe_group_result", 4);
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/CHECK_SERVER",   4);
-    GBS_write_hash(dontCallHash, "ARB_EDIT4/SECEDIT",              4);
-    GBS_write_hash(dontCallHash, "sec_edit",                       4);
-    GBS_write_hash(dontCallHash, "ARB_EDIT4/RNA3D",                4);
-    GBS_write_hash(dontCallHash, "rna3d",                          4);
-    GBS_write_hash(dontCallHash, "reload_config",                  4);
-    GBS_write_hash(dontCallHash, "LOAD_OLD_CONFIGURATION/LOAD",    4);
 #endif
 
 #if 1
-#if defined(WARN_TODO)
 #warning test callbacks asking questions again later
-#endif
+    GBS_write_hash(dontCallHash, "ARB_NT/mark_deep_branches",                            5);
+    GBS_write_hash(dontCallHash, "ARB_NT/mark_degen_branches",                           5);
+    GBS_write_hash(dontCallHash, "ARB_NT/mark_long_branches",                            5);
     GBS_write_hash(dontCallHash, "ARB_NT/tree_scale_lengths",                            5);
     GBS_write_hash(dontCallHash, "CREATE_USER_MASK/CREATE",                              5);
-    GBS_write_hash(dontCallHash, "GDE__Import__Import_sequences_using_Readseq_slow_/GO", 5);
+    GBS_write_hash(dontCallHash, "GDE__import__Import_sequences_using_Readseq_slow_/GO", 5);
     GBS_write_hash(dontCallHash, "INFO_OF_ALIGNMENT/DELETE",                             5);
     GBS_write_hash(dontCallHash, "LOAD_SELECTION_BOX/LOAD",                              5);
     GBS_write_hash(dontCallHash, "MULTI_PROBE/CREATE_NEW_SEQUENCE",                      5);
+    GBS_write_hash(dontCallHash, "NDS_PROPS/SAVELOAD_CONFIG",                            5);
+    GBS_write_hash(dontCallHash, "PRIMER_DESIGN/SAVELOAD_CONFIG",                        5);
+    GBS_write_hash(dontCallHash, "PROBE_DESIGN/SAVELOAD_CONFIG",                         5);
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/KILL_ALL_SERVERS",                     5);
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/KILL_SERVER",                          5);
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/UPDATE_SERVER",                        5);
-    GBS_write_hash(dontCallHash, "REALIGN_DNA/REALIGN",                                  5);
     GBS_write_hash(dontCallHash, "SPECIES_QUERY/DELETE_LISTED",                          5);
-    GBS_write_hash(dontCallHash, "SPECIES_QUERY/SAVELOAD_CONFIG_spec",                   5);
+    GBS_write_hash(dontCallHash, "SPECIES_QUERY/SAVELOAD_CONFIG",                        5);
     GBS_write_hash(dontCallHash, "SPECIES_SELECTIONS/RENAME",                            5);
     GBS_write_hash(dontCallHash, "SPECIES_SELECTIONS/STORE",                             5);
     GBS_write_hash(dontCallHash, "del_marked",                                           5);
+    GBS_write_hash(dontCallHash, "REALIGN_DNA/REALIGN",                                  5);
+    GBS_write_hash(dontCallHash, "TREE_PROPS/SAVELOAD_CONFIG",                           5);
+    GBS_write_hash(dontCallHash, "WWW_PROPS/SAVELOAD_CONFIG",                            5);
 #endif
 
-    GB_HASH *autodontCallHash = GBS_create_hash(100, GB_MIND_CASE);
+    GB_HASH *autodontCallHash = GBS_create_hash(30, GB_MIND_CASE);
     GBS_hash_do_loop(dontCallHash, auto_dontcall1, autodontCallHash);
     GBS_hash_do_loop(autodontCallHash, auto_dontcall2, dontCallHash);
     GBS_free_hash(autodontCallHash);
 }
 
-inline bool exclude_key(const char *key) {
-    if (strncmp(key, "FILTER_SELECT_", 14) == 0) {
-        if (strstr(key, "/2filter/2filter/2filter/") != 0) {
-            return true;
-        }
-    }
-    else {
-        if (strstr(key, "SAVELOAD_CONFIG") != 0) return true;
-    }
-    return false;
-}
-
 static long collect_callbacks(const char *key, long value, void *cl_callbacks) {
     if (GBS_read_hash(alreadyCalledHash, key) == 0) { // don't call twice
-        if (!exclude_key(key)) {
-            CallbackArray *callbacks = reinterpret_cast<CallbackArray*>(cl_callbacks);
-            callbacks->push_back(string(key));
-        }
+        CallbackArray *callbacks = reinterpret_cast<CallbackArray*>(cl_callbacks);
+        callbacks->push_back(string(key));
     }
     return value;
 }
 
-static int sortedByCallbackLocation(const char *k0, long v0, const char *k1, long v1) {
+int sortedByCallbackLocation(const char *k0, long v0, const char *k1, long v1) {
     AW_cb_struct *cbs0 = reinterpret_cast<AW_cb_struct*>(v0);
     AW_cb_struct *cbs1 = reinterpret_cast<AW_cb_struct*>(v1);
 
@@ -185,8 +165,8 @@ size_t AW_root::callallcallbacks(int mode) {
     // mode == 1 -> call all in reverse alpha-order
     // mode == 2 -> call all in code-order
     // mode == 3 -> call all in reverse code-order
-    // mode == 4 -> call all in random order
-    // mode & 8 -> repeat until no uncalled callbacks left
+    // mode == 10 -> call all in random order
+    // mode == 11-> call all in random order (repeated until no uncalled callbacks left)
 
     size_t count     = GBS_hash_count_elems(prvt->action_hash);
     size_t callCount = 0;
@@ -195,10 +175,10 @@ size_t AW_root::callallcallbacks(int mode) {
 
     if (!dontCallHash) build_dontCallHash();
 
-    if (mode>0 && (mode&8)) {
+    if (mode == 11) {
         aw_message("Calling callbacks iterated");
         for (int iter = 1; ; ++iter) { // forever
-            size_t thisCount = callallcallbacks(mode&~8); // call all in wanted order
+            size_t thisCount = callallcallbacks(10); // call all in random order
             aw_message(GBS_global_string("%zu callbacks were called (iteration %i)", thisCount, iter));
             if (!thisCount) {
                 aw_message("No uncalled callbacks left");
@@ -222,12 +202,8 @@ size_t AW_root::callallcallbacks(int mode) {
             case 3:
                 GBS_hash_do_sorted_loop(prvt->action_hash, collect_callbacks, sortedByCallbackLocation, &callbacks);
                 break;
-            case -2:
-            case 4:
-                GBS_hash_do_loop(prvt->action_hash, collect_callbacks, &callbacks);
-                break;
             default:
-                aw_assert(0);
+                GBS_hash_do_loop(prvt->action_hash, collect_callbacks, &callbacks);
                 break;
         }
 
@@ -237,8 +213,8 @@ size_t AW_root::callallcallbacks(int mode) {
             case 2: break;                          // use this order
             case 1:
             case 3: reverse(callbacks.begin(), callbacks.end()); break; // use reverse order
-            case 4: random_shuffle(callbacks.begin(), callbacks.end()); break; // use random order
-            default: aw_assert(0); break;           // unknown mode
+            case 10: random_shuffle(callbacks.begin(), callbacks.end()); break; // use random order
+            default : gb_assert(0); break;          // unknown mode
         }
 
         count = callbacks.size();
@@ -268,7 +244,7 @@ size_t AW_root::callallcallbacks(int mode) {
                         }
                         else {
                             fprintf(stderr, "Calling back %zu/%zu (%s)\n", curr, count, remote_command);
-
+                        
                             GB_clear_error();
 
                             cbs->run_callback();
@@ -284,7 +260,7 @@ size_t AW_root::callallcallbacks(int mode) {
                                 if (awp) {
                                     awp->force_expose();
                                     process_pending_events();
-
+                                    
                                     fprintf(stderr, "Popping down window '%s'\n", awp->get_window_id());
                                     awp->hide();
                                     process_pending_events();

@@ -12,17 +12,17 @@
 #ifndef NT_DBREPAIR_HXX
 #define NT_DBREPAIR_HXX
 
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
+#ifndef ARBDB_H
+#include <arbdb.h>
 #endif
-#ifndef AW_BASE_HXX
-#include <aw_base.hxx>
+#ifndef AW_WINDOW_HXX
+#include <aw_window.hxx>
 #endif
 
-class AW_window;
+
 
 GB_ERROR NT_repair_DB(GBDATA *gb_main);
-void     NT_rerepair_DB(AW_window*, AW_CL cl_gbmain, AW_CL);
+void NT_rerepair_DB(AW_window*, AW_CL cl_gbmain, AW_CL);
 
 #else
 #error NT_dbrepair.hxx included twice

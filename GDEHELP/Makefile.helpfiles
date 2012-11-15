@@ -99,4 +99,5 @@ $(GENHELPDEST)/%.help:
 		false )
 
 clean:
-	rm -rf $(GENHELPDEST) $(GENDOCDEST)
+	rm -f $(GENHELPDEST)/*.help
+	rm -f $(GENDOCDEST)/*.doc

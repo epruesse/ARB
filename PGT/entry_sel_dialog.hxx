@@ -19,7 +19,8 @@
 #include "dialog.hxx"
 
 
-class entrySelectionDialog : public MDialog { // derived from a Noncopyable
+class entrySelectionDialog : public MDialog
+{
     public:
         entrySelectionDialog(MDialog*);
         ~entrySelectionDialog();
@@ -32,6 +33,8 @@ class entrySelectionDialog : public MDialog { // derived from a Noncopyable
     protected:
         void createWindow();
 
+//         void getListEntries();
+
     private:
         char *m_entry;
         Widget m_top;
@@ -40,5 +43,11 @@ class entrySelectionDialog : public MDialog { // derived from a Noncopyable
         bool m_hasListCallback;
         static bool m_opened;
 };
+
+
+// CALLBACK WRAPPER FUNCTIONS (STATIC)
+void staticEntrySelExitButtonCallback(Widget, XtPointer, XtPointer);
+void staticListCallback(Widget, XtPointer, XtPointer);
+
 
 #endif // ENTRY_SELECTION_DIALOG_H

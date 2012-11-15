@@ -18,7 +18,7 @@
 /****************************************************************************
 *  CALLBACK FUNCTION - CREATS A RETURNVALUE ACCORDING TO THE SELECTED BUTTON
 ****************************************************************************/
-static void OkCancelResponse(Widget, XtPointer client, XtPointer call)
+void OkCancelResponse(Widget, XtPointer client, XtPointer call)
 {
     int *answer= (int *)client;
     XmAnyCallbackStruct *reason= (XmAnyCallbackStruct *)call;

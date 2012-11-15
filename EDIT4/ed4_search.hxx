@@ -12,34 +12,33 @@
 #ifndef ED4_SEARCH_HXX
 #define ED4_SEARCH_HXX
 
-enum ED4_SEARCH_CASE {
+typedef enum {
     ED4_SC_CASE_SENSITIVE,
     ED4_SC_CASE_INSENSITIVE
-};
+} ED4_SEARCH_CASE;
 
-enum ED4_SEARCH_TU {
+typedef enum {
     ED4_ST_T_NOT_EQUAL_U,
     ED4_ST_T_EQUAL_U
-};
+} ED4_SEARCH_TU;
 
-enum ED4_SEARCH_GAPS {
+typedef enum {
     ED4_SG_CONSIDER_GAPS,
     ED4_SG_IGNORE_GAPS
-};
+} ED4_SEARCH_GAPS;
 
-void ED4_search_cb(AW_window *aww, AW_CL searchDescriptor, AW_CL cl_ed4w);
-
-GB_ERROR ED4_repeat_last_search(class ED4_window *ed4w);
-AW_window *ED4_create_search_window(AW_root *root, AW_CL cl_type_and_ed4w);
-
-void ED4_create_search_awars(AW_root *root);
+void       ED4_search(AW_window *aww, AW_CL searchDescriptor);
+GB_ERROR   ED4_repeat_last_search(void);
+AW_window *ED4_create_search_window(AW_root *root, AW_CL type);
+void       ED4_create_search_awars(AW_root *root);
 
 // --------------------------------------------------------------------------------
 
 #define SEARCH_PATTERNS 9
 #define MAX_MISMATCHES  5
 
-enum ED4_SearchPositionType {
+typedef enum
+    {
     ED4_USER1_PATTERN,
     ED4_USER2_PATTERN,
     ED4_PROBE_PATTERN,
@@ -50,15 +49,8 @@ enum ED4_SearchPositionType {
     ED4_SIG2_PATTERN,
     ED4_SIG3_PATTERN,
     ED4_ANY_PATTERN
-};
 
-struct ED4_search_type_and_ed4w {
-    ED4_SearchPositionType  type;
-    ED4_window             *ed4w;
-
-    ED4_search_type_and_ed4w(ED4_SearchPositionType type_, ED4_window *ed4w_)
-        : type(type_), ed4w(ed4w_) {}
-};
+} ED4_SearchPositionType;
 
 extern const char *ED4_SearchPositionTypeId[];
 
@@ -73,8 +65,8 @@ inline int ED4_encodeSearchDescriptor(int direction, ED4_SearchPositionType patt
 
 
 
-class ED4_SearchPosition {
-    // one found position
+class ED4_SearchPosition // one found position
+{
     int start_pos, end_pos;
     int mismatch[MAX_MISMATCHES]; // contains positions of mismatches (or -1)
     ED4_SearchPositionType whatsFound;
@@ -96,7 +88,6 @@ public:
     ~ED4_SearchPosition() { delete next; }
 
     ED4_SearchPosition(const ED4_SearchPosition& other); // copy-ctor ('next' is always zero)
-    DECLARE_ASSIGNMENT_OPERATOR(ED4_SearchPosition);
 
     ED4_SearchPosition *insert(ED4_SearchPosition *toAdd);
     ED4_SearchPosition *remove(ED4_SearchPositionType typeToRemove);
@@ -120,9 +111,8 @@ public:
 
 class ED4_sequence_terminal;
 
-class ED4_SearchResults : virtual Noncopyable {
-    // list head
-
+class ED4_SearchResults // list head
+{
     int arraySize;              // ==0 -> 'first' is a list
     // >0 -> 'array' is an array of 'ED4_SearchPosition*' with 'arraySize' elements
 
@@ -137,11 +127,13 @@ class ED4_SearchResults : virtual Noncopyable {
     static char *buffer; // buffer for buildColorString
     static int initialized;
 
+    ED4_SearchResults(const ED4_SearchResults&) { e4_assert(0); }
+
     int is_list() const { return arraySize==0; }
     int is_array() const { return arraySize>0; }
 
-    void to_array();      // ensures that result is in array-format (used to improve search performance)
-    void to_list();       // ensures that result is in list-format (used to improve insert performance)
+    void to_array() const;      // ensures that result is in array-format (used to improve search performance)
+    void to_list() const;       // ensures that result is in list-format (used to improve insert performance)
 
 public:
 

@@ -1,30 +1,37 @@
-// =============================================================== //
-//                                                                 //
-//   File      : ED4_mini_classes.cxx                              //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 
+#include <arbdb.h>
+#include <aw_root.hxx>
+#include <aw_window.hxx>
+
+#include <awt_iupac.hxx>
 
 #include "ed4_class.hxx"
 #include "ed4_edit_string.hxx"
 #include "ed4_awars.hxx"
 #include "ed4_tools.hxx"
 
-#include <aw_awar.hxx>
-#include <aw_root.hxx>
-#include <iupac.h>
 
-#include <cctype>
+// --------------------------------------------------------------------------------
+//              ED4_folding_line::
+// --------------------------------------------------------------------------------
 
-// ------------------------
-//      ED4_bases_table
+ED4_folding_line::ED4_folding_line()
+{
+    memset((char *)this,0,sizeof(*this));
+}
+ED4_folding_line::~ED4_folding_line()
+{
+}
+
+// --------------------------------------------------------------------------------
+//              ED4_bases_table::
+// --------------------------------------------------------------------------------
 
 #ifdef DEBUG
-// # define COUNT_BASES_TABLE_SIZE
+//# define COUNT_BASES_TABLE_SIZE
 #endif
 
 #ifdef COUNT_BASES_TABLE_SIZE
@@ -139,14 +146,10 @@ void ED4_bases_table::sub(const ED4_bases_table& other, int start, int end)
         }
     }
 }
-void ED4_bases_table::sub_and_add(const ED4_bases_table& Sub, const ED4_bases_table& Add, PosRange range)
+void ED4_bases_table::sub_and_add(const ED4_bases_table& Sub, const ED4_bases_table& Add, int start, int end)
 {
     e4_assert(no_of_entries==Sub.no_of_entries);
     e4_assert(no_of_entries==Add.no_of_entries);
-
-    int start = range.start();
-    int end   = range.end();
-
     e4_assert(start>=0);
     e4_assert(end<no_of_entries);
     e4_assert(start<=end);
@@ -154,7 +157,7 @@ void ED4_bases_table::sub_and_add(const ED4_bases_table& Sub, const ED4_bases_ta
     int i;
     if (table_entry_size==SHORT_TABLE_ELEM_SIZE) {
         if (Sub.table_entry_size==SHORT_TABLE_ELEM_SIZE) {
-            if (Add.table_entry_size==SHORT_TABLE_ELEM_SIZE) {
+            if (Add.table_entry_size==SHORT_TABLE_ELEM_SIZE)  {
                 for (i=start; i<=end; i++) {
                     set_elem_short(i, get_elem_short(i)-Sub.get_elem_short(i)+Add.get_elem_short(i));
                 }
@@ -306,7 +309,7 @@ int ED4_bases_table::lastDifference(const ED4_bases_table& other, int start, int
 
 ED4_bases_table::ED4_bases_table(int maxseqlength)
 {
-    memset((char*)this, 0, sizeof(*this));
+    memset((char*)this,0,sizeof(*this));
     table_entry_size = SHORT_TABLE_ELEM_SIZE;
     if (maxseqlength) init(maxseqlength);
 }
@@ -335,6 +338,7 @@ void ED4_bases_table::change_table_length(int new_length, int default_entry)
             new_table[new_length] = no_of_bases.shortTable[no_of_entries];
             if (growth>0) {
                 for (int e=no_of_entries; e<new_length; ++e) new_table[e] = default_entry;
+                //memset(new_table+no_of_entries, 0, growth*sizeof(*new_table));
             }
 
             delete [] no_of_bases.shortTable;
@@ -347,6 +351,7 @@ void ED4_bases_table::change_table_length(int new_length, int default_entry)
             new_table[new_length] = no_of_bases.longTable[no_of_entries];
             if (growth>0) {
                 for (int e=no_of_entries; e<new_length; ++e) new_table[e] = default_entry;
+                //memset(new_table+no_of_entries, 0, growth*sizeof(*new_table));
             }
 
             delete [] no_of_bases.longTable;
@@ -386,54 +391,44 @@ int ED4_bases_table::empty() const
 }
 #endif // ASSERTION_USED
 
-// ------------------------
-//      Build consensus
+/* --------------------------------------------------------------------------------
+   Build consensus
+   -------------------------------------------------------------------------------- */
 
 // we make static copies of the awars to avoid performance breakdown (BK_up_to_date is changed by callback ED4_consensus_definition_changed)
 
-struct ConsensusBuildParams {
-    int countgaps;
-    int gapbound;
-    int group;
-    int considbound;
-    int upper;
-    int lower;
+static int BK_up_to_date = 0;
+static int BK_countgaps;
+static int BK_gapbound;
+static int BK_group;
+static int BK_considbound;
+static int BK_upper;
+static int BK_lower;
 
-    ConsensusBuildParams(AW_root *awr) {
-        countgaps   = awr->awar(ED4_AWAR_CONSENSUS_COUNTGAPS)->read_int();
-        gapbound    = awr->awar(ED4_AWAR_CONSENSUS_GAPBOUND)->read_int();
-        group       = awr->awar(ED4_AWAR_CONSENSUS_GROUP)->read_int();
-        considbound = awr->awar(ED4_AWAR_CONSENSUS_CONSIDBOUND)->read_int();
-        upper       = awr->awar(ED4_AWAR_CONSENSUS_UPPER)->read_int();
-        lower       = awr->awar(ED4_AWAR_CONSENSUS_LOWER)->read_int();
+void ED4_consensus_definition_changed(AW_root*, AW_CL,AW_CL) {
+    ED4_terminal *terminal = ED4_ROOT->root_group_man->get_first_terminal();
+
+    e4_assert(terminal);
+    while (terminal) {
+        if (terminal->parent->parent->flag.is_consensus) {
+            terminal->set_refresh();
+            terminal->parent->refresh_requested_by_child();
+        }
+        terminal = terminal->get_next_terminal();
     }
-#if defined(UNIT_TESTS)
-    ConsensusBuildParams() {
-        // uses awar defaults
-        countgaps   = 1;
-        gapbound    = 60;
-        group       = 1;
-        considbound = 30;
-        upper       = 95;
-        lower       = 70;
-    }
-#endif
-};
 
-static ConsensusBuildParams *BK = NULL; // @@@ make member of ED4_char_table ?
-
-void ED4_consensus_definition_changed(AW_root*, AW_CL, AW_CL) {
-    delete BK; BK = 0; // invalidate
-    ED4_ROOT->request_refresh_for_consensus_terminals();
+    BK_up_to_date = 0;
+    // ED4_ROOT->root_group_man->Show();
+    ED4_ROOT->refresh_all_windows(1);
 }
 
-static ARB_ERROR toggle_consensus_display(ED4_base *base, AW_CL show) {
-    if (base->is_consensus_manager()) {
+static ED4_returncode toggle_consensus_display(void **show, void **, ED4_base *base) {
+    if (base->flag.is_consensus) {
         ED4_manager *consensus_man = base->to_manager();
         ED4_spacer_terminal *spacer = consensus_man->parent->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
 
         if (show) {
-            consensus_man->unhide_children();
+            consensus_man->make_children_visible();
             spacer->extension.size[HEIGHT] = SPACERHEIGHT;
         }
         else {
@@ -444,50 +439,55 @@ static ARB_ERROR toggle_consensus_display(ED4_base *base, AW_CL show) {
         }
     }
 
-    return NULL;
+    return ED4_R_OK;
 }
 
 void ED4_consensus_display_changed(AW_root *root, AW_CL, AW_CL) {
     int show = root->awar(ED4_AWAR_CONSENSUS_SHOW)->read_int();
-    ED4_ROOT->root_group_man->route_down_hierarchy(toggle_consensus_display, show).expect_no_error();
+    ED4_ROOT->root_group_man->route_down_hierarchy((void**)show, 0, toggle_consensus_display);
+    ED4_ROOT->refresh_all_windows(1);
 }
 
-char *ED4_char_table::build_consensus_string(PosRange r) const {
-    ExplicitRange  range(r, size());
-    long           entries = range.size();
-    char          *new_buf = (char*)malloc(entries+1);
+char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *fill_id) const
+// consensus is only built in intervall
+// Note : Always check that consensus behavior is identical to that used in CON_evaluatestatistic()
+{
+    int i;
 
-    build_consensus_string_to(new_buf, range);
-    new_buf[entries] = 0;
+    if (!BK_up_to_date) {
+        BK_countgaps = ED4_ROOT->aw_root->awar(ED4_AWAR_CONSENSUS_COUNTGAPS)->read_int();
+        BK_gapbound = ED4_ROOT->aw_root->awar(ED4_AWAR_CONSENSUS_GAPBOUND)->read_int();
+        BK_group = ED4_ROOT->aw_root->awar(ED4_AWAR_CONSENSUS_GROUP)->read_int();
+        BK_considbound = ED4_ROOT->aw_root->awar(ED4_AWAR_CONSENSUS_CONSIDBOUND)->read_int();
+        BK_upper = ED4_ROOT->aw_root->awar(ED4_AWAR_CONSENSUS_UPPER)->read_int();
+        BK_lower = ED4_ROOT->aw_root->awar(ED4_AWAR_CONSENSUS_LOWER)->read_int();
+        BK_up_to_date = 1;
+    }
 
-    return new_buf;
-}
+    if (!fill_id) {
+        long entr = size();
 
-void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitRange range) const {
-    // 'consensus_string' has to be a buffer of size 'range.size()+1'
-    // Note : Always check that consensus behavior is identical to that used in CON_evaluatestatistic()
+        fill_id = new char[entr+1];
+        fill_id[entr] = 0;
+    }
 
-    if (!BK) BK = new ConsensusBuildParams(ED4_ROOT->aw_root);
+    e4_assert(right_idx<size());
+    if (right_idx==-1 || right_idx>=size()) right_idx = size()-1;
 
-    e4_assert(consensus_string);
-    e4_assert(range.end()<size());
+    char *consensus_string = fill_id;
 
 #define PERCENT(part, all)      ((100*(part))/(all))
-#define MAX_BASES_TABLES 41     // 25
+#define MAX_BASES_TABLES 41     //25
 
     e4_assert(used_bases_tables<=MAX_BASES_TABLES);     // this is correct for DNA/RNA -> build_consensus_string() must be corrected for AMI/PRO
 
-    const int left_idx  = range.start();
-    const int right_idx = range.end();
-
     if (sequences) {
-        for (int i=left_idx; i<=right_idx; i++) {
-            int o        = i-left_idx;
-            int bases    = 0;           // count of all bases together
+        for (i=left_idx; i<=right_idx; i++) {
+            int bases = 0; // count of all bases together
             int base[MAX_BASES_TABLES]; // count of specific base
             int j;
-            int max_base = -1;          // maximum count of specific base
-            int max_j    = -1;          // index of this base
+            int max_base = -1; // maximum count of specific base
+            int max_j = -1; // index of this base
 
             for (j=0; j<used_bases_tables; j++) {
                 base[j] = linear_table(j)[i];
@@ -505,10 +505,10 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
             // What to do with gaps?
 
             if (gaps == sequences) {
-                consensus_string[o] = '=';
+                consensus_string[i] = '=';
             }
-            else if (BK->countgaps && PERCENT(gaps, sequences)>=BK->gapbound) {
-                consensus_string[o] = '-';
+            else if (BK_countgaps && PERCENT(gaps, sequences)>=BK_gapbound) {
+                consensus_string[i] = '-';
             }
             else {
                 // Simplify using IUPAC :
@@ -516,8 +516,8 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                 char kchar;     // character for consensus
                 int  kcount;    // count this character
 
-                if (BK->group) { // group -> iupac
-                    if (ali_type == GB_AT_RNA || ali_type == GB_AT_DNA) {
+                if (BK_group) { // group -> iupac
+                    if (IS_NUCLEOTIDE()) {
                         int no_of_bases = 0; // count of different bases used to create iupac
                         char used_bases[MAX_BASES_TABLES+1]; // string containing those bases
 
@@ -526,87 +526,89 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                             int bchar = index_to_upperChar(j);
 
                             if (!ADPP_IS_ALIGN_CHARACTER(bchar)) {
-                                if (PERCENT(base[j], sequences)>=BK->considbound) {
+                                if (PERCENT(base[j], sequences)>=BK_considbound) {
                                     used_bases[no_of_bases++] = index_to_upperChar(j);
                                     kcount += base[j];
                                 }
                             }
                         }
                         used_bases[no_of_bases] = 0;
-                        kchar = ED4_encode_iupac(used_bases, ali_type);
+                        kchar = ED4_encode_iupac(used_bases, ED4_ROOT->alignment_type);
                     }
                     else {
-                        e4_assert(ali_type == GB_AT_AA);
+                        e4_assert(IS_AMINO());
 
-                        const int amino_groups = iupac::AA_GROUP_COUNT;
-                        int       group_count[amino_groups];
+                        int group_count[ED4_IUPAC_GROUPS];
 
-                        for (j=0; j<amino_groups; j++) {
+                        for (j=0; j<ED4_IUPAC_GROUPS; j++) {
                             group_count[j] = 0;
                         }
                         for (j=0; j<used_bases_tables; j++) {
                             unsigned char bchar = index_to_upperChar(j);
 
                             if (!ADPP_IS_ALIGN_CHARACTER(bchar)) {
-                                if (PERCENT(base[j], sequences)>=BK->considbound) {
-                                    group_count[iupac::get_amino_group_for(bchar)] += base[j];
+                                if (PERCENT(base[j], sequences)>=BK_considbound) {
+                                    group_count[AWT_iupac_group[toupper(bchar)-'A']] += base[j];
                                 }
                             }
                         }
 
                         kcount = 0;
                         int bestGroup = 0;
-                        for (j=0; j<amino_groups; j++) {
+                        for (j=0; j<ED4_IUPAC_GROUPS; j++) {
                             if (group_count[j]>kcount) {
                                 bestGroup = j;
                                 kcount = group_count[j];
                             }
                         }
 
-                        kchar = iupac::get_amino_consensus_char(iupac::Amino_Group(bestGroup));
+                        kchar = "?ADHIF"[bestGroup];
                     }
                 }
                 else {
-                    e4_assert(max_base);            // expect at least one base to occur
-                    e4_assert(max_j >= 0);
-
-                    kchar  = index_to_upperChar(max_j);
+                    e4_assert(max_base); // expect at least one base to occur
+                    kchar = index_to_upperChar(max_j);
                     kcount = max_base;
-                    e4_assert(kchar);
                 }
 
                 // show as upper or lower case ?
 
                 int percent = PERCENT(kcount, sequences);
 
-                if (percent>=BK->upper) {
-                    consensus_string[o] = kchar;
+                if (percent>=BK_upper) {
+                    consensus_string[i] = kchar;
                 }
-                else if (percent>=BK->lower) {
-                    consensus_string[o] = tolower(kchar);
+                else if (percent>=BK_lower){
+                    consensus_string[i] = tolower(kchar);
                 }
                 else {
-                    consensus_string[o] = '.';
+                    consensus_string[i] = '.';
                 }
             }
-            e4_assert(consensus_string[o]);
         }
     }
     else {
-        memset(consensus_string, '?', right_idx-left_idx+1);
+        for (i=left_idx; i<=right_idx; i++) {
+            consensus_string[i] = '?';
+        }
     }
+
+
 #undef PERCENT
+
+    return consensus_string;
 }
 
-// -----------------------
-//      ED4_char_table
+// --------------------------------------------------------------------------------
+//              ED4_char_table::
+// --------------------------------------------------------------------------------
 
-bool               ED4_char_table::initialized       = false;
-unsigned char      ED4_char_table::char_to_index_tab[MAXCHARTABLE];
-unsigned char     *ED4_char_table::upper_index_chars = 0;
-unsigned char     *ED4_char_table::lower_index_chars = 0;
-int                ED4_char_table::used_bases_tables = 0;
-GB_alignment_type  ED4_char_table::ali_type          = GB_AT_RNA;
+// bool ED4_char_table::tables_are_valid = true;
+bool ED4_char_table::initialized = false;
+unsigned char ED4_char_table::char_to_index_tab[MAXCHARTABLE];
+unsigned char *ED4_char_table::upper_index_chars = 0;
+unsigned char *ED4_char_table::lower_index_chars = 0;
+int ED4_char_table::used_bases_tables = 0;
 
 inline void ED4_char_table::set_char_to_index(unsigned char c, int index)
 {
@@ -630,71 +632,64 @@ void ED4_char_table::expand_tables() {
     }
 }
 
-void ED4_char_table::initial_setup(const char *gap_chars, GB_alignment_type ali_type_) {
-    const char *groups = 0;
-    used_bases_tables  = strlen(gap_chars);
-    ali_type           = ali_type_;
-
-    switch (ali_type) {
-        case GB_AT_RNA:
-            groups = "A,C,G,TU,MRWSYKVHDBN,";
-            break;
-        case GB_AT_DNA:
-            groups = "A,C,G,UT,MRWSYKVHDBN,";
-            break;
-        case GB_AT_AA:
-            groups = "P,A,G,S,T,Q,N,E,D,B,Z,H,K,R,L,I,V,M,F,Y,W,C,X"; // @@@ DRY (create 'groups' from AA_GROUP_...)
-            break;
-        default:
-            e4_assert(0);
-            break;
-    }
-
-    e4_assert(groups);
-
-    int i;
-
-    for (i=0; groups[i]; i++) {
-        if (groups[i]==',') {
-            used_bases_tables++;
-        }
-    }
-
-    lower_index_chars = new unsigned char[used_bases_tables];
-    upper_index_chars = new unsigned char[used_bases_tables];
-
-    int idx = 0;
-    unsigned char init_val = used_bases_tables-1; // map all unknown stuff to last table
-    memset(char_to_index_tab, init_val, MAXCHARTABLE*sizeof(*char_to_index_tab));
-
-    for (i=0; groups[i]; i++) {
-        if (groups[i]==',') {
-            idx++;
-        }
-        else {
-            e4_assert(isupper(groups[i]));
-            set_char_to_index(groups[i], idx);
-        }
-    }
-
-    const char *align_string_ptr = gap_chars;
-    while (1) {
-        char c = *align_string_ptr++;
-        if (!c) break;
-        set_char_to_index(c, idx++);
-    }
-
-    e4_assert(idx==used_bases_tables);
-    initialized = true;
-}
-
 ED4_char_table::ED4_char_table(int maxseqlength)
 {
-    memset((char*)this, 0, sizeof(*this));
+    memset((char*)this,0,sizeof(*this));
 
     if (!initialized) {
+        const char *groups = 0;
         char *align_string = ED4_ROOT->aw_root->awar_string(ED4_AWAR_GAP_CHARS)->read_string();
-        initial_setup(align_string, ED4_ROOT->alignment_type);
+        used_bases_tables = strlen(align_string);
+
+        if (IS_NUCLEOTIDE()) {
+            if (IS_RNA()) {
+                groups = "A,C,G,TU,MRWSYKVHDBN,";
+            }
+            else {
+                groups = "A,C,G,UT,MRWSYKVHDBN,";
+            }
+        }
+        else {
+            e4_assert(IS_AMINO());
+            groups = "P,A,G,S,T,Q,N,E,D,B,Z,H,K,R,L,I,V,M,F,Y,W,";
+        }
+
+        e4_assert(groups);
+
+        int i;
+
+        for (i=0; groups[i]; i++) {
+            if (groups[i]==',') {
+                used_bases_tables++;
+            }
+        }
+
+        lower_index_chars = new unsigned char[used_bases_tables];
+        upper_index_chars = new unsigned char[used_bases_tables];
+
+        int idx = 0;
+        unsigned char init_val = used_bases_tables-1; // map all unknown stuff to last table
+        memset(char_to_index_tab, init_val, MAXCHARTABLE*sizeof(*char_to_index_tab));
+
+        for (i=0; groups[i]; i++) {
+            if (groups[i]==',') {
+                idx++;
+            }
+            else {
+                e4_assert(isupper(groups[i]));
+                set_char_to_index(groups[i], idx);
+            }
+        }
+
+        const char *align_string_ptr = align_string;
+        while (1) {
+            char c = *align_string_ptr++;
+            if (!c) break;
+            set_char_to_index(c, idx++);
+        }
+
+        e4_assert(idx==used_bases_tables);
+        initialized = true;
         free(align_string);
     }
 
@@ -749,7 +744,7 @@ ED4_char_table::~ED4_char_table()
     delete [] bases_table;
 }
 
-const PosRange *ED4_char_table::changed_range(const ED4_char_table& other) const
+int ED4_char_table::changed_range(const ED4_char_table& other, int *startPtr, int *endPtr) const
 {
     int i;
     int Size = size();
@@ -772,15 +767,13 @@ const PosRange *ED4_char_table::changed_range(const ED4_char_table& other) const
                 linear_table(i).lastDifference(other.linear_table(i), end+1, Size-1, &end);
             }
 
+            *startPtr = start;
+            *endPtr = end;
             e4_assert(start<=end);
-
-            static PosRange range;
-            range = PosRange(start, end);
-
-            return &range;
+            return 1;
         }
     }
-    return NULL;
+    return 0;
 }
 void ED4_char_table::add(const ED4_char_table& other)
 {
@@ -832,7 +825,10 @@ void ED4_char_table::sub(const ED4_char_table& other, int start, int end)
     test();
 }
 
-void ED4_char_table::sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add) {
+void ED4_char_table::sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add)
+{
+    int start, end;
+
     test();
 
     if (Sub.ignore) {
@@ -843,51 +839,47 @@ void ED4_char_table::sub_and_add(const ED4_char_table& Sub, const ED4_char_table
     Sub.test();
     Add.test();
 
-    const PosRange *range = Sub.changed_range(Add);
-    if (range) {
+    if (Sub.changed_range(Add, &start, &end)) {
         prepare_to_add_elements(Add.added_sequences()-Sub.added_sequences());
-        sub_and_add(Sub, Add, *range);
+        sub_and_add(Sub, Add, start, end);
     }
 
     test();
 }
-
-void ED4_char_table::sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add, PosRange range) {
+void ED4_char_table::sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add, int start, int end)
+{
     test();
     Sub.test();
     Add.test();
 
     e4_assert(!Sub.ignore && !Add.ignore);
-    e4_assert(range.is_part());
+    e4_assert(start<=end);
 
     int i;
     for (i=0; i<used_bases_tables; i++) {
-        linear_table(i).sub_and_add(Sub.linear_table(i), Add.linear_table(i), range);
+        linear_table(i).sub_and_add(Sub.linear_table(i), Add.linear_table(i), start, end);
     }
 
     test();
 }
 
-const PosRange *ED4_char_table::changed_range(const char *string1, const char *string2, int min_len)
+int ED4_char_table::changed_range(const char *string1, const char *string2, int min_len, int *start, int *end)
 {
     const unsigned long *range1 = (const unsigned long *)string1;
     const unsigned long *range2 = (const unsigned long *)string2;
-    const int            step   = sizeof(*range1);
-
+    const int step = sizeof(*range1);
     int l = min_len/step;
     int r = min_len%step;
     int i;
     int j;
     int k;
 
-    int start = -1, end = -1;
-
     for (i=0; i<l; i++) {       // search wordwise (it's faster)
         if (range1[i] != range2[i]) {
             k = i*step;
             for (j=0; j<step; j++) {
                 if (string1[k+j] != string2[k+j]) {
-                    start = end = k+j;
+                    *start = *end = k+j;
                     break;
                 }
             }
@@ -900,7 +892,7 @@ const PosRange *ED4_char_table::changed_range(const char *string1, const char *s
     if (i==l) {         // no difference found in word -> look at rest
         for (j=0; j<r; j++) {
             if (string1[k+j] != string2[k+j]) {
-                start = end = k+j;
+                *start = *end = k+j;
                 break;
             }
         }
@@ -910,23 +902,21 @@ const PosRange *ED4_char_table::changed_range(const char *string1, const char *s
         }
     }
 
-    e4_assert(start != -1 && end != -1);
-
     for (j=r-1; j>=0; j--) {    // search rest backwards
         if (string1[k+j] != string2[k+j]) {
-            end = k+j;
+            *end = k+j;
             break;
         }
     }
 
     if (j==-1) {                // not found in rest -> search words backwards
-        int m = start/step;
+        int m = *start/step;
         for (i=l-1; i>=m; i--) {
             if (range1[i] != range2[i]) {
                 k = i*step;
                 for (j=step-1; j>=0; j--) {
                     if (string1[k+j] != string2[k+j]) {
-                        end = k+j;
+                        *end = k+j;
                         break;
                     }
                 }
@@ -935,12 +925,8 @@ const PosRange *ED4_char_table::changed_range(const char *string1, const char *s
         }
     }
 
-    e4_assert(start<=end);
-
-    static PosRange range;
-    range = PosRange(start, end);
-
-    return &range;
+    e4_assert(*start<=*end);
+    return 1;
 }
 
 void ED4_char_table::add(const char *scan_string, int len)
@@ -1015,10 +1001,9 @@ void ED4_char_table::sub(const char *scan_string, int len)
     test();
 }
 
-void ED4_char_table::sub_and_add(const char *old_string, const char *new_string, PosRange range) {
+void ED4_char_table::sub_and_add(const char *old_string, const char *new_string, int start, int end)
+{
     test();
-    int start = range.start();
-    int end   = range.end();
     e4_assert(start<=end);
 
     int i;
@@ -1029,9 +1014,6 @@ void ED4_char_table::sub_and_add(const char *old_string, const char *new_string,
             unsigned char o = old_string[i];
             unsigned char n = new_string[i];
 
-            e4_assert(o); // @@@ if these never fail, some code below is superfluous
-            e4_assert(n);
-            
             if (!o) {
                 for (; n && i<=end; i++) {
                     n = new_string[i];
@@ -1059,9 +1041,6 @@ void ED4_char_table::sub_and_add(const char *old_string, const char *new_string,
             unsigned char o = old_string[i];
             unsigned char n = new_string[i];
 
-            e4_assert(o); // @@@ if these never fail, some code below is superfluous
-            e4_assert(n);
-            
             if (!o) {
                 for (; n && i<=end; i++) {
                     n = new_string[i];
@@ -1087,15 +1066,34 @@ void ED4_char_table::sub_and_add(const char *old_string, const char *new_string,
     test();
 }
 
-void ED4_char_table::change_table_length(int new_length) {
-    for (int c=0; c<used_bases_tables; c++) {
+void ED4_char_table::change_table_length(int new_length)
+{
+    int c;
+
+    //     int bases1, gaps1;
+    //     bases_and_gaps_at(0, &bases1, &gaps1);
+
+    //     int table_thickness = bases1+gaps1;
+    //     bool gaps_inserted = false;
+
+    // test(); fails because MAXSEQUENCECHARACTERLENGTH is already incremented
+
+    for (c=0; c<used_bases_tables; c++) {
+        //         int default_entry = 0;
+        //         if (!gaps_inserted && ADPP_IS_ALIGN_CHARACTER(upper_index_chars[c])) {
+        //             default_entry = table_thickness;
+        //             gaps_inserted = true;
+        //         }
+        //         linear_table(c).change_table_length(new_length, default_entry);
         linear_table(c).change_table_length(new_length, 0);
     }
+
     test();
 }
 
 //  --------------
 //      tests:
+//  --------------
 
 #if defined(TEST_CHAR_TABLE_INTEGRITY) || defined(ASSERTION_USED)
 
@@ -1154,96 +1152,14 @@ bool ED4_char_table::ok() const
 
 #if defined(TEST_CHAR_TABLE_INTEGRITY)
 
+//  ------------------------------------------
+//      void ED4_char_table::test() const
+//  ------------------------------------------
 void ED4_char_table::test() const {
-
+    
     if (!ok()) {
         GBK_terminate("ED4_char_table::test() failed");
     }
 }
 
 #endif // TEST_CHAR_TABLE_INTEGRITY
-
-
-// --------------------------------------------------------------------------------
-
-#ifdef UNIT_TESTS
-#ifndef TEST_UNIT_H
-#include <test_unit.h>
-#endif
-
-void TEST_char_table() {
-    const char alphabeth[]   = "ACGTN-";
-    const int alphabeth_size = strlen(alphabeth);
-
-    const int seqlen = 30;
-    char      seq[seqlen+1];
-
-    const char *gapChars = ".-"; // @@@ doesnt make any difference which gaps are used - why?
-    // const char *gapChars = "-";
-    // const char *gapChars = ".";
-    // const char *gapChars = "A"; // makes me fail
-    ED4_char_table::initial_setup(gapChars, GB_AT_RNA);
-    ED4_init_is_align_character(gapChars);
-
-    TEST_ASSERT(!BK);
-    BK = new ConsensusBuildParams();
-
-    // BK->lower = 70; BK->upper = 95; BK->gapbound = 60; // defaults from awars
-    BK->lower    = 40; BK->upper = 70; BK->gapbound = 40;
-
-    srand(100);
-    for (int loop = 0; loop<5; ++loop) {
-        unsigned seed = rand();
-
-        srand(seed);
-
-        ED4_char_table tab(seqlen);
-
-        // build some seq
-        for (int c = 0; c<seqlen; ++c) seq[c] = alphabeth[rand()%alphabeth_size];
-        seq[seqlen]                           = 0;
-
-        TEST_ASSERT_EQUAL(strlen(seq), size_t(seqlen));
-
-        const int  add_count = 300;
-        char      *added_seqs[add_count];
-
-        // add seq multiple times
-        for (int a = 0; a<add_count; ++a) {
-            tab.add(seq, seqlen);
-            added_seqs[a]      = strdup(seq);
-            seq[rand()%seqlen] = alphabeth[rand()%alphabeth_size]; // modify 1 character in seq
-        }
-
-        // build consensi (just check regression)
-        {
-            char *consensus = tab.build_consensus_string();
-            switch (seed) {
-                case 677741240: TEST_ASSERT_EQUAL(consensus, ".-s-NW..aWu.NnWYa.R.mgcNK.c..."); break;
-                case 721151648: TEST_ASSERT_EQUAL(consensus, "a.nn..K..-gU.RW-SNcau.WNNacn.u"); break;
-                case 345295160: TEST_ASSERT_EQUAL(consensus, "..-g...MSn...guc.n.u.R.n.-Ng.k"); break;
-                case 346389111: TEST_ASSERT_EQUAL(consensus, ".unAn...gN.kc-cS.Raun...Sa-gY."); break;
-                case 367171911: TEST_ASSERT_EQUAL(consensus, "na.Na.nu.c-.-NU.aYgn-nng-.Wa.M"); break;
-                default: TEST_ASSERT_EQUAL(consensus, "undef");
-            }
-            free(consensus);
-        }
-
-        for (int a = 0; a<add_count; a++) {
-            tab.sub(added_seqs[a], seqlen);
-            freenull(added_seqs[a]);
-        }
-        {
-            char *consensus = tab.build_consensus_string();
-            TEST_ASSERT_EQUAL(consensus, "??????????????????????????????"); // check tab is empty
-            free(consensus);
-        }
-    }
-
-    delete BK;
-    BK = 0;
-}
-
-#endif // UNIT_TESTS
-
-// --------------------------------------------------------------------------------

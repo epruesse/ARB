@@ -1,130 +1,124 @@
-// =============================================================== //
-//                                                                 //
-//   File      : AP_pos_var_pars.cxx                               //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
-
-#include "ntree.hxx"
-#include "ap_pos_var_pars.hxx"
-
-#include <AP_pro_a_nucs.hxx>
-#include <awt_sel_boxes.hxx>
-#include <arb_progress.h>
-#include <aw_root.hxx>
-#include <aw_awar.hxx>
-#include <aw_msg.hxx>
+#include <stdlib.h>
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+// #include <malloc.h>
+#include <memory.h>
+#include <math.h>
+#include <arbdb.h>
 #include <arbdbt.h>
-#include <arb_strbuf.h>
+#include <aw_root.hxx>
+#include <aw_device.hxx>
+#include <aw_window.hxx>
+#include <awt.hxx>
+#include <awt_tree.hxx>
+#include <awt_sel_boxes.hxx>
 
-#include <cctype>
-#include <cmath>
+#include "ap_pos_var_pars.hxx"
 
 #define ap_assert(cond) arb_assert(cond)
 
+extern GBDATA *GLOBAL_gb_main;
 
-AP_pos_var::AP_pos_var(GBDATA *gb_maini, char *ali_namei, long ali_leni, int isdna, char *tree_namei) {
-    memset((char  *)this, 0, sizeof(AP_pos_var));
-    gb_main   = gb_maini;
-    ali_name  = strdup(ali_namei);
-    is_dna    = isdna;
-    ali_len   = ali_leni;
-    tree_name = strdup(tree_namei);
-    progress  = NULL;
+
+AP_pos_var::AP_pos_var(GBDATA *gb_maini,char *ali_namei, long ali_leni, int isdna, char *tree_namei) {
+    memset((char  *)this, 0, sizeof(AP_pos_var) ) ;
+    this->gb_main   = gb_maini;
+    this->ali_name  = strdup(ali_namei);
+    this->is_dna    = isdna;
+    this->ali_len   = ali_leni;
+    this->tree_name = strdup(tree_namei);
 }
 
 AP_pos_var::~AP_pos_var() {
-    delete progress;
     free(ali_name);
     free(tree_name);
     free(transitions);
     free(transversions);
-    for (int i=0; i<256; i++) free(frequencies[i]);
+    int i;
+    for (i=0;i<256;i++) free(frequencies[i]);
 }
 
-long AP_pos_var::getsize(GBT_TREE *tree) {
+long    AP_pos_var::getsize(GBT_TREE *tree){
     if (!tree) return 0;
     if (tree->is_leaf) return 1;
     return getsize(tree->leftson) + getsize(tree->rightson) + 1;
 }
 
-const char *AP_pos_var::parsimony(GBT_TREE *tree, GB_UINT4 *bases, GB_UINT4 *tbases) {
+const char *AP_pos_var::parsimony(GBT_TREE *tree, GB_UINT4 *bases, GB_UINT4 *tbases){
     GB_ERROR error = 0;
+    timer ++;
+    long i;
+    long l,r;
 
     if (tree->is_leaf) {
-        if (tree->gb_node) {
-            GBDATA *gb_data = GBT_read_sequence(tree->gb_node, ali_name);
-            if (gb_data) {
-                long seq_len = ali_len;
-                if (GB_read_string_count(gb_data) < seq_len) {
-                    seq_len = GB_read_string_count(gb_data);
-                }
+        unsigned char *sequence;
+        long           seq_len = ali_len;
+        if (!tree->gb_node) return 0; // zombie
 
-                unsigned char *sequence = (unsigned char*)GB_read_char_pntr(gb_data);
-                for (long i = 0; i< seq_len; i++) {
-                    long L = char_2_freq[sequence[i]];
-                    if (L) {
-                        ap_assert(frequencies[L]);
-                        frequencies[L][i]++;
-                    }
-                }
+        GBDATA *gb_data = GBT_read_sequence(tree->gb_node,ali_name);
+        if (!gb_data) return 0; // no sequence
+        if (GB_read_string_count(gb_data) < seq_len)
+            seq_len     = GB_read_string_count(gb_data);
+        sequence        = (unsigned char*)GB_read_char_pntr(gb_data);
 
-                if (bases) {
-                    for (long i = 0; i< seq_len; i++) bases[i] = char_2_transition[sequence[i]];
-                }
-                if (tbases) {
-                    for (long i = 0; i< seq_len; i++) tbases[i] = char_2_transversion[sequence[i]];
-                }
-            }
-        }
-    }
-    else {
-        GB_UINT4 *ls  = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
-        GB_UINT4 *rs  = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
-        GB_UINT4 *lts = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
-        GB_UINT4 *rts = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
-
-        if (!error) error = this->parsimony(tree->leftson, ls, lts);
-        if (!error) error = this->parsimony(tree->rightson, rs, rts);
-        if (!error) {
-            for (long i=0; i< ali_len; i++) {
-                long l = ls[i];
-                long r = rs[i];
-                if (l & r) {
-                    if (bases) bases[i] = l&r;
-                }
-                else {
-                    transitions[i] ++;
-                    if (bases) bases[i] = l|r;
-                }
-                l = lts[i];
-                r = rts[i];
-                if (l & r) {
-                    if (tbases) tbases[i] = l&r;
-                }
-                else {
-                    transversions[i] ++;
-                    if (tbases) tbases[i] = l|r;
-                }
+        for (i = 0; i< seq_len; i++ ) {
+            l = char_2_freq[sequence[i]];
+            if (l) {
+                ap_assert(frequencies[l]);
+                frequencies[l][i]++;
             }
         }
 
-        free(lts);
-        free(rts);
-
-        free(ls);
-        free(rs);
+        if (bases){
+            for (i = 0; i< seq_len; i++ ) bases[i] = char_2_transition[sequence[i]];
+        }
+        if (tbases){
+            for (i = 0; i< seq_len; i++ ) tbases[i] = char_2_transversion[sequence[i]];
+        }
+        return 0;
     }
-    progress->inc_and_check_user_abort(error);
+    if (aw_status(timer/(double)treesize)) return "Operation aborted";
+
+    GB_UINT4 *ls = (GB_UINT4 *)calloc(sizeof(GB_UINT4),(int)ali_len);
+    GB_UINT4 *rs = (GB_UINT4 *)calloc(sizeof(GB_UINT4),(int)ali_len);
+    GB_UINT4 *lts = (GB_UINT4 *)calloc(sizeof(GB_UINT4),(int)ali_len);
+    GB_UINT4 *rts = (GB_UINT4 *)calloc(sizeof(GB_UINT4),(int)ali_len);
+
+    if (!error) error = this->parsimony(tree->leftson,ls,lts);
+    if (!error) error = this->parsimony(tree->rightson,rs,rts);
+    if (!error){
+        for (i=0; i< ali_len; i++ ) {
+            l = ls[i];
+            r = rs[i];
+            if ( l & r ) {
+                if (bases) bases[i] = l&r;
+            }else{
+                transitions[i] ++;
+                if (bases) bases[i] = l|r;
+            }
+            l = lts[i];
+            r = rts[i];
+            if ( l & r ) {
+                if (tbases) tbases[i] = l&r;
+            }else{
+                transversions[i] ++;
+                if (tbases) tbases[i] = l|r;
+            }
+        }
+    }
+
+    free(lts);
+    free(rts);
+
+    free(ls);
+    free(rs);
     return error;
 }
 
 
 // Calculate the positional variability: control procedure
-GB_ERROR AP_pos_var::retrieve(GBT_TREE *tree) {
+GB_ERROR AP_pos_var::retrieve( GBT_TREE *tree){
     GB_ERROR error = 0;
     int i;
 
@@ -142,13 +136,13 @@ GB_ERROR AP_pos_var::retrieve(GBT_TREE *tree) {
         char_2_freq[(unsigned char)'u'] = 'U';
         char_2_freq[(unsigned char)'U'] = 'U';
         char_2_bitstring = (unsigned char *)AP_create_dna_to_ap_bases();
-        for (i=0; i<256; i++) {
+        for (i=0;i<256;i++) {
             int j;
             if (i=='-') j = '.'; else j = i;
             base = char_2_transition[i] = char_2_bitstring[j];
             char_2_transversion[i] = 0;
-            if (base & (AP_A | AP_G)) char_2_transversion[i] = 1;
-            if (base & (AP_C | AP_T)) char_2_transversion[i] |= 2;
+            if (base & (AP_A | AP_G) ) char_2_transversion[i] = 1;
+            if (base & (AP_C | AP_T) ) char_2_transversion[i] |= 2;
         }
         delete [] char_2_bitstring;
     }
@@ -156,27 +150,27 @@ GB_ERROR AP_pos_var::retrieve(GBT_TREE *tree) {
         long            base;
         AWT_translator *translator       = AWT_get_user_translator(gb_main);
         const long     *char_2_bitstring = translator->Pro2Bitset();
-
-        for (i=0; i<256; i++) {
+ 
+        for (i=0;i<256;i++){
             char_2_transversion[i] = 0;
             base = char_2_transition[i] = char_2_bitstring[i];
             if (base) char_2_freq[i] = toupper(i);
         }
     }
-    treesize = getsize(tree);
-    progress = new arb_progress(treesize);
+    this->treesize = this->getsize(tree);
+    this->timer = 0;
 
-    for (i=0; i<256; i++) {
+    for (i=0;i<256;i++) {
         int j;
-        if ((j = char_2_freq[i])) {
+        if ( (j = char_2_freq[i]) ) {
             if (!frequencies[j]) {
-                frequencies[j] = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
+                frequencies[j] = (GB_UINT4 *)calloc(sizeof(GB_UINT4),(int)ali_len);
             }
         }
     }
 
-    transitions = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
-    transversions = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
+    transitions = (GB_UINT4 *)calloc(sizeof(GB_UINT4),(int)ali_len);
+    transversions = (GB_UINT4 *)calloc(sizeof(GB_UINT4),(int)ali_len);
 
     error = this->parsimony(tree);
 
@@ -203,17 +197,17 @@ GB_ERROR AP_pos_var::save_sai(const char *sai_name) {
         GBDATA *gb_ali     = GB_search(gb_extended, ali_name, GB_DB);
         if (!gb_ali) error = GB_await_error();
         else {
-            const char *description =
+            const char *description = 
                 GBS_global_string("PVP: Positional Variability by Parsimony: tree '%s' ntaxa %li",
                                   tree_name, treesize/2);
-
+            
             error = GBT_write_string(gb_ali, "_TYPE", description);
         }
 
         if (!error) {
-            char *data = (char*)calloc(1, (int)ali_len+1);
+            char *data = (char*)calloc(1,(int)ali_len+1);
             int  *sum  = (int*)calloc(sizeof(int), (int)ali_len);
-
+            
             for (int j=0; j<256 && !error; j++) {                   // get sum of frequencies
                 if (frequencies[j]) {
                     for (int i=0; i<ali_len; i++) {
@@ -231,12 +225,12 @@ GB_ERROR AP_pos_var::save_sai(const char *sai_name) {
             if (!error) {
                 GBDATA *gb_transi     = GB_search(gb_ali, "FREQUENCIES/TRANSITIONS", GB_INTS);
                 if (!gb_transi) error = GB_await_error();
-                else    error         = GB_write_ints(gb_transi, transitions, ali_len);
+                else    error         = GB_write_ints(gb_transi,transitions,ali_len);
             }
             if (!error) {
                 GBDATA *gb_transv     = GB_search(gb_ali, "FREQUENCIES/TRANSVERSIONS", GB_INTS);
                 if (!gb_transv) error = GB_await_error();
-                else    error         = GB_write_ints(gb_transv, transversions, ali_len);
+                error                 = GB_write_ints(gb_transv,transversions,ali_len);
             }
 
             if (!error) {
@@ -255,7 +249,7 @@ GB_ERROR AP_pos_var::save_sai(const char *sai_name) {
                         data[i] = '-';
                         continue;
                     }
-                    double rate = transitions[i] / (double)sum[i];
+                    double rate = transitions[i]/ (double)sum[i];
                     if (rate >= b * .95) {
                         rate = b * .95;
                     }
@@ -266,7 +260,7 @@ GB_ERROR AP_pos_var::save_sai(const char *sai_name) {
                     double dcat = -log(rate)/lnlogbase;
                     int icat = (int)dcat;
                     if (icat > 35) icat = 35;
-                    if (icat >= max_categ) max_categ = icat + 1;
+                    if (icat >= max_categ) max_categ = icat +1;
                     data[i] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[icat];
                 }
 
@@ -276,8 +270,8 @@ GB_ERROR AP_pos_var::save_sai(const char *sai_name) {
                     // Generate Categories
                     GBS_strstruct *out = GBS_stropen(1000);
                     for (int i = 0; i<max_categ; i++) {
-                        GBS_floatcat(out, pow(1.0/logbase, i));
-                        GBS_chrcat(out, ' ');
+                        GBS_floatcat(out, pow(1.0/logbase, i) );
+                        GBS_chrcat(out,' ');
                     }
 
                     error = GBT_write_string(gb_ali, "_CATEGORIES", GBS_mempntr(out));
@@ -296,43 +290,43 @@ GB_ERROR AP_pos_var::save_sai(const char *sai_name) {
 
 
 // Calculate the positional variability: window interface
-static void AP_calc_pos_var_pars(AW_window *aww) {
+void AP_calc_pos_var_pars(AW_window *aww) {
     AW_root        *root  = aww->get_root();
-    GB_transaction  dummy(GLOBAL.gb_main);
+    GB_transaction  dummy(GLOBAL_gb_main);
     char           *tree_name;
     GB_ERROR        error = 0;
 
-    arb_progress progress("Calculating positional variability");
-    progress.subtitle("Loading Tree");
+    aw_openstatus("Calculating positional variability");
+    aw_status("Loading Tree");
     GBT_TREE *tree;
     {           // get tree
         tree_name = root->awar(AWAR_PVP_TREE)->read_string();
-        tree = GBT_read_tree(GLOBAL.gb_main, tree_name, sizeof(GBT_TREE));
+        tree = GBT_read_tree(GLOBAL_gb_main,tree_name,sizeof(GBT_TREE));
         if (!tree) {
             error = "Please select a valid tree";
         }
         else {
-            GBT_link_tree(tree, GLOBAL.gb_main, true, 0, 0);
+            GBT_link_tree(tree,GLOBAL_gb_main, GB_TRUE, 0, 0);
         }
     }
 
     if (!error) {
-        progress.subtitle("Counting mutations");
+        aw_status("Counting Mutations");
 
-        char *ali_name = GBT_get_default_alignment(GLOBAL.gb_main);
-        long  ali_len  = GBT_get_alignment_len(GLOBAL.gb_main, ali_name);
+        char *ali_name = GBT_get_default_alignment(GLOBAL_gb_main);
+        long  ali_len  = GBT_get_alignment_len(GLOBAL_gb_main,ali_name);
 
-        if (ali_len <= 0) {
+        if (ali_len <=0) {
             error = "Please select a valid alignment";
         }
         else {
-            GB_alignment_type  at       = GBT_get_alignment_type(GLOBAL.gb_main, ali_name);
+            GB_alignment_type  at       = GBT_get_alignment_type(GLOBAL_gb_main, ali_name);
             int                isdna    = at==GB_AT_DNA || at==GB_AT_RNA;
             char              *sai_name = root->awar(AWAR_PVP_SAI)->read_string();
-            AP_pos_var         pv(GLOBAL.gb_main, ali_name, ali_len, isdna, tree_name);
+            AP_pos_var         pv(GLOBAL_gb_main, ali_name, ali_len, isdna, tree_name);
 
             error             = pv.delete_old_sai(sai_name);
-            if (!error) error = pv.retrieve(tree);
+            if (!error) error = pv.retrieve( tree);
             if (!error) error = pv.save_sai(sai_name);
 
             free(sai_name);
@@ -343,42 +337,45 @@ static void AP_calc_pos_var_pars(AW_window *aww) {
     if (tree) GBT_delete_tree(tree);
     free(tree_name);
 
+    aw_closestatus();
+
     if (error) aw_message(error);
     return;
 }
 
-AW_window *AP_open_pos_var_pars_window(AW_root *root) {
+AW_window *AP_open_pos_var_pars_window( AW_root *root ){
 
-    GB_transaction dummy(GLOBAL.gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(root, "CSP_BY_PARSIMONY", "Conservation Profile: Parsimony Method");
+    aws->init( root, "CSP_BY_PARSIMONY", "Conservation Profile: Parsimony Method");
     aws->load_xfig("cpro/parsimony.fig");
 
-    root->awar_string(AWAR_PVP_SAI, "POS_VAR_BY_PARSIMONY", AW_ROOT_DEFAULT);
-    const char *largest_tree = GBT_name_of_largest_tree(GLOBAL.gb_main);
-    root->awar_string(AWAR_PVP_TREE, "tree_full", AW_ROOT_DEFAULT);
+    root->awar_string(AWAR_PVP_SAI, "POS_VAR_BY_PARSIMONY",AW_ROOT_DEFAULT);
+    char *largest_tree = GBT_find_largest_tree(GLOBAL_gb_main);
+    root->awar_string(AWAR_PVP_TREE, "tree_full",AW_ROOT_DEFAULT);
     root->awar(AWAR_PVP_TREE)->write_string(largest_tree);
+    freeset(largest_tree, 0);
 
-    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE","C");
 
-    aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"pos_var_pars.hlp");
-    aws->create_button("HELP", "HELP", "H");
+    aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"pos_var_pars.hlp");
+    aws->create_button("HELP","HELP","H");
 
     aws->at("name");
     aws->create_input_field(AWAR_PVP_SAI);
 
     aws->at("box");
-    awt_create_selection_list_on_sai(GLOBAL.gb_main, aws, AWAR_PVP_SAI);
+    awt_create_selection_list_on_extendeds(GLOBAL_gb_main,aws,AWAR_PVP_SAI);
 
     aws->at("trees");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, AWAR_PVP_TREE);
+    awt_create_selection_list_on_trees(GLOBAL_gb_main,aws,AWAR_PVP_TREE);
 
     aws->at("go");
     aws->highlight();
     aws->callback(AP_calc_pos_var_pars);
-    aws->create_button("GO", "GO");
+    aws->create_button("GO","GO");
 
     return (AW_window *)aws;
 }

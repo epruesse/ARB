@@ -1,53 +1,41 @@
-// =============================================================== //
-//                                                                 //
-//   File      : GEN_gene.hxx                                      //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Coded by Ralf Westram (coder@reallysoft.de) in 2001           //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+/*********************************************************************************
+ *  Coded by Ralf Westram (coder@reallysoft.de) in 2001                          *
+ *  Institute of Microbiology (Technical University Munich)                      *
+ *  http://www.mikro.biologie.tu-muenchen.de/                                    *
+ *********************************************************************************/
 
 #ifndef GEN_GENE_HXX
 #define GEN_GENE_HXX
 
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
-#endif
-#ifndef AW_BASE_HXX
-#include <aw_base.hxx>
-#endif
-#ifndef ARBTOOLS_H
-#include <arbtools.h>
-#endif
-#ifndef AW_POSITION_HXX
-#include <aw_position.hxx>
-#endif
-
-#ifndef _GLIBCXX_SET
+#ifndef __SET__
 #include <set>
 #endif
-#ifndef _GLIBCXX_STRING
+#ifndef __STRING__
 #include <string>
 #endif
 
-
-// ------------------------------------------
+//  ----------------------------------------
 //      display classes for ARB_GENE_MAP:
+//  ----------------------------------------
 
 class  GEN_root;
 class  GEN_graphic;
 struct GEN_position;
 
-class GEN_gene { 
-    GBDATA              *gb_gene; 
-    GEN_root            *root; 
+//  -----------------------
+//      class GEN_gene
+//  -----------------------
+class GEN_gene {
+private:
+    GBDATA              *gb_gene;
+    GEN_root            *root;
     std::string          name;
     mutable std::string  nodeInfo;
     long                 pos1;
     long                 pos2;
     bool                 complement;
+
+    //     int       level; // on which "level" the gene is printed
 
     // Note: if a gene is joined from several parts it is represented in several GEN_gene's!
 
@@ -57,16 +45,6 @@ class GEN_gene {
 public:
     GEN_gene(GBDATA *gb_gene_, GEN_root *root_, const GEN_position *location);
     GEN_gene(GBDATA *gb_gene_, GEN_root *root_, const GEN_position *location, int partNumber);
-    GEN_gene(const GEN_gene& other)
-        : gb_gene(other.gb_gene),
-          root(other.root),
-          name(other.name),
-          nodeInfo(other.nodeInfo),
-          pos1(other.pos1),
-          pos2(other.pos2),
-          complement(other.complement)
-    {}
-    DECLARE_ASSIGNMENT_OPERATOR(GEN_gene);
     ~GEN_gene() {}
 
     inline bool operator<(const GEN_gene& other) const {
@@ -79,6 +57,7 @@ public:
     long EndPos() const { return pos2; } // last position of gene (1..n)
     long Length() const { return pos2-pos1+1; }
     bool Complement() const { return complement; }
+    //     int Level() const { return level; }
     const std::string& NodeInfo() const { return nodeInfo; }
     const std::string& Name() const { return name; } // returns the short name of the gene
     const GBDATA *GbGene() const { return gb_gene; }
@@ -90,9 +69,11 @@ public:
 typedef std::multiset<GEN_gene> GEN_gene_set;
 typedef GEN_gene_set::iterator GEN_iterator;
 
-class AW_device;
-
-class GEN_root : virtual Noncopyable {
+//  -----------------------
+//      class GEN_root
+//  -----------------------
+class GEN_root {
+private:
     GBDATA      *gb_main;
     GEN_graphic *gen_graphic;
     std::string  organism_name; // name1 of current species
@@ -105,19 +86,8 @@ class GEN_root : virtual Noncopyable {
 
     GBDATA *gb_gene_data;       // i am build upon this
 
-    AW::Rectangle gene_range;
+    AW_world selected_range; // draw-range of selected gene (set by paint, used by GEN_jump_cb)
 
-    
-    void clear_selected_range() { gene_range = AW::Rectangle(); }
-    void increase_selected_range(AW::Position pos) {
-        gene_range = gene_range.valid() ? bounding_box(gene_range, pos) : AW::Rectangle(pos, pos);
-    }
-    void increase_selected_range(AW::Rectangle rect) {
-        gene_range = gene_range.valid() ? bounding_box(gene_range, rect) : rect;
-    }
-
-    int smart_text(AW_device *device, int gc, const char *str, AW_pos x, AW_pos y);
-    int smart_line(AW_device *device, int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1);
 
 public:
     GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *gb_main_, AW_root *aw_root, GEN_graphic *gen_graphic_);
@@ -134,8 +104,10 @@ public:
 
     void reinit_NDS() const;
 
-    const AW::Rectangle& get_selected_range() const { return gene_range; }
+    const AW_world& get_selected_range() const { return selected_range; }
 };
+
+
 
 #else
 #error GEN_gene.hxx included twice

@@ -18,13 +18,12 @@
 TIFFimage::TIFFimage()
 {
     // PREDEFINE THE CLASS VARIABLES
-    m_array           = NULL;
-    m_width           = 0;
-    m_height          = 0;
-    m_size            = 0;
-    m_ximage_colormap = false;
-    m_hasData         = false;
-    m_name            = NULL;
+    m_array=  NULL;
+    m_width=  0;
+    m_height= 0;
+    m_size=   0;
+    m_ximage_colormap= false;
+    m_hasData= false;
 }
 
 
@@ -79,6 +78,7 @@ bool TIFFimage::hasData() { return m_hasData; }
 int TIFFimage::open(char *name)
 {
     // DEFINE LOCAL VARIABLES
+    TIFF *tiff= NULL;
     uint32 *array= NULL;
     uint32 loc_width= 0;
     uint32 loc_height= 0;
@@ -87,7 +87,7 @@ int TIFFimage::open(char *name)
     bool error= false;
 
     // OPEN TIFF FiLENAME
-    TIFF *tiff = TIFFOpen(name, "r");
+    tiff= TIFFOpen(name, "r");
 
     // IF A HANDLE WAS RETURNED, CONTINUE...
     if(tiff)

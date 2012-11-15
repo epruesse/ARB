@@ -19,9 +19,15 @@ MENUS/%.genmenu : genmenu.header
 MENUS/%.genmenu : MENUS/%.menu
 		( cat genmenu.header; sed -e "s/^[ ]*//" ) < $< > $@
 
-$(MENUS) : $(MENUS_SRC) $(GENMENUS) Makefile $(PPP) $(CLEAN)
+MENUS_DIRTY=$(MENUS).dirty
+
+$(MENUS_DIRTY) : $(MENUS_SRC) $(GENMENUS) Makefile $(PPP)
+	$(PPP) -IMENUS $(MENUS_SRC) >$@
+
+$(MENUS) : $(MENUS_DIRTY) $(CLEAN)
 	-chmod a+w $@
-	$(PPP) -IMENUS $(MENUS_SRC) | $(CLEAN) >$@
+	$(CLEAN) <$(MENUS_DIRTY) >$@
+	rm $(MENUS_DIRTY)
 	chmod a-w $@
 
 # ------------------------------------------------------------
@@ -40,7 +46,8 @@ save:
 	rm -f arbgdemenus*.tar.gz
 	tar cvf - MENUS ARB_GDEmenus* |gzip >`date '+arbgdemnus_%d_%m_%y.tar.gz'`
 
-clean: $(HELPFILELIST)
+clean:
+	rm -f $(GENMENUS) $(MENUS) $(HELPFILELIST)
 	@$(MAKE) -f Makefile.helpfiles \
 		"GENHELPDEST=$(GENHELPDEST)" \
 		"GENDOCDEST=$(GENDOCDEST)" \

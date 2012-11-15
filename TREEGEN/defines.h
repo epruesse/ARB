@@ -1,34 +1,38 @@
-#ifndef DEFINES_H
-#define DEFINES_H
+#ifndef __DEFINES_H
+#define __DEFINES_H
 
-#ifndef _STDIO_H
+#ifndef __STDIO_H
 #include <stdio.h>
 #endif
+
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
 
-// ----------------
-//      Defines
+/* /-----------\ */
+/* |  Defines  | */
+/* \-----------/ */
 
 #define outOfMemory()   def_outOfMemory(__FILE__, __LINE__)
-#define assert(c)       do { static int assCnt; assCnt++; if (!(c)) def_assert(#c, __FILE__, __LINE__, assCnt); } while (0)
+#define assert(c)       do { static int assCnt; assCnt++; if (!(c)) def_assert(#c, __FILE__, __LINE__, assCnt); } while(0)
 
-// --------------
-//      Typen
+/* /---------\ */
+/* |  Typen  | */
+/* \---------/ */
 
 typedef char          *str;
 typedef const char    *cstr;
 
-// ---------------------
-//      Hilfroutinen
+/* /----------------\ */
+/* |  Hilfroutinen  | */
+/* \----------------/ */
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif    
 
     void error           (cstr message);
-    void errorf          (cstr format, ...) __ATTR__FORMAT(1);
+    void errorf          (cstr format, ...) __ATTR__FORMAT(1); 
 
     void warning         (cstr message);
     void warningf        (cstr format, ...) __ATTR__FORMAT(1);
@@ -38,7 +42,7 @@ extern "C" {
 
 #ifdef __cplusplus
 }
-#endif
+#endif    
 
 
 #endif

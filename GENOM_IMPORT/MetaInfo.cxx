@@ -19,7 +19,7 @@ void Reference::add(const string& field, const string& content)
 {
     gi_assert(!field.empty());
     gi_assert(!content.empty());
-
+    
     stringMapIter existing = entries.find(field);
     if (existing != entries.end()) {
         throw GBS_global_string("Duplicated reference entry for '%s'", field.c_str());
@@ -67,7 +67,7 @@ string References::tagged_content(const string& refkey) const
 {
     string content;
 
-    if (ref_count == 1) { // only one reference -> don't tag
+    if (ref_count == 1) { // only one reference -> dont tag
         RefVectorCIter  i           = refs.begin();
         const string   *ref_content = i->get(refkey);
 
@@ -105,8 +105,8 @@ void References::dump() const
 #endif // DEBUG
 
 enum DBID_TYPE {
-    DBID_STANDARD,
-    DBID_ACCEPT,
+    DBID_STANDARD, 
+    DBID_ACCEPT, 
     DBID_ILLEGAL,
 };
 struct DBID {
@@ -134,7 +134,9 @@ void References::add_dbid(const string& content) {
     // * Multiple database references may be concatenated (each starts on it's own line)
     // * 'id' is possibly split up on several lines
 
-    RegExpr         reg_dbid("^([A-Z]+);\\s+|\n([A-Z]+);\\s+", false);
+    RegExpr reg_dbid("^([A-Z]+);\\s+|\n([A-Z]+);\\s+", false);
+    size_t  offset = 0;
+
     const RegMatch *dbid_start = reg_dbid.match(content);
 
     if (!dbid_start) {
@@ -150,7 +152,8 @@ void References::add_dbid(const string& content) {
             string dbid     = sub->extract(content);
             size_t id_start = dbid_start->posBehindMatch();
 
-            dbid_start = reg_dbid.match(content, id_start); // search for start of next db-id
+            offset     = id_start;
+            dbid_start = reg_dbid.match(content, offset); // search for start of next db-id
 
             DBID_TYPE   type      = DBID_ILLEGAL;
             const char *arb_field = 0;

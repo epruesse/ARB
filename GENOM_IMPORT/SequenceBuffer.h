@@ -27,7 +27,7 @@ public:
 
     size_t getCount(unsigned char idx) const { return count[idx]; }
     size_t getCount() const { return all; }
-    void countChars(const std::string& line);
+    void countChars(const string& line);
 
     void clear();
 };
@@ -36,15 +36,15 @@ public:
 enum Base { BC_A, BC_C, BC_G, BC_T, BC_OTHER, BC_ALL, BC_COUNTERS };
 
 class BaseCounter {
-    std::string source;             // where does information originate from
-    size_t      count[BC_COUNTERS]; // number of occurrences of single bases
+    string source;              // where does information originate from
+    size_t count[BC_COUNTERS];  // number of occurances of single bases
 
     SmartPtr<CharCounter> char_count; // character counter (used by addLine)
 
     void catchUpWithLineCounter() const;
 
 public:
-    BaseCounter(const std::string& Source)
+    BaseCounter(const string& Source)
         : source(Source)
     {
         for (int i = 0; i<BC_COUNTERS; ++i) count[i] = 0;
@@ -55,8 +55,8 @@ public:
     void calcOverallCounter();
 
     void startLineCounter();
-    void addLine(const std::string& line) {
-        gi_assert(!char_count.isNull()); // call startLineCounter before!
+    void addLine(const string& line) {
+        gi_assert(!char_count.Null()); // call startLineCounter before!
         char_count->countChars(line);
     }
 
@@ -67,7 +67,7 @@ public:
     }
 };
 
-class SequenceBuffer : virtual Noncopyable {
+class SequenceBuffer : public Noncopyable {
     stringVector  lines;        // stores input lines
     BaseCounter   baseCounter;
     mutable char *seq;
@@ -81,14 +81,14 @@ public:
     }
     ~SequenceBuffer();
 
-    void addLine(const std::string& line) {
+    void addLine(const string& line) {
         lines.push_back(line);
         baseCounter.addLine(line);
     }
 
     const BaseCounter& getBaseCounter() const { return baseCounter; }
     BaseCounter& getBaseCounter() { return baseCounter; }
-
+    
     const char *getSequence() const;
 };
 

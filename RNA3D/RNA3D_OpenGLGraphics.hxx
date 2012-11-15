@@ -17,7 +17,7 @@ struct ColorRGBf {
     ColorRGBf(float r, float g, float b) { red = r; green = g; blue = b; }
 
     bool operator==(ColorRGBf c) {
-        if ((red == c.red) && (green == c.green) && (blue == c.blue)) {
+        if((red == c.red) && (green == c.green) && (blue == c.blue)) {
             return true;
         }
         else {
@@ -27,17 +27,18 @@ struct ColorRGBf {
 };
 
 struct OpenGLGraphics {
-    int       screenXmax, screenYmax, mouseX, mouseY;
+    int       screenXmax,screenYmax, mouseX, mouseY;
     bool      displayGrid;
     ColorRGBf ApplicationBGColor;
 
-    OpenGLGraphics();
-    virtual  ~OpenGLGraphics();
+    OpenGLGraphics(void);
+    virtual  ~OpenGLGraphics(void);
 
     void WinToScreenCoordinates(int x, int y, GLdouble  *screenPos);
     void ScreenToWinCoordinates(int x, int y, GLdouble *winPos);
 
     void PrintString(float x, float y, float z, char *s, void *font);
+    void PrintComment(float x, float y, float z, char *s);
 
     void init_font(GLuint base, char* f);
     void print_string(GLuint base, char* s);

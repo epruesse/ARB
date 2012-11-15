@@ -1,10 +1,6 @@
 #ifndef AW_AT_HXX
 #define AW_AT_HXX
 
-#ifndef AW_BASE_HXX
-#include "aw_base.hxx"
-#endif
-
 class AW_at {
 public:
     short shadow_thickness;
@@ -39,9 +35,11 @@ public:
 
     int biggest_height_of_buttons;
 
-    short saved_xoff_for_label;
+    short saved_x_correction_for_label;
+    //     short correct_for_at_center_intern;
 
     short saved_x;
+    bool  correct_for_at_string;
     int   correct_for_at_center;
     short x_for_newline;
 
@@ -51,7 +49,7 @@ public:
     bool attach_ly;
     bool attach_any;
 
-    AW_at();
+    AW_at(void);
 };
 
 

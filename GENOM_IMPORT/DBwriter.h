@@ -8,7 +8,6 @@
 //   http://www.arb-home.de/                                        //
 //                                                                  //
 // ================================================================ //
-
 #ifndef DBWRITER_H
 #define DBWRITER_H
 
@@ -26,6 +25,11 @@
 #endif
 #ifndef GENOMEIMPORT_H
 #include "GenomeImport.h"
+#endif
+
+
+#ifndef ARBDB_H
+#include <arbdb.h>
 #endif
 
 class UniqueNameDetector;
@@ -47,17 +51,17 @@ public:
     const string& getMessage() const { return err; }
 };
 
-typedef std::map<std::string, int> NameCounter;
+typedef map<string, int> NameCounter;
 class Translator;
 
-class DBwriter : virtual Noncopyable {
+class DBwriter : public Noncopyable {
     const char     *ali_name;
     ImportSession&  session;
 
     // following data is valid for one organism write :
     GBDATA      *gb_organism;   // current organism
     GBDATA      *gb_gene_data;  // current gene data
-    NameCounter  generatedGenes; // helper to create unique gene names (key = name, value = count occurrences)
+    NameCounter  generatedGenes; // helper to create unique gene names (key = name, value = count occurances)
 
     void testAndRemoveTranslations(Importer& importer); // test and delete translations (if test was ok). warns via Importer
     void hideUnwantedGenes();

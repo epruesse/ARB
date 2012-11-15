@@ -27,18 +27,14 @@ ARCHS = $(ARCHS_ALL) $(ARCHS_NON_DEBIAN)
 endif
 
 # --------------------------------------------------------------------------------
-# modify cflags for submakefiles 
+# no warnings in this subtree
 
-RAISE_WARNINGS=0# no warnings in this subtree
-UNIT_TESTS=0# no tests in this subtree
-
-sub_cflags:=$(cflags)
+RAISE_WARNINGS=0
 
 ifeq ('$(RAISE_WARNINGS)','0')
-sub_cflags:=$(subst -W -Wall,-w,$(sub_cflags))
-endif
-ifeq ('$(UNIT_TESTS)','0')
-sub_cflags:=$(subst -DUNIT_TESTS,,$(sub_cflags))
+sub_cflags:=$(subst -W -Wall,-w,$(cflags))
+else
+sub_cflags:=$(cflags)
 endif
 
 # --------------------------------------------------------------------------------
@@ -51,6 +47,9 @@ endif
 ifeq ('$(RAISE_WARNINGS)','0')
 	@echo ----------------- warnings enabled again
 endif
+
+proto:
+	@echo "Nothing to be done for proto"
 
 depends: $(ARCHS:.dummy=.depend)
 
@@ -78,10 +77,6 @@ clean: $(ARCHS:.dummy=.clean)
 	@$(MAKE) -C $(@D) \
 		"ARB  = yes" \
 		clean
-
-%.proto:
-	@$(MAKE) -C $(@D) \
-		proto
 
 # the end of the above command avoids that the output of parallel make calls gets mixed up 
 

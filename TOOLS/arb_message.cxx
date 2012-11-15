@@ -1,24 +1,20 @@
-// =============================================================== //
-//                                                                 //
-//   File      : arb_message.cxx                                   //
-//   Purpose   : raise aw_message from external scripts            //
-//                                                                 //
-//   Coded by Ralf Westram (coder@reallysoft.de) in November 2003  //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <arbdb.h>
 #include <arbdbt.h>
 
-int ARB_main(int argc, const char *argv[]) {
-    if (argc == 1) {
+int main(int argc,char **argv)
+{
+    if (argc == 1)  {
         fprintf(stderr, "Usage: arb_message \"the message\"\n");
-        return EXIT_FAILURE;
+        return -1;
     }
 
     const char *progname = argv[0];
-    if (!progname || progname[0] == 0) progname = "arb_message";
+    if (!progname || progname[0] == 0) {
+        progname = "arb_message";
+    }
 
     char *the_message  = strdup(argv[1]);
     char *unencoded_lf = 0;
@@ -27,17 +23,14 @@ int ARB_main(int argc, const char *argv[]) {
         strcpy(unencoded_lf+1, unencoded_lf+2);
     }
 
-    {
-        GB_shell shell;
-        GBDATA *gb_main = GB_open(":", "r");
-        if (!gb_main) {
-            fprintf(stderr, "%s: %s\n", progname, the_message);
-        }
-        else {
-            GBT_message(gb_main, the_message);
-            GB_close(gb_main);
-        }
+    GBDATA *gb_main = GB_open(":","r");
+    if (!gb_main){
+        fprintf(stderr, "%s: %s\n", progname, the_message);
+    }
+    else {
+        GBT_message(gb_main, the_message);
+        GB_close(gb_main);
     }
     free(the_message);
-    return EXIT_SUCCESS;
+    return 0;
 }

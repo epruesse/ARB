@@ -1,8 +1,5 @@
 #!/usr/bin/perl
 
-use strict;
-use warnings;
-
 # create/update build info into
 # $ARBHOME/TEMPLATES/arb_build.h and
 # $ARBHOME/TEMPLATES/svn_revision.h
@@ -21,7 +18,7 @@ if ((not -d $ARBHOME) or (not -f $ARBHOME.'/arb_LICENSE.txt')) {
 
 my $TEMPLATES    = $ARBHOME.'/TEMPLATES';       if (not -d $TEMPLATES)    { die "no such directory '$TEMPLATES'"; }
 my $SOURCE_TOOLS = $ARBHOME.'/SOURCE_TOOLS';    if (not -d $SOURCE_TOOLS) { die "no such directory '$SOURCE_TOOLS'"; }
-my $mv_if_diff   = $SOURCE_TOOLS.'/mv_if_diff'; if (not -x $mv_if_diff)   { die "no such script '$mv_if_diff'"; }
+my $mv_if_diff   = $SOURCE_TOOLS.'/mv_if_diff'; if (not -x $mv_if_diff)   { die "no such skript '$mv_if_diff'"; }
 
 # --------------------------------------------------------------------------------
 
@@ -173,11 +170,7 @@ update($arb_build_h,@arb_build);
 # update revision info?
 if ($in_SVN) {
   # in SVN checkout -> update revision info
-  my $revision = `svnversion -c -n $ARBHOME`;
-  if ($revision =~ /^2:/) {
-    # for some reason -c a "2:" prefix
-    $revision = $';
-  }
+  my $revision = `svnversion -n $ARBHOME`;
   my @svn_revision = (
                       '#define ARB_SVN_REVISION "'.$revision.'"',
                      );
@@ -189,5 +182,4 @@ else {
   }
   # use revision info as in source tarball
 }
-
 

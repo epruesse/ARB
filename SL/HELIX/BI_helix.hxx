@@ -1,21 +1,26 @@
 #ifndef BI_HELIX_HXX
 #define BI_HELIX_HXX
 
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
-#endif
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
-#ifndef ARBTOOLS_H
-#include <arbtools.h>
-#endif
-
-#ifndef bi_assert
 #define bi_assert(bed) arb_assert(bed)
+
+#ifndef _CPP_CSTDLIB
+#include <cstdlib>
+#endif
+#ifndef _CPP_CSTDIO
+#include <cstdio>
+#endif
+#ifndef _CPP_CSTRING
+#include <cstring>
 #endif
 
-enum BI_PAIR_TYPE {
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
+
+typedef enum {
     HELIX_NONE,                                     // used in entries
     HELIX_STRONG_PAIR,
     HELIX_PAIR,                                     // used in entries
@@ -38,7 +43,7 @@ enum BI_PAIR_TYPE {
     HELIX_NON_STANDARD9,                            // used in entries
     HELIX_NO_MATCH,
     HELIX_MAX
-};
+} BI_PAIR_TYPE;
 
 struct BI_helix_entry {
     long          pair_pos;
@@ -52,11 +57,11 @@ struct BI_helix_entry {
     bool allocated;
 };
 
-class BI_helix : virtual Noncopyable {
+class BI_helix {
     BI_helix_entry *entries;
     size_t          Size;
 
-    void _init();
+    void _init(void);
 
     static char *helix_error;                       // error occurring during init is stored here
 
@@ -66,21 +71,21 @@ protected:
 
     char *pairs[HELIX_MAX];
     char *char_bind[HELIX_MAX];
-
+    
     bool is_pairtype(char left, char right, BI_PAIR_TYPE pair_type);
 
 public:
 
     static char *get_error() { return helix_error; }
-    static void clear_error() { freenull(helix_error); }
+    static void clear_error() { freeset(helix_error, NULL); }
     static void set_error(const char *err) { freedup(helix_error, err); }
 
-    BI_helix();
-    ~BI_helix();
+    BI_helix(void);
+    ~BI_helix(void);
 
     const char *init(GBDATA *gb_main);
     const char *init(GBDATA *gb_main, const char *alignment_name);
-    const char *init(GBDATA *gb_helix_nr, GBDATA *gb_helix, size_t size);
+    const char *init(GBDATA *gb_helix_nr,GBDATA *gb_helix,size_t size);
     const char *initFromData(const char *helix_nr, const char *helix, size_t size);
 
     int check_pair(char left, char right, BI_PAIR_TYPE pair_type); // return 1 if bases form a pair
@@ -104,13 +109,47 @@ public:
 
     long first_pair_position() const; // first pair position (or -1)
     long next_pair_position(size_t pos) const; // next pair position behind 'pos' (or -1)
-
+    
     long first_position(const char *helixNr) const; // returns -1 for non-existing helixNr's
     long last_position(const char *helixNr) const; // returns -1 for non-existing helixNr's
 };
 
 
 
+
+class BI_ecoli_ref {
+    size_t absLen;
+    size_t relLen;
+
+    size_t *abs2rel;
+    size_t *rel2abs;
+    
+    void bi_exit();
+
+public:
+    BI_ecoli_ref();
+    ~BI_ecoli_ref();
+
+    const char *init(GBDATA *gb_main);
+    const char *init(GBDATA *gb_main,char *alignment_name, char *ref_name);
+    const char *init(const char *seq, size_t size);
+
+    bool gotData() const { return abs2rel != 0; }
+    
+    size_t abs_2_rel(size_t abs) const {
+        bi_assert(gotData()); 
+        if (abs >= absLen) abs = absLen-1;
+        return abs2rel[abs];
+    }
+
+    size_t rel_2_abs(size_t rel) const {
+        bi_assert(gotData()); 
+        if (rel >= relLen) rel = relLen-1;
+        return rel2abs[rel];
+    }
+
+    size_t base_count() const { return relLen; }
+};
 
 
 #endif
