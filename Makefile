@@ -1801,11 +1801,13 @@ do_release:
 	-rm arb.tgz arbsrc.tgz
 	$(MAKE) testsave
 	$(MAKE) templ # auto upgrades version early
-	$(MAKE) tarfile sourcetarfile
+	$(MAKE) tarfile 
+	$(MAKE) sourcetarfile
 
 release_quick:
 	-rm arb.tgz arbsrc.tgz
-	$(MAKE) tarfile_quick sourcetarfile
+	$(MAKE) tarfile_quick
+	$(MAKE) sourcetarfile
 
 # --------------------------------------------------------------------------------
 
