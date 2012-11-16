@@ -257,8 +257,8 @@ GB_ERROR probe_input_data::init(GBDATA *gb_species_, bool& no_data) {
         no_data = true;
     }
     else {
-        GBDATA *gb_cs    = GB_entry(gb_ali, "cs");
-        GBDATA *gb_compr = GB_entry(gb_ali, "compr");
+        GBDATA *gb_cs    = GB_entry(gb_species_, "cs");
+        GBDATA *gb_compr = GB_entry(gb_species_, "compr");
 
         if (!gb_cs || !gb_compr) {
             error = GBS_global_string("Missing entry (%s) for species '%s'\n", gb_cs ? "compr" : "cs", GBT_read_name(gb_species_));
@@ -305,13 +305,13 @@ GB_ERROR PT_prepare_species_sequence(GBDATA *gb_species, const char *alignment_n
         else {
             {
                 uint32_t  checksum = GB_checksum(sdata, hsize, 1, ".-");
-                GBDATA   *gb_cs    = GB_create(gb_ali, "cs", GB_INT);
+                GBDATA   *gb_cs    = GB_create(gb_species, "cs", GB_INT);
                 error              = gb_cs ? GB_write_int(gb_cs, int32_t(checksum)) : GB_await_error();
             }
 
             if (!error) {
                 int     csize    = probe_compress_sequence(sdata, hsize);
-                GBDATA *gb_compr = GB_create(gb_ali, "compr", GB_BYTES);
+                GBDATA *gb_compr = GB_create(gb_species, "compr", GB_BYTES);
                 error            = gb_compr ? GB_write_bytes(gb_compr, sdata, csize) : GB_await_error();
             }
             free(sdata);
