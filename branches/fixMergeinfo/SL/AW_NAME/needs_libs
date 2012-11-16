@@ -1,0 +1,4 @@
+# libraries needed to link against SL/AW_NAME/AW_NAME.a
+
+SERVERCNTRL/SERVERCNTRL.a
+lib/libAWT.so

@@ -1,0 +1,39 @@
+#:AF375552;:name:Lactococcus lactis subsp. lactis
+#:AF375552;:strain:NCDO2118 tmRNA gene, partial sequence
+#:AF375552;:subsp:lactis
+#:AF375552;:atcc:NCDO 2118 tmRNA gene
+#:AF375552;:date:31-MAY-2001
+#:AF375552;:acs:AF375552;
+#:AF375552;:auth:Schoenhuber,W., Le Bourhis,G., Tremblay,J., Amann,R. and
+#:AF375552;:auth:Kulakauskas,S.
+#:AF375552;:jour:BMC Microbiol. 1(1), 20-20 (2001)
+#:AF375552;:title:Utilization of tmRNA sequences for bacterial identification
+#:AF375552;:rem:ref:1  (bases 1 to 310)
+#:AF375552;:rem:ref:2  (bases 1 to 310)
+#:AF375552;:rem:auth:Schoenhuber,W., Le Bourhis,G., Tremblay,J., Amann,R.I.
+#:AF375552;:rem::  and Kulakauskas,S.
+#:AF375552;:rem:jour:Submitted (02-MAY-2001) to the EMBL/GenBank/DDBJ
+#:AF375552;:rem::  databases. Microbiology, Institut National de la Recherche
+#:AF375552;:rem::  Agronomique, Domaine de Vilvert, Jouy-en-Josas 78352,
+#:AF375552;:rem::  France
+#:AF375552;:rem:GenBank ACCESSION:AF375552;
+#:AF375552;:rem:Please note: all these entries have been modified for test
+#:AF375552;:rem:purposes.
+#:AF375552;:rem:*source: strain=NCDO2118 tmRNA gene, partial sequence;
+#:AF375552;:rem:*source: subspecies=lactis;
+
+AF375552;  Length: 310  October 25, 2010  12:13:24  Type: N  Check: 3578  ..
+
+       1  cattgtcgcg catgaactgc aactgctgag ggatcaggat aatcatccgc 
+
+      51  agataaatat aactgctaaa aataatacac aaacttacgc aatggcagcc 
+
+     101  taaacagcac catgcgtgcc tgatttttgc tcactgatgg caatttgacg 
+
+     151  gcctaaactt ttagtcagat acgttgttgt ggaggcttga cgcagcaaaa 
+
+     201  gagatttaaa gccccgcaaa atgtcgctgt ttgagactgg ctttggcatt 
+
+     251  ttgttaaatt tgagaaagtc ctatggttgt agacgttgat gtagcaaggt 
+
+     301  gtttggacag  
