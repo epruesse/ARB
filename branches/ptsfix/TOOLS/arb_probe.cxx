@@ -1329,53 +1329,103 @@ void TEST_SLOW_design_probe() {
     // test here runs versus database ../UNIT_TESTER/run/TEST_pt_src.arb
 
     bool use_gene_ptserver = false;
-    const char *arguments[] = {
-        "prgnamefake",
-        "designnames=ClnCorin#CltBotul#CPPParap#ClfPerfr",
-        "designmintargets=100",
-    };
-    const char *expected = 
-        "Probe design Parameters:\n"
-        "Length of probe      18\n"
-        "Temperature        [ 0.0 -400.0]\n"
-        "GC-Content         [30.0 -80.0]\n"
-        "E.Coli Position    [any]\n"
-        "Max Non Group Hits     0\n"
-        "Min Group Hits       100%\n"
-        "Target             le     apos ecol grps  G+C 4GC+2AT Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
-        "AUCAAGUCGAGCGAUGAA 18 A=    17   16    4 44.4 52.0    UUCAUCGCUCGACUUGAU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-        "CGAAAGGAAGAUUAAUAC 18 B=    94   82    4 33.3 48.0    GUAUUAAUCUUCCUUUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-        "GAAAGGAAGAUUAAUACC 18 B+     1   83    4 33.3 48.0    GGUAUUAAUCUUCCUUUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-        "UCAAGUCGAGCGAUGAAG 18 A+     1   17    4 50.0 54.0    CUUCAUCGCUCGACUUGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n";
-
-    TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
-
-    // ------------------------------------------------------
-    //      design MANY probes to test location specifier
-
     {
-        char *positions = extract_locations(expected);
-        TEST_ASSERT_EQUAL(positions, "A=17B=94B+1A+1");
-        free(positions);
+        const char *arguments[] = {
+            "prgnamefake",
+            "designnames=ClnCorin#CltBotul#CPPParap#ClfPerfr",
+            "designmintargets=100",
+        };
+        const char *expected =
+            "Probe design Parameters:\n"
+            "Length of probe      18\n"
+            "Temperature        [ 0.0 -400.0]\n"
+            "GC-Content         [30.0 -80.0]\n"
+            "E.Coli Position    [any]\n"
+            "Max Non Group Hits     0\n"
+            "Min Group Hits       100%\n"
+            "Target             le     apos ecol grps  G+C 4GC+2AT Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
+            "AUCAAGUCGAGCGAUGAA 18 A=    17   16    4 44.4 52.0    UUCAUCGCUCGACUUGAU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "CGAAAGGAAGAUUAAUAC 18 B=    94   82    4 33.3 48.0    GUAUUAAUCUUCCUUUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "GAAAGGAAGAUUAAUACC 18 B+     1   83    4 33.3 48.0    GGUAUUAAUCUUCCUUUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "UCAAGUCGAGCGAUGAAG 18 A+     1   17    4 50.0 54.0    CUUCAUCGCUCGACUUGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+
+        // test extraction of positions:
+        {
+            char *positions = extract_locations(expected);
+            TEST_ASSERT_EQUAL(positions, "A=17B=94B+1A+1");
+            free(positions);
+        }
     }
 
-    const char *arguments_loc[] = {
-        "prgnamefake",
-        // "designnames=Stsssola#Stsssola", // @@@ crashes the ptserver
-        "designnames=CPPParap#PsAAAA00",
-        "designmintargets=50", // hit at least 1 of the 2 targets
-        "designmingc=0", "designmaxgc=100", // allow all GCs
-        "designmishit=99999",  // allow enough outgroup hits
-        "designmaxhits=99999", // do not limit results
-        "designprobelength=3",
-    };
+#if 0 // @@@ 
+    // document bug introduced in [8988]
+    // (works with [8965] .. [8987]; fails with [8988] .. HEAD)
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "designnames=VbhChole#VblVulni",
+            "designmintargets=50", // hit at least 1 of the 2 targets
+            "designmingc=60", "designmaxgc=75", // specific GC range
+        };
 
-    const char *expected_loc = 
-        "A=96B=141C=20D=107B+1E=110F=84G=9H=150I=145C+1D+1J=17K=122L=72C-1M=33N=114E+1O=178"
-        "P=24E+2F+1Q=138O+1R=170S=182A-1T=87G+1J-1N-1U=79F+2U-1V=129I+2H-2C+2W=12D-1D+2C-2O+2"
-        "P-1J-2X=165R+1Y=92W+2W+1Z=125O-2D-2H+1a=104H-1L+1";
+        const char *expected = "Probe design Parameters:\n"
+            "Length of probe      18\n"
+            "Temperature        [ 0.0 -400.0]\n"
+            "GC-Content         [60.0 -75.0]\n"
+            "E.Coli Position    [any]\n"
+            "Max Non Group Hits     0\n"
+            "Min Group Hits        50%\n"
+            "Target             le     apos ecol grps  G+C 4GC+2AT Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
+            "AGUCGAGCGGCAGCACAG 18 A=    21   20    2 66.7 60.0    CUGUGCUGCCGCUCGACU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "GUCGAGCGGCAGCACAGA 18 A+     1   21    2 66.7 60.0    UCUGUGCUGCCGCUCGAC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "UCGAGCGGCAGCACAGAG 18 A+     2   21    2 66.7 60.0    CUCUGUGCUGCCGCUCGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "AAGUCGAGCGGCAGCACA 18 A-     1   19    2 61.1 58.0    UGUGCUGCCGCUCGACUU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  2,  2,  2,  3,  3,\n"
+            "AGCGGCAGCACAGAGGAA 18 A+     5   21    1 61.1 58.0    UUCCUCUGUGCUGCCGCU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "CGAGCGGCAGCACAGAGA 18 A+     3   21    1 66.7 60.0    UCUCUGUGCUGCCGCUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "CGAGCGGCAGCACAGAGG 18 A+     3   21    1 72.2 62.0    CCUCUGUGCUGCCGCUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "CGGCAGCACAGAGGAACU 18 A+     7   23    1 61.1 58.0    AGUUCCUCUGUGCUGCCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "CUUGUUCCUUGGGUGGCG 18 B=    52   47    1 61.1 58.0    CGCCACCCAAGGAACAAG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "CUUGUUUCUCGGGUGGCG 18 B-     0   47    1 61.1 58.0    CGCCACCCGAGAAACAAG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "GAGCGGCAGCACAGAGAA 18 A+     4   21    1 61.1 58.0    UUCUCUGUGCUGCCGCUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "GAGCGGCAGCACAGAGGA 18 A+     4   21    1 66.7 60.0    UCCUCUGUGCUGCCGCUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "GCGGCAGCACAGAGAAAC 18 A+     6   22    1 61.1 58.0    GUUUCUCUGUGCUGCCGC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "GCGGCAGCACAGAGGAAC 18 A+     6   22    1 66.7 60.0    GUUCCUCUGUGCUGCCGC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "GUUCCUUGGGUGGCGAGC 18 B+     3   50    1 66.7 60.0    GCUCGCCACCCAAGGAAC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "GUUUCUCGGGUGGCGAGC 18 B+     3   50    1 66.7 60.0    GCUCGCCACCCGAGAAAC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "UCCUUGGGUGGCGAGCGG 18 B+    11   58    1 72.2 62.0    CCGCUCGCCACCCAAGGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "UGUUCCUUGGGUGGCGAG 18 B+     2   49    1 61.1 58.0    CUCGCCACCCAAGGAACA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "UGUUUCUCGGGUGGCGAG 18 B+     2   49    1 61.1 58.0    CUCGCCACCCGAGAAACA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "UUCCUUGGGUGGCGAGCG 18 B+    10   57    1 66.7 60.0    CGCUCGCCACCCAAGGAA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "UUCUCGGGUGGCGAGCGG 18 B+    11   58    1 72.2 62.0    CCGCUCGCCACCCGAGAA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "CAAGUCGAGCGGCAGCAC 18 A-     2   18    2 66.7 60.0    GUGCUGCCGCUCGACUUG |  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  2,  2,  2,  3,  3,  3,  4,  4,  4,  4,\n"
+            "UCAAGUCGAGCGGCAGCA 18 A-     3   17    2 61.1 58.0    UGCUGCCGCUCGACUUGA |  0,  1,  1,  1,  2,  2,  2,  2,  3,  3,  3,  4,  4,  4,  5,  5,  5,  5,  6,  6,\n";
 
-    TEST_ARB_PROBE_FILT(ARRAY_ELEMS(arguments_loc), arguments_loc, extract_locations, expected_loc);
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+    }
+#endif
+
+    // design MANY probes to test location specifier
+    {
+        const char *arguments_loc[] = {
+            "prgnamefake",
+            // "designnames=Stsssola#Stsssola", // @@@ crashes the ptserver
+            "designnames=CPPParap#PsAAAA00",
+            "designmintargets=50", // hit at least 1 of the 2 targets
+            "designmingc=0", "designmaxgc=100", // allow all GCs
+            "designmishit=99999",  // allow enough outgroup hits
+            "designmaxhits=99999", // do not limit results
+            "designprobelength=3",
+        };
+
+        const char *expected_loc =
+            "A=96B=141C=20D=107B+1E=110F=84G=9H=150I=145C+1D+1J=17K=122L=72C-1M=33N=114E+1O=178"
+            "P=24E+2F+1Q=138O+1R=170S=182A-1T=87G+1J-1N-1U=79F+2U-1V=129I+2H-2C+2W=12D-1D+2C-2O+2"
+            "P-1J-2X=165R+1Y=92W+2W+1Z=125O-2D-2H+1a=104H-1L+1";
+
+        TEST_ARB_PROBE_FILT(ARRAY_ELEMS(arguments_loc), arguments_loc, extract_locations, expected_loc);
+    }
 }
 
 void TEST_SLOW_match_designed_probe() {
