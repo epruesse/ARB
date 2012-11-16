@@ -671,7 +671,7 @@ struct ptnd_chain_check_part {
                 const char *seq = psg.data[partLoc.name].get_data();
 
                 while (probe[height] && (base = seq[pos])) {
-                    if (!split && ((h = ptnd_check_split(ptnd.locs, probe, height, base)) < 0.0)) {
+                    if (!split && (h = (ptnd_check_split(ptnd.locs, probe, height, base) < 0.0))) {
                         dt -= h;
                         split = 1;
                     }
