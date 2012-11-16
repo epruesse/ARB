@@ -1359,9 +1359,7 @@ void TEST_SLOW_design_probe() {
         }
     }
 
-#if 0 // @@@ 
-    // document bug introduced in [8988]
-    // (works with [8965] .. [8987]; fails with [8988] .. HEAD)
+    // test vs bug (fails with [8988] .. [9175])
     {
         const char *arguments[] = {
             "prgnamefake",
@@ -1404,7 +1402,6 @@ void TEST_SLOW_design_probe() {
 
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }
-#endif
 
     // design MANY probes to test location specifier
     {
