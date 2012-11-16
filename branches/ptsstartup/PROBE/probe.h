@@ -152,35 +152,26 @@ public:
 class probe_input_data : virtual Noncopyable {      // every taxa's own data
 
     char *data;       // sequence
-    long  checksum;   // checksum of sequence
     int   size; // @@@ misleading (contains 1 if no bases in sequence)
 
-    char   *name;
-    char   *fullname;
     GBDATA *gb_species;
 
     bool group;           // probe_design: whether species is in group
 
-    // obsolete methods below @@@ remove them
+    // obsolete? methods below @@@ remove them
     GBDATA *get_gbdata() const { return gb_species; }
     void set_data(char *assign, int size_) { pt_assert(!data); data = assign; size = size_; }
-    void set_checksum(long cs) { checksum = cs; }
 
 public:
 
     probe_input_data()
         : data(0),
-          checksum(0),
           size(0),
-          name(0),
-          fullname(0),
           gb_species(0),
           group(false)
     {}
     ~probe_input_data() {
         free(data);
-        free(name);
-        free(fullname);
     }
 
     GB_ERROR init(GBDATA *gb_species_, bool& no_data);
@@ -188,9 +179,27 @@ public:
     const char *get_data() const { return data; }
     char *read_alignment(int *psize) const;
 
-    const char *get_name() const { return name; }
-    const char *get_fullname() const { return fullname; }
-    long get_checksum() const { return checksum; }
+    // @@@ speed up all DB-searches by directly using GBQUARK
+    const char *get_name() const {
+        GB_transaction ta(gb_species);
+
+        GBDATA *gb_name = GB_entry(gb_species, "name");
+        pt_assert(gb_name);
+        return GB_read_char_pntr(gb_name);
+    }
+    const char *get_fullname() const {
+        GB_transaction ta(gb_species);
+
+        GBDATA *gb_full = GB_entry(gb_species, "full_name");
+        return gb_full ? GB_read_char_pntr(gb_full) : "";
+    }
+    long get_checksum() const {
+        GB_transaction ta(gb_species);
+        GBDATA *gb_cs = GB_entry(gb_species, "cs");
+        pt_assert(gb_cs);
+        uint32_t csum = uint32_t(GB_read_int(gb_cs));
+        return csum;
+    }
     int get_size() const { return size; }
 
     PT_base base_at(int rpos) const {

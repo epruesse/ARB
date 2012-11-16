@@ -264,18 +264,11 @@ GB_ERROR probe_input_data::init(GBDATA *gb_species_, bool& no_data) {
             error = GBS_global_string("Missing entry (%s) for species '%s'\n", gb_cs ? "compr" : "cs", GBT_read_name(gb_species_));
         }
         else {
-            name                    = strdup(GBT_read_name(gb_species_));
-            fullname                = GBT_read_string(gb_species_, "full_name");
-            if (!fullname) fullname = strdup("");
-
             gb_species = gb_species_;
 
-            uint32_t checksum = uint32_t(GB_read_int(gb_cs));
+            int      csize = GB_read_count(gb_compr);
+            GB_CSTR  compr = GB_read_bytes_pntr(gb_compr);
 
-            int     csize = GB_read_count(gb_compr);
-            GB_CSTR compr = GB_read_bytes_pntr(gb_compr);
-
-            set_checksum(checksum);
             set_data(GB_memdup(compr, csize), csize);
         }
     }
