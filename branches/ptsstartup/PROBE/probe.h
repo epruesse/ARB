@@ -157,25 +157,25 @@ class probe_input_data : virtual Noncopyable {      // every taxa's own data
 
     char   *name;
     char   *fullname;
-    GBDATA *gbd;
+    GBDATA *gb_species;
 
     bool group;           // probe_design: whether species is in group
 
     // obsolete methods below @@@ remove them
-    GBDATA *get_gbdata() const { return gbd; }
+    GBDATA *get_gbdata() const { return gb_species; }
     void set_data(char *assign, int size_) { pt_assert(!data); data = assign; size = size_; }
     void set_checksum(long cs) { checksum = cs; }
-    
+
 public:
 
     probe_input_data()
         : data(0),
-          checksum(0), 
-          size(0), 
-          name(0), 
-          fullname(0), 
-          gbd(0), 
-          group(false) 
+          checksum(0),
+          size(0),
+          name(0),
+          fullname(0),
+          gb_species(0),
+          group(false)
     {}
     ~probe_input_data() {
         free(data);
@@ -183,7 +183,7 @@ public:
         free(fullname);
     }
 
-    GB_ERROR init(GBDATA *gbd_, bool& no_data);
+    GB_ERROR init(GBDATA *gb_species_, bool& no_data);
 
     const char *get_data() const { return data; }
     char *read_alignment(int *psize) const;

@@ -231,10 +231,9 @@ static char *probe_read_string_append_point(GBDATA *gb_data, int *psize) {
 }
 
 char *probe_input_data::read_alignment(int *psize) const {
-    char           *buffer     = 0;
-    GBDATA         *gb_species = get_gbdata();
-    GB_transaction  ta(gb_species);
-    GBDATA         *gb_ali     = GB_entry(gb_species, psg.alignment_name);
+    char           *buffer = 0;
+    GB_transaction  ta(get_gbdata());
+    GBDATA         *gb_ali = GB_entry(get_gbdata(), psg.alignment_name);
 
     if (gb_ali) {
         GBDATA *gb_data = GB_entry(gb_ali, "data");
@@ -247,14 +246,14 @@ char *probe_read_alignment(int j, int *psize) {
     return psg.data[j].read_alignment(psize);
 }
 
-GB_ERROR probe_input_data::init(GBDATA *gb_species, bool& no_data) {
+GB_ERROR probe_input_data::init(GBDATA *gb_species_, bool& no_data) {
     GB_ERROR  error   = NULL;
-    GBDATA   *gb_ali  = GB_entry(gb_species, psg.alignment_name);
+    GBDATA   *gb_ali  = GB_entry(gb_species_, psg.alignment_name);
     GBDATA   *gb_data = gb_ali ? GB_entry(gb_ali, "data") : NULL;
 
     no_data = false;
     if (!gb_data) {
-        error   = GBS_global_string("Species '%s' has no data in '%s'", GBT_read_name(gb_species), psg.alignment_name);
+        error   = GBS_global_string("Species '%s' has no data in '%s'", GBT_read_name(gb_species_), psg.alignment_name);
         no_data = true;
     }
     else {
@@ -262,14 +261,14 @@ GB_ERROR probe_input_data::init(GBDATA *gb_species, bool& no_data) {
         GBDATA *gb_compr = GB_entry(gb_ali, "compr");
 
         if (!gb_cs || !gb_compr) {
-            error = GBS_global_string("Missing entry (%s) for species '%s'\n", gb_cs ? "compr" : "cs", GBT_read_name(gb_species));
+            error = GBS_global_string("Missing entry (%s) for species '%s'\n", gb_cs ? "compr" : "cs", GBT_read_name(gb_species_));
         }
         else {
-            name                    = strdup(GBT_read_name(gb_species));
-            fullname                = GBT_read_string(gb_species, "full_name");
+            name                    = strdup(GBT_read_name(gb_species_));
+            fullname                = GBT_read_string(gb_species_, "full_name");
             if (!fullname) fullname = strdup("");
 
-            gbd = gb_species;
+            gb_species = gb_species_;
 
             uint32_t checksum = uint32_t(GB_read_int(gb_cs));
 
