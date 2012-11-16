@@ -60,14 +60,6 @@ public:
     {
         if (!data) GBK_terminate("out of memory");
         prev = NULL;
-
-        if (next) {
-            pt_assert(next->count()>0);
-            pt_assert(count()>1);
-        }
-        else {
-            pt_assert(count()>0);
-        }
     }
 
     ~MemBlock() {
@@ -97,6 +89,7 @@ public:
             (next && next->contains(somemem, blocksize));
     }
 
+#if defined(PTM_MEM_DUMP_STATS)
     size_t count() const {
         const MemBlock *b = this;
         
@@ -108,6 +101,7 @@ public:
 
         return cnt;
     }
+#endif
 };
 
 class MemBlockManager : virtual Noncopyable {
@@ -141,13 +135,12 @@ public:
     }
 
     char *get_block(int forsize) {
-        int allocsize  = blocksize4size(forsize);
-        int tab        = size2idx(forsize);
-        block[tab]     = new MemBlock(allocsize, block[tab]);
-        allsize       += allocsize;
+        int allocsize = blocksize4size(forsize);
+        int tab       = size2idx(forsize);
 
-        pt_assert(block[tab]->count()>0); // checks validity of block-chain 
-        
+        block[tab]  = new MemBlock(allocsize, block[tab]);
+        allsize    += allocsize;
+
         return block[tab]->get_memory();
     }
 
