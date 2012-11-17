@@ -11,10 +11,9 @@
 
 #include "ptclean.h"
 #include <arbdbt.h>
+#include <arb_progress.h>
 
 #define pt_assert(cond) arb_assert(cond)
-
-// using namespace std;
 
 class EntryTempMarker : virtual Noncopyable {
     // marks all entries of DB as 'temp', that are of no use for PTSERVER
@@ -24,6 +23,8 @@ class EntryTempMarker : virtual Noncopyable {
     GB_transaction  ta;
     Servertype      type;
     char           *ali_name;
+
+    mutable arb_progress progress;
 
     enum Need {
         NONE,
@@ -49,7 +50,10 @@ class EntryTempMarker : virtual Noncopyable {
                 break;
 
             case SOME_OF_SPECIES_DATA:
-                if (strcmp(keyname, "species") == 0) return SOME_OF_SPECIES;
+                if (strcmp(keyname, "species") == 0) {
+                    progress.inc();
+                    return SOME_OF_SPECIES;
+                }
                 break;
 
             case SOME_OF_EXTENDED_DATA:
@@ -109,9 +113,13 @@ public:
         : gb_main(gb_main_),
           ta(gb_main),
           type(type_),
-          ali_name(GBT_get_default_alignment(gb_main))
+          ali_name(GBT_get_default_alignment(gb_main)),
+          progress("Remove unused database entries", GBT_get_species_count(gb_main))
     {}
-    ~EntryTempMarker() { free(ali_name); }
+    ~EntryTempMarker() {
+        free(ali_name);
+        progress.done();
+    }
 
     GB_ERROR mark_unwanted_entries() { return mark_subentries(gb_main, SOME_OF_ROOT); }
 };
