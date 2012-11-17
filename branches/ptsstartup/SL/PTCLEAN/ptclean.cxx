@@ -87,22 +87,25 @@ class EntryTempMarker : virtual Noncopyable {
         return NONE;
     }
 
-    GB_ERROR mark_child(GBDATA *gb_entry, const char *keyname, Need from) {
+    GB_ERROR del_child(GBDATA *gb_entry, const char *keyname, Need from) {
         GB_ERROR error = 0;
         Need     need  = data_needed(gb_entry, keyname, from);
         switch (need) {
-            case NONE: error = GB_set_temporary(gb_entry); break;
-            case ALL:  pt_assert(!GB_is_temporary(gb_entry)); break;
-            default:   error = mark_subentries(gb_entry, need); break;
+            case NONE: error = GB_delete(gb_entry); break;
+            // case ALL:  pt_assert(!GB_is_temporary(gb_entry)); break;
+            case ALL:  break;
+            default:   error = del_subentries(gb_entry, need); break;
         }
         return error;
     }
-    GB_ERROR mark_subentries(GBDATA *gb_father, Need from) {
+    GB_ERROR del_subentries(GBDATA *gb_father, Need from) {
         GB_ERROR error = 0;
         if (!GB_is_temporary(gb_father)) {
-            for (GBDATA *gb_child = GB_child(gb_father); gb_child && !error; gb_child = GB_nextChild(gb_child)) {
+            GBDATA *gb_next_child = NULL;
+            for (GBDATA *gb_child = GB_child(gb_father); gb_child && !error; gb_child = gb_next_child) {
+                gb_next_child = GB_nextChild(gb_child);
                 const char *key = GB_read_key_pntr(gb_child);
-                error           = mark_child(gb_child, key, from);
+                error           = del_child(gb_child, key, from);
             }
         }
         return error;
@@ -121,7 +124,7 @@ public:
         progress.done();
     }
 
-    GB_ERROR mark_unwanted_entries() { return mark_subentries(gb_main, SOME_OF_ROOT); }
+    GB_ERROR mark_unwanted_entries() { return del_subentries(gb_main, SOME_OF_ROOT); }
 };
 
 inline GB_ERROR clean_ptserver_database(GBDATA *gb_main, Servertype type) {
