@@ -174,6 +174,7 @@ PT_io.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_io.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_io.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_io.o: $(ARBHOME)/INCLUDE/arb_error.h
+PT_io.o: $(ARBHOME)/INCLUDE/arb_file.h
 PT_io.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_io.o: $(ARBHOME)/INCLUDE/arb_progress.h
 PT_io.o: $(ARBHOME)/INCLUDE/arb_string.h

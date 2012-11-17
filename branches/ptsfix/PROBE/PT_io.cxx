@@ -15,6 +15,7 @@
 #include <arbdbt.h>
 #include <BI_basepos.hxx>
 #include <arb_progress.h>
+#include <arb_file.h>
 
 int compress_data(char *probestring) {
     //! change a sequence with normal bases the PT_? format and delete all other signs
@@ -52,16 +53,21 @@ ARB_ERROR probe_read_data_base(const char *name, bool readOnly) { // goes to hea
 
     psg.gb_shell = new GB_shell;
 
-    GBDATA *gb_main     = GB_open(name, readOnly ? "r" : "rw");
-    if (!gb_main) error = GB_await_error();
-    else {
-        error = GB_begin_transaction(gb_main);
-        if (!error) {
-            psg.gb_main         = gb_main;
-            psg.gb_species_data = GBT_get_species_data(gb_main);
-            psg.gb_sai_data     = GBT_get_SAI_data(gb_main);
+    if (!readOnly && !GB_is_writeablefile(name)) {
+        error = GBS_global_string("Database '%s' is write-protected - aborting", name);
+    }
+    if (!error) {
+        GBDATA *gb_main     = GB_open(name, readOnly ? "r" : "rw");
+        if (!gb_main) error = GB_await_error();
+        else {
+            error = GB_begin_transaction(gb_main);
+            if (!error) {
+                psg.gb_main         = gb_main;
+                psg.gb_species_data = GBT_get_species_data(gb_main);
+                psg.gb_sai_data     = GBT_get_SAI_data(gb_main);
+            }
+            error = GB_end_transaction(gb_main, error);
         }
-        error = GB_end_transaction(gb_main, error);
     }
     return error;
 }
