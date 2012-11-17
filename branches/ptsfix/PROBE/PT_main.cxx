@@ -367,7 +367,7 @@ __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, cons
             }
 
             if (update_reason) {
-                printf("- updating postree (Reason: %s)", update_reason);
+                printf("- updating postree (Reason: %s)\n", update_reason);
 
                 const char *build_step[] = {
                     "build_clean",
