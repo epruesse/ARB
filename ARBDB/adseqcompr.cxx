@@ -11,6 +11,7 @@
 #include <arbdbt.h>
 #include <arb_progress.h>
 #include <arb_file.h>
+#include <arb_misc.h>
 
 #include "gb_key.h"
 #include <static_assert.h>

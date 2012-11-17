@@ -12,8 +12,10 @@
 #include <arb_handlers.h>
 #include <arb_msg.h>
 #include <arb_assert.h>
+#include "arb_misc.h"
 #include <smartptr.h>
 #include <unistd.h>
+#include <time.h>
 
 // AISC_MKPT_PROMOTE:#ifndef ARB_CORE_H
 // AISC_MKPT_PROMOTE:#include <arb_core.h>
@@ -44,8 +46,10 @@ class BasicStatus : virtual Noncopyable {
     int         printed;
     const char *cursor;
 
+    time_t start;
+
 public:
-    BasicStatus() : openCount(0) {}
+    BasicStatus() : openCount(0) { time(&start); }
     ~BasicStatus() { if (openCount) close(); }
 
     void open(const char *title) {
@@ -55,6 +59,8 @@ public:
         printed  = 0;
         cursor   = NULL;
         subtitle = NULL;
+
+        time(&start);
     }
     void close() {
         freenull(subtitle);
@@ -67,13 +73,7 @@ public:
 
     void set_subtitle(const char *stitle) {
         arb_assert(openCount == 1);
-        if (cursor) {
-            int offset = cursor - subtitle;
-            subtitle[strlen(subtitle)-1] = 0;
-            freeset(subtitle, GBS_global_string_copy("%s/%s}", subtitle, stitle));
-            cursor = subtitle+offset;
-        }
-        else {
+        if (!cursor) {
             freeset(subtitle, GBS_global_string_copy("{%s}", stitle));
             cursor = subtitle;
         }
@@ -95,7 +95,20 @@ public:
                 }
                 printed++;
                 if (printed == nextLF) {
-                    fprintf(arbout, " [%5.1f%%]\n", printed*100.0/(WIDTH*HEIGHT));
+                    time_t now;
+                    time(&now);
+
+                    fprintf(arbout, " [%5.1f%%]", printed*100.0/(WIDTH*HEIGHT));
+                    bool   done    = (printed == (WIDTH*HEIGHT));
+                    double seconds = difftime(now, start);
+
+                    const char *whatshown = done ? "used" : "left";
+                    fprintf(arbout, " %s: ", whatshown);
+
+                    long show_sec = done ? seconds : long(seconds*(1.0-gauge)/gauge+0.5);
+                    fputs(GBS_readable_timediff(show_sec), arbout);
+                    fputc('\n', arbout);
+
                     nextLF = next_LF();
                 }
             }

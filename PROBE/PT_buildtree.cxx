@@ -14,6 +14,7 @@
 #include "pt_prototypes.h"
 #include <arb_defs.h>
 #include <arb_file.h>
+#include <arb_misc.h>
 
 #include <arb_progress.h>
 

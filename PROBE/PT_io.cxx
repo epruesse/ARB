@@ -99,6 +99,34 @@ inline size_t count_gaps_and_dots(const char *seq, int seqsize) {
     return count;
 }
 
+// uncomment next line to count all bases compressed by ptserver and dump them when program terminates
+// #define COUNT_COMPRESSES_BASES
+#if defined(COUNT_COMPRESSES_BASES)
+class BaseCounter {
+    long count[PT_BASES];
+public:
+    BaseCounter() {
+        for (int i = 0; i<PT_BASES; ++i) {
+            count[i] = 0;
+        }
+    }
+    ~BaseCounter() {
+        fflush_all();
+        fputs("\nBaseCounter:\n", stderr);
+        for (int i = 0; i<PT_BASES; ++i) {
+            fprintf(stderr, "count[%i]=%li\n", i, count[i]);
+        }
+    }
+
+    void inc(uchar base) {
+        pt_assert(base >= 0 && base<PT_BASES);
+        ++count[base];
+    }
+};
+
+static BaseCounter base_counter;
+#endif
+
 int probe_compress_sequence(char *seq, int seqsize) {
     static SmartMallocPtr(uchar) smart_tab;
     uchar *tab = NULL;
@@ -308,7 +336,7 @@ void probe_read_alignments() {
     else {
         printf("\nAll species contain data in alignment '%s'.\n", psg.alignment_name);
     }
-    fflush(stdout);
+    fflush_all();
 }
 
 void PT_build_species_hash() {
