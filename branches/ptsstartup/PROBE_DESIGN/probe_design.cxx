@@ -1774,8 +1774,7 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
 
         progress.subtitle("Exporting the database");
         {
-            const char *mode = "bfm"; // save PT-server database with Fastload file
-
+            const char *mode = GB_supports_mapfile() ? "mbf" : "bf"; // save PT-server database with Fastload file (if supported)
             if (create_gene_server) {
                 char *temp_server_name = GBS_string_eval(file, "*.arb=*_temp.arb", 0);
                 error = GB_save_as(gb_main, temp_server_name, mode);
