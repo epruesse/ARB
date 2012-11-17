@@ -549,7 +549,6 @@ struct DataLoc {
 #if defined(DEBUG)
     void dump(FILE *fp) const {
         fprintf(fp, "          apos=%6i  rpos=%6i  name=%6i='%s'\n", apos, rpos, name, psg.data[name].get_name());
-        fflush(fp);
     }
 #endif
 };

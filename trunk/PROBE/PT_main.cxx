@@ -11,12 +11,14 @@
 #include "probe.h"
 #include <PT_server_prototypes.h>
 #include "pt_prototypes.h"
+// #include "PT_mem.h"
 
 #include <BI_basepos.hxx>
 
 #include <arbdbt.h>
 #include <arb_file.h>
 #include <arb_defs.h>
+#include <arb_misc.h>
 #include <servercntrl.h>
 #include <server.h>
 #include <client.h>
@@ -26,6 +28,7 @@
 
 #include <unistd.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #define MAX_TRY 10
 #define TIME_OUT 1000*60*60*24
@@ -37,6 +40,8 @@ ULONG                       physical_memory = 0;
 int gene_flag = 0;
 
 PT_main *aisc_main;
+
+static time_t startTime;
 
 static gene_struct_list    all_gene_structs;         // stores all gene_structs
 gene_struct_index_arb      gene_struct_arb2internal; // sorted by arb species+gene name
@@ -191,6 +196,8 @@ int server_shutdown(PT_main *pm, aisc_string passwd) {
     // password check
     pm = pm;
     if (strcmp(passwd, "47@#34543df43%&3667gh")) return 1;
+
+    fflush_all();
     fprintf(stderr, "\nARB_PT_SERVER: received shutdown message\n");
 
     // shutdown clients
@@ -199,6 +206,7 @@ int server_shutdown(PT_main *pm, aisc_string passwd) {
     // shutdown server
     aisc_server_shutdown(psg.com_so);
     PT_exit();
+    fflush_all();
     exit(EXIT_SUCCESS);
 }
 
@@ -415,11 +423,18 @@ __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, cons
 
             if (!error) error = enter_stage_3_load_tree(aisc_main, pt_name);
             if (!error) error = PT_init_map();
-            
+
             if (!error) {
                 // all ok -> main "loop"
-                printf("ok, server is running.\n");             // do NOT change or remove! others depend on it
-                fflush(stdout);
+                {
+                    time_t now; time(&now);
+                    fflush_all();
+                    printf("[startup took %s]\n", GBS_readable_timediff(difftime(now, startTime)));
+                }
+
+                printf("ok, server is running.\n"); // do NOT change or remove! others depend on it
+
+                fflush_all();
                 aisc_accept_calls(so);
             }
         }
@@ -542,6 +557,8 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
 }
 
 int ARB_main(int argc, const char *argv[]) {
+    time(&startTime);
+
     int         exitcode = EXIT_SUCCESS;
     arb_params *params   = arb_trace_argv(&argc, (const char **)argv);
     const char *exename  = argv[0];
@@ -577,10 +594,17 @@ int ARB_main(int argc, const char *argv[]) {
             fprintf(stderr, "%s: Error: %s\n", exename, error);
             exitcode = EXIT_FAILURE;
         }
+        else {
+            time_t now; time(&now);
+            fflush_all();
+            printf("[ptserver '%s' took %s]\n", command, GBS_readable_timediff(difftime(now, startTime)));
+            fflush(stdout);
+        }
         free(command);
     }
 
     free_arb_params(params);
     PT_exit();
+    fflush_all();
     return exitcode;
 }

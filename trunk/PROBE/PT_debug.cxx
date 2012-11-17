@@ -72,6 +72,8 @@ static void analyse_tree(POS_TREE *pt, int height) {
             }
             break;
     };
+
+    fflush_all();
 }
 #endif
 
@@ -210,6 +212,7 @@ void PT_dump_POS_TREE(POS_TREE * IF_DEBUG(node), FILE *IF_DEBUG(out)) {
             fputs("<invalid node type>\n", out);
             break;
     }
+    fflush_all();
 #endif
 }
 
