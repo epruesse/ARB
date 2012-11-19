@@ -611,6 +611,7 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USE
 #ifdef UNIT_TESTS
 #ifndef TEST_UNIT_H
 #include <test_unit.h>
+#include "PT_compress.h"
 #endif
 
 void TEST_PrefixProbabilities() {
@@ -665,20 +666,18 @@ static int count_passes(Partition& p) {
     return count;
 }
 
-class Compressed : virtual Noncopyable {
-    size_t  len;
-    char   *data;
+class Compressed {
+    size_t        len;
+    PT_compressed compressed;
+
 public:
     Compressed(const char *readable)
-        : len(strlen(readable)+1),
-          data(new char[len])
+        : len(strlen(readable)),
+          compressed(len)
     {
-        memcpy(data, readable, len);
-        probe_compress_sequence(data, len);
+        compressed.createFrom(readable, len);
     }
-    ~Compressed() { delete [] data; }
-
-    const char *seq() const { return data; }
+    const char *seq() const { return compressed.get_seq(); }
 };
 
 void TEST_MarkedPrefixes() {

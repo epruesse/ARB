@@ -34,6 +34,7 @@ depend.init:
 
 PT_buildtree.o: probe.h
 PT_buildtree.o: probe_tree.h
+PT_buildtree.o: PT_compress.h
 PT_buildtree.o: PT_partition.h
 PT_buildtree.o: PT_prefixIter.h
 PT_buildtree.o: pt_prototypes.h
@@ -166,6 +167,7 @@ PT_findEx.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_io.o: probe.h
+PT_io.o: PT_compress.h
 PT_io.o: pt_prototypes.h
 PT_io.o: PT_tools.h
 PT_io.o: $(ARBHOME)/INCLUDE/ad_prot.h

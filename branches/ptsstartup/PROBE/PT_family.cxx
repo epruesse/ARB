@@ -374,7 +374,7 @@ int find_family(PT_family *ffinder, bytestring *species) {
     int complement  = ffinder->complement; // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement
 
     char *sequence     = species->data; // sequence data passed by caller
-    int   sequence_len = probe_compress_sequence(sequence, species->size);
+    int   sequence_len = probe_compress_sequence(sequence, species->size-1);
 
     bool use_all_oligos = ffinder->only_A_probes == 0;
 

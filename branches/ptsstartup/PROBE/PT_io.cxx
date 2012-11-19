@@ -11,6 +11,7 @@
 
 #include "probe.h"
 #include "pt_prototypes.h"
+#include "PT_compress.h"
 
 #include <arbdbt.h>
 #include <BI_basepos.hxx>
@@ -72,118 +73,24 @@ ARB_ERROR probe_read_data_base(const char *name, bool readOnly) { // goes to hea
     return error;
 }
 
-inline size_t count_uint_32(uint32_t *seq, size_t seqsize, uint32_t cmp) {
-    size_t count = 0;
-    while (count<seqsize && seq[count] == cmp) count++;
-    return count*4;
-}
+uchar PT_compressed::translate[256]; 
+bool  PT_compressed::translation_initialized = false;
 
-inline size_t count_char(const char *seq, size_t seqsize, char c, uint32_t c4) {
-    if (seq[0] == c) {
-        size_t count = 1+count_uint_32((uint32_t*)(seq+1), (seqsize-1)/4, c4);
-        for (; count<seqsize && seq[count] == c; ++count) ;
-        return count;
-    }
-    return 0;
-}
-
-inline size_t count_dots(const char *seq, int seqsize) { return count_char(seq, seqsize, '.', 0x2E2E2E2E); }
-inline size_t count_gaps(const char *seq, int seqsize) { return count_char(seq, seqsize, '-', 0x2D2D2D2D); }
-
-inline size_t count_gaps_and_dots(const char *seq, int seqsize) {
-    size_t count = 0;
-    size_t count2;
-    size_t count3;
-
-    do {
-        count2  = count_dots(seq+count, seqsize-count);
-        count  += count2;
-        count3  = count_gaps(seq+count, seqsize-count);
-        count  += count3;
-    }
-    while (count2 || count3);
-    return count;
-}
-
-// uncomment next line to count all bases compressed by ptserver and dump them when program terminates
-// #define COUNT_COMPRESSES_BASES
 #if defined(COUNT_COMPRESSES_BASES)
-class BaseCounter {
-    long count[PT_BASES];
-public:
-    BaseCounter() {
-        for (int i = 0; i<PT_BASES; ++i) {
-            count[i] = 0;
-        }
-    }
-    ~BaseCounter() {
-        fflush_all();
-        fputs("\nBaseCounter:\n", stderr);
-        for (int i = 0; i<PT_BASES; ++i) {
-            fprintf(stderr, "count[%i]=%li\n", i, count[i]);
-        }
-    }
-
-    void inc(uchar base) {
-        pt_assert(base >= 0 && base<PT_BASES);
-        ++count[base];
-    }
-};
-
-static BaseCounter base_counter;
+BaseCounter PT_compressed::base_counter;
 #endif
 
-int probe_compress_sequence(char *seq, int seqsize) {
+size_t probe_compress_sequence(char *seq, size_t seqsize) {
     // translates a readable sequence into PT_base
     // (see also: probe_2_readable)
-    static SmartMallocPtr(uchar) smart_tab;
-    uchar *tab = NULL;
-    if (smart_tab.isNull()) {
-        tab = (uchar *) malloc(256);
-        memset(tab, PT_N, 256);
-        tab['A'] = tab['a'] = PT_A;
-        tab['C'] = tab['c'] = PT_C;
-        tab['G'] = tab['g'] = PT_G;
-        tab['T'] = tab['t'] = PT_T;
-        tab['U'] = tab['u'] = PT_T;
-        tab['.'] = PT_QU;
-        tab[0] = PT_B_UNDEF;
-        smart_tab = tab;
-    }
 
-    tab = &*smart_tab;
-    char *dest = seq;
-    size_t offset = 0;
+    PT_compressed compressed(seqsize);
 
-    while (seq[offset]) {
-        offset += count_gaps(seq + offset, seqsize - offset); // skip over gaps
+    compressed.createFrom(reinterpret_cast<unsigned char*>(seq), seqsize);
+    pt_assert(compressed.get_size() <= (seqsize+1));
 
-        uchar c = tab[safeCharIndex(seq[offset++])];
-        if (c == PT_B_UNDEF)
-            break; // already seen terminal zerobyte
-
-#if defined(COUNT_COMPRESSES_BASES)
-        base_counter.inc(c);
-#endif
-        *dest++ = c;
-        if (c == PT_QU) { // TODO: *seq = '.' ???
-            offset += count_gaps_and_dots(seq + offset, seqsize - offset); // skip over gaps and dots
-            // dest[-1] = PT_N; // @@@ uncomment this to handle '.' like 'N' (experimental!!!)
-        }
-    }
-
-    if (dest[-1] != PT_QU) {
-#if defined(COUNT_COMPRESSES_BASES)
-        base_counter.inc(PT_QU);
-#endif
-        *dest++ = PT_QU;
-    }
-
-#ifdef ARB_64
-    pt_assert(!((dest - seq) & 0xffffffff00000000)); // must fit into 32 bit
-#endif
-
-    return dest - seq;
+    memcpy(seq, compressed.get_seq(), compressed.get_size());
+    return compressed.get_size();
 }
 
 char *readable_probe(const char *compressed_probe, size_t len, char T_or_U) {
@@ -216,7 +123,7 @@ char *readable_probe(const char *compressed_probe, size_t len, char T_or_U) {
     return result;
 }
 
-static char *probe_read_string_append_point(GBDATA *gb_data, int *psize) {
+static char *probe_read_string_append_point(GBDATA *gb_data, int *psize) { // @@@ obsolete
     long  len  = GB_read_string_count(gb_data);
     char *data = GB_read_string(gb_data);
 
@@ -236,20 +143,29 @@ static char *probe_read_string_append_point(GBDATA *gb_data, int *psize) {
     return data;
 }
 
-char *probe_input_data::read_alignment(int *psize) const {
+char *probe_input_data::read_alignment(int *psize) const { // @@@ eliminate when abspos-array exists
     char           *buffer = 0;
     GB_transaction  ta(get_gbdata());
     GBDATA         *gb_ali = GB_entry(get_gbdata(), psg.alignment_name);
 
     if (gb_ali) {
         GBDATA *gb_data = GB_entry(gb_ali, "data");
-        if (gb_data) buffer = probe_read_string_append_point(gb_data, psize);
+        if (gb_data) buffer = probe_read_string_append_point(gb_data, psize); // @@@ last use
     }
     return buffer;
 }
 
-char *probe_read_alignment(int j, int *psize) { 
+char *probe_read_alignment(int j, int *psize) { // @@@ elim
     return psg.data[j].read_alignment(psize);
+}
+
+inline GBDATA *expect_entry(GBDATA *gb_species, const char *entry_name) {
+    GBDATA *gb_entry = GB_entry(gb_species, entry_name);
+    if (!gb_entry) {
+        GB_export_errorf("Expected entry '%s' is missing for species '%s'",
+                         entry_name, GBT_read_name(gb_species));
+    }
+    return gb_entry;
 }
 
 GB_ERROR probe_input_data::init(GBDATA *gb_species_, bool& no_data) {
@@ -259,16 +175,16 @@ GB_ERROR probe_input_data::init(GBDATA *gb_species_, bool& no_data) {
 
     no_data = false;
     if (!gb_data) {
+        // @@@ when these are deleted during cleanup, this branch gets impossible
         error   = GBS_global_string("Species '%s' has no data in '%s'", GBT_read_name(gb_species_), psg.alignment_name);
         no_data = true;
     }
     else {
-        GBDATA *gb_cs    = GB_entry(gb_species_, "cs");
-        GBDATA *gb_compr = GB_entry(gb_species_, "compr");
+        GBDATA *gb_cs      = expect_entry(gb_species_, "cs");
+        GBDATA *gb_compr   = expect_entry(gb_species_, "compr");
+        GBDATA *gb_baseoff = expect_entry(gb_species_, "baseoff");
 
-        if (!gb_cs || !gb_compr) {
-            error = GBS_global_string("Missing entry (%s) for species '%s'\n", gb_cs ? "compr" : "cs", GBT_read_name(gb_species_));
-        }
+        if (!gb_cs || !gb_compr || !gb_baseoff) error = GB_await_error();
         else {
             gb_species = gb_species_;
 
@@ -282,7 +198,7 @@ GB_ERROR probe_input_data::init(GBDATA *gb_species_, bool& no_data) {
     return error;
 }
 
-GB_ERROR PT_prepare_species_sequence(GBDATA *gb_species, const char *alignment_name, bool& data_missing) {
+inline GB_ERROR PT_prepare_species_sequence(GBDATA *gb_species, const char *alignment_name, bool& data_missing, PT_compressed& compressed) {
     GB_ERROR  error   = NULL;
     GBDATA   *gb_ali  = GB_entry(gb_species, alignment_name);
     GBDATA   *gb_data = gb_ali ? GB_entry(gb_ali, "data") : NULL;
@@ -292,28 +208,41 @@ GB_ERROR PT_prepare_species_sequence(GBDATA *gb_species, const char *alignment_n
     if (!gb_data) {
         error = GBS_global_string("Species '%s' has no data in '%s'", GBT_read_name(gb_species), alignment_name);
         data_missing = true;
+
+        // @@@ delete all species w/o data in wanted alignment
     }
     else {
-        int   hsize;
-        char *sdata = probe_read_string_append_point(gb_data, &hsize);
+        const char *seq = GB_read_char_pntr(gb_data);
 
-        if (!sdata) {
+        if (!seq) {
             error = GBS_global_string("Could not read data in '%s' for species '%s'\n(Reason: %s)",
                                       psg.alignment_name, GBT_read_name(gb_species), GB_await_error());
         }
         else {
+            size_t seqlen = GB_read_string_count(gb_data);
+            compressed.createFrom(seq, seqlen);
+
             {
-                uint32_t  checksum = GB_checksum(sdata, hsize, 1, ".-");
+                uint32_t  checksum = GB_checksum(seq, seqlen, 1, ".-");
                 GBDATA   *gb_cs    = GB_create(gb_species, "cs", GB_INT);
-                error              = gb_cs ? GB_write_int(gb_cs, int32_t(checksum)) : GB_await_error();
+                error              = gb_cs
+                    ? GB_write_int(gb_cs, int32_t(checksum))
+                    : GB_await_error();
             }
 
             if (!error) {
-                int     csize    = probe_compress_sequence(sdata, hsize);
                 GBDATA *gb_compr = GB_create(gb_species, "compr", GB_BYTES);
-                error            = gb_compr ? GB_write_bytes(gb_compr, sdata, csize) : GB_await_error();
+                error            = gb_compr
+                    ? GB_write_bytes(gb_compr, compressed.get_seq(), compressed.get_size())
+                    : GB_await_error();
             }
-            free(sdata);
+
+            if (!error) {
+                GBDATA *gb_baseoff = GB_create(gb_species, "baseoff", GB_INTS);
+                error = gb_baseoff
+                    ? GB_write_ints(gb_baseoff, compressed.get_offsets(), compressed.get_size())
+                    : GB_await_error();
+            }
         }
     }
 
@@ -332,6 +261,9 @@ GB_ERROR PT_prepare_data(GBDATA *gb_main) {
         int data_missing = 0;
 
         char *ali_name = GBT_get_default_alignment(gb_main);
+        long  ali_len  = GBT_get_alignment_len(gb_main, ali_name);
+
+        PT_compressed compressBuffer(ali_len);
 
         printf("Database contains %i species\n", icount);
         {
@@ -341,7 +273,8 @@ GB_ERROR PT_prepare_data(GBDATA *gb_main) {
                  gb_species = GBT_next_species(gb_species))
             {
                 bool no_data;
-                error = PT_prepare_species_sequence(gb_species, ali_name, no_data);
+                // @@@ directly pass-down missing-data-counter and do not report error in that case
+                error = PT_prepare_species_sequence(gb_species, ali_name, no_data, compressBuffer);
                 if (no_data) {
                     data_missing++;
                     error = NULL;
