@@ -456,29 +456,15 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
                 ++currPass;
                 arb_progress data_progress(GBS_global_string("pass %i/%i", currPass, passes), psg.data_count);
 
-                for (int i = 0; i < psg.data_count; i++) {
-                    int                      psize;
-                    char                    *align_abs = probe_read_alignment(i, &psize);
-                    const probe_input_data&  pid       = psg.data[i];
-                    const char              *probe     = pid.get_data();
+                for (int name = 0; name < psg.data_count; name++) {
+                    const probe_input_data&  pid   = psg.data[name];
+                    const char              *probe = pid.get_data();
 
-                    int abs_align_pos = psize-1;
-                    for (int j = pid.get_size() - 1; j >= 0; j--, abs_align_pos--) {
-                        if (j == 0 && probe[j] == PT_QU) {
-                            pt_assert(abs_align_pos >= 0);
-                        }
-                        else {
-                            get_abs_align_pos(align_abs, abs_align_pos); // may result in neg. abs_align_pos (seems to happen if sequences are short < 214bp )
-                            if (abs_align_pos < 0) break; // -> in this case abort
-                        }
-
-
-                        if (partition.contains(probe+j)) {
-                            pt = build_pos_tree(pt, DataLoc(i, abs_align_pos, j));
+                    for (int rel = pid.get_size() - 1; rel >= 0; rel--) {
+                        if (partition.contains(probe+rel)) {
+                            pt = build_pos_tree(pt, DataLoc(name, pid.get_abspos(rel), rel));
                         }
                     }
-                    free(align_abs);
-
                     ++data_progress;
                 }
 

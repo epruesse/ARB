@@ -44,7 +44,6 @@ int compress_data(char *probestring);
 ARB_ERROR probe_read_data_base(const char *name, bool readOnly) __ATTR__USERESULT;
 size_t probe_compress_sequence(char *seq, size_t seqsize);
 char *readable_probe(const char *compressed_probe, size_t len, char T_or_U);
-char *probe_read_alignment(int j, int *psize);
 GB_ERROR PT_prepare_data(GBDATA *gb_main);
 void probe_read_prebuild_alignments(void);
 void PT_build_species_hash(void);

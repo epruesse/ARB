@@ -123,42 +123,6 @@ char *readable_probe(const char *compressed_probe, size_t len, char T_or_U) {
     return result;
 }
 
-static char *probe_read_string_append_point(GBDATA *gb_data, int *psize) { // @@@ obsolete
-    long  len  = GB_read_string_count(gb_data);
-    char *data = GB_read_string(gb_data);
-
-    if (data) {
-        if (data[len - 1] != '.') {
-            char *buffer = (char *) malloc(len + 2);
-            strcpy(buffer, data);
-            buffer[len++] = '.';
-            buffer[len] = 0;
-            freeset(data, buffer);
-        }
-        *psize = len;
-    }
-    else {
-        *psize = 0;
-    }
-    return data;
-}
-
-char *probe_input_data::read_alignment(int *psize) const { // @@@ eliminate when abspos-array exists
-    char           *buffer = 0;
-    GB_transaction  ta(get_gbdata());
-    GBDATA         *gb_ali = GB_entry(get_gbdata(), psg.alignment_name);
-
-    if (gb_ali) {
-        GBDATA *gb_data = GB_entry(gb_ali, "data");
-        if (gb_data) buffer = probe_read_string_append_point(gb_data, psize); // @@@ last use
-    }
-    return buffer;
-}
-
-char *probe_read_alignment(int j, int *psize) { // @@@ elim
-    return psg.data[j].read_alignment(psize);
-}
-
 inline GBDATA *expect_entry(GBDATA *gb_species, const char *entry_name) {
     GBDATA *gb_entry = GB_entry(gb_species, entry_name);
     if (!gb_entry) {

@@ -149,9 +149,8 @@ public:
 // ---------------------
 //      Probe search
 
-class probe_input_data : virtual Noncopyable {      // every taxa's own data
-
-    char *data;       // sequence
+class probe_input_data : virtual Noncopyable { // every taxa's own data
+    char *data; // sequence
     int   size; // @@@ misleading (contains 1 if no bases in sequence)
 
     GBDATA *gb_species;
@@ -177,7 +176,6 @@ public:
     GB_ERROR init(GBDATA *gb_species_, bool& no_data);
 
     const char *get_data() const { return data; }
-    char *read_alignment(int *psize) const;
 
     // @@@ speed up all DB-searches by directly using GBQUARK
     const char *get_name() const {
@@ -193,7 +191,7 @@ public:
         GBDATA *gb_full = GB_entry(gb_species, "full_name");
         return gb_full ? GB_read_char_pntr(gb_full) : "";
     }
-    long get_checksum() const {
+    long get_checksum() const { // @@@ change return-type -> uint32_t
         GB_transaction ta(gb_species);
         GBDATA *gb_cs = GB_entry(gb_species, "cs");
         pt_assert(gb_cs);
@@ -211,7 +209,22 @@ public:
 
     void set_group_state(bool isGroupMember) { group = isGroupMember; }
 
-    long get_abspos() const {
+    size_t get_abspos(size_t rel_pos) const { // @@@ slowest possible impl
+        GB_transaction ta(gb_species);
+
+        GBDATA *gb_baseoff = GB_entry(gb_species, "baseoff");
+        pt_assert(gb_baseoff);
+
+        const GB_CUINT4 *baseoff = GB_read_ints_pntr(gb_baseoff);
+
+        size_t abspos = 0;
+        for (size_t rp = 0; rp <= rel_pos; ++rp) {
+            abspos += baseoff[rp];
+        }
+        return abspos;
+    }
+
+    long get_geneabspos() const {
         pt_assert(gene_flag); // only legal in gene-ptserver
         GBDATA *gb_pos = GB_entry(get_gbdata(), "abspos");
         if (gb_pos) return GB_read_int(gb_pos);
@@ -288,7 +301,7 @@ public:
     GB_shell *gb_shell;
     GBDATA   *gb_main;                              // ARBDB interface
     GBDATA   *gb_species_data;
-    GBDATA   *gb_sai_data;
+    GBDATA   *gb_sai_data; // @@@ elim (used once)
     char     *alignment_name;
     GB_HASH  *namehash;                             // name to int
 

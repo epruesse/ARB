@@ -697,7 +697,7 @@ static void gene_rel_2_abs(PT_probematch *ml) {
     GB_transaction ta(psg.gb_main);
 
     for (; ml; ml = ml->next) {
-        long gene_pos = psg.data[ml->name].get_abspos();
+        long gene_pos = psg.data[ml->name].get_geneabspos();
         if (gene_pos >= 0) {
             ml->g_pos  = ml->b_pos;
             ml->b_pos += gene_pos;

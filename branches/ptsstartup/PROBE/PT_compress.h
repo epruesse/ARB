@@ -78,7 +78,7 @@ typedef unsigned char uchar;
 class PT_compressed : virtual Noncopyable {
     size_t    max_input_length;
     uchar    *compressed;
-    unsigned *base_offset;
+    unsigned *base_offset; // to previous base
     size_t    size;
 
     static bool  translation_initialized;
@@ -141,18 +141,27 @@ public:
             base_counter.inc(c);
 #endif
             compressed[base_count] = c;
-            last_base_offset       = base_offset[base_count++] = offset-last_base_offset;
+            base_offset[base_count++] = offset-last_base_offset;
+            last_base_offset = offset;
         }
 
         pt_assert(base_count>0);
 
+        // ensure last entry is a dot
         if (compressed[base_count-1] != PT_QU) {
 #if defined(COUNT_COMPRESSES_BASES)
             base_counter.inc(PT_QU);
 #endif
             compressed[base_count]  = PT_QU;
-            base_offset[base_count] = base_offset[base_count-1]+1;
+            base_offset[base_count] = 1; // one position behind prev base
             ++base_count;
+        }
+
+        // if first entry is a dot, reposition it before 1st non-dot-base
+        if (compressed[0] == PT_QU && base_count>1) {
+            pt_assert(compressed[1] != PT_QU); // many dots should always compress into 1 dot
+            base_offset[0] = base_offset[1]-1;
+            base_offset[1] = 1;
         }
 
         size = base_count;
