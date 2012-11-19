@@ -128,7 +128,7 @@ public:
 };
 
 template <class T>
-class auto_delete_array_ptr {
+class auto_delete_array_ptr : virtual Noncopyable {
     T *const thePointer;
 public:
     auto_delete_array_ptr(T *p) : thePointer(p) {
