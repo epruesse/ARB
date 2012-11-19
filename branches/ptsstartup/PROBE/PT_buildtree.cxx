@@ -464,8 +464,14 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
 
                     int abs_align_pos = psize-1;
                     for (int j = pid.get_size() - 1; j >= 0; j--, abs_align_pos--) {
-                        get_abs_align_pos(align_abs, abs_align_pos); // may result in neg. abs_align_pos (seems to happen if sequences are short < 214bp )
-                        if (abs_align_pos < 0) break; // -> in this case abort
+                        if (j == 0 && probe[j] == PT_QU) {
+                            pt_assert(abs_align_pos >= 0);
+                        }
+                        else {
+                            get_abs_align_pos(align_abs, abs_align_pos); // may result in neg. abs_align_pos (seems to happen if sequences are short < 214bp )
+                            if (abs_align_pos < 0) break; // -> in this case abort
+                        }
+
 
                         if (partition.contains(probe+j)) {
                             pt = build_pos_tree(pt, DataLoc(i, abs_align_pos, j));
