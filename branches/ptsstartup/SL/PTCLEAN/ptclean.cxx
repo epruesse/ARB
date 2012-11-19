@@ -131,15 +131,12 @@ inline GB_ERROR clean_ptserver_database(GBDATA *gb_main, Servertype type) {
     return EntryTempMarker(type, gb_main).mark_unwanted_entries();
 }
 
-GB_ERROR prepare_ptserver_database(GBDATA *gb_main, Servertype type) {
+GB_ERROR cleanup_ptserver_database(GBDATA *gb_main, Servertype type) {
     GB_ERROR error    = GB_request_undo_type(gb_main, GB_UNDO_NONE);
     if (!error) error = GB_no_transaction(gb_main);
     if (!error) {
         GB_push_my_security(gb_main);
         error = clean_ptserver_database(gb_main, type);
-        if (!error) {
-            // @@@ calculate bp and checksums
-        }
         GB_pop_my_security(gb_main);
     }
     return error;
@@ -158,7 +155,7 @@ void TEST_SLOW_ptclean() {
     const char *saveas  = "TEST_pt_cleaned.arb";
 
     TEST_ASSERT(gb_main);
-    TEST_ASSERT_NO_ERROR(prepare_ptserver_database(gb_main, PTSERVER));
+    TEST_ASSERT_NO_ERROR(cleanup_ptserver_database(gb_main, PTSERVER));
     TEST_ASSERT_NO_ERROR(GB_save_as(gb_main, saveas, "a"));
     GB_close(gb_main);
 

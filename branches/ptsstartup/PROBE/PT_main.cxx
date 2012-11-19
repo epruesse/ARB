@@ -447,7 +447,7 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
             error = probe_read_data_base(params->db_server, false);
             if (!error) {
                 pt_assert(psg.gb_main);
-                error             = prepare_ptserver_database(psg.gb_main, PTSERVER);
+                error             = cleanup_ptserver_database(psg.gb_main, PTSERVER);
                 if (!error) error = PT_prepare_data(psg.gb_main);
                 if (!error) {
                     const char *mode = "bf"; // save PT-server database withOUT! Fastload file
