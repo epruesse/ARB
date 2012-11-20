@@ -63,15 +63,17 @@ AW_common_gtk::AW_common_gtk(GdkDisplay *display_in,
              AW_area    area)
     : AW_common(fcolors, dcolors, dcolors_count),
       display(display_in),
-      window(window_in)
+      window(window_in),
+        pixelDepth(gdk_screen_get_system_visual(gdk_display_get_default_screen(display))->depth)
 {
-
+    
+    
     window->set_resize_callback(area, AW_window_resize_cb, (AW_CL)this);
     AW_window_resize_cb(window, (AW_CL)this, 0);//call the resize cb once in the beginning to get the size
 }
 
 AW_GC *AW_common_gtk::create_gc() {
-    return new AW_GC_gtk(this);
+    return new AW_GC_gtk(this, pixelDepth);
 }
 
 void AW_GC::set_font(const AW_font font_nr, const int size, int *found_size) {
@@ -83,13 +85,13 @@ void AW_GC::set_font(const AW_font font_nr, const int size, int *found_size) {
 }
 
 //FIXME initialize gc
-AW_GC_gtk::AW_GC_gtk(AW_common *common) : AW_GC(common) {
+AW_GC_gtk::AW_GC_gtk(AW_common *common, int pixelDepth) : AW_GC(common) {
 
-    FIXME("Use real drawable to create gc");
     //It is not possible to create a gc without a drawable.
     //The gc can only be used to draw on drawables which use the same colormap and depth
-    GdkPixmap *temp = gdk_pixmap_new(0, 3000, 3000, 24); // memory leak
+    GdkPixmap *temp = gdk_pixmap_new(0, 1, 1, pixelDepth); 
     gc = gdk_gc_new(temp);
+    g_object_unref((gpointer)temp);
 
 }
 AW_GC_gtk::~AW_GC_gtk(){};

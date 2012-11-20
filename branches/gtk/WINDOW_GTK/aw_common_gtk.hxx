@@ -32,7 +32,11 @@ class AW_GC_gtk : public AW_GC { // derived from Noncopyable
 
 public:
 
-    AW_GC_gtk(AW_common *common);
+    /**
+     * Create a gc with specified pixel depth.
+     * @note>: The gc can only be used to draw on surfaces that have the same pixel depth.
+     */
+    AW_GC_gtk(AW_common *common, int pixelDepth);
     ~AW_GC_gtk();
 
     // AW_GC interface (uses motif call)
@@ -48,7 +52,7 @@ public:
 class AW_common_gtk: public AW_common { // derived from Noncopyable
     GdkDisplay *display;
     GtkWidget  *window;
-
+    int pixelDepth; /** < Pixel depth of all drawing surfaces  */
 
 
 public:
