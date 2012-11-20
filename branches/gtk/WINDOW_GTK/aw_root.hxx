@@ -15,11 +15,9 @@
 #endif
 #include "AW_gtk_forward_declarations.hxx"
 #include "aw_root_gtk.hxx"
-#include <string>
+#include "aw_assert.hxx"
 
-#ifndef aw_assert
-#define aw_assert(bed) arb_assert(bed)
-#endif
+#include <string>
 
 
 typedef void (*AW_RCB0)(AW_root*);

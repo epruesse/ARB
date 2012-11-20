@@ -23,10 +23,7 @@
 #include <cmath>
 #endif
 
-#ifndef aw_assert
-#define aw_assert(bed) arb_assert(bed)
-#endif
-
+#include "aw_assert.hxx"
 // ------------------------
 //      validity checks
 

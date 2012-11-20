@@ -12,6 +12,7 @@
 #include "aw_xkey.hxx"
 #include "aw_msg.hxx"
 #include "aw_gtk_migration_helpers.hxx"
+#include "aw_assert.hxx"
 
 #include <arbdbt.h>
 #include <arb_defs.h>
@@ -20,9 +21,6 @@
 #include <gdk/gdkkeysyms.h>
 #include <gdk/gdkkeys.h>
 #include <string>
-#ifndef aw_assert
-#define aw_assert(bed) arb_assert(bed)
-#endif
 
 
 #if defined(DEBUG)
