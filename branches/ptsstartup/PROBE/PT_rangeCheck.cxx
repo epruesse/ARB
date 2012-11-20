@@ -22,6 +22,8 @@ int Range::calc_max_abs_pos() const {
 
     const probe_input_data& pid = psg.data[curr_match->name];
 
+    pid.preload_rel2abs();
+
     int rel_size = pid.get_size();
     int abs_size = pid.get_abspos(rel_size-1)+1;
 
@@ -33,6 +35,8 @@ int Range::calc_max_abs_pos() const {
             return pid.get_abspos(max_rel);
         }
     }
+
+    pid.flush_rel2abs();
 
     return -1;
 }

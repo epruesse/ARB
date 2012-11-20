@@ -153,6 +153,8 @@ class probe_input_data : virtual Noncopyable { // every taxa's own data
     char *data; // sequence
     int   size; // @@@ misleading (contains 1 if no bases in sequence)
 
+    mutable int *rel2abs;
+
     GBDATA *gb_species;
 
     bool group;           // probe_design: whether species is in group
@@ -161,16 +163,36 @@ class probe_input_data : virtual Noncopyable { // every taxa's own data
     GBDATA *get_gbdata() const { return gb_species; }
     void set_data(char *assign, int size_) { pt_assert(!data); data = assign; size = size_; }
 
+    void load_rel2abs() const {
+        GB_transaction ta(gb_species);
+
+        GBDATA *gb_baseoff = GB_entry(gb_species, "baseoff");
+        pt_assert(gb_baseoff);
+
+        const GB_CUINT4 *baseoff = GB_read_ints_pntr(gb_baseoff);
+
+        pt_assert(!rel2abs);
+        rel2abs = new int[size];
+
+        int abs = 0;
+        for (int rel = 0; rel<size; ++rel) {
+            abs          += baseoff[rel];
+            rel2abs[rel]  = abs;
+        }
+    }
+
 public:
 
     probe_input_data()
         : data(0),
           size(0),
+          rel2abs(0),
           gb_species(0),
           group(false)
     {}
     ~probe_input_data() {
         free(data);
+        flush_rel2abs();
     }
 
     GB_ERROR init(GBDATA *gb_species_, bool& no_data);
@@ -209,21 +231,6 @@ public:
 
     void set_group_state(bool isGroupMember) { group = isGroupMember; }
 
-    size_t get_abspos(size_t rel_pos) const { // @@@ slowest possible impl
-        GB_transaction ta(gb_species);
-
-        GBDATA *gb_baseoff = GB_entry(gb_species, "baseoff");
-        pt_assert(gb_baseoff);
-
-        const GB_CUINT4 *baseoff = GB_read_ints_pntr(gb_baseoff);
-
-        size_t abspos = 0;
-        for (size_t rp = 0; rp <= rel_pos; ++rp) {
-            abspos += baseoff[rp];
-        }
-        return abspos;
-    }
-
     long get_geneabspos() const {
         pt_assert(gene_flag); // only legal in gene-ptserver
         GBDATA *gb_pos = GB_entry(get_gbdata(), "abspos");
@@ -231,7 +238,15 @@ public:
         return -1;
     }
 
-private:
+    void preload_rel2abs() const { if (!rel2abs) load_rel2abs(); }
+    void flush_rel2abs() const {
+        if (rel2abs) { delete [] rel2abs; rel2abs = NULL; }
+    }
+    size_t get_abspos(size_t rel_pos) const {
+        pt_assert(rel2abs); // you need to call preload_rel2abs
+        return rel2abs[rel_pos];
+    }
+
 };
 
 struct probe_statistic_struct {
