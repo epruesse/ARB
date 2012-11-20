@@ -107,6 +107,7 @@ makedir() {
 # Generates some directories as well:
 makedir INCLUDE &&
 makedir INCLUDE/GL &&
+makedir INCLUDE/devices &&
 
 makedir NAMES_COM/GENC &&
 makedir NAMES_COM/GENH &&
@@ -115,6 +116,7 @@ makedir NAMES_COM/O &&
 makedir PROBE_COM/GENC &&
 makedir PROBE_COM/GENH &&
 makedir PROBE_COM/O &&
+
 
 makedir lib/help &&
 
@@ -320,6 +322,17 @@ symlink_file ../WINDOW/aw_select.hxx INCLUDE/aw_select.hxx &&
 symlink_file ../WINDOW/aw_window.hxx INCLUDE/aw_window.hxx &&
 symlink_file ../WINDOW/aw_window_Xm_interface.hxx INCLUDE/aw_window_Xm_interface.hxx &&
 symlink_file ../XML/xml.hxx INCLUDE/xml.hxx &&
+symlink_file ../../WINDOW_GTK/devices/aw_clipable.hxx INCLUDE/devices/aw_clipable.hxx  &&
+symlink_file ../../WINDOW_GTK/devices/aw_device.hxx INCLUDE/devices/aw_device.hxx &&
+symlink_file ../../WINDOW_GTK/devices/aw_device_click.hxx INCLUDE/devices/aw_device_click.hxx &&
+symlink_file ../../WINDOW_GTK/devices/aw_device_gtk.hxx INCLUDE/devices/aw_device_gtk.hxx &&
+symlink_file ../../WINDOW_GTK/devices/aw_device_size.hxx INCLUDE/devices/aw_device_size.hxx &&
+symlink_file ../../WINDOW_GTK/devices/aw_simple_device.hxx INCLUDE/devices/aw_simple_device.hxx &&
+symlink_file ../../WINDOW_GTK/devices/aw_stylable.hxx INCLUDE/devices/aw_stylable.hxx &&
+symlink_file ../../WINDOW_GTK/devices/aw_zoomable.hxx INCLUDE/devices/aw_zoomable.hxx  &&
+
+
+
 
 # gl stuff
 symlink_file ../../GL/glpng/glpng.h INCLUDE/GL/glpng.h &&
