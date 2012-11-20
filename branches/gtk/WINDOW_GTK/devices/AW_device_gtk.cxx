@@ -51,6 +51,7 @@ AW_device_gtk::AW_device_gtk(AW_common *commoni, GtkWidget *drawingArea) :
 bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri) {
 
     bool drawflag = false;
+    
 
     arb_assert(get_common()->get_GC(gc) != NULL);
 
@@ -58,28 +59,29 @@ bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri)
         LineVector transLine = transform(Line);
         LineVector clippedLine;
         drawflag = true;
-        FIXME("Clipping not implemented");
-        //clip(transLine, clippedLine); 
+
+        drawflag = clip(transLine, clippedLine); 
+        
+         
         if (drawflag) {
 
-
+            aw_assert(clippedLine.valid());
               //this is the version that should be used if clipping is active
-//            gdk_draw_line(GDK_DRAWABLE(pixmap),
-//                         //get_common()->get_GC(gc), 
-//                         drawingArea->style->white_gc,
-//                         int(clippedLine.start().xpos()),
-//                         int(clippedLine.start().ypos()),
-//                         int(clippedLine.head().xpos()),
-//                         int(clippedLine.head().ypos()));
-
-            
-
             gdk_draw_line(GDK_DRAWABLE(drawingArea->window),
                          get_common()->get_GC(gc),
-                         int(transLine.start().xpos()),
-                         int(transLine.start().ypos()),
-                         int(transLine.head().xpos()),
-                         int(transLine.head().ypos()));
+                         int(clippedLine.start().xpos()),
+                         int(clippedLine.start().ypos()),
+                         int(clippedLine.head().xpos()),
+                         int(clippedLine.head().ypos()));
+
+            
+//
+//            gdk_draw_line(GDK_DRAWABLE(drawingArea->window),
+//                         get_common()->get_GC(gc),
+//                         int(transLine.start().xpos()),
+//                         int(transLine.start().ypos()),
+//                         int(transLine.head().xpos()),
+//                         int(transLine.head().ypos()));
 
             AUTO_FLUSH(this);
         }
@@ -92,7 +94,6 @@ bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri)
 bool AW_device_gtk::draw_string_on_screen(AW_device *device, int gc, const  char *str, size_t /* opt_str_len */, size_t /*start*/, size_t size,
                                     AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/, AW_CL /*cduser*/)
 {
-    FIXME("I do not fully understand why this has to be done in a out of class callback. Check later if this can be transformed into a member");
     AW_pos X, Y;
     device->transform(x, y, X, Y);
     aw_assert(size <= strlen(str));

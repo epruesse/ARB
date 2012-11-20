@@ -199,7 +199,12 @@ namespace AW {
     // -----------------------------------------
     //      inline Position members
 
-    inline Position& Position::operator += (const Vector& v) { x += v.x(); y += v.y(); ISVALID(*this); return *this; }
+    inline Position& Position::operator += (const Vector& v) 
+    {
+        x += v.x();
+        y += v.y();
+        aw_assert(valid());
+        return *this; }
     inline Position& Position::operator -= (const Vector& v) { x -= v.x(); y -= v.y(); ISVALID(*this); return *this; }
 
     // ------------------------------------------

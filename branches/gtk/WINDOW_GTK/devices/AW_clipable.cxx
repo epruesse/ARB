@@ -7,6 +7,7 @@
 
 #include "aw_clipable.hxx"
 #include "aw_assert.hxx"
+#include <cmath>
  
 
 inline AW_pos clip_in_range(AW_pos low, AW_pos val, AW_pos high) {
@@ -101,7 +102,7 @@ bool AW_clipable::clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out
             }
         }
     }
-
+ 
     return is_visible;
 }
 
@@ -110,6 +111,7 @@ bool AW_clipable::clip(const AW::LineVector& line, AW::LineVector& clippedLine) 
     bool   drawflag = clip(line.start().xpos(), line.start().ypos(), line.head().xpos(), line.head().ypos(),
                            x0, y0, x1, y1);
     if (drawflag) clippedLine = AW::LineVector(x0, y0, x1, y1);
+    
     return drawflag;
 }
 void AW_clipable::set_bottom_clip_border(int bottom, bool allow_oversize) {
