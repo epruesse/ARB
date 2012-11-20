@@ -281,7 +281,7 @@ static void AW_color_group_usage_changed_cb(AW_root *awr, AW_CL /* cl_ntw */) {
     use_color_groups       = awr->awar(AWAR_COLOR_GROUPS_USE)->read_int();
     //     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
     //     ntw->refresh();
-    // @@@ FIXME: a working refresh is missing
+    // @@@ TODO: a working refresh is missing
 }
 
 static void AW_color_group_name_changed_cb(AW_root *) {

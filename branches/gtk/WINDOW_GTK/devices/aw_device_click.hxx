@@ -11,7 +11,7 @@
 
 
 
-// @@@ FIXME: elements of the following classes should go private!
+// @@@ TODO: elements of the following classes should go private!
 
 class AW_clicked_element {
 public:

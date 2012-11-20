@@ -13,7 +13,7 @@
 #include "aw_awar.hxx"
 #include <arbdb.h>
 #include "aw_macro.hxx"
-#include "aw_nawar.hxx" //FIXME difference between awar and nawar?
+#include "aw_nawar.hxx" //TODO difference between awar and nawar?
 #include "aw_msg.hxx"
 #include "aw_root.hxx"
 #include "aw_window.hxx"

@@ -72,7 +72,8 @@ awKeymap gtk_key_2_awkey(const GdkEventKey& event) {
         
         //forward ctrl and alt state
         if(event.state & GDK_CONTROL_MASK) singlekey.modifier = (AW_key_mod) (singlekey.modifier &  AW_KEYMODE_CONTROL);
-        if(event.state & GDK_META_MASK) singlekey.modifier = (AW_key_mod) (singlekey.modifier &  AW_KEYMODE_ALT); //FIXME make sure meta is really alt
+        FIXME("Not sure if meta key is really the alt key");
+        if(event.state & GDK_META_MASK) singlekey.modifier = (AW_key_mod) (singlekey.modifier &  AW_KEYMODE_ALT); 
         
         singlekey.str = keysymStr;
         aw_assert(!singlekey.str.empty());

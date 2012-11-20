@@ -42,7 +42,7 @@ public:
     /**
      * Adds a new callback.
      * @param f The callback.
-     * @param aww FIXME
+     * @param aww TODO
      * @param cd1 callback parameter 1
      * @param cd2 callback parameter 2
      */

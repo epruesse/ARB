@@ -17,7 +17,7 @@
 #include <gdk/gdkpixmap.h>
 #include <gtk/gtkwidget.h>
 #include "aw_xfont.hxx"
-//FIXME remove of xfont is gone
+//TODO remove if xfont is gone
 #include <gdk/gdkx.h>
 #include <string>
 #include <algorithm>
@@ -48,8 +48,8 @@ static void AW_window_resize_cb(AW_window *, AW_CL cl_common_gtk, AW_CL) {
 //    common->set_screen_size(width, height);
 
 
-    gint width = common->get_window_id()->allocation.width;
-    gint height = common->get_window_id()->allocation.height;
+    gint width = common->get_window()->allocation.width;
+    gint height = common->get_window()->allocation.height;
     common->set_screen_size(width, height);
 
 }
@@ -85,10 +85,10 @@ void AW_GC::set_font(const AW_font font_nr, const int size, int *found_size) {
 //FIXME initialize gc
 AW_GC_gtk::AW_GC_gtk(AW_common *common) : AW_GC(common) {
 
-    //FIXME hack
+    FIXME("Use real drawable to create gc");
     //It is not possible to create a gc without a drawable.
     //The gc can only be used to draw on drawables which use the same colormap and depth
-    GdkPixmap *temp = gdk_pixmap_new(0, 3000, 3000, 24); //FIXME memory leak
+    GdkPixmap *temp = gdk_pixmap_new(0, 3000, 3000, 24); // memory leak
     gc = gdk_gc_new(temp);
 
 }
@@ -123,7 +123,7 @@ void AW_GC_gtk::wm_set_lineattributes(short lwidth, AW_linestyle lstyle){
             break;
         case AW_DASHED:
         case AW_DOTTED:
-            //FIXME gdk does not support dotted lines?? cant imagine that
+            FIXME("DOTTED lines are converted to DASHED lines");
             lineStyle = GDK_LINE_ON_OFF_DASH;
             break;
         default:
@@ -137,8 +137,6 @@ void AW_GC_gtk::wm_set_lineattributes(short lwidth, AW_linestyle lstyle){
 void AW_GC_gtk::wm_set_font(const AW_font font_nr, const int size, int *found_size) {
     // if found_size != 0 -> return value for used font size
 
-    //FIXME font stuff
-
     XFontStruct *xfs;
     {
         int  found_font_size;
@@ -147,7 +145,7 @@ void AW_GC_gtk::wm_set_font(const AW_font font_nr, const int size, int *found_si
     }
 
 
-    //FIXME Font Hack
+    FIXME("Font conversion hack");
     //extract XLFD name from XFontStruct
 
     XFontProp *xfp;
@@ -163,7 +161,8 @@ void AW_GC_gtk::wm_set_font(const AW_font font_nr, const int size, int *found_si
         }
     }
 
-    //FIXME Remove this workaround
+    FIXME("Gtk seems unable to load unicode fonts");
+    //workaround
     //for some reason gtk cannot load fonts that contain ISO10646. ISO10646 is unicode.
     //However it works fine if the "ISO10646" is replaced with a wildcard.
     //This is most likely due to the very old gtk version on this system :)
@@ -195,7 +194,6 @@ void AW_GC_gtk::wm_set_font(const AW_font font_nr, const int size, int *found_si
 }
 
 int AW_GC_gtk::get_available_fontsizes(AW_font font_nr, int *available_sizes) const {
-    //FIXME font stuff
     GTK_NOT_IMPLEMENTED;
     return 0;
 }

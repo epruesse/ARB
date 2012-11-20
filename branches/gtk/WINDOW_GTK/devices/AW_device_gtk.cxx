@@ -34,7 +34,7 @@ AW_DEVICE_TYPE AW_device_gtk::type() { return AW_DEVICE_SCREEN; }
 #define XDRAW_PARAM3(common,gc) XDRAW_PARAM2(common), (common)->get_GC(gc)
 
 
-//FIXME device flushing is not implemented right now.
+
 
 
 AW_device_gtk::AW_device_gtk(AW_common *commoni, GtkWidget *drawingArea) :
@@ -58,13 +58,14 @@ bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri)
         LineVector transLine = transform(Line);
         LineVector clippedLine;
         drawflag = true;
-        //clip(transLine, clippedLine); //FIXME clipping
+        FIXME("Clipping not implemented");
+        //clip(transLine, clippedLine); 
         if (drawflag) {
 
 
               //this is the version that should be used if clipping is active
 //            gdk_draw_line(GDK_DRAWABLE(pixmap),
-//                         //get_common()->get_GC(gc), // FIXME get real gc instead
+//                         //get_common()->get_GC(gc), 
 //                         drawingArea->style->white_gc,
 //                         int(clippedLine.start().xpos()),
 //                         int(clippedLine.start().ypos()),
@@ -75,8 +76,6 @@ bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri)
 
             gdk_draw_line(GDK_DRAWABLE(drawingArea->window),
                          get_common()->get_GC(gc),
-                    //drawingArea->style->white_gc,
-                   // pGc,
                          int(transLine.start().xpos()),
                          int(transLine.start().ypos()),
                          int(transLine.head().xpos()),
@@ -89,10 +88,11 @@ bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri)
     return true;
 }
 
-//FIXME I do not fully understand why this has to be done in a out of class callback. Check later if this can be transformed into a member
+
 bool AW_device_gtk::draw_string_on_screen(AW_device *device, int gc, const  char *str, size_t /* opt_str_len */, size_t /*start*/, size_t size,
                                     AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/, AW_CL /*cduser*/)
 {
+    FIXME("I do not fully understand why this has to be done in a out of class callback. Check later if this can be transformed into a member");
     AW_pos X, Y;
     device->transform(x, y, X, Y);
     aw_assert(size <= strlen(str));
@@ -104,7 +104,7 @@ bool AW_device_gtk::draw_string_on_screen(AW_device *device, int gc, const  char
 
     gdk_gc_get_values(gdkGc, &values);
     ASSERT_FALSE(values.font == NULL);
-    //FIXME according to the gtk documentation it should be possible to use NULL as font.
+    //TODO according to the gtk documentation it should be possible to use NULL as font.
     //      NULL means: use the gc font. However that does not work. Maybe it will in a newer gtk version.
     gdk_draw_string(GDK_DRAWABLE(device_gtk->drawingArea->window),
                     values.font,
@@ -113,7 +113,6 @@ bool AW_device_gtk::draw_string_on_screen(AW_device *device, int gc, const  char
                     AW_INT(Y),
                     str);
 
-    //FIXME what does y coordinate -1 mean?
     return true;
 }
 
@@ -254,7 +253,6 @@ void AW_device_gtk::clear_text(int gc, const char *string, AW_pos x, AW_pos y, A
 
 void AW_device_gtk::flush() {
     gdk_flush();
-//    XFlush(get_common()->get_display());
 }
 
 void AW_device_gtk::move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y) {

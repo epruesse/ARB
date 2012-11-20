@@ -24,7 +24,7 @@
 
 
 //globals
-//FIXME use static class or namespace for globals
+//TODO use static class or namespace for globals
 
 #if defined(DARWIN)
 #define OPENURL "open"
@@ -201,9 +201,9 @@ struct fallbacks {
     const char *init;
 };
 
-static struct fallbacks aw_fb[] = {
+static struct fallbacks aw_fb[] = { 
     // Name         fallback awarname    default value
-    { "FontList",   "window/font",       "8x13bold" }, //FIXME font stuff not sure if this is needed anymore
+    { "FontList",   "window/font",       "8x13bold" }, 
     { "background", "window/background", "grey" },
     { "foreground", "window/foreground", "Black", },
     { 0,            "window/color_1",    "red", },
@@ -218,6 +218,8 @@ void AW_root::init_variables(AW_default database) {
     hash_table_for_variables = GBS_create_hash(1000, GB_MIND_CASE);
     hash_for_windows         = GBS_create_hash(100, GB_MIND_CASE);
 
+    FIXME("not sure if aw_fb is still needed");
+    
     for (int i=0; aw_fb[i].awar; ++i) {
         awar_string(aw_fb[i].awar, aw_fb[i].init, application_database);
     }
@@ -244,8 +246,7 @@ void AW_root::make_sensitive(GtkWidget* w, AW_active mask) {
 
 void AW_root::init_root(const char *programname, bool no_exit) {
     // initialize ARB gtk application
-    int          a = 0;
-    //FIXME font stuff
+    //TODO font stuff
     XFontStruct *fontstruct;
     char        *fallback_resources[100];
 
@@ -256,9 +257,8 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     program_name  = strdup(programname);
 
     //simulate minimal argc and argv.
-    //FIXME gain access to the real argc and argv
 
-    char *argv[] = { program_name };
+    FIXME("Do not use fake argc and argv to run gtk_init()");
     int argc = 0;
     gtk_init(&argc, NULL);
 
@@ -266,7 +266,7 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     color_mode = AW_RGB_COLOR; //mono color mode is not supported
     create_colormap();//load the colortable from database
 
-    //FIXME font stuff
+    FIXME("The whole font system is still using X");
     int i;
     for (i=0; i<1000 && aw_fb[i].fb; i++) {
         GBDATA *gb_awar       = GB_search((GBDATA*)application_database, aw_fb[i].awar, GB_FIND);
@@ -277,7 +277,7 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     //ARB_install_handlers(aw_handlers);
 
     /**
-     * FIXME Font Hack!
+     *  Font Hack!
      * The whole font system is still using X.
      * right before drawing the fonts are converted to GdkFont and drawn.
      * This is a quick hack to be able to get the correct fonts.
@@ -285,7 +285,7 @@ void AW_root::init_root(const char *programname, bool no_exit) {
 
     Display* display = GDK_DISPLAY_XDISPLAY(gdk_display_get_default());
 
-    //FIXME font stuff
+    //TODO font stuff
     {
         GBDATA *gbd = (GBDATA*)application_database;
         const char *font = GB_read_char_pntr(GB_search(gbd, "window/font", GB_FIND));
@@ -383,15 +383,15 @@ void AW_root::create_colormap() {
 }
 
 
-void AW_root::window_hide(AW_window *aww) {
+void AW_root::window_hide(AW_window */*aww*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_root::add_timed_callback(int ms, AW_RCB2 f, AW_CL cd1, AW_CL cd2) {
+void AW_root::add_timed_callback(int /*ms*/, AW_RCB2 /*f*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_root::add_timed_callback_never_disabled(int ms, AW_RCB2 f, AW_CL cd1, AW_CL cd2) {
+void AW_root::add_timed_callback_never_disabled(int /*ms*/, AW_RCB2 /*f*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
@@ -453,12 +453,12 @@ AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value, AW_def
     return vs;
 }
 
-GB_ERROR AW_root::check_for_remote_command(AW_default gb_main, const char *rm_base) {
+GB_ERROR AW_root::check_for_remote_command(AW_default /*gb_main*/, const char */*rm_base*/) {
     GTK_NOT_IMPLEMENTED;
     return 0;
 }
 
-void AW_root::dont_save_awars_with_default_value(GBDATA *gb_main) {
+void AW_root::dont_save_awars_with_default_value(GBDATA */*gb_main*/) {
     GTK_NOT_IMPLEMENTED;
 }
 

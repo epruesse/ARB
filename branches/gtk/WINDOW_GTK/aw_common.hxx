@@ -222,8 +222,7 @@ public:
         screen.r = -1;
     }
     virtual ~AW_common() {}
-
-    //FIXME no idea why this method exists
+    //TODO no idea why this method exists
     void reset_style();
 
     const AW_screen_area& get_screen() const { return screen; }

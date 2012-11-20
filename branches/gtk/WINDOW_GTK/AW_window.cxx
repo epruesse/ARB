@@ -102,7 +102,7 @@ public:
     AW_cb_struct  *popup_cb;
     
     /**
-     FIXME
+     TODO comment
      */
     AW_cb_struct *focus_cb;
     
@@ -352,7 +352,8 @@ void AW_window::callback(void (*f)(AW_window*)){
 
 
 void AW_window::callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
-    _callback = new AW_cb_struct(this, (AW_CB)f, cd1);//FIXME is it really good to new the _callback each time?
+    FIXME("Callback newed every time, possible memory leak");
+    _callback = new AW_cb_struct(this, (AW_CB)f, cd1);
 }
 
 void AW_window::callback(AW_cb_struct * /* owner */ awcbs) {
@@ -407,7 +408,7 @@ inline void calculate_textsize(const char *str, int *width, int *height) {
     *height = textheight;
 }
 
-//FIXME right now it seems that this method can be transformed into a private member of aw_window. However I am not sure yet. Check later
+//TODO right now it seems that this method can be transformed into a private member of aw_window. However I am not sure yet. Check later
 static void calculate_label_size(AW_window *aww, int *width, int *height, bool in_pixel, const char *non_at_label) {
     // in_pixel == true -> calculate size in pixels
     // in_pixel == false -> calculate size in characters
@@ -430,13 +431,13 @@ static void calculate_label_size(AW_window *aww, int *width, int *height, bool i
 }
 
 
-//FIXME I think this method should be transformed into a private member
+//TODO I think this method should be transformed into a private member
 static char *pixmapPath(const char *pixmapName) {
     return nulldup(GB_path_in_ARBLIB("pixmaps", pixmapName));
 }
 
-//FIXME this method was originally defined in AW_button.cxx.
-//FIXME I think this method should be transformed into a private member
+//TODO this method was originally defined in AW_button.cxx.
+//TODO I think this method should be transformed into a private member
 #define MAX_LINE_LENGTH 200
 __ATTR__USERESULT static GB_ERROR detect_bitmap_size(const char *pixmapname, int *width, int *height) {
     GB_ERROR err = 0;
@@ -516,7 +517,7 @@ __ATTR__USERESULT static GB_ERROR detect_bitmap_size(const char *pixmapname, int
 #undef MAX_LINE_LENGTH
 
 
-//FIXME I think this should be a private member
+//TODO I think this should be a private member
 const char *aw_str_2_label(const char *str, AW_window *aww) {
     aw_assert(str);
 
@@ -572,8 +573,9 @@ void AW_label_in_awar_list(AW_window *aww, GtkWidget* widget, const char *str) {
             aww->update_label(widget, var_value);
         }
         else {
+            FIXME("Code only reachable if asserts are disabled");
             aw_assert(0); // awar not found
-            aww->update_label(widget, str); //FIXME unreachable code (only if asserts are disabled)
+            aww->update_label(widget, str); 
         }
         free(var_value);
         is_awar->tie_widget(0, widget, AW_WIDGET_LABEL_FIELD, aww);
@@ -619,14 +621,17 @@ int AW_window::calculate_string_height(int rows, int offset) const {
     }
 }
 
-//FIXME why is this called server_callback??
+
 void AW_server_callback(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
     GTK_PARTLY_IMPLEMENTED;
 
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
 
+    FIXME("AW_server_callback help not implemented");
+    
+    
 //    AW_root *root = cbs->aw->get_root();
-    //FIXME AW_server_callback help not implemented
+    // 
 //    if (p_global->help_active) {
 //        p_global->help_active = 0;
 //        p_global->normal_cursor();
@@ -642,25 +647,25 @@ void AW_server_callback(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
 //        }
 //        return;
 //    }
-    //FIXME AW_server_callback recording not implemented
+   FIXME("AW_server_callback recording not implemented");
    // if (root->prvt->recording) root->prvt->recording->record_action(cbs->id);
 
     if (cbs->f == AW_POPUP) {
         cbs->run_callback();
     }
     else {
-        //FIXME AW_server_callback wait cursor not implemented
+        FIXME("AW_server_callback wait cursor not implemented");
 //        p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
 //                XtWindow(p_aww(cbs->aw)->shell),
 //                p_global->clock_cursor);
         cbs->run_callback();
-        //FIXME AW_server_callback destruction of old events not implemented
+        FIXME("AW_server_callback destruction of old events not implemented");
 //        XEvent event; // destroy all old events !!!
 //        while (XCheckMaskEvent(XtDisplay(p_global->toplevel_widget),
 //        ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|
 //        KeyPressMask|KeyReleaseMask|PointerMotionMask, &event)) {
 //        }
-        //FIXME AW_server_callback help not implemented
+        FIXME("AW_server_callback help not implemented");
 //        if (p_global->help_active) {
 //            p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
 //                    XtWindow(p_aww(cbs->aw)->shell),
@@ -682,8 +687,8 @@ void AW_window::_set_activate_callback(GtkWidget *widget) {
             _at.helptext_for_next_button = 0;
         }
         
-        //FIXME this assumes that widget is a button
-        //FIXME investigate why this code works but the commented one does not
+        FIXME("this assumes that widget is a button");
+        FIXME("investigate why this code works but the commented one does not");
         g_signal_connect((gpointer)widget, "clicked", G_CALLBACK(AW_server_callback), (gpointer)_callback);
         //g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(AW_server_callback), G_OBJECT(_callback));
     }
@@ -846,7 +851,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     }
 
     //GtkWidget* parent_widget = (_at.attach_any) ? prvt->areas[AW_INFO_AREA]->get_form() : prvt->areas[AW_INFO_AREA]->get_area();
-    //FIXME quick hack
+
     GtkWidget* parent_widget = GTK_WIDGET(prvt->fixed_size_area);
 
     GtkWidget* tmp_label = 0;
@@ -856,9 +861,9 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
         _at.y_for_next_button = y_label;
 
         tmp_label = gtk_label_new(NULL); //NULL means: create label without text
-        gtk_fixed_put(GTK_FIXED(parent_widget), tmp_label, x_label, y_label); //FIXME evil hack depends on areas beeing GtkFixed
+        gtk_fixed_put(GTK_FIXED(parent_widget), tmp_label, x_label, y_label); 
 
-        //FIXME width_of_label is no longer used and can be deleted (just not yet, am not sure if i will need it in the future?)
+        FIXME("width_of_label is no longer used and can be deleted (just not yet, am not sure if i will need it in the future?");
 
 
         if(_at.label_for_inputfield[0]=='#') {
@@ -903,7 +908,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
                                 _at.highlight = false;
                 }
                 else {
-                   //FIXME highlight button here
+                    FIXME("Highlight button not implemented");
                 }
             }
 
@@ -918,10 +923,10 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
                 gtk_button_set_label(GTK_BUTTON(buttonOrLabel), aw_str_2_label(buttonlabel, this));
             }
 
-
-            //FIXME gtkbutton does not have shadow thickness. Maybe gtk_button_set_relief
+            FIXME("Button shadow thickness not implemented");
+            //gtkbutton does not have shadow thickness. Maybe gtk_button_set_relief
             //args.add(XmNshadowThickness, _at.shadow_thickness);
-            //FIXME label alignment inside gtk button not implemented
+            FIXME("label alignment inside gtk button not implemented");
             //args.add(XmNalignment,       XmALIGNMENT_CENTER);
 
         }
@@ -943,13 +948,13 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
 //            args.add(XmNalignment, (org_correct_for_at_center == 1) ? XmALIGNMENT_CENTER : XmALIGNMENT_BEGINNING);
         }
 
-        //FIXME font stuff
+        FIXME("Button is not using fontlist");
         //args.add(XmNfontList,   (XtArgVal)p_global->fontlist);
 
-        //FIXME background color for buttons is missing
+        FIXME("Background color for buttons is missing");
         //args.add(XmNbackground, _at.background_color);
 
-        //FIXME let motif choose size not implemented
+        //TODO this is probably useless
 //        if (!let_motif_choose_size) {
 //            args.add(XmNwidth,  width_of_button);
 //            args.add(XmNheight, height_of_button);
@@ -970,7 +975,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
         }
         else {
             aw_assert(_at.correct_for_at_center == 0);
-            //FIXME button justify label?
+            FIXME("button justify label, what is this?");
            // AW_JUSTIFY_LABEL(button, _at.correct_for_at_center); // @@@ strange, again sets XmNalignment (already done above). maybe some relict. does nothing if (_at.correct_for_at_center == 0)
         }
 
@@ -1000,7 +1005,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
             height = requisition.height;
             width = requisition.width;
 
-            //FIXME let motif choose size not implemented
+            FIXME("let motif choose size not implemented");
 //            if (let_motif_choose_size) {
 //                if (_at.correct_for_at_center) {
 //                    toRecenter   = ButOrHigh;
@@ -1009,7 +1014,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
 //                width = 0;          // ignore the used size (because it may use more than the window size)
 //            }
         }
-        //FIXME shiftback not implemented
+        FIXME("button shiftback not implemented");
 //        if (toRecenter) {
 //            int shiftback = 0;
 //            switch (_at.correct_for_at_center) {
@@ -1024,7 +1029,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
 
     _at.correct_for_at_center = org_correct_for_at_center; // restore original justification
     _at.y_for_next_button     = org_y_for_next_button;
-    //FIXME prvt->toggle_field not set to button. What is its purpose anyway?
+    FIXME("prvt->toggle_field not set. What is it's purpose anyway?");
    // p_w->toggle_field = button;
 
     this->unset_at_commands();
@@ -1354,7 +1359,8 @@ void AW_window::create_menu(AW_label name, const char *mnemonic, AW_active mask 
         aw_assert(legal_mask(mask));
         
         GTK_PARTLY_IMPLEMENTED;
-        //FIXME debug code for duplicate mnemonics missing
+        FIXME("debug code for duplicate mnemonics missing");
+
 
 //    #ifdef DEBUG
 //        init_duplicate_mnemonic();
@@ -1376,8 +1382,8 @@ int AW_window::create_mode(const char *pixmap, const char */*help_text_*/, AW_ac
     aw_assert(legal_mask(mask));
     aw_assert(NULL != prvt->mode_menu);
     
-    //FIXME help text not implemented
-    GTK_PARTLY_IMPLEMENTED;
+
+    FIXME("help text not implemented");
     
 
     const char *path = GB_path_in_ARBLIB("pixmaps", pixmap);
@@ -1387,7 +1393,7 @@ int AW_window::create_mode(const char *pixmap, const char */*help_text_*/, AW_ac
     gtk_toolbar_insert(prvt->mode_menu, item, -1); //-1 = append
     
     
-    //FIXME callback not implemented
+    FIXME("callback not implemented");
     
 //    AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, 0);
 //    AW_cb_struct *cb2 = new AW_cb_struct(this, (AW_CB)aw_mode_callback, (AW_CL)p_w->number_of_modes, (AW_CL)cbs, helpText, cbs);
@@ -1564,10 +1570,9 @@ void AW_window::insert_default_toggle(AW_label /*toggle_label*/, const char */*m
 void AW_window::insert_help_topic(AW_label name, const char */*mnemonic*/, const char */*help_text_*/, AW_active /*mask*/, void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/){
     aw_assert(NULL != prvt->help_menu);
     
-    GTK_PARTLY_IMPLEMENTED;
-    //FIXME mnemonic not working
-    //FIXME help entry callback not working.
-    //FIXME help text not working.
+    FIXME("mnemonic not working");
+    FIXME("help entry callback not working");
+    FIXME("Help text not working");
     GtkWidget *item = gtk_menu_item_new_with_label(name);
     gtk_menu_shell_append(prvt->help_menu, item);
     
@@ -1578,7 +1583,7 @@ void AW_window::insert_help_topic(AW_label name, const char */*mnemonic*/, const
 void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active mask, AW_CB f, AW_CL cd1, AW_CL cd2){
    aw_assert(legal_mask(mask));
   
-   GTK_PARTLY_IMPLEMENTED;
+   FIXME("duplicate mnemonic test not implemented");
 
    std::string topicName = AW_motif_gtk_conversion::convert_mnemonic(name, mnemonic);
    
@@ -1589,8 +1594,7 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const cha
    gtk_menu_shell_append(prvt->menus.top(), item);  
    
    
-   
-   //FIXME duplicate mnemonic test not implemented
+
 #if defined(DUMP_MENU_LIST)
  //   dumpMenuEntry(name);
 #endif // DUMP_MENU_LIST
@@ -1647,7 +1651,7 @@ void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active m
     prvt->menus.push(GTK_MENU_SHELL(submenu));
     
     
-    //FIXME duplicate mnemonic test not implemented
+    FIXME("duplicate mnemonic test not implemented");
     #if defined(DUMP_MENU_LIST)
         dumpOpenSubMenu(name);
     #endif // DUMP_MENU_LIST
@@ -1823,7 +1827,8 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
 
 
     set_expose_callback(AW_INFO_AREA, (AW_CB)AW_xfigCB_info_area, (AW_CL)xfig_data, 0);
-    xfig->create_gcs(get_device(AW_INFO_AREA), get_root()->color_mode ? 8 : 1); //FIXME remove color mode.
+    //TODO remove color mode
+    xfig->create_gcs(get_device(AW_INFO_AREA), get_root()->color_mode ? 8 : 1); 
 
     int xsize = xfig->maxx - xfig->minx;
     int ysize = xfig->maxy - xfig->miny;
@@ -1837,7 +1842,7 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
         recalc_size_atShow(AW_RESIZE_ANY);
         set_window_size(_at.max_x_size, _at.max_y_size);
 
-        //FIXME this call should not be necessary. The sceen size should have been set by the resize_callback...
+        FIXME("this call should not be necessary. The screen size should have been set by the resize_callback...");
         device->get_common()->set_screen_size(_at.max_x_size, _at.max_y_size);
 
     }
@@ -1885,7 +1890,7 @@ static void AW_focusCB(GtkWidget* /*wgt*/, gpointer cl_aww) {
 
 void AW_window::run_focus_callback() {
 
-    //FIXME i have never actually seen this. But set_focus_callback is called several times.
+    FIXME("i have never actually seen this. But set_focus_callback is called several times.");
     if (prvt->focus_cb) prvt->focus_cb->run_callback();
 }
 
@@ -2038,8 +2043,8 @@ bool AW_window::is_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW
 void AW_window::update_label(GtkWidget* widget, const char *var_value) {
     
     if (get_root()->changer_of_variable != widget) {
-        //FIXME this will break if the labels content should switch from text to image or vice versa
-        //FIXME only works for labels and buttons right now
+        FIXME("this will break if the labels content should switch from text to image or vice versa");
+        FIXME("only works for labels and buttons right now");
         
         if(GTK_IS_BUTTON(widget)) {
             gtk_button_set_label(GTK_BUTTON(widget), var_value);   
@@ -2103,12 +2108,12 @@ AW_window::AW_window() {
 }
 
 AW_window::~AW_window() {
-    //FIXME delete prvt
+    FIXME("delete prvt");
 }
 
 
 //aw_window_menu
-//FIXME move to own file
+//TODO move to own file
 AW_window_menu::AW_window_menu(){
     GTK_NOT_IMPLEMENTED;
 }
@@ -2144,11 +2149,11 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     root = root_in; // for macro
     window_name = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
-
+    
     prvt->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
     gtk_window_set_title(prvt->window, window_name);
     gtk_window_set_default_size(prvt->window, width, height);
-    vbox = gtk_vbox_new(false, 1);//FIXME remove constant
+    vbox = gtk_vbox_new(false, 1); FIXME("pixel constants in gui init code");
     gtk_container_add(GTK_CONTAINER(prvt->window), vbox);
 
     GTK_PARTLY_IMPLEMENTED;
@@ -2158,10 +2163,10 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
 
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(prvt->menu_bar), false,
                        false, //has no effect if the third parameter is false
-                       2); //FIXME constant value
+                       2); FIXME("pixel constants in gui init code");
 
     //create help menu
-    //FIXME help button is not on the right most button.
+    FIXME("HELP button is not the rightmost button");
     GtkMenuItem *help_item = GTK_MENU_ITEM(gtk_menu_item_new_with_mnemonic(help_button));
     prvt->help_menu = GTK_MENU_SHELL(gtk_menu_new());
     gtk_menu_item_set_submenu(help_item, GTK_WIDGET(prvt->help_menu));
@@ -2170,7 +2175,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     gtk_menu_shell_append(GTK_MENU_SHELL(prvt->menu_bar), GTK_WIDGET(help_item));
     
     
-    hbox = gtk_hbox_new(false, 1); //FIXME constant
+    hbox = gtk_hbox_new(false, 1);FIXME("pixel constants in gui init code");
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), true, true, 0);
     
     prvt->mode_menu = GTK_TOOLBAR(gtk_toolbar_new());
@@ -2187,12 +2192,13 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     
     //The buttons are above the drawing are
     prvt->fixed_size_area = GTK_FIXED(gtk_fixed_new());
-    prvt->areas[AW_INFO_AREA] = new AW_area_management(root, GTK_WIDGET(prvt->fixed_size_area), GTK_WIDGET(prvt->fixed_size_area)); //FIXME form should be a frame around the area
+    FIXME("form should be a frame around area?!");
+    prvt->areas[AW_INFO_AREA] = new AW_area_management(root, GTK_WIDGET(prvt->fixed_size_area), GTK_WIDGET(prvt->fixed_size_area)); 
     gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(prvt->fixed_size_area), false, false, 0);
     
     
     GtkWidget* drawing_area = gtk_drawing_area_new();
-    gtk_drawing_area_size(GTK_DRAWING_AREA(drawing_area), 3000, 3000); //FIXME hardcoded size.
+    gtk_drawing_area_size(GTK_DRAWING_AREA(drawing_area), 3000, 3000); FIXME("pixel constants in gui init code");
     GtkWidget *scrollArea = gtk_scrolled_window_new(NULL, NULL); //NULL causes the scrolledWindow to create its own scroll adjustments
     gtk_box_pack_start(GTK_BOX(vbox2), scrollArea, true, true, 0);   
     gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrollArea), drawing_area);
@@ -2203,28 +2209,8 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
 
     prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(root, drawing_area, drawing_area); //FIXME form should be a frame around the area.
     
-//    
-//    GtkWidget* drawing_area_bottom = gtk_drawing_area_new();
-//    gtk_container_add(GTK_CONTAINER(hbox), drawing_area_bottom);
-//    gtk_widget_realize(GTK_WIDGET(drawing_area_bottom));
-//  
-//    prvt->areas[AW_BOTTOM_AREA] = new AW_area_management(root, drawing_area_bottom, drawing_area_bottom); //FIXME form should be a frame around the area.
-//    
-//    GtkWidget* drawing_area_info = gtk_drawing_area_new();
-    //gtk_container_add(GTK_CONTAINER(hbox), drawing_area_info);
-//    gtk_widget_realize(GTK_WIDGET(drawing_area_info));
-  
- //   prvt->areas[AW_INFO_AREA] = new AW_area_management(root, drawing_area_info, drawing_area_info); //FIXME form should be a frame around the area.
 
-
-    
-    
-//
-//    XmMainWindowSetAreas(main_window, p_w->menu_bar[0], (Widget) NULL, (Widget) NULL, (Widget) NULL, form1);
-
-//    aw_realize_widget(this);
-
-    gtk_widget_realize(GTK_WIDGET(prvt->window));
+    gtk_widget_realize(GTK_WIDGET(prvt->window)); //realizes everything
     create_devices();
     aw_create_help_entry(this);
     create_window_variables();
@@ -2253,7 +2239,7 @@ AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
         AW_area_management* pMiddleArea = prvt->areas[AW_MIDDLE_AREA];
         if(pMiddleArea) {
             gtk_widget_modify_bg(pMiddleArea->get_area(),GTK_STATE_NORMAL, &root->getColor(color_table[colnum]));
-            //FIXME no idea if this works :D
+            FIXME("no idea if this works");
         }
     }
     return (AW_color_idx)colnum;
@@ -2433,7 +2419,7 @@ void AW_at_maxsize::restore(AW_at& /*at*/) const {
 }
 
 
-//FIXME comment
+//TODO comment
 AW_cb_struct_guard AW_cb_struct::guard_before = NULL;
 AW_cb_struct_guard AW_cb_struct::guard_after  = NULL;
 AW_postcb_cb       AW_cb_struct::postcb       = NULL;

@@ -19,3 +19,6 @@
 #define GTK_NOT_IMPLEMENTED printf("NOT IMPLEMENTED %s\n",  __PRETTY_FUNCTION__)
 //#define GTK_PARTLY_IMPLEMENTED printf("PARTLY IMPLEMENTED %s\n",  __PRETTY_FUNCTION__)
 #define GTK_PARTLY_IMPLEMENTED
+
+#define FIXME(str)  printf("FIXME: [%s] in %s\n", str, __PRETTY_FUNCTION__)
+

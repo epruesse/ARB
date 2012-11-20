@@ -24,8 +24,6 @@ class AW_common_gtk;
  */
 class AW_GC_gtk : public AW_GC { // derived from Noncopyable
     GdkGC*      gc;
-    //FIXME font stuff
-    //XFontStruct curfont;
 
     virtual void wm_set_foreground_color(AW_rgb col);
     virtual void wm_set_function(AW_function mode);
@@ -43,8 +41,6 @@ public:
     inline AW_common_gtk *get_common() const;
 
     GdkGC* get_gc() const { return gc; }
-    //FIXME font stuff
-    //const XFontStruct *get_xfont() const { return &curfont; }
 };
 
 
@@ -70,11 +66,10 @@ public:
     AW_GC_gtk *map_mod_gc(int gc) { return DOWNCAST(AW_GC_gtk*, AW_common::map_mod_gc(gc)); }
 
     GdkDisplay *get_display() const { return display; }
-    GtkWidget *get_window_id() const { return window; } //FIXME rename to get_window
+    GtkWidget *get_window() const { return window; }
 
     GdkGC *get_GC(int gc) const { return map_gc(gc)->get_gc(); }
-    //FIXME font stuff
-    //const XFontStruct *get_xfont(int gc) const { return map_gc(gc)->get_xfont(); }
+
 };
 
 inline AW_common_gtk *AW_GC_gtk::get_common() const {

@@ -23,6 +23,7 @@
 #include <cmath>
 #endif
 
+#include "aw_gtk_migration_helpers.hxx"
 #include "aw_assert.hxx"
 // ------------------------
 //      validity checks
@@ -78,9 +79,10 @@ namespace AW {
 
     public:
 
-        //FIXME only works correctly if the doubles are really ints.
+        
         //Otherwise comparing floats with == is unsafe!
         bool valid() const {
+            FIXME("comparing doubles with ==");
             return (x == x) && (y == y);
         } // fails if one is NAN
 

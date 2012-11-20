@@ -231,7 +231,7 @@ void AW_selection_list::refresh() {
 
 
 //AW_DB_selection
-//FIXME move to own file
+//TODO move to own file
 AW_DB_selection::AW_DB_selection(AW_selection_list *sellist_, GBDATA *gbd_)
     : AW_selection(sellist_)
     , gbd(gbd_)
