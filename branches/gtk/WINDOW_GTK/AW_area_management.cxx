@@ -15,11 +15,11 @@
 #include "gdk/gdkscreen.h"
 #include "gtk/gtkwidget.h"
 #include "aw_common_gtk.hxx"
-#include "aw_device_gtk.hxx"
+#include "devices/aw_device_gtk.hxx"
 #include "aw_root.hxx"
 #include "aw_xkey.hxx"
-#include "aw_device_size.hxx"
-#include "aw_device_click.hxx"
+#include "devices/aw_device_size.hxx"
+#include "devices/aw_device_click.hxx"
 
 class AW_area_management::Pimpl {
 public:

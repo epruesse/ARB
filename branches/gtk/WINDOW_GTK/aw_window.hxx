@@ -6,7 +6,7 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
-#ifndef ARB_ASSERT_H
+#ifndef ARB_ASSERT_H 
 #include <arb_assert.h>
 #endif
 #ifndef AW_KEYSYM_HXX
@@ -20,12 +20,15 @@
 #include "AW_gtk_forward_declarations.hxx"
 #include "AW_area_management.hxx"
 
+//the following types are not forward declared because ARB needs to know about them
+//and I dont want to change includes in ARB
+#include "devices/aw_device_print.hxx" 
+#include "devices/aw_device_click.hxx"
+#include "devices/aw_device_size.hxx"
+
 class AW_window;
 class AW_xfig;
 class AW_device;
-class AW_device_click;
-class AW_device_print;
-class AW_device_size;
 class AW_screen_area;
 struct GB_HASH;
 

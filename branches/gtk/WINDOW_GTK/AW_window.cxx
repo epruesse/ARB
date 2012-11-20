@@ -14,8 +14,8 @@
 #include "AW_area_management.hxx"
 #include "aw_xfig.hxx" 
 #include "aw_root.hxx"
-#include "aw_device_click.hxx"  
-#include "aw_device_size.hxx"
+#include "devices/aw_device_click.hxx"  
+#include "devices/aw_device_size.hxx"
 #include "aw_at.hxx"
 #include "aw_msg.hxx"
 #include "aw_awar.hxx"
@@ -1498,7 +1498,7 @@ AW_device *AW_window::get_device(AW_area area){
     arb_assert(NULL != aram);
     return (AW_device *)aram->get_screen_device();
 }
-
+  
 void AW_window::get_event(AW_event *eventi) const {
     *eventi = event;
 }

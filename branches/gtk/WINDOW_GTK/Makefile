@@ -1,6 +1,22 @@
 .SUFFIXES: .o .c .cxx .depend
 
-OBJECTS = $(subst .cxx,.o,$(wildcard *.cxx))
+#Add additional subdirectories to this list.
+SUBDIRS = devices
+
+
+
+
+#############################################################
+###END OF CONFIG AREA. DO NOT CHANGE ANYTHING BELOW THIS LINE
+#############################################################
+
+vpath %.cxx $(SUBDIRS)
+
+#Add objects from main directory
+OBJECTS = $(subst .cxx,.o,$(wildcard *.cxx)) 
+
+#Add objects from subdirs
+OBJECTS += $(foreach dir,$(SUBDIRS),$(notdir $(subst .cxx,.o,$(wildcard $(dir)/*.cxx)))) 
 
 LIB_SHARED=../lib/$(MAIN:.a=).$(SHARED_LIB_SUFFIX)
 
@@ -37,29 +53,3 @@ depend.init:
 	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-
-# Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
-
-aw_awar.o: aw_awar.hxx
-aw_awar.o: aw_base.hxx
-aw_awar.o: $(ARBHOME)/INCLUDE/arb_assert.h
-aw_awar.o: $(ARBHOME)/INCLUDE/arb_core.h
-aw_awar.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-aw_awar.o: $(ARBHOME)/INCLUDE/arbtools.h
-aw_awar.o: $(ARBHOME)/INCLUDE/attributes.h
-aw_awar.o: $(ARBHOME)/INCLUDE/cb.h
-aw_awar.o: $(ARBHOME)/INCLUDE/dupstr.h
-aw_awar.o: $(ARBHOME)/INCLUDE/test_global.h
-
-aw_root.o: aw_base.hxx
-aw_root.o: aw_root.hxx
-aw_root.o: $(ARBHOME)/INCLUDE/arb_assert.h
-aw_root.o: $(ARBHOME)/INCLUDE/arb_core.h
-aw_root.o: $(ARBHOME)/INCLUDE/arb_error.h
-aw_root.o: $(ARBHOME)/INCLUDE/arbtools.h
-aw_root.o: $(ARBHOME)/INCLUDE/attributes.h
-aw_root.o: $(ARBHOME)/INCLUDE/cb.h
-aw_root.o: $(ARBHOME)/INCLUDE/dupstr.h
-aw_root.o: $(ARBHOME)/INCLUDE/smartptr.h
-aw_root.o: $(ARBHOME)/INCLUDE/test_global.h
