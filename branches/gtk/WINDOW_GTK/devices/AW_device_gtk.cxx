@@ -74,15 +74,6 @@ bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri)
                          int(clippedLine.head().xpos()),
                          int(clippedLine.head().ypos()));
 
-            
-//
-//            gdk_draw_line(GDK_DRAWABLE(drawingArea->window),
-//                         get_common()->get_GC(gc),
-//                         int(transLine.start().xpos()),
-//                         int(transLine.start().ypos()),
-//                         int(transLine.head().xpos()),
-//                         int(transLine.head().ypos()));
-
             AUTO_FLUSH(this);
         }
     }
@@ -140,12 +131,6 @@ bool AW_device_gtk::box_impl(int gc, bool filled, const Rectangle& rect, AW_bits
                                    clippedRect.width() + 1,
                                    clippedRect.height() +1); // see aw_device.hxx@WORLD_vs_PIXEL
                 AUTO_FLUSH(this);
-//                XFillRectangle(XDRAW_PARAM3(get_common(), gc),
-//                               AW_INT(clippedRect.left()),
-//                               AW_INT(clippedRect.top()),
-//                               AW_INT(clippedRect.width())+1, 
-//                               AW_INT(clippedRect.height())+1);
-               
             }
         }
         else {
@@ -200,21 +185,21 @@ void AW_device_gtk::clear(AW_bitset filteri) {
 }
 
 void AW_device_gtk::clear_part(const Rectangle& rect, AW_bitset filteri) {
-//    if (filteri & filter) {
-//        Rectangle transRect = transform(rect);
-//        Rectangle clippedRect;
-//        bool drawflag = box_clip(transRect, clippedRect);
-//        if (drawflag) {
-//            XClearArea(XDRAW_PARAM2(get_common()),
-//                       AW_INT(clippedRect.left()),
-//                       AW_INT(clippedRect.top()),
-//                       AW_INT(clippedRect.width())+1, // see aw_device.hxx@WORLD_vs_PIXEL
-//                       AW_INT(clippedRect.height())+1,
-//                       False);
-//            AUTO_FLUSH(this);
-//        }
-//    }
-    GTK_NOT_IMPLEMENTED;
+    if (filteri & filter) {
+        Rectangle transRect = transform(rect);
+        Rectangle clippedRect;
+        bool drawflag = box_clip(transRect, clippedRect);
+        if (drawflag) {
+            
+            gdk_window_clear_area(drawingArea->window,
+                                  AW_INT(clippedRect.left()),
+                                  AW_INT(clippedRect.top()),
+                                  AW_INT(clippedRect.width())+1, // see aw_device.hxx@WORLD_vs_PIXEL
+                                  AW_INT(clippedRect.height())+1);
+            //TODO the old motif code did not generate expose events on clear area
+            AUTO_FLUSH(this);
+        }
+    }
 }
 
 
