@@ -120,21 +120,41 @@ public:
         return of_range(prefix_idx, prefix_idx);
     }
 
-    int find_index_near_leftsum(double wanted_leftsum) const {
+    int find_index_near_leftsum(double wanted) const {
         // returned index is in range [0 ... prefixes]
 
-        int    best_idx  = -1;
-        double best_diff = 2.0;
+        int best_idx;
+        if (prefixes == 0) best_idx = 0;
+        else {
+            int low  = 0;
+            int high = prefixes;
 
-        for (int i = 0; i <= prefixes; ++i) {
-            double diff = fabs(left_of(i)-wanted_leftsum);
-            if (diff<best_diff) {
-                best_diff = diff;
-                best_idx  = i;
+            double lol = left_of(low);
+            if (lol >= wanted) best_idx = low;
+            else {
+                double loh = left_of(high);
+                if (loh<wanted) best_idx = high;
+                else  {
+                    while ((low+1)<high) {
+                        pt_assert(lol<wanted && wanted<=loh);
+
+                        int mid = (low+high)/2;
+                        pt_assert(mid != low && mid != high);
+
+                        double left_of_mid = left_of(mid);
+                        if (left_of_mid<wanted) {
+                            low = mid;
+                            lol = left_of_mid;
+                        }
+                        else {
+                            high = mid;
+                            loh  = left_of_mid;
+                        }
+                    }
+                    best_idx = fabs(lol-wanted) < fabs(loh-wanted) ? low : high;
+                }
             }
         }
-
-        pt_assert(best_idx >= 0);
         return best_idx;
     }
 };
