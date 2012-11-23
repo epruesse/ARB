@@ -323,7 +323,7 @@ void TEST_nuc_groups() {
                 }
             }
             else {
-                TEST_EXPECT(!group.count);
+                TEST_REJECT(group.count);
             }
         }
     }

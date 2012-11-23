@@ -3369,7 +3369,7 @@ void TEST_BASIC_UnalignedBases() {
 
     // test add+remove
     ub.memorize(ExplicitRange(5, 7));
-    TEST_EXPECT(!ub.is_empty());
+    TEST_REJECT(ub.is_empty());
     TEST_EXPECT_EQUAL(asstr(ub), " 5/7");
     
     TEST_EXPECT(ub.recall() == ExplicitRange(5, 7));

@@ -1185,7 +1185,7 @@ void TEST_char_table() {
     ED4_char_table::initial_setup(gapChars, GB_AT_RNA);
     ED4_init_is_align_character(gapChars);
 
-    TEST_EXPECT(!BK);
+    TEST_REJECT(BK);
     BK = new ConsensusBuildParams();
 
     // BK->lower = 70; BK->upper = 95; BK->gapbound = 60; // defaults from awars

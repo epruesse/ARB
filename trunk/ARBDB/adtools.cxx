@@ -963,7 +963,7 @@ void TEST_scan_db() {
 
     TEST_EXPECT_SCANNED_EQUALS("species", "/AL,/ARB_color,/acc,/ali_16s/data,/bits_test,/float_test,/full_name,/name,/seqcheck,/tax");
 
-    TEST_EXPECT(!GB_have_error());
+    TEST_REJECT(GB_have_error());
     
     GB_close(gb_main);
 }
