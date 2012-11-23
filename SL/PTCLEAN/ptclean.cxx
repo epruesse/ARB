@@ -145,7 +145,7 @@ void TEST_SLOW_ptclean() {
     GBDATA     *gb_main = GB_open("TEST_pt_src.arb", "rw");
     const char *saveas  = "TEST_pt_cleaned.arb";
 
-    TEST_EXPECT_NOTNULL(gb_main);
+    TEST_REJECT_NULL(gb_main);
     TEST_EXPECT_NO_ERROR(prepare_ptserver_database(gb_main, PTSERVER));
     TEST_EXPECT_NO_ERROR(GB_save_as(gb_main, saveas, "a"));
     GB_close(gb_main);

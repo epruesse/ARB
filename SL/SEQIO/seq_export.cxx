@@ -746,7 +746,7 @@ void TEST_sequence_export() {
 
         GBT_mark_all(gb_main, 0);
         GBDATA *gb_species = GBT_find_species(gb_main, "MetMazei");
-        TEST_EXPECT_NOTNULL(gb_species);
+        TEST_REJECT_NULL(gb_species);
 
         GB_write_flag(gb_species, 1); // mark
         free(ali);
@@ -764,7 +764,7 @@ void TEST_sequence_export() {
                 }
 
                 const char *name = strrchr(eft[e], '/');
-                TEST_EXPECT_NOTNULL(name);
+                TEST_REJECT_NULL(name);
                 name++;
 
                 char *expected = GBS_global_string_copy("impexp/%s.exported", name);

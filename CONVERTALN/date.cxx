@@ -369,7 +369,7 @@ void TEST_BASIC_conv_date() {
     TEST_EXPECT_GCG_DATE("Wed Sep 5 19:46:25 2010",  "September 5, 2010  19:46:25");
     TEST_EXPECT_GCG_DATE("Wed Sep 05 19:46:25 2010", "September 5, 2010  19:46:25");
 
-    TEST_EXPECT_NOTNULL(gcg_date(today_date())); // currently gcg_date is only used like this
+    TEST_REJECT_NULL(gcg_date(today_date())); // currently gcg_date is only used like this
 }
 
 #endif // UNIT_TESTS

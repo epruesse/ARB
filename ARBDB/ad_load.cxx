@@ -1762,7 +1762,7 @@ void TEST_io_number() {
 
     {
         FILE *out = fopen(numbers, "wb");
-        TEST_EXPECT_NOTNULL(out);
+        TEST_REJECT_NULL(out);
 
         long lastPos = 0;
         for (size_t i = 0; i<ARRAY_ELEMS(DATA); ++i) {
@@ -1784,7 +1784,7 @@ void TEST_io_number() {
 
     {
         FILE *in = fopen(numbers, "rb");
-        TEST_EXPECT_NOTNULL(in);
+        TEST_REJECT_NULL(in);
 
         long lastPos = 0;
 

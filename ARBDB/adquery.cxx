@@ -1219,7 +1219,7 @@ void TEST_DB_search() {
 
         {
             GBDATA *gb_any_child = GB_child(db.gb_cont1);
-            TEST_EXPECT_NOTNULL(gb_any_child);
+            TEST_REJECT_NULL(gb_any_child);
             TEST_EXPECT_EQUAL(gb_any_child, GB_entry(db.gb_cont1, "entry"));
             TEST_EXPECT_EQUAL(gb_any_child, GB_search(db.gb_main, "container1/entry", GB_FIND));
 
@@ -1249,10 +1249,10 @@ void TEST_DB_search() {
         }
 
         {
-            GBDATA *gb_child1 = GB_child(db.gb_cont2);   TEST_EXPECT_NOTNULL(gb_child1);
-            GBDATA *gb_child2 = GB_nextChild(gb_child1); TEST_EXPECT_NOTNULL(gb_child2);
-            GBDATA *gb_child3 = GB_nextChild(gb_child2); TEST_EXPECT_NOTNULL(gb_child3);
-            GBDATA *gb_child4 = GB_nextChild(gb_child3); TEST_EXPECT_NOTNULL(gb_child4);
+            GBDATA *gb_child1 = GB_child(db.gb_cont2);   TEST_REJECT_NULL(gb_child1);
+            GBDATA *gb_child2 = GB_nextChild(gb_child1); TEST_REJECT_NULL(gb_child2);
+            GBDATA *gb_child3 = GB_nextChild(gb_child2); TEST_REJECT_NULL(gb_child3);
+            GBDATA *gb_child4 = GB_nextChild(gb_child3); TEST_REJECT_NULL(gb_child4);
 
             TEST_EXPECT_EQUAL(GB_read_key_pntr(gb_child1), "item");
             TEST_EXPECT_EQUAL(GB_read_key_pntr(gb_child2), "other");
@@ -1276,19 +1276,19 @@ void TEST_DB_search() {
         //      single entries
 
         {
-            GBDATA *gb_str      = GB_searchOrCreate_string(db.gb_cont_misc, "str", "bla");   TEST_EXPECT_NOTNULL(gb_str);
+            GBDATA *gb_str      = GB_searchOrCreate_string(db.gb_cont_misc, "str", "bla");   TEST_REJECT_NULL(gb_str);
             GBDATA *gb_str_same = GB_searchOrCreate_string(db.gb_cont_misc, "str", "blub");
 
             TEST_EXPECT_EQUAL(gb_str, gb_str_same);
             TEST_EXPECT_EQUAL(GB_read_char_pntr(gb_str), "bla");
 
-            GBDATA *gb_int      = GB_searchOrCreate_int(db.gb_cont_misc, "int", 4711);   TEST_EXPECT_NOTNULL(gb_int);
+            GBDATA *gb_int      = GB_searchOrCreate_int(db.gb_cont_misc, "int", 4711);   TEST_REJECT_NULL(gb_int);
             GBDATA *gb_int_same = GB_searchOrCreate_int(db.gb_cont_misc, "int", 2012);
 
             TEST_EXPECT_EQUAL(gb_int, gb_int_same);
             TEST_EXPECT_EQUAL(GB_read_int(gb_int), 4711);
 
-            GBDATA *gb_float      = GB_searchOrCreate_float(db.gb_cont_misc, "float", 0.815);   TEST_EXPECT_NOTNULL(gb_float);
+            GBDATA *gb_float      = GB_searchOrCreate_float(db.gb_cont_misc, "float", 0.815);   TEST_REJECT_NULL(gb_float);
             GBDATA *gb_float_same = GB_searchOrCreate_float(db.gb_cont_misc, "float", 3.1415);
 
             TEST_EXPECT_EQUAL(gb_float, gb_float_same);
@@ -1339,19 +1339,19 @@ void TEST_DB_search() {
             TEST_EXPECT_NULL(GB_find_string(db.gb_cont_misc, "str", "blub", GB_MIND_CASE, SEARCH_CHILD));
 
             GBDATA *gb_name;
-            TEST_EXPECT_NOTNULL                  (GB_find_string          (db.gb_cont1, "name", "entry 77",  GB_MIND_CASE,   SEARCH_GRANDCHILD));
-            TEST_EXPECT_NOTNULL                  (GB_find_string          (db.gb_cont1, "name", "entry 99",  GB_MIND_CASE,   SEARCH_GRANDCHILD));
+            TEST_REJECT_NULL                  (GB_find_string          (db.gb_cont1, "name", "entry 77",  GB_MIND_CASE,   SEARCH_GRANDCHILD));
+            TEST_REJECT_NULL                  (GB_find_string          (db.gb_cont1, "name", "entry 99",  GB_MIND_CASE,   SEARCH_GRANDCHILD));
             TEST_EXPECT_NORESULT__NOERROREXPORTED(GB_find_string          (db.gb_cont1, "name", "entry 100", GB_MIND_CASE,   SEARCH_GRANDCHILD));
             TEST_EXPECT_NORESULT__NOERROREXPORTED(GB_find_string          (db.gb_cont1, "name", "ENTRY 13",  GB_MIND_CASE,   SEARCH_GRANDCHILD));
-            TEST_EXPECT_NOTNULL                  (gb_name = GB_find_string(db.gb_cont1, "name", "ENTRY 13",  GB_IGNORE_CASE, SEARCH_GRANDCHILD));
+            TEST_REJECT_NULL                  (gb_name = GB_find_string(db.gb_cont1, "name", "ENTRY 13",  GB_IGNORE_CASE, SEARCH_GRANDCHILD));
 
             GBDATA *gb_sub;
-            TEST_EXPECT_NOTNULL(gb_sub = GB_get_father(gb_name));        TEST_EXPECT_EQUAL(GBT_get_name(gb_sub), "entry 13");
-            TEST_EXPECT_NOTNULL(gb_sub = GB_followingEntry(gb_sub, 0));  TEST_EXPECT_EQUAL(GBT_get_name(gb_sub), "entry 14");
-            TEST_EXPECT_NOTNULL(gb_sub = GB_followingEntry(gb_sub, 1));  TEST_EXPECT_EQUAL(GBT_get_name(gb_sub), "entry 16");
-            TEST_EXPECT_NOTNULL(gb_sub = GB_followingEntry(gb_sub, 10)); TEST_EXPECT_EQUAL(GBT_get_name(gb_sub), "entry 27");
+            TEST_REJECT_NULL(gb_sub = GB_get_father(gb_name));        TEST_EXPECT_EQUAL(GBT_get_name(gb_sub), "entry 13");
+            TEST_REJECT_NULL(gb_sub = GB_followingEntry(gb_sub, 0));  TEST_EXPECT_EQUAL(GBT_get_name(gb_sub), "entry 14");
+            TEST_REJECT_NULL(gb_sub = GB_followingEntry(gb_sub, 1));  TEST_EXPECT_EQUAL(GBT_get_name(gb_sub), "entry 16");
+            TEST_REJECT_NULL(gb_sub = GB_followingEntry(gb_sub, 10)); TEST_EXPECT_EQUAL(GBT_get_name(gb_sub), "entry 27");
             TEST_EXPECT_NORESULT__NOERROREXPORTED(GB_followingEntry(gb_sub, -1U));
-            TEST_EXPECT_NOTNULL(gb_sub = GB_brother(gb_sub, "entry"));   TEST_EXPECT_EQUAL(GBT_get_name(gb_sub), "entry 0");
+            TEST_REJECT_NULL(gb_sub = GB_brother(gb_sub, "entry"));   TEST_EXPECT_EQUAL(GBT_get_name(gb_sub), "entry 0");
 
             TEST_EXPECT_EQUAL(gb_bla = GB_search(gb_4711, "/misc/str", GB_FIND), gb_str);
 
@@ -1390,12 +1390,12 @@ void TEST_DB_search() {
         TEST_EXPECT_NORESULT__NOERROREXPORTED(GB_first_marked(db.gb_cont2, "entry"));
 
         GBDATA *gb_marked;
-        TEST_EXPECT_NOTNULL(gb_marked = GB_first_marked(db.gb_cont2, "item"));
+        TEST_REJECT_NULL(gb_marked = GB_first_marked(db.gb_cont2, "item"));
         TEST_EXPECT_EQUAL(GBT_get_name(gb_marked), "item 0");
 
         TEST_EXPECT_NORESULT__NOERROREXPORTED(GB_following_marked(gb_marked, "item", 1)); // skip over last
         
-        TEST_EXPECT_NOTNULL(gb_marked = GB_next_marked(gb_marked, "item")); // find last
+        TEST_REJECT_NULL(gb_marked = GB_next_marked(gb_marked, "item")); // find last
         TEST_EXPECT_EQUAL(GBT_get_name(gb_marked), "item 14");
     }
 

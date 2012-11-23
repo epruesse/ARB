@@ -1278,8 +1278,8 @@ void TEST_SLOW_loadsave() {
 
     {
         // test opening saved DBs
-        GBDATA *gb_a2b = GB_open("a2b.arb", "rw"); TEST_EXPECT_NOTNULL(gb_a2b);
-        GBDATA *gb_b2b = GB_open("b2b.arb", "rw"); TEST_EXPECT_NOTNULL(gb_b2b);
+        GBDATA *gb_a2b = GB_open("a2b.arb", "rw"); TEST_REJECT_NULL(gb_a2b);
+        GBDATA *gb_b2b = GB_open("b2b.arb", "rw"); TEST_REJECT_NULL(gb_b2b);
 
         // modify ..
         TEST_EXPECT_NO_ERROR(modify_db(gb_a2b));
@@ -1317,7 +1317,7 @@ void TEST_SLOW_loadsave() {
             // check master/slave DBs
             TEST_EXPECT_NO_ERROR(GB_save_as(gb_b2b, "master.arb", "b"));
 
-            GBDATA *gb_master = GB_open("master.arb", "rw"); TEST_EXPECT_NOTNULL(gb_master);
+            GBDATA *gb_master = GB_open("master.arb", "rw"); TEST_REJECT_NULL(gb_master);
             TEST_EXPECT_NO_ERROR(modify_db(gb_master));
 
             TEST_EXPECT_NO_ERROR(GB_save_quick(gb_master, "master.arb"));
@@ -1331,7 +1331,7 @@ void TEST_SLOW_loadsave() {
             TEST_EXPECT_ERROR_CONTAINS(GB_save_as(gb_master, "master.arb", "b"), "already exists and is write protected"); // overwrite should fail now
 
             {
-                GBDATA *gb_slave = GB_open("slave.arb", "rw"); TEST_EXPECT_NOTNULL(gb_slave); // load slave DB
+                GBDATA *gb_slave = GB_open("slave.arb", "rw"); TEST_REJECT_NULL(gb_slave); // load slave DB
                 TEST_EXPECT_NO_ERROR(modify_db(gb_slave));
                 TEST_EXPECT_NO_ERROR(GB_save_quick(gb_slave, "slave.arb"));
                 TEST_EXPECT_NO_ERROR(GB_save_quick_as(gb_slave, "renamed.arb"));
@@ -1385,13 +1385,13 @@ void TEST_SLOW_quicksave_names() {
     {
         // update min_bin.arb from min_ascii.arb
         const char *aname    = "min_ascii.arb";
-        GBDATA     *gb_ascii = GB_open(aname, "rw"); TEST_EXPECT_NOTNULL(gb_ascii);
+        GBDATA     *gb_ascii = GB_open(aname, "rw"); TEST_REJECT_NULL(gb_ascii);
 
         TEST_EXPECT_NO_ERROR(GB_save_as(gb_ascii, bname, "b"));
         GB_close(gb_ascii);
     }
 #endif
-    GBDATA *gb_bin = GB_open(bname, "rw"); TEST_EXPECT_NOTNULL(gb_bin);
+    GBDATA *gb_bin = GB_open(bname, "rw"); TEST_REJECT_NULL(gb_bin);
     for (int i = 0; i <= 100; ++i) {
         TEST_EXPECT_NO_ERROR(GB_save_quick(gb_bin, bname));
         switch (i) {
