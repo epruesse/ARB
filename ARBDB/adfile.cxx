@@ -732,10 +732,10 @@ void TEST_logic() {
         TEST_EXPECT(implicated(false, any)); // "..aus Falschem folgt Beliebiges.."
         TEST_EXPECT(implicated(any, any));
 
-        TEST_EXPECT( correlated(any, any));
-        TEST_EXPECT(!correlated(any, !any));
-        TEST_EXPECT(!contradicted(any, any));
-        TEST_EXPECT( contradicted(any, !any));
+        TEST_EXPECT(correlated(any, any));
+        TEST_REJECT(correlated(any, !any));
+        TEST_REJECT(contradicted(any, any));
+        TEST_EXPECT(contradicted(any, !any));
     }
 
     TEST_EXPECT(correlated(false, false));

@@ -278,9 +278,9 @@ void TEST_BASIC_switch_parsing() {
     TEST_EXPECT(strcasecmp_start("GenBank", "NEXUS") < 0);
     TEST_EXPECT(strcasecmp_start("NEXUS", "GenBank") > 0);
 
-    TEST_EXPECT(!is_abbrev_switch("notAswitch", "notAswitch"));
-    TEST_EXPECT(!is_abbrev_switch("-GenbankPlus", "Genbank"));
-    TEST_EXPECT(!is_abbrev_switch("-Ge", "NEXUS"));
+    TEST_REJECT(is_abbrev_switch("notAswitch", "notAswitch"));
+    TEST_REJECT(is_abbrev_switch("-GenbankPlus", "Genbank"));
+    TEST_REJECT(is_abbrev_switch("-Ge", "NEXUS"));
 
     TEST_EXPECT(is_abbrev_switch("-Ge", "Genbank"));
     TEST_EXPECT(is_abbrev_switch("-N", "NEXUS"));

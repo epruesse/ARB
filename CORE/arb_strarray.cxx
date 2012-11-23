@@ -167,7 +167,7 @@ void TEST_StrArray() {
 
     array.put(strdup("first"));
 
-    TEST_EXPECT(!array.empty());
+    TEST_REJECT(array.empty());
     TEST_EXPECT_EQUAL(array.size(), 1);
     TEST_EXPECT_EQUAL(array[0], "first");
     TEST_EXPECT_NULL(array[1]);

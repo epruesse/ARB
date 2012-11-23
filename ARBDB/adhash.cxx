@@ -1297,7 +1297,7 @@ void TEST_GBS_hash_next_element_that() {
 
         for (int iter = 1; iter <= 3; ++iter) {
             key = GBS_hash_next_element_that(hash, key, has_value_greater, (void*)1);
-            if (iter == 3) TEST_EXPECT(!key);
+            if (iter == 3) TEST_REJECT(key);
             else {
                 TEST_REJECT_NULL(key);
                 sum += GBS_read_hash(hash, key);

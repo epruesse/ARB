@@ -1292,7 +1292,7 @@ struct gbcm_get_m_id_TESTER : virtual Noncopyable {
     bool no_error() {
         if (error) {
             fprintf(stderr, "Unexpected error for path '%s': %s\n", path, error);
-            TEST_EXPECT(!name);
+            TEST_REJECT(name);
         }
         else if (!name) fprintf(stderr, "Neither error nor name for path '%s'\n", path);
         return !error;
@@ -1369,7 +1369,7 @@ void TEST_paths() {
         char *nosuchpath_in_arbhome = strdup(GB_concat_path(arbhome, "nosuchpath"));
         char *file_in_nosuchpath    = strdup(GB_concat_path(nosuchpath_in_arbhome, "whatever"));
 
-        TEST_EXPECT(!GB_is_directory(nosuchpath_in_arbhome));
+        TEST_REJECT(GB_is_directory(nosuchpath_in_arbhome));
 
         // test GB_get_full_path
         TEST_EXPECT_IS_CANONICAL(somefile_in_arbhome);
@@ -1434,7 +1434,7 @@ void TEST_GB_remove_on_exit() {
         TestFile file("test1");
         TEST_EXPECT(file.exists());
         TEST_EXPECT(TestFile(file.get_name()).exists()); // removes the file
-        TEST_EXPECT(!file.exists());
+        TEST_REJECT(file.exists());
     }
 
     TestFile t("test1");
@@ -1445,7 +1445,7 @@ void TEST_GB_remove_on_exit() {
         GB_remove_on_exit(t.get_name());
         GB_close(gb_main);
     }
-    TEST_EXPECT(!t.exists());
+    TEST_REJECT(t.exists());
 }
 
 #endif

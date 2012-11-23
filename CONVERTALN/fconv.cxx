@@ -176,7 +176,7 @@ static void test_expected_conversion(const char *file, const char *flavor) {
         TEST_EXPECT_ZERO_OR_SHOW_ERRNO(system(GBS_global_string("cp %s %s", file, expected)));
     }
     else {
-        TEST_EXPECT(!more_than_date_differs(file, expected));
+        TEST_REJECT(more_than_date_differs(file, expected));
     }
     free(expected);
 }
@@ -219,7 +219,7 @@ static void test_convert_by_format_num(int from, int to) {
     else {
         if (!error) TEST_ERROR("No error for unsupported conversion '%s'", GBS_global_string("%s -> %s", NAME(from), NAME(to)));
         TEST_REJECT_NULL(strstr(error, "supported")); // wrong error
-        TEST_EXPECT(!GB_is_regularfile(toFile)); // unsupported produced output
+        TEST_REJECT(GB_is_regularfile(toFile)); // unsupported produced output
     }
     TEST_EXPECT(me.supported == !error);
 

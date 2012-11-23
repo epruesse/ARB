@@ -57,17 +57,17 @@ void TEST_PosRange() {
     PosRange till9 = PosRange::till(9);
     PosRange seven2nine(7, 9);
 
-    TEST_EXPECT(!empty.is_whole());      TEST_EXPECT(!empty.is_part());      TEST_EXPECT( empty.is_empty());
-    TEST_EXPECT( whole.is_whole());      TEST_EXPECT(!whole.is_part());      TEST_EXPECT(!whole.is_empty());
-    TEST_EXPECT(!from7.is_whole());      TEST_EXPECT( from7.is_part());      TEST_EXPECT(!from7.is_empty());
-    TEST_EXPECT(!till9.is_whole());      TEST_EXPECT( till9.is_part());      TEST_EXPECT(!till9.is_empty());
-    TEST_EXPECT(!seven2nine.is_whole()); TEST_EXPECT( seven2nine.is_part()); TEST_EXPECT(!seven2nine.is_empty());
+    TEST_REJECT(empty.is_whole());      TEST_REJECT(empty.is_part());      TEST_EXPECT(empty.is_empty());
+    TEST_EXPECT(whole.is_whole());      TEST_REJECT(whole.is_part());      TEST_REJECT(whole.is_empty());
+    TEST_REJECT(from7.is_whole());      TEST_EXPECT(from7.is_part());      TEST_REJECT(from7.is_empty());
+    TEST_REJECT(till9.is_whole());      TEST_EXPECT(till9.is_part());      TEST_REJECT(till9.is_empty());
+    TEST_REJECT(seven2nine.is_whole()); TEST_EXPECT(seven2nine.is_part()); TEST_REJECT(seven2nine.is_empty());
 
-    TEST_EXPECT( empty.is_limited());
-    TEST_EXPECT(!whole.is_limited());
-    TEST_EXPECT(!from7.is_limited());
-    TEST_EXPECT( till9.is_limited());
-    TEST_EXPECT( seven2nine.is_limited());
+    TEST_EXPECT(empty.is_limited());
+    TEST_REJECT(whole.is_limited());
+    TEST_REJECT(from7.is_limited());
+    TEST_EXPECT(till9.is_limited());
+    TEST_EXPECT(seven2nine.is_limited());
 
     // test size
     TEST_EXPECT_EQUAL(empty.size(), 0);
@@ -95,7 +95,7 @@ void TEST_PosRange() {
     for (int pos = -3; pos<12; ++pos) {
         TEST_ANNOTATE_ASSERT(GBS_global_string("pos=%i", pos));
 
-        TEST_EXPECT(!empty.contains(pos));
+        TEST_REJECT(empty.contains(pos));
         TEST_EXPECT(correlated(whole.contains(pos),      pos >= 0));
         TEST_EXPECT(correlated(from7.contains(pos),      pos >= 7));
         TEST_EXPECT(correlated(till9.contains(pos),      pos >= 0 && pos <= 9));
@@ -103,7 +103,7 @@ void TEST_PosRange() {
     }
     TEST_EXPECT(whole.contains(INT_MAX));
     TEST_EXPECT(from7.contains(INT_MAX));
-    TEST_EXPECT(!empty.contains(INT_MAX));
+    TEST_REJECT(empty.contains(INT_MAX));
 }
 
 void TEST_ExplicitRange() {

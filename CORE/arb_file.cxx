@@ -266,34 +266,34 @@ void TEST_basic_file_checks() {
         TEST_EXPECT(GB_is_link(linkToFile));
         TEST_EXPECT(GB_is_link(linkToDir));
         TEST_EXPECT(GB_is_link(linkNowhere));
-        TEST_EXPECT(!GB_is_link(someFile));
-        TEST_EXPECT(!GB_is_link(noFile));
-        TEST_EXPECT(!GB_is_link(someDir));
-        TEST_EXPECT(!GB_is_link(NULL));
+        TEST_REJECT(GB_is_link(someFile));
+        TEST_REJECT(GB_is_link(noFile));
+        TEST_REJECT(GB_is_link(someDir));
+        TEST_REJECT(GB_is_link(NULL));
 
         TEST_EXPECT(GB_is_regularfile(linkToFile));
-        TEST_EXPECT(!GB_is_regularfile(linkToDir));
-        TEST_EXPECT(!GB_is_regularfile(linkNowhere));
+        TEST_REJECT(GB_is_regularfile(linkToDir));
+        TEST_REJECT(GB_is_regularfile(linkNowhere));
         TEST_EXPECT(GB_is_regularfile(someFile));
-        TEST_EXPECT(!GB_is_regularfile(someDir));
-        TEST_EXPECT(!GB_is_regularfile(noFile));
-        TEST_EXPECT(!GB_is_regularfile(NULL));
+        TEST_REJECT(GB_is_regularfile(someDir));
+        TEST_REJECT(GB_is_regularfile(noFile));
+        TEST_REJECT(GB_is_regularfile(NULL));
 
-        TEST_EXPECT(!GB_is_directory(linkToFile));
+        TEST_REJECT(GB_is_directory(linkToFile));
         TEST_EXPECT(GB_is_directory(linkToDir));
-        TEST_EXPECT(!GB_is_directory(linkNowhere));
-        TEST_EXPECT(!GB_is_directory(someFile));
-        TEST_EXPECT(!GB_is_directory(noFile));
+        TEST_REJECT(GB_is_directory(linkNowhere));
+        TEST_REJECT(GB_is_directory(someFile));
+        TEST_REJECT(GB_is_directory(noFile));
         TEST_EXPECT(GB_is_directory(someDir));
-        TEST_EXPECT(!GB_is_directory(NULL));
+        TEST_REJECT(GB_is_directory(NULL));
 
         TEST_EXPECT(GB_is_readablefile(linkToFile));
-        TEST_EXPECT(!GB_is_readablefile(linkToDir));
-        TEST_EXPECT(!GB_is_readablefile(linkNowhere));
+        TEST_REJECT(GB_is_readablefile(linkToDir));
+        TEST_REJECT(GB_is_readablefile(linkNowhere));
         TEST_EXPECT(GB_is_readablefile(someFile));
-        TEST_EXPECT(!GB_is_readablefile(noFile));
-        TEST_EXPECT(!GB_is_readablefile(someDir));
-        TEST_EXPECT(!GB_is_readablefile(NULL));
+        TEST_REJECT(GB_is_readablefile(noFile));
+        TEST_REJECT(GB_is_readablefile(someDir));
+        TEST_REJECT(GB_is_readablefile(NULL));
         
         TEST_EXPECT(GB_is_readable(linkToDir));
         TEST_EXPECT(GB_is_readable(someDir));
