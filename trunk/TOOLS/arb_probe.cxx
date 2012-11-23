@@ -1168,7 +1168,7 @@ arb_test::match_expectation partial_covers_full_probe(const char *part, const ch
     
     expectation_group expected;
     expected.add(that(strstr(full, part)).does_differ_from_NULL());
-    expected.add(that(strlen(part)).less_than(strlen(full)));
+    expected.add(that(strlen(part)).is_less_than(strlen(full)));
 
     {
         Matches matchFull, matchPart;

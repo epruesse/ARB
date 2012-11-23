@@ -101,50 +101,45 @@ bool GBK_running_on_valgrind() {
     return RUNNING_ON_VALGRIND>0;
 }
 
-bool GBK_raises_SIGSEGV(void (*cb)(void), bool result_in_valgrind) {
+bool GBK_raises_SIGSEGV(void (*cb)(void)) {
     // test whether 'cb' aborts with SIGSEGV
-    // (does nothing and always returns 'result_in_valgrind' if executable is running under valgrind!)
+    // (Note: never true under valgrind!)
 
     volatile bool segv_occurred = false;
-    if (GBK_running_on_valgrind()) {
-        segv_occurred = result_in_valgrind;
-    }
-    else {
-        arb_assert(!suppress_sigsegv);
-        SigHandler old_handler = INSTALL_SIGHANDLER(SIGSEGV, sigsegv_handler, "GBK_raises_SIGSEGV");
+    arb_assert(!suppress_sigsegv);
+    SigHandler old_handler = INSTALL_SIGHANDLER(SIGSEGV, sigsegv_handler, "GBK_raises_SIGSEGV");
 
-        suppress_sigsegv = true;
+    suppress_sigsegv = true;
 
-        // ----------------------------------------
-        // start of critical section
-        // (need volatile for modified local auto variables, see man longjump)
+    // ----------------------------------------
+    // start of critical section
+    // (need volatile for modified local auto variables, see man longjump)
+    {
+        // cppcheck-suppress variableScope
+        volatile int trapped;
         {
-            // cppcheck-suppress variableScope
-            volatile int trapped; 
-            {
-                volatile SuppressOutput toConsole;           // comment-out this line to show console output of 'cb'
+            volatile SuppressOutput toConsole;           // comment-out this line to show console output of 'cb'
 
-                int old_suppression       = BackTraceInfo::suppress();
-                BackTraceInfo::suppress() = true;
+            int old_suppression       = BackTraceInfo::suppress();
+            BackTraceInfo::suppress() = true;
 
-                trapped = sigsetjmp(return_after_segv, 1);
+            trapped = sigsetjmp(return_after_segv, 1);
 
-                if (!trapped) {                     // normal execution
-                    cb();
-                }
-                else {
-                    segv_occurred = true;
-                }
-                BackTraceInfo::suppress() = old_suppression;
+            if (!trapped) {                     // normal execution
+                cb();
             }
-            suppress_sigsegv = false;
-            arb_assert(implicated(trapped, trapped == 667));
+            else {
+                segv_occurred = true;
+            }
+            BackTraceInfo::suppress() = old_suppression;
         }
-        // end of critical section
-        // ----------------------------------------
-
-        UNINSTALL_SIGHANDLER(SIGSEGV, sigsegv_handler, old_handler, "GBK_raises_SIGSEGV");
+        suppress_sigsegv = false;
+        arb_assert(implicated(trapped, trapped == 667));
     }
+    // end of critical section
+    // ----------------------------------------
+
+    UNINSTALL_SIGHANDLER(SIGSEGV, sigsegv_handler, old_handler, "GBK_raises_SIGSEGV");
 
     return segv_occurred;
 }
