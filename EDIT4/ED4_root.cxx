@@ -221,12 +221,12 @@ static arb_test::match_expectation correct_world2win_calculation(ED4_foldable& f
     return all().of(precondition, world_2_win_conversion);
 }
 
-#define TEST_ASSERT_WIN_UNFOLDED(xwi,ywi)              TEST_EXPECT(correct_win2world_calculation(foldable, xwi, ywi, xwi, ywi))
-#define TEST_ASSERT_WIN_WORLD_FOLDING(xwi,ywi,fx,fy)   TEST_EXPECT(correct_win2world_calculation(foldable, xwi, ywi, (xwi)+(fx), (ywi)+(fy)))
-#define TEST_ASSERT_WORLD_WIN_FOLDING(xwo,ywo,xwi,ywi) TEST_EXPECT(correct_world2win_calculation(foldable, xwo, ywo, xwi, ywi))
+#define TEST_ASSERT_WIN_UNFOLDED(xwi,ywi)              TEST_EXPECTATION(correct_win2world_calculation(foldable, xwi, ywi, xwi, ywi))
+#define TEST_ASSERT_WIN_WORLD_FOLDING(xwi,ywi,fx,fy)   TEST_EXPECTATION(correct_win2world_calculation(foldable, xwi, ywi, (xwi)+(fx), (ywi)+(fy)))
+#define TEST_ASSERT_WORLD_WIN_FOLDING(xwo,ywo,xwi,ywi) TEST_EXPECTATION(correct_world2win_calculation(foldable, xwo, ywo, xwi, ywi))
 
-#define TEST_ASSERT_WIN_WORLD_FOLDING__BROKEN(xwi,ywi,fx,fy)        TEST_EXPECT__BROKEN(correct_win2world_calculation(foldable, xwi, ywi, (xwi)+(fx), (ywi)+(fy)))
-#define TEST_ASSERT_WIN_WORLD_FOLDING__BROKENIF(when,xwi,ywi,fx,fy) TEST_EXPECT__BROKENIF(when, correct_win2world_calculation(foldable, xwi, ywi, (xwi)+(fx), (ywi)+(fy)))
+#define TEST_ASSERT_WIN_WORLD_FOLDING__BROKEN(xwi,ywi,fx,fy)        TEST_EXPECTATION__BROKEN(correct_win2world_calculation(foldable, xwi, ywi, (xwi)+(fx), (ywi)+(fy)))
+#define TEST_ASSERT_WIN_WORLD_FOLDING__BROKENIF(when,xwi,ywi,fx,fy) TEST_EXPECTATION__BROKENIF(when, correct_win2world_calculation(foldable, xwi, ywi, (xwi)+(fx), (ywi)+(fy)))
 
 void TEST_win_2_world() {
     ED4_foldable foldable;
