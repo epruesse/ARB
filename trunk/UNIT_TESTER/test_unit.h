@@ -1091,10 +1091,10 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_EXPECT_ZERO(cond)            TEST_EXPECTATION(that(cond).is_equal_to(0))
-#define TEST_EXPECT_ZERO__BROKEN(cond)    TEST_EXPECTATION__BROKEN(that(cond).is_equal_to(0))
-#define TEST_EXPECT_NONZERO(cond)         TEST_EXPECTATION(that(cond).does_differ_from(0)) // @@@ elim 'NON'
-#define TEST_EXPECT_NONZERO__BROKEN(cond) TEST_EXPECTATION__BROKEN(that(cond).does_differ_from(0))
+#define TEST_EXPECT_ZERO(cond)         TEST_EXPECTATION(that(cond).is_equal_to(0))
+#define TEST_EXPECT_ZERO__BROKEN(cond) TEST_EXPECTATION__BROKEN(that(cond).is_equal_to(0))
+#define TEST_REJECT_ZERO(cond)         TEST_EXPECTATION(that(cond).does_differ_from(0))
+#define TEST_REJECT_ZERO__BROKEN(cond) TEST_EXPECTATION__BROKEN(that(cond).does_differ_from(0))
 
 #define TEST_EXPECT_ZERO_OR_SHOW_ERRNO(iocond)                  \
     do {                                                        \
@@ -1266,15 +1266,15 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 
 #define TEST_EXPECT_CONTAINS(str, part) TEST_EXPECTATION(that(str).does_contain(part))
 
-#define TEST_EXPECT_NULL(n)            TEST_EXPECT_EQUAL(n, (typeof(n))NULL)
-#define TEST_EXPECT_NULL__BROKEN(n)    TEST_EXPECT_EQUAL__BROKEN(n, (typeof(n))NULL)
-#define TEST_EXPECT_NOTNULL(n)         TEST_EXPECT_DIFFERENT(n, (typeof(n))NULL) // @@@ elim 'NOT'
-#define TEST_EXPECT_NOTNULL__BROKEN(n) TEST_EXPECT_DIFFERENT__BROKEN(n, (typeof(n))NULL)
+#define TEST_EXPECT_NULL(n)         TEST_EXPECT_EQUAL(n, (typeof(n))NULL)
+#define TEST_EXPECT_NULL__BROKEN(n) TEST_EXPECT_EQUAL__BROKEN(n, (typeof(n))NULL)
+#define TEST_REJECT_NULL(n)         TEST_EXPECT_DIFFERENT(n, (typeof(n))NULL)
+#define TEST_REJECT_NULL__BROKEN(n) TEST_EXPECT_DIFFERENT__BROKEN(n, (typeof(n))NULL)
 
-#define TEST_EXPECT(cond)               TEST_EXPECT_EQUAL(cond, true)  // @@@ rename into TEST_EXPECT when eliminated
-#define TEST_EXPECT__BROKEN(cond)       TEST_EXPECT_EQUAL__BROKEN(cond, true)
-#define TEST_EXPECT_WRONG(cond)         TEST_EXPECT_EQUAL(cond, false) // @@@ rename into TEST_REJECT when eliminated
-#define TEST_EXPECT_WRONG__BROKEN(cond) TEST_EXPECT_EQUAL__BROKEN(cond, false)
+#define TEST_EXPECT(cond)         TEST_EXPECT_EQUAL(cond, true)
+#define TEST_EXPECT__BROKEN(cond) TEST_EXPECT_EQUAL__BROKEN(cond, true)
+#define TEST_REJECT(cond)         TEST_EXPECT_EQUAL(cond, false)
+#define TEST_REJECT__BROKEN(cond) TEST_EXPECT_EQUAL__BROKEN(cond, false)
 
 // --------------------------------------------------------------------------------
 // the following macros only work when

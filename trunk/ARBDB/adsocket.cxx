@@ -1320,14 +1320,14 @@ struct gbcm_get_m_id_TESTER : virtual Noncopyable {
 };
 
 void TEST_gbcm_get_m_id() {
-    TEST_EXPECT_NOTNULL(gbcm_get_m_id_TESTER(NULL).error);
-    TEST_EXPECT_NOTNULL(gbcm_get_m_id_TESTER("").error);
+    TEST_REJECT_NULL(gbcm_get_m_id_TESTER(NULL).error);
+    TEST_REJECT_NULL(gbcm_get_m_id_TESTER("").error);
     TEST_EXPECT(gbcm_get_m_id_TESTER(":").parsed(ANY_NAME, -1));
 
     TEST_EXPECT(gbcm_get_m_id_TESTER("localhost:71").parsed("localhost", 71)); // fixed with [6486]
-    TEST_EXPECT_NOTNULL(gbcm_get_m_id_TESTER("localhost:0").error);
+    TEST_REJECT_NULL(gbcm_get_m_id_TESTER("localhost:0").error);
     TEST_EXPECT(gbcm_get_m_id_TESTER("localhost:4096").error == NULL);
-    TEST_EXPECT_NOTNULL(gbcm_get_m_id_TESTER("localhost:4097").error);
+    TEST_REJECT_NULL(gbcm_get_m_id_TESTER("localhost:4097").error);
 
     TEST_EXPECT(gbcm_get_m_id_TESTER(":/tmp/arb_pt_ralf1").parsed("/tmp/arb_pt_ralf1", -1));
 

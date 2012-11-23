@@ -1233,7 +1233,7 @@ void TEST_tree() {
             {
                 GBT_TREE *tree = GBT_read_tree(gb_main, "tree_nj_bs", sizeof(GBT_TREE));
 
-                TEST_EXPECT_NOTNULL(tree);
+                TEST_REJECT_NULL(tree);
 
                 size_t leaf_count = GBT_count_leafs(tree);
 
@@ -1306,12 +1306,12 @@ void TEST_tree() {
             TEST_EXPECT_ERROR_CONTAINS(GBT_copy_tree(gb_main, "tree_tree2",  "tree_test"),     "tree 'tree_test' already exists");
 
             TEST_EXPECT_NO_ERROR(GBT_copy_tree(gb_main, "tree_test", "tree_test_copy"));
-            TEST_EXPECT_NOTNULL(GBT_find_tree(gb_main, "tree_test_copy"));
+            TEST_REJECT_NULL(GBT_find_tree(gb_main, "tree_test_copy"));
             TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_tree2|tree_test|tree_test_copy|tree_nj_bs|tree_nj");
 
             // rename
             TEST_EXPECT_NO_ERROR(GBT_rename_tree(gb_main, "tree_nj", "tree_renamed_nj"));
-            TEST_EXPECT_NOTNULL(GBT_find_tree(gb_main, "tree_renamed_nj"));
+            TEST_REJECT_NULL(GBT_find_tree(gb_main, "tree_renamed_nj"));
             TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_tree2|tree_test|tree_test_copy|tree_nj_bs|tree_renamed_nj");
 
             TEST_EXPECT_NO_ERROR(GBT_rename_tree(gb_main, "tree_tree2", "tree_renamed_tree2"));

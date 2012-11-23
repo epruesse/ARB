@@ -218,7 +218,7 @@ static void test_convert_by_format_num(int from, int to) {
     }
     else {
         if (!error) TEST_ERROR("No error for unsupported conversion '%s'", GBS_global_string("%s -> %s", NAME(from), NAME(to)));
-        TEST_EXPECT_NOTNULL(strstr(error, "supported")); // wrong error
+        TEST_REJECT_NULL(strstr(error, "supported")); // wrong error
         TEST_EXPECT(!GB_is_regularfile(toFile)); // unsupported produced output
     }
     TEST_EXPECT(me.supported == !error);
@@ -230,11 +230,11 @@ static void test_convert_by_format_num(int from, int to) {
         const char *fromFile = "general/empty.input";
 
         error = test_convert(fromFile, toFile, TYPE(from), TYPE(to));
-        TEST_EXPECT_NOTNULL(error);
+        TEST_REJECT_NULL(error);
 
         fromFile = "general/text.input";
         error = test_convert(fromFile, toFile, TYPE(from), TYPE(to));
-        TEST_EXPECT_NOTNULL(error);
+        TEST_REJECT_NULL(error);
     }
 #endif
 
