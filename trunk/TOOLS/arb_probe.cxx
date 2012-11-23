@@ -1188,8 +1188,8 @@ arb_test::match_expectation partial_covers_full_probe(const char *part, const ch
     return all().ofgroup(expected);
 }
 
-#define TEST_PARTIAL_COVERS_FULL_PROBE(part,full)         TEST_EXPECT(partial_covers_full_probe(part, full))
-#define TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN(part,full) TEST_EXPECT__BROKEN(partial_covers_full_probe(part, full))
+#define TEST_PARTIAL_COVERS_FULL_PROBE(part,full)         TEST_EXPECTATION(partial_covers_full_probe(part, full))
+#define TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN(part,full) TEST_EXPECTATION__BROKEN(partial_covers_full_probe(part, full))
 
 void TEST_SLOW_unmatched_probes() {
     // near 3'end of alignment

@@ -1106,7 +1106,7 @@ static arb_test::match_expectation clustal_aligns(const char *i1, const char *i2
     return all().ofgroup(expected);
 }
 
-#define TEST_CLUSTAL_ALIGNS(i1,i2,o1,o2,score) TEST_EXPECT(clustal_aligns(i1,i2,o1,o2,score))
+#define TEST_CLUSTAL_ALIGNS(i1,i2,o1,o2,score) TEST_EXPECTATION(clustal_aligns(i1,i2,o1,o2,score))
 
 void TEST_clustalV() {
     TEST_CLUSTAL_ALIGNS("ACGTTGCAACGT",

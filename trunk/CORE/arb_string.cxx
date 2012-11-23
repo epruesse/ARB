@@ -170,11 +170,11 @@ void TEST_arbtest_expectations() {
     string boskop      = apple;
     string pomegranate = "Granatapfel";
 
-    TEST_EXPECT(that(apple).is_equal_to("Apfel"));
+    TEST_EXPECTATION(that(apple).is_equal_to("Apfel"));
     
-    TEST_EXPECT(that(apple).does_differ_from(pear));
-    TEST_EXPECT(that(apple).is_equal_to(boskop));
-    TEST_EXPECT(wrong(that(pomegranate).is_equal_to(apple)));
+    TEST_EXPECTATION(that(apple).does_differ_from(pear));
+    TEST_EXPECTATION(that(apple).is_equal_to(boskop));
+    TEST_EXPECTATION(wrong(that(pomegranate).is_equal_to(apple)));
 
     match_expectation ff1 = that(1.0).is_equal_to(2-1);
     match_expectation ff2 = that(boskop).is_equal_to(apple);
@@ -188,39 +188,39 @@ void TEST_arbtest_expectations() {
     match_expectation a2 = all().of(ff1, ff2);
     match_expectation a3 = all().of(ff1, ff2, ff3);
 
-    TEST_EXPECT(a1);
-    TEST_EXPECT(a2);
-    TEST_EXPECT(a3);
+    TEST_EXPECTATION(a1);
+    TEST_EXPECTATION(a2);
+    TEST_EXPECTATION(a3);
 
     match_expectation n1 = none().of(ff1);
     match_expectation n2 = none().of(ff1, ff2);
     match_expectation n3 = none().of(ff1, ff2, ff3);
 
-    TEST_EXPECT(wrong(none().of(that(boskop).is_equal_to(apple))));
-    TEST_EXPECT(wrong(n1));
-    TEST_EXPECT(wrong(n2));
-    TEST_EXPECT(wrong(n3));
+    TEST_EXPECTATION(wrong(none().of(that(boskop).is_equal_to(apple))));
+    TEST_EXPECTATION(wrong(n1));
+    TEST_EXPECTATION(wrong(n2));
+    TEST_EXPECTATION(wrong(n3));
 
-    TEST_EXPECT(atleast(1).of(a1));
-    TEST_EXPECT(atleast(1).of(a1, n1));
-    TEST_EXPECT(atleast(1).of(n2, a1, n1));
+    TEST_EXPECTATION(atleast(1).of(a1));
+    TEST_EXPECTATION(atleast(1).of(a1, n1));
+    TEST_EXPECTATION(atleast(1).of(n2, a1, n1));
 
-    TEST_EXPECT(wrong(atleast(2).of(a1, n1, n2)));
-    TEST_EXPECT(wrong(atleast(2).of(a1, n1)));
-    TEST_EXPECT(wrong(atleast(2).of(a1))); // impossible
+    TEST_EXPECTATION(wrong(atleast(2).of(a1, n1, n2)));
+    TEST_EXPECTATION(wrong(atleast(2).of(a1, n1)));
+    TEST_EXPECTATION(wrong(atleast(2).of(a1))); // impossible
 
-    TEST_EXPECT(atmost(2).of(a1));
-    TEST_EXPECT(atmost(2).of(a1, a2));
-    TEST_EXPECT(atmost(2).of(a1, a2, n1));
-    TEST_EXPECT(atmost(2).of(a1, n1, n2));
-    TEST_EXPECT(atmost(2).of(n1, n2));
-    TEST_EXPECT(wrong(atmost(2).of(a1, a2, a3)));
+    TEST_EXPECTATION(atmost(2).of(a1));
+    TEST_EXPECTATION(atmost(2).of(a1, a2));
+    TEST_EXPECTATION(atmost(2).of(a1, a2, n1));
+    TEST_EXPECTATION(atmost(2).of(a1, n1, n2));
+    TEST_EXPECTATION(atmost(2).of(n1, n2));
+    TEST_EXPECTATION(wrong(atmost(2).of(a1, a2, a3)));
 
-    TEST_EXPECT(exactly(1).of(ff1, nf1, nf2));
-    TEST_EXPECT(wrong(exactly(1).of(nf1, nf2)));
-    TEST_EXPECT(wrong(exactly(1).of(nf1, nf2, nf3)));
-    TEST_EXPECT(wrong(exactly(1).of(ff1, ff2, nf2)));
-    TEST_EXPECT(wrong(exactly(1).of(ff1, ff2, ff3)));
+    TEST_EXPECTATION(exactly(1).of(ff1, nf1, nf2));
+    TEST_EXPECTATION(wrong(exactly(1).of(nf1, nf2)));
+    TEST_EXPECTATION(wrong(exactly(1).of(nf1, nf2, nf3)));
+    TEST_EXPECTATION(wrong(exactly(1).of(ff1, ff2, nf2)));
+    TEST_EXPECTATION(wrong(exactly(1).of(ff1, ff2, ff3)));
 
 }
 
@@ -228,15 +228,15 @@ void TEST_expectation_groups() {
     using namespace arb_test;
 
     expectation_group no_expectations;
-    TEST_EXPECT(all().ofgroup(no_expectations));
-    TEST_EXPECT(none().ofgroup(no_expectations));
+    TEST_EXPECTATION(all().ofgroup(no_expectations));
+    TEST_EXPECTATION(none().ofgroup(no_expectations));
 
     expectation_group fulfilled_expectation  (that(1).is_equal_to(1));
     expectation_group unfulfilled_expectation(that(1).is_equal_to(0));
     expectation_group some_fulfilled_expectations(that(1).is_equal_to(0), that(1).is_equal_to(1));
 
-    TEST_EXPECT(all().ofgroup(fulfilled_expectation));
-    TEST_EXPECT(none().ofgroup(unfulfilled_expectation));
+    TEST_EXPECTATION(all().ofgroup(fulfilled_expectation));
+    TEST_EXPECTATION(none().ofgroup(unfulfilled_expectation));
 
     TEST_ASSERT(none().ofgroup(fulfilled_expectation).unfulfilled());
     TEST_ASSERT(all().ofgroup(unfulfilled_expectation).unfulfilled());
@@ -342,12 +342,12 @@ void TEST_user_type_with_expectations() {
     user_type ut3(-4, -8);
     user_type ut4(4, -8);
 
-    TEST_EXPECT(that(ut1).does_differ_from(ut12));
-    TEST_EXPECT(that(ut12).is_equal_to(ut12.flipped()));
-    TEST_EXPECT(that(ut1).does_differ_from(ut1.flipped()));
+    TEST_EXPECTATION(that(ut1).does_differ_from(ut12));
+    TEST_EXPECTATION(that(ut12).is_equal_to(ut12.flipped()));
+    TEST_EXPECTATION(that(ut1).does_differ_from(ut1.flipped()));
 
-    TEST_EXPECT(that(ut1).fulfills(in_same_quadrant, ut12));
-    TEST_EXPECT(none().of(that(ut1).fulfills(in_same_quadrant, ut2),
+    TEST_EXPECTATION(that(ut1).fulfills(in_same_quadrant, ut12));
+    TEST_EXPECTATION(none().of(that(ut1).fulfills(in_same_quadrant, ut2),
                           that(ut2).fulfills(in_same_quadrant, ut3),
                           that(ut3).fulfills(in_same_quadrant, ut4)));
 }
@@ -358,9 +358,9 @@ void TEST_similarity() {
     double d2      = d1-epsilon*0.6;
     double d3      = d1+epsilon*0.6;
 
-    TEST_EXPECT(that(d1).fulfills(epsilon_similar(epsilon), d2));
-    TEST_EXPECT(that(d1).fulfills(epsilon_similar(epsilon), d3));
-    TEST_EXPECT(that(d2).contradicts(epsilon_similar(epsilon), d3));
+    TEST_EXPECTATION(that(d1).fulfills(epsilon_similar(epsilon), d2));
+    TEST_EXPECTATION(that(d1).fulfills(epsilon_similar(epsilon), d3));
+    TEST_EXPECTATION(that(d2).contradicts(epsilon_similar(epsilon), d3));
 
     TEST_ASSERT_SIMILAR(d1, d2, epsilon);
     TEST_ASSERT_SIMILAR(d1, d3, epsilon);
@@ -373,13 +373,13 @@ void TEST_less_equal() {
 
     // less/more etc
 
-    TEST_EXPECT(that(x).is_less_than(y));
-    TEST_EXPECT(that(x).is_less_or_equal(y));
-    TEST_EXPECT(that(x).is_less_or_equal(x));
+    TEST_EXPECTATION(that(x).is_less_than(y));
+    TEST_EXPECTATION(that(x).is_less_or_equal(y));
+    TEST_EXPECTATION(that(x).is_less_or_equal(x));
     
-    TEST_EXPECT(that(y).is_more_than(x));
-    TEST_EXPECT(that(y).is_more_or_equal(x));
-    TEST_EXPECT(that(y).is_more_or_equal(y));
+    TEST_EXPECTATION(that(y).is_more_than(x));
+    TEST_EXPECTATION(that(y).is_more_or_equal(x));
+    TEST_EXPECTATION(that(y).is_more_or_equal(y));
 
     TEST_ASSERT_LOWER_EQUAL(x, y);
     TEST_ASSERT_LOWER_EQUAL(x, x);

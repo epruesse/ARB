@@ -73,7 +73,7 @@ arb_test::match_expectation arrays_equal(const StrArray& expected, const StrArra
 
 #define TEST_ASSERT_READS_SAME(fc,name) do {                     \
         FileContent oc(name);                                    \
-        TEST_EXPECT(arrays_equal(fc.lines(), oc.lines()));       \
+        TEST_EXPECTATION(arrays_equal(fc.lines(), oc.lines()));       \
     } while(0)
 
 void TEST_linefeed_conversion() {

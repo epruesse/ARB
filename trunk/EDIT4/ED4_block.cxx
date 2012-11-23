@@ -1050,10 +1050,10 @@ static arb_test::match_expectation blockop_expected_io(const ED4_block_operator&
     return all().ofgroup(expectations);
 }
 
-#define TEST_ASSERT_BLOCKOP_PERFORMS(oversized_input,blockop,expected)         TEST_EXPECT(blockop_expected_io(blockop, oversized_input, expected, NULL))
-#define TEST_ASSERT_BLOCKOP_PERFORMS__BROKEN(oversized_input,blockop,expected) TEST_EXPECT__BROKEN(blockop_expected_io(blockop, oversized_input, expected, NULL))
-#define TEST_ASSERT_BLOCKOP_ERRORHAS(oversized_input,blockop,expected)         TEST_EXPECT(blockop_expected_io(blockop, oversized_input, NULL, expected))
-#define TEST_ASSERT_BLOCKOP_ERRORHAS__BROKEN(oversized_input,blockop,expected) TEST_EXPECT__BROKEN(blockop_expected_io(blockop, oversized_input, NULL, expected))
+#define TEST_ASSERT_BLOCKOP_PERFORMS(oversized_input,blockop,expected)         TEST_EXPECTATION(blockop_expected_io(blockop, oversized_input, expected, NULL))
+#define TEST_ASSERT_BLOCKOP_PERFORMS__BROKEN(oversized_input,blockop,expected) TEST_EXPECTATION__BROKEN(blockop_expected_io(blockop, oversized_input, expected, NULL))
+#define TEST_ASSERT_BLOCKOP_ERRORHAS(oversized_input,blockop,expected)         TEST_EXPECTATION(blockop_expected_io(blockop, oversized_input, NULL, expected))
+#define TEST_ASSERT_BLOCKOP_ERRORHAS__BROKEN(oversized_input,blockop,expected) TEST_EXPECTATION__BROKEN(blockop_expected_io(blockop, oversized_input, NULL, expected))
 
 void TEST_block_operators() {
     ED4_init_is_align_character("-.");
