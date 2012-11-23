@@ -148,12 +148,12 @@ void ED4_start_plugin(AW_window *aw, AW_CL cl_gbmain, AW_CL cl_pluginname) {
 #include <test_unit.h>
 
 void TEST_plugin_found() {
-    TEST_ASSERT(findPlugin("SECEDIT"));
-    TEST_ASSERT(!findPlugin("unknown"));
+    TEST_ASSERT_NOTNULL(findPlugin("SECEDIT"));
+    TEST_ASSERT_NULL(findPlugin("unknown"));
 #if defined(ARB_OPENGL)
-    TEST_ASSERT(findPlugin("RNA3D"));
+    TEST_ASSERT_NOTNULL(findPlugin("RNA3D"));
 #else
-    TEST_ASSERT(!findPlugin("RNA3D"));
+    TEST_ASSERT_NULL(findPlugin("RNA3D"));
 #endif
 }
 

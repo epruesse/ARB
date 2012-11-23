@@ -58,13 +58,13 @@ void TEST_PosRange() {
     PosRange seven2nine(7, 9);
 
     TEST_ASSERT(!empty.is_whole());      TEST_ASSERT(!empty.is_part());      TEST_ASSERT( empty.is_empty());
-    TEST_ASSERT( whole.is_whole());      TEST_ASSERT(!whole.is_part());      TEST_ASSERT(!whole.is_empty());     
-    TEST_ASSERT(!from7.is_whole());      TEST_ASSERT( from7.is_part());      TEST_ASSERT(!from7.is_empty());     
-    TEST_ASSERT(!till9.is_whole());      TEST_ASSERT( till9.is_part());      TEST_ASSERT(!till9.is_empty());     
-    TEST_ASSERT(!seven2nine.is_whole()); TEST_ASSERT( seven2nine.is_part()); TEST_ASSERT(!seven2nine.is_empty()); 
+    TEST_ASSERT( whole.is_whole());      TEST_ASSERT(!whole.is_part());      TEST_ASSERT(!whole.is_empty());
+    TEST_ASSERT(!from7.is_whole());      TEST_ASSERT( from7.is_part());      TEST_ASSERT(!from7.is_empty());
+    TEST_ASSERT(!till9.is_whole());      TEST_ASSERT( till9.is_part());      TEST_ASSERT(!till9.is_empty());
+    TEST_ASSERT(!seven2nine.is_whole()); TEST_ASSERT( seven2nine.is_part()); TEST_ASSERT(!seven2nine.is_empty());
 
-    TEST_ASSERT( empty.is_limited());     
-    TEST_ASSERT(!whole.is_limited());     
+    TEST_ASSERT( empty.is_limited());
+    TEST_ASSERT(!whole.is_limited());
     TEST_ASSERT(!from7.is_limited());
     TEST_ASSERT( till9.is_limited());
     TEST_ASSERT( seven2nine.is_limited());

@@ -218,7 +218,7 @@ void TEST_consensus_tree_1() {
     GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 0.7);
 
     TEST_ASSERT(!error);
-    TEST_ASSERT(tree);
+    TEST_ASSERT_NOTNULL(tree);
 
     TEST_ASSERT_EQUAL(species_count, 22);
     TEST_ASSERT_EQUAL(GBT_count_leafs(tree), species_count);
@@ -253,7 +253,7 @@ void TEST_consensus_tree_1_single() {
         size_t species_count;
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 0.01);
         TEST_ASSERT(!error);
-        TEST_ASSERT(tree);
+        TEST_ASSERT_NOTNULL(tree);
 
         TEST_ASSERT_EQUAL(species_count, 22);
         TEST_ASSERT_EQUAL(GBT_count_leafs(tree), species_count);
@@ -288,7 +288,7 @@ void TEST_consensus_tree_2() {
         size_t species_count;
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 2.5);
         TEST_ASSERT(!error);
-        TEST_ASSERT(tree);
+        TEST_ASSERT_NOTNULL(tree);
 
         TEST_ASSERT_EQUAL(species_count, 59);
         TEST_ASSERT_EQUAL(GBT_count_leafs(tree), species_count);
@@ -324,7 +324,7 @@ void TEST_consensus_tree_3() {
         size_t species_count;
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
         TEST_ASSERT(!error);
-        TEST_ASSERT(tree);
+        TEST_ASSERT_NOTNULL(tree);
 
         TEST_ASSERT_EQUAL(species_count, 128);
         TEST_ASSERT_EQUAL(GBT_count_leafs(tree), species_count);

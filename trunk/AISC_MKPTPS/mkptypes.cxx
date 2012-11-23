@@ -1744,7 +1744,7 @@ inline const char *test_extract(bool ATTR, const char *str) {
 
     search_comment_for_attribute();
 
-    TEST_ASSERT(!searchResult(!ATTR));
+    TEST_ASSERT_WRONG(searchResult(!ATTR));
     return searchResult(ATTR);
 }
 

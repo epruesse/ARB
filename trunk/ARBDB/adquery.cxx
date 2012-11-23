@@ -1219,7 +1219,7 @@ void TEST_DB_search() {
 
         {
             GBDATA *gb_any_child = GB_child(db.gb_cont1);
-            TEST_ASSERT(gb_any_child);
+            TEST_ASSERT_NOTNULL(gb_any_child);
             TEST_ASSERT_EQUAL(gb_any_child, GB_entry(db.gb_cont1, "entry"));
             TEST_ASSERT_EQUAL(gb_any_child, GB_search(db.gb_main, "container1/entry", GB_FIND));
 
@@ -1249,10 +1249,10 @@ void TEST_DB_search() {
         }
 
         {
-            GBDATA *gb_child1 = GB_child(db.gb_cont2);   TEST_ASSERT(gb_child1);
-            GBDATA *gb_child2 = GB_nextChild(gb_child1); TEST_ASSERT(gb_child2);
-            GBDATA *gb_child3 = GB_nextChild(gb_child2); TEST_ASSERT(gb_child3);
-            GBDATA *gb_child4 = GB_nextChild(gb_child3); TEST_ASSERT(gb_child4);
+            GBDATA *gb_child1 = GB_child(db.gb_cont2);   TEST_ASSERT_NOTNULL(gb_child1);
+            GBDATA *gb_child2 = GB_nextChild(gb_child1); TEST_ASSERT_NOTNULL(gb_child2);
+            GBDATA *gb_child3 = GB_nextChild(gb_child2); TEST_ASSERT_NOTNULL(gb_child3);
+            GBDATA *gb_child4 = GB_nextChild(gb_child3); TEST_ASSERT_NOTNULL(gb_child4);
 
             TEST_ASSERT_EQUAL(GB_read_key_pntr(gb_child1), "item");
             TEST_ASSERT_EQUAL(GB_read_key_pntr(gb_child2), "other");
@@ -1276,19 +1276,19 @@ void TEST_DB_search() {
         //      single entries
 
         {
-            GBDATA *gb_str      = GB_searchOrCreate_string(db.gb_cont_misc, "str", "bla");   TEST_ASSERT(gb_str);
+            GBDATA *gb_str      = GB_searchOrCreate_string(db.gb_cont_misc, "str", "bla");   TEST_ASSERT_NOTNULL(gb_str);
             GBDATA *gb_str_same = GB_searchOrCreate_string(db.gb_cont_misc, "str", "blub");
 
             TEST_ASSERT_EQUAL(gb_str, gb_str_same);
             TEST_ASSERT_EQUAL(GB_read_char_pntr(gb_str), "bla");
 
-            GBDATA *gb_int      = GB_searchOrCreate_int(db.gb_cont_misc, "int", 4711);   TEST_ASSERT(gb_int);
+            GBDATA *gb_int      = GB_searchOrCreate_int(db.gb_cont_misc, "int", 4711);   TEST_ASSERT_NOTNULL(gb_int);
             GBDATA *gb_int_same = GB_searchOrCreate_int(db.gb_cont_misc, "int", 2012);
 
             TEST_ASSERT_EQUAL(gb_int, gb_int_same);
             TEST_ASSERT_EQUAL(GB_read_int(gb_int), 4711);
 
-            GBDATA *gb_float      = GB_searchOrCreate_float(db.gb_cont_misc, "float", 0.815);   TEST_ASSERT(gb_float);
+            GBDATA *gb_float      = GB_searchOrCreate_float(db.gb_cont_misc, "float", 0.815);   TEST_ASSERT_NOTNULL(gb_float);
             GBDATA *gb_float_same = GB_searchOrCreate_float(db.gb_cont_misc, "float", 3.1415);
 
             TEST_ASSERT_EQUAL(gb_float, gb_float_same);

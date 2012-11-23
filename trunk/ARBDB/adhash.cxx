@@ -1106,7 +1106,7 @@ void TEST_GBS_hashtab_2_string() {
         GB_HASH *hash = TEST.get_hash(case_sens);
         
         char *as_string = GBS_hashtab_2_string(hash);
-        TEST_ASSERT(as_string);
+        TEST_ASSERT_NOTNULL(as_string);
 
         GB_HASH *hash2 = GBS_create_hash(1000, case_sens ? GB_MIND_CASE : GB_IGNORE_CASE);
         GBS_string_2_hashtab(hash2, as_string); 
@@ -1299,7 +1299,7 @@ void TEST_GBS_hash_next_element_that() {
             key = GBS_hash_next_element_that(hash, key, has_value_greater, (void*)1);
             if (iter == 3) TEST_ASSERT(!key);
             else {
-                TEST_ASSERT(key);
+                TEST_ASSERT_NOTNULL(key);
                 sum += GBS_read_hash(hash, key);
             }
         }

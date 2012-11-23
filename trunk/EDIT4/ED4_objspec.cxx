@@ -209,8 +209,8 @@ void TEST_objspec_registry() {
     TEST_ASSERT((seq.get_possible_descendants()       & ED4_L_SEQUENCE_STRING) == 0);
     TEST_ASSERT((multi_seq.get_possible_descendants() & ED4_L_SEQUENCE_STRING) == 0);
 
-    TEST_ASSERT(seq.get_allowed_descendants()       & ED4_L_SEQUENCE_STRING);
-    TEST_ASSERT(multi_seq.get_allowed_descendants() & ED4_L_SEQUENCE_STRING);
+    TEST_ASSERT_NONZERO(seq.get_allowed_descendants()       & ED4_L_SEQUENCE_STRING);
+    TEST_ASSERT_NONZERO(multi_seq.get_allowed_descendants() & ED4_L_SEQUENCE_STRING);
 
     TEST_ASSERT((multi_seq.get_allowed_descendants() & ED4_L_ROOTGROUP) == 0);
 
@@ -218,15 +218,15 @@ void TEST_objspec_registry() {
     multi_seq.announce_added(ED4_L_SEQUENCE);
     seq.announce_added(ED4_L_SEQUENCE_STRING);
 
-    TEST_ASSERT(seq.get_possible_descendants()       & ED4_L_SEQUENCE_STRING);
-    TEST_ASSERT(multi_seq.get_possible_descendants() & ED4_L_SEQUENCE_STRING);
+    TEST_ASSERT_NONZERO(seq.get_possible_descendants()       & ED4_L_SEQUENCE_STRING);
+    TEST_ASSERT_NONZERO(multi_seq.get_possible_descendants() & ED4_L_SEQUENCE_STRING);
 
-    TEST_ASSERT((multi_seq.get_possible_descendants() & ED4_L_SEQUENCE_INFO) == 0);
+    TEST_ASSERT_ZERO(multi_seq.get_possible_descendants() & ED4_L_SEQUENCE_INFO);
 
     // add more (checks refresh)
     seq.announce_added(ED4_L_SEQUENCE_INFO);
 
-    TEST_ASSERT(multi_seq.get_possible_descendants() & ED4_L_SEQUENCE_INFO);
+    TEST_ASSERT_NONZERO(multi_seq.get_possible_descendants() & ED4_L_SEQUENCE_INFO);
 }
 
 #endif // UNIT_TESTS

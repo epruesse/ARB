@@ -838,11 +838,11 @@ static struct arb_unit_test::test_alignment_data TestAlignmentData_Genome[] = {
 #define TEST_GENPOS_FIELD(field,value) do {                             \
         GBDATA *gb_field = GB_entry(gb_gene, (field));                  \
         if ((value)) {                                                  \
-            TEST_ASSERT(gb_field);                                      \
+            TEST_ASSERT_NOTNULL(gb_field);                              \
             TEST_ASSERT_EQUAL(GB_read_char_pntr(gb_field), (value));    \
         }                                                               \
         else {                                                          \
-            TEST_ASSERT(!gb_field);                                     \
+            TEST_ASSERT_NULL(gb_field);                                 \
         }                                                               \
     } while(0)
 
@@ -879,9 +879,9 @@ void TEST_GEN_position() {
     {
         GB_transaction ta(gb_main);
 
-        GBDATA *gb_organism  = GBT_find_species(gb_main, "spec"); TEST_ASSERT(gb_organism);
-        GBDATA *gb_gene_data = GEN_findOrCreate_gene_data(gb_organism); TEST_ASSERT(gb_gene_data);
-        GBDATA *gb_gene      = GEN_create_nonexisting_gene_rel_gene_data(gb_gene_data, "gene"); TEST_ASSERT(gb_gene);
+        GBDATA *gb_organism  = GBT_find_species(gb_main, "spec"); TEST_ASSERT_NOTNULL(gb_organism);
+        GBDATA *gb_gene_data = GEN_findOrCreate_gene_data(gb_organism); TEST_ASSERT_NOTNULL(gb_gene_data);
+        GBDATA *gb_gene      = GEN_create_nonexisting_gene_rel_gene_data(gb_gene_data, "gene"); TEST_ASSERT_NOTNULL(gb_gene);
 
         typedef SmartCustomPtr(GEN_position, GEN_free_position) GEN_position_Ptr;
         GEN_position_Ptr pos;

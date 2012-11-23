@@ -1242,7 +1242,7 @@ void TEST_SLOW_variable_defaults_in_server() {
     T_PT_MAIN com;
     T_PT_LOCS locs;
     aisc_com *link = aisc_open(servername, com, AISC_MAGIC_NUMBER);
-    TEST_ASSERT(link);
+    TEST_ASSERT_NOTNULL(link);
 
     TEST_ASSERT_ZERO(aisc_create(link, PT_MAIN, com,
                                  MAIN_LOCS, PT_LOCS, locs,

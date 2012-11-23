@@ -128,7 +128,7 @@ __ATTR__NORETURN static void UNITTEST_sigsegv_handler(int sig) {
 
             default:
                 trap_code = TRAP_UNEXPECTED;
-                TEST_ASSERT(0);
+                test_assert(0, true);
                 break;
         }
         if (backtrace_cause) demangle_backtrace(BackTraceInfo(0), stderr, backtrace_cause);
